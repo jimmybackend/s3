@@ -570,6 +570,21 @@ function manejarClickPaginacionBloqueArchivos(e) {
   const params = new URLSearchParams(window.location.search);
   params.set('pagina', String(p));
 
+  const filtrosActivos = (typeof window.obtenerFiltros === 'function')
+    ? window.obtenerFiltros()
+    : {
+        buscar: document.querySelector('#formFiltros [name="buscar"]')?.value ?? '',
+        tipo: document.querySelector('#formFiltros [name="tipo"]')?.value ?? '',
+        fecha_inicio: document.querySelector('#formFiltros [name="fecha_inicio"]')?.value ?? '',
+        fecha_fin: document.querySelector('#formFiltros [name="fecha_fin"]')?.value ?? ''
+      };
+
+  ['buscar', 'tipo', 'fecha_inicio', 'fecha_fin'].forEach((k) => {
+    const v = filtrosActivos?.[k];
+    if (v && String(v).trim() !== '') params.set(k, String(v));
+    else params.delete(k);
+  });
+
   const rutaActual = document.getElementById('archivosContexto')?.dataset?.rutaActual;
   if (rutaActual && String(rutaActual).trim() !== '') {
     params.set('ruta', String(rutaActual));
@@ -590,7 +605,12 @@ function manejarClickPaginacionBloqueArchivos(e) {
 }
 
 function initPaginacionBloqueArchivos() {
-  document.addEventListener('click', manejarClickPaginacionBloqueArchivos);
+  if (window.__archivosPaginacionHandler) {
+    document.removeEventListener('click', window.__archivosPaginacionHandler);
+  }
+
+  window.__archivosPaginacionHandler = manejarClickPaginacionBloqueArchivos;
+  document.addEventListener('click', window.__archivosPaginacionHandler);
 }
 
 /* -------------------------

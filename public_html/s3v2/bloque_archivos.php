@@ -39,13 +39,19 @@ function tooltip_from_metadatos(?string $raw): string {
 }
 
 /* ---------------- Parámetros (sin formulario aquí) ---------------- */
+$rutaGet = trim((string)($_GET['ruta'] ?? ''));
+if ($rutaGet !== '') {
+  $_SESSION['ruta_actual'] = $rutaGet;
+}
+
 $rutaActual   = $_SESSION['ruta_actual'] ?? 'Data/';
+$rutaActual   = rtrim(str_replace('\\', '/', $rutaActual), '/') . '/';
 $buscar       = $_GET['buscar'] ?? '';
 $tipo         = $_GET['tipo'] ?? '';
 $fechaInicio  = $_GET['fecha_inicio'] ?? '';
 $fechaFin     = $_GET['fecha_fin'] ?? '';
 $pagina       = max(1, intval($_GET['pagina'] ?? 1));
-$limite       = max(5, intval($_GET['limite'] ?? 50));
+$limite       = max(5, intval($_GET['limite'] ?? 5));
 
 /* ---------------- WHERE base ---------------- */
 $where  = "Ruta = ? AND Found = 1";
@@ -518,16 +524,25 @@ function initContextoBloqueArchivos() {
    - si no existe, desde inputs/select
 ------------------------- */
 function getLimiteActualPaginacion() {
+  const desdeSelect = document.querySelector('#formLimite select[name="limite"]');
+  if (desdeSelect && desdeSelect.value && String(desdeSelect.value).trim() !== '') {
+    return String(desdeSelect.value);
+  }
+
+  const desdeContexto = document.getElementById('archivosContexto')?.dataset?.limite;
+  if (desdeContexto && String(desdeContexto).trim() !== '') {
+    return String(desdeContexto);
+  }
+
   const desdeUrl = new URLSearchParams(window.location.search).get('limite');
   if (desdeUrl && String(desdeUrl).trim() !== '') {
     return String(desdeUrl);
   }
 
   const candidatos = [
-    document.querySelector('[name="limite"]'),
-    document.getElementById('limite'),
     document.querySelector('select[name="limite"]'),
-    document.querySelector('#formFiltrosArchivos [name="limite"]')
+    document.getElementById('limite'),
+    document.querySelector('#formFiltros [name="limite"]')
   ];
 
   for (const el of candidatos) {
@@ -550,9 +565,15 @@ function manejarClickPaginacionBloqueArchivos(e) {
   if (!p) return;
 
   e.preventDefault();
+  e.__archivosPaginationHandled = true;
 
   const params = new URLSearchParams(window.location.search);
   params.set('pagina', String(p));
+
+  const rutaActual = document.getElementById('archivosContexto')?.dataset?.rutaActual;
+  if (rutaActual && String(rutaActual).trim() !== '') {
+    params.set('ruta', String(rutaActual));
+  }
 
   const limiteActual = getLimiteActualPaginacion();
   if (limiteActual) {

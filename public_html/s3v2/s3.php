@@ -48,7 +48,7 @@ $tipo         = $_GET['tipo'] ?? '';
 $buscar       = $_GET['buscar'] ?? '';
 $fechaInicio  = $_GET['fecha_inicio'] ?? '';
 $fechaFin     = $_GET['fecha_fin'] ?? '';
-$limite       = (int)($_GET['limite'] ?? 50);
+$limite       = (int)($_GET['limite'] ?? 5);
 $pagina       = (int)($_GET['pagina'] ?? 1);
 $pagina       = max(1, $pagina);
 
@@ -425,10 +425,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' &&
       <input type="hidden" name="tipo" value="<?= htmlspecialchars($_GET['tipo'] ?? '') ?>">
 
       <label class="mr-2 mb-2">Mostrar:</label>
-      <select name="limite" class="form-control mr-2 mb-2" style="max-width: 100px;">
-        <?php foreach ([5, 10, 20, 50, 100, 500] as $op): ?>
-          <option value="<?= $op ?>" <?= $limite === $op ? 'selected' : '' ?>><?= $op ?></option>
-        <?php endforeach; ?>
+      <select name="limite" class="form-control mr-2 mb-2" style="max-width: 100px;">␊
+        <?php foreach ([5, 10, 20, 50] as $op): ?>
+          <option value="<?= $op ?>" <?= $limite === $op ? 'selected' : '' ?>><?= $op ?></option>␊
+        <?php endforeach; ?>␊
       </select>
     </form>
 
@@ -437,7 +437,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' &&
       <?php if ($showFilters): ?>
         <form id="formFiltros" class="form-inline" onsubmit="return false;">
           <input type="hidden" name="ruta" value="<?= htmlspecialchars($basePrefix) ?>">
-          <input type="hidden" name="limite" value="<?= (int)($_GET['limite'] ?? 50) ?>">
+          <input type="hidden" name="limite" value="<?= (int)($_GET['limite'] ?? 5) ?>">
 
           <input type="text" name="buscar" class="form-control mr-2 mb-2" placeholder="Buscar..." value="<?= htmlspecialchars($_GET['buscar'] ?? '') ?>" style="max-width: 160px;">
           <input type="date" name="fecha_inicio" class="form-control mr-2 mb-2" value="<?= htmlspecialchars($_GET['fecha_inicio'] ?? '') ?>" style="max-width: 150px;">

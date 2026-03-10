@@ -415,55 +415,63 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' &&
         <div class="alert alert-danger"><?= htmlspecialchars($error) ?></div>
       <?php endif; ?>
 
-     <div class="d-flex flex-wrap align-items-end mb-3" style="gap: 10px;"> 
-      <!-- Formulario de cantidad -->
-    <form id="formLimite" class="form-inline" onsubmit="return false;">
-      <input type="hidden" name="ruta" value="<?= htmlspecialchars($basePrefix) ?>">
-      <input type="hidden" name="buscar" value="<?= htmlspecialchars($_GET['buscar'] ?? '') ?>">
-      <input type="hidden" name="fecha_inicio" value="<?= htmlspecialchars($_GET['fecha_inicio'] ?? '') ?>">
-      <input type="hidden" name="fecha_fin" value="<?= htmlspecialchars($_GET['fecha_fin'] ?? '') ?>">
-      <input type="hidden" name="tipo" value="<?= htmlspecialchars($_GET['tipo'] ?? '') ?>">
+     <div class="d-flex align-items-center justify-content-between mb-2" style="gap: 10px;">
+      <h6 class="mb-0">Archivos</h6>
+      <button class="btn btn-outline-secondary btn-sm" type="button"
+              data-toggle="collapse" data-target="#panelFiltrosArchivos"
+              data-bs-toggle="collapse" data-bs-target="#panelFiltrosArchivos"
+              aria-expanded="false" aria-controls="panelFiltrosArchivos"
+              aria-label="Mostrar u ocultar filtros"
+              title="Mostrar/Ocultar filtros">
+        <i class="fas fa-ellipsis-v"></i>
+      </button>
+    </div>
 
-      <label class="mr-2 mb-2">Mostrar:</label>
-      <select name="limite" class="form-control mr-2 mb-2" style="max-width: 100px;">␊
-        <?php foreach ([5, 10, 20, 50] as $op): ?>
-          <option value="<?= $op ?>" <?= $limite === $op ? 'selected' : '' ?>><?= $op ?></option>␊
-        <?php endforeach; ?>␊
-      </select>
-    </form>
-
-    
-      <!-- Formulario de filtros -->
-      <?php if ($showFilters): ?>
-        <form id="formFiltros" class="form-inline" onsubmit="return false;">
+    <div id="panelFiltrosArchivos" class="collapse mb-3">
+      <div class="d-flex flex-wrap align-items-end" style="gap: 10px;">
+        <!-- Formulario de cantidad -->
+        <form id="formLimite" class="form-inline" onsubmit="return false;">
           <input type="hidden" name="ruta" value="<?= htmlspecialchars($basePrefix) ?>">
-          <input type="hidden" name="limite" value="<?= (int)($_GET['limite'] ?? 5) ?>">
+          <input type="hidden" name="buscar" value="<?= htmlspecialchars($_GET['buscar'] ?? '') ?>">
+          <input type="hidden" name="fecha_inicio" value="<?= htmlspecialchars($_GET['fecha_inicio'] ?? '') ?>">
+          <input type="hidden" name="fecha_fin" value="<?= htmlspecialchars($_GET['fecha_fin'] ?? '') ?>">
+          <input type="hidden" name="tipo" value="<?= htmlspecialchars($_GET['tipo'] ?? '') ?>">
 
-          <input type="text" name="buscar" class="form-control mr-2 mb-2" placeholder="Buscar..." value="<?= htmlspecialchars($_GET['buscar'] ?? '') ?>" style="max-width: 160px;">
-          <input type="date" name="fecha_inicio" class="form-control mr-2 mb-2" value="<?= htmlspecialchars($_GET['fecha_inicio'] ?? '') ?>" style="max-width: 150px;">
-          <input type="date" name="fecha_fin" class="form-control mr-2 mb-2" value="<?= htmlspecialchars($_GET['fecha_fin'] ?? '') ?>" style="max-width: 150px;">
+          <label class="mr-2 mb-2">Mostrar:</label>
+          <select name="limite" class="form-control mr-2 mb-2" style="max-width: 100px;">␊
+            <?php foreach ([5, 10, 20, 50] as $op): ?>
+              <option value="<?= $op ?>" <?= $limite === $op ? 'selected' : '' ?>><?= $op ?></option>␊
+            <?php endforeach; ?>␊
+          </select>
+        </form>
 
-        <select name="tipo" class="form-control mr-2 mb-2" style="max-width: 140px;">
-          <option value="">Todos los tipos</option>
-          <?php foreach ($extensiones_unicas as $ext): ?>
-            <option value="<?= $ext ?>" <?= $ext === $tipo ? 'selected' : '' ?>>.<?= $ext ?></option>
-          <?php endforeach; ?>
-        </select>
+        <!-- Formulario de filtros -->
+        <?php if ($showFilters): ?>
+          <form id="formFiltros" class="form-inline" onsubmit="return false;">
+            <input type="hidden" name="ruta" value="<?= htmlspecialchars($basePrefix) ?>">
+            <input type="hidden" name="limite" value="<?= (int)($_GET['limite'] ?? 5) ?>">
 
-          <button type="submit" class="btn btn-primary mr-2 mb-2">Filtrar</button>
-        
+            <input type="text" name="buscar" class="form-control mr-2 mb-2" placeholder="Buscar..." value="<?= htmlspecialchars($_GET['buscar'] ?? '') ?>" style="max-width: 160px;">
+            <input type="date" name="fecha_inicio" class="form-control mr-2 mb-2" value="<?= htmlspecialchars($_GET['fecha_inicio'] ?? '') ?>" style="max-width: 150px;">
+            <input type="date" name="fecha_fin" class="form-control mr-2 mb-2" value="<?= htmlspecialchars($_GET['fecha_fin'] ?? '') ?>" style="max-width: 150px;">
 
+            <select name="tipo" class="form-control mr-2 mb-2" style="max-width: 140px;">
+              <option value="">Todos los tipos</option>
+              <?php foreach ($extensiones_unicas as $ext): ?>
+                <option value="<?= $ext ?>" <?= $ext === $tipo ? 'selected' : '' ?>>.<?= $ext ?></option>
+              <?php endforeach; ?>
+            </select>
+
+            <button type="submit" class="btn btn-primary mr-2 mb-2">Filtrar</button>
             <button type="button" id="btnQuitarFiltros" class="btn btn-outline-secondary mb-2" style="display: inline;">
               Quitar filtros
             </button>
-
-
-        </form>
-
-      <?php endif; ?>
+          </form>
+        <?php endif; ?>
+      </div>
     </div>
-        
-        <?php if (!empty($archivosPaginados)): ?>
+
+<?php if (!empty($archivosPaginados)): ?>
           <form id="multiDeleteForm" action="delete_multiple.php" method="POST" class="w-100">
             <input type="hidden" name="ruta" value="<?= htmlspecialchars($basePrefix) ?>">
         

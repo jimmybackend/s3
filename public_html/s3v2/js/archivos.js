@@ -295,6 +295,16 @@
       }
 
       const usp = urlParams(merged);
+
+      if (!usp.get('ruta')) {
+        const rutaCtx =
+          document.getElementById('archivosContexto')?.dataset?.rutaActual ||
+          window.rutaActual ||
+          document.getElementById('formFiltros')?.querySelector('[name="ruta"]')?.value ||
+          '';
+        if (rutaCtx) usp.set('ruta', String(rutaCtx));
+      }
+
       usp.set('_', Date.now().toString()); // anti-cache SIEMPRE
 
       const url = URL_BLOQUE_ARCHIVOS + '?' + usp.toString();
@@ -1123,7 +1133,7 @@
       tipo: f?.tipo?.value || '',
       fecha_inicio: f?.fecha_inicio?.value || '',
       fecha_fin: f?.fecha_fin?.value || '',
-      limite: (L?.querySelector('select[name="limite"]')?.value) || 50,
+      limite: (L?.querySelector('select[name="limite"]')?.value) || 5,
       pagina: 1
     };
 

@@ -1,8 +1,19 @@
 <?php
 /**
- * ============================================================
- * ARCHIVO: mover_archivo.php
- * ============================================================
+    $nuevaRuta = trim((string)($_POST['nueva_ruta'] ?? $_POST['ruta_destino'] ?? ''));
+        $raw = $_POST['archivos_json'];
+        if (is_array($raw)) {
+            $keys = $raw;
+        } else {
+            $tmp = json_decode((string)$raw, true);
+            if (is_array($tmp)) $keys = $tmp;
+        }
+    }
+
+    if (!empty($keys)) {
+        $keys = array_values(array_filter(array_map(function ($k) {
+            return trim(urldecode((string)$k));
+        }, $keys)));
  *
  * FUNCIÓN:
  * Endpoint para mover un archivo entre carpetas.

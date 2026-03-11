@@ -780,7 +780,7 @@ window.downloadSelected = window.downloadSelected || function downloadSelected()
   document.body.removeChild(form);
 };
 
-window.moveSelected = window.moveSelected || function moveSelected() {
+window.moveSelected = function moveSelected() {
   const seleccionados = getSeleccionadosBloqueArchivos();
   if (!seleccionados.length) {
     alert('Selecciona al menos un archivo para mover.');
@@ -793,14 +793,32 @@ window.moveSelected = window.moveSelected || function moveSelected() {
   const modal = document.getElementById('modalMover');
   if (!modal) return;
 
-  if (window.bootstrap && window.bootstrap.Modal) {
-    window.bootstrap.Modal.getOrCreateInstance(modal).show();
-  } else if (window.jQuery && window.$) {
-    window.$(modal).modal('show');
-  } else {
-    modal.classList.add('show');
-    modal.style.display = 'block';
+  try {
+    if (window.jQuery && window.$ && typeof window.$(modal).modal === 'function') {
+      window.$(modal).modal('show');
+      return;
+    }
+  } catch (e) {}
+
+  try {
+    if (window.bootstrap && window.bootstrap.Modal) {
+      if (typeof window.bootstrap.Modal.getOrCreateInstance === 'function') {
+        window.bootstrap.Modal.getOrCreateInstance(modal).show();
+      } else {
+        (new window.bootstrap.Modal(modal)).show();
+      }
+      return;
+    }
+  } catch (e) {}
+
+  const opener = document.querySelector('[data-toggle="modal"][data-target="#modalMover"], [data-bs-toggle="modal"][data-bs-target="#modalMover"]');
+  if (opener) {
+    opener.click();
+    return;
   }
+
+  modal.classList.add('show');
+  modal.style.display = 'block';
 };
 
 (function initSeleccionBloqueArchivos(){

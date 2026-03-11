@@ -578,19 +578,11 @@
     try {
       setBtnLoading(btnMover, true, '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Moviendo…');
 
-      const seleccionFinal = (() => {
-        try {
-          const arr = JSON.parse(archivosJSON);
-          if (Array.isArray(arr)) return arr;
-        } catch (_) {}
-        return seleccionActual(multiForm);
-      })();
-
-      const body = new URLSearchParams();
-      body.set('ruta_actual', rutaActual);
-      body.set('archivos_json', JSON.stringify(seleccionFinal));
-      body.set('nueva_ruta', nuevaRuta);
-      seleccionFinal.forEach((k) => body.append('archivos[]', String(k)));
+      const body = new URLSearchParams({
+        ruta_actual: rutaActual,
+        archivos_json: archivosJSON,
+        nueva_ruta: nuevaRuta
+      });
 
       const { res, json, text } = await fetchJson(URL_MOVER, {
         method: 'POST',

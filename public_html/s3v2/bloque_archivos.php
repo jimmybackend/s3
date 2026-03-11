@@ -20,6 +20,13 @@ function bytes_human($bytes){
   return round($bytes/1073741824,2) . ' GB';
 }
 function ext_de($nombre){ return strtolower(pathinfo($nombre, PATHINFO_EXTENSION)); }
+function build_file_s3_key(string $ruta, string $encriptado): string {
+  $ruta = rtrim(str_replace('\\', '/', trim($ruta)), '/') . '/';
+  $enc  = ltrim(str_replace('\\', '/', trim($encriptado)), '/');
+  if ($enc === '') return '';
+  if (strpos($enc, $ruta) === 0) return $enc;
+  return $ruta . $enc;
+}
 function registro_encriptado(array $row){ return ($row['Nombre'] ?? '') !== ($row['Encriptado'] ?? ''); }
 function registro_seguro(array $row){
   $a = $row['AccessType'] ?? 'normal';
@@ -137,13 +144,7 @@ foreach ($filas as $r) {
   $ext = ext_de($r['Nombre']);
 
   if (in_array($ext, $imagenesExt, true)) {
-    $uid  = isset($r['user_id_']) ? (int)$r['user_id_'] : 1;
-    $root = 'Data' . ($uid > 1 ? $uid : '');
-
-    $enc = ltrim((string)$r['Encriptado'], '/');
-    $enc = preg_replace('#^Data\d*/#i', '', $enc);
-
-    $s3key = $root . '/' . $enc;
+    $s3key = build_file_s3_key((string)($r['Ruta'] ?? ''), (string)($r['Encriptado'] ?? ''));
 
     $imagenesPagina[] = ['key' => $s3key, 'nombre' => $r['Nombre']];
   }
@@ -220,13 +221,8 @@ foreach ($filas as $r) {
       $rutaRow  = $row['Ruta'];
       $keyEnc   = $row['Encriptado'];
 
-      $uid  = (int)($row['user_id_'] ?? 1);
-      $root = 'Data' . ($uid > 1 ? $uid : '');
-
-      $enc = ltrim((string)$keyEnc, '/');
-      $enc = preg_replace('#^Data\d*/#i', '', $enc);
-
-      $s3key  = $root . '/' . $enc;
+      $uid    = (int)($row['user_id_'] ?? 1);
+      $s3key  = build_file_s3_key((string)$rutaRow, (string)$keyEnc);
       $s3keyQ = rawurlencode($s3key);
 
       $thumbUrl = "thumb.php?key={$s3keyQ}&uid={$uid}&w=128&h=128";

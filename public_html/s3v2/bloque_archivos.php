@@ -191,9 +191,9 @@ foreach ($filas as $r) {
       Seleccionar todos
     </label>
     <span id="filesSelectedCount" class="text-muted small"></span>
-    <button class="btn btn-sm btn-danger" onclick="deleteSelected()">Eliminar seleccionados</button>
-    <button class="btn btn-sm btn-primary" onclick="downloadSelected()">Descargar seleccionados</button>
-    <button class="btn btn-sm btn-secondary" onclick="moveSelected()">Mover seleccionados</button>
+    <button type="button" class="btn btn-sm btn-danger" onclick="deleteSelected()">Eliminar seleccionados</button>
+    <button type="button" class="btn btn-sm btn-primary" onclick="downloadSelected()">Descargar seleccionados</button>
+    <button type="button" class="btn btn-sm btn-secondary" onclick="moveSelected()">Mover seleccionados</button>
     <button type="button" id="btnVerGaleria"
             class="btn btn-sm btn-outline-primary <?= count($imagenesPagina) ? '' : 'd-none' ?>"
             data-bs-toggle="modal" data-bs-target="#modalGaleriaCompleta"
@@ -752,9 +752,84 @@ document.addEventListener('click', function (e) {
   window.deleteOne(btn.dataset.archivo || '');
 });
 
-window.deleteSelected = window.deleteSelected || async function deleteSelected() {
+function getSeleccionadosBloqueArchivos() {
   const wrap = document.getElementById('archivosWrap') || document;
-  const seleccionados = Array.from(wrap.querySelectorAll('input[name="archivos[]"]:checked')).map(cb => cb.value).filter(Boolean);
+  return Array.from(wrap.querySelectorAll('input[name="archivos[]"]:checked')).map(cb => cb.value).filter(Boolean);
+}
+
+window.downloadSelected = window.downloadSelected || function downloadSelected() {
+  const seleccionados = getSeleccionadosBloqueArchivos();
+  if (!seleccionados.length) {
+    alert('Selecciona al menos un archivo.');
+    return;
+  }
+
+  const form = document.createElement('form');
+  form.method = 'POST';
+  form.action = 'descargar_zip.php';
+  form.style.display = 'none';
+
+  const input = document.createElement('input');
+  input.type = 'hidden';
+  input.name = 'archivos_json';
+  input.value = JSON.stringify(seleccionados);
+
+  form.appendChild(input);
+  document.body.appendChild(form);
+  form.submit();
+  document.body.removeChild(form);
+};
+
+window.moveSelected = window.moveSelected || function moveSelected() {
+  const seleccionados = getSeleccionadosBloqueArchivos();
+  if (!seleccionados.length) {
+    alert('Selecciona al menos un archivo para mover.');
+    return;
+  }
+
+  const jsonInput = document.getElementById('archivosJson');
+  if (jsonInput) jsonInput.value = JSON.stringify(seleccionados);
+
+  const modal = document.getElementById('modalMover');
+  if (!modal) return;
+
+  if (window.bootstrap && window.bootstrap.Modal) {
+    window.bootstrap.Modal.getOrCreateInstance(modal).show();
+  } else if (window.jQuery && window.$) {
+    window.$(modal).modal('show');
+  } else {
+    modal.classList.add('show');
+    modal.style.display = 'block';
+  }
+};
+
+(function initSeleccionBloqueArchivos(){
+  const checkAll = document.getElementById('checkAllFiles');
+  const updateCount = () => {
+    const n = getSeleccionadosBloqueArchivos().length;
+    const el = document.getElementById('filesSelectedCount');
+    if (el) el.textContent = n ? `${n} seleccionado(s)` : '';
+  };
+
+  if (checkAll) {
+    checkAll.addEventListener('change', function(){
+      const checked = !!checkAll.checked;
+      const wrap = document.getElementById('archivosWrap') || document;
+      wrap.querySelectorAll('input[name="archivos[]"]').forEach(cb => { cb.checked = checked; });
+      updateCount();
+    });
+  }
+
+  document.addEventListener('change', function(e){
+    if (!e.target || !e.target.matches('input[name="archivos[]"]')) return;
+    updateCount();
+  });
+
+  updateCount();
+})();
+
+window.deleteSelected = window.deleteSelected || async function deleteSelected() {
+  const seleccionados = getSeleccionadosBloqueArchivos();
 
   if (!seleccionados.length) {
     alert('Selecciona al menos un archivo.');

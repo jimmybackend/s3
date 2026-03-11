@@ -20,6 +20,13 @@ function bytes_human($bytes){
   return round($bytes/1073741824,2) . ' GB';
 }
 function ext_de($nombre){ return strtolower(pathinfo($nombre, PATHINFO_EXTENSION)); }
+function build_file_s3_key(string $ruta, string $encriptado): string {
+  $ruta = rtrim(str_replace('\\', '/', trim($ruta)), '/') . '/';
+  $enc  = ltrim(str_replace('\\', '/', trim($encriptado)), '/');
+  if ($enc === '') return '';
+  if (strpos($enc, $ruta) === 0) return $enc;
+  return $ruta . $enc;
+}
 function registro_encriptado(array $row){ return ($row['Nombre'] ?? '') !== ($row['Encriptado'] ?? ''); }
 function registro_seguro(array $row){
   $a = $row['AccessType'] ?? 'normal';
@@ -137,13 +144,7 @@ foreach ($filas as $r) {
   $ext = ext_de($r['Nombre']);
 
   if (in_array($ext, $imagenesExt, true)) {
-    $uid  = isset($r['user_id_']) ? (int)$r['user_id_'] : 1;
-    $root = 'Data' . ($uid > 1 ? $uid : '');
-
-    $enc = ltrim((string)$r['Encriptado'], '/');
-    $enc = preg_replace('#^Data\d*/#i', '', $enc);
-
-    $s3key = $root . '/' . $enc;
+    $s3key = build_file_s3_key((string)($r['Ruta'] ?? ''), (string)($r['Encriptado'] ?? ''));
 
     $imagenesPagina[] = ['key' => $s3key, 'nombre' => $r['Nombre']];
   }
@@ -183,30 +184,22 @@ foreach ($filas as $r) {
     </div>
   </div>
 
-  <!-- ====== Botón de galería ====== -->
-  <div class="d-flex align-items-center justify-content-end mb-2">
-    <button type="button" id="btnVerGaleria"
-            class="btn btn-sm btn-outline-primary <?= count($imagenesPagina) ? '' : 'd-none' ?>"
-            data-bs-toggle="modal" data-bs-target="#modalGaleriaCompleta"
-            data-toggle="modal" data-target="#modalGaleriaCompleta">
-      <i class="fas fa-images"></i> Ver galería (6×6)
-    </button>
-  </div>
-
   <!-- ====== LISTA ====== -->
   <div class="mb-2 d-flex align-items-center gap-2">
     <label class="mb-0">
       <input type="checkbox" id="checkAllFiles">
       Seleccionar todos
     </label>
-
     <span id="filesSelectedCount" class="text-muted small"></span>
-  </div>
-
-  <div class="mb-2">
-    <button class="btn btn-sm btn-danger" onclick="deleteSelected()">Eliminar seleccionados</button>
-    <button class="btn btn-sm btn-primary" onclick="downloadSelected()">Descargar seleccionados</button>
-    <button class="btn btn-sm btn-secondary" onclick="moveSelected()">Mover seleccionados</button>
+    <button type="button" class="btn btn-sm btn-danger" onclick="deleteSelected()">Eliminar seleccionados</button>
+    <button type="button" class="btn btn-sm btn-primary" onclick="downloadSelected()">Descargar seleccionados</button>
+    <button type="button" class="btn btn-sm btn-secondary" onclick="moveSelected()">Mover seleccionados</button>
+    <button type="button" id="btnVerGaleria"
+            class="btn btn-sm btn-outline-primary <?= count($imagenesPagina) ? '' : 'd-none' ?>"
+            data-bs-toggle="modal" data-bs-target="#modalGaleriaCompleta"
+            data-toggle="modal" data-target="#modalGaleriaCompleta">
+      <i class="fas fa-images"></i> Ver galería (6×6)
+    </button>
   </div>
 
   <ul class="list-group">
@@ -220,13 +213,8 @@ foreach ($filas as $r) {
       $rutaRow  = $row['Ruta'];
       $keyEnc   = $row['Encriptado'];
 
-      $uid  = (int)($row['user_id_'] ?? 1);
-      $root = 'Data' . ($uid > 1 ? $uid : '');
-
-      $enc = ltrim((string)$keyEnc, '/');
-      $enc = preg_replace('#^Data\d*/#i', '', $enc);
-
-      $s3key  = $root . '/' . $enc;
+      $uid    = (int)($row['user_id_'] ?? 1);
+      $s3key  = build_file_s3_key((string)$rutaRow, (string)$keyEnc);
       $s3keyQ = rawurlencode($s3key);
 
       $thumbUrl = "thumb.php?key={$s3keyQ}&uid={$uid}&w=128&h=128";
@@ -369,13 +357,10 @@ foreach ($filas as $r) {
                 <i class="fas fa-download"></i> Descargar
               </a>
 
-              <form action="delete.php" method="POST" class="d-inline js-delete-one-form">
-                <input type="hidden" name="archivo" value="<?= h($s3key) ?>">
-                <input type="hidden" name="ruta" value="<?= h($rutaActual) ?>">
-                <button type="submit" class="dropdown-item text-danger">
-                  <i class="fas fa-trash-alt"></i> Eliminar
-                </button>
-              </form>
+              <button type="button" class="dropdown-item text-danger js-delete-one"
+                      data-archivo="<?= h($s3key) ?>">
+                <i class="fas fa-trash-alt"></i> Eliminar
+              </button>
 
               <div class="dropdown-divider"></div>
               <h6 class="dropdown-header">Organización</h6>
@@ -723,6 +708,182 @@ function initLoaderBloqueArchivos() {
   initPaginacionBloqueArchivos();
   initLoaderBloqueArchivos();
 })();
+
+
+
+window.deleteOne = window.deleteOne || async function deleteOne(archivo) {
+  const key = String(archivo || '').trim();
+  if (!key) return;
+
+  if (!confirm('¿Eliminar este archivo?')) return;
+
+  try {
+    const body = new URLSearchParams({ archivo: key });
+    const res = await fetch('eliminar_archivo.php', {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+        'X-Requested-With': 'XMLHttpRequest'
+      },
+      body
+    });
+
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok || json.estado !== 'ok') {
+      throw new Error(json.mensaje || json.error || ('HTTP ' + res.status));
+    }
+
+    if (typeof window.actualizarBloqueArchivos === 'function') {
+      await window.actualizarBloqueArchivos({ pagina: 1 });
+    } else {
+      location.reload();
+    }
+  } catch (err) {
+    console.error(err);
+    alert('❌ ' + (err.message || err));
+  }
+};
+
+document.addEventListener('click', function (e) {
+  const btn = e.target.closest('.js-delete-one');
+  if (!btn || !btn.dataset) return;
+  e.preventDefault();
+  window.deleteOne(btn.dataset.archivo || '');
+});
+
+function getSeleccionadosBloqueArchivos() {
+  const wrap = document.getElementById('archivosWrap') || document;
+  return Array.from(wrap.querySelectorAll('input[name="archivos[]"]:checked')).map(cb => cb.value).filter(Boolean);
+}
+
+window.downloadSelected = window.downloadSelected || function downloadSelected() {
+  const seleccionados = getSeleccionadosBloqueArchivos();
+  if (!seleccionados.length) {
+    alert('Selecciona al menos un archivo.');
+    return;
+  }
+
+  const form = document.createElement('form');
+  form.method = 'POST';
+  form.action = 'descargar_zip.php';
+  form.style.display = 'none';
+
+  const input = document.createElement('input');
+  input.type = 'hidden';
+  input.name = 'archivos_json';
+  input.value = JSON.stringify(seleccionados);
+
+  form.appendChild(input);
+  document.body.appendChild(form);
+  form.submit();
+  document.body.removeChild(form);
+};
+
+window.moveSelected = function moveSelected() {
+  const seleccionados = getSeleccionadosBloqueArchivos();
+  if (!seleccionados.length) {
+    alert('Selecciona al menos un archivo para mover.');
+    return;
+  }
+
+  const jsonInput = document.getElementById('archivosJson');
+  if (jsonInput) jsonInput.value = JSON.stringify(seleccionados);
+
+  const modal = document.getElementById('modalMover');
+  if (!modal) return;
+
+  try {
+    if (window.jQuery && window.$ && typeof window.$(modal).modal === 'function') {
+      window.$(modal).modal('show');
+      return;
+    }
+  } catch (e) {}
+
+  try {
+    if (window.bootstrap && window.bootstrap.Modal) {
+      if (typeof window.bootstrap.Modal.getOrCreateInstance === 'function') {
+        window.bootstrap.Modal.getOrCreateInstance(modal).show();
+      } else {
+        (new window.bootstrap.Modal(modal)).show();
+      }
+      return;
+    }
+  } catch (e) {}
+
+  const opener = document.querySelector('[data-toggle="modal"][data-target="#modalMover"], [data-bs-toggle="modal"][data-bs-target="#modalMover"]');
+  if (opener) {
+    opener.click();
+    return;
+  }
+
+  modal.classList.add('show');
+  modal.style.display = 'block';
+};
+
+(function initSeleccionBloqueArchivos(){
+  const checkAll = document.getElementById('checkAllFiles');
+  const updateCount = () => {
+    const n = getSeleccionadosBloqueArchivos().length;
+    const el = document.getElementById('filesSelectedCount');
+    if (el) el.textContent = n ? `${n} seleccionado(s)` : '';
+  };
+
+  if (checkAll) {
+    checkAll.addEventListener('change', function(){
+      const checked = !!checkAll.checked;
+      const wrap = document.getElementById('archivosWrap') || document;
+      wrap.querySelectorAll('input[name="archivos[]"]').forEach(cb => { cb.checked = checked; });
+      updateCount();
+    });
+  }
+
+  document.addEventListener('change', function(e){
+    if (!e.target || !e.target.matches('input[name="archivos[]"]')) return;
+    updateCount();
+  });
+
+  updateCount();
+})();
+
+window.deleteSelected = window.deleteSelected || async function deleteSelected() {
+  const seleccionados = getSeleccionadosBloqueArchivos();
+
+  if (!seleccionados.length) {
+    alert('Selecciona al menos un archivo.');
+    return;
+  }
+
+  if (!confirm('¿Eliminar los archivos seleccionados?')) return;
+
+  try {
+    const body = new URLSearchParams({ archivos_json: JSON.stringify(seleccionados) });
+    const res = await fetch('delete_multiple.php', {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+        'X-Requested-With': 'XMLHttpRequest'
+      },
+      body
+    });
+
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok || json.estado !== 'ok') {
+      throw new Error(json.mensaje || json.error || ('HTTP ' + res.status));
+    }
+
+    if (typeof window.actualizarBloqueArchivos === 'function') {
+      await window.actualizarBloqueArchivos({ pagina: 1 });
+    } else {
+      location.reload();
+    }
+  } catch (err) {
+    console.error(err);
+    alert('❌ ' + (err.message || err));
+  }
+};
+
 </script>
 
 

@@ -578,11 +578,19 @@
     try {
       setBtnLoading(btnMover, true, '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Moviendo…');
 
-      const body = new URLSearchParams({
-        ruta_actual: rutaActual,
-        archivos_json: archivosJSON,
-        nueva_ruta: nuevaRuta
-      });
+      const seleccionFinal = (() => {
+        try {
+          const arr = JSON.parse(archivosJSON);
+          if (Array.isArray(arr)) return arr;
+        } catch (_) {}
+        return seleccionActual(multiForm);
+      })();
+
+      const body = new URLSearchParams();
+      body.set('ruta_actual', rutaActual);
+      body.set('archivos_json', JSON.stringify(seleccionFinal));
+      body.set('nueva_ruta', nuevaRuta);
+      seleccionFinal.forEach((k) => body.append('archivos[]', String(k)));
 
       const { res, json, text } = await fetchJson(URL_MOVER, {
         method: 'POST',
@@ -590,9 +598,9 @@
         body
       });
 
-      if (!res.ok) throw new Error('HTTP ' + res.status);
-      if (!json) throw new Error(text || 'Respuesta inválida');
-      if (!json.ok) throw new Error(json.error || 'No se pudo mover.');
+      if (!json) throw new Error(text || ('HTTP ' + res.status));
+      if (!res.ok) throw new Error(json.error || json.mensaje || ('HTTP ' + res.status));
+      if (!json.ok) throw new Error(json.error || json.mensaje || 'No se pudo mover.');
 
       hideModal('modalMover');
 

@@ -365,7 +365,7 @@ foreach ($filas as $r) {
                 <i class="fas fa-download"></i> Descargar
               </a>
 
-              <form action="delete.php" method="POST" class="d-inline js-delete-one-form">
+              <form action="eliminar_archivo.php" method="POST" class="d-inline js-delete-one-form">
                 <input type="hidden" name="archivo" value="<?= h($s3key) ?>">
                 <input type="hidden" name="ruta" value="<?= h($rutaActual) ?>">
                 <button type="submit" class="dropdown-item text-danger">
@@ -719,6 +719,47 @@ function initLoaderBloqueArchivos() {
   initPaginacionBloqueArchivos();
   initLoaderBloqueArchivos();
 })();
+
+
+window.deleteSelected = window.deleteSelected || async function deleteSelected() {
+  const wrap = document.getElementById('archivosWrap') || document;
+  const seleccionados = Array.from(wrap.querySelectorAll('input[name="archivos[]"]:checked')).map(cb => cb.value).filter(Boolean);
+
+  if (!seleccionados.length) {
+    alert('Selecciona al menos un archivo.');
+    return;
+  }
+
+  if (!confirm('¿Eliminar los archivos seleccionados?')) return;
+
+  try {
+    const body = new URLSearchParams({ archivos_json: JSON.stringify(seleccionados) });
+    const res = await fetch('delete_multiple.php', {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+        'X-Requested-With': 'XMLHttpRequest'
+      },
+      body
+    });
+
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok || json.estado !== 'ok') {
+      throw new Error(json.mensaje || json.error || ('HTTP ' + res.status));
+    }
+
+    if (typeof window.actualizarBloqueArchivos === 'function') {
+      await window.actualizarBloqueArchivos({ pagina: 1 });
+    } else {
+      location.reload();
+    }
+  } catch (err) {
+    console.error(err);
+    alert('❌ ' + (err.message || err));
+  }
+};
+
 </script>
 
 

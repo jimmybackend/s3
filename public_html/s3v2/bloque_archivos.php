@@ -184,30 +184,22 @@ foreach ($filas as $r) {
     </div>
   </div>
 
-  <!-- ====== Botón de galería ====== -->
-  <div class="d-flex align-items-center justify-content-end mb-2">
-    <button type="button" id="btnVerGaleria"
-            class="btn btn-sm btn-outline-primary <?= count($imagenesPagina) ? '' : 'd-none' ?>"
-            data-bs-toggle="modal" data-bs-target="#modalGaleriaCompleta"
-            data-toggle="modal" data-target="#modalGaleriaCompleta">
-      <i class="fas fa-images"></i> Ver galería (6×6)
-    </button>
-  </div>
-
   <!-- ====== LISTA ====== -->
   <div class="mb-2 d-flex align-items-center gap-2">
     <label class="mb-0">
       <input type="checkbox" id="checkAllFiles">
       Seleccionar todos
     </label>
-
     <span id="filesSelectedCount" class="text-muted small"></span>
-  </div>
-
-  <div class="mb-2">
     <button class="btn btn-sm btn-danger" onclick="deleteSelected()">Eliminar seleccionados</button>
     <button class="btn btn-sm btn-primary" onclick="downloadSelected()">Descargar seleccionados</button>
     <button class="btn btn-sm btn-secondary" onclick="moveSelected()">Mover seleccionados</button>
+    <button type="button" id="btnVerGaleria"
+            class="btn btn-sm btn-outline-primary <?= count($imagenesPagina) ? '' : 'd-none' ?>"
+            data-bs-toggle="modal" data-bs-target="#modalGaleriaCompleta"
+            data-toggle="modal" data-target="#modalGaleriaCompleta">
+      <i class="fas fa-images"></i> Ver galería (6×6)
+    </button>
   </div>
 
   <ul class="list-group">
@@ -365,13 +357,10 @@ foreach ($filas as $r) {
                 <i class="fas fa-download"></i> Descargar
               </a>
 
-              <form action="eliminar_archivo.php" method="POST" class="d-inline js-delete-one-form">
-                <input type="hidden" name="archivo" value="<?= h($s3key) ?>">
-                <input type="hidden" name="ruta" value="<?= h($rutaActual) ?>">
-                <button type="submit" class="dropdown-item text-danger">
-                  <i class="fas fa-trash-alt"></i> Eliminar
-                </button>
-              </form>
+              <button type="button" class="dropdown-item text-danger js-delete-one"
+                      data-archivo="<?= h($s3key) ?>">
+                <i class="fas fa-trash-alt"></i> Eliminar
+              </button>
 
               <div class="dropdown-divider"></div>
               <h6 class="dropdown-header">Organización</h6>
@@ -720,6 +709,48 @@ function initLoaderBloqueArchivos() {
   initLoaderBloqueArchivos();
 })();
 
+
+
+window.deleteOne = window.deleteOne || async function deleteOne(archivo) {
+  const key = String(archivo || '').trim();
+  if (!key) return;
+
+  if (!confirm('¿Eliminar este archivo?')) return;
+
+  try {
+    const body = new URLSearchParams({ archivo: key });
+    const res = await fetch('eliminar_archivo.php', {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+        'X-Requested-With': 'XMLHttpRequest'
+      },
+      body
+    });
+
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok || json.estado !== 'ok') {
+      throw new Error(json.mensaje || json.error || ('HTTP ' + res.status));
+    }
+
+    if (typeof window.actualizarBloqueArchivos === 'function') {
+      await window.actualizarBloqueArchivos({ pagina: 1 });
+    } else {
+      location.reload();
+    }
+  } catch (err) {
+    console.error(err);
+    alert('❌ ' + (err.message || err));
+  }
+};
+
+document.addEventListener('click', function (e) {
+  const btn = e.target.closest('.js-delete-one');
+  if (!btn || !btn.dataset) return;
+  e.preventDefault();
+  window.deleteOne(btn.dataset.archivo || '');
+});
 
 window.deleteSelected = window.deleteSelected || async function deleteSelected() {
   const wrap = document.getElementById('archivosWrap') || document;

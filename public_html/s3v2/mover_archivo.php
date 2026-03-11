@@ -1,10 +1,48 @@
 <?php
 /**
- * ============================================================
- * ARCHIVO: mover_archivo.php
- * ============================================================
- *
- * FUNCIÓN:
+    $nuevaRuta = trim((string)($_POST['nueva_ruta'] ?? $_POST['ruta_destino'] ?? ''));
+        $raw = $_POST['archivos_json'];
+        if (is_array($raw)) {
+            $keys = $raw;
+        } else {
+            $tmp = json_decode((string)$raw, true);
+            if (is_array($tmp)) $keys = $tmp;
+        }
+    }
+
+    if (!empty($keys)) {
+        $keys = array_values(array_filter(array_map(function ($k) {
+    $hadBatchPayload = false;
+
+    if (isset($_POST['archivos'])) {
+        $hadBatchPayload = true;
+        if (is_array($_POST['archivos'])) {
+            $keys = $_POST['archivos'];
+        } elseif (trim((string)$_POST['archivos']) !== '') {
+            $keys = [$_POST['archivos']];
+        }
+        $hadBatchPayload = true;
+
+            $rawStr = trim((string)$raw);
+            if ($rawStr !== '') {
+                $tmp = json_decode($rawStr, true);
+                if (is_array($tmp)) {
+                    $keys = $tmp;
+                } elseif (is_string($tmp) && trim($tmp) !== '') {
+                    $keys = [$tmp];
+                } else {
+                    // fallback: venía una sola key plana, no JSON
+                    $keys = [$rawStr];
+                }
+            }
+    } elseif (isset($_POST['archivo']) && trim((string)$_POST['archivo']) !== '') {
+        // Compatibilidad: key única enviada como "archivo"
+        $hadBatchPayload = true;
+        $keys = [$_POST['archivo']];
+    if ($hadBatchPayload) {
+        throw new Exception('No hay archivos seleccionados');
+    }
+
  * Endpoint para mover un archivo entre carpetas.
  *
  * RESPONSABILIDAD:

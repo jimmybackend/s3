@@ -52,11 +52,11 @@
     }
   }
 
-  // 🎯 Captura cualquier submit de form[action="delete.php"] dentro de #bloque-archivos
+  // 🎯 Captura submit de eliminación individual dentro de #bloque-archivos
   document.addEventListener('submit', async function(e){
     const form = e.target;
     if (!form.closest('#bloque-archivos')) return;
-    if (!form.action || !form.action.includes('delete.php')) return;
+    if (!form.action || !(form.action.includes('delete.php') || form.action.includes('eliminar_archivo.php'))) return;
 
     e.preventDefault();
 

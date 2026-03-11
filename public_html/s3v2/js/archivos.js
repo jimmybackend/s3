@@ -590,9 +590,9 @@
         body
       });
 
-      if (!res.ok) throw new Error('HTTP ' + res.status);
-      if (!json) throw new Error(text || 'Respuesta inválida');
-      if (!json.ok) throw new Error(json.error || 'No se pudo mover.');
+      if (!json) throw new Error(text || ('HTTP ' + res.status));
+      if (!res.ok) throw new Error(json.error || json.mensaje || ('HTTP ' + res.status));
+      if (!json.ok) throw new Error(json.error || json.mensaje || 'No se pudo mover.');
 
       hideModal('modalMover');
 

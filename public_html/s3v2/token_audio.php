@@ -1,5 +1,4 @@
 <?php
-// token_audio.php — público (GET ?t=...) y legacy API (POST archivo)
 declare(strict_types=1);
 ini_set('display_errors', '0');
 error_reporting(E_ALL);
@@ -8,112 +7,114 @@ date_default_timezone_set('America/Merida');
 $ROOT = __DIR__;
 
 try {
-  require_once $ROOT . '/vendor/autoload.php';
-  require_once __DIR__ . '/app_bootstrap.php';
-  require_once $ROOT . '/S3Manager.php';
+    require_once $ROOT . '/vendor/autoload.php';
+    require_once __DIR__ . '/app_bootstrap.php';
+    require_once $ROOT . '/S3Manager.php';
 } catch (Throwable $e) {
-  http_response_code(500);
-  header('Content-Type: text/plain; charset=UTF-8');
-  echo "Error de arranque: ".$e->getMessage();
-  exit;
-}
-
-function presigned_url(string $key): string {
-  $manager = new S3Manager();
-  return $manager->generarPresignedUrl($key);
-}
-
-function fail_html(string $msg, int $code = 400): never {
-  http_response_code($code);
-  header('Content-Type: text/html; charset=UTF-8');
-  echo '<!doctype html><meta charset="utf-8"><div style="font-family:sans-serif;padding:2rem">'
-     . htmlspecialchars($msg) . '</div>';
-  exit;
-}
-
-// =======================
-// MODO API LEGACY (POST)
-// =======================
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-  header('Content-Type: application/json; charset=UTF-8');
-
-  $key = trim($_POST['archivo'] ?? '');
-  if ($key === '') {
-    http_response_code(400);
-    echo json_encode(['estado'=>'error','mensaje'=>'Archivo no especificado.']);
-    exit;
-  }
-  try {
-    $url = presigned_url($key);
-    echo json_encode(['estado'=>'ok','url'=>$url]);
-  } catch (Throwable $e) {
     http_response_code(500);
-    echo json_encode(['estado'=>'error','mensaje'=>$e->getMessage()]);
-  }
-  exit;
+    header('Content-Type: text/plain; charset=UTF-8');
+    echo 'Error de arranque: ' . $e->getMessage();
+    exit;
 }
 
-// =======================
-// MODO PÚBLICO (GET)
-// =======================
-$t   = $_GET['t'] ?? '';
-$key = $_GET['archivo'] ?? ($_GET['key'] ?? '');
+function presigned_url(string $key): string
+{
+    global $db_connection;
+    $manager = new S3Manager($db_connection);
+    return $manager->generarPresignedUrl($key);
+}
+
+function fail_html(string $msg, int $code = 400): never
+{
+    http_response_code($code);
+    header('Content-Type: text/html; charset=UTF-8');
+    echo '<!doctype html><meta charset="utf-8"><div style="font-family:sans-serif;padding:2rem">'
+        . htmlspecialchars($msg, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8')
+        . '</div>';
+    exit;
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    header('Content-Type: application/json; charset=UTF-8');
+
+    $key = trim((string)($_POST['archivo'] ?? ''));
+    if ($key === '') {
+        http_response_code(400);
+        echo json_encode(['estado' => 'error', 'mensaje' => 'Archivo no especificado.']);
+        exit;
+    }
+
+    try {
+        $url = presigned_url($key);
+        echo json_encode(['estado' => 'ok', 'url' => $url], JSON_UNESCAPED_SLASHES);
+    } catch (Throwable $e) {
+        http_response_code(500);
+        echo json_encode(['estado' => 'error', 'mensaje' => $e->getMessage()]);
+    }
+    exit;
+}
+
+$t   = trim((string)($_GET['t'] ?? ''));
+$key = trim((string)($_GET['archivo'] ?? $_GET['key'] ?? ''));
 
 if ($t !== '') {
-  // Resolver token en tokens.json
-  $tokensFile = $ROOT . '/tokens.json';
-  if (!is_file($tokensFile)) fail_html('No existe tokens.json', 500);
-
-  $raw = @file_get_contents($tokensFile);
-  $tokens = json_decode((string)$raw, true);
-  if (!is_array($tokens) || empty($tokens[$t])) {
-    fail_html('Token inválido o inexistente.', 404);
-  }
-
-  $tok     = $tokens[$t];
-  $key     = $tok['archivo_key'] ?? '';
-  $expIso  = $tok['expira'] ?? null;
-  // Opcional: validar tipo (no bloquea si no coincide)
-  // if (!empty($tok['tipo']) && $tok['tipo'] !== 'audio') { /* aviso o log */ }
-
-  if ($key === '') fail_html('Token sin archivo asociado.', 500);
-
-  // Validar expiración si viene definida
-  if ($expIso) {
-    try {
-      $now = new DateTime('now', new DateTimeZone('America/Merida'));
-      $exp = new DateTime($expIso, new DateTimeZone('America/Merida'));
-      if ($now > $exp) fail_html('El enlace ha expirado.', 410);
-    } catch (Throwable $e) {
-      // si falla el parseo, no bloqueamos
+    $tokensFile = $ROOT . '/tokens.json';
+    if (!is_file($tokensFile)) {
+        fail_html('No existe tokens.json', 500);
     }
-  }
+
+    $raw = @file_get_contents($tokensFile);
+    $tokens = json_decode((string)$raw, true);
+
+    if (!is_array($tokens) || empty($tokens[$t])) {
+        fail_html('Token inválido o inexistente.', 404);
+    }
+
+    $tok    = $tokens[$t];
+    $key    = trim((string)($tok['archivo_key'] ?? ''));
+    $expIso = $tok['expira'] ?? null;
+
+    if ($key === '') {
+        fail_html('Token sin archivo asociado.', 500);
+    }
+
+    if (!empty($expIso)) {
+        try {
+            $now = new DateTime('now', new DateTimeZone('America/Merida'));
+            $exp = new DateTime((string)$expIso, new DateTimeZone('America/Merida'));
+            if ($now > $exp) {
+                fail_html('El enlace ha expirado.', 410);
+            }
+        } catch (Throwable $e) {
+        }
+    }
 }
 
-// También permitimos ?archivo=... directo (legacy)
-if ($key === '') fail_html('Archivo no especificado.', 400);
+if ($key === '') {
+    fail_html('Archivo no especificado.', 400);
+}
 
-// Generar URL presignada
 try {
-  $url = presigned_url($key);
+    $url = presigned_url($key);
 } catch (Throwable $e) {
-  fail_html('No se pudo generar la URL presignada: '.$e->getMessage(), 500);
+    fail_html('No se pudo generar la URL presignada: ' . $e->getMessage(), 500);
 }
 
-// ¿Redirección directa?
 if (isset($_GET['direct']) || isset($_GET['download'])) {
-  header('Location: '.$url);
-  exit;
+    header('Location: ' . $url);
+    exit;
 }
 
-// ¿JSON en GET? (útil para depurar)
 if (isset($_GET['json'])) {
-  header('Content-Type: application/json; charset=UTF-8');
-  echo json_encode(['estado'=>'ok','url'=>$url,'archivo'=>$key], JSON_UNESCAPED_SLASHES);
-  exit;
+    header('Content-Type: application/json; charset=UTF-8');
+    echo json_encode([
+        'estado'  => 'ok',
+        'url'     => $url,
+        'archivo' => $key
+    ], JSON_UNESCAPED_SLASHES);
+    exit;
 }
 
-// Página con <audio>
 $nombre = basename($key);
 header('Content-Type: text/html; charset=UTF-8');
 ?>
@@ -122,7 +123,7 @@ header('Content-Type: text/html; charset=UTF-8');
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title><?= htmlspecialchars($nombre) ?> · Audio compartido</title>
+<title><?= htmlspecialchars($nombre, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?> · Audio compartido</title>
 <style>
   :root{color-scheme:dark}
   body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;margin:0;background:#0b0b0b;color:#fff}
@@ -136,14 +137,14 @@ header('Content-Type: text/html; charset=UTF-8');
 </head>
 <body>
   <div class="wrap">
-    <h1 style="font-size:1.05rem;font-weight:600;margin:8px 0 12px"><?= htmlspecialchars($nombre) ?></h1>
+    <h1 style="font-size:1.05rem;font-weight:600;margin:8px 0 12px"><?= htmlspecialchars($nombre, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></h1>
     <div class="box">
-      <audio controls preload="metadata" src="<?= htmlspecialchars($url) ?>"></audio>
+      <audio controls preload="metadata" src="<?= htmlspecialchars($url, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>"></audio>
     </div>
     <div class="meta">
-      Ruta: <?= htmlspecialchars($key) ?>
+      Ruta: <?= htmlspecialchars($key, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>
     </div>
-    <a class="btn" href="<?= htmlspecialchars($url) ?>" target="_blank" rel="noopener">Abrir directo</a>
+    <a class="btn" href="<?= htmlspecialchars($url, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>" target="_blank" rel="noopener">Abrir directo</a>
   </div>
 </body>
 </html>

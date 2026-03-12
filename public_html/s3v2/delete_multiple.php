@@ -1,11 +1,24 @@
 <?php
+header('Content-Type: application/json; charset=utf-8');
 
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
-require_once __DIR__.'/app_bootstrap.php';
-require_once __DIR__.'/S3Manager.php';
+require_once __DIR__ . '/app_bootstrap.php';
+require_once __DIR__ . '/S3Manager.php';
 
 try {
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        http_response_code(405);
+        echo json_encode([
+            'ok'      => false,
+            'estado'  => 'error',
+            'mensaje' => 'Método no permitido',
+            'error'   => 'Método no permitido'
+        ]);
+        exit;
+    }
 
     $keys = [];
 
@@ -18,29 +31,30 @@ try {
         }
     }
 
+    $keys = array_values(array_filter(array_map(static function ($k) {
+        return trim((string)$k);
+    }, $keys)));
+
     if (empty($keys)) {
-        throw new Exception("No hay archivos");
+        throw new Exception('No hay archivos seleccionados');
     }
 
     $s3 = new S3Manager($db_connection);
-
     $result = $s3->deleteMultiple($keys);
 
     echo json_encode([
-        'estado' => 'ok',
-        'ok'     => true,
-        'data'   => $result
+        'ok'      => true,
+        'estado'  => 'ok',
+        'mensaje' => 'Archivos eliminados correctamente',
+        'data'    => $result
     ]);
-
-} catch (Exception $e) {
-
+} catch (Throwable $e) {
     http_response_code(500);
 
     echo json_encode([
-        'estado'  => 'error',
         'ok'      => false,
+        'estado'  => 'error',
         'mensaje' => $e->getMessage(),
         'error'   => $e->getMessage()
     ]);
-
 }

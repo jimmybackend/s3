@@ -1,13 +1,4 @@
 <?php
-/**
- * ============================================================
- * ARCHIVO: renombrar_archivo.php
- * ============================================================
- * FUNCIÓN:
- * Renombra un archivo usando la KEY S3 enviada desde la interfaz.
- * ============================================================
- */
-
 header('Content-Type: application/json; charset=utf-8');
 
 if (session_status() === PHP_SESSION_NONE) {
@@ -18,35 +9,44 @@ require_once __DIR__ . '/app_bootstrap.php';
 require_once __DIR__ . '/S3Manager.php';
 
 try {
-
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-        throw new Exception('Método no permitido');
+        http_response_code(405);
+        echo json_encode([
+            'ok'      => false,
+            'estado'  => 'error',
+            'mensaje' => 'Método no permitido',
+            'error'   => 'Método no permitido'
+        ]);
+        exit;
     }
 
-    if (!isset($_POST['key']) || trim($_POST['key']) === '') {
+    $key = trim((string)($_POST['key'] ?? ''));
+    $nombreNuevo = trim((string)($_POST['nombre_nuevo'] ?? ''));
+
+    if ($key === '') {
         throw new Exception('Falta la clave del archivo.');
     }
 
-    if (!isset($_POST['nombre_nuevo']) || trim($_POST['nombre_nuevo']) === '') {
+    if ($nombreNuevo === '') {
         throw new Exception('Falta el nuevo nombre del archivo.');
     }
 
-    $key = trim($_POST['key']);
-    $nombreNuevo = trim($_POST['nombre_nuevo']);
-
-    $s3Manager = new S3Manager();
+    $s3Manager = new S3Manager($db_connection);
     $resultado = $s3Manager->renameFile($key, $nombreNuevo);
 
     echo json_encode([
+        'ok'      => true,
         'estado'  => 'ok',
         'mensaje' => 'Archivo renombrado correctamente',
         'data'    => $resultado
     ]);
-
-} catch (Exception $e) {
+} catch (Throwable $e) {
     http_response_code(500);
+
     echo json_encode([
+        'ok'      => false,
         'estado'  => 'error',
-        'mensaje' => $e->getMessage()
+        'mensaje' => $e->getMessage(),
+        'error'   => $e->getMessage()
     ]);
 }

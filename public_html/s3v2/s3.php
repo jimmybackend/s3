@@ -468,58 +468,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' &&
             </button>
           </form>
         <?php endif; ?>
+        
+                    <!-- Opciones de reproducción -->
+            <div id="ap-controls" class="d-flex align-items-center mb-2">
+              <div class="custom-control custom-switch">
+                <input type="checkbox" class="custom-control-input" id="apModeRepeat">
+                <label class="custom-control-label" for="apModeRepeat">Repetir pista</label>
+                <small class="text-muted ml-2">Si no está activado, al terminar avanza a la siguiente.</small>
+              </div>
+              
+            </div>
       </div>
     </div>
 
 <?php if (!empty($archivosPaginados)): ?>
           <form id="multiDeleteForm" action="delete_multiple.php" method="POST" class="w-100">
             <input type="hidden" name="ruta" value="<?= htmlspecialchars($basePrefix) ?>">
-        
-            <div class="d-flex align-items-center flex-wrap justify-content-between mb-3 w-100" style="gap: 10px;">
-              <!-- Checkbox "Seleccionar todos" -->
-              <div>
-                <input type="checkbox" id="selectAll" onchange="toggleAll(this)"> Seleccionar todos
-              </div>
-        
-              <!-- Botones de acción múltiple -->
-              <div class="d-flex flex-wrap" style="gap: 10px;">
-                <button type="button" class="btn btn-outline-secondary" data-toggle="modal" data-target="#modalMover">
-                  <i class="fas fa-arrows-alt"></i> Mover seleccionados
-                </button>
-
-
-        
-                <button type="submit" formaction="descargar_zip.php" class="btn btn-outline-primary">
-                  <i class="fas fa-file-archive"></i> Descargar seleccionados a ZIP
-                </button>
-        
-                <!--<button type="submit" class="btn btn-outline-danger" onclick="return confirm('¿Eliminar los archivos seleccionados?')">
-                  <i class="fas fa-trash"></i> Eliminar seleccionados
-                </button>-->
-                <button type="button" id="btnEliminarSeleccionados" class="btn btn-outline-danger">
-                  <i class="fas fa-trash"></i> Eliminar seleccionados
-                </button>
-              </div>
-            </div>
-        
-        
-            <!-- Opciones de reproducción -->
-            <div id="ap-controls" class="d-flex align-items-center mb-2">
-              <div class="custom-control custom-switch">
-                <input type="checkbox" class="custom-control-input" id="apModeRepeat">
-                <label class="custom-control-label" for="apModeRepeat">Repetir pista</label>
-              </div>
-              <small class="text-muted ml-2">Si no está activado, al terminar avanza a la siguiente.</small>
-            </div>
-
-
-
-        
-        
-        
-        
             <div id="bloque-archivos">
-                <p class="text-muted">No hay archivos en esta carpeta.</p>
               <?php
                 $_GET['ruta'] = $basePrefix;
                 include 'bloque_archivos.php';

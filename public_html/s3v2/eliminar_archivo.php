@@ -1,13 +1,4 @@
 <?php
-/**
- * ============================================================
- * ARCHIVO: eliminar_archivo.php
- * ============================================================
- * Endpoint para eliminar un archivo individual.
- * Acepta `file_id` o `archivo` (key S3) para compatibilidad.
- * ============================================================
- */
-
 header('Content-Type: application/json; charset=utf-8');
 
 if (session_status() === PHP_SESSION_NONE) {
@@ -21,8 +12,8 @@ try {
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
         http_response_code(405);
         echo json_encode([
-            'estado'  => 'error',
             'ok'      => false,
+            'estado'  => 'error',
             'mensaje' => 'Método no permitido',
             'error'   => 'Método no permitido'
         ]);
@@ -45,17 +36,17 @@ try {
     $resultado = $s3Manager->deleteFile($fileRef);
 
     echo json_encode([
-        'estado'  => 'ok',
         'ok'      => true,
+        'estado'  => 'ok',
         'mensaje' => 'Archivo eliminado correctamente',
         'data'    => $resultado
     ]);
-
-} catch (Exception $e) {
+} catch (Throwable $e) {
     http_response_code(500);
+
     echo json_encode([
-        'estado'  => 'error',
         'ok'      => false,
+        'estado'  => 'error',
         'mensaje' => $e->getMessage(),
         'error'   => $e->getMessage()
     ]);

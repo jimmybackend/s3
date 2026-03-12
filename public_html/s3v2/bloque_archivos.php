@@ -187,7 +187,7 @@ foreach ($filas as $r) {
   <!-- ====== LISTA ====== -->
   <div class="mb-2 d-flex align-items-center gap-2">
     <label class="mb-0">
-      <input type="checkbox" id="checkAllFiles">
+      <input type="checkbox" id="selectAll">
       Seleccionar todos
     </label>
     <span id="filesSelectedCount" class="text-muted small"></span>
@@ -364,12 +364,11 @@ foreach ($filas as $r) {
 
               <div class="dropdown-divider"></div>
               <h6 class="dropdown-header">Organización</h6>
-              <button type="button" class="dropdown-item"
-                      data-bs-toggle="modal" data-bs-target="#modalMover"
-                      data-toggle="modal" data-target="#modalMover"
-                      onclick="return (window.abrirModalMover ? abrirModalMover('<?= h($s3key) ?>') : false);">
-                <i class="fas fa-arrows-alt"></i> Mover
-              </button>
+                <button type="button"
+                        class="dropdown-item js-move-one"
+                        data-key="<?= h($s3key) ?>">
+                  <i class="fas fa-arrows-alt"></i> Mover
+                </button>
 
               <div class="dropdown-divider"></div>
               <h6 class="dropdown-header">Compartir y seguridad</h6>

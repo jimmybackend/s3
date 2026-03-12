@@ -1,76 +1,4 @@
 <?php
-/**
-    $nuevaRuta = trim((string)($_POST['nueva_ruta'] ?? $_POST['ruta_destino'] ?? ''));
-        $raw = $_POST['archivos_json'];
-        if (is_array($raw)) {
-            $keys = $raw;
-        } else {
-            $tmp = json_decode((string)$raw, true);
-            if (is_array($tmp)) $keys = $tmp;
-        }
-    }
-
-    if (!empty($keys)) {
-        $keys = array_values(array_filter(array_map(function ($k) {
-    $hadBatchPayload = false;
-
-    if (isset($_POST['archivos'])) {
-        $hadBatchPayload = true;
-        if (is_array($_POST['archivos'])) {
-            $keys = $_POST['archivos'];
-        } elseif (trim((string)$_POST['archivos']) !== '') {
-            $keys = [$_POST['archivos']];
-        }
-        $hadBatchPayload = true;
-
-            $rawStr = trim((string)$raw);
-            if ($rawStr !== '') {
-                $tmp = json_decode($rawStr, true);
-                if (is_array($tmp)) {
-                    $keys = $tmp;
-                } elseif (is_string($tmp) && trim($tmp) !== '') {
-                    $keys = [$tmp];
-                } else {
-                    // fallback: venía una sola key plana, no JSON
-                    $keys = [$rawStr];
-                }
-            }
-    } elseif (isset($_POST['archivo']) && trim((string)$_POST['archivo']) !== '') {
-        // Compatibilidad: key única enviada como "archivo"
-        $hadBatchPayload = true;
-        $keys = [$_POST['archivo']];
-    if ($hadBatchPayload) {
-        throw new Exception('No hay archivos seleccionados');
-    }
-
- * Endpoint para mover un archivo entre carpetas.
- *
- * RESPONSABILIDAD:
- * - Recibir el ID del archivo
- * - Recibir la nueva ruta destino
- * - Llamar a S3Manager->moveFile()
- *
- * IMPORTANTE:
- * Este archivo NO contiene lógica S3 ni SQL.
- * Toda la lógica vive dentro de S3Manager.php
- *
- * FLUJO:
- *
- * Cliente (JS)
- *      ↓
- * mover_archivo.php
- *      ↓
- * S3Manager->moveFile()
- *      ↓
- * 1) Copiar archivo en S3 a la nueva ruta
- * 2) Eliminar archivo original en S3
- * 3) Actualizar Ruta en FileS3
- *      ↓
- * Respuesta JSON
- *
- * ============================================================
- */
-
 header('Content-Type: application/json; charset=utf-8');
 
 if (session_status() === PHP_SESSION_NONE) {
@@ -81,91 +9,106 @@ require_once __DIR__ . '/app_bootstrap.php';
 require_once __DIR__ . '/S3Manager.php';
 
 try {
-
-    /**
-     * ============================================================
-     * VALIDAR MÉTODO HTTP
-     * ============================================================
-     */
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-
         http_response_code(405);
-
         echo json_encode([
-            'estado' => 'error',
-            'mensaje' => 'Método no permitido'
+            'ok'      => false,
+            'estado'  => 'error',
+            'mensaje' => 'Método no permitido',
+            'error'   => 'Método no permitido'
         ]);
-
         exit;
     }
 
-    /**
-     * ============================================================
-     * VALIDAR DATOS
-     * ============================================================
-     */
+    $s3Manager = new S3Manager($db_connection);
 
-    if (!isset($_POST['file_id'])) {
-        throw new Exception('Falta el ID del archivo');
-    }
+    $nuevaRuta = trim((string)($_POST['nueva_ruta'] ?? $_POST['ruta_destino'] ?? ''));
 
-    if (!isset($_POST['nueva_ruta'])) {
+    if ($nuevaRuta === '') {
         throw new Exception('Falta la ruta destino');
     }
 
-    $fileId = intval($_POST['file_id']);
-    $nuevaRuta = trim($_POST['nueva_ruta']);
+    $nuevaRuta = rtrim(str_replace('\\', '/', $nuevaRuta), '/') . '/';
 
-    if ($nuevaRuta === '') {
-        throw new Exception('Ruta destino inválida');
+    // -------------------------------------------------
+    // 1) Compatibilidad: mover un archivo por ID
+    // -------------------------------------------------
+    if (isset($_POST['file_id']) && trim((string)$_POST['file_id']) !== '') {
+        $fileId = (int)$_POST['file_id'];
+
+        if ($fileId <= 0) {
+            throw new Exception('ID de archivo inválido');
+        }
+
+        $resultado = $s3Manager->moveFile($fileId, $nuevaRuta);
+
+        echo json_encode([
+            'ok'      => true,
+            'estado'  => 'ok',
+            'mensaje' => 'Archivo movido correctamente',
+            'data'    => $resultado
+        ]);
+        exit;
     }
 
-    /**
-     * ============================================================
-     * NORMALIZAR RUTA DESTINO
-     * ============================================================
-     */
+    // -------------------------------------------------
+    // 2) Compatibilidad: mover uno o varios archivos por key
+    // -------------------------------------------------
+    $keys = [];
 
-    $nuevaRuta = rtrim($nuevaRuta, '/') . '/';
+    if (isset($_POST['archivos']) && is_array($_POST['archivos'])) {
+        $keys = $_POST['archivos'];
+    } elseif (isset($_POST['archivos_json'])) {
+        $raw = $_POST['archivos_json'];
 
-    /**
-     * ============================================================
-     * CREAR INSTANCIA S3Manager
-     * ============================================================
-     */
+        if (is_array($raw)) {
+            $keys = $raw;
+        } else {
+            $raw = trim((string)$raw);
 
-    $s3Manager = new S3Manager($db_connection);
+            if ($raw !== '') {
+                $decoded = json_decode($raw, true);
 
-    /**
-     * ============================================================
-     * EJECUTAR MOVIMIENTO
-     * ============================================================
-     */
+                if (is_array($decoded)) {
+                    $keys = $decoded;
+                } elseif (is_string($decoded) && trim($decoded) !== '') {
+                    $keys = [trim($decoded)];
+                } else {
+                    $keys = [$raw];
+                }
+            }
+        }
+    } elseif (isset($_POST['archivo']) && trim((string)$_POST['archivo']) !== '') {
+        $keys = [trim((string)$_POST['archivo'])];
+    }
 
-    $resultado = $s3Manager->moveFile(
-        $fileId,
-        $nuevaRuta
-    );
+    $keys = array_values(array_filter(array_map(static function ($item) {
+        return trim((string)$item);
+    }, $keys)));
 
-    /**
-     * ============================================================
-     * RESPUESTA JSON
-     * ============================================================
-     */
+    if (empty($keys)) {
+        throw new Exception('No hay archivos seleccionados');
+    }
+
+    if (!method_exists($s3Manager, 'moveMultiple')) {
+        throw new Exception('El método moveMultiple() no existe en S3Manager');
+    }
+
+    $resultado = $s3Manager->moveMultiple($keys, $nuevaRuta);
 
     echo json_encode([
-        'estado' => 'ok',
-        'mensaje' => 'Archivo movido correctamente',
-        'data' => $resultado
+        'ok'      => true,
+        'estado'  => 'ok',
+        'mensaje' => 'Archivo(s) movido(s) correctamente',
+        'data'    => $resultado
     ]);
-
-} catch (Exception $e) {
-
+} catch (Throwable $e) {
     http_response_code(500);
 
     echo json_encode([
-        'estado' => 'error',
-        'mensaje' => $e->getMessage()
+        'ok'      => false,
+        'estado'  => 'error',
+        'mensaje' => $e->getMessage(),
+        'error'   => $e->getMessage()
     ]);
-
 }

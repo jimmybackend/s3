@@ -463,10 +463,29 @@
   }, true);
 
   document.addEventListener('show.bs.modal', function (e) {
-    const modal = e.target;
-    if (!modal || modal.id !== 'modalRenombrarArchivo') return;
-    try { llenarModalRenombrarArchivo(e.relatedTarget || __ultimoTriggerRenombrarArchivo); } catch (_) {}
-  }, true);
+  const modal = e.target;
+  if (!modal || modal.id !== 'modalMover') return;
+
+  const jsonInput = document.getElementById('archivosJson') || qs('#archivosJson', modal);
+  const valorActual = (jsonInput?.value || '').trim();
+
+  if (!valorActual) {
+    const seleccionados = seleccionActual(document);
+
+    if (!seleccionados.length) {
+      alert('Selecciona al menos un archivo para mover.');
+      setTimeout(() => hideModal(modal), 0);
+      return;
+    }
+
+    if (jsonInput) {
+      jsonInput.value = JSON.stringify(seleccionados);
+    }
+  }
+
+  const selDst = document.getElementById('nuevaRutaSelect') || qs('#nuevaRutaSelect', modal);
+  if (selDst) toggleCampoNuevaCarpeta(selDst);
+}, true);
 
   document.addEventListener('submit', function (e) {
     const form = document.getElementById('formRenombrarArchivo');
@@ -538,8 +557,11 @@
   // 5) Mover archivos (múltiple)
   // =========================
   function seleccionActual(root) {
-    return Array.from(root.querySelectorAll('input[name="archivos[]"]:checked')).map(cb => cb.value);
-  }
+  const base = root || document;
+  return Array.from(base.querySelectorAll('input[name="archivos[]"]:checked'))
+    .map(cb => cb.value)
+    .filter(Boolean);
+}
 
   function toggleCampoNuevaCarpeta(selectEl) {
     const wrap = document.getElementById('campoNuevaCarpeta');
@@ -548,94 +570,131 @@
   }
 
   async function moverArchivosAjax() {
-    const multiForm = document.getElementById('multiDeleteForm');
-    const formModal = document.getElementById('formMoverArchivos');
-    const btnMover = document.getElementById('btnMoverArchivos');
+  const formModal = document.getElementById('formMoverArchivos');
+  const btnMover = document.getElementById('btnMoverArchivos');
 
-    if (!multiForm || !formModal) return;
+  if (!formModal) return;
 
-    const rutaActual = (formModal.querySelector('input[name="ruta_actual"]')?.value || '').trim();
-    let archivosJSON = (formModal.querySelector('input[name="archivos_json"]')?.value || '').trim();
+  const rutaActual = (formModal.querySelector('input[name="ruta_actual"]')?.value || '').trim();
+  let archivosJSON = (formModal.querySelector('input[name="archivos_json"]')?.value || '').trim();
 
-    const selDst = document.getElementById('nuevaRutaSelect') || formModal.querySelector('#nuevaRutaSelect');
-    let nuevaRuta = (selDst?.value || '').trim();
-    const nuevaCarp = (formModal.querySelector('input[name="nueva_carpeta"]')?.value || '').trim();
+  const selDst = document.getElementById('nuevaRutaSelect') || formModal.querySelector('#nuevaRutaSelect');
+  let nuevaRuta = (selDst?.value || '').trim();
+  const nuevaCarp = (formModal.querySelector('input[name="nueva_carpeta"]')?.value || '').trim();
 
-    if (!archivosJSON) {
-      const sel = seleccionActual(multiForm);
-      if (!sel.length) { alert('No hay archivos seleccionados.'); return; }
-      archivosJSON = JSON.stringify(sel);
+  if (!archivosJSON) {
+    const sel = seleccionActual(document);
+    if (!sel.length) {
+      alert('No hay archivos seleccionados.');
+      return;
     }
-
-    if (!nuevaRuta) { alert('Selecciona la carpeta de destino.'); return; }
-
-    if (nuevaRuta === '__crear__') {
-      if (!nuevaCarp) { alert('Escribe el nombre de la nueva carpeta.'); return; }
-      if (/[\\/]/.test(nuevaCarp)) { alert('El nombre no debe contener "/" ni "\\".'); return; }
-      nuevaRuta = (rutaActual.replace(/\/?$/, '/')) + nuevaCarp.replace(/^\/+|\/+$/g, '') + '/';
-    }
-
-    try {
-      setBtnLoading(btnMover, true, '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Moviendo…');
-
-      const body = new URLSearchParams({
-        ruta_actual: rutaActual,
-        archivos_json: archivosJSON,
-        nueva_ruta: nuevaRuta
-      });
-
-      const { res, json, text } = await fetchJson(URL_MOVER, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
-        body
-      });
-
-      if (!json) throw new Error(text || ('HTTP ' + res.status));
-      if (!res.ok) throw new Error(json.error || json.mensaje || ('HTTP ' + res.status));
-      if (!json.ok) throw new Error(json.error || json.mensaje || 'No se pudo mover.');
-
-      hideModal('modalMover');
-
-      multiForm.querySelectorAll('input[name="archivos[]"]:checked').forEach(cb => cb.checked = false);
-      const selectAll = multiForm.querySelector('#selectAll');
-      if (selectAll) selectAll.checked = false;
-
-      if (typeof window.actualizarBloqueCarpetas === 'function') await window.actualizarBloqueCarpetas();
-      if (typeof window.actualizarBloqueArchivos === 'function') await window.actualizarBloqueArchivos({ pagina: 1 });
-    } catch (err) {
-      console.error(err);
-      alert('❌ ' + (err.message || err));
-    } finally {
-      setBtnLoading(btnMover, false);
-    }
+    archivosJSON = JSON.stringify(sel);
   }
 
-  document.addEventListener('show.bs.modal', function (e) {
-    const modal = e.target;
-    if (!modal || modal.id !== 'modalMover') return;
+  if (!nuevaRuta) {
+    alert('Selecciona la carpeta de destino.');
+    return;
+  }
 
-    const multiForm = document.getElementById('multiDeleteForm');
-    if (!multiForm) return;
-
-    const seleccionados = seleccionActual(multiForm);
-    if (!seleccionados.length) {
-      alert('Selecciona al menos un archivo para mover.');
-      setTimeout(() => hideModal(modal), 0);
+  if (nuevaRuta === '__crear__') {
+    if (!nuevaCarp) {
+      alert('Escribe el nombre de la nueva carpeta.');
+      return;
+    }
+    if (/[\\/]/.test(nuevaCarp)) {
+      alert('El nombre no debe contener "/" ni "\\".');
       return;
     }
 
-    const jsonInput = document.getElementById('archivosJson') || qs('#archivosJson', modal);
-    if (jsonInput) jsonInput.value = JSON.stringify(seleccionados);
+    nuevaRuta = (rutaActual.replace(/\/?$/, '/')) + nuevaCarp.replace(/^\/+|\/+$/g, '') + '/';
+  }
 
-    const selDst = document.getElementById('nuevaRutaSelect') || qs('#nuevaRutaSelect', modal);
-    if (selDst) toggleCampoNuevaCarpeta(selDst);
-  }, true);
+  try {
+    setBtnLoading(btnMover, true, '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Moviendo...');
+
+    const body = new URLSearchParams({
+      ruta_actual: rutaActual,
+      archivos_json: archivosJSON,
+      nueva_ruta: nuevaRuta
+    });
+
+    const { res, json, text } = await fetchJson(URL_MOVER, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
+      body
+    });
+
+    if (!json) throw new Error(text || ('HTTP ' + res.status));
+    if (!res.ok) throw new Error(json.error || json.mensaje || ('HTTP ' + res.status));
+    if (!json.ok) throw new Error(json.error || json.mensaje || 'No se pudo mover.');
+
+    hideModal('modalMover');
+
+    document.querySelectorAll('input[name="archivos[]"]:checked').forEach(cb => {
+      cb.checked = false;
+    });
+
+    const selectAllA = document.getElementById('selectAll');
+    const selectAllB = document.getElementById('checkAllFiles');
+
+    if (selectAllA) selectAllA.checked = false;
+    if (selectAllB) selectAllB.checked = false;
+
+    const inputJson = formModal.querySelector('input[name="archivos_json"]');
+    if (inputJson) inputJson.value = '';
+
+    if (typeof window.actualizarBloqueCarpetas === 'function') {
+      await window.actualizarBloqueCarpetas();
+    }
+
+    if (typeof window.actualizarBloqueArchivos === 'function') {
+      await window.actualizarBloqueArchivos({ pagina: 1 });
+    }
+  } catch (err) {
+    console.error(err);
+    alert('❌ ' + (err.message || err));
+  } finally {
+    setBtnLoading(btnMover, false);
+  }
+}
+window.abrirModalMover = window.abrirModalMover || function (key) {
+  const archivoKey = String(key || '').trim();
+  if (!archivoKey) {
+    alert('Falta la clave del archivo.');
+    return false;
+  }
+
+  const modal = document.getElementById('modalMover');
+  if (!modal) {
+    alert('No se encontró el modal de mover.');
+    return false;
+  }
+
+  const jsonInput = document.getElementById('archivosJson') || modal.querySelector('#archivosJson') || modal.querySelector('input[name="archivos_json"]');
+  if (jsonInput) {
+    jsonInput.value = JSON.stringify([archivoKey]);
+  }
+
+  const selDst = document.getElementById('nuevaRutaSelect') || modal.querySelector('#nuevaRutaSelect');
+  if (selDst) {
+    selDst.value = '';
+    toggleCampoNuevaCarpeta(selDst);
+  }
+
+  const nuevaCarpeta = modal.querySelector('input[name="nueva_carpeta"]');
+  if (nuevaCarpeta) {
+    nuevaCarpeta.value = '';
+  }
+
+  showModal(modal);
+  return false;
+};
 
   document.addEventListener('change', function (e) {
-    const sel = closest(e.target, '#nuevaRutaSelect');
-    if (!sel) return;
-    toggleCampoNuevaCarpeta(sel);
-  });
+  const selectAll = closest(e.target, '#selectAll, #checkAllFiles');
+  if (!selectAll) return;
+  toggleAll(selectAll);
+});
 
   document.addEventListener('submit', function (e) {
     const formModal = document.getElementById('formMoverArchivos');
@@ -652,6 +711,15 @@
     if (!btn) return;
     e.preventDefault();
     moverArchivosAjax();
+  });
+
+  document.addEventListener('click', function (e) {
+    const btn = closest(e.target, '.js-move-one');
+    if (!btn) return;
+
+    e.preventDefault();
+    const key = (btn.getAttribute('data-key') || btn.dataset?.key || '').trim();
+    window.abrirModalMover(key);
   });
 
   // =========================

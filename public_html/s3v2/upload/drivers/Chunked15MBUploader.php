@@ -80,7 +80,7 @@ private function s3()
     $carpeta = $this->carpetaSesion();
     $ymd = gmdate('Ymd');
     $safeBase = preg_replace('/[^\w\-.]+/u', '_', basename($filename));
-    $key = $carpeta . '/uploads/' . $ymd . '/' . $sig . '-' . $safeBase;
+    $key = $carpeta . '/' . $sig . '-' . $safeBase; ///uploads/' . $ymd . '
 
     $s3 = $this->s3();
     $bucket = $this->bucket();

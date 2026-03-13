@@ -6,6 +6,34 @@ if (session_status() === PHP_SESSION_NONE) session_start();
 
 header('Content-Type: application/json; charset=utf-8');
 
+function json_out(array $payload): void
+{
+    echo json_encode($payload, JSON_UNESCAPED_UNICODE);
+    exit;
+}
+
+function normalize_key(string $key): string
+{
+    $key = trim(str_replace('\\', '/', $key));
+    $key = preg_replace('~/+~', '/', $key);
+    return ltrim((string)$key, '/');
+}
+
+function split_key_parts(string $key): array
+{
+    $key = normalize_key($key);
+    $pos = strrpos($key, '/');
+
+    if ($pos === false) {
+        return ['', $key];
+    }
+
+    return [
+        substr($key, 0, $pos + 1), // Ruta con slash final
+        substr($key, $pos + 1),    // Nombre / Encriptado final
+    ];
+}
+
 $userId = 0;
 if (isset($_SESSION['user_id'])) {
     $userId = (int)$_SESSION['user_id'];
@@ -14,17 +42,16 @@ if (isset($_SESSION['user_id'])) {
 }
 
 if ($userId <= 0) {
-    echo json_encode(['ok' => false, 'msg' => 'Sesión inválida']);
-    exit;
+    json_out(['ok' => false, 'msg' => 'Sesión inválida']);
 }
 
 $mode = isset($_POST['mode']) ? trim((string)$_POST['mode']) : '';
 if ($mode !== 'secure' && $mode !== 'normal') {
-    echo json_encode(['ok' => false, 'msg' => 'Modo inválido']);
-    exit;
+    json_out(['ok' => false, 'msg' => 'Modo inválido']);
 }
 
 $keys = [];
+
 if (isset($_POST['key']) && $_POST['key'] !== '') {
     $keys[] = (string)$_POST['key'];
 }
@@ -37,25 +64,24 @@ if (isset($_POST['keys[]'])) {
     $keys = array_merge($keys, $tmp);
 }
 
-$keys = array_values(array_unique(array_filter(array_map(static function ($v) {
-    $v = trim(str_replace('\\', '/', (string)$v));
-    $v = preg_replace('#/+#', '/', $v);
-    return ltrim((string)$v, '/');
-}, $keys))));
+$keys = array_values(array_unique(array_filter(array_map(
+    function ($v) {
+        return normalize_key((string)$v);
+    },
+    $keys
+))));
 
 if (!$keys) {
-    echo json_encode(['ok' => false, 'msg' => 'Sin archivos seleccionados']);
-    exit;
+    json_out(['ok' => false, 'msg' => 'Sin archivos seleccionados']);
 }
 
-$password = isset($_POST['password']) ? trim((string)$_POST['password']) : '';
+$password   = isset($_POST['password']) ? trim((string)$_POST['password']) : '';
 $secureHint = isset($_POST['secure_hint']) ? trim((string)$_POST['secure_hint']) : '';
 
 if ($mode === 'secure') {
     $len = mb_strlen($password, 'UTF-8');
     if ($len < 4 || $len > 100) {
-        echo json_encode(['ok' => false, 'msg' => 'La contraseña debe tener entre 4 y 100 caracteres']);
-        exit;
+        json_out(['ok' => false, 'msg' => 'La contraseña debe tener entre 4 y 100 caracteres']);
     }
 }
 
@@ -64,99 +90,177 @@ $fail = 0;
 $errors = [];
 
 try {
-    $checkStmt = $db_connection->prepare(
-        "SELECT id_, AccessType, PasswordHash, SecureHint FROM FileS3 WHERE user_id_=? AND Encriptado=? AND Found=1 LIMIT 1"
+    /**
+     * 1) Buscar por key completa en Encriptado
+     * 2) Si no existe, buscar por Ruta + Encriptado separado
+     * 3) Actualizar por id_ para no depender del formato guardado
+     */
+
+    $findByFullKey = $db_connection->prepare(
+        "SELECT id_, Encriptado, Ruta
+         FROM FileS3
+         WHERE user_id_=? AND Encriptado=? AND Found=1
+         LIMIT 1"
     );
 
-    if (!$checkStmt) {
-        throw new RuntimeException('No se pudo preparar SELECT de validación');
+    if (!$findByFullKey) {
+        throw new RuntimeException('No se pudo preparar SELECT por key completa');
+    }
+
+    $findByRutaEnc = $db_connection->prepare(
+        "SELECT id_, Encriptado, Ruta
+         FROM FileS3
+         WHERE user_id_=? AND Ruta=? AND Encriptado=? AND Found=1
+         LIMIT 1"
+    );
+
+    if (!$findByRutaEnc) {
+        throw new RuntimeException('No se pudo preparar SELECT por ruta/encriptado');
     }
 
     if ($mode === 'secure') {
         $hash = password_hash($password, PASSWORD_DEFAULT);
 
-        $stmt = $db_connection->prepare(
+        $updateStmt = $db_connection->prepare(
             "UPDATE FileS3
-                SET AccessType='secure',
-                    PasswordHash=?,
-                    SecureHint=?,
-                    SecureUpdatedAt=NOW()
-              WHERE user_id_=? AND Encriptado=? AND Found=1"
+             SET AccessType='secure',
+                 PasswordHash=?,
+                 SecureHint=?,
+                 SecureUpdatedAt=NOW()
+             WHERE id_=? AND user_id_=? AND Found=1"
         );
 
-        if (!$stmt) {
+        if (!$updateStmt) {
             throw new RuntimeException('No se pudo preparar UPDATE secure');
         }
 
         foreach ($keys as $key) {
-            $checkStmt->bind_param('is', $userId, $key);
-            $checkStmt->execute();
-            $row = $checkStmt->get_result()->fetch_assoc();
+            $row = null;
 
+            // Intento 1: key completa
+            $findByFullKey->bind_param('is', $userId, $key);
+            $findByFullKey->execute();
+            $res = $findByFullKey->get_result();
+            $row = $res ? $res->fetch_assoc() : null;
+
+            // Intento 2: Ruta + Encriptado separado
             if (!$row) {
+                [$ruta, $enc] = split_key_parts($key);
+
+                if ($ruta !== '' && $enc !== '') {
+                    $findByRutaEnc->bind_param('iss', $userId, $ruta, $enc);
+                    $findByRutaEnc->execute();
+                    $res = $findByRutaEnc->get_result();
+                    $row = $res ? $res->fetch_assoc() : null;
+                }
+            }
+
+            if (!$row || empty($row['id_'])) {
                 $fail++;
                 $errors[] = "No existe el archivo: {$key}";
                 continue;
             }
 
-            $stmt->bind_param('ssis', $hash, $secureHint, $userId, $key);
-            $stmt->execute();
+            $id = (int)$row['id_'];
 
-            if ($stmt->errno) {
+            $updateStmt->bind_param('ssii', $hash, $secureHint, $id, $userId);
+            $updateStmt->execute();
+
+            if ($updateStmt->errno) {
                 $fail++;
                 $errors[] = "Error al actualizar: {$key}";
                 continue;
             }
 
+            if ($updateStmt->affected_rows < 0) {
+                $fail++;
+                $errors[] = "No se pudo actualizar: {$key}";
+                continue;
+            }
+
             $ok++;
             unset($_SESSION['secure_ok_files'][$key]);
+
+            // Limpia también por el valor real almacenado, por si difiere del key recibido
+            if (!empty($row['Encriptado'])) {
+                unset($_SESSION['secure_ok_files'][normalize_key((string)$row['Encriptado'])]);
+            }
         }
 
-        $stmt->close();
+        $updateStmt->close();
     } else {
-        $stmt = $db_connection->prepare(
+        $updateStmt = $db_connection->prepare(
             "UPDATE FileS3
-                SET AccessType='normal',
-                    PasswordHash=NULL,
-                    SecureHint=NULL,
-                    SecureUpdatedAt=NOW()
-              WHERE user_id_=? AND Encriptado=? AND Found=1"
+             SET AccessType='normal',
+                 PasswordHash=NULL,
+                 SecureHint=NULL,
+                 SecureUpdatedAt=NOW()
+             WHERE id_=? AND user_id_=? AND Found=1"
         );
 
-        if (!$stmt) {
+        if (!$updateStmt) {
             throw new RuntimeException('No se pudo preparar UPDATE normal');
         }
 
         foreach ($keys as $key) {
-            $checkStmt->bind_param('is', $userId, $key);
-            $checkStmt->execute();
-            $row = $checkStmt->get_result()->fetch_assoc();
+            $row = null;
 
+            // Intento 1: key completa
+            $findByFullKey->bind_param('is', $userId, $key);
+            $findByFullKey->execute();
+            $res = $findByFullKey->get_result();
+            $row = $res ? $res->fetch_assoc() : null;
+
+            // Intento 2: Ruta + Encriptado separado
             if (!$row) {
+                [$ruta, $enc] = split_key_parts($key);
+
+                if ($ruta !== '' && $enc !== '') {
+                    $findByRutaEnc->bind_param('iss', $userId, $ruta, $enc);
+                    $findByRutaEnc->execute();
+                    $res = $findByRutaEnc->get_result();
+                    $row = $res ? $res->fetch_assoc() : null;
+                }
+            }
+
+            if (!$row || empty($row['id_'])) {
                 $fail++;
                 $errors[] = "No existe el archivo: {$key}";
                 continue;
             }
 
-            $stmt->bind_param('is', $userId, $key);
-            $stmt->execute();
+            $id = (int)$row['id_'];
 
-            if ($stmt->errno) {
+            $updateStmt->bind_param('ii', $id, $userId);
+            $updateStmt->execute();
+
+            if ($updateStmt->errno) {
                 $fail++;
                 $errors[] = "Error al actualizar: {$key}";
                 continue;
             }
 
+            if ($updateStmt->affected_rows < 0) {
+                $fail++;
+                $errors[] = "No se pudo actualizar: {$key}";
+                continue;
+            }
+
             $ok++;
             unset($_SESSION['secure_ok_files'][$key]);
+
+            if (!empty($row['Encriptado'])) {
+                unset($_SESSION['secure_ok_files'][normalize_key((string)$row['Encriptado'])]);
+            }
         }
 
-        $stmt->close();
+        $updateStmt->close();
     }
 
-    $checkStmt->close();
+    $findByFullKey->close();
+    $findByRutaEnc->close();
 
-    echo json_encode([
+    json_out([
         'ok' => $ok > 0,
         'ok_count' => $ok,
         'fail_count' => $fail,
@@ -165,7 +269,8 @@ try {
     ]);
 } catch (Throwable $e) {
     error_log('[set_file_security.php] ' . $e->getMessage());
-    echo json_encode([
+
+    json_out([
         'ok' => false,
         'msg' => 'Error de servidor',
         'error' => $e->getMessage()

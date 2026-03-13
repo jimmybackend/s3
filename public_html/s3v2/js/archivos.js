@@ -941,6 +941,40 @@ window.abrirModalMover = window.abrirModalMover || function (key) {
 
     return false;
   };
+  
+  
+  window.cerrarModalCompartir = function () {
+  var el = document.getElementById('modalCompartir');
+  if (!el) return false;
+
+  try {
+    if (window.bootstrap && window.bootstrap.Modal) {
+      var inst = window.bootstrap.Modal.getOrCreateInstance
+        ? window.bootstrap.Modal.getOrCreateInstance(el)
+        : new window.bootstrap.Modal(el);
+      inst.hide();
+      return false;
+    }
+
+    if (window.jQuery && typeof window.jQuery.fn.modal === 'function') {
+      window.jQuery(el).modal('hide');
+      return false;
+    }
+  } catch (e) {
+    console.error(e);
+  }
+
+  el.style.display = 'none';
+  el.classList.remove('show');
+  el.setAttribute('aria-hidden', 'true');
+  document.body.classList.remove('modal-open');
+
+  document.querySelectorAll('.modal-backdrop').forEach(function (bd) {
+    bd.remove();
+  });
+
+  return false;
+};
 
   document.addEventListener('click', function (e) {
     const btn = closest(e.target, '#btnCopyLink');
@@ -962,6 +996,8 @@ window.abrirModalMover = window.abrirModalMover || function (key) {
     const lbl = document.getElementById('fechaExpiraLabel');
     if (inp && lbl) lbl.textContent = calcularExpiraLabel(inp.value);
   }, true);
+  
+  
 
   // =========================
   // 8) Búsqueda global + abrir carpeta sin refrescar
@@ -1111,244 +1147,537 @@ window.abrirModalMover = window.abrirModalMover || function (key) {
   });
 
   // =========================
-  // 9) Seguridad de archivos — integra seguridad_archivos.js (pero con delegación)
-  // =========================
+  // 9) Seguridad de archivos
+  function normalizeKey(key) {
+    key = String(key || '').trim().replace(/\\/g, '/');
+    key = key.replace(/\/+/g, '/');
+    return key.replace(/^\/+/, '');
+  }
+
   function parseKey(key) {
+    key = normalizeKey(key);
     if (!key) return { ruta: '', enc: '' };
-    const parts = key.split('/');
-    const enc = parts.pop();
-    const ruta = parts.length ? (parts.join('/') + '/') : '';
-    return { ruta, enc };
+    const pos = key.lastIndexOf('/');
+    if (pos === -1) return { ruta: '', enc: key };
+    return {
+      ruta: key.substring(0, pos + 1),
+      enc: key
+    };
+  }
+
+    function ensureSecurityModal() {
+    let modal = document.getElementById('securityFileModal');
+
+    if (modal && modal.querySelector('#secModalTitle')) {
+      return modal;
+    }
+
+    // Compatibilidad: si existe un modal viejo o incompleto, lo quitamos
+    const oldModal = document.getElementById('fileSecurityModal');
+    if (oldModal) {
+      try { oldModal.remove(); } catch (_) {}
+    }
+    if (modal && !modal.querySelector('#secModalTitle')) {
+      try { modal.remove(); } catch (_) {}
+    }
+
+    const html = `
+      <div class="modal fade" id="securityFileModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content security-modal-content">
+            <div class="modal-header">
+              <h5 id="secModalTitle" class="modal-title">Seguridad del archivo</h5>
+              <button type="button" class="btn-close" aria-label="Cerrar" data-sec-close></button>
+            </div>
+            <div class="modal-body">
+              <div class="security-help" id="secModalText"></div>
+
+              <div class="security-help">
+                Archivo: <strong class="security-file-name" id="secFileName">—</strong>
+              </div>
+
+              <div class="security-hint-box" id="secHintBox" style="display:none;"></div>
+
+              <div class="mb-3" id="secPasswordField">
+                <label for="secPasswordInput" class="form-label">Contraseña</label>
+                <div class="input-group">
+                  <input type="password" id="secPasswordInput" class="form-control" autocomplete="new-password">
+                  <button type="button" class="btn btn-toggle-pass" data-sec-toggle="secPasswordInput">Ver</button>
+                </div>
+              </div>
+
+              <div class="mb-3" id="secConfirmField" style="display:none;">
+                <label for="secConfirmInput" class="form-label">Confirmar contraseña</label>
+                <div class="input-group">
+                  <input type="password" id="secConfirmInput" class="form-control" autocomplete="new-password">
+                  <button type="button" class="btn btn-toggle-pass" data-sec-toggle="secConfirmInput">Ver</button>
+                </div>
+              </div>
+
+              <div class="mb-3" id="secHintField" style="display:none;">
+                <label for="secHintInput" class="form-label">Pista para recordar</label>
+                <input type="text" id="secHintInput" class="form-control" maxlength="255" placeholder="Opcional">
+              </div>
+
+              <label class="sec-check-row" id="secShowAllRow" style="display:none;">
+                <input type="checkbox" id="secShowAllCheckbox"> Mostrar contraseñas
+              </label>
+
+              <div class="security-error" id="secModalError"></div>
+            </div>
+            <div class="modal-footer">
+              <div class="security-actions w-100">
+                <button type="button" class="btn btn-secondary" data-sec-cancel>Cancelar</button>
+                <button type="button" class="btn btn-primary" data-sec-accept>Aceptar</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>`;
+
+    const wrap = document.createElement('div');
+    wrap.innerHTML = html.trim();
+    modal = wrap.firstElementChild;
+    document.body.appendChild(modal);
+
+    modal.addEventListener('click', function (e) {
+      if (e.target === modal) {
+        closeSecurityModal(null);
+        return;
+      }
+
+      const toggleBtn = e.target.closest('[data-sec-toggle]');
+      if (toggleBtn) {
+        const id = toggleBtn.getAttribute('data-sec-toggle');
+        const input = document.getElementById(id);
+        if (!input) return;
+        input.type = input.type === 'password' ? 'text' : 'password';
+        toggleBtn.textContent = input.type === 'password' ? 'Ver' : 'Ocultar';
+        return;
+      }
+
+      const closeBtn = e.target.closest('[data-sec-close],[data-sec-cancel]');
+      if (closeBtn) {
+        closeSecurityModal(null);
+      }
+    });
+
+    const showAll = document.getElementById('secShowAllCheckbox');
+    if (showAll) {
+      showAll.addEventListener('change', function () {
+        ['secPasswordInput', 'secConfirmInput'].forEach(function (id) {
+          const input = document.getElementById(id);
+          if (!input) return;
+          input.type = showAll.checked ? 'text' : 'password';
+          const btn = modal.querySelector('[data-sec-toggle="' + id + '"]');
+          if (btn) btn.textContent = showAll.checked ? 'Ocultar' : 'Ver';
+        });
+      });
+    }
+
+    return modal;
+  }
+
+  let secModalResolver = null;
+
+  function closeSecurityModal(result) {
+    const modal = document.getElementById('securityFileModal');
+    if (!modal) return;
+
+    let closed = false;
+
+    if (window.bootstrap && window.bootstrap.Modal) {
+      try {
+        const inst = typeof window.bootstrap.Modal.getOrCreateInstance === 'function'
+          ? window.bootstrap.Modal.getOrCreateInstance(modal)
+          : new window.bootstrap.Modal(modal);
+        inst.hide();
+        closed = true;
+      } catch (_) {}
+    }
+
+    if (!closed && window.jQuery && typeof window.jQuery === 'function') {
+      try {
+        const $m = window.jQuery(modal);
+        if ($m && typeof $m.modal === 'function') {
+          $m.modal('hide');
+          closed = true;
+        }
+      } catch (_) {}
+    }
+
+    if (!closed) {
+      modal.classList.remove('show');
+      modal.style.display = 'none';
+      modal.setAttribute('aria-hidden', 'true');
+      document.body.classList.remove('modal-open');
+      document.querySelectorAll('.modal-backdrop').forEach(function (bd) { bd.remove(); });
+    }
+
+    if (secModalResolver) {
+      const resolve = secModalResolver;
+      secModalResolver = null;
+      resolve(result);
+    }
+  }
+
+  function openSecurityModal(opts) {
+    const modal = ensureSecurityModal();
+
+    let bsModal = null;
+    if (window.bootstrap && window.bootstrap.Modal) {
+      try {
+        bsModal = typeof window.bootstrap.Modal.getOrCreateInstance === 'function'
+          ? window.bootstrap.Modal.getOrCreateInstance(modal)
+          : new window.bootstrap.Modal(modal);
+      } catch (_) {
+        bsModal = null;
+      }
+    }
+
+    const title = modal.querySelector('#secModalTitle');
+    const text = modal.querySelector('#secModalText');
+    const error = modal.querySelector('#secModalError');
+    const pwdField = modal.querySelector('#secPasswordField');
+    const confirmField = modal.querySelector('#secConfirmField');
+    const hintField = modal.querySelector('#secHintField');
+    const hintBox = modal.querySelector('#secHintBox');
+    const showAllRow = modal.querySelector('#secShowAllRow');
+    const pwd = modal.querySelector('#secPasswordInput');
+    const conf = modal.querySelector('#secConfirmInput');
+    const hint = modal.querySelector('#secHintInput');
+    const accept = modal.querySelector('[data-sec-accept]');
+    const cancel = modal.querySelector('[data-sec-cancel]');
+    const closeBtn = modal.querySelector('[data-sec-close]');
+    const fileNameBox = modal.querySelector('#secFileName');
+    const chk = modal.querySelector('#secShowAllCheckbox');
+
+    if (!title || !text || !error || !pwdField || !confirmField || !hintField || !hintBox ||
+        !showAllRow || !pwd || !conf || !hint || !accept || !cancel || !closeBtn || !fileNameBox) {
+      throw new Error('El modal de seguridad no se generó correctamente.');
+    }
+
+    title.textContent = opts.title || 'Seguridad del archivo';
+    text.textContent = opts.text || '';
+    error.classList.remove('show');
+    error.textContent = '';
+
+    const key = String(opts.key || '');
+    fileNameBox.textContent = key ? key.split('/').pop() : '—';
+
+    pwd.value = '';
+    conf.value = '';
+    hint.value = opts.defaultHint || '';
+    pwd.type = 'password';
+    conf.type = 'password';
+
+    if (chk) chk.checked = false;
+
+    modal.querySelectorAll('[data-sec-toggle]').forEach(function (btn) {
+      btn.textContent = 'Ver';
+    });
+
+    pwdField.style.display = opts.askPassword === false ? 'none' : '';
+    confirmField.style.display = opts.askConfirm ? '' : 'none';
+    hintField.style.display = opts.askHint ? '' : 'none';
+    showAllRow.style.display = opts.askPassword === false ? 'none' : '';
+
+    if (opts.hintText) {
+      const esc = String(opts.hintText).replace(/[&<>"']/g, function (ch) {
+        return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[ch];
+      });
+      hintBox.style.display = '';
+      hintBox.innerHTML = '<strong>Pista guardada:</strong> ' + esc;
+    } else {
+      hintBox.style.display = 'none';
+      hintBox.innerHTML = '';
+    }
+
+    if (bsModal) {
+      bsModal.show();
+    } else if (window.jQuery && typeof window.jQuery === 'function') {
+      try {
+        const $m = window.jQuery(modal);
+        if ($m && typeof $m.modal === 'function') {
+          $m.modal('show');
+        } else {
+          throw new Error('sin modal jQuery');
+        }
+      } catch (_) {
+        modal.style.display = 'block';
+        modal.classList.add('show');
+        modal.removeAttribute('aria-hidden');
+        document.body.classList.add('modal-open');
+        if (!document.querySelector('.modal-backdrop')) {
+          const bd = document.createElement('div');
+          bd.className = 'modal-backdrop fade show';
+          document.body.appendChild(bd);
+        }
+      }
+    } else {
+      modal.style.display = 'block';
+      modal.classList.add('show');
+      modal.removeAttribute('aria-hidden');
+      document.body.classList.add('modal-open');
+      if (!document.querySelector('.modal-backdrop')) {
+        const bd = document.createElement('div');
+        bd.className = 'modal-backdrop fade show';
+        document.body.appendChild(bd);
+      }
+    }
+
+    return new Promise(function (resolve) {
+      secModalResolver = resolve;
+
+      const cleanup = function () {
+        accept.removeEventListener('click', onAccept);
+        cancel.removeEventListener('click', onCancel);
+        closeBtn.removeEventListener('click', onCancel);
+        modal.removeEventListener('keydown', onKey);
+      };
+
+      const onAccept = function () {
+        const result = {
+          password: String(pwd.value || '').trim(),
+          confirmPassword: String(conf.value || '').trim(),
+          hint: String(hint.value || '').trim()
+        };
+
+        if (opts.askPassword !== false && result.password.length < 4) {
+          error.textContent = 'La contraseña debe tener al menos 4 caracteres.';
+          error.classList.add('show');
+          pwd.focus();
+          return;
+        }
+
+        if (opts.askConfirm && result.password !== result.confirmPassword) {
+          error.textContent = 'La confirmación no coincide con la contraseña.';
+          error.classList.add('show');
+          conf.focus();
+          return;
+        }
+
+        cleanup();
+        closeSecurityModal(result);
+      };
+
+      const onCancel = function () {
+        cleanup();
+        closeSecurityModal(null);
+      };
+
+      const onKey = function (e) {
+        if (e.key === 'Escape') {
+          e.preventDefault();
+          onCancel();
+        } else if (e.key === 'Enter') {
+          e.preventDefault();
+          onAccept();
+        }
+      };
+
+      accept.addEventListener('click', onAccept);
+      cancel.addEventListener('click', onCancel);
+      closeBtn.addEventListener('click', onCancel);
+      modal.addEventListener('keydown', onKey);
+
+      setTimeout(function () {
+        (opts.askPassword === false ? accept : pwd).focus();
+      }, 20);
+    });
   }
 
   async function postFormAcceptJSON(url, data) {
-    const body = (data instanceof FormData) ? data : (() => {
-      const fd = new FormData();
-      Object.entries(data || {}).forEach(([k, v]) => fd.append(k, v));
-      return fd;
-    })();
+    const fd = new FormData();
+    Object.entries(data || {}).forEach(([k, v]) => {
+      if (Array.isArray(v)) {
+        v.forEach(item => fd.append(k + '[]', item));
+      } else {
+        fd.append(k, v == null ? '' : String(v));
+      }
+    });
 
     const res = await fetch(url, {
       method: 'POST',
       headers: { 'Accept': 'application/json' },
-      body
+      body: fd
     });
 
     const ct = res.headers.get('content-type') || '';
-    let j = null;
+    let json = null;
+
     if (ct.includes('application/json')) {
-      j = await res.json().catch(() => null);
+      json = await res.json().catch(() => null);
     } else {
-      const t = await res.text();
-      try { j = JSON.parse(t); } catch { j = { ok: false, error: t }; }
-    }
-    if (!res.ok) throw new Error(j?.error || `HTTP ${res.status}`);
-    return j || { ok: true };
-  }
-
-  function setLockedUI(li, { secure, unlocked }) {
-    if (!li) return;
-    li.dataset.secure = secure ? '1' : '0';
-    li.dataset.unlocked = unlocked ? '1' : '0';
-
-    li.classList.toggle('sec-yes', !!secure);
-    li.classList.toggle('sec-no', !secure);
-
-    const btn = qs('.js-lock-toggle', li);
-    const label = qs('.lock-ctl .lock-label', li);
-
-    if (!btn) return;
-
-    btn.classList.remove('btn-warning', 'btn-info');
-    const icon = btn.querySelector('i.fas');
-
-    if (secure) {
-      if (unlocked) {
-        btn.classList.add('btn-info');
-        if (icon) icon.className = 'fas fa-key';
-        btn.title = 'Desbloqueado (temporal)';
-        if (label) label.textContent = 'Desbloqueado';
-      } else {
-        btn.classList.add('btn-warning');
-        if (icon) icon.className = 'fas fa-lock';
-        btn.title = 'Bloqueado';
-        if (label) label.textContent = 'Bloqueado';
-      }
-    } else {
-      btn.classList.add('btn-info');
-      if (icon) icon.className = 'fas fa-key';
-      btn.title = 'Sin seguridad';
-      if (label) label.textContent = 'Sin seguridad';
-    }
-  }
-
-  function refreshBloqueArchivosDesdeFiltros() {
-    // Copia el comportamiento de seguridad_archivos.js (usa formFiltros/formLimite/rutaActualData)
-    const f = document.getElementById('formFiltros');
-    const L = document.getElementById('formLimite');
-    let ruta = f && f.ruta ? f.ruta.value : '';
-
-    if (!ruta) {
+      const txt = await res.text();
       try {
-        const s = document.getElementById('rutaActualData')?.textContent || '""';
-        ruta = JSON.parse(s) || '';
-      } catch { ruta = ''; }
+        json = JSON.parse(txt);
+      } catch (_) {
+        json = { ok: false, msg: txt || ('HTTP ' + res.status) };
+      }
     }
 
-    const filtros = {
-      ruta,
-      buscar: f?.buscar?.value || '',
-      tipo: f?.tipo?.value || '',
-      fecha_inicio: f?.fecha_inicio?.value || '',
-      fecha_fin: f?.fecha_fin?.value || '',
-      limite: (L?.querySelector('select[name="limite"]')?.value) || 5,
-      pagina: 1
-    };
-
-    if (typeof window.actualizarBloqueArchivos === 'function') {
-      window.actualizarBloqueArchivos(null, filtros);
+    if (!res.ok) {
+      throw new Error(json?.msg || json?.error || ('HTTP ' + res.status));
     }
+
+    return json || { ok: false, msg: 'Respuesta inválida' };
   }
 
-  // Compat: si en algún lugar llamas a bindBloqueArchivosSeguridad(), que no truene
-  window.bindBloqueArchivosSeguridad = window.bindBloqueArchivosSeguridad || function () { /* ya usamos delegación */ };
+  async function lockFileByKey(key) {
+    key = normalizeKey(key);
+    if (!key) return false;
 
-  // Candado por fila (.js-lock-toggle)
-  document.addEventListener('click', async function (e) {
-    const btn = closest(e.target, '.js-lock-toggle');
-    if (!btn) return;
+    const data = await openSecurityModal({
+      title: 'Proteger con contraseña',
+      text: 'Escribe una contraseña para proteger este archivo.',
+      askPassword: true,
+      askConfirm: true,
+      askHint: true
+    });
+    if (!data) return false;
 
-    e.preventDefault();
+    const j = await postFormAcceptJSON('set_file_security.php', {
+      mode: 'secure',
+      key: key,
+      password: data.password,
+      secure_hint: data.hint
+    });
 
-    const li = btn.closest('li');
-    if (!li) return;
+    if (!j?.ok || !Number(j?.ok_count || 0)) {
+      throw new Error(j?.msg || 'No se pudo proteger el archivo');
+    }
+    return true;
+  }
 
-    const ruta = btn.dataset.ruta || '';
-    const enc = btn.dataset.enc || '';
-    const pass = li.querySelector('.lock-pass')?.value || '';
+  async function unlockFileByKey(key, btn) {
+    key = normalizeKey(key);
+    if (!key) return false;
 
-    const secure = li.dataset.secure === '1';
-    const unlocked = li.dataset.unlocked === '1';
+    const data = await openSecurityModal({
+      title: 'Desbloquear archivo',
+      text: 'Escribe la contraseña para desbloquear temporalmente este archivo.',
+      askPassword: true,
+      askConfirm: false,
+      askHint: false,
+      hintText: btn?.dataset?.hint || ''
+    });
+    if (!data) return false;
 
+    const parts = parseKey(key);
+    const j = await postFormAcceptJSON('unlock_file.php', {
+      key: key,
+      ruta: parts.ruta,
+      encriptado: parts.enc,
+      password: data.password
+    });
+
+    if (!j?.ok) {
+      throw new Error(j?.msg || 'No se pudo desbloquear el archivo');
+    }
+    return true;
+  }
+
+  async function relockFileByKey(key) {
+    key = normalizeKey(key);
+    if (!key) return false;
+
+    const j = await postFormAcceptJSON('relock_file.php', { key });
+    if (!j?.ok) throw new Error(j?.msg || 'No se pudo bloquear de nuevo');
+    return true;
+  }
+
+  async function unsecureFileByKey(key) {
+    key = normalizeKey(key);
+    if (!key) return false;
+    if (!confirm('¿Quitar la protección con contraseña de este archivo?')) return false;
+
+    const j = await postFormAcceptJSON('set_file_security.php', {
+      mode: 'normal',
+      key: key
+    });
+
+    if (!j?.ok || !Number(j?.ok_count || 0)) {
+      throw new Error(j?.msg || 'No se pudo quitar la seguridad');
+    }
+    return true;
+  }
+
+    window.setFileSecurity = async function (action, key) {
     try {
-      setBtnLoading(btn, true);
-
-      if (secure) {
-        if (unlocked) {
-          const j = await postFormAcceptJSON(URL_RELOCK_FILE, { ruta, enc });
-          if (!j?.ok) throw new Error(j?.error || 'relock failed');
-          setLockedUI(li, { secure: true, unlocked: false });
-        } else {
-          if (!pass || pass.length < 4) {
-            alert('Proporciona la contraseña (mínimo 4 caracteres) para desbloquear temporalmente.');
-            return;
+      if (action === 'lock') {
+        const ok = await lockFileByKey(key);
+        if (ok) {
+          if (typeof refreshBloqueArchivosDesdeFiltros === 'function') {
+            refreshBloqueArchivosDesdeFiltros();
+          } else {
+            window.location.reload();
           }
-          const j = await postFormAcceptJSON(URL_SET_FILE_SECURITY, { action: 'unlock', ruta, enc, pass });
-          if (!j?.ok) throw new Error(j?.error || 'unlock failed');
-          setLockedUI(li, { secure: true, unlocked: true });
         }
-      } else {
-        if (!pass || pass.length < 4) {
-          alert('Proporciona la contraseña (mínimo 4 caracteres) para asegurar el archivo.');
-          return;
+        return false;
+      }
+
+      if (action === 'unlock') {
+        const btn = document.querySelector(`.js-unlock-file[data-key="${cssEscape(key)}"]`);
+        const unlocked = btn && btn.dataset.unlocked === '1';
+
+        const ok = unlocked
+          ? await relockFileByKey(key)
+          : await unlockFileByKey(key);
+
+        if (ok) {
+          if (typeof refreshBloqueArchivosDesdeFiltros === 'function') {
+            refreshBloqueArchivosDesdeFiltros();
+          } else {
+            window.location.reload();
+          }
         }
-        const j = await postFormAcceptJSON(URL_SET_FILE_SECURITY, { action: 'secure', ruta, enc, pass });
-        if (!j?.ok) throw new Error(j?.error || 'secure failed');
-        setLockedUI(li, { secure: true, unlocked: true });
+        return false;
       }
+
+      if (action === 'unsecure') {
+        const ok = await unsecureFileByKey(key);
+        if (ok) {
+          if (typeof refreshBloqueArchivosDesdeFiltros === 'function') {
+            refreshBloqueArchivosDesdeFiltros();
+          } else {
+            window.location.reload();
+          }
+        }
+        return false;
+      }
+
+      return false;
     } catch (err) {
       console.error(err);
-      alert('Error de seguridad: ' + (err.message || err));
-    } finally {
-      setBtnLoading(btn, false);
+      alert(err.message || 'Error de seguridad');
+      return false;
+    }
+  };
+
+  document.addEventListener('click', function (e) {
+    const btnLock = closest(e.target, '.js-lock-file');
+    if (btnLock) {
+      e.preventDefault();
+      window.setFileSecurity('lock', btnLock.dataset.key || '');
+      return;
+    }
+
+    const btnUnlock = closest(e.target, '.js-unlock-file');
+    if (btnUnlock) {
+      e.preventDefault();
+      window.setFileSecurity('unlock', btnUnlock.dataset.key || '');
+      return;
+    }
+
+    const btnUnsecure = closest(e.target, '.js-unsecure-one');
+    if (btnUnsecure) {
+      e.preventDefault();
+      window.setFileSecurity('unsecure', btnUnsecure.dataset.key || '');
+      return;
     }
   });
 
-  // Menú uno-a-uno: asegurar / quitar seguridad
-  document.addEventListener('click', async function (e) {
-    const aSecure = closest(e.target, '.js-secure-one');
-    const aUnsecure = closest(e.target, '.js-unsecure-one');
-
-    if (!aSecure && !aUnsecure) return;
-    e.preventDefault();
-
-    try {
-      if (aSecure) {
-        const key = aSecure.dataset.key || '';
-        if (!key) return;
-        const { ruta, enc } = parseKey(key);
-        const pass = prompt('Contraseña para asegurar (mín. 4 caracteres):') || '';
-        if (!pass || pass.length < 4) return;
-
-        const j = await postFormAcceptJSON(URL_SET_FILE_SECURITY, { action: 'secure', ruta, enc, pass });
-        if (!j?.ok) throw new Error(j?.error || 'secure failed');
-        refreshBloqueArchivosDesdeFiltros();
-      }
-
-      if (aUnsecure) {
-        const key = aUnsecure.dataset.key || '';
-        if (!key) return;
-        const { ruta, enc } = parseKey(key);
-        if (!confirm('¿Quitar seguridad de este archivo?')) return;
-
-        const j = await postFormAcceptJSON(URL_SET_FILE_SECURITY, { action: 'unsecure', ruta, enc });
-        if (!j?.ok) throw new Error(j?.error || 'unsecure failed');
-        refreshBloqueArchivosDesdeFiltros();
-      }
-    } catch (err) {
-      console.error(err);
-      alert('Error de seguridad: ' + (err.message || err));
-    }
-  });
-
-  // Lote: asegurar / quitar seguridad
-  function getSeleccionadosSeguridad() {
-    return qsa('input[name="archivos[]"]:checked').map(ch => ch.value);
-  }
-
-  document.addEventListener('click', async function (e) {
-    const b1 = closest(e.target, '#btnBatchSecure');
-    const b2 = closest(e.target, '#btnBatchUnsecure');
-    if (!b1 && !b2) return;
-
-    e.preventDefault();
-
-    const keys = getSeleccionadosSeguridad();
-    if (keys.length === 0) { alert('Selecciona archivos.'); return; }
-
-    try {
-      if (b1) {
-        const pass = document.getElementById('batchPass')?.value || '';
-        if (!pass || pass.length < 4) { alert('Contraseña (mín. 4 caracteres).'); return; }
-
-        setBtnLoading(b1, true);
-        await Promise.all(keys.map(key => {
-          const { ruta, enc } = parseKey(key);
-          return postFormAcceptJSON(URL_SET_FILE_SECURITY, { action: 'secure', ruta, enc, pass });
-        }));
-        refreshBloqueArchivosDesdeFiltros();
-      }
-
-      if (b2) {
-        if (!confirm('¿Quitar seguridad de los seleccionados?')) return;
-
-        setBtnLoading(b2, true);
-        await Promise.all(keys.map(key => {
-          const { ruta, enc } = parseKey(key);
-          return postFormAcceptJSON(URL_SET_FILE_SECURITY, { action: 'unsecure', ruta, enc });
-        }));
-        refreshBloqueArchivosDesdeFiltros();
-      }
-    } catch (err) {
-      console.error(err);
-      alert('Error de seguridad: ' + (err.message || err));
-    } finally {
-      if (b1) setBtnLoading(b1, false);
-      if (b2) setBtnLoading(b2, false);
-    }
-  });
-  
-// =========================
 // 10) Toggle "Seleccionar todos" (integra toggleAll.js)
 // =========================
 function toggleAll(source) {

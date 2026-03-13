@@ -802,8 +802,6 @@ body.ui-theme.theme-light #syncStatus .sync-box{box-shadow:0 0 0 1px rgba(0,0,0,
 }
 
 
-
-
 /* ===== FIX modal centrado real en viewport ===== */
 body.modal-open{
   overflow:hidden !important;
@@ -874,4 +872,111 @@ body.ui-theme .modal-backdrop{
   body.ui-theme .modal-dialog.modal-xl{
     max-width:100%;
   }
+}
+
+
+/* ===== Modal seguridad real usado por archivos.js ===== */
+body.ui-theme #securityFileModal{
+  z-index: 1062 !important;
+}
+
+body.ui-theme #securityFileModal .modal-dialog{
+  max-width: min(96vw, 560px) !important;
+}
+
+body.ui-theme #securityFileModal .security-modal-content{
+  background: linear-gradient(180deg, var(--panel-bg), var(--panel-bg2)) !important;
+  color: var(--text) !important;
+  border: 1px solid rgba(var(--accent-rgb), .22) !important;
+  box-shadow: 0 18px 60px rgba(0,0,0,.45) !important;
+  border-radius: 14px !important;
+  overflow: hidden;
+}
+
+body.ui-theme #securityFileModal .modal-header,
+body.ui-theme #securityFileModal .modal-footer{
+  border-color: var(--border) !important;
+  background: transparent !important;
+}
+
+body.ui-theme #securityFileModal .modal-title{
+  color: var(--accent) !important;
+}
+
+body.ui-theme #securityFileModal .modal-body{
+  background: transparent !important;
+  color: var(--text) !important;
+}
+
+body.ui-theme #securityFileModal .form-label,
+body.ui-theme #securityFileModal label{
+  color: var(--text-strong) !important;
+}
+
+body.ui-theme #securityFileModal .security-help,
+body.ui-theme #securityFileModal .form-text,
+body.ui-theme #securityFileModal .sec-check-row{
+  color: var(--text-soft) !important;
+}
+
+body.ui-theme #securityFileModal .security-file-name{
+  color: var(--accent-2) !important;
+  word-break: break-word;
+}
+
+body.ui-theme #securityFileModal .security-hint-box{
+  background: rgba(var(--accent-rgb), .08) !important;
+  border: 1px dashed rgba(var(--accent-rgb), .28) !important;
+  color: var(--text) !important;
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin-bottom: 12px;
+}
+
+body.ui-theme #securityFileModal .form-control{
+  background: color-mix(in srgb, var(--bg) 78%, transparent) !important;
+  color: var(--text) !important;
+  border: 1px solid var(--border) !important;
+}
+
+body.ui-theme #securityFileModal .form-control:focus{
+  border-color: rgba(var(--accent-rgb), .55) !important;
+  box-shadow: var(--accent-glow) !important;
+}
+
+body.ui-theme #securityFileModal .input-group .btn,
+body.ui-theme #securityFileModal .btn-toggle-pass{
+  background: rgba(0,0,0,.25) !important;
+  color: var(--text) !important;
+  border: 1px solid var(--border) !important;
+}
+
+body.ui-theme #securityFileModal .input-group .btn:hover,
+body.ui-theme #securityFileModal .btn-toggle-pass:hover{
+  border-color: rgba(var(--accent-rgb), .55) !important;
+  box-shadow: var(--accent-glow) !important;
+  color: var(--accent-2) !important;
+}
+
+body.ui-theme #securityFileModal .btn-close{
+  filter: invert(1) grayscale(1) brightness(1.4);
+  opacity: .8;
+}
+
+body.ui-theme.theme-light #securityFileModal .btn-close{
+  filter: none;
+}
+
+body.ui-theme #securityFileModal .security-error{
+  display: none;
+  margin-top: .75rem;
+  padding: .65rem .8rem;
+  border-radius: 10px;
+  background: rgba(255, 80, 80, .08);
+  border: 1px solid rgba(255, 95, 122, .22);
+  color: #ff9aaa;
+}
+
+body.ui-theme #securityFileModal .security-error.show{
+  display: block;
 }

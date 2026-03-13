@@ -1502,7 +1502,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' &&
   </div>
 </div>
 <!-- MODAL securityFileModal -->
-<div class="modal fade" id="securityFileModal" tabindex="-1" aria-hidden="true">
+<!--<div class="modal fade" id="securityFileModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
       <form id="securityFileForm" autocomplete="off">
@@ -1554,7 +1554,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' &&
             </div>
 
             <div class="form-text" id="securityUnlockHintBox" style="display:none;">
-              Pista: <span id="securityUnlockHint"></span>
+              Pista: <span id="securityUnlockHint"></span> 
             </div>
           </div>
 
@@ -1576,7 +1576,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' &&
       </form>
     </div>
   </div>
-</div>
+</div>--> 
 <!-- Modal: Preferencias -->
 <div class="modal fade" id="modalPreferencias" tabindex="-1" role="dialog" aria-labelledby="modalPreferenciasLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered" role="document">

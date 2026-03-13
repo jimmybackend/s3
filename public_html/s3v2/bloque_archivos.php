@@ -236,6 +236,7 @@ foreach ($filas as $r) {
 
       $yaEncript = registro_encriptado($row);
       $seguro    = registro_seguro($row);
+      $unlocked  = isset($_SESSION['secure_ok_files'][$s3key]) && (int)($_SESSION['secure_ok_files'][$s3key]) >= time();
 
       $rid = substr(md5($s3key),0,10);
       if ($esVideo) $videoIndex++;
@@ -245,6 +246,9 @@ foreach ($filas as $r) {
     ?>
       <li
         class="list-group-item d-flex justify-content-between align-items-center file-row <?= $clsEnc ?> <?= $clsSec ?> is-pending"
+        data-secure="<?= $seguro ? '1' : '0' ?>"
+        data-unlocked="<?= $unlocked ? '1' : '0' ?>"
+        data-secure-hint="<?= h((string)($row['SecureHint'] ?? '')) ?>"
         data-tipo="archivo"
         data-ext="<?= h($ext) ?>"
         data-key="<?= h($s3key) ?>"
@@ -272,6 +276,13 @@ foreach ($filas as $r) {
             <div class="font-weight-bold">
               <?= h($nombre) ?>
               <span class="badge badge-light badge-ext text-uppercase"><?= h($ext) ?></span>
+              <?php if ($seguro): ?>
+                <span class="badge <?= $unlocked ? 'badge-info' : 'badge-warning' ?> ml-1 js-security-badge">
+                  <?= $unlocked ? 'Desbloqueado' : 'Seguro' ?>
+                </span>
+              <?php else: ?>
+                <span class="badge badge-secondary ml-1 js-security-badge">Normal</span>
+              <?php endif; ?>
             </div>
 
             <small class="text-muted"
@@ -285,7 +296,8 @@ foreach ($filas as $r) {
 
             <?php if ($esAudio): ?>
               <div class="d-flex align-items-center mt-1">
-                <button type="button" class="btn btn-sm btn-outline-primary btn-inline"
+                <button type="button" class="btn btn-sm btn-outline-primary btn-inline js-audio-open"
+                        data-key="<?= h($s3key) ?>"
                         onclick="if(window.verAudioDesde){ verAudioDesde('<?= h($s3key) ?>','<?= h($nombre) ?>'); }">
                   <i class="fas fa-play"></i> Escuchar
                 </button>
@@ -353,7 +365,7 @@ foreach ($filas as $r) {
                 <i class="fas fa-i-cursor"></i> Renombrar
               </button>
 
-              <a class="dropdown-item" href="descargar_archivo.php?archivo=<?= $s3keyQ ?>&nombre=<?= urlencode($nombre) ?>">
+              <a class="dropdown-item js-download-file" href="descargar_archivo.php?archivo=<?= $s3keyQ ?>&nombre=<?= urlencode($nombre) ?>" data-key="<?= h($s3key) ?>">
                 <i class="fas fa-download"></i> Descargar
               </a>
 
@@ -388,17 +400,24 @@ foreach ($filas as $r) {
                 </button>
               <?php endif; ?>
 
+              <button type="button"
+                      class="dropdown-item js-lock-file <?= $seguro ? 'd-none' : '' ?>"
+                      data-key="<?= h($s3key) ?>">
+                <i class="fas fa-lock"></i> Proteger con contraseña
+              </button>
+
+              <button type="button"
+                      class="dropdown-item js-unlock-file <?= $seguro ? '' : 'd-none' ?>"
+                      data-key="<?= h($s3key) ?>"
+                      data-unlocked="<?= $unlocked ? '1' : '0' ?>">
+                <i class="fas <?= $unlocked ? 'fa-lock' : 'fa-unlock' ?>"></i>
+                <?= $unlocked ? 'Bloquear de nuevo' : 'Desbloquear' ?>
+              </button>
+
               <?php if ($seguro): ?>
-                <button type="button" class="dropdown-item js-unlock-file"
-                        data-key="<?= h($s3key) ?>"
-                        onclick="if(window.setFileSecurity){ setFileSecurity('unlock', this.dataset.key); } else { alert('TODO: unlock'); }">
-                  <i class="fas fa-unlock"></i> Unlock
-                </button>
-              <?php else: ?>
-                <button type="button" class="dropdown-item js-lock-file"
-                        data-key="<?= h($s3key) ?>"
-                        onclick="if(window.setFileSecurity){ setFileSecurity('lock', this.dataset.key); } else { alert('TODO: lock'); }">
-                  <i class="fas fa-lock"></i> Lock
+                <button type="button" class="dropdown-item text-danger js-unsecure-one"
+                        data-key="<?= h($s3key) ?>">
+                  <i class="fas fa-shield-alt"></i> Quitar seguridad
                 </button>
               <?php endif; ?>
 

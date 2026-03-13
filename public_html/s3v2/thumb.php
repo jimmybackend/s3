@@ -1,17 +1,8 @@
 <?php
 /**
  * thumb.php — Genera (si falta) y sirve miniaturas guardadas en S3.
- *
- * CAMBIO CLAVE:
- *  - La key del thumb AHORA incluye w/h/fit para que NO regenere por tamaños distintos:
- *      thumbs/Data1/ruta/archivo__128x128_cover.jpg
- *
- * MODO HOSTING SIN FFMPEG:
- *  - Para VIDEOS: devuelve icono fijo (img/video.png o img/video.jpg).
- *  - Para IMÁGENES: genera JPG y lo sube a S3 solo si NO existe.
- *
- * Mantiene:
- *  - Normalización de keys duplicadas (Data/Data y prefijo largo duplicado)
+ * Respeta la seguridad por archivo: si el archivo está protegido y no está
+ * desbloqueado en la sesión, devuelve un icono genérico y no lee el original.
  */
 
 declare(strict_types=1);
@@ -25,7 +16,11 @@ require_once __DIR__ . '/S3Manager.php';
 
 use Aws\Exception\AwsException;
 
-function thumbLog(string $msg): void { return; } // deja así o habilita log si lo necesitas
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+function thumbLog(string $msg): void { return; }
 
 function outputLocalImage(string $pathPngOrJpg): void {
     if (!is_file($pathPngOrJpg)) {
@@ -74,16 +69,10 @@ function safeKey(string $raw): string {
     return ltrim($raw, '/');
 }
 
-/**
- * Normaliza keys duplicadas:
- *  A) DataN/ repetido: Data/Data/x => Data/x
- *  B) Prefijo largo duplicado: A/B/C/A/B/C/file => A/B/C/file
- */
 function normalizeOrigKey(string $k): string {
     $k = ltrim($k, '/');
     $k = preg_replace('~/{2,}~', '/', $k) ?? $k;
 
-    // A) DataN/ repetido
     for ($i = 0; $i < 3; $i++) {
         if (preg_match('~^(Data\d*/)(\1)+~i', $k)) {
             $k2 = preg_replace('~^(Data\d*/)(\1)+~i', '$1', $k);
@@ -92,10 +81,9 @@ function normalizeOrigKey(string $k): string {
         } else break;
     }
 
-    // B) prefijo completo duplicado por segmentos
-    $parts = array_values(array_filter(explode('/', $k), function ($p) {
-    return $p !== null && $p !== '';
-}));
+    $parts = array_values(array_filter(explode('/', $k), static function ($p) {
+        return $p !== null && $p !== '';
+    }));
     $n = count($parts);
     if ($n >= 4) {
         $best = 0;
@@ -137,9 +125,6 @@ function stripLeadingData(string $origKey): string {
     return $k;
 }
 
-/**
- * NUEVO: el thumbKey incluye tamaño/fit para que quede cacheado por variante
- */
 function makeThumbKey(string $origKey, int $uid, string $outExt, int $w, int $h, string $fit): string {
     $base = computeThumbBase($uid);
     $rest = stripLeadingData($origKey);
@@ -153,7 +138,6 @@ function makeThumbKey(string $origKey, int $uid, string $outExt, int $w, int $h,
     return $base . $restNoExt . '__' . $w . 'x' . $h . '_' . $fit . '.' . $outExt;
 }
 
-// --- Resize: Imagick si existe, si no GD ---
 function resizeToJpeg(string $bin, int $w, int $h, string $fit = 'cover'): string {
     $fit = strtolower($fit);
     if ($fit !== 'contain') $fit = 'cover';
@@ -229,6 +213,63 @@ function resizeToJpeg(string $bin, int $w, int $h, string $fit = 'cover'): strin
     return $out;
 }
 
+function security_resolve_user_id(): int
+{
+    $candidates = [
+        $_SESSION['user_id_'] ?? null,
+        $_SESSION['user_id'] ?? null,
+        $_SESSION['id_usuario'] ?? null,
+        $_SESSION['id_user'] ?? null,
+        $_SESSION['id'] ?? null,
+    ];
+
+    foreach ($candidates as $value) {
+        if ($value !== null && $value !== '' && ctype_digit((string)$value)) {
+            return (int)$value;
+        }
+    }
+
+    return 0;
+}
+
+function security_lookup_file(mysqli $db, int $userId, string $key): ?array
+{
+    $stmt = $db->prepare("
+        SELECT id_, Nombre, Ruta, Encriptado, AccessType, PasswordHash, SecureHint
+        FROM FileS3
+        WHERE user_id_ = ?
+          AND Encriptado = ?
+          AND Found = 1
+        LIMIT 1
+    ");
+    if (!$stmt) {
+        throw new RuntimeException('No se pudo preparar la validación de seguridad.');
+    }
+
+    $stmt->bind_param('is', $userId, $key);
+    $stmt->execute();
+    $res = $stmt->get_result();
+    $row = $res ? $res->fetch_assoc() : null;
+    $stmt->close();
+
+    return $row ?: null;
+}
+
+function security_session_is_unlocked(string $key): bool
+{
+    $expires = $_SESSION['secure_ok_files'][$key] ?? null;
+    if ($expires === null) {
+        return false;
+    }
+
+    if ((int)$expires < time()) {
+        unset($_SESSION['secure_ok_files'][$key]);
+        return false;
+    }
+
+    return true;
+}
+
 // ================== MAIN ==================
 $keyRaw = $_GET['key'] ?? '';
 $origKeyRaw = safeKey((string)$keyRaw);
@@ -255,10 +296,38 @@ if (!$isImg && !$isVid) {
 }
 
 try {
+    $userId = security_resolve_user_id();
+    if ($userId <= 0) {
+        header('X-Thumb-Status: NO_SESSION');
+        outputFallbackFile();
+    }
+
+    /** @var mysqli $db_connection */
+    global $db_connection;
+    if (!$db_connection instanceof mysqli) {
+        throw new RuntimeException('No existe una conexión mysqli válida.');
+    }
+
+    $fileRow = security_lookup_file($db_connection, $userId, $origKey);
+    if (!$fileRow) {
+        header('X-Thumb-Status: NO_FILE_ROW');
+        outputFallbackFile();
+    }
+
+    $isSecure = (($fileRow['AccessType'] ?? 'normal') === 'secure')
+        || !empty($fileRow['PasswordHash']);
+
+    if ($isSecure && !security_session_is_unlocked($origKey)) {
+        header('X-Thumb-Status: LOCKED');
+        if ($isVid) {
+            outputVideoIcon();
+        }
+        outputFallbackFile();
+    }
+
     $s3 = Config::getS3();
     $bucket = (new S3Manager())->getBucket();
 
-    // Keys de thumbs (ahora con w/h/fit)
     $thumbKeyJpg = makeThumbKey($origKey, $uid, 'jpg', $w, $h, $fit);
     $thumbKeyGif = $isVid ? makeThumbKey($origKey, $uid, 'gif', $w, $h, $fit) : '';
 
@@ -267,13 +336,11 @@ try {
     if ($origKeyRaw !== $origKey) header('X-Thumb-OrigKey-Raw: ' . $origKeyRaw);
     header('X-Thumb-Key-Jpg: ' . $thumbKeyJpg);
 
-    // 1) HIT: si existe thumb, servirlo (sin regenerar)
     if ($isVid) {
-        // primero gif si existiera
         if ($thumbKeyGif !== '' && $s3->doesObjectExistV2($bucket, $thumbKeyGif)) {
             $obj = $s3->getObject(['Bucket' => $bucket, 'Key' => $thumbKeyGif]);
             header('Content-Type: ' . ($obj['ContentType'] ?? 'image/gif'));
-            header('Cache-Control: public, max-age=604800');
+            header('Cache-Control: private, no-store');
             header('X-Thumb-Status: HIT_GIF');
             echo (string)$obj['Body'];
             exit;
@@ -282,28 +349,25 @@ try {
         if ($s3->doesObjectExistV2($bucket, $thumbKeyJpg)) {
             $obj = $s3->getObject(['Bucket' => $bucket, 'Key' => $thumbKeyJpg]);
             header('Content-Type: ' . ($obj['ContentType'] ?? 'image/jpeg'));
-            header('Cache-Control: public, max-age=604800');
+            header('Cache-Control: private, no-store');
             header('X-Thumb-Status: HIT_JPG');
             echo (string)$obj['Body'];
             exit;
         }
 
-        // SIN FFMPEG: icono fijo para videos
         header('X-Thumb-Status: VIDEO_ICON');
         outputVideoIcon();
     }
 
-    // IMAGEN: HIT
     if ($s3->doesObjectExistV2($bucket, $thumbKeyJpg)) {
-        $obj = $s3->getObject(['Bucket' => $bucket, 'Key' => $thumbKeyJpg]); 
+        $obj = $s3->getObject(['Bucket' => $bucket, 'Key' => $thumbKeyJpg]);
         header('Content-Type: ' . ($obj['ContentType'] ?? 'image/jpeg'));
-        header('Cache-Control: public, max-age=604800');
+        header('Cache-Control: private, no-store');
         header('X-Thumb-Status: HIT_JPG');
         echo (string)$obj['Body'];
         exit;
     }
 
-    // 2) Descargar original (imagen)
     try {
         $origObj = $s3->getObject(['Bucket' => $bucket, 'Key' => $origKey]);
         $bin = (string)$origObj['Body'];
@@ -313,7 +377,6 @@ try {
         outputFallbackFile();
     }
 
-    // 3) Generar JPG y subir (solo si NO existía)
     $thumbBin = resizeToJpeg($bin, $w, $h, $fit);
 
     $s3->putObject([
@@ -325,7 +388,7 @@ try {
     ]);
 
     header('Content-Type: image/jpeg');
-    header('Cache-Control: public, max-age=604800');
+    header('Cache-Control: private, no-store');
     header('X-Thumb-Status: GEN_IMG');
     echo $thumbBin;
     exit;

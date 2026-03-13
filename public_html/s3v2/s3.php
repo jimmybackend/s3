@@ -1310,7 +1310,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' &&
           Compartir archivo
         </h5>
         <button type="button" class="close btn btn-link" data-dismiss="modal" aria-label="Cerrar"
-                onclick="if(window.bootstrap){bootstrap.Modal.getInstance(document.getElementById('modalCompartir'))?.hide()}else{$('#modalCompartir').modal('hide')}">
+                onclick="return cerrarModalCompartir();">
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
@@ -1498,6 +1498,82 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' &&
           <?php endforeach; ?>
         <?php endif; ?>
       </div>
+    </div>
+  </div>
+</div>
+<!-- MODAL securityFileModal -->
+<div class="modal fade" id="securityFileModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <form id="securityFileForm" autocomplete="off">
+        <div class="modal-header">
+          <h5 class="modal-title" id="securityFileModalTitle">Seguridad del archivo</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+
+        <div class="modal-body">
+          <input type="hidden" id="securityAction" value="">
+          <input type="hidden" id="securityFileKey" value="">
+
+          <div class="security-help">
+            Archivo: <strong class="security-file-name" id="securityFileName">—</strong>
+          </div>
+
+          <div id="securityLockFields">
+            <div class="mb-3">
+              <label for="securityPassword" class="form-label">Contraseña</label>
+              <div class="input-group">
+                <input type="password" class="form-control" id="securityPassword" maxlength="100">
+                <button type="button" class="btn btn-toggle-pass" id="btnToggleSecurityPassword">Ver</button>
+              </div>
+              <div class="form-text">Mínimo 4 caracteres.</div>
+            </div>
+
+            <div class="mb-3">
+              <label for="securityPasswordConfirm" class="form-label">Confirmar contraseña</label>
+              <div class="input-group">
+                <input type="password" class="form-control" id="securityPasswordConfirm" maxlength="100">
+                <button type="button" class="btn btn-toggle-pass" id="btnToggleSecurityPasswordConfirm">Ver</button>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label for="securityHint" class="form-label">Pista de seguridad</label>
+              <input type="text" class="form-control" id="securityHint" maxlength="255">
+              <div class="form-text">Opcional.</div>
+            </div>
+          </div>
+
+          <div id="securityUnlockFields" style="display:none;">
+            <div class="mb-3">
+              <label for="securityUnlockPassword" class="form-label">Contraseña</label>
+              <div class="input-group">
+                <input type="password" class="form-control" id="securityUnlockPassword" maxlength="100">
+                <button type="button" class="btn btn-toggle-pass" id="btnToggleSecurityUnlockPassword">Ver</button>
+              </div>
+            </div>
+
+            <div class="form-text" id="securityUnlockHintBox" style="display:none;">
+              Pista: <span id="securityUnlockHint"></span>
+            </div>
+          </div>
+
+          <div id="securityRemoveFields" style="display:none;">
+            <p class="mb-0">¿Seguro que deseas quitar la protección con contraseña de este archivo?</p>
+          </div>
+
+          <div class="security-error" id="securityFileError"></div>
+        </div>
+
+        <div class="modal-footer">
+          <div class="security-actions w-100">
+            <button type="button" class="btn" data-bs-dismiss="modal" id="btnSecurityCancel">Cancelar</button>
+            <button type="submit" class="btn" id="btnSecurityConfirm">
+              <span id="securityBtnText">Aceptar</span>
+            </button>
+          </div>
+        </div>
+      </form>
     </div>
   </div>
 </div>

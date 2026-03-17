@@ -980,3 +980,27 @@ body.ui-theme #securityFileModal .security-error{
 body.ui-theme #securityFileModal .security-error.show{
   display: block;
 }
+
+/* ===== FIX fondo modal seguridad ===== */
+
+body.ui-theme #securityFileModal .modal-content,
+body.ui-theme #securityFileModal .security-modal-content{
+  background:#000 !important;
+  background-image:none !important;
+  opacity:1 !important;
+}
+
+body.ui-theme #securityFileModal .modal-body{
+  background:#000 !important;
+}
+
+body.ui-theme #securityFileModal .modal-header,
+body.ui-theme #securityFileModal .modal-footer{
+  background:#000 !important;
+}
+
+/* backdrop más oscuro */
+body.ui-theme .modal-backdrop.show{
+  background-color:#000 !important;
+  opacity:.75 !important;
+} 

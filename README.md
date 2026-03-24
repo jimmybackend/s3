@@ -1,26 +1,29 @@
 # ArcadeCloud Drive
 
-**Tu hub de herramientas sobre Amazon**  
-**S3 · Rekognition · Polly · Translate**
+Tu hub de herramientas sobre Amazon (**S3 · Rekognition · Polly · Translate**)
 
-ArcadeCloud Drive es una plataforma orientada a la gestión de archivos en la nube, preparada para integrarse con endpoints en PHP. Permite trabajar con archivos subidos por el usuario para **ver, convertir, transcribir, traducir, compartir, proteger y mucho más**.
+Índice de lo que podemos hacer con los archivos que el usuario sube: **ver, convertir, transcribir, traducir, compartir, proteger y más**. Todo listo para conectar con tus endpoints PHP.
 
----
+## Demo en línea-
 
-## Tecnologías y servicios
-
-- Amazon S3
-- Amazon Rekognition
-- Amazon Polly
-- Amazon Translate
-- AWS KMS / Encrypt
-- Compresión ZIP
+[Ver ArcadeCloud Drive](https://esforzados.com/s3v2/index.php)
 
 ---
 
-## Funcionalidades principales
+## Servicios integrados
 
-### Acciones de archivo
+- **S3**
+- **Rekognition**
+- **Polly**
+- **Translate**
+- **KMS / Encrypt**
+- **ZIP**
+
+---
+
+## Acciones rápidas
+
+### Acciones de Archivo
 
 - Ver imagen
 - Ver video
@@ -31,63 +34,54 @@ ArcadeCloud Drive es una plataforma orientada a la gestión de archivos en la nu
 - Descargar archivo
 - Eliminar archivo
 - Crear copia
-- Descompactar archivos ZIP
-- Compactar archivos ZIP
+- Descompactar (ZIP)
+- Compactar ZIP
 
-### Acciones de organización
+### Acciones de Organización
 
 - Mover archivo
 - Compartir archivo
 
-### Acciones de seguridad
+### Acciones de Seguridad
 
-- Encriptar archivos
-- Bloquear / desbloquear archivos
+- Encriptar
+- Bloquear / Desbloquear
 
----
+### Video Llamada
 
-## Procesamiento con IA / AWS / ML
-
-- Extraer texto de documentos (**DOC → TXT**)
-- Transcribir audio a texto
-- Convertir texto a voz con **Amazon Polly**
-- Traducir contenido
-- Analizar imágenes y documentos con **Amazon Rekognition**
+Para iniciar la videollamada, contacta al administrador de la página.
 
 ---
 
-## Inicio de sesión
+## Procesamiento (IA / AWS / ML)
+
+- Extraer texto (**DOC → TXT**)
+- Transcribir audio (**voz → texto**)
+- Texto a voz (**Polly**)
+- Traducción
+- Análisis de imagen/documento (**Rekognition**)
+
+---
+
+## Sesión
 
 Desde la barra superior puedes abrir `login.php` para iniciar sesión.
 
-El sistema puede integrarse con el flujo de autenticación que prefieras, por ejemplo:
+Integra tu flujo de autenticación preferido:
 
-- PHP con sesiones
-- Headers personalizados
-- JWT
-
----
-
-## Subida de archivos
-
-El sistema soporta:
-
-- Subida de múltiples archivos
-- Drag & Drop
-- Carga de directorios
-
-Solo necesitas conectarlo a tu endpoint PHP encargado de subir los archivos a Amazon S3.
+- **PHP + sesiones / headers**
+- **JWT**
 
 ---
 
-## Videollamada
+## Subida / Drag & Drop
 
-### Llamar desde la web
+Soporta adjuntar múltiples archivos y directorios.
 
-Para iniciar la videollamada, contacta con el administrador de la página.
+Conéctalo a tu endpoint PHP que sube a S3.
 
 ---
 
 ## Licencia
 
-Este proyecto se distribuye bajo licencia **GPL-3.0**.
+GPL-3.0

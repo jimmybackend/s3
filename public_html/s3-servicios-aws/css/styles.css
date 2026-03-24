@@ -2480,3 +2480,21 @@ body.ui-theme .tooltip.bs-tooltip-right .arrow::before{
     gap: .4rem;
   }
 }
+
+/* Ajuste puntual: en modo oscuro, botones del bloque de archivos sin relleno sólido */
+body.ui-theme.theme-dark #pane-archivos #bloque-archivos .archivos-wrap .btn.btn-primary,
+body.ui-theme.theme-dark #pane-archivos #bloque-archivos .archivos-wrap .btn.btn-danger,
+body.ui-theme.theme-dark #pane-archivos #bloque-archivos .archivos-wrap .btn.btn-warning,
+body.ui-theme.theme-dark #pane-archivos #bloque-archivos .archivos-wrap .btn.btn-success{
+  background: transparent !important;
+  color: var(--text) !important;
+  border-color: var(--border) !important;
+}
+
+body.ui-theme.theme-dark #pane-archivos #bloque-archivos .archivos-wrap .btn.btn-primary:hover,
+body.ui-theme.theme-dark #pane-archivos #bloque-archivos .archivos-wrap .btn.btn-danger:hover,
+body.ui-theme.theme-dark #pane-archivos #bloque-archivos .archivos-wrap .btn.btn-warning:hover,
+body.ui-theme.theme-dark #pane-archivos #bloque-archivos .archivos-wrap .btn.btn-success:hover{
+  background: rgba(var(--accent-rgb), .10) !important;
+  border-color: rgba(var(--accent-rgb), .45) !important;
+}

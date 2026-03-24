@@ -227,6 +227,9 @@ try {
           <button id="btnSyncS3" class="dropdown-item">
               <i class="fas fa-rotate"></i> Sincronizar S3
           </button>
+          <button class="dropdown-item" data-toggle="modal" data-target="#modalCostosAws">
+              <i class="fas fa-chart-line"></i> Costos AWS
+          </button>
           
           <div class="dropdown-divider"></div>
            <a class="dropdown-item text-danger" href="logout.php">
@@ -1646,6 +1649,44 @@ try {
   </div>
 </div>
 
+<!-- Modal: Costos AWS -->
+<div class="modal fade" id="modalCostosAws" tabindex="-1" role="dialog" aria-labelledby="modalCostosAwsLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header bg-dark text-white">
+        <h5 class="modal-title" id="modalCostosAwsLabel"><i class="fas fa-chart-line mr-2"></i> Costos AWS</h5>
+        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Cerrar">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div id="costosAwsLoading" class="text-center py-3 d-none">
+          <div class="spinner-border text-primary" role="status" aria-hidden="true"></div>
+          <div class="mt-2">Consultando costos en AWS...</div>
+        </div>
+
+        <div id="costosAwsError" class="alert alert-danger d-none mb-3"></div>
+
+        <div id="costosAwsContenido" class="d-none">
+          <div class="mb-4">
+            <h6 class="text-muted mb-1" id="costosAwsMesActualTitulo">Mes actual</h6>
+            <div class="h4 mb-1" id="costosAwsMesActualMonto">-</div>
+            <div class="text-muted" id="costosAwsMesActualPorcentaje"></div>
+          </div>
+          <div>
+            <h6 class="text-muted mb-1" id="costosAwsPrevistoTitulo">Final de mes previsto</h6>
+            <div class="h4 mb-1" id="costosAwsPrevistoMonto">-</div>
+            <div class="text-muted" id="costosAwsPrevistoPorcentaje"></div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Modal Traducir -->
 <div class="modal fade" id="modalTraducir" tabindex="-1" role="dialog" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered" role="document">
@@ -2432,6 +2473,76 @@ document.addEventListener('DOMContentLoaded', function () {
     if (x.tagName === 'A') e.preventDefault();
   }, true);
 })();
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  var $modal = $('#modalCostosAws');
+  if (!$modal.length) return;
+
+  var $loading = $('#costosAwsLoading');
+  var $error = $('#costosAwsError');
+  var $contenido = $('#costosAwsContenido');
+  var $mesActualTitulo = $('#costosAwsMesActualTitulo');
+  var $mesActualMonto = $('#costosAwsMesActualMonto');
+  var $mesActualPorcentaje = $('#costosAwsMesActualPorcentaje');
+  var $previstoTitulo = $('#costosAwsPrevistoTitulo');
+  var $previstoMonto = $('#costosAwsPrevistoMonto');
+  var $previstoPorcentaje = $('#costosAwsPrevistoPorcentaje');
+
+  function formatearMonto(valor, moneda) {
+    var numero = Number(valor);
+    if (!isFinite(numero)) return '-';
+    var formateado = numero.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    var sufijo = (moneda === 'USD') ? 'US$' : moneda;
+    return formateado + ' ' + sufijo;
+  }
+
+  function mostrarCargando() {
+    $error.addClass('d-none').text('');
+    $contenido.addClass('d-none');
+    $loading.removeClass('d-none');
+  }
+
+  function mostrarError(mensaje) {
+    $loading.addClass('d-none');
+    $contenido.addClass('d-none');
+    $error.removeClass('d-none').text(mensaje);
+  }
+
+  function cargarCostosAws() {
+    mostrarCargando();
+    $.ajax({
+      url: 'costos_aws.php',
+      method: 'GET',
+      dataType: 'json'
+    }).done(function (resp) {
+      if (!resp || !resp.ok) {
+        mostrarError((resp && resp.error) ? resp.error : 'No fue posible obtener los costos de AWS.');
+        return;
+      }
+
+      $loading.addClass('d-none');
+      $contenido.removeClass('d-none');
+
+      $mesActualTitulo.text(resp.mes_actual || 'Mes actual');
+      $mesActualMonto.text(formatearMonto(resp.costo_actual, resp.currency || 'USD'));
+      $mesActualPorcentaje.text(resp.porcentaje_actual ? (resp.porcentaje_actual + ' %') : '');
+
+      $previstoTitulo.text(resp.fin_mes_previsto || 'Final de mes previsto');
+      $previstoMonto.text(formatearMonto(resp.costo_previsto, resp.currency || 'USD'));
+      $previstoPorcentaje.text(resp.porcentaje_previsto ? (resp.porcentaje_previsto + ' %') : '');
+    }).fail(function (xhr) {
+      var error = 'No se pudo consultar AWS Cost Explorer.';
+      if (xhr && xhr.responseJSON && xhr.responseJSON.error) {
+        error = xhr.responseJSON.error;
+      }
+      mostrarError(error);
+    });
+  }
+
+  $modal.on('show.bs.modal', cargarCostosAws);
+});
 </script>
 
 </body>

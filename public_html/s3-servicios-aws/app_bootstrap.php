@@ -1,4 +1,9 @@
 <?php
+/**
+ * Archivo: app_bootstrap.php
+ * Versión: 3.0
+ * Descripción: Carga autoload de Composer y archivos privados base (configuración y DB).
+ */
 declare(strict_types=1);
 
 // Desactiva IMDS (evita que el SDK intente 169.254.169.254)
@@ -24,7 +29,7 @@ if ($APP_ROOT === false) {
     die('No se pudo resolver APP_ROOT con realpath(). Revisa la ruta /../../');
 }
 
-// 3) Archivos privados
+// 3) Archivos privados requeridos por toda la app
 $configPath = $APP_ROOT . '/Config-s3.php';
 $dbPath     = $APP_ROOT . '/db.php';
 

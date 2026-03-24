@@ -1,4 +1,9 @@
 <?php
+/**
+ * Archivo: Config-s3.php
+ * Versión: 3.0
+ * Descripción: Centraliza configuración AWS y constructores de clientes SDK.
+ */
 declare(strict_types=1);
 
 use Aws\BedrockRuntime\BedrockRuntimeClient;

@@ -1,4 +1,9 @@
 <?php
+/**
+ * Archivo: S3Manager.php
+ * Versión: 3.0
+ * Descripción: Encapsula operaciones S3 y sincronización de metadatos con base de datos.
+ */
 require_once 'vendor/autoload.php';
 require_once __DIR__ . '/app_bootstrap.php';
 

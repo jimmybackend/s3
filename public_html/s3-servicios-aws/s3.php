@@ -1070,7 +1070,6 @@ try {
   </div>
 </div>
 
-
 <!-- PESTAÑA servicios -->
 <div class="tab-pane fade" id="pane-servicios" role="tabpanel" aria-labelledby="tab-servicios"></div>
 
@@ -1651,40 +1650,42 @@ try {
 
 <!-- Modal: Costos AWS -->
 <div class="modal fade" id="modalCostosAws" tabindex="-1" role="dialog" aria-labelledby="modalCostosAwsLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered" role="document">
-    <div class="modal-content">
-      <div class="modal-header bg-dark text-white">
-        <h5 class="modal-title" id="modalCostosAwsLabel"><i class="fas fa-chart-line mr-2"></i> Costos AWS</h5>
-        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Cerrar">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-      <div class="modal-body">
-        <div id="costosAwsLoading" class="text-center py-3 d-none">
-          <div class="spinner-border text-primary" role="status" aria-hidden="true"></div>
-          <div class="mt-2">Consultando costos en AWS...</div>
-        </div>
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content bg-dark text-white border-secondary">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title" id="modalCostosAwsLabel">Costos AWS</h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Cerrar">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
 
-        <div id="costosAwsError" class="alert alert-danger d-none mb-3"></div>
+            <div class="modal-body">
+                <div id="costosAwsLoading" class="text-info">
+                    Consultando costos...
+                </div>
 
-        <div id="costosAwsContenido" class="d-none">
-          <div class="mb-4">
-            <h6 class="text-muted mb-1" id="costosAwsMesActualTitulo">Mes actual</h6>
-            <div class="h4 mb-1" id="costosAwsMesActualMonto">-</div>
-            <div class="text-muted" id="costosAwsMesActualPorcentaje"></div>
-          </div>
-          <div>
-            <h6 class="text-muted mb-1" id="costosAwsPrevistoTitulo">Final de mes previsto</h6>
-            <div class="h4 mb-1" id="costosAwsPrevistoMonto">-</div>
-            <div class="text-muted" id="costosAwsPrevistoPorcentaje"></div>
-          </div>
+                <div id="costosAwsError" class="alert alert-danger d-none mb-0"></div>
+
+                <div id="costosAwsContenido" class="d-none" style="display:none;">
+                    <div class="mb-3">
+                        <div id="costosAwsMesActualTitulo" class="font-weight-bold">Mes actual</div>
+                        <div id="costosAwsMesActualMonto" style="font-size: 1.25rem;">-</div>
+                        <div id="costosAwsMesActualPorcentaje" class="text-info small"></div>
+                    </div>
+
+                    <div>
+                        <div id="costosAwsPrevistoTitulo" class="font-weight-bold">Final de mes previsto</div>
+                        <div id="costosAwsPrevistoMonto" style="font-size: 1.25rem;">-</div>
+                        <div id="costosAwsPrevistoPorcentaje" class="text-warning small"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer border-secondary">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+            </div>
         </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
-      </div>
     </div>
-  </div>
 </div>
 
 <!-- Modal Traducir -->
@@ -2476,74 +2477,228 @@ document.addEventListener('DOMContentLoaded', function () {
 </script>
 
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-  var $modal = $('#modalCostosAws');
-  if (!$modal.length) return;
+(function ($) {
+    'use strict';
 
-  var $loading = $('#costosAwsLoading');
-  var $error = $('#costosAwsError');
-  var $contenido = $('#costosAwsContenido');
-  var $mesActualTitulo = $('#costosAwsMesActualTitulo');
-  var $mesActualMonto = $('#costosAwsMesActualMonto');
-  var $mesActualPorcentaje = $('#costosAwsMesActualPorcentaje');
-  var $previstoTitulo = $('#costosAwsPrevistoTitulo');
-  var $previstoMonto = $('#costosAwsPrevistoMonto');
-  var $previstoPorcentaje = $('#costosAwsPrevistoPorcentaje');
-
-  function formatearMonto(valor, moneda) {
-    var numero = Number(valor);
-    if (!isFinite(numero)) return '-';
-    var formateado = numero.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    var sufijo = (moneda === 'USD') ? 'US$' : moneda;
-    return formateado + ' ' + sufijo;
-  }
-
-  function mostrarCargando() {
-    $error.addClass('d-none').text('');
-    $contenido.addClass('d-none');
-    $loading.removeClass('d-none');
-  }
-
-  function mostrarError(mensaje) {
-    $loading.addClass('d-none');
-    $contenido.addClass('d-none');
-    $error.removeClass('d-none').text(mensaje);
-  }
-
-  function cargarCostosAws() {
-    mostrarCargando();
-    $.ajax({
-      url: 'costos_aws.php',
-      method: 'GET',
-      dataType: 'json'
-    }).done(function (resp) {
-      if (!resp || !resp.ok) {
-        mostrarError((resp && resp.error) ? resp.error : 'No fue posible obtener los costos de AWS.');
+    if (typeof $ === 'undefined') {
         return;
-      }
+    }
 
-      $loading.addClass('d-none');
-      $contenido.removeClass('d-none');
+    var $modal = $('#modalCostosAws');
+    if (!$modal.length) {
+        return;
+    }
 
-      $mesActualTitulo.text(resp.mes_actual || 'Mes actual');
-      $mesActualMonto.text(formatearMonto(resp.costo_actual, resp.currency || 'USD'));
-      $mesActualPorcentaje.text(resp.porcentaje_actual ? (resp.porcentaje_actual + ' %') : '');
+    var xhrCostosAws = null;
+    var consultaEnCurso = false;
 
-      $previstoTitulo.text(resp.fin_mes_previsto || 'Final de mes previsto');
-      $previstoMonto.text(formatearMonto(resp.costo_previsto, resp.currency || 'USD'));
-      $previstoPorcentaje.text(resp.porcentaje_previsto ? (resp.porcentaje_previsto + ' %') : '');
-    }).fail(function (xhr) {
-      var error = 'No se pudo consultar AWS Cost Explorer.';
-      if (xhr && xhr.responseJSON && xhr.responseJSON.error) {
-        error = xhr.responseJSON.error;
-      }
-      mostrarError(error);
+    function el(id) {
+        return $(id);
+    }
+
+    function formatearMonto(valor, moneda) {
+        var numero = parseFloat(valor);
+        if (isNaN(numero)) {
+            return '-';
+        }
+
+        return numero.toLocaleString('es-MX', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        }) + ' ' + (moneda || 'USD');
+    }
+
+    function resetModal() {
+        el('#costosAwsLoading')
+            .removeClass('d-none')
+            .css('display', 'block')
+            .text('Consultando costos...');
+
+        el('#costosAwsError')
+            .addClass('d-none')
+            .css('display', 'none')
+            .text('');
+
+        el('#costosAwsContenido')
+            .addClass('d-none')
+            .css('display', 'none');
+
+        el('#costosAwsMesActualTitulo').text('Mes actual');
+        el('#costosAwsMesActualMonto').text('-');
+        el('#costosAwsMesActualPorcentaje').text('');
+
+        el('#costosAwsPrevistoTitulo').text('Final de mes previsto');
+        el('#costosAwsPrevistoMonto').text('-');
+        el('#costosAwsPrevistoPorcentaje').text('');
+    }
+
+    function mostrarError(mensaje) {
+        el('#costosAwsLoading')
+            .addClass('d-none')
+            .css('display', 'none');
+
+        el('#costosAwsContenido')
+            .addClass('d-none')
+            .css('display', 'none');
+
+        el('#costosAwsError')
+            .removeClass('d-none')
+            .css('display', 'block')
+            .text(mensaje || 'No se pudo consultar AWS Cost Explorer.');
+    }
+
+    function mostrarContenido(resp) {
+        el('#costosAwsMesActualTitulo').text(resp.mes_actual || 'Mes actual');
+        el('#costosAwsMesActualMonto').text(formatearMonto(resp.costo_actual, resp.currency));
+        el('#costosAwsMesActualPorcentaje').text(
+            resp.porcentaje_actual !== null && typeof resp.porcentaje_actual !== 'undefined'
+                ? resp.porcentaje_actual + ' %'
+                : ''
+        );
+
+        el('#costosAwsPrevistoTitulo').text(resp.fin_mes_previsto || 'Final de mes previsto');
+        el('#costosAwsPrevistoMonto').text(formatearMonto(resp.costo_previsto, resp.currency));
+        el('#costosAwsPrevistoPorcentaje').text(
+            resp.porcentaje_previsto !== null && typeof resp.porcentaje_previsto !== 'undefined'
+                ? resp.porcentaje_previsto + ' %'
+                : ''
+        );
+
+        el('#costosAwsLoading')
+            .addClass('d-none')
+            .css('display', 'none');
+
+        el('#costosAwsError')
+            .addClass('d-none')
+            .css('display', 'none')
+            .text('');
+
+        el('#costosAwsContenido')
+            .removeClass('d-none')
+            .css('display', 'block');
+    }
+
+    function traducirError(mensaje) {
+        if (!mensaje) {
+            return 'No se pudo obtener la información de costos.';
+        }
+
+        var m = String(mensaje).toLowerCase();
+
+        if (m.indexOf('timeout') !== -1) {
+            return 'AWS no respondió a tiempo.';
+        }
+
+        if (
+            m.indexOf('accessdenied') !== -1 ||
+            m.indexOf('not authorized') !== -1 ||
+            m.indexOf('unauthorized') !== -1
+        ) {
+            return 'No tienes permisos para consultar AWS Cost Explorer.';
+        }
+
+        if (m.indexOf('cost explorer is not enabled') !== -1) {
+            return 'Cost Explorer no está habilitado en esta cuenta AWS.';
+        }
+
+        if (
+            m.indexOf('sesión inválida') !== -1 ||
+            m.indexOf('sesion invalida') !== -1 ||
+            m.indexOf('session') !== -1
+        ) {
+            return 'Tu sesión no es válida o expiró.';
+        }
+
+        return mensaje;
+    }
+
+    function cargarCostosAws() {
+        if (consultaEnCurso) {
+            return;
+        }
+
+        consultaEnCurso = true;
+        resetModal();
+
+        if (xhrCostosAws && xhrCostosAws.readyState !== 4) {
+            xhrCostosAws.abort();
+        }
+
+        xhrCostosAws = $.ajax({
+            url: 'costos_aws.php',
+            method: 'GET',
+            dataType: 'json',
+            cache: false,
+            timeout: 15000,
+            data: {
+                _: Date.now()
+            }
+        });
+
+        xhrCostosAws.done(function (resp) {
+            if (!resp || typeof resp !== 'object') {
+                mostrarError('La respuesta del servidor no es válida.');
+                return;
+            }
+
+            if (resp.ok !== true) {
+                mostrarError(traducirError(resp.error || 'No se pudo obtener la información de costos.'));
+                return;
+            }
+
+            mostrarContenido(resp);
+        });
+
+        xhrCostosAws.fail(function (xhr, textStatus, errorThrown) {
+            if (textStatus === 'abort') {
+                return;
+            }
+
+            var mensaje = 'No se pudo consultar AWS Cost Explorer.';
+
+            if (textStatus === 'timeout') {
+                mensaje = 'AWS no respondió a tiempo.';
+            } else if (xhr && xhr.responseJSON && xhr.responseJSON.error) {
+                mensaje = xhr.responseJSON.error;
+            } else if (xhr && xhr.responseText) {
+                try {
+                    var r = JSON.parse(xhr.responseText);
+                    if (r.error) {
+                        mensaje = r.error;
+                    } else {
+                        mensaje = xhr.responseText;
+                    }
+                } catch (e) {
+                    mensaje = xhr.responseText || errorThrown || mensaje;
+                }
+            } else if (errorThrown) {
+                mensaje = errorThrown;
+            }
+
+            mostrarError(traducirError(mensaje));
+        });
+
+        xhrCostosAws.always(function () {
+            consultaEnCurso = false;
+        });
+    }
+
+    $modal.off('.costosaws');
+
+    $modal.on('shown.bs.modal.costosaws', function () {
+        cargarCostosAws();
     });
-  }
 
-  $modal.on('show.bs.modal', cargarCostosAws);
-});
+    $modal.on('hidden.bs.modal.costosaws', function () {
+        if (xhrCostosAws && xhrCostosAws.readyState !== 4) {
+            xhrCostosAws.abort();
+        }
+
+        consultaEnCurso = false;
+        resetModal();
+    });
+
+})(jQuery);
 </script>
-
 </body>
 </html>

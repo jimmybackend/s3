@@ -77,6 +77,44 @@ function db_fetch_one(mysqli $db, string $sql, array $bind = [], string $types =
     return $row ?: null;
 }
 
+function db_fetch_all(mysqli $db, string $sql, array $bind = [], string $types = ''): array {
+    $st = $db->prepare($sql);
+    if (!$st) throw new Exception("SQL prepare failed: {$db->error} | {$sql}");
+
+    if (!empty($bind)) {
+        if ($types === '') {
+            $types = '';
+            foreach ($bind as $v) {
+                if (is_int($v)) $types .= 'i';
+                elseif (is_float($v)) $types .= 'd';
+                else $types .= 's';
+            }
+        }
+        $st->bind_param($types, ...$bind);
+    }
+
+    if (!$st->execute()) {
+        $err = $st->error;
+        $st->close();
+        throw new Exception("SQL exec failed: {$err}");
+    }
+
+    $res = $st->get_result();
+    $rows = [];
+    if ($res) {
+        while ($row = $res->fetch_assoc()) {
+            $rows[] = $row;
+        }
+    }
+    $st->close();
+    return $rows;
+}
+
+
+function db_like_escape(string $value): string {
+    return str_replace(['!', '%', '_'], ['!!', '!%', '!_'], $value);
+}
+
 /* ====== S3 ====== */
 try {
     $s3 = Config::getS3();
@@ -180,7 +218,14 @@ function upsert_folder(mysqli $db, int $userId, string $prefix, string $name, ?s
     );
 }
 
-/* ====== Upsert file (Encriptado = KEY COMPLETO) ====== */
+/* ====== Upsert file (Encriptado = KEY COMPLETO) ======
+   Regla principal:
+   - Encriptado SIEMPRE debe ser el Key real completo de S3.
+   - Nombre es el nombre visible/amigable y NO se sobrescribe si ya existe.
+   - Si el registro venía de una versión anterior con Encriptado incompleto
+     pero está en la misma Ruta y su Encriptado termina con el basename real
+     de S3, se actualiza ese mismo registro en vez de insertar otro.
+*/
 function upsert_file(mysqli $db, int $userId, string $s3Key, int $size): void {
     $dir = '';
     $pos = strrpos($s3Key, '/');
@@ -189,26 +234,54 @@ function upsert_file(mysqli $db, int $userId, string $s3Key, int $size): void {
 
     $basename = ($pos !== false) ? substr($s3Key, $pos + 1) : $s3Key;
 
+    // 1) Caso normal/correcto: el Encriptado ya es el Key completo real de S3.
     $row = db_fetch_one($db,
-        "SELECT id_, Tamano, Ruta FROM FileS3 WHERE user_id_=? AND Encriptado=? LIMIT 1",
+        "SELECT id_, Nombre, Encriptado, Tamano, Ruta
+         FROM FileS3
+         WHERE user_id_=? AND Encriptado=?
+         LIMIT 1",
         [$userId, $s3Key],
         'is'
     );
 
+    // 2) Caso legado: antes se guardó solo el nombre real o un Encriptado incompleto.
+    //    Solo se toma si hay UN candidato claro en la misma carpeta.
+    if (!$row) {
+        $legacyRows = db_fetch_all($db,
+            "SELECT id_, Nombre, Encriptado, Tamano, Ruta
+             FROM FileS3
+             WHERE user_id_=?
+               AND Ruta=?
+               AND Found=0
+               AND (Encriptado=? OR Encriptado LIKE ? ESCAPE '!')
+             ORDER BY id_ ASC
+             LIMIT 2",
+            [$userId, $dir, $basename, '%/' . db_like_escape($basename)],
+            'isss'
+        );
+
+        if (count($legacyRows) === 1) {
+            $row = $legacyRows[0];
+        }
+    }
+
     if ($row) {
-        // SOLO actualizar lo técnico + Found. NO tocar Nombre ni seguridad.
+        // Actualizar solo datos técnicos. Nombre se conserva; solo se llena si estaba vacío.
         db_exec($db,
             "UPDATE FileS3
-             SET Tamano = IF(Tamano<>?, ?, Tamano),
-                 Ruta   = IF(Ruta<>?, ?, Ruta),
-                 Found  = 1
+             SET Encriptado = IF(Encriptado<>?, ?, Encriptado),
+                 Tamano     = IF(Tamano<>?, ?, Tamano),
+                 Ruta       = IF(Ruta<>?, ?, Ruta),
+                 Nombre     = IF(Nombre IS NULL OR Nombre='', ?, Nombre),
+                 Found      = 1
              WHERE id_=?",
-            [$size, $size, $dir, $dir, (int)$row['id_']],
-            'iissi'
+            [$s3Key, $s3Key, $size, $size, $dir, $dir, $basename, (int)$row['id_']],
+            'ssiisssi'
         );
         return;
     }
 
+    // Archivo nuevo real: aquí sí el Nombre visible nace del nombre real en S3.
     db_exec($db,
         "INSERT INTO FileS3 (Nombre, Encriptado, Tamano, Metadatos, Ruta, Found, AccessType, Fecha, user_id_)
          VALUES (?, ?, ?, NULL, ?, 1, 'normal', NOW(), ?)",

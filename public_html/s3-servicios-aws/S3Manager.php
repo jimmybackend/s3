@@ -1,9 +1,4 @@
 <?php
-/**
- * Archivo: S3Manager.php
- * Versión: 3.0
- * Descripción: Encapsula operaciones S3 y sincronización de metadatos con base de datos.
- */
 require_once 'vendor/autoload.php';
 require_once __DIR__ . '/app_bootstrap.php';
 
@@ -1473,75 +1468,122 @@ public function uploadFile($tmpPath, $originalName, $ruta, $userId, $mimeType, $
      * FUNCTION: renameFile
      * ============================================================
      * DESCRIPCIÓN:
-     * Renombra un archivo usando id_ o KEY S3. Mantiene la misma
-     * carpeta y actualiza S3 + FileS3 inmediatamente.
+     * Cambia únicamente el nombre visible del archivo en la tabla
+     * FileS3, campo Nombre.
+     *
+     * IMPORTANTE:
+     * Esta función NO modifica el archivo real en S3.
+     * Esta función NO cambia el campo Encriptado.
+     * Esta función NO cambia el campo Ruta.
+     * Esta función NO copia ni borra objetos en S3.
+     *
+     * El campo Encriptado debe conservar el KEY real del archivo
+     * en S3, por ejemplo:
+     *
+     * Data/Chat/GenerationsImages/14/f_68c1dfa1c81f74.38475569_e68671b5.mp4
+     *
+     * El campo Nombre es solamente el nombre visible para el usuario,
+     * por ejemplo:
+     *
+     * output.mp4
      *
      * PARÁMETROS:
-     * $fileRef     → id_ o key S3
+     * $fileRef     → id_ o KEY S3 del archivo
      * $nuevoNombre → nuevo nombre visible
      * $rutaActual  → no se usa; se mantiene por compatibilidad
      *
      * RETORNA:
-     * array con datos actualizados
+     * array con datos actualizados, conservando Encriptado y Ruta
      * ============================================================
      */
+    public function renameFile($fileRef, $nuevoNombre, $rutaActual = null)
+    {
+        $nuevoNombre = trim((string)$nuevoNombre);
 
-public function renameFile($fileRef, $nuevoNombre, $rutaActual = null)
-{
-    $nuevoNombre = trim((string)$nuevoNombre);
-    if ($nuevoNombre === '') {
-        throw new RuntimeException('Debes indicar el nuevo nombre del archivo.');
+        if ($nuevoNombre === '') {
+            throw new RuntimeException('Debes indicar el nuevo nombre del archivo.');
+        }
+
+        /*
+         * Seguridad:
+         * Nombre es solo el nombre visible del archivo.
+         * No debe recibir rutas ni diagonales.
+         *
+         * Correcto:
+         * output.mp4
+         *
+         * Incorrecto:
+         * Data/Carpeta/output.mp4
+         */
+        if (
+            strpos($nuevoNombre, '/') !== false ||
+            strpos($nuevoNombre, '\\') !== false
+        ) {
+            throw new RuntimeException('El nombre del archivo no debe contener rutas.');
+        }
+
+        /*
+         * Obtenemos el registro actual del archivo.
+         * Puede buscar por id_ o por KEY S3, según lo que reciba $fileRef.
+         *
+         * El segundo parámetro true indica que solo debe buscar archivos
+         * marcados como encontrados/activos.
+         */
+        $file = $this->getFileRecord($fileRef, true);
+
+        $id = (int)$file['id_'];
+
+        /*
+         * Conservamos los valores técnicos actuales.
+         * Estos valores NO se deben modificar al renombrar visualmente.
+         */
+        $nombreAnterior    = (string)($file['Nombre'] ?? '');
+        $encriptadoActual = (string)($file['Encriptado'] ?? '');
+        $rutaActualDb     = (string)($file['Ruta'] ?? '');
+
+        /*
+         * KEY real del archivo en S3.
+         * Solo lo calculamos para regresarlo como referencia.
+         * NO se usa para copiar, borrar ni renombrar en S3.
+         */
+        $keyS3Actual = $this->buildStoredFileKey($file);
+
+        /*
+         * IMPORTANTE:
+         * Aquí solo se actualiza el campo Nombre.
+         *
+         * No tocar:
+         * - Encriptado
+         * - Ruta
+         * - Found
+         *
+         * Así evitamos perder el KEY real del archivo en S3.
+         */
+        $sql = "UPDATE FileS3
+                SET Nombre = ?
+                WHERE id_ = ?";
+
+        $stmt = $this->db->prepare($sql);
+
+        if (!$stmt) {
+            throw new RuntimeException('Error preparando renameFile: ' . $this->db->error);
+        }
+
+        $stmt->bind_param('si', $nuevoNombre, $id);
+        $this->executeStmt($stmt, 'Error actualizando Nombre en FileS3 en renameFile');
+        $stmt->close();
+
+        return [
+            'id'                    => $id,
+            'nombre_anterior'       => $nombreAnterior,
+            'nombre'                => $nuevoNombre,
+            'encriptado'            => $encriptadoActual,
+            'ruta'                  => $rutaActualDb,
+            'key_s3'                => $keyS3Actual,
+            's3_modificado'         => false,
+            'encriptado_modificado' => false
+        ];
     }
-
-    $file = $this->getFileRecord($fileRef, true);
-
-    $oldKey = $this->buildStoredFileKey($file);
-    $ruta   = $this->normalizePrefix((string)$file['Ruta']);
-
-    $extension = pathinfo($nuevoNombre, PATHINFO_EXTENSION);
-    $nuevoEncriptado = uniqid('f_', true) . '_' . bin2hex(random_bytes(4));
-    if ($extension !== '') {
-        $nuevoEncriptado .= '.' . $extension;
-    }
-
-    $newKey = $this->normalizeFileKey($ruta . $nuevoEncriptado);
-
-    $this->s3->copyObject([
-        'Bucket'            => $this->bucket,
-        'CopySource'        => $this->bucket . '/' . $oldKey,
-        'Key'               => $newKey,
-        'ACL'               => 'private',
-        'MetadataDirective' => 'COPY'
-    ]);
-
-    $this->s3->deleteObject([
-        'Bucket' => $this->bucket,
-        'Key'    => $oldKey
-    ]);
-
-    $sql = "UPDATE FileS3
-            SET Nombre = ?, Encriptado = ?, Ruta = ?, Found = 1
-            WHERE id_ = ?";
-
-    $stmt = $this->db->prepare($sql);
-    if (!$stmt) {
-        throw new RuntimeException('Error preparando renameFile: ' . $this->db->error);
-    }
-
-    $id = (int)$file['id_'];
-    $stmt->bind_param('sssi', $nuevoNombre, $newKey, $ruta, $id);
-    $this->executeStmt($stmt, 'Error actualizando FileS3 en renameFile');
-    $stmt->close();
-
-    return [
-        'id'         => $id,
-        'nombre'     => $nuevoNombre,
-        'encriptado' => $newKey,
-        'ruta'       => $ruta,
-        'old_key'    => $oldKey,
-        'key_s3'     => $newKey
-    ];
-}
 
     /**
      * ============================================================

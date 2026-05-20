@@ -224,13 +224,13 @@ try {
           <button class="dropdown-item" data-toggle="modal" data-target="#modalEnlacesUtiles">
             <i class="fas fa-link"></i> Enlaces
           </button>
-          <button id="btnSyncS3" class="dropdown-item">
-              <i class="fas fa-rotate"></i> Sincronizar S3
-          </button>
+         
           <button class="dropdown-item" data-toggle="modal" data-target="#modalCostosAws">
               <i class="fas fa-chart-line"></i> Costos AWS
           </button>
-          
+           <button id="btnSyncS3" class="dropdown-item">
+              <i class="fas fa-rotate"></i> Sincronizar S3
+          </button>
           <div class="dropdown-divider"></div>
            <a class="dropdown-item text-danger" href="logout.php">
             <i class="fas fa-sign-out-alt"></i> Cerrar sesión

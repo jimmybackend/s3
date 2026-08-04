@@ -1,9 +1,4 @@
 <?php
-/**
- * Archivo: upload/storage/UploadStateStore.php
- * Versión: 3.0
- * Descripción: Persiste y recupera el estado temporal de cargas en archivos JSON.
- */
 // upload/storage/UploadStateStore.php
 declare(strict_types=1);
 
@@ -23,7 +18,6 @@ final class UploadStateStore
     public function save($id, array $data)
     {
         $path = $this->path($id);
-        // Se guarda en formato legible para facilitar soporte operativo.
         $json = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
         if ($json === false) {
             throw new RuntimeException('No se pudo serializar estado JSON');
@@ -51,7 +45,6 @@ final class UploadStateStore
 
     private function path($id)
     {
-        // Normaliza el identificador para evitar rutas inválidas o traversal accidental.
         $safe = preg_replace('/[^a-zA-Z0-9_\-\.]/', '_', (string)$id);
         return $this->dir . $safe . '.json';
     }

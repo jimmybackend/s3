@@ -1,9 +1,4 @@
 <?php
-/**
- * Archivo: upload/UploadFactory.php
- * Versión: 3.0
- * Descripción: Crea el driver de subida según el modo solicitado por la capa API.
- */
 // upload/UploadFactory.php
 declare(strict_types=1);
 
@@ -16,7 +11,6 @@ require_once __DIR__ . '/drivers/Chunked15MBUploader.php';
 
 final class UploadFactory
 {
-    // Punto único de resolución de estrategia de upload para mantener uniforme la integración.
     public static function make($mode)
     {
         $mode = (string)$mode;

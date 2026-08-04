@@ -286,7 +286,7 @@
 @keyframes toast-in { from { transform: translateY(8px); opacity:0 } to { transform: translateY(0); opacity:1 } }
 
 /* =========================================================
-   CHAT 2 adaptado al tema principal ui-theme / neon / ascii
+   CHAT 2 adaptado al tema principal ui-theme / neon
    ========================================================= */
 
 #pane-Chat2,
@@ -752,7 +752,6 @@ body.ui-theme.theme-light #chat2Messages .chat-md thead th{
 
 /* =========================================================
    CHAT2 PRO ENHANCEMENTS + FIX MENSAJES LARGOS
-   Pegar al final de chat.css
    ========================================================= */
 
 /* Selección de texto */
@@ -1014,3 +1013,187 @@ body.ui-theme.theme-light #chat2Messages .chat-code-copy-btn{
 body.ui-theme.theme-light #chat2Messages .chat-code-copy-btn:hover{
   background:rgba(var(--accent-rgb), .16);
 }
+
+
+/* =========================================================
+PROYECTOS Y FUENTES (ÚNICO BLOQUE)
+========================================================= */
+/* Selector de proyecto */
+#chat2Project {
+  font-size: 0.85rem;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--bg) 78%, transparent) !important;
+  color: var(--text) !important;
+}
+
+#chat2Project:focus {
+  border-color: rgba(var(--accent-rgb), .55) !important;
+  box-shadow: var(--accent-glow) !important;
+}
+
+/* Botones de herramientas */
+#pane-Chat2 .btn-group .btn {
+  font-size: 0.75rem;
+  padding: .25rem .5rem;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text);
+  transition: all 0.2s ease;
+}
+
+#pane-Chat2 .btn-group .btn:hover {
+  background: rgba(var(--accent-rgb), .1);
+  border-color: rgba(var(--accent-rgb), .4);
+  color: var(--accent);
+}
+
+#pane-Chat2 .btn-group .btn.active {
+  background: rgba(var(--accent-rgb), .2);
+  border-color: rgba(var(--accent-rgb), .5);
+  color: var(--accent);
+}
+
+/* Panel de fuentes */
+#chat2SourcesPanel {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: .75rem;
+  background: rgba(var(--accent-rgb), .03);
+}
+
+#chat2SourcesPanel h6 {
+  font-size: 0.85rem;
+  color: var(--text-strong);
+}
+
+#chat2SourcesList .list-group-item {
+  font-size: 0.75rem;
+  padding: .35rem .5rem;
+  border: 1px solid var(--border);
+  background: var(--panel-bg);
+  color: var(--text);
+}
+
+#chat2SourcesList .list-group-item:hover {
+  background: rgba(var(--accent-rgb), .08);
+}
+
+#chat2SourcesList .source-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+#chat2SourcesList .source-item .source-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#chat2SourcesList .source-item .source-status {
+  font-size: 0.7rem;
+  padding: .15rem .4rem;
+  border-radius: 10px;
+  margin-left: .5rem;
+}
+
+#chat2SourcesList .source-item .source-status.indexed {
+  background: rgba(40, 167, 69, .2);
+  color: #28a745;
+}
+
+#chat2SourcesList .source-item .source-status.pending {
+  background: rgba(255, 193, 7, .2);
+  color: #ffc107;
+}
+
+#chat2SourcesList .source-item .source-status.error {
+  background: rgba(220, 53, 69, .2);
+  color: #dc3569;
+}
+
+/* Chips de herramientas ejecutadas */
+.chat-msg .tool-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+  padding: .25rem .5rem;
+  border: 1px solid rgba(var(--accent-rgb), .3);
+  background: rgba(var(--accent-rgb), .08);
+  border-radius: 6px;
+  font-size: 0.75rem;
+  margin: .25rem 0;
+  color: var(--text);
+}
+
+.chat-msg .tool-chip i {
+  color: var(--accent);
+}
+
+.chat-msg .tool-chip .tool-name {
+  font-weight: 600;
+  color: var(--accent);
+}
+
+/* Modal de proyectos */
+#modalProjectManager .modal-content {
+  background: var(--panel-bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+#modalProjectManager .form-control {
+  background: color-mix(in srgb, var(--bg) 78%, transparent) !important;
+  color: var(--text) !important;
+  border: 1px solid var(--border) !important;
+}
+
+#modalProjectManager .form-control:focus {
+  border-color: rgba(var(--accent-rgb), .55) !important;
+  box-shadow: var(--accent-glow) !important;
+}
+
+#modalProjectManager .list-group-item {
+  background: var(--panel-bg2);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+#modalProjectManager .list-group-item:hover {
+  background: rgba(var(--accent-rgb), .08);
+}
+
+/* Tema claro - ajustes específicos */
+body.ui-theme.theme-light #chat2SourcesPanel {
+  background: rgba(var(--accent-rgb), .05);
+}
+
+body.ui-theme.theme-light #chat2SourcesList .list-group-item {
+  background: #ffffff;
+}
+
+body.ui-theme.theme-light #chat2SourcesList .list-group-item:hover {
+  background: rgba(var(--accent-rgb), .1);
+}
+
+/* Asegurar que la pestaña y el card ocupen toda la altura */
+#pane-Chat2 {
+  display: flex !important;
+  flex-direction: column !important;
+  height: 100% !important;
+  min-height: 0 !important;
+}
+
+#pane-Chat2 .card {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+}
+
+/* El área de mensajes ocupa el resto y tiene scroll */
+#chat2Messages {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  overflow-y: auto !important;
+}
+

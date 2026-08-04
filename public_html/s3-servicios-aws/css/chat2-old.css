@@ -1,0 +1,568 @@
+/* ======================================================================
+chat2.css - Archivo unificado para s3_chat.php
+Solo incluye: Chat IA, Dashboard, Contexto, Proyectos
+Modo oscuro: verde neón | Modo claro: azul/celeste
+====================================================================== */
+
+/* =========================================================
+VARIABLES Y BASE DEL TEMA
+========================================================= */
+body.ui-theme{
+  --bg:#000;
+  --bg2:#050505;
+  --bg3:#0b0b0b;
+  --text:#dbe4ee;
+  --text-soft:#9aa4af;
+  --text-strong:#f8fafc;
+  --panel-bg:rgba(255,255,255,.03);
+  --panel-bg2:rgba(255,255,255,.02);
+  --panel-solid:#050505;
+  --border:rgba(255,255,255,.10);
+  --border-soft:rgba(255,255,255,.06);
+  --accent:#00ff66;
+  --accent-2:#66ff99;
+  --accent-rgb:0,255,102;
+  --accent-glow:0 0 10px rgba(var(--accent-rgb),.35), 0 0 22px rgba(var(--accent-rgb),.22);
+  --danger:#ff5a5a;
+  --warn:#ffd861;
+  --ok:#00ff66;
+}
+body.ui-theme{
+  background:var(--bg) !important;
+  color:var(--text) !important;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace !important;
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+}
+/* Variantes de color neón */
+body.ui-theme.theme-neon-green{ --accent:#00ff66; --accent-2:#66ff99; --accent-rgb:0,255,102; }
+body.ui-theme.theme-neon-blue{ --accent:#26c6ff; --accent-2:#83e2ff; --accent-rgb:38,198,255; }
+body.ui-theme.theme-neon-red{ --accent:#ff4d6d; --accent-2:#ff8fa3; --accent-rgb:255,77,109; }
+body.ui-theme.theme-neon-yellow{ --accent:#ffd93d; --accent-2:#ffe98a; --accent-rgb:255,217,61; }
+/* Modo claro */
+body.ui-theme.theme-light{
+  --bg:#f5f7fb;
+  --bg2:#ffffff;
+  --bg3:#f8fafc;
+  --text:#1f2937;
+  --text-soft:#6b7280;
+  --text-strong:#111827;  --panel-bg:rgba(255,255,255,.95);
+  --panel-bg2:rgba(255,255,255,1);
+  --panel-solid:#ffffff;
+  --border:rgba(15,23,42,.10);
+  --border-soft:rgba(15,23,42,.06);
+}
+/* Modo oscuro */
+body.ui-theme.theme-dark{
+  --bg:#000000;
+  --bg2:#050505;
+  --bg3:#0b0b0b;
+  --text:#dbe4ee;
+  --text-soft:#9aa4af;
+  --text-strong:#f8fafc;
+  --panel-bg:rgba(255,255,255,.03);
+  --panel-bg2:rgba(255,255,255,.02);
+  --panel-solid:#050505;
+  --border:rgba(255,255,255,.10);
+  --border-soft:rgba(255,255,255,.06);
+}
+/* Vision modes */
+body.ui-theme.vision-normal{}
+body.ui-theme.vision-myopia{filter:contrast(.98) saturate(.92);}
+body.ui-theme.vision-protanopia{filter:hue-rotate(-12deg) saturate(.78);}
+body.ui-theme.vision-deuteranopia{filter:hue-rotate(14deg) saturate(.82);}
+body.ui-theme.vision-tritanopia{filter:hue-rotate(35deg) saturate(.85);}
+
+/* =========================================================
+2. TEXTO BASE Y ENLACES
+========================================================= */
+body.ui-theme,
+body.ui-theme p,
+body.ui-theme div,
+body.ui-theme span,
+body.ui-theme label,
+body.ui-theme li,
+body.ui-theme td,
+body.ui-theme th { color: var(--text) !important; }
+body.ui-theme .text-muted,
+body.ui-theme .small,
+body.ui-theme small,
+body.ui-theme .form-text { color: var(--text-soft) !important; }
+body.ui-theme h1,
+body.ui-theme h2,
+body.ui-theme h3,
+body.ui-theme h4,
+body.ui-theme h5,
+body.ui-theme h6,
+body.ui-theme strong,
+body.ui-theme b,body.ui-theme .card-title,
+body.ui-theme .modal-title,
+body.ui-theme .navbar-brand { color: var(--text-strong) !important; }
+body.ui-theme a { color: var(--accent) !important; }
+body.ui-theme a:hover,
+body.ui-theme a:focus { color: var(--accent-2) !important; text-shadow: var(--accent-glow); }
+body.ui-theme i,
+body.ui-theme .fas,
+body.ui-theme .far,
+body.ui-theme .fab { color: var(--accent) !important; text-shadow:0 0 10px rgba(var(--accent-rgb),.12); }
+
+/* =========================================================
+3. NAVBAR
+========================================================= */
+body.ui-theme .navbar{
+  background: linear-gradient(180deg,var(--bg),var(--bg2)) !important;
+  border-bottom:1px solid rgba(var(--accent-rgb),.25);
+  box-shadow:0 2px 14px rgba(0,0,0,.25);
+  position:relative;
+  z-index:1035;
+  flex:0 0 auto;
+}
+body.ui-theme .navbar .nav-link,
+body.ui-theme .navbar-brand { color: var(--text-strong) !important; }
+body.ui-theme .navbar .nav-link:hover,
+body.ui-theme .navbar .nav-link:focus,
+body.ui-theme .navbar .nav-link.active,
+body.ui-theme .navbar-brand:hover { color: var(--accent) !important; text-shadow:0 0 8px rgba(var(--accent-rgb),.6); }
+body.ui-theme .navbar .btn { background:rgba(0,0,0,.35) !important; border:1px solid var(--border) !important; color:var(--text) !important; }
+body.ui-theme.theme-light .navbar .btn { background:rgba(255,255,255,.75) !important; }
+
+/* =========================================================
+4. TABS (nav-tabs)
+========================================================= */
+body.ui-theme .nav-tabs { border-bottom: 1px solid var(--border) !important; }
+body.ui-theme .nav-tabs .nav-link { background: transparent !important; color: var(--text-soft) !important; border: 1px solid transparent !important; }
+body.ui-theme .nav-tabs .nav-link:hover,
+body.ui-theme .nav-tabs .nav-link:focus { color: var(--accent) !important; border-color: var(--border) !important; }
+body.ui-theme .nav-tabs .nav-link.active { background: var(--bg2) !important; color: var(--accent) !important; border-color: var(--border) var(--border) var(--bg2) !important; }
+
+/* =========================================================
+5. CARDS
+========================================================= */
+body.ui-theme .card { background: var(--bg2) !important; color: var(--text) !important; border: 1px solid var(--border) !important; border-radius:10px !important; box-shadow:0 12px 34px rgba(0,0,0,.35); }
+body.ui-theme .card:hover { border-color:rgba(var(--accent-rgb),.55) !important; box-shadow:0 0 0 1px rgba(var(--accent-rgb),.22) inset, 0 12px 34px rgba(0,0,0,.35), 0 0 18px rgba(var(--accent-rgb),.22) !important; }
+body.ui-theme .card .card-header,
+body.ui-theme .card .card-body,
+body.ui-theme .card .card-footer { background: transparent !important; color: var(--text) !important; border-color: var(--border) !important; }
+body.ui-theme.theme-light .card { background: #fff !important; }
+/* =========================================================
+6. BOTONES
+========================================================= */
+body.ui-theme .btn,
+body.ui-theme button { background:rgba(0,0,0,.25) !important; color:var(--text) !important; border:1px solid var(--border) !important; border-radius:10px !important; box-shadow:0 0 0 1px rgba(255,255,255,.04) inset; }
+body.ui-theme.theme-light .btn,
+body.ui-theme.theme-light button { background:rgba(255,255,255,.75) !important; }
+body.ui-theme .btn:hover,
+body.ui-theme button:hover { border-color:rgba(var(--accent-rgb),.55) !important; box-shadow:var(--accent-glow) !important; color:var(--accent-2) !important; }
+body.ui-theme .btn-primary { background: var(--accent) !important; color: #000 !important; border: 1px solid var(--accent) !important; }
+body.ui-theme .btn-primary:hover,
+body.ui-theme .btn-primary:focus { background: var(--accent-2) !important; color: #000 !important; border-color: var(--accent-2) !important; }
+body.ui-theme .btn-outline-primary,
+body.ui-theme .btn-outline-secondary,
+body.ui-theme .btn-secondary { background: transparent !important; color: var(--text) !important; border: 1px solid var(--border) !important; }
+body.ui-theme .btn-outline-primary:hover,
+body.ui-theme .btn-outline-secondary:hover,
+body.ui-theme .btn-secondary:hover { background: rgba(var(--accent-rgb), .10) !important; color: var(--accent) !important; border-color: var(--accent) !important; }
+body.ui-theme .btn-outline-danger { background: transparent !important; color: var(--danger) !important; border: 1px solid var(--danger) !important; }
+body.ui-theme .btn-outline-danger:hover { background: rgba(255,90,90,.15) !important; }
+body.ui-theme .btn-outline-success { background: transparent !important; color: var(--ok) !important; border: 1px solid var(--ok) !important; }
+body.ui-theme .btn-outline-success:hover { background: rgba(0,255,102,.15) !important; }
+body.ui-theme .btn-outline-info { background: transparent !important; color: #17a2b8 !important; border: 1px solid #17a2b8 !important; }
+body.ui-theme .btn-outline-info:hover { background: rgba(23,162,184,.15) !important; }
+body.ui-theme .btn-group .btn { border-radius: 0 !important; }
+body.ui-theme .btn-group .btn:first-child { border-top-left-radius: 10px !important; border-bottom-left-radius: 10px !important; }
+body.ui-theme .btn-group .btn:last-child { border-top-right-radius: 10px !important; border-bottom-right-radius: 10px !important; }
+
+/* =========================================================
+7. FORMULARIOS
+========================================================= */
+body.ui-theme .form-control,
+body.ui-theme .form-select,
+body.ui-theme textarea,
+body.ui-theme select,
+body.ui-theme input { background: var(--bg3) !important; color: var(--text) !important; border: 1px solid var(--border) !important; }
+body.ui-theme .form-control::placeholder,
+body.ui-theme textarea::placeholder { color: var(--text-soft) !important; }
+body.ui-theme .form-control:focus,
+body.ui-theme .form-select:focus,
+body.ui-theme textarea:focus,
+body.ui-theme select:focus,
+body.ui-theme input:focus { background: var(--bg3) !important; color: var(--text-strong) !important; border-color: var(--accent) !important; box-shadow: 0 0 0 .15rem rgba(var(--accent-rgb), .18) !important; }
+body.ui-theme.theme-light .form-control,
+body.ui-theme.theme-light .form-select,
+body.ui-theme.theme-light textarea,
+body.ui-theme.theme-light select,
+body.ui-theme.theme-light input { background: #fff !important; }
+body.ui-theme .custom-control-input:checked ~ .custom-control-label::before { background-color: var(--accent) !important; border-color: var(--accent) !important; }
+body.ui-theme .custom-control-label::before { background-color: var(--bg3) !important; border: 1px solid var(--border) !important; }
+/* =========================================================
+8. DROPDOWNS
+========================================================= */
+body.ui-theme .dropdown-menu { background: var(--bg2) !important; border: 1px solid var(--border) !important; box-shadow:0 18px 60px rgba(0,0,0,.45) !important; z-index:1050 !important; }
+body.ui-theme .navbar .dropdown-menu { z-index:1045 !important; }
+body.ui-theme.theme-light .dropdown-menu { background:rgba(255,255,255,.98) !important; }
+body.ui-theme .dropdown-item { color:var(--text) !important; }
+body.ui-theme .dropdown-item:hover,
+body.ui-theme .dropdown-item:focus { background:rgba(var(--accent-rgb),.10) !important; color:var(--accent-2) !important; text-shadow:var(--accent-glow); }
+body.ui-theme .dropdown-header { color:var(--text-soft) !important; }
+body.ui-theme .dropdown-divider { border-color: var(--border) !important; }
+
+/* =========================================================
+9. MODALES
+========================================================= */
+body.ui-theme .modal { z-index: 1060 !important; }
+body.ui-theme .modal-backdrop { z-index: 1055 !important; background-color: rgba(0,0,0,0.75) !important; }
+body.ui-theme .modal-content { background: var(--bg2) !important; color: var(--text) !important; border: 1px solid var(--border) !important; box-shadow:0 18px 60px rgba(0,0,0,.45) !important; border-radius:14px !important; }
+body.ui-theme.theme-light .modal-content { background: #fff !important; }
+body.ui-theme .modal-header,
+body.ui-theme .modal-footer { border-color: var(--border) !important; background: transparent !important; }
+body.ui-theme .modal-body { color: var(--text) !important; }
+body.ui-theme .modal-title { color: var(--accent) !important; }
+body.ui-theme .modal .close { color: var(--text) !important; text-shadow: none !important; opacity: .8; }
+body.ui-theme .modal .close:hover { opacity: 1; }
+body.modal-open { overflow: hidden !important; }
+#modalProjectManager .modal-content,
+#modalProjectSources .modal-content { background: var(--bg2) !important; color: var(--text) !important; border: 1px solid var(--border) !important; }
+#modalProjectManager .form-control,
+#modalProjectSources .form-control { background: var(--bg3) !important; color: var(--text) !important; border: 1px solid var(--border) !important; }
+#modalProjectManager .form-control:focus,
+#modalProjectSources .form-control:focus { border-color: rgba(var(--accent-rgb), .55) !important; box-shadow: var(--accent-glow) !important; }
+#modalProjectManager .list-group-item,
+#modalProjectSources .list-group-item { background: var(--bg3) !important; color: var(--text) !important; border: 1px solid var(--border) !important; }
+#modalProjectManager .list-group-item:hover,
+#modalProjectSources .list-group-item:hover { background: rgba(var(--accent-rgb), .08) !important; }
+
+/* =========================================================
+10. TABLAS
+========================================================= */
+body.ui-theme .table { background: var(--bg2) !important; color: var(--text) !important; --bs-table-bg: var(--bg2) !important; --bs-table-color: var(--text) !important; --bs-table-border-color: var(--border) !important; --bs-table-striped-bg: var(--bg3) !important; --bs-table-striped-color: var(--text) !important; --bs-table-hover-bg: rgba(var(--accent-rgb), .08) !important; --bs-table-hover-color: var(--text-strong) !important; }
+body.ui-theme .table thead,
+body.ui-theme .table thead tr,
+body.ui-theme .table thead th { background: var(--bg3) !important; color: var(--accent) !important; border-color: var(--border) !important; }
+body.ui-theme .table tbody,
+body.ui-theme .table tbody tr,
+body.ui-theme .table tbody td,
+body.ui-theme .table td,
+body.ui-theme .table th { background: transparent !important; color: var(--text) !important; border-color: var(--border) !important; }body.ui-theme .table-dark { background: var(--bg2) !important; color: var(--text) !important; }
+body.ui-theme .table-dark thead th { background: var(--bg3) !important; color: var(--accent) !important; border-color: var(--border) !important; }
+body.ui-theme .table-dark td,
+body.ui-theme .table-dark th { border-color: var(--border) !important; }
+body.ui-theme .table-hover tbody tr:hover { background: rgba(var(--accent-rgb), .08) !important; }
+
+/* =========================================================
+11. BADGES
+========================================================= */
+body.ui-theme .badge { background: var(--bg3) !important; color: var(--accent) !important; border: 1px solid rgba(var(--accent-rgb),.25); }
+body.ui-theme .badge-secondary { background: rgba(108,117,125,.2) !important; color: var(--text) !important; border-color: rgba(108,117,125,.3) !important; }
+body.ui-theme .badge-success { background: rgba(40,167,69,.2) !important; color: #28a745 !important; border-color: rgba(40,167,69,.3) !important; }
+body.ui-theme .badge-danger { background: rgba(220,53,69,.2) !important; color: #dc3545 !important; border-color: rgba(220,53,69,.3) !important; }
+body.ui-theme .badge-warning { background: rgba(255,193,7,.2) !important; color: #ffc107 !important; border-color: rgba(255,193,7,.3) !important; }
+body.ui-theme .badge-info { background: rgba(23,162,184,.2) !important; color: #17a2b8 !important; border-color: rgba(23,162,184,.3) !important; }
+body.ui-theme .badge-primary { background: rgba(var(--accent-rgb),.2) !important; color: var(--accent) !important; border-color: rgba(var(--accent-rgb),.3) !important; }
+
+/* =========================================================
+12. LISTAS
+========================================================= */
+body.ui-theme .list-group-item { background: var(--bg2) !important; color: var(--text) !important; border: 1px solid var(--border) !important; }
+body.ui-theme .list-group-item:hover { background: rgba(var(--accent-rgb), .08) !important; }
+
+/* =========================================================
+13. PROGRESS BARS
+========================================================= */
+body.ui-theme .progress { background: rgba(255,255,255,.06) !important; border: 1px solid var(--border) !important; }
+body.ui-theme .progress-bar { background-color: var(--accent) !important; }
+
+/* =========================================================
+14. ALERTAS
+========================================================= */
+body.ui-theme .alert { background: var(--bg3) !important; color: var(--text) !important; border: 1px solid var(--border) !important; }
+body.ui-theme .alert-success { background: rgba(40,167,69,.1) !important; color: #28a745 !important; border-color: rgba(40,167,69,.3) !important; }
+
+/* =========================================================
+15. SIDEBAR PANEL
+========================================================= */
+.sidebar-panel { background: var(--bg2) !important; border-right: 1px solid var(--border) !important; min-height: calc(100vh - 56px); padding: 1rem .5rem; overflow-y: auto; }
+.sidebar-panel .accordion-section { margin-bottom: .5rem; border: 1px solid var(--border) !important; border-radius: 6px; overflow: hidden; background: var(--bg2) !important; }
+.sidebar-panel .accordion-header { background: rgba(255,255,255,0.05); padding: .5rem .75rem; cursor: pointer; font-weight: 600; font-size: .85rem; display: flex; align-items: center; justify-content: space-between; user-select: none; color: var(--text-strong) !important; border-bottom: 1px solid var(--border-soft, transparent); }
+.sidebar-panel .accordion-header:hover { background: rgba(var(--accent-rgb), 0.1); color: var(--accent) !important; }
+.sidebar-panel .accordion-header i { color: var(--accent) !important; }
+.sidebar-panel .accordion-body { padding: .5rem; max-height: 280px; overflow-y: auto; font-size: .8rem; background: var(--bg2) !important; }
+.sidebar-panel .sb-item { padding: .35rem .5rem; border-radius: 4px; cursor: pointer; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text) !important; transition: all 0.15s ease; }
+.sidebar-panel .sb-item:hover { background: rgba(var(--accent-rgb), 0.08); color: var(--accent) !important; }
+.sidebar-panel .sb-item.active { background: rgba(var(--accent-rgb), 0.2); color: var(--accent) !important; font-weight: 600; }
+.sidebar-panel .tool-btn { display: block; width: 100%; text-align: left; padding: .4rem .6rem; margin-bottom: 3px; border: 1px solid var(--border); background: transparent; color: var(--text) !important; border-radius: 4px; font-size: .8rem; cursor: pointer; transition: all 0.15s ease; }
+.sidebar-panel .tool-btn:hover { background: rgba(var(--accent-rgb), 0.15); border-color: rgba(var(--accent-rgb), 0.4); color: var(--accent) !important; }
+.sidebar-panel .tool-btn i { width: 18px; color: var(--accent) !important; }.sidebar-panel::-webkit-scrollbar { width: 8px; }
+.sidebar-panel::-webkit-scrollbar-track { background: rgba(255,255,255,.04); }
+.sidebar-panel::-webkit-scrollbar-thumb { background: rgba(var(--accent-rgb),.35); border-radius: 999px; }
+/* Modo claro para sidebar */
+body.ui-theme.theme-light .sidebar-panel { background: #fff !important; border-right: 1px solid rgba(15,23,42,.10) !important; }
+body.ui-theme.theme-light .sidebar-panel .accordion-section { background: #fff !important; border: 1px solid rgba(15,23,42,.10) !important; }
+body.ui-theme.theme-light .sidebar-panel .accordion-header { background: rgba(0,0,0,.02); color: var(--text-strong) !important; border-bottom: 1px solid rgba(15,23,42,.06); }
+body.ui-theme.theme-light .sidebar-panel .accordion-header:hover { background: rgba(var(--accent-rgb), 0.08); color: var(--accent) !important; }
+body.ui-theme.theme-light .sidebar-panel .accordion-body { background: #fff !important; }
+body.ui-theme.theme-light .sidebar-panel .sb-item { color: var(--text) !important; }
+body.ui-theme.theme-light .sidebar-panel .sb-item:hover { background: rgba(var(--accent-rgb), 0.08); color: var(--accent) !important; }
+body.ui-theme.theme-light .sidebar-panel .sb-item.active { background: rgba(var(--accent-rgb), 0.15); color: var(--accent) !important; }
+body.ui-theme.theme-light .sidebar-panel .tool-btn { background: #fff !important; color: var(--text) !important; border: 1px solid rgba(15,23,42,.12); }
+body.ui-theme.theme-light .sidebar-panel .tool-btn:hover { background: rgba(var(--accent-rgb), 0.10) !important; color: var(--accent) !important; border-color: rgba(var(--accent-rgb), 0.30); }
+body.ui-theme.theme-light .sidebar-panel::-webkit-scrollbar-track { background: rgba(0,0,0,.04); }
+
+/* =========================================================
+16. CHAT IA
+========================================================= */
+#chat2Messages,
+#chat2Messages.chat2-messages { flex:1 1 auto; min-height:0 !important; height:auto !important; max-height:60vh !important; overflow-y:auto !important; overflow-x:hidden !important; background:var(--bg) !important; color:var(--text) !important; display:flex; flex-direction:column; gap:.45rem; border-top:1px solid var(--border); border-bottom:1px solid var(--border); scrollbar-width:thin; overscroll-behavior:contain; box-sizing:border-box; position:relative; }
+#chat2Messages::-webkit-scrollbar { width:10px; }
+#chat2Messages::-webkit-scrollbar-track { background:rgba(255,255,255,.04); }
+#chat2Messages::-webkit-scrollbar-thumb { background:rgba(var(--accent-rgb),.35); border-radius:999px; border:2px solid transparent; background-clip:padding-box; }
+.chat-log { display:flex; flex-direction:column; gap:.45rem; width:100%; min-width:0; min-height:min-content; }
+#chat2Messages .chat-msg { font-size:.80rem; max-width:92%; width:fit-content; min-width:0; padding:.6rem .8rem; border-radius:12px; word-break:break-word; overflow-wrap:anywhere; hyphens:auto; white-space:normal; box-sizing:border-box; border:1px solid var(--border) !important; box-shadow:0 0 0 1px rgba(255,255,255,.03) inset; }
+#chat2Messages .chat-user,
+#chat2Messages .chat-msg.user { margin-right:auto; margin-left:0; background:linear-gradient(180deg, var(--panel-bg), var(--panel-bg2)) !important; color:var(--text) !important; border-color:rgba(var(--accent-rgb),.28) !important; border-top-left-radius:8px; border-top-right-radius:12px; border-bottom-left-radius:8px; border-bottom-right-radius:12px; }
+#chat2Messages .chat-assistant,
+#chat2Messages .chat-msg.assistant { margin-left:auto; margin-right:0; background:rgba(var(--accent-rgb),.06) !important; color:var(--text-strong) !important; border-color:rgba(var(--accent-rgb),.32) !important; border-top-left-radius:12px; border-top-right-radius:8px; border-bottom-left-radius:12px; border-bottom-right-radius:8px; box-shadow:0 0 10px rgba(var(--accent-rgb),.08); }
+#chat2Messages .msg-time,
+#chat2Messages .chat-meta { font-size:.60rem; color:var(--text-soft) !important; margin-top:.3rem; }
+#chat2Messages .chat-msg .chat-md { line-height:1.55; color:inherit; min-width:0; }
+#chat2Messages .chat-msg .chat-md > *:first-child { margin-top:0 !important; }
+#chat2Messages .chat-msg .chat-md > *:last-child { margin-bottom:0 !important; }
+#chat2Messages .chat-msg .chat-md p { margin:.5rem 0; }
+#chat2Messages .chat-msg .chat-md h1,
+#chat2Messages .chat-msg .chat-md h2,
+#chat2Messages .chat-msg .chat-md h3,
+#chat2Messages .chat-msg .chat-md h4,
+#chat2Messages .chat-msg .chat-md h5,
+#chat2Messages .chat-msg .chat-md h6 { margin:.6rem 0 .35rem; font-weight:600; line-height:1.2; color:var(--text-strong) !important; }
+#chat2Messages .chat-msg .chat-md h1 { font-size:1.05rem; }
+#chat2Messages .chat-msg .chat-md h2 { font-size:.98rem; padding-bottom:.2rem; border-bottom:1px solid var(--border); }
+#chat2Messages .chat-msg .chat-md h3 { font-size:.93rem; }
+#chat2Messages .chat-msg .chat-md h4 { font-size:.89rem; }
+#chat2Messages .chat-msg .chat-md h5 { font-size:.84rem; }
+#chat2Messages .chat-msg .chat-md h6 { font-size:.80rem; color:var(--text-soft) !important; }
+#chat2Messages .chat-msg .chat-md ul,
+#chat2Messages .chat-msg .chat-md ol { margin:.45rem 0 .5rem; padding-left:1.15rem; }#chat2Messages .chat-msg .chat-md li { margin:.2rem 0; }
+#chat2Messages .chat-msg .chat-md blockquote { margin:.55rem 0; padding:.45rem .7rem; border-left:3px solid rgba(var(--accent-rgb),.45); background:rgba(var(--accent-rgb),.06); color:var(--text-soft) !important; border-radius:6px; }
+#chat2Messages .chat-msg .chat-md hr { border:0; border-top:1px solid var(--border); margin:.65rem 0; }
+#chat2Messages .chat-msg .chat-md code { font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; font-size:.85em; background:rgba(255,255,255,.05) !important; color:var(--accent) !important; border:1px solid var(--border) !important; border-radius:4px; padding:.05rem .3rem; white-space:pre-wrap; word-break:break-word; }
+#chat2Messages .chat-msg .chat-md pre { background:#050505 !important; color:var(--text) !important; border-radius:8px; padding:.65rem .8rem; overflow:auto; max-width:100%; max-height:32vh; margin:.6rem 0; border:1px solid rgba(var(--accent-rgb),.18) !important; box-sizing:border-box; }
+#chat2Messages .chat-msg .chat-md pre code { background:transparent !important; border:0 !important; color:inherit !important; padding:0; white-space:pre-wrap; }
+#chat2Messages .chat-msg .chat-md table { width:100%; border-collapse:collapse; margin:.5rem 0; font-size:.74rem; display:block; overflow-x:auto; max-width:100%; }
+#chat2Messages .chat-msg .chat-md th,
+#chat2Messages .chat-msg .chat-md td { border:1px solid var(--border); padding:.35rem .45rem; vertical-align:top; color:var(--text) !important; }
+#chat2Messages .chat-msg .chat-md thead th { background:rgba(var(--accent-rgb),.08) !important; color:var(--text-strong) !important; font-weight:600; }
+#chat2Messages .chat-msg .chat-md a { color:var(--accent) !important; text-decoration:underline; text-underline-offset:2px; }
+#chat2Messages .chat-msg .chat-md a:hover { color:var(--accent-2) !important; text-shadow:var(--accent-glow); }
+#chat2Messages .chat-msg .chat-md img { max-width:100%; height:auto; border-radius:8px; display:block; margin:.35rem auto; border:1px solid var(--border); }
+#chat2Project { font-size: 0.85rem; border: 1px solid var(--border); background: var(--bg3) !important; color: var(--text) !important; }
+#chat2Project:focus { border-color: rgba(var(--accent-rgb), .55) !important; box-shadow: var(--accent-glow) !important; }
+#chat2SourcesPanel { border: 1px solid var(--border); border-radius: 8px; padding: .75rem; background: rgba(var(--accent-rgb), .03); }
+#chat2SourcesPanel h6 { font-size: 0.85rem; color: var(--text-strong); }
+#chat2SourcesList .list-group-item { font-size: 0.75rem; padding: .35rem .5rem; border: 1px solid var(--border); background: var(--bg2); color: var(--text); }
+#chat2SourcesList .list-group-item:hover { background: rgba(var(--accent-rgb), .08); }
+.file-chip { display:inline-flex; align-items:center; gap:.35rem; padding:.2rem .45rem; border:1px solid var(--border); background:linear-gradient(180deg, var(--panel-bg), var(--panel-bg2)) !important; color:var(--text) !important; border-radius:999px; font-size:.72rem; line-height:1.2; box-shadow:none; }
+.file-chip i { font-size:.8rem; opacity:.75; }
+.file-chip .chip-x { appearance:none; border:0; background:transparent; font-size:1rem; line-height:1; padding:0 .1rem; cursor:pointer; color:var(--text-soft) !important; }
+.file-chip .chip-x:hover { color:var(--accent) !important; }
+.chat-file-queue { border-top:1px dashed var(--border); padding-top:.35rem; }
+.chat-msg .tool-chip { display: inline-flex; align-items: center; gap: .35rem; padding: .25rem .5rem; border: 1px solid rgba(var(--accent-rgb), .3); background: rgba(var(--accent-rgb), .08); border-radius: 6px; font-size: 0.75rem; margin: .25rem 0; color: var(--text); }
+.chat-msg .tool-chip i { color: var(--accent); }
+.chat-msg .tool-chip .tool-name { font-weight: 600; color: var(--accent); }
+
+/* =========================================================
+17. CHAT TOASTS
+========================================================= */
+.chat-toasts { position: fixed; right: 16px; bottom: 16px; z-index: 1080; display: flex; flex-direction: column; gap: 8px; }
+.chat-toast { background: var(--bg2); color: var(--text); border: 1px solid var(--border); border-radius: 10px; padding: .6rem .75rem; min-width: 260px; max-width: 340px; box-shadow: 0 6px 18px rgba(0,0,0,.25); animation: toast-in .2s ease-out; }
+.chat-toast .ct-title { font-weight:600; font-size:.86rem; margin-bottom:.25rem; color: var(--text-strong) !important; }
+.chat-toast .ct-actions { display:flex; gap:.35rem; justify-content:flex-end; margin-top:.25rem; }
+.chat-toast button { background:rgba(var(--accent-rgb),.15); color:var(--text); border:1px solid rgba(var(--accent-rgb),.3); border-radius:6px; padding:.25rem .5rem; font-size:.78rem; cursor:pointer; }
+.chat-toast button:hover { background:rgba(var(--accent-rgb),.25); border-color:rgba(var(--accent-rgb),.5); }
+.chat-toast .ct-close { background:transparent; color:var(--text-soft); border:0; }
+.chat-toast .ct-close:hover { color:var(--accent); }
+@keyframes toast-in { from { transform: translateY(8px); opacity:0 } to { transform: translateY(0); opacity:1 } }
+
+/* =========================================================
+18. DASHBOARD  (NOTA: SIN display aquí; lo controla la sección 23)
+========================================================= */
+#pane-Dashboard { padding: 1rem !important; }
+#pane-Dashboard .container-fluid { padding: 0 !important; }
+#pane-Dashboard h4 { color: var(--text-strong) !important; margin-bottom: 1.5rem !important; }
+#pane-Dashboard .card { background: var(--bg2) !important; color: var(--text) !important; border: 1px solid rgba(var(--accent-rgb), 0.3) !important; border-radius: 10px !important; margin-bottom: 1rem !important; }
+#pane-Dashboard .card.bg-dark { background: var(--bg2) !important; border-color: rgba(var(--accent-rgb), 0.3) !important; }
+#pane-Dashboard .card-header { background: rgba(var(--accent-rgb), 0.08) !important; color: var(--text-strong) !important; border-bottom: 1px solid rgba(var(--accent-rgb), 0.2) !important; padding: 0.75rem 1rem !important; }#pane-Dashboard .card-body { background: transparent !important; color: var(--text) !important; padding: 1rem !important; }
+#pane-Dashboard .card-title,
+#pane-Dashboard h3,
+#pane-Dashboard h6 { color: var(--text-strong) !important; }
+#pane-Dashboard .text-muted,
+#pane-Dashboard small { color: var(--text-soft) !important; }
+#pane-Dashboard .text-info { color: #17a2b8 !important; }
+#pane-Dashboard .text-success { color: #28a745 !important; }
+#pane-Dashboard .text-warning { color: #ffc107 !important; }
+#pane-Dashboard .text-primary { color: var(--accent) !important; }
+#pane-Dashboard .table { background: transparent !important; color: var(--text) !important; margin-bottom: 0 !important; }
+#pane-Dashboard .table thead th { background: rgba(var(--accent-rgb), 0.1) !important; color: var(--accent) !important; border-color: rgba(var(--accent-rgb), 0.2) !important; font-weight: 600 !important; }
+#pane-Dashboard .table td,
+#pane-Dashboard .table th { border-color: rgba(var(--accent-rgb), 0.15) !important; color: var(--text) !important; }
+#pane-Dashboard .table tbody tr:hover { background: rgba(var(--accent-rgb), 0.06) !important; }
+#pane-Dashboard #chartTokenUsage { max-height: 300px !important; width: 100% !important; }
+#pane-Dashboard .progress { background: rgba(255, 255, 255, 0.1) !important; border-radius: 4px !important; }
+#pane-Dashboard .progress-bar { background-color: var(--accent) !important; }
+#pane-Dashboard .badge { background: rgba(var(--accent-rgb), 0.2) !important; color: var(--accent) !important; border: 1px solid rgba(var(--accent-rgb), 0.3) !important; }
+
+/* =========================================================
+19. CONTEXTO  (NOTA: SIN display aquí; lo controla la sección 23)
+========================================================= */
+#pane-Contexto { padding: 1rem !important; }
+#pane-Contexto .container-fluid { padding: 0 !important; }
+#pane-Contexto h4 { color: var(--text-strong) !important; margin-bottom: 1.5rem !important; }
+#pane-Contexto .card { background: var(--bg2) !important; color: var(--text) !important; border: 1px solid rgba(var(--accent-rgb), 0.3) !important; border-radius: 10px !important; margin-bottom: 1rem !important; }
+#pane-Contexto .card.bg-dark { background: var(--bg2) !important; border-color: rgba(var(--accent-rgb), 0.3) !important; }
+#pane-Contexto .card-header { background: rgba(var(--accent-rgb), 0.08) !important; color: var(--text-strong) !important; border-bottom: 1px solid rgba(var(--accent-rgb), 0.2) !important; padding: 0.75rem 1rem !important; }
+#pane-Contexto .card-body { background: transparent !important; color: var(--text) !important; padding: 1rem !important; }
+#contextEmptyState { padding: 3rem 1rem !important; }
+#contextEmptyState i { color: var(--text-soft) !important; opacity: 0.5; }
+#contextEmptyState p { color: var(--text-soft) !important; }
+#ctxProjectList,
+#ctxSessionList { color: var(--text) !important; }
+
+/* =========================================================
+20. MODO CLARO - AJUSTES ESPECÍFICOS
+========================================================= */
+body.ui-theme.theme-light #chat2Messages,
+body.ui-theme.theme-light #chat2Messages.chat2-messages { background:#f8fafc !important; color:#111827 !important; border-top:1px solid rgba(15,23,42,.10) !important; border-bottom:1px solid rgba(15,23,42,.10) !important; }
+body.ui-theme.theme-light #chat2Messages .chat-msg { background:#f3f4f6 !important; color:#111827 !important; border:1px solid rgba(var(--accent-rgb), .65) !important; box-shadow:0 1px 3px rgba(15,23,42,.06) !important; }
+body.ui-theme.theme-light #chat2Messages .chat-user,
+body.ui-theme.theme-light #chat2Messages .chat-msg.user { background:#f3f4f6 !important; color:#111827 !important; border:1px solid rgba(var(--accent-rgb), .70) !important; }
+body.ui-theme.theme-light #chat2Messages .chat-assistant,
+body.ui-theme.theme-light #chat2Messages .chat-msg.assistant { background:#eef2f7 !important; color:#111827 !important; border:1px solid rgba(var(--accent-rgb), .70) !important; }
+body.ui-theme.theme-light #chat2Messages .chat-msg,
+body.ui-theme.theme-light #chat2Messages .chat-msg div,
+body.ui-theme.theme-light #chat2Messages .chat-msg p,
+body.ui-theme.theme-light #chat2Messages .chat-msg span,body.ui-theme.theme-light #chat2Messages .chat-msg li,
+body.ui-theme.theme-light #chat2Messages .chat-msg strong,
+body.ui-theme.theme-light #chat2Messages .chat-msg b,
+body.ui-theme.theme-light #chat2Messages .chat-msg em,
+body.ui-theme.theme-light #chat2Messages .chat-msg small { color:#111827 !important; }
+body.ui-theme.theme-light #chat2Messages .msg-time,
+body.ui-theme.theme-light #chat2Messages .chat-meta { color:#4b5563 !important; }
+body.ui-theme.theme-light #chat2Messages .chat-md h1,
+body.ui-theme.theme-light #chat2Messages .chat-md h2,
+body.ui-theme.theme-light #chat2Messages .chat-md h3,
+body.ui-theme.theme-light #chat2Messages .chat-md h4,
+body.ui-theme.theme-light #chat2Messages .chat-md h5,
+body.ui-theme.theme-light #chat2Messages .chat-md h6 { color:#111827 !important; border-color:rgba(var(--accent-rgb), .20) !important; }
+body.ui-theme.theme-light #chat2Messages .chat-md a { color:var(--accent) !important; }
+body.ui-theme.theme-light #chat2Messages .chat-md a:hover { color:var(--accent-2) !important; text-shadow:none !important; }
+body.ui-theme.theme-light #chat2Messages .chat-md blockquote { background:#e5e7eb !important; color:#111827 !important; border-left:4px solid rgba(var(--accent-rgb), .65) !important; }
+body.ui-theme.theme-light #chat2Messages .chat-md code:not(pre code) { background:#e5e7eb !important; color:#111827 !important; border:1px solid rgba(var(--accent-rgb), .30) !important; border-radius:6px; padding:.1rem .35rem; }
+body.ui-theme.theme-light #chat2Messages .chat-md pre { background:var(--accent) !important; color:#000 !important; border:1px solid rgba(var(--accent-rgb), .95) !important; border-left:5px solid var(--accent-2) !important; border-radius:10px !important; box-shadow:0 0 0 1px rgba(var(--accent-rgb), .18) inset !important; padding:1rem !important; overflow:auto; }
+body.ui-theme.theme-light #chat2Messages .chat-md pre,
+body.ui-theme.theme-light #chat2Messages .chat-md pre code { background:transparent !important; color:#000 !important; text-shadow:none !important; }
+body.ui-theme.theme-light.theme-neon-yellow #chat2Messages .chat-md pre,
+body.ui-theme.theme-light.theme-neon-yellow #chat2Messages .chat-md pre code { color:#111 !important; }
+body.ui-theme.theme-light #chat2Messages .chat-md table { background:transparent !important; color:#111827 !important; }
+body.ui-theme.theme-light #chat2Messages .chat-md th,
+body.ui-theme.theme-light #chat2Messages .chat-md td { color:#111827 !important; border-color:rgba(var(--accent-rgb), .22) !important; }
+body.ui-theme.theme-light #chat2Messages .chat-md thead th { background:#e5e7eb !important; color:#111827 !important; }
+body.ui-theme.theme-light #chat2SourcesPanel { background: rgba(var(--accent-rgb), .05); }
+body.ui-theme.theme-light #chat2SourcesList .list-group-item { background: #ffffff; }
+body.ui-theme.theme-light #chat2SourcesList .list-group-item:hover { background: rgba(var(--accent-rgb), .1); }
+body.ui-theme.theme-light .file-chip { background: #fff !important; color: #111827 !important; border: 1px solid rgba(0,0,0,.15) !important; }
+body.ui-theme.theme-light .chat-toast { background: #fff; color: #111827; border: 1px solid rgba(0,0,0,.12); }
+/* Dashboard modo claro */
+body.ui-theme.theme-light #pane-Dashboard .card { background: #ffffff !important; border-color: rgba(0,0,0,.12) !important; }
+body.ui-theme.theme-light #pane-Dashboard .card.bg-dark { background: #ffffff !important; border-color: #3b82f6 !important; }
+body.ui-theme.theme-light #pane-Dashboard .card-header { background: #eff6ff !important; color: #1e40af !important; border-bottom: 1px solid #dbeafe !important; }
+body.ui-theme.theme-light #pane-Dashboard .card-title,
+body.ui-theme.theme-light #pane-Dashboard h3,
+body.ui-theme.theme-light #pane-Dashboard h6 { color: #1f2937 !important; }
+body.ui-theme.theme-light #pane-Dashboard .text-muted,
+body.ui-theme.theme-light #pane-Dashboard small { color: #6b7280 !important; }
+body.ui-theme.theme-light #pane-Dashboard .text-info { color: #0a6b8a !important; }
+body.ui-theme.theme-light #pane-Dashboard .text-success { color: #0f6b3a !important; }
+body.ui-theme.theme-light #pane-Dashboard .text-warning { color: #a67c00 !important; }
+body.ui-theme.theme-light #pane-Dashboard .text-primary { color: #004085 !important; }
+body.ui-theme.theme-light #pane-Dashboard .table thead th { background: #eff6ff !important; color: #1e40af !important; border-color: #dbeafe !important; }
+body.ui-theme.theme-light #pane-Dashboard .table td,
+body.ui-theme.theme-light #pane-Dashboard .table th { border-color: #e5e7eb !important; color: #1f2937 !important; }
+body.ui-theme.theme-light #pane-Dashboard .table tbody tr:hover { background: #f3f4f6 !important; }
+body.ui-theme.theme-light #pane-Dashboard .progress { background: #e5e7eb !important; }
+body.ui-theme.theme-light #pane-Dashboard .progress-bar { background-color: #3b82f6 !important; }body.ui-theme.theme-light #pane-Dashboard .badge { background: #dbeafe !important; color: #1e40af !important; border-color: #bfdbfe !important; }
+/* Contexto modo claro */
+body.ui-theme.theme-light #pane-Contexto .card { background: #ffffff !important; border-color: rgba(0,0,0,.12) !important; }
+body.ui-theme.theme-light #pane-Contexto .card.bg-dark { background: #ffffff !important; border-color: #3b82f6 !important; }
+body.ui-theme.theme-light #pane-Contexto .card-header { background: #eff6ff !important; color: #1e40af !important; border-bottom: 1px solid #dbeafe !important; }
+body.ui-theme.theme-light #contextEmptyState i,
+body.ui-theme.theme-light #contextEmptyState p { color: #6b7280 !important; }
+body.ui-theme.theme-light #ctxProjectList,
+body.ui-theme.theme-light #ctxSessionList { color: #1f2937 !important; }
+
+/* =========================================================
+21. LAYOUT FLEX (estructura general; los panes se controlan en 23)
+========================================================= */
+body.ui-theme .container-fluid { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+body.ui-theme .container-fluid .row { flex: 1 1 auto; min-height: 0; }
+body.ui-theme .container-fluid .col-md-10 { display: flex; flex-direction: column; height: 100%; }
+body.ui-theme .container-fluid .col-md-10 .tab-content { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+/* El Chat usa flex SOLO cuando está activo (antes estaba sin .active y rompía todo) */
+body.ui-theme #pane-Chat2.show.active { flex: 1 1 auto !important; min-height: 0 !important; display: flex !important; flex-direction: column !important; }
+body.ui-theme #pane-Chat2.show.active .card { flex: 1 1 auto !important; min-height: 0 !important; }
+body.ui-theme #chat2Messages { flex: 1 1 auto !important; min-height: 0 !important; overflow-y: auto !important; }
+
+/* =========================================================
+22. OPTIMIZACIONES FINALES (chat)
+========================================================= */
+#chat2Messages .chat-msg,
+#chat2Messages .chat-msg * { user-select:text; -webkit-user-select:text; }
+#chat2Messages .chat-msg { width:auto !important; max-width:92% !important; min-width:0 !important; display:block !important; overflow:visible !important; white-space:normal !important; box-sizing:border-box; }
+#chat2Messages .chat-msg .chat-md { display:block !important; width:100% !important; min-width:0 !important; max-width:100% !important; line-height:1.45; white-space:normal; word-break:break-word; overflow-wrap:anywhere; }
+#chat2Messages .chat-msg > div,
+#chat2Messages .chat-msg .chat-md > * { min-width:0 !important; max-width:100% !important; }
+#pane-Chat2,
+#pane-Chat2 .tab-pane,
+#pane-Chat2 .card,
+#pane-Chat2 .card-body,
+#pane-Chat2 .chat-panel,
+#pane-Chat2 .chat-layout,
+#pane-Chat2 .chat2-main,
+#pane-Chat2 .chat2-right { min-height:0 !important; }
+#pane-Chat2.show.active { display: flex !important; flex-direction: column !important; height: 100% !important; min-height: 0 !important; }
+
+/* =========================================================
+23. FIX RAÍZ — UNA SOLA PESTAÑA VISIBLE A LA VEZ
+Este bloque resuelve el "contenido aparece abajo".
+Bootstrap oculta pestañas inactivas con display:none; cualquier
+regla "display:... !important" aplicada al panel SIN .active
+las vuelve visibles y las apila, empujando el contenido al fondo.
+Estas reglas, con MAYOR especificidad (#id + .clases), ganan
+sobre cualquier regla suelta y restauran el comportamiento real:
+  - inactiva  -> display:none  (no ocupa espacio)  - activa    -> block (Dashboard/Contexto/Servicios) => contenido ARRIBA
+  - activa    -> flex  (Chat) => llena el área y scrollea por dentro
+========================================================= */
+#mainTabsContent > .tab-pane {
+  display: none !important;
+}
+#mainTabsContent > .tab-pane.show.active {
+  display: block !important;
+}
+#mainTabsContent > #pane-Chat2.show.active {
+  display: flex !important;
+  flex-direction: column !important;
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+}
+/* Que el contenido de Dashboard/Contexto/Servicios arranque arriba,
+   anulando el h-100 del HTML cuando el panel está activo */
+#mainTabsContent > #pane-Dashboard.show.active > .container-fluid,
+#mainTabsContent > #pane-Contexto.show.active > .container-fluid,
+#mainTabsContent > #pane-servicios.show.active > .container-fluid {
+  height: auto !important;
+  flex: 0 0 auto !important;
+}
+#mainTabsContent > #pane-Dashboard.show.active > .container-fluid > .row,
+#mainTabsContent > #pane-Contexto.show.active > .container-fluid > .row,
+#mainTabsContent > #pane-servicios.show.active > .container-fluid > .row {
+  height: auto !important;
+  flex: 0 0 auto !important;
+}

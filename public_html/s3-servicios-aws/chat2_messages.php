@@ -115,7 +115,7 @@ if ($limit > 2000) $limit = 2000;
 /* ============================
    Verificar existencia + permisos
    ============================ */
-$sqlGet = "SELECT id_, user_id_, title, status, model_id, provider, created_at, updated_at
+$sqlGet = "SELECT id_, user_id_, project_id_, title, status, model_id, provider, context_summary, created_at, updated_at
            FROM ChatSessions
            WHERE id_ = ?";
 $stmtG = $db_connection->prepare($sqlGet);
@@ -145,31 +145,27 @@ if (!$can_view) {
    ============================ */
 // Nota: sanitizamos $limit y lo interpolamos; MySQL permite literales numéricos seguros.
 $limit_sql = (string)$limit;
-
 $sqlM = "
-    SELECT
-      id_,
-      session_id_,
-      user_id_,
-      role,
-      content_type,
-      content,
-      s3_key,
-      mime_type,
-      size_bytes,
-      thumb_s3_key,
-      duration_ms,
-      model_id,
-      stop_reason,
-      prompt_tokens,
-      completion_tokens,
-      latency_ms,
-      meta,
-      created_at
-    FROM ChatMessages
-    WHERE session_id_ = ?
-    ORDER BY id_ ASC
-    LIMIT $limit_sql
+SELECT
+    id_, session_id_, user_id_, role, content_type, content,
+    s3_key, mime_type, size_bytes, thumb_s3_key, duration_ms,
+    model_id, stop_reason, prompt_tokens, completion_tokens, latency_ms, meta,
+    phase, parent_msg_id, created_at
+FROM ChatMessages cm
+WHERE session_id_ = ?
+  AND NOT EXISTS (
+      -- Filtro mágico: Excluye mensajes de system con phase='respond' 
+      -- si ya existe uno con phase='compile' para el mismo mensaje de usuario
+      SELECT 1 FROM ChatMessages cm2 
+      WHERE cm2.session_id_ = cm.session_id_ 
+        AND cm2.role = 'system' 
+        AND cm2.phase = 'compile' 
+        AND cm2.parent_msg_id = cm.parent_msg_id
+        AND cm.phase = 'respond'
+        AND cm.role = 'system'
+  )
+ORDER BY id_ ASC
+LIMIT $limit_sql
 ";
 
 $stmtM = $db_connection->prepare($sqlM);
@@ -202,6 +198,8 @@ while ($m = $resM->fetch_assoc()) {
         'completion_tokens' => $m['completion_tokens'] !== null ? (int)$m['completion_tokens'] : null,
         'latency_ms'        => $m['latency_ms'] !== null ? (int)$m['latency_ms'] : null,
         'meta'              => $m['meta'] !== null ? (string)$m['meta'] : null,
+        'phase'             => $m['phase'] !== null ? (string)$m['phase'] : null,       // <-- NUEVO
+        'parent_msg_id'     => $m['parent_msg_id'] !== null ? (int)$m['parent_msg_id'] : null, // <-- NUEVO
         'created_at'        => (string)$m['created_at'],
     ];
 }
@@ -210,17 +208,48 @@ $stmtM->close();
 /* ============================
    Respuesta
    ============================ */
+// Si la sesión tiene proyecto, cargar contexto del proyecto
+$projectContext = null;
+if (!empty($sessionRow['project_id_'])) {
+    $projectId = (int)$sessionRow['project_id_'];
+    
+    // Cargar reglas del proyecto
+    $sqlCtx = "SELECT type, title, content FROM ProjectContext WHERE project_id_ = ? ORDER BY created_at ASC";
+    $stmtCtx = $db_connection->prepare($sqlCtx);
+    if ($stmtCtx) {
+        $stmtCtx->bind_param('i', $projectId);
+        $stmtCtx->execute();
+        $resCtx = $stmtCtx->get_result();
+        $contextItems = [];
+        while ($ctx = $resCtx->fetch_assoc()) {
+            $contextItems[] = [
+                'type' => $ctx['type'],
+                'title' => $ctx['title'],
+                'content' => $ctx['content']
+            ];
+        }
+        $stmtCtx->close();
+        
+        if (!empty($contextItems)) {
+            $projectContext = $contextItems;
+        }
+    }
+}
+
 jexit([
     'ok' => true,
     'session' => [
-        'id'         => (int)$sessionRow['id_'],
-        'user_id'    => (int)$sessionRow['user_id_'],
-        'title'      => (string)$sessionRow['title'],
-        'status'     => (string)$sessionRow['status'],
-        'model_id'   => (string)$sessionRow['model_id'],
-        'provider'   => $sessionRow['provider'] !== null ? (string)$sessionRow['provider'] : null,
-        'created_at' => (string)$sessionRow['created_at'],
-        'updated_at' => (string)$sessionRow['updated_at'],
+        'id'              => (int)$sessionRow['id_'],
+        'user_id'         => (int)$sessionRow['user_id_'],
+        'project_id'      => !empty($sessionRow['project_id_']) ? (int)$sessionRow['project_id_'] : null,
+        'title'           => (string)$sessionRow['title'],
+        'status'          => (string)$sessionRow['status'],
+        'model_id'        => (string)$sessionRow['model_id'],
+        'provider'        => $sessionRow['provider'] !== null ? (string)$sessionRow['provider'] : null,
+        'context_summary' => !empty($sessionRow['context_summary']) ? (string)$sessionRow['context_summary'] : null,
+        'project_context' => $projectContext,
+        'created_at'      => (string)$sessionRow['created_at'],
+        'updated_at'      => (string)$sessionRow['updated_at'],
     ],
     'messages' => $messages
 ]);

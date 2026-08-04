@@ -81,25 +81,53 @@ if (!$isMysqli && !$isPdo) {
   jexit(['ok' => false, 'error' => 'DB no disponible (no hay $db_connection mysqli ni $pdo PDO)'], 500);
 }
 
+
 /* ============================
    user_id
    ============================ */
 $user_id = 0;
 
+// 1. Intentar desde $_SESSION['user_id'] (por si ya existe)
 if (isset($_SESSION['user_id']) && is_numeric($_SESSION['user_id'])) {
   $user_id = (int)$_SESSION['user_id'];
 }
 
-if (!$user_id) {
-  // Si tu frontend manda user_id por GET, puedes permitirlo, pero es mejor que sea solo por sesión.
-  if (isset($_GET['user_id']) && is_numeric($_GET['user_id'])) {
-    $user_id = (int)$_GET['user_id'];
+// 2. Si no, intentar obtenerlo desde $_SESSION['usuario'] (nombre de usuario)
+if (!$user_id && isset($_SESSION['usuario']) && !empty($_SESSION['usuario'])) {
+  $username = (string)$_SESSION['usuario'];
+  
+  // Buscar el ID en la tabla de usuarios (ajusta el nombre de tabla y columna)
+  // Suponiendo que tienes una tabla 'usuarios' con columnas 'id' y 'username'
+  if ($isMysqli) {
+    $stmt = $db_connection->prepare("SELECT id FROM usuarios WHERE username = ?");
+    if ($stmt) {
+      $stmt->bind_param("s", $username);
+      $stmt->execute();
+      $res = $stmt->get_result();
+      if ($row = $res->fetch_assoc()) {
+        $user_id = (int)$row['id'];
+      }
+      $stmt->close();
+    }
+  } elseif ($isPdo) {
+    $stmt = $pdo->prepare("SELECT id FROM usuarios WHERE username = ?");
+    $stmt->execute([$username]);
+    if ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+      $user_id = (int)$row['id'];
+    }
   }
 }
 
-if (!$user_id) {
-  jexit(['ok' => false, 'error' => 'No hay sesión (user_id)'], 401);
+// 3. Fallback: permitir GET (por si el frontend lo envía)
+if (!$user_id && isset($_GET['user_id']) && is_numeric($_GET['user_id'])) {
+  $user_id = (int)$_GET['user_id'];
 }
+
+// 4. Si aún no hay user_id, devolver error
+if (!$user_id) {
+  jexit(['ok' => false, 'error' => 'No hay sesión (user_id) y no se pudo obtener desde el nombre de usuario'], 401);
+}
+
 
 /* ============================
    Parámetros
@@ -136,11 +164,11 @@ if ($q !== '') {
 $whereSql = 'WHERE ' . implode(' AND ', $whereParts);
 
 $sql = "
-  SELECT id_, user_id_, title, model_id, provider, status, created_at, updated_at
-  FROM ChatSessions
-  $whereSql
-  ORDER BY updated_at DESC
-  LIMIT 200
+SELECT id_, user_id_, project_id_, title, model_id, provider, status, created_at, updated_at
+FROM ChatSessions
+$whereSql
+ORDER BY updated_at DESC
+LIMIT 200
 ";
 
 /* ============================
@@ -167,19 +195,20 @@ if ($isMysqli) {
 
   $res = $stmt->get_result();
   $sessions = [];
-  while ($row = $res->fetch_assoc()) {
+while ($row = $res->fetch_assoc()) {
     $sessions[] = [
-      'id'         => (int)$row['id_'],
-      'user_id'    => (int)$row['user_id_'],
-      'title'      => (string)$row['title'],
-      'model_id'   => (string)$row['model_id'],
-      'provider'   => $row['provider'] !== null ? (string)$row['provider'] : null,
-      'status'     => (string)$row['status'],
-      'archived'   => ((string)$row['status'] === 'archived'),
-      'created_at' => (string)$row['created_at'],
-      'updated_at' => (string)$row['updated_at'],
+        'id'         => (int)$row['id_'],
+        'user_id'    => (int)$row['user_id_'],
+        'project_id' => $row['project_id_'] !== null ? (int)$row['project_id_'] : null,
+        'title'      => (string)$row['title'],
+        'model_id'   => (string)$row['model_id'],
+        'provider'   => $row['provider'] !== null ? (string)$row['provider'] : null,
+        'status'     => (string)$row['status'],
+        'archived'   => ((string)$row['status'] === 'archived'),
+        'created_at' => (string)$row['created_at'],
+        'updated_at' => (string)$row['updated_at'],
     ];
-  }
+}
   $stmt->close();
 
   jexit(['ok' => true, 'sessions' => $sessions]);
@@ -215,32 +244,33 @@ try {
 
   $whereSql = 'WHERE ' . implode(' AND ', $whereParts);
 
-  $sqlPdo = "
-    SELECT id_, user_id_, title, model_id, provider, status, created_at, updated_at
-    FROM ChatSessions
-    $whereSql
-    ORDER BY updated_at DESC
-    LIMIT 200
-  ";
+$sqlPdo = "
+SELECT id_, user_id_, project_id_, title, model_id, provider, status, created_at, updated_at
+FROM ChatSessions
+$whereSql
+ORDER BY updated_at DESC
+LIMIT 200
+";
 
   $stmt = $pdo->prepare($sqlPdo);
   $stmt->execute($bind);
   $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
   $sessions = [];
-  foreach ($rows as $row) {
+foreach ($rows as $row) {
     $sessions[] = [
-      'id'         => (int)$row['id_'],
-      'user_id'    => (int)$row['user_id_'],
-      'title'      => (string)$row['title'],
-      'model_id'   => (string)$row['model_id'],
-      'provider'   => $row['provider'] !== null ? (string)$row['provider'] : null,
-      'status'     => (string)$row['status'],
-      'archived'   => ((string)$row['status'] === 'archived'),
-      'created_at' => (string)$row['created_at'],
-      'updated_at' => (string)$row['updated_at'],
+        'id'         => (int)$row['id_'],
+        'user_id'    => (int)$row['user_id_'],
+        'project_id' => $row['project_id_'] !== null ? (int)$row['project_id_'] : null,
+        'title'      => (string)$row['title'],
+        'model_id'   => (string)$row['model_id'],
+        'provider'   => $row['provider'] !== null ? (string)$row['provider'] : null,
+        'status'     => (string)$row['status'],
+        'archived'   => ((string)$row['status'] === 'archived'),
+        'created_at' => (string)$row['created_at'],
+        'updated_at' => (string)$row['updated_at'],
     ];
-  }
+}
 
   jexit(['ok' => true, 'sessions' => $sessions]);
 

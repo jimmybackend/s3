@@ -124,6 +124,25 @@ if ($model_id === '') {
 }
 $provider = infer_provider($model_id);
 
+// ✅ Proyecto opcional
+$project_id = isset($_POST['project_id']) && $_POST['project_id'] !== '' ? (int)$_POST['project_id'] : null;
+
+// Si se proporciona project_id, verificar que exista y pertenezca al usuario
+if ($project_id !== null) {
+    $sqlCheckProject = "SELECT id_ FROM Projects WHERE id_ = ? AND user_id_ = ? AND status = 'active'";
+    $stmtCheckProject = $db_connection->prepare($sqlCheckProject);
+    if ($stmtCheckProject) {
+        $stmtCheckProject->bind_param('ii', $project_id, $user_id);
+        $stmtCheckProject->execute();
+        $resCheckProject = $stmtCheckProject->get_result();
+        if ($resCheckProject->num_rows === 0) {
+            $stmtCheckProject->close();
+            $project_id = null; // Si no es válido, lo ignoramos
+        } else {
+            $stmtCheckProject->close();
+        }
+    }
+}
 /* ============================
    Crear id_ y hacer INSERT
    ============================ */
@@ -137,16 +156,14 @@ while ($attempts < $maxAttempts) {
 
     $id_ = next_id($db_connection, 'ChatSessions', 'id_');
 
-    $sql = "INSERT INTO ChatSessions (id_, user_id_, title, model_id, provider, status, meta)
-            VALUES (?, ?, ?, ?, ?, 'open', NULL)";
-
-    $stmt = $db_connection->prepare($sql);
-    if (!$stmt) {
-        $error = 'Error preparando SQL: ' . $db_connection->error;
-        break;
-    }
-
-    $stmt->bind_param('iisss', $id_, $user_id, $title, $model_id, $provider);
+$sql = "INSERT INTO ChatSessions (id_, user_id_, project_id_, title, model_id, provider, status, meta)
+        VALUES (?, ?, ?, ?, ?, ?, 'open', NULL)";
+$stmt = $db_connection->prepare($sql);
+if (!$stmt) {
+    $error = 'Error preparando SQL: ' . $db_connection->error;
+    break;
+}
+$stmt->bind_param('iiisss', $id_, $user_id, $project_id, $title, $model_id, $provider);
     $ok = $stmt->execute();
 
     if ($ok) {
@@ -171,7 +188,7 @@ if (!$created_id) {
 }
 
 // Leer la fila para devolver timestamps (opcional)
-$sqlGet = "SELECT title, status, model_id, provider, created_at, updated_at
+$sqlGet = "SELECT title, status, model_id, provider, project_id_, created_at, updated_at
            FROM ChatSessions WHERE id_ = ?";
 $stmtG = $db_connection->prepare($sqlGet);
 if ($stmtG) {
@@ -181,18 +198,19 @@ if ($stmtG) {
         $row = $res ? $res->fetch_assoc() : null;
         $stmtG->close();
 
-        if ($row) {
-            jexit([
-                'ok' => true,
-                'id' => (int)$created_id,
-                'title' => (string)($row['title'] ?? $title),
-                'status' => (string)($row['status'] ?? 'open'),
-                'model_id' => (string)($row['model_id'] ?? $model_id),
-                'provider' => $row['provider'] !== null ? (string)$row['provider'] : $provider,
-                'created_at' => (string)($row['created_at'] ?? ''),
-                'updated_at' => (string)($row['updated_at'] ?? ''),
-            ]);
-        }
+if ($row) { 
+    jexit([
+        'ok' => true,
+        'id' => (int)$created_id,
+        'project_id' => $row['project_id_'] !== null ? (int)$row['project_id_'] : null,
+        'title' => (string)($row['title'] ?? $title),
+        'status' => (string)($row['status'] ?? 'open'),
+        'model_id' => (string)($row['model_id'] ?? $model_id),
+        'provider' => $row['provider'] !== null ? (string)$row['provider'] : $provider,
+        'created_at' => (string)($row['created_at'] ?? ''),
+        'updated_at' => (string)($row['updated_at'] ?? ''),
+    ]);
+}
     } else {
         $stmtG->close();
     }
@@ -202,6 +220,7 @@ if ($stmtG) {
 jexit([
     'ok' => true,
     'id' => (int)$created_id,
+    'project_id' => $project_id,
     'title' => $title,
     'status' => 'open',
     'model_id' => $model_id,

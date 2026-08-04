@@ -1,0 +1,118 @@
+{
+    "ok": true,
+    "processed": 0,
+    "succeeded": 0,
+    "failed": 0,
+    "skipped": 0,
+    "details": [],
+    "duration_ms": 44,
+    "message": "No hay trabajos pendientes"
+}
+{
+    "ok": true,
+    "processed": 5,
+    "succeeded": 5,
+    "failed": 0,
+    "skipped": 0,
+    "details": [
+        {
+            "job_id": 1,
+            "target_type": "session_block",
+            "target_id": 1,
+            "status": "completed_smart",
+            "action": "new_summary_created",
+            "dimensions": 1024
+        },
+        {
+            "job_id": 2,
+            "target_type": "session_block",
+            "target_id": 2,
+            "status": "completed_smart",
+            "action": "new_summary_created",
+            "dimensions": 1024
+        },
+        {
+            "job_id": 3,
+            "target_type": "session_block",
+            "target_id": 3,
+            "status": "completed_smart",
+            "action": "new_summary_created",
+            "dimensions": 1024
+        },
+        {
+            "job_id": 4,
+            "target_type": "session_block",
+            "target_id": 4,
+            "status": "completed_smart",
+            "action": "new_summary_created",
+            "dimensions": 1024
+        },
+        {
+            "job_id": 5,
+            "target_type": "session_block",
+            "target_id": 5,
+            "status": "completed_smart",
+            "action": "new_summary_created",
+            "dimensions": 1024
+        }
+    ],
+    "duration_ms": 8427
+}
+{
+    "ok": true,
+    "processed": 1,
+    "succeeded": 1,
+    "failed": 0,
+    "skipped": 0,
+    "details": [
+        {
+            "job_id": 6,
+            "target_type": "session_block",
+            "target_id": 6,
+            "status": "completed_smart",
+            "action": "new_summary_created",
+            "dimensions": 1024
+        }
+    ],
+    "duration_ms": 1583
+}
+{
+    "ok": true,
+    "processed": 0,
+    "succeeded": 0,
+    "failed": 0,
+    "skipped": 0,
+    "details": [],
+    "duration_ms": 49,
+    "message": "No hay trabajos pendientes"
+}
+{
+    "ok": true,
+    "processed": 0,
+    "succeeded": 0,
+    "failed": 0,
+    "skipped": 0,
+    "details": [],
+    "duration_ms": 41,
+    "message": "No hay trabajos pendientes"
+}
+{
+    "ok": true,
+    "processed": 0,
+    "succeeded": 0,
+    "failed": 0,
+    "skipped": 0,
+    "details": [],
+    "duration_ms": 59,
+    "message": "No hay trabajos pendientes"
+}
+{
+    "ok": true,
+    "processed": 0,
+    "succeeded": 0,
+    "failed": 0,
+    "skipped": 0,
+    "details": [],
+    "duration_ms": 139,
+    "message": "No hay trabajos pendientes"
+}

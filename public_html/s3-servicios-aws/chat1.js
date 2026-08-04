@@ -1,4 +1,4 @@
-// chat2.js — Chat con Markdown, adjuntos, proyectos y herramientas (Versión Corregida)
+// chat1.js — Chat con Markdown, adjuntos, proyectos y herramientas (Versión Corregida)
 (function () {
   'use strict';
 
@@ -499,27 +499,31 @@ function pushLocal(role, content, opts = {}) {
     // ===============================
     // Sesiones
     // ===============================
-    async function loadSessions() {
-      setStatus('Cargando sesiones…');
-      try {
-        const qs = new URLSearchParams();
-        const q = (el.sbChatSearch && el.sbChatSearch.value.trim()) || (el.search && el.search.value.trim()) || '';
-        if (q) qs.set('q', q);
-        if (el.showArchived && el.showArchived.checked) qs.set('archived', '1');
+async function loadSessions() {
+  setStatus('Cargando sesiones…');
+  try {
+    const qs = new URLSearchParams();
+    const q = (el.sbChatSearch && el.sbChatSearch.value.trim()) || (el.search && el.search.value.trim()) || '';
+    if (q) qs.set('q', q);
+    if (el.showArchived && el.showArchived.checked) qs.set('archived', '1');
 
-        const r = await fetch(`${API.sessions}?${qs.toString()}`, { credentials: 'same-origin' });
-        const j = toJSONorThrow(await r.text(), r.status, 'La API de sesiones');
-        if (!r.ok || j.ok === false) throw new Error(j.error || `HTTP ${r.status}`);
-        sessions = Array.isArray(j.sessions) ? j.sessions : [];
-        renderSessionsList();
-      } catch (e) {
-        console.error(e);
-        const target = el.sbChatList || el.sessionsList;
-        if (target) target.innerHTML = `<div class="text-danger small">${esc(e.message)}</div>`;
-      } finally {
-        setStatus('');
-      }
-    }
+    // ✅ AÑADIR ESTO: Enviar user_id
+    const uid = getUserId();
+    if (uid) qs.set('user_id', uid);
+
+    const r = await fetch(`${API.sessions}?${qs.toString()}`, { credentials: 'same-origin' });
+    const j = toJSONorThrow(await r.text(), r.status, 'La API de sesiones');
+    if (!r.ok || j.ok === false) throw new Error(j.error || `HTTP ${r.status}`);
+    sessions = Array.isArray(j.sessions) ? j.sessions : [];
+    renderSessionsList();
+  } catch (e) {
+    console.error(e);
+    const target = el.sbChatList || el.sessionsList;
+    if (target) target.innerHTML = `<div class="text-danger small">${esc(e.message)}</div>`;
+  } finally {
+    setStatus('');
+  }
+}
 
 
 function renderSessionsList() {

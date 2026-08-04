@@ -77,7 +77,6 @@ if ($action) {
         switch ($action) {
             case 'init':     echo json_encode(handle_init());    break;
             case 'sign':     echo json_encode(handle_sign());    break; // presign URL para un part
-            case 'part':     echo json_encode(handle_part());    break; // sube un paquete vía PHP a S3
             case 'resume':   echo json_encode(handle_resume());  break;
             case 'complete': echo json_encode(handle_complete());break;
             default: http_response_code(400); echo json_encode(['error'=>'Acción no válida']);
@@ -131,8 +130,9 @@ function handle_sign() {
     $uploadId     = (string)($_POST['uploadId'] ?? '');
     $key          = (string)($_POST['key'] ?? '');
     $partNumber   = (int)($_POST['partNumber'] ?? 0);
+    $contentLength= (int)($_POST['contentLength'] ?? 0);
 
-    if ($uploadId==='' || $key==='' || $partNumber<=0) {
+    if ($uploadId==='' || $key==='' || $partNumber<=0 || $contentLength<=0) {
         http_response_code(400); return ['error'=>'Parámetros inválidos para firmar'];
     }
 
@@ -143,6 +143,7 @@ function handle_sign() {
             'Key'          => $key,
             'UploadId'     => $uploadId,
             'PartNumber'   => $partNumber,
+            'ContentLength'=> $contentLength,
         ]);
         // URL válida por 1 hora
         $req = $client->createPresignedRequest($cmd, '+1 hour');
@@ -154,75 +155,6 @@ function handle_sign() {
         http_response_code(500); return ['error'=>$e->getMessage()];
     }
 }
-
-
-function handle_part() {
-    $uploadId   = (string)($_POST['uploadId'] ?? '');
-    $key        = (string)($_POST['key'] ?? '');
-    $partNumber = (int)($_POST['partNumber'] ?? 0);
-
-    if ($uploadId === '' || $key === '' || $partNumber <= 0) {
-        http_response_code(400);
-        return ['error' => 'Parámetros inválidos para paquete'];
-    }
-
-    if (!isset($_FILES['part']) || !is_uploaded_file($_FILES['part']['tmp_name'])) {
-        http_response_code(400);
-        return ['error' => 'No llegó el archivo del paquete'];
-    }
-
-    $tmp  = $_FILES['part']['tmp_name'];
-    $size = (int)($_FILES['part']['size'] ?? 0);
-
-    if ($size <= 0) {
-        http_response_code(400);
-        return ['error' => 'Paquete vacío'];
-    }
-
-    try {
-        $fh = fopen($tmp, 'rb');
-        if (!$fh) {
-            http_response_code(500);
-            return ['error' => 'No se pudo abrir el paquete temporal'];
-        }
-
-        $client = cfg_s3();
-        $res = $client->uploadPart([
-            'Bucket'        => cfg_bucket(),
-            'Key'           => $key,
-            'UploadId'      => $uploadId,
-            'PartNumber'    => $partNumber,
-            'Body'          => $fh,
-            'ContentLength' => $size,
-        ]);
-
-        if (is_resource($fh)) {
-            fclose($fh);
-        }
-
-        $etag = trim((string)$res->get('ETag'), '"');
-
-        if ($etag === '') {
-            http_response_code(500);
-            return ['error' => 'S3 no devolvió ETag del paquete'];
-        }
-
-        return [
-            'ok' => true,
-            'partNumber' => $partNumber,
-            'etag' => $etag,
-            'size' => $size,
-        ];
-
-    } catch (AwsException $e) {
-        http_response_code(500);
-        return ['error' => 'AWS uploadPart: ' . $e->getAwsErrorMessage()];
-    } catch (Throwable $e) {
-        http_response_code(500);
-        return ['error' => $e->getMessage()];
-    }
-}
-
 
 function handle_complete() {
     $uploadId = (string)($_POST['uploadId'] ?? '');
@@ -388,11 +320,11 @@ function handle_resume() {
   const resultBox=$('result'), resKey=$('resKey'), resUrl=$('resUrl'), resLink=$('resLink'), resLinkWrap=$('resLinkWrap');
 
   // === Config: 15MB y 4 workers en paralelo ===
-  const CHUNK_SIZE = 15 * 1024 * 1024; // 15 MB (S3 requiere >= 5 MB salvo la última parte)
+  const CHUNK_SIZE = 15 * 1024 * 1024; // 15 MB (S3 permite >= 5 MB en multipart)
   const MAX_WORKERS = 4;
 
   let state = {
-    paused:false, failed:false, file:null, uploadId:null, s3key:null, etags:{},
+    paused:false, file:null, uploadId:null, s3key:null, etags:{},
     totalParts:0, nextPart:1, inFlight:0, uploadedBytes:0, aborters:new Map()
   };
 
@@ -411,7 +343,6 @@ function handle_resume() {
 
   async function initUpload(){
     state.file=fileInput.files?.[0];
-    state.failed=false;
     if(!state.file){ msg('Selecciona un archivo para comenzar.','warn'); return; }
     fn.textContent=state.file.name; fs.textContent=humanSize(state.file.size);
 
@@ -452,52 +383,20 @@ function handle_resume() {
       const partNumber = state.nextPart++;
       uploadPartParallel(partNumber).catch(e=>{
         msg(`Error en paquete ${partNumber}: ${e.message}`,'err');
-        state.failed=true;
         state.paused=true;
         pauseBtn.disabled=true; resumeBtn.disabled=false;
       });
     }
-    if (!state.paused && !state.failed && state.inFlight===0 && state.nextPart>state.totalParts) {
-      if (Object.keys(state.etags).length >= state.totalParts) {
-        completeUpload();
-      } else {
-        msg('No se completa: faltan paquetes confirmados.', 'err');
-      }
+    if (!state.paused && state.inFlight===0 && state.nextPart>state.totalParts) {
+      // Todos los parts enviados: completar
+      completeUpload();
     }
   }
 
   async function signPart(partNumber, size, signal) {
-    const r = await postForm('sign',{uploadId:state.uploadId,key:state.s3key,partNumber},signal);
+    const r = await postForm('sign',{uploadId:state.uploadId,key:state.s3key,partNumber,contentLength:size},signal);
     if(!r.ok || !r.url) throw new Error(r.error || 'Fallo al firmar URL');
     return r.url;
-  }
-
-
-  async function uploadPartToServer(partNumber, blob, signal) {
-    const form = new FormData();
-    form.append('action', 'part');
-    form.append('uploadId', state.uploadId);
-    form.append('key', state.s3key);
-    form.append('partNumber', String(partNumber));
-    form.append('part', blob, 'part-' + partNumber + '.bin');
-
-    const res = await fetch(location.pathname, {
-      method: 'POST',
-      body: form,
-      signal
-    });
-
-    if (!res.ok) {
-      const t = await res.text().catch(()=> '');
-      throw new Error(`HTTP ${res.status}: ${t || res.statusText}`);
-    }
-
-    const r = await res.json();
-    if (!r.ok || !r.etag) {
-      throw new Error(r.error || 'No se recibió ETag del paquete');
-    }
-
-    return r.etag;
   }
 
   async function uploadPartParallel(partNumber){
@@ -509,8 +408,32 @@ function handle_resume() {
     state.inFlight++;
 
     try {
-      // Subir paquete al mismo up.php; PHP lo manda a S3 con app_bootstrap.php / Config existente
-      let etag = await uploadPartToServer(partNumber, blob, controller.signal);
+      const url = await signPart(partNumber, blob.size, controller.signal);
+
+      // PUT directo a S3 con la parte
+      const res = await fetch(url, {
+        method: 'PUT',
+        body: blob,
+        headers: { 'Content-Length': String(blob.size) },
+        signal: controller.signal
+      });
+      if(!res.ok){
+        const t=await res.text().catch(()=> ''); throw new Error(`PUT ${res.status}: ${t || res.statusText}`);
+      }
+
+      // Tomar ETag del header (asegúrate que CORS exponga ETag)
+      let etag = res.headers.get('ETag') || res.headers.get('etag') || '';
+      etag = etag.replace(/^"+|"+$/g,''); // quitar comillas
+
+      if(!etag){
+        // Si ETag no viene por CORS, podemos re-consultar al servidor listParts…
+        const sync = await postForm('resume',{uploadId:state.uploadId,key:state.s3key});
+        if (sync && sync.found && sync.etags && sync.etags[String(partNumber)]) {
+          etag = sync.etags[String(partNumber)];
+        } else {
+          throw new Error('No se pudo obtener ETag (revisa CORS del bucket: ExposeHeaders: ETag)');
+        }
+      }
 
       state.etags[partNumber]=etag;
       state.uploadedBytes += (end-start);
@@ -521,7 +444,7 @@ function handle_resume() {
       state.inFlight--;
       state.aborters.delete(partNumber);
       // Programar más trabajos si hay pendientes
-      if(!state.paused && !state.failed) scheduleWorkers();
+      if(!state.paused) scheduleWorkers();
     }
   }
 

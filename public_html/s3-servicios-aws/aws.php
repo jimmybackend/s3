@@ -111,7 +111,7 @@ if (isset($_SESSION['usuario']) && !empty($_SESSION['usuario'])) {
     exit;
 }**/
 
-require 'vendor/autoload.php';
+require '../vendor/autoload.php';
 
 use OTPHP\TOTP;
 $currentCode ='';

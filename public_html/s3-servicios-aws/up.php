@@ -4,13 +4,13 @@
 // - Guarda en s3://<bucket>/Data/uploads/YYYYMMDD/<hash>-<archivo>
 // - Sin arrow functions ni <=> (compatibilidad amplia).
 
-require_once __DIR__ . '/vendor/autoload.php';
+require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/app_bootstrap.php';
 
 use Aws\S3\S3Client;
 use Aws\Exception\AwsException;
 
-// ===== Metadatos locales (solo JSON, no guardamos el archivo grande) =====
+// ===== Metadatos locales (solo JSON, no guardamos el archivo grande) ===== 
 if (!defined('UPLOAD_DIR')) define('UPLOAD_DIR', __DIR__ . '/Data/uploads');
 if (!defined('TMP_DIR'))     define('TMP_DIR', __DIR__ . '/Data/uploads/.tmp');
 foreach ([UPLOAD_DIR, TMP_DIR] as $d) { if (!is_dir($d)) { @mkdir($d, 0775, true); } }
@@ -473,31 +473,45 @@ function handle_resume() {
   }
 
 
-  async function uploadPartToServer(partNumber, blob, signal) {
-    const form = new FormData();
-    form.append('action', 'part');
-    form.append('uploadId', state.uploadId);
-    form.append('key', state.s3key);
-    form.append('partNumber', String(partNumber));
-    form.append('part', blob, 'part-' + partNumber + '.bin');
+  async function uploadPartDirectToS3(partNumber, blob, signal) {
+    // 1) up.php solo firma la petición; el contenido del paquete NO pasa por PHP.
+    const url = await signPart(partNumber, blob.size, signal);
 
-    const res = await fetch(location.pathname, {
-      method: 'POST',
-      body: form,
+    // 2) El navegador envía el paquete directamente al endpoint presignado de S3.
+    const res = await fetch(url, {
+      method: 'PUT',
+      body: blob,
       signal
     });
 
     if (!res.ok) {
       const t = await res.text().catch(()=> '');
-      throw new Error(`HTTP ${res.status}: ${t || res.statusText}`);
+      throw new Error(`S3 HTTP ${res.status}: ${t || res.statusText}`);
     }
 
-    const r = await res.json();
-    if (!r.ok || !r.etag) {
-      throw new Error(r.error || 'No se recibió ETag del paquete');
+    // S3 devuelve el ETag. Si CORS no expone ese header, lo recuperamos
+    // mediante listParts desde PHP (petición pequeña, sin transportar el archivo).
+    let etag = (res.headers.get('ETag') || res.headers.get('etag') || '').trim();
+    etag = etag.replace(/^"|"$/g, '');
+
+    if (!etag) {
+      const sync = await postForm('resume', {
+        filename: state.file ? state.file.name : '',
+        filesize: state.file ? state.file.size : 0,
+        uploadId: state.uploadId,
+        key: state.s3key
+      }, signal);
+
+      if (sync && sync.found && sync.etags) {
+        etag = String(sync.etags[String(partNumber)] || sync.etags[partNumber] || '').replace(/^"|"$/g, '');
+      }
     }
 
-    return r.etag;
+    if (!etag) {
+      throw new Error('S3 recibió el paquete pero no se pudo obtener su ETag. Revisa la configuración CORS del bucket para permitir PUT y, de preferencia, exponer ETag.');
+    }
+
+    return etag;
   }
 
   async function uploadPartParallel(partNumber){
@@ -509,8 +523,8 @@ function handle_resume() {
     state.inFlight++;
 
     try {
-      // Subir paquete al mismo up.php; PHP lo manda a S3 con app_bootstrap.php / Config existente
-      let etag = await uploadPartToServer(partNumber, blob, controller.signal);
+      // Direct-to-S3 real: PHP solo genera la URL presignada.
+      let etag = await uploadPartDirectToS3(partNumber, blob, controller.signal);
 
       state.etags[partNumber]=etag;
       state.uploadedBytes += (end-start);

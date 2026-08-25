@@ -15,7 +15,7 @@ putenv('AWS_EC2_METADATA_DISABLED=true');
 // ✅ GUARD: Evitar doble carga del bootstrap completo
 // Si este archivo ya se ejecutó una vez, no volver a ejecutarlo.
 // =====================================================================
-if (defined('APP_BOOTSTRAP_LOADED')) {
+if (defined('APP_BOOTSTRAP_LOADED')) { 
     return;
 }
 define('APP_BOOTSTRAP_LOADED', true);
@@ -24,7 +24,7 @@ define('APP_BOOTSTRAP_LOADED', true);
 // ✅ GUARD: Evitar doble carga del autoloader de Composer
 // Si la clase del autoloader ya existe, no incluirlo de nuevo.
 // =====================================================================
-$autoload = __DIR__ . '/vendor/autoload.php';
+$autoload = __DIR__ . '/../vendor/autoload.php';
 if (!is_file($autoload)) {
     die("No existe: {$autoload}");
 }

@@ -17,7 +17,7 @@ declare(strict_types=1);
  * Puede ejecutarse manualmente desde navegador o mediante cron de HostGator.
  */
 
-require __DIR__ . '/vendor/autoload.php';
+require __DIR__ . '../vendor/autoload.php';
 require_once __DIR__ . '/app_bootstrap.php';
 
 use Aws\Rds\RdsClient;

@@ -357,72 +357,6 @@ function mdToHtml(md) {
       el.input.setSelectionRange(el.input.value.length, el.input.value.length);
     }
 
-    // ===============================
-    // Render de mensajes
-    // ===============================
-    /*function pushLocal(role, content, opts = {}) {
-      const ct = opts.content_type || 'text';
-      const timeHtml = opts.created_at ? `<div class="msg-time">${esc(fmtDate(opts.created_at))}</div>` : '';
-      let html = '';
-
-      if (ct === 'image' && (opts.s3_key || opts.thumb_s3_key)) {
-        const imgUrl = buildS3Url(opts.thumb_s3_key || opts.s3_key);
-        const fullUrl = buildS3Url(opts.s3_key || opts.thumb_s3_key);
-        html = `<div class="chat-msg ${role === 'assistant' ? 'assistant chat-assistant' : 'user chat-user'}">
-          <div><strong>${role === 'assistant' ? 'Asistente' : 'Tú'}</strong></div>
-          ${content ? `<div>${esc(content)}</div>` : ''}
-          <a href="${fullUrl}" target="_blank" rel="noopener"><img src="${imgUrl}" alt="imagen" style="max-width:320px; border-radius:8px; margin-top:.35rem;"></a>
-          ${timeHtml}
-        </div>`;
-      } else if (ct === 'video' && opts.s3_key) {
-        const vidUrl = buildS3Url(opts.s3_key);
-        html = `<div class="chat-msg ${role === 'assistant' ? 'assistant chat-assistant' : 'user chat-user'}">
-          <div><strong>${role === 'assistant' ? 'Asistente' : 'Tú'}</strong></div>
-          ${content ? `<div>${esc(content)}</div>` : ''}
-          <video controls style="max-width:420px; margin-top:.35rem;" preload="metadata">
-            <source src="${vidUrl}" type="${esc(opts.mime_type || 'video/mp4')}">
-            Tu navegador no soporta video embebido. <a href="${vidUrl}" target="_blank" rel="noopener">Descargar</a>
-          </video>
-          ${timeHtml}
-        </div>`;
-      } else if (ct === 'audio' && opts.s3_key) {
-        const aUrl = buildS3Url(opts.s3_key);
-        html = `<div class="chat-msg ${role === 'assistant' ? 'assistant chat-assistant' : 'user chat-user'}">
-          <div><strong>${role === 'assistant' ? 'Asistente' : 'Tú'}</strong></div>
-          ${content ? `<div>${esc(content)}</div>` : ''}
-          <audio controls style="width:320px; margin-top:.35rem;">
-            <source src="${aUrl}" type="${esc(opts.mime_type || 'audio/mpeg')}">
-            <a href="${aUrl}" target="_blank" rel="noopener">Descargar audio</a>
-          </audio>
-          ${timeHtml}
-        </div>`;
-      } else {
-        if (role === 'assistant') {
-          const msgId = opts.message_id || '';
-          const isPrimordial = opts.is_primordial == 1 || opts.is_primordial === true;
-          
-          const primordialBtn = msgId ? `
-            <button class="btn-primordial ${isPrimordial ? 'active' : ''}" 
-                    data-msg-id="${msgId}" 
-                    title="${isPrimordial ? 'Quitar de primordiales (verdad absoluta)' : 'Marcar como primordial (verdad absoluta)'}"
-                    style="float:right; background:none; border:1px solid #ffc107; color:${isPrimordial ? '#ffc107' : '#ccc'}; 
-                           padding:2px 8px; font-size:0.7rem; border-radius:4px; cursor:pointer; margin-bottom: 4px; transition: all 0.2s;">
-              <i class="fas fa-${isPrimordial ? 'star' : 'star-o'}"></i> ${isPrimordial ? 'Primordial' : 'Marcar'}
-            </button>
-          ` : '';
-
-          html = `<div class="chat-msg assistant chat-assistant">
-            ${primordialBtn}
-            <div class="chat-md">${mdToHtml(content || '')}</div>${timeHtml}
-          </div>`;
-        } else {
-          html = `<div class="chat-msg user chat-user"><div>${esc(content || '').replace(/\n/g, '<br>')}</div>${timeHtml}</div>`;
-        }
-      }
-      el.messages.insertAdjacentHTML('beforeend', html);
-      scrollMessagesToBottom();
-    }*/
-
 function pushLocal(role, content, opts = {}) {
   const ct = opts.content_type || 'text';
   const timeHtml = opts.created_at ? `<div class="msg-time">${esc(fmtDate(opts.created_at))}</div>` : '';
@@ -701,92 +635,6 @@ function renderSessionsList() {
       });
     }
 
-// ===============================
-// Modal de Aprobación de Prompt Compilado
-// ===============================
-/*function showPromptApprovalModal(compiledPrompt, compilationId) {
-  return new Promise((resolve) => {
-    // Crear modal dinámicamente
-    const modalHtml = `
-      <div class="modal fade" id="promptApprovalModal" tabindex="-1" role="dialog">
-        <div class="modal-dialog modal-lg" role="document">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h5 class="modal-title">💡 Prompt Optimizado por IA</h5>
-              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-              </button>
-            </div>
-            <div class="modal-body">
-              <p class="text-muted small">
-                He optimizado tu pregunta incorporando el contexto de la sesión, 
-                las instrucciones del proyecto y los fragmentos de código relevantes.
-                <strong>Puedes editarlo antes de enviarlo</strong> o aprobarlo tal cual.
-              </p>
-              <div class="form-group">
-                <label for="compiledPromptText">Prompt optimizado y enriquecido:</label>
-                <textarea class="form-control" id="compiledPromptText" rows="10" 
-                          style="font-family: monospace; font-size: 0.85rem;">${esc(compiledPrompt)}</textarea>
-              </div>
-              <div class="alert alert-info small" role="alert">
-                <i class="fas fa-info-circle"></i> 
-                Este prompt se enviará al modelo de IA para generar la respuesta. 
-                Editarlo puede mejorar o empeorar los resultados.
-              </div>
-            </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" id="btnCancelPrompt" data-dismiss="modal">
-                <i class="fas fa-times"></i> Cancelar
-              </button>
-              <button type="button" class="btn btn-primary" id="btnApprovePrompt">
-                <i class="fas fa-check"></i> Aprobar y Enviar
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    `;
-
-    // Insertar modal en el DOM
-    const modalContainer = document.createElement('div');
-    modalContainer.innerHTML = modalHtml;
-    document.body.appendChild(modalContainer);
-
-    const modal = document.getElementById('promptApprovalModal');
-    const textarea = document.getElementById('compiledPromptText');
-    const btnApprove = document.getElementById('btnApprovePrompt');
-    const btnCancel = document.getElementById('btnCancelPrompt');
-
-    // Mostrar modal con jQuery (Bootstrap 4)
-    jQuery(modal).modal('show');
-
-    // Event listeners
-    btnApprove.addEventListener('click', () => {
-      const finalPrompt = textarea.value.trim();
-      if (!finalPrompt) {
-        alert('El prompt no puede estar vacío');
-        return;
-      }
-
-      jQuery(modal).modal('hide');
-      resolve({
-        prompt: finalPrompt,
-        compilation_id: compilationId
-      });
-    });
-
-    btnCancel.addEventListener('click', () => {
-      jQuery(modal).modal('hide');
-      resolve(null);
-    });
-
-    // Limpiar modal después de cerrarlo
-    jQuery(modal).on('hidden.bs.modal', () => {
-      modalContainer.remove();
-    });
-  });
-}*/
-
 function showPromptApprovalModal(compiledPrompt, compilationId) {
     return new Promise((resolve) => {
         // Detectar si el prompt fue realmente enriquecido
@@ -1045,15 +893,6 @@ if ((editMatch || createMatch) && currentProjectId) {
             return; // Salir sin enviar nada a Opus
           }
 
-// ❌ COMENTA O ELIMINA ESTO - No actualices el mensaje del usuario inline
-         /* // ✅ ACTUALIZAR: El mensaje del usuario en el chat con el prompt APROBADO/EDITADO
-          const lastUserMsg = el.messages.querySelector('.chat-msg.user:last-child');
-          if (lastUserMsg) {
-            const contentDiv = lastUserMsg.querySelector('div > div') || lastUserMsg.querySelector('div');
-            if (contentDiv) {
-              contentDiv.innerHTML = mdToHtml(approved.prompt);
-            }
-          }*/
           
 // En su lugar, simplemente remueve el mensaje temporal del usuario
 const lastUserMsg = el.messages.querySelector('.chat-msg.user:last-child');
@@ -1505,49 +1344,6 @@ function renderProjectList() {
         if (list) list.innerHTML = '<div class="text-danger small">Error cargando fuentes</div>';
       }
     }
-
-/*function renderProjectSources() {
-  const list = el.sourcesList;
-  const countMain = el.sourcesCount;
-  if (!list) return;
-  
-  if (projectSources.length === 0) {
-    list.innerHTML = '<div class="text-muted small">Sin fuentes agregadas</div>';
-    if (countMain) countMain.textContent = '0';
-    if (el.sbSourcesCount) el.sbSourcesCount.textContent = '0';
-    return; // ✅ Salimos temprano, sin retornar HTML inválido
-  }
-  
-  // ✅ Renderizamos la lista con el botón de eliminar incluido
-  list.innerHTML = projectSources.map(s => {
-    const statusClass = s.status || 'pending';
-    const statusText = { 'pending': 'Pendiente', 'indexed': 'Indexado', 'stale': 'Desactualizado', 'error': 'Error' }[statusClass] || statusClass;
-    const badgeClass = statusClass === 'indexed' ? 'success' : statusClass === 'error' ? 'danger' : 'warning';
-    
-    return `<div class="list-group-item source-item d-flex justify-content-between align-items-center py-1 px-2" data-id="${s.id}" style="font-size:0.7rem;">
-      <span class="text-truncate" style="max-width:65%;" title="${esc(s.filename)}">${esc(s.filename)}</span>
-      <span class="d-flex align-items-center" style="gap: 4px;">
-        <span class="badge badge-${badgeClass}" style="font-size:0.6rem;">${statusText}</span>
-        <button class="btn btn-sm btn-outline-danger btn-delete-source" data-id="${s.id}" title="Eliminar" style="padding: 0 .3rem; font-size: 0.6rem;">
-          <i class="fas fa-trash"></i>
-        </button>
-      </span>
-    </div>`;
-  }).join('');
-  
-  // Actualizamos contadores
-  if (countMain) countMain.textContent = String(projectSources.length);
-  if (el.sbSourcesCount) el.sbSourcesCount.textContent = String(projectSources.length);
-  
-  // ✅ Listeners para botones de eliminar (ahora sí encontrarán los botones)
-  list.querySelectorAll('.btn-delete-source').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const id = parseInt(btn.getAttribute('data-id'), 10);
-      deleteProjectSource(id);
-    });
-  });
-}*/
 
 function renderProjectSources() {
   const list = el.sourcesList;

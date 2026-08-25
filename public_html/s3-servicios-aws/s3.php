@@ -5,7 +5,7 @@ header('Content-Type: text/html; charset=UTF-8');
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
 
-require_once 'vendor/autoload.php';
+require_once '../vendor/autoload.php';
 require_once __DIR__ . '/app_bootstrap.php';
 require_once 'S3Manager.php';
 require_once 'utils/helpers.php';
@@ -549,12 +549,25 @@ try {
 <!-- PESTAÑA CHAT2 V. 2.01 (Bedrock) -->
 <div class="tab-pane fade" id="pane-Chat2" role="tabpanel" aria-labelledby="tab-Chat2"> 
 
+ <!-- ====== PANE: Chat (Auto-Router Titan) ====== -->
+  <div class="container-fluid py-3">
+    <div class="row">
+      <div class="col-12 text-center">
+        <!-- Botón que abre el chat en nueva pestaña -->
+        <a href="/michat/" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-lg">
+          <i class="fas fa-comment-dots"></i> Ir al Chat
+        </a>
+        <!-- Si no usas FontAwesome, quita el <i> o cámbialo por un icono de Bootstrap -->
+      </div>
+    </div>
+  </div>
+
   <!-- ====== PANE: Chat (Auto-Router Titan) ====== -->
   <div class="container-fluid py-3">
     <div class="row">
       <div class="col-12 text-center">
         <!-- Botón que abre el chat en nueva pestaña -->
-        <a href="https://drive.esforzados.com/s3chat.php" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-lg">
+        <a href="/chat/s3chat.php" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-lg">
           <i class="fas fa-comment-dots"></i> Ir al Chat
         </a>
         <!-- Si no usas FontAwesome, quita el <i> o cámbialo por un icono de Bootstrap -->
@@ -566,7 +579,7 @@ try {
     <div class="row">
       <div class="col-12 text-center">
         <!-- Botón que abre el chat en nueva pestaña -->
-        <a href="https://drive.esforzados.com/s3chat-old.php" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-lg">
+        <a href="/s3chat-old.php" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-lg">
           <i class="fas fa-comment-dots"></i> Ir al Chat Viejo
         </a>
         <!-- Si no usas FontAwesome, quita el <i> o cámbialo por un icono de Bootstrap -->
@@ -1934,8 +1947,8 @@ try {
 <script src="js/recargarPagina.js"></script>
 <script src="js/filtros.js"></script>
 
-<script src="chat2.js"></script>
-<script src="chat2-enhancements.js"></script>
+<!--<script src="chat2.js"></script>
+<script src="chat2-enhancements.js"></script>-->
 
 <script src="js/editar-txt.js"></script>
 
@@ -1955,12 +1968,12 @@ try {
 <script src="js/sincronizar.js"></script>
 <script src="js/estilo.js"></script>
 
-<script src="js/calls.js"></script> 
+<!--<script src="js/calls.js"></script> 
 <script>
   document.addEventListener('DOMContentLoaded', function () {
     startIncomingPolling();
   });
-</script>
+</script>-->
 
 
 

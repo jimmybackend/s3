@@ -6,7 +6,7 @@ if (!isset($_SESSION['usuario'])) {
     exit(json_encode(['estado' => 'error', 'mensaje' => 'Acceso denegado']));
 }
 
-require 'vendor/autoload.php';
+require '/../vendor/autoload.php';
 require_once __DIR__ . '/app_bootstrap.php';
 
 use Aws\Exception\AwsException;

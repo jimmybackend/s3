@@ -6,7 +6,7 @@ declare(strict_types=1);
  * Aquí se asume que Config::ACCESS_KEY, Config::SECRET_KEY y Config::REGION
  * ya existen en tu proyecto.
  */
-require __DIR__ . '/vendor/autoload.php';
+require __DIR__ . '../vendor/autoload.php';
 require_once __DIR__ . '/app_bootstrap.php';
 
 use Aws\Ec2\Ec2Client;

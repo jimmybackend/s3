@@ -15,7 +15,7 @@ function jserr(string $msg, int $code = 500, array $extra = []) {
 
 try {
   $ROOT = __DIR__;
-  require_once $ROOT . '/vendor/autoload.php';
+  require_once $ROOT . '../vendor/autoload.php';
   require_once __DIR__ . '/app_bootstrap.php';
   // require_once $ROOT . '/S3Manager.php'; // si lo usas aquí
 } catch (Throwable $e) {

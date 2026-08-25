@@ -2,7 +2,7 @@
 header('Content-Type: application/json; charset=UTF-8');
 session_start();
 
-require_once 'vendor/autoload.php';
+require_once '../vendor/autoload.php';
 require_once __DIR__ . '/app_bootstrap.php';
 require_once 'S3Manager.php';
 

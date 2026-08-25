@@ -1,5 +1,5 @@
 <?php
-require 'vendor/autoload.php';
+require_once '../vendor/autoload.php';
 require_once __DIR__ . '/app_bootstrap.php';
 
 use Aws\S3\S3Client;

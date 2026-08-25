@@ -18,7 +18,7 @@ if (!isset($_SESSION['user_id']) || !is_numeric($_SESSION['user_id']) || (int)$_
 $userId = (int)$_SESSION['user_id'];
 
 /* ====== Includes ====== */
-require_once __DIR__ . '/vendor/autoload.php';
+require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/app_bootstrap.php';
 require_once __DIR__ . '/S3Manager.php';
 require_once __DIR__ . '/utils/helpers.php';

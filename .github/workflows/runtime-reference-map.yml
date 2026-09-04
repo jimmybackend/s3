@@ -1,0 +1,29 @@
+name: Runtime endpoint map
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/scripts/runtime_reference_map.py'
+      - '.github/workflows/runtime-reference-map.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  map:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - run: python3 .github/scripts/runtime_reference_map.py
+      - name: Commit map
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add drive/docs/RUNTIME_ENDPOINTS.md drive/docs/runtime_endpoints.json
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "Document active Drive runtime endpoints"
+          git push origin main

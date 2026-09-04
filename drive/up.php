@@ -6,16 +6,92 @@ require_once __DIR__ . '/app_bootstrap.php';
 use ArcadeCloud\Drive\Upload\PublicMultipartUploadService;
 
 $app = \ArcadeCloud\Drive\Core\ApplicationKernel::app();
-$service = new PublicMultipartUploadService(
-    $app->s3(),
-    $app->bucket(),
-    sys_get_temp_dir() . '/arcadecloud-public-upload-state'
+
+$session = $app->session();
+$session->start();
+$session->requireAuthenticated('index.php');
+
+$actorUserId = $session->userId();
+$actorRole = trim((string)($_SESSION['role'] ?? ''));
+
+if (!in_array($actorRole, ['Administración', 'Soporte'], true)) {
+    http_response_code(403);
+    exit('No autorizado.');
+}
+
+$db = $app->db();
+
+$targetUserId = (int)(
+    $_POST['target_user_id']
+    ?? $_GET['target_user_id']
+    ?? 0
 );
+
+$targetUser = null;
+
+if ($targetUserId > 0) {
+    $stmt = $db->prepare(
+        'SELECT id, email, userstatus
+         FROM Users
+         WHERE id = ?
+         LIMIT 1'
+    );
+
+    $stmt->bind_param('i', $targetUserId);
+    $stmt->execute();
+
+    $resultUser = $stmt->get_result();
+    $targetUser = $resultUser->fetch_assoc() ?: null;
+
+    $stmt->close();
+
+    if (!$targetUser) {
+        throw new RuntimeException('Usuario destino no encontrado.');
+    }
+}
+
+$users = [];
+
+$resultUsers = $db->query(
+    'SELECT id, email, userstatus
+     FROM Users
+     ORDER BY email ASC'
+);
+
+while ($row = $resultUsers->fetch_assoc()) {
+    $users[] = $row;
+}
+
+$service = null;
+
+if ($targetUser !== null) {
+    $userRoot = $app
+        ->userStorageProvisioner()
+        ->ensureRoot($targetUserId);
+
+    $targetPrefix =
+        rtrim($userRoot, '/') .
+        '/uploads';
+
+    $service = new PublicMultipartUploadService(
+        $app->s3(),
+        $app->bucket(),
+        sys_get_temp_dir() . '/arcadecloud-public-upload-state',
+        $targetPrefix
+    );
+}
 
 $action = trim((string)($_POST['action'] ?? ''));
 if ($action !== '') {
     header('Content-Type: application/json; charset=utf-8');
+
     try {
+        if ($targetUser === null || $service === null) {
+            throw new RuntimeException(
+                'Debes seleccionar el usuario destino.'
+            );
+        }
+
         $result = match ($action) {
             'init' => $service->init($_POST),
             'sign' => $service->sign($_POST),
@@ -24,6 +100,104 @@ if ($action !== '') {
             'complete' => $service->complete($_POST),
             default => throw new RuntimeException('Acción no válida.'),
         };
+
+        if ($action === 'complete') {
+            $key = trim((string)($result['key'] ?? ''));
+
+            if ($key === '') {
+                throw new RuntimeException(
+                    'S3 no devolvió la key final.'
+                );
+            }
+
+            $head = $app->s3()->headObject([
+                'Bucket' => $app->bucket(),
+                'Key' => $key,
+            ]);
+
+            $size = (int)(
+                $head['ContentLength'] ?? 0
+            );
+
+            $visibleName = basename(
+                trim(
+                    (string)(
+                        $_POST['filename']
+                        ?? basename($key)
+                    )
+                )
+            );
+
+            $physicalName = basename($key);
+
+            $dir = dirname($key);
+
+            $route =
+                $dir === '.'
+                    ? ''
+                    : rtrim($dir, '/') . '/';
+
+            $metadata = json_encode([
+                'source' => 'up.php',
+                'uploaded_by_user_id' => $actorUserId,
+            ], JSON_UNESCAPED_UNICODE);
+
+            $stmt = $db->prepare(
+                "INSERT INTO FileS3
+                    (
+                        Nombre,
+                        Encriptado,
+                        Tamano,
+                        Metadatos,
+                        Ruta,
+                        Found,
+                        AccessType,
+                        user_id_
+                    )
+                 VALUES
+                    (?, ?, ?, ?, ?, 1, 'normal', ?)
+                 ON DUPLICATE KEY UPDATE
+                    Nombre = VALUES(Nombre),
+                    Tamano = VALUES(Tamano),
+                    Metadatos = VALUES(Metadatos),
+                    Ruta = VALUES(Ruta),
+                    Found = 1"
+            );
+
+            if (!$stmt) {
+                throw new RuntimeException(
+                    'No se pudo preparar registro FileS3.'
+                );
+            }
+
+            $stmt->bind_param(
+                'ssissi',
+                $visibleName,
+                $physicalName,
+                $size,
+                $metadata,
+                $route,
+                $targetUserId
+            );
+
+            if (!$stmt->execute()) {
+                $error = $stmt->error;
+                $stmt->close();
+
+                throw new RuntimeException(
+                    'Archivo completado en S3 pero no registrado en FileS3: ' .
+                    $error
+                );
+            }
+
+            $stmt->close();
+
+            $result['registered'] = true;
+            $result['target_user_id'] = $targetUserId;
+            $result['target_email'] =
+                (string)$targetUser['email'];
+        }
+
         echo json_encode($result, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     } catch (Throwable $e) {
         http_response_code(500);
@@ -71,7 +245,59 @@ if ($action !== '') {
 </style>
 </head>
 <body>
+
+<?php if ($targetUser === null): ?>
+
 <div class="panel">
+  <h1>Seleccionar usuario</h1>
+
+  <p class="sub">
+    Elige a qué usuario deseas subir los archivos.
+  </p>
+
+  <div style="display:grid;gap:10px;">
+    <?php foreach ($users as $user): ?>
+      <a
+        href="?target_user_id=<?= (int)$user['id'] ?>"
+        style="
+          display:block;
+          padding:14px 16px;
+          border:1px solid #334155;
+          border-radius:12px;
+          color:#e5e7eb;
+          text-decoration:none;
+          background:#0b1222;
+        "
+      >
+        <?= htmlspecialchars((string)$user['email']) ?>
+      </a>
+    <?php endforeach; ?>
+  </div>
+</div>
+
+</body>
+</html>
+<?php exit; ?>
+
+<?php endif; ?>
+
+<div class="panel">
+
+  <div style="margin-bottom:15px;">
+    <span class="pill">
+      Usuario destino:
+      <strong>
+        <?= htmlspecialchars((string)$targetUser['email']) ?>
+      </strong>
+    </span>
+
+    <a
+      href="up.php"
+      style="margin-left:10px;color:#9aa7ff;"
+    >
+      Cambiar usuario
+    </a>
+  </div>
   <h1>Subida reanudable a S3 (Directo)</h1>
   <p class="sub">Sube de forma secuencial con paquetes de 15 MB. Cada paquete pasa por el servidor y se confirma en S3 antes de continuar.</p>
 
@@ -114,14 +340,69 @@ if ($action !== '') {
 <script>
 (() => {
   const $ = (id) => document.getElementById(id);
+
+  const TARGET_USER_ID =
+    <?= (int)$targetUserId ?>;
   const fileInput = $('file'), startBtn=$('startBtn'), pauseBtn=$('pauseBtn'), resumeBtn=$('resumeBtn');
   const bar=$('bar'), status=$('status'), fn=$('fn'), fs=$('fs'), uploadIdEl=$('uploadId'), s3keyEl=$('s3key');
   const resultBox=$('result'), resKey=$('resKey'), resUrl=$('resUrl'), resLink=$('resLink'), resLinkWrap=$('resLinkWrap');
 
   // === Config robusta para archivos grandes ===
   // Un solo paquete a la vez prioriza estabilidad sobre velocidad.
-  const CHUNK_SIZE = 15 * 1024 * 1024;
+  let CHUNK_SIZE = 15 * 1024 * 1024;
+
   const MAX_WORKERS = 1;
+
+  function elegirChunk(file) {
+    const connection =
+      navigator.connection ||
+      navigator.mozConnection ||
+      navigator.webkitConnection ||
+      null;
+
+    const type =
+      String(
+        connection?.effectiveType || ''
+      ).toLowerCase();
+
+    const downlink =
+      Number(
+        connection?.downlink || 0
+      );
+
+    let mb = 15;
+
+    if (
+      type === 'slow-2g' ||
+      type === '2g'
+    ) {
+      mb = 5;
+
+    } else if (
+      type === '3g' ||
+      (downlink > 0 && downlink < 5)
+    ) {
+      mb = 8;
+
+    } else if (
+      type === '4g' &&
+      downlink >= 10
+    ) {
+      mb = 24;
+    }
+
+    /*
+     * Archivos pequeños no necesitan paquetes grandes.
+     */
+    if (
+      file &&
+      file.size < 100 * 1024 * 1024
+    ) {
+      mb = Math.min(mb, 8);
+    }
+
+    return mb * 1024 * 1024;
+  }
 
   // Si una conexión directa navegador -> S3 falla temporalmente,
   // reintentamos el mismo paquete antes de pausar la subida.
@@ -140,7 +421,16 @@ if ($action !== '') {
   const setProgress=(p)=>{ bar.style.width = `${p}%`; };
 
   async function postForm(action, data, signal) {
-    const form=new FormData(); form.append('action',action); for (const [k,v] of Object.entries(data)) if(v!==undefined&&v!==null) form.append(k,v);
+    const form=new FormData();
+
+    form.append('action', action);
+    form.append('target_user_id', String(TARGET_USER_ID));
+
+    for (const [k,v] of Object.entries(data)) {
+      if(v!==undefined && v!==null) {
+        form.append(k,v);
+      }
+    }
     const res=await fetch(location.pathname,{method:'POST',body:form,signal});
     if(!res.ok){ const t=await res.text().catch(()=> ''); throw new Error(`HTTP ${res.status}: ${t || res.statusText}`); }
     return res.json();
@@ -152,7 +442,20 @@ if ($action !== '') {
     state.file=fileInput.files?.[0];
     state.failed=false;
     if(!state.file){ msg('Selecciona un archivo para comenzar.','warn'); return; }
-    fn.textContent=state.file.name; fs.textContent=humanSize(state.file.size);
+    fn.textContent=state.file.name;
+    fs.textContent=humanSize(state.file.size);
+
+    CHUNK_SIZE =
+      elegirChunk(state.file);
+
+    const chunkInfo =
+      document.getElementById('chunkInfo');
+
+    if (chunkInfo) {
+      chunkInfo.textContent =
+        'Tamaño automático: ' +
+        humanSize(CHUNK_SIZE);
+    }
 
     msg('Verificando sesión previa…');
     let data={found:false};
@@ -160,11 +463,27 @@ if ($action !== '') {
     catch(e){ msg(`No se pudo verificar sesión previa, se iniciará una nueva. Detalle: ${e.message}`,'warn'); }
 
     if(data && data.found){
+
+      if (data.chunk_size) {
+        CHUNK_SIZE =
+          Number(data.chunk_size);
+      }
+
       state.uploadId=data.uploadId; state.s3key=data.key; state.etags=data.etags||{};
       msg('Sesión previa encontrada. Sincronizando…','ok');
     } else {
       try{
-        const init=await postForm('init',{filename:state.file.name,filesize:state.file.size,mime:state.file.type||'application/octet-stream'});
+        const init=await postForm('init',{
+          filename:state.file.name,
+          filesize:state.file.size,
+          mime:state.file.type||'application/octet-stream',
+          chunk_size:CHUNK_SIZE
+        });
+
+        if (init.chunk_size) {
+          CHUNK_SIZE =
+            Number(init.chunk_size);
+        }
         state.uploadId=init.uploadId; state.s3key=init.key; state.etags={};
         msg('Sesión creada en S3.','ok');
       }catch(e){ msg(`No se pudo iniciar la subida: ${e.message}`,'err'); return; }
@@ -221,6 +540,7 @@ if ($action !== '') {
     const form = new FormData();
 
     form.append('action', 'part');
+    form.append('target_user_id', String(TARGET_USER_ID));
     form.append('uploadId', state.uploadId);
     form.append('key', state.s3key);
     form.append('partNumber', String(partNumber));
@@ -343,7 +663,13 @@ if ($action !== '') {
   async function completeUpload(){
     msg('Completando subida en S3…');
     try{
-      const r=await postForm('complete',{uploadId:state.uploadId,key:state.s3key,etags:JSON.stringify(state.etags)});
+      const r=await postForm('complete',{
+        uploadId:state.uploadId,
+        key:state.s3key,
+        etags:JSON.stringify(state.etags),
+        filename:state.file.name,
+        filesize:state.file.size
+      });
       setProgress(100);
       msg(`Subida finalizada. Objeto: ${r.objectUrl || state.s3key}`,'ok');
 

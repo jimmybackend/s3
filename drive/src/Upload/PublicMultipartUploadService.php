@@ -25,8 +25,18 @@ final class PublicMultipartUploadService
         $filename = trim((string)($input['filename'] ?? ''));
         $filesize = (int)($input['filesize'] ?? 0);
         $mime = trim((string)($input['mime'] ?? 'application/octet-stream'));
+
+        $chunkSize = (int)($input['chunk_size'] ?? (15 * 1024 * 1024));
+
+        $minChunk = 5 * 1024 * 1024;
+        $maxChunk = 24 * 1024 * 1024;
+
         if ($filename === '' || $filesize <= 0) {
             throw new RuntimeException('Datos de archivo inválidos.');
+        }
+
+        if ($chunkSize < $minChunk || $chunkSize > $maxChunk) {
+            throw new RuntimeException('Tamaño de paquete inválido.');
         }
 
         $sig = $this->signature($filename, $filesize);
@@ -48,10 +58,17 @@ final class PublicMultipartUploadService
             'key' => $key,
             'uploadId' => $uploadId,
             'parts' => [],
+            'chunk_size' => $chunkSize,
             'created' => time(),
         ]);
 
-        return ['ok' => true, 'uploadId' => $uploadId, 'key' => $key, 'signature' => $sig];
+        return [
+            'ok' => true,
+            'uploadId' => $uploadId,
+            'key' => $key,
+            'signature' => $sig,
+            'chunk_size' => $chunkSize,
+        ];
     }
 
     public function sign(array $input): array
@@ -120,7 +137,13 @@ final class PublicMultipartUploadService
                 $remote = $this->listParts((string)$meta['uploadId'], (string)$meta['key']);
                 $meta['parts'] = $remote + (is_array($meta['parts'] ?? null) ? $meta['parts'] : []);
                 $this->save($sig, $meta);
-                return ['found' => true, 'uploadId' => $meta['uploadId'], 'key' => $meta['key'], 'etags' => $meta['parts']];
+                return [
+                    'found' => true,
+                    'uploadId' => $meta['uploadId'],
+                    'key' => $meta['key'],
+                    'etags' => $meta['parts'],
+                    'chunk_size' => (int)($meta['chunk_size'] ?? (15 * 1024 * 1024)),
+                ];
             }
         }
 
@@ -168,7 +191,11 @@ final class PublicMultipartUploadService
 
     private function signature(string $filename, int $filesize): string
     {
-        return sha1($filename . '|' . $filesize);
+        return sha1(
+            rtrim($this->prefix, '/') . '|' .
+            $filename . '|' .
+            $filesize
+        );
     }
 
     private function assertKey(string $key): void

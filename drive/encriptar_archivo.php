@@ -1,101 +1,39 @@
 <?php
+declare(strict_types=1);
+
 require_once __DIR__ . '/app_bootstrap.php';
+
+use ArcadeCloud\Drive\Application\FileKeyRotationService;
+use ArcadeCloud\Drive\Aws\FileRecordLocator;
+use ArcadeCloud\Drive\Core\ApplicationKernel;
 
 header('Content-Type: application/json; charset=UTF-8');
 
 try {
-    // Solo JSON POST
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-        http_response_code(405);
-        echo json_encode(['estado' => 'error', 'mensaje' => 'Método no permitido']);
-        exit;
+        throw new RuntimeException('Método no permitido.');
     }
-
-    $raw = file_get_contents('php://input');
-    $data = json_decode($raw, true);
-    $keyOriginal = $data['key'] ?? '';
-    if (!$keyOriginal) {
-        http_response_code(400);
-        echo json_encode(['estado' => 'error', 'mensaje' => 'Falta el nombre del archivo.']);
-        exit;
+    $app = ApplicationKernel::app();
+    $session = $app->session();
+    $session->start();
+    $userId = $session->userId();
+    if ($userId <= 0) {
+        throw new RuntimeException('Sesión inválida.');
     }
-
-    $s3     = Config::getS3();
-    $bucket = Config::BUCKET;
-
-    // Descargar original (OJO: en archivos muy grandes es pesado; si quieras optimizar luego, hacemos copyObject)
-    $obj = $s3->getObject([
-        'Bucket' => $bucket,
-        'Key'    => $keyOriginal
-    ]);
-
-    // Body puede ser un stream; fuerzo string
-    $body = $obj['Body'];
-    $contenido = is_string($body) ? $body : $body->getContents();
-
-    // Generar nombre encriptado
-    $extension = pathinfo($keyOriginal, PATHINFO_EXTENSION);
-    $nombreEncriptado = uniqid('f_', true) . '_' . bin2hex(random_bytes(4)) . ($extension ? ".$extension" : '');
-
-    $dir = trim(dirname($keyOriginal), '/'); // dirname('.') si está en raíz
-    $nuevaKey = ($dir ? $dir . '/' : '') . $nombreEncriptado;
-
-    // Nombre "original" a guardar en DB
-    $nombreOriginal = basename($keyOriginal);
-    // Si ya tuvieras un mapping previo, lo respetamos (igual a tu código)
-    $stmt = $db_connection->prepare("SELECT Nombre FROM FileS3 WHERE Encriptado = ? LIMIT 1");
-    if ($stmt) {
-        $stmt->bind_param("s", $nombreOriginal);
-        $stmt->execute();
-        $res = $stmt->get_result();
-        if ($fila = $res->fetch_assoc()) {
-            $nombreOriginal = $fila['Nombre'];
-        }
-        $stmt->close();
+    $data = json_decode((string)file_get_contents('php://input'), true) ?: [];
+    $key = trim((string)($data['key'] ?? ''));
+    if ($key === '') {
+        throw new RuntimeException('Falta el nombre del archivo.');
     }
-
-    // Metadatos para tu DB
-    $metadatos = json_encode([
-        'origen_s3'   => $keyOriginal,
-        'fecha'       => date('Y-m-d'),
-        'hora'        => date('H:i:s'),
-        'tamano_kb'   => round(strlen($contenido) / 1024, 2),
-        'hash_sha256' => hash('sha256', $contenido),
-    ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
-
-    // Subir nuevo objeto
-    $contentType = $obj['ContentType'] ?? 'application/octet-stream';
-    $s3->putObject([
-        'Bucket'      => $bucket,
-        'Key'         => $nuevaKey,
-        'Body'        => $contenido,
-        'ACL'         => 'private',
-        'ContentType' => $contentType
-    ]);
-
-    // Borrar original
-    $s3->deleteObject([
-        'Bucket' => $bucket,
-        'Key'    => $keyOriginal
-    ]);
-
-    // Guardar en DB (OJO: ahora con los **4** placeholders y tipos "sssi")
-    $user_id_ = $_SESSION['user_id'] ?? 1; // ajusta si usas otro campo de sesión
-    $stmt = $db_connection->prepare("INSERT INTO FileS3 (Nombre, Encriptado, Metadatos, user_id_) VALUES (?, ?, ?, ?)");
-    if (!$stmt) {
-        throw new Exception('DB prepare error: ' . $db_connection->error);
-    }
-    $stmt->bind_param("sssi", $nombreOriginal, $nombreEncriptado, $metadatos, $user_id_);
-    $stmt->execute();
-    $stmt->close();
-
-    echo json_encode([
-        'estado'    => 'ok',
-        'newKey'    => $nuevaKey,
-        'encriptado'=> $nombreEncriptado
-    ]);
-
+    $service = new FileKeyRotationService(
+        $app->db(),
+        $app->s3(),
+        $app->bucket(),
+        new FileRecordLocator($app->db()),
+        $app->storageObjectNameCodec()
+    );
+    echo json_encode($service->rotate($userId, $key), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 } catch (Throwable $e) {
-    http_response_code(500);
-    echo json_encode(['estado' => 'error', 'mensaje' => $e->getMessage()]);
+    http_response_code(400);
+    echo json_encode(['estado' => 'error', 'mensaje' => $e->getMessage()], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 }

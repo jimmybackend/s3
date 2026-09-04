@@ -86,9 +86,7 @@ final class RemoteUrlUploader implements UploaderInterface
 
     $carpeta = trim((string)($req['ruta_objetivo'] ?? ''), '/');
     if ($carpeta === '') throw new RuntimeException('Falta ruta_objetivo');
-    $ext = pathinfo($nombreOriginal, PATHINFO_EXTENSION);
-    if ($ext === '') $ext = 'bin';
-    $nombreEncriptado = uniqid('f_', true) . '_' . bin2hex(random_bytes(4)) . '.' . $ext;
+    $nombreEncriptado = (new \ArcadeCloud\Drive\Storage\StorageObjectNameCodec())->createFileObjectName($nombreOriginal);
     $key = $carpeta . '/' . $nombreEncriptado;
 
     // Multipart streaming (8MB)

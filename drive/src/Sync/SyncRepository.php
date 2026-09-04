@@ -16,17 +16,17 @@ final class SyncRepository
     public function upsertFolder(int $userId,string $prefix,string $name,?string $parent): void
     {
         $row=$this->one('SELECT id_ FROM S3Folders WHERE user_id_=? AND Prefix=? LIMIT 1',[$userId,$prefix],'is');
-        if($row){$id=(int)$row['id_'];$this->exec('UPDATE S3Folders SET Found=1,Nombre=?,ParentPrefix=?,UpdatedAt=NOW() WHERE id_=? AND user_id_=?',[$name,$parent,$id,$userId],'ssii');return;}
+        if($row){$id=(int)$row['id_'];$this->exec('UPDATE S3Folders SET Found=1,ParentPrefix=?,UpdatedAt=NOW() WHERE id_=? AND user_id_=?',[$parent,$id,$userId],'sii');return;}
         $this->exec("INSERT INTO S3Folders (user_id_,Prefix,Nombre,ParentPrefix,Found,AccessType,CreatedAt,UpdatedAt) VALUES (?,?,?,?,1,'normal',NOW(),NOW())",[$userId,$prefix,$name,$parent],'isss');
     }
 
-    public function upsertFile(int $userId,string $key,int $size): void
+    public function upsertFile(int $userId,string $key,int $size,?string $recoveredName=null): void
     {
-        $pos=strrpos($key,'/');$dir=$pos===false?'':substr($key,0,$pos+1);$dir=$dir!==''?rtrim($dir,'/').'/':'';$base=$pos===false?$key:substr($key,$pos+1);
+        $pos=strrpos($key,'/');$dir=$pos===false?'':substr($key,0,$pos+1);$dir=$dir!==''?rtrim($dir,'/').'/':'';$base=$pos===false?$key:substr($key,$pos+1);$visible=trim((string)$recoveredName);if($visible==='')$visible=$base;
         $row=$this->one('SELECT id_ FROM FileS3 WHERE user_id_=? AND Encriptado=? LIMIT 1',[$userId,$key],'is');
         if(!$row){$legacy=$this->all("SELECT id_,Encriptado FROM FileS3 WHERE user_id_=? AND Ruta=? AND Found=0 AND (Encriptado=? OR Encriptado LIKE ? ESCAPE '!') ORDER BY id_ ASC LIMIT 2",[$userId,$dir,$base,'%/'.$this->likeEscape($base)],'isss');if(count($legacy)===1)$row=$legacy[0];}
-        if($row){$id=(int)$row['id_'];$this->exec("UPDATE FileS3 SET Encriptado=?,Tamano=?,Ruta=?,Nombre=IF(Nombre IS NULL OR Nombre='',?,Nombre),Found=1 WHERE id_=? AND user_id_=?",[$key,$size,$dir,$base,$id,$userId],'sissii');return;}
-        $this->exec("INSERT INTO FileS3 (Nombre,Encriptado,Tamano,Metadatos,Ruta,Found,AccessType,Fecha,user_id_) VALUES (?,?,?,NULL,?,1,'normal',NOW(),?)",[$base,$key,$size,$dir,$userId],'ssisi');
+        if($row){$id=(int)$row['id_'];$this->exec("UPDATE FileS3 SET Encriptado=?,Tamano=?,Ruta=?,Nombre=IF(Nombre IS NULL OR Nombre='',?,Nombre),Found=1 WHERE id_=? AND user_id_=?",[$key,$size,$dir,$visible,$id,$userId],'sissii');return;}
+        $this->exec("INSERT INTO FileS3 (Nombre,Encriptado,Tamano,Metadatos,Ruta,Found,AccessType,Fecha,user_id_) VALUES (?,?,?,NULL,?,1,'normal',NOW(),?)",[$visible,$key,$size,$dir,$userId],'ssisi');
     }
 
     public function status(int $userId): array

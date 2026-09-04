@@ -67,3 +67,18 @@ user_id = N  -> DataN/
 Esto permite que un usuario creado por cualquier sistema de registro quede provisionado en su
 primer acceso al Drive, siempre usando el ID real asignado por MySQL. La separación lógica en
 BD sigue siendo obligatoria mediante `user_id_` y ningún endpoint debe aceptar una raíz de otro usuario.
+
+## Nombres visibles vs. nombres físicos en S3
+
+El nombre que ve el usuario es un dato lógico de MySQL. Renombrar no renombra objetos en S3.
+
+- Archivo nuevo: `f_<32hex>-<nombre-de-creacion.ext>`.
+- Carpeta nueva: `d_<32hex>-<nombre-de-creacion>/`.
+- Raíz: `Data/` para `user_id=1`; `DataN/` para los demás usuarios. La raíz no se puede renombrar, mover ni eliminar.
+- `FileS3.Nombre` y `S3Folders.Nombre` son los nombres visibles y pueden cambiar sin modificar la key/prefix físico.
+- Mover sí cambia la ubicación física, pero conserva el basename físico y el nombre visible.
+- La sincronización nunca sobrescribe un `Nombre` visible existente. Si reconstruye una fila ausente, `StorageObjectNameCodec` recupera el nombre de creación desde el sufijo de la key.
+- Para archivos históricos `f_*` que no incorporaban nombre, la sincronización manual intenta `headObject` y metadata `original-name`; si tampoco existe, solo puede recuperar el basename físico.
+
+Esta separación evita colisiones de nombres y permite reconstruir el catálogo desde S3. Como consecuencia deliberada, un nombre cambiado únicamente en MySQL después de la creación no puede recuperarse desde S3 si se pierde completamente la base de datos; se recuperará el nombre de creación. Para preservar también los renombrados posteriores hace falta respaldar MySQL o un manifiesto independiente.
+

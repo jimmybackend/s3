@@ -10,7 +10,7 @@ final class SyncController extends AbstractJsonController
 {
     public function run(): never
     {
-        try{$uid=$this->guardAuthenticated();if(session_status()===PHP_SESSION_ACTIVE)session_write_close();ignore_user_abort(true);@set_time_limit(0);$service=new S3SyncService(new SyncRepository($this->app->db()),$this->app->s3(),$this->app->bucket(),$this->app->userStoragePath());JsonResponse::send($service->synchronize($uid));}
+        try{$uid=$this->guardAuthenticated();if(session_status()===PHP_SESSION_ACTIVE)session_write_close();ignore_user_abort(true);@set_time_limit(0);$service=new S3SyncService(new SyncRepository($this->app->db()),$this->app->s3(),$this->app->bucket(),$this->app->userStoragePath(),$this->app->storageObjectNameCodec());JsonResponse::send($service->synchronize($uid));}
         catch(\Throwable $e){JsonResponse::send(['ok'=>false,'step'=>'sync','error'=>$e->getMessage()],500);}
     }
     public function status(): never

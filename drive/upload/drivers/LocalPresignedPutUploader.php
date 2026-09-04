@@ -63,8 +63,7 @@ final class LocalPresignedPutUploader implements UploaderInterface
             throw new RuntimeException('Datos incompletos para iniciar la subida.');
         }
 
-        $ext = pathinfo($nombreOriginal, PATHINFO_EXTENSION);
-        $nombreEncriptado = uniqid('f_', true) . '_' . bin2hex(random_bytes(4)) . ($ext ? '.' . $ext : '');
+        $nombreEncriptado = (new \ArcadeCloud\Drive\Storage\StorageObjectNameCodec())->createFileObjectName($nombreOriginal);
         $key = $rutaObjetivo . $nombreEncriptado;
 
         $cmd = $this->s3()->getCommand('PutObject', [

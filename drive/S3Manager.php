@@ -6,8 +6,9 @@ class S3Manager
     private $s3;
     private $bucket;
     private $db;
+    private \ArcadeCloud\Drive\Storage\StorageObjectNameCodec $nameCodec;
 
-    public function __construct(?\Aws\S3\S3Client $s3 = null, ?mysqli $db = null, ?string $bucket = null)
+    public function __construct(?\Aws\S3\S3Client $s3 = null, ?mysqli $db = null, ?string $bucket = null, ?\ArcadeCloud\Drive\Storage\StorageObjectNameCodec $nameCodec = null)
     {
         $this->s3 = $s3 ?? Config::getS3();
         $this->bucket = $bucket ?? Config::BUCKET;
@@ -22,6 +23,7 @@ class S3Manager
         }
 
         $this->db = $db;
+        $this->nameCodec = $nameCodec ?? new \ArcadeCloud\Drive\Storage\StorageObjectNameCodec();
     }
 
     public function getBucket()
@@ -57,7 +59,7 @@ class S3Manager
 
     private function getBasePrefix(): string
     {
-        return $this->normalizePrefix(Config::RUTA_RAIZ ?? 'Data/');
+        return (new \ArcadeCloud\Drive\Storage\UserStoragePath())->rootForUser($this->resolveUserId());
     }
 
     private function getSessionRoute(): string
@@ -175,10 +177,39 @@ class S3Manager
         return $exists;
     }
 
-    private function upsertFolderDb(int $userId, string $prefix): void
+    private function folderVisibleNameExistsDb(int $userId, string $parentPrefix, string $visibleName, ?string $excludePrefix = null): bool
+    {
+        $parentPrefix = $this->normalizePrefix($parentPrefix);
+        $sql = "SELECT 1 FROM S3Folders
+                WHERE user_id_ = ? AND ParentPrefix = ? AND Nombre = ? AND Found = 1";
+        $types = 'iss';
+        $params = [$userId, $parentPrefix, $visibleName];
+        if ($excludePrefix !== null) {
+            $sql .= ' AND Prefix <> ?';
+            $types .= 's';
+            $params[] = $this->normalizePrefix($excludePrefix);
+        }
+        $sql .= ' LIMIT 1';
+        $stmt = $this->db->prepare($sql);
+        if (!$stmt) {
+            throw new RuntimeException('Error verificando nombre visible de carpeta: ' . $this->db->error);
+        }
+        $stmt->bind_param($types, ...$params);
+        $this->executeStmt($stmt, 'Error verificando nombre visible de carpeta');
+        $stmt->store_result();
+        $exists = $stmt->num_rows > 0;
+        $stmt->close();
+        return $exists;
+    }
+
+    private function upsertFolderDb(int $userId, string $prefix, ?string $visibleName = null): void
     {
         $prefix = $this->normalizePrefix($prefix);
-        $nombre = $this->folderNameFromPrefix($prefix);
+        $physicalName = $this->folderNameFromPrefix($prefix);
+        $nombre = trim((string)$visibleName);
+        if ($nombre === '') {
+            $nombre = $this->nameCodec->recoverFolderVisibleName($physicalName) ?? $physicalName;
+        }
         $parent = $this->parentPrefix($prefix);
 
         $sql = "INSERT INTO S3Folders
@@ -186,7 +217,7 @@ class S3Manager
                 VALUES
                     (?, ?, ?, ?, 1, 'normal', NULL, NULL, NULL)
                 ON DUPLICATE KEY UPDATE
-                    Nombre = VALUES(Nombre),
+                    Nombre = IF(Nombre IS NULL OR Nombre = '', VALUES(Nombre), Nombre),
                     ParentPrefix = VALUES(ParentPrefix),
                     Found = 1,
                     UpdatedAt = CURRENT_TIMESTAMP";
@@ -244,7 +275,7 @@ private function renameMoveFolderTreeDb(int $userId, string $oldPrefix, string $
      * ya que el árbol se arma con Prefix / ParentPrefix.
      * ============================================================
      */
-    $sqlSel = "SELECT id_, Prefix, ParentPrefix
+    $sqlSel = "SELECT id_, Prefix, ParentPrefix, Nombre
                FROM S3Folders
                WHERE user_id_ = ?
                  AND (Prefix = ? OR Prefix LIKE CONCAT(?, '%'))
@@ -270,7 +301,7 @@ private function renameMoveFolderTreeDb(int $userId, string $oldPrefix, string $
     }
 
     $sqlUpdFolder = "UPDATE S3Folders
-                     SET Prefix = ?, Nombre = ?, ParentPrefix = ?, Found = 1, UpdatedAt = CURRENT_TIMESTAMP
+                     SET Prefix = ?, ParentPrefix = ?, Found = 1, UpdatedAt = CURRENT_TIMESTAMP
                      WHERE id_ = ? AND user_id_ = ?";
 
     $stmtUpdFolder = $this->db->prepare($sqlUpdFolder);
@@ -299,10 +330,9 @@ private function renameMoveFolderTreeDb(int $userId, string $oldPrefix, string $
             }
         }
 
-        $newName = $this->folderNameFromPrefix($newFolderPrefix);
         $id = (int)$folder['id_'];
 
-        $stmtUpdFolder->bind_param('sssii', $newFolderPrefix, $newName, $newParent, $id, $userId);
+        $stmtUpdFolder->bind_param('ssii', $newFolderPrefix, $newParent, $id, $userId);
         $this->executeStmt($stmtUpdFolder, 'Error actualizando S3Folders');
         $foldersUpdated++;
     }
@@ -635,59 +665,49 @@ private function getFolderRecord($folderRef, bool $throwIfMissing = false): ?arr
     public function crearCarpeta(string $rutaBase, string $nombreCarpeta): void
     {
         $userId = $this->resolveUserId();
-
-        $rutaBase = trim($rutaBase) !== ''
-            ? $this->normalizePrefix($rutaBase)
-            : $this->getSessionRoute();
-
+        $rutaBase = trim($rutaBase) !== '' ? $this->normalizePrefix($rutaBase) : $this->getSessionRoute();
         $nombreCarpeta = trim($nombreCarpeta);
 
         if ($nombreCarpeta === '') {
             throw new RuntimeException('Debes indicar un nombre de carpeta.');
         }
-
-        if (!preg_match('/^[^\\\\\/:*?"<>|]+$/u', $nombreCarpeta)) {
+        if (!preg_match('/^[^\\\/:*?"<>|]+$/u', $nombreCarpeta)) {
             throw new RuntimeException('El nombre de la carpeta contiene caracteres no permitidos.');
         }
 
         $base = $this->getBasePrefix();
         if (strpos($rutaBase, $base) !== 0) {
-            throw new RuntimeException('Ruta fuera de la carpeta base.');
+            throw new RuntimeException('Ruta fuera de la carpeta base del usuario.');
+        }
+        if ($this->folderVisibleNameExistsDb($userId, $rutaBase, $nombreCarpeta)) {
+            throw new RuntimeException('Ya existe una carpeta visible con ese nombre en este nivel.');
         }
 
-        $carpetaKey = $this->normalizePrefix($rutaBase . $nombreCarpeta);
-
-        if ($this->folderExistsDb($userId, $carpetaKey)) {
-            throw new RuntimeException('La carpeta ya existe en la base de datos.');
-        }
-
-        $probe = $this->s3->listObjectsV2([
-            'Bucket'  => $this->bucket,
-            'Prefix'  => $carpetaKey,
-            'MaxKeys' => 1
-        ]);
-
-        if (!empty($probe['KeyCount'])) {
-            throw new RuntimeException('La carpeta ya existe en S3.');
-        }
+        // El nombre físico no cambia nunca al renombrar visualmente.
+        // Formato: d_<token>-<nombre de creación>/
+        $physicalName = $this->nameCodec->createFolderObjectName($nombreCarpeta);
+        $carpetaKey = $this->normalizePrefix($rutaBase . $physicalName);
 
         $this->s3->putObject([
             'Bucket' => $this->bucket,
-            'Key'    => $carpetaKey,
-            'Body'   => '',
-            'ACL'    => 'private'
+            'Key' => $carpetaKey,
+            'Body' => '',
+            'ACL' => 'private',
+            'ContentType' => 'application/x-directory'
         ]);
 
         $this->db->begin_transaction();
-
         try {
-            $this->upsertFolderDb($userId, $carpetaKey);
+            $this->upsertFolderDb($userId, $carpetaKey, $nombreCarpeta);
             $this->db->commit();
         } catch (Throwable $e) {
             $this->db->rollback();
+            try {
+                $this->s3->deleteObject(['Bucket' => $this->bucket, 'Key' => $carpetaKey]);
+            } catch (Throwable) {
+            }
             throw $e;
         }
-
         $this->setSessionRoute($rutaBase);
     }
 
@@ -819,119 +839,52 @@ public function eliminarCarpetaCompleta($ruta): array
 public function renombrarCarpeta(string $rutaAntigua, string $nuevoNombre): void
 {
     $userId = $this->resolveUserId();
-
     $rutaAntigua = $this->normalizePrefix($rutaAntigua);
     $nuevoNombre = trim($nuevoNombre);
 
     if ($nuevoNombre === '') {
         throw new RuntimeException('Debes indicar el nuevo nombre de la carpeta.');
     }
-
-    if (!preg_match('/^[^\\\\\/:*?"<>|]+$/u', $nuevoNombre)) {
+    if (!preg_match('/^[^\\\/:*?"<>|]+$/u', $nuevoNombre)) {
         throw new RuntimeException('El nuevo nombre contiene caracteres no permitidos.');
     }
 
     $base = $this->getBasePrefix();
-
     if (strpos($rutaAntigua, $base) !== 0) {
-        throw new RuntimeException('Ruta fuera de la carpeta base.');
+        throw new RuntimeException('Ruta fuera de la carpeta base del usuario.');
     }
-
     if ($rutaAntigua === $base) {
-        throw new RuntimeException('No puedes renombrar la carpeta raíz.');
+        throw new RuntimeException('No puedes renombrar la carpeta raíz del usuario.');
     }
 
-    $nuevaRuta = $this->normalizePrefix($this->getRutaPadre($rutaAntigua) . $nuevoNombre);
-
-    if ($rutaAntigua === $nuevaRuta) {
-        return;
+    $stmt = $this->db->prepare('SELECT id_, ParentPrefix, Nombre FROM S3Folders WHERE user_id_ = ? AND Prefix = ? AND Found = 1 LIMIT 1');
+    if (!$stmt) {
+        throw new RuntimeException('No se pudo localizar la carpeta: ' . $this->db->error);
+    }
+    $stmt->bind_param('is', $userId, $rutaAntigua);
+    $this->executeStmt($stmt, 'Error localizando carpeta para renombrar');
+    $folder = $stmt->get_result()->fetch_assoc();
+    $stmt->close();
+    if (!$folder) {
+        throw new RuntimeException('Carpeta no encontrada.');
     }
 
-    $probe = $this->s3->listObjectsV2([
-        'Bucket'  => $this->bucket,
-        'Prefix'  => $nuevaRuta,
-        'MaxKeys' => 1
-    ]);
-
-    if (!empty($probe['KeyCount']) || $this->folderExistsDb($userId, $nuevaRuta)) {
-        throw new RuntimeException('Ya existe una carpeta con ese nombre.');
+    $parent = trim((string)($folder['ParentPrefix'] ?? ''));
+    $parent = $parent !== '' ? $this->normalizePrefix($parent) : $base;
+    if ($this->folderVisibleNameExistsDb($userId, $parent, $nuevoNombre, $rutaAntigua)) {
+        throw new RuntimeException('Ya existe una carpeta visible con ese nombre en este nivel.');
     }
 
-    $continuationToken = null;
-    $borrar = [];
-
-    do {
-        $params = [
-            'Bucket'  => $this->bucket,
-            'Prefix'  => $rutaAntigua,
-            'MaxKeys' => 1000
-        ];
-
-        if ($continuationToken) {
-            $params['ContinuationToken'] = $continuationToken;
-        }
-
-        $objetos = $this->s3->listObjectsV2($params);
-
-        foreach ($objetos['Contents'] ?? [] as $objeto) {
-            $origen = $objeto['Key'];
-
-            /**
-             * IMPORTANTE:
-             * Solo cambia el prefijo/carpeta.
-             * El resto de la key se conserva igual,
-             * así el nombre real del archivo en S3 no cambia.
-             */
-            $destino = $nuevaRuta . substr($origen, strlen($rutaAntigua));
-
-            $this->s3->copyObject([
-                'Bucket'            => $this->bucket,
-                'CopySource'        => rawurlencode($this->bucket . '/' . $origen),
-                'Key'               => $destino,
-                'ACL'               => 'private',
-                'MetadataDirective' => 'COPY'
-            ]);
-
-            $borrar[] = ['Key' => $origen];
-
-            if (count($borrar) >= 1000) {
-                $this->s3->deleteObjects([
-                    'Bucket' => $this->bucket,
-                    'Delete' => ['Objects' => $borrar, 'Quiet' => true]
-                ]);
-                $borrar = [];
-            }
-        }
-
-        $continuationToken = !empty($objetos['IsTruncated'])
-            ? ($objetos['NextContinuationToken'] ?? null)
-            : null;
-
-    } while ($continuationToken);
-
-    if (!empty($borrar)) {
-        $this->s3->deleteObjects([
-            'Bucket' => $this->bucket,
-            'Delete' => ['Objects' => $borrar, 'Quiet' => true]
-        ]);
+    // Renombrar es una operación exclusivamente lógica: no CopyObject,
+    // no DeleteObject y no cambia Prefix/ParentPrefix.
+    $id = (int)$folder['id_'];
+    $update = $this->db->prepare('UPDATE S3Folders SET Nombre = ?, UpdatedAt = CURRENT_TIMESTAMP WHERE id_ = ? AND user_id_ = ?');
+    if (!$update) {
+        throw new RuntimeException('No se pudo preparar el renombrado de carpeta: ' . $this->db->error);
     }
-
-    $this->db->begin_transaction();
-
-    try {
-        /**
-         * Aquí está la clave:
-         * renameMoveFolderTreeDb() debe actualizar solo Ruta en FileS3,
-         * sin tocar Nombre ni Encriptado.
-         */
-        $this->renameMoveFolderTreeDb($userId, $rutaAntigua, $nuevaRuta);
-        $this->db->commit();
-    } catch (Throwable $e) {
-        $this->db->rollback();
-        throw $e;
-    }
-
-    $this->updateSessionRouteAfterMove($rutaAntigua, $nuevaRuta);
+    $update->bind_param('sii', $nuevoNombre, $id, $userId);
+    $this->executeStmt($update, 'Error renombrando carpeta en base de datos');
+    $update->close();
 }
 
 /**
@@ -960,6 +913,9 @@ public function deleteFolderRecursive($folderRef): array
 
     if ($prefix === '') {
         throw new RuntimeException('Prefijo de carpeta inválido.');
+    }
+    if ($prefix === $this->getBasePrefix()) {
+        throw new RuntimeException('No puedes eliminar la carpeta raíz del usuario.');
     }
 
     $deletedS3Objects = 0;
@@ -1382,13 +1338,7 @@ public function uploadFile($tmpPath, $originalName, $ruta, $userId, $mimeType, $
     }
 
     $ruta = $this->normalizePrefix((string)$ruta);
-    $extension = pathinfo($originalName, PATHINFO_EXTENSION);
-
-    $nombreEncriptado = uniqid('f_', true) . '_' . bin2hex(random_bytes(4));
-    if ($extension !== '') {
-        $nombreEncriptado .= '.' . $extension;
-    }
-
+    $nombreEncriptado = $this->nameCodec->createFileObjectName($originalName);
     $key = $this->normalizeFileKey($ruta . $nombreEncriptado);
 
     $this->s3->putObject([

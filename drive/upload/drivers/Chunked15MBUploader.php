@@ -74,9 +74,8 @@ private function s3()
     $sig = $this->signature($filename, $filesize, $carpeta, $userId);
 
     // key: el destino queda congelado desde INIT
-    $ymd = gmdate('Ymd');
-    $safeBase = preg_replace('/[^\w\-.]+/u', '_', basename($filename));
-    $key = $carpeta . '/' . $sig . '-' . $safeBase; ///uploads/' . $ymd . '
+    $physicalName = (new \ArcadeCloud\Drive\Storage\StorageObjectNameCodec())->createFileObjectName($filename);
+    $key = $carpeta . '/' . $physicalName;
 
     $s3 = $this->s3();
     $bucket = $this->bucket();

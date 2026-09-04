@@ -20,9 +20,9 @@ final class DropboxUploader implements UploaderInterface
 
     private function s3()
     {
-        if (!class_exists('Config')) throw new RuntimeException('Config no est¨¢ disponible');
+        if (!class_exists('Config')) throw new RuntimeException('Config no estï¿½ï¿½ disponible');
         $s3 = Config::getS3();
-        if (!($s3 instanceof S3Client)) throw new RuntimeException('Config::getS3() no devolvi¨® S3Client');
+        if (!($s3 instanceof S3Client)) throw new RuntimeException('Config::getS3() no devolviï¿½ï¿½ S3Client');
         return $s3;
     }
 
@@ -41,7 +41,7 @@ final class DropboxUploader implements UploaderInterface
         $files = isset($req['_files']) && is_array($req['_files']) ? $req['_files'] : $_FILES;
 
         if (empty($files['file'])) {
-            throw new RuntimeException('No se recibi¨® archivo (field "file")');
+            throw new RuntimeException('No se recibiï¿½ï¿½ archivo (field "file")');
         }
 
         $bucket = $this->bucket();
@@ -75,8 +75,7 @@ final class DropboxUploader implements UploaderInterface
             $tmpFile = (string)$f['tmp_name'][$i];
             $nombreOriginal = (string)$f['name'][$i];
 
-            $ext = pathinfo($nombreOriginal, PATHINFO_EXTENSION);
-            $nombreHash = uniqid('f_', true) . '_' . bin2hex(random_bytes(4)) . ($ext ? '.' . $ext : '');
+            $nombreHash = (new \ArcadeCloud\Drive\Storage\StorageObjectNameCodec())->createFileObjectName($nombreOriginal);
             $keyFinal = $rutaBase . $nombreHash;
 
             $metadatosArray = [

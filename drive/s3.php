@@ -382,7 +382,7 @@ $footerEspacioUsado = $storageUsage['formatted'];
 
         
 </div>
-        <form action="api/upload.php?mode=dropbox&action=init" class="dropzone mb-4" id="dropzonePublico">
+        <form action="api/upload.php?mode=local_put&action=init" class="dropzone mb-4" id="dropzonePublico">
           <div class="dz-message">Arrastra aquí o haz clic para subir</div>
         </form>
 

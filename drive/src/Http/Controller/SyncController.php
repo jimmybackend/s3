@@ -1,21 +1,180 @@
 <?php
 declare(strict_types=1);
+
 namespace ArcadeCloud\Drive\Http\Controller;
+
 use ArcadeCloud\Drive\Http\JsonResponse;
-use ArcadeCloud\Drive\Sync\S3SyncService;
+use ArcadeCloud\Drive\Sync\SyncJobStore;
 use ArcadeCloud\Drive\Sync\SyncRepository;
 use ArcadeCloud\Drive\View\SyncStatusRenderer;
+use RuntimeException;
 
 final class SyncController extends AbstractJsonController
 {
     public function run(): never
     {
-        try{$uid=$this->guardAuthenticated();if(session_status()===PHP_SESSION_ACTIVE)session_write_close();ignore_user_abort(true);@set_time_limit(0);$service=new S3SyncService(new SyncRepository($this->app->db()),$this->app->s3(),$this->app->bucket(),$this->app->userStoragePath(),$this->app->storageObjectNameCodec());JsonResponse::send($service->synchronize($uid));}
-        catch(\Throwable $e){JsonResponse::send(['ok'=>false,'step'=>'sync','error'=>$e->getMessage()],500);}
+        try {
+            $this->requirePost();
+
+            $userId = $this->guardAuthenticated();
+
+            if (session_status() === PHP_SESSION_ACTIVE) {
+                session_write_close();
+            }
+
+            $jobId = bin2hex(random_bytes(16));
+
+            $store = new SyncJobStore();
+            $store->create($userId, $jobId);
+
+            $worker =
+                dirname(__DIR__, 3) .
+                '/bin/sync_worker.php';
+
+            if (!is_file($worker)) {
+                throw new RuntimeException(
+                    'Worker de sincronización no encontrado.'
+                );
+            }
+
+            $php = '/usr/bin/php';
+
+            $setsid =
+                is_executable('/usr/bin/setsid')
+                    ? '/usr/bin/setsid'
+                    : '/bin/setsid';
+
+            if (!is_executable($php)) {
+                throw new RuntimeException(
+                    'PHP CLI no disponible.'
+                );
+            }
+
+            if (!is_executable($setsid)) {
+                throw new RuntimeException(
+                    'setsid no disponible.'
+                );
+            }
+
+            $command =
+                escapeshellarg($setsid) .
+                ' -f ' .
+                escapeshellarg($php) .
+                ' ' .
+                escapeshellarg($worker) .
+                ' ' .
+                (int)$userId .
+                ' ' .
+                escapeshellarg($jobId) .
+                ' >/dev/null 2>&1 </dev/null';
+
+            $output = [];
+            $exitCode = 0;
+
+            exec(
+                $command,
+                $output,
+                $exitCode
+            );
+
+            if ($exitCode !== 0) {
+                $store->update($userId, $jobId, [
+                    'state' => 'error',
+                    'message' => 'No se pudo iniciar worker.',
+                ]);
+
+                throw new RuntimeException(
+                    'No se pudo iniciar sincronización.'
+                );
+            }
+
+            JsonResponse::send([
+                'ok' => true,
+                'job_id' => $jobId,
+                'state' => 'queued',
+                'message' => 'Sincronización iniciada',
+            ], 202);
+
+        } catch (\Throwable $error) {
+            JsonResponse::send([
+                'ok' => false,
+                'error' => $error->getMessage(),
+            ], 500);
+        }
     }
+
     public function status(): never
     {
-        try{$uid=$this->guardAuthenticated();$status=(new SyncRepository($this->app->db()))->status($uid);if($this->request->queryString('view')==='html'){header('Content-Type: text/html; charset=utf-8');echo(new SyncStatusRenderer())->render($status,$this->request->queryString('loading')==='1');exit;}JsonResponse::send(['ok'=>true,'user_id'=>$uid]+$status);}
-        catch(\Throwable $e){JsonResponse::send(['ok'=>false,'error'=>$e->getMessage()],500);}
+        try {
+            $userId = $this->guardAuthenticated();
+
+            $jobId =
+                $this->request
+                    ->queryString('job_id');
+
+            if ($jobId !== '') {
+                $store = new SyncJobStore();
+
+                $job =
+                    $store->read(
+                        $userId,
+                        $jobId
+                    );
+
+                if ($job === null) {
+                    JsonResponse::send([
+                        'ok' => false,
+                        'error' => 'Job no encontrado.',
+                    ], 404);
+                }
+
+                JsonResponse::send(
+                    array_merge(
+                        ['ok' => true],
+                        $job
+                    )
+                );
+            }
+
+            $status =
+                (
+                    new SyncRepository(
+                        $this->app->db()
+                    )
+                )->status($userId);
+
+            if (
+                $this->request
+                    ->queryString('view') ===
+                'html'
+            ) {
+                header(
+                    'Content-Type: text/html; charset=utf-8'
+                );
+
+                echo (
+                    new SyncStatusRenderer()
+                )->render(
+                    $status,
+                    $this->request
+                        ->queryString('loading') === '1'
+                );
+
+                exit;
+            }
+
+            JsonResponse::send(
+                [
+                    'ok' => true,
+                    'user_id' => $userId
+                ] + $status
+            );
+
+        } catch (\Throwable $error) {
+            JsonResponse::send([
+                'ok' => false,
+                'error' => $error->getMessage(),
+            ], 500);
+        }
     }
 }

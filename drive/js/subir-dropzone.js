@@ -10,86 +10,86 @@ class SubirDropzoneModule {
 
     Dropzone.autoDiscover = false;
 
-    const API = window.UPLOAD_API || 'api/upload.php';
+    const API =
+      window.UPLOAD_API ||
+      'api/upload.php';
 
     /*
-     * ============================================================
-     * IMPORTANTE
-     * ============================================================
-     * NO declaramos aquí:
-     *
-     *   addedfile
-     *   sending
-     *   uploadprogress
-     *   success
-     *   error
-     *   removedfile
-     *
-     * porque son callbacks internos de Dropzone.
-     *
-     * Si los sustituimos se pierde:
-     * - preview
-     * - miniatura
-     * - progreso
-     * - estados
-     * - cancelar/quitar
-     *
-     * Nuestra lógica se registra más abajo con drop.on().
-     * ============================================================
+     * Procesamos un archivo a la vez.
+     * Preferimos estabilidad.
      */
-    const drop = new Dropzone('#dropzonePublico', {
-      url: `${API}?mode=dropbox&action=init`,
-      paramName: 'file',
+    let uploadQueue =
+      Promise.resolve();
 
-      addRemoveLinks: true,
-      withCredentials: true,
+    const drop =
+      new Dropzone(
+        '#dropzonePublico',
+        {
+          url:
+            `${API}?mode=local_put&action=init`,
 
-      headers: {
-        'X-Requested-With': 'XMLHttpRequest'
-      },
+          autoProcessQueue: false,
 
-      /*
-       * Miniaturas de imágenes.
-       */
-      createImageThumbnails: true,
-      thumbnailWidth: 120,
-      thumbnailHeight: 120,
-      thumbnailMethod: 'contain',
+          addRemoveLinks: true,
 
-      /*
-       * Textos visibles.
-       */
-      dictDefaultMessage: 'Arrastra aquí o haz clic para subir',
-      dictFallbackMessage: 'Tu navegador no permite subida mediante arrastrar y soltar.',
-      dictFileTooBig: 'El archivo es demasiado grande.',
-      dictInvalidFileType: 'Tipo de archivo no permitido.',
-      dictResponseError: 'Error del servidor: {{statusCode}}',
-      dictCancelUpload: 'Cancelar',
-      dictCancelUploadConfirmation: '¿Cancelar esta subida?',
-      dictRemoveFile: 'Quitar'
-    });
+          createImageThumbnails: true,
 
+          thumbnailWidth: 120,
+          thumbnailHeight: 120,
+          thumbnailMethod: 'contain',
 
-    /*
-     * ============================================================
-     * HELPERS VISUALES
-     * ============================================================
-     */
+          dictDefaultMessage:
+            'Arrastra aquí o haz clic para subir',
+
+          dictCancelUpload:
+            'Cancelar',
+
+          dictCancelUploadConfirmation:
+            '¿Cancelar esta subida?',
+
+          dictRemoveFile:
+            'Quitar',
+
+          dictResponseError:
+            'Error del servidor: {{statusCode}}'
+        }
+      );
+
 
     function statusNode(file) {
-      if (!file || !file.previewElement) return null;
+      if (!file?.previewElement) {
+        return null;
+      }
 
-      let node = file.previewElement.querySelector('.drive-upload-status');
+      let node =
+        file.previewElement
+          .querySelector(
+            '.drive-upload-status'
+          );
 
       if (!node) {
-        node = document.createElement('div');
-        node.className = 'drive-upload-status';
-        node.style.marginTop = '6px';
-        node.style.fontSize = '12px';
-        node.style.fontWeight = '600';
-        node.style.textAlign = 'center';
+        node =
+          document.createElement(
+            'div'
+          );
 
-        file.previewElement.appendChild(node);
+        node.className =
+          'drive-upload-status';
+
+        node.style.marginTop =
+          '6px';
+
+        node.style.fontSize =
+          '12px';
+
+        node.style.fontWeight =
+          '600';
+
+        node.style.textAlign =
+          'center';
+
+        file.previewElement
+          .appendChild(node);
       }
 
       return node;
@@ -97,179 +97,592 @@ class SubirDropzoneModule {
 
 
     function percentNode(file) {
-      if (!file || !file.previewElement) return null;
+      if (!file?.previewElement) {
+        return null;
+      }
 
-      let node = file.previewElement.querySelector('.drive-upload-percent');
+      let node =
+        file.previewElement
+          .querySelector(
+            '.drive-upload-percent'
+          );
 
       if (!node) {
-        node = document.createElement('div');
-        node.className = 'drive-upload-percent';
-        node.style.marginTop = '3px';
-        node.style.fontSize = '12px';
-        node.style.textAlign = 'center';
-        node.textContent = '0%';
-
-        const progress =
-          file.previewElement.querySelector('.dz-progress');
-
-        if (progress && progress.parentNode) {
-          progress.parentNode.insertBefore(
-            node,
-            progress.nextSibling
+        node =
+          document.createElement(
+            'div'
           );
-        } else {
-          file.previewElement.appendChild(node);
-        }
+
+        node.className =
+          'drive-upload-percent';
+
+        node.style.fontSize =
+          '12px';
+
+        node.style.textAlign =
+          'center';
+
+        node.style.marginTop =
+          '3px';
+
+        node.textContent =
+          '0%';
+
+        file.previewElement
+          .appendChild(node);
       }
 
       return node;
     }
 
 
-    function setStatus(file, text) {
-      const node = statusNode(file);
+    function setStatus(
+      file,
+      text
+    ) {
+      const node =
+        statusNode(file);
 
       if (node) {
-        node.textContent = text;
+        node.textContent =
+          text;
       }
     }
 
 
-    /*
-     * ============================================================
-     * ARCHIVO AGREGADO
-     * ============================================================
-     *
-     * El listener nativo de Dropzone YA creó el preview antes de
-     * llegar aquí.
-     * ============================================================
-     */
-    drop.on('addedfile', function(file) {
+    async function apiRequest(
+      file,
+      action,
+      values
+    ) {
+      const body =
+        new URLSearchParams();
+
+      Object.entries(
+        values || {}
+      ).forEach(
+        ([key, value]) => {
+          if (
+            value !== undefined &&
+            value !== null
+          ) {
+            body.set(
+              key,
+              String(value)
+            );
+          }
+        }
+      );
+
+      const controller =
+        new AbortController();
+
+      file._driveApiController =
+        controller;
+
       try {
-        file._driveTargetRoute =
-          window.DriveUploadDestination.capture();
+        const response =
+          await fetch(
+            `${API}?mode=local_put&action=${action}`,
+            {
+              method: 'POST',
 
-        percentNode(file);
-        setStatus(file, 'Preparando…');
+              credentials:
+                'same-origin',
 
-      } catch (error) {
-        console.error(error);
+              cache:
+                'no-store',
 
-        setStatus(
+              headers: {
+                'X-Requested-With':
+                  'XMLHttpRequest',
+
+                'Content-Type':
+                  'application/x-www-form-urlencoded;charset=UTF-8'
+              },
+
+              body:
+                body.toString(),
+
+              signal:
+                controller.signal
+            }
+          );
+
+        const raw =
+          await response.text();
+
+        let json = null;
+
+        try {
+          json =
+            raw
+              ? JSON.parse(raw)
+              : null;
+        } catch (_) {}
+
+        if (
+          !response.ok ||
+          !json ||
+          json.ok !== true
+        ) {
+          throw new Error(
+            (
+              json &&
+              (
+                json.error ||
+                json.message
+              )
+            ) ||
+            raw ||
+            `HTTP ${response.status}`
+          );
+        }
+
+        return json;
+
+      } finally {
+        if (
+          file._driveApiController ===
+          controller
+        ) {
+          file._driveApiController =
+            null;
+        }
+      }
+    }
+
+
+    function putToS3(
+      file,
+      url
+    ) {
+      return new Promise(
+        (resolve, reject) => {
+          const xhr =
+            new XMLHttpRequest();
+
+          file.xhr = xhr;
+
+          xhr.open(
+            'PUT',
+            url,
+            true
+          );
+
+          xhr.setRequestHeader(
+            'Content-Type',
+            file.type ||
+            'application/octet-stream'
+          );
+
+          xhr.upload.onprogress =
+            function(event) {
+              if (
+                !event.lengthComputable
+              ) {
+                return;
+              }
+
+              const percentage =
+                (
+                  event.loaded /
+                  event.total
+                ) * 100;
+
+              drop.emit(
+                'uploadprogress',
+                file,
+                percentage,
+                event.loaded
+              );
+            };
+
+          xhr.onload =
+            function() {
+              if (
+                xhr.status >= 200 &&
+                xhr.status < 300
+              ) {
+                resolve();
+                return;
+              }
+
+              reject(
+                new Error(
+                  `S3 HTTP ${xhr.status}`
+                )
+              );
+            };
+
+          xhr.onerror =
+            function() {
+              reject(
+                new Error(
+                  'La conexión con S3 se interrumpió.'
+                )
+              );
+            };
+
+          xhr.onabort =
+            function() {
+              const error =
+                new Error(
+                  'Subida cancelada'
+                );
+
+              error.name =
+                'AbortError';
+
+              reject(error);
+            };
+
+          xhr.send(file);
+        }
+      );
+    }
+
+
+    async function cancelPending(
+      file
+    ) {
+      if (
+        file._driveCompleted ||
+        file._driveCancelling ||
+        !file._driveUploadToken
+      ) {
+        return;
+      }
+
+      file._driveCancelling =
+        true;
+
+      try {
+        await apiRequest(
           file,
-          error.message || String(error)
+          'part',
+          {
+            cancel: 1,
+            upload_token:
+              file._driveUploadToken
+          }
         );
 
-        drop.removeFile(file);
+        file._driveUploadToken =
+          '';
 
-        alert(error.message || error);
+      } catch (error) {
+        if (
+          error?.name !==
+          'AbortError'
+        ) {
+          console.warn(
+            '[Dropzone] No se pudo limpiar subida cancelada:',
+            error
+          );
+        }
+
+      } finally {
+        file._driveCancelling =
+          false;
       }
-    });
+    }
 
 
-    /*
-     * ============================================================
-     * ENVIANDO
-     * ============================================================
-     */
-    drop.on('sending', function(file, xhr, formData) {
+    async function uploadOne(
+      file
+    ) {
+      if (file._driveRemoved) {
+        return;
+      }
+
       try {
         const route =
           file._driveTargetRoute ||
-          window.DriveUploadDestination.capture();
+          window
+            .DriveUploadDestination
+            .capture();
 
-        file._driveTargetRoute = route;
-
-        formData.append(
-          'ruta_objetivo',
-          route
-        );
-
-        setStatus(file, 'Subiendo…');
-
-      } catch (error) {
-        console.error(error);
-
-        try {
-          xhr.abort();
-        } catch (_) {}
+        file._driveTargetRoute =
+          route;
 
         setStatus(
           file,
-          'Error: ' + (error.message || error)
+          'Preparando subida…'
         );
-      }
-    });
-
-
-    /*
-     * ============================================================
-     * PROGRESO
-     * ============================================================
-     */
-    drop.on('uploadprogress', function(file, progress) {
-      const value = Math.max(
-        0,
-        Math.min(100, Number(progress) || 0)
-      );
-
-      const node = percentNode(file);
-
-      if (node) {
-        node.textContent =
-          value >= 100
-            ? '100%'
-            : `${value.toFixed(1)}%`;
-      }
-
-      setStatus(
-        file,
-        value >= 100
-          ? 'Procesando en el servidor…'
-          : 'Subiendo…'
-      );
-    });
-
-
-    /*
-     * ============================================================
-     * ÉXITO
-     * ============================================================
-     */
-    drop.on('success', async function(file, response) {
-      let payload = response;
-
-      if (typeof payload === 'string') {
-        try {
-          payload = JSON.parse(payload);
-        } catch (_) {
-          payload = null;
-        }
-      }
-
-      const first =
-        payload &&
-        Array.isArray(payload.resultados)
-          ? payload.resultados[0]
-          : null;
-
-      if (
-        !payload ||
-        payload.ok !== true ||
-        (first && first.estado !== 'ok')
-      ) {
-        const message =
-          (first && first.mensaje) ||
-          (payload && payload.error) ||
-          'La subida no se confirmó correctamente.';
 
         /*
-         * Dropzone recibió HTTP 200 pero nuestro backend
-         * informó un fallo lógico.
+         * 1. PHP crea intención + URL firmada.
          */
-        if (file.previewElement) {
-          file.previewElement.classList.remove('dz-success');
+        const init =
+          await apiRequest(
+            file,
+            'init',
+            {
+              nombre:
+                file.name,
+
+              ruta_objetivo:
+                route
+            }
+          );
+
+        file._driveUploadToken =
+          init.upload_token || '';
+
+        file._driveS3Key =
+          init.key || '';
+
+        if (file._driveRemoved) {
+          await cancelPending(
+            file
+          );
+
+          return;
         }
+
+        /*
+         * Marcamos el archivo como uploading para que Dropzone
+         * cambie Quitar -> Cancelar y conserve su UI normal.
+         */
+        file.status =
+          Dropzone.UPLOADING;
+
+        drop.emit(
+          'processing',
+          file
+        );
+
+        setStatus(
+          file,
+          'Subiendo directamente a S3…'
+        );
+
+        /*
+         * 2. Archivo directo navegador -> S3.
+         *
+         * Reintentamos hasta 3 veces si la red falla.
+         */
+        let putError = null;
+
+        for (
+          let attempt = 1;
+          attempt <= 3;
+          attempt++
+        ) {
+          try {
+            await putToS3(
+              file,
+              init.url
+            );
+
+            putError = null;
+
+            break;
+
+          } catch (error) {
+            putError = error;
+
+            if (
+              error?.name ===
+                'AbortError' ||
+              file._driveRemoved ||
+              file.status ===
+                Dropzone.CANCELED
+            ) {
+              throw error;
+            }
+
+            if (attempt < 3) {
+              setStatus(
+                file,
+                `Conexión interrumpida. Reintento ${attempt + 1}/3…`
+              );
+
+              await new Promise(
+                resolve =>
+                  setTimeout(
+                    resolve,
+                    attempt * 1500
+                  )
+              );
+            }
+          }
+        }
+
+        if (putError) {
+          throw putError;
+        }
+
+        if (
+          file._driveRemoved ||
+          file.status ===
+            Dropzone.CANCELED
+        ) {
+          await cancelPending(
+            file
+          );
+
+          return;
+        }
+
+        drop.emit(
+          'uploadprogress',
+          file,
+          100,
+          file.size
+        );
+
+        setStatus(
+          file,
+          'Registrando en la base de datos…'
+        );
+
+        /*
+         * 3. PHP confirma S3 y registra FileS3.
+         * Este POST contiene solo unos cuantos bytes.
+         */
+        let completed = null;
+        let completeError = null;
+
+        /*
+         * COMPLETE es idempotente en PHP.
+         * Podemos repetirlo sin crear duplicados.
+         */
+        for (let attempt = 1; attempt <= 3; attempt++) {
+          try {
+            completed =
+              await apiRequest(
+                file,
+                'complete',
+                {
+                  upload_token:
+                    file._driveUploadToken,
+
+                  tamano:
+                    file.size || 0
+                }
+              );
+
+            completeError = null;
+            break;
+
+          } catch (error) {
+            completeError = error;
+
+            if (attempt < 3) {
+              setStatus(
+                file,
+                `Confirmando en BD. Reintento ${attempt + 1}/3…`
+              );
+
+              await new Promise(
+                resolve =>
+                  setTimeout(
+                    resolve,
+                    attempt * 1000
+                  )
+              );
+            }
+          }
+        }
+
+        if (!completed) {
+          const error =
+            completeError ||
+            new Error(
+              'No se pudo confirmar el registro en la base de datos.'
+            );
+
+          error.driveCompleteAmbiguous = true;
+          throw error;
+        }
+
+        file._driveCompleted =
+          true;
+
+        file._driveUploadToken =
+          '';
+
+        file.status =
+          Dropzone.SUCCESS;
+
+        drop.emit(
+          'success',
+          file,
+          completed
+        );
+
+        drop.emit(
+          'complete',
+          file
+        );
+
+        const percent =
+          percentNode(file);
+
+        if (percent) {
+          percent.textContent =
+            '100%';
+        }
+
+        setStatus(
+          file,
+          '✓ Subida completada'
+        );
+
+        try {
+          await window
+            .DriveUploadDestination
+            .afterSuccess(route);
+
+        } catch (error) {
+          console.error(
+            '[Dropzone] Error refrescando Drive:',
+            error
+          );
+        }
+
+      } catch (error) {
+        const cancelled =
+          error?.name ===
+            'AbortError' ||
+          file._driveRemoved ||
+          file.status ===
+            Dropzone.CANCELED;
+
+        if (cancelled) {
+          await cancelPending(
+            file
+          );
+
+          setStatus(
+            file,
+            'Subida cancelada'
+          );
+
+          return;
+        }
+
+        /*
+         * Si PUT falló antes de complete sí limpiamos.
+         *
+         * Pero si complete es ambiguo NO borramos S3:
+         * MySQL podría haber registrado correctamente y haberse
+         * perdido únicamente la respuesta HTTP.
+         */
+        if (!error?.driveCompleteAmbiguous) {
+          await cancelPending(
+            file
+          );
+        }
+
+        file.status =
+          Dropzone.ERROR;
+
+        const message =
+          error?.message ||
+          String(error);
 
         drop.emit(
           'error',
@@ -277,143 +690,165 @@ class SubirDropzoneModule {
           message
         );
 
-        return;
-      }
-
-      const node = percentNode(file);
-
-      if (node) {
-        node.textContent = '100%';
-      }
-
-      setStatus(
-        file,
-        '✓ Subida completada'
-      );
-
-      console.log(
-        '✅ Archivo subido:',
-        payload
-      );
-
-      try {
-        await window.DriveUploadDestination.afterSuccess(
-          file._driveTargetRoute || ''
+        drop.emit(
+          'complete',
+          file
         );
-      } catch (error) {
+
+        setStatus(
+          file,
+          error?.driveCompleteAmbiguous
+            ? '⚠ Archivo recibido por S3; no se pudo confirmar la respuesta de BD. Usa Sincronizar antes de volver a subirlo.'
+            : '✗ Error: ' + message
+        );
+
         console.error(
-          '[Dropzone] Error actualizando vista:',
+          '❌ Error al subir:',
           error
         );
       }
-    });
+    }
 
 
-    /*
-     * ============================================================
-     * ERROR
-     * ============================================================
-     */
-    drop.on('error', function(file, response) {
-      let message = response;
+    drop.on(
+      'addedfile',
+      function(file) {
+        try {
+          file._driveTargetRoute =
+            window
+              .DriveUploadDestination
+              .capture();
 
-      if (
-        response &&
-        typeof response === 'object'
+          percentNode(file);
+
+          setStatus(
+            file,
+            'En cola…'
+          );
+
+          /*
+           * Un archivo por vez.
+           */
+          uploadQueue =
+            uploadQueue
+              .then(
+                () =>
+                  uploadOne(file)
+              )
+              .catch(
+                error =>
+                  console.error(
+                    error
+                  )
+              );
+
+        } catch (error) {
+          setStatus(
+            file,
+            'Error: ' +
+            (
+              error?.message ||
+              error
+            )
+          );
+
+          drop.removeFile(
+            file
+          );
+        }
+      }
+    );
+
+
+    drop.on(
+      'uploadprogress',
+      function(
+        file,
+        progress
       ) {
-        message =
-          response.error ||
-          response.message ||
-          JSON.stringify(response);
+        const value =
+          Math.max(
+            0,
+            Math.min(
+              100,
+              Number(progress) || 0
+            )
+          );
+
+        const node =
+          percentNode(file);
+
+        if (node) {
+          node.textContent =
+            `${value.toFixed(1)}%`;
+        }
       }
-
-      message =
-        String(message || 'Error desconocido');
-
-      setStatus(
-        file,
-        '✗ Error: ' + message
-      );
-
-      console.error(
-        '❌ Error al subir:',
-        response
-      );
-    });
+    );
 
 
-    /*
-     * ============================================================
-     * CANCELADO
-     * ============================================================
-     *
-     * Dropzone aborta el XHR automáticamente.
-     *
-     * En mode=dropbox no tenemos JSON multipart ni archivos
-     * temporales propios:
-     * el temporal pertenece a PHP y PHP lo descarta cuando
-     * termina/aborta la petición.
-     * ============================================================
-     */
-    drop.on('canceled', function(file) {
-      setStatus(
-        file,
-        'Subida cancelada'
-      );
+    drop.on(
+      'canceled',
+      function(file) {
+        setStatus(
+          file,
+          'Subida cancelada'
+        );
 
-      const node = percentNode(file);
-
-      if (node) {
-        node.textContent = 'Cancelado';
+        cancelPending(file);
       }
-
-      console.log(
-        '⛔ Subida cancelada:',
-        file.name
-      );
-    });
+    );
 
 
-    /*
-     * ============================================================
-     * COLA COMPLETA
-     * ============================================================
-     */
-    drop.on('queuecomplete', function() {
-      console.log(
-        '✅ Cola de subida terminada'
-      );
-    });
+    drop.on(
+      'removedfile',
+      function(file) {
+        file._driveRemoved =
+          true;
+
+        try {
+          file._driveApiController
+            ?.abort();
+        } catch (_) {}
+
+        if (
+          file.xhr &&
+          file.xhr.readyState !== 4
+        ) {
+          try {
+            file.xhr.abort();
+          } catch (_) {}
+        }
+
+        cancelPending(file);
+      }
+    );
 
 
-    /*
-     * Compatibilidad con código existente.
-     */
     if (
-      typeof API !== 'undefined' &&
-      typeof window.API === 'undefined'
+      typeof window.API ===
+      'undefined'
     ) {
       window.API = API;
     }
 
-    if (
-      typeof drop !== 'undefined' &&
-      typeof window.drop === 'undefined'
-    ) {
-      window.drop = drop;
-    }
+    window.drop =
+      drop;
 
     return this;
   }
 
-  static boot(win = window, doc = document) {
+  static boot(
+    win = window,
+    doc = document
+  ) {
     win.ArcadeCloudDrive =
       win.ArcadeCloudDrive || {
         modules: {}
       };
 
     win.ArcadeCloudDrive.modules =
-      win.ArcadeCloudDrive.modules || {};
+      win.ArcadeCloudDrive.modules ||
+      {};
 
     const instance =
       new SubirDropzoneModule(

@@ -44,7 +44,7 @@ try {
 
     // local_put usa la sesión unos milisegundos para guardar/consumir el intent.
     // Los demás modos pueden tardar mucho: liberamos el lock de sesión antes de S3.
-    $keepSessionOpen = ($mode === 'local_put' && in_array($action, ['init', 'complete'], true));
+    $keepSessionOpen = ($mode === 'local_put' && in_array($action, ['init', 'part', 'complete'], true));
     if (!$keepSessionOpen && session_status() === PHP_SESSION_ACTIVE) {
         session_write_close();
     }

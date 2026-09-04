@@ -629,29 +629,37 @@ class CarpetasModule {
           body: toFormUrlEncoded({ ruta, nuevo })
         });
 
-        let j = await res.json().catch(() => null);
+        const raw = await res.text();
 
-        if (!res.ok || !j) {
-          // fallback: POST normal al action del form (s3.php)
-          const action = form.getAttribute('action') || window.location.href;
-          const fd = new FormData(form);
-
-          res = await fetchNoCache(action, {
-            method: 'POST',
-            body: fd,
-            credentials: 'same-origin'
-          });
-
-          if (!res.ok) {
-            throw new Error('No se pudo renombrar la carpeta (HTTP ' + res.status + ').');
-          }
-
-          rutaActualizada = String(window.rutaActual || ruta).trim();
-        } else if (j.ok !== true) {
-          throw new Error(j.error || 'No se pudo renombrar la carpeta.');
-        } else {
-          rutaActualizada = String(j.ruta_actual || window.rutaActual || ruta).trim();
+        let j = null;
+        try {
+          j = raw ? JSON.parse(raw) : null;
+        } catch (_) {
+          j = null;
         }
+
+        if (!res.ok) {
+          const detalle =
+            (j && j.error)
+              ? j.error
+              : (raw || `HTTP ${res.status}`);
+
+          throw new Error(`No se pudo renombrar la carpeta: ${detalle}`);
+        }
+
+        if (!j || j.ok !== true) {
+          throw new Error(
+            (j && j.error)
+              ? j.error
+              : 'Respuesta inválida renombrando carpeta.'
+          );
+        }
+
+        rutaActualizada = String(
+          j.ruta_actual ||
+          window.rutaActual ||
+          ruta
+        ).trim();
 
         if (rutaActualizada) {
           window.rutaActual = rutaActualizada;
@@ -875,14 +883,30 @@ class CarpetasModule {
           credentials: 'same-origin'
         });
 
-        const j = await res.json().catch(() => null);
+        const raw = await res.text();
 
-        if (!res.ok || !j) {
-          throw new Error('Respuesta inválida creando carpeta.');
+        let j = null;
+        try {
+          j = raw ? JSON.parse(raw) : null;
+        } catch (_) {
+          j = null;
         }
 
-        if (!j.ok) {
-          throw new Error(j.error || 'No se pudo crear la carpeta.');
+        if (!res.ok) {
+          const detalle =
+            (j && j.error)
+              ? j.error
+              : (raw || `HTTP ${res.status}`);
+
+          throw new Error(`No se pudo crear la carpeta: ${detalle}`);
+        }
+
+        if (!j || j.ok !== true) {
+          throw new Error(
+            (j && j.error)
+              ? j.error
+              : 'Respuesta inválida creando carpeta.'
+          );
         }
 
         const rutaActualizada = String(j.ruta_actual || ruta).trim();

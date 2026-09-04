@@ -73,7 +73,7 @@ if ($action !== '') {
 <body>
 <div class="panel">
   <h1>Subida reanudable a S3 (Directo)</h1>
-  <p class="sub">Sube en paralelo con paquetes de 15 MB. Mensajes visibles sin diálogos del navegador.</p>
+  <p class="sub">Sube de forma secuencial con paquetes de 15 MB. Cada paquete pasa por el servidor y se confirma en S3 antes de continuar.</p>
 
   <div class="grid">
     <div class="uploader">
@@ -118,9 +118,17 @@ if ($action !== '') {
   const bar=$('bar'), status=$('status'), fn=$('fn'), fs=$('fs'), uploadIdEl=$('uploadId'), s3keyEl=$('s3key');
   const resultBox=$('result'), resKey=$('resKey'), resUrl=$('resUrl'), resLink=$('resLink'), resLinkWrap=$('resLinkWrap');
 
-  // === Config: 15MB y 4 workers en paralelo ===
-  const CHUNK_SIZE = 15 * 1024 * 1024; // 15 MB (S3 requiere >= 5 MB salvo la última parte)
-  const MAX_WORKERS = 4;
+  // === Config robusta para archivos grandes ===
+  // Un solo paquete a la vez prioriza estabilidad sobre velocidad.
+  const CHUNK_SIZE = 15 * 1024 * 1024;
+  const MAX_WORKERS = 1;
+
+  // Si una conexión directa navegador -> S3 falla temporalmente,
+  // reintentamos el mismo paquete antes de pausar la subida.
+  const MAX_RETRIES = 5;
+  const RETRY_BASE_MS = 1500;
+
+  const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
   let state = {
     paused:false, failed:false, file:null, uploadId:null, s3key:null, etags:{},
@@ -182,10 +190,22 @@ if ($action !== '') {
     while(!state.paused && state.inFlight < MAX_WORKERS && state.nextPart <= state.totalParts){
       const partNumber = state.nextPart++;
       uploadPartParallel(partNumber).catch(e=>{
-        msg(`Error en paquete ${partNumber}: ${e.message}`,'err');
+        const aborted =
+          e && (
+            e.name === 'AbortError' ||
+            String(e.message || '').toLowerCase().includes('abort')
+          );
+
+        // Pausar manualmente no debe marcar la sesión como fallida.
+        if (state.paused && aborted) {
+          return;
+        }
+
+        msg(`Error definitivo en paquete ${partNumber}: ${e.message}`,'err');
         state.failed=true;
         state.paused=true;
-        pauseBtn.disabled=true; resumeBtn.disabled=false;
+        pauseBtn.disabled=true;
+        resumeBtn.disabled=false;
       });
     }
     if (!state.paused && !state.failed && state.inFlight===0 && state.nextPart>state.totalParts) {
@@ -197,52 +217,56 @@ if ($action !== '') {
     }
   }
 
-  async function signPart(partNumber, size, signal) {
-    const r = await postForm('sign',{uploadId:state.uploadId,key:state.s3key,partNumber},signal);
-    if(!r.ok || !r.url) throw new Error(r.error || 'Fallo al firmar URL');
-    return r.url;
-  }
+  async function uploadPartViaPhp(partNumber, blob, signal) {
+    const form = new FormData();
 
+    form.append('action', 'part');
+    form.append('uploadId', state.uploadId);
+    form.append('key', state.s3key);
+    form.append('partNumber', String(partNumber));
 
-  async function uploadPartDirectToS3(partNumber, blob, signal) {
-    // 1) up.php solo firma la petición; el contenido del paquete NO pasa por PHP.
-    const url = await signPart(partNumber, blob.size, signal);
+    // Un solo chunk de 15 MB viaja navegador -> PHP -> S3.
+    form.append(
+      'part',
+      blob,
+      `part-${String(partNumber).padStart(5, '0')}.bin`
+    );
 
-    // 2) El navegador envía el paquete directamente al endpoint presignado de S3.
-    const res = await fetch(url, {
-      method: 'PUT',
-      body: blob,
-      signal
+    const res = await fetch(location.pathname, {
+      method: 'POST',
+      body: form,
+      signal,
+      credentials: 'same-origin',
+      cache: 'no-store'
     });
 
+    const raw = await res.text();
+
+    let data = null;
+
+    try {
+      data = raw ? JSON.parse(raw) : null;
+    } catch (_) {
+      data = null;
+    }
+
     if (!res.ok) {
-      const t = await res.text().catch(()=> '');
-      throw new Error(`S3 HTTP ${res.status}: ${t || res.statusText}`);
+      const detail =
+        data && data.error
+          ? data.error
+          : (raw || `HTTP ${res.status}`);
+
+      throw new Error(detail);
     }
 
-    // S3 devuelve el ETag. Si CORS no expone ese header, lo recuperamos
-    // mediante listParts desde PHP (petición pequeña, sin transportar el archivo).
-    let etag = (res.headers.get('ETag') || res.headers.get('etag') || '').trim();
-    etag = etag.replace(/^"|"$/g, '');
-
-    if (!etag) {
-      const sync = await postForm('resume', {
-        filename: state.file ? state.file.name : '',
-        filesize: state.file ? state.file.size : 0,
-        uploadId: state.uploadId,
-        key: state.s3key
-      }, signal);
-
-      if (sync && sync.found && sync.etags) {
-        etag = String(sync.etags[String(partNumber)] || sync.etags[partNumber] || '').replace(/^"|"$/g, '');
-      }
+    if (!data || data.ok !== true || !data.etag) {
+      throw new Error(
+        (data && data.error) ||
+        `El paquete ${partNumber} no fue confirmado por S3.`
+      );
     }
 
-    if (!etag) {
-      throw new Error('S3 recibió el paquete pero no se pudo obtener su ETag. Revisa la configuración CORS del bucket para permitir PUT y, de preferencia, exponer ETag.');
-    }
-
-    return etag;
+    return String(data.etag).replace(/^"|"$/g, '');
   }
 
   async function uploadPartParallel(partNumber){
@@ -255,7 +279,53 @@ if ($action !== '') {
 
     try {
       // Direct-to-S3 real: PHP solo genera la URL presignada.
-      let etag = await uploadPartDirectToS3(partNumber, blob, controller.signal);
+      // El mismo paquete puede reintentarse sin reiniciar el multipart.
+      let etag = '';
+      let lastError = null;
+
+      for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+        try {
+          etag = await uploadPartViaPhp(
+            partNumber,
+            blob,
+            controller.signal
+          );
+
+          if (etag) {
+            if (attempt > 1) {
+              msg(
+                `Paquete ${partNumber}: recuperado correctamente en intento ${attempt}/${MAX_RETRIES}.`,
+                'ok'
+              );
+            }
+            break;
+          }
+
+        } catch (e) {
+          lastError = e;
+
+          if (controller.signal.aborted) {
+            throw e;
+          }
+
+          if (attempt < MAX_RETRIES) {
+            const delay = RETRY_BASE_MS * attempt;
+
+            msg(
+              `Paquete ${partNumber}: intento ${attempt}/${MAX_RETRIES} falló. Reintentando en ${(delay / 1000).toFixed(1)} s…`,
+              'warn'
+            );
+
+            await sleep(delay);
+          }
+        }
+      }
+
+      if (!etag) {
+        throw lastError || new Error(
+          `No se pudo confirmar el paquete ${partNumber} después de ${MAX_RETRIES} intentos.`
+        );
+      }
 
       state.etags[partNumber]=etag;
       state.uploadedBytes += (end-start);

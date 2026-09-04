@@ -11,7 +11,7 @@ class S3Manager
     public function __construct(?\Aws\S3\S3Client $s3 = null, ?mysqli $db = null, ?string $bucket = null, ?\ArcadeCloud\Drive\Storage\StorageObjectNameCodec $nameCodec = null)
     {
         $this->s3 = $s3 ?? Config::getS3();
-        $this->bucket = $bucket ?? Config::BUCKET;
+        $this->bucket = $bucket ?? Config::getBucket();
 
         if ($db === null) {
             global $db_connection;
@@ -671,8 +671,26 @@ private function getFolderRecord($folderRef, bool $throwIfMissing = false): ?arr
         if ($nombreCarpeta === '') {
             throw new RuntimeException('Debes indicar un nombre de carpeta.');
         }
-        if (!preg_match('/^[^\\\/:*?"<>|]+$/u', $nombreCarpeta)) {
-            throw new RuntimeException('El nombre de la carpeta contiene caracteres no permitidos.');
+
+        /*
+         * Permitimos:
+         * letras, números, espacios, acentos, ñ, guiones,
+         * paréntesis y demás caracteres normales.
+         *
+         * Solo bloqueamos:
+         * \ / : * ? " < > |
+         * nombres "." y ".."
+         * caracteres de control.
+         */
+        if (
+            $nombreCarpeta === '.' ||
+            $nombreCarpeta === '..' ||
+            strpbrk($nombreCarpeta, '\\/:*?"<>|') !== false ||
+            preg_match('/[\x00-\x1F\x7F]/', $nombreCarpeta) === 1
+        ) {
+            throw new RuntimeException(
+                'El nombre contiene caracteres no permitidos: \ / : * ? " < > |'
+            );
         }
 
         $base = $this->getBasePrefix();
@@ -845,8 +863,16 @@ public function renombrarCarpeta(string $rutaAntigua, string $nuevoNombre): void
     if ($nuevoNombre === '') {
         throw new RuntimeException('Debes indicar el nuevo nombre de la carpeta.');
     }
-    if (!preg_match('/^[^\\\/:*?"<>|]+$/u', $nuevoNombre)) {
-        throw new RuntimeException('El nuevo nombre contiene caracteres no permitidos.');
+
+    if (
+        $nuevoNombre === '.' ||
+        $nuevoNombre === '..' ||
+        strpbrk($nuevoNombre, '\\/:*?"<>|') !== false ||
+        preg_match('/[\x00-\x1F\x7F]/', $nuevoNombre) === 1
+    ) {
+        throw new RuntimeException(
+            'El nuevo nombre contiene caracteres no permitidos: \ / : * ? " < > |'
+        );
     }
 
     $base = $this->getBasePrefix();

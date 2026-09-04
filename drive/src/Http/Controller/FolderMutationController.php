@@ -48,7 +48,18 @@ final class FolderMutationController extends AbstractJsonController
                 throw new RuntimeException('No se puede eliminar la carpeta raíz del usuario.');
             }
             $this->app->s3Manager()->eliminarCarpetaCompleta($route);
-            JsonResponse::send(['ok' => true, 'message' => 'Carpeta eliminada correctamente.', 'ruta' => $route]);
+
+            $currentRoute = $this->app->userStoragePath()->normalizeForUser(
+                (string)($_SESSION['ruta_actual'] ?? $this->app->userStoragePath()->rootForUser($userId)),
+                $userId
+            );
+
+            JsonResponse::send([
+                'ok' => true,
+                'message' => 'Carpeta eliminada correctamente.',
+                'ruta' => $route,
+                'ruta_actual' => $currentRoute,
+            ]);
         } catch (\Throwable $error) {
             JsonResponse::error($error->getMessage(), 400);
         }
@@ -96,7 +107,19 @@ final class FolderMutationController extends AbstractJsonController
                 throw new RuntimeException('No se puede renombrar la carpeta raíz del usuario.');
             }
             $this->app->s3Manager()->renombrarCarpeta($route, $name);
-            JsonResponse::send(['ok' => true, 'message' => 'Carpeta renombrada correctamente.', 'ruta' => $route, 'nuevo' => $name]);
+
+            $currentRoute = $this->app->userStoragePath()->normalizeForUser(
+                (string)($_SESSION['ruta_actual'] ?? $this->app->userStoragePath()->rootForUser($userId)),
+                $userId
+            );
+
+            JsonResponse::send([
+                'ok' => true,
+                'message' => 'Carpeta renombrada correctamente.',
+                'ruta' => $route,
+                'nuevo' => $name,
+                'ruta_actual' => $currentRoute,
+            ]);
         } catch (\Throwable $error) {
             JsonResponse::error($error->getMessage(), 400);
         }

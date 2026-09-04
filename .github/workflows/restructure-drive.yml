@@ -1,0 +1,296 @@
+name: Restructure drive app
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/restructure-drive.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  restructure:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Rename app and remove legacy chat
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          SRC='public_html/s3-servicios-aws'
+          DST='public_html/drive'
+
+          test -d "$SRC"
+          test ! -e "$DST"
+          git mv "$SRC" "$DST"
+
+          chat_files=(
+            'bedrock_chat2.php'
+            'chat1.js'
+            'chat2-enhancements.js'
+            'chat2.js'
+            'chat2_messages.php'
+            'chat2_session_archive.php'
+            'chat2_session_create.php'
+            'chat2_session_restore.php'
+            'chat2_session_title.php'
+            'chat2_sessions.php'
+            'chat_gen_image.php'
+            'chat_gen_video_start.php'
+            'chat_gen_video_status.php'
+            'chat_mark_primordial.php'
+            'chat_notify_poll.php'
+            'chat_upload.php'
+            'code_edit.php'
+            'compress_session_context-old.php'
+            'compress_session_context.php'
+            'cron_compression.log'
+            'cron_embeddings.log'
+            'css/chat-old.css'
+            'css/chat.css'
+            'css/chat2-old.css'
+            'css/chat2.css'
+            'dashboard.php'
+            'dashboard_stats.php'
+            'get_context.php'
+            'includes/SessionContextManager.php'
+            'includes/SessionRetriever.php'
+            'index_project_sources.php'
+            'process_embedding_queue-old.php'
+            'process_embedding_queue.php'
+            'project_source_delete.php'
+            'project_sources.php'
+            'project_upload.php'
+            'projects.php'
+            'run_tests.php'
+            's3_chat.php'
+            's3chat-old.php'
+            's3chat.php'
+            's3chatstats.php'
+            'token_usage_debug.log'
+            'tokens.json'
+            'tools.php'
+          )
+
+          for rel in "${chat_files[@]}"; do
+            if [ -e "$DST/$rel" ]; then
+              git rm -f "$DST/$rel"
+            fi
+          done
+
+          cat > "$DST/app_bootstrap.php" <<'PHP'
+          <?php
+          declare(strict_types=1);
+
+          /**
+           * Punto único de arranque de ArcadeCloud Drive.
+           *
+           * Estructura esperada:
+           * public_html/
+           * ├── vendor/
+           * └── drive/
+           *     └── app_bootstrap.php
+           *
+           * Config-s3.php y db.php permanecen fuera de public_html.
+           */
+
+          if (defined('APP_BOOTSTRAP_LOADED')) {
+              return;
+          }
+
+          // Una carpeta atrás: public_html/ (vendor privado respecto al DocumentRoot de drive).
+          $PUBLIC_ROOT = realpath(dirname(__DIR__));
+
+          // Dos carpetas atrás: raíz privada del proyecto (Config-s3.php y db.php).
+          $PRIVATE_ROOT = realpath(dirname(__DIR__, 2));
+
+          if ($PUBLIC_ROOT === false) {
+              throw new RuntimeException('No se pudo resolver public_html.');
+          }
+
+          if ($PRIVATE_ROOT === false) {
+              throw new RuntimeException('No se pudo resolver la raíz privada de la aplicación.');
+          }
+
+          $autoloadPath = $PUBLIC_ROOT . '/vendor/autoload.php';
+          $configPath   = $PRIVATE_ROOT . '/Config-s3.php';
+          $dbPath       = $PRIVATE_ROOT . '/db.php';
+
+          foreach ([
+              'Composer'      => $autoloadPath,
+              'Configuración' => $configPath,
+              'Base de datos' => $dbPath,
+          ] as $nombre => $ruta) {
+              if (!is_file($ruta)) {
+                  throw new RuntimeException($nombre . ' no encontrado: ' . $ruta);
+              }
+          }
+
+          putenv('AWS_EC2_METADATA_DISABLED=true');
+
+          require_once $autoloadPath;
+          require_once $configPath;
+          require_once $dbPath;
+
+          if (!isset($db_connection) || !($db_connection instanceof mysqli)) {
+              throw new RuntimeException('La conexión mysqli $db_connection no fue inicializada por db.php.');
+          }
+
+          define('APP_BOOTSTRAP_LOADED', true);
+          PHP
+
+          python3 <<'PY'
+          from pathlib import Path
+          import re
+
+          p = Path('public_html/drive/s3.php')
+          rawb = p.read_bytes()
+          try:
+              text = rawb.decode('utf-8')
+              enc = 'utf-8'
+          except UnicodeDecodeError:
+              text = rawb.decode('latin-1')
+              enc = 'latin-1'
+
+          # CSS del chat viejo.
+          text = re.sub(r'^\s*<link[^>]+href=["\']css/chat(?:2)?(?:-old)?\.css["\'][^>]*>\s*$', '', text, flags=re.I|re.M)
+
+          # Pestaña Chat IA.
+          text = re.sub(
+              r'\s*<li class=["\']nav-item["\']>\s*<a[^>]+id=["\']tab-Chat2["\'][\s\S]*?</li>',
+              '', text, count=1, flags=re.I
+          )
+
+          # Panel completo Chat IA, hasta el inicio de Bitácora.
+          text = re.sub(
+              r'\s*<!--\s*PESTAÑA CHAT2[\s\S]*?(?=<!--\s*PESTAÑA Bitacora\s*-->)',
+              '\n', text, count=1, flags=re.I
+          )
+
+          # Iframe antiguo comentado dentro de Subir.
+          text = re.sub(
+              r'\s*<!--\s*<iframe[\s\S]*?portal\.esforzados\.com/html/chat/users\.php[\s\S]*?</iframe>\s*-->',
+              '', text, flags=re.I
+          )
+
+          # Enlaces útiles relacionados con chats.
+          text = re.sub(
+              r'\s*<li class=["\']list-group-item["\']>\s*<a[^>]+href=["\'][^"\']*(?:s3_chat\.php|/html/chat/|chat\.openai\.com)[^"\']*["\'][\s\S]*?</li>',
+              '', text, flags=re.I
+          )
+
+          # Toasts y scripts comentados del chat.
+          text = re.sub(r'\s*<div id=["\'](?:chatToasts|incomingToasts)["\'][^>]*></div>', '', text, flags=re.I)
+          text = re.sub(r'\s*<!--[^>]*(?:chat-toasts|chat-toast)[\s\S]*?-->', '', text, flags=re.I)
+          text = re.sub(r'\s*<!--\s*<script src=["\']chat2\.js["\']></script>[\s\S]*?<script src=["\']chat2-enhancements\.js["\']></script>\s*-->', '', text, flags=re.I)
+
+          # Limpieza de líneas vacías excesivas.
+          text = re.sub(r'\n{4,}', '\n\n\n', text)
+          p.write_bytes(text.encode(enc))
+
+          # Si algún archivo conservado todavía enlaza hojas chat.css, quitar solo el enlace.
+          for q in Path('public_html/drive').glob('*.php'):
+              if q.name == 's3.php':
+                  continue
+              b = q.read_bytes()
+              try:
+                  t = b.decode('utf-8'); e = 'utf-8'
+              except UnicodeDecodeError:
+                  t = b.decode('latin-1'); e = 'latin-1'
+              nt = re.sub(r'^\s*<link[^>]+href=["\']css/chat(?:2)?(?:-old)?\.css["\'][^>]*>\s*$', '', t, flags=re.I|re.M)
+              if nt != t:
+                  q.write_bytes(nt.encode(e))
+          PY
+
+          # Actualiza la documentación del módulo de subida a la nueva ruta.
+          python3 <<'PY'
+          from pathlib import Path
+          p = Path('public_html/drive/upload/LEEME.md')
+          if p.exists():
+              b = p.read_bytes()
+              try:
+                  t = b.decode('utf-8'); e='utf-8'
+              except UnicodeDecodeError:
+                  t = b.decode('latin-1'); e='latin-1'
+              t = t.replace('public_html/s3v2/', 'public_html/drive/')
+              t = t.replace('/s3v2/', '/drive/')
+              t = t.replace('s3v2/vendor/autoload.php', '../vendor/autoload.php')
+              t = t.replace('Además, en la raíz de `s3v2/`:', 'En `public_html/drive/`:')
+              t = t.replace('- `vendor/` (Composer, AWS SDK)\r\n', '- `../vendor/` (Composer, AWS SDK; fuera del DocumentRoot de `drive`)\r\n')
+              t = t.replace('- `vendor/` (Composer, AWS SDK)\n', '- `../vendor/` (Composer, AWS SDK; fuera del DocumentRoot de `drive`)\n')
+              t = t.replace('`require_once __DIR__ . \'/vendor/autoload.php\';`', '`require_once dirname(__DIR__) . \'/vendor/autoload.php\';`')
+              p.write_bytes(t.encode(e))
+          PY
+
+      - name: Audit new structure
+        shell: bash
+        run: |
+          set -euo pipefail
+          ROOT='public_html/drive'
+
+          test -d "$ROOT"
+          test ! -e 'public_html/s3-servicios-aws'
+          test -f "$ROOT/s3.php"
+          test -f "$ROOT/app_bootstrap.php"
+
+          echo '=== Bootstrap ==='
+          grep -n "dirname(__DIR__)" "$ROOT/app_bootstrap.php"
+          grep -n "'/vendor/autoload.php'" "$ROOT/app_bootstrap.php"
+          grep -n "dirname(__DIR__, 2)" "$ROOT/app_bootstrap.php"
+          grep -n "'/Config-s3.php'" "$ROOT/app_bootstrap.php"
+          grep -n "'/db.php'" "$ROOT/app_bootstrap.php"
+
+          echo '=== Direct vendor loaders outside bootstrap ==='
+          hits="$(grep -RInE --include='*.php' '^[[:space:]]*(require|require_once|include|include_once).*vendor/autoload\.php' "$ROOT" | grep -v '/app_bootstrap.php:' || true)"
+          if [ -n "$hits" ]; then
+            printf '%s\n' "$hits"
+            exit 1
+          fi
+          echo 'OK: Composer centralized in app_bootstrap.php'
+
+          echo '=== Direct DB loaders outside bootstrap ==='
+          hits="$(grep -RInE --include='*.php' '^[[:space:]]*(require|require_once|include|include_once).*(db-s3|db)\.php' "$ROOT" | grep -v '/app_bootstrap.php:' || true)"
+          if [ -n "$hits" ]; then
+            printf '%s\n' "$hits"
+            exit 1
+          fi
+          echo 'OK: DB centralized in app_bootstrap.php'
+
+          echo '=== Legacy chat filenames ==='
+          chat_names="$(find "$ROOT" -type f -printf '%P\n' | grep -Ei '(^|/)(s3_?chat|chat[0-9_-]*|bedrock_chat|.*session_context|process_embedding_queue|project_sources|projects\.php|tools\.php|code_edit\.php|run_tests\.php)' || true)"
+          if [ -n "$chat_names" ]; then
+            printf '%s\n' "$chat_names"
+            exit 1
+          fi
+          echo 'OK: legacy chat files removed'
+
+          echo '=== Residual internal chat references ==='
+          refs="$(grep -RIniE --exclude='*.png' --exclude='*.jpg' --exclude='*.gif' --exclude='LEEME.md' '(s3chat|s3_chat|chat2|bedrock_chat|ChatSessions|SessionContextBlocks|ProjectSources|ChunkEmbeddings|ToolCalls)' "$ROOT" || true)"
+          if [ -n "$refs" ]; then
+            printf '%s\n' "$refs"
+            exit 1
+          fi
+          echo 'OK: no legacy chat references remain'
+
+          echo '=== PHP syntax ==='
+          find "$ROOT" -type f -name '*.php' -print0 | while IFS= read -r -d '' f; do
+            php -l "$f" >/dev/null
+          done
+          echo 'OK: PHP syntax valid'
+
+      - name: Commit restructure and remove workflow
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git rm .github/workflows/restructure-drive.yml
+          git add -A
+          git commit -m 'Move app to public_html/drive and remove legacy chat'
+          git push origin main

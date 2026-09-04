@@ -25,6 +25,22 @@ $pageService = $app->drivePageService();
 $vm = $pageService->build($_SESSION, $_GET, $userId);
 
 $basePrefix = $vm->basePrefix;
+
+/*
+ * ============================================================
+ * DESTINOS PARA MOVER ARCHIVOS
+ * ============================================================
+ * DB-FIRST:
+ * No consultamos S3 para construir este listado.
+ * Se muestran únicamente las carpetas del usuario autenticado.
+ * ============================================================
+ */
+$todasLasCarpetas = $app->s3Manager()->listarCarpetasDesdeDb(
+    $userId,
+    $userRoot,
+    true
+);
+
 $tipo = $vm->tipo;
 $buscar = $vm->buscar;
 $fechaInicio = $vm->fechaInicio;
@@ -689,6 +705,7 @@ $footerEspacioUsado = $storageUsage['formatted'];
         <div class="form-group">
           <label>Selecciona carpeta de destino:</label>
           <select name="nueva_ruta" id="nuevaRutaSelect" class="form-control" required>
+            <option value="">— Selecciona carpeta de destino —</option>
             <?php foreach ($todasLasCarpetas as $ruta): ?>
               <?php
                 $nivel = substr_count(trim($ruta, '/'), '/');

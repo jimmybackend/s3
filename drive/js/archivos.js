@@ -653,7 +653,19 @@ class ArchivosModule {
 
         if (!formModal) return;
 
-        const rutaActual = (formModal.querySelector('input[name="ruta_actual"]')?.value || '').trim();
+        const rutaActualInput = formModal.querySelector('input[name="ruta_actual"]');
+
+        const rutaActual = String(
+          document.getElementById('archivosContexto')?.dataset?.rutaActual ||
+          window.rutaActual ||
+          rutaActualInput?.value ||
+          ''
+        ).trim();
+
+        if (rutaActualInput && rutaActual) {
+          rutaActualInput.value = rutaActual;
+        }
+
         let archivosJSON = (formModal.querySelector('input[name="archivos_json"]')?.value || '').trim();
 
         const selDst = document.getElementById('nuevaRutaSelect') || formModal.querySelector('#nuevaRutaSelect');

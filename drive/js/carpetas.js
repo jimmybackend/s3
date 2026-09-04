@@ -823,7 +823,13 @@ class CarpetasModule {
       if (!modal) return;
 
       const btn = evt && evt.relatedTarget ? evt.relatedTarget : null;
-      const ruta = getRutaFromElement(btn) || '';
+
+      const ruta = String(
+        document.getElementById('archivosContexto')?.dataset?.rutaActual ||
+        window.rutaActual ||
+        getRutaFromElement(btn) ||
+        ''
+      ).trim();
 
       const inputRuta = $id(CFG.ids.crearCarpetaRuta);
       const textoRuta = $id(CFG.ids.crearCarpetaRutaTexto);

@@ -29,10 +29,10 @@ final class FileRecordLocator
         $basename = $slash === false ? $key : substr($key, $slash + 1);
 
         $stmt = $this->db->prepare(
-            'SELECT id_, user_id_, Nombre, Ruta, Encriptado, Tamano, Fecha, Metadatos, AccessType, PasswordHash, SecureHint, Found\n'
-            . 'FROM FileS3\n'
-            . 'WHERE user_id_ = ? AND Found = 1\n'
-            . '  AND ((Ruta = ? AND Encriptado = ?) OR Encriptado = ?)\n'
+            'SELECT id_, user_id_, Nombre, Ruta, Encriptado, Tamano, Fecha, Metadatos, AccessType, PasswordHash, SecureHint, Found '
+            . 'FROM FileS3 '
+            . 'WHERE user_id_ = ? AND Found = 1 '
+            . 'AND ((Ruta = ? AND Encriptado = ?) OR Encriptado = ?) '
             . 'ORDER BY id_ DESC LIMIT 20'
         );
         if (!$stmt) {

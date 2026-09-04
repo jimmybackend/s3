@@ -34,7 +34,7 @@ final class DriveApplication
     {
         $this->db = $db;
         $this->s3 = \Config::getS3();
-        $this->bucket = \Config::BUCKET;
+        $this->bucket = \Config::getBucket();
     }
 
     public static function boot(mysqli $db): self

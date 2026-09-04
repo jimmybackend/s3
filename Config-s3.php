@@ -1,8 +1,12 @@
 <?php
 /**
  * Archivo: Config-s3.php
- * Versión: 3.0
- * Descripción: Centraliza configuración AWS y constructores de clientes SDK.
+ * Descripción:
+ * Centraliza configuración AWS y creación de clientes del SDK.
+ *
+ * Prioridad:
+ *   1. Variables de entorno.
+ *   2. Constantes locales como fallback no secreto.
  */
 declare(strict_types=1);
 
@@ -17,128 +21,260 @@ use Aws\S3\S3Client;
 
 final class Config
 {
-    /** ============ AJUSTA ESTO ============ */
-    public const REGION      = 'us-east-1';
-    public const BUCKET      = 's3nubeaws';
+    /*
+     * Fallbacks NO secretos.
+     *
+     * REGION puede tener un valor seguro por defecto.
+     * BUCKET se conserva temporalmente por compatibilidad con código
+     * antiguo que todavía será auditado, pero el runtime nuevo debe
+     * utilizar siempre getBucket().
+     */
+    public const REGION = 'us-east-1';
+    public const BUCKET = 's3nubeaws';
 
- 
-
-    public const ACCESS_KEY = 'ACCESS_KEY';
-    public const SECRET_KEY = 'SECRET_KEY';
+    /*
+     * Nunca guardar credenciales reales en Git.
+     */
+    public const ACCESS_KEY = '';
+    public const SECRET_KEY = '';
 
     public const DEFAULT_USER_ID = 1;
 
-    public const RUTA_RAIZ      = 'Data/';
+    public const RUTA_RAIZ       = 'Data/';
     public const RUTA_COMPARTIDA = 'Data/Compartidos/';
 
-    /** ============ IMPORTANTE ============ */
+    /**
+     * Evita búsquedas innecesarias de credenciales vía IMDS.
+     */
     public static function bootAwsEnv(): void
     {
-        // Evita que el SDK intente 169.254.169.254 (IMDS) cuando NO estás en EC2
         putenv('AWS_EC2_METADATA_DISABLED=true');
     }
 
-    /** Credenciales: ENV → constantes */
-   public static function getAwsCredentials(): array
-        {
-            self::bootAwsEnv();
-        
-            $key = getenv('AWS_ACCESS_KEY_ID');
-            $sec = getenv('AWS_SECRET_ACCESS_KEY');
-        
-            if (!$key || !$sec) {
-                // si no hay env vars, cae a constantes
-                $key = defined(__CLASS__ . '::ACCESS_KEY') ? self::ACCESS_KEY : '';
-                $sec = defined(__CLASS__ . '::SECRET_KEY') ? self::SECRET_KEY : '';
-            }
-        
-            $key = is_string($key) ? trim($key) : '';
-            $sec = is_string($sec) ? trim($sec) : '';
-        
-            if ($key === '' || $sec === '') {
-                throw new RuntimeException('Faltan credenciales AWS. Define AWS_ACCESS_KEY_ID/AWS_SECRET_ACCESS_KEY o Config::ACCESS_KEY/SECRET_KEY.');
-            }
-        
-            return ['key' => $key, 'secret' => $sec];
-        }
-        
-        public static function getS3(): S3Client
-        {
-            return new S3Client([
-                'region'      => self::REGION,
-                'version'     => 'latest',
-                'credentials' => self::getAwsCredentials(),
-            ]);
-        }
-        
-        public static function getBedrockRuntime(): BedrockRuntimeClient
-        {
-            return new BedrockRuntimeClient([
-                'region'      => self::REGION,
-                'version'     => 'latest',
-                'credentials' => self::getAwsCredentials(),
-                'http'        => ['connect_timeout' => 20, 'timeout' => 240],
-            ]);
-        }
-        
-        public static function getTextract(): TextractClient
-        {
-            return new TextractClient([
-                'region'      => self::REGION,
-                'version'     => 'latest',
-                'credentials' => self::getAwsCredentials(),
-                'http'        => ['connect_timeout' => 15, 'timeout' => 120],
-            ]);
+    /**
+     * Obtiene una variable de entorno limpia.
+     */
+    private static function env(string $name): string
+    {
+        $value = getenv($name);
+
+        return is_string($value)
+            ? trim($value)
+            : '';
+    }
+
+    /**
+     * Región AWS.
+     *
+     * Prioridad:
+     * AWS_REGION -> Config::REGION.
+     */
+    public static function getRegion(): string
+    {
+        $region = self::env('AWS_REGION');
+
+        if ($region === '') {
+            $region = trim(self::REGION);
         }
 
-        public static function getComprehend(): ComprehendClient
-        {
-            return new ComprehendClient([
-                'region'      => self::REGION,
-                'version'     => 'latest',
-                'credentials' => self::getAwsCredentials(),
-                'http'        => ['connect_timeout' => 15, 'timeout' => 120],
-            ]);
+        if ($region === '') {
+            throw new RuntimeException(
+                'Falta AWS_REGION y no existe una región fallback válida.'
+            );
         }
 
-        public static function getRekognition(): RekognitionClient
-        {
-            return new RekognitionClient([
-                'region'      => self::REGION,
-                'version'     => 'latest',
-                'credentials' => self::getAwsCredentials(),
-                'http'        => ['connect_timeout' => 15, 'timeout' => 120],
-            ]);
-        }
-        public static function getPolly(): PollyClient
-        {
-            return new PollyClient([
-                'region' => self::REGION,
-                'version' => 'latest',
-                'credentials' => self::getAwsCredentials(),
-                'http' => ['connect_timeout' => 15, 'timeout' => 120],
-            ]);
+        return $region;
+    }
+
+    /**
+     * Bucket S3.
+     *
+     * AWS_S3_BUCKET debe contener exclusivamente el nombre del bucket:
+     *
+     * correcto:
+     *   nombre-del-bucket
+     *
+     * incorrecto:
+     *   s3://nombre-del-bucket
+     *   https://...
+     *   nombre-del-bucket.s3.amazonaws.com
+     */
+    public static function getBucket(): string
+    {
+        $bucket = self::env('AWS_S3_BUCKET');
+
+        if ($bucket === '') {
+            $bucket = trim(self::BUCKET);
         }
 
-        public static function getTranslate(): TranslateClient
-        {
-            return new TranslateClient([
-                'region' => self::REGION,
-                'version' => 'latest',
-                'credentials' => self::getAwsCredentials(),
-                'http' => ['connect_timeout' => 15, 'timeout' => 120],
-            ]);
+        if ($bucket === '') {
+            throw new RuntimeException(
+                'Falta AWS_S3_BUCKET y no existe un bucket fallback válido.'
+            );
         }
 
-        public static function getTranscribe(): TranscribeServiceClient
-        {
-            return new TranscribeServiceClient([
-                'region' => self::REGION,
-                'version' => 'latest',
-                'credentials' => self::getAwsCredentials(),
-                'http' => ['connect_timeout' => 15, 'timeout' => 120],
-            ]);
+        if (
+            str_contains($bucket, '://')
+            || str_contains($bucket, '/')
+            || str_contains($bucket, '\\')
+            || preg_match('/\s/', $bucket)
+        ) {
+            throw new RuntimeException(
+                'AWS_S3_BUCKET debe contener únicamente el nombre del bucket.'
+            );
         }
 
+        return $bucket;
+    }
+
+    /**
+     * Credenciales AWS.
+     *
+     * Prioridad:
+     * ENV -> constantes locales.
+     *
+     * No imprime ni registra las credenciales.
+     */
+    public static function getAwsCredentials(): array
+    {
+        self::bootAwsEnv();
+
+        $key = self::env('AWS_ACCESS_KEY_ID');
+        $secret = self::env('AWS_SECRET_ACCESS_KEY');
+
+        if ($key === '') {
+            $key = trim(self::ACCESS_KEY);
+        }
+
+        if ($secret === '') {
+            $secret = trim(self::SECRET_KEY);
+        }
+
+        if ($key === '' || $secret === '') {
+            throw new RuntimeException(
+                'Faltan credenciales AWS. Define AWS_ACCESS_KEY_ID y AWS_SECRET_ACCESS_KEY.'
+            );
+        }
+
+        $credentials = [
+            'key'    => $key,
+            'secret' => $secret,
+        ];
+
+        /*
+         * Compatible también con credenciales temporales.
+         */
+        $token = self::env('AWS_SESSION_TOKEN');
+
+        if ($token !== '') {
+            $credentials['token'] = $token;
+        }
+
+        return $credentials;
+    }
+
+    /**
+     * Configuración común para clientes AWS SDK.
+     */
+    public static function getAwsClientConfig(array $overrides = []): array
+    {
+        $config = [
+            'region'      => self::getRegion(),
+            'version'     => 'latest',
+            'credentials' => self::getAwsCredentials(),
+        ];
+
+        return array_replace_recursive($config, $overrides);
+    }
+
+    public static function getS3(): S3Client
+    {
+        return new S3Client(
+            self::getAwsClientConfig()
+        );
+    }
+
+    public static function getBedrockRuntime(): BedrockRuntimeClient
+    {
+        return new BedrockRuntimeClient(
+            self::getAwsClientConfig([
+                'http' => [
+                    'connect_timeout' => 20,
+                    'timeout' => 240,
+                ],
+            ])
+        );
+    }
+
+    public static function getTextract(): TextractClient
+    {
+        return new TextractClient(
+            self::getAwsClientConfig([
+                'http' => [
+                    'connect_timeout' => 15,
+                    'timeout' => 120,
+                ],
+            ])
+        );
+    }
+
+    public static function getComprehend(): ComprehendClient
+    {
+        return new ComprehendClient(
+            self::getAwsClientConfig([
+                'http' => [
+                    'connect_timeout' => 15,
+                    'timeout' => 120,
+                ],
+            ])
+        );
+    }
+
+    public static function getRekognition(): RekognitionClient
+    {
+        return new RekognitionClient(
+            self::getAwsClientConfig([
+                'http' => [
+                    'connect_timeout' => 15,
+                    'timeout' => 120,
+                ],
+            ])
+        );
+    }
+
+    public static function getPolly(): PollyClient
+    {
+        return new PollyClient(
+            self::getAwsClientConfig([
+                'http' => [
+                    'connect_timeout' => 15,
+                    'timeout' => 120,
+                ],
+            ])
+        );
+    }
+
+    public static function getTranslate(): TranslateClient
+    {
+        return new TranslateClient(
+            self::getAwsClientConfig([
+                'http' => [
+                    'connect_timeout' => 15,
+                    'timeout' => 120,
+                ],
+            ])
+        );
+    }
+
+    public static function getTranscribe(): TranscribeServiceClient
+    {
+        return new TranscribeServiceClient(
+            self::getAwsClientConfig([
+                'http' => [
+                    'connect_timeout' => 15,
+                    'timeout' => 120,
+                ],
+            ])
+        );
+    }
 }
-

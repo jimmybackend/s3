@@ -5,7 +5,7 @@ require_once __DIR__ . '/app_bootstrap.php';
 
 // Obtener la clave del objeto S3
 $key = $_GET['archivo'] ?? '';
-$bucket = Config::BUCKET;
+$bucket = Config::getBucket();
 
 if (!$key) {
     http_response_code(400);

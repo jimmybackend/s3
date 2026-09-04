@@ -18,7 +18,16 @@ jobs:
         with:
           fetch-depth: 0
       - name: Apply migration
-        run: python3 .github/scripts/recoverable_keys.py
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('.github/scripts/recoverable_keys.py')
+          s = p.read_text()
+          s = s.replace('fp.read_text()', "fp.read_text(errors='replace')")
+          p.write_text(s)
+          PY
+          python3 .github/scripts/recoverable_keys.py
+          git checkout -- .github/scripts/recoverable_keys.py
       - name: Validate PHP
         run: |
           set -euo pipefail

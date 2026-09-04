@@ -7,6 +7,7 @@ use ArcadeCloud\Drive\Application\DrivePageService;
 use ArcadeCloud\Drive\Application\FileListService;
 use ArcadeCloud\Drive\Application\UploadDestinationService;
 use ArcadeCloud\Drive\Security\SessionManager;
+use ArcadeCloud\Drive\Storage\StorageObjectNameCodec;
 use ArcadeCloud\Drive\Storage\StorageUsageService;
 use ArcadeCloud\Drive\Storage\UserStoragePath;
 use ArcadeCloud\Drive\Storage\UserStorageProvisioner;
@@ -27,6 +28,7 @@ final class DriveApplication
     private ?StorageUsageService $storageUsageService = null;
     private ?UserStoragePath $userStoragePath = null;
     private ?UserStorageProvisioner $userStorageProvisioner = null;
+    private ?StorageObjectNameCodec $storageObjectNameCodec = null;
 
     private function __construct(mysqli $db)
     {
@@ -65,11 +67,21 @@ final class DriveApplication
         return $this->userStoragePath ??= new UserStoragePath();
     }
 
+    public function storageObjectNameCodec(): StorageObjectNameCodec
+    {
+        return $this->storageObjectNameCodec ??= new StorageObjectNameCodec();
+    }
+
     public function s3Manager(): \S3Manager
     {
         if ($this->s3Manager === null) {
             require_once dirname(__DIR__, 2) . '/S3Manager.php';
-            $this->s3Manager = new \S3Manager($this->s3, $this->db, $this->bucket);
+            $this->s3Manager = new \S3Manager(
+                $this->s3,
+                $this->db,
+                $this->bucket,
+                $this->storageObjectNameCodec()
+            );
         }
         return $this->s3Manager;
     }

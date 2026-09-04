@@ -1,0 +1,39 @@
+name: OOP file access migration
+on:
+  push:
+    branches: [main]
+    paths: ['.github/scripts/oop_file_access.py','.github/workflows/oop-file-access.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0}
+      - run: python3 .github/scripts/oop_file_access.py
+      - name: Validate
+        run: |
+          php -l drive/src/Http/Request.php
+          php -l drive/src/Http/ByteRange.php
+          php -l drive/src/Http/BinaryResponse.php
+          php -l drive/src/Application/FileAccessService.php
+          php -l drive/src/Application/TemporaryZip.php
+          php -l drive/src/Application/ZipDownloadService.php
+          php -l drive/src/Http/Controller/FileAccessController.php
+          for f in descargar_archivo.php descargar.php ver_archivo.php descargar_zip.php download_multiple.php; do
+            php -l "drive/$f"
+            ! grep -q '\$_GET\|\$_POST\|session_start\|\$db_connection\|Config::getS3\|^function ' "drive/$f"
+          done
+          grep -q 'requireReadableByKey' drive/src/Application/FileAccessService.php
+          grep -q 'requireReadableByKey' drive/src/Application/ZipDownloadService.php
+          grep -q 'ByteRange::parse' drive/src/Application/FileAccessService.php
+      - name: Commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add drive
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "Move file streaming and downloads behind OOP services"
+          git push origin main

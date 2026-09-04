@@ -2608,3 +2608,34 @@ body[data-theme="dark"] .thinking-block,
   #modalImagenUnica .gu-frame{height:70vh;padding:.5rem;}
 }
 
+
+
+/* AWS file actions: icono + etiqueta visible. */
+.aws-file-action {
+  width: auto !important;
+  min-width: 0 !important;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  gap: .3rem;
+  white-space: nowrap;
+  padding-left: .5rem !important;
+  padding-right: .5rem !important;
+}
+
+.aws-file-action .aws-action-label {
+  position: static !important;
+  width: auto !important;
+  height: auto !important;
+  overflow: visible !important;
+  clip: auto !important;
+  white-space: nowrap !important;
+  font-size: .72rem;
+  line-height: 1;
+}
+
+@media (max-width: 768px) {
+  .aws-file-action .aws-action-label {
+    font-size: .68rem;
+  }
+}

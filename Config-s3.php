@@ -7,6 +7,8 @@
 declare(strict_types=1);
 
 use Aws\BedrockRuntime\BedrockRuntimeClient;
+use Aws\Comprehend\ComprehendClient;
+use Aws\Rekognition\RekognitionClient;
 use Aws\Textract\TextractClient;
 use Aws\S3\S3Client;
 
@@ -79,6 +81,26 @@ final class Config
         public static function getTextract(): TextractClient
         {
             return new TextractClient([
+                'region'      => self::REGION,
+                'version'     => 'latest',
+                'credentials' => self::getAwsCredentials(),
+                'http'        => ['connect_timeout' => 15, 'timeout' => 120],
+            ]);
+        }
+
+        public static function getComprehend(): ComprehendClient
+        {
+            return new ComprehendClient([
+                'region'      => self::REGION,
+                'version'     => 'latest',
+                'credentials' => self::getAwsCredentials(),
+                'http'        => ['connect_timeout' => 15, 'timeout' => 120],
+            ]);
+        }
+
+        public static function getRekognition(): RekognitionClient
+        {
+            return new RekognitionClient([
                 'region'      => self::REGION,
                 'version'     => 'latest',
                 'credentials' => self::getAwsCredentials(),

@@ -1512,6 +1512,24 @@ $footerEspacioUsado = $storageUsage['formatted'];
     </div>
   </div>
 </div>
+<!-- Modal Amazon Comprehend -->
+<div class="modal fade" id="modalComprehend" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header bg-dark text-white">
+        <h5 class="modal-title" id="comprehendTitle">Amazon Comprehend</h5>
+        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Cerrar"><span aria-hidden="true">&times;</span></button>
+      </div>
+      <div class="modal-body" id="comprehendBody">
+        <div class="text-muted">Selecciona un archivo de texto para analizarlo.</div>
+      </div>
+      <div class="modal-footer">
+        <small class="text-muted mr-auto">Entidades · frases clave · sentimiento · PII</small>
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
 <!-- Modal: Grabar Audio -->
 <div class="modal fade" id="modalGrabarAudio" tabindex="-1" role="dialog" aria-hidden="true">
   <div class="modal-dialog modal-md modal-dialog-centered" role="document">
@@ -1656,6 +1674,7 @@ $footerEspacioUsado = $storageUsage['formatted'];
 <script src="js/editar-txt.js"></script>
 
 <script src="js/imagenes.js"></script>
+<script src="js/aws-comprehend.js"></script>
 
 <script src="js/mediaFloating.js"></script>
 

@@ -42,6 +42,7 @@ $txtEditExt = ['txt','srt','vtt','md','html','css','js','php','py','json','csv',
 $textractExt = ['jpg','jpeg','png','tif','tiff','pdf'];
 $traducirExt = ['txt','pdf','jpg','jpeg','png','tif','tiff'];
 $analizarExt = ['jpg','jpeg','png','tif','tiff','bmp'];
+$comprehendExt = ['txt','jas','md','markdown','csv','json','html','htm','xml','sql','log','srt','vtt','php','phtml','js','mjs','css','py','ini','cfg','conf','yaml','yml'];
 
 $imagenesPagina = [];
 $visibles = 0;
@@ -149,6 +150,7 @@ foreach ($filas as $row) {
       $puedeTex= in_array($ext, $textractExt, true);
       $puedeTrd= in_array($ext, $traducirExt, true);
       $puedeAna= in_array($ext, $analizarExt, true);
+      $puedeComprehend = in_array($ext, $comprehendExt, true);
 
       $yaEncript = FileViewHelper::isEncrypted($row);
         $bloqueado = FileViewHelper::isLocked($row);
@@ -437,82 +439,96 @@ $unlockClass = $unlocked ? 'btn-success' : 'btn-warning';
 <?php if (!$soloSeguridad): ?>
 <?php if ($puedeTex): ?>
   <button type="button"
-          class="btn btn-sm btn-primary btn-accion-ia js-textract"
+          class="btn btn-sm btn-primary btn-accion-ia aws-file-action js-textract"
           data-key="<?= FileViewHelper::escape($s3key) ?>"
           data-toggle="tooltip"
           data-placement="top"
-          title="DOC2TXT"
-          aria-label="DOC2TXT">
+          title="Amazon Textract · Extraer texto"
+          aria-label="Amazon Textract · Extraer texto">
     <i class="fas fa-file-alt"></i>
-    <span class="btn-texto-oculto">DOC2TXT</span>
+    <span class="aws-action-label">Extraer texto</span>
   </button>
 <?php endif; ?>
 
 <?php if ($esAudio): ?>
   <button type="button"
-          class="btn btn-sm btn-primary btn-accion-ia js-transcribir"
+          class="btn btn-sm btn-primary btn-accion-ia aws-file-action js-transcribir"
           data-key="<?= FileViewHelper::escape($s3key) ?>"
           data-nombre="<?= FileViewHelper::escape($nombre) ?>"
           data-toggle="tooltip"
           data-placement="top"
-          title="AUDIO2TXT"
-          aria-label="AUDIO2TXT">
+          title="Amazon Transcribe · Audio a texto"
+          aria-label="Amazon Transcribe · Audio a texto">
     <i class="fas fa-file-audio"></i>
-    <span class="btn-texto-oculto">AUDIO2TXT</span>
+    <span class="aws-action-label">Transcribir</span>
   </button>
 <?php endif; ?>
 <?php if ($esVideo): ?>
   <button type="button"
-          class="btn btn-sm btn-primary btn-accion-ia js-transcribir"
+          class="btn btn-sm btn-primary btn-accion-ia aws-file-action js-transcribir"
           data-key="<?= FileViewHelper::escape($s3key) ?>"
           data-nombre="<?= FileViewHelper::escape($nombre) ?>"
           data-toggle="tooltip"
           data-placement="top"
-          title="VIDEO2TXT"
-          aria-label="VIDEO2TXT">
+          title="Amazon Transcribe · Video a texto"
+          aria-label="Amazon Transcribe · Video a texto">
     <i class="fas fa-file-video"></i>
-    <span class="btn-texto-oculto">VIDEO2TXT</span>
+    <span class="aws-action-label">Transcribir</span>
   </button>
 <?php endif; ?>
 
 <?php if ($editTxt): ?>
   <button type="button"
-          class="btn btn-sm btn-primary btn-accion-ia js-polly"
+          class="btn btn-sm btn-primary btn-accion-ia aws-file-action js-polly"
           data-key="<?= FileViewHelper::escape($s3key) ?>"
           data-nombre="<?= FileViewHelper::escape($nombre) ?>"
           data-toggle="tooltip"
           data-placement="top"
-          title="TXT2AUDIO"
-          aria-label="TXT2AUDIO">
+          title="Amazon Polly · Texto a audio"
+          aria-label="Amazon Polly · Texto a audio">
     <i class="fas fa-headphones"></i>
-    <span class="btn-texto-oculto">TXT2AUDIO</span>
+    <span class="aws-action-label">Crear audio</span>
   </button>
 <?php endif; ?>
 
 <?php if ($puedeTrd): ?>
   <button type="button"
-          class="btn btn-sm btn-primary btn-accion-ia js-traducir"
+          class="btn btn-sm btn-primary btn-accion-ia aws-file-action js-traducir"
           data-key="<?= FileViewHelper::escape($s3key) ?>"
           data-nombre="<?= FileViewHelper::escape($nombre) ?>"
           data-toggle="tooltip"
           data-placement="top"
-          title="DOC2TRADUCIR"
-          aria-label="DOC2TRADUCIR">
+          title="Amazon Translate · Traducir"
+          aria-label="Amazon Translate · Traducir">
     <i class="fas fa-language"></i>
-    <span class="btn-texto-oculto">DOC2TRADUCIR</span>
+    <span class="aws-action-label">Traducir</span>
   </button>
 <?php endif; ?>
 
 <?php if ($puedeAna): ?>
   <button type="button"
-          class="btn btn-sm btn-primary btn-accion-ia js-rekognition"
+          class="btn btn-sm btn-primary btn-accion-ia aws-file-action js-rekognition"
           data-key="<?= FileViewHelper::escape($s3key) ?>"
           data-toggle="tooltip"
           data-placement="top"
-          title="IMG2ANALISIS"
-          aria-label="IMG2ANALISIS">
+          title="Amazon Rekognition · Analizar imagen"
+          aria-label="Amazon Rekognition · Analizar imagen">
     <i class="fas fa-tags"></i>
-    <span class="btn-texto-oculto">IMG2ANALISIS</span>
+    <span class="aws-action-label">Analizar imagen</span>
+  </button>
+<?php endif; ?>
+
+<?php if ($puedeComprehend): ?>
+  <button type="button"
+          class="btn btn-sm btn-primary btn-accion-ia aws-file-action js-comprehend"
+          data-key="<?= FileViewHelper::escape($s3key) ?>"
+          data-nombre="<?= FileViewHelper::escape($nombre) ?>"
+          data-toggle="tooltip"
+          data-placement="top"
+          title="Amazon Comprehend · Analizar texto"
+          aria-label="Amazon Comprehend · Analizar texto">
+    <i class="fas fa-brain"></i>
+    <span class="aws-action-label">Analizar texto</span>
   </button>
 <?php endif; ?>
 

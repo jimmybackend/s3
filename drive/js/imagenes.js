@@ -6,7 +6,6 @@
    - galería grid
    - fix backdrop modal
    Requiere:
-   - generar_galeria.php
    - ver_archivo.php
    - thumb.php
    - Bootstrap 4/5 recomendado
@@ -290,35 +289,6 @@
       return recolectarImagenesDesdeDOM();
     }
 
-    async function fetchDesdeServidor(params){
-      try {
-        var url = new URL('generar_galeria.php', window.location.href);
-        var contextRoute = document.getElementById('archivosContexto')?.dataset?.rutaActual || '';
-        if (contextRoute) {
-          url.searchParams.set('ruta', contextRoute);
-        }
-
-        if (params && typeof params === 'object') {
-          Object.keys(params).forEach(function(k){
-            if (params[k] !== undefined && params[k] !== null && params[k] !== '') {
-              url.searchParams.set(k, params[k]);
-            }
-          });
-        }
-
-        var res = await fetch(url.toString(), { credentials: 'same-origin' });
-        if (!res.ok) return [];
-
-        var data = await res.json();
-        if (!Array.isArray(data)) return [];
-
-        return data.map(normalizeItem).filter(Boolean);
-      } catch (e) {
-        console.warn('Error en generar_galeria.php', e);
-        return [];
-      }
-    }
-
     function render(list, perSlide){
       var mount = document.getElementById(WrapId);
       if (!mount) return;
@@ -381,13 +351,12 @@
       } catch(e){}
     }
 
-    async function verCarrusel(params){
+    async function verCarrusel(){
       var perSlide = getPerSlide();
-      var list = await fetchDesdeServidor(params);
-
-      if (!list.length) {
-        list = recolectarDesdeBufferODOM();
-      }
+      // Fuente única: filas de bloque_archivos.php de la página actual.
+      // No consulta toda la carpeta ni S3 ni generar_galeria.php.
+      actualizarBufferGaleria();
+      var list = recolectarDesdeBufferODOM();
 
       render(list, perSlide);
       showModal(document.getElementById(ModalId));
@@ -517,6 +486,12 @@
 
   document.addEventListener('DOMContentLoaded', function(){
     actualizarBufferGaleria();
+  });
+
+  // Cada cambio AJAX de página sustituye #bloque-archivos. Reconstruimos
+  // inmediatamente el buffer para que nunca queden imágenes de la página anterior.
+  document.addEventListener('bloque-archivos:actualizado', function(){
+    setTimeout(actualizarBufferGaleria, 0);
   });
 
   document.addEventListener('bloque-archivos:actualizado', function(){

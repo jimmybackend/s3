@@ -1,0 +1,782 @@
+name: Move Drive to root and start OOP architecture
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/move-drive-root-oop.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Move Drive, remove calls and add OOP core
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          SRC='public_html/drive'
+          DST='drive'
+
+          test -d "$SRC"
+          test ! -e "$DST"
+          git mv "$SRC" "$DST"
+
+          # public_html queda vacío después del movimiento.
+          rmdir public_html
+
+          # Videollamada eliminada completamente del código.
+          for rel in 'calls.php' 'videollamada.php' 'js/calls.js'; do
+            if [ -e "$DST/$rel" ]; then
+              git rm -f "$DST/$rel"
+            fi
+          done
+
+          mkdir -p \
+            "$DST/src/Core" \
+            "$DST/src/Application" \
+            "$DST/src/Http" \
+            "$DST/src/Security"
+
+          cat > "$DST/src/Security/SessionManager.php" <<'PHP'
+          <?php
+          declare(strict_types=1);
+
+          namespace ArcadeCloud\Drive\Security;
+
+          final class SessionManager
+          {
+              public function start(): void
+              {
+                  if (session_status() !== PHP_SESSION_ACTIVE) {
+                      session_start();
+                  }
+              }
+
+              public function isAuthenticated(): bool
+              {
+                  return isset($_SESSION['usuario']) && trim((string) $_SESSION['usuario']) !== '';
+              }
+
+              public function requireAuthenticated(string $redirect = 'index.php'): void
+              {
+                  if ($this->isAuthenticated()) {
+                      return;
+                  }
+
+                  header('Location: ' . $redirect);
+                  exit;
+              }
+
+              public function userId(): int
+              {
+                  return isset($_SESSION['user_id']) ? (int) $_SESSION['user_id'] : 0;
+              }
+
+              public function userName(): string
+              {
+                  return isset($_SESSION['usuario']) ? (string) $_SESSION['usuario'] : '';
+              }
+          }
+          PHP
+
+          cat > "$DST/src/Http/JsonResponse.php" <<'PHP'
+          <?php
+          declare(strict_types=1);
+
+          namespace ArcadeCloud\Drive\Http;
+
+          final class JsonResponse
+          {
+              public static function send(array $payload, int $status = 200): void
+              {
+                  http_response_code($status);
+                  header('Content-Type: application/json; charset=utf-8');
+                  header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+                  echo json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+                  exit;
+              }
+
+              public static function ok(array $data = [], int $status = 200): void
+              {
+                  self::send(['ok' => true] + $data, $status);
+              }
+
+              public static function error(string $message, int $status = 400, array $extra = []): void
+              {
+                  self::send(['ok' => false, 'error' => $message] + $extra, $status);
+              }
+          }
+          PHP
+
+          cat > "$DST/src/Application/DrivePageViewModel.php" <<'PHP'
+          <?php
+          declare(strict_types=1);
+
+          namespace ArcadeCloud\Drive\Application;
+
+          final class DrivePageViewModel
+          {
+              public bool $showCounts = false;
+              public bool $showMetas = false;
+              public bool $mediaHidden = true;
+              public bool $showFilters = true;
+
+              public string $basePrefix = '';
+              public string $tipo = '';
+              public string $buscar = '';
+              public string $fechaInicio = '';
+              public string $fechaFin = '';
+
+              public int $limite = 5;
+              public int $pagina = 1;
+              public int $totalPaginas = 1;
+              public int $totalArchivos = 0;
+
+              public float $pesoTotalMB = 0.0;
+              public string $error = '';
+
+              public array $extensionesUnicas = [];
+              public array $playlistAudioAll = [];
+              public array $playlistVideoAll = [];
+              public bool $tieneAudio = false;
+              public bool $tieneVideo = false;
+              public array $archivosPaginados = [];
+              public array $todasLasCarpetas = [];
+              public array $imagenes = [];
+              public array $folder = [];
+              public array $ruta = [];
+          }
+          PHP
+
+          cat > "$DST/src/Application/DrivePageService.php" <<'PHP'
+          <?php
+          declare(strict_types=1);
+
+          namespace ArcadeCloud\Drive\Application;
+
+          final class DrivePageService
+          {
+              private \S3Manager $manager;
+
+              public function __construct(\S3Manager $manager)
+              {
+                  $this->manager = $manager;
+              }
+
+              public function preferencesRedirect(array &$session, array $query, string $method): ?string
+              {
+                  if ($method !== 'GET' || !isset($query['preferencias'])) {
+                      return null;
+                  }
+
+                  $session['show_counts']  = isset($query['toggle_counts']);
+                  $session['show_metas']   = isset($query['toggle_metas']);
+                  $session['media_hidden'] = !isset($query['toggle_media']);
+                  $session['show_filters'] = filter_var(
+                      $query['toggle_filters'] ?? false,
+                      FILTER_VALIDATE_BOOLEAN
+                  );
+
+                  unset(
+                      $query['toggle_counts'],
+                      $query['toggle_metas'],
+                      $query['toggle_media'],
+                      $query['preferencias']
+                  );
+
+                  return 's3.php' . ($query !== [] ? '?' . http_build_query($query) : '');
+              }
+
+              public function build(array &$session, array $query): DrivePageViewModel
+              {
+                  $vm = new DrivePageViewModel();
+
+                  $vm->showCounts  = (bool) ($session['show_counts'] ?? false);
+                  $vm->showMetas   = (bool) ($session['show_metas'] ?? false);
+                  $vm->mediaHidden = (bool) ($session['media_hidden'] ?? true);
+                  $vm->showFilters = (bool) ($session['show_filters'] ?? true);
+
+                  if (empty($session['ruta_actual'])) {
+                      $session['ruta_actual'] = \Config::RUTA_RAIZ;
+                  }
+
+                  $vm->basePrefix = rtrim((string) $session['ruta_actual'], '/') . '/';
+                  $vm->tipo = trim((string) ($query['tipo'] ?? ''));
+                  $vm->buscar = trim((string) ($query['buscar'] ?? ''));
+                  $vm->fechaInicio = trim((string) ($query['fecha_inicio'] ?? ''));
+                  $vm->fechaFin = trim((string) ($query['fecha_fin'] ?? ''));
+                  $vm->limite = max(1, (int) ($query['limite'] ?? 5));
+                  $vm->pagina = max(1, (int) ($query['pagina'] ?? 1));
+
+                  try {
+                      $archivos = $this->manager->listArchivos($vm->basePrefix, $vm->showMetas);
+
+                      $filtrados = array_filter(
+                          $archivos,
+                          function (array $archivo) use ($vm): bool {
+                              $nombre = basename((string) $archivo['Key']);
+                              $fechaArchivo = $archivo['LastModified']->format('Y-m-d');
+                              $ext = strtolower((string) pathinfo($nombre, PATHINFO_EXTENSION));
+
+                              if ($vm->buscar !== '' && stripos($nombre, $vm->buscar) === false) {
+                                  return false;
+                              }
+                              if ($vm->fechaInicio !== '' && $fechaArchivo < $vm->fechaInicio) {
+                                  return false;
+                              }
+                              if ($vm->fechaFin !== '' && $fechaArchivo > $vm->fechaFin) {
+                                  return false;
+                              }
+                              if ($vm->tipo !== '' && $ext !== $vm->tipo) {
+                                  return false;
+                              }
+
+                              return true;
+                          }
+                      );
+
+                      usort(
+                          $filtrados,
+                          static fn(array $a, array $b): int => $b['LastModified'] <=> $a['LastModified']
+                      );
+
+                      $vm->totalArchivos = count($filtrados);
+                      $vm->totalPaginas = max(1, (int) ceil($vm->totalArchivos / $vm->limite));
+                      $vm->pagina = min($vm->pagina, $vm->totalPaginas);
+
+                      $inicio = ($vm->pagina - 1) * $vm->limite;
+                      $vm->archivosPaginados = array_slice($filtrados, $inicio, $vm->limite);
+
+                      $bytes = array_sum(array_map(
+                          static fn(array $archivo): int => (int) ($archivo['Size'] ?? 0),
+                          $vm->archivosPaginados
+                      ));
+                      $vm->pesoTotalMB = round($bytes / 1024 / 1024, 2);
+
+                      $vm->playlistAudioAll = array_values(array_filter(
+                          $vm->archivosPaginados,
+                          static function (array $archivo): bool {
+                              $ext = strtolower((string) pathinfo((string) $archivo['Key'], PATHINFO_EXTENSION));
+                              return in_array($ext, ['mp3', 'wav', 'ogg', 'opus', 'm4a'], true);
+                          }
+                      ));
+
+                      $vm->playlistVideoAll = array_values(array_filter(
+                          $vm->archivosPaginados,
+                          static function (array $archivo): bool {
+                              $ext = strtolower((string) pathinfo((string) $archivo['Key'], PATHINFO_EXTENSION));
+                              return in_array($ext, ['mp4', 'webm', 'ogg'], true);
+                          }
+                      ));
+
+                      $vm->imagenes = array_values(array_filter(
+                          $vm->archivosPaginados,
+                          static function (array $archivo): bool {
+                              $ext = strtolower((string) pathinfo((string) $archivo['Key'], PATHINFO_EXTENSION));
+                              return in_array($ext, ['jpg', 'jpeg', 'png', 'gif'], true);
+                          }
+                      ));
+
+                      $vm->tieneAudio = $vm->playlistAudioAll !== [];
+                      $vm->tieneVideo = $vm->playlistVideoAll !== [];
+                      $vm->todasLasCarpetas = $this->manager->obtenerTodasLasCarpetas();
+
+                      $extensiones = [];
+                      foreach ($archivos as $archivo) {
+                          $nombre = basename((string) $archivo['Key']);
+                          $ext = strtolower((string) pathinfo($nombre, PATHINFO_EXTENSION));
+                          if ($ext !== '') {
+                              $extensiones[$ext] = true;
+                          }
+                      }
+                      $vm->extensionesUnicas = array_keys($extensiones);
+                      sort($vm->extensionesUnicas);
+                  } catch (\Throwable $e) {
+                      $vm->error = 'Error al filtrar archivos: ' . $e->getMessage();
+                  }
+
+                  return $vm;
+              }
+          }
+          PHP
+
+          cat > "$DST/src/Core/DriveApplication.php" <<'PHP'
+          <?php
+          declare(strict_types=1);
+
+          namespace ArcadeCloud\Drive\Core;
+
+          use ArcadeCloud\Drive\Application\DrivePageService;
+          use ArcadeCloud\Drive\Security\SessionManager;
+          use Aws\S3\S3Client;
+          use mysqli;
+
+          final class DriveApplication
+          {
+              private mysqli $db;
+              private S3Client $s3;
+              private string $bucket;
+              private ?\S3Manager $s3Manager = null;
+              private ?SessionManager $session = null;
+              private ?DrivePageService $drivePageService = null;
+
+              private function __construct(mysqli $db)
+              {
+                  $this->db = $db;
+                  $this->s3 = \Config::getS3();
+                  $this->bucket = \Config::BUCKET;
+              }
+
+              public static function boot(mysqli $db): self
+              {
+                  return new self($db);
+              }
+
+              public function db(): mysqli
+              {
+                  return $this->db;
+              }
+
+              public function s3(): S3Client
+              {
+                  return $this->s3;
+              }
+
+              public function bucket(): string
+              {
+                  return $this->bucket;
+              }
+
+              public function session(): SessionManager
+              {
+                  if ($this->session === null) {
+                      $this->session = new SessionManager();
+                  }
+                  return $this->session;
+              }
+
+              public function s3Manager(): \S3Manager
+              {
+                  if ($this->s3Manager === null) {
+                      require_once dirname(__DIR__, 2) . '/S3Manager.php';
+                      $this->s3Manager = new \S3Manager($this->s3, $this->db, $this->bucket);
+                  }
+                  return $this->s3Manager;
+              }
+
+              public function drivePageService(): DrivePageService
+              {
+                  if ($this->drivePageService === null) {
+                      $this->drivePageService = new DrivePageService($this->s3Manager());
+                  }
+                  return $this->drivePageService;
+              }
+          }
+          PHP
+
+          cat > "$DST/app_bootstrap.php" <<'PHP'
+          <?php
+          declare(strict_types=1);
+
+          /**
+           * Bootstrap único de ArcadeCloud Drive.
+           *
+           * Estructura esperada:
+           * raíz_proyecto/
+           * ├── vendor/
+           * ├── Config-s3.php
+           * ├── db.php
+           * └── drive/
+           *     ├── app_bootstrap.php
+           *     └── src/
+           *
+           * Desde drive/ todas las dependencias privadas están UNA carpeta atrás.
+           */
+
+          if (defined('APP_BOOTSTRAP_LOADED')) {
+              return;
+          }
+
+          $PROJECT_ROOT = realpath(dirname(__DIR__));
+          if ($PROJECT_ROOT === false) {
+              throw new RuntimeException('No se pudo resolver la raíz del proyecto.');
+          }
+
+          $autoloadPath = $PROJECT_ROOT . '/vendor/autoload.php';
+          $configPath   = $PROJECT_ROOT . '/Config-s3.php';
+          $dbPath       = $PROJECT_ROOT . '/db.php';
+
+          foreach ([
+              'Composer'      => $autoloadPath,
+              'Configuración' => $configPath,
+              'Base de datos' => $dbPath,
+          ] as $nombre => $ruta) {
+              if (!is_file($ruta)) {
+                  throw new RuntimeException($nombre . ' no encontrado: ' . $ruta);
+              }
+          }
+
+          putenv('AWS_EC2_METADATA_DISABLED=true');
+
+          require_once $autoloadPath;
+          require_once $configPath;
+          require_once $dbPath;
+
+          if (!isset($db_connection) || !($db_connection instanceof mysqli)) {
+              throw new RuntimeException('La conexión mysqli $db_connection no fue inicializada por db.php.');
+          }
+
+          spl_autoload_register(static function (string $class): void {
+              $prefix = 'ArcadeCloud\\Drive\\';
+              if (strncmp($class, $prefix, strlen($prefix)) !== 0) {
+                  return;
+              }
+
+              $relative = substr($class, strlen($prefix));
+              $file = __DIR__ . '/src/' . str_replace('\\', '/', $relative) . '.php';
+              if (is_file($file)) {
+                  require_once $file;
+              }
+          });
+
+          $driveApplication = \ArcadeCloud\Drive\Core\DriveApplication::boot($db_connection);
+
+          function drive_app(): \ArcadeCloud\Drive\Core\DriveApplication
+          {
+              global $driveApplication;
+              if (!$driveApplication instanceof \ArcadeCloud\Drive\Core\DriveApplication) {
+                  throw new RuntimeException('DriveApplication no fue inicializada.');
+              }
+              return $driveApplication;
+          }
+
+          define('APP_BOOTSTRAP_LOADED', true);
+          PHP
+
+          # S3Manager pasa a aceptar inyección de dependencias, conservando compatibilidad con new S3Manager().
+          python3 <<'PY'
+          from pathlib import Path
+          import re
+
+          p = Path('drive/S3Manager.php')
+          b = p.read_bytes()
+          try:
+              text = b.decode('utf-8'); enc = 'utf-8'
+          except UnicodeDecodeError:
+              text = b.decode('latin-1'); enc = 'latin-1'
+
+          old = '''    public function __construct()\n    {\n        $this->s3 = Config::getS3();\n        $this->bucket = Config::BUCKET;\n\n        global $db_connection;\n        $this->db = $db_connection;\n\n        if (!$this->db instanceof mysqli) {\n            throw new RuntimeException('No existe una conexión mysqli válida en $db_connection');\n        }\n    }'''
+          new = '''    public function __construct(?\\Aws\\S3\\S3Client $s3 = null, ?mysqli $db = null, ?string $bucket = null)\n    {\n        $this->s3 = $s3 ?? Config::getS3();\n        $this->bucket = $bucket ?? Config::BUCKET;\n\n        if ($db === null) {\n            global $db_connection;\n            $db = $db_connection ?? null;\n        }\n\n        if (!$db instanceof mysqli) {\n            throw new RuntimeException('No existe una conexión mysqli válida para S3Manager.');\n        }\n\n        $this->db = $db;\n    }'''
+
+          normalized = text.replace('\r\n', '\n')
+          if old not in normalized:
+              raise SystemExit('No se encontró el constructor esperado de S3Manager')
+          normalized = normalized.replace(old, new, 1)
+          p.write_bytes(normalized.encode(enc))
+          PY
+
+          # s3.php se vuelve un controlador/vista delgada: sesión, aplicación y ViewModel mediante objetos.
+          python3 <<'PY'
+          from pathlib import Path
+          import re
+
+          p = Path('drive/s3.php')
+          b = p.read_bytes()
+          try:
+              text = b.decode('utf-8'); enc = 'utf-8'
+          except UnicodeDecodeError:
+              text = b.decode('latin-1'); enc = 'latin-1'
+
+          marker = text.find('?>')
+          if marker < 0:
+              raise SystemExit('No se encontró cierre PHP inicial en s3.php')
+
+          new_head = r'''<?php
+          declare(strict_types=1);
+
+          header('Content-Type: text/html; charset=UTF-8');
+          ini_set('display_errors', '1');
+          error_reporting(E_ALL);
+
+          require_once __DIR__ . '/app_bootstrap.php';
+          require_once __DIR__ . '/utils/helpers.php';
+
+          $app = drive_app();
+          $session = $app->session();
+          $session->start();
+          $session->requireAuthenticated('index.php');
+
+          $pageService = $app->drivePageService();
+          $redirect = $pageService->preferencesRedirect(
+              $_SESSION,
+              $_GET,
+              $_SERVER['REQUEST_METHOD'] ?? 'GET'
+          );
+          if ($redirect !== null) {
+              header('Location: ' . $redirect);
+              exit;
+          }
+
+          $vm = $pageService->build($_SESSION, $_GET);
+
+          // Adaptador temporal para la vista PHP existente.
+          // La lógica ya vive en objetos; estas variables sólo alimentan el HTML heredado.
+          $showCounts = $vm->showCounts;
+          $showMetas = $vm->showMetas;
+          $mediaHidden = $vm->mediaHidden;
+          $showFilters = $vm->showFilters;
+          $basePrefix = $vm->basePrefix;
+          $tipo = $vm->tipo;
+          $buscar = $vm->buscar;
+          $fechaInicio = $vm->fechaInicio;
+          $fechaFin = $vm->fechaFin;
+          $limite = $vm->limite;
+          $pagina = $vm->pagina;
+          $error = $vm->error;
+          $extensiones_unicas = $vm->extensionesUnicas;
+          $playlistAudioAll = $vm->playlistAudioAll;
+          $playlistVideoAll = $vm->playlistVideoAll;
+          $tieneAudio = $vm->tieneAudio;
+          $tieneVideo = $vm->tieneVideo;
+          $totalPaginas = $vm->totalPaginas;
+          $totalArchivos = $vm->totalArchivos;
+          $archivosPaginados = $vm->archivosPaginados;
+          $todasLasCarpetas = $vm->todasLasCarpetas;
+          $imagenes = $vm->imagenes;
+          $folder = $vm->folder;
+          $ruta = $vm->ruta;
+          $pesoTotalMB = $vm->pesoTotalMB;
+          $manager = $app->s3Manager();
+          $s3 = $app->s3();
+          $bucket = $app->bucket();
+          ?>'''
+
+          text = new_head + text[marker + 2:]
+
+          # Elimina la pestaña Bitácora, que sólo existía para llamadas/videollamadas.
+          text = re.sub(
+              r'\s*<li class=["\']nav-item["\']>\s*<a[^>]+id=["\']tab-bitacora["\'][\s\S]*?</li>',
+              '', text, flags=re.I
+          )
+          text = re.sub(
+              r'\s*<!--\s*PESTAÑA Bitacora\s*-->[\s\S]*?(?=<!--\s*PESTAÑA servicios\s*-->)',
+              '\n', text, flags=re.I
+          )
+
+          # Elimina cualquier bloque comentado que cargaba calls.js/polling.
+          text = re.sub(
+              r'\s*<!--\s*<script src=["\']js/calls\.js["\']></script>[\s\S]*?-->',
+              '', text, flags=re.I
+          )
+          text = re.sub(r'\n{4,}', '\n\n\n', text)
+          p.write_bytes(text.encode(enc))
+          PY
+
+          # Quita CSS específico de la bitácora de llamadas.
+          python3 <<'PY'
+          from pathlib import Path
+          import re
+
+          for name in ['drive/css/styles.css', 'drive/css/styles-old.css']:
+              p = Path(name)
+              if not p.exists():
+                  continue
+              b = p.read_bytes()
+              try:
+                  text = b.decode('utf-8'); enc='utf-8'
+              except UnicodeDecodeError:
+                  text = b.decode('latin-1'); enc='latin-1'
+
+              text = re.sub(
+                  r'/\*\s*Bitácora específicamente\s*\*/\s*body\.ui-theme\s+#bitacoraBody\s*\{[\s\S]*?\}\s*',
+                  '', text, flags=re.I
+              )
+              text = re.sub(r'^.*#bitacoraBody.*\r?\n', '', text, flags=re.I|re.M)
+              p.write_bytes(text.encode(enc))
+          PY
+
+          # README: retira la sección de videollamada.
+          python3 <<'PY'
+          from pathlib import Path
+          import re
+
+          p = Path('README.md')
+          text = p.read_text(encoding='utf-8')
+          text = re.sub(
+              r'\n### Video Llamada\n[\s\S]*?(?=\n---\n)',
+              '', text, flags=re.I
+          )
+          p.write_text(text, encoding='utf-8')
+          PY
+
+          # SQL histórico: elimina definición, índices, AUTO_INCREMENT y FKs de la tabla calls.
+          python3 <<'PY'
+          from pathlib import Path
+          import re
+
+          p = Path('adbbmis1_Cloud.sql')
+          text = p.read_text(encoding='utf-8')
+
+          # CREATE TABLE calls completo.
+          text = re.sub(
+              r'(?ms)^--\s*\n-- Estructura de tabla para la tabla `calls`\s*\n--\s*\n\s*CREATE TABLE `calls` \([\s\S]*?;\s*\n',
+              '', text
+          )
+
+          # Cualquier ALTER TABLE calls completo (índices, AUTO_INCREMENT, constraints).
+          text = re.sub(r'(?ms)^ALTER TABLE `calls`\s*[\s\S]*?;\s*\n', '', text)
+
+          # Comentarios de sección que hayan quedado específicamente para calls.
+          text = re.sub(r'(?m)^-- .*`calls`.*\n', '', text)
+          text = re.sub(r'\n{4,}', '\n\n\n', text)
+          p.write_text(text, encoding='utf-8')
+          PY
+
+          # Documentación de rutas: ya no existe public_html.
+          while IFS= read -r -d '' f; do
+            python3 - "$f" <<'PY'
+          import sys
+          from pathlib import Path
+          p = Path(sys.argv[1])
+          try:
+              t = p.read_text(encoding='utf-8')
+          except UnicodeDecodeError:
+              t = p.read_text(encoding='latin-1')
+              enc = 'latin-1'
+          else:
+              enc = 'utf-8'
+          t = t.replace('public_html/drive/', 'drive/')
+          t = t.replace('public_html/drive', 'drive')
+          p.write_text(t, encoding=enc)
+          PY
+          done < <(find . -type f \( -name '*.md' -o -name '*.php' -o -name '*.txt' \) -print0)
+
+          cat > "$DST/ARCHITECTURE.md" <<'MD'
+          # Arquitectura OOP de ArcadeCloud Drive
+
+          ## Estructura
+
+          ```text
+          raíz_proyecto/
+          ├── vendor/
+          ├── Config-s3.php
+          ├── db.php
+          └── drive/
+              ├── app_bootstrap.php
+              ├── s3.php
+              ├── S3Manager.php
+              ├── src/
+              │   ├── Core/
+              │   ├── Application/
+              │   ├── Security/
+              │   └── Http/
+              └── upload/
+          ```
+
+          `drive/` es el DocumentRoot de la aplicación. `vendor/`, `Config-s3.php` y `db.php`
+          están una carpeta arriba y no deben exponerse por HTTP.
+
+          ## Regla de diseño
+
+          El código nuevo del Drive se implementa orientado a objetos:
+
+          - Los archivos públicos `.php` son controladores/entrypoints delgados.
+          - La lógica de negocio vive en clases dentro de `src/` o módulos OOP existentes.
+          - Se usa inyección de dependencias en lugar de crear clientes AWS/DB repetidamente.
+          - `DriveApplication` es el composition root de servicios compartidos.
+          - `SessionManager` encapsula la sesión y autenticación básica.
+          - `DrivePageService` contiene la lógica de consulta/filtro/paginación de la página principal.
+          - `S3Manager` sigue siendo el servicio principal S3, ahora con inyección opcional de S3, DB y bucket.
+          - El módulo `upload/` conserva Factory, drivers, repositorios y almacenamiento orientados a objetos.
+          - Respuestas JSON nuevas deben usar `Http\\JsonResponse`.
+
+          ## Migración del legado
+
+          La vista `s3.php` todavía expone variables PHP al HTML por compatibilidad, pero la lógica que
+          las construye ya reside en `DrivePageService` y un `DrivePageViewModel`.
+
+          Los endpoints heredados se migrarán al mismo patrón cuando se modifiquen: Controller -> Service -> Repository/Infrastructure.
+          No debe agregarse nueva lógica de negocio procedural a los entrypoints.
+          MD
+
+      - name: Audit migration
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          test -d drive
+          test ! -e public_html
+          test -f drive/app_bootstrap.php
+          test -f drive/src/Core/DriveApplication.php
+          test -f drive/src/Application/DrivePageService.php
+          test -f drive/src/Application/DrivePageViewModel.php
+          test -f drive/src/Security/SessionManager.php
+          test -f drive/src/Http/JsonResponse.php
+
+          echo '=== Root layout ==='
+          test -f Config-s3.php
+          test -f db.php
+          grep -n "dirname(__DIR__)" drive/app_bootstrap.php
+          grep -n "'/vendor/autoload.php'" drive/app_bootstrap.php
+          grep -n "'/Config-s3.php'" drive/app_bootstrap.php
+          grep -n "'/db.php'" drive/app_bootstrap.php
+
+          echo '=== Removed video-call module ==='
+          test ! -e drive/calls.php
+          test ! -e drive/videollamada.php
+          test ! -e drive/js/calls.js
+
+          refs="$(grep -RIniE --exclude='*.png' --exclude='*.jpg' --exclude='*.gif' '(calls\.php|videollamada\.php|receiverCall|bitacoraBody|js/calls\.js)' drive README.md || true)"
+          if [ -n "$refs" ]; then
+            printf '%s\n' "$refs"
+            exit 1
+          fi
+          echo 'OK: no video-call code references remain'
+
+          if grep -nE 'CREATE TABLE `calls`|ALTER TABLE `calls`|tabla `calls`' adbbmis1_Cloud.sql; then
+            echo 'Residual calls table definition found'
+            exit 1
+          fi
+          echo 'OK: calls schema removed from SQL dump'
+
+          echo '=== No obsolete public_html path ==='
+          refs="$(grep -RIni --exclude-dir=.git 'public_html/drive' . || true)"
+          if [ -n "$refs" ]; then
+            printf '%s\n' "$refs"
+            exit 1
+          fi
+
+          echo '=== OOP main flow ==='
+          grep -n 'drive_app()' drive/s3.php
+          grep -n 'drivePageService()' drive/s3.php
+          grep -n 'class DriveApplication' drive/src/Core/DriveApplication.php
+          grep -n 'class DrivePageService' drive/src/Application/DrivePageService.php
+          grep -n 'class SessionManager' drive/src/Security/SessionManager.php
+
+          echo '=== PHP syntax ==='
+          find drive -type f -name '*.php' -print0 | while IFS= read -r -d '' f; do
+            php -l "$f" >/dev/null
+          done
+          php -l Config-s3.php >/dev/null
+          php -l db.php >/dev/null
+          echo 'OK: PHP syntax valid'
+
+      - name: Commit migration and remove workflow
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git rm .github/workflows/move-drive-root-oop.yml
+          git add -A
+          git commit -m 'Move Drive to root, remove video calls, add OOP core'
+          git push origin main

@@ -5,7 +5,7 @@ require_once __DIR__ . '/app_bootstrap.php';
 
 use ArcadeCloud\Drive\Http\JsonResponse;
 
-$app = drive_app();
+$app = \ArcadeCloud\Drive\Core\ApplicationKernel::app();
 $session = $app->session();
 $session->start();
 

@@ -5,7 +5,7 @@ require_once __DIR__ . '/app_bootstrap.php';
 
 use ArcadeCloud\Drive\Upload\PublicMultipartUploadService;
 
-$app = drive_app();
+$app = \ArcadeCloud\Drive\Core\ApplicationKernel::app();
 $service = new PublicMultipartUploadService(
     $app->s3(),
     $app->bucket(),

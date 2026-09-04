@@ -7,7 +7,7 @@ error_reporting(E_ALL);
 
 require_once __DIR__ . '/app_bootstrap.php';
 
-$app = drive_app();
+$app = \ArcadeCloud\Drive\Core\ApplicationKernel::app();
 $session = $app->session();
 $session->start();
 $session->requireAuthenticated('index.php');
@@ -41,7 +41,7 @@ $footerEspacioUsado = $storageUsage['formatted'];
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <link rel="icon" href="ellogo.png" type="image/x-icon">
 
-  <link rel="stylesheet" href="css/styles-old.css">
+  <link rel="stylesheet" href="css/styles.css">
 
   <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
@@ -1665,6 +1665,7 @@ $footerEspacioUsado = $storageUsage['formatted'];
 
 <script src="js/carpetas.js"></script>
 <script src="js/archivos.js"></script>
+<script src="js/file-block.js"></script>
 
 <script src="js/actualizar-hora.js"></script>
 <script src="js/storage-usage.js"></script>

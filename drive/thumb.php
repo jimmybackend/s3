@@ -22,7 +22,7 @@ function thumbnailFallback(): never
     exit;
 }
 
-$app = drive_app();
+$app = \ArcadeCloud\Drive\Core\ApplicationKernel::app();
 $session = $app->session();
 $session->start();
 

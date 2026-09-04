@@ -9,7 +9,7 @@ require_once $root . '/upload/core/UploaderInterface.php';
 require_once $root . '/upload/core/UploadResponse.php';
 require_once $root . '/upload/UploadFactory.php';
 
-$app = drive_app();
+$app = \ArcadeCloud\Drive\Core\ApplicationKernel::app();
 $session = $app->session();
 $session->start();
 

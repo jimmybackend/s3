@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/app_bootstrap.php';
 
-$app = drive_app();
+$app = \ArcadeCloud\Drive\Core\ApplicationKernel::app();
 $sessionManager = $app->session();
 $sessionManager->start();
 $sessionManager->requireAuthenticated('index.php');

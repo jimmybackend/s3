@@ -8,7 +8,7 @@ header('Content-Type: application/json; charset=utf-8');
 require_once __DIR__ . '/app_bootstrap.php';
 
 try {
-    $app = drive_app();
+    $app = \ArcadeCloud\Drive\Core\ApplicationKernel::app();
     $session = $app->session();
     $session->start();
     if (!$session->isAuthenticated() || $session->userId() <= 0) {

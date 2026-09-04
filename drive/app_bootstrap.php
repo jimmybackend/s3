@@ -58,15 +58,6 @@ spl_autoload_register(static function (string $class): void {
     }
 });
 
-$driveApplication = \ArcadeCloud\Drive\Core\DriveApplication::boot($db_connection);
-
-function drive_app(): \ArcadeCloud\Drive\Core\DriveApplication
-{
-    global $driveApplication;
-    if (!$driveApplication instanceof \ArcadeCloud\Drive\Core\DriveApplication) {
-        throw new RuntimeException('DriveApplication no fue inicializada.');
-    }
-    return $driveApplication;
-}
+\ArcadeCloud\Drive\Core\ApplicationKernel::boot($db_connection);
 
 define('APP_BOOTSTRAP_LOADED', true);

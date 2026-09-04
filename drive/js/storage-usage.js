@@ -1,27 +1,50 @@
-(() => {
-  'use strict';
-
-  async function actualizarEspacioUsado(force = true) {
-    const target = document.getElementById('footerEspacioUsado');
-    if (!target) return;
-
-    try {
-      const url = 'storage_usage.php' + (force ? '?refresh=1' : '');
-      const response = await fetch(url, {
-        credentials: 'same-origin',
-        cache: 'no-store',
-        headers: { 'X-Requested-With': 'XMLHttpRequest' }
-      });
-      const data = await response.json();
-      if (!response.ok || !data.ok) {
-        throw new Error(data.error || `HTTP ${response.status}`);
-      }
-      target.textContent = data.formatted || '0 B';
-    } catch (error) {
-      console.error('[storage-usage] No se pudo actualizar el espacio usado:', error);
-    }
+class StorageUsageModule {
+  constructor(win, doc) {
+    this.window = win;
+    this.document = doc;
   }
 
-  window.actualizarEspacioUsado = actualizarEspacioUsado;
-  document.addEventListener('drive:storage-changed', () => actualizarEspacioUsado(true));
-})();
+  init() {
+    const window = this.window;
+    const document = this.document;
+    (() => {
+      'use strict';
+
+      async function actualizarEspacioUsado(force = true) {
+        const target = document.getElementById('footerEspacioUsado');
+        if (!target) return;
+
+        try {
+          const url = 'storage_usage.php' + (force ? '?refresh=1' : '');
+          const response = await fetch(url, {
+            credentials: 'same-origin',
+            cache: 'no-store',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+          });
+          const data = await response.json();
+          if (!response.ok || !data.ok) {
+            throw new Error(data.error || `HTTP ${response.status}`);
+          }
+          target.textContent = data.formatted || '0 B';
+        } catch (error) {
+          console.error('[storage-usage] No se pudo actualizar el espacio usado:', error);
+        }
+      }
+
+      window.actualizarEspacioUsado = actualizarEspacioUsado;
+      document.addEventListener('drive:storage-changed', () => actualizarEspacioUsado(true));
+    })();
+
+    return this;
+  }
+
+  static boot(win = window, doc = document) {
+    win.ArcadeCloudDrive = win.ArcadeCloudDrive || { modules: {} };
+    win.ArcadeCloudDrive.modules = win.ArcadeCloudDrive.modules || {};
+    const instance = new StorageUsageModule(win, doc).init();
+    win.ArcadeCloudDrive.modules['storage-usage'] = instance;
+    return instance;
+  }
+}
+
+StorageUsageModule.boot();

@@ -328,7 +328,7 @@ class ArchivosModule {
 
         return usp;
       }
-      
+
     function getBloqueArchivosContext() {
       const out = {};
 
@@ -372,7 +372,7 @@ class ArchivosModule {
       }
 
       return out;
-    }  
+    }
 
       function setBtnLoading(btn, on, htmlLoading) {
         if (!btn) return;
@@ -1149,13 +1149,56 @@ class ArchivosModule {
           const ruta = it.ruta || '';
           const key = it.key || '';
           const tamKB = it.tamano_formateado
-            ? ` | ${window.escapeHtml(it.tamano_formateado)}`
-            : ((it.tamano_kb != null) ? ` | ${it.tamano_kb} KB` : '');
+            ? window.escapeHtml(it.tamano_formateado)
+            : ((it.tamano_kb != null) ? `${it.tamano_kb} KB` : '');
+
+          const fechaRaw = String(it.fecha || '').trim();
+
+          let fechaMostrar = fechaRaw || 'Sin fecha';
+
+          if (fechaRaw) {
+            try {
+              const fechaNormalizada =
+                fechaRaw.includes('T')
+                  ? fechaRaw
+                  : fechaRaw.replace(' ', 'T');
+
+              const fechaObj =
+                new Date(fechaNormalizada);
+
+              if (!Number.isNaN(fechaObj.getTime())) {
+                fechaMostrar =
+                  new Intl.DateTimeFormat(
+                    'es-MX',
+                    {
+                      year: 'numeric',
+                      month: '2-digit',
+                      day: '2-digit',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    }
+                  ).format(fechaObj);
+              }
+            } catch (_) {}
+          }
+
           html += `
             <li class="list-group-item d-flex justify-content-between align-items-center">
-              <div>
-                <strong>${nombre}</strong><br>
-                <small class="text-muted">${window.escapeHtml(ruta)}${tamKB}</small>
+              <div class="pr-3">
+                <strong>${nombre}</strong>
+
+                <div class="global-search-meta mt-1">
+                  <div>
+                    <span class="global-search-label">Ruta:</span>
+                    ${window.escapeHtml(ruta || '—')}
+                  </div>
+
+                  <div>
+                    <span class="global-search-label">Fecha:</span>
+                    ${window.escapeHtml(fechaMostrar)}
+                    ${tamKB ? ` · ${tamKB}` : ''}
+                  </div>
+                </div>
               </div>
               <button type="button" class="btn btn-sm btn-outline-primary btn-ir" data-ruta="${window.escapeHtml(ruta)}" data-key="${window.escapeHtml(key)}" data-nombre="${window.escapeHtml(nombreRaw)}">
                 <i class="fas fa-folder-open"></i> Ir

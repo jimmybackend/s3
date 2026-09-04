@@ -325,10 +325,10 @@ body.ui-theme.theme-light{
 
 /* ===== Simulaciones / accesibilidad básica ===== */
 body.ui-theme.vision-normal{}
-body.ui-theme.vision-myopia{filter:contrast(.98) saturate(.92);} 
-body.ui-theme.vision-protanopia{filter:hue-rotate(-12deg) saturate(.78);} 
-body.ui-theme.vision-deuteranopia{filter:hue-rotate(14deg) saturate(.82);} 
-body.ui-theme.vision-tritanopia{filter:hue-rotate(35deg) saturate(.85);} 
+body.ui-theme.vision-myopia{filter:contrast(.98) saturate(.92);}
+body.ui-theme.vision-protanopia{filter:hue-rotate(-12deg) saturate(.78);}
+body.ui-theme.vision-deuteranopia{filter:hue-rotate(14deg) saturate(.82);}
+body.ui-theme.vision-tritanopia{filter:hue-rotate(35deg) saturate(.85);}
 
 /* ===== Enlaces ===== */
 body.ui-theme a{ color: var(--accent) !important; }
@@ -389,7 +389,7 @@ body.ui-theme .folder-icon,
 body.ui-theme i,
 body.ui-theme .fas,
 body.ui-theme .far,
-body.ui-theme .fab{color:var(--accent) !important;text-shadow:0 0 10px rgba(var(--accent-rgb),.12);} 
+body.ui-theme .fab{color:var(--accent) !important;text-shadow:0 0 10px rgba(var(--accent-rgb),.12);}
 
 /* ===== Inputs ===== */
 body.ui-theme input,
@@ -495,7 +495,7 @@ body.ui-theme .navbar .dropdown-menu{
 }
 body.ui-theme.theme-light .dropdown-menu{background:rgba(255,255,255,.98) !important;}
 body.ui-theme .dropdown-item{color:var(--text) !important;}
-body.ui-theme .dropdown-item:hover{background:rgba(var(--accent-rgb),.10) !important;color:var(--accent-2) !important;text-shadow:var(--accent-glow);} 
+body.ui-theme .dropdown-item:hover{background:rgba(var(--accent-rgb),.10) !important;color:var(--accent-2) !important;text-shadow:var(--accent-glow);}
 body.ui-theme .modal-content{
   background:color-mix(in srgb, var(--bg) 94%, transparent) !important;
   color:var(--text) !important;
@@ -510,17 +510,17 @@ body.ui-theme .modal-backdrop{z-index:1055 !important;}
 
 /* ===== Bloque carpetas ===== */
 body.ui-theme #bloque-carpetas{background:var(--bg) !important;border:1px solid rgba(var(--accent-rgb),.25) !important;}
-body.ui-theme #bloque-carpetas .card-header{background:var(--bg) !important;color:var(--accent) !important;border-bottom:1px solid rgba(var(--accent-rgb),.25);} 
+body.ui-theme #bloque-carpetas .card-header{background:var(--bg) !important;color:var(--accent) !important;border-bottom:1px solid rgba(var(--accent-rgb),.25);}
 body.ui-theme #bloque-carpetas .card-body{background:var(--bg) !important;}
 body.ui-theme #arbolCarpetas .folder-row{color:var(--text) !important;padding:3px 6px;}
 body.ui-theme #arbolCarpetas a.folder{color:var(--text-strong) !important;text-decoration:none;}
-body.ui-theme #arbolCarpetas .folder-row:hover{background:rgba(var(--accent-rgb),.08) !important;color:var(--accent) !important;text-shadow:0 0 6px rgba(var(--accent-rgb),.6);} 
+body.ui-theme #arbolCarpetas .folder-row:hover{background:rgba(var(--accent-rgb),.08) !important;color:var(--accent) !important;text-shadow:0 0 6px rgba(var(--accent-rgb),.6);}
 body.ui-theme #arbolCarpetas a.folder.active{color:var(--accent) !important;font-weight:600;}
 body.ui-theme #arbolCarpetas i{color:var(--accent) !important;}
 body.ui-theme #arbolCarpetas .btn{background:rgba(0,0,0,.4) !important;border:1px solid var(--border) !important;color:var(--text) !important;}
 body.ui-theme .sidebar{background:var(--bg) !important;border-right:1px solid rgba(var(--accent-rgb),.25) !important;color:var(--text);}
 body.ui-theme .sidebar input{background:var(--bg2) !important;color:var(--text) !important;border:1px solid var(--border) !important;}
-body.ui-theme .sidebar:hover{box-shadow:0 0 15px rgba(var(--accent-rgb),.15);} 
+body.ui-theme .sidebar:hover{box-shadow:0 0 15px rgba(var(--accent-rgb),.15);}
 
 /* ===== Bloque archivos ===== */
 body.ui-theme .archivos-wrap{background:var(--bg) !important;color:var(--text) !important;}
@@ -532,10 +532,10 @@ body.ui-theme .archivos-wrap .list-group{background:var(--bg) !important;}
 body.ui-theme .archivos-wrap .list-group-item,
 body.ui-theme .archivos-wrap .file-row{background:var(--bg) !important;color:var(--text-strong) !important;border:1px solid var(--border) !important;}
 body.ui-theme .archivos-wrap .list-group-item:hover,
-body.ui-theme .archivos-wrap .file-row:hover{background:rgba(var(--accent-rgb),.07) !important;border-color:rgba(var(--accent-rgb),.35) !important;box-shadow:0 0 10px rgba(var(--accent-rgb),.18);} 
+body.ui-theme .archivos-wrap .file-row:hover{background:rgba(var(--accent-rgb),.07) !important;border-color:rgba(var(--accent-rgb),.35) !important;box-shadow:0 0 10px rgba(var(--accent-rgb),.18);}
 body.ui-theme .archivos-wrap .badge,
 body.ui-theme .archivos-wrap .badge-light,
-body.ui-theme .archivos-wrap .badge-ext{background:var(--bg3) !important;color:var(--accent) !important;border:1px solid rgba(var(--accent-rgb),.25);} 
+body.ui-theme .archivos-wrap .badge-ext{background:var(--bg3) !important;color:var(--accent) !important;border:1px solid rgba(var(--accent-rgb),.25);}
 body.ui-theme .archivos-wrap img.thumb-img,
 body.ui-theme .archivos-wrap .thumb{background:var(--bg2) !important;border:1px solid rgba(var(--accent-rgb),.18);border-radius:6px;}
 body.ui-theme .archivos-wrap .pagination .page-link{background:var(--bg) !important;color:var(--text) !important;border:1px solid var(--border) !important;}
@@ -549,8 +549,8 @@ body.ui-theme .list-group .file-row.sec-no { border-left:4px solid var(--sec-no)
 /* ===== Loader / gallery theme ===== */
 body.ui-theme #archivosLoaderOverlay{background:color-mix(in srgb, var(--bg3) 92%, transparent) !important;border:1px solid var(--border) !important;color:var(--text) !important;}
 body.ui-theme.theme-light #archivosLoaderOverlay{background:rgba(255,255,255,.96) !important;}
-body.ui-theme #archivosLoaderOverlay .spinner{border:2px solid rgba(255,255,255,.18);border-top-color:rgba(var(--accent-rgb),.75);} 
-body.ui-theme.theme-light #archivosLoaderOverlay .spinner{border:2px solid rgba(0,0,0,.18);border-top-color:rgba(var(--accent-rgb),.75);} 
+body.ui-theme #archivosLoaderOverlay .spinner{border:2px solid rgba(255,255,255,.18);border-top-color:rgba(var(--accent-rgb),.75);}
+body.ui-theme.theme-light #archivosLoaderOverlay .spinner{border:2px solid rgba(0,0,0,.18);border-top-color:rgba(var(--accent-rgb),.75);}
 body.ui-theme .gal-thumb .card-body,
 body.ui-theme .gallery-card .caption,
 body.ui-theme #modalImagenUnica .gu-caption{color:var(--text) !important;}
@@ -2638,4 +2638,156 @@ body[data-theme="dark"] .thinking-block,
   .aws-file-action .aws-action-label {
     font-size: .68rem;
   }
+}
+
+/* ============================================================
+   SUBIR ARCHIVOS - CONTRASTE DE ACCIONES LIGHT / DARK
+   ============================================================ */
+
+body.ui-theme #pane-Subir .btn,
+body.ui-theme #pane-Subir button,
+body.ui-theme #pane-Subir .file-input-button,
+body.ui-theme #pane-Subir .dz-remove,
+body.ui-theme #pane-Subir #btnCancelarGrande {
+  text-shadow: none !important;
+  font-weight: 600;
+}
+
+/* Modo oscuro */
+body.ui-theme.theme-dark #pane-Subir .btn,
+body.ui-theme.theme-dark #pane-Subir button,
+body.ui-theme.theme-dark #pane-Subir .file-input-button,
+body.ui-theme.theme-dark #pane-Subir .dz-remove,
+body.ui-theme.theme-dark #pane-Subir #btnCancelarGrande {
+  color: #ffffff !important;
+}
+
+/* Modo claro */
+body.ui-theme.theme-light #pane-Subir .btn,
+body.ui-theme.theme-light #pane-Subir button,
+body.ui-theme.theme-light #pane-Subir .file-input-button,
+body.ui-theme.theme-light #pane-Subir .dz-remove,
+body.ui-theme.theme-light #pane-Subir #btnCancelarGrande {
+  color: #111111 !important;
+}
+
+/* Los controles de Dropzone deben seguir siendo visibles */
+body.ui-theme #pane-Subir .dz-remove {
+  display: inline-block;
+  margin-top: 5px;
+  opacity: .9;
+  text-decoration: underline !important;
+}
+
+/* Datos secundarios de la búsqueda global */
+body.ui-theme .global-search-meta {
+  color: var(--text-soft) !important;
+  font-size: .76rem;
+  line-height: 1.45;
+}
+
+body.ui-theme .global-search-label {
+  color: var(--text-strong) !important;
+  font-weight: 600;
+}
+
+
+/* ============================================================
+   SUBIR ARCHIVOS - CONTRASTE DEFINITIVO
+   ============================================================ */
+
+/* Texto general de la sección */
+body.ui-theme.theme-light #pane-Subir,
+body.ui-theme.theme-light #pane-Subir .card,
+body.ui-theme.theme-light #pane-Subir .card-body,
+body.ui-theme.theme-light #pane-Subir label,
+body.ui-theme.theme-light #pane-Subir .small {
+  color: #222 !important;
+}
+
+/* Texto secundario */
+body.ui-theme.theme-light #pane-Subir .text-muted,
+body.ui-theme.theme-light #pane-Subir .file-name,
+body.ui-theme.theme-light #pane-Subir #uploadResult,
+body.ui-theme.theme-light #pane-Subir #uploadResultGrande,
+body.ui-theme.theme-light #pane-Subir #fileNameGrande {
+  color: #555 !important;
+}
+
+/* Botones activos en light */
+body.ui-theme.theme-light #pane-Subir .btn:not(:disabled),
+body.ui-theme.theme-light #pane-Subir button:not(:disabled),
+body.ui-theme.theme-light #pane-Subir .file-input-button {
+  color: #111 !important;
+  border-color: rgba(0,0,0,.35) !important;
+}
+
+/* Botones deshabilitados: que sigan siendo visibles */
+body.ui-theme.theme-light #pane-Subir .btn:disabled,
+body.ui-theme.theme-light #pane-Subir button:disabled,
+body.ui-theme.theme-light #pane-Subir .btn.disabled {
+  color: #666 !important;
+  background: #eeeeee !important;
+  border-color: #b8b8b8 !important;
+  opacity: 1 !important;
+}
+
+/* Inputs / placeholder */
+body.ui-theme.theme-light #pane-Subir input,
+body.ui-theme.theme-light #pane-Subir input::placeholder {
+  color: #333 !important;
+}
+
+body.ui-theme.theme-light #pane-Subir input::placeholder {
+  opacity: .65;
+}
+
+/* Dropzone */
+body.ui-theme.theme-light #pane-Subir .dropzone,
+body.ui-theme.theme-light #pane-Subir .dz-message {
+  color: #222 !important;
+}
+
+/* Botón Quitar / Cancelar */
+body.ui-theme.theme-light #pane-Subir .dz-remove,
+body.ui-theme.theme-light #pane-Subir #btnCancelarGrande {
+  color: #333 !important;
+}
+
+/* Dark */
+body.ui-theme.theme-dark #pane-Subir .btn:disabled,
+body.ui-theme.theme-dark #pane-Subir button:disabled,
+body.ui-theme.theme-dark #pane-Subir .btn.disabled {
+  color: #aaa !important;
+  background: #222 !important;
+  border-color: #555 !important;
+  opacity: 1 !important;
+}
+
+
+/* ===== Subir Archivo / Subir 15MB visibles en modo claro ===== */
+
+body.ui-theme.theme-light #pane-Subir #uploadForm button[type="submit"],
+body.ui-theme.theme-light #pane-Subir #btnSubirGrande {
+  background: #198754 !important;
+  border-color: #146c43 !important;
+  color: #ffffff !important;
+  opacity: 1 !important;
+}
+
+/* Deshabilitados: siguen viéndose claramente */
+body.ui-theme.theme-light #pane-Subir #uploadForm button[type="submit"]:disabled,
+body.ui-theme.theme-light #pane-Subir #btnSubirGrande:disabled {
+  background: #a8d5bd !important;
+  border-color: #79b895 !important;
+  color: #234b36 !important;
+  opacity: 1 !important;
+}
+
+/* Hover cuando están activos */
+body.ui-theme.theme-light #pane-Subir #uploadForm button[type="submit"]:not(:disabled):hover,
+body.ui-theme.theme-light #pane-Subir #btnSubirGrande:not(:disabled):hover {
+  background: #157347 !important;
+  border-color: #146c43 !important;
+  color: #ffffff !important;
 }

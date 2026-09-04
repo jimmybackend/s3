@@ -65,7 +65,7 @@ $footerEspacioUsado = $storageUsage['formatted'];
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <link rel="icon" href="ellogo.png" type="image/x-icon">
 
-  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/styles.css?v=20260904-1541">
 
   <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
@@ -96,38 +96,38 @@ $footerEspacioUsado = $storageUsage['formatted'];
           <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="temaMenu" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             <i class="fas fa-palette mr-1"></i> Diseño
           </a>
-        
+
           <div class="dropdown-menu dropdown-menu-right" aria-labelledby="temaMenu" style="min-width:280px;">
-            
+
             <h6 class="dropdown-header">Color neón</h6>
             <button class="dropdown-item js-set-theme" data-theme="theme-neon-green">Verde neón</button>
             <button class="dropdown-item js-set-theme" data-theme="theme-neon-blue">Azul neón</button>
             <button class="dropdown-item js-set-theme" data-theme="theme-neon-red">Rojo neón</button>
             <button class="dropdown-item js-set-theme" data-theme="theme-neon-yellow">Amarillo neón</button>
-        
+
             <div class="dropdown-divider"></div>
-        
+
             <h6 class="dropdown-header">Modo</h6>
             <button class="dropdown-item js-set-mode" data-mode="theme-dark">Oscuro</button>
             <button class="dropdown-item js-set-mode" data-mode="theme-light">Claro</button>
-        
+
             <div class="dropdown-divider"></div>
-        
+
             <h6 class="dropdown-header">Visión</h6>
             <button class="dropdown-item js-set-vision" data-vision="vision-normal">Normal</button>
             <button class="dropdown-item js-set-vision" data-vision="vision-myopia">Miopía</button>
             <button class="dropdown-item js-set-vision" data-vision="vision-protanopia">Protanopia</button>
             <button class="dropdown-item js-set-vision" data-vision="vision-deuteranopia">Deuteranopia</button>
             <button class="dropdown-item js-set-vision" data-vision="vision-tritanopia">Tritanopia</button>
-        
+
             <div class="dropdown-divider"></div>
-        
+
             <button class="dropdown-item" id="btnToggleAscii">
               <i class="fas fa-terminal mr-1"></i> Alternar ASCII
             </button>
-        
+
           </div>
-        </li>    
+        </li>
       <li class="nav-item dropdown">
         <a class="nav-link dropdown-toggle d-flex align-items-center text-white" href="#" id="usuarioMenu" role="button" data-toggle="dropdown">
           <img src="logo1.png" alt="Perfil" class="rounded-circle mr-2" width="30" height="30">
@@ -138,7 +138,7 @@ $footerEspacioUsado = $storageUsage['formatted'];
           <button class="dropdown-item" data-toggle="modal" data-target="#modalEnlacesUtiles">
             <i class="fas fa-link"></i> Enlaces
           </button>
-         
+
           <button class="dropdown-item" data-toggle="modal" data-target="#modalCostosAws">
               <i class="fas fa-chart-line"></i> Costos AWS
           </button>
@@ -162,7 +162,7 @@ $footerEspacioUsado = $storageUsage['formatted'];
     <!-- Panel lateral -->
     <!--<div class="col-md-3 p-3 bg-white border-right">-->
         <div class="col-md-3 p-3 sidebar">
-        
+
        <?php include 'bloque_carpetas.php'; ?>
 
 
@@ -196,7 +196,7 @@ $footerEspacioUsado = $storageUsage['formatted'];
 
 
     </div>
-    
+
     <!-- Panel principal -->
     <div class="col-md-9 p-4">
  <!--
@@ -288,7 +288,7 @@ $footerEspacioUsado = $storageUsage['formatted'];
               Quitar filtros
             </button>
           </form>
-        
+
                     <!-- Opciones de reproducción -->
             <div id="ap-controls" class="d-flex align-items-center mb-2">
               <div class="custom-control custom-switch">
@@ -296,7 +296,7 @@ $footerEspacioUsado = $storageUsage['formatted'];
                 <label class="custom-control-label" for="apModeRepeat">Repetir pista</label>
                 <small class="text-muted ml-2">Si no está activado, al terminar avanza a la siguiente.</small>
               </div>
-              
+
             </div>
       </div>
     </div>
@@ -313,7 +313,7 @@ $footerEspacioUsado = $storageUsage['formatted'];
 
 <div id="syncStatus" class="mb-2 sync-green"></div>
 
-  
+
       </div>
     </div>
   </div>
@@ -321,11 +321,11 @@ $footerEspacioUsado = $storageUsage['formatted'];
 <!-- PESTAÑA Cargar -->
 <div class="tab-pane fade" id="pane-Subir" role="tabpanel" aria-labelledby="tab-Subir">
 
-  
+
 <!-- Formulario de subida sin recarga -->
 <div class="upload-form-container card p-3 shadow-sm">
   <h6><i class="fas fa-upload"></i> Subir archivo</h6>
-  
+
   <div class="card p-3 my-2">
   <label class="form-label">Subir desde URL (Drive / directo)</label>
   <div class="input-group">
@@ -338,33 +338,33 @@ $footerEspacioUsado = $storageUsage['formatted'];
   <div id="uploadUrlResult" class="small text-muted mt-2"></div>
 </div>
 
-  
+
   <div class="card mb-3">
   <div class="card-body">
 
     <div class="small mb-2">
       <strong>¿Deseas subir archivos?</strong><br>
-      Puedes utilizar el siguiente formulario para subir archivos de <strong>gran tamaño (más de 1 GB)</strong>. 
-      Primero selecciona el archivo y luego pulsa <em>Subir</em>. 
+      Puedes utilizar el siguiente formulario para subir archivos de <strong>gran tamaño (más de 1 GB)</strong>.
+      Primero selecciona el archivo y luego pulsa <em>Subir</em>.
       Asegúrate de <strong>navegar por las carpetas a tu izquierda</strong> y posicionarte en aquella donde deseas que se guarde el archivo.
     </div>
 
     <form id="uploadForm">
-      
+
       <div class="file-input-wrapper mb-2">
         <div class="file-input-button btn btn-primary btn-sm">
           <i class="fas fa-folder-open"></i> Seleccionar Archivo
         </div>
         <input type="file" id="archivo" required>
       </div>
-      
+
       <div id="fileName" class="file-name text-muted small mb-2"></div>
-      
+
       <div class="progress mb-2" id="progressBar" style="display:none;">
         <div class="progress-bar progress-bar-striped progress-bar-animated"
              role="progressbar" style="width: 0%"></div>
       </div>
-      
+
       <button type="submit" class="btn btn-success btn-sm">
         <span class="spinner-border spinner-border-sm d-none" id="spinner" role="status"></span>
         <span id="buttonText">Subir Archivo</span>
@@ -378,9 +378,9 @@ $footerEspacioUsado = $storageUsage['formatted'];
   <div id="uploadResult" class="mt-2 text-muted small">
     Selecciona un archivo y haz clic en Subir
   </div>
-  
 
-        
+
+
 </div>
         <form action="api/upload.php?mode=local_put&action=init" class="dropzone mb-4" id="dropzonePublico">
           <div class="dz-message">Arrastra aquí o haz clic para subir</div>
@@ -392,7 +392,7 @@ $footerEspacioUsado = $storageUsage['formatted'];
 
  <div class="card mb-2">
   <div class="card-body small py-2">
-    Recomendado para archivos grandes (ej. &gt; 200MB / 1GB+). 
+    Recomendado para archivos grandes (ej. &gt; 200MB / 1GB+).
     Muestra progreso real, permite reintentos y reanudar.
   </div>
 </div>
@@ -435,14 +435,14 @@ $footerEspacioUsado = $storageUsage['formatted'];
 
 </div>
 
- 
+
 
 </div>
-     
 
-     
+
+
 </div>
-  
+
 
 <!-- Agrega esta parte al final del body para mostrar el modal -->
 
@@ -866,7 +866,7 @@ $footerEspacioUsado = $storageUsage['formatted'];
               <i class="fab fa-youtube text-danger mr-2"></i> YouTube CC → S3
             </a>
           </li>
-          
+
           <li class="list-group-item">
             <a href="http://esforzados.com/cpanel" target="_blank">
               <i class="fas fa-cogs text-dark mr-2"></i> cPanel Esforzados
@@ -882,7 +882,7 @@ $footerEspacioUsado = $storageUsage['formatted'];
               <i class="fas fa-qrcode text-primary mr-2"></i> Ec2
             </a>
           </li>
-          
+
           <li class="list-group-item">
             <a href="https://cliente.hostgator.mx/sitios-web" target="_blank">
               <i class="fas fa-server text-info mr-2"></i> HostGator Sitios Web
@@ -899,7 +899,7 @@ $footerEspacioUsado = $storageUsage['formatted'];
             <i class="fas fa-envelope text-primary mr-2"></i> Titan Mail (Webmail)
           </a>
         </li>
-        
+
         <li class="list-group-item">
           <a href="https://demo.filestash.app/login" target="_blank">
             <i class="fas fa-hdd text-info mr-2"></i> Filestash (Explorador S3 / FTP)
@@ -915,7 +915,7 @@ $footerEspacioUsado = $storageUsage['formatted'];
               <i class="fas fa-folder-open text-info mr-2"></i> Buckets S3
             </a>
           </li>
-          
+
           <li class="list-group-item">
             <a href="https://esforzados.com/AI/index.html" target="_blank">
               <i class="fas fa-robot text-info mr-2"></i> AI
@@ -941,7 +941,7 @@ $footerEspacioUsado = $storageUsage['formatted'];
               <i class="fas fa-project-diagram text-success mr-2"></i> SkyDrop
             </a>
           </li>
-          
+
         </ul>
       </div>
     </div>
@@ -1007,7 +1007,7 @@ $footerEspacioUsado = $storageUsage['formatted'];
             <select id="traducirTarget" class="form-control">
               <!-- default -->
               <option value="es" selected>Spanish (es)</option>
-            
+
               <option value="af">Afrikaans (af)</option>
               <option value="sq">Albanian (sq)</option>
               <option value="am">Amharic (am)</option>
@@ -1531,7 +1531,7 @@ $footerEspacioUsado = $storageUsage['formatted'];
         </div>
       </div>
       <div class="modal-footer">
-       
+
         <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
       </div>
     </div>
@@ -1572,7 +1572,7 @@ $footerEspacioUsado = $storageUsage['formatted'];
           <input id="gaNombre" type="text" class="form-control" placeholder="Ej. reunión, nota, idea... (sin extensión)">
           <small class="text-muted">Si lo dejas vacío se generará uno automático con fecha/hora.</small>
         </div>
-        
+
         <div class="form-group">
           <label for="gaGain">Ganancia de entrada (preamp)</label>
           <input id="gaGain" type="range" min="0" max="3" step="0.05" value="1" class="w-100">
@@ -1689,7 +1689,7 @@ $footerEspacioUsado = $storageUsage['formatted'];
 
 
 <script src="js/carpetas.js"></script>
-<script src="js/archivos.js"></script>
+<script src="js/archivos.js?v=20260904-1535"></script>
 <script src="js/file-block.js"></script>
 
 <script src="js/actualizar-hora.js"></script>

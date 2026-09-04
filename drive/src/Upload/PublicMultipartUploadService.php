@@ -29,7 +29,9 @@ final class PublicMultipartUploadService
         $chunkSize = (int)($input['chunk_size'] ?? (15 * 1024 * 1024));
 
         $minChunk = 5 * 1024 * 1024;
-        $maxChunk = 24 * 1024 * 1024;
+        // El cuerpo de cada parte va navegador -> S3.
+        // PHP únicamente recibe el número del tamaño seleccionado.
+        $maxChunk = 256 * 1024 * 1024;
 
         if ($filename === '' || $filesize <= 0) {
             throw new RuntimeException('Datos de archivo inválidos.');

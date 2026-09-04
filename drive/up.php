@@ -299,7 +299,11 @@ if ($action !== '') {
     </a>
   </div>
   <h1>Subida reanudable a S3 (Directo)</h1>
-  <p class="sub">Sube de forma secuencial con paquetes de 15 MB. Cada paquete pasa por el servidor y se confirma en S3 antes de continuar.</p>
+  <p class="sub">
+    Subida multipart directa a Amazon S3.
+    PHP únicamente autoriza y registra la operación;
+    los datos del archivo viajan directamente desde tu navegador a S3.
+  </p>
 
   <div class="grid">
     <div class="uploader">
@@ -347,11 +351,18 @@ if ($action !== '') {
   const bar=$('bar'), status=$('status'), fn=$('fn'), fs=$('fs'), uploadIdEl=$('uploadId'), s3keyEl=$('s3key');
   const resultBox=$('result'), resKey=$('resKey'), resUrl=$('resUrl'), resLink=$('resLink'), resLinkWrap=$('resLinkWrap');
 
-  // === Config robusta para archivos grandes ===
-  // Un solo paquete a la vez prioriza estabilidad sobre velocidad.
-  let CHUNK_SIZE = 15 * 1024 * 1024;
+  // =====================================================
+  // MULTIPART DIRECT-TO-S3
+  // =====================================================
+  // Los archivos NO atraviesan PHP.
+  // PHP solo crea el multipart, firma partes y completa.
+  let CHUNK_SIZE = 32 * 1024 * 1024;
 
-  const MAX_WORKERS = 1;
+  // Dos conexiones en móvil y tres en escritorio.
+  const MAX_WORKERS =
+    /Android|iPhone|iPad|Mobile/i.test(navigator.userAgent)
+      ? 2
+      : 3;
 
   function elegirChunk(file) {
     const connection =
@@ -361,45 +372,79 @@ if ($action !== '') {
       null;
 
     const type =
-      String(
-        connection?.effectiveType || ''
-      ).toLowerCase();
+      String(connection?.effectiveType || '').toLowerCase();
 
     const downlink =
-      Number(
-        connection?.downlink || 0
-      );
+      Number(connection?.downlink || 0);
 
-    let mb = 15;
+    /*
+     * Ya no estamos limitados por upload_max_filesize/post_max_size,
+     * porque el chunk no atraviesa PHP.
+     *
+     * Valores conservadores pero rápidos:
+     *
+     * lenta       -> 8 MB
+     * 3G          -> 16 MB
+     * normal      -> 32 MB
+     * rápida      -> 64 MB
+     * muy rápida  -> 128 MB
+     */
+    let mb = 32;
 
     if (
       type === 'slow-2g' ||
       type === '2g'
     ) {
-      mb = 5;
+      mb = 8;
 
     } else if (
       type === '3g' ||
       (downlink > 0 && downlink < 5)
     ) {
-      mb = 8;
+      mb = 16;
+
+    } else if (downlink >= 50) {
+      mb = 128;
 
     } else if (
-      type === '4g' &&
-      downlink >= 10
+      downlink >= 10 ||
+      type === '4g'
     ) {
-      mb = 24;
+      mb = 64;
     }
 
     /*
-     * Archivos pequeños no necesitan paquetes grandes.
+     * Para archivos pequeños no necesitamos bloques enormes.
      */
-    if (
-      file &&
-      file.size < 100 * 1024 * 1024
-    ) {
-      mb = Math.min(mb, 8);
+    if (file && file.size < 100 * 1024 * 1024) {
+      mb = Math.min(mb, 16);
     }
+
+    /*
+     * S3 multipart admite hasta 10,000 partes.
+     * Dejamos margen y aumentamos automáticamente el chunk
+     * cuando el archivo sea extraordinariamente grande.
+     */
+    if (file && file.size > 0) {
+      const MB = 1024 * 1024;
+
+      const minimumByParts =
+        Math.ceil(
+          file.size /
+          9900 /
+          MB
+        );
+
+      mb = Math.max(
+        mb,
+        minimumByParts
+      );
+    }
+
+    /*
+     * Límite práctico del uploader web.
+     */
+    mb = Math.max(8, Math.min(256, mb));
 
     return mb * 1024 * 1024;
   }
@@ -413,12 +458,42 @@ if ($action !== '') {
 
   let state = {
     paused:false, failed:false, file:null, uploadId:null, s3key:null, etags:{},
-    totalParts:0, nextPart:1, inFlight:0, uploadedBytes:0, aborters:new Map()
+    totalParts:0,
+    nextPart:1,
+    inFlight:0,
+    uploadedBytes:0,
+    aborters:new Map(),
+    progressBytes:new Map()
   };
 
   const humanSize = (n)=>{const u=['B','KB','MB','GB','TB'];let i=0,v=n;while(v>1024&&i<u.length-1){v/=1024;i++;}return `${v.toFixed(1)} ${u[i]}`;};
   const msg = (t,c='')=>{const d=document.createElement('div'); if(c)d.classList.add(c); d.textContent=t; status.appendChild(d); status.scrollTop=status.scrollHeight;};
-  const setProgress=(p)=>{ bar.style.width = `${p}%`; };
+  const setProgress=(p)=>{
+    bar.style.width = `${Math.max(0, Math.min(100, p))}%`;
+  };
+
+  function actualizarProgresoDirecto() {
+    if (!state.file || !state.file.size) {
+      setProgress(0);
+      return;
+    }
+
+    let inFlightBytes = 0;
+
+    for (const bytes of state.progressBytes.values()) {
+      inFlightBytes += Number(bytes || 0);
+    }
+
+    const total =
+      Math.min(
+        state.file.size,
+        state.uploadedBytes + inFlightBytes
+      );
+
+    setProgress(
+      (total / state.file.size) * 100
+    );
+  }
 
   async function postForm(action, data, signal) {
     const form=new FormData();
@@ -453,8 +528,11 @@ if ($action !== '') {
 
     if (chunkInfo) {
       chunkInfo.textContent =
-        'Tamaño automático: ' +
-        humanSize(CHUNK_SIZE);
+        'Directo a S3 · ' +
+        humanSize(CHUNK_SIZE) +
+        ' · ' +
+        MAX_WORKERS +
+        (MAX_WORKERS === 1 ? ' conexión' : ' conexiones');
     }
 
     msg('Verificando sesión previa…');
@@ -536,57 +614,156 @@ if ($action !== '') {
     }
   }
 
-  async function uploadPartViaPhp(partNumber, blob, signal) {
-    const form = new FormData();
-
-    form.append('action', 'part');
-    form.append('target_user_id', String(TARGET_USER_ID));
-    form.append('uploadId', state.uploadId);
-    form.append('key', state.s3key);
-    form.append('partNumber', String(partNumber));
-
-    // Un solo chunk de 15 MB viaja navegador -> PHP -> S3.
-    form.append(
-      'part',
-      blob,
-      `part-${String(partNumber).padStart(5, '0')}.bin`
+  async function solicitarUrlParte(partNumber, signal) {
+    const signed = await postForm(
+      'sign',
+      {
+        uploadId: state.uploadId,
+        key: state.s3key,
+        partNumber: partNumber
+      },
+      signal
     );
 
-    const res = await fetch(location.pathname, {
-      method: 'POST',
-      body: form,
-      signal,
-      credentials: 'same-origin',
-      cache: 'no-store'
-    });
-
-    const raw = await res.text();
-
-    let data = null;
-
-    try {
-      data = raw ? JSON.parse(raw) : null;
-    } catch (_) {
-      data = null;
-    }
-
-    if (!res.ok) {
-      const detail =
-        data && data.error
-          ? data.error
-          : (raw || `HTTP ${res.status}`);
-
-      throw new Error(detail);
-    }
-
-    if (!data || data.ok !== true || !data.etag) {
+    if (!signed || !signed.url) {
       throw new Error(
-        (data && data.error) ||
-        `El paquete ${partNumber} no fue confirmado por S3.`
+        `No se pudo obtener URL presignada para la parte ${partNumber}.`
       );
     }
 
-    return String(data.etag).replace(/^"|"$/g, '');
+    return signed.url;
+  }
+
+  function putDirectoS3(
+    url,
+    blob,
+    partNumber,
+    signal
+  ) {
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+
+      xhr.open(
+        'PUT',
+        url,
+        true
+      );
+
+      xhr.timeout = 0;
+
+      xhr.upload.onprogress = function (event) {
+        if (!event.lengthComputable) {
+          return;
+        }
+
+        state.progressBytes.set(
+          partNumber,
+          event.loaded
+        );
+
+        actualizarProgresoDirecto();
+      };
+
+      xhr.onload = function () {
+        state.progressBytes.delete(partNumber);
+
+        if (
+          xhr.status < 200 ||
+          xhr.status >= 300
+        ) {
+          reject(
+            new Error(
+              `S3 respondió HTTP ${xhr.status} en la parte ${partNumber}.`
+            )
+          );
+          return;
+        }
+
+        const etag =
+          String(
+            xhr.getResponseHeader('ETag') || ''
+          )
+          .replace(/^"|"$/g, '')
+          .trim();
+
+        if (!etag) {
+          reject(
+            new Error(
+              'S3 recibió la parte pero no expuso ETag. ' +
+              'Verifica ExposeHeaders: ETag en CORS.'
+            )
+          );
+          return;
+        }
+
+        resolve(etag);
+      };
+
+      xhr.onerror = function () {
+        state.progressBytes.delete(partNumber);
+        actualizarProgresoDirecto();
+
+        reject(
+          new Error(
+            `Error de red enviando directamente a S3 la parte ${partNumber}.`
+          )
+        );
+      };
+
+      xhr.onabort = function () {
+        state.progressBytes.delete(partNumber);
+        actualizarProgresoDirecto();
+
+        const error = new Error(
+          `Parte ${partNumber} cancelada.`
+        );
+
+        error.name = 'AbortError';
+
+        reject(error);
+      };
+
+      if (signal) {
+        if (signal.aborted) {
+          xhr.abort();
+          return;
+        }
+
+        signal.addEventListener(
+          'abort',
+          () => {
+            try {
+              xhr.abort();
+            } catch (_) {}
+          },
+          { once: true }
+        );
+      }
+
+      xhr.send(blob);
+    });
+  }
+
+  async function uploadPartDirecto(
+    partNumber,
+    blob,
+    signal
+  ) {
+    /*
+     * Pedimos una URL nueva en cada intento.
+     * La petición a PHP pesa apenas unos bytes.
+     */
+    const url = await solicitarUrlParte(
+      partNumber,
+      signal
+    );
+
+    return putDirectoS3(
+      url,
+      blob,
+      partNumber,
+      signal
+    );
   }
 
   async function uploadPartParallel(partNumber){
@@ -605,7 +782,7 @@ if ($action !== '') {
 
       for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
         try {
-          etag = await uploadPartViaPhp(
+          etag = await uploadPartDirecto(
             partNumber,
             blob,
             controller.signal
@@ -647,14 +824,16 @@ if ($action !== '') {
         );
       }
 
-      state.etags[partNumber]=etag;
-      state.uploadedBytes += (end-start);
-      setProgress(Math.min(100,(state.uploadedBytes/f.size)*100));
+      state.progressBytes.delete(partNumber);
+      state.etags[partNumber] = etag;
+      state.uploadedBytes += (end - start);
+      actualizarProgresoDirecto();
       msg(`Paquete ${partNumber} confirmado (${( (end-start)/1024/1024 ).toFixed(1)} MB).`,'ok');
 
     } finally {
       state.inFlight--;
       state.aborters.delete(partNumber);
+      state.progressBytes.delete(partNumber);
       // Programar más trabajos si hay pendientes
       if(!state.paused && !state.failed) scheduleWorkers();
     }

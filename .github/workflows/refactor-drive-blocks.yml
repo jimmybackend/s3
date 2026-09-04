@@ -1,0 +1,93 @@
+name: Refactor Drive blocks OOP
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/refactor-drive-blocks.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  refactor:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Refactor blocks
+        run: python3 .github/scripts/refactor_drive_blocks.py
+
+      - name: Validate PHP and JavaScript
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          test ! -e drive/utils
+          test ! -e drive/js/actualizarbloquefooter.js
+
+          if grep -RIni --exclude-dir=.git "utils/helpers.php" drive; then
+            echo 'Residual utils/helpers.php reference found'
+            exit 1
+          fi
+
+          if grep -nE 'SELECT |listArchivos|Config::getS3|S3Manager|app_bootstrap' drive/bloque_footer.php; then
+            echo 'Footer still contains data-access logic'
+            exit 1
+          fi
+
+          if grep -RIni --include='*.js' "fetch('bloque_footer.php\|URL_FOOTER.*bloque_footer.php" drive/js; then
+            echo 'JavaScript still fetches bloque_footer.php'
+            exit 1
+          fi
+
+          grep -n 'user_id_ = ? AND Ruta = ? AND Found = 1' drive/src/Application/FileListService.php
+          grep -n 'user_id_ = ? AND Found = 1' drive/src/Storage/StorageUsageService.php
+          grep -n 'FROM S3Folders WHERE user_id_ = ? AND Found = 1' drive/src/View/FolderTreeRenderer.php
+          grep -n "public const RUTA_RAIZ      = 'Data/';" Config-s3.php
+
+          php -l Config-s3.php >/dev/null
+          php -l db.php >/dev/null
+          find drive -type f -name '*.php' -print0 | while IFS= read -r -d '' f; do
+            php -l "$f" >/dev/null
+          done
+
+          node --check drive/js/archivos.js
+          node --check drive/js/carpetas.js
+          node --check drive/js/actualizar-hora.js
+          node --check drive/js/storage-usage.js
+          node --check drive/js/sincronizar.js
+
+          for f in \
+            drive/thumb.php \
+            drive/ver_archivo.php \
+            drive/editor.php \
+            drive/descargar_archivo.php \
+            drive/eliminar_archivo.php \
+            drive/descargar_zip.php \
+            drive/delete_multiple.php \
+            drive/actualizar_ruta.php \
+            drive/listar_carpetas.php \
+            drive/mover_carpeta.php \
+            drive/renombrar_carpeta.php \
+            drive/eliminar_carpeta.php \
+            drive/crear_carpeta.php; do
+            test -f "$f"
+          done
+
+          echo 'OK: Drive blocks refactor validated'
+
+      - name: Commit refactor
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git rm .github/scripts/refactor_drive_blocks.py
+          git rm .github/workflows/refactor-drive-blocks.yml
+          git add -A
+          git commit -m 'Refactor Drive blocks and decouple footer usage'
+          git push origin main

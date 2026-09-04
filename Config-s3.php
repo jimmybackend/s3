@@ -23,8 +23,8 @@ final class Config
 
     public const DEFAULT_USER_ID = 1;
 
-    public const RUTA_RAIZ      = 'Datos/';
-    public const RUTA_COMPARTIDA = 'Datos/Compartidos/';
+    public const RUTA_RAIZ      = 'Data/';
+    public const RUTA_COMPARTIDA = 'Data/Compartidos/';
 
     /** ============ IMPORTANTE ============ */
     public static function bootAwsEnv(): void

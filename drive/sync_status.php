@@ -12,7 +12,6 @@ session_start();
 
 require_once __DIR__ . '/app_bootstrap.php';
 require_once __DIR__ . '/S3Manager.php';
-require_once __DIR__ . '/utils/helpers.php';
 
 
 if (!isset($_SESSION['usuario']) && !isset($_SESSION['user_id'])) { http_response_code(401); echo "Sin sesión."; exit; }

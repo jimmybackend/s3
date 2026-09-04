@@ -1,29 +1,28 @@
 <?php
-// actualizar_ruta.php — Guarda la ruta actual en sesión y responde JSON
-if (session_status() === PHP_SESSION_NONE) { session_start(); }
+declare(strict_types=1);
+
+require_once __DIR__ . '/app_bootstrap.php';
+
 header('Content-Type: application/json; charset=utf-8');
 
-$ruta = isset($_POST['ruta']) ? (string)$_POST['ruta'] : '';
+$app = drive_app();
+$session = $app->session();
+$session->start();
 
-// Normaliza a "Data/.../"
-$ruta = trim($ruta);
-$ruta = preg_replace('~[\\/]+~', '/', $ruta);
+if (!$session->isAuthenticated() || $session->userId() <= 0) {
+    http_response_code(401);
+    echo json_encode(['ok' => false, 'mensaje' => 'Sin sesión'], JSON_UNESCAPED_UNICODE);
+    exit;
+}
 
+$ruta = trim((string) ($_POST['ruta'] ?? $_POST['rutaNueva'] ?? ''));
 if ($ruta === '') {
-  echo json_encode(['ok' => false, 'mensaje' => 'Ruta vacía']);
-  exit;
+    http_response_code(422);
+    echo json_encode(['ok' => false, 'mensaje' => 'Ruta vacía'], JSON_UNESCAPED_UNICODE);
+    exit;
 }
 
-// Asegura prefijo "Data/"
-if (strpos($ruta, 'Data/') !== 0) {
-  $ruta = 'Data/' . ltrim($ruta, '/');
-}
-
-// Sin slash inicial; con slash final
-$ruta = ltrim($ruta, '/');
-if (substr($ruta, -1) !== '/') $ruta .= '/';
-
-// Guarda en sesión exactamente como lo requiere bloque_archivos.php
+$ruta = $app->userStoragePath()->normalizeForUser($ruta, $session->userId());
 $_SESSION['ruta_actual'] = $ruta;
 
-echo json_encode(['ok' => true, 'ruta' => $ruta]);
+echo json_encode(['ok' => true, 'ruta' => $ruta], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);

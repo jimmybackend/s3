@@ -4,7 +4,11 @@ declare(strict_types=1);
 namespace ArcadeCloud\Drive\Core;
 
 use ArcadeCloud\Drive\Application\DrivePageService;
+use ArcadeCloud\Drive\Application\FileListService;
 use ArcadeCloud\Drive\Security\SessionManager;
+use ArcadeCloud\Drive\Storage\StorageUsageService;
+use ArcadeCloud\Drive\Storage\UserStoragePath;
+use ArcadeCloud\Drive\View\FolderTreeRenderer;
 use Aws\S3\S3Client;
 use mysqli;
 
@@ -15,7 +19,10 @@ final class DriveApplication
     private string $bucket;
     private ?\S3Manager $s3Manager = null;
     private ?SessionManager $session = null;
+    private ?FileListService $fileListService = null;
     private ?DrivePageService $drivePageService = null;
+    private ?StorageUsageService $storageUsageService = null;
+    private ?UserStoragePath $userStoragePath = null;
 
     private function __construct(mysqli $db)
     {
@@ -46,10 +53,12 @@ final class DriveApplication
 
     public function session(): SessionManager
     {
-        if ($this->session === null) {
-            $this->session = new SessionManager();
-        }
-        return $this->session;
+        return $this->session ??= new SessionManager();
+    }
+
+    public function userStoragePath(): UserStoragePath
+    {
+        return $this->userStoragePath ??= new UserStoragePath();
     }
 
     public function s3Manager(): \S3Manager
@@ -61,11 +70,26 @@ final class DriveApplication
         return $this->s3Manager;
     }
 
+    public function fileListService(): FileListService
+    {
+        return $this->fileListService ??= new FileListService($this->db);
+    }
+
     public function drivePageService(): DrivePageService
     {
-        if ($this->drivePageService === null) {
-            $this->drivePageService = new DrivePageService($this->s3Manager());
-        }
-        return $this->drivePageService;
+        return $this->drivePageService ??= new DrivePageService(
+            $this->fileListService(),
+            $this->userStoragePath()
+        );
+    }
+
+    public function storageUsageService(): StorageUsageService
+    {
+        return $this->storageUsageService ??= new StorageUsageService($this->db);
+    }
+
+    public function folderTreeRenderer(int $userId): FolderTreeRenderer
+    {
+        return new FolderTreeRenderer($this->db, $userId, $this->userStoragePath());
     }
 }

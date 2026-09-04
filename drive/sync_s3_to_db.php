@@ -20,7 +20,6 @@ $userId = (int)$_SESSION['user_id'];
 /* ====== Includes ====== */
 require_once __DIR__ . '/app_bootstrap.php';
 require_once __DIR__ . '/S3Manager.php';
-require_once __DIR__ . '/utils/helpers.php';
 
 
 /* ====== DB helpers ====== */

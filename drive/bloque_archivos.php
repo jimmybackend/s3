@@ -1,174 +1,72 @@
 <?php
-/*  bloque_archivos.php — v3.3
-    - Si el archivo está seguro y bloqueado, solo se muestran acciones de seguridad
-    - Si está normal o desbloqueado, se muestran todas las demás acciones
-    - No expone data-original cuando está seguro y bloqueado
-    - Mantiene tu estructura original
-*/
+declare(strict_types=1);
 
-if (session_status() === PHP_SESSION_NONE) session_start();
+use ArcadeCloud\Drive\View\FileViewHelper;
 
 require_once __DIR__ . '/app_bootstrap.php';
 
-/* ---------------- Helpers ---------------- */
-function h($s){ return htmlspecialchars((string)$s, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); }
-function bytes_human($bytes){
-  $bytes = (int)$bytes;
-  if ($bytes < 1024)       return $bytes . ' B';
-  if ($bytes < 1048576)    return round($bytes/1024,2) . ' KB';
-  if ($bytes < 1073741824) return round($bytes/1048576,2) . ' MB';
-  return round($bytes/1073741824,2) . ' GB';
-}
-function ext_de($nombre){ return strtolower(pathinfo($nombre, PATHINFO_EXTENSION)); }
-function build_file_s3_key(string $ruta, string $encriptado): string {
-  $ruta = rtrim(str_replace('\\', '/', trim($ruta)), '/') . '/';
-  $enc  = ltrim(str_replace('\\', '/', trim($encriptado)), '/');
-  if ($enc === '') return '';
-  if (strpos($enc, $ruta) === 0) return $enc;
-  return $ruta . $enc;
-}
-function registro_encriptado(array $row){ return ($row['Nombre'] ?? '') !== ($row['Encriptado'] ?? ''); }
-function registro_bloqueado(array $row): bool {
-  return (($row['AccessType'] ?? 'normal') === 'secure');
-}
+$app = drive_app();
+$sessionManager = $app->session();
+$sessionManager->start();
+$sessionManager->requireAuthenticated('index.php');
+$userId = $sessionManager->userId();
 
-function registro_tiene_seguridad(array $row): bool {
-  $a = (string)($row['AccessType'] ?? 'normal');
-  $p = (string)($row['PasswordHash'] ?? '');
-  return in_array($a, ['secure', 'unlocked'], true) || $p !== '';
-}
-function tooltip_from_metadatos(?string $raw): string {
-  if (!$raw) return 'Sin metadatos';
-  $raw = trim($raw);
-  $decoded = json_decode($raw, true);
-  $pretty = (json_last_error() === JSON_ERROR_NONE)
-    ? json_encode($decoded, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)
-    : $raw;
-  if (mb_strlen($pretty) > 2000) $pretty = mb_substr($pretty, 0, 2000) . "…";
-  $pretty = str_replace(["\r\n","\r","\n"], "&#10;", htmlspecialchars($pretty, ENT_QUOTES|ENT_SUBSTITUTE, 'UTF-8'));
-  return $pretty;
-}
-
-/* ---------------- Parámetros (sin formulario aquí) ---------------- */
-$rutaGet = trim((string)($_GET['ruta'] ?? ''));
+$rutaGet = trim((string) ($_GET['ruta'] ?? ''));
 if ($rutaGet !== '') {
-  $_SESSION['ruta_actual'] = $rutaGet;
+    $_SESSION['ruta_actual'] = $app->userStoragePath()->normalizeForUser($rutaGet, $userId);
 }
 
-$rutaActual   = $_SESSION['ruta_actual'] ?? 'Data/';
-$rutaActual   = rtrim(str_replace('\\', '/', $rutaActual), '/') . '/';
-$buscar       = $_GET['buscar'] ?? '';
-$tipo         = $_GET['tipo'] ?? '';
-$fechaInicio  = $_GET['fecha_inicio'] ?? '';
-$fechaFin     = $_GET['fecha_fin'] ?? '';
-$pagina       = max(1, intval($_GET['pagina'] ?? 1));
-$limite       = max(5, intval($_GET['limite'] ?? 5));
+$rutaActual = $app->userStoragePath()->normalizeForUser(
+    (string) ($_SESSION['ruta_actual'] ?? ''),
+    $userId
+);
+$_SESSION['ruta_actual'] = $rutaActual;
 
-/* ---------------- WHERE base ---------------- */
-$where  = "Ruta = ? AND Found = 1";
-$types  = "s";
-$params = [$rutaActual];
+$state = $app->fileListService()->load($userId, $rutaActual, $_GET);
+$filas = $state['rows'];
+$total = $state['total'];
+$pagina = $state['page'];
+$limite = $state['limit'];
+$buscar = $state['search'];
+$tipo = $state['type'];
+$fechaInicio = $state['date_from'];
+$fechaFin = $state['date_to'];
+$carpetaTotal = $state['folder_total'];
+$carpetaPesoMB = round($state['folder_bytes'] / 1048576, 2);
 
-if ($buscar !== '') {
-  $where .= " AND (Nombre LIKE CONCAT('%',?,'%') OR Encriptado LIKE CONCAT('%',?,'%'))";
-  $types .= "ss"; $params[] = $buscar; $params[] = $buscar;
-}
-if ($tipo !== '') {
-  $where .= " AND LOWER(SUBSTRING_INDEX(Nombre,'.',-1)) = ?";
-  $types .= "s"; $params[] = strtolower($tipo);
-}
-if ($fechaInicio !== '') {
-  $where .= " AND DATE(Fecha) >= ?";
-  $types .= "s"; $params[] = $fechaInicio;
-}
-if ($fechaFin !== '') {
-  $where .= " AND DATE(Fecha) <= ?";
-  $types .= "s"; $params[] = $fechaFin;
-}
-
-/* ---------------- Total (filtrado actual) ---------------- */
-$sqlCount = "SELECT COUNT(*) as n FROM FileS3 WHERE $where";
-$stmtC = $db_connection->prepare($sqlCount);
-$stmtC->bind_param($types, ...$params);
-$stmtC->execute();
-$resC = $stmtC->get_result();
-$total = ($resC && ($r=$resC->fetch_assoc())) ? (int)$r['n'] : 0;
-$stmtC->close();
-
-/* ---------------- Totales carpeta (sin filtros) ---------------- */
-$sqlFolder = "SELECT COUNT(*) as n, COALESCE(SUM(Tamano),0) as s FROM FileS3 WHERE Ruta = ? AND Found = 1";
-$stmtF = $db_connection->prepare($sqlFolder);
-$stmtF->bind_param("s", $rutaActual);
-$stmtF->execute();
-$resF = $stmtF->get_result();
-$carpetaTotal = 0;
-$carpetaPesoMB = 0.0;
-if ($resF && ($rf = $resF->fetch_assoc())) {
-  $carpetaTotal = (int)$rf['n'];
-  $carpetaPesoMB = round(((int)$rf['s']) / 1048576, 2);
-}
-$stmtF->close();
-
-$offset = ($pagina - 1) * $limite;
-
-/* ---------------- Página de datos ---------------- */
-$sql = "SELECT id_, Nombre, Encriptado, Tamano, Metadatos, Ruta,
-               Found, AccessType, PasswordHash, SecureHint, SecureUpdatedAt, Fecha, user_id_
-        FROM FileS3
-        WHERE $where
-        ORDER BY Fecha DESC
-        LIMIT ? OFFSET ?";
-$typesPage  = $types . "ii";
-$paramsPage = array_merge($params, [$limite, $offset]);
-
-$stmt = $db_connection->prepare($sql);
-$stmt->bind_param($typesPage, ...$paramsPage);
-$stmt->execute();
-$result = $stmt->get_result();
-
-$filas = [];
-while ($row = $result->fetch_assoc()) $filas[] = $row;
-$stmt->close();
-
-/* ---------------- Clasificación por tipo ---------------- */
 $imagenesExt = ['jpg','jpeg','png','gif','webp','bmp'];
-$audioExt    = ['mp3','wav','ogg','opus','m4a','aac'];
-$videoExt    = ['mp4','webm','mov','avi','mkv'];
-$txtEditExt  = ['txt','srt','vtt','md','html','css','js','php','py','json','csv','sql','jas'];
+$audioExt = ['mp3','wav','ogg','opus','m4a','aac'];
+$videoExt = ['mp4','webm','mov','avi','mkv'];
+$txtEditExt = ['txt','srt','vtt','md','html','css','js','php','py','json','csv','sql','jas'];
 $textractExt = ['jpg','jpeg','png','tif','tiff','pdf'];
 $traducirExt = ['txt','pdf','jpg','jpeg','png','tif','tiff'];
 $analizarExt = ['jpg','jpeg','png','tif','tiff','bmp'];
 
-/* ---------------- Preparar datos para galería y conteos (página) ---------------- */
 $imagenesPagina = [];
 $visibles = 0;
 $noVisibles = 0;
 $segurosAbiertos = 0;
 
-foreach ($filas as $r) {
-  $ext = ext_de($r['Nombre']);
-
-  if (in_array($ext, $imagenesExt, true)) {
-    $s3key = build_file_s3_key(
-      (string)($r['Ruta'] ?? ''),
-      (string)($r['Encriptado'] ?? '')
-    );
-
-    $imagenesPagina[] = [
-      'key'    => $s3key,
-      'nombre' => $r['Nombre']
-    ];
-  }
-
-  if (registro_bloqueado($r)) {
-    $noVisibles++;
-  } else {
-    $visibles++;
-
-    if (registro_tiene_seguridad($r)) {
-      $segurosAbiertos++;
+foreach ($filas as $row) {
+    $ext = FileViewHelper::extension((string) ($row['Nombre'] ?? ''));
+    if (in_array($ext, $imagenesExt, true)) {
+        $imagenesPagina[] = [
+            'key' => FileViewHelper::buildS3Key(
+                (string) ($row['Ruta'] ?? ''),
+                (string) ($row['Encriptado'] ?? '')
+            ),
+            'nombre' => (string) ($row['Nombre'] ?? ''),
+        ];
     }
-  }
+
+    if (FileViewHelper::isLocked($row)) {
+        $noVisibles++;
+    } else {
+        $visibles++;
+        if (FileViewHelper::hasSecurity($row)) {
+            $segurosAbiertos++;
+        }
+    }
 }
 ?>
 
@@ -176,7 +74,7 @@ foreach ($filas as $r) {
 
   <!-- Contexto persistente para JS -->
   <div id="archivosContexto"
-       data-ruta-actual="<?= h($rutaActual) ?>"
+       data-ruta-actual="<?= FileViewHelper::escape($rutaActual) ?>"
        data-pagina-actual="<?= (int)$pagina ?>"
        data-limite="<?= (int)$limite ?>"></div>
   <script type="application/json" id="imagenesGaleriaData"><?= json_encode($imagenesPagina, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?></script>
@@ -195,7 +93,7 @@ foreach ($filas as $r) {
 <div class="small">
   Archivos: <strong><?= (int)$carpetaTotal ?></strong> |
   Peso: <strong><?= number_format($carpetaPesoMB, 2) ?></strong> MB |
-  Ruta: <code><?= h($rutaActual) ?></code> |
+  Ruta: <code><?= FileViewHelper::escape($rutaActual) ?></code> |
   Visibles (página): <strong><?= (int)$visibles ?></strong> |
   Bloqueados (página): <strong><?= (int)$noVisibles ?></strong> |
   Protegidos abiertos (página): <strong><?= (int)$segurosAbiertos ?></strong> |
@@ -230,7 +128,7 @@ foreach ($filas as $r) {
       $keyEnc   = $row['Encriptado'];
 
       $uid    = (int)($row['user_id_'] ?? 1);
-      $s3key  = build_file_s3_key((string)$rutaRow, (string)$keyEnc);
+      $s3key  = FileViewHelper::buildS3Key((string)$rutaRow, (string)$keyEnc);
       $s3keyQ = rawurlencode($s3key);
 
       $thumbUrl = "thumb.php?key={$s3keyQ}&uid={$uid}&w=128&h=128";
@@ -239,8 +137,8 @@ foreach ($filas as $r) {
 
       $tamano    = (int)($row['Tamano'] ?? 0);
       $fechaTxt  = date('Y-m-d H:i', strtotime($row['Fecha'] ?? 'now'));
-      $ext       = ext_de($nombre);
-      $metaTitle = tooltip_from_metadatos($row['Metadatos'] ?? null);
+      $ext       = FileViewHelper::extension($nombre);
+      $metaTitle = FileViewHelper::metadataTooltip($row['Metadatos'] ?? null);
 
       $esImg   = in_array($ext, $imagenesExt, true);
       $esAudio = in_array($ext, $audioExt, true);
@@ -250,9 +148,9 @@ foreach ($filas as $r) {
       $puedeTrd= in_array($ext, $traducirExt, true);
       $puedeAna= in_array($ext, $analizarExt, true);
 
-      $yaEncript = registro_encriptado($row);
-        $bloqueado = registro_bloqueado($row);
-        $seguro    = registro_tiene_seguridad($row);
+      $yaEncript = FileViewHelper::isEncrypted($row);
+        $bloqueado = FileViewHelper::isLocked($row);
+        $seguro    = FileViewHelper::hasSecurity($row);
         $unlocked  = (($row['AccessType'] ?? 'normal') === 'unlocked');
         $soloSeguridad = $bloqueado;
 
@@ -266,27 +164,27 @@ foreach ($filas as $r) {
   class="list-group-item d-flex justify-content-between align-items-center file-row <?= $esAudio ? 'file-row-audio' : '' ?> <?= $clsEnc ?> <?= $clsSec ?> is-pending"
         data-secure="<?= $seguro ? '1' : '0' ?>"
         data-unlocked="<?= $unlocked ? '1' : '0' ?>"
-        data-secure-hint="<?= h((string)($row['SecureHint'] ?? '')) ?>"
+        data-secure-hint="<?= FileViewHelper::escape((string)($row['SecureHint'] ?? '')) ?>"
         data-tipo="archivo"
-        data-ext="<?= h($ext) ?>"
-        data-key="<?= h($s3key) ?>"
-        data-nombre="<?= h($nombre) ?>"
+        data-ext="<?= FileViewHelper::escape($ext) ?>"
+        data-key="<?= FileViewHelper::escape($s3key) ?>"
+        data-nombre="<?= FileViewHelper::escape($nombre) ?>"
         <?php if (!$soloSeguridad): ?>
-        data-original="<?= h($origUrl) ?>"
+        data-original="<?= FileViewHelper::escape($origUrl) ?>"
         <?php endif; ?>
       >
         <div class="d-flex align-items-center file-main-block">
 
           <input type="checkbox"
                  name="archivos[]"
-                 value="<?= h($s3key) ?>"
-                 data-nombre="<?= h($nombre) ?>"
+                 value="<?= FileViewHelper::escape($s3key) ?>"
+                 data-nombre="<?= FileViewHelper::escape($nombre) ?>"
                  class="mr-2 align-self-start">
 
           <img
             class="thumb-img js-thumb"
             src="img/loading.gif"
-            data-thumb="<?= h($thumbUrl) ?>"
+            data-thumb="<?= FileViewHelper::escape($thumbUrl) ?>"
             width="32" height="32"
             loading="lazy"
             alt=""
@@ -294,8 +192,8 @@ foreach ($filas as $r) {
 
           <div>
             <div class="font-weight-bold">
-              <?= h($nombre) ?>
-              <span class="badge badge-light badge-ext text-uppercase"><?= h($ext) ?></span>
+              <?= FileViewHelper::escape($nombre) ?>
+              <span class="badge badge-light badge-ext text-uppercase"><?= FileViewHelper::escape($ext) ?></span>
               <?php if ($seguro): ?>
                 <span class="badge <?= $unlocked ? 'badge-info' : 'badge-warning' ?> ml-1 js-security-badge">
                   <?= $unlocked ? 'Desbloqueado' : 'Seguro' ?>
@@ -308,10 +206,10 @@ foreach ($filas as $r) {
             <small class="text-muted"
                    data-toggle="tooltip" data-placement="top"
                    title="<?= $metaTitle ?>">
-              <?= h($rutaRow) ?>
+              <?= FileViewHelper::escape($rutaRow) ?>
               — <?= $fechaTxt ?>
-              — <span class="text-mono"><?= h($keyEnc) ?></span>
-             — <?= bytes_human($tamano) ?>
+              — <span class="text-mono"><?= FileViewHelper::escape($keyEnc) ?></span>
+             — <?= FileViewHelper::formatBytes($tamano) ?>
             </small>
 
 <?php if (!$soloSeguridad): ?>
@@ -330,7 +228,7 @@ foreach ($filas as $r) {
     </div>
 
     <audio id="audio-<?= $rid ?>"
-           data-src="<?= h($origUrl) ?>"
+           data-src="<?= FileViewHelper::escape($origUrl) ?>"
            preload="none"
            style="display:none"></audio>
   </div>
@@ -340,9 +238,9 @@ foreach ($filas as $r) {
   <div class="d-flex align-items-center mt-1">
     <button type="button"
             class="btn btn-sm btn-outline-primary js-inline-video-open"
-            data-key="<?= h($s3key) ?>"
-            data-src="<?= h($origUrl) ?>"
-            data-nombre="<?= h($nombre) ?>"
+            data-key="<?= FileViewHelper::escape($s3key) ?>"
+            data-src="<?= FileViewHelper::escape($origUrl) ?>"
+            data-nombre="<?= FileViewHelper::escape($nombre) ?>"
             data-video-index="<?= (int)$videoIndex ?>">
       <i class="fas fa-play-circle"></i> 
     </button>
@@ -357,9 +255,9 @@ foreach ($filas as $r) {
           <?php if ($esImg && !$soloSeguridad): ?>
             <button type="button"
                     class="btn btn-sm btn-primary js-ver-imagen"
-                    data-key="<?= h($s3key) ?>"
-                    data-nombre="<?= h($nombre) ?>"
-                    data-original="<?= h($origUrl) ?>" data-toggle="modal" data-target="#modalImagenUnica" title="VER IMAGEN">
+                    data-key="<?= FileViewHelper::escape($s3key) ?>"
+                    data-nombre="<?= FileViewHelper::escape($nombre) ?>"
+                    data-original="<?= FileViewHelper::escape($origUrl) ?>" data-toggle="modal" data-target="#modalImagenUnica" title="VER IMAGEN">
               <i class="far fa-image"></i> 
             </button>
           <?php endif; ?>
@@ -370,7 +268,7 @@ foreach ($filas as $r) {
   <?php if ($ext === 'pdf'): ?>
     <button type="button"
             class="btn btn-sm btn-primary js-ver-pdf"
-            data-key="<?= h($s3key) ?>" title="VER PDF">
+            data-key="<?= FileViewHelper::escape($s3key) ?>" title="VER PDF">
       <i class="fas fa-file-pdf"></i>
     </button>
   <?php endif; ?>
@@ -385,26 +283,26 @@ foreach ($filas as $r) {
 
   <button type="button"
           class="btn btn-sm btn-primary js-rename-file"
-          data-key="<?= h($s3key) ?>"
-          data-nombre="<?= h($nombre) ?>" title="RENOMBRAR">
+          data-key="<?= FileViewHelper::escape($s3key) ?>"
+          data-nombre="<?= FileViewHelper::escape($nombre) ?>" title="RENOMBRAR">
     <i class="fas fa-i-cursor"></i>
   </button>
 
   <a class="btn btn-sm btn-primary js-download-file"
      href="descargar_archivo.php?archivo=<?= $s3keyQ ?>&nombre=<?= urlencode($nombre) ?>"
-     data-key="<?= h($s3key) ?>" title="DESCARGAR">
+     data-key="<?= FileViewHelper::escape($s3key) ?>" title="DESCARGAR">
     <i class="fas fa-download"></i>
   </a>
 
   <button type="button"
           class="btn btn-sm btn-primary text-danger js-delete-one"
-          data-archivo="<?= h($s3key) ?>" title="ELIMINAR">
+          data-archivo="<?= FileViewHelper::escape($s3key) ?>" title="ELIMINAR">
     <i class="fas fa-trash-alt"></i>
   </button>
 
   <button type="button"
           class="btn btn-sm btn-primary js-move-one"
-          data-key="<?= h($s3key) ?>" title="MOVER">
+          data-key="<?= FileViewHelper::escape($s3key) ?>" title="MOVER">
     <i class="fas fa-arrows-alt"></i>
   </button>
 
@@ -413,8 +311,8 @@ foreach ($filas as $r) {
 <?php if (!$soloSeguridad): ?>
   <button type="button"
           class="btn btn-sm btn-primary js-share"
-          data-key="<?= h($s3key) ?>"
-          data-ext="<?= h($ext) ?>" title="COMPARTIR">
+          data-key="<?= FileViewHelper::escape($s3key) ?>"
+          data-ext="<?= FileViewHelper::escape($ext) ?>" title="COMPARTIR">
     <i class="fas fa-share-alt"></i>
   </button>
 <?php endif; ?>
@@ -457,8 +355,8 @@ $unlockClass = $unlocked ? 'btn-success' : 'btn-warning';
   <!-- Encripta físicamente el archivo si aún no ha sido transformado -->
   <button type="button"
           class="btn btn-sm btn-primary btn-encriptar"
-          data-key="<?= h($s3key) ?>"
-          data-nombre="<?= h($nombre) ?>"
+          data-key="<?= FileViewHelper::escape($s3key) ?>"
+          data-nombre="<?= FileViewHelper::escape($nombre) ?>"
           title="ENCRIPTAR">
     <i class="fas fa-lock"></i>
   </button>
@@ -468,7 +366,7 @@ $unlockClass = $unlocked ? 'btn-success' : 'btn-warning';
   <!-- Activa protección persistente: AccessType = secure -->
   <button type="button"
           class="btn btn-sm btn-primary js-lock-file"
-          data-key="<?= h($s3key) ?>"
+          data-key="<?= FileViewHelper::escape($s3key) ?>"
           title="PROTEGER">
     <i class="fas fa-shield-alt"></i>
   </button>
@@ -481,11 +379,11 @@ $unlockClass = $unlocked ? 'btn-success' : 'btn-warning';
     - unlocked -> BLOQUEAR    / fa-lock
   -->
   <button type="button"
-          class="btn btn-sm <?= h($unlockClass) ?> js-unlock-file"
-          data-key="<?= h($s3key) ?>"
+          class="btn btn-sm <?= FileViewHelper::escape($unlockClass) ?> js-unlock-file"
+          data-key="<?= FileViewHelper::escape($s3key) ?>"
           data-unlocked="<?= $unlocked ? '1' : '0' ?>"
-          title="<?= h($unlockTitle) ?>">
-    <i class="fas <?= h($unlockIcon) ?>"></i>
+          title="<?= FileViewHelper::escape($unlockTitle) ?>">
+    <i class="fas <?= FileViewHelper::escape($unlockIcon) ?>"></i>
   </button>
 <?php endif; ?>
 
@@ -499,7 +397,7 @@ $unlockClass = $unlocked ? 'btn-success' : 'btn-warning';
 
   <button type="button"
           class="btn btn-sm btn-danger js-unsecure-one"
-          data-key="<?= h($s3key) ?>"
+          data-key="<?= FileViewHelper::escape($s3key) ?>"
           title="QUITAR PROTECCIÓN">
     <i class="fas fa-shield-virus"></i>
   </button>
@@ -509,7 +407,7 @@ $unlockClass = $unlocked ? 'btn-success' : 'btn-warning';
 <?php if ($puedeTex): ?>
   <button type="button"
           class="btn btn-sm btn-primary btn-accion-ia js-textract"
-          data-key="<?= h($s3key) ?>"
+          data-key="<?= FileViewHelper::escape($s3key) ?>"
           data-toggle="tooltip"
           data-placement="top"
           title="DOC2TXT"
@@ -522,8 +420,8 @@ $unlockClass = $unlocked ? 'btn-success' : 'btn-warning';
 <?php if ($esAudio): ?>
   <button type="button"
           class="btn btn-sm btn-primary btn-accion-ia js-transcribir"
-          data-key="<?= h($s3key) ?>"
-          data-nombre="<?= h($nombre) ?>"
+          data-key="<?= FileViewHelper::escape($s3key) ?>"
+          data-nombre="<?= FileViewHelper::escape($nombre) ?>"
           data-toggle="tooltip"
           data-placement="top"
           title="AUDIO2TXT"
@@ -535,8 +433,8 @@ $unlockClass = $unlocked ? 'btn-success' : 'btn-warning';
 <?php if ($esVideo): ?>
   <button type="button"
           class="btn btn-sm btn-primary btn-accion-ia js-transcribir"
-          data-key="<?= h($s3key) ?>"
-          data-nombre="<?= h($nombre) ?>"
+          data-key="<?= FileViewHelper::escape($s3key) ?>"
+          data-nombre="<?= FileViewHelper::escape($nombre) ?>"
           data-toggle="tooltip"
           data-placement="top"
           title="VIDEO2TXT"
@@ -549,8 +447,8 @@ $unlockClass = $unlocked ? 'btn-success' : 'btn-warning';
 <?php if ($editTxt): ?>
   <button type="button"
           class="btn btn-sm btn-primary btn-accion-ia js-polly"
-          data-key="<?= h($s3key) ?>"
-          data-nombre="<?= h($nombre) ?>"
+          data-key="<?= FileViewHelper::escape($s3key) ?>"
+          data-nombre="<?= FileViewHelper::escape($nombre) ?>"
           data-toggle="tooltip"
           data-placement="top"
           title="TXT2AUDIO"
@@ -563,8 +461,8 @@ $unlockClass = $unlocked ? 'btn-success' : 'btn-warning';
 <?php if ($puedeTrd): ?>
   <button type="button"
           class="btn btn-sm btn-primary btn-accion-ia js-traducir"
-          data-key="<?= h($s3key) ?>"
-          data-nombre="<?= h($nombre) ?>"
+          data-key="<?= FileViewHelper::escape($s3key) ?>"
+          data-nombre="<?= FileViewHelper::escape($nombre) ?>"
           data-toggle="tooltip"
           data-placement="top"
           title="DOC2TRADUCIR"
@@ -577,7 +475,7 @@ $unlockClass = $unlocked ? 'btn-success' : 'btn-warning';
 <?php if ($puedeAna): ?>
   <button type="button"
           class="btn btn-sm btn-primary btn-accion-ia js-rekognition"
-          data-key="<?= h($s3key) ?>"
+          data-key="<?= FileViewHelper::escape($s3key) ?>"
           data-toggle="tooltip"
           data-placement="top"
           title="IMG2ANALISIS"
@@ -848,46 +746,6 @@ function initLoaderBloqueArchivos() {
 
 
 
-window.deleteOne = window.deleteOne || async function deleteOne(archivo) {
-  const key = String(archivo || '').trim();
-  if (!key) return;
-
-  if (!confirm('¿Eliminar este archivo?')) return;
-
-  try {
-    const body = new URLSearchParams({ archivo: key });
-    const res = await fetch('eliminar_archivo.php', {
-      method: 'POST',
-      credentials: 'same-origin',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
-        'X-Requested-With': 'XMLHttpRequest'
-      },
-      body
-    });
-
-    const json = await res.json().catch(() => ({}));
-    if (!res.ok || json.estado !== 'ok') {
-      throw new Error(json.mensaje || json.error || ('HTTP ' + res.status));
-    }
-
-    if (typeof window.actualizarBloqueArchivos === 'function') {
-      await window.actualizarBloqueArchivos({ pagina: 1 });
-    } else {
-      location.reload();
-    }
-  } catch (err) {
-    console.error(err);
-    alert('❌ ' + (err.message || err));
-  }
-};
-
-document.addEventListener('click', function (e) {
-  const btn = e.target.closest('.js-delete-one');
-  if (!btn || !btn.dataset) return;
-  e.preventDefault();
-  window.deleteOne(btn.dataset.archivo || '');
-});
 
 function getSeleccionadosBloqueArchivos() {
   const wrap = document.getElementById('archivosWrap') || document;
@@ -975,10 +833,14 @@ window.moveSelected = function moveSelected() {
     });
   }
 
-  document.addEventListener('change', function(e){
+  if (window.__bloqueArchivosSelectionHandler) {
+    document.removeEventListener('change', window.__bloqueArchivosSelectionHandler);
+  }
+  window.__bloqueArchivosSelectionHandler = function(e){
     if (!e.target || !e.target.matches('input[name="archivos[]"]')) return;
     updateCount();
-  });
+  };
+  document.addEventListener('change', window.__bloqueArchivosSelectionHandler);
 
   updateCount();
 })();
@@ -1015,6 +877,8 @@ window.deleteSelected = window.deleteSelected || async function deleteSelected()
     } else {
       location.reload();
     }
+
+    try { document.dispatchEvent(new Event('drive:storage-changed')); } catch (_) {}
   } catch (err) {
     console.error(err);
     alert('❌ ' + (err.message || err));

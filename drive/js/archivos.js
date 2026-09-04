@@ -28,7 +28,6 @@
 
   const URL_BUSCAR = 'buscar_archivo.php';
   const URL_SET_RUTA = 'actualizar_ruta.php';
-  const URL_FOOTER = 'bloque_footer.php';
 
   const URLS_GENERAR_TOKEN = ['generar_token.php', '../generar_token.php'];
 
@@ -454,17 +453,11 @@ function getBloqueArchivosContext() {
 
   window.actualizarBloqueCarpetas = window.actualizarBloqueCarpetas || (async function () { /* noop */ });
   window.actualizarBloqueFooter = window.actualizarBloqueFooter || (async function (args) {
-    const cont = document.getElementById('bloque-footer');
-    if (!cont) return;
-    try {
-      const usp = urlParams(args || {});
-      usp.set('_', Date.now().toString());
-      const url = URL_FOOTER + '?' + usp.toString();
-      const { res, text } = await fetchText(url, { method: 'GET', cache: 'no-store' });
-      if (res.ok) cont.innerHTML = text;
-    } catch (e) {
-      console.error('[actualizarBloqueFooter] error:', e);
-    }
+    const route = String(
+      (args && (args.rutaNueva || args.ruta)) || window.rutaActual || ''
+    ).trim();
+    const routeNode = document.getElementById('footerRutaActual');
+    if (routeNode && route) routeNode.textContent = route;
   });
 
   // =========================
@@ -2005,6 +1998,8 @@ document.addEventListener('click', function (e) {
         fila.style.transition = 'opacity .2s ease';
         fila.style.opacity = '0.35';
       }
+
+      try { document.dispatchEvent(new Event('drive:storage-changed')); } catch (_) {}
 
       // Refrescar igual que en mover, para que se vea realmente eliminado
       if (typeof window.actualizarBloqueArchivos === 'function') {

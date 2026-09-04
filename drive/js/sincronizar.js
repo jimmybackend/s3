@@ -133,6 +133,7 @@
 
     await renderStatusFinal();
     showToast({ title: 'Sincronización', message: '✅ Sincronización completada.' });
+    try { document.dispatchEvent(new Event('drive:storage-changed')); } catch (_) {}
 
   } catch (e) {
     console.error(e);

@@ -6,12 +6,12 @@ ini_set('display_errors', '1');
 error_reporting(E_ALL);
 
 require_once __DIR__ . '/app_bootstrap.php';
-require_once __DIR__ . '/utils/helpers.php';
 
 $app = drive_app();
 $session = $app->session();
 $session->start();
 $session->requireAuthenticated('index.php');
+$userId = $session->userId();
 
 $pageService = $app->drivePageService();
 $redirect = $pageService->preferencesRedirect(
@@ -24,9 +24,8 @@ if ($redirect !== null) {
     exit;
 }
 
-$vm = $pageService->build($_SESSION, $_GET);
+$vm = $pageService->build($_SESSION, $_GET, $userId);
 
-// Adaptador temporal de la vista heredada. La lógica ya vive en objetos.
 $showCounts = $vm->showCounts;
 $showMetas = $vm->showMetas;
 $mediaHidden = $vm->mediaHidden;
@@ -40,21 +39,10 @@ $limite = $vm->limite;
 $pagina = $vm->pagina;
 $error = $vm->error;
 $extensiones_unicas = $vm->extensionesUnicas;
-$playlistAudioAll = $vm->playlistAudioAll;
-$playlistVideoAll = $vm->playlistVideoAll;
-$tieneAudio = $vm->tieneAudio;
-$tieneVideo = $vm->tieneVideo;
-$totalPaginas = $vm->totalPaginas;
-$totalArchivos = $vm->totalArchivos;
-$archivosPaginados = $vm->archivosPaginados;
-$todasLasCarpetas = $vm->todasLasCarpetas;
-$imagenes = $vm->imagenes;
-$folder = $vm->folder;
-$ruta = $vm->ruta;
-$pesoTotalMB = $vm->pesoTotalMB;
-$manager = $app->s3Manager();
-$s3 = $app->s3();
-$bucket = $app->bucket();
+
+$storageUsage = $app->storageUsageService()->getUsage($userId);
+$footerRutaActual = $basePrefix;
+$footerEspacioUsado = $storageUsage['formatted'];
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -1739,7 +1727,7 @@ $bucket = $app->bucket();
 <script src="js/archivos.js"></script>
 
 <script src="js/actualizar-hora.js"></script>
-<script src="js/actualizarbloquefooter.js"></script>
+<script src="js/storage-usage.js"></script>
 <script src="js/recargarPagina.js"></script>
 <script src="js/filtros.js"></script>
 

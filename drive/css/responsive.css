@@ -1,0 +1,718 @@
+/* ============================================================
+   ARCADECLOUD DRIVE
+   RESPONSIVE CANONICO
+   Este archivo se carga DESPUES de styles.css.
+   ============================================================ */
+
+
+/* ---------- BASE ---------- */
+
+html,
+body {
+  width: 100%;
+  max-width: 100%;
+}
+
+.drive-container,
+.drive-layout,
+.drive-main,
+#pane-archivos,
+#bloque-archivos,
+#archivosWrap {
+  min-width: 0;
+}
+
+.drive-main,
+#bloque-archivos,
+#archivosWrap {
+  width: 100%;
+  max-width: none;
+}
+
+
+/* ============================================================
+   ESCRITORIO
+   ============================================================ */
+
+@media (min-width: 992px) and (pointer: fine) {
+
+  .drive-sidebar-toggle {
+    display: none !important;
+  }
+
+}
+
+
+/* ============================================================
+   TABLET / MOVIL
+   Detectamos ancho O dispositivo tactil.
+   Esto ayuda incluso con "Sitio de escritorio" en Chrome.
+   ============================================================ */
+
+@media (max-width: 991.98px), (pointer: coarse) {
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  body {
+    overflow-x: hidden;
+  }
+
+
+  /* ---------- NAVBAR ---------- */
+
+  body.ui-theme .drive-navbar {
+    width: 100%;
+
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+
+    gap: .3rem;
+
+    padding: .45rem .55rem !important;
+  }
+
+  .drive-sidebar-toggle {
+    display: inline-flex !important;
+
+    flex: 0 0 42px;
+
+    width: 42px !important;
+    height: 42px !important;
+
+    margin: 0 !important;
+
+    align-items: center;
+    justify-content: center;
+  }
+
+  .drive-navbar .navbar-brand {
+    display: flex !important;
+    align-items: center;
+
+    min-width: 0;
+
+    flex: 1 1 auto;
+
+    margin: 0 !important;
+    padding: 0 !important;
+
+    white-space: nowrap;
+  }
+
+  .drive-navbar .navbar-brand img {
+    width: 30px !important;
+    height: 30px !important;
+  }
+
+  .drive-navbar-actions {
+    display: flex !important;
+
+    flex: 0 0 auto;
+
+    align-items: center;
+
+    gap: .3rem !important;
+
+    margin: 0 !important;
+  }
+
+  .drive-navbar-actions .btn {
+    width: 42px !important;
+    height: 42px !important;
+
+    min-width: 42px;
+
+    padding: 0 !important;
+
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .drive-navbar-menus {
+    display: flex !important;
+
+    flex: 0 1 auto;
+
+    width: auto !important;
+
+    min-width: 0;
+
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+
+    align-items: center;
+
+    gap: .15rem !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
+
+    border: 0 !important;
+  }
+
+  #temaMenu,
+  #usuarioMenu {
+    height: 42px !important;
+
+    display: flex !important;
+    align-items: center !important;
+
+    margin: 0 !important;
+
+    padding: .35rem .45rem !important;
+
+    white-space: nowrap;
+  }
+
+  #usuarioMenu {
+    max-width: 175px;
+
+    min-width: 0;
+  }
+
+  #usuarioMenu img {
+    width: 28px !important;
+    height: 28px !important;
+
+    flex: 0 0 28px;
+  }
+
+  .drive-user-label {
+    display: block;
+
+    min-width: 0;
+    max-width: 120px;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+
+    white-space: nowrap;
+  }
+
+
+  /* ---------- MAIN ---------- */
+
+  .drive-container {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  .drive-layout {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+
+  body.ui-theme .drive-main {
+    flex: 0 0 100% !important;
+
+    width: 100% !important;
+    max-width: 100% !important;
+
+    padding: .75rem !important;
+  }
+
+
+  /* ---------- TABS ---------- */
+
+  #mainTabs {
+    width: 100%;
+
+    margin-bottom: .65rem;
+
+    overflow-x: auto;
+
+    white-space: nowrap;
+  }
+
+
+  /* ---------- ACCIONES / FILTROS ---------- */
+
+  .bulk-mobile-tools {
+    position: sticky;
+
+    top: 0;
+
+    z-index: 30;
+
+    width: 100%;
+
+    display: flex !important;
+
+    gap: .5rem;
+
+    padding: .45rem 0;
+
+    background: var(--bg);
+  }
+
+  .bulk-mobile-tools .btn {
+    min-height: 44px;
+
+    padding: .45rem .75rem !important;
+  }
+
+
+  /* ---------- TARJETAS ---------- */
+
+  body.ui-theme #archivosWrap {
+    width: 100% !important;
+
+    max-width: none !important;
+
+    padding: .75rem !important;
+
+    font-size: 16px !important;
+  }
+
+  body.ui-theme #archivosWrap .list-group {
+    width: 100%;
+  }
+
+  body.ui-theme #archivosWrap .file-row {
+    width: 100%;
+
+    display: flex !important;
+
+    flex-direction: column !important;
+
+    align-items: stretch !important;
+
+    gap: .65rem !important;
+
+    padding: .9rem !important;
+  }
+
+  body.ui-theme #archivosWrap .file-main-block {
+    width: 100%;
+
+    min-width: 0;
+
+    align-items: flex-start !important;
+  }
+
+  body.ui-theme #archivosWrap
+  .file-main-block > div:last-child {
+
+    flex: 1 1 auto;
+
+    min-width: 0;
+  }
+
+  body.ui-theme #archivosWrap
+  .file-main-block .font-weight-bold {
+
+    font-size: 1rem !important;
+
+    line-height: 1.4;
+  }
+
+
+  /* ---------- METADATA ---------- */
+
+  body.ui-theme #archivosWrap .file-meta-line {
+    display: flex !important;
+
+    align-items: center;
+
+    flex-wrap: wrap;
+
+    gap: .15rem;
+
+    margin-top: .3rem;
+
+    font-size: .82rem !important;
+
+    line-height: 1.5;
+  }
+
+  body.ui-theme #archivosWrap .file-physical-key {
+    display: none !important;
+  }
+
+  body.ui-theme #archivosWrap .file-route {
+    max-width: 160px;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+
+    white-space: nowrap;
+  }
+
+
+  /* ---------- ACCIONES POR ARCHIVO ---------- */
+
+  body.ui-theme #archivosWrap .file-actions-block {
+    width: 100%;
+
+    display: flex !important;
+
+    flex-wrap: wrap !important;
+
+    align-items: center !important;
+
+    justify-content: flex-start !important;
+
+    gap: .45rem !important;
+
+    margin: 0 !important;
+
+    padding-top: .65rem;
+
+    border-top: 1px solid var(--border);
+  }
+
+  body.ui-theme #archivosWrap
+  .file-actions-block .btn {
+
+    min-width: 42px;
+    min-height: 42px;
+
+    display: inline-flex;
+
+    align-items: center;
+    justify-content: center;
+  }
+
+  body.ui-theme #archivosWrap
+  .file-actions-break-after-security {
+
+    display: block;
+
+    flex: 0 0 100%;
+
+    width: 100%;
+
+    height: 0;
+  }
+
+
+  /* ---------- PAGINACION ---------- */
+
+  body.ui-theme #archivosWrap .pagination {
+    display: flex;
+
+    flex-wrap: wrap;
+
+    gap: .5rem;
+
+    margin-top: 1rem;
+
+    justify-content: flex-start;
+  }
+
+  body.ui-theme #archivosWrap
+  .pagination .page-link {
+
+    width: 58px !important;
+    height: 58px !important;
+
+    min-width: 58px !important;
+    min-height: 58px !important;
+
+    display: inline-flex !important;
+
+    align-items: center;
+    justify-content: center;
+
+    padding: 0 !important;
+
+    font-size: 1.1rem !important;
+
+    font-weight: 700;
+
+    border-radius: 10px !important;
+  }
+
+
+  /* ---------- RESUMEN ---------- */
+
+  body.ui-theme .resumen-carpeta-bottom {
+    width: 100%;
+
+    margin-top: .8rem !important;
+
+    padding: .75rem !important;
+
+    line-height: 1.6;
+  }
+
+}
+
+
+/* ============================================================
+   TELEFONO ANGOSTO
+   ============================================================ */
+
+@media (max-width: 575.98px) {
+
+  body.ui-theme .drive-main {
+    padding:
+      .65rem .45rem 1rem !important;
+  }
+
+  .drive-navbar .navbar-brand {
+    flex: 0 0 30px;
+
+    width: 30px;
+
+    font-size: 0 !important;
+  }
+
+  .drive-design-label {
+    display: none;
+  }
+
+  #temaMenu {
+    width: 38px;
+
+    justify-content: center;
+  }
+
+  #usuarioMenu {
+    max-width: 105px;
+  }
+
+  .drive-user-label {
+    max-width: 55px;
+
+    font-size: .75rem;
+  }
+
+  body.ui-theme #archivosWrap {
+    padding: .65rem !important;
+  }
+
+  body.ui-theme #archivosWrap .file-row {
+    padding: .8rem .7rem !important;
+  }
+
+  body.ui-theme #archivosWrap .file-route {
+    max-width: 125px;
+  }
+
+}
+
+
+/* ============================================================
+   TABLET REAL / MOBILE EN MODO ESCRITORIO
+   ============================================================ */
+
+@media (pointer: coarse) and (min-width: 768px) {
+
+  body.ui-theme .drive-main {
+    font-size: 18px !important;
+  }
+
+  body.ui-theme #archivosWrap {
+    font-size: 18px !important;
+  }
+
+  body.ui-theme #archivosWrap
+  .file-main-block .font-weight-bold {
+
+    font-size: 1.08rem !important;
+  }
+
+}
+
+/* ============================================================
+   RESPONSIVE CANONICO - SIDEBAR / DROPDOWNS / FOLDERS
+   ============================================================ */
+
+@media (max-width: 991.98px), (pointer: coarse) {
+
+  body.drive-sidebar-open {
+    overflow: hidden !important;
+  }
+
+
+  /* ---------- SIDEBAR OFF-CANVAS ---------- */
+
+  body.ui-theme .drive-sidebar {
+    position: fixed !important;
+
+    top: 0;
+    left: 0;
+
+    z-index: 1070;
+
+    width: min(90vw, 390px) !important;
+    max-width: 390px !important;
+
+    height: 100vh;
+    height: 100dvh;
+
+    min-height: 100vh !important;
+    min-height: 100dvh !important;
+
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    padding: .8rem !important;
+
+    transform: translateX(-105%);
+
+    transition: transform .22s ease;
+
+    border-radius: 0 12px 12px 0 !important;
+
+    box-shadow:
+      14px 0 35px rgba(0,0,0,.38) !important;
+  }
+
+
+  body.ui-theme .drive-sidebar.is-open {
+    transform: translateX(0);
+  }
+
+
+  .drive-sidebar-mobile-head {
+    position: sticky;
+
+    top: 0;
+
+    z-index: 10;
+
+    display: flex !important;
+
+    align-items: center;
+    justify-content: space-between;
+
+    min-height: 48px;
+
+    margin: -.3rem -.3rem .7rem;
+
+    padding: .45rem .55rem;
+
+    background: var(--bg) !important;
+
+    border-bottom: 1px solid var(--border);
+  }
+
+
+  /* ---------- BACKDROP ---------- */
+
+  .drive-sidebar-backdrop {
+    position: fixed;
+
+    inset: 0;
+
+    z-index: 1065;
+
+    display: block !important;
+
+    background: rgba(0,0,0,.5);
+
+    opacity: 0;
+
+    visibility: hidden;
+
+    transition:
+      opacity .2s ease,
+      visibility .2s ease;
+  }
+
+
+  .drive-sidebar-backdrop.is-visible {
+    opacity: 1;
+
+    visibility: visible;
+  }
+
+
+  /* ---------- CARPETAS ---------- */
+
+  #arbolCarpetas {
+    width: 100%;
+
+    min-width: 0;
+  }
+
+
+  #arbolCarpetas .folder-row {
+    width: 100%;
+
+    min-width: 0;
+
+    display: flex !important;
+
+    flex-wrap: wrap;
+
+    align-items: center !important;
+
+    gap: .3rem;
+  }
+
+
+  #arbolCarpetas .folder-row > a.folder {
+    flex: 1 1 140px;
+
+    min-width: 0;
+
+    white-space: normal;
+
+    overflow-wrap: anywhere;
+  }
+
+
+  #arbolCarpetas .folder-actions,
+  #arbolCarpetas .folder-row > .btn-group {
+    display: flex !important;
+
+    flex-wrap: wrap;
+
+    gap: .2rem;
+
+    max-width: 100%;
+
+    margin-left: auto !important;
+
+    opacity: 1 !important;
+  }
+
+
+  /* ---------- DROPDOWNS NAVBAR ---------- */
+
+  .drive-navbar-menus .dropdown {
+    position: relative !important;
+  }
+
+
+  body.ui-theme .drive-navbar-menus .dropdown-menu {
+    position: absolute !important;
+
+    top: calc(100% + 5px) !important;
+
+    right: 0 !important;
+    left: auto !important;
+
+    width: min(300px, calc(100vw - 1rem));
+
+    min-width: 230px !important;
+
+    max-width: calc(100vw - 1rem);
+
+    max-height: 75vh;
+
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    margin: 0 !important;
+
+    z-index: 1095 !important;
+  }
+
+}
+
+
+/* Logo/nombre también es control del sidebar */
+#btnToggleSidebarBrand {
+  cursor: pointer;
+}

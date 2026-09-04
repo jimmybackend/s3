@@ -67,7 +67,10 @@ $footerEspacioUsado = $storageUsage['formatted'];
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <link rel="icon" href="ellogo.png" type="image/x-icon">
 
-  <link rel="stylesheet" href="css/styles.css?v=20260904-responsive6">
+  <link rel="stylesheet" href="css/styles.css?v=20260904-clean1">
+  <link rel="stylesheet"
+        href="css/responsive.css?v=20260904-2">
+
 
   <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
@@ -88,7 +91,13 @@ $footerEspacioUsado = $storageUsage['formatted'];
           title="Mostrar carpetas">
     <i class="fas fa-bars"></i>
   </button>
-  <a class="navbar-brand" href="s3.php">
+  <a class="navbar-brand"
+     href="#"
+     id="btnToggleSidebarBrand"
+     role="button"
+     aria-controls="driveSidebar"
+     title="Mostrar carpetas"
+     onclick="document.getElementById('btnToggleSidebar').click(); return false;">
     <!-- <img src="../assets/img/icono.png" width="30" height="30" class="d-inline-block align-top" alt="Logo"> Cloud Drive -->
     <img src="ellogo.png" width="30" height="30" class="rounded-circle mr-2" width="30" height="30" alt="Logo"> Cloud Drive
   </a>

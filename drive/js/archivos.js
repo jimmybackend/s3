@@ -1085,7 +1085,11 @@ function llenarModalRenombrarArchivo(triggerButton) {
   async function abrirCarpetaSinRefresco(opts) {
     const ruta = (opts && opts.ruta) || '';
     const key = (opts && opts.key) || '';
+    const nombre = (opts && opts.nombre) || '';
     const args = { pagina: 1, ruta: ruta, rutaNueva: ruta };
+    // Filtramos temporalmente por nombre para garantizar que el archivo buscado
+    // aparezca aunque normalmente estuviera en otra página de la carpeta.
+    if (nombre) args.buscar = nombre;
 
     if (typeof window.actualizarBloqueArchivos === 'function') await window.actualizarBloqueArchivos(args);
     if (typeof window.actualizarBloqueCarpetas === 'function') await window.actualizarBloqueCarpetas();
@@ -1119,17 +1123,20 @@ function llenarModalRenombrarArchivo(triggerButton) {
 
     let html = '<ul class="list-group">';
     arr.forEach(function (it) {
-      const nombre = window.escapeHtml(it.nombre || '');
+      const nombreRaw = it.nombre_real || it.nombre || '';
+      const nombre = window.escapeHtml(nombreRaw);
       const ruta = it.ruta || '';
       const key = it.key || '';
-      const tamKB = (it.tamano_kb != null) ? ` | ${it.tamano_kb} KB` : '';
+      const tamKB = it.tamano_formateado
+        ? ` | ${window.escapeHtml(it.tamano_formateado)}`
+        : ((it.tamano_kb != null) ? ` | ${it.tamano_kb} KB` : '');
       html += `
         <li class="list-group-item d-flex justify-content-between align-items-center">
           <div>
             <strong>${nombre}</strong><br>
             <small class="text-muted">${window.escapeHtml(ruta)}${tamKB}</small>
           </div>
-          <button type="button" class="btn btn-sm btn-outline-primary btn-ir" data-ruta="${window.escapeHtml(ruta)}" data-key="${window.escapeHtml(key)}">
+          <button type="button" class="btn btn-sm btn-outline-primary btn-ir" data-ruta="${window.escapeHtml(ruta)}" data-key="${window.escapeHtml(key)}" data-nombre="${window.escapeHtml(nombreRaw)}">
             <i class="fas fa-folder-open"></i> Ir
           </button>
         </li>`;
@@ -1198,13 +1205,14 @@ function llenarModalRenombrarArchivo(triggerButton) {
 
     const ruta = btn.getAttribute('data-ruta') || '';
     const key = btn.getAttribute('data-key') || '';
+    const nombre = btn.getAttribute('data-nombre') || '';
 
     const oldHtml = btn.innerHTML;
     btn.disabled = true;
     btn.classList.add('disabled');
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
 
-    abrirCarpetaSinRefresco({ ruta, key })
+    abrirCarpetaSinRefresco({ ruta, key, nombre })
       .catch((err) => { console.error(err); alert('No se pudo abrir la carpeta por AJAX.'); })
       .finally(() => {
         btn.disabled = false;

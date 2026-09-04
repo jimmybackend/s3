@@ -436,8 +436,12 @@ $footerEspacioUsado = $storageUsage['formatted'];
         <form id="formBusquedaGlobal">
           <div class="form-row">
             <div class="form-group col-md-8">
-              <label for="terminoBusqueda">Nombre o patrón de archivo (ej. <code>*.pdf</code>, <code>jimm*</code>)</label>
-              <input type="text" class="form-control" id="terminoBusqueda" name="termino" placeholder="Ingrese nombre o patrón del archivo" required>
+              <label for="terminoBusqueda">Buscar por nombre</label>
+              <input type="text" class="form-control" id="terminoBusqueda" name="termino" placeholder="factura, fact*, *.pdf, *2026*" required>
+              <small class="form-text text-muted">
+                Texto normal busca en cualquier parte del nombre. <code>fact*</code> busca al inicio,
+                <code>*.pdf</code> al final, <code>*2026*</code> en cualquier parte y <code>?</code> representa un carácter.
+              </small>
             </div>
             <div class="form-group col-md-4 align-self-end">
               <button type="submit" class="btn btn-primary btn-block">

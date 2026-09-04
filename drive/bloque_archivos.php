@@ -127,13 +127,10 @@ foreach ($filas as $row) {
       $rutaRow  = $row['Ruta'];
       $keyEnc   = $row['Encriptado'];
 
-      $uid    = (int)($row['user_id_'] ?? 1);
       $s3key  = FileViewHelper::buildS3Key((string)$rutaRow, (string)$keyEnc);
       $s3keyQ = rawurlencode($s3key);
 
-      $thumbUrl = "thumb.php?key={$s3keyQ}&uid={$uid}&w=128&h=128";
       $origUrl  = "ver_archivo.php?archivo={$s3keyQ}";
-      $placeholder = "img/loading.gif";
 
       $tamano    = (int)($row['Tamano'] ?? 0);
       $fechaTxt  = date('Y-m-d H:i', strtotime($row['Fecha'] ?? 'now'));
@@ -161,7 +158,7 @@ foreach ($filas as $row) {
       $clsSec = $seguro    ? 'sec-yes' : 'sec-no';
     ?>
      <li
-  class="list-group-item d-flex justify-content-between align-items-center file-row <?= $esAudio ? 'file-row-audio' : '' ?> <?= $clsEnc ?> <?= $clsSec ?> is-pending"
+  class="list-group-item d-flex justify-content-between align-items-center file-row <?= $esAudio ? 'file-row-audio' : '' ?> <?= $clsEnc ?> <?= $clsSec ?> is-ready"
         data-secure="<?= $seguro ? '1' : '0' ?>"
         data-unlocked="<?= $unlocked ? '1' : '0' ?>"
         data-secure-hint="<?= FileViewHelper::escape((string)($row['SecureHint'] ?? '')) ?>"
@@ -182,12 +179,11 @@ foreach ($filas as $row) {
                  class="mr-2 align-self-start">
 
           <img
-            class="thumb-img js-thumb"
-            src="img/loading.gif"
-            data-thumb="<?= FileViewHelper::escape($thumbUrl) ?>"
+            class="thumb-img"
+            src="img/file.png"
             width="32" height="32"
             loading="lazy"
-            alt=""
+            alt="Archivo"
           >
 
           <div>
@@ -637,101 +633,18 @@ function initPaginacionBloqueArchivos() {
    5) Loader del bloque
 ------------------------- */
 function initLoaderBloqueArchivos() {
-  const wrap     = document.getElementById('archivosWrap');
-  const overlay  = document.getElementById('archivosLoaderOverlay');
+  const wrap = document.getElementById('archivosWrap');
+  const overlay = document.getElementById('archivosLoaderOverlay');
   const backdrop = document.getElementById('archivosLoaderBackdrop');
-  const text     = document.getElementById('archivosLoaderText');
-
-  if (!wrap || !overlay || !text) return;
-
-  const showLoader = (msg) => {
-    text.textContent = msg || 'Cargando…';
-    overlay.style.display = 'block';
-    if (backdrop) backdrop.style.display = 'block';
-    wrap.classList.add('is-loading');
-  };
-
-  const hideLoader = () => {
-    overlay.style.display = 'none';
-    if (backdrop) backdrop.style.display = 'none';
-    wrap.classList.remove('is-loading');
-  };
-
-  showLoader('Cargando datos…');
-
-  const rows   = Array.from(wrap.querySelectorAll('li.file-row'));
-  const thumbs = Array.from(wrap.querySelectorAll('img.js-thumb'));
-
-  if (!rows.length) {
-    hideLoader();
-    return;
-  }
-
-  rows.forEach(r => {
-    if (!r.querySelector('img.js-thumb')) {
-      r.classList.remove('is-pending');
-      r.classList.add('is-ready');
-    }
-  });
-
-  let total = thumbs.length;
-  let done  = 0;
-
-  const showProgress = () => {
-    const pct = total ? Math.round((done / total) * 100) : 100;
-    text.textContent = `Cargando miniaturas… ${done}/${total} (${pct}%)`;
-  };
-
-  const revealRow = (img) => {
-    const row = img.closest('li.file-row');
-    if (!row) return;
-    if (row.classList.contains('is-ready')) return;
-    row.classList.remove('is-pending');
-    row.classList.add('is-ready');
-  };
-
-  const finishIfReady = () => {
-    if (done >= total) hideLoader();
-  };
-
-  showProgress();
-
-  const hardTimeoutMs = 4500;
-  const timer = setTimeout(() => {
-    rows.forEach(r => {
-      r.classList.remove('is-pending');
-      r.classList.add('is-ready');
+  if (wrap) {
+    wrap.querySelectorAll('li.file-row').forEach(row => {
+      row.classList.remove('is-pending');
+      row.classList.add('is-ready');
     });
-    hideLoader();
-  }, hardTimeoutMs);
-
-  const markDone = (img) => {
-    done++;
-    revealRow(img);
-    showProgress();
-    finishIfReady();
-    if (done >= total) clearTimeout(timer);
-  };
-
-  thumbs.forEach(img => {
-    const onLoad = () => { cleanup(); markDone(img); };
-    const onErr  = () => { cleanup(); markDone(img); };
-
-    const cleanup = () => {
-      img.removeEventListener('load', onLoad);
-      img.removeEventListener('error', onErr);
-    };
-
-    img.addEventListener('load', onLoad, { once:true });
-    img.addEventListener('error', onErr, { once:true });
-
-    if (img.complete) {
-      setTimeout(() => {
-        cleanup();
-        markDone(img);
-      }, 0);
-    }
-  });
+    wrap.classList.remove('is-loading');
+  }
+  if (overlay) overlay.style.display = 'none';
+  if (backdrop) backdrop.style.display = 'none';
 }
 
 /* -------------------------
@@ -889,42 +802,3 @@ window.deleteSelected = window.deleteSelected || async function deleteSelected()
 
 
 
-<script>
-(async function () {
-  const MAX_TRIES = 12;
-  const BASE_DELAY = 400;
-
-  function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
-
-  async function loadThumb(img) {
-    const url = img.dataset.thumb;
-    for (let i = 1; i <= MAX_TRIES; i++) {
-      try {
-        await new Promise((res, rej) => {
-          const t = new Image();
-          t.onload = () => res();
-          t.onerror = () => rej();
-          t.src = url + (url.includes('?') ? '&' : '?') + 't=' + Date.now() + '_' + i;
-        });
-
-        img.src = url + (url.includes('?') ? '&' : '?') + 'ok=' + Date.now();
-        return true;
-      } catch (e) {
-        await sleep(BASE_DELAY * i);
-      }
-    }
-
-    img.src = 'img/file.png';
-    return false;
-  }
-
-  const imgs = Array.from(document.querySelectorAll('img.thumb-img[data-thumb]'));
-  await Promise.allSettled(imgs.map(loadThumb));
-
-  const loadingList = document.getElementById('loadingList');
-  const fileList = document.getElementById('fileList');
-
-  if (loadingList) loadingList.style.display = 'none';
-  if (fileList) fileList.style.display = 'block';
-})();
-</script>

@@ -27,7 +27,6 @@
   const URL_ENCRIPTAR = 'encriptar_archivo.php';
 
   const URL_BUSCAR = 'buscar_archivo.php';
-  const URL_SET_RUTA = 'actualizar_ruta.php';
 
   const URLS_GENERAR_TOKEN = ['generar_token.php', '../generar_token.php'];
 
@@ -1083,23 +1082,10 @@ function llenarModalRenombrarArchivo(triggerButton) {
   // =========================
   // 8) Búsqueda global + abrir carpeta sin refrescar
   // =========================
-  async function setRutaSesion(ruta) {
-    if (!ruta) return;
-    const body = new URLSearchParams({ ruta: ruta, rutaNueva: ruta });
-    const { res } = await fetchJson(URL_SET_RUTA, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
-      body
-    });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-  }
-
   async function abrirCarpetaSinRefresco(opts) {
     const ruta = (opts && opts.ruta) || '';
     const key = (opts && opts.key) || '';
     const args = { pagina: 1, ruta: ruta, rutaNueva: ruta };
-
-    await setRutaSesion(ruta);
 
     if (typeof window.actualizarBloqueArchivos === 'function') await window.actualizarBloqueArchivos(args);
     if (typeof window.actualizarBloqueCarpetas === 'function') await window.actualizarBloqueCarpetas();

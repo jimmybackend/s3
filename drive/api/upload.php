@@ -1,93 +1,72 @@
 <?php
-/**
- * API unificada de subida
- * - action=init|part|complete
- * - mode=local_put|remote_url|dropbox|chunked
- *
- * Ejemplos:
- *  /s3v2/api/upload.php?mode=local_put&action=init&nombre=archivo.pdf
- *  /s3v2/api/upload.php?mode=remote_url&action=init&url=https://...
- *  /s3v2/api/upload.php?mode=chunked&action=init  (POST filename, filesize, mime)
- *  /s3v2/api/upload.php?mode=chunked&action=part  (POST step=sign/resume ...)
- */
-
 declare(strict_types=1);
-session_start();
 
 header('Content-Type: application/json; charset=utf-8');
 
-// =====================================================
-//  Bootstrap del proyecto (carga vendor + Config + db)
-//  IMPORTANTE: aquí NO buscamos rutas a mano.
-// =====================================================
-$root = dirname(__DIR__); // .../s3v2
-$bootstrap = $root . '/app_bootstrap.php';
-if (!is_file($bootstrap)) {
-  http_response_code(500);
-  echo json_encode(['ok' => false, 'error' => 'No existe app_bootstrap.php en: ' . $bootstrap], JSON_UNESCAPED_UNICODE);
-  exit;
-}
-require_once $bootstrap;
+$root = dirname(__DIR__);
+require_once $root . '/app_bootstrap.php';
+require_once $root . '/upload/core/UploaderInterface.php';
+require_once $root . '/upload/core/UploadResponse.php';
+require_once $root . '/upload/UploadFactory.php';
 
-// =====================================================
-//  Carga del módulo de subida (árbol /upload)
-// =====================================================
-$coreInterface = $root . '/upload/core/UploaderInterface.php';
-$coreResponse  = $root . '/upload/core/UploadResponse.php';
-$factoryFile   = $root . '/upload/UploadFactory.php';
+$app = drive_app();
+$session = $app->session();
+$session->start();
 
-if (!is_file($coreInterface) || !is_file($coreResponse) || !is_file($factoryFile)) {
-  http_response_code(500);
-  echo json_encode([
-    'ok' => false,
-    'error' => 'Faltan archivos del módulo upload',
-    'missing' => [
-      'UploaderInterface.php' => $coreInterface,
-      'UploadResponse.php'    => $coreResponse,
-      'UploadFactory.php'     => $factoryFile,
-    ]
-  ], JSON_UNESCAPED_UNICODE);
-  exit;
+if (!$session->isAuthenticated() || $session->userId() <= 0) {
+    UploadResponse::fail('Sesión inválida.', 401);
 }
 
-require_once $coreInterface;
-require_once $coreResponse;
-require_once $factoryFile;
-
-// =====================================================
-//  Request
-// =====================================================
-$action = isset($_REQUEST['action']) ? (string)$_REQUEST['action'] : '';
-$mode   = isset($_REQUEST['mode'])   ? (string)$_REQUEST['mode']   : '';
-
+$action = trim((string) ($_REQUEST['action'] ?? ''));
+$mode = trim((string) ($_REQUEST['mode'] ?? ''));
 if ($action === '' || $mode === '') {
-  UploadResponse::fail('Faltan parámetros action/mode', 400);
+    UploadResponse::fail('Faltan parámetros action/mode', 400);
 }
 
 try {
-  $uploader = UploadFactory::make($mode);
+    $req = array_merge($_GET, $_POST);
+    $req['_files'] = $_FILES;
+    $req['_user_id'] = $session->userId();
+    $req['_usuario'] = $session->userName();
 
-  // Importante: include también FILES para que drivers tipo dropbox lo usen
-  $req = array_merge($_GET, $_POST);
-  $req['_files'] = $_FILES;
+    if ($action === 'init') {
+        $requestedRoute = trim((string) ($req['ruta_objetivo'] ?? ''));
+        if ($requestedRoute === '') {
+            UploadResponse::fail('Falta ruta_objetivo. La subida debe fijar su destino al iniciar.', 422);
+        }
+        $req['ruta_objetivo'] = $app->uploadDestinationService()->resolve(
+            $session->userId(),
+            $requestedRoute
+        );
+    }
 
-  if ($action === 'init') {
-    UploadResponse::ok($uploader->init($req));
-  } elseif ($action === 'part') {
-    UploadResponse::ok($uploader->part($req));
-  } elseif ($action === 'complete') {
-    UploadResponse::ok($uploader->complete($req));
-  } else {
-    UploadResponse::fail('Acción inválida', 400);
-  }
+    $uploader = UploadFactory::make($mode);
+
+    // local_put usa la sesión unos milisegundos para guardar/consumir el intent.
+    // Los demás modos pueden tardar mucho: liberamos el lock de sesión antes de S3.
+    $keepSessionOpen = ($mode === 'local_put' && in_array($action, ['init', 'complete'], true));
+    if (!$keepSessionOpen && session_status() === PHP_SESSION_ACTIVE) {
+        session_write_close();
+    }
+
+    if ($action === 'init') {
+        $result = $uploader->init($req);
+    } elseif ($action === 'part') {
+        $result = $uploader->part($req);
+    } elseif ($action === 'complete') {
+        $result = $uploader->complete($req);
+    } else {
+        UploadResponse::fail('Acción inválida', 400);
+    }
+
+    if ($keepSessionOpen && session_status() === PHP_SESSION_ACTIVE) {
+        session_write_close();
+    }
+
+    UploadResponse::ok($result);
 } catch (Throwable $e) {
-  // Devuelve el error en JSON (para poder verlo en el navegador/console)
-  http_response_code(500);
-  echo json_encode([
-    'ok' => false,
-    'error' => $e->getMessage(),
-    'file' => $e->getFile(),
-    'line' => $e->getLine(),
-  ], JSON_UNESCAPED_UNICODE);
-  exit;
+    if (session_status() === PHP_SESSION_ACTIVE) {
+        session_write_close();
+    }
+    UploadResponse::fail($e->getMessage(), 500);
 }

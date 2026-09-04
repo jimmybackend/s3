@@ -216,14 +216,6 @@ $footerEspacioUsado = $storageUsage['formatted'];
       Subir Archivos
     </a>
   </li>
-  
-  <li class="nav-item">
-    <a class="nav-link" id="tab-servicios" data-toggle="tab"
-       href="#pane-servicios" role="tab" aria-controls="pane-servicios"
-       aria-selected="false">
-      Servicios
-    </a>
-  </li>
 </ul>
 
 <div class="tab-content" id="mainTabsContent">
@@ -304,18 +296,15 @@ $footerEspacioUsado = $storageUsage['formatted'];
       </div>
     </div>
 
-<?php if (!empty($archivosPaginados)): ?>
-          <form id="multiDeleteForm" action="delete_multiple.php" method="POST" class="w-100">
-            <input type="hidden" name="ruta" value="<?= htmlspecialchars($basePrefix) ?>">
-            <div id="bloque-archivos">
-              <?php
-                $_GET['ruta'] = $basePrefix;
-                include 'bloque_archivos.php';
-              ?>
-            </div>
-          </form>
-          
-        <?php endif; ?>
+<form id="multiDeleteForm" action="delete_multiple.php" method="POST" class="w-100">
+          <input type="hidden" name="ruta" value="<?= htmlspecialchars($basePrefix) ?>">
+          <div id="bloque-archivos">
+            <?php
+              $_GET['ruta'] = $basePrefix;
+              include 'bloque_archivos.php';
+            ?>
+          </div>
+        </form>
 
 <div id="syncStatus" class="mb-2 sync-green"></div>
 
@@ -434,8 +423,6 @@ $footerEspacioUsado = $storageUsage['formatted'];
 </div>
 
 </div>
-<!-- PESTAÑA servicios -->
-<div class="tab-pane fade" id="pane-servicios" role="tabpanel" aria-labelledby="tab-servicios"></div>
 
 <div id="bloque-footer">
   <?php include 'bloque_footer.php'; ?>
@@ -1741,6 +1728,12 @@ $footerEspacioUsado = $storageUsage['formatted'];
 <script src="js/pdf-pantalla-completa.js"></script>
 
 <script src="js/soportesMediaTypes.js"></script>
+<script>
+  window.UPLOAD_API = "api/upload.php";
+  window.DRIVE_INITIAL_ROUTE = <?= json_encode($basePrefix) ?>;
+  window.rutaActual = <?= json_encode($basePrefix) ?>;
+</script>
+<script src="js/upload-destination.js"></script>
 <script src="js/subir-dropzone.js"></script>
 <script src="js/subir.js"></script>
 <script src="js/ver-metadatos.js"></script>
@@ -1751,16 +1744,8 @@ $footerEspacioUsado = $storageUsage['formatted'];
 
 
 
-<script>
-  // Ruta relativa desde s3.php (s3v2/s3.php) hacia el API (s3v2/api/upload.php)
-  window.UPLOAD_API = "api/upload.php";
-</script>
 <!-- Cargar JS chunked -->
 <script src="js/subir-chunked.js"></script>
-
-<script>
-window.rutaActual = <?= json_encode($basePrefix) ?>;
-</script>
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {

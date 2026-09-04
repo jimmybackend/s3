@@ -8,107 +8,144 @@ require_once __DIR__ . '/../repositories/FileS3Repository.php';
 
 final class LocalPresignedPutUploader implements UploaderInterface
 {
-  private function db(): mysqli {
-    global $db_connection;
-    if (!isset($db_connection) || !($db_connection instanceof mysqli)) {
-      throw new RuntimeException('DB no disponible ($db_connection). Revisa db.php/app_bootstrap.php');
-    }
-    return $db_connection;
-  }
+    private const PENDING_KEY = 'drive_pending_local_uploads';
+    private const TTL_SECONDS = 7200;
 
-  private function s3(): S3Client {
-    if (!class_exists('Config')) throw new RuntimeException('Config no está disponible');
-    return Config::getS3();
-  }
-
-  private function bucket(): string {
-    return (string)Config::BUCKET;
-  }
-
-  private function carpetaSesion(): string {
-    // Respeta tu sistema actual:
-    $carpeta = isset($_SESSION['ruta_actual']) && $_SESSION['ruta_actual'] !== ''
-      ? trim((string)$_SESSION['ruta_actual'], '/')
-      : trim((string)Config::RUTA_COMPARTIDA, '/');
-    return $carpeta;
-  }
-
-  public function init(array $req): array
-  {
-    $nombreOriginal = (string)($req['nombre'] ?? '');
-    if ($nombreOriginal === '') {
-      throw new RuntimeException('Falta parámetro nombre');
+    private function db(): mysqli
+    {
+        global $db_connection;
+        if (!isset($db_connection) || !($db_connection instanceof mysqli)) {
+            throw new RuntimeException('DB no disponible ($db_connection).');
+        }
+        return $db_connection;
     }
 
-    $carpeta = $this->carpetaSesion(); // sin / al final
-    $ext = pathinfo($nombreOriginal, PATHINFO_EXTENSION);
-    $nombreEncriptado = uniqid('f_', true) . '_' . bin2hex(random_bytes(4)) . ($ext ? '.' . $ext : '');
-    $key = $carpeta . '/' . $nombreEncriptado;
-
-    // URL firmada PUT
-    $s3 = $this->s3();
-    $cmd = $s3->getCommand('PutObject', [
-      'Bucket' => $this->bucket(),
-      'Key'    => $key,
-      'ACL'    => 'private',
-    ]);
-    $request = $s3->createPresignedRequest($cmd, '+1 hour');
-    $url = (string)$request->getUri();
-
-    // Metadatos DB (como tu firmado.php, pero además guardamos Ruta)
-    $metadatos = json_encode([
-      'ip_origen'      => $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1',
-      'user_agent'     => $_SERVER['HTTP_USER_AGENT'] ?? 'desconocido',
-      'referer'        => $_SERVER['HTTP_REFERER'] ?? 'ninguno',
-      'fecha_servidor' => date('Y-m-d'),
-      'hora_servidor'  => date('H:i:s'),
-      'usuario_envio'  => $_SESSION['usuario'] ?? 'publico'
-    ], JSON_UNESCAPED_UNICODE);
-
-    $userId = (int)($_SESSION['user_id'] ?? 0);
-
-    $repo = new FileS3Repository($this->db());
-    $fileId = $repo->insertFile([
-      'Nombre'     => $nombreOriginal,
-      'Encriptado' => $nombreEncriptado,
-      'Tamano'     => 0,
-      'Metadatos'  => $metadatos,
-      'Ruta'       => rtrim($carpeta, '/') . '/', // Ruta guardada como prefijo
-      'Found'      => 1,
-      'AccessType' => 'normal',
-      'Fecha'      => date('Y-m-d H:i:s'),
-      'user_id_'   => $userId,
-    ]);
-
-    return [
-      'url'              => $url,
-      'key'              => $key,
-      'carpeta'          => $carpeta,
-      'nombreOriginal'   => $nombreOriginal,
-      'nombreEncriptado' => $nombreEncriptado,
-      'file_id'          => $fileId,
-    ];
-  }
-
-  public function part(array $req): array
-  {
-    // No aplica para local_put
-    return ['ok' => true];
-  }
-
-  public function complete(array $req): array
-  {
-    // Opcional: permitir que el front avise tamaño real al final
-    $nombreEncriptado = (string)($req['nombreEncriptado'] ?? '');
-    $tamano = (int)($req['tamano'] ?? 0);
-    $userId = (int)($_SESSION['user_id'] ?? 0);
-
-    if ($nombreEncriptado !== '' && $tamano > 0) {
-      $repo = new FileS3Repository($this->db());
-      $repo->updateSizeByEncriptado($nombreEncriptado, $tamano, $userId);
-      return ['ok' => true, 'updated' => true];
+    private function s3(): S3Client
+    {
+        return Config::getS3();
     }
 
-    return ['ok' => true, 'updated' => false];
-  }
+    private function bucket(): string
+    {
+        return (string) Config::BUCKET;
+    }
+
+    private function userId(array $req): int
+    {
+        return (int) ($req['_user_id'] ?? $_SESSION['user_id'] ?? 0);
+    }
+
+    private function cleanupPending(): void
+    {
+        $now = time();
+        $pending = $_SESSION[self::PENDING_KEY] ?? [];
+        if (!is_array($pending)) {
+            $_SESSION[self::PENDING_KEY] = [];
+            return;
+        }
+        foreach ($pending as $token => $row) {
+            $created = (int) ($row['created_at'] ?? 0);
+            if ($created <= 0 || ($now - $created) > self::TTL_SECONDS) {
+                unset($pending[$token]);
+            }
+        }
+        $_SESSION[self::PENDING_KEY] = $pending;
+    }
+
+    public function init(array $req): array
+    {
+        $this->cleanupPending();
+
+        $nombreOriginal = trim((string) ($req['nombre'] ?? ''));
+        $rutaObjetivo = rtrim((string) ($req['ruta_objetivo'] ?? ''), '/') . '/';
+        $userId = $this->userId($req);
+        if ($nombreOriginal === '' || $rutaObjetivo === '/' || $userId <= 0) {
+            throw new RuntimeException('Datos incompletos para iniciar la subida.');
+        }
+
+        $ext = pathinfo($nombreOriginal, PATHINFO_EXTENSION);
+        $nombreEncriptado = uniqid('f_', true) . '_' . bin2hex(random_bytes(4)) . ($ext ? '.' . $ext : '');
+        $key = $rutaObjetivo . $nombreEncriptado;
+
+        $cmd = $this->s3()->getCommand('PutObject', [
+            'Bucket' => $this->bucket(),
+            'Key' => $key,
+            'ACL' => 'private',
+        ]);
+        $request = $this->s3()->createPresignedRequest($cmd, '+1 hour');
+
+        $metadatos = json_encode([
+            'ip_origen' => $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1',
+            'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? 'desconocido',
+            'referer' => $_SERVER['HTTP_REFERER'] ?? 'ninguno',
+            'fecha_servidor' => date('Y-m-d'),
+            'hora_servidor' => date('H:i:s'),
+            'usuario_envio' => (string) ($req['_usuario'] ?? 'usuario'),
+        ], JSON_UNESCAPED_UNICODE);
+
+        $token = bin2hex(random_bytes(18));
+        $_SESSION[self::PENDING_KEY][$token] = [
+            'created_at' => time(),
+            'user_id' => $userId,
+            'Nombre' => $nombreOriginal,
+            'Encriptado' => $nombreEncriptado,
+            'Metadatos' => $metadatos,
+            'Ruta' => $rutaObjetivo,
+            'key' => $key,
+        ];
+
+        return [
+            'url' => (string) $request->getUri(),
+            'key' => $key,
+            'ruta_objetivo' => $rutaObjetivo,
+            'nombreOriginal' => $nombreOriginal,
+            'nombreEncriptado' => $nombreEncriptado,
+            'upload_token' => $token,
+        ];
+    }
+
+    public function part(array $req): array
+    {
+        return ['ok' => true];
+    }
+
+    public function complete(array $req): array
+    {
+        $this->cleanupPending();
+
+        $token = trim((string) ($req['upload_token'] ?? ''));
+        $tamano = max(0, (int) ($req['tamano'] ?? 0));
+        $userId = $this->userId($req);
+        $pending = $token !== '' ? ($_SESSION[self::PENDING_KEY][$token] ?? null) : null;
+
+        if (!is_array($pending)) {
+            throw new RuntimeException('La sesión de subida expiró o no existe.');
+        }
+        if ((int) ($pending['user_id'] ?? 0) !== $userId) {
+            throw new RuntimeException('La subida no pertenece al usuario actual.');
+        }
+
+        $repo = new FileS3Repository($this->db());
+        $fileId = $repo->insertFile([
+            'Nombre' => (string) $pending['Nombre'],
+            'Encriptado' => (string) $pending['Encriptado'],
+            'Tamano' => $tamano,
+            'Metadatos' => $pending['Metadatos'] ?? null,
+            'Ruta' => (string) $pending['Ruta'],
+            'Found' => 1,
+            'AccessType' => 'normal',
+            'Fecha' => date('Y-m-d H:i:s'),
+            'user_id_' => $userId,
+        ]);
+
+        unset($_SESSION[self::PENDING_KEY][$token]);
+
+        return [
+            'ok' => true,
+            'file_id' => $fileId,
+            'key' => (string) $pending['key'],
+            'ruta_objetivo' => (string) $pending['Ruta'],
+            'tamano' => $tamano,
+        ];
+    }
 }

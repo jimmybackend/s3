@@ -26,12 +26,6 @@ final class RemoteUrlUploader implements UploaderInterface
     return (string)Config::BUCKET;
   }
 
-  private function carpetaSesion(): string {
-    $carpeta = isset($_SESSION['ruta_actual']) && $_SESSION['ruta_actual'] !== ''
-      ? trim((string)$_SESSION['ruta_actual'], '/')
-      : trim((string)Config::RUTA_COMPARTIDA, '/');
-    return $carpeta;
-  }
 
   // ---------- helpers URL ----------
   private function decodeUrl(array $req): string {
@@ -90,7 +84,8 @@ final class RemoteUrlUploader implements UploaderInterface
     $contentType = (string)($headers['content-type'] ?? 'application/octet-stream');
     $nombreOriginal = $this->guessFilename($url, $headers);
 
-    $carpeta = $this->carpetaSesion();
+    $carpeta = trim((string)($req['ruta_objetivo'] ?? ''), '/');
+    if ($carpeta === '') throw new RuntimeException('Falta ruta_objetivo');
     $ext = pathinfo($nombreOriginal, PATHINFO_EXTENSION);
     if ($ext === '') $ext = 'bin';
     $nombreEncriptado = uniqid('f_', true) . '_' . bin2hex(random_bytes(4)) . '.' . $ext;
@@ -202,13 +197,13 @@ final class RemoteUrlUploader implements UploaderInterface
       'content_type' => $contentType,
       'bytes'        => $bytes,
       'ip_origen'    => $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0',
-      'usuario_envio'=> $_SESSION['usuario'] ?? 'publico',
+      'usuario_envio'=> (string)($req['_usuario'] ?? 'usuario'),
       'fecha'        => date('Y-m-d'),
       'hora'         => date('H:i:s'),
     ], JSON_UNESCAPED_UNICODE);
 
     $repo = new FileS3Repository($this->db());
-    $userId = (int)($_SESSION['user_id'] ?? 0);
+    $userId = (int)($req['_user_id'] ?? 0);
     $fileId = $repo->insertFile([
       'Nombre'     => $nombreOriginal,
       'Encriptado' => $nombreEncriptado,

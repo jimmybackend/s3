@@ -5,6 +5,7 @@ namespace ArcadeCloud\Drive\Core;
 
 use ArcadeCloud\Drive\Application\DrivePageService;
 use ArcadeCloud\Drive\Application\FileListService;
+use ArcadeCloud\Drive\Application\UploadDestinationService;
 use ArcadeCloud\Drive\Security\SessionManager;
 use ArcadeCloud\Drive\Storage\StorageUsageService;
 use ArcadeCloud\Drive\Storage\UserStoragePath;
@@ -21,6 +22,7 @@ final class DriveApplication
     private ?SessionManager $session = null;
     private ?FileListService $fileListService = null;
     private ?DrivePageService $drivePageService = null;
+    private ?UploadDestinationService $uploadDestinationService = null;
     private ?StorageUsageService $storageUsageService = null;
     private ?UserStoragePath $userStoragePath = null;
 
@@ -79,6 +81,14 @@ final class DriveApplication
     {
         return $this->drivePageService ??= new DrivePageService(
             $this->fileListService(),
+            $this->userStoragePath()
+        );
+    }
+
+    public function uploadDestinationService(): UploadDestinationService
+    {
+        return $this->uploadDestinationService ??= new UploadDestinationService(
+            $this->db,
             $this->userStoragePath()
         );
     }

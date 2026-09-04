@@ -1070,7 +1070,6 @@ body.ui-theme .dropzone,
 body.ui-theme .sidebar,
 body.ui-theme .archivos-wrap,
 body.ui-theme #bloque-carpetas,
-body.ui-theme #pane-servicios,
 body.ui-theme #pane-Subir .card {
   background: var(--bg2) !important;
   color: var(--text) !important;

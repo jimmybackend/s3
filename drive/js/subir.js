@@ -37,14 +37,20 @@ document.addEventListener('DOMContentLoaded', function () {
         return;
       }
 
-      setStatus(uploadResult, 'Subiendo...', 'primary');
+      const rutaObjetivo = window.DriveUploadDestination.capture();
+      setStatus(uploadResult, 'Subiendo a ' + rutaObjetivo + '...', 'primary');
       toggleButton(form.querySelector('button'), true, spinner, buttonText, 'Subiendo...');
       if (progressBar) progressBar.style.display = 'block';
 
       try {
-        // 1) Obtener URL firmada (backend usa la ruta de sesión)
-        const nombre = encodeURIComponent(archivo.name);
-        const resFirma = await fetch(API + '?mode=local_put&action=init&nombre=' + nombre, {
+        // 1) Obtener URL firmada con destino inmutable.
+        const initParams = new URLSearchParams({
+          mode: 'local_put',
+          action: 'init',
+          nombre: archivo.name,
+          ruta_objetivo: rutaObjetivo
+        });
+        const resFirma = await fetch(API + '?' + initParams.toString(), {
           method: 'GET',
           credentials: 'same-origin',
           headers: { 'X-Requested-With': 'XMLHttpRequest' }
@@ -68,7 +74,7 @@ document.addEventListener('DOMContentLoaded', function () {
         // 3) Avisar tamaño real (no bloquea si falla)
         try {
           const body = new URLSearchParams();
-          body.append('nombreEncriptado', json.nombreEncriptado || '');
+          body.append('upload_token', json.upload_token || '');
           body.append('tamano', String(archivo.size || 0));
 
           await fetch(API + '?mode=local_put&action=complete', {
@@ -92,10 +98,8 @@ document.addEventListener('DOMContentLoaded', function () {
         if (input) input.value = '';
         if (fileName) fileName.textContent = '';
 
-        // 6) Refresca listado si existe
-        if (typeof window.actualizarBloqueArchivos === 'function') {
-          window.actualizarBloqueArchivos();
-        }
+        // 6) Actualiza espacio y, solo si seguimos en el mismo destino, la lista DB.
+        await window.DriveUploadDestination.afterSuccess(rutaObjetivo);
       } catch (error) {
         showErrorLocal('❌ Error en subida: ' + ((error && error.message) ? error.message : error));
         console.error(error);
@@ -140,8 +144,9 @@ document.addEventListener('DOMContentLoaded', function () {
       return;
     }
 
+    const rutaObjetivo = window.DriveUploadDestination.capture();
     toggleButton(btnSubirUrl, true, spinnerUrl, btnTxtUrl, 'Subiendo...');
-    setStatus(uploadUrlResult, 'Descargando y subiendo a S3...', 'primary');
+    setStatus(uploadUrlResult, 'Descargando y subiendo a ' + rutaObjetivo + '...', 'primary');
 
     // Timeout de seguridad
     const controller = (typeof AbortController !== 'undefined') ? new AbortController() : null;
@@ -153,6 +158,7 @@ document.addEventListener('DOMContentLoaded', function () {
       const body = new URLSearchParams();
       body.append('url', url);
       body.append('u64', toBase64Utf8(url));
+      body.append('ruta_objetivo', rutaObjetivo);
 
       let resp = await fetch(API + '?mode=remote_url&action=init', {
         method: 'POST',
@@ -172,7 +178,7 @@ document.addEventListener('DOMContentLoaded', function () {
         try { raw1 = await resp.text(); } catch (e) {}
         if (raw1) console.warn('Respuesta POST:', raw1.slice(0, 500));
 
-        const qs = new URLSearchParams({ u64: toBase64Utf8(url) }).toString();
+        const qs = new URLSearchParams({ u64: toBase64Utf8(url), ruta_objetivo: rutaObjetivo }).toString();
         resp = await fetch(API + '?mode=remote_url&action=init&' + qs, {
           method: 'GET',
           credentials: 'same-origin',
@@ -205,9 +211,7 @@ document.addEventListener('DOMContentLoaded', function () {
         true
       );
 
-      if (typeof window.actualizarBloqueArchivos === 'function') {
-        window.actualizarBloqueArchivos();
-      }
+      await window.DriveUploadDestination.afterSuccess(rutaObjetivo);
     } catch (e) {
       const msg = (e && e.name === 'AbortError')
         ? 'Tiempo de espera agotado.'

@@ -55,7 +55,6 @@
       
     },
     urls: {
-      actualizarRuta: 'actualizar_ruta.php',
       bloqueArchivos: 'bloque_archivos.php',
       bloqueCarpetas: 'bloque_carpetas.php',
 
@@ -180,25 +179,6 @@
     } catch (_) {}
   }
 
-  async function actualizarRutaSesion(ruta) {
-    const res = await fetchNoCache(CFG.urls.actualizarRuta, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      // Compat: algunos scripts esperan rutaNueva
-      body: toFormUrlEncoded({ ruta, rutaNueva: ruta })
-    });
-
-    // tu cargarcarpetas.js esperaba JSON {ok, ruta}, pero bindArbolCarpetas.js solo revisaba HTTP
-    // aquí soportamos ambos sin romper
-    let json = null;
-    try { json = await res.clone().json(); } catch (_) {}
-
-    if (!res.ok) throw new Error('Error al actualizar ruta en sesión (HTTP ' + res.status + ')');
-    if (json && json.ok === false) throw new Error(json.mensaje || 'No se guardó la ruta');
-
-    return json; // puede traer {ok:true, ruta:'...'}
-  }
-
   async function refrescarBloqueArchivosCompat(params) {
     // Siempre refrescamos por fetch aquí para evitar depender de otras funciones/globales
     // (esto evita el caso donde el bloque se actualiza pero NO se ejecutan scripts/miniaturas hasta F5).
@@ -310,8 +290,6 @@ window.actualizarBloqueCarpetas = async function actualizarBloqueCarpetas(opts) 
   ultimaRutaAbierta = ruta;
 
   try { if (window.imagenesGaleria) window.imagenesGaleria = []; } catch (_) {}
-
-  await actualizarRutaSesion(ruta);
 
   window.rutaActual = ruta;
 

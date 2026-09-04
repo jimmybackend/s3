@@ -35,19 +35,6 @@ final class DropboxUploader implements UploaderInterface
         throw new RuntimeException('No pude detectar el bucket en Config.');
     }
 
-    private function rutaBase()
-    {
-        if (!isset($_SESSION['usuario'])) {
-            throw new RuntimeException('Acceso denegado (no hay sesi¨®n usuario)');
-        }
-        // Usa ruta actual o ra¨ªz
-        $ruta = isset($_SESSION['ruta_actual']) && $_SESSION['ruta_actual'] !== ''
-            ? (string)$_SESSION['ruta_actual']
-            : (defined('Config::RUTA_RAIZ') ? (string)Config::RUTA_RAIZ : 'Data/');
-
-        return rtrim($ruta, '/') . '/';
-    }
-
     public function init(array $req): array
     {
         // Dropzone manda el archivo en $_FILES['file'] normalmente
@@ -60,7 +47,8 @@ final class DropboxUploader implements UploaderInterface
         $bucket = $this->bucket();
         $s3 = $this->s3();
         $repo = new FileS3Repository($this->db());
-        $rutaBase = $this->rutaBase();
+        $rutaBase = rtrim((string)($req['ruta_objetivo'] ?? ''), '/') . '/';
+        if ($rutaBase === '/') throw new RuntimeException('Falta ruta_objetivo');
 
         $f = $files['file'];
 
@@ -75,7 +63,7 @@ final class DropboxUploader implements UploaderInterface
             ];
         }
 
-        $userId = (int)($_SESSION['user_id'] ?? 0);
+        $userId = (int)($req['_user_id'] ?? 0);
         $resultados = [];
 
         for ($i = 0; $i < count($f['name']); $i++) {
@@ -95,7 +83,7 @@ final class DropboxUploader implements UploaderInterface
                 'tipo'        => @mime_content_type($tmpFile) ?: ($f['type'][$i] ?? 'application/octet-stream'),
                 'tamano_kb'   => round((int)@filesize($tmpFile) / 1024, 2),
                 'hash_sha256' => @hash_file('sha256', $tmpFile) ?: '',
-                'subido_por'  => $_SESSION['usuario'] ?? 'publico',
+                'subido_por'  => (string)($req['_usuario'] ?? 'usuario'),
                 'ip_origen'   => $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0',
                 'fecha'       => date('Y-m-d'),
                 'hora'        => date('H:i:s'),

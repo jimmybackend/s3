@@ -54,15 +54,9 @@ private function s3()
     return (string)Config::BUCKET;
   }
 
-  private function carpetaSesion(): string {
-    $carpeta = isset($_SESSION['ruta_actual']) && $_SESSION['ruta_actual'] !== ''
-      ? trim((string)$_SESSION['ruta_actual'], '/')
-      : trim((string)Config::RUTA_COMPARTIDA, '/');
-    return $carpeta;
-  }
 
-  private function signature(string $filename, int $filesize): string {
-    return sha1($filename . '|' . $filesize);
+  private function signature(string $filename, int $filesize, string $route, int $userId): string {
+    return sha1($userId . '|' . $route . '|' . $filename . '|' . $filesize);
   }
 
   public function init(array $req): array
@@ -74,10 +68,12 @@ private function s3()
       throw new RuntimeException('Datos inválidos: filename/filesize');
     }
 
-    $sig = $this->signature($filename, $filesize);
+    $userId = (int)($req['_user_id'] ?? 0);
+    $carpeta = trim((string)($req['ruta_objetivo'] ?? ''), '/');
+    if ($userId <= 0 || $carpeta === '') throw new RuntimeException('Usuario/ruta objetivo inválidos');
+    $sig = $this->signature($filename, $filesize, $carpeta, $userId);
 
-    // key: usa carpeta de sesión + prefijo uploads/YYYYMMDD/
-    $carpeta = $this->carpetaSesion();
+    // key: el destino queda congelado desde INIT
     $ymd = gmdate('Ymd');
     $safeBase = preg_replace('/[^\w\-.]+/u', '_', basename($filename));
     $key = $carpeta . '/' . $sig . '-' . $safeBase; ///uploads/' . $ymd . '
@@ -107,6 +103,8 @@ private function s3()
       'filesize' => $filesize,
       'mime'     => $mime,
       'parts'    => [], // num => etag
+      'user_id'  => $userId,
+      'ruta_objetivo' => rtrim($carpeta, '/') . '/',
       'created'  => time(),
     ]);
 
@@ -128,6 +126,9 @@ private function s3()
       $key      = (string)($req['key'] ?? '');
 
       $meta = $stateId !== '' ? $this->store->load($stateId) : null;
+      if ($meta && (int)($meta['user_id'] ?? 0) !== (int)($req['_user_id'] ?? 0)) {
+        throw new RuntimeException('La subida multipart no pertenece al usuario actual.');
+      }
       if ($meta) {
         $uploadId = (string)$meta['uploadId'];
         $key      = (string)$meta['key'];
@@ -180,6 +181,9 @@ private function s3()
     $key      = (string)($req['key'] ?? '');
 
     $meta = $stateId !== '' ? $this->store->load($stateId) : null;
+    if ($meta && (int)($meta['user_id'] ?? 0) !== (int)($req['_user_id'] ?? 0)) {
+      throw new RuntimeException('La subida multipart no pertenece al usuario actual.');
+    }
     if ($meta) {
       $uploadId = (string)$meta['uploadId'];
       $key      = (string)$meta['key'];
@@ -221,14 +225,14 @@ private function s3()
     $nombreEncriptado = basename($key);
     $nombreOriginal = $meta['filename'] ?? 'archivo';
     $filesize = (int)($meta['filesize'] ?? 0);
-    $userId = (int)($_SESSION['user_id'] ?? 0);
+    $userId = (int)($req['_user_id'] ?? 0);
 
     $metadatos = json_encode([
       'multipart' => true,
       'uploadId'  => $uploadId,
       'parts'     => array_keys($etags),
       'ip_origen' => $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0',
-      'usuario'   => $_SESSION['usuario'] ?? 'publico',
+      'usuario'   => (string)($req['_usuario'] ?? 'usuario'),
       'fecha'     => date('Y-m-d'),
       'hora'      => date('H:i:s'),
     ], JSON_UNESCAPED_UNICODE);

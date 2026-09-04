@@ -98,6 +98,7 @@ document.addEventListener('DOMContentLoaded', function () {
     let uploadId = null;
     let key = null;
     let stateId = null;
+    let rutaObjetivo = null;
 
     try {
       // 0) Si hay sesión guardada => reanudar
@@ -106,12 +107,15 @@ document.addEventListener('DOMContentLoaded', function () {
         uploadId = saved.uploadId;
         key = saved.key;
         stateId = saved.stateId;
-        setStatus('Reanudando sesión anterior…', 'primary');
+        rutaObjetivo = saved.rutaObjetivo || (String(key).includes('/') ? String(key).slice(0, String(key).lastIndexOf('/') + 1) : '');
+        setStatus('Reanudando sesión anterior en ' + rutaObjetivo + '…', 'primary');
       } else {
         // 1) INIT
         setStatus('Iniciando multipart…', 'primary');
 
+        rutaObjetivo = window.DriveUploadDestination.capture();
         const initBody = new URLSearchParams();
+        initBody.append('ruta_objetivo', rutaObjetivo);
         initBody.append('filename', file.name);
         initBody.append('filesize', String(file.size));
         initBody.append('mime', file.type || 'application/octet-stream');
@@ -143,6 +147,7 @@ document.addEventListener('DOMContentLoaded', function () {
           filename: file.name,
           filesize: file.size,
           lastModified: file.lastModified || 0,
+          rutaObjetivo: rutaObjetivo,
           createdAt: Date.now()
         });
       }
@@ -215,6 +220,7 @@ document.addEventListener('DOMContentLoaded', function () {
         // 3a) pedir URL firmada para esta parte
         const signBody = new URLSearchParams();
         signBody.append('step', 'sign');
+        if (stateId) signBody.append('stateId', stateId);
         signBody.append('uploadId', uploadId);
         signBody.append('key', key);
         signBody.append('partNumber', String(partNumber));
@@ -258,6 +264,7 @@ document.addEventListener('DOMContentLoaded', function () {
           filesize: file.size,
           lastModified: file.lastModified || 0,
           etags: etags,
+          rutaObjetivo: rutaObjetivo,
           updatedAt: Date.now()
         });
       }
@@ -289,10 +296,8 @@ document.addEventListener('DOMContentLoaded', function () {
       setProgress(100);
       setStatus('✅ Subido completo: ' + key + ' (' + formatFileSize(file.size) + ')', 'success');
 
-      // refrescar listado
-      if (typeof window.actualizarBloqueArchivos === 'function') {
-        window.actualizarBloqueArchivos();
-      }
+      // Actualiza solo lo necesario: espacio y lista si seguimos en el destino original.
+      await window.DriveUploadDestination.afterSuccess(rutaObjetivo);
 
       // limpiar sesión y UI
       clearSession(file);

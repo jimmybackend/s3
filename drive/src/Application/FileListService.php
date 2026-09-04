@@ -52,20 +52,27 @@ final class FileListService
             $params[] = $dateTo;
         }
 
-        $total = $this->count("SELECT COUNT(*) FROM FileS3 WHERE {$where}", $types, $params);
+        // Una sola ida a MySQL para: total filtrado + total/peso de la carpeta.
+        $aggregateSql = "SELECT
+                (SELECT COUNT(*) FROM FileS3 WHERE {$where}) AS filtered_total,
+                COUNT(*) AS folder_total,
+                COALESCE(SUM(Tamano), 0) AS folder_bytes
+            FROM FileS3
+            WHERE user_id_ = ? AND Ruta = ? AND Found = 1";
+
+        $aggregateStmt = $this->prepare($aggregateSql);
+        $aggregateParams = array_merge($params, [$userId, $route]);
+        $this->bind($aggregateStmt, $types . 'is', $aggregateParams);
+        $aggregateStmt->execute();
+        $aggregate = $aggregateStmt->get_result()->fetch_assoc() ?: [];
+        $aggregateStmt->close();
+
+        $total = (int) ($aggregate['filtered_total'] ?? 0);
         $pages = max(1, (int) ceil($total / $limit));
         $page = min($page, $pages);
         $offset = ($page - 1) * $limit;
 
-        $folderStmt = $this->prepare(
-            'SELECT COUNT(*) AS n, COALESCE(SUM(Tamano),0) AS s FROM FileS3 WHERE user_id_ = ? AND Ruta = ? AND Found = 1'
-        );
-        $folderParams = [$userId, $route];
-        $this->bind($folderStmt, 'is', $folderParams);
-        $folderStmt->execute();
-        $folderRow = $folderStmt->get_result()->fetch_assoc() ?: [];
-        $folderStmt->close();
-
+        // Segunda y última consulta de navegación: las filas de la página.
         $sql = "SELECT id_, Nombre, Encriptado, Tamano, Metadatos, Ruta,
                        Found, AccessType, PasswordHash, SecureHint, SecureUpdatedAt, Fecha, user_id_
                 FROM FileS3
@@ -94,8 +101,8 @@ final class FileListService
             'type' => $type,
             'date_from' => $dateFrom,
             'date_to' => $dateTo,
-            'folder_total' => (int) ($folderRow['n'] ?? 0),
-            'folder_bytes' => (int) ($folderRow['s'] ?? 0),
+            'folder_total' => (int) ($aggregate['folder_total'] ?? 0),
+            'folder_bytes' => (int) ($aggregate['folder_bytes'] ?? 0),
         ];
     }
 
@@ -120,17 +127,6 @@ final class FileListService
         }
         $stmt->close();
         return $extensions;
-    }
-
-    private function count(string $sql, string $types, array $params): int
-    {
-        $stmt = $this->prepare($sql);
-        $this->bind($stmt, $types, $params);
-        $stmt->execute();
-        $stmt->bind_result($value);
-        $stmt->fetch();
-        $stmt->close();
-        return (int) $value;
     }
 
     private function prepare(string $sql): mysqli_stmt

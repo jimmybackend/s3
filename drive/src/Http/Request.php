@@ -41,6 +41,12 @@ final class Request
         return trim((string)$value);
     }
 
+    public function postRawString(string $name, string $default = ''): string
+    {
+        $value = $this->post[$name] ?? $default;
+        return is_scalar($value) ? (string)$value : $default;
+    }
+
     public function postInt(string $name, int $default = 0): int
     {
         $value = $this->post[$name] ?? $default;

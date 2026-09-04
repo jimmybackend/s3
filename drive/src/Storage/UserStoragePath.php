@@ -29,6 +29,12 @@ final class UserStoragePath
             return $root;
         }
 
+        // Compatibilidad con sesiones creadas cuando Config::RUTA_RAIZ era "Datos/".
+        if ($path === 'Datos' || strpos($path, 'Datos/') === 0) {
+            $suffix = $path === 'Datos' ? '' : substr($path, strlen('Datos/'));
+            return $suffix === '' ? $root : $root . trim($suffix, '/') . '/';
+        }
+
         if (strpos($path, $root) === 0) {
             return rtrim($path, '/') . '/';
         }

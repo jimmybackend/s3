@@ -41,7 +41,8 @@ $videoExt = ['mp4','webm','mov','avi','mkv'];
 $txtEditExt = ['txt','srt','vtt','md','html','css','js','php','py','json','csv','sql','jas'];
 $textractExt = ['jpg','jpeg','png','tif','tiff','pdf'];
 $traducirExt = ['txt','pdf','jpg','jpeg','png','tif','tiff'];
-$analizarExt = ['jpg','jpeg','png','tif','tiff','bmp'];
+$analizarExt = ['jpg','jpeg','png'];
+$transcribeExt = ['amr','flac','m4a','mp3','mp4','ogg','webm','wav'];
 $comprehendExt = ['txt','jas','md','markdown','csv','json','html','htm','xml','sql','log','srt','vtt','php','phtml','js','mjs','css','py','ini','cfg','conf','yaml','yml'];
 
 $imagenesPagina = [];
@@ -150,6 +151,7 @@ foreach ($filas as $row) {
       $puedeTex= in_array($ext, $textractExt, true);
       $puedeTrd= in_array($ext, $traducirExt, true);
       $puedeAna= in_array($ext, $analizarExt, true);
+      $puedeTranscribir = in_array($ext, $transcribeExt, true);
       $puedeComprehend = in_array($ext, $comprehendExt, true);
 
       $yaEncript = FileViewHelper::isEncrypted($row);
@@ -450,7 +452,7 @@ $unlockClass = $unlocked ? 'btn-success' : 'btn-warning';
   </button>
 <?php endif; ?>
 
-<?php if ($esAudio): ?>
+<?php if ($puedeTranscribir && !$esVideo): ?>
   <button type="button"
           class="btn btn-sm btn-primary btn-accion-ia aws-file-action js-transcribir"
           data-key="<?= FileViewHelper::escape($s3key) ?>"
@@ -463,7 +465,7 @@ $unlockClass = $unlocked ? 'btn-success' : 'btn-warning';
     <span class="aws-action-label">Transcribir</span>
   </button>
 <?php endif; ?>
-<?php if ($esVideo): ?>
+<?php if ($puedeTranscribir && $esVideo): ?>
   <button type="button"
           class="btn btn-sm btn-primary btn-accion-ia aws-file-action js-transcribir"
           data-key="<?= FileViewHelper::escape($s3key) ?>"

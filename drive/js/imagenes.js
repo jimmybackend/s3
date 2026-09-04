@@ -488,27 +488,11 @@
     actualizarBufferGaleria();
   });
 
-  // Cada cambio AJAX de página sustituye #bloque-archivos. Reconstruimos
-  // inmediatamente el buffer para que nunca queden imágenes de la página anterior.
+  // Cada cambio AJAX de página sustituye #bloque-archivos. Un único evento
+  // reconstruye el buffer desde las filas visibles de ESA página.
   document.addEventListener('bloque-archivos:actualizado', function(){
     setTimeout(actualizarBufferGaleria, 0);
   });
-
-  document.addEventListener('bloque-archivos:actualizado', function(){
-    actualizarBufferGaleria();
-  });
-
-  document.addEventListener('bloque-archivos:updated', function(){
-    actualizarBufferGaleria();
-  });
-
-  var target = document.getElementById('bloque-archivos') || document.body;
-  if (target && window.MutationObserver) {
-    var mo = new MutationObserver(function(){
-      actualizarBufferGaleria();
-    });
-    mo.observe(target, { childList: true, subtree: true });
-  }
 
   window.setGaleriaGridSize = function(n){
     if (!window.GaleriaGrid) return null;

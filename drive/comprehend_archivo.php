@@ -16,6 +16,7 @@ try {
         throw new RuntimeException('Método no permitido.');
     }
 
+    $userId = $session->userId();
     $key = trim((string)($_POST['key'] ?? $_POST['archivo'] ?? ''));
     if ($key === '') {
         throw new RuntimeException('Falta el archivo a analizar.');
@@ -34,7 +35,7 @@ try {
 
     echo json_encode([
         'ok' => true,
-        'analysis' => $service->analyze($session->userId(), $key),
+        'analysis' => $service->analyze($userId, $key),
     ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 } catch (Throwable $e) {
     http_response_code(400);

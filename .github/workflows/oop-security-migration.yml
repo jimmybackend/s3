@@ -1,0 +1,60 @@
+name: OOP file security migration
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/scripts/oop_security_migration.py'
+      - '.github/workflows/oop-security-migration.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Apply migration
+        run: python3 .github/scripts/oop_security_migration.py
+
+      - name: Validate PHP
+        run: |
+          php -l drive/src/Security/SessionManager.php
+          php -l drive/src/Security/FileSecurityRepository.php
+          php -l drive/src/Security/FileSecurityService.php
+          php -l drive/src/Http/Controller/FileSecurityController.php
+          php -l drive/set_file_security.php
+          php -l drive/unlock_file.php
+          php -l drive/relock_file.php
+
+      - name: Audit security architecture
+        run: |
+          set -euo pipefail
+          for f in set_file_security.php unlock_file.php relock_file.php; do
+            ! grep -q 'session_start' "drive/$f"
+            ! grep -q '\$_POST' "drive/$f"
+            ! grep -q '\$db_connection' "drive/$f"
+            ! grep -q '^function ' "drive/$f"
+          done
+          grep -q 'password_verify' drive/src/Security/FileSecurityService.php
+          grep -q "AccessType='secure'" drive/src/Security/FileSecurityRepository.php
+          grep -q "AccessType='unlocked'" drive/src/Security/FileSecurityRepository.php
+          grep -q "AccessType='normal'" drive/src/Security/FileSecurityRepository.php
+          grep -q 'clearSecureAccessKeys' drive/src/Security/SessionManager.php
+
+      - name: Commit migration
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add drive
+          if git diff --cached --quiet; then
+            echo "No changes"
+            exit 0
+          fi
+          git commit -m "Consolidate file security behind OOP services"
+          git push origin main

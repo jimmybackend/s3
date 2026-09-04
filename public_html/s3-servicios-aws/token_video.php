@@ -7,7 +7,6 @@ date_default_timezone_set('America/Merida');
 $ROOT = __DIR__;
 
 try {
-    require_once $ROOT . '/../vendor/autoload.php';
     require_once __DIR__ . '/app_bootstrap.php';
     require_once $ROOT . '/S3Manager.php';
 } catch (Throwable $e) {

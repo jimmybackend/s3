@@ -2,7 +2,6 @@
 // ec2.php – Panel EC2 + RDS/Aurora manual con polling, modal de clave, errores visibles y descarga RDP con IP pública
 session_start();
 
-require __DIR__ . '../vendor/autoload.php';
 require_once __DIR__ . '/app_bootstrap.php';
 
 use Aws\Ec2\Ec2Client;

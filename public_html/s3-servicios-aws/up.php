@@ -4,7 +4,6 @@
 // - Guarda en s3://<bucket>/Data/uploads/YYYYMMDD/<hash>-<archivo>
 // - Sin arrow functions ni <=> (compatibilidad amplia).
 
-require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/app_bootstrap.php';
 
 use Aws\S3\S3Client;

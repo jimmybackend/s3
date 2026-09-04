@@ -18,7 +18,6 @@ header('Content-Type: application/json; charset=utf-8');
 
 try {
   // ==== Dependencias de tu proyecto ====
-  require_once __DIR__ . '/../vendor/autoload.php';
   require_once __DIR__ . '/app_bootstrap.php';
   require_once __DIR__ . '/S3Manager.php';
 

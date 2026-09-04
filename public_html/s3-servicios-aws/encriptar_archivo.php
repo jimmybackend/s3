@@ -1,5 +1,4 @@
 <?php
-require '../vendor/autoload.php';
 require_once __DIR__ . '/app_bootstrap.php';
 
 header('Content-Type: application/json; charset=UTF-8');

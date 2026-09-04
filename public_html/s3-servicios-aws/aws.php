@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/app_bootstrap.php';
 session_start();
 
 /*
@@ -111,7 +112,6 @@ if (isset($_SESSION['usuario']) && !empty($_SESSION['usuario'])) {
     exit;
 }**/
 
-require '../vendor/autoload.php';
 
 use OTPHP\TOTP;
 $currentCode ='';

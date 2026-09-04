@@ -1,5 +1,4 @@
 <?php
-require_once '/../vendor/autoload.php';
 require_once __DIR__ . '/app_bootstrap.php';
 require_once 'S3Manager.php';
 

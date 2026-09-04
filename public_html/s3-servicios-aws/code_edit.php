@@ -57,7 +57,6 @@ try {
     if (file_exists($vendorPath)) {
         require_once $vendorPath;
     } elseif (file_exists(__DIR__ . '/../vendor/autoload.php')) {
-        require_once __DIR__ . '/../vendor/autoload.php';
     }
 
     $bootstrapPath = __DIR__ . '/app_bootstrap.php';

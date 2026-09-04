@@ -5,7 +5,6 @@ header('Content-Type: text/html; charset=UTF-8');
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
 
-require_once 'vendor/autoload.php';
 require_once __DIR__ . '/app_bootstrap.php';
 require_once 'S3Manager.php';
 require_once 'utils/helpers.php';

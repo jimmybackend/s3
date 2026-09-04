@@ -1,5 +1,4 @@
 <?php 
-require '../vendor/autoload.php';
 require_once __DIR__ . '/app_bootstrap.php';
 
 $s3     = Config::getS3();

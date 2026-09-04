@@ -1,18 +1,50 @@
 <?php
-/**
- * Archivo: db.php
- * Versión: 3.0
- * Descripción: Inicializa la conexión mysqli global usada por el proyecto.
- */
-$servidor  = "servidor";
-$usuario   = "usuario";
-$clave     = "clave";
-$basedatos = "basedatos";
+declare(strict_types=1);
 
-// La conexión se mantiene en una variable global para reutilizarla en scripts legacy.
-$db_connection = mysqli_connect($servidor, $usuario, $clave, $basedatos) or die(mysqli_error($db_connection));
+$required = ['DB_HOST', 'DB_USER', 'DB_PASSWORD', 'DB_NAME'];
+$missing = [];
 
-if (!$db_connection) {
-    die('No se ha podido conectar a la base de datos: ' . mysqli_connect_error());
+foreach ($required as $name) {
+    $value = getenv($name);
+    if ($value === false || trim((string) $value) === '') {
+        $missing[] = $name;
+    }
 }
-?>
+
+if ($missing !== []) {
+    throw new RuntimeException(
+        'Falta configuración esencial de base de datos: ' . implode(', ', $missing)
+    );
+}
+
+$port = filter_var(
+    (string) (getenv('DB_PORT') ?: '3306'),
+    FILTER_VALIDATE_INT,
+    ['options' => ['min_range' => 1, 'max_range' => 65535]]
+);
+
+if ($port === false) {
+    throw new RuntimeException('DB_PORT no es válido.');
+}
+
+$db_connection = mysqli_init();
+if (!$db_connection) {
+    throw new RuntimeException('No se pudo inicializar mysqli.');
+}
+
+mysqli_options($db_connection, MYSQLI_OPT_CONNECT_TIMEOUT, 10);
+
+if (!@mysqli_real_connect(
+    $db_connection,
+    (string) getenv('DB_HOST'),
+    (string) getenv('DB_USER'),
+    (string) getenv('DB_PASSWORD'),
+    (string) getenv('DB_NAME'),
+    (int) $port
+)) {
+    throw new RuntimeException('No se pudo conectar a la base de datos remota.');
+}
+
+if (!mysqli_set_charset($db_connection, 'utf8mb4')) {
+    throw new RuntimeException('No se pudo configurar utf8mb4.');
+}

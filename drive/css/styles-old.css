@@ -2486,3 +2486,72 @@ body.ui-theme.theme-dark #pane-archivos #bloque-archivos .archivos-wrap .btn.btn
   border-color: rgba(var(--accent-rgb), .45) !important;
 }
 
+/* =========================================================
+   FILE TYPE ICONS + IMAGE THUMBNAILS
+   ========================================================= */
+.file-preview-button{
+  width:58px;height:58px;min-width:58px;padding:0;margin-right:.65rem;
+  border:0;background:transparent;border-radius:9px;overflow:hidden;
+  display:inline-flex;align-items:center;justify-content:center;cursor:pointer;
+}
+.file-preview-button:focus{outline:2px solid var(--accent);outline-offset:2px;}
+.file-thumb-image{
+  width:56px!important;height:56px!important;min-width:56px;
+  object-fit:cover;display:block;border-radius:8px;
+}
+.file-type-icon{
+  width:56px;height:56px;min-width:56px;margin-right:.65rem;
+  display:inline-flex;align-items:center;justify-content:center;
+  border-radius:9px;border:1px solid rgba(var(--accent-rgb),.22);
+  background:var(--bg2);font-size:1.75rem;line-height:1;
+}
+.file-type-pdf{color:#e34b4b;}
+.file-type-word{color:#4d82d8;}
+.file-type-excel{color:#39a96b;}
+.file-type-powerpoint{color:#d97941;}
+.file-type-archive{color:#d5a740;}
+.file-type-text{color:var(--text);}
+.file-type-code{color:#b78cff;}
+.file-type-audio{color:#e06db0;}
+.file-type-video{color:#63b3ed;}
+.file-type-database{color:#56c7c7;}
+.file-type-ebook{color:#d6a65c;}
+.file-type-mail{color:#8eb5ff;}
+.file-type-font{color:#c7c7c7;}
+.file-type-certificate{color:#e0c45d;}
+.file-type-package,.file-type-model{color:#b59cff;}
+.file-type-design{color:#ec85cb;}
+.file-type-generic{color:var(--muted);}
+.file-type-locked{color:#f0ad4e;}
+
+/* El visor 1x1 usa SIEMPRE ver_archivo.php (original S3), nunca la miniatura. */
+#modalImagenUnica .modal-dialog{
+  width:auto;max-width:min(1200px,96vw);margin:2vh auto;
+}
+#modalImagenUnica .modal-content{
+  max-height:96vh;overflow:hidden;background:#000!important;
+}
+#modalImagenUnica .modal-body{overflow:hidden;background:#000!important;}
+#modalImagenUnica .carousel,#modalImagenUnica .carousel-inner,#modalImagenUnica .carousel-item{
+  max-height:88vh;background:#000;
+}
+#modalImagenUnica .gu-frame{
+  height:76vh;min-height:0!important;padding:1rem;
+  display:flex!important;align-items:center!important;justify-content:center!important;
+  overflow:hidden;background:#000;
+}
+#modalImagenUnica .gu-original-image{
+  display:block;width:auto!important;height:auto!important;
+  max-width:100%!important;max-height:100%!important;
+  object-fit:contain!important;margin:auto!important;
+}
+#modalImagenUnica .gu-caption{
+  max-height:8vh;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+@media (max-width:767.98px){
+  .file-preview-button,.file-type-icon{width:48px;height:48px;min-width:48px;}
+  .file-thumb-image{width:46px!important;height:46px!important;min-width:46px;}
+  #modalImagenUnica .modal-dialog{max-width:98vw;margin:1vh auto;}
+  #modalImagenUnica .gu-frame{height:70vh;padding:.5rem;}
+}
+

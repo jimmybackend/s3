@@ -18,7 +18,7 @@
   const U = {
     qs:  (sel, ctx=document) => ctx.querySelector(sel),
     qsa: (sel, ctx=document) => Array.from(ctx.querySelectorAll(sel)),
-    imgExts: ['jpg','jpeg','png','gif','webp','bmp','svg'],
+    imgExts: ['jpg','jpeg','png','gif','webp','bmp','avif','tif','tiff'],
     urlOriginalFromKey: (key) => 'ver_archivo.php?archivo=' + encodeURIComponent(key),
     thumbFromKey: (key, w=384, h=216) => 'thumb.php?key=' + encodeURIComponent(key) + '&w=' + w + '&h=' + h + '&fit=cover&fmt=jpg',
     dispatch: (name, detail) => document.dispatchEvent(new CustomEvent(name, { detail: detail || {} })),
@@ -122,7 +122,7 @@
       var key = li.getAttribute('data-key') || '';
       var nombre = li.getAttribute('data-nombre') || (key ? key.split('/').pop() : '');
       var original = li.getAttribute('data-original') || '';
-      var thumbEl = li.querySelector('img.thumb');
+      var thumbEl = li.querySelector('img.file-thumb-image, img.thumb-img, img.thumb');
       var thumb = thumbEl ? thumbEl.src : '';
 
       var ext = '';
@@ -200,7 +200,7 @@
       lista.forEach(function(it, idx){
         html += '    <div class="carousel-item' + (idx === 0 ? ' active' : '') + '">';
         html += '      <div class="gu-frame text-center" style="background:#000;">';
-        html += '        <img src="' + it.original + '" alt="' + (it.nombre || '') + '" style="max-width:100%;max-height:75vh;object-fit:contain;" loading="lazy" decoding="async">';
+        html += '        <img class="gu-original-image" src="' + it.original + '" alt="' + (it.nombre || '') + '" loading="lazy" decoding="async" draggable="false">';
         html += '      </div>';
         html += '      <div class="gu-caption text-center p-2" style="color:#fff;background:#111;">' + (it.nombre || '') + '</div>';
         html += '    </div>';
@@ -293,6 +293,10 @@
     async function fetchDesdeServidor(params){
       try {
         var url = new URL('generar_galeria.php', window.location.href);
+        var contextRoute = document.getElementById('archivosContexto')?.dataset?.rutaActual || '';
+        if (contextRoute) {
+          url.searchParams.set('ruta', contextRoute);
+        }
 
         if (params && typeof params === 'object') {
           Object.keys(params).forEach(function(k){

@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 use ArcadeCloud\Drive\View\FileViewHelper;
+use ArcadeCloud\Drive\View\FileIconResolver;
 
 require_once __DIR__ . '/app_bootstrap.php';
 
@@ -34,7 +35,7 @@ $fechaFin = $state['date_to'];
 $carpetaTotal = $state['folder_total'];
 $carpetaBytes = (int) $state['folder_bytes'];
 
-$imagenesExt = ['jpg','jpeg','png','gif','webp','bmp'];
+$imagenesExt = ['jpg','jpeg','png','gif','webp','bmp','avif','tif','tiff'];
 $audioExt = ['mp3','wav','ogg','opus','m4a','aac'];
 $videoExt = ['mp4','webm','mov','avi','mkv'];
 $txtEditExt = ['txt','srt','vtt','md','html','css','js','php','py','json','csv','sql','jas'];
@@ -49,7 +50,7 @@ $segurosAbiertos = 0;
 
 foreach ($filas as $row) {
     $ext = FileViewHelper::extension((string) ($row['Nombre'] ?? ''));
-    if (in_array($ext, $imagenesExt, true)) {
+    if (in_array($ext, $imagenesExt, true) && !FileViewHelper::isLocked($row)) {
         $imagenesPagina[] = [
             'key' => FileViewHelper::buildS3Key(
                 (string) ($row['Ruta'] ?? ''),
@@ -138,6 +139,8 @@ foreach ($filas as $row) {
       $metaTitle = FileViewHelper::metadataTooltip($row['Metadatos'] ?? null);
       $metaData = FileViewHelper::metadataArray($row['Metadatos'] ?? null);
       $metaJson = json_encode($metaData, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+      $iconInfo = FileIconResolver::resolve($ext);
+      $thumbUrl = 'thumb.php?key=' . rawurlencode($s3key) . '&w=96&h=96&fit=cover';
 
       $esImg   = in_array($ext, $imagenesExt, true);
       $esAudio = in_array($ext, $audioExt, true);
@@ -180,13 +183,34 @@ foreach ($filas as $row) {
                  data-nombre="<?= FileViewHelper::escape($nombre) ?>"
                  class="mr-2 align-self-start">
 
-          <img
-            class="thumb-img"
-            src="img/file.png"
-            width="32" height="32"
-            loading="lazy"
-            alt="Archivo"
-          >
+          <?php if ($esImg && !$soloSeguridad): ?>
+            <button type="button"
+                    class="file-preview-button js-ver-imagen"
+                    data-key="<?= FileViewHelper::escape($s3key) ?>"
+                    data-nombre="<?= FileViewHelper::escape($nombre) ?>"
+                    data-original="<?= FileViewHelper::escape($origUrl) ?>"
+                    title="Ver imagen completa">
+              <img
+                class="thumb-img file-thumb-image"
+                src="<?= FileViewHelper::escape($thumbUrl) ?>"
+                width="56" height="56"
+                loading="lazy"
+                decoding="async"
+                alt="Miniatura de <?= FileViewHelper::escape($nombre) ?>"
+              >
+            </button>
+          <?php else: ?>
+            <?php
+              $visualIcon = $soloSeguridad
+                  ? ['icon' => 'fa-lock', 'category' => 'locked', 'label' => 'Archivo protegido']
+                  : $iconInfo;
+            ?>
+            <span class="file-type-icon file-type-<?= FileViewHelper::escape($visualIcon['category']) ?>"
+                  title="<?= FileViewHelper::escape($visualIcon['label']) ?>"
+                  aria-label="<?= FileViewHelper::escape($visualIcon['label']) ?>">
+              <i class="fas <?= FileViewHelper::escape($visualIcon['icon']) ?>" aria-hidden="true"></i>
+            </span>
+          <?php endif; ?>
 
           <div>
             <div class="font-weight-bold">

@@ -12,6 +12,7 @@ use Aws\Rekognition\RekognitionClient;
 use Aws\Textract\TextractClient;
 use Aws\Polly\PollyClient;
 use Aws\Translate\TranslateClient;
+use Aws\TranscribeService\TranscribeServiceClient;
 use Aws\S3\S3Client;
 
 final class Config
@@ -122,6 +123,16 @@ final class Config
         public static function getTranslate(): TranslateClient
         {
             return new TranslateClient([
+                'region' => self::REGION,
+                'version' => 'latest',
+                'credentials' => self::getAwsCredentials(),
+                'http' => ['connect_timeout' => 15, 'timeout' => 120],
+            ]);
+        }
+
+        public static function getTranscribe(): TranscribeServiceClient
+        {
+            return new TranscribeServiceClient([
                 'region' => self::REGION,
                 'version' => 'latest',
                 'credentials' => self::getAwsCredentials(),

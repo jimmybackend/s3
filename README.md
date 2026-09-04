@@ -47,10 +47,6 @@ Tu hub de herramientas sobre Amazon (**S3 · Rekognition · Polly · Translate**
 - Encriptar
 - Bloquear / Desbloquear
 
-### Video Llamada
-
-Para iniciar la videollamada, contacta al administrador de la página.
-
 ---
 
 ## Procesamiento (IA / AWS / ML)

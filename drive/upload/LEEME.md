@@ -6,7 +6,7 @@ Este módulo unifica **todas las subidas de archivos** (desde PC, desde URL remo
 
 ## Estructura de carpetas
 
-Dentro de `public_html/drive/`:
+Dentro de `drive/`:
 
 ```
 api/
@@ -29,7 +29,7 @@ upload/
     state/                   ← Carpeta donde se guardan JSON de estado (debe ser escribible)
 ```
 
-En `public_html/drive/`:
+En `drive/`:
 - `app_bootstrap.php` (carga `vendor/autoload.php` + incluye `Config-s3.php` y `db.php` desde fuera del webroot)
 - `../vendor/` (Composer, AWS SDK; una carpeta atrás de `drive`)
 

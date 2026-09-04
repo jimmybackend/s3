@@ -1070,7 +1070,6 @@ body.ui-theme .dropzone,
 body.ui-theme .sidebar,
 body.ui-theme .archivos-wrap,
 body.ui-theme #bloque-carpetas,
-body.ui-theme #bitacoraBody,
 body.ui-theme #pane-servicios,
 body.ui-theme #pane-Subir .card {
   background: var(--bg2) !important;
@@ -1179,21 +1178,12 @@ body.ui-theme .table th {
   border-color: var(--border) !important;
 }
 
-/* Bitácora específicamente */
-body.ui-theme #bitacoraBody {
-  background: var(--bg2) !important;
-  color: var(--text) !important;
-}
-
-body.ui-theme #bitacoraBody .table th {
   color: var(--accent) !important;
 }
 
-body.ui-theme #bitacoraBody .table td {
   color: var(--text) !important;
 }
 
-body.ui-theme #bitacoraBody .badge {
   color: #fff !important;
 }
 
@@ -1276,7 +1266,6 @@ body.ui-theme.theme-light .upload-form-container,
 body.ui-theme.theme-light .dropzone,
 body.ui-theme.theme-light .archivos-wrap,
 body.ui-theme.theme-light #bloque-carpetas,
-body.ui-theme.theme-light #bitacoraBody,
 body.ui-theme.theme-light .table,
 body.ui-theme.theme-light .modal-content,
 body.ui-theme.theme-light .dropdown-menu {

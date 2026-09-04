@@ -38,23 +38,6 @@ CREATE TABLE `AccessControl` (
 
 -- --------------------------------------------------------
 
---
--- Estructura de tabla para la tabla `calls`
---
-
-CREATE TABLE `calls` (
-  `id` bigint UNSIGNED NOT NULL,
-  `user_id_` int NOT NULL,
-  `from_user_id` int DEFAULT NULL,
-  `from` varchar(191) DEFAULT NULL,
-  `to` varchar(191) DEFAULT NULL,
-  `status` enum('ringing','accepted','rejected','ended') NOT NULL DEFAULT 'ringing',
-  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `accepted_at` datetime DEFAULT NULL,
-  `rejected_at` datetime DEFAULT NULL,
-  `ended_at` datetime DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
 -- --------------------------------------------------------
 
 --
@@ -467,14 +450,7 @@ ALTER TABLE `AccessControl`
   ADD KEY `user_id` (`user_id`);
 
 --
--- Indices de la tabla `calls`
 --
-ALTER TABLE `calls`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `idx_user_status_created` (`user_id_`,`status`,`created_at`),
-  ADD KEY `idx_status_created` (`status`,`created_at`),
-  ADD KEY `fk_calls_user_caller` (`from_user_id`);
-
 --
 -- Indices de la tabla `ChatMessages`
 --
@@ -661,11 +637,7 @@ ALTER TABLE `AccessControl`
   MODIFY `id` int NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT de la tabla `calls`
 --
-ALTER TABLE `calls`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT;
-
 --
 -- AUTO_INCREMENT de la tabla `ChatMessages`
 --
@@ -791,12 +763,7 @@ ALTER TABLE `AccessControl`
   ADD CONSTRAINT `AccessControl_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `Users` (`id`);
 
 --
--- Filtros para la tabla `calls`
 --
-ALTER TABLE `calls`
-  ADD CONSTRAINT `fk_calls_user_caller` FOREIGN KEY (`from_user_id`) REFERENCES `Users` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
-  ADD CONSTRAINT `fk_calls_user_receiver` FOREIGN KEY (`user_id_`) REFERENCES `Users` (`id`) ON UPDATE CASCADE;
-
 --
 -- Filtros para la tabla `ChatMessages`
 --

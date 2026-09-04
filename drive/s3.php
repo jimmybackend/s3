@@ -1,139 +1,60 @@
 <?php
-session_start();
-header('Content-Type: text/html; charset=UTF-8');
+declare(strict_types=1);
 
-ini_set('display_errors', 1);
+header('Content-Type: text/html; charset=UTF-8');
+ini_set('display_errors', '1');
 error_reporting(E_ALL);
 
 require_once __DIR__ . '/app_bootstrap.php';
-require_once 'S3Manager.php';
-require_once 'utils/helpers.php';
+require_once __DIR__ . '/utils/helpers.php';
 
-if (!isset($_SESSION['usuario']) || empty($_SESSION['usuario'])) {
-    header("Location: index.php");
+$app = drive_app();
+$session = $app->session();
+$session->start();
+$session->requireAuthenticated('index.php');
+
+$pageService = $app->drivePageService();
+$redirect = $pageService->preferencesRedirect(
+    $_SESSION,
+    $_GET,
+    $_SERVER['REQUEST_METHOD'] ?? 'GET'
+);
+if ($redirect !== null) {
+    header('Location: ' . $redirect);
     exit;
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['preferencias'])) {
-    $_SESSION['show_counts']   = isset($_GET['toggle_counts']);
-    $_SESSION['show_metas']    = isset($_GET['toggle_metas']);
-    $_SESSION['media_hidden']  = !isset($_GET['toggle_media']);
-    $_SESSION['show_filters']  = filter_input(INPUT_GET, 'toggle_filters', FILTER_VALIDATE_BOOLEAN);
+$vm = $pageService->build($_SESSION, $_GET);
 
-    $qs = $_GET;
-    unset($qs['toggle_counts'], $qs['toggle_metas'], $qs['toggle_media'], $qs['preferencias']);
-    $location = 's3.php' . (count($qs) ? '?' . http_build_query($qs) : '');
-    header("Location: $location");
-    exit;
-}
-
-$showCounts   = $_SESSION['show_counts'] ?? false;
-$showMetas    = $_SESSION['show_metas'] ?? false;
-$mediaHidden  = $_SESSION['media_hidden'] ?? true;
-$showFilters  = $_SESSION['show_filters'] ?? true;
-
-$s3 = Config::getS3();
-$manager = new S3Manager();
-$bucket = $manager->getBucket();
-
-
-
-if (empty($_SESSION['ruta_actual'])) {
-    $_SESSION['ruta_actual'] = Config::RUTA_RAIZ;
-}
-
-$basePrefix = rtrim($_SESSION['ruta_actual'], '/') . '/';
-$tipo         = $_GET['tipo'] ?? '';
-$buscar       = $_GET['buscar'] ?? '';
-$fechaInicio  = $_GET['fecha_inicio'] ?? '';
-$fechaFin     = $_GET['fecha_fin'] ?? '';
-$limite       = (int)($_GET['limite'] ?? 5);
-$pagina       = (int)($_GET['pagina'] ?? 1);
-$pagina       = max(1, $pagina);
-
-$error = '';
-$extensiones_unicas = [];
-$playlistAudioAll = [];
-$playlistVideoAll = [];
-$tieneAudio = false;
-$tieneVideo = false;
-$totalPaginas = 1;
-$archivosPaginados = [];
-$todasLasCarpetas = [];
-$imagenes = [];
-$folder = [];
-$ruta = [];
-
-try {
-    $archivos = $manager->listArchivos($basePrefix, $showMetas);
-
-    $archivosFiltrados = array_filter($archivos, function ($archivo) use ($buscar, $fechaInicio, $fechaFin, $tipo) {
-        $nombre = basename($archivo['Key']);
-        $fechaArchivo = $archivo['LastModified']->format('Y-m-d');
-        $ext = strtolower(pathinfo($nombre, PATHINFO_EXTENSION));
-
-        if ($buscar && stripos($nombre, $buscar) === false) return false;
-        if ($fechaInicio && $fechaArchivo < $fechaInicio) return false;
-        if ($fechaFin && $fechaArchivo > $fechaFin) return false;
-        if ($tipo && $ext !== $tipo) return false;
-
-        return true;
-    });
-
-    usort($archivosFiltrados, function ($a, $b) {
-        return $b['LastModified'] <=> $a['LastModified'];
-    });
-
-    $totalArchivos = count($archivosFiltrados);
-    $totalPaginas = max(1, ceil($totalArchivos / $limite));
-    $pagina = max(1, min($pagina, $totalPaginas));
-    $inicio = ($pagina - 1) * $limite;
-    $archivosPaginados = array_slice($archivosFiltrados, $inicio, $limite);
-    $pesoTotalKB = array_sum(array_map(function($a) {
-        return isset($a['Size']) ? $a['Size'] : 0;
-    }, $archivosPaginados)) / 1024;
-    
-    $pesoTotalMB = round($pesoTotalKB / 1024, 2);
-
-
-    $playlistAudioAll = array_values(array_filter($archivosPaginados, function($a){
-        $ext = strtolower(pathinfo($a['Key'], PATHINFO_EXTENSION));
-        return in_array($ext, ['mp3','wav','ogg','opus','m4a']);
-    }));
-
-    $playlistVideoAll = array_values(array_filter($archivosPaginados, function($a){
-        $ext = strtolower(pathinfo($a['Key'], PATHINFO_EXTENSION));
-        return in_array($ext, ['mp4','webm','ogg']);
-    }));
-
-    $imagenes = array_values(array_filter($archivosPaginados, function($a) use ($manager) {
-        $ext = strtolower(pathinfo($a['Key'], PATHINFO_EXTENSION));
-        return in_array($ext, ['jpg','jpeg','png','gif']);
-    }));
-
-    $tieneAudio = !empty($playlistAudioAll);
-   // $tieneVideo = !empty($playlistVideoAll);
-    $todasLasCarpetas = $manager->obtenerTodasLasCarpetas();
-        $todasLasCarpetas = $manager->obtenerTodasLasCarpetas();
-
-    // -----------------------------
-    // Construir lista de extensiones únicas
-    // -----------------------------
-    $extensiones_unicas = [];
-    foreach ($archivos as $archivo) {
-        $nombre = basename($archivo['Key']);
-        $ext    = strtolower(pathinfo($nombre, PATHINFO_EXTENSION));
-        if ($ext !== '') {
-            $extensiones_unicas[$ext] = true;
-        }
-    }
-    $extensiones_unicas = array_keys($extensiones_unicas);
-    sort($extensiones_unicas);
-
-} catch (Exception $e) {
-    $error = "Error al filtrar archivos: " . $e->getMessage();
-}
-
+// Adaptador temporal de la vista heredada. La lógica ya vive en objetos.
+$showCounts = $vm->showCounts;
+$showMetas = $vm->showMetas;
+$mediaHidden = $vm->mediaHidden;
+$showFilters = $vm->showFilters;
+$basePrefix = $vm->basePrefix;
+$tipo = $vm->tipo;
+$buscar = $vm->buscar;
+$fechaInicio = $vm->fechaInicio;
+$fechaFin = $vm->fechaFin;
+$limite = $vm->limite;
+$pagina = $vm->pagina;
+$error = $vm->error;
+$extensiones_unicas = $vm->extensionesUnicas;
+$playlistAudioAll = $vm->playlistAudioAll;
+$playlistVideoAll = $vm->playlistVideoAll;
+$tieneAudio = $vm->tieneAudio;
+$tieneVideo = $vm->tieneVideo;
+$totalPaginas = $vm->totalPaginas;
+$totalArchivos = $vm->totalArchivos;
+$archivosPaginados = $vm->archivosPaginados;
+$todasLasCarpetas = $vm->todasLasCarpetas;
+$imagenes = $vm->imagenes;
+$folder = $vm->folder;
+$ruta = $vm->ruta;
+$pesoTotalMB = $vm->pesoTotalMB;
+$manager = $app->s3Manager();
+$s3 = $app->s3();
+$bucket = $app->bucket();
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -306,12 +227,6 @@ try {
        aria-selected="false">
       Subir Archivos
     </a>
-  </li>
-  
-    <li class="nav-item">
-    <a class="nav-link" id="tab-bitacora" data-toggle="tab"
-       href="#pane-bitacora" role="tab" aria-controls="pane-bitacora"
-       aria-selected="false"> Bitacora</a>
   </li>
   
   <li class="nav-item">
@@ -531,42 +446,6 @@ try {
 </div>
 
 </div>
-<!-- PESTAÑA Bitacora -->
-<div class="tab-pane fade" id="pane-bitacora" role="tabpanel" aria-labelledby="tab-bitacora">
-
-  <div id="receiverCallPanel" class="card border-info mb-3" style="display:none;">
-    <div class="card-header d-flex justify-content-between align-items-center">
-      <div>
-        <strong id="receiverCallTitle">Sin llamada activa</strong>
-        <div id="receiverCallMeta" class="small text-muted mt-1"></div>
-        <div id="receiverCallId" class="small text-muted"></div>
-      </div>
-      <button type="button" id="btnReceiverHangup" class="btn btn-danger btn-sm">
-        <i class="fas fa-phone-slash"></i> Colgar
-      </button>
-    </div>
-    <div class="card-body">
-      <div id="receiverCallNotice" class="alert alert-secondary mb-2">
-        Esperando llamadas...
-      </div>
-
-      <div class="embed-responsive embed-responsive-16by9 border rounded overflow-hidden bg-dark">
-        <iframe
-          id="receiverCallFrame"
-          src="about:blank"
-          class="embed-responsive-item"
-          allow="camera; microphone; autoplay; fullscreen"
-          style="width:100%; height:520px; border:0;">
-        </iframe>
-      </div> 
-    </div>
-  </div>
-
-  <div id="bitacoraBody" class="border rounded p-3 bg-body-tertiary mt-3">
-    No hay registros aún.
-  </div>
-</div>
-
 <!-- PESTAÑA servicios -->
 <div class="tab-pane fade" id="pane-servicios" role="tabpanel" aria-labelledby="tab-servicios"></div>
 
@@ -1881,13 +1760,6 @@ try {
 
 <script src="js/sincronizar.js"></script>
 <script src="js/estilo.js"></script>
-
-<!--<script src="js/calls.js"></script> 
-<script>
-  document.addEventListener('DOMContentLoaded', function () {
-    startIncomingPolling();
-  });
-</script>-->
 
 
 

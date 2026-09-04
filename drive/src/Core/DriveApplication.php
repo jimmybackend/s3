@@ -9,6 +9,7 @@ use ArcadeCloud\Drive\Application\UploadDestinationService;
 use ArcadeCloud\Drive\Security\SessionManager;
 use ArcadeCloud\Drive\Storage\StorageUsageService;
 use ArcadeCloud\Drive\Storage\UserStoragePath;
+use ArcadeCloud\Drive\Storage\UserStorageProvisioner;
 use ArcadeCloud\Drive\View\FolderTreeRenderer;
 use Aws\S3\S3Client;
 use mysqli;
@@ -25,6 +26,7 @@ final class DriveApplication
     private ?UploadDestinationService $uploadDestinationService = null;
     private ?StorageUsageService $storageUsageService = null;
     private ?UserStoragePath $userStoragePath = null;
+    private ?UserStorageProvisioner $userStorageProvisioner = null;
 
     private function __construct(mysqli $db)
     {
@@ -96,6 +98,16 @@ final class DriveApplication
     public function storageUsageService(): StorageUsageService
     {
         return $this->storageUsageService ??= new StorageUsageService($this->db);
+    }
+
+    public function userStorageProvisioner(): UserStorageProvisioner
+    {
+        return $this->userStorageProvisioner ??= new UserStorageProvisioner(
+            $this->db,
+            $this->s3,
+            $this->bucket,
+            $this->userStoragePath()
+        );
     }
 
     public function folderTreeRenderer(int $userId): FolderTreeRenderer

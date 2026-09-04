@@ -13,6 +13,14 @@ $session->start();
 $session->requireAuthenticated('index.php');
 $userId = $session->userId();
 
+// Provisionamiento multiusuario idempotente:
+// user 1 => Data/, user 2 => Data2/, user N => DataN/.
+$userRoot = $app->userStorageProvisioner()->ensureRoot($userId);
+$_SESSION['ruta_actual'] = $app->userStoragePath()->normalizeForUser(
+    (string) ($_SESSION['ruta_actual'] ?? $userRoot),
+    $userId
+);
+
 $pageService = $app->drivePageService();
 $vm = $pageService->build($_SESSION, $_GET, $userId);
 

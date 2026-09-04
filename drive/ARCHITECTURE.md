@@ -42,3 +42,28 @@ El desarrollo nuevo y las refactorizaciones del Drive se implementan orientados 
 `s3.php` conserva temporalmente variables para alimentar el HTML heredado, pero filtros,
 paginación, sesión y construcción de estado ya se obtienen mediante objetos. Esto permite
 migrar los endpoints restantes por módulos sin romper de golpe la aplicación en producción.
+
+
+## Provisionamiento multiusuario
+
+La raíz física/lógica del Drive se deriva exclusivamente del `Users.id` autenticado:
+
+```text
+user_id = 1  -> Data/
+user_id = 2  -> Data2/
+user_id = 3  -> Data3/
+user_id = N  -> DataN/
+```
+
+`UserStoragePath` es la única clase autorizada para calcular y normalizar esas raíces.
+`UserStorageProvisioner` se ejecuta al entrar a `s3.php` y es idempotente:
+
+1. consulta `S3Folders` por `user_id_ + Prefix`;
+2. si la raíz ya está registrada, no consulta ni escribe S3;
+3. si es el primer acceso, crea el objeto vacío `DataN/` en S3;
+4. registra la raíz en `S3Folders` con `Found=1`;
+5. la sesión se normaliza de nuevo contra la raíz del usuario antes de construir la página.
+
+Esto permite que un usuario creado por cualquier sistema de registro quede provisionado en su
+primer acceso al Drive, siempre usando el ID real asignado por MySQL. La separación lógica en
+BD sigue siendo obligatoria mediante `user_id_` y ningún endpoint debe aceptar una raíz de otro usuario.

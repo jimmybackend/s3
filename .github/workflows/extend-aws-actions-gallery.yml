@@ -1,0 +1,78 @@
+name: Extend AWS file actions and gallery
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/scripts/extend_aws_actions_gallery.py'
+      - '.github/workflows/extend-aws-actions-gallery.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Apply migration
+        run: python3 .github/scripts/extend_aws_actions_gallery.py
+
+      - name: Validate PHP
+        run: |
+          php -l Config-s3.php
+          php -l drive/bloque_archivos.php
+          php -l drive/comprehend_archivo.php
+          php -l drive/rekognition_labels.php
+          php -l drive/s3.php
+          php -l drive/src/Aws/FileRecordLocator.php
+          php -l drive/src/Aws/ComprehendFileService.php
+
+      - name: Validate JavaScript
+        run: |
+          node --check drive/js/imagenes.js
+          node --check drive/js/aws-comprehend.js
+
+      - name: Audit behavior
+        run: |
+          set -euo pipefail
+          grep -q "getComprehend" Config-s3.php
+          grep -q "getRekognition" Config-s3.php
+          grep -q "js-comprehend" drive/bloque_archivos.php
+          grep -q "aws-action-label">/dev/null drive/bloque_archivos.php
+          grep -q "Amazon Textract · Extraer texto" drive/bloque_archivos.php
+          grep -q "Amazon Transcribe · Audio a texto" drive/bloque_archivos.php
+          grep -q "Amazon Polly · Texto a audio" drive/bloque_archivos.php
+          grep -q "Amazon Translate · Traducir" drive/bloque_archivos.php
+          grep -q "Amazon Rekognition · Analizar imagen" drive/bloque_archivos.php
+          grep -q "Amazon Comprehend · Analizar texto" drive/bloque_archivos.php
+          grep -q "requireReadableByKey" drive/rekognition_labels.php
+          grep -q "id_ = ? AND user_id_ = ?" drive/rekognition_labels.php
+          grep -q "detectPiiEntities" drive/src/Aws/ComprehendFileService.php
+          grep -q "detectKeyPhrases" drive/src/Aws/ComprehendFileService.php
+          grep -q "detectEntities" drive/src/Aws/ComprehendFileService.php
+          grep -q "detectSentiment" drive/src/Aws/ComprehendFileService.php
+          ! grep -q "fetchDesdeServidor" drive/js/imagenes.js
+          ! grep -q "generar_galeria.php" drive/js/imagenes.js
+          grep -q "bloque-archivos:actualizado" drive/js/imagenes.js
+          grep -q "Fuente única: filas de bloque_archivos.php de la página actual" drive/js/imagenes.js
+          grep -q "js-lock-file" drive/bloque_archivos.php
+          grep -q "js-unlock-file" drive/bloque_archivos.php
+          grep -q "audio-player-pro" drive/bloque_archivos.php
+          grep -q "js-inline-video-open" drive/bloque_archivos.php
+
+      - name: Commit migration
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add Config-s3.php drive
+          if git diff --cached --quiet; then
+            echo "No changes"
+            exit 0
+          fi
+          git commit -m "Add AWS text analysis and page-scoped image galleries"
+          git push origin main

@@ -147,7 +147,6 @@ try {
   <link rel="icon" href="ellogo.png" type="image/x-icon">
 
   <link rel="stylesheet" href="css/styles-old.css">
-  <link rel="stylesheet" href="css/chat-old.css">
 
   <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
@@ -308,13 +307,6 @@ try {
       Subir Archivos
     </a>
   </li>
-    <li class="nav-item">
-    <a class="nav-link" id="tab-Chat2" data-toggle="tab"
-       href="#pane-Chat2" role="tab" aria-controls="pane-Chat2"
-       aria-selected="false">
-      Chat IA
-    </a>
-  </li>
   
     <li class="nav-item">
     <a class="nav-link" id="tab-bitacora" data-toggle="tab"
@@ -431,11 +423,6 @@ try {
 
 <!-- PESTAÑA Cargar -->
 <div class="tab-pane fade" id="pane-Subir" role="tabpanel" aria-labelledby="tab-Subir">
- <!-- <iframe
-    src="https://portal.esforzados.com/html/chat/users.php"
-    style="width:100%; height:600px; border:0; overflow:auto;"
-    title="Chat Esforzados">
-  </iframe>-->
 
   
 <!-- Formulario de subida sin recarga -->
@@ -543,51 +530,7 @@ try {
   </div>
 </div>
 
-</div>        
-      
-<!-- PESTAÑA CHAT2 V. 2.01 (Bedrock) -->
-<div class="tab-pane fade" id="pane-Chat2" role="tabpanel" aria-labelledby="tab-Chat2"> 
-
- <!-- ====== PANE: Chat (Auto-Router Titan) ====== -->
-  <div class="container-fluid py-3">
-    <div class="row">
-      <div class="col-12 text-center">
-        <!-- Botón que abre el chat en nueva pestaña -->
-        <a href="/michat/" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-lg">
-          <i class="fas fa-comment-dots"></i> Ir al Chat
-        </a>
-        <!-- Si no usas FontAwesome, quita el <i> o cámbialo por un icono de Bootstrap -->
-      </div>
-    </div>
-  </div>
-
-  <!-- ====== PANE: Chat (Auto-Router Titan) ====== -->
-  <div class="container-fluid py-3">
-    <div class="row">
-      <div class="col-12 text-center">
-        <!-- Botón que abre el chat en nueva pestaña -->
-        <a href="/chat/s3chat.php" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-lg">
-          <i class="fas fa-comment-dots"></i> Ir al Chat
-        </a>
-        <!-- Si no usas FontAwesome, quita el <i> o cámbialo por un icono de Bootstrap -->
-      </div>
-    </div>
-  </div>
-    <!-- ====== PANE: Chat (Auto-Router Titan) ====== -->
-  <div class="container-fluid py-3">
-    <div class="row">
-      <div class="col-12 text-center">
-        <!-- Botón que abre el chat en nueva pestaña -->
-        <a href="/s3chat-old.php" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-lg">
-          <i class="fas fa-comment-dots"></i> Ir al Chat Viejo
-        </a>
-        <!-- Si no usas FontAwesome, quita el <i> o cámbialo por un icono de Bootstrap -->
-      </div>
-    </div>
-  </div>
-
 </div>
-
 <!-- PESTAÑA Bitacora -->
 <div class="tab-pane fade" id="pane-bitacora" role="tabpanel" aria-labelledby="tab-bitacora">
 
@@ -1116,11 +1059,6 @@ try {
             </a>
           </li>
           <li class="list-group-item">
-            <a href="https://drive.esforzados.com/s3_chat.php" target="_blank">
-              <i class="fas fa-qrcode text-primary mr-2"></i> Chat
-            </a>
-          </li>
-          <li class="list-group-item">
             <a href="https://drive.esforzados.com/aws.php" target="_blank">
               <i class="fas fa-qrcode text-primary mr-2"></i> Generador OTP
             </a>
@@ -1128,16 +1066,6 @@ try {
           <li class="list-group-item">
             <a href="https://drive.esforzados.com/ec2.php" target="_blank">
               <i class="fas fa-qrcode text-primary mr-2"></i> Ec2
-            </a>
-          </li>
-          <li class="list-group-item">
-            <a href="https://portal.esforzados.com/html/chat/mcerssunachmx.php" target="_blank">
-              <i class="fas fa-comments text-success mr-2"></i> Chat SUNACH-MX
-            </a>
-          </li>
-          <li class="list-group-item">
-            <a href="https://portal.esforzados.com/html/chat/users.php" target="_blank">
-              <i class="fas fa-comments text-success mr-2"></i> Chat 
             </a>
           </li>
           
@@ -1161,12 +1089,6 @@ try {
         <li class="list-group-item">
           <a href="https://demo.filestash.app/login" target="_blank">
             <i class="fas fa-hdd text-info mr-2"></i> Filestash (Explorador S3 / FTP)
-          </a>
-        </li>
-        
-        <li class="list-group-item">
-          <a href="https://chat.openai.com/" target="_blank">
-            <i class="fas fa-robot text-success mr-2"></i> ChatGPT (OpenAI)
           </a>
         </li>
           <li class="list-group-item">
@@ -1927,10 +1849,6 @@ try {
         </div>
       </div>
 
-<div id="chatToasts" class="chat-toasts"></div>
-<!-- Contenedor de toasts (usa .chat-toasts / .chat-toast de tus CSS) -->
-<div id="incomingToasts" class="chat-toasts"></div>
-
 </div>
 
 <script src="js/polly.js"></script>
@@ -1945,9 +1863,6 @@ try {
 <script src="js/actualizarbloquefooter.js"></script>
 <script src="js/recargarPagina.js"></script>
 <script src="js/filtros.js"></script>
-
-<!--<script src="chat2.js"></script>
-<script src="chat2-enhancements.js"></script>-->
 
 <script src="js/editar-txt.js"></script>
 

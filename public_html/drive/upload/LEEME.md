@@ -6,7 +6,7 @@ Este módulo unifica **todas las subidas de archivos** (desde PC, desde URL remo
 
 ## Estructura de carpetas
 
-Dentro de `public_html/s3v2/`:
+Dentro de `public_html/drive/`:
 
 ```
 api/
@@ -29,9 +29,9 @@ upload/
     state/                   ← Carpeta donde se guardan JSON de estado (debe ser escribible)
 ```
 
-Además, en la raíz de `s3v2/`:
+En `public_html/drive/`:
 - `app_bootstrap.php` (carga `vendor/autoload.php` + incluye `Config-s3.php` y `db.php` desde fuera del webroot)
-- `vendor/` (Composer, AWS SDK)
+- `../vendor/` (Composer, AWS SDK; una carpeta atrás de `drive`)
 
 ---
 
@@ -40,7 +40,7 @@ Además, en la raíz de `s3v2/`:
 El proyecto usa `app_bootstrap.php` para **mantener `Config-s3.php` y `db.php` fuera de `public_html`** (carpeta protegida), evitando exposición de credenciales.
 
 `app_bootstrap.php` debe cargar:
-1) `s3v2/vendor/autoload.php` (AWS SDK)
+1) `../vendor/autoload.php` (AWS SDK)
 2) `Config-s3.php` y `db.php` desde la ruta privada (fuera del webroot)
 
 Si AWS no carga, aparecerá el error: `Class "Aws\S3\S3Client" not found`.
@@ -71,7 +71,7 @@ Si AWS no carga, aparecerá el error: `Class "Aws\S3\S3Client" not found`.
 ### 1) `local_put` (Subida desde PC, PUT directo a S3)
 **Paso 1: pedir URL firmada**
 ```
-GET /s3v2/api/upload.php?mode=local_put&action=init&nombre=archivo.pdf
+GET /drive/api/upload.php?mode=local_put&action=init&nombre=archivo.pdf
 ```
 
 Respuesta (JSON):
@@ -81,7 +81,7 @@ Respuesta (JSON):
 **Paso 2: el navegador hace PUT a `json.url`**  
 **Paso 3 (opcional recomendado): avisar tamaño real**
 ```
-POST /s3v2/api/upload.php?mode=local_put&action=complete
+POST /drive/api/upload.php?mode=local_put&action=complete
   nombreEncriptado=<...>
   tamano=<bytes>
 ```
@@ -98,14 +98,14 @@ Se envía una URL remota y el servidor:
 
 **POST recomendado**
 ```
-POST /s3v2/api/upload.php?mode=remote_url&action=init
+POST /drive/api/upload.php?mode=remote_url&action=init
   url=<url>
   u64=<base64 utf8 de url> (opcional)
 ```
 
 **Fallback GET (útil si WAF/hosting bloquea POST)**
 ```
-GET /s3v2/api/upload.php?mode=remote_url&action=init&u64=<base64>
+GET /drive/api/upload.php?mode=remote_url&action=init&u64=<base64>
 ```
 
 Respuesta (JSON) típica:
@@ -118,7 +118,7 @@ Dropzone sube archivos como `multipart/form-data` con field `file`.
 
 Ejemplo:
 ```
-POST /s3v2/api/upload.php?mode=dropbox&action=init
+POST /drive/api/upload.php?mode=dropbox&action=init
   file=<archivo>
 ```
 
@@ -134,7 +134,7 @@ Este modo está pensado para archivos grandes (ej. > 1GB) y usa multipart con pr
 
 **init** crea MultipartUpload:
 ```
-POST /s3v2/api/upload.php?mode=chunked&action=init
+POST /drive/api/upload.php?mode=chunked&action=init
   filename=<nombre>
   filesize=<bytes>
   mime=<mime>
@@ -142,7 +142,7 @@ POST /s3v2/api/upload.php?mode=chunked&action=init
 
 **part** firma una parte:
 ```
-POST /s3v2/api/upload.php?mode=chunked&action=part
+POST /drive/api/upload.php?mode=chunked&action=part
   uploadId=<id>
   key=<key>
   partNumber=<n>
@@ -152,7 +152,7 @@ POST /s3v2/api/upload.php?mode=chunked&action=part
 
 **resume** lista partes subidas (reanudar):
 ```
-POST /s3v2/api/upload.php?mode=chunked&action=part
+POST /drive/api/upload.php?mode=chunked&action=part
   step=resume
   stateId=<id> (si se usa)
   uploadId=<id>
@@ -161,7 +161,7 @@ POST /s3v2/api/upload.php?mode=chunked&action=part
 
 **complete** finaliza multipart:
 ```
-POST /s3v2/api/upload.php?mode=chunked&action=complete
+POST /drive/api/upload.php?mode=chunked&action=complete
   stateId=<id> (si se usa store local)
   uploadId=<id>
   key=<key>
@@ -242,7 +242,7 @@ Y llamar:
 ### Error: `Class "Aws\S3\S3Client" not found`
 - Falta cargar `vendor/autoload.php`.  
 Solución: asegurar que `app_bootstrap.php` incluya:
-`require_once __DIR__ . '/vendor/autoload.php';`
+`require_once dirname(__DIR__) . '/vendor/autoload.php';`
 
 ### HTTP 500 en `api/upload.php`
 - Revisar logs de PHP.

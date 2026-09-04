@@ -1,8 +1,6 @@
 /* ======================================================================
    styles-themes-full.css
-   Base original + tema visual multi-color / light-dark / vision / ASCII
-   Uso recomendado en <body>:
-   <body class="ui-theme theme-neon-green theme-dark vision-normal ascii-on">
+   Base original + tema visual multi-color / light-dark / vision
    ====================================================================== */
 
 /* ===== Base / Layout ===== */
@@ -22,9 +20,6 @@ img.rounded-circle{border:2px solid #fff;}
 #mediaFloating{position:fixed;bottom:1rem;right:1rem;z-index:1100;max-width:440px;}
 #mediaFloating .card{margin-bottom:.5rem;}
 #toggleMediaBtn{width:100%;margin-bottom:.5rem;}
-
-/* ===== Footer tipo Windows ===== */
-/* centralizado al final */
 
 /* ===== Árbol de carpetas ===== */
 .folder-tree{list-style:none;padding-left:12px;margin:0;}
@@ -252,7 +247,7 @@ img.rounded-circle{border:2px solid #fff;}
 
 /* ======================================================================
    SISTEMA DE TEMAS
-   Debe usarse con: <body class="ui-theme theme-neon-green theme-dark vision-normal ascii-on">
+   Debe usarse con: <body class="ui-theme theme-neon-green theme-dark vision-normal">
    ====================================================================== */
 body.ui-theme{
   --bg:#000;
@@ -275,10 +270,6 @@ body.ui-theme{
   --ok:#00ff66;
   --sec-ok:#00ff66;
   --sec-no:#888;
-  --ascii-fs:10px;
-  --ascii-lh:12px;
-  --ascii-trk:.35px;
-  --ascii-pad:18px;
   --body-grad:
     radial-gradient(1200px 700px at 20% 10%, rgba(200,200,200,.10), transparent 60%),
     radial-gradient(900px 600px at 80% 20%, rgba(160,160,160,.08), transparent 55%),
@@ -338,14 +329,6 @@ body.ui-theme.vision-myopia{filter:contrast(.98) saturate(.92);}
 body.ui-theme.vision-protanopia{filter:hue-rotate(-12deg) saturate(.78);} 
 body.ui-theme.vision-deuteranopia{filter:hue-rotate(14deg) saturate(.82);} 
 body.ui-theme.vision-tritanopia{filter:hue-rotate(35deg) saturate(.85);} 
-
-/* ===== Capa sutil ASCII / ruido ===== */
-body.ui-theme.ascii-on::before{
-  content:"0101010010110010010100101100100101001011001001010010110010010100010010010100110010100101100100101001011001001010";
-  position:fixed;inset:0;font-size:12px;line-height:16px;opacity:.05;
-  color:rgba(var(--accent-rgb),.40);pointer-events:none;white-space:pre-wrap;overflow:hidden;z-index:0;
-}
-body.ui-theme > *{position:relative;z-index:1;}
 
 /* ===== Enlaces ===== */
 body.ui-theme a{ color: var(--accent) !important; }
@@ -434,7 +417,7 @@ body.ui-theme textarea:focus{
   body.ui-theme.theme-light textarea{background:#fff !important;}
 }
 
-/* ===== ASCII borders ===== */
+/* ===== Bordes y sombras (sin ASCII) ===== */
 body.ui-theme .sidebar,
 body.ui-theme .card,
 body.ui-theme .dropzone,
@@ -450,65 +433,6 @@ body.ui-theme .archivos-wrap{
   box-shadow:0 12px 34px rgba(0,0,0,.35);
 }
 
-body.ui-theme.ascii-on .sidebar::before,
-body.ui-theme.ascii-on .sidebar::after,
-body.ui-theme.ascii-on .card::before,
-body.ui-theme.ascii-on .card::after,
-body.ui-theme.ascii-on .dropzone::before,
-body.ui-theme.ascii-on .dropzone::after,
-body.ui-theme.ascii-on .upload-form-container::before,
-body.ui-theme.ascii-on .upload-form-container::after,
-body.ui-theme.ascii-on .list-group-item::before,
-body.ui-theme.ascii-on .list-group-item::after,
-body.ui-theme.ascii-on .ap-ui::before,
-body.ui-theme.ascii-on .ap-ui::after,
-body.ui-theme.ascii-on footer::before,
-body.ui-theme.ascii-on footer::after,
-body.ui-theme.ascii-on #bloque-carpetas::before,
-body.ui-theme.ascii-on #bloque-carpetas::after,
-body.ui-theme.ascii-on .archivos-wrap::before,
-body.ui-theme.ascii-on .archivos-wrap::after{
-  position:absolute;left:10px;right:10px;font-size:var(--ascii-fs);line-height:var(--ascii-lh);
-  letter-spacing:var(--ascii-trk);color:rgba(220,220,220,.75);opacity:.95;white-space:nowrap;
-  overflow:hidden;pointer-events:none;text-shadow:0 0 6px rgba(255,255,255,.05);
-}
-body.ui-theme.ascii-on .sidebar::before,
-body.ui-theme.ascii-on .card::before,
-body.ui-theme.ascii-on .dropzone::before,
-body.ui-theme.ascii-on .upload-form-container::before,
-body.ui-theme.ascii-on .list-group-item::before,
-body.ui-theme.ascii-on .ap-ui::before,
-body.ui-theme.ascii-on footer::before,
-body.ui-theme.ascii-on #bloque-carpetas::before,
-body.ui-theme.ascii-on .archivos-wrap::before{top:6px;content:"+--------------------------------------------------------------------------+";}
-body.ui-theme.ascii-on .sidebar::after,
-body.ui-theme.ascii-on .card::after,
-body.ui-theme.ascii-on .dropzone::after,
-body.ui-theme.ascii-on .upload-form-container::after,
-body.ui-theme.ascii-on .list-group-item::after,
-body.ui-theme.ascii-on .ap-ui::after,
-body.ui-theme.ascii-on footer::after,
-body.ui-theme.ascii-on #bloque-carpetas::after,
-body.ui-theme.ascii-on .archivos-wrap::after{bottom:6px;content:"+--------------------------------------------------------------------------+";}
-
-body.ui-theme.ascii-on .sidebar,
-body.ui-theme.ascii-on .card,
-body.ui-theme.ascii-on .dropzone,
-body.ui-theme.ascii-on .upload-form-container,
-body.ui-theme.ascii-on .list-group-item,
-body.ui-theme.ascii-on .ap-ui,
-body.ui-theme.ascii-on footer,
-body.ui-theme.ascii-on #bloque-carpetas,
-body.ui-theme.ascii-on .archivos-wrap{
-  background-image:
-    linear-gradient(180deg, var(--panel-bg), var(--panel-bg2)),
-    repeating-linear-gradient(to bottom, rgba(220,220,220,.70) 0px, rgba(220,220,220,.70) 1px, transparent 1px, transparent var(--ascii-lh)),
-    repeating-linear-gradient(to bottom, rgba(220,220,220,.70) 0px, rgba(220,220,220,.70) 1px, transparent 1px, transparent var(--ascii-lh)) !important;
-  background-size:auto, 1px var(--ascii-lh), 1px var(--ascii-lh) !important;
-  background-position:0 0, 10px 18px, calc(100% - 10px) 18px !important;
-  background-repeat:no-repeat, repeat-y, repeat-y !important;
-}
-
 /* ===== Hovers ===== */
 body.ui-theme .sidebar:hover,
 body.ui-theme .card:hover,
@@ -520,25 +444,6 @@ body.ui-theme #bloque-carpetas:hover,
 body.ui-theme .archivos-wrap:hover{
   border-color:rgba(var(--accent-rgb),.55) !important;
   box-shadow:0 0 0 1px rgba(var(--accent-rgb),.22) inset, 0 12px 34px rgba(0,0,0,.35), 0 0 18px rgba(var(--accent-rgb),.22) !important;
-}
-body.ui-theme.ascii-on .sidebar:hover::before,
-body.ui-theme.ascii-on .sidebar:hover::after,
-body.ui-theme.ascii-on .card:hover::before,
-body.ui-theme.ascii-on .card:hover::after,
-body.ui-theme.ascii-on .dropzone:hover::before,
-body.ui-theme.ascii-on .dropzone:hover::after,
-body.ui-theme.ascii-on .upload-form-container:hover::before,
-body.ui-theme.ascii-on .upload-form-container:hover::after,
-body.ui-theme.ascii-on .list-group-item:hover::before,
-body.ui-theme.ascii-on .list-group-item:hover::after,
-body.ui-theme.ascii-on .ap-ui:hover::before,
-body.ui-theme.ascii-on .ap-ui:hover::after,
-body.ui-theme.ascii-on #bloque-carpetas:hover::before,
-body.ui-theme.ascii-on #bloque-carpetas:hover::after,
-body.ui-theme.ascii-on .archivos-wrap:hover::before,
-body.ui-theme.ascii-on .archivos-wrap:hover::after{
-  color:rgba(var(--accent-rgb),.95);
-  text-shadow:var(--accent-glow);
 }
 
 /* ===== Botones ===== */
@@ -564,12 +469,6 @@ body.ui-theme .page-link:hover{
   box-shadow:var(--accent-glow) !important;
   color:var(--accent-2) !important;
 }
-body.ui-theme.ascii-on .btn::before,
-body.ui-theme.ascii-on button::before,
-body.ui-theme.ascii-on .file-input-button::before{content:"[ ";opacity:.9;color:rgba(var(--accent-rgb),.75);} 
-body.ui-theme.ascii-on .btn::after,
-body.ui-theme.ascii-on button::after,
-body.ui-theme.ascii-on .file-input-button::after{content:" ]";opacity:.9;color:rgba(var(--accent-rgb),.75);} 
 
 /* ===== Navbar ===== */
 body.ui-theme .navbar{
@@ -1173,7 +1072,6 @@ body.ui-theme .archivos-wrap,
 body.ui-theme #bloque-carpetas,
 body.ui-theme #bitacoraBody,
 body.ui-theme #pane-servicios,
-body.ui-theme #pane-Chat2 .card,
 body.ui-theme #pane-Subir .card {
   background: var(--bg2) !important;
   color: var(--text) !important;
@@ -2152,12 +2050,6 @@ body.ui-theme #pane-archivos #bloque-archivos .archivos-wrap .file-row.dropdown-
   text-shadow:none !important;
 }
 
-/* Si el modo ASCII está activo, no dibujar pseudo-bordes sobre cada archivo */
-body.ui-theme.ascii-on #pane-archivos #bloque-archivos .archivos-wrap .list-group-item::before,
-body.ui-theme.ascii-on #pane-archivos #bloque-archivos .archivos-wrap .list-group-item::after{
-  display:none !important;
-}
-
 /* Si una búsqueda resalta una fila, que no suba de capa */
 #bloque-archivos .destacado-s3{
   position:relative !important;
@@ -2498,4 +2390,165 @@ body.ui-theme.theme-dark #pane-archivos #bloque-archivos .archivos-wrap .btn.btn
   background: rgba(var(--accent-rgb), .10) !important;
   border-color: rgba(var(--accent-rgb), .45) !important;
 }
+
+html, body {
+  height: 100%;
+  margin: 0;
+}
+
+body.ui-theme {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* El navbar fijo en la parte superior */
+body.ui-theme .navbar {
+  flex: 0 0 auto;
+}
+
+/* El contenedor principal (row) ocupa el resto */
+body.ui-theme .container-fluid {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* La fila (row) también flex */
+body.ui-theme .container-fluid .row {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+/* Las columnas */
+body.ui-theme .container-fluid .col-md-10 {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* El contenido de la columna (tabs, etc.) ocupa todo */
+body.ui-theme .container-fluid .col-md-10 .tab-content {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* La pestaña activa debe ocupar todo */
+body.ui-theme .tab-pane.active {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* =========================================================
+   DASHBOARD: Textos oscuros en claro, claros en oscuro
+   ========================================================= */
+
+/* 1. Fondo y texto base de las tarjetas del Dashboard */
+#pane-Dashboard .card {
+  background: var(--bg2) !important;
+  color: var(--text) !important;
+  border-color: var(--border) !important;
+}
+
+/* 2. Títulos y números principales (h3, h6) */
+#pane-Dashboard .card-title,
+#pane-Dashboard h6,
+#pane-Dashboard h3,
+#pane-Dashboard .card-body .small,
+#pane-Dashboard .text-muted,
+#pane-Dashboard small {
+  color: var(--text-strong) !important;  /* negro en claro, blanco en oscuro */
+}
+
+/* 3. Etiquetas "text-muted" internas (las que están dentro de .card-body) */
+#pane-Dashboard .card-body .text-muted {
+  color: var(--text-soft) !important;   /* gris más oscuro en claro, gris claro en oscuro */
+  opacity: 0.9;
+}
+
+/* 4. Colores de acento (info, success, warning, primary) más oscuros en modo claro */
+body.ui-theme.theme-light #pane-Dashboard .text-info {
+  color: #0a6b8a !important;
+}
+body.ui-theme.theme-light #pane-Dashboard .text-success {
+  color: #0f6b3a !important;
+}
+body.ui-theme.theme-light #pane-Dashboard .text-warning {
+  color: #a67c00 !important;
+}
+body.ui-theme.theme-light #pane-Dashboard .text-primary {
+  color: #004085 !important;
+}
+
+/* 5. (Opcional) Fondo de las tarjetas en modo claro más claro */
+body.ui-theme.theme-light #pane-Dashboard .card {
+  background: #ffffff !important;
+  border-color: rgba(0,0,0,.12) !important;
+}
+
+/* 6. Tablas internas del Dashboard */
+#pane-Dashboard .table {
+  background: transparent !important;
+  color: var(--text) !important;
+}
+
+#pane-Dashboard .table thead th {
+  color: var(--text-strong) !important;
+  border-color: var(--border) !important;
+}
+
+#pane-Dashboard .table td,
+#pane-Dashboard .table th {
+  border-color: var(--border) !important;
+}
+
+#pane-Dashboard .table tbody tr {
+  background: transparent !important;
+}
+
+#pane-Dashboard .table tbody tr:hover {
+  background: rgba(var(--accent-rgb), .06) !important;
+}
+
+/* =========================================
+   ESTILOS PARA BLOQUES DE PENSAMIENTO (<thinking>)
+   ========================================= */
+
+/* Modo Claro (Por defecto): Fondo oscuro, texto blanco */
+.thinking-block {
+  background-color: #2d3748; /* Gris oscuro */
+  color: #ffffff !important; /* Texto blanco */
+  border-left: 4px solid #4a5568;
+  padding: 12px 16px;
+  border-radius: 6px;
+  margin: 12px 0;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  white-space: pre-wrap; /* Respeta los saltos de línea internos */
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Modo Oscuro: Fondo claro, texto oscuro */
+/* Ajusta '.dark-mode', '[data-theme="dark"]' o '.dark' según la clase que use tu proyecto */
+body.dark-mode .thinking-block,
+body[data-theme="dark"] .thinking-block,
+.dark .thinking-block {
+  background-color: #e2e8f0; /* Gris claro */
+  color: #1a202c; /* Texto oscuro */
+  border-left-color: #cbd5e0;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+/* Estilo para el icono de cerebro (ya usas FontAwesome) */
+.thinking-block i {
+  margin-right: 6px;
+  opacity: 0.8;
+}
+
 

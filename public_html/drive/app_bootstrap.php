@@ -2,30 +2,40 @@
 declare(strict_types=1);
 
 /**
- * app_bootstrap.php
+ * Punto único de arranque de ArcadeCloud Drive.
  *
- * Punto único de arranque para public_html/s3-servicios-aws.
+ * Estructura esperada:
  *
- * Desde aquí se cargan los recursos privados ubicados fuera de public_html:
- * - vendor/autoload.php
- * - Config-s3.php
- * - db.php
+ * raíz_privada/
+ * ├── Config-s3.php
+ * ├── db.php
+ * └── public_html/
+ *     ├── vendor/
+ *     └── drive/
+ *         └── app_bootstrap.php
  */
 
 if (defined('APP_BOOTSTRAP_LOADED')) {
     return;
 }
 
-// s3-servicios-aws -> public_html -> raíz privada del proyecto.
-$APP_ROOT = realpath(dirname(__DIR__, 2));
+// Una carpeta atrás desde drive/: public_html/.
+$PUBLIC_ROOT = realpath(dirname(__DIR__));
 
-if ($APP_ROOT === false) {
+// Dos carpetas atrás desde drive/: raíz privada del proyecto.
+$PRIVATE_ROOT = realpath(dirname(__DIR__, 2));
+
+if ($PUBLIC_ROOT === false) {
+    throw new RuntimeException('No se pudo resolver public_html.');
+}
+
+if ($PRIVATE_ROOT === false) {
     throw new RuntimeException('No se pudo resolver la raíz privada de la aplicación.');
 }
 
-$autoloadPath = $APP_ROOT . '/vendor/autoload.php';
-$configPath   = $APP_ROOT . '/Config-s3.php';
-$dbPath       = $APP_ROOT . '/db.php';
+$autoloadPath = $PUBLIC_ROOT . '/vendor/autoload.php';
+$configPath   = $PRIVATE_ROOT . '/Config-s3.php';
+$dbPath       = $PRIVATE_ROOT . '/db.php';
 
 foreach ([
     'Composer'      => $autoloadPath,
@@ -37,7 +47,6 @@ foreach ([
     }
 }
 
-// Evita consultas del SDK a IMDS cuando el servidor no usa credenciales de rol EC2.
 putenv('AWS_EC2_METADATA_DISABLED=true');
 
 require_once $autoloadPath;

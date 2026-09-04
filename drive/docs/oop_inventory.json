@@ -1,0 +1,2742 @@
+{
+  "summary": {
+    "php_total": 107,
+    "php_class_modules": 30,
+    "php_needs_migration": 42,
+    "js_total": 27,
+    "js_class_modules": 0,
+    "js_needs_migration": 27
+  },
+  "php": [
+    {
+      "path": "drive/S3Manager.php",
+      "lines": 2052,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": true,
+      "superglobals": [
+        "GET",
+        "POST",
+        "SERVER",
+        "SESSION"
+      ],
+      "db": true,
+      "s3": true,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/actualizar_ruta.php",
+      "lines": 28,
+      "kind": "thin endpoint",
+      "classes": 0,
+      "functions": [],
+      "session": true,
+      "superglobals": [
+        "POST",
+        "SESSION"
+      ],
+      "db": false,
+      "s3": false,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/api/upload.php",
+      "lines": 73,
+      "kind": "thin endpoint",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [
+        "FILES",
+        "GET",
+        "POST",
+        "REQUEST"
+      ],
+      "db": false,
+      "s3": false,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/api.php",
+      "lines": 61,
+      "kind": "thin endpoint",
+      "classes": 0,
+      "functions": [],
+      "session": true,
+      "superglobals": [
+        "GET",
+        "POST",
+        "SESSION"
+      ],
+      "db": false,
+      "s3": false,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/app_bootstrap.php",
+      "lines": 73,
+      "kind": "procedural endpoint",
+      "classes": 0,
+      "functions": [
+        "drive_app"
+      ],
+      "session": false,
+      "superglobals": [],
+      "db": true,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": [
+        "global functions: drive_app",
+        "DB in endpoint"
+      ]
+    },
+    {
+      "path": "drive/aws.php",
+      "lines": 392,
+      "kind": "view/entrypoint",
+      "classes": 0,
+      "functions": [],
+      "session": true,
+      "superglobals": [
+        "POST",
+        "SERVER",
+        "SESSION"
+      ],
+      "db": false,
+      "s3": false,
+      "bootstrap": true,
+      "html": true,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/bloque_archivos.php",
+      "lines": 858,
+      "kind": "view/entrypoint",
+      "classes": 0,
+      "functions": [
+        "initTooltipsBloqueArchivos",
+        "initContextoBloqueArchivos",
+        "getLimiteActualPaginacion",
+        "manejarClickPaginacionBloqueArchivos",
+        "initPaginacionBloqueArchivos",
+        "initLoaderBloqueArchivos",
+        "getSeleccionadosBloqueArchivos"
+      ],
+      "session": true,
+      "superglobals": [
+        "GET",
+        "SESSION"
+      ],
+      "db": false,
+      "s3": false,
+      "bootstrap": true,
+      "html": true,
+      "namespace": false,
+      "issues": [
+        "global functions: initTooltipsBloqueArchivos, initContextoBloqueArchivos, getLimiteActualPaginacion, manejarClickPaginacionBloqueArchivos, initPaginacionBloqueArchivos, initLoaderBloqueArchivos, getSeleccionadosBloqueArchivos"
+      ]
+    },
+    {
+      "path": "drive/bloque_carpetas.php",
+      "lines": 69,
+      "kind": "view/entrypoint",
+      "classes": 0,
+      "functions": [],
+      "session": true,
+      "superglobals": [
+        "GET",
+        "SESSION"
+      ],
+      "db": false,
+      "s3": false,
+      "bootstrap": true,
+      "html": true,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/bloque_footer.php",
+      "lines": 32,
+      "kind": "view/entrypoint",
+      "classes": 0,
+      "functions": [],
+      "session": true,
+      "superglobals": [
+        "SESSION"
+      ],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": true,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/buscar_archivo.php",
+      "lines": 51,
+      "kind": "thin endpoint",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [
+        "POST",
+        "SERVER"
+      ],
+      "db": false,
+      "s3": false,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/comprehend_archivo.php",
+      "lines": 47,
+      "kind": "thin endpoint",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [
+        "POST",
+        "SERVER"
+      ],
+      "db": false,
+      "s3": false,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/costos_aws.php",
+      "lines": 260,
+      "kind": "endpoint with logic",
+      "classes": 0,
+      "functions": [],
+      "session": true,
+      "superglobals": [
+        "SESSION"
+      ],
+      "db": false,
+      "s3": false,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": [
+        "session in endpoint"
+      ]
+    },
+    {
+      "path": "drive/crear_carpeta.php",
+      "lines": 44,
+      "kind": "thin endpoint",
+      "classes": 0,
+      "functions": [],
+      "session": true,
+      "superglobals": [
+        "POST",
+        "SERVER",
+        "SESSION"
+      ],
+      "db": false,
+      "s3": true,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/delete_multiple.php",
+      "lines": 60,
+      "kind": "thin endpoint",
+      "classes": 0,
+      "functions": [],
+      "session": true,
+      "superglobals": [
+        "POST",
+        "SERVER"
+      ],
+      "db": true,
+      "s3": true,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/descargar.php",
+      "lines": 127,
+      "kind": "endpoint with logic",
+      "classes": 0,
+      "functions": [],
+      "session": true,
+      "superglobals": [
+        "GET",
+        "SERVER",
+        "SESSION"
+      ],
+      "db": true,
+      "s3": true,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": [
+        "DB in endpoint",
+        "AWS/S3 in endpoint",
+        "session in endpoint"
+      ]
+    },
+    {
+      "path": "drive/descargar_archivo.php",
+      "lines": 155,
+      "kind": "view/entrypoint",
+      "classes": 0,
+      "functions": [
+        "security_resolve_user_id",
+        "security_normalize_key",
+        "security_lookup_file",
+        "security_session_is_unlocked",
+        "render_blocked_page"
+      ],
+      "session": true,
+      "superglobals": [
+        "GET",
+        "SESSION"
+      ],
+      "db": true,
+      "s3": true,
+      "bootstrap": true,
+      "html": true,
+      "namespace": false,
+      "issues": [
+        "global functions: security_resolve_user_id, security_normalize_key, security_lookup_file, security_session_is_unlocked, render_blocked_page"
+      ]
+    },
+    {
+      "path": "drive/descargar_zip.php",
+      "lines": 154,
+      "kind": "endpoint with logic",
+      "classes": 0,
+      "functions": [],
+      "session": true,
+      "superglobals": [
+        "POST",
+        "SERVER",
+        "SESSION"
+      ],
+      "db": true,
+      "s3": true,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": [
+        "DB in endpoint",
+        "AWS/S3 in endpoint",
+        "session in endpoint"
+      ]
+    },
+    {
+      "path": "drive/download_multiple.php",
+      "lines": 33,
+      "kind": "thin endpoint",
+      "classes": 0,
+      "functions": [],
+      "session": true,
+      "superglobals": [
+        "POST"
+      ],
+      "db": true,
+      "s3": true,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/ec2-cron-old.php",
+      "lines": 404,
+      "kind": "procedural endpoint",
+      "classes": 0,
+      "functions": [
+        "logLine",
+        "stateName",
+        "isRunningLike",
+        "isStoppedLike",
+        "isPriority",
+        "secondaryMustBeOffNow",
+        "shouldForceNow",
+        "listAllInstances"
+      ],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": [
+        "global functions: logLine, stateName, isRunningLike, isStoppedLike, isPriority, secondaryMustBeOffNow, shouldForceNow, listAllInstances"
+      ]
+    },
+    {
+      "path": "drive/ec2-cron.php",
+      "lines": 405,
+      "kind": "procedural endpoint",
+      "classes": 0,
+      "functions": [
+        "logLine",
+        "stateName",
+        "isRunningLike",
+        "isStoppedLike",
+        "isPriority",
+        "secondaryMustBeOffNow",
+        "shouldForceNow",
+        "listAllInstances"
+      ],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": [
+        "global functions: logLine, stateName, isRunningLike, isStoppedLike, isPriority, secondaryMustBeOffNow, shouldForceNow, listAllInstances"
+      ]
+    },
+    {
+      "path": "drive/ec2-db-stop.php",
+      "lines": 321,
+      "kind": "procedural endpoint",
+      "classes": 0,
+      "functions": [
+        "logLine",
+        "outLine",
+        "dbInstanceStatus",
+        "dbClusterStatus",
+        "isDatabaseStoppable",
+        "listAllDbInstances",
+        "listAllDbClusters",
+        "findDatabaseTarget",
+        "databaseTargetStatus",
+        "stopDatabaseTarget"
+      ],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": [
+        "global functions: logLine, outLine, dbInstanceStatus, dbClusterStatus, isDatabaseStoppable, listAllDbInstances, listAllDbClusters, findDatabaseTarget"
+      ]
+    },
+    {
+      "path": "drive/ec2-db.php",
+      "lines": 676,
+      "kind": "procedural endpoint",
+      "classes": 0,
+      "functions": [
+        "logLine",
+        "stateName",
+        "isRunningLike",
+        "isStoppedLike",
+        "isPriority",
+        "secondaryMustBeOffNow",
+        "mayBeOnNow",
+        "shouldForceNow",
+        "dbInstanceStatus",
+        "dbClusterStatus",
+        "isDatabaseStartable",
+        "isDatabaseStoppable",
+        "listAllDbInstances",
+        "listAllDbClusters",
+        "findDatabaseTarget",
+        "startDatabaseTarget",
+        "stopDatabaseTarget",
+        "databaseTargetStatus",
+        "listAllInstances"
+      ],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": [
+        "global functions: logLine, stateName, isRunningLike, isStoppedLike, isPriority, secondaryMustBeOffNow, mayBeOnNow, shouldForceNow"
+      ]
+    },
+    {
+      "path": "drive/ec2.php",
+      "lines": 1233,
+      "kind": "class/module",
+      "classes": 2,
+      "functions": [
+        "getTag",
+        "e",
+        "is_protected_id",
+        "is_manual_database_id",
+        "e",
+        "is_protected_id",
+        "is_manual_database_id",
+        "database_status_from_target",
+        "is_database_startable",
+        "is_database_stoppable",
+        "database_state_class",
+        "normalize_database_target",
+        "ip_to_ec2_dns_compute1",
+        "default_rdp_content",
+        "set_rdp_full_address"
+      ],
+      "session": true,
+      "superglobals": [
+        "GET",
+        "POST",
+        "SERVER",
+        "SESSION"
+      ],
+      "db": false,
+      "s3": false,
+      "bootstrap": true,
+      "html": true,
+      "namespace": false,
+      "issues": [
+        "global functions: getTag, e, is_protected_id, is_manual_database_id, e, is_protected_id, is_manual_database_id, database_status_from_target"
+      ]
+    },
+    {
+      "path": "drive/ec22.php",
+      "lines": 1371,
+      "kind": "class/module",
+      "classes": 2,
+      "functions": [
+        "actualizar_estado_servidor_palabra",
+        "sincronizar_estado_palabra",
+        "getTag",
+        "e",
+        "is_protected_id",
+        "is_manual_database_id",
+        "e",
+        "is_protected_id",
+        "is_manual_database_id",
+        "database_status_from_target",
+        "is_database_startable",
+        "is_database_stoppable",
+        "database_state_class",
+        "normalize_database_target",
+        "ip_to_ec2_dns_compute1",
+        "default_rdp_content",
+        "set_rdp_full_address"
+      ],
+      "session": true,
+      "superglobals": [
+        "GET",
+        "POST",
+        "SESSION"
+      ],
+      "db": false,
+      "s3": false,
+      "bootstrap": true,
+      "html": true,
+      "namespace": false,
+      "issues": [
+        "global functions: actualizar_estado_servidor_palabra, sincronizar_estado_palabra, getTag, e, is_protected_id, is_manual_database_id, e, is_protected_id"
+      ]
+    },
+    {
+      "path": "drive/editor.php",
+      "lines": 485,
+      "kind": "view/entrypoint",
+      "classes": 0,
+      "functions": [
+        "detectarLenguaje",
+        "setStatus",
+        "limpiarMarcadores",
+        "marcarGuardado",
+        "actualizarBotonValidar",
+        "aplicarLenguaje",
+        "poblarLenguajes",
+        "deshacer",
+        "rehacer",
+        "buscar",
+        "reemplazar",
+        "irALinea",
+        "toggleWordWrap"
+      ],
+      "session": false,
+      "superglobals": [
+        "GET"
+      ],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": true,
+      "namespace": false,
+      "issues": [
+        "global functions: detectarLenguaje, setStatus, limpiarMarcadores, marcarGuardado, actualizarBotonValidar, aplicarLenguaje, poblarLenguajes, deshacer"
+      ]
+    },
+    {
+      "path": "drive/eliminar_archivo.php",
+      "lines": 53,
+      "kind": "thin endpoint",
+      "classes": 0,
+      "functions": [],
+      "session": true,
+      "superglobals": [
+        "POST",
+        "SERVER"
+      ],
+      "db": true,
+      "s3": true,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/eliminar_carpeta.php",
+      "lines": 36,
+      "kind": "thin endpoint",
+      "classes": 0,
+      "functions": [],
+      "session": true,
+      "superglobals": [
+        "POST",
+        "SERVER"
+      ],
+      "db": false,
+      "s3": true,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/encriptar_archivo.php",
+      "lines": 102,
+      "kind": "endpoint with logic",
+      "classes": 0,
+      "functions": [],
+      "session": true,
+      "superglobals": [
+        "SERVER",
+        "SESSION"
+      ],
+      "db": true,
+      "s3": true,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": [
+        "DB in endpoint",
+        "AWS/S3 in endpoint",
+        "session in endpoint"
+      ]
+    },
+    {
+      "path": "drive/firma.php",
+      "lines": 108,
+      "kind": "endpoint with logic",
+      "classes": 0,
+      "functions": [],
+      "session": true,
+      "superglobals": [
+        "GET",
+        "SERVER",
+        "SESSION"
+      ],
+      "db": true,
+      "s3": true,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": [
+        "DB in endpoint",
+        "AWS/S3 in endpoint",
+        "session in endpoint"
+      ]
+    },
+    {
+      "path": "drive/firmado.php",
+      "lines": 83,
+      "kind": "thin endpoint",
+      "classes": 0,
+      "functions": [],
+      "session": true,
+      "superglobals": [
+        "GET",
+        "SERVER",
+        "SESSION"
+      ],
+      "db": true,
+      "s3": true,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/firmadowww.php",
+      "lines": 438,
+      "kind": "view/entrypoint",
+      "classes": 0,
+      "functions": [
+        "respond",
+        "driveIdFromUrl",
+        "driveNormalizeToUc",
+        "driveConfirmedUrlFromHtml",
+        "isHtmlContentType",
+        "http_get_with_headers",
+        "http_head_or_null",
+        "extraerFilenameDeContentDisposition",
+        "deducirNombre",
+        "mimeToExtension"
+      ],
+      "session": true,
+      "superglobals": [
+        "GET",
+        "POST",
+        "SERVER",
+        "SESSION"
+      ],
+      "db": true,
+      "s3": true,
+      "bootstrap": true,
+      "html": true,
+      "namespace": false,
+      "issues": [
+        "global functions: respond, driveIdFromUrl, driveNormalizeToUc, driveConfirmedUrlFromHtml, isHtmlContentType, http_get_with_headers, http_head_or_null, extraerFilenameDeContentDisposition"
+      ]
+    },
+    {
+      "path": "drive/fixfiles.php",
+      "lines": 759,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": true,
+      "s3": true,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/generar_galeria.php",
+      "lines": 79,
+      "kind": "thin endpoint",
+      "classes": 0,
+      "functions": [],
+      "session": true,
+      "superglobals": [
+        "GET",
+        "SESSION"
+      ],
+      "db": true,
+      "s3": false,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/generar_token.php",
+      "lines": 108,
+      "kind": "procedural endpoint",
+      "classes": 0,
+      "functions": [
+        "jserr"
+      ],
+      "session": false,
+      "superglobals": [
+        "POST",
+        "SERVER"
+      ],
+      "db": false,
+      "s3": false,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": [
+        "global functions: jserr"
+      ]
+    },
+    {
+      "path": "drive/get_playlist.php",
+      "lines": 89,
+      "kind": "thin endpoint",
+      "classes": 0,
+      "functions": [],
+      "session": true,
+      "superglobals": [
+        "GET",
+        "SESSION"
+      ],
+      "db": true,
+      "s3": true,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/guardar_texto.php",
+      "lines": 51,
+      "kind": "thin endpoint",
+      "classes": 0,
+      "functions": [],
+      "session": true,
+      "superglobals": [
+        "POST",
+        "SERVER"
+      ],
+      "db": false,
+      "s3": true,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/index.php",
+      "lines": 87,
+      "kind": "view/entrypoint",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": true,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/leer_texto.php",
+      "lines": 42,
+      "kind": "thin endpoint",
+      "classes": 0,
+      "functions": [],
+      "session": true,
+      "superglobals": [
+        "GET"
+      ],
+      "db": false,
+      "s3": true,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/listar_archivos.php",
+      "lines": 35,
+      "kind": "view/entrypoint",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [
+        "GET"
+      ],
+      "db": false,
+      "s3": true,
+      "bootstrap": true,
+      "html": true,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/listar_carpetas.php",
+      "lines": 27,
+      "kind": "thin endpoint",
+      "classes": 0,
+      "functions": [],
+      "session": true,
+      "superglobals": [],
+      "db": false,
+      "s3": true,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/login.php",
+      "lines": 92,
+      "kind": "view/entrypoint",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": true,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/logout.php",
+      "lines": 6,
+      "kind": "procedural endpoint",
+      "classes": 0,
+      "functions": [],
+      "session": true,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": [
+        "session in endpoint"
+      ]
+    },
+    {
+      "path": "drive/migrar_nombres_s3.php",
+      "lines": 58,
+      "kind": "thin endpoint",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": true,
+      "s3": true,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/move_multiple.php",
+      "lines": 68,
+      "kind": "thin endpoint",
+      "classes": 0,
+      "functions": [],
+      "session": true,
+      "superglobals": [
+        "POST",
+        "SERVER"
+      ],
+      "db": true,
+      "s3": true,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/mover_archivo.php",
+      "lines": 114,
+      "kind": "endpoint with logic",
+      "classes": 0,
+      "functions": [],
+      "session": true,
+      "superglobals": [
+        "POST",
+        "SERVER"
+      ],
+      "db": true,
+      "s3": true,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": [
+        "DB in endpoint",
+        "AWS/S3 in endpoint",
+        "session in endpoint"
+      ]
+    },
+    {
+      "path": "drive/mover_carpeta.php",
+      "lines": 42,
+      "kind": "thin endpoint",
+      "classes": 0,
+      "functions": [],
+      "session": true,
+      "superglobals": [
+        "POST",
+        "SERVER"
+      ],
+      "db": false,
+      "s3": true,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/polly_cargar_texto.php",
+      "lines": 53,
+      "kind": "thin endpoint",
+      "classes": 0,
+      "functions": [],
+      "session": true,
+      "superglobals": [
+        "POST",
+        "SESSION"
+      ],
+      "db": false,
+      "s3": true,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/polly_list_voices.php",
+      "lines": 48,
+      "kind": "thin endpoint",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [
+        "GET"
+      ],
+      "db": false,
+      "s3": false,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/polly_tts.php",
+      "lines": 376,
+      "kind": "endpoint with logic",
+      "classes": 0,
+      "functions": [],
+      "session": true,
+      "superglobals": [
+        "POST",
+        "SESSION"
+      ],
+      "db": true,
+      "s3": true,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": [
+        "DB in endpoint",
+        "AWS/S3 in endpoint",
+        "session in endpoint"
+      ]
+    },
+    {
+      "path": "drive/procesar_textract.php",
+      "lines": 74,
+      "kind": "thin endpoint",
+      "classes": 0,
+      "functions": [],
+      "session": true,
+      "superglobals": [
+        "POST"
+      ],
+      "db": false,
+      "s3": true,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/psesion.php",
+      "lines": 112,
+      "kind": "endpoint with logic",
+      "classes": 0,
+      "functions": [],
+      "session": true,
+      "superglobals": [
+        "POST",
+        "SERVER",
+        "SESSION"
+      ],
+      "db": true,
+      "s3": false,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": [
+        "DB in endpoint",
+        "session in endpoint"
+      ]
+    },
+    {
+      "path": "drive/rekognition_labels.php",
+      "lines": 131,
+      "kind": "endpoint with logic",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [
+        "POST"
+      ],
+      "db": true,
+      "s3": false,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": [
+        "DB in endpoint"
+      ]
+    },
+    {
+      "path": "drive/relock_file.php",
+      "lines": 288,
+      "kind": "procedural endpoint",
+      "classes": 0,
+      "functions": [
+        "json_out",
+        "resolve_relock_user_id",
+        "normalize_relock_key",
+        "split_relock_key",
+        "clear_relock_session_keys"
+      ],
+      "session": true,
+      "superglobals": [
+        "POST",
+        "SESSION"
+      ],
+      "db": true,
+      "s3": false,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": [
+        "global functions: json_out, resolve_relock_user_id, normalize_relock_key, split_relock_key, clear_relock_session_keys",
+        "DB in endpoint",
+        "session in endpoint"
+      ]
+    },
+    {
+      "path": "drive/renombrar_archivo.php",
+      "lines": 52,
+      "kind": "thin endpoint",
+      "classes": 0,
+      "functions": [],
+      "session": true,
+      "superglobals": [
+        "POST",
+        "SERVER"
+      ],
+      "db": true,
+      "s3": true,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/renombrar_carpeta.php",
+      "lines": 42,
+      "kind": "thin endpoint",
+      "classes": 0,
+      "functions": [],
+      "session": true,
+      "superglobals": [
+        "POST",
+        "SERVER"
+      ],
+      "db": false,
+      "s3": true,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/s3.php",
+      "lines": 1983,
+      "kind": "view/entrypoint",
+      "classes": 0,
+      "functions": [],
+      "session": true,
+      "superglobals": [
+        "GET",
+        "SESSION"
+      ],
+      "db": false,
+      "s3": false,
+      "bootstrap": true,
+      "html": true,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/set_file_security.php",
+      "lines": 359,
+      "kind": "procedural endpoint",
+      "classes": 0,
+      "functions": [
+        "json_out",
+        "normalize_key",
+        "split_key_parts",
+        "clear_secure_session_keys"
+      ],
+      "session": true,
+      "superglobals": [
+        "POST",
+        "SESSION"
+      ],
+      "db": true,
+      "s3": false,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": [
+        "global functions: json_out, normalize_key, split_key_parts, clear_secure_session_keys",
+        "DB in endpoint",
+        "session in endpoint"
+      ]
+    },
+    {
+      "path": "drive/src/Application/DrivePageService.php",
+      "lines": 40,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Application/DrivePageViewModel.php",
+      "lines": 18,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Application/FileListService.php",
+      "lines": 155,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": true,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Application/FileSearchService.php",
+      "lines": 104,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": true,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Application/UploadDestinationService.php",
+      "lines": 56,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": true,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Aws/ComprehendFileService.php",
+      "lines": 223,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": true,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Aws/FileRecordLocator.php",
+      "lines": 75,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": true,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Core/DriveApplication.php",
+      "lines": 106,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": true,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Http/JsonResponse.php",
+      "lines": 27,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Media/ThumbnailService.php",
+      "lines": 380,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": true,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Security/SessionManager.php",
+      "lines": 40,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": true,
+      "superglobals": [
+        "SESSION"
+      ],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Storage/StorageUsageService.php",
+      "lines": 78,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": true,
+      "superglobals": [
+        "SESSION"
+      ],
+      "db": true,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Storage/UserStoragePath.php",
+      "lines": 50,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Upload/PublicMultipartUploadService.php",
+      "lines": 233,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/View/FileIconResolver.php",
+      "lines": 136,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/View/FileViewHelper.php",
+      "lines": 108,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/View/FolderTreeRenderer.php",
+      "lines": 123,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": true,
+      "s3": false,
+      "bootstrap": false,
+      "html": true,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/storage_usage.php",
+      "lines": 24,
+      "kind": "thin endpoint",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [
+        "GET"
+      ],
+      "db": false,
+      "s3": false,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/subir_archivo.php",
+      "lines": 140,
+      "kind": "endpoint with logic",
+      "classes": 0,
+      "functions": [],
+      "session": true,
+      "superglobals": [
+        "FILES",
+        "SERVER",
+        "SESSION"
+      ],
+      "db": true,
+      "s3": true,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": [
+        "DB in endpoint",
+        "AWS/S3 in endpoint",
+        "session in endpoint"
+      ]
+    },
+    {
+      "path": "drive/subir_publico.php",
+      "lines": 157,
+      "kind": "view/entrypoint",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [
+        "GET",
+        "POST"
+      ],
+      "db": true,
+      "s3": true,
+      "bootstrap": true,
+      "html": true,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/sync_s3_to_db.php",
+      "lines": 379,
+      "kind": "procedural endpoint",
+      "classes": 0,
+      "functions": [
+        "db_exec",
+        "db_fetch_one",
+        "db_fetch_all",
+        "db_like_escape",
+        "add_folder",
+        "upsert_folder",
+        "upsert_file"
+      ],
+      "session": true,
+      "superglobals": [
+        "SESSION"
+      ],
+      "db": true,
+      "s3": true,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": [
+        "global functions: db_exec, db_fetch_one, db_fetch_all, db_like_escape, add_folder, upsert_folder, upsert_file",
+        "DB in endpoint",
+        "AWS/S3 in endpoint",
+        "session in endpoint"
+      ]
+    },
+    {
+      "path": "drive/sync_status.php",
+      "lines": 91,
+      "kind": "view/entrypoint",
+      "classes": 0,
+      "functions": [
+        "qscalar"
+      ],
+      "session": true,
+      "superglobals": [
+        "GET",
+        "SESSION"
+      ],
+      "db": true,
+      "s3": false,
+      "bootstrap": true,
+      "html": true,
+      "namespace": false,
+      "issues": [
+        "global functions: qscalar"
+      ]
+    },
+    {
+      "path": "drive/thumb.php",
+      "lines": 78,
+      "kind": "procedural endpoint",
+      "classes": 0,
+      "functions": [
+        "thumbnailFallback"
+      ],
+      "session": true,
+      "superglobals": [
+        "GET",
+        "SERVER",
+        "SESSION"
+      ],
+      "db": false,
+      "s3": false,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": [
+        "global functions: thumbnailFallback",
+        "session in endpoint"
+      ]
+    },
+    {
+      "path": "drive/token_audio.php",
+      "lines": 149,
+      "kind": "view/entrypoint",
+      "classes": 0,
+      "functions": [
+        "presigned_url",
+        "fail_html"
+      ],
+      "session": false,
+      "superglobals": [
+        "GET",
+        "POST",
+        "SERVER"
+      ],
+      "db": true,
+      "s3": true,
+      "bootstrap": true,
+      "html": true,
+      "namespace": false,
+      "issues": [
+        "global functions: presigned_url, fail_html"
+      ]
+    },
+    {
+      "path": "drive/token_texto.php",
+      "lines": 260,
+      "kind": "view/entrypoint",
+      "classes": 0,
+      "functions": [
+        "fail_html",
+        "presigned_url",
+        "is_text_ext",
+        "is_image_ext"
+      ],
+      "session": false,
+      "superglobals": [
+        "GET",
+        "POST",
+        "SERVER"
+      ],
+      "db": true,
+      "s3": true,
+      "bootstrap": true,
+      "html": true,
+      "namespace": false,
+      "issues": [
+        "global functions: fail_html, presigned_url, is_text_ext, is_image_ext"
+      ]
+    },
+    {
+      "path": "drive/token_video.php",
+      "lines": 149,
+      "kind": "view/entrypoint",
+      "classes": 0,
+      "functions": [
+        "presigned_url",
+        "fail_html"
+      ],
+      "session": false,
+      "superglobals": [
+        "GET",
+        "POST",
+        "SERVER"
+      ],
+      "db": true,
+      "s3": true,
+      "bootstrap": true,
+      "html": true,
+      "namespace": false,
+      "issues": [
+        "global functions: presigned_url, fail_html"
+      ]
+    },
+    {
+      "path": "drive/traducir_archivo.php",
+      "lines": 113,
+      "kind": "endpoint with logic",
+      "classes": 0,
+      "functions": [],
+      "session": true,
+      "superglobals": [
+        "POST"
+      ],
+      "db": false,
+      "s3": true,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": [
+        "AWS/S3 in endpoint",
+        "session in endpoint"
+      ]
+    },
+    {
+      "path": "drive/transcribir_estado.php",
+      "lines": 458,
+      "kind": "procedural endpoint",
+      "classes": 0,
+      "functions": [
+        "tx_json_response",
+        "tx_get_param",
+        "tx_fetch_remote_binary",
+        "tx_normalize_path",
+        "tx_find_file_row",
+        "tx_upsert_generated_file",
+        "tx_parse_s3_location_from_uri",
+        "tx_fetch_remote_binary_smart",
+        "tx_s3_uri_to_key",
+        "tx_store_generated_variant"
+      ],
+      "session": true,
+      "superglobals": [
+        "GET",
+        "POST",
+        "SESSION"
+      ],
+      "db": true,
+      "s3": true,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": [
+        "global functions: tx_json_response, tx_get_param, tx_fetch_remote_binary, tx_normalize_path, tx_find_file_row, tx_upsert_generated_file, tx_parse_s3_location_from_uri, tx_fetch_remote_binary_smart",
+        "DB in endpoint",
+        "AWS/S3 in endpoint",
+        "session in endpoint"
+      ]
+    },
+    {
+      "path": "drive/transcribir_iniciar.php",
+      "lines": 355,
+      "kind": "procedural endpoint",
+      "classes": 0,
+      "functions": [
+        "tx_json_error",
+        "tx_post_bool",
+        "tx_post_array",
+        "tx_sanitize_job_name",
+        "tx_build_s3_uri",
+        "tx_normalize_path",
+        "tx_dirname_key",
+        "tx_find_source_file"
+      ],
+      "session": true,
+      "superglobals": [
+        "POST",
+        "SESSION"
+      ],
+      "db": true,
+      "s3": true,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": [
+        "global functions: tx_json_error, tx_post_bool, tx_post_array, tx_sanitize_job_name, tx_build_s3_uri, tx_normalize_path, tx_dirname_key, tx_find_source_file",
+        "DB in endpoint",
+        "AWS/S3 in endpoint",
+        "session in endpoint"
+      ]
+    },
+    {
+      "path": "drive/unlock_file.php",
+      "lines": 282,
+      "kind": "procedural endpoint",
+      "classes": 0,
+      "functions": [
+        "json_out",
+        "resolve_unlock_user_id",
+        "normalize_unlock_key",
+        "split_unlock_key",
+        "clear_unlock_session_keys"
+      ],
+      "session": true,
+      "superglobals": [
+        "POST",
+        "SESSION"
+      ],
+      "db": true,
+      "s3": false,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": [
+        "global functions: json_out, resolve_unlock_user_id, normalize_unlock_key, split_unlock_key, clear_unlock_session_keys",
+        "DB in endpoint",
+        "session in endpoint"
+      ]
+    },
+    {
+      "path": "drive/up-clean.php",
+      "lines": 60,
+      "kind": "thin endpoint",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": true,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/up-old.php",
+      "lines": 505,
+      "kind": "view/entrypoint",
+      "classes": 0,
+      "functions": [
+        "cfg_s3",
+        "cfg_bucket",
+        "signature",
+        "meta_path",
+        "save_meta",
+        "load_meta",
+        "list_parts_etags",
+        "handle_init",
+        "handle_sign",
+        "handle_complete",
+        "handle_resume"
+      ],
+      "session": false,
+      "superglobals": [
+        "POST"
+      ],
+      "db": false,
+      "s3": true,
+      "bootstrap": true,
+      "html": true,
+      "namespace": false,
+      "issues": [
+        "global functions: cfg_s3, cfg_bucket, signature, meta_path, save_meta, load_meta, list_parts_etags, handle_init"
+      ]
+    },
+    {
+      "path": "drive/up.php",
+      "lines": 327,
+      "kind": "view/entrypoint",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [
+        "FILES",
+        "POST"
+      ],
+      "db": false,
+      "s3": false,
+      "bootstrap": true,
+      "html": true,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/up2.php",
+      "lines": 581,
+      "kind": "view/entrypoint",
+      "classes": 0,
+      "functions": [
+        "cfg_s3",
+        "cfg_bucket",
+        "signature",
+        "meta_path",
+        "save_meta",
+        "load_meta",
+        "list_parts_etags",
+        "handle_init",
+        "handle_sign",
+        "handle_part",
+        "handle_complete",
+        "handle_resume"
+      ],
+      "session": false,
+      "superglobals": [
+        "FILES",
+        "POST"
+      ],
+      "db": false,
+      "s3": true,
+      "bootstrap": true,
+      "html": true,
+      "namespace": false,
+      "issues": [
+        "global functions: cfg_s3, cfg_bucket, signature, meta_path, save_meta, load_meta, list_parts_etags, handle_init"
+      ]
+    },
+    {
+      "path": "drive/upload/UploadFactory.php",
+      "lines": 31,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/upload/core/UploadResponse.php",
+      "lines": 15,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/upload/core/UploaderInterface.php",
+      "lines": 11,
+      "kind": "class/module",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/upload/drivers/Chunked15MBUploader.php",
+      "lines": 301,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [
+        "SERVER"
+      ],
+      "db": true,
+      "s3": true,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/upload/drivers/DropboxUploader.php",
+      "lines": 137,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [
+        "FILES",
+        "SERVER"
+      ],
+      "db": false,
+      "s3": true,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/upload/drivers/LocalPresignedPutUploader.php",
+      "lines": 152,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": true,
+      "superglobals": [
+        "SERVER",
+        "SESSION"
+      ],
+      "db": true,
+      "s3": true,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/upload/drivers/RemoteUrlUploader.php",
+      "lines": 232,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [
+        "SERVER"
+      ],
+      "db": true,
+      "s3": true,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/upload/repositories/FileS3Repository.php",
+      "lines": 86,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": true,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/upload/storage/UploadStateStore.php",
+      "lines": 51,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/upload.php",
+      "lines": 144,
+      "kind": "endpoint with logic",
+      "classes": 0,
+      "functions": [],
+      "session": true,
+      "superglobals": [
+        "FILES",
+        "POST",
+        "SERVER",
+        "SESSION"
+      ],
+      "db": true,
+      "s3": true,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": [
+        "DB in endpoint",
+        "AWS/S3 in endpoint",
+        "session in endpoint"
+      ]
+    },
+    {
+      "path": "drive/upload_audio_recording.php",
+      "lines": 91,
+      "kind": "thin endpoint",
+      "classes": 0,
+      "functions": [],
+      "session": true,
+      "superglobals": [
+        "FILES",
+        "POST",
+        "SERVER",
+        "SESSION"
+      ],
+      "db": false,
+      "s3": true,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/upload_publico.php",
+      "lines": 132,
+      "kind": "procedural endpoint",
+      "classes": 0,
+      "functions": [
+        "safeMeta"
+      ],
+      "session": true,
+      "superglobals": [
+        "FILES",
+        "GET",
+        "SERVER",
+        "SESSION"
+      ],
+      "db": true,
+      "s3": true,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": [
+        "global functions: safeMeta",
+        "DB in endpoint",
+        "AWS/S3 in endpoint",
+        "session in endpoint"
+      ]
+    },
+    {
+      "path": "drive/validar_php.php",
+      "lines": 129,
+      "kind": "procedural endpoint",
+      "classes": 0,
+      "functions": [
+        "responder"
+      ],
+      "session": false,
+      "superglobals": [
+        "POST",
+        "SERVER"
+      ],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": [
+        "global functions: responder"
+      ]
+    },
+    {
+      "path": "drive/ver.php",
+      "lines": 155,
+      "kind": "view/entrypoint",
+      "classes": 0,
+      "functions": [
+        "guessTipoPorExt"
+      ],
+      "session": false,
+      "superglobals": [
+        "GET"
+      ],
+      "db": false,
+      "s3": true,
+      "bootstrap": true,
+      "html": true,
+      "namespace": false,
+      "issues": [
+        "global functions: guessTipoPorExt"
+      ]
+    },
+    {
+      "path": "drive/ver_archivo.php",
+      "lines": 433,
+      "kind": "procedural endpoint",
+      "classes": 0,
+      "functions": [
+        "out_text",
+        "resolve_user_id",
+        "normalize_prefix_local",
+        "normalize_file_key_local",
+        "build_stored_file_key_local",
+        "security_lookup_file",
+        "is_secure_file",
+        "security_session_is_unlocked",
+        "parse_http_range",
+        "output_stream_body"
+      ],
+      "session": true,
+      "superglobals": [
+        "GET",
+        "SERVER",
+        "SESSION"
+      ],
+      "db": true,
+      "s3": true,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": [
+        "global functions: out_text, resolve_user_id, normalize_prefix_local, normalize_file_key_local, build_stored_file_key_local, security_lookup_file, is_secure_file, security_session_is_unlocked",
+        "DB in endpoint",
+        "AWS/S3 in endpoint",
+        "session in endpoint"
+      ]
+    },
+    {
+      "path": "drive/ver_pdf.php",
+      "lines": 44,
+      "kind": "thin endpoint",
+      "classes": 0,
+      "functions": [],
+      "session": true,
+      "superglobals": [
+        "GET"
+      ],
+      "db": false,
+      "s3": true,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    }
+  ],
+  "js": [
+    {
+      "path": "drive/js/actualizar-hora.js",
+      "lines": 13,
+      "kind": "procedural script",
+      "classes": [],
+      "functions": [
+        "actualizarHoraFooter"
+      ],
+      "window_assign": [],
+      "window_func": [],
+      "top_vars": [],
+      "iife": false,
+      "issues": [
+        "top-level functions: actualizarHoraFooter",
+        "no ES class"
+      ]
+    },
+    {
+      "path": "drive/js/archivos.js",
+      "lines": 2037,
+      "kind": "procedural script",
+      "classes": [],
+      "functions": [
+        "getBloqueArchivosContext",
+        "llenarModalRenombrarArchivo",
+        "ensureSecurityModal"
+      ],
+      "window_assign": [
+        "__archivosJSBound",
+        "__shareContext",
+        "abrirModalMover",
+        "abrirModalRenombrarArchivo",
+        "actualizarBloqueArchivos",
+        "actualizarBloqueCarpetas",
+        "actualizarBloqueFooter",
+        "cerrarModalCompartir",
+        "compartirArchivo",
+        "copiarEnlace",
+        "encriptarArchivo",
+        "escapeHtml",
+        "jQuery",
+        "resaltarArchivo",
+        "setFileSecurity",
+        "share_onDiasInput"
+      ],
+      "window_func": [
+        "abrirModalRenombrarArchivo",
+        "cerrarModalCompartir",
+        "setFileSecurity"
+      ],
+      "top_vars": [],
+      "iife": true,
+      "issues": [
+        "top-level functions: getBloqueArchivosContext, llenarModalRenombrarArchivo, ensureSecurityModal",
+        "window functions: abrirModalRenombrarArchivo, cerrarModalCompartir, setFileSecurity",
+        "no ES class"
+      ]
+    },
+    {
+      "path": "drive/js/audiovideo.js",
+      "lines": 595,
+      "kind": "encapsulated legacy module",
+      "classes": [],
+      "functions": [],
+      "window_assign": [
+        "__audioVideoJSBound",
+        "audioNext",
+        "audioPrev",
+        "audioStoppedByUser",
+        "currentVideoKey",
+        "playlistVideo",
+        "reproducirVideoDesde",
+        "videoIndex",
+        "videoNext",
+        "videoPlayPause",
+        "videoPrev",
+        "videoStoppedByUser",
+        "wavePlayPause"
+      ],
+      "window_func": [
+        "audioNext",
+        "audioPrev",
+        "reproducirVideoDesde",
+        "videoNext",
+        "videoPlayPause",
+        "videoPrev",
+        "wavePlayPause"
+      ],
+      "top_vars": [],
+      "iife": true,
+      "issues": [
+        "window functions: audioNext, audioPrev, reproducirVideoDesde, videoNext, videoPlayPause, videoPrev, wavePlayPause",
+        "no ES class"
+      ]
+    },
+    {
+      "path": "drive/js/aws-comprehend.js",
+      "lines": 120,
+      "kind": "encapsulated legacy module",
+      "classes": [],
+      "functions": [],
+      "window_assign": [],
+      "window_func": [],
+      "top_vars": [],
+      "iife": true,
+      "issues": [
+        "no ES class"
+      ]
+    },
+    {
+      "path": "drive/js/carpetas.js",
+      "lines": 1076,
+      "kind": "procedural script",
+      "classes": [],
+      "functions": [
+        "toggleCampoNuevaCarpeta",
+        "initNuevaRutaSelect",
+        "bindModalEvents",
+        "bindDelegationGlobal"
+      ],
+      "window_assign": [
+        "__bindArbolCarpetas",
+        "actualizarBloqueCarpetas",
+        "actualizarBloqueFooter",
+        "bindBloqueArchivosSeguridad",
+        "cargarCarpetas",
+        "imagenesGaleria",
+        "rutaActual"
+      ],
+      "window_func": [
+        "actualizarBloqueCarpetas"
+      ],
+      "top_vars": [],
+      "iife": true,
+      "issues": [
+        "top-level functions: toggleCampoNuevaCarpeta, initNuevaRutaSelect, bindModalEvents, bindDelegationGlobal",
+        "window functions: actualizarBloqueCarpetas",
+        "no ES class"
+      ]
+    },
+    {
+      "path": "drive/js/descarga-multiple.js",
+      "lines": 91,
+      "kind": "encapsulated legacy module",
+      "classes": [],
+      "functions": [],
+      "window_assign": [],
+      "window_func": [],
+      "top_vars": [],
+      "iife": true,
+      "issues": [
+        "no ES class"
+      ]
+    },
+    {
+      "path": "drive/js/descarga-uno.js",
+      "lines": 87,
+      "kind": "encapsulated legacy module",
+      "classes": [],
+      "functions": [],
+      "window_assign": [],
+      "window_func": [],
+      "top_vars": [],
+      "iife": true,
+      "issues": [
+        "no ES class"
+      ]
+    },
+    {
+      "path": "drive/js/editar-txt.js",
+      "lines": 44,
+      "kind": "procedural script",
+      "classes": [],
+      "functions": [
+        "editarTxt"
+      ],
+      "window_assign": [],
+      "window_func": [],
+      "top_vars": [],
+      "iife": false,
+      "issues": [
+        "top-level functions: editarTxt",
+        "no ES class"
+      ]
+    },
+    {
+      "path": "drive/js/elimina-multiple.js",
+      "lines": 81,
+      "kind": "encapsulated legacy module",
+      "classes": [],
+      "functions": [],
+      "window_assign": [
+        "actualizarBloqueArchivos"
+      ],
+      "window_func": [],
+      "top_vars": [],
+      "iife": true,
+      "issues": [
+        "no ES class"
+      ]
+    },
+    {
+      "path": "drive/js/elimina-uno.js",
+      "lines": 98,
+      "kind": "encapsulated legacy module",
+      "classes": [],
+      "functions": [],
+      "window_assign": [
+        "actualizarBloqueArchivos"
+      ],
+      "window_func": [],
+      "top_vars": [],
+      "iife": true,
+      "issues": [
+        "no ES class"
+      ]
+    },
+    {
+      "path": "drive/js/estilo.js",
+      "lines": 117,
+      "kind": "procedural script",
+      "classes": [],
+      "functions": [],
+      "window_assign": [],
+      "window_func": [],
+      "top_vars": [],
+      "iife": false,
+      "issues": [
+        "no ES class"
+      ]
+    },
+    {
+      "path": "drive/js/filtros.js",
+      "lines": 74,
+      "kind": "procedural script",
+      "classes": [],
+      "functions": [],
+      "window_assign": [
+        "FiltroUI"
+      ],
+      "window_func": [],
+      "top_vars": [
+        "FiltroUI"
+      ],
+      "iife": false,
+      "issues": [
+        "top-level state: FiltroUI",
+        "no ES class"
+      ]
+    },
+    {
+      "path": "drive/js/imagenes.js",
+      "lines": 511,
+      "kind": "encapsulated legacy module",
+      "classes": [],
+      "functions": [],
+      "window_assign": [
+        "GaleriaGrid",
+        "GaleriaUnica",
+        "getGaleriaGridSize",
+        "imagenesGaleria",
+        "setGaleriaGridSize"
+      ],
+      "window_func": [
+        "getGaleriaGridSize",
+        "setGaleriaGridSize"
+      ],
+      "top_vars": [],
+      "iife": true,
+      "issues": [
+        "window functions: getGaleriaGridSize, setGaleriaGridSize",
+        "no ES class"
+      ]
+    },
+    {
+      "path": "drive/js/mediaFloating.js",
+      "lines": 14,
+      "kind": "procedural script",
+      "classes": [],
+      "functions": [],
+      "window_assign": [],
+      "window_func": [],
+      "top_vars": [],
+      "iife": false,
+      "issues": [
+        "no ES class"
+      ]
+    },
+    {
+      "path": "drive/js/obtenerFiltros.js",
+      "lines": 101,
+      "kind": "encapsulated legacy module",
+      "classes": [],
+      "functions": [],
+      "window_assign": [
+        "actualizarBloqueArchivos",
+        "actualizarBloqueCarpetas",
+        "obtenerFiltros"
+      ],
+      "window_func": [],
+      "top_vars": [],
+      "iife": true,
+      "issues": [
+        "no ES class"
+      ]
+    },
+    {
+      "path": "drive/js/pdf-pantalla-completa.js",
+      "lines": 22,
+      "kind": "procedural script",
+      "classes": [],
+      "functions": [
+        "pantallaCompletaPDF"
+      ],
+      "window_assign": [],
+      "window_func": [],
+      "top_vars": [],
+      "iife": false,
+      "issues": [
+        "top-level functions: pantallaCompletaPDF",
+        "no ES class"
+      ]
+    },
+    {
+      "path": "drive/js/polly.js",
+      "lines": 982,
+      "kind": "procedural script",
+      "classes": [],
+      "functions": [
+        "generarAudioPolly",
+        "pintarRekognition"
+      ],
+      "window_assign": [
+        "AWS_BUCKET_NAME",
+        "abrirModalGrabarAudio",
+        "abrirModalPolly",
+        "abrirModalRekognition",
+        "abrirModalTraducir",
+        "abrirModalTranscribir",
+        "copiarTextract",
+        "copiarTraducido",
+        "copiarTx",
+        "extraerTexto",
+        "mostrarResultadoTextract",
+        "transcribirAudio"
+      ],
+      "window_func": [
+        "abrirModalGrabarAudio",
+        "abrirModalPolly",
+        "abrirModalRekognition",
+        "abrirModalTraducir",
+        "abrirModalTranscribir",
+        "copiarTextract",
+        "copiarTraducido",
+        "copiarTx",
+        "extraerTexto",
+        "mostrarResultadoTextract",
+        "transcribirAudio"
+      ],
+      "top_vars": [
+        "URLS"
+      ],
+      "iife": true,
+      "issues": [
+        "top-level functions: generarAudioPolly, pintarRekognition",
+        "window functions: abrirModalGrabarAudio, abrirModalPolly, abrirModalRekognition, abrirModalTraducir, abrirModalTranscribir, copiarTextract, copiarTraducido, copiarTx",
+        "top-level state: URLS",
+        "no ES class"
+      ]
+    },
+    {
+      "path": "drive/js/recargarPagina.js",
+      "lines": 3,
+      "kind": "procedural script",
+      "classes": [],
+      "functions": [
+        "recargarPagina"
+      ],
+      "window_assign": [],
+      "window_func": [],
+      "top_vars": [],
+      "iife": false,
+      "issues": [
+        "top-level functions: recargarPagina",
+        "no ES class"
+      ]
+    },
+    {
+      "path": "drive/js/sincronizar.js",
+      "lines": 64,
+      "kind": "procedural script",
+      "classes": [],
+      "functions": [],
+      "window_assign": [
+        "actualizarBloqueArchivos",
+        "actualizarBloqueCarpetas",
+        "triggerSyncS3"
+      ],
+      "window_func": [],
+      "top_vars": [],
+      "iife": false,
+      "issues": [
+        "no ES class"
+      ]
+    },
+    {
+      "path": "drive/js/soportesMediaTypes.js",
+      "lines": 367,
+      "kind": "encapsulated legacy module",
+      "classes": [],
+      "functions": [],
+      "window_assign": [],
+      "window_func": [],
+      "top_vars": [],
+      "iife": true,
+      "issues": [
+        "no ES class"
+      ]
+    },
+    {
+      "path": "drive/js/storage-usage.js",
+      "lines": 28,
+      "kind": "procedural script",
+      "classes": [],
+      "functions": [],
+      "window_assign": [
+        "actualizarEspacioUsado"
+      ],
+      "window_func": [],
+      "top_vars": [],
+      "iife": false,
+      "issues": [
+        "no ES class"
+      ]
+    },
+    {
+      "path": "drive/js/subir-chunked.js",
+      "lines": 432,
+      "kind": "encapsulated legacy module",
+      "classes": [],
+      "functions": [],
+      "window_assign": [],
+      "window_func": [],
+      "top_vars": [],
+      "iife": true,
+      "issues": [
+        "no ES class"
+      ]
+    },
+    {
+      "path": "drive/js/subir-dropzone.js",
+      "lines": 47,
+      "kind": "procedural script",
+      "classes": [],
+      "functions": [],
+      "window_assign": [],
+      "window_func": [],
+      "top_vars": [
+        "API",
+        "drop"
+      ],
+      "iife": false,
+      "issues": [
+        "top-level state: API, drop",
+        "no ES class"
+      ]
+    },
+    {
+      "path": "drive/js/subir.js",
+      "lines": 315,
+      "kind": "encapsulated legacy module",
+      "classes": [],
+      "functions": [],
+      "window_assign": [],
+      "window_func": [],
+      "top_vars": [],
+      "iife": true,
+      "issues": [
+        "no ES class"
+      ]
+    },
+    {
+      "path": "drive/js/upload-destination.js",
+      "lines": 40,
+      "kind": "procedural script",
+      "classes": [],
+      "functions": [],
+      "window_assign": [
+        "DriveUploadDestination",
+        "actualizarBloqueArchivos"
+      ],
+      "window_func": [],
+      "top_vars": [],
+      "iife": false,
+      "issues": [
+        "no ES class"
+      ]
+    },
+    {
+      "path": "drive/js/ver-metadatos.js",
+      "lines": 52,
+      "kind": "procedural script",
+      "classes": [],
+      "functions": [],
+      "window_assign": [
+        "verMetadatos"
+      ],
+      "window_func": [
+        "verMetadatos"
+      ],
+      "top_vars": [],
+      "iife": false,
+      "issues": [
+        "window functions: verMetadatos",
+        "no ES class"
+      ]
+    },
+    {
+      "path": "drive/js/ver-pdf.js",
+      "lines": 88,
+      "kind": "encapsulated legacy module",
+      "classes": [],
+      "functions": [],
+      "window_assign": [
+        "jQuery",
+        "verPDF"
+      ],
+      "window_func": [],
+      "top_vars": [],
+      "iife": true,
+      "issues": [
+        "no ES class"
+      ]
+    }
+  ]
+}

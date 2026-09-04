@@ -1,0 +1,30 @@
+name: OOP synchronization
+on:
+  push:
+    branches: [main]
+    paths: ['.github/scripts/oop_sync.py','.github/workflows/oop-sync.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0}
+      - run: python3 .github/scripts/oop_sync.py
+      - name: Validate
+        run: |
+          for f in drive/src/Sync/SyncRepository.php drive/src/Sync/S3SyncService.php drive/src/View/SyncStatusRenderer.php drive/src/Http/Controller/SyncController.php drive/sync_s3_to_db.php drive/sync_status.php; do php -l "$f"; done
+          for f in sync_s3_to_db.php sync_status.php; do ! grep -q '\$_SESSION\|\$_GET\|\$_POST\|\$db_connection\|Config::getS3\|^function ' "drive/$f"; done
+          grep -q 'listObjectsV2' drive/src/Sync/S3SyncService.php
+          grep -q 'begin_transaction' drive/src/Sync/SyncRepository.php
+          grep -q 'rollback' drive/src/Sync/S3SyncService.php
+      - name: Commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add drive
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "Move S3 synchronization behind OOP services"
+          git push origin main

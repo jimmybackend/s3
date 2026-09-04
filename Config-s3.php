@@ -10,6 +10,8 @@ use Aws\BedrockRuntime\BedrockRuntimeClient;
 use Aws\Comprehend\ComprehendClient;
 use Aws\Rekognition\RekognitionClient;
 use Aws\Textract\TextractClient;
+use Aws\Polly\PollyClient;
+use Aws\Translate\TranslateClient;
 use Aws\S3\S3Client;
 
 final class Config
@@ -107,5 +109,25 @@ final class Config
                 'http'        => ['connect_timeout' => 15, 'timeout' => 120],
             ]);
         }
+        public static function getPolly(): PollyClient
+        {
+            return new PollyClient([
+                'region' => self::REGION,
+                'version' => 'latest',
+                'credentials' => self::getAwsCredentials(),
+                'http' => ['connect_timeout' => 15, 'timeout' => 120],
+            ]);
+        }
+
+        public static function getTranslate(): TranslateClient
+        {
+            return new TranslateClient([
+                'region' => self::REGION,
+                'version' => 'latest',
+                'credentials' => self::getAwsCredentials(),
+                'http' => ['connect_timeout' => 15, 'timeout' => 120],
+            ]);
+        }
+
 }
 

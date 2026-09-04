@@ -89,6 +89,11 @@ final class Request
         return array_key_exists($name, $this->post);
     }
 
+    public function allPost(): array
+    {
+        return $this->post;
+    }
+
     public function files(): array
     {
         return $this->files;

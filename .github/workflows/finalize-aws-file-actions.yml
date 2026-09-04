@@ -1,0 +1,62 @@
+name: Finalize AWS file actions
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/scripts/finalize_aws_file_actions.py'
+      - '.github/workflows/finalize-aws-file-actions.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  finalize:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Apply final fixes
+        run: python3 .github/scripts/finalize_aws_file_actions.py
+
+      - name: Validate syntax
+        run: |
+          php -l drive/bloque_archivos.php
+          php -l drive/comprehend_archivo.php
+          php -l drive/src/Aws/FileRecordLocator.php
+          node --check drive/js/imagenes.js
+
+      - name: Audit final behavior
+        run: |
+          set -euo pipefail
+          grep -Fq "$analizarExt = ['jpg','jpeg','png'];" drive/bloque_archivos.php
+          grep -Fq "$transcribeExt = ['amr','flac','m4a','mp3','mp4','ogg','webm','wav'];" drive/bloque_archivos.php
+          grep -Fq '$puedeTranscribir = in_array($ext, $transcribeExt, true);' drive/bloque_archivos.php
+          grep -Fq '<?php if ($puedeTranscribir && !$esVideo): ?>' drive/bloque_archivos.php
+          grep -Fq '<?php if ($puedeTranscribir && $esVideo): ?>' drive/bloque_archivos.php
+          test "$(grep -c "document.addEventListener('bloque-archivos:actualizado'" drive/js/imagenes.js)" -eq 1
+          ! grep -q "bloque-archivos:updated" drive/js/imagenes.js
+          ! grep -q "MutationObserver" drive/js/imagenes.js
+          ! grep -q "generar_galeria.php" drive/js/imagenes.js
+          grep -q 'var list = recolectarDesdeBufferODOM();' drive/js/imagenes.js
+          grep -q '$userId = $session->userId();' drive/comprehend_archivo.php
+          grep -q '$service->analyze($userId, $key)' drive/comprehend_archivo.php
+          grep -q 'js-lock-file' drive/bloque_archivos.php
+          grep -q 'js-unlock-file' drive/bloque_archivos.php
+          grep -q 'audio-player-pro' drive/bloque_archivos.php
+          grep -q 'js-inline-video-open' drive/bloque_archivos.php
+
+      - name: Commit fixes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add drive/bloque_archivos.php drive/comprehend_archivo.php drive/js/imagenes.js
+          if git diff --cached --quiet; then
+            echo "No changes"
+            exit 0
+          fi
+          git commit -m "Align AWS file actions with supported formats"
+          git push origin main

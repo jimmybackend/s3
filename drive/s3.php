@@ -58,6 +58,8 @@ $footerEspacioUsado = $storageUsage['formatted'];
 <html lang="es">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Cloud Drive</title>
 
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
@@ -65,7 +67,7 @@ $footerEspacioUsado = $storageUsage['formatted'];
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <link rel="icon" href="ellogo.png" type="image/x-icon">
 
-  <link rel="stylesheet" href="css/styles.css?v=20260904-1541">
+  <link rel="stylesheet" href="css/styles.css?v=20260904-responsive6">
 
   <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
@@ -75,14 +77,24 @@ $footerEspacioUsado = $storageUsage['formatted'];
 
 <body class="ui-theme theme-neon-green theme-dark vision-normal ascii-on">
 
-<nav class="navbar navbar-expand-lg navbar-dark px-3">
+
+<nav class="navbar navbar-expand-lg navbar-dark px-3 drive-navbar">
+
+  <button id="btnToggleSidebar"
+          type="button"
+          class="btn btn-outline-light drive-sidebar-toggle mr-2"
+          aria-controls="driveSidebar"
+          aria-expanded="false"
+          title="Mostrar carpetas">
+    <i class="fas fa-bars"></i>
+  </button>
   <a class="navbar-brand" href="s3.php">
     <!-- <img src="../assets/img/icono.png" width="30" height="30" class="d-inline-block align-top" alt="Logo"> Cloud Drive -->
     <img src="ellogo.png" width="30" height="30" class="rounded-circle mr-2" width="30" height="30" alt="Logo"> Cloud Drive
   </a>
 
-    <div class="form-inline my-2 my-lg-0 ml-auto">
-        <button id="btnRecargar" class="btn btn-primary ml-2" onclick="recargarPagina()" title="Recargar página">
+    <div class="form-inline my-2 my-lg-0 ml-auto drive-navbar-actions">
+<button id="btnRecargar" class="btn btn-primary ml-2" onclick="recargarPagina()" title="Recargar página">
         <i class="fas fa-sync-alt"></i>
       </button>
       <button class="btn btn-outline-light ml-2" data-toggle="modal" data-target="#modalBusquedaGlobal" title="Buscar en todas las carpetas">
@@ -91,10 +103,10 @@ $footerEspacioUsado = $storageUsage['formatted'];
     </div>
 
 
-    <ul class="navbar-nav ml-3">
+    <ul class="navbar-nav ml-3 drive-navbar-menus">
        <li class="nav-item dropdown ml-2">
           <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="temaMenu" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-            <i class="fas fa-palette mr-1"></i> Diseño
+            <i class="fas fa-palette mr-1"></i><span class="drive-design-label">Diseño</span>
           </a>
 
           <div class="dropdown-menu dropdown-menu-right" aria-labelledby="temaMenu" style="min-width:280px;">
@@ -131,7 +143,7 @@ $footerEspacioUsado = $storageUsage['formatted'];
       <li class="nav-item dropdown">
         <a class="nav-link dropdown-toggle d-flex align-items-center text-white" href="#" id="usuarioMenu" role="button" data-toggle="dropdown">
           <img src="logo1.png" alt="Perfil" class="rounded-circle mr-2" width="30" height="30">
-          <?= htmlspecialchars($_SESSION['usuario']) ?>
+          <span class="drive-user-label"><?= htmlspecialchars($_SESSION['usuario']) ?></span>
         </a>
 
         <div class="dropdown-menu dropdown-menu-right" aria-labelledby="usuarioMenu">
@@ -155,13 +167,32 @@ $footerEspacioUsado = $storageUsage['formatted'];
 
 </nav>
 
+<div id="driveSidebarBackdrop"
+     class="drive-sidebar-backdrop"
+     aria-hidden="true"></div>
 
-<div class="container-fluid">
+<div class="container-fluid drive-container">
 
-  <div class="row">
+  <div class="row drive-layout">
     <!-- Panel lateral -->
     <!--<div class="col-md-3 p-3 bg-white border-right">-->
-        <div class="col-md-3 p-3 sidebar">
+        <div id="driveSidebar"
+             class="col-md-3 p-3 sidebar drive-sidebar">
+
+       <div class="drive-sidebar-mobile-head">
+         <span>
+           <i class="fas fa-folder-open mr-1"></i>
+           Carpetas
+         </span>
+
+         <button id="btnCerrarSidebar"
+                 type="button"
+                 class="btn btn-sm btn-outline-secondary"
+                 aria-label="Cerrar panel de carpetas"
+                 title="Cerrar">
+           <i class="fas fa-times"></i>
+         </button>
+       </div>
 
        <?php include 'bloque_carpetas.php'; ?>
 
@@ -198,7 +229,7 @@ $footerEspacioUsado = $storageUsage['formatted'];
     </div>
 
     <!-- Panel principal -->
-    <div class="col-md-9 p-4">
+    <div class="col-md-9 p-4 drive-main">
  <!--
 <h4 id="tituloRutaActual">
   <i class="fas fa-folder-open"></i> Archivos en <strong id="textoRuta"><?= htmlspecialchars($_SESSION['ruta_actual'] ?? Config::RUTA_RAIZ) ?></strong>
@@ -237,7 +268,7 @@ $footerEspacioUsado = $storageUsage['formatted'];
         <div class="alert alert-danger"><?= htmlspecialchars($error) ?></div>
       <?php endif; ?>
 
-     <div class="d-flex align-items-center justify-content-between mb-2" style="gap: 10px;">
+     <div class="d-flex align-items-center justify-content-between mb-2 archivos-filter-header" style="gap: 10px;">
       <h6 class="mb-0">Archivos</h6>
       <button class="btn btn-outline-secondary btn-sm" type="button"
               data-toggle="collapse" data-target="#panelFiltrosArchivos"
@@ -2004,5 +2035,110 @@ document.addEventListener('DOMContentLoaded', function () {
 
 })(jQuery);
 </script>
+
+<script>
+(() => {
+  const sidebar =
+    document.getElementById('driveSidebar');
+
+  const btnOpen =
+    document.getElementById('btnToggleSidebar');
+
+  const btnClose =
+    document.getElementById('btnCerrarSidebar');
+
+  const backdrop =
+    document.getElementById('driveSidebarBackdrop');
+
+  if (!sidebar || !btnOpen) {
+    return;
+  }
+
+  const mobileQuery =
+    window.matchMedia('(max-width: 991.98px)');
+
+  function setSidebar(open) {
+    if (!mobileQuery.matches) {
+      open = false;
+    }
+
+    sidebar.classList.toggle(
+      'is-open',
+      open
+    );
+
+    if (backdrop) {
+      backdrop.classList.toggle(
+        'is-visible',
+        open
+      );
+    }
+
+    document.body.classList.toggle(
+      'drive-sidebar-open',
+      open
+    );
+
+    btnOpen.setAttribute(
+      'aria-expanded',
+      open ? 'true' : 'false'
+    );
+  }
+
+  btnOpen.addEventListener(
+    'click',
+    () => {
+      setSidebar(
+        !sidebar.classList.contains('is-open')
+      );
+    }
+  );
+
+  if (btnClose) {
+    btnClose.addEventListener(
+      'click',
+      () => setSidebar(false)
+    );
+  }
+
+  if (backdrop) {
+    backdrop.addEventListener(
+      'click',
+      () => setSidebar(false)
+    );
+  }
+
+  sidebar.addEventListener(
+    'click',
+    (event) => {
+      if (
+        mobileQuery.matches &&
+        event.target.closest('a.folder')
+      ) {
+        setSidebar(false);
+      }
+    }
+  );
+
+  document.addEventListener(
+    'keydown',
+    (event) => {
+      if (event.key === 'Escape') {
+        setSidebar(false);
+      }
+    }
+  );
+
+  window.addEventListener(
+    'resize',
+    () => {
+      if (!mobileQuery.matches) {
+        setSidebar(false);
+      }
+    }
+  );
+})();
+</script>
+
 </body>
 </html>

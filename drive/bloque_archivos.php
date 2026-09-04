@@ -90,36 +90,85 @@ foreach ($filas as $row) {
   
 
 
-  <!-- ====== Resumen carpeta ====== -->
-  
-  <div class="resumen-carpeta">
-<div class="small">
-  Archivos: <strong><?= (int)$carpetaTotal ?></strong> |
-  Peso: <strong><?= FileViewHelper::formatBytes($carpetaBytes) ?></strong> |
-  Ruta: <code><?= FileViewHelper::escape($rutaActual) ?></code> |
-  Visibles (página): <strong><?= (int)$visibles ?></strong> |
-  Bloqueados (página): <strong><?= (int)$noVisibles ?></strong> |
-  Protegidos abiertos (página): <strong><?= (int)$segurosAbiertos ?></strong> |
-  Filtrados (total): <strong><?= (int)$total ?></strong>
+  <!-- ====== ACCIONES MASIVAS ====== -->
+
+<div class="bulk-actions-shell">
+
+  <div class="bulk-mobile-tools d-lg-none">
+
+    <button type="button"
+            class="btn btn-sm btn-outline-primary bulk-actions-toggle"
+            data-toggle="collapse"
+            data-target="#bulkActionsPanel"
+            aria-expanded="false"
+            aria-controls="bulkActionsPanel">
+      <i class="fas fa-check-square mr-1"></i>
+      Acciones
+      <i class="fas fa-chevron-down ml-1"></i>
+    </button>
+
+    <button type="button"
+            class="btn btn-sm btn-outline-primary bulk-filter-toggle"
+            data-toggle="collapse"
+            data-target="#panelFiltrosArchivos"
+            aria-expanded="false"
+            aria-controls="panelFiltrosArchivos">
+      <i class="fas fa-filter mr-1"></i>
+      Filtros
+      <i class="fas fa-chevron-down ml-1"></i>
+    </button>
+
+  </div>
+
+  <div id="bulkActionsPanel"
+       class="collapse d-lg-block bulk-actions-panel">
+
+    <div class="bulk-actions-inner">
+
+      <label class="mb-0 bulk-select-all">
+        <input type="checkbox" id="checkAllFiles">
+        Seleccionar todos
+      </label>
+
+      <span id="filesSelectedCount"
+            class="text-muted small"></span>
+
+      <button type="button"
+              class="btn btn-sm btn-danger"
+              data-file-bulk-action="delete">
+        <i class="fas fa-trash-alt mr-1"></i>
+        Eliminar
+      </button>
+
+      <button type="button"
+              class="btn btn-sm btn-primary"
+              data-file-bulk-action="download">
+        <i class="fas fa-download mr-1"></i>
+        Descargar
+      </button>
+
+      <button type="button"
+              class="btn btn-sm btn-secondary"
+              data-file-bulk-action="move">
+        <i class="fas fa-arrows-alt mr-1"></i>
+        Mover
+      </button>
+
+      <button type="button"
+              id="btnVerGaleria"
+              class="btn btn-sm btn-outline-primary <?= count($imagenesPagina) ? '' : 'd-none' ?>"
+              data-toggle="modal"
+              data-target="#modalGaleriaCompleta">
+        <i class="fas fa-images mr-1"></i>
+        Galería
+      </button>
+
+    </div>
+  </div>
 </div>
-  </div>
-  
-    <!-- ====== LISTA ====== -->
-  <div class="mb-2 d-flex align-items-center gap-2">
-    <label class="mb-0">
-      <!-- <input type="checkbox" id="selectAll">-->
-      <input type="checkbox" id="checkAllFiles">
-      Seleccionar todos
-    </label>
-    <span id="filesSelectedCount" class="text-muted small"></span>
-    <button type="button" class="btn btn-sm btn-danger" data-file-bulk-action="delete">Eliminar seleccionados</button>
-    <button type="button" class="btn btn-sm btn-primary" data-file-bulk-action="download">Descargar seleccionados</button>
-    <button type="button" class="btn btn-sm btn-secondary" data-file-bulk-action="move">Mover seleccionados</button>
-    <button type="button" id="btnVerGaleria" class="btn btn-sm btn-outline-primary <?= count($imagenesPagina) ? '' : 'd-none' ?>" data-toggle="modal" data-target="#modalGaleriaCompleta"><i class="fas fa-images"></i></button>
-  </div>
 
 
-  <ul class="list-group">
+<ul class="list-group">
     <?php if (!$filas): ?>
       <li class="list-group-item">No hay archivos.</li>
     <?php else: ?>
@@ -229,13 +278,35 @@ foreach ($filas as $row) {
               <?php endif; ?>
             </div>
 
-            <small class="text-muted"
-                   data-toggle="tooltip" data-placement="top"
+            <small class="text-muted file-meta-line"
+                   data-toggle="tooltip"
+                   data-placement="top"
                    title="<?= $metaTitle ?>">
-              <?= FileViewHelper::escape($rutaRow) ?>
-              — <?= $fechaTxt ?>
-              — <span class="text-mono"><?= FileViewHelper::escape($keyEnc) ?></span>
-             — <?= FileViewHelper::formatBytes($tamano) ?>
+
+              <span class="file-route"
+                    title="<?= FileViewHelper::escape($rutaRow) ?>">
+                <?= FileViewHelper::escape($rutaRow) ?>
+              </span>
+
+              <span class="file-meta-sep"> · </span>
+
+              <span class="file-date">
+                <?= $fechaTxt ?>
+              </span>
+
+              <span class="file-physical-key">
+                <span class="file-meta-sep"> · </span>
+                <span class="text-mono">
+                  <?= FileViewHelper::escape($keyEnc) ?>
+                </span>
+              </span>
+
+              <span class="file-meta-sep"> · </span>
+
+              <strong class="file-size">
+                <?= FileViewHelper::formatBytes($tamano) ?>
+              </strong>
+
             </small>
 
 <?php if (!$soloSeguridad): ?>
@@ -438,6 +509,11 @@ $unlockClass = $unlocked ? 'btn-success' : 'btn-warning';
   </button>
 <?php endif; ?>
 
+<!-- En tablet/móvil: las acciones posteriores a seguridad
+     comienzan en una nueva línea -->
+<span class="file-actions-break-after-security"
+      aria-hidden="true"></span>
+
 <?php if (!$soloSeguridad): ?>
 <?php if ($puedeTex): ?>
   <button type="button"
@@ -560,6 +636,20 @@ $unlockClass = $unlocked ? 'btn-success' : 'btn-warning';
       </ul>
     </nav>
   <?php endif; ?>
+
+<!-- ====== RESUMEN CARPETA - DEBAJO DE PAGINACION ====== -->
+<div class="resumen-carpeta resumen-carpeta-bottom">
+  <div class="small">
+    Archivos: <strong><?= (int)$carpetaTotal ?></strong> |
+    Peso: <strong><?= FileViewHelper::formatBytes($carpetaBytes) ?></strong> |
+    Ruta: <code><?= FileViewHelper::escape($rutaActual) ?></code> |
+    Visibles (página): <strong><?= (int)$visibles ?></strong> |
+    Bloqueados (página): <strong><?= (int)$noVisibles ?></strong> |
+    Protegidos abiertos (página): <strong><?= (int)$segurosAbiertos ?></strong> |
+    Filtrados (total): <strong><?= (int)$total ?></strong>
+  </div>
+</div>
+
   
 
 </div><!-- /archivosWrap -->

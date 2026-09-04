@@ -1,0 +1,94 @@
+name: Optimize Drive DB navigation
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/optimize-drive-db-navigation.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  optimize:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Apply optimization
+        run: python3 .github/scripts/optimize_drive_db_navigation.py
+
+      - name: Validate PHP
+        shell: bash
+        run: |
+          set -euo pipefail
+          while IFS= read -r -d '' file; do
+            php -l "$file" >/dev/null
+          done < <(find drive -type f -name '*.php' -print0)
+          php -l Config-s3.php >/dev/null
+          php -l db.php >/dev/null
+
+      - name: Validate JavaScript
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check drive/js/upload-destination.js
+          node --check drive/js/subir.js
+          node --check drive/js/subir-dropzone.js
+          node --check drive/js/subir-chunked.js
+          node --check drive/js/carpetas.js
+          node --check drive/js/archivos.js
+          node --check drive/js/sincronizar.js
+
+      - name: Audit DB-first behavior
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          test "$(grep -c 'id="tab-' drive/s3.php)" -eq 2
+          ! grep -q 'tab-servicios\|pane-servicios' drive/s3.php
+          grep -q "include 'bloque_archivos.php'" drive/s3.php
+          ! grep -q 'archivosPaginados' drive/s3.php
+
+          grep -q 'ruta_objetivo' drive/api/upload.php
+          grep -q 'session_write_close' drive/api/upload.php
+          grep -q 'UploadDestinationService' drive/src/Core/DriveApplication.php
+          grep -q 'S3Folders' drive/src/Application/UploadDestinationService.php
+
+          ! grep -R "\$_SESSION\['ruta_actual'\]" drive/upload/drivers/*.php
+          grep -q 'upload_token' drive/upload/drivers/LocalPresignedPutUploader.php
+          grep -q 'insertFile' drive/upload/drivers/LocalPresignedPutUploader.php
+
+          grep -q 'DriveUploadDestination' drive/js/subir.js
+          grep -q 'DriveUploadDestination' drive/js/subir-dropzone.js
+          grep -q 'DriveUploadDestination' drive/js/subir-chunked.js
+
+          ! grep -q 'thumb.php' drive/bloque_archivos.php
+          ! grep -q 'js-thumb' drive/bloque_archivos.php
+
+          ! grep -q 'sync_status.php' drive/js/sincronizar.js
+          ! grep -q 'actualizarRutaSesion' drive/js/carpetas.js
+          ! grep -q 'setRutaSesion' drive/js/archivos.js
+
+          ! grep -E 'listObjects|headObject|listObjectsV2|getObject' \
+            drive/s3.php drive/bloque_archivos.php drive/bloque_carpetas.php \
+            drive/src/Application/DrivePageService.php \
+            drive/src/Application/FileListService.php \
+            drive/src/View/FolderTreeRenderer.php
+
+          echo 'OK: Drive navigation is DB-first and upload destination is immutable.'
+
+      - name: Commit optimization
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git rm .github/scripts/optimize_drive_db_navigation.py
+          git rm .github/workflows/optimize-drive-db-navigation.yml
+          git add -A
+          git commit -m 'Make Drive DB-first and freeze upload destinations'
+          git push origin main

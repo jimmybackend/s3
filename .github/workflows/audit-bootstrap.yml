@@ -1,0 +1,59 @@
+name: Audit bootstrap dependencies
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/audit-bootstrap.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Verify centralized dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          ROOT='public_html/s3-servicios-aws'
+
+          echo '=== DIRECT VENDOR LOADERS ==='
+          vendor_hits="$(grep -RInE --include='*.php' '^[[:space:]]*(require|require_once|include|include_once).*vendor/autoload\.php' "$ROOT" | grep -v '/app_bootstrap.php:' || true)"
+          if [ -n "$vendor_hits" ]; then
+            printf '%s\n' "$vendor_hits"
+            exit 1
+          fi
+          echo 'OK: no PHP file loads vendor directly outside app_bootstrap.php'
+
+          echo '=== DIRECT DB LOADERS ==='
+          db_hits="$(grep -RInE --include='*.php' '^[[:space:]]*(require|require_once|include|include_once).*(db-s3|db)\.php' "$ROOT" | grep -v '/app_bootstrap.php:' || true)"
+          if [ -n "$db_hits" ]; then
+            printf '%s\n' "$db_hits"
+            exit 1
+          fi
+          echo 'OK: no PHP file loads db.php/db-s3.php directly outside app_bootstrap.php'
+
+          echo '=== S3 ENTRYPOINT ==='
+          grep -n "require_once __DIR__ . '/app_bootstrap.php';" "$ROOT/s3.php"
+          echo 'OK: s3.php uses app_bootstrap.php'
+
+          echo '=== BOOTSTRAP PRIVATE PATHS ==='
+          grep -n "dirname(__DIR__, 2)" "$ROOT/app_bootstrap.php"
+          grep -n "'/vendor/autoload.php'" "$ROOT/app_bootstrap.php"
+          grep -n "'/Config-s3.php'" "$ROOT/app_bootstrap.php"
+          grep -n "'/db.php'" "$ROOT/app_bootstrap.php"
+          echo 'OK: private dependency paths are centralized'
+
+      - name: Remove one-time audit workflow
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git rm .github/workflows/audit-bootstrap.yml
+          git commit -m 'Remove one-time bootstrap audit workflow'
+          git push origin main

@@ -32,8 +32,8 @@ jobs:
       - name: Audit final behavior
         run: |
           set -euo pipefail
-          grep -Fq "$analizarExt = ['jpg','jpeg','png'];" drive/bloque_archivos.php
-          grep -Fq "$transcribeExt = ['amr','flac','m4a','mp3','mp4','ogg','webm','wav'];" drive/bloque_archivos.php
+          grep -Fq "\$analizarExt = ['jpg','jpeg','png'];" drive/bloque_archivos.php
+          grep -Fq "\$transcribeExt = ['amr','flac','m4a','mp3','mp4','ogg','webm','wav'];" drive/bloque_archivos.php
           grep -Fq '$puedeTranscribir = in_array($ext, $transcribeExt, true);' drive/bloque_archivos.php
           grep -Fq '<?php if ($puedeTranscribir && !$esVideo): ?>' drive/bloque_archivos.php
           grep -Fq '<?php if ($puedeTranscribir && $esVideo): ?>' drive/bloque_archivos.php
@@ -42,8 +42,8 @@ jobs:
           ! grep -q "MutationObserver" drive/js/imagenes.js
           ! grep -q "generar_galeria.php" drive/js/imagenes.js
           grep -q 'var list = recolectarDesdeBufferODOM();' drive/js/imagenes.js
-          grep -q '$userId = $session->userId();' drive/comprehend_archivo.php
-          grep -q '$service->analyze($userId, $key)' drive/comprehend_archivo.php
+          grep -Fq '$userId = $session->userId();' drive/comprehend_archivo.php
+          grep -Fq '$service->analyze($userId, $key)' drive/comprehend_archivo.php
           grep -q 'js-lock-file' drive/bloque_archivos.php
           grep -q 'js-unlock-file' drive/bloque_archivos.php
           grep -q 'audio-player-pro' drive/bloque_archivos.php

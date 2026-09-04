@@ -72,6 +72,12 @@ final class Request
         return is_array($decoded) ? $decoded : [];
     }
 
+    public function serverString(string $name, string $default = ''): string
+    {
+        $value = $this->server[$name] ?? $default;
+        return is_scalar($value) ? trim((string)$value) : $default;
+    }
+
     public function queryString(string $name, string $default = ''): string
     {
         $value = $this->query[$name] ?? $default;

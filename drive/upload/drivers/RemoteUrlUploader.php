@@ -22,9 +22,10 @@ final class RemoteUrlUploader implements UploaderInterface
     return Config::getS3();
   }
 
-  private function bucket(): string {
-    return (string)Config::BUCKET;
-  }
+  private function bucket(): string
+{
+    return Config::getBucket();
+}
 
 
   // ---------- helpers URL ----------

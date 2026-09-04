@@ -50,9 +50,10 @@ private function s3()
     throw new RuntimeException('Config::getS3() devolvió: ' . $tipo);
 }
 
-  private function bucket(): string {
-    return (string)Config::BUCKET;
-  }
+  private function bucket(): string
+{
+    return Config::getBucket();
+}
 
 
   private function signature(string $filename, int $filesize, string $route, int $userId): string {

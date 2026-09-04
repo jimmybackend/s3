@@ -26,9 +26,9 @@ final class LocalPresignedPutUploader implements UploaderInterface
     }
 
     private function bucket(): string
-    {
-        return (string) Config::BUCKET;
-    }
+{
+    return Config::getBucket();
+}
 
     private function userId(array $req): int
     {

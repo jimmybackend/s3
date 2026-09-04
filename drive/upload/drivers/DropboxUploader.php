@@ -26,13 +26,9 @@ final class DropboxUploader implements UploaderInterface
         return $s3;
     }
 
-    private function bucket()
+    private function bucket(): string
     {
-        if (defined('Config::BUCKET')) return (string)Config::BUCKET;
-        if (property_exists('Config', 'BUCKET')) return (string)Config::$BUCKET;
-        if (property_exists('Config', 'bucket')) return (string)Config::$bucket;
-        if (method_exists('Config', 'getBucket')) return (string)Config::getBucket();
-        throw new RuntimeException('No pude detectar el bucket en Config.');
+        return Config::getBucket();
     }
 
     public function init(array $req): array

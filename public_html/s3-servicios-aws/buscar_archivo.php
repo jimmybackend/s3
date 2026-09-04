@@ -7,20 +7,6 @@ require_once __DIR__ . '/app_bootstrap.php';
 
 use Aws\S3\S3Client;
 
-//
-// Intentar incluir db.php que define $db_connection (mysqli)
-//
-$db_included = false;
-$paths = [__DIR__ . '/db.php', __DIR__ . '/../db.php'];
-foreach ($paths as $p) {
-    if (is_file($p)) {
-        include_once $p;
-        $db_included = true;
-        break;
-    }
-}
-// $db_connection (mysqli) debería existir si el include fue correcto.
-
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
     echo json_encode(['estado' => 'error', 'mensaje' => 'Método no permitido']);

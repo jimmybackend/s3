@@ -1,0 +1,37 @@
+name: Fix Drive migration audit
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/fix-drive-migration-audit.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fix self-match and retrigger migration
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 <<'PY'
+          from pathlib import Path
+          p = Path('.github/workflows/move-drive-root-oop.yml')
+          t = p.read_text(encoding='utf-8')
+          old = "grep -RIni --exclude-dir=.git 'public_html/drive' . || true"
+          new = "grep -RIni --exclude-dir=.git --exclude='move-drive-root-oop.yml' 'public_html/drive' . || true"
+          if old not in t:
+              raise SystemExit('Audit line not found')
+          p.write_text(t.replace(old, new, 1), encoding='utf-8')
+          PY
+
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git rm .github/workflows/fix-drive-migration-audit.yml
+          git add .github/workflows/move-drive-root-oop.yml
+          git commit -m 'Fix Drive migration audit self-match'
+          git push origin main

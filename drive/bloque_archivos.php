@@ -32,7 +32,7 @@ $tipo = $state['type'];
 $fechaInicio = $state['date_from'];
 $fechaFin = $state['date_to'];
 $carpetaTotal = $state['folder_total'];
-$carpetaPesoMB = round($state['folder_bytes'] / 1048576, 2);
+$carpetaBytes = (int) $state['folder_bytes'];
 
 $imagenesExt = ['jpg','jpeg','png','gif','webp','bmp'];
 $audioExt = ['mp3','wav','ogg','opus','m4a','aac'];
@@ -92,7 +92,7 @@ foreach ($filas as $row) {
   <div class="resumen-carpeta">
 <div class="small">
   Archivos: <strong><?= (int)$carpetaTotal ?></strong> |
-  Peso: <strong><?= number_format($carpetaPesoMB, 2) ?></strong> MB |
+  Peso: <strong><?= FileViewHelper::formatBytes($carpetaBytes) ?></strong> |
   Ruta: <code><?= FileViewHelper::escape($rutaActual) ?></code> |
   Visibles (página): <strong><?= (int)$visibles ?></strong> |
   Bloqueados (página): <strong><?= (int)$noVisibles ?></strong> |
@@ -136,6 +136,8 @@ foreach ($filas as $row) {
       $fechaTxt  = date('Y-m-d H:i', strtotime($row['Fecha'] ?? 'now'));
       $ext       = FileViewHelper::extension($nombre);
       $metaTitle = FileViewHelper::metadataTooltip($row['Metadatos'] ?? null);
+      $metaData = FileViewHelper::metadataArray($row['Metadatos'] ?? null);
+      $metaJson = json_encode($metaData, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 
       $esImg   = in_array($ext, $imagenesExt, true);
       $esAudio = in_array($ext, $audioExt, true);
@@ -276,6 +278,15 @@ foreach ($filas as $row) {
       <i class="fas fa-edit"></i>
     </a>
   <?php endif; ?>
+
+
+  <button type="button"
+          class="btn btn-sm btn-primary js-file-metadata"
+          data-nombre="<?= FileViewHelper::escape($nombre) ?>"
+          data-meta="<?= FileViewHelper::escape($metaJson ?: '{}') ?>"
+          title="METADATOS">
+    <i class="fas fa-info-circle"></i>
+  </button>
 
   <button type="button"
           class="btn btn-sm btn-primary js-rename-file"

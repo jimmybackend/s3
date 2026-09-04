@@ -1,303 +1,35 @@
 <?php
-// up.php — Subida multipart reanudable Direct-to-S3 (presigned) con paralelismo.
-// - Usa tu Config.php (Config::getS3 y Config::BUCKET).
-// - Guarda en s3://<bucket>/Data/uploads/YYYYMMDD/<hash>-<archivo>
-// - Sin arrow functions ni <=> (compatibilidad amplia).
+declare(strict_types=1);
 
 require_once __DIR__ . '/app_bootstrap.php';
 
-use Aws\S3\S3Client;
-use Aws\Exception\AwsException;
+use ArcadeCloud\Drive\Upload\PublicMultipartUploadService;
 
-// ===== Metadatos locales (solo JSON, no guardamos el archivo grande) ===== 
-if (!defined('UPLOAD_DIR')) define('UPLOAD_DIR', __DIR__ . '/Data/uploads');
-if (!defined('TMP_DIR'))     define('TMP_DIR', __DIR__ . '/Data/uploads/.tmp');
-foreach ([UPLOAD_DIR, TMP_DIR] as $d) { if (!is_dir($d)) { @mkdir($d, 0775, true); } }
+$app = drive_app();
+$service = new PublicMultipartUploadService(
+    $app->s3(),
+    $app->bucket(),
+    sys_get_temp_dir() . '/arcadecloud-public-upload-state'
+);
 
-// ===== Proveedores: directo desde tu Config.php =====
-function cfg_s3() {
-    $c = \Config::getS3();
-    if (!($c instanceof S3Client)) {
-        http_response_code(500);
-        header('Content-Type: application/json; charset=utf-8');
-        echo json_encode(['error'=>'Config::getS3() no devolvió Aws\\S3\\S3Client']);
-        exit;
-    }
-    return $c;
-}
-function cfg_bucket() {
-    if (defined('Config::BUCKET')) {
-        return constant('Config::BUCKET');
-    }
-    http_response_code(500);
-    header('Content-Type: application/json; charset=utf-8');
-    echo json_encode(['error' => 'Config::BUCKET no está definido']);
-    exit;
-}
-
-// ===== Utilidades reanudación =====
-function signature($filename, $filesize) { return sha1($filename.'|'.$filesize); }
-function meta_path($sig) { return rtrim(TMP_DIR,'/\\').DIRECTORY_SEPARATOR.$sig.'.json'; }
-function save_meta($sig, $data) { @file_put_contents(meta_path($sig), json_encode($data, JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE)); }
-function load_meta($sig) {
-    $p = meta_path($sig);
-    if (is_file($p)) {
-        $j = json_decode((string)@file_get_contents($p), true);
-        if (is_array($j)) return $j;
-    }
-    return null;
-}
-function list_parts_etags($uploadId, $key) {
-    $client = cfg_s3();
-    $parts = []; $marker = null;
-    try {
-        do {
-            $args = ['Bucket'=>cfg_bucket(),'Key'=>$key,'UploadId'=>$uploadId];
-            if ($marker) $args['PartNumberMarker'] = $marker;
-            $res = $client->listParts($args);
-            $ps = $res->get('Parts') ?: [];
-            foreach ($ps as $p) {
-                $num  = (int)($p['PartNumber'] ?? 0);
-                $etag = trim((string)($p['ETag'] ?? ''), '"');
-                if ($num>0 && $etag!=='') $parts[(string)$num] = $etag;
-            }
-            $isTrunc = (bool)($res->get('IsTruncated') ?? false);
-            $marker  = $res->get('NextPartNumberMarker') ?? null;
-        } while ($isTrunc);
-    } catch (Throwable $e) {}
-    return $parts;
-}
-
-// ===== Router AJAX =====
-$action = isset($_POST['action']) ? $_POST['action'] : '';
-if ($action) {
+$action = trim((string)($_POST['action'] ?? ''));
+if ($action !== '') {
     header('Content-Type: application/json; charset=utf-8');
     try {
-        switch ($action) {
-            case 'init':     echo json_encode(handle_init());    break;
-            case 'sign':     echo json_encode(handle_sign());    break; // presign URL para un part
-            case 'part':     echo json_encode(handle_part());    break; // sube un paquete vía PHP a S3
-            case 'resume':   echo json_encode(handle_resume());  break;
-            case 'complete': echo json_encode(handle_complete());break;
-            default: http_response_code(400); echo json_encode(['error'=>'Acción no válida']);
-        }
+        $result = match ($action) {
+            'init' => $service->init($_POST),
+            'sign' => $service->sign($_POST),
+            'part' => $service->part($_POST, $_FILES),
+            'resume' => $service->resume($_POST),
+            'complete' => $service->complete($_POST),
+            default => throw new RuntimeException('Acción no válida.'),
+        };
+        echo json_encode($result, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     } catch (Throwable $e) {
-        http_response_code(500); echo json_encode(['error'=>$e->getMessage()]);
+        http_response_code(500);
+        echo json_encode(['error' => $e->getMessage()], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     }
     exit;
-}
-
-// ===== Acciones =====
-function handle_init() {
-    $filename = trim((string)($_POST['filename'] ?? ''));
-    $filesize = (int)($_POST['filesize'] ?? 0);
-    $mime     = trim((string)($_POST['mime'] ?? 'application/octet-stream'));
-    if ($filename==='' || $filesize<=0) { http_response_code(400); return ['error'=>'Datos de archivo inválidos']; }
-
-    $sig      = signature($filename, $filesize);
-    $basename = preg_replace('/[^\w\-.]+/u', '_', $filename);
-    $ymd      = gmdate('Ymd');                 // YYYYMMDD
-    $base     = 'Data/uploads';                // prefijo en S3
-    $key      = "{$base}/{$ymd}/{$sig}-{$basename}";
-
-    // Marcadores de carpeta (opcionales, para visibilidad en consola)
-    $client = cfg_s3();
-    $bucket = cfg_bucket();
-    foreach (["Data/","{$base}/","{$base}/{$ymd}/"] as $folderKey) {
-        try {
-            $client->putObject([
-                'Bucket'=>$bucket,'Key'=>$folderKey,'Body'=>'','ContentType'=>'application/x-directory'
-            ]);
-        } catch (Throwable $e) {/* no bloquear */}
-    }
-
-    // Crear la subida multipart en S3
-    $res = $client->createMultipartUpload([
-        'Bucket'      => $bucket,
-        'Key'         => $key,
-        'ContentType' => $mime,
-        'Metadata'    => ['original-name'=>$filename,'original-size'=>(string)$filesize],
-    ]);
-    $uploadId = (string)$res->get('UploadId');
-
-    save_meta($sig, ['filename'=>$filename,'filesize'=>$filesize,'key'=>$key,'uploadId'=>$uploadId,'parts'=>[]]);
-
-    return ['ok'=>true,'uploadId'=>$uploadId,'key'=>$key,'signature'=>$sig];
-}
-
-function handle_sign() {
-    // Firma una URL presignada de UploadPart para un partNumber
-    $uploadId     = (string)($_POST['uploadId'] ?? '');
-    $key          = (string)($_POST['key'] ?? '');
-    $partNumber   = (int)($_POST['partNumber'] ?? 0);
-
-    if ($uploadId==='' || $key==='' || $partNumber<=0) {
-        http_response_code(400); return ['error'=>'Parámetros inválidos para firmar'];
-    }
-
-    $client = cfg_s3(); $bucket = cfg_bucket();
-    try {
-        $cmd = $client->getCommand('UploadPart', [
-            'Bucket'       => $bucket,
-            'Key'          => $key,
-            'UploadId'     => $uploadId,
-            'PartNumber'   => $partNumber,
-        ]);
-        // URL válida por 1 hora
-        $req = $client->createPresignedRequest($cmd, '+1 hour');
-        $url = (string)$req->getUri();
-        return ['ok'=>true,'url'=>$url];
-    } catch (AwsException $e) {
-        http_response_code(500); return ['error'=>'AWS presign UploadPart: '.$e->getAwsErrorMessage()];
-    } catch (Throwable $e) {
-        http_response_code(500); return ['error'=>$e->getMessage()];
-    }
-}
-
-
-function handle_part() {
-    $uploadId   = (string)($_POST['uploadId'] ?? '');
-    $key        = (string)($_POST['key'] ?? '');
-    $partNumber = (int)($_POST['partNumber'] ?? 0);
-
-    if ($uploadId === '' || $key === '' || $partNumber <= 0) {
-        http_response_code(400);
-        return ['error' => 'Parámetros inválidos para paquete'];
-    }
-
-    if (!isset($_FILES['part']) || !is_uploaded_file($_FILES['part']['tmp_name'])) {
-        http_response_code(400);
-        return ['error' => 'No llegó el archivo del paquete'];
-    }
-
-    $tmp  = $_FILES['part']['tmp_name'];
-    $size = (int)($_FILES['part']['size'] ?? 0);
-
-    if ($size <= 0) {
-        http_response_code(400);
-        return ['error' => 'Paquete vacío'];
-    }
-
-    try {
-        $fh = fopen($tmp, 'rb');
-        if (!$fh) {
-            http_response_code(500);
-            return ['error' => 'No se pudo abrir el paquete temporal'];
-        }
-
-        $client = cfg_s3();
-        $res = $client->uploadPart([
-            'Bucket'        => cfg_bucket(),
-            'Key'           => $key,
-            'UploadId'      => $uploadId,
-            'PartNumber'    => $partNumber,
-            'Body'          => $fh,
-            'ContentLength' => $size,
-        ]);
-
-        if (is_resource($fh)) {
-            fclose($fh);
-        }
-
-        $etag = trim((string)$res->get('ETag'), '"');
-
-        if ($etag === '') {
-            http_response_code(500);
-            return ['error' => 'S3 no devolvió ETag del paquete'];
-        }
-
-        return [
-            'ok' => true,
-            'partNumber' => $partNumber,
-            'etag' => $etag,
-            'size' => $size,
-        ];
-
-    } catch (AwsException $e) {
-        http_response_code(500);
-        return ['error' => 'AWS uploadPart: ' . $e->getAwsErrorMessage()];
-    } catch (Throwable $e) {
-        http_response_code(500);
-        return ['error' => $e->getMessage()];
-    }
-}
-
-
-function handle_complete() {
-    $uploadId = (string)($_POST['uploadId'] ?? '');
-    $key      = (string)($_POST['key'] ?? '');
-    $etagsJ   = (string)($_POST['etags'] ?? '{}');
-    $etags    = json_decode($etagsJ, true) ?: [];
-    if ($uploadId==='' || $key==='' || empty($etags)) {
-        http_response_code(400); return ['error'=>'Faltan parámetros para completar'];
-    }
-
-    $parts = [];
-    foreach ($etags as $num=>$tag) {
-        $parts[] = ['PartNumber'=>(int)$num, 'ETag'=>'"'.$tag.'"'];
-    }
-    // Ordenar por PartNumber
-    usort($parts, function($a, $b) {
-        $pa = isset($a['PartNumber']) ? (int)$a['PartNumber'] : 0;
-        $pb = isset($b['PartNumber']) ? (int)$b['PartNumber'] : 0;
-        if ($pa === $pb) return 0;
-        return ($pa < $pb) ? -1 : 1;
-    });
-
-    try {
-        $client = cfg_s3(); $bucket = cfg_bucket();
-        $res = $client->completeMultipartUpload([
-            'Bucket' => $bucket, 'Key' => $key, 'UploadId' => $uploadId,
-            'MultipartUpload' => ['Parts' => $parts]
-        ]);
-
-        // URL firmada para ver/descargar (1 hora)
-        $cmd = $client->getCommand('GetObject', ['Bucket'=>$bucket,'Key'=>$key]);
-        $req = $client->createPresignedRequest($cmd, '+1 hour');
-        $url = (string)$req->getUri();
-    } catch (AwsException $e) {
-        http_response_code(500); return ['error'=>'AWS completeMultipartUpload: '.$e->getAwsErrorMessage()];
-    } catch (Throwable $e) {
-        http_response_code(500); return ['error'=>$e->getMessage()];
-    }
-
-    // Limpieza de metadatos locales de esa subida
-    foreach (glob(TMP_DIR.'/*.json') as $file) {
-        $j = json_decode((string)@file_get_contents($file), true);
-        if ($j && is_array($j) && ($j['uploadId'] ?? '') === $uploadId && ($j['key'] ?? '') === $key) { @unlink($file); }
-    }
-
-    return [
-        'ok'=>true,
-        'location'=>(string)($res->get('Location') ?? ''),
-        'objectUrl'=>"s3://".cfg_bucket()."/".$key,
-        'key'=>$key,
-        'url'=>$url
-    ];
-}
-
-function handle_resume() {
-    $filename = trim((string)($_POST['filename'] ?? ''));
-    $filesize = (int)($_POST['filesize'] ?? 0);
-    $uploadId = (string)($_POST['uploadId'] ?? '');
-    $key      = (string)($_POST['key'] ?? '');
-
-    $sig = ($filename && $filesize) ? signature($filename, $filesize) : null;
-    $meta = $sig ? load_meta($sig) : null;
-
-    if ($meta) {
-        $remote = list_parts_etags($meta['uploadId'], $meta['key']);
-        if ($remote) {
-            $meta['parts'] = $remote + (isset($meta['parts']) && is_array($meta['parts']) ? $meta['parts'] : []);
-            save_meta($sig, $meta);
-        }
-        return ['found'=>true, 'uploadId'=>$meta['uploadId'], 'key'=>$meta['key'], 'etags'=>($meta['parts'] ?? [])];
-    }
-    if ($uploadId && $key) {
-        $etags = list_parts_etags($uploadId, $key);
-        if ($etags) return ['found'=>true,'uploadId'=>$uploadId,'key'=>$key,'etags'=>$etags];
-    }
-    return ['found'=>false];
 }
 
 // ========================== UI ==========================

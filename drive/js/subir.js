@@ -71,20 +71,20 @@ document.addEventListener('DOMContentLoaded', function () {
         // Simular barra
         if (progressBarInner) await simulateProgress(progressBarInner);
 
-        // 3) Avisar tamaño real (no bloquea si falla)
-        try {
-          const body = new URLSearchParams();
-          body.append('upload_token', json.upload_token || '');
-          body.append('tamano', String(archivo.size || 0));
+        // 3) Confirmar en FileS3. El éxito exige S3 + BD.
+        const body = new URLSearchParams();
+        body.append('upload_token', json.upload_token || '');
+        body.append('tamano', String(archivo.size || 0));
 
-          await fetch(API + '?mode=local_put&action=complete', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
-            credentials: 'same-origin',
-            body: body.toString()
-          });
-        } catch (e) {
-          console.warn('complete local_put falló:', e);
+        const completeResp = await fetch(API + '?mode=local_put&action=complete', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+          credentials: 'same-origin',
+          body: body.toString()
+        });
+        const completeJson = await safeJson(completeResp);
+        if (!completeResp.ok || !completeJson || completeJson.ok !== true) {
+          throw new Error((completeJson && completeJson.error) || 'El objeto llegó a S3 pero no pudo registrarse en FileS3.');
         }
 
         // 4) OK

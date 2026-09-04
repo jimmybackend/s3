@@ -63,22 +63,38 @@ final class FileViewHelper
     {
         $accessType = (string) ($row['AccessType'] ?? 'normal');
         $passwordHash = (string) ($row['PasswordHash'] ?? '');
-
         return in_array($accessType, ['secure', 'unlocked'], true) || $passwordHash !== '';
     }
 
-    public static function metadataTooltip(?string $raw): string
+    public static function metadataArray(mixed $raw): array
     {
-        if ($raw === null || trim($raw) === '') {
+        if (is_array($raw)) {
+            return $raw;
+        }
+        if ($raw === null || trim((string) $raw) === '') {
+            return [];
+        }
+
+        $text = trim((string) $raw);
+        $decoded = json_decode($text, true);
+        if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+            return $decoded;
+        }
+
+        return ['valor' => $text];
+    }
+
+    public static function metadataTooltip(mixed $raw): string
+    {
+        $data = self::metadataArray($raw);
+        if ($data === []) {
             return 'Sin metadatos';
         }
 
-        $raw = trim($raw);
-        $decoded = json_decode($raw, true);
-        $pretty = json_last_error() === JSON_ERROR_NONE
-            ? (string) json_encode($decoded, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)
-            : $raw;
-
+        $pretty = (string) json_encode(
+            $data,
+            JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES
+        );
         $length = function_exists('mb_strlen') ? mb_strlen($pretty) : strlen($pretty);
         if ($length > 2000) {
             $pretty = function_exists('mb_substr') ? mb_substr($pretty, 0, 2000) : substr($pretty, 0, 2000);

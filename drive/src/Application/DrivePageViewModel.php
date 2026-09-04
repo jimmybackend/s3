@@ -5,10 +5,6 @@ namespace ArcadeCloud\Drive\Application;
 
 final class DrivePageViewModel
 {
-    public bool $showCounts = false;
-    public bool $showMetas = false;
-    public bool $mediaHidden = true;
-    public bool $showFilters = true;
     public string $basePrefix = '';
     public string $tipo = '';
     public string $buscar = '';

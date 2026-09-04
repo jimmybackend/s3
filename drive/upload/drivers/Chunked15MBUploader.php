@@ -148,10 +148,20 @@ private function s3()
     }
 
     // step=sign (presigned UploadPart)
+    $stateId      = (string)($req['stateId'] ?? '');
     $uploadId     = (string)($req['uploadId'] ?? '');
     $key          = (string)($req['key'] ?? '');
     $partNumber   = (int)($req['partNumber'] ?? 0);
     $contentLength= (int)($req['contentLength'] ?? 0);
+
+    $meta = $stateId !== '' ? $this->store->load($stateId) : null;
+    $currentUserId = (int)($req['_user_id'] ?? 0);
+    if (!$meta || (int)($meta['user_id'] ?? 0) !== $currentUserId) {
+      throw new RuntimeException('Estado multipart inválido o ajeno al usuario actual.');
+    }
+    if ((string)($meta['uploadId'] ?? '') !== $uploadId || (string)($meta['key'] ?? '') !== $key) {
+      throw new RuntimeException('La parte no coincide con la subida multipart iniciada.');
+    }
 
     if ($uploadId === '' || $key === '' || $partNumber <= 0 || $contentLength <= 0) {
       throw new RuntimeException('Parámetros inválidos para firmar (uploadId,key,partNumber,contentLength)');

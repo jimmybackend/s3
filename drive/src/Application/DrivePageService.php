@@ -13,28 +13,9 @@ final class DrivePageService
     ) {
     }
 
-    public function preferencesRedirect(array &$session, array $query, string $method): ?string
-    {
-        if ($method !== 'GET' || !isset($query['preferencias'])) {
-            return null;
-        }
-
-        $session['show_counts'] = isset($query['toggle_counts']);
-        $session['show_metas'] = isset($query['toggle_metas']);
-        $session['media_hidden'] = !isset($query['toggle_media']);
-        $session['show_filters'] = filter_var($query['toggle_filters'] ?? false, FILTER_VALIDATE_BOOLEAN);
-
-        unset($query['toggle_counts'], $query['toggle_metas'], $query['toggle_media'], $query['preferencias']);
-        return 's3.php' . ($query !== [] ? '?' . http_build_query($query) : '');
-    }
-
     public function build(array &$session, array $query, int $userId): DrivePageViewModel
     {
         $vm = new DrivePageViewModel();
-        $vm->showCounts = (bool) ($session['show_counts'] ?? false);
-        $vm->showMetas = (bool) ($session['show_metas'] ?? false);
-        $vm->mediaHidden = (bool) ($session['media_hidden'] ?? true);
-        $vm->showFilters = (bool) ($session['show_filters'] ?? true);
 
         $route = $this->paths->normalizeForUser((string) ($session['ruta_actual'] ?? ''), $userId);
         $session['ruta_actual'] = $route;

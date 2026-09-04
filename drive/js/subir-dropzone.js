@@ -25,7 +25,18 @@ const drop = new Dropzone('#dropzonePublico', {
   },
 
   async success(file, response) {
-    console.log('✅ Archivo subido:', response);
+    let payload = response;
+    if (typeof payload === 'string') {
+      try { payload = JSON.parse(payload); } catch (_) { payload = null; }
+    }
+    const first = payload && Array.isArray(payload.resultados) ? payload.resultados[0] : null;
+    if (!payload || payload.ok !== true || (first && first.estado !== 'ok')) {
+      const message = (first && first.mensaje) || (payload && payload.error) || 'La subida no se confirmó correctamente.';
+      this.emit('error', file, message);
+      return;
+    }
+
+    console.log('✅ Archivo subido:', payload);
     await window.DriveUploadDestination.afterSuccess(file._driveTargetRoute || '');
   },
 

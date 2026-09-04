@@ -14,22 +14,8 @@ $session->requireAuthenticated('index.php');
 $userId = $session->userId();
 
 $pageService = $app->drivePageService();
-$redirect = $pageService->preferencesRedirect(
-    $_SESSION,
-    $_GET,
-    $_SERVER['REQUEST_METHOD'] ?? 'GET'
-);
-if ($redirect !== null) {
-    header('Location: ' . $redirect);
-    exit;
-}
-
 $vm = $pageService->build($_SESSION, $_GET, $userId);
 
-$showCounts = $vm->showCounts;
-$showMetas = $vm->showMetas;
-$mediaHidden = $vm->mediaHidden;
-$showFilters = $vm->showFilters;
 $basePrefix = $vm->basePrefix;
 $tipo = $vm->tipo;
 $buscar = $vm->buscar;
@@ -125,9 +111,6 @@ $footerEspacioUsado = $storageUsage['formatted'];
         </a>
 
         <div class="dropdown-menu dropdown-menu-right" aria-labelledby="usuarioMenu">
-          <button class="dropdown-item" data-toggle="modal" data-target="#modalPreferencias">
-            <i class="fas fa-sliders-h"></i> Preferencias
-          </button>
           <button class="dropdown-item" data-toggle="modal" data-target="#modalEnlacesUtiles">
             <i class="fas fa-link"></i> Enlaces
           </button>
@@ -261,7 +244,6 @@ $footerEspacioUsado = $storageUsage['formatted'];
         </form>
 
         <!-- Formulario de filtros -->
-        <?php if ($showFilters): ?>
           <form id="formFiltros" class="form-inline" onsubmit="return false;">
             <input type="hidden" name="ruta" value="<?= htmlspecialchars($basePrefix) ?>">
             <input type="hidden" name="limite" value="<?= (int)($_GET['limite'] ?? 5) ?>">
@@ -282,7 +264,6 @@ $footerEspacioUsado = $storageUsage['formatted'];
               Quitar filtros
             </button>
           </form>
-        <?php endif; ?>
         
                     <!-- Opciones de reproducción -->
             <div id="ap-controls" class="d-flex align-items-center mb-2">
@@ -818,61 +799,11 @@ $footerEspacioUsado = $storageUsage['formatted'];
         </button>
       </div>
       <div class="modal-body" id="cuerpoMetadatos" style="word-wrap: break-word; overflow-x: auto;">
-        <!-- Aquí van los metadatos -->
-        <?php if (!empty($archivo['meta'])): ?>
-          <br><small>Meta:</small>
-          <?php foreach ($archivo['meta'] as $k => $v): ?>
-            <br><small><strong><?= htmlspecialchars($k) ?></strong>: <?= htmlspecialchars($v) ?></small>
-          <?php endforeach; ?>
-        <?php endif; ?>
       </div>
     </div>
   </div>
 </div>
 
-<!-- Modal: Preferencias -->
-<div class="modal fade" id="modalPreferencias" tabindex="-1" role="dialog" aria-labelledby="modalPreferenciasLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered" role="document">
-    <div class="modal-content">
-      <form method="get" action="s3.php">
-        <input type="hidden" name="ruta" value="<?= htmlspecialchars($basePrefix) ?>">
-        <input type="hidden" name="preferencias" value="1">
-        <div class="modal-header bg-primary text-white">
-          <h5 class="modal-title" id="modalPreferenciasLabel"><i class="fas fa-cogs"></i> Opciones de visualización</h5>
-          <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
-        </div>
-        <div class="modal-body">
-
-          <div class="custom-control custom-switch mb-2">
-            <input type="checkbox" class="custom-control-input" id="switchCounts" name="toggle_counts" value="1" <?= $showCounts ? 'checked' : '' ?>>
-            <label class="custom-control-label" for="switchCounts">Mostrar conteo de archivos</label>
-          </div>
-
-          <div class="custom-control custom-switch mb-2">
-            <input type="checkbox" class="custom-control-input" id="switchMetas" name="toggle_metas" value="1" <?= $showMetas ? 'checked' : '' ?>>
-            <label class="custom-control-label" for="switchMetas">Mostrar metadatos</label>
-          </div>
-
-          <div class="custom-control custom-switch mb-2">
-            <input type="checkbox" class="custom-control-input" id="switchMedia" name="toggle_media" value="1" <?= $mediaHidden ? '' : 'checked' ?>>
-            <label class="custom-control-label" for="switchMedia">Mostrar reproductor flotante</label>
-          </div>
-          
-          <div class="custom-control custom-switch mb-2">
-          <input type="checkbox" class="custom-control-input" id="switchFilters" name="toggle_filters" value="1" <?= $showFilters ? 'checked' : '' ?>>
-          <label class="custom-control-label" for="switchFilters">Mostrar filtros de búsqueda</label>
-          </div>
-
-
-        </div>
-        <div class="modal-footer">
-          <button type="submit" class="btn btn-primary">Guardar cambios</button>
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
-        </div>
-      </form>
-    </div>
-  </div>
-</div>
 <!-- Modal: Enlaces Utiles -->
 <div class="modal fade" id="modalEnlacesUtiles" tabindex="-1" role="dialog" aria-labelledby="modalEnlacesUtilesLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered modal-md" role="document">

@@ -1,0 +1,58 @@
+name: Core OOP migration
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/scripts/oop_core_migration.py'
+      - '.github/workflows/oop-core-migration.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Apply migration
+        run: python3 .github/scripts/oop_core_migration.py
+
+      - name: Validate PHP syntax
+        run: |
+          find drive -type f -name '*.php' -print0 | xargs -0 -n1 php -l >/tmp/php-lint.log
+          cat /tmp/php-lint.log
+
+      - name: Validate JavaScript syntax
+        run: |
+          for f in drive/js/*.js; do node --check "$f"; done
+
+      - name: Audit structural OOP
+        run: |
+          set -euo pipefail
+          test -f drive/src/Core/ApplicationKernel.php
+          ! grep -R "function drive_app" -n drive/app_bootstrap.php drive/src
+          ! grep -R "drive_app()" -n drive --include='*.php'
+          ! grep -q '<script>' drive/bloque_archivos.php
+          grep -q 'data-file-bulk-action="delete"' drive/bloque_archivos.php
+          grep -q 'class FileBlockApp' drive/js/file-block.js
+          test "$(grep -L '^class .*Module' drive/js/*.js | grep -v 'file-block.js' | wc -l)" -eq 0
+          test "$(grep -R -l '^function ' drive/js --include='*.js' | wc -l)" -eq 0
+          grep -q 'css/styles.css' drive/s3.php
+          ! grep -q 'css/styles-old.css' drive/s3.php
+
+      - name: Commit migration
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add drive
+          if git diff --cached --quiet; then
+            echo "No changes"
+            exit 0
+          fi
+          git commit -m "Encapsulate Drive bootstrap and JavaScript in OOP modules"
+          git push origin main

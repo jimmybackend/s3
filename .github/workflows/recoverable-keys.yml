@@ -1,0 +1,60 @@
+name: Recoverable S3 keys
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/scripts/recoverable_keys.py'
+      - '.github/workflows/recoverable-keys.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Apply migration
+        run: python3 .github/scripts/recoverable_keys.py
+      - name: Validate PHP
+        run: |
+          set -euo pipefail
+          php -l drive/src/Storage/StorageObjectNameCodec.php
+          php -l drive/src/Core/DriveApplication.php
+          php -l drive/S3Manager.php
+          php -l drive/src/Sync/SyncRepository.php
+          php -l drive/src/Sync/S3SyncService.php
+          php -l drive/src/Http/Controller/SyncController.php
+          php -l drive/src/Application/FileKeyRotationService.php
+          php -l drive/encriptar_archivo.php
+          php -l drive/upload/drivers/LocalPresignedPutUploader.php
+          php -l drive/upload/drivers/RemoteUrlUploader.php
+          php -l drive/upload/drivers/DropboxUploader.php
+          php -l drive/upload/drivers/Chunked15MBUploader.php
+      - name: Contract checks
+        run: |
+          set -euo pipefail
+          grep -q "createFolderObjectName" drive/S3Manager.php
+          grep -q "createFileObjectName" drive/S3Manager.php
+          grep -q "Renombrar es una operación exclusivamente lógica" drive/S3Manager.php
+          ! grep -A80 "public function renombrarCarpeta" drive/S3Manager.php | grep -q "copyObject"
+          grep -q "No puedes eliminar la carpeta raíz" drive/S3Manager.php
+          grep -q "recoverFolderVisibleName" drive/src/Sync/S3SyncService.php
+          grep -q "recoverVisibleFileName" drive/src/Sync/S3SyncService.php
+          grep -q "UPDATE S3Folders SET Found=1,ParentPrefix" drive/src/Sync/SyncRepository.php
+          grep -q "f_<32hex>" drive/ARCHITECTURE.md
+      - name: Commit migration
+        run: |
+          set -euo pipefail
+          git config user.name "Jimmy Backend"
+          git config user.email "jimmybackend@gmail.com"
+          git add drive
+          if git diff --cached --quiet; then
+            echo "No changes"
+            exit 0
+          fi
+          git commit -m "Separate visible names from recoverable S3 keys"
+          git push

@@ -5,7 +5,6 @@ namespace ArcadeCloud\Drive\Http\Controller;
 
 use ArcadeCloud\Drive\Application\FileAccessService;
 use ArcadeCloud\Drive\Application\ZipDownloadService;
-use ArcadeCloud\Drive\Aws\FileRecordLocator;
 use ArcadeCloud\Drive\Http\BinaryResponse;
 
 final class FileAccessController
@@ -34,6 +33,16 @@ final class FileAccessController
         } catch (\Throwable $e) { $this->response->text($this->status($e), 'Error al descargar: '.$e->getMessage()); }
     }
 
+    public function pdf(): never
+    {
+        try {
+            $file=$this->service()->downloadStream($this->userId(), $this->request->queryString('archivo'));
+            $this->response->inlineDocument($file, 'application/pdf', 86400);
+        } catch (\Throwable $e) {
+            $this->response->text($this->status($e), 'Error al cargar PDF: '.$e->getMessage());
+        }
+    }
+
     public function view(): never
     {
         try {
@@ -53,14 +62,14 @@ final class FileAccessController
             if ($this->request->method() !== 'POST') $this->response->text(405, 'Método no permitido');
             $keys=$this->request->postArray('archivos');
             if (!$keys) $keys=$this->request->postJsonArray('archivos_json');
-            $service=new ZipDownloadService(new FileRecordLocator($this->app->db()), $this->app->s3(), $this->app->bucket());
+            $service=new ZipDownloadService($this->app->fileRecordLocator(), $this->app->s3(), $this->app->bucket());
             $this->response->zip($service->create($this->userId(),$keys));
         } catch (\Throwable $e) { $this->response->text($this->status($e), 'Error: '.$e->getMessage()); }
     }
 
     private function service(): FileAccessService
     {
-        return new FileAccessService(new FileRecordLocator($this->app->db()), $this->app->s3(), $this->app->bucket(), $this->app->s3Manager());
+        return new FileAccessService($this->app->fileRecordLocator(), $this->app->s3(), $this->app->bucket(), $this->app->s3Manager());
     }
 
     private function userId(): int

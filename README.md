@@ -2,6 +2,23 @@
 
 ArcadeCloud Drive es un gestor de archivos familiar multiusuario construido sobre **PHP + MySQL + Amazon S3**. MySQL es la fuente de verdad para la navegación y S3 conserva el contenido físico.
 
+## Estado estable
+
+**Versión de cierre: `v1.0-oop` — 5 de septiembre de 2026.**
+
+La migración incremental del backend heredado a arquitectura orientada a objetos está terminada. La versión estable vive en `main` y mantiene los contratos HTTP y la funcionalidad existente del Drive.
+
+Principios de esta línea estable:
+
+- entrypoints PHP delgados;
+- lógica de negocio bajo `drive/src/`;
+- navegación diaria DB-first;
+- acceso multiusuario limitado por `user_id_`;
+- S3 como almacenamiento físico, no como índice de navegación;
+- servicios AWS detrás de Controller / Service / Gateway;
+- configuración privada y secretos fuera del repositorio;
+- procesos largos, como Amazon Transcribe, ejecutados y consultados de forma asíncrona.
+
 ## Principios
 
 ### DB-first
@@ -117,6 +134,8 @@ El Drive integra:
 - Comprehend;
 - Cost Explorer.
 
+Las acciones AWS del listado funcionan también en dispositivos táctiles. Amazon Transcribe inicia el trabajo en segundo plano y el frontend consulta su estado hasta notificar que la transcripción está lista.
+
 `ec2.php` es un panel personal para revisar y operar recursos EC2. `ec2-cron.php` aplica la política horaria definida para evitar mantener recursos de prueba encendidos fuera del horario permitido.
 
 ### Herramienta AWS personal
@@ -153,6 +172,8 @@ drive/src/
 
 `DriveApplication` es el composition root. `ApplicationKernel` expone la instancia de aplicación y los entrypoints públicos delegan en controladores.
 
+El antiguo monolito de acceso S3 ya no forma parte del runtime. Las responsabilidades están distribuidas entre repositories, services, gateways y utilidades de infraestructura específicas.
+
 ## Estructura principal
 
 ```text
@@ -174,7 +195,6 @@ s3/
     ├── aws.php
     ├── ec2.php
     ├── ec2-cron.php
-    ├── S3Manager.php
     ├── ARCHITECTURE.md
     ├── api/
     │   └── upload.php
@@ -222,16 +242,22 @@ composer install --no-dev --optimize-autoloader
 
 ## Documentación
 
-- `drive/ARCHITECTURE.md`: reglas y módulos de arquitectura.
+- `drive/ARCHITECTURE.md`: arquitectura y reglas obligatorias.
+- `drive/docs/RELEASE_V1_OOP.md`: cierre de la migración y baseline estable.
 - `drive/docs/DB_FIRST_NAVIGATION.md`: navegación y consultas del catálogo.
 - `drive/docs/KEY_ROTATION.md`: rotación de key física.
 - `drive/docs/UPLOAD_CLEANUP.md`: limpieza segura de subidas abandonadas.
 - `drive/docs/PERSONAL_AWS_TOOL.md`: herramienta personal y configuración privada.
+- `drive/docs/RUNTIME_ENDPOINTS.md`: inventario de entrypoints runtime.
 - `drive/upload/LEEME.md`: API y drivers de subida.
 
 ## CI
 
 `.github/workflows/` valida sintaxis PHP, fronteras OOP, referencias, seguridad, subida, sincronización, sharing, navegación, multimedia y `git diff --check`.
+
+## Flujo de trabajo después de v1.0-oop
+
+Los cambios nuevos deben partir de `main` en una rama de funcionalidad o mantenimiento, validarse y volver a `main` mediante merge. La migración OOP ya no es una rama de trabajo activa.
 
 ## Licencia
 

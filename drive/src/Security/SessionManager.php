@@ -19,6 +19,11 @@ final class SessionManager
         }
     }
 
+    public function snapshot(): array
+    {
+        return isset($_SESSION) && is_array($_SESSION) ? $_SESSION : [];
+    }
+
     public function isAuthenticated(): bool
     {
         return isset($_SESSION['usuario']) && trim((string)$_SESSION['usuario']) !== '';

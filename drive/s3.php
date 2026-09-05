@@ -1788,7 +1788,7 @@ $footerEspacioUsado = $storageUsage['formatted'];
 
 </div>
 
-<script src="js/polly.js?v=20260905-aws-actions1"></script>
+<script src="js/polly.js?v=<?= (int) filemtime(__DIR__ . '/js/polly.js') ?>"></script>
 <script src="js/audiovideo.js"></script>
 <script src="js/media-floating.js?v=20260904-1"></script>
 
@@ -1807,7 +1807,7 @@ $footerEspacioUsado = $storageUsage['formatted'];
 
 <script src="js/imagenes.js"></script>
 
-<script src="js/aws-comprehend.js?v=20260905-aws-actions1"></script>
+<script src="js/aws-comprehend.js?v=<?= (int) filemtime(__DIR__ . '/js/aws-comprehend.js') ?>"></script>
 
 <script src="js/mediaFloating.js"></script>
 

@@ -1,42 +1,42 @@
 # Herramienta AWS personal
 
-`drive/aws.php` es una herramienta personal y temporal. No forma parte de las funciones compartidas del Drive familiar.
+`drive/aws.php` es una herramienta privada separada de las funciones familiares del Drive.
 
 ## Política de acceso
 
-- Si existe una sesión autenticada del Drive, únicamente `user_id = 1` puede usar la herramienta.
-- Una sesión autenticada de cualquier otro usuario recibe HTTP 403 y no puede usar la contraseña alternativa.
-- Sin sesión del Drive, puede utilizarse la contraseña privada configurada fuera del repositorio.
-- La contraseña y las semillas TOTP nunca deben almacenarse en GitHub ni dentro del webroot.
+- Con sesión autenticada del Drive, únicamente `user_id = 1` puede usarla.
+- Cualquier otro usuario autenticado recibe HTTP 403.
+- Sin sesión del Drive, se requiere la contraseña privada configurada fuera del repositorio.
+- La contraseña y las semillas TOTP no se almacenan en Git ni dentro del webroot.
 
 ## Arquitectura
 
 ```text
 aws.php
   -> PersonalAwsController
-      -> PersonalToolAccessService
-      -> PersonalTotpService
-          -> PersonalAwsConfig
-      -> PersonalAwsPageRenderer
+     -> PersonalToolAccessService
+     -> PersonalTotpService
+        -> PersonalAwsConfig
+     -> PersonalAwsPageRenderer
 ```
 
-Las semillas TOTP permanecen en el servidor. El navegador recibe únicamente un identificador de cuenta, la etiqueta y, después de solicitarlo, el código TOTP generado.
+Las semillas TOTP permanecen en el servidor. El navegador recibe identificadores y etiquetas de cuenta y, cuando se solicita, el código TOTP generado por el servidor.
 
-## Archivo privado
+## Configuración privada
 
-Por defecto se lee:
+Ruta predeterminada:
 
 ```text
 /etc/arcadecloud-drive/personal-aws.json
 ```
 
-Puede cambiarse mediante:
+Ruta alternativa:
 
 ```text
 ARCADECLOUD_PERSONAL_AWS_CONFIG=/ruta/privada/personal-aws.json
 ```
 
-Formato esperado, usando únicamente valores de ejemplo:
+Formato:
 
 ```json
 {
@@ -47,11 +47,6 @@ Formato esperado, usando únicamente valores de ejemplo:
       "label": "AWS principal",
       "secret": "TOTP_SECRET_AQUI",
       "note": ""
-    },
-    "correo-personal": {
-      "label": "Correo personal",
-      "secret": "TOTP_SECRET_AQUI",
-      "note": "Nota privada opcional"
     }
   }
 }
@@ -63,8 +58,4 @@ Permisos recomendados:
 root:nginx 0640
 ```
 
-El hash de la contraseña debe generarse en el servidor con `password_hash()`; nunca se documenta la contraseña real.
-
-## Seguridad
-
-Versiones históricas de `aws.php` contenían material TOTP dentro del código. Eliminarlo del HEAD evita nuevas exposiciones, pero no lo elimina del historial Git. Las semillas históricamente versionadas deben considerarse conocidas por cualquier actor con acceso al repositorio y conviene rotarlas cuando sea posible.
+El hash de contraseña se genera en el servidor mediante `password_hash()` y la contraseña real no se documenta.

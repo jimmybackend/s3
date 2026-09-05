@@ -1,0 +1,70 @@
+name: OOP upload validation
+
+on:
+  push:
+    branches:
+      - main
+      - 'refactor/**'
+    paths:
+      - 'drive/api/upload.php'
+      - 'drive/upload/UploadFactory.php'
+      - 'drive/upload/drivers/LocalPresignedPutUploader.php'
+      - 'drive/upload/drivers/RemoteUrlUploader.php'
+      - 'drive/upload/drivers/DropboxUploader.php'
+      - 'drive/upload/drivers/Chunked15MBUploader.php'
+      - 'drive/src/Http/Controller/UploadController.php'
+      - 'drive/src/Http/Request.php'
+      - 'drive/src/Core/DriveApplication.php'
+      - '.github/workflows/oop-upload.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate PHP syntax
+        run: |
+          set -euo pipefail
+          for f in \
+            drive/api/upload.php \
+            drive/upload/UploadFactory.php \
+            drive/upload/drivers/LocalPresignedPutUploader.php \
+            drive/upload/drivers/RemoteUrlUploader.php \
+            drive/upload/drivers/DropboxUploader.php \
+            drive/upload/drivers/Chunked15MBUploader.php \
+            drive/src/Http/Controller/UploadController.php \
+            drive/src/Http/Request.php \
+            drive/src/Core/DriveApplication.php; do
+            php -l "$f"
+          done
+          echo PHP_OK
+
+      - name: Audit upload architecture
+        run: |
+          set -euo pipefail
+          ! grep -q '\$_SESSION\|\$_GET\|\$_POST\|\$_FILES\|\$_REQUEST\|\$db_connection\|UploadFactory::make' drive/api/upload.php
+          grep -q 'UploadController' drive/api/upload.php
+          grep -q 'uploadFactory' drive/src/Core/DriveApplication.php
+          grep -q 'UploadFactory' drive/src/Core/DriveApplication.php
+          grep -q 'uploadDestinationService' drive/src/Http/Controller/UploadController.php
+          grep -q 'local_put' drive/src/Http/Controller/UploadController.php
+          for f in \
+            drive/upload/drivers/LocalPresignedPutUploader.php \
+            drive/upload/drivers/RemoteUrlUploader.php \
+            drive/upload/drivers/DropboxUploader.php \
+            drive/upload/drivers/Chunked15MBUploader.php; do
+            ! grep -q 'global \$db_connection\|\$GLOBALS\|Config::getS3\|Config::getBucket\|\$_SESSION\|\$_SERVER\|\$_FILES' "$f"
+          done
+          grep -q 'StorageObjectNameCodec' drive/upload/UploadFactory.php
+          grep -q 'SessionManager' drive/upload/UploadFactory.php
+          echo OOP_OK
+
+      - name: Diff whitespace check
+        run: git diff --check HEAD^ HEAD

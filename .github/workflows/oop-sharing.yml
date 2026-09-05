@@ -4,12 +4,13 @@ on:
   push:
     branches:
       - main
-      - refactor/oop-sharing-tokens
+      - 'refactor/**'
     paths:
       - 'drive/generar_token.php'
       - 'drive/token_audio.php'
       - 'drive/token_video.php'
       - 'drive/token_texto.php'
+      - 'drive/ver.php'
       - 'drive/src/Sharing/**'
       - 'drive/src/Http/Controller/ShareController.php'
       - 'drive/src/Http/Controller/PublicShareController.php'
@@ -23,6 +24,7 @@ on:
       - 'drive/token_audio.php'
       - 'drive/token_video.php'
       - 'drive/token_texto.php'
+      - 'drive/ver.php'
       - 'drive/src/Sharing/**'
       - 'drive/src/Http/Controller/ShareController.php'
       - 'drive/src/Http/Controller/PublicShareController.php'
@@ -39,6 +41,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Validate PHP syntax
         run: |
@@ -58,7 +62,8 @@ jobs:
             drive/generar_token.php \
             drive/token_audio.php \
             drive/token_video.php \
-            drive/token_texto.php; do
+            drive/token_texto.php \
+            drive/ver.php; do
             php -l "$f"
           done
           echo PHP_OK
@@ -66,10 +71,13 @@ jobs:
       - name: Audit thin public endpoints
         run: |
           set -euo pipefail
-          for f in generar_token.php token_audio.php token_video.php token_texto.php; do
+          for f in generar_token.php token_audio.php token_video.php token_texto.php ver.php; do
             ! grep -q '\$_SESSION\|\$_GET\|\$_POST\|\$db_connection\|Config::getS3\|new S3Manager\|^function ' "drive/$f"
             grep -q 'Controller' "drive/$f"
           done
+          grep -q 'legacy' drive/ver.php
+          grep -q 'public function legacy' drive/src/Http/Controller/PublicShareController.php
+          grep -q "'expira'" drive/src/Sharing/ShareAccessService.php
           grep -q 'user_id_ = ? AND Found = 1' drive/src/Sharing/ShareFileRepository.php
           grep -q 'LOCK_EX' drive/src/Sharing/ShareTokenStore.php
           grep -q 'ShareFileRepository' drive/src/Sharing/ShareLinkService.php
@@ -96,3 +104,6 @@ jobs:
             unlink($path);
           '
           echo TOKEN_STORE_OK
+
+      - name: Diff whitespace check
+        run: git diff --check HEAD^ HEAD

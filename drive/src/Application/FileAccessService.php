@@ -13,8 +13,7 @@ final class FileAccessService
     public function __construct(
         private FileRecordLocator $locator,
         private S3Client $s3,
-        private string $bucket,
-        private \S3Manager $manager
+        private string $bucket
     ) {
     }
 
@@ -26,7 +25,23 @@ final class FileAccessService
     public function signedDownload(int $userId, string $key): array
     {
         $row = $this->locate($userId, $key);
-        return $this->manager->downloadFile((string)$row['_key']);
+        $realKey = (string)$row['_key'];
+        $name = trim((string)($row['Nombre'] ?? '')) ?: basename($realKey);
+        $name = str_replace(["\r", "\n", '"'], ['', '', "'"], $name);
+
+        $command = $this->s3->getCommand('GetObject', [
+            'Bucket' => $this->bucket,
+            'Key' => $realKey,
+            'ResponseContentDisposition' => 'attachment; filename="' . $name . '"',
+        ]);
+        $request = $this->s3->createPresignedRequest($command, '+10 minutes');
+
+        return [
+            'id' => (int)$row['id_'],
+            'nombre' => $name,
+            'key_s3' => $realKey,
+            'url_descarga' => (string)$request->getUri(),
+        ];
     }
 
     public function downloadStream(int $userId, string $key, string $fallbackName = ''): array

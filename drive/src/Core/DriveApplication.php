@@ -23,6 +23,8 @@ use ArcadeCloud\Drive\Storage\StorageObjectNameCodec;
 use ArcadeCloud\Drive\Storage\StorageUsageService;
 use ArcadeCloud\Drive\Storage\UserStoragePath;
 use ArcadeCloud\Drive\Storage\UserStorageProvisioner;
+use ArcadeCloud\Drive\Upload\PublicDropzoneUploadService;
+use ArcadeCloud\Drive\Upload\UploadCatalogRepository;
 use ArcadeCloud\Drive\View\FolderTreeRenderer;
 use Aws\S3\S3Client;
 use mysqli;
@@ -42,6 +44,8 @@ final class DriveApplication
     private ?MediaPlaylistRepository $mediaPlaylistRepository = null;
     private ?MediaPlaylistService $mediaPlaylistService = null;
     private ?ThumbnailService $thumbnailService = null;
+    private ?UploadCatalogRepository $uploadCatalogRepository = null;
+    private ?PublicDropzoneUploadService $publicDropzoneUploadService = null;
     private ?FileListService $fileListService = null;
     private ?DrivePageService $drivePageService = null;
     private ?UploadDestinationService $uploadDestinationService = null;
@@ -152,6 +156,22 @@ final class DriveApplication
             );
         }
         return $this->uploadFactory;
+    }
+
+    public function uploadCatalogRepository(): UploadCatalogRepository
+    {
+        return $this->uploadCatalogRepository ??= new UploadCatalogRepository($this->db);
+    }
+
+    public function publicDropzoneUploadService(): PublicDropzoneUploadService
+    {
+        return $this->publicDropzoneUploadService ??= new PublicDropzoneUploadService(
+            $this->s3,
+            $this->bucket,
+            (string)\Config::RUTA_COMPARTIDA,
+            $this->storageObjectNameCodec(),
+            $this->uploadCatalogRepository()
+        );
     }
 
     public function userStoragePath(): UserStoragePath

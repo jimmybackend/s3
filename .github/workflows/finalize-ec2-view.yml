@@ -1,0 +1,48 @@
+name: Finalize EC2 view OOP
+
+on:
+  push:
+    branches: ['refactor/oop-drive-migration']
+    paths:
+      - '.github/scripts/finalize_ec2_view.py'
+      - '.github/workflows/finalize-ec2-view.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  finalize:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Apply EC2 view cleanup
+        run: python3 .github/scripts/finalize_ec2_view.py
+
+      - name: Validate
+        run: |
+          set -euo pipefail
+          php -l drive/ec2.php >/dev/null
+          php -l drive/src/View/Ec2PanelHelper.php >/dev/null
+          ! grep -Eq '^function[[:space:]]+' drive/ec2.php
+          ! grep -Eq 'new[[:space:]]+(Ec2Client|RdsClient)|class[[:space:]]+(EC2Panel|RDSPanel)' drive/ec2.php
+          grep -q 'Ec2PanelHelper as H' drive/ec2.php
+          git diff --check
+          echo PHP_OK
+          echo OOP_OK
+          echo DIFF_OK
+
+      - name: Commit
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add drive/ec2.php
+          if git diff --cached --quiet; then
+            echo NO_CHANGES
+            exit 0
+          fi
+          git commit -m "Move EC2 panel helpers into view class"
+          git push origin HEAD:refactor/oop-drive-migration

@@ -1,265 +1,327 @@
-# Arquitectura OOP de ArcadeCloud Drive
+# Arquitectura de ArcadeCloud Drive
 
-## Estructura
+## Estructura general
 
 ```text
-raiz_proyecto/
-├── vendor/
-├── Config-s3.php
-├── db.php
-└── drive/
-    ├── app_bootstrap.php
-    ├── s3.php
-    ├── S3Manager.php
-    ├── src/
-    │   ├── Core/
-    │   ├── Application/
-    │   ├── Aws/
-    │   ├── Http/
-    │   ├── Media/
-    │   ├── Security/
-    │   ├── Sharing/
-    │   ├── Storage/
-    │   ├── Sync/
-    │   ├── Upload/
-    │   └── View/
-    └── upload/
+PHP entrypoint
+  -> Controller
+     -> Service
+        -> Repository / Infrastructure
 ```
 
-`drive/` es el DocumentRoot de la aplicación. `vendor/`, `Config-s3.php` y `db.php`
-están exactamente una carpeta arriba y no deben exponerse por HTTP.
+Los archivos públicos deben ser delgados. La lógica de negocio vive bajo `drive/src/` o en módulos OOP de `drive/upload/`.
 
-## Regla de diseño
+## Composition root
 
-El desarrollo nuevo y las refactorizaciones del Drive se implementan orientados a objetos:
+`DriveApplication` centraliza dependencias compartidas:
 
-- Los archivos PHP públicos son controladores o entrypoints delgados.
-- La lógica de negocio vive en clases bajo `src/` o en módulos OOP existentes.
-- `DriveApplication` actúa como composition root y centraliza dependencias compartidas.
-- `SessionManager` encapsula sesión y autenticación.
-- `DrivePageService` y `DrivePageViewModel` contienen la lógica de la página principal.
-- `S3Manager` es un servicio de infraestructura y acepta inyección de S3, mysqli y bucket.
-- `upload/` conserva Factory, drivers, repositories y storage orientados a objetos.
-- Los endpoints JSON nuevos deben reutilizar `Http\JsonResponse`.
-- Los endpoints heredados se migran al patrón Controller -> Service -> Repository/Infrastructure.
-- No debe agregarse nueva lógica de negocio procedural a los entrypoints.
+- `mysqli`;
+- `S3Client`;
+- bucket;
+- sesión;
+- repositorios;
+- servicios de aplicación;
+- servicios AWS;
+- servicios de sharing;
+- servicios de subida;
+- servicios de almacenamiento y sincronización.
 
-## Compatibilidad
+`ApplicationKernel` expone la instancia única utilizada por los entrypoints.
 
-`s3.php` conserva temporalmente variables para alimentar el HTML heredado, pero filtros,
-paginación, sesión y construcción de estado ya se obtienen mediante objetos. Esto permite
-migrar los endpoints restantes por módulos sin romper de golpe la aplicación en producción.
+## Navegación DB-first
 
-## Autenticación
-
-Los formularios existentes siguen enviando sus credenciales a `psesion.php` y el cierre de
-sesión sigue usando `logout.php`. Ambos archivos son ahora entrypoints delgados:
+MySQL es la fuente de verdad para la navegación normal.
 
 ```text
-psesion.php
-    -> AuthController::login()
-        -> AuthenticationService
-            -> AuthenticationRepository (Users / AccessControl)
-            -> SessionManager
+s3.php / bloque_archivos.php / bloque_carpetas.php
+  -> servicios de aplicación
+     -> FileS3 / S3Folders
+```
 
-logout.php
-    -> AuthController::logout()
+S3 no se lista para construir la navegación diaria.
+
+### Carpetas
+
+```text
+listar_carpetas.php
+  -> FolderQueryController
+     -> FolderQueryService
+        -> FolderRepository
+        -> UserStoragePath
+```
+
+### Ruta actual
+
+```text
+actualizar_ruta.php
+  -> NavigationController
+     -> UserStoragePath
+     -> SessionManager
+```
+
+### Búsqueda
+
+```text
+buscar_archivo.php
+  -> FileSearchController
+     -> FileSearchService
+        -> FileS3
+```
+
+### Uso de almacenamiento
+
+```text
+storage_usage.php
+  -> StorageUsageController
+     -> StorageUsageService
+        -> FileS3
         -> SessionManager
 ```
 
-Reglas preservadas del flujo histórico:
+## Multiusuario
 
-1. máximo de tres intentos de login por identificador dentro de la sesión;
-2. credenciales inválidas redirigen a `303.html`;
-3. usuarios no activos redirigen a `202.html`;
-4. los roles `Administración` y `Soporte` entran a `s3.php`;
-5. el acceso correcto se registra en `AccessControl`;
-6. las preferencias iniciales de sesión (`show_counts`, `show_metas`, `media_hidden`, `show_filters`) se conservan.
-
-La sesión ya no se manipula desde los endpoints. `SessionManager` concentra inicio, creación de
-sesión autenticada, contador de intentos y destrucción de sesión. Al autenticar correctamente se
-regenera el identificador de sesión para evitar conservar el ID previo al login.
-
-`AuthenticationRepository` es la única pieza del módulo que conoce las tablas `Users` y
-`AccessControl`; `AuthenticationService` concentra la validación del hash, estado del usuario y
-creación de la sesión autenticada.
-
-## Costos AWS
-
-El modal existente sigue consultando `costos_aws.php` y conserva el mismo contrato JSON visible:
+La raíz se calcula exclusivamente desde el ID autenticado:
 
 ```text
-costos_aws.php
-    -> AwsCostController
-        -> AwsCostService
-            -> CostExplorerGateway
-                -> AWS Cost Explorer
+user_id = 1 -> Data/
+user_id = 2 -> Data2/
+user_id = N -> DataN/
 ```
 
-`AwsCostController` valida la sesión y libera el lock de PHP antes de esperar a AWS.
-`AwsCostService` calcula los periodos, porcentajes y previsión del mes. `CostExplorerGateway`
-es la única clase del módulo que crea y conoce `CostExplorerClient`.
+`UserStoragePath` normaliza rutas y bloquea saltos hacia raíces de otros usuarios. `UserStorageProvisioner` garantiza que la raíz exista en catálogo y S3.
 
-La respuesta compatible mantiene `mes_actual`, `costo_actual`, `porcentaje_actual`,
-`fin_mes_previsto`, `costo_previsto`, `porcentaje_previsto` y `currency`. Se eliminaron del
-endpoint los datos de depuración de identidad AWS y cualquier fragmento de access key; una
-respuesta HTTP nunca debe exponer credenciales ni identificadores derivados de ellas.
+Las consultas de usuario deben limitarse por `user_id_` y, cuando corresponda, `Found=1`.
 
-## Media y miniaturas
+## Archivos y carpetas
 
-Los endpoints de lectura de playlist y miniaturas ya no contienen SQL ni manipulación directa
-de sesión:
+### Mutaciones de archivos
 
 ```text
-media_playlist.php
-    -> MediaPlaylistController
-        -> MediaPlaylistService
-            -> MediaPlaylistRepository (FileS3)
-            -> UserStoragePath
-
-thumb.php
-    -> ThumbnailController
-        -> ThumbnailService
-            -> MySQL / S3 / cache privada
+eliminar_archivo.php
+move_multiple.php
+mover_archivo.php
+renombrar_archivo.php
+  -> FileMutationController
 ```
 
-`MediaPlaylistRepository` filtra siempre por `user_id_`, ruta, `Found=1` y excluye archivos con
-`AccessType='secure'`. `MediaPlaylistService` normaliza la ruta dentro de la raíz real del usuario
-y conserva el contrato `audio` / `video` que consume el reproductor flotante.
-
-`ThumbnailController` conserva ETag, respuestas 304, headers `X-Thumb-*` y fallback de imagen.
-El snapshot de sesión necesario para validar archivos protegidos se obtiene mediante
-`SessionManager`; el entrypoint `thumb.php` no lee `$_SESSION` ni `$_GET`.
-
-## Provisionamiento multiusuario
-
-La raíz física/lógica del Drive se deriva exclusivamente del `Users.id` autenticado:
+### Mutaciones de carpetas
 
 ```text
-user_id = 1  -> Data/
-user_id = 2  -> Data2/
-user_id = 3  -> Data3/
-user_id = N  -> DataN/
+crear_carpeta.php
+eliminar_carpeta.php
+mover_carpeta.php
+renombrar_carpeta.php
+  -> FolderMutationController
 ```
 
-`UserStoragePath` es la única clase autorizada para calcular y normalizar esas raíces.
-`UserStorageProvisioner` se ejecuta al entrar a `s3.php` y es idempotente:
+### Seguridad de archivos
 
-1. consulta `S3Folders` por `user_id_ + Prefix`;
-2. si la raíz ya está registrada, no consulta ni escribe S3;
-3. si es el primer acceso, crea el objeto vacío `DataN/` en S3;
-4. registra la raíz en `S3Folders` con `Found=1`;
-5. la sesión se normaliza de nuevo contra la raíz del usuario antes de construir la página.
+```text
+set_file_security.php
+unlock_file.php
+relock_file.php
+  -> FileSecurityController
+     -> FileSecurityService
+        -> FileSecurityRepository
+```
 
-Esto permite que un usuario creado por cualquier sistema de registro quede provisionado en su
-primer acceso al Drive, siempre usando el ID real asignado por MySQL. La separación lógica en
-BD sigue siendo obligatoria mediante `user_id_` y ningún endpoint debe aceptar una raíz de otro usuario.
+### Acceso y descargas
 
-## Nombres visibles vs. nombres físicos en S3
+```text
+descargar.php
+descargar_archivo.php
+descargar_zip.php
+download_multiple.php
+ver_pdf.php
+ver_archivo.php
+  -> FileAccessController
+     -> FileAccessService / ZipDownloadService
+```
 
-El nombre que ve el usuario es un dato lógico de MySQL. Renombrar no renombra objetos en S3.
+### Texto
 
-- Archivo nuevo: `f_<32hex>-<nombre-de-creacion.ext>`.
-- Carpeta nueva: `d_<32hex>-<nombre-de-creacion>/`.
-- Raíz: `Data/` para `user_id=1`; `DataN/` para los demás usuarios. La raíz no se puede renombrar, mover ni eliminar.
-- `FileS3.Nombre` y `S3Folders.Nombre` son los nombres visibles y pueden cambiar sin modificar la key/prefix físico.
-- Mover sí cambia la ubicación física, pero conserva el basename físico y el nombre visible.
-- La sincronización nunca sobrescribe un `Nombre` visible existente. Si reconstruye una fila ausente, `StorageObjectNameCodec` recupera el nombre de creación desde el sufijo de la key.
-- Para archivos históricos `f_*` que no incorporaban nombre, la sincronización manual intenta `headObject` y metadata `original-name`; si tampoco existe, solo puede recuperar el basename físico.
+```text
+leer_texto.php
+guardar_texto.php
+validar_php.php
+  -> TextEditorController
+```
 
-Esta separación evita colisiones de nombres y permite reconstruir el catálogo desde S3. Como consecuencia deliberada, un nombre cambiado únicamente en MySQL después de la creación no puede recuperarse desde S3 si se pierde completamente la base de datos; se recuperará el nombre de creación. Para preservar también los renombrados posteriores hace falta respaldar MySQL o un manifiesto independiente.
+### Rotación de key física
 
-## Compartir archivos
+```text
+encriptar_archivo.php
+  -> FileKeyRotationController
+     -> FileKeyRotationService
+        -> FileRecordLocator
+        -> StorageObjectNameCodec
+```
 
-Los enlaces compartidos siguen conservando los endpoints históricos para no romper URLs ni JavaScript existente:
+## Nombres lógicos y físicos
 
-- `generar_token.php`
-- `token_audio.php`
-- `token_video.php`
-- `token_texto.php`
-- `ver.php` como visor de compatibilidad para enlaces antiguos
+- `FileS3.Nombre`: nombre visible.
+- `FileS3.Encriptado`: basename físico.
+- `S3Folders.Nombre`: nombre visible de carpeta.
+- la raíz del usuario no se puede renombrar, mover ni eliminar;
+- renombrar modifica el catálogo;
+- mover puede cambiar la ubicación física;
+- `StorageObjectNameCodec` centraliza la generación y lectura de nombres físicos.
 
-Estos entrypoints no contienen lógica de sesión, SQL, filesystem ni AWS. El flujo es:
+## Autenticación
+
+```text
+psesion.php
+  -> AuthController::login
+     -> AuthenticationService
+        -> AuthenticationRepository
+        -> SessionManager
+
+logout.php
+  -> AuthController::logout
+     -> SessionManager
+```
+
+`AuthenticationRepository` conoce `Users` y `AccessControl`. `SessionManager` concentra inicio, autenticación, preferencias de sesión y destrucción.
+
+## Sharing
 
 ```text
 generar_token.php
-    -> ShareController
-        -> ShareLinkService
-            -> ShareFileRepository (MySQL / ownership)
-            -> ShareTokenStore (tokens.json con flock)
+  -> ShareController
+     -> ShareLinkService
+        -> ShareFileRepository
+        -> ShareTokenStore
 
- token_*.php / ver.php
-    -> PublicShareController
-        -> ShareAccessService
-            -> ShareFileRepository
-            -> ShareTokenStore
-            -> ShareObjectStorage (S3)
-        -> SharePageRenderer
+token_audio.php
+token_video.php
+token_texto.php
+ver.php
+  -> PublicShareController
+     -> ShareAccessService
+        -> ShareFileRepository
+        -> ShareTokenStore
+        -> ShareObjectStorage
+     -> SharePageRenderer
 ```
 
-Reglas del módulo:
+La creación de enlaces requiere sesión y ownership. El acceso público requiere token válido. Las peticiones directas por key requieren sesión y ownership.
 
-1. crear un enlace requiere sesión autenticada;
-2. antes de crear el token se comprueba que el objeto pertenece al `user_id_` real en `FileS3` y que `Found=1`;
-3. una petición directa por key sin token también requiere sesión y ownership;
-4. el acceso con un token válido sigue siendo público hasta su expiración;
-5. los tokens nuevos conservan el formato histórico y agregan `user_id`, `file_id` y `nombre` para poder validar ownership;
-6. los tokens legacy que no tienen esos campos siguen siendo legibles para no romper enlaces existentes;
-7. `tokens.json` se mantiene fuera del repositorio y se actualiza con bloqueo de archivo para evitar escrituras concurrentes corruptas;
-8. `ShareObjectStorage` es la única pieza del módulo que conoce S3;
-9. `ver.php` conserva `?t=`/`?token=` y `?direct`/`?download`, pero delega toda validación y acceso a las clases del módulo.
+## Multimedia
 
-La persistencia en `tokens.json` es deliberadamente compatible con producción. Si más adelante se cambia a MySQL u otro storage, debe hacerse detrás de la misma responsabilidad de `ShareTokenStore`, sin volver a introducir persistencia en los endpoints.
+```text
+media_playlist.php
+  -> MediaPlaylistController
+     -> MediaPlaylistService
+        -> MediaPlaylistRepository
 
-## Subidas de archivos
+thumb.php
+  -> ThumbnailController
+     -> ThumbnailService
+```
 
-La subida que utiliza actualmente el Drive conserva `api/upload.php` como URL pública, pero el
-endpoint ya no conoce sesiones globales, S3, MySQL ni la selección concreta del driver:
+La playlist se construye desde `FileS3`. Las miniaturas utilizan catálogo, S3 y cache privada.
+
+## Subidas
+
+### API principal
 
 ```text
 api/upload.php
-    -> UploadController
-        -> UploadFactory
-            -> LocalPresignedPutUploader
-            -> RemoteUrlUploader
-            -> DropboxUploader
-            -> Chunked15MBUploader
+  -> UploadController
+     -> UploadFactory
+        -> LocalPresignedPutUploader
+        -> RemoteUrlUploader
+        -> DropboxUploader
+        -> Chunked15MBUploader
 ```
 
-`DriveApplication` inyecta `mysqli`, `S3Client`, bucket, `StorageObjectNameCodec`,
-`SessionManager` y el storage de estado en `UploadFactory`. Los cuatro drivers dejaron de leer
-`$db_connection`, `$GLOBALS`, `Config::getS3()`, `$_SESSION`, `$_SERVER` y `$_FILES`.
+Los drivers reciben sus dependencias por inyección. `FileS3Repository` registra los archivos y `UploadStateStore` mantiene el estado de multipart cuando corresponde.
 
-Los endpoints antiguos `upload.php` y `subir_archivo.php` se conservan como fachadas de
-compatibilidad y delegan a `LegacyUploadController`; no se eliminan mientras no se confirme que
-no existen consumidores externos.
+### Multipart directo
 
-La zona pública conserva sus URLs históricas, pero también está separada por responsabilidades:
+`up.php` crea multipart en la raíz `DataN/uploads/`. El navegador envía partes directamente a S3 mediante URLs presignadas. Al completar, el objeto se registra en `FileS3`.
+
+### Zona pública
 
 ```text
 upload_publico.php
-    -> PublicUploadController
-        -> PublicDropzoneUploadService
-            -> UploadCatalogRepository
-            -> S3
+  -> PublicUploadController
+     -> PublicDropzoneUploadService
+        -> UploadCatalogRepository
 
 subir_publico.php
-    -> PublicSharedBrowserController
-        -> PublicSharedBrowserService
-            -> PublicSharedBrowserRepository
-            -> S3
-        -> PublicSharedPageRenderer
+  -> PublicSharedBrowserController
+     -> PublicSharedBrowserService
+        -> PublicSharedBrowserRepository
+     -> PublicSharedPageRenderer
 ```
 
-Reglas de seguridad y compatibilidad de la zona pública:
+La zona pública queda confinada a la raíz compartida configurada.
 
-1. toda subida y navegación pública queda confinada a `Config::RUTA_COMPARTIDA` (`Data/Compartidos/` actualmente);
-2. un `prefix` o `ruta` no puede escapar de esa raíz ni contener segmentos `..`;
-3. la creación de carpetas rechaza separadores, caracteres de control y nombres `.`/`..`;
-4. `upload_publico.php` conserva el contrato JSON y registra el archivo en `FileS3` mediante repository;
-5. `subir_publico.php` conserva la página, navegación, Dropzone y creación de carpetas, pero ya no contiene llamadas S3 ni SQL;
-6. el nombre visible se recupera de `FileS3` por `Encriptado + Ruta` y, si no existe catálogo, se muestra el basename físico;
-7. la navegación normal autenticada del Drive sigue siendo DB-first; el listado S3 de `subir_publico.php` es una superficie pública heredada y explícita, no se usa para la navegación normal multiusuario.
+### Limpieza manual
 
-El workflow `oop-upload.yml` valida sintaxis, entrypoints delgados, ausencia de globals en los
-drivers, límites de la raíz compartida y `git diff --check` antes de considerar cerrado el módulo.
+```text
+up-clean.php
+  -> UploadCleanupController
+     -> UploadCleanupService
+
+bin/upload_cleanup.php
+  -> UploadCleanupCommand
+     -> UploadCleanupService
+```
+
+La edad predeterminada es 30 días. Los objetos registrados en `FileS3` nunca se eliminan como huérfanos.
+
+## Sincronización
+
+```text
+sync_s3_to_db.php
+sync_status.php
+  -> SyncController
+     -> S3SyncService
+        -> SyncRepository
+        -> SyncJobStore
+
+bin/sync_worker.php
+```
+
+La sincronización recorre S3 por lotes y actualiza el catálogo sin convertir S3 en la fuente de navegación normal.
+
+## Servicios AWS
+
+```text
+costos_aws.php
+  -> AwsCostController
+     -> AwsCostService
+        -> CostExplorerGateway
+```
+
+Las acciones sobre archivos AWS delegan en `AwsFileController` y servicios especializados para Rekognition, Textract, Polly, Translate y Comprehend. Transcribe utiliza `TranscriptionController` y `TranscriptionFileService`.
+
+## Herramienta AWS personal
+
+```text
+aws.php
+  -> PersonalAwsController
+     -> PersonalToolAccessService
+     -> PersonalTotpService
+        -> PersonalAwsConfig
+     -> PersonalAwsPageRenderer
+```
+
+Con sesión del Drive, sólo `user_id = 1` tiene acceso. La configuración privada se lee fuera del repositorio y las semillas TOTP permanecen del lado servidor.
+
+## Administración EC2
+
+`ec2.php` muestra y opera los recursos EC2 utilizados por el propietario. `ec2-cron.php` aplica la política horaria de apagado configurada para evitar recursos de prueba encendidos fuera de horario.
+
+## Reglas obligatorias
+
+1. No agregar SQL a entrypoints públicos.
+2. No agregar llamadas AWS/S3 a entrypoints cuando exista un Service/Gateway responsable.
+3. No listar S3 para navegación normal.
+4. No aceptar rutas de otro usuario.
+5. No exponer secretos, credenciales ni semillas TOTP en Git, HTML o JSON.
+6. No modificar `vendor/`.
+7. Mantener los contratos HTTP utilizados por el frontend.
+8. Validar cambios con `php -l`, `node --check` cuando aplique y `git diff --check`.

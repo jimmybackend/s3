@@ -14,8 +14,15 @@ raiz_proyecto/
     ├── src/
     │   ├── Core/
     │   ├── Application/
+    │   ├── Aws/
+    │   ├── Http/
+    │   ├── Media/
     │   ├── Security/
-    │   └── Http/
+    │   ├── Sharing/
+    │   ├── Storage/
+    │   ├── Sync/
+    │   ├── Upload/
+    │   └── View/
     └── upload/
 ```
 
@@ -42,7 +49,6 @@ El desarrollo nuevo y las refactorizaciones del Drive se implementan orientados 
 `s3.php` conserva temporalmente variables para alimentar el HTML heredado, pero filtros,
 paginación, sesión y construcción de estado ya se obtienen mediante objetos. Esto permite
 migrar los endpoints restantes por módulos sin romper de golpe la aplicación en producción.
-
 
 ## Provisionamiento multiusuario
 
@@ -82,3 +88,42 @@ El nombre que ve el usuario es un dato lógico de MySQL. Renombrar no renombra o
 
 Esta separación evita colisiones de nombres y permite reconstruir el catálogo desde S3. Como consecuencia deliberada, un nombre cambiado únicamente en MySQL después de la creación no puede recuperarse desde S3 si se pierde completamente la base de datos; se recuperará el nombre de creación. Para preservar también los renombrados posteriores hace falta respaldar MySQL o un manifiesto independiente.
 
+## Compartir archivos
+
+Los enlaces compartidos siguen conservando los endpoints históricos para no romper URLs ni JavaScript existente:
+
+- `generar_token.php`
+- `token_audio.php`
+- `token_video.php`
+- `token_texto.php`
+
+Estos entrypoints no contienen lógica de sesión, SQL, filesystem ni AWS. El flujo es:
+
+```text
+generar_token.php
+    -> ShareController
+        -> ShareLinkService
+            -> ShareFileRepository (MySQL / ownership)
+            -> ShareTokenStore (tokens.json con flock)
+
+ token_*.php
+    -> PublicShareController
+        -> ShareAccessService
+            -> ShareFileRepository
+            -> ShareTokenStore
+            -> ShareObjectStorage (S3)
+        -> SharePageRenderer
+```
+
+Reglas del módulo:
+
+1. crear un enlace requiere sesión autenticada;
+2. antes de crear el token se comprueba que el objeto pertenece al `user_id_` real en `FileS3` y que `Found=1`;
+3. una petición directa por key sin token también requiere sesión y ownership;
+4. el acceso con un token válido sigue siendo público hasta su expiración;
+5. los tokens nuevos conservan el formato histórico y agregan `user_id`, `file_id` y `nombre` para poder validar ownership;
+6. los tokens legacy que no tienen esos campos siguen siendo legibles para no romper enlaces existentes;
+7. `tokens.json` se mantiene fuera del repositorio y se actualiza con bloqueo de archivo para evitar escrituras concurrentes corruptas;
+8. `ShareObjectStorage` es la única pieza del módulo que conoce S3.
+
+La persistencia en `tokens.json` es deliberadamente compatible con producción. Si más adelante se cambia a MySQL u otro storage, debe hacerse detrás de la misma responsabilidad de `ShareTokenStore`, sin volver a introducir persistencia en los endpoints.

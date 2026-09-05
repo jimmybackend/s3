@@ -35,6 +35,49 @@ final class PublicShareController
         $this->handleGet($endpointKind);
     }
 
+    public function legacy(): void
+    {
+        if ($this->request->method() !== 'GET') {
+            $this->renderError(new ShareException('Método no permitido.', 405));
+            return;
+        }
+
+        try {
+            $token = $this->request->queryString(
+                't',
+                $this->request->queryString('token')
+            );
+
+            if ($token === '') {
+                throw new ShareException('Falta parámetro de token.', 400);
+            }
+
+            $share = $this->app->shareAccessService()->publicToken($token);
+
+            if ($this->request->hasQuery('direct') || $this->request->hasQuery('download')) {
+                header('Location: ' . (string)$share['url']);
+                exit;
+            }
+
+            $kind = $this->renderer->resolveKind(
+                '',
+                (string)($share['tipo'] ?? 'otro'),
+                (string)$share['key']
+            );
+
+            $content = $kind === 'text'
+                ? $this->app->shareAccessService()->readPublicContent($share)
+                : null;
+
+            header('Content-Type: text/html; charset=UTF-8');
+            echo $this->renderer->render($kind, $share, $content);
+        } catch (ShareException $e) {
+            $this->renderError($e);
+        } catch (Throwable $e) {
+            $this->renderError(new ShareException('No se pudo abrir el enlace compartido.', 500));
+        }
+    }
+
     private function handlePrivatePost(string $endpointKind): void
     {
         try {

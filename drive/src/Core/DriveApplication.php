@@ -10,9 +10,11 @@ use ArcadeCloud\Drive\Application\FolderQueryService;
 use ArcadeCloud\Drive\Application\UploadDestinationService;
 use ArcadeCloud\Drive\Aws\AwsCostService;
 use ArcadeCloud\Drive\Aws\CostExplorerGateway;
+use ArcadeCloud\Drive\Aws\Ec2Gateway;
 use ArcadeCloud\Drive\Aws\FileRecordLocator;
 use ArcadeCloud\Drive\Aws\PersonalAwsConfig;
 use ArcadeCloud\Drive\Aws\PersonalTotpService;
+use ArcadeCloud\Drive\Aws\RdsGateway;
 use ArcadeCloud\Drive\Media\MediaPlaylistRepository;
 use ArcadeCloud\Drive\Media\MediaPlaylistService;
 use ArcadeCloud\Drive\Media\ThumbnailService;
@@ -20,6 +22,7 @@ use ArcadeCloud\Drive\Security\AuthenticationRepository;
 use ArcadeCloud\Drive\Security\AuthenticationService;
 use ArcadeCloud\Drive\Security\PersonalToolAccessService;
 use ArcadeCloud\Drive\Security\SessionManager;
+use ArcadeCloud\Drive\Security\UserDirectoryRepository;
 use ArcadeCloud\Drive\Sharing\ShareAccessService;
 use ArcadeCloud\Drive\Sharing\ShareFileRepository;
 use ArcadeCloud\Drive\Sharing\ShareLinkService;
@@ -30,6 +33,7 @@ use ArcadeCloud\Drive\Storage\StorageObjectNameCodec;
 use ArcadeCloud\Drive\Storage\StorageUsageService;
 use ArcadeCloud\Drive\Storage\UserStoragePath;
 use ArcadeCloud\Drive\Storage\UserStorageProvisioner;
+use ArcadeCloud\Drive\Upload\AdminMultipartUploadService;
 use ArcadeCloud\Drive\Upload\PublicDropzoneUploadService;
 use ArcadeCloud\Drive\Upload\PublicSharedBrowserRepository;
 use ArcadeCloud\Drive\Upload\PublicSharedBrowserService;
@@ -61,6 +65,8 @@ final class DriveApplication
     private ?MediaPlaylistService $mediaPlaylistService = null;
     private ?ThumbnailService $thumbnailService = null;
     private ?UploadCatalogRepository $uploadCatalogRepository = null;
+    private ?UserDirectoryRepository $userDirectoryRepository = null;
+    private ?AdminMultipartUploadService $adminMultipartUploadService = null;
     private ?PublicDropzoneUploadService $publicDropzoneUploadService = null;
     private ?PublicSharedBrowserRepository $publicSharedBrowserRepository = null;
     private ?PublicSharedBrowserService $publicSharedBrowserService = null;
@@ -102,6 +108,16 @@ final class DriveApplication
     public function bucket(): string
     {
         return $this->bucket;
+    }
+
+    public function ec2Gateway(?string $region = null): Ec2Gateway
+    {
+        return new Ec2Gateway($region ?? \Config::getRegion());
+    }
+
+    public function rdsGateway(?string $region = null): RdsGateway
+    {
+        return new RdsGateway($region ?? \Config::getRegion());
     }
 
     public function session(): SessionManager
@@ -236,6 +252,23 @@ final class DriveApplication
     public function uploadCatalogRepository(): UploadCatalogRepository
     {
         return $this->uploadCatalogRepository ??= new UploadCatalogRepository($this->db);
+    }
+
+    public function userDirectoryRepository(): UserDirectoryRepository
+    {
+        return $this->userDirectoryRepository ??= new UserDirectoryRepository($this->db);
+    }
+
+    public function adminMultipartUploadService(): AdminMultipartUploadService
+    {
+        return $this->adminMultipartUploadService ??= new AdminMultipartUploadService(
+            $this->userDirectoryRepository(),
+            $this->userStorageProvisioner(),
+            $this->uploadCatalogRepository(),
+            $this->s3,
+            $this->bucket,
+            sys_get_temp_dir() . '/arcadecloud-public-upload-state'
+        );
     }
 
     public function publicDropzoneUploadService(): PublicDropzoneUploadService

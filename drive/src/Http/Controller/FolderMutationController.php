@@ -17,12 +17,12 @@ final class FolderMutationController extends AbstractJsonController
             $session = $this->app->session();
             $routeInput = $this->request->postString('ruta');
             if ($routeInput === '') {
-                $routeInput = (string)($_SESSION['ruta_actual'] ?? $this->app->userStoragePath()->rootForUser($userId));
+                $routeInput = (string)$session->get('ruta_actual', $this->app->userStoragePath()->rootForUser($userId));
             }
             $route = $this->app->userStoragePath()->normalizeForUser($routeInput, $userId);
 
-            $this->app->s3Manager()->crearCarpeta($route, $name);
-            $_SESSION['ruta_actual'] = $route;
+            $this->app->folderMutationService()->create($userId, $route, $name);
+            $session->set('ruta_actual', $route);
 
             JsonResponse::send([
                 'ok' => true,
@@ -40,25 +40,29 @@ final class FolderMutationController extends AbstractJsonController
         try {
             $this->requirePost();
             $userId = $this->guardAuthenticated();
-            $route = $this->app->userStoragePath()->normalizeForUser(
+            $paths = $this->app->userStoragePath();
+            $root = $paths->rootForUser($userId);
+            $route = $paths->normalizeForUser(
                 $this->requireNonEmpty($this->request->postString('ruta'), 'Falta la ruta de la carpeta.'),
                 $userId
             );
-            if ($route === $this->app->userStoragePath()->rootForUser($userId)) {
+            if ($route === $root) {
                 throw new RuntimeException('No se puede eliminar la carpeta raíz del usuario.');
             }
-            $this->app->s3Manager()->eliminarCarpetaCompleta($route);
 
-            $currentRoute = $this->app->userStoragePath()->normalizeForUser(
-                (string)($_SESSION['ruta_actual'] ?? $this->app->userStoragePath()->rootForUser($userId)),
-                $userId
-            );
+            $result = $this->app->folderMutationService()->delete($userId, $route);
+            $session = $this->app->session();
+            $current = $paths->normalizeForUser((string)$session->get('ruta_actual', $root), $userId);
+            if (str_starts_with($current, $route)) {
+                $current = $paths->normalizeForUser((string)($result['parent'] ?? $root), $userId);
+                $session->set('ruta_actual', $current);
+            }
 
             JsonResponse::send([
                 'ok' => true,
                 'message' => 'Carpeta eliminada correctamente.',
                 'ruta' => $route,
-                'ruta_actual' => $currentRoute,
+                'ruta_actual' => $current,
             ]);
         } catch (\Throwable $error) {
             JsonResponse::error($error->getMessage(), 400);
@@ -70,18 +74,28 @@ final class FolderMutationController extends AbstractJsonController
         try {
             $this->requirePost();
             $userId = $this->guardAuthenticated();
-            $origin = $this->app->userStoragePath()->normalizeForUser(
+            $paths = $this->app->userStoragePath();
+            $root = $paths->rootForUser($userId);
+            $origin = $paths->normalizeForUser(
                 $this->requireNonEmpty($this->request->postString('origen'), 'Falta la carpeta origen.'),
                 $userId
             );
-            $destination = $this->app->userStoragePath()->normalizeForUser(
+            $destination = $paths->normalizeForUser(
                 $this->requireNonEmpty($this->request->postString('destino'), 'Falta la carpeta destino.'),
                 $userId
             );
-            if ($origin === $this->app->userStoragePath()->rootForUser($userId)) {
+            if ($origin === $root) {
                 throw new RuntimeException('No se puede mover la carpeta raíz del usuario.');
             }
-            $this->app->s3Manager()->moverCarpeta($origin, $destination);
+
+            $result = $this->app->folderMutationService()->move($userId, $origin, $destination);
+            $final = (string)$result['destino'];
+            $session = $this->app->session();
+            $current = $paths->normalizeForUser((string)$session->get('ruta_actual', $root), $userId);
+            if (str_starts_with($current, $origin)) {
+                $session->set('ruta_actual', $final . substr($current, strlen($origin)));
+            }
+
             JsonResponse::send([
                 'ok' => true,
                 'message' => 'Carpeta movida correctamente.',
@@ -98,18 +112,20 @@ final class FolderMutationController extends AbstractJsonController
         try {
             $this->requirePost();
             $userId = $this->guardAuthenticated();
-            $route = $this->app->userStoragePath()->normalizeForUser(
+            $paths = $this->app->userStoragePath();
+            $root = $paths->rootForUser($userId);
+            $route = $paths->normalizeForUser(
                 $this->requireNonEmpty($this->request->postString('ruta'), 'Falta la ruta de la carpeta.'),
                 $userId
             );
             $name = $this->requireNonEmpty($this->request->postString('nuevo'), 'Debes indicar el nuevo nombre.');
-            if ($route === $this->app->userStoragePath()->rootForUser($userId)) {
+            if ($route === $root) {
                 throw new RuntimeException('No se puede renombrar la carpeta raíz del usuario.');
             }
-            $this->app->s3Manager()->renombrarCarpeta($route, $name);
 
-            $currentRoute = $this->app->userStoragePath()->normalizeForUser(
-                (string)($_SESSION['ruta_actual'] ?? $this->app->userStoragePath()->rootForUser($userId)),
+            $this->app->folderMutationService()->rename($userId, $route, $name);
+            $current = $paths->normalizeForUser(
+                (string)$this->app->session()->get('ruta_actual', $root),
                 $userId
             );
 
@@ -118,7 +134,7 @@ final class FolderMutationController extends AbstractJsonController
                 'message' => 'Carpeta renombrada correctamente.',
                 'ruta' => $route,
                 'nuevo' => $name,
-                'ruta_actual' => $currentRoute,
+                'ruta_actual' => $current,
             ]);
         } catch (\Throwable $error) {
             JsonResponse::error($error->getMessage(), 400);

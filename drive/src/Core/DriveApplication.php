@@ -6,6 +6,8 @@ namespace ArcadeCloud\Drive\Core;
 use ArcadeCloud\Drive\Application\DrivePageService;
 use ArcadeCloud\Drive\Application\FileKeyRotationService;
 use ArcadeCloud\Drive\Application\FileListService;
+use ArcadeCloud\Drive\Application\FileMutationService;
+use ArcadeCloud\Drive\Application\FolderMutationService;
 use ArcadeCloud\Drive\Application\FolderQueryService;
 use ArcadeCloud\Drive\Application\UploadDestinationService;
 use ArcadeCloud\Drive\Aws\AwsCostService;
@@ -28,6 +30,8 @@ use ArcadeCloud\Drive\Sharing\ShareFileRepository;
 use ArcadeCloud\Drive\Sharing\ShareLinkService;
 use ArcadeCloud\Drive\Sharing\ShareObjectStorage;
 use ArcadeCloud\Drive\Sharing\ShareTokenStore;
+use ArcadeCloud\Drive\Storage\FileRecordRepository;
+use ArcadeCloud\Drive\Storage\FolderMutationRepository;
 use ArcadeCloud\Drive\Storage\FolderRepository;
 use ArcadeCloud\Drive\Storage\StorageObjectNameCodec;
 use ArcadeCloud\Drive\Storage\StorageUsageService;
@@ -37,6 +41,7 @@ use ArcadeCloud\Drive\Upload\AdminMultipartUploadService;
 use ArcadeCloud\Drive\Upload\PublicDropzoneUploadService;
 use ArcadeCloud\Drive\Upload\PublicSharedBrowserRepository;
 use ArcadeCloud\Drive\Upload\PublicSharedBrowserService;
+use ArcadeCloud\Drive\Upload\SingleUploadService;
 use ArcadeCloud\Drive\Upload\UploadCatalogRepository;
 use ArcadeCloud\Drive\View\FolderTreeRenderer;
 use Aws\S3\S3Client;
@@ -47,7 +52,6 @@ final class DriveApplication
     private mysqli $db;
     private S3Client $s3;
     private string $bucket;
-    private ?\S3Manager $s3Manager = null;
     private ?\UploadFactory $uploadFactory = null;
     private ?SessionManager $session = null;
     private ?AuthenticationRepository $authenticationRepository = null;
@@ -58,13 +62,18 @@ final class DriveApplication
     private ?PersonalToolAccessService $personalToolAccessService = null;
     private ?PersonalTotpService $personalTotpService = null;
     private ?FileRecordLocator $fileRecordLocator = null;
+    private ?FileRecordRepository $fileRecordRepository = null;
+    private ?FileMutationService $fileMutationService = null;
     private ?FileKeyRotationService $fileKeyRotationService = null;
     private ?FolderRepository $folderRepository = null;
+    private ?FolderMutationRepository $folderMutationRepository = null;
+    private ?FolderMutationService $folderMutationService = null;
     private ?FolderQueryService $folderQueryService = null;
     private ?MediaPlaylistRepository $mediaPlaylistRepository = null;
     private ?MediaPlaylistService $mediaPlaylistService = null;
     private ?ThumbnailService $thumbnailService = null;
     private ?UploadCatalogRepository $uploadCatalogRepository = null;
+    private ?SingleUploadService $singleUploadService = null;
     private ?UserDirectoryRepository $userDirectoryRepository = null;
     private ?AdminMultipartUploadService $adminMultipartUploadService = null;
     private ?PublicDropzoneUploadService $publicDropzoneUploadService = null;
@@ -148,18 +157,14 @@ final class DriveApplication
 
     public function awsCostService(): AwsCostService
     {
-        return $this->awsCostService ??= new AwsCostService(
-            $this->costExplorerGateway()
-        );
+        return $this->awsCostService ??= new AwsCostService($this->costExplorerGateway());
     }
 
     public function personalAwsConfig(): PersonalAwsConfig
     {
         if ($this->personalAwsConfig === null) {
             $path = trim((string)(getenv('ARCADECLOUD_PERSONAL_AWS_CONFIG') ?: ''));
-            if ($path === '') {
-                $path = '/etc/arcadecloud-drive/personal-aws.json';
-            }
+            if ($path === '') $path = '/etc/arcadecloud-drive/personal-aws.json';
             $this->personalAwsConfig = new PersonalAwsConfig($path);
         }
         return $this->personalAwsConfig;
@@ -176,14 +181,26 @@ final class DriveApplication
 
     public function personalTotpService(): PersonalTotpService
     {
-        return $this->personalTotpService ??= new PersonalTotpService(
-            $this->personalAwsConfig()
-        );
+        return $this->personalTotpService ??= new PersonalTotpService($this->personalAwsConfig());
     }
 
     public function fileRecordLocator(): FileRecordLocator
     {
         return $this->fileRecordLocator ??= new FileRecordLocator($this->db);
+    }
+
+    public function fileRecordRepository(): FileRecordRepository
+    {
+        return $this->fileRecordRepository ??= new FileRecordRepository($this->db);
+    }
+
+    public function fileMutationService(): FileMutationService
+    {
+        return $this->fileMutationService ??= new FileMutationService(
+            $this->fileRecordRepository(),
+            $this->s3,
+            $this->bucket
+        );
     }
 
     public function fileKeyRotationService(): FileKeyRotationService
@@ -200,6 +217,22 @@ final class DriveApplication
     public function folderRepository(): FolderRepository
     {
         return $this->folderRepository ??= new FolderRepository($this->db);
+    }
+
+    public function folderMutationRepository(): FolderMutationRepository
+    {
+        return $this->folderMutationRepository ??= new FolderMutationRepository($this->db);
+    }
+
+    public function folderMutationService(): FolderMutationService
+    {
+        return $this->folderMutationService ??= new FolderMutationService(
+            $this->folderMutationRepository(),
+            $this->userStoragePath(),
+            $this->storageObjectNameCodec(),
+            $this->s3,
+            $this->bucket
+        );
     }
 
     public function folderQueryService(): FolderQueryService
@@ -252,6 +285,16 @@ final class DriveApplication
     public function uploadCatalogRepository(): UploadCatalogRepository
     {
         return $this->uploadCatalogRepository ??= new UploadCatalogRepository($this->db);
+    }
+
+    public function singleUploadService(): SingleUploadService
+    {
+        return $this->singleUploadService ??= new SingleUploadService(
+            $this->s3,
+            $this->bucket,
+            $this->uploadCatalogRepository(),
+            $this->storageObjectNameCodec()
+        );
     }
 
     public function userDirectoryRepository(): UserDirectoryRepository
@@ -307,20 +350,6 @@ final class DriveApplication
         return $this->storageObjectNameCodec ??= new StorageObjectNameCodec();
     }
 
-    public function s3Manager(): \S3Manager
-    {
-        if ($this->s3Manager === null) {
-            require_once dirname(__DIR__, 2) . '/S3Manager.php';
-            $this->s3Manager = new \S3Manager(
-                $this->s3,
-                $this->db,
-                $this->bucket,
-                $this->storageObjectNameCodec()
-            );
-        }
-        return $this->s3Manager;
-    }
-
     public function fileListService(): FileListService
     {
         return $this->fileListService ??= new FileListService($this->db);
@@ -372,17 +401,12 @@ final class DriveApplication
 
     public function shareTokenStore(): ShareTokenStore
     {
-        return $this->shareTokenStore ??= new ShareTokenStore(
-            dirname(__DIR__, 2) . '/tokens.json'
-        );
+        return $this->shareTokenStore ??= new ShareTokenStore(dirname(__DIR__, 2) . '/tokens.json');
     }
 
     public function shareObjectStorage(): ShareObjectStorage
     {
-        return $this->shareObjectStorage ??= new ShareObjectStorage(
-            $this->s3,
-            $this->bucket
-        );
+        return $this->shareObjectStorage ??= new ShareObjectStorage($this->s3, $this->bucket);
     }
 
     public function shareLinkService(): ShareLinkService

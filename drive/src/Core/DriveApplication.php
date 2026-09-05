@@ -6,6 +6,8 @@ namespace ArcadeCloud\Drive\Core;
 use ArcadeCloud\Drive\Application\DrivePageService;
 use ArcadeCloud\Drive\Application\FileListService;
 use ArcadeCloud\Drive\Application\UploadDestinationService;
+use ArcadeCloud\Drive\Security\AuthenticationRepository;
+use ArcadeCloud\Drive\Security\AuthenticationService;
 use ArcadeCloud\Drive\Security\SessionManager;
 use ArcadeCloud\Drive\Sharing\ShareAccessService;
 use ArcadeCloud\Drive\Sharing\ShareFileRepository;
@@ -27,6 +29,8 @@ final class DriveApplication
     private string $bucket;
     private ?\S3Manager $s3Manager = null;
     private ?SessionManager $session = null;
+    private ?AuthenticationRepository $authenticationRepository = null;
+    private ?AuthenticationService $authenticationService = null;
     private ?FileListService $fileListService = null;
     private ?DrivePageService $drivePageService = null;
     private ?UploadDestinationService $uploadDestinationService = null;
@@ -70,6 +74,19 @@ final class DriveApplication
     public function session(): SessionManager
     {
         return $this->session ??= new SessionManager();
+    }
+
+    public function authenticationRepository(): AuthenticationRepository
+    {
+        return $this->authenticationRepository ??= new AuthenticationRepository($this->db);
+    }
+
+    public function authenticationService(): AuthenticationService
+    {
+        return $this->authenticationService ??= new AuthenticationService(
+            $this->authenticationRepository(),
+            $this->session()
+        );
     }
 
     public function userStoragePath(): UserStoragePath

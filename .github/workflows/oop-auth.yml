@@ -24,6 +24,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Validate PHP syntax
         run: |
@@ -55,4 +57,4 @@ jobs:
           grep -q 'session_regenerate_id' drive/src/Security/SessionManager.php
 
       - name: Diff whitespace check
-        run: git diff --check HEAD^ HEAD || true
+        run: git diff --check origin/main...HEAD

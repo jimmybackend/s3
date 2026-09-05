@@ -8,6 +8,8 @@ use ArcadeCloud\Drive\Application\FileListService;
 use ArcadeCloud\Drive\Application\UploadDestinationService;
 use ArcadeCloud\Drive\Aws\AwsCostService;
 use ArcadeCloud\Drive\Aws\CostExplorerGateway;
+use ArcadeCloud\Drive\Media\MediaPlaylistRepository;
+use ArcadeCloud\Drive\Media\MediaPlaylistService;
 use ArcadeCloud\Drive\Security\AuthenticationRepository;
 use ArcadeCloud\Drive\Security\AuthenticationService;
 use ArcadeCloud\Drive\Security\SessionManager;
@@ -35,6 +37,8 @@ final class DriveApplication
     private ?AuthenticationService $authenticationService = null;
     private ?CostExplorerGateway $costExplorerGateway = null;
     private ?AwsCostService $awsCostService = null;
+    private ?MediaPlaylistRepository $mediaPlaylistRepository = null;
+    private ?MediaPlaylistService $mediaPlaylistService = null;
     private ?FileListService $fileListService = null;
     private ?DrivePageService $drivePageService = null;
     private ?UploadDestinationService $uploadDestinationService = null;
@@ -105,6 +109,19 @@ final class DriveApplication
     {
         return $this->awsCostService ??= new AwsCostService(
             $this->costExplorerGateway()
+        );
+    }
+
+    public function mediaPlaylistRepository(): MediaPlaylistRepository
+    {
+        return $this->mediaPlaylistRepository ??= new MediaPlaylistRepository($this->db);
+    }
+
+    public function mediaPlaylistService(): MediaPlaylistService
+    {
+        return $this->mediaPlaylistService ??= new MediaPlaylistService(
+            $this->mediaPlaylistRepository(),
+            $this->userStoragePath()
         );
     }
 

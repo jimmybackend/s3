@@ -69,7 +69,11 @@ final class FileAccessController
 
     private function service(): FileAccessService
     {
-        return new FileAccessService($this->app->fileRecordLocator(), $this->app->s3(), $this->app->bucket(), $this->app->s3Manager());
+        return new FileAccessService(
+            $this->app->fileRecordLocator(),
+            $this->app->s3(),
+            $this->app->bucket()
+        );
     }
 
     private function userId(): int

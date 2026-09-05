@@ -10,6 +10,7 @@ on:
       - 'drive/upload.php'
       - 'drive/subir_archivo.php'
       - 'drive/upload_publico.php'
+      - 'drive/subir_publico.php'
       - 'drive/upload/UploadFactory.php'
       - 'drive/upload/drivers/LocalPresignedPutUploader.php'
       - 'drive/upload/drivers/RemoteUrlUploader.php'
@@ -17,9 +18,13 @@ on:
       - 'drive/upload/drivers/Chunked15MBUploader.php'
       - 'drive/src/Upload/PublicDropzoneUploadService.php'
       - 'drive/src/Upload/UploadCatalogRepository.php'
+      - 'drive/src/Upload/PublicSharedBrowserRepository.php'
+      - 'drive/src/Upload/PublicSharedBrowserService.php'
       - 'drive/src/Http/Controller/UploadController.php'
       - 'drive/src/Http/Controller/LegacyUploadController.php'
       - 'drive/src/Http/Controller/PublicUploadController.php'
+      - 'drive/src/Http/Controller/PublicSharedBrowserController.php'
+      - 'drive/src/View/PublicSharedPageRenderer.php'
       - 'drive/src/Http/Request.php'
       - 'drive/src/Core/DriveApplication.php'
       - '.github/workflows/oop-upload.yml'
@@ -44,6 +49,7 @@ jobs:
             drive/upload.php \
             drive/subir_archivo.php \
             drive/upload_publico.php \
+            drive/subir_publico.php \
             drive/upload/UploadFactory.php \
             drive/upload/drivers/LocalPresignedPutUploader.php \
             drive/upload/drivers/RemoteUrlUploader.php \
@@ -51,9 +57,13 @@ jobs:
             drive/upload/drivers/Chunked15MBUploader.php \
             drive/src/Upload/PublicDropzoneUploadService.php \
             drive/src/Upload/UploadCatalogRepository.php \
+            drive/src/Upload/PublicSharedBrowserRepository.php \
+            drive/src/Upload/PublicSharedBrowserService.php \
             drive/src/Http/Controller/UploadController.php \
             drive/src/Http/Controller/LegacyUploadController.php \
             drive/src/Http/Controller/PublicUploadController.php \
+            drive/src/Http/Controller/PublicSharedBrowserController.php \
+            drive/src/View/PublicSharedPageRenderer.php \
             drive/src/Http/Request.php \
             drive/src/Core/DriveApplication.php; do
             php -l "$f"
@@ -63,7 +73,7 @@ jobs:
       - name: Audit upload architecture
         run: |
           set -euo pipefail
-          for f in drive/api/upload.php drive/upload.php drive/subir_archivo.php drive/upload_publico.php; do
+          for f in drive/api/upload.php drive/upload.php drive/subir_archivo.php drive/upload_publico.php drive/subir_publico.php; do
             ! grep -q '\$_SESSION\|\$_GET\|\$_POST\|\$_FILES\|\$_REQUEST\|\$db_connection\|Config::getS3\|^function ' "$f"
             grep -q 'Controller' "$f"
           done
@@ -71,16 +81,25 @@ jobs:
           grep -q 'LegacyUploadController' drive/upload.php
           grep -q 'LegacyUploadController' drive/subir_archivo.php
           grep -q 'PublicUploadController' drive/upload_publico.php
+          grep -q 'PublicSharedBrowserController' drive/subir_publico.php
           grep -q 'uploadFactory' drive/src/Core/DriveApplication.php
           grep -q 'PublicDropzoneUploadService' drive/src/Core/DriveApplication.php
           grep -q 'UploadCatalogRepository' drive/src/Core/DriveApplication.php
+          grep -q 'PublicSharedBrowserService' drive/src/Core/DriveApplication.php
+          grep -q 'PublicSharedBrowserRepository' drive/src/Core/DriveApplication.php
           grep -q 'uploadDestinationService' drive/src/Http/Controller/UploadController.php
           grep -q 'local_put' drive/src/Http/Controller/UploadController.php
           grep -q 's3Manager' drive/src/Http/Controller/LegacyUploadController.php
           grep -q 'publicDropzoneUploadService' drive/src/Http/Controller/PublicUploadController.php
+          grep -q 'publicSharedBrowserService' drive/src/Http/Controller/PublicSharedBrowserController.php
           grep -q 'RUTA_COMPARTIDA' drive/src/Core/DriveApplication.php
           grep -q 'fuera de la zona compartida' drive/src/Upload/PublicDropzoneUploadService.php
+          grep -q 'fuera de la zona compartida' drive/src/Upload/PublicSharedBrowserService.php
+          grep -q 'El nombre de la carpeta contiene caracteres no permitidos' drive/src/Upload/PublicSharedBrowserService.php
+          grep -q 'Encriptado = ?' drive/src/Upload/PublicSharedBrowserRepository.php
+          grep -q 'Ruta = ?' drive/src/Upload/PublicSharedBrowserRepository.php
           grep -q 'user_id_' drive/src/Upload/UploadCatalogRepository.php
+          ! grep -q 'Config::\|\$_GET\|\$_POST\|\$db_connection\|listObjectsV2\|putObject' drive/src/View/PublicSharedPageRenderer.php
           for f in \
             drive/upload/drivers/LocalPresignedPutUploader.php \
             drive/upload/drivers/RemoteUrlUploader.php \
@@ -93,4 +112,6 @@ jobs:
           echo OOP_OK
 
       - name: Diff whitespace check
-        run: git diff --check HEAD^ HEAD
+        run: |
+          git diff --check HEAD^ HEAD
+          echo DIFF_OK

@@ -1,0 +1,136 @@
+name: Fix AWS mobile actions
+
+on:
+  push:
+    branches: ['refactor/oop-drive-migration']
+    paths:
+      - '.github/workflows/fix-aws-mobile-actions.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Patch mobile AWS actions
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          js_path = Path('drive/js/aws-comprehend.js')
+          js = js_path.read_text()
+
+          old = """    this.bound = false;\n    this.onClick = this.onClick.bind(this);\n"""
+          new = """    this.bound = false;\n    this.lastPointerAt = 0;\n    this.onClick = this.onClick.bind(this);\n    this.prepareButtons = this.prepareButtons.bind(this);\n"""
+          if old not in js:
+              raise SystemExit('JS_CONSTRUCTOR_PATTERN_NOT_FOUND')
+          js = js.replace(old, new, 1)
+
+          marker = """  invoke(functionName, args) {\n"""
+          prepare = """  prepareButtons() {\n    const jq = this.window.jQuery;\n\n    this.document.querySelectorAll('.aws-file-action').forEach((button) => {\n      try {\n        if (jq && jq.fn && typeof jq.fn.tooltip === 'function') {\n          jq(button).tooltip('dispose');\n        }\n      } catch (_) {}\n\n      button.removeAttribute('data-toggle');\n      button.removeAttribute('data-placement');\n      button.style.pointerEvents = 'auto';\n      button.style.touchAction = 'manipulation';\n    });\n  }\n\n"""
+          if marker not in js:
+              raise SystemExit('JS_INVOKE_MARKER_NOT_FOUND')
+          js = js.replace(marker, prepare + marker, 1)
+
+          old = """    if (!button) return;\n\n    const key = button.getAttribute('data-key') || '';\n"""
+          new = """    if (!button) return;\n\n    const now = Date.now();\n    if (event.type === 'click' && (now - this.lastPointerAt) < 750) {\n      event.preventDefault();\n      event.stopPropagation();\n      if (typeof event.stopImmediatePropagation === 'function') {\n        event.stopImmediatePropagation();\n      }\n      return;\n    }\n    if (event.type === 'pointerup') {\n      this.lastPointerAt = now;\n    }\n\n    const key = button.getAttribute('data-key') || '';\n"""
+          if old not in js:
+              raise SystemExit('JS_BUTTON_PATTERN_NOT_FOUND')
+          js = js.replace(old, new, 1)
+
+          old = """  init() {\n    if (!this.bound) {\n      this.document.addEventListener('click', this.onClick, true);\n      this.bound = true;\n    }\n    return this;\n  }\n"""
+          new = """  init() {\n    if (!this.bound) {\n      this.document.addEventListener('pointerup', this.onClick, true);\n      this.document.addEventListener('click', this.onClick, true);\n      this.document.addEventListener('bloque-archivos:actualizado', this.prepareButtons);\n      this.document.addEventListener('bloque-archivos:updated', this.prepareButtons);\n      this.bound = true;\n    }\n    this.prepareButtons();\n    return this;\n  }\n"""
+          if old not in js:
+              raise SystemExit('JS_INIT_PATTERN_NOT_FOUND')
+          js = js.replace(old, new, 1)
+          js_path.write_text(js)
+
+          css_path = Path('drive/css/responsive.css')
+          css = css_path.read_text()
+          block = r'''
+
+/* ============================================================
+   AWS ACTIONS - TOUCH FIX DEFINITIVO
+   En dispositivos tactiles separamos las acciones AWS de la
+   franja horizontal principal. Evita que un toque se interprete
+   como desplazamiento y garantiza hit-testing sobre el boton.
+   ============================================================ */
+@media (max-width: 991.98px), (pointer: coarse) {
+  body.ui-theme #archivosWrap .file-actions-block {
+    display: block !important;
+    overflow: visible !important;
+    white-space: normal !important;
+  }
+
+  body.ui-theme #archivosWrap .file-actions-primary {
+    width: 100% !important;
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    gap: .45rem !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  body.ui-theme #archivosWrap .file-actions-secondary {
+    width: 100% !important;
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    align-items: center !important;
+    gap: .45rem !important;
+    margin-top: .5rem !important;
+    overflow: visible !important;
+    position: relative !important;
+    z-index: 5 !important;
+    pointer-events: auto !important;
+  }
+
+  body.ui-theme #archivosWrap .file-actions-secondary .aws-file-action {
+    display: inline-flex !important;
+    width: auto !important;
+    min-width: max-content !important;
+    min-height: 44px !important;
+    position: relative !important;
+    z-index: 6 !important;
+    pointer-events: auto !important;
+    touch-action: manipulation !important;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  body.ui-theme #archivosWrap .file-actions-secondary .aws-file-action > * {
+    pointer-events: none !important;
+  }
+}
+'''
+          if 'AWS ACTIONS - TOUCH FIX DEFINITIVO' not in css:
+              css += block
+          css_path.write_text(css)
+          PY
+
+      - name: Validate
+        run: |
+          node --check drive/js/aws-comprehend.js
+          grep -q "addEventListener('pointerup'" drive/js/aws-comprehend.js
+          grep -q 'AWS ACTIONS - TOUCH FIX DEFINITIVO' drive/css/responsive.css
+          git diff --check
+          echo JS_OK
+          echo TOUCH_OK
+          echo DIFF_OK
+
+      - name: Commit
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add drive/js/aws-comprehend.js drive/css/responsive.css
+          git commit -m 'Fix AWS file actions on touch devices'
+          git push origin HEAD:refactor/oop-drive-migration

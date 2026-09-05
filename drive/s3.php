@@ -69,7 +69,7 @@ $footerEspacioUsado = $storageUsage['formatted'];
 
   <link rel="stylesheet" href="css/styles.css?v=20260904-clean1">
   <link rel="stylesheet"
-        href="css/responsive.css?v=20260904-4">
+        href="css/responsive.css?v=20260904-6">
 
 
   <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
@@ -277,17 +277,7 @@ $footerEspacioUsado = $storageUsage['formatted'];
         <div class="alert alert-danger"><?= htmlspecialchars($error) ?></div>
       <?php endif; ?>
 
-     <div class="d-flex align-items-center justify-content-between mb-2 archivos-filter-header" style="gap: 10px;">
-      <h6 class="mb-0">Archivos</h6>
-      <button class="btn btn-outline-secondary btn-sm" type="button"
-              data-toggle="collapse" data-target="#panelFiltrosArchivos"
-              data-bs-toggle="collapse" data-bs-target="#panelFiltrosArchivos"
-              aria-expanded="false" aria-controls="panelFiltrosArchivos"
-              aria-label="Mostrar u ocultar filtros"
-              title="Mostrar/Ocultar filtros">
-        <i class="fas fa-ellipsis-v"></i>
-      </button>
-    </div>
+
 
     <div id="panelFiltrosArchivos" class="collapse mb-3">
       <div class="d-flex flex-wrap align-items-end" style="gap: 10px;">
@@ -386,7 +376,8 @@ $footerEspacioUsado = $storageUsage['formatted'];
       <strong>¿Deseas subir archivos?</strong><br>
       Puedes utilizar el siguiente formulario para subir archivos de <strong>gran tamaño (más de 1 GB)</strong>.
       Primero selecciona el archivo y luego pulsa <em>Subir</em>.
-      Asegúrate de <strong>navegar por las carpetas a tu izquierda</strong> y posicionarte en aquella donde deseas que se guarde el archivo.
+      Asegúrate de <strong>seleccionar primero la carpeta de destino</strong>.
+      En móvil o tableta puedes abrir las carpetas con el botón <strong>☰</strong>.
     </div>
 
     <form id="uploadForm">

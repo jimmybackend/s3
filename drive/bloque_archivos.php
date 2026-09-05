@@ -87,7 +87,7 @@ foreach ($filas as $row) {
     <span class="spinner"></span>
     <span id="archivosLoaderText">Cargando…</span>
   </div>
-  
+
 
 
   <!-- ====== ACCIONES MASIVAS ====== -->
@@ -339,7 +339,7 @@ foreach ($filas as $row) {
             data-src="<?= FileViewHelper::escape($origUrl) ?>"
             data-nombre="<?= FileViewHelper::escape($nombre) ?>"
             data-video-index="<?= (int)$videoIndex ?>">
-      <i class="fas fa-play-circle"></i> 
+      <i class="fas fa-play-circle"></i>
     </button>
   </div>
 <?php endif; ?>
@@ -349,13 +349,14 @@ foreach ($filas as $row) {
         </div>
 
         <div class="d-flex align-items-center gap-2 file-actions-block">
+          <div class="file-actions-primary">
           <?php if ($esImg && !$soloSeguridad): ?>
             <button type="button"
                     class="btn btn-sm btn-primary js-ver-imagen"
                     data-key="<?= FileViewHelper::escape($s3key) ?>"
                     data-nombre="<?= FileViewHelper::escape($nombre) ?>"
                     data-original="<?= FileViewHelper::escape($origUrl) ?>" data-toggle="modal" data-target="#modalImagenUnica" title="VER IMAGEN">
-              <i class="far fa-image"></i> 
+              <i class="far fa-image"></i>
             </button>
           <?php endif; ?>
 
@@ -509,10 +510,9 @@ $unlockClass = $unlocked ? 'btn-success' : 'btn-warning';
   </button>
 <?php endif; ?>
 
-<!-- En tablet/móvil: las acciones posteriores a seguridad
-     comienzan en una nueva línea -->
-<span class="file-actions-break-after-security"
-      aria-hidden="true"></span>
+          </div>
+
+          <div class="file-actions-secondary">
 
 <?php if (!$soloSeguridad): ?>
 <?php if ($puedeTex): ?>
@@ -612,10 +612,11 @@ $unlockClass = $unlocked ? 'btn-success' : 'btn-warning';
 
 <?php endif; ?>
 
-   
 
-              
 
+
+
+          </div>
         </div>
       </li>
     <?php endforeach; ?>
@@ -650,7 +651,7 @@ $unlockClass = $unlocked ? 'btn-success' : 'btn-warning';
   </div>
 </div>
 
-  
+
 
 </div><!-- /archivosWrap -->
 

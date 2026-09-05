@@ -716,3 +716,258 @@ body {
 #btnToggleSidebarBrand {
   cursor: pointer;
 }
+
+/* ============================================================
+   FOOTER RESPONSIVE
+   ============================================================ */
+
+.drive-footer {
+  width: 100%;
+
+  display: grid;
+
+  grid-template-columns:
+    minmax(0, 1fr)
+    auto
+    auto;
+
+  align-items: center;
+
+  gap: .75rem;
+
+  padding: .65rem .75rem;
+}
+
+.drive-footer-route {
+  min-width: 0;
+
+  display: flex;
+
+  align-items: center;
+
+  overflow: hidden;
+}
+
+#footerRutaActual {
+  min-width: 0;
+
+  overflow: hidden;
+
+  text-overflow: ellipsis;
+
+  white-space: nowrap;
+}
+
+.drive-footer-storage,
+.drive-footer-clock {
+  white-space: nowrap;
+}
+
+
+/* ---------- móvil / tablet ---------- */
+
+@media (max-width: 767.98px) {
+
+  .drive-footer {
+    grid-template-columns:
+      minmax(0, 1fr)
+      auto;
+
+    gap:
+      .4rem .7rem;
+
+    padding:
+      .65rem .7rem;
+
+    overflow: hidden;
+  }
+
+  /*
+   * Ruta ocupa una fila completa.
+   */
+  .drive-footer-route {
+    grid-column: 1 / -1;
+
+    width: 100%;
+
+    margin: 0 !important;
+
+    font-size: .82rem;
+  }
+
+  .drive-footer-storage {
+    grid-column: 1;
+
+    margin: 0 !important;
+
+    font-size: .78rem;
+
+    white-space: normal;
+  }
+
+  .drive-footer-clock {
+    grid-column: 2;
+
+    margin: 0 !important;
+
+    text-align: right;
+
+    font-size: .76rem;
+
+    white-space: normal;
+  }
+
+}
+
+
+/* ---------- teléfonos pequeños ---------- */
+
+@media (max-width: 420px) {
+
+  .drive-footer {
+    grid-template-columns: 1fr;
+
+    gap: .3rem;
+  }
+
+  .drive-footer-route,
+  .drive-footer-storage,
+  .drive-footer-clock {
+    grid-column: 1;
+
+    width: 100%;
+
+    text-align: left;
+  }
+
+}
+
+/* ============================================================
+   ACCIONES DE ARCHIVO - FILAS DEFINITIVAS
+   ============================================================ */
+
+/*
+ * Escritorio conserva el comportamiento normal.
+ */
+.file-actions-primary,
+.file-actions-secondary {
+  display: contents;
+}
+
+
+/* ============================================================
+   MOVIL / TABLET
+   ============================================================ */
+
+@media (max-width: 991.98px), (pointer: coarse) {
+
+  /*
+   * El contenedor exterior ya no decide los saltos.
+   * Cada grupo controla su propia fila.
+   */
+  body.ui-theme #archivosWrap .file-actions-block {
+    display: block !important;
+
+    width: 100%;
+
+    margin: 0 !important;
+
+    padding-top: .65rem;
+
+    border-top: 1px solid var(--border);
+  }
+
+
+  /*
+   * ACCIONES PRINCIPALES:
+   * una sola línea SIEMPRE.
+   *
+   * Si el teléfono es demasiado estrecho,
+   * la fila se desplaza horizontalmente.
+   */
+  body.ui-theme #archivosWrap .file-actions-primary {
+    width: 100%;
+
+    display: flex !important;
+
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+
+    align-items: center;
+
+    gap: .45rem;
+
+    overflow-x: auto;
+    overflow-y: hidden;
+
+    padding:
+      .05rem .05rem .35rem;
+
+    -webkit-overflow-scrolling: touch;
+
+    scrollbar-width: none;
+  }
+
+
+  body.ui-theme #archivosWrap
+  .file-actions-primary::-webkit-scrollbar {
+    display: none;
+  }
+
+
+  body.ui-theme #archivosWrap
+  .file-actions-primary > .btn,
+  body.ui-theme #archivosWrap
+  .file-actions-primary > a.btn {
+
+    flex: 0 0 44px;
+
+    width: 44px;
+    height: 44px;
+
+    min-width: 44px !important;
+    min-height: 44px !important;
+
+    margin: 0 !important;
+
+    display: inline-flex !important;
+
+    align-items: center;
+    justify-content: center;
+  }
+
+
+  /*
+   * ACCIONES AWS:
+   * debajo y sí pueden acomodarse en varias filas.
+   */
+  body.ui-theme #archivosWrap .file-actions-secondary {
+    width: 100%;
+
+    display: flex !important;
+
+    flex-wrap: wrap !important;
+
+    align-items: center;
+
+    gap: .45rem;
+
+    margin-top: .45rem;
+  }
+
+
+  body.ui-theme #archivosWrap
+  .file-actions-secondary:empty {
+    display: none !important;
+  }
+
+
+  /*
+   * Ya no usamos el viejo salto artificial.
+   */
+  body.ui-theme #archivosWrap
+  .file-actions-break-after-security {
+    display: none !important;
+  }
+
+}

@@ -15,17 +15,17 @@ $espacioUsadoFooter = isset($footerEspacioUsado)
 
 $e = static fn(string $value): string => htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 ?>
-<footer class="d-flex justify-content-between align-items-center">
-  <div class="text-muted small mr-3 d-flex align-items-center">
+<footer class="drive-footer">
+  <div class="text-muted small drive-footer-route">
     <i class="fas fa-folder-open mr-1"></i>
     <strong id="footerRutaActual"><?= $e($rutaActualFooter) ?></strong>
   </div>
 
-  <div class="text-muted small flex-shrink-0 ml-3">
+  <div class="text-muted small drive-footer-storage">
     Espacio usado: <strong id="footerEspacioUsado" class="text-info"><?= $e($espacioUsadoFooter) ?></strong>
   </div>
 
-  <div class="text-muted small flex-shrink-0 ml-3">
+  <div class="text-muted small drive-footer-clock">
     <span id="relojFooter"><strong><?= date('Y-m-d H:i:s') ?></strong></span>
   </div>
 </footer>

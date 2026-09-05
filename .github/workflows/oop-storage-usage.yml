@@ -1,0 +1,63 @@
+name: OOP storage usage validation
+
+on:
+  push:
+    branches:
+      - main
+      - 'refactor/**'
+    paths:
+      - 'drive/storage_usage.php'
+      - 'drive/js/storage-usage.js'
+      - 'drive/src/Storage/StorageUsageService.php'
+      - 'drive/src/Http/Controller/StorageUsageController.php'
+      - 'drive/src/Security/SessionManager.php'
+      - 'drive/src/Core/DriveApplication.php'
+      - '.github/workflows/oop-storage-usage.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate PHP syntax
+        run: |
+          set -euo pipefail
+          php -l drive/storage_usage.php
+          php -l drive/src/Storage/StorageUsageService.php
+          php -l drive/src/Http/Controller/StorageUsageController.php
+          php -l drive/src/Security/SessionManager.php
+          php -l drive/src/Core/DriveApplication.php
+          echo PHP_OK
+
+      - name: Audit storage usage boundary
+        run: |
+          set -euo pipefail
+          ! grep -q '\$_SESSION\|\$_GET\|\$_POST\|session_start\|\$db_connection\|Config::\|SELECT' drive/storage_usage.php
+          grep -q 'StorageUsageController' drive/storage_usage.php
+          grep -q 'storageUsageService' drive/src/Http/Controller/StorageUsageController.php
+          grep -q "queryString('refresh')" drive/src/Http/Controller/StorageUsageController.php
+          ! grep -q '\$_SESSION' drive/src/Storage/StorageUsageService.php
+          grep -q 'SessionManager' drive/src/Storage/StorageUsageService.php
+          grep -q 'user_id_ = ?' drive/src/Storage/StorageUsageService.php
+          grep -q 'Found = 1' drive/src/Storage/StorageUsageService.php
+          grep -q 'new StorageUsageService' drive/src/Core/DriveApplication.php
+          grep -q '\$this->session()' drive/src/Core/DriveApplication.php
+          echo OOP_OK
+
+      - name: Validate runtime reference
+        run: |
+          set -euo pipefail
+          grep -q "storage_usage.php" drive/js/storage-usage.js
+          echo REFERENCIAS_OK
+
+      - name: Diff whitespace check
+        run: |
+          git diff --check HEAD^ HEAD
+          echo DIFF_OK

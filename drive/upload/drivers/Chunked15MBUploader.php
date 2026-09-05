@@ -1,301 +1,265 @@
 <?php
-// upload/drivers/Chunked15MBUploader.php
 declare(strict_types=1);
 
+use ArcadeCloud\Drive\Storage\StorageObjectNameCodec;
+use Aws\S3\S3Client;
+
+require_once __DIR__ . '/../core/UploaderInterface.php';
+require_once __DIR__ . '/../repositories/FileS3Repository.php';
 require_once __DIR__ . '/../storage/UploadStateStore.php';
 
 final class Chunked15MBUploader implements UploaderInterface
 {
-    /** @var UploadStateStore */
-    private $store;
+    public function __construct(
+        private mysqli $db,
+        private S3Client $s3,
+        private string $bucket,
+        private StorageObjectNameCodec $codec,
+        private UploadStateStore $store
+    ) {
+    }
 
-    public function __construct()
+    private function signature(string $filename, int $filesize, string $route, int $userId): string
     {
-        $this->store = new UploadStateStore(__DIR__ . '/../storage/state');
+        return sha1($userId . '|' . $route . '|' . $filename . '|' . $filesize);
     }
 
-  private function db(): mysqli {
-    global $db_connection;
-    if (!isset($db_connection) || !($db_connection instanceof mysqli)) {
-      throw new RuntimeException('DB no disponible ($db_connection). Revisa db.php/app_bootstrap.php');
-    }
-    return $db_connection;
-  }
+    public function init(array $req): array
+    {
+        $filename = trim((string)($req['filename'] ?? ''));
+        $filesize = (int)($req['filesize'] ?? 0);
+        $mime = trim((string)($req['mime'] ?? 'application/octet-stream'));
 
-private function s3()
-{
-    if (!class_exists('Config')) {
-        throw new RuntimeException('Config no está disponible');
-    }
+        if ($filename === '' || $filesize <= 0) {
+            throw new RuntimeException('Datos inválidos: filename/filesize');
+        }
 
-    $s3 = Config::getS3();
+        $userId = (int)($req['_user_id'] ?? 0);
+        $carpeta = trim((string)($req['ruta_objetivo'] ?? ''), '/');
+        if ($userId <= 0 || $carpeta === '') {
+            throw new RuntimeException('Usuario/ruta objetivo inválidos');
+        }
 
-    // Caso 1: ya es el cliente correcto
-    if ($s3 instanceof \Aws\S3\S3Client) {
-        return $s3;
-    }
+        $signature = $this->signature($filename, $filesize, $carpeta, $userId);
+        $physicalName = $this->codec->createFileObjectName($filename);
+        $key = $carpeta . '/' . $physicalName;
 
-    // Caso 2: Config devuelve el objeto Aws\Sdk
-    if ($s3 instanceof \Aws\Sdk) {
-        return $s3->createS3();
-    }
+        $result = $this->s3->createMultipartUpload([
+            'Bucket' => $this->bucket,
+            'Key' => $key,
+            'ContentType' => $mime,
+            'ACL' => 'private',
+            'Metadata' => [
+                'original-name' => mb_substr($filename, 0, 1024),
+                'original-size' => (string)$filesize,
+            ],
+        ]);
 
-    // Caso 3: Config devuelve un array con credenciales/región/etc
-    if (is_array($s3)) {
-        return new \Aws\S3\S3Client($s3);
-    }
+        $uploadId = (string)$result->get('UploadId');
+        $stateId = $signature;
 
-    // Debug útil: qué devolvió realmente
-    $tipo = is_object($s3) ? get_class($s3) : gettype($s3);
-    throw new RuntimeException('Config::getS3() devolvió: ' . $tipo);
-}
+        $this->store->save($stateId, [
+            'stateId' => $stateId,
+            'uploadId' => $uploadId,
+            'key' => $key,
+            'filename' => $filename,
+            'filesize' => $filesize,
+            'mime' => $mime,
+            'parts' => [],
+            'user_id' => $userId,
+            'ruta_objetivo' => rtrim($carpeta, '/') . '/',
+            'created' => time(),
+        ]);
 
-  private function bucket(): string
-{
-    return Config::getBucket();
-}
-
-
-  private function signature(string $filename, int $filesize, string $route, int $userId): string {
-    return sha1($userId . '|' . $route . '|' . $filename . '|' . $filesize);
-  }
-
-  public function init(array $req): array
-  {
-    $filename = trim((string)($req['filename'] ?? ''));
-    $filesize = (int)($req['filesize'] ?? 0);
-    $mime     = trim((string)($req['mime'] ?? 'application/octet-stream'));
-    if ($filename === '' || $filesize <= 0) {
-      throw new RuntimeException('Datos inválidos: filename/filesize');
-    }
-
-    $userId = (int)($req['_user_id'] ?? 0);
-    $carpeta = trim((string)($req['ruta_objetivo'] ?? ''), '/');
-    if ($userId <= 0 || $carpeta === '') throw new RuntimeException('Usuario/ruta objetivo inválidos');
-    $sig = $this->signature($filename, $filesize, $carpeta, $userId);
-
-    // key: el destino queda congelado desde INIT
-    $physicalName = (new \ArcadeCloud\Drive\Storage\StorageObjectNameCodec())->createFileObjectName($filename);
-    $key = $carpeta . '/' . $physicalName;
-
-    $s3 = $this->s3();
-    $bucket = $this->bucket();
-
-    $res = $s3->createMultipartUpload([
-      'Bucket'      => $bucket,
-      'Key'         => $key,
-      'ContentType' => $mime,
-      'ACL'         => 'private',
-      'Metadata'    => [
-        'original-name' => mb_substr($filename, 0, 1024),
-        'original-size' => (string)$filesize
-      ],
-    ]);
-
-    $uploadId = (string)$res->get('UploadId');
-
-    $stateId = $sig; // id estable
-    $this->store->save($stateId, [
-      'stateId'  => $stateId,
-      'uploadId' => $uploadId,
-      'key'      => $key,
-      'filename' => $filename,
-      'filesize' => $filesize,
-      'mime'     => $mime,
-      'parts'    => [], // num => etag
-      'user_id'  => $userId,
-      'ruta_objetivo' => rtrim($carpeta, '/') . '/',
-      'created'  => time(),
-    ]);
-
-    return [
-      'ok'       => true,
-      'stateId'  => $stateId,
-      'uploadId' => $uploadId,
-      'key'      => $key,
-    ];
-  }
-
-  public function part(array $req): array
-  {
-    $step = (string)($req['step'] ?? 'sign'); // sign|resume
-
-    if ($step === 'resume') {
-      $stateId  = (string)($req['stateId'] ?? '');
-      $uploadId = (string)($req['uploadId'] ?? '');
-      $key      = (string)($req['key'] ?? '');
-
-      $meta = $stateId !== '' ? $this->store->load($stateId) : null;
-      if ($meta && (int)($meta['user_id'] ?? 0) !== (int)($req['_user_id'] ?? 0)) {
-        throw new RuntimeException('La subida multipart no pertenece al usuario actual.');
-      }
-      if ($meta) {
-        $uploadId = (string)$meta['uploadId'];
-        $key      = (string)$meta['key'];
-      }
-
-      if ($uploadId === '' || $key === '') {
-        throw new RuntimeException('Faltan parámetros para resume (stateId o uploadId+key)');
-      }
-
-      $etags = $this->listPartsEtags($uploadId, $key);
-      if ($meta && $stateId !== '') {
-        $meta['parts'] = $etags;
-        $this->store->save($stateId, $meta);
-      }
-
-      return ['ok'=>true, 'etags'=>$etags, 'uploadId'=>$uploadId, 'key'=>$key];
+        return [
+            'ok' => true,
+            'stateId' => $stateId,
+            'uploadId' => $uploadId,
+            'key' => $key,
+        ];
     }
 
-    // step=sign (presigned UploadPart)
-    $stateId      = (string)($req['stateId'] ?? '');
-    $uploadId     = (string)($req['uploadId'] ?? '');
-    $key          = (string)($req['key'] ?? '');
-    $partNumber   = (int)($req['partNumber'] ?? 0);
-    $contentLength= (int)($req['contentLength'] ?? 0);
+    public function part(array $req): array
+    {
+        $step = (string)($req['step'] ?? 'sign');
 
-    $meta = $stateId !== '' ? $this->store->load($stateId) : null;
-    $currentUserId = (int)($req['_user_id'] ?? 0);
-    if (!$meta || (int)($meta['user_id'] ?? 0) !== $currentUserId) {
-      throw new RuntimeException('Estado multipart inválido o ajeno al usuario actual.');
+        if ($step === 'resume') {
+            $stateId = (string)($req['stateId'] ?? '');
+            $uploadId = (string)($req['uploadId'] ?? '');
+            $key = (string)($req['key'] ?? '');
+
+            $meta = $stateId !== '' ? $this->store->load($stateId) : null;
+            if ($meta && (int)($meta['user_id'] ?? 0) !== (int)($req['_user_id'] ?? 0)) {
+                throw new RuntimeException('La subida multipart no pertenece al usuario actual.');
+            }
+            if ($meta) {
+                $uploadId = (string)$meta['uploadId'];
+                $key = (string)$meta['key'];
+            }
+
+            if ($uploadId === '' || $key === '') {
+                throw new RuntimeException('Faltan parámetros para resume (stateId o uploadId+key)');
+            }
+
+            $etags = $this->listPartsEtags($uploadId, $key);
+            if ($meta && $stateId !== '') {
+                $meta['parts'] = $etags;
+                $this->store->save($stateId, $meta);
+            }
+
+            return [
+                'ok' => true,
+                'etags' => $etags,
+                'uploadId' => $uploadId,
+                'key' => $key,
+            ];
+        }
+
+        $stateId = (string)($req['stateId'] ?? '');
+        $uploadId = (string)($req['uploadId'] ?? '');
+        $key = (string)($req['key'] ?? '');
+        $partNumber = (int)($req['partNumber'] ?? 0);
+        $contentLength = (int)($req['contentLength'] ?? 0);
+
+        $meta = $stateId !== '' ? $this->store->load($stateId) : null;
+        $currentUserId = (int)($req['_user_id'] ?? 0);
+        if (!$meta || (int)($meta['user_id'] ?? 0) !== $currentUserId) {
+            throw new RuntimeException('Estado multipart inválido o ajeno al usuario actual.');
+        }
+        if ((string)($meta['uploadId'] ?? '') !== $uploadId || (string)($meta['key'] ?? '') !== $key) {
+            throw new RuntimeException('La parte no coincide con la subida multipart iniciada.');
+        }
+
+        if ($uploadId === '' || $key === '' || $partNumber <= 0 || $contentLength <= 0) {
+            throw new RuntimeException('Parámetros inválidos para firmar (uploadId,key,partNumber,contentLength)');
+        }
+
+        $command = $this->s3->getCommand('UploadPart', [
+            'Bucket' => $this->bucket,
+            'Key' => $key,
+            'UploadId' => $uploadId,
+            'PartNumber' => $partNumber,
+            'ContentLength' => $contentLength,
+        ]);
+
+        $presigned = $this->s3->createPresignedRequest($command, '+1 hour');
+
+        return ['ok' => true, 'url' => (string)$presigned->getUri()];
     }
-    if ((string)($meta['uploadId'] ?? '') !== $uploadId || (string)($meta['key'] ?? '') !== $key) {
-      throw new RuntimeException('La parte no coincide con la subida multipart iniciada.');
+
+    public function complete(array $req): array
+    {
+        $stateId = (string)($req['stateId'] ?? '');
+        $uploadId = (string)($req['uploadId'] ?? '');
+        $key = (string)($req['key'] ?? '');
+
+        $meta = $stateId !== '' ? $this->store->load($stateId) : null;
+        if ($meta && (int)($meta['user_id'] ?? 0) !== (int)($req['_user_id'] ?? 0)) {
+            throw new RuntimeException('La subida multipart no pertenece al usuario actual.');
+        }
+        if ($meta) {
+            $uploadId = (string)$meta['uploadId'];
+            $key = (string)$meta['key'];
+        }
+
+        $etagsJson = (string)($req['etags'] ?? '');
+        $etags = $etagsJson !== '' ? (json_decode($etagsJson, true) ?: []) : [];
+        if (empty($etags) && $uploadId !== '' && $key !== '') {
+            $etags = $this->listPartsEtags($uploadId, $key);
+        }
+
+        if ($uploadId === '' || $key === '' || empty($etags)) {
+            throw new RuntimeException('Faltan parámetros para complete (uploadId,key,etags)');
+        }
+
+        $parts = [];
+        foreach ($etags as $number => $tag) {
+            $parts[] = [
+                'PartNumber' => (int)$number,
+                'ETag' => '"' . trim((string)$tag, '"') . '"',
+            ];
+        }
+        usort($parts, static fn(array $a, array $b): int => (int)$a['PartNumber'] <=> (int)$b['PartNumber']);
+
+        $this->s3->completeMultipartUpload([
+            'Bucket' => $this->bucket,
+            'Key' => $key,
+            'UploadId' => $uploadId,
+            'MultipartUpload' => ['Parts' => $parts],
+        ]);
+
+        $carpeta = dirname($key) . '/';
+        $nombreEncriptado = basename($key);
+        $nombreOriginal = (string)($meta['filename'] ?? 'archivo');
+        $filesize = (int)($meta['filesize'] ?? 0);
+        $userId = (int)($req['_user_id'] ?? 0);
+
+        $metadatos = json_encode([
+            'multipart' => true,
+            'uploadId' => $uploadId,
+            'parts' => array_keys($etags),
+            'ip_origen' => (string)($req['_remote_addr'] ?? '0.0.0.0'),
+            'usuario' => (string)($req['_usuario'] ?? 'usuario'),
+            'fecha' => date('Y-m-d'),
+            'hora' => date('H:i:s'),
+        ], JSON_UNESCAPED_UNICODE);
+
+        $repo = new FileS3Repository($this->db);
+        $fileId = $repo->insertFile([
+            'Nombre' => $nombreOriginal,
+            'Encriptado' => $nombreEncriptado,
+            'Tamano' => $filesize,
+            'Metadatos' => $metadatos,
+            'Ruta' => $carpeta,
+            'Found' => 1,
+            'AccessType' => 'normal',
+            'Fecha' => date('Y-m-d H:i:s'),
+            'user_id_' => $userId,
+        ]);
+
+        if ($stateId !== '') {
+            $this->store->delete($stateId);
+        }
+
+        return [
+            'ok' => true,
+            'key' => $key,
+            'file_id' => $fileId,
+            'ruta' => $carpeta,
+            'encriptado' => $nombreEncriptado,
+        ];
     }
 
-    if ($uploadId === '' || $key === '' || $partNumber <= 0 || $contentLength <= 0) {
-      throw new RuntimeException('Parámetros inválidos para firmar (uploadId,key,partNumber,contentLength)');
+    private function listPartsEtags(string $uploadId, string $key): array
+    {
+        $out = [];
+        $marker = null;
+
+        do {
+            $args = [
+                'Bucket' => $this->bucket,
+                'Key' => $key,
+                'UploadId' => $uploadId,
+            ];
+            if ($marker !== null) {
+                $args['PartNumberMarker'] = $marker;
+            }
+
+            $result = $this->s3->listParts($args);
+            $parts = $result->get('Parts') ?: [];
+
+            foreach ($parts as $part) {
+                $number = (int)($part['PartNumber'] ?? 0);
+                $etag = trim((string)($part['ETag'] ?? ''), '"');
+                if ($number > 0 && $etag !== '') {
+                    $out[(string)$number] = $etag;
+                }
+            }
+
+            $isTruncated = (bool)($result->get('IsTruncated') ?? false);
+            $marker = $result->get('NextPartNumberMarker') ?? null;
+        } while ($isTruncated);
+
+        return $out;
     }
-
-    $s3 = $this->s3();
-    $bucket = $this->bucket();
-
-    $cmd = $s3->getCommand('UploadPart', [
-      'Bucket'        => $bucket,
-      'Key'           => $key,
-      'UploadId'      => $uploadId,
-      'PartNumber'    => $partNumber,
-      'ContentLength' => $contentLength,
-    ]);
-
-    $presigned = $s3->createPresignedRequest($cmd, '+1 hour');
-    $url = (string)$presigned->getUri();
-
-    return ['ok'=>true, 'url'=>$url];
-  }
-
-  public function complete(array $req): array
-  {
-    $stateId  = (string)($req['stateId'] ?? '');
-    $uploadId = (string)($req['uploadId'] ?? '');
-    $key      = (string)($req['key'] ?? '');
-
-    $meta = $stateId !== '' ? $this->store->load($stateId) : null;
-    if ($meta && (int)($meta['user_id'] ?? 0) !== (int)($req['_user_id'] ?? 0)) {
-      throw new RuntimeException('La subida multipart no pertenece al usuario actual.');
-    }
-    if ($meta) {
-      $uploadId = (string)$meta['uploadId'];
-      $key      = (string)$meta['key'];
-    }
-
-    $etagsJson = (string)($req['etags'] ?? '');
-    $etags = $etagsJson !== '' ? (json_decode($etagsJson, true) ?: []) : [];
-    if (empty($etags)) {
-      // si no vienen etags del front, intentamos listParts
-      if ($uploadId !== '' && $key !== '') {
-        $etags = $this->listPartsEtags($uploadId, $key);
-      }
-    }
-
-    if ($uploadId === '' || $key === '' || empty($etags)) {
-      throw new RuntimeException('Faltan parámetros para complete (uploadId,key,etags)');
-    }
-
-    $parts = [];
-    foreach ($etags as $num => $tag) {
-      $parts[] = ['PartNumber' => (int)$num, 'ETag' => '"' . trim((string)$tag, '"') . '"'];
-    }
-    usort($parts, function($a, $b) {
-      return ((int)$a['PartNumber']) <=> ((int)$b['PartNumber']);
-    });
-
-    $s3 = $this->s3();
-    $bucket = $this->bucket();
-
-    $s3->completeMultipartUpload([
-      'Bucket' => $bucket,
-      'Key'    => $key,
-      'UploadId' => $uploadId,
-      'MultipartUpload' => ['Parts' => $parts],
-    ]);
-
-    // Registrar DB (FileS3)
-    $carpeta = dirname($key) . '/';
-    $nombreEncriptado = basename($key);
-    $nombreOriginal = $meta['filename'] ?? 'archivo';
-    $filesize = (int)($meta['filesize'] ?? 0);
-    $userId = (int)($req['_user_id'] ?? 0);
-
-    $metadatos = json_encode([
-      'multipart' => true,
-      'uploadId'  => $uploadId,
-      'parts'     => array_keys($etags),
-      'ip_origen' => $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0',
-      'usuario'   => (string)($req['_usuario'] ?? 'usuario'),
-      'fecha'     => date('Y-m-d'),
-      'hora'      => date('H:i:s'),
-    ], JSON_UNESCAPED_UNICODE);
-
-    $repo = new FileS3Repository($this->db());
-    $fileId = $repo->insertFile([
-      'Nombre'     => (string)$nombreOriginal,
-      'Encriptado' => (string)$nombreEncriptado,
-      'Tamano'     => $filesize,
-      'Metadatos'  => $metadatos,
-      'Ruta'       => $carpeta,
-      'Found'      => 1,
-      'AccessType' => 'normal',
-      'Fecha'      => date('Y-m-d H:i:s'),
-      'user_id_'   => $userId,
-    ]);
-
-    if ($stateId !== '') $this->store->delete($stateId);
-
-    return [
-      'ok'       => true,
-      'key'      => $key,
-      'file_id'  => $fileId,
-      'ruta'     => $carpeta,
-      'encriptado'=> $nombreEncriptado,
-    ];
-  }
-
-  private function listPartsEtags(string $uploadId, string $key): array
-  {
-    $s3 = $this->s3();
-    $bucket = $this->bucket();
-
-    $out = [];
-    $marker = null;
-
-    do {
-      $args = ['Bucket'=>$bucket,'Key'=>$key,'UploadId'=>$uploadId];
-      if ($marker !== null) $args['PartNumberMarker'] = $marker;
-
-      $res = $s3->listParts($args);
-      $parts = $res->get('Parts') ?: [];
-
-      foreach ($parts as $p) {
-        $num = (int)($p['PartNumber'] ?? 0);
-        $etag = trim((string)($p['ETag'] ?? ''), '"');
-        if ($num > 0 && $etag !== '') $out[(string)$num] = $etag;
-      }
-
-      $isTrunc = (bool)($res->get('IsTruncated') ?? false);
-      $marker  = $res->get('NextPartNumberMarker') ?? null;
-    } while ($isTrunc);
-
-    return $out;
-  }
 }

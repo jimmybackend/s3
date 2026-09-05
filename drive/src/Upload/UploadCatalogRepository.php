@@ -65,4 +65,50 @@ final class UploadCatalogRepository
         $stmt->close();
         return $id;
     }
+
+    public function upsertCompletedMultipart(
+        int $userId,
+        string $visibleName,
+        string $physicalName,
+        int $size,
+        string $metadata,
+        string $route
+    ): void {
+        $stmt = $this->db->prepare(
+            "INSERT INTO FileS3
+                (Nombre, Encriptado, Tamano, Metadatos, Ruta, Found, AccessType, user_id_)
+             VALUES
+                (?, ?, ?, ?, ?, 1, 'normal', ?)
+             ON DUPLICATE KEY UPDATE
+                Nombre = VALUES(Nombre),
+                Tamano = VALUES(Tamano),
+                Metadatos = VALUES(Metadatos),
+                Ruta = VALUES(Ruta),
+                Found = 1"
+        );
+
+        if (!$stmt) {
+            throw new RuntimeException('No se pudo preparar el registro FileS3: ' . $this->db->error);
+        }
+
+        $stmt->bind_param(
+            'ssissi',
+            $visibleName,
+            $physicalName,
+            $size,
+            $metadata,
+            $route,
+            $userId
+        );
+
+        if (!$stmt->execute()) {
+            $error = $stmt->error;
+            $stmt->close();
+            throw new RuntimeException(
+                'Archivo completado en S3 pero no registrado en FileS3: ' . $error
+            );
+        }
+
+        $stmt->close();
+    }
 }

@@ -3,21 +3,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/app_bootstrap.php';
 
-use ArcadeCloud\Drive\Http\JsonResponse;
-
-$app = \ArcadeCloud\Drive\Core\ApplicationKernel::app();
-$session = $app->session();
-$session->start();
-
-if (!$session->isAuthenticated() || $session->userId() <= 0) {
-    JsonResponse::error('Sin sesión', 401);
-}
-
-$force = isset($_GET['refresh']) && $_GET['refresh'] === '1';
-$usage = $app->storageUsageService()->getUsage($session->userId(), $force);
-
-JsonResponse::ok([
-    'bytes' => $usage['bytes'],
-    'formatted' => $usage['formatted'],
-    'cached_at' => $usage['cached_at'],
-]);
+(new \ArcadeCloud\Drive\Http\Controller\StorageUsageController(
+    \ArcadeCloud\Drive\Core\ApplicationKernel::app(),
+    \ArcadeCloud\Drive\Http\Request::fromGlobals()
+))->show();

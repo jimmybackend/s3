@@ -6,6 +6,8 @@ namespace ArcadeCloud\Drive\Core;
 use ArcadeCloud\Drive\Application\DrivePageService;
 use ArcadeCloud\Drive\Application\FileListService;
 use ArcadeCloud\Drive\Application\UploadDestinationService;
+use ArcadeCloud\Drive\Aws\AwsCostService;
+use ArcadeCloud\Drive\Aws\CostExplorerGateway;
 use ArcadeCloud\Drive\Security\AuthenticationRepository;
 use ArcadeCloud\Drive\Security\AuthenticationService;
 use ArcadeCloud\Drive\Security\SessionManager;
@@ -31,6 +33,8 @@ final class DriveApplication
     private ?SessionManager $session = null;
     private ?AuthenticationRepository $authenticationRepository = null;
     private ?AuthenticationService $authenticationService = null;
+    private ?CostExplorerGateway $costExplorerGateway = null;
+    private ?AwsCostService $awsCostService = null;
     private ?FileListService $fileListService = null;
     private ?DrivePageService $drivePageService = null;
     private ?UploadDestinationService $uploadDestinationService = null;
@@ -86,6 +90,21 @@ final class DriveApplication
         return $this->authenticationService ??= new AuthenticationService(
             $this->authenticationRepository(),
             $this->session()
+        );
+    }
+
+    public function costExplorerGateway(): CostExplorerGateway
+    {
+        return $this->costExplorerGateway ??= new CostExplorerGateway(
+            \Config::getAwsCredentials(),
+            'us-east-1'
+        );
+    }
+
+    public function awsCostService(): AwsCostService
+    {
+        return $this->awsCostService ??= new AwsCostService(
+            $this->costExplorerGateway()
         );
     }
 

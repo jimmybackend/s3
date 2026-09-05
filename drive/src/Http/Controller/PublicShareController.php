@@ -27,6 +27,11 @@ final class PublicShareController
             return;
         }
 
+        if ($this->request->method() !== 'GET') {
+            $this->renderError(new ShareException('Método no permitido.', 405));
+            return;
+        }
+
         $this->handleGet($endpointKind);
     }
 
@@ -60,7 +65,7 @@ final class PublicShareController
         } catch (Throwable $e) {
             JsonResponse::send([
                 'estado' => 'error',
-                'mensaje' => $e->getMessage(),
+                'mensaje' => 'No se pudo procesar el archivo.',
             ], 500);
         }
     }
@@ -88,7 +93,7 @@ final class PublicShareController
                 $share['tipo'] = 'otro';
             }
 
-            if ($this->request->queryString('direct') !== '' || $this->request->queryString('download') !== '') {
+            if ($this->request->hasQuery('direct') || $this->request->hasQuery('download')) {
                 header('Location: ' . (string)$share['url']);
                 exit;
             }
@@ -99,19 +104,12 @@ final class PublicShareController
                 (string)$share['key']
             );
 
-            if ($this->request->queryString('json') !== '') {
+            if ($this->request->hasQuery('json')) {
                 if ($kind === 'text') {
-                    $content = $token !== ''
-                        ? $this->app->shareAccessService()->readPublicContent($share)
-                        : $this->app->shareAccessService()->privateContent(
-                            $this->authenticatedUserId(),
-                            (string)$share['key']
-                        )['contenido'];
-
                     JsonResponse::send([
                         'estado' => 'ok',
                         'archivo' => $share['key'],
-                        'contenido' => $content,
+                        'contenido' => $this->contentFor($share, $token !== ''),
                     ]);
                 }
 
@@ -122,27 +120,29 @@ final class PublicShareController
                 ]);
             }
 
-            $content = null;
-            if ($kind === 'text') {
-                $content = $token !== ''
-                    ? $this->app->shareAccessService()->readPublicContent($share)
-                    : $this->app->shareAccessService()->privateContent(
-                        $this->authenticatedUserId(),
-                        (string)$share['key']
-                    )['contenido'];
-            }
+            $content = $kind === 'text'
+                ? $this->contentFor($share, $token !== '')
+                : null;
 
             header('Content-Type: text/html; charset=UTF-8');
             echo $this->renderer->render($kind, $share, $content);
         } catch (ShareException $e) {
-            http_response_code($e->httpStatus());
-            header('Content-Type: text/html; charset=UTF-8');
-            echo $this->renderer->error($e->getMessage());
+            $this->renderError($e);
         } catch (Throwable $e) {
-            http_response_code(500);
-            header('Content-Type: text/html; charset=UTF-8');
-            echo $this->renderer->error('No se pudo abrir el enlace compartido.');
+            $this->renderError(new ShareException('No se pudo abrir el enlace compartido.', 500));
         }
+    }
+
+    private function contentFor(array $share, bool $public): string
+    {
+        if ($public) {
+            return $this->app->shareAccessService()->readPublicContent($share);
+        }
+
+        return (string)$this->app->shareAccessService()->privateContent(
+            $this->authenticatedUserId(),
+            (string)$share['key']
+        )['contenido'];
     }
 
     private function authenticatedUserId(): int
@@ -154,5 +154,12 @@ final class PublicShareController
         }
 
         return $session->userId();
+    }
+
+    private function renderError(ShareException $e): void
+    {
+        http_response_code($e->httpStatus());
+        header('Content-Type: text/html; charset=UTF-8');
+        echo $this->renderer->error($e->getMessage());
     }
 }

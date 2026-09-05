@@ -6,6 +6,7 @@ namespace ArcadeCloud\Drive\Core;
 use ArcadeCloud\Drive\Application\DrivePageService;
 use ArcadeCloud\Drive\Application\FileKeyRotationService;
 use ArcadeCloud\Drive\Application\FileListService;
+use ArcadeCloud\Drive\Application\FolderQueryService;
 use ArcadeCloud\Drive\Application\UploadDestinationService;
 use ArcadeCloud\Drive\Aws\AwsCostService;
 use ArcadeCloud\Drive\Aws\CostExplorerGateway;
@@ -21,6 +22,7 @@ use ArcadeCloud\Drive\Sharing\ShareFileRepository;
 use ArcadeCloud\Drive\Sharing\ShareLinkService;
 use ArcadeCloud\Drive\Sharing\ShareObjectStorage;
 use ArcadeCloud\Drive\Sharing\ShareTokenStore;
+use ArcadeCloud\Drive\Storage\FolderRepository;
 use ArcadeCloud\Drive\Storage\StorageObjectNameCodec;
 use ArcadeCloud\Drive\Storage\StorageUsageService;
 use ArcadeCloud\Drive\Storage\UserStoragePath;
@@ -47,6 +49,8 @@ final class DriveApplication
     private ?AwsCostService $awsCostService = null;
     private ?FileRecordLocator $fileRecordLocator = null;
     private ?FileKeyRotationService $fileKeyRotationService = null;
+    private ?FolderRepository $folderRepository = null;
+    private ?FolderQueryService $folderQueryService = null;
     private ?MediaPlaylistRepository $mediaPlaylistRepository = null;
     private ?MediaPlaylistService $mediaPlaylistService = null;
     private ?ThumbnailService $thumbnailService = null;
@@ -140,6 +144,19 @@ final class DriveApplication
             $this->bucket,
             $this->fileRecordLocator(),
             $this->storageObjectNameCodec()
+        );
+    }
+
+    public function folderRepository(): FolderRepository
+    {
+        return $this->folderRepository ??= new FolderRepository($this->db);
+    }
+
+    public function folderQueryService(): FolderQueryService
+    {
+        return $this->folderQueryService ??= new FolderQueryService(
+            $this->folderRepository(),
+            $this->userStoragePath()
         );
     }
 

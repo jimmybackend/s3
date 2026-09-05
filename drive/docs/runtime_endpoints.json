@@ -1,0 +1,1372 @@
+{
+  "active": [
+    "drive/api/upload.php",
+    "drive/app_bootstrap.php",
+    "drive/aws.php",
+    "drive/bloque_archivos.php",
+    "drive/bloque_carpetas.php",
+    "drive/bloque_footer.php",
+    "drive/costos_aws.php",
+    "drive/delete_multiple.php",
+    "drive/descargar_archivo.php",
+    "drive/ec2.php",
+    "drive/editor.php",
+    "drive/guardar_texto.php",
+    "drive/index.php",
+    "drive/leer_texto.php",
+    "drive/login.php",
+    "drive/logout.php",
+    "drive/psesion.php",
+    "drive/s3.php",
+    "drive/thumb.php",
+    "drive/up.php",
+    "drive/upload.php",
+    "drive/validar_php.php",
+    "drive/ver_archivo.php"
+  ],
+  "rows": [
+    {
+      "path": "drive/actualizar_ruta.php",
+      "size": 264,
+      "active": false,
+      "references": [
+        "drive/js/carpetas.js",
+        "drive/js/obtenerFiltros.js"
+      ]
+    },
+    {
+      "path": "drive/api/upload.php",
+      "size": 264,
+      "active": true,
+      "references": [
+        "drive/s3.php",
+        "drive/js/soportesMediaTypes.js",
+        "drive/js/subir-chunked.js",
+        "drive/js/subir-dropzone.js",
+        "drive/js/subir.js"
+      ]
+    },
+    {
+      "path": "drive/app_bootstrap.php",
+      "size": 1640,
+      "active": true,
+      "references": [
+        "drive/actualizar_ruta.php",
+        "drive/api/upload.php",
+        "drive/aws.php",
+        "drive/bin/sync_worker.php",
+        "drive/bin/upload_cleanup.php",
+        "drive/bloque_archivos.php",
+        "drive/bloque_carpetas.php",
+        "drive/buscar_archivo.php",
+        "drive/comprehend_archivo.php",
+        "drive/costos_aws.php",
+        "drive/crear_carpeta.php",
+        "drive/delete_multiple.php",
+        "drive/descargar.php",
+        "drive/descargar_archivo.php",
+        "drive/descargar_zip.php",
+        "drive/download_multiple.php",
+        "drive/ec2-cron.php",
+        "drive/ec2.php",
+        "drive/eliminar_archivo.php",
+        "drive/eliminar_carpeta.php",
+        "drive/encriptar_archivo.php",
+        "drive/generar_token.php",
+        "drive/guardar_texto.php",
+        "drive/leer_texto.php",
+        "drive/listar_carpetas.php",
+        "drive/logout.php",
+        "drive/media_playlist.php",
+        "drive/move_multiple.php",
+        "drive/mover_archivo.php",
+        "drive/mover_carpeta.php",
+        "drive/polly_cargar_texto.php",
+        "drive/polly_list_voices.php",
+        "drive/polly_tts.php",
+        "drive/procesar_textract.php",
+        "drive/psesion.php",
+        "drive/rekognition_labels.php",
+        "drive/relock_file.php",
+        "drive/renombrar_archivo.php",
+        "drive/renombrar_carpeta.php",
+        "drive/s3.php",
+        "drive/set_file_security.php",
+        "drive/storage_usage.php",
+        "drive/subir_archivo.php",
+        "drive/subir_publico.php",
+        "drive/sync_s3_to_db.php",
+        "drive/sync_status.php",
+        "drive/thumb.php",
+        "drive/token_audio.php",
+        "drive/token_texto.php",
+        "drive/token_video.php",
+        "drive/traducir_archivo.php",
+        "drive/transcribir_estado.php",
+        "drive/transcribir_iniciar.php",
+        "drive/unlock_file.php",
+        "drive/up-clean.php",
+        "drive/up.php",
+        "drive/upload.php",
+        "drive/upload_audio_recording.php",
+        "drive/upload_publico.php",
+        "drive/validar_php.php",
+        "drive/ver.php",
+        "drive/ver_archivo.php",
+        "drive/ver_pdf.php"
+      ]
+    },
+    {
+      "path": "drive/aws.php",
+      "size": 260,
+      "active": true,
+      "references": [
+        "drive/s3.php",
+        "drive/src/Http/Controller/PersonalAwsController.php"
+      ]
+    },
+    {
+      "path": "drive/bin/sync_worker.php",
+      "size": 2672,
+      "active": false,
+      "references": [
+        "drive/src/Http/Controller/SyncController.php"
+      ]
+    },
+    {
+      "path": "drive/bin/upload_cleanup.php",
+      "size": 236,
+      "active": false,
+      "references": [
+        "drive/src/Http/Controller/UploadCleanupController.php"
+      ]
+    },
+    {
+      "path": "drive/bloque_archivos.php",
+      "size": 23738,
+      "active": true,
+      "references": [
+        "drive/s3.php",
+        "drive/js/archivos.js",
+        "drive/js/carpetas.js",
+        "drive/js/elimina-multiple.js",
+        "drive/js/elimina-uno.js",
+        "drive/js/imagenes.js",
+        "drive/js/obtenerFiltros.js"
+      ]
+    },
+    {
+      "path": "drive/bloque_carpetas.php",
+      "size": 2439,
+      "active": true,
+      "references": [
+        "drive/s3.php",
+        "drive/js/carpetas.js",
+        "drive/js/obtenerFiltros.js"
+      ]
+    },
+    {
+      "path": "drive/bloque_footer.php",
+      "size": 972,
+      "active": true,
+      "references": [
+        "drive/s3.php"
+      ]
+    },
+    {
+      "path": "drive/buscar_archivo.php",
+      "size": 259,
+      "active": false,
+      "references": [
+        "drive/js/archivos.js"
+      ]
+    },
+    {
+      "path": "drive/comprehend_archivo.php",
+      "size": 258,
+      "active": false,
+      "references": [
+        "drive/js/aws-comprehend.js"
+      ]
+    },
+    {
+      "path": "drive/costos_aws.php",
+      "size": 257,
+      "active": true,
+      "references": [
+        "drive/s3.php"
+      ]
+    },
+    {
+      "path": "drive/crear_carpeta.php",
+      "size": 263,
+      "active": false,
+      "references": [
+        "drive/js/carpetas.js"
+      ]
+    },
+    {
+      "path": "drive/delete_multiple.php",
+      "size": 265,
+      "active": true,
+      "references": [
+        "drive/s3.php",
+        "drive/js/elimina-multiple.js",
+        "drive/js/file-block.js"
+      ]
+    },
+    {
+      "path": "drive/descargar.php",
+      "size": 259,
+      "active": false,
+      "references": [
+        "drive/js/descarga-uno.js"
+      ]
+    },
+    {
+      "path": "drive/descargar_archivo.php",
+      "size": 265,
+      "active": true,
+      "references": [
+        "drive/bloque_archivos.php"
+      ]
+    },
+    {
+      "path": "drive/descargar_zip.php",
+      "size": 254,
+      "active": false,
+      "references": [
+        "drive/js/descarga-multiple.js",
+        "drive/js/file-block.js"
+      ]
+    },
+    {
+      "path": "drive/download_multiple.php",
+      "size": 254,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/ec2-cron.php",
+      "size": 868,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/ec2.php",
+      "size": 34804,
+      "active": true,
+      "references": [
+        "drive/s3.php"
+      ]
+    },
+    {
+      "path": "drive/editor.php",
+      "size": 13973,
+      "active": true,
+      "references": [
+        "drive/bloque_archivos.php",
+        "drive/js/editar-txt.js"
+      ]
+    },
+    {
+      "path": "drive/eliminar_archivo.php",
+      "size": 264,
+      "active": false,
+      "references": [
+        "drive/js/archivos.js",
+        "drive/js/elimina-uno.js"
+      ]
+    },
+    {
+      "path": "drive/eliminar_carpeta.php",
+      "size": 263,
+      "active": false,
+      "references": [
+        "drive/js/carpetas.js"
+      ]
+    },
+    {
+      "path": "drive/encriptar_archivo.php",
+      "size": 264,
+      "active": false,
+      "references": [
+        "drive/js/archivos.js"
+      ]
+    },
+    {
+      "path": "drive/generar_token.php",
+      "size": 254,
+      "active": false,
+      "references": [
+        "drive/js/archivos.js"
+      ]
+    },
+    {
+      "path": "drive/guardar_texto.php",
+      "size": 255,
+      "active": true,
+      "references": [
+        "drive/editor.php"
+      ]
+    },
+    {
+      "path": "drive/index.php",
+      "size": 2759,
+      "active": true,
+      "references": [
+        "drive/bloque_archivos.php",
+        "drive/bloque_carpetas.php",
+        "drive/s3.php",
+        "drive/src/Http/Controller/AuthController.php",
+        "drive/src/Security/SessionManager.php",
+        "drive/src/View/PersonalAwsPageRenderer.php",
+        "drive/up.php"
+      ]
+    },
+    {
+      "path": "drive/leer_texto.php",
+      "size": 255,
+      "active": true,
+      "references": [
+        "drive/editor.php"
+      ]
+    },
+    {
+      "path": "drive/listar_carpetas.php",
+      "size": 258,
+      "active": false,
+      "references": [
+        "drive/js/carpetas.js"
+      ]
+    },
+    {
+      "path": "drive/login.php",
+      "size": 3130,
+      "active": true,
+      "references": []
+    },
+    {
+      "path": "drive/logout.php",
+      "size": 307,
+      "active": true,
+      "references": [
+        "drive/s3.php"
+      ]
+    },
+    {
+      "path": "drive/media_playlist.php",
+      "size": 260,
+      "active": false,
+      "references": [
+        "drive/js/media-floating.js"
+      ]
+    },
+    {
+      "path": "drive/move_multiple.php",
+      "size": 263,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/mover_archivo.php",
+      "size": 259,
+      "active": false,
+      "references": [
+        "drive/js/archivos.js"
+      ]
+    },
+    {
+      "path": "drive/mover_carpeta.php",
+      "size": 261,
+      "active": false,
+      "references": [
+        "drive/js/carpetas.js"
+      ]
+    },
+    {
+      "path": "drive/polly_cargar_texto.php",
+      "size": 257,
+      "active": false,
+      "references": [
+        "drive/js/polly.js"
+      ]
+    },
+    {
+      "path": "drive/polly_list_voices.php",
+      "size": 259,
+      "active": false,
+      "references": [
+        "drive/js/polly.js"
+      ]
+    },
+    {
+      "path": "drive/polly_tts.php",
+      "size": 256,
+      "active": false,
+      "references": [
+        "drive/js/polly.js"
+      ]
+    },
+    {
+      "path": "drive/procesar_textract.php",
+      "size": 256,
+      "active": false,
+      "references": [
+        "drive/js/polly.js"
+      ]
+    },
+    {
+      "path": "drive/psesion.php",
+      "size": 306,
+      "active": true,
+      "references": [
+        "drive/index.php",
+        "drive/login.php"
+      ]
+    },
+    {
+      "path": "drive/rekognition_labels.php",
+      "size": 259,
+      "active": false,
+      "references": [
+        "drive/js/polly.js"
+      ]
+    },
+    {
+      "path": "drive/relock_file.php",
+      "size": 261,
+      "active": false,
+      "references": [
+        "drive/js/archivos.js"
+      ]
+    },
+    {
+      "path": "drive/renombrar_archivo.php",
+      "size": 261,
+      "active": false,
+      "references": [
+        "drive/js/archivos.js"
+      ]
+    },
+    {
+      "path": "drive/renombrar_carpeta.php",
+      "size": 263,
+      "active": false,
+      "references": [
+        "drive/js/carpetas.js"
+      ]
+    },
+    {
+      "path": "drive/s3.php",
+      "size": 89190,
+      "active": true,
+      "references": [
+        "drive/app_bootstrap.php",
+        "drive/src/Http/Controller/AuthController.php",
+        "drive/src/View/PersonalAwsPageRenderer.php",
+        "drive/js/archivos.js",
+        "drive/js/carpetas.js",
+        "drive/js/subir.js"
+      ]
+    },
+    {
+      "path": "drive/set_file_security.php",
+      "size": 262,
+      "active": false,
+      "references": [
+        "drive/js/archivos.js"
+      ]
+    },
+    {
+      "path": "drive/src/Application/DrivePageService.php",
+      "size": 1266,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Application/DrivePageViewModel.php",
+      "size": 407,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Application/FileAccessService.php",
+      "size": 4239,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Application/FileKeyRotationService.php",
+      "size": 2464,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Application/FileListService.php",
+      "size": 5057,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Application/FileMutationService.php",
+      "size": 4252,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Application/FileSearchService.php",
+      "size": 3211,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Application/FolderMutationService.php",
+      "size": 7677,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Application/FolderQueryService.php",
+      "size": 1419,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Application/PhpLintService.php",
+      "size": 2577,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Application/TemporaryZip.php",
+      "size": 529,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Application/TextFileService.php",
+      "size": 7171,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Application/UploadDestinationService.php",
+      "size": 1518,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Application/ZipDownloadService.php",
+      "size": 2569,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Aws/AwsCostService.php",
+      "size": 3101,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Aws/ComprehendFileService.php",
+      "size": 8039,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Aws/CostExplorerGateway.php",
+      "size": 2165,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Aws/Ec2CostGuardService.php",
+      "size": 3601,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Aws/Ec2CronLogger.php",
+      "size": 660,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Aws/Ec2Gateway.php",
+      "size": 2811,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Aws/FileMetadataRepository.php",
+      "size": 1489,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Aws/FileRecordLocator.php",
+      "size": 2320,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Aws/GeneratedFileRepository.php",
+      "size": 1683,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Aws/PersonalAwsConfig.php",
+      "size": 3147,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Aws/PersonalTotpService.php",
+      "size": 1130,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Aws/PollyFileService.php",
+      "size": 4646,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Aws/RdsGateway.php",
+      "size": 7547,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Aws/RekognitionFileService.php",
+      "size": 2471,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Aws/TextractFileService.php",
+      "size": 1282,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Aws/TranscriptionFileService.php",
+      "size": 11587,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Aws/TranslateFileService.php",
+      "size": 2352,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Console/UploadCleanupCommand.php",
+      "size": 1699,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Core/ApplicationKernel.php",
+      "size": 797,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Core/DriveApplication.php",
+      "size": 14905,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Http/BinaryResponse.php",
+      "size": 3650,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Http/ByteRange.php",
+      "size": 1517,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Http/Controller/AbstractJsonController.php",
+      "size": 1849,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Http/Controller/AuthController.php",
+      "size": 2622,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Http/Controller/AwsCostController.php",
+      "size": 1053,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Http/Controller/AwsFileController.php",
+      "size": 3303,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Http/Controller/FileAccessController.php",
+      "size": 3712,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Http/Controller/FileKeyRotationController.php",
+      "size": 938,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Http/Controller/FileMutationController.php",
+      "size": 4149,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Http/Controller/FileSearchController.php",
+      "size": 1189,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Http/Controller/FileSecurityController.php",
+      "size": 2989,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Http/Controller/FolderMutationController.php",
+      "size": 5582,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Http/Controller/FolderQueryController.php",
+      "size": 658,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Http/Controller/LegacyUploadController.php",
+      "size": 4461,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Http/Controller/MediaPlaylistController.php",
+      "size": 896,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Http/Controller/NavigationController.php",
+      "size": 1111,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Http/Controller/PersonalAwsController.php",
+      "size": 2214,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Http/Controller/PublicShareController.php",
+      "size": 6723,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Http/Controller/PublicSharedBrowserController.php",
+      "size": 2324,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Http/Controller/PublicUploadController.php",
+      "size": 2677,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Http/Controller/ShareController.php",
+      "size": 2728,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Http/Controller/StorageUsageController.php",
+      "size": 763,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Http/Controller/SyncController.php",
+      "size": 4681,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Http/Controller/TextEditorController.php",
+      "size": 2053,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Http/Controller/ThumbnailController.php",
+      "size": 2668,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Http/Controller/TranscriptionController.php",
+      "size": 1323,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Http/Controller/UploadCleanupController.php",
+      "size": 2308,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Http/Controller/UploadController.php",
+      "size": 3128,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Http/JsonResponse.php",
+      "size": 785,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Http/Request.php",
+      "size": 2765,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Media/MediaPlaylistRepository.php",
+      "size": 1198,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Media/MediaPlaylistService.php",
+      "size": 1762,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Media/ThumbnailService.php",
+      "size": 13754,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Security/AuthenticationRepository.php",
+      "size": 1646,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Security/AuthenticationService.php",
+      "size": 1184,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Security/FileSecurityRepository.php",
+      "size": 3185,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Security/FileSecurityService.php",
+      "size": 6438,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Security/PersonalToolAccessService.php",
+      "size": 1263,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Security/SessionManager.php",
+      "size": 3409,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Security/UserDirectoryRepository.php",
+      "size": 2002,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Sharing/ShareAccessService.php",
+      "size": 3090,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Sharing/ShareException.php",
+      "size": 383,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Sharing/ShareFileRepository.php",
+      "size": 2065,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Sharing/ShareLinkService.php",
+      "size": 2255,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Sharing/ShareObjectStorage.php",
+      "size": 790,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Sharing/ShareTokenStore.php",
+      "size": 3716,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Storage/FileRecordRepository.php",
+      "size": 4535,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Storage/FolderMutationRepository.php",
+      "size": 10303,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Storage/FolderRepository.php",
+      "size": 1339,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Storage/StorageObjectNameCodec.php",
+      "size": 3333,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Storage/StorageUsageService.php",
+      "size": 2737,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Storage/UserStoragePath.php",
+      "size": 1377,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Storage/UserStorageProvisioner.php",
+      "size": 3175,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Sync/S3SyncService.php",
+      "size": 8922,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Sync/SyncJobStore.php",
+      "size": 3353,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Sync/SyncRepository.php",
+      "size": 14835,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Upload/AdminMultipartUploadService.php",
+      "size": 3458,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Upload/PublicDropzoneUploadService.php",
+      "size": 4465,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Upload/PublicMultipartUploadService.php",
+      "size": 9869,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Upload/PublicSharedBrowserRepository.php",
+      "size": 1396,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Upload/PublicSharedBrowserService.php",
+      "size": 5716,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Upload/SingleUploadService.php",
+      "size": 3148,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Upload/UploadCatalogRepository.php",
+      "size": 3288,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Upload/UploadCleanupService.php",
+      "size": 10027,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/View/Ec2PanelHelper.php",
+      "size": 2076,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/View/FileIconResolver.php",
+      "size": 5461,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/View/FileViewHelper.php",
+      "size": 3181,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/View/FolderTreeRenderer.php",
+      "size": 4762,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/View/PersonalAwsPageRenderer.php",
+      "size": 7763,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/View/PublicSharedPageRenderer.php",
+      "size": 4559,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/View/SharePageRenderer.php",
+      "size": 4961,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/View/SyncStatusRenderer.php",
+      "size": 1126,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/storage_usage.php",
+      "size": 259,
+      "active": false,
+      "references": [
+        "drive/js/storage-usage.js"
+      ]
+    },
+    {
+      "path": "drive/subir_archivo.php",
+      "size": 261,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/subir_publico.php",
+      "size": 266,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/sync_s3_to_db.php",
+      "size": 237,
+      "active": false,
+      "references": [
+        "drive/js/sincronizar.js"
+      ]
+    },
+    {
+      "path": "drive/sync_status.php",
+      "size": 240,
+      "active": false,
+      "references": [
+        "drive/js/sincronizar.js"
+      ]
+    },
+    {
+      "path": "drive/thumb.php",
+      "size": 256,
+      "active": true,
+      "references": [
+        "drive/bloque_archivos.php",
+        "drive/js/imagenes.js"
+      ]
+    },
+    {
+      "path": "drive/token_audio.php",
+      "size": 267,
+      "active": false,
+      "references": [
+        "drive/src/Sharing/ShareLinkService.php"
+      ]
+    },
+    {
+      "path": "drive/token_texto.php",
+      "size": 267,
+      "active": false,
+      "references": [
+        "drive/src/Sharing/ShareLinkService.php"
+      ]
+    },
+    {
+      "path": "drive/token_video.php",
+      "size": 267,
+      "active": false,
+      "references": [
+        "drive/src/Sharing/ShareLinkService.php",
+        "drive/js/audiovideo.js"
+      ]
+    },
+    {
+      "path": "drive/traducir_archivo.php",
+      "size": 257,
+      "active": false,
+      "references": [
+        "drive/js/polly.js"
+      ]
+    },
+    {
+      "path": "drive/transcribir_estado.php",
+      "size": 260,
+      "active": false,
+      "references": [
+        "drive/js/polly.js"
+      ]
+    },
+    {
+      "path": "drive/transcribir_iniciar.php",
+      "size": 259,
+      "active": false,
+      "references": [
+        "drive/js/polly.js"
+      ]
+    },
+    {
+      "path": "drive/unlock_file.php",
+      "size": 261,
+      "active": false,
+      "references": [
+        "drive/js/archivos.js"
+      ]
+    },
+    {
+      "path": "drive/up-clean.php",
+      "size": 263,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/up.php",
+      "size": 22847,
+      "active": true,
+      "references": [
+        "drive/src/Http/Controller/UploadCleanupController.php",
+        "drive/src/Upload/AdminMultipartUploadService.php"
+      ]
+    },
+    {
+      "path": "drive/upload/UploadFactory.php",
+      "size": 1802,
+      "active": false,
+      "references": [
+        "drive/src/Core/DriveApplication.php"
+      ]
+    },
+    {
+      "path": "drive/upload/core/UploadResponse.php",
+      "size": 623,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/upload/core/UploaderInterface.php",
+      "size": 352,
+      "active": false,
+      "references": [
+        "drive/upload/UploadFactory.php",
+        "drive/upload/drivers/Chunked15MBUploader.php",
+        "drive/upload/drivers/DropboxUploader.php",
+        "drive/upload/drivers/LocalPresignedPutUploader.php",
+        "drive/upload/drivers/RemoteUrlUploader.php"
+      ]
+    },
+    {
+      "path": "drive/upload/drivers/Chunked15MBUploader.php",
+      "size": 9272,
+      "active": false,
+      "references": [
+        "drive/upload/UploadFactory.php"
+      ]
+    },
+    {
+      "path": "drive/upload/drivers/DropboxUploader.php",
+      "size": 4374,
+      "active": false,
+      "references": [
+        "drive/upload/UploadFactory.php"
+      ]
+    },
+    {
+      "path": "drive/upload/drivers/LocalPresignedPutUploader.php",
+      "size": 9298,
+      "active": false,
+      "references": [
+        "drive/upload/UploadFactory.php"
+      ]
+    },
+    {
+      "path": "drive/upload/drivers/RemoteUrlUploader.php",
+      "size": 8618,
+      "active": false,
+      "references": [
+        "drive/upload/UploadFactory.php"
+      ]
+    },
+    {
+      "path": "drive/upload/repositories/FileS3Repository.php",
+      "size": 2872,
+      "active": false,
+      "references": [
+        "drive/upload/drivers/Chunked15MBUploader.php",
+        "drive/upload/drivers/DropboxUploader.php",
+        "drive/upload/drivers/LocalPresignedPutUploader.php",
+        "drive/upload/drivers/RemoteUrlUploader.php"
+      ]
+    },
+    {
+      "path": "drive/upload/storage/UploadStateStore.php",
+      "size": 1374,
+      "active": false,
+      "references": [
+        "drive/upload/UploadFactory.php",
+        "drive/upload/drivers/Chunked15MBUploader.php"
+      ]
+    },
+    {
+      "path": "drive/upload.php",
+      "size": 260,
+      "active": true,
+      "references": [
+        "drive/s3.php",
+        "drive/js/soportesMediaTypes.js",
+        "drive/js/subir-chunked.js",
+        "drive/js/subir-dropzone.js",
+        "drive/js/subir.js"
+      ]
+    },
+    {
+      "path": "drive/upload_audio_recording.php",
+      "size": 3132,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/upload_publico.php",
+      "size": 261,
+      "active": false,
+      "references": [
+        "drive/src/View/PublicSharedPageRenderer.php"
+      ]
+    },
+    {
+      "path": "drive/validar_php.php",
+      "size": 258,
+      "active": true,
+      "references": [
+        "drive/editor.php"
+      ]
+    },
+    {
+      "path": "drive/ver.php",
+      "size": 260,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/ver_archivo.php",
+      "size": 255,
+      "active": true,
+      "references": [
+        "drive/bloque_archivos.php",
+        "drive/src/Media/MediaPlaylistService.php",
+        "drive/js/archivos.js",
+        "drive/js/imagenes.js"
+      ]
+    },
+    {
+      "path": "drive/ver_pdf.php",
+      "size": 256,
+      "active": false,
+      "references": [
+        "drive/js/ver-pdf.js"
+      ]
+    }
+  ]
+}

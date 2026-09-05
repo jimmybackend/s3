@@ -52,6 +52,8 @@ if ($accessState === 'locked') {
 '''
 
 new_text = header + body
+new_text = '\n'.join(line.rstrip() for line in new_text.splitlines()) + '\n'
+
 if new_text == text:
     print('EC2_ACCESS_ALREADY_CURRENT')
     raise SystemExit(0)

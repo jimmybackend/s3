@@ -1806,7 +1806,8 @@ $footerEspacioUsado = $storageUsage['formatted'];
 <script src="js/editar-txt.js"></script>
 
 <script src="js/imagenes.js"></script>
-<script src="js/aws-comprehend.js"></script>
+<script src="js/polly.js?v=20260905-aws-actions1"></script>
+<script src="js/aws-comprehend.js?v=20260905-aws-actions1"></script>
 
 <script src="js/mediaFloating.js"></script>
 

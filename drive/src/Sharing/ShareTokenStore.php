@@ -24,8 +24,7 @@ final class ShareTokenStore
                 throw new ShareException('No se pudo bloquear el almacén de enlaces compartidos.', 500);
             }
 
-            $tokens = $this->readFromHandle($handle);
-            $tokens = $this->withoutExpired($tokens);
+            $tokens = $this->withoutExpired($this->readFromHandle($handle));
 
             do {
                 $token = bin2hex(random_bytes(16));
@@ -77,7 +76,14 @@ final class ShareTokenStore
         }
 
         $decoded = json_decode($raw, true);
-        return is_array($decoded) ? $decoded : [];
+        if (!is_array($decoded)) {
+            throw new ShareException(
+                'El almacén de enlaces compartidos contiene JSON inválido; no se sobrescribió.',
+                500
+            );
+        }
+
+        return $decoded;
     }
 
     private function writeToHandle($handle, array $tokens): void

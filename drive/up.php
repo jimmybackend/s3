@@ -19,189 +19,45 @@ if (!in_array($actorRole, ['Administración', 'Soporte'], true)) {
     exit('No autorizado.');
 }
 
-$db = $app->db();
-
 $targetUserId = (int)(
     $_POST['target_user_id']
     ?? $_GET['target_user_id']
     ?? 0
 );
 
-$targetUser = null;
-
-if ($targetUserId > 0) {
-    $stmt = $db->prepare(
-        'SELECT id, email, userstatus
-         FROM Users
-         WHERE id = ?
-         LIMIT 1'
-    );
-
-    $stmt->bind_param('i', $targetUserId);
-    $stmt->execute();
-
-    $resultUser = $stmt->get_result();
-    $targetUser = $resultUser->fetch_assoc() ?: null;
-
-    $stmt->close();
-
-    if (!$targetUser) {
-        throw new RuntimeException('Usuario destino no encontrado.');
-    }
-}
-
-$users = [];
-
-$resultUsers = $db->query(
-    'SELECT id, email, userstatus
-     FROM Users
-     ORDER BY email ASC'
-);
-
-while ($row = $resultUsers->fetch_assoc()) {
-    $users[] = $row;
-}
-
-$service = null;
-
-if ($targetUser !== null) {
-    $userRoot = $app
-        ->userStorageProvisioner()
-        ->ensureRoot($targetUserId);
-
-    $targetPrefix =
-        rtrim($userRoot, '/') .
-        '/uploads';
-
-    $service = new PublicMultipartUploadService(
-        $app->s3(),
-        $app->bucket(),
-        sys_get_temp_dir() . '/arcadecloud-public-upload-state',
-        $targetPrefix
-    );
-}
+$adminUpload = $app->adminMultipartUploadService();
+$targetUser = $targetUserId > 0
+    ? $adminUpload->targetUser($targetUserId)
+    : null;
+$users = $adminUpload->users();
 
 $action = trim((string)($_POST['action'] ?? ''));
 if ($action !== '') {
     header('Content-Type: application/json; charset=utf-8');
 
     try {
-        if ($targetUser === null || $service === null) {
-            throw new RuntimeException(
-                'Debes seleccionar el usuario destino.'
-            );
+        if ($targetUser === null) {
+            throw new RuntimeException('Debes seleccionar el usuario destino.');
         }
 
-        $result = match ($action) {
-            'init' => $service->init($_POST),
-            'sign' => $service->sign($_POST),
-            'part' => $service->part($_POST, $_FILES),
-            'resume' => $service->resume($_POST),
-            'complete' => $service->complete($_POST),
-            default => throw new RuntimeException('Acción no válida.'),
-        };
+        $result = $adminUpload->handle(
+            $actorUserId,
+            $targetUserId,
+            $action,
+            $_POST,
+            $_FILES
+        );
 
-        if ($action === 'complete') {
-            $key = trim((string)($result['key'] ?? ''));
-
-            if ($key === '') {
-                throw new RuntimeException(
-                    'S3 no devolvió la key final.'
-                );
-            }
-
-            $head = $app->s3()->headObject([
-                'Bucket' => $app->bucket(),
-                'Key' => $key,
-            ]);
-
-            $size = (int)(
-                $head['ContentLength'] ?? 0
-            );
-
-            $visibleName = basename(
-                trim(
-                    (string)(
-                        $_POST['filename']
-                        ?? basename($key)
-                    )
-                )
-            );
-
-            $physicalName = basename($key);
-
-            $dir = dirname($key);
-
-            $route =
-                $dir === '.'
-                    ? ''
-                    : rtrim($dir, '/') . '/';
-
-            $metadata = json_encode([
-                'source' => 'up.php',
-                'uploaded_by_user_id' => $actorUserId,
-            ], JSON_UNESCAPED_UNICODE);
-
-            $stmt = $db->prepare(
-                "INSERT INTO FileS3
-                    (
-                        Nombre,
-                        Encriptado,
-                        Tamano,
-                        Metadatos,
-                        Ruta,
-                        Found,
-                        AccessType,
-                        user_id_
-                    )
-                 VALUES
-                    (?, ?, ?, ?, ?, 1, 'normal', ?)
-                 ON DUPLICATE KEY UPDATE
-                    Nombre = VALUES(Nombre),
-                    Tamano = VALUES(Tamano),
-                    Metadatos = VALUES(Metadatos),
-                    Ruta = VALUES(Ruta),
-                    Found = 1"
-            );
-
-            if (!$stmt) {
-                throw new RuntimeException(
-                    'No se pudo preparar registro FileS3.'
-                );
-            }
-
-            $stmt->bind_param(
-                'ssissi',
-                $visibleName,
-                $physicalName,
-                $size,
-                $metadata,
-                $route,
-                $targetUserId
-            );
-
-            if (!$stmt->execute()) {
-                $error = $stmt->error;
-                $stmt->close();
-
-                throw new RuntimeException(
-                    'Archivo completado en S3 pero no registrado en FileS3: ' .
-                    $error
-                );
-            }
-
-            $stmt->close();
-
-            $result['registered'] = true;
-            $result['target_user_id'] = $targetUserId;
-            $result['target_email'] =
-                (string)$targetUser['email'];
-        }
-
-        echo json_encode($result, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-    } catch (Throwable $e) {
+        echo json_encode(
+            $result,
+            JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES
+        );
+    } catch (Throwable $error) {
         http_response_code(500);
-        echo json_encode(['error' => $e->getMessage()], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        echo json_encode(
+            ['error' => $error->getMessage()],
+            JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES
+        );
     }
     exit;
 }

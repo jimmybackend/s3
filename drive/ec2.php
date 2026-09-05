@@ -8,6 +8,8 @@ use ArcadeCloud\Drive\Http\Request;
 use ArcadeCloud\Drive\View\PersonalAwsPageRenderer;
 use Aws\Ec2\Ec2Client;
 use Aws\Rds\RdsClient;
+use ArcadeCloud\Drive\Aws\Ec2Gateway;
+use ArcadeCloud\Drive\Aws\RdsGateway;
 use Aws\Exception\AwsException;
 
 $app = ApplicationKernel::app();
@@ -69,217 +71,6 @@ $csrf = $_SESSION['csrf'];
 $actionPasswordHash = $app->personalAwsConfig()->actionPasswordHash();
 
 // ===================== Clientes AWS =====================
-class EC2Panel {
-    /** @var Ec2Client */
-    private $ec2;
-
-    public function __construct($region) {
-        $this->ec2 = new Ec2Client([
-            'region'      => $region,
-            'version'     => 'latest',
-            'credentials' => [
-                'key'    => Config::ACCESS_KEY,
-                'secret' => Config::SECRET_KEY,
-            ],
-        ]);
-    }
-
-    public function listInstances($stateFilter = null) {
-        $instances = [];
-        $params = [];
-        if ($stateFilter && $stateFilter !== 'all') {
-            $params['Filters'] = [[ 'Name'=>'instance-state-name', 'Values'=>[$stateFilter] ]];
-        }
-        do {
-            $res = $this->ec2->describeInstances($params);
-            foreach (($res['Reservations'] ?? []) as $r) {
-                foreach (($r['Instances'] ?? []) as $i) { $instances[] = $i; }
-            }
-            $params['NextToken'] = isset($res['NextToken']) ? $res['NextToken'] : null;
-        } while (!empty($params['NextToken']));
-        return $instances;
-    }
-
-    public function getInstance($instanceId) {
-        $res = $this->ec2->describeInstances(['InstanceIds' => [$instanceId]]);
-        $r = $res['Reservations'][0] ?? null;
-        return $r ? ($r['Instances'][0] ?? null) : null;
-    }
-
-    public function start($instanceId) {
-        return $this->ec2->startInstances(['InstanceIds' => [$instanceId]]);
-    }
-
-    public function stop($instanceId, $force=false) {
-        return $this->ec2->stopInstances([
-            'InstanceIds'=>[$instanceId],
-            'Force'=>$force
-        ]);
-    }
-}
-
-class RDSPanel {
-    /** @var RdsClient */
-    private $rds;
-
-    public function __construct($region) {
-        $this->rds = new RdsClient([
-            'region'      => $region,
-            'version'     => 'latest',
-            'credentials' => [
-                'key'    => Config::ACCESS_KEY,
-                'secret' => Config::SECRET_KEY,
-            ],
-        ]);
-    }
-
-    private function describeInstanceOrNull(string $id): ?array {
-        try {
-            $res = $this->rds->describeDBInstances([
-                'DBInstanceIdentifier' => $id,
-            ]);
-            return $res['DBInstances'][0] ?? null;
-        } catch (AwsException $e) {
-            $code = (string)($e->getAwsErrorCode() ?: '');
-            if (in_array($code, ['DBInstanceNotFound', 'DBInstanceNotFoundFault'], true)) {
-                return null;
-            }
-            throw $e;
-        }
-    }
-
-    private function describeClusterOrNull(string $id): ?array {
-        try {
-            $res = $this->rds->describeDBClusters([
-                'DBClusterIdentifier' => $id,
-            ]);
-            return $res['DBClusters'][0] ?? null;
-        } catch (AwsException $e) {
-            $code = (string)($e->getAwsErrorCode() ?: '');
-            if (in_array($code, ['DBClusterNotFound', 'DBClusterNotFoundFault'], true)) {
-                return null;
-            }
-            throw $e;
-        }
-    }
-
-    /**
-     * Busca un identificador primero como RDS Instance y luego como Aurora/DB Cluster.
-     * Retorna ['type'=>'instance'|'cluster', 'data'=>array] o null.
-     */
-    public function getDatabaseTarget(string $id): ?array {
-        $instance = $this->describeInstanceOrNull($id);
-        if ($instance !== null) {
-            return ['type' => 'instance', 'data' => $instance];
-        }
-
-        $cluster = $this->describeClusterOrNull($id);
-        if ($cluster !== null) {
-            return ['type' => 'cluster', 'data' => $cluster];
-        }
-
-        return null;
-    }
-
-    public function listConfiguredDatabases(array $ids): array {
-        $rows = [];
-        foreach ($ids as $id) {
-            $id = (string)$id;
-            try {
-                $target = $this->getDatabaseTarget($id);
-                if ($target === null) {
-                    $rows[] = [
-                        'id' => $id,
-                        'found' => false,
-                        'aws_type' => 'No encontrada',
-                        'target_type' => '',
-                        'status' => 'not_found',
-                        'engine' => '',
-                        'class' => '',
-                        'endpoint' => '',
-                        'reader_endpoint' => '',
-                        'port' => '',
-                        'az' => '',
-                        'multi_az' => '',
-                        'error' => '',
-                    ];
-                    continue;
-                }
-                $rows[] = normalize_database_target($id, $target);
-            } catch (AwsException $e) {
-                $rows[] = [
-                    'id' => $id,
-                    'found' => false,
-                    'aws_type' => 'Error AWS',
-                    'target_type' => '',
-                    'status' => 'error',
-                    'engine' => '',
-                    'class' => '',
-                    'endpoint' => '',
-                    'reader_endpoint' => '',
-                    'port' => '',
-                    'az' => '',
-                    'multi_az' => '',
-                    'error' => ($e->getAwsErrorCode()?:'AWS').': '.($e->getAwsErrorMessage()?:$e->getMessage()),
-                ];
-            } catch (Throwable $t) {
-                $rows[] = [
-                    'id' => $id,
-                    'found' => false,
-                    'aws_type' => 'Error',
-                    'target_type' => '',
-                    'status' => 'error',
-                    'engine' => '',
-                    'class' => '',
-                    'endpoint' => '',
-                    'reader_endpoint' => '',
-                    'port' => '',
-                    'az' => '',
-                    'multi_az' => '',
-                    'error' => $t->getMessage(),
-                ];
-            }
-        }
-        return $rows;
-    }
-
-    public function startDatabase(string $id, string $type): void {
-        if ($type === 'instance') {
-            $this->rds->startDBInstance([
-                'DBInstanceIdentifier' => $id,
-            ]);
-            return;
-        }
-
-        if ($type === 'cluster') {
-            $this->rds->startDBCluster([
-                'DBClusterIdentifier' => $id,
-            ]);
-            return;
-        }
-
-        throw new RuntimeException("Tipo de base de datos no soportado para START: {$type}");
-    }
-
-    public function stopDatabase(string $id, string $type): void {
-        if ($type === 'instance') {
-            $this->rds->stopDBInstance([
-                'DBInstanceIdentifier' => $id,
-            ]);
-            return;
-        }
-
-        if ($type === 'cluster') {
-            $this->rds->stopDBCluster([
-                'DBClusterIdentifier' => $id,
-            ]);
-            return;
-        }
-
-        throw new RuntimeException("Tipo de base de datos no soportado para STOP: {$type}");
-    }
-}
-
 // ===================== Funciones auxiliares =====================
 function getTag($instance, $key) {
     foreach (($instance['Tags'] ?? []) as $t) {
@@ -422,7 +213,7 @@ if (isset($_GET['download']) && $_GET['download'] === 'rdp') {
     $path = __DIR__ . '/' . RDP_FILE_NAME;
 
     try {
-        $panel = new EC2Panel($region);
+        $panel = $app->ec2Gateway($region);
         $inst  = $panel->getInstance($id);
         if (!$inst) { http_response_code(404); echo "Instancia no encontrada"; exit; }
 
@@ -471,7 +262,7 @@ if (isset($_GET['ajax']) && $_GET['ajax'] === 'status') {
     $id = isset($_GET['id']) ? (string)$_GET['id'] : '';
     if (!$id) { echo json_encode(['ok'=>false,'error'=>'Falta id']); exit; }
     try {
-        $panel = new EC2Panel($region);
+        $panel = $app->ec2Gateway($region);
         $inst = $panel->getInstance($id);
         if (!$inst) { echo json_encode(['ok'=>false,'error'=>'Instancia no encontrada']); exit; }
         $st   = (string)($inst['State']['Name'] ?? 'unknown');
@@ -507,7 +298,7 @@ if (isset($_POST['ajax']) && $_POST['ajax'] === 'action') {
         echo json_encode(['ok'=>false,'error'=>'Clave requerida o incorrecta']); exit;
     }
     try {
-        $panel = new EC2Panel($region);
+        $panel = $app->ec2Gateway($region);
         if ($action === 'start') $panel->start($id); else $panel->stop($id, $force);
         echo json_encode(['ok'=>true,'message'=>($action==='start'?'Se solicitó encender ':'Se solicitó detener ').$id.'.']);
     } catch (AwsException $e) {
@@ -528,7 +319,7 @@ if (isset($_GET['ajax']) && $_GET['ajax'] === 'rds_status') {
     if (!is_manual_database_id($id)) { echo json_encode(['ok'=>false,'error'=>'Base de datos no permitida en este panel']); exit; }
 
     try {
-        $panel = new RDSPanel($region);
+        $panel = $app->rdsGateway($region);
         $target = $panel->getDatabaseTarget($id);
         if ($target === null) {
             echo json_encode([
@@ -549,7 +340,7 @@ if (isset($_GET['ajax']) && $_GET['ajax'] === 'rds_status') {
             ]);
             exit;
         }
-        echo json_encode(['ok'=>true] + normalize_database_target($id, $target));
+        echo json_encode(['ok'=>true] + $panel->normalizeTarget($id, $target));
     } catch (AwsException $e) {
         error_log('AWS RDS status error: '.$e->getMessage());
         echo json_encode(['ok'=>false,'error'=>($e->getAwsErrorCode()?:'AWS').': '.($e->getAwsErrorMessage()?:$e->getMessage())]);
@@ -581,17 +372,17 @@ if (isset($_POST['ajax']) && $_POST['ajax'] === 'rds_action') {
     }
 
     try {
-        $panel = new RDSPanel($region);
+        $panel = $app->rdsGateway($region);
         $target = $panel->getDatabaseTarget($id);
         if ($target === null) {
             echo json_encode(['ok'=>false,'error'=>'Base de datos no encontrada como RDS Instance ni como Aurora/DB Cluster']); exit;
         }
 
         $type = (string)$target['type'];
-        $status = database_status_from_target($target);
+        $status = $panel->statusFromTarget($target);
 
         if ($action === 'start') {
-            if (!is_database_startable($status)) {
+            if (!$panel->isStartable($status)) {
                 echo json_encode(['ok'=>false,'error'=>"La base {$id} está en estado '{$status}', no se puede encender desde ese estado."]); exit;
             }
             $panel->startDatabase($id, $type);
@@ -600,7 +391,7 @@ if (isset($_POST['ajax']) && $_POST['ajax'] === 'rds_action') {
         }
 
         if ($action === 'stop') {
-            if (!is_database_stoppable($status)) {
+            if (!$panel->isStoppable($status)) {
                 echo json_encode(['ok'=>false,'error'=>"La base {$id} está en estado '{$status}', no se puede detener desde ese estado."]); exit;
             }
             $panel->stopDatabase($id, $type);
@@ -620,7 +411,7 @@ if (isset($_POST['ajax']) && $_POST['ajax'] === 'rds_action') {
 // ===================== Render (no-AJAX) =====================
 $err = null; $awsErr = null; $rdsErr = null; $list = []; $dbList = [];
 try {
-    $panel = new EC2Panel($region);
+    $panel = $app->ec2Gateway($region);
     $list = $panel->listInstances($state);
 } catch (AwsException $e) {
     $awsErr = ($e->getAwsErrorCode()?:'AWS').': '.($e->getAwsErrorMessage()?:$e->getMessage());
@@ -629,7 +420,7 @@ try {
 }
 
 try {
-    $rdsPanel = new RDSPanel($region);
+    $rdsPanel = $app->rdsGateway($region);
     $dbList = $rdsPanel->listConfiguredDatabases(MANUAL_DATABASE_IDS);
 } catch (AwsException $e) {
     $rdsErr = ($e->getAwsErrorCode()?:'AWS').': '.($e->getAwsErrorMessage()?:$e->getMessage());

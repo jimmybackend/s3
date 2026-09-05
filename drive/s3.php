@@ -35,11 +35,7 @@ $basePrefix = $vm->basePrefix;
  * Se muestran únicamente las carpetas del usuario autenticado.
  * ============================================================
  */
-$todasLasCarpetas = $app->s3Manager()->listarCarpetasDesdeDb(
-    $userId,
-    $userRoot,
-    true
-);
+$todasLasCarpetas = $app->folderQueryService()->allForUser($userId, true);
 
 $tipo = $vm->tipo;
 $buscar = $vm->buscar;

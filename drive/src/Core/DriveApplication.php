@@ -33,6 +33,7 @@ final class DriveApplication
     private S3Client $s3;
     private string $bucket;
     private ?\S3Manager $s3Manager = null;
+    private ?\UploadFactory $uploadFactory = null;
     private ?SessionManager $session = null;
     private ?AuthenticationRepository $authenticationRepository = null;
     private ?AuthenticationService $authenticationService = null;
@@ -135,6 +136,22 @@ final class DriveApplication
             $this->bucket,
             sys_get_temp_dir() . '/arcadecloud-drive-thumbnails'
         );
+    }
+
+    public function uploadFactory(): \UploadFactory
+    {
+        if ($this->uploadFactory === null) {
+            require_once dirname(__DIR__, 2) . '/upload/UploadFactory.php';
+            $this->uploadFactory = new \UploadFactory(
+                $this->db,
+                $this->s3,
+                $this->bucket,
+                $this->storageObjectNameCodec(),
+                $this->session(),
+                dirname(__DIR__, 2) . '/upload/storage/state'
+            );
+        }
+        return $this->uploadFactory;
     }
 
     public function userStoragePath(): UserStoragePath

@@ -1,0 +1,64 @@
+name: OOP folder query validation
+
+on:
+  push:
+    branches:
+      - main
+      - 'refactor/**'
+    paths:
+      - 'drive/listar_carpetas.php'
+      - 'drive/js/carpetas.js'
+      - 'drive/src/Storage/FolderRepository.php'
+      - 'drive/src/Application/FolderQueryService.php'
+      - 'drive/src/Http/Controller/FolderQueryController.php'
+      - 'drive/src/Core/DriveApplication.php'
+      - '.github/workflows/oop-folder-query.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate PHP syntax
+        run: |
+          set -euo pipefail
+          php -l drive/listar_carpetas.php
+          php -l drive/src/Storage/FolderRepository.php
+          php -l drive/src/Application/FolderQueryService.php
+          php -l drive/src/Http/Controller/FolderQueryController.php
+          php -l drive/src/Core/DriveApplication.php
+          echo PHP_OK
+
+      - name: Audit DB-first folder query boundary
+        run: |
+          set -euo pipefail
+          ! grep -q '\$_SESSION\|\$_GET\|\$_POST\|session_start\|\$db_connection\|S3Manager\|Config::\|SELECT\|listObjectsV2' drive/listar_carpetas.php
+          grep -q 'FolderQueryController' drive/listar_carpetas.php
+          grep -q 'folderQueryService' drive/src/Http/Controller/FolderQueryController.php
+          grep -q 'FolderRepository' drive/src/Application/FolderQueryService.php
+          grep -q 'UserStoragePath' drive/src/Application/FolderQueryService.php
+          ! grep -q 'S3Client\|listObjectsV2\|getObject\|putObject' drive/src/Application/FolderQueryService.php
+          grep -q 'user_id_ = ?' drive/src/Storage/FolderRepository.php
+          grep -q 'Found = 1' drive/src/Storage/FolderRepository.php
+          grep -q 'Prefix LIKE CONCAT' drive/src/Storage/FolderRepository.php
+          grep -q 'folderRepository' drive/src/Core/DriveApplication.php
+          grep -q 'folderQueryService' drive/src/Core/DriveApplication.php
+          echo OOP_OK
+
+      - name: Validate runtime reference
+        run: |
+          set -euo pipefail
+          grep -q "listarCarpetas: 'listar_carpetas.php'" drive/js/carpetas.js
+          echo REFERENCIAS_OK
+
+      - name: Diff whitespace check
+        run: |
+          git diff --check HEAD^ HEAD
+          echo DIFF_OK

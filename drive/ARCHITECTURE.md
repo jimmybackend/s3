@@ -50,6 +50,40 @@ El desarrollo nuevo y las refactorizaciones del Drive se implementan orientados 
 paginación, sesión y construcción de estado ya se obtienen mediante objetos. Esto permite
 migrar los endpoints restantes por módulos sin romper de golpe la aplicación en producción.
 
+## Autenticación
+
+Los formularios existentes siguen enviando sus credenciales a `psesion.php` y el cierre de
+sesión sigue usando `logout.php`. Ambos archivos son ahora entrypoints delgados:
+
+```text
+psesion.php
+    -> AuthController::login()
+        -> AuthenticationService
+            -> AuthenticationRepository (Users / AccessControl)
+            -> SessionManager
+
+logout.php
+    -> AuthController::logout()
+        -> SessionManager
+```
+
+Reglas preservadas del flujo histórico:
+
+1. máximo de tres intentos de login por identificador dentro de la sesión;
+2. credenciales inválidas redirigen a `303.html`;
+3. usuarios no activos redirigen a `202.html`;
+4. los roles `Administración` y `Soporte` entran a `s3.php`;
+5. el acceso correcto se registra en `AccessControl`;
+6. las preferencias iniciales de sesión (`show_counts`, `show_metas`, `media_hidden`, `show_filters`) se conservan.
+
+La sesión ya no se manipula desde los endpoints. `SessionManager` concentra inicio, creación de
+sesión autenticada, contador de intentos y destrucción de sesión. Al autenticar correctamente se
+regenera el identificador de sesión para evitar conservar el ID previo al login.
+
+`AuthenticationRepository` es la única pieza del módulo que conoce las tablas `Users` y
+`AccessControl`; `AuthenticationService` concentra la validación del hash, estado del usuario y
+creación de la sesión autenticada.
+
 ## Provisionamiento multiusuario
 
 La raíz física/lógica del Drive se deriva exclusivamente del `Users.id` autenticado:

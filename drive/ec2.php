@@ -1,116 +1,42 @@
 <?php
-session_start();
-
-/*
-|--------------------------------------------------------------------------
-| Protección simple por contraseña
-|--------------------------------------------------------------------------
-| Cambia esta contraseña por la tuya.
-| No debe haber espacios ni HTML antes de este <?php
-*/
-
-$PASSWORD_CORRECTA = 'Us1317mx@777'; // <-- CAMBIA ESTO
-
-// Si ya ingresó correctamente, dejamos ver la página
-if (isset($_SESSION['pagina_autorizada']) && $_SESSION['pagina_autorizada'] === true) {
-    // Continúa cargando la página normal
-} else {
-
-    // Si enviaron la contraseña
-    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        $password = $_POST['password'] ?? '';
-
-        if (hash_equals($PASSWORD_CORRECTA, $password)) {
-            $_SESSION['pagina_autorizada'] = true;
-
-            // Recargamos la misma página ya autorizada
-            header('Location: ' . $_SERVER['PHP_SELF']);
-            exit;
-        } else {
-            // Contraseña incorrecta: mandar al index.php
-            header('Location: index.php');
-            exit;
-        }
-    }
-
-    // Si todavía no manda contraseña, mostramos formulario
-    ?>
-    <!DOCTYPE html>
-    <html lang="es">
-    <head>
-        <meta charset="UTF-8">
-        <title>Acceso protegido</title>
-        <style>
-            body {
-                font-family: Arial, sans-serif;
-                background: #f4f4f4;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                height: 100vh;
-                margin: 0;
-            }
-
-            .box {
-                background: white;
-                padding: 30px;
-                border-radius: 10px;
-                box-shadow: 0 0 15px rgba(0,0,0,0.15);
-                width: 320px;
-                text-align: center;
-            }
-
-            input[type="password"] {
-                width: 100%;
-                padding: 12px;
-                margin: 15px 0;
-                border: 1px solid #ccc;
-                border-radius: 6px;
-                box-sizing: border-box;
-            }
-
-            button {
-                width: 100%;
-                padding: 12px;
-                background: #0d6efd;
-                color: white;
-                border: none;
-                border-radius: 6px;
-                cursor: pointer;
-                font-size: 16px;
-            }
-
-            button:hover {
-                background: #0b5ed7;
-            }
-        </style>
-    </head>
-    <body>
-
-    <div class="box">
-        <h2>Acceso privado</h2>
-
-        <form method="post">
-            <input type="password" name="password" placeholder="Contraseña" required autofocus>
-            <button type="submit">Entrar</button>
-        </form>
-    </div>
-
-    </body>
-    </html>
-    <?php
-    exit;
-}
-?>
-<?php
-// ec2.php – Panel EC2 + RDS/Aurora manual con polling, modal de clave, errores visibles y descarga RDP con IP pública
-session_start();
+declare(strict_types=1);
 
 require_once __DIR__ . '/app_bootstrap.php';
 
+use ArcadeCloud\Drive\Core\ApplicationKernel;
+use ArcadeCloud\Drive\Http\Request;
+use ArcadeCloud\Drive\View\PersonalAwsPageRenderer;
 use Aws\Ec2\Ec2Client;
 use Aws\Rds\RdsClient;
 use Aws\Exception\AwsException;
+
+$app = ApplicationKernel::app();
+$request = Request::fromGlobals();
+$access = $app->personalToolAccessService();
+$renderer = new PersonalAwsPageRenderer();
+$accessState = $access->state();
+
+if ($accessState === 'forbidden') {
+    $renderer->forbidden();
+}
+
+if ($accessState === 'locked') {
+    $configured = $app->personalAwsConfig()->isConfigured();
+
+    if (
+        $request->method() === 'POST'
+        && $request->postString('action') === 'unlock'
+    ) {
+        if ($access->unlock($request->postRawString('access_password'))) {
+            header('Location: ' . $request->serverString('PHP_SELF', 'ec2.php'));
+            exit;
+        }
+
+        $renderer->locked($configured, 'Contraseña incorrecta.');
+    }
+
+    $renderer->locked($configured);
+}
 
 // ===================== Config =====================
 $DEFAULT_REGION = defined('Config::REGION') ? Config::REGION : 'us-east-1';
@@ -368,11 +294,11 @@ function is_protected_id($id){ return in_array($id, PROTECTED_INSTANCE_IDS, true
 function is_manual_database_id($id){ return in_array($id, MANUAL_DATABASE_IDS, true); }
 **/
 function e($s){ return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
-function is_protected_id($id){ 
-    return true; 
+function is_protected_id($id){
+    return true;
 }
-function is_manual_database_id($id){ 
-    return in_array($id, MANUAL_DATABASE_IDS, true); 
+function is_manual_database_id($id){
+    return in_array($id, MANUAL_DATABASE_IDS, true);
 }
 
 

@@ -1,5 +1,13 @@
 # Arquitectura de ArcadeCloud Drive
 
+## Estado
+
+**Baseline estable: `v1.0-oop` — 5 de septiembre de 2026.**
+
+La migración incremental del backend heredado a una arquitectura OOP está cerrada. `main` contiene la versión estable desplegada en producción. A partir de este punto, los cambios nuevos son mantenimiento o nuevas funcionalidades y deben partir de `main`.
+
+El runtime ya no depende de un monolito central para operar S3. Las responsabilidades están separadas entre Controller, Service, Repository y Gateway/Infrastructure.
+
 ## Estructura general
 
 ```text
@@ -326,7 +334,11 @@ costos_aws.php
         -> CostExplorerGateway
 ```
 
-Las acciones sobre archivos AWS delegan en `AwsFileController` y servicios especializados para Rekognition, Textract, Polly, Translate y Comprehend. Transcribe utiliza `TranscriptionController` y `TranscriptionFileService`.
+Las acciones sobre archivos AWS delegan en `AwsFileController` y servicios especializados para Rekognition, Textract, Polly, Translate y Comprehend.
+
+Transcribe utiliza `TranscriptionController` y `TranscriptionFileService`. El frontend inicia la transcripción, informa que el trabajo continúa en segundo plano y consulta su estado hasta notificar que el resultado está listo.
+
+Las acciones AWS del listado soportan interacción táctil mediante eventos de puntero y mantienen separación visual de las acciones principales en móvil.
 
 ## Herramientas AWS personales
 
@@ -340,6 +352,12 @@ aws.php
 ```
 
 Con sesión del Drive, sólo `user_id = 1` tiene acceso. Contraseñas, hashes operativos, nombres privados de cuentas y semillas TOTP se leen desde configuración privada fuera del repositorio. Las semillas permanecen del lado servidor.
+
+La configuración privada de producción utiliza:
+
+```text
+/etc/arcadecloud-drive/personal-aws.json
+```
 
 ## Administración EC2 y RDS
 
@@ -357,6 +375,19 @@ ec2-cron.php
 
 `ec2.php` muestra y opera los recursos del propietario. `ec2-cron.php` aplica la política horaria de protección de costos. Los clientes AWS no se construyen dentro de los entrypoints.
 
+## Criterios de cierre de v1.0-oop
+
+La migración se considera cerrada porque:
+
+- los entrypoints principales delegan en Controller/Service;
+- la navegación normal permanece DB-first;
+- no existen consumidores runtime del antiguo monolito S3;
+- las operaciones sensibles usan el `user_id_` autenticado;
+- las acciones AWS, incluida la interacción móvil, fueron probadas en producción;
+- Transcribe funciona de manera asíncrona con seguimiento de estado;
+- la rama de migración fue fusionada y retirada;
+- producción ejecuta `main`.
+
 ## Reglas obligatorias
 
 1. No agregar SQL a entrypoints públicos.
@@ -367,3 +398,4 @@ ec2-cron.php
 6. No modificar `vendor/`.
 7. Mantener los contratos HTTP utilizados por el frontend.
 8. Validar cambios con `php -l`, `node --check` cuando aplique y `git diff --check`.
+9. Las nuevas funcionalidades deben desarrollarse desde `main` en ramas independientes y volver mediante merge validado.

@@ -1,0 +1,58 @@
+name: OOP authentication validation
+
+on:
+  push:
+    branches:
+      - main
+      - 'refactor/**'
+    paths:
+      - 'drive/psesion.php'
+      - 'drive/logout.php'
+      - 'drive/src/Security/AuthenticationRepository.php'
+      - 'drive/src/Security/AuthenticationService.php'
+      - 'drive/src/Security/SessionManager.php'
+      - 'drive/src/Http/Controller/AuthController.php'
+      - 'drive/src/Core/DriveApplication.php'
+      - '.github/workflows/oop-auth.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate PHP syntax
+        run: |
+          php -l drive/psesion.php
+          php -l drive/logout.php
+          php -l drive/src/Security/AuthenticationRepository.php
+          php -l drive/src/Security/AuthenticationService.php
+          php -l drive/src/Security/SessionManager.php
+          php -l drive/src/Http/Controller/AuthController.php
+          php -l drive/src/Core/DriveApplication.php
+
+      - name: Audit thin authentication endpoints
+        run: |
+          set -euo pipefail
+          for f in drive/psesion.php drive/logout.php; do
+            ! grep -q 'session_start' "$f"
+            ! grep -q '\$_SESSION' "$f"
+            ! grep -q '\$_POST' "$f"
+            ! grep -q '\$_GET' "$f"
+            ! grep -q '\$db_connection' "$f"
+            ! grep -q -- '->prepare' "$f"
+            ! grep -q '^function ' "$f"
+          done
+          grep -q 'AuthController' drive/psesion.php
+          grep -q 'AuthController' drive/logout.php
+          grep -q 'password_verify' drive/src/Security/AuthenticationService.php
+          grep -q 'FROM Users WHERE email = ?' drive/src/Security/AuthenticationRepository.php
+          grep -q 'INSERT INTO AccessControl' drive/src/Security/AuthenticationRepository.php
+          grep -q 'session_regenerate_id' drive/src/Security/SessionManager.php
+
+      - name: Diff whitespace check
+        run: git diff --check HEAD^ HEAD || true

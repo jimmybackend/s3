@@ -6,10 +6,7 @@ require_once __DIR__ . '/app_bootstrap.php';
 use ArcadeCloud\Drive\Core\ApplicationKernel;
 use ArcadeCloud\Drive\Http\Request;
 use ArcadeCloud\Drive\View\PersonalAwsPageRenderer;
-use Aws\Ec2\Ec2Client;
-use Aws\Rds\RdsClient;
-use ArcadeCloud\Drive\Aws\Ec2Gateway;
-use ArcadeCloud\Drive\Aws\RdsGateway;
+use ArcadeCloud\Drive\View\Ec2PanelHelper as H;
 use Aws\Exception\AwsException;
 
 $app = ApplicationKernel::app();
@@ -70,137 +67,6 @@ if (empty($_SESSION['csrf'])) {
 $csrf = $_SESSION['csrf'];
 $actionPasswordHash = $app->personalAwsConfig()->actionPasswordHash();
 
-// ===================== Clientes AWS =====================
-// ===================== Funciones auxiliares =====================
-function getTag($instance, $key) {
-    foreach (($instance['Tags'] ?? []) as $t) {
-        if (($t['Key'] ?? '') === $key) return (string)($t['Value'] ?? '');
-    }
-    return '';
-}
-/**
-function e($s){ return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
-function is_protected_id($id){ return in_array($id, PROTECTED_INSTANCE_IDS, true); }
-function is_manual_database_id($id){ return in_array($id, MANUAL_DATABASE_IDS, true); }
-**/
-function e($s){ return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8'); }
-function is_protected_id($id){
-    return true;
-}
-function is_manual_database_id($id){
-    return in_array($id, MANUAL_DATABASE_IDS, true);
-}
-
-
-function database_status_from_target(array $target): string {
-    if ($target['type'] === 'instance') {
-        return (string)($target['data']['DBInstanceStatus'] ?? 'unknown');
-    }
-    if ($target['type'] === 'cluster') {
-        return (string)($target['data']['Status'] ?? 'unknown');
-    }
-    return 'unknown';
-}
-
-function is_database_startable(string $status): bool {
-    return $status === 'stopped';
-}
-
-function is_database_stoppable(string $status): bool {
-    return $status === 'available';
-}
-
-function database_state_class(string $status): string {
-    if ($status === 'available') return 'state-running';
-    if ($status === 'stopped') return 'state-stopped';
-    if (in_array($status, ['not_found', 'error'], true)) return 'state-error';
-    return 'state-other';
-}
-
-function normalize_database_target(string $id, array $target): array {
-    if ($target['type'] === 'instance') {
-        $db = $target['data'];
-        return [
-            'id' => $id,
-            'found' => true,
-            'aws_type' => 'RDS Instance',
-            'target_type' => 'instance',
-            'status' => (string)($db['DBInstanceStatus'] ?? 'unknown'),
-            'engine' => (string)($db['Engine'] ?? ''),
-            'class' => (string)($db['DBInstanceClass'] ?? ''),
-            'endpoint' => (string)($db['Endpoint']['Address'] ?? ''),
-            'reader_endpoint' => '',
-            'port' => (string)($db['Endpoint']['Port'] ?? ''),
-            'az' => (string)($db['AvailabilityZone'] ?? ''),
-            'multi_az' => !empty($db['MultiAZ']) ? 'Sí' : 'No',
-            'error' => '',
-        ];
-    }
-
-    if ($target['type'] === 'cluster') {
-        $cluster = $target['data'];
-        $azs = $cluster['AvailabilityZones'] ?? [];
-        return [
-            'id' => $id,
-            'found' => true,
-            'aws_type' => 'Aurora / DB Cluster',
-            'target_type' => 'cluster',
-            'status' => (string)($cluster['Status'] ?? 'unknown'),
-            'engine' => (string)($cluster['Engine'] ?? ''),
-            'class' => 'cluster',
-            'endpoint' => (string)($cluster['Endpoint'] ?? ''),
-            'reader_endpoint' => (string)($cluster['ReaderEndpoint'] ?? ''),
-            'port' => (string)($cluster['Port'] ?? ''),
-            'az' => is_array($azs) ? implode(', ', array_map('strval', $azs)) : '',
-            'multi_az' => is_array($azs) && count($azs) > 1 ? 'Sí' : 'No',
-            'error' => '',
-        ];
-    }
-
-    return [
-        'id' => $id,
-        'found' => false,
-        'aws_type' => 'Desconocido',
-        'target_type' => '',
-        'status' => 'unknown',
-        'engine' => '',
-        'class' => '',
-        'endpoint' => '',
-        'reader_endpoint' => '',
-        'port' => '',
-        'az' => '',
-        'multi_az' => '',
-        'error' => '',
-    ];
-}
-
-/**
- * Convierte IPv4 "50.17.162.57" a "ec2-50-17-162-57.compute-1.amazonaws.com"
- * (Como tú lo pediste, fijo compute-1.amazonaws.com)
- */
-function ip_to_ec2_dns_compute1($ipv4) {
-    $ipv4 = trim((string)$ipv4);
-    if ($ipv4 === '') return '';
-    if (!filter_var($ipv4, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) return '';
-    $dashed = str_replace('.', '-', $ipv4);
-    return 'ec2-' . $dashed . '.compute-1.amazonaws.com';
-}
-
-function default_rdp_content() {
-    return "auto connect:i:1\r\nfull address:s:\r\nusername:s:Administrator\r\n";
-}
-
-function set_rdp_full_address($rdpText, $fullAddressHost) {
-    $fullAddressHost = (string)$fullAddressHost;
-    $hasLine = preg_match('/^full address:s:.*$/mi', $rdpText);
-    if ($hasLine) {
-        $rdpText = preg_replace('/^full address:s:.*$/mi', 'full address:s:' . $fullAddressHost, $rdpText);
-    } else {
-        $rdpText = rtrim($rdpText, "\r\n") . "\r\nfull address:s:" . $fullAddressHost . "\r\n";
-    }
-    return $rdpText;
-}
-
 // ===================== DOWNLOAD RDP =====================
 if (isset($_GET['download']) && $_GET['download'] === 'rdp') {
     $id = isset($_GET['id']) ? (string)$_GET['id'] : '';
@@ -231,15 +97,15 @@ if (isset($_GET['download']) && $_GET['download'] === 'rdp') {
             exit;
         }
 
-        $host = ip_to_ec2_dns_compute1($pip);
+        $host = H::ipv4ToEc2Dns($pip);
         if ($host === '') {
             http_response_code(500);
             echo "IPv4 pública inválida: " . $pip;
             exit;
         }
 
-        $rdp = is_file($path) ? file_get_contents($path) : default_rdp_content();
-        $rdp = set_rdp_full_address($rdp, $host);
+        $rdp = is_file($path) ? file_get_contents($path) : H::defaultRdpContent();
+        $rdp = H::setRdpFullAddress($rdp, $host);
         file_put_contents($path, $rdp);
 
         header('Content-Type: application/x-rdp');
@@ -316,7 +182,7 @@ if (isset($_GET['ajax']) && $_GET['ajax'] === 'rds_status') {
     header('Content-Type: application/json; charset=utf-8');
     $id = isset($_GET['id']) ? (string)$_GET['id'] : '';
     if (!$id) { echo json_encode(['ok'=>false,'error'=>'Falta id']); exit; }
-    if (!is_manual_database_id($id)) { echo json_encode(['ok'=>false,'error'=>'Base de datos no permitida en este panel']); exit; }
+    if (!H::isManualDatabase($id, MANUAL_DATABASE_IDS)) { echo json_encode(['ok'=>false,'error'=>'Base de datos no permitida en este panel']); exit; }
 
     try {
         $panel = $app->rdsGateway($region);
@@ -364,7 +230,7 @@ if (isset($_POST['ajax']) && $_POST['ajax'] === 'rds_action') {
     if (!$id || !in_array($action, ['start','stop'], true)) {
         echo json_encode(['ok'=>false,'error'=>'Parámetros inválidos']); exit;
     }
-    if (!is_manual_database_id($id)) {
+    if (!H::isManualDatabase($id, MANUAL_DATABASE_IDS)) {
         echo json_encode(['ok'=>false,'error'=>'Base de datos no permitida en este panel']); exit;
     }
     if ($pw === '' || $actionPasswordHash === '' || !password_verify($pw, $actionPasswordHash)) {
@@ -476,7 +342,7 @@ code{word-break:break-all}
     <div class="card">
         <form class="row" method="get">
             <label>Región:
-                <input type="text" name="region" value="<?= e($region) ?>" placeholder="us-east-1">
+                <input type="text" name="region" value="<?= H::e($region) ?>" placeholder="us-east-1">
             </label>
             <label>Estado EC2:
                 <select name="state">
@@ -495,13 +361,13 @@ code{word-break:break-all}
     </div>
 
     <?php if ($awsErr): ?>
-        <div class="alert alert-err"><strong>Error AWS EC2:</strong> <?= e($awsErr) ?></div>
+        <div class="alert alert-err"><strong>Error AWS EC2:</strong> <?= H::e($awsErr) ?></div>
     <?php endif; ?>
     <?php if ($rdsErr): ?>
-        <div class="alert alert-err"><strong>Error AWS RDS:</strong> <?= e($rdsErr) ?></div>
+        <div class="alert alert-err"><strong>Error AWS RDS:</strong> <?= H::e($rdsErr) ?></div>
     <?php endif; ?>
     <?php if ($err): ?>
-        <div class="alert alert-err"><strong>Error:</strong> <?= e($err) ?></div>
+        <div class="alert alert-err"><strong>Error:</strong> <?= H::e($err) ?></div>
     <?php endif; ?>
 
     <div class="card">
@@ -518,7 +384,7 @@ code{word-break:break-all}
             <?php else:
                 foreach ($list as $i):
                     $id   = (string)($i['InstanceId'] ?? '');
-                    $name = getTag($i, 'Name');
+                    $name = H::tag($i, 'Name');
                     $st   = (string)($i['State']['Name'] ?? 'unknown');
                     $cls  = $st === 'running' ? 'state-running' : ($st === 'stopped' ? 'state-stopped' : 'state-other');
                     $type = (string)($i['InstanceType'] ?? '');
@@ -526,31 +392,31 @@ code{word-break:break-all}
                     $pip  = (string)($i['PublicIpAddress'] ?? '');
                     $prip = (string)($i['PrivateIpAddress'] ?? '');
                     $lt   = isset($i['LaunchTime']) ? (new DateTime($i['LaunchTime']))->format('Y-m-d H:i:s T') : '';
-                    $prot = is_protected_id($id);
+                    $prot = H::isProtected($id);
                     $isRdp = ($id === RDP_INSTANCE_ID);
             ?>
-                <tr id="row-<?= e($id) ?>" data-id="<?= e($id) ?>" data-protected="<?= $prot ? '1':'0' ?>">
+                <tr id="row-<?= H::e($id) ?>" data-id="<?= H::e($id) ?>" data-protected="<?= $prot ? '1':'0' ?>">
                     <td class="actions">
                         <?php if ($st === 'running'): ?>
-                            <button data-action="stop" data-id="<?= e($id) ?>">Detener</button>
-                            <label class="note"><input type="checkbox" data-force="<?= e($id) ?>"> force</label>
+                            <button data-action="stop" data-id="<?= H::e($id) ?>">Detener</button>
+                            <label class="note"><input type="checkbox" data-force="<?= H::e($id) ?>"> force</label>
                             <?php if ($isRdp && $pip !== ''): ?>
-                                <a class="rdp" href="?download=rdp&id=<?= e($id) ?>&region=<?= e($region) ?>">Descargar RDP</a>
+                                <a class="rdp" href="?download=rdp&id=<?= H::e($id) ?>&region=<?= H::e($region) ?>">Descargar RDP</a>
                             <?php endif; ?>
                         <?php elseif ($st === 'stopped'): ?>
-                            <button data-action="start" data-id="<?= e($id) ?>">Encender</button>
+                            <button data-action="start" data-id="<?= H::e($id) ?>">Encender</button>
                         <?php else: ?>
                             <span class="note">Sin acción</span>
                         <?php endif; ?>
                     </td>
-                    <td><code><?= e($id) ?></code><?= $prot ? ' <span class="badge state-other" title="Instancia marcada como protegida">🔒 Protegida</span>' : '' ?></td>
-                    <td><?= e($name) ?></td>
-                    <td><span class="badge <?= e($cls) ?>" data-state="<?= e($id) ?>"><?= e($st) ?></span></td>
-                    <td data-type="<?= e($id) ?>"><?= e($type) ?></td>
-                    <td data-az="<?= e($id) ?>"><?= e($az) ?></td>
-                    <td data-pip="<?= e($id) ?>"><?= e($pip) ?></td>
-                    <td data-prip="<?= e($id) ?>"><?= e($prip) ?></td>
-                    <td><?= e($lt) ?></td>
+                    <td><code><?= H::e($id) ?></code><?= $prot ? ' <span class="badge state-other" title="Instancia marcada como protegida">🔒 Protegida</span>' : '' ?></td>
+                    <td><?= H::e($name) ?></td>
+                    <td><span class="badge <?= H::e($cls) ?>" data-state="<?= H::e($id) ?>"><?= H::e($st) ?></span></td>
+                    <td data-type="<?= H::e($id) ?>"><?= H::e($type) ?></td>
+                    <td data-az="<?= H::e($id) ?>"><?= H::e($az) ?></td>
+                    <td data-pip="<?= H::e($id) ?>"><?= H::e($pip) ?></td>
+                    <td data-prip="<?= H::e($id) ?>"><?= H::e($prip) ?></td>
+                    <td><?= H::e($lt) ?></td>
                 </tr>
             <?php endforeach; endif; ?>
             </tbody>
@@ -573,7 +439,7 @@ code{word-break:break-all}
                 foreach ($dbList as $db):
                     $dbId = (string)$db['id'];
                     $dbStatus = (string)$db['status'];
-                    $dbCls = database_state_class($dbStatus);
+                    $dbCls = H::databaseStateClass($dbStatus);
                     $found = !empty($db['found']);
                     $targetType = (string)($db['target_type'] ?? '');
                     $endpoint = (string)($db['endpoint'] ?? '');
@@ -581,32 +447,32 @@ code{word-break:break-all}
                     $azText = trim((string)($db['az'] ?? ''));
                     $multiAz = trim((string)($db['multi_az'] ?? ''));
             ?>
-                <tr id="rds-row-<?= e($dbId) ?>" data-rds-id="<?= e($dbId) ?>" data-rds-type="<?= e($targetType) ?>">
+                <tr id="rds-row-<?= H::e($dbId) ?>" data-rds-id="<?= H::e($dbId) ?>" data-rds-type="<?= H::e($targetType) ?>">
                     <td class="actions rds-actions">
                         <?php if (!$found): ?>
                             <span class="note">No encontrada</span>
                         <?php elseif ($dbStatus === 'available'): ?>
-                            <button data-rds-action="stop" data-rds-id="<?= e($dbId) ?>">Apagar DB</button>
+                            <button data-rds-action="stop" data-rds-id="<?= H::e($dbId) ?>">Apagar DB</button>
                         <?php elseif ($dbStatus === 'stopped'): ?>
-                            <button data-rds-action="start" data-rds-id="<?= e($dbId) ?>">Encender DB</button>
+                            <button data-rds-action="start" data-rds-id="<?= H::e($dbId) ?>">Encender DB</button>
                         <?php else: ?>
                             <span class="note">Sin acción</span>
                         <?php endif; ?>
                     </td>
-                    <td><code><?= e($dbId) ?></code>    <span class="badge state-other" title="Base de datos protegida: solo se controla manualmente con clave">        🔒 Protegida    </span></td>
-                    <td data-rds-aws_type="<?= e($dbId) ?>"><?= e($db['aws_type'] ?? '') ?></td>
+                    <td><code><?= H::e($dbId) ?></code>    <span class="badge state-other" title="Base de datos protegida: solo se controla manualmente con clave">        🔒 Protegida    </span></td>
+                    <td data-rds-aws_type="<?= H::e($dbId) ?>"><?= H::e($db['aws_type'] ?? '') ?></td>
                     <td>
-                        <span class="badge <?= e($dbCls) ?>" data-rds-state="<?= e($dbId) ?>"><?= e($dbStatus) ?></span>
-                        <?php if (!empty($db['error'])): ?><div class="note state-error"><?= e($db['error']) ?></div><?php endif; ?>
+                        <span class="badge <?= H::e($dbCls) ?>" data-rds-state="<?= H::e($dbId) ?>"><?= H::e($dbStatus) ?></span>
+                        <?php if (!empty($db['error'])): ?><div class="note state-error"><?= H::e($db['error']) ?></div><?php endif; ?>
                     </td>
-                    <td data-rds-engine="<?= e($dbId) ?>"><?= e($db['engine'] ?? '') ?></td>
-                    <td data-rds-class="<?= e($dbId) ?>"><?= e($db['class'] ?? '') ?></td>
-                    <td data-rds-endpoint="<?= e($dbId) ?>">
-                        <?php if ($endpoint !== ''): ?><code><?= e($endpoint) ?></code><?php endif; ?>
-                        <?php if ($readerEndpoint !== ''): ?><div class="note">Reader: <code><?= e($readerEndpoint) ?></code></div><?php endif; ?>
+                    <td data-rds-engine="<?= H::e($dbId) ?>"><?= H::e($db['engine'] ?? '') ?></td>
+                    <td data-rds-class="<?= H::e($dbId) ?>"><?= H::e($db['class'] ?? '') ?></td>
+                    <td data-rds-endpoint="<?= H::e($dbId) ?>">
+                        <?php if ($endpoint !== ''): ?><code><?= H::e($endpoint) ?></code><?php endif; ?>
+                        <?php if ($readerEndpoint !== ''): ?><div class="note">Reader: <code><?= H::e($readerEndpoint) ?></code></div><?php endif; ?>
                     </td>
-                    <td data-rds-port="<?= e($dbId) ?>"><?= e($db['port'] ?? '') ?></td>
-                    <td data-rds-az="<?= e($dbId) ?>"><?= e($azText) ?><?= $multiAz !== '' ? '<div class="note">Multi-AZ: '.e($multiAz).'</div>' : '' ?></td>
+                    <td data-rds-port="<?= H::e($dbId) ?>"><?= H::e($db['port'] ?? '') ?></td>
+                    <td data-rds-az="<?= H::e($dbId) ?>"><?= H::e($azText) ?><?= $multiAz !== '' ? '<div class="note">Multi-AZ: '.H::e($multiAz).'</div>' : '' ?></td>
                 </tr>
             <?php endforeach; endif; ?>
             </tbody>
@@ -629,9 +495,9 @@ code{word-break:break-all}
 
 <script>
 (function(){
-  const csrf = "<?= e($csrf) ?>";
-  const region = "<?= e($region) ?>";
-  const RDP_INSTANCE_ID = "<?= e(RDP_INSTANCE_ID) ?>";
+  const csrf = "<?= H::e($csrf) ?>";
+  const region = "<?= H::e($region) ?>";
+  const RDP_INSTANCE_ID = "<?= H::e(RDP_INSTANCE_ID) ?>";
   const modal = document.getElementById('modal');
   const modalTitle = document.getElementById('modalTitle');
   const modalText = document.getElementById('modalText');

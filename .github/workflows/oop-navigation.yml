@@ -1,0 +1,59 @@
+name: OOP navigation validation
+
+on:
+  push:
+    branches:
+      - main
+      - 'refactor/**'
+    paths:
+      - 'drive/actualizar_ruta.php'
+      - 'drive/js/carpetas.js'
+      - 'drive/js/obtenerFiltros.js'
+      - 'drive/src/Http/Controller/NavigationController.php'
+      - 'drive/src/Http/Controller/AbstractJsonController.php'
+      - 'drive/src/Storage/UserStoragePath.php'
+      - '.github/workflows/oop-navigation.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate PHP syntax
+        run: |
+          set -euo pipefail
+          php -l drive/actualizar_ruta.php
+          php -l drive/src/Http/Controller/NavigationController.php
+          php -l drive/src/Http/Controller/AbstractJsonController.php
+          php -l drive/src/Storage/UserStoragePath.php
+          echo PHP_OK
+
+      - name: Audit navigation boundary
+        run: |
+          set -euo pipefail
+          ! grep -q '\$_SESSION\|\$_GET\|\$_POST\|session_start\|Config::\|\$db_connection\|^function ' drive/actualizar_ruta.php
+          grep -q 'NavigationController' drive/actualizar_ruta.php
+          grep -q "postString('ruta')" drive/src/Http/Controller/NavigationController.php
+          grep -q "postString('rutaNueva')" drive/src/Http/Controller/NavigationController.php
+          grep -q 'normalizeForUser' drive/src/Http/Controller/NavigationController.php
+          grep -q "set('ruta_actual'" drive/src/Http/Controller/NavigationController.php
+          echo OOP_OK
+
+      - name: Validate runtime references
+        run: |
+          set -euo pipefail
+          grep -q 'actualizar_ruta.php' drive/js/carpetas.js
+          grep -q 'actualizar_ruta.php' drive/js/obtenerFiltros.js
+          echo REFERENCIAS_OK
+
+      - name: Diff whitespace check
+        run: |
+          git diff --check HEAD^ HEAD
+          echo DIFF_OK

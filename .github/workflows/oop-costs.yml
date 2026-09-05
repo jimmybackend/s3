@@ -1,0 +1,58 @@
+name: OOP AWS cost validation
+
+on:
+  push:
+    branches:
+      - main
+      - 'refactor/**'
+    paths:
+      - 'drive/costos_aws.php'
+      - 'drive/src/Aws/CostExplorerGateway.php'
+      - 'drive/src/Aws/AwsCostService.php'
+      - 'drive/src/Http/Controller/AwsCostController.php'
+      - 'drive/src/Security/SessionManager.php'
+      - 'drive/src/Core/DriveApplication.php'
+      - '.github/workflows/oop-costs.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate PHP syntax
+        run: |
+          php -l drive/costos_aws.php
+          php -l drive/src/Aws/CostExplorerGateway.php
+          php -l drive/src/Aws/AwsCostService.php
+          php -l drive/src/Http/Controller/AwsCostController.php
+          php -l drive/src/Security/SessionManager.php
+          php -l drive/src/Core/DriveApplication.php
+
+      - name: Audit cost architecture
+        run: |
+          set -euo pipefail
+          ! grep -q 'session_start' drive/costos_aws.php
+          ! grep -q '\$_SESSION' drive/costos_aws.php
+          ! grep -q 'Config::' drive/costos_aws.php
+          ! grep -q 'CostExplorerClient' drive/costos_aws.php
+          ! grep -q 'StsClient' drive/costos_aws.php
+          ! grep -q 'access_key' drive/costos_aws.php
+          ! grep -q 'debug' drive/costos_aws.php
+          grep -q 'AwsCostController' drive/costos_aws.php
+          grep -q 'CostExplorerClient' drive/src/Aws/CostExplorerGateway.php
+          grep -q 'getCostAndUsage' drive/src/Aws/CostExplorerGateway.php
+          grep -q 'getCostForecast' drive/src/Aws/CostExplorerGateway.php
+          grep -q "'mes_actual' => 'Mes actual'" drive/src/Aws/AwsCostService.php
+          grep -q "'fin_mes_previsto' => 'Final de mes previsto'" drive/src/Aws/AwsCostService.php
+          grep -q 'closeWrite' drive/src/Http/Controller/AwsCostController.php
+          ! grep -R -q 'StsClient' drive/costos_aws.php drive/src/Aws/AwsCostService.php drive/src/Http/Controller/AwsCostController.php
+
+      - name: Diff whitespace check
+        run: git diff --check HEAD^ HEAD

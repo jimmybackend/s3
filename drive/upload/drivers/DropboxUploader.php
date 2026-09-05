@@ -1,119 +1,115 @@
 <?php
 declare(strict_types=1);
 
-use Aws\S3\S3Client;
+use ArcadeCloud\Drive\Storage\StorageObjectNameCodec;
 use Aws\Exception\AwsException;
+use Aws\S3\S3Client;
 
 require_once __DIR__ . '/../core/UploaderInterface.php';
 require_once __DIR__ . '/../repositories/FileS3Repository.php';
 
 final class DropboxUploader implements UploaderInterface
 {
-    private function db()
-    {
-        if (isset($GLOBALS['db_connection']) && $GLOBALS['db_connection'] instanceof mysqli) return $GLOBALS['db_connection'];
-        if (isset($GLOBALS['conn']) && $GLOBALS['conn'] instanceof mysqli) return $GLOBALS['conn'];
-        if (isset($GLOBALS['mysqli']) && $GLOBALS['mysqli'] instanceof mysqli) return $GLOBALS['mysqli'];
-        if (isset($GLOBALS['db']) && $GLOBALS['db'] instanceof mysqli) return $GLOBALS['db'];
-        throw new RuntimeException('DB no disponible (mysqli). Revisa app_bootstrap.php/db.php');
-    }
-
-    private function s3()
-    {
-        if (!class_exists('Config')) throw new RuntimeException('Config no est�� disponible');
-        $s3 = Config::getS3();
-        if (!($s3 instanceof S3Client)) throw new RuntimeException('Config::getS3() no devolvi�� S3Client');
-        return $s3;
-    }
-
-    private function bucket(): string
-    {
-        return Config::getBucket();
+    public function __construct(
+        private mysqli $db,
+        private S3Client $s3,
+        private string $bucket,
+        private StorageObjectNameCodec $codec
+    ) {
     }
 
     public function init(array $req): array
     {
-        // Dropzone manda el archivo en $_FILES['file'] normalmente
-        $files = isset($req['_files']) && is_array($req['_files']) ? $req['_files'] : $_FILES;
+        $files = isset($req['_files']) && is_array($req['_files'])
+            ? $req['_files']
+            : [];
 
         if (empty($files['file'])) {
-            throw new RuntimeException('No se recibi�� archivo (field "file")');
+            throw new RuntimeException('No se recibió archivo (field "file")');
         }
 
-        $bucket = $this->bucket();
-        $s3 = $this->s3();
-        $repo = new FileS3Repository($this->db());
+        $repo = new FileS3Repository($this->db);
         $rutaBase = rtrim((string)($req['ruta_objetivo'] ?? ''), '/') . '/';
-        if ($rutaBase === '/') throw new RuntimeException('Falta ruta_objetivo');
+        if ($rutaBase === '/') {
+            throw new RuntimeException('Falta ruta_objetivo');
+        }
 
-        $f = $files['file'];
-
-        // Normaliza single/multi
-        if (!is_array($f['tmp_name'])) {
-            $f = [
-                'name'     => [$f['name']],
-                'type'     => [$f['type']],
-                'tmp_name' => [$f['tmp_name']],
-                'error'    => [$f['error']],
-                'size'     => [$f['size']],
+        $file = $files['file'];
+        if (!is_array($file['tmp_name'])) {
+            $file = [
+                'name' => [$file['name']],
+                'type' => [$file['type']],
+                'tmp_name' => [$file['tmp_name']],
+                'error' => [$file['error']],
+                'size' => [$file['size']],
             ];
         }
 
         $userId = (int)($req['_user_id'] ?? 0);
         $resultados = [];
 
-        for ($i = 0; $i < count($f['name']); $i++) {
-            if (($f['error'][$i] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) {
-                $resultados[] = ['estado' => 'error', 'mensaje' => 'UPLOAD_ERR=' . (int)$f['error'][$i]];
+        for ($i = 0; $i < count($file['name']); $i++) {
+            if (($file['error'][$i] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) {
+                $resultados[] = [
+                    'estado' => 'error',
+                    'mensaje' => 'UPLOAD_ERR=' . (int)$file['error'][$i],
+                ];
                 continue;
             }
 
-            $tmpFile = (string)$f['tmp_name'][$i];
-            $nombreOriginal = (string)$f['name'][$i];
-
-            $nombreHash = (new \ArcadeCloud\Drive\Storage\StorageObjectNameCodec())->createFileObjectName($nombreOriginal);
+            $tmpFile = (string)$file['tmp_name'][$i];
+            $nombreOriginal = (string)$file['name'][$i];
+            $nombreHash = $this->codec->createFileObjectName($nombreOriginal);
             $keyFinal = $rutaBase . $nombreHash;
 
             $metadatosArray = [
-                'tipo'        => @mime_content_type($tmpFile) ?: ($f['type'][$i] ?? 'application/octet-stream'),
-                'tamano_kb'   => round((int)@filesize($tmpFile) / 1024, 2),
+                'tipo' => @mime_content_type($tmpFile) ?: ($file['type'][$i] ?? 'application/octet-stream'),
+                'tamano_kb' => round((int)@filesize($tmpFile) / 1024, 2),
                 'hash_sha256' => @hash_file('sha256', $tmpFile) ?: '',
-                'subido_por'  => (string)($req['_usuario'] ?? 'usuario'),
-                'ip_origen'   => $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0',
-                'fecha'       => date('Y-m-d'),
-                'hora'        => date('H:i:s'),
-                'navegador'   => $_SERVER['HTTP_USER_AGENT'] ?? 'desconocido'
+                'subido_por' => (string)($req['_usuario'] ?? 'usuario'),
+                'ip_origen' => (string)($req['_remote_addr'] ?? '0.0.0.0'),
+                'fecha' => date('Y-m-d'),
+                'hora' => date('H:i:s'),
+                'navegador' => (string)($req['_user_agent'] ?? 'desconocido'),
             ];
             $metadatosJSON = json_encode($metadatosArray, JSON_UNESCAPED_UNICODE);
 
             try {
-                $s3->putObject([
-                    'Bucket'     => $bucket,
-                    'Key'        => $keyFinal,
+                $this->s3->putObject([
+                    'Bucket' => $this->bucket,
+                    'Key' => $keyFinal,
                     'SourceFile' => $tmpFile,
-                    'ACL'        => 'private',
-                    'Metadata'   => $metadatosArray
+                    'ACL' => 'private',
+                    'Metadata' => $metadatosArray,
                 ]);
-
-                $tamano = (int)@filesize($tmpFile);
 
                 $fileId = $repo->insertFile([
-                    'Nombre'     => $nombreOriginal,
+                    'Nombre' => $nombreOriginal,
                     'Encriptado' => $nombreHash,
-                    'Tamano'     => $tamano,
-                    'Metadatos'  => $metadatosJSON,
-                    'Ruta'       => $rutaBase,
-                    'Found'      => 1,
+                    'Tamano' => (int)@filesize($tmpFile),
+                    'Metadatos' => $metadatosJSON,
+                    'Ruta' => $rutaBase,
+                    'Found' => 1,
                     'AccessType' => 'normal',
-                    'Fecha'      => date('Y-m-d H:i:s'),
-                    'user_id_'   => $userId,
+                    'Fecha' => date('Y-m-d H:i:s'),
+                    'user_id_' => $userId,
                 ]);
 
-                $resultados[] = ['estado' => 'ok', 'key' => $keyFinal, 'file_id' => $fileId];
+                $resultados[] = [
+                    'estado' => 'ok',
+                    'key' => $keyFinal,
+                    'file_id' => $fileId,
+                ];
             } catch (AwsException $e) {
-                $resultados[] = ['estado' => 'error', 'mensaje' => $e->getAwsErrorMessage()];
+                $resultados[] = [
+                    'estado' => 'error',
+                    'mensaje' => $e->getAwsErrorMessage() ?: $e->getMessage(),
+                ];
             } catch (Throwable $e) {
-                $resultados[] = ['estado' => 'error', 'mensaje' => $e->getMessage()];
+                $resultados[] = [
+                    'estado' => 'error',
+                    'mensaje' => $e->getMessage(),
+                ];
             }
         }
 

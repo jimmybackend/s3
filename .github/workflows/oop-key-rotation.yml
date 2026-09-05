@@ -1,0 +1,67 @@
+name: OOP file key rotation validation
+
+on:
+  push:
+    branches:
+      - main
+      - 'refactor/**'
+    paths:
+      - 'drive/encriptar_archivo.php'
+      - 'drive/js/archivos.js'
+      - 'drive/src/Application/FileKeyRotationService.php'
+      - 'drive/src/Aws/FileRecordLocator.php'
+      - 'drive/src/Http/Controller/AbstractJsonController.php'
+      - 'drive/src/Http/Controller/FileKeyRotationController.php'
+      - 'drive/src/Core/DriveApplication.php'
+      - '.github/workflows/oop-key-rotation.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate PHP syntax
+        run: |
+          set -euo pipefail
+          php -l drive/encriptar_archivo.php
+          php -l drive/src/Application/FileKeyRotationService.php
+          php -l drive/src/Aws/FileRecordLocator.php
+          php -l drive/src/Http/Controller/AbstractJsonController.php
+          php -l drive/src/Http/Controller/FileKeyRotationController.php
+          php -l drive/src/Core/DriveApplication.php
+          echo PHP_OK
+
+      - name: Audit key rotation architecture
+        run: |
+          set -euo pipefail
+          ! grep -q '\$_SESSION\|\$_GET\|\$_POST\|\$_SERVER\|\$db_connection\|Config::\|FileKeyRotationService\|FileRecordLocator\|copyObject\|deleteObject\|file_get_contents' drive/encriptar_archivo.php
+          grep -q 'FileKeyRotationController' drive/encriptar_archivo.php
+          grep -q "php://input" drive/src/Http/Controller/FileKeyRotationController.php
+          grep -q 'fileKeyRotationService' drive/src/Http/Controller/FileKeyRotationController.php
+          grep -q 'fileKeyRotationService' drive/src/Core/DriveApplication.php
+          grep -q 'fileRecordLocator' drive/src/Core/DriveApplication.php
+          grep -q 'requireReadableByKey' drive/src/Application/FileKeyRotationService.php
+          grep -q 'UPDATE FileS3 SET Encriptado' drive/src/Application/FileKeyRotationService.php
+          grep -q 'user_id_ = ?' drive/src/Application/FileKeyRotationService.php
+          grep -q 'copyObject' drive/src/Application/FileKeyRotationService.php
+          grep -q 'deleteObject' drive/src/Application/FileKeyRotationService.php
+          echo OOP_OK
+
+      - name: Validate runtime reference
+        run: |
+          set -euo pipefail
+          grep -q "URL_ENCRIPTAR = 'encriptar_archivo.php'" drive/js/archivos.js
+          grep -q "JSON.stringify({ key })" drive/js/archivos.js
+          echo REFERENCIAS_OK
+
+      - name: Diff whitespace check
+        run: |
+          git diff --check HEAD^ HEAD
+          echo DIFF_OK

@@ -4,6 +4,8 @@ on:
   push:
     branches: [main]
     paths:
+      - 'drive/**/*.php'
+      - 'drive/**/*.js'
       - '.github/scripts/runtime_reference_map.py'
       - '.github/workflows/runtime-reference-map.yml'
   workflow_dispatch:

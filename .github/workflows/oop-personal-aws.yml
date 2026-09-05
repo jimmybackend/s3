@@ -1,0 +1,68 @@
+name: OOP personal AWS validation
+
+on:
+  push:
+    branches: ['refactor/oop-drive-migration']
+    paths:
+      - 'drive/aws.php'
+      - 'drive/src/Aws/PersonalAwsConfig.php'
+      - 'drive/src/Aws/PersonalTotpService.php'
+      - 'drive/src/Security/PersonalToolAccessService.php'
+      - 'drive/src/Http/Controller/PersonalAwsController.php'
+      - 'drive/src/View/PersonalAwsPageRenderer.php'
+      - 'drive/src/Core/DriveApplication.php'
+      - 'drive/docs/PERSONAL_AWS_TOOL.md'
+      - '.github/workflows/oop-personal-aws.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: PHP syntax
+        run: |
+          set -euo pipefail
+          php -l drive/aws.php
+          php -l drive/src/Aws/PersonalAwsConfig.php
+          php -l drive/src/Aws/PersonalTotpService.php
+          php -l drive/src/Security/PersonalToolAccessService.php
+          php -l drive/src/Http/Controller/PersonalAwsController.php
+          php -l drive/src/View/PersonalAwsPageRenderer.php
+          php -l drive/src/Core/DriveApplication.php
+          echo PHP_OK
+
+      - name: Owner-only and secret-boundary contracts
+        run: |
+          set -euo pipefail
+          grep -q 'PersonalAwsController' drive/aws.php
+          ! grep -Eq 'session_start|TOTP::create|secret_key|PASSWORD_CORRECTA|password_verify' drive/aws.php
+          grep -q "ownerUserId = 1" drive/src/Security/PersonalToolAccessService.php
+          grep -q "'forbidden'" drive/src/Security/PersonalToolAccessService.php
+          grep -q 'password_verify' drive/src/Security/PersonalToolAccessService.php
+          grep -q 'publicAccounts' drive/src/Aws/PersonalAwsConfig.php
+          grep -q "'id' => \$id" drive/src/Aws/PersonalAwsConfig.php
+          grep -q "'label' =>" drive/src/Aws/PersonalAwsConfig.php
+          ! grep -q 'secret_key' drive/src/View/PersonalAwsPageRenderer.php
+          grep -q 'account_id' drive/src/View/PersonalAwsPageRenderer.php
+          grep -q 'ARCADECLOUD_PERSONAL_AWS_CONFIG' drive/src/Core/DriveApplication.php
+          echo OOP_OK
+
+      - name: No personal secrets in current aws entrypoint
+        run: |
+          set -euo pipefail
+          ! grep -Eq '[A-Za-z0-9]{24,}' drive/aws.php
+          ! grep -Eq 'recovery|backup|secret' drive/aws.php
+          echo SECRET_BOUNDARY_OK
+
+      - name: Diff check
+        run: |
+          set -euo pipefail
+          git diff --check HEAD^ HEAD
+          echo DIFF_OK

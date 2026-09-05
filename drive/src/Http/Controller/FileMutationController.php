@@ -12,7 +12,7 @@ final class FileMutationController extends AbstractJsonController
     {
         try {
             $this->requirePost();
-            $this->guardAuthenticated();
+            $userId = $this->guardAuthenticated();
             $ref = $this->request->postInt('file_id');
             if ($ref <= 0) {
                 $ref = $this->request->postString('archivo');
@@ -25,7 +25,7 @@ final class FileMutationController extends AbstractJsonController
                 'ok' => true,
                 'estado' => 'ok',
                 'mensaje' => 'Archivo eliminado correctamente',
-                'data' => $this->app->s3Manager()->deleteFile($ref),
+                'data' => $this->app->fileMutationService()->delete($userId, $ref),
             ]);
         } catch (\Throwable $error) {
             $this->fail($error);
@@ -36,7 +36,7 @@ final class FileMutationController extends AbstractJsonController
     {
         try {
             $this->requirePost();
-            $this->guardAuthenticated();
+            $userId = $this->guardAuthenticated();
             $keys = $this->keysFromRequest();
             if (!$keys) {
                 throw new RuntimeException('No hay archivos seleccionados');
@@ -46,7 +46,7 @@ final class FileMutationController extends AbstractJsonController
                 'ok' => true,
                 'estado' => 'ok',
                 'mensaje' => 'Archivos eliminados correctamente',
-                'data' => $this->app->s3Manager()->deleteMultiple($keys),
+                'data' => $this->app->fileMutationService()->deleteMany($userId, $keys),
             ]);
         } catch (\Throwable $error) {
             $this->fail($error);
@@ -73,7 +73,7 @@ final class FileMutationController extends AbstractJsonController
                     'ok' => true,
                     'estado' => 'ok',
                     'mensaje' => 'Archivo movido correctamente',
-                    'data' => $this->app->s3Manager()->moveFile($fileId, $route),
+                    'data' => $this->app->fileMutationService()->move($userId, $fileId, $route),
                 ]);
             }
 
@@ -92,7 +92,7 @@ final class FileMutationController extends AbstractJsonController
                 'ok' => true,
                 'estado' => 'ok',
                 'mensaje' => count($keys) === 1 ? 'Archivo movido correctamente' : 'Archivos movidos correctamente',
-                'data' => $this->app->s3Manager()->moveMultiple($keys, $route),
+                'data' => $this->app->fileMutationService()->moveMany($userId, $keys, $route),
             ]);
         } catch (\Throwable $error) {
             $this->fail($error);
@@ -108,7 +108,7 @@ final class FileMutationController extends AbstractJsonController
     {
         try {
             $this->requirePost();
-            $this->guardAuthenticated();
+            $userId = $this->guardAuthenticated();
             $key = $this->requireNonEmpty($this->request->postString('key'), 'Falta la clave del archivo.');
             $name = $this->requireNonEmpty($this->request->postString('nombre_nuevo'), 'Falta el nuevo nombre del archivo.');
 
@@ -116,7 +116,7 @@ final class FileMutationController extends AbstractJsonController
                 'ok' => true,
                 'estado' => 'ok',
                 'mensaje' => 'Archivo renombrado correctamente',
-                'data' => $this->app->s3Manager()->renameFile($key, $name),
+                'data' => $this->app->fileMutationService()->rename($userId, $key, $name),
             ]);
         } catch (\Throwable $error) {
             $this->fail($error);

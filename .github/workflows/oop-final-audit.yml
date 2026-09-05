@@ -1,0 +1,71 @@
+name: OOP final audit
+
+on:
+  push:
+    branches:
+      - main
+      - refactor/oop-drive-migration
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: PHP syntax
+        run: |
+          set -euo pipefail
+          FAILED=0
+          while IFS= read -r file; do
+            if ! php -l "$file" >/dev/null 2>&1; then
+              echo "PHP_ERROR=$file"
+              FAILED=1
+            fi
+          done < <(git ls-files 'drive/*.php' 'drive/**/*.php')
+          test "$FAILED" -eq 0
+          echo PHP_OK
+
+      - name: Runtime boundaries
+        run: |
+          set -euo pipefail
+          ! grep -Eq '\$db_connection\b|Config::getS3\s*\(|new[[:space:]]+\\?Aws\\' \
+            drive/*.php \
+            --exclude='S3Manager.php' \
+            --exclude='app_bootstrap.php'
+          echo ENDPOINT_BOUNDARIES_OK
+
+      - name: S3Manager references
+        run: |
+          set -euo pipefail
+          echo '=== S3MANAGER_REFERENCES ==='
+          REFS=$(git grep -n 'S3Manager' -- drive ':!drive/S3Manager.php' || true)
+          if [ -n "$REFS" ]; then
+            printf '%s\n' "$REFS"
+            echo S3MANAGER_REFERENCES_FOUND
+            exit 1
+          fi
+          echo S3MANAGER_REFERENCES=0
+
+      - name: Inventory heuristic
+        run: |
+          set -euo pipefail
+          python3 .github/scripts/oop_inventory.py
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          p = Path('drive/docs/oop_inventory.json')
+          data = json.loads(p.read_text())
+          print('=== PHP_HEURISTIC_REVIEW ===')
+          for x in data['php']:
+              if x['kind'] in {'procedural endpoint','endpoint with logic'} or x['functions']:
+                  print(x['path'] + ' | ' + '; '.join(x['issues']))
+          PY
+
+      - name: Diff check
+        run: |
+          git diff --check
+          echo DIFF_OK

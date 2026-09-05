@@ -1,0 +1,51 @@
+name: OOP thumbnail validation
+
+on:
+  push:
+    branches:
+      - main
+      - 'refactor/**'
+    paths:
+      - 'drive/thumb.php'
+      - 'drive/src/Media/ThumbnailService.php'
+      - 'drive/src/Http/Controller/ThumbnailController.php'
+      - 'drive/src/Security/SessionManager.php'
+      - 'drive/src/Core/DriveApplication.php'
+      - '.github/workflows/oop-thumbnail.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate PHP syntax
+        run: |
+          php -l drive/thumb.php
+          php -l drive/src/Media/ThumbnailService.php
+          php -l drive/src/Http/Controller/ThumbnailController.php
+          php -l drive/src/Security/SessionManager.php
+          php -l drive/src/Core/DriveApplication.php
+
+      - name: Audit thumbnail architecture
+        run: |
+          set -euo pipefail
+          ! grep -q '\$_SESSION' drive/thumb.php
+          ! grep -q '\$_GET' drive/thumb.php
+          ! grep -q 'session_start' drive/thumb.php
+          ! grep -q '^function ' drive/thumb.php
+          grep -q 'ThumbnailController' drive/thumb.php
+          grep -q 'thumbnailService' drive/src/Core/DriveApplication.php
+          grep -q 'snapshot' drive/src/Http/Controller/ThumbnailController.php
+          grep -q 'closeWrite' drive/src/Http/Controller/ThumbnailController.php
+          grep -q 'HTTP_IF_NONE_MATCH' drive/src/Http/Controller/ThumbnailController.php
+          grep -q 'X-Thumb-Status' drive/src/Http/Controller/ThumbnailController.php
+
+      - name: Diff whitespace check
+        run: git diff --check HEAD^ HEAD

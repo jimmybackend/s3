@@ -35,11 +35,7 @@ $basePrefix = $vm->basePrefix;
  * Se muestran únicamente las carpetas del usuario autenticado.
  * ============================================================
  */
-$todasLasCarpetas = $app->s3Manager()->listarCarpetasDesdeDb(
-    $userId,
-    $userRoot,
-    true
-);
+$todasLasCarpetas = $app->folderQueryService()->allForUser($userId, true);
 
 $tipo = $vm->tipo;
 $buscar = $vm->buscar;
@@ -1792,7 +1788,7 @@ $footerEspacioUsado = $storageUsage['formatted'];
 
 </div>
 
-<script src="js/polly.js"></script>
+<script src="js/polly.js?v=<?= (int) filemtime(__DIR__ . '/js/polly.js') ?>"></script>
 <script src="js/audiovideo.js"></script>
 <script src="js/media-floating.js?v=20260904-1"></script>
 
@@ -1810,7 +1806,8 @@ $footerEspacioUsado = $storageUsage['formatted'];
 <script src="js/editar-txt.js"></script>
 
 <script src="js/imagenes.js"></script>
-<script src="js/aws-comprehend.js"></script>
+
+<script src="js/aws-comprehend.js?v=<?= (int) filemtime(__DIR__ . '/js/aws-comprehend.js') ?>"></script>
 
 <script src="js/mediaFloating.js"></script>
 

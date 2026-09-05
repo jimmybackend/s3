@@ -84,9 +84,19 @@ final class Request
         return is_scalar($value) ? trim((string)$value) : $default;
     }
 
+    public function hasQuery(string $name): bool
+    {
+        return array_key_exists($name, $this->query);
+    }
+
     public function hasPost(string $name): bool
     {
         return array_key_exists($name, $this->post);
+    }
+
+    public function allQuery(): array
+    {
+        return $this->query;
     }
 
     public function allPost(): array

@@ -1,0 +1,60 @@
+name: OOP file search validation
+
+on:
+  push:
+    branches:
+      - main
+      - 'refactor/**'
+    paths:
+      - 'drive/buscar_archivo.php'
+      - 'drive/js/archivos.js'
+      - 'drive/src/Application/FileSearchService.php'
+      - 'drive/src/Http/Controller/FileSearchController.php'
+      - 'drive/src/Http/Controller/AbstractJsonController.php'
+      - '.github/workflows/oop-file-search.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate PHP syntax
+        run: |
+          set -euo pipefail
+          php -l drive/buscar_archivo.php
+          php -l drive/src/Application/FileSearchService.php
+          php -l drive/src/Http/Controller/FileSearchController.php
+          php -l drive/src/Http/Controller/AbstractJsonController.php
+          echo PHP_OK
+
+      - name: Audit DB-first search boundary
+        run: |
+          set -euo pipefail
+          ! grep -q '\$_SESSION\|\$_GET\|\$_POST\|\$_SERVER\|session_start\|\$db_connection\|Config::\|SELECT\|S3Manager' drive/buscar_archivo.php
+          grep -q 'FileSearchController' drive/buscar_archivo.php
+          grep -q 'FileSearchService' drive/src/Http/Controller/FileSearchController.php
+          grep -q "postString('termino')" drive/src/Http/Controller/FileSearchController.php
+          grep -q -- '->search($userId, $term, 200)' drive/src/Http/Controller/FileSearchController.php
+          grep -q 'FROM FileS3' drive/src/Application/FileSearchService.php
+          grep -q 'user_id_ = ?' drive/src/Application/FileSearchService.php
+          grep -q 'Found = 1' drive/src/Application/FileSearchService.php
+          ! grep -q 'S3Client\|listObjectsV2\|getObject' drive/src/Application/FileSearchService.php
+          echo OOP_OK
+
+      - name: Validate runtime reference
+        run: |
+          set -euo pipefail
+          grep -q "URL_BUSCAR = 'buscar_archivo.php'" drive/js/archivos.js
+          echo REFERENCIAS_OK
+
+      - name: Diff whitespace check
+        run: |
+          git diff --check HEAD^ HEAD
+          echo DIFF_OK

@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace ArcadeCloud\Drive\Storage;
 
+use ArcadeCloud\Drive\Security\SessionManager;
 use mysqli;
 use RuntimeException;
 
@@ -10,8 +11,11 @@ final class StorageUsageService
 {
     private const SESSION_KEY = 'drive_storage_usage';
 
-    public function __construct(private mysqli $db, private int $ttlSeconds = 300)
-    {
+    public function __construct(
+        private mysqli $db,
+        private SessionManager $session,
+        private int $ttlSeconds = 300
+    ) {
     }
 
     public function getUsage(int $userId, bool $forceRefresh = false): array
@@ -20,9 +24,14 @@ final class StorageUsageService
             return $this->payload(0);
         }
 
-        $cached = $_SESSION[self::SESSION_KEY][$userId] ?? null;
+        $allCached = $this->session->get(self::SESSION_KEY, []);
+        if (!is_array($allCached)) {
+            $allCached = [];
+        }
+
+        $cached = $allCached[$userId] ?? null;
         if (!$forceRefresh && is_array($cached)) {
-            $cachedAt = (int) ($cached['cached_at'] ?? 0);
+            $cachedAt = (int)($cached['cached_at'] ?? 0);
             if ($cachedAt > 0 && (time() - $cachedAt) < $this->ttlSeconds) {
                 return $cached;
             }
@@ -36,19 +45,32 @@ final class StorageUsageService
         }
 
         $stmt->bind_param('i', $userId);
-        $stmt->execute();
+        if (!$stmt->execute()) {
+            $error = $stmt->error;
+            $stmt->close();
+            throw new RuntimeException('No se pudo consultar el espacio usado: ' . $error);
+        }
+
         $stmt->bind_result($bytes);
         $stmt->fetch();
         $stmt->close();
 
-        $payload = $this->payload((int) $bytes);
-        $_SESSION[self::SESSION_KEY][$userId] = $payload;
+        $payload = $this->payload((int)$bytes);
+        $allCached[$userId] = $payload;
+        $this->session->set(self::SESSION_KEY, $allCached);
+
         return $payload;
     }
 
     public function invalidate(int $userId): void
     {
-        unset($_SESSION[self::SESSION_KEY][$userId]);
+        $allCached = $this->session->get(self::SESSION_KEY, []);
+        if (!is_array($allCached)) {
+            return;
+        }
+
+        unset($allCached[$userId]);
+        $this->session->set(self::SESSION_KEY, $allCached);
     }
 
     private function payload(int $bytes): array
@@ -62,16 +84,19 @@ final class StorageUsageService
 
     private function formatBytes(int $bytes): string
     {
-        $value = (float) $bytes;
+        $value = (float)$bytes;
         $units = ['B', 'KB', 'MB', 'GB', 'TB', 'PB'];
         $index = 0;
+
         while ($value >= 1024 && $index < count($units) - 1) {
             $value /= 1024;
             $index++;
         }
+
         if ($index === 0) {
-            return (string) $bytes . ' B';
+            return (string)$bytes . ' B';
         }
+
         return number_format($value, 2, '.', '') . ' ' . $units[$index];
     }
 }

@@ -1,0 +1,65 @@
+name: OOP upload cleanup validation
+
+on:
+  push:
+    branches: ['refactor/oop-drive-migration']
+    paths:
+      - 'drive/up-clean.php'
+      - 'drive/bin/upload_cleanup.php'
+      - 'drive/src/Console/UploadCleanupCommand.php'
+      - 'drive/src/Http/Controller/UploadCleanupController.php'
+      - 'drive/src/Upload/UploadCleanupService.php'
+      - '.github/workflows/oop-upload-cleanup.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: PHP syntax
+        run: |
+          set -euo pipefail
+          php -l drive/up-clean.php
+          php -l drive/bin/upload_cleanup.php
+          php -l drive/src/Console/UploadCleanupCommand.php
+          php -l drive/src/Http/Controller/UploadCleanupController.php
+          php -l drive/src/Upload/UploadCleanupService.php
+          echo PHP_OK
+
+      - name: OOP and safety contracts
+        run: |
+          set -euo pipefail
+          ! grep -Eq 'session_start|Config::getS3|Config::BUCKET|listMultipartUploads|abortMultipartUpload|deleteObject|\$db_connection|^function ' drive/up-clean.php
+          grep -Fq 'UploadCleanupController' drive/up-clean.php
+          grep -Fq 'UploadCleanupService' drive/src/Http/Controller/UploadCleanupController.php
+          grep -Fq 'run($days, false)' drive/src/Http/Controller/UploadCleanupController.php
+          grep -Fq -- '--execute' drive/src/Console/UploadCleanupCommand.php
+          grep -Fq 'FROM FileS3' drive/src/Upload/UploadCleanupService.php
+          grep -Fq 'user_id_ = ?' drive/src/Upload/UploadCleanupService.php
+          grep -Fq 'objects_registered' drive/src/Upload/UploadCleanupService.php
+          grep -Fq "Data(?:\\d+)?/uploads/" drive/src/Upload/UploadCleanupService.php
+          grep -Fq 'if ($execute)' drive/src/Upload/UploadCleanupService.php
+          echo OOP_OK
+
+      - name: Reference contracts
+        run: |
+          set -euo pipefail
+          grep -Fq 'up-clean.php' drive/docs/RUNTIME_ENDPOINTS.md || true
+          grep -Fq 'PublicMultipartUploadService' drive/up.php
+          grep -Fq "'/uploads'" drive/up.php
+          grep -Fq 'INSERT INTO FileS3' drive/up.php
+          echo REFERENCIAS_OK
+
+      - name: Diff and secret checks
+        run: |
+          set -euo pipefail
+          git diff --check HEAD^ HEAD
+          ! git diff HEAD^ HEAD | grep -E 'AKIA[0-9A-Z]{16}|ASIA[0-9A-Z]{16}'
+          echo DIFF_OK

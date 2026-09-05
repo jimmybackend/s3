@@ -12,6 +12,13 @@ final class SessionManager
         }
     }
 
+    public function closeWrite(): void
+    {
+        if (session_status() === PHP_SESSION_ACTIVE) {
+            session_write_close();
+        }
+    }
+
     public function isAuthenticated(): bool
     {
         return isset($_SESSION['usuario']) && trim((string)$_SESSION['usuario']) !== '';

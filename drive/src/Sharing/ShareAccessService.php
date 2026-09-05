@@ -67,6 +67,7 @@ final class ShareAccessService
             'nombre' => $name,
             'tipo' => strtolower(trim((string)($payload['tipo'] ?? 'otro'))),
             'url' => $this->storage->presignedUrl($key),
+            'expira' => (string)($payload['expira'] ?? ''),
             'legacy' => $userId <= 0,
         ];
     }

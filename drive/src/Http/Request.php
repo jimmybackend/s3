@@ -94,6 +94,11 @@ final class Request
         return array_key_exists($name, $this->post);
     }
 
+    public function allQuery(): array
+    {
+        return $this->query;
+    }
+
     public function allPost(): array
     {
         return $this->post;

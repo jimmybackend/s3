@@ -28,6 +28,11 @@ final class PersonalAwsConfig
         return trim((string)($this->load()['password_hash'] ?? ''));
     }
 
+    public function actionPasswordHash(): string
+    {
+        return trim((string)($this->load()['action_password_hash'] ?? ''));
+    }
+
     public function issuer(): string
     {
         $issuer = trim((string)($this->load()['issuer'] ?? 'ArcadeCloud'));

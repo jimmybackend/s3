@@ -1,4 +1,5 @@
 from pathlib import Path
+import re
 
 path = Path('drive/ec2.php')
 text = path.read_text(encoding='utf-8')
@@ -8,6 +9,26 @@ if marker not in text:
     raise SystemExit('EC2_CONFIG_MARKER_NOT_FOUND')
 
 body = marker + text.split(marker, 1)[1]
+
+# La clave para acciones start/stop vive en la configuración privada.
+body = re.sub(
+    r"\n// Misma clave base usada por el panel para encender/apagar EC2 y RDS manualmente\.\nconst PROTECTED_PASSWORD = '[^']*';\n",
+    '\n',
+    body,
+    count=1,
+)
+
+csrf_line = "$csrf = $_SESSION['csrf'];"
+action_hash_line = "$actionPasswordHash = $app->personalAwsConfig()->actionPasswordHash();"
+if action_hash_line not in body:
+    if csrf_line not in body:
+        raise SystemExit('EC2_CSRF_MARKER_NOT_FOUND')
+    body = body.replace(csrf_line, csrf_line + '\n' + action_hash_line, 1)
+
+body = body.replace(
+    'if ($pw !== PROTECTED_PASSWORD) {',
+    "if ($pw === '' || $actionPasswordHash === '' || !password_verify($pw, $actionPasswordHash)) {",
+)
 
 header = r'''<?php
 declare(strict_types=1);

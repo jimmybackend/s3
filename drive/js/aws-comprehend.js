@@ -166,7 +166,63 @@ class AwsFileActionRouter {
     this.window = win;
     this.document = doc;
     this.bound = false;
+    this.lastPointerAt = 0;
+    this.onPointerUp = this.onPointerUp.bind(this);
     this.onClick = this.onClick.bind(this);
+    this.prepareButtons = this.prepareButtons.bind(this);
+  }
+
+  isTouchLayout() {
+    if (!this.window.matchMedia) return true;
+    return this.window.matchMedia('(max-width: 991.98px), (pointer: coarse)').matches;
+  }
+
+  prepareButtons() {
+    const jq = this.window.jQuery;
+    const touchLayout = this.isTouchLayout();
+
+    this.document.querySelectorAll('.aws-file-action').forEach((button) => {
+      try {
+        if (jq && jq.fn && typeof jq.fn.tooltip === 'function') {
+          jq(button).tooltip('dispose');
+        }
+      } catch (_) {}
+
+      button.removeAttribute('data-toggle');
+      button.removeAttribute('data-placement');
+      button.style.setProperty('pointer-events', 'auto', 'important');
+      button.style.setProperty('touch-action', 'manipulation', 'important');
+      button.style.setProperty('position', 'relative', 'important');
+      button.style.setProperty('z-index', '6', 'important');
+
+      Array.from(button.children).forEach((child) => {
+        child.style.setProperty('pointer-events', 'none', 'important');
+      });
+
+      if (!touchLayout) return;
+
+      const secondary = button.closest('.file-actions-secondary');
+      const block = button.closest('.file-actions-block');
+
+      if (block) {
+        block.style.setProperty('display', 'block', 'important');
+        block.style.setProperty('overflow', 'visible', 'important');
+        block.style.setProperty('white-space', 'normal', 'important');
+      }
+
+      if (secondary) {
+        secondary.style.setProperty('display', 'flex', 'important');
+        secondary.style.setProperty('width', '100%', 'important');
+        secondary.style.setProperty('flex-wrap', 'wrap', 'important');
+        secondary.style.setProperty('align-items', 'center', 'important');
+        secondary.style.setProperty('gap', '.45rem', 'important');
+        secondary.style.setProperty('margin-top', '.5rem', 'important');
+        secondary.style.setProperty('overflow', 'visible', 'important');
+        secondary.style.setProperty('position', 'relative', 'important');
+        secondary.style.setProperty('z-index', '5', 'important');
+        secondary.style.setProperty('pointer-events', 'auto', 'important');
+      }
+    });
   }
 
   invoke(functionName, args) {
@@ -180,12 +236,8 @@ class AwsFileActionRouter {
     return true;
   }
 
-  onClick(event) {
-    const button = event.target && event.target.closest
-      ? event.target.closest('.aws-file-action')
-      : null;
-
-    if (!button) return;
+  activate(button, event) {
+    if (!button) return false;
 
     const key = button.getAttribute('data-key') || '';
     const name = button.getAttribute('data-nombre') || key;
@@ -214,20 +266,58 @@ class AwsFileActionRouter {
       }
     }
 
-    if (!handled) return;
-
-    event.preventDefault();
-    event.stopPropagation();
-    if (typeof event.stopImmediatePropagation === 'function') {
-      event.stopImmediatePropagation();
+    if (handled && event) {
+      event.preventDefault();
+      event.stopPropagation();
+      if (typeof event.stopImmediatePropagation === 'function') {
+        event.stopImmediatePropagation();
+      }
     }
+
+    return handled;
+  }
+
+  buttonFromEvent(event) {
+    return event.target && event.target.closest
+      ? event.target.closest('.aws-file-action')
+      : null;
+  }
+
+  onPointerUp(event) {
+    const button = this.buttonFromEvent(event);
+    if (!button) return;
+
+    this.lastPointerAt = Date.now();
+    this.activate(button, event);
+  }
+
+  onClick(event) {
+    const button = this.buttonFromEvent(event);
+    if (!button) return;
+
+    if ((Date.now() - this.lastPointerAt) < 750) {
+      event.preventDefault();
+      event.stopPropagation();
+      if (typeof event.stopImmediatePropagation === 'function') {
+        event.stopImmediatePropagation();
+      }
+      return;
+    }
+
+    this.activate(button, event);
   }
 
   init() {
     if (!this.bound) {
+      this.document.addEventListener('pointerup', this.onPointerUp, true);
       this.document.addEventListener('click', this.onClick, true);
+      this.document.addEventListener('bloque-archivos:actualizado', this.prepareButtons);
+      this.document.addEventListener('bloque-archivos:updated', this.prepareButtons);
+      this.window.addEventListener('resize', this.prepareButtons);
       this.bound = true;
     }
+
+    this.prepareButtons();
     return this;
   }
 
@@ -237,6 +327,7 @@ class AwsFileActionRouter {
 
     const previous = win.ArcadeCloudDrive.modules['aws-action-router'];
     if (previous instanceof AwsFileActionRouter) {
+      previous.prepareButtons();
       return previous;
     }
 

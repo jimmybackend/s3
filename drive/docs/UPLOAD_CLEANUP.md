@@ -1,23 +1,23 @@
 # Limpieza manual de subidas abandonadas
 
-`up-clean.php` ya no realiza borrados directamente. La limpieza se separa en:
+La limpieza de subidas está separada en dos superficies:
 
 ```text
 up-clean.php
-    -> UploadCleanupController
-        -> UploadCleanupService
-            -> MySQL (Users / FileS3)
-            -> S3
-            -> estado local de PublicMultipartUploadService
+  -> UploadCleanupController
+     -> UploadCleanupService
+        -> MySQL
+        -> S3
+        -> estado local
 
-drive/bin/upload_cleanup.php
-    -> UploadCleanupCommand
-        -> UploadCleanupService
+bin/upload_cleanup.php
+  -> UploadCleanupCommand
+     -> UploadCleanupService
 ```
 
-## Regla principal
+## Alcance
 
-La limpieza sólo trabaja dentro de las rutas reservadas por `up.php`:
+La limpieza sólo trabaja dentro de:
 
 ```text
 user 1 -> Data/uploads/
@@ -27,55 +27,47 @@ user N -> DataN/uploads/
 
 La edad predeterminada es **30 días**.
 
-## Qué puede limpiar
+## Candidatos
 
-1. Multipart uploads de S3 que nunca fueron completados y tienen más de 30 días.
-2. Objetos completados dentro de `DataN/uploads/` con más de 30 días que **no tienen ningún registro correspondiente en `FileS3`** para ese usuario.
-3. Archivos locales `.json` de estado de `PublicMultipartUploadService` con más de 30 días.
+1. Multipart uploads de S3 incompletos con más de 30 días.
+2. Objetos dentro de `DataN/uploads/` con más de 30 días que no tienen registro correspondiente en `FileS3` para ese usuario.
+3. Archivos locales `.json` de estado con más de 30 días.
 
-## Qué nunca debe borrar
+## Protecciones
 
-- Un objeto que tenga registro en `FileS3`, aunque sea antiguo.
-- Archivos fuera de `DataN/uploads/`.
-- Archivos normales de las carpetas del Drive.
-- Objetos recientes.
-- Raíces `Data/`, `Data2/`, `DataN/`.
+Nunca se elimina:
 
-El control contra `FileS3` se realiza antes de considerar un objeto terminado como huérfano. Esta protección evita confundir un archivo válido de usuario con un temporal abandonado.
+- un objeto registrado en `FileS3`;
+- un objeto fuera de `DataN/uploads/`;
+- una raíz de usuario;
+- un objeto reciente;
+- un archivo normal de otra carpeta del Drive.
 
-## Modo simulación
+## Simulación
 
-La simulación no modifica S3 ni elimina archivos locales.
-
-Desde EC2:
+El modo predeterminado no modifica S3 ni elimina archivos locales.
 
 ```bash
 cd /var/www/arcadecloud-drive
-php drive/bin/upload_cleanup.php
-```
-
-Para probar otra edad sin borrar:
-
-```bash
 php drive/bin/upload_cleanup.php --days=30
 ```
 
-`up-clean.php` por HTTP también es únicamente una simulación y requiere una sesión con rol `Administración` o `Soporte`.
+`up-clean.php` por HTTP también es sólo simulación y requiere una sesión con rol `Administración` o `Soporte`.
 
-## Ejecución real
+## Ejecución
 
-La eliminación real se permite sólo desde CLI y requiere `--execute`:
+La eliminación real sólo está disponible por CLI y requiere `--execute`:
 
 ```bash
 cd /var/www/arcadecloud-drive
 php drive/bin/upload_cleanup.php --days=30 --execute
 ```
 
-Antes de usar `--execute`, se debe revisar primero la salida del mismo comando sin `--execute`.
+La salida de simulación debe revisarse antes de ejecutar borrados.
 
-## Resultado
+## Reporte
 
-El reporte indica, entre otros:
+El resultado incluye:
 
 - `multipart_seen`
 - `multipart_stale`
@@ -89,4 +81,4 @@ El reporte indica, entre otros:
 - `states_stale`
 - `states_deleted`
 
-En modo simulación, cada candidato aparece como `would_abort`, `would_delete` o `would_delete_state`.
+En simulación los candidatos aparecen como `would_abort`, `would_delete` o `would_delete_state`.

@@ -3,6 +3,9 @@ declare(strict_types=1);
 
 namespace ArcadeCloud\Drive\View;
 
+use DateTimeImmutable;
+use Throwable;
+
 final class SharePageRenderer
 {
     public function resolveKind(string $endpointKind, string $tokenType, string $key): string
@@ -11,6 +14,13 @@ final class SharePageRenderer
             return $endpointKind;
         }
 
+        $tokenType = strtolower(trim($tokenType));
+        if ($tokenType === 'audio') {
+            return 'audio';
+        }
+        if ($tokenType === 'video') {
+            return 'video';
+        }
         if ($tokenType === 'imagen') {
             return 'image';
         }
@@ -21,6 +31,12 @@ final class SharePageRenderer
         $ext = strtolower((string)pathinfo($key, PATHINFO_EXTENSION));
         if (in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp'], true)) {
             return 'image';
+        }
+        if (in_array($ext, ['mp4', 'webm', 'mov', 'avi', 'mkv', 'm4v', 'ogv'], true)) {
+            return 'video';
+        }
+        if (in_array($ext, ['mp3', 'wav', 'ogg', 'opus', 'm4a', 'aac', 'flac', 'amr'], true)) {
+            return 'audio';
         }
         if (in_array($ext, ['txt', 'srt', 'vtt', 'md', 'html', 'htm', 'json', 'csv', 'log', 'ini', 'xml', 'yml', 'yaml'], true)) {
             return 'text';
@@ -51,6 +67,11 @@ final class SharePageRenderer
             default => '<p>Este archivo puede abrirse mediante el enlace compartido.</p>',
         };
 
+        $expiry = $this->expiryLabel((string)($share['expira'] ?? ''));
+        $expiryHtml = $expiry !== ''
+            ? '<div class="meta">Expira: ' . $this->e($expiry) . '</div>'
+            : '';
+
         return '<!doctype html>\n'
             . '<html lang="es"><head><meta charset="utf-8">'
             . '<meta name="viewport" content="width=device-width,initial-scale=1">'
@@ -60,6 +81,7 @@ final class SharePageRenderer
             . '<h1 style="font-size:1.1rem;font-weight:600;margin:8px 0 12px">' . $this->e($name) . '</h1>'
             . '<div class="box">' . $body . '</div>'
             . '<div class="meta">Ruta: ' . $this->e($key) . '</div>'
+            . $expiryHtml
             . '<a class="btn" href="' . $this->e($url) . '" target="_blank" rel="noopener">Abrir directo</a>'
             . '</div></body></html>';
     }
@@ -72,6 +94,20 @@ final class SharePageRenderer
             . '<body style="font-family:system-ui,sans-serif;padding:2rem">'
             . $this->e($message)
             . '</body></html>';
+    }
+
+    private function expiryLabel(string $value): string
+    {
+        $value = trim($value);
+        if ($value === '') {
+            return '';
+        }
+
+        try {
+            return (new DateTimeImmutable($value))->format('Y-m-d H:i:s');
+        } catch (Throwable $e) {
+            return $value;
+        }
     }
 
     private function e(string $value): string

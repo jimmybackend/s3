@@ -1,259 +1,172 @@
-# Módulo de Subidas (S3v2) — LEEME.md
+# Módulo de subidas
 
-Este módulo unifica **todas las subidas de archivos** (desde PC, desde URL remota/Drive, por Dropzone/Dropbox y por chunks) usando una **API común** (`api/upload.php`) y drivers polimórficos en `upload/drivers/`.
+La API principal del Drive es `drive/api/upload.php`. El endpoint delega en `UploadController`, que resuelve el driver mediante `UploadFactory`.
 
----
+## Arquitectura
 
-## Estructura de carpetas
-
-Dentro de `drive/`:
-
+```text
+api/upload.php
+  -> UploadController
+     -> UploadFactory
+        -> LocalPresignedPutUploader
+        -> RemoteUrlUploader
+        -> DropboxUploader
+        -> Chunked15MBUploader
 ```
-api/
-  upload.php                ← API unificada (router)
 
+Estructura:
+
+```text
 upload/
-  UploadFactory.php         ← Factory de drivers según mode
-  core/
-    UploaderInterface.php   ← Interfaz común init/part/complete
-    UploadResponse.php      ← Respuestas JSON uniformes
-  drivers/
-    LocalPresignedPutUploader.php   ← Subida local con URL firmada (PUT directo a S3)
-    RemoteUrlUploader.php           ← Subida por URL remota (Drive/Directo) desde servidor
-    DropboxUploader.php             ← Subida vía Dropzone (multipart/form-data) desde servidor
-    Chunked15MBUploader.php         ← Subida por partes (presigned uploadPart)
-  repositories/
-    FileS3Repository.php     ← Inserta/actualiza registros en tabla FileS3
-  storage/
-    UploadStateStore.php     ← Guarda estado JSON del multipart (chunked)
-    state/                   ← Carpeta donde se guardan JSON de estado (debe ser escribible)
+├── UploadFactory.php
+├── core/
+│   ├── UploaderInterface.php
+│   └── UploadResponse.php
+├── drivers/
+│   ├── LocalPresignedPutUploader.php
+│   ├── RemoteUrlUploader.php
+│   ├── DropboxUploader.php
+│   └── Chunked15MBUploader.php
+├── repositories/
+│   └── FileS3Repository.php
+└── storage/
+    └── UploadStateStore.php
 ```
 
-En `drive/`:
-- `app_bootstrap.php` (carga `vendor/autoload.php` + incluye `Config-s3.php` y `db.php` desde fuera del webroot)
-- `../vendor/` (Composer, AWS SDK; una carpeta atrás de `drive`)
+`DriveApplication` inyecta base de datos, S3, bucket, `StorageObjectNameCodec`, `SessionManager` y almacenamiento de estado.
 
----
+## Contrato HTTP
 
-## Bootstrap y seguridad de credenciales
+Parámetros base:
 
-El proyecto usa `app_bootstrap.php` para **mantener `Config-s3.php` y `db.php` fuera de `public_html`** (carpeta protegida), evitando exposición de credenciales.
-
-`app_bootstrap.php` debe cargar:
-1) `../vendor/autoload.php` (AWS SDK)
-2) `Config-s3.php` y `db.php` desde la ruta privada (fuera del webroot)
-
-Si AWS no carga, aparecerá el error: `Class "Aws\S3\S3Client" not found`.
-
----
-
-## API Unificada: `api/upload.php`
-
-### Parámetros base
-- `mode`: tipo de subida
-- `action`: fase del flujo
-
-`mode` soportados:
-- `local_put`  → archivo desde el navegador (PC) usando URL firmada
-- `remote_url` → descarga desde URL (Drive/Directo) y sube a S3 desde servidor
-- `dropbox`    → subida multipart/form-data (Dropzone)
-- `chunked`    → subida por partes (15MB) con multipart presigned
-
-`action` soportados:
-- `init`      → iniciar operación (firmar URL / iniciar multipart / ejecutar remote upload / etc.)
-- `part`      → operaciones de partes (solo `chunked`)
-- `complete`  → finalizar y/o actualizar metadatos (ej. tamaño final)
-
----
-
-## Flujos por modo
-
-### 1) `local_put` (Subida desde PC, PUT directo a S3)
-**Paso 1: pedir URL firmada**
-```
-GET /drive/api/upload.php?mode=local_put&action=init&nombre=archivo.pdf
+```text
+mode=<modo>
+action=<acción>
 ```
 
-Respuesta (JSON):
-- `url` (presigned PUT)
-- `key`, `carpeta`, `nombreEncriptado`, etc.
+Modos:
 
-**Paso 2: el navegador hace PUT a `json.url`**  
-**Paso 3 (opcional recomendado): avisar tamaño real**
-```
-POST /drive/api/upload.php?mode=local_put&action=complete
-  nombreEncriptado=<...>
-  tamano=<bytes>
-```
+- `local_put`: archivo local con PUT directo a S3 mediante URL presignada.
+- `remote_url`: descarga una URL remota y la almacena en S3.
+- `dropbox`: recibe `multipart/form-data` desde el navegador.
+- `chunked`: multipart por partes con URLs presignadas.
 
-> Este modo inserta primero el registro en FileS3 y luego actualiza el tamaño (si `complete` se llama).
+Acciones:
 
----
+- `init`
+- `part`
+- `complete`
 
-### 2) `remote_url` (Subida desde URL remota / Google Drive)
-Se envía una URL remota y el servidor:
-1) descarga por streaming
-2) sube a S3 (multipart si es grande)
-3) registra en DB (FileS3)
+## Destino
 
-**POST recomendado**
-```
-POST /drive/api/upload.php?mode=remote_url&action=init
-  url=<url>
-  u64=<base64 utf8 de url> (opcional)
+Al iniciar una subida autenticada se debe enviar `ruta_objetivo`. `UploadDestinationService` normaliza y valida esa ruta dentro de la raíz del usuario antes de que el driver la utilice.
+
+```text
+user 1 -> Data/
+user 2 -> Data2/
+user N -> DataN/
 ```
 
-**Fallback GET (útil si WAF/hosting bloquea POST)**
-```
-GET /drive/api/upload.php?mode=remote_url&action=init&u64=<base64>
-```
+Ningún driver puede decidir una raíz distinta a la autorizada para el usuario.
 
-Respuesta (JSON) típica:
-- `ok`, `key`, `bytes`, `nombreOriginal`, `nombreEncriptado`
+## local_put
 
----
+Flujo:
 
-### 3) `dropbox` (Dropzone)
-Dropzone sube archivos como `multipart/form-data` con field `file`.
-
-Ejemplo:
-```
-POST /drive/api/upload.php?mode=dropbox&action=init
-  file=<archivo>
+```text
+1. navegador -> api/upload.php?mode=local_put&action=init
+2. PHP genera URL presignada
+3. navegador -> S3 mediante PUT
+4. navegador -> action=complete
+5. catálogo FileS3 actualizado
 ```
 
-Respuesta (JSON):
-- `estado`, `resultados[]` con `key` y `file_id`
+El cuerpo del archivo no atraviesa PHP en el PUT.
 
-> Si Dropzone sigue apuntando a `upload.php` (legacy), funciona igual pero NO está unificado. Para unificar, cambia el `url` del Dropzone a `api/upload.php?mode=dropbox&action=init`.
+## remote_url
 
----
+El servidor recibe una URL, descarga el contenido por streaming y lo almacena en S3. Después registra el objeto en `FileS3`.
 
-### 4) `chunked` (subida por partes de 15MB)
-Este modo está pensado para archivos grandes (ej. > 1GB) y usa multipart con presigned UploadPart.
-
-**init** crea MultipartUpload:
-```
-POST /drive/api/upload.php?mode=chunked&action=init
-  filename=<nombre>
-  filesize=<bytes>
-  mime=<mime>
+```text
+api/upload.php?mode=remote_url&action=init
 ```
 
-**part** firma una parte:
-```
-POST /drive/api/upload.php?mode=chunked&action=part
-  uploadId=<id>
-  key=<key>
-  partNumber=<n>
-  contentLength=<bytes>
-  step=sign
+## dropbox
+
+Recibe `multipart/form-data` y utiliza `DropboxUploader`.
+
+```text
+api/upload.php?mode=dropbox&action=init
 ```
 
-**resume** lista partes subidas (reanudar):
+El archivo se registra mediante `FileS3Repository`.
+
+## chunked
+
+`Chunked15MBUploader` gestiona multipart reanudable.
+
+### init
+
+Crea el multipart y guarda el estado necesario.
+
+### part
+
+Firma o procesa una parte según el contrato del frontend.
+
+### complete
+
+Ordena las partes, completa el multipart y actualiza el catálogo.
+
+`UploadStateStore` mantiene el estado JSON en `drive/upload/storage/state/`. Esa ruta debe ser escribible por el proceso PHP y no debe exponerse públicamente.
+
+## Multipart directo de `up.php`
+
+`up.php` utiliza `PublicMultipartUploadService` para una subida directa navegador -> S3 destinada a un usuario seleccionado por un operador autorizado.
+
+```text
+Navegador
+  -> PHP: init / sign / resume / complete
+  -> S3: partes del archivo
 ```
-POST /drive/api/upload.php?mode=chunked&action=part
-  step=resume
-  stateId=<id> (si se usa)
-  uploadId=<id>
-  key=<key>
+
+Los objetos se crean dentro de:
+
+```text
+Data/uploads/
+Data2/uploads/
+DataN/uploads/
 ```
 
-**complete** finaliza multipart:
-```
-POST /drive/api/upload.php?mode=chunked&action=complete
-  stateId=<id> (si se usa store local)
-  uploadId=<id>
-  key=<key>
-  etags=<json de {partNumber: etag}>
-```
+El objeto sólo se registra en `FileS3` después de completar correctamente el multipart.
 
-> El estado de multipart se guarda en `upload/storage/state/` como JSON. La carpeta debe ser escribible.
+## Limpieza
 
----
+`drive/bin/upload_cleanup.php` inspecciona multipart abandonados, objetos huérfanos y estados locales antiguos. La edad predeterminada es 30 días y el modo predeterminado es simulación.
 
-## Comportamiento de duplicados en `chunked` (15MB)
+Un objeto registrado en `FileS3` nunca se considera huérfano.
 
-En el modo **`chunked`** (subida por partes), el sistema está diseñado para **reanudar** subidas interrumpidas.
-Por eso, si intentas subir **el mismo archivo** (mismo `filename` y mismo `filesize`) más de una vez:
+## Registro en MySQL
 
-- El backend calcula un identificador estable (**`stateId`**) a partir de `filename|filesize`.
-- El frontend guarda y reutiliza esa sesión en `localStorage` para poder reanudar.
-- Al repetir la subida del mismo archivo, se reutiliza la misma sesión y el mismo `key` → **se sobrescribe** (o se completa) el mismo objeto en S3, en vez de crear un duplicado.
+`FileS3Repository` y los repositorios de subida almacenan los datos del catálogo, incluyendo:
 
-✅ Esto es **intencional** y es lo que permite:
-- reintentos automáticos por chunk,
-- reanudación tras cortes de internet,
-- reanudación tras recargar la página (seleccionando el mismo archivo).
-
-> Si en algún momento se necesitara subir “como nuevo” (crear duplicado), se puede añadir un parámetro `forceNew=1` en `init` para generar una key diferente, pero por defecto el comportamiento actual es **sobrescribir / reanudar**.
-
----
-
-## Registro en base de datos
-
-La tabla usada es `FileS3`.  
-Se registran (mínimo):
-- `Nombre` (original)
-- `Encriptado` (nombre final/encriptado)
+- `Nombre`
+- `Encriptado`
 - `Tamano`
-- `Metadatos` (JSON)
-- `Ruta` (prefijo/carpeta, NOT NULL)
+- `Metadatos`
+- `Ruta`
+- `Found`
+- `AccessType`
 - `user_id_`
 
-El repositorio central es:
-- `upload/repositories/FileS3Repository.php`
+## Seguridad
 
----
+- La API principal requiere sesión autenticada.
+- La ruta se normaliza por usuario.
+- Los drivers reciben dependencias por inyección.
+- Las credenciales AWS no se envían al navegador.
+- Las URLs presignadas tienen expiración limitada.
+- Los nombres físicos se generan mediante la estrategia de almacenamiento del Drive.
 
-## Archivos legacy (compatibilidad)
+## Validación
 
-En el sistema previo existían endpoints:
-- `firmado.php` (URL firmada para subida local)
-- `firmadowww.php` (subida desde URL remota)
-- `upload.php` / `upload_publico.php` (Dropzone)
-
-Ahora la lógica equivalente está en drivers:
-- `LocalPresignedPutUploader.php` (reemplaza firmado.php)
-- `RemoteUrlUploader.php` (reemplaza firmadowww.php)
-- `DropboxUploader.php` (reemplaza upload.php)
-
-### Si decides mantener `firmadowww.php`
-Puedes dejarlo por compatibilidad mientras migras el frontend.
-Recomendación: que `firmadowww.php` use `app_bootstrap.php` y tenga `vendor/autoload.php` cargado.
-
----
-
-## Frontend (resumen)
-
-El JS del panel debe apuntar a:
-- `window.UPLOAD_API = "api/upload.php";`
-
-Y llamar:
-- Local: `?mode=local_put&action=init`
-- URL:   `?mode=remote_url&action=init`
-- Dropzone: `?mode=dropbox&action=init` (si se unifica)
-- Chunked: `?mode=chunked&action=init|part|complete`
-
----
-
-## Notas y troubleshooting
-
-### Error: `Class "Aws\S3\S3Client" not found`
-- Falta cargar `vendor/autoload.php`.  
-Solución: asegurar que `app_bootstrap.php` incluya:
-`require_once dirname(__DIR__) . '/vendor/autoload.php';`
-
-### HTTP 500 en `api/upload.php`
-- Revisar logs de PHP.
-- Verificar que existan los drivers en `upload/drivers/` con nombres exactos (Linux distingue mayúsculas).
-- Confirmar que `app_bootstrap.php` se está cargando desde `api/upload.php`.
-
-### Permisos
-- `upload/storage/state/` debe ser escribible para `chunked`.
-
----
-
-## Versiones
-- PHP: 7.x compatible
-- AWS SDK: cargado por Composer (`vendor/`)
+Los workflows de subida comprueban sintaxis PHP, fronteras OOP, ausencia de dependencias globales en drivers, referencias del frontend y `git diff --check`.

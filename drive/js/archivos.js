@@ -37,7 +37,14 @@ class ArchivosModule {
 
       const URL_BUSCAR = 'buscar_archivo.php';
 
-      const URLS_GENERAR_TOKEN = ['generar_token.php', '../generar_token.php'];
+      // Endpoint único y estable dentro de /drive/.
+      // No usamos ../generar_token.php porque desde /drive/
+      // terminaría apuntando a /generar_token.php y ocultaría
+      // el error real con un 404 de Nginx.
+      const URL_GENERAR_TOKEN = new URL(
+        'generar_token.php',
+        window.location.href
+      ).pathname;
 
       // Seguridad
       const URL_SET_FILE_SECURITY = 'set_file_security.php';
@@ -925,17 +932,49 @@ class ArchivosModule {
       }
 
       async function generarLink(payload) {
-        let lastErr = null;
-        for (const u of URLS_GENERAR_TOKEN) {
-          try {
-            const { res, json, text } = await postToken(u, payload);
-            if (res.ok && json) return { res, json, text, url: u };
-            lastErr = new Error(text || ('Respuesta inválida en ' + u));
-          } catch (e) {
-            lastErr = e;
-          }
+        const { res, json, text } =
+          await postToken(
+            URL_GENERAR_TOKEN,
+            payload
+          );
+
+        if (!res.ok) {
+          const mensaje =
+            json && json.mensaje
+              ? json.mensaje
+              : (
+                  text
+                    ? text.replace(/<[^>]*>/g, ' ').replace(/\\s+/g, ' ').trim()
+                    : 'HTTP ' + res.status
+                );
+
+          throw new Error(
+            'HTTP ' +
+            res.status +
+            ': ' +
+            mensaje
+          );
         }
-        throw lastErr || new Error('No se pudo contactar generar_token.php');
+
+        if (!json) {
+          throw new Error(
+            'El servidor no devolvió JSON válido.'
+          );
+        }
+
+        if (json.estado !== 'ok') {
+          throw new Error(
+            json.mensaje ||
+            'No se pudo generar el enlace.'
+          );
+        }
+
+        return {
+          res,
+          json,
+          text,
+          url: URL_GENERAR_TOKEN
+        };
       }
 
       window.copiarEnlace = window.copiarEnlace || async function () {

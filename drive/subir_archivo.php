@@ -101,7 +101,7 @@ try {
      * INSTANCIAR S3Manager
      * ============================================================
      */
-    $s3Manager = new S3Manager($db_connection);
+    $s3Manager = new S3Manager(db: $db_connection);
 
     /**
      * ============================================================

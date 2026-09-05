@@ -1799,7 +1799,7 @@ $footerEspacioUsado = $storageUsage['formatted'];
 
 
 <script src="js/carpetas.js"></script>
-<script src="js/archivos.js?v=20260904-1535"></script>
+<script src="js/archivos.js?v=20260904-2205"></script>
 <script src="js/file-block.js"></script>
 
 <script src="js/actualizar-hora.js"></script>

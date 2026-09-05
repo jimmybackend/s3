@@ -19,7 +19,7 @@ try {
 function presigned_url(string $key): string
 {
     global $db_connection;
-    $manager = new S3Manager($db_connection);
+    $manager = new S3Manager(db: $db_connection);
     return $manager->generarPresignedUrl($key);
 }
 

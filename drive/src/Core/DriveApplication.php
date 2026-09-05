@@ -10,6 +10,7 @@ use ArcadeCloud\Drive\Aws\AwsCostService;
 use ArcadeCloud\Drive\Aws\CostExplorerGateway;
 use ArcadeCloud\Drive\Media\MediaPlaylistRepository;
 use ArcadeCloud\Drive\Media\MediaPlaylistService;
+use ArcadeCloud\Drive\Media\ThumbnailService;
 use ArcadeCloud\Drive\Security\AuthenticationRepository;
 use ArcadeCloud\Drive\Security\AuthenticationService;
 use ArcadeCloud\Drive\Security\SessionManager;
@@ -39,6 +40,7 @@ final class DriveApplication
     private ?AwsCostService $awsCostService = null;
     private ?MediaPlaylistRepository $mediaPlaylistRepository = null;
     private ?MediaPlaylistService $mediaPlaylistService = null;
+    private ?ThumbnailService $thumbnailService = null;
     private ?FileListService $fileListService = null;
     private ?DrivePageService $drivePageService = null;
     private ?UploadDestinationService $uploadDestinationService = null;
@@ -122,6 +124,16 @@ final class DriveApplication
         return $this->mediaPlaylistService ??= new MediaPlaylistService(
             $this->mediaPlaylistRepository(),
             $this->userStoragePath()
+        );
+    }
+
+    public function thumbnailService(): ThumbnailService
+    {
+        return $this->thumbnailService ??= new ThumbnailService(
+            $this->db,
+            $this->s3,
+            $this->bucket,
+            sys_get_temp_dir() . '/arcadecloud-drive-thumbnails'
         );
     }
 

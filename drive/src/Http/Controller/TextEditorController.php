@@ -12,10 +12,14 @@ final class TextEditorController extends AbstractJsonController
     public function read(): never
     {
         try {
-            $this->guardAuthenticated();
+            $userId = $this->guardAuthenticated();
             $key = $this->request->queryString('archivo');
-            $service = new TextFileService($this->app->s3Manager());
-            JsonResponse::send(['estado'=>'ok','data'=>$service->read($key)]);
+            $service = new TextFileService(
+                $this->app->fileRecordLocator(),
+                $this->app->s3(),
+                $this->app->bucket()
+            );
+            JsonResponse::send(['estado'=>'ok','data'=>$service->read($userId, $key)]);
         } catch (\Throwable $error) {
             JsonResponse::send(['estado'=>'error','mensaje'=>$error->getMessage()], 500);
         }
@@ -25,11 +29,15 @@ final class TextEditorController extends AbstractJsonController
     {
         try {
             $this->requirePost();
-            $this->guardAuthenticated();
+            $userId = $this->guardAuthenticated();
             $key = $this->request->postString('archivo');
             $content = $this->request->postRawString('contenido');
-            $service = new TextFileService($this->app->s3Manager());
-            JsonResponse::send(['estado'=>'ok','data'=>$service->save($key, $content)]);
+            $service = new TextFileService(
+                $this->app->fileRecordLocator(),
+                $this->app->s3(),
+                $this->app->bucket()
+            );
+            JsonResponse::send(['estado'=>'ok','data'=>$service->save($userId, $key, $content)]);
         } catch (\Throwable $error) {
             JsonResponse::send(['estado'=>'error','mensaje'=>$error->getMessage()], 500);
         }

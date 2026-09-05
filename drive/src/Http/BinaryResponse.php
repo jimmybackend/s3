@@ -38,6 +38,24 @@ final class BinaryResponse
         $this->streamBody($file['body']); exit;
     }
 
+    public function inlineDocument(array $file, string $mime = 'application/pdf', int $maxAge = 86400): never
+    {
+        while (ob_get_level()) ob_end_clean();
+        set_time_limit(0);
+
+        $name = str_replace(["\r", "\n", '"'], ['', '', "'"], (string)($file['name'] ?? 'archivo.pdf'));
+        if ($name === '') $name = 'archivo.pdf';
+
+        header('Content-Type: '.$mime);
+        header('Content-Disposition: inline; filename="'.$name.'"');
+        header('Accept-Ranges: bytes');
+        header('Cache-Control: public, max-age='.max(0, $maxAge));
+        if (($file['length'] ?? null) !== null) header('Content-Length: '.(int)$file['length']);
+
+        $this->streamBody($file['body']);
+        exit;
+    }
+
     public function inlineRange(array $file): never
     {
         /** @var ByteRange $range */ $range=$file['range'];

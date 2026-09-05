@@ -4,10 +4,12 @@ declare(strict_types=1);
 namespace ArcadeCloud\Drive\Core;
 
 use ArcadeCloud\Drive\Application\DrivePageService;
+use ArcadeCloud\Drive\Application\FileKeyRotationService;
 use ArcadeCloud\Drive\Application\FileListService;
 use ArcadeCloud\Drive\Application\UploadDestinationService;
 use ArcadeCloud\Drive\Aws\AwsCostService;
 use ArcadeCloud\Drive\Aws\CostExplorerGateway;
+use ArcadeCloud\Drive\Aws\FileRecordLocator;
 use ArcadeCloud\Drive\Media\MediaPlaylistRepository;
 use ArcadeCloud\Drive\Media\MediaPlaylistService;
 use ArcadeCloud\Drive\Media\ThumbnailService;
@@ -43,6 +45,8 @@ final class DriveApplication
     private ?AuthenticationService $authenticationService = null;
     private ?CostExplorerGateway $costExplorerGateway = null;
     private ?AwsCostService $awsCostService = null;
+    private ?FileRecordLocator $fileRecordLocator = null;
+    private ?FileKeyRotationService $fileKeyRotationService = null;
     private ?MediaPlaylistRepository $mediaPlaylistRepository = null;
     private ?MediaPlaylistService $mediaPlaylistService = null;
     private ?ThumbnailService $thumbnailService = null;
@@ -120,6 +124,22 @@ final class DriveApplication
     {
         return $this->awsCostService ??= new AwsCostService(
             $this->costExplorerGateway()
+        );
+    }
+
+    public function fileRecordLocator(): FileRecordLocator
+    {
+        return $this->fileRecordLocator ??= new FileRecordLocator($this->db);
+    }
+
+    public function fileKeyRotationService(): FileKeyRotationService
+    {
+        return $this->fileKeyRotationService ??= new FileKeyRotationService(
+            $this->db,
+            $this->s3,
+            $this->bucket,
+            $this->fileRecordLocator(),
+            $this->storageObjectNameCodec()
         );
     }
 

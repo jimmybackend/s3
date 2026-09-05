@@ -24,6 +24,8 @@ use ArcadeCloud\Drive\Storage\StorageUsageService;
 use ArcadeCloud\Drive\Storage\UserStoragePath;
 use ArcadeCloud\Drive\Storage\UserStorageProvisioner;
 use ArcadeCloud\Drive\Upload\PublicDropzoneUploadService;
+use ArcadeCloud\Drive\Upload\PublicSharedBrowserRepository;
+use ArcadeCloud\Drive\Upload\PublicSharedBrowserService;
 use ArcadeCloud\Drive\Upload\UploadCatalogRepository;
 use ArcadeCloud\Drive\View\FolderTreeRenderer;
 use Aws\S3\S3Client;
@@ -46,6 +48,8 @@ final class DriveApplication
     private ?ThumbnailService $thumbnailService = null;
     private ?UploadCatalogRepository $uploadCatalogRepository = null;
     private ?PublicDropzoneUploadService $publicDropzoneUploadService = null;
+    private ?PublicSharedBrowserRepository $publicSharedBrowserRepository = null;
+    private ?PublicSharedBrowserService $publicSharedBrowserService = null;
     private ?FileListService $fileListService = null;
     private ?DrivePageService $drivePageService = null;
     private ?UploadDestinationService $uploadDestinationService = null;
@@ -171,6 +175,21 @@ final class DriveApplication
             (string)\Config::RUTA_COMPARTIDA,
             $this->storageObjectNameCodec(),
             $this->uploadCatalogRepository()
+        );
+    }
+
+    public function publicSharedBrowserRepository(): PublicSharedBrowserRepository
+    {
+        return $this->publicSharedBrowserRepository ??= new PublicSharedBrowserRepository($this->db);
+    }
+
+    public function publicSharedBrowserService(): PublicSharedBrowserService
+    {
+        return $this->publicSharedBrowserService ??= new PublicSharedBrowserService(
+            $this->s3,
+            $this->bucket,
+            (string)\Config::RUTA_COMPARTIDA,
+            $this->publicSharedBrowserRepository()
         );
     }
 

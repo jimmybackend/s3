@@ -1,31 +1,59 @@
 <?php
-// upload/UploadFactory.php
 declare(strict_types=1);
 
-require_once __DIR__ . '/core/UploaderInterface.php';
+use ArcadeCloud\Drive\Security\SessionManager;
+use ArcadeCloud\Drive\Storage\StorageObjectNameCodec;
+use Aws\S3\S3Client;
 
+require_once __DIR__ . '/core/UploaderInterface.php';
 require_once __DIR__ . '/drivers/LocalPresignedPutUploader.php';
 require_once __DIR__ . '/drivers/RemoteUrlUploader.php';
 require_once __DIR__ . '/drivers/DropboxUploader.php';
 require_once __DIR__ . '/drivers/Chunked15MBUploader.php';
+require_once __DIR__ . '/storage/UploadStateStore.php';
 
 final class UploadFactory
 {
-    public static function make($mode)
-    {
-        $mode = (string)$mode;
+    public function __construct(
+        private mysqli $db,
+        private S3Client $s3,
+        private string $bucket,
+        private StorageObjectNameCodec $codec,
+        private SessionManager $session,
+        private string $stateDirectory
+    ) {
+    }
 
-        switch ($mode) {
-            case 'local_put':
-                return new LocalPresignedPutUploader();
-            case 'remote_url':
-                return new RemoteUrlUploader();
-            case 'dropbox':
-                return new DropboxUploader();
-            case 'chunked':
-                return new Chunked15MBUploader();
-            default:
-                throw new RuntimeException('Modo inválido: ' . $mode);
-        }
+    public function make(string $mode): UploaderInterface
+    {
+        return match ($mode) {
+            'local_put' => new LocalPresignedPutUploader(
+                $this->db,
+                $this->s3,
+                $this->bucket,
+                $this->codec,
+                $this->session
+            ),
+            'remote_url' => new RemoteUrlUploader(
+                $this->db,
+                $this->s3,
+                $this->bucket,
+                $this->codec
+            ),
+            'dropbox' => new DropboxUploader(
+                $this->db,
+                $this->s3,
+                $this->bucket,
+                $this->codec
+            ),
+            'chunked' => new Chunked15MBUploader(
+                $this->db,
+                $this->s3,
+                $this->bucket,
+                $this->codec,
+                new UploadStateStore($this->stateDirectory)
+            ),
+            default => throw new RuntimeException('Modo inválido: ' . $mode),
+        };
     }
 }

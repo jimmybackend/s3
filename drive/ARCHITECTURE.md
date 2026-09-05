@@ -9,24 +9,23 @@ PHP entrypoint
         -> Repository / Infrastructure
 ```
 
-Los archivos públicos deben ser delgados. La lógica de negocio vive bajo `drive/src/` o en módulos OOP de `drive/upload/`.
+Los entrypoints públicos son delgados. La lógica de negocio vive bajo `drive/src/` o en los módulos OOP de `drive/upload/`.
 
 ## Composition root
 
-`DriveApplication` centraliza dependencias compartidas:
+`DriveApplication` centraliza:
 
 - `mysqli`;
-- `S3Client`;
-- bucket;
+- `S3Client` y bucket;
 - sesión;
 - repositorios;
 - servicios de aplicación;
-- servicios AWS;
+- gateways AWS;
 - servicios de sharing;
 - servicios de subida;
-- servicios de almacenamiento y sincronización.
+- almacenamiento y sincronización.
 
-`ApplicationKernel` expone la instancia única utilizada por los entrypoints.
+`ApplicationKernel` expone la instancia utilizada por los entrypoints.
 
 ## Navegación DB-first
 
@@ -90,19 +89,23 @@ user_id = N -> DataN/
 
 `UserStoragePath` normaliza rutas y bloquea saltos hacia raíces de otros usuarios. `UserStorageProvisioner` garantiza que la raíz exista en catálogo y S3.
 
-Las consultas de usuario deben limitarse por `user_id_` y, cuando corresponda, `Found=1`.
+Las consultas y mutaciones de usuario se limitan por `user_id_` y, cuando corresponde, `Found=1`.
 
 ## Archivos y carpetas
 
 ### Mutaciones de archivos
 
 ```text
-eliminar_archivo.php
-move_multiple.php
-mover_archivo.php
+eliminar_archivo.php / delete_multiple.php
+mover_archivo.php / move_multiple.php
 renombrar_archivo.php
   -> FileMutationController
+     -> FileMutationService
+        -> FileRecordRepository
+        -> S3Client
 ```
+
+El repositorio localiza cada archivo dentro del `user_id_` autenticado. Renombrar cambia sólo el nombre visible. Mover puede cambiar la key física en S3 y actualiza el catálogo.
 
 ### Mutaciones de carpetas
 
@@ -112,7 +115,14 @@ eliminar_carpeta.php
 mover_carpeta.php
 renombrar_carpeta.php
   -> FolderMutationController
+     -> FolderMutationService
+        -> FolderMutationRepository
+        -> UserStoragePath
+        -> StorageObjectNameCodec
+        -> S3Client
 ```
+
+La raíz de usuario no se puede renombrar, mover ni eliminar.
 
 ### Seguridad de archivos
 
@@ -136,6 +146,8 @@ ver_pdf.php
 ver_archivo.php
   -> FileAccessController
      -> FileAccessService / ZipDownloadService
+        -> FileRecordLocator
+        -> S3Client
 ```
 
 ### Texto
@@ -145,6 +157,9 @@ leer_texto.php
 guardar_texto.php
 validar_php.php
   -> TextEditorController
+     -> TextFileService / PhpLintService
+        -> FileRecordLocator
+        -> S3Client
 ```
 
 ### Rotación de key física
@@ -160,10 +175,9 @@ encriptar_archivo.php
 ## Nombres lógicos y físicos
 
 - `FileS3.Nombre`: nombre visible.
-- `FileS3.Encriptado`: basename físico.
+- `FileS3.Encriptado`: nombre o key física del objeto almacenado.
 - `S3Folders.Nombre`: nombre visible de carpeta.
-- la raíz del usuario no se puede renombrar, mover ni eliminar;
-- renombrar modifica el catálogo;
+- renombrar modifica el catálogo visible;
 - mover puede cambiar la ubicación física;
 - `StorageObjectNameCodec` centraliza la generación y lectura de nombres físicos.
 
@@ -192,10 +206,7 @@ generar_token.php
         -> ShareFileRepository
         -> ShareTokenStore
 
-token_audio.php
-token_video.php
-token_texto.php
-ver.php
+token_audio.php / token_video.php / token_texto.php / ver.php
   -> PublicShareController
      -> ShareAccessService
         -> ShareFileRepository
@@ -235,11 +246,30 @@ api/upload.php
         -> Chunked15MBUploader
 ```
 
-Los drivers reciben sus dependencias por inyección. `FileS3Repository` registra los archivos y `UploadStateStore` mantiene el estado de multipart cuando corresponde.
+Los drivers reciben dependencias por inyección y registran los objetos terminados en `FileS3`.
 
-### Multipart directo
+### Subida simple compatible
 
-`up.php` crea multipart en la raíz `DataN/uploads/`. El navegador envía partes directamente a S3 mediante URLs presignadas. Al completar, el objeto se registra en `FileS3`.
+```text
+upload.php / subir_archivo.php
+  -> LegacyUploadController
+     -> SingleUploadService / UploadFactory
+        -> UploadCatalogRepository
+        -> StorageObjectNameCodec
+```
+
+### Multipart administrativo
+
+```text
+up.php
+  -> AdminMultipartUploadService
+     -> PublicMultipartUploadService
+     -> UserDirectoryRepository
+     -> UserStorageProvisioner
+     -> UploadCatalogRepository
+```
+
+El navegador envía las partes directamente a S3 mediante URLs presignadas. Al completar, el objeto se registra en `FileS3` para el usuario destino.
 
 ### Zona pública
 
@@ -298,7 +328,7 @@ costos_aws.php
 
 Las acciones sobre archivos AWS delegan en `AwsFileController` y servicios especializados para Rekognition, Textract, Polly, Translate y Comprehend. Transcribe utiliza `TranscriptionController` y `TranscriptionFileService`.
 
-## Herramienta AWS personal
+## Herramientas AWS personales
 
 ```text
 aws.php
@@ -309,19 +339,31 @@ aws.php
      -> PersonalAwsPageRenderer
 ```
 
-Con sesión del Drive, sólo `user_id = 1` tiene acceso. La configuración privada se lee fuera del repositorio y las semillas TOTP permanecen del lado servidor.
+Con sesión del Drive, sólo `user_id = 1` tiene acceso. Contraseñas, hashes operativos, nombres privados de cuentas y semillas TOTP se leen desde configuración privada fuera del repositorio. Las semillas permanecen del lado servidor.
 
-## Administración EC2
+## Administración EC2 y RDS
 
-`ec2.php` muestra y opera los recursos EC2 utilizados por el propietario. `ec2-cron.php` aplica la política horaria de apagado configurada para evitar recursos de prueba encendidos fuera de horario.
+```text
+ec2.php
+  -> PersonalToolAccessService
+  -> Ec2Gateway / RdsGateway
+  -> Ec2PanelHelper
+
+ec2-cron.php
+  -> Ec2CostGuardService
+     -> Ec2Gateway
+     -> Ec2CronLogger
+```
+
+`ec2.php` muestra y opera los recursos del propietario. `ec2-cron.php` aplica la política horaria de protección de costos. Los clientes AWS no se construyen dentro de los entrypoints.
 
 ## Reglas obligatorias
 
 1. No agregar SQL a entrypoints públicos.
 2. No agregar llamadas AWS/S3 a entrypoints cuando exista un Service/Gateway responsable.
 3. No listar S3 para navegación normal.
-4. No aceptar rutas de otro usuario.
-5. No exponer secretos, credenciales ni semillas TOTP en Git, HTML o JSON.
+4. No aceptar rutas o registros de otro usuario.
+5. No exponer secretos, credenciales ni semillas TOTP en Git, HTML o JSON público.
 6. No modificar `vendor/`.
 7. Mantener los contratos HTTP utilizados por el frontend.
 8. Validar cambios con `php -l`, `node --check` cuando aplique y `git diff --check`.

@@ -7,6 +7,11 @@ use ArcadeCloud\Drive\Application\DrivePageService;
 use ArcadeCloud\Drive\Application\FileListService;
 use ArcadeCloud\Drive\Application\UploadDestinationService;
 use ArcadeCloud\Drive\Security\SessionManager;
+use ArcadeCloud\Drive\Sharing\ShareAccessService;
+use ArcadeCloud\Drive\Sharing\ShareFileRepository;
+use ArcadeCloud\Drive\Sharing\ShareLinkService;
+use ArcadeCloud\Drive\Sharing\ShareObjectStorage;
+use ArcadeCloud\Drive\Sharing\ShareTokenStore;
 use ArcadeCloud\Drive\Storage\StorageObjectNameCodec;
 use ArcadeCloud\Drive\Storage\StorageUsageService;
 use ArcadeCloud\Drive\Storage\UserStoragePath;
@@ -29,6 +34,11 @@ final class DriveApplication
     private ?UserStoragePath $userStoragePath = null;
     private ?UserStorageProvisioner $userStorageProvisioner = null;
     private ?StorageObjectNameCodec $storageObjectNameCodec = null;
+    private ?ShareFileRepository $shareFileRepository = null;
+    private ?ShareTokenStore $shareTokenStore = null;
+    private ?ShareObjectStorage $shareObjectStorage = null;
+    private ?ShareLinkService $shareLinkService = null;
+    private ?ShareAccessService $shareAccessService = null;
 
     private function __construct(mysqli $db)
     {
@@ -125,5 +135,42 @@ final class DriveApplication
     public function folderTreeRenderer(int $userId): FolderTreeRenderer
     {
         return new FolderTreeRenderer($this->db, $userId, $this->userStoragePath());
+    }
+
+    public function shareFileRepository(): ShareFileRepository
+    {
+        return $this->shareFileRepository ??= new ShareFileRepository($this->db);
+    }
+
+    public function shareTokenStore(): ShareTokenStore
+    {
+        return $this->shareTokenStore ??= new ShareTokenStore(
+            dirname(__DIR__, 2) . '/tokens.json'
+        );
+    }
+
+    public function shareObjectStorage(): ShareObjectStorage
+    {
+        return $this->shareObjectStorage ??= new ShareObjectStorage(
+            $this->s3,
+            $this->bucket
+        );
+    }
+
+    public function shareLinkService(): ShareLinkService
+    {
+        return $this->shareLinkService ??= new ShareLinkService(
+            $this->shareFileRepository(),
+            $this->shareTokenStore()
+        );
+    }
+
+    public function shareAccessService(): ShareAccessService
+    {
+        return $this->shareAccessService ??= new ShareAccessService(
+            $this->shareFileRepository(),
+            $this->shareTokenStore(),
+            $this->shareObjectStorage()
+        );
     }
 }

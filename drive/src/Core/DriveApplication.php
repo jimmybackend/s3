@@ -11,11 +11,14 @@ use ArcadeCloud\Drive\Application\UploadDestinationService;
 use ArcadeCloud\Drive\Aws\AwsCostService;
 use ArcadeCloud\Drive\Aws\CostExplorerGateway;
 use ArcadeCloud\Drive\Aws\FileRecordLocator;
+use ArcadeCloud\Drive\Aws\PersonalAwsConfig;
+use ArcadeCloud\Drive\Aws\PersonalTotpService;
 use ArcadeCloud\Drive\Media\MediaPlaylistRepository;
 use ArcadeCloud\Drive\Media\MediaPlaylistService;
 use ArcadeCloud\Drive\Media\ThumbnailService;
 use ArcadeCloud\Drive\Security\AuthenticationRepository;
 use ArcadeCloud\Drive\Security\AuthenticationService;
+use ArcadeCloud\Drive\Security\PersonalToolAccessService;
 use ArcadeCloud\Drive\Security\SessionManager;
 use ArcadeCloud\Drive\Sharing\ShareAccessService;
 use ArcadeCloud\Drive\Sharing\ShareFileRepository;
@@ -47,6 +50,9 @@ final class DriveApplication
     private ?AuthenticationService $authenticationService = null;
     private ?CostExplorerGateway $costExplorerGateway = null;
     private ?AwsCostService $awsCostService = null;
+    private ?PersonalAwsConfig $personalAwsConfig = null;
+    private ?PersonalToolAccessService $personalToolAccessService = null;
+    private ?PersonalTotpService $personalTotpService = null;
     private ?FileRecordLocator $fileRecordLocator = null;
     private ?FileKeyRotationService $fileKeyRotationService = null;
     private ?FolderRepository $folderRepository = null;
@@ -128,6 +134,34 @@ final class DriveApplication
     {
         return $this->awsCostService ??= new AwsCostService(
             $this->costExplorerGateway()
+        );
+    }
+
+    public function personalAwsConfig(): PersonalAwsConfig
+    {
+        if ($this->personalAwsConfig === null) {
+            $path = trim((string)(getenv('ARCADECLOUD_PERSONAL_AWS_CONFIG') ?: ''));
+            if ($path === '') {
+                $path = '/etc/arcadecloud-drive/personal-aws.json';
+            }
+            $this->personalAwsConfig = new PersonalAwsConfig($path);
+        }
+        return $this->personalAwsConfig;
+    }
+
+    public function personalToolAccessService(): PersonalToolAccessService
+    {
+        return $this->personalToolAccessService ??= new PersonalToolAccessService(
+            $this->session(),
+            $this->personalAwsConfig(),
+            1
+        );
+    }
+
+    public function personalTotpService(): PersonalTotpService
+    {
+        return $this->personalTotpService ??= new PersonalTotpService(
+            $this->personalAwsConfig()
         );
     }
 

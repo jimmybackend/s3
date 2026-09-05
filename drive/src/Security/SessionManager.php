@@ -57,6 +57,56 @@ final class SessionManager
         unset($_SESSION[$key]);
     }
 
+    public function incrementLoginAttempt(string $identifier): int
+    {
+        $this->start();
+
+        if (!isset($_SESSION['login_attempts']) || !is_array($_SESSION['login_attempts'])) {
+            $_SESSION['login_attempts'] = [];
+        }
+
+        $current = (int)($_SESSION['login_attempts'][$identifier] ?? 0);
+        $current++;
+        $_SESSION['login_attempts'][$identifier] = $current;
+
+        return $current;
+    }
+
+    public function establishAuthenticatedUser(string $email, int $userId, string $role): void
+    {
+        $this->start();
+        session_regenerate_id(true);
+
+        $_SESSION['usuario'] = $email;
+        $_SESSION['user_id'] = $userId;
+        $_SESSION['role'] = $role;
+        $_SESSION['show_counts'] = false;
+        $_SESSION['show_metas'] = false;
+        $_SESSION['media_hidden'] = true;
+        $_SESSION['show_filters'] = true;
+    }
+
+    public function destroy(): void
+    {
+        $this->start();
+        $_SESSION = [];
+
+        if (ini_get('session.use_cookies')) {
+            $params = session_get_cookie_params();
+            setcookie(
+                session_name(),
+                '',
+                time() - 42000,
+                $params['path'],
+                $params['domain'],
+                (bool)$params['secure'],
+                (bool)$params['httponly']
+            );
+        }
+
+        session_destroy();
+    }
+
     public function clearSecureAccessKeys(array $keys): void
     {
         if (!isset($_SESSION['secure_ok_files']) || !is_array($_SESSION['secure_ok_files'])) {

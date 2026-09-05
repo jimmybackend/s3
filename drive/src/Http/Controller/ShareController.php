@@ -15,10 +15,10 @@ final class ShareController extends AbstractJsonController
             $this->requirePost();
             $userId = $this->guardAuthenticated();
 
-            $key = $this->requireNonEmpty(
-                $this->request->postString('archivo'),
-                'Falta parámetro "archivo".'
-            );
+            $key = $this->request->postString('archivo');
+            if ($key === '') {
+                throw new ShareException('Falta parámetro "archivo".', 400);
+            }
 
             $result = $this->app->shareLinkService()->create(
                 $userId,
@@ -40,9 +40,19 @@ final class ShareController extends AbstractJsonController
                 'calendario' => $result['calendario'],
             ]);
         } catch (ShareException $e) {
-            $this->fail($e, $e->httpStatus());
+            JsonResponse::send([
+                'ok' => false,
+                'estado' => 'error',
+                'mensaje' => $e->getMessage(),
+                'error' => $e->getMessage(),
+            ], $e->httpStatus());
         } catch (Throwable $e) {
-            $this->fail($e, 500);
+            JsonResponse::send([
+                'ok' => false,
+                'estado' => 'error',
+                'mensaje' => 'No se pudo generar el enlace compartido.',
+                'error' => 'No se pudo generar el enlace compartido.',
+            ], 500);
         }
     }
 

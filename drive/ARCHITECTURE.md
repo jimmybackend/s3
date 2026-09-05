@@ -105,6 +105,32 @@ La respuesta compatible mantiene `mes_actual`, `costo_actual`, `porcentaje_actua
 endpoint los datos de depuración de identidad AWS y cualquier fragmento de access key; una
 respuesta HTTP nunca debe exponer credenciales ni identificadores derivados de ellas.
 
+## Media y miniaturas
+
+Los endpoints de lectura de playlist y miniaturas ya no contienen SQL ni manipulación directa
+de sesión:
+
+```text
+media_playlist.php
+    -> MediaPlaylistController
+        -> MediaPlaylistService
+            -> MediaPlaylistRepository (FileS3)
+            -> UserStoragePath
+
+thumb.php
+    -> ThumbnailController
+        -> ThumbnailService
+            -> MySQL / S3 / cache privada
+```
+
+`MediaPlaylistRepository` filtra siempre por `user_id_`, ruta, `Found=1` y excluye archivos con
+`AccessType='secure'`. `MediaPlaylistService` normaliza la ruta dentro de la raíz real del usuario
+y conserva el contrato `audio` / `video` que consume el reproductor flotante.
+
+`ThumbnailController` conserva ETag, respuestas 304, headers `X-Thumb-*` y fallback de imagen.
+El snapshot de sesión necesario para validar archivos protegidos se obtiene mediante
+`SessionManager`; el entrypoint `thumb.php` no lee `$_SESSION` ni `$_GET`.
+
 ## Provisionamiento multiusuario
 
 La raíz física/lógica del Drive se deriva exclusivamente del `Users.id` autenticado:
@@ -151,6 +177,7 @@ Los enlaces compartidos siguen conservando los endpoints históricos para no rom
 - `token_audio.php`
 - `token_video.php`
 - `token_texto.php`
+- `ver.php` como visor de compatibilidad para enlaces antiguos
 
 Estos entrypoints no contienen lógica de sesión, SQL, filesystem ni AWS. El flujo es:
 
@@ -161,7 +188,7 @@ generar_token.php
             -> ShareFileRepository (MySQL / ownership)
             -> ShareTokenStore (tokens.json con flock)
 
- token_*.php
+ token_*.php / ver.php
     -> PublicShareController
         -> ShareAccessService
             -> ShareFileRepository
@@ -179,6 +206,7 @@ Reglas del módulo:
 5. los tokens nuevos conservan el formato histórico y agregan `user_id`, `file_id` y `nombre` para poder validar ownership;
 6. los tokens legacy que no tienen esos campos siguen siendo legibles para no romper enlaces existentes;
 7. `tokens.json` se mantiene fuera del repositorio y se actualiza con bloqueo de archivo para evitar escrituras concurrentes corruptas;
-8. `ShareObjectStorage` es la única pieza del módulo que conoce S3.
+8. `ShareObjectStorage` es la única pieza del módulo que conoce S3;
+9. `ver.php` conserva `?t=`/`?token=` y `?direct`/`?download`, pero delega toda validación y acceso a las clases del módulo.
 
 La persistencia en `tokens.json` es deliberadamente compatible con producción. Si más adelante se cambia a MySQL u otro storage, debe hacerse detrás de la misma responsabilidad de `ShareTokenStore`, sin volver a introducir persistencia en los endpoints.

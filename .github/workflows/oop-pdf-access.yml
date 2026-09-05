@@ -1,0 +1,63 @@
+name: OOP PDF access validation
+
+on:
+  push:
+    branches:
+      - main
+      - 'refactor/**'
+    paths:
+      - 'drive/ver_pdf.php'
+      - 'drive/js/ver-pdf.js'
+      - 'drive/src/Application/FileAccessService.php'
+      - 'drive/src/Http/BinaryResponse.php'
+      - 'drive/src/Http/Controller/FileAccessController.php'
+      - 'drive/src/Core/DriveApplication.php'
+      - '.github/workflows/oop-pdf-access.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate PHP syntax
+        run: |
+          set -euo pipefail
+          php -l drive/ver_pdf.php
+          php -l drive/src/Application/FileAccessService.php
+          php -l drive/src/Http/BinaryResponse.php
+          php -l drive/src/Http/Controller/FileAccessController.php
+          php -l drive/src/Core/DriveApplication.php
+          echo PHP_OK
+
+      - name: Audit PDF access boundary
+        run: |
+          set -euo pipefail
+          ! grep -q '\$_SESSION\|\$_GET\|\$_POST\|\$_SERVER\|\$db_connection\|Config::\|getObject\|getS3\|session_start' drive/ver_pdf.php
+          grep -q 'FileAccessController' drive/ver_pdf.php
+          grep -q -- '->pdf()' drive/ver_pdf.php
+          grep -q 'public function pdf' drive/src/Http/Controller/FileAccessController.php
+          grep -q 'downloadStream' drive/src/Http/Controller/FileAccessController.php
+          grep -q 'inlineDocument' drive/src/Http/Controller/FileAccessController.php
+          grep -q 'requireReadableByKey' drive/src/Application/FileAccessService.php
+          grep -q 'inlineDocument' drive/src/Http/BinaryResponse.php
+          grep -q "Content-Type: '.\$mime" drive/src/Http/BinaryResponse.php
+          grep -q 'Content-Disposition: inline' drive/src/Http/BinaryResponse.php
+          echo OOP_OK
+
+      - name: Validate runtime reference
+        run: |
+          set -euo pipefail
+          grep -q "ver_pdf.php?archivo=" drive/js/ver-pdf.js
+          echo REFERENCIAS_OK
+
+      - name: Diff whitespace check
+        run: |
+          git diff --check HEAD^ HEAD
+          echo DIFF_OK

@@ -277,7 +277,10 @@ final class DriveApplication
 
     public function storageUsageService(): StorageUsageService
     {
-        return $this->storageUsageService ??= new StorageUsageService($this->db);
+        return $this->storageUsageService ??= new StorageUsageService(
+            $this->db,
+            $this->session()
+        );
     }
 
     public function userStorageProvisioner(): UserStorageProvisioner

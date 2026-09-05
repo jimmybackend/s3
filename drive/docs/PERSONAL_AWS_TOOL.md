@@ -1,15 +1,16 @@
-# Herramienta AWS personal
+# Herramientas AWS personales
 
-`drive/aws.php` es una herramienta privada separada de las funciones familiares del Drive.
+`drive/aws.php` y `drive/ec2.php` son herramientas privadas separadas de las funciones familiares del Drive.
 
 ## Política de acceso
 
-- Con sesión autenticada del Drive, únicamente `user_id = 1` puede usarla.
+- Con sesión autenticada del Drive, únicamente `user_id = 1` puede utilizarlas.
 - Cualquier otro usuario autenticado recibe HTTP 403.
 - Sin sesión del Drive, se requiere la contraseña privada configurada fuera del repositorio.
-- La contraseña y las semillas TOTP no se almacenan en Git ni dentro del webroot.
+- `ec2.php` exige además una segunda contraseña para ejecutar acciones de encendido o apagado.
+- Las contraseñas y las semillas TOTP no se almacenan en Git ni dentro del webroot.
 
-## Arquitectura
+## Arquitectura de acceso y TOTP
 
 ```text
 aws.php
@@ -18,9 +19,16 @@ aws.php
      -> PersonalTotpService
         -> PersonalAwsConfig
      -> PersonalAwsPageRenderer
+
+ec2.php
+  -> PersonalToolAccessService
+  -> PersonalAwsConfig
+  -> panel EC2
 ```
 
 Las semillas TOTP permanecen en el servidor. El navegador recibe identificadores y etiquetas de cuenta y, cuando se solicita, el código TOTP generado por el servidor.
+
+La contraseña de acciones de `ec2.php` se conserva únicamente como hash y se verifica con `password_verify()` antes de ejecutar `start` o `stop`.
 
 ## Configuración privada
 
@@ -40,7 +48,8 @@ Formato:
 
 ```json
 {
-  "password_hash": "$2y$...HASH_GENERADO_EN_EL_SERVIDOR...",
+  "password_hash": "$2y$...HASH_DE_ACCESO...",
+  "action_password_hash": "$2y$...HASH_DE_ACCIONES...",
   "issuer": "ArcadeCloud",
   "accounts": {
     "aws-main": {
@@ -58,4 +67,4 @@ Permisos recomendados:
 root:nginx 0640
 ```
 
-El hash de contraseña se genera en el servidor mediante `password_hash()` y la contraseña real no se documenta.
+Los hashes se generan en el servidor mediante `password_hash()` y las contraseñas reales no se documentan.

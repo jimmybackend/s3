@@ -84,6 +84,27 @@ regenera el identificador de sesión para evitar conservar el ID previo al login
 `AccessControl`; `AuthenticationService` concentra la validación del hash, estado del usuario y
 creación de la sesión autenticada.
 
+## Costos AWS
+
+El modal existente sigue consultando `costos_aws.php` y conserva el mismo contrato JSON visible:
+
+```text
+costos_aws.php
+    -> AwsCostController
+        -> AwsCostService
+            -> CostExplorerGateway
+                -> AWS Cost Explorer
+```
+
+`AwsCostController` valida la sesión y libera el lock de PHP antes de esperar a AWS.
+`AwsCostService` calcula los periodos, porcentajes y previsión del mes. `CostExplorerGateway`
+es la única clase del módulo que crea y conoce `CostExplorerClient`.
+
+La respuesta compatible mantiene `mes_actual`, `costo_actual`, `porcentaje_actual`,
+`fin_mes_previsto`, `costo_previsto`, `porcentaje_previsto` y `currency`. Se eliminaron del
+endpoint los datos de depuración de identidad AWS y cualquier fragmento de access key; una
+respuesta HTTP nunca debe exponer credenciales ni identificadores derivados de ellas.
+
 ## Provisionamiento multiusuario
 
 La raíz física/lógica del Drive se deriva exclusivamente del `Users.id` autenticado:

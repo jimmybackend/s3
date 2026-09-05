@@ -38,16 +38,32 @@ jobs:
             --exclude='app_bootstrap.php'
           echo ENDPOINT_BOUNDARIES_OK
 
-      - name: S3Manager consumers
+      - name: S3Manager references
         run: |
-          echo '=== S3MANAGER_CONSUMERS ==='
-          git grep -n 's3Manager()' -- drive ':!drive/S3Manager.php' ':!drive/src/Core/DriveApplication.php' || true
-          COUNT=$(git grep -l 's3Manager()' -- drive ':!drive/S3Manager.php' ':!drive/src/Core/DriveApplication.php' | wc -l || true)
-          echo "S3MANAGER_CONSUMER_FILES=$COUNT"
+          set -euo pipefail
+          echo '=== S3MANAGER_REFERENCES ==='
+          REFS=$(git grep -n 'S3Manager' -- drive ':!drive/S3Manager.php' || true)
+          if [ -n "$REFS" ]; then
+            printf '%s\n' "$REFS"
+            echo S3MANAGER_REFERENCES_FOUND
+            exit 1
+          fi
+          echo S3MANAGER_REFERENCES=0
 
       - name: Inventory heuristic
         run: |
-          python3 .github/scripts/oop_inventory.py | tail -1
+          set -euo pipefail
+          python3 .github/scripts/oop_inventory.py
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          p = Path('drive/docs/oop_inventory.json')
+          data = json.loads(p.read_text())
+          print('=== PHP_HEURISTIC_REVIEW ===')
+          for x in data['php']:
+              if x['kind'] in {'procedural endpoint','endpoint with logic'} or x['functions']:
+                  print(x['path'] + ' | ' + '; '.join(x['issues']))
+          PY
 
       - name: Diff check
         run: |

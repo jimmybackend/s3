@@ -49,13 +49,15 @@ final class LegacyUploadController
             $userId = $session->userId();
             $route = $this->currentRoute($userId);
 
-            $result = $this->app->s3Manager()->uploadFile(
+            $result = $this->app->singleUploadService()->upload(
                 $tmpPath,
                 $originalName,
                 $route,
                 $userId,
                 $mimeType,
-                $fileSize
+                $fileSize,
+                $this->request->serverString('REMOTE_ADDR', 'unknown'),
+                $this->request->serverString('HTTP_USER_AGENT', 'unknown')
             );
 
             JsonResponse::send([

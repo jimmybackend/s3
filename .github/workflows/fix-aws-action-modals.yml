@@ -1,0 +1,73 @@
+name: Fix AWS action modals
+
+on:
+  push:
+    branches: ['refactor/oop-drive-migration']
+    paths:
+      - '.github/workflows/fix-aws-action-modals.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Wire AWS action modules
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          p = Path('drive/s3.php')
+          t = p.read_text(encoding='utf-8')
+
+          old = '''<script src="js/imagenes.js"></script>\n<script src="js/aws-comprehend.js"></script>'''
+          new = '''<script src="js/imagenes.js"></script>\n<script src="js/polly.js?v=20260905-aws-actions1"></script>\n<script src="js/aws-comprehend.js?v=20260905-aws-actions1"></script>'''
+
+          if old not in t:
+              if 'js/polly.js?v=20260905-aws-actions1' in t:
+                  print('AWS_MODAL_WIRING_ALREADY_OK')
+              else:
+                  raise SystemExit('AWS_SCRIPT_MARKERS_NOT_FOUND')
+          else:
+              t = t.replace(old, new, 1)
+              p.write_text(t, encoding='utf-8')
+              print('AWS_MODAL_WIRING_OK')
+          PY
+
+      - name: Validate
+        run: |
+          set -euo pipefail
+          php -l drive/s3.php >/dev/null
+          node --check drive/js/polly.js
+          node --check drive/js/aws-comprehend.js
+          grep -q 'js/polly.js?v=20260905-aws-actions1' drive/s3.php
+          grep -q 'js/aws-comprehend.js?v=20260905-aws-actions1' drive/s3.php
+          grep -q "\.js-textract" drive/js/polly.js
+          grep -q "\.js-rekognition" drive/js/polly.js
+          grep -q "\.js-traducir" drive/js/polly.js
+          grep -q "\.js-polly" drive/js/polly.js
+          grep -q "\.js-comprehend" drive/js/aws-comprehend.js
+          git diff --check
+          echo PHP_OK
+          echo JS_OK
+          echo AWS_MODAL_WIRING_OK
+          echo DIFF_OK
+
+      - name: Commit
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add drive/s3.php
+          if git diff --cached --quiet; then
+            echo NO_CHANGES
+            exit 0
+          fi
+          git commit -m "Fix AWS action modal wiring"
+          git push origin HEAD:refactor/oop-drive-migration

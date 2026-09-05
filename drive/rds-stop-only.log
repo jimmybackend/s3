@@ -1,9 +1,0 @@
-[2026-06-01 11:50:16 CST] RDS STOP ONLY iniciado a las 2026-06-01 11:50:16 CST.
-[2026-06-01 11:50:17 CST] DB esforzados-hub tipo 'instance' detectada en estado 'available'.
-[2026-06-01 11:50:17 CST] DB esforzados-hub tipo 'instance' está disponible. Intentando detener temporalmente.
-[2026-06-01 11:50:17 CST] DB esforzados-hub tipo 'instance' comando STOP enviado correctamente.
-[2026-06-01 11:50:17 CST] RDS STOP ONLY finalizado.
-[2026-06-03 10:36:28 CST] RDS STOP ONLY iniciado a las 2026-06-03 10:36:28 CST.
-[2026-06-03 10:36:28 CST] DB esforzados-hub tipo 'instance' detectada en estado 'stopped'.
-[2026-06-03 10:36:28 CST] DB esforzados-hub tipo 'instance' no se apagó porque su estado actual es 'stopped'.
-[2026-06-03 10:36:28 CST] RDS STOP ONLY finalizado.

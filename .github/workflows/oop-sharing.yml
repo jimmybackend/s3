@@ -1,0 +1,98 @@
+name: OOP sharing validation
+
+on:
+  push:
+    branches:
+      - main
+      - refactor/oop-sharing-tokens
+    paths:
+      - 'drive/generar_token.php'
+      - 'drive/token_audio.php'
+      - 'drive/token_video.php'
+      - 'drive/token_texto.php'
+      - 'drive/src/Sharing/**'
+      - 'drive/src/Http/Controller/ShareController.php'
+      - 'drive/src/Http/Controller/PublicShareController.php'
+      - 'drive/src/Http/Request.php'
+      - 'drive/src/Core/DriveApplication.php'
+      - 'drive/src/View/SharePageRenderer.php'
+      - '.github/workflows/oop-sharing.yml'
+  pull_request:
+    paths:
+      - 'drive/generar_token.php'
+      - 'drive/token_audio.php'
+      - 'drive/token_video.php'
+      - 'drive/token_texto.php'
+      - 'drive/src/Sharing/**'
+      - 'drive/src/Http/Controller/ShareController.php'
+      - 'drive/src/Http/Controller/PublicShareController.php'
+      - 'drive/src/Http/Request.php'
+      - 'drive/src/Core/DriveApplication.php'
+      - 'drive/src/View/SharePageRenderer.php'
+      - '.github/workflows/oop-sharing.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate PHP syntax
+        run: |
+          set -euo pipefail
+          for f in \
+            drive/src/Sharing/ShareException.php \
+            drive/src/Sharing/ShareFileRepository.php \
+            drive/src/Sharing/ShareTokenStore.php \
+            drive/src/Sharing/ShareObjectStorage.php \
+            drive/src/Sharing/ShareLinkService.php \
+            drive/src/Sharing/ShareAccessService.php \
+            drive/src/View/SharePageRenderer.php \
+            drive/src/Http/Controller/ShareController.php \
+            drive/src/Http/Controller/PublicShareController.php \
+            drive/src/Http/Request.php \
+            drive/src/Core/DriveApplication.php \
+            drive/generar_token.php \
+            drive/token_audio.php \
+            drive/token_video.php \
+            drive/token_texto.php; do
+            php -l "$f"
+          done
+          echo PHP_OK
+
+      - name: Audit thin public endpoints
+        run: |
+          set -euo pipefail
+          for f in generar_token.php token_audio.php token_video.php token_texto.php; do
+            ! grep -q '\$_SESSION\|\$_GET\|\$_POST\|\$db_connection\|Config::getS3\|new S3Manager\|^function ' "drive/$f"
+            grep -q 'Controller' "drive/$f"
+          done
+          grep -q 'user_id_ = ? AND Found = 1' drive/src/Sharing/ShareFileRepository.php
+          grep -q 'LOCK_EX' drive/src/Sharing/ShareTokenStore.php
+          grep -q 'ShareFileRepository' drive/src/Sharing/ShareLinkService.php
+          grep -q 'ShareObjectStorage' drive/src/Sharing/ShareAccessService.php
+          echo OOP_OK
+
+      - name: Test token store compatibility
+        run: |
+          set -euo pipefail
+          php -r '
+            require "drive/src/Sharing/ShareException.php";
+            require "drive/src/Sharing/ShareTokenStore.php";
+            $path = tempnam(sys_get_temp_dir(), "share-token-");
+            $store = new ArcadeCloud\Drive\Sharing\ShareTokenStore($path);
+            $id = $store->create([
+              "archivo_key" => "Data/example.txt",
+              "tipo" => "texto",
+              "expira" => (new DateTimeImmutable("+1 day"))->format(DATE_ATOM)
+            ]);
+            $row = $store->find($id);
+            if (!is_array($row) || ($row["archivo_key"] ?? "") !== "Data/example.txt") {
+              throw new RuntimeException("ShareTokenStore test failed");
+            }
+            unlink($path);
+          '
+          echo TOKEN_STORE_OK

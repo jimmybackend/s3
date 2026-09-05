@@ -210,3 +210,56 @@ Reglas del módulo:
 9. `ver.php` conserva `?t=`/`?token=` y `?direct`/`?download`, pero delega toda validación y acceso a las clases del módulo.
 
 La persistencia en `tokens.json` es deliberadamente compatible con producción. Si más adelante se cambia a MySQL u otro storage, debe hacerse detrás de la misma responsabilidad de `ShareTokenStore`, sin volver a introducir persistencia en los endpoints.
+
+## Subidas de archivos
+
+La subida que utiliza actualmente el Drive conserva `api/upload.php` como URL pública, pero el
+endpoint ya no conoce sesiones globales, S3, MySQL ni la selección concreta del driver:
+
+```text
+api/upload.php
+    -> UploadController
+        -> UploadFactory
+            -> LocalPresignedPutUploader
+            -> RemoteUrlUploader
+            -> DropboxUploader
+            -> Chunked15MBUploader
+```
+
+`DriveApplication` inyecta `mysqli`, `S3Client`, bucket, `StorageObjectNameCodec`,
+`SessionManager` y el storage de estado en `UploadFactory`. Los cuatro drivers dejaron de leer
+`$db_connection`, `$GLOBALS`, `Config::getS3()`, `$_SESSION`, `$_SERVER` y `$_FILES`.
+
+Los endpoints antiguos `upload.php` y `subir_archivo.php` se conservan como fachadas de
+compatibilidad y delegan a `LegacyUploadController`; no se eliminan mientras no se confirme que
+no existen consumidores externos.
+
+La zona pública conserva sus URLs históricas, pero también está separada por responsabilidades:
+
+```text
+upload_publico.php
+    -> PublicUploadController
+        -> PublicDropzoneUploadService
+            -> UploadCatalogRepository
+            -> S3
+
+subir_publico.php
+    -> PublicSharedBrowserController
+        -> PublicSharedBrowserService
+            -> PublicSharedBrowserRepository
+            -> S3
+        -> PublicSharedPageRenderer
+```
+
+Reglas de seguridad y compatibilidad de la zona pública:
+
+1. toda subida y navegación pública queda confinada a `Config::RUTA_COMPARTIDA` (`Data/Compartidos/` actualmente);
+2. un `prefix` o `ruta` no puede escapar de esa raíz ni contener segmentos `..`;
+3. la creación de carpetas rechaza separadores, caracteres de control y nombres `.`/`..`;
+4. `upload_publico.php` conserva el contrato JSON y registra el archivo en `FileS3` mediante repository;
+5. `subir_publico.php` conserva la página, navegación, Dropzone y creación de carpetas, pero ya no contiene llamadas S3 ni SQL;
+6. el nombre visible se recupera de `FileS3` por `Encriptado + Ruta` y, si no existe catálogo, se muestra el basename físico;
+7. la navegación normal autenticada del Drive sigue siendo DB-first; el listado S3 de `subir_publico.php` es una superficie pública heredada y explícita, no se usa para la navegación normal multiusuario.
+
+El workflow `oop-upload.yml` valida sintaxis, entrypoints delgados, ausencia de globals en los
+drivers, límites de la raíz compartida y `git diff --check` antes de considerar cerrado el módulo.

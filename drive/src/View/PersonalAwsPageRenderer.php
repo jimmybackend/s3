@@ -70,7 +70,8 @@ final class PersonalAwsPageRenderer
 
         if ($result !== null) {
             echo '<section class="result"><div class="muted">' . self::e($result['label']) . '</div>'
-                . '<div class="otp" id="otp-code">' . self::e($result['code']) . '</div>'
+                . '<div class="otp" id="otp-code" role="button" tabindex="0" aria-label="Copiar código TOTP">' . self::e($result['code']) . '</div>'
+                . '<div class="copy-hint" id="copy-status" aria-live="polite">Toca el código para copiar</div>'
                 . '<div>Válido aproximadamente <span id="timer">' . (int)$result['remaining'] . '</span> s</div>';
             if ($result['note'] !== '') {
                 echo '<div class="note">' . nl2br(self::e($result['note'])) . '</div>';
@@ -94,8 +95,20 @@ final class PersonalAwsPageRenderer
 
         echo '</main>';
         if ($result !== null) {
-            echo '<script>(function(){let n=' . (int)$result['remaining'] . ';const el=document.getElementById("timer");'
-                . 'const id=setInterval(function(){n--;if(el){el.textContent=Math.max(0,n);}if(n<=0){clearInterval(id);}},1000);})();</script>';
+            echo '<script>(function(){'
+                . 'let n=' . (int)$result['remaining'] . ';'
+                . 'const timer=document.getElementById("timer");'
+                . 'const code=document.getElementById("otp-code");'
+                . 'const status=document.getElementById("copy-status");'
+                . 'const id=setInterval(function(){n--;if(timer){timer.textContent=Math.max(0,n);}if(n<=0){clearInterval(id);}},1000);'
+                . 'async function copyCode(){if(!code){return;}const value=(code.textContent||"").trim();if(!value){return;}'
+                . 'let copied=false;'
+                . 'try{if(navigator.clipboard&&window.isSecureContext){await navigator.clipboard.writeText(value);copied=true;}}catch(e){}'
+                . 'if(!copied){const area=document.createElement("textarea");area.value=value;area.setAttribute("readonly","");area.style.position="fixed";area.style.opacity="0";document.body.appendChild(area);area.select();try{copied=document.execCommand("copy");}catch(e){copied=false;}document.body.removeChild(area);}'
+                . 'if(status){const original="Toca el código para copiar";status.textContent=copied?"✓ Copiado":"No se pudo copiar";status.classList.toggle("copied",copied);window.setTimeout(function(){status.textContent=original;status.classList.remove("copied");},1400);}'
+                . '}'
+                . 'if(code){code.addEventListener("click",copyCode);code.addEventListener("keydown",function(e){if(e.key==="Enter"||e.key===" "){e.preventDefault();copyCode();}});}'
+                . '})();</script>';
         }
         echo '</body></html>';
         exit;
@@ -106,7 +119,9 @@ final class PersonalAwsPageRenderer
         return '<style>body{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:#0b1020;color:#e5e7eb;margin:0;padding:24px}'
             . '.card{max-width:420px;margin:8vh auto;background:#111827;border:1px solid #263244;border-radius:16px;padding:24px;box-shadow:0 18px 50px rgba(0,0,0,.35)}'
             . '.wide{max-width:700px}.muted{color:#9ca3af}.error{color:#fca5a5}.result{margin:22px 0;padding:18px;border:1px solid #334155;border-radius:14px;background:#0f172a}'
-            . '.otp{font:700 36px ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.12em;margin:10px 0}.note{margin-top:14px;padding:10px;border-radius:8px;background:#1f2937}'
+            . '.otp{font:700 36px ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.12em;margin:10px 0;cursor:pointer;user-select:none;touch-action:manipulation;display:inline-block;border-radius:8px;padding:4px 2px}'
+            . '.otp:focus{outline:2px solid #60a5fa;outline-offset:5px}.otp:active{transform:scale(.98)}.copy-hint{font-size:13px;color:#93c5fd;margin:-2px 0 10px}.copy-hint.copied{color:#86efac}'
+            . '.note{margin-top:14px;padding:10px;border-radius:8px;background:#1f2937}'
             . 'label{display:block;margin:14px 0 8px}input,select,button{width:100%;box-sizing:border-box;padding:12px;border-radius:9px;font-size:16px}'
             . 'input,select{background:#0b1220;color:#e5e7eb;border:1px solid #374151}button{margin-top:14px;border:0;background:#2563eb;color:#fff;font-weight:700;cursor:pointer}'
             . 'a{color:#93c5fd}</style>';

@@ -50,8 +50,6 @@ const PROTECTED_INSTANCE_IDS = [
     'i-0978e1ba7e04a9d69',
 ];
 
-// Misma clave base usada por el panel para encender/apagar EC2 y RDS manualmente.
-const PROTECTED_PASSWORD = 'Us1317mx@';
 
 // Bases de datos que deben verse SIEMPRE en este panel y que solo se controlan manualmente.
 // IMPORTANTE: aquí ya NO hay horarios. Nada se enciende ni se apaga automáticamente desde este archivo.
@@ -68,6 +66,7 @@ if (empty($_SESSION['csrf'])) {
     $_SESSION['csrf'] = bin2hex(random_bytes(16));
 }
 $csrf = $_SESSION['csrf'];
+$actionPasswordHash = $app->personalAwsConfig()->actionPasswordHash();
 
 // ===================== Clientes AWS =====================
 class EC2Panel {
@@ -504,7 +503,7 @@ if (isset($_POST['ajax']) && $_POST['ajax'] === 'action') {
     if (!$id || !in_array($action, ['start','stop'], true)) {
         echo json_encode(['ok'=>false,'error'=>'Parámetros inválidos']); exit;
     }
-    if ($pw !== PROTECTED_PASSWORD) {
+    if ($pw === '' || $actionPasswordHash === '' || !password_verify($pw, $actionPasswordHash)) {
         echo json_encode(['ok'=>false,'error'=>'Clave requerida o incorrecta']); exit;
     }
     try {
@@ -577,7 +576,7 @@ if (isset($_POST['ajax']) && $_POST['ajax'] === 'rds_action') {
     if (!is_manual_database_id($id)) {
         echo json_encode(['ok'=>false,'error'=>'Base de datos no permitida en este panel']); exit;
     }
-    if ($pw !== PROTECTED_PASSWORD) {
+    if ($pw === '' || $actionPasswordHash === '' || !password_verify($pw, $actionPasswordHash)) {
         echo json_encode(['ok'=>false,'error'=>'Clave requerida o incorrecta']); exit;
     }
 

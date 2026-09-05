@@ -1,283 +1,198 @@
 # ArcadeCloud Drive
 
-ArcadeCloud Drive es un gestor de archivos multiusuario construido sobre **Amazon S3 + MySQL + PHP**, con herramientas de AWS para procesar, proteger, convertir y reproducir contenido.
+ArcadeCloud Drive es un gestor de archivos familiar multiusuario construido sobre **PHP + MySQL + Amazon S3**. MySQL es la fuente de verdad para la navegación y S3 conserva el contenido físico.
 
-El proyecto ya no trata a S3 como una carpeta que se lista en cada navegación. La arquitectura actual usa **MySQL como catálogo y fuente de verdad para la navegación diaria**, mientras que **S3 conserva el contenido físico** y se consulta de forma explícita cuando hace falta sincronizar, leer o modificar objetos.
-
-> Estado actual: aplicación funcional en evolución. La navegación, archivos, carpetas, seguridad, multimedia, sincronización y varias integraciones AWS están operativas; aún quedan endpoints heredados por migrar a OOP y pruebas funcionales por consolidar.
-
----
-
-## Principios de arquitectura
+## Principios
 
 ### DB-first
 
-La navegación normal consulta MySQL, no hace `ListObjects` sobre S3.
+La navegación normal consulta MySQL. S3 se utiliza para leer, escribir, mover, eliminar, sincronizar y procesar objetos cuando una operación lo requiere.
 
 ```text
 Navegador
-   |
-   v
-PHP / servicios de aplicación
-   |
-   +----> MySQL: rutas, nombres visibles, permisos, estado
-   |
-   +----> S3: contenido físico y operaciones explícitas
+   -> Entrypoint PHP
+      -> Controller
+         -> Service
+            -> Repository / Infrastructure
+               -> MySQL / S3 / AWS
 ```
-
-Esto evita que una carpeta con miles de objetos dependa de una consulta completa a S3 en cada clic.
-
-### Nombres visibles y nombres físicos separados
-
-El usuario trabaja con nombres legibles guardados en MySQL, mientras que S3 puede conservar nombres físicos estables.
-
-- `FileS3.Nombre`: nombre visible del archivo.
-- `FileS3.Encriptado`: nombre físico/key asociado al objeto.
-- `S3Folders.Nombre`: nombre visible de la carpeta.
-- Renombrar un archivo cambia el nombre lógico en MySQL sin tener que copiar el objeto en S3.
-- Mover sí puede cambiar la ubicación física, conservando el basename físico.
 
 ### Multiusuario
 
-La raíz se deriva del ID real del usuario:
+Cada usuario tiene una raíz aislada derivada de su ID:
 
 ```text
-user_id = 1  -> Data/
-user_id = 2  -> Data2/
-user_id = 3  -> Data3/
-...
-user_id = N  -> DataN/
+user_id = 1 -> Data/
+user_id = 2 -> Data2/
+user_id = N -> DataN/
 ```
 
-La raíz de cada usuario está protegida: no se puede renombrar, mover ni eliminar.
+La raíz de usuario no se puede renombrar, mover ni eliminar. Las consultas del catálogo se limitan mediante `user_id_` y `Found=1`.
 
----
+### Nombre visible y nombre físico
 
-## Funcionalidades actuales
+- `FileS3.Nombre`: nombre visible.
+- `FileS3.Encriptado`: nombre físico del objeto.
+- `S3Folders.Nombre`: nombre visible de carpeta.
+- Renombrar cambia el catálogo MySQL.
+- Mover puede cambiar la ubicación física manteniendo el basename físico.
 
-### Archivos
+## Funcionalidad
 
-- Listado paginado desde MySQL.
-- Búsqueda global por nombre con ruta y fecha.
-- Filtros por nombre, extensión y fechas.
-- Ver imágenes y miniaturas.
-- Ver PDF.
-- Reproducir audio y video.
-- Editor de texto/código para formatos compatibles.
-- Renombrar.
-- Descargar.
-- Eliminar.
-- Mover.
-- Compartir.
-- Acciones múltiples sobre archivos seleccionados.
-- Compactar y descargar ZIP.
-- Mostrar ruta lógica, fecha, tamaño y ubicación física S3.
+### Archivos y carpetas
 
-### Carpetas
-
-- Crear carpeta.
-- Renombrar carpeta.
-- Mover carpeta.
-- Eliminar carpeta.
-- Árbol de navegación.
-- Raíz provisionada automáticamente por usuario.
-- Vista responsive mediante panel lateral off-canvas en móvil/tableta.
-
-### Seguridad
-
-- Encriptar / transformar físicamente archivos cuando corresponde.
-- Proteger archivo.
-- Desbloquear.
-- Volver a bloquear.
-- Quitar protección.
-- Separación de archivos por `user_id_`.
-- Normalización de rutas por usuario.
+- navegación paginada DB-first;
+- búsqueda global por nombre;
+- filtros por nombre, extensión y fecha;
+- miniaturas, imágenes y PDF;
+- reproducción de audio y video;
+- editor de texto/código;
+- crear, renombrar, mover y eliminar carpetas;
+- renombrar, mover, descargar y eliminar archivos;
+- acciones múltiples;
+- ZIP;
+- enlaces compartidos;
+- protección, desbloqueo y rebloqueo;
+- cálculo de uso de almacenamiento.
 
 ### Multimedia
 
-Existe un reproductor flotante persistente para audio y video:
+El reproductor flotante utiliza una playlist obtenida desde MySQL mediante:
 
-- Puede moverse dentro de la página.
-- Conserva su posición.
-- Sigue reproduciendo aunque el usuario cambie de carpeta dentro del Drive.
-- Playlist construida desde MySQL para la carpeta de origen.
-- Anterior / play-pausa / siguiente.
-- Avance automático al siguiente archivo.
-- Audio y video comparten el mismo concepto de reproductor persistente.
+```text
+media_playlist.php
+  -> MediaPlaylistController
+     -> MediaPlaylistService
+        -> MediaPlaylistRepository
+```
 
 ### Subidas
 
-El proyecto contiene más de una estrategia porque se han mantenido rutas compatibles mientras se migra la arquitectura.
-
-#### Subida normal del Drive
-
-La interfaz principal usa drivers de subida desacoplados mediante `UploadFactory` y servicios dedicados.
-
-#### Subida grande `up.php`
-
-`up.php` fue migrado a **multipart directo navegador -> S3 mediante URLs presignadas**.
+La API principal es:
 
 ```text
-Navegador
-   |
-   +---- init/sign/complete ----> PHP
-   |
-   +==== partes grandes ========> S3
-                                  |
-                                  +--> FileS3 al completar
+api/upload.php
+  -> UploadController
+     -> UploadFactory
+        -> LocalPresignedPutUploader
+        -> RemoteUrlUploader
+        -> DropboxUploader
+        -> Chunked15MBUploader
 ```
 
-El archivo pesado ya no necesita atravesar PHP-FPM o Nginx. PHP autoriza, firma, completa el multipart y registra el archivo en MySQL.
+También existe `up.php` para multipart directo navegador -> S3. PHP inicia, firma y completa la operación; el cuerpo pesado viaja directamente a S3 y al finalizar se registra en `FileS3`.
 
-El tamaño de las partes puede adaptarse al dispositivo/conexión y el servicio soporta partes grandes sin depender de `upload_max_filesize` para el cuerpo del archivo.
+Las superficies públicas de subida y navegación compartida están separadas en `PublicUploadController` y `PublicSharedBrowserController` y quedan confinadas a la raíz compartida configurada.
 
-> Pendiente: completar una batería de pruebas reales de `up.php` con archivos pequeños, medianos y de varios cientos de MB/GB, incluyendo pausa, reanudación, cancelación, CORS y fallos de red.
+### Limpieza de subidas abandonadas
 
----
+`drive/bin/upload_cleanup.php` analiza multipart incompletos, objetos huérfanos y estados locales antiguos dentro de `DataN/uploads/`. Por defecto trabaja en simulación. La eliminación requiere `--execute` y nunca elimina objetos registrados en `FileS3`.
 
-## Sincronización S3 -> MySQL
+### Sincronización
 
-La sincronización manual no se ejecuta como una petición HTTP larga.
+La sincronización S3 -> MySQL se ejecuta en segundo plano:
 
-La arquitectura actual utiliza:
+```text
+sync_s3_to_db.php / sync_status.php
+  -> SyncController
+     -> S3SyncService
+        -> SyncRepository
+        -> SyncJobStore
 
-- `SyncController`
-- `S3SyncService`
-- `SyncRepository`
-- `SyncJobStore`
-- `drive/bin/sync_worker.php`
+bin/sync_worker.php
+```
 
-El navegador crea el trabajo y consulta su estado; un worker independiente procesa S3 por lotes en segundo plano. De esta forma CloudFront/Nginx no necesitan mantener abierta una petición durante miles de objetos.
+La sincronización reconstruye y actualiza catálogo; no sustituye la navegación DB-first.
 
-La sincronización intenta preservar nombres visibles existentes en MySQL y reconstruye filas ausentes sin convertir S3 en el mecanismo normal de navegación.
+### Servicios AWS
 
----
+El Drive integra:
 
-## Servicios AWS utilizados
+- Amazon S3;
+- Rekognition;
+- Textract;
+- Transcribe;
+- Polly;
+- Translate;
+- Comprehend;
+- Cost Explorer.
 
-Dependiendo del tipo de archivo y la acción elegida, el Drive integra o contiene soporte para:
+`ec2.php` es un panel personal para revisar y operar recursos EC2. `ec2-cron.php` aplica la política horaria definida para evitar mantener recursos de prueba encendidos fuera del horario permitido.
 
-- **Amazon S3**: almacenamiento, multipart, URLs presignadas y contenido.
-- **Amazon Rekognition**: análisis de imágenes.
-- **Amazon Textract**: extracción de texto de documentos/imágenes.
-- **Amazon Transcribe**: audio/video a texto.
-- **Amazon Polly**: texto a voz.
-- **Amazon Translate**: traducción.
-- **Amazon Comprehend**: análisis de texto.
-- **AWS Cost Explorer**: consulta de costos desde la interfaz administrativa.
-- Funciones de administración EC2/RDS existentes en el repositorio.
+### Herramienta AWS personal
 
----
+`aws.php` es una herramienta privada separada de las funciones familiares del Drive.
+
+- con sesión del Drive, sólo `user_id = 1` puede utilizarla;
+- cualquier otro usuario autenticado recibe HTTP 403;
+- sin sesión se requiere la contraseña privada configurada fuera del repositorio;
+- las semillas TOTP permanecen en un archivo privado del servidor y no se envían al navegador.
+
+Consulta `drive/docs/PERSONAL_AWS_TOOL.md`.
+
+## Arquitectura OOP
+
+El código de aplicación vive principalmente bajo `drive/src/`:
+
+```text
+drive/src/
+├── Application/
+├── Aws/
+├── Console/
+├── Core/
+├── Http/
+│   └── Controller/
+├── Media/
+├── Security/
+├── Sharing/
+├── Storage/
+├── Sync/
+├── Upload/
+└── View/
+```
+
+`DriveApplication` es el composition root. `ApplicationKernel` expone la instancia de aplicación y los entrypoints públicos delegan en controladores.
 
 ## Estructura principal
 
 ```text
 s3/
-├── .github/workflows/        # auditorías y controles CI
+├── .github/
+│   ├── scripts/
+│   └── workflows/
 ├── composer.json
 ├── composer.lock
-├── Config-s3.php             # compatibilidad/configuración del proyecto
-├── db.php                    # compatibilidad DB
+├── Config-s3.php
+├── db.php
 ├── README.md
 └── drive/
     ├── app_bootstrap.php
     ├── index.php
+    ├── login.php
     ├── s3.php
     ├── up.php
+    ├── aws.php
+    ├── ec2.php
+    ├── ec2-cron.php
     ├── S3Manager.php
     ├── ARCHITECTURE.md
-    ├── css/
-    │   ├── styles.css
-    │   └── responsive.css
-    ├── js/
-    │   ├── archivos.js
-    │   ├── carpetas.js
-    │   ├── audiovideo.js
-    │   └── media-floating.js
     ├── api/
+    │   └── upload.php
     ├── bin/
-    │   └── sync_worker.php
+    │   ├── sync_worker.php
+    │   └── upload_cleanup.php
+    ├── css/
+    ├── js/
     ├── docs/
-    │   ├── OOP_AUDIT.md
-    │   ├── RUNTIME_ENDPOINTS.md
-    │   ├── oop_inventory.json
-    │   └── runtime_endpoints.json
     ├── src/
-    │   ├── Application/
-    │   ├── Aws/
-    │   ├── Core/
-    │   ├── Http/
-    │   ├── Media/
-    │   ├── Security/
-    │   ├── Storage/
-    │   ├── Sync/
-    │   ├── Upload/
-    │   └── View/
     └── upload/
-        ├── drivers/
-        ├── repositories/
-        └── storage/
 ```
 
-`drive/ARCHITECTURE.md` contiene las reglas internas de diseño y `drive/docs/` mantiene inventarios/auditorías del código heredado y de los endpoints.
+## Configuración privada
 
----
+Las credenciales y secretos no deben almacenarse en Git ni dentro del DocumentRoot. La producción utiliza configuración privada del servidor para MySQL, AWS y herramientas personales.
 
-## Orientación a objetos
-
-La dirección del proyecto es:
-
-```text
-entrypoint PHP
-    -> Controller
-        -> Service
-            -> Repository / Infrastructure
-```
-
-Las nuevas funciones deben evitar agregar lógica SQL o AWS directamente a los entrypoints públicos.
-
-Ya existen, entre otros:
-
-- `DriveApplication`
-- `DrivePageService`
-- `DrivePageViewModel`
-- `SessionManager`
-- `FileListService`
-- `FileSearchService`
-- `UploadDestinationService`
-- `UserStoragePath`
-- `UserStorageProvisioner`
-- servicios AWS y de seguridad
-- servicios de sincronización
-- servicios y drivers de subida
-- `FileViewHelper`
-- `FolderTreeRenderer`
-
-La auditoría actual del repositorio sigue detectando una cantidad importante de PHP y JavaScript heredado pendiente de migración, por lo que la transición se está haciendo por módulos para no romper producción.
-
----
-
-## Dependencias PHP
-
-Composer instala actualmente:
-
-- `aws/aws-sdk-php`
-- `spomky-labs/otphp`
-- `bacon/bacon-qr-code`
-
-Instalación:
-
-```bash
-composer install --no-dev --optimize-autoloader
-```
-
----
-
-## Configuración
-
-Las credenciales no deben vivir en Git ni quedar escritas en los archivos públicos.
-
-La aplicación espera configuración de entorno para MySQL y AWS, por ejemplo:
+Variables habituales:
 
 ```text
 DB_HOST
@@ -291,89 +206,33 @@ AWS_SECRET_ACCESS_KEY
 AWS_S3_BUCKET
 ```
 
-En producción estas variables deben inyectarse mediante el servicio/entorno del servidor. No se deben subir archivos `.env`, claves privadas ni credenciales al repositorio.
+La herramienta TOTP personal utiliza por defecto:
 
----
+```text
+/etc/arcadecloud-drive/personal-aws.json
+```
 
-## Responsive
+## Dependencias
 
-La aplicación tiene una capa específica `drive/css/responsive.css` que se carga después de los estilos generales.
+Composer administra las dependencias PHP, incluyendo AWS SDK y OTPHP.
 
-Incluye:
+```bash
+composer install --no-dev --optimize-autoloader
+```
 
-- móvil y tableta reales;
-- sidebar off-canvas;
-- navbar compacto;
-- acciones táctiles;
-- modales adaptativos;
-- tarjetas de archivo con nombres/rutas largas contenidas;
-- footer responsive;
-- reproductor multimedia flotante.
+## Documentación
 
----
+- `drive/ARCHITECTURE.md`: reglas y módulos de arquitectura.
+- `drive/docs/DB_FIRST_NAVIGATION.md`: navegación y consultas del catálogo.
+- `drive/docs/KEY_ROTATION.md`: rotación de key física.
+- `drive/docs/UPLOAD_CLEANUP.md`: limpieza segura de subidas abandonadas.
+- `drive/docs/PERSONAL_AWS_TOOL.md`: herramienta personal y configuración privada.
+- `drive/upload/LEEME.md`: API y drivers de subida.
 
-## CI y auditorías
+## CI
 
-`.github/workflows/` contiene verificaciones relacionadas con:
-
-- migración OOP del core;
-- servicios AWS;
-- acceso a archivos;
-- controladores HTTP;
-- seguridad;
-- sincronización;
-- editor de texto;
-- Transcribe;
-- inventario OOP;
-- mapa de referencias de runtime;
-- recuperación/consistencia de keys.
-
-También se mantienen:
-
-- `drive/docs/OOP_AUDIT.md`
-- `drive/docs/RUNTIME_ENDPOINTS.md`
-- inventarios JSON generados.
-
----
-
-## Qué falta / roadmap
-
-Prioridades actuales:
-
-1. **Probar completamente el multipart Direct-to-S3 de `up.php`** con diferentes tamaños, redes y reanudación.
-2. **Persistir visualmente los jobs de sincronización** para que la interfaz pueda recuperar el `job_id` después de refrescar el navegador.
-3. **Limpieza automática de multipart abandonados y temporales** después del periodo definido.
-4. **Continuar la migración OOP** de endpoints heredados que todavía contienen SQL, sesión o llamadas AWS directas.
-5. **Reducir JavaScript global/heredado** y encapsular módulos manteniendo una fachada de compatibilidad cuando sea necesaria.
-6. **Pruebas funcionales automatizadas** de navegación, permisos, subida, movimiento, renombrado, seguridad, sincronización y multimedia.
-7. **Pruebas de recuperación**: reconstruir catálogo desde S3 + backups de MySQL y verificar nombres/rutas.
-8. **Documentar despliegue reproducible** de Nginx, PHP-FPM, variables de entorno, permisos runtime y workers.
-9. **Office/documentos avanzados**: decidir si DOCX/XLSX/PPTX se editan mediante un servicio Office externo separado o solo se convierten; no conviene cargar un editor Office completo dentro de una instancia mínima del Drive.
-10. **Retirar archivos/endpoints heredados** únicamente cuando el mapa de referencias confirme que ya no tienen consumidores.
-
----
-
-## Estado de madurez
-
-ArcadeCloud Drive ya dispone de una base funcional bastante más amplia que un simple explorador S3:
-
-- catálogo DB-first;
-- almacenamiento S3;
-- multiusuario;
-- seguridad;
-- búsqueda y filtros;
-- multimedia persistente;
-- subida multipart directa;
-- sincronización en background;
-- herramientas AWS;
-- responsive móvil/tableta/escritorio;
-- arquitectura OOP en migración;
-- inventarios y controles CI.
-
-El trabajo pendiente está concentrado principalmente en **robustez, pruebas, limpieza de legado y despliegue reproducible**, no en demostrar el concepto básico del Drive.
-
----
+`.github/workflows/` valida sintaxis PHP, fronteras OOP, referencias, seguridad, subida, sincronización, sharing, navegación, multimedia y `git diff --check`.
 
 ## Licencia
 
-Este proyecto se distribuye bajo **GPL-3.0**. Consulta `LICENSE` para los términos completos.
+GPL-3.0. Consulta `LICENSE`.

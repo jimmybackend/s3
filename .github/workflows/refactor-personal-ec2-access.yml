@@ -1,0 +1,47 @@
+name: Refactor personal EC2 access
+
+on:
+  push:
+    branches: ['refactor/oop-drive-migration']
+    paths:
+      - '.github/scripts/refactor_personal_ec2_access.py'
+      - '.github/workflows/refactor-personal-ec2-access.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  refactor:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Update EC2 access boundary
+        run: python3 .github/scripts/refactor_personal_ec2_access.py
+
+      - name: Validate PHP
+        run: |
+          set -euo pipefail
+          php -l drive/ec2.php
+          ! grep -Eq '\$PASSWORD_CORRECTA|hash_equals\(' drive/ec2.php
+          grep -q 'personalToolAccessService' drive/ec2.php
+          grep -q "accessState === 'forbidden'" drive/ec2.php
+          echo PHP_OK
+          echo PERSONAL_ACCESS_OK
+
+      - name: Commit refactor
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add drive/ec2.php
+          if git diff --cached --quiet; then
+            echo NO_CHANGES
+            exit 0
+          fi
+          git diff --cached --check
+          git commit -m "Secure personal EC2 panel access"
+          git push origin HEAD:refactor/oop-drive-migration

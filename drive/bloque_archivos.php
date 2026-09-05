@@ -266,8 +266,8 @@ foreach ($filas as $row) {
           <?php endif; ?>
 
           <div>
-            <div class="font-weight-bold">
-              <?= FileViewHelper::escape($nombre) ?>
+            <div class="font-weight-bold file-title-line">
+              <span class="file-visible-name"><?= FileViewHelper::escape($nombre) ?></span>
               <span class="badge badge-light badge-ext text-uppercase"><?= FileViewHelper::escape($ext) ?></span>
               <?php if ($seguro): ?>
                 <span class="badge <?= $unlocked ? 'badge-info' : 'badge-warning' ?> ml-1 js-security-badge">
@@ -308,6 +308,14 @@ foreach ($filas as $row) {
               </strong>
 
             </small>
+
+            <div class="file-s3-location"
+                 title="<?= FileViewHelper::escape($s3key) ?>">
+              <span class="file-s3-label">
+                <i class="fab fa-aws"></i> S3:
+              </span>
+              <code><?= FileViewHelper::escape($s3key) ?></code>
+            </div>
 
 <?php if (!$soloSeguridad): ?>
 <?php if ($esAudio): ?>

@@ -69,7 +69,7 @@ $footerEspacioUsado = $storageUsage['formatted'];
 
   <link rel="stylesheet" href="css/styles.css?v=20260904-clean1">
   <link rel="stylesheet"
-        href="css/responsive.css?v=20260904-6">
+        href="css/responsive.css?v=20260904-7">
 
 
   <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>

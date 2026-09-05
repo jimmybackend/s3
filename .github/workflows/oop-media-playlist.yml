@@ -1,0 +1,52 @@
+name: OOP media playlist validation
+
+on:
+  push:
+    branches:
+      - main
+      - 'refactor/**'
+    paths:
+      - 'drive/media_playlist.php'
+      - 'drive/src/Media/MediaPlaylistRepository.php'
+      - 'drive/src/Media/MediaPlaylistService.php'
+      - 'drive/src/Http/Controller/MediaPlaylistController.php'
+      - 'drive/src/Core/DriveApplication.php'
+      - '.github/workflows/oop-media-playlist.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate PHP syntax
+        run: |
+          php -l drive/media_playlist.php
+          php -l drive/src/Media/MediaPlaylistRepository.php
+          php -l drive/src/Media/MediaPlaylistService.php
+          php -l drive/src/Http/Controller/MediaPlaylistController.php
+          php -l drive/src/Core/DriveApplication.php
+
+      - name: Audit playlist architecture
+        run: |
+          set -euo pipefail
+          ! grep -q '\$_SESSION' drive/media_playlist.php
+          ! grep -q '\$_GET' drive/media_playlist.php
+          ! grep -q '\$db_connection' drive/media_playlist.php
+          ! grep -q -- '->prepare' drive/media_playlist.php
+          ! grep -q '^function ' drive/media_playlist.php
+          grep -q 'MediaPlaylistController' drive/media_playlist.php
+          grep -q 'FROM FileS3' drive/src/Media/MediaPlaylistRepository.php
+          grep -q 'user_id_ = ?' drive/src/Media/MediaPlaylistRepository.php
+          grep -q "AccessType <> 'secure'" drive/src/Media/MediaPlaylistRepository.php
+          grep -q 'normalizeForUser' drive/src/Media/MediaPlaylistService.php
+          grep -q 'ver_archivo.php?archivo=' drive/src/Media/MediaPlaylistService.php
+
+      - name: Diff whitespace check
+        run: git diff --check HEAD^ HEAD

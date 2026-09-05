@@ -1315,3 +1315,220 @@ body.ui-theme #archivosWrap .file-s3-location code {
   }
 
 }
+
+/* ============================================================
+   LOGO PRINCIPAL
+   25% más ancho
+   ============================================================ */
+
+.drive-brand-logo {
+  width: 38px !important;
+  height: 30px !important;
+
+  min-width: 38px;
+
+  object-fit: cover;
+
+  border-radius: 8px;
+}
+
+
+/* El viejo dock izquierdo deja de utilizarse */
+#videoDock {
+  display: none !important;
+}
+
+
+/* ============================================================
+   REPRODUCTOR FLOTANTE AUDIO / VIDEO
+   ============================================================ */
+
+.floating-media-player {
+  position: fixed;
+
+  right: 22px;
+  bottom: 22px;
+
+  z-index: 1200;
+
+  width: min(390px, calc(100vw - 28px));
+
+  background: var(--panel-bg, #fff);
+
+  border:
+    1px solid var(--border);
+
+  border-radius: 13px;
+
+  overflow: hidden;
+
+  box-shadow:
+    0 15px 45px rgba(0,0,0,.35);
+}
+
+
+.floating-media-player[hidden] {
+  display: none !important;
+}
+
+
+.floating-media-handle {
+  min-height: 46px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: space-between;
+
+  gap: .5rem;
+
+  padding:
+    .55rem .65rem;
+
+  cursor: grab;
+
+  user-select: none;
+
+  touch-action: none;
+
+  background: var(--panel-bg2);
+}
+
+
+.floating-media-handle:active {
+  cursor: grabbing;
+}
+
+
+.floating-media-title-wrap {
+  min-width: 0;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: .45rem;
+}
+
+
+#floatingMediaTitle {
+  min-width: 0;
+
+  overflow: hidden;
+
+  text-overflow: ellipsis;
+
+  white-space: nowrap;
+
+  font-weight: 600;
+}
+
+
+.floating-media-close {
+  flex: 0 0 34px;
+
+  width: 34px;
+  height: 34px;
+
+  border: 0;
+
+  border-radius: 8px;
+
+  background: transparent;
+
+  color: inherit;
+}
+
+
+.floating-media-video {
+  display: block;
+
+  width: 100%;
+
+  max-height: 250px;
+
+  background: #000;
+}
+
+
+.floating-media-audio {
+  display: block;
+
+  width: calc(100% - 16px);
+
+  margin: 8px;
+}
+
+
+.floating-media-video[hidden],
+.floating-media-audio[hidden] {
+  display: none !important;
+}
+
+
+.floating-media-controls {
+  display: flex;
+
+  align-items: center;
+
+  gap: .45rem;
+
+  padding:
+    .55rem .65rem .65rem;
+}
+
+
+.floating-media-controls .btn {
+  width: 42px;
+  height: 42px;
+
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  padding: 0;
+}
+
+
+.floating-media-counter {
+  margin-left: auto;
+
+  font-size: .78rem;
+
+  opacity: .75;
+
+  white-space: nowrap;
+}
+
+
+/* ============================================================
+   MOVIL
+   ============================================================ */
+
+@media (max-width: 575.98px) {
+
+  .drive-navbar .navbar-brand {
+    width: 38px !important;
+
+    flex:
+      0 0 38px !important;
+  }
+
+
+  .floating-media-player {
+    right: 10px;
+    bottom: 12px;
+
+    width:
+      calc(100vw - 20px);
+
+    max-width: 420px;
+  }
+
+
+  .floating-media-video {
+    max-height: 34vh;
+  }
+
+}

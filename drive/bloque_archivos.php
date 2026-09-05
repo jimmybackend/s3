@@ -334,6 +334,8 @@ foreach ($filas as $row) {
 
     <audio id="audio-<?= $rid ?>"
            data-src="<?= FileViewHelper::escape($origUrl) ?>"
+           data-key="<?= FileViewHelper::escape($s3key) ?>"
+           data-nombre="<?= FileViewHelper::escape($nombre) ?>"
            preload="none"
            style="display:none"></audio>
   </div>

@@ -65,11 +65,11 @@ $footerEspacioUsado = $storageUsage['formatted'];
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.9.3/min/dropzone.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-  <link rel="icon" href="ellogo.png" type="image/x-icon">
+  <link rel="icon" href="ellogo.png" type="image/png">
 
   <link rel="stylesheet" href="css/styles.css?v=20260904-clean1">
   <link rel="stylesheet"
-        href="css/responsive.css?v=20260904-7">
+        href="css/responsive.css?v=20260904-8">
 
 
   <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
@@ -99,7 +99,11 @@ $footerEspacioUsado = $storageUsage['formatted'];
      title="Mostrar carpetas"
      onclick="document.getElementById('btnToggleSidebar').click(); return false;">
     <!-- <img src="../assets/img/icono.png" width="30" height="30" class="d-inline-block align-top" alt="Logo"> Cloud Drive -->
-    <img src="ellogo.png" width="30" height="30" class="rounded-circle mr-2" width="30" height="30" alt="Logo"> Cloud Drive
+    <img src="ellogo.png"
+         width="38"
+         height="30"
+         class="drive-brand-logo mr-2"
+         alt="Logo"> Cloud Drive
   </a>
 
     <div class="form-inline my-2 my-lg-0 ml-auto drive-navbar-actions">
@@ -179,6 +183,80 @@ $footerEspacioUsado = $storageUsage['formatted'];
 <div id="driveSidebarBackdrop"
      class="drive-sidebar-backdrop"
      aria-hidden="true"></div>
+
+
+<!-- =========================================================
+     REPRODUCTOR FLOTANTE PERSISTENTE
+     ========================================================= -->
+<div id="floatingMediaPlayer"
+     class="floating-media-player"
+     hidden>
+
+  <div id="floatingMediaHandle"
+       class="floating-media-handle">
+
+    <div class="floating-media-title-wrap">
+      <i id="floatingMediaTypeIcon"
+         class="fas fa-music"></i>
+
+      <span id="floatingMediaTitle">
+        Reproductor
+      </span>
+    </div>
+
+    <button id="floatingMediaClose"
+            type="button"
+            class="floating-media-close"
+            title="Cerrar">
+      <i class="fas fa-times"></i>
+    </button>
+
+  </div>
+
+  <video id="floatingVideo"
+         class="floating-media-video"
+         playsinline
+         preload="metadata"
+         controls
+         hidden></video>
+
+  <audio id="floatingAudio"
+         class="floating-media-audio"
+         preload="metadata"
+         controls
+         hidden></audio>
+
+  <div class="floating-media-controls">
+
+    <button id="floatingPrev"
+            type="button"
+            class="btn btn-sm btn-outline-primary"
+            title="Anterior">
+      <i class="fas fa-step-backward"></i>
+    </button>
+
+    <button id="floatingPlayPause"
+            type="button"
+            class="btn btn-sm btn-primary"
+            title="Play / Pausa">
+      <i class="fas fa-play"></i>
+    </button>
+
+    <button id="floatingNext"
+            type="button"
+            class="btn btn-sm btn-outline-primary"
+            title="Siguiente">
+      <i class="fas fa-step-forward"></i>
+    </button>
+
+    <span id="floatingMediaCounter"
+          class="floating-media-counter">
+      0 / 0
+    </span>
+
+  </div>
+
+</div>
 
 <div class="container-fluid drive-container">
 
@@ -1716,6 +1794,7 @@ $footerEspacioUsado = $storageUsage['formatted'];
 
 <script src="js/polly.js"></script>
 <script src="js/audiovideo.js"></script>
+<script src="js/media-floating.js?v=20260904-1"></script>
 
 
 

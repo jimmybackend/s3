@@ -8,7 +8,7 @@
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="css/styles.css">
-    <link rel="icon" href="../assets/img/icono.png" type="image/x-icon">
+    <link rel="icon" href="ellogo.png" type="image/png">
 
     <style>
         #zona-subida {

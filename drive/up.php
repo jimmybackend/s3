@@ -213,6 +213,7 @@ if ($action !== '') {
 <head>
 <meta charset="utf-8" />
 <title>Subida reanudable a S3 (Directo)</title>
+<link rel="icon" href="ellogo.png" type="image/png">
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <style>
   :root { --bg:#0b1020; --card:#0f172a; --muted:#9ca3af; --text:#e5e7eb; --accent:#4f46e5; --success:#16a34a; --warn:#f59e0b; --danger:#ef4444; }

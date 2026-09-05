@@ -7,12 +7,15 @@ on:
       - 'refactor/**'
     paths:
       - 'drive/api/upload.php'
+      - 'drive/upload.php'
+      - 'drive/subir_archivo.php'
       - 'drive/upload/UploadFactory.php'
       - 'drive/upload/drivers/LocalPresignedPutUploader.php'
       - 'drive/upload/drivers/RemoteUrlUploader.php'
       - 'drive/upload/drivers/DropboxUploader.php'
       - 'drive/upload/drivers/Chunked15MBUploader.php'
       - 'drive/src/Http/Controller/UploadController.php'
+      - 'drive/src/Http/Controller/LegacyUploadController.php'
       - 'drive/src/Http/Request.php'
       - 'drive/src/Core/DriveApplication.php'
       - '.github/workflows/oop-upload.yml'
@@ -34,12 +37,15 @@ jobs:
           set -euo pipefail
           for f in \
             drive/api/upload.php \
+            drive/upload.php \
+            drive/subir_archivo.php \
             drive/upload/UploadFactory.php \
             drive/upload/drivers/LocalPresignedPutUploader.php \
             drive/upload/drivers/RemoteUrlUploader.php \
             drive/upload/drivers/DropboxUploader.php \
             drive/upload/drivers/Chunked15MBUploader.php \
             drive/src/Http/Controller/UploadController.php \
+            drive/src/Http/Controller/LegacyUploadController.php \
             drive/src/Http/Request.php \
             drive/src/Core/DriveApplication.php; do
             php -l "$f"
@@ -49,12 +55,18 @@ jobs:
       - name: Audit upload architecture
         run: |
           set -euo pipefail
-          ! grep -q '\$_SESSION\|\$_GET\|\$_POST\|\$_FILES\|\$_REQUEST\|\$db_connection\|UploadFactory::make' drive/api/upload.php
+          for f in drive/api/upload.php drive/upload.php drive/subir_archivo.php; do
+            ! grep -q '\$_SESSION\|\$_GET\|\$_POST\|\$_FILES\|\$_REQUEST\|\$db_connection\|Config::getS3\|^function ' "$f"
+            grep -q 'Controller' "$f"
+          done
           grep -q 'UploadController' drive/api/upload.php
+          grep -q 'LegacyUploadController' drive/upload.php
+          grep -q 'LegacyUploadController' drive/subir_archivo.php
           grep -q 'uploadFactory' drive/src/Core/DriveApplication.php
           grep -q 'UploadFactory' drive/src/Core/DriveApplication.php
           grep -q 'uploadDestinationService' drive/src/Http/Controller/UploadController.php
           grep -q 'local_put' drive/src/Http/Controller/UploadController.php
+          grep -q 's3Manager' drive/src/Http/Controller/LegacyUploadController.php
           for f in \
             drive/upload/drivers/LocalPresignedPutUploader.php \
             drive/upload/drivers/RemoteUrlUploader.php \

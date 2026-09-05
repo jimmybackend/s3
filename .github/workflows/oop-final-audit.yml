@@ -1,0 +1,55 @@
+name: OOP final audit
+
+on:
+  push:
+    branches:
+      - main
+      - refactor/oop-drive-migration
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: PHP syntax
+        run: |
+          set -euo pipefail
+          FAILED=0
+          while IFS= read -r file; do
+            if ! php -l "$file" >/dev/null 2>&1; then
+              echo "PHP_ERROR=$file"
+              FAILED=1
+            fi
+          done < <(git ls-files 'drive/*.php' 'drive/**/*.php')
+          test "$FAILED" -eq 0
+          echo PHP_OK
+
+      - name: Runtime boundaries
+        run: |
+          set -euo pipefail
+          ! grep -Eq '\$db_connection\b|Config::getS3\s*\(|new[[:space:]]+\\?Aws\\' \
+            drive/*.php \
+            --exclude='S3Manager.php' \
+            --exclude='app_bootstrap.php'
+          echo ENDPOINT_BOUNDARIES_OK
+
+      - name: S3Manager consumers
+        run: |
+          echo '=== S3MANAGER_CONSUMERS ==='
+          git grep -n 's3Manager()' -- drive ':!drive/S3Manager.php' ':!drive/src/Core/DriveApplication.php' || true
+          COUNT=$(git grep -l 's3Manager()' -- drive ':!drive/S3Manager.php' ':!drive/src/Core/DriveApplication.php' | wc -l || true)
+          echo "S3MANAGER_CONSUMER_FILES=$COUNT"
+
+      - name: Inventory heuristic
+        run: |
+          python3 .github/scripts/oop_inventory.py | tail -1
+
+      - name: Diff check
+        run: |
+          git diff --check
+          echo DIFF_OK

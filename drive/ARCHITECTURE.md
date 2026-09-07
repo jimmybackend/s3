@@ -57,6 +57,8 @@ listar_carpetas.php
         -> UserStoragePath
 ```
 
+`FolderQueryService::destinationsForUser()` separa la identidad física de la presentación. Cada destino se entrega como `value` interno con el `Prefix` real de MySQL y `label` visible construido desde `S3Folders.Nombre`. Los selects de mover deben mostrar sólo `label`; `value` se conserva para ejecutar la operación física.
+
 ### Ruta actual
 
 ```text
@@ -103,6 +105,8 @@ Las consultas y mutaciones de usuario se limitan por `user_id_` y, cuando corres
 
 ### Mutaciones de archivos
 
+Los endpoints de compatibilidad siguen delegando en la capa OOP:
+
 ```text
 eliminar_archivo.php / delete_multiple.php
 mover_archivo.php / move_multiple.php
@@ -131,6 +135,45 @@ renombrar_carpeta.php
 ```
 
 La raíz de usuario no se puede renombrar, mover ni eliminar.
+
+### Movimientos iniciados desde la interfaz
+
+Los movimientos iniciados desde `s3.php` no mantienen abierta una petición HTTP durante una copia grande en S3. Se aceptan como tarea y el frontend consulta su estado.
+
+```text
+s3.php / archivos.js / carpetas.js
+  -> move_task.php
+     -> MoveJobController
+        -> MoveJobService
+           -> FileMutationService / FolderMutationService
+           -> MoveJobStore
+           -> S3 + MySQL
+
+move_task_status.php
+  -> MoveJobController::status
+     -> MoveJobService
+        -> MoveJobStore
+```
+
+Flujo:
+
+```text
+usuario elige destino visible de MySQL
+  -> POST de tarea
+  -> HTTP 202 inmediato
+  -> queued / running
+  -> copia y eliminación física en S3
+  -> actualización MySQL
+  -> completed / failed
+  -> polling del navegador
+  -> notificación y refresco de bloques
+```
+
+`MoveJobStore` guarda estado temporal por `job_id` y `user_id`. Por defecto usa el directorio temporal del sistema y puede configurarse con `ARCADECLOUD_MOVE_JOB_DIR`. Los estados se protegen con `flock` y se depuran automáticamente.
+
+El navegador nunca necesita mostrar el `Prefix` físico. El `label` del destino proviene de `S3Folders.Nombre`, mientras que el `value` interno conserva el `Prefix` real que necesitan `FileMutationService` y `FolderMutationService`.
+
+La opción de crear una carpeta desde el modal de mover delega en `FolderMutationService`; no construye un `Prefix` físico concatenando texto visible.
 
 ### Seguridad de archivos
 
@@ -185,9 +228,11 @@ encriptar_archivo.php
 - `FileS3.Nombre`: nombre visible.
 - `FileS3.Encriptado`: nombre o key física del objeto almacenado.
 - `S3Folders.Nombre`: nombre visible de carpeta.
+- `S3Folders.Prefix`: identificador físico interno de carpeta.
 - renombrar modifica el catálogo visible;
 - mover puede cambiar la ubicación física;
 - `StorageObjectNameCodec` centraliza la generación y lectura de nombres físicos.
+- los `Prefix` físicos no deben mostrarse en rutas o selects de la interfaz cuando pueda construirse una etiqueta desde `S3Folders.Nombre`.
 
 ## Autenticación
 

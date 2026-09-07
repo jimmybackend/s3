@@ -43,10 +43,40 @@ final class FolderQueryService
     }
 
     /**
-     * Ruta legible para interfaz construida exclusivamente con S3Folders.Nombre.
+     * Destinos para selects de mover.
      *
-     * El Prefix físico sigue siendo el identificador operativo interno, pero no
-     * se expone al usuario cuando existe la jerarquía correspondiente en MySQL.
+     * value conserva el Prefix físico necesario para ejecutar la operación.
+     * label se construye únicamente con Nombre de S3Folders y es lo único que
+     * debe mostrarse al usuario.
+     */
+    public function destinationsForUser(int $userId, bool $includeBase = true): array
+    {
+        if ($userId <= 0) {
+            throw new RuntimeException('Usuario inválido.');
+        }
+
+        $root = $this->normalizePrefix($this->paths->rootForUser($userId));
+        $rows = $this->repository->listHierarchyRows($userId);
+        $prefixes = $this->allForUser($userId, $includeBase);
+        $destinations = [];
+
+        foreach ($prefixes as $prefix) {
+            $prefix = $this->normalizePrefix((string)$prefix);
+            $destinations[] = [
+                'value' => $prefix,
+                'label' => $this->displayPathFromRows($root, $prefix, $rows),
+            ];
+        }
+
+        usort($destinations, static function (array $a, array $b): int {
+            return strnatcasecmp((string)$a['label'], (string)$b['label']);
+        });
+
+        return $destinations;
+    }
+
+    /**
+     * Ruta legible para interfaz construida exclusivamente con S3Folders.Nombre.
      */
     public function displayPathForUser(int $userId, string $prefix): string
     {
@@ -55,12 +85,15 @@ final class FolderQueryService
         }
 
         $root = $this->normalizePrefix($this->paths->rootForUser($userId));
-        $target = $this->paths->normalizeForUser($prefix, $userId);
-        $target = $this->normalizePrefix($target);
-
+        $target = $this->normalizePrefix($this->paths->normalizeForUser($prefix, $userId));
         $rows = $this->repository->listHierarchyRows($userId);
+
+        return $this->displayPathFromRows($root, $target, $rows);
+    }
+
+    private function displayPathFromRows(string $root, string $target, array $rows): string
+    {
         $segments = [];
-        $seen = [];
         $rootName = basename(rtrim($root, '/')) ?: 'Inicio';
 
         foreach ($rows as $row) {
@@ -73,18 +106,16 @@ final class FolderQueryService
                 continue;
             }
 
-            if ($rowPrefix === $root || strpos($target, $rowPrefix) === 0) {
-                $name = trim((string)($row['Nombre'] ?? ''));
-                if ($name === '') {
-                    continue;
-                }
-
-                if ($rowPrefix === $root) {
-                    $rootName = $name;
-                }
-
-                $segments[$rowPrefix] = $name;
+            $name = trim((string)($row['Nombre'] ?? ''));
+            if ($name === '') {
+                continue;
             }
+
+            if ($rowPrefix === $root) {
+                $rootName = $name;
+            }
+
+            $segments[$rowPrefix] = $name;
         }
 
         if (!isset($segments[$root])) {
@@ -93,22 +124,21 @@ final class FolderQueryService
 
         uksort($segments, static fn(string $a, string $b): int => strlen($a) <=> strlen($b));
 
+        $visible = [];
         foreach ($segments as $rowPrefix => $name) {
             if ($rowPrefix === $root || strpos($target, $rowPrefix) === 0) {
-                $seen[] = $name;
+                $name = trim((string)$name);
+                if ($name !== '') {
+                    $visible[] = $name;
+                }
             }
         }
 
-        $seen = array_values(array_filter(
-            array_map(static fn(string $name): string => trim($name), $seen),
-            static fn(string $name): bool => $name !== ''
-        ));
-
-        if ($seen === []) {
-            $seen[] = $rootName;
+        if ($visible === []) {
+            $visible[] = $rootName;
         }
 
-        return implode('/', $seen) . '/';
+        return implode('/', $visible) . '/';
     }
 
     private function normalizePrefix(string $prefix): string

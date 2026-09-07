@@ -7,6 +7,7 @@ use ArcadeCloud\Drive\Application\DrivePageService;
 use ArcadeCloud\Drive\Application\FileKeyRotationService;
 use ArcadeCloud\Drive\Application\FileListService;
 use ArcadeCloud\Drive\Application\FileMutationService;
+use ArcadeCloud\Drive\Application\MoveJobService;
 use ArcadeCloud\Drive\Application\FolderMutationService;
 use ArcadeCloud\Drive\Application\FolderQueryService;
 use ArcadeCloud\Drive\Application\UploadDestinationService;
@@ -33,6 +34,7 @@ use ArcadeCloud\Drive\Sharing\ShareTokenStore;
 use ArcadeCloud\Drive\Storage\FileRecordRepository;
 use ArcadeCloud\Drive\Storage\FolderMutationRepository;
 use ArcadeCloud\Drive\Storage\FolderRepository;
+use ArcadeCloud\Drive\Storage\MoveJobStore;
 use ArcadeCloud\Drive\Storage\StorageObjectNameCodec;
 use ArcadeCloud\Drive\Storage\StorageUsageService;
 use ArcadeCloud\Drive\Storage\UserStoragePath;
@@ -64,6 +66,8 @@ final class DriveApplication
     private ?FileRecordLocator $fileRecordLocator = null;
     private ?FileRecordRepository $fileRecordRepository = null;
     private ?FileMutationService $fileMutationService = null;
+    private ?MoveJobStore $moveJobStore = null;
+    private ?MoveJobService $moveJobService = null;
     private ?FileKeyRotationService $fileKeyRotationService = null;
     private ?FolderRepository $folderRepository = null;
     private ?FolderMutationRepository $folderMutationRepository = null;
@@ -200,6 +204,30 @@ final class DriveApplication
             $this->fileRecordRepository(),
             $this->s3,
             $this->bucket
+        );
+    }
+
+    public function moveJobStore(): MoveJobStore
+    {
+        if ($this->moveJobStore === null) {
+            $directory = trim((string)(getenv('ARCADECLOUD_MOVE_JOB_DIR') ?: ''));
+            if ($directory === '') {
+                $directory = sys_get_temp_dir() . '/arcadecloud-drive-move-jobs';
+            }
+            $this->moveJobStore = new MoveJobStore($directory);
+        }
+        return $this->moveJobStore;
+    }
+
+    public function moveJobService(): MoveJobService
+    {
+        return $this->moveJobService ??= new MoveJobService(
+            $this->fileMutationService(),
+            $this->folderMutationService(),
+            $this->fileRecordRepository(),
+            $this->folderMutationRepository(),
+            $this->userStoragePath(),
+            $this->moveJobStore()
         );
     }
 

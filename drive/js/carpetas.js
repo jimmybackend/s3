@@ -388,11 +388,14 @@ class CarpetasModule {
       async function cargarDestinosMover(origen) {
         const res = await fetchNoCache(CFG.urls.listarCarpetas, { method: 'GET' });
         const j = await res.json().catch(() => ({}));
-        if (!j.ok || !Array.isArray(j.carpetas)) throw new Error(j.error || 'No se pudieron cargar las carpetas.');
+        if (!j.ok) throw new Error(j.error || 'No se pudieron cargar las carpetas.');
 
-        // tu mover-carpeta.js re-ordenaba con localeCompare
-        j.carpetas.sort((a, b) => String(a).localeCompare(String(b), undefined, { numeric: true, sensitivity: 'base' }));
-        return j.carpetas;
+        const lista = Array.isArray(j.destinos)
+          ? j.destinos
+          : (Array.isArray(j.carpetas) ? j.carpetas.map((ruta) => ({ value: ruta, label: ruta })) : []);
+
+        lista.sort((a, b) => String(a.label || '').localeCompare(String(b.label || ''), undefined, { numeric: true, sensitivity: 'base' }));
+        return lista;
       }
 
       function renderOptionsMover(selectEl, lista, origen) {
@@ -406,29 +409,28 @@ class CarpetasModule {
 
         const ban = String(origen || '');
 
-        (lista || []).forEach((ruta) => {
-          ruta = String(ruta || '');
-          // No permitir mover dentro de sí misma o hijos
+        (lista || []).forEach((item) => {
+          const ruta = String((item && item.value) || '');
+          const label = String((item && item.label) || '');
+          // No permitir mover dentro de sí misma o hijos. Se compara el Prefix interno.
           if (!ruta) return;
           if (ruta === ban || ruta.startsWith(ban)) return;
 
           const opt = document.createElement('option');
           opt.value = ruta;
-
-          // Indent como tu script (aprox por profundidad de "/")
-          const depth = Math.max(0, ((ruta.match(/\//g) || []).length - 1));
-          opt.innerHTML = '&nbsp;'.repeat(depth * 3) + ruta;
-
+          opt.textContent = label || ruta;
           selectEl.appendChild(opt);
         });
       }
 
       function updatePreviewMover(origen, destino, previewEl) {
         if (!previewEl) return;
-        const org = String(origen || '').trim();
-        const dst = String(destino || '').trim();
-        const bn = baseNameOf(org);
-        safeSetText(previewEl, dst ? (dst + bn + '/') : '');
+        const selectEl = $id(CFG.ids.moverDestino);
+        const selected = selectEl && selectEl.selectedIndex >= 0
+          ? selectEl.options[selectEl.selectedIndex]
+          : null;
+        const label = selected ? String(selected.textContent || '').trim() : '';
+        safeSetText(previewEl, label);
       }
 
       async function onShowMoverModal(evt) {
@@ -449,7 +451,7 @@ class CarpetasModule {
 
         if ($origen) $origen.value = origen || '';
         if ($nombre) $nombre.value = nombre || '';
-        safeSetText($label, origen || '');
+        safeSetText($label, nombre || '');
         if ($destino) $destino.innerHTML = '<option value="">Cargando…</option>';
         safeSetText($preview, '');
 
@@ -508,47 +510,17 @@ class CarpetasModule {
           $btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Moviendo…';
         }
 
-        const res = await fetchNoCache(CFG.urls.moverCarpeta, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'X-Requested-With': 'XMLHttpRequest'
-          },
-          body: toFormUrlEncoded({ origen, destino })
+        if (!window.DriveMoveTasks || typeof window.DriveMoveTasks.start !== 'function') {
+          throw new Error('El módulo de tareas de movimiento no está disponible.');
+        }
+
+        await window.DriveMoveTasks.start({
+          type: 'folder',
+          origen,
+          destino
         });
-
-        const j = await res.json().catch(() => ({}));
-
-        if (!res.ok || !j || !j.ok) {
-          throw new Error((j && j.error) ? j.error : 'No se pudo mover la carpeta.');
-        }
-
-        const rutaActualizada = String(j.ruta_actual || window.rutaActual || '').trim();
-
-        if (rutaActualizada) {
-          window.rutaActual = rutaActualizada;
-        }
 
         safeHideModal(modal);
-
-        await refrescarBloqueCarpetasCompat({
-          ruta_actual: rutaActualizada
-        });
-
-        await refrescarBloqueArchivosCompat({
-          pagina: 1,
-          ruta: rutaActualizada || undefined
-        });
-
-        if (typeof window.actualizarBloqueFooter === 'function') {
-          try {
-            await window.actualizarBloqueFooter({
-              pagina: 1,
-              ruta: rutaActualizada,
-              rutaNueva: rutaActualizada
-            });
-          } catch (_) {}
-        }
 
       } catch (err) {
         console.error(err);

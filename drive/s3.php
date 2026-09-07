@@ -35,7 +35,7 @@ $basePrefix = $vm->basePrefix;
  * Se muestran únicamente las carpetas del usuario autenticado.
  * ============================================================
  */
-$todasLasCarpetas = $app->folderQueryService()->allForUser($userId, true);
+$todasLasCarpetas = $app->folderQueryService()->destinationsForUser($userId, true);
 
 $tipo = $vm->tipo;
 $buscar = $vm->buscar;
@@ -811,12 +811,14 @@ $footerEspacioUsado = $storageUsage['formatted'];
           <label>Selecciona carpeta de destino:</label>
           <select name="nueva_ruta" id="nuevaRutaSelect" class="form-control" required>
             <option value="">— Selecciona carpeta de destino —</option>
-            <?php foreach ($todasLasCarpetas as $ruta): ?>
+            <?php foreach ($todasLasCarpetas as $destino): ?>
               <?php
-                $nivel = substr_count(trim($ruta, '/'), '/');
+                $rutaFisica = (string)($destino['value'] ?? '');
+                $rutaVisible = (string)($destino['label'] ?? '');
+                $nivel = max(0, substr_count(trim($rutaVisible, '/'), '/'));
                 $espacio = str_repeat('&nbsp;&nbsp;&nbsp;', $nivel);
               ?>
-              <option value="<?= htmlspecialchars($ruta) ?>"><?= $espacio . htmlspecialchars($ruta) ?></option>
+              <option value="<?= htmlspecialchars($rutaFisica) ?>"><?= $espacio . htmlspecialchars($rutaVisible) ?></option>
             <?php endforeach; ?>
             <option value="__crear__">➕ Crear nueva carpeta</option>
           </select>
@@ -1794,9 +1796,10 @@ $footerEspacioUsado = $storageUsage['formatted'];
 
 
 
-<script src="js/carpetas.js"></script>
-<script src="js/archivos.js?v=20260904-2205"></script>
-<script src="js/file-block.js"></script>
+<script src="js/move-tasks.js?v=<?= (int) filemtime(__DIR__ . '/js/move-tasks.js') ?>"></script>
+<script src="js/carpetas.js?v=<?= (int) filemtime(__DIR__ . '/js/carpetas.js') ?>"></script>
+<script src="js/archivos.js?v=<?= (int) filemtime(__DIR__ . '/js/archivos.js') ?>"></script>
+<script src="js/file-block.js?v=<?= (int) filemtime(__DIR__ . '/js/file-block.js') ?>"></script>
 
 <script src="js/actualizar-hora.js"></script>
 <script src="js/storage-usage.js"></script>

@@ -2812,3 +2812,50 @@ body.ui-theme #pane-Subir #btnSubirGrande:not(:disabled):hover {
   border-color: #146c43 !important;
   color: #ffffff !important;
 }
+
+/* ===== UX ROUND 2: DROPZONE + VISION ===== */
+#dropzonePublico.dropzone-drive {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  justify-content: center !important;
+  align-items: flex-start !important;
+  gap: 12px !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+  overflow: hidden !important;
+}
+
+#dropzonePublico.dropzone-drive .dz-message {
+  flex: 0 0 100% !important;
+  width: 100% !important;
+  text-align: center !important;
+  margin: 1rem 0 !important;
+}
+
+#dropzonePublico.dropzone-drive .dz-preview {
+  margin: 6px !important;
+  vertical-align: top !important;
+  max-width: 150px !important;
+}
+
+body.ui-theme.vision-normal { filter: none !important; }
+body.ui-theme.vision-myopia { filter: blur(.65px) contrast(.92) saturate(.82) !important; }
+body.ui-theme.vision-protanopia { filter: hue-rotate(-28deg) saturate(.55) contrast(1.04) !important; }
+body.ui-theme.vision-deuteranopia { filter: hue-rotate(24deg) saturate(.58) contrast(1.04) !important; }
+body.ui-theme.vision-tritanopia { filter: hue-rotate(58deg) saturate(.62) contrast(1.04) !important; }
+
+#temaMenuPanel .js-set-theme.active,
+#temaMenuPanel .js-set-mode.active,
+#temaMenuPanel .js-set-vision.active {
+  font-weight: 700 !important;
+  border-color: currentColor !important;
+}
+
+#temaMenuPanel .js-set-theme.active::after,
+#temaMenuPanel .js-set-mode.active::after,
+#temaMenuPanel .js-set-vision.active::after {
+  content: "✓";
+  float: right;
+  margin-left: .75rem;
+}

@@ -293,7 +293,7 @@ foreach ($filas as $row) {
 
             <small class="text-muted file-meta-line"
                    data-toggle="tooltip"
-                   data-placement="top"
+                   data-placement="right"
                    title="<?= $metaTitle ?>">
 
               <span class="file-date">

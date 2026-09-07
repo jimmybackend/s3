@@ -187,6 +187,49 @@ final class Config
         return array_replace_recursive($config, $overrides);
     }
 
+    /**
+     * Configuración AWS para herramientas de control (EC2/RDS).
+     *
+     * Si AWS_CONTROL_ACCESS_KEY_ID / AWS_CONTROL_SECRET_ACCESS_KEY están
+     * definidos, se usan exclusivamente para el plano de control. Si no,
+     * se conserva compatibilidad usando las credenciales AWS generales.
+     */
+    public static function getAwsControlClientConfig(array $overrides = []): array
+    {
+        self::bootAwsEnv();
+
+        $key = self::env('AWS_CONTROL_ACCESS_KEY_ID');
+        $secret = self::env('AWS_CONTROL_SECRET_ACCESS_KEY');
+
+        if ($key === '' && $secret === '') {
+            return self::getAwsClientConfig($overrides);
+        }
+
+        if ($key === '' || $secret === '') {
+            throw new RuntimeException(
+                'AWS_CONTROL_ACCESS_KEY_ID y AWS_CONTROL_SECRET_ACCESS_KEY deben configurarse juntos.'
+            );
+        }
+
+        $credentials = [
+            'key' => $key,
+            'secret' => $secret,
+        ];
+
+        $token = self::env('AWS_CONTROL_SESSION_TOKEN');
+        if ($token !== '') {
+            $credentials['token'] = $token;
+        }
+
+        $config = [
+            'region' => self::getRegion(),
+            'version' => 'latest',
+            'credentials' => $credentials,
+        ];
+
+        return array_replace_recursive($config, $overrides);
+    }
+
     public static function getS3(): S3Client
     {
         return new S3Client(

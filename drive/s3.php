@@ -118,7 +118,7 @@ $footerEspacioUsado = $storageUsage['formatted'];
             <i class="fas fa-palette mr-1"></i><span class="drive-design-label">Diseño</span>
           </a>
 
-          <div class="dropdown-menu dropdown-menu-right" aria-labelledby="temaMenu" style="min-width:280px;">
+          <div class="dropdown-menu dropdown-menu-right" id="temaMenuPanel" aria-labelledby="temaMenu" style="min-width:280px;">
 
             <h6 class="dropdown-header">Color neón</h6>
             <button class="dropdown-item js-set-theme" data-theme="theme-neon-green">Verde neón</button>
@@ -487,7 +487,7 @@ $footerEspacioUsado = $storageUsage['formatted'];
 
 
 </div>
-        <form action="api/upload.php?mode=local_put&action=init" class="dropzone mb-4" id="dropzonePublico">
+        <form action="api/upload.php?mode=local_put&action=init" class="dropzone dropzone-drive mb-4" id="dropzonePublico">
           <div class="dz-message">Arrastra aquí o haz clic para subir</div>
         </form>
 
@@ -1788,7 +1788,7 @@ $footerEspacioUsado = $storageUsage['formatted'];
 <script src="js/ver-pdf.js"></script>
 
 <script src="js/sincronizar.js"></script>
-<script src="js/estilo.js"></script>
+<script src="js/estilo.js?v=<?= (int) filemtime(__DIR__ . '/js/estilo.js') ?>"></script>
 
 
 

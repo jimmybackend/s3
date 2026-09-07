@@ -30,6 +30,27 @@ final class MoveJobController extends AbstractJsonController
                 }
                 $destination = $this->requireNonEmpty($destination, 'Falta la ruta destino.');
 
+                if ($destination === '__crear__') {
+                    $session = $this->app->session();
+                    $base = $this->request->postString('ruta_actual');
+                    if ($base === '') {
+                        $base = (string)$session->get(
+                            'ruta_actual',
+                            $this->app->userStoragePath()->rootForUser($userId)
+                        );
+                    }
+                    $base = $this->app->userStoragePath()->normalizeForUser($base, $userId);
+                    $name = $this->requireNonEmpty(
+                        trim($this->request->postString('nueva_carpeta')),
+                        'Escribe el nombre de la nueva carpeta.'
+                    );
+                    $created = $this->app->folderMutationService()->create($userId, $base, $name);
+                    $destination = (string)($created['ruta'] ?? '');
+                    if ($destination === '') {
+                        throw new RuntimeException('No se pudo obtener la ruta de la carpeta creada.');
+                    }
+                }
+
                 $job = $this->app->moveJobService()->queueFiles($userId, $refs, $destination);
             } elseif ($type === 'folder') {
                 $origin = $this->requireNonEmpty(

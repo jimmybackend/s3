@@ -25,6 +25,15 @@ jobs:
       - name: Apply patch
         run: python3 .github/scripts/apply_mobile_ui_ec2_round2.py
 
+      - name: Normalize text files
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          for name in ['drive/css/styles.css', 'drive/css/responsive.css']:
+              p = Path(name)
+              p.write_text(p.read_text().rstrip() + '\n')
+          PY
+
       - name: Validate syntax
         run: |
           php -l Config-s3.php

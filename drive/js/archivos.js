@@ -467,12 +467,16 @@ class ArchivosModule {
       };
 
       window.actualizarBloqueCarpetas = window.actualizarBloqueCarpetas || (async function () { /* noop */ });
-      window.actualizarBloqueFooter = window.actualizarBloqueFooter || (async function (args) {
-        const route = String(
-          (args && (args.rutaNueva || args.ruta)) || window.rutaActual || ''
-        ).trim();
+      window.actualizarBloqueFooter = window.actualizarBloqueFooter || (async function () {
         const routeNode = document.getElementById('footerRutaActual');
-        if (routeNode && route) routeNode.textContent = route;
+        const visibleRoute = String(
+          document.getElementById('archivosContexto')?.dataset?.rutaVisible || ''
+        ).trim();
+
+        if (routeNode && visibleRoute) {
+          routeNode.textContent = visibleRoute;
+          routeNode.setAttribute('title', visibleRoute);
+        }
       });
 
       // =========================

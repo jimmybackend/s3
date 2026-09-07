@@ -34,6 +34,7 @@ $fechaInicio = $state['date_from'];
 $fechaFin = $state['date_to'];
 $carpetaTotal = $state['folder_total'];
 $carpetaBytes = (int) $state['folder_bytes'];
+$rutaVisible = $app->folderQueryService()->displayPathForUser($userId, $rutaActual);
 
 $imagenesExt = ['jpg','jpeg','png','gif','webp','bmp','avif','tif','tiff'];
 $audioExt = ['mp3','wav','ogg','opus','m4a','aac'];
@@ -78,6 +79,7 @@ foreach ($filas as $row) {
   <!-- Contexto persistente para JS -->
   <div id="archivosContexto"
        data-ruta-actual="<?= FileViewHelper::escape($rutaActual) ?>"
+       data-ruta-visible="<?= FileViewHelper::escape($rutaVisible) ?>"
        data-pagina-actual="<?= (int)$pagina ?>"
        data-limite="<?= (int)$limite ?>"></div>
   <script type="application/json" id="imagenesGaleriaData"><?= json_encode($imagenesPagina, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?></script>
@@ -283,22 +285,8 @@ foreach ($filas as $row) {
                    data-placement="top"
                    title="<?= $metaTitle ?>">
 
-              <span class="file-route"
-                    title="<?= FileViewHelper::escape($rutaRow) ?>">
-                <?= FileViewHelper::escape($rutaRow) ?>
-              </span>
-
-              <span class="file-meta-sep"> · </span>
-
               <span class="file-date">
                 <?= $fechaTxt ?>
-              </span>
-
-              <span class="file-physical-key">
-                <span class="file-meta-sep"> · </span>
-                <span class="text-mono">
-                  <?= FileViewHelper::escape($keyEnc) ?>
-                </span>
               </span>
 
               <span class="file-meta-sep"> · </span>
@@ -309,13 +297,6 @@ foreach ($filas as $row) {
 
             </small>
 
-            <div class="file-s3-location"
-                 title="<?= FileViewHelper::escape($s3key) ?>">
-              <span class="file-s3-label">
-                <i class="fab fa-aws"></i> S3:
-              </span>
-              <code><?= FileViewHelper::escape($s3key) ?></code>
-            </div>
 
 <?php if (!$soloSeguridad): ?>
 <?php if ($esAudio): ?>
@@ -653,7 +634,6 @@ $unlockClass = $unlocked ? 'btn-success' : 'btn-warning';
   <div class="small">
     Archivos: <strong><?= (int)$carpetaTotal ?></strong> |
     Peso: <strong><?= FileViewHelper::formatBytes($carpetaBytes) ?></strong> |
-    Ruta: <code><?= FileViewHelper::escape($rutaActual) ?></code> |
     Visibles (página): <strong><?= (int)$visibles ?></strong> |
     Bloqueados (página): <strong><?= (int)$noVisibles ?></strong> |
     Protegidos abiertos (página): <strong><?= (int)$segurosAbiertos ?></strong> |

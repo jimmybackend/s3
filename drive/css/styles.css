@@ -2791,3 +2791,24 @@ body.ui-theme.theme-light #pane-Subir #btnSubirGrande:not(:disabled):hover {
   border-color: #146c43 !important;
   color: #ffffff !important;
 }
+
+
+/* ============================================================
+   SUBIR ARCHIVOS - acciones principales verdes
+   ============================================================ */
+body.ui-theme #pane-Subir #btnSubirUrl,
+body.ui-theme #pane-Subir #uploadForm button[type="submit"],
+body.ui-theme #pane-Subir #btnSubirGrande {
+  background: #198754 !important;
+  border-color: #146c43 !important;
+  color: #ffffff !important;
+  opacity: 1 !important;
+}
+
+body.ui-theme #pane-Subir #btnSubirUrl:not(:disabled):hover,
+body.ui-theme #pane-Subir #uploadForm button[type="submit"]:not(:disabled):hover,
+body.ui-theme #pane-Subir #btnSubirGrande:not(:disabled):hover {
+  background: #157347 !important;
+  border-color: #146c43 !important;
+  color: #ffffff !important;
+}

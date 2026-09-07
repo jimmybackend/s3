@@ -1532,3 +1532,25 @@ body.ui-theme #archivosWrap .file-s3-location code {
   }
 
 }
+
+
+/* ============================================================
+   LOGO NAVBAR - mostrar imagen completa dentro del marco
+   ============================================================ */
+.drive-brand-logo {
+  width: 38px !important;
+  height: 30px !important;
+  object-fit: contain !important;
+  object-position: center !important;
+  padding: 2px !important;
+}
+
+@media (max-width: 991.98px), (pointer: coarse) {
+  .drive-navbar .navbar-brand img.drive-brand-logo {
+    width: 30px !important;
+    height: 30px !important;
+    object-fit: contain !important;
+    object-position: center !important;
+    padding: 2px !important;
+  }
+}

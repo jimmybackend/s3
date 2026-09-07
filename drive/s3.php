@@ -47,7 +47,7 @@ $error = $vm->error;
 $extensiones_unicas = $vm->extensionesUnicas;
 
 $storageUsage = $app->storageUsageService()->getUsage($userId);
-$footerRutaActual = $basePrefix;
+$footerRutaActual = $app->folderQueryService()->displayPathForUser($userId, $basePrefix);
 $footerEspacioUsado = $storageUsage['formatted'];
 ?>
 <!DOCTYPE html>
@@ -63,9 +63,9 @@ $footerEspacioUsado = $storageUsage['formatted'];
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <link rel="icon" href="ellogo.png" type="image/png">
 
-  <link rel="stylesheet" href="css/styles.css?v=20260904-clean1">
+  <link rel="stylesheet" href="css/styles.css?v=<?= (int) filemtime(__DIR__ . '/css/styles.css') ?>">
   <link rel="stylesheet"
-        href="css/responsive.css?v=20260904-8">
+        href="css/responsive.css?v=<?= (int) filemtime(__DIR__ . '/css/responsive.css') ?>">
 
 
   <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
@@ -434,7 +434,7 @@ $footerEspacioUsado = $storageUsage['formatted'];
   <label class="form-label">Subir desde URL (Drive / directo)</label>
   <div class="input-group">
     <input id="urlRemota" type="url" class="form-control" placeholder="https://...">
-    <button id="btnSubirUrl" class="btn btn-primary">
+    <button id="btnSubirUrl" class="btn btn-success">
       <span id="spinnerUrl" class="spinner-border spinner-border-sm d-none"></span>
       <span id="btnTxtUrl">Subir</span>
     </button>
@@ -978,12 +978,12 @@ $footerEspacioUsado = $storageUsage['formatted'];
             </a>
           </li>
           <li class="list-group-item">
-            <a href="https://drive.esforzados.com/aws.php" target="_blank">
+            <a href="aws.php" target="_blank">
               <i class="fas fa-qrcode text-primary mr-2"></i> Generador OTP
             </a>
           </li>
           <li class="list-group-item">
-            <a href="https://drive.esforzados.com/ec2.php" target="_blank">
+            <a href="ec2.php" target="_blank">
               <i class="fas fa-qrcode text-primary mr-2"></i> Ec2
             </a>
           </li>

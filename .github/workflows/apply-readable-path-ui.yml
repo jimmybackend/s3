@@ -1,0 +1,201 @@
+name: Apply readable path UI
+
+on:
+  push:
+    branches: ['feature/ui-readable-paths']
+    paths:
+      - '.github/workflows/apply-readable-path-ui.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Patch UI
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          # ------------------------------------------------------------
+          # s3.php
+          # ------------------------------------------------------------
+          p = Path('drive/s3.php')
+          s = p.read_text()
+
+          old = "$footerRutaActual = $basePrefix;"
+          new = "$footerRutaActual = $app->folderQueryService()->displayPathForUser($userId, $basePrefix);"
+          if old not in s:
+              raise SystemExit('S3_FOOTER_PATTERN_NOT_FOUND')
+          s = s.replace(old, new, 1)
+
+          old = '<link rel="stylesheet" href="css/styles.css?v=20260904-clean1">\n  <link rel="stylesheet"\n        href="css/responsive.css?v=20260904-8">'
+          new = '''<link rel="stylesheet" href="css/styles.css?v=<?= (int) filemtime(__DIR__ . '/css/styles.css') ?>">\n  <link rel="stylesheet"\n        href="css/responsive.css?v=<?= (int) filemtime(__DIR__ . '/css/responsive.css') ?>">'''
+          if old not in s:
+              raise SystemExit('S3_CSS_VERSION_PATTERN_NOT_FOUND')
+          s = s.replace(old, new, 1)
+
+          old = 'id="btnSubirUrl" class="btn btn-primary"'
+          new = 'id="btnSubirUrl" class="btn btn-success"'
+          if old not in s:
+              raise SystemExit('S3_UPLOAD_URL_BUTTON_PATTERN_NOT_FOUND')
+          s = s.replace(old, new, 1)
+
+          for old, new in [
+              ('href="https://drive.esforzados.com/aws.php"', 'href="aws.php"'),
+              ('href="https://drive.esforzados.com/ec2.php"', 'href="ec2.php"'),
+          ]:
+              if old not in s:
+                  raise SystemExit('S3_LINK_PATTERN_NOT_FOUND:' + old)
+              s = s.replace(old, new, 1)
+
+          p.write_text(s)
+
+          # ------------------------------------------------------------
+          # bloque_archivos.php
+          # ------------------------------------------------------------
+          p = Path('drive/bloque_archivos.php')
+          s = p.read_text()
+
+          old = "$carpetaBytes = (int) $state['folder_bytes'];\n"
+          new = "$carpetaBytes = (int) $state['folder_bytes'];\n$rutaVisible = $app->folderQueryService()->displayPathForUser($userId, $rutaActual);\n"
+          if old not in s:
+              raise SystemExit('FILES_VISIBLE_PATH_PATTERN_NOT_FOUND')
+          s = s.replace(old, new, 1)
+
+          old = '''  <div id="archivosContexto"\n       data-ruta-actual="<?= FileViewHelper::escape($rutaActual) ?>"\n       data-pagina-actual="<?= (int)$pagina ?>"'''
+          new = '''  <div id="archivosContexto"\n       data-ruta-actual="<?= FileViewHelper::escape($rutaActual) ?>"\n       data-ruta-visible="<?= FileViewHelper::escape($rutaVisible) ?>"\n       data-pagina-actual="<?= (int)$pagina ?>"'''
+          if old not in s:
+              raise SystemExit('FILES_CONTEXT_PATTERN_NOT_FOUND')
+          s = s.replace(old, new, 1)
+
+          old = '''              <span class="file-route"\n                    title="<?= FileViewHelper::escape($rutaRow) ?>">\n                <?= FileViewHelper::escape($rutaRow) ?>\n              </span>\n\n              <span class="file-meta-sep"> · </span>\n\n              <span class="file-date">\n                <?= $fechaTxt ?>\n              </span>\n\n              <span class="file-physical-key">\n                <span class="file-meta-sep"> · </span>\n                <span class="text-mono">\n                  <?= FileViewHelper::escape($keyEnc) ?>\n                </span>\n              </span>\n\n              <span class="file-meta-sep"> · </span>\n\n              <strong class="file-size">\n                <?= FileViewHelper::formatBytes($tamano) ?>\n              </strong>'''
+          new = '''              <span class="file-date">\n                <?= $fechaTxt ?>\n              </span>\n\n              <span class="file-meta-sep"> · </span>\n\n              <strong class="file-size">\n                <?= FileViewHelper::formatBytes($tamano) ?>\n              </strong>'''
+          if old not in s:
+              raise SystemExit('FILES_META_PATTERN_NOT_FOUND')
+          s = s.replace(old, new, 1)
+
+          old = '''\n            <div class="file-s3-location"\n                 title="<?= FileViewHelper::escape($s3key) ?>">\n              <span class="file-s3-label">\n                <i class="fab fa-aws"></i> S3:\n              </span>\n              <code><?= FileViewHelper::escape($s3key) ?></code>\n            </div>\n'''
+          if old not in s:
+              raise SystemExit('FILES_S3_LOCATION_PATTERN_NOT_FOUND')
+          s = s.replace(old, '\n', 1)
+
+          old = '''    Archivos: <strong><?= (int)$carpetaTotal ?></strong> |\n    Peso: <strong><?= FileViewHelper::formatBytes($carpetaBytes) ?></strong> |\n    Ruta: <code><?= FileViewHelper::escape($rutaActual) ?></code> |\n    Visibles (página):'''
+          new = '''    Archivos: <strong><?= (int)$carpetaTotal ?></strong> |\n    Peso: <strong><?= FileViewHelper::formatBytes($carpetaBytes) ?></strong> |\n    Visibles (página):'''
+          if old not in s:
+              raise SystemExit('FILES_SUMMARY_PATTERN_NOT_FOUND')
+          s = s.replace(old, new, 1)
+
+          p.write_text(s)
+
+          # ------------------------------------------------------------
+          # archivos.js: footer usa ruta visible del bloque recién cargado.
+          # ------------------------------------------------------------
+          p = Path('drive/js/archivos.js')
+          s = p.read_text()
+          old = '''      window.actualizarBloqueFooter = window.actualizarBloqueFooter || (async function (args) {\n        const route = String(\n          (args && (args.rutaNueva || args.ruta)) || window.rutaActual || ''\n        ).trim();\n        const routeNode = document.getElementById('footerRutaActual');\n        if (routeNode && route) routeNode.textContent = route;\n      });'''
+          new = '''      window.actualizarBloqueFooter = window.actualizarBloqueFooter || (async function () {\n        const routeNode = document.getElementById('footerRutaActual');\n        const visibleRoute = String(\n          document.getElementById('archivosContexto')?.dataset?.rutaVisible || ''\n        ).trim();\n\n        if (routeNode && visibleRoute) {\n          routeNode.textContent = visibleRoute;\n          routeNode.setAttribute('title', visibleRoute);\n        }\n      });'''
+          if old not in s:
+              raise SystemExit('ARCHIVOS_FOOTER_PATTERN_NOT_FOUND')
+          s = s.replace(old, new, 1)
+          p.write_text(s)
+
+          # ------------------------------------------------------------
+          # responsive.css: logo completo dentro del marco actual.
+          # ------------------------------------------------------------
+          p = Path('drive/css/responsive.css')
+          s = p.read_text()
+          block = r'''
+
+/* ============================================================
+   LOGO NAVBAR - mostrar imagen completa dentro del marco
+   ============================================================ */
+.drive-brand-logo {
+  width: 38px !important;
+  height: 30px !important;
+  object-fit: contain !important;
+  object-position: center !important;
+  padding: 2px !important;
+}
+
+@media (max-width: 991.98px), (pointer: coarse) {
+  .drive-navbar .navbar-brand img.drive-brand-logo {
+    width: 30px !important;
+    height: 30px !important;
+    object-fit: contain !important;
+    object-position: center !important;
+    padding: 2px !important;
+  }
+}
+'''
+          if 'LOGO NAVBAR - mostrar imagen completa dentro del marco' not in s:
+              s += block
+          p.write_text(s)
+
+          # ------------------------------------------------------------
+          # styles.css: los tres botones de subida principales verdes.
+          # ------------------------------------------------------------
+          p = Path('drive/css/styles.css')
+          s = p.read_text()
+          block = r'''
+
+/* ============================================================
+   SUBIR ARCHIVOS - acciones principales verdes
+   ============================================================ */
+body.ui-theme #pane-Subir #btnSubirUrl,
+body.ui-theme #pane-Subir #uploadForm button[type="submit"],
+body.ui-theme #pane-Subir #btnSubirGrande {
+  background: #198754 !important;
+  border-color: #146c43 !important;
+  color: #ffffff !important;
+  opacity: 1 !important;
+}
+
+body.ui-theme #pane-Subir #btnSubirUrl:not(:disabled):hover,
+body.ui-theme #pane-Subir #uploadForm button[type="submit"]:not(:disabled):hover,
+body.ui-theme #pane-Subir #btnSubirGrande:not(:disabled):hover {
+  background: #157347 !important;
+  border-color: #146c43 !important;
+  color: #ffffff !important;
+}
+'''
+          if 'SUBIR ARCHIVOS - acciones principales verdes' not in s:
+              s += block
+          p.write_text(s)
+          PY
+
+      - name: Validate
+        run: |
+          php -l drive/s3.php
+          php -l drive/bloque_archivos.php
+          php -l drive/src/Storage/FolderRepository.php
+          php -l drive/src/Application/FolderQueryService.php
+          node --check drive/js/archivos.js
+          git diff --check
+          ! grep -q 'drive.esforzados.com/aws.php' drive/s3.php
+          ! grep -q 'drive.esforzados.com/ec2.php' drive/s3.php
+          ! grep -q 'file-s3-location' drive/bloque_archivos.php
+          grep -q 'data-ruta-visible' drive/bloque_archivos.php
+          grep -q 'displayPathForUser' drive/s3.php
+          echo PHP_OK
+          echo JS_OK
+          echo UI_OK
+          echo DIFF_OK
+
+      - name: Commit
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add \
+            drive/s3.php \
+            drive/bloque_archivos.php \
+            drive/js/archivos.js \
+            drive/css/styles.css \
+            drive/css/responsive.css
+          git commit -m 'Improve readable paths and Drive UI details'
+          git push origin HEAD:feature/ui-readable-paths

@@ -14,7 +14,10 @@ final class FolderQueryController extends AbstractJsonController
             $userId = $this->guardAuthenticated();
             JsonResponse::send([
                 'ok' => true,
+                // Compatibilidad: Prefix físicos para consumidores antiguos.
                 'carpetas' => $this->app->folderQueryService()->allForUser($userId, true),
+                // UI nueva: value interno + label visible construido desde MySQL.
+                'destinos' => $this->app->folderQueryService()->destinationsForUser($userId, true),
             ]);
         } catch (Throwable $e) {
             JsonResponse::send([

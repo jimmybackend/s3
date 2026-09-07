@@ -406,7 +406,18 @@ code{word-break:break-all}
                     $az   = (string)($i['Placement']['AvailabilityZone'] ?? '');
                     $pip  = (string)($i['PublicIpAddress'] ?? '');
                     $prip = (string)($i['PrivateIpAddress'] ?? '');
-                    $lt   = isset($i['LaunchTime']) ? (new DateTime($i['LaunchTime']))->format('Y-m-d H:i:s T') : '';
+                    $launchTime = $i['LaunchTime'] ?? null;
+          if ($launchTime instanceof \DateTimeInterface) {
+              $lt = $launchTime->format('Y-m-d H:i:s T');
+          } elseif (is_string($launchTime) && trim($launchTime) !== '') {
+              try {
+                  $lt = (new \DateTime($launchTime))->format('Y-m-d H:i:s T');
+              } catch (\Throwable $dateError) {
+                  $lt = $launchTime;
+              }
+          } else {
+              $lt = '';
+          }
                     $prot = H::isProtected($id);
                     $isRdp = ($id === RDP_INSTANCE_ID);
             ?>

@@ -350,7 +350,7 @@ code{word-break:break-all}
                     $opts = ['all'=>'Todos','running'=>'running','stopped'=>'stopped','pending'=>'pending','stopping'=>'stopping','shutting-down'=>'shutting-down','terminated'=>'terminated'];
                     foreach ($opts as $val=>$label) {
                         $sel = $state===$val ? 'selected' : '';
-                        echo "<option value=\"".e($val)."\" $sel>".e($label)."</option>";
+                        echo "<option value=\"".H::e($val)."\" $sel>".H::e($label)."</option>";
                     }
                     ?>
                 </select>

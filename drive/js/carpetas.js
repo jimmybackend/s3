@@ -285,7 +285,7 @@ class CarpetasModule {
           fecha_inicio: f && f.fecha_inicio ? (f.fecha_inicio.value || '') : '',
           fecha_fin:    f && f.fecha_fin ? (f.fecha_fin.value || '') : '',
           tipo:         f && f.tipo ? (f.tipo.value || '') : '',
-          limite:       (L && L.querySelector) ? (L.querySelector('select[name="limite"]')?.value ?? 5) : 5,
+          limite:       (L && L.querySelector) ? (L.querySelector('select[name="limite"]')?.value ?? 10) : 10,
           pagina:       1
         };
       }

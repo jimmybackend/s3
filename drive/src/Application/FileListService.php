@@ -24,7 +24,7 @@ final class FileListService
         $dateFrom = trim((string) ($query['fecha_inicio'] ?? ''));
         $dateTo = trim((string) ($query['fecha_fin'] ?? ''));
         $page = max(1, (int) ($query['pagina'] ?? 1));
-        $limit = max(5, min(100, (int) ($query['limite'] ?? 5)));
+        $limit = max(5, min(100, (int) ($query['limite'] ?? 10)));
 
         $where = 'user_id_ = ? AND Ruta = ? AND Found = 1';
         $types = 'is';

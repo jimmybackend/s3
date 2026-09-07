@@ -136,6 +136,17 @@ foreach ($filas as $row) {
             class="text-muted small"></span>
 
       <button type="button"
+              class="btn btn-sm btn-outline-primary bulk-filter-toggle d-none d-lg-inline-flex align-items-center"
+              data-toggle="collapse"
+              data-target="#panelFiltrosArchivos"
+              aria-expanded="false"
+              aria-controls="panelFiltrosArchivos">
+        <i class="fas fa-filter mr-1"></i>
+        Filtros
+        <i class="fas fa-chevron-down ml-1"></i>
+      </button>
+
+      <button type="button"
               class="btn btn-sm btn-danger"
               data-file-bulk-action="delete">
         <i class="fas fa-trash-alt mr-1"></i>

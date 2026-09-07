@@ -21,7 +21,7 @@ class ObtenerFiltrosModule {
           buscar: get(f, '[name="buscar"]', ''),
           fecha_inicio: get(f, '[name="fecha_inicio"]', ''),
           fecha_fin: get(f, '[name="fecha_fin"]', ''),
-          limite: get(l, 'select[name="limite"]', '5')
+          limite: get(l, 'select[name="limite"]', '10')
         };
       }
 

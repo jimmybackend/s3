@@ -25,7 +25,7 @@ final class DrivePageService
         $vm->buscar = trim((string) ($query['buscar'] ?? ''));
         $vm->fechaInicio = trim((string) ($query['fecha_inicio'] ?? ''));
         $vm->fechaFin = trim((string) ($query['fecha_fin'] ?? ''));
-        $vm->limite = max(5, min(100, (int) ($query['limite'] ?? 5)));
+        $vm->limite = max(5, min(100, (int) ($query['limite'] ?? 10)));
         $vm->pagina = max(1, (int) ($query['pagina'] ?? 1));
 
         try {

@@ -96,8 +96,8 @@ $footerEspacioUsado = $storageUsage['formatted'];
      onclick="document.getElementById('btnToggleSidebar').click(); return false;">
     <!-- <img src="../assets/img/icono.png" width="30" height="30" class="d-inline-block align-top" alt="Logo"> Cloud Drive -->
     <img src="ellogo.png"
-         width="38"
-         height="30"
+         width="48"
+         height="38"
          class="drive-brand-logo mr-2"
          alt="Logo"> Cloud Drive
   </a>
@@ -374,7 +374,7 @@ $footerEspacioUsado = $storageUsage['formatted'];
         <!-- Formulario de filtros -->
           <form id="formFiltros" class="form-inline" onsubmit="return false;">
             <input type="hidden" name="ruta" value="<?= htmlspecialchars($basePrefix) ?>">
-            <input type="hidden" name="limite" value="<?= (int)($_GET['limite'] ?? 5) ?>">
+            <input type="hidden" name="limite" value="<?= (int)($_GET['limite'] ?? 10) ?>">
 
             <input type="text" name="buscar" class="form-control mr-2 mb-2" placeholder="Buscar..." value="<?= htmlspecialchars($_GET['buscar'] ?? '') ?>" style="max-width: 160px;">
             <input type="date" name="fecha_inicio" class="form-control mr-2 mb-2" value="<?= htmlspecialchars($_GET['fecha_inicio'] ?? '') ?>" style="max-width: 150px;">
@@ -1006,48 +1006,6 @@ $footerEspacioUsado = $storageUsage['formatted'];
             <i class="fas fa-envelope text-primary mr-2"></i> Titan Mail (Webmail)
           </a>
         </li>
-
-        <li class="list-group-item">
-          <a href="https://demo.filestash.app/login" target="_blank">
-            <i class="fas fa-hdd text-info mr-2"></i> Filestash (Explorador S3 / FTP)
-          </a>
-        </li>
-          <li class="list-group-item">
-            <a href="https://aws.amazon.com/console/" target="_blank">
-              <i class="fas fa-cloud text-primary mr-2"></i> Consola AWS
-            </a>
-          </li>
-          <li class="list-group-item">
-            <a href="https://s3.console.aws.amazon.com/s3/buckets" target="_blank">
-              <i class="fas fa-folder-open text-info mr-2"></i> Buckets S3
-            </a>
-          </li>
-
-          <li class="list-group-item">
-            <a href="https://esforzados.com/AI/index.html" target="_blank">
-              <i class="fas fa-robot text-info mr-2"></i> AI
-            </a>
-          </li>
-          <li class="list-group-item">
-            <a href="https://biblia.esforzados.com/index.php" target="_blank">
-              <i class="fas fa-book text-primary mr-2"></i> Concordancia
-            </a>
-          </li>
-          <li class="list-group-item">
-            <a href="https://tiendas.esforzados.com/" target="_blank">
-              <i class="fas fa-shopping-cart text-warning mr-2"></i> ShopControl
-            </a>
-          </li>
-          <li class="list-group-item">
-            <a href="https://projects.esforzados.com/" target="_blank">
-              <i class="fas fa-project-diagram text-success mr-2"></i> Projects
-            </a>
-          </li>
-          <li class="list-group-item">
-            <a href="https://esforzados.com/drone/" target="_blank">
-              <i class="fas fa-project-diagram text-success mr-2"></i> SkyDrop
-            </a>
-          </li>
 
         </ul>
       </div>

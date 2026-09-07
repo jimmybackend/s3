@@ -1322,12 +1322,13 @@ body.ui-theme #archivosWrap .file-s3-location code {
    ============================================================ */
 
 .drive-brand-logo {
-  width: 38px !important;
-  height: 30px !important;
+  width: 48px !important;
+  height: 38px !important;
 
-  min-width: 38px;
+  min-width: 48px;
 
-  object-fit: cover;
+  object-fit: contain;
+  object-position: center;
 
   border-radius: 8px;
 }
@@ -1509,10 +1510,10 @@ body.ui-theme #archivosWrap .file-s3-location code {
 @media (max-width: 575.98px) {
 
   .drive-navbar .navbar-brand {
-    width: 38px !important;
+    width: 48px !important;
 
     flex:
-      0 0 38px !important;
+      0 0 48px !important;
   }
 
 
@@ -1538,19 +1539,19 @@ body.ui-theme #archivosWrap .file-s3-location code {
    LOGO NAVBAR - mostrar imagen completa dentro del marco
    ============================================================ */
 .drive-brand-logo {
-  width: 38px !important;
-  height: 30px !important;
+  width: 48px !important;
+  height: 38px !important;
   object-fit: contain !important;
   object-position: center !important;
-  padding: 2px !important;
+  padding: 1px !important;
 }
 
 @media (max-width: 991.98px), (pointer: coarse) {
   .drive-navbar .navbar-brand img.drive-brand-logo {
-    width: 30px !important;
-    height: 30px !important;
+    width: 48px !important;
+    height: 38px !important;
     object-fit: contain !important;
     object-position: center !important;
-    padding: 2px !important;
+    padding: 1px !important;
   }
 }

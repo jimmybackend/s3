@@ -46,7 +46,7 @@ class FiltrosModule {
           fecha_inicio: f.fecha_inicio?.value ?? '',
           fecha_fin:    f.fecha_fin?.value ?? '',
           tipo:         f.tipo?.value ?? '',
-          limite:       L?.querySelector('select[name="limite"]')?.value ?? 50,
+          limite:       L?.querySelector('select[name="limite"]')?.value ?? 10,
           pagina:       1
         };
         actualizarBloqueArchivos(null, filtros);

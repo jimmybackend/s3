@@ -1,0 +1,65 @@
+name: Fix EC2 launch time rendering
+
+on:
+  push:
+    branches:
+      - feature/ui-readable-paths
+    paths:
+      - '.github/workflows/fix-ec2-launch-time.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/ui-readable-paths
+          fetch-depth: 0
+
+      - name: Patch EC2 launch time rendering
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('drive/ec2.php')
+          text = p.read_text()
+          old = "                    $lt   = isset($i['LaunchTime']) ? (new DateTime($i['LaunchTime']))->format('Y-m-d H:i:s T') : '';"
+          new = """                    $launchTime = $i['LaunchTime'] ?? null;
+                    if ($launchTime instanceof \\DateTimeInterface) {
+                        $lt = $launchTime->format('Y-m-d H:i:s T');
+                    } elseif (is_string($launchTime) && trim($launchTime) !== '') {
+                        try {
+                            $lt = (new \\DateTime($launchTime))->format('Y-m-d H:i:s T');
+                        } catch (\\Throwable $dateError) {
+                            $lt = $launchTime;
+                        }
+                    } else {
+                        $lt = '';
+                    }"""
+          if new not in text:
+              if old not in text:
+                  raise SystemExit('LAUNCH_TIME_PATTERN_NOT_FOUND')
+              text = text.replace(old, new, 1)
+              p.write_text(text)
+          print('EC2_LAUNCH_TIME_OK')
+          PY
+
+      - name: Validate
+        run: |
+          php -l drive/ec2.php
+          git diff --check
+
+      - name: Commit
+        run: |
+          if git diff --quiet; then
+            echo NO_CHANGES
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add drive/ec2.php
+          git commit -m 'Fix EC2 launch time rendering'
+          git push origin HEAD:feature/ui-readable-paths

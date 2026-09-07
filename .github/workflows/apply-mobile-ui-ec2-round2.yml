@@ -1,0 +1,49 @@
+name: Apply mobile UI and EC2 round2
+
+on:
+  push:
+    branches:
+      - feature/ui-readable-paths
+    paths:
+      - '.github/scripts/apply_mobile_ui_ec2_round2.py'
+      - '.github/workflows/apply-mobile-ui-ec2-round2.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/ui-readable-paths
+          fetch-depth: 0
+
+      - name: Apply patch
+        run: python3 .github/scripts/apply_mobile_ui_ec2_round2.py
+
+      - name: Validate syntax
+        run: |
+          php -l Config-s3.php
+          php -l drive/ec2.php
+          php -l drive/s3.php
+          php -l drive/bloque_archivos.php
+          php -l drive/src/Aws/Ec2Gateway.php
+          php -l drive/src/Aws/RdsGateway.php
+          node --check drive/js/estilo.js
+          git diff --check
+
+      - name: Commit changes
+        run: |
+          if git diff --quiet; then
+            echo "NO_CHANGES"
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add Config-s3.php drive/ec2.php drive/s3.php drive/bloque_archivos.php drive/css/styles.css drive/css/responsive.css drive/js/estilo.js drive/src/Aws/Ec2Gateway.php drive/src/Aws/RdsGateway.php
+          git commit -m 'Refine mobile Drive UI and EC2 control credentials'
+          git push origin HEAD:feature/ui-readable-paths

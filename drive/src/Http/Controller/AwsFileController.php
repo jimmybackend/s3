@@ -34,7 +34,15 @@ final class AwsFileController extends AbstractJsonController
         catch(\Throwable $e){JsonResponse::send(['ok'=>false,'error'=>$e->getMessage()],400);}
     }
     private function locator(): FileRecordLocator {return new FileRecordLocator($this->app->db());}
-    private function textractService(): TextractFileService {return new TextractFileService($this->locator(),\Config::getTextract(),$this->app->bucket());}
+    private function textractService(): TextractFileService
+    {
+        return new TextractFileService(
+            $this->locator(),
+            new FileMetadataRepository($this->app->db()),
+            \Config::getTextract(),
+            $this->app->bucket()
+        );
+    }
     private function translateService(): TranslateFileService {return new TranslateFileService($this->locator(),$this->app->s3(),$this->app->bucket(),$this->textractService(),\Config::getTranslate());}
     private function rekognitionService(): RekognitionFileService {return new RekognitionFileService($this->locator(),new FileMetadataRepository($this->app->db()),\Config::getRekognition(),$this->app->bucket());}
     private function pollyService(): PollyFileService {return new PollyFileService($this->locator(),new GeneratedFileRepository($this->app->db()),$this->app->s3(),\Config::getPolly(),$this->app->bucket());}

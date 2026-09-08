@@ -7,10 +7,10 @@ class SubirChunkedModule {
   init() {
     const window = this.window;
     const document = this.document;
-    // subir-chunked.js
+
     document.addEventListener('DOMContentLoaded', function () {
       const API = window.UPLOAD_API || 'api/upload.php';
-      const CHUNK_SIZE = 15 * 1024 * 1024; // 15MB
+      const LEGACY_CHUNK_SIZE = 15 * 1024 * 1024;
       const MAX_RETRIES = 5;
 
       const input = document.getElementById('archivoGrande');
@@ -22,8 +22,66 @@ class SubirChunkedModule {
       const result = document.getElementById('uploadResultGrande');
       const progressBar = document.getElementById('progressBarGrande');
       const progressInner = document.getElementById('progressBarGrandeInner');
+      const card = document.getElementById('chunkedCard');
 
       let cancelRequested = false;
+      let chunkSize = 32 * 1024 * 1024;
+
+      // La carga multipart pesada viaja navegador -> S3 mediante URLs firmadas.
+      // PHP sólo autoriza, firma las partes y registra el resultado final en MySQL.
+      function chooseChunkSize(file) {
+        const connection =
+          navigator.connection ||
+          navigator.mozConnection ||
+          navigator.webkitConnection ||
+          null;
+
+        const type = String(connection?.effectiveType || '').toLowerCase();
+        const downlink = Number(connection?.downlink || 0);
+        let mb = 32;
+
+        if (type === 'slow-2g' || type === '2g') {
+          mb = 8;
+        } else if (type === '3g' || (downlink > 0 && downlink < 5)) {
+          mb = 16;
+        } else if (downlink >= 50) {
+          mb = 128;
+        } else if (downlink >= 10 || type === '4g') {
+          mb = 64;
+        }
+
+        if (file && file.size < 100 * 1024 * 1024) {
+          mb = Math.min(mb, 16);
+        }
+
+        // S3 Multipart admite hasta 10,000 partes. Dejamos margen.
+        if (file && file.size > 0) {
+          const MB = 1024 * 1024;
+          const minimumByParts = Math.ceil(file.size / 9900 / MB);
+          mb = Math.max(mb, minimumByParts);
+        }
+
+        mb = Math.max(8, Math.min(256, mb));
+        return mb * 1024 * 1024;
+      }
+
+      function installDirectUploadLabels() {
+        if (card) {
+          const heading = card.querySelector('h6');
+          if (heading) {
+            heading.innerHTML = '<i class="fas fa-layer-group"></i> Subida grande directa a S3';
+          }
+
+          const description = card.querySelector('.card-body.small');
+          if (description) {
+            description.textContent =
+              'Recomendado para archivos grandes. Los datos viajan directamente del navegador a Amazon S3, con paquetes adaptativos, progreso, reintentos y reanudación.';
+          }
+        }
+
+        if (btnTxt) btnTxt.textContent = 'Subir';
+        setStatus('Selecciona un archivo y pulsa Subir. Los datos viajan directamente a S3.', 'muted');
+      }
 
       // ---------- LocalStorage para reanudar ----------
       const LS_PREFIX = 's3v2_chunked_';
@@ -55,39 +113,55 @@ class SubirChunkedModule {
       }
 
       // ---------- UI ----------
+      installDirectUploadLabels();
+
       if (input) {
         input.addEventListener('change', function () {
-          const f = input.files && input.files[0] ? input.files[0] : null;
-          if (!f) {
+          const file = input.files && input.files[0] ? input.files[0] : null;
+          if (!file) {
             if (fileName) fileName.textContent = '';
-            setStatus('Selecciona un archivo y pulsa Subir (15MB)', 'muted');
+            setStatus('Selecciona un archivo y pulsa Subir. Los datos viajan directamente a S3.', 'muted');
             return;
           }
 
-          if (fileName) fileName.textContent = 'Archivo: ' + f.name + ' (' + formatFileSize(f.size) + ')';
+          if (fileName) {
+            fileName.textContent = 'Archivo: ' + file.name + ' (' + formatFileSize(file.size) + ')';
+          }
 
-          const saved = loadSession(f);
+          const saved = loadSession(file);
           if (saved && saved.uploadId && saved.key) {
-            setStatus('Sesión previa detectada. Puedes reanudar la subida.', 'warning');
+            const savedChunk = Number(saved.chunkSize) > 0
+              ? Number(saved.chunkSize)
+              : LEGACY_CHUNK_SIZE;
+            setStatus(
+              'Sesión previa detectada. Puedes reanudarla con paquetes de ' + formatFileSize(savedChunk) + '.',
+              'warning'
+            );
           } else {
-            setStatus('Listo para subir por partes (15MB).', 'muted');
+            const recommended = chooseChunkSize(file);
+            setStatus(
+              'Listo para subida directa a S3 · paquetes adaptativos de ' + formatFileSize(recommended) + '.',
+              'muted'
+            );
           }
         });
       }
 
       if (btnSubir) {
         btnSubir.addEventListener('click', function () {
-          subirChunked().catch(function (e) {
-            console.error(e);
+          subirChunked().catch(function (error) {
+            console.error(error);
           });
         });
       }
 
       if (btnCancelar) {
-        btnCancelar.addEventListener('click', function () {
+        btnCancelar.addEventListener('click', function (event) {
+          event.preventDefault();
           cancelRequested = true;
           setStatus('Cancelando… (puedes reanudar luego)', 'warning');
-          btnCancelar.disabled = true;
+          btnCancelar.classList.add('disabled');
+          btnCancelar.setAttribute('aria-disabled', 'true');
         });
       }
 
@@ -110,17 +184,32 @@ class SubirChunkedModule {
         let rutaObjetivo = null;
 
         try {
-          // 0) Si hay sesión guardada => reanudar
+          // 0) Si hay sesión guardada, conservar exactamente el tamaño de parte original.
+          // Las sesiones antiguas no guardaban chunkSize y usaban 15 MB.
           const saved = loadSession(file);
           if (saved && saved.uploadId && saved.key && saved.stateId) {
             uploadId = saved.uploadId;
             key = saved.key;
             stateId = saved.stateId;
-            rutaObjetivo = saved.rutaObjetivo || (String(key).includes('/') ? String(key).slice(0, String(key).lastIndexOf('/') + 1) : '');
-            setStatus('Reanudando sesión anterior en ' + rutaObjetivo + '…', 'primary');
+            chunkSize = Number(saved.chunkSize) > 0
+              ? Number(saved.chunkSize)
+              : LEGACY_CHUNK_SIZE;
+            rutaObjetivo = saved.rutaObjetivo || (
+              String(key).includes('/')
+                ? String(key).slice(0, String(key).lastIndexOf('/') + 1)
+                : ''
+            );
+            setStatus(
+              'Reanudando subida directa a S3 · paquetes de ' + formatFileSize(chunkSize) + '…',
+              'primary'
+            );
           } else {
             // 1) INIT
-            setStatus('Iniciando multipart…', 'primary');
+            chunkSize = chooseChunkSize(file);
+            setStatus(
+              'Iniciando multipart directo a S3 · paquetes de ' + formatFileSize(chunkSize) + '…',
+              'primary'
+            );
 
             rutaObjetivo = window.DriveUploadDestination.capture();
             const initBody = new URLSearchParams();
@@ -141,14 +230,17 @@ class SubirChunkedModule {
 
             const initJson = await safeJson(initResp);
             if (!initResp.ok || !initJson || !initJson.uploadId || !initJson.key) {
-              throw new Error((initJson && initJson.error) ? initJson.error : ('init falló HTTP ' + initResp.status));
+              throw new Error(
+                (initJson && initJson.error)
+                  ? initJson.error
+                  : ('init falló HTTP ' + initResp.status)
+              );
             }
 
             uploadId = initJson.uploadId;
             key = initJson.key;
             stateId = initJson.stateId || '';
 
-            // Guardar sesión
             saveSession(file, {
               stateId: stateId,
               uploadId: uploadId,
@@ -156,6 +248,7 @@ class SubirChunkedModule {
               filename: file.name,
               filesize: file.size,
               lastModified: file.lastModified || 0,
+              chunkSize: chunkSize,
               rutaObjetivo: rutaObjetivo,
               createdAt: Date.now()
             });
@@ -185,48 +278,50 @@ class SubirChunkedModule {
               existingEtags = resumeJson.etags || {};
             }
           } catch (e) {
-            // no bloquea
+            // La consulta de reanudación no bloquea una sesión nueva.
           }
 
           // 3) Upload loop
-          const totalParts = Math.ceil(file.size / CHUNK_SIZE);
-          const etags = {}; // partNumber => etag sin comillas
+          const totalParts = Math.ceil(file.size / chunkSize);
+          const etags = {};
 
-          // mezclar lo reanudable
-          for (const kPart in existingEtags) {
-            if (Object.prototype.hasOwnProperty.call(existingEtags, kPart)) {
-              etags[kPart] = existingEtags[kPart];
+          for (const partKey in existingEtags) {
+            if (Object.prototype.hasOwnProperty.call(existingEtags, partKey)) {
+              etags[partKey] = existingEtags[partKey];
             }
           }
 
-          // bytes ya subidos (aprox exacto por tamaño de cada parte)
           let uploadedBytes = 0;
           for (const partStr in etags) {
-            const p = parseInt(partStr, 10);
-            if (!isFinite(p) || p <= 0) continue;
-            const start = (p - 1) * CHUNK_SIZE;
-            const end = Math.min(file.size, start + CHUNK_SIZE);
+            const part = parseInt(partStr, 10);
+            if (!isFinite(part) || part <= 0) continue;
+            const start = (part - 1) * chunkSize;
+            const end = Math.min(file.size, start + chunkSize);
             uploadedBytes += (end - start);
           }
           setProgress(Math.floor((uploadedBytes / file.size) * 100));
 
-          setStatus('Subiendo partes…', 'primary');
+          setStatus('Subiendo partes directamente a Amazon S3…', 'primary');
 
           for (let partNumber = 1; partNumber <= totalParts; partNumber++) {
-            if (cancelRequested) throw new Error('Cancelado por el usuario.');
+            if (cancelRequested) {
+              throw new Error('Cancelado por el usuario.');
+            }
 
-            // saltar si ya estaba subida
             if (etags[String(partNumber)]) {
-              setStatus('Reanudado: parte ' + partNumber + '/' + totalParts + ' ya estaba subida.', 'muted');
+              setStatus(
+                'Reanudado: parte ' + partNumber + '/' + totalParts + ' ya estaba subida.',
+                'muted'
+              );
               continue;
             }
 
-            const start = (partNumber - 1) * CHUNK_SIZE;
-            const end = Math.min(file.size, start + CHUNK_SIZE);
+            const start = (partNumber - 1) * chunkSize;
+            const end = Math.min(file.size, start + chunkSize);
             const chunk = file.slice(start, end);
             const contentLength = end - start;
 
-            // 3a) pedir URL firmada para esta parte
+            // 3a) PHP firma la parte; no recibe el cuerpo del archivo.
             const signBody = new URLSearchParams();
             signBody.append('step', 'sign');
             if (stateId) signBody.append('stateId', stateId);
@@ -247,24 +342,34 @@ class SubirChunkedModule {
 
             const signJson = await safeJson(signResp);
             if (!signResp.ok || !signJson || !signJson.url) {
-              throw new Error((signJson && signJson.error) ? signJson.error : ('sign falló HTTP ' + signResp.status));
+              throw new Error(
+                (signJson && signJson.error)
+                  ? signJson.error
+                  : ('sign falló HTTP ' + signResp.status)
+              );
             }
 
-            // 3b) subir chunk (con reintento + progreso real)
-            setStatus('Subiendo parte ' + partNumber + '/' + totalParts + '…', 'primary');
+            // 3b) El blob viaja directamente del navegador a la URL firmada de S3.
+            setStatus(
+              'Subiendo a S3: parte ' + partNumber + '/' + totalParts + '…',
+              'primary'
+            );
 
-            const etag = await putChunkWithRetry(signJson.url, chunk, function (loaded) {
-              const totalLoaded = uploadedBytes + loaded;
-              const pct = Math.floor((totalLoaded / file.size) * 100);
-              setProgress(pct);
-            }, MAX_RETRIES);
+            const etag = await putChunkWithRetry(
+              signJson.url,
+              chunk,
+              function (loaded) {
+                const totalLoaded = uploadedBytes + loaded;
+                const pct = Math.floor((totalLoaded / file.size) * 100);
+                setProgress(pct);
+              },
+              MAX_RETRIES
+            );
 
             etags[String(partNumber)] = etag;
             uploadedBytes += contentLength;
-
             setProgress(Math.floor((uploadedBytes / file.size) * 100));
 
-            // guardar progreso para reanudar si se cae la señal
             saveSession(file, {
               stateId: stateId,
               uploadId: uploadId,
@@ -272,14 +377,15 @@ class SubirChunkedModule {
               filename: file.name,
               filesize: file.size,
               lastModified: file.lastModified || 0,
+              chunkSize: chunkSize,
               etags: etags,
               rutaObjetivo: rutaObjetivo,
               updatedAt: Date.now()
             });
           }
 
-          // 4) COMPLETE
-          setStatus('Completando multipart…', 'primary');
+          // 4) COMPLETE: PHP completa multipart y registra FileS3 en MySQL.
+          setStatus('Completando multipart y registrando el archivo…', 'primary');
 
           const completeBody = new URLSearchParams();
           if (stateId) completeBody.append('stateId', stateId);
@@ -299,34 +405,37 @@ class SubirChunkedModule {
 
           const completeJson = await safeJson(completeResp);
           if (!completeResp.ok || !completeJson || completeJson.ok === false) {
-            throw new Error((completeJson && completeJson.error) ? completeJson.error : ('complete falló HTTP ' + completeResp.status));
+            throw new Error(
+              (completeJson && completeJson.error)
+                ? completeJson.error
+                : ('complete falló HTTP ' + completeResp.status)
+            );
           }
 
           setProgress(100);
-          setStatus('✅ Subido completo: ' + key + ' (' + formatFileSize(file.size) + ')', 'success');
+          setStatus(
+            '✅ Archivo subido correctamente (' + formatFileSize(file.size) + ').',
+            'success'
+          );
 
-          // Actualiza solo lo necesario: espacio y lista si seguimos en el destino original.
           await window.DriveUploadDestination.afterSuccess(rutaObjetivo);
 
-          // limpiar sesión y UI
           clearSession(file);
           if (input) input.value = '';
           if (fileName) fileName.textContent = '';
-
-          toggleBusy(false);
           return;
 
-        } catch (e) {
-          const msg = (e && e.message) ? e.message : String(e);
-          setStatus('❌ Error: ' + msg, 'danger');
-          console.error(e);
-          // dejamos la sesión guardada para reanudar
+        } catch (error) {
+          const message = error && error.message ? error.message : String(error);
+          setStatus('❌ Error: ' + message, 'danger');
+          console.error(error);
+          // Conservamos la sesión para reanudar después de una falla de red o cancelación.
         } finally {
           toggleBusy(false);
         }
       }
 
-      // ---------- PUT XHR (progreso + ETag) ----------
+      // ---------- PUT XHR directo a S3 ----------
       function putChunkXHR(url, blob, onProgress) {
         return new Promise(function (resolve, reject) {
           const xhr = new XMLHttpRequest();
@@ -340,21 +449,20 @@ class SubirChunkedModule {
 
           xhr.onload = function () {
             if (xhr.status >= 200 && xhr.status < 300) {
-              // Necesitamos ETag para completar multipart
-              // OJO: requiere CORS ExposeHeaders: ETag
               let etag = xhr.getResponseHeader('ETag') || xhr.getResponseHeader('etag') || '';
               etag = String(etag).replace(/"/g, '').trim();
               if (!etag) {
-                return reject(new Error('No se recibió ETag. Revisa CORS del bucket (ExposeHeaders: ETag).'));
+                reject(new Error('No se recibió ETag. Revisa CORS del bucket (ExposeHeaders: ETag).'));
+                return;
               }
               resolve(etag);
-            } else {
-              reject(new Error('PUT chunk falló HTTP ' + xhr.status));
+              return;
             }
+            reject(new Error('PUT directo a S3 falló HTTP ' + xhr.status));
           };
 
           xhr.onerror = function () {
-            reject(new Error('Error de red en PUT chunk'));
+            reject(new Error('Error de red durante el PUT directo a S3'));
           };
 
           xhr.send(blob);
@@ -362,42 +470,53 @@ class SubirChunkedModule {
       }
 
       function sleep(ms) {
-        return new Promise(function (r) { setTimeout(r, ms); });
+        return new Promise(function (resolve) {
+          setTimeout(resolve, ms);
+        });
       }
 
       async function putChunkWithRetry(url, blob, onProgress, maxRetries) {
-        maxRetries = maxRetries || 5;
         let attempt = 0;
-        let lastErr = null;
+        let lastError = null;
+        const retries = maxRetries || 5;
 
-        while (attempt < maxRetries) {
-          if (cancelRequested) throw new Error('Cancelado por el usuario.');
+        while (attempt < retries) {
+          if (cancelRequested) {
+            throw new Error('Cancelado por el usuario.');
+          }
 
           try {
-            const etag = await putChunkXHR(url, blob, onProgress);
-            return etag;
-          } catch (e) {
-            lastErr = e;
+            return await putChunkXHR(url, blob, onProgress);
+          } catch (error) {
+            lastError = error;
             attempt++;
 
-            if (attempt >= maxRetries) break;
+            if (attempt >= retries) break;
 
-            const wait = 800 * attempt; // backoff simple
-            setStatus('Fallo en chunk. Reintentando (' + attempt + '/' + maxRetries + ')…', 'warning');
+            const wait = 800 * attempt;
+            setStatus(
+              'Fallo temporal de red. Reintentando (' + attempt + '/' + retries + ')…',
+              'warning'
+            );
             await sleep(wait);
           }
         }
 
-        throw lastErr || new Error('Falló PUT chunk tras reintentos');
+        throw lastError || new Error('Falló PUT directo a S3 tras los reintentos');
       }
 
       // ---------- UI helpers ----------
       function toggleBusy(busy) {
-        if (btnSubir) btnSubir.disabled = !!busy;
-        if (btnCancelar) btnCancelar.disabled = !busy;
+        if (btnSubir) btnSubir.disabled = Boolean(busy);
+
+        if (btnCancelar) {
+          btnCancelar.classList.toggle('d-none', !busy);
+          btnCancelar.classList.remove('disabled');
+          btnCancelar.setAttribute('aria-disabled', 'false');
+        }
 
         if (spinner) spinner.classList[busy ? 'remove' : 'add']('d-none');
-        if (btnTxt) btnTxt.textContent = busy ? 'Subiendo…' : 'Subir (15MB)';
+        if (btnTxt) btnTxt.textContent = busy ? 'Subiendo…' : 'Subir';
 
         if (!busy) cancelRequested = false;
       }
@@ -408,8 +527,11 @@ class SubirChunkedModule {
       }
 
       function setProgress(pct) {
-        pct = Math.max(0, Math.min(100, parseInt(pct, 10) || 0));
-        if (progressInner) progressInner.style.width = pct + '%';
+        const value = Math.max(0, Math.min(100, parseInt(pct, 10) || 0));
+        if (progressInner) {
+          progressInner.style.width = value + '%';
+          progressInner.setAttribute('aria-valuenow', String(value));
+        }
       }
 
       function setStatus(message, kind) {
@@ -426,17 +548,25 @@ class SubirChunkedModule {
       }
 
       async function safeJson(resp) {
-        try { return await resp.json(); } catch (e) { return null; }
+        try {
+          return await resp.json();
+        } catch (e) {
+          return null;
+        }
       }
 
       function formatFileSize(bytes) {
-        bytes = Number(bytes);
-        if (!isFinite(bytes) || bytes <= 0) return '0 Bytes';
+        const value = Number(bytes);
+        if (!isFinite(value) || value <= 0) return '0 Bytes';
+
         const k = 1024;
         const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
-        const i = Math.floor(Math.log(bytes) / Math.log(k));
-        const num = bytes / Math.pow(k, i);
-        return (Math.round(num * 100) / 100) + ' ' + sizes[i];
+        const index = Math.min(
+          sizes.length - 1,
+          Math.floor(Math.log(value) / Math.log(k))
+        );
+        const number = value / Math.pow(k, index);
+        return (Math.round(number * 100) / 100) + ' ' + sizes[index];
       }
     });
 

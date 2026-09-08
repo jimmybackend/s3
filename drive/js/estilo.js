@@ -112,6 +112,108 @@ class EstiloModule {
         savePrefs();
       }
 
+      function installAboutDialog() {
+        const userMenu = document.getElementById('usuarioMenu');
+        const dropdown = userMenu ? userMenu.closest('.dropdown') : null;
+        const menu = dropdown ? dropdown.querySelector('.dropdown-menu') : null;
+
+        if (menu && !document.getElementById('btnAcercaArcadeCloud')) {
+          const aboutButton = document.createElement('button');
+          aboutButton.type = 'button';
+          aboutButton.id = 'btnAcercaArcadeCloud';
+          aboutButton.className = 'dropdown-item';
+          aboutButton.setAttribute('data-toggle', 'modal');
+          aboutButton.setAttribute('data-target', '#modalAcercaArcadeCloud');
+          aboutButton.innerHTML = '<i class="fas fa-circle-info"></i> Acerca de';
+
+          const divider = menu.querySelector('.dropdown-divider');
+          if (divider) menu.insertBefore(aboutButton, divider);
+          else menu.appendChild(aboutButton);
+        }
+
+        if (document.getElementById('modalAcercaArcadeCloud')) return;
+
+        const modal = document.createElement('div');
+        modal.className = 'modal fade';
+        modal.id = 'modalAcercaArcadeCloud';
+        modal.tabIndex = -1;
+        modal.setAttribute('role', 'dialog');
+        modal.setAttribute('aria-labelledby', 'modalAcercaArcadeCloudLabel');
+        modal.setAttribute('aria-hidden', 'true');
+        modal.innerHTML = `
+          <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <div>
+                  <h5 class="modal-title" id="modalAcercaArcadeCloudLabel">
+                    <i class="fas fa-cloud mr-2"></i>ArcadeCloud Drive
+                  </h5>
+                  <small class="text-muted">Drive web para Amazon S3</small>
+                </div>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+
+              <div class="modal-body">
+                <p>
+                  <strong>ArcadeCloud Drive</strong> es un gestor web para Amazon S3 diseñado para
+                  mantener la navegación y la organización lógica en MySQL, mientras Amazon S3 se
+                  utiliza como almacenamiento físico de los archivos.
+                </p>
+
+                <div class="alert alert-info">
+                  <strong>Software libre.</strong>
+                  Este proyecto se distribuye bajo la
+                  <strong>GNU General Public License v3.0 (GPLv3)</strong>.
+                  Puedes usarlo, estudiarlo, modificarlo y redistribuirlo respetando los términos
+                  de esa licencia y conservando los avisos legales que correspondan.
+                </div>
+
+                <p>
+                  ArcadeCloud Drive no vende ni incluye una “licencia de S3”. Para utilizarlo
+                  necesitas tu propia cuenta de AWS, un bucket de Amazon S3 y la configuración de
+                  acceso correspondiente. Los cargos generados por AWS son responsabilidad del
+                  titular de esa cuenta.
+                </p>
+
+                <p class="mb-3">
+                  Si este software te resulta útil, conserva el crédito de
+                  <strong>jimmybackend</strong> y, cuando sea posible, comparte tus mejoras con la
+                  comunidad. El proyecto nació para aportar una herramienta práctica y reutilizable,
+                  y agradeceremos que su origen no se pierda con el tiempo.
+                </p>
+
+                <div class="card">
+                  <div class="card-body py-3">
+                    <div><strong>Proyecto / autor:</strong> jimmybackend</div>
+                    <div><strong>Contacto:</strong> <a href="mailto:jimmybacked@gmail.com">jimmybacked@gmail.com</a></div>
+                    <div><strong>Soporte:</strong> <a href="mailto:soporte@esforzados.com">soporte@esforzados.com</a></div>
+                    <div>
+                      <strong>Repositorio:</strong>
+                      <a href="https://github.com/jimmybackend/s3" target="_blank" rel="noopener noreferrer">
+                        github.com/jimmybackend/s3
+                      </a>
+                    </div>
+                    <div><strong>Licencia:</strong> GNU GPL v3.0</div>
+                  </div>
+                </div>
+
+                <small class="d-block text-muted mt-3">
+                  Software distribuido sin garantía, en los términos de la GPLv3.
+                  Amazon Web Services y Amazon S3 son servicios de Amazon Web Services, Inc.
+                </small>
+              </div>
+
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+              </div>
+            </div>
+          </div>`;
+
+        document.body.appendChild(modal);
+      }
+
       document.addEventListener('click', function(e) {
         const btnTheme = e.target.closest('.js-set-theme');
         if (btnTheme) {
@@ -141,6 +243,7 @@ class EstiloModule {
         }
       });
 
+      installAboutDialog();
       loadPrefs();
     });
 

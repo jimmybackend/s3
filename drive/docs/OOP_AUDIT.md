@@ -4,11 +4,11 @@
 
 ## Resumen
 
-- PHP analizados: **188**
-- PHP que ya contienen clases/interfaces: **117**
+- PHP analizados: **189**
+- PHP que ya contienen clases/interfaces: **118**
 - PHP marcados para migración/revisión: **4**
-- JavaScript analizados: **30**
-- JavaScript que ya contienen clases: **29**
+- JavaScript analizados: **31**
+- JavaScript que ya contienen clases: **30**
 - JavaScript marcados para migración/revisión: **7**
 
 ## Criterio
@@ -70,6 +70,7 @@
 | `drive/renombrar_carpeta.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/s3.php` | 2182 | view/entrypoint | 0 | ⚠️ | — | — | — |
 | `drive/set_file_security.php` | 10 | thin endpoint | 0 | — | — | — | — |
+| `drive/src/Application/AiFileSearchService.php` | 470 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Application/DrivePageService.php` | 40 | class/module | 1 | — | — | — | — |
 | `drive/src/Application/DrivePageViewModel.php` | 18 | class/module | 1 | — | — | — | — |
 | `drive/src/Application/FileAccessService.php` | 114 | class/module | 1 | — | — | — | — |
@@ -86,12 +87,12 @@
 | `drive/src/Application/UploadDestinationService.php` | 56 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Application/ZipDownloadService.php` | 62 | class/module | 1 | — | — | — | — |
 | `drive/src/Aws/AwsCostService.php` | 92 | class/module | 1 | — | — | — | — |
-| `drive/src/Aws/ComprehendFileService.php` | 223 | class/module | 1 | — | ⚠️ | — | — |
+| `drive/src/Aws/ComprehendFileService.php` | 201 | class/module | 1 | — | — | — | — |
 | `drive/src/Aws/CostExplorerGateway.php` | 76 | class/module | 1 | — | — | — | — |
 | `drive/src/Aws/Ec2CostGuardService.php` | 116 | class/module | 1 | — | — | — | — |
 | `drive/src/Aws/Ec2CronLogger.php` | 28 | class/module | 1 | — | — | — | — |
 | `drive/src/Aws/Ec2Gateway.php` | 103 | class/module | 1 | — | — | — | — |
-| `drive/src/Aws/FileMetadataRepository.php` | 32 | class/module | 1 | — | ⚠️ | — | — |
+| `drive/src/Aws/FileMetadataRepository.php` | 118 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Aws/FileRecordLocator.php` | 75 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Aws/GeneratedFileRepository.php` | 36 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Aws/PersonalAwsConfig.php` | 122 | class/module | 1 | — | — | — | — |
@@ -99,7 +100,7 @@
 | `drive/src/Aws/PollyFileService.php` | 67 | class/module | 1 | — | — | — | — |
 | `drive/src/Aws/RdsGateway.php` | 233 | class/module | 1 | — | — | — | — |
 | `drive/src/Aws/RekognitionFileService.php` | 30 | class/module | 1 | — | — | — | — |
-| `drive/src/Aws/TextractFileService.php` | 31 | class/module | 1 | — | — | — | — |
+| `drive/src/Aws/TextractFileService.php` | 98 | class/module | 1 | — | — | — | — |
 | `drive/src/Aws/TranscriptionFileService.php` | 126 | class/module | 1 | — | — | — | — |
 | `drive/src/Aws/TranslateFileService.php` | 51 | class/module | 1 | — | — | — | — |
 | `drive/src/Console/UploadCleanupCommand.php` | 61 | class/module | 1 | — | — | — | — |
@@ -110,11 +111,11 @@
 | `drive/src/Http/Controller/AbstractJsonController.php` | 69 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/AuthController.php` | 94 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/AwsCostController.php` | 39 | class/module | 1 | — | — | — | — |
-| `drive/src/Http/Controller/AwsFileController.php` | 43 | class/module | 1 | — | — | — | — |
+| `drive/src/Http/Controller/AwsFileController.php` | 51 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/FileAccessController.php` | 96 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/FileKeyRotationController.php` | 35 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/FileMutationController.php` | 126 | class/module | 1 | — | — | — | — |
-| `drive/src/Http/Controller/FileSearchController.php` | 43 | class/module | 1 | — | — | — | — |
+| `drive/src/Http/Controller/FileSearchController.php` | 65 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/FileSecurityController.php` | 97 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/FolderMutationController.php` | 144 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/FolderQueryController.php` | 30 | class/module | 1 | — | — | — | — |
@@ -216,6 +217,7 @@
 | Archivo | Líneas | Tipo detectado | Clases | Funciones globales | `window` funciones | Observaciones |
 |---|---:|---|---|---|---|---|
 | `drive/js/actualizar-hora.js` | 36 | class/module | ActualizarHoraModule | — | — | — |
+| `drive/js/ai-search.js` | 187 | class/module | DriveAiSearchModule | — | — | — |
 | `drive/js/archivos.js` | 2155 | class/module | ArchivosModule | — | abrirModalRenombrarArchivo, cerrarModalCompartir, setFileSecurity | window functions: abrirModalRenombrarArchivo, cerrarModalCompartir, setFileSecurity |
 | `drive/js/audiovideo.js` | 619 | class/module | AudiovideoModule | — | audioNext, audioPrev, reproducirVideoDesde, videoNext, videoPlayPause, videoPrev | window functions: audioNext, audioPrev, reproducirVideoDesde, videoNext, videoPlayPause, videoPrev, wavePlayPause |
 | `drive/js/aws-comprehend.js` | 342 | class/module | AwsComprehendModule, AwsFileActionRouter | — | — | — |
@@ -225,8 +227,8 @@
 | `drive/js/editar-txt.js` | 68 | class/module | EditarTxtModule | — | — | — |
 | `drive/js/elimina-multiple.js` | 104 | class/module | EliminaMultipleModule | — | — | — |
 | `drive/js/elimina-uno.js` | 122 | class/module | EliminaUnoModule | — | — | — |
-| `drive/js/estilo.js` | 160 | class/module | EstiloModule | — | — | — |
-| `drive/js/file-block.js` | 285 | class/module | FileBlockApp | — | — | — |
+| `drive/js/estilo.js` | 323 | class/module | EstiloModule | — | — | — |
+| `drive/js/file-block.js` | 305 | class/module | FileBlockApp | — | — | — |
 | `drive/js/filtros.js` | 97 | class/module | FiltrosModule | — | — | — |
 | `drive/js/imagenes.js` | 535 | class/module | ImagenesModule | — | getGaleriaGridSize, setGaleriaGridSize | window functions: getGaleriaGridSize, setGaleriaGridSize |
 | `drive/js/media-floating.js` | 685 | procedural script | — | — | — | no ES class |
@@ -239,7 +241,7 @@
 | `drive/js/sincronizar.js` | 315 | class/module | SincronizarModule | — | — | — |
 | `drive/js/soportesMediaTypes.js` | 390 | class/module | SoportesMediaTypesModule | — | — | — |
 | `drive/js/storage-usage.js` | 51 | class/module | StorageUsageModule | — | — | — |
-| `drive/js/subir-chunked.js` | 456 | class/module | SubirChunkedModule | — | — | — |
+| `drive/js/subir-chunked.js` | 586 | class/module | SubirChunkedModule | — | — | — |
 | `drive/js/subir-dropzone.js` | 868 | class/module | SubirDropzoneModule | — | — | — |
 | `drive/js/subir.js` | 339 | class/module | SubirModule | — | — | — |
 | `drive/js/upload-destination.js` | 63 | class/module | UploadDestinationModule | — | — | — |

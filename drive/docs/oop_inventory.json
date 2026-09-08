@@ -1,10 +1,10 @@
 {
   "summary": {
-    "php_total": 188,
-    "php_class_modules": 117,
+    "php_total": 189,
+    "php_class_modules": 118,
     "php_needs_migration": 4,
-    "js_total": 30,
-    "js_class_modules": 29,
+    "js_total": 31,
+    "js_class_modules": 30,
     "js_needs_migration": 7
   },
   "php": [
@@ -764,6 +764,21 @@
       "issues": []
     },
     {
+      "path": "drive/src/Application/AiFileSearchService.php",
+      "lines": 470,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": true,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
       "path": "drive/src/Application/DrivePageService.php",
       "lines": 40,
       "kind": "class/module",
@@ -1005,13 +1020,13 @@
     },
     {
       "path": "drive/src/Aws/ComprehendFileService.php",
-      "lines": 223,
+      "lines": 201,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
       "session": false,
       "superglobals": [],
-      "db": true,
+      "db": false,
       "s3": false,
       "bootstrap": false,
       "html": false,
@@ -1080,7 +1095,7 @@
     },
     {
       "path": "drive/src/Aws/FileMetadataRepository.php",
-      "lines": 32,
+      "lines": 118,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -1200,7 +1215,7 @@
     },
     {
       "path": "drive/src/Aws/TextractFileService.php",
-      "lines": 31,
+      "lines": 98,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -1365,7 +1380,7 @@
     },
     {
       "path": "drive/src/Http/Controller/AwsFileController.php",
-      "lines": 43,
+      "lines": 51,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -1425,7 +1440,7 @@
     },
     {
       "path": "drive/src/Http/Controller/FileSearchController.php",
-      "lines": 43,
+      "lines": 65,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -2899,6 +2914,20 @@
       "issues": []
     },
     {
+      "path": "drive/js/ai-search.js",
+      "lines": 187,
+      "kind": "class/module",
+      "classes": [
+        "DriveAiSearchModule"
+      ],
+      "functions": [],
+      "window_assign": [],
+      "window_func": [],
+      "top_vars": [],
+      "iife": false,
+      "issues": []
+    },
+    {
       "path": "drive/js/archivos.js",
       "lines": 2155,
       "kind": "class/module",
@@ -3099,7 +3128,7 @@
     },
     {
       "path": "drive/js/estilo.js",
-      "lines": 160,
+      "lines": 323,
       "kind": "class/module",
       "classes": [
         "EstiloModule"
@@ -3113,7 +3142,7 @@
     },
     {
       "path": "drive/js/file-block.js",
-      "lines": 285,
+      "lines": 305,
       "kind": "class/module",
       "classes": [
         "FileBlockApp"
@@ -3362,7 +3391,7 @@
     },
     {
       "path": "drive/js/subir-chunked.js",
-      "lines": 456,
+      "lines": 586,
       "kind": "class/module",
       "classes": [
         "SubirChunkedModule"

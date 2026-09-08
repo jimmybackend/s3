@@ -18,6 +18,7 @@ final class ComprehendFileService
     private const LANGUAGE_CODES = ['en','es','fr','de','it','pt','ar','hi','ja','ko','zh','zh-TW'];
 
     private FileRecordLocator $locator;
+    private FileMetadataRepository $metadata;
 
     public function __construct(
         private mysqli $db,
@@ -26,6 +27,7 @@ final class ComprehendFileService
         private string $bucket
     ) {
         $this->locator = new FileRecordLocator($db);
+        $this->metadata = new FileMetadataRepository($db);
     }
 
     public function analyze(int $userId, string $key): array
@@ -38,6 +40,7 @@ final class ComprehendFileService
             throw new RuntimeException('Amazon Comprehend se habilita aquí para archivos de texto y código.');
         }
 
+        // Lectura del objeto únicamente para analizarlo. Nunca se escribe ni modifica S3.
         $object = $this->s3->getObject([
             'Bucket' => $this->bucket,
             'Key' => $realKey,
@@ -99,6 +102,7 @@ final class ComprehendFileService
             'record_id' => (int)$row['id_'],
             'key' => $realKey,
             'nombre' => (string)($row['Nombre'] ?? basename($realKey)),
+            'ruta' => (string)($row['Ruta'] ?? ''),
             'language' => $language,
             'languages' => $languages,
             'truncated' => $truncated,
@@ -116,8 +120,13 @@ final class ComprehendFileService
             $this->fillAnalysis($result, $text, $language);
         }
 
-        $this->storeMetadata($userId, $row, $result);
+        $stored = $result;
+        unset($stored['record_id'], $stored['key']);
+        $this->metadata->merge($userId, (int)$row['id_'], 'Comprehend', $stored);
+
         unset($result['record_id']);
+        $result['saved'] = true;
+        $result['metadata_section'] = 'Comprehend';
         return $result;
     }
 
@@ -187,36 +196,5 @@ final class ComprehendFileService
         } catch (\Throwable $e) {
             $result['warnings'][] = 'Detección de PII no disponible.';
         }
-    }
-
-    private function storeMetadata(int $userId, array $row, array $analysis): void
-    {
-        $meta = [];
-        $raw = trim((string)($row['Metadatos'] ?? ''));
-        if ($raw !== '') {
-            $decoded = json_decode($raw, true);
-            if (is_array($decoded)) {
-                $meta = $decoded;
-            }
-        }
-
-        $stored = $analysis;
-        unset($stored['record_id']);
-        $stored['ts'] = date('c');
-        $meta['Comprehend'] = $stored;
-
-        $json = json_encode($meta, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-        if (!is_string($json)) {
-            throw new RuntimeException('No se pudieron serializar los metadatos de Comprehend.');
-        }
-
-        $id = (int)$row['id_'];
-        $stmt = $this->db->prepare('UPDATE FileS3 SET Metadatos = ? WHERE id_ = ? AND user_id_ = ? LIMIT 1');
-        if (!$stmt) {
-            throw new RuntimeException('No se pudo preparar la actualización de metadatos: ' . $this->db->error);
-        }
-        $stmt->bind_param('sii', $json, $id, $userId);
-        $stmt->execute();
-        $stmt->close();
     }
 }

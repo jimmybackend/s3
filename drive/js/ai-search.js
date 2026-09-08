@@ -46,25 +46,12 @@ class DriveAiSearchModule {
 
   async onClick(event) {
     const aiButton = event.target.closest('#btnBusquedaIA');
-    if (aiButton) {
-      event.preventDefault();
-      event.stopPropagation();
-      await this.search(aiButton);
-      return;
-    }
-
-    const openButton = event.target.closest('#resultadosBusqueda [data-ai-open]');
-    if (!openButton) return;
+    if (!aiButton) return;
 
     event.preventDefault();
-    const route = String(openButton.dataset.ruta || '').trim();
-    const name = String(openButton.dataset.nombre || '').trim();
-    if (!route) return;
-
-    const url = new URL('s3.php', this.window.location.href);
-    url.searchParams.set('ruta', route);
-    if (name) url.searchParams.set('buscar', name);
-    this.window.location.href = url.toString();
+    event.stopPropagation();
+    event.stopImmediatePropagation();
+    await this.search(aiButton);
   }
 
   async search(button) {
@@ -158,11 +145,11 @@ class DriveAiSearchModule {
               <div class="small text-info mt-1">Confianza aproximada: ${confidence}%</div>
             </div>
             <button type="button"
-                    class="btn btn-sm btn-outline-primary"
-                    data-ai-open="1"
+                    class="btn btn-sm btn-outline-primary btn-ir"
                     data-ruta="${route}"
+                    data-key=""
                     data-nombre="${searchName}">
-              <i class="fas fa-folder-open mr-1"></i> Abrir ubicación
+              <i class="fas fa-folder-open mr-1"></i> Ir
             </button>
           </div>
         </div>`;

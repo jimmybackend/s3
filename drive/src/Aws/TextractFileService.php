@@ -8,23 +8,90 @@ use RuntimeException;
 
 final class TextractFileService
 {
-    private const EXTENSIONS=['jpg','jpeg','png','tif','tiff','pdf'];
-    public function __construct(private FileRecordLocator $locator, private TextractClient $client, private string $bucket) {}
+    private const EXTENSIONS = ['jpg','jpeg','png','tif','tiff','pdf'];
+    private const METADATA_TEXT_LIMIT = 24 * 1024;
 
-    public function extract(int $userId,string $key): array
-    {
-        $row=$this->locator->requireReadableByKey($userId,$key); $real=(string)$row['_key'];
-        $ext=strtolower((string)pathinfo((string)($row['Nombre']??$real),PATHINFO_EXTENSION));
-        if (!in_array($ext,self::EXTENSIONS,true)) throw new RuntimeException('Extensión no soportada para Textract');
-        $result=$this->client->detectDocumentText(['Document'=>['S3Object'=>['Bucket'=>$this->bucket,'Name'=>$real]]]);
-        $lines=[]; foreach ((array)($result['Blocks']??[]) as $block) {
-            if (($block['BlockType']??'')==='LINE' && isset($block['Text'])) $lines[]=(string)$block['Text'];
-        }
-        return ['ok'=>true,'archivo'=>$real,'texto'=>$lines,'textoJ'=>implode("\n",$lines)];
+    public function __construct(
+        private FileRecordLocator $locator,
+        private FileMetadataRepository $metadata,
+        private TextractClient $client,
+        private string $bucket
+    ) {
     }
 
-    public function extractText(int $userId,string $key): string
+    public function extract(int $userId, string $key): array
     {
-        return (string)$this->extract($userId,$key)['textoJ'];
+        $row = $this->locator->requireReadableByKey($userId, $key);
+        $real = (string)$row['_key'];
+        $ext = strtolower((string)pathinfo((string)($row['Nombre'] ?? $real), PATHINFO_EXTENSION));
+
+        if (!in_array($ext, self::EXTENSIONS, true)) {
+            throw new RuntimeException('Extensión no soportada para Textract');
+        }
+
+        $result = $this->client->detectDocumentText([
+            'Document' => [
+                'S3Object' => [
+                    'Bucket' => $this->bucket,
+                    'Name' => $real,
+                ],
+            ],
+        ]);
+
+        $lines = [];
+        foreach ((array)($result['Blocks'] ?? []) as $block) {
+            if (($block['BlockType'] ?? '') === 'LINE' && isset($block['Text'])) {
+                $lines[] = (string)$block['Text'];
+            }
+        }
+
+        $fullText = implode("\n", $lines);
+        [$metadataText, $metadataTruncated] = $this->metadataText($fullText);
+
+        // El análisis pertenece al catálogo MySQL. El objeto físico de S3 se mantiene intacto.
+        $this->metadata->merge(
+            $userId,
+            (int)$row['id_'],
+            'Textract',
+            [
+                'Nombre' => (string)($row['Nombre'] ?? ''),
+                'Ruta' => (string)($row['Ruta'] ?? ''),
+                'line_count' => count($lines),
+                'text' => $metadataText,
+                'text_truncated' => $metadataTruncated,
+                'bytes_extracted' => strlen($fullText),
+            ]
+        );
+
+        return [
+            'ok' => true,
+            'archivo' => $real,
+            'texto' => $lines,
+            'textoJ' => $fullText,
+            'saved' => true,
+        ];
+    }
+
+    public function extractText(int $userId, string $key): string
+    {
+        return (string)$this->extract($userId, $key)['textoJ'];
+    }
+
+    private function metadataText(string $text): array
+    {
+        if (strlen($text) <= self::METADATA_TEXT_LIMIT) {
+            return [$text, false];
+        }
+
+        if (function_exists('mb_strcut')) {
+            return [mb_strcut($text, 0, self::METADATA_TEXT_LIMIT, 'UTF-8'), true];
+        }
+
+        $cut = substr($text, 0, self::METADATA_TEXT_LIMIT);
+        if (function_exists('iconv')) {
+            $cut = (string)iconv('UTF-8', 'UTF-8//IGNORE', $cut);
+        }
+
+        return [$cut, true];
     }
 }

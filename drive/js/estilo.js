@@ -15,7 +15,7 @@ class EstiloModule {
       const visionClasses = ['vision-normal','vision-myopia','vision-protanopia','vision-deuteranopia','vision-tritanopia'];
 
       const defaultState = {
-        theme: 'theme-neon-green',   // oficial por default
+        theme: 'theme-neon-green',
         mode: 'theme-dark',
         vision: 'vision-normal',
         ascii: true
@@ -56,11 +56,8 @@ class EstiloModule {
           btn.setAttribute('aria-pressed', active ? 'true' : 'false');
         });
 
-        if (state.ascii) {
-          body.classList.add('ascii-on');
-        } else {
-          body.classList.remove('ascii-on');
-        }
+        if (state.ascii) body.classList.add('ascii-on');
+        else body.classList.remove('ascii-on');
       }
 
       function getStateFromBody() {
@@ -77,20 +74,19 @@ class EstiloModule {
       }
 
       function loadPrefs() {
-      const saved = localStorage.getItem('ui-theme-state');
+        const saved = localStorage.getItem('ui-theme-state');
+        if (!saved) {
+          applyState(defaultState);
+          return;
+        }
 
-      if (!saved) {
-        applyState(defaultState);   // usa verde neon
-        return;
+        try {
+          const state = JSON.parse(saved);
+          applyState({ ...defaultState, ...state });
+        } catch(e) {
+          applyState(defaultState);
+        }
       }
-
-      try {
-        const state = JSON.parse(saved);
-        applyState({ ...defaultState, ...state });
-      } catch(e) {
-        applyState(defaultState);
-      }
-    }
 
       function setTheme(theme) {
         applyState({ ...getStateFromBody(), theme });
@@ -177,6 +173,22 @@ class EstiloModule {
                   titular de esa cuenta.
                 </p>
 
+                <div class="card mb-3">
+                  <div class="card-body py-3">
+                    <h6 class="mb-2"><i class="fas fa-diagram-project mr-1"></i> Ecosistema jimmybackend</h6>
+                    <p class="mb-2">
+                      ArcadeCloud Drive está diseñado para convivir e integrarse con otros proyectos
+                      del mismo ecosistema. Cada aplicación puede operar por separado y, cuando se
+                      configura así, MiChat y ArcadeCloud Drive pueden compartir la misma base MySQL.
+                    </p>
+                    <ul class="mb-0 pl-4">
+                      <li><a href="https://github.com/jimmybackend/michat" target="_blank" rel="noopener noreferrer">MiChat</a> — chat e integración con Amazon Bedrock.</li>
+                      <li><a href="https://github.com/jimmybackend/MCMA-OpenMemory" target="_blank" rel="noopener noreferrer">MCMA-OpenMemory</a> — memoria artificial y recuperación de conocimiento.</li>
+                      <li><a href="https://github.com/jimmybackend/s3" target="_blank" rel="noopener noreferrer">ArcadeCloud Drive</a> — navegación MySQL y almacenamiento físico en Amazon S3.</li>
+                    </ul>
+                  </div>
+                </div>
+
                 <p class="mb-3">
                   Si este software te resulta útil, conserva el crédito de
                   <strong>jimmybackend</strong> y, cuando sea posible, comparte tus mejoras con la
@@ -187,14 +199,8 @@ class EstiloModule {
                 <div class="card">
                   <div class="card-body py-3">
                     <div><strong>Proyecto / autor:</strong> jimmybackend</div>
-                    <div><strong>Contacto:</strong> <a href="mailto:jimmybacked@gmail.com">jimmybacked@gmail.com</a></div>
+                    <div><strong>Contacto:</strong> <a href="mailto:jimmybackend@gmail.com">jimmybackend@gmail.com</a></div>
                     <div><strong>Soporte:</strong> <a href="mailto:soporte@esforzados.com">soporte@esforzados.com</a></div>
-                    <div>
-                      <strong>Repositorio:</strong>
-                      <a href="https://github.com/jimmybackend/s3" target="_blank" rel="noopener noreferrer">
-                        github.com/jimmybackend/s3
-                      </a>
-                    </div>
                     <div><strong>Licencia:</strong> GNU GPL v3.0</div>
                   </div>
                 </div>
@@ -212,6 +218,58 @@ class EstiloModule {
           </div>`;
 
         document.body.appendChild(modal);
+      }
+
+      function installUsefulLinks() {
+        const modal = document.getElementById('modalEnlacesUtiles');
+        const list = modal ? modal.querySelector('ul.list-group') : null;
+        if (!list) return;
+
+        list.innerHTML = `
+          <li class="list-group-item">
+            <a href="https://web.airdroid.com/?from=usercenter&lang=es-es" target="_blank" rel="noopener noreferrer">
+              <i class="fab fa-android text-success mr-2"></i> AirDroid Web
+            </a>
+          </li>
+          <li class="list-group-item">
+            <a href="up.php" target="_blank">
+              <i class="fas fa-upload text-primary mr-2"></i> Subir +1GB
+            </a>
+          </li>
+          <li class="list-group-item">
+            <a href="aws.php" target="_blank">
+              <i class="fas fa-qrcode text-primary mr-2"></i> Generador OTP
+            </a>
+          </li>
+          <li class="list-group-item">
+            <a href="ec2.php" target="_blank">
+              <i class="fas fa-server text-info mr-2"></i> EC2
+            </a>
+          </li>
+          <li class="list-group-item">
+            <a href="https://github.com/jimmybackend/michat" target="_blank" rel="noopener noreferrer">
+              <i class="fab fa-github mr-2"></i> GitHub · MiChat
+            </a>
+          </li>
+          <li class="list-group-item">
+            <a href="https://github.com/jimmybackend/MCMA-OpenMemory" target="_blank" rel="noopener noreferrer">
+              <i class="fab fa-github mr-2"></i> GitHub · MCMA-OpenMemory
+            </a>
+          </li>
+          <li class="list-group-item">
+            <a href="https://github.com/jimmybackend/s3" target="_blank" rel="noopener noreferrer">
+              <i class="fab fa-github mr-2"></i> GitHub · ArcadeCloud Drive
+            </a>
+          </li>`;
+      }
+
+      function loadAiSearchModule() {
+        if (document.querySelector('script[data-drive-ai-search]')) return;
+        const script = document.createElement('script');
+        script.src = 'js/ai-search.js?v=20260908-1';
+        script.async = false;
+        script.dataset.driveAiSearch = '1';
+        document.body.appendChild(script);
       }
 
       document.addEventListener('click', function(e) {
@@ -244,6 +302,8 @@ class EstiloModule {
       });
 
       installAboutDialog();
+      installUsefulLinks();
+      loadAiSearchModule();
       loadPrefs();
     });
 

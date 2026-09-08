@@ -124,7 +124,8 @@
       "active": true,
       "references": [
         "drive/s3.php",
-        "drive/src/Http/Controller/PersonalAwsController.php"
+        "drive/src/Http/Controller/PersonalAwsController.php",
+        "drive/js/estilo.js"
       ]
     },
     {
@@ -180,6 +181,7 @@
       "size": 259,
       "active": false,
       "references": [
+        "drive/js/ai-search.js",
         "drive/js/archivos.js"
       ]
     },
@@ -259,7 +261,8 @@
       "size": 35776,
       "active": true,
       "references": [
-        "drive/s3.php"
+        "drive/s3.php",
+        "drive/js/estilo.js"
       ]
     },
     {
@@ -483,6 +486,7 @@
         "drive/app_bootstrap.php",
         "drive/src/Http/Controller/AuthController.php",
         "drive/src/View/PersonalAwsPageRenderer.php",
+        "drive/js/ai-search.js",
         "drive/js/archivos.js",
         "drive/js/carpetas.js",
         "drive/js/subir.js"
@@ -495,6 +499,12 @@
       "references": [
         "drive/js/archivos.js"
       ]
+    },
+    {
+      "path": "drive/src/Application/AiFileSearchService.php",
+      "size": 16776,
+      "active": false,
+      "references": []
     },
     {
       "path": "drive/src/Application/DrivePageService.php",
@@ -762,7 +772,7 @@
     },
     {
       "path": "drive/src/Http/Controller/FileSearchController.php",
-      "size": 1189,
+      "size": 2106,
       "active": false,
       "references": []
     },
@@ -1264,7 +1274,8 @@
       "active": true,
       "references": [
         "drive/src/Http/Controller/UploadCleanupController.php",
-        "drive/src/Upload/AdminMultipartUploadService.php"
+        "drive/src/Upload/AdminMultipartUploadService.php",
+        "drive/js/estilo.js"
       ]
     },
     {

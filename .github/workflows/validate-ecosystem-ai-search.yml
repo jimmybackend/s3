@@ -1,0 +1,37 @@
+name: Validate ecosystem AI search
+
+on:
+  push:
+    branches:
+      - feature/ecosystem-ai-search
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate PHP syntax
+        run: |
+          php -l drive/src/Application/AiFileSearchService.php
+          php -l drive/src/Http/Controller/FileSearchController.php
+      - name: Validate JavaScript syntax
+        run: |
+          node --check drive/js/ai-search.js
+          node --check drive/js/estilo.js
+      - name: Validate search invariants
+        run: |
+          grep -q "amazon.nova-micro-v1:0" drive/src/Application/AiFileSearchService.php
+          grep -q "FROM FileS3" drive/src/Application/AiFileSearchService.php
+          ! grep -q "listObjects\|listObjectsV2" drive/src/Application/AiFileSearchService.php
+          grep -q "jimmybackend@gmail.com" drive/js/estilo.js
+          grep -q "github.com/jimmybackend/michat" drive/js/estilo.js
+          grep -q "github.com/jimmybackend/MCMA-OpenMemory" drive/js/estilo.js
+          grep -q "github.com/jimmybackend/s3" drive/js/estilo.js
+      - name: Validate shared schema
+        run: |
+          grep -q 'Tiempo de generación: 19-08-2026' adbbmis1_Cloud.sql
+          grep -q '`Metadatos` mediumtext' adbbmis1_Cloud.sql
+          grep -q 'CREATE TABLE IF NOT EXISTS `UserAIAgentConfigs`' adbbmis1_Cloud.sql

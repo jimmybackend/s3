@@ -45,8 +45,7 @@ $state  = isset($_GET['state']) ? (string)$_GET['state'] : 'all';
 // Instancias críticas que deben permanecer identificadas/protegidas visualmente.
 // Nota: la clave se exige del lado servidor para TODAS las acciones start/stop.
 const PROTECTED_INSTANCE_IDS = [
-    'i-091f5ddb0e2b42656',
-    'i-0978e1ba7e04a9d69',
+    'i-097146ee51c7f7026', // mailit-click
 ];
 
 
@@ -279,6 +278,22 @@ $err = null; $awsErr = null; $rdsErr = null; $list = []; $dbList = [];
 try {
     $panel = $app->ec2Gateway($region);
     $list = $panel->listInstances($state);
+
+    // Fallback defensivo: si AWS devuelve una lista vacía con filtro,
+    // intenta localizar las instancias personales configuradas por ID.
+    if ($list === []) {
+        foreach (PROTECTED_INSTANCE_IDS as $configuredId) {
+            $instance = $panel->getInstance($configuredId);
+            if (!$instance) {
+                continue;
+            }
+
+            $instanceState = (string)($instance['State']['Name'] ?? 'unknown');
+            if ($state === 'all' || $state === '' || $state === $instanceState) {
+                $list[] = $instance;
+            }
+        }
+    }
 } catch (AwsException $e) {
     $awsErr = ($e->getAwsErrorCode()?:'AWS').': '.($e->getAwsErrorMessage()?:$e->getMessage());
 } catch (Throwable $t) {
@@ -350,7 +365,7 @@ code{word-break:break-all}
                     $opts = ['all'=>'Todos','running'=>'running','stopped'=>'stopped','pending'=>'pending','stopping'=>'stopping','shutting-down'=>'shutting-down','terminated'=>'terminated'];
                     foreach ($opts as $val=>$label) {
                         $sel = $state===$val ? 'selected' : '';
-                        echo "<option value=\"".e($val)."\" $sel>".e($label)."</option>";
+                        echo "<option value=\"".H::e($val)."\" $sel>".H::e($label)."</option>";
                     }
                     ?>
                 </select>
@@ -391,7 +406,18 @@ code{word-break:break-all}
                     $az   = (string)($i['Placement']['AvailabilityZone'] ?? '');
                     $pip  = (string)($i['PublicIpAddress'] ?? '');
                     $prip = (string)($i['PrivateIpAddress'] ?? '');
-                    $lt   = isset($i['LaunchTime']) ? (new DateTime($i['LaunchTime']))->format('Y-m-d H:i:s T') : '';
+                    $launchTime = $i['LaunchTime'] ?? null;
+          if ($launchTime instanceof \DateTimeInterface) {
+              $lt = $launchTime->format('Y-m-d H:i:s T');
+          } elseif (is_string($launchTime) && trim($launchTime) !== '') {
+              try {
+                  $lt = (new \DateTime($launchTime))->format('Y-m-d H:i:s T');
+              } catch (\Throwable $dateError) {
+                  $lt = $launchTime;
+              }
+          } else {
+              $lt = '';
+          }
                     $prot = H::isProtected($id);
                     $isRdp = ($id === RDP_INSTANCE_ID);
             ?>

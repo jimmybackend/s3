@@ -14,7 +14,7 @@ final class RdsGateway
     public function __construct(string $region = '')
     {
         $region = trim($region);
-        $this->client = new RdsClient(\Config::getAwsClientConfig(
+        $this->client = new RdsClient(\Config::getAwsControlClientConfig(
             $region !== '' ? ['region' => $region] : []
         ));
     }

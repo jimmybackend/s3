@@ -12,7 +12,7 @@ final class Ec2Gateway
     public function __construct(string $region = '')
     {
         $region = trim($region);
-        $this->client = new Ec2Client(\Config::getAwsClientConfig(
+        $this->client = new Ec2Client(\Config::getAwsControlClientConfig(
             $region !== '' ? ['region' => $region] : []
         ));
     }

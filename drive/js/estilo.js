@@ -32,9 +32,29 @@ class EstiloModule {
         removeClasses(modeClasses);
         removeClasses(visionClasses);
 
-        body.classList.add(state.theme || defaultState.theme);
-        body.classList.add(state.mode || defaultState.mode);
-        body.classList.add(state.vision || defaultState.vision);
+        const nextTheme = state.theme || defaultState.theme;
+        const nextMode = state.mode || defaultState.mode;
+        const nextVision = state.vision || defaultState.vision;
+
+        body.classList.add(nextTheme);
+        body.classList.add(nextMode);
+        body.classList.add(nextVision);
+
+        document.querySelectorAll('.js-set-theme').forEach(btn => {
+          const active = btn.dataset.theme === nextTheme;
+          btn.classList.toggle('active', active);
+          btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+        });
+        document.querySelectorAll('.js-set-mode').forEach(btn => {
+          const active = btn.dataset.mode === nextMode;
+          btn.classList.toggle('active', active);
+          btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+        });
+        document.querySelectorAll('.js-set-vision').forEach(btn => {
+          const active = btn.dataset.vision === nextVision;
+          btn.classList.toggle('active', active);
+          btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+        });
 
         if (state.ascii) {
           body.classList.add('ascii-on');

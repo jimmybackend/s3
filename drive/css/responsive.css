@@ -1322,12 +1322,13 @@ body.ui-theme #archivosWrap .file-s3-location code {
    ============================================================ */
 
 .drive-brand-logo {
-  width: 38px !important;
-  height: 30px !important;
+  width: 48px !important;
+  height: 38px !important;
 
-  min-width: 38px;
+  min-width: 48px;
 
-  object-fit: cover;
+  object-fit: contain;
+  object-position: center;
 
   border-radius: 8px;
 }
@@ -1509,10 +1510,10 @@ body.ui-theme #archivosWrap .file-s3-location code {
 @media (max-width: 575.98px) {
 
   .drive-navbar .navbar-brand {
-    width: 38px !important;
+    width: 48px !important;
 
     flex:
-      0 0 38px !important;
+      0 0 48px !important;
   }
 
 
@@ -1531,4 +1532,111 @@ body.ui-theme #archivosWrap .file-s3-location code {
     max-height: 34vh;
   }
 
+}
+
+
+/* ============================================================
+   LOGO NAVBAR - mostrar imagen completa dentro del marco
+   ============================================================ */
+.drive-brand-logo {
+  width: 48px !important;
+  height: 38px !important;
+  object-fit: contain !important;
+  object-position: center !important;
+  padding: 1px !important;
+}
+
+@media (max-width: 991.98px), (pointer: coarse) {
+  .drive-navbar .navbar-brand img.drive-brand-logo {
+    width: 48px !important;
+    height: 38px !important;
+    object-fit: contain !important;
+    object-position: center !important;
+    padding: 1px !important;
+  }
+}
+
+/* ===== UX ROUND 2: NAVBAR + DROPZONE MOVIL ===== */
+.drive-navbar {
+  min-height: 66px !important;
+  align-items: center !important;
+}
+
+.drive-navbar .navbar-brand {
+  min-width: 160px;
+  display: inline-flex !important;
+  align-items: center !important;
+  white-space: nowrap !important;
+}
+
+@media (max-width: 991.98px), (pointer: coarse) {
+  .drive-navbar {
+    min-height: 62px !important;
+  }
+
+  .drive-navbar .navbar-brand {
+    min-width: 58px !important;
+    width: 58px !important;
+    flex: 0 0 58px !important;
+    overflow: hidden !important;
+    font-size: 0 !important;
+    margin-right: .35rem !important;
+  }
+
+  .drive-navbar .navbar-brand img.drive-brand-logo {
+    width: 50px !important;
+    height: 40px !important;
+    max-width: 50px !important;
+    object-fit: contain !important;
+    margin-right: 0 !important;
+  }
+
+  #temaMenuPanel {
+    position: fixed !important;
+    top: 64px !important;
+    right: 8px !important;
+    left: auto !important;
+    width: min(310px, calc(100vw - 16px)) !important;
+    min-width: 0 !important;
+    max-height: calc(100dvh - 76px) !important;
+    overflow-y: auto !important;
+    transform: none !important;
+    z-index: 1205 !important;
+  }
+
+  #dropzonePublico.dropzone-drive {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 10px !important;
+    padding: 12px !important;
+    overflow: hidden !important;
+  }
+
+  #dropzonePublico.dropzone-drive .dz-message {
+    grid-column: 1 / -1 !important;
+    width: 100% !important;
+  }
+
+  #dropzonePublico.dropzone-drive .dz-preview {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  #dropzonePublico.dropzone-drive .dz-preview .dz-image,
+  #dropzonePublico.dropzone-drive .dz-preview .dz-details,
+  #dropzonePublico.dropzone-drive .dz-preview .dz-progress,
+  #dropzonePublico.dropzone-drive .dz-preview .dz-error-message,
+  #dropzonePublico.dropzone-drive .dz-preview .dz-success-mark,
+  #dropzonePublico.dropzone-drive .dz-preview .dz-error-mark {
+    max-width: 100% !important;
+  }
+}
+
+@media (max-width: 420px) {
+  #dropzonePublico.dropzone-drive {
+    grid-template-columns: 1fr !important;
+  }
 }

@@ -35,7 +35,7 @@ $basePrefix = $vm->basePrefix;
  * Se muestran únicamente las carpetas del usuario autenticado.
  * ============================================================
  */
-$todasLasCarpetas = $app->folderQueryService()->allForUser($userId, true);
+$todasLasCarpetas = $app->folderQueryService()->destinationsForUser($userId, true);
 
 $tipo = $vm->tipo;
 $buscar = $vm->buscar;
@@ -47,7 +47,7 @@ $error = $vm->error;
 $extensiones_unicas = $vm->extensionesUnicas;
 
 $storageUsage = $app->storageUsageService()->getUsage($userId);
-$footerRutaActual = $basePrefix;
+$footerRutaActual = $app->folderQueryService()->displayPathForUser($userId, $basePrefix);
 $footerEspacioUsado = $storageUsage['formatted'];
 ?>
 <!DOCTYPE html>
@@ -63,9 +63,9 @@ $footerEspacioUsado = $storageUsage['formatted'];
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <link rel="icon" href="ellogo.png" type="image/png">
 
-  <link rel="stylesheet" href="css/styles.css?v=20260904-clean1">
+  <link rel="stylesheet" href="css/styles.css?v=<?= (int) filemtime(__DIR__ . '/css/styles.css') ?>">
   <link rel="stylesheet"
-        href="css/responsive.css?v=20260904-8">
+        href="css/responsive.css?v=<?= (int) filemtime(__DIR__ . '/css/responsive.css') ?>">
 
 
   <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
@@ -96,8 +96,8 @@ $footerEspacioUsado = $storageUsage['formatted'];
      onclick="document.getElementById('btnToggleSidebar').click(); return false;">
     <!-- <img src="../assets/img/icono.png" width="30" height="30" class="d-inline-block align-top" alt="Logo"> Cloud Drive -->
     <img src="ellogo.png"
-         width="38"
-         height="30"
+         width="48"
+         height="38"
          class="drive-brand-logo mr-2"
          alt="Logo"> Cloud Drive
   </a>
@@ -118,7 +118,7 @@ $footerEspacioUsado = $storageUsage['formatted'];
             <i class="fas fa-palette mr-1"></i><span class="drive-design-label">Diseño</span>
           </a>
 
-          <div class="dropdown-menu dropdown-menu-right" aria-labelledby="temaMenu" style="min-width:280px;">
+          <div class="dropdown-menu dropdown-menu-right" id="temaMenuPanel" aria-labelledby="temaMenu" style="min-width:280px;">
 
             <h6 class="dropdown-header">Color neón</h6>
             <button class="dropdown-item js-set-theme" data-theme="theme-neon-green">Verde neón</button>
@@ -374,7 +374,7 @@ $footerEspacioUsado = $storageUsage['formatted'];
         <!-- Formulario de filtros -->
           <form id="formFiltros" class="form-inline" onsubmit="return false;">
             <input type="hidden" name="ruta" value="<?= htmlspecialchars($basePrefix) ?>">
-            <input type="hidden" name="limite" value="<?= (int)($_GET['limite'] ?? 5) ?>">
+            <input type="hidden" name="limite" value="<?= (int)($_GET['limite'] ?? 10) ?>">
 
             <input type="text" name="buscar" class="form-control mr-2 mb-2" placeholder="Buscar..." value="<?= htmlspecialchars($_GET['buscar'] ?? '') ?>" style="max-width: 160px;">
             <input type="date" name="fecha_inicio" class="form-control mr-2 mb-2" value="<?= htmlspecialchars($_GET['fecha_inicio'] ?? '') ?>" style="max-width: 150px;">
@@ -434,7 +434,7 @@ $footerEspacioUsado = $storageUsage['formatted'];
   <label class="form-label">Subir desde URL (Drive / directo)</label>
   <div class="input-group">
     <input id="urlRemota" type="url" class="form-control" placeholder="https://...">
-    <button id="btnSubirUrl" class="btn btn-primary">
+    <button id="btnSubirUrl" class="btn btn-success">
       <span id="spinnerUrl" class="spinner-border spinner-border-sm d-none"></span>
       <span id="btnTxtUrl">Subir</span>
     </button>
@@ -487,7 +487,7 @@ $footerEspacioUsado = $storageUsage['formatted'];
 
 
 </div>
-        <form action="api/upload.php?mode=local_put&action=init" class="dropzone mb-4" id="dropzonePublico">
+        <form action="api/upload.php?mode=local_put&action=init" class="dropzone dropzone-drive mb-4" id="dropzonePublico">
           <div class="dz-message">Arrastra aquí o haz clic para subir</div>
         </form>
 
@@ -811,12 +811,14 @@ $footerEspacioUsado = $storageUsage['formatted'];
           <label>Selecciona carpeta de destino:</label>
           <select name="nueva_ruta" id="nuevaRutaSelect" class="form-control" required>
             <option value="">— Selecciona carpeta de destino —</option>
-            <?php foreach ($todasLasCarpetas as $ruta): ?>
+            <?php foreach ($todasLasCarpetas as $destino): ?>
               <?php
-                $nivel = substr_count(trim($ruta, '/'), '/');
+                $rutaFisica = (string)($destino['value'] ?? '');
+                $rutaVisible = (string)($destino['label'] ?? '');
+                $nivel = max(0, substr_count(trim($rutaVisible, '/'), '/'));
                 $espacio = str_repeat('&nbsp;&nbsp;&nbsp;', $nivel);
               ?>
-              <option value="<?= htmlspecialchars($ruta) ?>"><?= $espacio . htmlspecialchars($ruta) ?></option>
+              <option value="<?= htmlspecialchars($rutaFisica) ?>"><?= $espacio . htmlspecialchars($rutaVisible) ?></option>
             <?php endforeach; ?>
             <option value="__crear__">➕ Crear nueva carpeta</option>
           </select>
@@ -978,12 +980,12 @@ $footerEspacioUsado = $storageUsage['formatted'];
             </a>
           </li>
           <li class="list-group-item">
-            <a href="https://drive.esforzados.com/aws.php" target="_blank">
+            <a href="aws.php" target="_blank">
               <i class="fas fa-qrcode text-primary mr-2"></i> Generador OTP
             </a>
           </li>
           <li class="list-group-item">
-            <a href="https://drive.esforzados.com/ec2.php" target="_blank">
+            <a href="ec2.php" target="_blank">
               <i class="fas fa-qrcode text-primary mr-2"></i> Ec2
             </a>
           </li>
@@ -1004,48 +1006,6 @@ $footerEspacioUsado = $storageUsage['formatted'];
             <i class="fas fa-envelope text-primary mr-2"></i> Titan Mail (Webmail)
           </a>
         </li>
-
-        <li class="list-group-item">
-          <a href="https://demo.filestash.app/login" target="_blank">
-            <i class="fas fa-hdd text-info mr-2"></i> Filestash (Explorador S3 / FTP)
-          </a>
-        </li>
-          <li class="list-group-item">
-            <a href="https://aws.amazon.com/console/" target="_blank">
-              <i class="fas fa-cloud text-primary mr-2"></i> Consola AWS
-            </a>
-          </li>
-          <li class="list-group-item">
-            <a href="https://s3.console.aws.amazon.com/s3/buckets" target="_blank">
-              <i class="fas fa-folder-open text-info mr-2"></i> Buckets S3
-            </a>
-          </li>
-
-          <li class="list-group-item">
-            <a href="https://esforzados.com/AI/index.html" target="_blank">
-              <i class="fas fa-robot text-info mr-2"></i> AI
-            </a>
-          </li>
-          <li class="list-group-item">
-            <a href="https://biblia.esforzados.com/index.php" target="_blank">
-              <i class="fas fa-book text-primary mr-2"></i> Concordancia
-            </a>
-          </li>
-          <li class="list-group-item">
-            <a href="https://tiendas.esforzados.com/" target="_blank">
-              <i class="fas fa-shopping-cart text-warning mr-2"></i> ShopControl
-            </a>
-          </li>
-          <li class="list-group-item">
-            <a href="https://projects.esforzados.com/" target="_blank">
-              <i class="fas fa-project-diagram text-success mr-2"></i> Projects
-            </a>
-          </li>
-          <li class="list-group-item">
-            <a href="https://esforzados.com/drone/" target="_blank">
-              <i class="fas fa-project-diagram text-success mr-2"></i> SkyDrop
-            </a>
-          </li>
 
         </ul>
       </div>
@@ -1794,9 +1754,10 @@ $footerEspacioUsado = $storageUsage['formatted'];
 
 
 
-<script src="js/carpetas.js"></script>
-<script src="js/archivos.js?v=20260904-2205"></script>
-<script src="js/file-block.js"></script>
+<script src="js/move-tasks.js?v=<?= (int) filemtime(__DIR__ . '/js/move-tasks.js') ?>"></script>
+<script src="js/carpetas.js?v=<?= (int) filemtime(__DIR__ . '/js/carpetas.js') ?>"></script>
+<script src="js/archivos.js?v=<?= (int) filemtime(__DIR__ . '/js/archivos.js') ?>"></script>
+<script src="js/file-block.js?v=<?= (int) filemtime(__DIR__ . '/js/file-block.js') ?>"></script>
 
 <script src="js/actualizar-hora.js"></script>
 <script src="js/storage-usage.js"></script>
@@ -1827,7 +1788,7 @@ $footerEspacioUsado = $storageUsage['formatted'];
 <script src="js/ver-pdf.js"></script>
 
 <script src="js/sincronizar.js"></script>
-<script src="js/estilo.js"></script>
+<script src="js/estilo.js?v=<?= (int) filemtime(__DIR__ . '/js/estilo.js') ?>"></script>
 
 
 

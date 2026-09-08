@@ -467,12 +467,16 @@ class ArchivosModule {
       };
 
       window.actualizarBloqueCarpetas = window.actualizarBloqueCarpetas || (async function () { /* noop */ });
-      window.actualizarBloqueFooter = window.actualizarBloqueFooter || (async function (args) {
-        const route = String(
-          (args && (args.rutaNueva || args.ruta)) || window.rutaActual || ''
-        ).trim();
+      window.actualizarBloqueFooter = window.actualizarBloqueFooter || (async function () {
         const routeNode = document.getElementById('footerRutaActual');
-        if (routeNode && route) routeNode.textContent = route;
+        const visibleRoute = String(
+          document.getElementById('archivosContexto')?.dataset?.rutaVisible || ''
+        ).trim();
+
+        if (routeNode && visibleRoute) {
+          routeNode.textContent = visibleRoute;
+          routeNode.setAttribute('title', visibleRoute);
+        }
       });
 
       // =========================
@@ -702,28 +706,27 @@ class ArchivosModule {
             alert('El nombre no debe contener "/" ni "\\".');
             return;
           }
-
-          nuevaRuta = (rutaActual.replace(/\/?$/, '/')) + nuevaCarp.replace(/^\/+|\/+$/g, '') + '/';
         }
 
         try {
           setBtnLoading(btnMover, true, '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Moviendo...');
 
-          const body = new URLSearchParams({
+          if (!window.DriveMoveTasks || typeof window.DriveMoveTasks.start !== 'function') {
+            throw new Error('El módulo de tareas de movimiento no está disponible.');
+          }
+
+          const taskPayload = {
+            type: 'files',
             ruta_actual: rutaActual,
             archivos_json: archivosJSON,
             nueva_ruta: nuevaRuta
-          });
+          };
 
-          const { res, json, text } = await fetchJson(URL_MOVER, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
-            body
-          });
+          if (nuevaRuta === '__crear__') {
+            taskPayload.nueva_carpeta = nuevaCarp;
+          }
 
-          if (!json) throw new Error(text || ('HTTP ' + res.status));
-          if (!res.ok) throw new Error(json.error || json.mensaje || ('HTTP ' + res.status));
-          if (!json.ok) throw new Error(json.error || json.mensaje || 'No se pudo mover.');
+          await window.DriveMoveTasks.start(taskPayload);
 
           hideModal('modalMover');
 
@@ -740,13 +743,8 @@ class ArchivosModule {
           const inputJson = formModal.querySelector('input[name="archivos_json"]');
           if (inputJson) inputJson.value = '';
 
-          if (typeof window.actualizarBloqueCarpetas === 'function') {
-            await window.actualizarBloqueCarpetas();
-          }
-
-          if (typeof window.actualizarBloqueArchivos === 'function') {
-            await window.actualizarBloqueArchivos({ pagina: 1 });
-          }
+          // El refresco se realiza al terminar la tarea, no al aceptarla.
+          // Así el usuario puede seguir usando el Drive mientras S3 completa el movimiento.
         } catch (err) {
           console.error(err);
           alert('❌ ' + (err.message || err));

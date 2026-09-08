@@ -23,10 +23,30 @@ class FileBlockApp {
   }
 
   refresh() {
+    this.removeMetadataHover();
     this.initTooltips();
     this.syncContext();
     this.finishLoader();
     this.updateSelectionCount();
+  }
+
+  removeMetadataHover() {
+    const lines = Array.from(this.document.querySelectorAll('.file-meta-line'));
+    if (!lines.length) return;
+
+    try {
+      if (this.window.jQuery && typeof this.window.jQuery.fn.tooltip === 'function') {
+        this.window.jQuery(lines).tooltip('dispose');
+      }
+    } catch (_) {}
+
+    lines.forEach((element) => {
+      element.removeAttribute('data-toggle');
+      element.removeAttribute('data-placement');
+      element.removeAttribute('data-original-title');
+      element.removeAttribute('aria-describedby');
+      element.removeAttribute('title');
+    });
   }
 
   initTooltips() {

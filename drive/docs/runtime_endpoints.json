@@ -79,6 +79,8 @@
         "drive/logout.php",
         "drive/media_playlist.php",
         "drive/move_multiple.php",
+        "drive/move_task.php",
+        "drive/move_task_status.php",
         "drive/mover_archivo.php",
         "drive/mover_carpeta.php",
         "drive/polly_cargar_texto.php",
@@ -143,7 +145,7 @@
     },
     {
       "path": "drive/bloque_archivos.php",
-      "size": 23738,
+      "size": 23479,
       "active": true,
       "references": [
         "drive/s3.php",
@@ -254,7 +256,7 @@
     },
     {
       "path": "drive/ec2.php",
-      "size": 34804,
+      "size": 35776,
       "active": true,
       "references": [
         "drive/s3.php"
@@ -369,6 +371,22 @@
       "references": []
     },
     {
+      "path": "drive/move_task.php",
+      "size": 255,
+      "active": false,
+      "references": [
+        "drive/js/move-tasks.js"
+      ]
+    },
+    {
+      "path": "drive/move_task_status.php",
+      "size": 256,
+      "active": false,
+      "references": [
+        "drive/js/move-tasks.js"
+      ]
+    },
+    {
       "path": "drive/mover_archivo.php",
       "size": 259,
       "active": false,
@@ -459,7 +477,7 @@
     },
     {
       "path": "drive/s3.php",
-      "size": 89190,
+      "size": 88001,
       "active": true,
       "references": [
         "drive/app_bootstrap.php",
@@ -480,7 +498,7 @@
     },
     {
       "path": "drive/src/Application/DrivePageService.php",
-      "size": 1266,
+      "size": 1267,
       "active": false,
       "references": []
     },
@@ -504,7 +522,7 @@
     },
     {
       "path": "drive/src/Application/FileListService.php",
-      "size": 5057,
+      "size": 5058,
       "active": false,
       "references": []
     },
@@ -528,7 +546,13 @@
     },
     {
       "path": "drive/src/Application/FolderQueryService.php",
-      "size": 1419,
+      "size": 4564,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Application/MoveJobService.php",
+      "size": 4000,
       "active": false,
       "references": []
     },
@@ -594,7 +618,7 @@
     },
     {
       "path": "drive/src/Aws/Ec2Gateway.php",
-      "size": 2811,
+      "size": 2818,
       "active": false,
       "references": []
     },
@@ -636,7 +660,7 @@
     },
     {
       "path": "drive/src/Aws/RdsGateway.php",
-      "size": 7547,
+      "size": 7554,
       "active": false,
       "references": []
     },
@@ -648,7 +672,7 @@
     },
     {
       "path": "drive/src/Aws/TextractFileService.php",
-      "size": 1282,
+      "size": 2935,
       "active": false,
       "references": []
     },
@@ -678,7 +702,7 @@
     },
     {
       "path": "drive/src/Core/DriveApplication.php",
-      "size": 14905,
+      "size": 15917,
       "active": false,
       "references": []
     },
@@ -714,7 +738,7 @@
     },
     {
       "path": "drive/src/Http/Controller/AwsFileController.php",
-      "size": 3303,
+      "size": 3427,
       "active": false,
       "references": []
     },
@@ -756,7 +780,7 @@
     },
     {
       "path": "drive/src/Http/Controller/FolderQueryController.php",
-      "size": 658,
+      "size": 920,
       "active": false,
       "references": []
     },
@@ -769,6 +793,12 @@
     {
       "path": "drive/src/Http/Controller/MediaPlaylistController.php",
       "size": 896,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Http/Controller/MoveJobController.php",
+      "size": 6922,
       "active": false,
       "references": []
     },
@@ -972,7 +1002,13 @@
     },
     {
       "path": "drive/src/Storage/FolderRepository.php",
-      "size": 1339,
+      "size": 2858,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Storage/MoveJobStore.php",
+      "size": 5097,
       "active": false,
       "references": []
     },

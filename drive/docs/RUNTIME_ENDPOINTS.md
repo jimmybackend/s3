@@ -17,7 +17,7 @@
 | Archivo | Referenciado por |
 |---|---|
 | `drive/api/upload.php` | `drive/s3.php`, `drive/js/soportesMediaTypes.js`, `drive/js/subir-chunked.js`, `drive/js/subir-dropzone.js`, `drive/js/subir.js` |
-| `drive/app_bootstrap.php` | `drive/actualizar_ruta.php`, `drive/api/upload.php`, `drive/aws.php`, `drive/bin/sync_worker.php`, `drive/bin/upload_cleanup.php`, `drive/bloque_archivos.php`, `drive/bloque_carpetas.php`, `drive/buscar_archivo.php`, `drive/comprehend_archivo.php`, `drive/costos_aws.php`, `drive/crear_carpeta.php`, `drive/delete_multiple.php`, `drive/descargar.php`, `drive/descargar_archivo.php`, `drive/descargar_zip.php`, `drive/download_multiple.php`, `drive/ec2-cron.php`, `drive/ec2.php`, `drive/eliminar_archivo.php`, `drive/eliminar_carpeta.php`, `drive/encriptar_archivo.php`, `drive/generar_token.php`, `drive/guardar_texto.php`, `drive/leer_texto.php`, `drive/listar_carpetas.php`, `drive/logout.php`, `drive/media_playlist.php`, `drive/move_multiple.php`, `drive/mover_archivo.php`, `drive/mover_carpeta.php`, `drive/polly_cargar_texto.php`, `drive/polly_list_voices.php`, `drive/polly_tts.php`, `drive/procesar_textract.php`, `drive/psesion.php`, `drive/rekognition_labels.php`, `drive/relock_file.php`, `drive/renombrar_archivo.php`, `drive/renombrar_carpeta.php`, `drive/s3.php`, `drive/set_file_security.php`, `drive/storage_usage.php`, `drive/subir_archivo.php`, `drive/subir_publico.php`, `drive/sync_s3_to_db.php`, `drive/sync_status.php`, `drive/thumb.php`, `drive/token_audio.php`, `drive/token_texto.php`, `drive/token_video.php`, `drive/traducir_archivo.php`, `drive/transcribir_estado.php`, `drive/transcribir_iniciar.php`, `drive/unlock_file.php`, `drive/up-clean.php`, `drive/up.php`, `drive/upload.php`, `drive/upload_audio_recording.php`, `drive/upload_publico.php`, `drive/validar_php.php`, `drive/ver.php`, `drive/ver_archivo.php`, `drive/ver_pdf.php` |
+| `drive/app_bootstrap.php` | `drive/actualizar_ruta.php`, `drive/api/upload.php`, `drive/aws.php`, `drive/bin/sync_worker.php`, `drive/bin/upload_cleanup.php`, `drive/bloque_archivos.php`, `drive/bloque_carpetas.php`, `drive/buscar_archivo.php`, `drive/comprehend_archivo.php`, `drive/costos_aws.php`, `drive/crear_carpeta.php`, `drive/delete_multiple.php`, `drive/descargar.php`, `drive/descargar_archivo.php`, `drive/descargar_zip.php`, `drive/download_multiple.php`, `drive/ec2-cron.php`, `drive/ec2.php`, `drive/eliminar_archivo.php`, `drive/eliminar_carpeta.php`, `drive/encriptar_archivo.php`, `drive/generar_token.php`, `drive/guardar_texto.php`, `drive/leer_texto.php`, `drive/listar_carpetas.php`, `drive/logout.php`, `drive/media_playlist.php`, `drive/move_multiple.php`, `drive/move_task.php`, `drive/move_task_status.php`, `drive/mover_archivo.php`, `drive/mover_carpeta.php`, `drive/polly_cargar_texto.php`, `drive/polly_list_voices.php`, `drive/polly_tts.php`, `drive/procesar_textract.php`, `drive/psesion.php`, `drive/rekognition_labels.php`, `drive/relock_file.php`, `drive/renombrar_archivo.php`, `drive/renombrar_carpeta.php`, `drive/s3.php`, `drive/set_file_security.php`, `drive/storage_usage.php`, `drive/subir_archivo.php`, `drive/subir_publico.php`, `drive/sync_s3_to_db.php`, `drive/sync_status.php`, `drive/thumb.php`, `drive/token_audio.php`, `drive/token_texto.php`, `drive/token_video.php`, `drive/traducir_archivo.php`, `drive/transcribir_estado.php`, `drive/transcribir_iniciar.php`, `drive/unlock_file.php`, `drive/up-clean.php`, `drive/up.php`, `drive/upload.php`, `drive/upload_audio_recording.php`, `drive/upload_publico.php`, `drive/validar_php.php`, `drive/ver.php`, `drive/ver_archivo.php`, `drive/ver_pdf.php` |
 | `drive/aws.php` | `drive/s3.php`, `drive/src/Http/Controller/PersonalAwsController.php` |
 | `drive/bloque_archivos.php` | `drive/s3.php`, `drive/js/archivos.js`, `drive/js/carpetas.js`, `drive/js/elimina-multiple.js`, `drive/js/elimina-uno.js`, `drive/js/imagenes.js`, `drive/js/obtenerFiltros.js` |
 | `drive/bloque_carpetas.php` | `drive/s3.php`, `drive/js/carpetas.js`, `drive/js/obtenerFiltros.js` |
@@ -61,6 +61,8 @@
 | `drive/listar_carpetas.php` | `drive/js/carpetas.js` |
 | `drive/media_playlist.php` | `drive/js/media-floating.js` |
 | `drive/move_multiple.php` | ninguna |
+| `drive/move_task.php` | `drive/js/move-tasks.js` |
+| `drive/move_task_status.php` | `drive/js/move-tasks.js` |
 | `drive/mover_archivo.php` | `drive/js/archivos.js` |
 | `drive/mover_carpeta.php` | `drive/js/carpetas.js` |
 | `drive/polly_cargar_texto.php` | `drive/js/polly.js` |
@@ -81,6 +83,7 @@
 | `drive/src/Application/FileSearchService.php` | ninguna |
 | `drive/src/Application/FolderMutationService.php` | ninguna |
 | `drive/src/Application/FolderQueryService.php` | ninguna |
+| `drive/src/Application/MoveJobService.php` | ninguna |
 | `drive/src/Application/PhpLintService.php` | ninguna |
 | `drive/src/Application/TemporaryZip.php` | ninguna |
 | `drive/src/Application/TextFileService.php` | ninguna |
@@ -121,6 +124,7 @@
 | `drive/src/Http/Controller/FolderQueryController.php` | ninguna |
 | `drive/src/Http/Controller/LegacyUploadController.php` | ninguna |
 | `drive/src/Http/Controller/MediaPlaylistController.php` | ninguna |
+| `drive/src/Http/Controller/MoveJobController.php` | ninguna |
 | `drive/src/Http/Controller/NavigationController.php` | ninguna |
 | `drive/src/Http/Controller/PersonalAwsController.php` | ninguna |
 | `drive/src/Http/Controller/PublicShareController.php` | ninguna |
@@ -155,6 +159,7 @@
 | `drive/src/Storage/FileRecordRepository.php` | ninguna |
 | `drive/src/Storage/FolderMutationRepository.php` | ninguna |
 | `drive/src/Storage/FolderRepository.php` | ninguna |
+| `drive/src/Storage/MoveJobStore.php` | ninguna |
 | `drive/src/Storage/StorageObjectNameCodec.php` | ninguna |
 | `drive/src/Storage/StorageUsageService.php` | ninguna |
 | `drive/src/Storage/UserStoragePath.php` | ninguna |

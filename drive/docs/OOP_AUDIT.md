@@ -4,8 +4,8 @@
 
 ## Resumen
 
-- PHP analizados: **199**
-- PHP que ya contienen clases/interfaces: **125**
+- PHP analizados: **197**
+- PHP que ya contienen clases/interfaces: **124**
 - PHP marcados para migración/revisión: **5**
 - JavaScript analizados: **31**
 - JavaScript que ya contienen clases: **30**
@@ -27,7 +27,6 @@
 | `drive/api/upload.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/app_bootstrap.php` | 64 | procedural endpoint | 0 | — | ⚠️ | — | DB in endpoint |
 | `drive/aws.php` | 10 | thin endpoint | 0 | — | — | — | — |
-| `drive/bin/db_migrate.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/bin/sync_worker.php` | 113 | endpoint with logic | 0 | — | — | — | — |
 | `drive/bin/upload_cleanup.php` | 11 | thin endpoint | 0 | — | — | — | — |
 | `drive/bloque_archivos.php` | 662 | view/entrypoint | 0 | ⚠️ | — | — | — |
@@ -70,7 +69,7 @@
 | `drive/relock_file.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/renombrar_archivo.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/renombrar_carpeta.php` | 10 | thin endpoint | 0 | — | — | — | — |
-| `drive/s3.php` | 2182 | view/entrypoint | 0 | ⚠️ | — | — | — |
+| `drive/s3.php` | 2189 | view/entrypoint | 0 | ⚠️ | — | — | — |
 | `drive/set_file_security.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/src/Activity/ActivityCostRecorder.php` | 155 | class/module | 1 | — | — | — | — |
 | `drive/src/Activity/ActivityCostRepository.php` | 173 | class/module | 1 | — | ⚠️ | — | — |
@@ -109,7 +108,6 @@
 | `drive/src/Aws/TextractFileService.php` | 107 | class/module | 1 | — | — | — | — |
 | `drive/src/Aws/TranscriptionFileService.php` | 126 | class/module | 1 | — | — | — | — |
 | `drive/src/Aws/TranslateFileService.php` | 60 | class/module | 1 | — | — | — | — |
-| `drive/src/Console/SqlMigrationCommand.php` | 70 | class/module | 1 | — | — | — | — |
 | `drive/src/Console/UploadCleanupCommand.php` | 61 | class/module | 1 | — | — | — | — |
 | `drive/src/Core/ApplicationKernel.php` | 38 | class/module | 1 | — | — | — | — |
 | `drive/src/Core/DriveApplication.php` | 457 | class/module | 1 | — | — | ⚠️ | — |

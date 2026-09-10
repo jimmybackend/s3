@@ -1,7 +1,7 @@
 {
   "summary": {
-    "php_total": 199,
-    "php_class_modules": 125,
+    "php_total": 197,
+    "php_class_modules": 124,
     "php_needs_migration": 5,
     "js_total": 31,
     "js_class_modules": 30,
@@ -72,21 +72,6 @@
     },
     {
       "path": "drive/aws.php",
-      "lines": 10,
-      "kind": "thin endpoint",
-      "classes": 0,
-      "functions": [],
-      "session": false,
-      "superglobals": [],
-      "db": false,
-      "s3": false,
-      "bootstrap": true,
-      "html": false,
-      "namespace": false,
-      "issues": []
-    },
-    {
-      "path": "drive/bin/db_migrate.php",
       "lines": 10,
       "kind": "thin endpoint",
       "classes": 0,
@@ -762,7 +747,7 @@
     },
     {
       "path": "drive/s3.php",
-      "lines": 2182,
+      "lines": 2189,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -1336,21 +1321,6 @@
     {
       "path": "drive/src/Aws/TranslateFileService.php",
       "lines": 60,
-      "kind": "class/module",
-      "classes": 1,
-      "functions": [],
-      "session": false,
-      "superglobals": [],
-      "db": false,
-      "s3": false,
-      "bootstrap": false,
-      "html": false,
-      "namespace": true,
-      "issues": []
-    },
-    {
-      "path": "drive/src/Console/SqlMigrationCommand.php",
-      "lines": 70,
       "kind": "class/module",
       "classes": 1,
       "functions": [],

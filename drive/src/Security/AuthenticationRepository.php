@@ -15,7 +15,7 @@ final class AuthenticationRepository
     public function findUserByEmail(string $email): ?array
     {
         $stmt = $this->db->prepare(
-            'SELECT id, password, userstatus, role FROM Users WHERE email = ? LIMIT 1'
+            'SELECT id, password, userstatus, role, system_role FROM Users WHERE email = ? LIMIT 1'
         );
         if (!$stmt) {
             throw new RuntimeException('No se pudo preparar la consulta de autenticación.');

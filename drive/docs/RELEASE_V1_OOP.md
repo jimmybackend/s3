@@ -99,3 +99,37 @@ activity_costs.php
 ```
 
 El módulo conserva MySQL como fuente de verdad, filtra toda actividad por `user_id_`, reutiliza la integración existente de Cost Explorer y distingue costo **ESTIMADO** de costo **REAL AWS**. El registro de telemetría es best effort y no introduce secretos ni keys S3 en su tabla de auditoría.
+
+### Extensión posterior: FederationCloud y ArcadeLink
+
+El 10 de septiembre de 2026 ArcadeCloud Drive añadió una segunda evolución importante: pasó de ser únicamente un Drive web sobre S3 a incorporar una **capa de cloud federado**.
+
+Esta extensión tampoco modifica el significado histórico del tag `v1.0-oop`; utiliza precisamente ese baseline OOP como base estable.
+
+FederationCloud incorpora:
+
+- identidad Ed25519 independiente por nodo;
+- `node_id` y `node_name` firmados;
+- descubrimiento de nodos mediante seed;
+- validación HTTPS y protección SSRF;
+- solicitudes de proveedores;
+- aprobación, rechazo y revocación sólo por `Users.system_role = 'superadmin'`;
+- autorizaciones origen→proveedor firmadas;
+- archivos `.arcadelink` portables;
+- payload privado XChaCha20-Poly1305;
+- resolución local y remota de recursos;
+- creación de ArcadeLink directamente desde el botón **Compartir** del Drive;
+- dropzone FederationCloud con validación automática y apertura del recurso cuando la política lo permite.
+
+La arquitectura fue probada con dos instalaciones distintas: `drive.esforzados.com` como nodo origen y `fastdrive.esforzados.com` como nodo proveedor autorizado.
+
+La federación no convierte a los nodos en una base de datos o bucket compartido. Cada instalación conserva su autoridad local sobre MySQL, S3 y usuarios; FederationCloud añade identidad, confianza y resolución entre nodos.
+
+Todavía quedan fuera de esta etapa la selección automática de proveedor por recurso, replicación automática, buscador federado global, mirror lookup por SHA-256 y P2P.
+
+El estado actual se documenta en:
+
+- `drive/docs/FEDERATED_CLOUD_STATUS.md`;
+- `drive/docs/FEDERATIONCLOUD.md`;
+- `drive/docs/FEDERATION_PROVIDER_APPROVALS.md`;
+- `drive/docs/FEDERATION_NODE_RECOVERY.md`.

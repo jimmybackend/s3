@@ -1,0 +1,54 @@
+name: Activity costs navbar
+
+on:
+  push:
+    branches:
+      - main
+      - 'feat/**'
+      - 'fix/**'
+    paths:
+      - '.github/scripts/add_activity_costs_navbar.py'
+      - '.github/workflows/activity-costs-navbar.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  validate-and-apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Apply navbar migration
+        run: python3 .github/scripts/add_activity_costs_navbar.py
+
+      - name: Validate PHP
+        run: php -l drive/s3.php
+
+      - name: Validate navbar permissions
+        run: |
+          set -euo pipefail
+          grep -q 'href="activity_costs.php"' drive/s3.php
+          grep -q 'Actividad y costos' drive/s3.php
+          grep -q "personalToolAccessService()->state() === 'owner'" drive/s3.php
+          grep -q '<?php if ($canViewRealAws): ?>' drive/s3.php
+          grep -q 'data-target="#modalCostosAws"' drive/s3.php
+          git diff --check
+
+      - name: Commit runtime navbar
+        if: github.ref == 'refs/heads/main'
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add drive/s3.php
+          if git diff --cached --quiet; then
+            echo "No changes"
+            exit 0
+          fi
+          git commit -m "Expose activity costs in user menu"
+          git pull --rebase origin main
+          git push origin main

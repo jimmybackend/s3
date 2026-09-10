@@ -85,6 +85,7 @@
         "drive/eliminar_archivo.php",
         "drive/eliminar_carpeta.php",
         "drive/encriptar_archivo.php",
+        "drive/federationcloud/create.php",
         "drive/federationcloud/index.php",
         "drive/federationcloud/node.php",
         "drive/federationcloud/nodes.php",
@@ -221,7 +222,7 @@
     },
     {
       "path": "drive/bloque_footer.php",
-      "size": 4468,
+      "size": 4677,
       "active": true,
       "references": [
         "drive/s3.php"
@@ -348,6 +349,14 @@
       "active": false,
       "references": [
         "drive/js/archivos.js"
+      ]
+    },
+    {
+      "path": "drive/federationcloud/create.php",
+      "size": 427,
+      "active": false,
+      "references": [
+        "drive/js/arcadelink-share.js"
       ]
     },
     {
@@ -993,7 +1002,7 @@
     },
     {
       "path": "drive/src/Federation/FederationService.php",
-      "size": 4429,
+      "size": 5592,
       "active": false,
       "references": []
     },
@@ -1066,7 +1075,7 @@
     },
     {
       "path": "drive/src/Http/Controller/FederationController.php",
-      "size": 9627,
+      "size": 11474,
       "active": false,
       "references": []
     },

@@ -1,8 +1,8 @@
 {
   "summary": {
-    "php_total": 225,
-    "php_class_modules": 141,
-    "php_needs_migration": 11,
+    "php_total": 234,
+    "php_class_modules": 145,
+    "php_needs_migration": 13,
     "js_total": 32,
     "js_class_modules": 31,
     "js_needs_migration": 7
@@ -146,6 +146,21 @@
       "issues": []
     },
     {
+      "path": "drive/bin/federation_provider_request.php",
+      "lines": 86,
+      "kind": "procedural endpoint",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
       "path": "drive/bin/sync_worker.php",
       "lines": 113,
       "kind": "endpoint with logic",
@@ -213,7 +228,7 @@
     },
     {
       "path": "drive/bloque_footer.php",
-      "lines": 41,
+      "lines": 107,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -508,6 +523,51 @@
     {
       "path": "drive/federationcloud/nodes.php",
       "lines": 12,
+      "kind": "thin endpoint",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/federationcloud/provider-admin.php",
+      "lines": 11,
+      "kind": "thin endpoint",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/federationcloud/provider-request.php",
+      "lines": 11,
+      "kind": "thin endpoint",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/federationcloud/providers.php",
+      "lines": 11,
       "kind": "thin endpoint",
       "classes": 0,
       "functions": [],
@@ -1605,7 +1665,7 @@
     },
     {
       "path": "drive/src/Federation/FederationHttpClient.php",
-      "lines": 144,
+      "lines": 151,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -1642,6 +1702,51 @@
       "session": false,
       "superglobals": [],
       "db": true,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Federation/FederationProviderAuthorizationRepository.php",
+      "lines": 215,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": true,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Federation/FederationProviderAuthorizationService.php",
+      "lines": 233,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Federation/FederationProviderGrant.php",
+      "lines": 101,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
       "s3": false,
       "bootstrap": false,
       "html": false,
@@ -1846,6 +1951,21 @@
     {
       "path": "drive/src/Http/Controller/FederationDirectoryController.php",
       "lines": 73,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Http/Controller/FederationProviderController.php",
+      "lines": 115,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -3029,6 +3149,25 @@
       ]
     },
     {
+      "path": "drive/tests/federation_provider_smoke.php",
+      "lines": 76,
+      "kind": "procedural endpoint",
+      "classes": 0,
+      "functions": [
+        "providerOk"
+      ],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": [
+        "global functions: providerOk"
+      ]
+    },
+    {
       "path": "drive/tests/federationcloud_smoke.php",
       "lines": 146,
       "kind": "procedural endpoint",
@@ -3695,7 +3834,7 @@
     },
     {
       "path": "drive/js/federation-footer.js",
-      "lines": 65,
+      "lines": 258,
       "kind": "class/module",
       "classes": [
         "FederationFooterModule"

@@ -33,7 +33,7 @@
 | `drive/login.php` | entrada directa |
 | `drive/logout.php` | `drive/s3.php` |
 | `drive/psesion.php` | `drive/index.php`, `drive/login.php` |
-| `drive/s3.php` | `drive/app_bootstrap.php`, `drive/src/Http/Controller/AuthController.php`, `drive/src/View/PersonalAwsPageRenderer.php`, `drive/js/ai-search.js`, `drive/js/archivos.js`, `drive/js/carpetas.js`, `drive/js/subir.js` |
+| `drive/s3.php` | `drive/app_bootstrap.php`, `drive/src/Http/Controller/AuthController.php`, `drive/src/View/PersonalAwsPageRenderer.php`, `drive/js/archivos.js`, `drive/js/carpetas.js`, `drive/js/subir.js` |
 | `drive/thumb.php` | `drive/bloque_archivos.php`, `drive/js/imagenes.js` |
 | `drive/up.php` | `drive/src/Http/Controller/UploadCleanupController.php`, `drive/src/Upload/AdminMultipartUploadService.php`, `drive/js/estilo.js` |
 | `drive/upload.php` | `drive/s3.php`, `drive/js/soportesMediaTypes.js`, `drive/js/subir-chunked.js`, `drive/js/subir-dropzone.js`, `drive/js/subir.js` |

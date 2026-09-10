@@ -486,7 +486,6 @@
         "drive/app_bootstrap.php",
         "drive/src/Http/Controller/AuthController.php",
         "drive/src/View/PersonalAwsPageRenderer.php",
-        "drive/js/ai-search.js",
         "drive/js/archivos.js",
         "drive/js/carpetas.js",
         "drive/js/subir.js"
@@ -604,7 +603,7 @@
     },
     {
       "path": "drive/src/Aws/ComprehendFileService.php",
-      "size": 8039,
+      "size": 7376,
       "active": false,
       "references": []
     },
@@ -634,7 +633,7 @@
     },
     {
       "path": "drive/src/Aws/FileMetadataRepository.php",
-      "size": 1489,
+      "size": 3748,
       "active": false,
       "references": []
     },

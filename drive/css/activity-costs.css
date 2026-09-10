@@ -1,0 +1,38 @@
+.activity-cost-page { min-height: 100vh; }
+.activity-shell { max-width: 1500px; margin: 0 auto; padding: 24px clamp(12px, 2vw, 28px); }
+.activity-header { gap: 16px; margin-bottom: 22px; }
+.activity-header h1 { font-size: clamp(1.65rem, 3vw, 2.35rem); margin: 0 0 4px; }
+.activity-eyebrow { font-size: .78rem; letter-spacing: .13em; text-transform: uppercase; opacity: .78; font-weight: 700; }
+.activity-filter-card, .activity-stat-card, .activity-panel, .activity-notice { border: 1px solid rgba(127,127,127,.35); border-radius: 14px; }
+.activity-filter-card { padding: 16px; margin-bottom: 24px; }
+.activity-filter-card .form-group { margin-bottom: 0; }
+.activity-stat-card { padding: 18px; }
+.activity-stat-label { margin-top: 12px; opacity: .8; font-weight: 600; }
+.activity-stat-value { font-size: clamp(1.65rem, 3.5vw, 2.35rem); font-variant-numeric: tabular-nums; font-weight: 700; line-height: 1.2; margin: 4px 0; }
+.activity-badge { display: inline-flex; align-items: center; border-radius: 999px; padding: 3px 8px; font-size: .68rem; line-height: 1.25; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; border: 1px solid currentColor; }
+.activity-badge.estimated { color: #0b7285; }
+.activity-badge.real { color: #2f9e44; }
+.activity-badge.neutral { color: #6c757d; }
+.activity-notice { padding: 12px 14px; font-size: .92rem; }
+.activity-panel { padding: 16px; }
+.activity-section-title { font-size: 1.08rem; font-weight: 700; margin-bottom: 14px; }
+.activity-table { margin-bottom: 0; color: inherit; }
+.activity-table th { white-space: nowrap; font-size: .78rem; text-transform: uppercase; letter-spacing: .03em; border-top: 0; }
+.activity-table td { vertical-align: middle; }
+.activity-detail-table td { min-width: 110px; }
+.activity-detail-table td:nth-child(5), .activity-detail-table td:nth-child(6) { min-width: 180px; }
+.activity-status { display: inline-block; padding: 2px 7px; border-radius: 999px; font-size: .72rem; font-weight: 800; }
+.activity-status.ok { color: #2f9e44; border: 1px solid currentColor; }
+.activity-status.error { color: #c92a2a; border: 1px solid currentColor; }
+body.theme-dark .activity-filter-card, body.theme-dark .activity-stat-card, body.theme-dark .activity-panel, body.theme-dark .activity-notice { background: rgba(0,0,0,.28); }
+body.theme-light .activity-filter-card, body.theme-light .activity-stat-card, body.theme-light .activity-panel, body.theme-light .activity-notice { background: #fff; color: #132238; }
+body.theme-light .activity-table { color: #132238; }
+body.theme-light .activity-table thead th { color: #132238; background: #d9f7f2; }
+body.theme-light .activity-filter-card label, body.theme-light .activity-stat-label, body.theme-light .activity-section-title, body.theme-light .activity-header p, body.theme-light .activity-header h1 { color: #132238; }
+body.vision-presbyopia .activity-table td, body.vision-presbyopia .activity-table th { padding-top: .8rem; padding-bottom: .8rem; }
+@media (max-width: 767.98px) {
+  .activity-shell { padding-top: 14px; }
+  .activity-filter-card .form-group { margin-bottom: 12px; }
+  .activity-filter-card .form-group:last-child { margin-bottom: 0; }
+  .activity-detail-table { font-size: .9rem; }
+}

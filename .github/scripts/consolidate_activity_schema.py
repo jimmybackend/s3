@@ -59,7 +59,7 @@ def update_schema() -> None:
 
 def update_readme() -> None:
     text = README.read_text(encoding='utf-8')
-    note = ('Consulta `drive/docs/ACTIVITY_COSTS.md`.\n')
+    note = 'Consulta `drive/docs/ACTIVITY_COSTS.md`.\n'
     replacement = (
         'La tabla `DriveActivityEvents` forma parte del esquema base `adbbmis1_Cloud.sql`; '
         'una instalación nueva crea el módulo de actividad junto con el resto de la base de datos, '
@@ -111,41 +111,44 @@ Para una instalación limpia se importa `adbbmis1_Cloud.sql` una sola vez. Las i
 
 def update_workflow() -> None:
     text = WORKFLOW.read_text(encoding='utf-8')
-    obsolete_lines = [
-        "      - 'drive/bin/db_migrate.php'\n",
-        "      - 'drive/database/migrations/**'\n",
-        "      - 'drive/src/Console/SqlMigrationCommand.php'\n",
-        '            drive/bin/db_migrate.php \\\n',
-        '            drive/src/Console/SqlMigrationCommand.php \\\n',
-    ]
-    for line in obsolete_lines:
-        text = text.replace(line, '')
+    drop_tokens = (
+        'drive/bin/db_migrate.php',
+        'drive/database/migrations',
+        'drive/src/Console/SqlMigrationCommand.php',
+    )
+    text = ''.join(
+        line for line in text.splitlines(keepends=True)
+        if not any(token in line for token in drop_tokens)
+    )
 
     push_anchor = "      - '.github/workflows/activity-costs.yml'\n"
-    if "      - 'adbbmis1_Cloud.sql'\n" not in text:
-        if push_anchor not in text:
-            raise SystemExit('No se encontró ancla push de activity-costs.yml.')
-        text = text.replace(push_anchor, "      - 'adbbmis1_Cloud.sql'\n" + push_anchor, 1)
+    first_workflow = text.find(push_anchor)
+    if first_workflow < 0:
+        raise SystemExit('No se encontró ancla push de activity-costs.yml.')
+    push_prefix = text[:first_workflow]
+    if "      - 'adbbmis1_Cloud.sql'\n" not in push_prefix:
+        text = text[:first_workflow] + "      - 'adbbmis1_Cloud.sql'\n" + text[first_workflow:]
 
-    pr_anchor = "  workflow_dispatch:\n"
-    pr_sql = "      - 'adbbmis1_Cloud.sql'\n"
-    pull_section = text[text.find('  pull_request:'):text.find(pr_anchor)]
-    if pr_sql not in pull_section:
-        old = "  pull_request:\n    paths:\n      - 'drive/**'\n      - '.github/workflows/activity-costs.yml'\n"
-        new = "  pull_request:\n    paths:\n      - 'drive/**'\n      - 'adbbmis1_Cloud.sql'\n      - '.github/workflows/activity-costs.yml'\n"
-        if old not in text:
-            raise SystemExit('No se encontró bloque pull_request esperado.')
-        text = text.replace(old, new, 1)
+    old_pr = "  pull_request:\n    paths:\n      - 'drive/**'\n      - '.github/workflows/activity-costs.yml'\n"
+    new_pr = "  pull_request:\n    paths:\n      - 'drive/**'\n      - 'adbbmis1_Cloud.sql'\n      - '.github/workflows/activity-costs.yml'\n"
+    if old_pr in text:
+        text = text.replace(old_pr, new_pr, 1)
+    elif new_pr not in text:
+        raise SystemExit('No se encontró bloque pull_request esperado.')
 
-    text = text.replace(
-        "          grep -q 'CREATE TABLE IF NOT EXISTS `DriveActivityEvents`' drive/database/migrations/20260910_activity_costs.sql\n",
+    old_guard = "          grep -q 'CREATE TABLE IF NOT EXISTS `DriveActivityEvents`' drive/database/migrations/20260910_activity_costs.sql\n"
+    new_guard = (
         "          grep -q 'CREATE TABLE IF NOT EXISTS `DriveActivityEvents`' adbbmis1_Cloud.sql\n"
         "          grep -q 'DROP TABLE IF EXISTS `DriveActivityEvents`' adbbmis1_Cloud.sql\n"
     )
-    text = text.replace(
-        "drive/config/activity-cost-pricing.json drive/database/migrations drive/tests",
-        "drive/config/activity-cost-pricing.json drive/tests"
-    )
+    if old_guard in text:
+        text = text.replace(old_guard, new_guard, 1)
+    elif "CREATE TABLE IF NOT EXISTS `DriveActivityEvents`' adbbmis1_Cloud.sql" not in text:
+        anchor = "          grep -q 'Cost Explorer' drive/src/Activity/ActivityCostService.php\n"
+        if anchor not in text:
+            raise SystemExit('No se encontró ancla para guard del esquema maestro.')
+        text = text.replace(anchor, anchor + new_guard, 1)
+
     WORKFLOW.write_text(text, encoding='utf-8')
 
 
@@ -164,6 +167,8 @@ remove_obsolete()
 schema_text = SCHEMA.read_text(encoding='utf-8')
 if schema_text.count('CREATE TABLE IF NOT EXISTS `DriveActivityEvents`') != 1:
     raise SystemExit('DriveActivityEvents debe existir exactamente una vez en el esquema maestro.')
+if 'DROP TABLE IF EXISTS `DriveActivityEvents`' not in schema_text:
+    raise SystemExit('Falta DROP TABLE de DriveActivityEvents en el esquema maestro.')
 
 for path in OBSOLETE:
     if path.exists():

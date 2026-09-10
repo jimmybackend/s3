@@ -75,7 +75,7 @@ final class FederationProviderAuthorizationService
             'scope' => $scope,
             'message' => $status === 'active'
                 ? 'El nodo ya estaba autorizado como proveedor.'
-                : 'Solicitud recibida. Requiere aprobación de Administración en el nodo origen.',
+                : 'Solicitud recibida. Requiere aprobación de un superusuario en el nodo origen.',
         ];
     }
 

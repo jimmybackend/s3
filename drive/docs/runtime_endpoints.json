@@ -627,6 +627,7 @@
         "drive/app_bootstrap.php",
         "drive/src/Http/Controller/AuthController.php",
         "drive/src/View/ActivityCostPageRenderer.php",
+        "drive/src/View/FederationPageRenderer.php",
         "drive/src/View/PersonalAwsPageRenderer.php",
         "drive/js/archivos.js",
         "drive/js/carpetas.js",
@@ -1465,7 +1466,7 @@
     },
     {
       "path": "drive/src/View/FederationPageRenderer.php",
-      "size": 8283,
+      "size": 9465,
       "active": false,
       "references": []
     },

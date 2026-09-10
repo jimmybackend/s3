@@ -22,6 +22,17 @@ final class FederationNodeDescriptorValidator
             throw new FederationException('Node ID FederationCloud inválido.', 400);
         }
 
+        $nodeName = null;
+        if (array_key_exists('node_name', $descriptor)) {
+            if (!is_string($descriptor['node_name']) || trim((string)$descriptor['node_name']) === '') {
+                throw new FederationException('Nombre de nodo FederationCloud inválido.', 400);
+            }
+            $nodeName = NodeIdentityService::normalizeNodeName((string)$descriptor['node_name']);
+            if (!hash_equals($nodeName, (string)$descriptor['node_name'])) {
+                throw new FederationException('El nombre del nodo FederationCloud debe estar en formato canónico.', 400);
+            }
+        }
+
         $publicKey = FederationCodec::base64UrlDecode((string)$descriptor['public_key']);
         if (!hash_equals(NodeIdentityService::nodeIdFromPublicKey($publicKey), $nodeId)) {
             throw new FederationException('El Node ID no corresponde a la clave pública.', 400);
@@ -58,6 +69,7 @@ final class FederationNodeDescriptorValidator
             'protocol' => 'arcadecloud-federation',
             'version' => 1,
             'node_id' => $nodeId,
+            'node_name' => $nodeName,
             'public_url' => $publicUrl,
             'federation_url' => $federationUrl,
             'public_key' => (string)$descriptor['public_key'],

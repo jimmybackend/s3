@@ -32,6 +32,7 @@
       "active": true,
       "references": [
         "drive/bloque_carpetas.php",
+        "drive/s3.php",
         "drive/src/View/ActivityCostPageRenderer.php"
       ]
     },
@@ -65,7 +66,6 @@
         "drive/actualizar_ruta.php",
         "drive/api/upload.php",
         "drive/aws.php",
-        "drive/bin/db_migrate.php",
         "drive/bin/sync_worker.php",
         "drive/bin/upload_cleanup.php",
         "drive/bloque_archivos.php",
@@ -139,12 +139,6 @@
         "drive/src/Http/Controller/PersonalAwsController.php",
         "drive/js/estilo.js"
       ]
-    },
-    {
-      "path": "drive/bin/db_migrate.php",
-      "size": 234,
-      "active": false,
-      "references": []
     },
     {
       "path": "drive/bin/sync_worker.php",
@@ -499,7 +493,7 @@
     },
     {
       "path": "drive/s3.php",
-      "size": 88001,
+      "size": 88282,
       "active": true,
       "references": [
         "drive/app_bootstrap.php",
@@ -738,12 +732,6 @@
     {
       "path": "drive/src/Aws/TranslateFileService.php",
       "size": 2890,
-      "active": false,
-      "references": []
-    },
-    {
-      "path": "drive/src/Console/SqlMigrationCommand.php",
-      "size": 2207,
       "active": false,
       "references": []
     },

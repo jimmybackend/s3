@@ -1605,7 +1605,7 @@
     },
     {
       "path": "drive/src/Federation/FederatedResourceRepository.php",
-      "lines": 91,
+      "lines": 117,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -1800,7 +1800,7 @@
     },
     {
       "path": "drive/src/Federation/FederationService.php",
-      "lines": 152,
+      "lines": 146,
       "kind": "class/module",
       "classes": 1,
       "functions": [],

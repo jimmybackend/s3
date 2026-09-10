@@ -29,8 +29,9 @@ class FederationFooterModule {
       }
 
       const nodeId = String(data.local_node.node_id);
-      nodeTarget.textContent = this.shortNodeId(nodeId);
-      nodeTarget.title = nodeId;
+      const nodeName = data.local_node.node_name ? String(data.local_node.node_name) : '';
+      nodeTarget.textContent = nodeName || this.shortNodeId(nodeId);
+      nodeTarget.title = nodeName ? `${nodeName} · ${nodeId}` : nodeId;
 
       const connected = Math.max(1, Number.parseInt(data.connected_nodes, 10) || 1);
       countTarget.textContent = String(connected);

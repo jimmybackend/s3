@@ -2420,7 +2420,7 @@
     },
     {
       "path": "drive/src/Security/AuthenticationService.php",
-      "lines": 43,
+      "lines": 45,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -2480,7 +2480,7 @@
     },
     {
       "path": "drive/src/Security/SessionManager.php",
-      "lines": 132,
+      "lines": 149,
       "kind": "class/module",
       "classes": 1,
       "functions": [],

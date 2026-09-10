@@ -180,11 +180,11 @@
 | `drive/src/Media/MediaPlaylistService.php` | 66 | class/module | 1 | — | — | — | — |
 | `drive/src/Media/ThumbnailService.php` | 380 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Security/AuthenticationRepository.php` | 59 | class/module | 1 | — | ⚠️ | — | — |
-| `drive/src/Security/AuthenticationService.php` | 43 | class/module | 1 | — | — | — | — |
+| `drive/src/Security/AuthenticationService.php` | 45 | class/module | 1 | — | — | — | — |
 | `drive/src/Security/FileSecurityRepository.php` | 92 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Security/FileSecurityService.php` | 183 | class/module | 1 | — | — | — | — |
 | `drive/src/Security/PersonalToolAccessService.php` | 53 | class/module | 1 | — | — | — | — |
-| `drive/src/Security/SessionManager.php` | 132 | class/module | 1 | ⚠️ | — | — | — |
+| `drive/src/Security/SessionManager.php` | 149 | class/module | 1 | ⚠️ | — | — | — |
 | `drive/src/Security/UserDirectoryRepository.php` | 72 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Sharing/ShareAccessService.php` | 105 | class/module | 1 | — | — | — | — |
 | `drive/src/Sharing/ShareException.php` | 22 | class/module | 1 | — | — | — | — |

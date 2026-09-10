@@ -29,14 +29,16 @@ final class AuthenticationService
 
         $userId = (int)($user['id'] ?? 0);
         $role = (string)($user['role'] ?? '');
+        $systemRole = (string)($user['system_role'] ?? 'user');
 
-        $this->session->establishAuthenticatedUser($email, $userId, $role);
+        $this->session->establishAuthenticatedUser($email, $userId, $role, $systemRole);
         $this->repository->recordLogin($userId, $role, $ipAddress);
 
         return [
             'status' => 'authenticated',
             'user_id' => $userId,
             'role' => $role,
+            'system_role' => $systemRole,
         ];
     }
 }

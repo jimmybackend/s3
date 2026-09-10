@@ -4,9 +4,9 @@
 
 ## Resumen
 
-- PHP analizados: **189**
-- PHP que ya contienen clases/interfaces: **118**
-- PHP marcados para migración/revisión: **4**
+- PHP analizados: **199**
+- PHP que ya contienen clases/interfaces: **125**
+- PHP marcados para migración/revisión: **5**
 - JavaScript analizados: **31**
 - JavaScript que ya contienen clases: **30**
 - JavaScript marcados para migración/revisión: **7**
@@ -22,14 +22,16 @@
 
 | Archivo | Líneas | Tipo detectado | Clases | Sesión | DB | AWS/S3 | Observaciones |
 |---|---:|---|---:|:---:|:---:|:---:|---|
+| `drive/activity_costs.php` | 8 | thin endpoint | 0 | — | — | — | — |
 | `drive/actualizar_ruta.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/api/upload.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/app_bootstrap.php` | 64 | procedural endpoint | 0 | — | ⚠️ | — | DB in endpoint |
 | `drive/aws.php` | 10 | thin endpoint | 0 | — | — | — | — |
+| `drive/bin/db_migrate.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/bin/sync_worker.php` | 113 | endpoint with logic | 0 | — | — | — | — |
 | `drive/bin/upload_cleanup.php` | 11 | thin endpoint | 0 | — | — | — | — |
 | `drive/bloque_archivos.php` | 662 | view/entrypoint | 0 | ⚠️ | — | — | — |
-| `drive/bloque_carpetas.php` | 69 | view/entrypoint | 0 | ⚠️ | — | — | — |
+| `drive/bloque_carpetas.php` | 75 | view/entrypoint | 0 | ⚠️ | — | — | — |
 | `drive/bloque_footer.php` | 32 | view/entrypoint | 0 | ⚠️ | — | — | — |
 | `drive/buscar_archivo.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/comprehend_archivo.php` | 8 | thin endpoint | 0 | — | — | — | — |
@@ -70,6 +72,10 @@
 | `drive/renombrar_carpeta.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/s3.php` | 2182 | view/entrypoint | 0 | ⚠️ | — | — | — |
 | `drive/set_file_security.php` | 10 | thin endpoint | 0 | — | — | — | — |
+| `drive/src/Activity/ActivityCostRecorder.php` | 155 | class/module | 1 | — | — | — | — |
+| `drive/src/Activity/ActivityCostRepository.php` | 173 | class/module | 1 | — | ⚠️ | — | — |
+| `drive/src/Activity/ActivityCostService.php` | 148 | class/module | 1 | — | — | — | — |
+| `drive/src/Activity/AwsUnitPriceCatalog.php` | 81 | class/module | 1 | — | — | — | — |
 | `drive/src/Application/AiFileSearchService.php` | 470 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Application/DrivePageService.php` | 40 | class/module | 1 | — | — | — | — |
 | `drive/src/Application/DrivePageViewModel.php` | 18 | class/module | 1 | — | — | — | — |
@@ -78,7 +84,7 @@
 | `drive/src/Application/FileListService.php` | 155 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Application/FileMutationService.php` | 119 | class/module | 1 | — | — | — | — |
 | `drive/src/Application/FileSearchService.php` | 104 | class/module | 1 | — | ⚠️ | — | — |
-| `drive/src/Application/FolderMutationService.php` | 188 | class/module | 1 | — | — | — | — |
+| `drive/src/Application/FolderMutationService.php` | 214 | class/module | 1 | — | — | — | — |
 | `drive/src/Application/FolderQueryService.php` | 152 | class/module | 1 | — | — | — | — |
 | `drive/src/Application/MoveJobService.php` | 117 | class/module | 1 | — | — | — | — |
 | `drive/src/Application/PhpLintService.php` | 70 | class/module | 1 | — | — | — | — |
@@ -86,8 +92,8 @@
 | `drive/src/Application/TextFileService.php` | 157 | class/module | 1 | — | — | — | — |
 | `drive/src/Application/UploadDestinationService.php` | 56 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Application/ZipDownloadService.php` | 62 | class/module | 1 | — | — | — | — |
-| `drive/src/Aws/AwsCostService.php` | 92 | class/module | 1 | — | — | — | — |
-| `drive/src/Aws/ComprehendFileService.php` | 201 | class/module | 1 | — | — | — | — |
+| `drive/src/Aws/AwsCostService.php` | 115 | class/module | 1 | — | — | — | — |
+| `drive/src/Aws/ComprehendFileService.php` | 230 | class/module | 1 | — | — | — | — |
 | `drive/src/Aws/CostExplorerGateway.php` | 76 | class/module | 1 | — | — | — | — |
 | `drive/src/Aws/Ec2CostGuardService.php` | 116 | class/module | 1 | — | — | — | — |
 | `drive/src/Aws/Ec2CronLogger.php` | 28 | class/module | 1 | — | — | — | — |
@@ -97,44 +103,46 @@
 | `drive/src/Aws/GeneratedFileRepository.php` | 36 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Aws/PersonalAwsConfig.php` | 122 | class/module | 1 | — | — | — | — |
 | `drive/src/Aws/PersonalTotpService.php` | 44 | class/module | 1 | — | — | — | — |
-| `drive/src/Aws/PollyFileService.php` | 67 | class/module | 1 | — | — | — | — |
+| `drive/src/Aws/PollyFileService.php` | 68 | class/module | 1 | — | — | — | — |
 | `drive/src/Aws/RdsGateway.php` | 233 | class/module | 1 | — | — | — | — |
 | `drive/src/Aws/RekognitionFileService.php` | 30 | class/module | 1 | — | — | — | — |
-| `drive/src/Aws/TextractFileService.php` | 98 | class/module | 1 | — | — | — | — |
+| `drive/src/Aws/TextractFileService.php` | 107 | class/module | 1 | — | — | — | — |
 | `drive/src/Aws/TranscriptionFileService.php` | 126 | class/module | 1 | — | — | — | — |
-| `drive/src/Aws/TranslateFileService.php` | 51 | class/module | 1 | — | — | — | — |
+| `drive/src/Aws/TranslateFileService.php` | 60 | class/module | 1 | — | — | — | — |
+| `drive/src/Console/SqlMigrationCommand.php` | 70 | class/module | 1 | — | — | — | — |
 | `drive/src/Console/UploadCleanupCommand.php` | 61 | class/module | 1 | — | — | — | — |
 | `drive/src/Core/ApplicationKernel.php` | 38 | class/module | 1 | — | — | — | — |
 | `drive/src/Core/DriveApplication.php` | 457 | class/module | 1 | — | — | ⚠️ | — |
 | `drive/src/Http/BinaryResponse.php` | 85 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/ByteRange.php` | 45 | procedural endpoint | 0 | — | — | — | — |
 | `drive/src/Http/Controller/AbstractJsonController.php` | 69 | class/module | 1 | — | — | — | — |
+| `drive/src/Http/Controller/ActivityCostController.php` | 70 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/AuthController.php` | 94 | class/module | 1 | — | — | — | — |
-| `drive/src/Http/Controller/AwsCostController.php` | 39 | class/module | 1 | — | — | — | — |
-| `drive/src/Http/Controller/AwsFileController.php` | 51 | class/module | 1 | — | — | — | — |
-| `drive/src/Http/Controller/FileAccessController.php` | 96 | class/module | 1 | — | — | — | — |
+| `drive/src/Http/Controller/AwsCostController.php` | 61 | class/module | 1 | — | — | — | — |
+| `drive/src/Http/Controller/AwsFileController.php` | 325 | class/module | 1 | — | — | — | — |
+| `drive/src/Http/Controller/FileAccessController.php` | 145 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/FileKeyRotationController.php` | 35 | class/module | 1 | — | — | — | — |
-| `drive/src/Http/Controller/FileMutationController.php` | 126 | class/module | 1 | — | — | — | — |
+| `drive/src/Http/Controller/FileMutationController.php` | 124 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/FileSearchController.php` | 65 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/FileSecurityController.php` | 97 | class/module | 1 | — | — | — | — |
-| `drive/src/Http/Controller/FolderMutationController.php` | 144 | class/module | 1 | — | — | — | — |
+| `drive/src/Http/Controller/FolderMutationController.php` | 203 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/FolderQueryController.php` | 30 | class/module | 1 | — | — | — | — |
-| `drive/src/Http/Controller/LegacyUploadController.php` | 139 | class/module | 1 | — | — | — | — |
+| `drive/src/Http/Controller/LegacyUploadController.php` | 140 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/MediaPlaylistController.php` | 35 | class/module | 1 | — | — | — | — |
-| `drive/src/Http/Controller/MoveJobController.php` | 180 | class/module | 1 | — | — | — | — |
+| `drive/src/Http/Controller/MoveJobController.php` | 243 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/NavigationController.php` | 42 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/PersonalAwsController.php` | 74 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/PublicShareController.php` | 209 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/PublicSharedBrowserController.php` | 76 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/PublicUploadController.php` | 81 | class/module | 1 | — | — | — | — |
-| `drive/src/Http/Controller/ShareController.php` | 79 | class/module | 1 | — | — | — | — |
+| `drive/src/Http/Controller/ShareController.php` | 78 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/StorageUsageController.php` | 28 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/SyncController.php` | 181 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/TextEditorController.php` | 61 | class/module | 1 | — | — | — | — |
-| `drive/src/Http/Controller/ThumbnailController.php` | 95 | class/module | 1 | — | — | — | — |
-| `drive/src/Http/Controller/TranscriptionController.php` | 26 | class/module | 1 | — | — | — | — |
+| `drive/src/Http/Controller/ThumbnailController.php` | 110 | class/module | 1 | — | — | — | — |
+| `drive/src/Http/Controller/TranscriptionController.php` | 128 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/UploadCleanupController.php` | 76 | class/module | 1 | — | — | — | — |
-| `drive/src/Http/Controller/UploadController.php` | 95 | class/module | 1 | — | — | — | — |
+| `drive/src/Http/Controller/UploadController.php` | 252 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/JsonResponse.php` | 27 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Request.php` | 112 | class/module | 1 | — | — | — | — |
 | `drive/src/Media/MediaPlaylistRepository.php` | 49 | class/module | 1 | — | ⚠️ | — | — |
@@ -172,6 +180,7 @@
 | `drive/src/Upload/SingleUploadService.php` | 104 | class/module | 1 | — | — | — | — |
 | `drive/src/Upload/UploadCatalogRepository.php` | 115 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Upload/UploadCleanupService.php` | 316 | class/module | 1 | — | ⚠️ | — | — |
+| `drive/src/View/ActivityCostPageRenderer.php` | 358 | class/module | 1 | — | — | — | — |
 | `drive/src/View/Ec2PanelHelper.php` | 69 | class/module | 1 | — | — | — | — |
 | `drive/src/View/FileIconResolver.php` | 136 | class/module | 1 | — | — | — | — |
 | `drive/src/View/FileViewHelper.php` | 108 | class/module | 1 | — | — | — | — |
@@ -185,6 +194,7 @@
 | `drive/subir_publico.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/sync_s3_to_db.php` | 5 | thin endpoint | 0 | — | — | — | — |
 | `drive/sync_status.php` | 5 | thin endpoint | 0 | — | — | — | — |
+| `drive/tests/activity_costs_smoke.php` | 79 | view/entrypoint | 0 | — | — | — | global functions: check |
 | `drive/thumb.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/token_audio.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/token_texto.php` | 10 | thin endpoint | 0 | — | — | — | — |

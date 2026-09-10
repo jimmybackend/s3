@@ -1,13 +1,28 @@
 {
   "summary": {
-    "php_total": 189,
-    "php_class_modules": 118,
-    "php_needs_migration": 4,
+    "php_total": 199,
+    "php_class_modules": 125,
+    "php_needs_migration": 5,
     "js_total": 31,
     "js_class_modules": 30,
     "js_needs_migration": 7
   },
   "php": [
+    {
+      "path": "drive/activity_costs.php",
+      "lines": 8,
+      "kind": "thin endpoint",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
     {
       "path": "drive/actualizar_ruta.php",
       "lines": 10,
@@ -71,6 +86,21 @@
       "issues": []
     },
     {
+      "path": "drive/bin/db_migrate.php",
+      "lines": 10,
+      "kind": "thin endpoint",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
       "path": "drive/bin/sync_worker.php",
       "lines": 113,
       "kind": "endpoint with logic",
@@ -120,7 +150,7 @@
     },
     {
       "path": "drive/bloque_carpetas.php",
-      "lines": 69,
+      "lines": 75,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -764,6 +794,66 @@
       "issues": []
     },
     {
+      "path": "drive/src/Activity/ActivityCostRecorder.php",
+      "lines": 155,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Activity/ActivityCostRepository.php",
+      "lines": 173,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": true,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Activity/ActivityCostService.php",
+      "lines": 148,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Activity/AwsUnitPriceCatalog.php",
+      "lines": 81,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
       "path": "drive/src/Application/AiFileSearchService.php",
       "lines": 470,
       "kind": "class/module",
@@ -885,7 +975,7 @@
     },
     {
       "path": "drive/src/Application/FolderMutationService.php",
-      "lines": 188,
+      "lines": 214,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -1005,7 +1095,7 @@
     },
     {
       "path": "drive/src/Aws/AwsCostService.php",
-      "lines": 92,
+      "lines": 115,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -1020,7 +1110,7 @@
     },
     {
       "path": "drive/src/Aws/ComprehendFileService.php",
-      "lines": 201,
+      "lines": 230,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -1170,7 +1260,7 @@
     },
     {
       "path": "drive/src/Aws/PollyFileService.php",
-      "lines": 67,
+      "lines": 68,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -1215,7 +1305,7 @@
     },
     {
       "path": "drive/src/Aws/TextractFileService.php",
-      "lines": 98,
+      "lines": 107,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -1245,7 +1335,22 @@
     },
     {
       "path": "drive/src/Aws/TranslateFileService.php",
-      "lines": 51,
+      "lines": 60,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Console/SqlMigrationCommand.php",
+      "lines": 70,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -1349,6 +1454,21 @@
       "issues": []
     },
     {
+      "path": "drive/src/Http/Controller/ActivityCostController.php",
+      "lines": 70,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
       "path": "drive/src/Http/Controller/AuthController.php",
       "lines": 94,
       "kind": "class/module",
@@ -1365,7 +1485,7 @@
     },
     {
       "path": "drive/src/Http/Controller/AwsCostController.php",
-      "lines": 39,
+      "lines": 61,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -1380,7 +1500,7 @@
     },
     {
       "path": "drive/src/Http/Controller/AwsFileController.php",
-      "lines": 51,
+      "lines": 325,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -1395,7 +1515,7 @@
     },
     {
       "path": "drive/src/Http/Controller/FileAccessController.php",
-      "lines": 96,
+      "lines": 145,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -1425,7 +1545,7 @@
     },
     {
       "path": "drive/src/Http/Controller/FileMutationController.php",
-      "lines": 126,
+      "lines": 124,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -1470,7 +1590,7 @@
     },
     {
       "path": "drive/src/Http/Controller/FolderMutationController.php",
-      "lines": 144,
+      "lines": 203,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -1500,7 +1620,7 @@
     },
     {
       "path": "drive/src/Http/Controller/LegacyUploadController.php",
-      "lines": 139,
+      "lines": 140,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -1530,7 +1650,7 @@
     },
     {
       "path": "drive/src/Http/Controller/MoveJobController.php",
-      "lines": 180,
+      "lines": 243,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -1620,7 +1740,7 @@
     },
     {
       "path": "drive/src/Http/Controller/ShareController.php",
-      "lines": 79,
+      "lines": 78,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -1680,7 +1800,7 @@
     },
     {
       "path": "drive/src/Http/Controller/ThumbnailController.php",
-      "lines": 95,
+      "lines": 110,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -1695,7 +1815,7 @@
     },
     {
       "path": "drive/src/Http/Controller/TranscriptionController.php",
-      "lines": 26,
+      "lines": 128,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -1725,7 +1845,7 @@
     },
     {
       "path": "drive/src/Http/Controller/UploadController.php",
-      "lines": 95,
+      "lines": 252,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -2301,6 +2421,21 @@
       "issues": []
     },
     {
+      "path": "drive/src/View/ActivityCostPageRenderer.php",
+      "lines": 358,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": true,
+      "namespace": true,
+      "issues": []
+    },
+    {
       "path": "drive/src/View/Ec2PanelHelper.php",
       "lines": 69,
       "kind": "class/module",
@@ -2494,6 +2629,25 @@
       "html": false,
       "namespace": false,
       "issues": []
+    },
+    {
+      "path": "drive/tests/activity_costs_smoke.php",
+      "lines": 79,
+      "kind": "view/entrypoint",
+      "classes": 0,
+      "functions": [
+        "check"
+      ],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": true,
+      "namespace": false,
+      "issues": [
+        "global functions: check"
+      ]
     },
     {
       "path": "drive/thumb.php",

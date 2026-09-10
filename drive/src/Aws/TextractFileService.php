@@ -39,11 +39,17 @@ final class TextractFileService
         ]);
 
         $lines = [];
+        $pageCount = 0;
         foreach ((array)($result['Blocks'] ?? []) as $block) {
-            if (($block['BlockType'] ?? '') === 'LINE' && isset($block['Text'])) {
+            $blockType = (string)($block['BlockType'] ?? '');
+            if ($blockType === 'PAGE') {
+                $pageCount++;
+            }
+            if ($blockType === 'LINE' && isset($block['Text'])) {
                 $lines[] = (string)$block['Text'];
             }
         }
+        $pageCount = max(1, $pageCount);
 
         $fullText = implode("\n", $lines);
         [$metadataText, $metadataTruncated] = $this->metadataText($fullText);
@@ -57,6 +63,7 @@ final class TextractFileService
                 'Nombre' => (string)($row['Nombre'] ?? ''),
                 'Ruta' => (string)($row['Ruta'] ?? ''),
                 'line_count' => count($lines),
+                'page_count' => $pageCount,
                 'text' => $metadataText,
                 'text_truncated' => $metadataTruncated,
                 'bytes_extracted' => strlen($fullText),
@@ -66,8 +73,10 @@ final class TextractFileService
         return [
             'ok' => true,
             'archivo' => $real,
+            'file_id' => (int)$row['id_'],
             'texto' => $lines,
             'textoJ' => $fullText,
+            'page_count' => $pageCount,
             'saved' => true,
         ];
     }

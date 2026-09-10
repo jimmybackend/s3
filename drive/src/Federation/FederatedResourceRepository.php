@@ -40,20 +40,39 @@ final class FederatedResourceRepository
 
     public function findOwnedFileByStorageRef(int $userId, string $storageRef): ?array
     {
-        $storageRef = trim($storageRef);
-        if ($userId <= 0 || $storageRef === '' || strlen($storageRef) > 255) return null;
+        $key = $this->normalizeKey($storageRef);
+        if ($userId <= 0 || $key === '' || strlen($key) > 1024) return null;
+
+        $slash = strrpos($key, '/');
+        $route = $slash === false ? '' : substr($key, 0, $slash + 1);
+        $basename = $slash === false ? $key : substr($key, $slash + 1);
+
         $stmt = $this->db->prepare(
             'SELECT id_, user_id_, Nombre, Encriptado, Tamano, Metadatos, Ruta, Found, AccessType, Fecha '
-            . 'FROM FileS3 WHERE Encriptado = ? AND user_id_ = ? AND Found = 1 LIMIT 1'
+            . 'FROM FileS3 '
+            . 'WHERE user_id_ = ? AND Found = 1 '
+            . 'AND ((Ruta = ? AND Encriptado = ?) OR Encriptado = ?) '
+            . 'ORDER BY id_ DESC LIMIT 20'
         );
         if (!$stmt) {
             throw new FederationException('No se pudo consultar el recurso estable local.', 500);
         }
-        $stmt->bind_param('si', $storageRef, $userId);
+
+        $stmt->bind_param('isss', $userId, $route, $basename, $key);
         $stmt->execute();
-        $row = $stmt->get_result()->fetch_assoc();
+        $result = $stmt->get_result();
+
+        while ($row = $result->fetch_assoc()) {
+            $realKey = $this->normalizeKey($this->storageKey($row));
+            if ($realKey !== $key) {
+                continue;
+            }
+            $stmt->close();
+            return $row;
+        }
+
         $stmt->close();
-        return is_array($row) ? $row : null;
+        return null;
     }
 
     public function contentId(array $file): ?string
@@ -86,5 +105,12 @@ final class FederatedResourceRepository
     public function storageKey(array $file): string
     {
         return FileViewHelper::buildS3Key((string)($file['Ruta'] ?? ''), (string)($file['Encriptado'] ?? ''));
+    }
+
+    private function normalizeKey(string $key): string
+    {
+        $key = str_replace('\\', '/', trim($key));
+        $key = preg_replace('~/+~', '/', $key) ?? $key;
+        return ltrim($key, '/');
     }
 }

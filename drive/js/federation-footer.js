@@ -22,8 +22,19 @@ class FederationFooterModule {
       this.csrf = String(this.requestsButton.dataset.csrf || '');
       this.loadAdmin(false);
       const modal = this.document.getElementById('modalFederationProviderRequests');
-      if (modal && this.window.jQuery) {
-        this.window.jQuery(modal).on('shown.bs.modal', () => this.loadAdmin(true));
+      if (modal) {
+        // Bootstrap appends the backdrop to <body>. Keep the FederationCloud
+        // modal there too so parent stacking contexts cannot place it behind
+        // the backdrop and block its action buttons.
+        if (modal.parentElement !== this.document.body) {
+          this.document.body.appendChild(modal);
+        }
+
+        if (this.window.jQuery) {
+          this.window.jQuery(modal).on('shown.bs.modal', () => this.loadAdmin(true));
+        } else {
+          this.requestsButton.addEventListener('click', () => this.loadAdmin(true));
+        }
       } else {
         this.requestsButton.addEventListener('click', () => this.loadAdmin(true));
       }

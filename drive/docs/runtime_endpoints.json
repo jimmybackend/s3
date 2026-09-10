@@ -221,7 +221,7 @@
     },
     {
       "path": "drive/bloque_footer.php",
-      "size": 4463,
+      "size": 4468,
       "active": true,
       "references": [
         "drive/s3.php"
@@ -1078,7 +1078,7 @@
     },
     {
       "path": "drive/src/Http/Controller/FederationProviderController.php",
-      "size": 5195,
+      "size": 5159,
       "active": false,
       "references": []
     },
@@ -1252,13 +1252,13 @@
     },
     {
       "path": "drive/src/Security/AuthenticationRepository.php",
-      "size": 1646,
+      "size": 1659,
       "active": false,
       "references": []
     },
     {
       "path": "drive/src/Security/AuthenticationService.php",
-      "size": 1184,
+      "size": 1303,
       "active": false,
       "references": []
     },
@@ -1282,7 +1282,7 @@
     },
     {
       "path": "drive/src/Security/SessionManager.php",
-      "size": 3409,
+      "size": 3885,
       "active": false,
       "references": []
     },

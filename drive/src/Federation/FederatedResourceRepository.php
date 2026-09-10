@@ -38,6 +38,24 @@ final class FederatedResourceRepository
         return is_array($row) ? $row : null;
     }
 
+    public function findOwnedFileByStorageRef(int $userId, string $storageRef): ?array
+    {
+        $storageRef = trim($storageRef);
+        if ($userId <= 0 || $storageRef === '' || strlen($storageRef) > 255) return null;
+        $stmt = $this->db->prepare(
+            'SELECT id_, user_id_, Nombre, Encriptado, Tamano, Metadatos, Ruta, Found, AccessType, Fecha '
+            . 'FROM FileS3 WHERE Encriptado = ? AND user_id_ = ? AND Found = 1 LIMIT 1'
+        );
+        if (!$stmt) {
+            throw new FederationException('No se pudo consultar el recurso estable local.', 500);
+        }
+        $stmt->bind_param('si', $storageRef, $userId);
+        $stmt->execute();
+        $row = $stmt->get_result()->fetch_assoc();
+        $stmt->close();
+        return is_array($row) ? $row : null;
+    }
+
     public function contentId(array $file): ?string
     {
         $metadata = FileViewHelper::metadataArray($file['Metadatos'] ?? null);

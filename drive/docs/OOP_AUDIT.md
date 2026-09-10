@@ -227,7 +227,7 @@
 | `drive/js/editar-txt.js` | 68 | class/module | EditarTxtModule | — | — | — |
 | `drive/js/elimina-multiple.js` | 104 | class/module | EliminaMultipleModule | — | — | — |
 | `drive/js/elimina-uno.js` | 122 | class/module | EliminaUnoModule | — | — | — |
-| `drive/js/estilo.js` | 323 | class/module | EstiloModule | — | — | — |
+| `drive/js/estilo.js` | 351 | class/module | EstiloModule | — | — | — |
 | `drive/js/file-block.js` | 305 | class/module | FileBlockApp | — | — | — |
 | `drive/js/filtros.js` | 97 | class/module | FiltrosModule | — | — | — |
 | `drive/js/imagenes.js` | 535 | class/module | ImagenesModule | — | getGaleriaGridSize, setGaleriaGridSize | window functions: getGaleriaGridSize, setGaleriaGridSize |

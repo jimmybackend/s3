@@ -65,7 +65,7 @@ final class ActivityCostRepository
         [$where, $params] = $this->where($userId, $start, $end, $service, $action);
 
         $totals = $this->one(
-            "SELECT COUNT(*) AS operations,
+            "SELECT COUNT(DISTINCT COALESCE(e.`CorrelationId`, CONCAT('row:', e.id_))) AS operations,
                     COALESCE(SUM(`EstimatedCost`), 0) AS estimated_cost,
                     SUM(CASE WHEN `PricingState` = 'partial' THEN 1 ELSE 0 END) AS partial_count,
                     SUM(CASE WHEN `PricingState` = 'unpriced' THEN 1 ELSE 0 END) AS unpriced_count,
@@ -75,7 +75,7 @@ final class ActivityCostRepository
         );
 
         $byService = $this->all(
-            "SELECT `Service` AS service, COUNT(*) AS operations,
+            "SELECT `Service` AS service, COUNT(DISTINCT COALESCE(e.`CorrelationId`, CONCAT('row:', e.id_))) AS operations,
                     COALESCE(SUM(`EstimatedCost`), 0) AS estimated_cost
              FROM `DriveActivityEvents` e WHERE $where
              GROUP BY `Service` ORDER BY estimated_cost DESC, operations DESC, `Service` ASC",
@@ -83,7 +83,7 @@ final class ActivityCostRepository
         );
 
         $byAction = $this->all(
-            "SELECT `Action` AS action, COUNT(*) AS operations,
+            "SELECT `Action` AS action, COUNT(DISTINCT COALESCE(e.`CorrelationId`, CONCAT('row:', e.id_))) AS operations,
                     COALESCE(SUM(`EstimatedCost`), 0) AS estimated_cost
              FROM `DriveActivityEvents` e WHERE $where
              GROUP BY `Action` ORDER BY estimated_cost DESC, operations DESC, `Action` ASC",
@@ -91,7 +91,7 @@ final class ActivityCostRepository
         );
 
         $daily = $this->all(
-            "SELECT DATE(`CreatedAt`) AS day, COUNT(*) AS operations,
+            "SELECT DATE(`CreatedAt`) AS day, COUNT(DISTINCT COALESCE(e.`CorrelationId`, CONCAT('row:', e.id_))) AS operations,
                     COALESCE(SUM(`EstimatedCost`), 0) AS estimated_cost
              FROM `DriveActivityEvents` e WHERE $where
              GROUP BY DATE(`CreatedAt`) ORDER BY day DESC",

@@ -1,0 +1,66 @@
+name: FederationCloud validation
+
+on:
+  push:
+    branches:
+      - main
+      - 'feature/arcadelink-v1-federationcloud'
+    paths:
+      - 'drive/federationcloud/**'
+      - 'drive/bin/federation_identity_init.php'
+      - 'drive/src/Federation/**'
+      - 'drive/src/Http/Controller/FederationController.php'
+      - 'drive/src/View/FederationPageRenderer.php'
+      - 'drive/tests/federationcloud_smoke.php'
+      - 'drive/docs/FEDERATIONCLOUD.md'
+      - '.github/workflows/federationcloud.yml'
+  pull_request:
+    paths:
+      - 'drive/federationcloud/**'
+      - 'drive/bin/federation_identity_init.php'
+      - 'drive/src/Federation/**'
+      - 'drive/src/Http/Controller/FederationController.php'
+      - 'drive/src/View/FederationPageRenderer.php'
+      - 'drive/tests/federationcloud_smoke.php'
+      - 'drive/docs/FEDERATIONCLOUD.md'
+      - '.github/workflows/federationcloud.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate PHP runtime requirements
+        run: |
+          php -r 'if (!extension_loaded("sodium")) { fwrite(STDERR, "sodium missing\n"); exit(1); }'
+
+      - name: Validate FederationCloud PHP syntax
+        run: |
+          set -euo pipefail
+          find drive/src/Federation drive/federationcloud -type f -name '*.php' -print0 | xargs -0 -n1 php -l
+          php -l drive/src/Http/Controller/FederationController.php
+          php -l drive/src/View/FederationPageRenderer.php
+          php -l drive/bin/federation_identity_init.php
+          php -l drive/tests/federationcloud_smoke.php
+
+      - name: FederationCloud cryptographic smoke test
+        run: php drive/tests/federationcloud_smoke.php
+
+      - name: Security and architecture guards
+        run: |
+          set -euo pipefail
+          grep -q "XChaCha20-Poly1305" drive/src/Federation/ArcadeLinkService.php
+          grep -q "Ed25519" drive/src/Federation/ArcadeLinkService.php
+          grep -q "FILTER_FLAG_NO_PRIV_RANGE" drive/src/Federation/FederationHttpClient.php
+          grep -q "CURLOPT_FOLLOWLOCATION => false" drive/src/Federation/FederationHttpClient.php
+          grep -q "CURLOPT_RESOLVE" drive/src/Federation/FederationHttpClient.php
+          ! grep -R -E '(AKIA[0-9A-Z]{16}|BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY|aws_secret_access_key[[:space:]]*=)' drive/src/Federation drive/federationcloud drive/bin/federation_identity_init.php drive/tests/federationcloud_smoke.php
+          ! grep -R "s3.amazonaws.com" drive/src/Federation drive/federationcloud
+
+      - name: Diff whitespace check
+        run: git diff --check

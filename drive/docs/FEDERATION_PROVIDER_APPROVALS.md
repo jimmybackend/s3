@@ -15,11 +15,15 @@ Ejemplo:
 2. Desde el candidato se ejecuta `drive/bin/federation_provider_request.php` apuntando al Federation URL del origen.
 3. El origen verifica criptográficamente el descriptor y vuelve a consultar el `node.php` del candidato mediante el cliente protegido contra SSRF.
 4. La relación se guarda como `pending` en `FederationNodeAuthorizations`.
-5. En el Drive del origen, una sesión con rol `Administración` ve `Solicitudes: N` en el footer.
-6. El administrador abre el modal y elige `Aprobar` o `Rechazar`.
+5. En el Drive del origen, únicamente una sesión cuya fila `Users.system_role` sea `superadmin` ve `Solicitudes: N` en el footer.
+6. El superusuario abre el modal y elige `Aprobar` o `Rechazar`.
 7. Al aprobar, el origen firma con Ed25519 el vínculo exacto origen→proveedor, rol y alcance.
 8. Sólo proveedores `active` aparecen en `/federationcloud/providers.php`.
-9. Una autorización activa puede revocarse desde el mismo modal.
+9. Una autorización activa puede revocarse desde el mismo modal, también sólo por `superadmin`.
+
+`Users.role` (por ejemplo `Administración` o `Soporte`) describe el área funcional del usuario y no concede autoridad para administrar FederationCloud. La autorización sensible usa exclusivamente `Users.system_role`, cuyos valores del esquema son `user`, `admin` y `superadmin`.
+
+Después de desplegar un cambio de `system_role`, el usuario debe iniciar una sesión nueva para que el valor quede cargado en `$_SESSION['system_role']`.
 
 ## Solicitud desde un nodo candidato
 
@@ -41,7 +45,8 @@ El resultado esperado antes de aprobación es `status=pending`.
 
 - Registrar un nodo no autoriza recursos.
 - La solicitud no se confía de forma ciega: el origen consulta al candidato y valida firma, Node ID, clave, nombre y URLs.
-- Sólo el rol de sesión `Administración` puede aprobar/rechazar/revocar.
+- Sólo `Users.system_role = 'superadmin'` puede ver, aprobar, rechazar o revocar solicitudes.
+- `Users.role = 'Administración'` por sí solo no concede este permiso.
 - Las decisiones POST requieren token CSRF de sesión.
 - La autorización queda firmada por el nodo origen.
 - El proveedor no recibe por este flujo permisos de escritura en S3 o MySQL.

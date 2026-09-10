@@ -13,7 +13,7 @@ $espacioUsadoFooter = isset($footerEspacioUsado)
     ? (string) $footerEspacioUsado
     : '0 B';
 
-$isFederationAdmin = trim((string)($_SESSION['role'] ?? '')) === 'Administración';
+$isFederationAdmin = trim((string)($_SESSION['system_role'] ?? 'user')) === 'superadmin';
 $federationProviderCsrf = '';
 if ($isFederationAdmin) {
     $existingCsrf = $_SESSION['federation_provider_csrf'] ?? null;
@@ -68,7 +68,7 @@ $federationFooterJs = __DIR__ . '/js/federation-footer.js';
           <h5 class="modal-title" id="modalFederationProviderRequestsLabel">
             <i class="fas fa-server mr-1"></i> Proveedores FederationCloud
           </h5>
-          <div class="small text-muted">Sólo Administración puede aprobar, rechazar o revocar nodos.</div>
+          <div class="small text-muted">Sólo superusuarios pueden aprobar, rechazar o revocar nodos.</div>
         </div>
         <button type="button" class="close text-light" data-dismiss="modal" aria-label="Cerrar">
           <span aria-hidden="true">&times;</span>

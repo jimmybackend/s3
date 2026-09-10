@@ -83,8 +83,8 @@ final class FederationProviderController
         if (!$session->isAuthenticated()) {
             JsonResponse::send(['ok' => false, 'error' => 'Autenticación requerida.'], 401);
         }
-        if (trim((string)$session->get('role', '')) !== 'Administración') {
-            JsonResponse::send(['ok' => false, 'error' => 'Sólo Administración puede autorizar nodos proveedores.'], 403);
+        if (!$session->isSuperAdmin()) {
+            JsonResponse::send(['ok' => false, 'error' => 'Sólo un superusuario puede autorizar nodos proveedores.'], 403);
         }
 
         try {

@@ -1,0 +1,146 @@
+/* ======================================================================
+   ArcadeCloud Drive - Perfiles de accesibilidad visual
+
+   Estos perfiles son ayudas de legibilidad. No simulan ni corrigen
+   opticamente una graduacion. Su objetivo es reducir esfuerzo visual con
+   texto nitido, mayor contraste, espaciado y controles mas faciles de leer.
+   ====================================================================== */
+
+/* Miopia: nunca desenfocar la interfaz. Priorizar nitidez y contraste. */
+body.ui-theme.vision-myopia {
+  filter: none !important;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif !important;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+body.ui-theme.vision-myopia * {
+  text-shadow: none !important;
+}
+
+body.ui-theme.vision-myopia p,
+body.ui-theme.vision-myopia li,
+body.ui-theme.vision-myopia label,
+body.ui-theme.vision-myopia .card-body,
+body.ui-theme.vision-myopia .modal-body,
+body.ui-theme.vision-myopia .list-group-item,
+body.ui-theme.vision-myopia .dropdown-item,
+body.ui-theme.vision-myopia .form-control,
+body.ui-theme.vision-myopia .btn {
+  line-height: 1.58 !important;
+  letter-spacing: .01em;
+}
+
+body.ui-theme.vision-myopia .text-muted,
+body.ui-theme.vision-myopia small,
+body.ui-theme.vision-myopia .small {
+  opacity: 1 !important;
+}
+
+/* Vista cansada / presbicia: tipografia mayor, mas aire y controles amplios. */
+body.ui-theme.vision-presbyopia {
+  filter: none !important;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif !important;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+body.ui-theme.vision-presbyopia * {
+  text-shadow: none !important;
+}
+
+body.ui-theme.theme-light.vision-presbyopia {
+  --text: #111111;
+  --text-soft: #2f2f2f;
+  --text-strong: #000000;
+  --border: rgba(0, 0, 0, .22);
+  --border-soft: rgba(0, 0, 0, .14);
+}
+
+body.ui-theme.theme-dark.vision-presbyopia {
+  --text: #f4f4f4;
+  --text-soft: #dddddd;
+  --text-strong: #ffffff;
+  --border: rgba(255, 255, 255, .24);
+  --border-soft: rgba(255, 255, 255, .16);
+}
+
+body.ui-theme.vision-presbyopia p,
+body.ui-theme.vision-presbyopia li,
+body.ui-theme.vision-presbyopia label,
+body.ui-theme.vision-presbyopia .card-body,
+body.ui-theme.vision-presbyopia .modal-body,
+body.ui-theme.vision-presbyopia .list-group-item,
+body.ui-theme.vision-presbyopia .dropdown-item,
+body.ui-theme.vision-presbyopia .form-control,
+body.ui-theme.vision-presbyopia .btn,
+body.ui-theme.vision-presbyopia .nav-link,
+body.ui-theme.vision-presbyopia .table {
+  font-size: 1.08rem !important;
+  line-height: 1.68 !important;
+  letter-spacing: .012em;
+}
+
+body.ui-theme.vision-presbyopia h1,
+body.ui-theme.vision-presbyopia h2,
+body.ui-theme.vision-presbyopia h3,
+body.ui-theme.vision-presbyopia h4,
+body.ui-theme.vision-presbyopia h5,
+body.ui-theme.vision-presbyopia h6,
+body.ui-theme.vision-presbyopia .modal-title {
+  line-height: 1.35 !important;
+  letter-spacing: .006em;
+}
+
+body.ui-theme.vision-presbyopia .btn,
+body.ui-theme.vision-presbyopia .form-control,
+body.ui-theme.vision-presbyopia .dropdown-item {
+  min-height: 44px;
+}
+
+body.ui-theme.vision-presbyopia .form-control {
+  padding-top: .55rem;
+  padding-bottom: .55rem;
+}
+
+body.ui-theme.vision-presbyopia a {
+  text-decoration-thickness: 2px;
+  text-underline-offset: 2px;
+}
+
+body.ui-theme.vision-presbyopia .text-muted,
+body.ui-theme.vision-presbyopia small,
+body.ui-theme.vision-presbyopia .small {
+  opacity: 1 !important;
+  font-size: .98rem !important;
+  line-height: 1.55 !important;
+}
+
+/* En movil aumentamos un poco mas la lectura y el area tactil. */
+@media (max-width: 768px) {
+  body.ui-theme.vision-presbyopia p,
+  body.ui-theme.vision-presbyopia li,
+  body.ui-theme.vision-presbyopia label,
+  body.ui-theme.vision-presbyopia .card-body,
+  body.ui-theme.vision-presbyopia .modal-body,
+  body.ui-theme.vision-presbyopia .list-group-item,
+  body.ui-theme.vision-presbyopia .dropdown-item,
+  body.ui-theme.vision-presbyopia .form-control,
+  body.ui-theme.vision-presbyopia .btn,
+  body.ui-theme.vision-presbyopia .nav-link,
+  body.ui-theme.vision-presbyopia .table {
+    font-size: 1.14rem !important;
+    line-height: 1.72 !important;
+  }
+
+  body.ui-theme.vision-presbyopia .btn,
+  body.ui-theme.vision-presbyopia .form-control,
+  body.ui-theme.vision-presbyopia .dropdown-item {
+    min-height: 48px;
+  }
+
+  body.ui-theme.vision-presbyopia small,
+  body.ui-theme.vision-presbyopia .small {
+    font-size: 1rem !important;
+  }
+}

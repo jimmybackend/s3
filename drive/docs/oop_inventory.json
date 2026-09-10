@@ -3834,7 +3834,7 @@
     },
     {
       "path": "drive/js/federation-footer.js",
-      "lines": 258,
+      "lines": 269,
       "kind": "class/module",
       "classes": [
         "FederationFooterModule"

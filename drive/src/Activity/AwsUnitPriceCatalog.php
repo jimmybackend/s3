@@ -63,7 +63,11 @@ final class AwsUnitPriceCatalog
             $known++;
         }
 
-        $state = $unknown === [] ? 'complete' : ($known > 0 ? 'partial' : 'unpriced');
+        if ($known === 0 && $unknown === []) {
+            $state = 'unpriced';
+        } else {
+            $state = $unknown === [] ? 'complete' : ($known > 0 ? 'partial' : 'unpriced');
+        }
 
         return [
             'amount' => $state === 'unpriced' ? null : $amount,

@@ -98,6 +98,45 @@ final class FederationController
         }
     }
 
+    public function createApi(): void
+    {
+        if ($this->request->method() !== 'POST') {
+            JsonResponse::send(['ok' => false, 'error' => 'Método no permitido.'], 405);
+        }
+
+        $userId = $this->currentUserId();
+        if ($userId <= 0) {
+            JsonResponse::send(['ok' => false, 'error' => 'Debes iniciar sesión para crear un ArcadeLink.'], 401);
+        }
+
+        $started = microtime(true);
+        $visibility = $this->request->postString('visibility', 'UNLISTED');
+        $rights = $this->request->postString('rights', 'link_only');
+
+        try {
+            $service = new FederationService($this->app);
+            $created = $service->createLinkByStorageRef(
+                $userId,
+                $this->request->postString('storage_ref'),
+                $visibility,
+                $rights
+            );
+            $this->activity()->success($userId, 'arcadelink_create', 'FederationCloud', (int)$created['file_id'], ['drive.no_direct_aws_charge' => 1], $started, [
+                'visibility' => $visibility,
+                'rights' => $rights,
+                'source' => 'drive_share_modal',
+                'aws_direct' => false,
+            ]);
+            $this->sendArcadeLinkDownload($created);
+        } catch (FederationException $e) {
+            $this->activity()->failure($userId, 'arcadelink_create', 'FederationCloud', $started);
+            JsonResponse::send(['ok' => false, 'error' => $e->getMessage()], $e->httpStatus());
+        } catch (Throwable) {
+            $this->activity()->failure($userId, 'arcadelink_create', 'FederationCloud', $started);
+            JsonResponse::send(['ok' => false, 'error' => 'No se pudo crear el ArcadeLink.'], 500);
+        }
+    }
+
     public function resolveApi(): void
     {
         if ($this->request->method() !== 'POST') {
@@ -144,18 +183,23 @@ final class FederationController
                 'rights' => $this->request->postString('rights', 'unknown_rights'),
                 'aws_direct' => false,
             ]);
-            $filename = preg_replace('/[^A-Za-z0-9._-]+/', '_', (string)$created['filename']) ?: 'resource.arcadelink';
-            header('Content-Type: application/vnd.arcadecloud.arcadelink+json; charset=utf-8');
-            header('X-Content-Type-Options: nosniff');
-            header('Content-Disposition: attachment; filename="' . $filename . '"');
-            header('Content-Length: ' . strlen((string)$created['content']));
-            echo $created['content'];
-            exit;
+            $this->sendArcadeLinkDownload($created);
         } catch (Throwable $e) {
             $this->activity()->failure($userId, 'arcadelink_create', 'FederationCloud', $started);
             if ($e instanceof FederationException) throw $e;
             throw new FederationException('No se pudo crear el ArcadeLink.', 500);
         }
+    }
+
+    private function sendArcadeLinkDownload(array $created): never
+    {
+        $filename = preg_replace('/[^A-Za-z0-9._-]+/', '_', (string)$created['filename']) ?: 'resource.arcadelink';
+        header('Content-Type: application/vnd.arcadecloud.arcadelink+json; charset=utf-8');
+        header('X-Content-Type-Options: nosniff');
+        header('Content-Disposition: attachment; filename="' . $filename . '"');
+        header('Content-Length: ' . strlen((string)$created['content']));
+        echo $created['content'];
+        exit;
     }
 
     private function uploadedArcadeLink(): string

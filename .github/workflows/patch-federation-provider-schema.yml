@@ -22,39 +22,16 @@ jobs:
           set -euo pipefail
           python3 <<'PY'
           from pathlib import Path
+          import base64
 
           path = Path('adbbmis1_Cloud.sql')
           text = path.read_text(encoding='utf-8')
+          encoded = 'LS0KLS0gRXN0cnVjdHVyYSBkZSB0YWJsYSBwYXJhIGxhIHRhYmxhIGBGZWRlcmF0aW9uTm9kZUF1dGhvcml6YXRpb25zYAotLQoKRFJPUCBUQUJMRSBJRiBFWElTVFMgYEZlZGVyYXRpb25Ob2RlQXV0aG9yaXphdGlvbnNgOwpDUkVBVEUgVEFCTEUgSUYgTk9UIEVYSVNUUyBgRmVkZXJhdGlvbk5vZGVBdXRob3JpemF0aW9uc2AgKAogIGBpZF9gIGJpZ2ludCBVTlNJR05FRCBOT1QgTlVMTCBBVVRPX0lOQ1JFTUVOVCwKICBgT3JpZ2luTm9kZUlkYCB2YXJjaGFyKDY0KSBDSEFSQUNURVIgU0VUIGFzY2lpIENPTExBVEUgYXNjaWlfYmluIE5PVCBOVUxMLAogIGBQcm92aWRlck5vZGVJZGAgdmFyY2hhcig2NCkgQ0hBUkFDVEVSIFNFVCBhc2NpaSBDT0xMQVRFIGFzY2lpX2JpbiBOT1QgTlVMTCwKICBgUm9sZWAgZW51bSgncHJvdmlkZXInLCdtaXJyb3InKSBOT1QgTlVMTCBERUZBVUxUICdwcm92aWRlcicsCiAgYFNjb3BlYCBlbnVtKCdhbGxfYWxsb3dlZF9yZXNvdXJjZXMnLCdzZWxlY3RlZF9yZXNvdXJjZXMnKSBOT1QgTlVMTCBERUZBVUxUICdhbGxfYWxsb3dlZF9yZXNvdXJjZXMnLAogIGBTdGF0dXNgIGVudW0oJ3BlbmRpbmcnLCdhY3RpdmUnLCdyZXZva2VkJywnYmxvY2tlZCcpIE5PVCBOVUxMIERFRkFVTFQgJ3BlbmRpbmcnLAogIGBPcmlnaW5TaWduYXR1cmVgIHZhcmNoYXIoMjU2KSBDSEFSQUNURVIgU0VUIGFzY2lpIENPTExBVEUgYXNjaWlfYmluIERFRkFVTFQgTlVMTCwKICBgUmVxdWVzdGVkQXRgIGRhdGV0aW1lIE5PVCBOVUxMIERFRkFVTFQgQ1VSUkVOVF9USU1FU1RBTVAsCiAgYEF1dGhvcml6ZWRBdGAgZGF0ZXRpbWUgREVGQVVMVCBOVUxMLAogIGBMYXN0U2VlbmAgZGF0ZXRpbWUgREVGQVVMVCBOVUxMLAogIGBSZXZva2VkQXRgIGRhdGV0aW1lIERFRkFVTFQgTlVMTCwKICBQUklNQVJZIEtFWSAoYGlkX2ApLAogIFVOSVFVRSBLRVkgYHVxX2ZlZGVyYXRpb25fbm9kZV9hdXRob3JpemF0aW9uYCAoYE9yaWdpbk5vZGVJZGAsYFByb3ZpZGVyTm9kZUlkYCksCiAgS0VZIGBpZHhfZmVkZXJhdGlvbl9wcm92aWRlcmAgKGBQcm92aWRlck5vZGVJZGAsYFN0YXR1c2ApLAogIEtFWSBgaWR4X2ZlZGVyYXRpb25fb3JpZ2luYCAoYE9yaWdpbk5vZGVJZGAsYFN0YXR1c2ApCikgRU5HSU5FPUlubm9EQiBERUZBVUxUIENIQVJTRVQ9dXRmOG1iNCBDT0xMQVRFPXV0ZjhtYjRfdW5pY29kZV9jaTsKCi0tIC0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tCgo='
 
           if 'CREATE TABLE IF NOT EXISTS `FederationNodeAuthorizations`' not in text:
               marker = "--\n-- Estructura de tabla para la tabla `FileVersions`\n--\n"
               pos = text.index(marker)
-              block = """--
--- Estructura de tabla para la tabla `FederationNodeAuthorizations`
---
-
-DROP TABLE IF EXISTS `FederationNodeAuthorizations`;
-CREATE TABLE IF NOT EXISTS `FederationNodeAuthorizations` (
-  `id_` bigint UNSIGNED NOT NULL AUTO_INCREMENT,
-  `OriginNodeId` varchar(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
-  `ProviderNodeId` varchar(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
-  `Role` enum('provider','mirror') NOT NULL DEFAULT 'provider',
-  `Scope` enum('all_allowed_resources','selected_resources') NOT NULL DEFAULT 'all_allowed_resources',
-  `Status` enum('pending','active','revoked','blocked') NOT NULL DEFAULT 'pending',
-  `OriginSignature` varchar(256) CHARACTER SET ascii COLLATE ascii_bin DEFAULT NULL,
-  `RequestedAt` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `AuthorizedAt` datetime DEFAULT NULL,
-  `LastSeen` datetime DEFAULT NULL,
-  `RevokedAt` datetime DEFAULT NULL,
-  PRIMARY KEY (`id_`),
-  UNIQUE KEY `uq_federation_node_authorization` (`OriginNodeId`,`ProviderNodeId`),
-  KEY `idx_federation_provider` (`ProviderNodeId`,`Status`),
-  KEY `idx_federation_origin` (`OriginNodeId`,`Status`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- --------------------------------------------------------
-
-"""
+              block = base64.b64decode(encoded).decode('utf-8')
               text = text[:pos] + block + text[pos:]
               path.write_text(text, encoding='utf-8')
           PY

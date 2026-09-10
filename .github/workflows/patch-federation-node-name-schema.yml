@@ -1,0 +1,63 @@
+name: Patch Federation NodeName into central schema
+
+on:
+  push:
+    branches:
+      - feature/federation-node-name-recovery
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/federation-node-name-recovery
+
+      - name: Patch central SQL schema
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 <<'PY'
+          from pathlib import Path
+
+          path = Path('adbbmis1_Cloud.sql')
+          text = path.read_text(encoding='utf-8')
+          start = text.index('CREATE TABLE IF NOT EXISTS `FederationNodes` (')
+          end = text.index('\n) ENGINE=InnoDB', start)
+          block = text[start:end]
+
+          if '`NodeName` varchar(64)' not in block:
+              needle = "  `NodeId` varchar(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,\n"
+              replacement = needle + "  `NodeName` varchar(64) CHARACTER SET ascii COLLATE ascii_general_ci DEFAULT NULL,\n"
+              if needle not in block:
+                  raise SystemExit('No se encontró NodeId en FederationNodes')
+              block = block.replace(needle, replacement, 1)
+
+          if '`uq_federation_nodes_name`' not in block:
+              needle = "  PRIMARY KEY (`NodeId`),\n"
+              replacement = needle + "  UNIQUE KEY `uq_federation_nodes_name` (`NodeName`),\n"
+              if needle not in block:
+                  raise SystemExit('No se encontró PRIMARY KEY de FederationNodes')
+              block = block.replace(needle, replacement, 1)
+
+          text = text[:start] + block + text[end:]
+          path.write_text(text, encoding='utf-8')
+          PY
+
+          git diff --check
+          grep -q '`NodeName` varchar(64) CHARACTER SET ascii COLLATE ascii_general_ci DEFAULT NULL' adbbmis1_Cloud.sql
+          grep -q 'UNIQUE KEY `uq_federation_nodes_name` (`NodeName`)' adbbmis1_Cloud.sql
+
+      - name: Commit schema and remove one-shot workflow
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm .github/workflows/patch-federation-node-name-schema.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'feat: add signed names to FederationNodes schema'
+          git push origin HEAD:feature/federation-node-name-recovery

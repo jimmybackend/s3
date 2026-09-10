@@ -8,6 +8,7 @@ use JsonException;
 final class FederationHttpClient
 {
     private const MAX_RESPONSE_BYTES = 65536;
+    private const ALLOWED_ENDPOINTS = ['node.php', 'resolve.php', 'register.php', 'nodes.php'];
 
     public function getJson(string $federationUrl, string $endpoint): array
     {
@@ -24,7 +25,7 @@ final class FederationHttpClient
         if (!extension_loaded('curl')) {
             throw new FederationException('La extensión curl de PHP es necesaria para consultar nodos remotos.', 503);
         }
-        if (!in_array($endpoint, ['node.php', 'resolve.php'], true)) {
+        if (!in_array($endpoint, self::ALLOWED_ENDPOINTS, true)) {
             throw new FederationException('Endpoint federado remoto no permitido.');
         }
         [$url, $host, $ip] = $this->safeTarget($baseUrl, $endpoint);
@@ -70,7 +71,7 @@ final class FederationHttpClient
         $error = curl_error($ch);
         curl_close($ch);
         if ($ok === false || $http !== 200) {
-            throw new FederationException('El nodo de origen no respondió correctamente' . ($error !== '' ? ': ' . $error : '.'), 502);
+            throw new FederationException('El nodo FederationCloud no respondió correctamente' . ($error !== '' ? ': ' . $error : '.'), 502);
         }
         if ($contentType !== '' && !str_starts_with($contentType, 'application/json')) {
             throw new FederationException('El nodo remoto devolvió un tipo de contenido inesperado.', 502);

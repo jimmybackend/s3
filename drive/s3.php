@@ -12,6 +12,7 @@ $session = $app->session();
 $session->start();
 $session->requireAuthenticated('index.php');
 $userId = $session->userId();
+$canViewRealAws = $app->personalToolAccessService()->state() === 'owner';
 
 // Provisionamiento multiusuario idempotente:
 // user 1 => Data/, user 2 => Data2/, user N => DataN/.
@@ -160,9 +161,15 @@ $footerEspacioUsado = $storageUsage['formatted'];
             <i class="fas fa-link"></i> Enlaces
           </button>
 
+          <a class="dropdown-item" href="activity_costs.php">
+            <i class="fas fa-receipt"></i> Actividad y costos
+          </a>
+
+          <?php if ($canViewRealAws): ?>
           <button class="dropdown-item" data-toggle="modal" data-target="#modalCostosAws">
               <i class="fas fa-chart-line"></i> Costos AWS
           </button>
+          <?php endif; ?>
            <button id="btnSyncS3" class="dropdown-item">
               <i class="fas fa-rotate"></i> Sincronizar S3
           </button>

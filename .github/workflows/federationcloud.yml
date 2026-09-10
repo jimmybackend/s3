@@ -7,16 +7,19 @@ on:
       - 'feature/arcadelink-v1-federationcloud'
       - 'feature/federation-node-directory'
       - 'feature/federation-node-name-recovery'
+      - 'feature/federation-provider-approvals'
     paths:
       - 'drive/federationcloud/**'
-      - 'drive/bin/federation_identity_*.php'
+      - 'drive/bin/federation_*.php'
       - 'drive/config/federation-seeds.json'
       - 'drive/src/Federation/**'
       - 'drive/src/Http/Controller/FederationController.php'
       - 'drive/src/Http/Controller/FederationDirectoryController.php'
+      - 'drive/src/Http/Controller/FederationProviderController.php'
       - 'drive/src/View/FederationPageRenderer.php'
       - 'drive/tests/federationcloud_smoke.php'
       - 'drive/tests/federation_directory_smoke.php'
+      - 'drive/tests/federation_provider_smoke.php'
       - 'drive/docs/FEDERATIONCLOUD.md'
       - 'adbbmis1_Cloud.sql'
       - 'drive/bloque_footer.php'
@@ -25,14 +28,16 @@ on:
   pull_request:
     paths:
       - 'drive/federationcloud/**'
-      - 'drive/bin/federation_identity_*.php'
+      - 'drive/bin/federation_*.php'
       - 'drive/config/federation-seeds.json'
       - 'drive/src/Federation/**'
       - 'drive/src/Http/Controller/FederationController.php'
       - 'drive/src/Http/Controller/FederationDirectoryController.php'
+      - 'drive/src/Http/Controller/FederationProviderController.php'
       - 'drive/src/View/FederationPageRenderer.php'
       - 'drive/tests/federationcloud_smoke.php'
       - 'drive/tests/federation_directory_smoke.php'
+      - 'drive/tests/federation_provider_smoke.php'
       - 'drive/docs/FEDERATIONCLOUD.md'
       - 'adbbmis1_Cloud.sql'
       - 'drive/bloque_footer.php'
@@ -57,19 +62,24 @@ jobs:
         run: |
           set -euo pipefail
           find drive/src/Federation drive/federationcloud -type f -name '*.php' -print0 | xargs -0 -n1 php -l
-          find drive/bin -maxdepth 1 -type f -name 'federation_identity_*.php' -print0 | xargs -0 -n1 php -l
+          find drive/bin -maxdepth 1 -type f -name 'federation_*.php' -print0 | xargs -0 -n1 php -l
           php -l drive/src/Http/Controller/FederationController.php
           php -l drive/src/Http/Controller/FederationDirectoryController.php
+          php -l drive/src/Http/Controller/FederationProviderController.php
           php -l drive/src/View/FederationPageRenderer.php
           php -l drive/bloque_footer.php
           php -l drive/tests/federationcloud_smoke.php
           php -l drive/tests/federation_directory_smoke.php
+          php -l drive/tests/federation_provider_smoke.php
 
       - name: FederationCloud cryptographic smoke test
         run: php drive/tests/federationcloud_smoke.php
 
       - name: FederationCloud directory and recovery smoke test
         run: php drive/tests/federation_directory_smoke.php
+
+      - name: FederationCloud provider authorization smoke test
+        run: php drive/tests/federation_provider_smoke.php
 
       - name: Security and architecture guards
         run: |
@@ -80,12 +90,16 @@ jobs:
           grep -q "FILTER_FLAG_NO_PRIV_RANGE" drive/src/Federation/FederationHttpClient.php
           grep -q "CURLOPT_FOLLOWLOCATION => false" drive/src/Federation/FederationHttpClient.php
           grep -q "CURLOPT_RESOLVE" drive/src/Federation/FederationHttpClient.php
+          grep -q "provider-request.php" drive/src/Federation/FederationHttpClient.php
           grep -q "https://drive.esforzados.com/federationcloud/" drive/config/federation-seeds.json
           grep -q 'CREATE TABLE IF NOT EXISTS `FederationNodes`' adbbmis1_Cloud.sql
+          grep -q 'CREATE TABLE IF NOT EXISTS `FederationNodeAuthorizations`' adbbmis1_Cloud.sql
           grep -q '`NodeName` varchar(64) CHARACTER SET ascii COLLATE ascii_general_ci DEFAULT NULL' adbbmis1_Cloud.sql
           grep -q 'UNIQUE KEY `uq_federation_nodes_name` (`NodeName`)' adbbmis1_Cloud.sql
+          grep -q "Sólo Administración puede autorizar nodos proveedores" drive/src/Http/Controller/FederationProviderController.php
+          grep -q "X-Federation-CSRF" drive/js/federation-footer.js
           ! grep -R "drive.esforzados.com" drive/src/Federation
-          ! grep -R -E '(AKIA[0-9A-Z]{16}|BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY|aws_secret_access_key[[:space:]]*=)' drive/src/Federation drive/federationcloud drive/bin/federation_identity_*.php drive/tests/federationcloud_smoke.php drive/tests/federation_directory_smoke.php
+          ! grep -R -E '(AKIA[0-9A-Z]{16}|BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY|aws_secret_access_key[[:space:]]*=)' drive/src/Federation drive/federationcloud drive/bin/federation_*.php drive/tests/federationcloud_smoke.php drive/tests/federation_directory_smoke.php drive/tests/federation_provider_smoke.php
           ! grep -R "s3.amazonaws.com" drive/src/Federation drive/federationcloud
 
       - name: Diff whitespace check

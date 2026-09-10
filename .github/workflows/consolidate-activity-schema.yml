@@ -1,0 +1,69 @@
+name: Consolidate activity schema
+
+on:
+  push:
+    branches:
+      - main
+      - 'chore/consolidate-activity-schema'
+    paths:
+      - '.github/scripts/consolidate_activity_schema.py'
+      - '.github/workflows/consolidate-activity-schema.yml'
+      - 'adbbmis1_Cloud.sql'
+      - 'README.md'
+      - 'drive/docs/ACTIVITY_COSTS.md'
+      - 'drive/database/migrations/20260910_activity_costs.sql'
+      - 'drive/bin/db_migrate.php'
+      - 'drive/src/Console/SqlMigrationCommand.php'
+      - '.github/workflows/activity-costs.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: drive-generated-docs-main
+  cancel-in-progress: false
+
+jobs:
+  consolidate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Apply consolidation in workspace
+        run: python3 .github/scripts/consolidate_activity_schema.py
+
+      - name: Validate consolidated schema
+        run: |
+          set -euo pipefail
+          test "$(grep -c 'CREATE TABLE IF NOT EXISTS `DriveActivityEvents`' adbbmis1_Cloud.sql)" -eq 1
+          grep -q 'DROP TABLE IF EXISTS `DriveActivityEvents`' adbbmis1_Cloud.sql
+          ! test -e drive/database/migrations/20260910_activity_costs.sql
+          ! test -e drive/bin/db_migrate.php
+          ! test -e drive/src/Console/SqlMigrationCommand.php
+          ! grep -q 'db_migrate.php' README.md drive/docs/ACTIVITY_COSTS.md .github/workflows/activity-costs.yml
+          ! grep -q '20260910_activity_costs.sql' drive/docs/ACTIVITY_COSTS.md .github/workflows/activity-costs.yml
+          grep -q "CREATE TABLE IF NOT EXISTS `DriveActivityEvents`' adbbmis1_Cloud.sql" .github/workflows/activity-costs.yml
+          php drive/tests/activity_costs_smoke.php
+          git diff --check
+
+      - name: Commit consolidated schema on main
+        if: github.ref == 'refs/heads/main'
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git rm -f .github/scripts/consolidate_activity_schema.py .github/workflows/consolidate-activity-schema.yml
+          git add -A
+
+          if git diff --cached --quiet; then
+            echo "No changes"
+            exit 0
+          fi
+
+          git commit -m "Consolidate activity costs into base database schema"
+          git pull --rebase origin main
+          git push origin main

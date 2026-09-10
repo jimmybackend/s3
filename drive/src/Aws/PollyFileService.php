@@ -31,7 +31,7 @@ final class PollyFileService
         if (!in_array($ext,self::TEXT_EXTENSIONS,true)) throw new RuntimeException('Solo se pueden cargar archivos de texto compatibles en Polly.');
         $obj=$this->s3->getObject(['Bucket'=>$this->bucket,'Key'=>$real]); $body=(string)$obj['Body'];
         if (function_exists('mb_detect_encoding') && !mb_detect_encoding($body,'UTF-8',true)) $body=mb_convert_encoding($body,'UTF-8');
-        return ['ok'=>true,'archivo'=>$real,'texto'=>$body];
+        return ['ok'=>true,'archivo'=>$real,'file_id'=>(int)$row['id_'],'texto'=>$body,'bytes'=>strlen($body)];
     }
 
     public function synthesize(int $userId,array $input): array
@@ -56,7 +56,8 @@ final class PollyFileService
             $this->s3->putObject(['Bucket'=>$this->bucket,'Key'=>$dest,'Body'=>$bytes,'ACL'=>'private','ContentType'=>$contentType,'Metadata'=>['origin'=>$realFrom,'voiceid'=>$voice,'engine'=>$params['Engine'],'format'=>$format,'sample_rate'=>$sample]]);
             $dbStatus=$this->generated->upsert($userId,$visible,$dest,$size,$meta,$dir);
         }
-        return ['ok'=>true,'mode'=>$toS3?'s3':'inline','s3_key'=>$toS3?$dest:null,'filename'=>basename($dest),'nombre'=>$visible,'ruta'=>$dir,'audioBase64'=>base64_encode($bytes),'contentType'=>$contentType,'db_status'=>$dbStatus,'db_message'=>$dbStatus==='no_intentado'?'':('Registro '.$dbStatus.' correctamente en FileS3.'),'db_error'=>''];
+        $characters=function_exists('mb_strlen')?mb_strlen($text,'UTF-8'):strlen($text);
+        return ['ok'=>true,'mode'=>$toS3?'s3':'inline','s3_key'=>$toS3?$dest:null,'filename'=>basename($dest),'nombre'=>$visible,'ruta'=>$dir,'audioBase64'=>base64_encode($bytes),'contentType'=>$contentType,'db_status'=>$dbStatus,'db_message'=>$dbStatus==='no_intentado'?'':('Registro '.$dbStatus.' correctamente en FileS3.'),'db_error'=>'','engine_used'=>(string)$params['Engine'],'characters_input'=>$characters,'output_bytes'=>$size,'source_file_id'=>(int)$origin['id_']];
     }
 
     private function format(string $format): array

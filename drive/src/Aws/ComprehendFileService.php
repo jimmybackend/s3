@@ -40,7 +40,6 @@ final class ComprehendFileService
             throw new RuntimeException('Amazon Comprehend se habilita aquí para archivos de texto y código.');
         }
 
-        // Lectura del objeto únicamente para analizarlo. Nunca se escribe ni modifica S3.
         $object = $this->s3->getObject([
             'Bucket' => $this->bucket,
             'Key' => $realKey,
@@ -80,9 +79,14 @@ final class ComprehendFileService
         $warnings = [];
         $languages = [];
         $language = null;
+        $unitsPerRequest = $this->billingUnitsForText($text);
+        $billableRequests = 0;
+        $billingUnits = 0;
 
         try {
             $langResp = $this->comprehend->detectDominantLanguage(['Text' => $text]);
+            $billableRequests++;
+            $billingUnits += $unitsPerRequest;
             $languages = array_map(static function (array $item): array {
                 return [
                     'code' => (string)($item['LanguageCode'] ?? ''),
@@ -90,7 +94,7 @@ final class ComprehendFileService
                 ];
             }, array_slice((array)$langResp->get('Languages'), 0, 5));
             $language = $languages[0]['code'] ?? null;
-        } catch (\Throwable $e) {
+        } catch (\Throwable) {
             $warnings[] = 'No se pudo detectar automáticamente el idioma.';
         }
 
@@ -108,6 +112,10 @@ final class ComprehendFileService
             'truncated' => $truncated,
             'bytes_original' => $originalBytes,
             'bytes_analyzed' => strlen($text),
+            'characters_analyzed' => $this->characterCount($text),
+            'billable_requests' => $billableRequests,
+            'billing_units' => $billingUnits,
+            'units_per_request' => $unitsPerRequest,
             'sentiment' => null,
             'sentiment_scores' => [],
             'key_phrases' => [],
@@ -117,29 +125,31 @@ final class ComprehendFileService
         ];
 
         if (in_array($language, self::LANGUAGE_CODES, true)) {
-            $this->fillAnalysis($result, $text, $language);
+            $this->fillAnalysis($result, $text, $language, $unitsPerRequest);
         }
 
         $stored = $result;
         unset($stored['record_id'], $stored['key']);
         $this->metadata->merge($userId, (int)$row['id_'], 'Comprehend', $stored);
 
-        unset($result['record_id']);
+        $result['file_id'] = (int)$result['record_id'];
+        unset($result['record_id'], $result['key']);
         $result['saved'] = true;
         $result['metadata_section'] = 'Comprehend';
         return $result;
     }
 
-    private function fillAnalysis(array &$result, string $text, string $language): void
+    private function fillAnalysis(array &$result, string $text, string $language, int $unitsPerRequest): void
     {
         try {
             $response = $this->comprehend->detectSentiment([
                 'Text' => $text,
                 'LanguageCode' => $language,
             ]);
+            $this->addBillableRequest($result, $unitsPerRequest);
             $result['sentiment'] = (string)$response->get('Sentiment');
             $result['sentiment_scores'] = (array)$response->get('SentimentScore');
-        } catch (\Throwable $e) {
+        } catch (\Throwable) {
             $result['warnings'][] = 'Sentimiento no disponible.';
         }
 
@@ -148,6 +158,7 @@ final class ComprehendFileService
                 'Text' => $text,
                 'LanguageCode' => $language,
             ]);
+            $this->addBillableRequest($result, $unitsPerRequest);
             $phrases = [];
             foreach (array_slice((array)$response->get('KeyPhrases'), 0, 25) as $item) {
                 $phrases[] = [
@@ -156,7 +167,7 @@ final class ComprehendFileService
                 ];
             }
             $result['key_phrases'] = $phrases;
-        } catch (\Throwable $e) {
+        } catch (\Throwable) {
             $result['warnings'][] = 'Frases clave no disponibles.';
         }
 
@@ -165,6 +176,7 @@ final class ComprehendFileService
                 'Text' => $text,
                 'LanguageCode' => $language,
             ]);
+            $this->addBillableRequest($result, $unitsPerRequest);
             $entities = [];
             foreach (array_slice((array)$response->get('Entities'), 0, 30) as $item) {
                 $entities[] = [
@@ -174,7 +186,7 @@ final class ComprehendFileService
                 ];
             }
             $result['entities'] = $entities;
-        } catch (\Throwable $e) {
+        } catch (\Throwable) {
             $result['warnings'][] = 'Entidades no disponibles.';
         }
 
@@ -183,6 +195,7 @@ final class ComprehendFileService
                 'Text' => $text,
                 'LanguageCode' => $language,
             ]);
+            $this->addBillableRequest($result, $unitsPerRequest);
             $pii = [];
             foreach (array_slice((array)$response->get('Entities'), 0, 30) as $item) {
                 $pii[] = [
@@ -193,8 +206,24 @@ final class ComprehendFileService
                 ];
             }
             $result['pii'] = $pii;
-        } catch (\Throwable $e) {
+        } catch (\Throwable) {
             $result['warnings'][] = 'Detección de PII no disponible.';
         }
+    }
+
+    private function addBillableRequest(array &$result, int $unitsPerRequest): void
+    {
+        $result['billable_requests'] = (int)($result['billable_requests'] ?? 0) + 1;
+        $result['billing_units'] = (int)($result['billing_units'] ?? 0) + $unitsPerRequest;
+    }
+
+    private function billingUnitsForText(string $text): int
+    {
+        return max(3, (int)ceil($this->characterCount($text) / 100));
+    }
+
+    private function characterCount(string $text): int
+    {
+        return function_exists('mb_strlen') ? mb_strlen($text, 'UTF-8') : strlen($text);
     }
 }

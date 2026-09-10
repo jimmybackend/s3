@@ -20,18 +20,27 @@ final class TranslateFileService
     {
         $row=$this->locator->requireReadableByKey($userId,$key); $real=(string)$row['_key'];
         $ext=strtolower((string)pathinfo((string)($row['Nombre']??$real),PATHINFO_EXTENSION));
+        $sourceS3Get = false;
+        $textractPages = 0;
         if (in_array($ext,self::TEXT,true)) {
             $obj=$this->s3->getObject(['Bucket'=>$this->bucket,'Key'=>$real]); $text=(string)$obj['Body'];
+            $sourceS3Get = true;
             if (function_exists('mb_detect_encoding') && !mb_detect_encoding($text,'UTF-8',true)) $text=mb_convert_encoding($text,'UTF-8');
         } elseif (in_array($ext,self::DOCUMENT,true)) {
-            $text=$this->textract->extractText($userId,$real);
+            $extraction=$this->textract->extract($userId,$real);
+            $text=(string)($extraction['textoJ']??'');
+            $textractPages=max(1,(int)($extraction['page_count']??1));
         } else throw new RuntimeException('Extensión no soportada para traducción');
+
+        $characters = function_exists('mb_strlen') ? mb_strlen($text, 'UTF-8') : strlen($text);
+        $requests = 0;
         $translation=''; foreach ($this->chunks($text) as $chunk) {
             if ($chunk==='') continue;
             $response=$this->translate->translateText(['Text'=>$chunk,'SourceLanguageCode'=>$source,'TargetLanguageCode'=>$target]);
             $translation.=(string)$response['TranslatedText']."\n";
+            $requests++;
         }
-        return ['ok'=>true,'archivo'=>$real,'target'=>$target,'sourceUsed'=>$source,'traduccion'=>trim($translation)];
+        return ['ok'=>true,'archivo'=>$real,'file_id'=>(int)$row['id_'],'target'=>$target,'sourceUsed'=>$source,'traduccion'=>trim($translation),'characters_input'=>$characters,'input_bytes'=>strlen($text),'requests'=>$requests,'source_s3_get'=>$sourceS3Get,'textract_pages'=>$textractPages];
     }
 
     private function chunks(string $text): array

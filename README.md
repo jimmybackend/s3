@@ -6,7 +6,7 @@ ArcadeCloud Drive es un gestor de archivos familiar multiusuario construido sobr
 
 **Versión de cierre: `v1.0-oop` — 5 de septiembre de 2026.**
 
-La migración incremental del backend heredado a arquitectura orientada a objetos está terminada. La versión estable vive en `main` y mantiene los contratos HTTP y la funcionalidad existente del Drive.
+La migración incremental del backend heredado a arquitectura orientada a objetos está terminada. La versión estable vive en `main` y mantiene los contratos HTTP y la funcionalidad existente del Drive. Las nuevas funciones posteriores a ese baseline continúan respetando la misma arquitectura.
 
 Principios de esta línea estable:
 
@@ -71,6 +71,19 @@ La raíz de usuario no se puede renombrar, mover ni eliminar. Las consultas del 
 - enlaces compartidos;
 - protección, desbloqueo y rebloqueo;
 - cálculo de uso de almacenamiento.
+
+### Actividad y costos
+
+`drive/activity_costs.php` muestra la actividad del usuario autenticado y separa claramente:
+
+- **costo atribuido / ESTIMADO**, calculado a partir de unidades observables de las operaciones del Drive;
+- **costo REAL AWS**, obtenido mediante la integración existente con AWS Cost Explorer cuando la autorización privada ya existente lo permite.
+
+La página incluye filtros por período, servicio y operación, desgloses diarios, por servicio y por acción, y actividad reciente. El registro es best effort: una falla de telemetría no debe romper una operación válida del Drive.
+
+Los precios de atribución están desacoplados en `drive/config/activity-cost-pricing.json`. Las unidades que no pueden tasarse con suficiente precisión se marcan como parciales o no tasadas en vez de inventar un costo.
+
+Consulta `drive/docs/ACTIVITY_COSTS.md`.
 
 ### Multimedia
 
@@ -155,6 +168,7 @@ El código de aplicación vive principalmente bajo `drive/src/`:
 
 ```text
 drive/src/
+├── Activity/
 ├── Application/
 ├── Aws/
 ├── Console/
@@ -191,6 +205,7 @@ s3/
     ├── index.php
     ├── login.php
     ├── s3.php
+    ├── activity_costs.php
     ├── up.php
     ├── aws.php
     ├── ec2.php
@@ -199,9 +214,13 @@ s3/
     ├── api/
     │   └── upload.php
     ├── bin/
+    │   ├── db_migrate.php
     │   ├── sync_worker.php
     │   └── upload_cleanup.php
+    ├── config/
     ├── css/
+    ├── database/
+    │   └── migrations/
     ├── js/
     ├── docs/
     ├── src/
@@ -244,6 +263,7 @@ composer install --no-dev --optimize-autoloader
 
 - `drive/ARCHITECTURE.md`: arquitectura y reglas obligatorias.
 - `drive/docs/RELEASE_V1_OOP.md`: cierre de la migración y baseline estable.
+- `drive/docs/ACTIVITY_COSTS.md`: auditoría de operaciones, atribución de costos y reconciliación con Cost Explorer.
 - `drive/docs/DB_FIRST_NAVIGATION.md`: navegación y consultas del catálogo.
 - `drive/docs/KEY_ROTATION.md`: rotación de key física.
 - `drive/docs/UPLOAD_CLEANUP.md`: limpieza segura de subidas abandonadas.
@@ -253,7 +273,7 @@ composer install --no-dev --optimize-autoloader
 
 ## CI
 
-`.github/workflows/` valida sintaxis PHP, fronteras OOP, referencias, seguridad, subida, sincronización, sharing, navegación, multimedia y `git diff --check`.
+`.github/workflows/` valida sintaxis PHP, fronteras OOP, referencias, seguridad, subida, sincronización, sharing, navegación, multimedia, actividad/costos y `git diff --check`.
 
 ## Flujo de trabajo después de v1.0-oop
 

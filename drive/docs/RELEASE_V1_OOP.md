@@ -84,3 +84,18 @@ Además deben preservarse las fronteras multiusuario, DB-first y los contratos H
 ## Desarrollo posterior
 
 `v1.0-oop` es un punto de referencia estable, no una rama de desarrollo. Las nuevas funcionalidades deben partir de `main` en ramas independientes y fusionarse después de validación.
+
+### Extensión posterior: actividad y costos
+
+El 10 de septiembre de 2026 se añadió, como funcionalidad posterior al baseline y sin cambiar el significado del tag `v1.0-oop`, el módulo documentado en `drive/docs/ACTIVITY_COSTS.md`.
+
+La extensión mantiene las reglas del baseline:
+
+```text
+activity_costs.php
+  -> ActivityCostController
+     -> ActivityCostService
+        -> ActivityCostRepository / CostExplorerGateway
+```
+
+El módulo conserva MySQL como fuente de verdad, filtra toda actividad por `user_id_`, reutiliza la integración existente de Cost Explorer y distingue costo **ESTIMADO** de costo **REAL AWS**. El registro de telemetría es best effort y no introduce secretos ni keys S3 en su tabla de auditoría.

@@ -1,0 +1,25 @@
+{
+  "version": "2026-09-10",
+  "source_id": "AWS public pricing verified 2026-09-10; first-tier attribution reference",
+  "currency": "USD",
+  "region_reference": "us-east-1",
+  "notes": "Attribution references only. Free tier, volume tiers, transfer destination, storage duration, discounts, taxes and account-specific pricing are reconciled with Cost Explorer.",
+  "rates": {
+    "s3.put_request": 5e-06,
+    "s3.copy_request": 5e-06,
+    "s3.list_request": 5e-06,
+    "s3.get_request": 4e-07,
+    "s3.head_request": 4e-07,
+    "s3.delete_request": 0.0,
+    "rekognition.group2_image": 0.001,
+    "textract.detect_document_text_page": 0.0015,
+    "polly.standard_character": 4e-06,
+    "polly.neural_character": 1.6e-05,
+    "polly.long-form_character": 0.0001,
+    "polly.generative_character": 3e-05,
+    "translate.standard_character": 1.5e-05,
+    "comprehend.nlp_unit": 0.0001,
+    "cost_explorer.api_request": 0.01,
+    "drive.no_direct_aws_charge": 0.0
+  }
+}

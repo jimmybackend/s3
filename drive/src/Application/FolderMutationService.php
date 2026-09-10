@@ -51,7 +51,11 @@ final class FolderMutationService
             throw $error;
         }
 
-        return ['ruta' => $prefix, 'nombre' => $name];
+        return [
+            'ruta' => $prefix,
+            'nombre' => $name,
+            's3_put_requests' => 1,
+        ];
     }
 
     public function rename(int $userId, string $route, string $name): void
@@ -80,6 +84,10 @@ final class FolderMutationService
         if ($origin === $final) throw new RuntimeException('El destino es igual al origen.');
         if (str_starts_with($final, $origin)) throw new RuntimeException('No puedes mover una carpeta dentro de sí misma.');
 
+        $listRequests = 1;
+        $copyRequests = 0;
+        $deleteRequests = 0;
+
         $probe = $this->s3->listObjectsV2([
             'Bucket' => $this->bucket,
             'Prefix' => $final,
@@ -95,6 +103,7 @@ final class FolderMutationService
             $params = ['Bucket' => $this->bucket, 'Prefix' => $origin, 'MaxKeys' => 1000];
             if ($continuation) $params['ContinuationToken'] = $continuation;
             $objects = $this->s3->listObjectsV2($params);
+            $listRequests++;
             foreach (($objects['Contents'] ?? []) as $object) {
                 $oldKey = (string)$object['Key'];
                 $newKey = $final . substr($oldKey, strlen($origin));
@@ -105,18 +114,29 @@ final class FolderMutationService
                     'ACL' => 'private',
                     'MetadataDirective' => 'COPY',
                 ]);
+                $copyRequests++;
                 $toDelete[] = ['Key' => $oldKey];
                 if (count($toDelete) >= 1000) {
                     $this->deleteObjects($toDelete);
+                    $deleteRequests++;
                     $toDelete = [];
                 }
             }
             $continuation = !empty($objects['IsTruncated']) ? ($objects['NextContinuationToken'] ?? null) : null;
         } while ($continuation);
-        if ($toDelete !== []) $this->deleteObjects($toDelete);
+        if ($toDelete !== []) {
+            $this->deleteObjects($toDelete);
+            $deleteRequests++;
+        }
 
         $updated = $this->folders->moveTree($userId, $origin, $final);
-        return ['origen' => $origin, 'destino' => $final] + $updated;
+        return [
+            'origen' => $origin,
+            'destino' => $final,
+            's3_list_requests' => $listRequests,
+            's3_copy_requests' => $copyRequests,
+            's3_delete_requests' => $deleteRequests,
+        ] + $updated;
     }
 
     public function delete(int $userId, string $route): array
@@ -127,17 +147,21 @@ final class FolderMutationService
         $this->folders->requireActive($userId, $route);
 
         $deletedS3 = 0;
+        $listRequests = 0;
+        $deleteRequests = 0;
         $continuation = null;
         do {
             $params = ['Bucket' => $this->bucket, 'Prefix' => $route, 'MaxKeys' => 1000];
             if ($continuation) $params['ContinuationToken'] = $continuation;
             $result = $this->s3->listObjectsV2($params);
+            $listRequests++;
             $objects = [];
             foreach (($result['Contents'] ?? []) as $object) {
                 if (!empty($object['Key'])) $objects[] = ['Key' => (string)$object['Key']];
             }
             if ($objects !== []) {
                 $this->deleteObjects($objects);
+                $deleteRequests++;
                 $deletedS3 += count($objects);
             }
             $continuation = !empty($result['IsTruncated']) ? ($result['NextContinuationToken'] ?? null) : null;
@@ -148,6 +172,8 @@ final class FolderMutationService
             'estado' => 'ok',
             'prefix_eliminado' => $route,
             's3_objects' => $deletedS3,
+            's3_list_requests' => $listRequests,
+            's3_delete_requests' => $deleteRequests,
             'files_deleted' => $deleted['files'],
             'folders_deleted' => $deleted['folders'],
             'parent' => $this->parentPrefix($route) ?: $base,

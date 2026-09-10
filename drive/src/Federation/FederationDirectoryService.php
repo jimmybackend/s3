@@ -91,6 +91,11 @@ final class FederationDirectoryService
                 throw new FederationException('El descriptor anunciado no coincide con el nodo remoto verificado.', 409);
             }
         }
+        $candidateName = is_string($candidate['node_name'] ?? null) ? (string)$candidate['node_name'] : '';
+        $liveName = is_string($live['node_name'] ?? null) ? (string)$live['node_name'] : '';
+        if (!hash_equals($candidateName, $liveName)) {
+            throw new FederationException('El nombre anunciado no coincide con el nodo remoto verificado.', 409);
+        }
 
         $this->nodes->upsertVerified($live);
         return $this->seedDirectoryPayload($local);
@@ -114,6 +119,9 @@ final class FederationDirectoryService
     {
         return [
             'node_id' => (string)$descriptor['node_id'],
+            'node_name' => is_string($descriptor['node_name'] ?? null) && $descriptor['node_name'] !== ''
+                ? (string)$descriptor['node_name']
+                : null,
             'public_url' => (string)$descriptor['public_url'],
             'federation_url' => (string)$descriptor['federation_url'],
         ];

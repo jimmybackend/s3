@@ -13,7 +13,7 @@ final class NodeIdentityService
     {
     }
 
-    public static function initialize(string $path, bool $overwrite = false): array
+    public static function initialize(string $path, bool $overwrite = false, ?string $nodeName = null): array
     {
         if (!extension_loaded('sodium')) {
             throw new FederationException('La extensión sodium de PHP es obligatoria para FederationCloud.', 500);
@@ -41,23 +41,44 @@ final class NodeIdentityService
             'payload_key' => FederationCodec::base64UrlEncode($payloadKey),
             'created_at' => gmdate(DATE_ATOM),
         ];
-        $json = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR) . "\n";
-        $tmp = $path . '.tmp-' . bin2hex(random_bytes(6));
-        if (@file_put_contents($tmp, $json, LOCK_EX) === false) {
-            throw new FederationException('No se pudo escribir la identidad temporal.', 500);
+        if ($nodeName !== null && trim($nodeName) !== '') {
+            $data['node_name'] = self::normalizeNodeName($nodeName);
         }
-        @chmod($tmp, 0600);
-        if (!@rename($tmp, $path)) {
-            @unlink($tmp);
-            throw new FederationException('No se pudo instalar la identidad del nodo.', 500);
-        }
-        @chmod($path, 0600);
+        self::writeNewIdentity($path, $data);
         return $data;
     }
 
     public function nodeId(): string
     {
         return (string)$this->load()['node_id'];
+    }
+
+    public function nodeName(): ?string
+    {
+        $name = $this->load()['node_name'] ?? null;
+        return is_string($name) && $name !== '' ? $name : null;
+    }
+
+    public function assignNodeName(string $nodeName): array
+    {
+        $name = self::normalizeNodeName($nodeName);
+        $data = $this->load();
+        $existing = is_string($data['node_name'] ?? null) ? (string)$data['node_name'] : '';
+        if ($existing !== '' && !hash_equals($existing, $name)) {
+            throw new FederationException('La identidad ya tiene un nombre de nodo distinto; no se cambió automáticamente.', 409);
+        }
+        if ($existing === $name) {
+            return $data;
+        }
+
+        $data['node_name'] = $name;
+        $json = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR) . "\n";
+        if (@file_put_contents($this->path, $json, LOCK_EX) === false) {
+            throw new FederationException('No se pudo guardar el nombre dentro de la identidad del nodo.', 500);
+        }
+        @chmod($this->path, 0600);
+        $this->identity = $data;
+        return $data;
     }
 
     public function publicKey(): string
@@ -98,12 +119,28 @@ final class NodeIdentityService
         return 'acn_' . FederationCodec::base64UrlEncode($digest);
     }
 
+    public static function normalizeNodeName(string $nodeName): string
+    {
+        $name = strtolower(trim($nodeName));
+        if (strlen($name) < 3 || strlen($name) > 64
+            || !preg_match('/\A[a-z0-9][a-z0-9._-]*[a-z0-9]\z/', $name)) {
+            throw new FederationException('El nombre del nodo debe tener 3-64 caracteres: a-z, 0-9, punto, guion o guion bajo.', 400);
+        }
+        return $name;
+    }
+
     public function signedDescriptor(FederationConfig $config): array
     {
         $descriptor = [
             'protocol' => 'arcadecloud-federation',
             'version' => 1,
             'node_id' => $this->nodeId(),
+        ];
+        $nodeName = $this->nodeName();
+        if ($nodeName !== null) {
+            $descriptor['node_name'] = $nodeName;
+        }
+        $descriptor += [
             'public_url' => $config->publicUrl(),
             'federation_url' => $config->federationUrl(),
             'public_key' => $this->publicKeyEncoded(),
@@ -149,7 +186,28 @@ final class NodeIdentityService
             || !hash_equals(self::nodeIdFromPublicKey($public), (string)$decoded['node_id'])) {
             throw new FederationException('Identidad criptográfica del nodo inválida.', 500);
         }
+        if (isset($decoded['node_name'])) {
+            if (!is_string($decoded['node_name'])
+                || !hash_equals(self::normalizeNodeName((string)$decoded['node_name']), (string)$decoded['node_name'])) {
+                throw new FederationException('Nombre de nodo inválido dentro de la identidad.', 500);
+            }
+        }
         $this->identity = $decoded;
         return $decoded;
+    }
+
+    private static function writeNewIdentity(string $path, array $data): void
+    {
+        $json = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR) . "\n";
+        $tmp = $path . '.tmp-' . bin2hex(random_bytes(6));
+        if (@file_put_contents($tmp, $json, LOCK_EX) === false) {
+            throw new FederationException('No se pudo escribir la identidad temporal.', 500);
+        }
+        @chmod($tmp, 0600);
+        if (!@rename($tmp, $path)) {
+            @unlink($tmp);
+            throw new FederationException('No se pudo instalar la identidad del nodo.', 500);
+        }
+        @chmod($path, 0600);
     }
 }

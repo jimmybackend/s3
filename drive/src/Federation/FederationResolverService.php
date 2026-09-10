@@ -39,7 +39,10 @@ final class FederationResolverService
             throw new FederationException($message, $status === 'private_auth_required' ? 401 : 409);
         }
         $payload = $this->links->decryptLocalPayload($document);
-        $file = $this->resources->requireOwnedFile((int)$payload['user_id'], (int)$payload['file_id']);
+        $file = $this->findPayloadFile($payload);
+        if ($file === null) {
+            throw new FederationException('Archivo no encontrado para este recurso FederationCloud.', 404);
+        }
         return ['payload' => $payload, 'file' => $file, 'resolved' => $resolved];
     }
 
@@ -74,8 +77,7 @@ final class FederationResolverService
     {
         $payload = $this->links->decryptLocalPayload($document);
         $ownerId = (int)$payload['user_id'];
-        $fileId = (int)$payload['file_id'];
-        $file = $this->resources->findOwnedFile($ownerId, $fileId);
+        $file = $this->findPayloadFile($payload);
         if ($file === null) {
             return $this->baseResult($document, 'not_available', false, true);
         }
@@ -95,7 +97,30 @@ final class FederationResolverService
         $result['content_verified'] = is_string($signedContentId) && is_string($currentContentId)
             ? hash_equals($signedContentId, $currentContentId)
             : null;
+        $result['recovered_by_storage_ref'] = (int)($payload['version'] ?? 1) >= 2
+            && (int)($file['id_'] ?? 0) !== (int)($payload['file_id'] ?? 0);
         return $result;
+    }
+
+    private function findPayloadFile(array $payload): ?array
+    {
+        $ownerId = (int)($payload['user_id'] ?? 0);
+        $fileId = (int)($payload['file_id'] ?? 0);
+        $file = $this->resources->findOwnedFile($ownerId, $fileId);
+
+        if ((int)($payload['version'] ?? 1) < 2) {
+            return $file;
+        }
+
+        $storageRef = trim((string)($payload['storage_ref'] ?? ''));
+        if ($storageRef === '') {
+            return null;
+        }
+        if ($file !== null && hash_equals($storageRef, (string)($file['Encriptado'] ?? ''))) {
+            return $file;
+        }
+
+        return $this->resources->findOwnedFileByStorageRef($ownerId, $storageRef);
     }
 
     private function resolveRemote(array $document): array

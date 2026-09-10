@@ -9,6 +9,7 @@ require_once $root . '/src/Federation/NodeIdentityService.php';
 require_once $root . '/src/Federation/ArcadeLinkService.php';
 
 use ArcadeCloud\Drive\Federation\ArcadeLinkService;
+use ArcadeCloud\Drive\Federation\FederationCodec;
 use ArcadeCloud\Drive\Federation\FederationConfig;
 use ArcadeCloud\Drive\Federation\FederationException;
 use ArcadeCloud\Drive\Federation\NodeIdentityService;
@@ -20,6 +21,53 @@ function ok(bool $condition, string $message): void
         exit(1);
     }
     fwrite(STDOUT, "OK: {$message}\n");
+}
+
+function legacyDocument(ArcadeLinkService $links, NodeIdentityService $identity, FederationConfig $config): array
+{
+    $resourceId = $links->resourceId(7, 42);
+    $document = [
+        'format' => 'arcadelink',
+        'version' => 1,
+        'resource_id' => $resourceId,
+        'origin_node_id' => $identity->nodeId(),
+        'origin' => $config->publicUrl(),
+        'federation_url' => $config->federationUrl(),
+        'resource_type' => 'file',
+        'title' => 'Documento legado.pdf',
+        'size_bytes' => 123456,
+        'media_type' => 'application/pdf',
+        'visibility' => 'PUBLIC',
+        'rights' => 'unknown_rights',
+        'content_id' => 'sha256:' . str_repeat('a', 64),
+        'issued_at' => gmdate(DATE_ATOM),
+    ];
+    $privatePayload = [
+        'version' => 1,
+        'user_id' => 7,
+        'file_id' => 42,
+        'resource_id' => $resourceId,
+    ];
+    $nonce = random_bytes(SODIUM_CRYPTO_AEAD_XCHACHA20POLY1305_IETF_NPUBBYTES);
+    $ciphertext = sodium_crypto_aead_xchacha20poly1305_ietf_encrypt(
+        FederationCodec::canonicalJson($privatePayload),
+        FederationCodec::canonicalJson($document),
+        $nonce,
+        $identity->payloadKey()
+    );
+    $document['payload'] = [
+        'alg' => 'XChaCha20-Poly1305',
+        'nonce' => FederationCodec::base64UrlEncode($nonce),
+        'ciphertext' => FederationCodec::base64UrlEncode($ciphertext),
+    ];
+    $signed = FederationCodec::canonicalJson($document);
+    $document['signature'] = [
+        'alg' => 'Ed25519',
+        'key_id' => $identity->nodeId(),
+        'public_key' => $identity->publicKeyEncoded(),
+        'value' => FederationCodec::base64UrlEncode($identity->sign($signed)),
+    ];
+    return $document;
 }
 
 if (!extension_loaded('sodium')) {
@@ -46,6 +94,7 @@ try {
     $file = [
         'id_' => 42,
         'Nombre' => 'Documento de prueba.pdf',
+        'Encriptado' => 'stable-object-42.bin',
         'Tamano' => 123456,
         'AccessType' => 'normal',
     ];
@@ -58,6 +107,13 @@ try {
     ok($parsed['signature']['alg'] === 'Ed25519', 'firma Ed25519 válida');
     $payload = $links->decryptLocalPayload($parsed);
     ok((int)$payload['user_id'] === 7 && (int)$payload['file_id'] === 42, 'payload cifrado se recupera sólo con identidad local');
+    ok((int)$payload['version'] === 2 && $payload['storage_ref'] === 'stable-object-42.bin', 'ArcadeLink nuevo conserva referencia estable cifrada');
+    ok($public['resource_id'] === $links->resourceIdForStorageRef(7, 'stable-object-42.bin'), 'Resource ID nuevo depende de referencia estable');
+
+    $legacy = legacyDocument($links, $identity, $config);
+    $legacyParsed = $links->parse($links->encode($legacy));
+    $legacyPayload = $links->decryptLocalPayload($legacyParsed);
+    ok((int)$legacyPayload['version'] === 1 && (int)$legacyPayload['file_id'] === 42, 'ArcadeLink legado version 1 sigue siendo compatible');
 
     $private = $links->create($file, 7, $sha, 'application/pdf', 'PRIVATE', 'link_only');
     ok($private['content_id'] === null, 'PRIVATE nunca publica fingerprint');

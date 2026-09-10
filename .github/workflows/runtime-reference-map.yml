@@ -13,6 +13,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: drive-generated-docs-main
+  cancel-in-progress: false
+
 jobs:
   map:
     runs-on: ubuntu-latest
@@ -28,4 +32,5 @@ jobs:
           git add drive/docs/RUNTIME_ENDPOINTS.md drive/docs/runtime_endpoints.json
           if git diff --cached --quiet; then exit 0; fi
           git commit -m "Document active Drive runtime endpoints"
+          git pull --rebase origin main
           git push origin main

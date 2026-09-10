@@ -52,16 +52,10 @@ final class FederationService
     {
         $this->ensureEnabled();
         $storageRef = str_replace('\\', '/', trim($storageRef));
+        $storageRef = preg_replace('~/+~', '/', $storageRef) ?? $storageRef;
+        $storageRef = ltrim($storageRef, '/');
         if ($storageRef === '') {
             throw new FederationException('Referencia de archivo ausente.', 400);
-        }
-        $slash = strrpos($storageRef, '/');
-        if ($slash !== false) {
-            $storageRef = substr($storageRef, $slash + 1);
-        }
-        $storageRef = trim($storageRef);
-        if ($storageRef === '') {
-            throw new FederationException('Referencia de archivo inválida.', 400);
         }
         $file = $this->resources->findOwnedFileByStorageRef($userId, $storageRef);
         if ($file === null) {

@@ -20,7 +20,13 @@ $e = static fn(string $value): string => htmlspecialchars($value, ENT_QUOTES | E
 <div id="bloque-carpetas" class="card">
   <div class="card-header py-2 d-flex align-items-center">
     <strong><i class="fas fa-folder-open"></i> Carpetas</strong>
-    <div class="ml-auto">
+    <div class="ml-auto d-flex align-items-center">
+      <a href="activity_costs.php"
+         class="btn btn-sm btn-outline-primary mr-1"
+         title="Actividad y costos"
+         aria-label="Actividad y costos">
+        <i class="fas fa-receipt"></i>
+      </a>
       <button type="button"
               class="btn btn-sm btn-outline-primary"
               data-toggle="modal"

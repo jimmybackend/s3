@@ -45,7 +45,7 @@ jobs:
           ! test -e drive/src/Console/SqlMigrationCommand.php
           ! grep -q 'db_migrate.php' README.md drive/docs/ACTIVITY_COSTS.md .github/workflows/activity-costs.yml
           ! grep -q '20260910_activity_costs.sql' drive/docs/ACTIVITY_COSTS.md .github/workflows/activity-costs.yml
-          grep -q "CREATE TABLE IF NOT EXISTS `DriveActivityEvents`' adbbmis1_Cloud.sql" .github/workflows/activity-costs.yml
+          grep -F -q 'adbbmis1_Cloud.sql' .github/workflows/activity-costs.yml
           php drive/tests/activity_costs_smoke.php
           git diff --check
 

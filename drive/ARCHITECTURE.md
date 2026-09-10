@@ -1,10 +1,10 @@
-# Arquitectura de ArcadeCloud Drive
+# Arquitectura de ArcadeCloud Drive + FederationCloud
 
 ## Estado
 
 **Baseline estable: `v1.0-oop` — 5 de septiembre de 2026.**
 
-La migración incremental del backend heredado a una arquitectura OOP está cerrada. `main` contiene la versión estable desplegada en producción. A partir de este punto, los cambios nuevos son mantenimiento o nuevas funcionalidades y deben partir de `main`.
+La migración incremental del backend heredado a una arquitectura OOP está cerrada. `main` contiene la versión estable y su evolución posterior. ArcadeCloud Drive ya no es sólo un gestor S3: sobre el plano local DB-first existe ahora **FederationCloud**, una capa de identidad, descubrimiento, autorización y resolución entre instalaciones ArcadeCloud.
 
 El runtime ya no depende de un monolito central para operar S3. Las responsabilidades están separadas entre Controller, Service, Repository y Gateway/Infrastructure.
 
@@ -18,6 +18,43 @@ PHP entrypoint
 ```
 
 Los entrypoints públicos son delgados. La lógica de negocio vive bajo `drive/src/` o en los módulos OOP de `drive/upload/`.
+
+La federación respeta la misma regla:
+
+```text
+federationcloud/*.php
+  -> FederationController
+     -> FederationService / FederationDirectoryService / ProviderAuthorizationService
+        -> repositorios + identidad + cliente HTTP seguro
+```
+
+## Dos planos del sistema
+
+### Plano local
+
+Cada instalación conserva su propia autoridad sobre catálogo, usuarios y almacenamiento:
+
+```text
+ArcadeCloud Drive
+  -> MySQL: navegación, metadatos y ownership
+  -> S3: bytes físicos
+  -> AWS: servicios auxiliares
+```
+
+### Plano federado
+
+FederationCloud no sustituye MySQL ni S3. Añade una capa de confianza entre nodos:
+
+```text
+.arcadelink
+  -> firma Ed25519
+  -> node_id de origen
+  -> Federation URL HTTPS
+  -> validación remota
+  -> resolución del recurso
+```
+
+Los nodos conservan autonomía local. Una autorización FederationCloud no concede por sí sola acceso de escritura al MySQL o S3 de otro nodo.
 
 ## Composition root
 
@@ -34,6 +71,8 @@ Los entrypoints públicos son delgados. La lógica de negocio vive bajo `drive/s
 - almacenamiento y sincronización.
 
 `ApplicationKernel` expone la instancia utilizada por los entrypoints.
+
+Los servicios FederationCloud reciben `DriveApplication` cuando necesitan catálogo, sesión o sharing local, pero mantienen identidad criptográfica, resolución remota y autorización dentro de `drive/src/Federation/`.
 
 ## Navegación DB-first
 
@@ -100,6 +139,8 @@ user_id = N -> DataN/
 `UserStoragePath` normaliza rutas y bloquea saltos hacia raíces de otros usuarios. `UserStorageProvisioner` garantiza que la raíz exista en catálogo y S3.
 
 Las consultas y mutaciones de usuario se limitan por `user_id_` y, cuando corresponde, `Found=1`.
+
+La federación no elimina esta frontera: crear un ArcadeLink desde el Drive exige sesión y ownership local del archivo.
 
 ## Archivos y carpetas
 
@@ -231,8 +272,10 @@ encriptar_archivo.php
 - `S3Folders.Prefix`: identificador físico interno de carpeta.
 - renombrar modifica el catálogo visible;
 - mover puede cambiar la ubicación física;
-- `StorageObjectNameCodec` centraliza la generación y lectura de nombres físicos.
+- `StorageObjectNameCodec` centraliza la generación y lectura de nombres físicos;
 - los `Prefix` físicos no deben mostrarse en rutas o selects de la interfaz cuando pueda construirse una etiqueta desde `S3Folders.Nombre`.
+
+ArcadeLink no publica la referencia física privada como autoridad pública. La referencia necesaria para continuidad local permanece dentro del payload cifrado.
 
 ## Autenticación
 
@@ -250,7 +293,9 @@ logout.php
 
 `AuthenticationRepository` conoce `Users` y `AccessControl`. `SessionManager` concentra inicio, autenticación, preferencias de sesión y destrucción.
 
-## Sharing
+La administración sensible de proveedores FederationCloud utiliza `Users.system_role`; sólo `superadmin` puede aprobar, rechazar o revocar autorizaciones.
+
+## Sharing tradicional
 
 ```text
 generar_token.php
@@ -269,6 +314,137 @@ token_audio.php / token_video.php / token_texto.php / ver.php
 ```
 
 La creación de enlaces requiere sesión y ownership. El acceso público requiere token válido. Las peticiones directas por key requieren sesión y ownership.
+
+## FederationCloud y ArcadeLink
+
+FederationCloud vive bajo:
+
+```text
+drive/federationcloud/
+drive/src/Federation/
+```
+
+Cada nodo posee una identidad independiente:
+
+```text
+node_name
+node_id = acn_...
+public_key
+public_url
+federation_url
+```
+
+La clave privada y `payload_key` permanecen fuera del repositorio y del DocumentRoot.
+
+### Descriptor de nodo
+
+```text
+federationcloud/node.php
+  -> FederationController::nodeApi()
+     -> FederationService
+        -> NodeIdentityService
+        -> FederationConfig
+```
+
+El descriptor público se firma con Ed25519.
+
+### ArcadeLink
+
+```text
+Compartir archivo
+  -> federationcloud/create.php
+     -> FederationController::createApi()
+        -> FederationService
+           -> FederatedResourceRepository
+           -> ArcadeLinkService
+```
+
+La UI normal del Drive permite descargar un `.arcadelink` desde el modal **Compartir**.
+
+La resolución humana usa:
+
+```text
+federationcloud/index.php
+  -> FederationController::index()
+     -> FederationService
+        -> ArcadeLinkService
+        -> FederationResolverService
+        -> FederationHttpClient
+```
+
+El flujo visual es:
+
+```text
+dropzone
+ -> seleccionar/soltar .arcadelink
+ -> validación automática
+ -> recurso verificado
+ -> Abrir
+```
+
+### Seguridad criptográfica
+
+- firma: Ed25519;
+- payload privado: XChaCha20-Poly1305;
+- `content_id`: SHA-256 cuando ya existe y la visibilidad permite publicarlo;
+- cliente remoto limitado a HTTPS:443;
+- sin redirects;
+- protección SSRF y fijación de IP DNS;
+- sin descargador arbitrario de URLs.
+
+### Descubrimiento y directorio
+
+```text
+federationcloud/register.php
+federationcloud/nodes.php
+  -> servicios de directorio FederationCloud
+     -> validación criptográfica
+     -> verificación HTTPS del nodo anunciado
+     -> FederationNodes
+```
+
+Registrar un nodo no lo autoriza para servir recursos de otro nodo.
+
+### Proveedores autorizados
+
+```text
+federation_provider_request.php
+  -> provider-request.php
+     -> verificar descriptor + node.php remoto
+     -> FederationNodeAuthorizations: pending
+
+superadmin en nodo origen
+  -> provider-admin.php
+     -> aprobar / rechazar / revocar
+     -> autorización Ed25519 origen -> proveedor
+```
+
+La arquitectura se probó con dos instalaciones independientes: `drive.esforzados.com` como origen y `fastdrive.esforzados.com` como proveedor autorizado.
+
+### Estado de federación
+
+Implementado:
+
+- identidad por nodo;
+- descriptor firmado;
+- descubrimiento mediante seed;
+- registro y verificación de nodos;
+- solicitud/aprobación/revocación de proveedor;
+- ArcadeLink portable;
+- creación desde el Drive;
+- verificación y resolución local/remota;
+- apertura mediante sharing temporal cuando la política lo permite.
+
+Pendiente:
+
+- `FederatedResources` como índice público de recursos;
+- `FederationResourceLocations` para origen/proveedor/mirror por recurso;
+- selección automática de proveedor;
+- mirror lookup por SHA-256;
+- replicación/copias autorizadas;
+- buscador federado global.
+
+P2P/BitTorrent no forma parte de la etapa actual.
 
 ## Multimedia
 
@@ -383,8 +559,6 @@ Las acciones sobre archivos AWS delegan en `AwsFileController` y servicios espec
 
 Transcribe utiliza `TranscriptionController` y `TranscriptionFileService`. El frontend inicia la transcripción, informa que el trabajo continúa en segundo plano y consulta su estado hasta notificar que el resultado está listo.
 
-Las acciones AWS del listado soportan interacción táctil mediante eventos de puntero y mantienen separación visual de las acciones principales en móvil.
-
 ## Herramientas AWS personales
 
 ```text
@@ -428,10 +602,12 @@ La migración se considera cerrada porque:
 - la navegación normal permanece DB-first;
 - no existen consumidores runtime del antiguo monolito S3;
 - las operaciones sensibles usan el `user_id_` autenticado;
-- las acciones AWS, incluida la interacción móvil, fueron probadas en producción;
+- las acciones AWS fueron probadas en producción;
 - Transcribe funciona de manera asíncrona con seguimiento de estado;
 - la rama de migración fue fusionada y retirada;
 - producción ejecuta `main`.
+
+FederationCloud es una extensión posterior a ese baseline y no cambia el significado histórico del tag `v1.0-oop`.
 
 ## Reglas obligatorias
 
@@ -439,8 +615,11 @@ La migración se considera cerrada porque:
 2. No agregar llamadas AWS/S3 a entrypoints cuando exista un Service/Gateway responsable.
 3. No listar S3 para navegación normal.
 4. No aceptar rutas o registros de otro usuario.
-5. No exponer secretos, credenciales ni semillas TOTP en Git, HTML o JSON público.
+5. No exponer secretos, credenciales, identidades privadas, `payload_key` ni semillas TOTP en Git, HTML o JSON público.
 6. No modificar `vendor/`.
 7. Mantener los contratos HTTP utilizados por el frontend.
-8. Validar cambios con `php -l`, `node --check` cuando aplique y `git diff --check`.
-9. Las nuevas funcionalidades deben desarrollarse desde `main` en ramas independientes y volver mediante merge validado.
+8. Todo endpoint FederationCloud remoto debe validar identidad, firma, HTTPS y límites de payload antes de confiar en otro nodo.
+9. Registrar un nodo no debe equivaler a autorizarlo como proveedor.
+10. Mantener `FileS3` como fuente de verdad local aunque exista una capa federada.
+11. Validar cambios con `php -l`, `node --check` cuando aplique y `git diff --check`.
+12. Las nuevas funcionalidades deben desarrollarse desde `main` en ramas independientes y volver mediante merge validado.

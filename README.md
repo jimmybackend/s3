@@ -1,14 +1,31 @@
-# ArcadeCloud Drive
+# ArcadeCloud Drive + FederationCloud
 
-ArcadeCloud Drive es un gestor de archivos familiar multiusuario construido sobre **PHP + MySQL + Amazon S3**. MySQL es la fuente de verdad para la navegación y S3 conserva el contenido físico.
+ArcadeCloud Drive es una **plataforma de almacenamiento multiusuario con capa de cloud federado**, construida sobre **PHP + MySQL + Amazon S3**.
 
-## Estado estable
+MySQL sigue siendo la fuente de verdad para navegación y metadatos, Amazon S3 conserva el contenido físico y **FederationCloud** añade identidad criptográfica de nodos, descubrimiento, autorización entre servidores y resolución de recursos mediante archivos portables `.arcadelink`.
 
-**Versión de cierre: `v1.0-oop` — 5 de septiembre de 2026.**
+El proyecto comenzó como un Drive web para S3. Hoy puede operar como una red de instalaciones ArcadeCloud independientes que se reconocen y validan entre sí sin publicar claves AWS, sesiones ni rutas físicas privadas de S3.
 
-La migración incremental del backend heredado a arquitectura orientada a objetos está terminada. La versión estable vive en `main` y mantiene los contratos HTTP y la funcionalidad existente del Drive. Las nuevas funciones posteriores a ese baseline continúan respetando la misma arquitectura.
+## Estado actual
 
-Principios de esta línea estable:
+**Baseline estable histórico: `v1.0-oop` — 5 de septiembre de 2026.**
+
+La migración incremental del backend heredado a arquitectura orientada a objetos está terminada. `main` contiene la evolución posterior de ese baseline e incorpora actualmente:
+
+- navegación DB-first;
+- arquitectura OOP estable;
+- multiusuario por `user_id_`;
+- almacenamiento físico en Amazon S3;
+- actividad y costos;
+- servicios AWS;
+- **FederationCloud**;
+- **ArcadeLink** portable y firmado;
+- identidad Ed25519 por nodo;
+- descubrimiento y validación HTTPS entre nodos;
+- solicitudes y aprobación de proveedores;
+- resolución local y remota de ArcadeLinks.
+
+Principios que siguen siendo obligatorios:
 
 - entrypoints PHP delgados;
 - lógica de negocio bajo `drive/src/`;
@@ -17,22 +34,114 @@ Principios de esta línea estable:
 - S3 como almacenamiento físico, no como índice de navegación;
 - servicios AWS detrás de Controller / Service / Gateway;
 - configuración privada y secretos fuera del repositorio;
-- procesos largos, como Amazon Transcribe, ejecutados y consultados de forma asíncrona.
+- procesos largos ejecutados y consultados de forma asíncrona;
+- FederationCloud no concede acceso implícito a MySQL, S3 ni secretos de otro nodo.
 
-## Principios
+## De Drive S3 a cloud federado
 
-### DB-first
-
-La navegación normal consulta MySQL. S3 se utiliza para leer, escribir, mover, eliminar, sincronizar y procesar objetos cuando una operación lo requiere.
+La arquitectura actual separa dos planos:
 
 ```text
+PLANO LOCAL
 Navegador
    -> Entrypoint PHP
       -> Controller
          -> Service
             -> Repository / Infrastructure
                -> MySQL / S3 / AWS
+
+PLANO FEDERADO
+.arcadelink
+   -> validar firma Ed25519
+      -> identificar node_id origen
+         -> consultar FederationCloud por HTTPS
+            -> resolver recurso / proveedor autorizado
 ```
+
+Cada instalación conserva autonomía local. FederationCloud añade una capa de confianza y resolución entre instalaciones.
+
+La federación actualmente cubre:
+
+```text
+identidad criptográfica
++ descubrimiento de nodos
++ autorización origen -> proveedor
++ ArcadeLink portable
++ resolución entre nodos
+```
+
+Todavía no incluye P2P, replicación automática, escritura remota sobre S3 de terceros, buscador global ni selección automática del mejor proveedor por recurso.
+
+Consulta `drive/docs/FEDERATED_CLOUD_STATUS.md` y `drive/docs/FEDERATIONCLOUD.md`.
+
+## ArcadeLink
+
+`.arcadelink` es el pasaporte portable de un recurso ArcadeCloud.
+
+Un ArcadeLink puede conservar:
+
+- `resource_id` lógico;
+- nodo de origen;
+- URL federada;
+- título y tipo de recurso;
+- tamaño;
+- visibilidad;
+- derechos declarados;
+- `content_id` SHA-256 cuando exista y la política permita publicarlo;
+- payload privado cifrado;
+- firma Ed25519.
+
+La referencia local sensible se protege con **XChaCha20-Poly1305**.
+
+Desde la interfaz normal del Drive, el botón **Compartir** permite generar y descargar un `.arcadelink`. En `/federationcloud/` puede soltarse ese archivo en un dropzone; el sistema valida automáticamente la firma, resuelve el recurso y ofrece **Abrir** cuando la política lo permite.
+
+Modos de visibilidad:
+
+- `PUBLIC`: preparado para anuncio o búsqueda futura;
+- `UNLISTED`: resuelve quien posee el ArcadeLink, sin búsqueda general;
+- `PRIVATE`: no anuncia fingerprint público y exige política local compatible.
+
+Derechos v1:
+
+- `link_only`;
+- `unknown_rights`;
+- `user_owned_authorized`;
+- `copy_allowed`.
+
+## FederationCloud
+
+Cada instalación puede tener identidad propia:
+
+```text
+node_name
+node_id = acn_...
+public_key
+public_url
+federation_url
+```
+
+La identidad se firma con **Ed25519** y se almacena fuera del repositorio.
+
+Los nodos pueden descubrirse mediante un seed y validar en vivo el `node.php` anunciado antes de aceptar su identidad.
+
+Un nodo registrado **no** se convierte automáticamente en proveedor. La autorización de proveedor es una segunda capa de confianza:
+
+```text
+nodo proveedor
+  -> envía solicitud firmada
+     -> nodo origen verifica identidad y HTTPS
+        -> solicitud pending
+           -> superadmin aprueba/rechaza
+              -> autorización firmada origen -> proveedor
+```
+
+La arquitectura ya fue probada con dos instalaciones distintas, una como nodo origen y otra como proveedor autorizado.
+
+## Principios locales
+
+### DB-first
+
+La navegación normal consulta MySQL. S3 se utiliza para leer, escribir, mover, eliminar, sincronizar y procesar objetos cuando una operación lo requiere.
 
 ### Multiusuario
 
@@ -51,8 +160,9 @@ La raíz de usuario no se puede renombrar, mover ni eliminar. Las consultas del 
 - `FileS3.Nombre`: nombre visible.
 - `FileS3.Encriptado`: nombre físico del objeto.
 - `S3Folders.Nombre`: nombre visible de carpeta.
-- Renombrar cambia el catálogo MySQL.
-- Mover puede cambiar la ubicación física manteniendo el basename físico.
+- `S3Folders.Prefix`: referencia física interna.
+- renombrar cambia el catálogo visible;
+- mover puede cambiar la ubicación física.
 
 ## Funcionalidad
 
@@ -68,28 +178,27 @@ La raíz de usuario no se puede renombrar, mover ni eliminar. Las consultas del 
 - renombrar, mover, descargar y eliminar archivos;
 - acciones múltiples;
 - ZIP;
-- enlaces compartidos;
+- enlaces compartidos tradicionales;
+- ArcadeLink federado;
 - protección, desbloqueo y rebloqueo;
 - cálculo de uso de almacenamiento.
 
 ### Actividad y costos
 
-`drive/activity_costs.php` muestra la actividad del usuario autenticado y separa claramente:
+`drive/activity_costs.php` muestra la actividad del usuario autenticado y separa:
 
-- **costo atribuido / ESTIMADO**, calculado a partir de unidades observables de las operaciones del Drive;
-- **costo REAL AWS**, obtenido mediante la integración existente con AWS Cost Explorer cuando la autorización privada ya existente lo permite.
+- **costo atribuido / ESTIMADO**;
+- **costo REAL AWS**, cuando Cost Explorer está autorizado.
 
-La página incluye filtros por período, servicio y operación, desgloses diarios, por servicio y por acción, y actividad reciente. El registro es best effort: una falla de telemetría no debe romper una operación válida del Drive.
+Los eventos FederationCloud registrados incluyen:
 
-Los precios de atribución están desacoplados en `drive/config/activity-cost-pricing.json`. Las unidades que no pueden tasarse con suficiente precisión se marcan como parciales o no tasadas en vez de inventar un costo.
-
-La tabla `DriveActivityEvents` forma parte del esquema base `adbbmis1_Cloud.sql`; una instalación nueva crea el módulo de actividad junto con el resto de la base de datos, sin ejecutar una migración incremental separada.
+- `arcadelink_create`;
+- `arcadelink_resolve`;
+- `arcadelink_open`.
 
 Consulta `drive/docs/ACTIVITY_COSTS.md`.
 
 ### Multimedia
-
-El reproductor flotante utiliza una playlist obtenida desde MySQL mediante:
 
 ```text
 media_playlist.php
@@ -99,8 +208,6 @@ media_playlist.php
 ```
 
 ### Subidas
-
-La API principal es:
 
 ```text
 api/upload.php
@@ -114,15 +221,11 @@ api/upload.php
 
 También existe `up.php` para multipart directo navegador -> S3. PHP inicia, firma y completa la operación; el cuerpo pesado viaja directamente a S3 y al finalizar se registra en `FileS3`.
 
-Las superficies públicas de subida y navegación compartida están separadas en `PublicUploadController` y `PublicSharedBrowserController` y quedan confinadas a la raíz compartida configurada.
-
 ### Limpieza de subidas abandonadas
 
-`drive/bin/upload_cleanup.php` analiza multipart incompletos, objetos huérfanos y estados locales antiguos dentro de `DataN/uploads/`. Por defecto trabaja en simulación. La eliminación requiere `--execute` y nunca elimina objetos registrados en `FileS3`.
+`drive/bin/upload_cleanup.php` analiza multipart incompletos, objetos huérfanos y estados locales antiguos dentro de `DataN/uploads/`. La eliminación requiere `--execute` y nunca elimina objetos registrados en `FileS3`.
 
 ### Sincronización
-
-La sincronización S3 -> MySQL se ejecuta en segundo plano:
 
 ```text
 sync_s3_to_db.php / sync_status.php
@@ -149,20 +252,7 @@ El Drive integra:
 - Comprehend;
 - Cost Explorer.
 
-Las acciones AWS del listado funcionan también en dispositivos táctiles. Amazon Transcribe inicia el trabajo en segundo plano y el frontend consulta su estado hasta notificar que la transcripción está lista.
-
-`ec2.php` es un panel personal para revisar y operar recursos EC2. `ec2-cron.php` aplica la política horaria definida para evitar mantener recursos de prueba encendidos fuera del horario permitido.
-
-### Herramienta AWS personal
-
-`aws.php` es una herramienta privada separada de las funciones familiares del Drive.
-
-- con sesión del Drive, sólo `user_id = 1` puede utilizarla;
-- cualquier otro usuario autenticado recibe HTTP 403;
-- sin sesión se requiere la contraseña privada configurada fuera del repositorio;
-- las semillas TOTP permanecen en un archivo privado del servidor y no se envían al navegador.
-
-Consulta `drive/docs/PERSONAL_AWS_TOOL.md`.
+Amazon Transcribe trabaja de forma asíncrona y el frontend consulta su estado hasta completar.
 
 ## Arquitectura OOP
 
@@ -175,6 +265,7 @@ drive/src/
 ├── Aws/
 ├── Console/
 ├── Core/
+├── Federation/
 ├── Http/
 │   └── Controller/
 ├── Media/
@@ -188,15 +279,13 @@ drive/src/
 
 `DriveApplication` es el composition root. `ApplicationKernel` expone la instancia de aplicación y los entrypoints públicos delegan en controladores.
 
-El antiguo monolito de acceso S3 ya no forma parte del runtime. Las responsabilidades están distribuidas entre repositories, services, gateways y utilidades de infraestructura específicas.
+FederationCloud respeta la misma arquitectura y no introduce lógica criptográfica o SQL directamente en entrypoints públicos.
 
 ## Estructura principal
 
 ```text
 s3/
 ├── .github/
-│   ├── scripts/
-│   └── workflows/
 ├── composer.json
 ├── composer.lock
 ├── Config-s3.php
@@ -208,16 +297,10 @@ s3/
     ├── login.php
     ├── s3.php
     ├── activity_costs.php
-    ├── up.php
-    ├── aws.php
-    ├── ec2.php
-    ├── ec2-cron.php
+    ├── federationcloud/
     ├── ARCHITECTURE.md
     ├── api/
-    │   └── upload.php
     ├── bin/
-    │   ├── sync_worker.php
-    │   └── upload_cleanup.php
     ├── config/
     ├── css/
     ├── js/
@@ -228,7 +311,7 @@ s3/
 
 ## Configuración privada
 
-Las credenciales y secretos no deben almacenarse en Git ni dentro del DocumentRoot. La producción utiliza configuración privada del servidor para MySQL, AWS y herramientas personales.
+Las credenciales y secretos no deben almacenarse en Git ni dentro del DocumentRoot.
 
 Variables habituales:
 
@@ -244,15 +327,27 @@ AWS_SECRET_ACCESS_KEY
 AWS_S3_BUCKET
 ```
 
-La herramienta TOTP personal utiliza por defecto:
+FederationCloud añade:
 
 ```text
-/etc/arcadecloud-drive/personal-aws.json
+ARCADECLOUD_PUBLIC_URL
+ARCADECLOUD_FEDERATION_URL
+ARCADECLOUD_FEDERATION_ENABLED
+ARCADECLOUD_FEDERATION_IDENTITY
+ARCADECLOUD_FEDERATION_SEED_URL   # opcional
 ```
+
+La identidad del nodo se guarda fuera del DocumentRoot, por ejemplo:
+
+```text
+/etc/arcadecloud-drive/federation-node.json
+```
+
+No debe publicarse ni copiarse a Git.
 
 ## Dependencias
 
-Composer administra las dependencias PHP, incluyendo AWS SDK y OTPHP.
+Composer administra las dependencias PHP.
 
 ```bash
 composer install --no-dev --optimize-autoloader
@@ -261,22 +356,28 @@ composer install --no-dev --optimize-autoloader
 ## Documentación
 
 - `drive/ARCHITECTURE.md`: arquitectura y reglas obligatorias.
-- `drive/docs/RELEASE_V1_OOP.md`: cierre de la migración y baseline estable.
-- `drive/docs/ACTIVITY_COSTS.md`: auditoría de operaciones, atribución de costos y reconciliación con Cost Explorer.
-- `drive/docs/DB_FIRST_NAVIGATION.md`: navegación y consultas del catálogo.
+- `drive/docs/FEDERATED_CLOUD_STATUS.md`: estado actual de la evolución hacia cloud federado.
+- `drive/docs/FEDERATIONCLOUD.md`: protocolo ArcadeLink/FederationCloud, seguridad y roadmap.
+- `drive/docs/FEDERATION_PROVIDER_APPROVALS.md`: autorización de proveedores.
+- `drive/docs/FEDERATION_NODE_RECOVERY.md`: continuidad y recuperación de identidad.
+- `drive/docs/RELEASE_V1_OOP.md`: baseline histórico del cierre OOP.
+- `drive/docs/ACTIVITY_COSTS.md`: auditoría y costos.
+- `drive/docs/DB_FIRST_NAVIGATION.md`: navegación y catálogo.
 - `drive/docs/KEY_ROTATION.md`: rotación de key física.
 - `drive/docs/UPLOAD_CLEANUP.md`: limpieza segura de subidas abandonadas.
-- `drive/docs/PERSONAL_AWS_TOOL.md`: herramienta personal y configuración privada.
+- `drive/docs/PERSONAL_AWS_TOOL.md`: herramienta AWS personal.
 - `drive/docs/RUNTIME_ENDPOINTS.md`: inventario de entrypoints runtime.
 - `drive/upload/LEEME.md`: API y drivers de subida.
 
 ## CI
 
-`.github/workflows/` valida sintaxis PHP, fronteras OOP, referencias, seguridad, subida, sincronización, sharing, navegación, multimedia, actividad/costos y `git diff --check`.
+`.github/workflows/` valida sintaxis PHP, fronteras OOP, seguridad, subida, sincronización, sharing, navegación, multimedia, actividad/costos y FederationCloud, incluyendo smoke tests criptográficos y de autorización de proveedores.
 
-## Flujo de trabajo después de v1.0-oop
+## Flujo de desarrollo
 
-Los cambios nuevos deben partir de `main` en una rama de funcionalidad o mantenimiento, validarse y volver a `main` mediante merge. La migración OOP ya no es una rama de trabajo activa.
+Los cambios nuevos parten de `main`, se desarrollan en ramas independientes, pasan validación y vuelven mediante pull request.
+
+El tag `v1.0-oop` sigue siendo el baseline histórico de la migración OOP; FederationCloud representa la evolución funcional posterior del proyecto.
 
 ## Licencia
 

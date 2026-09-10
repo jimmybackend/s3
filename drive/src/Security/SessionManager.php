@@ -54,6 +54,16 @@ final class SessionManager
         return isset($_SESSION['usuario']) ? (string)$_SESSION['usuario'] : '';
     }
 
+    public function systemRole(): string
+    {
+        return isset($_SESSION['system_role']) ? trim((string)$_SESSION['system_role']) : 'user';
+    }
+
+    public function isSuperAdmin(): bool
+    {
+        return hash_equals('superadmin', $this->systemRole());
+    }
+
     public function get(string $key, mixed $default = null): mixed
     {
         return $_SESSION[$key] ?? $default;
@@ -84,14 +94,21 @@ final class SessionManager
         return $current;
     }
 
-    public function establishAuthenticatedUser(string $email, int $userId, string $role): void
-    {
+    public function establishAuthenticatedUser(
+        string $email,
+        int $userId,
+        string $role,
+        string $systemRole = 'user'
+    ): void {
         $this->start();
         session_regenerate_id(true);
 
         $_SESSION['usuario'] = $email;
         $_SESSION['user_id'] = $userId;
         $_SESSION['role'] = $role;
+        $_SESSION['system_role'] = in_array($systemRole, ['user', 'admin', 'superadmin'], true)
+            ? $systemRole
+            : 'user';
         $_SESSION['show_counts'] = false;
         $_SESSION['show_metas'] = false;
         $_SESSION['media_hidden'] = true;

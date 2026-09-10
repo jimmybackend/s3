@@ -7,8 +7,8 @@
 - PHP analizados: **235**
 - PHP que ya contienen clases/interfaces: **145**
 - PHP marcados para migración/revisión: **13**
-- JavaScript analizados: **33**
-- JavaScript que ya contienen clases: **32**
+- JavaScript analizados: **34**
+- JavaScript que ya contienen clases: **33**
 - JavaScript marcados para migración/revisión: **7**
 
 ## Criterio
@@ -214,7 +214,7 @@
 | `drive/src/Upload/UploadCleanupService.php` | 316 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/View/ActivityCostPageRenderer.php` | 358 | class/module | 1 | — | — | — | — |
 | `drive/src/View/Ec2PanelHelper.php` | 69 | class/module | 1 | — | — | — | — |
-| `drive/src/View/FederationPageRenderer.php` | 105 | class/module | 1 | — | — | — | — |
+| `drive/src/View/FederationPageRenderer.php` | 186 | class/module | 1 | — | — | — | — |
 | `drive/src/View/FileIconResolver.php` | 136 | class/module | 1 | — | — | — | — |
 | `drive/src/View/FileViewHelper.php` | 108 | class/module | 1 | — | — | — | — |
 | `drive/src/View/FolderTreeRenderer.php` | 123 | class/module | 1 | — | ⚠️ | — | — |
@@ -276,6 +276,7 @@
 | `drive/js/elimina-uno.js` | 122 | class/module | EliminaUnoModule | — | — | — |
 | `drive/js/estilo.js` | 351 | class/module | EstiloModule | — | — | — |
 | `drive/js/federation-footer.js` | 269 | class/module | FederationFooterModule | — | — | — |
+| `drive/js/federation-page.js` | 95 | class/module | FederationPageModule | — | — | — |
 | `drive/js/file-block.js` | 305 | class/module | FileBlockApp | — | — | — |
 | `drive/js/filtros.js` | 97 | class/module | FiltrosModule | — | — | — |
 | `drive/js/imagenes.js` | 535 | class/module | ImagenesModule | — | getGaleriaGridSize, setGaleriaGridSize | window functions: getGaleriaGridSize, setGaleriaGridSize |

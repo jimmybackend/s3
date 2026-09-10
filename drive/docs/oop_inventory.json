@@ -3,8 +3,8 @@
     "php_total": 235,
     "php_class_modules": 145,
     "php_needs_migration": 13,
-    "js_total": 33,
-    "js_class_modules": 32,
+    "js_total": 34,
+    "js_class_modules": 33,
     "js_needs_migration": 7
   },
   "php": [
@@ -2932,7 +2932,7 @@
     },
     {
       "path": "drive/src/View/FederationPageRenderer.php",
-      "lines": 105,
+      "lines": 186,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -3867,6 +3867,20 @@
       "kind": "class/module",
       "classes": [
         "FederationFooterModule"
+      ],
+      "functions": [],
+      "window_assign": [],
+      "window_func": [],
+      "top_vars": [],
+      "iife": false,
+      "issues": []
+    },
+    {
+      "path": "drive/js/federation-page.js",
+      "lines": 95,
+      "kind": "class/module",
+      "classes": [
+        "FederationPageModule"
       ],
       "functions": [],
       "window_assign": [],

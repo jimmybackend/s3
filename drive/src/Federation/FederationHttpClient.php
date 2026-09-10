@@ -8,7 +8,14 @@ use JsonException;
 final class FederationHttpClient
 {
     private const MAX_RESPONSE_BYTES = 65536;
-    private const ALLOWED_ENDPOINTS = ['node.php', 'resolve.php', 'register.php', 'nodes.php'];
+    private const ALLOWED_ENDPOINTS = [
+        'node.php',
+        'resolve.php',
+        'register.php',
+        'nodes.php',
+        'provider-request.php',
+        'providers.php',
+    ];
 
     public function getJson(string $federationUrl, string $endpoint): array
     {

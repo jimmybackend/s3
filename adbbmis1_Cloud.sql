@@ -260,6 +260,31 @@ CREATE TABLE IF NOT EXISTS `FederationNodes` (
 -- --------------------------------------------------------
 
 --
+-- Estructura de tabla para la tabla `FederationNodeAuthorizations`
+--
+
+DROP TABLE IF EXISTS `FederationNodeAuthorizations`;
+CREATE TABLE IF NOT EXISTS `FederationNodeAuthorizations` (
+  `id_` bigint UNSIGNED NOT NULL AUTO_INCREMENT,
+  `OriginNodeId` varchar(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  `ProviderNodeId` varchar(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  `Role` enum('provider','mirror') NOT NULL DEFAULT 'provider',
+  `Scope` enum('all_allowed_resources','selected_resources') NOT NULL DEFAULT 'all_allowed_resources',
+  `Status` enum('pending','active','revoked','blocked') NOT NULL DEFAULT 'pending',
+  `OriginSignature` varchar(256) CHARACTER SET ascii COLLATE ascii_bin DEFAULT NULL,
+  `RequestedAt` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `AuthorizedAt` datetime DEFAULT NULL,
+  `LastSeen` datetime DEFAULT NULL,
+  `RevokedAt` datetime DEFAULT NULL,
+  PRIMARY KEY (`id_`),
+  UNIQUE KEY `uq_federation_node_authorization` (`OriginNodeId`,`ProviderNodeId`),
+  KEY `idx_federation_provider` (`ProviderNodeId`,`Status`),
+  KEY `idx_federation_origin` (`OriginNodeId`,`Status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Estructura de tabla para la tabla `FileVersions`
 --
 

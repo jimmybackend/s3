@@ -1,0 +1,107 @@
+name: Activity and cost tracking validation
+
+on:
+  push:
+    branches:
+      - main
+      - 'feat/activity-cost-tracking'
+    paths:
+      - 'drive/activity_costs.php'
+      - 'drive/bloque_carpetas.php'
+      - 'drive/bin/db_migrate.php'
+      - 'drive/config/activity-cost-pricing.json'
+      - 'drive/database/migrations/**'
+      - 'drive/src/Activity/**'
+      - 'drive/src/Aws/AwsCostService.php'
+      - 'drive/src/Aws/ComprehendFileService.php'
+      - 'drive/src/Aws/PollyFileService.php'
+      - 'drive/src/Aws/TextractFileService.php'
+      - 'drive/src/Aws/TranslateFileService.php'
+      - 'drive/src/Application/FolderMutationService.php'
+      - 'drive/src/Console/SqlMigrationCommand.php'
+      - 'drive/src/Http/Controller/ActivityCostController.php'
+      - 'drive/src/Http/Controller/AwsCostController.php'
+      - 'drive/src/Http/Controller/AwsFileController.php'
+      - 'drive/src/Http/Controller/FileAccessController.php'
+      - 'drive/src/Http/Controller/FileMutationController.php'
+      - 'drive/src/Http/Controller/FolderMutationController.php'
+      - 'drive/src/Http/Controller/LegacyUploadController.php'
+      - 'drive/src/Http/Controller/MoveJobController.php'
+      - 'drive/src/Http/Controller/ShareController.php'
+      - 'drive/src/Http/Controller/ThumbnailController.php'
+      - 'drive/src/Http/Controller/TranscriptionController.php'
+      - 'drive/src/Http/Controller/UploadController.php'
+      - 'drive/src/View/ActivityCostPageRenderer.php'
+      - 'drive/tests/activity_costs_smoke.php'
+      - '.github/workflows/activity-costs.yml'
+  pull_request:
+    paths:
+      - 'drive/**'
+      - '.github/workflows/activity-costs.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate PHP syntax
+        run: |
+          set -euo pipefail
+          for f in \
+            drive/activity_costs.php \
+            drive/bloque_carpetas.php \
+            drive/bin/db_migrate.php \
+            drive/src/Activity/*.php \
+            drive/src/Aws/AwsCostService.php \
+            drive/src/Aws/ComprehendFileService.php \
+            drive/src/Aws/PollyFileService.php \
+            drive/src/Aws/TextractFileService.php \
+            drive/src/Aws/TranslateFileService.php \
+            drive/src/Application/FolderMutationService.php \
+            drive/src/Console/SqlMigrationCommand.php \
+            drive/src/Http/Controller/ActivityCostController.php \
+            drive/src/Http/Controller/AwsCostController.php \
+            drive/src/Http/Controller/AwsFileController.php \
+            drive/src/Http/Controller/FileAccessController.php \
+            drive/src/Http/Controller/FileMutationController.php \
+            drive/src/Http/Controller/FolderMutationController.php \
+            drive/src/Http/Controller/LegacyUploadController.php \
+            drive/src/Http/Controller/MoveJobController.php \
+            drive/src/Http/Controller/ShareController.php \
+            drive/src/Http/Controller/ThumbnailController.php \
+            drive/src/Http/Controller/TranscriptionController.php \
+            drive/src/Http/Controller/UploadController.php \
+            drive/src/View/ActivityCostPageRenderer.php \
+            drive/tests/activity_costs_smoke.php; do
+            php -l "$f"
+          done
+
+      - name: Activity cost smoke test
+        run: php drive/tests/activity_costs_smoke.php
+
+      - name: Architecture and privacy guards
+        run: |
+          set -euo pipefail
+          grep -q 'ActivityCostController' drive/activity_costs.php
+          ! grep -q '\$_GET\|\$_POST\|\$_SESSION' drive/activity_costs.php
+          grep -F -q 'e.`user_id_` = ?' drive/src/Activity/ActivityCostRepository.php
+          grep -F -q 'LEFT JOIN FileS3 f ON f.id_ = e.`FileId` AND f.user_id_ = e.`user_id_`' drive/src/Activity/ActivityCostRepository.php
+          grep -q "state() === 'owner'" drive/src/Http/Controller/ActivityCostController.php
+          grep -q "state() !== 'owner'" drive/src/Http/Controller/AwsCostController.php
+          grep -q 'COUNT(DISTINCT COALESCE' drive/src/Activity/ActivityCostRepository.php
+          grep -q 'comprehend.nlp_unit' drive/src/Http/Controller/AwsFileController.php
+          grep -q 's3_list_requests' drive/src/Application/FolderMutationService.php
+          grep -q 'folder_move' drive/src/Http/Controller/MoveJobController.php
+          grep -q 'cost_explorer.api_request' drive/src/Http/Controller/AwsCostController.php
+          grep -q 'Best effort' drive/src/Activity/ActivityCostRecorder.php
+          grep -q 'Cost Explorer' drive/src/Activity/ActivityCostService.php
+          grep -q 'CREATE TABLE IF NOT EXISTS `DriveActivityEvents`' drive/database/migrations/20260910_activity_costs.sql
+          ! grep -R -E '(AKIA[0-9A-Z]{16}|aws_secret_access_key[[:space:]]*=|BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY)' drive/src/Activity drive/activity_costs.php drive/config/activity-cost-pricing.json drive/database/migrations drive/tests
+
+      - name: Diff whitespace check
+        run: git diff --check

@@ -8,9 +8,7 @@ on:
     paths:
       - 'drive/activity_costs.php'
       - 'drive/bloque_carpetas.php'
-      - 'drive/bin/db_migrate.php'
       - 'drive/config/activity-cost-pricing.json'
-      - 'drive/database/migrations/**'
       - 'drive/src/Activity/**'
       - 'drive/src/Aws/AwsCostService.php'
       - 'drive/src/Aws/ComprehendFileService.php'
@@ -18,7 +16,6 @@ on:
       - 'drive/src/Aws/TextractFileService.php'
       - 'drive/src/Aws/TranslateFileService.php'
       - 'drive/src/Application/FolderMutationService.php'
-      - 'drive/src/Console/SqlMigrationCommand.php'
       - 'drive/src/Http/Controller/ActivityCostController.php'
       - 'drive/src/Http/Controller/AwsCostController.php'
       - 'drive/src/Http/Controller/AwsFileController.php'
@@ -33,10 +30,12 @@ on:
       - 'drive/src/Http/Controller/UploadController.php'
       - 'drive/src/View/ActivityCostPageRenderer.php'
       - 'drive/tests/activity_costs_smoke.php'
+      - 'adbbmis1_Cloud.sql'
       - '.github/workflows/activity-costs.yml'
   pull_request:
     paths:
       - 'drive/**'
+      - 'adbbmis1_Cloud.sql'
       - '.github/workflows/activity-costs.yml'
   workflow_dispatch:
 
@@ -55,7 +54,6 @@ jobs:
           for f in \
             drive/activity_costs.php \
             drive/bloque_carpetas.php \
-            drive/bin/db_migrate.php \
             drive/src/Activity/*.php \
             drive/src/Aws/AwsCostService.php \
             drive/src/Aws/ComprehendFileService.php \
@@ -63,7 +61,6 @@ jobs:
             drive/src/Aws/TextractFileService.php \
             drive/src/Aws/TranslateFileService.php \
             drive/src/Application/FolderMutationService.php \
-            drive/src/Console/SqlMigrationCommand.php \
             drive/src/Http/Controller/ActivityCostController.php \
             drive/src/Http/Controller/AwsCostController.php \
             drive/src/Http/Controller/AwsFileController.php \
@@ -100,8 +97,9 @@ jobs:
           grep -q 'cost_explorer.api_request' drive/src/Http/Controller/AwsCostController.php
           grep -q 'Best effort' drive/src/Activity/ActivityCostRecorder.php
           grep -q 'Cost Explorer' drive/src/Activity/ActivityCostService.php
-          grep -q 'CREATE TABLE IF NOT EXISTS `DriveActivityEvents`' drive/database/migrations/20260910_activity_costs.sql
-          ! grep -R -E '(AKIA[0-9A-Z]{16}|aws_secret_access_key[[:space:]]*=|BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY)' drive/src/Activity drive/activity_costs.php drive/config/activity-cost-pricing.json drive/database/migrations drive/tests
+          grep -q 'CREATE TABLE IF NOT EXISTS `DriveActivityEvents`' adbbmis1_Cloud.sql
+          grep -q 'DROP TABLE IF EXISTS `DriveActivityEvents`' adbbmis1_Cloud.sql
+          ! grep -R -E '(AKIA[0-9A-Z]{16}|aws_secret_access_key[[:space:]]*=|BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY)' drive/src/Activity drive/activity_costs.php drive/config/activity-cost-pricing.json drive/tests
 
       - name: Diff whitespace check
         run: git diff --check

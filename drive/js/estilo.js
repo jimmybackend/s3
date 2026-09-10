@@ -12,7 +12,7 @@ class EstiloModule {
 
       const themeClasses = ['theme-neon-green','theme-neon-blue','theme-neon-red','theme-neon-yellow'];
       const modeClasses = ['theme-dark','theme-light'];
-      const visionClasses = ['vision-normal','vision-myopia','vision-protanopia','vision-deuteranopia','vision-tritanopia'];
+      const visionClasses = ['vision-normal','vision-myopia','vision-presbyopia','vision-protanopia','vision-deuteranopia','vision-tritanopia'];
 
       const defaultState = {
         theme: 'theme-neon-green',
@@ -106,6 +106,34 @@ class EstiloModule {
       function toggleAscii() {
         applyState({ ...getStateFromBody(), ascii: !body.classList.contains('ascii-on') });
         savePrefs();
+      }
+
+      function installVisionAccessibility() {
+        if (!document.querySelector('link[data-drive-vision-accessibility]')) {
+          const link = document.createElement('link');
+          link.rel = 'stylesheet';
+          link.href = 'css/vision-accessibility.css?v=20260910-1';
+          link.dataset.driveVisionAccessibility = '1';
+          document.head.appendChild(link);
+        }
+
+        const myopiaButton = document.querySelector('.js-set-vision[data-vision="vision-myopia"]');
+        if (!myopiaButton) return;
+
+        myopiaButton.textContent = 'Miopía · lectura clara';
+        myopiaButton.title = 'Prioriza nitidez y contraste; no simula desenfoque';
+        myopiaButton.setAttribute('aria-label', 'Miopía, lectura clara');
+
+        if (!document.querySelector('.js-set-vision[data-vision="vision-presbyopia"]')) {
+          const presbyopiaButton = document.createElement('button');
+          presbyopiaButton.type = 'button';
+          presbyopiaButton.className = 'dropdown-item js-set-vision';
+          presbyopiaButton.dataset.vision = 'vision-presbyopia';
+          presbyopiaButton.textContent = 'Vista cansada';
+          presbyopiaButton.title = 'Aumenta tamaño, espaciado, contraste y áreas táctiles';
+          presbyopiaButton.setAttribute('aria-label', 'Vista cansada, lectura ampliada');
+          myopiaButton.insertAdjacentElement('afterend', presbyopiaButton);
+        }
       }
 
       function installAboutDialog() {
@@ -301,6 +329,7 @@ class EstiloModule {
         }
       });
 
+      installVisionAccessibility();
       installAboutDialog();
       installUsefulLinks();
       loadAiSearchModule();

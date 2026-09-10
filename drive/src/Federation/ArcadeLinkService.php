@@ -32,10 +32,11 @@ final class ArcadeLinkService
         }
 
         $fileId = (int)($file['id_'] ?? 0);
-        if ($userId <= 0 || $fileId <= 0) {
+        $storageRef = trim((string)($file['Encriptado'] ?? ''));
+        if ($userId <= 0 || $fileId <= 0 || $storageRef === '' || strlen($storageRef) > 255) {
             throw new FederationException('Referencia local de recurso inválida.', 500);
         }
-        $resourceId = $this->resourceId($userId, $fileId);
+        $resourceId = $this->resourceIdForStorageRef($userId, $storageRef);
         if ($visibility === 'PRIVATE') {
             $contentId = null;
         } elseif ($contentId !== null && !preg_match('/\Asha256:[a-f0-9]{64}\z/', strtolower($contentId))) {
@@ -60,9 +61,10 @@ final class ArcadeLinkService
         ];
 
         $privatePayload = [
-            'version' => 1,
+            'version' => 2,
             'user_id' => $userId,
             'file_id' => $fileId,
+            'storage_ref' => $storageRef,
             'resource_id' => $resourceId,
         ];
         $aad = FederationCodec::canonicalJson($document);
@@ -158,13 +160,22 @@ final class ArcadeLinkService
             throw new FederationException('Payload ArcadeLink descifrado inválido.');
         }
         if (!is_array($decoded)
-            || (int)($decoded['version'] ?? 0) !== 1
+            || !in_array((int)($decoded['version'] ?? 0), [1, 2], true)
             || (int)($decoded['user_id'] ?? 0) <= 0
             || (int)($decoded['file_id'] ?? 0) <= 0
             || !hash_equals((string)($document['resource_id'] ?? ''), (string)($decoded['resource_id'] ?? ''))) {
             throw new FederationException('Payload ArcadeLink inconsistente.');
         }
-        $expected = $this->resourceId((int)$decoded['user_id'], (int)$decoded['file_id']);
+
+        if ((int)$decoded['version'] === 1) {
+            $expected = $this->resourceId((int)$decoded['user_id'], (int)$decoded['file_id']);
+        } else {
+            $storageRef = trim((string)($decoded['storage_ref'] ?? ''));
+            if ($storageRef === '' || strlen($storageRef) > 255) {
+                throw new FederationException('Referencia estable ArcadeLink inválida.');
+            }
+            $expected = $this->resourceIdForStorageRef((int)$decoded['user_id'], $storageRef);
+        }
         if (!hash_equals($expected, (string)$document['resource_id'])) {
             throw new FederationException('Resource ID ArcadeLink inconsistente.');
         }
@@ -174,6 +185,17 @@ final class ArcadeLinkService
     public function resourceId(int $userId, int $fileId): string
     {
         $message = 'arcadelink:v1:resource:' . $userId . ':' . $fileId;
+        $digest = hash_hmac('sha256', $message, $this->identity->payloadKey(), true);
+        return 'arl_' . FederationCodec::base64UrlEncode(substr($digest, 0, 18));
+    }
+
+    public function resourceIdForStorageRef(int $userId, string $storageRef): string
+    {
+        $storageRef = trim($storageRef);
+        if ($userId <= 0 || $storageRef === '' || strlen($storageRef) > 255) {
+            throw new FederationException('Referencia estable de recurso inválida.', 500);
+        }
+        $message = 'arcadelink:v1:stable-resource:' . $userId . ':' . $storageRef;
         $digest = hash_hmac('sha256', $message, $this->identity->payloadKey(), true);
         return 'arl_' . FederationCodec::base64UrlEncode(substr($digest, 0, 18));
     }

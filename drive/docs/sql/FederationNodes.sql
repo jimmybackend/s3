@@ -2,8 +2,8 @@
 -- Migración puntual. NO importar adbbmis1_Cloud.sql completo en producción.
 
 CREATE TABLE IF NOT EXISTS `FederationNodes` (
-  `NodeId` varchar(64) NOT NULL,
-  `PublicKey` varchar(128) NOT NULL,
+  `NodeId` varchar(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  `PublicKey` varchar(128) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
   `PublicUrl` varchar(512) NOT NULL,
   `FederationUrl` varchar(512) NOT NULL,
   `Status` enum('active','stale','blocked') NOT NULL DEFAULT 'active',

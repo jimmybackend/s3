@@ -1,10 +1,10 @@
 {
   "summary": {
-    "php_total": 234,
+    "php_total": 235,
     "php_class_modules": 145,
     "php_needs_migration": 13,
-    "js_total": 32,
-    "js_class_modules": 31,
+    "js_total": 33,
+    "js_class_modules": 32,
     "js_needs_migration": 7
   },
   "php": [
@@ -228,7 +228,7 @@
     },
     {
       "path": "drive/bloque_footer.php",
-      "lines": 107,
+      "lines": 111,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -478,6 +478,21 @@
     {
       "path": "drive/encriptar_archivo.php",
       "lines": 10,
+      "kind": "thin endpoint",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/federationcloud/create.php",
+      "lines": 13,
       "kind": "thin endpoint",
       "classes": 0,
       "functions": [],
@@ -1785,7 +1800,7 @@
     },
     {
       "path": "drive/src/Federation/FederationService.php",
-      "lines": 125,
+      "lines": 152,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -1935,7 +1950,7 @@
     },
     {
       "path": "drive/src/Http/Controller/FederationController.php",
-      "lines": 204,
+      "lines": 248,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -3611,6 +3626,20 @@
       "kind": "class/module",
       "classes": [
         "DriveAiSearchModule"
+      ],
+      "functions": [],
+      "window_assign": [],
+      "window_func": [],
+      "top_vars": [],
+      "iife": false,
+      "issues": []
+    },
+    {
+      "path": "drive/js/arcadelink-share.js",
+      "lines": 195,
+      "kind": "class/module",
+      "classes": [
+        "ArcadeLinkShareModule"
       ],
       "functions": [],
       "window_assign": [],

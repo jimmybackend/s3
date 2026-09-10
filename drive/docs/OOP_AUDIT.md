@@ -4,11 +4,11 @@
 
 ## Resumen
 
-- PHP analizados: **234**
+- PHP analizados: **235**
 - PHP que ya contienen clases/interfaces: **145**
 - PHP marcados para migración/revisión: **13**
-- JavaScript analizados: **32**
-- JavaScript que ya contienen clases: **31**
+- JavaScript analizados: **33**
+- JavaScript que ya contienen clases: **32**
 - JavaScript marcados para migración/revisión: **7**
 
 ## Criterio
@@ -36,7 +36,7 @@
 | `drive/bin/upload_cleanup.php` | 11 | thin endpoint | 0 | — | — | — | — |
 | `drive/bloque_archivos.php` | 662 | view/entrypoint | 0 | ⚠️ | — | — | — |
 | `drive/bloque_carpetas.php` | 75 | view/entrypoint | 0 | ⚠️ | — | — | — |
-| `drive/bloque_footer.php` | 107 | view/entrypoint | 0 | ⚠️ | — | — | — |
+| `drive/bloque_footer.php` | 111 | view/entrypoint | 0 | ⚠️ | — | — | — |
 | `drive/buscar_archivo.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/comprehend_archivo.php` | 8 | thin endpoint | 0 | — | — | — | — |
 | `drive/costos_aws.php` | 10 | thin endpoint | 0 | — | — | — | — |
@@ -52,6 +52,7 @@
 | `drive/eliminar_archivo.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/eliminar_carpeta.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/encriptar_archivo.php` | 10 | thin endpoint | 0 | — | — | — | — |
+| `drive/federationcloud/create.php` | 13 | thin endpoint | 0 | — | — | — | — |
 | `drive/federationcloud/index.php` | 13 | thin endpoint | 0 | — | — | — | — |
 | `drive/federationcloud/node.php` | 13 | thin endpoint | 0 | — | — | — | — |
 | `drive/federationcloud/nodes.php` | 12 | thin endpoint | 0 | — | — | — | — |
@@ -138,7 +139,7 @@
 | `drive/src/Federation/FederationProviderGrant.php` | 101 | class/module | 1 | — | — | — | — |
 | `drive/src/Federation/FederationResolverService.php` | 185 | class/module | 1 | — | — | — | — |
 | `drive/src/Federation/FederationSeedConfig.php` | 83 | class/module | 1 | — | — | — | — |
-| `drive/src/Federation/FederationService.php` | 125 | class/module | 1 | — | — | — | — |
+| `drive/src/Federation/FederationService.php` | 152 | class/module | 1 | — | — | — | — |
 | `drive/src/Federation/NodeIdentityBackupService.php` | 228 | class/module | 1 | — | — | — | — |
 | `drive/src/Federation/NodeIdentityService.php` | 214 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/BinaryResponse.php` | 85 | class/module | 1 | — | — | — | — |
@@ -148,7 +149,7 @@
 | `drive/src/Http/Controller/AuthController.php` | 94 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/AwsCostController.php` | 61 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/AwsFileController.php` | 325 | class/module | 1 | — | — | — | — |
-| `drive/src/Http/Controller/FederationController.php` | 204 | class/module | 1 | — | — | — | — |
+| `drive/src/Http/Controller/FederationController.php` | 248 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/FederationDirectoryController.php` | 73 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/FederationProviderController.php` | 115 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/FileAccessController.php` | 145 | class/module | 1 | — | — | — | — |
@@ -263,6 +264,7 @@
 |---|---:|---|---|---|---|---|
 | `drive/js/actualizar-hora.js` | 36 | class/module | ActualizarHoraModule | — | — | — |
 | `drive/js/ai-search.js` | 187 | class/module | DriveAiSearchModule | — | — | — |
+| `drive/js/arcadelink-share.js` | 195 | class/module | ArcadeLinkShareModule | — | — | — |
 | `drive/js/archivos.js` | 2155 | class/module | ArchivosModule | — | abrirModalRenombrarArchivo, cerrarModalCompartir, setFileSecurity | window functions: abrirModalRenombrarArchivo, cerrarModalCompartir, setFileSecurity |
 | `drive/js/audiovideo.js` | 619 | class/module | AudiovideoModule | — | audioNext, audioPrev, reproducirVideoDesde, videoNext, videoPlayPause, videoPrev | window functions: audioNext, audioPrev, reproducirVideoDesde, videoNext, videoPlayPause, videoPrev, wavePlayPause |
 | `drive/js/aws-comprehend.js` | 342 | class/module | AwsComprehendModule, AwsFileActionRouter | — | — | — |

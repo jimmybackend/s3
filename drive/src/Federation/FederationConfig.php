@@ -17,6 +17,9 @@ final class FederationConfig
     {
         $publicUrl = self::requiredUrl('ARCADECLOUD_PUBLIC_URL');
         $federationUrl = self::requiredUrl('ARCADECLOUD_FEDERATION_URL');
+        if (strtolower((string)parse_url($federationUrl, PHP_URL_SCHEME)) !== 'https') {
+            throw new FederationException('ARCADECLOUD_FEDERATION_URL debe usar HTTPS.', 500);
+        }
         $identityPath = trim((string)(getenv('ARCADECLOUD_FEDERATION_IDENTITY') ?: ''));
         if ($identityPath === '') {
             $identityPath = '/etc/arcadecloud-drive/federation-node.json';

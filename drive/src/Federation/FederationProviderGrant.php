@@ -81,6 +81,12 @@ final class FederationProviderGrant
                 return false;
             }
             $publicKey = FederationCodec::base64UrlDecode($originPublicKeyEncoded);
+            if (!hash_equals(
+                (string)$unsigned['origin_node_id'],
+                NodeIdentityService::nodeIdFromPublicKey($publicKey)
+            )) {
+                return false;
+            }
             $signatureBytes = FederationCodec::base64UrlDecode((string)$signature['value']);
             return NodeIdentityService::verify(
                 FederationCodec::canonicalJson($unsigned),

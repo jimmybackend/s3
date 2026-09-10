@@ -12,6 +12,7 @@
     "drive/descargar_archivo.php",
     "drive/ec2.php",
     "drive/editor.php",
+    "drive/federationcloud/index.php",
     "drive/guardar_texto.php",
     "drive/index.php",
     "drive/leer_texto.php",
@@ -84,6 +85,9 @@
         "drive/eliminar_archivo.php",
         "drive/eliminar_carpeta.php",
         "drive/encriptar_archivo.php",
+        "drive/federationcloud/index.php",
+        "drive/federationcloud/node.php",
+        "drive/federationcloud/resolve.php",
         "drive/generar_token.php",
         "drive/guardar_texto.php",
         "drive/leer_texto.php",
@@ -139,6 +143,12 @@
         "drive/src/Http/Controller/PersonalAwsController.php",
         "drive/js/estilo.js"
       ]
+    },
+    {
+      "path": "drive/bin/federation_identity_init.php",
+      "size": 1137,
+      "active": false,
+      "references": []
     },
     {
       "path": "drive/bin/sync_worker.php",
@@ -309,6 +319,39 @@
       "active": false,
       "references": [
         "drive/js/archivos.js"
+      ]
+    },
+    {
+      "path": "drive/federationcloud/index.php",
+      "size": 423,
+      "active": true,
+      "references": [
+        "drive/bloque_archivos.php",
+        "drive/bloque_carpetas.php",
+        "drive/s3.php",
+        "drive/src/Http/Controller/ActivityCostController.php",
+        "drive/src/Http/Controller/AuthController.php",
+        "drive/src/Security/SessionManager.php",
+        "drive/src/View/PersonalAwsPageRenderer.php",
+        "drive/up.php"
+      ]
+    },
+    {
+      "path": "drive/federationcloud/node.php",
+      "size": 425,
+      "active": false,
+      "references": [
+        "drive/src/Federation/FederationHttpClient.php",
+        "drive/src/Federation/FederationResolverService.php"
+      ]
+    },
+    {
+      "path": "drive/federationcloud/resolve.php",
+      "size": 428,
+      "active": false,
+      "references": [
+        "drive/src/Federation/FederationHttpClient.php",
+        "drive/src/Federation/FederationResolverService.php"
       ]
     },
     {
@@ -754,6 +797,73 @@
       "references": []
     },
     {
+      "path": "drive/src/Federation/ArcadeLinkService.php",
+      "size": 12182,
+      "active": false,
+      "references": [
+        "drive/tests/federationcloud_smoke.php"
+      ]
+    },
+    {
+      "path": "drive/src/Federation/FederatedResourceRepository.php",
+      "size": 2483,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Federation/FederationCodec.php",
+      "size": 1562,
+      "active": false,
+      "references": [
+        "drive/bin/federation_identity_init.php",
+        "drive/tests/federationcloud_smoke.php"
+      ]
+    },
+    {
+      "path": "drive/src/Federation/FederationConfig.php",
+      "size": 3018,
+      "active": false,
+      "references": [
+        "drive/tests/federationcloud_smoke.php"
+      ]
+    },
+    {
+      "path": "drive/src/Federation/FederationException.php",
+      "size": 373,
+      "active": false,
+      "references": [
+        "drive/bin/federation_identity_init.php",
+        "drive/tests/federationcloud_smoke.php"
+      ]
+    },
+    {
+      "path": "drive/src/Federation/FederationHttpClient.php",
+      "size": 6399,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Federation/FederationResolverService.php",
+      "size": 8154,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Federation/FederationService.php",
+      "size": 4429,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Federation/NodeIdentityService.php",
+      "size": 6339,
+      "active": false,
+      "references": [
+        "drive/bin/federation_identity_init.php",
+        "drive/tests/federationcloud_smoke.php"
+      ]
+    },
+    {
       "path": "drive/src/Http/BinaryResponse.php",
       "size": 3650,
       "active": false,
@@ -792,6 +902,12 @@
     {
       "path": "drive/src/Http/Controller/AwsFileController.php",
       "size": 10970,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Http/Controller/FederationController.php",
+      "size": 9627,
       "active": false,
       "references": []
     },
@@ -1168,6 +1284,12 @@
       "references": []
     },
     {
+      "path": "drive/src/View/FederationPageRenderer.php",
+      "size": 8283,
+      "active": false,
+      "references": []
+    },
+    {
       "path": "drive/src/View/FileIconResolver.php",
       "size": 5461,
       "active": false,
@@ -1248,6 +1370,12 @@
     {
       "path": "drive/tests/activity_costs_smoke.php",
       "size": 3980,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/tests/federationcloud_smoke.php",
+      "size": 3206,
       "active": false,
       "references": []
     },

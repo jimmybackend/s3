@@ -206,6 +206,38 @@ CREATE TABLE IF NOT EXISTS `FileS3` (
 -- --------------------------------------------------------
 
 --
+-- Estructura de tabla para la tabla `DriveActivityEvents`
+--
+
+DROP TABLE IF EXISTS `DriveActivityEvents`;
+CREATE TABLE IF NOT EXISTS `DriveActivityEvents` (
+  `id_` bigint UNSIGNED NOT NULL AUTO_INCREMENT,
+  `user_id_` int NOT NULL,
+  `actor_user_id_` int NOT NULL,
+  `Action` varchar(64) NOT NULL,
+  `Service` varchar(64) NOT NULL,
+  `FileId` int DEFAULT NULL,
+  `UnitsJson` text DEFAULT NULL,
+  `EstimatedCost` decimal(20,10) DEFAULT NULL,
+  `Currency` char(3) NOT NULL DEFAULT 'USD',
+  `PriceSource` varchar(255) NOT NULL,
+  `PricingState` varchar(16) NOT NULL DEFAULT 'unpriced',
+  `Status` varchar(16) NOT NULL DEFAULT 'ok',
+  `DurationMs` int UNSIGNED DEFAULT NULL,
+  `CorrelationId` varchar(96) DEFAULT NULL,
+  `MetadataJson` text DEFAULT NULL,
+  `CreatedAt` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id_`),
+  KEY `idx_drive_activity_user_date` (`user_id_`,`CreatedAt`),
+  KEY `idx_drive_activity_user_service_date` (`user_id_`,`Service`,`CreatedAt`),
+  KEY `idx_drive_activity_user_action_date` (`user_id_`,`Action`,`CreatedAt`),
+  KEY `idx_drive_activity_actor_date` (`actor_user_id_`,`CreatedAt`),
+  UNIQUE KEY `uq_drive_activity_correlation` (`user_id_`,`Action`,`Service`,`CorrelationId`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Estructura de tabla para la tabla `FileVersions`
 --
 

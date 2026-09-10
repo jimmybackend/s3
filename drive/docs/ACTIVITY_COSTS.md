@@ -35,13 +35,15 @@ Los entrypoints permanecen delgados. No se agregó un nuevo objeto monolítico y
 
 ## Base de datos
 
-La migración incremental es:
+`DriveActivityEvents` forma parte del esquema maestro:
 
 ```text
-drive/database/migrations/20260910_activity_costs.sql
+adbbmis1_Cloud.sql
 ```
 
-Crea `DriveActivityEvents`. Los campos almacenan identidad de usuario/actor, operación, servicio, referencia opcional a `FileS3.id_`, unidades de consumo, costo estimado, moneda, origen de precio, estado de tasación, estado de la operación, duración opcional, correlación hash y metadatos mínimos.
+Una instalación nueva de ArcadeCloud Drive crea esta tabla al cargar el SQL general, junto con el resto del esquema. No existe un paso de migración incremental separado para Actividad y costos.
+
+Los campos almacenan identidad de usuario/actor, operación, servicio, referencia opcional a `FileS3.id_`, unidades de consumo, costo estimado, moneda, origen de precio, estado de tasación, estado de la operación, duración opcional, correlación hash y metadatos mínimos.
 
 Índices principales:
 
@@ -52,7 +54,7 @@ Crea `DriveActivityEvents`. Los campos almacenan identidad de usuario/actor, ope
 
 La tabla no contiene la key física S3, presigned URLs, tokens, credenciales, contraseñas, TOTP ni IDs de sesión.
 
-El repositorio histórico no tenía un runner incremental de migraciones. Para este cambio se incorpora `drive/bin/db_migrate.php`, que sólo lee SQL versionado desde `drive/database/migrations/`. En producción debe invocarse con el nombre exacto de esta migración. La migración es idempotente mediante `CREATE TABLE IF NOT EXISTS`.
+Para una instalación limpia se importa `adbbmis1_Cloud.sql` una sola vez. Las instalaciones existentes que ya tengan `DriveActivityEvents` no necesitan volver a crearla.
 
 ## Multiusuario y autorización
 

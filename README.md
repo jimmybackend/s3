@@ -83,6 +83,8 @@ La página incluye filtros por período, servicio y operación, desgloses diario
 
 Los precios de atribución están desacoplados en `drive/config/activity-cost-pricing.json`. Las unidades que no pueden tasarse con suficiente precisión se marcan como parciales o no tasadas en vez de inventar un costo.
 
+La tabla `DriveActivityEvents` forma parte del esquema base `adbbmis1_Cloud.sql`; una instalación nueva crea el módulo de actividad junto con el resto de la base de datos, sin ejecutar una migración incremental separada.
+
 Consulta `drive/docs/ACTIVITY_COSTS.md`.
 
 ### Multimedia
@@ -214,13 +216,10 @@ s3/
     ├── api/
     │   └── upload.php
     ├── bin/
-    │   ├── db_migrate.php
     │   ├── sync_worker.php
     │   └── upload_cleanup.php
     ├── config/
     ├── css/
-    ├── database/
-    │   └── migrations/
     ├── js/
     ├── docs/
     ├── src/

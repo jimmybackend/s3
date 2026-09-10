@@ -173,8 +173,8 @@ class EstiloModule {
                   titular de esa cuenta.
                 </p>
 
-                <div class="card mb-3">
-                  <div class="card-body py-3">
+                <div class="alert alert-info mb-3">
+                  <div class="py-1">
                     <h6 class="mb-2"><i class="fas fa-diagram-project mr-1"></i> Ecosistema jimmybackend</h6>
                     <p class="mb-2">
                       ArcadeCloud Drive está diseñado para convivir e integrarse con otros proyectos
@@ -182,9 +182,9 @@ class EstiloModule {
                       configura así, MiChat y ArcadeCloud Drive pueden compartir la misma base MySQL.
                     </p>
                     <ul class="mb-0 pl-4">
-                      <li><a href="https://github.com/jimmybackend/michat" target="_blank" rel="noopener noreferrer">MiChat</a> — chat e integración con Amazon Bedrock.</li>
-                      <li><a href="https://github.com/jimmybackend/MCMA-OpenMemory" target="_blank" rel="noopener noreferrer">MCMA-OpenMemory</a> — memoria artificial y recuperación de conocimiento.</li>
-                      <li><a href="https://github.com/jimmybackend/s3" target="_blank" rel="noopener noreferrer">ArcadeCloud Drive</a> — navegación MySQL y almacenamiento físico en Amazon S3.</li>
+                      <li><a href="https://github.com/jimmybackend/michat" target="_blank" rel="noopener noreferrer" style="color:#111 !important;text-decoration:underline;">MiChat</a> — chat e integración con Amazon Bedrock.</li>
+                      <li><a href="https://github.com/jimmybackend/MCMA-OpenMemory" target="_blank" rel="noopener noreferrer" style="color:#111 !important;text-decoration:underline;">MCMA-OpenMemory</a> — memoria artificial y recuperación de conocimiento.</li>
+                      <li><a href="https://github.com/jimmybackend/s3" target="_blank" rel="noopener noreferrer" style="color:#111 !important;text-decoration:underline;">ArcadeCloud Drive</a> — navegación MySQL y almacenamiento físico en Amazon S3.</li>
                     </ul>
                   </div>
                 </div>
@@ -196,11 +196,11 @@ class EstiloModule {
                   y agradeceremos que su origen no se pierda con el tiempo.
                 </p>
 
-                <div class="card">
-                  <div class="card-body py-3">
+                <div class="alert alert-info mb-0">
+                  <div class="py-1">
                     <div><strong>Proyecto / autor:</strong> jimmybackend</div>
-                    <div><strong>Contacto:</strong> <a href="mailto:jimmybackend@gmail.com">jimmybackend@gmail.com</a></div>
-                    <div><strong>Soporte:</strong> <a href="mailto:soporte@esforzados.com">soporte@esforzados.com</a></div>
+                    <div><strong>Contacto:</strong> <a href="mailto:jimmybackend@gmail.com" style="color:#111 !important;text-decoration:underline;">jimmybackend@gmail.com</a></div>
+                    <div><strong>Soporte:</strong> <a href="mailto:soporte@esforzados.com" style="color:#111 !important;text-decoration:underline;">soporte@esforzados.com</a></div>
                     <div><strong>Licencia:</strong> GNU GPL v3.0</div>
                   </div>
                 </div>

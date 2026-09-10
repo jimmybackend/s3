@@ -1,6 +1,6 @@
 # ArcadeLink v1 + FederationCloud
 
-Estado: fase 1 funcional de pasaporte/resolución + fase 1.1 de descubrimiento de nodos + continuidad de identidad. No incluye P2P, buscador global, OAuth ni replicación automática.
+Estado: fase 1 funcional de pasaporte/resolución + fase 1.1 de descubrimiento de nodos + continuidad de identidad + fase 1.2 de proveedores autorizados. No incluye P2P, buscador global, OAuth ni replicación automática.
 
 ## Contrato v1
 
@@ -95,6 +95,44 @@ El primer registro liga el Node ID a su clave, nombre y URLs. Los registros post
 
 Los nodos no-seed se anuncian al seed al consultar su directorio. Si el seed no está disponible, el nodo conserva operación local y el endpoint responde en modo degradado con su propio nodo; no se bloquea la navegación del Drive.
 
+## Proveedores autorizados
+
+Un nodo registrado no obtiene permiso para servir recursos de otro nodo. La identidad y la autorización son capas separadas.
+
+Ejemplo:
+
+```text
+Nodo origen:     jimmybackend / drive.esforzados.com
+Nodo proveedor:  fastdrive / fastdrive.esforzados.com
+```
+
+El proveedor solicita autorización desde su propio servidor con `drive/bin/federation_provider_request.php`. El comando envía su descriptor firmado a `POST /federationcloud/provider-request.php` del origen. El nodo origen no confía sólo en el POST: valida la firma, consulta directamente el `node.php` del candidato usando el cliente protegido contra SSRF y exige coincidencia de Node ID, nombre, clave pública y URLs.
+
+Una solicitud válida se registra como `pending` en `FederationNodeAuthorizations`. No se convierte en proveedor activo automáticamente.
+
+En el Drive, únicamente una sesión con rol `Administración` puede consultar `GET /federationcloud/provider-admin.php` y decidir por `POST` con token CSRF. El footer muestra `Solicitudes: N` y abre un modal con:
+
+- solicitudes pendientes: `Aprobar` o `Rechazar`;
+- proveedores activos: `Revocar autorización`.
+
+Al aprobar, el nodo origen genera una autorización Ed25519 sobre el vínculo exacto `OriginNodeId + ProviderNodeId + Role + Scope`. La firma se guarda como `OriginSignature`. Alterar proveedor, rol o alcance invalida esa autorización.
+
+`GET /federationcloud/providers.php` es público y devuelve únicamente proveedores con `Status=active`, junto con la autorización firmada del origen. No publica solicitudes pendientes, rechazadas, revocadas ni bloqueadas.
+
+Roles soportados:
+
+- `provider`: servidor autorizado para proporcionar recursos permitidos por el origen;
+- `mirror`: reservado para una fase posterior con copia/replicación física verificada.
+
+Alcances soportados:
+
+- `all_allowed_resources`: todos los recursos cuya política permita ser servidos por proveedores;
+- `selected_resources`: preparado para autorización granular posterior.
+
+Ser proveedor no concede permisos de escritura sobre MySQL ni S3. Un servidor como `fastdrive.esforzados.com` debe empezar como ruta de lectura/descarga. Puede usar el mismo bucket S3 y la misma fuente de metadatos autorizada sin duplicar los objetos físicos, pero las operaciones de modificación siguen perteneciendo al Drive/origen y a sus permisos normales.
+
+Esta fase crea la confianza entre nodos. La selección durante una descarga (`drive.esforzados.com` frente a `fastdrive.esforzados.com`) se implementará sobre `FederatedResources` y `FederationResourceLocations`; todavía no se anuncia una ubicación de descarga alternativa por recurso.
+
 ## Recuperación del mismo nodo
 
 El contenido almacenado en S3 y la identidad FederationCloud son cosas distintas. S3 conserva los archivos, pero para que una reinstalación siga siendo exactamente el mismo nodo deben restaurarse también las mismas llaves de `/etc/arcadecloud-drive/federation-node.json`.
@@ -110,13 +148,17 @@ El respaldo cifra la identidad con una frase de recuperación leída desde un ar
 
 Para continuidad completa de enlaces nuevos después de reconstruir MySQL: restaurar la identidad, reconstruir `FileS3` desde la información persistente y conservar `Encriptado`. El resolver v2 puede encontrar el recurso por esa referencia aunque haya cambiado `id_`. Los ArcadeLink antiguos de payload v1 siguen funcionando mientras se conserve su `file_id`; no se puede retroactivamente añadir `storage_ref` a un enlace ya firmado.
 
-## Tabla FederationNodes
+## Tablas FederationCloud
 
-`FederationNodes` forma parte del esquema central `adbbmis1_Cloud.sql`; no existe un archivo SQL auxiliar que actúe como segunda fuente de verdad.
+`FederationNodes` y `FederationNodeAuthorizations` forman parte del esquema central `adbbmis1_Cloud.sql`; no existe un archivo SQL auxiliar que actúe como segunda fuente de verdad.
 
-Campos persistidos: `NodeId`, `NodeName`, `PublicKey`, `PublicUrl`, `FederationUrl`, `Status`, `FirstSeen`, `LastSeen`.
+`FederationNodes` persiste `NodeId`, `NodeName`, `PublicKey`, `PublicUrl`, `FederationUrl`, `Status`, `FirstSeen` y `LastSeen`.
 
-`NodeId` y `PublicKey` usan `ascii_bin` porque Base64URL distingue mayúsculas y minúsculas. `NodeName` usa ASCII case-insensitive y un índice único para impedir variantes confusas como nombres equivalentes por mayúsculas/minúsculas. En una instalación nueva la tabla se crea al importar el esquema central. En una producción existente se ejecuta manualmente sólo el DDL puntual necesario; nunca se reimporta el dump maestro completo sobre una base activa.
+`FederationNodeAuthorizations` persiste la relación entre nodo origen y proveedor: `OriginNodeId`, `ProviderNodeId`, `Role`, `Scope`, `Status`, `OriginSignature`, `RequestedAt`, `AuthorizedAt`, `LastSeen` y `RevokedAt`. La combinación origen/proveedor es única.
+
+Los Node ID y firmas usan comparaciones ASCII binarias cuando corresponde porque Base64URL distingue mayúsculas y minúsculas. `NodeName` usa ASCII case-insensitive y un índice único para impedir variantes confusas como nombres equivalentes por mayúsculas/minúsculas.
+
+En una instalación nueva las tablas se crean al importar el esquema central. En una producción existente se ejecuta manualmente sólo el DDL puntual necesario; nunca se reimporta el dump maestro completo sobre una base activa.
 
 ## Apertura local
 
@@ -132,25 +174,28 @@ Para usuarios autenticados se registran en `DriveActivityEvents`:
 
 Las operaciones sin costo AWS directo usan la unidad existente `drive.no_direct_aws_charge=1`. Las peticiones anónimas no se atribuyen a un usuario ficticio.
 
-## Seguridad del registro
+## Seguridad del registro y solicitudes
 
-`register.php` sólo acepta POST JSON de hasta 64 KiB. Los descriptores deben estar firmados y el seed verifica activamente el endpoint anunciado mediante el cliente FederationCloud protegido contra SSRF. Para exposición pública se recomienda además rate limiting en Nginx/ALB sobre `/federationcloud/register.php`; esta protección perimetral no se sustituye por la validación criptográfica.
+`register.php` y `provider-request.php` aceptan payloads JSON limitados. Los descriptores deben estar firmados y el nodo receptor verifica activamente el endpoint anunciado mediante el cliente FederationCloud protegido contra SSRF. `provider-admin.php` exige sesión `Administración` y CSRF para decisiones mutables.
+
+Para exposición pública se recomienda además rate limiting en Nginx/ALB sobre `/federationcloud/register.php` y `/federationcloud/provider-request.php`; esta protección perimetral no se sustituye por la validación criptográfica.
 
 ## Diseño persistente posterior
 
 Implementado ahora:
 
 1. `FederationNodes`: Node ID, nombre firmado, clave pública, URLs, estado y fechas de observación.
-2. Continuidad ArcadeLink: payload v2 con referencia estable cifrada y compatibilidad con payload v1.
+2. `FederationNodeAuthorizations`: solicitudes y autorizaciones firmadas origen→proveedor.
+3. Continuidad ArcadeLink: payload v2 con referencia estable cifrada y compatibilidad con payload v1.
 
 Pendiente para fases posteriores:
 
-3. `FederatedResources`: Resource ID, nodo origen, metadatos públicos, SHA-256 nullable, visibilidad, derechos, procedencia, versión/firma y estado.
-4. `FederationResourceLocations`: relación `origin|mirror` entre recurso/contenido y nodos que anuncian una ubicación, con última verificación.
-5. `FederationLocalBindings`: binding explícita `resource_id -> user_id_ + FileS3.id_` para ciclo de vida y revocación futura.
+4. `FederatedResources`: Resource ID, nodo origen, metadatos públicos, SHA-256 nullable, visibilidad, derechos, procedencia, versión/firma y estado.
+5. `FederationResourceLocations`: relación `origin|provider|mirror` entre recurso/contenido y nodos que anuncian una ubicación, con última verificación.
+6. `FederationLocalBindings`: binding explícita `resource_id -> user_id_ + FileS3.id_` para ciclo de vida y revocación futura.
 
 Reglas: PRIVATE nunca tendrá fingerprint público; toda binding local conservará `user_id_`; `FileS3` seguirá siendo fuente de verdad local; no se duplicarán `Nombre`, `Ruta` o `Encriptado` como autoridad. Las instalaciones nuevas se describen siempre en el esquema central; las bases ya desplegadas reciben sólo el DDL puntual necesario y nunca una reimportación completa del dump maestro.
 
 ## Siguiente fase
 
-Pendiente: índice público de recursos, mirror lookup por SHA-256, copia autorizada/Guardar en mi Drive, OAuth para nubes externas, revocación persistente y registro administrable de confianza. P2P/BitTorrent sigue fuera de esta etapa.
+Pendiente: selección de proveedor por recurso, índice público de recursos, mirror lookup por SHA-256, copia autorizada/Guardar en mi Drive, OAuth para nubes externas y revocación administrable de ubicaciones. P2P/BitTorrent sigue fuera de esta etapa.

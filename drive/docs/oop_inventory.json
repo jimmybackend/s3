@@ -1,8 +1,8 @@
 {
   "summary": {
-    "php_total": 221,
-    "php_class_modules": 140,
-    "php_needs_migration": 8,
+    "php_total": 225,
+    "php_class_modules": 141,
+    "php_needs_migration": 11,
     "js_total": 32,
     "js_class_modules": 31,
     "js_needs_migration": 7
@@ -86,8 +86,53 @@
       "issues": []
     },
     {
+      "path": "drive/bin/federation_identity_backup.php",
+      "lines": 49,
+      "kind": "procedural endpoint",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
       "path": "drive/bin/federation_identity_init.php",
-      "lines": 29,
+      "lines": 33,
+      "kind": "procedural endpoint",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/bin/federation_identity_name.php",
+      "lines": 35,
+      "kind": "procedural endpoint",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/bin/federation_identity_restore.php",
+      "lines": 48,
       "kind": "procedural endpoint",
       "classes": 0,
       "functions": [],
@@ -1470,7 +1515,7 @@
     },
     {
       "path": "drive/src/Federation/ArcadeLinkService.php",
-      "lines": 260,
+      "lines": 282,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -1485,7 +1530,7 @@
     },
     {
       "path": "drive/src/Federation/FederatedResourceRepository.php",
-      "lines": 73,
+      "lines": 91,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -1530,7 +1575,7 @@
     },
     {
       "path": "drive/src/Federation/FederationDirectoryService.php",
-      "lines": 129,
+      "lines": 137,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -1575,7 +1620,7 @@
     },
     {
       "path": "drive/src/Federation/FederationNodeDescriptorValidator.php",
-      "lines": 96,
+      "lines": 108,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -1590,7 +1635,7 @@
     },
     {
       "path": "drive/src/Federation/FederationNodeRepository.php",
-      "lines": 73,
+      "lines": 139,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -1605,7 +1650,7 @@
     },
     {
       "path": "drive/src/Federation/FederationResolverService.php",
-      "lines": 160,
+      "lines": 185,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -1649,8 +1694,23 @@
       "issues": []
     },
     {
+      "path": "drive/src/Federation/NodeIdentityBackupService.php",
+      "lines": 228,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
       "path": "drive/src/Federation/NodeIdentityService.php",
-      "lines": 156,
+      "lines": 214,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -2951,7 +3011,7 @@
     },
     {
       "path": "drive/tests/federation_directory_smoke.php",
-      "lines": 71,
+      "lines": 102,
       "kind": "procedural endpoint",
       "classes": 0,
       "functions": [
@@ -2970,11 +3030,12 @@
     },
     {
       "path": "drive/tests/federationcloud_smoke.php",
-      "lines": 90,
+      "lines": 146,
       "kind": "procedural endpoint",
       "classes": 0,
       "functions": [
-        "ok"
+        "ok",
+        "legacyDocument"
       ],
       "session": false,
       "superglobals": [],
@@ -2984,7 +3045,7 @@
       "html": false,
       "namespace": false,
       "issues": [
-        "global functions: ok"
+        "global functions: ok, legacyDocument"
       ]
     },
     {
@@ -3634,7 +3695,7 @@
     },
     {
       "path": "drive/js/federation-footer.js",
-      "lines": 64,
+      "lines": 65,
       "kind": "class/module",
       "classes": [
         "FederationFooterModule"

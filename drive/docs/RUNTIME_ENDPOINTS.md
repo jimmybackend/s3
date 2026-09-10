@@ -47,7 +47,10 @@
 | Archivo | Referencias encontradas |
 |---|---|
 | `drive/actualizar_ruta.php` | `drive/js/carpetas.js`, `drive/js/obtenerFiltros.js` |
+| `drive/bin/federation_identity_backup.php` | ninguna |
 | `drive/bin/federation_identity_init.php` | ninguna |
+| `drive/bin/federation_identity_name.php` | ninguna |
+| `drive/bin/federation_identity_restore.php` | ninguna |
 | `drive/bin/sync_worker.php` | `drive/src/Http/Controller/SyncController.php` |
 | `drive/bin/upload_cleanup.php` | `drive/src/Http/Controller/UploadCleanupController.php` |
 | `drive/buscar_archivo.php` | `drive/js/ai-search.js`, `drive/js/archivos.js` |
@@ -123,17 +126,18 @@
 | `drive/src/Core/DriveApplication.php` | ninguna |
 | `drive/src/Federation/ArcadeLinkService.php` | `drive/tests/federationcloud_smoke.php` |
 | `drive/src/Federation/FederatedResourceRepository.php` | ninguna |
-| `drive/src/Federation/FederationCodec.php` | `drive/bin/federation_identity_init.php`, `drive/tests/federation_directory_smoke.php`, `drive/tests/federationcloud_smoke.php` |
+| `drive/src/Federation/FederationCodec.php` | `drive/bin/federation_identity_backup.php`, `drive/bin/federation_identity_init.php`, `drive/bin/federation_identity_name.php`, `drive/bin/federation_identity_restore.php`, `drive/tests/federation_directory_smoke.php`, `drive/tests/federationcloud_smoke.php` |
 | `drive/src/Federation/FederationConfig.php` | `drive/tests/federation_directory_smoke.php`, `drive/tests/federationcloud_smoke.php` |
 | `drive/src/Federation/FederationDirectoryService.php` | ninguna |
-| `drive/src/Federation/FederationException.php` | `drive/bin/federation_identity_init.php`, `drive/tests/federation_directory_smoke.php`, `drive/tests/federationcloud_smoke.php` |
+| `drive/src/Federation/FederationException.php` | `drive/bin/federation_identity_backup.php`, `drive/bin/federation_identity_init.php`, `drive/bin/federation_identity_name.php`, `drive/bin/federation_identity_restore.php`, `drive/tests/federation_directory_smoke.php`, `drive/tests/federationcloud_smoke.php` |
 | `drive/src/Federation/FederationHttpClient.php` | ninguna |
 | `drive/src/Federation/FederationNodeDescriptorValidator.php` | `drive/tests/federation_directory_smoke.php` |
 | `drive/src/Federation/FederationNodeRepository.php` | ninguna |
 | `drive/src/Federation/FederationResolverService.php` | ninguna |
 | `drive/src/Federation/FederationSeedConfig.php` | `drive/tests/federation_directory_smoke.php` |
 | `drive/src/Federation/FederationService.php` | ninguna |
-| `drive/src/Federation/NodeIdentityService.php` | `drive/bin/federation_identity_init.php`, `drive/tests/federation_directory_smoke.php`, `drive/tests/federationcloud_smoke.php` |
+| `drive/src/Federation/NodeIdentityBackupService.php` | `drive/bin/federation_identity_backup.php`, `drive/bin/federation_identity_restore.php`, `drive/tests/federation_directory_smoke.php` |
+| `drive/src/Federation/NodeIdentityService.php` | `drive/bin/federation_identity_backup.php`, `drive/bin/federation_identity_init.php`, `drive/bin/federation_identity_name.php`, `drive/bin/federation_identity_restore.php`, `drive/tests/federation_directory_smoke.php`, `drive/tests/federationcloud_smoke.php` |
 | `drive/src/Http/BinaryResponse.php` | ninguna |
 | `drive/src/Http/ByteRange.php` | ninguna |
 | `drive/src/Http/Controller/AbstractJsonController.php` | ninguna |

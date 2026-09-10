@@ -1,5 +1,6 @@
 {
   "active": [
+    "drive/activity_costs.php",
     "drive/api/upload.php",
     "drive/app_bootstrap.php",
     "drive/aws.php",
@@ -26,6 +27,15 @@
   ],
   "rows": [
     {
+      "path": "drive/activity_costs.php",
+      "size": 257,
+      "active": true,
+      "references": [
+        "drive/bloque_carpetas.php",
+        "drive/src/View/ActivityCostPageRenderer.php"
+      ]
+    },
+    {
       "path": "drive/actualizar_ruta.php",
       "size": 264,
       "active": false,
@@ -51,9 +61,11 @@
       "size": 1640,
       "active": true,
       "references": [
+        "drive/activity_costs.php",
         "drive/actualizar_ruta.php",
         "drive/api/upload.php",
         "drive/aws.php",
+        "drive/bin/db_migrate.php",
         "drive/bin/sync_worker.php",
         "drive/bin/upload_cleanup.php",
         "drive/bloque_archivos.php",
@@ -129,6 +141,12 @@
       ]
     },
     {
+      "path": "drive/bin/db_migrate.php",
+      "size": 234,
+      "active": false,
+      "references": []
+    },
+    {
       "path": "drive/bin/sync_worker.php",
       "size": 2672,
       "active": false,
@@ -160,7 +178,7 @@
     },
     {
       "path": "drive/bloque_carpetas.php",
-      "size": 2439,
+      "size": 2681,
       "active": true,
       "references": [
         "drive/s3.php",
@@ -323,6 +341,7 @@
         "drive/bloque_archivos.php",
         "drive/bloque_carpetas.php",
         "drive/s3.php",
+        "drive/src/Http/Controller/ActivityCostController.php",
         "drive/src/Http/Controller/AuthController.php",
         "drive/src/Security/SessionManager.php",
         "drive/src/View/PersonalAwsPageRenderer.php",
@@ -485,6 +504,7 @@
       "references": [
         "drive/app_bootstrap.php",
         "drive/src/Http/Controller/AuthController.php",
+        "drive/src/View/ActivityCostPageRenderer.php",
         "drive/src/View/PersonalAwsPageRenderer.php",
         "drive/js/archivos.js",
         "drive/js/carpetas.js",
@@ -498,6 +518,30 @@
       "references": [
         "drive/js/archivos.js"
       ]
+    },
+    {
+      "path": "drive/src/Activity/ActivityCostRecorder.php",
+      "size": 5467,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Activity/ActivityCostRepository.php",
+      "size": 6704,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Activity/ActivityCostService.php",
+      "size": 5556,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Activity/AwsUnitPriceCatalog.php",
+      "size": 2316,
+      "active": false,
+      "references": []
     },
     {
       "path": "drive/src/Application/AiFileSearchService.php",
@@ -549,7 +593,7 @@
     },
     {
       "path": "drive/src/Application/FolderMutationService.php",
-      "size": 7677,
+      "size": 8396,
       "active": false,
       "references": []
     },
@@ -597,13 +641,13 @@
     },
     {
       "path": "drive/src/Aws/AwsCostService.php",
-      "size": 3101,
+      "size": 4598,
       "active": false,
       "references": []
     },
     {
       "path": "drive/src/Aws/ComprehendFileService.php",
-      "size": 7376,
+      "size": 8639,
       "active": false,
       "references": []
     },
@@ -663,7 +707,7 @@
     },
     {
       "path": "drive/src/Aws/PollyFileService.php",
-      "size": 4646,
+      "size": 4919,
       "active": false,
       "references": []
     },
@@ -681,7 +725,7 @@
     },
     {
       "path": "drive/src/Aws/TextractFileService.php",
-      "size": 2935,
+      "size": 3257,
       "active": false,
       "references": []
     },
@@ -693,7 +737,13 @@
     },
     {
       "path": "drive/src/Aws/TranslateFileService.php",
-      "size": 2352,
+      "size": 2890,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Console/SqlMigrationCommand.php",
+      "size": 2207,
       "active": false,
       "references": []
     },
@@ -734,6 +784,12 @@
       "references": []
     },
     {
+      "path": "drive/src/Http/Controller/ActivityCostController.php",
+      "size": 2313,
+      "active": false,
+      "references": []
+    },
+    {
       "path": "drive/src/Http/Controller/AuthController.php",
       "size": 2622,
       "active": false,
@@ -741,19 +797,19 @@
     },
     {
       "path": "drive/src/Http/Controller/AwsCostController.php",
-      "size": 1053,
+      "size": 2217,
       "active": false,
       "references": []
     },
     {
       "path": "drive/src/Http/Controller/AwsFileController.php",
-      "size": 3427,
+      "size": 10970,
       "active": false,
       "references": []
     },
     {
       "path": "drive/src/Http/Controller/FileAccessController.php",
-      "size": 3712,
+      "size": 6142,
       "active": false,
       "references": []
     },
@@ -765,7 +821,7 @@
     },
     {
       "path": "drive/src/Http/Controller/FileMutationController.php",
-      "size": 4149,
+      "size": 5389,
       "active": false,
       "references": []
     },
@@ -783,7 +839,7 @@
     },
     {
       "path": "drive/src/Http/Controller/FolderMutationController.php",
-      "size": 5582,
+      "size": 7936,
       "active": false,
       "references": []
     },
@@ -795,7 +851,7 @@
     },
     {
       "path": "drive/src/Http/Controller/LegacyUploadController.php",
-      "size": 4461,
+      "size": 5689,
       "active": false,
       "references": []
     },
@@ -807,7 +863,7 @@
     },
     {
       "path": "drive/src/Http/Controller/MoveJobController.php",
-      "size": 6922,
+      "size": 10059,
       "active": false,
       "references": []
     },
@@ -843,7 +899,7 @@
     },
     {
       "path": "drive/src/Http/Controller/ShareController.php",
-      "size": 2728,
+      "size": 3367,
       "active": false,
       "references": []
     },
@@ -867,13 +923,13 @@
     },
     {
       "path": "drive/src/Http/Controller/ThumbnailController.php",
-      "size": 2668,
+      "size": 3775,
       "active": false,
       "references": []
     },
     {
       "path": "drive/src/Http/Controller/TranscriptionController.php",
-      "size": 1323,
+      "size": 4629,
       "active": false,
       "references": []
     },
@@ -885,7 +941,7 @@
     },
     {
       "path": "drive/src/Http/Controller/UploadController.php",
-      "size": 3128,
+      "size": 9270,
       "active": false,
       "references": []
     },
@@ -1112,6 +1168,12 @@
       "references": []
     },
     {
+      "path": "drive/src/View/ActivityCostPageRenderer.php",
+      "size": 17271,
+      "active": false,
+      "references": []
+    },
+    {
       "path": "drive/src/View/Ec2PanelHelper.php",
       "size": 2076,
       "active": false,
@@ -1194,6 +1256,12 @@
       "references": [
         "drive/js/sincronizar.js"
       ]
+    },
+    {
+      "path": "drive/tests/activity_costs_smoke.php",
+      "size": 3980,
+      "active": false,
+      "references": []
     },
     {
       "path": "drive/thumb.php",

@@ -45,20 +45,29 @@ final class FederationService
     {
         $this->ensureEnabled();
         $file = $this->resources->requireOwnedFile($userId, $fileId);
-        $document = $this->links->create(
-            $file,
-            $userId,
-            $this->resources->contentId($file),
-            $this->resources->mediaType($file),
-            $visibility,
-            $rights
-        );
-        return [
-            'document' => $document,
-            'content' => $this->links->encode($document),
-            'filename' => $this->links->suggestedFilename($document),
-            'file_id' => (int)$file['id_'],
-        ];
+        return $this->createLinkForFile($file, $userId, $visibility, $rights);
+    }
+
+    public function createLinkByStorageRef(int $userId, string $storageRef, string $visibility, string $rights): array
+    {
+        $this->ensureEnabled();
+        $storageRef = str_replace('\\', '/', trim($storageRef));
+        if ($storageRef === '') {
+            throw new FederationException('Referencia de archivo ausente.', 400);
+        }
+        $slash = strrpos($storageRef, '/');
+        if ($slash !== false) {
+            $storageRef = substr($storageRef, $slash + 1);
+        }
+        $storageRef = trim($storageRef);
+        if ($storageRef === '') {
+            throw new FederationException('Referencia de archivo inválida.', 400);
+        }
+        $file = $this->resources->findOwnedFileByStorageRef($userId, $storageRef);
+        if ($file === null) {
+            throw new FederationException('Archivo no encontrado para este usuario.', 404);
+        }
+        return $this->createLinkForFile($file, $userId, $visibility, $rights);
     }
 
     public function inspect(string $raw, int $viewerUserId = 0): array
@@ -111,6 +120,24 @@ final class FederationService
     public function config(): FederationConfig
     {
         return $this->config;
+    }
+
+    private function createLinkForFile(array $file, int $userId, string $visibility, string $rights): array
+    {
+        $document = $this->links->create(
+            $file,
+            $userId,
+            $this->resources->contentId($file),
+            $this->resources->mediaType($file),
+            $visibility,
+            $rights
+        );
+        return [
+            'document' => $document,
+            'content' => $this->links->encode($document),
+            'filename' => $this->links->suggestedFilename($document),
+            'file_id' => (int)$file['id_'],
+        ];
     }
 
     private function shareType(string $mediaType): string

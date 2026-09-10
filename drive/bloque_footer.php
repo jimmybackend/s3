@@ -25,6 +25,7 @@ if ($isFederationAdmin) {
 
 $e = static fn(string $value): string => htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 $federationFooterJs = __DIR__ . '/js/federation-footer.js';
+$arcadeLinkShareJs = __DIR__ . '/js/arcadelink-share.js';
 ?>
 <footer class="drive-footer">
   <div class="text-muted small drive-footer-route">
@@ -103,4 +104,7 @@ $federationFooterJs = __DIR__ . '/js/federation-footer.js';
 
 <?php if (is_file($federationFooterJs)): ?>
 <script src="js/federation-footer.js?v=<?= (int) filemtime($federationFooterJs) ?>"></script>
+<?php endif; ?>
+<?php if (is_file($arcadeLinkShareJs)): ?>
+<script src="js/arcadelink-share.js?v=<?= (int) filemtime($arcadeLinkShareJs) ?>"></script>
 <?php endif; ?>

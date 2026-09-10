@@ -244,6 +244,7 @@ CREATE TABLE IF NOT EXISTS `DriveActivityEvents` (
 DROP TABLE IF EXISTS `FederationNodes`;
 CREATE TABLE IF NOT EXISTS `FederationNodes` (
   `NodeId` varchar(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  `NodeName` varchar(64) CHARACTER SET ascii COLLATE ascii_general_ci DEFAULT NULL,
   `PublicKey` varchar(128) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
   `PublicUrl` varchar(512) NOT NULL,
   `FederationUrl` varchar(512) NOT NULL,
@@ -251,6 +252,7 @@ CREATE TABLE IF NOT EXISTS `FederationNodes` (
   `FirstSeen` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `LastSeen` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`NodeId`),
+  UNIQUE KEY `uq_federation_nodes_name` (`NodeName`),
   KEY `idx_federation_nodes_status_last_seen` (`Status`,`LastSeen`),
   KEY `idx_federation_nodes_federation_url` (`FederationUrl`(191))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

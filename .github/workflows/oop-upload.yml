@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - 'refactor/**'
+      - 'fix/**'
     paths:
       - 'drive/api/upload.php'
       - 'drive/upload.php'
@@ -89,7 +90,9 @@ jobs:
           grep -q 'PublicSharedBrowserRepository' drive/src/Core/DriveApplication.php
           grep -q 'uploadDestinationService' drive/src/Http/Controller/UploadController.php
           grep -q 'local_put' drive/src/Http/Controller/UploadController.php
-          grep -q 's3Manager' drive/src/Http/Controller/LegacyUploadController.php
+          ! grep -q 's3Manager' drive/src/Http/Controller/LegacyUploadController.php
+          grep -q 'singleUploadService' drive/src/Http/Controller/LegacyUploadController.php
+          grep -q 'uploadFactory' drive/src/Http/Controller/LegacyUploadController.php
           grep -q 'publicDropzoneUploadService' drive/src/Http/Controller/PublicUploadController.php
           grep -q 'publicSharedBrowserService' drive/src/Http/Controller/PublicSharedBrowserController.php
           grep -q 'RUTA_COMPARTIDA' drive/src/Core/DriveApplication.php

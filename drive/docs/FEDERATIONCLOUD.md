@@ -103,11 +103,11 @@ El footer carga este estado de forma asíncrona con `drive/js/federation-footer.
 
 ## Tabla FederationNodes
 
-La fase 1.1 materializa la primera tabla federada. La migración puntual está en `drive/docs/sql/FederationNodes.sql`.
+La fase 1.1 materializa la primera tabla federada. `FederationNodes` forma parte del esquema central `adbbmis1_Cloud.sql`; no existe un archivo SQL auxiliar que actúe como segunda fuente de verdad.
 
 Campos persistidos: `NodeId`, `PublicKey`, `PublicUrl`, `FederationUrl`, `Status`, `FirstSeen`, `LastSeen`.
 
-En una producción existente se ejecuta únicamente esa migración específica; nunca se reimporta el dump maestro completo.
+`NodeId` y `PublicKey` usan `ascii_bin` porque Base64URL distingue mayúsculas y minúsculas. En una instalación nueva la tabla se crea al importar el esquema central. En una producción existente se ejecuta manualmente únicamente el `CREATE TABLE IF NOT EXISTS FederationNodes` correspondiente; nunca se reimporta el dump maestro completo sobre una base activa.
 
 ## Apertura local
 
@@ -139,7 +139,7 @@ Pendiente para fases posteriores:
 3. `FederationResourceLocations`: relación `origin|mirror` entre recurso/contenido y nodos que anuncian una ubicación, con última verificación.
 4. `FederationLocalBindings`: binding explícita `resource_id -> user_id_ + FileS3.id_` para ciclo de vida y revocación futura.
 
-Reglas: PRIVATE nunca tendrá fingerprint público; toda binding local conservará `user_id_`; `FileS3` seguirá siendo fuente de verdad local; no se duplicarán `Nombre`, `Ruta` o `Encriptado` como autoridad. Para una producción existente se entregan sólo los `CREATE TABLE`/`ALTER` puntuales, nunca una reimportación del dump maestro.
+Reglas: PRIVATE nunca tendrá fingerprint público; toda binding local conservará `user_id_`; `FileS3` seguirá siendo fuente de verdad local; no se duplicarán `Nombre`, `Ruta` o `Encriptado` como autoridad. Las instalaciones nuevas se describen siempre en el esquema central; las bases ya desplegadas reciben sólo el DDL puntual necesario y nunca una reimportación completa del dump maestro.
 
 ## Siguiente fase
 

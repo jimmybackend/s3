@@ -17,7 +17,7 @@ on:
       - 'drive/tests/federationcloud_smoke.php'
       - 'drive/tests/federation_directory_smoke.php'
       - 'drive/docs/FEDERATIONCLOUD.md'
-      - 'drive/docs/sql/FederationNodes.sql'
+      - 'adbbmis1_Cloud.sql'
       - 'drive/bloque_footer.php'
       - 'drive/js/federation-footer.js'
       - '.github/workflows/federationcloud.yml'
@@ -33,7 +33,7 @@ on:
       - 'drive/tests/federationcloud_smoke.php'
       - 'drive/tests/federation_directory_smoke.php'
       - 'drive/docs/FEDERATIONCLOUD.md'
-      - 'drive/docs/sql/FederationNodes.sql'
+      - 'adbbmis1_Cloud.sql'
       - 'drive/bloque_footer.php'
       - 'drive/js/federation-footer.js'
       - '.github/workflows/federationcloud.yml'
@@ -79,6 +79,7 @@ jobs:
           grep -q "CURLOPT_FOLLOWLOCATION => false" drive/src/Federation/FederationHttpClient.php
           grep -q "CURLOPT_RESOLVE" drive/src/Federation/FederationHttpClient.php
           grep -q "https://drive.esforzados.com/federationcloud/" drive/config/federation-seeds.json
+          grep -q 'CREATE TABLE IF NOT EXISTS `FederationNodes`' adbbmis1_Cloud.sql
           ! grep -R "drive.esforzados.com" drive/src/Federation
           ! grep -R -E '(AKIA[0-9A-Z]{16}|BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY|aws_secret_access_key[[:space:]]*=)' drive/src/Federation drive/federationcloud drive/bin/federation_identity_init.php drive/tests/federationcloud_smoke.php drive/tests/federation_directory_smoke.php
           ! grep -R "s3.amazonaws.com" drive/src/Federation drive/federationcloud

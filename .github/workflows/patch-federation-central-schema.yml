@@ -1,0 +1,84 @@
+name: Patch FederationNodes into central schema
+
+on:
+  push:
+    branches:
+      - 'fix/federationnodes-central-schema'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/federationnodes-central-schema
+
+      - name: Patch central SQL schema
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 <<'PY'
+          from pathlib import Path
+
+          schema = Path('adbbmis1_Cloud.sql')
+          text = schema.read_text(encoding='utf-8')
+
+          table_block = r'''-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `FederationNodes`
+--
+
+DROP TABLE IF EXISTS `FederationNodes`;
+CREATE TABLE IF NOT EXISTS `FederationNodes` (
+  `NodeId` varchar(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  `PublicKey` varchar(128) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  `PublicUrl` varchar(512) NOT NULL,
+  `FederationUrl` varchar(512) NOT NULL,
+  `Status` enum('active','stale','blocked') NOT NULL DEFAULT 'active',
+  `FirstSeen` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `LastSeen` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`NodeId`),
+  KEY `idx_federation_nodes_status_last_seen` (`Status`,`LastSeen`),
+  KEY `idx_federation_nodes_federation_url` (`FederationUrl`(191))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+'''
+
+          if 'CREATE TABLE IF NOT EXISTS `FederationNodes`' not in text:
+              marker = '--\n-- Estructura de tabla para la tabla `FileVersions`\n--\n'
+              pos = text.find(marker)
+              if pos < 0:
+                  raise SystemExit('No se encontró el marcador FileVersions en adbbmis1_Cloud.sql')
+              separator = text.rfind('-- --------------------------------------------------------', 0, pos)
+              if separator < 0:
+                  raise SystemExit('No se encontró separador antes de FileVersions')
+              text = text[:separator] + table_block + text[separator:]
+              schema.write_text(text, encoding='utf-8')
+
+          migration = Path('drive/docs/sql/FederationNodes.sql')
+          if migration.exists():
+              migration.unlink()
+
+          workflow = Path('.github/workflows/patch-federation-central-schema.yml')
+          if workflow.exists():
+              workflow.unlink()
+          PY
+
+          git diff --check
+          grep -q 'CREATE TABLE IF NOT EXISTS `FederationNodes`' adbbmis1_Cloud.sql
+          test ! -e drive/docs/sql/FederationNodes.sql
+
+      - name: Commit central schema change
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'fix: keep FederationNodes in central schema'
+          git push origin HEAD:fix/federationnodes-central-schema

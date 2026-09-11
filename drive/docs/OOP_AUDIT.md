@@ -4,9 +4,9 @@
 
 ## Resumen
 
-- PHP analizados: **268**
-- PHP que ya contienen clases/interfaces: **165**
-- PHP marcados para migración/revisión: **21**
+- PHP analizados: **284**
+- PHP que ya contienen clases/interfaces: **173**
+- PHP marcados para migración/revisión: **22**
 - JavaScript analizados: **37**
 - JavaScript que ya contienen clases: **36**
 - JavaScript marcados para migración/revisión: **7**
@@ -28,11 +28,13 @@
 | `drive/app_bootstrap.php` | 53 | procedural endpoint | 0 | — | ⚠️ | — | DB in endpoint |
 | `drive/aws.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/bin/arcadecloud-drive-admin-helper.php` | 294 | procedural endpoint | 0 | — | — | — | global functions: fail, isRoot, base64UrlEncode, requireServerOperator, base64UrlDecode, nodeIdFromPublicKey, normalizeNodeName, readConfig |
+| `drive/bin/federation_catalog_migrate.php` | 35 | thin endpoint | 0 | — | — | — | — |
 | `drive/bin/federation_identity_backup.php` | 49 | procedural endpoint | 0 | — | — | — | — |
 | `drive/bin/federation_identity_init.php` | 33 | procedural endpoint | 0 | — | — | — | — |
 | `drive/bin/federation_identity_name.php` | 35 | procedural endpoint | 0 | — | — | — | — |
 | `drive/bin/federation_identity_restore.php` | 48 | procedural endpoint | 0 | — | — | — | — |
 | `drive/bin/federation_provider_request.php` | 86 | procedural endpoint | 0 | — | — | — | — |
+| `drive/bin/federation_sync.php` | 34 | thin endpoint | 0 | — | — | — | — |
 | `drive/bin/sync_worker.php` | 113 | endpoint with logic | 0 | — | — | — | — |
 | `drive/bin/upload_cleanup.php` | 11 | thin endpoint | 0 | — | — | — | — |
 | `drive/bloque_archivos.php` | 662 | view/entrypoint | 0 | ⚠️ | — | — | — |
@@ -64,6 +66,11 @@
 | `drive/federationcloud/providers.php` | 11 | thin endpoint | 0 | — | — | — | — |
 | `drive/federationcloud/register.php` | 12 | thin endpoint | 0 | — | — | — | — |
 | `drive/federationcloud/resolve.php` | 13 | thin endpoint | 0 | — | — | — | — |
+| `drive/federationcloud/resource.php` | 11 | thin endpoint | 0 | — | — | — | — |
+| `drive/federationcloud/search.php` | 11 | thin endpoint | 0 | — | — | — | — |
+| `drive/federationcloud/sync-pull.php` | 11 | thin endpoint | 0 | — | — | — | — |
+| `drive/federationcloud/sync-push.php` | 11 | thin endpoint | 0 | — | — | — | — |
+| `drive/federationcloud/sync-status.php` | 11 | thin endpoint | 0 | — | — | — | — |
 | `drive/generar_token.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/guardar_texto.php` | 8 | thin endpoint | 0 | — | — | — | — |
 | `drive/index.php` | 87 | view/entrypoint | 0 | — | — | — | — |
@@ -137,21 +144,28 @@
 | `drive/src/Core/ApplicationKernel.php` | 38 | class/module | 1 | — | — | — | — |
 | `drive/src/Core/DriveApplication.php` | 488 | class/module | 1 | — | — | ⚠️ | — |
 | `drive/src/Federation/ArcadeLinkService.php` | 282 | class/module | 1 | — | — | — | — |
+| `drive/src/Federation/FederatedCatalogRepository.php` | 367 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Federation/FederatedResourceRepository.php` | 117 | class/module | 1 | — | ⚠️ | — | — |
+| `drive/src/Federation/FederationCatalogService.php` | 188 | class/module | 1 | — | — | — | — |
 | `drive/src/Federation/FederationCodec.php` | 54 | class/module | 1 | — | — | — | — |
 | `drive/src/Federation/FederationConfig.php` | 89 | class/module | 1 | — | — | — | — |
 | `drive/src/Federation/FederationDirectoryService.php` | 151 | class/module | 1 | — | — | — | — |
+| `drive/src/Federation/FederationEventCodec.php` | 115 | class/module | 1 | — | — | — | — |
+| `drive/src/Federation/FederationEventStore.php` | 288 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Federation/FederationException.php` | 20 | class/module | 1 | — | — | — | — |
-| `drive/src/Federation/FederationHttpClient.php` | 152 | class/module | 1 | — | — | — | — |
+| `drive/src/Federation/FederationGossipService.php` | 119 | class/module | 1 | — | — | — | — |
+| `drive/src/Federation/FederationHttpClient.php` | 157 | class/module | 1 | — | — | — | — |
 | `drive/src/Federation/FederationNodeAdminService.php` | 213 | class/module | 1 | — | — | — | — |
 | `drive/src/Federation/FederationNodeDescriptorValidator.php` | 108 | class/module | 1 | — | — | — | — |
 | `drive/src/Federation/FederationNodeRepository.php` | 166 | class/module | 1 | — | ⚠️ | — | — |
+| `drive/src/Federation/FederationPeerSyncRepository.php` | 125 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Federation/FederationProviderAuthorizationRepository.php` | 215 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Federation/FederationProviderAuthorizationService.php` | 233 | class/module | 1 | — | — | — | — |
 | `drive/src/Federation/FederationProviderGrant.php` | 101 | class/module | 1 | — | — | — | — |
 | `drive/src/Federation/FederationResolverService.php` | 185 | class/module | 1 | — | — | — | — |
 | `drive/src/Federation/FederationSeedConfig.php` | 83 | class/module | 1 | — | — | — | — |
-| `drive/src/Federation/FederationService.php` | 146 | class/module | 1 | — | — | — | — |
+| `drive/src/Federation/FederationService.php` | 174 | class/module | 1 | — | — | — | — |
+| `drive/src/Federation/FederationSyncConfig.php` | 36 | class/module | 1 | — | — | — | — |
 | `drive/src/Federation/NodeIdentityBackupService.php` | 228 | class/module | 1 | — | — | — | — |
 | `drive/src/Federation/NodeIdentityService.php` | 294 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/BinaryResponse.php` | 85 | class/module | 1 | — | — | — | — |
@@ -161,6 +175,7 @@
 | `drive/src/Http/Controller/AuthController.php` | 94 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/AwsCostController.php` | 61 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/AwsFileController.php` | 325 | class/module | 1 | — | — | — | — |
+| `drive/src/Http/Controller/FederationCatalogController.php` | 144 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/FederationController.php` | 248 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/FederationDirectoryController.php` | 85 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/FederationNodeAdminController.php` | 46 | class/module | 1 | — | — | — | — |
@@ -255,6 +270,7 @@
 | `drive/sync_s3_to_db.php` | 5 | thin endpoint | 0 | — | — | — | — |
 | `drive/sync_status.php` | 5 | thin endpoint | 0 | — | — | — | — |
 | `drive/tests/activity_costs_smoke.php` | 79 | view/entrypoint | 0 | — | — | — | global functions: check |
+| `drive/tests/federation_catalog_event_smoke.php` | 60 | procedural endpoint | 0 | — | — | — | global functions: fedCatalogOk |
 | `drive/tests/federation_directory_smoke.php` | 102 | procedural endpoint | 0 | — | — | — | global functions: directoryOk |
 | `drive/tests/federation_node_name_admin_smoke.php` | 91 | procedural endpoint | 0 | — | — | — | — |
 | `drive/tests/federation_provider_smoke.php` | 76 | procedural endpoint | 0 | — | — | — | global functions: providerOk |

@@ -6,6 +6,7 @@ on:
       - main
       - 'feat/superadmin-node-provisioning-server-settings'
       - 'feat/superadmin-db-aws-settings'
+      - 'feat/superadmin-temporary-reauth'
     paths:
       - 'drive/app_bootstrap.php'
       - 'drive/server-settings.php'
@@ -109,9 +110,15 @@ jobs:
           grep -q "set_group" drive/src/Http/Controller/ServerSettingsAdminController.php
           grep -q "btnSaveServerAdminGroup" drive/js/server-admin.js
           grep -q "password_verify" drive/src/Security/SuperAdminReauthenticationService.php
+          grep -q "TTL_SECONDS = 600" drive/src/Security/SuperAdminReauthenticationService.php
+          grep -q "requireRecent" drive/src/Security/SuperAdminReauthenticationService.php drive/src/Admin/ServerSettingsAdminService.php
+          grep -q "reauth_required" drive/src/Security/SuperAdminReauthenticationService.php drive/js/server-admin.js
+          grep -q "superadmin_reauth_expires_at" drive/src/Security/SuperAdminReauthenticationService.php
+          ! grep -Eq '(localStorage|sessionStorage)' drive/js/server-admin.js
           grep -q "SuperAdminReauthenticationService" drive/src/Admin/ServerSettingsAdminService.php
           grep -q "X-Server-Admin-CSRF" drive/js/server-admin.js
           grep -q "system_role = superadmin" drive/docs/SUPERADMIN_SERVER_SETTINGS.md
+          grep -q "10 minutos" drive/docs/SUPERADMIN_SERVER_SETTINGS.md
           grep -q "NOPASSWD: %s" drive/bin/install_arcadecloud_admin_helper.sh
           grep -q "/usr/local/sbin/arcadecloud-drive-admin" drive/bin/install_arcadecloud_admin_helper.sh
           grep -q "name-availability.php" drive/src/Federation/FederationHttpClient.php

@@ -14,6 +14,27 @@ final class FederationNodeRepository
     {
     }
 
+    public function assertNodeNameAvailable(string $nodeName, string $nodeId): void
+    {
+        $stmt = $this->db->prepare(
+            'SELECT NodeId FROM FederationNodes WHERE NodeName = ? AND NodeId <> ? LIMIT 1'
+        );
+        if (!$stmt) {
+            throw new FederationException('No se pudo validar la disponibilidad del nombre FederationCloud.', 500);
+        }
+        $stmt->bind_param('ss', $nodeName, $nodeId);
+        if (!$stmt->execute()) {
+            $message = $stmt->error;
+            $stmt->close();
+            throw new FederationException('No se pudo validar el nombre FederationCloud: ' . $message, 500);
+        }
+        $row = $stmt->get_result()->fetch_assoc();
+        $stmt->close();
+        if (is_array($row)) {
+            throw new FederationException('Ese nombre FederationCloud ya pertenece a otro Node ID.', 409);
+        }
+    }
+
     public function upsertVerified(array $descriptor): void
     {
         $nodeId = (string)$descriptor['node_id'];
@@ -39,16 +60,13 @@ final class FederationNodeRepository
                 }
             }
 
-            $existingName = is_string($existing['NodeName'] ?? null) && $existing['NodeName'] !== ''
-                ? (string)$existing['NodeName']
-                : null;
-            if ($existingName !== null && $nodeName !== null && !hash_equals($existingName, $nodeName)) {
-                throw new FederationException('El Node ID ya está ligado a otro nombre de nodo.', 409);
+            if ($nodeName !== null) {
+                $this->assertNodeNameAvailable($nodeName, $nodeId);
             }
 
             $stmt = $this->db->prepare(
                 "UPDATE FederationNodes
-                 SET NodeName = COALESCE(NodeName, ?), Status = 'active', LastSeen = UTC_TIMESTAMP()
+                 SET NodeName = COALESCE(?, NodeName), Status = 'active', LastSeen = UTC_TIMESTAMP()
                  WHERE NodeId = ? LIMIT 1"
             );
             if (!$stmt) {
@@ -66,6 +84,10 @@ final class FederationNodeRepository
             }
             $stmt->close();
             return;
+        }
+
+        if ($nodeName !== null) {
+            $this->assertNodeNameAvailable($nodeName, $nodeId);
         }
 
         $stmt = $this->db->prepare(

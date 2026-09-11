@@ -9,6 +9,7 @@ use ArcadeCloud\Drive\Core\ApplicationKernel;
 $sqlPaths = [
     dirname(__DIR__) . '/sql/federation_global_catalog.sql',
     dirname(__DIR__) . '/sql/federation_access_shares.sql',
+    dirname(__DIR__) . '/sql/federation_replicas.sql',
 ];
 $parts = [];
 foreach ($sqlPaths as $sqlPath) {
@@ -39,4 +40,4 @@ if ($db->errno) {
     exit(1);
 }
 
-echo "OK: catálogo global, solicitudes privadas y Shares FederationCloud instalados/actualizados.\n";
+echo "OK: catálogo global, solicitudes privadas, Shares y réplicas FederationCloud instalados/actualizados.\n";

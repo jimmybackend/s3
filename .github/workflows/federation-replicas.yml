@@ -1,0 +1,99 @@
+name: FederationCloud replicas validation
+
+on:
+  push:
+    branches:
+      - main
+      - 'feat/federation-replica-mirrors'
+    paths:
+      - 'drive/federationcloud/replica*.php'
+      - 'drive/src/Federation/FederationReplica*.php'
+      - 'drive/src/Federation/FederationLocationSelector.php'
+      - 'drive/src/Federation/FederationCatalogService.php'
+      - 'drive/src/Federation/FederationHttpClient.php'
+      - 'drive/src/Http/Controller/FederationReplicaController.php'
+      - 'drive/src/View/FederationPortalRenderer.php'
+      - 'drive/js/federation-portal.js'
+      - 'drive/bin/federation_sync.php'
+      - 'drive/bin/federation_catalog_migrate.php'
+      - 'drive/sql/federation_replicas.sql'
+      - 'drive/tests/federation_replica_smoke.php'
+      - 'drive/docs/FEDERATION_REPLICAS.md'
+      - '.github/workflows/federation-replicas.yml'
+  pull_request:
+    paths:
+      - 'drive/federationcloud/replica*.php'
+      - 'drive/src/Federation/FederationReplica*.php'
+      - 'drive/src/Federation/FederationLocationSelector.php'
+      - 'drive/src/Federation/FederationCatalogService.php'
+      - 'drive/src/Federation/FederationHttpClient.php'
+      - 'drive/src/Http/Controller/FederationReplicaController.php'
+      - 'drive/src/View/FederationPortalRenderer.php'
+      - 'drive/js/federation-portal.js'
+      - 'drive/bin/federation_sync.php'
+      - 'drive/bin/federation_catalog_migrate.php'
+      - 'drive/sql/federation_replicas.sql'
+      - 'drive/tests/federation_replica_smoke.php'
+      - 'drive/docs/FEDERATION_REPLICAS.md'
+      - '.github/workflows/federation-replicas.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate PHP syntax
+        run: |
+          set -euo pipefail
+          php -l drive/src/Federation/FederationLocationSelector.php
+          php -l drive/src/Federation/FederationReplicaMessageCodec.php
+          php -l drive/src/Federation/FederationReplicaRepository.php
+          php -l drive/src/Federation/FederationReplicaDownloader.php
+          php -l drive/src/Federation/FederationReplicaService.php
+          php -l drive/src/Federation/FederationReplicaResolverService.php
+          php -l drive/src/Federation/FederationCatalogService.php
+          php -l drive/src/Federation/FederationHttpClient.php
+          php -l drive/src/Http/Controller/FederationReplicaController.php
+          php -l drive/src/View/FederationPortalRenderer.php
+          php -l drive/federationcloud/replica.php
+          php -l drive/federationcloud/replica-offer.php
+          php -l drive/federationcloud/replica-resolve.php
+          php -l drive/federationcloud/replica-open.php
+          php -l drive/bin/federation_sync.php
+          php -l drive/bin/federation_catalog_migrate.php
+          php -l drive/tests/federation_replica_smoke.php
+
+      - name: Validate portal JavaScript
+        run: node --check drive/js/federation-portal.js
+
+      - name: Signed replica smoke test
+        run: php drive/tests/federation_replica_smoke.php
+
+      - name: Replica security and architecture guards
+        run: |
+          set -euo pipefail
+          grep -q 'FederationReplicaJobs' drive/sql/federation_replicas.sql
+          grep -q 'FederationReplicaObjects' drive/sql/federation_replicas.sql
+          grep -q 'all_allowed_resources' drive/src/Federation/FederationReplicaMessageCodec.php
+          grep -q 'copy_allowed' drive/src/Federation/FederationReplicaService.php
+          grep -q 'MAX_BYTES = 5368709120' drive/src/Federation/FederationReplicaDownloader.php
+          grep -q 'CURLOPT_FOLLOWLOCATION => false' drive/src/Federation/FederationReplicaDownloader.php
+          grep -q 'FILTER_FLAG_NO_PRIV_RANGE' drive/src/Federation/FederationReplicaDownloader.php
+          grep -q 'amazonaws' drive/src/Federation/FederationReplicaDownloader.php
+          grep -q 'SourceFile' drive/src/Federation/FederationReplicaService.php
+          grep -q 'location.upsert' drive/src/Federation/FederationReplicaService.php
+          grep -q "syncPending(3, 2)" drive/bin/federation_sync.php
+          grep -q "replica-offer.php" drive/src/Federation/FederationHttpClient.php
+          grep -q "replica-resolve.php" drive/src/Federation/FederationHttpClient.php
+          grep -q "preferred_location" drive/src/Federation/FederationCatalogService.php drive/js/federation-portal.js
+          grep -q "replica-open.php" drive/js/federation-portal.js
+          ! grep -q 'FederationEvents' drive/src/Federation/FederationReplicaRepository.php
+          ! grep -Eq '(DB_PASSWORD|AWS_SECRET_ACCESS_KEY|ARCADECLOUD_SMTP_PASSWORD)' drive/src/Federation/FederationReplicaMessageCodec.php drive/src/Federation/FederationReplicaService.php
+
+      - name: Diff whitespace check
+        run: git diff --check

@@ -8,6 +8,8 @@ use ArcadeCloud\Drive\Federation\FederationException;
 use ArcadeCloud\Drive\Federation\FederationNodeAdminService;
 use ArcadeCloud\Drive\Http\JsonResponse;
 use ArcadeCloud\Drive\Http\Request;
+use ArcadeCloud\Drive\Security\SuperAdminReauthenticationService;
+use InvalidArgumentException;
 use Throwable;
 
 final class FederationNodeAdminController
@@ -32,17 +34,16 @@ final class FederationNodeAdminController
                 JsonResponse::send(['ok' => false, 'error' => 'Token CSRF inválido. Recarga el Drive.'], 403);
             }
 
+            (new SuperAdminReauthenticationService($this->app))->verify($this->request->postString('current_password'));
             $action = strtolower(trim($this->request->postString('action', 'rename')));
-            if ($action === 'create') {
-                JsonResponse::send($service->createNode($this->request->postString('node_name')));
-            }
-            if ($action === 'rename') {
-                JsonResponse::send($service->renameNode($this->request->postString('node_name')));
-            }
+            if ($action === 'create') JsonResponse::send($service->createNode($this->request->postString('node_name')));
+            if ($action === 'rename') JsonResponse::send($service->renameNode($this->request->postString('node_name')));
             JsonResponse::send(['ok' => false, 'error' => 'Acción administrativa de nodo no permitida.'], 400);
+        } catch (InvalidArgumentException $e) {
+            JsonResponse::send(['ok' => false, 'error' => $e->getMessage()], 403);
         } catch (FederationException $e) {
             JsonResponse::send(['ok' => false, 'error' => $e->getMessage()], $e->httpStatus());
-        } catch (Throwable $e) {
+        } catch (Throwable) {
             JsonResponse::send(['ok' => false, 'error' => 'No se pudo administrar la identidad del nodo.'], 500);
         }
     }

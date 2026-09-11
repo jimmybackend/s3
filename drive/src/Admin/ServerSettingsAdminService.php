@@ -4,8 +4,7 @@ declare(strict_types=1);
 namespace ArcadeCloud\Drive\Admin;
 
 use ArcadeCloud\Drive\Core\DriveApplication;
-use ArcadeCloud\Drive\Security\AuthenticationRepository;
-use InvalidArgumentException;
+use ArcadeCloud\Drive\Security\SuperAdminReauthenticationService;
 use RuntimeException;
 use Throwable;
 
@@ -36,7 +35,7 @@ final class ServerSettingsAdminService
 
     public function set(string $name, string $value, string $currentPassword): array
     {
-        $this->requireCurrentSuperAdminPassword($currentPassword);
+        (new SuperAdminReauthenticationService($this->app))->verify($currentPassword);
         $value = ManagedRuntimeEnvironment::validateValue($name, $value);
         if (!$this->helper->available()) {
             $runtime = $this->runtimeUser();
@@ -60,21 +59,6 @@ final class ServerSettingsAdminService
         ];
     }
 
-    private function requireCurrentSuperAdminPassword(string $password): void
-    {
-        if ($password === '') throw new InvalidArgumentException('Confirma tu contraseña de superusuario.');
-        $session = $this->app->session();
-        $email = trim($session->userName());
-        if ($email === '') throw new InvalidArgumentException('La sesión no contiene un usuario válido.');
-
-        $row = (new AuthenticationRepository($this->app->db()))->findUserByEmail($email);
-        $hash = is_array($row) ? (string)($row['password'] ?? '') : '';
-        $role = is_array($row) ? (string)($row['system_role'] ?? '') : '';
-        if ($hash === '' || !hash_equals('superadmin', $role) || !password_verify($password, $hash)) {
-            throw new InvalidArgumentException('Contraseña de superusuario incorrecta.');
-        }
-    }
-
     private function audit(string $name): void
     {
         try {
@@ -90,9 +74,7 @@ final class ServerSettingsAdminService
             $stmt->bind_param('isss', $userId, $action, $ip, $details);
             $stmt->execute();
             $stmt->close();
-        } catch (Throwable) {
-            // La auditoría no debe imprimir secretos ni convertir un cambio válido en una fuga de información.
-        }
+        } catch (Throwable) {}
     }
 
     private function runtimeUser(): string

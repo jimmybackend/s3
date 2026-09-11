@@ -857,7 +857,7 @@
     },
     {
       "path": "drive/src/Aws/SesEmailService.php",
-      "size": 3370,
+      "size": 791,
       "active": false,
       "references": []
     },
@@ -1264,6 +1264,20 @@
       "references": []
     },
     {
+      "path": "drive/src/Mail/SmtpConfig.php",
+      "size": 3826,
+      "active": false,
+      "references": [
+        "drive/tests/smtp_config_smoke.php"
+      ]
+    },
+    {
+      "path": "drive/src/Mail/SmtpEmailService.php",
+      "size": 8610,
+      "active": false,
+      "references": []
+    },
+    {
       "path": "drive/src/Media/MediaPlaylistRepository.php",
       "size": 1198,
       "active": false,
@@ -1569,7 +1583,7 @@
     },
     {
       "path": "drive/src/View/UserProfileModalRenderer.php",
-      "size": 8188,
+      "size": 8494,
       "active": false,
       "references": []
     },
@@ -1630,6 +1644,12 @@
     {
       "path": "drive/tests/federationcloud_smoke.php",
       "size": 5661,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/tests/smtp_config_smoke.php",
+      "size": 1342,
       "active": false,
       "references": []
     },

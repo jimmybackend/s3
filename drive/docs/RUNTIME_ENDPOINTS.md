@@ -184,6 +184,8 @@
 | `drive/src/Http/Controller/UserProfileController.php` | ninguna |
 | `drive/src/Http/JsonResponse.php` | ninguna |
 | `drive/src/Http/Request.php` | ninguna |
+| `drive/src/Mail/SmtpConfig.php` | `drive/tests/smtp_config_smoke.php` |
+| `drive/src/Mail/SmtpEmailService.php` | ninguna |
 | `drive/src/Media/MediaPlaylistRepository.php` | ninguna |
 | `drive/src/Media/MediaPlaylistService.php` | ninguna |
 | `drive/src/Media/ThumbnailService.php` | ninguna |
@@ -244,6 +246,7 @@
 | `drive/tests/federation_directory_smoke.php` | ninguna |
 | `drive/tests/federation_provider_smoke.php` | ninguna |
 | `drive/tests/federationcloud_smoke.php` | ninguna |
+| `drive/tests/smtp_config_smoke.php` | ninguna |
 | `drive/tests/user_identity_presenter_smoke.php` | ninguna |
 | `drive/tests/user_profile_validator_smoke.php` | ninguna |
 | `drive/token_audio.php` | `drive/src/Sharing/ShareLinkService.php` |

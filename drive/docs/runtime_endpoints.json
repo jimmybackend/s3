@@ -99,6 +99,7 @@
         "drive/federationcloud/node-admin.php",
         "drive/federationcloud/node.php",
         "drive/federationcloud/nodes.php",
+        "drive/federationcloud/portal.php",
         "drive/federationcloud/provider-admin.php",
         "drive/federationcloud/provider-request.php",
         "drive/federationcloud/providers.php",
@@ -408,7 +409,9 @@
       "path": "drive/federationcloud/access.php",
       "size": 331,
       "active": false,
-      "references": []
+      "references": [
+        "drive/js/federation-portal.js"
+      ]
     },
     {
       "path": "drive/federationcloud/create.php",
@@ -472,6 +475,14 @@
       ]
     },
     {
+      "path": "drive/federationcloud/portal.php",
+      "size": 354,
+      "active": false,
+      "references": [
+        "drive/js/arcadelink-share.js"
+      ]
+    },
+    {
       "path": "drive/federationcloud/provider-admin.php",
       "size": 336,
       "active": false,
@@ -526,7 +537,9 @@
       "path": "drive/federationcloud/search.php",
       "size": 335,
       "active": false,
-      "references": []
+      "references": [
+        "drive/js/federation-portal.js"
+      ]
     },
     {
       "path": "drive/federationcloud/sync-pull.php",
@@ -749,6 +762,7 @@
         "drive/src/Http/Controller/AuthController.php",
         "drive/src/View/ActivityCostPageRenderer.php",
         "drive/src/View/FederationPageRenderer.php",
+        "drive/src/View/FederationPortalRenderer.php",
         "drive/src/View/PersonalAwsPageRenderer.php",
         "drive/js/archivos.js",
         "drive/js/carpetas.js",
@@ -1350,7 +1364,7 @@
     },
     {
       "path": "drive/src/Http/Controller/FederationController.php",
-      "size": 11474,
+      "size": 12041,
       "active": false,
       "references": []
     },
@@ -1363,6 +1377,12 @@
     {
       "path": "drive/src/Http/Controller/FederationNodeAdminController.php",
       "size": 2304,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Http/Controller/FederationPortalController.php",
+      "size": 968,
       "active": false,
       "references": []
     },
@@ -1831,6 +1851,12 @@
     {
       "path": "drive/src/View/FederationPageRenderer.php",
       "size": 9465,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/View/FederationPortalRenderer.php",
+      "size": 7873,
       "active": false,
       "references": []
     },

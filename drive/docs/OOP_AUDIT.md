@@ -109,7 +109,7 @@
 | `drive/src/Activity/AwsUnitPriceCatalog.php` | 81 | class/module | 1 | — | — | — | — |
 | `drive/src/Admin/ManagedRuntimeEnvironment.php` | 213 | class/module | 1 | — | — | — | — |
 | `drive/src/Admin/PrivilegedServerHelper.php` | 123 | class/module | 1 | — | — | — | — |
-| `drive/src/Admin/ServerSettingsAdminService.php` | 208 | class/module | 1 | — | ⚠️ | — | — |
+| `drive/src/Admin/ServerSettingsAdminService.php` | 211 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Application/AiFileSearchService.php` | 470 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Application/DrivePageService.php` | 40 | class/module | 1 | — | — | — | — |
 | `drive/src/Application/DrivePageViewModel.php` | 18 | class/module | 1 | — | — | — | — |
@@ -228,7 +228,7 @@
 | `drive/src/Security/PasswordChangeService.php` | 141 | class/module | 1 | — | — | — | — |
 | `drive/src/Security/PersonalToolAccessService.php` | 53 | class/module | 1 | — | — | — | — |
 | `drive/src/Security/SessionManager.php` | 149 | class/module | 1 | ⚠️ | — | — | — |
-| `drive/src/Security/SuperAdminReauthenticationService.php` | 31 | class/module | 1 | — | — | — | — |
+| `drive/src/Security/SuperAdminReauthenticationService.php` | 89 | class/module | 1 | — | — | — | — |
 | `drive/src/Security/UserDirectoryRepository.php` | 72 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Security/UserProfileRepository.php` | 117 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Security/UserProfileService.php` | 183 | class/module | 1 | — | — | — | — |
@@ -349,7 +349,7 @@
 | `drive/js/polly.js` | 1008 | class/module | PollyModule | — | abrirModalGrabarAudio, abrirModalPolly, abrirModalRekognition, abrirModalTraducir, abrirModalTranscribir, copiarTextract | window functions: abrirModalGrabarAudio, abrirModalPolly, abrirModalRekognition, abrirModalTraducir, abrirModalTranscribir, copiarTextract, copiarTraducido, copiarTx |
 | `drive/js/profile.js` | 277 | class/module | UserProfileModule | — | — | — |
 | `drive/js/recargarPagina.js` | 27 | class/module | RecargarPaginaModule | — | — | — |
-| `drive/js/server-admin.js` | 345 | class/module | ServerAdminModule | — | — | — |
+| `drive/js/server-admin.js` | 365 | class/module | ServerAdminModule | — | — | — |
 | `drive/js/setup.js` | 182 | class/module | ArcadeCloudSetup | — | — | — |
 | `drive/js/sincronizar.js` | 315 | class/module | SincronizarModule | — | — | — |
 | `drive/js/soportesMediaTypes.js` | 390 | class/module | SoportesMediaTypesModule | — | — | — |

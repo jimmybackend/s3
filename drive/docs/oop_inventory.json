@@ -1379,7 +1379,7 @@
     },
     {
       "path": "drive/src/Admin/ServerSettingsAdminService.php",
-      "lines": 208,
+      "lines": 211,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -3175,7 +3175,7 @@
     },
     {
       "path": "drive/src/Security/SuperAdminReauthenticationService.php",
-      "lines": 31,
+      "lines": 89,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -5070,7 +5070,7 @@
     },
     {
       "path": "drive/js/server-admin.js",
-      "lines": 345,
+      "lines": 365,
       "kind": "class/module",
       "classes": [
         "ServerAdminModule"

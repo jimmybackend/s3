@@ -12,9 +12,7 @@ final class PrivilegedServerHelper
 
     public function available(): bool
     {
-        if (!is_file(self::HELPER_PATH) || !is_executable(self::HELPER_PATH) || !is_executable(self::SUDO_PATH)) {
-            return false;
-        }
+        if (!is_file(self::HELPER_PATH) || !is_executable(self::HELPER_PATH) || !is_executable(self::SUDO_PATH)) return false;
         try {
             $result = $this->run(['status']);
             return ($result['exit_code'] ?? 1) === 0;
@@ -32,9 +30,7 @@ final class PrivilegedServerHelper
 
     public function setEnvironment(string $name, string $value): void
     {
-        if (!ManagedRuntimeEnvironment::isAllowed($name)) {
-            throw new RuntimeException('Variable no permitida.');
-        }
+        if (!ManagedRuntimeEnvironment::isAllowed($name)) throw new RuntimeException('Variable no permitida.');
         $this->run(['env-set', $name], $value . "\n");
     }
 
@@ -42,9 +38,7 @@ final class PrivilegedServerHelper
     {
         $result = $this->run(['identity-create', $nodeName]);
         $decoded = json_decode((string)$result['stdout'], true);
-        if (!is_array($decoded) || ($decoded['ok'] ?? null) !== true) {
-            throw new RuntimeException('El helper no confirmó la creación de identidad.');
-        }
+        if (!is_array($decoded) || ($decoded['ok'] ?? null) !== true) throw new RuntimeException('El helper no confirmó la creación de identidad.');
         return $decoded;
     }
 
@@ -53,30 +47,15 @@ final class PrivilegedServerHelper
         $this->run(['identity-rename', $nodeName]);
     }
 
-    public function deleteIdentityIfId(string $nodeId): void
-    {
-        $this->run(['identity-delete-if-id', $nodeId]);
-    }
-
     private function run(array $args, string $stdin = ''): array
     {
-        if (!function_exists('proc_open')) {
-            throw new RuntimeException('proc_open no está disponible; no se puede usar el helper administrativo.');
-        }
-        if (!is_executable(self::SUDO_PATH) || !is_executable(self::HELPER_PATH)) {
-            throw new RuntimeException('El helper administrativo de ArcadeCloud no está instalado.');
-        }
+        if (!function_exists('proc_open')) throw new RuntimeException('proc_open no está disponible; no se puede usar el helper administrativo.');
+        if (!is_executable(self::SUDO_PATH) || !is_executable(self::HELPER_PATH)) throw new RuntimeException('El helper administrativo de ArcadeCloud no está instalado.');
 
         $command = array_merge([self::SUDO_PATH, '-n', self::HELPER_PATH], array_values(array_map('strval', $args)));
-        $descriptors = [
-            0 => ['pipe', 'r'],
-            1 => ['pipe', 'w'],
-            2 => ['pipe', 'w'],
-        ];
+        $descriptors = [0 => ['pipe', 'r'], 1 => ['pipe', 'w'], 2 => ['pipe', 'w']];
         $process = proc_open($command, $descriptors, $pipes, null, null, ['bypass_shell' => true]);
-        if (!is_resource($process)) {
-            throw new RuntimeException('No se pudo iniciar el helper administrativo.');
-        }
+        if (!is_resource($process)) throw new RuntimeException('No se pudo iniciar el helper administrativo.');
 
         fwrite($pipes[0], $stdin);
         fclose($pipes[0]);
@@ -86,9 +65,7 @@ final class PrivilegedServerHelper
         fclose($pipes[2]);
         $exit = proc_close($process);
 
-        if (!is_string($stdout) || strlen($stdout) > 65536 || !is_string($stderr) || strlen($stderr) > 8192) {
-            throw new RuntimeException('Respuesta administrativa demasiado grande.');
-        }
+        if (!is_string($stdout) || strlen($stdout) > 65536 || !is_string($stderr) || strlen($stderr) > 8192) throw new RuntimeException('Respuesta administrativa demasiado grande.');
         if ($exit !== 0) {
             $message = trim($stderr);
             throw new RuntimeException($message !== '' ? $message : 'El helper administrativo rechazó la operación.');

@@ -34,36 +34,23 @@ final class FederationNodeAdminService
         $diagnostics = $this->diagnostics();
         if (!is_file($path)) {
             return [
-                'ok' => true,
-                'configured' => false,
-                'enabled' => $this->config->enabled(),
-                'identity_path' => $path,
-                'public_url' => $this->config->publicUrl(),
-                'federation_url' => $this->config->federationUrl(),
-                'diagnostics' => $diagnostics,
+                'ok' => true, 'configured' => false, 'enabled' => $this->config->enabled(),
+                'identity_path' => $path, 'public_url' => $this->config->publicUrl(),
+                'federation_url' => $this->config->federationUrl(), 'diagnostics' => $diagnostics,
             ];
         }
         if (!is_readable($path)) {
             return [
-                'ok' => true,
-                'configured' => true,
-                'ready' => false,
-                'enabled' => $this->config->enabled(),
-                'identity_path' => $path,
-                'error' => 'La identidad existe pero el proceso PHP no puede leerla.',
+                'ok' => true, 'configured' => true, 'ready' => false, 'enabled' => $this->config->enabled(),
+                'identity_path' => $path, 'error' => 'La identidad existe pero el proceso PHP no puede leerla.',
                 'diagnostics' => $diagnostics,
             ];
         }
 
         $descriptor = $this->validator->validate($this->identity->signedDescriptor($this->config));
         return [
-            'ok' => true,
-            'configured' => true,
-            'ready' => true,
-            'enabled' => $this->config->enabled(),
-            'identity_path' => $path,
-            'node' => $this->summary($descriptor),
-            'diagnostics' => $diagnostics,
+            'ok' => true, 'configured' => true, 'ready' => true, 'enabled' => $this->config->enabled(),
+            'identity_path' => $path, 'node' => $this->summary($descriptor), 'diagnostics' => $diagnostics,
         ];
     }
 
@@ -71,45 +58,39 @@ final class FederationNodeAdminService
     {
         $this->ensureEnabled();
         $path = $this->config->identityPath();
-        if (is_file($path)) {
-            throw new FederationException('La identidad del nodo ya existe. Usa Renombrar en lugar de Crear.', 409);
-        }
+        if (is_file($path)) throw new FederationException('La identidad del nodo ya existe. Usa Renombrar en lugar de Crear.', 409);
         $name = NodeIdentityService::normalizeNodeName($requestedName);
         $this->assertGloballyAvailable($name);
 
-        $createdNodeId = '';
         $usedHelper = false;
         try {
-            try {
-                $created = NodeIdentityService::initialize($path, false, $name);
-                $createdNodeId = (string)($created['node_id'] ?? '');
-            } catch (FederationException $directError) {
-                if (!$this->helper->available()) {
-                    throw $this->withPermissionGuidance($directError, true);
-                }
-                $created = $this->helper->createIdentity($name);
-                $createdNodeId = (string)($created['node_id'] ?? '');
-                $usedHelper = true;
-            }
-
-            $this->identity = new NodeIdentityService($path);
-            $descriptor = $this->validator->validate($this->identity->signedDescriptor($this->config));
-            $createdNodeId = (string)$descriptor['node_id'];
-            $this->registerDescriptor($descriptor);
-
-            return [
-                'ok' => true,
-                'configured' => true,
-                'message' => 'Nodo FederationCloud creado y registrado con un nombre global disponible.',
-                'node' => $this->summary($descriptor),
-                'used_privileged_helper' => $usedHelper,
-            ];
-        } catch (Throwable $e) {
-            if ($createdNodeId !== '') {
-                $this->rollbackNewIdentity($createdNodeId);
-            }
-            throw $e;
+            NodeIdentityService::initialize($path, false, $name);
+        } catch (FederationException $directError) {
+            if (!$this->helper->available()) throw $this->withPermissionGuidance($directError, true);
+            $this->helper->createIdentity($name);
+            $usedHelper = true;
         }
+
+        $this->identity = new NodeIdentityService($path);
+        $descriptor = $this->validator->validate($this->identity->signedDescriptor($this->config));
+        try {
+            $this->registerDescriptor($descriptor);
+        } catch (Throwable $e) {
+            // Nunca destruimos automáticamente una identidad recién creada: si el seed
+            // alcanzó a persistirla pero la respuesta se perdió, borrar las llaves dejaría
+            // una identidad huérfana e irrecuperable. Se conserva para reintento/renombre.
+            throw new FederationException(
+                'La identidad fue creada y se conservó en ' . $path . ', pero el registro global no pudo confirmarse. ' .
+                'No regeneres las llaves; corrige conectividad/nombre y vuelve a registrar o renombrar. Detalle: ' . $e->getMessage(),
+                $e instanceof FederationException ? $e->httpStatus() : 502
+            );
+        }
+
+        return [
+            'ok' => true, 'configured' => true,
+            'message' => 'Nodo FederationCloud creado y registrado con un nombre global disponible.',
+            'node' => $this->summary($descriptor), 'used_privileged_helper' => $usedHelper,
+        ];
     }
 
     public function renameNode(string $requestedName): array
@@ -118,10 +99,7 @@ final class FederationNodeAdminService
         $name = NodeIdentityService::normalizeNodeName($requestedName);
         $nodeId = $this->identity->nodeId();
         $oldName = $this->identity->nodeName();
-
-        if ($oldName !== null && hash_equals($oldName, $name)) {
-            return $this->state() + ['message' => 'El nodo ya usa ese nombre.'];
-        }
+        if ($oldName !== null && hash_equals($oldName, $name)) return $this->state() + ['message' => 'El nodo ya usa ese nombre.'];
 
         $this->assertGloballyAvailable($name);
         $this->persistNameWithFallback($name);
@@ -129,45 +107,30 @@ final class FederationNodeAdminService
         try {
             $this->identity = new NodeIdentityService($this->config->identityPath());
             $descriptor = $this->validator->validate($this->identity->signedDescriptor($this->config));
-            if (!hash_equals((string)$descriptor['node_id'], $nodeId)) {
-                throw new FederationException('El Node ID cambió durante el renombre; operación cancelada.', 500);
-            }
+            if (!hash_equals((string)$descriptor['node_id'], $nodeId)) throw new FederationException('El Node ID cambió durante el renombre; operación cancelada.', 500);
             $this->registerDescriptor($descriptor);
         } catch (Throwable $e) {
             if ($oldName !== null && $oldName !== '') {
                 try {
                     $this->persistNameWithFallback($oldName);
                     $this->identity = new NodeIdentityService($this->config->identityPath());
-                } catch (Throwable) {
-                    // El error original es más útil; state() mostrará la inconsistencia si persiste.
-                }
+                } catch (Throwable) {}
             }
             throw $e;
         }
 
-        return [
-            'ok' => true,
-            'message' => 'Nombre del nodo actualizado sin cambiar su identidad criptográfica.',
-            'node' => $this->summary($descriptor),
-        ];
+        return ['ok' => true, 'message' => 'Nombre del nodo actualizado sin cambiar su identidad criptográfica.', 'node' => $this->summary($descriptor)];
     }
 
     private function assertGloballyAvailable(string $name): void
     {
         if ($this->seeds->isSeed($this->config->federationUrl())) {
-            if (!$this->nodes->isNodeNameAvailable($name, '')) {
-                throw new FederationException('Ese nombre FederationCloud ya está registrado por otro nodo.', 409);
-            }
+            if (!$this->nodes->isNodeNameAvailable($name, '')) throw new FederationException('Ese nombre FederationCloud ya está registrado por otro nodo.', 409);
             return;
         }
-
         $response = $this->http->postJson($this->seeds->primary(), 'name-availability.php', ['node_name' => $name]);
-        if (($response['ok'] ?? null) !== true || !array_key_exists('available', $response)) {
-            throw new FederationException('El seed no pudo confirmar la disponibilidad del nombre del nodo.', 502);
-        }
-        if (($response['available'] ?? false) !== true) {
-            throw new FederationException('Ese nombre FederationCloud ya está registrado por otro nodo.', 409);
-        }
+        if (($response['ok'] ?? null) !== true || !array_key_exists('available', $response)) throw new FederationException('El seed no pudo confirmar la disponibilidad del nombre del nodo.', 502);
+        if (($response['available'] ?? false) !== true) throw new FederationException('Ese nombre FederationCloud ya está registrado por otro nodo.', 409);
     }
 
     private function registerDescriptor(array $descriptor): void
@@ -177,9 +140,7 @@ final class FederationNodeAdminService
             return;
         }
         $response = $this->http->postJson($this->seeds->primary(), 'register.php', ['descriptor' => $descriptor]);
-        if (($response['ok'] ?? null) !== true) {
-            throw new FederationException('El seed no confirmó el registro del nodo.', 502);
-        }
+        if (($response['ok'] ?? null) !== true) throw new FederationException('El seed no confirmó el registro del nodo.', 502);
     }
 
     private function persistNameWithFallback(string $name): void
@@ -188,46 +149,25 @@ final class FederationNodeAdminService
             $this->identity->renameNodeName($name);
             return;
         } catch (FederationException $directError) {
-            if (!$this->helper->available()) {
-                throw $this->withPermissionGuidance($directError, false);
-            }
+            if (!$this->helper->available()) throw $this->withPermissionGuidance($directError, false);
         }
         try {
             $this->helper->renameIdentity($name);
         } catch (Throwable $helperError) {
-            throw new FederationException(
-                'No se pudo escribir la identidad mediante el helper privilegiado: ' . $helperError->getMessage(),
-                500
-            );
+            throw new FederationException('No se pudo escribir la identidad mediante el helper privilegiado: ' . $helperError->getMessage(), 500);
         }
-    }
-
-    private function rollbackNewIdentity(string $nodeId): void
-    {
-        $path = $this->config->identityPath();
-        if ($this->helper->available()) {
-            try {
-                $this->helper->deleteIdentityIfId($nodeId);
-                return;
-            } catch (Throwable) {
-                // Se intenta también eliminación local cuando el directorio lo permite.
-            }
-        }
-        if (is_file($path)) @unlink($path);
     }
 
     private function withPermissionGuidance(FederationException $error, bool $creating): FederationException
     {
         $path = $this->config->identityPath();
         $runtime = $this->runtimeUser();
-        $driveRoot = dirname(__DIR__, 2);
-        $installer = $driveRoot . '/bin/install_arcadecloud_admin_helper.sh';
+        $installer = dirname(__DIR__, 2) . '/bin/install_arcadecloud_admin_helper.sh';
         $operation = $creating ? 'crear' : 'actualizar';
         return new FederationException(
-            'No se pudo ' . $operation . ' la identidad en ' . $path . '. ' .
-            'El proceso PHP-FPM (' . $runtime . ') no tiene permisos suficientes y el helper privilegiado no está instalado. ' .
+            'No se pudo ' . $operation . ' la identidad en ' . $path . '. El proceso PHP-FPM (' . $runtime . ') no tiene permisos suficientes y el helper privilegiado no está instalado. ' .
             'Instálalo una sola vez con: sudo bash ' . $installer . ' --php-user=' . $runtime . '. ' .
-            'Alternativamente, para una identidad existente puedes conceder escritura sólo al archivo con ACL. Detalle: ' . $error->getMessage(),
+            'Para una identidad existente también puedes conceder escritura sólo al archivo con ACL. Detalle: ' . $error->getMessage(),
             500
         );
     }
@@ -238,13 +178,9 @@ final class FederationNodeAdminService
         $runtime = $this->runtimeUser();
         $driveRoot = dirname(__DIR__, 2);
         return [
-            'runtime_user' => $runtime,
-            'identity_exists' => is_file($path),
-            'identity_readable' => is_readable($path),
-            'identity_writable' => is_writable($path),
-            'parent_writable' => is_writable(dirname($path)),
-            'privileged_helper' => $this->helper->available(),
-            'helper_path' => PrivilegedServerHelper::HELPER_PATH,
+            'runtime_user' => $runtime, 'identity_exists' => is_file($path), 'identity_readable' => is_readable($path),
+            'identity_writable' => is_writable($path), 'parent_writable' => is_writable(dirname($path)),
+            'privileged_helper' => $this->helper->available(), 'helper_path' => PrivilegedServerHelper::HELPER_PATH,
             'install_helper_command' => 'sudo bash ' . $driveRoot . '/bin/install_arcadecloud_admin_helper.sh --php-user=' . $runtime,
             'existing_file_acl_command' => 'sudo setfacl -m u:' . $runtime . ':rw ' . $path,
         ];
@@ -271,8 +207,6 @@ final class FederationNodeAdminService
 
     private function ensureEnabled(): void
     {
-        if (!$this->config->enabled()) {
-            throw new FederationException('FederationCloud está desactivado. Un superusuario puede activar ARCADECLOUD_FEDERATION_ENABLED desde Configuración del servidor.', 503);
-        }
+        if (!$this->config->enabled()) throw new FederationException('FederationCloud está desactivado. Un superusuario puede activar ARCADECLOUD_FEDERATION_ENABLED desde Configuración del servidor.', 503);
     }
 }

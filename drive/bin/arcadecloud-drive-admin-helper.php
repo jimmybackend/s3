@@ -128,7 +128,14 @@ $phpGroup = trim((string)($config['php_group'] ?? ''));
 $action = (string)($argv[1] ?? 'status');
 
 if ($action === 'status') {
-    fwrite(STDOUT, json_encode(['ok' => true, 'identity_path' => $identityPath, 'identity_exists' => is_file($identityPath), 'runtime_env_path' => $runtimePath], JSON_UNESCAPED_SLASHES) . "\n");
+    fwrite(STDOUT, json_encode([
+        'ok' => true,
+        'version' => 2,
+        'capabilities' => ['env_set_many' => true, 'db_aws_settings' => true],
+        'identity_path' => $identityPath,
+        'identity_exists' => is_file($identityPath),
+        'runtime_env_path' => $runtimePath,
+    ], JSON_UNESCAPED_SLASHES) . "\n");
     exit(0);
 }
 

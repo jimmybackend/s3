@@ -1,0 +1,109 @@
+name: Superadmin server settings validation
+
+on:
+  push:
+    branches:
+      - main
+      - 'feat/superadmin-node-provisioning-server-settings'
+    paths:
+      - 'drive/app_bootstrap.php'
+      - 'drive/server-settings.php'
+      - 'drive/bloque_footer.php'
+      - 'drive/js/server-admin.js'
+      - 'drive/js/federation-footer.js'
+      - 'drive/bin/arcadecloud-drive-admin-helper.php'
+      - 'drive/bin/install_arcadecloud_admin_helper.sh'
+      - 'drive/src/Admin/**'
+      - 'drive/src/Federation/FederationNodeAdminService.php'
+      - 'drive/src/Federation/FederationNodeRepository.php'
+      - 'drive/src/Federation/FederationDirectoryService.php'
+      - 'drive/src/Federation/FederationHttpClient.php'
+      - 'drive/src/Http/Controller/FederationNodeAdminController.php'
+      - 'drive/src/Http/Controller/FederationDirectoryController.php'
+      - 'drive/src/Http/Controller/ServerSettingsAdminController.php'
+      - 'drive/federationcloud/name-availability.php'
+      - 'drive/tests/server_admin_config_smoke.php'
+      - 'drive/docs/SUPERADMIN_SERVER_SETTINGS.md'
+      - '.github/workflows/server-admin.yml'
+  pull_request:
+    paths:
+      - 'drive/app_bootstrap.php'
+      - 'drive/server-settings.php'
+      - 'drive/bloque_footer.php'
+      - 'drive/js/server-admin.js'
+      - 'drive/js/federation-footer.js'
+      - 'drive/bin/arcadecloud-drive-admin-helper.php'
+      - 'drive/bin/install_arcadecloud_admin_helper.sh'
+      - 'drive/src/Admin/**'
+      - 'drive/src/Federation/FederationNodeAdminService.php'
+      - 'drive/src/Federation/FederationNodeRepository.php'
+      - 'drive/src/Federation/FederationDirectoryService.php'
+      - 'drive/src/Federation/FederationHttpClient.php'
+      - 'drive/src/Http/Controller/FederationNodeAdminController.php'
+      - 'drive/src/Http/Controller/FederationDirectoryController.php'
+      - 'drive/src/Http/Controller/ServerSettingsAdminController.php'
+      - 'drive/federationcloud/name-availability.php'
+      - 'drive/tests/server_admin_config_smoke.php'
+      - 'drive/docs/SUPERADMIN_SERVER_SETTINGS.md'
+      - '.github/workflows/server-admin.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate PHP syntax
+        run: |
+          set -euo pipefail
+          php -l drive/app_bootstrap.php
+          php -l drive/server-settings.php
+          php -l drive/bloque_footer.php
+          php -l drive/bin/arcadecloud-drive-admin-helper.php
+          php -l drive/src/Admin/ManagedRuntimeEnvironment.php
+          php -l drive/src/Admin/PrivilegedServerHelper.php
+          php -l drive/src/Admin/ServerSettingsAdminService.php
+          php -l drive/src/Federation/FederationNodeAdminService.php
+          php -l drive/src/Federation/FederationNodeRepository.php
+          php -l drive/src/Federation/FederationDirectoryService.php
+          php -l drive/src/Federation/FederationHttpClient.php
+          php -l drive/src/Http/Controller/FederationNodeAdminController.php
+          php -l drive/src/Http/Controller/FederationDirectoryController.php
+          php -l drive/src/Http/Controller/ServerSettingsAdminController.php
+          php -l drive/federationcloud/name-availability.php
+          php -l drive/tests/server_admin_config_smoke.php
+
+      - name: Validate JavaScript and installer
+        run: |
+          set -euo pipefail
+          node --check drive/js/server-admin.js
+          node --check drive/js/federation-footer.js
+          bash -n drive/bin/install_arcadecloud_admin_helper.sh
+
+      - name: Managed environment smoke test
+        run: php drive/tests/server_admin_config_smoke.php
+
+      - name: Security boundary guards
+        run: |
+          set -euo pipefail
+          grep -q "ARCADECLOUD_SMTP_PASSWORD" drive/src/Admin/ManagedRuntimeEnvironment.php
+          grep -q "password_verify" drive/src/Admin/ServerSettingsAdminService.php
+          grep -q "X-Server-Admin-CSRF" drive/js/server-admin.js
+          grep -q "system_role = superadmin" drive/docs/SUPERADMIN_SERVER_SETTINGS.md
+          grep -q "NOPASSWD: %s" drive/bin/install_arcadecloud_admin_helper.sh
+          grep -q "/usr/local/sbin/arcadecloud-drive-admin" drive/bin/install_arcadecloud_admin_helper.sh
+          grep -q "name-availability.php" drive/src/Federation/FederationHttpClient.php
+          grep -q "assertGloballyAvailable" drive/src/Federation/FederationNodeAdminService.php
+          ! grep -Eq "['\"]DB_[A-Z0-9_]+['\"]" drive/bin/arcadecloud-drive-admin-helper.php
+          ! grep -Eq "['\"]AWS_[A-Z0-9_]+['\"]" drive/bin/arcadecloud-drive-admin-helper.php
+          ! grep -Eq '\b(shell_exec|exec|system|passthru|popen)\s*\(' drive/bin/arcadecloud-drive-admin-helper.php
+          ! grep -q "identity-delete" drive/bin/arcadecloud-drive-admin-helper.php
+          ! grep -q "chmod 777" drive/bin/install_arcadecloud_admin_helper.sh
+          ! grep -q "chmod 666" drive/bin/install_arcadecloud_admin_helper.sh
+
+      - name: Diff whitespace check
+        run: git diff --check

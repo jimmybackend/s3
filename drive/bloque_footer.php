@@ -86,11 +86,6 @@ $arcadeLinkShareJs = __DIR__ . '/js/arcadelink-share.js';
           <input id="federationNodeNameInput" class="form-control" maxlength="64" autocomplete="off" placeholder="drive.esforzados.com">
           <small class="form-text text-muted">Puede ser etiqueta, dominio o IP pública legible. La conexión real sigue usando las URLs firmadas.</small>
         </div>
-        <div class="form-group">
-          <label for="federationNodePassword">Contraseña actual de superusuario</label>
-          <input id="federationNodePassword" type="password" class="form-control" autocomplete="current-password">
-          <small class="form-text text-muted">Crear o renombrar un nodo requiere reautenticación, además de la sesión y el token CSRF.</small>
-        </div>
         <div class="form-group"><label for="federationNodeIdReadonly">Node ID criptográfico</label><input id="federationNodeIdReadonly" class="form-control" readonly></div>
         <div class="form-group"><label for="federationNodePublicUrlReadonly">Public URL</label><input id="federationNodePublicUrlReadonly" class="form-control" readonly></div>
         <div class="form-group mb-0"><label for="federationNodeFederationUrlReadonly">Federation URL</label><input id="federationNodeFederationUrlReadonly" class="form-control" readonly></div>

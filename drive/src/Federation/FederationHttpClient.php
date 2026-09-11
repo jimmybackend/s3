@@ -13,6 +13,7 @@ final class FederationHttpClient
         'resolve.php',
         'register.php',
         'nodes.php',
+        'name-availability.php',
         'provider-request.php',
         'providers.php',
     ];

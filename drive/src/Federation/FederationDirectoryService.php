@@ -67,6 +67,20 @@ final class FederationDirectoryService
         }
     }
 
+    public function nodeNameAvailability(string $requestedName): array
+    {
+        $this->ensureEnabled();
+        if (!$this->seeds->isSeed($this->config->federationUrl())) {
+            throw new FederationException('La disponibilidad global de nombres se consulta en un seed FederationCloud.', 403);
+        }
+        $name = NodeIdentityService::normalizeNodeName($requestedName);
+        return [
+            'ok' => true,
+            'node_name' => $name,
+            'available' => $this->nodes->isNodeNameAvailable($name, ''),
+        ];
+    }
+
     public function registerRemote(array $submitted): array
     {
         $this->ensureEnabled();

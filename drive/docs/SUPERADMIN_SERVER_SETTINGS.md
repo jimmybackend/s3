@@ -118,6 +118,28 @@ Allowlist inicial:
 
 Una variable fuera de la allowlist es rechazada tanto por la aplicación como por el helper root. Para ampliar la lista debe existir un cambio explícito y revisable en el repositorio.
 
+## Vista práctica del panel Servidor
+
+El modal **Servidor** muestra todas las variables administrables en una sola tabla:
+
+```text
+Variable | Grupo | Valor actual | Origen | Modificar
+```
+
+El origen se interpreta así:
+
+- `runtime-env.json`: la variable ya fue administrada desde ArcadeCloud;
+- `entorno PHP`: el proceso PHP-FPM ya recibió esa variable desde systemd, el pool u otro mecanismo del servidor;
+- `sin configurar`: no existe una configuración explícita ni en `runtime-env.json` ni en el entorno de PHP.
+
+Esto permite conservar instalaciones existentes y migrarlas gradualmente. Una variable puede seguir viniendo de un `EnvironmentFile` del servidor hasta que el superadmin decida modificarla desde la UI; desde ese momento la clave escrita en `runtime-env.json` tiene precedencia para las siguientes peticiones.
+
+La arquitectura completa de fuentes, precedencia, diagnóstico de `EnvironmentFile`, pools PHP-FPM y ejemplos sintéticos está documentada en:
+
+- [`RUNTIME_ENV_CONFIGURATION.md`](RUNTIME_ENV_CONFIGURATION.md)
+
+No deben copiarse a la documentación los valores reales de una instalación.
+
 ## Lo que deliberadamente NO puede cambiar desde este panel
 
 La primera versión no permite modificar desde la web:

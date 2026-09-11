@@ -1053,7 +1053,7 @@
     },
     {
       "path": "drive/src/Federation/NodeIdentityService.php",
-      "size": 9134,
+      "size": 11521,
       "active": false,
       "references": [
         "drive/bin/federation_identity_backup.php",
@@ -1663,7 +1663,7 @@
     },
     {
       "path": "drive/tests/federation_node_name_admin_smoke.php",
-      "size": 2101,
+      "size": 3981,
       "active": false,
       "references": []
     },

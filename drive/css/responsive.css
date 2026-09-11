@@ -175,9 +175,11 @@ body {
     min-width: 0;
   }
 
-  #usuarioMenu img {
+  #usuarioMenu img,
+  #usuarioMenu .drive-user-avatar {
     width: 28px !important;
     height: 28px !important;
+    min-width: 28px !important;
 
     flex: 0 0 28px;
   }

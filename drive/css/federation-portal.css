@@ -1,0 +1,132 @@
+.federation-portal-body {
+  min-height: 100vh;
+}
+
+.federation-portal-shell {
+  width: min(1180px, calc(100% - 24px));
+  margin: 24px auto 48px;
+}
+
+.federation-portal-header {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.federation-portal-header h1 {
+  font-size: clamp(1.5rem, 2.5vw, 2.2rem);
+  margin-bottom: 6px;
+}
+
+.federation-node-chip {
+  border: 1px solid rgba(255,255,255,.15);
+  border-radius: 10px;
+  padding: 8px 12px;
+  min-width: 180px;
+  background: rgba(255,255,255,.04);
+}
+
+.federation-node-chip span,
+.federation-node-chip strong {
+  display: block;
+}
+
+.federation-portal-tabs {
+  border-bottom-color: rgba(255,255,255,.16);
+}
+
+.federation-portal-tabs .nav-link {
+  color: rgba(255,255,255,.72);
+  border-color: transparent;
+}
+
+.federation-portal-tabs .nav-link.active {
+  color: #fff;
+  background: rgba(255,255,255,.06);
+  border-color: rgba(255,255,255,.16) rgba(255,255,255,.16) transparent;
+}
+
+.federation-portal-content {
+  padding-top: 16px;
+}
+
+.federation-panel {
+  border: 1px solid rgba(255,255,255,.14);
+  border-radius: 12px;
+  padding: 16px;
+  background: rgba(0,0,0,.18);
+}
+
+.federation-search-form .form-control {
+  min-width: 240px;
+}
+
+.federation-result-list,
+#federationIncomingList,
+#federationOutgoingList,
+#federationReceivedShares,
+#federationSentShares {
+  display: grid;
+  gap: 10px;
+}
+
+.federation-result-card,
+.federation-mini-card {
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 10px;
+  background: rgba(255,255,255,.035);
+  padding: 12px;
+}
+
+.federation-result-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+}
+
+.federation-result-main {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.federation-result-actions {
+  flex: 0 0 auto;
+}
+
+.federation-days-input {
+  width: 84px;
+}
+
+@media (max-width: 767.98px) {
+  .federation-portal-shell {
+    width: min(100% - 16px, 1180px);
+    margin-top: 12px;
+  }
+
+  .federation-result-card {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .federation-result-actions {
+    width: 100%;
+  }
+
+  .federation-result-actions .btn {
+    width: 100%;
+  }
+
+  .federation-search-form {
+    display: block;
+  }
+
+  .federation-search-form .form-control,
+  .federation-search-form .btn {
+    width: 100%;
+    margin-right: 0 !important;
+  }
+}

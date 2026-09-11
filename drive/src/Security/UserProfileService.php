@@ -31,17 +31,27 @@ final class UserProfileService
             throw new RuntimeException('No se encontró el perfil del usuario.');
         }
 
+        $email = (string)($profile['email'] ?? '');
         $name = trim((string)$profile['firstname'] . ' ' . (string)$profile['lastname']);
-        $profile['alias'] = UserIdentityPresenter::alias((string)$profile['email']);
+        $profile['alias'] = UserIdentityPresenter::alias($email);
         $profile['initials'] = UserIdentityPresenter::initials(
-            $name !== '' ? $name : (string)$profile['email']
+            $name !== '' ? $name : $email
         );
         $profile['avatar_url'] = $this->presignedAvatarUrl(
             $userId,
             isset($profile['profilepicture']) ? (string)$profile['profilepicture'] : ''
         );
 
-        unset($profile['password']);
+        // El navegador no necesita conocer el correo completo, la key privada S3
+        // ni campos internos de autorización para editar datos personales.
+        unset(
+            $profile['email'],
+            $profile['profilepicture'],
+            $profile['system_role'],
+            $profile['chat'],
+            $profile['password']
+        );
+
         return $profile;
     }
 

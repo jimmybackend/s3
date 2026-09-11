@@ -18,14 +18,18 @@ use ArcadeCloud\Drive\Aws\FileRecordLocator;
 use ArcadeCloud\Drive\Aws\PersonalAwsConfig;
 use ArcadeCloud\Drive\Aws\PersonalTotpService;
 use ArcadeCloud\Drive\Aws\RdsGateway;
+use ArcadeCloud\Drive\Aws\SesEmailService;
 use ArcadeCloud\Drive\Media\MediaPlaylistRepository;
 use ArcadeCloud\Drive\Media\MediaPlaylistService;
 use ArcadeCloud\Drive\Media\ThumbnailService;
 use ArcadeCloud\Drive\Security\AuthenticationRepository;
 use ArcadeCloud\Drive\Security\AuthenticationService;
+use ArcadeCloud\Drive\Security\PasswordChangeService;
 use ArcadeCloud\Drive\Security\PersonalToolAccessService;
 use ArcadeCloud\Drive\Security\SessionManager;
 use ArcadeCloud\Drive\Security\UserDirectoryRepository;
+use ArcadeCloud\Drive\Security\UserProfileRepository;
+use ArcadeCloud\Drive\Security\UserProfileService;
 use ArcadeCloud\Drive\Sharing\ShareAccessService;
 use ArcadeCloud\Drive\Sharing\ShareFileRepository;
 use ArcadeCloud\Drive\Sharing\ShareLinkService;
@@ -58,6 +62,9 @@ final class DriveApplication
     private ?SessionManager $session = null;
     private ?AuthenticationRepository $authenticationRepository = null;
     private ?AuthenticationService $authenticationService = null;
+    private ?UserProfileRepository $userProfileRepository = null;
+    private ?UserProfileService $userProfileService = null;
+    private ?PasswordChangeService $passwordChangeService = null;
     private ?CostExplorerGateway $costExplorerGateway = null;
     private ?AwsCostService $awsCostService = null;
     private ?PersonalAwsConfig $personalAwsConfig = null;
@@ -148,6 +155,30 @@ final class DriveApplication
         return $this->authenticationService ??= new AuthenticationService(
             $this->authenticationRepository(),
             $this->session()
+        );
+    }
+
+    public function userProfileRepository(): UserProfileRepository
+    {
+        return $this->userProfileRepository ??= new UserProfileRepository($this->db);
+    }
+
+    public function userProfileService(): UserProfileService
+    {
+        return $this->userProfileService ??= new UserProfileService(
+            $this->userProfileRepository(),
+            $this->s3,
+            $this->bucket,
+            $this->userStoragePath()
+        );
+    }
+
+    public function passwordChangeService(): PasswordChangeService
+    {
+        return $this->passwordChangeService ??= new PasswordChangeService(
+            $this->userProfileRepository(),
+            $this->session(),
+            new SesEmailService()
         );
     }
 

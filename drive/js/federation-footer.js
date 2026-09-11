@@ -6,6 +6,9 @@ class FederationFooterModule {
     this.countTarget = null;
     this.requestsButton = null;
     this.requestsCount = null;
+    this.identityButton = null;
+    this.identityModal = null;
+    this.saveIdentityButton = null;
     this.csrf = '';
   }
 
@@ -16,10 +19,26 @@ class FederationFooterModule {
 
     this.refresh(this.nodeTarget, this.countTarget);
 
+    this.identityButton = this.document.getElementById('btnFederationNodeIdentity');
+    this.identityModal = this.document.getElementById('modalFederationNodeIdentity');
+    this.saveIdentityButton = this.document.getElementById('btnSaveFederationNodeIdentity');
+    if (this.identityButton && this.identityModal && this.saveIdentityButton) {
+      this.csrf = String(this.identityButton.dataset.csrf || '');
+      if (this.identityModal.parentElement !== this.document.body) {
+        this.document.body.appendChild(this.identityModal);
+      }
+      if (this.window.jQuery) {
+        this.window.jQuery(this.identityModal).on('shown.bs.modal', () => this.loadIdentity());
+      } else {
+        this.identityButton.addEventListener('click', () => this.loadIdentity());
+      }
+      this.saveIdentityButton.addEventListener('click', () => this.saveIdentity());
+    }
+
     this.requestsButton = this.document.getElementById('btnFederationProviderRequests');
     this.requestsCount = this.document.getElementById('footerFederationRequests');
     if (this.requestsButton && this.requestsCount) {
-      this.csrf = String(this.requestsButton.dataset.csrf || '');
+      this.csrf = this.csrf || String(this.requestsButton.dataset.csrf || '');
       this.loadAdmin(false);
       const modal = this.document.getElementById('modalFederationProviderRequests');
       if (modal) {
@@ -43,7 +62,8 @@ class FederationFooterModule {
     return this;
   }
 
-  async refresh(nodeTarget, countTarget) {
+  async refresh(nodeTarget = this.nodeTarget, countTarget = this.countTarget) {
+    if (!nodeTarget || !countTarget) return;
     try {
       const response = await fetch('federationcloud/nodes.php', {
         credentials: 'same-origin',
@@ -75,6 +95,98 @@ class FederationFooterModule {
       countTarget.textContent = '—';
       console.error('[federation-footer] No se pudo consultar FederationCloud:', error);
     }
+  }
+
+  async loadIdentity() {
+    this.showIdentityMessage('Cargando identidad del nodo…', 'info');
+    try {
+      const response = await fetch('federationcloud/node-admin.php', {
+        credentials: 'same-origin',
+        cache: 'no-store',
+        headers: {
+          'Accept': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest'
+        }
+      });
+      const data = await response.json();
+      if (!response.ok || !data.ok || !data.node) {
+        throw new Error(data.error || `HTTP ${response.status}`);
+      }
+      this.fillIdentity(data.node);
+      this.showIdentityMessage('', '');
+    } catch (error) {
+      this.showIdentityMessage(error.message || 'No se pudo cargar la identidad del nodo.', 'danger');
+    }
+  }
+
+  fillIdentity(node) {
+    const name = this.document.getElementById('federationNodeNameInput');
+    const nodeId = this.document.getElementById('federationNodeIdReadonly');
+    const publicUrl = this.document.getElementById('federationNodePublicUrlReadonly');
+    const federationUrl = this.document.getElementById('federationNodeFederationUrlReadonly');
+
+    if (name) name.value = String(node.node_name || '');
+    if (nodeId) nodeId.value = String(node.node_id || '');
+    if (publicUrl) publicUrl.value = String(node.public_url || '');
+    if (federationUrl) federationUrl.value = String(node.federation_url || '');
+  }
+
+  async saveIdentity() {
+    const input = this.document.getElementById('federationNodeNameInput');
+    const button = this.saveIdentityButton;
+    const nodeName = String(input?.value || '').trim().toLowerCase();
+    if (!button || !this.csrf) return;
+
+    if (!/^[a-z0-9][a-z0-9._-]{1,62}[a-z0-9]$/.test(nodeName)) {
+      this.showIdentityMessage('Usa 3-64 caracteres: a-z, 0-9, punto, guion o guion bajo.', 'warning');
+      return;
+    }
+
+    button.disabled = true;
+    button.textContent = 'Guardando…';
+    this.showIdentityMessage('Actualizando nombre firmado del nodo…', 'info');
+
+    try {
+      const body = new URLSearchParams();
+      body.set('node_name', nodeName);
+      const response = await fetch('federationcloud/node-admin.php', {
+        method: 'POST',
+        credentials: 'same-origin',
+        cache: 'no-store',
+        headers: {
+          'Accept': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
+          'X-Federation-CSRF': this.csrf,
+          'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+        },
+        body: body.toString()
+      });
+      const data = await response.json();
+      if (!response.ok || !data.ok || !data.node) {
+        throw new Error(data.error || `HTTP ${response.status}`);
+      }
+
+      this.fillIdentity(data.node);
+      await this.refresh();
+      this.showIdentityMessage(data.message || 'Nombre del nodo actualizado.', 'success');
+    } catch (error) {
+      this.showIdentityMessage(error.message || 'No se pudo actualizar el nombre del nodo.', 'danger');
+    } finally {
+      button.disabled = false;
+      button.textContent = 'Guardar nombre';
+    }
+  }
+
+  showIdentityMessage(message, type) {
+    const alert = this.document.getElementById('federationNodeIdentityAlert');
+    if (!alert) return;
+    if (!message) {
+      alert.className = 'alert d-none';
+      alert.textContent = '';
+      return;
+    }
+    alert.className = `alert alert-${type || 'info'}`;
+    alert.textContent = message;
   }
 
   async loadAdmin(renderLists) {

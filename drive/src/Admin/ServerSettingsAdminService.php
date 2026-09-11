@@ -21,9 +21,12 @@ final class ServerSettingsAdminService
     {
         $runtime = $this->runtimeUser();
         $driveRoot = dirname(__DIR__, 2);
+        $helperAvailable = $this->helper->available();
+        $groupSupport = $helperAvailable && $this->helper->supportsEnvironmentGroups();
         return [
             'ok' => true,
-            'helper_available' => $this->helper->available(),
+            'helper_available' => $helperAvailable,
+            'helper_group_settings' => $groupSupport,
             'helper_path' => PrivilegedServerHelper::HELPER_PATH,
             'runtime_user' => $runtime,
             'managed_env_path' => ManagedRuntimeEnvironment::DEFAULT_PATH,
@@ -106,7 +109,7 @@ final class ServerSettingsAdminService
         if ($validated === []) throw new RuntimeException('No hay cambios nuevos para guardar.');
         if ($group === 'database') $this->testDatabaseConnection($validated);
 
-        $this->assertHelperAvailable();
+        $this->assertHelperAvailable(true);
         $this->helper->setEnvironmentMany($validated);
         foreach ($validated as $name => $value) {
             putenv($name . '=' . $value);
@@ -161,14 +164,17 @@ final class ServerSettingsAdminService
         @\mysqli_close($probe);
     }
 
-    private function assertHelperAvailable(): void
+    private function assertHelperAvailable(bool $requireGroups = false): void
     {
-        if ($this->helper->available()) return;
+        $available = $this->helper->available();
+        $supportsGroups = !$requireGroups || ($available && $this->helper->supportsEnvironmentGroups());
+        if ($available && $supportsGroups) return;
+
         $runtime = $this->runtimeUser();
         $driveRoot = dirname(__DIR__, 2);
+        $reason = $available && $requireGroups ? 'El helper instalado necesita actualizarse.' : 'El helper administrativo no está instalado.';
         throw new RuntimeException(
-            'El helper administrativo no está instalado o necesita actualizarse. Ejecuta: sudo bash ' .
-            $driveRoot . '/bin/install_arcadecloud_admin_helper.sh --php-user=' . $runtime
+            $reason . ' Ejecuta: sudo bash ' . $driveRoot . '/bin/install_arcadecloud_admin_helper.sh --php-user=' . $runtime
         );
     }
 

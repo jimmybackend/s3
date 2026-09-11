@@ -109,6 +109,7 @@
         "drive/polly_list_voices.php",
         "drive/polly_tts.php",
         "drive/procesar_textract.php",
+        "drive/profile.php",
         "drive/psesion.php",
         "drive/rekognition_labels.php",
         "drive/relock_file.php",
@@ -579,6 +580,14 @@
       ]
     },
     {
+      "path": "drive/profile.php",
+      "size": 308,
+      "active": false,
+      "references": [
+        "drive/js/profile.js"
+      ]
+    },
+    {
       "path": "drive/psesion.php",
       "size": 306,
       "active": true,
@@ -621,7 +630,7 @@
     },
     {
       "path": "drive/s3.php",
-      "size": 88878,
+      "size": 90284,
       "active": true,
       "references": [
         "drive/app_bootstrap.php",
@@ -847,6 +856,12 @@
       "references": []
     },
     {
+      "path": "drive/src/Aws/SesEmailService.php",
+      "size": 3370,
+      "active": false,
+      "references": []
+    },
+    {
       "path": "drive/src/Aws/TextractFileService.php",
       "size": 3257,
       "active": false,
@@ -878,7 +893,7 @@
     },
     {
       "path": "drive/src/Core/DriveApplication.php",
-      "size": 15917,
+      "size": 17036,
       "active": false,
       "references": []
     },
@@ -1231,6 +1246,12 @@
       "references": []
     },
     {
+      "path": "drive/src/Http/Controller/UserProfileController.php",
+      "size": 4275,
+      "active": false,
+      "references": []
+    },
+    {
       "path": "drive/src/Http/JsonResponse.php",
       "size": 785,
       "active": false,
@@ -1285,6 +1306,12 @@
       "references": []
     },
     {
+      "path": "drive/src/Security/PasswordChangeService.php",
+      "size": 5001,
+      "active": false,
+      "references": []
+    },
+    {
       "path": "drive/src/Security/PersonalToolAccessService.php",
       "size": 1263,
       "active": false,
@@ -1301,6 +1328,26 @@
       "size": 2002,
       "active": false,
       "references": []
+    },
+    {
+      "path": "drive/src/Security/UserProfileRepository.php",
+      "size": 3779,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Security/UserProfileService.php",
+      "size": 6247,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Security/UserProfileValidator.php",
+      "size": 3580,
+      "active": false,
+      "references": [
+        "drive/tests/user_profile_validator_smoke.php"
+      ]
     },
     {
       "path": "drive/src/Sharing/ShareAccessService.php",
@@ -1521,6 +1568,12 @@
       ]
     },
     {
+      "path": "drive/src/View/UserProfileModalRenderer.php",
+      "size": 8188,
+      "active": false,
+      "references": []
+    },
+    {
       "path": "drive/storage_usage.php",
       "size": 259,
       "active": false,
@@ -1583,6 +1636,12 @@
     {
       "path": "drive/tests/user_identity_presenter_smoke.php",
       "size": 966,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/tests/user_profile_validator_smoke.php",
+      "size": 1457,
       "active": false,
       "references": []
     },

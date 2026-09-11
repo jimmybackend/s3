@@ -5,6 +5,7 @@ declare(strict_types=1);
 require_once dirname(__DIR__) . '/app_bootstrap.php';
 
 use ArcadeCloud\Drive\Core\ApplicationKernel;
+use ArcadeCloud\Drive\Federation\FederationAccessService;
 use ArcadeCloud\Drive\Federation\FederationGossipService;
 
 $lockPath = sys_get_temp_dir() . '/arcadecloud-federation-sync.lock';
@@ -20,7 +21,17 @@ if (!flock($lock, LOCK_EX | LOCK_NB)) {
 }
 
 try {
-    $result = (new FederationGossipService(ApplicationKernel::app()))->syncOnce();
+    $app = ApplicationKernel::app();
+    $result = (new FederationGossipService($app))->syncOnce();
+    try {
+        $result['access_requests'] = (new FederationAccessService($app))->syncPending(5);
+    } catch (Throwable $e) {
+        $result['access_requests'] = [
+            'degraded' => true,
+            'error' => 'La cola privada de solicitudes no pudo procesarse en este ciclo.',
+        ];
+        error_log('[FederationCloud access sync] ' . $e->getMessage());
+    }
     echo json_encode($result, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . "\n";
 } catch (Throwable $e) {
     fwrite(STDERR, "FederationCloud sync error: {$e->getMessage()}\n");

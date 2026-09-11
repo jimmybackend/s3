@@ -19,6 +19,8 @@ final class FederationHttpClient
         'providers.php',
         'sync-pull.php',
         'sync-push.php',
+        'access-request.php',
+        'access-status.php',
     ];
 
     public function getJson(string $federationUrl, string $endpoint): array

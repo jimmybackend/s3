@@ -226,6 +226,7 @@
 | `drive/src/View/PublicSharedPageRenderer.php` | ninguna |
 | `drive/src/View/SharePageRenderer.php` | ninguna |
 | `drive/src/View/SyncStatusRenderer.php` | ninguna |
+| `drive/src/View/UserIdentityPresenter.php` | `drive/tests/user_identity_presenter_smoke.php` |
 | `drive/storage_usage.php` | `drive/js/storage-usage.js` |
 | `drive/subir_archivo.php` | ninguna |
 | `drive/subir_publico.php` | ninguna |
@@ -235,6 +236,7 @@
 | `drive/tests/federation_directory_smoke.php` | ninguna |
 | `drive/tests/federation_provider_smoke.php` | ninguna |
 | `drive/tests/federationcloud_smoke.php` | ninguna |
+| `drive/tests/user_identity_presenter_smoke.php` | ninguna |
 | `drive/token_audio.php` | `drive/src/Sharing/ShareLinkService.php` |
 | `drive/token_texto.php` | `drive/src/Sharing/ShareLinkService.php` |
 | `drive/token_video.php` | `drive/src/Sharing/ShareLinkService.php`, `drive/js/audiovideo.js` |

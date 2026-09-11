@@ -621,7 +621,7 @@
     },
     {
       "path": "drive/s3.php",
-      "size": 88282,
+      "size": 88878,
       "active": true,
       "references": [
         "drive/app_bootstrap.php",
@@ -1513,6 +1513,14 @@
       "references": []
     },
     {
+      "path": "drive/src/View/UserIdentityPresenter.php",
+      "size": 1755,
+      "active": false,
+      "references": [
+        "drive/tests/user_identity_presenter_smoke.php"
+      ]
+    },
+    {
       "path": "drive/storage_usage.php",
       "size": 259,
       "active": false,
@@ -1569,6 +1577,12 @@
     {
       "path": "drive/tests/federationcloud_smoke.php",
       "size": 5661,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/tests/user_identity_presenter_smoke.php",
+      "size": 966,
       "active": false,
       "references": []
     },
@@ -1646,7 +1660,7 @@
     },
     {
       "path": "drive/up.php",
-      "size": 22847,
+      "size": 23031,
       "active": true,
       "references": [
         "drive/src/Http/Controller/UploadCleanupController.php",

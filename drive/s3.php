@@ -13,6 +13,9 @@ $session->start();
 $session->requireAuthenticated('index.php');
 $userId = $session->userId();
 $canViewRealAws = $app->personalToolAccessService()->state() === 'owner';
+$userIdentifier = $session->userName();
+$userAlias = \ArcadeCloud\Drive\View\UserIdentityPresenter::alias($userIdentifier);
+$userInitials = \ArcadeCloud\Drive\View\UserIdentityPresenter::initials($userIdentifier);
 
 // Provisionamiento multiusuario idempotente:
 // user 1 => Data/, user 2 => Data2/, user N => DataN/.
@@ -152,8 +155,12 @@ $footerEspacioUsado = $storageUsage['formatted'];
         </li>
       <li class="nav-item dropdown">
         <a class="nav-link dropdown-toggle d-flex align-items-center text-white" href="#" id="usuarioMenu" role="button" data-toggle="dropdown">
-          <img src="logo1.png" alt="Perfil" class="rounded-circle mr-2" width="30" height="30">
-          <span class="drive-user-label"><?= htmlspecialchars($_SESSION['usuario']) ?></span>
+          <span class="drive-user-avatar rounded-circle mr-2 d-inline-flex align-items-center justify-content-center"
+                aria-hidden="true"
+                style="width:30px;height:30px;min-width:30px;font-size:.75rem;font-weight:700;border:2px solid rgba(255,255,255,.85);background:rgba(255,255,255,.15);letter-spacing:.02em;">
+            <?= htmlspecialchars($userInitials, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>
+          </span>
+          <span class="drive-user-label"><?= htmlspecialchars($userAlias, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></span>
         </a>
 
         <div class="dropdown-menu dropdown-menu-right" aria-labelledby="usuarioMenu">

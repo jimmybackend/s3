@@ -126,7 +126,7 @@ if ($action !== '') {
           background:#0b1222;
         "
       >
-        <?= htmlspecialchars((string)$user['email']) ?>
+        <?= htmlspecialchars(\ArcadeCloud\Drive\View\UserIdentityPresenter::alias((string)$user['email']), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>
       </a>
     <?php endforeach; ?>
   </div>
@@ -144,7 +144,7 @@ if ($action !== '') {
     <span class="pill">
       Usuario destino:
       <strong>
-        <?= htmlspecialchars((string)$targetUser['email']) ?>
+        <?= htmlspecialchars(\ArcadeCloud\Drive\View\UserIdentityPresenter::alias((string)$targetUser['email']), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>
       </strong>
     </span>
 

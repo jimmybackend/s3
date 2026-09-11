@@ -16,6 +16,9 @@ function serverAdminOk(bool $condition, string $message): void
 
 $path = sys_get_temp_dir() . '/arcadecloud-runtime-env-' . bin2hex(random_bytes(6)) . '.json';
 try {
+    file_put_contents($path, "{}\n");
+    serverAdminOk(ManagedRuntimeEnvironment::read($path) === [], 'acepta objeto JSON vacío creado por el instalador');
+
     file_put_contents($path, json_encode([
         'ARCADECLOUD_PUBLIC_URL' => 'https://drive.example.test',
         'ARCADECLOUD_FEDERATION_ENABLED' => 'true',

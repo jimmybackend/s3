@@ -1,0 +1,80 @@
+name: Initial setup validation
+
+on:
+  push:
+    branches:
+      - main
+      - 'feat/bootstrap-web-setup'
+    paths:
+      - 'drive/setup/**'
+      - 'drive/js/setup.js'
+      - 'drive/src/Setup/**'
+      - 'drive/src/Admin/ManagedRuntimeEnvironment.php'
+      - 'drive/src/Admin/PrivilegedServerHelper.php'
+      - 'drive/bin/arcadecloud-drive-admin-helper.php'
+      - 'drive/bin/install_arcadecloud_admin_helper.sh'
+      - 'drive/tests/setup_bootstrap_smoke.php'
+      - 'drive/docs/INITIAL_SETUP.md'
+      - '.github/workflows/initial-setup.yml'
+  pull_request:
+    paths:
+      - 'drive/setup/**'
+      - 'drive/js/setup.js'
+      - 'drive/src/Setup/**'
+      - 'drive/src/Admin/ManagedRuntimeEnvironment.php'
+      - 'drive/src/Admin/PrivilegedServerHelper.php'
+      - 'drive/bin/arcadecloud-drive-admin-helper.php'
+      - 'drive/bin/install_arcadecloud_admin_helper.sh'
+      - 'drive/tests/setup_bootstrap_smoke.php'
+      - 'drive/docs/INITIAL_SETUP.md'
+      - '.github/workflows/initial-setup.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate PHP syntax
+        run: |
+          set -euo pipefail
+          php -l drive/setup/index.php
+          php -l drive/setup/api.php
+          php -l drive/src/Setup/BootstrapSetupAuth.php
+          php -l drive/src/Setup/SetupConfigurationService.php
+          php -l drive/src/Setup/SuperAdminBootstrapService.php
+          php -l drive/src/Admin/PrivilegedServerHelper.php
+          php -l drive/bin/arcadecloud-drive-admin-helper.php
+          php -l drive/tests/setup_bootstrap_smoke.php
+
+      - name: Validate JavaScript and installer
+        run: |
+          set -euo pipefail
+          node --check drive/js/setup.js
+          bash -n drive/bin/install_arcadecloud_admin_helper.sh
+
+      - name: Bootstrap authentication smoke test
+        run: php drive/tests/setup_bootstrap_smoke.php
+
+      - name: Setup security boundary guards
+        run: |
+          set -euo pipefail
+          grep -q "token_hash" drive/bin/arcadecloud-drive-admin-helper.php
+          grep -q "password_hash('arcadecloud'" drive/bin/arcadecloud-drive-admin-helper.php
+          grep -q "requireServerOperator" drive/bin/arcadecloud-drive-admin-helper.php
+          grep -q "php_user" drive/bin/arcadecloud-drive-admin-helper.php
+          grep -q "bootstrap-complete" drive/bin/arcadecloud-drive-admin-helper.php
+          grep -q "setup.lock" drive/src/Setup/BootstrapSetupAuth.php
+          grep -q "system_role, chat, userstatus" drive/src/Setup/SuperAdminBootstrapService.php
+          grep -q "'superadmin'" drive/src/Setup/SuperAdminBootstrapService.php
+          grep -q "X-ArcadeCloud-Setup-CSRF" drive/js/setup.js
+          ! grep -q "app_bootstrap.php" drive/setup/api.php
+          ! grep -q "require.*db.php" drive/setup/api.php
+          ! grep -Eq '\b(shell_exec|exec|system|passthru|popen)\s*\(' drive/setup/api.php drive/src/Setup/*.php
+
+      - name: Diff whitespace check
+        run: git diff --check

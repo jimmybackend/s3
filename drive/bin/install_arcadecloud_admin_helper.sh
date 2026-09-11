@@ -10,6 +10,9 @@ PHP_USER=""
 PHP_GROUP=""
 IDENTITY_PATH="/etc/arcadecloud-drive/federation-node.json"
 RUNTIME_ENV_PATH="/etc/arcadecloud-drive/runtime-env.json"
+BOOTSTRAP_AUTH_PATH="/etc/arcadecloud-drive/bootstrap-auth.json"
+SETUP_LOCK_PATH="/etc/arcadecloud-drive/setup.lock"
+BOOTSTRAP_SETUP=0
 
 for arg in "$@"; do
   case "$arg" in
@@ -17,6 +20,9 @@ for arg in "$@"; do
     --php-group=*) PHP_GROUP="${arg#*=}" ;;
     --identity-path=*) IDENTITY_PATH="${arg#*=}" ;;
     --runtime-env-path=*) RUNTIME_ENV_PATH="${arg#*=}" ;;
+    --bootstrap-auth-path=*) BOOTSTRAP_AUTH_PATH="${arg#*=}" ;;
+    --setup-lock-path=*) SETUP_LOCK_PATH="${arg#*=}" ;;
+    --bootstrap-setup) BOOTSTRAP_SETUP=1 ;;
     *) echo "ERROR: argumento desconocido: $arg" >&2; exit 2 ;;
   esac
 done
@@ -40,14 +46,12 @@ if ! getent group "$PHP_GROUP" >/dev/null 2>&1; then
   exit 2
 fi
 
-case "$IDENTITY_PATH" in
-  /*) ;;
-  *) echo "ERROR: identity-path debe ser absoluto." >&2; exit 2 ;;
-esac
-case "$RUNTIME_ENV_PATH" in
-  /*) ;;
-  *) echo "ERROR: runtime-env-path debe ser absoluto." >&2; exit 2 ;;
-esac
+for path_value in "$IDENTITY_PATH" "$RUNTIME_ENV_PATH" "$BOOTSTRAP_AUTH_PATH" "$SETUP_LOCK_PATH"; do
+  case "$path_value" in
+    /*) ;;
+    *) echo "ERROR: todas las rutas administrativas deben ser absolutas." >&2; exit 2 ;;
+  esac
+done
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 SOURCE_HELPER="$SCRIPT_DIR/arcadecloud-drive-admin-helper.php"
@@ -64,13 +68,15 @@ fi
 install -d -o root -g "$PHP_GROUP" -m 0750 "$CONFIG_DIR"
 install -o root -g root -m 0755 "$SOURCE_HELPER" "$TARGET_HELPER"
 
-python3 - "$CONFIG_FILE" "$IDENTITY_PATH" "$RUNTIME_ENV_PATH" "$PHP_USER" "$PHP_GROUP" <<'PY'
+python3 - "$CONFIG_FILE" "$IDENTITY_PATH" "$RUNTIME_ENV_PATH" "$BOOTSTRAP_AUTH_PATH" "$SETUP_LOCK_PATH" "$PHP_USER" "$PHP_GROUP" <<'PY'
 import json, os, sys, tempfile
-path, identity, runtime, user, group = sys.argv[1:]
+path, identity, runtime, bootstrap_auth, setup_lock, user, group = sys.argv[1:]
 data = {
-    "version": 1,
+    "version": 2,
     "identity_path": identity,
     "runtime_env_path": runtime,
+    "bootstrap_auth_path": bootstrap_auth,
+    "setup_lock_path": setup_lock,
     "php_user": user,
     "php_group": group,
 }
@@ -100,6 +106,14 @@ if [[ -e "$IDENTITY_PATH" ]]; then
   chown root:"$PHP_GROUP" "$IDENTITY_PATH"
   chmod 0640 "$IDENTITY_PATH"
 fi
+if [[ -e "$BOOTSTRAP_AUTH_PATH" ]]; then
+  chown root:"$PHP_GROUP" "$BOOTSTRAP_AUTH_PATH"
+  chmod 0640 "$BOOTSTRAP_AUTH_PATH"
+fi
+if [[ -e "$SETUP_LOCK_PATH" ]]; then
+  chown root:root "$SETUP_LOCK_PATH"
+  chmod 0644 "$SETUP_LOCK_PATH"
+fi
 
 printf '%s ALL=(root) NOPASSWD: %s\n' "$PHP_USER" "$TARGET_HELPER" > "$SUDOERS_FILE"
 chmod 0440 "$SUDOERS_FILE"
@@ -109,10 +123,23 @@ fi
 
 "$TARGET_HELPER" status
 
+if [[ "$BOOTSTRAP_SETUP" -eq 1 ]]; then
+  echo
+  echo "=== SUPERVISOR TEMPORAL DE INSTALACIÓN ==="
+  BOOTSTRAP_RESULT="$("$TARGET_HELPER" bootstrap-init)"
+  echo "$BOOTSTRAP_RESULT"
+  echo "Abre /setup/?token=ACTIVATION_TOKEN usando el token mostrado arriba."
+  echo "Usuario temporal: arcadecloud"
+  echo "Contraseña inicial: arcadecloud"
+  echo "El token es obligatorio y se consume sólo como activación de la sesión de setup."
+fi
+
 echo
 echo "OK: helper administrativo instalado."
 echo "PHP-FPM user: $PHP_USER"
 echo "PHP-FPM group: $PHP_GROUP"
 echo "Identity: $IDENTITY_PATH"
 echo "Managed runtime env: $RUNTIME_ENV_PATH"
+echo "Bootstrap auth: $BOOTSTRAP_AUTH_PATH"
+echo "Setup lock: $SETUP_LOCK_PATH"
 echo "Sudo permitido únicamente para: $TARGET_HELPER"

@@ -7,7 +7,8 @@ use JsonException;
 
 final class FederationHttpClient
 {
-    private const MAX_RESPONSE_BYTES = 65536;
+    private const DEFAULT_MAX_RESPONSE_BYTES = 65536;
+    private const SYNC_MAX_RESPONSE_BYTES = 262144;
     private const ALLOWED_ENDPOINTS = [
         'node.php',
         'resolve.php',
@@ -16,6 +17,8 @@ final class FederationHttpClient
         'name-availability.php',
         'provider-request.php',
         'providers.php',
+        'sync-pull.php',
+        'sync-push.php',
     ];
 
     public function getJson(string $federationUrl, string $endpoint): array
@@ -37,6 +40,7 @@ final class FederationHttpClient
             throw new FederationException('Endpoint federado remoto no permitido.');
         }
         [$url, $host, $ip] = $this->safeTarget($baseUrl, $endpoint);
+        $maxResponseBytes = $endpoint === 'sync-pull.php' ? self::SYNC_MAX_RESPONSE_BYTES : self::DEFAULT_MAX_RESPONSE_BYTES;
         $response = '';
         $ch = curl_init($url);
         if ($ch === false) throw new FederationException('No se pudo inicializar cURL.', 500);
@@ -48,19 +52,20 @@ final class FederationHttpClient
             CURLOPT_TIMEOUT_MS => 5000,
             CURLOPT_PROTOCOLS => CURLPROTO_HTTPS,
             CURLOPT_REDIR_PROTOCOLS => CURLPROTO_HTTPS,
-            CURLOPT_HTTPHEADER => ['Accept: application/json', 'User-Agent: ArcadeCloud-Federation/1'],
+            CURLOPT_HTTPHEADER => ['Accept: application/json', 'User-Agent: ArcadeCloud-Federation/2'],
             CURLOPT_RESOLVE => [$host . ':443:' . $ip],
             CURLOPT_RETURNTRANSFER => false,
             CURLOPT_HEADER => false,
-            CURLOPT_WRITEFUNCTION => static function ($curl, string $chunk) use (&$response): int {
-                if (strlen($response) + strlen($chunk) > self::MAX_RESPONSE_BYTES) return 0;
+            CURLOPT_WRITEFUNCTION => static function ($curl, string $chunk) use (&$response, $maxResponseBytes): int {
+                if (strlen($response) + strlen($chunk) > $maxResponseBytes) return 0;
                 $response .= $chunk;
                 return strlen($chunk);
             },
         ];
         if ($method === 'POST') {
             $json = json_encode($body, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR);
-            if (strlen($json) > ArcadeLinkService::MAX_BYTES) {
+            $maxRequestBytes = $endpoint === 'sync-push.php' ? self::SYNC_MAX_RESPONSE_BYTES : ArcadeLinkService::MAX_BYTES;
+            if (strlen($json) > $maxRequestBytes) {
                 curl_close($ch);
                 throw new FederationException('Solicitud federada demasiado grande.');
             }
@@ -69,7 +74,7 @@ final class FederationHttpClient
             $options[CURLOPT_HTTPHEADER] = [
                 'Accept: application/json',
                 'Content-Type: application/json',
-                'User-Agent: ArcadeCloud-Federation/1',
+                'User-Agent: ArcadeCloud-Federation/2',
             ];
         }
         curl_setopt_array($ch, $options);
@@ -85,7 +90,7 @@ final class FederationHttpClient
             throw new FederationException('El nodo remoto devolvió un tipo de contenido inesperado.', 502);
         }
         try {
-            $decoded = json_decode($response, true, 16, JSON_THROW_ON_ERROR);
+            $decoded = json_decode($response, true, 32, JSON_THROW_ON_ERROR);
         } catch (JsonException) {
             throw new FederationException('El nodo remoto devolvió JSON inválido.', 502);
         }

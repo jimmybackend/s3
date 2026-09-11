@@ -11,6 +11,7 @@ final class FederationCatalogService
     private NodeIdentityService $identity;
     private FederatedCatalogRepository $catalog;
     private FederationEventStore $events;
+    private FederationLocationSelector $locations;
 
     public function __construct(private DriveApplication $app)
     {
@@ -22,6 +23,7 @@ final class FederationCatalogService
             $this->catalog,
             new FederationEventCodec()
         );
+        $this->locations = new FederationLocationSelector();
     }
 
     public function announceNodeIfChanged(): ?array
@@ -115,7 +117,12 @@ final class FederationCatalogService
         $this->ensureEnabled();
         $query = trim($query);
         if (strlen($query) < 2 || strlen($query) > 160) throw new FederationException('La búsqueda global debe tener entre 2 y 160 caracteres.', 400);
-        return $this->catalog->search($query, $limit);
+        $rows = $this->catalog->search($query, $limit);
+        foreach ($rows as &$row) {
+            $row['preferred_location'] = $this->locations->preferred(is_array($row['locations'] ?? null) ? $row['locations'] : []);
+        }
+        unset($row);
+        return $rows;
     }
 
     public function resource(string $resourceId): ?array
@@ -123,6 +130,7 @@ final class FederationCatalogService
         $this->ensureEnabled();
         $resource = $this->catalog->find($resourceId);
         if ($resource === null) return null;
+        $locations = $this->catalog->locations($resourceId);
         return [
             'resource_id' => (string)$resource['ResourceId'],
             'origin_node_id' => (string)$resource['OriginNodeId'],
@@ -133,7 +141,8 @@ final class FederationCatalogService
             'visibility' => (string)$resource['Visibility'],
             'discovery_policy' => (string)$resource['DiscoveryPolicy'],
             'rights' => (string)$resource['Rights'],
-            'locations' => $this->catalog->locations($resourceId),
+            'locations' => $locations,
+            'preferred_location' => $this->locations->preferred($locations),
             'arcadelink' => $this->decodeArcadeLink($resource['ArcadeLinkJson'] ?? null),
         ];
     }

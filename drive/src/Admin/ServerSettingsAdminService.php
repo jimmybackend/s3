@@ -79,11 +79,11 @@ final class ServerSettingsAdminService
             if (!array_key_exists($name, $values)) continue;
             $raw = (string)$values[$name];
             $meta = ManagedRuntimeEnvironment::DEFINITIONS[$name];
-            $secret = (bool)($meta['secret'] ?? false);
+            $required = (bool)($meta['required'] ?? false);
             $configured = (bool)($stateByName[$name]['configured'] ?? false);
 
-            // Campo secreto vacío significa conservar el valor actual.
-            if ($secret && $raw === '' && $configured) continue;
+            // Dejar vacío conserva un valor existente. Los opcionales vacíos no se escriben.
+            if ($raw === '' && ($configured || !$required)) continue;
             $validated[$name] = ManagedRuntimeEnvironment::validateValue($name, $raw);
         }
 

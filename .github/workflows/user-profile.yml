@@ -6,7 +6,11 @@ on:
       - 'drive/profile.php'
       - 'drive/s3.php'
       - 'drive/js/profile.js'
+      - 'drive/config/smtp.env.example'
+      - 'drive/docs/PROFILE_EMAIL_SMTP.md'
       - 'drive/src/Aws/SesEmailService.php'
+      - 'drive/src/Mail/SmtpConfig.php'
+      - 'drive/src/Mail/SmtpEmailService.php'
       - 'drive/src/Core/DriveApplication.php'
       - 'drive/src/Http/Controller/UserProfileController.php'
       - 'drive/src/Security/PasswordChangeService.php'
@@ -15,6 +19,7 @@ on:
       - 'drive/src/Security/UserProfileValidator.php'
       - 'drive/src/View/UserProfileModalRenderer.php'
       - 'drive/tests/user_profile_validator_smoke.php'
+      - 'drive/tests/smtp_config_smoke.php'
       - '.github/workflows/user-profile.yml'
   push:
     branches:
@@ -23,7 +28,11 @@ on:
       - 'drive/profile.php'
       - 'drive/s3.php'
       - 'drive/js/profile.js'
+      - 'drive/config/smtp.env.example'
+      - 'drive/docs/PROFILE_EMAIL_SMTP.md'
       - 'drive/src/Aws/SesEmailService.php'
+      - 'drive/src/Mail/SmtpConfig.php'
+      - 'drive/src/Mail/SmtpEmailService.php'
       - 'drive/src/Core/DriveApplication.php'
       - 'drive/src/Http/Controller/UserProfileController.php'
       - 'drive/src/Security/PasswordChangeService.php'
@@ -32,6 +41,7 @@ on:
       - 'drive/src/Security/UserProfileValidator.php'
       - 'drive/src/View/UserProfileModalRenderer.php'
       - 'drive/tests/user_profile_validator_smoke.php'
+      - 'drive/tests/smtp_config_smoke.php'
       - '.github/workflows/user-profile.yml'
 
 permissions:
@@ -52,6 +62,8 @@ jobs:
           php -l drive/profile.php
           php -l drive/src/Core/DriveApplication.php
           php -l drive/src/Aws/SesEmailService.php
+          php -l drive/src/Mail/SmtpConfig.php
+          php -l drive/src/Mail/SmtpEmailService.php
           php -l drive/src/Http/Controller/UserProfileController.php
           php -l drive/src/Security/PasswordChangeService.php
           php -l drive/src/Security/UserProfileRepository.php
@@ -65,6 +77,9 @@ jobs:
       - name: Profile validation smoke test
         run: php drive/tests/user_profile_validator_smoke.php
 
+      - name: SMTP configuration smoke test
+        run: php -d zend.assertions=1 -d assert.exception=1 drive/tests/smtp_config_smoke.php
+
       - name: Security and architecture guards
         run: |
           set -euo pipefail
@@ -76,6 +91,13 @@ jobs:
           grep -q "FotosPerfil/" drive/src/Security/UserProfileService.php
           grep -q "createPresignedRequest" drive/src/Security/UserProfileService.php
           grep -q "profilepicture" drive/src/Security/UserProfileRepository.php
+          grep -q "spinner-border" drive/src/View/UserProfileModalRenderer.php
+          grep -q "Subiendo fotografía" drive/js/profile.js
+          grep -q "ARCADECLOUD_SMTP_PASSWORD" drive/src/Mail/SmtpConfig.php
+          grep -q "SmtpEmailService" drive/src/Aws/SesEmailService.php
+          ! grep -q "SesClient" drive/src/Aws/SesEmailService.php
+          ! grep -R -q "micontraseñasegura" drive/src drive/js
+          ! grep -R -q "soporte@midominio.com" drive/src drive/js
           ! grep -q "UPDATE Users SET system_role" drive/src/Security/UserProfileRepository.php
           ! grep -q "UPDATE Users SET role" drive/src/Security/UserProfileRepository.php
           ! grep -q "UPDATE Users SET email" drive/src/Security/UserProfileRepository.php

@@ -17,6 +17,7 @@ on:
       - 'drive/src/Http/Controller/FederationController.php'
       - 'drive/src/Http/Controller/FederationDirectoryController.php'
       - 'drive/src/Http/Controller/FederationProviderController.php'
+      - 'drive/src/Http/Controller/FederationNodeAdminController.php'
       - 'drive/src/Security/AuthenticationRepository.php'
       - 'drive/src/Security/AuthenticationService.php'
       - 'drive/src/Security/SessionManager.php'
@@ -24,6 +25,7 @@ on:
       - 'drive/tests/federationcloud_smoke.php'
       - 'drive/tests/federation_directory_smoke.php'
       - 'drive/tests/federation_provider_smoke.php'
+      - 'drive/tests/federation_node_name_admin_smoke.php'
       - 'drive/docs/FEDERATIONCLOUD.md'
       - 'drive/docs/FEDERATION_PROVIDER_APPROVALS.md'
       - 'adbbmis1_Cloud.sql'
@@ -39,6 +41,7 @@ on:
       - 'drive/src/Http/Controller/FederationController.php'
       - 'drive/src/Http/Controller/FederationDirectoryController.php'
       - 'drive/src/Http/Controller/FederationProviderController.php'
+      - 'drive/src/Http/Controller/FederationNodeAdminController.php'
       - 'drive/src/Security/AuthenticationRepository.php'
       - 'drive/src/Security/AuthenticationService.php'
       - 'drive/src/Security/SessionManager.php'
@@ -46,6 +49,7 @@ on:
       - 'drive/tests/federationcloud_smoke.php'
       - 'drive/tests/federation_directory_smoke.php'
       - 'drive/tests/federation_provider_smoke.php'
+      - 'drive/tests/federation_node_name_admin_smoke.php'
       - 'drive/docs/FEDERATIONCLOUD.md'
       - 'drive/docs/FEDERATION_PROVIDER_APPROVALS.md'
       - 'adbbmis1_Cloud.sql'
@@ -75,6 +79,7 @@ jobs:
           php -l drive/src/Http/Controller/FederationController.php
           php -l drive/src/Http/Controller/FederationDirectoryController.php
           php -l drive/src/Http/Controller/FederationProviderController.php
+          php -l drive/src/Http/Controller/FederationNodeAdminController.php
           php -l drive/src/Security/AuthenticationRepository.php
           php -l drive/src/Security/AuthenticationService.php
           php -l drive/src/Security/SessionManager.php
@@ -83,6 +88,10 @@ jobs:
           php -l drive/tests/federationcloud_smoke.php
           php -l drive/tests/federation_directory_smoke.php
           php -l drive/tests/federation_provider_smoke.php
+          php -l drive/tests/federation_node_name_admin_smoke.php
+
+      - name: Validate FederationCloud JavaScript
+        run: node --check drive/js/federation-footer.js
 
       - name: FederationCloud cryptographic smoke test
         run: php drive/tests/federationcloud_smoke.php
@@ -92,6 +101,9 @@ jobs:
 
       - name: FederationCloud provider authorization smoke test
         run: php drive/tests/federation_provider_smoke.php
+
+      - name: FederationCloud signed node rename smoke test
+        run: php drive/tests/federation_node_name_admin_smoke.php
 
       - name: Security and architecture guards
         run: |
@@ -111,11 +123,16 @@ jobs:
           grep -q "system_role" drive/src/Security/AuthenticationRepository.php
           grep -q "isSuperAdmin" drive/src/Security/SessionManager.php
           grep -q "if (!\$session->isSuperAdmin())" drive/src/Http/Controller/FederationProviderController.php
+          grep -q "if (!\$session->isSuperAdmin())" drive/src/Http/Controller/FederationNodeAdminController.php
+          grep -q "renameNodeName" drive/src/Federation/NodeIdentityService.php
+          grep -Fq "COALESCE(?, NodeName)" drive/src/Federation/FederationNodeRepository.php
+          grep -q "node-admin.php" drive/js/federation-footer.js
+          grep -q "btnFederationNodeIdentity" drive/bloque_footer.php
           grep -q "\$_SESSION\['system_role'\]" drive/bloque_footer.php
           grep -q "X-Federation-CSRF" drive/js/federation-footer.js
           ! grep -q "Sólo Administración puede autorizar nodos proveedores" drive/src/Http/Controller/FederationProviderController.php
           ! grep -R "drive.esforzados.com" drive/src/Federation
-          ! grep -R -E '(AKIA[0-9A-Z]{16}|BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY|aws_secret_access_key[[:space:]]*=)' drive/src/Federation drive/federationcloud drive/bin/federation_*.php drive/tests/federationcloud_smoke.php drive/tests/federation_directory_smoke.php drive/tests/federation_provider_smoke.php
+          ! grep -R -E '(AKIA[0-9A-Z]{16}|BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY|aws_secret_access_key[[:space:]]*=)' drive/src/Federation drive/federationcloud drive/bin/federation_*.php drive/tests/federationcloud_smoke.php drive/tests/federation_directory_smoke.php drive/tests/federation_provider_smoke.php drive/tests/federation_node_name_admin_smoke.php
           ! grep -R "s3.amazonaws.com" drive/src/Federation drive/federationcloud
 
       - name: Diff whitespace check

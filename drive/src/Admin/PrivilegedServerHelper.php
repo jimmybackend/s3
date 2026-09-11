@@ -40,6 +40,19 @@ final class PrivilegedServerHelper
         }
     }
 
+    public function supportsBootstrapSetup(): bool
+    {
+        try {
+            $status = $this->status();
+            return ($status['ok'] ?? false) === true
+                && (int)($status['version'] ?? 0) >= 3
+                && (bool)($status['capabilities']['web_setup'] ?? false)
+                && (bool)($status['capabilities']['bootstrap_complete'] ?? false);
+        } catch (RuntimeException) {
+            return false;
+        }
+    }
+
     public function setEnvironment(string $name, string $value): void
     {
         if (!ManagedRuntimeEnvironment::isAllowed($name)) throw new RuntimeException('Variable no permitida.');
@@ -58,6 +71,14 @@ final class PrivilegedServerHelper
         }
         $json = json_encode($payload, JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
         $this->run(['env-set-many'], $json);
+    }
+
+    public function completeBootstrapSetup(): void
+    {
+        if (!$this->supportsBootstrapSetup()) {
+            throw new RuntimeException('El helper administrativo no soporta cierre de setup; reinstálalo desde el repositorio actual.');
+        }
+        $this->run(['bootstrap-complete']);
     }
 
     public function createIdentity(string $nodeName): array

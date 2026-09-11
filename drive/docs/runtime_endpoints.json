@@ -157,7 +157,7 @@
     },
     {
       "path": "drive/bin/arcadecloud-drive-admin-helper.php",
-      "size": 7758,
+      "size": 9555,
       "active": false,
       "references": []
     },
@@ -233,7 +233,7 @@
     },
     {
       "path": "drive/bloque_footer.php",
-      "size": 11432,
+      "size": 12035,
       "active": true,
       "references": [
         "drive/s3.php"
@@ -713,7 +713,7 @@
     },
     {
       "path": "drive/src/Admin/ManagedRuntimeEnvironment.php",
-      "size": 7022,
+      "size": 10256,
       "active": true,
       "references": [
         "drive/app_bootstrap.php",
@@ -722,13 +722,13 @@
     },
     {
       "path": "drive/src/Admin/PrivilegedServerHelper.php",
-      "size": 3142,
+      "size": 4132,
       "active": false,
       "references": []
     },
     {
       "path": "drive/src/Admin/ServerSettingsAdminService.php",
-      "size": 3499,
+      "size": 9427,
       "active": false,
       "references": []
     },
@@ -1272,7 +1272,7 @@
     },
     {
       "path": "drive/src/Http/Controller/ServerSettingsAdminController.php",
-      "size": 2389,
+      "size": 3292,
       "active": false,
       "references": []
     },
@@ -1740,7 +1740,7 @@
     },
     {
       "path": "drive/tests/server_admin_config_smoke.php",
-      "size": 3094,
+      "size": 5201,
       "active": false,
       "references": []
     },

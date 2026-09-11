@@ -169,16 +169,35 @@ La tabla nunca devuelve el valor actual de:
 
 La interfaz sólo indica `configurada`. Si el campo secreto queda vacío al guardar un grupo y ya existía un valor, se conserva.
 
-## Confirmación del superusuario
+## Confirmación del superusuario y elevación temporal
 
-Cada modificación requiere:
+Toda modificación sensible exige:
 
 1. sesión autenticada;
 2. `system_role = superadmin`;
 3. CSRF válido;
-4. contraseña actual del superusuario.
+4. reautenticación reciente del superusuario.
 
-La auditoría registra los nombres de las variables modificadas, pero no sus valores.
+La primera modificación después de abrir/expirar la autorización solicita la contraseña actual. Si es correcta, el servidor guarda únicamente en la sesión:
+
+```text
+superadmin_reauth_user_id
+superadmin_reauth_expires_at
+```
+
+No guarda la contraseña ni su hash adicional. La elevación dura **10 minutos** (`600` segundos). Durante ese intervalo el superadmin puede guardar más cambios desde el panel Servidor sin volver a escribir la contraseña.
+
+La elevación queda inválida automáticamente cuando:
+
+- vence el TTL;
+- la sesión deja de estar autenticada;
+- el usuario de sesión cambia;
+- el usuario deja de tener `system_role = superadmin`;
+- se cierra sesión y se destruye la sesión PHP.
+
+La interfaz recibe sólo `reauth_required`, `reauth_expires_in` y `reauth_ttl_seconds`; nunca recibe ni conserva la contraseña. No se usa `localStorage` ni `sessionStorage` para esta autorización.
+
+La auditoría registra los nombres de las variables modificadas, pero no sus valores ni la contraseña.
 
 ## Lo que no administra este panel
 

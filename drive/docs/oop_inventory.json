@@ -87,7 +87,7 @@
     },
     {
       "path": "drive/bin/arcadecloud-drive-admin-helper.php",
-      "lines": 166,
+      "lines": 207,
       "kind": "procedural endpoint",
       "classes": 0,
       "functions": [
@@ -101,6 +101,8 @@
         "safeConfiguredPath",
         "ensureParent",
         "writeJsonAtomic",
+        "readRuntimeConfig",
+        "validateEnvironmentMap",
         "validateIdentity"
       ],
       "session": false,
@@ -257,7 +259,7 @@
     },
     {
       "path": "drive/bloque_footer.php",
-      "lines": 184,
+      "lines": 194,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -1139,7 +1141,7 @@
     },
     {
       "path": "drive/src/Admin/ManagedRuntimeEnvironment.php",
-      "lines": 153,
+      "lines": 213,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -1154,7 +1156,7 @@
     },
     {
       "path": "drive/src/Admin/PrivilegedServerHelper.php",
-      "lines": 76,
+      "lines": 102,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -1169,7 +1171,7 @@
     },
     {
       "path": "drive/src/Admin/ServerSettingsAdminService.php",
-      "lines": 89,
+      "lines": 208,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -2401,7 +2403,7 @@
     },
     {
       "path": "drive/src/Http/Controller/ServerSettingsAdminController.php",
-      "lines": 52,
+      "lines": 73,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -3565,7 +3567,7 @@
     },
     {
       "path": "drive/tests/server_admin_config_smoke.php",
-      "lines": 67,
+      "lines": 97,
       "kind": "procedural endpoint",
       "classes": 0,
       "functions": [
@@ -4533,7 +4535,7 @@
     },
     {
       "path": "drive/js/server-admin.js",
-      "lines": 207,
+      "lines": 345,
       "kind": "class/module",
       "classes": [
         "ServerAdminModule"

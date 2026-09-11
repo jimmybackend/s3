@@ -20,7 +20,9 @@
     "drive/logout.php",
     "drive/psesion.php",
     "drive/s3.php",
+    "drive/setup/index.php",
     "drive/src/Admin/ManagedRuntimeEnvironment.php",
+    "drive/src/Setup/BootstrapSetupAuth.php",
     "drive/thumb.php",
     "drive/up.php",
     "drive/upload.php",
@@ -157,7 +159,7 @@
     },
     {
       "path": "drive/bin/arcadecloud-drive-admin-helper.php",
-      "size": 9555,
+      "size": 12894,
       "active": false,
       "references": []
     },
@@ -688,6 +690,29 @@
       ]
     },
     {
+      "path": "drive/setup/api.php",
+      "size": 3859,
+      "active": false,
+      "references": [
+        "drive/js/setup.js"
+      ]
+    },
+    {
+      "path": "drive/setup/index.php",
+      "size": 4700,
+      "active": true,
+      "references": [
+        "drive/bloque_archivos.php",
+        "drive/bloque_carpetas.php",
+        "drive/s3.php",
+        "drive/src/Http/Controller/ActivityCostController.php",
+        "drive/src/Http/Controller/AuthController.php",
+        "drive/src/Security/SessionManager.php",
+        "drive/src/View/PersonalAwsPageRenderer.php",
+        "drive/up.php"
+      ]
+    },
+    {
       "path": "drive/src/Activity/ActivityCostRecorder.php",
       "size": 5467,
       "active": false,
@@ -717,14 +742,17 @@
       "active": true,
       "references": [
         "drive/app_bootstrap.php",
+        "drive/setup/api.php",
         "drive/tests/server_admin_config_smoke.php"
       ]
     },
     {
       "path": "drive/src/Admin/PrivilegedServerHelper.php",
-      "size": 4132,
+      "size": 4890,
       "active": false,
-      "references": []
+      "references": [
+        "drive/setup/api.php"
+      ]
     },
     {
       "path": "drive/src/Admin/ServerSettingsAdminService.php",
@@ -1449,6 +1477,32 @@
       ]
     },
     {
+      "path": "drive/src/Setup/BootstrapSetupAuth.php",
+      "size": 6062,
+      "active": true,
+      "references": [
+        "drive/setup/api.php",
+        "drive/setup/index.php",
+        "drive/tests/setup_bootstrap_smoke.php"
+      ]
+    },
+    {
+      "path": "drive/src/Setup/SetupConfigurationService.php",
+      "size": 7791,
+      "active": false,
+      "references": [
+        "drive/setup/api.php"
+      ]
+    },
+    {
+      "path": "drive/src/Setup/SuperAdminBootstrapService.php",
+      "size": 6963,
+      "active": false,
+      "references": [
+        "drive/setup/api.php"
+      ]
+    },
+    {
       "path": "drive/src/Sharing/ShareAccessService.php",
       "size": 3090,
       "active": false,
@@ -1741,6 +1795,12 @@
     {
       "path": "drive/tests/server_admin_config_smoke.php",
       "size": 5201,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/tests/setup_bootstrap_smoke.php",
+      "size": 2145,
       "active": false,
       "references": []
     },

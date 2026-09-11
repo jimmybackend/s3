@@ -36,7 +36,9 @@
 | `drive/logout.php` | `drive/s3.php` |
 | `drive/psesion.php` | `drive/index.php`, `drive/login.php` |
 | `drive/s3.php` | `drive/app_bootstrap.php`, `drive/src/Http/Controller/AuthController.php`, `drive/src/View/ActivityCostPageRenderer.php`, `drive/src/View/FederationPageRenderer.php`, `drive/src/View/PersonalAwsPageRenderer.php`, `drive/js/archivos.js`, `drive/js/carpetas.js`, `drive/js/subir.js` |
-| `drive/src/Admin/ManagedRuntimeEnvironment.php` | `drive/app_bootstrap.php`, `drive/tests/server_admin_config_smoke.php` |
+| `drive/setup/index.php` | `drive/bloque_archivos.php`, `drive/bloque_carpetas.php`, `drive/s3.php`, `drive/src/Http/Controller/ActivityCostController.php`, `drive/src/Http/Controller/AuthController.php`, `drive/src/Security/SessionManager.php`, `drive/src/View/PersonalAwsPageRenderer.php`, `drive/up.php` |
+| `drive/src/Admin/ManagedRuntimeEnvironment.php` | `drive/app_bootstrap.php`, `drive/setup/api.php`, `drive/tests/server_admin_config_smoke.php` |
+| `drive/src/Setup/BootstrapSetupAuth.php` | `drive/setup/api.php`, `drive/setup/index.php`, `drive/tests/setup_bootstrap_smoke.php` |
 | `drive/thumb.php` | `drive/bloque_archivos.php`, `drive/js/imagenes.js` |
 | `drive/up.php` | `drive/src/Http/Controller/UploadCleanupController.php`, `drive/src/Upload/AdminMultipartUploadService.php`, `drive/js/estilo.js` |
 | `drive/upload.php` | `drive/s3.php`, `drive/js/soportesMediaTypes.js`, `drive/js/subir-chunked.js`, `drive/js/subir-dropzone.js`, `drive/js/subir.js` |
@@ -95,11 +97,12 @@
 | `drive/renombrar_carpeta.php` | `drive/js/carpetas.js` |
 | `drive/server-settings.php` | `drive/js/server-admin.js` |
 | `drive/set_file_security.php` | `drive/js/archivos.js` |
+| `drive/setup/api.php` | `drive/js/setup.js` |
 | `drive/src/Activity/ActivityCostRecorder.php` | ninguna |
 | `drive/src/Activity/ActivityCostRepository.php` | ninguna |
 | `drive/src/Activity/ActivityCostService.php` | ninguna |
 | `drive/src/Activity/AwsUnitPriceCatalog.php` | ninguna |
-| `drive/src/Admin/PrivilegedServerHelper.php` | ninguna |
+| `drive/src/Admin/PrivilegedServerHelper.php` | `drive/setup/api.php` |
 | `drive/src/Admin/ServerSettingsAdminService.php` | ninguna |
 | `drive/src/Application/AiFileSearchService.php` | ninguna |
 | `drive/src/Application/DrivePageService.php` | ninguna |
@@ -211,6 +214,8 @@
 | `drive/src/Security/UserProfileRepository.php` | ninguna |
 | `drive/src/Security/UserProfileService.php` | ninguna |
 | `drive/src/Security/UserProfileValidator.php` | `drive/tests/user_profile_validator_smoke.php` |
+| `drive/src/Setup/SetupConfigurationService.php` | `drive/setup/api.php` |
+| `drive/src/Setup/SuperAdminBootstrapService.php` | `drive/setup/api.php` |
 | `drive/src/Sharing/ShareAccessService.php` | ninguna |
 | `drive/src/Sharing/ShareException.php` | ninguna |
 | `drive/src/Sharing/ShareFileRepository.php` | ninguna |
@@ -259,6 +264,7 @@
 | `drive/tests/federation_provider_smoke.php` | ninguna |
 | `drive/tests/federationcloud_smoke.php` | ninguna |
 | `drive/tests/server_admin_config_smoke.php` | ninguna |
+| `drive/tests/setup_bootstrap_smoke.php` | ninguna |
 | `drive/tests/smtp_config_smoke.php` | ninguna |
 | `drive/tests/user_identity_presenter_smoke.php` | ninguna |
 | `drive/tests/user_profile_validator_smoke.php` | ninguna |

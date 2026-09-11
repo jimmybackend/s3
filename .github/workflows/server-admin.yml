@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - 'feat/superadmin-node-provisioning-server-settings'
+      - 'feat/superadmin-db-aws-settings'
     paths:
       - 'drive/app_bootstrap.php'
       - 'drive/server-settings.php'
@@ -25,6 +26,7 @@ on:
       - 'drive/federationcloud/name-availability.php'
       - 'drive/tests/server_admin_config_smoke.php'
       - 'drive/docs/SUPERADMIN_SERVER_SETTINGS.md'
+      - 'drive/docs/RUNTIME_ENV_CONFIGURATION.md'
       - '.github/workflows/server-admin.yml'
   pull_request:
     paths:
@@ -47,6 +49,7 @@ on:
       - 'drive/federationcloud/name-availability.php'
       - 'drive/tests/server_admin_config_smoke.php'
       - 'drive/docs/SUPERADMIN_SERVER_SETTINGS.md'
+      - 'drive/docs/RUNTIME_ENV_CONFIGURATION.md'
       - '.github/workflows/server-admin.yml'
   workflow_dispatch:
 
@@ -90,10 +93,21 @@ jobs:
       - name: Managed environment smoke test
         run: php drive/tests/server_admin_config_smoke.php
 
-      - name: Security boundary guards
+      - name: Administrative boundary guards
         run: |
           set -euo pipefail
           grep -q "ARCADECLOUD_SMTP_PASSWORD" drive/src/Admin/ManagedRuntimeEnvironment.php
+          grep -q "DB_HOST" drive/src/Admin/ManagedRuntimeEnvironment.php
+          grep -q "DB_PASSWORD" drive/src/Admin/ManagedRuntimeEnvironment.php
+          grep -q "AWS_ACCESS_KEY_ID" drive/src/Admin/ManagedRuntimeEnvironment.php
+          grep -q "AWS_SECRET_ACCESS_KEY" drive/src/Admin/ManagedRuntimeEnvironment.php
+          grep -q "atomic_group.*database" drive/src/Admin/ManagedRuntimeEnvironment.php
+          grep -q "atomic_group.*aws" drive/src/Admin/ManagedRuntimeEnvironment.php
+          grep -q "env-set-many" drive/bin/arcadecloud-drive-admin-helper.php
+          grep -q "setEnvironmentMany" drive/src/Admin/PrivilegedServerHelper.php
+          grep -q "mysqli_real_connect" drive/src/Admin/ServerSettingsAdminService.php
+          grep -q "set_group" drive/src/Http/Controller/ServerSettingsAdminController.php
+          grep -q "btnSaveServerAdminGroup" drive/js/server-admin.js
           grep -q "password_verify" drive/src/Security/SuperAdminReauthenticationService.php
           grep -q "SuperAdminReauthenticationService" drive/src/Admin/ServerSettingsAdminService.php
           grep -q "X-Server-Admin-CSRF" drive/js/server-admin.js
@@ -103,8 +117,6 @@ jobs:
           grep -q "name-availability.php" drive/src/Federation/FederationHttpClient.php
           grep -q "assertGloballyAvailable" drive/src/Federation/FederationNodeAdminService.php
           grep -q "configured' => false" drive/src/Federation/FederationNodeAdminService.php
-          ! grep -Eq "['\"]DB_[A-Z0-9_]+['\"]" drive/bin/arcadecloud-drive-admin-helper.php
-          ! grep -Eq "['\"]AWS_[A-Z0-9_]+['\"]" drive/bin/arcadecloud-drive-admin-helper.php
           ! grep -Eq '\b(shell_exec|exec|system|passthru|popen)\s*\(' drive/bin/arcadecloud-drive-admin-helper.php
           ! grep -q "identity-delete" drive/bin/arcadecloud-drive-admin-helper.php
           ! grep -q "chmod 777" drive/bin/install_arcadecloud_admin_helper.sh

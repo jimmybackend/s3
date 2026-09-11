@@ -34,9 +34,7 @@ final class ManagedRuntimeEnvironment
     public static function loadIntoProcess(?string $path = null): void
     {
         $path = $path ?: self::DEFAULT_PATH;
-        if (!is_file($path) || !is_readable($path)) {
-            return;
-        }
+        if (!is_file($path) || !is_readable($path)) return;
 
         foreach (self::read($path) as $name => $value) {
             if (!isset(self::DEFINITIONS[$name]) || !is_string($value)) continue;
@@ -102,6 +100,13 @@ final class ManagedRuntimeEnvironment
         }
         if (strlen($value) > 4096 || str_contains($value, "\0")) {
             throw new RuntimeException('Valor de variable inválido o demasiado grande.');
+        }
+
+        $secret = (bool)(self::DEFINITIONS[$name]['secret'] ?? false);
+        // Un secreto puede contener espacios significativos. Nunca se normaliza silenciosamente.
+        if ($secret) {
+            if ($value === '') throw new RuntimeException($name . ' no puede quedar vacío desde este panel.');
+            return $value;
         }
 
         $value = trim($value);

@@ -257,7 +257,7 @@
     },
     {
       "path": "drive/bloque_footer.php",
-      "lines": 163,
+      "lines": 184,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -4533,7 +4533,7 @@
     },
     {
       "path": "drive/js/server-admin.js",
-      "lines": 153,
+      "lines": 207,
       "kind": "class/module",
       "classes": [
         "ServerAdminModule"

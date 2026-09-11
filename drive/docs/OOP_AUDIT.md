@@ -37,7 +37,7 @@
 | `drive/bin/upload_cleanup.php` | 11 | thin endpoint | 0 | — | — | — | — |
 | `drive/bloque_archivos.php` | 662 | view/entrypoint | 0 | ⚠️ | — | — | — |
 | `drive/bloque_carpetas.php` | 75 | view/entrypoint | 0 | ⚠️ | — | — | — |
-| `drive/bloque_footer.php` | 163 | view/entrypoint | 0 | ⚠️ | — | — | — |
+| `drive/bloque_footer.php` | 184 | view/entrypoint | 0 | ⚠️ | — | — | — |
 | `drive/buscar_archivo.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/comprehend_archivo.php` | 8 | thin endpoint | 0 | — | — | — | — |
 | `drive/costos_aws.php` | 10 | thin endpoint | 0 | — | — | — | — |
@@ -315,7 +315,7 @@
 | `drive/js/polly.js` | 1008 | class/module | PollyModule | — | abrirModalGrabarAudio, abrirModalPolly, abrirModalRekognition, abrirModalTraducir, abrirModalTranscribir, copiarTextract | window functions: abrirModalGrabarAudio, abrirModalPolly, abrirModalRekognition, abrirModalTraducir, abrirModalTranscribir, copiarTextract, copiarTraducido, copiarTx |
 | `drive/js/profile.js` | 277 | class/module | UserProfileModule | — | — | — |
 | `drive/js/recargarPagina.js` | 27 | class/module | RecargarPaginaModule | — | — | — |
-| `drive/js/server-admin.js` | 153 | class/module | ServerAdminModule | — | — | — |
+| `drive/js/server-admin.js` | 207 | class/module | ServerAdminModule | — | — | — |
 | `drive/js/sincronizar.js` | 315 | class/module | SincronizarModule | — | — | — |
 | `drive/js/soportesMediaTypes.js` | 390 | class/module | SoportesMediaTypesModule | — | — | — |
 | `drive/js/storage-usage.js` | 51 | class/module | StorageUsageModule | — | — | — |

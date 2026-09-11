@@ -4,11 +4,11 @@
 
 ## Resumen
 
-- PHP analizados: **237**
-- PHP que ya contienen clases/interfaces: **146**
-- PHP marcados para migración/revisión: **14**
-- JavaScript analizados: **34**
-- JavaScript que ya contienen clases: **33**
+- PHP analizados: **246**
+- PHP que ya contienen clases/interfaces: **153**
+- PHP marcados para migración/revisión: **15**
+- JavaScript analizados: **35**
+- JavaScript que ya contienen clases: **34**
 - JavaScript marcados para migración/revisión: **7**
 
 ## Criterio
@@ -78,12 +78,13 @@
 | `drive/polly_list_voices.php` | 8 | thin endpoint | 0 | — | — | — | — |
 | `drive/polly_tts.php` | 8 | thin endpoint | 0 | — | — | — | — |
 | `drive/procesar_textract.php` | 8 | thin endpoint | 0 | — | — | — | — |
+| `drive/profile.php` | 11 | thin endpoint | 0 | — | — | — | — |
 | `drive/psesion.php` | 14 | thin endpoint | 0 | — | — | — | — |
 | `drive/rekognition_labels.php` | 8 | thin endpoint | 0 | — | — | — | — |
 | `drive/relock_file.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/renombrar_archivo.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/renombrar_carpeta.php` | 10 | thin endpoint | 0 | — | — | — | — |
-| `drive/s3.php` | 2196 | view/entrypoint | 0 | ⚠️ | — | — | — |
+| `drive/s3.php` | 2227 | view/entrypoint | 0 | ⚠️ | — | — | — |
 | `drive/set_file_security.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/src/Activity/ActivityCostRecorder.php` | 155 | class/module | 1 | — | — | — | — |
 | `drive/src/Activity/ActivityCostRepository.php` | 173 | class/module | 1 | — | ⚠️ | — | — |
@@ -119,12 +120,13 @@
 | `drive/src/Aws/PollyFileService.php` | 68 | class/module | 1 | — | — | — | — |
 | `drive/src/Aws/RdsGateway.php` | 233 | class/module | 1 | — | — | — | — |
 | `drive/src/Aws/RekognitionFileService.php` | 30 | class/module | 1 | — | — | — | — |
+| `drive/src/Aws/SesEmailService.php` | 91 | class/module | 1 | — | — | — | — |
 | `drive/src/Aws/TextractFileService.php` | 107 | class/module | 1 | — | — | — | — |
 | `drive/src/Aws/TranscriptionFileService.php` | 126 | class/module | 1 | — | — | — | — |
 | `drive/src/Aws/TranslateFileService.php` | 60 | class/module | 1 | — | — | — | — |
 | `drive/src/Console/UploadCleanupCommand.php` | 61 | class/module | 1 | — | — | — | — |
 | `drive/src/Core/ApplicationKernel.php` | 38 | class/module | 1 | — | — | — | — |
-| `drive/src/Core/DriveApplication.php` | 457 | class/module | 1 | — | — | ⚠️ | — |
+| `drive/src/Core/DriveApplication.php` | 488 | class/module | 1 | — | — | ⚠️ | — |
 | `drive/src/Federation/ArcadeLinkService.php` | 282 | class/module | 1 | — | — | — | — |
 | `drive/src/Federation/FederatedResourceRepository.php` | 117 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Federation/FederationCodec.php` | 54 | class/module | 1 | — | — | — | — |
@@ -175,6 +177,7 @@
 | `drive/src/Http/Controller/TranscriptionController.php` | 128 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/UploadCleanupController.php` | 76 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/UploadController.php` | 252 | class/module | 1 | — | — | — | — |
+| `drive/src/Http/Controller/UserProfileController.php` | 118 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/JsonResponse.php` | 27 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Request.php` | 112 | class/module | 1 | — | — | — | — |
 | `drive/src/Media/MediaPlaylistRepository.php` | 49 | class/module | 1 | — | ⚠️ | — | — |
@@ -184,9 +187,13 @@
 | `drive/src/Security/AuthenticationService.php` | 45 | class/module | 1 | — | — | — | — |
 | `drive/src/Security/FileSecurityRepository.php` | 92 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Security/FileSecurityService.php` | 183 | class/module | 1 | — | — | — | — |
+| `drive/src/Security/PasswordChangeService.php` | 141 | class/module | 1 | — | — | — | — |
 | `drive/src/Security/PersonalToolAccessService.php` | 53 | class/module | 1 | — | — | — | — |
 | `drive/src/Security/SessionManager.php` | 149 | class/module | 1 | ⚠️ | — | — | — |
 | `drive/src/Security/UserDirectoryRepository.php` | 72 | class/module | 1 | — | ⚠️ | — | — |
+| `drive/src/Security/UserProfileRepository.php` | 117 | class/module | 1 | — | ⚠️ | — | — |
+| `drive/src/Security/UserProfileService.php` | 183 | class/module | 1 | — | — | — | — |
+| `drive/src/Security/UserProfileValidator.php` | 96 | class/module | 1 | — | — | — | — |
 | `drive/src/Sharing/ShareAccessService.php` | 105 | class/module | 1 | — | — | — | — |
 | `drive/src/Sharing/ShareException.php` | 22 | class/module | 1 | — | — | — | — |
 | `drive/src/Sharing/ShareFileRepository.php` | 72 | class/module | 1 | — | ⚠️ | — | — |
@@ -223,6 +230,7 @@
 | `drive/src/View/SharePageRenderer.php` | 118 | class/module | 1 | — | — | — | — |
 | `drive/src/View/SyncStatusRenderer.php` | 14 | class/module | 1 | — | — | — | — |
 | `drive/src/View/UserIdentityPresenter.php` | 71 | class/module | 1 | — | — | — | — |
+| `drive/src/View/UserProfileModalRenderer.php` | 125 | class/module | 1 | — | — | — | — |
 | `drive/storage_usage.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/subir_archivo.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/subir_publico.php` | 10 | thin endpoint | 0 | — | — | — | — |
@@ -233,6 +241,7 @@
 | `drive/tests/federation_provider_smoke.php` | 76 | procedural endpoint | 0 | — | — | — | global functions: providerOk |
 | `drive/tests/federationcloud_smoke.php` | 146 | procedural endpoint | 0 | — | — | — | global functions: ok, legacyDocument |
 | `drive/tests/user_identity_presenter_smoke.php` | 30 | procedural endpoint | 0 | — | — | — | — |
+| `drive/tests/user_profile_validator_smoke.php` | 57 | procedural endpoint | 0 | — | — | — | — |
 | `drive/thumb.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/token_audio.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/token_texto.php` | 10 | thin endpoint | 0 | — | — | — | — |
@@ -288,6 +297,7 @@
 | `drive/js/obtenerFiltros.js` | 125 | class/module | ObtenerFiltrosModule | — | — | — |
 | `drive/js/pdf-pantalla-completa.js` | 45 | class/module | PdfPantallaCompletaModule | — | — | — |
 | `drive/js/polly.js` | 1008 | class/module | PollyModule | — | abrirModalGrabarAudio, abrirModalPolly, abrirModalRekognition, abrirModalTraducir, abrirModalTranscribir, copiarTextract | window functions: abrirModalGrabarAudio, abrirModalPolly, abrirModalRekognition, abrirModalTraducir, abrirModalTranscribir, copiarTextract, copiarTraducido, copiarTx |
+| `drive/js/profile.js` | 242 | class/module | UserProfileModule | — | — | — |
 | `drive/js/recargarPagina.js` | 27 | class/module | RecargarPaginaModule | — | — | — |
 | `drive/js/sincronizar.js` | 315 | class/module | SincronizarModule | — | — | — |
 | `drive/js/soportesMediaTypes.js` | 390 | class/module | SoportesMediaTypesModule | — | — | — |

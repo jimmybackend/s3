@@ -1,10 +1,10 @@
 {
   "summary": {
-    "php_total": 237,
-    "php_class_modules": 146,
-    "php_needs_migration": 14,
-    "js_total": 34,
-    "js_class_modules": 33,
+    "php_total": 246,
+    "php_class_modules": 153,
+    "php_needs_migration": 15,
+    "js_total": 35,
+    "js_class_modules": 34,
     "js_needs_migration": 7
   },
   "php": [
@@ -881,6 +881,21 @@
       "issues": []
     },
     {
+      "path": "drive/profile.php",
+      "lines": 11,
+      "kind": "thin endpoint",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
       "path": "drive/psesion.php",
       "lines": 14,
       "kind": "thin endpoint",
@@ -957,7 +972,7 @@
     },
     {
       "path": "drive/s3.php",
-      "lines": 2196,
+      "lines": 2227,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -1499,6 +1514,21 @@
       "issues": []
     },
     {
+      "path": "drive/src/Aws/SesEmailService.php",
+      "lines": 91,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
       "path": "drive/src/Aws/TextractFileService.php",
       "lines": 107,
       "kind": "class/module",
@@ -1575,7 +1605,7 @@
     },
     {
       "path": "drive/src/Core/DriveApplication.php",
-      "lines": 457,
+      "lines": 488,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -2339,6 +2369,21 @@
       "issues": []
     },
     {
+      "path": "drive/src/Http/Controller/UserProfileController.php",
+      "lines": 118,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
       "path": "drive/src/Http/JsonResponse.php",
       "lines": 27,
       "kind": "class/module",
@@ -2479,6 +2524,21 @@
       "issues": []
     },
     {
+      "path": "drive/src/Security/PasswordChangeService.php",
+      "lines": 141,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
       "path": "drive/src/Security/PersonalToolAccessService.php",
       "lines": 53,
       "kind": "class/module",
@@ -2519,6 +2579,51 @@
       "session": false,
       "superglobals": [],
       "db": true,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Security/UserProfileRepository.php",
+      "lines": 117,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": true,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Security/UserProfileService.php",
+      "lines": 183,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Security/UserProfileValidator.php",
+      "lines": 96,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
       "s3": false,
       "bootstrap": false,
       "html": false,
@@ -3066,6 +3171,21 @@
       "issues": []
     },
     {
+      "path": "drive/src/View/UserProfileModalRenderer.php",
+      "lines": 125,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": true,
+      "namespace": true,
+      "issues": []
+    },
+    {
       "path": "drive/storage_usage.php",
       "lines": 10,
       "kind": "thin endpoint",
@@ -3220,6 +3340,21 @@
     {
       "path": "drive/tests/user_identity_presenter_smoke.php",
       "lines": 30,
+      "kind": "procedural endpoint",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/tests/user_profile_validator_smoke.php",
+      "lines": 57,
       "kind": "procedural endpoint",
       "classes": 0,
       "functions": [],
@@ -4105,6 +4240,20 @@
       "issues": [
         "window functions: abrirModalGrabarAudio, abrirModalPolly, abrirModalRekognition, abrirModalTraducir, abrirModalTranscribir, copiarTextract, copiarTraducido, copiarTx"
       ]
+    },
+    {
+      "path": "drive/js/profile.js",
+      "lines": 242,
+      "kind": "class/module",
+      "classes": [
+        "UserProfileModule"
+      ],
+      "functions": [],
+      "window_assign": [],
+      "window_func": [],
+      "top_vars": [],
+      "iife": false,
+      "issues": []
     },
     {
       "path": "drive/js/recargarPagina.js",

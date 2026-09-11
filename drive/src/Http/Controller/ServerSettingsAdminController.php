@@ -8,6 +8,7 @@ use ArcadeCloud\Drive\Core\DriveApplication;
 use ArcadeCloud\Drive\Http\JsonResponse;
 use ArcadeCloud\Drive\Http\Request;
 use InvalidArgumentException;
+use JsonException;
 use RuntimeException;
 use Throwable;
 
@@ -34,12 +35,32 @@ final class ServerSettingsAdminController
             }
 
             $action = strtolower(trim($this->request->postString('action', 'set')));
-            if ($action !== 'set') JsonResponse::send(['ok' => false, 'error' => 'Acción no permitida.'], 400);
-            JsonResponse::send($service->set(
-                $this->request->postString('name'),
-                $this->request->postString('value'),
-                $this->request->postString('current_password')
-            ));
+            if ($action === 'set') {
+                JsonResponse::send($service->set(
+                    $this->request->postString('name'),
+                    $this->request->postString('value'),
+                    $this->request->postString('current_password')
+                ));
+            }
+
+            if ($action === 'set_group') {
+                $json = $this->request->postString('values_json', '{}');
+                try {
+                    $values = json_decode($json, true, 32, JSON_THROW_ON_ERROR);
+                } catch (JsonException) {
+                    throw new RuntimeException('El grupo de configuración no contiene JSON válido.');
+                }
+                if (!is_array($values) || ($values !== [] && array_is_list($values))) {
+                    throw new RuntimeException('El grupo de configuración tiene formato inválido.');
+                }
+                JsonResponse::send($service->setGroup(
+                    $this->request->postString('group'),
+                    $values,
+                    $this->request->postString('current_password')
+                ));
+            }
+
+            JsonResponse::send(['ok' => false, 'error' => 'Acción no permitida.'], 400);
         } catch (InvalidArgumentException $e) {
             JsonResponse::send(['ok' => false, 'error' => $e->getMessage()], 403);
         } catch (RuntimeException $e) {

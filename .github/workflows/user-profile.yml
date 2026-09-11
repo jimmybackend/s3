@@ -1,0 +1,84 @@
+name: User profile validation
+
+on:
+  pull_request:
+    paths:
+      - 'drive/profile.php'
+      - 'drive/s3.php'
+      - 'drive/js/profile.js'
+      - 'drive/src/Aws/SesEmailService.php'
+      - 'drive/src/Core/DriveApplication.php'
+      - 'drive/src/Http/Controller/UserProfileController.php'
+      - 'drive/src/Security/PasswordChangeService.php'
+      - 'drive/src/Security/UserProfileRepository.php'
+      - 'drive/src/Security/UserProfileService.php'
+      - 'drive/src/Security/UserProfileValidator.php'
+      - 'drive/src/View/UserProfileModalRenderer.php'
+      - 'drive/tests/user_profile_validator_smoke.php'
+      - '.github/workflows/user-profile.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'drive/profile.php'
+      - 'drive/s3.php'
+      - 'drive/js/profile.js'
+      - 'drive/src/Aws/SesEmailService.php'
+      - 'drive/src/Core/DriveApplication.php'
+      - 'drive/src/Http/Controller/UserProfileController.php'
+      - 'drive/src/Security/PasswordChangeService.php'
+      - 'drive/src/Security/UserProfileRepository.php'
+      - 'drive/src/Security/UserProfileService.php'
+      - 'drive/src/Security/UserProfileValidator.php'
+      - 'drive/src/View/UserProfileModalRenderer.php'
+      - 'drive/tests/user_profile_validator_smoke.php'
+      - '.github/workflows/user-profile.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate PHP syntax
+        run: |
+          set -euo pipefail
+          php -l drive/s3.php
+          php -l drive/profile.php
+          php -l drive/src/Core/DriveApplication.php
+          php -l drive/src/Aws/SesEmailService.php
+          php -l drive/src/Http/Controller/UserProfileController.php
+          php -l drive/src/Security/PasswordChangeService.php
+          php -l drive/src/Security/UserProfileRepository.php
+          php -l drive/src/Security/UserProfileService.php
+          php -l drive/src/Security/UserProfileValidator.php
+          php -l drive/src/View/UserProfileModalRenderer.php
+
+      - name: Validate JavaScript
+        run: node --check drive/js/profile.js
+
+      - name: Profile validation smoke test
+        run: php drive/tests/user_profile_validator_smoke.php
+
+      - name: Security and architecture guards
+        run: |
+          set -euo pipefail
+          grep -q "UserProfileController" drive/profile.php
+          grep -q "X-Profile-CSRF" drive/js/profile.js
+          grep -q "hash_equals" drive/src/Http/Controller/UserProfileController.php
+          grep -q "password_hash" drive/src/Security/PasswordChangeService.php
+          grep -q "password_verify" drive/src/Security/PasswordChangeService.php
+          grep -q "FotosPerfil/" drive/src/Security/UserProfileService.php
+          grep -q "createPresignedRequest" drive/src/Security/UserProfileService.php
+          grep -q "profilepicture" drive/src/Security/UserProfileRepository.php
+          ! grep -q "UPDATE Users SET system_role" drive/src/Security/UserProfileRepository.php
+          ! grep -q "UPDATE Users SET role" drive/src/Security/UserProfileRepository.php
+          ! grep -q "UPDATE Users SET email" drive/src/Security/UserProfileRepository.php
+
+      - name: Diff whitespace check
+        run: git diff --check origin/main...HEAD

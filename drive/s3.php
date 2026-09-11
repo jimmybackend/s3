@@ -14,8 +14,23 @@ $session->requireAuthenticated('index.php');
 $userId = $session->userId();
 $canViewRealAws = $app->personalToolAccessService()->state() === 'owner';
 $userIdentifier = $session->userName();
+$profileCsrf = (string)$session->get('profile_csrf', '');
+if (!preg_match('/\A[a-f0-9]{64}\z/', $profileCsrf)) {
+    $profileCsrf = bin2hex(random_bytes(32));
+    $session->set('profile_csrf', $profileCsrf);
+}
+
 $userAlias = \ArcadeCloud\Drive\View\UserIdentityPresenter::alias($userIdentifier);
 $userInitials = \ArcadeCloud\Drive\View\UserIdentityPresenter::initials($userIdentifier);
+$userAvatarUrl = '';
+try {
+    $navbarProfile = $app->userProfileService()->profile($userId);
+    $userAlias = (string)($navbarProfile['alias'] ?? $userAlias);
+    $userInitials = (string)($navbarProfile['initials'] ?? $userInitials);
+    $userAvatarUrl = (string)($navbarProfile['avatar_url'] ?? '');
+} catch (Throwable) {
+    // El Drive sigue disponible con iniciales si el perfil no puede cargarse.
+}
 
 // Provisionamiento multiusuario idempotente:
 // user 1 => Data/, user 2 => Data2/, user N => DataN/.
@@ -155,15 +170,28 @@ $footerEspacioUsado = $storageUsage['formatted'];
         </li>
       <li class="nav-item dropdown">
         <a class="nav-link dropdown-toggle d-flex align-items-center text-white" href="#" id="usuarioMenu" role="button" data-toggle="dropdown">
-          <span class="drive-user-avatar rounded-circle mr-2 d-inline-flex align-items-center justify-content-center"
-                aria-hidden="true"
-                style="width:30px;height:30px;min-width:30px;font-size:.75rem;font-weight:700;border:2px solid rgba(255,255,255,.85);background:rgba(255,255,255,.15);letter-spacing:.02em;">
-            <?= htmlspecialchars($userInitials, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>
-          </span>
+          <?php if ($userAvatarUrl !== ''): ?>
+            <img src="<?= htmlspecialchars($userAvatarUrl, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>"
+                 alt="Perfil"
+                 class="drive-user-avatar rounded-circle mr-2"
+                 width="30"
+                 height="30"
+                 style="object-fit:cover;">
+          <?php else: ?>
+            <span class="drive-user-avatar rounded-circle mr-2 d-inline-flex align-items-center justify-content-center"
+                  aria-hidden="true"
+                  style="width:30px;height:30px;min-width:30px;font-size:.75rem;font-weight:700;border:2px solid rgba(255,255,255,.85);background:rgba(255,255,255,.15);letter-spacing:.02em;">
+              <?= htmlspecialchars($userInitials, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?>
+            </span>
+          <?php endif; ?>
           <span class="drive-user-label"><?= htmlspecialchars($userAlias, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></span>
         </a>
 
         <div class="dropdown-menu dropdown-menu-right" aria-labelledby="usuarioMenu">
+          <button class="dropdown-item" data-toggle="modal" data-target="#modalUserProfile">
+            <i class="fas fa-user-circle"></i> Mi perfil
+          </button>
+          <div class="dropdown-divider"></div>
           <button class="dropdown-item" data-toggle="modal" data-target="#modalEnlacesUtiles">
             <i class="fas fa-link"></i> Enlaces
           </button>
@@ -547,6 +575,8 @@ $footerEspacioUsado = $storageUsage['formatted'];
 </div>
 
 </div>
+
+<?= \ArcadeCloud\Drive\View\UserProfileModalRenderer::render($profileCsrf) ?>
 
 <div id="bloque-footer">
   <?php include 'bloque_footer.php'; ?>
@@ -1803,6 +1833,7 @@ $footerEspacioUsado = $storageUsage['formatted'];
 
 <script src="js/sincronizar.js"></script>
 <script src="js/estilo.js?v=<?= (int) filemtime(__DIR__ . '/js/estilo.js') ?>"></script>
+<script src="js/profile.js?v=<?= (int) filemtime(__DIR__ . '/js/profile.js') ?>"></script>
 
 
 

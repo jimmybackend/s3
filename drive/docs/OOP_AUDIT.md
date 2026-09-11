@@ -4,11 +4,11 @@
 
 ## Resumen
 
-- PHP analizados: **253**
-- PHP que ya contienen clases/interfaces: **157**
-- PHP marcados para migración/revisión: **17**
-- JavaScript analizados: **35**
-- JavaScript que ya contienen clases: **34**
+- PHP analizados: **262**
+- PHP que ya contienen clases/interfaces: **162**
+- PHP marcados para migración/revisión: **19**
+- JavaScript analizados: **36**
+- JavaScript que ya contienen clases: **35**
 - JavaScript marcados para migración/revisión: **7**
 
 ## Criterio
@@ -25,8 +25,9 @@
 | `drive/activity_costs.php` | 8 | thin endpoint | 0 | — | — | — | — |
 | `drive/actualizar_ruta.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/api/upload.php` | 10 | thin endpoint | 0 | — | — | — | — |
-| `drive/app_bootstrap.php` | 64 | procedural endpoint | 0 | — | ⚠️ | — | DB in endpoint |
+| `drive/app_bootstrap.php` | 53 | procedural endpoint | 0 | — | ⚠️ | — | DB in endpoint |
 | `drive/aws.php` | 10 | thin endpoint | 0 | — | — | — | — |
+| `drive/bin/arcadecloud-drive-admin-helper.php` | 166 | procedural endpoint | 0 | — | — | — | global functions: fail, isRoot, base64UrlEncode, base64UrlDecode, nodeIdFromPublicKey, normalizeNodeName, readConfig, safeConfiguredPath |
 | `drive/bin/federation_identity_backup.php` | 49 | procedural endpoint | 0 | — | — | — | — |
 | `drive/bin/federation_identity_init.php` | 33 | procedural endpoint | 0 | — | — | — | — |
 | `drive/bin/federation_identity_name.php` | 35 | procedural endpoint | 0 | — | — | — | — |
@@ -36,7 +37,7 @@
 | `drive/bin/upload_cleanup.php` | 11 | thin endpoint | 0 | — | — | — | — |
 | `drive/bloque_archivos.php` | 662 | view/entrypoint | 0 | ⚠️ | — | — | — |
 | `drive/bloque_carpetas.php` | 75 | view/entrypoint | 0 | ⚠️ | — | — | — |
-| `drive/bloque_footer.php` | 171 | view/entrypoint | 0 | ⚠️ | — | — | — |
+| `drive/bloque_footer.php` | 163 | view/entrypoint | 0 | ⚠️ | — | — | — |
 | `drive/buscar_archivo.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/comprehend_archivo.php` | 8 | thin endpoint | 0 | — | — | — | — |
 | `drive/costos_aws.php` | 10 | thin endpoint | 0 | — | — | — | — |
@@ -54,6 +55,7 @@
 | `drive/encriptar_archivo.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/federationcloud/create.php` | 13 | thin endpoint | 0 | — | — | — | — |
 | `drive/federationcloud/index.php` | 13 | thin endpoint | 0 | — | — | — | — |
+| `drive/federationcloud/name-availability.php` | 11 | thin endpoint | 0 | — | — | — | — |
 | `drive/federationcloud/node-admin.php` | 12 | thin endpoint | 0 | — | — | — | — |
 | `drive/federationcloud/node.php` | 13 | thin endpoint | 0 | — | — | — | — |
 | `drive/federationcloud/nodes.php` | 12 | thin endpoint | 0 | — | — | — | — |
@@ -86,11 +88,15 @@
 | `drive/renombrar_archivo.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/renombrar_carpeta.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/s3.php` | 2227 | view/entrypoint | 0 | ⚠️ | — | — | — |
+| `drive/server-settings.php` | 11 | thin endpoint | 0 | — | — | — | — |
 | `drive/set_file_security.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/src/Activity/ActivityCostRecorder.php` | 155 | class/module | 1 | — | — | — | — |
 | `drive/src/Activity/ActivityCostRepository.php` | 173 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Activity/ActivityCostService.php` | 148 | class/module | 1 | — | — | — | — |
 | `drive/src/Activity/AwsUnitPriceCatalog.php` | 81 | class/module | 1 | — | — | — | — |
+| `drive/src/Admin/ManagedRuntimeEnvironment.php` | 150 | class/module | 1 | — | — | — | — |
+| `drive/src/Admin/PrivilegedServerHelper.php` | 76 | class/module | 1 | — | — | — | — |
+| `drive/src/Admin/ServerSettingsAdminService.php` | 89 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Application/AiFileSearchService.php` | 470 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Application/DrivePageService.php` | 40 | class/module | 1 | — | — | — | — |
 | `drive/src/Application/DrivePageViewModel.php` | 18 | class/module | 1 | — | — | — | — |
@@ -132,12 +138,12 @@
 | `drive/src/Federation/FederatedResourceRepository.php` | 117 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Federation/FederationCodec.php` | 54 | class/module | 1 | — | — | — | — |
 | `drive/src/Federation/FederationConfig.php` | 89 | class/module | 1 | — | — | — | — |
-| `drive/src/Federation/FederationDirectoryService.php` | 137 | class/module | 1 | — | — | — | — |
+| `drive/src/Federation/FederationDirectoryService.php` | 151 | class/module | 1 | — | — | — | — |
 | `drive/src/Federation/FederationException.php` | 20 | class/module | 1 | — | — | — | — |
-| `drive/src/Federation/FederationHttpClient.php` | 151 | class/module | 1 | — | — | — | — |
-| `drive/src/Federation/FederationNodeAdminService.php` | 108 | class/module | 1 | — | — | — | — |
+| `drive/src/Federation/FederationHttpClient.php` | 152 | class/module | 1 | — | — | — | — |
+| `drive/src/Federation/FederationNodeAdminService.php` | 213 | class/module | 1 | — | — | — | — |
 | `drive/src/Federation/FederationNodeDescriptorValidator.php` | 108 | class/module | 1 | — | — | — | — |
-| `drive/src/Federation/FederationNodeRepository.php` | 161 | class/module | 1 | — | ⚠️ | — | — |
+| `drive/src/Federation/FederationNodeRepository.php` | 166 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Federation/FederationProviderAuthorizationRepository.php` | 215 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Federation/FederationProviderAuthorizationService.php` | 233 | class/module | 1 | — | — | — | — |
 | `drive/src/Federation/FederationProviderGrant.php` | 101 | class/module | 1 | — | — | — | — |
@@ -154,8 +160,8 @@
 | `drive/src/Http/Controller/AwsCostController.php` | 61 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/AwsFileController.php` | 325 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/FederationController.php` | 248 | class/module | 1 | — | — | — | — |
-| `drive/src/Http/Controller/FederationDirectoryController.php` | 73 | class/module | 1 | — | — | — | — |
-| `drive/src/Http/Controller/FederationNodeAdminController.php` | 54 | class/module | 1 | — | — | — | — |
+| `drive/src/Http/Controller/FederationDirectoryController.php` | 85 | class/module | 1 | — | — | — | — |
+| `drive/src/Http/Controller/FederationNodeAdminController.php` | 46 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/FederationProviderController.php` | 115 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/FileAccessController.php` | 145 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/FileKeyRotationController.php` | 35 | class/module | 1 | — | — | — | — |
@@ -172,6 +178,7 @@
 | `drive/src/Http/Controller/PublicShareController.php` | 209 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/PublicSharedBrowserController.php` | 76 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/PublicUploadController.php` | 81 | class/module | 1 | — | — | — | — |
+| `drive/src/Http/Controller/ServerSettingsAdminController.php` | 52 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/ShareController.php` | 78 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/StorageUsageController.php` | 28 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/SyncController.php` | 181 | class/module | 1 | — | — | — | — |
@@ -195,6 +202,7 @@
 | `drive/src/Security/PasswordChangeService.php` | 141 | class/module | 1 | — | — | — | — |
 | `drive/src/Security/PersonalToolAccessService.php` | 53 | class/module | 1 | — | — | — | — |
 | `drive/src/Security/SessionManager.php` | 149 | class/module | 1 | ⚠️ | — | — | — |
+| `drive/src/Security/SuperAdminReauthenticationService.php` | 31 | class/module | 1 | — | — | — | — |
 | `drive/src/Security/UserDirectoryRepository.php` | 72 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Security/UserProfileRepository.php` | 117 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Security/UserProfileService.php` | 183 | class/module | 1 | — | — | — | — |
@@ -246,6 +254,7 @@
 | `drive/tests/federation_node_name_admin_smoke.php` | 91 | procedural endpoint | 0 | — | — | — | — |
 | `drive/tests/federation_provider_smoke.php` | 76 | procedural endpoint | 0 | — | — | — | global functions: providerOk |
 | `drive/tests/federationcloud_smoke.php` | 146 | procedural endpoint | 0 | — | — | — | global functions: ok, legacyDocument |
+| `drive/tests/server_admin_config_smoke.php` | 64 | procedural endpoint | 0 | — | — | — | global functions: serverAdminOk |
 | `drive/tests/smtp_config_smoke.php` | 42 | procedural endpoint | 0 | — | — | — | — |
 | `drive/tests/user_identity_presenter_smoke.php` | 30 | procedural endpoint | 0 | — | — | — | — |
 | `drive/tests/user_profile_validator_smoke.php` | 57 | procedural endpoint | 0 | — | — | — | — |
@@ -293,7 +302,7 @@
 | `drive/js/elimina-multiple.js` | 104 | class/module | EliminaMultipleModule | — | — | — |
 | `drive/js/elimina-uno.js` | 122 | class/module | EliminaUnoModule | — | — | — |
 | `drive/js/estilo.js` | 351 | class/module | EstiloModule | — | — | — |
-| `drive/js/federation-footer.js` | 381 | class/module | FederationFooterModule | — | — | — |
+| `drive/js/federation-footer.js` | 341 | class/module | FederationFooterModule | — | — | — |
 | `drive/js/federation-page.js` | 95 | class/module | FederationPageModule | — | — | — |
 | `drive/js/file-block.js` | 305 | class/module | FileBlockApp | — | — | — |
 | `drive/js/filtros.js` | 97 | class/module | FiltrosModule | — | — | — |
@@ -306,6 +315,7 @@
 | `drive/js/polly.js` | 1008 | class/module | PollyModule | — | abrirModalGrabarAudio, abrirModalPolly, abrirModalRekognition, abrirModalTraducir, abrirModalTranscribir, copiarTextract | window functions: abrirModalGrabarAudio, abrirModalPolly, abrirModalRekognition, abrirModalTraducir, abrirModalTranscribir, copiarTextract, copiarTraducido, copiarTx |
 | `drive/js/profile.js` | 277 | class/module | UserProfileModule | — | — | — |
 | `drive/js/recargarPagina.js` | 27 | class/module | RecargarPaginaModule | — | — | — |
+| `drive/js/server-admin.js` | 153 | class/module | ServerAdminModule | — | — | — |
 | `drive/js/sincronizar.js` | 315 | class/module | SincronizarModule | — | — | — |
 | `drive/js/soportesMediaTypes.js` | 390 | class/module | SoportesMediaTypesModule | — | — | — |
 | `drive/js/storage-usage.js` | 51 | class/module | StorageUsageModule | — | — | — |

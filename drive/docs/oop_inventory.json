@@ -1,10 +1,10 @@
 {
   "summary": {
-    "php_total": 253,
-    "php_class_modules": 157,
-    "php_needs_migration": 17,
-    "js_total": 35,
-    "js_class_modules": 34,
+    "php_total": 262,
+    "php_class_modules": 162,
+    "php_needs_migration": 19,
+    "js_total": 36,
+    "js_class_modules": 35,
     "js_needs_migration": 7
   },
   "php": [
@@ -55,7 +55,7 @@
     },
     {
       "path": "drive/app_bootstrap.php",
-      "lines": 64,
+      "lines": 53,
       "kind": "procedural endpoint",
       "classes": 0,
       "functions": [],
@@ -84,6 +84,35 @@
       "html": false,
       "namespace": false,
       "issues": []
+    },
+    {
+      "path": "drive/bin/arcadecloud-drive-admin-helper.php",
+      "lines": 166,
+      "kind": "procedural endpoint",
+      "classes": 0,
+      "functions": [
+        "fail",
+        "isRoot",
+        "base64UrlEncode",
+        "base64UrlDecode",
+        "nodeIdFromPublicKey",
+        "normalizeNodeName",
+        "readConfig",
+        "safeConfiguredPath",
+        "ensureParent",
+        "writeJsonAtomic",
+        "validateIdentity"
+      ],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": [
+        "global functions: fail, isRoot, base64UrlEncode, base64UrlDecode, nodeIdFromPublicKey, normalizeNodeName, readConfig, safeConfiguredPath"
+      ]
     },
     {
       "path": "drive/bin/federation_identity_backup.php",
@@ -228,7 +257,7 @@
     },
     {
       "path": "drive/bloque_footer.php",
-      "lines": 171,
+      "lines": 163,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -508,6 +537,21 @@
     {
       "path": "drive/federationcloud/index.php",
       "lines": 13,
+      "kind": "thin endpoint",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/federationcloud/name-availability.php",
+      "lines": 11,
       "kind": "thin endpoint",
       "classes": 0,
       "functions": [],
@@ -1004,6 +1048,21 @@
       "issues": []
     },
     {
+      "path": "drive/server-settings.php",
+      "lines": 11,
+      "kind": "thin endpoint",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
       "path": "drive/set_file_security.php",
       "lines": 10,
       "kind": "thin endpoint",
@@ -1072,6 +1131,53 @@
       "session": false,
       "superglobals": [],
       "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Admin/ManagedRuntimeEnvironment.php",
+      "lines": 150,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Admin/PrivilegedServerHelper.php",
+      "lines": 76,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Admin/ServerSettingsAdminService.php",
+      "lines": 89,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [
+        "SERVER"
+      ],
+      "db": true,
       "s3": false,
       "bootstrap": false,
       "html": false,
@@ -1695,7 +1801,7 @@
     },
     {
       "path": "drive/src/Federation/FederationDirectoryService.php",
-      "lines": 137,
+      "lines": 151,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -1725,7 +1831,7 @@
     },
     {
       "path": "drive/src/Federation/FederationHttpClient.php",
-      "lines": 151,
+      "lines": 152,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -1740,7 +1846,7 @@
     },
     {
       "path": "drive/src/Federation/FederationNodeAdminService.php",
-      "lines": 108,
+      "lines": 213,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -1770,7 +1876,7 @@
     },
     {
       "path": "drive/src/Federation/FederationNodeRepository.php",
-      "lines": 161,
+      "lines": 166,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -2025,7 +2131,7 @@
     },
     {
       "path": "drive/src/Http/Controller/FederationDirectoryController.php",
-      "lines": 73,
+      "lines": 85,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -2040,7 +2146,7 @@
     },
     {
       "path": "drive/src/Http/Controller/FederationNodeAdminController.php",
-      "lines": 54,
+      "lines": 46,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -2281,6 +2387,21 @@
     {
       "path": "drive/src/Http/Controller/PublicUploadController.php",
       "lines": 81,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Http/Controller/ServerSettingsAdminController.php",
+      "lines": 52,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -2638,6 +2759,21 @@
       "superglobals": [
         "SESSION"
       ],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Security/SuperAdminReauthenticationService.php",
+      "lines": 31,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
       "db": false,
       "s3": false,
       "bootstrap": false,
@@ -3428,6 +3564,25 @@
       ]
     },
     {
+      "path": "drive/tests/server_admin_config_smoke.php",
+      "lines": 64,
+      "kind": "procedural endpoint",
+      "classes": 0,
+      "functions": [
+        "serverAdminOk"
+      ],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": [
+        "global functions: serverAdminOk"
+      ]
+    },
+    {
       "path": "drive/tests/smtp_config_smoke.php",
       "lines": 42,
       "kind": "procedural endpoint",
@@ -4133,7 +4288,7 @@
     },
     {
       "path": "drive/js/federation-footer.js",
-      "lines": 381,
+      "lines": 341,
       "kind": "class/module",
       "classes": [
         "FederationFooterModule"
@@ -4371,6 +4526,20 @@
       "window_assign": [
         "recargarPagina"
       ],
+      "window_func": [],
+      "top_vars": [],
+      "iife": false,
+      "issues": []
+    },
+    {
+      "path": "drive/js/server-admin.js",
+      "lines": 153,
+      "kind": "class/module",
+      "classes": [
+        "ServerAdminModule"
+      ],
+      "functions": [],
+      "window_assign": [],
       "window_func": [],
       "top_vars": [],
       "iife": false,

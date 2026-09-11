@@ -28,6 +28,18 @@ final class PrivilegedServerHelper
         return is_array($decoded) ? $decoded : ['ok' => false];
     }
 
+    public function supportsEnvironmentGroups(): bool
+    {
+        try {
+            $status = $this->status();
+            return ($status['ok'] ?? false) === true
+                && (int)($status['version'] ?? 0) >= 2
+                && (bool)($status['capabilities']['env_set_many'] ?? false);
+        } catch (RuntimeException) {
+            return false;
+        }
+    }
+
     public function setEnvironment(string $name, string $value): void
     {
         if (!ManagedRuntimeEnvironment::isAllowed($name)) throw new RuntimeException('Variable no permitida.');

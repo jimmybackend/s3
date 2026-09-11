@@ -5,11 +5,19 @@ on:
     branches:
       - main
       - 'feat/federation-access-shares'
+      - 'feat/federation-portal-policies-v2'
     paths:
       - 'drive/federationcloud/access*.php'
+      - 'drive/federationcloud/portal.php'
       - 'drive/src/Federation/FederationAccess*.php'
       - 'drive/src/Federation/FederationHttpClient.php'
       - 'drive/src/Http/Controller/FederationAccessController.php'
+      - 'drive/src/Http/Controller/FederationPortalController.php'
+      - 'drive/src/Http/Controller/FederationController.php'
+      - 'drive/src/View/FederationPortalRenderer.php'
+      - 'drive/js/federation-portal.js'
+      - 'drive/js/arcadelink-share.js'
+      - 'drive/css/federation-portal.css'
       - 'drive/bin/federation_sync.php'
       - 'drive/bin/federation_catalog_migrate.php'
       - 'drive/sql/federation_access_shares.sql'
@@ -19,9 +27,16 @@ on:
   pull_request:
     paths:
       - 'drive/federationcloud/access*.php'
+      - 'drive/federationcloud/portal.php'
       - 'drive/src/Federation/FederationAccess*.php'
       - 'drive/src/Federation/FederationHttpClient.php'
       - 'drive/src/Http/Controller/FederationAccessController.php'
+      - 'drive/src/Http/Controller/FederationPortalController.php'
+      - 'drive/src/Http/Controller/FederationController.php'
+      - 'drive/src/View/FederationPortalRenderer.php'
+      - 'drive/js/federation-portal.js'
+      - 'drive/js/arcadelink-share.js'
+      - 'drive/css/federation-portal.css'
       - 'drive/bin/federation_sync.php'
       - 'drive/bin/federation_catalog_migrate.php'
       - 'drive/sql/federation_access_shares.sql'
@@ -47,17 +62,27 @@ jobs:
           php -l drive/src/Federation/FederationAccessService.php
           php -l drive/src/Federation/FederationHttpClient.php
           php -l drive/src/Http/Controller/FederationAccessController.php
+          php -l drive/src/Http/Controller/FederationPortalController.php
+          php -l drive/src/Http/Controller/FederationController.php
+          php -l drive/src/View/FederationPortalRenderer.php
           php -l drive/federationcloud/access-request.php
           php -l drive/federationcloud/access-status.php
           php -l drive/federationcloud/access.php
+          php -l drive/federationcloud/portal.php
           php -l drive/bin/federation_sync.php
           php -l drive/bin/federation_catalog_migrate.php
           php -l drive/tests/federation_access_message_smoke.php
 
+      - name: Validate JavaScript syntax
+        run: |
+          set -euo pipefail
+          node --check drive/js/federation-portal.js
+          node --check drive/js/arcadelink-share.js
+
       - name: Signed access-message smoke test
         run: php drive/tests/federation_access_message_smoke.php
 
-      - name: Access privacy guards
+      - name: Access privacy and portal guards
         run: |
           set -euo pipefail
           grep -q 'FederationAccessRequests' drive/sql/federation_access_shares.sql
@@ -67,6 +92,10 @@ jobs:
           grep -q "X_FEDERATION_ACCESS_CSRF\|X-Federation-Access-CSRF" drive/src/Http/Controller/FederationAccessController.php drive/docs/FEDERATION_ACCESS_AND_SHARES.md
           grep -q "syncPending(5)" drive/bin/federation_sync.php
           grep -q "ShareLinkService" drive/docs/FEDERATION_ACCESS_AND_SHARES.md
+          grep -q "requestable_metadata" drive/js/arcadelink-share.js
+          grep -q "discovery_policy" drive/src/Http/Controller/FederationController.php
+          grep -q "search.php" drive/js/federation-portal.js
+          grep -q "access.php" drive/js/federation-portal.js
           ! grep -q "FederationEvents" drive/src/Federation/FederationAccessRepository.php
           ! grep -q "FederationEvents" drive/src/Federation/FederationAccessService.php
           ! grep -Eq '(email|firstname|lastname|password)' drive/src/Federation/FederationAccessMessageCodec.php

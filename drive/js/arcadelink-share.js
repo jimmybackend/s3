@@ -35,10 +35,17 @@ class ArcadeLinkShareModule {
       this.download(downloadButton);
     }, true);
 
+    this.document.addEventListener('change', (event) => {
+      const target = event.target;
+      if (!target || target.id !== 'arcadeLinkDiscoveryPolicy') return;
+      this.updateDiscoveryHelp();
+    }, true);
+
     this.document.addEventListener('shown.bs.modal', (event) => {
       if (!event.target || event.target.id !== 'modalCompartir') return;
       this.ensurePanel();
       this.updateContextLabel();
+      this.updateDiscoveryHelp();
     }, true);
 
     if (this.document.readyState === 'loading') {
@@ -62,14 +69,14 @@ class ArcadeLinkShareModule {
     panel.innerHTML = `
       <div class="d-flex align-items-center justify-content-between mb-2">
         <strong><i class="fas fa-network-wired mr-1"></i> ArcadeLink FederationCloud</strong>
-        <span class="badge badge-info">portable</span>
+        <a class="badge badge-info" href="federationcloud/portal.php">portal global</a>
       </div>
       <p class="small text-muted mb-3">
         Descarga un pasaporte <code>.arcadelink</code> firmado por este nodo. No contiene credenciales AWS ni una URL permanente de S3.
       </p>
       <div id="arcadeLinkShareFile" class="small text-muted text-break mb-2"></div>
       <div class="form-row">
-        <div class="form-group col-md-6 mb-2">
+        <div class="form-group col-md-4 mb-2">
           <label for="arcadeLinkVisibility" class="mb-1">Visibilidad</label>
           <select id="arcadeLinkVisibility" class="form-control form-control-sm">
             <option value="UNLISTED" selected>UNLISTED</option>
@@ -77,7 +84,16 @@ class ArcadeLinkShareModule {
             <option value="PUBLIC">PUBLIC</option>
           </select>
         </div>
-        <div class="form-group col-md-6 mb-2">
+        <div class="form-group col-md-4 mb-2">
+          <label for="arcadeLinkDiscoveryPolicy" class="mb-1">Descubrimiento</label>
+          <select id="arcadeLinkDiscoveryPolicy" class="form-control form-control-sm">
+            <option value="" selected>Automático</option>
+            <option value="local_only">local_only</option>
+            <option value="requestable_metadata">requestable_metadata</option>
+            <option value="public_metadata">public_metadata</option>
+          </select>
+        </div>
+        <div class="form-group col-md-4 mb-2">
           <label for="arcadeLinkRights" class="mb-1">Derechos</label>
           <select id="arcadeLinkRights" class="form-control form-control-sm">
             <option value="link_only" selected>link_only</option>
@@ -87,6 +103,7 @@ class ArcadeLinkShareModule {
           </select>
         </div>
       </div>
+      <div id="arcadeLinkDiscoveryHelp" class="small text-muted mb-2"></div>
       <div class="d-flex align-items-center flex-wrap mt-2">
         <button type="button" id="btnArcadeLinkDownload" class="btn btn-info btn-sm mr-2">
           <i class="fas fa-file-download mr-1"></i> Descargar .arcadelink
@@ -94,10 +111,11 @@ class ArcadeLinkShareModule {
         <span id="arcadeLinkShareStatus" class="small text-muted"></span>
       </div>
       <div class="small text-muted mt-2">
-        UNLISTED es el modo recomendado para compartir: no aparece en búsquedas generales, pero puede resolverse con el archivo ArcadeLink.
+        <strong>local_only</strong> no publica metadata; <strong>requestable_metadata</strong> permite encontrar el recurso y solicitar acceso; <strong>public_metadata</strong> publica metadata de un recurso PUBLIC.
       </div>`;
 
     modalBody.appendChild(panel);
+    this.updateDiscoveryHelp();
   }
 
   updateContextLabel() {
@@ -106,6 +124,20 @@ class ArcadeLinkShareModule {
     target.textContent = this.context.name
       ? `Recurso: ${this.context.name}`
       : (this.context.key ? 'Recurso seleccionado listo para ArcadeLink.' : 'Selecciona un archivo desde el botón Compartir.');
+  }
+
+  updateDiscoveryHelp() {
+    const target = this.document.getElementById('arcadeLinkDiscoveryHelp');
+    const select = this.document.getElementById('arcadeLinkDiscoveryPolicy');
+    if (!target || !select) return;
+    const policy = String(select.value || '');
+    const labels = {
+      '': 'Automático: PUBLIC → public_metadata; PRIVATE/UNLISTED → local_only.',
+      local_only: 'Sólo existe localmente en este nodo y no entra al índice global.',
+      requestable_metadata: 'La metadata entra al catálogo global; el archivo sigue protegido y el acceso requiere aprobación del propietario.',
+      public_metadata: 'La metadata es global. Sólo es válido cuando Visibilidad = PUBLIC.'
+    };
+    target.textContent = labels[policy] || '';
   }
 
   setStatus(message, type = 'muted') {
@@ -124,16 +156,23 @@ class ArcadeLinkShareModule {
 
     const visibility = String(this.document.getElementById('arcadeLinkVisibility')?.value || 'UNLISTED');
     const rights = String(this.document.getElementById('arcadeLinkRights')?.value || 'link_only');
+    const discoveryPolicy = String(this.document.getElementById('arcadeLinkDiscoveryPolicy')?.value || '');
+    if (discoveryPolicy === 'public_metadata' && visibility !== 'PUBLIC') {
+      this.setStatus('public_metadata requiere Visibilidad = PUBLIC.', 'danger');
+      return;
+    }
+
     const oldHtml = button.innerHTML;
     button.disabled = true;
     button.innerHTML = '<span class="spinner-border spinner-border-sm mr-1" role="status" aria-hidden="true"></span> Generando…';
-    this.setStatus('Firmando ArcadeLink…', 'muted');
+    this.setStatus('Firmando ArcadeLink y actualizando catálogo…', 'muted');
 
     try {
       const body = new URLSearchParams();
       body.set('storage_ref', key);
       body.set('visibility', visibility);
       body.set('rights', rights);
+      body.set('discovery_policy', discoveryPolicy);
 
       const response = await fetch('federationcloud/create.php', {
         method: 'POST',
@@ -172,7 +211,8 @@ class ArcadeLinkShareModule {
       anchor.remove();
       this.window.setTimeout(() => URL.revokeObjectURL(url), 1500);
 
-      this.setStatus(`ArcadeLink generado · ${visibility}`, 'success');
+      const policyText = discoveryPolicy || (visibility === 'PUBLIC' ? 'public_metadata' : 'local_only');
+      this.setStatus(`ArcadeLink generado · ${visibility} · ${policyText}`, 'success');
     } catch (error) {
       console.error('[arcadelink-share]', error);
       this.setStatus(error && error.message ? error.message : 'No se pudo generar el ArcadeLink.', 'danger');

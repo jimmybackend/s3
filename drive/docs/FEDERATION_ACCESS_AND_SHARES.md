@@ -6,6 +6,56 @@ La búsqueda global puede descubrir recursos con `DiscoveryPolicy = requestable_
 
 Las solicitudes y grants **no forman parte del gossip global**. Sólo viajan entre el nodo solicitante y el nodo origen del recurso.
 
+## Portal de usuario
+
+El portal autenticado vive en:
+
+```text
+/federationcloud/portal.php
+```
+
+Integra tres superficies sobre las APIs existentes:
+
+```text
+Buscar global
+Solicitudes
+  - recibidas
+  - enviadas
+Shares
+  - received
+  - sent
+```
+
+La búsqueda del portal usa `/federationcloud/search.php` y consulta la copia local de `FederatedResources`; no hace fan-out en tiempo real a todos los nodos.
+
+Las solicitudes y Shares usan `/federationcloud/access.php` con el token CSRF de sesión. La interfaz no obtiene ni expone `user_id` remoto, correo, contraseñas ni credenciales de infraestructura.
+
+## Políticas visibles al compartir
+
+El modal ArcadeLink permite seleccionar explícitamente:
+
+```text
+local_only
+requestable_metadata
+public_metadata
+```
+
+También conserva modo `Automático`:
+
+```text
+PUBLIC   -> public_metadata
+UNLISTED -> local_only
+PRIVATE  -> local_only
+```
+
+Reglas:
+
+- `local_only`: el recurso no entra al catálogo global;
+- `requestable_metadata`: se replica metadata, pero el acceso requiere aprobación del propietario;
+- `public_metadata`: sólo es válido con `visibility=PUBLIC` y publica metadata al catálogo global.
+
+El endpoint `create.php` recibe `discovery_policy` y lo pasa a `FederationService`; el backend sigue validando la combinación final, por lo que la seguridad no depende del JavaScript.
+
 ## Identidad entre nodos
 
 No se replica ni se transmite `Users.id` como identidad global. Un `user_id` sólo tiene significado en su MySQL local.
@@ -156,6 +206,7 @@ La fase se valida con:
 - grant aprobado firmado;
 - rechazo firmado sin URL;
 - lint de servicios/endpoints;
+- validación sintáctica del portal y del modal de compartir;
 - guards que impiden meter estos mensajes privados al event log global.
 
 El tráfico real entre servidores se puede probar después sin cambiar el protocolo.

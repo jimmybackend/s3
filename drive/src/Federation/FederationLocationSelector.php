@@ -7,9 +7,10 @@ final class FederationLocationSelector
 {
     /**
      * Provider/mirror activos se prefieren al origen para repartir carga.
-     * La elección es determinista y no hace probes remotos síncronos.
+     * El orden es determinista y el resolver puede intentar el siguiente
+     * destino cuando una ubicación no responde.
      */
-    public function preferred(array $locations): ?array
+    public function ordered(array $locations): array
     {
         $clean = [];
         foreach ($locations as $row) {
@@ -30,7 +31,6 @@ final class FederationLocationSelector
                 'updated_at' => $row['updated_at'] ?? $row['UpdatedAt'] ?? null,
             ];
         }
-        if ($clean === []) return null;
 
         usort($clean, function (array $a, array $b): int {
             $rankA = $this->rank($a);
@@ -43,7 +43,13 @@ final class FederationLocationSelector
             return strcmp((string)$a['node_id'], (string)$b['node_id']);
         });
 
-        return $clean[0];
+        return $clean;
+    }
+
+    public function preferred(array $locations): ?array
+    {
+        $ordered = $this->ordered($locations);
+        return $ordered[0] ?? null;
     }
 
     private function rank(array $row): int

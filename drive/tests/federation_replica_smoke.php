@@ -35,7 +35,9 @@ try {
 
     $grant = FederationProviderGrant::sign(
         $origin,
-        FederationProviderGrant::payload($origin->nodeId(), $provider->nodeId(), 'mirror', 'all_allowed_resources')
+        $provider->nodeId(),
+        'mirror',
+        'all_allowed_resources'
     );
     $codec = new FederationReplicaMessageCodec();
     $offer = $codec->createOffer(
@@ -63,7 +65,9 @@ try {
 
     $selectedGrant = FederationProviderGrant::sign(
         $origin,
-        FederationProviderGrant::payload($origin->nodeId(), $provider->nodeId(), 'mirror', 'selected_resources')
+        $provider->nodeId(),
+        'mirror',
+        'selected_resources'
     );
     $selected = $offer;
     $selected['provider_grant'] = $selectedGrant;

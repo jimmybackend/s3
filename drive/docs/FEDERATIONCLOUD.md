@@ -13,7 +13,7 @@ Consulta también `drive/docs/FEDERATED_CLOUD_STATUS.md` para el estado funciona
 - `resource_id` (`arl_...`) identifica lógicamente el recurso.
 - `content_id` (`sha256:...`) identifica los bytes exactos cuando esa huella ya existe y la política permite publicarla.
 - `node_id` (`acn_...`) identifica criptográficamente al nodo emisor.
-- `node_name` es sólo un nombre público legible, por ejemplo `jimmybackend`; nunca sustituye al Node ID.
+- `node_name` es sólo un nombre público legible, por ejemplo `drive.ejemplo.com`; nunca sustituye al Node ID.
 
 Variables de entorno:
 
@@ -26,7 +26,7 @@ ARCADECLOUD_FEDERATION_IDENTITY=/etc/arcadecloud-drive/federation-node.json
 
 Opcionalmente `ARCADECLOUD_FEDERATION_SEED_URL` permite sustituir el seed primario sin cambiar código. Si no se define, el repositorio usa `drive/config/federation-seeds.json`.
 
-La identidad se crea explícitamente con `drive/bin/federation_identity_init.php` y no se genera durante una petición web. Una identidad nueva puede recibir nombre con `--name=nombre`. Una identidad existente sin nombre puede nombrarse una sola vez con `drive/bin/federation_identity_name.php`; cambiar un nombre ya fijado requiere intervención administrativa y no ocurre por registro automático.
+La identidad puede provisionarse de dos maneras. Para instalaciones headless continúan disponibles `drive/bin/federation_identity_init.php` y las utilidades CLI de identidad. En la aplicación, una sesión `superadmin` puede crear la identidad inicial o renombrar `node_name` desde el footer. Antes de crear llaves se consulta al seed para comprobar que el nombre esté disponible y el registro firmado final vuelve a imponer la unicidad. Si el sistema necesita escribir bajo `/etc/arcadecloud-drive`, la UI muestra la ruta y los permisos requeridos; opcionalmente puede usarse el helper privilegiado limitado descrito en `drive/docs/SUPERADMIN_SERVER_SETTINGS.md` y `drive/docs/NODE_PROVISIONING.md`.
 
 ## Formato
 
@@ -132,9 +132,9 @@ No se codifica dentro de la lógica PHP: está declarado en `drive/config/federa
 
 Cada instalación posee su propia identidad Ed25519 y se anuncia al seed mediante `POST /federationcloud/register.php`. El anuncio contiene únicamente el descriptor público firmado. `node_name`, cuando existe, forma parte del descriptor firmado. Antes de persistir un nodo remoto, el seed valida protocolo, Node ID, nombre, clave y firma; valida HTTPS; consulta mediante el cliente SSRF-safe el `node.php` anunciado; vuelve a validar el descriptor recibido directamente; exige coincidencia de Node ID, clave, nombre y URLs; y sólo entonces actualiza `LastSeen`.
 
-El primer registro liga el Node ID a su clave, nombre y URLs. Los registros posteriores no pueden cambiar silenciosamente esa asociación. Si el mismo Node ID intenta reaparecer con otra URL, otra clave o un nombre diferente, el seed responde conflicto y exige recuperación administrativa explícita.
+El primer registro liga el Node ID a su clave, nombre y URLs. Un registro posterior puede actualizar el `node_name` únicamente cuando conserva exactamente el mismo Node ID, clave pública, Public URL y Federation URL y el descriptor nuevo está firmado por la misma identidad. Cambiar silenciosamente clave o URLs sigue siendo rechazado y requiere recuperación administrativa explícita.
 
-`node_name` es único en el seed cuando está definido, pero no concede autoridad criptográfica. La autoridad sigue siendo la clave Ed25519 que genera el `node_id`. No se persiste IP, ciudad, país ni ubicación física.
+`node_name` es único en el seed cuando está definido, pero no concede autoridad criptográfica. La autoridad sigue siendo la clave Ed25519 que genera el `node_id`. `POST /federationcloud/name-availability.php` permite hacer un preflight antes de crear una identidad, pero la restricción única y el registro firmado siguen siendo la autoridad final frente a carreras. No se persiste IP, ciudad, país ni ubicación física como fuente de confianza.
 
 `GET /federationcloud/nodes.php` devuelve el nodo local, el seed, el contador y hasta 100 nodos activos. En esta fase, “Nodos conectados” significa nodos con `Status=active` observados durante los últimos 15 minutos. El footer muestra `node_name` cuando existe y conserva el Node ID completo en el tooltip.
 
@@ -221,9 +221,9 @@ Las operaciones sin costo AWS directo usan la unidad existente `drive.no_direct_
 
 ## Seguridad del registro y solicitudes
 
-`register.php` y `provider-request.php` aceptan payloads JSON limitados. Los descriptores deben estar firmados y el nodo receptor verifica activamente el endpoint anunciado mediante el cliente FederationCloud protegido contra SSRF. `provider-admin.php` exige sesión `superadmin` y CSRF para decisiones mutables.
+`register.php`, `name-availability.php` y `provider-request.php` aceptan payloads limitados. Los descriptores deben estar firmados y el nodo receptor verifica activamente el endpoint anunciado mediante el cliente FederationCloud protegido contra SSRF. `provider-admin.php` exige sesión `superadmin` y CSRF para decisiones mutables. El preflight de nombres no otorga identidad ni autoridad; sólo reduce colisiones antes de generar llaves.
 
-Para exposición pública se recomienda además rate limiting en Nginx/ALB sobre `/federationcloud/register.php` y `/federationcloud/provider-request.php`; esta protección perimetral no se sustituye por la validación criptográfica.
+Para exposición pública se recomienda además rate limiting en Nginx/ALB sobre los endpoints públicos de FederationCloud; esta protección perimetral no se sustituye por la validación criptográfica.
 
 ## Frontera de seguridad
 
@@ -236,7 +236,7 @@ FederationCloud nunca debe publicar o transportar como parte del directorio o de
 - `payload_key`;
 - rutas privadas permanentes de S3.
 
-La federación crea identidad y confianza entre nodos; no fusiona sus perímetros de seguridad.
+La federación crea identidad y confianza entre nodos; no fusiona sus perímetros de seguridad. La administración web del servidor está deliberadamente limitada a capacidades allowlisted y se documenta en `drive/docs/SUPERADMIN_SERVER_SETTINGS.md` y `drive/docs/SERVER_ADMIN_SECURITY_BOUNDARY.md`.
 
 ## Diseño persistente posterior
 
@@ -247,12 +247,13 @@ Implementado ahora:
 3. Continuidad ArcadeLink: payload v2 con referencia estable cifrada y compatibilidad con payload v1.
 4. Creación de ArcadeLink desde el modal Compartir del Drive.
 5. Dropzone FederationCloud con validación automática y presentación del recurso resuelto.
+6. Creación y renombre administrativo de la identidad FederationCloud desde el footer, con diagnóstico de permisos y prevención de colisiones de nombre.
 
 Pendiente para fases posteriores:
 
-6. `FederatedResources`: Resource ID, nodo origen, metadatos públicos, SHA-256 nullable, visibilidad, derechos, procedencia, versión/firma y estado.
-7. `FederationResourceLocations`: relación `origin|provider|mirror` entre recurso/contenido y nodos que anuncian una ubicación, con última verificación.
-8. `FederationLocalBindings`: binding explícita `resource_id -> user_id_ + FileS3.id_` para ciclo de vida y revocación futura.
+7. `FederatedResources`: Resource ID, nodo origen, metadatos públicos, SHA-256 nullable, visibilidad, derechos, procedencia, versión/firma y estado.
+8. `FederationResourceLocations`: relación `origin|provider|mirror` entre recurso/contenido y nodos que anuncian una ubicación, con última verificación.
+9. `FederationLocalBindings`: binding explícita `resource_id -> user_id_ + FileS3.id_` para ciclo de vida y revocación futura.
 
 Reglas: PRIVATE nunca tendrá fingerprint público; toda binding local conservará `user_id_`; `FileS3` seguirá siendo fuente de verdad local; no se duplicarán `Nombre`, `Ruta` o `Encriptado` como autoridad. Las instalaciones nuevas se describen siempre en el esquema central; las bases ya desplegadas reciben sólo el DDL puntual necesario y nunca una reimportación completa del dump maestro.
 

@@ -1,10 +1,10 @@
 {
   "summary": {
-    "php_total": 262,
-    "php_class_modules": 162,
-    "php_needs_migration": 19,
-    "js_total": 36,
-    "js_class_modules": 35,
+    "php_total": 268,
+    "php_class_modules": 165,
+    "php_needs_migration": 21,
+    "js_total": 37,
+    "js_class_modules": 36,
     "js_needs_migration": 7
   },
   "php": [
@@ -87,13 +87,14 @@
     },
     {
       "path": "drive/bin/arcadecloud-drive-admin-helper.php",
-      "lines": 207,
+      "lines": 294,
       "kind": "procedural endpoint",
       "classes": 0,
       "functions": [
         "fail",
         "isRoot",
         "base64UrlEncode",
+        "requireServerOperator",
         "base64UrlDecode",
         "nodeIdFromPublicKey",
         "normalizeNodeName",
@@ -103,6 +104,8 @@
         "writeJsonAtomic",
         "readRuntimeConfig",
         "validateEnvironmentMap",
+        "createBootstrapAuth",
+        "completeBootstrap",
         "validateIdentity"
       ],
       "session": false,
@@ -113,7 +116,7 @@
       "html": false,
       "namespace": false,
       "issues": [
-        "global functions: fail, isRoot, base64UrlEncode, base64UrlDecode, nodeIdFromPublicKey, normalizeNodeName, readConfig, safeConfiguredPath"
+        "global functions: fail, isRoot, base64UrlEncode, requireServerOperator, base64UrlDecode, nodeIdFromPublicKey, normalizeNodeName, readConfig"
       ]
     },
     {
@@ -1080,6 +1083,46 @@
       "issues": []
     },
     {
+      "path": "drive/setup/api.php",
+      "lines": 100,
+      "kind": "procedural endpoint",
+      "classes": 0,
+      "functions": [
+        "setupJson",
+        "setupPost"
+      ],
+      "session": false,
+      "superglobals": [
+        "POST",
+        "SERVER"
+      ],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": [
+        "global functions: setupJson, setupPost"
+      ]
+    },
+    {
+      "path": "drive/setup/index.php",
+      "lines": 86,
+      "kind": "view/entrypoint",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [
+        "GET"
+      ],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": true,
+      "namespace": false,
+      "issues": []
+    },
+    {
       "path": "drive/src/Activity/ActivityCostRecorder.php",
       "lines": 155,
       "kind": "class/module",
@@ -1156,7 +1199,7 @@
     },
     {
       "path": "drive/src/Admin/PrivilegedServerHelper.php",
-      "lines": 102,
+      "lines": 123,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -2844,6 +2887,54 @@
       "issues": []
     },
     {
+      "path": "drive/src/Setup/BootstrapSetupAuth.php",
+      "lines": 181,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": true,
+      "superglobals": [
+        "SERVER",
+        "SESSION"
+      ],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Setup/SetupConfigurationService.php",
+      "lines": 182,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Setup/SuperAdminBootstrapService.php",
+      "lines": 174,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": true,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
       "path": "drive/src/Sharing/ShareAccessService.php",
       "lines": 105,
       "kind": "class/module",
@@ -3583,6 +3674,21 @@
       "issues": [
         "global functions: serverAdminOk"
       ]
+    },
+    {
+      "path": "drive/tests/setup_bootstrap_smoke.php",
+      "lines": 57,
+      "kind": "procedural endpoint",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": []
     },
     {
       "path": "drive/tests/smtp_config_smoke.php",
@@ -4539,6 +4645,20 @@
       "kind": "class/module",
       "classes": [
         "ServerAdminModule"
+      ],
+      "functions": [],
+      "window_assign": [],
+      "window_func": [],
+      "top_vars": [],
+      "iife": false,
+      "issues": []
+    },
+    {
+      "path": "drive/js/setup.js",
+      "lines": 182,
+      "kind": "class/module",
+      "classes": [
+        "ArcadeCloudSetup"
       ],
       "functions": [],
       "window_assign": [],

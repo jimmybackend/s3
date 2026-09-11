@@ -94,7 +94,7 @@
 | `drive/src/Activity/ActivityCostRepository.php` | 173 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Activity/ActivityCostService.php` | 148 | class/module | 1 | — | — | — | — |
 | `drive/src/Activity/AwsUnitPriceCatalog.php` | 81 | class/module | 1 | — | — | — | — |
-| `drive/src/Admin/ManagedRuntimeEnvironment.php` | 150 | class/module | 1 | — | — | — | — |
+| `drive/src/Admin/ManagedRuntimeEnvironment.php` | 153 | class/module | 1 | — | — | — | — |
 | `drive/src/Admin/PrivilegedServerHelper.php` | 76 | class/module | 1 | — | — | — | — |
 | `drive/src/Admin/ServerSettingsAdminService.php` | 89 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Application/AiFileSearchService.php` | 470 | class/module | 1 | — | ⚠️ | — | — |
@@ -254,7 +254,7 @@
 | `drive/tests/federation_node_name_admin_smoke.php` | 91 | procedural endpoint | 0 | — | — | — | — |
 | `drive/tests/federation_provider_smoke.php` | 76 | procedural endpoint | 0 | — | — | — | global functions: providerOk |
 | `drive/tests/federationcloud_smoke.php` | 146 | procedural endpoint | 0 | — | — | — | global functions: ok, legacyDocument |
-| `drive/tests/server_admin_config_smoke.php` | 64 | procedural endpoint | 0 | — | — | — | global functions: serverAdminOk |
+| `drive/tests/server_admin_config_smoke.php` | 67 | procedural endpoint | 0 | — | — | — | global functions: serverAdminOk |
 | `drive/tests/smtp_config_smoke.php` | 42 | procedural endpoint | 0 | — | — | — | — |
 | `drive/tests/user_identity_presenter_smoke.php` | 30 | procedural endpoint | 0 | — | — | — | — |
 | `drive/tests/user_profile_validator_smoke.php` | 57 | procedural endpoint | 0 | — | — | — | — |

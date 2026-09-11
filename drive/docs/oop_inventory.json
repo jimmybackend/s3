@@ -1139,7 +1139,7 @@
     },
     {
       "path": "drive/src/Admin/ManagedRuntimeEnvironment.php",
-      "lines": 150,
+      "lines": 153,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -3565,7 +3565,7 @@
     },
     {
       "path": "drive/tests/server_admin_config_smoke.php",
-      "lines": 64,
+      "lines": 67,
       "kind": "procedural endpoint",
       "classes": 0,
       "functions": [

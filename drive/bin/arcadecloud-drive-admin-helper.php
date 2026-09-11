@@ -11,6 +11,8 @@ declare(strict_types=1);
 const AC_ADMIN_CONFIG = '/etc/arcadecloud-drive/admin-helper.json';
 const AC_RUNTIME_ENV_DEFAULT = '/etc/arcadecloud-drive/runtime-env.json';
 const AC_IDENTITY_DEFAULT = '/etc/arcadecloud-drive/federation-node.json';
+const AC_BOOTSTRAP_AUTH_DEFAULT = '/etc/arcadecloud-drive/bootstrap-auth.json';
+const AC_SETUP_LOCK_DEFAULT = '/etc/arcadecloud-drive/setup.lock';
 
 const AC_ENV_ALLOWLIST = [
     'ARCADECLOUD_PUBLIC_URL', 'ARCADECLOUD_FEDERATION_URL', 'ARCADECLOUD_FEDERATION_ENABLED',
@@ -26,6 +28,14 @@ const AC_ENV_ALLOWLIST = [
 function fail(string $message, int $code = 1): never { fwrite(STDERR, $message . "\n"); exit($code); }
 function isRoot(): bool { return function_exists('posix_geteuid') && posix_geteuid() === 0; }
 function base64UrlEncode(string $bytes): string { return rtrim(strtr(base64_encode($bytes), '+/', '-_'), '='); }
+
+function requireDirectRootOperator(): void
+{
+    $sudoUser = trim((string)getenv('SUDO_USER'));
+    if ($sudoUser !== '' && $sudoUser !== 'root') {
+        fail('Esta acción bootstrap sólo puede ejecutarse directamente por root.', 77);
+    }
+}
 
 function base64UrlDecode(string $encoded): string
 {
@@ -104,6 +114,44 @@ function validateEnvironmentMap(array $changes): array
     return $validated;
 }
 
+function createBootstrapAuth(string $authPath, string $lockPath, string $phpGroup): array
+{
+    if (is_file($lockPath)) return ['ok' => true, 'created' => false, 'setup_locked' => true];
+    if (is_file($authPath)) return ['ok' => true, 'created' => false, 'setup_locked' => false, 'bootstrap_exists' => true];
+
+    $token = bin2hex(random_bytes(32));
+    $hash = password_hash('arcadecloud', PASSWORD_DEFAULT);
+    if (!is_string($hash) || $hash === '') fail('No se pudo generar el hash del supervisor bootstrap.');
+
+    writeJsonAtomic($authPath, [
+        'version' => 1,
+        'enabled' => true,
+        'username' => 'arcadecloud',
+        'password_hash' => $hash,
+        'token_hash' => hash('sha256', $token),
+        'created_at' => gmdate(DATE_ATOM),
+    ], 0640, $phpGroup);
+
+    return [
+        'ok' => true,
+        'created' => true,
+        'setup_locked' => false,
+        'username' => 'arcadecloud',
+        'initial_password' => 'arcadecloud',
+        'activation_token' => $token,
+    ];
+}
+
+function completeBootstrap(string $authPath, string $lockPath): void
+{
+    writeJsonAtomic($lockPath, [
+        'version' => 1,
+        'completed' => true,
+        'completed_at' => gmdate(DATE_ATOM),
+    ], 0644, null);
+    if (is_file($authPath) && !unlink($authPath)) fail('Setup completado, pero no se pudo retirar la credencial bootstrap.');
+}
+
 function validateIdentity(array $data): void
 {
     foreach (['node_id', 'public_key', 'secret_key', 'payload_key'] as $field) {
@@ -124,18 +172,56 @@ if (!extension_loaded('sodium')) fail('PHP sodium es obligatorio.', 69);
 $config = readConfig();
 $runtimePath = safeConfiguredPath($config, 'runtime_env_path', AC_RUNTIME_ENV_DEFAULT);
 $identityPath = safeConfiguredPath($config, 'identity_path', AC_IDENTITY_DEFAULT);
+$bootstrapAuthPath = safeConfiguredPath($config, 'bootstrap_auth_path', AC_BOOTSTRAP_AUTH_DEFAULT);
+$setupLockPath = safeConfiguredPath($config, 'setup_lock_path', AC_SETUP_LOCK_DEFAULT);
 $phpGroup = trim((string)($config['php_group'] ?? ''));
 $action = (string)($argv[1] ?? 'status');
 
 if ($action === 'status') {
     fwrite(STDOUT, json_encode([
         'ok' => true,
-        'version' => 2,
-        'capabilities' => ['env_set_many' => true, 'db_aws_settings' => true],
+        'version' => 3,
+        'capabilities' => [
+            'env_set_many' => true,
+            'db_aws_settings' => true,
+            'web_setup' => true,
+            'bootstrap_complete' => true,
+        ],
         'identity_path' => $identityPath,
         'identity_exists' => is_file($identityPath),
         'runtime_env_path' => $runtimePath,
+        'bootstrap_auth_path' => $bootstrapAuthPath,
+        'bootstrap_enabled' => is_file($bootstrapAuthPath) && !is_file($setupLockPath),
+        'setup_lock_path' => $setupLockPath,
+        'setup_locked' => is_file($setupLockPath),
     ], JSON_UNESCAPED_SLASHES) . "\n");
+    exit(0);
+}
+
+if ($action === 'bootstrap-init') {
+    requireDirectRootOperator();
+    fwrite(STDOUT, json_encode(createBootstrapAuth($bootstrapAuthPath, $setupLockPath, $phpGroup), JSON_UNESCAPED_SLASHES) . "\n");
+    exit(0);
+}
+
+if ($action === 'bootstrap-reset') {
+    requireDirectRootOperator();
+    if (is_file($setupLockPath)) fail('La instalación ya está cerrada; no se reactiva bootstrap automáticamente.', 17);
+    if (is_file($bootstrapAuthPath) && !unlink($bootstrapAuthPath)) fail('No se pudo reemplazar la credencial bootstrap.');
+    fwrite(STDOUT, json_encode(createBootstrapAuth($bootstrapAuthPath, $setupLockPath, $phpGroup), JSON_UNESCAPED_SLASHES) . "\n");
+    exit(0);
+}
+
+if ($action === 'bootstrap-complete') {
+    completeBootstrap($bootstrapAuthPath, $setupLockPath);
+    fwrite(STDOUT, "ok\n");
+    exit(0);
+}
+
+if ($action === 'bootstrap-disable') {
+    requireDirectRootOperator();
+    completeBootstrap($bootstrapAuthPath, $setupLockPath);
+    fwrite(STDOUT, "ok\n");
     exit(0);
 }
 

@@ -23,6 +23,7 @@ final class ServerSettingsAdminService
         $driveRoot = dirname(__DIR__, 2);
         $helperAvailable = $this->helper->available();
         $groupSupport = $helperAvailable && $this->helper->supportsEnvironmentGroups();
+        $reauth = (new SuperAdminReauthenticationService($this->app))->state();
         return [
             'ok' => true,
             'helper_available' => $helperAvailable,
@@ -33,12 +34,13 @@ final class ServerSettingsAdminService
             'settings' => ManagedRuntimeEnvironment::publicState(),
             'install_command' => 'sudo bash ' . $driveRoot . '/bin/install_arcadecloud_admin_helper.sh --php-user=' . $runtime,
             'security_boundary' => 'La UI administra únicamente variables de runtime declaradas por ArcadeCloud y no ejecuta comandos arbitrarios.',
-        ];
+        ] + $reauth;
     }
 
     public function set(string $name, string $value, string $currentPassword): array
     {
-        (new SuperAdminReauthenticationService($this->app))->verify($currentPassword);
+        $reauth = new SuperAdminReauthenticationService($this->app);
+        $reauth->requireRecent($currentPassword);
         if (!ManagedRuntimeEnvironment::isAllowed($name)) throw new RuntimeException('Variable no permitida.');
         if ((string)(ManagedRuntimeEnvironment::DEFINITIONS[$name]['atomic_group'] ?? '') !== '') {
             throw new RuntimeException('Esta variable pertenece a un grupo que debe guardarse completo desde el panel Servidor.');
@@ -56,12 +58,13 @@ final class ServerSettingsAdminService
             'message' => 'Variable ArcadeCloud actualizada. El nuevo valor se aplicará a las siguientes peticiones.',
             'name' => $name,
             'secret' => (bool)(ManagedRuntimeEnvironment::DEFINITIONS[$name]['secret'] ?? false),
-        ];
+        ] + $reauth->state();
     }
 
     public function setGroup(string $group, array $values, string $currentPassword): array
     {
-        (new SuperAdminReauthenticationService($this->app))->verify($currentPassword);
+        $reauth = new SuperAdminReauthenticationService($this->app);
+        $reauth->requireRecent($currentPassword);
         $group = strtolower(trim($group));
         $allowedNames = ManagedRuntimeEnvironment::namesForAtomicGroup($group);
         if ($allowedNames === []) throw new RuntimeException('Grupo de configuración no permitido.');
@@ -124,7 +127,7 @@ final class ServerSettingsAdminService
                 : 'Configuración AWS guardada.',
             'group' => $group,
             'updated' => array_keys($validated),
-        ];
+        ] + $reauth->state();
     }
 
     private function effectiveConfigured(string $name, array $validated, array $stateByName): bool

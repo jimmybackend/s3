@@ -56,7 +56,7 @@
         profileCountry: 'country',
         profileHomephone: 'homephone',
         profileMobilephone: 'mobilephone',
-        profileEmail: 'email',
+        profileEmail: 'alias',
         profileRole: 'role',
         profileUserstatus: 'userstatus',
         profileRegistrationdate: 'registrationdate'

@@ -55,14 +55,28 @@ class ServerAdminModule {
       if (!response.ok || !data.ok || !Array.isArray(data.settings)) throw new Error(data.error || `HTTP ${response.status}`);
       this.settings = data.settings;
       this.renderSettings(preferredName, preferredGroup);
+
       const helper = this.document.getElementById('serverAdminHelperStatus');
+      const helperAvailable = Boolean(data.helper_available);
+      const groupReady = Boolean(data.helper_group_settings);
       if (helper) {
-        helper.textContent = data.helper_available
-          ? `Helper activo: ${data.helper_path}. Archivo administrado: ${data.managed_env_path}.`
-          : `Helper no instalado. Preparación única desde el servidor: ${data.install_command}`;
-        helper.className = data.helper_available ? 'small text-success mb-3' : 'small text-warning mb-3';
+        if (!helperAvailable) {
+          helper.textContent = `Helper no instalado. Preparación única desde el servidor: ${data.install_command}`;
+        } else if (!groupReady) {
+          helper.textContent = `Helper activo para variables simples, pero necesita actualizarse para Base de datos/AWS: ${data.install_command}`;
+        } else {
+          helper.textContent = `Helper activo: ${data.helper_path}. Archivo administrado: ${data.managed_env_path}.`;
+        }
+        helper.className = helperAvailable && groupReady ? 'small text-success mb-3' : 'small text-warning mb-3';
       }
-      this.showMessage(data.helper_available ? '' : 'Antes del primer cambio debes instalar una sola vez el helper mostrado abajo.', data.helper_available ? '' : 'warning');
+
+      if (!helperAvailable) {
+        this.showMessage('Antes del primer cambio debes instalar una sola vez el helper mostrado arriba.', 'warning');
+      } else if (!groupReady) {
+        this.showMessage('Actualiza una vez el helper para habilitar la configuración agrupada de Base de datos y AWS.', 'warning');
+      } else {
+        this.showMessage('', '');
+      }
     } catch (error) {
       this.showMessage(error.message || 'No se pudo cargar la configuración del servidor.', 'danger');
     }

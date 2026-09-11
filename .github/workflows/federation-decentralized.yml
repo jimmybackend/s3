@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - 'feat/decentralized-federation-catalog'
+      - 'fix/federation-cli-migration-environment'
     paths:
       - 'drive/federationcloud/sync-*.php'
       - 'drive/federationcloud/search.php'
@@ -82,7 +83,15 @@ jobs:
           php -l drive/tests/federation_catalog_event_smoke.php
 
       - name: Validate timer installer
-        run: bash -n drive/bin/install_federation_sync_timer.sh
+        run: |
+          set -euo pipefail
+          bash -n drive/bin/install_federation_sync_timer.sh
+          grep -q 'arcadecloud-federation-migrate.service' drive/bin/install_federation_sync_timer.sh
+          grep -q 'EnvironmentFile=-' drive/bin/install_federation_sync_timer.sh
+          migrate_line="$(grep -n 'systemctl start arcadecloud-federation-migrate.service' drive/bin/install_federation_sync_timer.sh | head -1 | cut -d: -f1)"
+          timer_line="$(grep -n 'systemctl enable --now arcadecloud-federation-sync.timer' drive/bin/install_federation_sync_timer.sh | head -1 | cut -d: -f1)"
+          test -n "$migrate_line" -a -n "$timer_line"
+          test "$migrate_line" -lt "$timer_line"
 
       - name: Signed event smoke test
         run: php drive/tests/federation_catalog_event_smoke.php

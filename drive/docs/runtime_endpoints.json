@@ -20,6 +20,7 @@
     "drive/logout.php",
     "drive/psesion.php",
     "drive/s3.php",
+    "drive/src/Admin/ManagedRuntimeEnvironment.php",
     "drive/thumb.php",
     "drive/up.php",
     "drive/upload.php",
@@ -60,7 +61,7 @@
     },
     {
       "path": "drive/app_bootstrap.php",
-      "size": 1640,
+      "size": 1892,
       "active": true,
       "references": [
         "drive/activity_costs.php",
@@ -87,6 +88,7 @@
         "drive/encriptar_archivo.php",
         "drive/federationcloud/create.php",
         "drive/federationcloud/index.php",
+        "drive/federationcloud/name-availability.php",
         "drive/federationcloud/node-admin.php",
         "drive/federationcloud/node.php",
         "drive/federationcloud/nodes.php",
@@ -117,6 +119,7 @@
         "drive/renombrar_archivo.php",
         "drive/renombrar_carpeta.php",
         "drive/s3.php",
+        "drive/server-settings.php",
         "drive/set_file_security.php",
         "drive/storage_usage.php",
         "drive/subir_archivo.php",
@@ -151,6 +154,12 @@
         "drive/src/Http/Controller/PersonalAwsController.php",
         "drive/js/estilo.js"
       ]
+    },
+    {
+      "path": "drive/bin/arcadecloud-drive-admin-helper.php",
+      "size": 7758,
+      "active": false,
+      "references": []
     },
     {
       "path": "drive/bin/federation_identity_backup.php",
@@ -224,7 +233,7 @@
     },
     {
       "path": "drive/bloque_footer.php",
-      "size": 7777,
+      "size": 10608,
       "active": true,
       "references": [
         "drive/s3.php"
@@ -374,6 +383,15 @@
         "drive/src/Security/SessionManager.php",
         "drive/src/View/PersonalAwsPageRenderer.php",
         "drive/up.php"
+      ]
+    },
+    {
+      "path": "drive/federationcloud/name-availability.php",
+      "size": 353,
+      "active": false,
+      "references": [
+        "drive/src/Federation/FederationHttpClient.php",
+        "drive/src/Federation/FederationNodeAdminService.php"
       ]
     },
     {
@@ -654,6 +672,14 @@
       ]
     },
     {
+      "path": "drive/server-settings.php",
+      "size": 324,
+      "active": false,
+      "references": [
+        "drive/js/server-admin.js"
+      ]
+    },
+    {
       "path": "drive/set_file_security.php",
       "size": 262,
       "active": false,
@@ -682,6 +708,27 @@
     {
       "path": "drive/src/Activity/AwsUnitPriceCatalog.php",
       "size": 2316,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Admin/ManagedRuntimeEnvironment.php",
+      "size": 6847,
+      "active": true,
+      "references": [
+        "drive/app_bootstrap.php",
+        "drive/tests/server_admin_config_smoke.php"
+      ]
+    },
+    {
+      "path": "drive/src/Admin/PrivilegedServerHelper.php",
+      "size": 3142,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Admin/ServerSettingsAdminService.php",
+      "size": 3499,
       "active": false,
       "references": []
     },
@@ -951,7 +998,7 @@
     },
     {
       "path": "drive/src/Federation/FederationDirectoryService.php",
-      "size": 5444,
+      "size": 5999,
       "active": false,
       "references": []
     },
@@ -973,7 +1020,7 @@
     },
     {
       "path": "drive/src/Federation/FederationHttpClient.php",
-      "size": 6593,
+      "size": 6626,
       "active": false,
       "references": [
         "drive/bin/federation_provider_request.php"
@@ -981,7 +1028,7 @@
     },
     {
       "path": "drive/src/Federation/FederationNodeAdminService.php",
-      "size": 3834,
+      "size": 10193,
       "active": false,
       "references": []
     },
@@ -996,7 +1043,7 @@
     },
     {
       "path": "drive/src/Federation/FederationNodeRepository.php",
-      "size": 6355,
+      "size": 6518,
       "active": false,
       "references": []
     },
@@ -1117,13 +1164,13 @@
     },
     {
       "path": "drive/src/Http/Controller/FederationDirectoryController.php",
-      "size": 3089,
+      "size": 4466,
       "active": false,
       "references": []
     },
     {
       "path": "drive/src/Http/Controller/FederationNodeAdminController.php",
-      "size": 2091,
+      "size": 2304,
       "active": false,
       "references": []
     },
@@ -1220,6 +1267,12 @@
     {
       "path": "drive/src/Http/Controller/PublicUploadController.php",
       "size": 2677,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Http/Controller/ServerSettingsAdminController.php",
+      "size": 2389,
       "active": false,
       "references": []
     },
@@ -1360,6 +1413,12 @@
     {
       "path": "drive/src/Security/SessionManager.php",
       "size": 3885,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Security/SuperAdminReauthenticationService.php",
+      "size": 1201,
       "active": false,
       "references": []
     },
@@ -1676,6 +1735,12 @@
     {
       "path": "drive/tests/federationcloud_smoke.php",
       "size": 5661,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/tests/server_admin_config_smoke.php",
+      "size": 2935,
       "active": false,
       "references": []
     },

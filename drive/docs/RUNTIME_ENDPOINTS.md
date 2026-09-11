@@ -18,7 +18,7 @@
 |---|---|
 | `drive/activity_costs.php` | `drive/bloque_carpetas.php`, `drive/s3.php`, `drive/src/View/ActivityCostPageRenderer.php` |
 | `drive/api/upload.php` | `drive/s3.php`, `drive/js/soportesMediaTypes.js`, `drive/js/subir-chunked.js`, `drive/js/subir-dropzone.js`, `drive/js/subir.js` |
-| `drive/app_bootstrap.php` | `drive/activity_costs.php`, `drive/actualizar_ruta.php`, `drive/api/upload.php`, `drive/aws.php`, `drive/bin/sync_worker.php`, `drive/bin/upload_cleanup.php`, `drive/bloque_archivos.php`, `drive/bloque_carpetas.php`, `drive/buscar_archivo.php`, `drive/comprehend_archivo.php`, `drive/costos_aws.php`, `drive/crear_carpeta.php`, `drive/delete_multiple.php`, `drive/descargar.php`, `drive/descargar_archivo.php`, `drive/descargar_zip.php`, `drive/download_multiple.php`, `drive/ec2-cron.php`, `drive/ec2.php`, `drive/eliminar_archivo.php`, `drive/eliminar_carpeta.php`, `drive/encriptar_archivo.php`, `drive/federationcloud/create.php`, `drive/federationcloud/index.php`, `drive/federationcloud/node-admin.php`, `drive/federationcloud/node.php`, `drive/federationcloud/nodes.php`, `drive/federationcloud/provider-admin.php`, `drive/federationcloud/provider-request.php`, `drive/federationcloud/providers.php`, `drive/federationcloud/register.php`, `drive/federationcloud/resolve.php`, `drive/generar_token.php`, `drive/guardar_texto.php`, `drive/leer_texto.php`, `drive/listar_carpetas.php`, `drive/logout.php`, `drive/media_playlist.php`, `drive/move_multiple.php`, `drive/move_task.php`, `drive/move_task_status.php`, `drive/mover_archivo.php`, `drive/mover_carpeta.php`, `drive/polly_cargar_texto.php`, `drive/polly_list_voices.php`, `drive/polly_tts.php`, `drive/procesar_textract.php`, `drive/profile.php`, `drive/psesion.php`, `drive/rekognition_labels.php`, `drive/relock_file.php`, `drive/renombrar_archivo.php`, `drive/renombrar_carpeta.php`, `drive/s3.php`, `drive/set_file_security.php`, `drive/storage_usage.php`, `drive/subir_archivo.php`, `drive/subir_publico.php`, `drive/sync_s3_to_db.php`, `drive/sync_status.php`, `drive/thumb.php`, `drive/token_audio.php`, `drive/token_texto.php`, `drive/token_video.php`, `drive/traducir_archivo.php`, `drive/transcribir_estado.php`, `drive/transcribir_iniciar.php`, `drive/unlock_file.php`, `drive/up-clean.php`, `drive/up.php`, `drive/upload.php`, `drive/upload_audio_recording.php`, `drive/upload_publico.php`, `drive/validar_php.php`, `drive/ver.php`, `drive/ver_archivo.php`, `drive/ver_pdf.php` |
+| `drive/app_bootstrap.php` | `drive/activity_costs.php`, `drive/actualizar_ruta.php`, `drive/api/upload.php`, `drive/aws.php`, `drive/bin/sync_worker.php`, `drive/bin/upload_cleanup.php`, `drive/bloque_archivos.php`, `drive/bloque_carpetas.php`, `drive/buscar_archivo.php`, `drive/comprehend_archivo.php`, `drive/costos_aws.php`, `drive/crear_carpeta.php`, `drive/delete_multiple.php`, `drive/descargar.php`, `drive/descargar_archivo.php`, `drive/descargar_zip.php`, `drive/download_multiple.php`, `drive/ec2-cron.php`, `drive/ec2.php`, `drive/eliminar_archivo.php`, `drive/eliminar_carpeta.php`, `drive/encriptar_archivo.php`, `drive/federationcloud/create.php`, `drive/federationcloud/index.php`, `drive/federationcloud/name-availability.php`, `drive/federationcloud/node-admin.php`, `drive/federationcloud/node.php`, `drive/federationcloud/nodes.php`, `drive/federationcloud/provider-admin.php`, `drive/federationcloud/provider-request.php`, `drive/federationcloud/providers.php`, `drive/federationcloud/register.php`, `drive/federationcloud/resolve.php`, `drive/generar_token.php`, `drive/guardar_texto.php`, `drive/leer_texto.php`, `drive/listar_carpetas.php`, `drive/logout.php`, `drive/media_playlist.php`, `drive/move_multiple.php`, `drive/move_task.php`, `drive/move_task_status.php`, `drive/mover_archivo.php`, `drive/mover_carpeta.php`, `drive/polly_cargar_texto.php`, `drive/polly_list_voices.php`, `drive/polly_tts.php`, `drive/procesar_textract.php`, `drive/profile.php`, `drive/psesion.php`, `drive/rekognition_labels.php`, `drive/relock_file.php`, `drive/renombrar_archivo.php`, `drive/renombrar_carpeta.php`, `drive/s3.php`, `drive/server-settings.php`, `drive/set_file_security.php`, `drive/storage_usage.php`, `drive/subir_archivo.php`, `drive/subir_publico.php`, `drive/sync_s3_to_db.php`, `drive/sync_status.php`, `drive/thumb.php`, `drive/token_audio.php`, `drive/token_texto.php`, `drive/token_video.php`, `drive/traducir_archivo.php`, `drive/transcribir_estado.php`, `drive/transcribir_iniciar.php`, `drive/unlock_file.php`, `drive/up-clean.php`, `drive/up.php`, `drive/upload.php`, `drive/upload_audio_recording.php`, `drive/upload_publico.php`, `drive/validar_php.php`, `drive/ver.php`, `drive/ver_archivo.php`, `drive/ver_pdf.php` |
 | `drive/aws.php` | `drive/s3.php`, `drive/src/Http/Controller/PersonalAwsController.php`, `drive/js/estilo.js` |
 | `drive/bloque_archivos.php` | `drive/s3.php`, `drive/js/archivos.js`, `drive/js/carpetas.js`, `drive/js/elimina-multiple.js`, `drive/js/elimina-uno.js`, `drive/js/imagenes.js`, `drive/js/obtenerFiltros.js` |
 | `drive/bloque_carpetas.php` | `drive/s3.php`, `drive/js/carpetas.js`, `drive/js/obtenerFiltros.js` |
@@ -36,6 +36,7 @@
 | `drive/logout.php` | `drive/s3.php` |
 | `drive/psesion.php` | `drive/index.php`, `drive/login.php` |
 | `drive/s3.php` | `drive/app_bootstrap.php`, `drive/src/Http/Controller/AuthController.php`, `drive/src/View/ActivityCostPageRenderer.php`, `drive/src/View/FederationPageRenderer.php`, `drive/src/View/PersonalAwsPageRenderer.php`, `drive/js/archivos.js`, `drive/js/carpetas.js`, `drive/js/subir.js` |
+| `drive/src/Admin/ManagedRuntimeEnvironment.php` | `drive/app_bootstrap.php`, `drive/tests/server_admin_config_smoke.php` |
 | `drive/thumb.php` | `drive/bloque_archivos.php`, `drive/js/imagenes.js` |
 | `drive/up.php` | `drive/src/Http/Controller/UploadCleanupController.php`, `drive/src/Upload/AdminMultipartUploadService.php`, `drive/js/estilo.js` |
 | `drive/upload.php` | `drive/s3.php`, `drive/js/soportesMediaTypes.js`, `drive/js/subir-chunked.js`, `drive/js/subir-dropzone.js`, `drive/js/subir.js` |
@@ -47,6 +48,7 @@
 | Archivo | Referencias encontradas |
 |---|---|
 | `drive/actualizar_ruta.php` | `drive/js/carpetas.js`, `drive/js/obtenerFiltros.js` |
+| `drive/bin/arcadecloud-drive-admin-helper.php` | ninguna |
 | `drive/bin/federation_identity_backup.php` | ninguna |
 | `drive/bin/federation_identity_init.php` | ninguna |
 | `drive/bin/federation_identity_name.php` | ninguna |
@@ -65,6 +67,7 @@
 | `drive/eliminar_carpeta.php` | `drive/js/carpetas.js` |
 | `drive/encriptar_archivo.php` | `drive/js/archivos.js` |
 | `drive/federationcloud/create.php` | `drive/js/arcadelink-share.js` |
+| `drive/federationcloud/name-availability.php` | `drive/src/Federation/FederationHttpClient.php`, `drive/src/Federation/FederationNodeAdminService.php` |
 | `drive/federationcloud/node-admin.php` | `drive/js/federation-footer.js` |
 | `drive/federationcloud/node.php` | `drive/bin/federation_provider_request.php`, `drive/src/Federation/FederationDirectoryService.php`, `drive/src/Federation/FederationHttpClient.php`, `drive/src/Federation/FederationProviderAuthorizationService.php`, `drive/src/Federation/FederationResolverService.php` |
 | `drive/federationcloud/nodes.php` | `drive/src/Federation/FederationHttpClient.php`, `drive/js/federation-footer.js` |
@@ -90,11 +93,14 @@
 | `drive/relock_file.php` | `drive/js/archivos.js` |
 | `drive/renombrar_archivo.php` | `drive/js/archivos.js` |
 | `drive/renombrar_carpeta.php` | `drive/js/carpetas.js` |
+| `drive/server-settings.php` | `drive/js/server-admin.js` |
 | `drive/set_file_security.php` | `drive/js/archivos.js` |
 | `drive/src/Activity/ActivityCostRecorder.php` | ninguna |
 | `drive/src/Activity/ActivityCostRepository.php` | ninguna |
 | `drive/src/Activity/ActivityCostService.php` | ninguna |
 | `drive/src/Activity/AwsUnitPriceCatalog.php` | ninguna |
+| `drive/src/Admin/PrivilegedServerHelper.php` | ninguna |
+| `drive/src/Admin/ServerSettingsAdminService.php` | ninguna |
 | `drive/src/Application/AiFileSearchService.php` | ninguna |
 | `drive/src/Application/DrivePageService.php` | ninguna |
 | `drive/src/Application/DrivePageViewModel.php` | ninguna |
@@ -176,6 +182,7 @@
 | `drive/src/Http/Controller/PublicShareController.php` | ninguna |
 | `drive/src/Http/Controller/PublicSharedBrowserController.php` | ninguna |
 | `drive/src/Http/Controller/PublicUploadController.php` | ninguna |
+| `drive/src/Http/Controller/ServerSettingsAdminController.php` | ninguna |
 | `drive/src/Http/Controller/ShareController.php` | ninguna |
 | `drive/src/Http/Controller/StorageUsageController.php` | ninguna |
 | `drive/src/Http/Controller/SyncController.php` | ninguna |
@@ -199,6 +206,7 @@
 | `drive/src/Security/PasswordChangeService.php` | ninguna |
 | `drive/src/Security/PersonalToolAccessService.php` | ninguna |
 | `drive/src/Security/SessionManager.php` | ninguna |
+| `drive/src/Security/SuperAdminReauthenticationService.php` | ninguna |
 | `drive/src/Security/UserDirectoryRepository.php` | ninguna |
 | `drive/src/Security/UserProfileRepository.php` | ninguna |
 | `drive/src/Security/UserProfileService.php` | ninguna |
@@ -250,6 +258,7 @@
 | `drive/tests/federation_node_name_admin_smoke.php` | ninguna |
 | `drive/tests/federation_provider_smoke.php` | ninguna |
 | `drive/tests/federationcloud_smoke.php` | ninguna |
+| `drive/tests/server_admin_config_smoke.php` | ninguna |
 | `drive/tests/smtp_config_smoke.php` | ninguna |
 | `drive/tests/user_identity_presenter_smoke.php` | ninguna |
 | `drive/tests/user_profile_validator_smoke.php` | ninguna |

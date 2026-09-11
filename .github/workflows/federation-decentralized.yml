@@ -1,0 +1,110 @@
+name: FederationCloud decentralized catalog validation
+
+on:
+  push:
+    branches:
+      - main
+      - 'feat/decentralized-federation-catalog'
+    paths:
+      - 'drive/federationcloud/sync-*.php'
+      - 'drive/federationcloud/search.php'
+      - 'drive/federationcloud/resource.php'
+      - 'drive/src/Federation/FederationEventCodec.php'
+      - 'drive/src/Federation/FederatedCatalogRepository.php'
+      - 'drive/src/Federation/FederationEventStore.php'
+      - 'drive/src/Federation/FederationCatalogService.php'
+      - 'drive/src/Federation/FederationPeerSyncRepository.php'
+      - 'drive/src/Federation/FederationSyncConfig.php'
+      - 'drive/src/Federation/FederationGossipService.php'
+      - 'drive/src/Federation/FederationHttpClient.php'
+      - 'drive/src/Federation/FederationService.php'
+      - 'drive/src/Http/Controller/FederationCatalogController.php'
+      - 'drive/bin/federation_catalog_migrate.php'
+      - 'drive/bin/federation_sync.php'
+      - 'drive/bin/install_federation_sync_timer.sh'
+      - 'drive/sql/federation_global_catalog.sql'
+      - 'drive/tests/federation_catalog_event_smoke.php'
+      - 'drive/docs/FEDERATION_DECENTRALIZED_CATALOG.md'
+      - '.github/workflows/federation-decentralized.yml'
+  pull_request:
+    paths:
+      - 'drive/federationcloud/sync-*.php'
+      - 'drive/federationcloud/search.php'
+      - 'drive/federationcloud/resource.php'
+      - 'drive/src/Federation/FederationEventCodec.php'
+      - 'drive/src/Federation/FederatedCatalogRepository.php'
+      - 'drive/src/Federation/FederationEventStore.php'
+      - 'drive/src/Federation/FederationCatalogService.php'
+      - 'drive/src/Federation/FederationPeerSyncRepository.php'
+      - 'drive/src/Federation/FederationSyncConfig.php'
+      - 'drive/src/Federation/FederationGossipService.php'
+      - 'drive/src/Federation/FederationHttpClient.php'
+      - 'drive/src/Federation/FederationService.php'
+      - 'drive/src/Http/Controller/FederationCatalogController.php'
+      - 'drive/bin/federation_catalog_migrate.php'
+      - 'drive/bin/federation_sync.php'
+      - 'drive/bin/install_federation_sync_timer.sh'
+      - 'drive/sql/federation_global_catalog.sql'
+      - 'drive/tests/federation_catalog_event_smoke.php'
+      - 'drive/docs/FEDERATION_DECENTRALIZED_CATALOG.md'
+      - '.github/workflows/federation-decentralized.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate PHP syntax
+        run: |
+          set -euo pipefail
+          php -l drive/src/Federation/FederationEventCodec.php
+          php -l drive/src/Federation/FederatedCatalogRepository.php
+          php -l drive/src/Federation/FederationEventStore.php
+          php -l drive/src/Federation/FederationCatalogService.php
+          php -l drive/src/Federation/FederationPeerSyncRepository.php
+          php -l drive/src/Federation/FederationSyncConfig.php
+          php -l drive/src/Federation/FederationGossipService.php
+          php -l drive/src/Federation/FederationHttpClient.php
+          php -l drive/src/Federation/FederationService.php
+          php -l drive/src/Http/Controller/FederationCatalogController.php
+          php -l drive/federationcloud/sync-pull.php
+          php -l drive/federationcloud/sync-push.php
+          php -l drive/federationcloud/sync-status.php
+          php -l drive/federationcloud/search.php
+          php -l drive/federationcloud/resource.php
+          php -l drive/bin/federation_catalog_migrate.php
+          php -l drive/bin/federation_sync.php
+          php -l drive/tests/federation_catalog_event_smoke.php
+
+      - name: Validate timer installer
+        run: bash -n drive/bin/install_federation_sync_timer.sh
+
+      - name: Signed event smoke test
+        run: php drive/tests/federation_catalog_event_smoke.php
+
+      - name: Decentralized catalog guards
+        run: |
+          set -euo pipefail
+          grep -q 'FederationEvents' drive/sql/federation_global_catalog.sql
+          grep -q 'FederationClocks' drive/sql/federation_global_catalog.sql
+          grep -q 'FederatedResources' drive/sql/federation_global_catalog.sql
+          grep -q 'FederationResourceLocations' drive/sql/federation_global_catalog.sql
+          grep -q 'FederationPeerSyncState' drive/sql/federation_global_catalog.sql
+          grep -q 'ContiguousSequence' drive/src/Federation/FederationEventStore.php
+          grep -q "sync-pull.php" drive/src/Federation/FederationHttpClient.php
+          grep -q "sync-push.php" drive/src/Federation/FederationHttpClient.php
+          grep -q "peersPerRun" drive/src/Federation/FederationGossipService.php
+          grep -q "public_metadata" drive/src/Federation/FederationCatalogService.php
+          grep -q "requestable_metadata" drive/src/Federation/FederationCatalogService.php
+          grep -q "local_only" drive/src/Federation/FederationCatalogService.php
+          grep -q "setup" drive/docs/FEDERATION_DECENTRALIZED_CATALOG.md || true
+          ! grep -Eq '(DB_PASSWORD|AWS_SECRET_ACCESS_KEY|ARCADECLOUD_SMTP_PASSWORD).*PayloadJson' drive/sql/federation_global_catalog.sql
+          ! grep -Eq 'FROM Users|INTO Users|UPDATE Users' drive/src/Federation/FederationEventStore.php drive/src/Federation/FederatedCatalogRepository.php
+
+      - name: Diff whitespace check
+        run: git diff --check

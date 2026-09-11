@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace ArcadeCloud\Drive\Federation;
 
 use ArcadeCloud\Drive\Core\DriveApplication;
+use Throwable;
 
 final class FederationService
 {
@@ -41,15 +42,20 @@ final class FederationService
         return $this->identity->signedDescriptor($this->config);
     }
 
-    public function createLink(int $userId, int $fileId, string $visibility, string $rights): array
+    public function createLink(int $userId, int $fileId, string $visibility, string $rights, string $discoveryPolicy = ''): array
     {
         $this->ensureEnabled();
         $file = $this->resources->requireOwnedFile($userId, $fileId);
-        return $this->createLinkForFile($file, $userId, $visibility, $rights);
+        return $this->createLinkForFile($file, $userId, $visibility, $rights, $discoveryPolicy);
     }
 
-    public function createLinkByStorageRef(int $userId, string $storageRef, string $visibility, string $rights): array
-    {
+    public function createLinkByStorageRef(
+        int $userId,
+        string $storageRef,
+        string $visibility,
+        string $rights,
+        string $discoveryPolicy = ''
+    ): array {
         $this->ensureEnabled();
         $storageRef = str_replace('\\', '/', trim($storageRef));
         $storageRef = preg_replace('~/+~', '/', $storageRef) ?? $storageRef;
@@ -61,7 +67,7 @@ final class FederationService
         if ($file === null) {
             throw new FederationException('Archivo no encontrado para este usuario.', 404);
         }
-        return $this->createLinkForFile($file, $userId, $visibility, $rights);
+        return $this->createLinkForFile($file, $userId, $visibility, $rights, $discoveryPolicy);
     }
 
     public function inspect(string $raw, int $viewerUserId = 0): array
@@ -116,8 +122,13 @@ final class FederationService
         return $this->config;
     }
 
-    private function createLinkForFile(array $file, int $userId, string $visibility, string $rights): array
-    {
+    private function createLinkForFile(
+        array $file,
+        int $userId,
+        string $visibility,
+        string $rights,
+        string $discoveryPolicy = ''
+    ): array {
         $document = $this->links->create(
             $file,
             $userId,
@@ -126,11 +137,28 @@ final class FederationService
             $visibility,
             $rights
         );
+
+        $catalog = [
+            'published' => false,
+            'discovery_policy' => $discoveryPolicy !== ''
+                ? strtolower(trim($discoveryPolicy))
+                : FederationCatalogService::defaultDiscoveryPolicy((string)$document['visibility']),
+        ];
+        try {
+            $catalog = (new FederationCatalogService($this->app))->publishArcadeLink($document, $userId, $discoveryPolicy);
+        } catch (Throwable $e) {
+            // El ArcadeLink sigue siendo portable aun si el catálogo global todavía
+            // no fue migrado o está temporalmente degradado.
+            error_log('[FederationCloud catalog] ' . $e->getMessage());
+            $catalog['degraded'] = true;
+        }
+
         return [
             'document' => $document,
             'content' => $this->links->encode($document),
             'filename' => $this->links->suggestedFilename($document),
             'file_id' => (int)$file['id_'],
+            'catalog' => $catalog,
         ];
     }
 

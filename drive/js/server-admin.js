@@ -6,6 +6,7 @@ class ServerAdminModule {
     this.modal = null;
     this.saveButton = null;
     this.select = null;
+    this.tableBody = null;
     this.valueInput = null;
     this.passwordInput = null;
     this.csrf = '';
@@ -17,9 +18,10 @@ class ServerAdminModule {
     this.modal = this.document.getElementById('modalServerAdmin');
     this.saveButton = this.document.getElementById('btnSaveServerAdmin');
     this.select = this.document.getElementById('serverAdminVariable');
+    this.tableBody = this.document.getElementById('serverAdminSettingsTableBody');
     this.valueInput = this.document.getElementById('serverAdminValue');
     this.passwordInput = this.document.getElementById('serverAdminPassword');
-    if (!this.button || !this.modal || !this.saveButton || !this.select || !this.valueInput || !this.passwordInput) return this;
+    if (!this.button || !this.modal || !this.saveButton || !this.select || !this.tableBody || !this.valueInput || !this.passwordInput) return this;
 
     this.csrf = String(this.button.dataset.csrf || '');
     if (this.modal.parentElement !== this.document.body) this.document.body.appendChild(this.modal);
@@ -30,7 +32,7 @@ class ServerAdminModule {
     return this;
   }
 
-  async load() {
+  async load(preferredName = '') {
     this.showMessage('Cargando configuración administrada…', 'info');
     try {
       const response = await fetch('server-settings.php', {
@@ -40,39 +42,91 @@ class ServerAdminModule {
       const data = await response.json();
       if (!response.ok || !data.ok || !Array.isArray(data.settings)) throw new Error(data.error || `HTTP ${response.status}`);
       this.settings = data.settings;
-      this.renderSettings();
+      this.renderSettings(preferredName);
       const helper = this.document.getElementById('serverAdminHelperStatus');
       if (helper) {
         helper.textContent = data.helper_available
-          ? `Helper privilegiado activo: ${data.helper_path}. Variables guardadas en ${data.managed_env_path}.`
+          ? `Helper activo: ${data.helper_path}. Archivo administrado: ${data.managed_env_path}.`
           : `Helper no instalado. Preparación única desde el servidor: ${data.install_command}`;
         helper.className = data.helper_available ? 'small text-success mb-3' : 'small text-warning mb-3';
       }
-      this.showMessage(data.helper_available ? '' : 'Antes del primer cambio debes instalar una sola vez el helper mostrado abajo. Después podrás administrar estas variables desde la aplicación.', data.helper_available ? '' : 'warning');
+      this.showMessage(data.helper_available ? '' : 'Antes del primer cambio debes instalar una sola vez el helper mostrado abajo.', data.helper_available ? '' : 'warning');
     } catch (error) {
       this.showMessage(error.message || 'No se pudo cargar la configuración del servidor.', 'danger');
     }
   }
 
-  renderSettings() {
+  renderSettings(preferredName = '') {
     this.select.replaceChildren();
-    let lastGroup = '';
+    this.tableBody.replaceChildren();
+
+    const groups = new Map();
     this.settings.forEach((row) => {
       const group = String(row.group || 'General');
-      if (group !== lastGroup) {
-        const optgroup = this.document.createElement('optgroup');
+      let optgroup = groups.get(group);
+      if (!optgroup) {
+        optgroup = this.document.createElement('optgroup');
         optgroup.label = group;
-        optgroup.dataset.group = group;
+        groups.set(group, optgroup);
         this.select.appendChild(optgroup);
-        lastGroup = group;
       }
-      const target = this.select.lastElementChild;
+
       const option = this.document.createElement('option');
       option.value = String(row.name || '');
       option.textContent = `${row.name}${row.configured ? ' · configurada' : ' · sin configurar'}`;
-      if (target && target.tagName === 'OPTGROUP') target.appendChild(option);
-      else this.select.appendChild(option);
+      optgroup.appendChild(option);
+
+      const tr = this.document.createElement('tr');
+
+      const nameCell = this.document.createElement('td');
+      const code = this.document.createElement('code');
+      code.textContent = String(row.name || '');
+      nameCell.appendChild(code);
+      const groupLine = this.document.createElement('div');
+      groupLine.className = 'small text-muted mt-1';
+      groupLine.textContent = group;
+      nameCell.appendChild(groupLine);
+
+      const valueCell = this.document.createElement('td');
+      valueCell.className = 'text-break';
+      if (row.secret) {
+        valueCell.textContent = row.configured ? '•••••••• · configurada' : '—';
+      } else {
+        valueCell.textContent = String(row.value || '') || '—';
+      }
+
+      const sourceCell = this.document.createElement('td');
+      const source = String(row.source || 'unset');
+      sourceCell.textContent = source === 'managed'
+        ? 'runtime-env.json'
+        : (source === 'process' ? 'entorno PHP' : 'sin configurar');
+
+      const actionCell = this.document.createElement('td');
+      actionCell.className = 'text-right text-nowrap';
+      const editButton = this.document.createElement('button');
+      editButton.type = 'button';
+      editButton.className = 'btn btn-sm btn-outline-info';
+      editButton.textContent = 'Modificar';
+      editButton.addEventListener('click', () => {
+        this.select.value = String(row.name || '');
+        this.syncSelectedSetting();
+        this.valueInput.focus();
+      });
+      actionCell.appendChild(editButton);
+
+      tr.appendChild(nameCell);
+      tr.appendChild(valueCell);
+      tr.appendChild(sourceCell);
+      tr.appendChild(actionCell);
+      this.tableBody.appendChild(tr);
     });
+
+    const count = this.document.getElementById('serverAdminVariableCount');
+    if (count) count.textContent = `${this.settings.length} variables disponibles`;
+
+    if (preferredName && this.settings.some((row) => String(row.name) === String(preferredName))) {
+      this.select.value = preferredName;
+    }
     this.syncSelectedSetting();
   }
 
@@ -81,12 +135,12 @@ class ServerAdminModule {
     if (!row) return;
     this.valueInput.type = row.secret ? 'password' : 'text';
     this.valueInput.value = row.secret ? '' : String(row.value || '');
-    this.valueInput.placeholder = row.secret && row.configured ? 'Secreto configurado; escribe uno nuevo para reemplazarlo' : '';
+    this.valueInput.placeholder = row.secret && row.configured ? 'Escribe un nuevo valor para reemplazar el actual' : '';
     const help = this.document.getElementById('serverAdminValueHelp');
     if (help) {
       help.textContent = row.secret
-        ? 'El valor actual no se devuelve al navegador.'
-        : `Origen actual: ${row.source || 'unset'}.`;
+        ? `Variable configurada: ${row.configured ? 'sí' : 'no'}.`
+        : `Valor actual cargado desde: ${row.source === 'managed' ? 'runtime-env.json' : (row.source === 'process' ? 'entorno PHP' : 'sin configurar')}.`;
     }
   }
 
@@ -122,8 +176,8 @@ class ServerAdminModule {
       if (!response.ok || !data.ok) throw new Error(data.error || `HTTP ${response.status}`);
       this.passwordInput.value = '';
       this.valueInput.value = '';
+      await this.load(name);
       this.showMessage(data.message || 'Variable actualizada.', 'success');
-      await this.load();
     } catch (error) {
       this.showMessage(error.message || 'No se pudo actualizar la variable.', 'danger');
     } finally {

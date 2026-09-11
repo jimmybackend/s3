@@ -29,11 +29,12 @@ function fail(string $message, int $code = 1): never { fwrite(STDERR, $message .
 function isRoot(): bool { return function_exists('posix_geteuid') && posix_geteuid() === 0; }
 function base64UrlEncode(string $bytes): string { return rtrim(strtr(base64_encode($bytes), '+/', '-_'), '='); }
 
-function requireDirectRootOperator(): void
+function requireServerOperator(array $config): void
 {
     $sudoUser = trim((string)getenv('SUDO_USER'));
-    if ($sudoUser !== '' && $sudoUser !== 'root') {
-        fail('Esta acción bootstrap sólo puede ejecutarse directamente por root.', 77);
+    $phpUser = trim((string)($config['php_user'] ?? ''));
+    if ($sudoUser !== '' && $phpUser !== '' && hash_equals($phpUser, $sudoUser)) {
+        fail('Esta acción bootstrap sólo puede ejecutarla el operador del servidor, no PHP-FPM.', 77);
     }
 }
 
@@ -149,7 +150,7 @@ function completeBootstrap(string $authPath, string $lockPath): void
         'completed' => true,
         'completed_at' => gmdate(DATE_ATOM),
     ], 0644, null);
-    if (is_file($authPath) && !unlink($authPath)) fail('Setup completado, pero no se pudo retirar la credencial bootstrap.');
+    if (is_file($authPath)) @unlink($authPath);
 }
 
 function validateIdentity(array $data): void
@@ -199,13 +200,13 @@ if ($action === 'status') {
 }
 
 if ($action === 'bootstrap-init') {
-    requireDirectRootOperator();
+    requireServerOperator($config);
     fwrite(STDOUT, json_encode(createBootstrapAuth($bootstrapAuthPath, $setupLockPath, $phpGroup), JSON_UNESCAPED_SLASHES) . "\n");
     exit(0);
 }
 
 if ($action === 'bootstrap-reset') {
-    requireDirectRootOperator();
+    requireServerOperator($config);
     if (is_file($setupLockPath)) fail('La instalación ya está cerrada; no se reactiva bootstrap automáticamente.', 17);
     if (is_file($bootstrapAuthPath) && !unlink($bootstrapAuthPath)) fail('No se pudo reemplazar la credencial bootstrap.');
     fwrite(STDOUT, json_encode(createBootstrapAuth($bootstrapAuthPath, $setupLockPath, $phpGroup), JSON_UNESCAPED_SLASHES) . "\n");
@@ -219,7 +220,7 @@ if ($action === 'bootstrap-complete') {
 }
 
 if ($action === 'bootstrap-disable') {
-    requireDirectRootOperator();
+    requireServerOperator($config);
     completeBootstrap($bootstrapAuthPath, $setupLockPath);
     fwrite(STDOUT, "ok\n");
     exit(0);

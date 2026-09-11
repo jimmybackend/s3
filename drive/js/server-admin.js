@@ -17,6 +17,8 @@ class ServerAdminModule {
     this.activeGroup = '';
     this.csrf = '';
     this.settings = [];
+    this.reauthRequired = true;
+    this.reauthExpiresIn = 0;
   }
 
   init() {
@@ -54,6 +56,7 @@ class ServerAdminModule {
       const data = await response.json();
       if (!response.ok || !data.ok || !Array.isArray(data.settings)) throw new Error(data.error || `HTTP ${response.status}`);
       this.settings = data.settings;
+      this.setReauthState(data);
       this.renderSettings(preferredName, preferredGroup);
 
       const helper = this.document.getElementById('serverAdminHelperStatus');
@@ -79,6 +82,23 @@ class ServerAdminModule {
       }
     } catch (error) {
       this.showMessage(error.message || 'No se pudo cargar la configuración del servidor.', 'danger');
+    }
+  }
+
+  setReauthState(data) {
+    this.reauthRequired = data.reauth_required !== false;
+    this.reauthExpiresIn = Math.max(0, Number.parseInt(data.reauth_expires_in || '0', 10) || 0);
+    const wrapper = this.passwordInput.closest('.form-group');
+    const help = wrapper ? wrapper.querySelector('small') : null;
+    this.passwordInput.disabled = !this.reauthRequired;
+    this.passwordInput.value = '';
+    if (this.reauthRequired) {
+      this.passwordInput.placeholder = 'Contraseña actual de superusuario';
+      if (help) help.textContent = 'Se solicita una vez. Al validarla, la sesión queda elevada temporalmente; la contraseña no se almacena.';
+    } else {
+      const minutes = Math.max(1, Math.ceil(this.reauthExpiresIn / 60));
+      this.passwordInput.placeholder = `Autorización temporal activa · ~${minutes} min`;
+      if (help) help.textContent = `Autorización sensible activa durante aproximadamente ${minutes} min. Puedes guardar más cambios sin volver a escribir la contraseña.`;
     }
   }
 
@@ -247,8 +267,8 @@ class ServerAdminModule {
     const value = String(this.valueInput.value || '');
     const currentPassword = String(this.passwordInput.value || '');
     if (!name || !this.csrf) return;
-    if (!currentPassword) {
-      this.showMessage('Confirma tu contraseña actual de superusuario.', 'warning');
+    if (this.reauthRequired && !currentPassword) {
+      this.showMessage('Confirma tu contraseña actual de superusuario para iniciar la autorización temporal.', 'warning');
       return;
     }
 
@@ -262,7 +282,7 @@ class ServerAdminModule {
       body.set('value', value);
       body.set('current_password', currentPassword);
       const data = await this.post(body);
-      this.passwordInput.value = '';
+      this.setReauthState(data);
       this.valueInput.value = '';
       await this.load(name);
       this.showMessage(data.message || 'Variable actualizada.', 'success');
@@ -278,8 +298,8 @@ class ServerAdminModule {
     const group = String(this.activeGroup || '');
     const currentPassword = String(this.passwordInput.value || '');
     if (!group || !this.csrf) return;
-    if (!currentPassword) {
-      this.showMessage('Confirma tu contraseña actual de superusuario.', 'warning');
+    if (this.reauthRequired && !currentPassword) {
+      this.showMessage('Confirma tu contraseña actual de superusuario para iniciar la autorización temporal.', 'warning');
       return;
     }
 
@@ -298,7 +318,7 @@ class ServerAdminModule {
       body.set('values_json', JSON.stringify(values));
       body.set('current_password', currentPassword);
       const data = await this.post(body);
-      this.passwordInput.value = '';
+      this.setReauthState(data);
       await this.load('', group);
       this.showMessage(data.message || 'Grupo actualizado.', 'success');
     } catch (error) {

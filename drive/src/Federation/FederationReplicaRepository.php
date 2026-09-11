@@ -11,19 +11,6 @@ final class FederationReplicaRepository
 
     public function queueOutgoing(array $job): void
     {
-        $stmt = $this->db->prepare(
-            "INSERT INTO FederationReplicaJobs
-             (OfferId, Direction, ResourceId, LocalUserId, RemoteNodeId, RemoteFederationUrl, Role, Status,
-              SourceStorageRef, ContentId, SizeBytes, Title, MediaType, NextAttemptAt, ExpiresAt)
-             VALUES (?, 'outgoing', ?, ?, ?, ?, ?, 'queued', ?, ?, ?, ?, ?, UTC_TIMESTAMP(6), DATE_ADD(UTC_TIMESTAMP(6), INTERVAL 7 DAY))
-             ON DUPLICATE KEY UPDATE
-               RemoteFederationUrl=VALUES(RemoteFederationUrl), Role=VALUES(Role),
-               SourceStorageRef=VALUES(SourceStorageRef), ContentId=VALUES(ContentId), SizeBytes=VALUES(SizeBytes),
-               Title=VALUES(Title), MediaType=VALUES(MediaType),
-               Status=IF(Status='active','active','queued'), NextAttemptAt=IF(Status='active',NextAttemptAt,UTC_TIMESTAMP(6)),
-               LastError=IF(Status='active',LastError,NULL), ExpiresAt=DATE_ADD(UTC_TIMESTAMP(6), INTERVAL 7 DAY)"
-        );
-        if (!$stmt) throw new FederationException('No se pudo preparar cola de réplica.', 500);
         $offerId = (string)$job['offer_id'];
         $resourceId = (string)$job['resource_id'];
         $userId = (int)$job['user_id'];
@@ -35,9 +22,6 @@ final class FederationReplicaRepository
         $size = (int)$job['size_bytes'];
         $title = (string)$job['title'];
         $mediaType = (string)$job['media_type'];
-        $stmt->bind_param('ssisssssis ss', $offerId, $resourceId, $userId, $nodeId, $url, $role, $storageRef, $contentId, $size, $title, $mediaType);
-        // mysqli no admite espacios en el tipo; se usa bind dinámico limpio abajo.
-        $stmt->close();
 
         $stmt = $this->db->prepare(
             "INSERT INTO FederationReplicaJobs
@@ -88,7 +72,7 @@ final class FederationReplicaRepository
                ExpiresAt=VALUES(ExpiresAt)"
         );
         if (!$stmt) throw new FederationException('No se pudo preparar recepción de réplica.', 500);
-        $stmt->bind_param('sssssssissss', $offerId, $resourceId, $originNodeId, $originFederationUrl, $role, $json, $contentId, $size, $title, $mediaType, $expiresAt);
+        $stmt->bind_param('sssssssisss', $offerId, $resourceId, $originNodeId, $originFederationUrl, $role, $json, $contentId, $size, $title, $mediaType, $expiresAt);
         if (!$stmt->execute()) {
             $message = $stmt->error;
             $stmt->close();

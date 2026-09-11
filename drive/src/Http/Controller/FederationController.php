@@ -112,6 +112,7 @@ final class FederationController
         $started = microtime(true);
         $visibility = $this->request->postString('visibility', 'UNLISTED');
         $rights = $this->request->postString('rights', 'link_only');
+        $discoveryPolicy = $this->request->postString('discovery_policy');
 
         try {
             $service = new FederationService($this->app);
@@ -119,11 +120,14 @@ final class FederationController
                 $userId,
                 $this->request->postString('storage_ref'),
                 $visibility,
-                $rights
+                $rights,
+                $discoveryPolicy
             );
+            $catalog = is_array($created['catalog'] ?? null) ? $created['catalog'] : [];
             $this->activity()->success($userId, 'arcadelink_create', 'FederationCloud', (int)$created['file_id'], ['drive.no_direct_aws_charge' => 1], $started, [
                 'visibility' => $visibility,
                 'rights' => $rights,
+                'discovery_policy' => (string)($catalog['discovery_policy'] ?? $discoveryPolicy),
                 'source' => 'drive_share_modal',
                 'aws_direct' => false,
             ]);
@@ -171,16 +175,22 @@ final class FederationController
     {
         $started = microtime(true);
         $fileId = $this->request->postInt('file_id');
+        $visibility = $this->request->postString('visibility', 'PRIVATE');
+        $rights = $this->request->postString('rights', 'unknown_rights');
+        $discoveryPolicy = $this->request->postString('discovery_policy');
         try {
             $created = $service->createLink(
                 $userId,
                 $fileId,
-                $this->request->postString('visibility', 'PRIVATE'),
-                $this->request->postString('rights', 'unknown_rights')
+                $visibility,
+                $rights,
+                $discoveryPolicy
             );
+            $catalog = is_array($created['catalog'] ?? null) ? $created['catalog'] : [];
             $this->activity()->success($userId, 'arcadelink_create', 'FederationCloud', (int)$created['file_id'], ['drive.no_direct_aws_charge' => 1], $started, [
-                'visibility' => $this->request->postString('visibility', 'PRIVATE'),
-                'rights' => $this->request->postString('rights', 'unknown_rights'),
+                'visibility' => $visibility,
+                'rights' => $rights,
+                'discovery_policy' => (string)($catalog['discovery_policy'] ?? $discoveryPolicy),
                 'aws_direct' => false,
             ]);
             $this->sendArcadeLinkDownload($created);

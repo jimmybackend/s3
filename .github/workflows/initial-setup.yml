@@ -65,7 +65,8 @@ jobs:
           set -euo pipefail
           grep -q "token_hash" drive/bin/arcadecloud-drive-admin-helper.php
           grep -q "password_hash('arcadecloud'" drive/bin/arcadecloud-drive-admin-helper.php
-          grep -q "requireDirectRootOperator" drive/bin/arcadecloud-drive-admin-helper.php
+          grep -q "requireServerOperator" drive/bin/arcadecloud-drive-admin-helper.php
+          grep -q "php_user" drive/bin/arcadecloud-drive-admin-helper.php
           grep -q "bootstrap-complete" drive/bin/arcadecloud-drive-admin-helper.php
           grep -q "setup.lock" drive/src/Setup/BootstrapSetupAuth.php
           grep -q "system_role, chat, userstatus" drive/src/Setup/SuperAdminBootstrapService.php

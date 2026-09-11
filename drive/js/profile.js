@@ -12,6 +12,12 @@
       this.pictureInput = document.getElementById('profilePictureInput');
       this.avatarPreview = document.getElementById('profileAvatarPreview');
       this.aliasPreview = document.getElementById('profileAliasPreview');
+      this.uploadButton = document.getElementById('btnUploadProfilePicture');
+      this.removeButton = document.getElementById('btnRemoveProfilePicture');
+      this.uploadSpinner = document.getElementById('profileUploadSpinner');
+      this.uploadIcon = document.getElementById('profileUploadIcon');
+      this.uploadLabel = document.getElementById('profileUploadLabel');
+      this.uploadStatus = document.getElementById('profileUploadStatus');
       this.bind();
     }
 
@@ -23,8 +29,8 @@
         this.savePersonal();
       });
 
-      document.getElementById('btnUploadProfilePicture')?.addEventListener('click', () => this.uploadAvatar());
-      document.getElementById('btnRemoveProfilePicture')?.addEventListener('click', () => this.removeAvatar());
+      this.uploadButton?.addEventListener('click', () => this.uploadAvatar());
+      this.removeButton?.addEventListener('click', () => this.removeAvatar());
       document.getElementById('btnRequestPasswordCode')?.addEventListener('click', () => this.requestPasswordCode());
       document.getElementById('btnChangeProfilePassword')?.addEventListener('click', () => this.changePassword());
     }
@@ -143,6 +149,9 @@
         return;
       }
 
+      this.setAvatarBusy(true, 'Subiendo fotografía…');
+      this.message('Subiendo fotografía…', 'info');
+
       try {
         const body = new FormData();
         body.set('action', 'upload_avatar');
@@ -150,22 +159,48 @@
         const data = await this.post(body);
         this.pictureInput.value = '';
         this.fill(data.profile || {});
+        this.setUploadStatus('Fotografía actualizada correctamente.', 'text-success');
         this.message(data.message || 'Imagen actualizada.', 'success');
       } catch (error) {
+        this.setUploadStatus('No se pudo actualizar la fotografía.', 'text-danger');
         this.message(error.message || 'No se pudo cambiar la imagen.', 'danger');
+      } finally {
+        this.setAvatarBusy(false);
       }
     }
 
     async removeAvatar() {
+      this.setAvatarBusy(true, 'Quitando fotografía…');
+
       try {
         const body = new FormData();
         body.set('action', 'remove_avatar');
         const data = await this.post(body);
         this.fill(data.profile || {});
+        this.setUploadStatus('Se usarán tus iniciales.', 'text-muted');
         this.message(data.message || 'Imagen eliminada.', 'success');
       } catch (error) {
+        this.setUploadStatus('No se pudo quitar la fotografía.', 'text-danger');
         this.message(error.message || 'No se pudo eliminar la imagen.', 'danger');
+      } finally {
+        this.setAvatarBusy(false);
       }
+    }
+
+    setAvatarBusy(busy, statusText = '') {
+      if (this.uploadButton) this.uploadButton.disabled = busy;
+      if (this.removeButton) this.removeButton.disabled = busy;
+      if (this.pictureInput) this.pictureInput.disabled = busy;
+      this.uploadSpinner?.classList.toggle('d-none', !busy);
+      this.uploadIcon?.classList.toggle('d-none', busy);
+      if (this.uploadLabel) this.uploadLabel.textContent = busy ? 'Procesando…' : 'Cambiar imagen';
+      if (busy && statusText) this.setUploadStatus(statusText, 'text-primary');
+    }
+
+    setUploadStatus(text, className) {
+      if (!this.uploadStatus) return;
+      this.uploadStatus.className = `small mt-2 ${className}`;
+      this.uploadStatus.textContent = text;
     }
 
     async requestPasswordCode() {

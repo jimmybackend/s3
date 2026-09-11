@@ -5,7 +5,7 @@ declare(strict_types=1);
 /**
  * Helper privilegiado mínimo de ArcadeCloud Drive.
  * Se instala root:root en /usr/local/sbin/arcadecloud-drive-admin.
- * NUNCA ejecuta comandos arbitrarios ni acepta nombres de variables fuera de allowlist.
+ * Nunca ejecuta comandos arbitrarios: sólo acciones y variables compiladas.
  */
 
 const AC_ADMIN_CONFIG = '/etc/arcadecloud-drive/admin-helper.json';
@@ -18,6 +18,9 @@ const AC_ENV_ALLOWLIST = [
     'ARCADECLOUD_SMTP_SECURE', 'ARCADECLOUD_SMTP_USERNAME', 'ARCADECLOUD_SMTP_PASSWORD',
     'ARCADECLOUD_SMTP_FROM_EMAIL', 'ARCADECLOUD_SMTP_FROM_NAME', 'ARCADECLOUD_SMTP_REPLY_TO',
     'ARCADECLOUD_SMTP_TIMEOUT', 'ARCADECLOUD_SMTP_DEBUG',
+    'DB_HOST', 'DB_PORT', 'DB_USER', 'DB_PASSWORD', 'DB_NAME',
+    'AWS_REGION', 'AWS_S3_BUCKET', 'AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY', 'AWS_SESSION_TOKEN',
+    'AWS_CONTROL_ACCESS_KEY_ID', 'AWS_CONTROL_SECRET_ACCESS_KEY', 'AWS_CONTROL_SESSION_TOKEN',
 ];
 
 function fail(string $message, int $code = 1): never { fwrite(STDERR, $message . "\n"); exit($code); }
@@ -80,6 +83,27 @@ function writeJsonAtomic(string $path, array $data, int $mode = 0640, ?string $g
     if ($group !== null && $group !== '') @chgrp($path, $group);
 }
 
+function readRuntimeConfig(string $runtimePath): array
+{
+    if (!is_file($runtimePath)) return [];
+    $decoded = json_decode((string)file_get_contents($runtimePath), true);
+    if ($decoded === []) return [];
+    if (!is_array($decoded) || array_is_list($decoded)) fail('La configuración administrada existente tiene formato inválido.');
+    return $decoded;
+}
+
+function validateEnvironmentMap(array $changes): array
+{
+    if ($changes === [] || count($changes) > count(AC_ENV_ALLOWLIST)) fail('No hay variables válidas para actualizar.');
+    $validated = [];
+    foreach ($changes as $name => $value) {
+        if (!is_string($name) || !in_array($name, AC_ENV_ALLOWLIST, true)) fail('Variable no permitida.');
+        if (!is_string($value) || strlen($value) > 8192 || str_contains($value, "\0")) fail('Valor inválido o demasiado grande.');
+        $validated[$name] = $value;
+    }
+    return $validated;
+}
+
 function validateIdentity(array $data): void
 {
     foreach (['node_id', 'public_key', 'secret_key', 'payload_key'] as $field) {
@@ -114,12 +138,22 @@ if ($action === 'env-set') {
     $value = stream_get_contents(STDIN, 8193);
     if (!is_string($value) || strlen($value) > 8192 || str_contains($value, "\0")) fail('Valor inválido o demasiado grande.');
     $value = rtrim($value, "\r\n");
-    $current = [];
-    if (is_file($runtimePath)) {
-        $decoded = json_decode((string)file_get_contents($runtimePath), true);
-        if (is_array($decoded) && !array_is_list($decoded)) $current = $decoded;
-    }
+    $current = readRuntimeConfig($runtimePath);
     $current[$name] = $value;
+    ksort($current, SORT_STRING);
+    writeJsonAtomic($runtimePath, $current, 0640, $phpGroup);
+    fwrite(STDOUT, "ok\n");
+    exit(0);
+}
+
+if ($action === 'env-set-many') {
+    $payload = stream_get_contents(STDIN, 65537);
+    if (!is_string($payload) || strlen($payload) > 65536) fail('Payload administrativo demasiado grande.');
+    $decoded = json_decode($payload, true);
+    if (!is_array($decoded) || ($decoded !== [] && array_is_list($decoded))) fail('Payload de variables inválido.');
+    $changes = validateEnvironmentMap($decoded);
+    $current = readRuntimeConfig($runtimePath);
+    foreach ($changes as $name => $value) $current[$name] = $value;
     ksort($current, SORT_STRING);
     writeJsonAtomic($runtimePath, $current, 0640, $phpGroup);
     fwrite(STDOUT, "ok\n");

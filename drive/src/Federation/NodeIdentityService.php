@@ -44,7 +44,7 @@ final class NodeIdentityService
         if ($nodeName !== null && trim($nodeName) !== '') {
             $data['node_name'] = self::normalizeNodeName($nodeName);
         }
-        self::writeNewIdentity($path, $data);
+        self::writeIdentity($path, $data);
         return $data;
     }
 
@@ -71,14 +71,24 @@ final class NodeIdentityService
             return $data;
         }
 
-        $data['node_name'] = $name;
-        $json = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR) . "\n";
-        if (@file_put_contents($this->path, $json, LOCK_EX) === false) {
-            throw new FederationException('No se pudo guardar el nombre dentro de la identidad del nodo.', 500);
+        return $this->persistNodeName($data, $name);
+    }
+
+    /**
+     * Renombra únicamente la etiqueta firmada del nodo.
+     * El node_id y las claves criptográficas permanecen intactos.
+     * Debe invocarse sólo desde un flujo administrativo autenticado.
+     */
+    public function renameNodeName(string $nodeName): array
+    {
+        $name = self::normalizeNodeName($nodeName);
+        $data = $this->load();
+        $existing = is_string($data['node_name'] ?? null) ? (string)$data['node_name'] : '';
+        if ($existing === $name) {
+            return $data;
         }
-        @chmod($this->path, 0600);
-        $this->identity = $data;
-        return $data;
+
+        return $this->persistNodeName($data, $name);
     }
 
     public function publicKey(): string
@@ -158,6 +168,14 @@ final class NodeIdentityService
         return $descriptor;
     }
 
+    private function persistNodeName(array $data, string $name): array
+    {
+        $data['node_name'] = $name;
+        self::writeIdentity($this->path, $data);
+        $this->identity = $data;
+        return $data;
+    }
+
     private function load(): array
     {
         if ($this->identity !== null) return $this->identity;
@@ -196,7 +214,7 @@ final class NodeIdentityService
         return $decoded;
     }
 
-    private static function writeNewIdentity(string $path, array $data): void
+    private static function writeIdentity(string $path, array $data): void
     {
         $json = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR) . "\n";
         $tmp = $path . '.tmp-' . bin2hex(random_bytes(6));

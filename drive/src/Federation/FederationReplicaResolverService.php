@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace ArcadeCloud\Drive\Federation;
 
 use ArcadeCloud\Drive\Core\DriveApplication;
+use Throwable;
 
 final class FederationReplicaResolverService
 {
@@ -65,25 +66,44 @@ final class FederationReplicaResolverService
         ];
     }
 
-    /** Elige mirror/provider activo antes que origin para repartir carga. */
+    /**
+     * Prueba ubicaciones en orden mirror -> provider -> origin.
+     * Un timeout no derriba la apertura: continúa con el siguiente candidato.
+     */
     public function openPreferred(string $resourceId): array
     {
-        $resource = $this->requirePublicCopyable($resourceId);
-        $preferred = $this->selector->preferred($this->catalog->locations($resourceId));
-        if ($preferred === null) throw new FederationException('No hay ubicación FederationCloud disponible para este recurso.', 503);
+        $this->requirePublicCopyable($resourceId);
+        $ordered = $this->selector->ordered($this->catalog->locations($resourceId));
+        if ($ordered === []) throw new FederationException('No hay ubicación FederationCloud disponible para este recurso.', 503);
 
-        if (hash_equals($this->identity->nodeId(), (string)$preferred['node_id'])) {
-            return $this->publicLocation($resourceId) + ['preferred_location' => $preferred];
+        $failures = [];
+        foreach ($ordered as $location) {
+            try {
+                if (hash_equals($this->identity->nodeId(), (string)$location['node_id'])) {
+                    $result = $this->publicLocation($resourceId);
+                } else {
+                    $federationUrl = trim((string)$location['federation_url']);
+                    if ($federationUrl === '') throw new FederationException('Ubicación sin Federation URL.', 503);
+                    $result = $this->http->postJson($federationUrl, 'replica-resolve.php', ['resource_id' => $resourceId]);
+                }
+                $url = trim((string)($result['access_url'] ?? ''));
+                $parts = parse_url($url);
+                if (empty($result['ok']) || !is_array($parts) || strtolower((string)($parts['scheme'] ?? '')) !== 'https' || !isset($parts['host'])) {
+                    throw new FederationException('La ubicación no devolvió acceso HTTPS válido.', 502);
+                }
+                return $result + [
+                    'preferred_location' => $location,
+                    'failover_attempts' => count($failures),
+                ];
+            } catch (Throwable $e) {
+                $failures[] = [
+                    'node_id' => (string)$location['node_id'],
+                    'role' => (string)$location['role'],
+                    'error' => substr($e->getMessage(), 0, 180),
+                ];
+            }
         }
-        $federationUrl = trim((string)$preferred['federation_url']);
-        if ($federationUrl === '') throw new FederationException('La ubicación preferida no publica Federation URL.', 503);
-        $result = $this->http->postJson($federationUrl, 'replica-resolve.php', ['resource_id' => $resourceId]);
-        $url = trim((string)($result['access_url'] ?? ''));
-        $parts = parse_url($url);
-        if (empty($result['ok']) || !is_array($parts) || strtolower((string)($parts['scheme'] ?? '')) !== 'https' || !isset($parts['host'])) {
-            throw new FederationException('La ubicación preferida no devolvió acceso HTTPS válido.', 502);
-        }
-        return $result + ['preferred_location' => $preferred];
+        throw new FederationException('Ninguna ubicación FederationCloud respondió con una copia válida.', 503);
     }
 
     private function requirePublicCopyable(string $resourceId): array

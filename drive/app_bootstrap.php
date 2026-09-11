@@ -25,11 +25,13 @@ if ($PROJECT_ROOT === false) {
 $autoloadPath = $PROJECT_ROOT . '/vendor/autoload.php';
 $configPath = $PROJECT_ROOT . '/Config-s3.php';
 $dbPath = $PROJECT_ROOT . '/db.php';
+$managedEnvironmentPath = __DIR__ . '/src/Admin/ManagedRuntimeEnvironment.php';
 
 foreach ([
     'Composer' => $autoloadPath,
     'Configuración' => $configPath,
     'Base de datos' => $dbPath,
+    'Entorno administrado' => $managedEnvironmentPath,
 ] as $nombre => $ruta) {
     if (!is_file($ruta)) {
         throw new RuntimeException($nombre . ' no encontrado: ' . $ruta);
@@ -37,6 +39,12 @@ foreach ([
 }
 
 putenv('AWS_EC2_METADATA_DISABLED=true');
+
+// Variables administradas por ArcadeCloud se cargan antes de Config-s3.php y db.php.
+// El archivo está fuera del repositorio y sólo admite una allowlist propia de la app.
+require_once $managedEnvironmentPath;
+\ArcadeCloud\Drive\Admin\ManagedRuntimeEnvironment::loadIntoProcess();
+
 require_once $autoloadPath;
 require_once $configPath;
 require_once $dbPath;

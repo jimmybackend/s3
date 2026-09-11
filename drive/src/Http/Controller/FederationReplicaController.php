@@ -5,6 +5,7 @@ namespace ArcadeCloud\Drive\Http\Controller;
 
 use ArcadeCloud\Drive\Core\DriveApplication;
 use ArcadeCloud\Drive\Federation\FederationException;
+use ArcadeCloud\Drive\Federation\FederationReplicaResolverService;
 use ArcadeCloud\Drive\Federation\FederationReplicaService;
 use ArcadeCloud\Drive\Http\JsonResponse;
 use ArcadeCloud\Drive\Http\Request;
@@ -68,17 +69,48 @@ final class FederationReplicaController
         }
     }
 
-    public function publicReplicaApi(): void
+    /** Máquina a máquina: sólo PUBLIC + copy_allowed. */
+    public function resolveApi(): void
     {
-        if ($this->request->method() !== 'GET') JsonResponse::send(['ok' => false, 'error' => 'Método no permitido.'], 405);
+        if ($this->request->method() !== 'POST') JsonResponse::send(['ok' => false, 'error' => 'Método no permitido.'], 405);
         try {
-            $resourceId = $this->request->queryString('resource_id');
-            if (!preg_match('/\Aarl_[A-Za-z0-9_-]{16,80}\z/', $resourceId)) throw new FederationException('Resource ID inválido.', 400);
-            JsonResponse::send((new FederationReplicaService($this->app))->publicReplica($resourceId));
+            $body = $this->jsonBody(8192);
+            $resourceId = trim((string)($body['resource_id'] ?? ''));
+            JsonResponse::send((new FederationReplicaResolverService($this->app))->publicLocation($resourceId));
         } catch (FederationException $e) {
             JsonResponse::send(['ok' => false, 'error' => $e->getMessage()], $e->httpStatus());
         } catch (Throwable) {
-            JsonResponse::send(['ok' => false, 'error' => 'No se pudo resolver la réplica pública.'], 500);
+            JsonResponse::send(['ok' => false, 'error' => 'No se pudo resolver la ubicación pública.'], 500);
+        }
+    }
+
+    /** Usuario local: elige automáticamente mirror/provider/origin y redirige a URL temporal. */
+    public function openPreferred(): void
+    {
+        if ($this->request->method() !== 'GET') {
+            http_response_code(405);
+            echo 'Método no permitido.';
+            return;
+        }
+        $session = $this->app->session();
+        $session->start();
+        if (!$session->isAuthenticated()) {
+            http_response_code(401);
+            echo 'Autenticación requerida.';
+            return;
+        }
+        try {
+            $resourceId = $this->request->queryString('resource_id');
+            $result = (new FederationReplicaResolverService($this->app))->openPreferred($resourceId);
+            $url = (string)($result['access_url'] ?? '');
+            header('Location: ' . $url, true, 302);
+            exit;
+        } catch (FederationException $e) {
+            http_response_code($e->httpStatus());
+            echo htmlspecialchars($e->getMessage(), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+        } catch (Throwable) {
+            http_response_code(500);
+            echo 'No se pudo abrir el recurso federado.';
         }
     }
 

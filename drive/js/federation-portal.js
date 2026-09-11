@@ -3,12 +3,15 @@ class FederationPortalModule {
     this.window = win;
     this.document = doc;
     this.csrf = '';
-    this.state = { incoming: [], outgoing: [], shares: [] };
+    this.replicaCsrf = '';
+    this.localNodeId = String(doc.body?.dataset?.federationNodeId || '');
+    this.state = { incoming: [], outgoing: [], shares: [], replicas: [] };
   }
 
   init() {
     this.bind();
     this.loadAccess();
+    this.loadReplicas();
     return this;
   }
 
@@ -20,12 +23,21 @@ class FederationPortalModule {
         this.search();
       });
     }
+    const refresh = this.document.getElementById('btnFederationReplicaRefresh');
+    if (refresh) refresh.addEventListener('click', () => this.loadReplicas());
 
     this.document.addEventListener('click', (event) => {
       const requestButton = event.target?.closest?.('[data-federation-request-resource]');
       if (requestButton) {
         event.preventDefault();
         this.requestAccess(String(requestButton.dataset.federationRequestResource || ''), requestButton);
+        return;
+      }
+
+      const replicaButton = event.target?.closest?.('[data-federation-replica-resource]');
+      if (replicaButton) {
+        event.preventDefault();
+        this.queueReplica(String(replicaButton.dataset.federationReplicaResource || ''), replicaButton);
         return;
       }
 
@@ -51,6 +63,18 @@ class FederationPortalModule {
       this.renderAccess();
     } catch (error) {
       this.alert(error.message || 'No se pudieron cargar solicitudes y Shares.', 'danger');
+    }
+  }
+
+  async loadReplicas() {
+    try {
+      const data = await this.fetchJson('replica.php', { credentials: 'same-origin', cache: 'no-store' });
+      this.replicaCsrf = String(data.csrf || '');
+      this.state.replicas = Array.isArray(data.jobs) ? data.jobs : [];
+      this.renderReplicas();
+    } catch (error) {
+      const target = this.document.getElementById('federationReplicaJobs');
+      if (target) target.innerHTML = `<div class="small text-warning">${this.escape(error.message || 'No se pudieron cargar réplicas.')}</div>`;
     }
   }
 
@@ -97,19 +121,38 @@ class FederationPortalModule {
       const title = String(row.title || row.Title || 'Recurso FederationCloud');
       const mediaType = String(row.media_type || row.MediaType || 'application/octet-stream');
       const visibility = String(row.visibility || row.Visibility || '');
+      const rights = String(row.rights || row.Rights || '');
       const originNodeId = String(row.origin_node_id || row.OriginNodeId || '');
       const locations = Array.isArray(row.locations) ? row.locations : [];
+      const preferred = row.preferred_location && typeof row.preferred_location === 'object' ? row.preferred_location : null;
 
       const actions = this.document.createElement('div');
-      actions.className = 'federation-result-actions';
+      actions.className = 'federation-result-actions d-flex flex-column';
       if (policy === 'requestable_metadata' && resourceId) {
         const button = this.document.createElement('button');
         button.type = 'button';
-        button.className = 'btn btn-sm btn-warning';
+        button.className = 'btn btn-sm btn-warning mb-2';
         button.dataset.federationRequestResource = resourceId;
         button.innerHTML = '<i class="fas fa-paper-plane mr-1"></i>Solicitar acceso';
         actions.appendChild(button);
-      } else if (policy === 'public_metadata') {
+      }
+      if (visibility === 'PUBLIC' && rights === 'copy_allowed' && resourceId) {
+        const open = this.document.createElement('a');
+        open.className = 'btn btn-sm btn-info mb-2';
+        open.href = `replica-open.php?resource_id=${encodeURIComponent(resourceId)}`;
+        open.target = '_blank';
+        open.rel = 'noopener';
+        open.innerHTML = '<i class="fas fa-bolt mr-1"></i>Abrir mejor copia';
+        actions.appendChild(open);
+      }
+      if (originNodeId && this.localNodeId && originNodeId === this.localNodeId && rights === 'copy_allowed') {
+        const replicate = this.document.createElement('button');
+        replicate.type = 'button';
+        replicate.className = 'btn btn-sm btn-outline-success';
+        replicate.dataset.federationReplicaResource = resourceId;
+        replicate.innerHTML = '<i class="fas fa-copy mr-1"></i>Crear 2 réplicas';
+        actions.appendChild(replicate);
+      } else if (policy === 'public_metadata' && actions.children.length === 0) {
         const badge = this.document.createElement('span');
         badge.className = 'badge badge-success';
         badge.textContent = 'metadata pública';
@@ -118,20 +161,58 @@ class FederationPortalModule {
 
       const body = this.document.createElement('div');
       body.className = 'federation-result-main';
+      const preferredText = preferred
+        ? `${String(preferred.role || 'origin')} · ${String(preferred.status || '')} · ${String(preferred.node_id || '')}`
+        : 'sin ubicación disponible';
       body.innerHTML = `
         <div class="d-flex align-items-center flex-wrap mb-1">
           <strong class="mr-2">${this.escape(title)}</strong>
           <span class="badge badge-secondary mr-1">${this.escape(mediaType)}</span>
           <span class="badge badge-info mr-1">${this.escape(visibility)}</span>
-          <span class="badge badge-dark">${this.escape(policy)}</span>
+          <span class="badge badge-dark mr-1">${this.escape(policy)}</span>
+          <span class="badge badge-light">${this.escape(rights)}</span>
         </div>
         <div class="small text-muted text-break">${this.escape(resourceId)}</div>
-        <div class="small text-muted mt-1">Origen: ${this.escape(originNodeId || 'desconocido')} · ubicaciones conocidas: ${locations.length}</div>`;
+        <div class="small text-muted mt-1">Origen: ${this.escape(originNodeId || 'desconocido')} · ubicaciones conocidas: ${locations.length}</div>
+        <div class="small text-muted mt-1">Preferida: ${this.escape(preferredText)}</div>`;
 
       card.appendChild(body);
       card.appendChild(actions);
       target.appendChild(card);
     });
+  }
+
+  async queueReplica(resourceId, button) {
+    if (!resourceId || !this.replicaCsrf) {
+      await this.loadReplicas();
+      if (!this.replicaCsrf) return;
+    }
+    const old = button.innerHTML;
+    button.disabled = true;
+    button.innerHTML = '<span class="spinner-border spinner-border-sm mr-1"></span>Encolando…';
+    try {
+      const body = new URLSearchParams();
+      body.set('action', 'queue');
+      body.set('resource_id', resourceId);
+      body.set('copies', '2');
+      const data = await this.fetchJson('replica.php', {
+        method: 'POST',
+        credentials: 'same-origin',
+        cache: 'no-store',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+          'X-Federation-Replica-CSRF': this.replicaCsrf
+        },
+        body: body.toString()
+      });
+      this.alert(String(data.message || 'Trabajo de réplica encolado.'), Array.isArray(data.queued) && data.queued.length ? 'success' : 'warning');
+      await this.loadReplicas();
+    } catch (error) {
+      this.alert(error.message || 'No se pudo encolar la réplica.', 'danger');
+    } finally {
+      button.disabled = false;
+      button.innerHTML = old;
+    }
   }
 
   async requestAccess(resourceId, button) {
@@ -144,13 +225,8 @@ class FederationPortalModule {
       body.set('action', 'request');
       body.set('resource_id', resourceId);
       const data = await this.fetchJson('access.php', {
-        method: 'POST',
-        credentials: 'same-origin',
-        cache: 'no-store',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
-          'X-Federation-Access-CSRF': this.csrf
-        },
+        method: 'POST', credentials: 'same-origin', cache: 'no-store',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8', 'X-Federation-Access-CSRF': this.csrf},
         body: body.toString()
       });
       this.alert(String(data.message || 'Solicitud registrada.'), data.status === 'queued' ? 'warning' : 'success');
@@ -177,13 +253,8 @@ class FederationPortalModule {
       body.set('decision', decision);
       body.set('days', String(days));
       const data = await this.fetchJson('access.php', {
-        method: 'POST',
-        credentials: 'same-origin',
-        cache: 'no-store',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
-          'X-Federation-Access-CSRF': this.csrf
-        },
+        method: 'POST', credentials: 'same-origin', cache: 'no-store',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8', 'X-Federation-Access-CSRF': this.csrf},
         body: body.toString()
       });
       this.alert(data.status === 'approved' ? 'Acceso aprobado y grant temporal creado.' : 'Solicitud rechazada.', 'success');
@@ -216,34 +287,48 @@ class FederationPortalModule {
     this.renderShares('federationSentShares', sent);
   }
 
-  renderIncoming(rows) {
-    const target = this.document.getElementById('federationIncomingList');
+  renderReplicas() {
+    const rows = this.state.replicas;
+    this.text('federationReplicaBadge', rows.length);
+    const target = this.document.getElementById('federationReplicaJobs');
     if (!target) return;
     target.innerHTML = '';
     if (!rows.length) {
-      target.innerHTML = '<div class="small text-muted">No hay solicitudes recibidas.</div>';
+      target.innerHTML = '<div class="small text-muted">No hay trabajos de réplica para este usuario.</div>';
       return;
     }
     rows.forEach((row) => {
-      const status = String(row.status || 'pending');
+      const status = String(row.Status || row.status || 'queued');
       const card = this.document.createElement('div');
       card.className = 'federation-mini-card';
       card.innerHTML = `
         <div class="d-flex justify-content-between align-items-start">
           <div>
-            <strong>${this.escape(String(row.resource_id || ''))}</strong>
-            <div class="small text-muted">Nodo: ${this.escape(String(row.remote_node_id || ''))}</div>
+            <strong>${this.escape(String(row.ResourceId || row.resource_id || ''))}</strong>
+            <div class="small text-muted">${this.escape(String(row.Direction || row.direction || ''))} · ${this.escape(String(row.Role || row.role || ''))} · nodo ${this.escape(String(row.RemoteNodeId || row.remote_node_id || ''))}</div>
           </div>
           <span class="badge ${this.statusClass(status)}">${this.escape(status)}</span>
         </div>
-        <div class="small text-muted mt-2">Solicitada: ${this.escape(String(row.requested_at || ''))}</div>`;
+        <div class="small text-muted mt-1">Intentos: ${this.escape(String(row.Attempts ?? row.attempts ?? 0))} · actualizado: ${this.escape(String(row.UpdatedAt || row.updated_at || ''))}</div>
+        ${(row.LastError || row.last_error) ? `<div class="small text-warning mt-1">${this.escape(String(row.LastError || row.last_error))}</div>` : ''}`;
+      target.appendChild(card);
+    });
+  }
+
+  renderIncoming(rows) {
+    const target = this.document.getElementById('federationIncomingList');
+    if (!target) return;
+    target.innerHTML = '';
+    if (!rows.length) { target.innerHTML = '<div class="small text-muted">No hay solicitudes recibidas.</div>'; return; }
+    rows.forEach((row) => {
+      const status = String(row.status || 'pending');
+      const card = this.document.createElement('div');
+      card.className = 'federation-mini-card';
+      card.innerHTML = `<div class="d-flex justify-content-between align-items-start"><div><strong>${this.escape(String(row.resource_id || ''))}</strong><div class="small text-muted">Nodo: ${this.escape(String(row.remote_node_id || ''))}</div></div><span class="badge ${this.statusClass(status)}">${this.escape(status)}</span></div><div class="small text-muted mt-2">Solicitada: ${this.escape(String(row.requested_at || ''))}</div>`;
       if (status === 'pending') {
         const actions = this.document.createElement('div');
         actions.className = 'd-flex align-items-center flex-wrap mt-2';
-        actions.innerHTML = `
-          <input type="number" min="1" max="30" value="7" class="form-control form-control-sm mr-2 federation-days-input" data-request-days="${this.escapeAttr(String(row.request_id || ''))}" aria-label="Días de acceso">
-          <button class="btn btn-success btn-sm mr-2" data-federation-decision="approve" data-request-id="${this.escapeAttr(String(row.request_id || ''))}"><i class="fas fa-check mr-1"></i>Aprobar</button>
-          <button class="btn btn-outline-danger btn-sm" data-federation-decision="reject" data-request-id="${this.escapeAttr(String(row.request_id || ''))}"><i class="fas fa-xmark mr-1"></i>Rechazar</button>`;
+        actions.innerHTML = `<input type="number" min="1" max="30" value="7" class="form-control form-control-sm mr-2 federation-days-input" data-request-days="${this.escapeAttr(String(row.request_id || ''))}" aria-label="Días de acceso"><button class="btn btn-success btn-sm mr-2" data-federation-decision="approve" data-request-id="${this.escapeAttr(String(row.request_id || ''))}"><i class="fas fa-check mr-1"></i>Aprobar</button><button class="btn btn-outline-danger btn-sm" data-federation-decision="reject" data-request-id="${this.escapeAttr(String(row.request_id || ''))}"><i class="fas fa-xmark mr-1"></i>Rechazar</button>`;
         card.appendChild(actions);
       }
       target.appendChild(card);
@@ -254,24 +339,12 @@ class FederationPortalModule {
     const target = this.document.getElementById('federationOutgoingList');
     if (!target) return;
     target.innerHTML = '';
-    if (!rows.length) {
-      target.innerHTML = '<div class="small text-muted">No has enviado solicitudes.</div>';
-      return;
-    }
+    if (!rows.length) { target.innerHTML = '<div class="small text-muted">No has enviado solicitudes.</div>'; return; }
     rows.forEach((row) => {
       const status = String(row.status || 'queued');
       const card = this.document.createElement('div');
       card.className = 'federation-mini-card';
-      card.innerHTML = `
-        <div class="d-flex justify-content-between align-items-start">
-          <div>
-            <strong>${this.escape(String(row.resource_id || ''))}</strong>
-            <div class="small text-muted">Nodo: ${this.escape(String(row.remote_node_id || ''))}</div>
-          </div>
-          <span class="badge ${this.statusClass(status)}">${this.escape(status)}</span>
-        </div>
-        <div class="small text-muted mt-2">Actualizada: ${this.escape(String(row.updated_at || ''))}</div>
-        ${row.last_error ? `<div class="small text-warning mt-1">${this.escape(String(row.last_error))}</div>` : ''}`;
+      card.innerHTML = `<div class="d-flex justify-content-between align-items-start"><div><strong>${this.escape(String(row.resource_id || ''))}</strong><div class="small text-muted">Nodo: ${this.escape(String(row.remote_node_id || ''))}</div></div><span class="badge ${this.statusClass(status)}">${this.escape(status)}</span></div><div class="small text-muted mt-2">Actualizada: ${this.escape(String(row.updated_at || ''))}</div>${row.last_error ? `<div class="small text-warning mt-1">${this.escape(String(row.last_error))}</div>` : ''}`;
       target.appendChild(card);
     });
   }
@@ -280,25 +353,13 @@ class FederationPortalModule {
     const target = this.document.getElementById(targetId);
     if (!target) return;
     target.innerHTML = '';
-    if (!rows.length) {
-      target.innerHTML = '<div class="small text-muted">Sin elementos.</div>';
-      return;
-    }
+    if (!rows.length) { target.innerHTML = '<div class="small text-muted">Sin elementos.</div>'; return; }
     rows.forEach((row) => {
       const status = String(row.status || 'active');
       const card = this.document.createElement('div');
       card.className = 'federation-mini-card';
       const accessUrl = typeof row.access_url === 'string' ? row.access_url : '';
-      card.innerHTML = `
-        <div class="d-flex justify-content-between align-items-start">
-          <div>
-            <strong>${this.escape(String(row.title || 'Recurso FederationCloud'))}</strong>
-            <div class="small text-muted">${this.escape(String(row.media_type || 'application/octet-stream'))}</div>
-          </div>
-          <span class="badge ${this.statusClass(status)}">${this.escape(status)}</span>
-        </div>
-        <div class="small text-muted text-break mt-1">${this.escape(String(row.resource_id || ''))}</div>
-        <div class="small text-muted mt-1">Expira: ${this.escape(String(row.expires_at || '—'))}</div>`;
+      card.innerHTML = `<div class="d-flex justify-content-between align-items-start"><div><strong>${this.escape(String(row.title || 'Recurso FederationCloud'))}</strong><div class="small text-muted">${this.escape(String(row.media_type || 'application/octet-stream'))}</div></div><span class="badge ${this.statusClass(status)}">${this.escape(status)}</span></div><div class="small text-muted text-break mt-1">${this.escape(String(row.resource_id || ''))}</div><div class="small text-muted mt-1">Expira: ${this.escape(String(row.expires_at || '—'))}</div>`;
       if (accessUrl && status === 'active') {
         const link = this.document.createElement('a');
         link.className = 'btn btn-info btn-sm mt-2';
@@ -313,13 +374,12 @@ class FederationPortalModule {
   }
 
   async fetchJson(url, options = {}) {
-    const response = await fetch(url, { headers: { Accept: 'application/json', ...(options.headers || {}) }, ...options });
+    const headers = { Accept: 'application/json', ...(options.headers || {}) };
+    const response = await fetch(url, { ...options, headers });
     const text = await response.text();
     let data = null;
     try { data = text ? JSON.parse(text) : {}; } catch (_) { data = null; }
-    if (!response.ok || !data || data.ok === false) {
-      throw new Error(String((data && data.error) || `HTTP ${response.status}`));
-    }
+    if (!response.ok || !data || data.ok === false) throw new Error(String((data && data.error) || `HTTP ${response.status}`));
     return data;
   }
 
@@ -333,26 +393,15 @@ class FederationPortalModule {
   }
 
   statusClass(status) {
-    if (['approved', 'active', 'completed'].includes(status)) return 'badge-success';
+    if (['approved', 'active', 'completed', 'stored'].includes(status)) return 'badge-success';
     if (['rejected', 'expired', 'failed'].includes(status)) return 'badge-danger';
-    if (['queued', 'pending'].includes(status)) return 'badge-warning';
+    if (['queued', 'pending', 'retry', 'offered', 'transferring'].includes(status)) return 'badge-warning';
     return 'badge-secondary';
   }
 
-  text(id, value) {
-    const target = this.document.getElementById(id);
-    if (target) target.textContent = String(value);
-  }
-
-  escape(value) {
-    const div = this.document.createElement('div');
-    div.textContent = String(value ?? '');
-    return div.innerHTML;
-  }
-
-  escapeAttr(value) {
-    return this.escape(value).replace(/`/g, '&#96;');
-  }
+  text(id, value) { const target = this.document.getElementById(id); if (target) target.textContent = String(value); }
+  escape(value) { const div = this.document.createElement('div'); div.textContent = String(value ?? ''); return div.innerHTML; }
+  escapeAttr(value) { return this.escape(value).replace(/`/g, '&#96;'); }
 
   static boot(win = window, doc = document) {
     win.ArcadeCloudDrive = win.ArcadeCloudDrive || { modules: {} };

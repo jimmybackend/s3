@@ -2,89 +2,52 @@
 
 ## Objetivo
 
-ArcadeCloud Drive permite que un `Users.system_role = superadmin` administre desde la aplicación dos áreas que antes obligaban a entrar por SSH:
+ArcadeCloud Drive permite que un `Users.system_role = superadmin` administre desde la aplicación:
 
 1. crear o renombrar la identidad FederationCloud;
-2. modificar una lista cerrada de variables de entorno propias de ArcadeCloud, incluyendo configuración SMTP.
+2. configurar FederationCloud y SMTP;
+3. actualizar la conexión MySQL usada por Drive;
+4. configurar las credenciales y parámetros AWS usados por Drive.
 
-Esto **no convierte la aplicación en una terminal root** y no concede `sudo` general al usuario de PHP-FPM.
+La configuración efectiva se guarda fuera del repositorio y nunca requiere escribir secretos dentro del código PHP.
 
-## Preparación root: una sola vez
+## Preparación administrativa: una sola vez
 
-Linux no permite que una aplicación web se conceda privilegios root a sí misma. Por seguridad existe un bootstrap administrativo que un operador del servidor ejecuta una sola vez:
+El servidor instala un helper limitado con:
 
 ```bash
 sudo bash drive/bin/install_arcadecloud_admin_helper.sh --php-user=USUARIO_REAL_PHP_FPM
 ```
 
-Ejemplos de usuario según la distribución pueden ser `apache`, `www-data` u otro pool dedicado. La aplicación detecta el usuario efectivo cuando POSIX está disponible y muestra el comando sugerido en el modal.
-
 El instalador:
 
-- copia un helper root-owned a `/usr/local/sbin/arcadecloud-drive-admin`;
+- copia `/usr/local/sbin/arcadecloud-drive-admin`;
 - crea `/etc/arcadecloud-drive/admin-helper.json`;
 - crea `/etc/arcadecloud-drive/runtime-env.json` si no existe;
-- permite al grupo PHP leer la identidad y las variables administradas;
-- instala una regla `sudoers` que autoriza **únicamente** el helper anterior;
-- no permite `sudo bash`, `sudo sh`, `sudo php` genérico, editores ni comandos arbitrarios.
+- permite al grupo PHP leer la configuración administrada;
+- instala una regla `sudoers` para invocar únicamente ese helper.
 
-El helper acepta solamente:
+Cuando el código del helper cambia, se vuelve a ejecutar el mismo instalador para reemplazar la copia de `/usr/local/sbin/arcadecloud-drive-admin` por la versión actual del repositorio.
 
-- consultar su estado;
-- escribir variables que estén en una allowlist compilada;
-- crear la identidad si todavía no existe;
-- renombrar únicamente `node_name` conservando `node_id` y claves.
+## Identidad FederationCloud
 
-No incluye una acción web para borrar la identidad.
-
-## Cuando no hay helper
-
-La creación/renombre intenta primero usar los permisos normales del proceso PHP-FPM. Si no puede, la API devuelve información accionable:
-
-- ruta exacta de identidad, normalmente `/etc/arcadecloud-drive/federation-node.json`;
-- usuario efectivo de PHP-FPM;
-- si el archivo existe, es legible o escribible;
-- si el directorio padre permite creación;
-- si el helper privilegiado está disponible;
-- comando de instalación sugerido.
-
-Para una identidad **ya existente**, un operador puede elegir no instalar el helper y conceder escritura sólo sobre ese archivo mediante ACL:
-
-```bash
-sudo setfacl -m u:USUARIO_PHP_FPM:rw /etc/arcadecloud-drive/federation-node.json
-```
-
-No se recomienda hacer `chmod 666`, `chmod 777` ni volver escribible todo `/etc/arcadecloud-drive`.
-
-## Creación de un nodo sin colisión
-
-La UI de identidad sirve tanto para una instalación nueva como para un nodo existente.
+La UI de identidad sirve para una instalación nueva o un nodo existente.
 
 Flujo de creación:
 
 ```text
 superadmin escribe node_name
- -> normalización estricta
- -> consulta al seed: ¿nombre disponible?
- -> si está ocupado: NO se generan llaves
- -> si está disponible: generar Ed25519 + payload_key
- -> crear federation-node.json
- -> publicar descriptor firmado
- -> seed vuelve a validar nombre, Node ID, clave y URLs
- -> registrar FederationNodes
+ -> normalización
+ -> seed comprueba disponibilidad
+ -> si está libre se generan llaves
+ -> federation-node.json
+ -> descriptor firmado
+ -> registro final en FederationNodes
 ```
 
-La consulta previa mejora UX, pero el registro firmado final sigue siendo la autoridad para cubrir carreras entre dos nodos que intenten tomar el mismo nombre al mismo tiempo.
+Renombrar modifica únicamente `node_name`; `node_id`, Ed25519 y `payload_key` permanecen iguales.
 
-Si las llaves ya fueron creadas y el registro no puede confirmarse por red, **la identidad se conserva**. Nunca se regeneran o borran automáticamente las llaves ante una respuesta incierta del seed.
-
-## Renombre
-
-Renombrar cambia solamente `node_name`. Antes de persistirlo también se valida disponibilidad global. El mismo `node_id`, clave Ed25519 y `payload_key` permanecen intactos.
-
-Cuando el archivo pertenece a root, el flujo usa el helper privilegiado. Cuando PHP-FPM ya tiene permiso directo sobre el archivo, puede actualizarlo sin helper.
-
-## Variables administradas desde la aplicación
+## Archivo de variables administradas
 
 El archivo administrado es:
 
@@ -92,9 +55,13 @@ El archivo administrado es:
 /etc/arcadecloud-drive/runtime-env.json
 ```
 
-`drive/app_bootstrap.php` lo carga al inicio de cada petición y convierte exclusivamente las claves permitidas en variables de proceso mediante `putenv()`. Por tanto un cambio realizado desde el modal se aplica a las siguientes peticiones sin requerir reiniciar PHP-FPM.
+`drive/app_bootstrap.php` lo carga antes de `Config-s3.php` y `db.php`. Por ello los valores guardados desde **Servidor** se aplican a las siguientes peticiones sin editar código PHP.
 
-Allowlist inicial:
+La arquitectura de fuentes y precedencia se documenta en:
+
+- [`RUNTIME_ENV_CONFIGURATION.md`](RUNTIME_ENV_CONFIGURATION.md)
+
+## Variables visibles en Servidor
 
 ### FederationCloud
 
@@ -116,39 +83,110 @@ Allowlist inicial:
 - `ARCADECLOUD_SMTP_TIMEOUT`
 - `ARCADECLOUD_SMTP_DEBUG`
 
-Una variable fuera de la allowlist es rechazada tanto por la aplicación como por el helper root. Para ampliar la lista debe existir un cambio explícito y revisable en el repositorio.
+### Base de datos
+
+Estas variables se editan y guardan como un único grupo `database`:
+
+- `DB_HOST`
+- `DB_PORT`
+- `DB_USER`
+- `DB_PASSWORD`
+- `DB_NAME`
+
+Antes de escribir el grupo, el backend intenta abrir una conexión MySQL con la configuración resultante. Si la conexión falla, `runtime-env.json` no se modifica.
+
+Un campo secreto ya configurado puede dejarse vacío en el formulario para conservar su valor actual.
+
+### AWS
+
+Estas variables se editan y guardan como un único grupo `aws`:
+
+- `AWS_REGION`
+- `AWS_S3_BUCKET`
+- `AWS_ACCESS_KEY_ID`
+- `AWS_SECRET_ACCESS_KEY`
+- `AWS_SESSION_TOKEN`
+- `AWS_CONTROL_ACCESS_KEY_ID`
+- `AWS_CONTROL_SECRET_ACCESS_KEY`
+- `AWS_CONTROL_SESSION_TOKEN`
+
+`AWS_SESSION_TOKEN` es opcional para credenciales temporales.
+
+Las credenciales `AWS_CONTROL_*` son opcionales. Cuando se usan, `AWS_CONTROL_ACCESS_KEY_ID` y `AWS_CONTROL_SECRET_ACCESS_KEY` deben existir juntas; de lo contrario el plano de control reutiliza las credenciales AWS generales según `Config-s3.php`.
+
+## Escritura atómica por grupo
+
+La base de datos y AWS no se escriben variable por variable.
+
+La UI envía todas las variables del bloque al backend y el helper ejecuta una sola actualización `env-set-many` sobre `runtime-env.json`.
+
+Esto evita estados intermedios como:
+
+```text
+DB_HOST nuevo
+DB_USER antiguo
+DB_PASSWORD antiguo
+DB_NAME antiguo
+```
+
+Para DB el flujo es:
+
+```text
+formulario completo
+ -> validar valores
+ -> combinar secretos existentes no reemplazados
+ -> probar conexión MySQL
+ -> si conecta: escribir grupo de una sola vez
+ -> siguientes peticiones usan la nueva DB
+```
 
 ## Vista práctica del panel Servidor
 
-El modal **Servidor** muestra todas las variables administrables en una sola tabla:
+El modal muestra:
 
 ```text
-Variable | Grupo | Valor actual | Origen | Modificar
+Variable | Grupo | Valor actual | Origen | Acción
 ```
 
-El origen se interpreta así:
+Los orígenes significan:
 
-- `runtime-env.json`: la variable ya fue administrada desde ArcadeCloud;
-- `entorno PHP`: el proceso PHP-FPM ya recibió esa variable desde systemd, el pool u otro mecanismo del servidor;
-- `sin configurar`: no existe una configuración explícita ni en `runtime-env.json` ni en el entorno de PHP.
+- `runtime-env.json`: administrada desde ArcadeCloud;
+- `entorno PHP`: recibida de systemd/PHP-FPM u otra configuración base;
+- `sin configurar`: no existe una variable explícita en esas dos fuentes.
 
-Esto permite conservar instalaciones existentes y migrarlas gradualmente. Una variable puede seguir viniendo de un `EnvironmentFile` del servidor hasta que el superadmin decida modificarla desde la UI; desde ese momento la clave escrita en `runtime-env.json` tiene precedencia para las siguientes peticiones.
+Para Base de datos y AWS, cualquier fila del grupo abre el formulario completo del bloque.
 
-La arquitectura completa de fuentes, precedencia, diagnóstico de `EnvironmentFile`, pools PHP-FPM y ejemplos sintéticos está documentada en:
+## Secretos
 
-- [`RUNTIME_ENV_CONFIGURATION.md`](RUNTIME_ENV_CONFIGURATION.md)
+La tabla nunca devuelve el valor actual de:
 
-No deben copiarse a la documentación los valores reales de una instalación.
+- `ARCADECLOUD_SMTP_PASSWORD`;
+- `DB_PASSWORD`;
+- `AWS_ACCESS_KEY_ID`;
+- `AWS_SECRET_ACCESS_KEY`;
+- tokens de sesión AWS;
+- credenciales `AWS_CONTROL_*`.
 
-## Lo que deliberadamente NO puede cambiar desde este panel
+La interfaz sólo indica `configurada`. Si el campo secreto queda vacío al guardar un grupo y ya existía un valor, se conserva.
 
-La primera versión no permite modificar desde la web:
+## Confirmación del superusuario
 
-- credenciales MySQL;
-- claves AWS o IAM;
-- reglas de firewall;
+Cada modificación requiere:
+
+1. sesión autenticada;
+2. `system_role = superadmin`;
+3. CSRF válido;
+4. contraseña actual del superusuario.
+
+La auditoría registra los nombres de las variables modificadas, pero no sus valores.
+
+## Lo que no administra este panel
+
+Aunque el superadmin puede cambiar la configuración de aplicación necesaria para operar Drive, el panel no edita directamente:
+
 - Nginx;
-- systemd;
+- unidades systemd;
+- firewall;
 - sudoers;
 - rutas arbitrarias del sistema;
 - comandos shell;
@@ -156,21 +194,4 @@ La primera versión no permite modificar desde la web:
 - `payload_key`;
 - `node_id`.
 
-Esos límites reducen el impacto si una sesión web o el propio sitio se ve comprometido.
-
-## Confirmación del superusuario
-
-Un POST de configuración exige simultáneamente:
-
-1. sesión autenticada;
-2. `system_role = superadmin`;
-3. CSRF válido;
-4. contraseña actual del superusuario verificada nuevamente contra `Users.password`.
-
-Los secretos configurados nunca se devuelven al navegador. Para `ARCADECLOUD_SMTP_PASSWORD` la UI sólo indica si existe un valor y permite reemplazarlo.
-
-La auditoría registra el nombre de la variable cambiada, el usuario y la IP, pero nunca el valor.
-
-## Responsabilidad
-
-El `superadmin` sí posee una capacidad operativa superior y debe asumirla conscientemente, pero el software conserva defensa en profundidad: autenticación, reautenticación, CSRF, allowlist, helper root limitado, archivos fuera de Git y ausencia de shell arbitrario.
+Esas piezas siguen siendo infraestructura del servidor y no configuración de ejecución de ArcadeCloud.

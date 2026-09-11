@@ -104,14 +104,14 @@ $arcadeLinkShareJs = __DIR__ . '/js/arcadelink-share.js';
       <div class="modal-header border-secondary">
         <div>
           <h5 class="modal-title" id="modalServerAdminLabel"><i class="fas fa-tools mr-1"></i> Configuración del servidor</h5>
-          <div class="small text-muted">Variables ArcadeCloud disponibles en esta instalación.</div>
+          <div class="small text-muted">FederationCloud, SMTP, base de datos y credenciales AWS de esta instalación.</div>
         </div>
         <button type="button" class="close text-light" data-dismiss="modal" aria-label="Cerrar"><span aria-hidden="true">&times;</span></button>
       </div>
       <div class="modal-body">
         <div id="serverAdminAlert" class="alert d-none" role="alert"></div>
         <div class="alert alert-info small">
-          Aquí puedes ver qué variables tiene ArcadeCloud, su valor actual y de dónde se está cargando. Pulsa <strong>Modificar</strong> en la variable que quieras cambiar.
+          Aquí puedes ver las variables que usa ArcadeCloud, su valor actual y de dónde se cargan. Base de datos y AWS se configuran como bloque para evitar cambios incompletos.
         </div>
         <div id="serverAdminHelperStatus" class="small text-muted mb-3">Consultando helper…</div>
 
@@ -119,7 +119,7 @@ $arcadeLinkShareJs = __DIR__ . '/js/arcadelink-share.js';
           <h6 class="mb-0">Variables disponibles</h6>
           <span id="serverAdminVariableCount" class="badge badge-secondary">—</span>
         </div>
-        <div class="table-responsive border border-secondary rounded mb-4" style="max-height: 360px; overflow-y: auto;">
+        <div class="table-responsive border border-secondary rounded mb-4" style="max-height: 390px; overflow-y: auto;">
           <table class="table table-dark table-sm table-hover mb-0">
             <thead>
               <tr>
@@ -135,24 +135,34 @@ $arcadeLinkShareJs = __DIR__ . '/js/arcadelink-share.js';
           </table>
         </div>
 
-        <h6>Modificar variable</h6>
-        <div class="form-group">
-          <label for="serverAdminVariable">Variable</label>
-          <select id="serverAdminVariable" class="form-control"></select>
+        <div id="serverAdminSingleEditor">
+          <h6>Modificar variable</h6>
+          <div class="form-group">
+            <label for="serverAdminVariable">Variable</label>
+            <select id="serverAdminVariable" class="form-control"></select>
+          </div>
+          <div class="form-group">
+            <label for="serverAdminValue">Nuevo valor</label>
+            <input id="serverAdminValue" class="form-control" autocomplete="off">
+            <small id="serverAdminValueHelp" class="form-text text-muted"></small>
+          </div>
         </div>
-        <div class="form-group">
-          <label for="serverAdminValue">Nuevo valor</label>
-          <input id="serverAdminValue" class="form-control" autocomplete="off">
-          <small id="serverAdminValueHelp" class="form-text text-muted"></small>
+
+        <div id="serverAdminGroupEditor" class="d-none">
+          <h6 id="serverAdminGroupTitle">Configurar grupo</h6>
+          <div id="serverAdminGroupFields"></div>
         </div>
-        <div class="form-group">
+
+        <div class="form-group mb-0">
           <label for="serverAdminPassword">Contraseña actual de superusuario</label>
           <input id="serverAdminPassword" type="password" class="form-control" autocomplete="current-password">
+          <small class="form-text text-muted">Se usa para confirmar el cambio; los campos secretos existentes pueden dejarse vacíos para conservar su valor.</small>
         </div>
       </div>
       <div class="modal-footer border-secondary">
         <button type="button" class="btn btn-outline-light" data-dismiss="modal">Cerrar</button>
         <button type="button" id="btnSaveServerAdmin" class="btn btn-info"><i class="fas fa-save mr-1"></i>Guardar variable</button>
+        <button type="button" id="btnSaveServerAdminGroup" class="btn btn-info d-none"><i class="fas fa-save mr-1"></i>Guardar grupo</button>
       </div>
     </div>
   </div>

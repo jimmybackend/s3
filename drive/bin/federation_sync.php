@@ -7,6 +7,7 @@ require_once dirname(__DIR__) . '/app_bootstrap.php';
 use ArcadeCloud\Drive\Core\ApplicationKernel;
 use ArcadeCloud\Drive\Federation\FederationAccessService;
 use ArcadeCloud\Drive\Federation\FederationGossipService;
+use ArcadeCloud\Drive\Federation\FederationReplicaService;
 
 $lockPath = sys_get_temp_dir() . '/arcadecloud-federation-sync.lock';
 $lock = fopen($lockPath, 'c+');
@@ -31,6 +32,16 @@ try {
             'error' => 'La cola privada de solicitudes no pudo procesarse en este ciclo.',
         ];
         error_log('[FederationCloud access sync] ' . $e->getMessage());
+    }
+    try {
+        // Bloques pequeños: hasta 3 ofertas salientes y 2 descargas entrantes por ciclo.
+        $result['replicas'] = (new FederationReplicaService($app))->syncPending(3, 2);
+    } catch (Throwable $e) {
+        $result['replicas'] = [
+            'degraded' => true,
+            'error' => 'La cola de réplicas no pudo procesarse en este ciclo.',
+        ];
+        error_log('[FederationCloud replica sync] ' . $e->getMessage());
     }
     echo json_encode($result, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . "\n";
 } catch (Throwable $e) {

@@ -4,9 +4,9 @@
 
 ## Resumen
 
-- PHP analizados: **235**
-- PHP que ya contienen clases/interfaces: **145**
-- PHP marcados para migración/revisión: **13**
+- PHP analizados: **237**
+- PHP que ya contienen clases/interfaces: **146**
+- PHP marcados para migración/revisión: **14**
 - JavaScript analizados: **34**
 - JavaScript que ya contienen clases: **33**
 - JavaScript marcados para migración/revisión: **7**
@@ -83,7 +83,7 @@
 | `drive/relock_file.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/renombrar_archivo.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/renombrar_carpeta.php` | 10 | thin endpoint | 0 | — | — | — | — |
-| `drive/s3.php` | 2189 | view/entrypoint | 0 | ⚠️ | — | — | — |
+| `drive/s3.php` | 2196 | view/entrypoint | 0 | ⚠️ | — | — | — |
 | `drive/set_file_security.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/src/Activity/ActivityCostRecorder.php` | 155 | class/module | 1 | — | — | — | — |
 | `drive/src/Activity/ActivityCostRepository.php` | 173 | class/module | 1 | — | ⚠️ | — | — |
@@ -222,6 +222,7 @@
 | `drive/src/View/PublicSharedPageRenderer.php` | 104 | class/module | 1 | — | — | — | — |
 | `drive/src/View/SharePageRenderer.php` | 118 | class/module | 1 | — | — | — | — |
 | `drive/src/View/SyncStatusRenderer.php` | 14 | class/module | 1 | — | — | — | — |
+| `drive/src/View/UserIdentityPresenter.php` | 71 | class/module | 1 | — | — | — | — |
 | `drive/storage_usage.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/subir_archivo.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/subir_publico.php` | 10 | thin endpoint | 0 | — | — | — | — |
@@ -231,6 +232,7 @@
 | `drive/tests/federation_directory_smoke.php` | 102 | procedural endpoint | 0 | — | — | — | global functions: directoryOk |
 | `drive/tests/federation_provider_smoke.php` | 76 | procedural endpoint | 0 | — | — | — | global functions: providerOk |
 | `drive/tests/federationcloud_smoke.php` | 146 | procedural endpoint | 0 | — | — | — | global functions: ok, legacyDocument |
+| `drive/tests/user_identity_presenter_smoke.php` | 30 | procedural endpoint | 0 | — | — | — | — |
 | `drive/thumb.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/token_audio.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/token_texto.php` | 10 | thin endpoint | 0 | — | — | — | — |

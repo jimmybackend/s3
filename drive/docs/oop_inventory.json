@@ -1,8 +1,8 @@
 {
   "summary": {
-    "php_total": 235,
-    "php_class_modules": 145,
-    "php_needs_migration": 13,
+    "php_total": 237,
+    "php_class_modules": 146,
+    "php_needs_migration": 14,
     "js_total": 34,
     "js_class_modules": 33,
     "js_needs_migration": 7
@@ -957,7 +957,7 @@
     },
     {
       "path": "drive/s3.php",
-      "lines": 2189,
+      "lines": 2196,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -3051,6 +3051,21 @@
       "issues": []
     },
     {
+      "path": "drive/src/View/UserIdentityPresenter.php",
+      "lines": 71,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
       "path": "drive/storage_usage.php",
       "lines": 10,
       "kind": "thin endpoint",
@@ -3201,6 +3216,21 @@
       "issues": [
         "global functions: ok, legacyDocument"
       ]
+    },
+    {
+      "path": "drive/tests/user_identity_presenter_smoke.php",
+      "lines": 30,
+      "kind": "procedural endpoint",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": []
     },
     {
       "path": "drive/thumb.php",

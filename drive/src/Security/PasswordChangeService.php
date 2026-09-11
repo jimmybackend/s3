@@ -121,10 +121,20 @@ final class PasswordChangeService
             return 'correo registrado';
         }
 
-        $first = function_exists('mb_substr')
-            ? mb_substr($local, 0, 1, 'UTF-8')
+        $localFirst = function_exists('mb_substr')
+            ? (string)mb_substr($local, 0, 1, 'UTF-8')
             : substr($local, 0, 1);
 
-        return $first . str_repeat('*', max(3, min(8, strlen($local) - 1))) . '@' . $domain;
+        $domainParts = explode('.', $domain);
+        $domainName = (string)($domainParts[0] ?? '');
+        $suffix = count($domainParts) > 1 ? '.' . end($domainParts) : '';
+        $domainFirst = $domainName !== '' ? substr($domainName, 0, 1) : '*';
+
+        return $localFirst
+            . str_repeat('*', max(3, min(8, strlen($local) - 1)))
+            . '@'
+            . $domainFirst
+            . '***'
+            . $suffix;
     }
 }

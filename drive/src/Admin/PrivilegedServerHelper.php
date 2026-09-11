@@ -34,6 +34,20 @@ final class PrivilegedServerHelper
         $this->run(['env-set', $name], $value . "\n");
     }
 
+    public function setEnvironmentMany(array $values): void
+    {
+        if ($values === []) throw new RuntimeException('No hay variables para actualizar.');
+        $payload = [];
+        foreach ($values as $name => $value) {
+            if (!is_string($name) || !ManagedRuntimeEnvironment::isAllowed($name) || !is_string($value)) {
+                throw new RuntimeException('Grupo de variables inválido.');
+            }
+            $payload[$name] = $value;
+        }
+        $json = json_encode($payload, JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
+        $this->run(['env-set-many'], $json);
+    }
+
     public function createIdentity(string $nodeName): array
     {
         $result = $this->run(['identity-create', $nodeName]);

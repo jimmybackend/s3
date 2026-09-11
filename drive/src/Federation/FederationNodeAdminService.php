@@ -9,16 +9,20 @@ use Throwable;
 final class FederationNodeAdminService
 {
     private FederationConfig $config;
+    private FederationSeedConfig $seeds;
     private NodeIdentityService $identity;
     private FederationNodeDescriptorValidator $validator;
     private FederationNodeRepository $nodes;
+    private FederationHttpClient $http;
 
     public function __construct(private DriveApplication $app)
     {
         $this->config = FederationConfig::fromEnvironment();
+        $this->seeds = FederationSeedConfig::fromProjectConfig();
         $this->identity = new NodeIdentityService($this->config->identityPath());
         $this->validator = new FederationNodeDescriptorValidator();
         $this->nodes = new FederationNodeRepository($this->app->db());
+        $this->http = new FederationHttpClient();
     }
 
     public function state(): array
@@ -38,10 +42,14 @@ final class FederationNodeAdminService
         $name = NodeIdentityService::normalizeNodeName($requestedName);
         $nodeId = $this->identity->nodeId();
         $oldName = $this->identity->nodeName();
+        $isSeed = $this->seeds->isSeed($this->config->federationUrl());
 
-        $this->nodes->assertNodeNameAvailable($name, $nodeId);
         if ($oldName !== null && hash_equals($oldName, $name)) {
             return $this->state() + ['message' => 'El nodo ya usa ese nombre.'];
+        }
+
+        if ($isSeed) {
+            $this->nodes->assertNodeNameAvailable($name, $nodeId);
         }
 
         $this->identity->renameNodeName($name);
@@ -51,7 +59,17 @@ final class FederationNodeAdminService
             if (!hash_equals((string)$descriptor['node_id'], $nodeId)) {
                 throw new FederationException('El Node ID cambió durante el renombre; operación cancelada.', 500);
             }
-            $this->nodes->upsertVerified($descriptor);
+
+            if ($isSeed) {
+                $this->nodes->upsertVerified($descriptor);
+            } else {
+                $response = $this->http->postJson($this->seeds->primary(), 'register.php', [
+                    'descriptor' => $descriptor,
+                ]);
+                if (($response['ok'] ?? null) !== true) {
+                    throw new FederationException('El seed no confirmó el nuevo nombre del nodo.', 502);
+                }
+            }
         } catch (Throwable $e) {
             if ($oldName !== null && $oldName !== '') {
                 try {

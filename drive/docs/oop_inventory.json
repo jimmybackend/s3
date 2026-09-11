@@ -1,8 +1,8 @@
 {
   "summary": {
-    "php_total": 295,
-    "php_class_modules": 179,
-    "php_needs_migration": 23,
+    "php_total": 307,
+    "php_class_modules": 186,
+    "php_needs_migration": 24,
     "js_total": 38,
     "js_class_modules": 37,
     "js_needs_migration": 7
@@ -121,7 +121,7 @@
     },
     {
       "path": "drive/bin/federation_catalog_migrate.php",
-      "lines": 43,
+      "lines": 44,
       "kind": "thin endpoint",
       "classes": 0,
       "functions": [],
@@ -211,7 +211,7 @@
     },
     {
       "path": "drive/bin/federation_sync.php",
-      "lines": 45,
+      "lines": 56,
       "kind": "thin endpoint",
       "classes": 0,
       "functions": [],
@@ -752,6 +752,66 @@
     {
       "path": "drive/federationcloud/register.php",
       "lines": 12,
+      "kind": "thin endpoint",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/federationcloud/replica-offer.php",
+      "lines": 11,
+      "kind": "thin endpoint",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/federationcloud/replica-open.php",
+      "lines": 11,
+      "kind": "thin endpoint",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/federationcloud/replica-resolve.php",
+      "lines": 11,
+      "kind": "thin endpoint",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/federationcloud/replica.php",
+      "lines": 11,
       "kind": "thin endpoint",
       "classes": 0,
       "functions": [],
@@ -2041,7 +2101,7 @@
     },
     {
       "path": "drive/src/Federation/FederationCatalogService.php",
-      "lines": 188,
+      "lines": 197,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -2161,7 +2221,22 @@
     },
     {
       "path": "drive/src/Federation/FederationHttpClient.php",
-      "lines": 159,
+      "lines": 161,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Federation/FederationLocationSelector.php",
+      "lines": 66,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -2267,6 +2342,81 @@
     {
       "path": "drive/src/Federation/FederationProviderGrant.php",
       "lines": 101,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Federation/FederationReplicaDownloader.php",
+      "lines": 112,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Federation/FederationReplicaMessageCodec.php",
+      "lines": 154,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Federation/FederationReplicaRepository.php",
+      "lines": 235,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": true,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Federation/FederationReplicaResolverService.php",
+      "lines": 131,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Federation/FederationReplicaService.php",
+      "lines": 335,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -2569,6 +2719,21 @@
     {
       "path": "drive/src/Http/Controller/FederationProviderController.php",
       "lines": 115,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Http/Controller/FederationReplicaController.php",
+      "lines": 132,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -3718,7 +3883,7 @@
     },
     {
       "path": "drive/src/View/FederationPortalRenderer.php",
-      "lines": 138,
+      "lines": 133,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -4049,6 +4214,25 @@
       "namespace": false,
       "issues": [
         "global functions: providerOk"
+      ]
+    },
+    {
+      "path": "drive/tests/federation_replica_smoke.php",
+      "lines": 98,
+      "kind": "procedural endpoint",
+      "classes": 0,
+      "functions": [
+        "replicaOk"
+      ],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": [
+        "global functions: replicaOk"
       ]
     },
     {
@@ -4839,7 +5023,7 @@
     },
     {
       "path": "drive/js/federation-portal.js",
-      "lines": 367,
+      "lines": 416,
       "kind": "class/module",
       "classes": [
         "FederationPortalModule"

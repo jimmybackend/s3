@@ -56,7 +56,10 @@ final class ManagedRuntimeEnvironment
         } catch (JsonException) {
             throw new RuntimeException('La configuración administrada no contiene JSON válido.');
         }
-        if (!is_array($decoded) || array_is_list($decoded)) {
+
+        // json_decode('{}', true) produce [] en PHP. Ese valor representa
+        // correctamente un objeto de configuración vacío y debe aceptarse.
+        if (!is_array($decoded) || ($decoded !== [] && array_is_list($decoded))) {
             throw new RuntimeException('La configuración administrada tiene un formato inválido.');
         }
 

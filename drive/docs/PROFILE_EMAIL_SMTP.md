@@ -16,14 +16,14 @@ Las credenciales SMTP nunca deben guardarse en GitHub.
 
 | Variable | Ejemplo | Uso |
 | --- | --- | --- |
-| `ARCADECLOUD_SMTP_HOST` | `smtp.titan.email` | Host SMTP |
+| `ARCADECLOUD_SMTP_HOST` | `smtp.example.test` | Host SMTP |
 | `ARCADECLOUD_SMTP_PORT` | `587` | Puerto SMTP |
 | `ARCADECLOUD_SMTP_SECURE` | `tls` | `tls`, `ssl` o vacío |
-| `ARCADECLOUD_SMTP_USERNAME` | `soporte@tu-dominio.example` | Usuario SMTP |
+| `ARCADECLOUD_SMTP_USERNAME` | `mailer@example.test` | Usuario SMTP |
 | `ARCADECLOUD_SMTP_PASSWORD` | `***` | Contraseña SMTP; obligatoria y secreta |
-| `ARCADECLOUD_SMTP_FROM_EMAIL` | `soporte@tu-dominio.example` | Remitente visible |
-| `ARCADECLOUD_SMTP_FROM_NAME` | `Esforzados Hub` | Nombre visible del remitente |
-| `ARCADECLOUD_SMTP_REPLY_TO` | `no-reply@tu-dominio.example` | Reply-To |
+| `ARCADECLOUD_SMTP_FROM_EMAIL` | `mailer@example.test` | Remitente visible |
+| `ARCADECLOUD_SMTP_FROM_NAME` | `ArcadeCloud Drive` | Nombre visible del remitente |
+| `ARCADECLOUD_SMTP_REPLY_TO` | `noreply@example.test` | Reply-To |
 | `ARCADECLOUD_SMTP_TIMEOUT` | `20` | Timeout entre 1 y 120 segundos |
 | `ARCADECLOUD_SMTP_DEBUG` | `false` | Logging técnico; nunca muestra usuario/contraseña AUTH |
 
@@ -34,23 +34,60 @@ Existe un template sin secretos en `drive/config/smtp.env.example`.
 Esto sirve para validar la configuración en una sesión de shell. No hace persistentes las variables para PHP-FPM:
 
 ```bash
-export ARCADECLOUD_SMTP_HOST='smtp.titan.email'
+export ARCADECLOUD_SMTP_HOST='smtp.example.test'
 export ARCADECLOUD_SMTP_PORT='587'
 export ARCADECLOUD_SMTP_SECURE='tls'
-export ARCADECLOUD_SMTP_USERNAME='soporte@tu-dominio.example'
+export ARCADECLOUD_SMTP_USERNAME='mailer@example.test'
 export ARCADECLOUD_SMTP_PASSWORD='TU_PASSWORD_REAL'
-export ARCADECLOUD_SMTP_FROM_EMAIL='soporte@tu-dominio.example'
-export ARCADECLOUD_SMTP_FROM_NAME='Esforzados Hub'
-export ARCADECLOUD_SMTP_REPLY_TO='no-reply@tu-dominio.example'
+export ARCADECLOUD_SMTP_FROM_EMAIL='mailer@example.test'
+export ARCADECLOUD_SMTP_FROM_NAME='ArcadeCloud Drive'
+export ARCADECLOUD_SMTP_REPLY_TO='noreply@example.test'
 export ARCADECLOUD_SMTP_TIMEOUT='20'
 export ARCADECLOUD_SMTP_DEBUG='false'
 ```
 
 ## Producción con PHP-FPM
 
-Las mismas claves deben inyectarse al proceso PHP-FPM mediante el mecanismo de entorno que use el servidor (por ejemplo, un `EnvironmentFile` del servicio systemd o directivas `env[...]` del pool PHP-FPM).
+Las mismas claves deben llegar al proceso PHP-FPM dedicado de Drive.
 
-No se documenta un nombre de servicio PHP-FPM inventado: antes de reiniciar producción hay que confirmar el servicio/pool real del servidor ArcadeCloud Drive.
+Una instalación puede mantener SMTP separado de la configuración general del servicio:
+
+```text
+/etc/arcadecloud-drive/drive.env
+/etc/arcadecloud-drive/smtp.env
+```
+
+La unidad systemd puede cargar ambos archivos:
+
+```ini
+[Service]
+EnvironmentFile=/etc/arcadecloud-drive/drive.env
+EnvironmentFile=/etc/arcadecloud-drive/smtp.env
+```
+
+El pool PHP-FPM dedicado debe permitir que esas variables lleguen a la aplicación; una configuración típica utiliza:
+
+```ini
+clear_env = no
+```
+
+También puede haber variables `env[ARCADECLOUD_...]` definidas directamente en el pool.
+
+Después de modificar la unidad o el pool, primero se identifica el servicio PHP-FPM real de la instalación y sólo entonces se recarga/reinicia ese servicio.
+
+Si el archivo SMTP existe pero no está incluido por systemd ni por el pool, la aplicación no recibirá esas variables y el panel **Servidor** las mostrará como `sin configurar`. Antes de volver a escribir credenciales, se debe comprobar cómo está siendo cargado el entorno.
+
+ArcadeCloud además tiene una capa administrada en:
+
+```text
+/etc/arcadecloud-drive/runtime-env.json
+```
+
+Cuando el superadmin modifica una variable SMTP desde el panel, esa clave pasa a `runtime-env.json` y tiene precedencia para las siguientes peticiones. Las demás variables pueden continuar viniendo del entorno PHP hasta que también sean administradas desde la UI.
+
+La arquitectura completa de fuentes, precedencia y diagnóstico está en:
+
+- [`RUNTIME_ENV_CONFIGURATION.md`](RUNTIME_ENV_CONFIGURATION.md)
 
 Nunca coloques la contraseña SMTP dentro de `Config-s3.php`, `s3.php`, JavaScript, HTML, README público ni archivos versionados.
 

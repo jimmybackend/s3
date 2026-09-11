@@ -36,6 +36,18 @@ $arcadeLinkShareJs = __DIR__ . '/js/arcadelink-share.js';
   <div class="text-muted small drive-footer-storage">
     <i class="fas fa-network-wired mr-1" aria-hidden="true"></i>
     Nodo: <strong id="footerFederationNode" class="text-info">consultando…</strong>
+    <?php if ($isFederationAdmin): ?>
+      <button
+        type="button"
+        id="btnFederationNodeIdentity"
+        class="btn btn-link btn-sm p-0 ml-1 align-baseline text-info"
+        data-toggle="modal"
+        data-target="#modalFederationNodeIdentity"
+        data-csrf="<?= $e($federationProviderCsrf) ?>"
+        title="Modificar nombre visible del nodo">
+        <i class="fas fa-pen" aria-hidden="true"></i><span class="sr-only">Modificar identidad visible del nodo</span>
+      </button>
+    <?php endif; ?>
     <span aria-hidden="true"> · </span>
     Nodos conectados: <strong id="footerFederationPeers" class="text-info">—</strong>
     <?php if ($isFederationAdmin): ?>
@@ -61,6 +73,54 @@ $arcadeLinkShareJs = __DIR__ . '/js/arcadelink-share.js';
 </footer>
 
 <?php if ($isFederationAdmin): ?>
+<div class="modal fade" id="modalFederationNodeIdentity" tabindex="-1" role="dialog" aria-labelledby="modalFederationNodeIdentityLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+    <div class="modal-content bg-dark text-light border-secondary">
+      <div class="modal-header border-secondary">
+        <div>
+          <h5 class="modal-title" id="modalFederationNodeIdentityLabel">
+            <i class="fas fa-fingerprint mr-1"></i> Identidad del nodo FederationCloud
+          </h5>
+          <div class="small text-muted">Sólo un superusuario puede cambiar el nombre visible firmado.</div>
+        </div>
+        <button type="button" class="close text-light" data-dismiss="modal" aria-label="Cerrar"><span aria-hidden="true">&times;</span></button>
+      </div>
+      <div class="modal-body">
+        <div id="federationNodeIdentityAlert" class="alert d-none" role="alert"></div>
+
+        <div class="alert alert-info small">
+          Cambiar el nombre no crea otro nodo. El <strong>Node ID</strong>, la clave Ed25519 y la identidad criptográfica permanecen iguales.
+        </div>
+
+        <div class="form-group">
+          <label for="federationNodeNameInput">Nombre visible del nodo</label>
+          <input id="federationNodeNameInput" class="form-control" maxlength="64" autocomplete="off" placeholder="drive.esforzados.com">
+          <small class="form-text text-muted">Puede ser una etiqueta, un dominio o una IP pública legible. La conexión real sigue usando las URLs firmadas.</small>
+        </div>
+
+        <div class="form-group">
+          <label for="federationNodeIdReadonly">Node ID criptográfico</label>
+          <input id="federationNodeIdReadonly" class="form-control" readonly>
+        </div>
+        <div class="form-group">
+          <label for="federationNodePublicUrlReadonly">Public URL</label>
+          <input id="federationNodePublicUrlReadonly" class="form-control" readonly>
+        </div>
+        <div class="form-group mb-0">
+          <label for="federationNodeFederationUrlReadonly">Federation URL</label>
+          <input id="federationNodeFederationUrlReadonly" class="form-control" readonly>
+        </div>
+      </div>
+      <div class="modal-footer border-secondary">
+        <button type="button" class="btn btn-outline-light" data-dismiss="modal">Cancelar</button>
+        <button type="button" id="btnSaveFederationNodeIdentity" class="btn btn-info">
+          <i class="fas fa-save mr-1"></i>Guardar nombre
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="modal fade" id="modalFederationProviderRequests" tabindex="-1" role="dialog" aria-labelledby="modalFederationProviderRequestsLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
     <div class="modal-content bg-dark text-light border-secondary">

@@ -713,7 +713,7 @@
     },
     {
       "path": "drive/src/Admin/ManagedRuntimeEnvironment.php",
-      "size": 6847,
+      "size": 7022,
       "active": true,
       "references": [
         "drive/app_bootstrap.php",
@@ -1740,7 +1740,7 @@
     },
     {
       "path": "drive/tests/server_admin_config_smoke.php",
-      "size": 2935,
+      "size": 3094,
       "active": false,
       "references": []
     },

@@ -38,6 +38,12 @@ try {
     serverAdminOk(($smtpPassword['configured'] ?? false) === true, 'indica que secreto está configurado');
     serverAdminOk(($smtpPassword['value'] ?? 'x') === '', 'nunca devuelve secreto al navegador');
 
+    $secretWithSpaces = '  synthetic secret with spaces  ';
+    serverAdminOk(
+        ManagedRuntimeEnvironment::validateValue('ARCADECLOUD_SMTP_PASSWORD', $secretWithSpaces) === $secretWithSpaces,
+        'preserva exactamente espacios significativos de secretos'
+    );
+
     $rejected = false;
     try { ManagedRuntimeEnvironment::validateValue('DB_PASSWORD', 'x'); } catch (RuntimeException) { $rejected = true; }
     serverAdminOk($rejected, 'rechaza variable arbitraria');

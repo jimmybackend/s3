@@ -14,7 +14,7 @@ final class FederationNodeRepository
     {
     }
 
-    public function assertNodeNameAvailable(string $nodeName, string $nodeId): void
+    public function isNodeNameAvailable(string $nodeName, string $nodeId = ''): bool
     {
         $stmt = $this->db->prepare(
             'SELECT NodeId FROM FederationNodes WHERE NodeName = ? AND NodeId <> ? LIMIT 1'
@@ -30,7 +30,12 @@ final class FederationNodeRepository
         }
         $row = $stmt->get_result()->fetch_assoc();
         $stmt->close();
-        if (is_array($row)) {
+        return !is_array($row);
+    }
+
+    public function assertNodeNameAvailable(string $nodeName, string $nodeId): void
+    {
+        if (!$this->isNodeNameAvailable($nodeName, $nodeId)) {
             throw new FederationException('Ese nombre FederationCloud ya pertenece a otro Node ID.', 409);
         }
     }

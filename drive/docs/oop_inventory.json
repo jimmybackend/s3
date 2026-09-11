@@ -1890,7 +1890,7 @@
     },
     {
       "path": "drive/src/Federation/NodeIdentityService.php",
-      "lines": 232,
+      "lines": 294,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -3375,7 +3375,7 @@
     },
     {
       "path": "drive/tests/federation_node_name_admin_smoke.php",
-      "lines": 54,
+      "lines": 91,
       "kind": "procedural endpoint",
       "classes": 0,
       "functions": [],

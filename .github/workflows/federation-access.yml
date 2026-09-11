@@ -1,0 +1,75 @@
+name: FederationCloud access and Shares validation
+
+on:
+  push:
+    branches:
+      - main
+      - 'feat/federation-access-shares'
+    paths:
+      - 'drive/federationcloud/access*.php'
+      - 'drive/src/Federation/FederationAccess*.php'
+      - 'drive/src/Federation/FederationHttpClient.php'
+      - 'drive/src/Http/Controller/FederationAccessController.php'
+      - 'drive/bin/federation_sync.php'
+      - 'drive/bin/federation_catalog_migrate.php'
+      - 'drive/sql/federation_access_shares.sql'
+      - 'drive/tests/federation_access_message_smoke.php'
+      - 'drive/docs/FEDERATION_ACCESS_AND_SHARES.md'
+      - '.github/workflows/federation-access.yml'
+  pull_request:
+    paths:
+      - 'drive/federationcloud/access*.php'
+      - 'drive/src/Federation/FederationAccess*.php'
+      - 'drive/src/Federation/FederationHttpClient.php'
+      - 'drive/src/Http/Controller/FederationAccessController.php'
+      - 'drive/bin/federation_sync.php'
+      - 'drive/bin/federation_catalog_migrate.php'
+      - 'drive/sql/federation_access_shares.sql'
+      - 'drive/tests/federation_access_message_smoke.php'
+      - 'drive/docs/FEDERATION_ACCESS_AND_SHARES.md'
+      - '.github/workflows/federation-access.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate PHP syntax
+        run: |
+          set -euo pipefail
+          php -l drive/src/Federation/FederationAccessMessageCodec.php
+          php -l drive/src/Federation/FederationAccessRepository.php
+          php -l drive/src/Federation/FederationAccessService.php
+          php -l drive/src/Federation/FederationHttpClient.php
+          php -l drive/src/Http/Controller/FederationAccessController.php
+          php -l drive/federationcloud/access-request.php
+          php -l drive/federationcloud/access-status.php
+          php -l drive/federationcloud/access.php
+          php -l drive/bin/federation_sync.php
+          php -l drive/bin/federation_catalog_migrate.php
+          php -l drive/tests/federation_access_message_smoke.php
+
+      - name: Signed access-message smoke test
+        run: php drive/tests/federation_access_message_smoke.php
+
+      - name: Access privacy guards
+        run: |
+          set -euo pipefail
+          grep -q 'FederationAccessRequests' drive/sql/federation_access_shares.sql
+          grep -q 'FederationShares' drive/sql/federation_access_shares.sql
+          grep -q "access-request.php" drive/src/Federation/FederationHttpClient.php
+          grep -q "access-status.php" drive/src/Federation/FederationHttpClient.php
+          grep -q "X_FEDERATION_ACCESS_CSRF\|X-Federation-Access-CSRF" drive/src/Http/Controller/FederationAccessController.php drive/docs/FEDERATION_ACCESS_AND_SHARES.md
+          grep -q "syncPending(5)" drive/bin/federation_sync.php
+          grep -q "ShareLinkService" drive/docs/FEDERATION_ACCESS_AND_SHARES.md
+          ! grep -q "FederationEvents" drive/src/Federation/FederationAccessRepository.php
+          ! grep -q "FederationEvents" drive/src/Federation/FederationAccessService.php
+          ! grep -Eq '(email|firstname|lastname|password)' drive/src/Federation/FederationAccessMessageCodec.php
+
+      - name: Diff whitespace check
+        run: git diff --check

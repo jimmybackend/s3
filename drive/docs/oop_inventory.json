@@ -1,8 +1,8 @@
 {
   "summary": {
-    "php_total": 246,
-    "php_class_modules": 153,
-    "php_needs_migration": 15,
+    "php_total": 249,
+    "php_class_modules": 155,
+    "php_needs_migration": 16,
     "js_total": 35,
     "js_class_modules": 34,
     "js_needs_migration": 7
@@ -1515,7 +1515,7 @@
     },
     {
       "path": "drive/src/Aws/SesEmailService.php",
-      "lines": 91,
+      "lines": 29,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -2419,6 +2419,36 @@
       "issues": []
     },
     {
+      "path": "drive/src/Mail/SmtpConfig.php",
+      "lines": 111,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Mail/SmtpEmailService.php",
+      "lines": 228,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": true,
+      "namespace": true,
+      "issues": []
+    },
+    {
       "path": "drive/src/Media/MediaPlaylistRepository.php",
       "lines": 49,
       "kind": "class/module",
@@ -3172,7 +3202,7 @@
     },
     {
       "path": "drive/src/View/UserProfileModalRenderer.php",
-      "lines": 125,
+      "lines": 127,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -3336,6 +3366,21 @@
       "issues": [
         "global functions: ok, legacyDocument"
       ]
+    },
+    {
+      "path": "drive/tests/smtp_config_smoke.php",
+      "lines": 42,
+      "kind": "procedural endpoint",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": []
     },
     {
       "path": "drive/tests/user_identity_presenter_smoke.php",
@@ -4243,7 +4288,7 @@
     },
     {
       "path": "drive/js/profile.js",
-      "lines": 242,
+      "lines": 277,
       "kind": "class/module",
       "classes": [
         "UserProfileModule"

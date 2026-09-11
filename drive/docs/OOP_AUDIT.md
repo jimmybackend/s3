@@ -4,9 +4,9 @@
 
 ## Resumen
 
-- PHP analizados: **246**
-- PHP que ya contienen clases/interfaces: **153**
-- PHP marcados para migración/revisión: **15**
+- PHP analizados: **249**
+- PHP que ya contienen clases/interfaces: **155**
+- PHP marcados para migración/revisión: **16**
 - JavaScript analizados: **35**
 - JavaScript que ya contienen clases: **34**
 - JavaScript marcados para migración/revisión: **7**
@@ -120,7 +120,7 @@
 | `drive/src/Aws/PollyFileService.php` | 68 | class/module | 1 | — | — | — | — |
 | `drive/src/Aws/RdsGateway.php` | 233 | class/module | 1 | — | — | — | — |
 | `drive/src/Aws/RekognitionFileService.php` | 30 | class/module | 1 | — | — | — | — |
-| `drive/src/Aws/SesEmailService.php` | 91 | class/module | 1 | — | — | — | — |
+| `drive/src/Aws/SesEmailService.php` | 29 | class/module | 1 | — | — | — | — |
 | `drive/src/Aws/TextractFileService.php` | 107 | class/module | 1 | — | — | — | — |
 | `drive/src/Aws/TranscriptionFileService.php` | 126 | class/module | 1 | — | — | — | — |
 | `drive/src/Aws/TranslateFileService.php` | 60 | class/module | 1 | — | — | — | — |
@@ -180,6 +180,8 @@
 | `drive/src/Http/Controller/UserProfileController.php` | 118 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/JsonResponse.php` | 27 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Request.php` | 112 | class/module | 1 | — | — | — | — |
+| `drive/src/Mail/SmtpConfig.php` | 111 | class/module | 1 | — | — | — | — |
+| `drive/src/Mail/SmtpEmailService.php` | 228 | class/module | 1 | — | — | — | — |
 | `drive/src/Media/MediaPlaylistRepository.php` | 49 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Media/MediaPlaylistService.php` | 66 | class/module | 1 | — | — | — | — |
 | `drive/src/Media/ThumbnailService.php` | 380 | class/module | 1 | — | ⚠️ | — | — |
@@ -230,7 +232,7 @@
 | `drive/src/View/SharePageRenderer.php` | 118 | class/module | 1 | — | — | — | — |
 | `drive/src/View/SyncStatusRenderer.php` | 14 | class/module | 1 | — | — | — | — |
 | `drive/src/View/UserIdentityPresenter.php` | 71 | class/module | 1 | — | — | — | — |
-| `drive/src/View/UserProfileModalRenderer.php` | 125 | class/module | 1 | — | — | — | — |
+| `drive/src/View/UserProfileModalRenderer.php` | 127 | class/module | 1 | — | — | — | — |
 | `drive/storage_usage.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/subir_archivo.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/subir_publico.php` | 10 | thin endpoint | 0 | — | — | — | — |
@@ -240,6 +242,7 @@
 | `drive/tests/federation_directory_smoke.php` | 102 | procedural endpoint | 0 | — | — | — | global functions: directoryOk |
 | `drive/tests/federation_provider_smoke.php` | 76 | procedural endpoint | 0 | — | — | — | global functions: providerOk |
 | `drive/tests/federationcloud_smoke.php` | 146 | procedural endpoint | 0 | — | — | — | global functions: ok, legacyDocument |
+| `drive/tests/smtp_config_smoke.php` | 42 | procedural endpoint | 0 | — | — | — | — |
 | `drive/tests/user_identity_presenter_smoke.php` | 30 | procedural endpoint | 0 | — | — | — | — |
 | `drive/tests/user_profile_validator_smoke.php` | 57 | procedural endpoint | 0 | — | — | — | — |
 | `drive/thumb.php` | 10 | thin endpoint | 0 | — | — | — | — |
@@ -297,7 +300,7 @@
 | `drive/js/obtenerFiltros.js` | 125 | class/module | ObtenerFiltrosModule | — | — | — |
 | `drive/js/pdf-pantalla-completa.js` | 45 | class/module | PdfPantallaCompletaModule | — | — | — |
 | `drive/js/polly.js` | 1008 | class/module | PollyModule | — | abrirModalGrabarAudio, abrirModalPolly, abrirModalRekognition, abrirModalTraducir, abrirModalTranscribir, copiarTextract | window functions: abrirModalGrabarAudio, abrirModalPolly, abrirModalRekognition, abrirModalTraducir, abrirModalTranscribir, copiarTextract, copiarTraducido, copiarTx |
-| `drive/js/profile.js` | 242 | class/module | UserProfileModule | — | — | — |
+| `drive/js/profile.js` | 277 | class/module | UserProfileModule | — | — | — |
 | `drive/js/recargarPagina.js` | 27 | class/module | RecargarPaginaModule | — | — | — |
 | `drive/js/sincronizar.js` | 315 | class/module | SincronizarModule | — | — | — |
 | `drive/js/soportesMediaTypes.js` | 390 | class/module | SoportesMediaTypesModule | — | — | — |

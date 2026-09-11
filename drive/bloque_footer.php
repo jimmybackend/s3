@@ -99,23 +99,45 @@ $arcadeLinkShareJs = __DIR__ . '/js/arcadelink-share.js';
 </div>
 
 <div class="modal fade" id="modalServerAdmin" tabindex="-1" role="dialog" aria-labelledby="modalServerAdminLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+  <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
     <div class="modal-content bg-dark text-light border-secondary">
       <div class="modal-header border-secondary">
         <div>
           <h5 class="modal-title" id="modalServerAdminLabel"><i class="fas fa-tools mr-1"></i> Configuración del servidor</h5>
-          <div class="small text-muted">Sólo superadmin. Cambios sensibles requieren confirmar tu contraseña.</div>
+          <div class="small text-muted">Variables ArcadeCloud disponibles en esta instalación.</div>
         </div>
         <button type="button" class="close text-light" data-dismiss="modal" aria-label="Cerrar"><span aria-hidden="true">&times;</span></button>
       </div>
       <div class="modal-body">
         <div id="serverAdminAlert" class="alert d-none" role="alert"></div>
-        <div class="alert alert-warning small">
-          Este panel <strong>no es una terminal root</strong>. Sólo modifica variables ArcadeCloud incluidas en una lista permitida y usa un helper privilegiado limitado.
+        <div class="alert alert-info small">
+          Aquí puedes ver qué variables tiene ArcadeCloud, su valor actual y de dónde se está cargando. Pulsa <strong>Modificar</strong> en la variable que quieras cambiar.
         </div>
         <div id="serverAdminHelperStatus" class="small text-muted mb-3">Consultando helper…</div>
+
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <h6 class="mb-0">Variables disponibles</h6>
+          <span id="serverAdminVariableCount" class="badge badge-secondary">—</span>
+        </div>
+        <div class="table-responsive border border-secondary rounded mb-4" style="max-height: 360px; overflow-y: auto;">
+          <table class="table table-dark table-sm table-hover mb-0">
+            <thead>
+              <tr>
+                <th style="min-width: 290px;">Variable</th>
+                <th style="min-width: 260px;">Valor actual</th>
+                <th style="min-width: 130px;">Origen</th>
+                <th class="text-right" style="width: 110px;">Acción</th>
+              </tr>
+            </thead>
+            <tbody id="serverAdminSettingsTableBody">
+              <tr><td colspan="4" class="text-muted">Cargando variables…</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h6>Modificar variable</h6>
         <div class="form-group">
-          <label for="serverAdminVariable">Variable ArcadeCloud</label>
+          <label for="serverAdminVariable">Variable</label>
           <select id="serverAdminVariable" class="form-control"></select>
         </div>
         <div class="form-group">
@@ -127,7 +149,6 @@ $arcadeLinkShareJs = __DIR__ . '/js/arcadelink-share.js';
           <label for="serverAdminPassword">Contraseña actual de superusuario</label>
           <input id="serverAdminPassword" type="password" class="form-control" autocomplete="current-password">
         </div>
-        <div class="small text-muted">Los secretos, como SMTP password, nunca se devuelven al navegador ni se registran en auditoría.</div>
       </div>
       <div class="modal-footer border-secondary">
         <button type="button" class="btn btn-outline-light" data-dismiss="modal">Cerrar</button>

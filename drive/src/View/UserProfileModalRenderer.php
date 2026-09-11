@@ -86,13 +86,13 @@ final class UserProfileModalRenderer
             <div class="card h-100">
               <div class="card-header font-weight-bold">Cuenta</div>
               <div class="card-body">
-                <div class="form-group"><label>Correo registrado</label><input id="profileEmail" class="form-control" readonly></div>
+                <div class="form-group"><label>Alias de cuenta</label><input id="profileEmail" class="form-control" readonly></div>
                 <div class="form-row">
                   <div class="form-group col-md-6"><label>Rol</label><input id="profileRole" class="form-control" readonly></div>
                   <div class="form-group col-md-6"><label>Estado</label><input id="profileUserstatus" class="form-control" readonly></div>
                 </div>
                 <div class="form-group mb-0"><label>Registrado</label><input id="profileRegistrationdate" class="form-control" readonly></div>
-                <small class="form-text text-muted mt-2">Los permisos, estado de cuenta y correo no se modifican desde este formulario.</small>
+                <small class="form-text text-muted mt-2">El correo real permanece oculto. Los permisos, roles y estado de cuenta no se modifican desde este formulario.</small>
               </div>
             </div>
           </div>

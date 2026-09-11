@@ -1,10 +1,10 @@
 {
   "summary": {
-    "php_total": 292,
-    "php_class_modules": 177,
+    "php_total": 295,
+    "php_class_modules": 179,
     "php_needs_migration": 23,
-    "js_total": 37,
-    "js_class_modules": 36,
+    "js_total": 38,
+    "js_class_modules": 37,
     "js_needs_migration": 7
   },
   "php": [
@@ -677,6 +677,21 @@
     {
       "path": "drive/federationcloud/nodes.php",
       "lines": 12,
+      "kind": "thin endpoint",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/federationcloud/portal.php",
+      "lines": 11,
       "kind": "thin endpoint",
       "classes": 0,
       "functions": [],
@@ -2493,7 +2508,7 @@
     },
     {
       "path": "drive/src/Http/Controller/FederationController.php",
-      "lines": 248,
+      "lines": 258,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -2524,6 +2539,21 @@
     {
       "path": "drive/src/Http/Controller/FederationNodeAdminController.php",
       "lines": 46,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Http/Controller/FederationPortalController.php",
+      "lines": 41,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -3687,6 +3717,21 @@
       "issues": []
     },
     {
+      "path": "drive/src/View/FederationPortalRenderer.php",
+      "lines": 138,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": true,
+      "namespace": true,
+      "issues": []
+    },
+    {
       "path": "drive/src/View/FileIconResolver.php",
       "lines": 136,
       "kind": "class/module",
@@ -4539,7 +4584,7 @@
     },
     {
       "path": "drive/js/arcadelink-share.js",
-      "lines": 195,
+      "lines": 235,
       "kind": "class/module",
       "classes": [
         "ArcadeLinkShareModule"
@@ -4784,6 +4829,20 @@
       "kind": "class/module",
       "classes": [
         "FederationPageModule"
+      ],
+      "functions": [],
+      "window_assign": [],
+      "window_func": [],
+      "top_vars": [],
+      "iife": false,
+      "issues": []
+    },
+    {
+      "path": "drive/js/federation-portal.js",
+      "lines": 367,
+      "kind": "class/module",
+      "classes": [
+        "FederationPortalModule"
       ],
       "functions": [],
       "window_assign": [],

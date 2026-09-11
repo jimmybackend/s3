@@ -4,11 +4,11 @@
 
 ## Resumen
 
-- PHP analizados: **292**
-- PHP que ya contienen clases/interfaces: **177**
+- PHP analizados: **295**
+- PHP que ya contienen clases/interfaces: **179**
 - PHP marcados para migración/revisión: **23**
-- JavaScript analizados: **37**
-- JavaScript que ya contienen clases: **36**
+- JavaScript analizados: **38**
+- JavaScript que ya contienen clases: **37**
 - JavaScript marcados para migración/revisión: **7**
 
 ## Criterio
@@ -64,6 +64,7 @@
 | `drive/federationcloud/node-admin.php` | 12 | thin endpoint | 0 | — | — | — | — |
 | `drive/federationcloud/node.php` | 13 | thin endpoint | 0 | — | — | — | — |
 | `drive/federationcloud/nodes.php` | 12 | thin endpoint | 0 | — | — | — | — |
+| `drive/federationcloud/portal.php` | 11 | thin endpoint | 0 | — | — | — | — |
 | `drive/federationcloud/provider-admin.php` | 11 | thin endpoint | 0 | — | — | — | — |
 | `drive/federationcloud/provider-request.php` | 11 | thin endpoint | 0 | — | — | — | — |
 | `drive/federationcloud/providers.php` | 11 | thin endpoint | 0 | — | — | — | — |
@@ -183,9 +184,10 @@
 | `drive/src/Http/Controller/AwsFileController.php` | 325 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/FederationAccessController.php` | 123 | class/module | 1 | ⚠️ | — | — | — |
 | `drive/src/Http/Controller/FederationCatalogController.php` | 144 | class/module | 1 | — | — | — | — |
-| `drive/src/Http/Controller/FederationController.php` | 248 | class/module | 1 | — | — | — | — |
+| `drive/src/Http/Controller/FederationController.php` | 258 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/FederationDirectoryController.php` | 85 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/FederationNodeAdminController.php` | 46 | class/module | 1 | — | — | — | — |
+| `drive/src/Http/Controller/FederationPortalController.php` | 41 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/FederationProviderController.php` | 115 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/FileAccessController.php` | 145 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/FileKeyRotationController.php` | 35 | class/module | 1 | — | — | — | — |
@@ -262,6 +264,7 @@
 | `drive/src/View/ActivityCostPageRenderer.php` | 358 | class/module | 1 | — | — | — | — |
 | `drive/src/View/Ec2PanelHelper.php` | 69 | class/module | 1 | — | — | — | — |
 | `drive/src/View/FederationPageRenderer.php` | 186 | class/module | 1 | — | — | — | — |
+| `drive/src/View/FederationPortalRenderer.php` | 138 | class/module | 1 | — | — | — | — |
 | `drive/src/View/FileIconResolver.php` | 136 | class/module | 1 | — | — | — | — |
 | `drive/src/View/FileViewHelper.php` | 108 | class/module | 1 | — | — | — | — |
 | `drive/src/View/FolderTreeRenderer.php` | 123 | class/module | 1 | — | ⚠️ | — | — |
@@ -321,7 +324,7 @@
 |---|---:|---|---|---|---|---|
 | `drive/js/actualizar-hora.js` | 36 | class/module | ActualizarHoraModule | — | — | — |
 | `drive/js/ai-search.js` | 187 | class/module | DriveAiSearchModule | — | — | — |
-| `drive/js/arcadelink-share.js` | 195 | class/module | ArcadeLinkShareModule | — | — | — |
+| `drive/js/arcadelink-share.js` | 235 | class/module | ArcadeLinkShareModule | — | — | — |
 | `drive/js/archivos.js` | 2155 | class/module | ArchivosModule | — | abrirModalRenombrarArchivo, cerrarModalCompartir, setFileSecurity | window functions: abrirModalRenombrarArchivo, cerrarModalCompartir, setFileSecurity |
 | `drive/js/audiovideo.js` | 619 | class/module | AudiovideoModule | — | audioNext, audioPrev, reproducirVideoDesde, videoNext, videoPlayPause, videoPrev | window functions: audioNext, audioPrev, reproducirVideoDesde, videoNext, videoPlayPause, videoPrev, wavePlayPause |
 | `drive/js/aws-comprehend.js` | 342 | class/module | AwsComprehendModule, AwsFileActionRouter | — | — | — |
@@ -334,6 +337,7 @@
 | `drive/js/estilo.js` | 351 | class/module | EstiloModule | — | — | — |
 | `drive/js/federation-footer.js` | 341 | class/module | FederationFooterModule | — | — | — |
 | `drive/js/federation-page.js` | 95 | class/module | FederationPageModule | — | — | — |
+| `drive/js/federation-portal.js` | 367 | class/module | FederationPortalModule | — | — | — |
 | `drive/js/file-block.js` | 305 | class/module | FileBlockApp | — | — | — |
 | `drive/js/filtros.js` | 97 | class/module | FiltrosModule | — | — | — |
 | `drive/js/imagenes.js` | 535 | class/module | ImagenesModule | — | getGaleriaGridSize, setGaleriaGridSize | window functions: getGaleriaGridSize, setGaleriaGridSize |

@@ -217,6 +217,17 @@ final class NodeIdentityService
     private static function writeIdentity(string $path, array $data): void
     {
         $json = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR) . "\n";
+
+        // Una identidad ya instalada bajo /etc puede pertenecer a root y permitir
+        // escritura únicamente al usuario/grupo de PHP-FPM. Actualizar el mismo
+        // inode evita requerir permiso para crear archivos temporales en /etc y
+        // conserva propietario, grupo y ACL existentes.
+        if (is_file($path)) {
+            self::writeExistingIdentity($path, $json);
+            return;
+        }
+
+        // La creación inicial sí usa instalación atómica mediante archivo temporal.
         $tmp = $path . '.tmp-' . bin2hex(random_bytes(6));
         if (@file_put_contents($tmp, $json, LOCK_EX) === false) {
             throw new FederationException('No se pudo escribir la identidad temporal.', 500);
@@ -227,5 +238,56 @@ final class NodeIdentityService
             throw new FederationException('No se pudo instalar la identidad del nodo.', 500);
         }
         @chmod($path, 0600);
+    }
+
+    private static function writeExistingIdentity(string $path, string $json): void
+    {
+        $handle = @fopen($path, 'c+');
+        if ($handle === false) {
+            throw new FederationException(
+                'La identidad existe pero el proceso PHP no tiene permiso para escribirla.',
+                500
+            );
+        }
+
+        $locked = false;
+        try {
+            if (!@flock($handle, LOCK_EX)) {
+                throw new FederationException('No se pudo bloquear la identidad del nodo para actualizarla.', 500);
+            }
+            $locked = true;
+
+            if (!@rewind($handle) || !@ftruncate($handle, 0)) {
+                throw new FederationException('No se pudo preparar la identidad existente para actualizarla.', 500);
+            }
+
+            $length = strlen($json);
+            $written = 0;
+            while ($written < $length) {
+                $chunk = @fwrite($handle, substr($json, $written));
+                if ($chunk === false || $chunk === 0) {
+                    throw new FederationException('No se pudo escribir completamente la identidad del nodo.', 500);
+                }
+                $written += $chunk;
+            }
+
+            if (!@fflush($handle)) {
+                throw new FederationException('No se pudo confirmar la escritura de la identidad del nodo.', 500);
+            }
+            if (function_exists('fsync')) {
+                @fsync($handle);
+            }
+        } finally {
+            if ($locked) {
+                @flock($handle, LOCK_UN);
+            }
+            @fclose($handle);
+        }
+
+        clearstatcache(true, $path);
+        $stored = @file_get_contents($path);
+        if (!is_string($stored) || !hash_equals($json, $stored)) {
+            throw new FederationException('La identidad escrita no pudo verificarse después de guardarla.', 500);
+        }
     }
 }

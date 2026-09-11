@@ -40,11 +40,13 @@ final class UserProfileModalRenderer
                 <small class="form-text text-muted mb-3">JPG, PNG o WebP. Máximo 5 MB y 4096 × 4096.</small>
 
                 <button id="btnUploadProfilePicture" type="button" class="btn btn-primary btn-sm mr-1">
-                  <i class="fas fa-camera mr-1"></i>Cambiar imagen
+                  <span id="profileUploadSpinner" class="spinner-border spinner-border-sm mr-1 d-none" role="status" aria-hidden="true"></span>
+                  <i id="profileUploadIcon" class="fas fa-camera mr-1"></i><span id="profileUploadLabel">Cambiar imagen</span>
                 </button>
                 <button id="btnRemoveProfilePicture" type="button" class="btn btn-outline-secondary btn-sm">
                   Usar iniciales
                 </button>
+                <div id="profileUploadStatus" class="small text-muted mt-2" aria-live="polite"></div>
               </div>
             </div>
           </div>

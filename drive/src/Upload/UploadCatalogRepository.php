@@ -66,24 +66,59 @@ final class UploadCatalogRepository
         return $id;
     }
 
+    public function ensureFolder(
+        int $userId,
+        string $prefix,
+        string $name,
+        ?string $parentPrefix
+    ): void {
+        $stmt = $this->db->prepare(
+            "INSERT INTO S3Folders
+                (user_id_, Prefix, Nombre, ParentPrefix, Found, AccessType, CreatedAt, UpdatedAt)
+             VALUES
+                (?, ?, ?, ?, 1, 'normal', NOW(), NOW())
+             ON DUPLICATE KEY UPDATE
+                Nombre = VALUES(Nombre),
+                ParentPrefix = VALUES(ParentPrefix),
+                Found = 1,
+                UpdatedAt = NOW()"
+        );
+
+        if (!$stmt) {
+            throw new RuntimeException('No se pudo preparar el registro S3Folders: ' . $this->db->error);
+        }
+
+        $stmt->bind_param('isss', $userId, $prefix, $name, $parentPrefix);
+
+        if (!$stmt->execute()) {
+            $error = $stmt->error;
+            $stmt->close();
+            throw new RuntimeException('No se pudo registrar la carpeta de subida: ' . $error);
+        }
+
+        $stmt->close();
+    }
+
     public function upsertCompletedMultipart(
         int $userId,
         string $visibleName,
         string $physicalName,
         int $size,
         string $metadata,
-        string $route
+        string $route,
+        string $uploadedAt
     ): void {
         $stmt = $this->db->prepare(
             "INSERT INTO FileS3
-                (Nombre, Encriptado, Tamano, Metadatos, Ruta, Found, AccessType, user_id_)
+                (Nombre, Encriptado, Tamano, Metadatos, Ruta, Found, AccessType, Fecha, user_id_)
              VALUES
-                (?, ?, ?, ?, ?, 1, 'normal', ?)
+                (?, ?, ?, ?, ?, 1, 'normal', ?, ?)
              ON DUPLICATE KEY UPDATE
                 Nombre = VALUES(Nombre),
                 Tamano = VALUES(Tamano),
                 Metadatos = VALUES(Metadatos),
                 Ruta = VALUES(Ruta),
+                Fecha = VALUES(Fecha),
                 Found = 1"
         );
 
@@ -92,12 +127,13 @@ final class UploadCatalogRepository
         }
 
         $stmt->bind_param(
-            'ssissi',
+            'ssisssi',
             $visibleName,
             $physicalName,
             $size,
             $metadata,
             $route,
+            $uploadedAt,
             $userId
         );
 

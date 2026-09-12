@@ -1,0 +1,64 @@
+name: FileS3 sync schema
+
+on:
+  pull_request:
+    paths:
+      - 'drive/src/Sync/SyncSchemaMigrator.php'
+      - 'drive/bin/sync_schema_migrate.php'
+      - 'drive/bin/install_node_sync_service.sh'
+      - 'drive/tests/sync_schema_migrator_regression.php'
+      - '.github/workflows/sync-schema.yml'
+
+jobs:
+  mariadb:
+    runs-on: ubuntu-latest
+    services:
+      db:
+        image: mariadb:10.5
+        env:
+          MARIADB_ROOT_PASSWORD: root
+          MARIADB_DATABASE: arcade_test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -proot"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+    steps:
+      - uses: actions/checkout@v4
+      - run: php -l drive/src/Sync/SyncSchemaMigrator.php && php -l drive/bin/sync_schema_migrate.php && php -l drive/tests/sync_schema_migrator_regression.php
+      - name: Regression MariaDB 10.5
+        env:
+          TEST_DB_HOST: 127.0.0.1
+          TEST_DB_PORT: 3306
+          TEST_DB_USER: root
+          TEST_DB_PASSWORD: root
+          TEST_DB_NAME: arcade_test
+        run: php drive/tests/sync_schema_migrator_regression.php
+
+  mysql57:
+    runs-on: ubuntu-latest
+    services:
+      db:
+        image: mysql:5.7
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: arcade_test
+        ports:
+          - 3307:3306
+        options: >-
+          --health-cmd="mysqladmin ping -proot"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Regression MySQL 5.7
+        env:
+          TEST_DB_HOST: 127.0.0.1
+          TEST_DB_PORT: 3307
+          TEST_DB_USER: root
+          TEST_DB_PASSWORD: root
+          TEST_DB_NAME: arcade_test
+        run: php drive/tests/sync_schema_migrator_regression.php

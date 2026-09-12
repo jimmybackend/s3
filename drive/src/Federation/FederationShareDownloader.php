@@ -6,6 +6,7 @@ namespace ArcadeCloud\Drive\Federation;
 final class FederationShareDownloader
 {
     private const MAX_BYTES = 5368709120; // 5 GiB
+    private const MAX_DOWNLOAD_SECONDS = 1800;
 
     public function download(string $accessUrl): array
     {
@@ -35,7 +36,7 @@ final class FederationShareDownloader
                 CURLOPT_FOLLOWLOCATION => false,
                 CURLOPT_MAXREDIRS => 0,
                 CURLOPT_CONNECTTIMEOUT_MS => 3000,
-                CURLOPT_TIMEOUT => 0,
+                CURLOPT_TIMEOUT => self::MAX_DOWNLOAD_SECONDS,
                 CURLOPT_PROTOCOLS => CURLPROTO_HTTPS,
                 CURLOPT_REDIR_PROTOCOLS => CURLPROTO_HTTPS,
                 CURLOPT_RESOLVE => [$host . ':443:' . $ip],

@@ -1,0 +1,84 @@
+name: FederationCloud Shares to Drive validation
+
+on:
+  pull_request:
+    paths:
+      - 'drive/sql/federation_access_shares.sql'
+      - 'drive/src/Federation/FederationShareDrive*.php'
+      - 'drive/src/Federation/FederationShareDownloader.php'
+      - 'drive/src/Http/Controller/FederationShareDriveController.php'
+      - 'drive/federationcloud/share-drive.php'
+      - 'drive/js/federation-share-drive.js'
+      - 'drive/src/View/FederationPortalRenderer.php'
+      - 'drive/bloque_carpetas.php'
+      - 'drive/docs/FEDERATION_ACCESS_AND_SHARES.md'
+      - '.github/workflows/federation-share-drive.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'drive/sql/federation_access_shares.sql'
+      - 'drive/src/Federation/FederationShareDrive*.php'
+      - 'drive/src/Federation/FederationShareDownloader.php'
+      - 'drive/src/Http/Controller/FederationShareDriveController.php'
+      - 'drive/federationcloud/share-drive.php'
+      - 'drive/js/federation-share-drive.js'
+      - 'drive/src/View/FederationPortalRenderer.php'
+      - 'drive/bloque_carpetas.php'
+      - 'drive/docs/FEDERATION_ACCESS_AND_SHARES.md'
+      - '.github/workflows/federation-share-drive.yml'
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate PHP syntax
+        run: |
+          set -euo pipefail
+          php -l drive/src/Federation/FederationShareDriveRepository.php
+          php -l drive/src/Federation/FederationShareDownloader.php
+          php -l drive/src/Federation/FederationShareDriveService.php
+          php -l drive/src/Http/Controller/FederationShareDriveController.php
+          php -l drive/federationcloud/share-drive.php
+          php -l drive/src/View/FederationPortalRenderer.php
+          php -l drive/bloque_carpetas.php
+
+      - name: Validate JavaScript
+        run: node --check drive/js/federation-share-drive.js
+
+      - name: Shares schema guards
+        run: |
+          set -euo pipefail
+          grep -q 'LocalFileId' drive/sql/federation_access_shares.sql
+          grep -q 'LocalS3Key' drive/sql/federation_access_shares.sql
+          grep -q 'ImportedAt' drive/sql/federation_access_shares.sql
+          grep -q 'ImportedResourceUpdatedAt' drive/sql/federation_access_shares.sql
+
+      - name: DB-first and storage guards
+        run: |
+          set -euo pipefail
+          grep -q 'singleUploadService()->upload' drive/src/Federation/FederationShareDriveService.php
+          grep -q 'userStoragePath()->rootForUser' drive/src/Federation/FederationShareDriveService.php
+          grep -q 'FileS3' drive/src/Federation/FederationShareDriveRepository.php
+          ! grep -R 'listObjects\|ListObjects' drive/src/Federation/FederationShareDrive*.php drive/src/Federation/FederationShareDownloader.php
+
+      - name: Download security guards
+        run: |
+          set -euo pipefail
+          grep -q 'download=1' drive/src/Federation/FederationShareDownloader.php
+          grep -q 'CURLPROTO_HTTPS' drive/src/Federation/FederationShareDownloader.php
+          grep -q 'FILTER_FLAG_NO_PRIV_RANGE' drive/src/Federation/FederationShareDownloader.php
+          grep -q 'amazonaws\\.com' drive/src/Federation/FederationShareDownloader.php
+          grep -q 'CURLOPT_FOLLOWLOCATION => false' drive/src/Federation/FederationShareDownloader.php
+
+      - name: UX guards
+        run: |
+          set -euo pipefail
+          grep -q 'Compartidos' drive/bloque_carpetas.php
+          grep -q 'Agregar a Mi Drive' drive/js/federation-share-drive.js
+          grep -q 'Agregar versión nueva' drive/js/federation-share-drive.js
+          grep -q 'share-drive.php' drive/js/federation-share-drive.js
+
+      - name: Diff whitespace check
+        run: git diff --check origin/${{ github.base_ref || 'main' }}...HEAD || git diff --check HEAD^

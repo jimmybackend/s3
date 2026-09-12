@@ -14,7 +14,7 @@ El portal autenticado vive en:
 /federationcloud/portal.php
 ```
 
-Integra cuatro superficies sobre las APIs existentes:
+Integra cuatro superficies:
 
 ```text
 Buscar global
@@ -76,7 +76,7 @@ signature Ed25519
 
 El nodo solicitante guarda localmente qué usuario hizo la solicitud. El nodo origen guarda qué usuario local es dueño del recurso. Ninguno necesita conocer el ID interno del usuario remoto.
 
-## Flujo
+## Flujo de acceso
 
 ```text
 búsqueda local del catálogo global
@@ -135,19 +135,34 @@ Un Share recibido y activo puede copiarse explícitamente con:
 Agregar a Mi Drive
 ```
 
-El flujo es:
+El navegador **no descarga el archivo**. Sólo crea un trabajo local:
 
 ```text
 Compartidos/Recibidos
-  -> grant temporal existente
-  -> GET al endpoint público con download=1
-  -> el nodo origen devuelve una única redirección HTTPS a S3
-  -> el nodo receptor valida que el destino sea S3 público
-  -> descarga a archivo temporal con límite de 5 GiB
+  -> POST share-drive.php
+  -> FederationShareImportJobs: queued
+  -> worker FederationCloud
+  -> máximo 1 importación por ciclo
+  -> grant temporal existente + download=1
+  -> nodo origen devuelve una única redirección HTTPS a S3
+  -> receptor valida destino S3 público
+  -> descarga a temporal con límite de 5 GiB y timeout finito
   -> SingleUploadService
   -> DataN/
   -> FileS3 con user_id local
+  -> trabajo completed
 ```
+
+La UI consulta el estado mientras exista un trabajo pendiente y puede mostrar:
+
+```text
+Copia en cola
+Copiando a Mi Drive
+Reintentando copia
+En Mi Drive
+```
+
+Este diseño evita mantener un proceso PHP-FPM web ocupado durante una descarga grande. Las transferencias se hacen por el worker `federation_sync.php`, que ya se ejecuta por systemd.
 
 La copia resultante es un archivo normal del usuario:
 
@@ -178,28 +193,43 @@ Si el catálogo global aprende que `FederatedResources.UpdatedAt` es posterior a
 Agregar versión nueva
 ```
 
-La nueva versión se guarda como otro archivo normal en `DataN/`; la copia anterior permanece intacta. Esto evita destruir cambios locales del usuario.
+La nueva versión crea otro trabajo y se guarda como otro archivo normal en `DataN/`; la copia anterior permanece intacta. Esto evita destruir cambios locales del usuario.
+
+`VersionKey` hace idempotente la combinación `usuario + Share + versión`, de modo que pulsar varias veces no crea trabajos independientes para la misma versión.
 
 ## Seguridad de la copia
 
 El importador de Compartidos:
 
-- exige sesión autenticada y CSRF propio;
+- exige sesión autenticada y CSRF propio para encolar;
 - sólo acepta Shares `received` del usuario actual;
 - exige estado `active` y grant no expirado;
+- procesa los bytes fuera de PHP-FPM;
 - sólo usa HTTPS puerto 443;
 - no sigue redirects automáticamente;
 - permite exactamente el salto controlado del endpoint Share hacia una URL S3 prefirmada;
 - rechaza IP privadas/reservadas y metadata service;
-- valida que el destino final sea `*.amazonaws.com` en formato S3;
+- valida que el destino final sea un endpoint S3 de AWS;
 - limita cada copia a 5 GiB;
-- no lista S3 para descubrir archivos.
+- limita una descarga individual a 30 minutos;
+- no lista S3 para descubrir archivos;
+- no devuelve `AccessUrl` al endpoint de estado de Mi Drive.
 
-## Reintentos
+## Colas y reintentos
 
-`drive/bin/federation_sync.php` procesa como máximo 5 solicitudes salientes pendientes por ciclo, además del gossip del catálogo. Los errores no detienen el gossip global.
+`drive/bin/federation_sync.php` procesa en bloques pequeños:
 
-Una solicitud expira por defecto después de 7 días. Un grant puede durar de 1 a 30 días según la decisión del propietario.
+```text
+solicitudes privadas: hasta 5 por ciclo
+réplicas: hasta 3 outgoing + 2 incoming por ciclo
+Agregar a Mi Drive: hasta 1 Share por ciclo
+```
+
+`FederationShareImportJobs` registra estado, intentos, próximo intento y error resumido. Los fallos transitorios usan backoff; después de 5 intentos el trabajo queda `failed` y el usuario puede volver a encolarlo desde la UI.
+
+Un error de importación de Compartidos no detiene gossip, solicitudes ni réplicas: el worker lo reporta como subsistema degradado y continúa.
+
+Una solicitud de acceso expira por defecto después de 7 días. Un grant puede durar de 1 a 30 días según la decisión del propietario.
 
 ## Endpoints máquina a máquina
 
@@ -226,14 +256,14 @@ GET  /federationcloud/share-drive.php
 POST /federationcloud/share-drive.php
 ```
 
-`share-drive.php` GET devuelve el estado de los Shares recibidos y si ya tienen una copia local. POST acepta:
+`share-drive.php` GET devuelve el estado de los Shares recibidos, vínculo con `FileS3`, estado de importación y si existe una versión global posterior. POST acepta:
 
 ```text
 action=import
 share_id=far_...
 ```
 
-y exige `X-Federation-Share-Drive-CSRF`.
+POST **encola** la copia; no transmite bytes en la petición web. Exige `X-Federation-Share-Drive-CSRF`.
 
 ## Privacidad
 
@@ -244,14 +274,15 @@ No se sincronizan globalmente:
 - URL temporal de grant;
 - tokens de descarga;
 - decisiones privadas;
+- trabajos `FederationShareImportJobs`;
 - contraseñas o credenciales del servidor;
 - rutas físicas de la copia personal `DataN/`.
 
-El catálogo global sabe que el recurso existe y dónde está; la relación de acceso y la copia personal siguen siendo privadas para los nodos/usuarios implicados.
+El catálogo global sabe que el recurso existe y dónde está; la relación de acceso, la cola de importación y la copia personal siguen siendo privadas para los nodos/usuarios implicados.
 
 ## Migración
 
-El mismo comando del catálogo instala/actualiza estas tablas:
+El mismo comando del catálogo instala/actualiza estas estructuras:
 
 ```bash
 php drive/bin/federation_catalog_migrate.php
@@ -262,6 +293,7 @@ Incluye:
 ```text
 FederationAccessRequests
 FederationShares
+FederationShareImportJobs
 ```
 
 y agrega idempotentemente las columnas de vínculo con Mi Drive a instalaciones existentes.
@@ -274,10 +306,12 @@ CI valida:
 - rechazo de manipulación;
 - grant aprobado firmado;
 - rechazo firmado sin URL;
-- lint de servicios/endpoints;
-- sintaxis del portal y de la integración de Compartidos;
+- lint PHP y JavaScript;
 - guard DB-first: la copia usa `SingleUploadService` y `UserStoragePath`;
+- guard de background: el endpoint sólo encola y el worker procesa una copia por ciclo;
 - guard SSRF: HTTPS, DNS público, sin redirects automáticos y destino S3;
-- ausencia de `ListObjects` en el flujo de Compartidos.
+- ausencia de `ListObjects` en el flujo de Compartidos;
+- migración real sobre MariaDB 10.5;
+- segunda ejecución de la misma migración para comprobar idempotencia.
 
 La prueba física usuario/nodo A -> usuario/nodo B, copia S3 y actualización de versión queda reservada para la prueba real del lunes.

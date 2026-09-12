@@ -17,6 +17,43 @@ $_SESSION['ruta_actual'] = $current;
 
 $e = static fn(string $value): string => htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 ?>
+<style>
+  #arbolCarpetas .federation-shares-row {
+    position: relative;
+    cursor: pointer;
+    border: 1px solid rgba(var(--accent-rgb), .22);
+    background: rgba(var(--accent-rgb), .06) !important;
+    margin-top: .35rem;
+  }
+  #arbolCarpetas .federation-shares-row:hover {
+    background: rgba(var(--accent-rgb), .14) !important;
+  }
+  #arbolCarpetas .shared-folder-link {
+    color: var(--text-strong) !important;
+    font-weight: 700;
+    text-decoration: none !important;
+    opacity: 1 !important;
+  }
+  #arbolCarpetas .shared-folder-link i {
+    color: var(--accent) !important;
+  }
+  #arbolCarpetas .federation-shares-row .badge {
+    position: relative;
+    z-index: 2;
+    pointer-events: none;
+  }
+  body.ui-theme.theme-light #arbolCarpetas .federation-shares-row {
+    background: rgba(var(--accent-rgb), .10) !important;
+    border-color: rgba(var(--accent-rgb), .38) !important;
+  }
+  body.ui-theme.theme-light #arbolCarpetas .shared-folder-link {
+    color: #17324d !important;
+    text-shadow: none !important;
+  }
+  body.ui-theme.theme-dark #arbolCarpetas .shared-folder-link {
+    color: var(--text-strong) !important;
+  }
+</style>
 <div id="bloque-carpetas" class="card">
   <div class="card-header py-2 d-flex align-items-center">
     <strong><i class="fas fa-folder-open"></i> Carpetas</strong>
@@ -55,6 +92,14 @@ $e = static fn(string $value): string => htmlspecialchars($value, ENT_QUOTES | E
 
           <div class="ml-auto btn-group btn-group-sm">
             <button type="button"
+                    class="btn btn-light btn-xs js-sync-folder"
+                    title="Sincronizar todo este usuario desde S3"
+                    aria-label="Sincronizar raíz del usuario"
+                    data-sync-prefix="<?= $e($root) ?>"
+                    data-sync-name="<?= $e(rtrim($root, '/')) ?>">
+              <i class="fas fa-rotate"></i>
+            </button>
+            <button type="button"
                     class="btn btn-light btn-xs"
                     title="Nueva subcarpeta"
                     data-toggle="modal"
@@ -71,11 +116,12 @@ $e = static fn(string $value): string => htmlspecialchars($value, ENT_QUOTES | E
       </li>
 
       <li class="folder-item folder-item-virtual mt-1" data-prefix="virtual:shares">
-        <div class="folder-row d-flex align-items-center">
+        <div class="folder-row d-flex align-items-center federation-shares-row">
           <span class="toggle empty" aria-hidden="true">·</span>
           <a href="federationcloud/portal.php?view=shares"
-             class="shared-folder-link"
-             title="Archivos compartidos recibidos y enviados">
+             class="shared-folder-link stretched-link"
+             title="Abrir FederationCloud · Compartidos"
+             aria-label="Abrir FederationCloud Compartidos">
             <i class="fas fa-users mr-1"></i>
             <span class="name">Compartidos</span>
           </a>

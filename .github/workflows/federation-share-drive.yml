@@ -8,6 +8,7 @@ on:
       - 'drive/src/Federation/FederationShareDownloader.php'
       - 'drive/src/Http/Controller/FederationShareDriveController.php'
       - 'drive/federationcloud/share-drive.php'
+      - 'drive/bin/federation_sync.php'
       - 'drive/js/federation-share-drive.js'
       - 'drive/src/View/FederationPortalRenderer.php'
       - 'drive/bloque_carpetas.php'
@@ -21,6 +22,7 @@ on:
       - 'drive/src/Federation/FederationShareDownloader.php'
       - 'drive/src/Http/Controller/FederationShareDriveController.php'
       - 'drive/federationcloud/share-drive.php'
+      - 'drive/bin/federation_sync.php'
       - 'drive/js/federation-share-drive.js'
       - 'drive/src/View/FederationPortalRenderer.php'
       - 'drive/bloque_carpetas.php'
@@ -41,6 +43,7 @@ jobs:
           php -l drive/src/Federation/FederationShareDriveService.php
           php -l drive/src/Http/Controller/FederationShareDriveController.php
           php -l drive/federationcloud/share-drive.php
+          php -l drive/bin/federation_sync.php
           php -l drive/src/View/FederationPortalRenderer.php
           php -l drive/bloque_carpetas.php
 
@@ -54,13 +57,18 @@ jobs:
           grep -q 'LocalS3Key' drive/sql/federation_access_shares.sql
           grep -q 'ImportedAt' drive/sql/federation_access_shares.sql
           grep -q 'ImportedResourceUpdatedAt' drive/sql/federation_access_shares.sql
+          grep -q 'FederationShareImportJobs' drive/sql/federation_access_shares.sql
+          grep -q 'uq_fshare_import_version' drive/sql/federation_access_shares.sql
 
-      - name: DB-first and storage guards
+      - name: DB-first and background storage guards
         run: |
           set -euo pipefail
           grep -q 'singleUploadService()->upload' drive/src/Federation/FederationShareDriveService.php
           grep -q 'userStoragePath()->rootForUser' drive/src/Federation/FederationShareDriveService.php
           grep -q 'FileS3' drive/src/Federation/FederationShareDriveRepository.php
+          grep -q 'queueImport' drive/src/Http/Controller/FederationShareDriveController.php
+          grep -q 'FederationShareDriveService' drive/bin/federation_sync.php
+          grep -q 'syncPending(1)' drive/bin/federation_sync.php
           ! grep -R 'listObjects\|ListObjects' drive/src/Federation/FederationShareDrive*.php drive/src/Federation/FederationShareDownloader.php
 
       - name: Download security guards
@@ -71,6 +79,7 @@ jobs:
           grep -q 'FILTER_FLAG_NO_PRIV_RANGE' drive/src/Federation/FederationShareDownloader.php
           grep -q 'amazonaws\\.com' drive/src/Federation/FederationShareDownloader.php
           grep -q 'CURLOPT_FOLLOWLOCATION => false' drive/src/Federation/FederationShareDownloader.php
+          grep -q 'MAX_DOWNLOAD_SECONDS' drive/src/Federation/FederationShareDownloader.php
 
       - name: UX guards
         run: |
@@ -78,6 +87,7 @@ jobs:
           grep -q 'Compartidos' drive/bloque_carpetas.php
           grep -q 'Agregar a Mi Drive' drive/js/federation-share-drive.js
           grep -q 'Agregar versión nueva' drive/js/federation-share-drive.js
+          grep -q 'Copia en cola' drive/js/federation-share-drive.js
           grep -q 'share-drive.php' drive/js/federation-share-drive.js
 
       - name: Diff whitespace check

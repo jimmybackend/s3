@@ -73,6 +73,7 @@
         "drive/aws.php",
         "drive/bin/federation_catalog_migrate.php",
         "drive/bin/federation_sync.php",
+        "drive/bin/sync_node_worker.php",
         "drive/bin/sync_worker.php",
         "drive/bin/upload_cleanup.php",
         "drive/bloque_archivos.php",
@@ -219,6 +220,12 @@
     {
       "path": "drive/bin/federation_sync.php",
       "size": 2476,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/bin/sync_node_worker.php",
+      "size": 1918,
       "active": false,
       "references": []
     },
@@ -1896,6 +1903,12 @@
       "references": []
     },
     {
+      "path": "drive/src/Sync/NodeSyncService.php",
+      "size": 3923,
+      "active": false,
+      "references": []
+    },
+    {
       "path": "drive/src/Sync/S3SyncService.php",
       "size": 8922,
       "active": false,
@@ -1909,9 +1922,11 @@
     },
     {
       "path": "drive/src/Sync/SyncRepository.php",
-      "size": 14835,
+      "size": 13255,
       "active": false,
-      "references": []
+      "references": [
+        "drive/tests/sync_repository_regression.php"
+      ]
     },
     {
       "path": "drive/src/Upload/AdminMultipartUploadService.php",
@@ -2140,6 +2155,12 @@
     {
       "path": "drive/tests/smtp_config_smoke.php",
       "size": 1342,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/tests/sync_repository_regression.php",
+      "size": 3451,
       "active": false,
       "references": []
     },

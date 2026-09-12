@@ -10,13 +10,13 @@ El botón **Sincronizar S3** inicia un proceso CLI desacoplado del request HTTP:
 usuario autenticado
   -> SyncController
   -> setsid + PHP CLI
-  -> bin/sync_worker.php USER_ID JOB_ID
+  -> bin/sync_worker.php USER_ID JOB_ID [PREFIX]
   -> S3SyncService
   -> ListObjectsV2 Prefix=DataN/
   -> FileS3 / S3Folders sólo con user_id=N
 ```
 
-El navegador sólo consulta el estado del job. No espera a que termine el recorrido S3.
+El navegador sólo consulta el estado del job. No espera a que termine el recorrido S3 y cerrar la pestaña no detiene el worker.
 
 La raíz depende del usuario:
 
@@ -27,6 +27,23 @@ user N -> DataN/
 ```
 
 Una sincronización de usuario nunca debe listar la raíz completa del bucket ni modificar filas de otro `user_id_`.
+
+## Sincronización de una carpeta concreta
+
+Cada carpeta del árbol puede solicitar una reconciliación limitada a su propio prefijo. Por ejemplo:
+
+```text
+usuario 1
+carpeta: Data/Docs/
+
+ListObjectsV2 Prefix=Data/Docs/
+```
+
+El request sigue validando el usuario autenticado y `UserStoragePath` impide saltar a `Data2/`, `Data3/` u otra raíz. El worker continúa siendo asíncrono y usa el mismo lock por usuario, así que no puede correr simultáneamente una sincronización completa y otra de carpeta para el mismo usuario.
+
+Cuando termina una sincronización de carpeta, las eliminaciones se reconcilian **sólo dentro de ese prefijo**. Las filas de otras carpetas y de otros usuarios permanecen intactas.
+
+Esto permite recuperar rápidamente objetos que fueron añadidos directamente en S3 sin recorrer los miles de objetos de todo `DataN/`.
 
 ## Referencia física FileS3
 
@@ -40,7 +57,30 @@ Encriptado:  f_abc-documento.pdf
 
 `Encriptado` es el nombre físico, no la key completa. Esto mantiene compatibilidad con `varchar(255)` y evita que una ruta profunda provoque `Data too long for column 'Encriptado'`.
 
+La identidad física es:
+
+```text
+user_id_ + Ruta + Encriptado
+```
+
+por lo que el mismo nombre físico puede existir en dos carpetas diferentes del mismo usuario.
+
 El reconciliador sigue reconociendo temporalmente registros históricos que hayan almacenado la key completa en `Encriptado` y los normaliza cuando vuelve a observar el objeto.
+
+## Subidas grandes mediante up.php
+
+`up.php` envía los bytes directamente del navegador a Amazon S3 mediante multipart y URLs prefirmadas. PHP autoriza, firma y completa la operación, pero no transporta el archivo grande.
+
+Después de completar S3, `AdminMultipartUploadService` ejecuta `HeadObject` y registra inmediatamente:
+
+- el archivo en `FileS3`;
+- la ruta física `DataN/uploads/`;
+- la carpeta `uploads` en `S3Folders` si todavía no estaba catalogada;
+- tamaño real;
+- fecha de subida basada en `LastModified` de S3, normalizada a UTC;
+- metadata `source=up.php` y usuario que realizó la subida.
+
+Por tanto, una subida completada correctamente no debe necesitar una sincronización completa para aparecer en MySQL. La sincronización de la carpeta `uploads` queda como mecanismo de reconciliación si existen objetos históricos o creados fuera de ArcadeCloud.
 
 ## Sincronización completa del nodo
 
@@ -68,8 +108,11 @@ sudo bash drive/bin/install_node_sync_service.sh \
 El instalador crea:
 
 ```text
+arcadecloud-drive-sync-migrate.service
 arcadecloud-drive-node-sync.service
 ```
+
+La migración de sincronización se ejecuta antes del servicio de nodo para garantizar la identidad `user_id_ + Ruta + Encriptado`.
 
 No se habilita un timer global automáticamente: una reconciliación completa puede ser costosa y debe ser una operación administrativa explícita.
 
@@ -85,7 +128,7 @@ Consultar estado:
 sudo systemctl status arcadecloud-drive-node-sync.service --no-pager -l
 ```
 
-Consultar log:
+Consultar log sin dejar la terminal abierta:
 
 ```bash
 sudo journalctl -u arcadecloud-drive-node-sync.service -n 100 --no-pager

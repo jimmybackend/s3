@@ -69,6 +69,19 @@ $e = static fn(string $value): string => htmlspecialchars($value, ENT_QUOTES | E
           <?= $tree->renderChildren($root, $current) ?>
         </div>
       </li>
+
+      <li class="folder-item folder-item-virtual mt-1" data-prefix="virtual:shares">
+        <div class="folder-row d-flex align-items-center">
+          <span class="toggle empty" aria-hidden="true">·</span>
+          <a href="federationcloud/portal.php?view=shares"
+             class="shared-folder-link"
+             title="Archivos compartidos recibidos y enviados">
+            <i class="fas fa-users mr-1"></i>
+            <span class="name">Compartidos</span>
+          </a>
+          <span class="ml-auto badge badge-info">FederationCloud</span>
+        </div>
+      </li>
     </ul>
   </div>
 </div>

@@ -48,8 +48,13 @@ if (!$db->query("INSERT INTO FileS3 (Nombre,Encriptado,Ruta,user_id_) VALUES ('B
     throw new RuntimeException('Same basename in another route must be allowed: ' . $db->error);
 }
 
-$duplicateSameRoute = $db->query("INSERT INTO FileS3 (Nombre,Encriptado,Ruta,user_id_) VALUES ('C','manifest.json','Data/a/',1)");
-if ($duplicateSameRoute !== false) {
+$duplicateRejected = false;
+try {
+    $db->query("INSERT INTO FileS3 (Nombre,Encriptado,Ruta,user_id_) VALUES ('C','manifest.json','Data/a/',1)");
+} catch (mysqli_sql_exception $error) {
+    $duplicateRejected = ((int)$error->getCode() === 1062);
+}
+if (!$duplicateRejected) {
     throw new RuntimeException('Same user+route+basename must remain unique.');
 }
 

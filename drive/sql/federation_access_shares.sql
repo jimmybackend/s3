@@ -70,11 +70,66 @@ CREATE TABLE IF NOT EXISTS FederationShareImportJobs (
   KEY idx_fshare_import_user (UserId, ShareId, UpdatedAt)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Existing installations need these columns too. Production uses MariaDB,
--- where IF NOT EXISTS keeps the migration idempotent.
-ALTER TABLE FederationShares ADD COLUMN IF NOT EXISTS LocalFileId int DEFAULT NULL AFTER ExpiresAt;
-ALTER TABLE FederationShares ADD COLUMN IF NOT EXISTS LocalS3Key varchar(1024) DEFAULT NULL AFTER LocalFileId;
-ALTER TABLE FederationShares ADD COLUMN IF NOT EXISTS ImportedAt datetime(6) DEFAULT NULL AFTER LocalS3Key;
-ALTER TABLE FederationShares ADD COLUMN IF NOT EXISTS ImportedResourceUpdatedAt datetime(6) DEFAULT NULL AFTER ImportedAt;
-ALTER TABLE FederationShares ADD COLUMN IF NOT EXISTS ImportedContentId varchar(80) CHARACTER SET ascii COLLATE ascii_bin DEFAULT NULL AFTER ImportedResourceUpdatedAt;
-ALTER TABLE FederationShares ADD INDEX IF NOT EXISTS idx_fshares_local_file (UserId, LocalFileId);
+-- Portable upgrades for existing installations.
+-- Do not use `ADD COLUMN IF NOT EXISTS`: that syntax differs across MySQL/MariaDB versions.
+-- information_schema + prepared statements keeps this migration idempotent on both engines.
+
+SET @arcade_sql = IF(
+  (SELECT COUNT(*) FROM information_schema.COLUMNS
+   WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'FederationShares' AND COLUMN_NAME = 'LocalFileId') = 0,
+  'ALTER TABLE FederationShares ADD COLUMN LocalFileId int DEFAULT NULL AFTER ExpiresAt',
+  'SELECT 1'
+);
+PREPARE arcade_stmt FROM @arcade_sql;
+EXECUTE arcade_stmt;
+DEALLOCATE PREPARE arcade_stmt;
+
+SET @arcade_sql = IF(
+  (SELECT COUNT(*) FROM information_schema.COLUMNS
+   WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'FederationShares' AND COLUMN_NAME = 'LocalS3Key') = 0,
+  'ALTER TABLE FederationShares ADD COLUMN LocalS3Key varchar(1024) DEFAULT NULL AFTER LocalFileId',
+  'SELECT 1'
+);
+PREPARE arcade_stmt FROM @arcade_sql;
+EXECUTE arcade_stmt;
+DEALLOCATE PREPARE arcade_stmt;
+
+SET @arcade_sql = IF(
+  (SELECT COUNT(*) FROM information_schema.COLUMNS
+   WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'FederationShares' AND COLUMN_NAME = 'ImportedAt') = 0,
+  'ALTER TABLE FederationShares ADD COLUMN ImportedAt datetime(6) DEFAULT NULL AFTER LocalS3Key',
+  'SELECT 1'
+);
+PREPARE arcade_stmt FROM @arcade_sql;
+EXECUTE arcade_stmt;
+DEALLOCATE PREPARE arcade_stmt;
+
+SET @arcade_sql = IF(
+  (SELECT COUNT(*) FROM information_schema.COLUMNS
+   WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'FederationShares' AND COLUMN_NAME = 'ImportedResourceUpdatedAt') = 0,
+  'ALTER TABLE FederationShares ADD COLUMN ImportedResourceUpdatedAt datetime(6) DEFAULT NULL AFTER ImportedAt',
+  'SELECT 1'
+);
+PREPARE arcade_stmt FROM @arcade_sql;
+EXECUTE arcade_stmt;
+DEALLOCATE PREPARE arcade_stmt;
+
+SET @arcade_sql = IF(
+  (SELECT COUNT(*) FROM information_schema.COLUMNS
+   WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'FederationShares' AND COLUMN_NAME = 'ImportedContentId') = 0,
+  'ALTER TABLE FederationShares ADD COLUMN ImportedContentId varchar(80) CHARACTER SET ascii COLLATE ascii_bin DEFAULT NULL AFTER ImportedResourceUpdatedAt',
+  'SELECT 1'
+);
+PREPARE arcade_stmt FROM @arcade_sql;
+EXECUTE arcade_stmt;
+DEALLOCATE PREPARE arcade_stmt;
+
+SET @arcade_sql = IF(
+  (SELECT COUNT(*) FROM information_schema.STATISTICS
+   WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'FederationShares' AND INDEX_NAME = 'idx_fshares_local_file') = 0,
+  'ALTER TABLE FederationShares ADD INDEX idx_fshares_local_file (UserId, LocalFileId)',
+  'SELECT 1'
+);
+PREPARE arcade_stmt FROM @arcade_sql;
+EXECUTE arcade_stmt;
+DEALLOCATE PREPARE arcade_stmt;

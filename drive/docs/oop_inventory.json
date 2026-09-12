@@ -1,8 +1,8 @@
 {
   "summary": {
-    "php_total": 312,
-    "php_class_modules": 190,
-    "php_needs_migration": 24,
+    "php_total": 315,
+    "php_class_modules": 191,
+    "php_needs_migration": 25,
     "js_total": 39,
     "js_class_modules": 38,
     "js_needs_migration": 7
@@ -212,6 +212,21 @@
     {
       "path": "drive/bin/federation_sync.php",
       "lines": 67,
+      "kind": "thin endpoint",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/bin/sync_node_worker.php",
+      "lines": 75,
       "kind": "thin endpoint",
       "classes": 0,
       "functions": [],
@@ -3747,6 +3762,21 @@
       "issues": []
     },
     {
+      "path": "drive/src/Sync/NodeSyncService.php",
+      "lines": 126,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": true,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
       "path": "drive/src/Sync/S3SyncService.php",
       "lines": 387,
       "kind": "class/module",
@@ -3778,7 +3808,7 @@
     },
     {
       "path": "drive/src/Sync/SyncRepository.php",
-      "lines": 630,
+      "lines": 437,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -4378,6 +4408,26 @@
       "html": false,
       "namespace": false,
       "issues": []
+    },
+    {
+      "path": "drive/tests/sync_repository_regression.php",
+      "lines": 91,
+      "kind": "procedural endpoint",
+      "classes": 0,
+      "functions": [
+        "check"
+      ],
+      "session": false,
+      "superglobals": [],
+      "db": true,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": [
+        "global functions: check",
+        "DB in endpoint"
+      ]
     },
     {
       "path": "drive/tests/user_identity_presenter_smoke.php",

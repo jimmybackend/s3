@@ -4,9 +4,9 @@
 
 ## Resumen
 
-- PHP analizados: **312**
-- PHP que ya contienen clases/interfaces: **190**
-- PHP marcados para migración/revisión: **24**
+- PHP analizados: **315**
+- PHP que ya contienen clases/interfaces: **191**
+- PHP marcados para migración/revisión: **25**
 - JavaScript analizados: **39**
 - JavaScript que ya contienen clases: **38**
 - JavaScript marcados para migración/revisión: **7**
@@ -35,6 +35,7 @@
 | `drive/bin/federation_identity_restore.php` | 48 | procedural endpoint | 0 | — | — | — | — |
 | `drive/bin/federation_provider_request.php` | 86 | procedural endpoint | 0 | — | — | — | — |
 | `drive/bin/federation_sync.php` | 67 | thin endpoint | 0 | — | — | — | — |
+| `drive/bin/sync_node_worker.php` | 75 | thin endpoint | 0 | — | — | — | — |
 | `drive/bin/sync_worker.php` | 113 | endpoint with logic | 0 | — | — | — | — |
 | `drive/bin/upload_cleanup.php` | 11 | thin endpoint | 0 | — | — | — | — |
 | `drive/bloque_archivos.php` | 662 | view/entrypoint | 0 | ⚠️ | — | — | — |
@@ -266,9 +267,10 @@
 | `drive/src/Storage/StorageUsageService.php` | 103 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Storage/UserStoragePath.php` | 50 | class/module | 1 | — | — | — | — |
 | `drive/src/Storage/UserStorageProvisioner.php` | 105 | class/module | 1 | — | ⚠️ | — | — |
+| `drive/src/Sync/NodeSyncService.php` | 126 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Sync/S3SyncService.php` | 387 | class/module | 1 | — | — | — | — |
 | `drive/src/Sync/SyncJobStore.php` | 138 | class/module | 1 | — | — | — | — |
-| `drive/src/Sync/SyncRepository.php` | 630 | class/module | 1 | — | ⚠️ | — | — |
+| `drive/src/Sync/SyncRepository.php` | 437 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Upload/AdminMultipartUploadService.php` | 123 | class/module | 1 | — | — | — | — |
 | `drive/src/Upload/PublicDropzoneUploadService.php` | 125 | class/module | 1 | — | — | — | — |
 | `drive/src/Upload/PublicMultipartUploadService.php` | 262 | class/module | 1 | — | — | — | — |
@@ -306,6 +308,7 @@
 | `drive/tests/server_admin_config_smoke.php` | 97 | procedural endpoint | 0 | — | — | — | global functions: serverAdminOk |
 | `drive/tests/setup_bootstrap_smoke.php` | 57 | procedural endpoint | 0 | — | — | — | — |
 | `drive/tests/smtp_config_smoke.php` | 42 | procedural endpoint | 0 | — | — | — | — |
+| `drive/tests/sync_repository_regression.php` | 91 | procedural endpoint | 0 | — | ⚠️ | — | global functions: check; DB in endpoint |
 | `drive/tests/user_identity_presenter_smoke.php` | 30 | procedural endpoint | 0 | — | — | — | — |
 | `drive/tests/user_profile_validator_smoke.php` | 57 | procedural endpoint | 0 | — | — | — | — |
 | `drive/thumb.php` | 10 | thin endpoint | 0 | — | — | — | — |

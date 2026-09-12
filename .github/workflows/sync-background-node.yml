@@ -1,0 +1,73 @@
+name: Background user and node synchronization
+
+on:
+  pull_request:
+    paths:
+      - 'drive/src/Sync/**'
+      - 'drive/bin/sync_worker.php'
+      - 'drive/bin/sync_node_worker.php'
+      - 'drive/bin/install_node_sync_service.sh'
+      - 'drive/tests/sync_repository_regression.php'
+      - '.github/workflows/sync-background-node.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'drive/src/Sync/**'
+      - 'drive/bin/sync_worker.php'
+      - 'drive/bin/sync_node_worker.php'
+      - 'drive/bin/install_node_sync_service.sh'
+      - 'drive/tests/sync_repository_regression.php'
+      - '.github/workflows/sync-background-node.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    services:
+      mariadb:
+        image: mariadb:10.5
+        env:
+          MARIADB_ROOT_PASSWORD: rootpass
+          MARIADB_DATABASE: arcadecloud_test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -prootpass"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: PHP syntax
+        run: |
+          php -l drive/src/Sync/SyncRepository.php
+          php -l drive/src/Sync/S3SyncService.php
+          php -l drive/src/Sync/SyncJobStore.php
+          php -l drive/src/Sync/NodeSyncService.php
+          php -l drive/bin/sync_worker.php
+          php -l drive/bin/sync_node_worker.php
+          bash -n drive/bin/install_node_sync_service.sh
+
+      - name: Verify user isolation and background design
+        run: |
+          grep -q "'Prefix' => \$base" drive/src/Sync/S3SyncService.php
+          grep -q 'rootForUser' drive/src/Sync/S3SyncService.php
+          grep -q 'setsid' drive/src/Http/Controller/SyncController.php
+          grep -q 'SELECT id FROM Users ORDER BY id ASC' drive/src/Sync/NodeSyncService.php
+          grep -q 'lockPath(\$userId)' drive/src/Sync/NodeSyncService.php
+          grep -q 'arcadecloud-drive-node-sync.service' drive/bin/install_node_sync_service.sh
+          grep -q 'Encriptado=?' drive/src/Sync/SyncRepository.php
+          grep -q '\$base, \$size, \$dir' drive/src/Sync/SyncRepository.php
+
+      - name: Regression test against MariaDB 10.5
+        env:
+          TEST_DB_HOST: 127.0.0.1
+          TEST_DB_PORT: 3306
+          TEST_DB_USER: root
+          TEST_DB_PASSWORD: rootpass
+          TEST_DB_NAME: arcadecloud_test
+        run: php drive/tests/sync_repository_regression.php

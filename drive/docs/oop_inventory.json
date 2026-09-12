@@ -1,8 +1,8 @@
 {
   "summary": {
-    "php_total": 315,
-    "php_class_modules": 191,
-    "php_needs_migration": 25,
+    "php_total": 318,
+    "php_class_modules": 192,
+    "php_needs_migration": 26,
     "js_total": 39,
     "js_class_modules": 38,
     "js_needs_migration": 7
@@ -227,6 +227,21 @@
     {
       "path": "drive/bin/sync_node_worker.php",
       "lines": 75,
+      "kind": "thin endpoint",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/bin/sync_schema_migrate.php",
+      "lines": 17,
       "kind": "thin endpoint",
       "classes": 0,
       "functions": [],
@@ -3822,6 +3837,21 @@
       "issues": []
     },
     {
+      "path": "drive/src/Sync/SyncSchemaMigrator.php",
+      "lines": 114,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": true,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
       "path": "drive/src/Upload/AdminMultipartUploadService.php",
       "lines": 123,
       "kind": "class/module",
@@ -4426,6 +4456,23 @@
       "namespace": false,
       "issues": [
         "global functions: check",
+        "DB in endpoint"
+      ]
+    },
+    {
+      "path": "drive/tests/sync_schema_migrator_regression.php",
+      "lines": 75,
+      "kind": "procedural endpoint",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": true,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": [
         "DB in endpoint"
       ]
     },

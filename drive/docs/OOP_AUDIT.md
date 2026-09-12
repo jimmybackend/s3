@@ -4,9 +4,9 @@
 
 ## Resumen
 
-- PHP analizados: **315**
-- PHP que ya contienen clases/interfaces: **191**
-- PHP marcados para migración/revisión: **25**
+- PHP analizados: **318**
+- PHP que ya contienen clases/interfaces: **192**
+- PHP marcados para migración/revisión: **26**
 - JavaScript analizados: **39**
 - JavaScript que ya contienen clases: **38**
 - JavaScript marcados para migración/revisión: **7**
@@ -36,6 +36,7 @@
 | `drive/bin/federation_provider_request.php` | 86 | procedural endpoint | 0 | — | — | — | — |
 | `drive/bin/federation_sync.php` | 67 | thin endpoint | 0 | — | — | — | — |
 | `drive/bin/sync_node_worker.php` | 75 | thin endpoint | 0 | — | — | — | — |
+| `drive/bin/sync_schema_migrate.php` | 17 | thin endpoint | 0 | — | — | — | — |
 | `drive/bin/sync_worker.php` | 113 | endpoint with logic | 0 | — | — | — | — |
 | `drive/bin/upload_cleanup.php` | 11 | thin endpoint | 0 | — | — | — | — |
 | `drive/bloque_archivos.php` | 662 | view/entrypoint | 0 | ⚠️ | — | — | — |
@@ -271,6 +272,7 @@
 | `drive/src/Sync/S3SyncService.php` | 387 | class/module | 1 | — | — | — | — |
 | `drive/src/Sync/SyncJobStore.php` | 138 | class/module | 1 | — | — | — | — |
 | `drive/src/Sync/SyncRepository.php` | 437 | class/module | 1 | — | ⚠️ | — | — |
+| `drive/src/Sync/SyncSchemaMigrator.php` | 114 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Upload/AdminMultipartUploadService.php` | 123 | class/module | 1 | — | — | — | — |
 | `drive/src/Upload/PublicDropzoneUploadService.php` | 125 | class/module | 1 | — | — | — | — |
 | `drive/src/Upload/PublicMultipartUploadService.php` | 262 | class/module | 1 | — | — | — | — |
@@ -309,6 +311,7 @@
 | `drive/tests/setup_bootstrap_smoke.php` | 57 | procedural endpoint | 0 | — | — | — | — |
 | `drive/tests/smtp_config_smoke.php` | 42 | procedural endpoint | 0 | — | — | — | — |
 | `drive/tests/sync_repository_regression.php` | 91 | procedural endpoint | 0 | — | ⚠️ | — | global functions: check; DB in endpoint |
+| `drive/tests/sync_schema_migrator_regression.php` | 75 | procedural endpoint | 0 | — | ⚠️ | — | DB in endpoint |
 | `drive/tests/user_identity_presenter_smoke.php` | 30 | procedural endpoint | 0 | — | — | — | — |
 | `drive/tests/user_profile_validator_smoke.php` | 57 | procedural endpoint | 0 | — | — | — | — |
 | `drive/thumb.php` | 10 | thin endpoint | 0 | — | — | — | — |

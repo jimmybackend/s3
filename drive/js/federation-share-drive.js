@@ -25,7 +25,9 @@ class FederationShareDriveModule {
     const target = this.document.getElementById('federationReceivedShares');
     if (target && 'MutationObserver' in this.window) {
       this.observer = new MutationObserver(() => this.enhanceCards());
-      this.observer.observe(target, { childList: true, subtree: true });
+      // El portal reemplaza las tarjetas como hijos directos. No observamos el
+      // subárbol porque enhanceCards() añade botones dentro de esas tarjetas.
+      this.observer.observe(target, { childList: true });
     }
   }
 

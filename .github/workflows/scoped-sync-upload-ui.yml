@@ -1,0 +1,115 @@
+name: Scoped sync upload and Federation UI
+
+on:
+  pull_request:
+    paths:
+      - 'drive/src/Sync/**'
+      - 'drive/src/Http/Controller/SyncController.php'
+      - 'drive/bin/sync_worker.php'
+      - 'drive/js/sincronizar.js'
+      - 'drive/src/View/FolderTreeRenderer.php'
+      - 'drive/bloque_carpetas.php'
+      - 'drive/src/Upload/AdminMultipartUploadService.php'
+      - 'drive/src/Upload/UploadCatalogRepository.php'
+      - 'drive/up.php'
+      - 'drive/css/up-page.css'
+      - 'drive/src/View/FederationPortalRenderer.php'
+      - 'drive/css/federation-portal.css'
+      - 'drive/js/theme-state-bridge.js'
+      - 'drive/tests/scoped_sync_repository_regression.php'
+      - 'drive/tests/upload_catalog_registration_regression.php'
+      - '.github/workflows/scoped-sync-upload-ui.yml'
+
+jobs:
+  lint-and-guards:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: PHP syntax
+        run: |
+          php -l drive/src/Sync/S3SyncService.php
+          php -l drive/src/Sync/SyncRepository.php
+          php -l drive/src/Http/Controller/SyncController.php
+          php -l drive/bin/sync_worker.php
+          php -l drive/src/View/FolderTreeRenderer.php
+          php -l drive/bloque_carpetas.php
+          php -l drive/src/Upload/AdminMultipartUploadService.php
+          php -l drive/src/Upload/UploadCatalogRepository.php
+          php -l drive/up.php
+          php -l drive/src/View/FederationPortalRenderer.php
+          php -l drive/tests/scoped_sync_repository_regression.php
+          php -l drive/tests/upload_catalog_registration_regression.php
+      - name: JavaScript syntax
+        run: |
+          node --check drive/js/sincronizar.js
+          node --check drive/js/theme-state-bridge.js
+          node --check drive/js/federation-portal.js
+      - name: Architecture and UI guards
+        run: |
+          grep -F "finalizeSyncPrefix" drive/src/Sync/S3SyncService.php
+          grep -F "normalizeForUser" drive/src/Http/Controller/SyncController.php
+          grep -F "js-sync-folder" drive/src/View/FolderTreeRenderer.php
+          grep -F "federation-shares-row" drive/bloque_carpetas.php
+          grep -F "stretched-link" drive/bloque_carpetas.php
+          grep -F "theme-state-bridge.js" drive/src/View/FederationPortalRenderer.php
+          grep -F "theme-state-bridge.js" drive/up.php
+          grep -F "up-page.css" drive/up.php
+          grep -F "uploaded_at_utc" drive/src/Upload/AdminMultipartUploadService.php
+          grep -F "Fecha = VALUES(Fecha)" drive/src/Upload/UploadCatalogRepository.php
+          grep -F "INSERT INTO S3Folders" drive/src/Upload/UploadCatalogRepository.php
+
+  mariadb:
+    runs-on: ubuntu-latest
+    services:
+      db:
+        image: mariadb:10.5
+        env:
+          MARIADB_ROOT_PASSWORD: root
+          MARIADB_DATABASE: arcade_test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -proot"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Scoped sync and upload registration regressions
+        env:
+          TEST_DB_HOST: 127.0.0.1
+          TEST_DB_PORT: 3306
+          TEST_DB_USER: root
+          TEST_DB_PASSWORD: root
+          TEST_DB_NAME: arcade_test
+        run: |
+          php drive/tests/scoped_sync_repository_regression.php
+          php drive/tests/upload_catalog_registration_regression.php
+
+  mysql57:
+    runs-on: ubuntu-latest
+    services:
+      db:
+        image: mysql:5.7
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: arcade_test
+        ports:
+          - 3307:3306
+        options: >-
+          --health-cmd="mysqladmin ping -proot"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Scoped sync and upload registration regressions
+        env:
+          TEST_DB_HOST: 127.0.0.1
+          TEST_DB_PORT: 3307
+          TEST_DB_USER: root
+          TEST_DB_PASSWORD: root
+          TEST_DB_NAME: arcade_test
+        run: |
+          php drive/tests/scoped_sync_repository_regression.php
+          php drive/tests/upload_catalog_registration_regression.php

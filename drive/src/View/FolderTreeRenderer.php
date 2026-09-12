@@ -61,6 +61,7 @@ final class FolderTreeRenderer
             $html .= '<a href="#" class="folder' . ($isActive ? ' active' : '') . '" data-route="' . self::e($prefix) . '" data-ruta="' . self::e($prefix) . '">';
             $html .= '<i class="fas fa-folder mr-1"></i> <span class="name">' . self::e($name) . '</span></a>';
             $html .= '<div class="ml-auto btn-group btn-group-sm">';
+            $html .= '<button type="button" class="btn btn-light btn-xs js-sync-folder" title="Sincronizar esta carpeta desde S3" aria-label="Sincronizar ' . self::e($name) . '" data-sync-prefix="' . self::e($prefix) . '" data-sync-name="' . self::e($name) . '"><i class="fas fa-rotate"></i></button>';
             $html .= '<button type="button" class="btn btn-light btn-xs" title="Mover" data-toggle="modal" data-target="#modalMoverCarpeta" data-route="' . self::e($prefix) . '" data-name="' . self::e($name) . '"><i class="fas fa-arrows-alt"></i></button>';
             $html .= '<button type="button" class="btn btn-light btn-xs" title="Renombrar" data-toggle="modal" data-target="#modalRenombrar" data-actual="' . self::e($prefix) . '" data-nombre="' . self::e($name) . '"><i class="fas fa-i-cursor"></i></button>';
             $html .= '<button type="button" class="btn btn-light btn-xs text-danger" title="Eliminar" data-toggle="modal" data-target="#modalEliminarCarpeta" data-route="' . self::e($prefix) . '" data-name="' . self::e($name) . '"><i class="fas fa-trash"></i></button>';

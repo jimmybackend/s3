@@ -13,6 +13,7 @@ final class FederationPortalRenderer
         $responsiveVersion = is_file($driveRoot . '/css/responsive.css') ? (int)filemtime($driveRoot . '/css/responsive.css') : 1;
         $federationVersion = is_file($driveRoot . '/css/federation.css') ? (int)filemtime($driveRoot . '/css/federation.css') : 1;
         $portalCssVersion = is_file($driveRoot . '/css/federation-portal.css') ? (int)filemtime($driveRoot . '/css/federation-portal.css') : 1;
+        $themeBridgeVersion = is_file($driveRoot . '/js/theme-state-bridge.js') ? (int)filemtime($driveRoot . '/js/theme-state-bridge.js') : 1;
         $portalJsVersion = is_file($driveRoot . '/js/federation-portal.js') ? (int)filemtime($driveRoot . '/js/federation-portal.js') : 1;
         $shareDriveJsVersion = is_file($driveRoot . '/js/federation-share-drive.js') ? (int)filemtime($driveRoot . '/js/federation-share-drive.js') : 1;
         $nodeId = is_array($node) ? (string)($node['node_id'] ?? '') : '';
@@ -30,6 +31,7 @@ final class FederationPortalRenderer
   <link rel="stylesheet" href="../css/responsive.css?v=<?= $responsiveVersion ?>">
   <link rel="stylesheet" href="../css/federation.css?v=<?= $federationVersion ?>">
   <link rel="stylesheet" href="../css/federation-portal.css?v=<?= $portalCssVersion ?>">
+  <script defer src="../js/theme-state-bridge.js?v=<?= $themeBridgeVersion ?>"></script>
 </head>
 <body class="ui-theme theme-neon-green theme-dark vision-normal ascii-on federation-portal-body" data-federation-node-id="<?= $h($nodeId) ?>">
 <nav class="navbar navbar-expand-lg navbar-dark px-3 drive-navbar">
@@ -128,6 +130,23 @@ final class FederationPortalRenderer
 
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+(() => {
+  const requestedView = new URLSearchParams(window.location.search).get('view') || '';
+  const panes = {
+    search: '#federationSearchPane',
+    requests: '#federationRequestsPane',
+    shares: '#federationSharesPane',
+    replicas: '#federationReplicasPane'
+  };
+  const pane = panes[requestedView];
+  if (!pane) return;
+  const link = document.querySelector(`#federationPortalTabs a[href="${pane}"]`);
+  if (link && window.jQuery) {
+    window.jQuery(link).tab('show');
+  }
+})();
+</script>
 <?php if ($authenticated): ?>
 <script src="../js/federation-portal.js?v=<?= $portalJsVersion ?>"></script>
 <script src="../js/federation-share-drive.js?v=<?= $shareDriveJsVersion ?>"></script>

@@ -92,18 +92,7 @@ final class SyncRepository
 
     public function finalizeSync(int $userId, string $syncId): array
     {
-        /*
-         * FileS3 conserva la referencia física en dos columnas:
-         * Ruta + Encriptado. Algunos registros históricos guardaron la key
-         * completa en Encriptado; la expresión CASE los sigue reconociendo
-         * mientras una sincronización posterior los normaliza.
-         */
-        $fileKey = "CASE
-            WHEN f.Ruta <> ''
-             AND LEFT(f.Encriptado, CHAR_LENGTH(f.Ruta)) = f.Ruta
-                THEN f.Encriptado
-            ELSE CONCAT(f.Ruta,f.Encriptado)
-        END";
+        $fileKey = $this->fileKeySql();
 
         $sqlFiles = "
             DELETE f
@@ -151,11 +140,76 @@ final class SyncRepository
         $foldersRemoved = $stmt->affected_rows;
         $stmt->close();
 
-        $this->exec(
-            'DELETE FROM S3SyncSeen WHERE sync_id=? AND user_id=?',
-            [$syncId, $userId],
-            'si'
-        );
+        $this->clearSeen($syncId, $userId);
+
+        return [
+            'files_removed' => $filesRemoved,
+            'folders_removed' => $foldersRemoved,
+        ];
+    }
+
+    public function finalizeSyncPrefix(
+        int $userId,
+        string $syncId,
+        string $prefix
+    ): array {
+        $prefix = rtrim(str_replace('\\', '/', trim($prefix)), '/') . '/';
+
+        if ($prefix === '/') {
+            throw new RuntimeException('Prefijo de sincronización inválido.');
+        }
+
+        $fileKey = $this->fileKeySql();
+
+        $sqlFiles = "
+            DELETE f
+            FROM FileS3 f
+            LEFT JOIN S3SyncSeen s
+              ON s.sync_id = ?
+             AND s.user_id = f.user_id_
+             AND s.kind = 'file'
+             AND s.key_hash = SHA2($fileKey, 256)
+             AND s.object_key = $fileKey
+            WHERE f.user_id_ = ?
+              AND LEFT($fileKey, CHAR_LENGTH(?)) = ?
+              AND s.key_hash IS NULL
+        ";
+
+        $stmt = $this->prepare($sqlFiles);
+        $stmt->bind_param('siss', $syncId, $userId, $prefix, $prefix);
+        if (!$stmt->execute()) {
+            $error = $stmt->error;
+            $stmt->close();
+            throw new RuntimeException($error);
+        }
+        $filesRemoved = $stmt->affected_rows;
+        $stmt->close();
+
+        $sqlFolders = "
+            DELETE f
+            FROM S3Folders f
+            LEFT JOIN S3SyncSeen s
+              ON s.sync_id = ?
+             AND s.user_id = f.user_id_
+             AND s.kind = 'folder'
+             AND s.key_hash = SHA2(f.Prefix, 256)
+             AND s.object_key = f.Prefix
+            WHERE f.user_id_ = ?
+              AND LEFT(f.Prefix, CHAR_LENGTH(?)) = ?
+              AND s.key_hash IS NULL
+        ";
+
+        $stmt = $this->prepare($sqlFolders);
+        $stmt->bind_param('siss', $syncId, $userId, $prefix, $prefix);
+        if (!$stmt->execute()) {
+            $error = $stmt->error;
+            $stmt->close();
+            throw new RuntimeException($error);
+        }
+        $foldersRemoved = $stmt->affected_rows;
+        $stmt->close();
+
+        $this->clearSeen($syncId, $userId);
 
         return [
             'files_removed' => $filesRemoved,
@@ -231,12 +285,6 @@ final class SyncRepository
     ): void {
         [$dir, $base] = $this->splitKey($key);
 
-        /*
-         * Encriptado es el nombre físico, no la key completa.
-         * StorageObjectNameCodec limita los nombres creados por ArcadeCloud
-         * para que entren en varchar(255). Esto evita el error
-         * "Data too long for column Encriptado" al sincronizar rutas profundas.
-         */
         if ($this->charLength($base) > 255) {
             throw new RuntimeException(
                 'El nombre físico S3 supera 255 caracteres y no puede catalogarse: ' .
@@ -255,11 +303,6 @@ final class SyncRepository
             $visible = $base;
         }
 
-        /*
-         * Primero buscamos la forma canónica Ruta+Encriptado. La segunda
-         * condición reconoce registros históricos que guardaron la key
-         * completa en Encriptado y permite normalizarlos sin duplicar filas.
-         */
         $row = $this->one(
             "SELECT id_
              FROM FileS3
@@ -337,6 +380,25 @@ final class SyncRepository
                 'i'
             ),
         ];
+    }
+
+    private function fileKeySql(): string
+    {
+        return "CASE
+            WHEN f.Ruta <> ''
+             AND LEFT(f.Encriptado, CHAR_LENGTH(f.Ruta)) = f.Ruta
+                THEN f.Encriptado
+            ELSE CONCAT(f.Ruta,f.Encriptado)
+        END";
+    }
+
+    private function clearSeen(string $syncId, int $userId): void
+    {
+        $this->exec(
+            'DELETE FROM S3SyncSeen WHERE sync_id=? AND user_id=?',
+            [$syncId, $userId],
+            'si'
+        );
     }
 
     /** @return array{0:string,1:string} */

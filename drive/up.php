@@ -62,6 +62,11 @@ if ($action !== '') {
     exit;
 }
 
+$stylesVersion = is_file(__DIR__ . '/css/styles.css') ? (int)filemtime(__DIR__ . '/css/styles.css') : 1;
+$responsiveVersion = is_file(__DIR__ . '/css/responsive.css') ? (int)filemtime(__DIR__ . '/css/responsive.css') : 1;
+$upCssVersion = is_file(__DIR__ . '/css/up-page.css') ? (int)filemtime(__DIR__ . '/css/up-page.css') : 1;
+$themeBridgeVersion = is_file(__DIR__ . '/js/theme-state-bridge.js') ? (int)filemtime(__DIR__ . '/js/theme-state-bridge.js') : 1;
+
 // ========================== UI ==========================
 ?>
 <!doctype html>
@@ -71,6 +76,10 @@ if ($action !== '') {
 <title>Subida reanudable a S3 (Directo)</title>
 <link rel="icon" href="ellogo.png" type="image/png">
 <meta name="viewport" content="width=device-width,initial-scale=1" />
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<link rel="stylesheet" href="css/styles.css?v=<?= $stylesVersion ?>">
+<link rel="stylesheet" href="css/responsive.css?v=<?= $responsiveVersion ?>">
 <style>
   :root { --bg:#0b1020; --card:#0f172a; --muted:#9ca3af; --text:#e5e7eb; --accent:#4f46e5; --success:#16a34a; --warn:#f59e0b; --danger:#ef4444; }
   *{box-sizing:border-box}
@@ -100,8 +109,20 @@ if ($action !== '') {
   .result h2{margin:0 0 10px;font-size:18px}
   .result .k{color:#9aa7ff}
 </style>
+<link rel="stylesheet" href="css/up-page.css?v=<?= $upCssVersion ?>">
+<script defer src="js/theme-state-bridge.js?v=<?= $themeBridgeVersion ?>"></script>
 </head>
-<body>
+<body class="ui-theme theme-neon-green theme-dark vision-normal ascii-on up-page">
+
+<nav class="navbar navbar-expand-lg navbar-dark px-3 drive-navbar">
+  <a class="navbar-brand d-flex align-items-center" href="s3.php" title="Volver al Drive">
+    <img src="ellogo.png" width="48" height="38" class="drive-brand-logo mr-2" alt="Logo">
+    Cloud Drive
+  </a>
+  <div class="ml-auto d-flex align-items-center">
+    <a class="btn btn-outline-light btn-sm" href="s3.php"><i class="fas fa-arrow-left mr-1"></i>Drive</a>
+  </div>
+</nav>
 
 <?php if ($targetUser === null): ?>
 
@@ -708,6 +729,9 @@ if ($action !== '') {
       });
       setProgress(100);
       msg(`Subida finalizada. Objeto: ${r.objectUrl || state.s3key}`,'ok');
+      if (r.registered) {
+        msg(`Registrado en Mi Drive · ${r.registered_route || 'uploads/'} · ${r.registered_at_utc || ''} UTC`,'ok');
+      }
 
       // Bloque Resultado
       const objectUrl = r.objectUrl || ('s3://' + (state.s3key || ''));

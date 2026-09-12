@@ -7,6 +7,7 @@ if (PHP_SAPI !== 'cli') {
 
 $userId = (int)($argv[1] ?? 0);
 $jobId = (string)($argv[2] ?? '');
+$scopePrefix = trim((string)($argv[3] ?? ''));
 
 if ($userId <= 0 || !preg_match('/^[a-f0-9]{32}$/', $jobId)) {
     exit(3);
@@ -20,7 +21,6 @@ use ArcadeCloud\Drive\Sync\SyncJobStore;
 use ArcadeCloud\Drive\Sync\SyncRepository;
 
 $store = new SyncJobStore();
-
 $lockHandle = fopen($store->lockPath($userId), 'c+');
 
 if (!$lockHandle) {
@@ -40,12 +40,20 @@ if (!flock($lockHandle, LOCK_EX | LOCK_NB)) {
 }
 
 try {
+    $app = ApplicationKernel::app();
+    $root = $app->userStoragePath()->rootForUser($userId);
+    $normalizedScope = $scopePrefix === ''
+        ? ''
+        : $app->userStoragePath()->normalizeForUser($scopePrefix, $userId);
+
     $store->update($userId, $jobId, [
         'state' => 'running',
-        'message' => 'Iniciando sincronización',
+        'scope' => $normalizedScope === '' ? 'user' : 'folder',
+        'scope_prefix' => $normalizedScope,
+        'message' => $normalizedScope === ''
+            ? 'Iniciando sincronización del usuario'
+            : 'Iniciando sincronización de ' . $normalizedScope,
     ]);
-
-    $app = ApplicationKernel::app();
 
     $service = new S3SyncService(
         new SyncRepository($app->db()),
@@ -57,10 +65,10 @@ try {
 
     $syncId = null;
     $token = null;
-
     $batch = 0;
     $files = 0;
     $folders = 0;
+    $result = [];
 
     do {
         $batch++;
@@ -68,7 +76,8 @@ try {
         $result = $service->synchronizeBatch(
             $userId,
             $syncId,
-            $token
+            $token,
+            $normalizedScope !== '' ? $normalizedScope : null
         );
 
         $syncId = (string)$result['sync_id'];
@@ -79,24 +88,31 @@ try {
 
         $store->update($userId, $jobId, [
             'state' => 'running',
+            'scope' => (string)($result['scope'] ?? ($normalizedScope === '' ? 'user' : 'folder')),
+            'scope_prefix' => (string)($result['base'] ?? ($normalizedScope !== '' ? $normalizedScope : $root)),
             'batch' => $batch,
             'files' => $files,
             'folders' => $folders,
             'message' =>
                 'Lote ' . $batch .
-                ' · ' . $files . ' archivos',
+                ' · ' . $files . ' archivos' .
+                ($normalizedScope !== '' ? ' · ' . $normalizedScope : ''),
         ]);
 
     } while (empty($result['done']));
 
     $store->update($userId, $jobId, [
         'state' => 'done',
+        'scope' => (string)($result['scope'] ?? ($normalizedScope === '' ? 'user' : 'folder')),
+        'scope_prefix' => (string)($result['base'] ?? ($normalizedScope !== '' ? $normalizedScope : $root)),
         'batch' => $batch,
         'files' => $files,
         'folders' => $folders,
         'files_removed' => (int)($result['files_removed'] ?? 0),
         'folders_removed' => (int)($result['folders_removed'] ?? 0),
-        'message' => 'Sincronización completada',
+        'message' => $normalizedScope === ''
+            ? 'Sincronización de usuario completada'
+            : 'Sincronización de carpeta completada',
         'finished_at' => date('c'),
     ]);
 

@@ -14,6 +14,7 @@ final class FederationPortalRenderer
         $federationVersion = is_file($driveRoot . '/css/federation.css') ? (int)filemtime($driveRoot . '/css/federation.css') : 1;
         $portalCssVersion = is_file($driveRoot . '/css/federation-portal.css') ? (int)filemtime($driveRoot . '/css/federation-portal.css') : 1;
         $portalJsVersion = is_file($driveRoot . '/js/federation-portal.js') ? (int)filemtime($driveRoot . '/js/federation-portal.js') : 1;
+        $shareDriveJsVersion = is_file($driveRoot . '/js/federation-share-drive.js') ? (int)filemtime($driveRoot . '/js/federation-share-drive.js') : 1;
         $nodeId = is_array($node) ? (string)($node['node_id'] ?? '') : '';
         ?>
 <!doctype html>
@@ -67,7 +68,7 @@ final class FederationPortalRenderer
     <ul class="nav nav-tabs federation-portal-tabs" id="federationPortalTabs" role="tablist">
       <li class="nav-item"><a class="nav-link active" data-toggle="tab" href="#federationSearchPane" role="tab"><i class="fas fa-search mr-1"></i>Buscar global</a></li>
       <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#federationRequestsPane" role="tab"><i class="fas fa-inbox mr-1"></i>Solicitudes <span id="federationIncomingBadge" class="badge badge-warning ml-1">0</span></a></li>
-      <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#federationSharesPane" role="tab"><i class="fas fa-folder-tree mr-1"></i>Shares <span id="federationSharesBadge" class="badge badge-info ml-1">0</span></a></li>
+      <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#federationSharesPane" role="tab"><i class="fas fa-folder-tree mr-1"></i>Compartidos <span id="federationSharesBadge" class="badge badge-info ml-1">0</span></a></li>
       <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#federationReplicasPane" role="tab"><i class="fas fa-copy mr-1"></i>Réplicas <span id="federationReplicaBadge" class="badge badge-secondary ml-1">0</span></a></li>
     </ul>
 
@@ -100,9 +101,12 @@ final class FederationPortalRenderer
       </section>
 
       <section class="tab-pane fade" id="federationSharesPane" role="tabpanel">
+        <div class="alert alert-info small">
+          <strong>Compartidos</strong> es una carpeta lógica. Abrir un Share no lo duplica. Cuando elijas <strong>Agregar a Mi Drive</strong>, se descarga una copia privada a tu raíz <code>DataN/</code>, se registra en <code>FileS3</code> y el Share continúa visible aquí como referencia de origen.
+        </div>
         <div class="row">
-          <div class="col-lg-6 mb-3"><div class="federation-panel h-100"><div class="d-flex justify-content-between align-items-center mb-3"><h2 class="h5 mb-0">Shares/received</h2><span id="federationReceivedCount" class="badge badge-secondary">0</span></div><div id="federationReceivedShares"><div class="small text-muted">Cargando...</div></div></div></div>
-          <div class="col-lg-6 mb-3"><div class="federation-panel h-100"><div class="d-flex justify-content-between align-items-center mb-3"><h2 class="h5 mb-0">Shares/sent</h2><span id="federationSentCount" class="badge badge-secondary">0</span></div><div id="federationSentShares"><div class="small text-muted">Cargando...</div></div></div></div>
+          <div class="col-lg-6 mb-3"><div class="federation-panel h-100"><div class="d-flex justify-content-between align-items-center mb-3"><h2 class="h5 mb-0">Compartidos/Recibidos</h2><span id="federationReceivedCount" class="badge badge-secondary">0</span></div><div id="federationReceivedShares"><div class="small text-muted">Cargando...</div></div></div></div>
+          <div class="col-lg-6 mb-3"><div class="federation-panel h-100"><div class="d-flex justify-content-between align-items-center mb-3"><h2 class="h5 mb-0">Compartidos/Enviados</h2><span id="federationSentCount" class="badge badge-secondary">0</span></div><div id="federationSentShares"><div class="small text-muted">Cargando...</div></div></div></div>
         </div>
       </section>
 
@@ -124,7 +128,10 @@ final class FederationPortalRenderer
 
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
-<?php if ($authenticated): ?><script src="../js/federation-portal.js?v=<?= $portalJsVersion ?>"></script><?php endif; ?>
+<?php if ($authenticated): ?>
+<script src="../js/federation-portal.js?v=<?= $portalJsVersion ?>"></script>
+<script src="../js/federation-share-drive.js?v=<?= $shareDriveJsVersion ?>"></script>
+<?php endif; ?>
 </body>
 </html>
 <?php

@@ -11,10 +11,22 @@ $user = getenv('TEST_DB_USER') ?: 'root';
 $pass = getenv('TEST_DB_PASSWORD') ?: '';
 $name = getenv('TEST_DB_NAME') ?: 'arcade_test';
 
-$db = new mysqli($host, $user, $pass, $name, $port);
-if ($db->connect_errno) {
-    fwrite(STDERR, "DB connect failed: {$db->connect_error}\n");
-    exit(1);
+mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+$db = null;
+$lastError = null;
+for ($attempt = 1; $attempt <= 30; $attempt++) {
+    try {
+        $db = new mysqli($host, $user, $pass, $name, $port);
+        break;
+    } catch (mysqli_sql_exception $error) {
+        $lastError = $error;
+        usleep(500000);
+    }
+}
+if (!$db instanceof mysqli) {
+    throw new RuntimeException(
+        'DB connect failed after retries: ' . ($lastError?->getMessage() ?? 'unknown error')
+    );
 }
 $db->set_charset('utf8mb4');
 
@@ -33,9 +45,7 @@ $sql = "CREATE TABLE FileS3 (
     PRIMARY KEY (id_),
     UNIQUE KEY uq_files3_user_key (user_id_, Encriptado)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4";
-if (!$db->query($sql)) {
-    throw new RuntimeException($db->error);
-}
+$db->query($sql);
 
 $db->query("INSERT INTO FileS3 (Nombre,Encriptado,Ruta,user_id_) VALUES ('A','manifest.json','Data/a/',1)");
 
@@ -44,9 +54,7 @@ if (empty($result['ok'])) {
     throw new RuntimeException('Migration did not return ok.');
 }
 
-if (!$db->query("INSERT INTO FileS3 (Nombre,Encriptado,Ruta,user_id_) VALUES ('B','manifest.json','Data/b/',1)")) {
-    throw new RuntimeException('Same basename in another route must be allowed: ' . $db->error);
-}
+$db->query("INSERT INTO FileS3 (Nombre,Encriptado,Ruta,user_id_) VALUES ('B','manifest.json','Data/b/',1)");
 
 $duplicateRejected = false;
 try {

@@ -32,6 +32,19 @@ on:
 jobs:
   validate:
     runs-on: ubuntu-latest
+    services:
+      mariadb:
+        image: mariadb:10.5
+        env:
+          MARIADB_ROOT_PASSWORD: arcade-test-root
+          MARIADB_DATABASE: arcade_test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -parcade-test-root"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=10
     steps:
       - uses: actions/checkout@v4
 
@@ -49,6 +62,16 @@ jobs:
 
       - name: Validate JavaScript
         run: node --check drive/js/federation-share-drive.js
+
+      - name: Validate idempotent MariaDB schema
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq mariadb-client
+          mysql -h127.0.0.1 -P3306 -uroot -parcade-test-root arcade_test < drive/sql/federation_access_shares.sql
+          mysql -h127.0.0.1 -P3306 -uroot -parcade-test-root arcade_test < drive/sql/federation_access_shares.sql
+          mysql -h127.0.0.1 -P3306 -uroot -parcade-test-root arcade_test -Nse "SHOW TABLES LIKE 'FederationShareImportJobs'" | grep -q FederationShareImportJobs
+          mysql -h127.0.0.1 -P3306 -uroot -parcade-test-root arcade_test -Nse "SHOW COLUMNS FROM FederationShares LIKE 'LocalFileId'" | grep -q LocalFileId
 
       - name: Shares schema guards
         run: |

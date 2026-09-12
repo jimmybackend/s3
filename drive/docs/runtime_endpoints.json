@@ -238,7 +238,7 @@
     },
     {
       "path": "drive/bin/sync_worker.php",
-      "size": 2672,
+      "size": 3810,
       "active": false,
       "references": [
         "drive/src/Http/Controller/SyncController.php"
@@ -268,7 +268,7 @@
     },
     {
       "path": "drive/bloque_carpetas.php",
-      "size": 3265,
+      "size": 4929,
       "active": true,
       "references": [
         "drive/s3.php",
@@ -828,6 +828,7 @@
         "drive/src/View/FederationPageRenderer.php",
         "drive/src/View/FederationPortalRenderer.php",
         "drive/src/View/PersonalAwsPageRenderer.php",
+        "drive/up.php",
         "drive/js/archivos.js",
         "drive/js/carpetas.js",
         "drive/js/federation-share-drive.js",
@@ -1641,7 +1642,7 @@
     },
     {
       "path": "drive/src/Http/Controller/SyncController.php",
-      "size": 4681,
+      "size": 5505,
       "active": false,
       "references": []
     },
@@ -1917,7 +1918,7 @@
     },
     {
       "path": "drive/src/Sync/S3SyncService.php",
-      "size": 8922,
+      "size": 7070,
       "active": false,
       "references": []
     },
@@ -1929,9 +1930,10 @@
     },
     {
       "path": "drive/src/Sync/SyncRepository.php",
-      "size": 13255,
+      "size": 14698,
       "active": false,
       "references": [
+        "drive/tests/scoped_sync_repository_regression.php",
         "drive/tests/sync_repository_regression.php"
       ]
     },
@@ -1945,7 +1947,7 @@
     },
     {
       "path": "drive/src/Upload/AdminMultipartUploadService.php",
-      "size": 3458,
+      "size": 4477,
       "active": false,
       "references": []
     },
@@ -1981,9 +1983,11 @@
     },
     {
       "path": "drive/src/Upload/UploadCatalogRepository.php",
-      "size": 3288,
+      "size": 4435,
       "active": false,
-      "references": []
+      "references": [
+        "drive/tests/upload_catalog_registration_regression.php"
+      ]
     },
     {
       "path": "drive/src/Upload/UploadCleanupService.php",
@@ -2011,7 +2015,7 @@
     },
     {
       "path": "drive/src/View/FederationPortalRenderer.php",
-      "size": 9362,
+      "size": 10106,
       "active": false,
       "references": []
     },
@@ -2029,7 +2033,7 @@
     },
     {
       "path": "drive/src/View/FolderTreeRenderer.php",
-      "size": 4762,
+      "size": 5065,
       "active": false,
       "references": []
     },
@@ -2156,6 +2160,12 @@
       "references": []
     },
     {
+      "path": "drive/tests/scoped_sync_repository_regression.php",
+      "size": 3900,
+      "active": false,
+      "references": []
+    },
+    {
       "path": "drive/tests/server_admin_config_smoke.php",
       "size": 5201,
       "active": false,
@@ -2182,6 +2192,12 @@
     {
       "path": "drive/tests/sync_schema_migrator_regression.php",
       "size": 2461,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/tests/upload_catalog_registration_regression.php",
+      "size": 4485,
       "active": false,
       "references": []
     },
@@ -2272,11 +2288,12 @@
     },
     {
       "path": "drive/up.php",
-      "size": 23031,
+      "size": 24676,
       "active": true,
       "references": [
         "drive/src/Http/Controller/UploadCleanupController.php",
         "drive/src/Upload/AdminMultipartUploadService.php",
+        "drive/tests/upload_catalog_registration_regression.php",
         "drive/js/estilo.js"
       ]
     },

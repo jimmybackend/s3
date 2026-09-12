@@ -36,12 +36,12 @@
 | `drive/login.php` | entrada directa |
 | `drive/logout.php` | `drive/s3.php` |
 | `drive/psesion.php` | `drive/index.php`, `drive/login.php` |
-| `drive/s3.php` | `drive/app_bootstrap.php`, `drive/src/Http/Controller/AuthController.php`, `drive/src/View/ActivityCostPageRenderer.php`, `drive/src/View/FederationPageRenderer.php`, `drive/src/View/FederationPortalRenderer.php`, `drive/src/View/PersonalAwsPageRenderer.php`, `drive/js/archivos.js`, `drive/js/carpetas.js`, `drive/js/federation-share-drive.js`, `drive/js/subir.js` |
+| `drive/s3.php` | `drive/app_bootstrap.php`, `drive/src/Http/Controller/AuthController.php`, `drive/src/View/ActivityCostPageRenderer.php`, `drive/src/View/FederationPageRenderer.php`, `drive/src/View/FederationPortalRenderer.php`, `drive/src/View/PersonalAwsPageRenderer.php`, `drive/up.php`, `drive/js/archivos.js`, `drive/js/carpetas.js`, `drive/js/federation-share-drive.js`, `drive/js/subir.js` |
 | `drive/setup/index.php` | `drive/bloque_archivos.php`, `drive/bloque_carpetas.php`, `drive/s3.php`, `drive/src/Http/Controller/ActivityCostController.php`, `drive/src/Http/Controller/AuthController.php`, `drive/src/Security/SessionManager.php`, `drive/src/View/PersonalAwsPageRenderer.php`, `drive/up.php` |
 | `drive/src/Admin/ManagedRuntimeEnvironment.php` | `drive/app_bootstrap.php`, `drive/setup/api.php`, `drive/tests/server_admin_config_smoke.php` |
 | `drive/src/Setup/BootstrapSetupAuth.php` | `drive/setup/api.php`, `drive/setup/index.php`, `drive/tests/setup_bootstrap_smoke.php` |
 | `drive/thumb.php` | `drive/bloque_archivos.php`, `drive/js/imagenes.js` |
-| `drive/up.php` | `drive/src/Http/Controller/UploadCleanupController.php`, `drive/src/Upload/AdminMultipartUploadService.php`, `drive/js/estilo.js` |
+| `drive/up.php` | `drive/src/Http/Controller/UploadCleanupController.php`, `drive/src/Upload/AdminMultipartUploadService.php`, `drive/tests/upload_catalog_registration_regression.php`, `drive/js/estilo.js` |
 | `drive/upload.php` | `drive/s3.php`, `drive/js/soportesMediaTypes.js`, `drive/js/subir-chunked.js`, `drive/js/subir-dropzone.js`, `drive/js/subir.js` |
 | `drive/validar_php.php` | `drive/editor.php` |
 | `drive/ver_archivo.php` | `drive/bloque_archivos.php`, `drive/src/Media/MediaPlaylistService.php`, `drive/js/archivos.js`, `drive/js/imagenes.js` |
@@ -275,7 +275,7 @@
 | `drive/src/Sync/NodeSyncService.php` | ninguna |
 | `drive/src/Sync/S3SyncService.php` | ninguna |
 | `drive/src/Sync/SyncJobStore.php` | ninguna |
-| `drive/src/Sync/SyncRepository.php` | `drive/tests/sync_repository_regression.php` |
+| `drive/src/Sync/SyncRepository.php` | `drive/tests/scoped_sync_repository_regression.php`, `drive/tests/sync_repository_regression.php` |
 | `drive/src/Sync/SyncSchemaMigrator.php` | `drive/tests/sync_schema_migrator_regression.php` |
 | `drive/src/Upload/AdminMultipartUploadService.php` | ninguna |
 | `drive/src/Upload/PublicDropzoneUploadService.php` | ninguna |
@@ -283,7 +283,7 @@
 | `drive/src/Upload/PublicSharedBrowserRepository.php` | ninguna |
 | `drive/src/Upload/PublicSharedBrowserService.php` | ninguna |
 | `drive/src/Upload/SingleUploadService.php` | ninguna |
-| `drive/src/Upload/UploadCatalogRepository.php` | ninguna |
+| `drive/src/Upload/UploadCatalogRepository.php` | `drive/tests/upload_catalog_registration_regression.php` |
 | `drive/src/Upload/UploadCleanupService.php` | ninguna |
 | `drive/src/View/ActivityCostPageRenderer.php` | ninguna |
 | `drive/src/View/Ec2PanelHelper.php` | ninguna |
@@ -311,11 +311,13 @@
 | `drive/tests/federation_provider_smoke.php` | ninguna |
 | `drive/tests/federation_replica_smoke.php` | ninguna |
 | `drive/tests/federationcloud_smoke.php` | ninguna |
+| `drive/tests/scoped_sync_repository_regression.php` | ninguna |
 | `drive/tests/server_admin_config_smoke.php` | ninguna |
 | `drive/tests/setup_bootstrap_smoke.php` | ninguna |
 | `drive/tests/smtp_config_smoke.php` | ninguna |
 | `drive/tests/sync_repository_regression.php` | ninguna |
 | `drive/tests/sync_schema_migrator_regression.php` | ninguna |
+| `drive/tests/upload_catalog_registration_regression.php` | ninguna |
 | `drive/tests/user_identity_presenter_smoke.php` | ninguna |
 | `drive/tests/user_profile_validator_smoke.php` | ninguna |
 | `drive/token_audio.php` | `drive/src/Sharing/ShareLinkService.php` |

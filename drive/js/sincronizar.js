@@ -7,25 +7,16 @@ class SincronizarModule {
   init() {
     const window = this.window;
     const document = this.document;
-
-    const btn =
-      document.getElementById(
-        'btnSyncS3'
-      );
-
-    const host =
-      document.getElementById(
-        'syncStatus'
-      );
+    const btn = document.getElementById('btnSyncS3');
+    const host = document.getElementById('syncStatus');
 
     if (!btn) {
       return this;
     }
 
-    function status(
-      text,
-      type = 'muted'
-    ) {
+    let busy = false;
+
+    function status(text, type = 'muted') {
       if (!host) return;
 
       host.className =
@@ -43,40 +34,20 @@ class SincronizarModule {
       host.textContent = text;
     }
 
-    async function jsonFetch(
-      url,
-      options
-    ) {
-      const response =
-        await fetch(
-          url,
-          options
-        );
-
-      const raw =
-        await response.text();
-
+    async function jsonFetch(url, options) {
+      const response = await fetch(url, options);
+      const raw = await response.text();
       let data = null;
 
       try {
-        data =
-          raw
-            ? JSON.parse(raw)
-            : null;
+        data = raw ? JSON.parse(raw) : null;
       } catch (_) {}
 
-      if (
-        !response.ok ||
-        !data ||
-        data.ok !== true
-      ) {
+      if (!response.ok || !data || data.ok !== true) {
         throw new Error(
           (
             data &&
-            (
-              data.error ||
-              data.message
-            )
+            (data.error || data.message)
           ) ||
           raw ||
           `HTTP ${response.status}`
@@ -87,147 +58,126 @@ class SincronizarModule {
     }
 
     function wait(ms) {
-      return new Promise(
-        resolve =>
-          setTimeout(
-            resolve,
-            ms
-          )
-      );
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    function setControlsDisabled(disabled) {
+      btn.disabled = disabled;
+      document
+        .querySelectorAll('.js-sync-folder')
+        .forEach((button) => {
+          button.disabled = disabled;
+        });
     }
 
     async function refreshDrive() {
-      if (
-        typeof window
-          .actualizarBloqueArchivos ===
-        'function'
-      ) {
-        await window
-          .actualizarBloqueArchivos({
-            pagina: 1
-          });
+      if (typeof window.actualizarBloqueArchivos === 'function') {
+        await window.actualizarBloqueArchivos({ pagina: 1 });
       }
 
-      if (
-        typeof window
-          .actualizarBloqueCarpetas ===
-        'function'
-      ) {
-        await window
-          .actualizarBloqueCarpetas();
+      if (typeof window.actualizarBloqueCarpetas === 'function') {
+        await window.actualizarBloqueCarpetas();
       }
 
       try {
-        document.dispatchEvent(
-          new Event(
-            'drive:storage-changed'
-          )
-        );
+        document.dispatchEvent(new Event('drive:storage-changed'));
       } catch (_) {}
     }
 
-    async function triggerSync(
-      event
-    ) {
-      if (event) {
-        event.preventDefault();
-      }
-
-      if (btn.disabled) {
+    async function runSync(prefix = '', label = '', triggerButton = btn) {
+      if (busy) {
+        status('Ya existe una sincronización en curso para este usuario.', 'primary');
         return;
       }
 
-      const oldHtml =
-        btn.innerHTML;
+      busy = true;
+      setControlsDisabled(true);
 
-      btn.disabled = true;
+      const oldHtml = triggerButton ? triggerButton.innerHTML : '';
+      if (triggerButton) {
+        triggerButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+      }
 
-      btn.innerHTML =
-        '<i class="fas fa-spinner fa-spin"></i> Sincronizando…';
+      const scopeLabel = label ? ` · ${label}` : '';
 
       try {
         status(
-          'Iniciando sincronización…',
+          prefix
+            ? `Iniciando sincronización de carpeta${scopeLabel}…`
+            : 'Iniciando sincronización del usuario…',
           'primary'
         );
 
-        const start =
-          await jsonFetch(
-            'sync_s3_to_db.php',
-            {
-              method: 'POST',
-              credentials:
-                'same-origin',
-              cache:
-                'no-store',
-              headers: {
-                'X-Requested-With':
-                  'XMLHttpRequest'
-              }
-            }
-          );
+        const form = new FormData();
+        if (prefix) {
+          form.append('prefix', prefix);
+        }
 
-        const jobId =
-          start.job_id;
+        const start = await jsonFetch(
+          'sync_s3_to_db.php',
+          {
+            method: 'POST',
+            body: form,
+            credentials: 'same-origin',
+            cache: 'no-store',
+            headers: {
+              'X-Requested-With': 'XMLHttpRequest'
+            }
+          }
+        );
+
+        const jobId = start.job_id;
 
         if (!jobId) {
-          throw new Error(
-            'El servidor no devolvió job_id.'
-          );
+          throw new Error('El servidor no devolvió job_id.');
         }
+
+        const scoped = start.scope === 'folder';
+        const effectiveLabel = scoped
+          ? (label || String(start.scope_prefix || 'carpeta'))
+          : '';
 
         while (true) {
           await wait(1000);
 
-          const job =
-            await jsonFetch(
-              'sync_status.php?job_id=' +
+          const job = await jsonFetch(
+            'sync_status.php?job_id=' +
               encodeURIComponent(jobId) +
               '&_=' +
               Date.now(),
-              {
-                credentials:
-                  'same-origin',
-                cache:
-                  'no-store',
-                headers: {
-                  'X-Requested-With':
-                    'XMLHttpRequest'
-                }
+            {
+              credentials: 'same-origin',
+              cache: 'no-store',
+              headers: {
+                'X-Requested-With': 'XMLHttpRequest'
               }
-            );
+            }
+          );
 
-          if (
-            job.state ===
-            'queued'
-          ) {
+          if (job.state === 'queued') {
             status(
-              'Sincronización en cola…',
+              scoped
+                ? `Carpeta ${effectiveLabel} · en cola…`
+                : 'Sincronización en cola…',
               'primary'
             );
-
             continue;
           }
 
-          if (
-            job.state ===
-            'running'
-          ) {
+          if (job.state === 'running') {
             status(
+              (scoped ? `Carpeta ${effectiveLabel} · ` : '') +
               `Lote ${job.batch || 0} · ` +
               `${job.files || 0} archivo(s) · ` +
               `${job.folders || 0} carpeta(s)`,
               'primary'
             );
-
             continue;
           }
 
-          if (
-            job.state ===
-            'done'
-          ) {
+          if (job.state === 'done') {
             status(
+              (scoped ? `Carpeta ${effectiveLabel} · ` : '') +
               `Sincronización completada · ` +
               `${job.files || 0} archivo(s) · ` +
               `${job.folders || 0} carpeta(s)`,
@@ -235,24 +185,14 @@ class SincronizarModule {
             );
 
             await refreshDrive();
-
             break;
           }
 
-          if (
-            job.state ===
-            'error'
-          ) {
-            throw new Error(
-              job.message ||
-              'El worker falló.'
-            );
+          if (job.state === 'error') {
+            throw new Error(job.message || 'El worker falló.');
           }
 
-          throw new Error(
-            'Estado desconocido: ' +
-            String(job.state)
-          );
+          throw new Error('Estado desconocido: ' + String(job.state));
         }
 
       } catch (error) {
@@ -260,52 +200,59 @@ class SincronizarModule {
 
         status(
           'No se pudo sincronizar: ' +
-          (
-            error.message ||
-            error
-          ),
+          (error.message || error),
           'danger'
         );
 
       } finally {
-        btn.disabled = false;
-        btn.innerHTML = oldHtml;
+        busy = false;
+        setControlsDisabled(false);
+
+        if (triggerButton && triggerButton.isConnected) {
+          triggerButton.innerHTML = oldHtml;
+        }
       }
     }
 
-    btn.addEventListener(
-      'click',
-      triggerSync
-    );
+    btn.addEventListener('click', (event) => {
+      event.preventDefault();
+      runSync('', '', btn);
+    });
 
-    window.triggerSyncS3 =
-      triggerSync;
+    document.addEventListener('click', (event) => {
+      const folderButton = event.target?.closest?.('.js-sync-folder');
+      if (!folderButton) return;
+
+      event.preventDefault();
+      event.stopPropagation();
+
+      runSync(
+        String(folderButton.dataset.syncPrefix || ''),
+        String(folderButton.dataset.syncName || ''),
+        folderButton
+      );
+    });
+
+    window.triggerSyncS3 = function triggerSyncS3(event) {
+      if (event && typeof event.preventDefault === 'function') {
+        event.preventDefault();
+      }
+      return runSync('', '', btn);
+    };
+
+    window.triggerSyncFolderS3 = function triggerSyncFolderS3(prefix, label) {
+      return runSync(String(prefix || ''), String(label || ''), null);
+    };
 
     return this;
   }
 
-  static boot(
-    win = window,
-    doc = document
-  ) {
-    win.ArcadeCloudDrive =
-      win.ArcadeCloudDrive || {
-        modules: {}
-      };
+  static boot(win = window, doc = document) {
+    win.ArcadeCloudDrive = win.ArcadeCloudDrive || { modules: {} };
+    win.ArcadeCloudDrive.modules = win.ArcadeCloudDrive.modules || {};
 
-    win.ArcadeCloudDrive.modules =
-      win.ArcadeCloudDrive.modules ||
-      {};
-
-    const instance =
-      new SincronizarModule(
-        win,
-        doc
-      ).init();
-
-    win.ArcadeCloudDrive.modules[
-      'sincronizar'
-    ] = instance;
+    const instance = new SincronizarModule(win, doc).init();
+    win.ArcadeCloudDrive.modules.sincronizar = instance;
 
     return instance;
   }

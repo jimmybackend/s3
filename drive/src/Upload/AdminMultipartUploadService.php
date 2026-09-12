@@ -6,6 +6,9 @@ namespace ArcadeCloud\Drive\Upload;
 use ArcadeCloud\Drive\Security\UserDirectoryRepository;
 use ArcadeCloud\Drive\Storage\UserStorageProvisioner;
 use Aws\S3\S3Client;
+use DateTimeImmutable;
+use DateTimeInterface;
+use DateTimeZone;
 use RuntimeException;
 
 final class AdminMultipartUploadService
@@ -97,13 +100,38 @@ final class AdminMultipartUploadService
         $physicalName = basename($key);
         $dir = dirname($key);
         $route = $dir === '.' ? '' : rtrim($dir, '/') . '/';
+        $uploadedAt = gmdate('Y-m-d H:i:s');
+
+        $lastModified = $head['LastModified'] ?? null;
+        if ($lastModified instanceof DateTimeInterface) {
+            $uploadedAt = DateTimeImmutable::createFromInterface($lastModified)
+                ->setTimezone(new DateTimeZone('UTC'))
+                ->format('Y-m-d H:i:s');
+        }
+
         $metadata = json_encode([
             'source' => 'up.php',
             'uploaded_by_user_id' => $actorUserId,
+            'uploaded_at_utc' => $uploadedAt,
         ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 
         if ($metadata === false) {
             throw new RuntimeException('No se pudieron construir los metadatos de la subida.');
+        }
+
+        if ($route !== '') {
+            $folderName = basename(rtrim($route, '/'));
+            $parentDir = dirname(rtrim($route, '/'));
+            $parentPrefix = $parentDir === '.'
+                ? null
+                : rtrim($parentDir, '/') . '/';
+
+            $this->catalog->ensureFolder(
+                $targetUserId,
+                $route,
+                $folderName,
+                $parentPrefix
+            );
         }
 
         $this->catalog->upsertCompletedMultipart(
@@ -112,10 +140,13 @@ final class AdminMultipartUploadService
             $physicalName,
             $size,
             $metadata,
-            $route
+            $route,
+            $uploadedAt
         );
 
         $result['registered'] = true;
+        $result['registered_at_utc'] = $uploadedAt;
+        $result['registered_route'] = $route;
         $result['target_user_id'] = $targetUserId;
         $result['target_email'] = $targetEmail;
     }

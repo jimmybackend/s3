@@ -42,6 +42,10 @@ final class SyncController extends AbstractJsonController
                 $scopePrefix = $this->app
                     ->userStoragePath()
                     ->normalizeForUser($candidate, $userId);
+
+                if ($scopePrefix === $root) {
+                    $scopePrefix = '';
+                }
             }
 
             if (session_status() === PHP_SESSION_ACTIVE) {

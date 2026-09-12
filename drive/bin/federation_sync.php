@@ -8,6 +8,7 @@ use ArcadeCloud\Drive\Core\ApplicationKernel;
 use ArcadeCloud\Drive\Federation\FederationAccessService;
 use ArcadeCloud\Drive\Federation\FederationGossipService;
 use ArcadeCloud\Drive\Federation\FederationReplicaService;
+use ArcadeCloud\Drive\Federation\FederationShareDriveService;
 
 $lockPath = sys_get_temp_dir() . '/arcadecloud-federation-sync.lock';
 $lock = fopen($lockPath, 'c+');
@@ -42,6 +43,16 @@ try {
             'error' => 'La cola de réplicas no pudo procesarse en este ciclo.',
         ];
         error_log('[FederationCloud replica sync] ' . $e->getMessage());
+    }
+    try {
+        // Agregar a Mi Drive se hace fuera de PHP-FPM: una copia por ciclo.
+        $result['share_imports'] = (new FederationShareDriveService($app))->syncPending(1);
+    } catch (Throwable $e) {
+        $result['share_imports'] = [
+            'degraded' => true,
+            'error' => 'La cola de Compartidos no pudo procesarse en este ciclo.',
+        ];
+        error_log('[FederationCloud Share import sync] ' . $e->getMessage());
     }
     echo json_encode($result, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . "\n";
 } catch (Throwable $e) {

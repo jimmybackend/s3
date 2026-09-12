@@ -4,12 +4,12 @@
 
 ## Resumen
 
-- PHP analizados: **318**
+- PHP analizados: **320**
 - PHP que ya contienen clases/interfaces: **192**
-- PHP marcados para migración/revisión: **26**
-- JavaScript analizados: **39**
+- PHP marcados para migración/revisión: **28**
+- JavaScript analizados: **40**
 - JavaScript que ya contienen clases: **38**
-- JavaScript marcados para migración/revisión: **7**
+- JavaScript marcados para migración/revisión: **9**
 
 ## Criterio
 
@@ -37,10 +37,10 @@
 | `drive/bin/federation_sync.php` | 67 | thin endpoint | 0 | — | — | — | — |
 | `drive/bin/sync_node_worker.php` | 75 | thin endpoint | 0 | — | — | — | — |
 | `drive/bin/sync_schema_migrate.php` | 17 | thin endpoint | 0 | — | — | — | — |
-| `drive/bin/sync_worker.php` | 113 | endpoint with logic | 0 | — | — | — | — |
+| `drive/bin/sync_worker.php` | 129 | endpoint with logic | 0 | — | — | — | — |
 | `drive/bin/upload_cleanup.php` | 11 | thin endpoint | 0 | — | — | — | — |
 | `drive/bloque_archivos.php` | 662 | view/entrypoint | 0 | ⚠️ | — | — | — |
-| `drive/bloque_carpetas.php` | 88 | view/entrypoint | 0 | ⚠️ | — | — | — |
+| `drive/bloque_carpetas.php` | 134 | view/entrypoint | 0 | ⚠️ | — | — | — |
 | `drive/bloque_footer.php` | 194 | view/entrypoint | 0 | ⚠️ | — | — | — |
 | `drive/buscar_archivo.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/comprehend_archivo.php` | 8 | thin endpoint | 0 | — | — | — | — |
@@ -225,7 +225,7 @@
 | `drive/src/Http/Controller/ServerSettingsAdminController.php` | 73 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/ShareController.php` | 78 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/StorageUsageController.php` | 28 | class/module | 1 | — | — | — | — |
-| `drive/src/Http/Controller/SyncController.php` | 181 | class/module | 1 | — | — | — | — |
+| `drive/src/Http/Controller/SyncController.php` | 177 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/TextEditorController.php` | 61 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/ThumbnailController.php` | 110 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/TranscriptionController.php` | 128 | class/module | 1 | — | — | — | — |
@@ -269,25 +269,25 @@
 | `drive/src/Storage/UserStoragePath.php` | 50 | class/module | 1 | — | — | — | — |
 | `drive/src/Storage/UserStorageProvisioner.php` | 105 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Sync/NodeSyncService.php` | 126 | class/module | 1 | — | ⚠️ | — | — |
-| `drive/src/Sync/S3SyncService.php` | 387 | class/module | 1 | — | — | — | — |
+| `drive/src/Sync/S3SyncService.php` | 265 | class/module | 1 | — | — | — | — |
 | `drive/src/Sync/SyncJobStore.php` | 138 | class/module | 1 | — | — | — | — |
-| `drive/src/Sync/SyncRepository.php` | 437 | class/module | 1 | — | ⚠️ | — | — |
+| `drive/src/Sync/SyncRepository.php` | 499 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Sync/SyncSchemaMigrator.php` | 114 | class/module | 1 | — | ⚠️ | — | — |
-| `drive/src/Upload/AdminMultipartUploadService.php` | 123 | class/module | 1 | — | — | — | — |
+| `drive/src/Upload/AdminMultipartUploadService.php` | 154 | class/module | 1 | — | — | — | — |
 | `drive/src/Upload/PublicDropzoneUploadService.php` | 125 | class/module | 1 | — | — | — | — |
 | `drive/src/Upload/PublicMultipartUploadService.php` | 262 | class/module | 1 | — | — | — | — |
 | `drive/src/Upload/PublicSharedBrowserRepository.php` | 61 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Upload/PublicSharedBrowserService.php` | 189 | class/module | 1 | — | — | — | — |
 | `drive/src/Upload/SingleUploadService.php` | 104 | class/module | 1 | — | — | — | — |
-| `drive/src/Upload/UploadCatalogRepository.php` | 115 | class/module | 1 | — | ⚠️ | — | — |
+| `drive/src/Upload/UploadCatalogRepository.php` | 151 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Upload/UploadCleanupService.php` | 316 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/View/ActivityCostPageRenderer.php` | 358 | class/module | 1 | — | — | — | — |
 | `drive/src/View/Ec2PanelHelper.php` | 69 | class/module | 1 | — | — | — | — |
 | `drive/src/View/FederationPageRenderer.php` | 186 | class/module | 1 | — | — | — | — |
-| `drive/src/View/FederationPortalRenderer.php` | 140 | class/module | 1 | — | — | — | — |
+| `drive/src/View/FederationPortalRenderer.php` | 159 | class/module | 1 | — | — | — | — |
 | `drive/src/View/FileIconResolver.php` | 136 | class/module | 1 | — | — | — | — |
 | `drive/src/View/FileViewHelper.php` | 108 | class/module | 1 | — | — | — | — |
-| `drive/src/View/FolderTreeRenderer.php` | 123 | class/module | 1 | — | ⚠️ | — | — |
+| `drive/src/View/FolderTreeRenderer.php` | 124 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/View/PersonalAwsPageRenderer.php` | 135 | class/module | 1 | — | — | — | — |
 | `drive/src/View/PublicSharedPageRenderer.php` | 104 | class/module | 1 | — | — | — | — |
 | `drive/src/View/SharePageRenderer.php` | 118 | class/module | 1 | — | — | — | — |
@@ -307,11 +307,13 @@
 | `drive/tests/federation_provider_smoke.php` | 76 | procedural endpoint | 0 | — | — | — | global functions: providerOk |
 | `drive/tests/federation_replica_smoke.php` | 98 | procedural endpoint | 0 | — | — | — | global functions: replicaOk |
 | `drive/tests/federationcloud_smoke.php` | 146 | procedural endpoint | 0 | — | — | — | global functions: ok, legacyDocument |
+| `drive/tests/scoped_sync_repository_regression.php` | 96 | procedural endpoint | 0 | — | ⚠️ | — | DB in endpoint |
 | `drive/tests/server_admin_config_smoke.php` | 97 | procedural endpoint | 0 | — | — | — | global functions: serverAdminOk |
 | `drive/tests/setup_bootstrap_smoke.php` | 57 | procedural endpoint | 0 | — | — | — | — |
 | `drive/tests/smtp_config_smoke.php` | 42 | procedural endpoint | 0 | — | — | — | — |
 | `drive/tests/sync_repository_regression.php` | 91 | procedural endpoint | 0 | — | ⚠️ | — | global functions: check; DB in endpoint |
 | `drive/tests/sync_schema_migrator_regression.php` | 75 | procedural endpoint | 0 | — | ⚠️ | — | DB in endpoint |
+| `drive/tests/upload_catalog_registration_regression.php` | 125 | procedural endpoint | 0 | — | ⚠️ | — | DB in endpoint |
 | `drive/tests/user_identity_presenter_smoke.php` | 30 | procedural endpoint | 0 | — | — | — | — |
 | `drive/tests/user_profile_validator_smoke.php` | 57 | procedural endpoint | 0 | — | — | — | — |
 | `drive/thumb.php` | 10 | thin endpoint | 0 | — | — | — | — |
@@ -323,7 +325,7 @@
 | `drive/transcribir_iniciar.php` | 8 | thin endpoint | 0 | — | — | — | — |
 | `drive/unlock_file.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/up-clean.php` | 10 | thin endpoint | 0 | — | — | — | — |
-| `drive/up.php` | 759 | view/entrypoint | 0 | ⚠️ | — | — | — |
+| `drive/up.php` | 783 | view/entrypoint | 0 | ⚠️ | — | — | — |
 | `drive/upload/UploadFactory.php` | 60 | class/module | 1 | — | — | — | — |
 | `drive/upload/core/UploadResponse.php` | 15 | class/module | 1 | — | — | — | — |
 | `drive/upload/core/UploaderInterface.php` | 11 | class/module | 0 | — | — | — | — |
@@ -375,12 +377,13 @@
 | `drive/js/recargarPagina.js` | 27 | class/module | RecargarPaginaModule | — | — | — |
 | `drive/js/server-admin.js` | 365 | class/module | ServerAdminModule | — | — | — |
 | `drive/js/setup.js` | 182 | class/module | ArcadeCloudSetup | — | — | — |
-| `drive/js/sincronizar.js` | 315 | class/module | SincronizarModule | — | — | — |
+| `drive/js/sincronizar.js` | 262 | class/module | SincronizarModule | — | triggerSyncFolderS3, triggerSyncS3 | window functions: triggerSyncFolderS3, triggerSyncS3 |
 | `drive/js/soportesMediaTypes.js` | 390 | class/module | SoportesMediaTypesModule | — | — | — |
 | `drive/js/storage-usage.js` | 51 | class/module | StorageUsageModule | — | — | — |
 | `drive/js/subir-chunked.js` | 586 | class/module | SubirChunkedModule | — | — | — |
 | `drive/js/subir-dropzone.js` | 868 | class/module | SubirDropzoneModule | — | — | — |
 | `drive/js/subir.js` | 339 | class/module | SubirModule | — | — | — |
+| `drive/js/theme-state-bridge.js` | 62 | procedural script | — | — | — | no ES class |
 | `drive/js/upload-destination.js` | 63 | class/module | UploadDestinationModule | — | — | — |
 | `drive/js/ver-metadatos.js` | 75 | class/module | VerMetadatosModule | — | verMetadatos | window functions: verMetadatos |
 | `drive/js/ver-pdf.js` | 112 | class/module | VerPdfModule | — | — | — |

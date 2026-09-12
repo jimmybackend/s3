@@ -1,11 +1,11 @@
 {
   "summary": {
-    "php_total": 318,
+    "php_total": 320,
     "php_class_modules": 192,
-    "php_needs_migration": 26,
-    "js_total": 39,
+    "php_needs_migration": 28,
+    "js_total": 40,
     "js_class_modules": 38,
-    "js_needs_migration": 7
+    "js_needs_migration": 9
   },
   "php": [
     {
@@ -256,7 +256,7 @@
     },
     {
       "path": "drive/bin/sync_worker.php",
-      "lines": 113,
+      "lines": 129,
       "kind": "endpoint with logic",
       "classes": 0,
       "functions": [],
@@ -304,7 +304,7 @@
     },
     {
       "path": "drive/bloque_carpetas.php",
-      "lines": 88,
+      "lines": 134,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -3123,7 +3123,7 @@
     },
     {
       "path": "drive/src/Http/Controller/SyncController.php",
-      "lines": 181,
+      "lines": 177,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -3793,7 +3793,7 @@
     },
     {
       "path": "drive/src/Sync/S3SyncService.php",
-      "lines": 387,
+      "lines": 265,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -3823,7 +3823,7 @@
     },
     {
       "path": "drive/src/Sync/SyncRepository.php",
-      "lines": 437,
+      "lines": 499,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -3853,7 +3853,7 @@
     },
     {
       "path": "drive/src/Upload/AdminMultipartUploadService.php",
-      "lines": 123,
+      "lines": 154,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -3943,7 +3943,7 @@
     },
     {
       "path": "drive/src/Upload/UploadCatalogRepository.php",
-      "lines": 115,
+      "lines": 151,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -4018,7 +4018,7 @@
     },
     {
       "path": "drive/src/View/FederationPortalRenderer.php",
-      "lines": 140,
+      "lines": 159,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -4063,7 +4063,7 @@
     },
     {
       "path": "drive/src/View/FolderTreeRenderer.php",
-      "lines": 123,
+      "lines": 124,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -4391,6 +4391,23 @@
       ]
     },
     {
+      "path": "drive/tests/scoped_sync_repository_regression.php",
+      "lines": 96,
+      "kind": "procedural endpoint",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": true,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": [
+        "DB in endpoint"
+      ]
+    },
+    {
       "path": "drive/tests/server_admin_config_smoke.php",
       "lines": 97,
       "kind": "procedural endpoint",
@@ -4462,6 +4479,23 @@
     {
       "path": "drive/tests/sync_schema_migrator_regression.php",
       "lines": 75,
+      "kind": "procedural endpoint",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": true,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": [
+        "DB in endpoint"
+      ]
+    },
+    {
+      "path": "drive/tests/upload_catalog_registration_regression.php",
+      "lines": 125,
       "kind": "procedural endpoint",
       "classes": 0,
       "functions": [],
@@ -4643,7 +4677,7 @@
     },
     {
       "path": "drive/up.php",
-      "lines": 759,
+      "lines": 783,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -5468,19 +5502,27 @@
     },
     {
       "path": "drive/js/sincronizar.js",
-      "lines": 315,
+      "lines": 262,
       "kind": "class/module",
       "classes": [
         "SincronizarModule"
       ],
       "functions": [],
       "window_assign": [
+        "actualizarBloqueArchivos",
+        "actualizarBloqueCarpetas",
+        "triggerSyncFolderS3",
         "triggerSyncS3"
       ],
-      "window_func": [],
+      "window_func": [
+        "triggerSyncFolderS3",
+        "triggerSyncS3"
+      ],
       "top_vars": [],
       "iife": false,
-      "issues": []
+      "issues": [
+        "window functions: triggerSyncFolderS3, triggerSyncS3"
+      ]
     },
     {
       "path": "drive/js/soportesMediaTypes.js",
@@ -5556,6 +5598,22 @@
       "top_vars": [],
       "iife": true,
       "issues": []
+    },
+    {
+      "path": "drive/js/theme-state-bridge.js",
+      "lines": 62,
+      "kind": "procedural script",
+      "classes": [],
+      "functions": [],
+      "window_assign": [
+        "ArcadeCloudApplyStoredTheme"
+      ],
+      "window_func": [],
+      "top_vars": [],
+      "iife": false,
+      "issues": [
+        "no ES class"
+      ]
     },
     {
       "path": "drive/js/upload-destination.js",

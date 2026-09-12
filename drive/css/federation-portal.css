@@ -1,5 +1,7 @@
 .federation-portal-body {
   min-height: 100vh;
+  background: var(--body-grad) !important;
+  color: var(--text) !important;
 }
 
 .federation-portal-shell {
@@ -16,17 +18,28 @@
   margin-bottom: 20px;
 }
 
+.federation-portal-header h1,
+.federation-portal-header h2,
+.federation-panel h2 {
+  color: var(--text-strong) !important;
+}
+
 .federation-portal-header h1 {
   font-size: clamp(1.5rem, 2.5vw, 2.2rem);
   margin-bottom: 6px;
 }
 
+.federation-portal-body .text-muted {
+  color: var(--text-soft) !important;
+}
+
 .federation-node-chip {
-  border: 1px solid rgba(255,255,255,.15);
+  border: 1px solid var(--border);
   border-radius: 10px;
   padding: 8px 12px;
   min-width: 180px;
-  background: rgba(255,255,255,.04);
+  background: var(--panel-bg);
+  color: var(--text-strong);
 }
 
 .federation-node-chip span,
@@ -35,18 +48,25 @@
 }
 
 .federation-portal-tabs {
-  border-bottom-color: rgba(255,255,255,.16);
+  border-bottom-color: var(--border);
 }
 
 .federation-portal-tabs .nav-link {
-  color: rgba(255,255,255,.72);
+  color: var(--text-soft) !important;
   border-color: transparent;
+  text-decoration: none !important;
+}
+
+.federation-portal-tabs .nav-link:hover {
+  color: var(--accent) !important;
+  border-color: var(--border-soft) var(--border-soft) transparent;
+  background: rgba(var(--accent-rgb), .06);
 }
 
 .federation-portal-tabs .nav-link.active {
-  color: #fff;
-  background: rgba(255,255,255,.06);
-  border-color: rgba(255,255,255,.16) rgba(255,255,255,.16) transparent;
+  color: var(--text-strong) !important;
+  background: var(--panel-bg) !important;
+  border-color: var(--border) var(--border) transparent !important;
 }
 
 .federation-portal-content {
@@ -54,14 +74,24 @@
 }
 
 .federation-panel {
-  border: 1px solid rgba(255,255,255,.14);
+  border: 1px solid var(--border);
   border-radius: 12px;
   padding: 16px;
-  background: rgba(0,0,0,.18);
+  background: var(--panel-bg);
+  color: var(--text);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, .12);
 }
 
 .federation-search-form .form-control {
   min-width: 240px;
+  background: var(--bg3) !important;
+  color: var(--text-strong) !important;
+  border-color: var(--border) !important;
+}
+
+.federation-search-form .form-control::placeholder {
+  color: var(--text-soft) !important;
+  opacity: .85;
 }
 
 .federation-result-list,
@@ -75,10 +105,17 @@
 
 .federation-result-card,
 .federation-mini-card {
-  border: 1px solid rgba(255,255,255,.12);
+  border: 1px solid var(--border);
   border-radius: 10px;
-  background: rgba(255,255,255,.035);
+  background: var(--panel-bg2);
+  color: var(--text);
   padding: 12px;
+}
+
+.federation-result-card code,
+.federation-mini-card code,
+.federation-panel code {
+  color: var(--accent-2) !important;
 }
 
 .federation-result-card {
@@ -99,12 +136,38 @@
 
 .federation-days-input {
   width: 84px;
+  background: var(--bg3) !important;
+  color: var(--text-strong) !important;
+  border-color: var(--border) !important;
+}
+
+body.ui-theme.theme-light.federation-portal-body .federation-panel,
+body.ui-theme.theme-light.federation-portal-body .federation-node-chip,
+body.ui-theme.theme-light.federation-portal-body .federation-result-card,
+body.ui-theme.theme-light.federation-portal-body .federation-mini-card {
+  box-shadow: 0 8px 24px rgba(20, 45, 70, .08);
+}
+
+body.ui-theme.theme-light.federation-portal-body .federation-portal-tabs .nav-link.active {
+  color: #17324d !important;
+}
+
+body.ui-theme.theme-dark.federation-portal-body .federation-portal-tabs .nav-link.active {
+  color: var(--text-strong) !important;
 }
 
 @media (max-width: 767.98px) {
   .federation-portal-shell {
     width: min(100% - 16px, 1180px);
     margin-top: 12px;
+  }
+
+  .federation-portal-header {
+    gap: 10px;
+  }
+
+  .federation-node-chip {
+    width: 100%;
   }
 
   .federation-result-card {

@@ -127,6 +127,7 @@ final class FederationShareDriveService
         $accessUrl = trim((string)($share['AccessUrl'] ?? ''));
         $download = $this->downloader->download($accessUrl);
         $tmp = (string)$download['path'];
+        $createdFileId = 0;
         try {
             $title = $this->safeFileName((string)$share['Title'], (string)$share['MediaType']);
             $mimeType = trim((string)$share['MediaType']);
@@ -143,21 +144,31 @@ final class FederationShareDriveService
                 'FederationCloud Share import'
             );
 
-            $fileId = (int)$result['id'];
+            $createdFileId = (int)$result['id'];
             $s3Key = (string)$result['key_s3'];
             $resourceUpdatedAt = is_string($share['ResourceUpdatedAt'] ?? null) ? (string)$share['ResourceUpdatedAt'] : null;
             $contentId = is_string($share['ResourceContentId'] ?? null) && $share['ResourceContentId'] !== ''
                 ? (string)$share['ResourceContentId'] : null;
             $this->shares->attachProvenance(
                 $userId,
-                $fileId,
+                $createdFileId,
                 $shareId,
                 (string)$share['ResourceId'],
                 (string)$share['RemoteNodeId']
             );
-            $this->shares->markImported($userId, $shareId, $fileId, $s3Key, $resourceUpdatedAt, $contentId);
-            return $fileId;
+            $this->shares->markImported($userId, $shareId, $createdFileId, $s3Key, $resourceUpdatedAt, $contentId);
+            return $createdFileId;
         } catch (Throwable $e) {
+            // SingleUploadService ya compensa si falla su propio INSERT. Si algo
+            // falla después, retiramos la copia recién creada para que un
+            // reintento no duplique archivos personales sin vínculo Share.
+            if ($createdFileId > 0) {
+                try {
+                    $this->app->fileMutationService()->delete($userId, $createdFileId);
+                } catch (Throwable $cleanupError) {
+                    error_log('[FederationCloud Share import cleanup] ' . $cleanupError->getMessage());
+                }
+            }
             if ($e instanceof FederationException) throw $e;
             error_log('[FederationCloud Share import] ' . $e->getMessage());
             throw new FederationException('No se pudo agregar el Share a Mi Drive.', 500);

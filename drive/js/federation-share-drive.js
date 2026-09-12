@@ -5,6 +5,7 @@ class FederationShareDriveModule {
     this.csrf = '';
     this.rows = [];
     this.observer = null;
+    this.pollTimer = null;
   }
 
   init() {
@@ -40,8 +41,20 @@ class FederationShareDriveModule {
       this.csrf = String(data.csrf || '');
       this.rows = Array.isArray(data.received) ? data.received : [];
       this.enhanceCards();
+      this.schedulePoll();
     } catch (error) {
       this.alert(error.message || 'No se pudo cargar el estado de Compartidos.', 'warning');
+    }
+  }
+
+  schedulePoll() {
+    if (this.pollTimer) {
+      this.window.clearTimeout(this.pollTimer);
+      this.pollTimer = null;
+    }
+    const waiting = this.rows.some((row) => ['queued', 'processing', 'retry'].includes(String(row.import_status || '')));
+    if (waiting) {
+      this.pollTimer = this.window.setTimeout(() => this.load(), 8000);
     }
   }
 
@@ -82,9 +95,22 @@ class FederationShareDriveModule {
         actions.appendChild(openDrive);
       }
 
+      const importStatus = String(state.import_status || '');
+      if (['queued', 'processing', 'retry'].includes(importStatus)) {
+        const pending = this.document.createElement('span');
+        pending.className = importStatus === 'retry' ? 'badge badge-warning mb-1' : 'badge badge-info mb-1';
+        pending.innerHTML = importStatus === 'processing'
+          ? '<i class="fas fa-spinner fa-spin mr-1"></i>Copiando a Mi Drive'
+          : importStatus === 'retry'
+            ? '<i class="fas fa-clock mr-1"></i>Reintentando copia'
+            : '<i class="fas fa-hourglass-half mr-1"></i>Copia en cola';
+        actions.appendChild(pending);
+        return;
+      }
+
       if (String(state.status || '') !== 'active') return;
 
-      if (!state.imported || state.update_available) {
+      if (!state.imported || state.update_available || importStatus === 'failed') {
         const button = this.document.createElement('button');
         button.type = 'button';
         button.className = state.update_available
@@ -93,8 +119,17 @@ class FederationShareDriveModule {
         button.dataset.shareDriveImport = shareId;
         button.innerHTML = state.update_available
           ? '<i class="fas fa-rotate mr-1"></i>Agregar versión nueva'
-          : '<i class="fas fa-plus mr-1"></i>Agregar a Mi Drive';
+          : importStatus === 'failed'
+            ? '<i class="fas fa-rotate mr-1"></i>Reintentar Agregar a Mi Drive'
+            : '<i class="fas fa-plus mr-1"></i>Agregar a Mi Drive';
         actions.appendChild(button);
+
+        if (importStatus === 'failed' && state.import_error) {
+          const error = this.document.createElement('span');
+          error.className = 'small text-warning ml-2 mb-1';
+          error.textContent = String(state.import_error);
+          actions.appendChild(error);
+        }
       } else {
         const current = this.document.createElement('span');
         current.className = 'small text-muted mb-1';
@@ -108,7 +143,7 @@ class FederationShareDriveModule {
     if (!shareId || !this.csrf) return;
     const original = button.innerHTML;
     button.disabled = true;
-    button.innerHTML = '<span class="spinner-border spinner-border-sm mr-1"></span>Copiando…';
+    button.innerHTML = '<span class="spinner-border spinner-border-sm mr-1"></span>Encolando…';
     try {
       const body = new URLSearchParams();
       body.set('action', 'import');
@@ -123,10 +158,10 @@ class FederationShareDriveModule {
         },
         body: body.toString()
       });
-      this.alert(String(data.message || 'Archivo agregado a Mi Drive.'), 'success');
+      this.alert(String(data.message || 'La copia quedó en cola.'), data.status === 'failed' ? 'warning' : 'success');
       await this.load();
     } catch (error) {
-      this.alert(error.message || 'No se pudo agregar el archivo a Mi Drive.', 'danger');
+      this.alert(error.message || 'No se pudo encolar el archivo para Mi Drive.', 'danger');
       button.disabled = false;
       button.innerHTML = original;
     }

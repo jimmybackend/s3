@@ -28,13 +28,15 @@ final class SyncController extends AbstractJsonController
                     ltrim(str_replace('\\', '/', $requestedPrefix), '/')
                 ) ?? '';
 
-                if (
-                    preg_match('~^Data(?:\d+)?/~i', $candidate) &&
-                    strpos($candidate, $root) !== 0
-                ) {
-                    throw new RuntimeException(
-                        'La carpeta solicitada no pertenece al usuario autenticado.'
-                    );
+                if (preg_match('~^Data(?:\d+)?/~i', $candidate)) {
+                    $candidateRoot = explode('/', $candidate, 2)[0] ?? '';
+                    $expectedRoot = rtrim($root, '/');
+
+                    if (strcasecmp($candidateRoot, $expectedRoot) !== 0) {
+                        throw new RuntimeException(
+                            'La carpeta solicitada no pertenece al usuario autenticado.'
+                        );
+                    }
                 }
 
                 $scopePrefix = $this->app

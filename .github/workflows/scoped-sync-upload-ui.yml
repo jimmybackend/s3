@@ -11,6 +11,8 @@ on:
       - 'drive/bloque_carpetas.php'
       - 'drive/src/Upload/AdminMultipartUploadService.php'
       - 'drive/src/Upload/UploadCatalogRepository.php'
+      - 'drive/up.php'
+      - 'drive/css/up-page.css'
       - 'drive/src/View/FederationPortalRenderer.php'
       - 'drive/css/federation-portal.css'
       - 'drive/js/theme-state-bridge.js'
@@ -33,6 +35,7 @@ jobs:
           php -l drive/bloque_carpetas.php
           php -l drive/src/Upload/AdminMultipartUploadService.php
           php -l drive/src/Upload/UploadCatalogRepository.php
+          php -l drive/up.php
           php -l drive/src/View/FederationPortalRenderer.php
           php -l drive/tests/scoped_sync_repository_regression.php
           php -l drive/tests/upload_catalog_registration_regression.php
@@ -49,6 +52,8 @@ jobs:
           grep -F "federation-shares-row" drive/bloque_carpetas.php
           grep -F "stretched-link" drive/bloque_carpetas.php
           grep -F "theme-state-bridge.js" drive/src/View/FederationPortalRenderer.php
+          grep -F "theme-state-bridge.js" drive/up.php
+          grep -F "up-page.css" drive/up.php
           grep -F "uploaded_at_utc" drive/src/Upload/AdminMultipartUploadService.php
           grep -F "Fecha = VALUES(Fecha)" drive/src/Upload/UploadCatalogRepository.php
           grep -F "INSERT INTO S3Folders" drive/src/Upload/UploadCatalogRepository.php

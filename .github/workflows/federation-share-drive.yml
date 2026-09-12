@@ -45,6 +45,18 @@ jobs:
           --health-interval=5s
           --health-timeout=5s
           --health-retries=10
+      mysql57:
+        image: mysql:5.7
+        env:
+          MYSQL_ROOT_PASSWORD: arcade-test-root
+          MYSQL_DATABASE: arcade_test
+        ports:
+          - 3307:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -parcade-test-root"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=10
     steps:
       - uses: actions/checkout@v4
         with:
@@ -65,15 +77,19 @@ jobs:
       - name: Validate JavaScript
         run: node --check drive/js/federation-share-drive.js
 
-      - name: Validate idempotent MariaDB schema
+      - name: Validate idempotent MariaDB and MySQL schemas
         run: |
           set -euo pipefail
           sudo apt-get update -qq
           sudo apt-get install -y -qq mariadb-client
-          mysql -h127.0.0.1 -P3306 -uroot -parcade-test-root arcade_test < drive/sql/federation_access_shares.sql
-          mysql -h127.0.0.1 -P3306 -uroot -parcade-test-root arcade_test < drive/sql/federation_access_shares.sql
-          mysql -h127.0.0.1 -P3306 -uroot -parcade-test-root arcade_test -Nse "SHOW TABLES LIKE 'FederationShareImportJobs'" | grep -q FederationShareImportJobs
-          mysql -h127.0.0.1 -P3306 -uroot -parcade-test-root arcade_test -Nse "SHOW COLUMNS FROM FederationShares LIKE 'LocalFileId'" | grep -q LocalFileId
+
+          for port in 3306 3307; do
+            mysql -h127.0.0.1 -P"$port" -uroot -parcade-test-root arcade_test < drive/sql/federation_access_shares.sql
+            mysql -h127.0.0.1 -P"$port" -uroot -parcade-test-root arcade_test < drive/sql/federation_access_shares.sql
+            mysql -h127.0.0.1 -P"$port" -uroot -parcade-test-root arcade_test -Nse "SHOW TABLES LIKE 'FederationShareImportJobs'" | grep -q FederationShareImportJobs
+            mysql -h127.0.0.1 -P"$port" -uroot -parcade-test-root arcade_test -Nse "SHOW COLUMNS FROM FederationShares LIKE 'LocalFileId'" | grep -q LocalFileId
+            mysql -h127.0.0.1 -P"$port" -uroot -parcade-test-root arcade_test -Nse "SHOW COLUMNS FROM FederationShares LIKE 'ImportedContentId'" | grep -q ImportedContentId
+          done
 
       - name: Shares schema guards
         run: |
@@ -82,8 +98,12 @@ jobs:
           grep -q 'LocalS3Key' drive/sql/federation_access_shares.sql
           grep -q 'ImportedAt' drive/sql/federation_access_shares.sql
           grep -q 'ImportedResourceUpdatedAt' drive/sql/federation_access_shares.sql
+          grep -q 'ImportedContentId' drive/sql/federation_access_shares.sql
           grep -q 'FederationShareImportJobs' drive/sql/federation_access_shares.sql
           grep -q 'uq_fshare_import_version' drive/sql/federation_access_shares.sql
+          grep -q 'information_schema.COLUMNS' drive/sql/federation_access_shares.sql
+          ! grep -q 'ADD COLUMN IF NOT EXISTS' drive/sql/federation_access_shares.sql
+          ! grep -q 'ADD INDEX IF NOT EXISTS' drive/sql/federation_access_shares.sql
 
       - name: DB-first and background storage guards
         run: |

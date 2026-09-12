@@ -1,0 +1,122 @@
+body.up-page {
+  margin: 0 !important;
+  min-height: 100vh;
+  background: var(--body-grad) !important;
+  color: var(--text) !important;
+}
+
+.up-page .drive-navbar {
+  margin-bottom: 0;
+}
+
+.up-page .panel,
+.up-page .result {
+  background: var(--panel-bg) !important;
+  color: var(--text) !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: 0 10px 32px rgba(0, 0, 0, .14) !important;
+}
+
+.up-page .panel {
+  margin-top: 28px !important;
+}
+
+.up-page h1,
+.up-page h2,
+.up-page strong {
+  color: var(--text-strong) !important;
+}
+
+.up-page p.sub,
+.up-page .meta,
+.up-page .status,
+.up-page .pill {
+  color: var(--text-soft) !important;
+}
+
+.up-page .uploader,
+.up-page input[type="file"] {
+  background: var(--panel-bg2) !important;
+  color: var(--text) !important;
+  border-color: var(--border) !important;
+}
+
+.up-page .btn {
+  background: var(--accent) !important;
+  color: #07110a !important;
+  border: 1px solid rgba(var(--accent-rgb), .72) !important;
+}
+
+.up-page .btn.secondary {
+  background: transparent !important;
+  color: var(--text-strong) !important;
+  border-color: var(--border) !important;
+}
+
+.up-page .btn.secondary:hover,
+.up-page .btn:hover {
+  box-shadow: var(--accent-glow);
+}
+
+.up-page .progress {
+  background: var(--bg3) !important;
+  border-color: var(--border) !important;
+}
+
+.up-page .bar {
+  background: linear-gradient(90deg, var(--accent), var(--accent-2)) !important;
+}
+
+.up-page code.key,
+.up-page .result .k,
+.up-page a:not(.navbar-brand):not(.btn) {
+  color: var(--accent-2) !important;
+}
+
+.up-page .pill {
+  background: var(--panel-bg2) !important;
+  border-color: var(--border) !important;
+}
+
+.up-page .panel a[href*="target_user_id"] {
+  display: block;
+  padding: 14px 16px;
+  border: 1px solid var(--border) !important;
+  border-radius: 12px;
+  color: var(--text-strong) !important;
+  text-decoration: none !important;
+  background: var(--panel-bg2) !important;
+}
+
+.up-page .panel a[href*="target_user_id"]:hover {
+  border-color: rgba(var(--accent-rgb), .55) !important;
+  background: rgba(var(--accent-rgb), .08) !important;
+}
+
+.up-page #resLink {
+  border-color: var(--border) !important;
+  color: var(--text-strong) !important;
+  background: var(--panel-bg2) !important;
+}
+
+body.ui-theme.theme-light.up-page .panel,
+body.ui-theme.theme-light.up-page .result {
+  box-shadow: 0 10px 26px rgba(20, 45, 70, .08) !important;
+}
+
+body.ui-theme.theme-light.up-page .btn {
+  color: #fff !important;
+}
+
+@media (max-width: 767.98px) {
+  .up-page .panel,
+  .up-page .result-wrap {
+    width: calc(100% - 16px) !important;
+    margin-left: 8px !important;
+    margin-right: 8px !important;
+  }
+
+  .up-page .panel {
+    padding: 18px !important;
+  }
+}

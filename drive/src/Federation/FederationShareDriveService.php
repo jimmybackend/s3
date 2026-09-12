@@ -26,22 +26,9 @@ final class FederationShareDriveService
         ];
     }
 
-    public function import(int $userId, string $shareId): array
+    public function queueImport(int $userId, string $shareId): array
     {
-        if ($userId <= 0) throw new FederationException('Usuario local inválido.', 401);
-        if (!preg_match('/\Afar_[A-Za-z0-9_-]{16,80}\z/', $shareId)) {
-            throw new FederationException('Share ID inválido.', 400);
-        }
-
-        $share = $this->shares->receivedShare($userId, $shareId);
-        if ($share === null) throw new FederationException('Archivo compartido no encontrado.', 404);
-        if ((string)$share['Status'] !== 'active') throw new FederationException('El Share ya no está activo.', 409);
-        if ($share['ExpiresAt'] !== null && strtotime((string)$share['ExpiresAt']) <= time()) {
-            throw new FederationException('El Share ya expiró.', 409);
-        }
-        $accessUrl = trim((string)($share['AccessUrl'] ?? ''));
-        if ($accessUrl === '') throw new FederationException('El Share no tiene acceso descargable.', 409);
-
+        $share = $this->requireImportableShare($userId, $shareId);
         $resourceUpdatedAt = is_string($share['ResourceUpdatedAt'] ?? null) ? (string)$share['ResourceUpdatedAt'] : null;
         $importedAtVersion = is_string($share['ImportedResourceUpdatedAt'] ?? null)
             ? (string)$share['ImportedResourceUpdatedAt'] : null;
@@ -52,10 +39,83 @@ final class FederationShareDriveService
                 'ok' => true,
                 'already_imported' => true,
                 'file_id' => (int)$share['LocalFileId'],
+                'status' => 'completed',
                 'message' => 'Este Share ya tiene una copia vigente en Mi Drive.',
             ];
         }
 
+        $versionBasis = $resourceUpdatedAt ?? (string)($share['UpdatedAt'] ?? $share['CreatedAt'] ?? 'unknown');
+        $versionKey = hash('sha256', (string)$share['ResourceId'] . '|' . $versionBasis);
+        $job = $this->shares->queueImport(
+            $userId,
+            $shareId,
+            (string)$share['ResourceId'],
+            $versionKey,
+            $resourceUpdatedAt
+        );
+        $status = (string)($job['Status'] ?? 'queued');
+
+        return [
+            'ok' => true,
+            'already_imported' => $status === 'completed',
+            'import_id' => (string)$job['ImportId'],
+            'status' => $status,
+            'message' => $status === 'completed'
+                ? 'Esta versión ya fue agregada a Mi Drive.'
+                : 'La copia quedó en cola. FederationCloud la agregará a Mi Drive en segundo plano.',
+        ];
+    }
+
+    public function syncPending(int $limit = 1): array
+    {
+        $processed = 0;
+        $completed = 0;
+        $retry = 0;
+        $failed = 0;
+
+        foreach ($this->shares->dueImports($limit) as $job) {
+            $importId = (string)$job['ImportId'];
+            if (!$this->shares->markProcessing($importId)) continue;
+            $processed++;
+            try {
+                $fileId = $this->performImport(
+                    (int)$job['UserId'],
+                    (string)$job['ShareId'],
+                    (string)$job['ResourceId']
+                );
+                $this->shares->markImportCompleted($importId, $fileId);
+                $completed++;
+            } catch (FederationException $e) {
+                if (in_array($e->httpStatus(), [400, 401, 403, 404, 409], true)) {
+                    $this->shares->markImportFailed($importId, $e->getMessage());
+                    $failed++;
+                } else {
+                    $state = $this->shares->markImportRetry($importId, $e->getMessage());
+                    $state === 'failed' ? $failed++ : $retry++;
+                }
+            } catch (Throwable $e) {
+                error_log('[FederationCloud Share import worker] ' . $e->getMessage());
+                $state = $this->shares->markImportRetry($importId, 'Error interno al copiar el archivo compartido.');
+                $state === 'failed' ? $failed++ : $retry++;
+            }
+        }
+
+        return [
+            'processed' => $processed,
+            'completed' => $completed,
+            'retry' => $retry,
+            'failed' => $failed,
+        ];
+    }
+
+    private function performImport(int $userId, string $shareId, string $expectedResourceId): int
+    {
+        $share = $this->requireImportableShare($userId, $shareId);
+        if (!hash_equals($expectedResourceId, (string)$share['ResourceId'])) {
+            throw new FederationException('El recurso del Share cambió durante la importación.', 409);
+        }
+
+        $accessUrl = trim((string)($share['AccessUrl'] ?? ''));
         $download = $this->downloader->download($accessUrl);
         $tmp = (string)$download['path'];
         try {
@@ -76,6 +136,7 @@ final class FederationShareDriveService
 
             $fileId = (int)$result['id'];
             $s3Key = (string)$result['key_s3'];
+            $resourceUpdatedAt = is_string($share['ResourceUpdatedAt'] ?? null) ? (string)$share['ResourceUpdatedAt'] : null;
             $this->shares->attachProvenance(
                 $userId,
                 $fileId,
@@ -84,20 +145,7 @@ final class FederationShareDriveService
                 (string)$share['RemoteNodeId']
             );
             $this->shares->markImported($userId, $shareId, $fileId, $s3Key, $resourceUpdatedAt);
-
-            return [
-                'ok' => true,
-                'already_imported' => false,
-                'file_id' => $fileId,
-                'key_s3' => $s3Key,
-                'route' => (string)$result['ruta'],
-                'name' => (string)$result['nombre_original'],
-                'size_bytes' => (int)$download['size_bytes'],
-                'sha256' => $download['sha256'] ?? null,
-                'message' => $existingFound
-                    ? 'La versión nueva se agregó a Mi Drive; la copia anterior se conservó.'
-                    : 'El archivo compartido se agregó a Mi Drive.',
-            ];
+            return $fileId;
         } catch (Throwable $e) {
             if ($e instanceof FederationException) throw $e;
             error_log('[FederationCloud Share import] ' . $e->getMessage());
@@ -105,6 +153,24 @@ final class FederationShareDriveService
         } finally {
             @unlink($tmp);
         }
+    }
+
+    private function requireImportableShare(int $userId, string $shareId): array
+    {
+        if ($userId <= 0) throw new FederationException('Usuario local inválido.', 401);
+        if (!preg_match('/\Afar_[A-Za-z0-9_-]{16,80}\z/', $shareId)) {
+            throw new FederationException('Share ID inválido.', 400);
+        }
+        $share = $this->shares->receivedShare($userId, $shareId);
+        if ($share === null) throw new FederationException('Archivo compartido no encontrado.', 404);
+        if ((string)$share['Status'] !== 'active') throw new FederationException('El Share ya no está activo.', 409);
+        if ($share['ExpiresAt'] !== null && strtotime((string)$share['ExpiresAt']) <= time()) {
+            throw new FederationException('El Share ya expiró.', 409);
+        }
+        if (trim((string)($share['AccessUrl'] ?? '')) === '') {
+            throw new FederationException('El Share no tiene acceso descargable.', 409);
+        }
+        return $share;
     }
 
     private function safeFileName(string $name, string $mediaType): string

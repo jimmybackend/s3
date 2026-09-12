@@ -1,10 +1,10 @@
 {
   "summary": {
-    "php_total": 307,
-    "php_class_modules": 186,
+    "php_total": 312,
+    "php_class_modules": 190,
     "php_needs_migration": 24,
-    "js_total": 38,
-    "js_class_modules": 37,
+    "js_total": 39,
+    "js_class_modules": 38,
     "js_needs_migration": 7
   },
   "php": [
@@ -211,7 +211,7 @@
     },
     {
       "path": "drive/bin/federation_sync.php",
-      "lines": 56,
+      "lines": 67,
       "kind": "thin endpoint",
       "classes": 0,
       "functions": [],
@@ -274,7 +274,7 @@
     },
     {
       "path": "drive/bloque_carpetas.php",
-      "lines": 75,
+      "lines": 88,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -856,6 +856,21 @@
     },
     {
       "path": "drive/federationcloud/search.php",
+      "lines": 11,
+      "kind": "thin endpoint",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/federationcloud/share-drive.php",
       "lines": 11,
       "kind": "thin endpoint",
       "classes": 0,
@@ -2475,6 +2490,51 @@
       "issues": []
     },
     {
+      "path": "drive/src/Federation/FederationShareDownloader.php",
+      "lines": 188,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Federation/FederationShareDriveRepository.php",
+      "lines": 350,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": true,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Federation/FederationShareDriveService.php",
+      "lines": 255,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
       "path": "drive/src/Federation/FederationSyncConfig.php",
       "lines": 36,
       "kind": "class/module",
@@ -2734,6 +2794,21 @@
     {
       "path": "drive/src/Http/Controller/FederationReplicaController.php",
       "lines": 132,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Http/Controller/FederationShareDriveController.php",
+      "lines": 68,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -3883,7 +3958,7 @@
     },
     {
       "path": "drive/src/View/FederationPortalRenderer.php",
-      "lines": 133,
+      "lines": 140,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -5027,6 +5102,20 @@
       "kind": "class/module",
       "classes": [
         "FederationPortalModule"
+      ],
+      "functions": [],
+      "window_assign": [],
+      "window_func": [],
+      "top_vars": [],
+      "iife": false,
+      "issues": []
+    },
+    {
+      "path": "drive/js/federation-share-drive.js",
+      "lines": 211,
+      "kind": "class/module",
+      "classes": [
+        "FederationShareDriveModule"
       ],
       "functions": [],
       "window_assign": [],

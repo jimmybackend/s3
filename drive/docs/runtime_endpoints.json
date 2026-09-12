@@ -74,6 +74,7 @@
         "drive/bin/federation_catalog_migrate.php",
         "drive/bin/federation_sync.php",
         "drive/bin/sync_node_worker.php",
+        "drive/bin/sync_schema_migrate.php",
         "drive/bin/sync_worker.php",
         "drive/bin/upload_cleanup.php",
         "drive/bloque_archivos.php",
@@ -226,6 +227,12 @@
     {
       "path": "drive/bin/sync_node_worker.php",
       "size": 1918,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/bin/sync_schema_migrate.php",
+      "size": 492,
       "active": false,
       "references": []
     },
@@ -1929,6 +1936,14 @@
       ]
     },
     {
+      "path": "drive/src/Sync/SyncSchemaMigrator.php",
+      "size": 3579,
+      "active": false,
+      "references": [
+        "drive/tests/sync_schema_migrator_regression.php"
+      ]
+    },
+    {
       "path": "drive/src/Upload/AdminMultipartUploadService.php",
       "size": 3458,
       "active": false,
@@ -2161,6 +2176,12 @@
     {
       "path": "drive/tests/sync_repository_regression.php",
       "size": 3451,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/tests/sync_schema_migrator_regression.php",
+      "size": 2461,
       "active": false,
       "references": []
     },

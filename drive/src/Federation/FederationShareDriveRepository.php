@@ -16,18 +16,18 @@ final class FederationShareDriveRepository
         $stmt = $this->db->prepare(
             "SELECT s.ShareId, s.ResourceId, s.RemoteNodeId, s.Title, s.MediaType, s.Status, s.AccessUrl,
                     s.ExpiresAt, s.LocalFileId, s.LocalS3Key, s.ImportedAt, s.ImportedResourceUpdatedAt,
-                    s.CreatedAt, s.UpdatedAt,
-                    r.UpdatedAt AS ResourceUpdatedAt,
+                    s.ImportedContentId, s.CreatedAt, s.UpdatedAt,
+                    r.UpdatedAt AS ResourceUpdatedAt, r.ContentId AS ResourceContentId,
                     f.Found AS LocalFileFound,
                     (SELECT j.ImportId FROM FederationShareImportJobs j
                      WHERE j.UserId=s.UserId AND j.ShareId=s.ShareId
-                     ORDER BY j.CreatedAt DESC LIMIT 1) AS ImportId,
+                     ORDER BY j.CreatedAt DESC, j.ImportId DESC LIMIT 1) AS ImportId,
                     (SELECT j.Status FROM FederationShareImportJobs j
                      WHERE j.UserId=s.UserId AND j.ShareId=s.ShareId
-                     ORDER BY j.CreatedAt DESC LIMIT 1) AS ImportStatus,
+                     ORDER BY j.CreatedAt DESC, j.ImportId DESC LIMIT 1) AS ImportStatus,
                     (SELECT j.LastError FROM FederationShareImportJobs j
                      WHERE j.UserId=s.UserId AND j.ShareId=s.ShareId
-                     ORDER BY j.CreatedAt DESC LIMIT 1) AS ImportError
+                     ORDER BY j.CreatedAt DESC, j.ImportId DESC LIMIT 1) AS ImportError
              FROM FederationShares s
              LEFT JOIN FederatedResources r ON r.ResourceId=s.ResourceId AND r.Tombstoned=0
              LEFT JOIN FileS3 f ON f.id_=s.LocalFileId AND f.user_id_=s.UserId
@@ -47,7 +47,7 @@ final class FederationShareDriveRepository
     public function receivedShare(int $userId, string $shareId): ?array
     {
         $stmt = $this->db->prepare(
-            "SELECT s.*, r.UpdatedAt AS ResourceUpdatedAt, f.Found AS LocalFileFound
+            "SELECT s.*, r.UpdatedAt AS ResourceUpdatedAt, r.ContentId AS ResourceContentId, f.Found AS LocalFileFound
              FROM FederationShares s
              LEFT JOIN FederatedResources r ON r.ResourceId=s.ResourceId AND r.Tombstoned=0
              LEFT JOIN FileS3 f ON f.id_=s.LocalFileId AND f.user_id_=s.UserId
@@ -101,9 +101,34 @@ final class FederationShareDriveRepository
         return $job;
     }
 
+    public function requeueCompleted(string $importId): void
+    {
+        $stmt = $this->db->prepare(
+            "UPDATE FederationShareImportJobs
+             SET Status='queued', Attempts=0, LastAttemptAt=NULL, NextAttemptAt=UTC_TIMESTAMP(6), LastError=NULL, LocalFileId=NULL, UpdatedAt=UTC_TIMESTAMP(6)
+             WHERE ImportId=? AND Status='completed' LIMIT 1"
+        );
+        if (!$stmt) return;
+        $stmt->bind_param('s', $importId);
+        $stmt->execute();
+        $stmt->close();
+    }
+
     public function dueImports(int $limit = 1): array
     {
         $limit = max(1, min(3, $limit));
+        // Si el proceso murió a mitad de una copia, no dejamos el job bloqueado para siempre.
+        $this->db->query(
+            "UPDATE FederationShareImportJobs
+             SET Status=IF(Attempts >= 5, 'failed', 'retry'),
+                 NextAttemptAt=IF(Attempts >= 5, NULL, UTC_TIMESTAMP(6)),
+                 LastError='La importación anterior se interrumpió y fue recuperada por el worker.',
+                 UpdatedAt=UTC_TIMESTAMP(6)
+             WHERE Status='processing'
+               AND LastAttemptAt IS NOT NULL
+               AND LastAttemptAt < DATE_SUB(UTC_TIMESTAMP(6), INTERVAL 1 HOUR)"
+        );
+
         $sql = "SELECT ImportId, UserId, ShareId, ResourceId, VersionKey, ResourceUpdatedAt, Status, Attempts
                 FROM FederationShareImportJobs
                 WHERE Status IN ('queued','retry')
@@ -194,15 +219,16 @@ final class FederationShareDriveRepository
         string $shareId,
         int $fileId,
         string $s3Key,
-        ?string $resourceUpdatedAt
+        ?string $resourceUpdatedAt,
+        ?string $contentId
     ): void {
         $stmt = $this->db->prepare(
             "UPDATE FederationShares
-             SET LocalFileId=?, LocalS3Key=?, ImportedAt=UTC_TIMESTAMP(6), ImportedResourceUpdatedAt=?
+             SET LocalFileId=?, LocalS3Key=?, ImportedAt=UTC_TIMESTAMP(6), ImportedResourceUpdatedAt=?, ImportedContentId=?
              WHERE UserId=? AND ShareId=? AND Direction='received' LIMIT 1"
         );
         if (!$stmt) throw new FederationException('No se pudo vincular la copia con Compartidos.', 500);
-        $stmt->bind_param('issis', $fileId, $s3Key, $resourceUpdatedAt, $userId, $shareId);
+        $stmt->bind_param('isssis', $fileId, $s3Key, $resourceUpdatedAt, $contentId, $userId, $shareId);
         if (!$stmt->execute() || $stmt->affected_rows < 1) {
             $stmt->close();
             throw new FederationException('No se pudo registrar la copia en Mi Drive.', 500);
@@ -283,10 +309,17 @@ final class FederationShareDriveRepository
         $resourceUpdatedAt = is_string($row['ResourceUpdatedAt'] ?? null) ? (string)$row['ResourceUpdatedAt'] : null;
         $importedResourceUpdatedAt = is_string($row['ImportedResourceUpdatedAt'] ?? null)
             ? (string)$row['ImportedResourceUpdatedAt'] : null;
-        $updateAvailable = $imported
-            && $resourceUpdatedAt !== null
-            && $importedResourceUpdatedAt !== null
-            && strtotime($resourceUpdatedAt) > strtotime($importedResourceUpdatedAt);
+        $resourceContentId = is_string($row['ResourceContentId'] ?? null) && $row['ResourceContentId'] !== ''
+            ? (string)$row['ResourceContentId'] : null;
+        $importedContentId = is_string($row['ImportedContentId'] ?? null) && $row['ImportedContentId'] !== ''
+            ? (string)$row['ImportedContentId'] : null;
+
+        $updateAvailable = false;
+        if ($imported && $resourceContentId !== null && $importedContentId !== null) {
+            $updateAvailable = !hash_equals($importedContentId, $resourceContentId);
+        } elseif ($imported && $resourceUpdatedAt !== null && $importedResourceUpdatedAt !== null) {
+            $updateAvailable = strtotime($resourceUpdatedAt) > strtotime($importedResourceUpdatedAt);
+        }
 
         return [
             'share_id' => (string)$row['ShareId'],

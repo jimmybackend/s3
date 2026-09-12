@@ -39,6 +39,7 @@ CREATE TABLE IF NOT EXISTS FederationShares (
   LocalS3Key varchar(1024) DEFAULT NULL,
   ImportedAt datetime(6) DEFAULT NULL,
   ImportedResourceUpdatedAt datetime(6) DEFAULT NULL,
+  ImportedContentId varchar(80) CHARACTER SET ascii COLLATE ascii_bin DEFAULT NULL,
   CreatedAt datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
   UpdatedAt datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
   PRIMARY KEY (ShareId),
@@ -75,4 +76,5 @@ ALTER TABLE FederationShares ADD COLUMN IF NOT EXISTS LocalFileId int DEFAULT NU
 ALTER TABLE FederationShares ADD COLUMN IF NOT EXISTS LocalS3Key varchar(1024) DEFAULT NULL AFTER LocalFileId;
 ALTER TABLE FederationShares ADD COLUMN IF NOT EXISTS ImportedAt datetime(6) DEFAULT NULL AFTER LocalS3Key;
 ALTER TABLE FederationShares ADD COLUMN IF NOT EXISTS ImportedResourceUpdatedAt datetime(6) DEFAULT NULL AFTER ImportedAt;
+ALTER TABLE FederationShares ADD COLUMN IF NOT EXISTS ImportedContentId varchar(80) CHARACTER SET ascii COLLATE ascii_bin DEFAULT NULL AFTER ImportedResourceUpdatedAt;
 ALTER TABLE FederationShares ADD INDEX IF NOT EXISTS idx_fshares_local_file (UserId, LocalFileId);

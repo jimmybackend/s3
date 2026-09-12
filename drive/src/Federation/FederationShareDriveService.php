@@ -29,12 +29,8 @@ final class FederationShareDriveService
     public function queueImport(int $userId, string $shareId): array
     {
         $share = $this->requireImportableShare($userId, $shareId);
-        $resourceUpdatedAt = is_string($share['ResourceUpdatedAt'] ?? null) ? (string)$share['ResourceUpdatedAt'] : null;
-        $importedAtVersion = is_string($share['ImportedResourceUpdatedAt'] ?? null)
-            ? (string)$share['ImportedResourceUpdatedAt'] : null;
         $existingFound = (int)($share['LocalFileFound'] ?? 0) === 1 && (int)($share['LocalFileId'] ?? 0) > 0;
-
-        if ($existingFound && ($resourceUpdatedAt === null || $importedAtVersion === null || strtotime($resourceUpdatedAt) <= strtotime($importedAtVersion))) {
+        if ($this->copyIsCurrent($share, $existingFound)) {
             return [
                 'ok' => true,
                 'already_imported' => true,
@@ -44,7 +40,12 @@ final class FederationShareDriveService
             ];
         }
 
-        $versionBasis = $resourceUpdatedAt ?? (string)($share['UpdatedAt'] ?? $share['CreatedAt'] ?? 'unknown');
+        $resourceUpdatedAt = is_string($share['ResourceUpdatedAt'] ?? null) ? (string)$share['ResourceUpdatedAt'] : null;
+        $contentId = is_string($share['ResourceContentId'] ?? null) && $share['ResourceContentId'] !== ''
+            ? (string)$share['ResourceContentId'] : null;
+        $versionBasis = $contentId !== null
+            ? 'content:' . $contentId
+            : 'updated:' . ($resourceUpdatedAt ?? (string)($share['UpdatedAt'] ?? $share['CreatedAt'] ?? 'unknown'));
         $versionKey = hash('sha256', (string)$share['ResourceId'] . '|' . $versionBasis);
         $job = $this->shares->queueImport(
             $userId,
@@ -54,6 +55,12 @@ final class FederationShareDriveService
             $resourceUpdatedAt
         );
         $status = (string)($job['Status'] ?? 'queued');
+
+        // Si el usuario borró su copia personal, la misma versión puede volver a copiarse.
+        if (!$existingFound && $status === 'completed') {
+            $this->shares->requeueCompleted((string)$job['ImportId']);
+            $status = 'queued';
+        }
 
         return [
             'ok' => true,
@@ -91,12 +98,14 @@ final class FederationShareDriveService
                     $failed++;
                 } else {
                     $state = $this->shares->markImportRetry($importId, $e->getMessage());
-                    $state === 'failed' ? $failed++ : $retry++;
+                    if ($state === 'failed') $failed++;
+                    else $retry++;
                 }
             } catch (Throwable $e) {
                 error_log('[FederationCloud Share import worker] ' . $e->getMessage());
                 $state = $this->shares->markImportRetry($importId, 'Error interno al copiar el archivo compartido.');
-                $state === 'failed' ? $failed++ : $retry++;
+                if ($state === 'failed') $failed++;
+                else $retry++;
             }
         }
 
@@ -137,6 +146,8 @@ final class FederationShareDriveService
             $fileId = (int)$result['id'];
             $s3Key = (string)$result['key_s3'];
             $resourceUpdatedAt = is_string($share['ResourceUpdatedAt'] ?? null) ? (string)$share['ResourceUpdatedAt'] : null;
+            $contentId = is_string($share['ResourceContentId'] ?? null) && $share['ResourceContentId'] !== ''
+                ? (string)$share['ResourceContentId'] : null;
             $this->shares->attachProvenance(
                 $userId,
                 $fileId,
@@ -144,7 +155,7 @@ final class FederationShareDriveService
                 (string)$share['ResourceId'],
                 (string)$share['RemoteNodeId']
             );
-            $this->shares->markImported($userId, $shareId, $fileId, $s3Key, $resourceUpdatedAt);
+            $this->shares->markImported($userId, $shareId, $fileId, $s3Key, $resourceUpdatedAt, $contentId);
             return $fileId;
         } catch (Throwable $e) {
             if ($e instanceof FederationException) throw $e;
@@ -171,6 +182,28 @@ final class FederationShareDriveService
             throw new FederationException('El Share no tiene acceso descargable.', 409);
         }
         return $share;
+    }
+
+    private function copyIsCurrent(array $share, bool $existingFound): bool
+    {
+        if (!$existingFound) return false;
+        $contentId = is_string($share['ResourceContentId'] ?? null) && $share['ResourceContentId'] !== ''
+            ? (string)$share['ResourceContentId'] : null;
+        $importedContentId = is_string($share['ImportedContentId'] ?? null) && $share['ImportedContentId'] !== ''
+            ? (string)$share['ImportedContentId'] : null;
+        if ($contentId !== null && $importedContentId !== null) {
+            return hash_equals($importedContentId, $contentId);
+        }
+
+        $updatedAt = is_string($share['ResourceUpdatedAt'] ?? null) ? (string)$share['ResourceUpdatedAt'] : null;
+        $importedUpdatedAt = is_string($share['ImportedResourceUpdatedAt'] ?? null)
+            ? (string)$share['ImportedResourceUpdatedAt'] : null;
+        if ($updatedAt !== null && $importedUpdatedAt !== null) {
+            return strtotime($updatedAt) <= strtotime($importedUpdatedAt);
+        }
+
+        // Sin un identificador/versionado remoto mejor, no duplicamos una copia existente.
+        return true;
     }
 
     private function safeFileName(string $name, string $mediaType): string

@@ -62,7 +62,7 @@ final class NodeSyncService
                 fclose($lock);
                 $summary['users_skipped_busy']++;
                 if ($progress !== null) {
-                    $progress($event + ['state' => 'busy']);
+                    $progress(array_merge($event, ['state' => 'busy']));
                 }
                 continue;
             }
@@ -74,11 +74,11 @@ final class NodeSyncService
                 $summary['folders'] += (int)($result['folders_upserted'] ?? 0);
 
                 if ($progress !== null) {
-                    $progress($event + [
+                    $progress(array_merge($event, [
                         'state' => 'done',
                         'files' => (int)($result['files_upserted'] ?? 0),
                         'folders' => (int)($result['folders_upserted'] ?? 0),
-                    ]);
+                    ]));
                 }
             } catch (\Throwable $error) {
                 $summary['users_failed']++;
@@ -87,10 +87,10 @@ final class NodeSyncService
                     'error' => $error->getMessage(),
                 ];
                 if ($progress !== null) {
-                    $progress($event + [
+                    $progress(array_merge($event, [
                         'state' => 'error',
                         'error' => $error->getMessage(),
-                    ]);
+                    ]));
                 }
             } finally {
                 flock($lock, LOCK_UN);

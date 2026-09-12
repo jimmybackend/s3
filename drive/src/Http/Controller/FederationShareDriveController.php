@@ -38,7 +38,7 @@ final class FederationShareDriveController
             $this->requireCsrf();
             $action = strtolower($this->request->postString('action', 'import'));
             if ($action !== 'import') throw new FederationException('Acción de Compartidos no permitida.', 400);
-            JsonResponse::send($service->import($userId, $this->request->postString('share_id')));
+            JsonResponse::send($service->queueImport($userId, $this->request->postString('share_id')));
         } catch (FederationException $e) {
             JsonResponse::send(['ok' => false, 'error' => $e->getMessage()], $e->httpStatus());
         } catch (Throwable) {

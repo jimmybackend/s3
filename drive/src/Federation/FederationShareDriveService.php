@@ -100,7 +100,8 @@ final class FederationShareDriveService
             ];
         } catch (Throwable $e) {
             if ($e instanceof FederationException) throw $e;
-            throw new FederationException('No se pudo agregar el Share a Mi Drive: ' . $e->getMessage(), 500);
+            error_log('[FederationCloud Share import] ' . $e->getMessage());
+            throw new FederationException('No se pudo agregar el Share a Mi Drive.', 500);
         } finally {
             @unlink($tmp);
         }

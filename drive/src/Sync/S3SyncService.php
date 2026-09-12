@@ -24,36 +24,26 @@ final class S3SyncService
     public function synchronizeBatch(
         int $userId,
         ?string $syncId = null,
-        ?string $continuationToken = null
+        ?string $continuationToken = null,
+        ?string $scopePrefix = null
     ): array {
-        $base = $this->paths->rootForUser(
-            $userId
-        );
+        $root = $this->paths->rootForUser($userId);
+        $base = $scopePrefix === null || trim($scopePrefix) === ''
+            ? $root
+            : $this->paths->normalizeForUser($scopePrefix, $userId);
 
-        $firstBatch =
-            $syncId === null ||
-            $syncId === '';
+        $firstBatch = $syncId === null || $syncId === '';
 
         if ($firstBatch) {
-            $syncId = bin2hex(
-                random_bytes(16)
-            );
+            $syncId = bin2hex(random_bytes(16));
 
             $this->s3->headBucket([
                 'Bucket' => $this->bucket
             ]);
 
-            $this->repository
-                ->cleanupExpiredSeen($userId);
-        } elseif (
-            !preg_match(
-                '/^[a-f0-9]{32}$/',
-                $syncId
-            )
-        ) {
-            throw new RuntimeException(
-                'Identificador de sincronización inválido.'
-            );
+            $this->repository->cleanupExpiredSeen($userId);
+        } elseif (!preg_match('/^[a-f0-9]{32}$/', $syncId)) {
+            throw new RuntimeException('Identificador de sincronización inválido.');
         }
 
         $params = [
@@ -62,12 +52,8 @@ final class S3SyncService
             'MaxKeys' => self::MAX_KEYS_PER_BATCH
         ];
 
-        if (
-            $continuationToken !== null &&
-            $continuationToken !== ''
-        ) {
-            $params['ContinuationToken'] =
-                $continuationToken;
+        if ($continuationToken !== null && $continuationToken !== '') {
+            $params['ContinuationToken'] = $continuationToken;
         }
 
         $this->repository->begin();
@@ -76,63 +62,30 @@ final class S3SyncService
             $folders = [];
             $files = 0;
 
-            /*
-             * La raíz siempre debe quedar registrada.
-             */
             if ($firstBatch) {
-                $this->addFolder(
-                    $folders,
-                    $base
-                );
+                $this->addFolder($folders, $base);
             }
 
-            $result = $this->s3
-                ->listObjectsV2($params);
+            $result = $this->s3->listObjectsV2($params);
 
-            foreach (
-                (array)($result['Contents'] ?? [])
-                as $object
-            ) {
-                $key = (string)(
-                    $object['Key'] ?? ''
-                );
+            foreach ((array)($result['Contents'] ?? []) as $object) {
+                $key = (string)($object['Key'] ?? '');
 
                 if ($key === '') {
                     continue;
                 }
 
                 if (str_ends_with($key, '/')) {
-                    $this->addFolder(
-                        $folders,
-                        $key
-                    );
-
+                    $this->addFolder($folders, $key);
                     continue;
                 }
 
-                $this->addParentFolders(
-                    $folders,
-                    $key
-                );
+                $this->addParentFolders($folders, $key, $base);
 
-                /*
-                 * DB-FIRST para nombres visibles.
-                 *
-                 * Si MySQL ya conoce el nombre, no consultamos
-                 * metadata S3 innecesariamente.
-                 */
-                $visible =
-                    $this->repository
-                        ->existingVisibleName(
-                            $userId,
-                            $key
-                        );
+                $visible = $this->repository->existingVisibleName($userId, $key);
 
                 if ($visible === null) {
-                    $visible =
-                        $this->recoverVisibleFileName(
-                            $key
-                        );
+                    $visible = $this->recoverVisibleFileName($key);
                 }
 
                 $this->repository->upsertFile(
@@ -152,9 +105,7 @@ final class S3SyncService
                 $files++;
             }
 
-            foreach (
-                $folders as $prefix => $info
-            ) {
+            foreach ($folders as $prefix => $info) {
                 $this->repository->upsertFolder(
                     $userId,
                     $prefix,
@@ -170,26 +121,17 @@ final class S3SyncService
                 );
             }
 
-            $done = empty(
-                $result['IsTruncated']
-            );
+            $done = empty($result['IsTruncated']);
 
             $removed = [
                 'files_removed' => 0,
                 'folders_removed' => 0
             ];
 
-            /*
-             * Únicamente después de recorrer TODO S3
-             * reconciliamos eliminaciones.
-             */
             if ($done) {
-                $removed =
-                    $this->repository
-                        ->finalizeSync(
-                            $userId,
-                            $syncId
-                        );
+                $removed = $base === $root
+                    ? $this->repository->finalizeSync($userId, $syncId)
+                    : $this->repository->finalizeSyncPrefix($userId, $syncId, $base);
             }
 
             $this->repository->commit();
@@ -199,51 +141,30 @@ final class S3SyncService
                 'user_id' => $userId,
                 'bucket' => $this->bucket,
                 'base' => $base,
-
+                'scope' => $base === $root ? 'user' : 'folder',
                 'sync_id' => $syncId,
-
                 'done' => $done,
-
-                'next_token' =>
-                    $done
-                        ? null
-                        : (
-                            (string)(
-                                $result[
-                                    'NextContinuationToken'
-                                ] ?? ''
-                            )
-                        ),
-
+                'next_token' => $done
+                    ? null
+                    : (string)($result['NextContinuationToken'] ?? ''),
                 'batch_files' => $files,
-                'batch_folders' => count(
-                    $folders
-                ),
-
-                'files_removed' =>
-                    $removed['files_removed'],
-
-                'folders_removed' =>
-                    $removed['folders_removed']
+                'batch_folders' => count($folders),
+                'files_removed' => $removed['files_removed'],
+                'folders_removed' => $removed['folders_removed']
             ];
 
         } catch (\Throwable $error) {
             $this->repository->rollback();
-
             throw $error;
         }
     }
 
-    /*
-     * Se mantiene para compatibilidad de llamadas antiguas,
-     * pero el endpoint web ya utiliza synchronizeBatch().
-     */
     public function synchronize(
-        int $userId
+        int $userId,
+        ?string $scopePrefix = null
     ): array {
         $syncId = null;
         $token = null;
-
         $files = 0;
         $folders = 0;
         $last = [];
@@ -252,36 +173,26 @@ final class S3SyncService
             $last = $this->synchronizeBatch(
                 $userId,
                 $syncId,
-                $token
+                $token,
+                $scopePrefix
             );
 
             $syncId = $last['sync_id'];
             $token = $last['next_token'];
+            $files += (int)$last['batch_files'];
+            $folders += (int)$last['batch_folders'];
 
-            $files +=
-                (int)$last['batch_files'];
+        } while (empty($last['done']));
 
-            $folders +=
-                (int)$last['batch_folders'];
-
-        } while (
-            empty($last['done'])
-        );
-
-        $last['files_upserted'] =
-            $files;
-
-        $last['folders_upserted'] =
-            $folders;
+        $last['files_upserted'] = $files;
+        $last['folders_upserted'] = $folders;
 
         return $last;
     }
 
-    private function recoverVisibleFileName(
-        string $key
-    ): string {
+    private function recoverVisibleFileName(string $key): string
+    {
         $base = basename($key);
-
         $decoded = $this->names->recoverFileVisibleName($base);
 
         if ($decoded !== null) {
@@ -293,94 +204,61 @@ final class S3SyncService
 
     private function addParentFolders(
         array &$folders,
-        string $key
+        string $key,
+        string $floorPrefix
     ): void {
         $dir = dirname($key);
 
-        if (
-            $dir === '.' ||
-            $dir === ''
-        ) {
+        if ($dir === '.' || $dir === '') {
             return;
         }
 
+        $floorPrefix = rtrim($floorPrefix, '/') . '/';
         $acc = '';
 
-        foreach (
-            explode('/', $dir)
-            as $part
-        ) {
+        foreach (explode('/', $dir) as $part) {
             if ($part === '') {
                 continue;
             }
 
             $acc .= $part . '/';
 
-            $this->addFolder(
-                $folders,
-                $acc
-            );
+            if (strpos($acc, $floorPrefix) !== 0) {
+                continue;
+            }
+
+            $this->addFolder($folders, $acc);
         }
     }
 
-    private function addFolder(
-        array &$folders,
-        string $prefix
-    ): void {
-        $prefix =
-            rtrim($prefix, '/') . '/';
+    private function addFolder(array &$folders, string $prefix): void
+    {
+        $prefix = rtrim($prefix, '/') . '/';
 
         if ($prefix === './') {
             return;
         }
 
-        $trim =
-            rtrim($prefix, '/');
+        $trim = rtrim($prefix, '/');
+        $pos = strrpos($trim, '/');
 
-        $pos =
-            strrpos($trim, '/');
+        $physical = $pos === false
+            ? $trim
+            : substr($trim, $pos + 1);
 
-        $physical =
-            $pos === false
-                ? $trim
-                : substr(
-                    $trim,
-                    $pos + 1
-                );
+        $name = $this->names->recoverFolderVisibleName($physical) ?? $physical;
 
-        $name =
-            $this->names
-                ->recoverFolderVisibleName(
-                    $physical
-                ) ?? $physical;
+        $parent = $pos === false
+            ? null
+            : rtrim(substr($trim, 0, $pos + 1), '/') . '/';
 
-        $parent =
-            $pos === false
-                ? null
-                : rtrim(
-                    substr(
-                        $trim,
-                        0,
-                        $pos + 1
-                    ),
-                    '/'
-                ) . '/';
-
-        if (
-            $parent === '/' ||
-            $parent === ''
-        ) {
+        if ($parent === '/' || $parent === '') {
             $parent = null;
         }
 
         $folders[$prefix] = [
-            'name' =>
-                $name !== ''
-                    ? $name
-                    : $prefix,
-
-            'parent' =>
-                $parent
+            'name' => $name !== '' ? $name : $prefix,
+            'parent' => $parent
         ];
     }
 }

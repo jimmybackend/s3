@@ -32,10 +32,12 @@ on:
       - 'drive/tests/federation_endpoint_resolver_smoke.php'
       - 'drive/tests/federation_https_contract_smoke.php'
       - 'drive/tests/federation_customs_contract_smoke.php'
+      - 'drive/tests/federation_replica_reconnect_contract_smoke.php'
       - 'drive/docs/FEDERATIONCLOUD.md'
       - 'drive/docs/FEDERATION_PROVIDER_APPROVALS.md'
       - 'drive/docs/FEDERATION_HTTPS_ENDPOINT.md'
       - 'drive/docs/FEDERATION_CUSTOMS_QUEUE.md'
+      - 'drive/docs/FEDERATION_OPERATIONS.md'
       - 'adbbmis1_Cloud.sql'
       - 'drive/bloque_footer.php'
       - 'drive/js/federation-footer.js'
@@ -64,10 +66,12 @@ on:
       - 'drive/tests/federation_endpoint_resolver_smoke.php'
       - 'drive/tests/federation_https_contract_smoke.php'
       - 'drive/tests/federation_customs_contract_smoke.php'
+      - 'drive/tests/federation_replica_reconnect_contract_smoke.php'
       - 'drive/docs/FEDERATIONCLOUD.md'
       - 'drive/docs/FEDERATION_PROVIDER_APPROVALS.md'
       - 'drive/docs/FEDERATION_HTTPS_ENDPOINT.md'
       - 'drive/docs/FEDERATION_CUSTOMS_QUEUE.md'
+      - 'drive/docs/FEDERATION_OPERATIONS.md'
       - 'adbbmis1_Cloud.sql'
       - 'drive/bloque_footer.php'
       - 'drive/js/federation-footer.js'
@@ -108,6 +112,7 @@ jobs:
           php -l drive/tests/federation_endpoint_resolver_smoke.php
           php -l drive/tests/federation_https_contract_smoke.php
           php -l drive/tests/federation_customs_contract_smoke.php
+          php -l drive/tests/federation_replica_reconnect_contract_smoke.php
 
       - name: Validate FederationCloud JavaScript and shell
         run: |
@@ -137,6 +142,9 @@ jobs:
       - name: FederationCloud Aduana and presence contract
         run: php drive/tests/federation_customs_contract_smoke.php
 
+      - name: FederationCloud authorized replica reconnect contract
+        run: php drive/tests/federation_replica_reconnect_contract_smoke.php
+
       - name: Security and architecture guards
         run: |
           set -euo pipefail
@@ -147,6 +155,8 @@ jobs:
           grep -q "CURLOPT_FOLLOWLOCATION => false" drive/src/Federation/FederationHttpClient.php
           grep -q "CURLOPT_RESOLVE" drive/src/Federation/FederationHttpClient.php
           grep -q "provider-request.php" drive/src/Federation/FederationHttpClient.php
+          grep -q "provider-presence.php" drive/src/Federation/FederationHttpClient.php
+          grep -q "ARCADECLOUD_FEDERATION_REPLICA_ORIGIN_URL" drive/src/Federation/FederationConfig.php
           grep -q "https://drive.esforzados.com/federationcloud/" drive/config/federation-seeds.json
           grep -q 'CREATE TABLE IF NOT EXISTS `FederationNodes`' adbbmis1_Cloud.sql
           grep -q 'CREATE TABLE IF NOT EXISTS `FederationNodeAuthorizations`' adbbmis1_Cloud.sql
@@ -171,9 +181,11 @@ jobs:
           grep -q 'OnUnitInactiveSec=${INTERVAL_SEC}s' drive/bin/install_federation_sync_timer.sh
           grep -q "enqueueNodePresence" drive/src/Federation/FederationDirectoryService.php
           grep -q "enqueueSharedBackendAuthorization" drive/src/Http/Controller/FederationProviderController.php
+          grep -q "receivePresence" drive/src/Http/Controller/FederationProviderController.php
+          grep -q "activeAvailableForOrigin" drive/src/Federation/FederationProviderAuthorizationRepository.php
           ! grep -q "Sólo Administración puede autorizar nodos proveedores" drive/src/Http/Controller/FederationProviderController.php
           ! grep -R "drive.esforzados.com" drive/src/Federation
-          ! grep -R -E '(AKIA[0-9A-Z]{16}|BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY|aws_secret_access_key[[:space:]]*=)' drive/src/Federation drive/federationcloud drive/bin/federation_*.php drive/bin/install_federation_https_service.sh drive/bin/install_federation_sync_timer.sh drive/tests/federationcloud_smoke.php drive/tests/federation_directory_smoke.php drive/tests/federation_provider_smoke.php drive/tests/federation_node_name_admin_smoke.php drive/tests/federation_endpoint_resolver_smoke.php drive/tests/federation_https_contract_smoke.php drive/tests/federation_customs_contract_smoke.php
+          ! grep -R -E '(AKIA[0-9A-Z]{16}|BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY|aws_secret_access_key[[:space:]]*=)' drive/src/Federation drive/federationcloud drive/bin/federation_*.php drive/bin/install_federation_https_service.sh drive/bin/install_federation_sync_timer.sh drive/tests/federationcloud_smoke.php drive/tests/federation_directory_smoke.php drive/tests/federation_provider_smoke.php drive/tests/federation_node_name_admin_smoke.php drive/tests/federation_endpoint_resolver_smoke.php drive/tests/federation_https_contract_smoke.php drive/tests/federation_customs_contract_smoke.php drive/tests/federation_replica_reconnect_contract_smoke.php
           ! grep -R "s3.amazonaws.com" drive/src/Federation drive/federationcloud
 
       - name: Diff whitespace check

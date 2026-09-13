@@ -4,9 +4,9 @@
 
 ## Resumen
 
-- PHP analizados: **321**
+- PHP analizados: **322**
 - PHP que ya contienen clases/interfaces: **193**
-- PHP marcados para migración/revisión: **28**
+- PHP marcados para migración/revisión: **29**
 - JavaScript analizados: **40**
 - JavaScript que ya contienen clases: **38**
 - JavaScript marcados para migración/revisión: **9**
@@ -201,7 +201,7 @@
 | `drive/src/Http/Controller/AwsFileController.php` | 325 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/FederationAccessController.php` | 123 | class/module | 1 | ⚠️ | — | — | — |
 | `drive/src/Http/Controller/FederationCatalogController.php` | 144 | class/module | 1 | — | — | — | — |
-| `drive/src/Http/Controller/FederationController.php` | 258 | class/module | 1 | — | — | — | — |
+| `drive/src/Http/Controller/FederationController.php` | 280 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/FederationDirectoryController.php` | 85 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/FederationNodeAdminController.php` | 46 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/FederationPortalController.php` | 41 | class/module | 1 | — | — | — | — |
@@ -301,6 +301,7 @@
 | `drive/sync_s3_to_db.php` | 5 | thin endpoint | 0 | — | — | — | — |
 | `drive/sync_status.php` | 5 | thin endpoint | 0 | — | — | — | — |
 | `drive/tests/activity_costs_smoke.php` | 79 | view/entrypoint | 0 | — | — | — | global functions: check |
+| `drive/tests/arcadelink_bundle_regression.php` | 65 | procedural endpoint | 0 | — | — | — | — |
 | `drive/tests/federation_access_message_smoke.php` | 72 | procedural endpoint | 0 | — | — | — | global functions: accessOk |
 | `drive/tests/federation_catalog_event_smoke.php` | 60 | procedural endpoint | 0 | — | — | — | global functions: fedCatalogOk |
 | `drive/tests/federation_directory_smoke.php` | 102 | procedural endpoint | 0 | — | — | — | global functions: directoryOk |
@@ -350,7 +351,7 @@
 |---|---:|---|---|---|---|---|
 | `drive/js/actualizar-hora.js` | 36 | class/module | ActualizarHoraModule | — | — | — |
 | `drive/js/ai-search.js` | 187 | class/module | DriveAiSearchModule | — | — | — |
-| `drive/js/arcadelink-share.js` | 235 | class/module | ArcadeLinkShareModule | — | — | — |
+| `drive/js/arcadelink-share.js` | 238 | class/module | ArcadeLinkShareModule | — | — | — |
 | `drive/js/archivos.js` | 2155 | class/module | ArchivosModule | — | abrirModalRenombrarArchivo, cerrarModalCompartir, setFileSecurity | window functions: abrirModalRenombrarArchivo, cerrarModalCompartir, setFileSecurity |
 | `drive/js/audiovideo.js` | 619 | class/module | AudiovideoModule | — | audioNext, audioPrev, reproducirVideoDesde, videoNext, videoPlayPause, videoPrev | window functions: audioNext, audioPrev, reproducirVideoDesde, videoNext, videoPlayPause, videoPrev, wavePlayPause |
 | `drive/js/aws-comprehend.js` | 342 | class/module | AwsComprehendModule, AwsFileActionRouter | — | — | — |

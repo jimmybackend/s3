@@ -16,6 +16,7 @@ final class FederationHttpClient
         'nodes.php',
         'name-availability.php',
         'provider-request.php',
+        'provider-presence.php',
         'providers.php',
         'sync-pull.php',
         'sync-push.php',
@@ -87,7 +88,7 @@ final class FederationHttpClient
         $contentType = strtolower((string)curl_getinfo($ch, CURLINFO_CONTENT_TYPE));
         $error = curl_error($ch);
         curl_close($ch);
-        if ($ok === false || $http !== 200) {
+        if ($ok === false || $http < 200 || $http >= 300) {
             throw new FederationException('El nodo FederationCloud no respondió correctamente' . ($error !== '' ? ': ' . $error : '.'), 502);
         }
         if ($contentType !== '' && !str_starts_with($contentType, 'application/json')) {

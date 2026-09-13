@@ -3,6 +3,7 @@ class ArcadeLinkShareModule {
     this.window = win;
     this.document = doc;
     this.context = { key: '', name: '' };
+    this.bulkKeys = [];
     this.bound = false;
   }
 
@@ -18,7 +19,7 @@ class ArcadeLinkShareModule {
       if (bulkButton) {
         event.preventDefault();
         event.stopImmediatePropagation();
-        this.downloadSelected(bulkButton);
+        this.prepareBulkShare();
         return;
       }
 
@@ -28,12 +29,14 @@ class ArcadeLinkShareModule {
 
       if (shareButton) {
         const row = shareButton.closest('.file-row');
+        this.bulkKeys = [];
         this.context = {
           key: String(shareButton.dataset.key || '').trim(),
           name: String((row && row.dataset.nombre) || '').trim()
         };
         this.ensurePanel();
         this.updateContextLabel();
+        this.updateDownloadButton();
         return;
       }
 
@@ -57,6 +60,7 @@ class ArcadeLinkShareModule {
       this.ensurePanel();
       this.updateContextLabel();
       this.updateDiscoveryHelp();
+      this.updateDownloadButton();
     }, true);
 
     this.document.addEventListener('bloque-archivos:actualizado', () => {
@@ -99,45 +103,28 @@ class ArcadeLinkShareModule {
       .filter(Boolean);
   }
 
-  downloadSelected(button) {
+  prepareBulkShare() {
     const selected = this.selectedKeys();
     if (!selected.length) {
       this.window.alert('Selecciona al menos un archivo para compartir con ArcadeLink.');
       return;
     }
 
-    const oldHtml = button.innerHTML;
-    button.disabled = true;
-    button.innerHTML = '<span class="spinner-border spinner-border-sm mr-1" role="status" aria-hidden="true"></span> Generando ZIP…';
+    this.bulkKeys = selected;
+    this.context = { key: '', name: '' };
+    this.ensurePanel();
+    this.updateContextLabel();
+    this.updateDiscoveryHelp();
+    this.updateDownloadButton();
 
-    const form = this.document.createElement('form');
-    form.method = 'POST';
-    form.action = 'federationcloud/bundle.php';
-    form.style.display = 'none';
+    const modal = this.document.getElementById('modalCompartir');
+    const jq = this.window.jQuery || this.window.$;
+    if (modal && jq && typeof jq(modal).modal === 'function') {
+      jq(modal).modal('show');
+      return;
+    }
 
-    const values = {
-      archivos_json: JSON.stringify(selected),
-      visibility: 'UNLISTED',
-      rights: 'link_only',
-      discovery_policy: ''
-    };
-
-    Object.entries(values).forEach(([name, value]) => {
-      const input = this.document.createElement('input');
-      input.type = 'hidden';
-      input.name = name;
-      input.value = value;
-      form.appendChild(input);
-    });
-
-    this.document.body.appendChild(form);
-    form.submit();
-    form.remove();
-
-    this.window.setTimeout(() => {
-      button.disabled = false;
-      button.innerHTML = oldHtml;
-    }, 1800);
+    this.window.alert('No se pudo abrir el panel de políticas ArcadeLink.');
   }
 
   ensurePanel() {
@@ -207,9 +194,28 @@ class ArcadeLinkShareModule {
   updateContextLabel() {
     const target = this.document.getElementById('arcadeLinkShareFile');
     if (!target) return;
+
+    if (this.bulkKeys.length) {
+      target.textContent = `${this.bulkKeys.length} archivo${this.bulkKeys.length === 1 ? '' : 's'} seleccionado${this.bulkKeys.length === 1 ? '' : 's'} para un solo ZIP portable.`;
+      return;
+    }
+
     target.textContent = this.context.name
       ? `Recurso: ${this.context.name}`
       : (this.context.key ? 'Recurso seleccionado listo para ArcadeLink.' : 'Selecciona un archivo desde el botón Compartir.');
+  }
+
+  updateDownloadButton() {
+    const button = this.document.getElementById('btnArcadeLinkDownload');
+    if (!button) return;
+
+    if (this.bulkKeys.length) {
+      const count = this.bulkKeys.length;
+      button.innerHTML = `<i class="fas fa-file-archive mr-1"></i> Descargar ${count} ArcadeLink${count === 1 ? '' : 's'} en ZIP`;
+      return;
+    }
+
+    button.innerHTML = '<i class="fas fa-file-archive mr-1"></i> Descargar ArcadeLink ZIP';
   }
 
   updateDiscoveryHelp() {
@@ -233,18 +239,74 @@ class ArcadeLinkShareModule {
     target.textContent = message;
   }
 
-  async download(button) {
-    const key = String(this.context.key || this.window.__shareContext?.key || '').trim();
-    if (!key) {
-      this.setStatus('No hay archivo seleccionado.', 'danger');
-      return;
-    }
-
+  download(button) {
     const visibility = String(this.document.getElementById('arcadeLinkVisibility')?.value || 'UNLISTED');
     const rights = String(this.document.getElementById('arcadeLinkRights')?.value || 'link_only');
     const discoveryPolicy = String(this.document.getElementById('arcadeLinkDiscoveryPolicy')?.value || '');
+
     if (discoveryPolicy === 'public_metadata' && visibility !== 'PUBLIC') {
       this.setStatus('public_metadata requiere Visibilidad = PUBLIC.', 'danger');
+      return;
+    }
+
+    if (this.bulkKeys.length) {
+      this.downloadBulk(button, visibility, rights, discoveryPolicy);
+      return;
+    }
+
+    this.downloadSingle(button, visibility, rights, discoveryPolicy);
+  }
+
+  downloadBulk(button, visibility, rights, discoveryPolicy) {
+    const selected = this.bulkKeys.slice();
+    if (!selected.length) {
+      this.setStatus('No hay archivos seleccionados.', 'danger');
+      return;
+    }
+
+    const oldHtml = button.innerHTML;
+    button.disabled = true;
+    button.innerHTML = '<span class="spinner-border spinner-border-sm mr-1" role="status" aria-hidden="true"></span> Generando ZIP…';
+    this.setStatus(`Firmando ${selected.length} ArcadeLink${selected.length === 1 ? '' : 's'} y construyendo un solo ZIP…`, 'muted');
+
+    const form = this.document.createElement('form');
+    form.method = 'POST';
+    form.action = 'federationcloud/bundle.php';
+    form.style.display = 'none';
+
+    const values = {
+      archivos_json: JSON.stringify(selected),
+      visibility,
+      rights,
+      discovery_policy: discoveryPolicy
+    };
+
+    Object.entries(values).forEach(([name, value]) => {
+      const input = this.document.createElement('input');
+      input.type = 'hidden';
+      input.name = name;
+      input.value = value;
+      form.appendChild(input);
+    });
+
+    this.document.body.appendChild(form);
+    form.submit();
+    form.remove();
+
+    const policyText = discoveryPolicy || (visibility === 'PUBLIC' ? 'public_metadata' : 'local_only');
+    this.setStatus(`ZIP solicitado · ${selected.length} ArcadeLink${selected.length === 1 ? '' : 's'} · ${visibility} · ${policyText}`, 'success');
+
+    this.window.setTimeout(() => {
+      button.disabled = false;
+      button.innerHTML = oldHtml;
+      this.updateDownloadButton();
+    }, 1800);
+  }
+
+  async downloadSingle(button, visibility, rights, discoveryPolicy) {
+    const key = String(this.context.key || this.window.__shareContext?.key || '').trim();
+    if (!key) {
+      this.setStatus('No hay archivo seleccionado.', 'danger');
       return;
     }
 
@@ -305,6 +367,7 @@ class ArcadeLinkShareModule {
     } finally {
       button.disabled = false;
       button.innerHTML = oldHtml;
+      this.updateDownloadButton();
     }
   }
 

@@ -38,7 +38,8 @@ httpsContractOk(str_contains($installer, 'php-fpm'), 'instalador advierte si run
 httpsContractOk(!str_contains($installer, 'chown root:"$RUN_GROUP" "$RUNTIME_ENV"'), 'no cambia ownership de runtime-env existente');
 httpsContractOk(str_contains($installer, 'test -r "$RUNTIME_ENV"'), 'verifica lectura de runtime-env por el usuario elegido');
 httpsContractOk(str_contains($installer, 'OnBootSec=45s'), 'reconciliación se agenda al arrancar');
-httpsContractOk(str_contains($installer, 'OnUnitActiveSec=${INTERVAL_HOURS}h'), 'timer mantiene renovación periódica');
+httpsContractOk(str_contains($installer, 'OnUnitInactiveSec=${INTERVAL_HOURS}h'), 'timer oneshot se reprograma después de completar el servicio');
+httpsContractOk(!str_contains($installer, 'OnUnitActiveSec=${INTERVAL_HOURS}h'), 'timer no depende del estado activo de un servicio oneshot');
 httpsContractOk(!preg_match('/^\s*systemctl enable /m', $installer), 'instalador no habilita timer antes de la primera prueba');
 httpsContractOk(str_contains($installer, 'sudo systemctl enable --now arcadecloud-federation-https.timer'), 'documenta activación explícita después de probar');
 httpsContractOk(str_contains($installer, 'NO ejecutó Certbot ni habilitó el timer'), 'activación inicial requiere paso explícito del operador');

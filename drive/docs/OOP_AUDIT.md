@@ -4,8 +4,8 @@
 
 ## Resumen
 
-- PHP analizados: **320**
-- PHP que ya contienen clases/interfaces: **192**
+- PHP analizados: **321**
+- PHP que ya contienen clases/interfaces: **193**
 - PHP marcados para migración/revisión: **28**
 - JavaScript analizados: **40**
 - JavaScript que ya contienen clases: **38**
@@ -154,6 +154,7 @@
 | `drive/src/Console/UploadCleanupCommand.php` | 61 | class/module | 1 | — | — | — | — |
 | `drive/src/Core/ApplicationKernel.php` | 38 | class/module | 1 | — | — | — | — |
 | `drive/src/Core/DriveApplication.php` | 488 | class/module | 1 | — | — | ⚠️ | — |
+| `drive/src/Federation/ArcadeLinkBundleService.php` | 134 | class/module | 1 | — | — | — | — |
 | `drive/src/Federation/ArcadeLinkService.php` | 282 | class/module | 1 | — | — | — | — |
 | `drive/src/Federation/FederatedCatalogRepository.php` | 367 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Federation/FederatedResourceRepository.php` | 117 | class/module | 1 | — | ⚠️ | — | — |

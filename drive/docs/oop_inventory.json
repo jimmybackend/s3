@@ -1,7 +1,7 @@
 {
   "summary": {
-    "php_total": 320,
-    "php_class_modules": 192,
+    "php_total": 321,
+    "php_class_modules": 193,
     "php_needs_migration": 28,
     "js_total": 40,
     "js_class_modules": 38,
@@ -2051,6 +2051,21 @@
       "s3": true,
       "bootstrap": false,
       "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Federation/ArcadeLinkBundleService.php",
+      "lines": 134,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": true,
       "namespace": true,
       "issues": []
     },

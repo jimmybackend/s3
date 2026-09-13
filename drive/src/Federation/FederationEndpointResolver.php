@@ -66,10 +66,24 @@ final class FederationEndpointResolver
     {
         $url = trim($url);
         if ($url === '') return null;
+        if (strlen($url) > 512) {
+            throw new FederationException('La URL FederationCloud configurada es demasiado larga.', 500);
+        }
 
         $parts = parse_url($url);
-        if (!is_array($parts) || !is_string($parts['host'] ?? null)) {
-            throw new FederationException('La URL FederationCloud configurada no contiene un host válido.', 500);
+        if (!is_array($parts)
+            || !isset($parts['scheme'], $parts['host'])
+            || !is_string($parts['host'])
+            || !in_array(strtolower((string)$parts['scheme']), ['http', 'https'], true)
+            || isset($parts['user'])
+            || isset($parts['pass'])
+            || isset($parts['query'])
+            || isset($parts['fragment'])) {
+            throw new FederationException('La URL FederationCloud configurada no es una URL HTTP/HTTPS segura.', 500);
+        }
+
+        if (isset($parts['port']) && !in_array((int)$parts['port'], [80, 443], true)) {
+            throw new FederationException('La URL FederationCloud configurada usa un puerto no permitido.', 500);
         }
 
         $host = strtolower(rtrim(trim((string)$parts['host']), '.'));

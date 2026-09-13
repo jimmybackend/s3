@@ -1,8 +1,8 @@
 {
   "summary": {
-    "php_total": 331,
-    "php_class_modules": 195,
-    "php_needs_migration": 33,
+    "php_total": 334,
+    "php_class_modules": 197,
+    "php_needs_migration": 34,
     "js_total": 40,
     "js_class_modules": 38,
     "js_needs_migration": 9
@@ -121,7 +121,7 @@
     },
     {
       "path": "drive/bin/federation_catalog_migrate.php",
-      "lines": 44,
+      "lines": 45,
       "kind": "thin endpoint",
       "classes": 0,
       "functions": [],
@@ -136,7 +136,7 @@
     },
     {
       "path": "drive/bin/federation_endpoint_refresh.php",
-      "lines": 40,
+      "lines": 60,
       "kind": "thin endpoint",
       "classes": 0,
       "functions": [],
@@ -258,7 +258,7 @@
     },
     {
       "path": "drive/bin/federation_sync.php",
-      "lines": 67,
+      "lines": 85,
       "kind": "thin endpoint",
       "classes": 0,
       "functions": [],
@@ -2238,7 +2238,7 @@
     },
     {
       "path": "drive/src/Federation/FederationCatalogService.php",
-      "lines": 197,
+      "lines": 200,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -2282,8 +2282,23 @@
       "issues": []
     },
     {
+      "path": "drive/src/Federation/FederationCustomsService.php",
+      "lines": 247,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
       "path": "drive/src/Federation/FederationDirectoryService.php",
-      "lines": 151,
+      "lines": 158,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -2387,6 +2402,21 @@
       "issues": []
     },
     {
+      "path": "drive/src/Federation/FederationIngressQueueRepository.php",
+      "lines": 249,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": true,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
       "path": "drive/src/Federation/FederationLocationSelector.php",
       "lines": 66,
       "kind": "class/module",
@@ -2433,7 +2463,7 @@
     },
     {
       "path": "drive/src/Federation/FederationNodeRepository.php",
-      "lines": 166,
+      "lines": 145,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -2478,7 +2508,7 @@
     },
     {
       "path": "drive/src/Federation/FederationProviderAuthorizationService.php",
-      "lines": 233,
+      "lines": 236,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -2885,7 +2915,7 @@
     },
     {
       "path": "drive/src/Http/Controller/FederationDirectoryController.php",
-      "lines": 85,
+      "lines": 88,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -2930,7 +2960,7 @@
     },
     {
       "path": "drive/src/Http/Controller/FederationProviderController.php",
-      "lines": 115,
+      "lines": 130,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -4459,6 +4489,25 @@
       "namespace": false,
       "issues": [
         "global functions: fedCatalogOk"
+      ]
+    },
+    {
+      "path": "drive/tests/federation_customs_contract_smoke.php",
+      "lines": 74,
+      "kind": "procedural endpoint",
+      "classes": 0,
+      "functions": [
+        "customsOk"
+      ],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": [
+        "global functions: customsOk"
       ]
     },
     {

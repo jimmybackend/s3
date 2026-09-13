@@ -16,9 +16,15 @@ El `.arcadelink` conserva exactamente el mismo contrato criptográfico: firma Ed
 
 ## Compartir varios archivos desde el Drive
 
-El bloque de archivos del Drive permite seleccionar uno o varios recursos y usar la acción **Compartir ArcadeLink**. La interfaz envía únicamente las referencias seleccionadas al endpoint autenticado `federationcloud/bundle.php`.
+El bloque de archivos del Drive permite seleccionar uno o varios recursos y usar la acción **Compartir ArcadeLink**. La acción abre el mismo panel de políticas utilizado por el compartir individual para elegir:
 
-El backend valida cada referencia contra el usuario autenticado, genera un ArcadeLink individual por recurso y construye un solo ZIP. La acción masiva usa por defecto la política conservadora `UNLISTED + link_only` y no publica una URL permanente de S3.
+- `visibility`;
+- `rights`;
+- `discovery_policy`.
+
+Los valores iniciales siguen siendo conservadores (`UNLISTED`, `link_only` y descubrimiento automático), pero la selección masiva ya no fija esas políticas en código: el usuario puede modificarlas antes de generar el paquete.
+
+La interfaz envía únicamente las referencias seleccionadas y las políticas elegidas al endpoint autenticado `federationcloud/bundle.php`. El backend valida cada referencia contra el `user_id` autenticado mediante `FederationService::createLinkByStorageRef()` y genera un ArcadeLink individual por recurso.
 
 Ejemplo:
 
@@ -27,10 +33,13 @@ ArcadeLinks-portables.zip
 ├── abrir-federtioncloud.html
 ├── audiencia-1.mp4.arcadelink
 ├── audiencia-2.mp4.arcadelink
-└── sentencia.pdf.arcadelink
+├── sentencia.pdf.arcadelink
+└── pruebas.zip.arcadelink
 ```
 
-Si dos recursos producen el mismo nombre de archivo, el empaquetador añade un sufijo numérico para impedir que uno sobrescriba al otro dentro del ZIP.
+El ZIP contiene exactamente una copia de `abrir-federtioncloud.html`. Si dos recursos producen el mismo nombre, el empaquetador añade un sufijo numérico (`-2`, `-3`, ...) para impedir que un ArcadeLink sobrescriba a otro.
+
+El paquete se crea temporalmente en el servidor y se elimina después de enviarlo al navegador. No se almacena en S3 y no incluye los archivos físicos originales, por lo que los videos, PDFs u otros objetos grandes no atraviesan PHP durante esta operación; sólo viajan los documentos `.arcadelink` y el HTML portable.
 
 ## Flujo de usuario
 
@@ -50,6 +59,7 @@ Selección múltiple:
 Drive
   -> seleccionar archivos
   -> Compartir ArcadeLink
+  -> elegir visibilidad / descubrimiento / derechos
   -> ArcadeLinks-portables.zip
 ```
 
@@ -66,19 +76,30 @@ descomprimir ZIP
 
 El archivo real continúa fuera del ZIP. FederationCloud resuelve el recurso mediante su ArcadeLink y aplica las políticas de acceso existentes.
 
+## Actividad y costos
+
+La creación de ArcadeLinks continúa registrándose mediante `DriveActivityEvents`/`ActivityCostRecorder` con la clasificación `drive.no_direct_aws_charge`. Crear y empaquetar documentos ArcadeLink no se registra como una transferencia S3 real. Las operaciones que sí leen o transfieren objetos de S3 conservan sus métricas existentes.
+
 ## Descarga directa de archivos
 
-`download.php` es un endpoint delgado que reutiliza `FileAccessController::signedDownload()`. PHP valida la sesión y la propiedad del archivo y genera una URL GET prefirmada temporal de S3; después responde con una redirección.
+La inspección del código actual confirmó que `descargar_archivo.php` ya era el endpoint normal de descarga directa y reutiliza `FileAccessController::signedDownload()`.
 
-Por tanto, los bytes del archivo individual no atraviesan PHP-FPM ni Nginx del Drive:
+El flujo es:
 
 ```text
 navegador
-  -> download.php
-  -> autorización + URL prefirmada
-  -> redirección temporal
+  -> descargar_archivo.php
+  -> validar sesión y user_id
+  -> localizar FileS3 en MySQL
+  -> reconstruir y validar la key real
+  -> generar URL GET prefirmada de S3 (10 minutos)
+  -> HTTP redirect
   -> S3
   -> navegador
 ```
 
-`descargar_archivo.php` conserva el mismo comportamiento de descarga firmada por compatibilidad. Los ZIP de descarga de varios archivos siguen siendo una operación distinta porque deben construir un contenedor ZIP con los bytes seleccionados.
+Por tanto, los bytes del archivo individual no atraviesan PHP-FPM ni Nginx del Drive. `FileAccessService::signedDownload()` usa `createPresignedRequest()` y no llama a `getObject()` para esa descarga.
+
+`download.php` permanece únicamente como alias delgado de compatibilidad y delega en el mismo `FileAccessController::signedDownload()`; no contiene una segunda implementación ni una segunda fuente de verdad. El endpoint canónico existente para el Drive sigue siendo `descargar_archivo.php`.
+
+Los ZIP de descarga de múltiples archivos físicos son una operación diferente porque sí deben construir un contenedor con los objetos seleccionados; eso no debe confundirse con el ZIP portable de ArcadeLinks, que sólo contiene metadatos firmados y el HTML launcher.

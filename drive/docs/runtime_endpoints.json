@@ -1148,7 +1148,9 @@
       "path": "drive/src/Federation/ArcadeLinkBundleService.php",
       "size": 5780,
       "active": false,
-      "references": []
+      "references": [
+        "drive/tests/arcadelink_bundle_regression.php"
+      ]
     },
     {
       "path": "drive/src/Federation/ArcadeLinkService.php",
@@ -1156,6 +1158,7 @@
       "active": false,
       "references": [
         "drive/bin/federation_provider_request.php",
+        "drive/tests/arcadelink_bundle_regression.php",
         "drive/tests/federationcloud_smoke.php"
       ]
     },
@@ -1257,6 +1260,7 @@
         "drive/bin/federation_identity_name.php",
         "drive/bin/federation_identity_restore.php",
         "drive/bin/federation_provider_request.php",
+        "drive/tests/arcadelink_bundle_regression.php",
         "drive/tests/federation_access_message_smoke.php",
         "drive/tests/federation_catalog_event_smoke.php",
         "drive/tests/federation_directory_smoke.php",
@@ -1498,7 +1502,7 @@
     },
     {
       "path": "drive/src/Http/Controller/FederationController.php",
-      "size": 12041,
+      "size": 12857,
       "active": false,
       "references": []
     },
@@ -2120,6 +2124,12 @@
     {
       "path": "drive/tests/activity_costs_smoke.php",
       "size": 3980,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/tests/arcadelink_bundle_regression.php",
+      "size": 2208,
       "active": false,
       "references": []
     },

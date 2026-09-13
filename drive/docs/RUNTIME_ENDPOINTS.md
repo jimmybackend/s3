@@ -159,8 +159,8 @@
 | `drive/src/Console/UploadCleanupCommand.php` | ninguna |
 | `drive/src/Core/ApplicationKernel.php` | ninguna |
 | `drive/src/Core/DriveApplication.php` | ninguna |
-| `drive/src/Federation/ArcadeLinkBundleService.php` | ninguna |
-| `drive/src/Federation/ArcadeLinkService.php` | `drive/bin/federation_provider_request.php`, `drive/tests/federationcloud_smoke.php` |
+| `drive/src/Federation/ArcadeLinkBundleService.php` | `drive/tests/arcadelink_bundle_regression.php` |
+| `drive/src/Federation/ArcadeLinkService.php` | `drive/bin/federation_provider_request.php`, `drive/tests/arcadelink_bundle_regression.php`, `drive/tests/federationcloud_smoke.php` |
 | `drive/src/Federation/FederatedCatalogRepository.php` | ninguna |
 | `drive/src/Federation/FederatedResourceRepository.php` | ninguna |
 | `drive/src/Federation/FederationAccessMessageCodec.php` | `drive/tests/federation_access_message_smoke.php` |
@@ -172,7 +172,7 @@
 | `drive/src/Federation/FederationDirectoryService.php` | ninguna |
 | `drive/src/Federation/FederationEventCodec.php` | `drive/tests/federation_catalog_event_smoke.php` |
 | `drive/src/Federation/FederationEventStore.php` | ninguna |
-| `drive/src/Federation/FederationException.php` | `drive/bin/federation_identity_backup.php`, `drive/bin/federation_identity_init.php`, `drive/bin/federation_identity_name.php`, `drive/bin/federation_identity_restore.php`, `drive/bin/federation_provider_request.php`, `drive/tests/federation_access_message_smoke.php`, `drive/tests/federation_catalog_event_smoke.php`, `drive/tests/federation_directory_smoke.php`, `drive/tests/federation_node_name_admin_smoke.php`, `drive/tests/federation_provider_smoke.php`, `drive/tests/federation_replica_smoke.php`, `drive/tests/federationcloud_smoke.php` |
+| `drive/src/Federation/FederationException.php` | `drive/bin/federation_identity_backup.php`, `drive/bin/federation_identity_init.php`, `drive/bin/federation_identity_name.php`, `drive/bin/federation_identity_restore.php`, `drive/bin/federation_provider_request.php`, `drive/tests/arcadelink_bundle_regression.php`, `drive/tests/federation_access_message_smoke.php`, `drive/tests/federation_catalog_event_smoke.php`, `drive/tests/federation_directory_smoke.php`, `drive/tests/federation_node_name_admin_smoke.php`, `drive/tests/federation_provider_smoke.php`, `drive/tests/federation_replica_smoke.php`, `drive/tests/federationcloud_smoke.php` |
 | `drive/src/Federation/FederationGossipService.php` | ninguna |
 | `drive/src/Federation/FederationHttpClient.php` | `drive/bin/federation_provider_request.php` |
 | `drive/src/Federation/FederationLocationSelector.php` | `drive/tests/federation_replica_smoke.php` |
@@ -305,6 +305,7 @@
 | `drive/sync_s3_to_db.php` | `drive/js/sincronizar.js` |
 | `drive/sync_status.php` | `drive/js/sincronizar.js` |
 | `drive/tests/activity_costs_smoke.php` | ninguna |
+| `drive/tests/arcadelink_bundle_regression.php` | ninguna |
 | `drive/tests/federation_access_message_smoke.php` | ninguna |
 | `drive/tests/federation_catalog_event_smoke.php` | ninguna |
 | `drive/tests/federation_directory_smoke.php` | ninguna |

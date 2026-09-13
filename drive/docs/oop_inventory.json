@@ -1,8 +1,8 @@
 {
   "summary": {
-    "php_total": 325,
+    "php_total": 326,
     "php_class_modules": 194,
-    "php_needs_migration": 29,
+    "php_needs_migration": 30,
     "js_total": 40,
     "js_class_modules": 38,
     "js_needs_migration": 9
@@ -4321,11 +4321,14 @@
       ]
     },
     {
-      "path": "drive/tests/arcadelink_bundle_regression.php",
+      "path": "drive/tests/arcadelink_bulk_contract_regression.php",
       "lines": 68,
       "kind": "procedural endpoint",
       "classes": 0,
-      "functions": [],
+      "functions": [
+        "source",
+        "expectContract"
+      ],
       "session": false,
       "superglobals": [],
       "db": false,
@@ -4333,7 +4336,30 @@
       "bootstrap": false,
       "html": false,
       "namespace": false,
-      "issues": []
+      "issues": [
+        "global functions: source, expectContract"
+      ]
+    },
+    {
+      "path": "drive/tests/arcadelink_bundle_regression.php",
+      "lines": 142,
+      "kind": "procedural endpoint",
+      "classes": 0,
+      "functions": [
+        "expect",
+        "openBundle",
+        "assertNoSecretMarkers"
+      ],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": [
+        "global functions: expect, openBundle, assertNoSecretMarkers"
+      ]
     },
     {
       "path": "drive/tests/federation_access_message_smoke.php",
@@ -5049,7 +5075,7 @@
     },
     {
       "path": "drive/js/arcadelink-share.js",
-      "lines": 321,
+      "lines": 384,
       "kind": "class/module",
       "classes": [
         "ArcadeLinkShareModule"

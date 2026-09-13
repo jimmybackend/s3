@@ -5,6 +5,7 @@ namespace ArcadeCloud\Drive\Http\Controller;
 
 use ArcadeCloud\Drive\Activity\ActivityCostRecorder;
 use ArcadeCloud\Drive\Core\DriveApplication;
+use ArcadeCloud\Drive\Federation\ArcadeLinkBundleService;
 use ArcadeCloud\Drive\Federation\ArcadeLinkService;
 use ArcadeCloud\Drive\Federation\FederationException;
 use ArcadeCloud\Drive\Federation\FederationService;
@@ -129,6 +130,7 @@ final class FederationController
                 'rights' => $rights,
                 'discovery_policy' => (string)($catalog['discovery_policy'] ?? $discoveryPolicy),
                 'source' => 'drive_share_modal',
+                'bundle' => 'portable_zip',
                 'aws_direct' => false,
             ]);
             $this->sendArcadeLinkDownload($created);
@@ -191,6 +193,7 @@ final class FederationController
                 'visibility' => $visibility,
                 'rights' => $rights,
                 'discovery_policy' => (string)($catalog['discovery_policy'] ?? $discoveryPolicy),
+                'bundle' => 'portable_zip',
                 'aws_direct' => false,
             ]);
             $this->sendArcadeLinkDownload($created);
@@ -203,12 +206,31 @@ final class FederationController
 
     private function sendArcadeLinkDownload(array $created): never
     {
-        $filename = preg_replace('/[^A-Za-z0-9._-]+/', '_', (string)$created['filename']) ?: 'resource.arcadelink';
-        header('Content-Type: application/vnd.arcadecloud.arcadelink+json; charset=utf-8');
+        $document = is_array($created['document'] ?? null) ? $created['document'] : [];
+        $portalUrl = (string)($document['federation_url'] ?? '');
+        $bundle = (new ArcadeLinkBundleService())->create([
+            [
+                'filename' => (string)($created['filename'] ?? 'resource.arcadelink'),
+                'content' => (string)($created['content'] ?? ''),
+            ],
+        ], $portalUrl);
+
+        $path = (string)$bundle['path'];
+        $filename = preg_replace('/[^A-Za-z0-9._-]+/', '_', (string)$bundle['filename']) ?: 'ArcadeLink-portable.zip';
+        $size = is_file($path) ? filesize($path) : false;
+
+        header('Content-Type: application/zip');
         header('X-Content-Type-Options: nosniff');
         header('Content-Disposition: attachment; filename="' . $filename . '"');
-        header('Content-Length: ' . strlen((string)$created['content']));
-        echo $created['content'];
+        if (is_int($size) || is_float($size)) {
+            header('Content-Length: ' . (string)$size);
+        }
+
+        $ok = readfile($path);
+        @unlink($path);
+        if ($ok === false) {
+            throw new FederationException('No se pudo enviar el ZIP ArcadeLink.', 500);
+        }
         exit;
     }
 

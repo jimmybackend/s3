@@ -58,12 +58,12 @@ try {
     expect(is_file($singlePath), 'Single portable ZIP was not created.');
     expect((string)$single['filename'] === 'ArcadeLink-portable.zip', 'Single bundle filename is incorrect.');
     expect((int)$single['count'] === 1, 'Single bundle count is incorrect.');
-    expect((string)$single['launcher'] === 'abrir-federtioncloud.html', 'Portable launcher name is incorrect.');
+    expect((string)$single['launcher'] === 'Abrir-FederationCloud.html', 'Portable launcher name is incorrect.');
 
     $zip = openBundle($singlePath);
     try {
         expect($zip->numFiles === 2, 'Single bundle must contain launcher plus one ArcadeLink.');
-        $launcher = $zip->getFromName('abrir-federtioncloud.html');
+        $launcher = $zip->getFromName('Abrir-FederationCloud.html');
         $link = $zip->getFromName('sentencia.pdf.arcadelink');
         expect(is_string($launcher), 'Single bundle launcher is missing.');
         expect(is_string($link) && str_contains($link, 'arl_single'), 'Single ArcadeLink was not preserved.');
@@ -106,7 +106,7 @@ try {
         for ($i = 0; $i < $zip->numFiles; $i++) {
             $name = (string)$zip->getNameIndex($i);
             $names[] = $name;
-            if ($name === 'abrir-federtioncloud.html') {
+            if ($name === 'Abrir-FederationCloud.html') {
                 $launcherCount++;
             } elseif (preg_match('/\.arcadelink\z/i', $name)) {
                 $arcadeLinkCount++;
@@ -119,7 +119,7 @@ try {
             assertNoSecretMarkers($content, 'ZIP entry ' . $name);
         }
 
-        expect($launcherCount === 1, 'Portable ZIP must contain exactly one abrir-federtioncloud.html.');
+        expect($launcherCount === 1, 'Portable ZIP must contain exactly one Abrir-FederationCloud.html.');
         expect($arcadeLinkCount === 3, 'Portable ZIP must contain one ArcadeLink per selected file.');
         expect(in_array('juicio-video.mp4.arcadelink', $names, true), 'First duplicate ArcadeLink name is missing.');
         expect(in_array('juicio-video.mp4-2.arcadelink', $names, true), 'Duplicate ArcadeLink filename was not made collision-safe.');

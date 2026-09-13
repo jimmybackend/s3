@@ -6,11 +6,11 @@ Para un recurso, el ZIP contiene exactamente:
 
 ```text
 ArcadeLink-portable.zip
-├── abrir-federtioncloud.html
+├── Abrir-FederationCloud.html
 └── <recurso>.arcadelink
 ```
 
-`abrir-federtioncloud.html` es un archivo HTML estándar y por eso puede abrirse con el navegador predeterminado en Windows, Linux o macOS. El HTML apunta a la `federation_url` firmada del nodo que emitió el ArcadeLink y explica que el receptor debe seleccionar o depositar el `.arcadelink` en FederationCloud.
+`Abrir-FederationCloud.html` es un archivo HTML estándar y por eso puede abrirse con el navegador predeterminado en Windows, Linux o macOS. El HTML apunta a la `federation_url` firmada del nodo que emitió el ArcadeLink y explica que el receptor debe seleccionar o depositar el `.arcadelink` en FederationCloud.
 
 El `.arcadelink` conserva exactamente el mismo contrato criptográfico: firma Ed25519, payload privado XChaCha20-Poly1305, `resource_id`, nodo origen, visibilidad y derechos. El ZIP no contiene credenciales AWS, cookies, sesiones, claves privadas ni una URL S3 permanente.
 
@@ -30,14 +30,14 @@ Ejemplo:
 
 ```text
 ArcadeLinks-portables.zip
-├── abrir-federtioncloud.html
+├── Abrir-FederationCloud.html
 ├── audiencia-1.mp4.arcadelink
 ├── audiencia-2.mp4.arcadelink
 ├── sentencia.pdf.arcadelink
 └── pruebas.zip.arcadelink
 ```
 
-El ZIP contiene exactamente una copia de `abrir-federtioncloud.html`. Si dos recursos producen el mismo nombre, el empaquetador añade un sufijo numérico (`-2`, `-3`, ...) para impedir que un ArcadeLink sobrescriba a otro.
+El ZIP contiene exactamente una copia de `Abrir-FederationCloud.html`. Si dos recursos producen el mismo nombre, el empaquetador añade un sufijo numérico (`-2`, `-3`, ...) para impedir que un ArcadeLink sobrescriba a otro.
 
 El paquete se crea temporalmente en el servidor y se elimina después de enviarlo al navegador. No se almacena en S3 y no incluye los archivos físicos originales, por lo que los videos, PDFs u otros objetos grandes no atraviesan PHP durante esta operación; sólo viajan los documentos `.arcadelink` y el HTML portable.
 
@@ -67,7 +67,7 @@ Receptor:
 
 ```text
 descomprimir ZIP
-  -> abrir abrir-federtioncloud.html
+  -> abrir Abrir-FederationCloud.html
   -> abrir FederationCloud en el navegador
   -> seleccionar o depositar el .arcadelink deseado
   -> validar firma

@@ -89,7 +89,7 @@ jobs:
           grep -q 'arcadeLinkRights' drive/js/arcadelink-share.js
           grep -q 'arcadeLinkDiscoveryPolicy' drive/js/arcadelink-share.js
           grep -q 'federationcloud/bundle.php' drive/js/arcadelink-share.js
-          grep -q 'abrir-federtioncloud.html' drive/src/Federation/ArcadeLinkBundleService.php
+          grep -q 'Abrir-FederationCloud.html' drive/src/Federation/ArcadeLinkBundleService.php
           grep -q 'FederationBundleController' drive/federationcloud/bundle.php
           grep -q 'signedDownload' drive/descargar_archivo.php
           grep -q 's3.presigned_get_intent' drive/src/Http/Controller/FileAccessController.php

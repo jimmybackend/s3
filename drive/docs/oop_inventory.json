@@ -1,8 +1,8 @@
 {
   "summary": {
-    "php_total": 334,
-    "php_class_modules": 197,
-    "php_needs_migration": 34,
+    "php_total": 338,
+    "php_class_modules": 198,
+    "php_needs_migration": 36,
     "js_total": 40,
     "js_class_modules": 38,
     "js_needs_migration": 9
@@ -136,7 +136,7 @@
     },
     {
       "path": "drive/bin/federation_endpoint_refresh.php",
-      "lines": 60,
+      "lines": 81,
       "kind": "thin endpoint",
       "classes": 0,
       "functions": [],
@@ -243,7 +243,7 @@
     },
     {
       "path": "drive/bin/federation_provider_request.php",
-      "lines": 86,
+      "lines": 87,
       "kind": "procedural endpoint",
       "classes": 0,
       "functions": [],
@@ -257,9 +257,24 @@
       "issues": []
     },
     {
-      "path": "drive/bin/federation_sync.php",
-      "lines": 85,
+      "path": "drive/bin/federation_replica_presence.php",
+      "lines": 21,
       "kind": "thin endpoint",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/bin/federation_sync.php",
+      "lines": 102,
+      "kind": "endpoint with logic",
       "classes": 0,
       "functions": [],
       "session": false,
@@ -813,6 +828,21 @@
     },
     {
       "path": "drive/federationcloud/provider-admin.php",
+      "lines": 11,
+      "kind": "thin endpoint",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/federationcloud/provider-presence.php",
       "lines": 11,
       "kind": "thin endpoint",
       "classes": 0,
@@ -2268,7 +2298,7 @@
     },
     {
       "path": "drive/src/Federation/FederationConfig.php",
-      "lines": 89,
+      "lines": 110,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -2388,7 +2418,7 @@
     },
     {
       "path": "drive/src/Federation/FederationHttpClient.php",
-      "lines": 161,
+      "lines": 162,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -2493,7 +2523,7 @@
     },
     {
       "path": "drive/src/Federation/FederationProviderAuthorizationRepository.php",
-      "lines": 215,
+      "lines": 275,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -2508,7 +2538,7 @@
     },
     {
       "path": "drive/src/Federation/FederationProviderAuthorizationService.php",
-      "lines": 236,
+      "lines": 326,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -2554,6 +2584,21 @@
     {
       "path": "drive/src/Federation/FederationReplicaMessageCodec.php",
       "lines": 154,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Federation/FederationReplicaPresenceService.php",
+      "lines": 129,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -2960,7 +3005,7 @@
     },
     {
       "path": "drive/src/Http/Controller/FederationProviderController.php",
-      "lines": 130,
+      "lines": 178,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -4599,6 +4644,25 @@
       "namespace": false,
       "issues": [
         "global functions: providerOk"
+      ]
+    },
+    {
+      "path": "drive/tests/federation_replica_reconnect_contract_smoke.php",
+      "lines": 77,
+      "kind": "procedural endpoint",
+      "classes": 0,
+      "functions": [
+        "reconnectOk"
+      ],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": [
+        "global functions: reconnectOk"
       ]
     },
     {

@@ -5,12 +5,20 @@ on:
     branches: ['main']
     paths:
       - 'drive/src/Federation/ArcadeLinkBundleService.php'
+      - 'drive/src/Federation/FederationService.php'
+      - 'drive/src/Federation/FederatedResourceRepository.php'
       - 'drive/src/Http/Controller/FederationController.php'
       - 'drive/src/Http/Controller/FederationBundleController.php'
+      - 'drive/src/Http/Controller/FileAccessController.php'
+      - 'drive/src/Application/FileAccessService.php'
       - 'drive/federationcloud/bundle.php'
+      - 'drive/federationcloud/create.php'
+      - 'drive/descargar_archivo.php'
       - 'drive/download.php'
       - 'drive/js/arcadelink-share.js'
       - 'drive/tests/arcadelink_bundle_regression.php'
+      - 'drive/tests/arcadelink_bulk_contract_regression.php'
+      - 'drive/tests/federationcloud_smoke.php'
       - 'drive/docs/ARCADELINK_PORTABLE_ZIP.md'
       - '.github/workflows/arcadelink-portable-zip.yml'
 
@@ -31,33 +39,62 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y php-zip
           php -m | grep -qi '^zip$'
+          php -m | grep -qi '^sodium$'
 
       - name: PHP syntax
         run: |
           set -euo pipefail
           php -l drive/src/Federation/ArcadeLinkBundleService.php
+          php -l drive/src/Federation/FederationService.php
+          php -l drive/src/Federation/FederatedResourceRepository.php
           php -l drive/src/Http/Controller/FederationController.php
           php -l drive/src/Http/Controller/FederationBundleController.php
+          php -l drive/src/Http/Controller/FileAccessController.php
+          php -l drive/src/Application/FileAccessService.php
           php -l drive/federationcloud/bundle.php
+          php -l drive/federationcloud/create.php
+          php -l drive/descargar_archivo.php
           php -l drive/download.php
           php -l drive/tests/arcadelink_bundle_regression.php
+          php -l drive/tests/arcadelink_bulk_contract_regression.php
+          php -l drive/tests/federationcloud_smoke.php
+
+      - name: JavaScript syntax
+        run: |
+          set -euo pipefail
+          node --check drive/js/arcadelink-share.js
 
       - name: Portable bundle regression
         run: |
           set -euo pipefail
           php drive/tests/arcadelink_bundle_regression.php
 
+      - name: Bulk sharing and direct download contracts
+        run: |
+          set -euo pipefail
+          php drive/tests/arcadelink_bulk_contract_regression.php
+
+      - name: ArcadeLink signature regression
+        run: |
+          set -euo pipefail
+          php drive/tests/federationcloud_smoke.php
+
       - name: Frontend and endpoint contracts
         run: |
           set -euo pipefail
           grep -q 'Descargar ArcadeLink ZIP' drive/js/arcadelink-share.js
           grep -q 'share-arcadelink' drive/js/arcadelink-share.js
+          grep -q 'prepareBulkShare' drive/js/arcadelink-share.js
+          grep -q 'arcadeLinkVisibility' drive/js/arcadelink-share.js
+          grep -q 'arcadeLinkRights' drive/js/arcadelink-share.js
+          grep -q 'arcadeLinkDiscoveryPolicy' drive/js/arcadelink-share.js
           grep -q 'federationcloud/bundle.php' drive/js/arcadelink-share.js
           grep -q 'abrir-federtioncloud.html' drive/src/Federation/ArcadeLinkBundleService.php
           grep -q 'FederationBundleController' drive/federationcloud/bundle.php
-          grep -q 'signedDownload' drive/download.php
+          grep -q 'signedDownload' drive/descargar_archivo.php
           grep -q 's3.presigned_get_intent' drive/src/Http/Controller/FileAccessController.php
           grep -q 'response->redirect' drive/src/Http/Controller/FileAccessController.php
+          grep -q 'createPresignedRequest' drive/src/Application/FileAccessService.php
 
       - name: Diff check
         run: |

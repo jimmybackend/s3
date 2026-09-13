@@ -159,6 +159,7 @@
 | `drive/src/Console/UploadCleanupCommand.php` | ninguna |
 | `drive/src/Core/ApplicationKernel.php` | ninguna |
 | `drive/src/Core/DriveApplication.php` | ninguna |
+| `drive/src/Federation/ArcadeLinkBundleService.php` | ninguna |
 | `drive/src/Federation/ArcadeLinkService.php` | `drive/bin/federation_provider_request.php`, `drive/tests/federationcloud_smoke.php` |
 | `drive/src/Federation/FederatedCatalogRepository.php` | ninguna |
 | `drive/src/Federation/FederatedResourceRepository.php` | ninguna |

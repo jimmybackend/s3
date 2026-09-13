@@ -24,34 +24,47 @@ $e = static fn(string $value): string => htmlspecialchars($value, ENT_QUOTES | E
     border: 1px solid rgba(var(--accent-rgb), .22);
     background: rgba(var(--accent-rgb), .06) !important;
     margin-top: .35rem;
+    opacity: 1 !important;
+    filter: none !important;
   }
   #arbolCarpetas .federation-shares-row:hover {
     background: rgba(var(--accent-rgb), .14) !important;
   }
-  #arbolCarpetas .shared-folder-link {
+  #arbolCarpetas .federation-shares-row .shared-folder-link,
+  #arbolCarpetas .federation-shares-row .shared-folder-link .name {
     color: var(--text-strong) !important;
-    font-weight: 700;
+    -webkit-text-fill-color: var(--text-strong) !important;
+    font-weight: 700 !important;
     text-decoration: none !important;
     opacity: 1 !important;
+    visibility: visible !important;
+    filter: none !important;
+    text-shadow: none !important;
   }
-  #arbolCarpetas .shared-folder-link i {
+  #arbolCarpetas .federation-shares-row .shared-folder-link i {
     color: var(--accent) !important;
+    -webkit-text-fill-color: currentColor !important;
+    opacity: 1 !important;
   }
   #arbolCarpetas .federation-shares-row .badge {
     position: relative;
     z-index: 2;
     pointer-events: none;
+    opacity: 1 !important;
   }
   body.ui-theme.theme-light #arbolCarpetas .federation-shares-row {
     background: rgba(var(--accent-rgb), .10) !important;
     border-color: rgba(var(--accent-rgb), .38) !important;
   }
-  body.ui-theme.theme-light #arbolCarpetas .shared-folder-link {
+  body.ui-theme.theme-light #arbolCarpetas .federation-shares-row .shared-folder-link,
+  body.ui-theme.theme-light #arbolCarpetas .federation-shares-row .shared-folder-link .name {
     color: #17324d !important;
-    text-shadow: none !important;
+    -webkit-text-fill-color: #17324d !important;
   }
-  body.ui-theme.theme-dark #arbolCarpetas .shared-folder-link {
-    color: var(--text-strong) !important;
+  body.ui-theme.theme-dark #arbolCarpetas .federation-shares-row .shared-folder-link,
+  body.ui-theme.theme-dark #arbolCarpetas .federation-shares-row .shared-folder-link .name {
+    color: #f2f2f2 !important;
+    -webkit-text-fill-color: #f2f2f2 !important;
   }
 </style>
 <div id="bloque-carpetas" class="card">

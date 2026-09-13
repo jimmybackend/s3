@@ -1,0 +1,54 @@
+name: ArcadeLink portable ZIP validation
+
+on:
+  pull_request:
+    branches: ['main']
+    paths:
+      - 'drive/src/Federation/ArcadeLinkBundleService.php'
+      - 'drive/src/Http/Controller/FederationController.php'
+      - 'drive/js/arcadelink-share.js'
+      - 'drive/tests/arcadelink_bundle_regression.php'
+      - 'drive/docs/ARCADELINK_PORTABLE_ZIP.md'
+      - '.github/workflows/arcadelink-portable-zip.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install PHP ZIP extension
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y php-zip
+          php -m | grep -qi '^zip$'
+
+      - name: PHP syntax
+        run: |
+          set -euo pipefail
+          php -l drive/src/Federation/ArcadeLinkBundleService.php
+          php -l drive/src/Http/Controller/FederationController.php
+          php -l drive/tests/arcadelink_bundle_regression.php
+
+      - name: Portable bundle regression
+        run: |
+          set -euo pipefail
+          php drive/tests/arcadelink_bundle_regression.php
+
+      - name: Frontend contract
+        run: |
+          set -euo pipefail
+          grep -q 'Descargar ArcadeLink ZIP' drive/js/arcadelink-share.js
+          grep -q 'application/zip' drive/js/arcadelink-share.js
+          grep -q 'ABRIR-FEDERATIONCLOUD-WINDOWS-LINUX-MAC.html' drive/src/Federation/ArcadeLinkBundleService.php
+
+      - name: Diff check
+        run: |
+          set -euo pipefail
+          git diff --check origin/main...HEAD

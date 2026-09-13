@@ -313,7 +313,7 @@
 | `drive/tests/federation_catalog_event_smoke.php` | 60 | procedural endpoint | 0 | — | — | — | global functions: fedCatalogOk |
 | `drive/tests/federation_directory_smoke.php` | 102 | procedural endpoint | 0 | — | — | — | global functions: directoryOk |
 | `drive/tests/federation_endpoint_resolver_smoke.php` | 95 | procedural endpoint | 0 | — | — | — | global functions: endpointOk |
-| `drive/tests/federation_https_contract_smoke.php` | 53 | procedural endpoint | 0 | — | — | — | global functions: httpsContractOk |
+| `drive/tests/federation_https_contract_smoke.php` | 54 | procedural endpoint | 0 | — | — | — | global functions: httpsContractOk |
 | `drive/tests/federation_node_name_admin_smoke.php` | 91 | procedural endpoint | 0 | — | — | — | — |
 | `drive/tests/federation_provider_smoke.php` | 76 | procedural endpoint | 0 | — | — | — | global functions: providerOk |
 | `drive/tests/federation_replica_smoke.php` | 98 | procedural endpoint | 0 | — | — | — | global functions: replicaOk |

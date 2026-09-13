@@ -4501,7 +4501,7 @@
     },
     {
       "path": "drive/tests/federation_https_contract_smoke.php",
-      "lines": 53,
+      "lines": 54,
       "kind": "procedural endpoint",
       "classes": 0,
       "functions": [

@@ -67,4 +67,28 @@ try {
 }
 endpointOk($rejectedBrokenUrl, 'rechaza URL configurada inválida en vez de adivinar');
 
+$rejectedCredentials = false;
+try {
+    $resolver->resolve('https://user:pass@drive.example.test', '', '8.8.8.8');
+} catch (FederationException) {
+    $rejectedCredentials = true;
+}
+endpointOk($rejectedCredentials, 'rechaza credenciales embebidas en URL configurada');
+
+$rejectedQuery = false;
+try {
+    $resolver->resolve('https://drive.example.test/?token=secret', '', '8.8.8.8');
+} catch (FederationException) {
+    $rejectedQuery = true;
+}
+endpointOk($rejectedQuery, 'rechaza query en URL configurada');
+
+$rejectedScheme = false;
+try {
+    $resolver->resolve('ftp://drive.example.test', '', '8.8.8.8');
+} catch (FederationException) {
+    $rejectedScheme = true;
+}
+endpointOk($rejectedScheme, 'rechaza esquema distinto de HTTP/HTTPS');
+
 fwrite(STDOUT, "Federation endpoint resolver smoke: OK\n");

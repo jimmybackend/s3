@@ -5,6 +5,7 @@ namespace ArcadeCloud\Drive\Http\Controller;
 
 use ArcadeCloud\Drive\Core\DriveApplication;
 use ArcadeCloud\Drive\Federation\ArcadeLinkService;
+use ArcadeCloud\Drive\Federation\FederationCustomsService;
 use ArcadeCloud\Drive\Federation\FederationException;
 use ArcadeCloud\Drive\Federation\FederationProviderAuthorizationService;
 use ArcadeCloud\Drive\Http\JsonResponse;
@@ -18,6 +19,11 @@ final class FederationProviderController
     {
     }
 
+    /**
+     * Esta ruta queda reservada para confianza privilegiada: una copia/réplica
+     * que servirá recursos del nodo origen. Los nodos independientes NO pasan
+     * por Solicitudes; se registran automáticamente por register.php.
+     */
     public function requestApi(): void
     {
         if ($this->request->method() !== 'POST') {
@@ -44,21 +50,30 @@ final class FederationProviderController
             if (!is_array($body)
                 || !is_array($body['provider_descriptor'] ?? null)
                 || array_is_list($body['provider_descriptor'])) {
-                throw new FederationException('Se requiere el descriptor firmado del nodo proveedor.', 400);
+                throw new FederationException('Se requiere el descriptor firmado de la copia FederationCloud.', 400);
             }
-            $result = (new FederationProviderAuthorizationService($this->app))->receiveRequest(
+            $relationship = strtolower(trim((string)($body['relationship'] ?? 'shared_backend')));
+            if ($relationship !== 'shared_backend') {
+                throw new FederationException(
+                    'Los nodos independientes no requieren aprobación; deben anunciarse mediante register.php.',
+                    400
+                );
+            }
+
+            $result = (new FederationCustomsService($this->app))->enqueueSharedBackendAuthorization(
                 (string)($body['origin_node_id'] ?? ''),
                 $body['provider_descriptor'],
-                (string)($body['role'] ?? 'provider'),
-                (string)($body['scope'] ?? 'all_allowed_resources')
+                (string)($body['role'] ?? 'mirror'),
+                (string)($body['scope'] ?? 'all_allowed_resources'),
+                is_string($body['request_id'] ?? null) ? (string)$body['request_id'] : null
             );
-            JsonResponse::send($result);
+            JsonResponse::send($result, 202);
         } catch (JsonException) {
             JsonResponse::send(['ok' => false, 'error' => 'JSON inválido.'], 400);
         } catch (FederationException $e) {
             JsonResponse::send(['ok' => false, 'error' => $e->getMessage()], $e->httpStatus());
         } catch (Throwable) {
-            JsonResponse::send(['ok' => false, 'error' => 'No se pudo registrar la solicitud de proveedor.'], 500);
+            JsonResponse::send(['ok' => false, 'error' => 'No se pudo recibir la solicitud de backend compartido.'], 500);
         }
     }
 
@@ -84,7 +99,7 @@ final class FederationProviderController
             JsonResponse::send(['ok' => false, 'error' => 'Autenticación requerida.'], 401);
         }
         if (!$session->isSuperAdmin()) {
-            JsonResponse::send(['ok' => false, 'error' => 'Sólo un superusuario puede autorizar nodos proveedores.'], 403);
+            JsonResponse::send(['ok' => false, 'error' => 'Sólo un superusuario puede autorizar copias con backend compartido.'], 403);
         }
 
         try {
@@ -108,7 +123,7 @@ final class FederationProviderController
         } catch (FederationException $e) {
             JsonResponse::send(['ok' => false, 'error' => $e->getMessage()], $e->httpStatus());
         } catch (Throwable) {
-            JsonResponse::send(['ok' => false, 'error' => 'No se pudo administrar la solicitud de proveedor.'], 500);
+            JsonResponse::send(['ok' => false, 'error' => 'No se pudo administrar la solicitud de copia compartida.'], 500);
         }
     }
 }

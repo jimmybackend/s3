@@ -1,0 +1,21 @@
+CREATE TABLE IF NOT EXISTS FederationIngressQueue (
+  id_ bigint unsigned NOT NULL AUTO_INCREMENT,
+  RequestId varchar(96) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  RequestType varchar(48) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  OriginNodeId varchar(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  TargetNodeId varchar(64) CHARACTER SET ascii COLLATE ascii_bin DEFAULT NULL,
+  DocumentationJson mediumtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
+  PayloadHash char(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  Priority smallint unsigned NOT NULL DEFAULT 100,
+  Status enum('queued','processing','retry','done','rejected','failed') NOT NULL DEFAULT 'queued',
+  Attempts smallint unsigned NOT NULL DEFAULT 0,
+  ReceivedAt datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+  AvailableAt datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+  StartedAt datetime(6) DEFAULT NULL,
+  FinishedAt datetime(6) DEFAULT NULL,
+  LastError varchar(512) DEFAULT NULL,
+  PRIMARY KEY (id_),
+  UNIQUE KEY uq_federation_ingress_request (RequestId),
+  KEY idx_federation_ingress_ready (Status, AvailableAt, Priority, id_),
+  KEY idx_federation_ingress_origin (OriginNodeId, ReceivedAt)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

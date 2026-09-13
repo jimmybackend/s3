@@ -29,13 +29,23 @@ final class FederationDirectoryService
     {
         $this->ensureEnabled();
         $local = $this->validator->validate($this->identity->signedDescriptor($this->config));
+        // El nodo local siempre queda materializado como activo en su propia DB.
+        $this->nodes->upsertVerified($local);
 
         if ($this->seeds->isSeed($this->config->federationUrl())) {
-            $this->nodes->upsertVerified($local);
             return $this->seedDirectoryPayload($local);
         }
 
         try {
+            // Bootstrap para gossip: el nodo independiente aprende la identidad completa
+            // del seed sin concederle permisos de recursos.
+            $seedDescriptor = $this->validator->validate(
+                $this->http->getJson($this->seeds->primary(), 'node.php')
+            );
+            $this->nodes->upsertVerified($seedDescriptor);
+
+            // Registro de presencia: el seed sólo recibe documentación y la pone en
+            // Aduana. La verificación HTTPS pesada ocurre luego, una petición por ciclo.
             $response = $this->http->postJson($this->seeds->primary(), 'register.php', [
                 'descriptor' => $local,
             ]);
@@ -52,6 +62,7 @@ final class FederationDirectoryService
                 'connected_nodes' => max(1, (int)$response['connected_nodes']),
                 'nodes' => array_slice($response['nodes'], 0, 100),
                 'active_window_minutes' => FederationNodeRepository::ACTIVE_WINDOW_MINUTES,
+                'registration' => is_array($response['registration'] ?? null) ? $response['registration'] : null,
                 'degraded' => false,
             ];
         } catch (Throwable) {
@@ -62,6 +73,7 @@ final class FederationDirectoryService
                 'connected_nodes' => 1,
                 'nodes' => [$this->publicSummary($local)],
                 'active_window_minutes' => FederationNodeRepository::ACTIVE_WINDOW_MINUTES,
+                'registration' => null,
                 'degraded' => true,
             ];
         }
@@ -81,7 +93,7 @@ final class FederationDirectoryService
         ];
     }
 
-    public function registerRemote(array $submitted): array
+    public function registerRemote(array $submitted, ?string $requestId = null): array
     {
         $this->ensureEnabled();
         if (!$this->seeds->isSeed($this->config->federationUrl())) {
@@ -93,26 +105,21 @@ final class FederationDirectoryService
 
         $candidate = $this->validator->validate($submitted);
         if (hash_equals((string)$local['node_id'], (string)$candidate['node_id'])) {
-            return $this->seedDirectoryPayload($local);
+            $payload = $this->seedDirectoryPayload($local);
+            $payload['registration'] = [
+                'accepted' => true,
+                'automatic' => true,
+                'requires_superadmin' => false,
+                'queue_status' => 'local',
+                'node_id' => (string)$local['node_id'],
+            ];
+            return $payload;
         }
 
-        $live = $this->validator->validate(
-            $this->http->getJson((string)$candidate['federation_url'], 'node.php')
-        );
-
-        foreach (['node_id', 'public_key', 'public_url', 'federation_url'] as $field) {
-            if (!hash_equals((string)$candidate[$field], (string)$live[$field])) {
-                throw new FederationException('El descriptor anunciado no coincide con el nodo remoto verificado.', 409);
-            }
-        }
-        $candidateName = is_string($candidate['node_name'] ?? null) ? (string)$candidate['node_name'] : '';
-        $liveName = is_string($live['node_name'] ?? null) ? (string)$live['node_name'] : '';
-        if (!hash_equals($candidateName, $liveName)) {
-            throw new FederationException('El nombre anunciado no coincide con el nodo remoto verificado.', 409);
-        }
-
-        $this->nodes->upsertVerified($live);
-        return $this->seedDirectoryPayload($local);
+        $registration = (new FederationCustomsService($this->app))->enqueueNodePresence($candidate, $requestId);
+        $payload = $this->seedDirectoryPayload($local);
+        $payload['registration'] = $registration;
+        return $payload;
     }
 
     private function seedDirectoryPayload(array $local): array

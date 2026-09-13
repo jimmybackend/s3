@@ -35,6 +35,9 @@ final class FederationCatalogService
             'node_name' => is_string($descriptor['node_name'] ?? null) ? (string)$descriptor['node_name'] : '',
             'public_url' => (string)$descriptor['public_url'],
             'federation_url' => (string)$descriptor['federation_url'],
+            // Heartbeat discreto: fuerza como máximo un node.upsert cada 5 minutos.
+            // Así LastSeen se replica por gossip sin generar un evento por cada ciclo.
+            'availability_bucket' => (int)floor(time() / 300),
         ];
         $hash = hash('sha256', FederationCodec::canonicalJson($payload));
         $previous = $this->events->latestPayloadHash($this->identity->nodeId(), 'node.upsert', $this->identity->nodeId());

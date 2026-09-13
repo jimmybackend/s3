@@ -142,21 +142,20 @@ EOF
 chmod 0644 "$SERVICE" "$TIMER"
 systemctl daemon-reload
 
-# Validaciones estáticas antes de habilitar el timer.
+# Validaciones estáticas. No se solicita certificado ni se habilita el timer todavía.
 "$PHP_BIN" -l "$APP_ROOT/drive/bin/federation_https_reconcile.php" >/dev/null
 "$PHP_BIN" -l "$APP_ROOT/drive/bin/federation_endpoint_refresh.php" >/dev/null
 "$NGINX_BIN" -t
 
-systemctl enable arcadecloud-federation-https.timer
-
-echo "OK: reconciliador HTTPS FederationCloud instalado."
+echo "OK: reconciliador HTTPS FederationCloud instalado, aún no activado."
 echo "Servicio: arcadecloud-federation-https.service"
 echo "Timer: arcadecloud-federation-https.timer"
-echo "Frecuencia: cada ${INTERVAL_HOURS}h y 45s después del arranque."
+echo "Frecuencia al activarlo: cada ${INTERVAL_HOURS}h y 45s después del arranque."
 echo "Runtime: $RUNTIME_ENV"
 echo "Webroot ACME: $WEBROOT"
 echo "Backend HTTP local para modo IP: 127.0.0.1:80 (Host: $BACKEND_HOST)"
 echo
-echo "IMPORTANTE: el instalador NO ejecutó Certbot todavía."
-echo "Para probar ahora: sudo systemctl start arcadecloud-federation-https.service"
-echo "Si la prueba termina bien: sudo systemctl start arcadecloud-federation-https.timer"
+echo "IMPORTANTE: el instalador NO ejecutó Certbot ni habilitó el timer."
+echo "1) Primera prueba: sudo systemctl start arcadecloud-federation-https.service"
+echo "2) Revisar: sudo systemctl status arcadecloud-federation-https.service --no-pager"
+echo "3) Si todo está bien: sudo systemctl enable --now arcadecloud-federation-https.timer"

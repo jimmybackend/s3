@@ -169,7 +169,7 @@ function nginxChallengeConfig(string $host, string $webroot): string
         . "    listen 80;\n"
         . "    server_name {$host};\n"
         . "    root {$webroot};\n"
-        . "    location ^~ /.well-known/acme-challenge/ { try_files \\$uri =404; }\n"
+        . '    location ^~ /.well-known/acme-challenge/ { try_files $uri =404; }' . "\n"
         . "    location / { return 404; }\n"
         . "}\n";
 }
@@ -182,8 +182,8 @@ function nginxDynamicIpConfig(string $ip, string $webroot, string $backendHost):
         . "    listen 80;\n"
         . "    server_name {$ip};\n"
         . "    root {$webroot};\n"
-        . "    location ^~ /.well-known/acme-challenge/ { try_files \\$uri =404; }\n"
-        . "    location / { return 301 https://\\$host\\$request_uri; }\n"
+        . '    location ^~ /.well-known/acme-challenge/ { try_files $uri =404; }' . "\n"
+        . '    location / { return 301 https://$host$request_uri; }' . "\n"
         . "}\n\n"
         . "server {\n"
         . "    listen 443 ssl;\n"
@@ -196,10 +196,10 @@ function nginxDynamicIpConfig(string $ip, string $webroot, string $backendHost):
         . "        proxy_pass http://127.0.0.1:80;\n"
         . "        proxy_http_version 1.1;\n"
         . "        proxy_set_header Host {$backendHost};\n"
-        . "        proxy_set_header X-Real-IP \\$remote_addr;\n"
-        . "        proxy_set_header X-Forwarded-For \\$proxy_add_x_forwarded_for;\n"
+        . '        proxy_set_header X-Real-IP $remote_addr;' . "\n"
+        . '        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;' . "\n"
         . "        proxy_set_header X-Forwarded-Proto https;\n"
-        . "        proxy_set_header X-Forwarded-Host \\$host;\n"
+        . '        proxy_set_header X-Forwarded-Host $host;' . "\n"
         . "    }\n"
         . "}\n";
 }
@@ -220,7 +220,7 @@ try {
     $nginxIpConfig = optionValue($argv, 'nginx-ip-config', '/etc/nginx/conf.d/arcadecloud-federation-ip.conf');
     $statePath = optionValue($argv, 'state-path', '/var/lib/arcadecloud-drive/federation-https-state.json');
     $backendHost = validateSimpleHost(optionValue($argv, 'backend-host', 'localhost'));
-    $runUser = optionValue($argv, 'run-user', 'nginx');
+    $runUser = validateSimpleHost(optionValue($argv, 'run-user', 'nginx'));
     $appRoot = optionValue($argv, 'app-root', dirname(__DIR__, 2));
     $phpBin = optionValue($argv, 'php-bin', '/usr/bin/php');
     $certbotBin = optionValue($argv, 'certbot-bin', '/usr/bin/certbot');
@@ -230,13 +230,17 @@ try {
     $runuserBin = optionValue($argv, 'runuser-bin', '/usr/sbin/runuser');
 
     foreach ([$runtimePath, $webroot, $nginxIpConfig, $statePath, $appRoot, $phpBin, $certbotBin, $nginxBin, $systemctlBin, $curlBin, $runuserBin] as $path) {
-        if ($path === '' || $path[0] !== '\/' || str_contains($path, "\0")) {
+        if ($path === '' || $path[0] !== '/' || str_contains($path, "\0")) {
             throw new RuntimeException('Todas las rutas del reconciliador deben ser absolutas.');
         }
     }
     if (!is_dir($webroot) || preg_match('/[\s;]/', $webroot)) throw new RuntimeException('webroot inválido.');
-    if (!is_executable($phpBin) || !is_executable($certbotBin) || !is_executable($nginxBin) || !is_executable($systemctlBin)) {
-        throw new RuntimeException('Falta PHP, Certbot, Nginx o systemctl en las rutas configuradas.');
+    if (!is_executable($phpBin) || !is_executable($certbotBin) || !is_executable($nginxBin)
+        || !is_executable($systemctlBin) || !is_executable($curlBin) || !is_executable($runuserBin)) {
+        throw new RuntimeException('Falta PHP, Certbot, Nginx, systemctl, curl o runuser en las rutas configuradas.');
+    }
+    if (!function_exists('posix_getpwnam') || posix_getpwnam($runUser) === false) {
+        throw new RuntimeException('El usuario configurado para refrescar FederationCloud no existe.');
     }
 
     $runtime = readRuntimeJson($runtimePath);

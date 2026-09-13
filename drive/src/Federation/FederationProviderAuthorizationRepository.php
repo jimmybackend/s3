@@ -147,7 +147,7 @@ final class FederationProviderAuthorizationRepository
         $stmt = $this->db->prepare(
             "UPDATE FederationNodeAuthorizations
              SET Role = ?, Scope = ?, Status = 'active', OriginSignature = ?,
-                 AuthorizedAt = UTC_TIMESTAMP(), LastSeen = UTC_TIMESTAMP(), RevokedAt = NULL
+                 AuthorizedAt = UTC_TIMESTAMP(), LastSeen = NULL, RevokedAt = NULL
              WHERE OriginNodeId = ? AND ProviderNodeId = ? AND Status = 'pending' LIMIT 1"
         );
         if (!$stmt) {

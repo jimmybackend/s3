@@ -136,6 +136,7 @@
         "drive/mover_carpeta.php",
         "drive/polly_cargar_texto.php",
         "drive/polly_list_voices.php",
+        "drive/polly_task_status.php",
         "drive/polly_tts.php",
         "drive/procesar_textract.php",
         "drive/profile.php",
@@ -824,10 +825,19 @@
       ]
     },
     {
+      "path": "drive/polly_task_status.php",
+      "size": 256,
+      "active": false,
+      "references": [
+        "drive/js/polly-background.js"
+      ]
+    },
+    {
       "path": "drive/polly_tts.php",
       "size": 256,
       "active": false,
       "references": [
+        "drive/js/polly-background.js",
         "drive/js/polly.js"
       ]
     },
@@ -1159,7 +1169,7 @@
     },
     {
       "path": "drive/src/Aws/PollyFileService.php",
-      "size": 4919,
+      "size": 16644,
       "active": false,
       "references": []
     },
@@ -1752,6 +1762,12 @@
     {
       "path": "drive/src/Http/Controller/PersonalAwsController.php",
       "size": 2214,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Http/Controller/PollyTaskController.php",
+      "size": 4070,
       "active": false,
       "references": []
     },

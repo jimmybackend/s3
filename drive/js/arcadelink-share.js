@@ -71,8 +71,11 @@ class ArcadeLinkShareModule {
         <strong><i class="fas fa-network-wired mr-1"></i> ArcadeLink FederationCloud</strong>
         <a class="badge badge-info" href="federationcloud/portal.php">portal global</a>
       </div>
+      <p class="small text-muted mb-2">
+        Descarga un ZIP portable. Incluye el pasaporte firmado <code>.arcadelink</code> y un acceso HTML a FederationCloud compatible con Windows, Linux y macOS.
+      </p>
       <p class="small text-muted mb-3">
-        Descarga un pasaporte <code>.arcadelink</code> firmado por este nodo. No contiene credenciales AWS ni una URL permanente de S3.
+        El paquete no contiene credenciales AWS ni una URL permanente de S3. El receptor abre FederationCloud y deposita ahí el archivo <code>.arcadelink</code>.
       </p>
       <div id="arcadeLinkShareFile" class="small text-muted text-break mb-2"></div>
       <div class="form-row">
@@ -106,7 +109,7 @@ class ArcadeLinkShareModule {
       <div id="arcadeLinkDiscoveryHelp" class="small text-muted mb-2"></div>
       <div class="d-flex align-items-center flex-wrap mt-2">
         <button type="button" id="btnArcadeLinkDownload" class="btn btn-info btn-sm mr-2">
-          <i class="fas fa-file-download mr-1"></i> Descargar .arcadelink
+          <i class="fas fa-file-archive mr-1"></i> Descargar ArcadeLink ZIP
         </button>
         <span id="arcadeLinkShareStatus" class="small text-muted"></span>
       </div>
@@ -165,7 +168,7 @@ class ArcadeLinkShareModule {
     const oldHtml = button.innerHTML;
     button.disabled = true;
     button.innerHTML = '<span class="spinner-border spinner-border-sm mr-1" role="status" aria-hidden="true"></span> Generando…';
-    this.setStatus('Firmando ArcadeLink y actualizando catálogo…', 'muted');
+    this.setStatus('Firmando ArcadeLink y construyendo paquete portable…', 'muted');
 
     try {
       const body = new URLSearchParams();
@@ -179,7 +182,7 @@ class ArcadeLinkShareModule {
         credentials: 'same-origin',
         cache: 'no-store',
         headers: {
-          'Accept': 'application/vnd.arcadecloud.arcadelink+json, application/json',
+          'Accept': 'application/zip, application/json',
           'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
           'X-Requested-With': 'XMLHttpRequest'
         },
@@ -200,7 +203,7 @@ class ArcadeLinkShareModule {
       const contentDisposition = response.headers.get('Content-Disposition') || '';
       const match = contentDisposition.match(/filename="?([^";]+)"?/i);
       const fallbackBase = (this.context.name || 'resource').replace(/[^A-Za-z0-9._-]+/g, '_');
-      const filename = match && match[1] ? match[1] : `${fallbackBase}.arcadelink`;
+      const filename = match && match[1] ? match[1] : `${fallbackBase}-ArcadeLink.zip`;
       const url = URL.createObjectURL(blob);
       const anchor = this.document.createElement('a');
       anchor.href = url;
@@ -212,10 +215,10 @@ class ArcadeLinkShareModule {
       this.window.setTimeout(() => URL.revokeObjectURL(url), 1500);
 
       const policyText = discoveryPolicy || (visibility === 'PUBLIC' ? 'public_metadata' : 'local_only');
-      this.setStatus(`ArcadeLink generado · ${visibility} · ${policyText}`, 'success');
+      this.setStatus(`ZIP ArcadeLink generado · Windows/Linux/macOS · ${visibility} · ${policyText}`, 'success');
     } catch (error) {
       console.error('[arcadelink-share]', error);
-      this.setStatus(error && error.message ? error.message : 'No se pudo generar el ArcadeLink.', 'danger');
+      this.setStatus(error && error.message ? error.message : 'No se pudo generar el paquete ArcadeLink.', 'danger');
     } finally {
       button.disabled = false;
       button.innerHTML = oldHtml;

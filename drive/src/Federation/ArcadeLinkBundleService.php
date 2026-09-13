@@ -48,7 +48,7 @@ final class ArcadeLinkBundleService
         }
 
         try {
-            $launcher = 'ABRIR-FEDERATIONCLOUD-WINDOWS-LINUX-MAC.html';
+            $launcher = 'abrir-federtioncloud.html';
             if (!$zip->addFromString($launcher, $this->launcherHtml($portalUrl))) {
                 throw new RuntimeException('No se pudo agregar el acceso al portal.');
             }

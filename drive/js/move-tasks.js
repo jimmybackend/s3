@@ -212,3 +212,13 @@ class DriveMoveTasks {
 }
 
 DriveMoveTasks.boot();
+
+(function loadPollyBackground(win, doc) {
+  if (win.PollyBackground || doc.querySelector('script[data-polly-background]')) return;
+
+  const script = doc.createElement('script');
+  script.src = 'js/polly-background.js?v=20260913-1';
+  script.async = true;
+  script.setAttribute('data-polly-background', '1');
+  doc.head.appendChild(script);
+})(window, document);

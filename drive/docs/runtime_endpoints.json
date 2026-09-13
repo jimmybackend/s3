@@ -188,16 +188,19 @@
     },
     {
       "path": "drive/bin/federation_catalog_migrate.php",
-      "size": 1329,
+      "size": 1397,
       "active": false,
-      "references": []
+      "references": [
+        "drive/tests/federation_customs_contract_smoke.php"
+      ]
     },
     {
       "path": "drive/bin/federation_endpoint_refresh.php",
-      "size": 1489,
+      "size": 2592,
       "active": false,
       "references": [
         "drive/bin/federation_https_reconcile.php",
+        "drive/tests/federation_customs_contract_smoke.php",
         "drive/tests/federation_https_contract_smoke.php"
       ]
     },
@@ -241,9 +244,11 @@
     },
     {
       "path": "drive/bin/federation_sync.php",
-      "size": 2476,
+      "size": 3220,
       "active": false,
-      "references": []
+      "references": [
+        "drive/tests/federation_customs_contract_smoke.php"
+      ]
     },
     {
       "path": "drive/bin/sync_node_worker.php",
@@ -516,10 +521,12 @@
       "active": false,
       "references": [
         "drive/bin/federation_provider_request.php",
+        "drive/src/Federation/FederationCustomsService.php",
         "drive/src/Federation/FederationDirectoryService.php",
         "drive/src/Federation/FederationHttpClient.php",
         "drive/src/Federation/FederationProviderAuthorizationService.php",
-        "drive/src/Federation/FederationResolverService.php"
+        "drive/src/Federation/FederationResolverService.php",
+        "drive/tests/federation_customs_contract_smoke.php"
       ]
     },
     {
@@ -571,9 +578,12 @@
       "size": 366,
       "active": false,
       "references": [
+        "drive/src/Federation/FederationCustomsService.php",
         "drive/src/Federation/FederationDirectoryService.php",
         "drive/src/Federation/FederationHttpClient.php",
-        "drive/src/Federation/FederationNodeAdminService.php"
+        "drive/src/Federation/FederationNodeAdminService.php",
+        "drive/src/Http/Controller/FederationProviderController.php",
+        "drive/tests/federation_customs_contract_smoke.php"
       ]
     },
     {
@@ -1236,9 +1246,11 @@
     },
     {
       "path": "drive/src/Federation/FederationCatalogService.php",
-      "size": 8730,
+      "size": 8968,
       "active": false,
-      "references": []
+      "references": [
+        "drive/tests/federation_customs_contract_smoke.php"
+      ]
     },
     {
       "path": "drive/src/Federation/FederationCodec.php",
@@ -1271,10 +1283,20 @@
       ]
     },
     {
-      "path": "drive/src/Federation/FederationDirectoryService.php",
-      "size": 5999,
+      "path": "drive/src/Federation/FederationCustomsService.php",
+      "size": 10643,
       "active": false,
-      "references": []
+      "references": [
+        "drive/tests/federation_customs_contract_smoke.php"
+      ]
+    },
+    {
+      "path": "drive/src/Federation/FederationDirectoryService.php",
+      "size": 6414,
+      "active": false,
+      "references": [
+        "drive/tests/federation_customs_contract_smoke.php"
+      ]
     },
     {
       "path": "drive/src/Federation/FederationEndpointResolver.php",
@@ -1336,6 +1358,14 @@
       ]
     },
     {
+      "path": "drive/src/Federation/FederationIngressQueueRepository.php",
+      "size": 10559,
+      "active": false,
+      "references": [
+        "drive/tests/federation_customs_contract_smoke.php"
+      ]
+    },
+    {
       "path": "drive/src/Federation/FederationLocationSelector.php",
       "size": 2519,
       "active": false,
@@ -1360,9 +1390,11 @@
     },
     {
       "path": "drive/src/Federation/FederationNodeRepository.php",
-      "size": 6518,
+      "size": 6379,
       "active": false,
-      "references": []
+      "references": [
+        "drive/tests/federation_customs_contract_smoke.php"
+      ]
     },
     {
       "path": "drive/src/Federation/FederationPeerSyncRepository.php",
@@ -1374,13 +1406,17 @@
       "path": "drive/src/Federation/FederationProviderAuthorizationRepository.php",
       "size": 8653,
       "active": false,
-      "references": []
+      "references": [
+        "drive/tests/federation_customs_contract_smoke.php"
+      ]
     },
     {
       "path": "drive/src/Federation/FederationProviderAuthorizationService.php",
-      "size": 9834,
+      "size": 10014,
       "active": false,
-      "references": []
+      "references": [
+        "drive/tests/federation_customs_contract_smoke.php"
+      ]
     },
     {
       "path": "drive/src/Federation/FederationProviderGrant.php",
@@ -1569,7 +1605,7 @@
     },
     {
       "path": "drive/src/Http/Controller/FederationDirectoryController.php",
-      "size": 4466,
+      "size": 4610,
       "active": false,
       "references": []
     },
@@ -1587,9 +1623,11 @@
     },
     {
       "path": "drive/src/Http/Controller/FederationProviderController.php",
-      "size": 5159,
+      "size": 5975,
       "active": false,
-      "references": []
+      "references": [
+        "drive/tests/federation_customs_contract_smoke.php"
+      ]
     },
     {
       "path": "drive/src/Http/Controller/FederationReplicaController.php",
@@ -2211,6 +2249,12 @@
     {
       "path": "drive/tests/federation_catalog_event_smoke.php",
       "size": 2442,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/tests/federation_customs_contract_smoke.php",
+      "size": 5800,
       "active": false,
       "references": []
     },

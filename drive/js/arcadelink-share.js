@@ -11,6 +11,17 @@ class ArcadeLinkShareModule {
     this.bound = true;
 
     this.document.addEventListener('click', (event) => {
+      const bulkButton = event.target && event.target.closest
+        ? event.target.closest('[data-file-bulk-action="share-arcadelink"]')
+        : null;
+
+      if (bulkButton) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        this.downloadSelected(bulkButton);
+        return;
+      }
+
       const shareButton = event.target && event.target.closest
         ? event.target.closest('.js-share')
         : null;
@@ -48,13 +59,85 @@ class ArcadeLinkShareModule {
       this.updateDiscoveryHelp();
     }, true);
 
+    this.document.addEventListener('bloque-archivos:actualizado', () => {
+      this.ensureBulkButton();
+    });
+
     if (this.document.readyState === 'loading') {
-      this.document.addEventListener('DOMContentLoaded', () => this.ensurePanel(), { once: true });
+      this.document.addEventListener('DOMContentLoaded', () => {
+        this.ensurePanel();
+        this.ensureBulkButton();
+      }, { once: true });
     } else {
       this.ensurePanel();
+      this.ensureBulkButton();
     }
 
     return this;
+  }
+
+  ensureBulkButton() {
+    const actions = this.document.querySelector('#archivosWrap .bulk-actions-inner');
+    if (!actions || actions.querySelector('[data-file-bulk-action="share-arcadelink"]')) return;
+
+    const button = this.document.createElement('button');
+    button.type = 'button';
+    button.className = 'btn btn-sm btn-info';
+    button.dataset.fileBulkAction = 'share-arcadelink';
+    button.title = 'Compartir seleccionados con ArcadeLink FederationCloud';
+    button.innerHTML = '<i class="fas fa-share-alt mr-1"></i> Compartir ArcadeLink';
+
+    const gallery = actions.querySelector('#btnVerGaleria');
+    if (gallery) actions.insertBefore(button, gallery);
+    else actions.appendChild(button);
+  }
+
+  selectedKeys() {
+    const wrap = this.document.getElementById('archivosWrap') || this.document;
+    return Array.from(wrap.querySelectorAll('input[name="archivos[]"]:checked'))
+      .map((checkbox) => String(checkbox.value || '').trim())
+      .filter(Boolean);
+  }
+
+  downloadSelected(button) {
+    const selected = this.selectedKeys();
+    if (!selected.length) {
+      this.window.alert('Selecciona al menos un archivo para compartir con ArcadeLink.');
+      return;
+    }
+
+    const oldHtml = button.innerHTML;
+    button.disabled = true;
+    button.innerHTML = '<span class="spinner-border spinner-border-sm mr-1" role="status" aria-hidden="true"></span> Generando ZIP…';
+
+    const form = this.document.createElement('form');
+    form.method = 'POST';
+    form.action = 'federationcloud/bundle.php';
+    form.style.display = 'none';
+
+    const values = {
+      archivos_json: JSON.stringify(selected),
+      visibility: 'UNLISTED',
+      rights: 'link_only',
+      discovery_policy: ''
+    };
+
+    Object.entries(values).forEach(([name, value]) => {
+      const input = this.document.createElement('input');
+      input.type = 'hidden';
+      input.name = name;
+      input.value = value;
+      form.appendChild(input);
+    });
+
+    this.document.body.appendChild(form);
+    form.submit();
+    form.remove();
+
+    this.window.setTimeout(() => {
+      button.disabled = false;
+      button.innerHTML = oldHtml;
+    }, 1800);
   }
 
   ensurePanel() {
@@ -72,7 +155,7 @@ class ArcadeLinkShareModule {
         <a class="badge badge-info" href="federationcloud/portal.php">portal global</a>
       </div>
       <p class="small text-muted mb-2">
-        Descarga un ZIP portable. Incluye el pasaporte firmado <code>.arcadelink</code> y un acceso HTML a FederationCloud compatible con Windows, Linux y macOS.
+        Descarga un ZIP portable. Incluye el pasaporte firmado <code>.arcadelink</code> y el archivo <code>abrir-federtioncloud.html</code> compatible con Windows, Linux y macOS.
       </p>
       <p class="small text-muted mb-3">
         El paquete no contiene credenciales AWS ni una URL permanente de S3. El receptor abre FederationCloud y deposita ahí el archivo <code>.arcadelink</code>.

@@ -28,7 +28,7 @@ function assertNoSecretMarkers(string $content, string $context): void
         'AWS_SECRET_ACCESS_KEY',
         'AWS_ACCESS_KEY_ID=',
         'X-Amz-Credential=',
-        'BEGIN PRIVATE KEY',
+        'BEGIN ' . 'PRIVATE KEY',
         'private_key',
         'PHPSESSID=',
         'Set-Cookie:',

@@ -32,8 +32,9 @@ httpsContractOk(str_contains($reconcile, "['bypass_shell' => true]"), 'proc_open
 httpsContractOk(str_contains($installer, 'After=network-online.target nginx.service'), 'servicio espera red y Nginx');
 httpsContractOk(str_contains($installer, 'OnBootSec=45s'), 'reconciliación se agenda al arrancar');
 httpsContractOk(str_contains($installer, 'OnUnitActiveSec=${INTERVAL_HOURS}h'), 'timer mantiene renovación periódica');
-httpsContractOk(str_contains($installer, 'systemctl enable arcadecloud-federation-https.timer'), 'instalador habilita timer sin ejecutar Certbot silenciosamente');
-httpsContractOk(str_contains($installer, 'NO ejecutó Certbot todavía'), 'activación inicial requiere paso explícito del operador');
+httpsContractOk(!preg_match('/^\s*systemctl enable /m', $installer), 'instalador no habilita timer antes de la primera prueba');
+httpsContractOk(str_contains($installer, 'sudo systemctl enable --now arcadecloud-federation-https.timer'), 'documenta activación explícita después de probar');
+httpsContractOk(str_contains($installer, 'NO ejecutó Certbot ni habilitó el timer'), 'activación inicial requiere paso explícito del operador');
 
 httpsContractOk(str_contains($refresh, 'FederationDirectoryService'), 'refresh reutiliza servicio FederationCloud existente');
 httpsContractOk(str_contains($refresh, 'SKIP: el nodo aún no tiene identidad'), 'nodo nuevo puede preparar HTTPS antes de crear identidad');

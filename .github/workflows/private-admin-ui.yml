@@ -1,0 +1,49 @@
+name: Private admin UI validation
+
+on:
+  pull_request:
+    branches: ['main']
+    paths:
+      - 'drive/bloque_carpetas.php'
+      - 'drive/ec2.php'
+      - 'drive/src/View/PersonalAwsPageRenderer.php'
+      - 'drive/css/personal-tools.css'
+      - 'drive/js/theme-state-bridge.js'
+      - '.github/workflows/private-admin-ui.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: PHP syntax
+        run: |
+          set -euo pipefail
+          php -l drive/bloque_carpetas.php
+          php -l drive/ec2.php
+          php -l drive/src/View/PersonalAwsPageRenderer.php
+
+      - name: Theme integration contracts
+        run: |
+          set -euo pipefail
+          test -f drive/css/personal-tools.css
+          grep -q 'personal-tool-page' drive/ec2.php
+          grep -q 'css/personal-tools.css' drive/ec2.php
+          grep -q 'js/theme-state-bridge.js' drive/ec2.php
+          grep -q 'personal-tool-page' drive/src/View/PersonalAwsPageRenderer.php
+          grep -q 'css/personal-tools.css' drive/src/View/PersonalAwsPageRenderer.php
+          grep -q 'js/theme-state-bridge.js' drive/src/View/PersonalAwsPageRenderer.php
+          grep -q 'shared-folder-link .name' drive/bloque_carpetas.php
+          grep -q -- '-webkit-text-fill-color: #17324d' drive/bloque_carpetas.php
+          grep -q -- '-webkit-text-fill-color: #f2f2f2' drive/bloque_carpetas.php
+
+      - name: Diff check
+        run: |
+          set -euo pipefail
+          git diff --check origin/main...HEAD

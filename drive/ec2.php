@@ -48,7 +48,6 @@ const PROTECTED_INSTANCE_IDS = [
     'i-097146ee51c7f7026', // mailit-click
 ];
 
-
 // Bases de datos que deben verse SIEMPRE en este panel y que solo se controlan manualmente.
 // IMPORTANTE: aquí ya NO hay horarios. Nada se enciende ni se apaga automáticamente desde este archivo.
 const MANUAL_DATABASE_IDS = [
@@ -308,13 +307,20 @@ try {
 } catch (Throwable $t) {
     $rdsErr = $t->getMessage();
 }
+
+$stylesVersion = is_file(__DIR__ . '/css/styles.css') ? (int)filemtime(__DIR__ . '/css/styles.css') : 1;
+$responsiveVersion = is_file(__DIR__ . '/css/responsive.css') ? (int)filemtime(__DIR__ . '/css/responsive.css') : 1;
+$toolVersion = is_file(__DIR__ . '/css/personal-tools.css') ? (int)filemtime(__DIR__ . '/css/personal-tools.css') : 1;
+$themeBridgeVersion = is_file(__DIR__ . '/js/theme-state-bridge.js') ? (int)filemtime(__DIR__ . '/js/theme-state-bridge.js') : 1;
 ?><!doctype html>
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>EC2 + RDS Panel</title>
- <link rel="icon" href="ellogo.png" type="image/x-icon">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>EC2 + RDS Panel · ArcadeCloud Drive</title>
+<link rel="icon" href="ellogo.png" type="image/png">
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 <style>
 body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Helvetica,Arial,sans-serif;margin:16px;background:#0b1020;color:#e6e8ef}
 h1{margin:0 0 12px 0;font-size:20px}
@@ -351,8 +357,23 @@ a.rdp{display:inline-block;margin-left:10px;color:#8ab4ff;text-decoration:none;b
 a.rdp:hover{opacity:.9}
 code{word-break:break-all}
 </style>
+<link rel="stylesheet" href="css/styles.css?v=<?= $stylesVersion ?>">
+<link rel="stylesheet" href="css/responsive.css?v=<?= $responsiveVersion ?>">
+<link rel="stylesheet" href="css/personal-tools.css?v=<?= $toolVersion ?>">
+<script defer src="js/theme-state-bridge.js?v=<?= $themeBridgeVersion ?>"></script>
 </head>
-<body>
+<body class="ui-theme theme-neon-green theme-dark vision-normal ascii-on personal-tool-page">
+<nav class="navbar navbar-expand-lg navbar-dark px-3 drive-navbar">
+  <a class="navbar-brand d-flex align-items-center" href="s3.php" title="Volver al Drive">
+    <img src="ellogo.png" width="48" height="38" class="drive-brand-logo mr-2" alt="Logo">
+    Cloud Drive
+  </a>
+  <div class="ml-auto d-flex align-items-center flex-wrap">
+    <a class="btn btn-outline-info btn-sm mr-2" href="aws.php"><i class="fab fa-aws mr-1"></i>AWS</a>
+    <a class="btn btn-outline-light btn-sm" href="s3.php"><i class="fas fa-arrow-left mr-1"></i>Drive</a>
+  </div>
+</nav>
+<main class="personal-tool-shell">
     <h1>Panel AWS · EC2 + RDS Manual</h1>
     <div class="card">
         <form class="row" method="get">
@@ -371,7 +392,6 @@ code{word-break:break-all}
                 </select>
             </label>
             <button type="submit">Actualizar</button>
-            <!--<span class="note">Credenciales: <code>config/Config.php</code> · Todas las acciones requieren clave.</span>-->
         </form>
     </div>
 
@@ -407,17 +427,17 @@ code{word-break:break-all}
                     $pip  = (string)($i['PublicIpAddress'] ?? '');
                     $prip = (string)($i['PrivateIpAddress'] ?? '');
                     $launchTime = $i['LaunchTime'] ?? null;
-          if ($launchTime instanceof \DateTimeInterface) {
-              $lt = $launchTime->format('Y-m-d H:i:s T');
-          } elseif (is_string($launchTime) && trim($launchTime) !== '') {
-              try {
-                  $lt = (new \DateTime($launchTime))->format('Y-m-d H:i:s T');
-              } catch (\Throwable $dateError) {
-                  $lt = $launchTime;
-              }
-          } else {
-              $lt = '';
-          }
+                    if ($launchTime instanceof \DateTimeInterface) {
+                        $lt = $launchTime->format('Y-m-d H:i:s T');
+                    } elseif (is_string($launchTime) && trim($launchTime) !== '') {
+                        try {
+                            $lt = (new \DateTime($launchTime))->format('Y-m-d H:i:s T');
+                        } catch (\Throwable $dateError) {
+                            $lt = $launchTime;
+                        }
+                    } else {
+                        $lt = '';
+                    }
                     $prot = H::isProtected($id);
                     $isRdp = ($id === RDP_INSTANCE_ID);
             ?>
@@ -485,7 +505,7 @@ code{word-break:break-all}
                             <span class="note">Sin acción</span>
                         <?php endif; ?>
                     </td>
-                    <td><code><?= H::e($dbId) ?></code>    <span class="badge state-other" title="Base de datos protegida: solo se controla manualmente con clave">        🔒 Protegida    </span></td>
+                    <td><code><?= H::e($dbId) ?></code> <span class="badge state-other" title="Base de datos protegida: solo se controla manualmente con clave">🔒 Protegida</span></td>
                     <td data-rds-aws_type="<?= H::e($dbId) ?>"><?= H::e($db['aws_type'] ?? '') ?></td>
                     <td>
                         <span class="badge <?= H::e($dbCls) ?>" data-rds-state="<?= H::e($dbId) ?>"><?= H::e($dbStatus) ?></span>
@@ -504,20 +524,20 @@ code{word-break:break-all}
             </tbody>
         </table>
     </div>
+</main>
 
-    <!-- Modal de clave -->
-    <div class="modal-backdrop" id="modal">
-      <div class="modal">
-        <h3 id="modalTitle">Confirmar acción AWS</h3>
-        <p id="modalText">Para encender o detener se requiere la clave.</p>
-        <p class="note">Clave: <kbd>U*******@</kbd></p>
-        <input type="password" id="pw" placeholder="Clave" autocomplete="current-password" style="width:100%;margin:8px 0">
-        <div class="row">
-            <button id="cancel" type="button">Cancelar</button>
-            <button id="confirm" type="button">Confirmar</button>
-        </div>
-      </div>
+<div class="modal-backdrop" id="modal">
+  <div class="modal">
+    <h3 id="modalTitle">Confirmar acción AWS</h3>
+    <p id="modalText">Para encender o detener se requiere la clave.</p>
+    <p class="note">Clave: <kbd>U*******@</kbd></p>
+    <input type="password" id="pw" placeholder="Clave" autocomplete="current-password" style="width:100%;margin:8px 0">
+    <div class="row">
+        <button id="cancel" type="button">Cancelar</button>
+        <button id="confirm" type="button">Confirmar</button>
     </div>
+  </div>
+</div>
 
 <script>
 (function(){
@@ -530,7 +550,7 @@ code{word-break:break-all}
   const pwInput = document.getElementById('pw');
   const btnCancel = document.getElementById('cancel');
   const btnConfirm = document.getElementById('confirm');
-  let pendingAction = null; // {kind:'ec2'|'rds', id, action, force}
+  let pendingAction = null;
 
   function htmlEscape(s){
     return String(s).replace(/[&<>"']/g, function(ch){
@@ -580,7 +600,6 @@ code{word-break:break-all}
     if (ev.target === modal) { hideModal(); pendingAction=null; }
   });
 
-  // ===================== EC2 JS =====================
   function badgeEl(id){ return document.querySelector('[data-state="'+attrEscape(id)+'"]'); }
   function cell(id, kind){ return document.querySelector('[data-'+kind+'="'+attrEscape(id)+'"]'); }
 
@@ -702,7 +721,6 @@ code{word-break:break-all}
     }, false);
   }
 
-  // ===================== RDS JS =====================
   function rdsBadgeEl(id){ return document.querySelector('[data-rds-state="'+attrEscape(id)+'"]'); }
   function rdsCell(id, kind){ return document.querySelector('[data-rds-'+kind+'="'+attrEscape(id)+'"]'); }
 
@@ -773,7 +791,7 @@ code{word-break:break-all}
   }
 
   async function pollRdsStatus(id, targetFinal){
-    const maxSecs = 1800; // RDS puede tardar varios minutos en iniciar/detener.
+    const maxSecs = 1800;
     const intervalMs = 10000;
     let elapsed = 0;
     while (elapsed <= maxSecs){

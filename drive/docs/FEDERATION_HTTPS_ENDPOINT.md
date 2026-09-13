@@ -104,17 +104,17 @@ El instalador crea:
 /etc/systemd/system/arcadecloud-federation-https.timer
 ```
 
-El timer queda habilitado, pero el instalador **no ejecuta Certbot durante la instalación**. Esto permite revisar primero la configuración. Para la primera reconciliación:
+Por seguridad, el instalador **no ejecuta Certbot y tampoco habilita el timer**. Primero valida sintaxis PHP y `nginx -t`. Después el operador hace una primera reconciliación explícita:
 
 ```bash
 sudo systemctl start arcadecloud-federation-https.service
 sudo systemctl status arcadecloud-federation-https.service --no-pager
 ```
 
-Después:
+Sólo cuando esa prueba termina correctamente se habilita la automatización:
 
 ```bash
-sudo systemctl start arcadecloud-federation-https.timer
+sudo systemctl enable --now arcadecloud-federation-https.timer
 systemctl list-timers arcadecloud-federation-https.timer --no-pager
 ```
 

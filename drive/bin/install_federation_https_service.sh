@@ -11,6 +11,8 @@ APP_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd)"
 WEBROOT=""
 BACKEND_HOST="localhost"
 RUNTIME_ENV="/etc/arcadecloud-drive/runtime-env.json"
+DRIVE_ENV="/etc/arcadecloud-drive/drive.env"
+FEDERATION_ENV="/etc/arcadecloud-drive/federation.env"
 STATE_PATH="/var/lib/arcadecloud-drive/federation-https-state.json"
 NGINX_IP_CONFIG="/etc/nginx/conf.d/arcadecloud-federation-ip.conf"
 PHP_BIN="$(command -v php || true)"
@@ -28,6 +30,8 @@ for arg in "$@"; do
     --webroot=*) WEBROOT="${arg#*=}" ;;
     --backend-host=*) BACKEND_HOST="${arg#*=}" ;;
     --runtime-env=*) RUNTIME_ENV="${arg#*=}" ;;
+    --drive-env=*) DRIVE_ENV="${arg#*=}" ;;
+    --federation-env=*) FEDERATION_ENV="${arg#*=}" ;;
     --state-path=*) STATE_PATH="${arg#*=}" ;;
     --nginx-ip-config=*) NGINX_IP_CONFIG="${arg#*=}" ;;
     --php-bin=*) PHP_BIN="${arg#*=}" ;;
@@ -39,7 +43,7 @@ for arg in "$@"; do
 done
 
 if [[ -z "$RUN_USER" ]]; then
-  echo "ERROR: indica --run-user=USUARIO_PHP_FPM (por ejemplo nginx)." >&2
+  echo "ERROR: indica --run-user=USUARIO_REAL_PHP_FPM (por ejemplo apache o nginx, según tu pool)." >&2
   exit 2
 fi
 if ! id "$RUN_USER" >/dev/null 2>&1; then
@@ -88,20 +92,31 @@ for pair in \
   fi
 done
 
-for path_value in "$RUNTIME_ENV" "$STATE_PATH" "$NGINX_IP_CONFIG" "$APP_ROOT" "$WEBROOT" "$PHP_BIN" "$CERTBOT_BIN" "$NGINX_BIN"; do
+for path_value in "$RUNTIME_ENV" "$DRIVE_ENV" "$FEDERATION_ENV" "$STATE_PATH" "$NGINX_IP_CONFIG" "$APP_ROOT" "$WEBROOT" "$PHP_BIN" "$CERTBOT_BIN" "$NGINX_BIN"; do
   case "$path_value" in
     /*) ;;
     *) echo "ERROR: las rutas deben ser absolutas: $path_value" >&2; exit 2 ;;
   esac
 done
 
-install -d -o root -g "$RUN_GROUP" -m 0750 "$(dirname "$RUNTIME_ENV")"
+if ! ps -eo user=,comm= | awk -v u="$RUN_USER" '$1 == u && $2 == "php-fpm" { found=1 } END { exit(found ? 0 : 1) }'; then
+  echo "ADVERTENCIA: no se detectó un worker php-fpm ejecutándose como $RUN_USER." >&2
+  echo "Verifica el usuario real del pool con: ps -eo user=,comm=,args= | grep '[p]hp-fpm'" >&2
+fi
+
+RUNTIME_DIR="$(dirname "$RUNTIME_ENV")"
+if [[ ! -d "$RUNTIME_DIR" ]]; then
+  install -d -o root -g "$RUN_GROUP" -m 0750 "$RUNTIME_DIR"
+fi
 if [[ ! -e "$RUNTIME_ENV" ]]; then
   install -o root -g "$RUN_GROUP" -m 0640 /dev/null "$RUNTIME_ENV"
   printf '{}\n' > "$RUNTIME_ENV"
 else
-  chown root:"$RUN_GROUP" "$RUNTIME_ENV"
-  chmod 0640 "$RUNTIME_ENV"
+  if ! "$RUNUSER_BIN" -u "$RUN_USER" -- test -r "$RUNTIME_ENV"; then
+    echo "ERROR: $RUN_USER no puede leer $RUNTIME_ENV." >&2
+    echo "No se cambió propietario/grupo automáticamente para no romper el pool PHP-FPM existente." >&2
+    exit 4
+  fi
 fi
 install -d -o root -g root -m 0755 "$(dirname "$STATE_PATH")"
 
@@ -118,6 +133,8 @@ Requires=nginx.service
 [Service]
 Type=oneshot
 WorkingDirectory=$APP_ROOT
+EnvironmentFile=-$DRIVE_ENV
+EnvironmentFile=-$FEDERATION_ENV
 ExecStart=$PHP_BIN $APP_ROOT/drive/bin/federation_https_reconcile.php --runtime-env=$RUNTIME_ENV --webroot=$WEBROOT --nginx-ip-config=$NGINX_IP_CONFIG --state-path=$STATE_PATH --backend-host=$BACKEND_HOST --run-user=$RUN_USER --app-root=$APP_ROOT --php-bin=$PHP_BIN --certbot-bin=$CERTBOT_BIN --nginx-bin=$NGINX_BIN --systemctl-bin=$SYSTEMCTL_BIN --curl-bin=$CURL_BIN --runuser-bin=$RUNUSER_BIN
 TimeoutStartSec=300
 UMask=0027
@@ -151,7 +168,10 @@ echo "OK: reconciliador HTTPS FederationCloud instalado, aún no activado."
 echo "Servicio: arcadecloud-federation-https.service"
 echo "Timer: arcadecloud-federation-https.timer"
 echo "Frecuencia al activarlo: cada ${INTERVAL_HOURS}h y 45s después del arranque."
-echo "Runtime: $RUNTIME_ENV"
+echo "Usuario de runtime FederationCloud: $RUN_USER"
+echo "Runtime administrado: $RUNTIME_ENV"
+echo "EnvironmentFile Drive: $DRIVE_ENV"
+echo "EnvironmentFile FederationCloud: $FEDERATION_ENV"
 echo "Webroot ACME: $WEBROOT"
 echo "Backend HTTP local para modo IP: 127.0.0.1:80 (Host: $BACKEND_HOST)"
 echo

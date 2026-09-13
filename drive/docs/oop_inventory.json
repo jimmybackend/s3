@@ -1,7 +1,7 @@
 {
   "summary": {
-    "php_total": 324,
-    "php_class_modules": 193,
+    "php_total": 325,
+    "php_class_modules": 194,
     "php_needs_migration": 29,
     "js_total": 40,
     "js_class_modules": 38,
@@ -646,7 +646,7 @@
     },
     {
       "path": "drive/federationcloud/bundle.php",
-      "lines": 13,
+      "lines": 12,
       "kind": "thin endpoint",
       "classes": 0,
       "functions": [],
@@ -2777,6 +2777,21 @@
       "issues": []
     },
     {
+      "path": "drive/src/Http/Controller/FederationBundleController.php",
+      "lines": 146,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
       "path": "drive/src/Http/Controller/FederationCatalogController.php",
       "lines": 144,
       "kind": "class/module",
@@ -4307,7 +4322,7 @@
     },
     {
       "path": "drive/tests/arcadelink_bundle_regression.php",
-      "lines": 65,
+      "lines": 68,
       "kind": "procedural endpoint",
       "classes": 0,
       "functions": [],
@@ -5034,7 +5049,7 @@
     },
     {
       "path": "drive/js/arcadelink-share.js",
-      "lines": 238,
+      "lines": 321,
       "kind": "class/module",
       "classes": [
         "ArcadeLinkShareModule"

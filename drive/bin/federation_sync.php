@@ -6,6 +6,7 @@ require_once dirname(__DIR__) . '/app_bootstrap.php';
 
 use ArcadeCloud\Drive\Core\ApplicationKernel;
 use ArcadeCloud\Drive\Federation\FederationAccessService;
+use ArcadeCloud\Drive\Federation\FederationCustomsService;
 use ArcadeCloud\Drive\Federation\FederationGossipService;
 use ArcadeCloud\Drive\Federation\FederationReplicaService;
 use ArcadeCloud\Drive\Federation\FederationShareDriveService;
@@ -24,7 +25,24 @@ if (!flock($lock, LOCK_EX | LOCK_NB)) {
 
 try {
     $app = ApplicationKernel::app();
+
+    // Aduana: como máximo UNA petición externa por ciclo. El lock de este worker
+    // garantiza que no haya dos procesadores pesados concurrentes.
+    try {
+        $customs = (new FederationCustomsService($app))->processNext();
+    } catch (Throwable $e) {
+        $customs = [
+            'degraded' => true,
+            'error' => 'La Aduana FederationCloud no pudo procesar su siguiente petición.',
+        ];
+        error_log('[FederationCloud customs] ' . $e->getMessage());
+    }
+
+    // Después de Aduana, gossip ya puede ver un nodo recién admitido y empezar
+    // a intercambiar su node.upsert firmado y el resto del catálogo.
     $result = (new FederationGossipService($app))->syncOnce();
+    $result['customs'] = $customs;
+
     try {
         $result['access_requests'] = (new FederationAccessService($app))->syncPending(5);
     } catch (Throwable $e) {

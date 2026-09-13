@@ -170,7 +170,7 @@ final class FederationProviderAuthorizationService
             'origin_node_id' => $originNodeId,
             'origin_node_name' => $this->identity->nodeName(),
             'pending' => array_map([$this, 'adminRow'], $this->authorizations->pendingForOrigin($originNodeId)),
-            'active' => array_map([$this, 'adminRow'], $this->authorizations->activeForOrigin($originNodeId)),
+            'active' => array_map([$this, 'adminRow'], $this->authorizations->allActiveForOrigin($originNodeId)),
         ];
     }
 
@@ -218,7 +218,7 @@ final class FederationProviderAuthorizationService
     {
         $this->ensureEnabled();
         $originNodeId = $this->identity->nodeId();
-        $rows = $this->authorizations->activeForOrigin($originNodeId);
+        $rows = $this->authorizations->allActiveForOrigin($originNodeId);
         $providers = [];
         foreach ($rows as $row) {
             $providers[] = [

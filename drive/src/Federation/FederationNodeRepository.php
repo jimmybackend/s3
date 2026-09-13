@@ -40,6 +40,14 @@ final class FederationNodeRepository
         }
     }
 
+    /**
+     * Persiste un descriptor ya verificado.
+     *
+     * La clave pública queda ligada de forma permanente al Node ID. Las URLs sí
+     * pueden rotar para soportar nodos con IP pública dinámica o migraciones de
+     * dominio. Los llamadores remotos deben validar firma Ed25519 y comprobar en
+     * vivo el nuevo endpoint antes de invocar este método.
+     */
     public function upsertVerified(array $descriptor): void
     {
         $nodeId = (string)$descriptor['node_id'];
@@ -52,17 +60,11 @@ final class FederationNodeRepository
 
         $existing = $this->findBinding($nodeId);
         if ($existing !== null) {
-            foreach ([
-                'PublicKey' => $publicKey,
-                'PublicUrl' => $publicUrl,
-                'FederationUrl' => $federationUrl,
-            ] as $column => $expected) {
-                if (!hash_equals((string)$existing[$column], $expected)) {
-                    throw new FederationException(
-                        'La identidad FederationCloud ya está ligada a otra clave o URL; requiere recuperación administrativa explícita.',
-                        409
-                    );
-                }
+            if (!hash_equals((string)$existing['PublicKey'], $publicKey)) {
+                throw new FederationException(
+                    'La identidad FederationCloud ya está ligada a otra clave pública; requiere recuperación administrativa explícita.',
+                    409
+                );
             }
 
             if ($nodeName !== null) {
@@ -71,13 +73,14 @@ final class FederationNodeRepository
 
             $stmt = $this->db->prepare(
                 "UPDATE FederationNodes
-                 SET NodeName = COALESCE(?, NodeName), Status = 'active', LastSeen = UTC_TIMESTAMP()
+                 SET NodeName = COALESCE(?, NodeName), PublicUrl = ?, FederationUrl = ?,
+                     Status = 'active', LastSeen = UTC_TIMESTAMP()
                  WHERE NodeId = ? LIMIT 1"
             );
             if (!$stmt) {
                 throw new FederationException('No se pudo preparar la actualización FederationNodes.', 500);
             }
-            $stmt->bind_param('ss', $nodeName, $nodeId);
+            $stmt->bind_param('ssss', $nodeName, $publicUrl, $federationUrl, $nodeId);
             if (!$stmt->execute()) {
                 $errno = $stmt->errno;
                 $message = $stmt->error;

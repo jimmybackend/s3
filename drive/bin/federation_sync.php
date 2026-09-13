@@ -8,6 +8,7 @@ use ArcadeCloud\Drive\Core\ApplicationKernel;
 use ArcadeCloud\Drive\Federation\FederationAccessService;
 use ArcadeCloud\Drive\Federation\FederationCustomsService;
 use ArcadeCloud\Drive\Federation\FederationGossipService;
+use ArcadeCloud\Drive\Federation\FederationReplicaPresenceService;
 use ArcadeCloud\Drive\Federation\FederationReplicaService;
 use ArcadeCloud\Drive\Federation\FederationShareDriveService;
 
@@ -26,6 +27,21 @@ if (!flock($lock, LOCK_EX | LOCK_NB)) {
 try {
     $app = ApplicationKernel::app();
 
+    // Una réplica configurada se presenta por iniciativa propia. El origen nunca
+    // sondea periódicamente a sus copias. Si ya está autorizada usa la puerta
+    // rápida de presencia; si es primera vez, cae a Aduana/Solicitudes.
+    try {
+        $replicaPresence = (new FederationReplicaPresenceService($app))->announce();
+    } catch (Throwable $e) {
+        $replicaPresence = [
+            'configured' => true,
+            'status' => 'degraded',
+            'available' => false,
+            'error' => 'No se pudo actualizar la presencia de la réplica en este ciclo.',
+        ];
+        error_log('[FederationCloud replica presence] ' . $e->getMessage());
+    }
+
     // Aduana: como máximo UNA petición externa por ciclo. El lock de este worker
     // garantiza que no haya dos procesadores pesados concurrentes.
     try {
@@ -38,9 +54,10 @@ try {
         error_log('[FederationCloud customs] ' . $e->getMessage());
     }
 
-    // Después de Aduana, gossip ya puede ver un nodo recién admitido y empezar
-    // a intercambiar su node.upsert firmado y el resto del catálogo.
+    // Después de presencia/Aduana, gossip ya puede ver un nodo recién admitido
+    // y empujar su node.upsert firmado al origen y al resto de la federación.
     $result = (new FederationGossipService($app))->syncOnce();
+    $result['replica_presence'] = $replicaPresence;
     $result['customs'] = $customs;
 
     try {

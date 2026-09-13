@@ -9,7 +9,8 @@ final class FederationConfig
         private string $publicUrl,
         private string $federationUrl,
         private string $identityPath,
-        private bool $enabled
+        private bool $enabled,
+        private ?string $replicaOriginUrl = null
     ) {
     }
 
@@ -32,7 +33,8 @@ final class FederationConfig
             rtrim($publicUrl, '/'),
             rtrim($federationUrl, '/') . '/',
             $identityPath,
-            self::envBool('ARCADECLOUD_FEDERATION_ENABLED', false)
+            self::envBool('ARCADECLOUD_FEDERATION_ENABLED', false),
+            self::optionalHttpsUrl('ARCADECLOUD_FEDERATION_REPLICA_ORIGIN_URL')
         );
     }
 
@@ -56,6 +58,11 @@ final class FederationConfig
         return $this->enabled;
     }
 
+    public function replicaOriginUrl(): ?string
+    {
+        return $this->replicaOriginUrl;
+    }
+
     private static function requiredUrl(string $name): string
     {
         $value = trim((string)(getenv($name) ?: ''));
@@ -74,6 +81,20 @@ final class FederationConfig
             throw new FederationException($name . ' no debe contener credenciales, query ni fragmento.', 500);
         }
         return $value;
+    }
+
+    private static function optionalHttpsUrl(string $name): ?string
+    {
+        $value = trim((string)(getenv($name) ?: ''));
+        if ($value === '') return null;
+        $parts = parse_url($value);
+        if (!is_array($parts) || strtolower((string)($parts['scheme'] ?? '')) !== 'https' || !isset($parts['host'])) {
+            throw new FederationException($name . ' debe contener una URL HTTPS válida.', 500);
+        }
+        if (isset($parts['user']) || isset($parts['pass']) || isset($parts['query']) || isset($parts['fragment'])) {
+            throw new FederationException($name . ' no debe contener credenciales, query ni fragmento.', 500);
+        }
+        return rtrim($value, '/') . '/';
     }
 
     private static function envBool(string $name, bool $default): bool

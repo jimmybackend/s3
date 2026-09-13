@@ -8,6 +8,7 @@ use ArcadeCloud\Drive\Core\ApplicationKernel;
 use ArcadeCloud\Drive\Federation\FederationCatalogService;
 use ArcadeCloud\Drive\Federation\FederationConfig;
 use ArcadeCloud\Drive\Federation\FederationDirectoryService;
+use ArcadeCloud\Drive\Federation\FederationReplicaPresenceService;
 
 try {
     $config = FederationConfig::fromEnvironment();
@@ -30,6 +31,19 @@ try {
     // replique disponibilidad/endpoint a toda la federación.
     $presenceEvent = (new FederationCatalogService($app))->announceNodeIfChanged();
 
+    // Sólo una copia que configure ARCADECLOUD_FEDERATION_REPLICA_ORIGIN_URL
+    // ejecuta este camino. El nodo origen no busca a sus copias.
+    try {
+        $replicaPresence = (new FederationReplicaPresenceService($app))->announce();
+    } catch (\Throwable $e) {
+        $replicaPresence = [
+            'configured' => $config->replicaOriginUrl() !== null,
+            'status' => 'degraded',
+            'available' => false,
+            'error' => $e->getMessage(),
+        ];
+    }
+
     $local = is_array($directory['local_node'] ?? null) ? $directory['local_node'] : [];
     $nodeId = (string)($local['node_id'] ?? '');
     $endpoint = (string)($local['federation_url'] ?? $config->federationUrl());
@@ -41,6 +55,9 @@ try {
         if (is_array($presenceEvent) && isset($presenceEvent['event_id'])) {
             fwrite(STDOUT, 'PRESENCE_EVENT_ID=' . (string)$presenceEvent['event_id'] . "\n");
         }
+        if (($replicaPresence['configured'] ?? false) === true) {
+            fwrite(STDOUT, 'REPLICA_STATUS=' . (string)($replicaPresence['status'] ?? 'unknown') . "\n");
+        }
         exit(0);
     }
 
@@ -51,6 +68,10 @@ try {
     }
     if (is_array($presenceEvent) && isset($presenceEvent['event_id'])) {
         fwrite(STDOUT, 'PRESENCE_EVENT_ID=' . (string)$presenceEvent['event_id'] . "\n");
+    }
+    if (($replicaPresence['configured'] ?? false) === true) {
+        fwrite(STDOUT, 'REPLICA_STATUS=' . (string)($replicaPresence['status'] ?? 'unknown') . "\n");
+        fwrite(STDOUT, 'REPLICA_AVAILABLE=' . (($replicaPresence['available'] ?? false) ? 'true' : 'false') . "\n");
     }
     exit(0);
 } catch (\Throwable $e) {

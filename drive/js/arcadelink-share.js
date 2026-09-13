@@ -142,7 +142,7 @@ class ArcadeLinkShareModule {
         <a class="badge badge-info" href="federationcloud/portal.php">portal global</a>
       </div>
       <p class="small text-muted mb-2">
-        Descarga un ZIP portable. Incluye el pasaporte firmado <code>.arcadelink</code> y el archivo <code>abrir-federtioncloud.html</code> compatible con Windows, Linux y macOS.
+        Descarga un ZIP portable. Incluye el pasaporte firmado <code>.arcadelink</code> y el archivo <code>Abrir-FederationCloud.html</code> compatible con Windows, Linux y macOS.
       </p>
       <p class="small text-muted mb-3">
         El paquete no contiene credenciales AWS ni una URL permanente de S3. El receptor abre FederationCloud y deposita ahí el archivo <code>.arcadelink</code>.

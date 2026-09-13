@@ -343,7 +343,8 @@
       "size": 265,
       "active": true,
       "references": [
-        "drive/bloque_archivos.php"
+        "drive/bloque_archivos.php",
+        "drive/tests/arcadelink_bulk_contract_regression.php"
       ]
     },
     {
@@ -448,6 +449,7 @@
       "size": 357,
       "active": false,
       "references": [
+        "drive/tests/arcadelink_bulk_contract_regression.php",
         "drive/js/arcadelink-share.js"
       ]
     },
@@ -960,7 +962,9 @@
       "path": "drive/src/Application/FileAccessService.php",
       "size": 4239,
       "active": false,
-      "references": []
+      "references": [
+        "drive/tests/arcadelink_bulk_contract_regression.php"
+      ]
     },
     {
       "path": "drive/src/Application/FileKeyRotationService.php",
@@ -1188,7 +1192,9 @@
       "path": "drive/src/Federation/FederatedResourceRepository.php",
       "size": 4014,
       "active": false,
-      "references": []
+      "references": [
+        "drive/tests/arcadelink_bulk_contract_regression.php"
+      ]
     },
     {
       "path": "drive/src/Federation/FederationAccessMessageCodec.php",
@@ -1407,7 +1413,9 @@
       "path": "drive/src/Federation/FederationService.php",
       "size": 6386,
       "active": false,
-      "references": []
+      "references": [
+        "drive/tests/arcadelink_bulk_contract_regression.php"
+      ]
     },
     {
       "path": "drive/src/Federation/FederationShareDownloader.php",
@@ -1514,7 +1522,9 @@
       "path": "drive/src/Http/Controller/FederationBundleController.php",
       "size": 5440,
       "active": false,
-      "references": []
+      "references": [
+        "drive/tests/arcadelink_bulk_contract_regression.php"
+      ]
     },
     {
       "path": "drive/src/Http/Controller/FederationCatalogController.php",
@@ -1568,7 +1578,9 @@
       "path": "drive/src/Http/Controller/FileAccessController.php",
       "size": 6142,
       "active": false,
-      "references": []
+      "references": [
+        "drive/tests/arcadelink_bulk_contract_regression.php"
+      ]
     },
     {
       "path": "drive/src/Http/Controller/FileKeyRotationController.php",
@@ -2150,8 +2162,14 @@
       "references": []
     },
     {
+      "path": "drive/tests/arcadelink_bulk_contract_regression.php",
+      "size": 4754,
+      "active": false,
+      "references": []
+    },
+    {
       "path": "drive/tests/arcadelink_bundle_regression.php",
-      "size": 2330,
+      "size": 5753,
       "active": false,
       "references": []
     },

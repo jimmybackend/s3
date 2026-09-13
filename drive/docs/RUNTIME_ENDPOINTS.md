@@ -25,7 +25,7 @@
 | `drive/bloque_footer.php` | `drive/s3.php` |
 | `drive/costos_aws.php` | `drive/s3.php` |
 | `drive/delete_multiple.php` | `drive/s3.php`, `drive/js/elimina-multiple.js`, `drive/js/file-block.js` |
-| `drive/descargar_archivo.php` | `drive/bloque_archivos.php` |
+| `drive/descargar_archivo.php` | `drive/bloque_archivos.php`, `drive/tests/arcadelink_bulk_contract_regression.php` |
 | `drive/ec2.php` | `drive/s3.php`, `drive/src/View/PersonalAwsPageRenderer.php`, `drive/js/estilo.js` |
 | `drive/editor.php` | `drive/bloque_archivos.php`, `drive/js/editar-txt.js` |
 | `drive/federationcloud/index.php` | `drive/bloque_archivos.php`, `drive/bloque_carpetas.php`, `drive/s3.php`, `drive/src/Http/Controller/ActivityCostController.php`, `drive/src/Http/Controller/AuthController.php`, `drive/src/Security/SessionManager.php`, `drive/up.php` |
@@ -77,7 +77,7 @@
 | `drive/federationcloud/access-request.php` | `drive/src/Federation/FederationAccessService.php`, `drive/src/Federation/FederationHttpClient.php` |
 | `drive/federationcloud/access-status.php` | `drive/src/Federation/FederationAccessService.php`, `drive/src/Federation/FederationHttpClient.php` |
 | `drive/federationcloud/access.php` | `drive/js/federation-portal.js` |
-| `drive/federationcloud/bundle.php` | `drive/js/arcadelink-share.js` |
+| `drive/federationcloud/bundle.php` | `drive/tests/arcadelink_bulk_contract_regression.php`, `drive/js/arcadelink-share.js` |
 | `drive/federationcloud/create.php` | `drive/js/arcadelink-share.js` |
 | `drive/federationcloud/name-availability.php` | `drive/src/Federation/FederationHttpClient.php`, `drive/src/Federation/FederationNodeAdminService.php` |
 | `drive/federationcloud/node-admin.php` | `drive/js/federation-footer.js` |
@@ -127,7 +127,7 @@
 | `drive/src/Application/AiFileSearchService.php` | ninguna |
 | `drive/src/Application/DrivePageService.php` | ninguna |
 | `drive/src/Application/DrivePageViewModel.php` | ninguna |
-| `drive/src/Application/FileAccessService.php` | ninguna |
+| `drive/src/Application/FileAccessService.php` | `drive/tests/arcadelink_bulk_contract_regression.php` |
 | `drive/src/Application/FileKeyRotationService.php` | ninguna |
 | `drive/src/Application/FileListService.php` | ninguna |
 | `drive/src/Application/FileMutationService.php` | ninguna |
@@ -164,7 +164,7 @@
 | `drive/src/Federation/ArcadeLinkBundleService.php` | `drive/tests/arcadelink_bundle_regression.php` |
 | `drive/src/Federation/ArcadeLinkService.php` | `drive/bin/federation_provider_request.php`, `drive/tests/arcadelink_bundle_regression.php`, `drive/tests/federationcloud_smoke.php` |
 | `drive/src/Federation/FederatedCatalogRepository.php` | ninguna |
-| `drive/src/Federation/FederatedResourceRepository.php` | ninguna |
+| `drive/src/Federation/FederatedResourceRepository.php` | `drive/tests/arcadelink_bulk_contract_regression.php` |
 | `drive/src/Federation/FederationAccessMessageCodec.php` | `drive/tests/federation_access_message_smoke.php` |
 | `drive/src/Federation/FederationAccessRepository.php` | ninguna |
 | `drive/src/Federation/FederationAccessService.php` | ninguna |
@@ -192,7 +192,7 @@
 | `drive/src/Federation/FederationReplicaService.php` | ninguna |
 | `drive/src/Federation/FederationResolverService.php` | ninguna |
 | `drive/src/Federation/FederationSeedConfig.php` | `drive/tests/federation_directory_smoke.php` |
-| `drive/src/Federation/FederationService.php` | ninguna |
+| `drive/src/Federation/FederationService.php` | `drive/tests/arcadelink_bulk_contract_regression.php` |
 | `drive/src/Federation/FederationShareDownloader.php` | ninguna |
 | `drive/src/Federation/FederationShareDriveRepository.php` | ninguna |
 | `drive/src/Federation/FederationShareDriveService.php` | ninguna |
@@ -207,7 +207,7 @@
 | `drive/src/Http/Controller/AwsCostController.php` | ninguna |
 | `drive/src/Http/Controller/AwsFileController.php` | ninguna |
 | `drive/src/Http/Controller/FederationAccessController.php` | ninguna |
-| `drive/src/Http/Controller/FederationBundleController.php` | ninguna |
+| `drive/src/Http/Controller/FederationBundleController.php` | `drive/tests/arcadelink_bulk_contract_regression.php` |
 | `drive/src/Http/Controller/FederationCatalogController.php` | ninguna |
 | `drive/src/Http/Controller/FederationController.php` | ninguna |
 | `drive/src/Http/Controller/FederationDirectoryController.php` | ninguna |
@@ -216,7 +216,7 @@
 | `drive/src/Http/Controller/FederationProviderController.php` | ninguna |
 | `drive/src/Http/Controller/FederationReplicaController.php` | ninguna |
 | `drive/src/Http/Controller/FederationShareDriveController.php` | ninguna |
-| `drive/src/Http/Controller/FileAccessController.php` | ninguna |
+| `drive/src/Http/Controller/FileAccessController.php` | `drive/tests/arcadelink_bulk_contract_regression.php` |
 | `drive/src/Http/Controller/FileKeyRotationController.php` | ninguna |
 | `drive/src/Http/Controller/FileMutationController.php` | ninguna |
 | `drive/src/Http/Controller/FileSearchController.php` | ninguna |
@@ -308,6 +308,7 @@
 | `drive/sync_s3_to_db.php` | `drive/js/sincronizar.js` |
 | `drive/sync_status.php` | `drive/js/sincronizar.js` |
 | `drive/tests/activity_costs_smoke.php` | ninguna |
+| `drive/tests/arcadelink_bulk_contract_regression.php` | ninguna |
 | `drive/tests/arcadelink_bundle_regression.php` | ninguna |
 | `drive/tests/federation_access_message_smoke.php` | ninguna |
 | `drive/tests/federation_catalog_event_smoke.php` | ninguna |

@@ -304,7 +304,7 @@
     },
     {
       "path": "drive/bloque_carpetas.php",
-      "lines": 134,
+      "lines": 147,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -489,7 +489,7 @@
     },
     {
       "path": "drive/ec2.php",
-      "lines": 841,
+      "lines": 859,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -4078,7 +4078,7 @@
     },
     {
       "path": "drive/src/View/PersonalAwsPageRenderer.php",
-      "lines": 135,
+      "lines": 171,
       "kind": "class/module",
       "classes": 1,
       "functions": [],

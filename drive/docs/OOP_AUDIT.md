@@ -40,7 +40,7 @@
 | `drive/bin/sync_worker.php` | 129 | endpoint with logic | 0 | — | — | — | — |
 | `drive/bin/upload_cleanup.php` | 11 | thin endpoint | 0 | — | — | — | — |
 | `drive/bloque_archivos.php` | 662 | view/entrypoint | 0 | ⚠️ | — | — | — |
-| `drive/bloque_carpetas.php` | 134 | view/entrypoint | 0 | ⚠️ | — | — | — |
+| `drive/bloque_carpetas.php` | 147 | view/entrypoint | 0 | ⚠️ | — | — | — |
 | `drive/bloque_footer.php` | 194 | view/entrypoint | 0 | ⚠️ | — | — | — |
 | `drive/buscar_archivo.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/comprehend_archivo.php` | 8 | thin endpoint | 0 | — | — | — | — |
@@ -52,7 +52,7 @@
 | `drive/descargar_zip.php` | 8 | thin endpoint | 0 | — | — | — | — |
 | `drive/download_multiple.php` | 8 | thin endpoint | 0 | — | — | — | — |
 | `drive/ec2-cron.php` | 39 | thin endpoint | 0 | — | — | — | — |
-| `drive/ec2.php` | 841 | view/entrypoint | 0 | ⚠️ | — | — | — |
+| `drive/ec2.php` | 859 | view/entrypoint | 0 | ⚠️ | — | — | — |
 | `drive/editor.php` | 485 | view/entrypoint | 0 | — | — | — | global functions: detectarLenguaje, setStatus, limpiarMarcadores, marcarGuardado, actualizarBotonValidar, aplicarLenguaje, poblarLenguajes, deshacer |
 | `drive/eliminar_archivo.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/eliminar_carpeta.php` | 10 | thin endpoint | 0 | — | — | — | — |
@@ -288,7 +288,7 @@
 | `drive/src/View/FileIconResolver.php` | 136 | class/module | 1 | — | — | — | — |
 | `drive/src/View/FileViewHelper.php` | 108 | class/module | 1 | — | — | — | — |
 | `drive/src/View/FolderTreeRenderer.php` | 124 | class/module | 1 | — | ⚠️ | — | — |
-| `drive/src/View/PersonalAwsPageRenderer.php` | 135 | class/module | 1 | — | — | — | — |
+| `drive/src/View/PersonalAwsPageRenderer.php` | 171 | class/module | 1 | — | — | — | — |
 | `drive/src/View/PublicSharedPageRenderer.php` | 104 | class/module | 1 | — | — | — | — |
 | `drive/src/View/SharePageRenderer.php` | 118 | class/module | 1 | — | — | — | — |
 | `drive/src/View/SyncStatusRenderer.php` | 14 | class/module | 1 | — | — | — | — |

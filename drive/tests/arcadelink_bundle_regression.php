@@ -31,6 +31,9 @@ if (!is_file($path)) {
 if ((int)$bundle['count'] !== 2) {
     throw new RuntimeException('Bundle count is incorrect.');
 }
+if ((string)$bundle['launcher'] !== 'abrir-federtioncloud.html') {
+    throw new RuntimeException('Portable launcher name is incorrect.');
+}
 
 $zip = new ZipArchive();
 if ($zip->open($path) !== true) {
@@ -38,7 +41,7 @@ if ($zip->open($path) !== true) {
 }
 
 try {
-    $launcherName = 'ABRIR-FEDERATIONCLOUD-WINDOWS-LINUX-MAC.html';
+    $launcherName = 'abrir-federtioncloud.html';
     $launcher = $zip->getFromName($launcherName);
     if (!is_string($launcher) || !str_contains($launcher, 'https://drive.esforzados.com/federationcloud/')) {
         throw new RuntimeException('Portable launcher is missing or has the wrong FederationCloud URL.');

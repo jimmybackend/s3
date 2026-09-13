@@ -1,0 +1,193 @@
+/* ArcadeCloud Drive · herramientas personales/administrativas
+ * Reutiliza las variables visuales de css/styles.css para que aws.php y ec2.php
+ * se sientan parte de la misma aplicación en tema claro u oscuro.
+ */
+
+body.personal-tool-page {
+  margin: 0 !important;
+  min-height: 100vh;
+  padding: 0 0 48px !important;
+  background: var(--body-grad) !important;
+  color: var(--text) !important;
+}
+
+.personal-tool-page .drive-navbar {
+  margin-bottom: 0;
+}
+
+.personal-tool-shell {
+  width: min(1180px, calc(100% - 24px));
+  margin: 24px auto 48px;
+}
+
+.personal-tool-page .personal-card,
+.personal-tool-page .card {
+  background: var(--panel-bg) !important;
+  color: var(--text) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 10px 32px rgba(0,0,0,.14) !important;
+}
+
+.personal-tool-page .personal-card {
+  max-width: 720px;
+  margin: 8vh auto 0;
+  padding: 24px;
+}
+
+.personal-tool-page .personal-card.wide {
+  max-width: 820px;
+}
+
+.personal-tool-page h1,
+.personal-tool-page h2,
+.personal-tool-page h3,
+.personal-tool-page strong,
+.personal-tool-page th {
+  color: var(--text-strong) !important;
+}
+
+.personal-tool-page .muted,
+.personal-tool-page .note,
+.personal-tool-page .copy-hint {
+  color: var(--text-soft) !important;
+  opacity: 1 !important;
+}
+
+.personal-tool-page a:not(.btn):not(.navbar-brand) {
+  color: var(--accent) !important;
+}
+
+.personal-tool-page a:not(.btn):not(.navbar-brand):hover {
+  color: var(--accent-2) !important;
+}
+
+.personal-tool-page input,
+.personal-tool-page select,
+.personal-tool-page textarea {
+  background: var(--bg3) !important;
+  color: var(--text-strong) !important;
+  border: 1px solid var(--border) !important;
+}
+
+.personal-tool-page button,
+.personal-tool-page .tool-button {
+  background: var(--accent) !important;
+  color: #07110a !important;
+  border: 1px solid rgba(var(--accent-rgb), .72) !important;
+  font-weight: 700;
+}
+
+body.ui-theme.theme-light.personal-tool-page button,
+body.ui-theme.theme-light.personal-tool-page .tool-button {
+  color: #fff !important;
+}
+
+.personal-tool-page button:hover,
+.personal-tool-page .tool-button:hover {
+  box-shadow: var(--accent-glow);
+}
+
+.personal-tool-page .result,
+.personal-tool-page .modal,
+.personal-tool-page .tool-panel {
+  background: var(--panel-bg2) !important;
+  color: var(--text) !important;
+  border-color: var(--border) !important;
+}
+
+.personal-tool-page .otp {
+  color: var(--text-strong) !important;
+}
+
+.personal-tool-page .otp:focus {
+  outline-color: var(--accent) !important;
+}
+
+.personal-tool-page .copy-hint {
+  color: var(--accent-2) !important;
+}
+
+.personal-tool-page .copy-hint.copied,
+.personal-tool-page .state-running {
+  color: var(--ok) !important;
+}
+
+.personal-tool-page .error,
+.personal-tool-page .state-error {
+  color: var(--danger) !important;
+}
+
+.personal-tool-page .state-stopped {
+  color: var(--warn) !important;
+}
+
+.personal-tool-page table {
+  color: var(--text) !important;
+}
+
+.personal-tool-page th,
+.personal-tool-page td {
+  border-bottom-color: var(--border) !important;
+}
+
+.personal-tool-page th {
+  background: var(--panel-solid) !important;
+}
+
+.personal-tool-page .badge {
+  background: var(--panel-bg2) !important;
+  border-color: var(--border) !important;
+}
+
+.personal-tool-page code,
+.personal-tool-page kbd {
+  color: var(--accent-2) !important;
+  background: var(--bg3) !important;
+  border-color: var(--border) !important;
+}
+
+.personal-tool-page .alert-ok {
+  background: rgba(0, 200, 90, .10) !important;
+  border-color: rgba(0, 200, 90, .32) !important;
+}
+
+.personal-tool-page .alert-err {
+  background: rgba(220, 40, 70, .10) !important;
+  border-color: rgba(220, 40, 70, .32) !important;
+}
+
+.personal-tool-page .modal-backdrop {
+  background: rgba(0,0,0,.55) !important;
+}
+
+.personal-tool-page a.rdp {
+  color: var(--accent-2) !important;
+  border-color: rgba(var(--accent-rgb), .45) !important;
+  background: rgba(var(--accent-rgb), .06) !important;
+}
+
+body.ui-theme.theme-light.personal-tool-page .personal-card,
+body.ui-theme.theme-light.personal-tool-page .card {
+  box-shadow: 0 10px 26px rgba(20,45,70,.08) !important;
+}
+
+@media (max-width: 767.98px) {
+  .personal-tool-shell {
+    width: calc(100% - 16px);
+    margin: 12px 8px 32px;
+  }
+
+  .personal-tool-page .personal-card {
+    margin: 16px 8px 0;
+    padding: 18px;
+  }
+
+  .personal-tool-page .card {
+    overflow-x: auto;
+  }
+
+  .personal-tool-page table {
+    min-width: 920px;
+  }
+}

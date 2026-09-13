@@ -4,7 +4,7 @@
 
 ## Resumen
 
-- PHP analizados: **322**
+- PHP analizados: **324**
 - PHP que ya contienen clases/interfaces: **193**
 - PHP marcados para migración/revisión: **29**
 - JavaScript analizados: **40**
@@ -50,6 +50,7 @@
 | `drive/descargar.php` | 8 | thin endpoint | 0 | — | — | — | — |
 | `drive/descargar_archivo.php` | 8 | thin endpoint | 0 | — | — | — | — |
 | `drive/descargar_zip.php` | 8 | thin endpoint | 0 | — | — | — | — |
+| `drive/download.php` | 8 | thin endpoint | 0 | — | — | — | — |
 | `drive/download_multiple.php` | 8 | thin endpoint | 0 | — | — | — | — |
 | `drive/ec2-cron.php` | 39 | thin endpoint | 0 | — | — | — | — |
 | `drive/ec2.php` | 859 | view/entrypoint | 0 | ⚠️ | — | — | — |
@@ -60,6 +61,7 @@
 | `drive/federationcloud/access-request.php` | 11 | thin endpoint | 0 | — | — | — | — |
 | `drive/federationcloud/access-status.php` | 11 | thin endpoint | 0 | — | — | — | — |
 | `drive/federationcloud/access.php` | 11 | thin endpoint | 0 | — | — | — | — |
+| `drive/federationcloud/bundle.php` | 13 | thin endpoint | 0 | — | — | — | — |
 | `drive/federationcloud/create.php` | 13 | thin endpoint | 0 | — | — | — | — |
 | `drive/federationcloud/index.php` | 13 | thin endpoint | 0 | — | — | — | — |
 | `drive/federationcloud/name-availability.php` | 11 | thin endpoint | 0 | — | — | — | — |

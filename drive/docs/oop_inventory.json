@@ -1,6 +1,6 @@
 {
   "summary": {
-    "php_total": 322,
+    "php_total": 324,
     "php_class_modules": 193,
     "php_needs_migration": 29,
     "js_total": 40,
@@ -458,6 +458,21 @@
       "issues": []
     },
     {
+      "path": "drive/download.php",
+      "lines": 8,
+      "kind": "thin endpoint",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
       "path": "drive/download_multiple.php",
       "lines": 8,
       "kind": "thin endpoint",
@@ -617,6 +632,21 @@
     {
       "path": "drive/federationcloud/access.php",
       "lines": 11,
+      "kind": "thin endpoint",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/federationcloud/bundle.php",
+      "lines": 13,
       "kind": "thin endpoint",
       "classes": 0,
       "functions": [],

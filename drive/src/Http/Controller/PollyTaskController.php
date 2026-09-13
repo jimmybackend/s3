@@ -100,7 +100,6 @@ final class PollyTaskController extends AbstractJsonController
         }
 
         $units = [
-            's3.put_request' => max(0, (int)($result['s3_put_requests'] ?? 0)),
             's3.copy_request' => max(0, (int)($result['s3_copy_requests'] ?? 0)),
             's3.delete_request' => max(0, (int)($result['s3_delete_requests'] ?? 0)),
             's3.head_request' => max(0, (int)($result['s3_head_requests'] ?? 0)),

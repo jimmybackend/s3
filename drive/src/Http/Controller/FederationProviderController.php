@@ -77,6 +77,54 @@ final class FederationProviderController
         }
     }
 
+    /**
+     * Fast path de presencia para una réplica YA autorizada. No concede permisos,
+     * no crea una Solicitud y no modifica role/scope: sólo verifica identidad,
+     * endpoint HTTPS y actualiza disponibilidad/LastSeen.
+     */
+    public function presenceApi(): void
+    {
+        if ($this->request->method() !== 'POST') {
+            JsonResponse::send(['ok' => false, 'error' => 'Método no permitido.'], 405);
+        }
+        $contentType = strtolower(trim($this->request->serverString('CONTENT_TYPE')));
+        if ($contentType !== '' && !str_starts_with($contentType, 'application/json')) {
+            JsonResponse::send(['ok' => false, 'error' => 'Content-Type debe ser application/json.'], 415);
+        }
+        $length = (int)$this->request->serverString('CONTENT_LENGTH', '0');
+        if ($length <= 0 || $length > ArcadeLinkService::MAX_BYTES) {
+            JsonResponse::send(['ok' => false, 'error' => 'Payload ausente o demasiado grande.'], 413);
+        }
+        $raw = file_get_contents('php://input', false, null, 0, ArcadeLinkService::MAX_BYTES + 1);
+        if (!is_string($raw) || $raw === '' || strlen($raw) > ArcadeLinkService::MAX_BYTES) {
+            JsonResponse::send(['ok' => false, 'error' => 'Payload FederationCloud inválido.'], 413);
+        }
+
+        try {
+            $body = json_decode($raw, true, 16, JSON_THROW_ON_ERROR);
+            if (!is_array($body)
+                || !is_array($body['provider_descriptor'] ?? null)
+                || array_is_list($body['provider_descriptor'])) {
+                throw new FederationException('Se requiere el descriptor firmado de la réplica.', 400);
+            }
+            if (strtolower(trim((string)($body['relationship'] ?? ''))) !== 'shared_backend') {
+                throw new FederationException('La puerta de presencia sólo acepta réplicas shared_backend.', 400);
+            }
+
+            $result = (new FederationProviderAuthorizationService($this->app))->receivePresence(
+                (string)($body['origin_node_id'] ?? ''),
+                $body['provider_descriptor']
+            );
+            JsonResponse::send($result, 200);
+        } catch (JsonException) {
+            JsonResponse::send(['ok' => false, 'error' => 'JSON inválido.'], 400);
+        } catch (FederationException $e) {
+            JsonResponse::send(['ok' => false, 'error' => $e->getMessage()], $e->httpStatus());
+        } catch (Throwable) {
+            JsonResponse::send(['ok' => false, 'error' => 'No se pudo actualizar la presencia de la réplica.'], 500);
+        }
+    }
+
     public function providersApi(): void
     {
         if ($this->request->method() !== 'GET') {

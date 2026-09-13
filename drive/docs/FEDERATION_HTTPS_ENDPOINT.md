@@ -144,7 +144,7 @@ sudo systemctl enable --now arcadecloud-federation-https.timer
 systemctl list-timers arcadecloud-federation-https.timer --no-pager
 ```
 
-El timer corre aproximadamente cada 12 horas y también después del arranque. Certbot decide si un certificado existente necesita renovación.
+El timer usa `OnBootSec=45s` para reconciliar poco después del arranque y `OnUnitInactiveSec=12h` para programar la siguiente ejecución aproximadamente 12 horas después de que finaliza el servicio `oneshot`. Se usa `RandomizedDelaySec=10m`, por lo que la hora exacta puede desplazarse dentro de esa ventana. Esta forma evita que un `oneshot` quede en estado `elapsed` sin una próxima ejecución. Certbot decide si un certificado existente necesita renovación.
 
 ## Estado observable
 

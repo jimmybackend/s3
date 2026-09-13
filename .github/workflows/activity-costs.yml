@@ -24,11 +24,15 @@ on:
       - 'drive/src/Http/Controller/FolderMutationController.php'
       - 'drive/src/Http/Controller/LegacyUploadController.php'
       - 'drive/src/Http/Controller/MoveJobController.php'
+      - 'drive/src/Http/Controller/PollyTaskController.php'
       - 'drive/src/Http/Controller/ShareController.php'
       - 'drive/src/Http/Controller/ThumbnailController.php'
       - 'drive/src/Http/Controller/TranscriptionController.php'
       - 'drive/src/Http/Controller/UploadController.php'
       - 'drive/src/View/ActivityCostPageRenderer.php'
+      - 'drive/polly_task_status.php'
+      - 'drive/js/polly-background.js'
+      - 'drive/js/move-tasks.js'
       - 'drive/tests/activity_costs_smoke.php'
       - 'adbbmis1_Cloud.sql'
       - '.github/workflows/activity-costs.yml'
@@ -54,6 +58,7 @@ jobs:
           for f in \
             drive/activity_costs.php \
             drive/bloque_carpetas.php \
+            drive/polly_task_status.php \
             drive/src/Activity/*.php \
             drive/src/Aws/AwsCostService.php \
             drive/src/Aws/ComprehendFileService.php \
@@ -69,6 +74,7 @@ jobs:
             drive/src/Http/Controller/FolderMutationController.php \
             drive/src/Http/Controller/LegacyUploadController.php \
             drive/src/Http/Controller/MoveJobController.php \
+            drive/src/Http/Controller/PollyTaskController.php \
             drive/src/Http/Controller/ShareController.php \
             drive/src/Http/Controller/ThumbnailController.php \
             drive/src/Http/Controller/TranscriptionController.php \
@@ -77,6 +83,11 @@ jobs:
             drive/tests/activity_costs_smoke.php; do
             php -l "$f"
           done
+
+      - name: Validate background Polly JavaScript
+        run: |
+          node --check drive/js/polly-background.js
+          node --check drive/js/move-tasks.js
 
       - name: Activity cost smoke test
         run: php drive/tests/activity_costs_smoke.php

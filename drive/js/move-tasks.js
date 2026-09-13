@@ -212,3 +212,21 @@ class DriveMoveTasks {
 }
 
 DriveMoveTasks.boot();
+
+(function loadPollyBackground(win, doc) {
+  if (win.PollyBackground || doc.querySelector('script[data-polly-background]')) return;
+
+  const script = doc.createElement('script');
+  script.src = 'js/polly-background.js?v=20260913-2';
+  script.async = true;
+  script.setAttribute('data-polly-background', '1');
+  script.addEventListener('load', () => {
+    if (!win.jQuery) return;
+    win.jQuery(function () {
+      if (!win.PollyBackground) return;
+      if (typeof win.PollyBackground.bindUi === 'function') win.PollyBackground.bindUi();
+      if (typeof win.PollyBackground.updateUiHints === 'function') win.PollyBackground.updateUiHints();
+    });
+  });
+  doc.head.appendChild(script);
+})(window, document);

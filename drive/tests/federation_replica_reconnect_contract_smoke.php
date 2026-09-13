@@ -48,17 +48,22 @@ reconnectOk(str_contains($replicas, '->activeForOrigin('), 'asignación de nueva
 
 reconnectOk(str_contains($presence, "postJson(\$originUrl, 'provider-presence.php'"), 'la copia se presenta por iniciativa propia');
 reconnectOk(str_contains($presence, "if (\$status === 'active')"), 'autorizada entra directamente sin nueva Solicitud');
+reconnectOk(str_contains($presence, 'FederationProviderGrant::verify'), 'la copia verifica la autorización firmada devuelta por el origen');
 reconnectOk(str_contains($presence, "if (in_array(\$status, ['pending', 'blocked', 'revoked'], true))"), 'estados restringidos no crean solicitudes automáticas');
 reconnectOk(str_contains($presence, "if (\$status !== 'authorization_required')"), 'sólo ausencia real de autorización dispara alta inicial');
 reconnectOk(str_contains($presence, "postJson(\$originUrl, 'provider-request.php'"), 'primera alta sí pasa por Aduana/Solicitudes');
 reconnectOk(str_contains($presence, "'relationship' => 'shared_backend'"), 'la copia identifica relación privilegiada explícitamente');
 reconnectOk(str_contains($presence, '->upsertVerified($origin)'), 'la copia aprende el origen como peer para gossip');
 
-$presencePos = strpos($sync, 'FederationReplicaPresenceService');
-$customsPos = strpos($sync, 'FederationCustomsService');
-$gossipPos = strpos($sync, 'FederationGossipService');
-reconnectOk($presencePos !== false && $customsPos !== false && $gossipPos !== false && $presencePos < $gossipPos, 'worker refresca presencia antes de gossip');
-reconnectOk(str_contains($refresh, 'FederationReplicaPresenceService'), 'arranque/cambio de endpoint reanuncia réplica');
+$presencePos = strpos($sync, 'new FederationReplicaPresenceService');
+$customsPos = strpos($sync, 'new FederationCustomsService');
+$gossipPos = strpos($sync, 'new FederationGossipService');
+reconnectOk(
+    $presencePos !== false && $customsPos !== false && $gossipPos !== false
+        && $presencePos < $customsPos && $customsPos < $gossipPos,
+    'worker refresca réplica, luego Aduana y después gossip'
+);
+reconnectOk(str_contains($refresh, 'new FederationReplicaPresenceService'), 'arranque/cambio de endpoint reanuncia réplica');
 reconnectOk(str_contains($requestCli, "'relationship' => 'shared_backend'"), 'CLI de alta inicial declara relación compartida');
 
 $securityCorpus = $presence . $service . $controller . $endpoint;

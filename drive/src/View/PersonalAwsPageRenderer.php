@@ -11,11 +11,11 @@ final class PersonalAwsPageRenderer
             ? 'Acceso privado'
             : 'La clave privada todavía no está configurada en el servidor.';
 
-        echo '<!doctype html><html lang="es"><head><meta charset="utf-8">'
-            . '<meta name="viewport" content="width=device-width,initial-scale=1">'
-            . '<title>Acceso privado</title>'
-            . $this->style()
-            . '</head><body><main class="card"><h1>' . self::e($message) . '</h1>';
+        echo $this->head('Acceso privado');
+        echo '<body class="ui-theme theme-neon-green theme-dark vision-normal ascii-on personal-tool-page">';
+        echo $this->navbar('Herramienta privada');
+        echo '<main class="personal-tool-shell"><section class="personal-card">'
+            . '<h1>' . self::e($message) . '</h1>';
 
         if ($error !== '') {
             echo '<p class="error">' . self::e($error) . '</p>';
@@ -30,20 +30,22 @@ final class PersonalAwsPageRenderer
                 . '</form>';
         }
 
-        echo '<p><a href="index.php">Volver</a></p></main></body></html>';
+        echo '<p class="mt-3 mb-0"><a href="s3.php">Volver al Drive</a></p>'
+            . '</section></main></body></html>';
         exit;
     }
 
     public function forbidden(): never
     {
         http_response_code(403);
-        echo '<!doctype html><html lang="es"><head><meta charset="utf-8">'
-            . '<meta name="viewport" content="width=device-width,initial-scale=1">'
-            . '<title>Acceso restringido</title>'
-            . $this->style()
-            . '</head><body><main class="card"><h1>Acceso restringido</h1>'
+        echo $this->head('Acceso restringido');
+        echo '<body class="ui-theme theme-neon-green theme-dark vision-normal ascii-on personal-tool-page">';
+        echo $this->navbar('Herramienta privada');
+        echo '<main class="personal-tool-shell"><section class="personal-card">'
+            . '<h1>Acceso restringido</h1>'
             . '<p>Esta herramienta personal no está disponible para esta cuenta.</p>'
-            . '<p><a href="s3.php">Volver al Drive</a></p></main></body></html>';
+            . '<p class="mb-0"><a href="s3.php">Volver al Drive</a></p>'
+            . '</section></main></body></html>';
         exit;
     }
 
@@ -53,14 +55,16 @@ final class PersonalAwsPageRenderer
      */
     public function tool(array $accounts, ?array $result = null, string $error = ''): never
     {
-        echo '<!doctype html><html lang="es"><head><meta charset="utf-8">'
-            . '<meta name="viewport" content="width=device-width,initial-scale=1">'
-            . '<title>Herramienta AWS personal</title>'
-            . $this->style()
-            . '</head><body><main class="card wide">'
-            . '<nav><a href="https://aws.amazon.com/es/console/" target="_blank" rel="noopener noreferrer">AWS</a>'
+        echo $this->head('Herramienta AWS personal');
+        echo '<body class="ui-theme theme-neon-green theme-dark vision-normal ascii-on personal-tool-page">';
+        echo $this->navbar('AWS personal');
+        echo '<main class="personal-tool-shell"><section class="personal-card wide">'
+            . '<nav class="mb-3">'
+            . '<a href="https://aws.amazon.com/es/console/" target="_blank" rel="noopener noreferrer">AWS</a>'
             . ' · <a href="https://console.aws.amazon.com/console/home" target="_blank" rel="noopener noreferrer">Consola</a>'
-            . ' · <a href="s3.php">Drive</a></nav>'
+            . ' · <a href="ec2.php">EC2 / RDS</a>'
+            . ' · <a href="s3.php">Drive</a>'
+            . '</nav>'
             . '<h1>Generador TOTP personal</h1>'
             . '<p class="muted">Las semillas permanecen en el servidor y no se envían al navegador.</p>';
 
@@ -93,7 +97,7 @@ final class PersonalAwsPageRenderer
             echo '</select><button type="submit">Generar código</button></form>';
         }
 
-        echo '</main>';
+        echo '</section></main>';
         if ($result !== null) {
             echo '<script>(function(){'
                 . 'let n=' . (int)$result['remaining'] . ';'
@@ -114,17 +118,49 @@ final class PersonalAwsPageRenderer
         exit;
     }
 
-    private function style(): string
+    private function head(string $title): string
     {
-        return '<style>body{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:#0b1020;color:#e5e7eb;margin:0;padding:24px}'
-            . '.card{max-width:420px;margin:8vh auto;background:#111827;border:1px solid #263244;border-radius:16px;padding:24px;box-shadow:0 18px 50px rgba(0,0,0,.35)}'
-            . '.wide{max-width:700px}.muted{color:#9ca3af}.error{color:#fca5a5}.result{margin:22px 0;padding:18px;border:1px solid #334155;border-radius:14px;background:#0f172a}'
+        $stylesVersion = $this->assetVersion('css/styles.css');
+        $responsiveVersion = $this->assetVersion('css/responsive.css');
+        $toolVersion = $this->assetVersion('css/personal-tools.css');
+        $themeBridgeVersion = $this->assetVersion('js/theme-state-bridge.js');
+
+        return '<!doctype html><html lang="es"><head><meta charset="utf-8">'
+            . '<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">'
+            . '<title>' . self::e($title) . ' · ArcadeCloud Drive</title>'
+            . '<link rel="icon" href="ellogo.png" type="image/png">'
+            . '<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">'
+            . '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">'
+            . '<link rel="stylesheet" href="css/styles.css?v=' . $stylesVersion . '">'
+            . '<link rel="stylesheet" href="css/responsive.css?v=' . $responsiveVersion . '">'
+            . '<link rel="stylesheet" href="css/personal-tools.css?v=' . $toolVersion . '">'
+            . '<script defer src="js/theme-state-bridge.js?v=' . $themeBridgeVersion . '"></script>'
+            . '<style>'
+            . '.personal-card label{display:block;margin:14px 0 8px}'
+            . '.personal-card input,.personal-card select,.personal-card button{width:100%;box-sizing:border-box;padding:12px;border-radius:9px;font-size:16px}'
+            . '.personal-card button{margin-top:14px;cursor:pointer}'
+            . '.result{margin:22px 0;padding:18px;border:1px solid var(--border);border-radius:14px}'
             . '.otp{font:700 36px ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.12em;margin:10px 0;cursor:pointer;user-select:none;touch-action:manipulation;display:inline-block;border-radius:8px;padding:4px 2px}'
-            . '.otp:focus{outline:2px solid #60a5fa;outline-offset:5px}.otp:active{transform:scale(.98)}.copy-hint{font-size:13px;color:#93c5fd;margin:-2px 0 10px}.copy-hint.copied{color:#86efac}'
-            . '.note{margin-top:14px;padding:10px;border-radius:8px;background:#1f2937}'
-            . 'label{display:block;margin:14px 0 8px}input,select,button{width:100%;box-sizing:border-box;padding:12px;border-radius:9px;font-size:16px}'
-            . 'input,select{background:#0b1220;color:#e5e7eb;border:1px solid #374151}button{margin-top:14px;border:0;background:#2563eb;color:#fff;font-weight:700;cursor:pointer}'
-            . 'a{color:#93c5fd}</style>';
+            . '.otp:focus{outline:2px solid var(--accent);outline-offset:5px}.otp:active{transform:scale(.98)}'
+            . '.copy-hint{font-size:13px;margin:-2px 0 10px}.note{margin-top:14px;padding:10px;border-radius:8px;background:var(--panel-bg2)}'
+            . '</style></head>';
+    }
+
+    private function navbar(string $label): string
+    {
+        return '<nav class="navbar navbar-expand-lg navbar-dark px-3 drive-navbar">'
+            . '<a class="navbar-brand d-flex align-items-center" href="s3.php" title="Volver al Drive">'
+            . '<img src="ellogo.png" width="48" height="38" class="drive-brand-logo mr-2" alt="Logo">Cloud Drive</a>'
+            . '<div class="ml-auto d-flex align-items-center flex-wrap">'
+            . '<span class="small text-muted mr-2">' . self::e($label) . '</span>'
+            . '<a class="btn btn-outline-light btn-sm" href="s3.php"><i class="fas fa-arrow-left mr-1"></i>Drive</a>'
+            . '</div></nav>';
+    }
+
+    private function assetVersion(string $relative): int
+    {
+        $path = dirname(__DIR__, 2) . '/' . ltrim($relative, '/');
+        return is_file($path) ? (int)filemtime($path) : 1;
     }
 
     private static function e(mixed $value): string

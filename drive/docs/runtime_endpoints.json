@@ -87,6 +87,7 @@
         "drive/descargar.php",
         "drive/descargar_archivo.php",
         "drive/descargar_zip.php",
+        "drive/download.php",
         "drive/download_multiple.php",
         "drive/ec2-cron.php",
         "drive/ec2.php",
@@ -96,6 +97,7 @@
         "drive/federationcloud/access-request.php",
         "drive/federationcloud/access-status.php",
         "drive/federationcloud/access.php",
+        "drive/federationcloud/bundle.php",
         "drive/federationcloud/create.php",
         "drive/federationcloud/index.php",
         "drive/federationcloud/name-availability.php",
@@ -354,6 +356,12 @@
       ]
     },
     {
+      "path": "drive/download.php",
+      "size": 265,
+      "active": false,
+      "references": []
+    },
+    {
       "path": "drive/download_multiple.php",
       "size": 254,
       "active": false,
@@ -433,6 +441,14 @@
       "active": false,
       "references": [
         "drive/js/federation-portal.js"
+      ]
+    },
+    {
+      "path": "drive/federationcloud/bundle.php",
+      "size": 357,
+      "active": false,
+      "references": [
+        "drive/js/arcadelink-share.js"
       ]
     },
     {
@@ -1146,7 +1162,7 @@
     },
     {
       "path": "drive/src/Federation/ArcadeLinkBundleService.php",
-      "size": 5780,
+      "size": 5761,
       "active": false,
       "references": [
         "drive/tests/arcadelink_bundle_regression.php"
@@ -1491,6 +1507,12 @@
     {
       "path": "drive/src/Http/Controller/FederationAccessController.php",
       "size": 5699,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Http/Controller/FederationBundleController.php",
+      "size": 5440,
       "active": false,
       "references": []
     },
@@ -2129,7 +2151,7 @@
     },
     {
       "path": "drive/tests/arcadelink_bundle_regression.php",
-      "size": 2208,
+      "size": 2330,
       "active": false,
       "references": []
     },

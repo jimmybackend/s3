@@ -171,6 +171,7 @@
       "size": 260,
       "active": true,
       "references": [
+        "drive/ec2.php",
         "drive/s3.php",
         "drive/src/Http/Controller/PersonalAwsController.php",
         "drive/js/estilo.js"
@@ -268,7 +269,7 @@
     },
     {
       "path": "drive/bloque_carpetas.php",
-      "size": 4929,
+      "size": 5660,
       "active": true,
       "references": [
         "drive/s3.php",
@@ -366,10 +367,11 @@
     },
     {
       "path": "drive/ec2.php",
-      "size": 35776,
+      "size": 37169,
       "active": true,
       "references": [
         "drive/s3.php",
+        "drive/src/View/PersonalAwsPageRenderer.php",
         "drive/js/estilo.js"
       ]
     },
@@ -452,7 +454,6 @@
         "drive/src/Http/Controller/ActivityCostController.php",
         "drive/src/Http/Controller/AuthController.php",
         "drive/src/Security/SessionManager.php",
-        "drive/src/View/PersonalAwsPageRenderer.php",
         "drive/up.php"
       ]
     },
@@ -656,7 +657,6 @@
         "drive/src/Http/Controller/ActivityCostController.php",
         "drive/src/Http/Controller/AuthController.php",
         "drive/src/Security/SessionManager.php",
-        "drive/src/View/PersonalAwsPageRenderer.php",
         "drive/up.php"
       ]
     },
@@ -823,6 +823,7 @@
       "active": true,
       "references": [
         "drive/app_bootstrap.php",
+        "drive/ec2.php",
         "drive/src/Http/Controller/AuthController.php",
         "drive/src/View/ActivityCostPageRenderer.php",
         "drive/src/View/FederationPageRenderer.php",
@@ -870,7 +871,6 @@
         "drive/src/Http/Controller/ActivityCostController.php",
         "drive/src/Http/Controller/AuthController.php",
         "drive/src/Security/SessionManager.php",
-        "drive/src/View/PersonalAwsPageRenderer.php",
         "drive/up.php"
       ]
     },
@@ -2039,7 +2039,7 @@
     },
     {
       "path": "drive/src/View/PersonalAwsPageRenderer.php",
-      "size": 7763,
+      "size": 9667,
       "active": false,
       "references": []
     },

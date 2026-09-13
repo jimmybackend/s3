@@ -1166,7 +1166,7 @@
     },
     {
       "path": "drive/src/Federation/ArcadeLinkBundleService.php",
-      "size": 5761,
+      "size": 5762,
       "active": false,
       "references": [
         "drive/tests/arcadelink_bundle_regression.php"
@@ -2169,7 +2169,7 @@
     },
     {
       "path": "drive/tests/arcadelink_bundle_regression.php",
-      "size": 5753,
+      "size": 5757,
       "active": false,
       "references": []
     },

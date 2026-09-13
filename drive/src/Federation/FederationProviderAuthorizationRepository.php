@@ -7,6 +7,8 @@ use mysqli;
 
 final class FederationProviderAuthorizationRepository
 {
+    private const DEFAULT_AVAILABILITY_SECONDS = 900;
+
     public function __construct(private mysqli $db)
     {
     }
@@ -67,12 +69,22 @@ final class FederationProviderAuthorizationRepository
         return $this->listForOrigin($originNodeId, 'pending');
     }
 
+    /**
+     * Réplicas que están autorizadas Y han confirmado presencia recientemente.
+     * Es el conjunto seguro para asignar trabajo físico ahora mismo.
+     */
     public function activeForOrigin(string $originNodeId): array
+    {
+        return $this->activeAvailableForOrigin($originNodeId, self::DEFAULT_AVAILABILITY_SECONDS);
+    }
+
+    /** Autorizaciones permanentes aunque la réplica esté temporalmente apagada. */
+    public function allActiveForOrigin(string $originNodeId): array
     {
         return $this->listForOrigin($originNodeId, 'active');
     }
 
-    public function activeAvailableForOrigin(string $originNodeId, int $freshSeconds = 900): array
+    public function activeAvailableForOrigin(string $originNodeId, int $freshSeconds = self::DEFAULT_AVAILABILITY_SECONDS): array
     {
         $freshSeconds = max(60, min(86400, $freshSeconds));
         $stmt = $this->db->prepare(
@@ -221,7 +233,11 @@ final class FederationProviderAuthorizationRepository
         $affected = $stmt->affected_rows;
         $stmt->close();
         if ($affected !== 1) {
-            throw new FederationException('La réplica no tiene una autorización activa.', 409);
+            // MySQL puede reportar 0 si LastSeen ya tenía exactamente el mismo segundo.
+            $current = $this->find($originNodeId, $providerNodeId);
+            if ($current === null || (string)$current['Status'] !== 'active') {
+                throw new FederationException('La réplica no tiene una autorización activa.', 409);
+            }
         }
     }
 

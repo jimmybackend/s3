@@ -73,9 +73,11 @@ final class FederationProviderAuthorizationService
             'provider_node' => $this->nodeSummary($live),
             'role' => $role,
             'scope' => $scope,
+            'relationship' => 'shared_backend',
+            'requires_superadmin' => true,
             'message' => $status === 'active'
-                ? 'El nodo ya estaba autorizado como proveedor.'
-                : 'Solicitud recibida. Requiere aprobación de un superusuario en el nodo origen.',
+                ? 'La copia ya estaba autorizada para servir recursos del nodo origen.'
+                : 'Solicitud de backend compartido recibida. Requiere aprobación de un superusuario en el nodo origen.',
         ];
     }
 
@@ -91,12 +93,13 @@ final class FederationProviderAuthorizationService
         $origin = $this->validator->validate($this->http->getJson($originFederationUrl, 'node.php'));
 
         if (hash_equals((string)$local['node_id'], (string)$origin['node_id'])) {
-            throw new FederationException('El nodo origen y el proveedor son la misma identidad.', 409);
+            throw new FederationException('El nodo origen y la copia son la misma identidad.', 409);
         }
 
         return $this->http->postJson($originFederationUrl, 'provider-request.php', [
             'origin_node_id' => (string)$origin['node_id'],
             'provider_descriptor' => $local,
+            'relationship' => 'shared_backend',
             'role' => $role,
             'scope' => $scope,
         ]);

@@ -26,7 +26,7 @@ for arg in "$@"; do
 done
 
 if [[ -z "$RUN_USER" ]]; then
-  echo "ERROR: indica --run-user=USUARIO_PHP_FPM (por ejemplo nginx)." >&2
+  echo "ERROR: indica --run-user=USUARIO_PHP_FPM (por ejemplo apache o nginx según tu pool)." >&2
   exit 2
 fi
 if ! id "$RUN_USER" >/dev/null 2>&1; then
@@ -80,7 +80,7 @@ EOF
 
 cat > "$SERVICE" <<EOF
 [Unit]
-Description=ArcadeCloud FederationCloud gossip sync
+Description=ArcadeCloud FederationCloud Aduana and gossip sync
 After=network-online.target
 Wants=network-online.target
 
@@ -100,11 +100,13 @@ EOF
 
 cat > "$TIMER" <<EOF
 [Unit]
-Description=ArcadeCloud FederationCloud gossip sync timer
+Description=ArcadeCloud FederationCloud Aduana and gossip timer
 
 [Timer]
-OnBootSec=90s
-OnUnitActiveSec=${INTERVAL_SEC}s
+# Se agenda desde la activación del timer, no desde el boot ya pasado.
+OnActiveSec=45s
+# federation_sync.php es oneshot; la siguiente ejecución parte de cuando terminó.
+OnUnitInactiveSec=${INTERVAL_SEC}s
 RandomizedDelaySec=30s
 AccuracySec=15s
 Persistent=true
@@ -129,11 +131,13 @@ fi
 
 systemctl enable --now arcadecloud-federation-sync.timer
 
-echo "OK: esquema FederationCloud migrado y sincronización instalada."
+echo "OK: esquema FederationCloud migrado y Aduana/sincronización instaladas."
 echo "Usuario: $RUN_USER"
 echo "EnvironmentFile Drive: $DRIVE_ENV"
 echo "EnvironmentFile FederationCloud: $FEDERATION_ENV"
-echo "Intervalo base: ${INTERVAL_SEC}s + jitter de hasta 30s"
+echo "Primera ejecución: 45s después de activar el timer + jitter de hasta 30s"
+echo "Siguientes ejecuciones: ${INTERVAL_SEC}s después de completar el worker + jitter"
+echo "Máximo de Aduana: una petición externa por ciclo"
 echo "Migración: arcadecloud-federation-migrate.service"
 echo "Servicio: arcadecloud-federation-sync.service"
 echo "Timer: arcadecloud-federation-sync.timer"

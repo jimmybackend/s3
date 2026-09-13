@@ -145,7 +145,7 @@ cat > "$TIMER" <<EOF
 Description=ArcadeCloud FederationCloud HTTPS renewal and endpoint timer
 
 [Timer]
-OnBootSec=45s
+OnActiveSec=45s
 OnUnitInactiveSec=${INTERVAL_HOURS}h
 RandomizedDelaySec=10m
 AccuracySec=1m
@@ -167,7 +167,7 @@ systemctl daemon-reload
 echo "OK: reconciliador HTTPS FederationCloud instalado, aún no activado."
 echo "Servicio: arcadecloud-federation-https.service"
 echo "Timer: arcadecloud-federation-https.timer"
-echo "Frecuencia al activarlo: cada ${INTERVAL_HOURS}h después de completar el servicio y 45s después del arranque."
+echo "Frecuencia al activarlo: primera reconciliación 45s después de activar el timer y luego cada ${INTERVAL_HOURS}h después de completar el servicio."
 echo "Usuario de runtime FederationCloud: $RUN_USER"
 echo "Runtime administrado: $RUNTIME_ENV"
 echo "EnvironmentFile Drive: $DRIVE_ENV"

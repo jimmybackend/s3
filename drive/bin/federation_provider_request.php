@@ -65,6 +65,7 @@ try {
     $response = $http->postJson($originUrl, 'provider-request.php', [
         'origin_node_id' => (string)$origin['node_id'],
         'provider_descriptor' => $local,
+        'relationship' => 'shared_backend',
         'role' => $role,
         'scope' => $scope,
     ]);
@@ -73,7 +74,7 @@ try {
     fwrite(STDOUT, 'origin_node_id=' . (string)$origin['node_id'] . "\n");
     fwrite(STDOUT, 'provider_node_id=' . (string)$local['node_id'] . "\n");
     fwrite(STDOUT, 'provider_node_name=' . (string)($local['node_name'] ?? '') . "\n");
-    fwrite(STDOUT, 'status=' . (string)($response['status'] ?? 'unknown') . "\n");
+    fwrite(STDOUT, 'status=' . (string)($response['queue_status'] ?? $response['status'] ?? 'unknown') . "\n");
     fwrite(STDOUT, 'message=' . (string)($response['message'] ?? '') . "\n");
     exit(0);
 } catch (FederationException $e) {

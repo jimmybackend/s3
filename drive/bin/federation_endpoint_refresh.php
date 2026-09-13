@@ -7,7 +7,6 @@ require_once dirname(__DIR__) . '/app_bootstrap.php';
 use ArcadeCloud\Drive\Core\ApplicationKernel;
 use ArcadeCloud\Drive\Federation\FederationConfig;
 use ArcadeCloud\Drive\Federation\FederationDirectoryService;
-use Throwable;
 
 try {
     $config = FederationConfig::fromEnvironment();
@@ -34,7 +33,7 @@ try {
     fwrite(STDOUT, "OK: descriptor FederationCloud firmado y publicado nuevamente.\n");
     fwrite(STDOUT, "NODE_ID={$nodeId}\nENDPOINT={$endpoint}\n");
     exit(0);
-} catch (Throwable $e) {
+} catch (\Throwable $e) {
     fwrite(STDERR, 'ERROR: no se pudo refrescar el endpoint FederationCloud: ' . $e->getMessage() . "\n");
     exit(1);
 }

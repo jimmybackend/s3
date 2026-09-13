@@ -30,6 +30,13 @@ httpsContractOk(!preg_match('/\bexec\s*\(/', $reconcile), 'no usa exec arbitrari
 httpsContractOk(str_contains($reconcile, "['bypass_shell' => true]"), 'proc_open evita interpretación de shell para comandos externos');
 
 httpsContractOk(str_contains($installer, 'After=network-online.target nginx.service'), 'servicio espera red y Nginx');
+httpsContractOk(str_contains($installer, 'EnvironmentFile=-$DRIVE_ENV'), 'servicio carga drive.env como los demás workers CLI');
+httpsContractOk(str_contains($installer, 'EnvironmentFile=-$FEDERATION_ENV'), 'servicio carga federation.env como los demás workers CLI');
+httpsContractOk(str_contains($installer, '--drive-env=*'), 'instalador permite cambiar drive.env');
+httpsContractOk(str_contains($installer, '--federation-env=*'), 'instalador permite cambiar federation.env');
+httpsContractOk(str_contains($installer, 'php-fpm'), 'instalador advierte si run-user no coincide con un worker PHP-FPM');
+httpsContractOk(!str_contains($installer, 'chown root:"$RUN_GROUP" "$RUNTIME_ENV"'), 'no cambia ownership de runtime-env existente');
+httpsContractOk(str_contains($installer, 'test -r "$RUNTIME_ENV"'), 'verifica lectura de runtime-env por el usuario elegido');
 httpsContractOk(str_contains($installer, 'OnBootSec=45s'), 'reconciliación se agenda al arrancar');
 httpsContractOk(str_contains($installer, 'OnUnitActiveSec=${INTERVAL_HOURS}h'), 'timer mantiene renovación periódica');
 httpsContractOk(!preg_match('/^\s*systemctl enable /m', $installer), 'instalador no habilita timer antes de la primera prueba');
@@ -38,6 +45,7 @@ httpsContractOk(str_contains($installer, 'NO ejecutó Certbot ni habilitó el ti
 
 httpsContractOk(str_contains($refresh, 'FederationDirectoryService'), 'refresh reutiliza servicio FederationCloud existente');
 httpsContractOk(str_contains($refresh, 'SKIP: el nodo aún no tiene identidad'), 'nodo nuevo puede preparar HTTPS antes de crear identidad');
+httpsContractOk(!str_contains($refresh, "use Throwable;"), 'refresh no emite warning por importar Throwable global');
 httpsContractOk(!str_contains($refresh, 'secret_key'), 'refresh no lee ni imprime clave privada directamente');
 httpsContractOk(!str_contains($refresh, 'payload_key'), 'refresh no expone payload key');
 

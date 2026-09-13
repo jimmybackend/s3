@@ -6,7 +6,6 @@ require_once dirname(__DIR__) . '/src/Federation/FederationException.php';
 require_once dirname(__DIR__) . '/src/Federation/FederationEndpointResolver.php';
 
 use ArcadeCloud\Drive\Federation\FederationEndpointResolver;
-use Throwable;
 
 function failHttps(string $message, int $code = 1): never
 {
@@ -267,7 +266,7 @@ try {
             unlink($nginxIpConfig);
             try {
                 nginxReload($nginxBin, $systemctlBin);
-            } catch (Throwable $e) {
+            } catch (\Throwable $e) {
                 writeAtomicText($nginxIpConfig, $old);
                 nginxReload($nginxBin, $systemctlBin);
                 throw $e;
@@ -332,6 +331,6 @@ try {
     fwrite(STDOUT, 'MODE=' . $mode . "\n");
     fwrite(STDOUT, 'PUBLIC_URL=' . $endpoint['public_url'] . "\n");
     fwrite(STDOUT, 'FEDERATION_URL=' . $endpoint['federation_url'] . "\n");
-} catch (Throwable $e) {
+} catch (\Throwable $e) {
     failHttps($e->getMessage());
 }

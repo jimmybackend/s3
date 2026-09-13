@@ -81,21 +81,47 @@ IP antigua
 
 El `node_id` no cambia. Sólo cambia el endpoint firmado.
 
-## Registro FederationCloud
+## Registro FederationCloud y entorno CLI
 
-Después de actualizar el endpoint, el reconciliador ejecuta `drive/bin/federation_endpoint_refresh.php` con el usuario de PHP-FPM. El comando reutiliza `FederationDirectoryService` y la identidad existente.
+Después de actualizar el endpoint, el reconciliador ejecuta `drive/bin/federation_endpoint_refresh.php` con el **mismo usuario real del pool PHP-FPM del Drive**. El comando reutiliza `FederationDirectoryService` y la identidad existente.
+
+No debe suponerse que Nginx y PHP-FPM usan el mismo usuario. Por ejemplo, en Amazon Linux Nginx puede ejecutar como `nginx` mientras el pool PHP-FPM `www` ejecuta sus workers como `apache`. Antes de instalar comprueba el usuario real:
+
+```bash
+ps -eo user=,comm=,args= | grep '[p]hp-fpm'
+```
+
+El servicio systemd también carga los mismos EnvironmentFile opcionales que los demás workers FederationCloud:
+
+```text
+/etc/arcadecloud-drive/drive.env
+/etc/arcadecloud-drive/federation.env
+```
+
+Esto es necesario porque un proceso CLI no hereda automáticamente el entorno privado de PHP-FPM. Sin esos archivos puede aparecer un error de `DB_HOST`, `DB_USER`, `DB_PASSWORD` o `DB_NAME` aunque el Drive web funcione correctamente.
+
+Los paths pueden cambiarse al instalar:
+
+```text
+--drive-env=/ruta/privada/drive.env
+--federation-env=/ruta/privada/federation.env
+```
+
+`runtime-env.json` mantiene su precedencia normal a través de `app_bootstrap.php`. Si el archivo ya existe, el instalador **no cambia automáticamente su propietario ni grupo**: verifica que el usuario elegido pueda leerlo y falla de forma segura si no puede. Así un `--run-user` equivocado no rompe el pool PHP-FPM existente.
 
 Si la identidad todavía no existe, el proceso termina con `SKIP` y HTTPS queda preparado para que posteriormente se cree el nodo. Si el directorio remoto está temporalmente inaccesible, el endpoint local permanece válido y el timer vuelve a intentarlo.
 
 ## systemd
 
-Instalación:
+Primero identifica el usuario PHP-FPM real. Ejemplo para un pool `www` que corre como `apache`:
 
 ```bash
 sudo bash drive/bin/install_federation_https_service.sh \
-  --run-user=nginx \
+  --run-user=apache \
   --app-root=/var/www/arcadecloud-drive
 ```
+
+En instalaciones cuyo pool realmente corre como `nginx`, usa `--run-user=nginx`.
 
 El instalador crea:
 

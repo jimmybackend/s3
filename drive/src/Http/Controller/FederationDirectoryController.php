@@ -72,7 +72,10 @@ final class FederationDirectoryController
             if (!is_array($body) || !is_array($body['descriptor'] ?? null) || array_is_list($body['descriptor'])) {
                 throw new FederationException('Se requiere un descriptor FederationCloud firmado.', 400);
             }
-            JsonResponse::send((new FederationDirectoryService($this->app))->registerRemote($body['descriptor']));
+            $requestId = is_string($body['request_id'] ?? null) ? (string)$body['request_id'] : null;
+            JsonResponse::send(
+                (new FederationDirectoryService($this->app))->registerRemote($body['descriptor'], $requestId)
+            );
         } catch (JsonException) {
             JsonResponse::send(['ok' => false, 'error' => 'JSON inválido.'], 400);
         } catch (FederationException $e) {

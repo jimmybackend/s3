@@ -72,6 +72,7 @@
         "drive/api/upload.php",
         "drive/aws.php",
         "drive/bin/federation_catalog_migrate.php",
+        "drive/bin/federation_endpoint_refresh.php",
         "drive/bin/federation_sync.php",
         "drive/bin/sync_node_worker.php",
         "drive/bin/sync_schema_migrate.php",
@@ -190,6 +191,23 @@
       "size": 1329,
       "active": false,
       "references": []
+    },
+    {
+      "path": "drive/bin/federation_endpoint_refresh.php",
+      "size": 1503,
+      "active": false,
+      "references": [
+        "drive/bin/federation_https_reconcile.php",
+        "drive/tests/federation_https_contract_smoke.php"
+      ]
+    },
+    {
+      "path": "drive/bin/federation_https_reconcile.php",
+      "size": 14606,
+      "active": false,
+      "references": [
+        "drive/tests/federation_https_contract_smoke.php"
+      ]
     },
     {
       "path": "drive/bin/federation_identity_backup.php",
@@ -1259,6 +1277,15 @@
       "references": []
     },
     {
+      "path": "drive/src/Federation/FederationEndpointResolver.php",
+      "size": 4874,
+      "active": false,
+      "references": [
+        "drive/bin/federation_https_reconcile.php",
+        "drive/tests/federation_endpoint_resolver_smoke.php"
+      ]
+    },
+    {
       "path": "drive/src/Federation/FederationEventCodec.php",
       "size": 4862,
       "active": false,
@@ -1277,6 +1304,7 @@
       "size": 373,
       "active": false,
       "references": [
+        "drive/bin/federation_https_reconcile.php",
         "drive/bin/federation_identity_backup.php",
         "drive/bin/federation_identity_init.php",
         "drive/bin/federation_identity_name.php",
@@ -1286,6 +1314,7 @@
         "drive/tests/federation_access_message_smoke.php",
         "drive/tests/federation_catalog_event_smoke.php",
         "drive/tests/federation_directory_smoke.php",
+        "drive/tests/federation_endpoint_resolver_smoke.php",
         "drive/tests/federation_node_name_admin_smoke.php",
         "drive/tests/federation_provider_smoke.php",
         "drive/tests/federation_replica_smoke.php",
@@ -2192,6 +2221,18 @@
       "references": []
     },
     {
+      "path": "drive/tests/federation_endpoint_resolver_smoke.php",
+      "size": 3382,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/tests/federation_https_contract_smoke.php",
+      "size": 3354,
+      "active": false,
+      "references": []
+    },
+    {
       "path": "drive/tests/federation_node_name_admin_smoke.php",
       "size": 3981,
       "active": false,
@@ -2469,7 +2510,10 @@
       "path": "drive/ver.php",
       "size": 260,
       "active": false,
-      "references": []
+      "references": [
+        "drive/bin/federation_https_reconcile.php",
+        "drive/tests/federation_endpoint_resolver_smoke.php"
+      ]
     },
     {
       "path": "drive/ver_archivo.php",

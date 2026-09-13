@@ -1,10 +1,10 @@
 {
   "summary": {
-    "php_total": 338,
-    "php_class_modules": 198,
+    "php_total": 340,
+    "php_class_modules": 199,
     "php_needs_migration": 36,
-    "js_total": 40,
-    "js_class_modules": 38,
+    "js_total": 41,
+    "js_class_modules": 39,
     "js_needs_migration": 9
   },
   "php": [
@@ -1292,6 +1292,21 @@
       "issues": []
     },
     {
+      "path": "drive/polly_task_status.php",
+      "lines": 8,
+      "kind": "thin endpoint",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
       "path": "drive/polly_tts.php",
       "lines": 8,
       "kind": "thin endpoint",
@@ -2013,7 +2028,7 @@
     },
     {
       "path": "drive/src/Aws/PollyFileService.php",
-      "lines": 68,
+      "lines": 446,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -3216,6 +3231,21 @@
     {
       "path": "drive/src/Http/Controller/PersonalAwsController.php",
       "lines": 74,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Http/Controller/PollyTaskController.php",
+      "lines": 124,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -5661,7 +5691,7 @@
     },
     {
       "path": "drive/js/move-tasks.js",
-      "lines": 215,
+      "lines": 233,
       "kind": "class/module",
       "classes": [
         "DriveMoveTasks"
@@ -5675,7 +5705,7 @@
       ],
       "window_func": [],
       "top_vars": [],
-      "iife": false,
+      "iife": true,
       "issues": []
     },
     {
@@ -5706,6 +5736,22 @@
       "functions": [],
       "window_assign": [
         "pantallaCompletaPDF"
+      ],
+      "window_func": [],
+      "top_vars": [],
+      "iife": false,
+      "issues": []
+    },
+    {
+      "path": "drive/js/polly-background.js",
+      "lines": 456,
+      "kind": "class/module",
+      "classes": [
+        "PollyBackgroundModule"
+      ],
+      "functions": [],
+      "window_assign": [
+        "actualizarBloqueArchivos"
       ],
       "window_func": [],
       "top_vars": [],

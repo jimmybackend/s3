@@ -4,11 +4,11 @@
 
 ## Resumen
 
-- PHP analizados: **338**
-- PHP que ya contienen clases/interfaces: **198**
+- PHP analizados: **340**
+- PHP que ya contienen clases/interfaces: **199**
 - PHP marcados para migración/revisión: **36**
-- JavaScript analizados: **40**
-- JavaScript que ya contienen clases: **38**
+- JavaScript analizados: **41**
+- JavaScript que ya contienen clases: **39**
 - JavaScript marcados para migración/revisión: **9**
 
 ## Criterio
@@ -103,6 +103,7 @@
 | `drive/mover_carpeta.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/polly_cargar_texto.php` | 8 | thin endpoint | 0 | — | — | — | — |
 | `drive/polly_list_voices.php` | 8 | thin endpoint | 0 | — | — | — | — |
+| `drive/polly_task_status.php` | 8 | thin endpoint | 0 | — | — | — | — |
 | `drive/polly_tts.php` | 8 | thin endpoint | 0 | — | — | — | — |
 | `drive/procesar_textract.php` | 8 | thin endpoint | 0 | — | — | — | — |
 | `drive/profile.php` | 11 | thin endpoint | 0 | — | — | — | — |
@@ -150,7 +151,7 @@
 | `drive/src/Aws/GeneratedFileRepository.php` | 36 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Aws/PersonalAwsConfig.php` | 122 | class/module | 1 | — | — | — | — |
 | `drive/src/Aws/PersonalTotpService.php` | 44 | class/module | 1 | — | — | — | — |
-| `drive/src/Aws/PollyFileService.php` | 68 | class/module | 1 | — | — | — | — |
+| `drive/src/Aws/PollyFileService.php` | 446 | class/module | 1 | — | — | — | — |
 | `drive/src/Aws/RdsGateway.php` | 233 | class/module | 1 | — | — | — | — |
 | `drive/src/Aws/RekognitionFileService.php` | 30 | class/module | 1 | — | — | — | — |
 | `drive/src/Aws/SesEmailService.php` | 29 | class/module | 1 | — | — | — | — |
@@ -231,6 +232,7 @@
 | `drive/src/Http/Controller/MoveJobController.php` | 243 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/NavigationController.php` | 42 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/PersonalAwsController.php` | 74 | class/module | 1 | — | — | — | — |
+| `drive/src/Http/Controller/PollyTaskController.php` | 124 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/PublicShareController.php` | 209 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/PublicSharedBrowserController.php` | 76 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/PublicUploadController.php` | 81 | class/module | 1 | — | — | — | — |
@@ -387,9 +389,10 @@
 | `drive/js/imagenes.js` | 535 | class/module | ImagenesModule | — | getGaleriaGridSize, setGaleriaGridSize | window functions: getGaleriaGridSize, setGaleriaGridSize |
 | `drive/js/media-floating.js` | 685 | procedural script | — | — | — | no ES class |
 | `drive/js/mediaFloating.js` | 38 | class/module | MediaFloatingModule | — | — | — |
-| `drive/js/move-tasks.js` | 215 | class/module | DriveMoveTasks | — | — | — |
+| `drive/js/move-tasks.js` | 233 | class/module | DriveMoveTasks | — | — | — |
 | `drive/js/obtenerFiltros.js` | 125 | class/module | ObtenerFiltrosModule | — | — | — |
 | `drive/js/pdf-pantalla-completa.js` | 45 | class/module | PdfPantallaCompletaModule | — | — | — |
+| `drive/js/polly-background.js` | 456 | class/module | PollyBackgroundModule | — | — | — |
 | `drive/js/polly.js` | 1008 | class/module | PollyModule | — | abrirModalGrabarAudio, abrirModalPolly, abrirModalRekognition, abrirModalTraducir, abrirModalTranscribir, copiarTextract | window functions: abrirModalGrabarAudio, abrirModalPolly, abrirModalRekognition, abrirModalTraducir, abrirModalTranscribir, copiarTextract, copiarTraducido, copiarTx |
 | `drive/js/profile.js` | 277 | class/module | UserProfileModule | — | — | — |
 | `drive/js/recargarPagina.js` | 27 | class/module | RecargarPaginaModule | — | — | — |

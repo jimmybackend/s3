@@ -87,7 +87,6 @@
         "drive/descargar.php",
         "drive/descargar_archivo.php",
         "drive/descargar_zip.php",
-        "drive/download.php",
         "drive/download_multiple.php",
         "drive/ec2-cron.php",
         "drive/ec2.php",
@@ -353,12 +352,6 @@
         "drive/js/descarga-multiple.js",
         "drive/js/file-block.js"
       ]
-    },
-    {
-      "path": "drive/download.php",
-      "size": 265,
-      "active": false,
-      "references": []
     },
     {
       "path": "drive/download_multiple.php",

@@ -137,17 +137,17 @@ final class FederationIngressQueueRepository
 
     public function complete(int $id): void
     {
-        $this->finish($id, 'done', null, 0);
+        $this->finish($id, 'done', null);
     }
 
     public function reject(int $id, string $message): void
     {
-        $this->finish($id, 'rejected', $message, 0);
+        $this->finish($id, 'rejected', $message);
     }
 
     public function fail(int $id, string $message): void
     {
-        $this->finish($id, 'failed', $message, 0);
+        $this->finish($id, 'failed', $message);
     }
 
     public function retry(int $id, string $message, int $delaySeconds): void
@@ -179,9 +179,8 @@ final class FederationIngressQueueRepository
         return max(0, (int)($row['c'] ?? 0));
     }
 
-    private function finish(int $id, string $status, ?string $message, int $unused): void
+    private function finish(int $id, string $status, ?string $message): void
     {
-        unset($unused);
         $message = $message !== null ? $this->safeError($message) : null;
         $stmt = $this->db->prepare(
             "UPDATE FederationIngressQueue

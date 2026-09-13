@@ -58,6 +58,13 @@ final class FederationReplicaPresenceService
         $status = strtolower(trim((string)($presence['status'] ?? '')));
 
         if ($status === 'active') {
+            $grant = $presence['grant'] ?? null;
+            if (!is_array($grant)
+                || !FederationProviderGrant::verify($grant, (string)$origin['public_key'])
+                || !hash_equals((string)$origin['node_id'], (string)($grant['origin_node_id'] ?? ''))
+                || !hash_equals((string)$local['node_id'], (string)($grant['provider_node_id'] ?? ''))) {
+                throw new FederationException('El origen no devolvió una autorización firmada válida para esta réplica.', 409);
+            }
             return [
                 'configured' => true,
                 'status' => 'active',
@@ -65,6 +72,8 @@ final class FederationReplicaPresenceService
                 'origin_node_id' => (string)$origin['node_id'],
                 'provider_node_id' => (string)$local['node_id'],
                 'origin_federation_url' => $originUrl,
+                'role' => (string)($grant['role'] ?? ''),
+                'scope' => (string)($grant['scope'] ?? ''),
                 'authorization_requested' => false,
                 'message' => 'Réplica autorizada reactivada sin crear una nueva Solicitud.',
             ];

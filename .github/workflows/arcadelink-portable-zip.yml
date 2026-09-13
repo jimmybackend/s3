@@ -6,6 +6,9 @@ on:
     paths:
       - 'drive/src/Federation/ArcadeLinkBundleService.php'
       - 'drive/src/Http/Controller/FederationController.php'
+      - 'drive/src/Http/Controller/FederationBundleController.php'
+      - 'drive/federationcloud/bundle.php'
+      - 'drive/download.php'
       - 'drive/js/arcadelink-share.js'
       - 'drive/tests/arcadelink_bundle_regression.php'
       - 'drive/docs/ARCADELINK_PORTABLE_ZIP.md'
@@ -34,6 +37,9 @@ jobs:
           set -euo pipefail
           php -l drive/src/Federation/ArcadeLinkBundleService.php
           php -l drive/src/Http/Controller/FederationController.php
+          php -l drive/src/Http/Controller/FederationBundleController.php
+          php -l drive/federationcloud/bundle.php
+          php -l drive/download.php
           php -l drive/tests/arcadelink_bundle_regression.php
 
       - name: Portable bundle regression
@@ -41,12 +47,17 @@ jobs:
           set -euo pipefail
           php drive/tests/arcadelink_bundle_regression.php
 
-      - name: Frontend contract
+      - name: Frontend and endpoint contracts
         run: |
           set -euo pipefail
           grep -q 'Descargar ArcadeLink ZIP' drive/js/arcadelink-share.js
-          grep -q 'application/zip' drive/js/arcadelink-share.js
-          grep -q 'ABRIR-FEDERATIONCLOUD-WINDOWS-LINUX-MAC.html' drive/src/Federation/ArcadeLinkBundleService.php
+          grep -q 'share-arcadelink' drive/js/arcadelink-share.js
+          grep -q 'federationcloud/bundle.php' drive/js/arcadelink-share.js
+          grep -q 'abrir-federtioncloud.html' drive/src/Federation/ArcadeLinkBundleService.php
+          grep -q 'FederationBundleController' drive/federationcloud/bundle.php
+          grep -q 'signedDownload' drive/download.php
+          grep -q 's3.presigned_get_intent' drive/src/Http/Controller/FileAccessController.php
+          grep -q 'response->redirect' drive/src/Http/Controller/FileAccessController.php
 
       - name: Diff check
         run: |

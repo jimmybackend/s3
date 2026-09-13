@@ -136,7 +136,7 @@
     },
     {
       "path": "drive/bin/federation_endpoint_refresh.php",
-      "lines": 41,
+      "lines": 40,
       "kind": "thin endpoint",
       "classes": 0,
       "functions": [],
@@ -151,7 +151,7 @@
     },
     {
       "path": "drive/bin/federation_https_reconcile.php",
-      "lines": 338,
+      "lines": 337,
       "kind": "procedural endpoint",
       "classes": 0,
       "functions": [
@@ -4501,7 +4501,7 @@
     },
     {
       "path": "drive/tests/federation_https_contract_smoke.php",
-      "lines": 45,
+      "lines": 53,
       "kind": "procedural endpoint",
       "classes": 0,
       "functions": [

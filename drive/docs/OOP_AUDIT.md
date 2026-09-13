@@ -4,9 +4,9 @@
 
 ## Resumen
 
-- PHP analizados: **326**
-- PHP que ya contienen clases/interfaces: **194**
-- PHP marcados para migración/revisión: **30**
+- PHP analizados: **331**
+- PHP que ya contienen clases/interfaces: **195**
+- PHP marcados para migración/revisión: **33**
 - JavaScript analizados: **40**
 - JavaScript que ya contienen clases: **38**
 - JavaScript marcados para migración/revisión: **9**
@@ -29,6 +29,8 @@
 | `drive/aws.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/bin/arcadecloud-drive-admin-helper.php` | 294 | procedural endpoint | 0 | — | — | — | global functions: fail, isRoot, base64UrlEncode, requireServerOperator, base64UrlDecode, nodeIdFromPublicKey, normalizeNodeName, readConfig |
 | `drive/bin/federation_catalog_migrate.php` | 44 | thin endpoint | 0 | — | — | — | — |
+| `drive/bin/federation_endpoint_refresh.php` | 41 | thin endpoint | 0 | — | — | — | — |
+| `drive/bin/federation_https_reconcile.php` | 338 | procedural endpoint | 0 | — | — | — | global functions: failHttps, optionValue, runFixed, readRuntimeJson, runtimeValue, writeRuntimeJsonInPlace, writeAtomicText, detectEc2PublicIpv4 |
 | `drive/bin/federation_identity_backup.php` | 49 | procedural endpoint | 0 | — | — | — | — |
 | `drive/bin/federation_identity_init.php` | 33 | procedural endpoint | 0 | — | — | — | — |
 | `drive/bin/federation_identity_name.php` | 35 | procedural endpoint | 0 | — | — | — | — |
@@ -167,6 +169,7 @@
 | `drive/src/Federation/FederationCodec.php` | 54 | class/module | 1 | — | — | — | — |
 | `drive/src/Federation/FederationConfig.php` | 89 | class/module | 1 | — | — | — | — |
 | `drive/src/Federation/FederationDirectoryService.php` | 151 | class/module | 1 | — | — | — | — |
+| `drive/src/Federation/FederationEndpointResolver.php` | 127 | class/module | 1 | — | — | — | — |
 | `drive/src/Federation/FederationEventCodec.php` | 115 | class/module | 1 | — | — | — | — |
 | `drive/src/Federation/FederationEventStore.php` | 288 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Federation/FederationException.php` | 20 | class/module | 1 | — | — | — | — |
@@ -309,6 +312,8 @@
 | `drive/tests/federation_access_message_smoke.php` | 72 | procedural endpoint | 0 | — | — | — | global functions: accessOk |
 | `drive/tests/federation_catalog_event_smoke.php` | 60 | procedural endpoint | 0 | — | — | — | global functions: fedCatalogOk |
 | `drive/tests/federation_directory_smoke.php` | 102 | procedural endpoint | 0 | — | — | — | global functions: directoryOk |
+| `drive/tests/federation_endpoint_resolver_smoke.php` | 95 | procedural endpoint | 0 | — | — | — | global functions: endpointOk |
+| `drive/tests/federation_https_contract_smoke.php` | 45 | procedural endpoint | 0 | — | — | — | global functions: httpsContractOk |
 | `drive/tests/federation_node_name_admin_smoke.php` | 91 | procedural endpoint | 0 | — | — | — | — |
 | `drive/tests/federation_provider_smoke.php` | 76 | procedural endpoint | 0 | — | — | — | global functions: providerOk |
 | `drive/tests/federation_replica_smoke.php` | 98 | procedural endpoint | 0 | — | — | — | global functions: replicaOk |

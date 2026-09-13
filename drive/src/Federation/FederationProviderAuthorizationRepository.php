@@ -20,7 +20,7 @@ final class FederationProviderAuthorizationRepository
                 throw new FederationException('Este nodo proveedor está bloqueado por el nodo origen.', 403);
             }
             if ($status === 'active') {
-                $this->touch($originNodeId, $providerNodeId);
+                $this->touchActive($originNodeId, $providerNodeId);
                 return 'active';
             }
 
@@ -72,6 +72,38 @@ final class FederationProviderAuthorizationRepository
         return $this->listForOrigin($originNodeId, 'active');
     }
 
+    public function activeAvailableForOrigin(string $originNodeId, int $freshSeconds = 900): array
+    {
+        $freshSeconds = max(60, min(86400, $freshSeconds));
+        $stmt = $this->db->prepare(
+            "SELECT a.id_, a.OriginNodeId, a.ProviderNodeId, a.Role, a.Scope, a.Status,
+                    a.OriginSignature, a.RequestedAt, a.AuthorizedAt, a.LastSeen, a.RevokedAt,
+                    n.NodeName, n.PublicKey, n.PublicUrl, n.FederationUrl
+             FROM FederationNodeAuthorizations a
+             INNER JOIN FederationNodes n ON n.NodeId = a.ProviderNodeId
+             WHERE a.OriginNodeId = ? AND a.Status = 'active'
+               AND a.LastSeen IS NOT NULL
+               AND TIMESTAMPDIFF(SECOND, a.LastSeen, UTC_TIMESTAMP()) <= ?
+             ORDER BY a.LastSeen DESC, a.id_ ASC
+             LIMIT 100"
+        );
+        if (!$stmt) {
+            throw new FederationException('No se pudo preparar el listado de réplicas disponibles.', 500);
+        }
+        $stmt->bind_param('si', $originNodeId, $freshSeconds);
+        if (!$stmt->execute()) {
+            $message = $stmt->error;
+            $stmt->close();
+            throw new FederationException('No se pudo listar réplicas disponibles: ' . $message, 500);
+        }
+        $result = $stmt->get_result();
+        $rows = [];
+        while ($row = $result->fetch_assoc()) $rows[] = $row;
+        $result->free();
+        $stmt->close();
+        return $rows;
+    }
+
     public function find(string $originNodeId, string $providerNodeId): ?array
     {
         $stmt = $this->db->prepare(
@@ -86,7 +118,7 @@ final class FederationProviderAuthorizationRepository
         if (!$stmt->execute()) {
             $message = $stmt->error;
             $stmt->close();
-            throw new FederationException('No se pudo consultar la autorización de proveedor: ' . $message, 500);
+            throw new FederationException('No se pudo consultar proveedores: ' . $message, 500);
         }
         $row = $stmt->get_result()->fetch_assoc();
         $stmt->close();
@@ -170,15 +202,27 @@ final class FederationProviderAuthorizationRepository
         }
     }
 
-    private function touch(string $originNodeId, string $providerNodeId): void
+    public function touchActive(string $originNodeId, string $providerNodeId): void
     {
         $stmt = $this->db->prepare(
-            'UPDATE FederationNodeAuthorizations SET LastSeen = UTC_TIMESTAMP() WHERE OriginNodeId = ? AND ProviderNodeId = ? LIMIT 1'
+            "UPDATE FederationNodeAuthorizations
+             SET LastSeen = UTC_TIMESTAMP()
+             WHERE OriginNodeId = ? AND ProviderNodeId = ? AND Status = 'active' LIMIT 1"
         );
-        if (!$stmt) return;
+        if (!$stmt) {
+            throw new FederationException('No se pudo preparar la actualización de presencia de la réplica.', 500);
+        }
         $stmt->bind_param('ss', $originNodeId, $providerNodeId);
-        $stmt->execute();
+        if (!$stmt->execute()) {
+            $message = $stmt->error;
+            $stmt->close();
+            throw new FederationException('No se pudo actualizar la presencia de la réplica: ' . $message, 500);
+        }
+        $affected = $stmt->affected_rows;
         $stmt->close();
+        if ($affected !== 1) {
+            throw new FederationException('La réplica no tiene una autorización activa.', 409);
+        }
     }
 
     private function listForOrigin(string $originNodeId, string $status): array

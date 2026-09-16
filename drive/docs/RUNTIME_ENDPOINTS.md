@@ -345,8 +345,8 @@
 | `drive/token_texto.php` | `drive/src/Sharing/ShareLinkService.php`, `drive/tests/federation_access_message_smoke.php` |
 | `drive/token_video.php` | `drive/src/Sharing/ShareLinkService.php`, `drive/js/audiovideo.js` |
 | `drive/traducir_archivo.php` | `drive/js/polly.js` |
-| `drive/transcribir_estado.php` | `drive/js/polly.js` |
-| `drive/transcribir_iniciar.php` | `drive/js/polly.js` |
+| `drive/transcribir_estado.php` | `drive/js/polly.js`, `drive/js/transcribe-background.js` |
+| `drive/transcribir_iniciar.php` | `drive/js/polly.js`, `drive/js/transcribe-background.js` |
 | `drive/unlock_file.php` | `drive/js/archivos.js` |
 | `drive/up-clean.php` | ninguna |
 | `drive/upload/UploadFactory.php` | `drive/src/Core/DriveApplication.php` |

@@ -1610,7 +1610,7 @@
     },
     {
       "path": "drive/src/Http/Controller/ActivityCostController.php",
-      "size": 2313,
+      "size": 2701,
       "active": false,
       "references": []
     },
@@ -2470,7 +2470,8 @@
       "size": 260,
       "active": false,
       "references": [
-        "drive/js/polly.js"
+        "drive/js/polly.js",
+        "drive/js/transcribe-background.js"
       ]
     },
     {
@@ -2478,7 +2479,8 @@
       "size": 259,
       "active": false,
       "references": [
-        "drive/js/polly.js"
+        "drive/js/polly.js",
+        "drive/js/transcribe-background.js"
       ]
     },
     {

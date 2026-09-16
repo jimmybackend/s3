@@ -1,10 +1,10 @@
 {
   "summary": {
-    "php_total": 346,
-    "php_class_modules": 202,
+    "php_total": 348,
+    "php_class_modules": 203,
     "php_needs_migration": 36,
-    "js_total": 42,
-    "js_class_modules": 40,
+    "js_total": 43,
+    "js_class_modules": 41,
     "js_needs_migration": 9
   },
   "php": [
@@ -72,6 +72,21 @@
     },
     {
       "path": "drive/aws.php",
+      "lines": 10,
+      "kind": "thin endpoint",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/background_tasks.php",
       "lines": 10,
       "kind": "thin endpoint",
       "classes": 0,
@@ -2943,7 +2958,7 @@
     },
     {
       "path": "drive/src/Http/Controller/ActivityCostController.php",
-      "lines": 80,
+      "lines": 81,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -2995,6 +3010,21 @@
       "session": false,
       "superglobals": [],
       "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Http/Controller/BackgroundTaskController.php",
+      "lines": 344,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": true,
       "s3": false,
       "bootstrap": false,
       "html": false,
@@ -4020,7 +4050,7 @@
     },
     {
       "path": "drive/src/Storage/MoveJobStore.php",
-      "lines": 171,
+      "lines": 208,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -4125,7 +4155,7 @@
     },
     {
       "path": "drive/src/Sync/SyncJobStore.php",
-      "lines": 138,
+      "lines": 174,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -5514,6 +5544,22 @@
       "issues": []
     },
     {
+      "path": "drive/js/background-tasks.js",
+      "lines": 350,
+      "kind": "class/module",
+      "classes": [
+        "BackgroundTaskCenter"
+      ],
+      "functions": [],
+      "window_assign": [
+        "ARCADECLOUD_UNIFIED_TASK_CENTER"
+      ],
+      "window_func": [],
+      "top_vars": [],
+      "iife": false,
+      "issues": []
+    },
+    {
       "path": "drive/js/carpetas.js",
       "lines": 1105,
       "kind": "class/module",
@@ -5781,13 +5827,14 @@
     },
     {
       "path": "drive/js/move-tasks.js",
-      "lines": 243,
+      "lines": 238,
       "kind": "class/module",
       "classes": [
         "DriveMoveTasks"
       ],
       "functions": [],
       "window_assign": [
+        "ARCADECLOUD_UNIFIED_TASK_CENTER",
         "actualizarBloqueArchivos",
         "actualizarBloqueCarpetas",
         "actualizarBloqueFooter",
@@ -5795,7 +5842,7 @@
       ],
       "window_func": [],
       "top_vars": [],
-      "iife": true,
+      "iife": false,
       "issues": []
     },
     {
@@ -5834,15 +5881,13 @@
     },
     {
       "path": "drive/js/polly-background.js",
-      "lines": 522,
+      "lines": 301,
       "kind": "class/module",
       "classes": [
         "PollyBackgroundModule"
       ],
       "functions": [],
-      "window_assign": [
-        "actualizarBloqueArchivos"
-      ],
+      "window_assign": [],
       "window_func": [],
       "top_vars": [],
       "iife": false,
@@ -6067,7 +6112,7 @@
     },
     {
       "path": "drive/js/transcribe-background.js",
-      "lines": 689,
+      "lines": 319,
       "kind": "class/module",
       "classes": [
         "TranscribeBackgroundModule"

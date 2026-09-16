@@ -4,11 +4,11 @@
 
 ## Resumen
 
-- PHP analizados: **346**
-- PHP que ya contienen clases/interfaces: **202**
+- PHP analizados: **348**
+- PHP que ya contienen clases/interfaces: **203**
 - PHP marcados para migración/revisión: **36**
-- JavaScript analizados: **42**
-- JavaScript que ya contienen clases: **40**
+- JavaScript analizados: **43**
+- JavaScript que ya contienen clases: **41**
 - JavaScript marcados para migración/revisión: **9**
 
 ## Criterio
@@ -27,6 +27,7 @@
 | `drive/api/upload.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/app_bootstrap.php` | 53 | procedural endpoint | 0 | — | ⚠️ | — | DB in endpoint |
 | `drive/aws.php` | 10 | thin endpoint | 0 | — | — | — | — |
+| `drive/background_tasks.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/bin/arcadecloud-drive-admin-helper.php` | 294 | procedural endpoint | 0 | — | — | — | global functions: fail, isRoot, base64UrlEncode, requireServerOperator, base64UrlDecode, nodeIdFromPublicKey, normalizeNodeName, readConfig |
 | `drive/bin/federation_catalog_migrate.php` | 45 | thin endpoint | 0 | — | — | — | — |
 | `drive/bin/federation_endpoint_refresh.php` | 81 | thin endpoint | 0 | — | — | — | — |
@@ -212,10 +213,11 @@
 | `drive/src/Http/BinaryResponse.php` | 85 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/ByteRange.php` | 45 | procedural endpoint | 0 | — | — | — | — |
 | `drive/src/Http/Controller/AbstractJsonController.php` | 69 | class/module | 1 | — | — | — | — |
-| `drive/src/Http/Controller/ActivityCostController.php` | 80 | class/module | 1 | — | — | — | — |
+| `drive/src/Http/Controller/ActivityCostController.php` | 81 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/AuthController.php` | 94 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/AwsCostController.php` | 61 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/AwsFileController.php` | 338 | class/module | 1 | — | — | — | — |
+| `drive/src/Http/Controller/BackgroundTaskController.php` | 344 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Http/Controller/FederationAccessController.php` | 123 | class/module | 1 | ⚠️ | — | — | — |
 | `drive/src/Http/Controller/FederationBundleController.php` | 146 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/FederationCatalogController.php` | 144 | class/module | 1 | — | — | — | — |
@@ -283,14 +285,14 @@
 | `drive/src/Storage/FileRecordRepository.php` | 122 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Storage/FolderMutationRepository.php` | 239 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Storage/FolderRepository.php` | 108 | class/module | 1 | — | ⚠️ | — | — |
-| `drive/src/Storage/MoveJobStore.php` | 171 | class/module | 1 | — | — | — | — |
+| `drive/src/Storage/MoveJobStore.php` | 208 | class/module | 1 | — | — | — | — |
 | `drive/src/Storage/StorageObjectNameCodec.php` | 104 | class/module | 1 | — | — | — | — |
 | `drive/src/Storage/StorageUsageService.php` | 103 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Storage/UserStoragePath.php` | 50 | class/module | 1 | — | — | — | — |
 | `drive/src/Storage/UserStorageProvisioner.php` | 105 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Sync/NodeSyncService.php` | 126 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Sync/S3SyncService.php` | 265 | class/module | 1 | — | — | — | — |
-| `drive/src/Sync/SyncJobStore.php` | 138 | class/module | 1 | — | — | — | — |
+| `drive/src/Sync/SyncJobStore.php` | 174 | class/module | 1 | — | — | — | — |
 | `drive/src/Sync/SyncRepository.php` | 499 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Sync/SyncSchemaMigrator.php` | 114 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Upload/AdminMultipartUploadService.php` | 154 | class/module | 1 | — | — | — | — |
@@ -379,6 +381,7 @@
 | `drive/js/archivos.js` | 2155 | class/module | ArchivosModule | — | abrirModalRenombrarArchivo, cerrarModalCompartir, setFileSecurity | window functions: abrirModalRenombrarArchivo, cerrarModalCompartir, setFileSecurity |
 | `drive/js/audiovideo.js` | 619 | class/module | AudiovideoModule | — | audioNext, audioPrev, reproducirVideoDesde, videoNext, videoPlayPause, videoPrev | window functions: audioNext, audioPrev, reproducirVideoDesde, videoNext, videoPlayPause, videoPrev, wavePlayPause |
 | `drive/js/aws-comprehend.js` | 342 | class/module | AwsComprehendModule, AwsFileActionRouter | — | — | — |
+| `drive/js/background-tasks.js` | 350 | class/module | BackgroundTaskCenter | — | — | — |
 | `drive/js/carpetas.js` | 1105 | class/module | CarpetasModule | — | actualizarBloqueCarpetas | window functions: actualizarBloqueCarpetas |
 | `drive/js/descarga-multiple.js` | 114 | class/module | DescargaMultipleModule | — | — | — |
 | `drive/js/descarga-uno.js` | 110 | class/module | DescargaUnoModule | — | — | — |
@@ -395,10 +398,10 @@
 | `drive/js/imagenes.js` | 535 | class/module | ImagenesModule | — | getGaleriaGridSize, setGaleriaGridSize | window functions: getGaleriaGridSize, setGaleriaGridSize |
 | `drive/js/media-floating.js` | 685 | procedural script | — | — | — | no ES class |
 | `drive/js/mediaFloating.js` | 38 | class/module | MediaFloatingModule | — | — | — |
-| `drive/js/move-tasks.js` | 243 | class/module | DriveMoveTasks | — | — | — |
+| `drive/js/move-tasks.js` | 238 | class/module | DriveMoveTasks | — | — | — |
 | `drive/js/obtenerFiltros.js` | 125 | class/module | ObtenerFiltrosModule | — | — | — |
 | `drive/js/pdf-pantalla-completa.js` | 45 | class/module | PdfPantallaCompletaModule | — | — | — |
-| `drive/js/polly-background.js` | 522 | class/module | PollyBackgroundModule | — | — | — |
+| `drive/js/polly-background.js` | 301 | class/module | PollyBackgroundModule | — | — | — |
 | `drive/js/polly.js` | 1008 | class/module | PollyModule | — | abrirModalGrabarAudio, abrirModalPolly, abrirModalRekognition, abrirModalTraducir, abrirModalTranscribir, copiarTextract | window functions: abrirModalGrabarAudio, abrirModalPolly, abrirModalRekognition, abrirModalTraducir, abrirModalTranscribir, copiarTextract, copiarTraducido, copiarTx |
 | `drive/js/profile.js` | 277 | class/module | UserProfileModule | — | — | — |
 | `drive/js/recargarPagina.js` | 27 | class/module | RecargarPaginaModule | — | — | — |
@@ -411,7 +414,7 @@
 | `drive/js/subir-dropzone.js` | 868 | class/module | SubirDropzoneModule | — | — | — |
 | `drive/js/subir.js` | 339 | class/module | SubirModule | — | — | — |
 | `drive/js/theme-state-bridge.js` | 62 | procedural script | — | — | — | no ES class |
-| `drive/js/transcribe-background.js` | 689 | class/module | TranscribeBackgroundModule | — | — | — |
+| `drive/js/transcribe-background.js` | 319 | class/module | TranscribeBackgroundModule | — | — | — |
 | `drive/js/upload-destination.js` | 63 | class/module | UploadDestinationModule | — | — | — |
 | `drive/js/ver-metadatos.js` | 75 | class/module | VerMetadatosModule | — | verMetadatos | window functions: verMetadatos |
 | `drive/js/ver-pdf.js` | 112 | class/module | VerPdfModule | — | — | — |

@@ -45,6 +45,7 @@ class DriveMoveTasks {
     this.remember(jobId);
     this.notify(json.mensaje || 'Movimiento enviado a segundo plano.', 'info', 5500);
     this.watch(jobId);
+    this.dispatch('drive:background-task-started', { kind: 'move', job_id: jobId });
     return json;
   }
 
@@ -213,30 +214,24 @@ class DriveMoveTasks {
 
 DriveMoveTasks.boot();
 
-(function loadPollyBackground(win, doc) {
-  if (win.PollyBackground || doc.querySelector('script[data-polly-background]')) return;
+// Desde aquí el centro visual es neutral respecto de proveedor. Polly y
+// Transcribe siguen teniendo sus módulos propios para iniciar/consultar jobs,
+// pero todos se presentan juntos en "Tareas".
+window.ARCADECLOUD_UNIFIED_TASK_CENTER = true;
 
-  const script = doc.createElement('script');
-  script.src = 'js/polly-background.js?v=20260916-4';
-  script.async = true;
-  script.setAttribute('data-polly-background', '1');
-  script.addEventListener('load', () => {
-    if (!win.jQuery) return;
-    win.jQuery(function () {
-      if (!win.PollyBackground) return;
-      if (typeof win.PollyBackground.bindUi === 'function') win.PollyBackground.bindUi();
-      if (typeof win.PollyBackground.updateUiHints === 'function') win.PollyBackground.updateUiHints();
-    });
+(function loadBackgroundModules(win, doc) {
+  const scripts = [
+    ['background-tasks', 'js/background-tasks.js?v=20260916-1'],
+    ['polly-background', 'js/polly-background.js?v=20260916-4'],
+    ['transcribe-background', 'js/transcribe-background.js?v=20260916-1']
+  ];
+
+  scripts.forEach(([name, src]) => {
+    if (doc.querySelector(`script[data-${name}]`)) return;
+    const script = doc.createElement('script');
+    script.src = src;
+    script.async = false;
+    script.setAttribute(`data-${name}`, '1');
+    doc.head.appendChild(script);
   });
-  doc.head.appendChild(script);
-})(window, document);
-
-(function loadTranscribeBackground(win, doc) {
-  if (win.TranscribeBackground || doc.querySelector('script[data-transcribe-background]')) return;
-
-  const script = doc.createElement('script');
-  script.src = 'js/transcribe-background.js?v=20260916-1';
-  script.async = true;
-  script.setAttribute('data-transcribe-background', '1');
-  doc.head.appendChild(script);
 })(window, document);

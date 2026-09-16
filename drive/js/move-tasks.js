@@ -217,7 +217,7 @@ DriveMoveTasks.boot();
   if (win.PollyBackground || doc.querySelector('script[data-polly-background]')) return;
 
   const script = doc.createElement('script');
-  script.src = 'js/polly-background.js?v=20260913-2';
+  script.src = 'js/polly-background.js?v=20260916-4';
   script.async = true;
   script.setAttribute('data-polly-background', '1');
   script.addEventListener('load', () => {

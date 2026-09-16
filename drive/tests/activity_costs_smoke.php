@@ -37,6 +37,22 @@ $partial = $catalog->estimate([
 check($partial['state'] === 'partial', 'Known + unknown units should be partial');
 check(in_array('s3.transfer_bytes', $partial['unknown_units'], true), 'Unknown unit must be disclosed');
 
+$pollyStandard = $catalog->estimate(['polly.standard_character' => 1_000_000]);
+check($pollyStandard['state'] === 'complete', 'Polly standard characters should be priced');
+check(abs((float)$pollyStandard['amount'] - 4.0) < 0.0000000001, 'Polly standard million-character reference mismatch');
+
+$pollyNeural = $catalog->estimate(['polly.neural_character' => 1_000_000]);
+check($pollyNeural['state'] === 'complete', 'Polly neural characters should be priced');
+check(abs((float)$pollyNeural['amount'] - 16.0) < 0.0000000001, 'Polly neural million-character reference mismatch');
+
+$pollyLongForm = $catalog->estimate(['polly.long-form_character' => 1_000_000]);
+check($pollyLongForm['state'] === 'complete', 'Polly long-form characters should be priced');
+check(abs((float)$pollyLongForm['amount'] - 100.0) < 0.0000000001, 'Polly long-form million-character reference mismatch');
+
+$pollyGenerative = $catalog->estimate(['polly.generative_character' => 1_000_000]);
+check($pollyGenerative['state'] === 'complete', 'Polly generative characters should be priced');
+check(abs((float)$pollyGenerative['amount'] - 30.0) < 0.0000000001, 'Polly generative million-character reference mismatch');
+
 $unpriced = $catalog->estimate(['transcribe.job_started' => 1]);
 check($unpriced['state'] === 'unpriced' && $unpriced['amount'] === null, 'Transcribe without duration must stay unpriced');
 

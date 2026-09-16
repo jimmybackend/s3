@@ -1,9 +1,9 @@
 {
-  "version": "2026-09-10",
-  "source_id": "AWS public pricing verified 2026-09-10; first-tier attribution reference",
+  "version": "2026-09-15",
+  "source_id": "AWS public pricing verified 2026-09-15; first-tier attribution reference",
   "currency": "USD",
   "region_reference": "us-east-1",
-  "notes": "Attribution references only. Free tier, volume tiers, transfer destination, storage duration, discounts, taxes and account-specific pricing are reconciled with Cost Explorer.",
+  "notes": "Attribution references only. Free tier, volume tiers, transfer destination, storage duration, discounts, taxes and account-specific pricing are reconciled with Cost Explorer. Amazon Transcribe standard batch uses a Tier-1 reference of USD 0.024/minute (USD 0.0004/second). PII redaction uses a Tier-1 add-on reference of USD 0.0024/minute (USD 0.00004/second).",
   "rates": {
     "s3.put_request": 5e-06,
     "s3.copy_request": 5e-06,
@@ -19,6 +19,8 @@
     "polly.generative_character": 3e-05,
     "translate.standard_character": 1.5e-05,
     "comprehend.nlp_unit": 0.0001,
+    "transcribe.standard_batch_second": 0.0004,
+    "transcribe.pii_redaction_second": 0.00004,
     "cost_explorer.api_request": 0.01,
     "drive.no_direct_aws_charge": 0.0
   }

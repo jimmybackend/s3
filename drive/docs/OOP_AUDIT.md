@@ -406,7 +406,7 @@
 | `drive/js/subir-dropzone.js` | 868 | class/module | SubirDropzoneModule | — | — | — |
 | `drive/js/subir.js` | 339 | class/module | SubirModule | — | — | — |
 | `drive/js/theme-state-bridge.js` | 62 | procedural script | — | — | — | no ES class |
-| `drive/js/transcribe-background.js` | 340 | class/module | TranscribeBackgroundModule | — | — | — |
+| `drive/js/transcribe-background.js` | 689 | class/module | TranscribeBackgroundModule | — | — | — |
 | `drive/js/upload-destination.js` | 63 | class/module | UploadDestinationModule | — | — | — |
 | `drive/js/ver-metadatos.js` | 75 | class/module | VerMetadatosModule | — | verMetadatos | window functions: verMetadatos |
 | `drive/js/ver-pdf.js` | 112 | class/module | VerPdfModule | — | — | — |

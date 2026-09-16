@@ -5992,7 +5992,7 @@
     },
     {
       "path": "drive/js/transcribe-background.js",
-      "lines": 340,
+      "lines": 689,
       "kind": "class/module",
       "classes": [
         "TranscribeBackgroundModule"

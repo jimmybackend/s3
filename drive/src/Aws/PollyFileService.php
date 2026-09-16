@@ -119,7 +119,12 @@ final class PollyFileService
                 );
             }
 
-            $tempPrefix = $dir . '.polly/' . $physicalBase;
+            // OutputS3KeyPrefix de Polly sólo acepta un subconjunto ASCII y
+            // rechaza, entre otros, espacios y acentos. Las carpetas reales del
+            // Drive sí pueden contenerlos, por lo que nunca enviamos la ruta del
+            // usuario como prefijo temporal. El resultado final se copia luego a
+            // la ruta original, conservando nombre/carpeta visibles.
+            $tempPrefix = $this->asyncPrefix($userId, $realFrom);
             $params = [
                 'Text' => $text,
                 'VoiceId' => $voice,
@@ -213,6 +218,8 @@ final class PollyFileService
         $res = $this->polly->getSpeechSynthesisTask(['TaskId' => $taskId]);
         $task = (array)$res->get('SynthesisTask');
         $status = (string)($task['TaskStatus'] ?? '');
+        $engine = strtolower((string)($task['Engine'] ?? 'standard'));
+        $characters = max(0, (int)($task['RequestCharacters'] ?? 0));
 
         if ($status === '') {
             throw new RuntimeException('Polly no devolvió el estado de la tarea.');
@@ -225,6 +232,8 @@ final class PollyFileService
                 'task_id' => $taskId,
                 'task_status' => 'failed',
                 'error' => (string)($task['TaskStatusReason'] ?? 'La generación de audio falló en Amazon Polly.'),
+                'engine_used' => $engine,
+                'characters_input' => $characters,
                 'source_file_id' => (int)$origin['id_'],
             ];
         }
@@ -235,17 +244,19 @@ final class PollyFileService
                 'mode' => 'task',
                 'task_id' => $taskId,
                 'task_status' => $status,
+                'engine_used' => $engine,
+                'characters_input' => $characters,
+                'source_file_id' => (int)$origin['id_'],
                 'message' => $status === 'scheduled'
                     ? 'La tarea de audio está programada.'
                     : 'Amazon Polly está generando el audio.',
-                'source_file_id' => (int)$origin['id_'],
             ];
         }
 
         $taskFormat = strtolower((string)($task['OutputFormat'] ?? 'mp3'));
         [$format, $ext, $contentType] = $this->format($taskFormat);
         [$dir, $physicalBase, $dest, $visible] = $this->destination($origin, $ext);
-        $expectedPrefix = $dir . '.polly/' . $physicalBase . '.';
+        $expectedPrefix = $this->asyncPrefix($userId, $realFrom) . '.';
         $outputUri = trim((string)($task['OutputUri'] ?? ''));
         $tempKey = $this->outputKeyFromUri($outputUri);
 
@@ -281,7 +292,6 @@ final class PollyFileService
             }
 
             $size = (int)($tempHead['ContentLength'] ?? 0);
-            $engine = strtolower((string)($task['Engine'] ?? 'standard'));
             $voice = (string)($task['VoiceId'] ?? '');
             $sample = (string)($task['SampleRate'] ?? '');
 
@@ -340,10 +350,12 @@ final class PollyFileService
             'ruta' => $dir,
             'contentType' => $contentType,
             'db_status' => $dbStatus,
-            'engine_used' => strtolower((string)($task['Engine'] ?? 'standard')),
-            'characters_input' => (int)($task['RequestCharacters'] ?? 0),
+            'engine_used' => $engine,
+            'characters_input' => $characters,
             'output_bytes' => $size,
             'source_file_id' => (int)$origin['id_'],
+            // La escritura inicial del temporal la realiza Polly en nuestro
+            // bucket. Luego Drive hace COPY + DELETE + HEAD para normalizarlo.
             's3_put_requests' => $finalizedNow ? 1 : 0,
             's3_copy_requests' => $finalizedNow ? 1 : 0,
             's3_delete_requests' => $finalizedNow ? 1 : 0,
@@ -363,6 +375,15 @@ final class PollyFileService
         $visible = (preg_replace('/\.[^.]+$/', '', $visible) ?: $visible) . '.' . $ext;
 
         return [$dir, $physicalBase, $dest, $visible];
+    }
+
+    private function asyncPrefix(int $userId, string $realFrom): string
+    {
+        $userPart = max(1, $userId);
+        $hash = hash('sha256', $realFrom);
+        // Sólo caracteres aceptados por OutputS3KeyPrefix y muy por debajo de
+        // su máximo de 800 caracteres.
+        return '.arcadecloud/polly/u' . $userPart . '/' . $hash;
     }
 
     private function assertVoiceSupportsEngine(string $voiceId, string $engine): void

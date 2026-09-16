@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 use ArcadeCloud\Drive\Activity\ActivityCostRecorder;
 use ArcadeCloud\Drive\Activity\AwsUnitPriceCatalog;
+use ArcadeCloud\Drive\Activity\TranscriptionCostAttribution;
 use ArcadeCloud\Drive\View\ActivityCostPageRenderer;
 
 spl_autoload_register(static function (string $class): void {
@@ -38,6 +39,45 @@ check(in_array('s3.transfer_bytes', $partial['unknown_units'], true), 'Unknown u
 
 $unpriced = $catalog->estimate(['transcribe.job_started' => 1]);
 check($unpriced['state'] === 'unpriced' && $unpriced['amount'] === null, 'Transcribe without duration must stay unpriced');
+
+$transcribeMinute = $catalog->estimate(['transcribe.standard_batch_second' => 60]);
+check($transcribeMinute['state'] === 'complete', 'Transcribe standard seconds should be priced');
+check(abs((float)$transcribeMinute['amount'] - 0.024) < 0.0000000001, 'Transcribe Tier-1 minute reference mismatch');
+
+$transcribePiiMinute = $catalog->estimate([
+    'transcribe.standard_batch_second' => 60,
+    'transcribe.pii_redaction_second' => 60,
+]);
+check($transcribePiiMinute['state'] === 'complete', 'Transcribe PII known units should be priced');
+check(abs((float)$transcribePiiMinute['amount'] - 0.0264) < 0.0000000001, 'Transcribe PII minute reference mismatch');
+
+$transcript = [
+    'results' => [
+        'items' => [
+            ['start_time' => '0.10', 'end_time' => '1.20'],
+            ['start_time' => '1.30', 'end_time' => '61.10'],
+        ],
+        'audio_segments' => [
+            ['start_time' => '0.00', 'end_time' => '61.25'],
+        ],
+    ],
+];
+$attribution = TranscriptionCostAttribution::fromResult($transcript, []);
+check(abs((float)$attribution['duration_seconds_observed'] - 61.25) < 0.0001, 'Transcribe duration extraction mismatch');
+check((int)$attribution['billable_seconds_reference'] === 62, 'Transcribe seconds must round up to whole seconds');
+check(($attribution['units']['transcribe.standard_batch_second'] ?? 0) === 62, 'Transcribe standard unit quantity mismatch');
+
+$shortAttribution = TranscriptionCostAttribution::fromResult([
+    'results' => ['items' => [['end_time' => '3.2']]],
+], []);
+check((int)$shortAttribution['billable_seconds_reference'] === 15, 'Transcribe pricing reference minimum should be 15 seconds');
+
+$partialAddOn = TranscriptionCostAttribution::fromResult($transcript, [
+    'ModelSettings' => ['LanguageModelName' => 'custom-model'],
+]);
+$partialAddOnEstimate = $catalog->estimate($partialAddOn['units']);
+check($partialAddOnEstimate['state'] === 'partial', 'Unverified Transcribe add-on must keep pricing partial');
+check(in_array('transcribe.custom_language_model_second', $partialAddOnEstimate['unknown_units'], true), 'Unverified CLM unit must be disclosed');
 
 $empty = $catalog->estimate([]);
 check($empty['state'] === 'unpriced' && $empty['amount'] === null, 'Empty units must not become a fake zero cost');

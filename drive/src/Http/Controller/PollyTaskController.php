@@ -57,7 +57,25 @@ final class PollyTaskController extends AbstractJsonController
             $userId = $this->guardAuthenticated();
             $stmt = $this->app->db()->prepare(
                 "SELECT e.id_, e.FileId, e.EstimatedCost, e.Currency, e.PricingState, e.Status,
-                        e.MetadataJson, e.CreatedAt, f.Nombre AS file_name
+                        e.MetadataJson, e.CreatedAt, f.Nombre AS file_name,
+                        (
+                          SELECT s.EstimatedCost
+                          FROM DriveActivityEvents s
+                          WHERE s.user_id_ = e.user_id_
+                            AND s.Action = 'polly'
+                            AND s.Service = 'S3'
+                            AND s.CorrelationId = e.CorrelationId
+                          LIMIT 1
+                        ) AS s3_cost,
+                        (
+                          SELECT s.PricingState
+                          FROM DriveActivityEvents s
+                          WHERE s.user_id_ = e.user_id_
+                            AND s.Action = 'polly'
+                            AND s.Service = 'S3'
+                            AND s.CorrelationId = e.CorrelationId
+                          LIMIT 1
+                        ) AS s3_pricing_state
                  FROM DriveActivityEvents e
                  LEFT JOIN FileS3 f
                    ON f.id_ = e.FileId AND f.user_id_ = e.user_id_
@@ -90,6 +108,11 @@ final class PollyTaskController extends AbstractJsonController
                 if ($phase === 'completed') $taskStatus = 'completed';
                 if ($phase === 'failed' || (string)($row['Status'] ?? '') === 'error') $taskStatus = 'failed';
 
+                $pollyCost = $row['EstimatedCost'] !== null ? (float)$row['EstimatedCost'] : null;
+                $s3Cost = $row['s3_cost'] !== null ? (float)$row['s3_cost'] : null;
+                $knownTotal = ($pollyCost ?? 0.0) + ($s3Cost ?? 0.0);
+                $hasKnownCost = $pollyCost !== null || $s3Cost !== null;
+
                 $tasks[] = [
                     'task_id' => $taskId,
                     'status' => $taskStatus,
@@ -99,9 +122,12 @@ final class PollyTaskController extends AbstractJsonController
                     'output_name' => (string)($meta['output_name'] ?? ''),
                     'engine' => (string)($meta['engine'] ?? ''),
                     'characters' => max(0, (int)($meta['characters'] ?? 0)),
-                    'estimated_cost' => $row['EstimatedCost'] !== null ? (float)$row['EstimatedCost'] : null,
+                    'polly_cost' => $pollyCost,
+                    's3_cost' => $s3Cost,
+                    'estimated_cost' => $hasKnownCost ? $knownTotal : null,
                     'currency' => (string)($row['Currency'] ?? 'USD'),
                     'pricing_state' => (string)($row['PricingState'] ?? ''),
+                    's3_pricing_state' => (string)($row['s3_pricing_state'] ?? ''),
                     'created_at' => (string)($row['CreatedAt'] ?? ''),
                     'reason' => (string)($meta['reason'] ?? ''),
                     'reconciled_by' => (string)($meta['reconciled_by'] ?? ''),
@@ -167,7 +193,16 @@ final class PollyTaskController extends AbstractJsonController
     {
         $taskId = (string)($result['task_id'] ?? '');
         if ($taskId === '') return;
-        $engine = strtolower((string)($result['engine_used'] ?? 'standard'));
+        $correlation = ActivityCostRecorder::correlation('polly', $taskId);
+        if ($correlation === null) return;
+
+        $previous = $this->lifecycleMetadata($userId, $correlation);
+        $engine = strtolower((string)($result['engine_used'] ?? $previous['engine'] ?? 'standard'));
+        $characters = max(
+            0,
+            (int)($result['characters_input'] ?? 0),
+            (int)($previous['characters'] ?? 0)
+        );
         $unit = match ($engine) {
             'neural' => 'polly.neural_character',
             'long-form' => 'polly.long-form_character',
@@ -180,18 +215,18 @@ final class PollyTaskController extends AbstractJsonController
             'polly',
             'Polly',
             ((int)($result['source_file_id'] ?? 0)) > 0 ? (int)$result['source_file_id'] : null,
-            [$unit => max(0, (int)($result['characters_input'] ?? 0))],
+            [$unit => $characters],
             $started,
             [
                 'phase' => 'completed',
                 'task_id' => $taskId,
                 'task_status' => 'completed',
                 'engine' => $engine,
-                'characters' => max(0, (int)($result['characters_input'] ?? 0)),
-                'output_name' => (string)($result['nombre'] ?? $result['filename'] ?? 'audio'),
+                'characters' => $characters,
+                'output_name' => (string)($result['nombre'] ?? $previous['output_name'] ?? $result['filename'] ?? 'audio'),
                 'reconciled_by' => 'browser_or_api',
             ],
-            ActivityCostRecorder::correlation('polly', $taskId)
+            $correlation
         );
     }
 
@@ -236,13 +271,15 @@ final class PollyTaskController extends AbstractJsonController
         if ($taskId === '') return;
         $correlation = ActivityCostRecorder::correlation('polly', $taskId);
         if ($correlation === null) return;
+        $previous = $this->lifecycleMetadata($userId, $correlation);
 
         $metadata = json_encode([
             'phase' => 'failed',
             'task_id' => $taskId,
             'task_status' => 'failed',
-            'engine' => (string)($result['engine_used'] ?? ''),
-            'characters' => max(0, (int)($result['characters_input'] ?? 0)),
+            'engine' => (string)($result['engine_used'] ?? $previous['engine'] ?? ''),
+            'characters' => max(0, (int)($result['characters_input'] ?? 0), (int)($previous['characters'] ?? 0)),
+            'output_name' => (string)($previous['output_name'] ?? 'audio'),
             'reason' => substr((string)($result['error'] ?? 'Polly falló.'), 0, 160),
             'reconciled_by' => 'browser_or_api',
         ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
@@ -261,9 +298,7 @@ final class PollyTaskController extends AbstractJsonController
 
     private function recordFinalizationCost(int $userId, array $result, float $started): void
     {
-        if (($result['finalized_now'] ?? false) !== true) {
-            return;
-        }
+        if (($result['finalized_now'] ?? false) !== true) return;
 
         $taskId = (string)($result['task_id'] ?? '');
         $units = [
@@ -289,5 +324,23 @@ final class PollyTaskController extends AbstractJsonController
             ],
             ActivityCostRecorder::correlation('polly', $taskId)
         );
+    }
+
+    private function lifecycleMetadata(int $userId, string $correlation): array
+    {
+        $stmt = $this->app->db()->prepare(
+            "SELECT MetadataJson FROM DriveActivityEvents
+             WHERE user_id_ = ? AND Action = 'polly' AND Service = 'Polly' AND CorrelationId = ?
+             LIMIT 1"
+        );
+        if (!$stmt || !$stmt->execute([$userId, $correlation])) {
+            if ($stmt) $stmt->close();
+            return [];
+        }
+        $row = $stmt->get_result()?->fetch_assoc();
+        $stmt->close();
+        if (!$row) return [];
+        $meta = json_decode((string)($row['MetadataJson'] ?? ''), true);
+        return is_array($meta) ? $meta : [];
     }
 }

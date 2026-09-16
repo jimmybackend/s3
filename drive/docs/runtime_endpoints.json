@@ -71,6 +71,7 @@
         "drive/actualizar_ruta.php",
         "drive/api/upload.php",
         "drive/aws.php",
+        "drive/background_tasks.php",
         "drive/bin/federation_catalog_migrate.php",
         "drive/bin/federation_endpoint_refresh.php",
         "drive/bin/federation_replica_presence.php",
@@ -187,6 +188,14 @@
       ]
     },
     {
+      "path": "drive/background_tasks.php",
+      "size": 262,
+      "active": false,
+      "references": [
+        "drive/js/background-tasks.js"
+      ]
+    },
+    {
       "path": "drive/bin/arcadecloud-drive-admin-helper.php",
       "size": 12894,
       "active": false,
@@ -289,7 +298,8 @@
       "size": 3810,
       "active": false,
       "references": [
-        "drive/src/Http/Controller/SyncController.php"
+        "drive/src/Http/Controller/SyncController.php",
+        "drive/src/Sync/SyncJobStore.php"
       ]
     },
     {
@@ -843,17 +853,13 @@
       "path": "drive/polly_task_status.php",
       "size": 256,
       "active": false,
-      "references": [
-        "drive/js/polly-background.js"
-      ]
+      "references": []
     },
     {
       "path": "drive/polly_tasks.php",
       "size": 255,
       "active": false,
-      "references": [
-        "drive/js/polly-background.js"
-      ]
+      "references": []
     },
     {
       "path": "drive/polly_tts.php",
@@ -1645,7 +1651,7 @@
     },
     {
       "path": "drive/src/Http/Controller/ActivityCostController.php",
-      "size": 2701,
+      "size": 2764,
       "active": false,
       "references": []
     },
@@ -1664,6 +1670,12 @@
     {
       "path": "drive/src/Http/Controller/AwsFileController.php",
       "size": 11662,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Http/Controller/BackgroundTaskController.php",
+      "size": 15472,
       "active": false,
       "references": []
     },
@@ -2090,7 +2102,7 @@
     },
     {
       "path": "drive/src/Storage/MoveJobStore.php",
-      "size": 5097,
+      "size": 6097,
       "active": false,
       "references": []
     },
@@ -2132,7 +2144,7 @@
     },
     {
       "path": "drive/src/Sync/SyncJobStore.php",
-      "size": 3353,
+      "size": 4447,
       "active": false,
       "references": []
     },

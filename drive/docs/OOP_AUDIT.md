@@ -4,8 +4,8 @@
 
 ## Resumen
 
-- PHP analizados: **343**
-- PHP que ya contienen clases/interfaces: **201**
+- PHP analizados: **346**
+- PHP que ya contienen clases/interfaces: **202**
 - PHP marcados para migración/revisión: **36**
 - JavaScript analizados: **42**
 - JavaScript que ya contienen clases: **40**
@@ -38,6 +38,7 @@
 | `drive/bin/federation_provider_request.php` | 87 | procedural endpoint | 0 | — | — | — | — |
 | `drive/bin/federation_replica_presence.php` | 21 | thin endpoint | 0 | — | — | — | — |
 | `drive/bin/federation_sync.php` | 102 | endpoint with logic | 0 | — | — | — | — |
+| `drive/bin/polly_reconcile.php` | 50 | thin endpoint | 0 | — | — | — | — |
 | `drive/bin/sync_node_worker.php` | 75 | thin endpoint | 0 | — | — | — | — |
 | `drive/bin/sync_schema_migrate.php` | 17 | thin endpoint | 0 | — | — | — | — |
 | `drive/bin/sync_worker.php` | 129 | endpoint with logic | 0 | — | — | — | — |
@@ -105,6 +106,7 @@
 | `drive/polly_cargar_texto.php` | 8 | thin endpoint | 0 | — | — | — | — |
 | `drive/polly_list_voices.php` | 8 | thin endpoint | 0 | — | — | — | — |
 | `drive/polly_task_status.php` | 8 | thin endpoint | 0 | — | — | — | — |
+| `drive/polly_tasks.php` | 8 | thin endpoint | 0 | — | — | — | — |
 | `drive/polly_tts.php` | 8 | thin endpoint | 0 | — | — | — | — |
 | `drive/procesar_textract.php` | 8 | thin endpoint | 0 | — | — | — | — |
 | `drive/profile.php` | 11 | thin endpoint | 0 | — | — | — | — |
@@ -122,6 +124,7 @@
 | `drive/src/Activity/ActivityCostRepository.php` | 173 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Activity/ActivityCostService.php` | 148 | class/module | 1 | — | — | — | — |
 | `drive/src/Activity/AwsUnitPriceCatalog.php` | 81 | class/module | 1 | — | — | — | — |
+| `drive/src/Activity/PollyTaskReconciler.php` | 257 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Activity/TranscriptionCostAttribution.php` | 117 | class/module | 1 | — | — | — | — |
 | `drive/src/Activity/TranscriptionReconciler.php` | 311 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Admin/ManagedRuntimeEnvironment.php` | 213 | class/module | 1 | — | — | — | — |
@@ -154,7 +157,7 @@
 | `drive/src/Aws/GeneratedFileRepository.php` | 36 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Aws/PersonalAwsConfig.php` | 122 | class/module | 1 | — | — | — | — |
 | `drive/src/Aws/PersonalTotpService.php` | 44 | class/module | 1 | — | — | — | — |
-| `drive/src/Aws/PollyFileService.php` | 446 | class/module | 1 | — | — | — | — |
+| `drive/src/Aws/PollyFileService.php` | 467 | class/module | 1 | — | — | — | — |
 | `drive/src/Aws/RdsGateway.php` | 233 | class/module | 1 | — | — | — | — |
 | `drive/src/Aws/RekognitionFileService.php` | 30 | class/module | 1 | — | — | — | — |
 | `drive/src/Aws/SesEmailService.php` | 29 | class/module | 1 | — | — | — | — |
@@ -212,7 +215,7 @@
 | `drive/src/Http/Controller/ActivityCostController.php` | 80 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/AuthController.php` | 94 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/AwsCostController.php` | 61 | class/module | 1 | — | — | — | — |
-| `drive/src/Http/Controller/AwsFileController.php` | 325 | class/module | 1 | — | — | — | — |
+| `drive/src/Http/Controller/AwsFileController.php` | 338 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/FederationAccessController.php` | 123 | class/module | 1 | ⚠️ | — | — | — |
 | `drive/src/Http/Controller/FederationBundleController.php` | 146 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/FederationCatalogController.php` | 144 | class/module | 1 | — | — | — | — |
@@ -235,7 +238,7 @@
 | `drive/src/Http/Controller/MoveJobController.php` | 243 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/NavigationController.php` | 42 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/PersonalAwsController.php` | 74 | class/module | 1 | — | — | — | — |
-| `drive/src/Http/Controller/PollyTaskController.php` | 124 | class/module | 1 | — | — | — | — |
+| `drive/src/Http/Controller/PollyTaskController.php` | 347 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Http/Controller/PublicShareController.php` | 209 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/PublicSharedBrowserController.php` | 76 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/PublicUploadController.php` | 81 | class/module | 1 | — | — | — | — |
@@ -316,7 +319,7 @@
 | `drive/subir_publico.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/sync_s3_to_db.php` | 5 | thin endpoint | 0 | — | — | — | — |
 | `drive/sync_status.php` | 5 | thin endpoint | 0 | — | — | — | — |
-| `drive/tests/activity_costs_smoke.php` | 119 | view/entrypoint | 0 | — | — | — | global functions: check |
+| `drive/tests/activity_costs_smoke.php` | 135 | view/entrypoint | 0 | — | — | — | global functions: check |
 | `drive/tests/arcadelink_bulk_contract_regression.php` | 68 | procedural endpoint | 0 | — | — | — | global functions: source, expectContract |
 | `drive/tests/arcadelink_bundle_regression.php` | 142 | procedural endpoint | 0 | — | — | — | global functions: expect, openBundle, assertNoSecretMarkers |
 | `drive/tests/federation_access_message_smoke.php` | 72 | procedural endpoint | 0 | — | — | — | global functions: accessOk |
@@ -395,7 +398,7 @@
 | `drive/js/move-tasks.js` | 243 | class/module | DriveMoveTasks | — | — | — |
 | `drive/js/obtenerFiltros.js` | 125 | class/module | ObtenerFiltrosModule | — | — | — |
 | `drive/js/pdf-pantalla-completa.js` | 45 | class/module | PdfPantallaCompletaModule | — | — | — |
-| `drive/js/polly-background.js` | 456 | class/module | PollyBackgroundModule | — | — | — |
+| `drive/js/polly-background.js` | 522 | class/module | PollyBackgroundModule | — | — | — |
 | `drive/js/polly.js` | 1008 | class/module | PollyModule | — | abrirModalGrabarAudio, abrirModalPolly, abrirModalRekognition, abrirModalTraducir, abrirModalTranscribir, copiarTextract | window functions: abrirModalGrabarAudio, abrirModalPolly, abrirModalRekognition, abrirModalTraducir, abrirModalTranscribir, copiarTextract, copiarTraducido, copiarTx |
 | `drive/js/profile.js` | 277 | class/module | UserProfileModule | — | — | — |
 | `drive/js/recargarPagina.js` | 27 | class/module | RecargarPaginaModule | — | — | — |

@@ -4,8 +4,8 @@
 
 ## Resumen
 
-- PHP analizados: **341**
-- PHP que ya contienen clases/interfaces: **200**
+- PHP analizados: **343**
+- PHP que ya contienen clases/interfaces: **201**
 - PHP marcados para migración/revisión: **36**
 - JavaScript analizados: **42**
 - JavaScript que ya contienen clases: **40**
@@ -41,6 +41,7 @@
 | `drive/bin/sync_node_worker.php` | 75 | thin endpoint | 0 | — | — | — | — |
 | `drive/bin/sync_schema_migrate.php` | 17 | thin endpoint | 0 | — | — | — | — |
 | `drive/bin/sync_worker.php` | 129 | endpoint with logic | 0 | — | — | — | — |
+| `drive/bin/transcribe_reconcile.php` | 50 | thin endpoint | 0 | — | — | — | — |
 | `drive/bin/upload_cleanup.php` | 11 | thin endpoint | 0 | — | — | — | — |
 | `drive/bloque_archivos.php` | 662 | view/entrypoint | 0 | ⚠️ | — | — | — |
 | `drive/bloque_carpetas.php` | 147 | view/entrypoint | 0 | ⚠️ | — | — | — |
@@ -122,6 +123,7 @@
 | `drive/src/Activity/ActivityCostService.php` | 148 | class/module | 1 | — | — | — | — |
 | `drive/src/Activity/AwsUnitPriceCatalog.php` | 81 | class/module | 1 | — | — | — | — |
 | `drive/src/Activity/TranscriptionCostAttribution.php` | 117 | class/module | 1 | — | — | — | — |
+| `drive/src/Activity/TranscriptionReconciler.php` | 311 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Admin/ManagedRuntimeEnvironment.php` | 213 | class/module | 1 | — | — | — | — |
 | `drive/src/Admin/PrivilegedServerHelper.php` | 123 | class/module | 1 | — | — | — | — |
 | `drive/src/Admin/ServerSettingsAdminService.php` | 211 | class/module | 1 | — | ⚠️ | — | — |

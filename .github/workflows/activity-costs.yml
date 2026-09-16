@@ -10,6 +10,8 @@ on:
       - 'drive/bloque_carpetas.php'
       - 'drive/bin/transcribe_reconcile.php'
       - 'drive/bin/install_transcribe_reconcile_timer.sh'
+      - 'drive/bin/polly_reconcile.php'
+      - 'drive/bin/install_polly_reconcile_timer.sh'
       - 'drive/config/activity-cost-pricing.json'
       - 'drive/src/Activity/**'
       - 'drive/src/Aws/AwsCostService.php'
@@ -33,6 +35,7 @@ on:
       - 'drive/src/Http/Controller/UploadController.php'
       - 'drive/src/View/ActivityCostPageRenderer.php'
       - 'drive/polly_task_status.php'
+      - 'drive/polly_tasks.php'
       - 'drive/js/polly-background.js'
       - 'drive/js/transcribe-background.js'
       - 'drive/js/move-tasks.js'
@@ -62,7 +65,9 @@ jobs:
             drive/activity_costs.php \
             drive/bloque_carpetas.php \
             drive/polly_task_status.php \
+            drive/polly_tasks.php \
             drive/bin/transcribe_reconcile.php \
+            drive/bin/polly_reconcile.php \
             drive/src/Activity/*.php \
             drive/src/Aws/AwsCostService.php \
             drive/src/Aws/ComprehendFileService.php \
@@ -88,8 +93,10 @@ jobs:
             php -l "$f"
           done
 
-      - name: Validate transcribe reconcile shell
-        run: bash -n drive/bin/install_transcribe_reconcile_timer.sh
+      - name: Validate AWS reconcile shells
+        run: |
+          bash -n drive/bin/install_transcribe_reconcile_timer.sh
+          bash -n drive/bin/install_polly_reconcile_timer.sh
 
       - name: Validate background AWS JavaScript
         run: |
@@ -116,6 +123,7 @@ jobs:
           grep -q 'cost_explorer.api_request' drive/src/Http/Controller/AwsCostController.php
           grep -q 'Best effort' drive/src/Activity/ActivityCostRecorder.php
           grep -q 'Cost Explorer' drive/src/Activity/ActivityCostService.php
+          grep -q 'PollyTaskReconciler' drive/bin/polly_reconcile.php
           grep -q 'CREATE TABLE IF NOT EXISTS `DriveActivityEvents`' adbbmis1_Cloud.sql
           grep -q 'DROP TABLE IF EXISTS `DriveActivityEvents`' adbbmis1_Cloud.sql
           ! grep -R -E '(AKIA[0-9A-Z]{16}|aws_secret_access_key[[:space:]]*=|BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY)' drive/src/Activity drive/activity_costs.php drive/config/activity-cost-pricing.json drive/tests

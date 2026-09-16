@@ -127,6 +127,7 @@
 | `drive/src/Activity/ActivityCostRepository.php` | ninguna |
 | `drive/src/Activity/ActivityCostService.php` | ninguna |
 | `drive/src/Activity/AwsUnitPriceCatalog.php` | ninguna |
+| `drive/src/Activity/TranscriptionCostAttribution.php` | ninguna |
 | `drive/src/Admin/PrivilegedServerHelper.php` | `drive/setup/api.php` |
 | `drive/src/Admin/ServerSettingsAdminService.php` | ninguna |
 | `drive/src/Application/AiFileSearchService.php` | ninguna |

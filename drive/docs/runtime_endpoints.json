@@ -980,6 +980,12 @@
       "references": []
     },
     {
+      "path": "drive/src/Activity/TranscriptionCostAttribution.php",
+      "size": 4113,
+      "active": false,
+      "references": []
+    },
+    {
       "path": "drive/src/Admin/ManagedRuntimeEnvironment.php",
       "size": 10256,
       "active": true,
@@ -1199,7 +1205,7 @@
     },
     {
       "path": "drive/src/Aws/TranscriptionFileService.php",
-      "size": 11587,
+      "size": 16632,
       "active": false,
       "references": []
     },
@@ -1827,7 +1833,7 @@
     },
     {
       "path": "drive/src/Http/Controller/TranscriptionController.php",
-      "size": 4629,
+      "size": 7693,
       "active": false,
       "references": []
     },
@@ -2280,7 +2286,7 @@
     },
     {
       "path": "drive/tests/activity_costs_smoke.php",
-      "size": 3980,
+      "size": 6163,
       "active": false,
       "references": []
     },

@@ -75,6 +75,7 @@
         "drive/bin/federation_endpoint_refresh.php",
         "drive/bin/federation_replica_presence.php",
         "drive/bin/federation_sync.php",
+        "drive/bin/polly_reconcile.php",
         "drive/bin/sync_node_worker.php",
         "drive/bin/sync_schema_migrate.php",
         "drive/bin/sync_worker.php",
@@ -138,6 +139,7 @@
         "drive/polly_cargar_texto.php",
         "drive/polly_list_voices.php",
         "drive/polly_task_status.php",
+        "drive/polly_tasks.php",
         "drive/polly_tts.php",
         "drive/procesar_textract.php",
         "drive/profile.php",
@@ -263,6 +265,12 @@
         "drive/tests/federation_customs_contract_smoke.php",
         "drive/tests/federation_replica_reconnect_contract_smoke.php"
       ]
+    },
+    {
+      "path": "drive/bin/polly_reconcile.php",
+      "size": 1418,
+      "active": false,
+      "references": []
     },
     {
       "path": "drive/bin/sync_node_worker.php",
@@ -840,6 +848,14 @@
       ]
     },
     {
+      "path": "drive/polly_tasks.php",
+      "size": 255,
+      "active": false,
+      "references": [
+        "drive/js/polly-background.js"
+      ]
+    },
+    {
       "path": "drive/polly_tts.php",
       "size": 256,
       "active": false,
@@ -983,6 +999,12 @@
     {
       "path": "drive/src/Activity/AwsUnitPriceCatalog.php",
       "size": 2316,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Activity/PollyTaskReconciler.php",
+      "size": 9186,
       "active": false,
       "references": []
     },
@@ -1188,7 +1210,7 @@
     },
     {
       "path": "drive/src/Aws/PollyFileService.php",
-      "size": 16644,
+      "size": 17739,
       "active": false,
       "references": []
     },
@@ -1641,7 +1663,7 @@
     },
     {
       "path": "drive/src/Http/Controller/AwsFileController.php",
-      "size": 10970,
+      "size": 11662,
       "active": false,
       "references": []
     },
@@ -1786,7 +1808,7 @@
     },
     {
       "path": "drive/src/Http/Controller/PollyTaskController.php",
-      "size": 4070,
+      "size": 14141,
       "active": false,
       "references": []
     },
@@ -2299,7 +2321,7 @@
     },
     {
       "path": "drive/tests/activity_costs_smoke.php",
-      "size": 6163,
+      "size": 7350,
       "active": false,
       "references": []
     },

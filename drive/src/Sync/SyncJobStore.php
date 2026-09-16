@@ -81,6 +81,42 @@ final class SyncJobStore
         return $data;
     }
 
+    /**
+     * Devuelve jobs recientes del usuario para el centro unificado de tareas.
+     * La fuente sigue siendo el mismo estado persistente que usa sync_worker.php.
+     */
+    public function recentForUser(int $userId, int $limit = 30): array
+    {
+        if ($userId <= 0) {
+            return [];
+        }
+
+        $limit = max(1, min(100, $limit));
+        $prefix = $this->dir . '/' . $userId . '-';
+        $rows = [];
+
+        foreach (glob($prefix . '*.json') ?: [] as $file) {
+            $name = basename($file, '.json');
+            $jobId = substr($name, strlen((string)$userId) + 1);
+            if (!preg_match('/^[a-f0-9]{32}$/', $jobId)) {
+                continue;
+            }
+
+            $job = $this->read($userId, $jobId);
+            if (!is_array($job)) {
+                continue;
+            }
+
+            $rows[] = $job;
+        }
+
+        usort($rows, static function (array $a, array $b): int {
+            return strcmp((string)($b['updated_at'] ?? ''), (string)($a['updated_at'] ?? ''));
+        });
+
+        return array_slice($rows, 0, $limit);
+    }
+
     public function lockPath(int $userId): string
     {
         return $this->dir . '/user-' . $userId . '.lock';

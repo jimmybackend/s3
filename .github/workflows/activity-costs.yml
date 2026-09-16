@@ -7,6 +7,7 @@ on:
       - 'feat/activity-cost-tracking'
     paths:
       - 'drive/activity_costs.php'
+      - 'drive/background_tasks.php'
       - 'drive/bloque_carpetas.php'
       - 'drive/bin/transcribe_reconcile.php'
       - 'drive/bin/install_transcribe_reconcile_timer.sh'
@@ -21,6 +22,7 @@ on:
       - 'drive/src/Aws/TranslateFileService.php'
       - 'drive/src/Application/FolderMutationService.php'
       - 'drive/src/Http/Controller/ActivityCostController.php'
+      - 'drive/src/Http/Controller/BackgroundTaskController.php'
       - 'drive/src/Http/Controller/AwsCostController.php'
       - 'drive/src/Http/Controller/AwsFileController.php'
       - 'drive/src/Http/Controller/FileAccessController.php'
@@ -33,9 +35,12 @@ on:
       - 'drive/src/Http/Controller/ThumbnailController.php'
       - 'drive/src/Http/Controller/TranscriptionController.php'
       - 'drive/src/Http/Controller/UploadController.php'
+      - 'drive/src/Storage/MoveJobStore.php'
+      - 'drive/src/Sync/SyncJobStore.php'
       - 'drive/src/View/ActivityCostPageRenderer.php'
       - 'drive/polly_task_status.php'
       - 'drive/polly_tasks.php'
+      - 'drive/js/background-tasks.js'
       - 'drive/js/polly-background.js'
       - 'drive/js/transcribe-background.js'
       - 'drive/js/move-tasks.js'
@@ -63,6 +68,7 @@ jobs:
           set -euo pipefail
           for f in \
             drive/activity_costs.php \
+            drive/background_tasks.php \
             drive/bloque_carpetas.php \
             drive/polly_task_status.php \
             drive/polly_tasks.php \
@@ -76,6 +82,7 @@ jobs:
             drive/src/Aws/TranslateFileService.php \
             drive/src/Application/FolderMutationService.php \
             drive/src/Http/Controller/ActivityCostController.php \
+            drive/src/Http/Controller/BackgroundTaskController.php \
             drive/src/Http/Controller/AwsCostController.php \
             drive/src/Http/Controller/AwsFileController.php \
             drive/src/Http/Controller/FileAccessController.php \
@@ -88,6 +95,8 @@ jobs:
             drive/src/Http/Controller/ThumbnailController.php \
             drive/src/Http/Controller/TranscriptionController.php \
             drive/src/Http/Controller/UploadController.php \
+            drive/src/Storage/MoveJobStore.php \
+            drive/src/Sync/SyncJobStore.php \
             drive/src/View/ActivityCostPageRenderer.php \
             drive/tests/activity_costs_smoke.php; do
             php -l "$f"
@@ -98,8 +107,9 @@ jobs:
           bash -n drive/bin/install_transcribe_reconcile_timer.sh
           bash -n drive/bin/install_polly_reconcile_timer.sh
 
-      - name: Validate background AWS JavaScript
+      - name: Validate background task JavaScript
         run: |
+          node --check drive/js/background-tasks.js
           node --check drive/js/polly-background.js
           node --check drive/js/transcribe-background.js
           node --check drive/js/move-tasks.js
@@ -124,6 +134,11 @@ jobs:
           grep -q 'Best effort' drive/src/Activity/ActivityCostRecorder.php
           grep -q 'Cost Explorer' drive/src/Activity/ActivityCostService.php
           grep -q 'PollyTaskReconciler' drive/bin/polly_reconcile.php
+          grep -q 'BackgroundTaskController' drive/background_tasks.php
+          grep -q 'recentForUser' drive/src/Storage/MoveJobStore.php
+          grep -q 'recentForUser' drive/src/Sync/SyncJobStore.php
+          grep -q "button.innerHTML = 'Tareas " drive/js/background-tasks.js
+          ! grep -q 'Tareas AWS' drive/js/background-tasks.js drive/js/polly-background.js drive/js/transcribe-background.js
           grep -q 'CREATE TABLE IF NOT EXISTS `DriveActivityEvents`' adbbmis1_Cloud.sql
           grep -q 'DROP TABLE IF EXISTS `DriveActivityEvents`' adbbmis1_Cloud.sql
           ! grep -R -E '(AKIA[0-9A-Z]{16}|aws_secret_access_key[[:space:]]*=|BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY)' drive/src/Activity drive/activity_costs.php drive/config/activity-cost-pricing.json drive/tests

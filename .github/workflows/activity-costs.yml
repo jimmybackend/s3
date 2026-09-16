@@ -32,6 +32,7 @@ on:
       - 'drive/src/View/ActivityCostPageRenderer.php'
       - 'drive/polly_task_status.php'
       - 'drive/js/polly-background.js'
+      - 'drive/js/transcribe-background.js'
       - 'drive/js/move-tasks.js'
       - 'drive/tests/activity_costs_smoke.php'
       - 'adbbmis1_Cloud.sql'
@@ -84,9 +85,10 @@ jobs:
             php -l "$f"
           done
 
-      - name: Validate background Polly JavaScript
+      - name: Validate background AWS JavaScript
         run: |
           node --check drive/js/polly-background.js
+          node --check drive/js/transcribe-background.js
           node --check drive/js/move-tasks.js
 
       - name: Activity cost smoke test

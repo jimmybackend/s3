@@ -230,3 +230,13 @@ DriveMoveTasks.boot();
   });
   doc.head.appendChild(script);
 })(window, document);
+
+(function loadTranscribeBackground(win, doc) {
+  if (win.TranscribeBackground || doc.querySelector('script[data-transcribe-background]')) return;
+
+  const script = doc.createElement('script');
+  script.src = 'js/transcribe-background.js?v=20260916-1';
+  script.async = true;
+  script.setAttribute('data-transcribe-background', '1');
+  doc.head.appendChild(script);
+})(window, document);

@@ -59,11 +59,21 @@ final class ActivityCostController
                 $view = $service->dashboard($userId, $period, $serviceFilter, $actionFilter, $canViewRealAws);
             }
 
-            echo (new ActivityCostPageRenderer())->render($view, $userId);
+            $html = (new ActivityCostPageRenderer())->render($view, $userId);
+            echo $this->withBackgroundTranscribe($html);
         } catch (\Throwable $e) {
             http_response_code(500);
             echo (new ActivityCostPageRenderer())->renderError($e->getMessage());
         }
         exit;
+    }
+
+    private function withBackgroundTranscribe(string $html): string
+    {
+        $script = '<script src="js/transcribe-background.js?v=20260916-1"></script>';
+        if (str_contains($html, '</body>')) {
+            return str_replace('</body>', $script . "\n</body>", $html);
+        }
+        return $html . $script;
     }
 }

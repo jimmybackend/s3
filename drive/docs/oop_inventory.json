@@ -3,8 +3,8 @@
     "php_total": 341,
     "php_class_modules": 200,
     "php_needs_migration": 36,
-    "js_total": 41,
-    "js_class_modules": 39,
+    "js_total": 42,
+    "js_class_modules": 40,
     "js_needs_migration": 9
   },
   "php": [
@@ -2868,7 +2868,7 @@
     },
     {
       "path": "drive/src/Http/Controller/ActivityCostController.php",
-      "lines": 70,
+      "lines": 80,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -2877,7 +2877,7 @@
       "db": false,
       "s3": false,
       "bootstrap": false,
-      "html": false,
+      "html": true,
       "namespace": true,
       "issues": []
     },
@@ -5706,7 +5706,7 @@
     },
     {
       "path": "drive/js/move-tasks.js",
-      "lines": 233,
+      "lines": 243,
       "kind": "class/module",
       "classes": [
         "DriveMoveTasks"
@@ -5989,6 +5989,22 @@
       "issues": [
         "no ES class"
       ]
+    },
+    {
+      "path": "drive/js/transcribe-background.js",
+      "lines": 340,
+      "kind": "class/module",
+      "classes": [
+        "TranscribeBackgroundModule"
+      ],
+      "functions": [],
+      "window_assign": [
+        "actualizarBloqueArchivos"
+      ],
+      "window_func": [],
+      "top_vars": [],
+      "iife": true,
+      "issues": []
     },
     {
       "path": "drive/js/upload-destination.js",

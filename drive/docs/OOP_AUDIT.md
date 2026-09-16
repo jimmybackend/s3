@@ -7,8 +7,8 @@
 - PHP analizados: **341**
 - PHP que ya contienen clases/interfaces: **200**
 - PHP marcados para migración/revisión: **36**
-- JavaScript analizados: **41**
-- JavaScript que ya contienen clases: **39**
+- JavaScript analizados: **42**
+- JavaScript que ya contienen clases: **40**
 - JavaScript marcados para migración/revisión: **9**
 
 ## Criterio
@@ -207,7 +207,7 @@
 | `drive/src/Http/BinaryResponse.php` | 85 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/ByteRange.php` | 45 | procedural endpoint | 0 | — | — | — | — |
 | `drive/src/Http/Controller/AbstractJsonController.php` | 69 | class/module | 1 | — | — | — | — |
-| `drive/src/Http/Controller/ActivityCostController.php` | 70 | class/module | 1 | — | — | — | — |
+| `drive/src/Http/Controller/ActivityCostController.php` | 80 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/AuthController.php` | 94 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/AwsCostController.php` | 61 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/AwsFileController.php` | 325 | class/module | 1 | — | — | — | — |
@@ -390,7 +390,7 @@
 | `drive/js/imagenes.js` | 535 | class/module | ImagenesModule | — | getGaleriaGridSize, setGaleriaGridSize | window functions: getGaleriaGridSize, setGaleriaGridSize |
 | `drive/js/media-floating.js` | 685 | procedural script | — | — | — | no ES class |
 | `drive/js/mediaFloating.js` | 38 | class/module | MediaFloatingModule | — | — | — |
-| `drive/js/move-tasks.js` | 233 | class/module | DriveMoveTasks | — | — | — |
+| `drive/js/move-tasks.js` | 243 | class/module | DriveMoveTasks | — | — | — |
 | `drive/js/obtenerFiltros.js` | 125 | class/module | ObtenerFiltrosModule | — | — | — |
 | `drive/js/pdf-pantalla-completa.js` | 45 | class/module | PdfPantallaCompletaModule | — | — | — |
 | `drive/js/polly-background.js` | 456 | class/module | PollyBackgroundModule | — | — | — |
@@ -406,6 +406,7 @@
 | `drive/js/subir-dropzone.js` | 868 | class/module | SubirDropzoneModule | — | — | — |
 | `drive/js/subir.js` | 339 | class/module | SubirModule | — | — | — |
 | `drive/js/theme-state-bridge.js` | 62 | procedural script | — | — | — | no ES class |
+| `drive/js/transcribe-background.js` | 340 | class/module | TranscribeBackgroundModule | — | — | — |
 | `drive/js/upload-destination.js` | 63 | class/module | UploadDestinationModule | — | — | — |
 | `drive/js/ver-metadatos.js` | 75 | class/module | VerMetadatosModule | — | verMetadatos | window functions: verMetadatos |
 | `drive/js/ver-pdf.js` | 112 | class/module | VerPdfModule | — | — | — |

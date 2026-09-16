@@ -7,6 +7,7 @@ if [[ "${EUID}" -ne 0 ]]; then
 fi
 
 RUN_USER=""
+RUN_USER_SOURCE=""
 APP_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd)"
 PHP_BIN="/usr/bin/php"
 INTERVAL_SEC=60
@@ -15,7 +16,7 @@ LIMIT=250
 
 for arg in "$@"; do
   case "$arg" in
-    --run-user=*) RUN_USER="${arg#*=}" ;;
+    --run-user=*) RUN_USER="${arg#*=}"; RUN_USER_SOURCE="argumento --run-user" ;;
     --app-root=*) APP_ROOT="${arg#*=}" ;;
     --php-bin=*) PHP_BIN="${arg#*=}" ;;
     --interval-sec=*) INTERVAL_SEC="${arg#*=}" ;;
@@ -25,24 +26,75 @@ for arg in "$@"; do
   esac
 done
 
-# Si no se especifica usuario, detecta un worker hijo del master del servicio
-# php-fpm-drive. Esto evita tomar por accidente un worker de MCMA u otro pool.
+# 1) Si el pool tiene un worker hijo activo, usa exactamente su usuario.
+# En pm=ondemand puede no existir ningún hijo en reposo, por eso hay fallback.
 if [[ -z "$RUN_USER" ]] && systemctl is-active --quiet php-fpm-drive.service; then
   MASTER_PID="$(systemctl show -p MainPID --value php-fpm-drive.service 2>/dev/null || true)"
   if [[ "$MASTER_PID" =~ ^[0-9]+$ ]] && (( MASTER_PID > 1 )); then
     CHILD_PID="$(pgrep -P "$MASTER_PID" 2>/dev/null | head -n 1 || true)"
     if [[ "$CHILD_PID" =~ ^[0-9]+$ ]]; then
       RUN_USER="$(ps -o user= -p "$CHILD_PID" 2>/dev/null | xargs || true)"
+      if [[ -n "$RUN_USER" ]]; then
+        RUN_USER_SOURCE="worker hijo de php-fpm-drive.service"
+      fi
+    fi
+  fi
+fi
+
+# 2) Fallback autoritativo para pools ondemand: toma el -y del ExecStart real
+# del servicio y pide a php-fpm que expanda/valide la configuración con -tt.
+# Así no adivinamos apache/nginx/ec2-user ni tomamos un pool de otra app.
+if [[ -z "$RUN_USER" ]]; then
+  EXEC_START="$(systemctl show -p ExecStart --value php-fpm-drive.service 2>/dev/null || true)"
+  FPM_CONF=""
+  FPM_DAEMON=""
+
+  if [[ "$EXEC_START" =~ [[:space:]]-y[[:space:]]+([^[:space:];}\}]+) ]]; then
+    FPM_CONF="${BASH_REMATCH[1]}"
+  fi
+  if [[ "$EXEC_START" =~ path=([^[:space:];}\}]+) ]]; then
+    FPM_DAEMON="${BASH_REMATCH[1]}"
+  fi
+
+  if [[ -z "$FPM_CONF" && -f /etc/php-fpm-drive.conf ]]; then
+    FPM_CONF="/etc/php-fpm-drive.conf"
+  fi
+  if [[ -z "$FPM_DAEMON" || ! -x "$FPM_DAEMON" ]]; then
+    if [[ -x /usr/sbin/php-fpm ]]; then
+      FPM_DAEMON="/usr/sbin/php-fpm"
+    elif command -v php-fpm >/dev/null 2>&1; then
+      FPM_DAEMON="$(command -v php-fpm)"
+    fi
+  fi
+
+  if [[ -n "$FPM_CONF" && -f "$FPM_CONF" && -n "$FPM_DAEMON" && -x "$FPM_DAEMON" ]]; then
+    FPM_TEST_OUTPUT="$($FPM_DAEMON -tt -y "$FPM_CONF" 2>&1 || true)"
+    RUN_USER="$(printf '%s\n' "$FPM_TEST_OUTPUT" | awk '
+      match($0, /(^|[[:space:]])user[[:space:]]*=[[:space:]]*[^[:space:];]+/) {
+        value = substr($0, RSTART, RLENGTH)
+        sub(/^.*user[[:space:]]*=[[:space:]]*/, "", value)
+        sub(/[[:space:];].*$/, "", value)
+        print value
+        exit
+      }
+    ')"
+    if [[ -n "$RUN_USER" ]]; then
+      RUN_USER_SOURCE="configuración PHP-FPM $FPM_CONF"
     fi
   fi
 fi
 
 if [[ -z "$RUN_USER" ]]; then
-  echo "ERROR: no pude detectar el usuario de php-fpm-drive. Usa --run-user=USUARIO sólo si ya lo verificaste en ese servicio." >&2
+  echo "ERROR: no pude determinar de forma segura el usuario del pool php-fpm-drive." >&2
+  echo "Diagnóstico sugerido: sudo /usr/sbin/php-fpm -tt -y /etc/php-fpm-drive.conf 2>&1 | grep -E 'user =|group =|listen ='" >&2
+  exit 2
+fi
+if [[ "$RUN_USER" == "root" ]]; then
+  echo "ERROR: el pool Drive no debe ejecutar este worker como root; detección rechazada." >&2
   exit 2
 fi
 if ! id "$RUN_USER" >/dev/null 2>&1; then
-  echo "ERROR: el usuario $RUN_USER no existe." >&2
+  echo "ERROR: el usuario detectado '$RUN_USER' no existe." >&2
   exit 2
 fi
 if [[ ! "$INTERVAL_SEC" =~ ^[0-9]+$ ]] || (( INTERVAL_SEC < 60 || INTERVAL_SEC > 3600 )); then
@@ -123,6 +175,7 @@ systemctl enable --now arcadecloud-transcribe-reconcile.timer
 
 echo "OK: reconciliación automática de Amazon Transcribe instalada."
 echo "Usuario Drive detectado: $RUN_USER"
+echo "Fuente de detección: $RUN_USER_SOURCE"
 echo "EnvironmentFile: $DRIVE_ENV"
 echo "Intervalo: ${INTERVAL_SEC}s después de cada ejecución"
 echo "Límite de eventos pendientes por ciclo: $LIMIT"

@@ -126,6 +126,43 @@ final class MoveJobStore
         }
     }
 
+    /**
+     * Lista las tareas recientes del usuario para el centro unificado.
+     */
+    public function recentForUser(int $userId, int $limit = 30): array
+    {
+        if ($userId <= 0) {
+            return [];
+        }
+
+        $limit = max(1, min(100, $limit));
+        $rows = [];
+
+        foreach (glob($this->directory . '/*.json') ?: [] as $path) {
+            $id = basename($path, '.json');
+            if (!preg_match('/^[a-f0-9]{32}$/', $id)) {
+                continue;
+            }
+
+            try {
+                $job = $this->get($id);
+            } catch (\Throwable) {
+                continue;
+            }
+
+            if ((int)($job['user_id'] ?? 0) !== $userId) {
+                continue;
+            }
+            $rows[] = $job;
+        }
+
+        usort($rows, static function (array $a, array $b): int {
+            return strcmp((string)($b['updated_at'] ?? ''), (string)($a['updated_at'] ?? ''));
+        });
+
+        return array_slice($rows, 0, $limit);
+    }
+
     private function writeNew(string $id, array $job): void
     {
         $path = $this->path($id);

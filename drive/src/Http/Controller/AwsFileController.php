@@ -145,13 +145,18 @@ final class AwsFileController extends AbstractJsonController
                 'units' => [$unit => max(0, (int)($result['characters_input'] ?? 0))],
             ]];
 
-            if (($result['mode'] ?? '') === 's3') {
-                $components[] = [
-                    'service' => 'S3',
-                    'units' => [
-                        's3.put_request' => 1,
-                        's3.storage_bytes_delta' => max(0, (int)($result['output_bytes'] ?? 0)),
-                    ],
+            $metadata = ['engine' => $engine];
+            $correlation = null;
+
+            if (($result['mode'] ?? '') === 'task' && !empty($result['task_id'])) {
+                $taskId = (string)$result['task_id'];
+                $correlation = ActivityCostRecorder::correlation('polly', $taskId);
+                $metadata += [
+                    'phase' => 'started',
+                    'task_id' => $taskId,
+                    'task_status' => (string)($result['task_status'] ?? 'scheduled'),
+                    'output_name' => (string)($result['nombre'] ?? $result['filename'] ?? 'audio'),
+                    'characters' => max(0, (int)($result['characters_input'] ?? 0)),
                 ];
             }
 
@@ -159,7 +164,8 @@ final class AwsFileController extends AbstractJsonController
                 $result,
                 (int)($result['source_file_id'] ?? 0),
                 $components,
-                ['engine' => $engine],
+                $metadata,
+                $correlation,
             ];
         });
     }
@@ -211,10 +217,17 @@ final class AwsFileController extends AbstractJsonController
         try {
             if ($post) $this->requirePost();
             $userId = $this->guardAuthenticated();
-            [$payload, $fileId, $components, $metadata] = $callback($userId);
+            $parts = $callback($userId);
+            $payload = $parts[0] ?? [];
+            $fileId = $parts[1] ?? null;
+            $components = $parts[2] ?? [];
+            $metadata = $parts[3] ?? [];
+            $correlationOverride = $parts[4] ?? null;
 
             if ($record) {
-                $correlation = $this->newCorrelation($action);
+                $correlation = is_string($correlationOverride) && $correlationOverride !== ''
+                    ? $correlationOverride
+                    : $this->newCorrelation($action);
                 foreach ((array)$components as $component) {
                     if (!is_array($component)) continue;
                     $service = trim((string)($component['service'] ?? $primaryService));

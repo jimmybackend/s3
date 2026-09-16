@@ -1,7 +1,7 @@
 {
   "summary": {
-    "php_total": 340,
-    "php_class_modules": 199,
+    "php_total": 341,
+    "php_class_modules": 200,
     "php_needs_migration": 36,
     "js_total": 41,
     "js_class_modules": 39,
@@ -1575,6 +1575,21 @@
       "issues": []
     },
     {
+      "path": "drive/src/Activity/TranscriptionCostAttribution.php",
+      "lines": 117,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
       "path": "drive/src/Admin/ManagedRuntimeEnvironment.php",
       "lines": 213,
       "kind": "class/module",
@@ -2103,7 +2118,7 @@
     },
     {
       "path": "drive/src/Aws/TranscriptionFileService.php",
-      "lines": 126,
+      "lines": 477,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -3395,7 +3410,7 @@
     },
     {
       "path": "drive/src/Http/Controller/TranscriptionController.php",
-      "lines": 128,
+      "lines": 215,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -4470,7 +4485,7 @@
     },
     {
       "path": "drive/tests/activity_costs_smoke.php",
-      "lines": 79,
+      "lines": 119,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [

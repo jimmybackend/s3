@@ -4,8 +4,8 @@
 
 ## Resumen
 
-- PHP analizados: **340**
-- PHP que ya contienen clases/interfaces: **199**
+- PHP analizados: **341**
+- PHP que ya contienen clases/interfaces: **200**
 - PHP marcados para migración/revisión: **36**
 - JavaScript analizados: **41**
 - JavaScript que ya contienen clases: **39**
@@ -121,6 +121,7 @@
 | `drive/src/Activity/ActivityCostRepository.php` | 173 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Activity/ActivityCostService.php` | 148 | class/module | 1 | — | — | — | — |
 | `drive/src/Activity/AwsUnitPriceCatalog.php` | 81 | class/module | 1 | — | — | — | — |
+| `drive/src/Activity/TranscriptionCostAttribution.php` | 117 | class/module | 1 | — | — | — | — |
 | `drive/src/Admin/ManagedRuntimeEnvironment.php` | 213 | class/module | 1 | — | — | — | — |
 | `drive/src/Admin/PrivilegedServerHelper.php` | 123 | class/module | 1 | — | — | — | — |
 | `drive/src/Admin/ServerSettingsAdminService.php` | 211 | class/module | 1 | — | ⚠️ | — | — |
@@ -156,7 +157,7 @@
 | `drive/src/Aws/RekognitionFileService.php` | 30 | class/module | 1 | — | — | — | — |
 | `drive/src/Aws/SesEmailService.php` | 29 | class/module | 1 | — | — | — | — |
 | `drive/src/Aws/TextractFileService.php` | 107 | class/module | 1 | — | — | — | — |
-| `drive/src/Aws/TranscriptionFileService.php` | 126 | class/module | 1 | — | — | — | — |
+| `drive/src/Aws/TranscriptionFileService.php` | 477 | class/module | 1 | — | — | — | — |
 | `drive/src/Aws/TranslateFileService.php` | 60 | class/module | 1 | — | — | — | — |
 | `drive/src/Console/UploadCleanupCommand.php` | 61 | class/module | 1 | — | — | — | — |
 | `drive/src/Core/ApplicationKernel.php` | 38 | class/module | 1 | — | — | — | — |
@@ -242,7 +243,7 @@
 | `drive/src/Http/Controller/SyncController.php` | 177 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/TextEditorController.php` | 61 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/ThumbnailController.php` | 110 | class/module | 1 | — | — | — | — |
-| `drive/src/Http/Controller/TranscriptionController.php` | 128 | class/module | 1 | — | — | — | — |
+| `drive/src/Http/Controller/TranscriptionController.php` | 215 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/UploadCleanupController.php` | 76 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/UploadController.php` | 252 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/UserProfileController.php` | 118 | class/module | 1 | — | — | — | — |
@@ -313,7 +314,7 @@
 | `drive/subir_publico.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/sync_s3_to_db.php` | 5 | thin endpoint | 0 | — | — | — | — |
 | `drive/sync_status.php` | 5 | thin endpoint | 0 | — | — | — | — |
-| `drive/tests/activity_costs_smoke.php` | 79 | view/entrypoint | 0 | — | — | — | global functions: check |
+| `drive/tests/activity_costs_smoke.php` | 119 | view/entrypoint | 0 | — | — | — | global functions: check |
 | `drive/tests/arcadelink_bulk_contract_regression.php` | 68 | procedural endpoint | 0 | — | — | — | global functions: source, expectContract |
 | `drive/tests/arcadelink_bundle_regression.php` | 142 | procedural endpoint | 0 | — | — | — | global functions: expect, openBundle, assertNoSecretMarkers |
 | `drive/tests/federation_access_message_smoke.php` | 72 | procedural endpoint | 0 | — | — | — | global functions: accessOk |

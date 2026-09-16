@@ -78,6 +78,7 @@
         "drive/bin/sync_node_worker.php",
         "drive/bin/sync_schema_migrate.php",
         "drive/bin/sync_worker.php",
+        "drive/bin/transcribe_reconcile.php",
         "drive/bin/upload_cleanup.php",
         "drive/bloque_archivos.php",
         "drive/bloque_carpetas.php",
@@ -282,6 +283,12 @@
       "references": [
         "drive/src/Http/Controller/SyncController.php"
       ]
+    },
+    {
+      "path": "drive/bin/transcribe_reconcile.php",
+      "size": 1396,
+      "active": false,
+      "references": []
     },
     {
       "path": "drive/bin/upload_cleanup.php",
@@ -982,6 +989,12 @@
     {
       "path": "drive/src/Activity/TranscriptionCostAttribution.php",
       "size": 4113,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Activity/TranscriptionReconciler.php",
+      "size": 10959,
       "active": false,
       "references": []
     },

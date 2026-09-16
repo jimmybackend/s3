@@ -60,7 +60,7 @@ final class ActivityCostController
             }
 
             $html = (new ActivityCostPageRenderer())->render($view, $userId);
-            echo $this->withBackgroundTranscribe($html);
+            echo $this->withBackgroundTasks($html);
         } catch (\Throwable $e) {
             http_response_code(500);
             echo (new ActivityCostPageRenderer())->renderError($e->getMessage());
@@ -68,9 +68,10 @@ final class ActivityCostController
         exit;
     }
 
-    private function withBackgroundTranscribe(string $html): string
+    private function withBackgroundTasks(string $html): string
     {
-        $script = '<script src="js/transcribe-background.js?v=20260916-1"></script>';
+        $script = '<script>window.ARCADECLOUD_UNIFIED_TASK_CENTER=true;</script>'
+            . '<script src="js/background-tasks.js?v=20260916-1"></script>';
         if (str_contains($html, '</body>')) {
             return str_replace('</body>', $script . "\n</body>", $html);
         }

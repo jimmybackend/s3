@@ -25,8 +25,20 @@ for arg in "$@"; do
   esac
 done
 
+# Si no se especifica usuario, detecta un worker hijo del master del servicio
+# php-fpm-drive. Esto evita tomar por accidente un worker de MCMA u otro pool.
+if [[ -z "$RUN_USER" ]] && systemctl is-active --quiet php-fpm-drive.service; then
+  MASTER_PID="$(systemctl show -p MainPID --value php-fpm-drive.service 2>/dev/null || true)"
+  if [[ "$MASTER_PID" =~ ^[0-9]+$ ]] && (( MASTER_PID > 1 )); then
+    CHILD_PID="$(pgrep -P "$MASTER_PID" 2>/dev/null | head -n 1 || true)"
+    if [[ "$CHILD_PID" =~ ^[0-9]+$ ]]; then
+      RUN_USER="$(ps -o user= -p "$CHILD_PID" 2>/dev/null | xargs || true)"
+    fi
+  fi
+fi
+
 if [[ -z "$RUN_USER" ]]; then
-  echo "ERROR: indica --run-user=USUARIO_PHP_FPM (por ejemplo apache o nginx según tu pool)." >&2
+  echo "ERROR: no pude detectar el usuario de php-fpm-drive. Usa --run-user=USUARIO sólo si ya lo verificaste en ese servicio." >&2
   exit 2
 fi
 if ! id "$RUN_USER" >/dev/null 2>&1; then
@@ -97,11 +109,11 @@ EOF
 chmod 0644 "$SERVICE" "$TIMER"
 systemctl daemon-reload
 
-# Ejecuta una reconciliación inmediata. Si no puede cargar DB/AWS, no dejamos
-# habilitado un timer roto.
+# Sólo un fallo de infraestructura debe impedir instalar el timer. Errores de
+# jobs históricos concretos se reportan dentro del JSON pero el worker continúa.
 systemctl reset-failed arcadecloud-transcribe-reconcile.service >/dev/null 2>&1 || true
 if ! systemctl start arcadecloud-transcribe-reconcile.service; then
-  echo "ERROR: la primera reconciliación Transcribe falló; el timer NO se habilitó." >&2
+  echo "ERROR: la primera reconciliación Transcribe falló por infraestructura; el timer NO se habilitó." >&2
   systemctl status arcadecloud-transcribe-reconcile.service --no-pager >&2 || true
   journalctl -u arcadecloud-transcribe-reconcile.service -n 80 --no-pager >&2 || true
   exit 4
@@ -110,7 +122,7 @@ fi
 systemctl enable --now arcadecloud-transcribe-reconcile.timer
 
 echo "OK: reconciliación automática de Amazon Transcribe instalada."
-echo "Usuario: $RUN_USER"
+echo "Usuario Drive detectado: $RUN_USER"
 echo "EnvironmentFile: $DRIVE_ENV"
 echo "Intervalo: ${INTERVAL_SEC}s después de cada ejecución"
 echo "Límite de eventos pendientes por ciclo: $LIMIT"

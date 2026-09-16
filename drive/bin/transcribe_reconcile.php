@@ -42,7 +42,11 @@ try {
 
     $result = $worker->run($limit);
     echo json_encode($result, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . PHP_EOL;
-    exit(($result['ok'] ?? false) ? 0 : 1);
+
+    // Los errores de un job concreto (por ejemplo un resultado histórico ya
+    // inaccesible) son advertencias de reconciliación, no un fallo del worker.
+    // Sólo las excepciones de infraestructura/arranque deben tumbar systemd.
+    exit(0);
 } catch (Throwable $e) {
     fwrite(STDERR, 'Transcribe reconcile error: ' . $e->getMessage() . PHP_EOL);
     exit(1);

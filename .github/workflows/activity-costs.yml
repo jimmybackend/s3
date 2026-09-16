@@ -8,6 +8,8 @@ on:
     paths:
       - 'drive/activity_costs.php'
       - 'drive/bloque_carpetas.php'
+      - 'drive/bin/transcribe_reconcile.php'
+      - 'drive/bin/install_transcribe_reconcile_timer.sh'
       - 'drive/config/activity-cost-pricing.json'
       - 'drive/src/Activity/**'
       - 'drive/src/Aws/AwsCostService.php'
@@ -60,6 +62,7 @@ jobs:
             drive/activity_costs.php \
             drive/bloque_carpetas.php \
             drive/polly_task_status.php \
+            drive/bin/transcribe_reconcile.php \
             drive/src/Activity/*.php \
             drive/src/Aws/AwsCostService.php \
             drive/src/Aws/ComprehendFileService.php \
@@ -84,6 +87,9 @@ jobs:
             drive/tests/activity_costs_smoke.php; do
             php -l "$f"
           done
+
+      - name: Validate transcribe reconcile shell
+        run: bash -n drive/bin/install_transcribe_reconcile_timer.sh
 
       - name: Validate background AWS JavaScript
         run: |

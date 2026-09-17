@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace ArcadeCloud\Drive\Activity;
 
 use ArcadeCloud\Drive\Aws\PollyFileService;
+use ArcadeCloud\Drive\View\FileViewHelper;
 use mysqli;
 use RuntimeException;
 use Throwable;
@@ -67,7 +68,11 @@ final class PollyTaskReconciler
         $eventId = (int)($event['id_'] ?? 0);
         $userId = (int)($event['user_id_'] ?? 0);
         $fileId = (int)($event['FileId'] ?? 0);
-        $fileKey = trim((string)($event['file_key'] ?? ''));
+        $fileKey = FileViewHelper::buildS3Key(
+            (string)($event['file_route'] ?? ''),
+            (string)($event['file_encrypted'] ?? '')
+        );
+        $fileKey = ltrim(str_replace('\\', '/', trim($fileKey)), '/');
         $correlation = trim((string)($event['CorrelationId'] ?? ''));
         $metadata = $this->decodeMetadata((string)($event['MetadataJson'] ?? ''));
         $taskId = trim((string)($metadata['task_id'] ?? ''));
@@ -175,7 +180,7 @@ final class PollyTaskReconciler
     private function pendingEvents(int $limit): array
     {
         $sql = "SELECT e.id_, e.user_id_, e.FileId, e.CorrelationId, e.MetadataJson, e.CreatedAt,
-                       f.Encriptado AS file_key
+                       f.Ruta AS file_route, f.Encriptado AS file_encrypted
                 FROM DriveActivityEvents e
                 LEFT JOIN FileS3 f
                   ON f.id_ = e.FileId AND f.user_id_ = e.user_id_

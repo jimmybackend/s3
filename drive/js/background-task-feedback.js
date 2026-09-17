@@ -1,5 +1,6 @@
 (function installBackgroundTaskFeedback(win, doc) {
   let attempts = 0;
+  let pollyGuardAttempts = 0;
 
   function ensureStyle() {
     if (doc.getElementById('backgroundTaskFeedbackStyle')) return;
@@ -111,9 +112,57 @@
     };
   }
 
+  /**
+   * El Drive todavía carga polly.js para otras herramientas AWS. Ese módulo
+   * heredado conserva un handler de "Generar audio" que espera audioBase64.
+   * El módulo nuevo polly-background.js usa el mismo botón para crear un job
+   * asíncrono. Dependiendo del orden de DOMContentLoaded, ambos handlers podían
+   * quedar activos y mandar dos solicitudes a Polly; el heredado además
+   * mostraba el falso error "El servidor no devolvió audio válido".
+   *
+   * Este listener en fase capture se vuelve el único dueño del submit Polly.
+   * Detiene handlers heredados y protege también contra doble toque en móvil.
+   */
+  function installPollySingleSubmitGuard() {
+    pollyGuardAttempts += 1;
+    const button = doc.getElementById('btnPollyGenerar');
+    const module = win.PollyBackground;
+
+    if (!button || !module || typeof module.generate !== 'function') {
+      if (pollyGuardAttempts < 100) win.setTimeout(installPollySingleSubmitGuard, 100);
+      return;
+    }
+    if (button.__arcadecloudPollySingleSubmitGuard) return;
+    button.__arcadecloudPollySingleSubmitGuard = true;
+
+    // Retira los handlers jQuery conocidos. El listener capture que instalamos
+    // abajo seguirá protegiendo aunque polly.js vuelva a enlazarse después.
+    if (win.jQuery) {
+      win.jQuery(button)
+        .off('click.polly')
+        .off('click.pollyBackground');
+    }
+
+    let busy = false;
+    button.addEventListener('click', async (event) => {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+
+      if (busy) return;
+      busy = true;
+      try {
+        await module.generate();
+      } finally {
+        busy = false;
+      }
+    }, true);
+  }
+
   if (doc.readyState === 'loading') {
     doc.addEventListener('DOMContentLoaded', apply, { once: true });
+    doc.addEventListener('DOMContentLoaded', installPollySingleSubmitGuard, { once: true });
   } else {
     apply();
+    installPollySingleSubmitGuard();
   }
 })(window, document);

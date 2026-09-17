@@ -94,23 +94,19 @@ final class MoveJobService
                 foreach ($refs as $ref) {
                     $current = $this->store->get($jobId);
                     if ((string)($current['status'] ?? '') === 'cancel_requested') {
-                        $cancelled = $this->store->update($jobId, [
-                            'status' => 'cancelled',
-                            'message' => 'Movimiento detenido de forma segura.',
-                            'result' => [
-                                'total' => $moved,
-                                'requested_total' => $total,
-                                'ruta_nueva' => $destination,
-                                'estado' => 'cancelado',
-                            ],
-                            'error' => null,
-                        ]);
-                        $cancelled['_worker_claimed'] = true;
-                        return $cancelled;
+                        return $this->cancelFilesJob($jobId, $moved, $total, $destination);
                     }
 
                     $this->files->move($userId, is_int($ref) ? $ref : (string)$ref, $destination);
                     $moved++;
+
+                    // La solicitud de detención puede llegar mientras S3 copia el
+                    // archivo. Revisamos de nuevo antes de escribir "running" para
+                    // no perderla por una carrera de estados.
+                    $afterMove = $this->store->get($jobId);
+                    if ((string)($afterMove['status'] ?? '') === 'cancel_requested') {
+                        return $this->cancelFilesJob($jobId, $moved, $total, $destination);
+                    }
 
                     $this->store->update($jobId, [
                         'status' => 'running',
@@ -176,5 +172,22 @@ final class MoveJobService
     public function statusForUser(int $userId, string $jobId): array
     {
         return $this->store->getForUser($userId, $jobId);
+    }
+
+    private function cancelFilesJob(string $jobId, int $moved, int $total, string $destination): array
+    {
+        $cancelled = $this->store->update($jobId, [
+            'status' => 'cancelled',
+            'message' => 'Movimiento detenido de forma segura.',
+            'result' => [
+                'total' => $moved,
+                'requested_total' => $total,
+                'ruta_nueva' => $destination,
+                'estado' => 'cancelado',
+            ],
+            'error' => null,
+        ]);
+        $cancelled['_worker_claimed'] = true;
+        return $cancelled;
     }
 }

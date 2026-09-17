@@ -91,7 +91,9 @@ if [[ ! -f "$SOURCE_HELPER" ]]; then
   exit 3
 fi
 
-install -d -o root -g root -m 0755 "$CONFIG_DIR"
+if [[ ! -d "$CONFIG_DIR" ]]; then
+  install -d -o root -g root -m 0755 "$CONFIG_DIR"
+fi
 install -o root -g root -m 0755 "$SOURCE_HELPER" "$TARGET_HELPER"
 
 python3 - "$CONFIG_FILE" "$REPO_ROOT" "$REPO_USER" "$BRANCH" "$PUBLIC_URL" "$PHP_SERVICE" <<'PY'

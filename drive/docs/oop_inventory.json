@@ -1,11 +1,11 @@
 {
   "summary": {
-    "php_total": 352,
-    "php_class_modules": 206,
+    "php_total": 356,
+    "php_class_modules": 208,
     "php_needs_migration": 37,
-    "js_total": 44,
+    "js_total": 45,
     "js_class_modules": 41,
-    "js_needs_migration": 10
+    "js_needs_migration": 11
   },
   "php": [
     {
@@ -426,7 +426,7 @@
     },
     {
       "path": "drive/bloque_carpetas.php",
-      "lines": 147,
+      "lines": 226,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -506,6 +506,21 @@
     },
     {
       "path": "drive/crear_carpeta.php",
+      "lines": 10,
+      "kind": "thin endpoint",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/create_folder_document.php",
       "lines": 10,
       "kind": "thin endpoint",
       "classes": 0,
@@ -1873,6 +1888,21 @@
       "s3": false,
       "bootstrap": false,
       "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Application/FolderDocumentService.php",
+      "lines": 298,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": true,
+      "s3": false,
+      "bootstrap": false,
+      "html": true,
       "namespace": true,
       "issues": []
     },
@@ -3319,6 +3349,21 @@
       "issues": []
     },
     {
+      "path": "drive/src/Http/Controller/FolderDocumentController.php",
+      "lines": 71,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
       "path": "drive/src/Http/Controller/FolderMutationController.php",
       "lines": 203,
       "kind": "class/module",
@@ -4470,7 +4515,7 @@
     },
     {
       "path": "drive/src/View/FolderTreeRenderer.php",
-      "lines": 124,
+      "lines": 143,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -4913,6 +4958,21 @@
       "issues": [
         "global functions: ok, legacyDocument"
       ]
+    },
+    {
+      "path": "drive/tests/folder_document_sanitizer.php",
+      "lines": 49,
+      "kind": "view/entrypoint",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": true,
+      "namespace": false,
+      "issues": []
     },
     {
       "path": "drive/tests/scoped_sync_repository_regression.php",
@@ -5843,6 +5903,23 @@
       "top_vars": [],
       "iife": false,
       "issues": []
+    },
+    {
+      "path": "drive/js/folder-document.js",
+      "lines": 348,
+      "kind": "encapsulated legacy module",
+      "classes": [],
+      "functions": [],
+      "window_assign": [
+        "__arcadeFolderDocumentBound",
+        "actualizarBloqueArchivos"
+      ],
+      "window_func": [],
+      "top_vars": [],
+      "iife": true,
+      "issues": [
+        "no ES class"
+      ]
     },
     {
       "path": "drive/js/imagenes.js",

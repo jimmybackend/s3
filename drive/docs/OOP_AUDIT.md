@@ -4,12 +4,12 @@
 
 ## Resumen
 
-- PHP analizados: **352**
-- PHP que ya contienen clases/interfaces: **206**
+- PHP analizados: **356**
+- PHP que ya contienen clases/interfaces: **208**
 - PHP marcados para migración/revisión: **37**
-- JavaScript analizados: **44**
+- JavaScript analizados: **45**
 - JavaScript que ya contienen clases: **41**
-- JavaScript marcados para migración/revisión: **10**
+- JavaScript marcados para migración/revisión: **11**
 
 ## Criterio
 
@@ -47,12 +47,13 @@
 | `drive/bin/transcribe_reconcile.php` | 54 | thin endpoint | 0 | — | — | — | — |
 | `drive/bin/upload_cleanup.php` | 11 | thin endpoint | 0 | — | — | — | — |
 | `drive/bloque_archivos.php` | 662 | view/entrypoint | 0 | ⚠️ | — | — | — |
-| `drive/bloque_carpetas.php` | 147 | view/entrypoint | 0 | ⚠️ | — | — | — |
+| `drive/bloque_carpetas.php` | 226 | view/entrypoint | 0 | ⚠️ | — | — | — |
 | `drive/bloque_footer.php` | 194 | view/entrypoint | 0 | ⚠️ | — | — | — |
 | `drive/buscar_archivo.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/comprehend_archivo.php` | 8 | thin endpoint | 0 | — | — | — | — |
 | `drive/costos_aws.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/crear_carpeta.php` | 10 | thin endpoint | 0 | — | — | — | — |
+| `drive/create_folder_document.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/delete_multiple.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/descargar.php` | 8 | thin endpoint | 0 | — | — | — | — |
 | `drive/descargar_archivo.php` | 8 | thin endpoint | 0 | — | — | — | — |
@@ -141,6 +142,7 @@
 | `drive/src/Application/FileListService.php` | 155 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Application/FileMutationService.php` | 119 | class/module | 1 | — | — | — | — |
 | `drive/src/Application/FileSearchService.php` | 104 | class/module | 1 | — | ⚠️ | — | — |
+| `drive/src/Application/FolderDocumentService.php` | 298 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Application/FolderMutationService.php` | 214 | class/module | 1 | — | — | — | — |
 | `drive/src/Application/FolderQueryService.php` | 152 | class/module | 1 | — | — | — | — |
 | `drive/src/Application/MoveJobService.php` | 194 | class/module | 1 | — | — | — | — |
@@ -237,6 +239,7 @@
 | `drive/src/Http/Controller/FileMutationController.php` | 124 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/FileSearchController.php` | 65 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/FileSecurityController.php` | 97 | class/module | 1 | — | — | — | — |
+| `drive/src/Http/Controller/FolderDocumentController.php` | 71 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/FolderMutationController.php` | 203 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/FolderQueryController.php` | 30 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/LegacyUploadController.php` | 140 | class/module | 1 | — | — | — | — |
@@ -313,7 +316,7 @@
 | `drive/src/View/FederationPortalRenderer.php` | 159 | class/module | 1 | — | — | — | — |
 | `drive/src/View/FileIconResolver.php` | 136 | class/module | 1 | — | — | — | — |
 | `drive/src/View/FileViewHelper.php` | 108 | class/module | 1 | — | — | — | — |
-| `drive/src/View/FolderTreeRenderer.php` | 124 | class/module | 1 | — | ⚠️ | — | — |
+| `drive/src/View/FolderTreeRenderer.php` | 143 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/View/PersonalAwsPageRenderer.php` | 171 | class/module | 1 | — | — | — | — |
 | `drive/src/View/PublicSharedPageRenderer.php` | 104 | class/module | 1 | — | — | — | — |
 | `drive/src/View/SharePageRenderer.php` | 118 | class/module | 1 | — | — | — | — |
@@ -339,6 +342,7 @@
 | `drive/tests/federation_replica_reconnect_contract_smoke.php` | 77 | procedural endpoint | 0 | — | — | — | global functions: reconnectOk |
 | `drive/tests/federation_replica_smoke.php` | 98 | procedural endpoint | 0 | — | — | — | global functions: replicaOk |
 | `drive/tests/federationcloud_smoke.php` | 146 | procedural endpoint | 0 | — | — | — | global functions: ok, legacyDocument |
+| `drive/tests/folder_document_sanitizer.php` | 49 | view/entrypoint | 0 | — | — | — | — |
 | `drive/tests/scoped_sync_repository_regression.php` | 96 | procedural endpoint | 0 | — | ⚠️ | — | DB in endpoint |
 | `drive/tests/server_admin_config_smoke.php` | 97 | procedural endpoint | 0 | — | — | — | global functions: serverAdminOk |
 | `drive/tests/setup_bootstrap_smoke.php` | 57 | procedural endpoint | 0 | — | — | — | — |
@@ -400,6 +404,7 @@
 | `drive/js/federation-share-drive.js` | 211 | class/module | FederationShareDriveModule | — | — | — |
 | `drive/js/file-block.js` | 305 | class/module | FileBlockApp | — | — | — |
 | `drive/js/filtros.js` | 97 | class/module | FiltrosModule | — | — | — |
+| `drive/js/folder-document.js` | 348 | encapsulated legacy module | — | — | — | no ES class |
 | `drive/js/imagenes.js` | 535 | class/module | ImagenesModule | — | getGaleriaGridSize, setGaleriaGridSize | window functions: getGaleriaGridSize, setGaleriaGridSize |
 | `drive/js/media-floating.js` | 685 | procedural script | — | — | — | no ES class |
 | `drive/js/mediaFloating.js` | 38 | class/module | MediaFloatingModule | — | — | — |

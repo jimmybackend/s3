@@ -169,6 +169,7 @@
         "drive/unlock_file.php",
         "drive/up-clean.php",
         "drive/up.php",
+        "drive/update.php",
         "drive/upload.php",
         "drive/upload_audio_recording.php",
         "drive/upload_publico.php",
@@ -200,6 +201,12 @@
     {
       "path": "drive/bin/arcadecloud-drive-admin-helper.php",
       "size": 12894,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/bin/arcadecloud-drive-updater.php",
+      "size": 5613,
       "active": false,
       "references": []
     },
@@ -1049,6 +1056,12 @@
       "references": []
     },
     {
+      "path": "drive/src/Admin/ArcadeCloudUpdaterService.php",
+      "size": 3544,
+      "active": false,
+      "references": []
+    },
+    {
       "path": "drive/src/Admin/ManagedRuntimeEnvironment.php",
       "size": 10256,
       "active": true,
@@ -1694,6 +1707,12 @@
     {
       "path": "drive/src/Http/Controller/ActivityCostController.php",
       "size": 2764,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Http/Controller/ArcadeCloudUpdateController.php",
+      "size": 2233,
       "active": false,
       "references": []
     },
@@ -2613,6 +2632,14 @@
         "drive/src/Upload/AdminMultipartUploadService.php",
         "drive/tests/upload_catalog_registration_regression.php",
         "drive/js/estilo.js"
+      ]
+    },
+    {
+      "path": "drive/update.php",
+      "size": 320,
+      "active": false,
+      "references": [
+        "drive/js/arcadecloud-updater.js"
       ]
     },
     {

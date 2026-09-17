@@ -150,13 +150,35 @@
     return String(editor.innerText || editor.textContent || '').replace(/\u00a0/g, ' ').trimEnd();
   }
 
-  function prepareModalOnBody() {
-    const nested = document.querySelector('#bloque-carpetas #modalCrearDocumentoCarpeta');
-    const modal = nested || byId('modalCrearDocumentoCarpeta');
-    if (!modal) return null;
+  function prepareFolderActionModalOnBody(action) {
+    if (!action) return null;
 
-    document.querySelectorAll('#modalCrearDocumentoCarpeta').forEach(function (candidate) {
-      if (candidate !== modal && candidate.parentNode) candidate.parentNode.removeChild(candidate);
+    const selector = String(
+      action.getAttribute('data-target') ||
+      action.getAttribute('data-bs-target') ||
+      ''
+    ).trim();
+
+    if (!selector || selector.charAt(0) !== '#') return null;
+
+    let candidates = [];
+    try {
+      candidates = Array.from(document.querySelectorAll(selector));
+    } catch (_) {
+      return null;
+    }
+    if (candidates.length === 0) return null;
+
+    const nested = candidates.find(function (candidate) {
+      return candidate.closest && candidate.closest('#bloque-carpetas');
+    });
+    const modal = nested || candidates[0];
+    if (!modal || !modal.classList.contains('modal')) return null;
+
+    candidates.forEach(function (candidate) {
+      if (candidate !== modal && candidate.id === modal.id && candidate.parentNode) {
+        candidate.parentNode.removeChild(candidate);
+      }
     });
 
     if (modal.parentNode !== document.body) {
@@ -166,10 +188,20 @@
     return modal;
   }
 
-  function closeSidebarBeforeDocumentModal() {
+  function closeSidebarBeforeFolderAction() {
     if (!document.body.classList.contains('drive-sidebar-open')) return;
+
     const closeButton = byId('btnCerrarSidebar');
-    if (closeButton) closeButton.click();
+    if (closeButton) {
+      closeButton.click();
+      return;
+    }
+
+    document.body.classList.remove('drive-sidebar-open');
+    const openButton = byId('btnToggleSidebar');
+    if (openButton) openButton.setAttribute('aria-expanded', 'false');
+    const backdrop = byId('driveSidebarBackdrop');
+    if (backdrop) backdrop.setAttribute('aria-hidden', 'true');
   }
 
   function openForFolder(button) {
@@ -321,11 +353,15 @@
   }
 
   document.addEventListener('click', function (event) {
-    const action = event.target.closest ? event.target.closest('.js-folder-document') : null;
+    const action = event.target.closest
+      ? event.target.closest('#bloque-carpetas .folder-actions .dropdown-item')
+      : null;
     if (!action) return;
 
-    prepareModalOnBody();
-    closeSidebarBeforeDocumentModal();
+    if (action.matches('[data-toggle="modal"], [data-bs-toggle="modal"]')) {
+      prepareFolderActionModalOnBody(action);
+    }
+    closeSidebarBeforeFolderAction();
   }, true);
 
   document.addEventListener('click', function (event) {

@@ -154,13 +154,19 @@ final class MoveJobStore
     {
         $job = $this->getForUser($userId, $id);
         $status = strtolower((string)($job['status'] ?? ''));
-        if (!in_array($status, ['completed', 'failed', 'error', 'cancelled'], true)) {
-            throw new RuntimeException('Sólo se pueden quitar tareas de movimiento terminadas, fallidas o canceladas.');
+
+        if (in_array($status, ['queued', 'pending'], true)) {
+            $lease = new BackgroundWorkerLease();
+            if ($lease->isActive('move', $id)) {
+                throw new RuntimeException('El traslado ya está siendo tomado por un worker. Deténlo antes de eliminarlo.');
+            }
+        } elseif (!in_array($status, ['completed', 'failed', 'error', 'cancelled'], true)) {
+            throw new RuntimeException('Sólo se pueden eliminar traslados en cola sin worker o tareas terminadas, fallidas o canceladas.');
         }
 
         $path = $this->path($id);
         if (is_file($path) && !@unlink($path)) {
-            throw new RuntimeException('No se pudo quitar la tarea de movimiento.');
+            throw new RuntimeException('No se pudo eliminar la tarea de movimiento.');
         }
     }
 

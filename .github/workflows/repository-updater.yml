@@ -1,0 +1,74 @@
+name: Manual repository updater validation
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'drive/repository-update.php'
+      - 'drive/bloque_footer.php'
+      - 'drive/js/repository-update.js'
+      - 'drive/bin/arcadecloud-drive-updater.php'
+      - 'drive/bin/install_arcadecloud_updater.sh'
+      - 'drive/src/Admin/RepositoryUpdateHelper.php'
+      - 'drive/src/Admin/RepositoryUpdateService.php'
+      - 'drive/src/Http/Controller/RepositoryUpdateController.php'
+      - 'drive/docs/ARCADECLOUD_UPDATER.md'
+      - '.github/workflows/repository-updater.yml'
+  pull_request:
+    paths:
+      - 'drive/repository-update.php'
+      - 'drive/bloque_footer.php'
+      - 'drive/js/repository-update.js'
+      - 'drive/bin/arcadecloud-drive-updater.php'
+      - 'drive/bin/install_arcadecloud_updater.sh'
+      - 'drive/src/Admin/RepositoryUpdateHelper.php'
+      - 'drive/src/Admin/RepositoryUpdateService.php'
+      - 'drive/src/Http/Controller/RepositoryUpdateController.php'
+      - 'drive/docs/ARCADECLOUD_UPDATER.md'
+      - '.github/workflows/repository-updater.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate syntax
+        run: |
+          set -euo pipefail
+          php -l drive/repository-update.php
+          php -l drive/bin/arcadecloud-drive-updater.php
+          php -l drive/src/Admin/RepositoryUpdateHelper.php
+          php -l drive/src/Admin/RepositoryUpdateService.php
+          php -l drive/src/Http/Controller/RepositoryUpdateController.php
+          php -l drive/bloque_footer.php
+          node --check drive/js/repository-update.js
+          bash -n drive/bin/install_arcadecloud_updater.sh
+
+      - name: Validate updater security boundaries
+        run: |
+          set -euo pipefail
+          grep -q "git.*merge.*--ff-only\|\['merge', '--ff-only'" drive/bin/arcadecloud-drive-updater.php
+          grep -q "GIT_TERMINAL_PROMPT=0" drive/bin/arcadecloud-drive-updater.php
+          grep -q "arcadecloud-drive-updater.lock" drive/bin/arcadecloud-drive-updater.php
+          grep -q "expected_remote_sha" drive/src/Http/Controller/RepositoryUpdateController.php
+          grep -q "SuperAdminReauthenticationService" drive/src/Admin/RepositoryUpdateService.php
+          grep -q "X-Repository-Update-CSRF" drive/js/repository-update.js
+          grep -q "repository_update_csrf" drive/src/Http/Controller/RepositoryUpdateController.php
+          grep -q "NOPASSWD: %s" drive/bin/install_arcadecloud_updater.sh
+          grep -q "/usr/local/sbin/arcadecloud-drive-updater" drive/bin/install_arcadecloud_updater.sh
+          grep -q "No se instala timer" drive/bin/install_arcadecloud_updater.sh
+          ! grep -Eq '\b(shell_exec|exec|system|passthru|popen)\s*\(' drive/bin/arcadecloud-drive-updater.php
+          ! grep -Eq '(setInterval|setTimeout\([^,]+,[[:space:]]*[0-9]+[[:space:]]*\).*fetch)' drive/js/repository-update.js
+          ! grep -Eq '(localStorage|sessionStorage)' drive/js/repository-update.js
+          ! grep -q "git pull" drive/bin/arcadecloud-drive-updater.php
+          ! grep -q "chmod 777" drive/bin/install_arcadecloud_updater.sh
+          ! grep -q "chmod 666" drive/bin/install_arcadecloud_updater.sh
+
+      - name: Diff whitespace check
+        run: git diff --check

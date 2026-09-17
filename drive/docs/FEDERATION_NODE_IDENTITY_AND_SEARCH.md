@@ -176,3 +176,62 @@ El índice responde **qué recursos ha decidido anunciar**.
 La autorización responde **quién puede obtenerlos**.
 
 Esas cuatro capas no deben mezclarse.
+
+## 11. Regla de namespace `DataN` para múltiples nubes y nodos
+
+`Data`, `Data2`, `Data3` ... `DataN` identifica el namespace local de un usuario dentro de un ArcadeCloud. **No es una identidad global de FederationCloud y no identifica por sí solo a una persona entre nodos.**
+
+Dentro de un mismo nodo, el mismo usuario conserva el mismo namespace en todos los proveedores de almacenamiento configurados:
+
+```text
+Usuario local 1
+AWS    -> Data/
+Google -> Data/
+Azure  -> Data/
+
+Usuario local 2
+AWS    -> Data2/
+Google -> Data2/
+Azure  -> Data2/
+```
+
+La interfaz puede mostrar etiquetas como `Data · AWS`, `Data · Google` y `Data · Azure` para orientar al usuario, pero la etiqueta del proveedor no debe introducirse dentro del prefijo físico `DataN`.
+
+Cada nodo independiente reinicia su propia asignación local según su organización y orden de alta. Por ejemplo, dos nodos diferentes pueden tener ambos un `Data/` y un `Data2/`. Eso es válido porque su identidad real está separada por el nodo y por el almacenamiento.
+
+```text
+drive.esforzados.com / bucket-central
+  Data/
+  Data2/
+
+ventas.esforzados.com / bucket-ventas
+  Data/
+  Data2/
+```
+
+**Regla de no colisión:** dos nodos independientes no pueden asignar el mismo `DataN` a usuarios distintos dentro del mismo namespace físico de almacenamiento. Si otro sector o nodo vuelve a comenzar desde `Data/`, debe usar otro bucket, container o raíz física independiente. No se permite que dos catálogos independientes interpreten el mismo `bucket + DataN/` como propietarios diferentes.
+
+Por tanto, una localización federada debe identificarse conceptualmente por una combinación equivalente a:
+
+```text
+node_id
++ storage_id / provider
++ bucket | container | raíz física
++ user_namespace (DataN)
++ object_key
+```
+
+El mismo usuario puede ser `Data/` en un nodo y `Data3/` en otro. FederationCloud debe relacionarlo mediante identidad y permisos federados, nunca suponiendo que dos prefijos `DataN` iguales representan a la misma persona.
+
+Para búsqueda y transferencia entre nubes, la política será de **afinidad primero y fallback después**: se intenta primero una localización compatible con el proveedor preferido del nodo solicitante; si el recurso no existe allí, se consultan las demás localizaciones autorizadas. Una transferencia entre proveedores conserva el namespace del usuario en el nodo destino, pero cambia únicamente la localización física.
+
+Ejemplo:
+
+```text
+origen:  nodo A / Google / Data2/Trabajo/informe.pdf
+destino: nodo B / AWS    / Data/Trabajo/informe.pdf
+```
+
+Los prefijos pueden ser distintos entre nodos porque son locales. Lo que debe conservarse es la identidad autorizada del recurso y del usuario, no el número de `DataN` entre instalaciones independientes.
+
+Esta regla es de arquitectura para la futura capa multi-cloud. No implica que Google Cloud Storage o Azure Blob estén implementados actualmente.

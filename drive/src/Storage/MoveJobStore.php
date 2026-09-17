@@ -100,29 +100,63 @@ final class MoveJobStore
                 throw new RuntimeException('No se pudo bloquear la tarea de movimiento.');
             }
 
-            rewind($fh);
-            $raw = stream_get_contents($fh);
-            $job = json_decode((string)$raw, true);
-            if (!is_array($job)) {
-                throw new RuntimeException('Estado de tarea de movimiento inválido.');
-            }
-
+            $job = $this->decodeLocked($fh);
             foreach ($changes as $key => $value) {
                 $job[$key] = $value;
             }
             $job['updated_at'] = gmdate('c');
-
-            rewind($fh);
-            ftruncate($fh, 0);
-            $json = json_encode($job, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
-            fwrite($fh, $json);
-            fflush($fh);
-            flock($fh, LOCK_UN);
-            @chmod($path, 0600);
-
+            $this->writeLocked($fh, $job, $path);
             return $job;
         } finally {
             fclose($fh);
+        }
+    }
+
+    /**
+     * Reclama atómicamente un job queued para evitar workers duplicados.
+     * Devuelve null cuando otra ejecución ya lo reclamó o el job ya terminó.
+     */
+    public function claimQueued(string $id): ?array
+    {
+        $path = $this->path($id);
+        $fh = @fopen($path, 'c+');
+        if (!$fh) {
+            throw new RuntimeException('No se pudo abrir la tarea de movimiento.');
+        }
+
+        try {
+            if (!flock($fh, LOCK_EX)) {
+                throw new RuntimeException('No se pudo bloquear la tarea de movimiento.');
+            }
+
+            $job = $this->decodeLocked($fh);
+            if ((string)($job['status'] ?? '') !== 'queued') {
+                flock($fh, LOCK_UN);
+                return null;
+            }
+
+            $job['status'] = 'running';
+            $job['message'] = 'Movimiento en proceso.';
+            $job['error'] = null;
+            $job['updated_at'] = gmdate('c');
+            $this->writeLocked($fh, $job, $path);
+            return $job;
+        } finally {
+            fclose($fh);
+        }
+    }
+
+    public function deleteForUser(int $userId, string $id): void
+    {
+        $job = $this->getForUser($userId, $id);
+        $status = strtolower((string)($job['status'] ?? ''));
+        if (!in_array($status, ['completed', 'failed', 'error', 'cancelled'], true)) {
+            throw new RuntimeException('Sólo se pueden quitar tareas de movimiento terminadas, fallidas o canceladas.');
+        }
+
+        $path = $this->path($id);
+        if (is_file($path) && !@unlink($path)) {
+            throw new RuntimeException('No se pudo quitar la tarea de movimiento.');
         }
     }
 
@@ -183,6 +217,28 @@ final class MoveJobStore
         } finally {
             fclose($fh);
         }
+    }
+
+    private function decodeLocked($fh): array
+    {
+        rewind($fh);
+        $raw = stream_get_contents($fh);
+        $job = json_decode((string)$raw, true);
+        if (!is_array($job)) {
+            throw new RuntimeException('Estado de tarea de movimiento inválido.');
+        }
+        return $job;
+    }
+
+    private function writeLocked($fh, array $job, string $path): void
+    {
+        rewind($fh);
+        ftruncate($fh, 0);
+        $json = json_encode($job, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
+        fwrite($fh, $json);
+        fflush($fh);
+        flock($fh, LOCK_UN);
+        @chmod($path, 0600);
     }
 
     private function path(string $id): string

@@ -189,19 +189,26 @@
   }
 
   function closeSidebarBeforeFolderAction() {
-    if (!document.body.classList.contains('drive-sidebar-open')) return;
+    // Cerrar el estado visual real del sidebar, no sólo disparar el botón.
+    document.body.classList.remove('drive-sidebar-open');
 
-    const closeButton = byId('btnCerrarSidebar');
-    if (closeButton) {
-      closeButton.click();
-      return;
+    const sidebar = byId('driveSidebar');
+    if (sidebar) {
+      sidebar.classList.remove('is-open');
+      sidebar.setAttribute('aria-hidden', 'true');
     }
 
-    document.body.classList.remove('drive-sidebar-open');
+    const backdrop = byId('driveSidebarBackdrop');
+    if (backdrop) {
+      backdrop.classList.remove('is-visible');
+      backdrop.setAttribute('aria-hidden', 'true');
+    }
+
     const openButton = byId('btnToggleSidebar');
     if (openButton) openButton.setAttribute('aria-expanded', 'false');
-    const backdrop = byId('driveSidebarBackdrop');
-    if (backdrop) backdrop.setAttribute('aria-hidden', 'true');
+
+    const brandButton = byId('btnToggleSidebarBrand');
+    if (brandButton) brandButton.setAttribute('aria-expanded', 'false');
   }
 
   function openForFolder(button) {

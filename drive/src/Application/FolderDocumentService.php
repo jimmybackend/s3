@@ -213,23 +213,30 @@ final class FolderDocumentService
         $dropEntirely = ['script', 'style', 'iframe', 'object', 'embed', 'svg', 'math', 'form', 'input', 'button', 'textarea', 'select', 'option', 'meta', 'link', 'base', 'img', 'video', 'audio', 'canvas'];
 
         foreach (iterator_to_array($parent->childNodes) as $node) {
-            if ($node instanceof DOMElement) {
-                $tag = strtolower($node->tagName);
-                if (in_array($tag, $dropEntirely, true)) {
-                    $parent->removeChild($node);
-                    continue;
-                }
-                if (!in_array($tag, $allowed, true)) {
-                    while ($node->firstChild) {
-                        $parent->insertBefore($node->firstChild, $node);
-                    }
-                    $parent->removeChild($node);
-                    continue;
-                }
-
-                $this->sanitizeAttributes($node);
-                $this->sanitizeChildren($node);
+            if (!$node instanceof DOMElement) {
+                continue;
             }
+
+            $tag = strtolower($node->tagName);
+            if (in_array($tag, $dropEntirely, true)) {
+                $parent->removeChild($node);
+                continue;
+            }
+
+            if (!in_array($tag, $allowed, true)) {
+                // Primero limpiamos descendientes y sólo después desenvolvemos la
+                // etiqueta desconocida. Así un <div><script>...</script></div>
+                // no puede colarse al mover los hijos al padre.
+                $this->sanitizeChildren($node);
+                while ($node->firstChild) {
+                    $parent->insertBefore($node->firstChild, $node);
+                }
+                $parent->removeChild($node);
+                continue;
+            }
+
+            $this->sanitizeAttributes($node);
+            $this->sanitizeChildren($node);
         }
     }
 
@@ -243,11 +250,13 @@ final class FolderDocumentService
             'ol' => ['start'],
         ];
         $allowed = $allowedByTag[$tag] ?? [];
-
-        foreach (iterator_to_array($element->attributes ?? []) as $attribute) {
-            $name = strtolower($attribute->nodeName);
-            if (!in_array($name, $allowed, true)) {
-                $element->removeAttributeNode($attribute);
+        $attributeNames = [];
+        foreach ($element->attributes as $attribute) {
+            $attributeNames[] = $attribute->nodeName;
+        }
+        foreach ($attributeNames as $attributeName) {
+            if (!in_array(strtolower($attributeName), $allowed, true)) {
+                $element->removeAttribute($attributeName);
             }
         }
 

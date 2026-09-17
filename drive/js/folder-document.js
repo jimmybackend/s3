@@ -83,8 +83,6 @@
         }
 
         if (!allowed.has(child.tagName)) {
-          // Limpiar descendientes antes de desenvolver la etiqueta desconocida.
-          // Evita que un script anidado sobreviva al mover los hijos al padre.
           clean(child);
           const parent = child.parentNode;
           while (child.firstChild) parent.insertBefore(child.firstChild, child);
@@ -150,6 +148,28 @@
 
   function editorPlainText(editor) {
     return String(editor.innerText || editor.textContent || '').replace(/\u00a0/g, ' ').trimEnd();
+  }
+
+  function prepareModalOnBody() {
+    const nested = document.querySelector('#bloque-carpetas #modalCrearDocumentoCarpeta');
+    const modal = nested || byId('modalCrearDocumentoCarpeta');
+    if (!modal) return null;
+
+    document.querySelectorAll('#modalCrearDocumentoCarpeta').forEach(function (candidate) {
+      if (candidate !== modal && candidate.parentNode) candidate.parentNode.removeChild(candidate);
+    });
+
+    if (modal.parentNode !== document.body) {
+      document.body.appendChild(modal);
+    }
+
+    return modal;
+  }
+
+  function closeSidebarBeforeDocumentModal() {
+    if (!document.body.classList.contains('drive-sidebar-open')) return;
+    const closeButton = byId('btnCerrarSidebar');
+    if (closeButton) closeButton.click();
   }
 
   function openForFolder(button) {
@@ -299,6 +319,14 @@
       setSaving(false);
     }
   }
+
+  document.addEventListener('click', function (event) {
+    const action = event.target.closest ? event.target.closest('.js-folder-document') : null;
+    if (!action) return;
+
+    prepareModalOnBody();
+    closeSidebarBeforeDocumentModal();
+  }, true);
 
   document.addEventListener('click', function (event) {
     const action = event.target.closest ? event.target.closest('.js-folder-document') : null;

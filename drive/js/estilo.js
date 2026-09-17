@@ -27,7 +27,6 @@ class EstiloModule {
 
       function applyState(state) {
         body.classList.add('ui-theme');
-
         removeClasses(themeClasses);
         removeClasses(modeClasses);
         removeClasses(visionClasses);
@@ -35,7 +34,6 @@ class EstiloModule {
         const nextTheme = state.theme || defaultState.theme;
         const nextMode = state.mode || defaultState.mode;
         const nextVision = state.vision || defaultState.vision;
-
         body.classList.add(nextTheme);
         body.classList.add(nextMode);
         body.classList.add(nextVision);
@@ -79,7 +77,6 @@ class EstiloModule {
           applyState(defaultState);
           return;
         }
-
         try {
           const state = JSON.parse(saved);
           applyState({ ...defaultState, ...state });
@@ -119,7 +116,6 @@ class EstiloModule {
 
         const myopiaButton = document.querySelector('.js-set-vision[data-vision="vision-myopia"]');
         if (!myopiaButton) return;
-
         myopiaButton.textContent = 'Miopía · lectura clara';
         myopiaButton.title = 'Prioriza nitidez y contraste; no simula desenfoque';
         myopiaButton.setAttribute('aria-label', 'Miopía, lectura clara');
@@ -149,7 +145,6 @@ class EstiloModule {
           aboutButton.setAttribute('data-toggle', 'modal');
           aboutButton.setAttribute('data-target', '#modalAcercaArcadeCloud');
           aboutButton.innerHTML = '<i class="fas fa-circle-info"></i> Acerca de';
-
           const divider = menu.querySelector('.dropdown-divider');
           if (divider) menu.insertBefore(aboutButton, divider);
           else menu.appendChild(aboutButton);
@@ -169,46 +164,19 @@ class EstiloModule {
             <div class="modal-content">
               <div class="modal-header">
                 <div>
-                  <h5 class="modal-title" id="modalAcercaArcadeCloudLabel">
-                    <i class="fas fa-cloud mr-2"></i>ArcadeCloud Drive
-                  </h5>
+                  <h5 class="modal-title" id="modalAcercaArcadeCloudLabel"><i class="fas fa-cloud mr-2"></i>ArcadeCloud Drive</h5>
                   <small class="text-muted">Drive web para Amazon S3</small>
                 </div>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
-                  <span aria-hidden="true">&times;</span>
-                </button>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar"><span aria-hidden="true">&times;</span></button>
               </div>
-
               <div class="modal-body">
-                <p>
-                  <strong>ArcadeCloud Drive</strong> es un gestor web para Amazon S3 diseñado para
-                  mantener la navegación y la organización lógica en MySQL, mientras Amazon S3 se
-                  utiliza como almacenamiento físico de los archivos.
-                </p>
-
-                <div class="alert alert-info">
-                  <strong>Software libre.</strong>
-                  Este proyecto se distribuye bajo la
-                  <strong>GNU General Public License v3.0 (GPLv3)</strong>.
-                  Puedes usarlo, estudiarlo, modificarlo y redistribuirlo respetando los términos
-                  de esa licencia y conservando los avisos legales que correspondan.
-                </div>
-
-                <p>
-                  ArcadeCloud Drive no vende ni incluye una “licencia de S3”. Para utilizarlo
-                  necesitas tu propia cuenta de AWS, un bucket de Amazon S3 y la configuración de
-                  acceso correspondiente. Los cargos generados por AWS son responsabilidad del
-                  titular de esa cuenta.
-                </p>
-
+                <p><strong>ArcadeCloud Drive</strong> es un gestor web para Amazon S3 diseñado para mantener la navegación y la organización lógica en MySQL, mientras Amazon S3 se utiliza como almacenamiento físico de los archivos.</p>
+                <div class="alert alert-info"><strong>Software libre.</strong> Este proyecto se distribuye bajo la <strong>GNU General Public License v3.0 (GPLv3)</strong>. Puedes usarlo, estudiarlo, modificarlo y redistribuirlo respetando los términos de esa licencia y conservando los avisos legales que correspondan.</div>
+                <p>ArcadeCloud Drive no vende ni incluye una “licencia de S3”. Para utilizarlo necesitas tu propia cuenta de AWS, un bucket de Amazon S3 y la configuración de acceso correspondiente. Los cargos generados por AWS son responsabilidad del titular de esa cuenta.</p>
                 <div class="alert alert-info mb-3">
                   <div class="py-1">
                     <h6 class="mb-2"><i class="fas fa-diagram-project mr-1"></i> Ecosistema jimmybackend</h6>
-                    <p class="mb-2">
-                      ArcadeCloud Drive está diseñado para convivir e integrarse con otros proyectos
-                      del mismo ecosistema. Cada aplicación puede operar por separado y, cuando se
-                      configura así, MiChat y ArcadeCloud Drive pueden compartir la misma base MySQL.
-                    </p>
+                    <p class="mb-2">ArcadeCloud Drive está diseñado para convivir e integrarse con otros proyectos del mismo ecosistema. Cada aplicación puede operar por separado y, cuando se configura así, MiChat y ArcadeCloud Drive pueden compartir la misma base MySQL.</p>
                     <ul class="mb-0 pl-4">
                       <li><a href="https://github.com/jimmybackend/michat" target="_blank" rel="noopener noreferrer" style="color:#111 !important;text-decoration:underline;">MiChat</a> — chat e integración con Amazon Bedrock.</li>
                       <li><a href="https://github.com/jimmybackend/MCMA-OpenMemory" target="_blank" rel="noopener noreferrer" style="color:#111 !important;text-decoration:underline;">MCMA-OpenMemory</a> — memoria artificial y recuperación de conocimiento.</li>
@@ -216,14 +184,7 @@ class EstiloModule {
                     </ul>
                   </div>
                 </div>
-
-                <p class="mb-3">
-                  Si este software te resulta útil, conserva el crédito de
-                  <strong>jimmybackend</strong> y, cuando sea posible, comparte tus mejoras con la
-                  comunidad. El proyecto nació para aportar una herramienta práctica y reutilizable,
-                  y agradeceremos que su origen no se pierda con el tiempo.
-                </p>
-
+                <p class="mb-3">Si este software te resulta útil, conserva el crédito de <strong>jimmybackend</strong> y, cuando sea posible, comparte tus mejoras con la comunidad. El proyecto nació para aportar una herramienta práctica y reutilizable, y agradeceremos que su origen no se pierda con el tiempo.</p>
                 <div class="alert alert-info mb-0">
                   <div class="py-1">
                     <div><strong>Proyecto / autor:</strong> jimmybackend</div>
@@ -232,19 +193,11 @@ class EstiloModule {
                     <div><strong>Licencia:</strong> GNU GPL v3.0</div>
                   </div>
                 </div>
-
-                <small class="d-block text-muted mt-3">
-                  Software distribuido sin garantía, en los términos de la GPLv3.
-                  Amazon Web Services y Amazon S3 son servicios de Amazon Web Services, Inc.
-                </small>
+                <small class="d-block text-muted mt-3">Software distribuido sin garantía, en los términos de la GPLv3. Amazon Web Services y Amazon S3 son servicios de Amazon Web Services, Inc.</small>
               </div>
-
-              <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
-              </div>
+              <div class="modal-footer"><button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button></div>
             </div>
           </div>`;
-
         document.body.appendChild(modal);
       }
 
@@ -252,43 +205,14 @@ class EstiloModule {
         const modal = document.getElementById('modalEnlacesUtiles');
         const list = modal ? modal.querySelector('ul.list-group') : null;
         if (!list) return;
-
         list.innerHTML = `
-          <li class="list-group-item">
-            <a href="https://web.airdroid.com/?from=usercenter&lang=es-es" target="_blank" rel="noopener noreferrer">
-              <i class="fab fa-android text-success mr-2"></i> AirDroid Web
-            </a>
-          </li>
-          <li class="list-group-item">
-            <a href="up.php" target="_blank">
-              <i class="fas fa-upload text-primary mr-2"></i> Subir +1GB
-            </a>
-          </li>
-          <li class="list-group-item">
-            <a href="aws.php" target="_blank">
-              <i class="fas fa-qrcode text-primary mr-2"></i> Generador OTP
-            </a>
-          </li>
-          <li class="list-group-item">
-            <a href="ec2.php" target="_blank">
-              <i class="fas fa-server text-info mr-2"></i> EC2
-            </a>
-          </li>
-          <li class="list-group-item">
-            <a href="https://github.com/jimmybackend/michat" target="_blank" rel="noopener noreferrer">
-              <i class="fab fa-github mr-2"></i> GitHub · MiChat
-            </a>
-          </li>
-          <li class="list-group-item">
-            <a href="https://github.com/jimmybackend/MCMA-OpenMemory" target="_blank" rel="noopener noreferrer">
-              <i class="fab fa-github mr-2"></i> GitHub · MCMA-OpenMemory
-            </a>
-          </li>
-          <li class="list-group-item">
-            <a href="https://github.com/jimmybackend/s3" target="_blank" rel="noopener noreferrer">
-              <i class="fab fa-github mr-2"></i> GitHub · ArcadeCloud Drive
-            </a>
-          </li>`;
+          <li class="list-group-item"><a href="https://web.airdroid.com/?from=usercenter&lang=es-es" target="_blank" rel="noopener noreferrer"><i class="fab fa-android text-success mr-2"></i> AirDroid Web</a></li>
+          <li class="list-group-item"><a href="up.php" target="_blank"><i class="fas fa-upload text-primary mr-2"></i> Subir +1GB</a></li>
+          <li class="list-group-item"><a href="aws.php" target="_blank"><i class="fas fa-qrcode text-primary mr-2"></i> Generador OTP</a></li>
+          <li class="list-group-item"><a href="ec2.php" target="_blank"><i class="fas fa-server text-info mr-2"></i> EC2</a></li>
+          <li class="list-group-item"><a href="https://github.com/jimmybackend/michat" target="_blank" rel="noopener noreferrer"><i class="fab fa-github mr-2"></i> GitHub · MiChat</a></li>
+          <li class="list-group-item"><a href="https://github.com/jimmybackend/MCMA-OpenMemory" target="_blank" rel="noopener noreferrer"><i class="fab fa-github mr-2"></i> GitHub · MCMA-OpenMemory</a></li>
+          <li class="list-group-item"><a href="https://github.com/jimmybackend/s3" target="_blank" rel="noopener noreferrer"><i class="fab fa-github mr-2"></i> GitHub · ArcadeCloud Drive</a></li>`;
       }
 
       function loadAiSearchModule() {
@@ -300,42 +224,33 @@ class EstiloModule {
         document.body.appendChild(script);
       }
 
+      function loadUpdaterModule() {
+        if (!document.getElementById('btnServerAdmin') || document.querySelector('script[data-drive-updater]')) return;
+        const script = document.createElement('script');
+        script.src = 'js/arcadecloud-updater.js?v=20260917-1';
+        script.async = false;
+        script.dataset.driveUpdater = '1';
+        document.body.appendChild(script);
+      }
+
       document.addEventListener('click', function(e) {
         const btnTheme = e.target.closest('.js-set-theme');
-        if (btnTheme) {
-          e.preventDefault();
-          setTheme(btnTheme.dataset.theme);
-          return;
-        }
-
+        if (btnTheme) { e.preventDefault(); setTheme(btnTheme.dataset.theme); return; }
         const btnMode = e.target.closest('.js-set-mode');
-        if (btnMode) {
-          e.preventDefault();
-          setMode(btnMode.dataset.mode);
-          return;
-        }
-
+        if (btnMode) { e.preventDefault(); setMode(btnMode.dataset.mode); return; }
         const btnVision = e.target.closest('.js-set-vision');
-        if (btnVision) {
-          e.preventDefault();
-          setVision(btnVision.dataset.vision);
-          return;
-        }
-
+        if (btnVision) { e.preventDefault(); setVision(btnVision.dataset.vision); return; }
         const btnAscii = e.target.closest('#btnToggleAscii');
-        if (btnAscii) {
-          e.preventDefault();
-          toggleAscii();
-        }
+        if (btnAscii) { e.preventDefault(); toggleAscii(); }
       });
 
       installVisionAccessibility();
       installAboutDialog();
       installUsefulLinks();
       loadAiSearchModule();
+      loadUpdaterModule();
       loadPrefs();
     });
-
     return this;
   }
 

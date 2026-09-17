@@ -1,8 +1,8 @@
 {
   "summary": {
-    "php_total": 348,
-    "php_class_modules": 203,
-    "php_needs_migration": 36,
+    "php_total": 350,
+    "php_class_modules": 204,
+    "php_needs_migration": 37,
     "js_total": 43,
     "js_class_modules": 41,
     "js_needs_migration": 9
@@ -302,6 +302,21 @@
       "issues": []
     },
     {
+      "path": "drive/bin/move_job_worker.php",
+      "lines": 122,
+      "kind": "endpoint with logic",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
       "path": "drive/bin/polly_reconcile.php",
       "lines": 50,
       "kind": "thin endpoint",
@@ -348,7 +363,7 @@
     },
     {
       "path": "drive/bin/sync_worker.php",
-      "lines": 129,
+      "lines": 151,
       "kind": "endpoint with logic",
       "classes": 0,
       "functions": [],
@@ -1742,6 +1757,21 @@
       "issues": []
     },
     {
+      "path": "drive/src/Application/BackgroundWorkerLauncher.php",
+      "lines": 99,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
       "path": "drive/src/Application/DrivePageService.php",
       "lines": 40,
       "kind": "class/module",
@@ -1878,7 +1908,7 @@
     },
     {
       "path": "drive/src/Application/MoveJobService.php",
-      "lines": 117,
+      "lines": 194,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -3018,7 +3048,7 @@
     },
     {
       "path": "drive/src/Http/Controller/BackgroundTaskController.php",
-      "lines": 344,
+      "lines": 650,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -3320,7 +3350,7 @@
     },
     {
       "path": "drive/src/Http/Controller/MoveJobController.php",
-      "lines": 243,
+      "lines": 164,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -4050,7 +4080,7 @@
     },
     {
       "path": "drive/src/Storage/MoveJobStore.php",
-      "lines": 208,
+      "lines": 264,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -4155,7 +4185,7 @@
     },
     {
       "path": "drive/src/Sync/SyncJobStore.php",
-      "lines": 174,
+      "lines": 192,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -5545,7 +5575,7 @@
     },
     {
       "path": "drive/js/background-tasks.js",
-      "lines": 350,
+      "lines": 631,
       "kind": "class/module",
       "classes": [
         "BackgroundTaskCenter"
@@ -5827,7 +5857,7 @@
     },
     {
       "path": "drive/js/move-tasks.js",
-      "lines": 238,
+      "lines": 247,
       "kind": "class/module",
       "classes": [
         "DriveMoveTasks"

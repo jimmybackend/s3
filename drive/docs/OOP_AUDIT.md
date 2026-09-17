@@ -4,9 +4,9 @@
 
 ## Resumen
 
-- PHP analizados: **348**
-- PHP que ya contienen clases/interfaces: **203**
-- PHP marcados para migración/revisión: **36**
+- PHP analizados: **350**
+- PHP que ya contienen clases/interfaces: **204**
+- PHP marcados para migración/revisión: **37**
 - JavaScript analizados: **43**
 - JavaScript que ya contienen clases: **41**
 - JavaScript marcados para migración/revisión: **9**
@@ -39,10 +39,11 @@
 | `drive/bin/federation_provider_request.php` | 87 | procedural endpoint | 0 | — | — | — | — |
 | `drive/bin/federation_replica_presence.php` | 21 | thin endpoint | 0 | — | — | — | — |
 | `drive/bin/federation_sync.php` | 102 | endpoint with logic | 0 | — | — | — | — |
+| `drive/bin/move_job_worker.php` | 122 | endpoint with logic | 0 | — | — | — | — |
 | `drive/bin/polly_reconcile.php` | 50 | thin endpoint | 0 | — | — | — | — |
 | `drive/bin/sync_node_worker.php` | 75 | thin endpoint | 0 | — | — | — | — |
 | `drive/bin/sync_schema_migrate.php` | 17 | thin endpoint | 0 | — | — | — | — |
-| `drive/bin/sync_worker.php` | 129 | endpoint with logic | 0 | — | — | — | — |
+| `drive/bin/sync_worker.php` | 151 | endpoint with logic | 0 | — | — | — | — |
 | `drive/bin/transcribe_reconcile.php` | 54 | thin endpoint | 0 | — | — | — | — |
 | `drive/bin/upload_cleanup.php` | 11 | thin endpoint | 0 | — | — | — | — |
 | `drive/bloque_archivos.php` | 662 | view/entrypoint | 0 | ⚠️ | — | — | — |
@@ -132,6 +133,7 @@
 | `drive/src/Admin/PrivilegedServerHelper.php` | 123 | class/module | 1 | — | — | — | — |
 | `drive/src/Admin/ServerSettingsAdminService.php` | 211 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Application/AiFileSearchService.php` | 470 | class/module | 1 | — | ⚠️ | — | — |
+| `drive/src/Application/BackgroundWorkerLauncher.php` | 99 | class/module | 1 | — | — | — | — |
 | `drive/src/Application/DrivePageService.php` | 40 | class/module | 1 | — | — | — | — |
 | `drive/src/Application/DrivePageViewModel.php` | 18 | class/module | 1 | — | — | — | — |
 | `drive/src/Application/FileAccessService.php` | 114 | class/module | 1 | — | — | — | — |
@@ -141,7 +143,7 @@
 | `drive/src/Application/FileSearchService.php` | 104 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Application/FolderMutationService.php` | 214 | class/module | 1 | — | — | — | — |
 | `drive/src/Application/FolderQueryService.php` | 152 | class/module | 1 | — | — | — | — |
-| `drive/src/Application/MoveJobService.php` | 117 | class/module | 1 | — | — | — | — |
+| `drive/src/Application/MoveJobService.php` | 194 | class/module | 1 | — | — | — | — |
 | `drive/src/Application/PhpLintService.php` | 70 | class/module | 1 | — | — | — | — |
 | `drive/src/Application/TemporaryZip.php` | 27 | class/module | 1 | — | — | — | — |
 | `drive/src/Application/TextFileService.php` | 157 | class/module | 1 | — | — | — | — |
@@ -217,7 +219,7 @@
 | `drive/src/Http/Controller/AuthController.php` | 94 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/AwsCostController.php` | 61 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/AwsFileController.php` | 338 | class/module | 1 | — | — | — | — |
-| `drive/src/Http/Controller/BackgroundTaskController.php` | 344 | class/module | 1 | — | ⚠️ | — | — |
+| `drive/src/Http/Controller/BackgroundTaskController.php` | 650 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Http/Controller/FederationAccessController.php` | 123 | class/module | 1 | ⚠️ | — | — | — |
 | `drive/src/Http/Controller/FederationBundleController.php` | 146 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/FederationCatalogController.php` | 144 | class/module | 1 | — | — | — | — |
@@ -237,7 +239,7 @@
 | `drive/src/Http/Controller/FolderQueryController.php` | 30 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/LegacyUploadController.php` | 140 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/MediaPlaylistController.php` | 35 | class/module | 1 | — | — | — | — |
-| `drive/src/Http/Controller/MoveJobController.php` | 243 | class/module | 1 | — | — | — | — |
+| `drive/src/Http/Controller/MoveJobController.php` | 164 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/NavigationController.php` | 42 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/PersonalAwsController.php` | 74 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/PollyTaskController.php` | 347 | class/module | 1 | — | ⚠️ | — | — |
@@ -285,14 +287,14 @@
 | `drive/src/Storage/FileRecordRepository.php` | 122 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Storage/FolderMutationRepository.php` | 239 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Storage/FolderRepository.php` | 108 | class/module | 1 | — | ⚠️ | — | — |
-| `drive/src/Storage/MoveJobStore.php` | 208 | class/module | 1 | — | — | — | — |
+| `drive/src/Storage/MoveJobStore.php` | 264 | class/module | 1 | — | — | — | — |
 | `drive/src/Storage/StorageObjectNameCodec.php` | 104 | class/module | 1 | — | — | — | — |
 | `drive/src/Storage/StorageUsageService.php` | 103 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Storage/UserStoragePath.php` | 50 | class/module | 1 | — | — | — | — |
 | `drive/src/Storage/UserStorageProvisioner.php` | 105 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Sync/NodeSyncService.php` | 126 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Sync/S3SyncService.php` | 265 | class/module | 1 | — | — | — | — |
-| `drive/src/Sync/SyncJobStore.php` | 174 | class/module | 1 | — | — | — | — |
+| `drive/src/Sync/SyncJobStore.php` | 192 | class/module | 1 | — | — | — | — |
 | `drive/src/Sync/SyncRepository.php` | 499 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Sync/SyncSchemaMigrator.php` | 114 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Upload/AdminMultipartUploadService.php` | 154 | class/module | 1 | — | — | — | — |
@@ -381,7 +383,7 @@
 | `drive/js/archivos.js` | 2155 | class/module | ArchivosModule | — | abrirModalRenombrarArchivo, cerrarModalCompartir, setFileSecurity | window functions: abrirModalRenombrarArchivo, cerrarModalCompartir, setFileSecurity |
 | `drive/js/audiovideo.js` | 619 | class/module | AudiovideoModule | — | audioNext, audioPrev, reproducirVideoDesde, videoNext, videoPlayPause, videoPrev | window functions: audioNext, audioPrev, reproducirVideoDesde, videoNext, videoPlayPause, videoPrev, wavePlayPause |
 | `drive/js/aws-comprehend.js` | 342 | class/module | AwsComprehendModule, AwsFileActionRouter | — | — | — |
-| `drive/js/background-tasks.js` | 350 | class/module | BackgroundTaskCenter | — | — | — |
+| `drive/js/background-tasks.js` | 631 | class/module | BackgroundTaskCenter | — | — | — |
 | `drive/js/carpetas.js` | 1105 | class/module | CarpetasModule | — | actualizarBloqueCarpetas | window functions: actualizarBloqueCarpetas |
 | `drive/js/descarga-multiple.js` | 114 | class/module | DescargaMultipleModule | — | — | — |
 | `drive/js/descarga-uno.js` | 110 | class/module | DescargaUnoModule | — | — | — |
@@ -398,7 +400,7 @@
 | `drive/js/imagenes.js` | 535 | class/module | ImagenesModule | — | getGaleriaGridSize, setGaleriaGridSize | window functions: getGaleriaGridSize, setGaleriaGridSize |
 | `drive/js/media-floating.js` | 685 | procedural script | — | — | — | no ES class |
 | `drive/js/mediaFloating.js` | 38 | class/module | MediaFloatingModule | — | — | — |
-| `drive/js/move-tasks.js` | 238 | class/module | DriveMoveTasks | — | — | — |
+| `drive/js/move-tasks.js` | 247 | class/module | DriveMoveTasks | — | — | — |
 | `drive/js/obtenerFiltros.js` | 125 | class/module | ObtenerFiltrosModule | — | — | — |
 | `drive/js/pdf-pantalla-completa.js` | 45 | class/module | PdfPantallaCompletaModule | — | — | — |
 | `drive/js/polly-background.js` | 301 | class/module | PollyBackgroundModule | — | — | — |

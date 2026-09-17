@@ -81,6 +81,24 @@ final class SyncJobStore
         return $data;
     }
 
+    public function deleteForUser(int $userId, string $jobId): void
+    {
+        $job = $this->read($userId, $jobId);
+        if ($job === null) {
+            return;
+        }
+
+        $state = strtolower((string)($job['state'] ?? ''));
+        if (!in_array($state, ['done', 'error', 'failed', 'cancelled'], true)) {
+            throw new RuntimeException('Sólo se pueden quitar sincronizaciones terminadas, fallidas o canceladas.');
+        }
+
+        $path = $this->path($userId, $jobId);
+        if (is_file($path) && !@unlink($path)) {
+            throw new RuntimeException('No se pudo quitar la sincronización.');
+        }
+    }
+
     /**
      * Devuelve jobs recientes del usuario para el centro unificado de tareas.
      * La fuente sigue siendo el mismo estado persistente que usa sync_worker.php.

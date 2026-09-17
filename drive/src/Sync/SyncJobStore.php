@@ -3,10 +3,14 @@ declare(strict_types=1);
 
 namespace ArcadeCloud\Drive\Sync;
 
+use ArcadeCloud\Drive\Core\BackgroundWorkerLease;
 use RuntimeException;
 
 final class SyncJobStore
 {
+    private const QUEUED_STALE_SECONDS = 120;
+    private const ACTIVE_STALE_SECONDS = 1800;
+
     private string $dir;
 
     public function __construct(?string $dir = null)
@@ -101,7 +105,8 @@ final class SyncJobStore
 
     /**
      * Devuelve jobs recientes del usuario para el centro unificado de tareas.
-     * La fuente sigue siendo el mismo estado persistente que usa sync_worker.php.
+     * Si el worker desapareció y el estado dejó de actualizarse, el job se
+     * cierra como failed para que pueda reintentarse o quitarse del centro.
      */
     public function recentForUser(int $userId, int $limit = 30): array
     {
@@ -125,6 +130,12 @@ final class SyncJobStore
                 continue;
             }
 
+            try {
+                $job = $this->reconcileStaleJob($userId, $jobId, $job);
+            } catch (\Throwable) {
+                // El centro todavía puede mostrar el último estado persistido.
+            }
+
             $rows[] = $job;
         }
 
@@ -138,6 +149,61 @@ final class SyncJobStore
     public function lockPath(int $userId): string
     {
         return $this->dir . '/user-' . $userId . '.lock';
+    }
+
+    private function reconcileStaleJob(int $userId, string $jobId, array $job): array
+    {
+        $state = strtolower((string)($job['state'] ?? ''));
+        if (!in_array($state, ['queued', 'pending', 'running', 'cancel_requested'], true)) {
+            return $job;
+        }
+
+        $updatedAt = strtotime((string)($job['updated_at'] ?? $job['created_at'] ?? ''));
+        if ($updatedAt === false) {
+            return $job;
+        }
+
+        $threshold = in_array($state, ['queued', 'pending'], true)
+            ? self::QUEUED_STALE_SECONDS
+            : self::ACTIVE_STALE_SECONDS;
+        if (time() - $updatedAt < $threshold) {
+            return $job;
+        }
+
+        $lease = new BackgroundWorkerLease();
+        if ($lease->isActive('sync', $jobId)) {
+            return $job;
+        }
+
+        // Compatibilidad con workers lanzados antes de introducir leases.
+        if (in_array($state, ['running', 'cancel_requested'], true) && $this->userSyncLockActive($userId)) {
+            return $job;
+        }
+
+        return $this->update($userId, $jobId, [
+            'state' => 'failed',
+            'message' => 'Proceso interrumpido: el worker ya no está activo. Puedes ejecutar de nuevo o quitar esta tarea.',
+            'finished_at' => date('c'),
+            'interrupted_at' => date('c'),
+        ]);
+    }
+
+    private function userSyncLockActive(int $userId): bool
+    {
+        $handle = @fopen($this->lockPath($userId), 'c+');
+        if (!$handle) {
+            return false;
+        }
+
+        try {
+            if (!flock($handle, LOCK_EX | LOCK_NB)) {
+                return true;
+            }
+            flock($handle, LOCK_UN);
+            return false;
+        } finally {
+            fclose($handle);
+        }
     }
 
     private function path(int $userId, string $jobId): string

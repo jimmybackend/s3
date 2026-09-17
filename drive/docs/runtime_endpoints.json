@@ -306,7 +306,7 @@
     },
     {
       "path": "drive/bin/sync_worker.php",
-      "size": 4918,
+      "size": 5811,
       "active": false,
       "references": [
         "drive/src/Application/BackgroundWorkerLauncher.php",
@@ -1023,7 +1023,7 @@
     },
     {
       "path": "drive/src/Activity/PollyTaskReconciler.php",
-      "size": 9186,
+      "size": 10979,
       "active": false,
       "references": []
     },
@@ -1035,7 +1035,7 @@
     },
     {
       "path": "drive/src/Activity/TranscriptionReconciler.php",
-      "size": 10959,
+      "size": 11127,
       "active": false,
       "references": []
     },
@@ -1235,7 +1235,7 @@
     },
     {
       "path": "drive/src/Aws/PollyFileService.php",
-      "size": 17739,
+      "size": 20686,
       "active": false,
       "references": []
     },
@@ -1700,7 +1700,7 @@
     },
     {
       "path": "drive/src/Http/Controller/BackgroundTaskController.php",
-      "size": 28526,
+      "size": 33355,
       "active": false,
       "references": []
     },
@@ -2127,7 +2127,7 @@
     },
     {
       "path": "drive/src/Storage/MoveJobStore.php",
-      "size": 9589,
+      "size": 9919,
       "active": false,
       "references": []
     },
@@ -2169,7 +2169,7 @@
     },
     {
       "path": "drive/src/Sync/SyncJobStore.php",
-      "size": 7287,
+      "size": 7684,
       "active": false,
       "references": []
     },

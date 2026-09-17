@@ -4,8 +4,8 @@
 
 ## Resumen
 
-- PHP analizados: **350**
-- PHP que ya contienen clases/interfaces: **204**
+- PHP analizados: **351**
+- PHP que ya contienen clases/interfaces: **205**
 - PHP marcados para migración/revisión: **37**
 - JavaScript analizados: **43**
 - JavaScript que ya contienen clases: **41**
@@ -39,11 +39,11 @@
 | `drive/bin/federation_provider_request.php` | 87 | procedural endpoint | 0 | — | — | — | — |
 | `drive/bin/federation_replica_presence.php` | 21 | thin endpoint | 0 | — | — | — | — |
 | `drive/bin/federation_sync.php` | 102 | endpoint with logic | 0 | — | — | — | — |
-| `drive/bin/move_job_worker.php` | 122 | endpoint with logic | 0 | — | — | — | — |
+| `drive/bin/move_job_worker.php` | 134 | endpoint with logic | 0 | — | — | — | — |
 | `drive/bin/polly_reconcile.php` | 50 | thin endpoint | 0 | — | — | — | — |
 | `drive/bin/sync_node_worker.php` | 75 | thin endpoint | 0 | — | — | — | — |
 | `drive/bin/sync_schema_migrate.php` | 17 | thin endpoint | 0 | — | — | — | — |
-| `drive/bin/sync_worker.php` | 151 | endpoint with logic | 0 | — | — | — | — |
+| `drive/bin/sync_worker.php` | 162 | endpoint with logic | 0 | — | — | — | — |
 | `drive/bin/transcribe_reconcile.php` | 54 | thin endpoint | 0 | — | — | — | — |
 | `drive/bin/upload_cleanup.php` | 11 | thin endpoint | 0 | — | — | — | — |
 | `drive/bloque_archivos.php` | 662 | view/entrypoint | 0 | ⚠️ | — | — | — |
@@ -169,6 +169,7 @@
 | `drive/src/Aws/TranslateFileService.php` | 60 | class/module | 1 | — | — | — | — |
 | `drive/src/Console/UploadCleanupCommand.php` | 61 | class/module | 1 | — | — | — | — |
 | `drive/src/Core/ApplicationKernel.php` | 38 | class/module | 1 | — | — | — | — |
+| `drive/src/Core/BackgroundWorkerLease.php` | 97 | class/module | 1 | — | — | — | — |
 | `drive/src/Core/DriveApplication.php` | 488 | class/module | 1 | — | — | ⚠️ | — |
 | `drive/src/Federation/ArcadeLinkBundleService.php` | 134 | class/module | 1 | — | — | — | — |
 | `drive/src/Federation/ArcadeLinkService.php` | 282 | class/module | 1 | — | — | — | — |
@@ -287,14 +288,14 @@
 | `drive/src/Storage/FileRecordRepository.php` | 122 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Storage/FolderMutationRepository.php` | 239 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Storage/FolderRepository.php` | 108 | class/module | 1 | — | ⚠️ | — | — |
-| `drive/src/Storage/MoveJobStore.php` | 264 | class/module | 1 | — | — | — | — |
+| `drive/src/Storage/MoveJobStore.php` | 309 | class/module | 1 | — | — | — | — |
 | `drive/src/Storage/StorageObjectNameCodec.php` | 104 | class/module | 1 | — | — | — | — |
 | `drive/src/Storage/StorageUsageService.php` | 103 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Storage/UserStoragePath.php` | 50 | class/module | 1 | — | — | — | — |
 | `drive/src/Storage/UserStorageProvisioner.php` | 105 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Sync/NodeSyncService.php` | 126 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Sync/S3SyncService.php` | 265 | class/module | 1 | — | — | — | — |
-| `drive/src/Sync/SyncJobStore.php` | 192 | class/module | 1 | — | — | — | — |
+| `drive/src/Sync/SyncJobStore.php` | 258 | class/module | 1 | — | — | — | — |
 | `drive/src/Sync/SyncRepository.php` | 499 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Sync/SyncSchemaMigrator.php` | 114 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Upload/AdminMultipartUploadService.php` | 154 | class/module | 1 | — | — | — | — |

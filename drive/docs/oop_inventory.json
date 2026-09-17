@@ -1,7 +1,7 @@
 {
   "summary": {
-    "php_total": 350,
-    "php_class_modules": 204,
+    "php_total": 351,
+    "php_class_modules": 205,
     "php_needs_migration": 37,
     "js_total": 43,
     "js_class_modules": 41,
@@ -303,7 +303,7 @@
     },
     {
       "path": "drive/bin/move_job_worker.php",
-      "lines": 122,
+      "lines": 134,
       "kind": "endpoint with logic",
       "classes": 0,
       "functions": [],
@@ -363,7 +363,7 @@
     },
     {
       "path": "drive/bin/sync_worker.php",
-      "lines": 151,
+      "lines": 162,
       "kind": "endpoint with logic",
       "classes": 0,
       "functions": [],
@@ -2297,6 +2297,21 @@
       "issues": []
     },
     {
+      "path": "drive/src/Core/BackgroundWorkerLease.php",
+      "lines": 97,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
       "path": "drive/src/Core/DriveApplication.php",
       "lines": 488,
       "kind": "class/module",
@@ -4080,7 +4095,7 @@
     },
     {
       "path": "drive/src/Storage/MoveJobStore.php",
-      "lines": 264,
+      "lines": 309,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -4185,7 +4200,7 @@
     },
     {
       "path": "drive/src/Sync/SyncJobStore.php",
-      "lines": 192,
+      "lines": 258,
       "kind": "class/module",
       "classes": 1,
       "functions": [],

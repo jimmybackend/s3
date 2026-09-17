@@ -278,7 +278,7 @@
     },
     {
       "path": "drive/bin/move_job_worker.php",
-      "size": 3784,
+      "size": 4090,
       "active": false,
       "references": [
         "drive/src/Application/BackgroundWorkerLauncher.php"
@@ -306,12 +306,11 @@
     },
     {
       "path": "drive/bin/sync_worker.php",
-      "size": 4624,
+      "size": 4918,
       "active": false,
       "references": [
         "drive/src/Application/BackgroundWorkerLauncher.php",
-        "drive/src/Http/Controller/SyncController.php",
-        "drive/src/Sync/SyncJobStore.php"
+        "drive/src/Http/Controller/SyncController.php"
       ]
     },
     {
@@ -1289,6 +1288,12 @@
       "references": []
     },
     {
+      "path": "drive/src/Core/BackgroundWorkerLease.php",
+      "size": 2712,
+      "active": false,
+      "references": []
+    },
+    {
       "path": "drive/src/Core/DriveApplication.php",
       "size": 17036,
       "active": false,
@@ -2122,7 +2127,7 @@
     },
     {
       "path": "drive/src/Storage/MoveJobStore.php",
-      "size": 7962,
+      "size": 9589,
       "active": false,
       "references": []
     },
@@ -2164,7 +2169,7 @@
     },
     {
       "path": "drive/src/Sync/SyncJobStore.php",
-      "size": 5089,
+      "size": 7287,
       "active": false,
       "references": []
     },

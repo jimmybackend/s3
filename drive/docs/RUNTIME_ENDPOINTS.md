@@ -67,7 +67,7 @@
 | `drive/bin/polly_reconcile.php` | `drive/src/Application/BackgroundWorkerLauncher.php` |
 | `drive/bin/sync_node_worker.php` | ninguna |
 | `drive/bin/sync_schema_migrate.php` | ninguna |
-| `drive/bin/sync_worker.php` | `drive/src/Application/BackgroundWorkerLauncher.php`, `drive/src/Http/Controller/SyncController.php`, `drive/src/Sync/SyncJobStore.php` |
+| `drive/bin/sync_worker.php` | `drive/src/Application/BackgroundWorkerLauncher.php`, `drive/src/Http/Controller/SyncController.php` |
 | `drive/bin/transcribe_reconcile.php` | `drive/src/Application/BackgroundWorkerLauncher.php` |
 | `drive/bin/upload_cleanup.php` | `drive/src/Http/Controller/UploadCleanupController.php` |
 | `drive/buscar_archivo.php` | `drive/js/ai-search.js`, `drive/js/archivos.js` |
@@ -174,6 +174,7 @@
 | `drive/src/Aws/TranslateFileService.php` | ninguna |
 | `drive/src/Console/UploadCleanupCommand.php` | ninguna |
 | `drive/src/Core/ApplicationKernel.php` | ninguna |
+| `drive/src/Core/BackgroundWorkerLease.php` | ninguna |
 | `drive/src/Core/DriveApplication.php` | ninguna |
 | `drive/src/Federation/ArcadeLinkBundleService.php` | `drive/tests/arcadelink_bundle_regression.php` |
 | `drive/src/Federation/ArcadeLinkService.php` | `drive/bin/federation_provider_request.php`, `drive/tests/arcadelink_bundle_regression.php`, `drive/tests/federationcloud_smoke.php` |

@@ -89,6 +89,7 @@
         "drive/comprehend_archivo.php",
         "drive/costos_aws.php",
         "drive/crear_carpeta.php",
+        "drive/create_folder_document.php",
         "drive/delete_multiple.php",
         "drive/descargar.php",
         "drive/descargar_archivo.php",
@@ -345,7 +346,7 @@
     },
     {
       "path": "drive/bloque_carpetas.php",
-      "size": 5660,
+      "size": 9118,
       "active": true,
       "references": [
         "drive/s3.php",
@@ -392,6 +393,14 @@
       "active": false,
       "references": [
         "drive/js/carpetas.js"
+      ]
+    },
+    {
+      "path": "drive/create_folder_document.php",
+      "size": 263,
+      "active": false,
+      "references": [
+        "drive/js/folder-document.js"
       ]
     },
     {
@@ -1120,6 +1129,14 @@
       "references": []
     },
     {
+      "path": "drive/src/Application/FolderDocumentService.php",
+      "size": 11117,
+      "active": false,
+      "references": [
+        "drive/tests/folder_document_sanitizer.php"
+      ]
+    },
+    {
       "path": "drive/src/Application/FolderMutationService.php",
       "size": 8396,
       "active": false,
@@ -1808,6 +1825,12 @@
       "references": []
     },
     {
+      "path": "drive/src/Http/Controller/FolderDocumentController.php",
+      "size": 2328,
+      "active": false,
+      "references": []
+    },
+    {
       "path": "drive/src/Http/Controller/FolderMutationController.php",
       "size": 7936,
       "active": false,
@@ -2284,7 +2307,7 @@
     },
     {
       "path": "drive/src/View/FolderTreeRenderer.php",
-      "size": 5065,
+      "size": 6105,
       "active": false,
       "references": []
     },
@@ -2443,6 +2466,12 @@
     {
       "path": "drive/tests/federationcloud_smoke.php",
       "size": 5661,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/tests/folder_document_sanitizer.php",
+      "size": 1990,
       "active": false,
       "references": []
     },

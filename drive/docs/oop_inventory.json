@@ -3063,7 +3063,7 @@
     },
     {
       "path": "drive/src/Http/Controller/BackgroundTaskCompatibilityController.php",
-      "lines": 123,
+      "lines": 245,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -5605,7 +5605,7 @@
     },
     {
       "path": "drive/js/background-task-feedback.js",
-      "lines": 120,
+      "lines": 169,
       "kind": "procedural script",
       "classes": [],
       "functions": [],

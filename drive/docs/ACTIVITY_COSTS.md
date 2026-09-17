@@ -136,6 +136,27 @@ Cuando se filtra la página por servicio u operación, la cifra real AWS se ocul
 
 Las correlaciones que parten de identificadores técnicos se guardan como SHA-256 con prefijo de tipo. El valor original de upload ID, token o job identifier no se almacena en la tabla de actividad.
 
+## Relación con el centro Tareas
+
+Desde el centro unificado **Tareas**, Polly y Transcribe usan `DriveActivityEvents` como estado persistente y fuente de telemetría.
+
+La acción **Eliminar de Tareas** no ejecuta `DELETE` sobre `DriveActivityEvents`. Sólo marca la tarea como oculta para el centro mediante metadata del job. Por tanto:
+
+- desaparece la tarjeta operativa;
+- permanece el historial de ejecución;
+- permanecen `EstimatedCost`, unidades, correlación y metadata financiera;
+- `activity_costs.php` continúa pudiendo incluir esos eventos en sus consultas normales.
+
+Esto fue validado como comportamiento esperado en producción el **16-Sep-2026**.
+
+Para Sync y Move, que usan archivos de estado propios, **Eliminar de Tareas** elimina únicamente ese pequeño registro de control; tampoco borra archivos reales del usuario.
+
+### Polly asíncrono
+
+Las tareas asíncronas Polly usan una correlación `polly:*` estable durante inicio y finalización. Cuando el reconciliador completa el trabajo puede añadir el componente S3 atribuible con la misma correlación, de modo que el centro **Tareas** puede mostrar un costo agregado sin inventar una segunda operación independiente.
+
+La corrección de resolución del archivo origen (`FileS3.Ruta + FileS3.Encriptado`) no modifica ni migra los registros financieros existentes; únicamente permite que el job se finalice correctamente contra su `FileId + user_id_` persistente.
+
 ## Página
 
 La interfaz muestra:

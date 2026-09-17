@@ -16,6 +16,7 @@ if ($userId <= 0 || !preg_match('/^[a-f0-9]{32}$/', $jobId)) {
 require_once dirname(__DIR__) . '/app_bootstrap.php';
 
 use ArcadeCloud\Drive\Core\ApplicationKernel;
+use ArcadeCloud\Drive\Core\BackgroundWorkerLease;
 use ArcadeCloud\Drive\Sync\S3SyncService;
 use ArcadeCloud\Drive\Sync\SyncJobStore;
 use ArcadeCloud\Drive\Sync\SyncRepository;
@@ -26,6 +27,12 @@ if (!is_array($existing)) {
     exit(3);
 }
 if (in_array((string)($existing['state'] ?? ''), ['done', 'cancelled'], true)) {
+    exit(0);
+}
+
+$lease = new BackgroundWorkerLease();
+$leaseHandle = $lease->acquire('sync', $jobId);
+if ($leaseHandle === null) {
     exit(0);
 }
 
@@ -147,4 +154,8 @@ try {
 } finally {
     flock($lockHandle, LOCK_UN);
     fclose($lockHandle);
+    if (is_resource($leaseHandle)) {
+        @flock($leaseHandle, LOCK_UN);
+        @fclose($leaseHandle);
+    }
 }

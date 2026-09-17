@@ -13,6 +13,8 @@ on:
       - 'drive/bin/install_transcribe_reconcile_timer.sh'
       - 'drive/bin/polly_reconcile.php'
       - 'drive/bin/install_polly_reconcile_timer.sh'
+      - 'drive/bin/move_job_worker.php'
+      - 'drive/bin/sync_worker.php'
       - 'drive/config/activity-cost-pricing.json'
       - 'drive/src/Activity/**'
       - 'drive/src/Aws/AwsCostService.php'
@@ -20,6 +22,8 @@ on:
       - 'drive/src/Aws/PollyFileService.php'
       - 'drive/src/Aws/TextractFileService.php'
       - 'drive/src/Aws/TranslateFileService.php'
+      - 'drive/src/Application/BackgroundWorkerLauncher.php'
+      - 'drive/src/Application/MoveJobService.php'
       - 'drive/src/Application/FolderMutationService.php'
       - 'drive/src/Http/Controller/ActivityCostController.php'
       - 'drive/src/Http/Controller/BackgroundTaskController.php'
@@ -74,12 +78,16 @@ jobs:
             drive/polly_tasks.php \
             drive/bin/transcribe_reconcile.php \
             drive/bin/polly_reconcile.php \
+            drive/bin/move_job_worker.php \
+            drive/bin/sync_worker.php \
             drive/src/Activity/*.php \
             drive/src/Aws/AwsCostService.php \
             drive/src/Aws/ComprehendFileService.php \
             drive/src/Aws/PollyFileService.php \
             drive/src/Aws/TextractFileService.php \
             drive/src/Aws/TranslateFileService.php \
+            drive/src/Application/BackgroundWorkerLauncher.php \
+            drive/src/Application/MoveJobService.php \
             drive/src/Application/FolderMutationService.php \
             drive/src/Http/Controller/ActivityCostController.php \
             drive/src/Http/Controller/BackgroundTaskController.php \
@@ -129,15 +137,20 @@ jobs:
           grep -q 'COUNT(DISTINCT COALESCE' drive/src/Activity/ActivityCostRepository.php
           grep -q 'comprehend.nlp_unit' drive/src/Http/Controller/AwsFileController.php
           grep -q 's3_list_requests' drive/src/Application/FolderMutationService.php
-          grep -q 'folder_move' drive/src/Http/Controller/MoveJobController.php
+          grep -q 'BackgroundWorkerLauncher' drive/src/Http/Controller/MoveJobController.php
+          grep -q 'folder_move' drive/bin/move_job_worker.php
           grep -q 'cost_explorer.api_request' drive/src/Http/Controller/AwsCostController.php
           grep -q 'Best effort' drive/src/Activity/ActivityCostRecorder.php
           grep -q 'Cost Explorer' drive/src/Activity/ActivityCostService.php
           grep -q 'PollyTaskReconciler' drive/bin/polly_reconcile.php
           grep -q 'BackgroundTaskController' drive/background_tasks.php
-          grep -q 'recentForUser' drive/src/Storage/MoveJobStore.php
-          grep -q 'recentForUser' drive/src/Sync/SyncJobStore.php
+          grep -q -- '->dispatch()' drive/background_tasks.php
+          grep -q 'claimQueued' drive/src/Storage/MoveJobStore.php
+          grep -q 'deleteForUser' drive/src/Storage/MoveJobStore.php
+          grep -q 'deleteForUser' drive/src/Sync/SyncJobStore.php
           grep -q "button.innerHTML = 'Tareas " drive/js/background-tasks.js
+          grep -q 'data-bg-task-action' drive/js/background-tasks.js
+          grep -q 'var(--panel-solid' drive/js/background-tasks.js
           ! grep -q 'Tareas AWS' drive/js/background-tasks.js drive/js/polly-background.js drive/js/transcribe-background.js
           grep -q 'CREATE TABLE IF NOT EXISTS `DriveActivityEvents`' adbbmis1_Cloud.sql
           grep -q 'DROP TABLE IF EXISTS `DriveActivityEvents`' adbbmis1_Cloud.sql

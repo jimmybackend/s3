@@ -23,39 +23,82 @@ body.up-page {
 
 .up-page h1,
 .up-page h2,
-.up-page strong {
+.up-page strong,
+.up-page label,
+.up-page p,
+.up-page .meta,
+.up-page .status {
   color: var(--text-strong) !important;
 }
 
 .up-page p.sub,
-.up-page .meta,
-.up-page .status,
-.up-page .pill {
+.up-page .pill,
+.up-page .text-muted {
   color: var(--text-soft) !important;
+  opacity: 1 !important;
 }
 
 .up-page .uploader,
 .up-page input[type="file"] {
   background: var(--panel-bg2) !important;
-  color: var(--text) !important;
-  border-color: var(--border) !important;
+  color: var(--text-strong) !important;
+  border-color: rgba(var(--accent-rgb), .38) !important;
 }
 
-.up-page .btn {
-  background: var(--accent) !important;
-  color: #07110a !important;
+/* Botón nativo del selector de archivos: visible también en tema claro. */
+.up-page input[type="file"]::file-selector-button,
+.up-page input[type="file"]::-webkit-file-upload-button {
+  background: var(--panel-solid) !important;
+  color: var(--text-strong) !important;
   border: 1px solid rgba(var(--accent-rgb), .72) !important;
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin-right: 10px;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* Mismo patrón visual que los controles de s3.php. */
+.up-page .btn,
+.up-page .drive-navbar .btn {
+  background: var(--panel-solid) !important;
+  color: var(--text-strong) !important;
+  border: 1px solid rgba(var(--accent-rgb), .72) !important;
+  box-shadow: none !important;
+  font-weight: 700;
 }
 
 .up-page .btn.secondary {
-  background: transparent !important;
+  background: var(--panel-bg2) !important;
   color: var(--text-strong) !important;
-  border-color: var(--border) !important;
+  border-color: rgba(var(--accent-rgb), .48) !important;
 }
 
+.up-page .btn:hover,
 .up-page .btn.secondary:hover,
-.up-page .btn:hover {
-  box-shadow: var(--accent-glow);
+.up-page .drive-navbar .btn:hover,
+.up-page input[type="file"]::file-selector-button:hover,
+.up-page input[type="file"]::-webkit-file-upload-button:hover {
+  background: rgba(var(--accent-rgb), .08) !important;
+  color: var(--text-strong) !important;
+  border-color: var(--accent) !important;
+  box-shadow: var(--accent-glow) !important;
+}
+
+.up-page .btn:focus,
+.up-page .drive-navbar .btn:focus,
+.up-page input[type="file"]:focus {
+  outline: 2px solid rgba(var(--accent-rgb), .38) !important;
+  outline-offset: 2px;
+}
+
+.up-page .btn:disabled,
+.up-page .btn[disabled] {
+  background: var(--panel-bg2) !important;
+  color: var(--text-soft) !important;
+  border-color: rgba(var(--accent-rgb), .35) !important;
+  opacity: .72 !important;
 }
 
 .up-page .progress {
@@ -75,13 +118,13 @@ body.up-page {
 
 .up-page .pill {
   background: var(--panel-bg2) !important;
-  border-color: var(--border) !important;
+  border: 1px solid rgba(var(--accent-rgb), .34) !important;
 }
 
 .up-page .panel a[href*="target_user_id"] {
   display: block;
   padding: 14px 16px;
-  border: 1px solid var(--border) !important;
+  border: 1px solid rgba(var(--accent-rgb), .48) !important;
   border-radius: 12px;
   color: var(--text-strong) !important;
   text-decoration: none !important;
@@ -89,12 +132,12 @@ body.up-page {
 }
 
 .up-page .panel a[href*="target_user_id"]:hover {
-  border-color: rgba(var(--accent-rgb), .55) !important;
+  border-color: var(--accent) !important;
   background: rgba(var(--accent-rgb), .08) !important;
 }
 
 .up-page #resLink {
-  border-color: var(--border) !important;
+  border-color: rgba(var(--accent-rgb), .48) !important;
   color: var(--text-strong) !important;
   background: var(--panel-bg2) !important;
 }
@@ -102,10 +145,6 @@ body.up-page {
 body.ui-theme.theme-light.up-page .panel,
 body.ui-theme.theme-light.up-page .result {
   box-shadow: 0 10px 26px rgba(20, 45, 70, .08) !important;
-}
-
-body.ui-theme.theme-light.up-page .btn {
-  color: #fff !important;
 }
 
 @media (max-width: 767.98px) {

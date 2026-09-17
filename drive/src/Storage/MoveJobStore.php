@@ -3,10 +3,14 @@ declare(strict_types=1);
 
 namespace ArcadeCloud\Drive\Storage;
 
+use ArcadeCloud\Drive\Core\BackgroundWorkerLease;
 use RuntimeException;
 
 final class MoveJobStore
 {
+    private const QUEUED_STALE_SECONDS = 120;
+    private const ACTIVE_STALE_SECONDS = 1800;
+
     public function __construct(private string $directory)
     {
         $this->directory = rtrim($this->directory, '/');
@@ -162,6 +166,8 @@ final class MoveJobStore
 
     /**
      * Lista las tareas recientes del usuario para el centro unificado.
+     * Los estados activos huérfanos se convierten a failed cuando el worker
+     * ya no conserva su lease y el estado dejó de actualizarse.
      */
     public function recentForUser(int $userId, int $limit = 30): array
     {
@@ -180,6 +186,7 @@ final class MoveJobStore
 
             try {
                 $job = $this->get($id);
+                $job = $this->reconcileStaleJob($job);
             } catch (\Throwable) {
                 continue;
             }
@@ -195,6 +202,44 @@ final class MoveJobStore
         });
 
         return array_slice($rows, 0, $limit);
+    }
+
+    private function reconcileStaleJob(array $job): array
+    {
+        $status = strtolower((string)($job['status'] ?? ''));
+        if (!in_array($status, ['queued', 'pending', 'running', 'cancel_requested'], true)) {
+            return $job;
+        }
+
+        $id = strtolower((string)($job['id'] ?? ''));
+        if (!preg_match('/^[a-f0-9]{32}$/', $id)) {
+            return $job;
+        }
+
+        $updatedAt = strtotime((string)($job['updated_at'] ?? $job['created_at'] ?? ''));
+        if ($updatedAt === false) {
+            return $job;
+        }
+
+        $threshold = in_array($status, ['queued', 'pending'], true)
+            ? self::QUEUED_STALE_SECONDS
+            : self::ACTIVE_STALE_SECONDS;
+        if (time() - $updatedAt < $threshold) {
+            return $job;
+        }
+
+        $lease = new BackgroundWorkerLease();
+        if ($lease->isActive('move', $id)) {
+            return $job;
+        }
+
+        return $this->update($id, [
+            'status' => 'failed',
+            'message' => 'Proceso interrumpido: el worker ya no está activo. Puedes quitar esta tarea de Tareas.',
+            'error' => 'Worker huérfano detectado por el servidor.',
+            'finished_at' => gmdate('c'),
+            'interrupted_at' => gmdate('c'),
+        ]);
     }
 
     private function writeNew(string $id, array $job): void

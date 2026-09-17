@@ -1,10 +1,10 @@
 {
   "summary": {
-    "php_total": 356,
-    "php_class_modules": 208,
-    "php_needs_migration": 37,
-    "js_total": 45,
-    "js_class_modules": 41,
+    "php_total": 360,
+    "php_class_modules": 210,
+    "php_needs_migration": 38,
+    "js_total": 46,
+    "js_class_modules": 42,
     "js_needs_migration": 11
   },
   "php": [
@@ -132,6 +132,30 @@
       "namespace": false,
       "issues": [
         "global functions: fail, isRoot, base64UrlEncode, requireServerOperator, base64UrlDecode, nodeIdFromPublicKey, normalizeNodeName, readConfig"
+      ]
+    },
+    {
+      "path": "drive/bin/arcadecloud-drive-updater.php",
+      "lines": 116,
+      "kind": "procedural endpoint",
+      "classes": 0,
+      "functions": [
+        "fail",
+        "readConfig",
+        "runAs",
+        "git",
+        "assertRepository",
+        "currentState"
+      ],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": [
+        "global functions: fail, readConfig, runAs, git, assertRepository, currentState"
       ]
     },
     {
@@ -1710,6 +1734,23 @@
       "issues": []
     },
     {
+      "path": "drive/src/Admin/ArcadeCloudUpdaterService.php",
+      "lines": 85,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [
+        "SERVER"
+      ],
+      "db": true,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
       "path": "drive/src/Admin/ManagedRuntimeEnvironment.php",
       "lines": 213,
       "kind": "class/module",
@@ -3043,6 +3084,21 @@
       "s3": false,
       "bootstrap": false,
       "html": true,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Http/Controller/ArcadeCloudUpdateController.php",
+      "lines": 48,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
       "namespace": true,
       "issues": []
     },
@@ -5280,6 +5336,21 @@
       "issues": []
     },
     {
+      "path": "drive/update.php",
+      "lines": 11,
+      "kind": "thin endpoint",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
       "path": "drive/upload/UploadFactory.php",
       "lines": 60,
       "kind": "class/module",
@@ -5557,6 +5628,20 @@
       "issues": []
     },
     {
+      "path": "drive/js/arcadecloud-updater.js",
+      "lines": 192,
+      "kind": "class/module",
+      "classes": [
+        "ArcadeCloudUpdaterModule"
+      ],
+      "functions": [],
+      "window_assign": [],
+      "window_func": [],
+      "top_vars": [],
+      "iife": false,
+      "issues": []
+    },
+    {
       "path": "drive/js/arcadelink-share.js",
       "lines": 384,
       "kind": "class/module",
@@ -5801,7 +5886,7 @@
     },
     {
       "path": "drive/js/estilo.js",
-      "lines": 351,
+      "lines": 267,
       "kind": "class/module",
       "classes": [
         "EstiloModule"

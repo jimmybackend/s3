@@ -4,11 +4,11 @@
 
 ## Resumen
 
-- PHP analizados: **356**
-- PHP que ya contienen clases/interfaces: **208**
-- PHP marcados para migración/revisión: **37**
-- JavaScript analizados: **45**
-- JavaScript que ya contienen clases: **41**
+- PHP analizados: **360**
+- PHP que ya contienen clases/interfaces: **210**
+- PHP marcados para migración/revisión: **38**
+- JavaScript analizados: **46**
+- JavaScript que ya contienen clases: **42**
 - JavaScript marcados para migración/revisión: **11**
 
 ## Criterio
@@ -29,6 +29,7 @@
 | `drive/aws.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/background_tasks.php` | 18 | thin endpoint | 0 | — | — | — | — |
 | `drive/bin/arcadecloud-drive-admin-helper.php` | 294 | procedural endpoint | 0 | — | — | — | global functions: fail, isRoot, base64UrlEncode, requireServerOperator, base64UrlDecode, nodeIdFromPublicKey, normalizeNodeName, readConfig |
+| `drive/bin/arcadecloud-drive-updater.php` | 116 | procedural endpoint | 0 | — | — | — | global functions: fail, readConfig, runAs, git, assertRepository, currentState |
 | `drive/bin/federation_catalog_migrate.php` | 45 | thin endpoint | 0 | — | — | — | — |
 | `drive/bin/federation_endpoint_refresh.php` | 81 | thin endpoint | 0 | — | — | — | — |
 | `drive/bin/federation_https_reconcile.php` | 337 | procedural endpoint | 0 | — | — | — | global functions: failHttps, optionValue, runFixed, readRuntimeJson, runtimeValue, writeRuntimeJsonInPlace, writeAtomicText, detectEc2PublicIpv4 |
@@ -130,6 +131,7 @@
 | `drive/src/Activity/PollyTaskReconciler.php` | 308 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Activity/TranscriptionCostAttribution.php` | 117 | class/module | 1 | — | — | — | — |
 | `drive/src/Activity/TranscriptionReconciler.php` | 315 | class/module | 1 | — | ⚠️ | — | — |
+| `drive/src/Admin/ArcadeCloudUpdaterService.php` | 85 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Admin/ManagedRuntimeEnvironment.php` | 213 | class/module | 1 | — | — | — | — |
 | `drive/src/Admin/PrivilegedServerHelper.php` | 123 | class/module | 1 | — | — | — | — |
 | `drive/src/Admin/ServerSettingsAdminService.php` | 211 | class/module | 1 | — | ⚠️ | — | — |
@@ -219,6 +221,7 @@
 | `drive/src/Http/ByteRange.php` | 45 | procedural endpoint | 0 | — | — | — | — |
 | `drive/src/Http/Controller/AbstractJsonController.php` | 69 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/ActivityCostController.php` | 81 | class/module | 1 | — | — | — | — |
+| `drive/src/Http/Controller/ArcadeCloudUpdateController.php` | 48 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/AuthController.php` | 94 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/AwsCostController.php` | 61 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/AwsFileController.php` | 338 | class/module | 1 | — | — | — | — |
@@ -362,6 +365,7 @@
 | `drive/unlock_file.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/up-clean.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/up.php` | 783 | view/entrypoint | 0 | ⚠️ | — | — | — |
+| `drive/update.php` | 11 | thin endpoint | 0 | — | — | — | — |
 | `drive/upload/UploadFactory.php` | 60 | class/module | 1 | — | — | — | — |
 | `drive/upload/core/UploadResponse.php` | 15 | class/module | 1 | — | — | — | — |
 | `drive/upload/core/UploaderInterface.php` | 11 | class/module | 0 | — | — | — | — |
@@ -385,6 +389,7 @@
 |---|---:|---|---|---|---|---|
 | `drive/js/actualizar-hora.js` | 36 | class/module | ActualizarHoraModule | — | — | — |
 | `drive/js/ai-search.js` | 187 | class/module | DriveAiSearchModule | — | — | — |
+| `drive/js/arcadecloud-updater.js` | 192 | class/module | ArcadeCloudUpdaterModule | — | — | — |
 | `drive/js/arcadelink-share.js` | 384 | class/module | ArcadeLinkShareModule | — | — | — |
 | `drive/js/archivos.js` | 2155 | class/module | ArchivosModule | — | abrirModalRenombrarArchivo, cerrarModalCompartir, setFileSecurity | window functions: abrirModalRenombrarArchivo, cerrarModalCompartir, setFileSecurity |
 | `drive/js/audiovideo.js` | 619 | class/module | AudiovideoModule | — | audioNext, audioPrev, reproducirVideoDesde, videoNext, videoPlayPause, videoPrev | window functions: audioNext, audioPrev, reproducirVideoDesde, videoNext, videoPlayPause, videoPrev, wavePlayPause |
@@ -397,7 +402,7 @@
 | `drive/js/editar-txt.js` | 68 | class/module | EditarTxtModule | — | — | — |
 | `drive/js/elimina-multiple.js` | 104 | class/module | EliminaMultipleModule | — | — | — |
 | `drive/js/elimina-uno.js` | 122 | class/module | EliminaUnoModule | — | — | — |
-| `drive/js/estilo.js` | 351 | class/module | EstiloModule | — | — | — |
+| `drive/js/estilo.js` | 267 | class/module | EstiloModule | — | — | — |
 | `drive/js/federation-footer.js` | 341 | class/module | FederationFooterModule | — | — | — |
 | `drive/js/federation-page.js` | 95 | class/module | FederationPageModule | — | — | — |
 | `drive/js/federation-portal.js` | 416 | class/module | FederationPortalModule | — | — | — |

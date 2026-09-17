@@ -225,6 +225,7 @@
 | `drive/src/Http/Controller/AuthController.php` | ninguna |
 | `drive/src/Http/Controller/AwsCostController.php` | ninguna |
 | `drive/src/Http/Controller/AwsFileController.php` | ninguna |
+| `drive/src/Http/Controller/BackgroundTaskCompatibilityController.php` | ninguna |
 | `drive/src/Http/Controller/BackgroundTaskController.php` | ninguna |
 | `drive/src/Http/Controller/FederationAccessController.php` | ninguna |
 | `drive/src/Http/Controller/FederationBundleController.php` | `drive/tests/arcadelink_bulk_contract_regression.php` |

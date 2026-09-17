@@ -190,7 +190,7 @@
     },
     {
       "path": "drive/background_tasks.php",
-      "size": 265,
+      "size": 427,
       "active": false,
       "references": [
         "drive/js/background-tasks.js"
@@ -1695,6 +1695,12 @@
     {
       "path": "drive/src/Http/Controller/AwsFileController.php",
       "size": 11662,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Http/Controller/BackgroundTaskCompatibilityController.php",
+      "size": 4180,
       "active": false,
       "references": []
     },

@@ -33,6 +33,7 @@ final class PollyTaskReconciler
             'pending' => count($pending),
             'completed' => 0,
             'failed' => 0,
+            'cancelled' => 0,
             'in_progress' => 0,
             'errors' => [],
         ];
@@ -44,6 +45,8 @@ final class PollyTaskReconciler
                     $stats['completed']++;
                 } elseif ($status === 'failed') {
                     $stats['failed']++;
+                } elseif ($status === 'cancelled') {
+                    $stats['cancelled']++;
                 } else {
                     $stats['in_progress']++;
                 }
@@ -74,6 +77,10 @@ final class PollyTaskReconciler
         }
         if ($taskId === '' || $correlation === '') {
             throw new RuntimeException('Evento Polly sin task_id/correlación persistente.');
+        }
+
+        if (strtolower((string)($metadata['phase'] ?? '')) === 'cancelled') {
+            return $this->reconcileCancelled($eventId, $userId, $fileKey, $taskId, $metadata);
         }
 
         $started = microtime(true);
@@ -132,6 +139,39 @@ final class PollyTaskReconciler
         return 'completed';
     }
 
+    private function reconcileCancelled(
+        int $eventId,
+        int $userId,
+        string $fileKey,
+        string $taskId,
+        array $metadata
+    ): string {
+        $result = $this->files->discardTask($userId, [
+            'task_id' => $taskId,
+            'from_key' => $fileKey,
+        ]);
+
+        $providerStatus = strtolower((string)($result['task_status'] ?? 'unknown'));
+        $cleanupDone = ($result['cleanup_done'] ?? false) === true;
+        $next = array_merge($metadata, [
+            'phase' => 'cancelled',
+            'task_id' => $taskId,
+            'task_status' => 'cancelled',
+            'provider_status' => $providerStatus,
+            'cleanup_pending' => !$cleanupDone,
+            'cleanup_done' => $cleanupDone,
+            'task_center_updated_at' => gmdate('c'),
+            'reconciled_by' => 'server_timer',
+        ]);
+        if ($cleanupDone) {
+            $next['cleanup_done_at'] = gmdate('c');
+            $next['deleted_temp'] = ($result['deleted_temp'] ?? false) === true;
+        }
+
+        $this->updateMetadata($eventId, $next, false);
+        return 'cancelled';
+    }
+
     private function pendingEvents(int $limit): array
     {
         $sql = "SELECT e.id_, e.user_id_, e.FileId, e.CorrelationId, e.MetadataJson, e.CreatedAt,
@@ -148,6 +188,10 @@ final class PollyTaskReconciler
                   AND (
                     e.MetadataJson LIKE '%\"phase\":\"started\"%'
                     OR e.MetadataJson LIKE '%\"phase\":\"running\"%'
+                    OR (
+                        e.MetadataJson LIKE '%\"phase\":\"cancelled\"%'
+                        AND e.MetadataJson LIKE '%\"cleanup_pending\":true%'
+                    )
                   )
                 ORDER BY e.CreatedAt ASC, e.id_ ASC
                 LIMIT " . (int)$limit;
@@ -161,21 +205,22 @@ final class PollyTaskReconciler
 
     private function updateRunning(int $eventId, string $taskId, string $status, array $previous): void
     {
-        $metadata = [
+        $metadata = array_merge($previous, [
             'phase' => 'running',
             'task_id' => $taskId,
             'task_status' => $status !== '' ? $status : 'unknown',
             'engine' => (string)($previous['engine'] ?? ''),
             'characters' => max(0, (int)($previous['characters'] ?? 0)),
             'output_name' => (string)($previous['output_name'] ?? 'audio'),
+            'task_center_updated_at' => gmdate('c'),
             'reconciled_by' => 'server_timer',
-        ];
+        ]);
         $this->updateMetadata($eventId, $metadata, false);
     }
 
     private function markFailed(int $eventId, string $taskId, string $reason, array $previous): void
     {
-        $metadata = [
+        $metadata = array_merge($previous, [
             'phase' => 'failed',
             'task_id' => $taskId,
             'task_status' => 'failed',
@@ -183,8 +228,9 @@ final class PollyTaskReconciler
             'characters' => max(0, (int)($previous['characters'] ?? 0)),
             'output_name' => (string)($previous['output_name'] ?? 'audio'),
             'reason' => substr($reason, 0, 160),
+            'task_center_updated_at' => gmdate('c'),
             'reconciled_by' => 'server_timer',
-        ];
+        ]);
         $this->updateMetadata($eventId, $metadata, true);
     }
 

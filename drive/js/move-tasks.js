@@ -168,7 +168,7 @@ class DriveMoveTasks {
         left: '1rem',
         right: '1rem',
         bottom: '1rem',
-        zIndex: '2050',
+        zIndex: '2200',
         maxWidth: '520px',
         marginLeft: 'auto'
       });
@@ -230,7 +230,8 @@ window.ARCADECLOUD_UNIFIED_TASK_CENTER = true;
 
 (function loadBackgroundModules(win, doc) {
   const scripts = [
-    ['background-tasks', 'js/background-tasks.js?v=20260916-2'],
+    ['background-tasks', 'js/background-tasks.js?v=20260916-3'],
+    ['background-task-feedback', 'js/background-task-feedback.js?v=20260916-1'],
     ['polly-background', 'js/polly-background.js?v=20260916-4'],
     ['transcribe-background', 'js/transcribe-background.js?v=20260916-1']
   ];

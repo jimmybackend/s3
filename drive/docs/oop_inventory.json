@@ -1,11 +1,11 @@
 {
   "summary": {
-    "php_total": 351,
-    "php_class_modules": 205,
+    "php_total": 352,
+    "php_class_modules": 206,
     "php_needs_migration": 37,
-    "js_total": 43,
+    "js_total": 44,
     "js_class_modules": 41,
-    "js_needs_migration": 9
+    "js_needs_migration": 10
   },
   "php": [
     {
@@ -87,7 +87,7 @@
     },
     {
       "path": "drive/background_tasks.php",
-      "lines": 10,
+      "lines": 18,
       "kind": "thin endpoint",
       "classes": 0,
       "functions": [],
@@ -3062,6 +3062,21 @@
       "issues": []
     },
     {
+      "path": "drive/src/Http/Controller/BackgroundTaskCompatibilityController.php",
+      "lines": 123,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": true,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
       "path": "drive/src/Http/Controller/BackgroundTaskController.php",
       "lines": 754,
       "kind": "class/module",
@@ -5589,6 +5604,20 @@
       "issues": []
     },
     {
+      "path": "drive/js/background-task-feedback.js",
+      "lines": 120,
+      "kind": "procedural script",
+      "classes": [],
+      "functions": [],
+      "window_assign": [],
+      "window_func": [],
+      "top_vars": [],
+      "iife": false,
+      "issues": [
+        "no ES class"
+      ]
+    },
+    {
       "path": "drive/js/background-tasks.js",
       "lines": 631,
       "kind": "class/module",
@@ -5872,7 +5901,7 @@
     },
     {
       "path": "drive/js/move-tasks.js",
-      "lines": 247,
+      "lines": 248,
       "kind": "class/module",
       "classes": [
         "DriveMoveTasks"

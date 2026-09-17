@@ -4,12 +4,12 @@
 
 ## Resumen
 
-- PHP analizados: **351**
-- PHP que ya contienen clases/interfaces: **205**
+- PHP analizados: **352**
+- PHP que ya contienen clases/interfaces: **206**
 - PHP marcados para migración/revisión: **37**
-- JavaScript analizados: **43**
+- JavaScript analizados: **44**
 - JavaScript que ya contienen clases: **41**
-- JavaScript marcados para migración/revisión: **9**
+- JavaScript marcados para migración/revisión: **10**
 
 ## Criterio
 
@@ -27,7 +27,7 @@
 | `drive/api/upload.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/app_bootstrap.php` | 53 | procedural endpoint | 0 | — | ⚠️ | — | DB in endpoint |
 | `drive/aws.php` | 10 | thin endpoint | 0 | — | — | — | — |
-| `drive/background_tasks.php` | 10 | thin endpoint | 0 | — | — | — | — |
+| `drive/background_tasks.php` | 18 | thin endpoint | 0 | — | — | — | — |
 | `drive/bin/arcadecloud-drive-admin-helper.php` | 294 | procedural endpoint | 0 | — | — | — | global functions: fail, isRoot, base64UrlEncode, requireServerOperator, base64UrlDecode, nodeIdFromPublicKey, normalizeNodeName, readConfig |
 | `drive/bin/federation_catalog_migrate.php` | 45 | thin endpoint | 0 | — | — | — | — |
 | `drive/bin/federation_endpoint_refresh.php` | 81 | thin endpoint | 0 | — | — | — | — |
@@ -220,6 +220,7 @@
 | `drive/src/Http/Controller/AuthController.php` | 94 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/AwsCostController.php` | 61 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/AwsFileController.php` | 338 | class/module | 1 | — | — | — | — |
+| `drive/src/Http/Controller/BackgroundTaskCompatibilityController.php` | 123 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Http/Controller/BackgroundTaskController.php` | 754 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Http/Controller/FederationAccessController.php` | 123 | class/module | 1 | ⚠️ | — | — | — |
 | `drive/src/Http/Controller/FederationBundleController.php` | 146 | class/module | 1 | — | — | — | — |
@@ -384,6 +385,7 @@
 | `drive/js/archivos.js` | 2155 | class/module | ArchivosModule | — | abrirModalRenombrarArchivo, cerrarModalCompartir, setFileSecurity | window functions: abrirModalRenombrarArchivo, cerrarModalCompartir, setFileSecurity |
 | `drive/js/audiovideo.js` | 619 | class/module | AudiovideoModule | — | audioNext, audioPrev, reproducirVideoDesde, videoNext, videoPlayPause, videoPrev | window functions: audioNext, audioPrev, reproducirVideoDesde, videoNext, videoPlayPause, videoPrev, wavePlayPause |
 | `drive/js/aws-comprehend.js` | 342 | class/module | AwsComprehendModule, AwsFileActionRouter | — | — | — |
+| `drive/js/background-task-feedback.js` | 120 | procedural script | — | — | — | no ES class |
 | `drive/js/background-tasks.js` | 631 | class/module | BackgroundTaskCenter | — | — | — |
 | `drive/js/carpetas.js` | 1105 | class/module | CarpetasModule | — | actualizarBloqueCarpetas | window functions: actualizarBloqueCarpetas |
 | `drive/js/descarga-multiple.js` | 114 | class/module | DescargaMultipleModule | — | — | — |
@@ -401,7 +403,7 @@
 | `drive/js/imagenes.js` | 535 | class/module | ImagenesModule | — | getGaleriaGridSize, setGaleriaGridSize | window functions: getGaleriaGridSize, setGaleriaGridSize |
 | `drive/js/media-floating.js` | 685 | procedural script | — | — | — | no ES class |
 | `drive/js/mediaFloating.js` | 38 | class/module | MediaFloatingModule | — | — | — |
-| `drive/js/move-tasks.js` | 247 | class/module | DriveMoveTasks | — | — | — |
+| `drive/js/move-tasks.js` | 248 | class/module | DriveMoveTasks | — | — | — |
 | `drive/js/obtenerFiltros.js` | 125 | class/module | ObtenerFiltrosModule | — | — | — |
 | `drive/js/pdf-pantalla-completa.js` | 45 | class/module | PdfPantallaCompletaModule | — | — | — |
 | `drive/js/polly-background.js` | 301 | class/module | PollyBackgroundModule | — | — | — |

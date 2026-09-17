@@ -14,6 +14,13 @@ require dirname(__DIR__) . '/app_bootstrap.php';
 
 use ArcadeCloud\Drive\Activity\ActivityCostRecorder;
 use ArcadeCloud\Drive\Core\ApplicationKernel;
+use ArcadeCloud\Drive\Core\BackgroundWorkerLease;
+
+$lease = new BackgroundWorkerLease();
+$leaseHandle = $lease->acquire('move', $jobId);
+if ($leaseHandle === null) {
+    exit(0);
+}
 
 try {
     $app = ApplicationKernel::app();
@@ -118,4 +125,9 @@ try {
 } catch (Throwable $e) {
     fwrite(STDERR, 'Move job worker error: ' . $e->getMessage() . PHP_EOL);
     exit(1);
+} finally {
+    if (is_resource($leaseHandle)) {
+        @flock($leaseHandle, LOCK_UN);
+        @fclose($leaseHandle);
+    }
 }

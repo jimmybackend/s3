@@ -363,7 +363,7 @@
     },
     {
       "path": "drive/bin/sync_worker.php",
-      "lines": 162,
+      "lines": 185,
       "kind": "endpoint with logic",
       "classes": 0,
       "functions": [],
@@ -1651,7 +1651,7 @@
     },
     {
       "path": "drive/src/Activity/PollyTaskReconciler.php",
-      "lines": 257,
+      "lines": 303,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -1681,7 +1681,7 @@
     },
     {
       "path": "drive/src/Activity/TranscriptionReconciler.php",
-      "lines": 311,
+      "lines": 315,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -2163,7 +2163,7 @@
     },
     {
       "path": "drive/src/Aws/PollyFileService.php",
-      "lines": 467,
+      "lines": 546,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -3063,7 +3063,7 @@
     },
     {
       "path": "drive/src/Http/Controller/BackgroundTaskController.php",
-      "lines": 650,
+      "lines": 754,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -4095,7 +4095,7 @@
     },
     {
       "path": "drive/src/Storage/MoveJobStore.php",
-      "lines": 309,
+      "lines": 315,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -4200,7 +4200,7 @@
     },
     {
       "path": "drive/src/Sync/SyncJobStore.php",
-      "lines": 258,
+      "lines": 263,
       "kind": "class/module",
       "classes": 1,
       "functions": [],

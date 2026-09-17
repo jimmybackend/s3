@@ -1,6 +1,7 @@
 /* ArcadeCloud Drive · herramientas personales/administrativas
- * Reutiliza las variables visuales de css/styles.css para que aws.php y ec2.php
- * se sientan parte de la misma aplicación en tema claro u oscuro.
+ * Contrato visual compartido por aws.php y ec2.php.
+ * El texto funcional prioriza legibilidad y las acciones usan siempre
+ * el color de acento elegido por el usuario como contorno visible.
  */
 
 body.personal-tool-page {
@@ -40,7 +41,7 @@ body.personal-tool-page {
   max-width: 820px;
 }
 
-/* Texto funcional: no depender del acento ni de grises tenues. */
+/* Texto de trabajo: nunca gris tenue. */
 .personal-tool-page h1,
 .personal-tool-page h2,
 .personal-tool-page h3,
@@ -50,29 +51,47 @@ body.personal-tool-page {
 .personal-tool-page label,
 .personal-tool-page p,
 .personal-tool-page li,
-.personal-tool-page span:not(.state-running):not(.state-stopped):not(.state-error):not(.state-other),
-.personal-tool-page .small {
-  color: var(--text-strong) !important;
-}
-
+.personal-tool-page .small,
 .personal-tool-page .muted,
 .personal-tool-page .note,
 .personal-tool-page .copy-hint,
-.personal-tool-page .text-muted {
-  color: var(--text) !important;
+.personal-tool-page .text-muted,
+.personal-tool-page form.row > label,
+.personal-tool-page .card > .note,
+.personal-tool-page .card .note {
+  color: var(--text-strong) !important;
   opacity: 1 !important;
+  text-shadow: none !important;
 }
 
-/* En claro un acento amarillo no debe convertirse en texto amarillo sobre blanco. */
+.personal-tool-page form.row > label,
+.personal-tool-page .personal-card label {
+  font-weight: 700;
+}
+
+/* Enlaces reconocibles incluso con acento amarillo sobre fondo claro. */
 .personal-tool-page a:not(.btn):not(.navbar-brand) {
   color: var(--text-strong) !important;
+  text-decoration-line: underline !important;
   text-decoration-color: var(--accent) !important;
-  text-decoration-thickness: 1px;
+  text-decoration-thickness: 2px !important;
   text-underline-offset: 3px;
+  font-weight: 650;
 }
 
-.personal-tool-page a:not(.btn):not(.navbar-brand):hover {
+.personal-tool-page .personal-card nav a {
+  display: inline-block;
+  padding: 2px 3px;
+  border-radius: 4px;
+  text-decoration-line: underline !important;
+  text-decoration-color: var(--accent) !important;
+  text-decoration-thickness: 2px !important;
+}
+
+.personal-tool-page a:not(.btn):not(.navbar-brand):hover,
+.personal-tool-page .personal-card nav a:hover {
   color: var(--text-strong) !important;
+  background: rgba(var(--accent-rgb), .09) !important;
   text-decoration-color: var(--accent) !important;
   text-shadow: none !important;
 }
@@ -82,14 +101,14 @@ body.personal-tool-page {
 .personal-tool-page textarea {
   background: var(--bg3) !important;
   color: var(--text-strong) !important;
-  border: 1px solid var(--accent) !important;
+  border: 2px solid var(--accent) !important;
   opacity: 1 !important;
 }
 
 .personal-tool-page input::placeholder,
 .personal-tool-page textarea::placeholder {
   color: var(--text) !important;
-  opacity: .88 !important;
+  opacity: 1 !important;
 }
 
 .personal-tool-page select option {
@@ -105,13 +124,21 @@ body.personal-tool-page {
   outline: none !important;
 }
 
-/* Contrato visual igual al Drive: fondo del panel + contorno del color elegido. */
+/* Toda acción conserva SIEMPRE el contorno del color seleccionado. */
 .personal-tool-page button,
 .personal-tool-page .tool-button,
-.personal-tool-page .drive-navbar .btn {
+.personal-tool-page .btn,
+.personal-tool-page .drive-navbar .btn,
+.personal-tool-page td.actions > button,
+.personal-tool-page td.rds-actions > button,
+.personal-tool-page form.row > button,
+.personal-tool-page .personal-card form button {
   background: var(--panel-solid) !important;
   color: var(--text-strong) !important;
   border: 2px solid var(--accent) !important;
+  border-color: var(--accent) !important;
+  border-style: solid !important;
+  border-width: 2px !important;
   font-weight: 700;
   opacity: 1 !important;
   box-shadow: none !important;
@@ -119,7 +146,12 @@ body.personal-tool-page {
 
 .personal-tool-page button:hover,
 .personal-tool-page .tool-button:hover,
-.personal-tool-page .drive-navbar .btn:hover {
+.personal-tool-page .btn:hover,
+.personal-tool-page .drive-navbar .btn:hover,
+.personal-tool-page td.actions > button:hover,
+.personal-tool-page td.rds-actions > button:hover,
+.personal-tool-page form.row > button:hover,
+.personal-tool-page .personal-card form button:hover {
   background: rgba(var(--accent-rgb), .10) !important;
   color: var(--text-strong) !important;
   border-color: var(--accent) !important;
@@ -128,19 +160,27 @@ body.personal-tool-page {
 
 .personal-tool-page button:focus,
 .personal-tool-page .tool-button:focus,
-.personal-tool-page .drive-navbar .btn:focus {
+.personal-tool-page .btn:focus,
+.personal-tool-page .drive-navbar .btn:focus,
+.personal-tool-page td.actions > button:focus,
+.personal-tool-page td.rds-actions > button:focus,
+.personal-tool-page .personal-card form button:focus {
   color: var(--text-strong) !important;
-  outline: 2px solid var(--accent) !important;
+  border-color: var(--accent) !important;
+  outline: 2px solid rgba(var(--accent-rgb), .38) !important;
   outline-offset: 2px;
 }
 
+/* Deshabilitado no significa invisible: el borde de acento se conserva. */
 .personal-tool-page button:disabled,
 .personal-tool-page .tool-button:disabled,
+.personal-tool-page .btn:disabled,
 .personal-tool-page button[disabled] {
   background: var(--panel-bg2) !important;
   color: var(--text) !important;
-  border-color: var(--accent) !important;
-  opacity: .58 !important;
+  border: 2px solid var(--accent) !important;
+  opacity: 1 !important;
+  cursor: not-allowed;
 }
 
 .personal-tool-page .result,
@@ -151,17 +191,16 @@ body.personal-tool-page {
   border-color: var(--accent) !important;
 }
 
+.personal-tool-page .result {
+  border: 2px solid var(--accent) !important;
+}
+
 .personal-tool-page .otp {
   color: var(--text-strong) !important;
 }
 
 .personal-tool-page .otp:focus {
   outline-color: var(--accent) !important;
-}
-
-.personal-tool-page .copy-hint,
-.personal-tool-page .copy-hint.copied {
-  color: var(--text) !important;
 }
 
 .personal-tool-page table {
@@ -178,7 +217,7 @@ body.personal-tool-page {
   background: var(--panel-solid) !important;
 }
 
-/* Estados: color semántico + borde visible; nunca sólo gris tenue. */
+/* Estados conservan semántica y alta legibilidad. */
 .personal-tool-page .badge,
 .personal-tool-page .state-running,
 .personal-tool-page .state-stopped,
@@ -211,7 +250,6 @@ body.personal-tool-page {
   border-color: var(--accent) !important;
 }
 
-/* Equivalentes más oscuros en claro para que verde/amarillo/rojo sigan siendo legibles. */
 body.ui-theme.theme-light.personal-tool-page .state-running {
   color: #08733a !important;
   border-color: #08733a !important;
@@ -259,6 +297,7 @@ body.ui-theme.theme-light.personal-tool-page .error {
   color: var(--text-strong) !important;
   border: 2px solid var(--accent) !important;
   background: var(--panel-solid) !important;
+  text-decoration: none !important;
 }
 
 body.ui-theme.theme-light.personal-tool-page .personal-card,

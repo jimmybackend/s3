@@ -5906,7 +5906,7 @@
     },
     {
       "path": "drive/js/folder-document.js",
-      "lines": 412,
+      "lines": 419,
       "kind": "encapsulated legacy module",
       "classes": [],
       "functions": [],

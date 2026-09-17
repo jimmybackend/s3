@@ -227,6 +227,10 @@ final class TranscriptionReconciler
                   AND e.Status = 'ok'
                   AND e.CorrelationId IS NOT NULL
                   AND e.CorrelationId LIKE 'transcribe:%'
+                  AND (
+                       e.MetadataJson IS NULL
+                       OR e.MetadataJson NOT LIKE '%\"phase\":\"cancelled\"%'
+                  )
                 ORDER BY e.CreatedAt ASC, e.id_ ASC
                 LIMIT " . (int)$limit;
 

@@ -76,6 +76,7 @@
         "drive/bin/federation_endpoint_refresh.php",
         "drive/bin/federation_replica_presence.php",
         "drive/bin/federation_sync.php",
+        "drive/bin/move_job_worker.php",
         "drive/bin/polly_reconcile.php",
         "drive/bin/sync_node_worker.php",
         "drive/bin/sync_schema_migrate.php",
@@ -189,7 +190,7 @@
     },
     {
       "path": "drive/background_tasks.php",
-      "size": 262,
+      "size": 265,
       "active": false,
       "references": [
         "drive/js/background-tasks.js"
@@ -276,10 +277,20 @@
       ]
     },
     {
+      "path": "drive/bin/move_job_worker.php",
+      "size": 3784,
+      "active": false,
+      "references": [
+        "drive/src/Application/BackgroundWorkerLauncher.php"
+      ]
+    },
+    {
       "path": "drive/bin/polly_reconcile.php",
       "size": 1418,
       "active": false,
-      "references": []
+      "references": [
+        "drive/src/Application/BackgroundWorkerLauncher.php"
+      ]
     },
     {
       "path": "drive/bin/sync_node_worker.php",
@@ -295,9 +306,10 @@
     },
     {
       "path": "drive/bin/sync_worker.php",
-      "size": 3810,
+      "size": 4624,
       "active": false,
       "references": [
+        "drive/src/Application/BackgroundWorkerLauncher.php",
         "drive/src/Http/Controller/SyncController.php",
         "drive/src/Sync/SyncJobStore.php"
       ]
@@ -306,7 +318,9 @@
       "path": "drive/bin/transcribe_reconcile.php",
       "size": 1604,
       "active": false,
-      "references": []
+      "references": [
+        "drive/src/Application/BackgroundWorkerLauncher.php"
+      ]
     },
     {
       "path": "drive/bin/upload_cleanup.php",
@@ -1057,6 +1071,12 @@
       "references": []
     },
     {
+      "path": "drive/src/Application/BackgroundWorkerLauncher.php",
+      "size": 2998,
+      "active": false,
+      "references": []
+    },
+    {
       "path": "drive/src/Application/DrivePageService.php",
       "size": 1267,
       "active": false,
@@ -1114,7 +1134,7 @@
     },
     {
       "path": "drive/src/Application/MoveJobService.php",
-      "size": 4000,
+      "size": 7544,
       "active": false,
       "references": []
     },
@@ -1675,7 +1695,7 @@
     },
     {
       "path": "drive/src/Http/Controller/BackgroundTaskController.php",
-      "size": 15472,
+      "size": 28526,
       "active": false,
       "references": []
     },
@@ -1802,7 +1822,7 @@
     },
     {
       "path": "drive/src/Http/Controller/MoveJobController.php",
-      "size": 10059,
+      "size": 6846,
       "active": false,
       "references": []
     },
@@ -2102,7 +2122,7 @@
     },
     {
       "path": "drive/src/Storage/MoveJobStore.php",
-      "size": 6097,
+      "size": 7962,
       "active": false,
       "references": []
     },
@@ -2144,7 +2164,7 @@
     },
     {
       "path": "drive/src/Sync/SyncJobStore.php",
-      "size": 4447,
+      "size": 5089,
       "active": false,
       "references": []
     },

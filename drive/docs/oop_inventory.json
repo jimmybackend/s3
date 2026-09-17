@@ -1651,7 +1651,7 @@
     },
     {
       "path": "drive/src/Activity/PollyTaskReconciler.php",
-      "lines": 303,
+      "lines": 308,
       "kind": "class/module",
       "classes": 1,
       "functions": [],

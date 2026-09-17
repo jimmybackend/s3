@@ -20,6 +20,7 @@ use RuntimeException;
 final class BackgroundTaskController extends AbstractJsonController
 {
     private const TERMINAL_HISTORY_SECONDS = 86400;
+    private const TRANSCRIBE_SCAN_LIMIT = 2000;
 
     public function dispatch(): never
     {
@@ -181,9 +182,13 @@ final class BackgroundTaskController extends AbstractJsonController
             }
 
             $terminal = in_array($status, ['completed', 'failed', 'cancelled'], true);
-            $actions = $terminal
-                ? [$this->uiAction('dismiss', 'Quitar de Tareas', 'muted', true)]
-                : [$this->uiAction('reconcile', 'Revisar ahora', 'primary', false)];
+            $actions = [];
+            if ($terminal) {
+                $actions[] = $this->uiAction('dismiss', 'Eliminar de Tareas', 'muted', true);
+            } else {
+                $actions[] = $this->uiAction('reconcile', 'Revisar ahora', 'primary', false);
+                $actions[] = $this->uiAction('cancel', 'Cancelar', 'danger', true);
+            }
 
             $tasks[] = [
                 'id' => $kind . ':' . $taskId,
@@ -240,13 +245,16 @@ final class BackgroundTaskController extends AbstractJsonController
 
             $actions = [];
             if (in_array($status, ['queued', 'pending', 'failed', 'cancelled'], true)) {
-                $actions[] = $this->uiAction('run_now', 'Ejecutar ahora', 'primary', false);
+                $actions[] = $this->uiAction('run_now', 'Iniciar ahora', 'primary', false);
             }
-            if (in_array($status, ['queued', 'pending', 'running'], true)) {
+            if (in_array($status, ['queued', 'pending'], true)) {
+                $actions[] = $this->uiAction('cancel', 'Cancelar', 'danger', true);
+                $actions[] = $this->uiAction('delete', 'Eliminar de Tareas', 'muted', true);
+            } elseif ($status === 'running') {
                 $actions[] = $this->uiAction('cancel', 'Detener', 'danger', true);
             }
             if (in_array($status, ['completed', 'failed', 'cancelled'], true)) {
-                $actions[] = $this->uiAction('delete', 'Quitar de Tareas', 'muted', true);
+                $actions[] = $this->uiAction('delete', 'Eliminar de Tareas', 'muted', true);
             }
 
             $jobId = (string)($job['job_id'] ?? '');
@@ -304,13 +312,16 @@ final class BackgroundTaskController extends AbstractJsonController
 
             $actions = [];
             if ($status === 'queued' || ($status === 'cancelled' && $processed === 0)) {
-                $actions[] = $this->uiAction('run_now', 'Ejecutar ahora', 'primary', false);
+                $actions[] = $this->uiAction('run_now', 'Iniciar ahora', 'primary', false);
             }
-            if (in_array($status, ['queued', 'pending'], true) || ($status === 'running' && $type === 'files')) {
+            if (in_array($status, ['queued', 'pending'], true)) {
+                $actions[] = $this->uiAction('cancel', 'Cancelar', 'danger', true);
+                $actions[] = $this->uiAction('delete', 'Eliminar de Tareas', 'muted', true);
+            } elseif ($status === 'running' && $type === 'files') {
                 $actions[] = $this->uiAction('cancel', 'Detener', 'danger', true);
             }
             if (in_array($status, ['completed', 'failed', 'cancelled'], true)) {
-                $actions[] = $this->uiAction('delete', 'Quitar de Tareas', 'muted', true);
+                $actions[] = $this->uiAction('delete', 'Eliminar de Tareas', 'muted', true);
             }
 
             $tasks[] = [
@@ -392,7 +403,7 @@ final class BackgroundTaskController extends AbstractJsonController
 
         if ($action === 'delete') {
             $store->deleteForUser($userId, $jobId);
-            return 'Sincronización quitada de Tareas.';
+            return 'Sincronización eliminada de Tareas.';
         }
 
         throw new RuntimeException('Acción de sincronización no permitida.');
@@ -451,7 +462,7 @@ final class BackgroundTaskController extends AbstractJsonController
 
         if ($action === 'delete') {
             $store->deleteForUser($userId, $jobId);
-            return 'Traslado quitado de Tareas.';
+            return 'Traslado eliminado de Tareas.';
         }
 
         throw new RuntimeException('Acción de traslado no permitida.');
@@ -464,7 +475,7 @@ final class BackgroundTaskController extends AbstractJsonController
         }
 
         $stmt = $this->app->db()->prepare(
-            "SELECT id_, Action, Service, Status, MetadataJson
+            "SELECT id_, Action, Service, Status, CorrelationId, MetadataJson
              FROM DriveActivityEvents
              WHERE id_ = ? AND user_id_ = ?
              LIMIT 1"
@@ -489,36 +500,124 @@ final class BackgroundTaskController extends AbstractJsonController
         $status = $this->activityStatus($row, $meta);
 
         if ($action === 'reconcile') {
-            if (in_array($status, ['completed', 'failed'], true)) {
+            if (in_array($status, ['completed', 'failed', 'cancelled'], true)) {
                 return 'La tarea ya está en estado terminal.';
             }
             $this->workerLauncher()->launchReconcile($kind);
             return 'El servidor revisará ahora el estado real del proveedor.';
         }
 
+        if ($action === 'cancel') {
+            if (in_array($status, ['completed', 'failed', 'cancelled'], true)) {
+                return 'La tarea ya está en estado terminal.';
+            }
+
+            $now = gmdate('c');
+            if ($kind === 'polly') {
+                $taskId = trim((string)($meta['task_id'] ?? ''));
+                if ($taskId === '') {
+                    throw new RuntimeException('La tarea Polly no tiene task_id persistente y no puede cancelarse con seguridad.');
+                }
+                $meta = array_merge($meta, [
+                    'phase' => 'cancelled',
+                    'task_status' => 'cancelled',
+                    'cancelled_at' => $now,
+                    'cleanup_pending' => true,
+                    'cleanup_done' => false,
+                    'task_center_updated_at' => $now,
+                ]);
+                $this->saveActivityMetadata($eventId, $userId, $meta);
+                $this->workerLauncher()->launchReconcile('polly');
+                return 'Audio cancelado en Drive. El servidor limpiará la salida temporal de Polly cuando aparezca.';
+            }
+
+            $correlation = trim((string)($row['CorrelationId'] ?? ''));
+            $jobName = trim((string)($meta['job_name'] ?? ''));
+            if ($jobName === '' && $correlation !== '') {
+                $jobName = $this->resolveTranscribeJobName($correlation);
+            }
+            if ($jobName === '') {
+                throw new RuntimeException('No se pudo localizar el job de Amazon Transcribe para cancelarlo. Usa Revisar ahora y vuelve a intentar.');
+            }
+
+            \Config::getTranscribe()->deleteTranscriptionJob([
+                'TranscriptionJobName' => $jobName,
+            ]);
+            $meta = array_merge($meta, [
+                'phase' => 'cancelled',
+                'status' => 'CANCELLED',
+                'job_name' => $jobName,
+                'cancelled_at' => $now,
+                'task_center_updated_at' => $now,
+            ]);
+            $this->saveActivityMetadata($eventId, $userId, $meta);
+            return 'Transcripción cancelada y eliminada del proveedor. Ya puedes eliminarla de Tareas.';
+        }
+
         if ($action === 'dismiss') {
             if (!in_array($status, ['completed', 'failed', 'cancelled'], true)) {
-                throw new RuntimeException('Una tarea activa no se puede quitar de la lista.');
+                throw new RuntimeException('Una tarea activa no se puede eliminar de la lista; primero cancélala o detenla.');
             }
             $meta['task_center_hidden_at'] = gmdate('c');
             $meta['task_center_updated_at'] = gmdate('c');
-            $json = json_encode($meta, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-            if (!is_string($json)) {
-                throw new RuntimeException('No se pudo guardar el estado visual de la tarea.');
-            }
-            $update = $this->app->db()->prepare(
-                "UPDATE DriveActivityEvents SET MetadataJson = ? WHERE id_ = ? AND user_id_ = ?"
-            );
-            if (!$update || !$update->execute([$json, $eventId, $userId])) {
-                $error = $update ? $update->error : $this->app->db()->error;
-                if ($update) $update->close();
-                throw new RuntimeException('No se pudo quitar la tarea del centro: ' . $error);
-            }
-            $update->close();
-            return 'Tarea quitada del centro. El registro de costos se conserva.';
+            $this->saveActivityMetadata($eventId, $userId, $meta);
+            return 'Tarea eliminada del centro. El historial de costos se conserva.';
         }
 
         throw new RuntimeException('Acción de servicio no permitida.');
+    }
+
+    private function saveActivityMetadata(int $eventId, int $userId, array $meta): void
+    {
+        $json = json_encode($meta, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        if (!is_string($json)) {
+            throw new RuntimeException('No se pudo guardar el estado de la tarea.');
+        }
+        $update = $this->app->db()->prepare(
+            "UPDATE DriveActivityEvents SET MetadataJson = ? WHERE id_ = ? AND user_id_ = ?"
+        );
+        if (!$update || !$update->execute([$json, $eventId, $userId])) {
+            $error = $update ? $update->error : $this->app->db()->error;
+            if ($update) $update->close();
+            throw new RuntimeException('No se pudo actualizar la tarea: ' . $error);
+        }
+        $update->close();
+    }
+
+    private function resolveTranscribeJobName(string $correlation): string
+    {
+        if ($correlation === '') return '';
+
+        $client = \Config::getTranscribe();
+        $scanned = 0;
+        foreach (['QUEUED', 'IN_PROGRESS', 'COMPLETED', 'FAILED'] as $awsStatus) {
+            $nextToken = null;
+            do {
+                $args = [
+                    'Status' => $awsStatus,
+                    'MaxResults' => 100,
+                ];
+                if (is_string($nextToken) && $nextToken !== '') {
+                    $args['NextToken'] = $nextToken;
+                }
+                $page = $client->listTranscriptionJobs($args);
+                foreach ((array)($page['TranscriptionJobSummaries'] ?? []) as $summary) {
+                    if (!is_array($summary)) continue;
+                    $jobName = trim((string)($summary['TranscriptionJobName'] ?? ''));
+                    if ($jobName === '') continue;
+                    $scanned++;
+                    if (ActivityCostRecorder::correlation('transcribe', $jobName) === $correlation) {
+                        return $jobName;
+                    }
+                    if ($scanned >= self::TRANSCRIBE_SCAN_LIMIT) {
+                        return '';
+                    }
+                }
+                $nextToken = isset($page['NextToken']) ? (string)$page['NextToken'] : null;
+            } while ($nextToken !== null && $nextToken !== '');
+        }
+
+        return '';
     }
 
     private function costsByCorrelation(int $userId): array
@@ -562,6 +661,7 @@ final class BackgroundTaskController extends AbstractJsonController
         $phase = strtolower((string)($meta['phase'] ?? ''));
         $raw = strtolower((string)($meta['task_status'] ?? $meta['status'] ?? ''));
 
+        if ($phase === 'cancelled' || $raw === 'cancelled') return 'cancelled';
         if ($rowStatus === 'error' || $phase === 'failed' || in_array($raw, ['failed', 'error'], true)) return 'failed';
         if ($phase === 'completed' || in_array($raw, ['completed', 'complete'], true)) return 'completed';
         if (in_array($raw, ['in_progress', 'running', 'processing'], true) || $phase === 'running') return 'running';
@@ -575,6 +675,9 @@ final class BackgroundTaskController extends AbstractJsonController
         return match ($status) {
             'completed' => 'Audio generado' . ($engine !== '' ? ' · motor ' . $engine : '') . '.',
             'failed' => trim((string)($meta['reason'] ?? 'La generación de audio falló.')),
+            'cancelled' => !empty($meta['cleanup_pending'])
+                ? 'Cancelada. El servidor limpiará el temporal de Polly cuando esté disponible.'
+                : 'Cancelada; no se guardará el audio generado.',
             'running' => 'El proveedor está generando el audio.',
             default => 'Audio en cola para generación.',
         };
@@ -586,6 +689,7 @@ final class BackgroundTaskController extends AbstractJsonController
         return match ($status) {
             'completed' => $seconds > 0 ? 'Transcripción terminada · ' . $seconds . ' s facturables.' : 'Transcripción terminada.',
             'failed' => 'La transcripción terminó con error.',
+            'cancelled' => 'Transcripción cancelada.',
             'running' => 'El proveedor está procesando el archivo.',
             default => 'Transcripción en cola.',
         };

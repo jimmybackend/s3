@@ -36,6 +36,15 @@ if ($leaseHandle === null) {
     exit(0);
 }
 
+// El job pudo ser cancelado/eliminado entre el lanzamiento del proceso y la
+// adquisición del lease. Revalidamos aquí para no recrear un JSON eliminado.
+$existing = $store->read($userId, $jobId);
+if (!is_array($existing) || in_array((string)($existing['state'] ?? ''), ['done', 'cancelled'], true)) {
+    @flock($leaseHandle, LOCK_UN);
+    @fclose($leaseHandle);
+    exit(0);
+}
+
 $lockHandle = fopen($store->lockPath($userId), 'c+');
 
 if (!$lockHandle) {
@@ -43,6 +52,8 @@ if (!$lockHandle) {
         'state' => 'error',
         'message' => 'No se pudo crear lock.',
     ]);
+    @flock($leaseHandle, LOCK_UN);
+    @fclose($leaseHandle);
     exit(4);
 }
 
@@ -51,6 +62,9 @@ if (!flock($lockHandle, LOCK_EX | LOCK_NB)) {
         'state' => 'error',
         'message' => 'Ya existe una sincronización en curso. Puedes reintentarla desde Tareas cuando termine la otra.',
     ]);
+    fclose($lockHandle);
+    @flock($leaseHandle, LOCK_UN);
+    @fclose($leaseHandle);
     exit(5);
 }
 
@@ -88,7 +102,13 @@ try {
 
     do {
         $current = $store->read($userId, $jobId);
-        if (is_array($current) && in_array((string)($current['state'] ?? ''), ['cancel_requested', 'cancelled'], true)) {
+        if (!is_array($current)) {
+            // Si el usuario eliminó la tarea antes de que iniciara, no se
+            // continúa ni se recrea el estado persistente.
+            $cancelled = true;
+            break;
+        }
+        if (in_array((string)($current['state'] ?? ''), ['cancel_requested', 'cancelled'], true)) {
             $cancelled = true;
             $store->update($userId, $jobId, [
                 'state' => 'cancelled',
@@ -146,11 +166,14 @@ try {
     }
 
 } catch (Throwable $error) {
-    $store->update($userId, $jobId, [
-        'state' => 'error',
-        'message' => $error->getMessage(),
-        'finished_at' => date('c'),
-    ]);
+    // No recrear una tarea que el usuario ya eliminó mientras arrancaba.
+    if ($store->read($userId, $jobId) !== null) {
+        $store->update($userId, $jobId, [
+            'state' => 'error',
+            'message' => $error->getMessage(),
+            'finished_at' => date('c'),
+        ]);
+    }
 } finally {
     flock($lockHandle, LOCK_UN);
     fclose($lockHandle);

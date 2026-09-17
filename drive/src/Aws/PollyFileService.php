@@ -364,6 +364,85 @@ final class PollyFileService
         ];
     }
 
+    /**
+     * Una tarea asíncrona de Polly no ofrece una API de cancelación. Cuando el
+     * usuario la cancela en Drive, esta rutina espera su estado real y elimina
+     * únicamente el temporal .arcadecloud/polly correspondiente, sin copiarlo
+     * al nombre final ni registrarlo como archivo generado.
+     */
+    public function discardTask(int $userId, array $input): array
+    {
+        $taskId = trim((string)($input['task_id'] ?? $input['taskId'] ?? ''));
+        $from = trim((string)($input['from_key'] ?? $input['fromKey'] ?? $input['pollyArchivoKey'] ?? ''));
+
+        if ($taskId === '' || !preg_match('/^[A-Za-z0-9_-]{1,100}$/', $taskId)) {
+            throw new RuntimeException('Identificador de tarea de Polly inválido.');
+        }
+        if ($from === '') {
+            throw new RuntimeException('Archivo origen requerido para limpiar la tarea de Polly.');
+        }
+
+        $origin = $this->locator->requireReadableByKey($userId, $from);
+        $realFrom = (string)$origin['_key'];
+        $res = $this->polly->getSpeechSynthesisTask(['TaskId' => $taskId]);
+        $task = (array)$res->get('SynthesisTask');
+        $status = strtolower(trim((string)($task['TaskStatus'] ?? '')));
+
+        if ($status === '') {
+            throw new RuntimeException('Polly no devolvió el estado de la tarea cancelada.');
+        }
+
+        if ($status === 'failed') {
+            return [
+                'ok' => true,
+                'task_id' => $taskId,
+                'task_status' => 'failed',
+                'cleanup_done' => true,
+                'deleted_temp' => false,
+            ];
+        }
+
+        if ($status !== 'completed') {
+            return [
+                'ok' => true,
+                'task_id' => $taskId,
+                'task_status' => $status,
+                'cleanup_done' => false,
+                'deleted_temp' => false,
+            ];
+        }
+
+        $taskFormat = strtolower((string)($task['OutputFormat'] ?? 'mp3'));
+        [, $ext] = $this->format($taskFormat);
+        $expectedPrefix = $this->asyncPrefix($userId, $realFrom) . '.';
+        $tempKey = $this->outputKeyFromUri(trim((string)($task['OutputUri'] ?? '')));
+
+        if (
+            $tempKey === '' ||
+            !str_starts_with($tempKey, $expectedPrefix) ||
+            !str_ends_with($tempKey, '.' . $ext)
+        ) {
+            throw new RuntimeException('La salida temporal cancelada de Polly no corresponde al archivo origen.');
+        }
+
+        $exists = $this->headIfExists($tempKey) !== null;
+        if ($exists) {
+            $this->s3->deleteObject([
+                'Bucket' => $this->bucket,
+                'Key' => $tempKey,
+            ]);
+        }
+
+        return [
+            'ok' => true,
+            'task_id' => $taskId,
+            'task_status' => 'completed',
+            'cleanup_done' => true,
+            'deleted_temp' => $exists,
+            'temp_key' => $tempKey,
+        ];
+    }
+
     private function destination(array $origin, string $ext): array
     {
         $realFrom = (string)$origin['_key'];

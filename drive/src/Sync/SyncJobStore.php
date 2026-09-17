@@ -93,13 +93,18 @@ final class SyncJobStore
         }
 
         $state = strtolower((string)($job['state'] ?? ''));
-        if (!in_array($state, ['done', 'error', 'failed', 'cancelled'], true)) {
-            throw new RuntimeException('Sólo se pueden quitar sincronizaciones terminadas, fallidas o canceladas.');
+        if (in_array($state, ['queued', 'pending'], true)) {
+            $lease = new BackgroundWorkerLease();
+            if ($lease->isActive('sync', $jobId) || $this->userSyncLockActive($userId)) {
+                throw new RuntimeException('La sincronización ya está siendo tomada por un worker. Deténla antes de eliminarla.');
+            }
+        } elseif (!in_array($state, ['done', 'error', 'failed', 'cancelled'], true)) {
+            throw new RuntimeException('Sólo se pueden eliminar sincronizaciones en cola sin worker o tareas terminadas, fallidas o canceladas.');
         }
 
         $path = $this->path($userId, $jobId);
         if (is_file($path) && !@unlink($path)) {
-            throw new RuntimeException('No se pudo quitar la sincronización.');
+            throw new RuntimeException('No se pudo eliminar la sincronización de Tareas.');
         }
     }
 

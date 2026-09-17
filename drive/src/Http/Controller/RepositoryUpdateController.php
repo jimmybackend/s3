@@ -23,8 +23,8 @@ final class RepositoryUpdateController
         if (!$session->isSuperAdmin()) JsonResponse::send(['ok' => false, 'error' => 'Sólo un superusuario puede administrar actualizaciones.'], 403);
         if ($this->request->method() !== 'POST') JsonResponse::send(['ok' => false, 'error' => 'Método no permitido.'], 405);
 
-        $expectedCsrf = (string)$session->get('repository_update_csrf', '');
-        $sentCsrf = $this->request->serverString('HTTP_X_REPOSITORY_UPDATE_CSRF');
+        $expectedCsrf = (string)$session->get('server_admin_csrf', '');
+        $sentCsrf = $this->request->serverString('HTTP_X_SERVER_ADMIN_CSRF');
         if ($expectedCsrf === '' || $sentCsrf === '' || !hash_equals($expectedCsrf, $sentCsrf)) {
             JsonResponse::send(['ok' => false, 'error' => 'Token CSRF inválido. Recarga el Drive.'], 403);
         }

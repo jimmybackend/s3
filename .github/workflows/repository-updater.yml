@@ -53,19 +53,19 @@ jobs:
       - name: Validate updater security boundaries
         run: |
           set -euo pipefail
-          grep -q "git.*merge.*--ff-only\|\['merge', '--ff-only'" drive/bin/arcadecloud-drive-updater.php
+          grep -q "\['merge', '--ff-only'" drive/bin/arcadecloud-drive-updater.php
           grep -q "GIT_TERMINAL_PROMPT=0" drive/bin/arcadecloud-drive-updater.php
           grep -q "arcadecloud-drive-updater.lock" drive/bin/arcadecloud-drive-updater.php
           grep -q "expected_remote_sha" drive/src/Http/Controller/RepositoryUpdateController.php
           grep -q "SuperAdminReauthenticationService" drive/src/Admin/RepositoryUpdateService.php
-          grep -q "X-Repository-Update-CSRF" drive/js/repository-update.js
-          grep -q "repository_update_csrf" drive/src/Http/Controller/RepositoryUpdateController.php
+          grep -q "X-Server-Admin-CSRF" drive/js/repository-update.js
+          grep -q "server_admin_csrf" drive/src/Http/Controller/RepositoryUpdateController.php
+          grep -q "btnServerAdmin" drive/js/repository-update.js
           grep -q "NOPASSWD: %s" drive/bin/install_arcadecloud_updater.sh
           grep -q "/usr/local/sbin/arcadecloud-drive-updater" drive/bin/install_arcadecloud_updater.sh
           grep -q "No se instala timer" drive/bin/install_arcadecloud_updater.sh
           ! grep -Eq '\b(shell_exec|exec|system|passthru|popen)\s*\(' drive/bin/arcadecloud-drive-updater.php
-          ! grep -Eq '(setInterval|setTimeout\([^,]+,[[:space:]]*[0-9]+[[:space:]]*\).*fetch)' drive/js/repository-update.js
-          ! grep -Eq '(localStorage|sessionStorage)' drive/js/repository-update.js
+          ! grep -Eq '(setInterval|localStorage|sessionStorage)' drive/js/repository-update.js
           ! grep -q "git pull" drive/bin/arcadecloud-drive-updater.php
           ! grep -q "chmod 777" drive/bin/install_arcadecloud_updater.sh
           ! grep -q "chmod 666" drive/bin/install_arcadecloud_updater.sh

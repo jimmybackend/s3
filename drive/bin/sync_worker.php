@@ -21,6 +21,14 @@ use ArcadeCloud\Drive\Sync\SyncJobStore;
 use ArcadeCloud\Drive\Sync\SyncRepository;
 
 $store = new SyncJobStore();
+$existing = $store->read($userId, $jobId);
+if (!is_array($existing)) {
+    exit(3);
+}
+if (in_array((string)($existing['state'] ?? ''), ['done', 'cancelled'], true)) {
+    exit(0);
+}
+
 $lockHandle = fopen($store->lockPath($userId), 'c+');
 
 if (!$lockHandle) {
@@ -34,7 +42,7 @@ if (!$lockHandle) {
 if (!flock($lockHandle, LOCK_EX | LOCK_NB)) {
     $store->update($userId, $jobId, [
         'state' => 'error',
-        'message' => 'Ya existe una sincronización en curso.',
+        'message' => 'Ya existe una sincronización en curso. Puedes reintentarla desde Tareas cuando termine la otra.',
     ]);
     exit(5);
 }
@@ -69,8 +77,20 @@ try {
     $files = 0;
     $folders = 0;
     $result = [];
+    $cancelled = false;
 
     do {
+        $current = $store->read($userId, $jobId);
+        if (is_array($current) && in_array((string)($current['state'] ?? ''), ['cancel_requested', 'cancelled'], true)) {
+            $cancelled = true;
+            $store->update($userId, $jobId, [
+                'state' => 'cancelled',
+                'message' => 'Sincronización detenida de forma segura entre lotes.',
+                'finished_at' => date('c'),
+            ]);
+            break;
+        }
+
         $batch++;
 
         $result = $service->synchronizeBatch(
@@ -101,20 +121,22 @@ try {
 
     } while (empty($result['done']));
 
-    $store->update($userId, $jobId, [
-        'state' => 'done',
-        'scope' => (string)($result['scope'] ?? ($normalizedScope === '' ? 'user' : 'folder')),
-        'scope_prefix' => (string)($result['base'] ?? ($normalizedScope !== '' ? $normalizedScope : $root)),
-        'batch' => $batch,
-        'files' => $files,
-        'folders' => $folders,
-        'files_removed' => (int)($result['files_removed'] ?? 0),
-        'folders_removed' => (int)($result['folders_removed'] ?? 0),
-        'message' => $normalizedScope === ''
-            ? 'Sincronización de usuario completada'
-            : 'Sincronización de carpeta completada',
-        'finished_at' => date('c'),
-    ]);
+    if (!$cancelled) {
+        $store->update($userId, $jobId, [
+            'state' => 'done',
+            'scope' => (string)($result['scope'] ?? ($normalizedScope === '' ? 'user' : 'folder')),
+            'scope_prefix' => (string)($result['base'] ?? ($normalizedScope !== '' ? $normalizedScope : $root)),
+            'batch' => $batch,
+            'files' => $files,
+            'folders' => $folders,
+            'files_removed' => (int)($result['files_removed'] ?? 0),
+            'folders_removed' => (int)($result['folders_removed'] ?? 0),
+            'message' => $normalizedScope === ''
+                ? 'Sincronización de usuario completada'
+                : 'Sincronización de carpeta completada',
+            'finished_at' => date('c'),
+        ]);
+    }
 
 } catch (Throwable $error) {
     $store->update($userId, $jobId, [

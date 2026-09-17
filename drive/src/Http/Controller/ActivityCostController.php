@@ -71,7 +71,7 @@ final class ActivityCostController
     private function withBackgroundTasks(string $html): string
     {
         $script = '<script>window.ARCADECLOUD_UNIFIED_TASK_CENTER=true;</script>'
-            . '<script src="js/background-tasks.js?v=20260916-1"></script>';
+            . '<script src="js/background-tasks.js?v=20260916-2"></script>';
         if (str_contains($html, '</body>')) {
             return str_replace('</body>', $script . "\n</body>", $html);
         }

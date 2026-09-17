@@ -21,7 +21,7 @@ final class MoveJobService
     ) {
     }
 
-    public function queueFiles(int $userId, array $refs, string $destination): array
+    public function queueFiles(int $userId, array $refs, string $destination, bool $createdDestination = false): array
     {
         $destination = $this->paths->normalizeForUser($destination, $userId);
         $refs = array_values(array_unique(array_filter(array_map(
@@ -40,6 +40,7 @@ final class MoveJobService
         return $this->store->create($userId, 'files', [
             'refs' => $refs,
             'destination' => $destination,
+            'created_destination' => $createdDestination,
         ]);
     }
 
@@ -62,29 +63,82 @@ final class MoveJobService
         ]);
     }
 
-    public function run(string $jobId): void
+    /**
+     * Ejecuta un job reclamándolo atómicamente.
+     *
+     * Para lotes de archivos la cancelación es cooperativa entre objetos: nunca
+     * interrumpe una copia S3 a mitad. Para carpetas sólo se puede cancelar antes
+     * de que empiece la mutación recursiva, porque cortarla a mitad dejaría una
+     * operación parcialmente aplicada difícil de revertir con seguridad.
+     */
+    public function run(string $jobId): array
     {
-        $job = $this->store->get($jobId);
-        if (($job['status'] ?? '') !== 'queued') {
-            return;
+        $job = $this->store->claimQueued($jobId);
+        if ($job === null) {
+            $current = $this->store->get($jobId);
+            $current['_worker_claimed'] = false;
+            return $current;
         }
 
-        $this->store->update($jobId, [
-            'status' => 'running',
-            'message' => 'Movimiento en proceso.',
-            'error' => null,
-        ]);
+        $userId = (int)($job['user_id'] ?? 0);
+        $type = (string)($job['type'] ?? '');
+        $payload = is_array($job['payload'] ?? null) ? $job['payload'] : [];
 
         try {
-            $userId = (int)($job['user_id'] ?? 0);
-            $type = (string)($job['type'] ?? '');
-            $payload = is_array($job['payload'] ?? null) ? $job['payload'] : [];
-
             if ($type === 'files') {
-                $refs = is_array($payload['refs'] ?? null) ? $payload['refs'] : [];
+                $refs = is_array($payload['refs'] ?? null) ? array_values($payload['refs']) : [];
                 $destination = (string)($payload['destination'] ?? '');
-                $result = $this->files->moveMany($userId, $refs, $destination);
+                $total = count($refs);
+                $moved = 0;
+
+                foreach ($refs as $ref) {
+                    $current = $this->store->get($jobId);
+                    if ((string)($current['status'] ?? '') === 'cancel_requested') {
+                        return $this->cancelFilesJob($jobId, $moved, $total, $destination);
+                    }
+
+                    $this->files->move($userId, is_int($ref) ? $ref : (string)$ref, $destination);
+                    $moved++;
+
+                    // La solicitud de detención puede llegar mientras S3 copia el
+                    // archivo. Revisamos de nuevo antes de escribir "running" para
+                    // no perderla por una carrera de estados.
+                    $afterMove = $this->store->get($jobId);
+                    if ((string)($afterMove['status'] ?? '') === 'cancel_requested') {
+                        return $this->cancelFilesJob($jobId, $moved, $total, $destination);
+                    }
+
+                    $this->store->update($jobId, [
+                        'status' => 'running',
+                        'message' => 'Moviendo archivos · ' . $moved . ' de ' . $total,
+                        'result' => [
+                            'total' => $moved,
+                            'requested_total' => $total,
+                            'ruta_nueva' => $destination,
+                            'estado' => 'parcial',
+                        ],
+                    ]);
+                }
+
+                $result = [
+                    'total' => $moved,
+                    'requested_total' => $total,
+                    'ruta_nueva' => $destination,
+                    'estado' => 'movidos',
+                ];
             } elseif ($type === 'folder') {
+                $current = $this->store->get($jobId);
+                if ((string)($current['status'] ?? '') === 'cancel_requested') {
+                    $cancelled = $this->store->update($jobId, [
+                        'status' => 'cancelled',
+                        'message' => 'Movimiento de carpeta cancelado antes de iniciar.',
+                        'result' => null,
+                        'error' => null,
+                    ]);
+                    $cancelled['_worker_claimed'] = true;
+                    return $cancelled;
+                }
+
                 $origin = (string)($payload['origin'] ?? '');
                 $destination = (string)($payload['destination'] ?? '');
                 $result = $this->folders->move($userId, $origin, $destination);
@@ -92,7 +146,7 @@ final class MoveJobService
                 throw new RuntimeException('Tipo de tarea de movimiento inválido.');
             }
 
-            $this->store->update($jobId, [
+            $completed = $this->store->update($jobId, [
                 'status' => 'completed',
                 'message' => $type === 'folder'
                     ? 'Carpeta movida correctamente.'
@@ -100,17 +154,40 @@ final class MoveJobService
                 'result' => $result,
                 'error' => null,
             ]);
+            $completed['_worker_claimed'] = true;
+            return $completed;
         } catch (\Throwable $error) {
-            $this->store->update($jobId, [
+            $current = $this->store->get($jobId);
+            $failed = $this->store->update($jobId, [
                 'status' => 'failed',
                 'message' => 'No se pudo completar el movimiento.',
+                'result' => is_array($current['result'] ?? null) ? $current['result'] : null,
                 'error' => $error->getMessage(),
             ]);
+            $failed['_worker_claimed'] = true;
+            return $failed;
         }
     }
 
     public function statusForUser(int $userId, string $jobId): array
     {
         return $this->store->getForUser($userId, $jobId);
+    }
+
+    private function cancelFilesJob(string $jobId, int $moved, int $total, string $destination): array
+    {
+        $cancelled = $this->store->update($jobId, [
+            'status' => 'cancelled',
+            'message' => 'Movimiento detenido de forma segura.',
+            'result' => [
+                'total' => $moved,
+                'requested_total' => $total,
+                'ruta_nueva' => $destination,
+                'estado' => 'cancelado',
+            ],
+            'error' => null,
+        ]);
+        $cancelled['_worker_claimed'] = true;
+        return $cancelled;
     }
 }

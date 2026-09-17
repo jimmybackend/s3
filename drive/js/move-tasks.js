@@ -100,6 +100,15 @@ class DriveMoveTasks {
           this.dispatch('drive:move-task-failed', json);
           return;
         }
+
+        if (status === 'cancelled') {
+          state.stopped = true;
+          this.active.delete(jobId);
+          this.forget(jobId);
+          this.notify(json.mensaje || 'Movimiento detenido.', 'info', 6000);
+          this.dispatch('drive:move-task-cancelled', json);
+          return;
+        }
       } catch (error) {
         state.networkErrors++;
         console.warn('[move-task] estado no disponible todavía:', error);
@@ -221,7 +230,7 @@ window.ARCADECLOUD_UNIFIED_TASK_CENTER = true;
 
 (function loadBackgroundModules(win, doc) {
   const scripts = [
-    ['background-tasks', 'js/background-tasks.js?v=20260916-1'],
+    ['background-tasks', 'js/background-tasks.js?v=20260916-2'],
     ['polly-background', 'js/polly-background.js?v=20260916-4'],
     ['transcribe-background', 'js/transcribe-background.js?v=20260916-1']
   ];

@@ -52,6 +52,44 @@ $e = static fn(string $value): string => htmlspecialchars($value, ENT_QUOTES | E
     pointer-events: none;
     opacity: 1 !important;
   }
+  #arbolCarpetas .folder-actions .dropdown-menu {
+    min-width: 15rem;
+    z-index: 1080;
+  }
+  #arbolCarpetas .folder-actions-toggle::after {
+    display: none;
+  }
+  #modalCrearDocumentoCarpeta .folder-document-editor {
+    min-height: 260px;
+    max-height: 55vh;
+    overflow: auto;
+    border: 1px solid var(--border);
+    border-radius: .6rem;
+    background: var(--panel-bg2);
+    color: var(--text);
+    padding: .85rem;
+    line-height: 1.5;
+    outline: none;
+  }
+  #modalCrearDocumentoCarpeta .folder-document-editor:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 .18rem rgba(var(--accent-rgb), .16);
+  }
+  #modalCrearDocumentoCarpeta .folder-document-editor:empty::before {
+    content: attr(data-placeholder);
+    color: var(--text-soft);
+    pointer-events: none;
+  }
+  #modalCrearDocumentoCarpeta .modal-content {
+    background: var(--panel-solid);
+    color: var(--text);
+    border-color: var(--border);
+  }
+  #modalCrearDocumentoCarpeta .form-control {
+    background: var(--panel-bg2);
+    color: var(--text);
+    border-color: var(--border);
+  }
   body.ui-theme.theme-light #arbolCarpetas .federation-shares-row {
     background: rgba(var(--accent-rgb), .10) !important;
     border-color: rgba(var(--accent-rgb), .38) !important;
@@ -103,24 +141,7 @@ $e = static fn(string $value): string => htmlspecialchars($value, ENT_QUOTES | E
             <span class="name"><?= $e(rtrim($root, '/')) ?></span>
           </a>
 
-          <div class="ml-auto btn-group btn-group-sm">
-            <button type="button"
-                    class="btn btn-light btn-xs js-sync-folder"
-                    title="Sincronizar todo este usuario desde S3"
-                    aria-label="Sincronizar raíz del usuario"
-                    data-sync-prefix="<?= $e($root) ?>"
-                    data-sync-name="<?= $e(rtrim($root, '/')) ?>">
-              <i class="fas fa-rotate"></i>
-            </button>
-            <button type="button"
-                    class="btn btn-light btn-xs"
-                    title="Nueva subcarpeta"
-                    data-toggle="modal"
-                    data-target="#modalCrearCarpeta"
-                    data-ruta="<?= $e($root) ?>">
-              <i class="fas fa-folder-plus"></i>
-            </button>
-          </div>
+          <?= \ArcadeCloud\Drive\View\FolderTreeRenderer::actionsMenu($root, rtrim($root, '/'), true) ?>
         </div>
 
         <div class="children" style="display:block">
@@ -143,4 +164,62 @@ $e = static fn(string $value): string => htmlspecialchars($value, ENT_QUOTES | E
       </li>
     </ul>
   </div>
+
+  <div class="modal fade" id="modalCrearDocumentoCarpeta" tabindex="-1" role="dialog" aria-labelledby="folderDocumentTitle" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+      <form id="formCrearDocumentoCarpeta" class="modal-content" autocomplete="off">
+        <div class="modal-header">
+          <div>
+            <h5 class="modal-title" id="folderDocumentTitle"><i class="fas fa-file-alt mr-2"></i>Crear documento desde texto</h5>
+            <small class="text-muted">Carpeta: <span id="folderDocumentFolderName"></span></small>
+          </div>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar"><span aria-hidden="true">&times;</span></button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" id="folderDocumentRoute" name="route" value="">
+
+          <div id="folderDocumentMessage" class="alert d-none" role="alert"></div>
+
+          <div class="form-row">
+            <div class="form-group col-md-8">
+              <label for="folderDocumentName">Nombre</label>
+              <input type="text" class="form-control" id="folderDocumentName" name="name" maxlength="180" placeholder="Mi prompt" required>
+            </div>
+            <div class="form-group col-md-4">
+              <label for="folderDocumentFormat">Guardar como</label>
+              <select class="form-control" id="folderDocumentFormat" name="format">
+                <option value="html" selected>HTML (.html) · conserva formato</option>
+                <option value="md">Markdown (.md)</option>
+                <option value="txt">Texto (.txt)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="d-flex align-items-center justify-content-between mb-2 flex-wrap">
+            <label class="mb-1" for="folderDocumentEditor">Contenido</label>
+            <button type="button" class="btn btn-sm btn-outline-primary mb-1" id="folderDocumentPaste">
+              <i class="fas fa-paste mr-1"></i>Pegar desde portapapeles
+            </button>
+          </div>
+          <div id="folderDocumentEditor"
+               class="folder-document-editor"
+               contenteditable="true"
+               role="textbox"
+               aria-multiline="true"
+               data-placeholder="Pega aquí una respuesta, prompt o texto de ChatGPT..."></div>
+          <small id="folderDocumentFormatHelp" class="form-text text-muted mt-2">
+            HTML conserva títulos, negritas, listas, tablas, enlaces y bloques de código. Los estilos propios de ChatGPT no se guardan.
+          </small>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary" id="folderDocumentSave">
+            <i class="fas fa-save mr-1"></i>Guardar en esta carpeta
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="js/folder-document.js?v=<?= (int) filemtime(__DIR__ . '/js/folder-document.js') ?>"></script>
 </div>

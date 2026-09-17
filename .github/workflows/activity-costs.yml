@@ -9,6 +9,7 @@ on:
       - 'drive/activity_costs.php'
       - 'drive/background_tasks.php'
       - 'drive/bloque_carpetas.php'
+      - 'drive/create_folder_document.php'
       - 'drive/bin/transcribe_reconcile.php'
       - 'drive/bin/install_transcribe_reconcile_timer.sh'
       - 'drive/bin/polly_reconcile.php'
@@ -25,6 +26,7 @@ on:
       - 'drive/src/Application/BackgroundWorkerLauncher.php'
       - 'drive/src/Application/MoveJobService.php'
       - 'drive/src/Application/FolderMutationService.php'
+      - 'drive/src/Application/FolderDocumentService.php'
       - 'drive/src/Http/Controller/ActivityCostController.php'
       - 'drive/src/Http/Controller/BackgroundTaskController.php'
       - 'drive/src/Http/Controller/AwsCostController.php'
@@ -32,6 +34,7 @@ on:
       - 'drive/src/Http/Controller/FileAccessController.php'
       - 'drive/src/Http/Controller/FileMutationController.php'
       - 'drive/src/Http/Controller/FolderMutationController.php'
+      - 'drive/src/Http/Controller/FolderDocumentController.php'
       - 'drive/src/Http/Controller/LegacyUploadController.php'
       - 'drive/src/Http/Controller/MoveJobController.php'
       - 'drive/src/Http/Controller/PollyTaskController.php'
@@ -42,13 +45,16 @@ on:
       - 'drive/src/Storage/MoveJobStore.php'
       - 'drive/src/Sync/SyncJobStore.php'
       - 'drive/src/View/ActivityCostPageRenderer.php'
+      - 'drive/src/View/FolderTreeRenderer.php'
       - 'drive/polly_task_status.php'
       - 'drive/polly_tasks.php'
       - 'drive/js/background-tasks.js'
       - 'drive/js/polly-background.js'
       - 'drive/js/transcribe-background.js'
       - 'drive/js/move-tasks.js'
+      - 'drive/js/folder-document.js'
       - 'drive/tests/activity_costs_smoke.php'
+      - 'drive/tests/folder_document_sanitizer.php'
       - 'adbbmis1_Cloud.sql'
       - '.github/workflows/activity-costs.yml'
   pull_request:
@@ -74,6 +80,7 @@ jobs:
             drive/activity_costs.php \
             drive/background_tasks.php \
             drive/bloque_carpetas.php \
+            drive/create_folder_document.php \
             drive/polly_task_status.php \
             drive/polly_tasks.php \
             drive/bin/transcribe_reconcile.php \
@@ -89,6 +96,7 @@ jobs:
             drive/src/Application/BackgroundWorkerLauncher.php \
             drive/src/Application/MoveJobService.php \
             drive/src/Application/FolderMutationService.php \
+            drive/src/Application/FolderDocumentService.php \
             drive/src/Http/Controller/ActivityCostController.php \
             drive/src/Http/Controller/BackgroundTaskController.php \
             drive/src/Http/Controller/AwsCostController.php \
@@ -96,6 +104,7 @@ jobs:
             drive/src/Http/Controller/FileAccessController.php \
             drive/src/Http/Controller/FileMutationController.php \
             drive/src/Http/Controller/FolderMutationController.php \
+            drive/src/Http/Controller/FolderDocumentController.php \
             drive/src/Http/Controller/LegacyUploadController.php \
             drive/src/Http/Controller/MoveJobController.php \
             drive/src/Http/Controller/PollyTaskController.php \
@@ -106,7 +115,9 @@ jobs:
             drive/src/Storage/MoveJobStore.php \
             drive/src/Sync/SyncJobStore.php \
             drive/src/View/ActivityCostPageRenderer.php \
-            drive/tests/activity_costs_smoke.php; do
+            drive/src/View/FolderTreeRenderer.php \
+            drive/tests/activity_costs_smoke.php \
+            drive/tests/folder_document_sanitizer.php; do
             php -l "$f"
           done
 
@@ -121,9 +132,13 @@ jobs:
           node --check drive/js/polly-background.js
           node --check drive/js/transcribe-background.js
           node --check drive/js/move-tasks.js
+          node --check drive/js/folder-document.js
 
       - name: Activity cost smoke test
         run: php drive/tests/activity_costs_smoke.php
+
+      - name: Folder document sanitizer test
+        run: php drive/tests/folder_document_sanitizer.php
 
       - name: Architecture and privacy guards
         run: |
@@ -152,9 +167,16 @@ jobs:
           grep -q 'data-bg-task-action' drive/js/background-tasks.js
           grep -q 'var(--panel-solid' drive/js/background-tasks.js
           ! grep -q 'Tareas AWS' drive/js/background-tasks.js drive/js/polly-background.js drive/js/transcribe-background.js
+          grep -q 'FolderDocumentController' drive/create_folder_document.php
+          ! grep -q '\$_GET\|\$_POST\|\$_SESSION' drive/create_folder_document.php drive/src/Http/Controller/FolderDocumentController.php
+          grep -q 'singleUploadService' drive/src/Http/Controller/FolderDocumentController.php
+          grep -F -q 'user_id_ = ? AND Prefix = ? AND Found = 1' drive/src/Application/FolderDocumentService.php
+          grep -q 'sanitizeHtmlFragment' drive/src/Application/FolderDocumentService.php
+          grep -q 'js-folder-document' drive/src/View/FolderTreeRenderer.php
+          grep -q 'folder-document.js' drive/bloque_carpetas.php
           grep -q 'CREATE TABLE IF NOT EXISTS `DriveActivityEvents`' adbbmis1_Cloud.sql
           grep -q 'DROP TABLE IF EXISTS `DriveActivityEvents`' adbbmis1_Cloud.sql
-          ! grep -R -E '(AKIA[0-9A-Z]{16}|aws_secret_access_key[[:space:]]*=|BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY)' drive/src/Activity drive/activity_costs.php drive/config/activity-cost-pricing.json drive/tests
+          ! grep -R -E '(AKIA[0-9A-Z]{16}|aws_secret_access_key[[:space:]]*=|BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY)' drive/src/Activity drive/src/Application/FolderDocumentService.php drive/src/Http/Controller/FolderDocumentController.php drive/activity_costs.php drive/config/activity-cost-pricing.json drive/tests
 
       - name: Diff whitespace check
         run: git diff --check

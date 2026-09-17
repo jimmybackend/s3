@@ -60,12 +60,8 @@ final class FolderTreeRenderer
             $html .= '<span class="' . ($hasKids ? 'toggle' : 'toggle empty') . '" title="Expandir/contraer">' . ($hasKids ? '−' : '·') . '</span>';
             $html .= '<a href="#" class="folder' . ($isActive ? ' active' : '') . '" data-route="' . self::e($prefix) . '" data-ruta="' . self::e($prefix) . '">';
             $html .= '<i class="fas fa-folder mr-1"></i> <span class="name">' . self::e($name) . '</span></a>';
-            $html .= '<div class="ml-auto btn-group btn-group-sm">';
-            $html .= '<button type="button" class="btn btn-light btn-xs js-sync-folder" title="Sincronizar esta carpeta desde S3" aria-label="Sincronizar ' . self::e($name) . '" data-sync-prefix="' . self::e($prefix) . '" data-sync-name="' . self::e($name) . '"><i class="fas fa-rotate"></i></button>';
-            $html .= '<button type="button" class="btn btn-light btn-xs" title="Mover" data-toggle="modal" data-target="#modalMoverCarpeta" data-route="' . self::e($prefix) . '" data-name="' . self::e($name) . '"><i class="fas fa-arrows-alt"></i></button>';
-            $html .= '<button type="button" class="btn btn-light btn-xs" title="Renombrar" data-toggle="modal" data-target="#modalRenombrar" data-actual="' . self::e($prefix) . '" data-nombre="' . self::e($name) . '"><i class="fas fa-i-cursor"></i></button>';
-            $html .= '<button type="button" class="btn btn-light btn-xs text-danger" title="Eliminar" data-toggle="modal" data-target="#modalEliminarCarpeta" data-route="' . self::e($prefix) . '" data-name="' . self::e($name) . '"><i class="fas fa-trash"></i></button>';
-            $html .= '</div></div>';
+            $html .= self::actionsMenu($prefix, $name, false);
+            $html .= '</div>';
             $html .= '<div class="children" style="display:' . $display . '">';
             if ($hasKids) {
                 $html .= $this->renderChildren($prefix, $active);
@@ -73,6 +69,29 @@ final class FolderTreeRenderer
             $html .= '</div></li>';
         }
         $html .= '</ul>';
+        return $html;
+    }
+
+    public static function actionsMenu(string $prefix, string $name, bool $root): string
+    {
+        $route = self::e($prefix);
+        $label = self::e($name);
+        $html = '<div class="ml-auto dropdown folder-actions">';
+        $html .= '<button type="button" class="btn btn-light btn-sm folder-actions-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="Acciones de ' . $label . '" aria-label="Acciones de ' . $label . '">';
+        $html .= '<i class="fas fa-ellipsis-v"></i></button>';
+        $html .= '<div class="dropdown-menu dropdown-menu-right">';
+        $html .= '<button type="button" class="dropdown-item js-folder-document" data-toggle="modal" data-target="#modalCrearDocumentoCarpeta" data-route="' . $route . '" data-name="' . $label . '"><i class="fas fa-file-alt mr-2"></i>Crear documento desde texto</button>';
+        $html .= '<button type="button" class="dropdown-item" data-toggle="modal" data-target="#modalCrearCarpeta" data-ruta="' . $route . '"><i class="fas fa-folder-plus mr-2"></i>Nueva subcarpeta</button>';
+        $html .= '<button type="button" class="dropdown-item js-sync-folder" data-sync-prefix="' . $route . '" data-sync-name="' . $label . '"><i class="fas fa-rotate mr-2"></i>Sincronizar desde S3</button>';
+
+        if (!$root) {
+            $html .= '<div class="dropdown-divider"></div>';
+            $html .= '<button type="button" class="dropdown-item" data-toggle="modal" data-target="#modalMoverCarpeta" data-route="' . $route . '" data-name="' . $label . '"><i class="fas fa-arrows-alt mr-2"></i>Mover</button>';
+            $html .= '<button type="button" class="dropdown-item" data-toggle="modal" data-target="#modalRenombrar" data-actual="' . $route . '" data-nombre="' . $label . '"><i class="fas fa-i-cursor mr-2"></i>Renombrar</button>';
+            $html .= '<button type="button" class="dropdown-item text-danger" data-toggle="modal" data-target="#modalEliminarCarpeta" data-route="' . $route . '" data-name="' . $label . '"><i class="fas fa-trash mr-2"></i>Eliminar</button>';
+        }
+
+        $html .= '</div></div>';
         return $html;
     }
 

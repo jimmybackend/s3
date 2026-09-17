@@ -83,6 +83,9 @@
         }
 
         if (!allowed.has(child.tagName)) {
+          // Limpiar descendientes antes de desenvolver la etiqueta desconocida.
+          // Evita que un script anidado sobreviva al mover los hijos al padre.
+          clean(child);
           const parent = child.parentNode;
           while (child.firstChild) parent.insertBefore(child.firstChild, child);
           child.remove();
@@ -165,6 +168,7 @@
     if (editor) {
       editor.innerHTML = '';
       delete editor.dataset.plainSource;
+      delete editor.dataset.editedAfterPaste;
     }
     setMessage('', 'info');
     updateFormatHelp();
@@ -199,6 +203,8 @@
           if (html || text) {
             editor.innerHTML = html ? sanitizeHtml(html) : escapeText(text).replace(/\n/g, '<br>');
             if (text) editor.dataset.plainSource = text;
+            else delete editor.dataset.plainSource;
+            delete editor.dataset.editedAfterPaste;
             setMessage('Contenido pegado. Revisa el nombre y el formato antes de guardar.', 'info');
             return;
           }
@@ -209,6 +215,7 @@
         const text = await navigator.clipboard.readText();
         editor.textContent = text;
         editor.dataset.plainSource = text;
+        delete editor.dataset.editedAfterPaste;
         setMessage('Texto pegado desde el portapapeles.', 'info');
         return;
       }

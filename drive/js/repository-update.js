@@ -8,7 +8,7 @@ class RepositoryUpdateModule {
 
   init() {
     const boot = () => {
-      this.config = this.document.getElementById('arcadeCloudRepositoryUpdateAdmin');
+      this.config = this.document.getElementById('btnServerAdmin');
       if (!this.config) return;
       this.ensurePanel();
       this.bind();
@@ -25,10 +25,7 @@ class RepositoryUpdateModule {
   ensurePanel() {
     if (this.document.getElementById('arcadeCloudUpdatePanel')) return;
     const modalBody = this.document.querySelector('#modalAcercaArcadeCloud .modal-body');
-    if (!modalBody) {
-      this.window.setTimeout(() => this.ensurePanel(), 0);
-      return;
-    }
+    if (!modalBody) return;
 
     const panel = this.document.createElement('div');
     panel.id = 'arcadeCloudUpdatePanel';
@@ -98,7 +95,7 @@ class RepositoryUpdateModule {
       credentials: 'same-origin',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
-        'X-Repository-Update-CSRF': this.csrf()
+        'X-Server-Admin-CSRF': this.csrf()
       },
       body: new URLSearchParams(data).toString()
     });

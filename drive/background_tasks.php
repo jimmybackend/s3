@@ -6,4 +6,4 @@ require_once __DIR__ . '/app_bootstrap.php';
 (new \ArcadeCloud\Drive\Http\Controller\BackgroundTaskController(
     \ArcadeCloud\Drive\Core\ApplicationKernel::app(),
     \ArcadeCloud\Drive\Http\Request::fromGlobals()
-))->index();
+))->dispatch();

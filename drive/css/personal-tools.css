@@ -43,13 +43,17 @@ body.personal-tool-page {
 .personal-tool-page h2,
 .personal-tool-page h3,
 .personal-tool-page strong,
-.personal-tool-page th {
+.personal-tool-page th,
+.personal-tool-page label,
+.personal-tool-page td,
+.personal-tool-page p {
   color: var(--text-strong) !important;
 }
 
 .personal-tool-page .muted,
 .personal-tool-page .note,
-.personal-tool-page .copy-hint {
+.personal-tool-page .copy-hint,
+.personal-tool-page .text-muted {
   color: var(--text-soft) !important;
   opacity: 1 !important;
 }
@@ -67,25 +71,51 @@ body.personal-tool-page {
 .personal-tool-page textarea {
   background: var(--bg3) !important;
   color: var(--text-strong) !important;
-  border: 1px solid var(--border) !important;
+  border: 1px solid rgba(var(--accent-rgb), .38) !important;
 }
 
+.personal-tool-page input:focus,
+.personal-tool-page select:focus,
+.personal-tool-page textarea:focus {
+  border-color: rgba(var(--accent-rgb), .80) !important;
+  box-shadow: 0 0 0 2px rgba(var(--accent-rgb), .10) !important;
+  outline: none !important;
+}
+
+/* Mismo lenguaje visual que s3.php: panel limpio + contorno de acento. */
 .personal-tool-page button,
-.personal-tool-page .tool-button {
-  background: var(--accent) !important;
-  color: #07110a !important;
+.personal-tool-page .tool-button,
+.personal-tool-page .drive-navbar .btn {
+  background: var(--panel-solid) !important;
+  color: var(--text-strong) !important;
   border: 1px solid rgba(var(--accent-rgb), .72) !important;
   font-weight: 700;
-}
-
-body.ui-theme.theme-light.personal-tool-page button,
-body.ui-theme.theme-light.personal-tool-page .tool-button {
-  color: #fff !important;
+  box-shadow: none !important;
 }
 
 .personal-tool-page button:hover,
-.personal-tool-page .tool-button:hover {
-  box-shadow: var(--accent-glow);
+.personal-tool-page .tool-button:hover,
+.personal-tool-page .drive-navbar .btn:hover {
+  background: rgba(var(--accent-rgb), .08) !important;
+  color: var(--text-strong) !important;
+  border-color: var(--accent) !important;
+  box-shadow: var(--accent-glow) !important;
+}
+
+.personal-tool-page button:focus,
+.personal-tool-page .tool-button:focus,
+.personal-tool-page .drive-navbar .btn:focus {
+  outline: 2px solid rgba(var(--accent-rgb), .38) !important;
+  outline-offset: 2px;
+}
+
+.personal-tool-page button:disabled,
+.personal-tool-page .tool-button:disabled,
+.personal-tool-page button[disabled] {
+  background: var(--panel-bg2) !important;
+  color: var(--text-soft) !important;
+  border-color: rgba(var(--accent-rgb), .35) !important;
+  opacity: .72 !important;
 }
 
 .personal-tool-page .result,
@@ -162,8 +192,8 @@ body.ui-theme.theme-light.personal-tool-page .tool-button {
 }
 
 .personal-tool-page a.rdp {
-  color: var(--accent-2) !important;
-  border-color: rgba(var(--accent-rgb), .45) !important;
+  color: var(--text-strong) !important;
+  border-color: rgba(var(--accent-rgb), .55) !important;
   background: rgba(var(--accent-rgb), .06) !important;
 }
 

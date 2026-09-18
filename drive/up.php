@@ -14,6 +14,12 @@ $session->requireAuthenticated('index.php');
 $actorUserId = $session->userId();
 $actorRole = trim((string)($_SESSION['role'] ?? ''));
 
+$adminUploadCsrf = (string)$session->get('admin_upload_csrf', '');
+if (!preg_match('/\A[a-f0-9]{64}\z/', $adminUploadCsrf)) {
+    $adminUploadCsrf = bin2hex(random_bytes(32));
+    $session->set('admin_upload_csrf', $adminUploadCsrf);
+}
+
 if (!in_array($actorRole, ['Administración', 'Soporte'], true)) {
     http_response_code(403);
     exit('No autorizado.');
@@ -34,6 +40,13 @@ $users = $adminUpload->users();
 $action = trim((string)($_POST['action'] ?? ''));
 if ($action !== '') {
     header('Content-Type: application/json; charset=utf-8');
+
+    $sentCsrf = trim((string)($_POST['csrf'] ?? ''));
+    if ($sentCsrf === '' || !hash_equals($adminUploadCsrf, $sentCsrf)) {
+        http_response_code(403);
+        echo json_encode(['error' => 'Token CSRF inválido. Recarga la página.'], JSON_UNESCAPED_UNICODE);
+        exit;
+    }
 
     try {
         if ($targetUser === null) {
@@ -225,6 +238,8 @@ $themeBridgeVersion = is_file(__DIR__ . '/js/theme-state-bridge.js') ? (int)file
 
   const TARGET_USER_ID =
     <?= (int)$targetUserId ?>;
+  const ADMIN_UPLOAD_CSRF =
+    <?= json_encode($adminUploadCsrf, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
   const fileInput = $('file'), startBtn=$('startBtn'), pauseBtn=$('pauseBtn'), resumeBtn=$('resumeBtn');
   const bar=$('bar'), status=$('status'), fn=$('fn'), fs=$('fs'), uploadIdEl=$('uploadId'), s3keyEl=$('s3key');
   const resultBox=$('result'), resKey=$('resKey'), resUrl=$('resUrl'), resLink=$('resLink'), resLinkWrap=$('resLinkWrap');
@@ -378,6 +393,7 @@ $themeBridgeVersion = is_file(__DIR__ . '/js/theme-state-bridge.js') ? (int)file
 
     form.append('action', action);
     form.append('target_user_id', String(TARGET_USER_ID));
+    form.append('csrf', ADMIN_UPLOAD_CSRF);
 
     for (const [k,v] of Object.entries(data)) {
       if(v!==undefined && v!==null) {

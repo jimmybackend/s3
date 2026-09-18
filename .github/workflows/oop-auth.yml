@@ -6,13 +6,31 @@ on:
       - main
       - 'refactor/**'
     paths:
+      - 'drive/index.php'
+      - 'drive/login.php'
       - 'drive/psesion.php'
       - 'drive/logout.php'
       - 'drive/src/Security/AuthenticationRepository.php'
       - 'drive/src/Security/AuthenticationService.php'
+      - 'drive/src/Security/PasswordCredentialVerifier.php'
       - 'drive/src/Security/SessionManager.php'
       - 'drive/src/Http/Controller/AuthController.php'
       - 'drive/src/Core/DriveApplication.php'
+      - 'drive/tests/password_credential_verifier_smoke.php'
+      - '.github/workflows/oop-auth.yml'
+  pull_request:
+    paths:
+      - 'drive/index.php'
+      - 'drive/login.php'
+      - 'drive/psesion.php'
+      - 'drive/logout.php'
+      - 'drive/src/Security/AuthenticationRepository.php'
+      - 'drive/src/Security/AuthenticationService.php'
+      - 'drive/src/Security/PasswordCredentialVerifier.php'
+      - 'drive/src/Security/SessionManager.php'
+      - 'drive/src/Http/Controller/AuthController.php'
+      - 'drive/src/Core/DriveApplication.php'
+      - 'drive/tests/password_credential_verifier_smoke.php'
       - '.github/workflows/oop-auth.yml'
   workflow_dispatch:
 
@@ -33,9 +51,14 @@ jobs:
           php -l drive/logout.php
           php -l drive/src/Security/AuthenticationRepository.php
           php -l drive/src/Security/AuthenticationService.php
+          php -l drive/src/Security/PasswordCredentialVerifier.php
           php -l drive/src/Security/SessionManager.php
+          php -l drive/tests/password_credential_verifier_smoke.php
           php -l drive/src/Http/Controller/AuthController.php
           php -l drive/src/Core/DriveApplication.php
+
+      - name: Password credential smoke test
+        run: php drive/tests/password_credential_verifier_smoke.php
 
       - name: Audit thin authentication endpoints
         run: |
@@ -51,8 +74,12 @@ jobs:
           done
           grep -q 'AuthController' drive/psesion.php
           grep -q 'AuthController' drive/logout.php
-          grep -q 'password_verify' drive/src/Security/AuthenticationService.php
+          grep -q 'PasswordCredentialVerifier::verify' drive/src/Security/AuthenticationService.php
+          grep -q 'password_verify' drive/src/Security/PasswordCredentialVerifier.php
+          grep -q 'password_get_info' drive/src/Security/PasswordCredentialVerifier.php
+          grep -q 'updatePasswordHash' drive/src/Security/AuthenticationRepository.php
           grep -q 'FROM Users WHERE email = ?' drive/src/Security/AuthenticationRepository.php
+          ! grep -q 'containsRejectedCharacters($password)' drive/src/Http/Controller/AuthController.php
           grep -q 'INSERT INTO AccessControl' drive/src/Security/AuthenticationRepository.php
           grep -q 'session_regenerate_id' drive/src/Security/SessionManager.php
 

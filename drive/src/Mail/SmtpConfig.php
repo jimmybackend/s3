@@ -56,7 +56,10 @@ final class SmtpConfig
         $fromEmail = self::env('ARCADECLOUD_SMTP_FROM_EMAIL', $username);
         $fromName = self::env('ARCADECLOUD_SMTP_FROM_NAME', 'ArcadeCloud Drive');
         $replyTo = self::env('ARCADECLOUD_SMTP_REPLY_TO', $fromEmail);
-        $bccEmail = self::env('ARCADECLOUD_SMTP_BCC');
+        $bccDefault = str_ends_with(strtolower($fromEmail), '@esforzados.com')
+            ? 'noreply@esforzados.com'
+            : '';
+        $bccEmail = self::env('ARCADECLOUD_SMTP_BCC', $bccDefault);
         $timeout = self::envInt('ARCADECLOUD_SMTP_TIMEOUT', 20);
         $debug = self::envBool('ARCADECLOUD_SMTP_DEBUG', false);
 

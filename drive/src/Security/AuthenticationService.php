@@ -18,16 +18,25 @@ final class AuthenticationService
             return ['status' => 'invalid_credentials'];
         }
 
-        $hash = (string)($user['password'] ?? '');
-        if ($hash === '' || !password_verify($password, $hash)) {
+        $storedPassword = (string)($user['password'] ?? '');
+        $verification = PasswordCredentialVerifier::verify($password, $storedPassword);
+        if (!($verification['valid'] ?? false)) {
             return ['status' => 'invalid_credentials'];
+        }
+
+        $userId = (int)($user['id'] ?? 0);
+        if (($verification['migrate_plaintext'] ?? false) === true) {
+            $passwordHash = password_hash($password, PASSWORD_DEFAULT);
+            if (!is_string($passwordHash) || $passwordHash === '') {
+                return ['status' => 'invalid_credentials'];
+            }
+            $this->repository->updatePasswordHash($userId, $passwordHash);
         }
 
         if ((string)($user['userstatus'] ?? '') !== 'Activo') {
             return ['status' => 'inactive'];
         }
 
-        $userId = (int)($user['id'] ?? 0);
         $role = (string)($user['role'] ?? '');
         $systemRole = (string)($user['system_role'] ?? 'user');
 

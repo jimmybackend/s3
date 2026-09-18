@@ -18,7 +18,6 @@ use ArcadeCloud\Drive\Aws\FileRecordLocator;
 use ArcadeCloud\Drive\Aws\PersonalAwsConfig;
 use ArcadeCloud\Drive\Aws\PersonalTotpService;
 use ArcadeCloud\Drive\Aws\RdsGateway;
-use ArcadeCloud\Drive\Aws\SesEmailService;
 use ArcadeCloud\Drive\Media\MediaPlaylistRepository;
 use ArcadeCloud\Drive\Media\MediaPlaylistService;
 use ArcadeCloud\Drive\Media\ThumbnailService;
@@ -176,9 +175,7 @@ final class DriveApplication
     public function passwordChangeService(): PasswordChangeService
     {
         return $this->passwordChangeService ??= new PasswordChangeService(
-            $this->userProfileRepository(),
-            $this->session(),
-            new SesEmailService()
+            $this->userProfileRepository()
         );
     }
 

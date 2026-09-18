@@ -77,10 +77,7 @@ final class UserProfileController
 
             if ($action === 'request_password_code') {
                 JsonResponse::send(
-                    $this->app->passwordChangeService()->requestCode(
-                        $userId,
-                        $this->request->serverString('HTTP_HOST')
-                    )
+                    $this->app->passwordChangeService()->requestCode($userId)
                 );
             }
 

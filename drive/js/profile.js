@@ -209,8 +209,8 @@
         body.set('action', 'request_password_code');
         const data = await this.post(body);
         const target = document.getElementById('passwordCodeDestination');
-        if (target) target.textContent = `Código enviado a ${data.email || 'tu correo registrado'}.`;
-        this.message(data.message || 'Código enviado.', 'success');
+        if (target) target.textContent = data.message || 'Datos listos para verificar.';
+        this.message(data.message || 'Datos listos para verificar.', 'success');
       } catch (error) {
         this.message(error.message || 'No se pudo enviar el código.', 'danger');
       }
@@ -222,6 +222,10 @@
       const confirmation = document.getElementById('profileConfirmPassword')?.value || '';
 
       try {
+        if (String(code).trim() === '') {
+          throw new Error('Escribe tu código postal registrado.');
+        }
+
         const passwordLength = Array.from(password).length;
         if (passwordLength < 1 || passwordLength > 6) {
           throw new Error('La nueva contraseña debe tener de 1 a 6 caracteres.');

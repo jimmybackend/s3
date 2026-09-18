@@ -1,6 +1,6 @@
 # Correo SMTP del perfil de ArcadeCloud Drive
 
-El cambio de contraseña del perfil usa un código de verificación de seis dígitos enviado al correo registrado del usuario.
+El cambio de contraseña del perfil ya no depende del correo. Para esta instalación familiar, la verificación usa el `postalcode` guardado en la tabla `Users`; el valor permanece estable hasta que el propio usuario actualiza sus Datos personales.
 
 ## Arquitectura
 
@@ -93,13 +93,15 @@ Nunca coloques la contraseña SMTP dentro de `Config-s3.php`, `s3.php`, JavaScri
 
 ## Flujo de seguridad de contraseña
 
-1. El usuario solicita el código desde `Mi perfil`.
-2. El backend obtiene el correo real desde `Users`; no lo expone completo al navegador.
-3. Se genera un código aleatorio de 6 dígitos.
-4. SMTP lo envía al correo registrado.
-5. La sesión guarda únicamente un hash del código durante 10 minutos.
-6. Hay espera de 60 segundos entre reenvíos y máximo 5 intentos.
+1. El usuario abre `Mi perfil`.
+2. El backend lee en ese momento `address` y `postalcode` desde la fila autenticada de `Users`.
+3. Si falta la dirección o el código postal, el cambio se rechaza y se pide completar primero los Datos personales.
+4. El usuario escribe como código de verificación el mismo código postal que tiene registrado.
+5. El backend vuelve a leer el perfil y compara exactamente el valor recibido contra `Users.postalcode`.
+6. No se genera código aleatorio, no se envía correo y no se guarda código de verificación en la sesión.
 7. La contraseña nueva se almacena usando `password_hash()`.
+
+Este mecanismo es deliberadamente sencillo para la etapa familiar/de pruebas y no debe interpretarse como un segundo factor de autenticación fuerte. La infraestructura SMTP documentada en este archivo permanece disponible para otros usos, pero ya no participa en el cambio de contraseña.
 
 ## Avatar y estado visual
 

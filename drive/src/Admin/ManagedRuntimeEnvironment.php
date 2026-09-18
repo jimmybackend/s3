@@ -28,6 +28,7 @@ final class ManagedRuntimeEnvironment
         'ARCADECLOUD_SMTP_FROM_EMAIL' => ['secret' => false, 'group' => 'SMTP'],
         'ARCADECLOUD_SMTP_FROM_NAME' => ['secret' => false, 'group' => 'SMTP'],
         'ARCADECLOUD_SMTP_REPLY_TO' => ['secret' => false, 'group' => 'SMTP'],
+        'ARCADECLOUD_SMTP_BCC' => ['secret' => false, 'group' => 'SMTP'],
         'ARCADECLOUD_SMTP_TIMEOUT' => ['secret' => false, 'group' => 'SMTP'],
         'ARCADECLOUD_SMTP_DEBUG' => ['secret' => false, 'group' => 'SMTP'],
 
@@ -173,6 +174,12 @@ final class ManagedRuntimeEnvironment
             $timeout = filter_var($value, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1, 'max_range' => 120]]);
             if ($timeout === false) throw new RuntimeException('ARCADECLOUD_SMTP_TIMEOUT debe estar entre 1 y 120.');
             return (string)$timeout;
+        }
+
+        if (in_array($name, ['ARCADECLOUD_SMTP_FROM_EMAIL', 'ARCADECLOUD_SMTP_REPLY_TO', 'ARCADECLOUD_SMTP_BCC'], true)
+            && $value !== ''
+            && !filter_var($value, FILTER_VALIDATE_EMAIL)) {
+            throw new RuntimeException($name . ' debe contener un correo válido.');
         }
 
         if ($name === 'ARCADECLOUD_SMTP_SECURE') {

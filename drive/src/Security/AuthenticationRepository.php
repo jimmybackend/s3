@@ -34,6 +34,22 @@ final class AuthenticationRepository
         return is_array($row) ? $row : null;
     }
 
+    public function updatePasswordHash(int $userId, string $passwordHash): void
+    {
+        $stmt = $this->db->prepare('UPDATE Users SET password = ? WHERE id = ? LIMIT 1');
+        if (!$stmt) {
+            throw new RuntimeException('No se pudo preparar la actualización segura de contraseña.');
+        }
+
+        $stmt->bind_param('si', $passwordHash, $userId);
+        if (!$stmt->execute()) {
+            $stmt->close();
+            throw new RuntimeException('No se pudo actualizar la contraseña segura del usuario.');
+        }
+
+        $stmt->close();
+    }
+
     public function recordLogin(int $userId, string $role, string $ipAddress): void
     {
         $action = 'Inicio de Sesión';

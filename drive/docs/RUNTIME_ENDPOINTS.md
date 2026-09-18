@@ -281,6 +281,7 @@
 | `drive/src/Security/FileSecurityRepository.php` | ninguna |
 | `drive/src/Security/FileSecurityService.php` | ninguna |
 | `drive/src/Security/PasswordChangeService.php` | ninguna |
+| `drive/src/Security/PasswordCredentialVerifier.php` | `drive/tests/password_credential_verifier_smoke.php` |
 | `drive/src/Security/PersonalToolAccessService.php` | ninguna |
 | `drive/src/Security/SessionManager.php` | ninguna |
 | `drive/src/Security/SuperAdminReauthenticationService.php` | ninguna |
@@ -350,6 +351,7 @@
 | `drive/tests/federation_replica_smoke.php` | ninguna |
 | `drive/tests/federationcloud_smoke.php` | ninguna |
 | `drive/tests/folder_document_sanitizer.php` | ninguna |
+| `drive/tests/password_credential_verifier_smoke.php` | ninguna |
 | `drive/tests/scoped_sync_repository_regression.php` | ninguna |
 | `drive/tests/server_admin_config_smoke.php` | ninguna |
 | `drive/tests/setup_bootstrap_smoke.php` | ninguna |

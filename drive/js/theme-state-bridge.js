@@ -1,4 +1,12 @@
-(() => {
+class ThemeStateBridge {
+  constructor(win, doc) {
+    this.win = win;
+    this.doc = doc;
+  }
+
+  init() {
+    const window = this.win;
+    const document = this.doc;
   'use strict';
 
   const themeClasses = [
@@ -58,4 +66,7 @@
   } else {
     apply();
   }
-})();
+  }
+}
+
+new ThemeStateBridge(window, document).init();

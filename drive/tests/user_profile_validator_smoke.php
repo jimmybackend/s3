@@ -36,20 +36,35 @@ if (!$rejected) {
     exit(1);
 }
 
+$passwordCases = ['1', '123456', 'abc123', 'ABC', 'a!2#'];
+foreach ($passwordCases as $password) {
+    if (UserProfileValidator::password($password, $password) !== $password) {
+        fwrite(STDERR, "Valid short password was rejected: {$password}.\n");
+        exit(1);
+    }
+}
+
+foreach (['', '1234567'] as $invalidPassword) {
+    $rejected = false;
+    try {
+        UserProfileValidator::password($invalidPassword, $invalidPassword);
+    } catch (InvalidArgumentException) {
+        $rejected = true;
+    }
+    if (!$rejected) {
+        fwrite(STDERR, "Invalid password length was accepted.\n");
+        exit(1);
+    }
+}
+
 $rejected = false;
 try {
-    UserProfileValidator::password('corta', 'corta');
+    UserProfileValidator::password('123456', '654321');
 } catch (InvalidArgumentException) {
     $rejected = true;
 }
 if (!$rejected) {
-    fwrite(STDERR, "Short password was accepted.\n");
-    exit(1);
-}
-
-$password = 'frase-segura-de-prueba-2026';
-if (UserProfileValidator::password($password, $password) !== $password) {
-    fwrite(STDERR, "Valid password was rejected.\n");
+    fwrite(STDERR, "Mismatched password confirmation was accepted.\n");
     exit(1);
 }
 

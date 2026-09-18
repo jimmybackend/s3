@@ -299,6 +299,7 @@ class SoportesMediaTypesModule {
 
         try {
           const API = window.UPLOAD_API || 'api/upload.php';
+          const CSRF = String(window.DRIVE_UPLOAD_CSRF || '');
           const initParams = new URLSearchParams({
             mode: 'local_put',
             action: 'init',
@@ -306,10 +307,15 @@ class SoportesMediaTypesModule {
             ruta_objetivo: rutaObjetivo
           });
 
-          const initResponse = await fetch(API + '?' + initParams.toString(), {
-            method: 'GET',
+          const initResponse = await fetch(API + '?mode=local_put&action=init', {
+            method: 'POST',
             credentials: 'same-origin',
-            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+              'X-Requested-With': 'XMLHttpRequest',
+              'X-Drive-CSRF': CSRF
+            },
+            body: initParams.toString()
           });
           const initJson = await initResponse.json().catch(() => null);
           if (!initResponse.ok || !initJson || !initJson.ok || !initJson.url || !initJson.upload_token) {
@@ -344,7 +350,8 @@ class SoportesMediaTypesModule {
             credentials: 'same-origin',
             headers: {
               'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
-              'X-Requested-With': 'XMLHttpRequest'
+              'X-Requested-With': 'XMLHttpRequest',
+              'X-Drive-CSRF': CSRF
             },
             body: completeBody.toString()
           });

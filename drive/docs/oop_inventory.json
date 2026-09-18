@@ -1752,7 +1752,7 @@
     },
     {
       "path": "drive/src/Admin/ManagedRuntimeEnvironment.php",
-      "lines": 213,
+      "lines": 220,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -3771,7 +3771,7 @@
     },
     {
       "path": "drive/src/Mail/SmtpConfig.php",
-      "lines": 111,
+      "lines": 120,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -3786,7 +3786,7 @@
     },
     {
       "path": "drive/src/Mail/SmtpEmailService.php",
-      "lines": 228,
+      "lines": 265,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -4046,7 +4046,7 @@
     },
     {
       "path": "drive/src/Setup/SetupConfigurationService.php",
-      "lines": 182,
+      "lines": 186,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -5083,7 +5083,7 @@
     },
     {
       "path": "drive/tests/smtp_config_smoke.php",
-      "lines": 42,
+      "lines": 49,
       "kind": "procedural endpoint",
       "classes": 0,
       "functions": [],

@@ -132,7 +132,7 @@
 | `drive/src/Activity/TranscriptionCostAttribution.php` | 117 | class/module | 1 | — | — | — | — |
 | `drive/src/Activity/TranscriptionReconciler.php` | 315 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Admin/ArcadeCloudUpdaterService.php` | 85 | class/module | 1 | — | ⚠️ | — | — |
-| `drive/src/Admin/ManagedRuntimeEnvironment.php` | 213 | class/module | 1 | — | — | — | — |
+| `drive/src/Admin/ManagedRuntimeEnvironment.php` | 220 | class/module | 1 | — | — | — | — |
 | `drive/src/Admin/PrivilegedServerHelper.php` | 123 | class/module | 1 | — | — | — | — |
 | `drive/src/Admin/ServerSettingsAdminService.php` | 211 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Application/AiFileSearchService.php` | 470 | class/module | 1 | — | ⚠️ | — | — |
@@ -266,8 +266,8 @@
 | `drive/src/Http/Controller/UserProfileController.php` | 115 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/JsonResponse.php` | 27 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Request.php` | 112 | class/module | 1 | — | — | — | — |
-| `drive/src/Mail/SmtpConfig.php` | 111 | class/module | 1 | — | — | — | — |
-| `drive/src/Mail/SmtpEmailService.php` | 228 | class/module | 1 | — | — | — | — |
+| `drive/src/Mail/SmtpConfig.php` | 120 | class/module | 1 | — | — | — | — |
+| `drive/src/Mail/SmtpEmailService.php` | 265 | class/module | 1 | — | — | — | — |
 | `drive/src/Media/MediaPlaylistRepository.php` | 49 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Media/MediaPlaylistService.php` | 66 | class/module | 1 | — | — | — | — |
 | `drive/src/Media/ThumbnailService.php` | 380 | class/module | 1 | — | ⚠️ | — | — |
@@ -284,7 +284,7 @@
 | `drive/src/Security/UserProfileService.php` | 183 | class/module | 1 | — | — | — | — |
 | `drive/src/Security/UserProfileValidator.php` | 96 | class/module | 1 | — | — | — | — |
 | `drive/src/Setup/BootstrapSetupAuth.php` | 181 | class/module | 1 | ⚠️ | — | — | — |
-| `drive/src/Setup/SetupConfigurationService.php` | 182 | class/module | 1 | — | — | — | — |
+| `drive/src/Setup/SetupConfigurationService.php` | 186 | class/module | 1 | — | — | — | — |
 | `drive/src/Setup/SuperAdminBootstrapService.php` | 174 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Sharing/ShareAccessService.php` | 105 | class/module | 1 | — | — | — | — |
 | `drive/src/Sharing/ShareException.php` | 22 | class/module | 1 | — | — | — | — |
@@ -349,7 +349,7 @@
 | `drive/tests/scoped_sync_repository_regression.php` | 96 | procedural endpoint | 0 | — | ⚠️ | — | DB in endpoint |
 | `drive/tests/server_admin_config_smoke.php` | 97 | procedural endpoint | 0 | — | — | — | global functions: serverAdminOk |
 | `drive/tests/setup_bootstrap_smoke.php` | 57 | procedural endpoint | 0 | — | — | — | — |
-| `drive/tests/smtp_config_smoke.php` | 42 | procedural endpoint | 0 | — | — | — | — |
+| `drive/tests/smtp_config_smoke.php` | 49 | procedural endpoint | 0 | — | — | — | — |
 | `drive/tests/sync_repository_regression.php` | 91 | procedural endpoint | 0 | — | ⚠️ | — | global functions: check; DB in endpoint |
 | `drive/tests/sync_schema_migrator_regression.php` | 75 | procedural endpoint | 0 | — | ⚠️ | — | DB in endpoint |
 | `drive/tests/upload_catalog_registration_regression.php` | 125 | procedural endpoint | 0 | — | ⚠️ | — | DB in endpoint |

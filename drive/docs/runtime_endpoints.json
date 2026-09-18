@@ -200,7 +200,7 @@
     },
     {
       "path": "drive/bin/arcadecloud-drive-admin-helper.php",
-      "size": 12894,
+      "size": 12918,
       "active": false,
       "references": []
     },
@@ -1063,7 +1063,7 @@
     },
     {
       "path": "drive/src/Admin/ManagedRuntimeEnvironment.php",
-      "size": 10256,
+      "size": 10636,
       "active": true,
       "references": [
         "drive/app_bootstrap.php",
@@ -1989,7 +1989,7 @@
     },
     {
       "path": "drive/src/Mail/SmtpConfig.php",
-      "size": 3826,
+      "size": 4293,
       "active": false,
       "references": [
         "drive/tests/smtp_config_smoke.php"
@@ -1997,7 +1997,7 @@
     },
     {
       "path": "drive/src/Mail/SmtpEmailService.php",
-      "size": 8610,
+      "size": 10029,
       "active": false,
       "references": []
     },
@@ -2105,7 +2105,7 @@
     },
     {
       "path": "drive/src/Setup/SetupConfigurationService.php",
-      "size": 7791,
+      "size": 8071,
       "active": false,
       "references": [
         "drive/setup/api.php"
@@ -2514,7 +2514,7 @@
     },
     {
       "path": "drive/tests/smtp_config_smoke.php",
-      "size": 1342,
+      "size": 1671,
       "active": false,
       "references": []
     },

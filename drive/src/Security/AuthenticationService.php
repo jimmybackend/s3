@@ -25,16 +25,17 @@ final class AuthenticationService
         }
 
         $userId = (int)($user['id'] ?? 0);
+
+        if ((string)($user['userstatus'] ?? '') !== 'Activo') {
+            return ['status' => 'inactive'];
+        }
+
         if (($verification['migrate_plaintext'] ?? false) === true) {
             $passwordHash = password_hash($password, PASSWORD_DEFAULT);
             if (!is_string($passwordHash) || $passwordHash === '') {
                 return ['status' => 'invalid_credentials'];
             }
             $this->repository->updatePasswordHash($userId, $passwordHash);
-        }
-
-        if ((string)($user['userstatus'] ?? '') !== 'Activo') {
-            return ['status' => 'inactive'];
         }
 
         $role = (string)($user['role'] ?? '');

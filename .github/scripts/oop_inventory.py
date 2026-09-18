@@ -63,11 +63,12 @@ def php_info(p):
 
     issues = []
     runtime_migration_kind = kind in {'procedural endpoint', 'endpoint with logic', 'cli entrypoint with logic'}
+    http_endpoint_kind = kind in {'thin endpoint', 'procedural endpoint', 'endpoint with logic'}
     if funcs and kind != 'test script':
         issues.append('global functions: ' + ', '.join(funcs[:8]))
-    if runtime_migration_kind and raw_db:
+    if (runtime_migration_kind or http_endpoint_kind) and raw_db and kind != 'bootstrap':
         issues.append('DB in entrypoint')
-    if runtime_migration_kind and raw_s3:
+    if (runtime_migration_kind or http_endpoint_kind) and raw_s3 and kind != 'bootstrap':
         issues.append('AWS/S3 in entrypoint')
     if runtime_migration_kind and direct_session:
         issues.append('session in entrypoint')
@@ -122,6 +123,7 @@ summary = {
         1 for x in php
         if x['kind'] in {'procedural endpoint', 'endpoint with logic', 'cli entrypoint with logic'}
         or (x['functions'] and x['kind'] != 'test script')
+        or any(issue.startswith(('DB in entrypoint', 'AWS/S3 in entrypoint')) for issue in x['issues'])
     ),
     'php_tests': sum(1 for x in php if x['kind'] == 'test script'),
     'js_total': len(js),

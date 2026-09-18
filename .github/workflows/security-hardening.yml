@@ -41,6 +41,23 @@ jobs:
             node --check "$file"
           done
 
+      - name: Runtime OOP inventory
+        run: |
+          python3 .github/scripts/oop_inventory.py | tee /tmp/oop-summary.json
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          data = json.loads(Path('drive/docs/oop_inventory.json').read_text())
+          summary = data['summary']
+          print('OOP runtime summary:', json.dumps(summary, ensure_ascii=False))
+          bad_src = [
+              row['path'] for row in data['php']
+              if 'src file without class' in row.get('issues', [])
+          ]
+          if bad_src:
+              raise SystemExit('src/ sin clase: ' + ', '.join(bad_src))
+          PY
+
       - name: Security regression tests
         run: php drive/tests/security_hardening_smoke.php
 

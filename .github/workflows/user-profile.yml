@@ -97,6 +97,9 @@ jobs:
           grep -q "spinner-border" drive/src/View/UserProfileModalRenderer.php
           grep -q "Subiendo fotografía" drive/js/profile.js
           grep -q "ARCADECLOUD_SMTP_PASSWORD" drive/src/Mail/SmtpConfig.php
+          grep -q "ARCADECLOUD_SMTP_BCC" drive/src/Mail/SmtpConfig.php
+          grep -q "bccEmail" drive/src/Mail/SmtpEmailService.php
+          grep -q "acceptRecipient" drive/src/Mail/SmtpEmailService.php
           grep -q "SmtpEmailService" drive/src/Aws/SesEmailService.php
           ! grep -q "SesClient" drive/src/Aws/SesEmailService.php
           ! grep -R -q "micontraseñasegura" drive/src drive/js

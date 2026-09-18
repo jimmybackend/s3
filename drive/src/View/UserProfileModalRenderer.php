@@ -103,10 +103,10 @@ final class UserProfileModalRenderer
             <div class="card h-100">
               <div class="card-header font-weight-bold">Cambiar contraseña</div>
               <div class="card-body">
-                <p class="small text-muted">Primero enviaremos un código de seis dígitos al correo registrado.</p>
-                <button id="btnRequestPasswordCode" type="button" class="btn btn-outline-primary btn-sm mb-3"><i class="fas fa-envelope mr-1"></i>Enviar código</button>
+                <p class="small text-muted">Para verificar tu identidad usa el código postal guardado en tus Datos personales. No se envía correo ni se crea un código temporal.</p>
+                <button id="btnRequestPasswordCode" type="button" class="btn btn-outline-primary btn-sm mb-3"><i class="fas fa-map-marker-alt mr-1"></i>Comprobar datos</button>
                 <div id="passwordCodeDestination" class="small text-muted mb-3"></div>
-                <div class="form-group"><label for="profileVerificationCode">Código</label><input id="profileVerificationCode" class="form-control" inputmode="numeric" maxlength="6" autocomplete="one-time-code"></div>
+                <div class="form-group"><label for="profileVerificationCode">Código postal</label><input id="profileVerificationCode" class="form-control" maxlength="10" autocomplete="postal-code"></div>
                 <div class="form-group"><label for="profileNewPassword">Nueva contraseña</label><input id="profileNewPassword" type="password" class="form-control" minlength="1" maxlength="6" autocomplete="new-password"></div>
                 <div class="form-group"><label for="profileConfirmPassword">Confirmar contraseña</label><input id="profileConfirmPassword" type="password" class="form-control" minlength="1" maxlength="6" autocomplete="new-password"></div>
                 <small class="form-text text-muted mb-3">De 1 a 6 caracteres. Puede usar solo números, solo letras o cualquier combinación con mayúsculas, minúsculas y símbolos. No se exige mezclar tipos de caracteres.</small>

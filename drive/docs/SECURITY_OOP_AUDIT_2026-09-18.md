@@ -119,13 +119,32 @@ Cambios concretos:
 - `setup/api.php` -> `SetupApiController`;
 - `upload_audio_recording.php` -> `AudioRecordingUploadController` -> `SingleUploadService`;
 - `SyncController` delega el lanzamiento CLI a `BackgroundWorkerLauncher`;
+- `move_job_worker.php` -> `Console\\MoveJobWorkerCommand`;
+- `sync_worker.php` -> `Console\\SyncWorkerCommand`;
+- `arcadecloud-drive-updater.php` quedó como ejecutable OOP autocontenido porque se instala en `/usr/local/sbin`;
+- `arcadecloud-drive-admin-helper.php` quedó como ejecutable OOP autocontenido, conservando allowlists y límites privilegiados;
+- `federation_https_reconcile.php` quedó encapsulado en `FederationHttpsReconciler`, conservando IMDSv2, Certbot y Nginx;
+- los cuatro módulos JavaScript heredados fueron envueltos en clases sin reescribir su lógica interna;
 - el inventario reconoce `readonly class`;
 - tests quedan separados de la deuda OOP de runtime;
 - wrappers CLI delgados se distinguen de lógica procedural;
 - funciones JavaScript dentro de vistas PHP ya no se confunden con funciones PHP;
 - un endpoint delgado que toca DB o AWS directamente vuelve a marcarse como deuda.
 
-No se exige convertir HTML, bootstrap, tests o wrappers CLI mínimos en clases artificiales. El criterio es que la lógica de negocio, infraestructura y mutaciones no vivan en entrypoints.
+No se exige convertir HTML, bootstrap o tests en clases artificiales. Los wrappers CLI mínimos pueden seguir siendo entrypoints; la lógica que ejecutan debe vivir en clases, salvo herramientas privilegiadas instaladas como archivos autocontenidos, que encapsulan su comportamiento en una clase dentro del propio ejecutable.
+
+Resultado del gate sobre la rama:
+
+- PHP analizados: **368**;
+- módulos PHP con clases/interfaces: **220**;
+- deuda OOP PHP de runtime: **0**;
+- tests PHP separados del criterio de runtime: **26**;
+- JavaScript analizados: **46**;
+- JavaScript con clases: **46**;
+- deuda OOP JavaScript: **0**;
+- fachadas `window` OOP conservadas por compatibilidad: **7**.
+
+El workflow falla si vuelve a aparecer deuda OOP PHP o JavaScript.
 
 ## Gate automático
 
@@ -137,11 +156,14 @@ No se exige convertir HTML, bootstrap, tests o wrappers CLI mínimos en clases a
 4. sintaxis de los JavaScript;
 5. inventario OOP;
 6. smoke tests de login throttle y SSRF;
-7. contratos de CSRF/SSRF;
-8. escaneo básico de secretos.
+7. contrato FederationCloud HTTPS;
+8. smoke test del bootstrap inicial;
+9. contratos de CSRF/SSRF y helpers privilegiados;
+10. escaneo básico de secretos;
+11. fallo obligatorio ante cualquier nueva deuda OOP de runtime.
 
-## Pendientes que requieren revisión separada
+## Pendiente fuera del repositorio
 
-Los helpers CLI privilegiados y scripts operativos grandes deben seguir revisándose por responsabilidad y mínimo privilegio. No deben reescribirse sólo para aumentar un contador OOP: cualquier migración de esos scripts debe conservar contratos de sudo/systemd, recuperación y operación FederationCloud.
+La auditoría del código queda sin deuda OOP de runtime conocida bajo el criterio anterior y sin avisos conocidos en `composer audit --locked`. Esto no equivale a riesgo cero.
 
-Después de fusionar este PR, la siguiente auditoría debe ejecutarse sobre el nuevo `main` y sobre el EC2 desplegado para validar configuración Nginx/PHP-FPM, permisos de archivos, systemd, sudoers y variables privadas, ya que esas capas no pueden certificarse únicamente desde el repositorio.
+Después de fusionar este PR, debe validarse el EC2 desplegado: configuración Nginx/PHP-FPM, permisos de archivos, systemd, sudoers, variables privadas, cabeceras de proxy y ejecución real de los helpers instalados en `/usr/local/sbin`. Esas capas no pueden certificarse únicamente desde GitHub.

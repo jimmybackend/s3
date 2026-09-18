@@ -2087,7 +2087,7 @@
     },
     {
       "path": "drive/src/Security/UserProfileValidator.php",
-      "size": 3580,
+      "size": 3583,
       "active": false,
       "references": [
         "drive/tests/user_profile_validator_smoke.php"
@@ -2364,7 +2364,7 @@
     },
     {
       "path": "drive/src/View/UserProfileModalRenderer.php",
-      "size": 8494,
+      "size": 8662,
       "active": false,
       "references": []
     },
@@ -2544,7 +2544,7 @@
     },
     {
       "path": "drive/tests/user_profile_validator_smoke.php",
-      "size": 1457,
+      "size": 1915,
       "active": false,
       "references": []
     },

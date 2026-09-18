@@ -166,7 +166,7 @@ final class SyncWorkerCommand
                     'finished_at' => date('c'),
                 ]);
             }
-            return 1;
+            return 0;
         } finally {
             if (is_resource($lockHandle)) {
                 @flock($lockHandle, LOCK_UN);

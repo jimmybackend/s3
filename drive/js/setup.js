@@ -12,7 +12,6 @@ class ArcadeCloudSetup {
       DB_PORT: '3306', AWS_REGION: 'us-east-1',
       ARCADECLOUD_SMTP_HOST: 'smtp.titan.email', ARCADECLOUD_SMTP_PORT: '587',
       ARCADECLOUD_SMTP_SECURE: 'tls', ARCADECLOUD_SMTP_FROM_NAME: 'ArcadeCloud Drive',
-      ARCADECLOUD_SMTP_BCC: 'noreply@esforzados.com',
       ARCADECLOUD_SMTP_TIMEOUT: '20', ARCADECLOUD_SMTP_DEBUG: 'false'
     };
   }

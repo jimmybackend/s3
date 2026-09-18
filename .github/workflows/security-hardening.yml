@@ -79,7 +79,10 @@ jobs:
           PY
 
       - name: Security regression tests
-        run: php drive/tests/security_hardening_smoke.php
+        run: |
+          php drive/tests/security_hardening_smoke.php
+          php drive/tests/federation_https_contract_smoke.php
+          php drive/tests/setup_bootstrap_smoke.php
 
       - name: Security contract checks
         shell: bash
@@ -95,6 +98,22 @@ jobs:
           grep -q "CURLOPT_RESOLVE" drive/upload/drivers/RemoteUrlUploader.php
           grep -q "MAX_BYTES" drive/upload/drivers/RemoteUrlUploader.php
           grep -q "admin_upload_csrf" drive/up.php
+
+          # Standalone privileged helpers must remain allowlisted and shell-safe.
+          grep -q "final class ArcadeCloudDriveAdminHelper" drive/bin/arcadecloud-drive-admin-helper.php
+          grep -q "requireServerOperator" drive/bin/arcadecloud-drive-admin-helper.php
+          grep -q "token_hash" drive/bin/arcadecloud-drive-admin-helper.php
+          grep -q "password_hash('arcadecloud'" drive/bin/arcadecloud-drive-admin-helper.php
+          ! grep -Eq '\\b(shell_exec|exec|system|passthru|popen)\\s*\\(' drive/bin/arcadecloud-drive-admin-helper.php
+
+          grep -q "final class ArcadeCloudDriveUpdater" drive/bin/arcadecloud-drive-updater.php
+          grep -q "merge.*--ff-only" drive/bin/arcadecloud-drive-updater.php
+          grep -q "jimmybackend/s3" drive/bin/arcadecloud-drive-updater.php
+          grep -q "bypass_shell" drive/bin/arcadecloud-drive-updater.php
+
+          grep -q "final class FederationHttpsReconciler" drive/bin/federation_https_reconcile.php
+          ! grep -Eq '\\b(shell_exec|exec|system|passthru|popen)\\s*\\(' drive/bin/federation_https_reconcile.php
+
           for file in drive/js/subir.js drive/js/subir-dropzone.js drive/js/subir-chunked.js drive/js/soportesMediaTypes.js; do
             grep -q "X-Drive-CSRF" "$file"
           done

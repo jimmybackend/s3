@@ -88,7 +88,11 @@ final class UploadController
                     ['mode' => $mode, 'phase' => $action]
                 );
             }
-            JsonResponse::send(['ok' => false, 'error' => $e->getMessage()], 500);
+            error_log('[ArcadeCloud upload] ' . $e::class . ': ' . $e->getMessage());
+            JsonResponse::send([
+                'ok' => false,
+                'error' => 'No se pudo completar la subida. Revisa los datos e inténtalo nuevamente.',
+            ], 500);
         }
     }
 

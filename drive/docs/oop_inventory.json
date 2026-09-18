@@ -1,8 +1,8 @@
 {
   "summary": {
-    "php_total": 360,
-    "php_class_modules": 210,
-    "php_needs_migration": 38,
+    "php_total": 362,
+    "php_class_modules": 211,
+    "php_needs_migration": 39,
     "js_total": 46,
     "js_class_modules": 42,
     "js_needs_migration": 11
@@ -1197,7 +1197,7 @@
     },
     {
       "path": "drive/index.php",
-      "lines": 87,
+      "lines": 88,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -1242,7 +1242,7 @@
     },
     {
       "path": "drive/login.php",
-      "lines": 92,
+      "lines": 93,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -3846,7 +3846,7 @@
     },
     {
       "path": "drive/src/Security/AuthenticationRepository.php",
-      "lines": 59,
+      "lines": 75,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -3861,7 +3861,7 @@
     },
     {
       "path": "drive/src/Security/AuthenticationService.php",
-      "lines": 45,
+      "lines": 55,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -3907,6 +3907,21 @@
     {
       "path": "drive/src/Security/PasswordChangeService.php",
       "lines": 80,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Security/PasswordCredentialVerifier.php",
+      "lines": 35,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -5027,6 +5042,21 @@
       "s3": false,
       "bootstrap": false,
       "html": true,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/tests/password_credential_verifier_smoke.php",
+      "lines": 44,
+      "kind": "procedural endpoint",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
       "namespace": false,
       "issues": []
     },

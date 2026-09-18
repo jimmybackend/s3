@@ -4,9 +4,9 @@
 
 ## Resumen
 
-- PHP analizados: **360**
-- PHP que ya contienen clases/interfaces: **210**
-- PHP marcados para migración/revisión: **38**
+- PHP analizados: **362**
+- PHP que ya contienen clases/interfaces: **211**
+- PHP marcados para migración/revisión: **39**
 - JavaScript analizados: **46**
 - JavaScript que ya contienen clases: **42**
 - JavaScript marcados para migración/revisión: **11**
@@ -96,10 +96,10 @@
 | `drive/federationcloud/sync-status.php` | 11 | thin endpoint | 0 | — | — | — | — |
 | `drive/generar_token.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/guardar_texto.php` | 8 | thin endpoint | 0 | — | — | — | — |
-| `drive/index.php` | 87 | view/entrypoint | 0 | — | — | — | — |
+| `drive/index.php` | 88 | view/entrypoint | 0 | — | — | — | — |
 | `drive/leer_texto.php` | 8 | thin endpoint | 0 | — | — | — | — |
 | `drive/listar_carpetas.php` | 10 | thin endpoint | 0 | — | — | — | — |
-| `drive/login.php` | 92 | view/entrypoint | 0 | — | — | — | — |
+| `drive/login.php` | 93 | view/entrypoint | 0 | — | — | — | — |
 | `drive/logout.php` | 14 | thin endpoint | 0 | — | — | — | — |
 | `drive/media_playlist.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/move_multiple.php` | 10 | thin endpoint | 0 | — | — | — | — |
@@ -271,11 +271,12 @@
 | `drive/src/Media/MediaPlaylistRepository.php` | 49 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Media/MediaPlaylistService.php` | 66 | class/module | 1 | — | — | — | — |
 | `drive/src/Media/ThumbnailService.php` | 380 | class/module | 1 | — | ⚠️ | — | — |
-| `drive/src/Security/AuthenticationRepository.php` | 59 | class/module | 1 | — | ⚠️ | — | — |
-| `drive/src/Security/AuthenticationService.php` | 45 | class/module | 1 | — | — | — | — |
+| `drive/src/Security/AuthenticationRepository.php` | 75 | class/module | 1 | — | ⚠️ | — | — |
+| `drive/src/Security/AuthenticationService.php` | 55 | class/module | 1 | — | — | — | — |
 | `drive/src/Security/FileSecurityRepository.php` | 92 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Security/FileSecurityService.php` | 183 | class/module | 1 | — | — | — | — |
 | `drive/src/Security/PasswordChangeService.php` | 80 | class/module | 1 | — | — | — | — |
+| `drive/src/Security/PasswordCredentialVerifier.php` | 35 | class/module | 1 | — | — | — | — |
 | `drive/src/Security/PersonalToolAccessService.php` | 53 | class/module | 1 | — | — | — | — |
 | `drive/src/Security/SessionManager.php` | 149 | class/module | 1 | ⚠️ | — | — | — |
 | `drive/src/Security/SuperAdminReauthenticationService.php` | 89 | class/module | 1 | — | — | — | — |
@@ -346,6 +347,7 @@
 | `drive/tests/federation_replica_smoke.php` | 98 | procedural endpoint | 0 | — | — | — | global functions: replicaOk |
 | `drive/tests/federationcloud_smoke.php` | 146 | procedural endpoint | 0 | — | — | — | global functions: ok, legacyDocument |
 | `drive/tests/folder_document_sanitizer.php` | 49 | view/entrypoint | 0 | — | — | — | — |
+| `drive/tests/password_credential_verifier_smoke.php` | 44 | procedural endpoint | 0 | — | — | — | — |
 | `drive/tests/scoped_sync_repository_regression.php` | 96 | procedural endpoint | 0 | — | ⚠️ | — | DB in endpoint |
 | `drive/tests/server_admin_config_smoke.php` | 97 | procedural endpoint | 0 | — | — | — | global functions: serverAdminOk |
 | `drive/tests/setup_bootstrap_smoke.php` | 57 | procedural endpoint | 0 | — | — | — | — |

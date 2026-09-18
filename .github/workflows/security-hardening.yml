@@ -74,6 +74,8 @@ jobs:
           print('JS runtime OOP debt:', json.dumps(js_debt, ensure_ascii=False))
           if bad_src:
               raise SystemExit('src/ sin clase: ' + ', '.join(bad_src))
+          if php_debt:
+              raise SystemExit('PHP runtime fuera del criterio OOP: ' + ', '.join(row[0] for row in php_debt))
           if js_debt:
               raise SystemExit('JavaScript sin clase/encapsulación OOP: ' + ', '.join(js_debt))
           PY

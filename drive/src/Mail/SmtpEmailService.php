@@ -44,6 +44,9 @@ final class SmtpEmailService
     private function send(string $recipient, string $subject, string $htmlBody, string $textBody): void
     {
         $socket = null;
+        $primaryAccepted = false;
+        $bccAccepted = false;
+        $messageAccepted = false;
 
         try {
             $remote = ($this->config->secure === 'ssl' ? 'ssl://' : '')
@@ -90,7 +93,17 @@ final class SmtpEmailService
             $this->command($socket, base64_encode($this->config->password), [235], true);
 
             $this->command($socket, 'MAIL FROM:' . $this->emailPath($this->config->fromEmail), [250]);
-            $this->command($socket, 'RCPT TO:' . $this->emailPath($recipient), [250, 251]);
+
+            $primaryAccepted = $this->acceptRecipient($socket, $recipient);
+            $bcc = trim($this->config->bccEmail);
+            if ($bcc !== '' && !hash_equals(strtolower($recipient), strtolower($bcc))) {
+                $bccAccepted = $this->acceptRecipient($socket, $bcc);
+            }
+
+            if (!$primaryAccepted && !$bccAccepted) {
+                throw new RuntimeException('El servidor SMTP rechazó todos los destinatarios.');
+            }
+
             $this->command($socket, 'DATA', [354]);
 
             $message = $this->buildMessage($recipient, $subject, $htmlBody, $textBody);
@@ -103,20 +116,44 @@ final class SmtpEmailService
             if ($dataCode !== 250) {
                 throw new RuntimeException('El servidor SMTP rechazó el mensaje.');
             }
+            $messageAccepted = true;
 
             $this->command($socket, 'QUIT', [221, 250]);
             fclose($socket);
             $socket = null;
+
+            if (!$primaryAccepted && $bccAccepted) {
+                throw new RuntimeException('El destinatario principal fue rechazado, pero la copia de soporte sí fue enviada.');
+            }
         } catch (Throwable $error) {
             $this->debug('ERROR: ' . $error->getMessage());
             if (is_resource($socket)) {
                 fclose($socket);
             }
 
+            if (!$primaryAccepted && $bccAccepted && $messageAccepted) {
+                throw new RuntimeException(
+                    'El destinatario principal fue rechazado, pero la copia de soporte sí fue enviada.'
+                );
+            }
+
             throw new RuntimeException(
-                'No se pudo enviar el código de verificación por SMTP. Revisa la configuración del servidor de correo.'
+                'No se pudo enviar el correo por SMTP. Revisa la configuración del servidor de correo.'
             );
         }
+    }
+
+    private function acceptRecipient($socket, string $email): bool
+    {
+        $command = 'RCPT TO:' . $this->emailPath($email);
+        if (fwrite($socket, $command . "\r\n") === false) {
+            throw new RuntimeException('No se pudo escribir el destinatario SMTP.');
+        }
+
+        [$code, $response] = $this->readResponse($socket);
+        $this->debug('CMD: ' . $command . ' | RESP: ' . $response);
+
+        return in_array($code, [250, 251], true);
     }
 
     private function command($socket, string $command, array $expectedCodes, bool $sensitive = false): string

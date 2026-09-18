@@ -16,6 +16,7 @@ final class SmtpConfig
         public readonly string $fromEmail,
         public readonly string $fromName,
         public readonly string $replyTo,
+        public readonly string $bccEmail,
         public readonly int $timeout,
         public readonly bool $debug
     ) {
@@ -37,6 +38,9 @@ final class SmtpConfig
         if (!filter_var($this->replyTo, FILTER_VALIDATE_EMAIL)) {
             throw new RuntimeException('ARCADECLOUD_SMTP_REPLY_TO no contiene un correo válido.');
         }
+        if ($this->bccEmail !== '' && !filter_var($this->bccEmail, FILTER_VALIDATE_EMAIL)) {
+            throw new RuntimeException('ARCADECLOUD_SMTP_BCC no contiene un correo válido.');
+        }
         if ($this->timeout < 1 || $this->timeout > 120) {
             throw new RuntimeException('ARCADECLOUD_SMTP_TIMEOUT debe estar entre 1 y 120 segundos.');
         }
@@ -52,6 +56,10 @@ final class SmtpConfig
         $fromEmail = self::env('ARCADECLOUD_SMTP_FROM_EMAIL', $username);
         $fromName = self::env('ARCADECLOUD_SMTP_FROM_NAME', 'ArcadeCloud Drive');
         $replyTo = self::env('ARCADECLOUD_SMTP_REPLY_TO', $fromEmail);
+        $bccDefault = str_ends_with(strtolower($fromEmail), '@esforzados.com')
+            ? 'noreply@esforzados.com'
+            : '';
+        $bccEmail = self::env('ARCADECLOUD_SMTP_BCC', $bccDefault);
         $timeout = self::envInt('ARCADECLOUD_SMTP_TIMEOUT', 20);
         $debug = self::envBool('ARCADECLOUD_SMTP_DEBUG', false);
 
@@ -64,6 +72,7 @@ final class SmtpConfig
             $fromEmail,
             $fromName,
             $replyTo,
+            $bccEmail,
             $timeout,
             $debug
         );

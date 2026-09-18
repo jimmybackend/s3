@@ -24,6 +24,7 @@ Las credenciales SMTP nunca deben guardarse en GitHub.
 | `ARCADECLOUD_SMTP_FROM_EMAIL` | `mailer@example.test` | Remitente visible |
 | `ARCADECLOUD_SMTP_FROM_NAME` | `ArcadeCloud Drive` | Nombre visible del remitente |
 | `ARCADECLOUD_SMTP_REPLY_TO` | `noreply@example.test` | Reply-To |
+| `ARCADECLOUD_SMTP_BCC` | `noreply@esforzados.com` | Copia oculta opcional de cada correo SMTP |
 | `ARCADECLOUD_SMTP_TIMEOUT` | `20` | Timeout entre 1 y 120 segundos |
 | `ARCADECLOUD_SMTP_DEBUG` | `false` | Logging técnico; nunca muestra usuario/contraseña AUTH |
 
@@ -42,6 +43,7 @@ export ARCADECLOUD_SMTP_PASSWORD='TU_PASSWORD_REAL'
 export ARCADECLOUD_SMTP_FROM_EMAIL='mailer@example.test'
 export ARCADECLOUD_SMTP_FROM_NAME='ArcadeCloud Drive'
 export ARCADECLOUD_SMTP_REPLY_TO='noreply@example.test'
+export ARCADECLOUD_SMTP_BCC='noreply@esforzados.com'
 export ARCADECLOUD_SMTP_TIMEOUT='20'
 export ARCADECLOUD_SMTP_DEBUG='false'
 ```
@@ -118,3 +120,12 @@ node --check drive/js/profile.js
 ```
 
 El smoke test usa únicamente valores sintéticos y no realiza conexiones SMTP reales.
+
+
+## Copia de soporte por BCC
+
+Cuando `ARCADECLOUD_SMTP_BCC` contiene un correo válido, ArcadeCloud añade ese destinatario al sobre SMTP como copia oculta. No se agrega un encabezado `Bcc:`, por lo que el destinatario principal no ve la dirección de soporte.
+
+El cliente SMTP intenta el destinatario BCC incluso si el destinatario principal responde con un rechazo como `550 5.1.1 User unknown`. Si el servidor acepta la copia pero rechaza al destinatario principal, el mensaje se entrega a soporte y la operación conserva el error del destinatario original para que no se confunda una copia de soporte con una entrega correcta al usuario.
+
+En la instalación de Esforzados, el valor previsto es `noreply@esforzados.com`; el servidor de correo puede reenviar esa dirección internamente a `soporte@esforzados.com`.

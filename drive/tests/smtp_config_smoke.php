@@ -13,6 +13,7 @@ putenv('ARCADECLOUD_SMTP_PASSWORD=test-only-secret');
 putenv('ARCADECLOUD_SMTP_FROM_EMAIL=mailer@example.test');
 putenv('ARCADECLOUD_SMTP_FROM_NAME=ArcadeCloud Test');
 putenv('ARCADECLOUD_SMTP_REPLY_TO=no-reply@example.test');
+putenv('ARCADECLOUD_SMTP_BCC=support-copy@example.test');
 putenv('ARCADECLOUD_SMTP_TIMEOUT=20');
 putenv('ARCADECLOUD_SMTP_DEBUG=false');
 
@@ -26,8 +27,14 @@ assert($config->password === 'test-only-secret');
 assert($config->fromEmail === 'mailer@example.test');
 assert($config->fromName === 'ArcadeCloud Test');
 assert($config->replyTo === 'no-reply@example.test');
+assert($config->bccEmail === 'support-copy@example.test');
 assert($config->timeout === 20);
 assert($config->debug === false);
+
+putenv('ARCADECLOUD_SMTP_BCC');
+putenv('ARCADECLOUD_SMTP_FROM_EMAIL=soporte@esforzados.com');
+$esforzadosConfig = SmtpConfig::fromEnvironment();
+assert($esforzadosConfig->bccEmail === 'noreply@esforzados.com');
 
 putenv('ARCADECLOUD_SMTP_PORT=70000');
 $invalidRejected = false;

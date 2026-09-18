@@ -38,7 +38,7 @@ final class AuthController
             $this->redirect('https://esforzados.com/index.php?x=101');
         }
 
-        if ($this->containsRejectedCharacters($email) || $this->containsRejectedCharacters($password)) {
+        if ($this->containsRejectedCharacters($email)) {
             $this->redirect('https://esforzados.com/index.php?x=100');
         }
 

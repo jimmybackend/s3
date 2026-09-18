@@ -70,6 +70,7 @@
                             id="password"
                             class="form-control"
                             placeholder="Contraseña"
+                            autocomplete="current-password"
                             required
                         >
                     </div>

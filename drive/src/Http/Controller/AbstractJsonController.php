@@ -48,13 +48,25 @@ abstract class AbstractJsonController
         ))));
     }
 
-    protected function fail(\Throwable $error, int $status = 500): never
+    protected function fail(\Throwable $error, int $status = 500, ?string $publicMessage = null): never
     {
+        if ($status >= 500) {
+            error_log(sprintf(
+                '[ArcadeCloud %s] %s: %s',
+                static::class,
+                $error::class,
+                $error->getMessage()
+            ));
+        }
+
+        $message = $publicMessage
+            ?? ($status >= 500 ? 'No se pudo completar la operación.' : $error->getMessage());
+
         JsonResponse::send([
             'ok' => false,
             'estado' => 'error',
-            'mensaje' => $error->getMessage(),
-            'error' => $error->getMessage(),
+            'mensaje' => $message,
+            'error' => $message,
         ], $status);
     }
 

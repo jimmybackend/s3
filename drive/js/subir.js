@@ -10,6 +10,7 @@ class SubirModule {
     document.addEventListener('DOMContentLoaded', function () {
       // API base (ideal: definido en s3.php)
       const API = window.UPLOAD_API || 'api/upload.php';
+      const CSRF = String(window.DRIVE_UPLOAD_CSRF || '');
 
       // =========================
       // SUBIDA LOCAL (API: local_put)
@@ -59,10 +60,15 @@ class SubirModule {
               nombre: archivo.name,
               ruta_objetivo: rutaObjetivo
             });
-            const resFirma = await fetch(API + '?' + initParams.toString(), {
-              method: 'GET',
+            const resFirma = await fetch(API + '?mode=local_put&action=init', {
+              method: 'POST',
               credentials: 'same-origin',
-              headers: { 'X-Requested-With': 'XMLHttpRequest' }
+              headers: {
+                'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-Drive-CSRF': CSRF
+              },
+              body: initParams.toString()
             });
             if (!resFirma.ok) throw new Error('Error HTTP init local_put: ' + resFirma.status);
 
@@ -87,7 +93,10 @@ class SubirModule {
 
             const completeResp = await fetch(API + '?mode=local_put&action=complete', {
               method: 'POST',
-              headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+              headers: {
+                'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+                'X-Drive-CSRF': CSRF
+              },
               credentials: 'same-origin',
               body: body.toString()
             });
@@ -173,28 +182,13 @@ class SubirModule {
             method: 'POST',
             headers: {
               'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
-              'X-Requested-With': 'XMLHttpRequest'
+              'X-Requested-With': 'XMLHttpRequest',
+              'X-Drive-CSRF': CSRF
             },
             body: body.toString(),
             credentials: 'same-origin',
             signal: controller ? controller.signal : undefined
           });
-
-          // Fallback GET con u64 (cuando hay WAF/hosting raro)
-          if (!resp.ok) {
-            console.warn('POST remote_url falló:', resp.status, resp.statusText);
-            let raw1 = '';
-            try { raw1 = await resp.text(); } catch (e) {}
-            if (raw1) console.warn('Respuesta POST:', raw1.slice(0, 500));
-
-            const qs = new URLSearchParams({ u64: toBase64Utf8(url), ruta_objetivo: rutaObjetivo }).toString();
-            resp = await fetch(API + '?mode=remote_url&action=init&' + qs, {
-              method: 'GET',
-              credentials: 'same-origin',
-              headers: { 'X-Requested-With': 'XMLHttpRequest' },
-              signal: controller ? controller.signal : undefined
-            });
-          }
 
           const json = await safeJson(resp);
 

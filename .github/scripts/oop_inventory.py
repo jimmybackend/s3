@@ -58,6 +58,8 @@ def php_info(p):
         kind = 'view/entrypoint'
     elif app_bootstrap and not funcs:
         kind = 'thin endpoint' if lines <= 100 else 'endpoint with logic'
+    elif not funcs and lines <= 30 and re.search(r'Controller\s*\(', php_text):
+        kind = 'thin endpoint'
     else:
         kind = 'procedural endpoint'
 

@@ -31,6 +31,11 @@ assert($config->bccEmail === 'support-copy@example.test');
 assert($config->timeout === 20);
 assert($config->debug === false);
 
+putenv('ARCADECLOUD_SMTP_BCC');
+putenv('ARCADECLOUD_SMTP_FROM_EMAIL=soporte@esforzados.com');
+$esforzadosConfig = SmtpConfig::fromEnvironment();
+assert($esforzadosConfig->bccEmail === 'noreply@esforzados.com');
+
 putenv('ARCADECLOUD_SMTP_PORT=70000');
 $invalidRejected = false;
 try {

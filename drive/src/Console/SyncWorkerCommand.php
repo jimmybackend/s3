@@ -1,0 +1,181 @@
+<?php
+declare(strict_types=1);
+
+namespace ArcadeCloud\Drive\Console;
+
+use ArcadeCloud\Drive\Core\ApplicationKernel;
+use ArcadeCloud\Drive\Core\BackgroundWorkerLease;
+use ArcadeCloud\Drive\Sync\S3SyncService;
+use ArcadeCloud\Drive\Sync\SyncJobStore;
+use ArcadeCloud\Drive\Sync\SyncRepository;
+use Throwable;
+
+final class SyncWorkerCommand
+{
+    public function run(array $argv): int
+    {
+        $userId = (int)($argv[1] ?? 0);
+        $jobId = (string)($argv[2] ?? '');
+        $scopePrefix = trim((string)($argv[3] ?? ''));
+
+        if ($userId <= 0 || !preg_match('/^[a-f0-9]{32}$/', $jobId)) {
+            return 3;
+        }
+
+        $store = new SyncJobStore();
+        $existing = $store->read($userId, $jobId);
+        if (!is_array($existing)) {
+            return 3;
+        }
+        if (in_array((string)($existing['state'] ?? ''), ['done', 'cancelled'], true)) {
+            return 0;
+        }
+
+        $lease = new BackgroundWorkerLease();
+        $leaseHandle = $lease->acquire('sync', $jobId);
+        if ($leaseHandle === null) {
+            return 0;
+        }
+
+        $lockHandle = null;
+
+        try {
+            // El job pudo cancelarse/eliminarse entre el lanzamiento y el lease.
+            $existing = $store->read($userId, $jobId);
+            if (!is_array($existing) || in_array((string)($existing['state'] ?? ''), ['done', 'cancelled'], true)) {
+                return 0;
+            }
+
+            $lockHandle = fopen($store->lockPath($userId), 'c+');
+            if (!is_resource($lockHandle)) {
+                $store->update($userId, $jobId, [
+                    'state' => 'error',
+                    'message' => 'No se pudo crear lock.',
+                ]);
+                return 4;
+            }
+
+            if (!flock($lockHandle, LOCK_EX | LOCK_NB)) {
+                $store->update($userId, $jobId, [
+                    'state' => 'error',
+                    'message' => 'Ya existe una sincronización en curso. Puedes reintentarla desde Tareas cuando termine la otra.',
+                ]);
+                return 5;
+            }
+
+            $app = ApplicationKernel::app();
+            $root = $app->userStoragePath()->rootForUser($userId);
+            $normalizedScope = $scopePrefix === ''
+                ? ''
+                : $app->userStoragePath()->normalizeForUser($scopePrefix, $userId);
+
+            $store->update($userId, $jobId, [
+                'state' => 'running',
+                'scope' => $normalizedScope === '' ? 'user' : 'folder',
+                'scope_prefix' => $normalizedScope,
+                'message' => $normalizedScope === ''
+                    ? 'Iniciando sincronización del usuario'
+                    : 'Iniciando sincronización de ' . $normalizedScope,
+            ]);
+
+            $service = new S3SyncService(
+                new SyncRepository($app->db()),
+                $app->s3(),
+                $app->bucket(),
+                $app->userStoragePath(),
+                $app->storageObjectNameCodec()
+            );
+
+            $syncId = null;
+            $token = null;
+            $batch = 0;
+            $files = 0;
+            $folders = 0;
+            $result = [];
+            $cancelled = false;
+
+            do {
+                $current = $store->read($userId, $jobId);
+                if (!is_array($current)) {
+                    $cancelled = true;
+                    break;
+                }
+
+                if (in_array((string)($current['state'] ?? ''), ['cancel_requested', 'cancelled'], true)) {
+                    $cancelled = true;
+                    $store->update($userId, $jobId, [
+                        'state' => 'cancelled',
+                        'message' => 'Sincronización detenida de forma segura entre lotes.',
+                        'finished_at' => date('c'),
+                    ]);
+                    break;
+                }
+
+                $batch++;
+
+                $result = $service->synchronizeBatch(
+                    $userId,
+                    $syncId,
+                    $token,
+                    $normalizedScope !== '' ? $normalizedScope : null
+                );
+
+                $syncId = (string)$result['sync_id'];
+                $token = $result['next_token'] ?: null;
+                $files += (int)($result['batch_files'] ?? 0);
+                $folders += (int)($result['batch_folders'] ?? 0);
+
+                $store->update($userId, $jobId, [
+                    'state' => 'running',
+                    'scope' => (string)($result['scope'] ?? ($normalizedScope === '' ? 'user' : 'folder')),
+                    'scope_prefix' => (string)($result['base'] ?? ($normalizedScope !== '' ? $normalizedScope : $root)),
+                    'batch' => $batch,
+                    'files' => $files,
+                    'folders' => $folders,
+                    'message' =>
+                        'Lote ' . $batch .
+                        ' · ' . $files . ' archivos' .
+                        ($normalizedScope !== '' ? ' · ' . $normalizedScope : ''),
+                ]);
+
+            } while (empty($result['done']));
+
+            if (!$cancelled) {
+                $store->update($userId, $jobId, [
+                    'state' => 'done',
+                    'scope' => (string)($result['scope'] ?? ($normalizedScope === '' ? 'user' : 'folder')),
+                    'scope_prefix' => (string)($result['base'] ?? ($normalizedScope !== '' ? $normalizedScope : $root)),
+                    'batch' => $batch,
+                    'files' => $files,
+                    'folders' => $folders,
+                    'files_removed' => (int)($result['files_removed'] ?? 0),
+                    'folders_removed' => (int)($result['folders_removed'] ?? 0),
+                    'message' => $normalizedScope === ''
+                        ? 'Sincronización de usuario completada'
+                        : 'Sincronización de carpeta completada',
+                    'finished_at' => date('c'),
+                ]);
+            }
+
+            return 0;
+        } catch (Throwable $error) {
+            if ($store->read($userId, $jobId) !== null) {
+                $store->update($userId, $jobId, [
+                    'state' => 'error',
+                    'message' => $error->getMessage(),
+                    'finished_at' => date('c'),
+                ]);
+            }
+            return 1;
+        } finally {
+            if (is_resource($lockHandle)) {
+                @flock($lockHandle, LOCK_UN);
+                @fclose($lockHandle);
+            }
+            if (is_resource($leaseHandle)) {
+                @flock($leaseHandle, LOCK_UN);
+                @fclose($leaseHandle);
+            }
+        }
+    }
+}

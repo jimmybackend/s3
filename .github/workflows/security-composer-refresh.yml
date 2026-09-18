@@ -43,4 +43,5 @@ jobs:
             exit 0
           fi
           git commit -m "security: refresh Composer lock"
+          git pull --rebase origin security/oop-hardening-2026-09-18
           git push origin HEAD:security/oop-hardening-2026-09-18

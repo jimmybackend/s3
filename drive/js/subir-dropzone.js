@@ -14,6 +14,9 @@ class SubirDropzoneModule {
       window.UPLOAD_API ||
       'api/upload.php';
 
+    const CSRF =
+      String(window.DRIVE_UPLOAD_CSRF || '');
+
     /*
      * Procesamos un archivo a la vez.
      * Preferimos estabilidad.
@@ -196,6 +199,9 @@ class SubirDropzoneModule {
               headers: {
                 'X-Requested-With':
                   'XMLHttpRequest',
+
+                'X-Drive-CSRF':
+                  CSRF,
 
                 'Content-Type':
                   'application/x-www-form-urlencoded;charset=UTF-8'

@@ -107,9 +107,9 @@ final class UserProfileModalRenderer
                 <button id="btnRequestPasswordCode" type="button" class="btn btn-outline-primary btn-sm mb-3"><i class="fas fa-envelope mr-1"></i>Enviar código</button>
                 <div id="passwordCodeDestination" class="small text-muted mb-3"></div>
                 <div class="form-group"><label for="profileVerificationCode">Código</label><input id="profileVerificationCode" class="form-control" inputmode="numeric" maxlength="6" autocomplete="one-time-code"></div>
-                <div class="form-group"><label for="profileNewPassword">Nueva contraseña</label><input id="profileNewPassword" type="password" class="form-control" maxlength="128" autocomplete="new-password"></div>
-                <div class="form-group"><label for="profileConfirmPassword">Confirmar contraseña</label><input id="profileConfirmPassword" type="password" class="form-control" maxlength="128" autocomplete="new-password"></div>
-                <small class="form-text text-muted mb-3">Mínimo 12 caracteres.</small>
+                <div class="form-group"><label for="profileNewPassword">Nueva contraseña</label><input id="profileNewPassword" type="password" class="form-control" minlength="1" maxlength="6" autocomplete="new-password"></div>
+                <div class="form-group"><label for="profileConfirmPassword">Confirmar contraseña</label><input id="profileConfirmPassword" type="password" class="form-control" minlength="1" maxlength="6" autocomplete="new-password"></div>
+                <small class="form-text text-muted mb-3">De 1 a 6 caracteres. Puede usar solo números, solo letras o cualquier combinación con mayúsculas, minúsculas y símbolos. No se exige mezclar tipos de caracteres.</small>
                 <button id="btnChangeProfilePassword" type="button" class="btn btn-danger"><i class="fas fa-key mr-1"></i>Cambiar contraseña</button>
               </div>
             </div>

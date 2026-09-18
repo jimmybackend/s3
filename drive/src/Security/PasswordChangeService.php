@@ -3,65 +3,25 @@ declare(strict_types=1);
 
 namespace ArcadeCloud\Drive\Security;
 
-use ArcadeCloud\Drive\Aws\SesEmailService;
 use InvalidArgumentException;
 use RuntimeException;
 
 final class PasswordChangeService
 {
-    private const CODE_TTL_SECONDS = 600;
-    private const RESEND_SECONDS = 60;
-    private const MAX_ATTEMPTS = 5;
-    private const SESSION_KEY = 'profile_password_verification';
-
     public function __construct(
-        private UserProfileRepository $repository,
-        private SessionManager $session,
-        private SesEmailService $mailer
+        private UserProfileRepository $repository
     ) {
     }
 
-    public function requestCode(int $userId, string $host): array
+    public function requestCode(int $userId): array
     {
-        $profile = $this->repository->findById($userId);
-        if ($profile === null) {
-            throw new RuntimeException('No se encontró el perfil del usuario.');
-        }
-
-        $email = trim((string)($profile['email'] ?? ''));
-        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            throw new RuntimeException('El perfil no tiene un correo válido para la verificación.');
-        }
-
-        $now = time();
-        $state = $this->session->get(self::SESSION_KEY, []);
-        if (is_array($state)
-            && (int)($state['user_id'] ?? 0) === $userId
-            && $now - (int)($state['sent_at'] ?? 0) < self::RESEND_SECONDS) {
-            throw new InvalidArgumentException('Espera un minuto antes de solicitar otro código.');
-        }
-
-        $code = (string)random_int(100000, 999999);
-        $this->mailer->sendPasswordVerification($email, $code, $host);
-
-        $hash = password_hash($code, PASSWORD_DEFAULT);
-        if (!is_string($hash) || $hash === '') {
-            throw new RuntimeException('No se pudo proteger el código de verificación.');
-        }
-
-        $this->session->set(self::SESSION_KEY, [
-            'user_id' => $userId,
-            'hash' => $hash,
-            'sent_at' => $now,
-            'expires_at' => $now + self::CODE_TTL_SECONDS,
-            'attempts' => 0,
-        ]);
+        $profile = $this->verificationProfile($userId);
 
         return [
             'ok' => true,
-            'message' => 'Código enviado al correo registrado.',
-            'email' => $this->maskEmail($email),
-            'expires_in' => self::CODE_TTL_SECONDS,
+            'message' => 'Datos listos. Usa tu código postal registrado como código de verificación.',
+            'verification' => 'postalcode',
+            'postalcode_length' => strlen((string)$profile['postalcode']),
         ];
     }
 
@@ -71,34 +31,19 @@ final class PasswordChangeService
         string $newPassword,
         string $confirmation
     ): array {
+        $profile = $this->verificationProfile($userId);
+        $postalCode = trim((string)$profile['postalcode']);
         $code = trim($code);
-        if (!preg_match('/^\d{6}$/', $code)) {
-            throw new InvalidArgumentException('El código debe contener 6 dígitos.');
+
+        if ($code === '') {
+            throw new InvalidArgumentException('Escribe tu código postal registrado.');
+        }
+
+        if (!hash_equals($postalCode, $code)) {
+            throw new InvalidArgumentException('El código postal no coincide con el registrado en tu perfil.');
         }
 
         $password = UserProfileValidator::password($newPassword, $confirmation);
-        $state = $this->session->get(self::SESSION_KEY, []);
-        if (!is_array($state) || (int)($state['user_id'] ?? 0) !== $userId) {
-            throw new InvalidArgumentException('Solicita primero un código de verificación.');
-        }
-
-        if (time() > (int)($state['expires_at'] ?? 0)) {
-            $this->session->remove(self::SESSION_KEY);
-            throw new InvalidArgumentException('El código de verificación venció. Solicita uno nuevo.');
-        }
-
-        $attempts = (int)($state['attempts'] ?? 0);
-        if ($attempts >= self::MAX_ATTEMPTS) {
-            $this->session->remove(self::SESSION_KEY);
-            throw new InvalidArgumentException('Se agotaron los intentos de verificación. Solicita un código nuevo.');
-        }
-
-        $hash = (string)($state['hash'] ?? '');
-        if ($hash === '' || !password_verify($code, $hash)) {
-            $state['attempts'] = $attempts + 1;
-            $this->session->set(self::SESSION_KEY, $state);
-            throw new InvalidArgumentException('El código de verificación no es correcto.');
-        }
 
         $passwordHash = password_hash($password, PASSWORD_DEFAULT);
         if (!is_string($passwordHash) || $passwordHash === '') {
@@ -106,7 +51,6 @@ final class PasswordChangeService
         }
 
         $this->repository->updatePassword($userId, $passwordHash);
-        $this->session->remove(self::SESSION_KEY);
 
         return [
             'ok' => true,
@@ -114,27 +58,22 @@ final class PasswordChangeService
         ];
     }
 
-    private function maskEmail(string $email): string
+    private function verificationProfile(int $userId): array
     {
-        [$local, $domain] = array_pad(explode('@', $email, 2), 2, '');
-        if ($local === '' || $domain === '') {
-            return 'correo registrado';
+        $profile = $this->repository->findById($userId);
+        if ($profile === null) {
+            throw new RuntimeException('No se encontró el perfil del usuario.');
         }
 
-        $localFirst = function_exists('mb_substr')
-            ? (string)mb_substr($local, 0, 1, 'UTF-8')
-            : substr($local, 0, 1);
+        $address = trim((string)($profile['address'] ?? ''));
+        $postalCode = trim((string)($profile['postalcode'] ?? ''));
 
-        $domainParts = explode('.', $domain);
-        $domainName = (string)($domainParts[0] ?? '');
-        $suffix = count($domainParts) > 1 ? '.' . end($domainParts) : '';
-        $domainFirst = $domainName !== '' ? substr($domainName, 0, 1) : '*';
+        if ($address === '' || $postalCode === '') {
+            throw new InvalidArgumentException(
+                'Antes de cambiar la contraseña, completa y guarda tu dirección y código postal en Datos personales.'
+            );
+        }
 
-        return $localFirst
-            . str_repeat('*', max(3, min(8, strlen($local) - 1)))
-            . '@'
-            . $domainFirst
-            . '***'
-            . $suffix;
+        return $profile;
     }
 }

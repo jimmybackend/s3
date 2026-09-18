@@ -1,4 +1,12 @@
-(function installBackgroundTaskFeedback(win, doc) {
+class BackgroundTaskFeedbackModule {
+  constructor(win, doc) {
+    this.win = win;
+    this.doc = doc;
+  }
+
+  init() {
+    const win = this.win;
+    const doc = this.doc;
   let attempts = 0;
   let pollyGuardAttempts = 0;
 
@@ -165,4 +173,7 @@
     apply();
     installPollySingleSubmitGuard();
   }
-})(window, document);
+  }
+}
+
+new BackgroundTaskFeedbackModule(window, document).init();

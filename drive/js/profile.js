@@ -222,6 +222,14 @@
       const confirmation = document.getElementById('profileConfirmPassword')?.value || '';
 
       try {
+        const passwordLength = Array.from(password).length;
+        if (passwordLength < 1 || passwordLength > 6) {
+          throw new Error('La nueva contraseña debe tener de 1 a 6 caracteres.');
+        }
+        if (password !== confirmation) {
+          throw new Error('La confirmación de contraseña no coincide.');
+        }
+
         const body = new FormData();
         body.set('action', 'change_password');
         body.set('verification_code', code);

@@ -59,11 +59,11 @@ final class UserProfileValidator
             ? mb_strlen($password, 'UTF-8')
             : strlen($password);
 
-        if ($length < 12) {
-            throw new InvalidArgumentException('La nueva contraseña debe tener al menos 12 caracteres.');
+        if ($length < 1) {
+            throw new InvalidArgumentException('La nueva contraseña no puede estar vacía.');
         }
-        if ($length > 128) {
-            throw new InvalidArgumentException('La nueva contraseña es demasiado larga.');
+        if ($length > 6) {
+            throw new InvalidArgumentException('La nueva contraseña debe tener como máximo 6 caracteres.');
         }
 
         return $password;

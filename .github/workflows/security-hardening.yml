@@ -54,8 +54,28 @@ jobs:
               row['path'] for row in data['php']
               if 'src file without class' in row.get('issues', [])
           ]
+          php_debt = [
+              (row['path'], row['kind'], row.get('issues', []))
+              for row in data['php']
+              if (
+                  row['kind'] in {'procedural endpoint', 'endpoint with logic', 'cli entrypoint with logic'}
+                  or (row.get('functions') and row['kind'] != 'test script')
+                  or any(
+                      issue.startswith(('DB in entrypoint', 'AWS/S3 in entrypoint'))
+                      for issue in row.get('issues', [])
+                  )
+              )
+          ]
+          js_debt = [
+              row['path'] for row in data['js']
+              if not row.get('classes') or row.get('functions')
+          ]
+          print('PHP runtime OOP debt:', json.dumps(php_debt, ensure_ascii=False))
+          print('JS runtime OOP debt:', json.dumps(js_debt, ensure_ascii=False))
           if bad_src:
               raise SystemExit('src/ sin clase: ' + ', '.join(bad_src))
+          if js_debt:
+              raise SystemExit('JavaScript sin clase/encapsulación OOP: ' + ', '.join(js_debt))
           PY
 
       - name: Security regression tests

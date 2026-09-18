@@ -2384,7 +2384,7 @@
     },
     {
       "path": "drive/src/Core/DriveApplication.php",
-      "lines": 488,
+      "lines": 485,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -3721,7 +3721,7 @@
     },
     {
       "path": "drive/src/Http/Controller/UserProfileController.php",
-      "lines": 118,
+      "lines": 115,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -3906,7 +3906,7 @@
     },
     {
       "path": "drive/src/Security/PasswordChangeService.php",
-      "lines": 141,
+      "lines": 80,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -6175,7 +6175,7 @@
     },
     {
       "path": "drive/js/profile.js",
-      "lines": 285,
+      "lines": 289,
       "kind": "class/module",
       "classes": [
         "UserProfileModule"

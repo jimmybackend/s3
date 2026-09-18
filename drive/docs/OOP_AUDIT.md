@@ -174,7 +174,7 @@
 | `drive/src/Console/UploadCleanupCommand.php` | 61 | class/module | 1 | — | — | — | — |
 | `drive/src/Core/ApplicationKernel.php` | 38 | class/module | 1 | — | — | — | — |
 | `drive/src/Core/BackgroundWorkerLease.php` | 97 | class/module | 1 | — | — | — | — |
-| `drive/src/Core/DriveApplication.php` | 488 | class/module | 1 | — | — | ⚠️ | — |
+| `drive/src/Core/DriveApplication.php` | 485 | class/module | 1 | — | — | ⚠️ | — |
 | `drive/src/Federation/ArcadeLinkBundleService.php` | 134 | class/module | 1 | — | — | — | — |
 | `drive/src/Federation/ArcadeLinkService.php` | 282 | class/module | 1 | — | — | — | — |
 | `drive/src/Federation/FederatedCatalogRepository.php` | 367 | class/module | 1 | — | ⚠️ | — | — |
@@ -263,7 +263,7 @@
 | `drive/src/Http/Controller/TranscriptionController.php` | 215 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/UploadCleanupController.php` | 76 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/UploadController.php` | 252 | class/module | 1 | — | — | — | — |
-| `drive/src/Http/Controller/UserProfileController.php` | 118 | class/module | 1 | — | — | — | — |
+| `drive/src/Http/Controller/UserProfileController.php` | 115 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/JsonResponse.php` | 27 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Request.php` | 112 | class/module | 1 | — | — | — | — |
 | `drive/src/Mail/SmtpConfig.php` | 111 | class/module | 1 | — | — | — | — |
@@ -275,7 +275,7 @@
 | `drive/src/Security/AuthenticationService.php` | 45 | class/module | 1 | — | — | — | — |
 | `drive/src/Security/FileSecurityRepository.php` | 92 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Security/FileSecurityService.php` | 183 | class/module | 1 | — | — | — | — |
-| `drive/src/Security/PasswordChangeService.php` | 141 | class/module | 1 | — | — | — | — |
+| `drive/src/Security/PasswordChangeService.php` | 80 | class/module | 1 | — | — | — | — |
 | `drive/src/Security/PersonalToolAccessService.php` | 53 | class/module | 1 | — | — | — | — |
 | `drive/src/Security/SessionManager.php` | 149 | class/module | 1 | ⚠️ | — | — | — |
 | `drive/src/Security/SuperAdminReauthenticationService.php` | 89 | class/module | 1 | — | — | — | — |
@@ -418,7 +418,7 @@
 | `drive/js/pdf-pantalla-completa.js` | 45 | class/module | PdfPantallaCompletaModule | — | — | — |
 | `drive/js/polly-background.js` | 301 | class/module | PollyBackgroundModule | — | — | — |
 | `drive/js/polly.js` | 1008 | class/module | PollyModule | — | abrirModalGrabarAudio, abrirModalPolly, abrirModalRekognition, abrirModalTraducir, abrirModalTranscribir, copiarTextract | window functions: abrirModalGrabarAudio, abrirModalPolly, abrirModalRekognition, abrirModalTraducir, abrirModalTranscribir, copiarTextract, copiarTraducido, copiarTx |
-| `drive/js/profile.js` | 285 | class/module | UserProfileModule | — | — | — |
+| `drive/js/profile.js` | 289 | class/module | UserProfileModule | — | — | — |
 | `drive/js/recargarPagina.js` | 27 | class/module | RecargarPaginaModule | — | — | — |
 | `drive/js/server-admin.js` | 365 | class/module | ServerAdminModule | — | — | — |
 | `drive/js/setup.js` | 182 | class/module | ArcadeCloudSetup | — | — | — |

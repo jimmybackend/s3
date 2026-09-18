@@ -354,7 +354,7 @@
 | `drive/tests/sync_schema_migrator_regression.php` | 75 | procedural endpoint | 0 | — | ⚠️ | — | DB in endpoint |
 | `drive/tests/upload_catalog_registration_regression.php` | 125 | procedural endpoint | 0 | — | ⚠️ | — | DB in endpoint |
 | `drive/tests/user_identity_presenter_smoke.php` | 30 | procedural endpoint | 0 | — | — | — | — |
-| `drive/tests/user_profile_validator_smoke.php` | 57 | procedural endpoint | 0 | — | — | — | — |
+| `drive/tests/user_profile_validator_smoke.php` | 72 | procedural endpoint | 0 | — | — | — | — |
 | `drive/thumb.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/token_audio.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/token_texto.php` | 10 | thin endpoint | 0 | — | — | — | — |
@@ -418,7 +418,7 @@
 | `drive/js/pdf-pantalla-completa.js` | 45 | class/module | PdfPantallaCompletaModule | — | — | — |
 | `drive/js/polly-background.js` | 301 | class/module | PollyBackgroundModule | — | — | — |
 | `drive/js/polly.js` | 1008 | class/module | PollyModule | — | abrirModalGrabarAudio, abrirModalPolly, abrirModalRekognition, abrirModalTraducir, abrirModalTranscribir, copiarTextract | window functions: abrirModalGrabarAudio, abrirModalPolly, abrirModalRekognition, abrirModalTraducir, abrirModalTranscribir, copiarTextract, copiarTraducido, copiarTx |
-| `drive/js/profile.js` | 277 | class/module | UserProfileModule | — | — | — |
+| `drive/js/profile.js` | 285 | class/module | UserProfileModule | — | — | — |
 | `drive/js/recargarPagina.js` | 27 | class/module | RecargarPaginaModule | — | — | — |
 | `drive/js/server-admin.js` | 365 | class/module | ServerAdminModule | — | — | — |
 | `drive/js/setup.js` | 182 | class/module | ArcadeCloudSetup | — | — | — |

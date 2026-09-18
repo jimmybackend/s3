@@ -5167,7 +5167,7 @@
     },
     {
       "path": "drive/tests/user_profile_validator_smoke.php",
-      "lines": 57,
+      "lines": 72,
       "kind": "procedural endpoint",
       "classes": 0,
       "functions": [],
@@ -6175,7 +6175,7 @@
     },
     {
       "path": "drive/js/profile.js",
-      "lines": 277,
+      "lines": 285,
       "kind": "class/module",
       "classes": [
         "UserProfileModule"

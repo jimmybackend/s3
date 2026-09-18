@@ -1325,7 +1325,7 @@
     },
     {
       "path": "drive/src/Core/DriveApplication.php",
-      "size": 17036,
+      "size": 16928,
       "active": false,
       "references": []
     },
@@ -1971,7 +1971,7 @@
     },
     {
       "path": "drive/src/Http/Controller/UserProfileController.php",
-      "size": 4275,
+      "size": 4162,
       "active": false,
       "references": []
     },
@@ -2045,7 +2045,7 @@
     },
     {
       "path": "drive/src/Security/PasswordChangeService.php",
-      "size": 5001,
+      "size": 2426,
       "active": false,
       "references": []
     },
@@ -2364,7 +2364,7 @@
     },
     {
       "path": "drive/src/View/UserProfileModalRenderer.php",
-      "size": 8662,
+      "size": 8722,
       "active": false,
       "references": []
     },

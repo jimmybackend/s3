@@ -4,6 +4,9 @@ on:
   pull_request:
     paths:
       - 'drive/src/Sync/**'
+      - 'drive/src/Application/BackgroundWorkerLauncher.php'
+      - 'drive/src/Console/SyncWorkerCommand.php'
+      - 'drive/src/Http/Controller/SyncController.php'
       - 'drive/bin/sync_worker.php'
       - 'drive/bin/sync_node_worker.php'
       - 'drive/bin/install_node_sync_service.sh'
@@ -13,6 +16,9 @@ on:
     branches: [main]
     paths:
       - 'drive/src/Sync/**'
+      - 'drive/src/Application/BackgroundWorkerLauncher.php'
+      - 'drive/src/Console/SyncWorkerCommand.php'
+      - 'drive/src/Http/Controller/SyncController.php'
       - 'drive/bin/sync_worker.php'
       - 'drive/bin/sync_node_worker.php'
       - 'drive/bin/install_node_sync_service.sh'
@@ -48,6 +54,9 @@ jobs:
           php -l drive/src/Sync/S3SyncService.php
           php -l drive/src/Sync/SyncJobStore.php
           php -l drive/src/Sync/NodeSyncService.php
+          php -l drive/src/Application/BackgroundWorkerLauncher.php
+          php -l drive/src/Console/SyncWorkerCommand.php
+          php -l drive/src/Http/Controller/SyncController.php
           php -l drive/bin/sync_worker.php
           php -l drive/bin/sync_node_worker.php
           bash -n drive/bin/install_node_sync_service.sh
@@ -56,7 +65,10 @@ jobs:
         run: |
           grep -q "'Prefix' => \$base" drive/src/Sync/S3SyncService.php
           grep -q 'rootForUser' drive/src/Sync/S3SyncService.php
-          grep -q 'setsid' drive/src/Http/Controller/SyncController.php
+          grep -q 'BackgroundWorkerLauncher' drive/src/Http/Controller/SyncController.php
+          grep -q 'setsid' drive/src/Application/BackgroundWorkerLauncher.php
+          grep -q 'SyncWorkerCommand' drive/bin/sync_worker.php
+          grep -q 'synchronizeBatch' drive/src/Console/SyncWorkerCommand.php
           grep -q 'SELECT id FROM Users ORDER BY id ASC' drive/src/Sync/NodeSyncService.php
           grep -q 'lockPath(\$userId)' drive/src/Sync/NodeSyncService.php
           grep -q 'arcadecloud-drive-node-sync.service' drive/bin/install_node_sync_service.sh

@@ -23,6 +23,7 @@ final class LegacyUploadController
         if ($this->request->method() !== 'POST') {
             JsonResponse::send(['estado' => 'error', 'mensaje' => 'Método no permitido'], 405);
         }
+        $this->requireUploadCsrf($session);
 
         $userId = $session->userId();
         $started = microtime(true);
@@ -59,7 +60,8 @@ final class LegacyUploadController
             JsonResponse::send(['estado' => 'ok', 'mensaje' => 'Archivo subido correctamente', 'data' => $result]);
         } catch (Throwable $e) {
             $this->activity()->failure($userId, 'upload', 'S3', $started, ['mode' => 'legacy_single']);
-            JsonResponse::send(['estado' => 'error', 'mensaje' => $e->getMessage()], 500);
+            error_log('[ArcadeCloud legacy upload] ' . $e::class . ': ' . $e->getMessage());
+            JsonResponse::send(['estado' => 'error', 'mensaje' => 'No se pudo completar la subida.'], 500);
         }
     }
 
@@ -69,6 +71,7 @@ final class LegacyUploadController
         if ($this->request->method() !== 'POST') {
             JsonResponse::send(['estado' => 'error', 'mensaje' => 'Método no permitido'], 405);
         }
+        $this->requireUploadCsrf($session);
 
         $files = $this->request->files();
         if (empty($files['file'])) {
@@ -99,7 +102,8 @@ final class LegacyUploadController
             JsonResponse::send($result);
         } catch (Throwable $e) {
             $this->activity()->failure($userId, 'upload', 'S3', $started, ['mode' => 'legacy_multi']);
-            JsonResponse::send(['estado' => 'error', 'mensaje' => $e->getMessage()], 500);
+            error_log('[ArcadeCloud legacy upload] ' . $e::class . ': ' . $e->getMessage());
+            JsonResponse::send(['estado' => 'error', 'mensaje' => 'No se pudo completar la subida.'], 500);
         }
     }
 
@@ -120,6 +124,16 @@ final class LegacyUploadController
     private function activity(): ActivityCostRecorder
     {
         return ActivityCostRecorder::fromDatabase($this->app->db());
+    }
+
+    private function requireUploadCsrf(\ArcadeCloud\Drive\Security\SessionManager $session): void
+    {
+        $expected = (string)$session->get('upload_csrf', '');
+        $sent = $this->request->serverString('HTTP_X_DRIVE_CSRF');
+
+        if ($expected === '' || $sent === '' || !hash_equals($expected, $sent)) {
+            JsonResponse::send(['estado' => 'error', 'mensaje' => 'Token CSRF inválido. Recarga el Drive.'], 403);
+        }
     }
 
     private function authenticatedSession(): \ArcadeCloud\Drive\Security\SessionManager

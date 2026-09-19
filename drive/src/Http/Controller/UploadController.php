@@ -26,6 +26,11 @@ final class UploadController
             JsonResponse::send(['ok' => false, 'error' => 'Sesión inválida.'], 401);
         }
 
+        if ($this->request->method() !== 'POST') {
+            JsonResponse::send(['ok' => false, 'error' => 'Método no permitido.'], 405);
+        }
+
+        $this->requireUploadCsrf($session);
         $userId = $session->userId();
         $started = microtime(true);
         $action = $this->request->queryString('action', $this->request->postString('action'));
@@ -83,7 +88,21 @@ final class UploadController
                     ['mode' => $mode, 'phase' => $action]
                 );
             }
-            JsonResponse::send(['ok' => false, 'error' => $e->getMessage()], 500);
+            error_log('[ArcadeCloud upload] ' . $e::class . ': ' . $e->getMessage());
+            JsonResponse::send([
+                'ok' => false,
+                'error' => 'No se pudo completar la subida. Revisa los datos e inténtalo nuevamente.',
+            ], 500);
+        }
+    }
+
+    private function requireUploadCsrf(\ArcadeCloud\Drive\Security\SessionManager $session): void
+    {
+        $expected = (string)$session->get('upload_csrf', '');
+        $sent = $this->request->serverString('HTTP_X_DRIVE_CSRF');
+
+        if ($expected === '' || $sent === '' || !hash_equals($expected, $sent)) {
+            JsonResponse::send(['ok' => false, 'error' => 'Token CSRF inválido. Recarga el Drive.'], 403);
         }
     }
 

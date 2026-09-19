@@ -1,4 +1,12 @@
-(function (window, document) {
+class FolderDocumentModule {
+  constructor(win, doc) {
+    this.win = win;
+    this.doc = doc;
+  }
+
+  init() {
+    const window = this.win;
+    const document = this.doc;
   'use strict';
 
   if (window.__arcadeFolderDocumentBound) return;
@@ -415,4 +423,7 @@
     event.preventDefault();
     saveDocument(form);
   });
-})(window, document);
+  }
+}
+
+new FolderDocumentModule(window, document).init();

@@ -27,6 +27,8 @@ on:
       - 'drive/src/Application/MoveJobService.php'
       - 'drive/src/Application/FolderMutationService.php'
       - 'drive/src/Application/FolderDocumentService.php'
+      - 'drive/src/Console/MoveJobWorkerCommand.php'
+      - 'drive/src/Console/SyncWorkerCommand.php'
       - 'drive/src/Http/Controller/ActivityCostController.php'
       - 'drive/src/Http/Controller/BackgroundTaskController.php'
       - 'drive/src/Http/Controller/AwsCostController.php'
@@ -97,6 +99,8 @@ jobs:
             drive/src/Application/MoveJobService.php \
             drive/src/Application/FolderMutationService.php \
             drive/src/Application/FolderDocumentService.php \
+            drive/src/Console/MoveJobWorkerCommand.php \
+            drive/src/Console/SyncWorkerCommand.php \
             drive/src/Http/Controller/ActivityCostController.php \
             drive/src/Http/Controller/BackgroundTaskController.php \
             drive/src/Http/Controller/AwsCostController.php \
@@ -153,7 +157,8 @@ jobs:
           grep -q 'comprehend.nlp_unit' drive/src/Http/Controller/AwsFileController.php
           grep -q 's3_list_requests' drive/src/Application/FolderMutationService.php
           grep -q 'BackgroundWorkerLauncher' drive/src/Http/Controller/MoveJobController.php
-          grep -q 'folder_move' drive/bin/move_job_worker.php
+          grep -q 'MoveJobWorkerCommand' drive/bin/move_job_worker.php
+          grep -q 'folder_move' drive/src/Console/MoveJobWorkerCommand.php
           grep -q 'cost_explorer.api_request' drive/src/Http/Controller/AwsCostController.php
           grep -q 'Best effort' drive/src/Activity/ActivityCostRecorder.php
           grep -q 'Cost Explorer' drive/src/Activity/ActivityCostService.php

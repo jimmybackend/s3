@@ -7,9 +7,41 @@ final class SessionManager
 {
     public function start(): void
     {
-        if (session_status() !== PHP_SESSION_ACTIVE) {
-            session_start();
+        if (session_status() === PHP_SESSION_ACTIVE) {
+            return;
         }
+
+        if (PHP_SAPI !== 'cli') {
+            ini_set('session.use_strict_mode', '1');
+            ini_set('session.cookie_httponly', '1');
+
+            if (!headers_sent()) {
+                $current = session_get_cookie_params();
+                $secure = $this->isHttpsRequest();
+
+                session_set_cookie_params([
+                    'lifetime' => (int)($current['lifetime'] ?? 0),
+                    'path' => (string)($current['path'] ?? '/'),
+                    'domain' => (string)($current['domain'] ?? ''),
+                    'secure' => $secure,
+                    'httponly' => true,
+                    'samesite' => 'Lax',
+                ]);
+            }
+        }
+
+        session_start();
+    }
+
+    private function isHttpsRequest(): bool
+    {
+        $https = strtolower(trim((string)($_SERVER['HTTPS'] ?? '')));
+        if ($https !== '' && $https !== 'off' && $https !== '0') {
+            return true;
+        }
+
+        $forwarded = strtolower(trim((string)($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '')));
+        return $forwarded === 'https';
     }
 
     public function closeWrite(): void

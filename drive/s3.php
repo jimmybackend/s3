@@ -2,7 +2,7 @@
 declare(strict_types=1);
 
 header('Content-Type: text/html; charset=UTF-8');
-ini_set('display_errors', '1');
+ini_set('display_errors', '0');
 error_reporting(E_ALL);
 
 require_once __DIR__ . '/app_bootstrap.php';
@@ -18,6 +18,12 @@ $profileCsrf = (string)$session->get('profile_csrf', '');
 if (!preg_match('/\A[a-f0-9]{64}\z/', $profileCsrf)) {
     $profileCsrf = bin2hex(random_bytes(32));
     $session->set('profile_csrf', $profileCsrf);
+}
+
+$uploadCsrf = (string)$session->get('upload_csrf', '');
+if (!preg_match('/\A[a-f0-9]{64}\z/', $uploadCsrf)) {
+    $uploadCsrf = bin2hex(random_bytes(32));
+    $session->set('upload_csrf', $uploadCsrf);
 }
 
 $userAlias = \ArcadeCloud\Drive\View\UserIdentityPresenter::alias($userIdentifier);
@@ -1822,6 +1828,7 @@ $footerEspacioUsado = $storageUsage['formatted'];
 <script src="js/soportesMediaTypes.js"></script>
 <script>
   window.UPLOAD_API = "api/upload.php";
+  window.DRIVE_UPLOAD_CSRF = <?= json_encode($uploadCsrf, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
   window.DRIVE_INITIAL_ROUTE = <?= json_encode($basePrefix) ?>;
   window.rutaActual = <?= json_encode($basePrefix) ?>;
 </script>

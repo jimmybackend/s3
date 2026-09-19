@@ -5,12 +5,11 @@ namespace ArcadeCloud\Drive\Http\Controller;
 
 use ArcadeCloud\Drive\Core\DriveApplication;
 use ArcadeCloud\Drive\Http\Request;
+use ArcadeCloud\Drive\Security\LoginRateLimiter;
 use Throwable;
 
 final class AuthController
 {
-    private const MAX_ATTEMPTS = 3;
-
     public function __construct(
         private DriveApplication $app,
         private Request $request
@@ -33,9 +32,18 @@ final class AuthController
         $email = $this->request->postRawString('email');
         $password = $this->request->postRawString('password');
 
-        if ($session->incrementLoginAttempt($email) > self::MAX_ATTEMPTS) {
-            $session->destroy();
-            $this->redirect('https://esforzados.com/index.php?x=101');
+        $ipAddress = $this->request->serverString('REMOTE_ADDR');
+        $limiter = new LoginRateLimiter();
+
+        try {
+            if (!$limiter->allow($email, $ipAddress)) {
+                $this->redirect('https://esforzados.com/index.php?x=101');
+            }
+        } catch (Throwable $e) {
+            error_log('Drive login limiter error: ' . $e->getMessage());
+            http_response_code(503);
+            echo 'El inicio de sesión no está disponible temporalmente.';
+            exit;
         }
 
         if ($this->containsRejectedCharacters($email)) {
@@ -46,7 +54,7 @@ final class AuthController
             $result = $this->app->authenticationService()->authenticate(
                 $email,
                 $password,
-                $this->request->serverString('REMOTE_ADDR')
+                $ipAddress
             );
         } catch (Throwable $e) {
             error_log('Drive authentication error: ' . $e->getMessage());
@@ -57,6 +65,11 @@ final class AuthController
         }
 
         if (($result['status'] ?? '') === 'invalid_credentials') {
+            try {
+                $limiter->registerFailure($email, $ipAddress);
+            } catch (Throwable $e) {
+                error_log('Drive login limiter failure-record error: ' . $e->getMessage());
+            }
             $this->redirect('303.html');
         }
 
@@ -65,6 +78,12 @@ final class AuthController
         }
 
         if (($result['status'] ?? '') === 'authenticated') {
+            try {
+                $limiter->clear($email, $ipAddress);
+            } catch (Throwable $e) {
+                error_log('Drive login limiter clear error: ' . $e->getMessage());
+            }
+
             $role = (string)($result['role'] ?? '');
             if ($role === 'Administración' || $role === 'Soporte') {
                 $this->redirect('s3.php');

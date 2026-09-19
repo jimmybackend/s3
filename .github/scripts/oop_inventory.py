@@ -25,37 +25,56 @@ def rel(p):
 
 def php_info(p):
     text = p.read_text(encoding='utf-8', errors='ignore')
-    classes = len(re.findall(r'(?m)^\s*(?:final\s+|abstract\s+)?class\s+\w+', text))
-    interfaces = len(re.findall(r'(?m)^\s*interface\s+\w+', text))
-    traits = len(re.findall(r'(?m)^\s*trait\s+\w+', text))
-    funcs = re.findall(r'(?m)^function\s+([A-Za-z_]\w*)\s*\(', text)
-    direct_session = bool(re.search(r'\bsession_start\s*\(|\$_SESSION\b', text))
-    superglobals = sorted(set(re.findall(r'\$_(GET|POST|REQUEST|SERVER|FILES|COOKIE|SESSION)\b', text)))
-    raw_db = bool(re.search(r'\$db_connection\b|->prepare\s*\(|->query\s*\(', text))
-    raw_s3 = bool(re.search(r'Config::getS3\s*\(|new\s+S3Manager\b|new\s+\\?Aws\\', text))
-    json_response = 'JsonResponse' in text
-    app_bootstrap = 'app_bootstrap.php' in text
+    php_chunks = re.findall(r'<\?php(.*?)(?:\?>|$)', text, re.DOTALL)
+    php_text = '\n'.join(php_chunks) if php_chunks else text
+    path = rel(p)
+
+    classes = len(re.findall(
+        r'(?m)^\s*(?:(?:final|abstract|readonly)\s+)*class\s+\w+',
+        php_text
+    ))
+    interfaces = len(re.findall(r'(?m)^\s*interface\s+\w+', php_text))
+    traits = len(re.findall(r'(?m)^\s*trait\s+\w+', php_text))
+    funcs = re.findall(r'(?m)^\s*function\s+([A-Za-z_]\w*)\s*\(', php_text)
+    direct_session = bool(re.search(r'\bsession_start\s*\(|\$_SESSION\b', php_text))
+    superglobals = sorted(set(re.findall(r'\$_(GET|POST|REQUEST|SERVER|FILES|COOKIE|SESSION)\b', php_text)))
+    raw_db = bool(re.search(r'\$db_connection\b|->prepare\s*\(|->query\s*\(', php_text))
+    raw_s3 = bool(re.search(r'Config::getS3\s*\(|new\s+S3Manager\b|new\s+\\?Aws\\', php_text))
+    json_response = 'JsonResponse' in php_text
+    app_bootstrap = 'app_bootstrap.php' in php_text
     html = bool(re.search(r'<(?:html|div|ul|li|form|button|script|footer|nav|section)\b', text, re.I))
-    namespace = bool(re.search(r'(?m)^namespace\s+', text))
+    namespace = bool(re.search(r'(?m)^\s*namespace\s+', php_text))
     lines = text.count('\n') + 1
-    if classes or interfaces or traits:
+
+    if path.startswith('drive/tests/'):
+        kind = 'test script'
+    elif p.name == 'app_bootstrap.php':
+        kind = 'bootstrap'
+    elif classes or interfaces or traits:
         kind = 'class/module'
+    elif path.startswith('drive/bin/'):
+        kind = 'thin cli entrypoint' if not funcs and lines <= 120 else 'cli entrypoint with logic'
     elif html:
         kind = 'view/entrypoint'
     elif app_bootstrap and not funcs:
         kind = 'thin endpoint' if lines <= 100 else 'endpoint with logic'
+    elif not funcs and lines <= 30 and re.search(r'Controller\s*\(', php_text):
+        kind = 'thin endpoint'
     else:
         kind = 'procedural endpoint'
+
     issues = []
-    if funcs:
+    runtime_migration_kind = kind in {'procedural endpoint', 'endpoint with logic', 'cli entrypoint with logic'}
+    http_endpoint_kind = kind in {'thin endpoint', 'procedural endpoint', 'endpoint with logic'}
+    if funcs and kind != 'test script':
         issues.append('global functions: ' + ', '.join(funcs[:8]))
-    if kind in {'procedural endpoint', 'endpoint with logic'} and raw_db:
-        issues.append('DB in endpoint')
-    if kind in {'procedural endpoint', 'endpoint with logic'} and raw_s3:
-        issues.append('AWS/S3 in endpoint')
-    if kind in {'procedural endpoint', 'endpoint with logic'} and direct_session:
-        issues.append('session in endpoint')
-    if not classes and not interfaces and not traits and p.parent.name == 'src':
+    if (runtime_migration_kind or http_endpoint_kind) and raw_db and kind != 'bootstrap':
+        issues.append('DB in entrypoint')
+    if (runtime_migration_kind or http_endpoint_kind) and raw_s3 and kind != 'bootstrap':
+        issues.append('AWS/S3 in entrypoint')
+    if runtime_migration_kind and direct_session:
+        issues.append('session in entrypoint')
+    if not classes and not interfaces and not traits and '/src/' in path and kind != 'test script':
         issues.append('src file without class')
     return {
         'path': rel(p), 'lines': lines, 'kind': kind, 'classes': classes,
@@ -102,10 +121,17 @@ js = [js_info(p) for p in files_with_suffix('.js')]
 summary = {
     'php_total': len(php),
     'php_class_modules': sum(1 for x in php if x['kind'] == 'class/module'),
-    'php_needs_migration': sum(1 for x in php if x['kind'] in {'procedural endpoint','endpoint with logic'} or x['functions']),
+    'php_needs_migration': sum(
+        1 for x in php
+        if x['kind'] in {'procedural endpoint', 'endpoint with logic', 'cli entrypoint with logic'}
+        or (x['functions'] and x['kind'] != 'test script')
+        or any(issue.startswith(('DB in entrypoint', 'AWS/S3 in entrypoint')) for issue in x['issues'])
+    ),
+    'php_tests': sum(1 for x in php if x['kind'] == 'test script'),
     'js_total': len(js),
     'js_class_modules': sum(1 for x in js if x['classes']),
-    'js_needs_migration': sum(1 for x in js if not x['classes'] or x['functions'] or x['window_func']),
+    'js_needs_migration': sum(1 for x in js if not x['classes'] or x['functions']),
+    'js_compatibility_facades': sum(1 for x in js if x['classes'] and x['window_func']),
 }
 
 lines = [
@@ -118,16 +144,20 @@ lines = [
     f"- PHP analizados: **{summary['php_total']}**",
     f"- PHP que ya contienen clases/interfaces: **{summary['php_class_modules']}**",
     f"- PHP marcados para migración/revisión: **{summary['php_needs_migration']}**",
+    f"- Tests PHP separados del objetivo OOP de runtime: **{summary['php_tests']}**",
     f"- JavaScript analizados: **{summary['js_total']}**",
     f"- JavaScript que ya contienen clases: **{summary['js_class_modules']}**",
-    f"- JavaScript marcados para migración/revisión: **{summary['js_needs_migration']}**",
+    f"- JavaScript sin clase/encapsulación OOP: **{summary['js_needs_migration']}**",
+    f"- JavaScript OOP con fachada `window` de compatibilidad: **{summary['js_compatibility_facades']}**",
     '',
     '## Criterio',
     '',
     '- `src/` y `upload/`: lógica de negocio e infraestructura en clases.',
     '- Entry points públicos: bootstrap + Controller/Service; sin SQL/AWS ni funciones globales.',
-    '- Vistas: pueden contener HTML, pero no deben crear clientes AWS/DB ni declarar funciones globales.',
-    '- JavaScript: comportamiento en clases; `window` solo para una fachada de compatibilidad explícita.',
+    '- CLI: el archivo ejecutable puede ser procedural si es un wrapper delgado que delega en clases.',
+    '- Tests: se auditan, pero no cuentan como deuda OOP del runtime.',
+    '- Vistas: pueden contener HTML; funciones JavaScript incrustadas no se confunden con funciones PHP.',
+    '- JavaScript: comportamiento en clases; `window` sólo como fachada de compatibilidad explícita.',
     '',
     '## PHP',
     '',

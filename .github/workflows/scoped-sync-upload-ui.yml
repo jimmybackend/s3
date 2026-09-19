@@ -5,6 +5,7 @@ on:
     paths:
       - 'drive/src/Sync/**'
       - 'drive/src/Http/Controller/SyncController.php'
+      - 'drive/src/Console/SyncWorkerCommand.php'
       - 'drive/bin/sync_worker.php'
       - 'drive/js/sincronizar.js'
       - 'drive/src/View/FolderTreeRenderer.php'
@@ -30,6 +31,7 @@ jobs:
           php -l drive/src/Sync/S3SyncService.php
           php -l drive/src/Sync/SyncRepository.php
           php -l drive/src/Http/Controller/SyncController.php
+          php -l drive/src/Console/SyncWorkerCommand.php
           php -l drive/bin/sync_worker.php
           php -l drive/src/View/FolderTreeRenderer.php
           php -l drive/bloque_carpetas.php
@@ -48,6 +50,7 @@ jobs:
         run: |
           grep -F "finalizeSyncPrefix" drive/src/Sync/S3SyncService.php
           grep -F "normalizeForUser" drive/src/Http/Controller/SyncController.php
+          grep -F "SyncWorkerCommand" drive/bin/sync_worker.php
           grep -F "js-sync-folder" drive/src/View/FolderTreeRenderer.php
           grep -F "federation-shares-row" drive/bloque_carpetas.php
           grep -F "stretched-link" drive/bloque_carpetas.php

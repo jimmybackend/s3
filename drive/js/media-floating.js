@@ -1,4 +1,12 @@
-(() => {
+class MediaFloatingApp {
+  constructor(win, doc) {
+    this.win = win;
+    this.doc = doc;
+  }
+
+  init() {
+    const window = this.win;
+    const document = this.doc;
   'use strict';
 
   if (window.__floatingMediaBound) {
@@ -681,4 +689,7 @@
 
   restorePosition();
 
-})();
+  }
+}
+
+new MediaFloatingApp(window, document).init();

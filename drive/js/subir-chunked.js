@@ -10,6 +10,7 @@ class SubirChunkedModule {
 
     document.addEventListener('DOMContentLoaded', function () {
       const API = window.UPLOAD_API || 'api/upload.php';
+      const CSRF = String(window.DRIVE_UPLOAD_CSRF || '');
       const LEGACY_CHUNK_SIZE = 15 * 1024 * 1024;
       const MAX_RETRIES = 5;
 
@@ -222,7 +223,8 @@ class SubirChunkedModule {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
-                'X-Requested-With': 'XMLHttpRequest'
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-Drive-CSRF': CSRF
               },
               credentials: 'same-origin',
               body: initBody.toString()
@@ -267,7 +269,8 @@ class SubirChunkedModule {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
-                'X-Requested-With': 'XMLHttpRequest'
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-Drive-CSRF': CSRF
               },
               credentials: 'same-origin',
               body: resumeBody.toString()
@@ -334,7 +337,8 @@ class SubirChunkedModule {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
-                'X-Requested-With': 'XMLHttpRequest'
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-Drive-CSRF': CSRF
               },
               credentials: 'same-origin',
               body: signBody.toString()

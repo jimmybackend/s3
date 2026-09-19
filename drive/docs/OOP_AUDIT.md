@@ -4,19 +4,23 @@
 
 ## Resumen
 
-- PHP analizados: **362**
-- PHP que ya contienen clases/interfaces: **211**
-- PHP marcados para migración/revisión: **39**
+- PHP analizados: **368**
+- PHP que ya contienen clases/interfaces: **220**
+- PHP marcados para migración/revisión: **0**
+- Tests PHP separados del objetivo OOP de runtime: **26**
 - JavaScript analizados: **46**
-- JavaScript que ya contienen clases: **42**
-- JavaScript marcados para migración/revisión: **11**
+- JavaScript que ya contienen clases: **46**
+- JavaScript sin clase/encapsulación OOP: **0**
+- JavaScript OOP con fachada `window` de compatibilidad: **7**
 
 ## Criterio
 
 - `src/` y `upload/`: lógica de negocio e infraestructura en clases.
 - Entry points públicos: bootstrap + Controller/Service; sin SQL/AWS ni funciones globales.
-- Vistas: pueden contener HTML, pero no deben crear clientes AWS/DB ni declarar funciones globales.
-- JavaScript: comportamiento en clases; `window` solo para una fachada de compatibilidad explícita.
+- CLI: el archivo ejecutable puede ser procedural si es un wrapper delgado que delega en clases.
+- Tests: se auditan, pero no cuentan como deuda OOP del runtime.
+- Vistas: pueden contener HTML; funciones JavaScript incrustadas no se confunden con funciones PHP.
+- JavaScript: comportamiento en clases; `window` sólo como fachada de compatibilidad explícita.
 
 ## PHP
 
@@ -25,28 +29,28 @@
 | `drive/activity_costs.php` | 8 | thin endpoint | 0 | — | — | — | — |
 | `drive/actualizar_ruta.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/api/upload.php` | 10 | thin endpoint | 0 | — | — | — | — |
-| `drive/app_bootstrap.php` | 53 | procedural endpoint | 0 | — | ⚠️ | — | DB in endpoint |
+| `drive/app_bootstrap.php` | 53 | bootstrap | 0 | — | ⚠️ | — | — |
 | `drive/aws.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/background_tasks.php` | 18 | thin endpoint | 0 | — | — | — | — |
-| `drive/bin/arcadecloud-drive-admin-helper.php` | 294 | procedural endpoint | 0 | — | — | — | global functions: fail, isRoot, base64UrlEncode, requireServerOperator, base64UrlDecode, nodeIdFromPublicKey, normalizeNodeName, readConfig |
-| `drive/bin/arcadecloud-drive-updater.php` | 116 | procedural endpoint | 0 | — | — | — | global functions: fail, readConfig, runAs, git, assertRepository, currentState |
-| `drive/bin/federation_catalog_migrate.php` | 45 | thin endpoint | 0 | — | — | — | — |
-| `drive/bin/federation_endpoint_refresh.php` | 81 | thin endpoint | 0 | — | — | — | — |
-| `drive/bin/federation_https_reconcile.php` | 337 | procedural endpoint | 0 | — | — | — | global functions: failHttps, optionValue, runFixed, readRuntimeJson, runtimeValue, writeRuntimeJsonInPlace, writeAtomicText, detectEc2PublicIpv4 |
-| `drive/bin/federation_identity_backup.php` | 49 | procedural endpoint | 0 | — | — | — | — |
-| `drive/bin/federation_identity_init.php` | 33 | procedural endpoint | 0 | — | — | — | — |
-| `drive/bin/federation_identity_name.php` | 35 | procedural endpoint | 0 | — | — | — | — |
-| `drive/bin/federation_identity_restore.php` | 48 | procedural endpoint | 0 | — | — | — | — |
-| `drive/bin/federation_provider_request.php` | 87 | procedural endpoint | 0 | — | — | — | — |
-| `drive/bin/federation_replica_presence.php` | 21 | thin endpoint | 0 | — | — | — | — |
-| `drive/bin/federation_sync.php` | 102 | endpoint with logic | 0 | — | — | — | — |
-| `drive/bin/move_job_worker.php` | 134 | endpoint with logic | 0 | — | — | — | — |
-| `drive/bin/polly_reconcile.php` | 50 | thin endpoint | 0 | — | — | — | — |
-| `drive/bin/sync_node_worker.php` | 75 | thin endpoint | 0 | — | — | — | — |
-| `drive/bin/sync_schema_migrate.php` | 17 | thin endpoint | 0 | — | — | — | — |
-| `drive/bin/sync_worker.php` | 185 | endpoint with logic | 0 | — | — | — | — |
-| `drive/bin/transcribe_reconcile.php` | 54 | thin endpoint | 0 | — | — | — | — |
-| `drive/bin/upload_cleanup.php` | 11 | thin endpoint | 0 | — | — | — | — |
+| `drive/bin/arcadecloud-drive-admin-helper.php` | 470 | class/module | 1 | — | — | — | — |
+| `drive/bin/arcadecloud-drive-updater.php` | 207 | class/module | 1 | — | — | — | — |
+| `drive/bin/federation_catalog_migrate.php` | 45 | thin cli entrypoint | 0 | — | — | — | — |
+| `drive/bin/federation_endpoint_refresh.php` | 81 | thin cli entrypoint | 0 | — | — | — | — |
+| `drive/bin/federation_https_reconcile.php` | 509 | class/module | 1 | — | — | — | — |
+| `drive/bin/federation_identity_backup.php` | 49 | thin cli entrypoint | 0 | — | — | — | — |
+| `drive/bin/federation_identity_init.php` | 33 | thin cli entrypoint | 0 | — | — | — | — |
+| `drive/bin/federation_identity_name.php` | 35 | thin cli entrypoint | 0 | — | — | — | — |
+| `drive/bin/federation_identity_restore.php` | 48 | thin cli entrypoint | 0 | — | — | — | — |
+| `drive/bin/federation_provider_request.php` | 87 | thin cli entrypoint | 0 | — | — | — | — |
+| `drive/bin/federation_replica_presence.php` | 21 | thin cli entrypoint | 0 | — | — | — | — |
+| `drive/bin/federation_sync.php` | 102 | thin cli entrypoint | 0 | — | — | — | — |
+| `drive/bin/move_job_worker.php` | 11 | thin cli entrypoint | 0 | — | — | — | — |
+| `drive/bin/polly_reconcile.php` | 50 | thin cli entrypoint | 0 | — | — | — | — |
+| `drive/bin/sync_node_worker.php` | 75 | thin cli entrypoint | 0 | — | — | — | — |
+| `drive/bin/sync_schema_migrate.php` | 17 | thin cli entrypoint | 0 | — | — | — | — |
+| `drive/bin/sync_worker.php` | 11 | thin cli entrypoint | 0 | — | — | — | — |
+| `drive/bin/transcribe_reconcile.php` | 54 | thin cli entrypoint | 0 | — | — | — | — |
+| `drive/bin/upload_cleanup.php` | 11 | thin cli entrypoint | 0 | — | — | — | — |
 | `drive/bloque_archivos.php` | 662 | view/entrypoint | 0 | ⚠️ | — | — | — |
 | `drive/bloque_carpetas.php` | 226 | view/entrypoint | 0 | ⚠️ | — | — | — |
 | `drive/bloque_footer.php` | 194 | view/entrypoint | 0 | ⚠️ | — | — | — |
@@ -63,7 +67,7 @@
 | `drive/download_multiple.php` | 8 | thin endpoint | 0 | — | — | — | — |
 | `drive/ec2-cron.php` | 39 | thin endpoint | 0 | — | — | — | — |
 | `drive/ec2.php` | 859 | view/entrypoint | 0 | ⚠️ | — | — | — |
-| `drive/editor.php` | 485 | view/entrypoint | 0 | — | — | — | global functions: detectarLenguaje, setStatus, limpiarMarcadores, marcarGuardado, actualizarBotonValidar, aplicarLenguaje, poblarLenguajes, deshacer |
+| `drive/editor.php` | 485 | view/entrypoint | 0 | — | — | — | — |
 | `drive/eliminar_archivo.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/eliminar_carpeta.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/encriptar_archivo.php` | 10 | thin endpoint | 0 | — | — | — | — |
@@ -119,10 +123,10 @@
 | `drive/relock_file.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/renombrar_archivo.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/renombrar_carpeta.php` | 10 | thin endpoint | 0 | — | — | — | — |
-| `drive/s3.php` | 2227 | view/entrypoint | 0 | ⚠️ | — | — | — |
+| `drive/s3.php` | 2234 | view/entrypoint | 0 | ⚠️ | — | — | — |
 | `drive/server-settings.php` | 11 | thin endpoint | 0 | — | — | — | — |
 | `drive/set_file_security.php` | 10 | thin endpoint | 0 | — | — | — | — |
-| `drive/setup/api.php` | 100 | procedural endpoint | 0 | — | — | — | global functions: setupJson, setupPost |
+| `drive/setup/api.php` | 14 | thin endpoint | 0 | — | — | — | — |
 | `drive/setup/index.php` | 86 | view/entrypoint | 0 | — | — | — | — |
 | `drive/src/Activity/ActivityCostRecorder.php` | 155 | class/module | 1 | — | — | — | — |
 | `drive/src/Activity/ActivityCostRepository.php` | 173 | class/module | 1 | — | ⚠️ | — | — |
@@ -171,6 +175,8 @@
 | `drive/src/Aws/TextractFileService.php` | 107 | class/module | 1 | — | — | — | — |
 | `drive/src/Aws/TranscriptionFileService.php` | 477 | class/module | 1 | — | — | — | — |
 | `drive/src/Aws/TranslateFileService.php` | 60 | class/module | 1 | — | — | — | — |
+| `drive/src/Console/MoveJobWorkerCommand.php` | 137 | class/module | 1 | — | — | — | — |
+| `drive/src/Console/SyncWorkerCommand.php` | 182 | class/module | 1 | — | — | — | — |
 | `drive/src/Console/UploadCleanupCommand.php` | 61 | class/module | 1 | — | — | — | — |
 | `drive/src/Core/ApplicationKernel.php` | 38 | class/module | 1 | — | — | — | — |
 | `drive/src/Core/BackgroundWorkerLease.php` | 97 | class/module | 1 | — | — | — | — |
@@ -218,11 +224,12 @@
 | `drive/src/Federation/NodeIdentityBackupService.php` | 228 | class/module | 1 | — | — | — | — |
 | `drive/src/Federation/NodeIdentityService.php` | 294 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/BinaryResponse.php` | 85 | class/module | 1 | — | — | — | — |
-| `drive/src/Http/ByteRange.php` | 45 | procedural endpoint | 0 | — | — | — | — |
-| `drive/src/Http/Controller/AbstractJsonController.php` | 69 | class/module | 1 | — | — | — | — |
+| `drive/src/Http/ByteRange.php` | 45 | class/module | 1 | — | — | — | — |
+| `drive/src/Http/Controller/AbstractJsonController.php` | 81 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/ActivityCostController.php` | 81 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/ArcadeCloudUpdateController.php` | 48 | class/module | 1 | — | — | — | — |
-| `drive/src/Http/Controller/AuthController.php` | 94 | class/module | 1 | — | — | — | — |
+| `drive/src/Http/Controller/AudioRecordingUploadController.php` | 108 | class/module | 1 | — | — | — | — |
+| `drive/src/Http/Controller/AuthController.php` | 113 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/AwsCostController.php` | 61 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/AwsFileController.php` | 338 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/BackgroundTaskCompatibilityController.php` | 245 | class/module | 1 | — | ⚠️ | — | — |
@@ -245,7 +252,7 @@
 | `drive/src/Http/Controller/FolderDocumentController.php` | 71 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/FolderMutationController.php` | 203 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/FolderQueryController.php` | 30 | class/module | 1 | — | — | — | — |
-| `drive/src/Http/Controller/LegacyUploadController.php` | 140 | class/module | 1 | — | — | — | — |
+| `drive/src/Http/Controller/LegacyUploadController.php` | 154 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/MediaPlaylistController.php` | 35 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/MoveJobController.php` | 164 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/NavigationController.php` | 42 | class/module | 1 | — | — | — | — |
@@ -257,12 +264,12 @@
 | `drive/src/Http/Controller/ServerSettingsAdminController.php` | 73 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/ShareController.php` | 78 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/StorageUsageController.php` | 28 | class/module | 1 | — | — | — | — |
-| `drive/src/Http/Controller/SyncController.php` | 177 | class/module | 1 | — | — | — | — |
+| `drive/src/Http/Controller/SyncController.php` | 147 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/TextEditorController.php` | 61 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/ThumbnailController.php` | 110 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/TranscriptionController.php` | 215 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/UploadCleanupController.php` | 76 | class/module | 1 | — | — | — | — |
-| `drive/src/Http/Controller/UploadController.php` | 252 | class/module | 1 | — | — | — | — |
+| `drive/src/Http/Controller/UploadController.php` | 271 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/UserProfileController.php` | 115 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/JsonResponse.php` | 27 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Request.php` | 112 | class/module | 1 | — | — | — | — |
@@ -275,16 +282,18 @@
 | `drive/src/Security/AuthenticationService.php` | 55 | class/module | 1 | — | — | — | — |
 | `drive/src/Security/FileSecurityRepository.php` | 92 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Security/FileSecurityService.php` | 183 | class/module | 1 | — | — | — | — |
+| `drive/src/Security/LoginRateLimiter.php` | 143 | class/module | 1 | — | — | — | — |
 | `drive/src/Security/PasswordChangeService.php` | 80 | class/module | 1 | — | — | — | — |
 | `drive/src/Security/PasswordCredentialVerifier.php` | 35 | class/module | 1 | — | — | — | — |
 | `drive/src/Security/PersonalToolAccessService.php` | 53 | class/module | 1 | — | — | — | — |
-| `drive/src/Security/SessionManager.php` | 149 | class/module | 1 | ⚠️ | — | — | — |
+| `drive/src/Security/SessionManager.php` | 181 | class/module | 1 | ⚠️ | — | — | — |
 | `drive/src/Security/SuperAdminReauthenticationService.php` | 89 | class/module | 1 | — | — | — | — |
 | `drive/src/Security/UserDirectoryRepository.php` | 72 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Security/UserProfileRepository.php` | 117 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Security/UserProfileService.php` | 183 | class/module | 1 | — | — | — | — |
 | `drive/src/Security/UserProfileValidator.php` | 96 | class/module | 1 | — | — | — | — |
 | `drive/src/Setup/BootstrapSetupAuth.php` | 181 | class/module | 1 | ⚠️ | — | — | — |
+| `drive/src/Setup/SetupApiController.php` | 108 | class/module | 1 | — | — | — | — |
 | `drive/src/Setup/SetupConfigurationService.php` | 186 | class/module | 1 | — | — | — | — |
 | `drive/src/Setup/SuperAdminBootstrapService.php` | 174 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Sharing/ShareAccessService.php` | 105 | class/module | 1 | — | — | — | — |
@@ -332,31 +341,32 @@
 | `drive/subir_publico.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/sync_s3_to_db.php` | 5 | thin endpoint | 0 | — | — | — | — |
 | `drive/sync_status.php` | 5 | thin endpoint | 0 | — | — | — | — |
-| `drive/tests/activity_costs_smoke.php` | 135 | view/entrypoint | 0 | — | — | — | global functions: check |
-| `drive/tests/arcadelink_bulk_contract_regression.php` | 68 | procedural endpoint | 0 | — | — | — | global functions: source, expectContract |
-| `drive/tests/arcadelink_bundle_regression.php` | 142 | procedural endpoint | 0 | — | — | — | global functions: expect, openBundle, assertNoSecretMarkers |
-| `drive/tests/federation_access_message_smoke.php` | 72 | procedural endpoint | 0 | — | — | — | global functions: accessOk |
-| `drive/tests/federation_catalog_event_smoke.php` | 60 | procedural endpoint | 0 | — | — | — | global functions: fedCatalogOk |
-| `drive/tests/federation_customs_contract_smoke.php` | 74 | procedural endpoint | 0 | — | — | — | global functions: customsOk |
-| `drive/tests/federation_directory_smoke.php` | 102 | procedural endpoint | 0 | — | — | — | global functions: directoryOk |
-| `drive/tests/federation_endpoint_resolver_smoke.php` | 95 | procedural endpoint | 0 | — | — | — | global functions: endpointOk |
-| `drive/tests/federation_https_contract_smoke.php` | 55 | procedural endpoint | 0 | — | — | — | global functions: httpsContractOk |
-| `drive/tests/federation_node_name_admin_smoke.php` | 91 | procedural endpoint | 0 | — | — | — | — |
-| `drive/tests/federation_provider_smoke.php` | 76 | procedural endpoint | 0 | — | — | — | global functions: providerOk |
-| `drive/tests/federation_replica_reconnect_contract_smoke.php` | 77 | procedural endpoint | 0 | — | — | — | global functions: reconnectOk |
-| `drive/tests/federation_replica_smoke.php` | 98 | procedural endpoint | 0 | — | — | — | global functions: replicaOk |
-| `drive/tests/federationcloud_smoke.php` | 146 | procedural endpoint | 0 | — | — | — | global functions: ok, legacyDocument |
-| `drive/tests/folder_document_sanitizer.php` | 49 | view/entrypoint | 0 | — | — | — | — |
-| `drive/tests/password_credential_verifier_smoke.php` | 44 | procedural endpoint | 0 | — | — | — | — |
-| `drive/tests/scoped_sync_repository_regression.php` | 96 | procedural endpoint | 0 | — | ⚠️ | — | DB in endpoint |
-| `drive/tests/server_admin_config_smoke.php` | 97 | procedural endpoint | 0 | — | — | — | global functions: serverAdminOk |
-| `drive/tests/setup_bootstrap_smoke.php` | 57 | procedural endpoint | 0 | — | — | — | — |
-| `drive/tests/smtp_config_smoke.php` | 49 | procedural endpoint | 0 | — | — | — | — |
-| `drive/tests/sync_repository_regression.php` | 91 | procedural endpoint | 0 | — | ⚠️ | — | global functions: check; DB in endpoint |
-| `drive/tests/sync_schema_migrator_regression.php` | 75 | procedural endpoint | 0 | — | ⚠️ | — | DB in endpoint |
-| `drive/tests/upload_catalog_registration_regression.php` | 125 | procedural endpoint | 0 | — | ⚠️ | — | DB in endpoint |
-| `drive/tests/user_identity_presenter_smoke.php` | 30 | procedural endpoint | 0 | — | — | — | — |
-| `drive/tests/user_profile_validator_smoke.php` | 72 | procedural endpoint | 0 | — | — | — | — |
+| `drive/tests/activity_costs_smoke.php` | 135 | test script | 0 | — | — | — | — |
+| `drive/tests/arcadelink_bulk_contract_regression.php` | 68 | test script | 0 | — | — | — | — |
+| `drive/tests/arcadelink_bundle_regression.php` | 142 | test script | 0 | — | — | — | — |
+| `drive/tests/federation_access_message_smoke.php` | 72 | test script | 0 | — | — | — | — |
+| `drive/tests/federation_catalog_event_smoke.php` | 60 | test script | 0 | — | — | — | — |
+| `drive/tests/federation_customs_contract_smoke.php` | 74 | test script | 0 | — | — | — | — |
+| `drive/tests/federation_directory_smoke.php` | 102 | test script | 0 | — | — | — | — |
+| `drive/tests/federation_endpoint_resolver_smoke.php` | 95 | test script | 0 | — | — | — | — |
+| `drive/tests/federation_https_contract_smoke.php` | 55 | test script | 0 | — | — | — | — |
+| `drive/tests/federation_node_name_admin_smoke.php` | 91 | test script | 0 | — | — | — | — |
+| `drive/tests/federation_provider_smoke.php` | 76 | test script | 0 | — | — | — | — |
+| `drive/tests/federation_replica_reconnect_contract_smoke.php` | 77 | test script | 0 | — | — | — | — |
+| `drive/tests/federation_replica_smoke.php` | 98 | test script | 0 | — | — | — | — |
+| `drive/tests/federationcloud_smoke.php` | 146 | test script | 0 | — | — | — | — |
+| `drive/tests/folder_document_sanitizer.php` | 49 | test script | 0 | — | — | — | — |
+| `drive/tests/password_credential_verifier_smoke.php` | 44 | test script | 0 | — | — | — | — |
+| `drive/tests/scoped_sync_repository_regression.php` | 96 | test script | 0 | — | ⚠️ | — | — |
+| `drive/tests/security_hardening_smoke.php` | 59 | test script | 0 | — | — | — | — |
+| `drive/tests/server_admin_config_smoke.php` | 97 | test script | 0 | — | — | — | — |
+| `drive/tests/setup_bootstrap_smoke.php` | 57 | test script | 0 | — | — | — | — |
+| `drive/tests/smtp_config_smoke.php` | 49 | test script | 0 | — | — | — | — |
+| `drive/tests/sync_repository_regression.php` | 91 | test script | 0 | — | ⚠️ | — | — |
+| `drive/tests/sync_schema_migrator_regression.php` | 75 | test script | 0 | — | ⚠️ | — | — |
+| `drive/tests/upload_catalog_registration_regression.php` | 125 | test script | 0 | — | ⚠️ | — | — |
+| `drive/tests/user_identity_presenter_smoke.php` | 30 | test script | 0 | — | — | — | — |
+| `drive/tests/user_profile_validator_smoke.php` | 72 | test script | 0 | — | — | — | — |
 | `drive/thumb.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/token_audio.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/token_texto.php` | 10 | thin endpoint | 0 | — | — | — | — |
@@ -366,7 +376,7 @@
 | `drive/transcribir_iniciar.php` | 8 | thin endpoint | 0 | — | — | — | — |
 | `drive/unlock_file.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/up-clean.php` | 10 | thin endpoint | 0 | — | — | — | — |
-| `drive/up.php` | 783 | view/entrypoint | 0 | ⚠️ | — | — | — |
+| `drive/up.php` | 799 | view/entrypoint | 0 | ⚠️ | — | — | — |
 | `drive/update.php` | 11 | thin endpoint | 0 | — | — | — | — |
 | `drive/upload/UploadFactory.php` | 60 | class/module | 1 | — | — | — | — |
 | `drive/upload/core/UploadResponse.php` | 15 | class/module | 1 | — | — | — | — |
@@ -374,11 +384,11 @@
 | `drive/upload/drivers/Chunked15MBUploader.php` | 266 | class/module | 1 | — | — | — | — |
 | `drive/upload/drivers/DropboxUploader.php` | 129 | class/module | 1 | — | — | — | — |
 | `drive/upload/drivers/LocalPresignedPutUploader.php` | 287 | class/module | 1 | — | ⚠️ | — | — |
-| `drive/upload/drivers/RemoteUrlUploader.php` | 260 | class/module | 1 | — | — | — | — |
+| `drive/upload/drivers/RemoteUrlUploader.php` | 470 | class/module | 1 | — | — | — | — |
 | `drive/upload/repositories/FileS3Repository.php` | 86 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/upload/storage/UploadStateStore.php` | 51 | class/module | 1 | — | — | — | — |
 | `drive/upload.php` | 10 | thin endpoint | 0 | — | — | — | — |
-| `drive/upload_audio_recording.php` | 91 | thin endpoint | 0 | ⚠️ | — | ⚠️ | — |
+| `drive/upload_audio_recording.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/upload_publico.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/validar_php.php` | 8 | thin endpoint | 0 | — | — | — | — |
 | `drive/ver.php` | 10 | thin endpoint | 0 | — | — | — | — |
@@ -396,7 +406,7 @@
 | `drive/js/archivos.js` | 2155 | class/module | ArchivosModule | — | abrirModalRenombrarArchivo, cerrarModalCompartir, setFileSecurity | window functions: abrirModalRenombrarArchivo, cerrarModalCompartir, setFileSecurity |
 | `drive/js/audiovideo.js` | 619 | class/module | AudiovideoModule | — | audioNext, audioPrev, reproducirVideoDesde, videoNext, videoPlayPause, videoPrev | window functions: audioNext, audioPrev, reproducirVideoDesde, videoNext, videoPlayPause, videoPrev, wavePlayPause |
 | `drive/js/aws-comprehend.js` | 342 | class/module | AwsComprehendModule, AwsFileActionRouter | — | — | — |
-| `drive/js/background-task-feedback.js` | 169 | procedural script | — | — | — | no ES class |
+| `drive/js/background-task-feedback.js` | 180 | class/module | BackgroundTaskFeedbackModule | — | — | — |
 | `drive/js/background-tasks.js` | 631 | class/module | BackgroundTaskCenter | — | — | — |
 | `drive/js/carpetas.js` | 1105 | class/module | CarpetasModule | — | actualizarBloqueCarpetas | window functions: actualizarBloqueCarpetas |
 | `drive/js/descarga-multiple.js` | 114 | class/module | DescargaMultipleModule | — | — | — |
@@ -411,9 +421,9 @@
 | `drive/js/federation-share-drive.js` | 211 | class/module | FederationShareDriveModule | — | — | — |
 | `drive/js/file-block.js` | 305 | class/module | FileBlockApp | — | — | — |
 | `drive/js/filtros.js` | 97 | class/module | FiltrosModule | — | — | — |
-| `drive/js/folder-document.js` | 419 | encapsulated legacy module | — | — | — | no ES class |
+| `drive/js/folder-document.js` | 430 | class/module | FolderDocumentModule | — | — | — |
 | `drive/js/imagenes.js` | 535 | class/module | ImagenesModule | — | getGaleriaGridSize, setGaleriaGridSize | window functions: getGaleriaGridSize, setGaleriaGridSize |
-| `drive/js/media-floating.js` | 685 | procedural script | — | — | — | no ES class |
+| `drive/js/media-floating.js` | 696 | class/module | MediaFloatingApp | — | — | — |
 | `drive/js/mediaFloating.js` | 38 | class/module | MediaFloatingModule | — | — | — |
 | `drive/js/move-tasks.js` | 248 | class/module | DriveMoveTasks | — | — | — |
 | `drive/js/obtenerFiltros.js` | 125 | class/module | ObtenerFiltrosModule | — | — | — |
@@ -425,12 +435,12 @@
 | `drive/js/server-admin.js` | 365 | class/module | ServerAdminModule | — | — | — |
 | `drive/js/setup.js` | 182 | class/module | ArcadeCloudSetup | — | — | — |
 | `drive/js/sincronizar.js` | 262 | class/module | SincronizarModule | — | triggerSyncFolderS3, triggerSyncS3 | window functions: triggerSyncFolderS3, triggerSyncS3 |
-| `drive/js/soportesMediaTypes.js` | 390 | class/module | SoportesMediaTypesModule | — | — | — |
+| `drive/js/soportesMediaTypes.js` | 397 | class/module | SoportesMediaTypesModule | — | — | — |
 | `drive/js/storage-usage.js` | 51 | class/module | StorageUsageModule | — | — | — |
-| `drive/js/subir-chunked.js` | 586 | class/module | SubirChunkedModule | — | — | — |
-| `drive/js/subir-dropzone.js` | 868 | class/module | SubirDropzoneModule | — | — | — |
-| `drive/js/subir.js` | 339 | class/module | SubirModule | — | — | — |
-| `drive/js/theme-state-bridge.js` | 62 | procedural script | — | — | — | no ES class |
+| `drive/js/subir-chunked.js` | 590 | class/module | SubirChunkedModule | — | — | — |
+| `drive/js/subir-dropzone.js` | 874 | class/module | SubirDropzoneModule | — | — | — |
+| `drive/js/subir.js` | 333 | class/module | SubirModule | — | — | — |
+| `drive/js/theme-state-bridge.js` | 73 | class/module | ThemeStateBridge | — | — | — |
 | `drive/js/transcribe-background.js` | 319 | class/module | TranscribeBackgroundModule | — | — | — |
 | `drive/js/upload-destination.js` | 63 | class/module | UploadDestinationModule | — | — | — |
 | `drive/js/ver-metadatos.js` | 75 | class/module | VerMetadatosModule | — | verMetadatos | window functions: verMetadatos |

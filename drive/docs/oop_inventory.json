@@ -1,11 +1,13 @@
 {
   "summary": {
-    "php_total": 362,
-    "php_class_modules": 211,
-    "php_needs_migration": 39,
+    "php_total": 368,
+    "php_class_modules": 220,
+    "php_needs_migration": 0,
+    "php_tests": 26,
     "js_total": 46,
-    "js_class_modules": 42,
-    "js_needs_migration": 11
+    "js_class_modules": 46,
+    "js_needs_migration": 0,
+    "js_compatibility_facades": 7
   },
   "php": [
     {
@@ -56,7 +58,7 @@
     {
       "path": "drive/app_bootstrap.php",
       "lines": 53,
-      "kind": "procedural endpoint",
+      "kind": "bootstrap",
       "classes": 0,
       "functions": [],
       "session": false,
@@ -66,9 +68,7 @@
       "bootstrap": false,
       "html": false,
       "namespace": false,
-      "issues": [
-        "DB in endpoint"
-      ]
+      "issues": []
     },
     {
       "path": "drive/aws.php",
@@ -102,27 +102,10 @@
     },
     {
       "path": "drive/bin/arcadecloud-drive-admin-helper.php",
-      "lines": 294,
-      "kind": "procedural endpoint",
-      "classes": 0,
-      "functions": [
-        "fail",
-        "isRoot",
-        "base64UrlEncode",
-        "requireServerOperator",
-        "base64UrlDecode",
-        "nodeIdFromPublicKey",
-        "normalizeNodeName",
-        "readConfig",
-        "safeConfiguredPath",
-        "ensureParent",
-        "writeJsonAtomic",
-        "readRuntimeConfig",
-        "validateEnvironmentMap",
-        "createBootstrapAuth",
-        "completeBootstrap",
-        "validateIdentity"
-      ],
+      "lines": 470,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
       "session": false,
       "superglobals": [],
       "db": false,
@@ -130,23 +113,14 @@
       "bootstrap": false,
       "html": false,
       "namespace": false,
-      "issues": [
-        "global functions: fail, isRoot, base64UrlEncode, requireServerOperator, base64UrlDecode, nodeIdFromPublicKey, normalizeNodeName, readConfig"
-      ]
+      "issues": []
     },
     {
       "path": "drive/bin/arcadecloud-drive-updater.php",
-      "lines": 116,
-      "kind": "procedural endpoint",
-      "classes": 0,
-      "functions": [
-        "fail",
-        "readConfig",
-        "runAs",
-        "git",
-        "assertRepository",
-        "currentState"
-      ],
+      "lines": 207,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
       "session": false,
       "superglobals": [],
       "db": false,
@@ -154,14 +128,12 @@
       "bootstrap": false,
       "html": false,
       "namespace": false,
-      "issues": [
-        "global functions: fail, readConfig, runAs, git, assertRepository, currentState"
-      ]
+      "issues": []
     },
     {
       "path": "drive/bin/federation_catalog_migrate.php",
       "lines": 45,
-      "kind": "thin endpoint",
+      "kind": "thin cli entrypoint",
       "classes": 0,
       "functions": [],
       "session": false,
@@ -176,7 +148,7 @@
     {
       "path": "drive/bin/federation_endpoint_refresh.php",
       "lines": 81,
-      "kind": "thin endpoint",
+      "kind": "thin cli entrypoint",
       "classes": 0,
       "functions": [],
       "session": false,
@@ -190,25 +162,10 @@
     },
     {
       "path": "drive/bin/federation_https_reconcile.php",
-      "lines": 337,
-      "kind": "procedural endpoint",
-      "classes": 0,
-      "functions": [
-        "failHttps",
-        "optionValue",
-        "runFixed",
-        "readRuntimeJson",
-        "runtimeValue",
-        "writeRuntimeJsonInPlace",
-        "writeAtomicText",
-        "detectEc2PublicIpv4",
-        "certbotVersionAtLeast54",
-        "certbotIdentityArgs",
-        "validateSimpleHost",
-        "nginxChallengeConfig",
-        "nginxDynamicIpConfig",
-        "nginxReload"
-      ],
+      "lines": 509,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
       "session": false,
       "superglobals": [],
       "db": false,
@@ -216,14 +173,12 @@
       "bootstrap": false,
       "html": false,
       "namespace": false,
-      "issues": [
-        "global functions: failHttps, optionValue, runFixed, readRuntimeJson, runtimeValue, writeRuntimeJsonInPlace, writeAtomicText, detectEc2PublicIpv4"
-      ]
+      "issues": []
     },
     {
       "path": "drive/bin/federation_identity_backup.php",
       "lines": 49,
-      "kind": "procedural endpoint",
+      "kind": "thin cli entrypoint",
       "classes": 0,
       "functions": [],
       "session": false,
@@ -238,7 +193,7 @@
     {
       "path": "drive/bin/federation_identity_init.php",
       "lines": 33,
-      "kind": "procedural endpoint",
+      "kind": "thin cli entrypoint",
       "classes": 0,
       "functions": [],
       "session": false,
@@ -253,7 +208,7 @@
     {
       "path": "drive/bin/federation_identity_name.php",
       "lines": 35,
-      "kind": "procedural endpoint",
+      "kind": "thin cli entrypoint",
       "classes": 0,
       "functions": [],
       "session": false,
@@ -268,7 +223,7 @@
     {
       "path": "drive/bin/federation_identity_restore.php",
       "lines": 48,
-      "kind": "procedural endpoint",
+      "kind": "thin cli entrypoint",
       "classes": 0,
       "functions": [],
       "session": false,
@@ -283,7 +238,7 @@
     {
       "path": "drive/bin/federation_provider_request.php",
       "lines": 87,
-      "kind": "procedural endpoint",
+      "kind": "thin cli entrypoint",
       "classes": 0,
       "functions": [],
       "session": false,
@@ -298,7 +253,7 @@
     {
       "path": "drive/bin/federation_replica_presence.php",
       "lines": 21,
-      "kind": "thin endpoint",
+      "kind": "thin cli entrypoint",
       "classes": 0,
       "functions": [],
       "session": false,
@@ -313,7 +268,7 @@
     {
       "path": "drive/bin/federation_sync.php",
       "lines": 102,
-      "kind": "endpoint with logic",
+      "kind": "thin cli entrypoint",
       "classes": 0,
       "functions": [],
       "session": false,
@@ -327,8 +282,8 @@
     },
     {
       "path": "drive/bin/move_job_worker.php",
-      "lines": 134,
-      "kind": "endpoint with logic",
+      "lines": 11,
+      "kind": "thin cli entrypoint",
       "classes": 0,
       "functions": [],
       "session": false,
@@ -343,7 +298,7 @@
     {
       "path": "drive/bin/polly_reconcile.php",
       "lines": 50,
-      "kind": "thin endpoint",
+      "kind": "thin cli entrypoint",
       "classes": 0,
       "functions": [],
       "session": false,
@@ -358,7 +313,7 @@
     {
       "path": "drive/bin/sync_node_worker.php",
       "lines": 75,
-      "kind": "thin endpoint",
+      "kind": "thin cli entrypoint",
       "classes": 0,
       "functions": [],
       "session": false,
@@ -373,7 +328,7 @@
     {
       "path": "drive/bin/sync_schema_migrate.php",
       "lines": 17,
-      "kind": "thin endpoint",
+      "kind": "thin cli entrypoint",
       "classes": 0,
       "functions": [],
       "session": false,
@@ -387,8 +342,8 @@
     },
     {
       "path": "drive/bin/sync_worker.php",
-      "lines": 185,
-      "kind": "endpoint with logic",
+      "lines": 11,
+      "kind": "thin cli entrypoint",
       "classes": 0,
       "functions": [],
       "session": false,
@@ -403,7 +358,7 @@
     {
       "path": "drive/bin/transcribe_reconcile.php",
       "lines": 54,
-      "kind": "thin endpoint",
+      "kind": "thin cli entrypoint",
       "classes": 0,
       "functions": [],
       "session": false,
@@ -418,7 +373,7 @@
     {
       "path": "drive/bin/upload_cleanup.php",
       "lines": 11,
-      "kind": "thin endpoint",
+      "kind": "thin cli entrypoint",
       "classes": 0,
       "functions": [],
       "session": false,
@@ -687,21 +642,7 @@
       "lines": 485,
       "kind": "view/entrypoint",
       "classes": 0,
-      "functions": [
-        "detectarLenguaje",
-        "setStatus",
-        "limpiarMarcadores",
-        "marcarGuardado",
-        "actualizarBotonValidar",
-        "aplicarLenguaje",
-        "poblarLenguajes",
-        "deshacer",
-        "rehacer",
-        "buscar",
-        "reemplazar",
-        "irALinea",
-        "toggleWordWrap"
-      ],
+      "functions": [],
       "session": false,
       "superglobals": [
         "GET"
@@ -711,9 +652,7 @@
       "bootstrap": false,
       "html": true,
       "namespace": false,
-      "issues": [
-        "global functions: detectarLenguaje, setStatus, limpiarMarcadores, marcarGuardado, actualizarBotonValidar, aplicarLenguaje, poblarLenguajes, deshacer"
-      ]
+      "issues": []
     },
     {
       "path": "drive/eliminar_archivo.php",
@@ -1542,7 +1481,7 @@
     },
     {
       "path": "drive/s3.php",
-      "lines": 2227,
+      "lines": 2234,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -1590,26 +1529,18 @@
     },
     {
       "path": "drive/setup/api.php",
-      "lines": 100,
-      "kind": "procedural endpoint",
+      "lines": 14,
+      "kind": "thin endpoint",
       "classes": 0,
-      "functions": [
-        "setupJson",
-        "setupPost"
-      ],
+      "functions": [],
       "session": false,
-      "superglobals": [
-        "POST",
-        "SERVER"
-      ],
+      "superglobals": [],
       "db": false,
       "s3": false,
       "bootstrap": false,
       "html": false,
       "namespace": false,
-      "issues": [
-        "global functions: setupJson, setupPost"
-      ]
+      "issues": []
     },
     {
       "path": "drive/setup/index.php",
@@ -2338,6 +2269,36 @@
       "issues": []
     },
     {
+      "path": "drive/src/Console/MoveJobWorkerCommand.php",
+      "lines": 137,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Console/SyncWorkerCommand.php",
+      "lines": 182,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
       "path": "drive/src/Console/UploadCleanupCommand.php",
       "lines": 61,
       "kind": "class/module",
@@ -3045,8 +3006,8 @@
     {
       "path": "drive/src/Http/ByteRange.php",
       "lines": 45,
-      "kind": "procedural endpoint",
-      "classes": 0,
+      "kind": "class/module",
+      "classes": 1,
       "functions": [],
       "session": false,
       "superglobals": [],
@@ -3059,7 +3020,7 @@
     },
     {
       "path": "drive/src/Http/Controller/AbstractJsonController.php",
-      "lines": 69,
+      "lines": 81,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -3103,8 +3064,23 @@
       "issues": []
     },
     {
+      "path": "drive/src/Http/Controller/AudioRecordingUploadController.php",
+      "lines": 108,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
       "path": "drive/src/Http/Controller/AuthController.php",
-      "lines": 94,
+      "lines": 113,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -3451,7 +3427,7 @@
     },
     {
       "path": "drive/src/Http/Controller/LegacyUploadController.php",
-      "lines": 140,
+      "lines": 154,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -3631,7 +3607,7 @@
     },
     {
       "path": "drive/src/Http/Controller/SyncController.php",
-      "lines": 177,
+      "lines": 147,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -3706,7 +3682,7 @@
     },
     {
       "path": "drive/src/Http/Controller/UploadController.php",
-      "lines": 252,
+      "lines": 271,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -3905,6 +3881,21 @@
       "issues": []
     },
     {
+      "path": "drive/src/Security/LoginRateLimiter.php",
+      "lines": 143,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
       "path": "drive/src/Security/PasswordChangeService.php",
       "lines": 80,
       "kind": "class/module",
@@ -3951,12 +3942,13 @@
     },
     {
       "path": "drive/src/Security/SessionManager.php",
-      "lines": 149,
+      "lines": 181,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
       "session": true,
       "superglobals": [
+        "SERVER",
         "SESSION"
       ],
       "db": false,
@@ -4051,6 +4043,24 @@
       "superglobals": [
         "SERVER",
         "SESSION"
+      ],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Setup/SetupApiController.php",
+      "lines": 108,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [
+        "POST",
+        "SERVER"
       ],
       "db": false,
       "s3": false,
@@ -4767,7 +4777,7 @@
     {
       "path": "drive/tests/activity_costs_smoke.php",
       "lines": 135,
-      "kind": "view/entrypoint",
+      "kind": "test script",
       "classes": 0,
       "functions": [
         "check"
@@ -4779,14 +4789,12 @@
       "bootstrap": false,
       "html": true,
       "namespace": false,
-      "issues": [
-        "global functions: check"
-      ]
+      "issues": []
     },
     {
       "path": "drive/tests/arcadelink_bulk_contract_regression.php",
       "lines": 68,
-      "kind": "procedural endpoint",
+      "kind": "test script",
       "classes": 0,
       "functions": [
         "source",
@@ -4799,14 +4807,12 @@
       "bootstrap": false,
       "html": false,
       "namespace": false,
-      "issues": [
-        "global functions: source, expectContract"
-      ]
+      "issues": []
     },
     {
       "path": "drive/tests/arcadelink_bundle_regression.php",
       "lines": 142,
-      "kind": "procedural endpoint",
+      "kind": "test script",
       "classes": 0,
       "functions": [
         "expect",
@@ -4820,14 +4826,12 @@
       "bootstrap": false,
       "html": false,
       "namespace": false,
-      "issues": [
-        "global functions: expect, openBundle, assertNoSecretMarkers"
-      ]
+      "issues": []
     },
     {
       "path": "drive/tests/federation_access_message_smoke.php",
       "lines": 72,
-      "kind": "procedural endpoint",
+      "kind": "test script",
       "classes": 0,
       "functions": [
         "accessOk"
@@ -4839,14 +4843,12 @@
       "bootstrap": false,
       "html": false,
       "namespace": false,
-      "issues": [
-        "global functions: accessOk"
-      ]
+      "issues": []
     },
     {
       "path": "drive/tests/federation_catalog_event_smoke.php",
       "lines": 60,
-      "kind": "procedural endpoint",
+      "kind": "test script",
       "classes": 0,
       "functions": [
         "fedCatalogOk"
@@ -4858,14 +4860,12 @@
       "bootstrap": false,
       "html": false,
       "namespace": false,
-      "issues": [
-        "global functions: fedCatalogOk"
-      ]
+      "issues": []
     },
     {
       "path": "drive/tests/federation_customs_contract_smoke.php",
       "lines": 74,
-      "kind": "procedural endpoint",
+      "kind": "test script",
       "classes": 0,
       "functions": [
         "customsOk"
@@ -4877,14 +4877,12 @@
       "bootstrap": false,
       "html": false,
       "namespace": false,
-      "issues": [
-        "global functions: customsOk"
-      ]
+      "issues": []
     },
     {
       "path": "drive/tests/federation_directory_smoke.php",
       "lines": 102,
-      "kind": "procedural endpoint",
+      "kind": "test script",
       "classes": 0,
       "functions": [
         "directoryOk"
@@ -4896,14 +4894,12 @@
       "bootstrap": false,
       "html": false,
       "namespace": false,
-      "issues": [
-        "global functions: directoryOk"
-      ]
+      "issues": []
     },
     {
       "path": "drive/tests/federation_endpoint_resolver_smoke.php",
       "lines": 95,
-      "kind": "procedural endpoint",
+      "kind": "test script",
       "classes": 0,
       "functions": [
         "endpointOk"
@@ -4915,14 +4911,12 @@
       "bootstrap": false,
       "html": false,
       "namespace": false,
-      "issues": [
-        "global functions: endpointOk"
-      ]
+      "issues": []
     },
     {
       "path": "drive/tests/federation_https_contract_smoke.php",
       "lines": 55,
-      "kind": "procedural endpoint",
+      "kind": "test script",
       "classes": 0,
       "functions": [
         "httpsContractOk"
@@ -4934,14 +4928,12 @@
       "bootstrap": false,
       "html": false,
       "namespace": false,
-      "issues": [
-        "global functions: httpsContractOk"
-      ]
+      "issues": []
     },
     {
       "path": "drive/tests/federation_node_name_admin_smoke.php",
       "lines": 91,
-      "kind": "procedural endpoint",
+      "kind": "test script",
       "classes": 0,
       "functions": [],
       "session": false,
@@ -4956,7 +4948,7 @@
     {
       "path": "drive/tests/federation_provider_smoke.php",
       "lines": 76,
-      "kind": "procedural endpoint",
+      "kind": "test script",
       "classes": 0,
       "functions": [
         "providerOk"
@@ -4968,14 +4960,12 @@
       "bootstrap": false,
       "html": false,
       "namespace": false,
-      "issues": [
-        "global functions: providerOk"
-      ]
+      "issues": []
     },
     {
       "path": "drive/tests/federation_replica_reconnect_contract_smoke.php",
       "lines": 77,
-      "kind": "procedural endpoint",
+      "kind": "test script",
       "classes": 0,
       "functions": [
         "reconnectOk"
@@ -4987,14 +4977,12 @@
       "bootstrap": false,
       "html": false,
       "namespace": false,
-      "issues": [
-        "global functions: reconnectOk"
-      ]
+      "issues": []
     },
     {
       "path": "drive/tests/federation_replica_smoke.php",
       "lines": 98,
-      "kind": "procedural endpoint",
+      "kind": "test script",
       "classes": 0,
       "functions": [
         "replicaOk"
@@ -5006,14 +4994,12 @@
       "bootstrap": false,
       "html": false,
       "namespace": false,
-      "issues": [
-        "global functions: replicaOk"
-      ]
+      "issues": []
     },
     {
       "path": "drive/tests/federationcloud_smoke.php",
       "lines": 146,
-      "kind": "procedural endpoint",
+      "kind": "test script",
       "classes": 0,
       "functions": [
         "ok",
@@ -5026,14 +5012,12 @@
       "bootstrap": false,
       "html": false,
       "namespace": false,
-      "issues": [
-        "global functions: ok, legacyDocument"
-      ]
+      "issues": []
     },
     {
       "path": "drive/tests/folder_document_sanitizer.php",
       "lines": 49,
-      "kind": "view/entrypoint",
+      "kind": "test script",
       "classes": 0,
       "functions": [],
       "session": false,
@@ -5048,7 +5032,7 @@
     {
       "path": "drive/tests/password_credential_verifier_smoke.php",
       "lines": 44,
-      "kind": "procedural endpoint",
+      "kind": "test script",
       "classes": 0,
       "functions": [],
       "session": false,
@@ -5063,7 +5047,7 @@
     {
       "path": "drive/tests/scoped_sync_repository_regression.php",
       "lines": 96,
-      "kind": "procedural endpoint",
+      "kind": "test script",
       "classes": 0,
       "functions": [],
       "session": false,
@@ -5073,14 +5057,29 @@
       "bootstrap": false,
       "html": false,
       "namespace": false,
-      "issues": [
-        "DB in endpoint"
-      ]
+      "issues": []
+    },
+    {
+      "path": "drive/tests/security_hardening_smoke.php",
+      "lines": 59,
+      "kind": "test script",
+      "classes": 0,
+      "functions": [
+        "securityHardeningCheck"
+      ],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": []
     },
     {
       "path": "drive/tests/server_admin_config_smoke.php",
       "lines": 97,
-      "kind": "procedural endpoint",
+      "kind": "test script",
       "classes": 0,
       "functions": [
         "serverAdminOk"
@@ -5092,14 +5091,12 @@
       "bootstrap": false,
       "html": false,
       "namespace": false,
-      "issues": [
-        "global functions: serverAdminOk"
-      ]
+      "issues": []
     },
     {
       "path": "drive/tests/setup_bootstrap_smoke.php",
       "lines": 57,
-      "kind": "procedural endpoint",
+      "kind": "test script",
       "classes": 0,
       "functions": [],
       "session": false,
@@ -5114,7 +5111,7 @@
     {
       "path": "drive/tests/smtp_config_smoke.php",
       "lines": 49,
-      "kind": "procedural endpoint",
+      "kind": "test script",
       "classes": 0,
       "functions": [],
       "session": false,
@@ -5129,7 +5126,7 @@
     {
       "path": "drive/tests/sync_repository_regression.php",
       "lines": 91,
-      "kind": "procedural endpoint",
+      "kind": "test script",
       "classes": 0,
       "functions": [
         "check"
@@ -5141,15 +5138,12 @@
       "bootstrap": false,
       "html": false,
       "namespace": false,
-      "issues": [
-        "global functions: check",
-        "DB in endpoint"
-      ]
+      "issues": []
     },
     {
       "path": "drive/tests/sync_schema_migrator_regression.php",
       "lines": 75,
-      "kind": "procedural endpoint",
+      "kind": "test script",
       "classes": 0,
       "functions": [],
       "session": false,
@@ -5159,14 +5153,12 @@
       "bootstrap": false,
       "html": false,
       "namespace": false,
-      "issues": [
-        "DB in endpoint"
-      ]
+      "issues": []
     },
     {
       "path": "drive/tests/upload_catalog_registration_regression.php",
       "lines": 125,
-      "kind": "procedural endpoint",
+      "kind": "test script",
       "classes": 0,
       "functions": [],
       "session": false,
@@ -5176,14 +5168,12 @@
       "bootstrap": false,
       "html": false,
       "namespace": false,
-      "issues": [
-        "DB in endpoint"
-      ]
+      "issues": []
     },
     {
       "path": "drive/tests/user_identity_presenter_smoke.php",
       "lines": 30,
-      "kind": "procedural endpoint",
+      "kind": "test script",
       "classes": 0,
       "functions": [],
       "session": false,
@@ -5198,7 +5188,7 @@
     {
       "path": "drive/tests/user_profile_validator_smoke.php",
       "lines": 72,
-      "kind": "procedural endpoint",
+      "kind": "test script",
       "classes": 0,
       "functions": [],
       "session": false,
@@ -5347,7 +5337,7 @@
     },
     {
       "path": "drive/up.php",
-      "lines": 783,
+      "lines": 799,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -5472,7 +5462,7 @@
     },
     {
       "path": "drive/upload/drivers/RemoteUrlUploader.php",
-      "lines": 260,
+      "lines": 470,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -5532,19 +5522,14 @@
     },
     {
       "path": "drive/upload_audio_recording.php",
-      "lines": 91,
+      "lines": 10,
       "kind": "thin endpoint",
       "classes": 0,
       "functions": [],
-      "session": true,
-      "superglobals": [
-        "FILES",
-        "POST",
-        "SERVER",
-        "SESSION"
-      ],
+      "session": false,
+      "superglobals": [],
       "db": false,
-      "s3": true,
+      "s3": false,
       "bootstrap": true,
       "html": false,
       "namespace": false,
@@ -5780,17 +5765,17 @@
     },
     {
       "path": "drive/js/background-task-feedback.js",
-      "lines": 169,
-      "kind": "procedural script",
-      "classes": [],
+      "lines": 180,
+      "kind": "class/module",
+      "classes": [
+        "BackgroundTaskFeedbackModule"
+      ],
       "functions": [],
       "window_assign": [],
       "window_func": [],
       "top_vars": [],
       "iife": false,
-      "issues": [
-        "no ES class"
-      ]
+      "issues": []
     },
     {
       "path": "drive/js/background-tasks.js",
@@ -6021,9 +6006,11 @@
     },
     {
       "path": "drive/js/folder-document.js",
-      "lines": 419,
-      "kind": "encapsulated legacy module",
-      "classes": [],
+      "lines": 430,
+      "kind": "class/module",
+      "classes": [
+        "FolderDocumentModule"
+      ],
       "functions": [],
       "window_assign": [
         "__arcadeFolderDocumentBound",
@@ -6032,9 +6019,7 @@
       "window_func": [],
       "top_vars": [],
       "iife": true,
-      "issues": [
-        "no ES class"
-      ]
+      "issues": []
     },
     {
       "path": "drive/js/imagenes.js",
@@ -6063,9 +6048,11 @@
     },
     {
       "path": "drive/js/media-floating.js",
-      "lines": 685,
-      "kind": "procedural script",
-      "classes": [],
+      "lines": 696,
+      "kind": "class/module",
+      "classes": [
+        "MediaFloatingApp"
+      ],
       "functions": [],
       "window_assign": [
         "__floatingMediaBound"
@@ -6073,9 +6060,7 @@
       "window_func": [],
       "top_vars": [],
       "iife": false,
-      "issues": [
-        "no ES class"
-      ]
+      "issues": []
     },
     {
       "path": "drive/js/mediaFloating.js",
@@ -6287,7 +6272,7 @@
     },
     {
       "path": "drive/js/soportesMediaTypes.js",
-      "lines": 390,
+      "lines": 397,
       "kind": "class/module",
       "classes": [
         "SoportesMediaTypesModule"
@@ -6317,7 +6302,7 @@
     },
     {
       "path": "drive/js/subir-chunked.js",
-      "lines": 586,
+      "lines": 590,
       "kind": "class/module",
       "classes": [
         "SubirChunkedModule"
@@ -6331,7 +6316,7 @@
     },
     {
       "path": "drive/js/subir-dropzone.js",
-      "lines": 868,
+      "lines": 874,
       "kind": "class/module",
       "classes": [
         "SubirDropzoneModule"
@@ -6348,7 +6333,7 @@
     },
     {
       "path": "drive/js/subir.js",
-      "lines": 339,
+      "lines": 333,
       "kind": "class/module",
       "classes": [
         "SubirModule"
@@ -6362,9 +6347,11 @@
     },
     {
       "path": "drive/js/theme-state-bridge.js",
-      "lines": 62,
-      "kind": "procedural script",
-      "classes": [],
+      "lines": 73,
+      "kind": "class/module",
+      "classes": [
+        "ThemeStateBridge"
+      ],
       "functions": [],
       "window_assign": [
         "ArcadeCloudApplyStoredTheme"
@@ -6372,9 +6359,7 @@
       "window_func": [],
       "top_vars": [],
       "iife": false,
-      "issues": [
-        "no ES class"
-      ]
+      "issues": []
     },
     {
       "path": "drive/js/transcribe-background.js",

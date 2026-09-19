@@ -68,7 +68,7 @@
 | `drive/bin/polly_reconcile.php` | `drive/src/Application/BackgroundWorkerLauncher.php` |
 | `drive/bin/sync_node_worker.php` | ninguna |
 | `drive/bin/sync_schema_migrate.php` | ninguna |
-| `drive/bin/sync_worker.php` | `drive/src/Application/BackgroundWorkerLauncher.php`, `drive/src/Http/Controller/SyncController.php` |
+| `drive/bin/sync_worker.php` | `drive/src/Application/BackgroundWorkerLauncher.php` |
 | `drive/bin/transcribe_reconcile.php` | `drive/src/Application/BackgroundWorkerLauncher.php` |
 | `drive/bin/upload_cleanup.php` | `drive/src/Http/Controller/UploadCleanupController.php` |
 | `drive/buscar_archivo.php` | `drive/js/ai-search.js`, `drive/js/archivos.js` |
@@ -176,6 +176,8 @@
 | `drive/src/Aws/TextractFileService.php` | ninguna |
 | `drive/src/Aws/TranscriptionFileService.php` | ninguna |
 | `drive/src/Aws/TranslateFileService.php` | ninguna |
+| `drive/src/Console/MoveJobWorkerCommand.php` | ninguna |
+| `drive/src/Console/SyncWorkerCommand.php` | ninguna |
 | `drive/src/Console/UploadCleanupCommand.php` | ninguna |
 | `drive/src/Core/ApplicationKernel.php` | ninguna |
 | `drive/src/Core/BackgroundWorkerLease.php` | ninguna |
@@ -227,6 +229,7 @@
 | `drive/src/Http/Controller/AbstractJsonController.php` | ninguna |
 | `drive/src/Http/Controller/ActivityCostController.php` | ninguna |
 | `drive/src/Http/Controller/ArcadeCloudUpdateController.php` | ninguna |
+| `drive/src/Http/Controller/AudioRecordingUploadController.php` | ninguna |
 | `drive/src/Http/Controller/AuthController.php` | ninguna |
 | `drive/src/Http/Controller/AwsCostController.php` | ninguna |
 | `drive/src/Http/Controller/AwsFileController.php` | ninguna |
@@ -280,6 +283,7 @@
 | `drive/src/Security/AuthenticationService.php` | ninguna |
 | `drive/src/Security/FileSecurityRepository.php` | ninguna |
 | `drive/src/Security/FileSecurityService.php` | ninguna |
+| `drive/src/Security/LoginRateLimiter.php` | `drive/tests/security_hardening_smoke.php` |
 | `drive/src/Security/PasswordChangeService.php` | ninguna |
 | `drive/src/Security/PasswordCredentialVerifier.php` | `drive/tests/password_credential_verifier_smoke.php` |
 | `drive/src/Security/PersonalToolAccessService.php` | ninguna |
@@ -289,6 +293,7 @@
 | `drive/src/Security/UserProfileRepository.php` | ninguna |
 | `drive/src/Security/UserProfileService.php` | ninguna |
 | `drive/src/Security/UserProfileValidator.php` | `drive/tests/user_profile_validator_smoke.php` |
+| `drive/src/Setup/SetupApiController.php` | `drive/setup/api.php` |
 | `drive/src/Setup/SetupConfigurationService.php` | `drive/setup/api.php` |
 | `drive/src/Setup/SuperAdminBootstrapService.php` | `drive/setup/api.php` |
 | `drive/src/Sharing/ShareAccessService.php` | ninguna |
@@ -353,6 +358,7 @@
 | `drive/tests/folder_document_sanitizer.php` | ninguna |
 | `drive/tests/password_credential_verifier_smoke.php` | ninguna |
 | `drive/tests/scoped_sync_repository_regression.php` | ninguna |
+| `drive/tests/security_hardening_smoke.php` | ninguna |
 | `drive/tests/server_admin_config_smoke.php` | ninguna |
 | `drive/tests/setup_bootstrap_smoke.php` | ninguna |
 | `drive/tests/smtp_config_smoke.php` | ninguna |
@@ -372,12 +378,12 @@
 | `drive/update.php` | `drive/js/arcadecloud-updater.js` |
 | `drive/upload/UploadFactory.php` | `drive/src/Core/DriveApplication.php` |
 | `drive/upload/core/UploadResponse.php` | ninguna |
-| `drive/upload/core/UploaderInterface.php` | `drive/upload/UploadFactory.php`, `drive/upload/drivers/Chunked15MBUploader.php`, `drive/upload/drivers/DropboxUploader.php`, `drive/upload/drivers/LocalPresignedPutUploader.php`, `drive/upload/drivers/RemoteUrlUploader.php` |
+| `drive/upload/core/UploaderInterface.php` | `drive/tests/security_hardening_smoke.php`, `drive/upload/UploadFactory.php`, `drive/upload/drivers/Chunked15MBUploader.php`, `drive/upload/drivers/DropboxUploader.php`, `drive/upload/drivers/LocalPresignedPutUploader.php`, `drive/upload/drivers/RemoteUrlUploader.php` |
 | `drive/upload/drivers/Chunked15MBUploader.php` | `drive/upload/UploadFactory.php` |
 | `drive/upload/drivers/DropboxUploader.php` | `drive/upload/UploadFactory.php` |
 | `drive/upload/drivers/LocalPresignedPutUploader.php` | `drive/upload/UploadFactory.php` |
-| `drive/upload/drivers/RemoteUrlUploader.php` | `drive/upload/UploadFactory.php` |
-| `drive/upload/repositories/FileS3Repository.php` | `drive/upload/drivers/Chunked15MBUploader.php`, `drive/upload/drivers/DropboxUploader.php`, `drive/upload/drivers/LocalPresignedPutUploader.php`, `drive/upload/drivers/RemoteUrlUploader.php` |
+| `drive/upload/drivers/RemoteUrlUploader.php` | `drive/tests/security_hardening_smoke.php`, `drive/upload/UploadFactory.php` |
+| `drive/upload/repositories/FileS3Repository.php` | `drive/tests/security_hardening_smoke.php`, `drive/upload/drivers/Chunked15MBUploader.php`, `drive/upload/drivers/DropboxUploader.php`, `drive/upload/drivers/LocalPresignedPutUploader.php`, `drive/upload/drivers/RemoteUrlUploader.php` |
 | `drive/upload/storage/UploadStateStore.php` | `drive/upload/UploadFactory.php`, `drive/upload/drivers/Chunked15MBUploader.php` |
 | `drive/upload_audio_recording.php` | ninguna |
 | `drive/upload_publico.php` | `drive/src/View/PublicSharedPageRenderer.php` |

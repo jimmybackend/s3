@@ -22,7 +22,10 @@ La migración incremental del backend heredado a arquitectura orientada a objeto
 - **ArcadeLink** portable y firmado;
 - identidad Ed25519 por nodo;
 - descubrimiento y validación HTTPS entre nodos;
-- solicitudes y aprobación de proveedores;
+- Aduana y autorización de providers/mirrors;
+- catálogo y ubicaciones federadas;
+- réplicas físicas autorizadas y failover por ubicación;
+- workers aislados por Node ID sobre MySQL compartida;
 - resolución local y remota de ArcadeLinks.
 
 Principios que siguen siendo obligatorios:

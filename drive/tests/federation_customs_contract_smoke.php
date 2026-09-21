@@ -30,7 +30,12 @@ customsOk(str_contains($sql, 'UNIQUE KEY uq_federation_ingress_request (RequestI
 customsOk(str_contains($sql, "enum('queued','processing','retry','done','rejected','failed')"), 'cola documenta estados de proceso');
 customsOk(str_contains($repo, 'LIMIT 1 FOR UPDATE'), 'claim de cola serializa la siguiente petición');
 customsOk(str_contains($repo, 'ORDER BY Priority ASC, ReceivedAt ASC, id_ ASC'), 'Aduana conserva prioridad y FIFO');
-customsOk(str_contains($repo, 'recoverStale'), 'Aduana recupera trabajos interrumpidos');
+customsOk(str_contains($repo, 'claimNext(string $targetNodeId)'), 'claim de Aduana exige identidad del nodo destino');
+customsOk(str_contains($repo, 'WHERE TargetNodeId=?'), 'Aduana particiona trabajos por TargetNodeId');
+customsOk(str_contains($repo, 'recoverStale(string $targetNodeId'), 'recuperación de Aduana queda aislada por nodo');
+customsOk(str_contains($repo, 'queuedCount(string $targetNodeId)'), 'profundidad de Aduana se calcula por nodo');
+customsOk(str_contains($customs, 'claimNext($localNodeId)'), 'worker sólo reclama Aduana destinada a su identidad');
+customsOk(str_contains($customs, 'recoverStale($localNodeId)'), 'worker sólo recupera Aduana destinada a su identidad');
 
 customsOk(str_contains($customs, "'node_presence'"), 'Aduana acepta presencia independiente');
 customsOk(str_contains($customs, "'shared_backend_authorization'"), 'Aduana separa autorización privilegiada');

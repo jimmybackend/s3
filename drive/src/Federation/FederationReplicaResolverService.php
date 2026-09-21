@@ -49,7 +49,8 @@ final class FederationReplicaResolverService
         }
 
         $object = $this->replicas->object($resourceId);
-        if ($object === null || (string)$object['Status'] !== 'active') {
+        if ($object === null || (string)$object['Status'] !== 'active'
+            || !$this->hasActiveLocalReplicaLocation($resourceId, (string)$object['Role'])) {
             throw new FederationException('Este nodo no tiene una copia activa del recurso.', 404);
         }
         if (!hash_equals((string)$resource['ContentId'], (string)$object['ContentId'])
@@ -104,6 +105,19 @@ final class FederationReplicaResolverService
             }
         }
         throw new FederationException('Ninguna ubicación FederationCloud respondió con una copia válida.', 503);
+    }
+
+    private function hasActiveLocalReplicaLocation(string $resourceId, string $role): bool
+    {
+        $localNodeId = $this->identity->nodeId();
+        foreach ($this->catalog->locations($resourceId) as $location) {
+            if (hash_equals($localNodeId, (string)($location['node_id'] ?? ''))
+                && (string)($location['status'] ?? '') === 'active'
+                && hash_equals($role, (string)($location['role'] ?? ''))) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private function requirePublicCopyable(string $resourceId): array

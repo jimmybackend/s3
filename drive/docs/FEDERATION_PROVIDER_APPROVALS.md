@@ -65,7 +65,10 @@ copia arranca
 
 Si la relación no existe, responde `authorization_required` y la copia cae al flujo inicial `provider-request.php -> Aduana -> Solicitudes`.
 
-Si la relación está `pending`, `revoked` o `blocked`, no se vuelve a crear automáticamente: requiere la decisión administrativa correspondiente.
+Si la relación está `pending`, `revoked` o `blocked`, no se promueve automáticamente. Después de
+una revocación deliberada, el operador puede ejecutar de nuevo
+`drive/bin/federation_provider_request.php`; el CLI actual genera un `request_id` nuevo para que
+Aduana cree una nueva solicitud administrativa. Esta corrección forma parte de PR #98.
 
 ## Configuración automática de una copia
 
@@ -112,5 +115,6 @@ El endpoint primero devuelve aceptación en Aduana. En un ciclo posterior del wo
 
 La arquitectura completa está documentada en:
 
+- `drive/docs/FEDERATION_NODE_REPLICA_INSTALL.md`
 - `drive/docs/FEDERATION_CUSTOMS_QUEUE.md`
 - `drive/docs/FEDERATION_OPERATIONS.md`

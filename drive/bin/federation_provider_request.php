@@ -37,6 +37,7 @@ $federationUrl = trim((string)($options['federation-url'] ?? ''));
 $identityPath = trim((string)($options['identity'] ?? '/etc/arcadecloud-drive/federation-node.json'));
 $role = (string)($options['role'] ?? 'provider');
 $scope = (string)($options['scope'] ?? 'all_allowed_resources');
+$requestId = 'fcq_' . FederationCodec::base64UrlEncode(random_bytes(24));
 
 if ($originUrl === '' || $publicUrl === '' || $federationUrl === '') {
     fwrite(STDERR, "Uso: php drive/bin/federation_provider_request.php --origin=https://origen/federationcloud/ --public-url=https://este-nodo --federation-url=https://este-nodo/federationcloud/ [--identity=/ruta/node.json] [--role=provider] [--scope=all_allowed_resources]\n");
@@ -68,12 +69,14 @@ try {
         'relationship' => 'shared_backend',
         'role' => $role,
         'scope' => $scope,
+        'request_id' => $requestId,
     ]);
 
     fwrite(STDOUT, "Solicitud FederationCloud enviada.\n");
     fwrite(STDOUT, 'origin_node_id=' . (string)$origin['node_id'] . "\n");
     fwrite(STDOUT, 'provider_node_id=' . (string)$local['node_id'] . "\n");
     fwrite(STDOUT, 'provider_node_name=' . (string)($local['node_name'] ?? '') . "\n");
+    fwrite(STDOUT, 'request_id=' . $requestId . "\n");
     fwrite(STDOUT, 'status=' . (string)($response['queue_status'] ?? $response['status'] ?? 'unknown') . "\n");
     fwrite(STDOUT, 'message=' . (string)($response['message'] ?? '') . "\n");
     exit(0);

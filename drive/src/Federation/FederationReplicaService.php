@@ -134,7 +134,7 @@ final class FederationReplicaService
 
     public function jobsForUser(int $userId): array
     {
-        return ['ok' => true, 'jobs' => $this->replicas->jobsForUser($userId)];
+        return ['ok' => true, 'jobs' => $this->replicas->jobsForUser($userId, $this->identity->nodeId())];
     }
 
     public function publicReplica(string $resourceId): array
@@ -163,7 +163,7 @@ final class FederationReplicaService
     private function syncOutgoing(int $limit): array
     {
         $processed = $offered = $active = $errors = 0;
-        foreach ($this->replicas->due('outgoing', $limit) as $job) {
+        foreach ($this->replicas->due('outgoing', $this->identity->nodeId(), $limit) as $job) {
             $processed++;
             $offerId = (string)$job['OfferId'];
             try {
@@ -218,7 +218,7 @@ final class FederationReplicaService
     private function syncIncoming(int $limit): array
     {
         $processed = $stored = $active = $errors = 0;
-        foreach ($this->replicas->due('incoming', $limit) as $job) {
+        foreach ($this->replicas->due('incoming', $this->identity->nodeId(), $limit) as $job) {
             $processed++;
             $offerId = (string)$job['OfferId'];
             try {

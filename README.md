@@ -65,14 +65,21 @@ La federación actualmente cubre:
 ```text
 identidad criptográfica
 + descubrimiento de nodos
-+ autorización origen -> proveedor
++ Aduana por TargetNodeId
++ autorización origen -> provider/mirror
 + ArcadeLink portable
-+ resolución entre nodos
++ catálogo y ubicaciones federadas
++ replicación física autorizada
++ selección/failover por ubicación
++ reactivación automática de mirrors
 ```
 
-Todavía no incluye P2P, replicación automática, escritura remota sobre S3 de terceros, buscador global ni selección automática del mejor proveedor por recurso.
+Los workers pueden operar sobre una MySQL compartida sin reclamar trabajos de otro Node ID desde
+PR #98. P2P/BitTorrent sigue fuera del alcance actual.
 
-Consulta `drive/docs/FEDERATED_CLOUD_STATUS.md` y `drive/docs/FEDERATIONCLOUD.md`.
+Para una instalación nueva comienza por
+`drive/docs/FEDERATION_NODE_REPLICA_INSTALL.md`. Consulta también
+`drive/docs/FEDERATED_CLOUD_STATUS.md` y `drive/docs/FEDERATIONCLOUD.md`.
 
 ## ArcadeLink
 
@@ -135,7 +142,9 @@ nodo proveedor
               -> autorización firmada origen -> proveedor
 ```
 
-La arquitectura ya fue probada con dos instalaciones distintas, una como nodo origen y otra como proveedor autorizado.
+La arquitectura ya fue probada con dos instalaciones distintas: una como nodo origen y otra como
+`mirror` autorizado. También se validó el failover de la aplicación y la ejecución simultánea de
+ambos workers sobre una MySQL compartida.
 
 ## Principios locales
 
@@ -356,6 +365,7 @@ composer install --no-dev --optimize-autoloader
 ## Documentación
 
 - `drive/ARCHITECTURE.md`: arquitectura y reglas obligatorias.
+- `drive/docs/FEDERATION_NODE_REPLICA_INSTALL.md`: instalación y troubleshooting de nodos y mirrors.
 - `drive/docs/FEDERATED_CLOUD_STATUS.md`: estado actual de la evolución hacia cloud federado.
 - `drive/docs/FEDERATIONCLOUD.md`: protocolo ArcadeLink/FederationCloud, seguridad y roadmap.
 - `drive/docs/FEDERATION_PROVIDER_APPROVALS.md`: autorización de proveedores.

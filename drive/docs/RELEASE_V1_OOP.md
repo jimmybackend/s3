@@ -133,3 +133,20 @@ El estado actual se documenta en:
 - `drive/docs/FEDERATIONCLOUD.md`;
 - `drive/docs/FEDERATION_PROVIDER_APPROVALS.md`;
 - `drive/docs/FEDERATION_NODE_RECOVERY.md`.
+
+
+#### Actualización operativa posterior — 21 de septiembre de 2026
+
+El texto anterior conserva el estado histórico de la extensión inicial del 10 de septiembre. Desde
+entonces `main` añadió catálogo federado, ubicaciones, selección de mirror/provider/origin,
+replicación física autorizada y reactivación de mirrors.
+
+También se validó una topología donde origen y mirror comparten MySQL/S3. PR #98 aisló Aduana y
+trabajos de réplica por Node ID para permitir ambos workers simultáneamente sobre una MySQL común.
+
+La guía vigente para nuevas instalaciones es:
+
+- `drive/docs/FEDERATION_NODE_REPLICA_INSTALL.md`.
+
+P2P/BitTorrent y la alta disponibilidad automática de dependencias compartidas siguen fuera del
+alcance actual.

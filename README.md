@@ -80,7 +80,8 @@ identidad criptográfica
 Los workers pueden operar sobre una MySQL compartida sin reclamar trabajos de otro Node ID desde
 PR #98. P2P/BitTorrent sigue fuera del alcance actual.
 
-Para una instalación nueva comienza por
+Antes de instalar, prepara los datos con
+`drive/docs/INSTALLATION_PREPARATION.md`. Para instalación de nodos/mirrors continúa con
 `drive/docs/FEDERATION_NODE_REPLICA_INSTALL.md`. Consulta también
 `drive/docs/FEDERATED_CLOUD_STATUS.md` y `drive/docs/FEDERATIONCLOUD.md`.
 
@@ -368,6 +369,7 @@ composer install --no-dev --optimize-autoloader
 ## Documentación
 
 - `drive/ARCHITECTURE.md`: arquitectura y reglas obligatorias.
+- `drive/docs/INSTALLATION_PREPARATION.md`: datos que debes tener listos antes de ejecutar el instalador.
 - `drive/docs/FEDERATION_NODE_REPLICA_INSTALL.md`: instalación y troubleshooting de nodos y mirrors.
 - `drive/docs/FEDERATED_CLOUD_STATUS.md`: estado actual de la evolución hacia cloud federado.
 - `drive/docs/FEDERATIONCLOUD.md`: protocolo ArcadeLink/FederationCloud, seguridad y roadmap.

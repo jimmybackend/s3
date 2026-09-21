@@ -15,6 +15,7 @@ on:
       - 'drive/bin/install_arcadecloud_admin_helper.sh'
       - 'drive/tests/setup_bootstrap_smoke.php'
       - 'drive/docs/INITIAL_SETUP.md'
+      - 'drive/docs/INSTALLATION_PREPARATION.md'
       - '.github/workflows/initial-setup.yml'
   pull_request:
     paths:
@@ -27,6 +28,7 @@ on:
       - 'drive/bin/install_arcadecloud_admin_helper.sh'
       - 'drive/tests/setup_bootstrap_smoke.php'
       - 'drive/docs/INITIAL_SETUP.md'
+      - 'drive/docs/INSTALLATION_PREPARATION.md'
       - '.github/workflows/initial-setup.yml'
   workflow_dispatch:
 

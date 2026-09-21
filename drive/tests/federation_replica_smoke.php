@@ -94,8 +94,8 @@ try {
     replicaOk(str_contains($replicaRepoSource, 'incomingJobId'), 'incoming usa clave operacional distinta del offer_id saliente');
     replicaOk(str_contains($replicaRepoSource, 'r.OriginNodeId=?'), 'cola saliente queda ligada al OriginNodeId local');
     replicaOk(str_contains($replicaRepoSource, "JSON_EXTRACT(OfferJson, '$.target_node_id')"), 'cola entrante queda ligada al target_node_id firmado');
-    replicaOk(str_contains($replicaServiceSource, "due('outgoing', $this->identity->nodeId(), $limit)"), 'worker saliente entrega su Node ID al repositorio');
-    replicaOk(str_contains($replicaServiceSource, "due('incoming', $this->identity->nodeId(), $limit)"), 'worker entrante entrega su Node ID al repositorio');
+    replicaOk(str_contains($replicaServiceSource, "due('outgoing', \$this->identity->nodeId(), \$limit)"), 'worker saliente entrega su Node ID al repositorio');
+    replicaOk(str_contains($replicaServiceSource, "due('incoming', \$this->identity->nodeId(), \$limit)"), 'worker entrante entrega su Node ID al repositorio');
 
     echo "federation replica smoke: OK\n";
 } finally {

@@ -3,7 +3,8 @@
 Estado validado: **21 de septiembre de 2026**.
 
 Este documento es la guía operativa para instalar una nueva instancia de ArcadeCloud Drive como
-**nodo FederationCloud** o como **réplica/mirror** de un nodo existente. Resume el flujo que fue
+**nodo FederationCloud** o como **réplica/mirror** de un nodo existente. Antes de empezar reúne la
+información indicada en `INSTALLATION_PREPARATION.md`. Resume el flujo que fue
 probado en producción con dos EC2, MySQL compartida fuera de las EC2 y Amazon S3 como backend
 compartido.
 

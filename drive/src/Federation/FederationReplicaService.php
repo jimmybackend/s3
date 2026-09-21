@@ -142,7 +142,8 @@ final class FederationReplicaService
         $this->ensureEnabled();
         $resource = $this->catalog->find($resourceId);
         $object = $this->replicas->object($resourceId);
-        if ($resource === null || $object === null || (string)$object['Status'] !== 'active') {
+        if ($resource === null || $object === null || (string)$object['Status'] !== 'active'
+            || !$this->hasActiveLocalReplicaLocation($resourceId, (string)$object['Role'])) {
             throw new FederationException('Este nodo no tiene una réplica activa del recurso.', 404);
         }
         if ((string)$resource['Visibility'] !== 'PUBLIC' || (string)$resource['Rights'] !== 'copy_allowed') {
@@ -286,6 +287,19 @@ final class FederationReplicaService
             'status' => 'active',
             'federation_url' => $this->config->federationUrl(),
         ]);
+    }
+
+    private function hasActiveLocalReplicaLocation(string $resourceId, string $role): bool
+    {
+        $localNodeId = $this->identity->nodeId();
+        foreach ($this->catalog->locations($resourceId) as $location) {
+            if (hash_equals($localNodeId, (string)($location['node_id'] ?? ''))
+                && (string)($location['status'] ?? '') === 'active'
+                && hash_equals($role, (string)($location['role'] ?? ''))) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private function requireLocalOwnedResource(int $userId, string $resourceId): array

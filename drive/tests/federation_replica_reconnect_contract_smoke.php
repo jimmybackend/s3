@@ -65,6 +65,8 @@ reconnectOk(
 );
 reconnectOk(str_contains($refresh, 'new FederationReplicaPresenceService'), 'arranque/cambio de endpoint reanuncia réplica');
 reconnectOk(str_contains($requestCli, "'relationship' => 'shared_backend'"), 'CLI de alta inicial declara relación compartida');
+reconnectOk(str_contains($requestCli, 'random_bytes(24)'), 'CLI manual genera Request ID fresco para reautorizar tras revocación');
+reconnectOk(str_contains($requestCli, "'request_id' => $requestId"), 'CLI envía Request ID explícito a Aduana');
 
 $securityCorpus = $presence . $service . $controller . $endpoint;
 reconnectOk(!preg_match('/AKIA[0-9A-Z]{16}/', $securityCorpus), 'reconexión no contiene credenciales AWS');

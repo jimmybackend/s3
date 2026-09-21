@@ -1,10 +1,12 @@
 # ArcadeLink v1 + FederationCloud
 
-Estado: **cloud federado funcional en identidad, descubrimiento, autorización de proveedores y resolución ArcadeLink**. No incluye todavía P2P, buscador global, replicación automática ni selección automática del mejor proveedor por recurso.
+Estado: **cloud federado funcional en identidad, descubrimiento, Aduana, autorización provider/mirror, ArcadeLink, catálogo, ubicaciones, réplicas físicas y failover por ubicación**.
 
-ArcadeCloud Drive comenzó como un gestor web para Amazon S3. FederationCloud añade ahora una capa federada que permite que varias instalaciones tengan identidad criptográfica propia, se descubran, se validen por HTTPS y establezcan relaciones de confianza sin compartir secretos ni publicar rutas privadas de S3.
+ArcadeCloud Drive comenzó como un gestor web para Amazon S3. FederationCloud añade una capa federada que permite que varias instalaciones tengan identidad criptográfica propia, se descubran, se validen por HTTPS y establezcan relaciones de confianza sin compartir secretos ni publicar rutas privadas de S3.
 
-Consulta también `drive/docs/FEDERATED_CLOUD_STATUS.md` para el estado funcional actual y las pruebas entre nodos ya realizadas.
+La guía operativa para instalar un nodo o una réplica está en
+`drive/docs/FEDERATION_NODE_REPLICA_INSTALL.md`. Consulta también
+`drive/docs/FEDERATED_CLOUD_STATUS.md` para el estado funcional validado.
 
 ## Contrato v1
 
@@ -169,7 +171,7 @@ Al aprobar, el nodo origen genera una autorización Ed25519 sobre el vínculo ex
 Roles soportados:
 
 - `provider`: servidor autorizado para proporcionar recursos permitidos por el origen;
-- `mirror`: reservado para una fase posterior con copia/replicación física verificada.
+- `mirror`: copia autorizada que puede participar en resolución y replicación física verificada.
 
 Alcances soportados:
 
@@ -180,7 +182,9 @@ Ser proveedor no concede permisos de escritura sobre MySQL ni S3. Un servidor pr
 
 La autorización origen→proveedor ya fue probada entre `drive.esforzados.com` y `fastdrive.esforzados.com`: el segundo nodo creó identidad propia, publicó `node.php` por HTTPS, envió la solicitud y fue aprobado desde el nodo origen.
 
-Esta fase crea la confianza entre nodos. La selección automática durante una descarga se implementará sobre `FederatedResources` y `FederationResourceLocations`; todavía no se anuncia una ubicación alternativa por recurso como ruta preferida automática.
+La confianza entre nodos alimenta el catálogo y las ubicaciones federadas. `FederatedResources` y
+`FederationResourceLocations` ya permiten anunciar ubicaciones y seleccionar automáticamente
+`mirror -> provider -> origin` según disponibilidad.
 
 ## Recuperación del mismo nodo
 
@@ -238,25 +242,26 @@ FederationCloud nunca debe publicar o transportar como parte del directorio o de
 
 La federación crea identidad y confianza entre nodos; no fusiona sus perímetros de seguridad. La administración web del servidor está deliberadamente limitada a capacidades allowlisted y se documenta en `drive/docs/SUPERADMIN_SERVER_SETTINGS.md` y `drive/docs/SERVER_ADMIN_SECURITY_BOUNDARY.md`.
 
-## Diseño persistente posterior
+## Estado persistente actual
 
-Implementado ahora:
+Implementado:
 
-1. `FederationNodes`: Node ID, nombre firmado, clave pública, URLs, estado y fechas de observación.
-2. `FederationNodeAuthorizations`: solicitudes y autorizaciones firmadas origen→proveedor.
-3. Continuidad ArcadeLink: payload v2 con referencia estable cifrada y compatibilidad con payload v1.
-4. Creación de ArcadeLink desde el modal Compartir del Drive.
-5. Dropzone FederationCloud con validación automática y presentación del recurso resuelto.
-6. Creación y renombre administrativo de la identidad FederationCloud desde el footer, con diagnóstico de permisos y prevención de colisiones de nombre.
+1. `FederationNodes`: identidad pública y presencia.
+2. `FederationNodeAuthorizations`: confianza firmada origen→provider/mirror.
+3. `FederationIngressQueue`: Aduana serializada y aislada por `TargetNodeId`.
+4. `FederatedResources`: catálogo federado de recursos.
+5. `FederationResourceLocations`: ubicaciones `origin|provider|mirror`.
+6. `FederationReplicaJobs`: control plane de réplicas.
+7. `FederationReplicaObjects`: objetos de réplica verificados.
+8. ArcadeLink v2 con referencia estable cifrada y compatibilidad con v1.
+9. reactivación automática de mirrors autorizados.
+10. ejecución simultánea de workers sobre MySQL compartida desde PR #98.
 
-Pendiente para fases posteriores:
+Reglas: PRIVATE no publica fingerprint; `FileS3` sigue siendo fuente de verdad local; secretos y llaves
+privadas no entran al protocolo. Las instalaciones existentes reciben sólo las migraciones previstas
+por los scripts del repo y nunca una reimportación destructiva del dump maestro.
 
-7. `FederatedResources`: Resource ID, nodo origen, metadatos públicos, SHA-256 nullable, visibilidad, derechos, procedencia, versión/firma y estado.
-8. `FederationResourceLocations`: relación `origin|provider|mirror` entre recurso/contenido y nodos que anuncian una ubicación, con última verificación.
-9. `FederationLocalBindings`: binding explícita `resource_id -> user_id_ + FileS3.id_` para ciclo de vida y revocación futura.
+## Fuera del alcance
 
-Reglas: PRIVATE nunca tendrá fingerprint público; toda binding local conservará `user_id_`; `FileS3` seguirá siendo fuente de verdad local; no se duplicarán `Nombre`, `Ruta` o `Encriptado` como autoridad. Las instalaciones nuevas se describen siempre en el esquema central; las bases ya desplegadas reciben sólo el DDL puntual necesario y nunca una reimportación completa del dump maestro.
-
-## Siguiente fase
-
-Pendiente: selección de proveedor por recurso, índice público de recursos, mirror lookup por SHA-256, copia autorizada/Guardar en mi Drive, OAuth para nubes externas y revocación administrable de ubicaciones. P2P/BitTorrent sigue fuera de esta etapa.
+P2P/BitTorrent, alta disponibilidad automática de dependencias compartidas y distribución de secretos
+siguen fuera del alcance actual.

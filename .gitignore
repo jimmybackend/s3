@@ -1,3 +1,6 @@
+# Composer dependencies
+/vendor/
+
 # Runtime upload state
 /drive/upload/storage/state/*.json
 /drive/tokens.json

@@ -1,24 +1,33 @@
 # Estado actual: ArcadeCloud Drive + FederationCloud
 
-Fecha: **10 de septiembre de 2026**.
+Fecha: **21 de septiembre de 2026**.
 
-ArcadeCloud Drive evolucionó de un gestor web para Amazon S3 a una **plataforma de almacenamiento con capa de cloud federado**.
+ArcadeCloud Drive opera como plataforma de almacenamiento multiusuario con una capa FederationCloud
+funcional para identidad, descubrimiento, autorización, catálogo, ubicaciones, réplicas y failover por
+nodo.
 
-El almacenamiento local de cada instalación sigue respetando los principios originales:
+Para instalar un nodo o una réplica desde cero consulta primero:
+
+- `FEDERATION_NODE_REPLICA_INSTALL.md`
+
+## Base local que no cambia
+
+Cada instalación conserva los principios de ArcadeCloud Drive:
 
 - MySQL es la fuente de verdad para navegación y metadatos;
 - Amazon S3 conserva los objetos físicos;
 - cada operación local permanece aislada por `user_id_`;
 - S3 no se lista durante la navegación normal;
-- la lógica de aplicación sigue la arquitectura `Entrypoint -> Controller -> Service -> Repository / Infrastructure`.
+- la lógica sigue `Entrypoint -> Controller -> Service -> Repository / Infrastructure`;
+- secretos y claves privadas permanecen fuera del repositorio.
 
-Sobre esa base ahora existe **FederationCloud**, que permite que varias instalaciones de ArcadeCloud Drive tengan identidad propia y se reconozcan entre sí sin compartir claves privadas ni publicar rutas físicas de S3.
+FederationCloud añade coordinación entre nodos; no sustituye esas reglas.
 
-## Qué está funcionando
+## Capacidades funcionando
 
 ### Identidad de nodo
 
-Cada instalación puede generar una identidad Ed25519 independiente:
+Cada instalación usa una identidad Ed25519 independiente:
 
 ```text
 node_name
@@ -28,131 +37,232 @@ public_url
 federation_url
 ```
 
-La identidad privada permanece fuera del repositorio y fuera del DocumentRoot.
+`node_id` es la identidad real. Dominio/IP son endpoints y pueden cambiar sin regenerar llaves.
 
-### Descubrimiento y confianza entre nodos
+### Directorio, seed y Aduana
 
-Los nodos publican un descriptor firmado mediante `node.php`. Un nodo puede registrarse ante un seed y otro nodo puede verificarlo en vivo antes de persistirlo.
+Los nodos publican `node.php`, se presentan ante un seed y son validados por HTTPS antes de quedar
+activos.
 
-La autorización de proveedor está separada de la identidad. Un nodo registrado no se convierte automáticamente en proveedor.
+Las entradas se serializan mediante `FederationIngressQueue`. En instalaciones que comparten MySQL,
+cada worker recupera y reclama sólo filas cuyo `TargetNodeId` coincide con su propia identidad.
 
-Los proveedores solicitan acceso mediante un descriptor firmado y el nodo origen valida:
+Esto fue corregido y validado en PR #98.
 
-- Node ID;
-- clave pública;
-- firma Ed25519;
-- nombre del nodo;
-- URL pública y Federation URL;
-- respuesta HTTPS del `node.php` anunciado.
+### Autorización provider/mirror
 
-La aprobación final pertenece a un `superadmin` del nodo origen.
+La identidad de un nodo y su autorización privilegiada son capas distintas.
+
+Una relación `shared_backend` entra por:
+
+```text
+provider-request.php
+ -> Aduana
+ -> verificación criptográfica + node.php
+ -> pending
+ -> superadmin
+ -> approve / reject
+```
+
+Roles:
+
+- `provider`;
+- `mirror`.
+
+Scopes:
+
+- `all_allowed_resources`;
+- `selected_resources`.
+
+La replicación automática actual requiere `all_allowed_resources`.
+
+### Reactivación de réplicas
+
+Una réplica previamente autorizada no vuelve a pedir aprobación después de reiniciar:
+
+```text
+provider-presence.php
+ -> autorización active
+ -> descriptor válido
+ -> LastSeen actualizado
+ -> available=true
+```
+
+La disponibilidad es temporal; la autorización permanece hasta revocación.
 
 ### ArcadeLink
 
-`.arcadelink` es el pasaporte portable y firmado de un recurso.
+`.arcadelink` es el pasaporte portable y firmado de un recurso. Puede:
 
-Actualmente puede:
-
-1. crearse directamente desde el botón **Compartir** de un archivo del Drive;
+1. crearse desde **Compartir**;
 2. conservar `resource_id`, procedencia, visibilidad y derechos;
-3. proteger su referencia local dentro de un payload XChaCha20-Poly1305;
+3. cifrar referencia privada con XChaCha20-Poly1305;
 4. firmarse con Ed25519;
-5. descargarse como archivo portable;
-6. cargarse mediante el dropzone de `/federationcloud/`;
-7. verificarse criptográficamente;
-8. resolverse contra el nodo origen;
-9. abrirse mediante el mecanismo temporal de sharing del Drive cuando la política lo permite.
+5. verificarse localmente;
+6. resolverse contra FederationCloud;
+7. abrirse bajo la política vigente.
 
-La interfaz de FederationCloud usa un flujo simple: dropzone -> validación automática -> recurso resuelto -> **Abrir**. El usuario puede seleccionar **Validar otro ArcadeLink** para reiniciar el flujo.
+### Catálogo y ubicaciones
 
-### Proveedor real probado
+Están implementados:
 
-La arquitectura ya fue probada con dos instalaciones distintas:
+- `FederatedResources`;
+- `FederationResourceLocations`;
+- eventos `resource.upsert`, `location.upsert` y tombstones;
+- selección de ubicaciones;
+- prioridad de mirror/provider/origin.
+
+Orden actual:
 
 ```text
-Nodo origen
+active mirror
+active provider
+active origin
+stale mirror
+stale provider
+stale origin
+```
+
+### Réplicas físicas autorizadas
+
+Para recursos `PUBLIC + copy_allowed` con Content ID SHA-256, FederationCloud puede crear trabajos de
+réplica autorizados.
+
+El control plane usa:
+
+- `FederationReplicaJobs`;
+- `FederationReplicaObjects`;
+- `replica-offer.php`;
+- `replica-resolve.php`.
+
+Los bytes se descargan por URL S3 prefirmada y no atraviesan PHP del origen.
+
+En MySQL compartida, PR #98 aísla:
+
+- outgoing por `OriginNodeId`;
+- incoming por `target_node_id` firmado;
+- Aduana por `TargetNodeId`.
+
+### Workers simultáneos sobre backend compartido
+
+Se validó que origen y mirror puedan ejecutar simultáneamente:
+
+```text
+arcadecloud-federation-sync.timer
+```
+
+sobre la misma MySQL sin reclamar trabajos del otro nodo.
+
+Prueba realizada:
+
+1. Fastdrive generó una presencia dirigida al seed/origen.
+2. El worker de Fastdrive ejecutó primero y reportó `customs.processed=0`.
+3. El worker de Drive ejecutó después y procesó `type=node_presence` del Node ID de Fastdrive.
+
+Eso valida el aislamiento por nodo.
+
+## Topología validada en producción
+
+```text
+Drive/origen
   drive.esforzados.com
-  node_name = jimmybackend
-
-Nodo proveedor de prueba
+  identidad propia
+  timer activo
+         |
+         +------ MySQL externa compartida
+         |
+         +------ Amazon S3 compartido
+         |
+Fastdrive/mirror
   fastdrive.esforzados.com
-  node_name = fastdrive
+  identidad propia y distinta
+  role=mirror
+  scope=all_allowed_resources
+  timer activo
 ```
 
-El segundo nodo generó su propia identidad, publicó su `node.php` por HTTPS, solicitó autorización y fue aprobado desde el nodo origen.
+Se comprobó:
 
-Esto demuestra la capa de identidad, descubrimiento, verificación y autorización entre nodos.
+- autorización inicial como `mirror`;
+- revocación y reautorización;
+- Request ID fresco después de revocación;
+- `available=true`;
+- reactivación sin nueva Solicitud;
+- ambos timers `enabled + active`;
+- aislamiento de Aduana en MySQL compartida;
+- operación de Fastdrive mientras `php-fpm-drive` del origen estaba detenido.
 
-## Qué significa “cloud federado” en esta etapa
+## Failover: qué se probó y qué no significa
 
-ArcadeCloud ya no depende conceptualmente de una sola instalación como única identidad del sistema. Varias instalaciones pueden operar como nodos independientes y establecer relaciones verificables entre sí.
+Se detuvo el PHP-FPM de la EC2 de origen y Fastdrive continuó con operaciones de Drive usando la MySQL
+externa y S3.
 
-La federación actual cubre:
+Eso demuestra tolerancia a la caída de **la aplicación/EC2 origen** en esa topología.
 
-```text
-identidad criptográfica
-  + descubrimiento de nodos
-  + autorización origen -> proveedor
-  + ArcadeLink portable
-  + resolución entre nodos
-```
+No significa alta disponibilidad de todas las dependencias:
 
-Todavía **no** significa:
+- si la MySQL compartida cae, ambos nodos se afectan;
+- si el backend S3 compartido deja de estar disponible, ambos se afectan;
+- DNS, certificados y red siguen teniendo sus propias dependencias.
 
-- P2P o BitTorrent;
-- replicación automática de objetos;
-- escritura remota sobre el S3 de otro nodo;
-- buscador global de todos los recursos;
-- selección automática del mejor proveedor por recurso;
-- mirror automático por SHA-256.
+Cada capa compartida debe resolver su propia alta disponibilidad.
 
-Esas capacidades pertenecen a fases posteriores.
+## Seguridad
 
-## Frontera de seguridad
+FederationCloud nunca publica como parte del directorio, ArcadeLink o autorización:
 
-FederationCloud no debe convertir la federación en acceso compartido a secretos.
-
-Nunca se publica en un ArcadeLink ni en el directorio federado:
-
-- `AWS_ACCESS_KEY_ID`;
-- `AWS_SECRET_ACCESS_KEY`;
+- claves AWS;
 - contraseñas MySQL;
 - cookies o sesiones;
-- claves privadas Ed25519;
+- clave privada Ed25519;
 - `payload_key`;
-- rutas privadas permanentes de S3.
+- rutas S3 privadas permanentes.
 
-Un proveedor autorizado tampoco obtiene por ese hecho permiso de escritura sobre MySQL o S3.
+Compartir backend es una decisión de infraestructura y no un privilegio transmitido por FederationCloud.
 
-## Arquitectura conceptual actual
+## Estado de operación esperado
 
-```text
-                         ArcadeLink
-                            |
-                            v
-+------------------+   HTTPS firmado   +------------------+
-| Nodo ArcadeCloud | <---------------> | Nodo ArcadeCloud |
-|                  |                   |                  |
-| Identidad        |                   | Identidad        |
-| Ed25519          |                   | Ed25519          |
-+--------+---------+                   +---------+--------+
-         |                                       |
-         v                                       v
-    MySQL + S3                              MySQL + S3
-    locales                                 locales
+Origen normal:
+
+```json
+"replica_presence": {
+  "configured": false,
+  "status": "not_replica"
+}
 ```
 
-Cada nodo conserva autonomía local; FederationCloud añade identidad, confianza y resolución entre instalaciones.
+Mirror autorizado:
 
-## Próxima etapa
+```json
+"replica_presence": {
+  "configured": true,
+  "status": "active",
+  "available": true,
+  "role": "mirror",
+  "scope": "all_allowed_resources",
+  "authorization_requested": false
+}
+```
 
-El siguiente salto es convertir la autorización de proveedor en una ruta de entrega efectiva por recurso:
+Sin trabajo pendiente:
 
-1. persistir recursos federados en `FederatedResources`;
-2. anunciar ubicaciones en `FederationResourceLocations`;
-3. seleccionar origen/proveedor para servir un recurso;
-4. habilitar búsqueda de mirrors por `content_id` cuando exista;
-5. permitir `Guardar en mi Drive` sólo cuando los derechos lo autoricen;
-6. soportar revocación de ubicaciones y autorizaciones sin invalidar la identidad histórica del recurso.
+```json
+"customs": {
+  "processed": 0,
+  "queue_depth": 0
+}
+```
 
-Hasta entonces, `FileS3` continúa siendo la fuente de verdad local y FederationCloud permanece como una capa federada sobre ArcadeCloud Drive, no como sustituto de MySQL o S3.
+Los ceros son normales. Investiga `degraded=true` o contadores de `errors` mayores que cero.
+
+## Fuera del alcance actual
+
+FederationCloud todavía no pretende ser:
+
+- P2P/BitTorrent;
+- un reemplazo distribuido de MySQL;
+- una capa que comparta secretos automáticamente;
+- alta disponibilidad automática de dependencias externas compartidas.
+
+La instalación y troubleshooting actuales están documentados en
+`FEDERATION_NODE_REPLICA_INSTALL.md`.

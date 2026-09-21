@@ -121,11 +121,13 @@ FederationCloud incorpora:
 - creación de ArcadeLink directamente desde el botón **Compartir** del Drive;
 - dropzone FederationCloud con validación automática y apertura del recurso cuando la política lo permite.
 
-La arquitectura fue probada con dos instalaciones distintas: `drive.esforzados.com` como nodo origen y `fastdrive.esforzados.com` como nodo proveedor autorizado.
+En esa etapa inicial la arquitectura fue probada con `drive.esforzados.com` como nodo origen y
+`fastdrive.esforzados.com` como proveedor autorizado.
 
-La federación no convierte a los nodos en una base de datos o bucket compartido. Cada instalación conserva su autoridad local sobre MySQL, S3 y usuarios; FederationCloud añade identidad, confianza y resolución entre nodos.
-
-Todavía quedan fuera de esta etapa la selección automática de proveedor por recurso, replicación automática, buscador federado global, mirror lookup por SHA-256 y P2P.
+El diseño no concede acceso implícito a DB/S3: compartir backend siempre es una decisión explícita de
+infraestructura. En la etapa del 10 de septiembre todavía estaban pendientes selección de ubicación y
+replicación física; esas capacidades se añadieron posteriormente y se resumen en la actualización del
+21 de septiembre al final de este documento.
 
 El estado actual se documenta en:
 
@@ -133,3 +135,20 @@ El estado actual se documenta en:
 - `drive/docs/FEDERATIONCLOUD.md`;
 - `drive/docs/FEDERATION_PROVIDER_APPROVALS.md`;
 - `drive/docs/FEDERATION_NODE_RECOVERY.md`.
+
+
+#### Actualización operativa posterior — 21 de septiembre de 2026
+
+El texto anterior conserva el estado histórico de la extensión inicial del 10 de septiembre. Desde
+entonces `main` añadió catálogo federado, ubicaciones, selección de mirror/provider/origin,
+replicación física autorizada y reactivación de mirrors.
+
+También se validó una topología donde origen y mirror comparten MySQL/S3. PR #98 aisló Aduana y
+trabajos de réplica por Node ID para permitir ambos workers simultáneamente sobre una MySQL común.
+
+La guía vigente para nuevas instalaciones es:
+
+- `drive/docs/FEDERATION_NODE_REPLICA_INSTALL.md`.
+
+P2P/BitTorrent y la alta disponibilidad automática de dependencias compartidas siguen fuera del
+alcance actual.

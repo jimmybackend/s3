@@ -63,6 +63,23 @@ Optional paths can be overridden:
 
 Never copy DB/AWS/SMTP secrets into repository files. The repository only documents the environment-loading mechanism; real credentials remain under the server's private `/etc` configuration or managed runtime environment.
 
+For manual diagnostics, load the same files explicitly when you need to reproduce the systemd
+environment:
+
+```bash
+sudo -u nginx bash -lc '
+set -a
+source /etc/arcadecloud-drive/drive.env
+source /etc/arcadecloud-drive/federation.env
+set +a
+/usr/bin/php /var/www/arcadecloud-drive/drive/bin/federation_endpoint_refresh.php
+'
+```
+
+If this command reports a missing `ARCADECLOUD_PUBLIC_URL`, verify that the FederationCloud variables
+exist either in the managed runtime or in the environment files available to that CLI process. The
+full node/mirror checklist is in `FEDERATION_NODE_REPLICA_INSTALL.md`.
+
 ## Diagnostics
 
 Migration:

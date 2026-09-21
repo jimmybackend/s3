@@ -419,30 +419,27 @@ superadmin en nodo origen
      -> autorización Ed25519 origen -> proveedor
 ```
 
-La arquitectura se probó con dos instalaciones independientes: `drive.esforzados.com` como origen y `fastdrive.esforzados.com` como proveedor autorizado.
+La arquitectura se probó con dos instalaciones: `drive.esforzados.com` como origen y
+`fastdrive.esforzados.com` como `mirror` autorizado, incluyendo workers simultáneos sobre una
+MySQL compartida y failover de aplicación.
 
 ### Estado de federación
 
 Implementado:
 
-- identidad por nodo;
-- descriptor firmado;
-- descubrimiento mediante seed;
-- registro y verificación de nodos;
-- solicitud/aprobación/revocación de proveedor;
+- identidad Ed25519 por nodo;
+- descriptor firmado y descubrimiento mediante seed;
+- Aduana serializada y aislada por `TargetNodeId`;
+- solicitud/aprobación/revocación provider/mirror;
+- reactivación de mirrors sin nueva aprobación;
 - ArcadeLink portable;
-- creación desde el Drive;
-- verificación y resolución local/remota;
-- apertura mediante sharing temporal cuando la política lo permite.
+- `FederatedResources` y `FederationResourceLocations`;
+- selección `mirror -> provider -> origin`;
+- replicación/copias autorizadas para recursos compatibles;
+- workers de réplica aislados por Node ID sobre MySQL compartida;
+- resolución local/remota y sharing temporal.
 
-Pendiente:
-
-- `FederatedResources` como índice público de recursos;
-- `FederationResourceLocations` para origen/proveedor/mirror por recurso;
-- selección automática de proveedor;
-- mirror lookup por SHA-256;
-- replicación/copias autorizadas;
-- buscador federado global.
+La instalación operativa está en `drive/docs/FEDERATION_NODE_REPLICA_INSTALL.md`.
 
 P2P/BitTorrent no forma parte de la etapa actual.
 

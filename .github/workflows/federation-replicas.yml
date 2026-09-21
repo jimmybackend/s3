@@ -19,6 +19,7 @@ on:
       - 'drive/sql/federation_replicas.sql'
       - 'drive/tests/federation_replica_smoke.php'
       - 'drive/docs/FEDERATION_REPLICAS.md'
+      - 'drive/docs/FEDERATION_NODE_REPLICA_INSTALL.md'
       - '.github/workflows/federation-replicas.yml'
   pull_request:
     paths:
@@ -35,6 +36,7 @@ on:
       - 'drive/sql/federation_replicas.sql'
       - 'drive/tests/federation_replica_smoke.php'
       - 'drive/docs/FEDERATION_REPLICAS.md'
+      - 'drive/docs/FEDERATION_NODE_REPLICA_INSTALL.md'
       - '.github/workflows/federation-replicas.yml'
   workflow_dispatch:
 

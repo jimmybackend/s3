@@ -121,11 +121,13 @@ FederationCloud incorpora:
 - creación de ArcadeLink directamente desde el botón **Compartir** del Drive;
 - dropzone FederationCloud con validación automática y apertura del recurso cuando la política lo permite.
 
-La arquitectura fue probada con dos instalaciones distintas: `drive.esforzados.com` como nodo origen y `fastdrive.esforzados.com` como nodo proveedor autorizado.
+En esa etapa inicial la arquitectura fue probada con `drive.esforzados.com` como nodo origen y
+`fastdrive.esforzados.com` como proveedor autorizado.
 
-La federación no convierte a los nodos en una base de datos o bucket compartido. Cada instalación conserva su autoridad local sobre MySQL, S3 y usuarios; FederationCloud añade identidad, confianza y resolución entre nodos.
-
-Todavía quedan fuera de esta etapa la selección automática de proveedor por recurso, replicación automática, buscador federado global, mirror lookup por SHA-256 y P2P.
+El diseño no concede acceso implícito a DB/S3: compartir backend siempre es una decisión explícita de
+infraestructura. En la etapa del 10 de septiembre todavía estaban pendientes selección de ubicación y
+replicación física; esas capacidades se añadieron posteriormente y se resumen en la actualización del
+21 de septiembre al final de este documento.
 
 El estado actual se documenta en:
 

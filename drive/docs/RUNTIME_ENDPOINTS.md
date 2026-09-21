@@ -212,9 +212,9 @@
 | `drive/src/Federation/FederationReplicaDownloader.php` | ninguna |
 | `drive/src/Federation/FederationReplicaMessageCodec.php` | `drive/tests/federation_replica_smoke.php` |
 | `drive/src/Federation/FederationReplicaPresenceService.php` | `drive/tests/federation_replica_reconnect_contract_smoke.php` |
-| `drive/src/Federation/FederationReplicaRepository.php` | ninguna |
-| `drive/src/Federation/FederationReplicaResolverService.php` | ninguna |
-| `drive/src/Federation/FederationReplicaService.php` | `drive/tests/federation_replica_reconnect_contract_smoke.php` |
+| `drive/src/Federation/FederationReplicaRepository.php` | `drive/tests/federation_replica_smoke.php` |
+| `drive/src/Federation/FederationReplicaResolverService.php` | `drive/tests/federation_replica_smoke.php` |
+| `drive/src/Federation/FederationReplicaService.php` | `drive/tests/federation_replica_reconnect_contract_smoke.php`, `drive/tests/federation_replica_smoke.php` |
 | `drive/src/Federation/FederationResolverService.php` | ninguna |
 | `drive/src/Federation/FederationSeedConfig.php` | `drive/tests/federation_directory_smoke.php` |
 | `drive/src/Federation/FederationService.php` | `drive/tests/arcadelink_bulk_contract_regression.php` |

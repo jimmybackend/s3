@@ -1,5 +1,9 @@
 # Instalación inicial de ArcadeCloud Drive
 
+Antes de comenzar, usa `INSTALLATION_PREPARATION.md` para reunir dominio/DNS, MySQL, AWS/S3,
+SMTP y los datos del primer superadmin. Así el asistente puede completarse sin detenerse para buscar
+credenciales o crear infraestructura a mitad del proceso.
+
 ## Objetivo
 
 Una instalación nueva puede necesitar configurar MySQL, AWS y SMTP **antes** de que exista un usuario normal en `Users`. Por eso `/setup/` usa un supervisor temporal separado del login del Drive.

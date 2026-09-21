@@ -41,7 +41,7 @@
 | `drive/bin/federation_identity_init.php` | 33 | thin cli entrypoint | 0 | — | — | — | — |
 | `drive/bin/federation_identity_name.php` | 35 | thin cli entrypoint | 0 | — | — | — | — |
 | `drive/bin/federation_identity_restore.php` | 48 | thin cli entrypoint | 0 | — | — | — | — |
-| `drive/bin/federation_provider_request.php` | 87 | thin cli entrypoint | 0 | — | — | — | — |
+| `drive/bin/federation_provider_request.php` | 90 | thin cli entrypoint | 0 | — | — | — | — |
 | `drive/bin/federation_replica_presence.php` | 21 | thin cli entrypoint | 0 | — | — | — | — |
 | `drive/bin/federation_sync.php` | 102 | thin cli entrypoint | 0 | — | — | — | — |
 | `drive/bin/move_job_worker.php` | 11 | thin cli entrypoint | 0 | — | — | — | — |
@@ -191,7 +191,7 @@
 | `drive/src/Federation/FederationCatalogService.php` | 200 | class/module | 1 | — | — | — | — |
 | `drive/src/Federation/FederationCodec.php` | 54 | class/module | 1 | — | — | — | — |
 | `drive/src/Federation/FederationConfig.php` | 110 | class/module | 1 | — | — | — | — |
-| `drive/src/Federation/FederationCustomsService.php` | 247 | class/module | 1 | — | — | — | — |
+| `drive/src/Federation/FederationCustomsService.php` | 248 | class/module | 1 | — | — | — | — |
 | `drive/src/Federation/FederationDirectoryService.php` | 158 | class/module | 1 | — | — | — | — |
 | `drive/src/Federation/FederationEndpointResolver.php` | 127 | class/module | 1 | — | — | — | — |
 | `drive/src/Federation/FederationEventCodec.php` | 115 | class/module | 1 | — | — | — | — |
@@ -199,7 +199,7 @@
 | `drive/src/Federation/FederationException.php` | 20 | class/module | 1 | — | — | — | — |
 | `drive/src/Federation/FederationGossipService.php` | 119 | class/module | 1 | — | — | — | — |
 | `drive/src/Federation/FederationHttpClient.php` | 162 | class/module | 1 | — | — | — | — |
-| `drive/src/Federation/FederationIngressQueueRepository.php` | 249 | class/module | 1 | — | ⚠️ | — | — |
+| `drive/src/Federation/FederationIngressQueueRepository.php` | 288 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Federation/FederationLocationSelector.php` | 66 | class/module | 1 | — | — | — | — |
 | `drive/src/Federation/FederationNodeAdminService.php` | 213 | class/module | 1 | — | — | — | — |
 | `drive/src/Federation/FederationNodeDescriptorValidator.php` | 108 | class/module | 1 | — | — | — | — |
@@ -211,9 +211,9 @@
 | `drive/src/Federation/FederationReplicaDownloader.php` | 112 | class/module | 1 | — | — | — | — |
 | `drive/src/Federation/FederationReplicaMessageCodec.php` | 154 | class/module | 1 | — | — | — | — |
 | `drive/src/Federation/FederationReplicaPresenceService.php` | 129 | class/module | 1 | — | — | — | — |
-| `drive/src/Federation/FederationReplicaRepository.php` | 235 | class/module | 1 | — | ⚠️ | — | — |
-| `drive/src/Federation/FederationReplicaResolverService.php` | 131 | class/module | 1 | — | — | — | — |
-| `drive/src/Federation/FederationReplicaService.php` | 335 | class/module | 1 | — | — | — | — |
+| `drive/src/Federation/FederationReplicaRepository.php` | 294 | class/module | 1 | — | ⚠️ | — | — |
+| `drive/src/Federation/FederationReplicaResolverService.php` | 145 | class/module | 1 | — | — | — | — |
+| `drive/src/Federation/FederationReplicaService.php` | 349 | class/module | 1 | — | — | — | — |
 | `drive/src/Federation/FederationResolverService.php` | 185 | class/module | 1 | — | — | — | — |
 | `drive/src/Federation/FederationSeedConfig.php` | 83 | class/module | 1 | — | — | — | — |
 | `drive/src/Federation/FederationService.php` | 174 | class/module | 1 | — | — | — | — |
@@ -346,14 +346,14 @@
 | `drive/tests/arcadelink_bundle_regression.php` | 142 | test script | 0 | — | — | — | — |
 | `drive/tests/federation_access_message_smoke.php` | 72 | test script | 0 | — | — | — | — |
 | `drive/tests/federation_catalog_event_smoke.php` | 60 | test script | 0 | — | — | — | — |
-| `drive/tests/federation_customs_contract_smoke.php` | 74 | test script | 0 | — | — | — | — |
+| `drive/tests/federation_customs_contract_smoke.php` | 79 | test script | 0 | — | — | — | — |
 | `drive/tests/federation_directory_smoke.php` | 102 | test script | 0 | — | — | — | — |
 | `drive/tests/federation_endpoint_resolver_smoke.php` | 95 | test script | 0 | — | — | — | — |
 | `drive/tests/federation_https_contract_smoke.php` | 55 | test script | 0 | — | — | — | — |
 | `drive/tests/federation_node_name_admin_smoke.php` | 91 | test script | 0 | — | — | — | — |
 | `drive/tests/federation_provider_smoke.php` | 76 | test script | 0 | — | — | — | — |
-| `drive/tests/federation_replica_reconnect_contract_smoke.php` | 77 | test script | 0 | — | — | — | — |
-| `drive/tests/federation_replica_smoke.php` | 98 | test script | 0 | — | — | — | — |
+| `drive/tests/federation_replica_reconnect_contract_smoke.php` | 79 | test script | 0 | — | — | — | — |
+| `drive/tests/federation_replica_smoke.php` | 109 | test script | 0 | — | — | — | — |
 | `drive/tests/federationcloud_smoke.php` | 146 | test script | 0 | — | — | — | — |
 | `drive/tests/folder_document_sanitizer.php` | 49 | test script | 0 | — | — | — | — |
 | `drive/tests/password_credential_verifier_smoke.php` | 44 | test script | 0 | — | — | — | — |

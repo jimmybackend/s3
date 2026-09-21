@@ -237,7 +237,7 @@
     },
     {
       "path": "drive/bin/federation_provider_request.php",
-      "lines": 87,
+      "lines": 90,
       "kind": "thin cli entrypoint",
       "classes": 0,
       "functions": [],
@@ -2510,7 +2510,7 @@
     },
     {
       "path": "drive/src/Federation/FederationCustomsService.php",
-      "lines": 247,
+      "lines": 248,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -2630,7 +2630,7 @@
     },
     {
       "path": "drive/src/Federation/FederationIngressQueueRepository.php",
-      "lines": 249,
+      "lines": 288,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -2810,7 +2810,7 @@
     },
     {
       "path": "drive/src/Federation/FederationReplicaRepository.php",
-      "lines": 235,
+      "lines": 294,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -2825,7 +2825,7 @@
     },
     {
       "path": "drive/src/Federation/FederationReplicaResolverService.php",
-      "lines": 131,
+      "lines": 145,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -2840,7 +2840,7 @@
     },
     {
       "path": "drive/src/Federation/FederationReplicaService.php",
-      "lines": 335,
+      "lines": 349,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -4864,7 +4864,7 @@
     },
     {
       "path": "drive/tests/federation_customs_contract_smoke.php",
-      "lines": 74,
+      "lines": 79,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -4964,7 +4964,7 @@
     },
     {
       "path": "drive/tests/federation_replica_reconnect_contract_smoke.php",
-      "lines": 77,
+      "lines": 79,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -4981,7 +4981,7 @@
     },
     {
       "path": "drive/tests/federation_replica_smoke.php",
-      "lines": 98,
+      "lines": 109,
       "kind": "test script",
       "classes": 0,
       "functions": [

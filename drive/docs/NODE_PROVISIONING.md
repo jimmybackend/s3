@@ -1,5 +1,9 @@
 # Provisionamiento de nodos FederationCloud
 
+Esta página cubre creación/renombre de identidad. Para instalar el nodo completo, configurar
+`federation.env`, autorizar un mirror y activar workers, consulta
+`FEDERATION_NODE_REPLICA_INSTALL.md`.
+
 ## Instalación nueva
 
 Una instalación nueva puede crear su identidad desde el modal **Nodo** cuando la sesión pertenece a un `superadmin`.

@@ -1,8 +1,12 @@
 # FederationCloud — operación, Aduana, HTTPS y réplicas
 
-Estado operativo documentado: 13-Sep-2026.
+Estado operativo documentado: 21-Sep-2026.
 
 Este documento reúne las decisiones e implementación operativa de FederationCloud para que un nodo pueda arrancar, publicar su endpoint HTTPS, anunciar presencia, entrar a la federación, solicitar confianza privilegiada únicamente cuando corresponde y reactivarse después de estar apagado sin perder su identidad ni pedir aprobación humana otra vez.
+
+Para una instalación paso a paso, incluyendo Composer, `federation.env`, autorización de mirrors,
+timers, MySQL compartida, failover y troubleshooting, consulta
+`drive/docs/FEDERATION_NODE_REPLICA_INSTALL.md`.
 
 ## Principios
 

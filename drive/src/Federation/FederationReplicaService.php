@@ -134,7 +134,7 @@ final class FederationReplicaService
 
     public function jobsForUser(int $userId): array
     {
-        return ['ok' => true, 'jobs' => $this->replicas->jobsForUser($userId)];
+        return ['ok' => true, 'jobs' => $this->replicas->jobsForUser($userId, $this->identity->nodeId())];
     }
 
     public function publicReplica(string $resourceId): array
@@ -142,7 +142,8 @@ final class FederationReplicaService
         $this->ensureEnabled();
         $resource = $this->catalog->find($resourceId);
         $object = $this->replicas->object($resourceId);
-        if ($resource === null || $object === null || (string)$object['Status'] !== 'active') {
+        if ($resource === null || $object === null || (string)$object['Status'] !== 'active'
+            || !$this->hasActiveLocalReplicaLocation($resourceId, (string)$object['Role'])) {
             throw new FederationException('Este nodo no tiene una réplica activa del recurso.', 404);
         }
         if ((string)$resource['Visibility'] !== 'PUBLIC' || (string)$resource['Rights'] !== 'copy_allowed') {
@@ -163,7 +164,7 @@ final class FederationReplicaService
     private function syncOutgoing(int $limit): array
     {
         $processed = $offered = $active = $errors = 0;
-        foreach ($this->replicas->due('outgoing', $limit) as $job) {
+        foreach ($this->replicas->due('outgoing', $this->identity->nodeId(), $limit) as $job) {
             $processed++;
             $offerId = (string)$job['OfferId'];
             try {
@@ -218,7 +219,7 @@ final class FederationReplicaService
     private function syncIncoming(int $limit): array
     {
         $processed = $stored = $active = $errors = 0;
-        foreach ($this->replicas->due('incoming', $limit) as $job) {
+        foreach ($this->replicas->due('incoming', $this->identity->nodeId(), $limit) as $job) {
             $processed++;
             $offerId = (string)$job['OfferId'];
             try {
@@ -286,6 +287,19 @@ final class FederationReplicaService
             'status' => 'active',
             'federation_url' => $this->config->federationUrl(),
         ]);
+    }
+
+    private function hasActiveLocalReplicaLocation(string $resourceId, string $role): bool
+    {
+        $localNodeId = $this->identity->nodeId();
+        foreach ($this->catalog->locations($resourceId) as $location) {
+            if (hash_equals($localNodeId, (string)($location['node_id'] ?? ''))
+                && (string)($location['status'] ?? '') === 'active'
+                && hash_equals($role, (string)($location['role'] ?? ''))) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private function requireLocalOwnedResource(int $userId, string $resourceId): array

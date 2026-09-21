@@ -278,6 +278,21 @@ Una réplica aprende el descriptor del origen durante la reactivación y lo pers
 
 La IP/dominio no es identidad. La firma Ed25519 sí lo es.
 
+## Dos workers con MySQL compartida
+
+Cuando el origen y una copia autorizada comparten la misma MySQL, ambos pueden ejecutar su propio
+`federation_sync.php` sin reclamar trabajo ajeno:
+
+- Aduana reclama únicamente filas cuyo `TargetNodeId` coincide con el Node ID local.
+- Los trabajos de réplica `outgoing` se procesan únicamente en el nodo que figura como `OriginNodeId` del recurso.
+- Los trabajos `incoming` se procesan únicamente en el `target_node_id` firmado de la oferta.
+- La fila entrante usa una clave operacional derivada distinta del `offer_id` protocolario para que, en una DB compartida, no sobrescriba la fila saliente del origen.
+- Un objeto de réplica compartido sólo se sirve desde un nodo que tenga una ubicación `active` anunciada para ese Resource ID.
+
+La autorización y la disponibilidad siguen siendo por Node ID, aunque MySQL y S3 sean comunes.
+
+Después de una revocación, una reautorización manual mediante
+`drive/bin/federation_provider_request.php` genera un `request_id` nuevo. Esto conserva la idempotencia de cada petición individual sin impedir una solicitud administrativa posterior.
 ## Seguridad
 
 Nunca se transmiten como prueba de relación:

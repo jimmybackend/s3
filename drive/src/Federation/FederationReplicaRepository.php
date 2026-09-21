@@ -47,7 +47,10 @@ final class FederationReplicaRepository
     public function storeIncoming(array $offer, string $originFederationUrl): string
     {
         $json = FederationCodec::canonicalJson($offer);
-        $offerId = (string)$offer['offer_id'];
+        // En una DB compartida el mismo offer_id protocolario existe como
+        // outgoing en el origen e incoming en el destino. La fila incoming usa
+        // una clave operacional distinta para no pisar la fila del origen.
+        $offerId = $this->incomingJobId($offer);
         $resourceId = (string)$offer['resource_id'];
         $originNodeId = (string)$offer['origin_node_id'];
         $role = (string)$offer['role'];
@@ -82,20 +85,55 @@ final class FederationReplicaRepository
         return 'queued';
     }
 
-    public function due(string $direction, int $limit): array
+    public function due(string $direction, string $localNodeId, int $limit): array
     {
         if (!in_array($direction, ['outgoing','incoming'], true)) return [];
+        $localNodeId = trim($localNodeId);
+        if (!preg_match('/\Aacn_[A-Za-z0-9_-]{20,64}\z/', $localNodeId)) {
+            throw new FederationException('Node ID local inválido para cola de réplicas.', 400);
+        }
+
         $limit = max(1, min(10, $limit));
         $statuses = $direction === 'outgoing' ? "'queued','retry','offered'" : "'queued','retry','stored'";
-        $sql = "SELECT * FROM FederationReplicaJobs
-                WHERE Direction=? AND Status IN ({$statuses})
-                  AND (NextAttemptAt IS NULL OR NextAttemptAt <= UTC_TIMESTAMP(6))
-                  AND (ExpiresAt IS NULL OR ExpiresAt > UTC_TIMESTAMP(6))
-                ORDER BY COALESCE(NextAttemptAt, CreatedAt) ASC, CreatedAt ASC LIMIT {$limit}";
-        $stmt = $this->db->prepare($sql);
-        if (!$stmt) throw new FederationException('No se pudo consultar cola de réplicas.', 500);
-        $stmt->bind_param('s', $direction);
-        $stmt->execute();
+
+        if ($direction === 'outgoing') {
+            // La propiedad local del trabajo se deriva del OriginNodeId del recurso.
+            // Esto permite que varios workers compartan MySQL sin robarse salidas.
+            $sql = "SELECT j.*
+                    FROM FederationReplicaJobs j
+                    INNER JOIN FederatedResources r ON r.ResourceId = j.ResourceId
+                    WHERE j.Direction=?
+                      AND r.OriginNodeId=?
+                      AND j.Status IN ({$statuses})
+                      AND (j.NextAttemptAt IS NULL OR j.NextAttemptAt <= UTC_TIMESTAMP(6))
+                      AND (j.ExpiresAt IS NULL OR j.ExpiresAt > UTC_TIMESTAMP(6))
+                    ORDER BY COALESCE(j.NextAttemptAt, j.CreatedAt) ASC, j.CreatedAt ASC
+                    LIMIT {$limit}";
+            $stmt = $this->db->prepare($sql);
+            if (!$stmt) throw new FederationException('No se pudo consultar cola saliente de réplicas.', 500);
+            $stmt->bind_param('ss', $direction, $localNodeId);
+        } else {
+            // La oferta firmada contiene target_node_id. Se usa como partición
+            // lógica para que sólo el destinatario procese la entrada.
+            $sql = "SELECT *
+                    FROM FederationReplicaJobs
+                    WHERE Direction=?
+                      AND JSON_UNQUOTE(JSON_EXTRACT(OfferJson, '$.target_node_id'))=?
+                      AND Status IN ({$statuses})
+                      AND (NextAttemptAt IS NULL OR NextAttemptAt <= UTC_TIMESTAMP(6))
+                      AND (ExpiresAt IS NULL OR ExpiresAt > UTC_TIMESTAMP(6))
+                    ORDER BY COALESCE(NextAttemptAt, CreatedAt) ASC, CreatedAt ASC
+                    LIMIT {$limit}";
+            $stmt = $this->db->prepare($sql);
+            if (!$stmt) throw new FederationException('No se pudo consultar cola entrante de réplicas.', 500);
+            $stmt->bind_param('ss', $direction, $localNodeId);
+        }
+
+        if (!$stmt->execute()) {
+            $message = $stmt->error;
+            $stmt->close();
+            throw new FederationException('No se pudo consultar cola de réplicas: ' . $message, 500);
+        }
         $result = $stmt->get_result();
         $rows = [];
         while ($row = $result->fetch_assoc()) $rows[] = $row;
@@ -208,18 +246,39 @@ final class FederationReplicaRepository
         return is_array($row) ? $row : null;
     }
 
-    public function jobsForUser(int $userId, int $limit = 50): array
+    public function jobsForUser(int $userId, string $localNodeId, int $limit = 50): array
     {
         $limit = max(1, min(100, $limit));
-        $stmt = $this->db->prepare("SELECT OfferId, Direction, ResourceId, RemoteNodeId, Role, Status, Attempts, NextAttemptAt, LastError, CreatedAt, UpdatedAt FROM FederationReplicaJobs WHERE LocalUserId=? ORDER BY UpdatedAt DESC LIMIT {$limit}");
+        $localNodeId = trim($localNodeId);
+        if (!preg_match('/\Aacn_[A-Za-z0-9_-]{20,64}\z/', $localNodeId)) return [];
+        $stmt = $this->db->prepare(
+            "SELECT j.OfferId, j.Direction, j.ResourceId, j.RemoteNodeId, j.Role, j.Status,
+                    j.Attempts, j.NextAttemptAt, j.LastError, j.CreatedAt, j.UpdatedAt
+             FROM FederationReplicaJobs j
+             INNER JOIN FederatedResources r ON r.ResourceId = j.ResourceId
+             WHERE j.LocalUserId=? AND r.OriginNodeId=?
+             ORDER BY j.UpdatedAt DESC
+             LIMIT {$limit}"
+        );
         if (!$stmt) throw new FederationException('No se pudieron listar trabajos de réplica.', 500);
-        $stmt->bind_param('i', $userId);
+        $stmt->bind_param('is', $userId, $localNodeId);
         $stmt->execute();
         $result = $stmt->get_result();
         $rows = [];
         while ($row = $result->fetch_assoc()) $rows[] = $row;
         $stmt->close();
         return $rows;
+    }
+
+    private function incomingJobId(array $offer): string
+    {
+        $protocolOfferId = trim((string)($offer['offer_id'] ?? ''));
+        $targetNodeId = trim((string)($offer['target_node_id'] ?? ''));
+        if ($protocolOfferId === '' || !preg_match('/\Aacn_[A-Za-z0-9_-]{20,64}\z/', $targetNodeId)) {
+            throw new FederationException('Oferta de réplica sin identidad de destino válida.', 400);
+        }
+        $digest = hash('sha256', 'incoming|' . $targetNodeId . '|' . $protocolOfferId, true);
+        return 'fri_' . FederationCodec::base64UrlEncode(substr($digest, 0, 18));
     }
 
     private function updateAttempt(string $offerId, string $status, ?string $error, int $delaySeconds): void

@@ -56,7 +56,7 @@ final class FederationCustomsService
             'requires_superadmin' => false,
             'request_id' => $row['request_id'],
             'queue_status' => $row['status'],
-            'queue_depth' => $this->queue->queuedCount(),
+            'queue_depth' => $this->queue->queuedCount($this->identity->nodeId()),
             'node_id' => $originNodeId,
         ];
     }
@@ -110,7 +110,7 @@ final class FederationCustomsService
             'requires_superadmin' => true,
             'request_id' => $row['request_id'],
             'queue_status' => $row['status'],
-            'queue_depth' => $this->queue->queuedCount(),
+            'queue_depth' => $this->queue->queuedCount($this->identity->nodeId()),
             'provider_node_id' => (string)$candidate['node_id'],
             'message' => 'La copia con backend compartido fue recibida por Aduana; al procesarse quedará en Solicitudes para el superadmin.',
         ];
@@ -120,8 +120,9 @@ final class FederationCustomsService
     public function processNext(): array
     {
         $this->ensureEnabled();
-        $recovered = $this->queue->recoverStale();
-        $row = $this->queue->claimNext();
+        $localNodeId = $this->identity->nodeId();
+        $recovered = $this->queue->recoverStale($localNodeId);
+        $row = $this->queue->claimNext($localNodeId);
         if ($row === null) {
             return ['ok' => true, 'processed' => 0, 'recovered' => $recovered, 'queue_depth' => 0];
         }
@@ -147,7 +148,7 @@ final class FederationCustomsService
                 'type' => (string)$row['RequestType'],
                 'result' => $result,
                 'recovered' => $recovered,
-                'queue_depth' => $this->queue->queuedCount(),
+                'queue_depth' => $this->queue->queuedCount($localNodeId),
             ];
         } catch (JsonException $e) {
             $this->queue->reject($id, 'Documentación JSON inválida.');

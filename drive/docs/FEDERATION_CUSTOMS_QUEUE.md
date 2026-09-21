@@ -27,6 +27,15 @@ Cada petición tiene `RequestId` único, hash de la documentación, Node ID de o
 
 `drive/bin/federation_sync.php` mantiene un `flock(... LOCK_EX | LOCK_NB)` y procesa **como máximo una petición de Aduana por ciclo**. Así pueden llegar muchas solicitudes HTTP sin convertir las operaciones pesadas en multiproceso.
 
+## Aislamiento por nodo con MySQL compartida
+
+`FederationIngressQueue` puede residir en una MySQL común a varios nodos. Por eso un worker no
+toma simplemente la primera fila global: recupera, reclama y cuenta únicamente peticiones cuyo
+`TargetNodeId` coincide con su propia identidad FederationCloud.
+
+Esto permite ejecutar simultáneamente el timer del origen y el de una copia sin que Fastdrive,
+por ejemplo, procese una solicitud dirigida a Drive. `RequestId` continúa siendo idempotente
+dentro de la petición; una reautorización manual posterior a una revocación usa un Request ID nuevo.
 ## Tres caminos de entrada
 
 ### 1. Nodo independiente: automático por Aduana

@@ -47,7 +47,8 @@ final class FederationIngressQueueRepository
         if ($existing !== null) {
             if (!hash_equals((string)$existing['PayloadHash'], $hash)
                 || !hash_equals((string)$existing['RequestType'], $requestType)
-                || !hash_equals((string)$existing['OriginNodeId'], $originNodeId)) {
+                || !hash_equals((string)$existing['OriginNodeId'], $originNodeId)
+                || !hash_equals((string)($existing['TargetNodeId'] ?? ''), (string)($targetNodeId ?? ''))) {
                 throw new FederationException('Request ID ya existe con otra documentación.', 409);
             }
             return $this->publicRow($existing);
@@ -77,35 +78,54 @@ final class FederationIngressQueueRepository
         return $this->publicRow($row);
     }
 
-    public function recoverStale(int $minutes = 15): int
+    public function recoverStale(string $targetNodeId, int $minutes = 15): int
     {
+        $targetNodeId = $this->validatedNodeId($targetNodeId, 'destino');
         $minutes = max(5, min(120, $minutes));
-        $sql = "UPDATE FederationIngressQueue
-                SET Status='retry', AvailableAt=UTC_TIMESTAMP(6), StartedAt=NULL,
-                    LastError='Worker interrumpido; petición recuperada automáticamente.'
-                WHERE Status='processing'
-                  AND StartedAt < DATE_SUB(UTC_TIMESTAMP(6), INTERVAL {$minutes} MINUTE)";
-        if (!$this->db->query($sql)) {
-            throw new FederationException('No se pudo recuperar la cola de aduana.', 500);
+        $stmt = $this->db->prepare(
+            "UPDATE FederationIngressQueue
+             SET Status='retry', AvailableAt=UTC_TIMESTAMP(6), StartedAt=NULL,
+                 LastError='Worker interrumpido; petición recuperada automáticamente.'
+             WHERE TargetNodeId=?
+               AND Status='processing'
+               AND StartedAt < DATE_SUB(UTC_TIMESTAMP(6), INTERVAL {$minutes} MINUTE)"
+        );
+        if (!$stmt) throw new FederationException('No se pudo preparar la recuperación de la cola de aduana.', 500);
+        $stmt->bind_param('s', $targetNodeId);
+        if (!$stmt->execute()) {
+            $message = $stmt->error;
+            $stmt->close();
+            throw new FederationException('No se pudo recuperar la cola de aduana: ' . $message, 500);
         }
-        return max(0, $this->db->affected_rows);
+        $count = $stmt->affected_rows;
+        $stmt->close();
+        return max(0, $count);
     }
 
-    public function claimNext(): ?array
+    public function claimNext(string $targetNodeId): ?array
     {
+        $targetNodeId = $this->validatedNodeId($targetNodeId, 'destino');
         $this->db->begin_transaction();
         try {
-            $result = $this->db->query(
+            $select = $this->db->prepare(
                 "SELECT id_, RequestId, RequestType, OriginNodeId, TargetNodeId, DocumentationJson,
                         PayloadHash, Priority, Status, Attempts, ReceivedAt, AvailableAt, StartedAt, FinishedAt, LastError
                  FROM FederationIngressQueue
-                 WHERE Status IN ('queued','retry') AND AvailableAt <= UTC_TIMESTAMP(6)
+                 WHERE TargetNodeId=?
+                   AND Status IN ('queued','retry')
+                   AND AvailableAt <= UTC_TIMESTAMP(6)
                  ORDER BY Priority ASC, ReceivedAt ASC, id_ ASC
                  LIMIT 1 FOR UPDATE"
             );
-            if (!$result) throw new FederationException('No se pudo seleccionar la siguiente petición de aduana.', 500);
-            $row = $result->fetch_assoc();
-            $result->free();
+            if (!$select) throw new FederationException('No se pudo preparar la siguiente petición de aduana.', 500);
+            $select->bind_param('s', $targetNodeId);
+            if (!$select->execute()) {
+                $message = $select->error;
+                $select->close();
+                throw new FederationException('No se pudo seleccionar la siguiente petición de aduana: ' . $message, 500);
+            }
+            $row = $select->get_result()->fetch_assoc();
+            $select->close();
             if (!is_array($row)) {
                 $this->db->commit();
                 return null;
@@ -115,10 +135,10 @@ final class FederationIngressQueueRepository
             $stmt = $this->db->prepare(
                 "UPDATE FederationIngressQueue
                  SET Status='processing', Attempts=Attempts+1, StartedAt=UTC_TIMESTAMP(6), LastError=NULL
-                 WHERE id_=? AND Status IN ('queued','retry') LIMIT 1"
+                 WHERE id_=? AND TargetNodeId=? AND Status IN ('queued','retry') LIMIT 1"
             );
             if (!$stmt) throw new FederationException('No se pudo preparar el claim de aduana.', 500);
-            $stmt->bind_param('i', $id);
+            $stmt->bind_param('is', $id, $targetNodeId);
             if (!$stmt->execute() || $stmt->affected_rows !== 1) {
                 $message = $stmt->error;
                 $stmt->close();
@@ -170,12 +190,22 @@ final class FederationIngressQueueRepository
         $stmt->close();
     }
 
-    public function queuedCount(): int
+    public function queuedCount(string $targetNodeId): int
     {
-        $result = $this->db->query("SELECT COUNT(*) AS c FROM FederationIngressQueue WHERE Status IN ('queued','retry','processing')");
-        if (!$result) return 0;
-        $row = $result->fetch_assoc();
-        $result->free();
+        $targetNodeId = $this->validatedNodeId($targetNodeId, 'destino');
+        $stmt = $this->db->prepare(
+            "SELECT COUNT(*) AS c
+             FROM FederationIngressQueue
+             WHERE TargetNodeId=? AND Status IN ('queued','retry','processing')"
+        );
+        if (!$stmt) return 0;
+        $stmt->bind_param('s', $targetNodeId);
+        if (!$stmt->execute()) {
+            $stmt->close();
+            return 0;
+        }
+        $row = $stmt->get_result()->fetch_assoc();
+        $stmt->close();
         return max(0, (int)($row['c'] ?? 0));
     }
 
@@ -237,6 +267,15 @@ final class FederationIngressQueueRepository
             'attempts' => (int)$row['Attempts'],
             'received_at' => (string)$row['ReceivedAt'],
         ];
+    }
+
+    private function validatedNodeId(string $nodeId, string $label): string
+    {
+        $nodeId = trim($nodeId);
+        if (!preg_match('/\Aacn_[A-Za-z0-9_-]{20,64}\z/', $nodeId)) {
+            throw new FederationException('Node ID ' . $label . ' inválido para aduana.', 400);
+        }
+        return $nodeId;
     }
 
     private function safeError(string $message): string

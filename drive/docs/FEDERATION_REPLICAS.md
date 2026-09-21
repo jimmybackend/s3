@@ -44,6 +44,22 @@ Esto distribuye recursos entre providers sin una base de planificación central.
 
 Un provider que ya aparece como ubicación `active` del recurso no vuelve a ser elegido.
 
+## Workers cuando varios nodos comparten MySQL/S3
+
+Una instalación puede tener dos identidades FederationCloud distintas sobre una MySQL común.
+La cola operacional conserva el esquema existente, pero su consumo está particionado lógicamente:
+
+- `outgoing`: sólo lo procesa el Node ID que es origen del recurso en `FederatedResources`;
+- `incoming`: sólo lo procesa el `target_node_id` firmado en la oferta;
+- la fila entrante usa un identificador operacional interno distinto del `offer_id` firmado para que
+  las filas incoming/outgoing puedan coexistir en una tabla cuyo `OfferId` es clave primaria.
+
+El `offer_id` protocolario no se modifica dentro de la oferta firmada. El identificador interno
+sólo existe en la cola MySQL local/compartida.
+
+Como `FederationReplicaObjects` también puede ser visible desde una DB compartida, resolver o
+servir una copia exige además que el nodo actual tenga una `location.upsert` activa propia. Así
+un nodo no se atribuye una ubicación anunciada por otro aunque ambos puedan alcanzar el mismo S3.
 ## Control plane privado
 
 El origen crea `FederationReplicaJobs` locales. El worker procesa pocos trabajos por ciclo:

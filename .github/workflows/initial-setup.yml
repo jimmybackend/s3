@@ -97,6 +97,9 @@ jobs:
           grep -q "isSetupPending" drive/src/Setup/SetupEntryGuard.php
           grep -q "system_role, chat, userstatus" drive/src/Setup/SuperAdminBootstrapService.php
           grep -q "'superadmin'" drive/src/Setup/SuperAdminBootstrapService.php
+          grep -q "\$role = 'Administración'" drive/src/Setup/SuperAdminBootstrapService.php
+          grep -q "assertPersistedSuperadmin" drive/src/Setup/SuperAdminBootstrapService.php
+          grep -q "supervisor temporal se conserva" drive/src/Setup/SuperAdminBootstrapService.php
           grep -q "X-ArcadeCloud-Setup-CSRF" drive/js/setup.js
           ! grep -q 'data-save-group="smtp"' drive/setup/index.php
           ! grep -q "AWS_SESSION_TOKEN" drive/js/setup.js

@@ -99,6 +99,10 @@ jobs:
           grep -q "'superadmin'" drive/src/Setup/SuperAdminBootstrapService.php
           grep -q "\$role = 'Administración'" drive/src/Setup/SuperAdminBootstrapService.php
           grep -q "assertPersistedSuperadmin" drive/src/Setup/SuperAdminBootstrapService.php
+          grep -q "adminBirthdate" drive/setup/index.php
+          grep -q "adminMobilephone" drive/setup/index.php
+          grep -q "'birthdate' => \$this->post('birthdate')" drive/src/Setup/SetupApiController.php
+          grep -q "UPDATE Users SET birthdate" drive/src/Setup/SuperAdminBootstrapService.php
           grep -q "supervisor temporal se conserva" drive/src/Setup/SuperAdminBootstrapService.php
           grep -q "X-ArcadeCloud-Setup-CSRF" drive/js/setup.js
           ! grep -q 'data-save-group="smtp"' drive/setup/index.php

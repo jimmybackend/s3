@@ -19,6 +19,9 @@ final class ManagedRuntimeEnvironment
         'ARCADECLOUD_FEDERATION_URL' => ['secret' => false, 'group' => 'FederationCloud'],
         'ARCADECLOUD_FEDERATION_ENABLED' => ['secret' => false, 'group' => 'FederationCloud'],
         'ARCADECLOUD_FEDERATION_SEED_URL' => ['secret' => false, 'group' => 'FederationCloud'],
+        'ARCADECLOUD_FEDERATION_REPLICA_ORIGIN_URL' => ['secret' => false, 'group' => 'FederationCloud avanzado'],
+        'ARCADECLOUD_FEDERATION_REPLICA_ROLE' => ['secret' => false, 'group' => 'FederationCloud avanzado'],
+        'ARCADECLOUD_FEDERATION_REPLICA_SCOPE' => ['secret' => false, 'group' => 'FederationCloud avanzado'],
 
         'ARCADECLOUD_SMTP_HOST' => ['secret' => false, 'group' => 'SMTP'],
         'ARCADECLOUD_SMTP_PORT' => ['secret' => false, 'group' => 'SMTP'],
@@ -202,7 +205,12 @@ final class ManagedRuntimeEnvironment
             throw new RuntimeException($name . ' contiene caracteres de control inválidos.');
         }
 
-        if (in_array($name, ['ARCADECLOUD_PUBLIC_URL', 'ARCADECLOUD_FEDERATION_URL', 'ARCADECLOUD_FEDERATION_SEED_URL'], true) && $value !== '') {
+        if (in_array($name, [
+            'ARCADECLOUD_PUBLIC_URL',
+            'ARCADECLOUD_FEDERATION_URL',
+            'ARCADECLOUD_FEDERATION_SEED_URL',
+            'ARCADECLOUD_FEDERATION_REPLICA_ORIGIN_URL',
+        ], true) && $value !== '') {
             $parts = parse_url($value);
             if (!is_array($parts) || !isset($parts['scheme'], $parts['host'])) {
                 throw new RuntimeException($name . ' debe contener una URL válida.');
@@ -214,6 +222,22 @@ final class ManagedRuntimeEnvironment
                 throw new RuntimeException($name . ' no debe contener credenciales, query ni fragmento.');
             }
         }
+        if ($name === 'ARCADECLOUD_FEDERATION_REPLICA_ROLE' && $value !== '') {
+            $lower = strtolower($value);
+            if (!in_array($lower, ['provider', 'mirror'], true)) {
+                throw new RuntimeException('ARCADECLOUD_FEDERATION_REPLICA_ROLE debe ser provider o mirror.');
+            }
+            return $lower;
+        }
+
+        if ($name === 'ARCADECLOUD_FEDERATION_REPLICA_SCOPE' && $value !== '') {
+            $lower = strtolower($value);
+            if (!in_array($lower, ['all_allowed_resources', 'selected_resources'], true)) {
+                throw new RuntimeException('ARCADECLOUD_FEDERATION_REPLICA_SCOPE no contiene un alcance permitido.');
+            }
+            return $lower;
+        }
+
         return $value;
     }
 }

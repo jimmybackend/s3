@@ -104,15 +104,20 @@ $arcadeLinkShareJs = __DIR__ . '/js/arcadelink-share.js';
       <div class="modal-header border-secondary">
         <div>
           <h5 class="modal-title" id="modalServerAdminLabel"><i class="fas fa-tools mr-1"></i> Configuración del servidor</h5>
-          <div class="small text-muted">FederationCloud, SMTP, base de datos y credenciales AWS de esta instalación.</div>
+          <div class="small text-muted">Configuración básica para operación diaria y configuración avanzada para integraciones opcionales.</div>
         </div>
         <button type="button" class="close text-light" data-dismiss="modal" aria-label="Cerrar"><span aria-hidden="true">&times;</span></button>
       </div>
       <div class="modal-body">
         <div id="serverAdminAlert" class="alert d-none" role="alert"></div>
         <div class="alert alert-info small">
-          Aquí puedes ver las variables que usa ArcadeCloud, su valor actual y de dónde se cargan. Base de datos y AWS se configuran como bloque para evitar cambios incompletos.
+          <strong>Básica</strong> muestra sólo lo necesario para Drive + FederationCloud base. <strong>Avanzada</strong> añade SMTP, tokens/credenciales AWS opcionales y configuración de mirror.
         </div>
+        <div class="btn-group btn-group-sm mb-3" role="group" aria-label="Nivel de configuración">
+          <button type="button" id="btnServerAdminBasic" class="btn btn-info active">Configuración básica</button>
+          <button type="button" id="btnServerAdminAdvanced" class="btn btn-outline-info">Configuración avanzada</button>
+        </div>
+        <div id="serverAdminModeHelp" class="small text-muted mb-3">Modo básico: opciones avanzadas ocultas.</div>
         <div id="serverAdminHelperStatus" class="small text-muted mb-3">Consultando helper…</div>
 
         <div class="d-flex justify-content-between align-items-center mb-2">

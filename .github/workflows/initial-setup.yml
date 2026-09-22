@@ -13,6 +13,7 @@ on:
       - 'drive/src/Admin/PrivilegedServerHelper.php'
       - 'drive/bin/arcadecloud-drive-admin-helper.php'
       - 'drive/bin/install_arcadecloud_admin_helper.sh'
+      - 'drive/bin/install_arcadecloud.sh'
       - 'drive/tests/setup_bootstrap_smoke.php'
       - 'drive/docs/INITIAL_SETUP.md'
       - 'drive/docs/INSTALLATION_PREPARATION.md'
@@ -26,6 +27,7 @@ on:
       - 'drive/src/Admin/PrivilegedServerHelper.php'
       - 'drive/bin/arcadecloud-drive-admin-helper.php'
       - 'drive/bin/install_arcadecloud_admin_helper.sh'
+      - 'drive/bin/install_arcadecloud.sh'
       - 'drive/tests/setup_bootstrap_smoke.php'
       - 'drive/docs/INITIAL_SETUP.md'
       - 'drive/docs/INSTALLATION_PREPARATION.md'
@@ -59,6 +61,7 @@ jobs:
           set -euo pipefail
           node --check drive/js/setup.js
           bash -n drive/bin/install_arcadecloud_admin_helper.sh
+          bash -n drive/bin/install_arcadecloud.sh
 
       - name: Bootstrap authentication smoke test
         run: php drive/tests/setup_bootstrap_smoke.php
@@ -75,7 +78,13 @@ jobs:
           grep -q "system_role, chat, userstatus" drive/src/Setup/SuperAdminBootstrapService.php
           grep -q "'superadmin'" drive/src/Setup/SuperAdminBootstrapService.php
           grep -q "X-ArcadeCloud-Setup-CSRF" drive/js/setup.js
-          grep -q "ARCADECLOUD_SMTP_BCC" drive/js/setup.js
+          ! grep -q 'data-save-group="smtp"' drive/setup/index.php
+          ! grep -q "AWS_SESSION_TOKEN" drive/js/setup.js
+          grep -q "aws_ready" drive/src/Setup/SetupApiController.php
+          grep -q "assertBasicConfigurationReady" drive/src/Setup/SuperAdminBootstrapService.php
+          grep -q "install_arcadecloud.sh --finalize" drive/docs/INITIAL_SETUP.md
+          grep -q "ARCADECLOUD_FEDERATION_ENABLED" drive/bin/install_arcadecloud.sh
+          grep -q "identity-create" drive/bin/install_arcadecloud.sh
           grep -q "ARCADECLOUD_SMTP_BCC" drive/src/Admin/ManagedRuntimeEnvironment.php
           ! grep -q "app_bootstrap.php" drive/setup/api.php
           ! grep -q "require.*db.php" drive/setup/api.php

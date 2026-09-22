@@ -1,196 +1,233 @@
 # Instalación inicial de ArcadeCloud Drive
 
-Antes de comenzar, usa `INSTALLATION_PREPARATION.md` para reunir dominio/DNS, MySQL, AWS/S3,
-SMTP y los datos del primer superadmin. Así el asistente puede completarse sin detenerse para buscar
-credenciales o crear infraestructura a mitad del proceso.
+Estado del flujo: **configuración básica de tres pasos**.
 
-## Objetivo
+Antes de comenzar, usa `INSTALLATION_PREPARATION.md` para reunir únicamente los datos que el
+setup básico necesita:
 
-Una instalación nueva puede necesitar configurar MySQL, AWS y SMTP **antes** de que exista un usuario normal en `Users`. Por eso `/setup/` usa un supervisor temporal separado del login del Drive.
+1. MySQL;
+2. AWS / S3 principal;
+3. datos del primer superadmin.
 
-Este supervisor:
+SMTP, credenciales AWS temporales/control, mirror y demás opciones se configuran después desde
+**Servidor → Configuración avanzada**.
 
-- no pertenece a la tabla `Users`;
-- no puede abrir archivos, S3, chat, FederationCloud ni otras funciones del Drive;
-- sólo puede administrar las variables permitidas de Base de datos, AWS y SMTP;
-- sólo existe mientras la instalación no tenga `setup.lock`;
-- desaparece al registrar el primer `Users.system_role = 'superadmin'`.
+## Instalador de aplicación
 
-## Crear el supervisor temporal
-
-En una instalación nueva se instala el helper con la bandera explícita `--bootstrap-setup`:
+Con el repositorio ya clonado y los prerrequisitos del servidor disponibles:
 
 ```bash
-sudo bash drive/bin/install_arcadecloud_admin_helper.sh \
-  --php-user=USUARIO_REAL_PHP_FPM \
-  --bootstrap-setup
+sudo bash drive/bin/install_arcadecloud.sh
 ```
 
-La bandera es intencional. Reinstalar el helper sin ella **no abre `/setup/`** en una instalación existente.
+El script:
 
-El helper genera:
+- detecta el usuario de PHP-FPM cuando es posible;
+- ejecuta Composer;
+- instala el helper administrativo;
+- abre el supervisor temporal de `/setup/`;
+- instala el updater;
+- detecta la IPv4 pública de EC2 mediante IMDSv2 cuando existe;
+- genera automáticamente una identidad FederationCloud si todavía no existe;
+- genera automáticamente un `node_name`;
+- intenta preparar HTTPS y FederationCloud básico sobre la IP pública;
+- deja un watcher systemd que finaliza los workers después de cerrar el setup web.
+
+Si no puede obtener HTTPS válido para la IP, **no bloquea el Drive**. FederationCloud queda desactivado
+y pendiente de terminar desde configuración avanzada.
+
+Opciones operativas:
+
+```text
+--app-root=/ruta/al/repo
+--php-user=USUARIO
+--repo-user=USUARIO
+--no-federation
+```
+
+## Supervisor temporal
+
+El helper mantiene el modelo existente de bootstrap:
 
 ```text
 /etc/arcadecloud-drive/bootstrap-auth.json
 ```
 
-El archivo contiene únicamente:
+El supervisor temporal:
 
-- nombre del supervisor temporal;
-- hash de contraseña;
-- hash SHA-256 del token de activación;
-- fecha de creación.
+- no pertenece a `Users`;
+- no puede abrir el Drive;
+- sólo puede usar el setup inicial;
+- requiere el token aleatorio generado por el servidor;
+- desaparece al crear/detectar el primer superadmin.
 
-No contiene la contraseña ni el token en texto plano.
-
-## Credenciales iniciales
-
-El supervisor tiene estas credenciales conocidas:
+Credenciales bootstrap actuales:
 
 ```text
 usuario: arcadecloud
 contraseña inicial: arcadecloud
 ```
 
-Por sí solas **no permiten entrar**. También es obligatorio el token aleatorio de 256 bits que el helper muestra una sola vez al crear el bootstrap.
+Estas credenciales por sí solas no permiten entrar: también se necesita el token de activación.
 
-El operador abre:
+## Flujo web básico
 
-```text
-https://TU-DOMINIO/setup/?token=TOKEN_GENERADO
-```
-
-Si el token coincide, el servidor lo asocia a la sesión PHP y redirige inmediatamente a `/setup/` sin dejar el token en la URL. Después se solicita `arcadecloud / arcadecloud`.
-
-El token sigue siendo válido para activar una nueva sesión mientras el setup siga abierto. Si se pierde antes de completar la instalación, root puede generar uno nuevo:
-
-```bash
-sudo /usr/local/sbin/arcadecloud-drive-admin bootstrap-reset
-```
-
-`bootstrap-reset` no funciona después de cerrar la instalación.
-
-## Flujo web
-
-El asistente muestra cuatro bloques:
+`/setup/` muestra sólo:
 
 ```text
 1. Base de datos
-2. AWS
-3. SMTP
-4. Primer superadmin
+2. AWS / S3
+3. Primer superadmin
 ```
 
-### Base de datos
+### 1. Base de datos
 
-Variables:
+Solicita:
 
-- `DB_HOST`
-- `DB_PORT`
-- `DB_USER`
-- `DB_PASSWORD`
-- `DB_NAME`
+- `DB_HOST`;
+- `DB_PORT` (3306 por defecto);
+- `DB_USER`;
+- `DB_PASSWORD`;
+- `DB_NAME`.
 
-Antes de escribirlas en `runtime-env.json`, ArcadeCloud intenta una conexión MySQL real. Si no conecta, no guarda el bloque.
+Antes de guardar, ArcadeCloud prueba una conexión MySQL real.
 
-El setup no importa automáticamente un dump SQL porque un archivo SQL puede representar una base existente y no debe ejecutarse implícitamente. La base seleccionada debe contener el esquema de ArcadeCloud; para crear el primer superadmin debe existir la tabla `Users`.
+La base seleccionada debe contener el esquema de ArcadeCloud. El setup no reimporta automáticamente
+un dump sobre una base existente. Para crear el primer superadmin debe existir la tabla `Users`.
 
-### AWS
+### 2. AWS / S3
 
-Variables principales:
+El setup básico sólo solicita:
 
-- `AWS_REGION`
-- `AWS_S3_BUCKET`
-- `AWS_ACCESS_KEY_ID`
-- `AWS_SECRET_ACCESS_KEY`
+- `AWS_REGION`;
+- `AWS_S3_BUCKET`;
+- `AWS_ACCESS_KEY_ID`;
+- `AWS_SECRET_ACCESS_KEY`.
 
-Variables opcionales:
+No pregunta:
 
-- `AWS_SESSION_TOKEN`
-- `AWS_CONTROL_ACCESS_KEY_ID`
-- `AWS_CONTROL_SECRET_ACCESS_KEY`
-- `AWS_CONTROL_SESSION_TOKEN`
+- `AWS_SESSION_TOKEN`;
+- `AWS_CONTROL_ACCESS_KEY_ID`;
+- `AWS_CONTROL_SECRET_ACCESS_KEY`;
+- `AWS_CONTROL_SESSION_TOKEN`.
 
-Las claves ya configuradas nunca se devuelven al navegador. Un campo secreto vacío conserva el valor existente.
+Esos campos quedan para configuración avanzada.
 
-### SMTP
+### 3. Primer superadmin
 
-El mismo asistente puede preparar las variables `ARCADECLOUD_SMTP_*` que usa `SmtpConfig`. Los secretos tampoco se devuelven al navegador.
-
-### Primer superadmin
-
-Cuando MySQL ya funciona, el setup solicita:
+Solicita:
 
 - nombre;
 - apellido;
 - correo;
-- contraseña del superadmin.
+- contraseña;
+- confirmación de contraseña.
 
-El backend crea un usuario `Activo`, con `system_role = 'superadmin'`, contraseña mediante `password_hash()` y campos de perfil mínimos compatibles con la tabla `Users` actual.
+La contraseña debe tener al menos 10 caracteres.
 
-Si ya existe un superadmin, no se crea otro: el setup simplemente completa el cierre del supervisor temporal.
+El backend no permite cerrar el setup si MySQL y AWS/S3 básico no están configurados.
 
-## Cierre irreversible del bootstrap
-
-Después de crear o detectar el primer superadmin, el helper:
-
-1. crea `/etc/arcadecloud-drive/setup.lock`;
-2. elimina `/etc/arcadecloud-drive/bootstrap-auth.json`;
-3. invalida la sesión temporal de setup.
-
-A partir de ese momento `/setup/` sólo informa que la instalación está cerrada.
-
-El operador también puede cerrarlo manualmente desde root:
-
-```bash
-sudo /usr/local/sbin/arcadecloud-drive-admin bootstrap-disable
-```
-
-El helper no reactiva automáticamente un setup que ya tiene `setup.lock`.
-
-## Separación respecto al Drive normal
-
-`drive/setup/api.php` **no carga `app_bootstrap.php` ni `db.php`** al abrir el asistente. Esto es necesario porque MySQL puede no estar configurado todavía.
-
-El flujo es:
+El usuario se crea con:
 
 ```text
-/setup
-  -> BootstrapSetupAuth
-  -> SetupConfigurationService
-  -> ManagedRuntimeEnvironment
-  -> helper privilegiado limitado
-  -> /etc/arcadecloud-drive/runtime-env.json
-
-cuando DB funciona:
-  -> SuperAdminBootstrapService
-  -> Users.system_role = superadmin
-  -> bootstrap-complete
-  -> setup.lock
+system_role = superadmin
+userstatus = Activo
 ```
 
-La aplicación normal continúa usando:
+La contraseña se almacena mediante `password_hash()`; nunca se persiste en texto plano.
+
+## Cierre del setup
+
+Al completar el primer superadmin:
+
+1. se crea `/etc/arcadecloud-drive/setup.lock`;
+2. se elimina `bootstrap-auth.json`;
+3. se invalida la sesión temporal;
+4. `arcadecloud-install-finalize.path` detecta el lock;
+5. si FederationCloud básico quedó habilitado, se instalan/migran sus workers y timer;
+6. se registra el resultado en:
 
 ```text
-app_bootstrap.php
-  -> runtime-env.json
-  -> Config-s3.php
-  -> db.php
-  -> Drive
+/var/lib/arcadecloud-drive/install-finalized.json
 ```
 
-No existe una segunda fuente de configuración.
+## FederationCloud básico
 
-## Archivos que nunca se versionan
+El instalador intenta detectar la IPv4 pública EC2 automáticamente.
 
-No deben entrar a Git:
+Si puede preparar HTTPS válido, guarda en:
 
-- `bootstrap-auth.json` real;
-- `setup.lock` real;
-- contenido real de `runtime-env.json`;
-- contraseñas MySQL/SMTP;
+```text
+/etc/arcadecloud-drive/runtime-env.json
+```
+
+valores equivalentes a:
+
+```text
+ARCADECLOUD_PUBLIC_URL=https://IP_PUBLICA
+ARCADECLOUD_FEDERATION_URL=https://IP_PUBLICA/federationcloud/
+ARCADECLOUD_FEDERATION_ENABLED=true
+```
+
+La identidad se guarda separada en:
+
+```text
+/etc/arcadecloud-drive/federation-node.json
+```
+
+Cambiar posteriormente de IP a dominio no debe regenerar `node_id`, Ed25519 ni `payload_key`.
+
+Si HTTPS sobre IP no puede quedar listo, el instalador conserva el Drive básico y deja:
+
+```text
+ARCADECLOUD_FEDERATION_ENABLED=false
+```
+
+hasta que el superadmin configure un endpoint válido.
+
+## Configuración básica y avanzada dentro de ArcadeCloud
+
+El modal **Servidor** abre por defecto en **Configuración básica**.
+
+Básica muestra:
+
+- MySQL;
+- AWS/S3 principal;
+- URL pública;
+- Federation URL;
+- FederationCloud enabled;
+- seed.
+
+Avanzada añade:
+
+- SMTP;
+- AWS session token;
+- credenciales AWS de control;
+- tokens de control;
+- configuración mirror.
+
+Las variables mirror nuevas se administran también desde `runtime-env.json`:
+
+```text
+ARCADECLOUD_FEDERATION_REPLICA_ORIGIN_URL
+ARCADECLOUD_FEDERATION_REPLICA_ROLE
+ARCADECLOUD_FEDERATION_REPLICA_SCOPE
+```
+
+Por tanto, las instalaciones nuevas ya no necesitan repartir la configuración mirror entre varios
+archivos. `federation.env` se conserva únicamente como compatibilidad para instalaciones anteriores.
+
+## Archivos privados
+
+No se versionan:
+
+- `runtime-env.json` real;
+- `federation-node.json`;
+- `bootstrap-auth.json`;
+- `setup.lock`;
+- contraseñas MySQL;
 - claves AWS;
-- token de activación;
-- identidad privada FederationCloud.
+- tokens;
+- secretos SMTP.
 
-Los tests y la documentación usan sólo valores sintéticos.
+La documentación y los tests sólo usan valores sintéticos.

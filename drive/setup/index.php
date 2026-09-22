@@ -28,7 +28,7 @@ if ($token !== '') {
 <body>
 <main>
   <h1>ArcadeCloud Setup</h1>
-  <p class="muted">Instalación inicial: Base de datos → AWS → SMTP → primer superadmin.</p>
+  <p class="muted">Instalación básica en 3 pasos: Base de datos → AWS/S3 → primer superadmin. Lo demás se configura después desde ArcadeCloud.</p>
   <div id="globalStatus" class="status">Cargando estado…</div>
 
   <section id="loginCard" class="card hidden">
@@ -49,20 +49,14 @@ if ($token !== '') {
     </div>
 
     <div class="card">
-      <h2>2. AWS</h2>
+      <h2>2. AWS / S3</h2>
       <div id="awsFields" class="grid"></div>
       <div class="row" style="margin-top:14px"><button data-save-group="aws">Guardar AWS</button></div>
     </div>
 
     <div class="card">
-      <h2>3. SMTP</h2>
-      <p class="muted">Puedes configurarlo ahora para recuperación/cambio de contraseña.</p>
-      <div id="smtpFields" class="grid"></div>
-      <div class="row" style="margin-top:14px"><button data-save-group="smtp">Guardar SMTP</button></div>
-    </div>
-
-    <div class="card">
-      <h2>4. Primer superadmin</h2>
+      <h2>3. Primer superadmin</h2>
+      <p class="muted">Correo SMTP, tokens AWS, mirrors y otras funciones quedan para Configuración avanzada dentro de ArcadeCloud.</p>
       <p class="muted">Al crear este usuario se elimina la credencial temporal y <code>/setup</code> queda bloqueado.</p>
       <div class="grid">
         <div class="field"><label>Nombre</label><input id="adminFirstname" autocomplete="given-name"></div>

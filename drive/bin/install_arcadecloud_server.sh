@@ -163,7 +163,7 @@ install_packages() {
 
 install_composer() {
   if command_exists composer; then
-    say "Composer ya instalado: $(composer --version 2>/dev/null | head -1)"
+    say "Composer ya instalado: $(COMPOSER_ALLOW_SUPERUSER=1 composer --version 2>/dev/null | head -1)"
     return
   fi
 
@@ -190,7 +190,7 @@ install_composer() {
   fi
 
   command_exists composer || fail "Composer no quedó instalado."
-  composer --version >/dev/null
+  COMPOSER_ALLOW_SUPERUSER=1 composer --version >/dev/null
 }
 
 install_certbot_if_available() {
@@ -503,7 +503,7 @@ echo "PHP-FPM service: php-fpm-drive.service"
 echo "PHP-FPM user: $PHP_USER"
 echo "PHP-FPM listen: $FPM_LISTEN"
 echo "Nginx: $(nginx -v 2>&1)"
-echo "Composer: $(composer --version 2>/dev/null | head -1)"
+echo "Composer: $(COMPOSER_ALLOW_SUPERUSER=1 composer --version 2>/dev/null | head -1)"
 if command_exists certbot; then
   echo "Certbot: $(certbot --version 2>/dev/null)"
 else

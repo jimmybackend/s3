@@ -90,7 +90,9 @@ No fija una versión PHP inventada. DNF resuelve la versión publicada por los r
 del sistema.
 
 Si Composer no existe como paquete del sistema, se descarga el instalador oficial de Composer y se
-valida su SHA-384 antes de instalarlo en /usr/local/bin/composer.
+valida su SHA-384 antes de instalarlo en /usr/local/bin/composer. Las comprobaciones de Composer que
+corren bajo sudo establecen COMPOSER_ALLOW_SUPERUSER=1 de forma explícita para que el instalador no
+se detenga esperando una respuesta interactiva.
 
 Si Certbot no está disponible, la instalación básica del Drive no falla. HTTPS FederationCloud queda
 pendiente para la fase de finalización.

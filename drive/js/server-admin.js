@@ -19,6 +19,9 @@ class ServerAdminModule {
     this.settings = [];
     this.reauthRequired = true;
     this.reauthExpiresIn = 0;
+    this.mode = 'basic';
+    this.basicButton = null;
+    this.advancedButton = null;
   }
 
   init() {
@@ -34,6 +37,8 @@ class ServerAdminModule {
     this.groupEditor = this.document.getElementById('serverAdminGroupEditor');
     this.groupFields = this.document.getElementById('serverAdminGroupFields');
     this.groupTitle = this.document.getElementById('serverAdminGroupTitle');
+    this.basicButton = this.document.getElementById('btnServerAdminBasic');
+    this.advancedButton = this.document.getElementById('btnServerAdminAdvanced');
     if (!this.button || !this.modal || !this.saveButton || !this.groupSaveButton || !this.select || !this.tableBody || !this.valueInput || !this.passwordInput || !this.singleEditor || !this.groupEditor || !this.groupFields || !this.groupTitle) return this;
 
     this.csrf = String(this.button.dataset.csrf || '');
@@ -43,6 +48,9 @@ class ServerAdminModule {
     this.select.addEventListener('change', () => this.syncSelectedSetting());
     this.saveButton.addEventListener('click', () => this.save());
     this.groupSaveButton.addEventListener('click', () => this.saveGroup());
+    if (this.basicButton) this.basicButton.addEventListener('click', () => this.setMode('basic'));
+    if (this.advancedButton) this.advancedButton.addEventListener('click', () => this.setMode('advanced'));
+    this.updateModeButtons();
     return this;
   }
 
@@ -102,12 +110,47 @@ class ServerAdminModule {
     }
   }
 
+  setMode(mode) {
+    this.mode = mode === 'advanced' ? 'advanced' : 'basic';
+    this.updateModeButtons();
+    this.renderSettings();
+  }
+
+  updateModeButtons() {
+    if (this.basicButton) {
+      this.basicButton.classList.toggle('btn-info', this.mode === 'basic');
+      this.basicButton.classList.toggle('btn-outline-info', this.mode !== 'basic');
+      this.basicButton.classList.toggle('active', this.mode === 'basic');
+    }
+    if (this.advancedButton) {
+      this.advancedButton.classList.toggle('btn-info', this.mode === 'advanced');
+      this.advancedButton.classList.toggle('btn-outline-info', this.mode !== 'advanced');
+      this.advancedButton.classList.toggle('active', this.mode === 'advanced');
+    }
+    const help = this.document.getElementById('serverAdminModeHelp');
+    if (help) help.textContent = this.mode === 'basic'
+      ? 'Modo básico: MySQL, AWS/S3 principal y FederationCloud base.'
+      : 'Modo avanzado: SMTP, credenciales AWS opcionales, mirror y todas las variables administrables.';
+  }
+
+  visibleSettings() {
+    if (this.mode === 'advanced') return this.settings;
+    const basic = new Set([
+      'DB_HOST', 'DB_PORT', 'DB_USER', 'DB_PASSWORD', 'DB_NAME',
+      'AWS_REGION', 'AWS_S3_BUCKET', 'AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY',
+      'ARCADECLOUD_PUBLIC_URL', 'ARCADECLOUD_FEDERATION_URL',
+      'ARCADECLOUD_FEDERATION_ENABLED', 'ARCADECLOUD_FEDERATION_SEED_URL'
+    ]);
+    return this.settings.filter((row) => basic.has(String(row.name || '')));
+  }
+
   renderSettings(preferredName = '', preferredGroup = '') {
     this.select.replaceChildren();
     this.tableBody.replaceChildren();
 
+    const visible = this.visibleSettings();
     const groups = new Map();
-    this.settings.forEach((row) => {
+    visible.forEach((row) => {
       const group = String(row.group || 'General');
       let optgroup = groups.get(group);
       if (!optgroup) {
@@ -160,17 +203,17 @@ class ServerAdminModule {
     });
 
     const count = this.document.getElementById('serverAdminVariableCount');
-    if (count) count.textContent = `${this.settings.length} variables disponibles`;
+    if (count) count.textContent = `${visible.length} variables · ${this.mode === 'basic' ? 'básica' : 'avanzada'}`;
 
     if (preferredGroup) {
-      const row = this.settings.find((item) => String(item.atomic_group || '') === String(preferredGroup));
+      const row = visible.find((item) => String(item.atomic_group || '') === String(preferredGroup));
       if (row) {
         this.select.value = String(row.name || '');
         this.openGroup(preferredGroup);
         return;
       }
     }
-    if (preferredName && this.settings.some((row) => String(row.name) === String(preferredName))) this.select.value = preferredName;
+    if (preferredName && visible.some((row) => String(row.name) === String(preferredName))) this.select.value = preferredName;
     this.syncSelectedSetting();
   }
 
@@ -203,7 +246,7 @@ class ServerAdminModule {
   }
 
   openGroup(groupKey) {
-    const rows = this.settings.filter((item) => String(item.atomic_group || '') === String(groupKey));
+    const rows = this.visibleSettings().filter((item) => String(item.atomic_group || '') === String(groupKey));
     if (!rows.length) return;
     this.activeGroup = String(groupKey);
     this.singleEditor.classList.add('d-none');
@@ -310,7 +353,8 @@ class ServerAdminModule {
 
     this.groupSaveButton.disabled = true;
     this.groupSaveButton.textContent = 'Guardando grupo…';
-    this.showMessage(`Validando ${group === 'database' ? 'base de datos' : 'AWS'}…`, 'info');
+    const label = group === 'database' ? 'base de datos' : (group === 'aws' ? 'AWS' : group);
+    this.showMessage(`Validando ${label}…`, 'info');
     try {
       const body = new URLSearchParams();
       body.set('action', 'set_group');

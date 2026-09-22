@@ -86,6 +86,11 @@ Instalación básica nueva:
 sudo bash drive/bin/install_arcadecloud.sh
 ```
 
+En **Amazon Linux 2023** el instalador prepara automáticamente PHP/PHP-FPM, Nginx, Composer, Git y las
+dependencias del sistema que falten. Si la EC2 todavía no tiene Git ni el repositorio, usa primero
+`bootstrap_arcadecloud.sh`; el flujo completo está documentado en
+`drive/docs/AUTOMATED_INSTALLER.md`.
+
 El setup web pide sólo **MySQL -> AWS/S3 -> primer superadmin**. El instalador genera identidad y
 nombre FederationCloud, detecta la IP pública cuando puede y deja lo opcional para **Servidor ->
 Configuración avanzada**. Después del setup se completa la infraestructura con:

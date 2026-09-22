@@ -1,18 +1,17 @@
 # Instalación inicial de ArcadeCloud Drive
 
-Antes de comenzar, usa `INSTALLATION_PREPARATION.md` para reunir dominio/DNS, MySQL, AWS/S3,
-SMTP y los datos del primer superadmin. Así el asistente puede completarse sin detenerse para buscar
-credenciales o crear infraestructura a mitad del proceso.
+Antes de comenzar, usa `INSTALLATION_PREPARATION.md` para reunir MySQL, AWS/S3 y los datos del
+primer superadmin. La instalación básica ya no exige SMTP, tokens AWS ni configuración de mirror.
 
 ## Objetivo
 
-Una instalación nueva puede necesitar configurar MySQL, AWS y SMTP **antes** de que exista un usuario normal en `Users`. Por eso `/setup/` usa un supervisor temporal separado del login del Drive.
+Una instalación nueva sólo necesita configurar MySQL y AWS/S3 **antes** de que exista un usuario normal en `Users`. Por eso `/setup/` usa un supervisor temporal separado del login del Drive.
 
 Este supervisor:
 
 - no pertenece a la tabla `Users`;
 - no puede abrir archivos, S3, chat, FederationCloud ni otras funciones del Drive;
-- sólo puede administrar las variables permitidas de Base de datos, AWS y SMTP;
+- durante el setup básico sólo administra Base de datos y las cuatro variables principales de AWS/S3;
 - sólo existe mientras la instalación no tenga `setup.lock`;
 - desaparece al registrar el primer `Users.system_role = 'superadmin'`.
 
@@ -72,14 +71,17 @@ sudo /usr/local/sbin/arcadecloud-drive-admin bootstrap-reset
 
 ## Flujo web
 
-El asistente muestra cuatro bloques:
+El asistente muestra tres bloques:
 
 ```text
 1. Base de datos
-2. AWS
-3. SMTP
-4. Primer superadmin
+2. AWS / S3
+3. Primer superadmin
 ```
+
+Después de entrar a ArcadeCloud, el superadmin dispone de **Configuración básica** y
+**Configuración avanzada**. SMTP, tokens AWS, credenciales AWS de control y mirrors pertenecen a la
+configuración avanzada.
 
 ### Base de datos
 
@@ -104,18 +106,10 @@ Variables principales:
 - `AWS_ACCESS_KEY_ID`
 - `AWS_SECRET_ACCESS_KEY`
 
-Variables opcionales:
-
-- `AWS_SESSION_TOKEN`
-- `AWS_CONTROL_ACCESS_KEY_ID`
-- `AWS_CONTROL_SECRET_ACCESS_KEY`
-- `AWS_CONTROL_SESSION_TOKEN`
+Durante el setup básico no se solicitan tokens ni credenciales de control. Esas opciones permanecen
+sin configurar hasta que el superadmin las habilite desde Configuración avanzada.
 
 Las claves ya configuradas nunca se devuelven al navegador. Un campo secreto vacío conserva el valor existente.
-
-### SMTP
-
-El mismo asistente puede preparar las variables `ARCADECLOUD_SMTP_*` que usa `SmtpConfig`. Los secretos tampoco se devuelven al navegador.
 
 ### Primer superadmin
 
@@ -129,6 +123,36 @@ Cuando MySQL ya funciona, el setup solicita:
 El backend crea un usuario `Activo`, con `system_role = 'superadmin'`, contraseña mediante `password_hash()` y campos de perfil mínimos compatibles con la tabla `Users` actual.
 
 Si ya existe un superadmin, no se crea otro: el setup simplemente completa el cierre del supervisor temporal.
+
+
+
+## Preparador automático del servidor
+
+Para una instalación nueva existe:
+
+```bash
+sudo bash drive/bin/install_arcadecloud.sh
+```
+
+La fase inicial:
+
+1. detecta el usuario PHP-FPM;
+2. instala dependencias Composer;
+3. instala el helper y abre el bootstrap temporal;
+4. genera una identidad FederationCloud si no existe;
+5. genera automáticamente un `node_name`;
+6. detecta la IPv4 pública cuando es posible;
+7. activa FederationCloud básico con esa IP y el seed predeterminado;
+8. deja al operador únicamente los tres pasos web.
+
+Después de completar los tres pasos:
+
+```bash
+sudo bash drive/bin/install_arcadecloud.sh --finalize
+```
+
+La finalización instala workers/timers y reconcilia HTTPS cuando Nginx/Certbot están disponibles. Un
+fallo de HTTPS FederationCloud no debe destruir una instalación Drive básica ya válida.
 
 ## Cierre irreversible del bootstrap
 

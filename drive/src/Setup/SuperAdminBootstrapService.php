@@ -40,13 +40,40 @@ final class SuperAdminBootstrapService
 
             $firstName = trim((string)($input['firstname'] ?? ''));
             $lastName = trim((string)($input['lastname'] ?? ''));
+            $curp = trim((string)($input['curp'] ?? ''));
+            $gender = trim((string)($input['gender'] ?? ''));
+            $birthdate = trim((string)($input['birthdate'] ?? ''));
             $email = strtolower(trim((string)($input['email'] ?? '')));
             $password = (string)($input['password'] ?? '');
+            $address = trim((string)($input['address'] ?? ''));
+            $neighborhood = trim((string)($input['neighborhood'] ?? ''));
+            $postalcode = trim((string)($input['postalcode'] ?? ''));
+            $state = trim((string)($input['state'] ?? ''));
+            $country = trim((string)($input['country'] ?? ''));
+            $homephone = trim((string)($input['homephone'] ?? ''));
+            $mobilephone = trim((string)($input['mobilephone'] ?? ''));
 
             if ($firstName === '' || strlen($firstName) > 255) throw new RuntimeException('Indica un nombre válido para el superadmin.');
             if ($lastName === '' || strlen($lastName) > 255) throw new RuntimeException('Indica un apellido válido para el superadmin.');
+            if ($curp === '' || strlen($curp) > 18) throw new RuntimeException('Indica un identificador válido de hasta 18 caracteres.');
+            if (!in_array($gender, ['Masculino', 'Femenino', 'Otro'], true)) throw new RuntimeException('Selecciona un sexo válido.');
+            $birth = DateTimeImmutable::createFromFormat('!Y-m-d', $birthdate);
+            if (!$birth || $birth->format('Y-m-d') !== $birthdate) throw new RuntimeException('Indica una fecha de nacimiento válida.');
             if (!filter_var($email, FILTER_VALIDATE_EMAIL) || strlen($email) > 255) throw new RuntimeException('Indica un correo válido para el superadmin.');
             if (strlen($password) < 10 || strlen($password) > 4096) throw new RuntimeException('La contraseña del superadmin debe tener al menos 10 caracteres.');
+            foreach ([
+                'dirección' => [$address, 255],
+                'colonia' => [$neighborhood, 255],
+                'código postal' => [$postalcode, 10],
+                'estado' => [$state, 255],
+                'país' => [$country, 255],
+                'teléfono de casa' => [$homephone, 15],
+                'teléfono móvil' => [$mobilephone, 15],
+            ] as $label => [$value, $max]) {
+                if ($value === '' || strlen($value) > $max) {
+                    throw new RuntimeException('Indica un ' . $label . ' válido.');
+                }
+            }
 
             $dup = $db->prepare('SELECT id FROM Users WHERE email = ? LIMIT 1');
             if (!$dup) throw new RuntimeException('No se pudo verificar el correo del superadmin.');
@@ -59,8 +86,6 @@ final class SuperAdminBootstrapService
             $hash = password_hash($password, PASSWORD_DEFAULT);
             if (!is_string($hash) || $hash === '') throw new RuntimeException('No se pudo proteger la contraseña del superadmin.');
 
-            $curp = '';
-            $gender = 'Otro';
             $role = 'Administración';
             $systemRole = 'superadmin';
             $chat = 1;
@@ -93,6 +118,30 @@ final class SuperAdminBootstrapService
                 }
                 $userId = (int)$stmt->insert_id;
                 $stmt->close();
+
+                $profile = $db->prepare(
+                    'UPDATE Users SET birthdate = ?, address = ?, neighborhood = ?, postalcode = ?, '
+                    . 'state = ?, country = ?, homephone = ?, mobilephone = ? WHERE id = ? LIMIT 1'
+                );
+                if (!$profile) throw new RuntimeException('No se pudo preparar el perfil del superadmin.');
+                $profile->bind_param(
+                    'ssssssssi',
+                    $birthdate,
+                    $address,
+                    $neighborhood,
+                    $postalcode,
+                    $state,
+                    $country,
+                    $homephone,
+                    $mobilephone,
+                    $userId
+                );
+                if (!$profile->execute() || $profile->affected_rows !== 1) {
+                    $profile->close();
+                    throw new RuntimeException('No se pudo completar el perfil del superadmin.');
+                }
+                $profile->close();
+
                 $db->commit();
             } catch (Throwable $e) {
                 $db->rollback();

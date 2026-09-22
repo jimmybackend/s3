@@ -28,6 +28,8 @@ final class SetupApiController
                     $helper = new PrivilegedServerHelper();
                     $response['settings'] = $config->state();
                     $response['database_ready'] = $config->databaseReady();
+                    $response['aws_ready'] = $config->awsReady();
+                    $response['basic_ready'] = $config->basicReady();
                     $response['helper'] = $helper->status();
                 }
                 $this->json($response);

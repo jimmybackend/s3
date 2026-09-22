@@ -257,6 +257,9 @@ validate_existing_drive_fpm() {
 configure_php_fpm() {
   if [[ -e "$FPM_MASTER" || -e "$FPM_SERVICE" ]]; then
     if ! is_managed_file "$FPM_MASTER" || ! is_managed_file "$FPM_SERVICE"; then
+      if [[ ! -r "$FPM_MASTER" ]] || ! systemctl cat php-fpm-drive.service >/dev/null 2>&1; then
+        fail "se encontró una configuración php-fpm-drive parcial/no administrada; no se sobrescribirá."
+      fi
       validate_existing_drive_fpm
       return
     fi

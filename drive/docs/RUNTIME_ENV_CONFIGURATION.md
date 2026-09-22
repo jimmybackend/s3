@@ -32,10 +32,10 @@ Los archivos `drive.env`, `smtp.env` y otros `EnvironmentFile` siguen siendo com
 para instalaciones existentes, pero no deben convertirse en fuentes duplicadas sin necesidad.
 
 La identidad privada FederationCloud permanece separada en
-`/etc/arcadecloud-drive/federation-node.json`. Actualmente las tres variables específicas de mirror
-(`REPLICA_ORIGIN_URL`, `REPLICA_ROLE`, `REPLICA_SCOPE`) todavía requieren
-`/etc/arcadecloud-drive/federation.env` hasta que entren a la allowlist de configuración
-administrada.
+`/etc/arcadecloud-drive/federation-node.json`. Las variables de mirror
+(`REPLICA_ORIGIN_URL`, `REPLICA_ROLE`, `REPLICA_SCOPE`) ya forman parte de la allowlist de
+`runtime-env.json`. `federation.env` queda disponible sólo para compatibilidad con instalaciones
+existentes.
 
 La tabla completa dato -> archivo está en `INSTALLATION_PREPARATION.md`.
 

@@ -5,14 +5,10 @@ class ArcadeCloudSetup {
     this.settings = [];
     this.groups = {
       database: ['DB_HOST', 'DB_PORT', 'DB_USER', 'DB_PASSWORD', 'DB_NAME'],
-      aws: ['AWS_REGION', 'AWS_S3_BUCKET', 'AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY', 'AWS_SESSION_TOKEN', 'AWS_CONTROL_ACCESS_KEY_ID', 'AWS_CONTROL_SECRET_ACCESS_KEY', 'AWS_CONTROL_SESSION_TOKEN'],
-      smtp: ['ARCADECLOUD_SMTP_HOST', 'ARCADECLOUD_SMTP_PORT', 'ARCADECLOUD_SMTP_SECURE', 'ARCADECLOUD_SMTP_USERNAME', 'ARCADECLOUD_SMTP_PASSWORD', 'ARCADECLOUD_SMTP_FROM_EMAIL', 'ARCADECLOUD_SMTP_FROM_NAME', 'ARCADECLOUD_SMTP_REPLY_TO', 'ARCADECLOUD_SMTP_BCC', 'ARCADECLOUD_SMTP_TIMEOUT', 'ARCADECLOUD_SMTP_DEBUG']
+      aws: ['AWS_REGION', 'AWS_S3_BUCKET', 'AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY']
     };
     this.defaults = {
-      DB_PORT: '3306', AWS_REGION: 'us-east-1',
-      ARCADECLOUD_SMTP_HOST: 'smtp.titan.email', ARCADECLOUD_SMTP_PORT: '587',
-      ARCADECLOUD_SMTP_SECURE: 'tls', ARCADECLOUD_SMTP_FROM_NAME: 'ArcadeCloud Drive',
-      ARCADECLOUD_SMTP_TIMEOUT: '20', ARCADECLOUD_SMTP_DEBUG: 'false'
+      DB_PORT: '3306', AWS_REGION: 'us-east-1'
     };
   }
 
@@ -60,7 +56,11 @@ class ArcadeCloudSetup {
       this.settings = Array.isArray(data.settings) ? data.settings : [];
       this.renderAllGroups();
       this.toggle('setupPanel', true);
-      this.message(`Supervisor temporal activo. MySQL: ${data.database_ready ? 'configurado' : 'pendiente'}.`, data.database_ready ? 'ok' : 'warn');
+      const ready = Boolean(data.basic_ready);
+      this.message(
+        `Instalación básica: MySQL ${data.database_ready ? '✓' : 'pendiente'} · AWS/S3 ${data.aws_ready ? '✓' : 'pendiente'}.`,
+        ready ? 'ok' : 'warn'
+      );
     } catch (error) {
       this.message(error.message || 'No se pudo consultar el setup.', 'error');
     }
@@ -136,7 +136,7 @@ class ArcadeCloudSetup {
       email: String(this.doc.getElementById('adminEmail').value || ''),
       password: String(this.doc.getElementById('adminPassword').value || '')
     };
-    this.message('Creando superadmin y cerrando el supervisor temporal…', 'warn');
+    this.message('Validando los tres pasos y creando el superadmin…', 'warn');
     try {
       const body = new URLSearchParams({action: 'create_superadmin', ...values});
       const data = await this.post(body, true);

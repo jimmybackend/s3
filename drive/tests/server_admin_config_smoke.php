@@ -16,7 +16,9 @@ function serverAdminOk(bool $condition, string $message): void
 
 $path = sys_get_temp_dir() . '/arcadecloud-runtime-env-' . bin2hex(random_bytes(6)) . '.json';
 $envNames = [
-    'ARCADECLOUD_PUBLIC_URL', 'ARCADECLOUD_FEDERATION_ENABLED', 'ARCADECLOUD_SMTP_HOST',
+    'ARCADECLOUD_PUBLIC_URL', 'ARCADECLOUD_FEDERATION_ENABLED',
+    'ARCADECLOUD_FEDERATION_REPLICA_ORIGIN_URL', 'ARCADECLOUD_FEDERATION_REPLICA_ROLE',
+    'ARCADECLOUD_FEDERATION_REPLICA_SCOPE', 'ARCADECLOUD_SMTP_HOST',
     'ARCADECLOUD_SMTP_PASSWORD', 'DB_HOST', 'DB_PORT', 'DB_USER', 'DB_PASSWORD', 'DB_NAME',
     'AWS_REGION', 'AWS_S3_BUCKET', 'AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY',
 ];
@@ -72,6 +74,18 @@ try {
     );
     serverAdminOk(ManagedRuntimeEnvironment::validateValue('DB_PORT', '3306') === '3306', 'acepta puerto MySQL válido');
     serverAdminOk(ManagedRuntimeEnvironment::validateValue('AWS_S3_BUCKET', 'arcadecloud-test-bucket') === 'arcadecloud-test-bucket', 'acepta nombre S3 válido');
+    serverAdminOk(
+        ManagedRuntimeEnvironment::validateValue('ARCADECLOUD_FEDERATION_REPLICA_ROLE', 'mirror') === 'mirror',
+        'acepta rol mirror administrado'
+    );
+    serverAdminOk(
+        ManagedRuntimeEnvironment::validateValue('ARCADECLOUD_FEDERATION_REPLICA_SCOPE', 'all_allowed_resources') === 'all_allowed_resources',
+        'acepta scope de réplica administrado'
+    );
+    serverAdminOk(
+        ManagedRuntimeEnvironment::validateValue('ARCADECLOUD_FEDERATION_REPLICA_ORIGIN_URL', 'https://origin.example.test/federationcloud/') === 'https://origin.example.test/federationcloud/',
+        'acepta origin HTTPS de mirror'
+    );
 
     $rejected = false;
     try { ManagedRuntimeEnvironment::validateValue('PATH', '/tmp'); } catch (RuntimeException) { $rejected = true; }

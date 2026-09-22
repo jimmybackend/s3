@@ -80,9 +80,22 @@ identidad criptográfica
 Los workers pueden operar sobre una MySQL compartida sin reclamar trabajos de otro Node ID desde
 PR #98. P2P/BitTorrent sigue fuera del alcance actual.
 
-Antes de instalar, prepara los datos con
-`drive/docs/INSTALLATION_PREPARATION.md`. Para instalación de nodos/mirrors continúa con
-`drive/docs/FEDERATION_NODE_REPLICA_INSTALL.md`. Consulta también
+Instalación básica nueva:
+
+```bash
+sudo bash drive/bin/install_arcadecloud.sh
+```
+
+El setup web pide sólo **MySQL -> AWS/S3 -> primer superadmin**. El instalador genera identidad y
+nombre FederationCloud, detecta la IP pública cuando puede y deja lo opcional para **Servidor ->
+Configuración avanzada**. Después del setup se completa la infraestructura con:
+
+```bash
+sudo bash drive/bin/install_arcadecloud.sh --finalize
+```
+
+Antes de instalar, consulta `drive/docs/INSTALLATION_PREPARATION.md`. Para nodos/mirrors avanzados
+continúa con `drive/docs/FEDERATION_NODE_REPLICA_INSTALL.md`. Consulta también
 `drive/docs/FEDERATED_CLOUD_STATUS.md` y `drive/docs/FEDERATIONCLOUD.md`.
 
 ## ArcadeLink

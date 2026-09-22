@@ -21,6 +21,7 @@ final class SuperAdminBootstrapService
 
     public function create(array $input): array
     {
+        $this->assertBasicConfigurationReady();
         $db = $this->connect();
         try {
             $this->assertUsersTable($db);
@@ -112,6 +113,24 @@ final class SuperAdminBootstrapService
             ];
         } finally {
             $db->close();
+        }
+    }
+
+    private function assertBasicConfigurationReady(): void
+    {
+        $required = [
+            'DB_HOST', 'DB_USER', 'DB_PASSWORD', 'DB_NAME',
+            'AWS_REGION', 'AWS_S3_BUCKET', 'AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY',
+        ];
+        $missing = [];
+        foreach ($required as $name) {
+            $value = getenv($name);
+            if ($value === false || trim((string)$value) === '') $missing[] = $name;
+        }
+        if ($missing !== []) {
+            throw new RuntimeException(
+                'Completa primero Base de datos y AWS/S3. Faltan: ' . implode(', ', $missing)
+            );
         }
     }
 

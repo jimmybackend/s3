@@ -20,7 +20,9 @@ final class ArcadeCloudDriveAdminHelper
 
     private const ENV_ALLOWLIST = [
         'ARCADECLOUD_PUBLIC_URL', 'ARCADECLOUD_FEDERATION_URL', 'ARCADECLOUD_FEDERATION_ENABLED',
-        'ARCADECLOUD_FEDERATION_SEED_URL', 'ARCADECLOUD_SMTP_HOST', 'ARCADECLOUD_SMTP_PORT',
+        'ARCADECLOUD_FEDERATION_SEED_URL', 'ARCADECLOUD_FEDERATION_REPLICA_ORIGIN_URL',
+        'ARCADECLOUD_FEDERATION_REPLICA_ROLE', 'ARCADECLOUD_FEDERATION_REPLICA_SCOPE',
+        'ARCADECLOUD_SMTP_HOST', 'ARCADECLOUD_SMTP_PORT',
         'ARCADECLOUD_SMTP_SECURE', 'ARCADECLOUD_SMTP_USERNAME', 'ARCADECLOUD_SMTP_PASSWORD',
         'ARCADECLOUD_SMTP_FROM_EMAIL', 'ARCADECLOUD_SMTP_FROM_NAME', 'ARCADECLOUD_SMTP_REPLY_TO',
         'ARCADECLOUD_SMTP_BCC', 'ARCADECLOUD_SMTP_TIMEOUT', 'ARCADECLOUD_SMTP_DEBUG',
@@ -53,12 +55,13 @@ final class ArcadeCloudDriveAdminHelper
         if ($action === 'status') {
             fwrite(STDOUT, json_encode([
                 'ok' => true,
-                'version' => 3,
+                'version' => 4,
                 'capabilities' => [
                     'env_set_many' => true,
                     'db_aws_settings' => true,
                     'web_setup' => true,
                     'bootstrap_complete' => true,
+                    'managed_replica_settings' => true,
                 ],
                 'identity_path' => $identityPath,
                 'identity_exists' => is_file($identityPath),

@@ -12,6 +12,7 @@ fi
 REPO_URL="https://github.com/jimmybackend/s3.git"
 BRANCH="main"
 APP_ROOT="/var/www/arcadecloud-drive"
+REPO_USER="${SUDO_USER:-root}"
 
 for arg in "$@"; do
   case "$arg" in
@@ -41,21 +42,32 @@ if [[ -e "$APP_ROOT" && ! -d "$APP_ROOT/.git" ]]; then
   exit 4
 fi
 
+if ! id "$REPO_USER" >/dev/null 2>&1; then
+  REPO_USER="root"
+fi
+
 if [[ ! -d "$APP_ROOT/.git" ]]; then
-  echo "==> Clonando ArcadeCloud ($BRANCH) en $APP_ROOT."
+  echo "==> Clonando ArcadeCloud ($BRANCH) en $APP_ROOT como $REPO_USER."
   install -d -m 0755 "$(dirname "$APP_ROOT")"
-  git clone --branch "$BRANCH" --single-branch "$REPO_URL" "$APP_ROOT"
+  if [[ "$REPO_USER" == "root" ]]; then
+    git clone --branch "$BRANCH" --single-branch "$REPO_URL" "$APP_ROOT"
+  else
+    install -d -o "$REPO_USER" -g "$(id -gn "$REPO_USER")" -m 0755 "$APP_ROOT"
+    rmdir "$APP_ROOT"
+    sudo -u "$REPO_USER" git clone --branch "$BRANCH" --single-branch "$REPO_URL" "$APP_ROOT"
+  fi
 else
   echo "==> ArcadeCloud ya existe; verificando checkout antes de actualizar."
+  REPO_USER="$(stat -c '%U' "$APP_ROOT")"
   cd "$APP_ROOT"
-  if [[ -n "$(git status --porcelain)" ]]; then
+  if [[ -n "$(sudo -u "$REPO_USER" git status --porcelain)" ]]; then
     echo "ERROR: el repositorio tiene cambios locales; no se actualizará automáticamente." >&2
-    git status --short >&2
+    sudo -u "$REPO_USER" git status --short >&2
     exit 5
   fi
-  git fetch origin "$BRANCH"
-  git checkout "$BRANCH"
-  git pull --ff-only origin "$BRANCH"
+  sudo -u "$REPO_USER" git fetch origin "$BRANCH"
+  sudo -u "$REPO_USER" git checkout "$BRANCH"
+  sudo -u "$REPO_USER" git pull --ff-only origin "$BRANCH"
 fi
 
 cd "$APP_ROOT"

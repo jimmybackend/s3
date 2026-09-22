@@ -20,6 +20,25 @@ Config-s3.php / db.php / servicios ArcadeCloud
 
 `runtime-env.json` es la capa administrada desde la aplicación. Cuando una clave existe allí, tiene precedencia para las siguientes peticiones.
 
+## Recomendación para instalaciones nuevas
+
+Para instalaciones nuevas, la configuración ordinaria de aplicación debe concentrarse en:
+
+```text
+/etc/arcadecloud-drive/runtime-env.json
+```
+
+Los archivos `drive.env`, `smtp.env` y otros `EnvironmentFile` siguen siendo compatibles y útiles
+para instalaciones existentes, pero no deben convertirse en fuentes duplicadas sin necesidad.
+
+La identidad privada FederationCloud permanece separada en
+`/etc/arcadecloud-drive/federation-node.json`. Actualmente las tres variables específicas de mirror
+(`REPLICA_ORIGIN_URL`, `REPLICA_ROLE`, `REPLICA_SCOPE`) todavía requieren
+`/etc/arcadecloud-drive/federation.env` hasta que entren a la allowlist de configuración
+administrada.
+
+La tabla completa dato -> archivo está en `INSTALLATION_PREPARATION.md`.
+
 ## Archivos privados del servidor
 
 Una instalación puede mantener configuración base fuera del repositorio, por ejemplo:

@@ -95,6 +95,9 @@ detect_php_user() {
   ')"
   [[ -n "$user" ]] && { printf '%s' "$user"; return 0; }
 
+  user="$(pool_user_from_conf /etc/php-fpm-drive.d/arcadecloud-drive.conf || true)"
+  [[ -n "$user" ]] && { printf '%s' "$user"; return 0; }
+
   user="$(pool_user_from_conf /etc/php-fpm.d/arcadecloud-drive.conf || true)"
   [[ -n "$user" ]] && { printf '%s' "$user"; return 0; }
 

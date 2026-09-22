@@ -104,6 +104,11 @@ jobs:
           grep -q "assertBasicConfigurationReady" drive/src/Setup/SuperAdminBootstrapService.php
           grep -q "install_arcadecloud.sh --finalize" drive/docs/INITIAL_SETUP.md
           grep -q "ARCADECLOUD_FEDERATION_ENABLED" drive/bin/install_arcadecloud.sh
+          grep -Fq '"ARCADECLOUD_PUBLIC_URL": f"http://{ip}"' drive/bin/install_arcadecloud.sh
+          grep -Fq '"ARCADECLOUD_FEDERATION_URL": ""' drive/bin/install_arcadecloud.sh
+          grep -Fq '"ARCADECLOUD_FEDERATION_ENABLED": "false"' drive/bin/install_arcadecloud.sh
+          grep -q "federation_runtime_enabled" drive/bin/install_arcadecloud.sh
+          ! grep -q "Endpoint público objetivo después de HTTPS" drive/bin/install_arcadecloud.sh
           grep -q "identity-create" drive/bin/install_arcadecloud.sh
           grep -q "install_arcadecloud_server.sh" drive/bin/install_arcadecloud.sh
           grep -q "dnf install -y" drive/bin/install_arcadecloud_server.sh

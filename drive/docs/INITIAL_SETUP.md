@@ -58,7 +58,13 @@ a `/setup/`. El supervisor `arcadecloud` nunca se autentica en el login normal p
 ninguna excepción al campo `type="email"`. Al cerrar correctamente el setup, se elimina
 `bootstrap-auth.json`, se crea `setup.lock` y el login normal vuelve a quedar disponible.
 
-El operador abre:
+El operador abre el endpoint disponible. En una EC2 nueva sin dominio puede ser:
+
+```text
+http://IP_PUBLICA/setup/?token=TOKEN_GENERADO
+```
+
+Si después configura un dominio con HTTPS, puede usar:
 
 ```text
 https://TU-DOMINIO/setup/?token=TOKEN_GENERADO
@@ -150,8 +156,9 @@ La fase inicial:
 7. genera una identidad FederationCloud si no existe;
 8. genera automáticamente un `node_name`;
 9. detecta la IPv4 pública cuando es posible;
-10. prepara FederationCloud básico con esa IP y el seed predeterminado;
-11. deja al operador únicamente los tres pasos web.
+10. guarda la IP pública como endpoint HTTP del Drive;
+11. genera y conserva la identidad FederationCloud, pero la deja desactivada hasta tener un endpoint HTTPS explícito;
+12. deja al operador únicamente los tres pasos web.
 
 En una EC2 que todavía no tenga Git puede usarse el bootstrap de raíz
 `bootstrap_arcadecloud.sh`. Consulta `AUTOMATED_INSTALLER.md` para el contrato completo,
@@ -163,8 +170,9 @@ Después de completar los tres pasos:
 sudo bash drive/bin/install_arcadecloud.sh --finalize
 ```
 
-La finalización instala workers/timers y reconcilia HTTPS cuando Nginx/Certbot están disponibles. Un
-fallo de HTTPS FederationCloud no debe destruir una instalación Drive básica ya válida.
+La finalización no exige dominio ni HTTPS. Si FederationCloud sigue desactivado, el Drive queda
+finalizado y utilizable por HTTP/IP sin instalar timers ni solicitar certificados. FederationCloud y
+HTTPS se activan después sólo cuando el superadmin los configure explícitamente.
 
 ## Cierre irreversible del bootstrap
 

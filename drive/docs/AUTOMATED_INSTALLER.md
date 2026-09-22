@@ -94,8 +94,8 @@ valida su SHA-384 antes de instalarlo en /usr/local/bin/composer. Las comprobaci
 corren bajo sudo establecen COMPOSER_ALLOW_SUPERUSER=1 de forma explícita para que el instalador no
 se detenga esperando una respuesta interactiva.
 
-Si Certbot no está disponible, la instalación básica del Drive no falla. HTTPS FederationCloud queda
-pendiente para la fase de finalización.
+Certbot puede estar disponible en el sistema, pero la instalación básica no depende de él. Sin dominio
+ni endpoint HTTPS explícito, ArcadeCloud no intenta emitir certificados durante la finalización.
 
 ## PHP-FPM
 
@@ -158,15 +158,16 @@ http://IP_PUBLICA/
 http://IP_PUBLICA/setup/
 ~~~
 
-FederationCloud conserva como objetivo:
+Ese estado ya es válido para usar ArcadeCloud Drive. La instalación básica guarda:
 
 ~~~text
-https://IP_PUBLICA
-https://IP_PUBLICA/federationcloud/
+ARCADECLOUD_PUBLIC_URL=http://IP_PUBLICA
+ARCADECLOUD_FEDERATION_ENABLED=false
 ~~~
 
-El instalador no desactiva verificación TLS, no crea certificados autofirmados para fingir éxito y no
-declara el endpoint FederationCloud listo hasta que el reconciliador HTTPS lo valide.
+La identidad FederationCloud se genera y conserva, pero FederationCloud no se activa hasta que el
+administrador configure explícitamente un endpoint HTTPS. No se crea un certificado autofirmado ni se
+fuerza al usuario a tener dominio.
 
 ## Setup básico
 
@@ -188,18 +189,12 @@ Después de cerrar correctamente /setup/:
 sudo bash drive/bin/install_arcadecloud.sh --finalize
 ~~~
 
-La finalización vuelve a ejecutar el preflight de forma idempotente y después instala/verifica workers,
-timers y reconciliación HTTPS.
+La finalización vuelve a ejecutar el preflight de forma idempotente y cierra la instalación básica.
+Si FederationCloud continúa desactivado, no instala sus timers ni intenta Certbot: el Drive permanece
+completamente utilizable por HTTP/IP.
 
-Si HTTPS no puede obtenerse o validarse:
-
-~~~text
-Drive: instalado
-Identidad FederationCloud: conservada
-Endpoint FederationCloud: pendiente HTTPS
-~~~
-
-Eso no destruye la instalación básica.
+Sólo cuando el administrador haya habilitado FederationCloud y configurado una URL HTTPS explícita,
+la finalización instala sus timers y ejecuta la reconciliación HTTPS.
 
 ## Idempotencia y seguridad
 

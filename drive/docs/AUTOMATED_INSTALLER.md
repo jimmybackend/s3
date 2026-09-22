@@ -87,10 +87,12 @@ pendiente para la fase de finalización.
 
 ## PHP-FPM
 
-El instalador crea un pool dedicado:
+El instalador crea un servicio y pool dedicados:
 
 ~~~text
-/etc/php-fpm.d/arcadecloud-drive.conf
+/etc/systemd/system/php-fpm-drive.service
+/etc/php-fpm-drive.conf
+/etc/php-fpm-drive.d/arcadecloud-drive.conf
 ~~~
 
 con escucha:
@@ -112,7 +114,9 @@ Nunca acepta root.
 Si 127.0.0.1:9075 ya pertenece a otro pool no administrado por ArcadeCloud, el instalador se detiene
 en lugar de sobrescribirlo.
 
-Después valida la configuración con PHP-FPM y activa php-fpm.service.
+Después valida la configuración con PHP-FPM y activa php-fpm-drive.service. Si ya existe un
+php-fpm-drive no administrado por el instalador, sólo lo reutiliza cuando su configuración es válida,
+usa un usuario no-root y escucha en 127.0.0.1:9075; de lo contrario se detiene sin sobrescribirlo.
 
 ## Nginx
 

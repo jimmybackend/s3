@@ -21,6 +21,7 @@ final class SuperAdminBootstrapService
 
     public function create(array $input): array
     {
+        $this->assertBasicConfigurationReady();
         $db = $this->connect();
         try {
             $this->assertUsersTable($db);

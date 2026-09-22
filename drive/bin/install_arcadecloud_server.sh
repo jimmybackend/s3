@@ -100,10 +100,32 @@ install_packages() {
 
   say "Familia PHP seleccionada automáticamente: $php_family"
 
-  local required=(
-    curl
-    git
-    nginx
+  local wanted=()
+  local pkg command_name package_name
+
+  # Para herramientas del sistema validamos primero el comando, no el nombre
+  # exacto del RPM. AL2023, por ejemplo, trae curl desde curl-minimal.
+  local command_packages=(
+    "curl:curl"
+    "git:git"
+    "nginx:nginx"
+    "python3:python3"
+    "tar:tar"
+    "unzip:unzip"
+  )
+
+  for pkg in "${command_packages[@]}"; do
+    command_name="${pkg%%:*}"
+    package_name="${pkg#*:}"
+    if command_exists "$command_name"; then
+      say "$command_name ya disponible: $(command -v "$command_name")"
+      continue
+    fi
+    package_available "$package_name" || fail "paquete requerido no disponible en los repositorios configurados: $package_name"
+    wanted+=("$package_name")
+  done
+
+  local php_required=(
     "$php_family"
     "$php_family-cli"
     "$php_family-fpm"
@@ -112,21 +134,16 @@ install_packages() {
     "$php_family-xml"
     "$php_family-gd"
     "$php_family-process"
-    python3
-    tar
-    unzip
   )
-  local optional=("$php_family-opcache")
-  local wanted=()
-  local pkg
 
-  for pkg in "${required[@]}"; do
+  for pkg in "${php_required[@]}"; do
     if ! rpm -q "$pkg" >/dev/null 2>&1; then
       package_available "$pkg" || fail "paquete requerido no disponible en los repositorios configurados: $pkg"
       wanted+=("$pkg")
     fi
   done
 
+  local optional=("$php_family-opcache")
   for pkg in "${optional[@]}"; do
     if ! rpm -q "$pkg" >/dev/null 2>&1 && package_available "$pkg"; then
       wanted+=("$pkg")

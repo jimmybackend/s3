@@ -19,6 +19,13 @@ class ServerAdminModule {
     this.settings = [];
     this.reauthRequired = true;
     this.reauthExpiresIn = 0;
+    this.mode = 'basic';
+    this.basicNames = new Set([
+      'DB_HOST', 'DB_PORT', 'DB_USER', 'DB_PASSWORD', 'DB_NAME',
+      'AWS_REGION', 'AWS_S3_BUCKET', 'AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY',
+      'ARCADECLOUD_PUBLIC_URL', 'ARCADECLOUD_FEDERATION_URL',
+      'ARCADECLOUD_FEDERATION_ENABLED', 'ARCADECLOUD_FEDERATION_SEED_URL'
+    ]);
   }
 
   init() {
@@ -34,6 +41,9 @@ class ServerAdminModule {
     this.groupEditor = this.document.getElementById('serverAdminGroupEditor');
     this.groupFields = this.document.getElementById('serverAdminGroupFields');
     this.groupTitle = this.document.getElementById('serverAdminGroupTitle');
+    this.basicButton = this.document.getElementById('btnServerAdminBasic');
+    this.advancedButton = this.document.getElementById('btnServerAdminAdvanced');
+    this.modeHelp = this.document.getElementById('serverAdminModeHelp');
     if (!this.button || !this.modal || !this.saveButton || !this.groupSaveButton || !this.select || !this.tableBody || !this.valueInput || !this.passwordInput || !this.singleEditor || !this.groupEditor || !this.groupFields || !this.groupTitle) return this;
 
     this.csrf = String(this.button.dataset.csrf || '');
@@ -43,7 +53,36 @@ class ServerAdminModule {
     this.select.addEventListener('change', () => this.syncSelectedSetting());
     this.saveButton.addEventListener('click', () => this.save());
     this.groupSaveButton.addEventListener('click', () => this.saveGroup());
+    if (this.basicButton) this.basicButton.addEventListener('click', () => this.setMode('basic'));
+    if (this.advancedButton) this.advancedButton.addEventListener('click', () => this.setMode('advanced'));
+    this.syncModeButtons();
     return this;
+  }
+
+
+  setMode(mode) {
+    this.mode = mode === 'advanced' ? 'advanced' : 'basic';
+    this.syncModeButtons();
+    this.renderSettings();
+  }
+
+  syncModeButtons() {
+    if (this.basicButton) {
+      this.basicButton.className = this.mode === 'basic' ? 'btn btn-info' : 'btn btn-outline-info';
+    }
+    if (this.advancedButton) {
+      this.advancedButton.className = this.mode === 'advanced' ? 'btn btn-info' : 'btn btn-outline-info';
+    }
+    if (this.modeHelp) {
+      this.modeHelp.textContent = this.mode === 'basic'
+        ? 'Básica: MySQL, AWS/S3 y FederationCloud esencial. Las demás funciones permanecen en No/no configuradas hasta que abras Avanzada.'
+        : 'Avanzada: SMTP, tokens AWS, credenciales de control, mirror/provider y todas las variables administrables.';
+    }
+  }
+
+  visibleSettings() {
+    if (this.mode === 'advanced') return this.settings;
+    return this.settings.filter((row) => this.basicNames.has(String(row.name || '')));
   }
 
   async load(preferredName = '', preferredGroup = '') {
@@ -107,7 +146,8 @@ class ServerAdminModule {
     this.tableBody.replaceChildren();
 
     const groups = new Map();
-    this.settings.forEach((row) => {
+    const visible = this.visibleSettings();
+    visible.forEach((row) => {
       const group = String(row.group || 'General');
       let optgroup = groups.get(group);
       if (!optgroup) {
@@ -160,22 +200,22 @@ class ServerAdminModule {
     });
 
     const count = this.document.getElementById('serverAdminVariableCount');
-    if (count) count.textContent = `${this.settings.length} variables disponibles`;
+    if (count) count.textContent = `${visible.length} variables · ${this.mode === 'basic' ? 'básica' : 'avanzada'}`;
 
     if (preferredGroup) {
-      const row = this.settings.find((item) => String(item.atomic_group || '') === String(preferredGroup));
+      const row = visible.find((item) => String(item.atomic_group || '') === String(preferredGroup));
       if (row) {
         this.select.value = String(row.name || '');
         this.openGroup(preferredGroup);
         return;
       }
     }
-    if (preferredName && this.settings.some((row) => String(row.name) === String(preferredName))) this.select.value = preferredName;
+    if (preferredName && visible.some((row) => String(row.name) === String(preferredName))) this.select.value = preferredName;
     this.syncSelectedSetting();
   }
 
   syncSelectedSetting() {
-    const row = this.settings.find((item) => String(item.name) === String(this.select.value));
+    const row = this.visibleSettings().find((item) => String(item.name) === String(this.select.value));
     if (!row) return;
     const atomicGroup = String(row.atomic_group || '');
     if (atomicGroup) {
@@ -203,7 +243,7 @@ class ServerAdminModule {
   }
 
   openGroup(groupKey) {
-    const rows = this.settings.filter((item) => String(item.atomic_group || '') === String(groupKey));
+    const rows = this.visibleSettings().filter((item) => String(item.atomic_group || '') === String(groupKey));
     if (!rows.length) return;
     this.activeGroup = String(groupKey);
     this.singleEditor.classList.add('d-none');

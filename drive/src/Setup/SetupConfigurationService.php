@@ -9,30 +9,19 @@ use RuntimeException;
 
 final class SetupConfigurationService
 {
+    /**
+     * El setup inicial sólo pide lo imprescindible para que el Drive funcione.
+     * SMTP, credenciales AWS temporales/control y FederationCloud avanzado se
+     * administran después desde la plataforma.
+     */
     private const GROUPS = [
         'database' => ['DB_HOST', 'DB_PORT', 'DB_USER', 'DB_PASSWORD', 'DB_NAME'],
-        'aws' => [
-            'AWS_REGION', 'AWS_S3_BUCKET', 'AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY',
-            'AWS_SESSION_TOKEN', 'AWS_CONTROL_ACCESS_KEY_ID', 'AWS_CONTROL_SECRET_ACCESS_KEY',
-            'AWS_CONTROL_SESSION_TOKEN',
-        ],
-        'smtp' => [
-            'ARCADECLOUD_SMTP_HOST', 'ARCADECLOUD_SMTP_PORT', 'ARCADECLOUD_SMTP_SECURE',
-            'ARCADECLOUD_SMTP_USERNAME', 'ARCADECLOUD_SMTP_PASSWORD', 'ARCADECLOUD_SMTP_FROM_EMAIL',
-            'ARCADECLOUD_SMTP_FROM_NAME', 'ARCADECLOUD_SMTP_REPLY_TO', 'ARCADECLOUD_SMTP_BCC',
-            'ARCADECLOUD_SMTP_TIMEOUT', 'ARCADECLOUD_SMTP_DEBUG',
-        ],
+        'aws' => ['AWS_REGION', 'AWS_S3_BUCKET', 'AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY'],
     ];
 
     private const REQUIRED = [
         'database' => ['DB_HOST', 'DB_USER', 'DB_PASSWORD', 'DB_NAME'],
         'aws' => ['AWS_REGION', 'AWS_S3_BUCKET', 'AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY'],
-        'smtp' => [
-            'ARCADECLOUD_SMTP_HOST', 'ARCADECLOUD_SMTP_PORT', 'ARCADECLOUD_SMTP_SECURE',
-            'ARCADECLOUD_SMTP_USERNAME', 'ARCADECLOUD_SMTP_PASSWORD', 'ARCADECLOUD_SMTP_FROM_EMAIL',
-            'ARCADECLOUD_SMTP_FROM_NAME', 'ARCADECLOUD_SMTP_REPLY_TO', 'ARCADECLOUD_SMTP_TIMEOUT',
-            'ARCADECLOUD_SMTP_DEBUG',
-        ],
     ];
 
     private PrivilegedServerHelper $helper;
@@ -79,7 +68,6 @@ final class SetupConfigurationService
             $configured = (bool)($stateByName[$name]['configured'] ?? false);
             $required = in_array($name, self::REQUIRED[$group], true);
 
-            // Vacío conserva el valor existente. Un opcional vacío no crea una clave nueva.
             if ($raw === '' && ($configured || !$required)) continue;
             $validated[$name] = ManagedRuntimeEnvironment::validateValue($name, $raw);
         }
@@ -91,26 +79,6 @@ final class SetupConfigurationService
         foreach (self::REQUIRED[$group] as $name) {
             if (!$this->effectiveConfigured($name, $validated, $stateByName)) {
                 throw new RuntimeException($name . ' es obligatorio para continuar con el setup.');
-            }
-        }
-
-        if ($group === 'aws') {
-            $controlKey = $this->effectiveConfigured('AWS_CONTROL_ACCESS_KEY_ID', $validated, $stateByName);
-            $controlSecret = $this->effectiveConfigured('AWS_CONTROL_SECRET_ACCESS_KEY', $validated, $stateByName);
-            if ($controlKey !== $controlSecret) {
-                throw new RuntimeException('AWS_CONTROL_ACCESS_KEY_ID y AWS_CONTROL_SECRET_ACCESS_KEY deben configurarse juntos.');
-            }
-        }
-
-        if ($group === 'smtp') {
-            $from = $this->effectiveValue('ARCADECLOUD_SMTP_FROM_EMAIL', $validated);
-            $replyTo = $this->effectiveValue('ARCADECLOUD_SMTP_REPLY_TO', $validated);
-            $bcc = $this->effectiveValue('ARCADECLOUD_SMTP_BCC', $validated);
-            if (!filter_var($from, FILTER_VALIDATE_EMAIL) || !filter_var($replyTo, FILTER_VALIDATE_EMAIL)) {
-                throw new RuntimeException('FROM_EMAIL y REPLY_TO deben contener correos válidos.');
-            }
-            if ($bcc !== '' && !filter_var($bcc, FILTER_VALIDATE_EMAIL)) {
-                throw new RuntimeException('SMTP_BCC debe contener un correo válido.');
             }
         }
 
@@ -132,13 +100,28 @@ final class SetupConfigurationService
             'updated' => array_keys($validated),
             'message' => $group === 'database'
                 ? 'Conexión MySQL verificada y guardada.'
-                : strtoupper($group) . ' guardado en la configuración administrada.',
+                : 'AWS/S3 básico guardado en la configuración administrada.',
         ];
     }
 
     public function databaseReady(): bool
     {
-        foreach (self::REQUIRED['database'] as $name) {
+        return $this->requiredReady('database');
+    }
+
+    public function awsReady(): bool
+    {
+        return $this->requiredReady('aws');
+    }
+
+    public function basicReady(): bool
+    {
+        return $this->databaseReady() && $this->awsReady();
+    }
+
+    private function requiredReady(string $group): bool
+    {
+        foreach (self::REQUIRED[$group] as $name) {
             $value = getenv($name);
             if ($value === false || trim((string)$value) === '') return false;
         }

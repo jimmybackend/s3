@@ -102,7 +102,11 @@ jobs:
           grep -q "adminBirthdate" drive/setup/index.php
           grep -q "adminMobilephone" drive/setup/index.php
           grep -q "'birthdate' => \$this->post('birthdate')" drive/src/Setup/SetupApiController.php
-          grep -q "UPDATE Users SET birthdate" drive/src/Setup/SuperAdminBootstrapService.php
+          grep -q "\\DateTimeImmutable::createFromFormat" drive/src/Setup/SuperAdminBootstrapService.php
+          grep -q "countUsers" drive/src/Setup/SuperAdminBootstrapService.php
+          grep -q "INSERT INTO Users" drive/src/Setup/SuperAdminBootstrapService.php
+          grep -q "birthdate, email, password" drive/src/Setup/SuperAdminBootstrapService.php
+          ! grep -q "UPDATE Users SET birthdate" drive/src/Setup/SuperAdminBootstrapService.php
           grep -q "supervisor temporal se conserva" drive/src/Setup/SuperAdminBootstrapService.php
           grep -q "X-ArcadeCloud-Setup-CSRF" drive/js/setup.js
           ! grep -q 'data-save-group="smtp"' drive/setup/index.php

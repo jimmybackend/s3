@@ -3,7 +3,8 @@
 Estado: **21 de septiembre de 2026**.
 
 Este documento existe para que el administrador tenga **toda la información preparada antes de
-ejecutar el futuro instalador de ArcadeCloud Drive**.
+ejecutar el instalador de ArcadeCloud Drive**. El preflight automático para Amazon Linux 2023 ya está
+implementado y se documenta en `AUTOMATED_INSTALLER.md`.
 
 La idea es sencilla: el instalador debe avanzar por etapas y, cuando solicite un dato, el operador ya
 debe tenerlo listo para pegar. No debe obligar a detener la instalación para ir a crear un bucket,
@@ -107,7 +108,7 @@ No son datos para pegar, pero sí condiciones necesarias:
 
 ## Qué debe hacer el instalador
 
-Debe comprobar automáticamente:
+Debe comprobar automáticamente —e instalar cuando falte en Amazon Linux 2023—:
 
 ```text
 Linux compatible
@@ -118,8 +119,10 @@ Composer
 Git
 curl
 Python 3
-Certbot cuando se vaya a usar HTTPS administrado
+Certbot cuando esté disponible para HTTPS administrado
 ```
+
+La ausencia de Certbot no debe destruir la instalación básica: HTTPS FederationCloud queda pendiente.
 
 También debe detectar el usuario del pool PHP-FPM.
 

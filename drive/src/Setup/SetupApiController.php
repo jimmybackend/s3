@@ -28,6 +28,8 @@ final class SetupApiController
                     $helper = new PrivilegedServerHelper();
                     $response['settings'] = $config->state();
                     $response['database_ready'] = $config->databaseReady();
+                    $response['aws_ready'] = $config->awsReady();
+                    $response['basic_ready'] = $config->basicReady();
                     $response['helper'] = $helper->status();
                 }
                 $this->json($response);
@@ -68,6 +70,12 @@ final class SetupApiController
             }
 
             if ($action === 'create_superadmin') {
+                $config = new SetupConfigurationService();
+                if (!$config->basicReady()) {
+                    throw new RuntimeException(
+                        'Completa y guarda primero la Base de datos y AWS/S3 básico antes de crear el superadmin.'
+                    );
+                }
                 $result = (new SuperAdminBootstrapService())->create([
                     'firstname' => $this->post('firstname'),
                     'lastname' => $this->post('lastname'),

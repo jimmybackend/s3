@@ -141,62 +141,23 @@ PHP-FPM detectado:
 
 ---
 
-# 4. ETAPA 1 — Dominio o IP pública
+# 4. ETAPA 1 — Endpoint público automático
 
-## El instalador debe preguntar
+La instalación básica no pregunta dominio ni IP. El instalador intenta detectar automáticamente una
+IPv4 pública global, primero mediante EC2 IMDSv2 y luego mediante una consulta externa de respaldo.
 
-```text
-¿Cómo será accesible este ArcadeCloud?
-
-1. Dominio
-2. IP pública
-```
-
-## Si se usará dominio, tener preparado
+Cuando la obtiene, deriva:
 
 ```text
-Dominio completo:
-________________________________________
+ARCADECLOUD_PUBLIC_URL=https://IP_PUBLICA
+ARCADECLOUD_FEDERATION_URL=https://IP_PUBLICA/federationcloud/
 ```
 
-Ejemplo:
+Si no puede detectar una IP pública válida, **no bloquea el Drive**: deja FederationCloud pendiente de
+endpoint para resolverlo posteriormente desde la plataforma.
 
-```text
-drive.example.com
-```
-
-Antes de solicitar el certificado, el DNS debe apuntar al servidor correcto.
-
-Preparar:
-
-```text
-Tipo de registro DNS: A / AAAA / CNAME según infraestructura
-Hostname:
-________________________________________
-
-Destino actual:
-________________________________________
-```
-
-El instalador debe verificar resolución DNS antes de ejecutar Certbot.
-
-## Si se usará IP pública
-
-No debe pedir al operador una IP si puede detectarla de forma confiable. En EC2, el reconciliador
-actual puede detectar IPv4 pública mediante IMDSv2.
-
-Para certificados IP, el código actual requiere Certbot compatible con certificados IP short-lived.
-
-## URLs que se derivan
-
-Con dominio:
-
-```text
-ARCADECLOUD_PUBLIC_URL=https://drive.example.com
-ARCADECLOUD_FEDERATION_URL=https://drive.example.com/federationcloud/
-```
-
-El usuario no debería tener que escribir ambas si el instalador puede construirlas desde el dominio.
+Un dominio propio pertenece a Configuración avanzada. Cambiar posteriormente de IP a dominio no
+regenera `node_id`, Ed25519 ni `payload_key`.
 
 ---
 
@@ -535,33 +496,14 @@ explícito de **restauración de identidad**.
 
 ## Seed FederationCloud
 
-El instalador debe preguntar:
+La instalación básica usa automáticamente el primer seed configurado en:
 
 ```text
-¿Usar el seed predeterminado de ArcadeCloud?
-
-1. Sí
-2. No, indicar otro seed
+drive/config/federation-seeds.json
 ```
 
-Si se indica otro:
-
-```text
-ARCADECLOUD_FEDERATION_SEED_URL:
-________________________________________
-```
-
-La URL debe incluir:
-
-```text
-/federationcloud/
-```
-
-Ejemplo correcto:
-
-```text
-https://drive.example.com/federationcloud/
-```
+No pregunta por un seed. Un seed personalizado se configura posteriormente desde Configuración
+avanzada y debe terminar en `/federationcloud/`.
 
 ---
 
@@ -695,7 +637,6 @@ Antes de declarar la instalación terminada, el instalador debe ejecutar un resu
 [OK] MySQL connection
 [OK] ArcadeCloud schema
 [OK] S3 configuration
-[OK] SMTP configuration
 [OK] superadmin
 [OK] HTTPS
 [OK] Federation identity        (si se habilitó)
@@ -723,12 +664,6 @@ Acceso sudo/root disponible:  Sí / No
 Dominio o IP pública:
 ________________________________________
 
-DOMINIO / DNS
--------------
-Hostname:
-________________________________________
-DNS ya apunta al servidor:  Sí / No
-
 MYSQL
 -----
 DB_HOST:
@@ -755,40 +690,6 @@ ________________________________________
 AWS_SECRET_ACCESS_KEY:
 ________________________________________
 
-AWS_SESSION_TOKEN (opcional):
-________________________________________
-AWS_CONTROL_ACCESS_KEY_ID (opcional):
-________________________________________
-AWS_CONTROL_SECRET_ACCESS_KEY (opcional):
-________________________________________
-AWS_CONTROL_SESSION_TOKEN (opcional):
-________________________________________
-
-SMTP
-----
-SMTP_HOST:
-________________________________________
-SMTP_PORT:
-________________________________________
-SMTP_SECURE:
-________________________________________
-SMTP_USERNAME:
-________________________________________
-SMTP_PASSWORD:
-________________________________________
-SMTP_FROM_EMAIL:
-________________________________________
-SMTP_FROM_NAME:
-________________________________________
-SMTP_REPLY_TO:
-________________________________________
-SMTP_BCC (opcional):
-________________________________________
-SMTP_TIMEOUT:
-________________________________________
-SMTP_DEBUG:
-________________________________________
-
 PRIMER SUPERADMIN
 -----------------
 Nombre:
@@ -799,25 +700,13 @@ Correo:
 ________________________________________
 Contraseña preparada: Sí / No
 
-FEDERATIONCLOUD
+FEDERATIONCLOUD BÁSICO
+----------------------
+No requiere datos: IP, node_name, identidad y seed se resuelven automáticamente cuando es posible.
+
+DATOS AVANZADOS
 ---------------
-Habilitar FederationCloud: Sí / No
-node_name:
-________________________________________
-Seed personalizado (si aplica):
-________________________________________
-
-TIPO DE NODO
-------------
-Normal / origen / mirror:
-________________________________________
-
-SI ES MIRROR
-------------
-Federation URL del origen:
-________________________________________
-Comparte MySQL: Sí / No
-Comparte S3: Sí / No
+No son necesarios para instalar. SMTP, tokens AWS, dominio propio y mirror se configuran después.
 ```
 
 **No guardes una hoja rellenada con secretos dentro del repositorio, correo no cifrado o un chat

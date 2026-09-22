@@ -133,9 +133,13 @@ El backend crea un usuario `Activo`, con `role = 'Administración'` y
 automáticamente y `profilepicture` queda NULL hasta que el usuario suba una imagen desde ArcadeCloud.
 La contraseña se guarda mediante `password_hash()`.
 
-Todos los datos de perfil se escriben dentro de la misma transacción. Después vuelve a consultar MySQL
-para comprobar que ese mismo usuario quedó persistido. Sólo entonces elimina la credencial temporal
-`arcadecloud`.
+En una instalación nueva, si la tabla `Users` está vacía, todos los datos del primer superadmin se
+insertan en una única operación dentro de la misma transacción. No se crea una fila parcial para
+actualizarla después. Si `Users` ya contiene registros pero no existe un superadmin, el setup se
+detiene y no eleva privilegios automáticamente sobre una base existente.
+
+Después del INSERT vuelve a consultar MySQL para comprobar que ese mismo usuario quedó persistido.
+Sólo entonces elimina la credencial temporal `arcadecloud`.
 
 `arcadecloud` nunca se inserta en la tabla `Users`: sólo existe en el archivo temporal de bootstrap.
 

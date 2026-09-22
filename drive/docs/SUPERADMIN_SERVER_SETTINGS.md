@@ -61,6 +61,18 @@ La arquitectura de fuentes y precedencia se documenta en:
 
 - [`RUNTIME_ENV_CONFIGURATION.md`](RUNTIME_ENV_CONFIGURATION.md)
 
+## Modos del panel Servidor
+
+El modal abre en **Configuración básica**.
+
+Básica muestra:
+
+- Base de datos;
+- AWS/S3 principal;
+- FederationCloud base.
+
+**Configuración avanzada** muestra además SMTP, AWS temporal/control y mirror.
+
 ## Variables visibles en Servidor
 
 ### FederationCloud
@@ -69,6 +81,12 @@ La arquitectura de fuentes y precedencia se documenta en:
 - `ARCADECLOUD_FEDERATION_URL`
 - `ARCADECLOUD_FEDERATION_ENABLED`
 - `ARCADECLOUD_FEDERATION_SEED_URL`
+
+En modo avanzado también:
+
+- `ARCADECLOUD_FEDERATION_REPLICA_ORIGIN_URL`
+- `ARCADECLOUD_FEDERATION_REPLICA_ROLE`
+- `ARCADECLOUD_FEDERATION_REPLICA_SCOPE`
 
 ### SMTP
 
@@ -155,7 +173,9 @@ Los orígenes significan:
 - `entorno PHP`: recibida de systemd/PHP-FPM u otra configuración base;
 - `sin configurar`: no existe una variable explícita en esas dos fuentes.
 
-Para Base de datos y AWS, cualquier fila del grupo abre el formulario completo del bloque.
+Para Base de datos y AWS, cualquier fila del grupo abre el formulario completo del bloque. En modo
+básico, el bloque AWS oculta token de sesión y credenciales de control; al cambiar a avanzado aparecen
+sin alterar los valores existentes.
 
 ## Secretos
 

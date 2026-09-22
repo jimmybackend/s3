@@ -1001,7 +1001,7 @@
     },
     {
       "path": "drive/setup/index.php",
-      "size": 4592,
+      "size": 5655,
       "active": true,
       "references": [
         "drive/bloque_archivos.php",
@@ -2144,7 +2144,7 @@
     },
     {
       "path": "drive/src/Setup/SetupApiController.php",
-      "size": 4280,
+      "size": 4870,
       "active": false,
       "references": [
         "drive/setup/api.php"
@@ -2169,7 +2169,7 @@
     },
     {
       "path": "drive/src/Setup/SuperAdminBootstrapService.php",
-      "size": 8651,
+      "size": 11365,
       "active": false,
       "references": [
         "drive/setup/api.php"

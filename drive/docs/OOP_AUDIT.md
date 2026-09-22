@@ -229,7 +229,7 @@
 | `drive/src/Http/Controller/ActivityCostController.php` | 81 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/ArcadeCloudUpdateController.php` | 48 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/AudioRecordingUploadController.php` | 108 | class/module | 1 | — | — | — | — |
-| `drive/src/Http/Controller/AuthController.php` | 113 | class/module | 1 | — | — | — | — |
+| `drive/src/Http/Controller/AuthController.php` | 114 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/AwsCostController.php` | 61 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/AwsFileController.php` | 338 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/BackgroundTaskCompatibilityController.php` | 245 | class/module | 1 | — | ⚠️ | — | — |
@@ -296,7 +296,7 @@
 | `drive/src/Setup/SetupApiController.php` | 110 | class/module | 1 | — | — | — | — |
 | `drive/src/Setup/SetupConfigurationService.php` | 167 | class/module | 1 | — | — | — | — |
 | `drive/src/Setup/SetupEntryGuard.php` | 22 | class/module | 1 | — | — | — | — |
-| `drive/src/Setup/SuperAdminBootstrapService.php` | 193 | class/module | 1 | — | ⚠️ | — | — |
+| `drive/src/Setup/SuperAdminBootstrapService.php` | 221 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Sharing/ShareAccessService.php` | 105 | class/module | 1 | — | — | — | — |
 | `drive/src/Sharing/ShareException.php` | 22 | class/module | 1 | — | — | — | — |
 | `drive/src/Sharing/ShareFileRepository.php` | 72 | class/module | 1 | — | ⚠️ | — | — |

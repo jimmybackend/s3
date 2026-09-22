@@ -3080,7 +3080,7 @@
     },
     {
       "path": "drive/src/Http/Controller/AuthController.php",
-      "lines": 113,
+      "lines": 114,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -4101,7 +4101,7 @@
     },
     {
       "path": "drive/src/Setup/SuperAdminBootstrapService.php",
-      "lines": 193,
+      "lines": 221,
       "kind": "class/module",
       "classes": 1,
       "functions": [],

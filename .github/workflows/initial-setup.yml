@@ -14,9 +14,12 @@ on:
       - 'drive/bin/arcadecloud-drive-admin-helper.php'
       - 'drive/bin/install_arcadecloud_admin_helper.sh'
       - 'drive/bin/install_arcadecloud.sh'
+      - 'drive/bin/install_arcadecloud_server.sh'
+      - 'bootstrap_arcadecloud.sh'
       - 'drive/tests/setup_bootstrap_smoke.php'
       - 'drive/docs/INITIAL_SETUP.md'
       - 'drive/docs/INSTALLATION_PREPARATION.md'
+      - 'drive/docs/AUTOMATED_INSTALLER.md'
       - '.github/workflows/initial-setup.yml'
   pull_request:
     paths:
@@ -61,7 +64,9 @@ jobs:
           set -euo pipefail
           node --check drive/js/setup.js
           bash -n drive/bin/install_arcadecloud_admin_helper.sh
+          bash -n drive/bin/install_arcadecloud_server.sh
           bash -n drive/bin/install_arcadecloud.sh
+          bash -n bootstrap_arcadecloud.sh
 
       - name: Bootstrap authentication smoke test
         run: php drive/tests/setup_bootstrap_smoke.php
@@ -85,6 +90,13 @@ jobs:
           grep -q "install_arcadecloud.sh --finalize" drive/docs/INITIAL_SETUP.md
           grep -q "ARCADECLOUD_FEDERATION_ENABLED" drive/bin/install_arcadecloud.sh
           grep -q "identity-create" drive/bin/install_arcadecloud.sh
+          grep -q "install_arcadecloud_server.sh" drive/bin/install_arcadecloud.sh
+          grep -q "dnf install -y" drive/bin/install_arcadecloud_server.sh
+          grep -q "127.0.0.1:9075" drive/bin/install_arcadecloud_server.sh
+          grep -q "nginx -t" drive/bin/install_arcadecloud_server.sh
+          grep -q "hash_file('sha384'" drive/bin/install_arcadecloud_server.sh
+          grep -q "git pull --ff-only" bootstrap_arcadecloud.sh
+          ! grep -Eq 'curl[^|]*\|[[:space:]]*(bash|sh)' drive/bin/install_arcadecloud_server.sh bootstrap_arcadecloud.sh
           grep -q "ARCADECLOUD_SMTP_BCC" drive/src/Admin/ManagedRuntimeEnvironment.php
           ! grep -q "app_bootstrap.php" drive/setup/api.php
           ! grep -q "require.*db.php" drive/setup/api.php

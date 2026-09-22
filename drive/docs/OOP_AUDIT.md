@@ -127,7 +127,7 @@
 | `drive/server-settings.php` | 11 | thin endpoint | 0 | — | — | — | — |
 | `drive/set_file_security.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/setup/api.php` | 14 | thin endpoint | 0 | — | — | — | — |
-| `drive/setup/index.php` | 80 | view/entrypoint | 0 | — | — | — | — |
+| `drive/setup/index.php` | 90 | view/entrypoint | 0 | — | — | — | — |
 | `drive/src/Activity/ActivityCostRecorder.php` | 155 | class/module | 1 | — | — | — | — |
 | `drive/src/Activity/ActivityCostRepository.php` | 173 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Activity/ActivityCostService.php` | 148 | class/module | 1 | — | — | — | — |
@@ -293,10 +293,10 @@
 | `drive/src/Security/UserProfileService.php` | 183 | class/module | 1 | — | — | — | — |
 | `drive/src/Security/UserProfileValidator.php` | 96 | class/module | 1 | — | — | — | — |
 | `drive/src/Setup/BootstrapSetupAuth.php` | 181 | class/module | 1 | ⚠️ | — | — | — |
-| `drive/src/Setup/SetupApiController.php` | 110 | class/module | 1 | — | — | — | — |
+| `drive/src/Setup/SetupApiController.php` | 120 | class/module | 1 | — | — | — | — |
 | `drive/src/Setup/SetupConfigurationService.php` | 167 | class/module | 1 | — | — | — | — |
 | `drive/src/Setup/SetupEntryGuard.php` | 22 | class/module | 1 | — | — | — | — |
-| `drive/src/Setup/SuperAdminBootstrapService.php` | 221 | class/module | 1 | — | ⚠️ | — | — |
+| `drive/src/Setup/SuperAdminBootstrapService.php` | 270 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Sharing/ShareAccessService.php` | 105 | class/module | 1 | — | — | — | — |
 | `drive/src/Sharing/ShareException.php` | 22 | class/module | 1 | — | — | — | — |
 | `drive/src/Sharing/ShareFileRepository.php` | 72 | class/module | 1 | — | ⚠️ | — | — |
@@ -435,7 +435,7 @@
 | `drive/js/profile.js` | 289 | class/module | UserProfileModule | — | — | — |
 | `drive/js/recargarPagina.js` | 27 | class/module | RecargarPaginaModule | — | — | — |
 | `drive/js/server-admin.js` | 405 | class/module | ServerAdminModule | — | — | — |
-| `drive/js/setup.js` | 182 | class/module | ArcadeCloudSetup | — | — | — |
+| `drive/js/setup.js` | 192 | class/module | ArcadeCloudSetup | — | — | — |
 | `drive/js/sincronizar.js` | 262 | class/module | SincronizarModule | — | triggerSyncFolderS3, triggerSyncS3 | window functions: triggerSyncFolderS3, triggerSyncS3 |
 | `drive/js/soportesMediaTypes.js` | 397 | class/module | SoportesMediaTypesModule | — | — | — |
 | `drive/js/storage-usage.js` | 51 | class/module | StorageUsageModule | — | — | — |

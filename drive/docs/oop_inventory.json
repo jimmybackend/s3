@@ -1544,7 +1544,7 @@
     },
     {
       "path": "drive/setup/index.php",
-      "lines": 80,
+      "lines": 90,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -4053,7 +4053,7 @@
     },
     {
       "path": "drive/src/Setup/SetupApiController.php",
-      "lines": 110,
+      "lines": 120,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -4101,7 +4101,7 @@
     },
     {
       "path": "drive/src/Setup/SuperAdminBootstrapService.php",
-      "lines": 221,
+      "lines": 270,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -6264,7 +6264,7 @@
     },
     {
       "path": "drive/js/setup.js",
-      "lines": 182,
+      "lines": 192,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudSetup"

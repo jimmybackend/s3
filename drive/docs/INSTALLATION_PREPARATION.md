@@ -88,9 +88,9 @@ El asistente web `/setup/` queda reducido a:
 Base de datos -> AWS/S3 -> primer superadmin
 ```
 
-La configuración básica posterior mantiene FederationCloud esencial activo cuando existe una IP
-pública utilizable. Todo lo opcional permanece en No/no configurado hasta que el superadmin abra
-Configuración avanzada.
+La configuración básica deja el Drive utilizable por HTTP/IP aunque no exista dominio. FederationCloud
+conserva su identidad, pero permanece desactivado hasta que el superadmin configure explícitamente un
+endpoint HTTPS. Todo lo opcional permanece en No/no configurado hasta entonces.
 
 ---
 
@@ -122,7 +122,8 @@ Python 3
 Certbot cuando esté disponible para HTTPS administrado
 ```
 
-La ausencia de Certbot no debe destruir la instalación básica: HTTPS FederationCloud queda pendiente.
+La ausencia de Certbot no debe afectar la instalación básica. Certbot sólo es necesario cuando el
+administrador decide habilitar un endpoint HTTPS.
 
 También debe detectar el usuario del pool PHP-FPM.
 
@@ -152,12 +153,14 @@ IPv4 pública global, primero mediante EC2 IMDSv2 y luego mediante una consulta 
 Cuando la obtiene, deriva:
 
 ```text
-ARCADECLOUD_PUBLIC_URL=https://IP_PUBLICA
-ARCADECLOUD_FEDERATION_URL=https://IP_PUBLICA/federationcloud/
+ARCADECLOUD_PUBLIC_URL=http://IP_PUBLICA
+ARCADECLOUD_FEDERATION_URL=
+ARCADECLOUD_FEDERATION_ENABLED=false
 ```
 
-Si no puede detectar una IP pública válida, **no bloquea el Drive**: deja FederationCloud pendiente de
-endpoint para resolverlo posteriormente desde la plataforma.
+La IP HTTP es un endpoint válido y suficiente para dejar ArcadeCloud Drive instalado y operativo. Si no
+puede detectar una IP pública válida, **no bloquea el Drive**: lo deja preparado localmente y
+FederationCloud continúa desactivado.
 
 Un dominio propio pertenece a Configuración avanzada. Cambiar posteriormente de IP a dominio no
 regenera `node_id`, Ed25519 ni `payload_key`.
@@ -210,11 +213,13 @@ El sistema genera un token aleatorio de activación.
 - hash;
 - archivo bootstrap.
 
-El sistema muestra el token y el operador abre:
+El sistema muestra el token y, sin dominio, el operador abre:
 
 ```text
-https://TU-DOMINIO/setup/?token=TOKEN_GENERADO
+http://IP_PUBLICA/setup/?token=TOKEN_GENERADO
 ```
+
+Si posteriormente existe un dominio con HTTPS también puede usarse ese dominio.
 
 Las credenciales temporales actuales son:
 
@@ -456,9 +461,9 @@ Al completar el primer superadmin se cerrará el supervisor temporal de instalac
 
 ---
 
-# 11. ETAPA 7 — FederationCloud básico automático
+# 11. ETAPA 7 — Identidad FederationCloud preparada
 
-Esta etapa debe ejecutarse después de que el Drive local básico funcione.
+Esta etapa se prepara automáticamente sin convertir FederationCloud en requisito del Drive.
 
 ## En modo básico el instalador **no pregunta** si se desea FederationCloud ni solicita `node_name`.
 
@@ -468,14 +473,14 @@ El comportamiento predeterminado es:
 detectar IPv4 pública
 -> generar node_name automáticamente
 -> generar identidad Ed25519
--> ARCADECLOUD_FEDERATION_ENABLED=true
--> PUBLIC_URL=https://IP
--> FEDERATION_URL=https://IP/federationcloud/
--> usar seed predeterminado
+-> PUBLIC_URL=http://IP
+-> ARCADECLOUD_FEDERATION_ENABLED=false
+-> FEDERATION_URL vacío
+-> conservar seed predeterminado
 ```
 
-Si no se obtiene una IPv4 pública global válida, Drive continúa instalado y FederationCloud queda
-pendiente de endpoint. El superadmin puede completarlo después desde la plataforma.
+El Drive queda completamente utilizable por HTTP/IP. FederationCloud se habilita más adelante sólo si
+el superadmin configura un endpoint HTTPS explícito.
 
 El `node_name` automático puede cambiarse posteriormente sin cambiar `node_id` ni las llaves.
 

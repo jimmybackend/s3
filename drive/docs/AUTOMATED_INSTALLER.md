@@ -59,22 +59,27 @@ En Amazon Linux 2023 el preparador verifica e instala, cuando falten:
 curl
 git
 nginx
-php
-php-cli
-php-fpm
-php-mysqlnd
-php-mbstring
-php-xml
-php-gd
-php-process
 python3
 tar
 unzip
-php-opcache          (si está disponible)
 Composer
 Certbot              (si está disponible)
 plugin Nginx Certbot (si está disponible)
 ~~~
+
+PHP es especial en AL2023 porque los paquetes están versionados. El instalador detecta automáticamente
+la familia más nueva disponible, en este orden:
+
+~~~text
+php8.5
+php8.4
+php8.3
+php8.2
+php8.1
+~~~
+
+y usa la misma familia para CLI, FPM, mysqlnd, mbstring, XML, GD, process y opcache. No mezcla módulos
+de distintas ramas PHP.
 
 No fija una versión PHP inventada. DNF resuelve la versión publicada por los repositorios configurados
 del sistema.

@@ -95,21 +95,8 @@ jobs:
           grep -q "identity-create" drive/bin/install_arcadecloud.sh
           grep -q "install_arcadecloud_server.sh" drive/bin/install_arcadecloud.sh
           grep -q "dnf install -y" drive/bin/install_arcadecloud_server.sh
-          grep -q "php8.5 php8.4 php8.3 php8.2 php8.1" drive/bin/install_arcadecloud_server.sh
-          grep -q '"\$php_family-fpm"' drive/bin/install_arcadecloud_server.sh
-          ! grep -qE '^[[:space:]]+php-fpm
-          grep -q "nginx -t" drive/bin/install_arcadecloud_server.sh
-          grep -q "hash_file('sha384'" drive/bin/install_arcadecloud_server.sh
-          grep -q "git pull --ff-only" bootstrap_arcadecloud.sh
-          ! grep -Eq 'curl[^|]*\|[[:space:]]*(bash|sh)' drive/bin/install_arcadecloud_server.sh bootstrap_arcadecloud.sh
-          grep -q "ARCADECLOUD_SMTP_BCC" drive/src/Admin/ManagedRuntimeEnvironment.php
-          ! grep -q "app_bootstrap.php" drive/setup/api.php
-          ! grep -q "require.*db.php" drive/setup/api.php
-          ! grep -Eq '\b(shell_exec|exec|system|passthru|popen)\s*\(' drive/setup/api.php drive/src/Setup/*.php
-
-      - name: Diff whitespace check
-        run: git diff --check
- drive/bin/install_arcadecloud_server.sh
+          grep -q "for candidate in php8.5 php8.4 php8.3 php8.2 php8.1" drive/bin/install_arcadecloud_server.sh
+          grep -Fq '"$php_family-fpm"' drive/bin/install_arcadecloud_server.sh
           grep -q "127.0.0.1:9075" drive/bin/install_arcadecloud_server.sh
           grep -q "nginx -t" drive/bin/install_arcadecloud_server.sh
           grep -q "hash_file('sha384'" drive/bin/install_arcadecloud_server.sh

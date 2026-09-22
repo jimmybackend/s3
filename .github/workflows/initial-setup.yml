@@ -95,6 +95,8 @@ jobs:
           grep -q "identity-create" drive/bin/install_arcadecloud.sh
           grep -q "install_arcadecloud_server.sh" drive/bin/install_arcadecloud.sh
           grep -q "dnf install -y" drive/bin/install_arcadecloud_server.sh
+          grep -q "for candidate in php8.5 php8.4 php8.3 php8.2 php8.1" drive/bin/install_arcadecloud_server.sh
+          grep -Fq '"$php_family-fpm"' drive/bin/install_arcadecloud_server.sh
           grep -q "127.0.0.1:9075" drive/bin/install_arcadecloud_server.sh
           grep -q "nginx -t" drive/bin/install_arcadecloud_server.sh
           grep -q "hash_file('sha384'" drive/bin/install_arcadecloud_server.sh

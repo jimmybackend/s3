@@ -69,24 +69,54 @@ package_available() {
   dnf -q list --available "$1" >/dev/null 2>&1 || rpm -q "$1" >/dev/null 2>&1
 }
 
+detect_php_package_family() {
+  local installed_pkg family candidate
+
+  if command_exists php; then
+    installed_pkg="$(rpm -qf "$(command -v php)" --qf '%{NAME}\n' 2>/dev/null | head -1 || true)"
+    if [[ "$installed_pkg" =~ ^(php8\.[1-9])(-|$) ]]; then
+      family="${BASH_REMATCH[1]}"
+      if package_available "$family-fpm"; then
+        printf '%s' "$family"
+        return 0
+      fi
+    fi
+  fi
+
+  for candidate in php8.5 php8.4 php8.3 php8.2 php8.1; do
+    if package_available "$candidate" && package_available "$candidate-fpm"; then
+      printf '%s' "$candidate"
+      return 0
+    fi
+  done
+
+  return 1
+}
+
 install_packages() {
+  local php_family
+  php_family="$(detect_php_package_family || true)"
+  [[ -n "$php_family" ]] || fail "no encontré una familia PHP soportada (php8.1..php8.5) en los repositorios configurados."
+
+  say "Familia PHP seleccionada automáticamente: $php_family"
+
   local required=(
     curl
     git
     nginx
-    php
-    php-cli
-    php-fpm
-    php-mysqlnd
-    php-mbstring
-    php-xml
-    php-gd
-    php-process
+    "$php_family"
+    "$php_family-cli"
+    "$php_family-fpm"
+    "$php_family-mysqlnd"
+    "$php_family-mbstring"
+    "$php_family-xml"
+    "$php_family-gd"
+    "$php_family-process"
     python3
     tar
     unzip
   )
-  local optional=(php-opcache)
+  local optional=("$php_family-opcache")
   local wanted=()
   local pkg
 
@@ -109,6 +139,9 @@ install_packages() {
   else
     say "Dependencias base del sistema ya instaladas."
   fi
+
+  command_exists php || fail "la familia $php_family se instaló pero no expuso el comando php."
+  command_exists php-fpm || fail "la familia $php_family se instaló pero no expuso el comando php-fpm."
 }
 
 install_composer() {

@@ -53,7 +53,8 @@ dependencias.
 
 ## Dependencias administradas
 
-En Amazon Linux 2023 el preparador verifica e instala, cuando falten:
+En Amazon Linux 2023 el preparador verifica primero si ya existen los comandos y sólo instala el paquete
+cuando el comando falta:
 
 ~~~text
 curl
@@ -66,6 +67,10 @@ Composer
 Certbot              (si está disponible)
 plugin Nginx Certbot (si está disponible)
 ~~~
+
+Esto evita reemplazar proveedores válidos del sistema. En particular, las AMI de AL2023 incluyen
+normalmente el comando `curl` mediante `curl-minimal`; ArcadeCloud lo acepta y no intenta sustituirlo
+por el paquete completo `curl`.
 
 PHP es especial en AL2023 porque los paquetes están versionados. El instalador detecta automáticamente
 la familia más nueva disponible, en este orden:

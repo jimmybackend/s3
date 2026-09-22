@@ -28,7 +28,7 @@ if ($token !== '') {
 <body>
 <main>
   <h1>ArcadeCloud Setup</h1>
-  <p class="muted">Instalación inicial: Base de datos → AWS → SMTP → primer superadmin.</p>
+  <p class="muted">Configuración básica: Base de datos → AWS/S3 → primer superadmin.</p>
   <div id="globalStatus" class="status">Cargando estado…</div>
 
   <section id="loginCard" class="card hidden">
@@ -49,26 +49,25 @@ if ($token !== '') {
     </div>
 
     <div class="card">
-      <h2>2. AWS</h2>
+      <h2>2. AWS / S3</h2>
+      <p class="muted">Sólo se piden las credenciales principales. Tokens temporales y credenciales AWS de control se configuran después en modo avanzado.</p>
       <div id="awsFields" class="grid"></div>
-      <div class="row" style="margin-top:14px"><button data-save-group="aws">Guardar AWS</button></div>
+      <div class="row" style="margin-top:14px"><button data-save-group="aws">Guardar AWS / S3</button></div>
     </div>
 
     <div class="card">
-      <h2>3. SMTP</h2>
-      <p class="muted">Puedes configurarlo ahora para recuperación/cambio de contraseña.</p>
-      <div id="smtpFields" class="grid"></div>
-      <div class="row" style="margin-top:14px"><button data-save-group="smtp">Guardar SMTP</button></div>
-    </div>
-
-    <div class="card">
-      <h2>4. Primer superadmin</h2>
+      <h2>3. Primer superadmin</h2>
       <p class="muted">Al crear este usuario se elimina la credencial temporal y <code>/setup</code> queda bloqueado.</p>
       <div class="grid">
         <div class="field"><label>Nombre</label><input id="adminFirstname" autocomplete="given-name"></div>
         <div class="field"><label>Apellido</label><input id="adminLastname" autocomplete="family-name"></div>
         <div class="field"><label>Correo</label><input id="adminEmail" type="email" autocomplete="email"></div>
         <div class="field"><label>Contraseña</label><input id="adminPassword" type="password" autocomplete="new-password"><span class="secret-note">Mínimo 10 caracteres.</span></div>
+        <div class="field"><label>Repetir contraseña</label><input id="adminPasswordConfirm" type="password" autocomplete="new-password"></div>
+      </div>
+      <div class="alert alert-info" style="margin-top:14px">
+        SMTP, AWS temporal/control, mirror y demás opciones se configuran después desde <strong>Servidor → Configuración avanzada</strong>.
+        FederationCloud básico lo prepara automáticamente el instalador del servidor cuando detecta una IP pública utilizable.
       </div>
       <div class="row" style="margin-top:14px"><button id="btnCreateSuperadmin">Crear superadmin y cerrar setup</button><button id="btnSetupLogout" class="secondary">Cerrar sesión temporal</button></div>
     </div>

@@ -4,10 +4,10 @@
 
 ## Resumen
 
-- PHP analizados: **368**
-- PHP que ya contienen clases/interfaces: **220**
+- PHP analizados: **370**
+- PHP que ya contienen clases/interfaces: **221**
 - PHP marcados para migración/revisión: **0**
-- Tests PHP separados del objetivo OOP de runtime: **26**
+- Tests PHP separados del objetivo OOP de runtime: **27**
 - JavaScript analizados: **46**
 - JavaScript que ya contienen clases: **46**
 - JavaScript sin clase/encapsulación OOP: **0**
@@ -100,7 +100,7 @@
 | `drive/federationcloud/sync-status.php` | 11 | thin endpoint | 0 | — | — | — | — |
 | `drive/generar_token.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/guardar_texto.php` | 8 | thin endpoint | 0 | — | — | — | — |
-| `drive/index.php` | 88 | view/entrypoint | 0 | — | — | — | — |
+| `drive/index.php` | 98 | view/entrypoint | 0 | — | — | — | — |
 | `drive/leer_texto.php` | 8 | thin endpoint | 0 | — | — | — | — |
 | `drive/listar_carpetas.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/login.php` | 93 | view/entrypoint | 0 | — | — | — | — |
@@ -295,6 +295,7 @@
 | `drive/src/Setup/BootstrapSetupAuth.php` | 181 | class/module | 1 | ⚠️ | — | — | — |
 | `drive/src/Setup/SetupApiController.php` | 110 | class/module | 1 | — | — | — | — |
 | `drive/src/Setup/SetupConfigurationService.php` | 167 | class/module | 1 | — | — | — | — |
+| `drive/src/Setup/SetupEntryGuard.php` | 22 | class/module | 1 | — | — | — | — |
 | `drive/src/Setup/SuperAdminBootstrapService.php` | 193 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Sharing/ShareAccessService.php` | 105 | class/module | 1 | — | — | — | — |
 | `drive/src/Sharing/ShareException.php` | 22 | class/module | 1 | — | — | — | — |
@@ -361,6 +362,7 @@
 | `drive/tests/security_hardening_smoke.php` | 59 | test script | 0 | — | — | — | — |
 | `drive/tests/server_admin_config_smoke.php` | 111 | test script | 0 | — | — | — | — |
 | `drive/tests/setup_bootstrap_smoke.php` | 57 | test script | 0 | — | — | — | — |
+| `drive/tests/setup_entry_guard_smoke.php` | 38 | test script | 0 | — | — | — | — |
 | `drive/tests/smtp_config_smoke.php` | 49 | test script | 0 | — | — | — | — |
 | `drive/tests/sync_repository_regression.php` | 91 | test script | 0 | — | ⚠️ | — | — |
 | `drive/tests/sync_schema_migrator_regression.php` | 75 | test script | 0 | — | ⚠️ | — | — |

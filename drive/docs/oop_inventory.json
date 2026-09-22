@@ -1,9 +1,9 @@
 {
   "summary": {
-    "php_total": 368,
-    "php_class_modules": 220,
+    "php_total": 370,
+    "php_class_modules": 221,
     "php_needs_migration": 0,
-    "php_tests": 26,
+    "php_tests": 27,
     "js_total": 46,
     "js_class_modules": 46,
     "js_needs_migration": 0,
@@ -1136,7 +1136,7 @@
     },
     {
       "path": "drive/index.php",
-      "lines": 88,
+      "lines": 98,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -4085,6 +4085,21 @@
       "issues": []
     },
     {
+      "path": "drive/src/Setup/SetupEntryGuard.php",
+      "lines": 22,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
       "path": "drive/src/Setup/SuperAdminBootstrapService.php",
       "lines": 193,
       "kind": "class/module",
@@ -5096,6 +5111,21 @@
     {
       "path": "drive/tests/setup_bootstrap_smoke.php",
       "lines": 57,
+      "kind": "test script",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/tests/setup_entry_guard_smoke.php",
+      "lines": 38,
       "kind": "test script",
       "classes": 0,
       "functions": [],

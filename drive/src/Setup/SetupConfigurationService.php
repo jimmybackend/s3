@@ -80,25 +80,6 @@ final class SetupConfigurationService
             }
         }
 
-        if ($group === 'aws') {
-            $controlKey = $this->effectiveConfigured('AWS_CONTROL_ACCESS_KEY_ID', $validated, $stateByName);
-            $controlSecret = $this->effectiveConfigured('AWS_CONTROL_SECRET_ACCESS_KEY', $validated, $stateByName);
-            if ($controlKey !== $controlSecret) {
-                throw new RuntimeException('AWS_CONTROL_ACCESS_KEY_ID y AWS_CONTROL_SECRET_ACCESS_KEY deben configurarse juntos.');
-            }
-        }
-
-        if ($group === 'smtp') {
-            $from = $this->effectiveValue('ARCADECLOUD_SMTP_FROM_EMAIL', $validated);
-            $replyTo = $this->effectiveValue('ARCADECLOUD_SMTP_REPLY_TO', $validated);
-            $bcc = $this->effectiveValue('ARCADECLOUD_SMTP_BCC', $validated);
-            if (!filter_var($from, FILTER_VALIDATE_EMAIL) || !filter_var($replyTo, FILTER_VALIDATE_EMAIL)) {
-                throw new RuntimeException('FROM_EMAIL y REPLY_TO deben contener correos válidos.');
-            }
-            if ($bcc !== '' && !filter_var($bcc, FILTER_VALIDATE_EMAIL)) {
-                throw new RuntimeException('SMTP_BCC debe contener un correo válido.');
-            }
-        }
 
         if ($validated === []) {
             return ['ok' => true, 'group' => $group, 'updated' => [], 'message' => 'No había cambios nuevos para guardar.'];

@@ -108,6 +108,9 @@ jobs:
           grep -Fq '"ARCADECLOUD_FEDERATION_URL": ""' drive/bin/install_arcadecloud.sh
           grep -Fq '"ARCADECLOUD_FEDERATION_ENABLED": "false"' drive/bin/install_arcadecloud.sh
           grep -q "federation_runtime_enabled" drive/bin/install_arcadecloud.sh
+          grep -q "prepare_setup_activation" drive/bin/install_arcadecloud.sh
+          grep -q "bootstrap-reset" drive/bin/install_arcadecloud.sh
+          grep -q "URL DE SETUP" drive/bin/install_arcadecloud.sh
           ! grep -q "Endpoint público objetivo después de HTTPS" drive/bin/install_arcadecloud.sh
           grep -q "identity-create" drive/bin/install_arcadecloud.sh
           grep -q "install_arcadecloud_server.sh" drive/bin/install_arcadecloud.sh

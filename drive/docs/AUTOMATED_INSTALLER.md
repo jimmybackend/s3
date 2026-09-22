@@ -12,7 +12,9 @@ antes de ArcadeCloud. El instalador debe detectar lo que ya existe, conservar un
 instalar únicamente lo que falte, crear la configuración propia de ArcadeCloud sin sobrescribir archivos
 ajenos, validar PHP-FPM y Nginx, ejecutar Composer y abrir el setup web de tres pasos.
 
-La configuración de MySQL, AWS/S3 y el primer superadmin sigue realizándose en /setup/.
+La configuración de MySQL, AWS/S3 y el primer superadmin sigue realizándose en /setup/. El instalador
+genera la activación temporal y muestra directamente la URL completa lista para abrir; el operador no
+debe construir manualmente `?token=...`.
 
 ## EC2 completamente vacía
 

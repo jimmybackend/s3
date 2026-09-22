@@ -98,6 +98,9 @@ jobs:
         run: |
           set -euo pipefail
           grep -q "ARCADECLOUD_SMTP_PASSWORD" drive/src/Admin/ManagedRuntimeEnvironment.php
+          grep -q "ARCADECLOUD_FEDERATION_REPLICA_ORIGIN_URL" drive/src/Admin/ManagedRuntimeEnvironment.php
+          grep -q "ARCADECLOUD_FEDERATION_REPLICA_ROLE" drive/src/Admin/ManagedRuntimeEnvironment.php
+          grep -q "ARCADECLOUD_FEDERATION_REPLICA_SCOPE" drive/src/Admin/ManagedRuntimeEnvironment.php
           grep -q "DB_HOST" drive/src/Admin/ManagedRuntimeEnvironment.php
           grep -q "DB_PASSWORD" drive/src/Admin/ManagedRuntimeEnvironment.php
           grep -q "AWS_ACCESS_KEY_ID" drive/src/Admin/ManagedRuntimeEnvironment.php
@@ -109,6 +112,9 @@ jobs:
           grep -q "mysqli_real_connect" drive/src/Admin/ServerSettingsAdminService.php
           grep -q "set_group" drive/src/Http/Controller/ServerSettingsAdminController.php
           grep -q "btnSaveServerAdminGroup" drive/js/server-admin.js
+          grep -q "btnServerAdminBasic" drive/js/server-admin.js drive/bloque_footer.php
+          grep -q "btnServerAdminAdvanced" drive/js/server-admin.js drive/bloque_footer.php
+          grep -q "visibleSettings" drive/js/server-admin.js
           grep -q "password_verify" drive/src/Security/SuperAdminReauthenticationService.php
           grep -q "TTL_SECONDS = 600" drive/src/Security/SuperAdminReauthenticationService.php
           grep -q "requireRecent" drive/src/Security/SuperAdminReauthenticationService.php drive/src/Admin/ServerSettingsAdminService.php

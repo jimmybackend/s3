@@ -136,14 +136,21 @@ sudo bash drive/bin/install_arcadecloud.sh
 
 La fase inicial:
 
-1. detecta el usuario PHP-FPM;
-2. instala dependencias Composer;
-3. instala el helper y abre el bootstrap temporal;
-4. genera una identidad FederationCloud si no existe;
-5. genera automáticamente un `node_name`;
-6. detecta la IPv4 pública cuando es posible;
-7. activa FederationCloud básico con esa IP y el seed predeterminado;
-8. deja al operador únicamente los tres pasos web.
+1. en Amazon Linux 2023 detecta e instala automáticamente las dependencias del sistema que falten;
+2. configura un pool PHP-FPM dedicado para ArcadeCloud en `127.0.0.1:9075` cuando sea necesario;
+3. configura y valida Nginx para servir el Drive por HTTP;
+4. detecta el usuario PHP-FPM;
+5. instala dependencias Composer;
+6. instala el helper y abre el bootstrap temporal;
+7. genera una identidad FederationCloud si no existe;
+8. genera automáticamente un `node_name`;
+9. detecta la IPv4 pública cuando es posible;
+10. prepara FederationCloud básico con esa IP y el seed predeterminado;
+11. deja al operador únicamente los tres pasos web.
+
+En una EC2 que todavía no tenga Git puede usarse el bootstrap de raíz
+`bootstrap_arcadecloud.sh`. Consulta `AUTOMATED_INSTALLER.md` para el contrato completo,
+idempotencia y archivos del sistema administrados.
 
 Después de completar los tres pasos:
 

@@ -85,7 +85,8 @@ final class AuthController
             }
 
             $role = (string)($result['role'] ?? '');
-            if ($role === 'Administración' || $role === 'Soporte') {
+            $systemRole = (string)($result['system_role'] ?? 'user');
+            if ($systemRole === 'superadmin' || $role === 'Administración' || $role === 'Soporte') {
                 $this->redirect('s3.php');
             }
         }

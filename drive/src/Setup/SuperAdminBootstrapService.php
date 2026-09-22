@@ -61,7 +61,7 @@ final class SuperAdminBootstrapService
 
             $curp = '';
             $gender = 'Otro';
-            $role = 'Otros';
+            $role = 'Administración';
             $systemRole = 'superadmin';
             $chat = 1;
             $status = 'Activo';
@@ -100,8 +100,10 @@ final class SuperAdminBootstrapService
                 throw new RuntimeException('No se pudo crear el superadmin.');
             }
 
-            // Si este paso llegara a fallar, el superadmin ya existe. Un reintento
-            // entra por findExistingSuperadmin() y sólo completa el cierre.
+            $this->assertPersistedSuperadmin($db, $userId, $email);
+
+            // Sólo después de comprobar que el usuario real existe en MySQL se retira
+            // el supervisor temporal del setup.
             $this->helper->completeBootstrapSetup();
 
             return [
@@ -179,6 +181,32 @@ final class SuperAdminBootstrapService
             throw new RuntimeException('La conexión funciona, pero falta la tabla Users. Importa primero el esquema SQL de ArcadeCloud.');
         }
         $result->free();
+    }
+
+    private function assertPersistedSuperadmin(mysqli $db, int $userId, string $email): void
+    {
+        $stmt = $db->prepare(
+            "SELECT id FROM Users WHERE id = ? AND email = ? AND role = 'Administración' "
+            . "AND system_role = 'superadmin' AND userstatus = 'Activo' LIMIT 1"
+        );
+        if (!$stmt) {
+            throw new RuntimeException('No se pudo verificar el superadmin recién creado.');
+        }
+
+        $stmt->bind_param('is', $userId, $email);
+        if (!$stmt->execute()) {
+            $stmt->close();
+            throw new RuntimeException('No se pudo verificar el superadmin recién creado.');
+        }
+
+        $row = $stmt->get_result()->fetch_assoc();
+        $stmt->close();
+
+        if (!is_array($row)) {
+            throw new RuntimeException(
+                'El superadmin no quedó persistido correctamente en MySQL; el supervisor temporal se conserva.'
+            );
+        }
     }
 
     private function findExistingSuperadmin(mysqli $db): ?array

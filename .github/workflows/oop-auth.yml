@@ -82,6 +82,7 @@ jobs:
           ! grep -q 'containsRejectedCharacters($password)' drive/src/Http/Controller/AuthController.php
           grep -q 'INSERT INTO AccessControl' drive/src/Security/AuthenticationRepository.php
           grep -q 'session_regenerate_id' drive/src/Security/SessionManager.php
+          grep -q "\$systemRole === 'superadmin'" drive/src/Http/Controller/AuthController.php
 
       - name: Diff whitespace check
         run: git diff --check origin/main...HEAD

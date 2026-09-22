@@ -102,7 +102,7 @@
     },
     {
       "path": "drive/bin/arcadecloud-drive-admin-helper.php",
-      "lines": 470,
+      "lines": 473,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -423,7 +423,7 @@
     },
     {
       "path": "drive/bloque_footer.php",
-      "lines": 194,
+      "lines": 202,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -1544,7 +1544,7 @@
     },
     {
       "path": "drive/setup/index.php",
-      "lines": 86,
+      "lines": 80,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -1683,7 +1683,7 @@
     },
     {
       "path": "drive/src/Admin/ManagedRuntimeEnvironment.php",
-      "lines": 220,
+      "lines": 240,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -4053,7 +4053,7 @@
     },
     {
       "path": "drive/src/Setup/SetupApiController.php",
-      "lines": 108,
+      "lines": 110,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -4071,7 +4071,7 @@
     },
     {
       "path": "drive/src/Setup/SetupConfigurationService.php",
-      "lines": 186,
+      "lines": 167,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -4086,7 +4086,7 @@
     },
     {
       "path": "drive/src/Setup/SuperAdminBootstrapService.php",
-      "lines": 174,
+      "lines": 193,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -5078,7 +5078,7 @@
     },
     {
       "path": "drive/tests/server_admin_config_smoke.php",
-      "lines": 97,
+      "lines": 111,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -6220,7 +6220,7 @@
     },
     {
       "path": "drive/js/server-admin.js",
-      "lines": 365,
+      "lines": 405,
       "kind": "class/module",
       "classes": [
         "ServerAdminModule"

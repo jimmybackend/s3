@@ -48,6 +48,7 @@ need python3
 need curl
 need git
 need systemctl
+need sudo
 
 [[ -d "$APP_ROOT/.git" ]] || fail "$APP_ROOT no es un checkout Git de ArcadeCloud."
 [[ -f "$APP_ROOT/composer.json" ]] || fail "falta composer.json en $APP_ROOT."

@@ -1741,7 +1741,7 @@
     },
     {
       "path": "drive/src/Http/Controller/AuthController.php",
-      "size": 3309,
+      "size": 3411,
       "active": false,
       "references": []
     },
@@ -2169,7 +2169,7 @@
     },
     {
       "path": "drive/src/Setup/SuperAdminBootstrapService.php",
-      "size": 7648,
+      "size": 8651,
       "active": false,
       "references": [
         "drive/setup/api.php"

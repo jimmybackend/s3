@@ -7,6 +7,7 @@ on:
       - 'feat/bootstrap-web-setup'
     paths:
       - 'drive/setup/**'
+      - 'drive/index.php'
       - 'drive/js/setup.js'
       - 'drive/src/Setup/**'
       - 'drive/src/Admin/ManagedRuntimeEnvironment.php'
@@ -17,6 +18,7 @@ on:
       - 'drive/bin/install_arcadecloud_server.sh'
       - 'bootstrap_arcadecloud.sh'
       - 'drive/tests/setup_bootstrap_smoke.php'
+      - 'drive/tests/setup_entry_guard_smoke.php'
       - 'drive/docs/INITIAL_SETUP.md'
       - 'drive/docs/INSTALLATION_PREPARATION.md'
       - 'drive/docs/AUTOMATED_INSTALLER.md'
@@ -24,6 +26,8 @@ on:
   pull_request:
     paths:
       - 'drive/setup/**'
+      - 'drive/index.php'
+      - 'drive/login.php'
       - 'drive/js/setup.js'
       - 'drive/src/Setup/**'
       - 'drive/src/Admin/ManagedRuntimeEnvironment.php'
@@ -34,6 +38,7 @@ on:
       - 'drive/bin/install_arcadecloud_server.sh'
       - 'bootstrap_arcadecloud.sh'
       - 'drive/tests/setup_bootstrap_smoke.php'
+      - 'drive/tests/setup_entry_guard_smoke.php'
       - 'drive/docs/INITIAL_SETUP.md'
       - 'drive/docs/INSTALLATION_PREPARATION.md'
       - 'drive/docs/AUTOMATED_INSTALLER.md'
@@ -52,15 +57,18 @@ jobs:
       - name: Validate PHP syntax
         run: |
           set -euo pipefail
+          php -l drive/index.php
           php -l drive/setup/index.php
           php -l drive/setup/api.php
           php -l drive/src/Setup/BootstrapSetupAuth.php
+          php -l drive/src/Setup/SetupEntryGuard.php
           php -l drive/src/Setup/SetupConfigurationService.php
           php -l drive/src/Setup/SuperAdminBootstrapService.php
           php -l drive/src/Admin/ManagedRuntimeEnvironment.php
           php -l drive/src/Admin/PrivilegedServerHelper.php
           php -l drive/bin/arcadecloud-drive-admin-helper.php
           php -l drive/tests/setup_bootstrap_smoke.php
+          php -l drive/tests/setup_entry_guard_smoke.php
 
       - name: Validate JavaScript and installer
         run: |
@@ -72,7 +80,9 @@ jobs:
           bash -n bootstrap_arcadecloud.sh
 
       - name: Bootstrap authentication smoke test
-        run: php drive/tests/setup_bootstrap_smoke.php
+        run: |
+          php drive/tests/setup_bootstrap_smoke.php
+          php drive/tests/setup_entry_guard_smoke.php
 
       - name: Setup security boundary guards
         run: |
@@ -83,6 +93,8 @@ jobs:
           grep -q "php_user" drive/bin/arcadecloud-drive-admin-helper.php
           grep -q "bootstrap-complete" drive/bin/arcadecloud-drive-admin-helper.php
           grep -q "setup.lock" drive/src/Setup/BootstrapSetupAuth.php
+          grep -q "SetupEntryGuard" drive/index.php
+          grep -q "isSetupPending" drive/src/Setup/SetupEntryGuard.php
           grep -q "system_role, chat, userstatus" drive/src/Setup/SuperAdminBootstrapService.php
           grep -q "'superadmin'" drive/src/Setup/SuperAdminBootstrapService.php
           grep -q "X-ArcadeCloud-Setup-CSRF" drive/js/setup.js

@@ -53,6 +53,11 @@ contraseña inicial: arcadecloud
 
 Por sí solas **no permiten entrar**. También es obligatorio el token aleatorio de 256 bits que el helper muestra una sola vez al crear el bootstrap.
 
+Mientras existe `bootstrap-auth.json` y todavía no existe `setup.lock`, la entrada normal `/` redirige
+a `/setup/`. El supervisor `arcadecloud` nunca se autentica en el login normal por correo y no se añade
+ninguna excepción al campo `type="email"`. Al cerrar correctamente el setup, se elimina
+`bootstrap-auth.json`, se crea `setup.lock` y el login normal vuelve a quedar disponible.
+
 El operador abre:
 
 ```text

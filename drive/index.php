@@ -1,4 +1,14 @@
+<?php
+declare(strict_types=1);
 
+require_once __DIR__ . '/src/Setup/SetupEntryGuard.php';
+
+$setupGuard = new \ArcadeCloud\Drive\Setup\SetupEntryGuard();
+if ($setupGuard->isSetupPending()) {
+    header('Location: setup/', true, 302);
+    exit;
+}
+?>
 <!DOCTYPE html>
 <html lang="es">
 <head>

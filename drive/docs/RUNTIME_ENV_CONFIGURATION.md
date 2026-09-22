@@ -32,10 +32,9 @@ Los archivos `drive.env`, `smtp.env` y otros `EnvironmentFile` siguen siendo com
 para instalaciones existentes, pero no deben convertirse en fuentes duplicadas sin necesidad.
 
 La identidad privada FederationCloud permanece separada en
-`/etc/arcadecloud-drive/federation-node.json`. Actualmente las tres variables específicas de mirror
-(`REPLICA_ORIGIN_URL`, `REPLICA_ROLE`, `REPLICA_SCOPE`) todavía requieren
-`/etc/arcadecloud-drive/federation.env` hasta que entren a la allowlist de configuración
-administrada.
+`/etc/arcadecloud-drive/federation-node.json`. Las variables específicas de mirror ya forman parte
+de la configuración administrada y, en instalaciones nuevas, también se guardan en
+`/etc/arcadecloud-drive/runtime-env.json`.
 
 La tabla completa dato -> archivo está en `INSTALLATION_PREPARATION.md`.
 
@@ -126,6 +125,17 @@ Esto permite migrar una instalación existente de forma gradual: una variable pu
 ### FederationCloud y SMTP
 
 Se pueden modificar como variables individuales desde la tabla Servidor.
+
+El panel abre por defecto en **Configuración básica**, que muestra únicamente MySQL, AWS/S3 principal
+y FederationCloud base. **Configuración avanzada** añade SMTP, credenciales AWS opcionales y mirror.
+
+Las variables mirror administradas son:
+
+```text
+ARCADECLOUD_FEDERATION_REPLICA_ORIGIN_URL
+ARCADECLOUD_FEDERATION_REPLICA_ROLE
+ARCADECLOUD_FEDERATION_REPLICA_SCOPE
+```
 
 ### Base de datos
 

@@ -131,7 +131,12 @@ Cuando MySQL ya funciona, el setup solicita:
 - correo;
 - contraseña del superadmin.
 
-El backend crea un usuario `Activo`, con `system_role = 'superadmin'`, contraseña mediante `password_hash()` y campos de perfil mínimos compatibles con la tabla `Users` actual.
+El backend crea un usuario `Activo`, con `role = 'Administración'` y
+`system_role = 'superadmin'`, contraseña mediante `password_hash()` y campos de perfil mínimos
+compatibles con la tabla `Users` actual. Después del INSERT vuelve a consultar MySQL para comprobar que
+ese mismo usuario quedó persistido. Sólo entonces elimina la credencial temporal `arcadecloud`.
+
+`arcadecloud` nunca se inserta en la tabla `Users`: sólo existe en el archivo temporal de bootstrap.
 
 Si ya existe un superadmin, no se crea otro: el setup simplemente completa el cierre del supervisor temporal.
 

@@ -159,7 +159,43 @@ runtime_set_many() {
 }
 
 install_helper() {
-  bash "$WEBROOT/bin/install_arcadecloud_admin_helper.sh"     --php-user="$PHP_USER"     --bootstrap-setup
+  bash "$WEBROOT/bin/install_arcadecloud_admin_helper.sh" --php-user="$PHP_USER"
+}
+
+SETUP_ACTIVATION_URL=""
+
+prepare_setup_activation() {
+  if [[ -f "$CONFIG_DIR/setup.lock" ]]; then
+    echo "✓ El setup ya está cerrado; no se genera una nueva activación."
+    return 0
+  fi
+
+  local result token public_ip public_url base_url
+  result="$(/usr/local/sbin/arcadecloud-drive-admin bootstrap-reset)"
+  token="$(python3 -c 'import json,sys; print(json.load(sys.stdin).get("activation_token",""))' <<<"$result")"
+  [[ "$token" =~ ^[a-f0-9]{64}$ ]] || fail "no se pudo generar el token temporal de setup."
+
+  public_ip="$(detect_public_ipv4 || true)"
+  if [[ -n "$public_ip" ]] && validate_public_ipv4 "$public_ip"; then
+    base_url="http://$public_ip"
+  else
+    public_url="$(python3 - "$RUNTIME_ENV" 2>/dev/null <<'PY' || true
+import json, sys
+try:
+    with open(sys.argv[1], encoding="utf-8") as f:
+        print((json.load(f).get("ARCADECLOUD_PUBLIC_URL") or "").rstrip("/"))
+except Exception:
+    pass
+PY
+)"
+    base_url="$public_url"
+  fi
+
+  if [[ -n "$base_url" ]]; then
+    SETUP_ACTIVATION_URL="$base_url/setup/?token=$token"
+  else
+    SETUP_ACTIVATION_URL="/setup/?token=$token"
+  fi
 }
 
 prepare_composer() {
@@ -252,13 +288,22 @@ PY
 
   if [[ -n "$public_ip" ]]; then
     echo "Drive HTTP por IP: http://$public_ip/"
-    echo "Setup HTTP: http://$public_ip/setup/"
-    echo "Dominio y HTTPS: opcionales; pueden configurarse después desde el servidor."
   elif [[ -n "$public_url" ]]; then
-    echo "Setup: $public_url/setup/"
-  else
-    echo "Abre /setup/ en el endpoint HTTP/HTTPS que ya tengas configurado."
+    echo "Drive: $public_url/"
   fi
+
+  if [[ -n "$SETUP_ACTIVATION_URL" ]]; then
+    echo
+    echo "URL DE SETUP — CÓPIALA COMPLETA EN EL NAVEGADOR:"
+    echo "$SETUP_ACTIVATION_URL"
+    echo
+    echo "Supervisor temporal: arcadecloud / arcadecloud"
+    echo "La URL se regenera automáticamente si vuelves a ejecutar el instalador antes de terminar."
+  else
+    echo "Setup ya completado; no hay token temporal activo."
+  fi
+
+  echo "Dominio y HTTPS: opcionales; pueden configurarse después desde el servidor."
 
   echo
   echo "Cuando termines los tres pasos ejecuta:"
@@ -345,4 +390,5 @@ fi
 prepare_composer
 install_helper
 prepare_federation_basic
+prepare_setup_activation
 show_setup_url

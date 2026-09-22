@@ -296,7 +296,7 @@
 | `drive/src/Setup/SetupApiController.php` | 120 | class/module | 1 | — | — | — | — |
 | `drive/src/Setup/SetupConfigurationService.php` | 167 | class/module | 1 | — | — | — | — |
 | `drive/src/Setup/SetupEntryGuard.php` | 22 | class/module | 1 | — | — | — | — |
-| `drive/src/Setup/SuperAdminBootstrapService.php` | 270 | class/module | 1 | — | ⚠️ | — | — |
+| `drive/src/Setup/SuperAdminBootstrapService.php` | 276 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Sharing/ShareAccessService.php` | 105 | class/module | 1 | — | — | — | — |
 | `drive/src/Sharing/ShareException.php` | 22 | class/module | 1 | — | — | — | — |
 | `drive/src/Sharing/ShareFileRepository.php` | 72 | class/module | 1 | — | ⚠️ | — | — |

@@ -4101,7 +4101,7 @@
     },
     {
       "path": "drive/src/Setup/SuperAdminBootstrapService.php",
-      "lines": 270,
+      "lines": 276,
       "kind": "class/module",
       "classes": 1,
       "functions": [],

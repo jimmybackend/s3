@@ -61,8 +61,18 @@ if ($token !== '') {
       <div class="grid">
         <div class="field"><label>Nombre</label><input id="adminFirstname" autocomplete="given-name"></div>
         <div class="field"><label>Apellido</label><input id="adminLastname" autocomplete="family-name"></div>
+        <div class="field"><label>Identificador</label><input id="adminCurp" maxlength="18"></div>
+        <div class="field"><label>Sexo</label><select id="adminGender"><option value="Masculino">Masculino</option><option value="Femenino">Femenino</option><option value="Otro">Otro</option></select></div>
+        <div class="field"><label>Fecha de nacimiento</label><input id="adminBirthdate" type="date"></div>
         <div class="field"><label>Correo</label><input id="adminEmail" type="email" autocomplete="email"></div>
         <div class="field"><label>Contraseña</label><input id="adminPassword" type="password" autocomplete="new-password"><span class="secret-note">Mínimo 10 caracteres.</span></div>
+        <div class="field"><label>Dirección</label><input id="adminAddress"></div>
+        <div class="field"><label>Colonia</label><input id="adminNeighborhood"></div>
+        <div class="field"><label>Código postal</label><input id="adminPostalcode" maxlength="10"></div>
+        <div class="field"><label>Estado</label><input id="adminState"></div>
+        <div class="field"><label>País</label><input id="adminCountry"></div>
+        <div class="field"><label>Teléfono de casa</label><input id="adminHomephone" maxlength="15"></div>
+        <div class="field"><label>Teléfono móvil</label><input id="adminMobilephone" maxlength="15"></div>
       </div>
       <div class="row" style="margin-top:14px"><button id="btnCreateSuperadmin">Crear superadmin y cerrar setup</button><button id="btnSetupLogout" class="secondary">Cerrar sesión temporal</button></div>
     </div>

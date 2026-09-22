@@ -124,17 +124,18 @@ Las claves ya configuradas nunca se devuelven al navegador. Un campo secreto vac
 
 ### Primer superadmin
 
-Cuando MySQL ya funciona, el setup solicita:
-
-- nombre;
-- apellido;
-- correo;
-- contraseña del superadmin.
+Cuando MySQL ya funciona, el setup solicita el perfil inicial completo: nombre, apellido, identificador,
+sexo, fecha de nacimiento, correo, contraseña, dirección, colonia, código postal, estado, país,
+teléfono de casa y teléfono móvil.
 
 El backend crea un usuario `Activo`, con `role = 'Administración'` y
-`system_role = 'superadmin'`, contraseña mediante `password_hash()` y campos de perfil mínimos
-compatibles con la tabla `Users` actual. Después del INSERT vuelve a consultar MySQL para comprobar que
-ese mismo usuario quedó persistido. Sólo entonces elimina la credencial temporal `arcadecloud`.
+`system_role = 'superadmin'`. `registrationdate` la genera MySQL, `chat = 1` se asigna
+automáticamente y `profilepicture` queda NULL hasta que el usuario suba una imagen desde ArcadeCloud.
+La contraseña se guarda mediante `password_hash()`.
+
+Todos los datos de perfil se escriben dentro de la misma transacción. Después vuelve a consultar MySQL
+para comprobar que ese mismo usuario quedó persistido. Sólo entonces elimina la credencial temporal
+`arcadecloud`.
 
 `arcadecloud` nunca se inserta en la tabla `Users`: sólo existe en el archivo temporal de bootstrap.
 

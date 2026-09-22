@@ -73,8 +73,18 @@ final class SetupApiController
                 $result = (new SuperAdminBootstrapService())->create([
                     'firstname' => $this->post('firstname'),
                     'lastname' => $this->post('lastname'),
+                    'curp' => $this->post('curp'),
+                    'gender' => $this->post('gender'),
+                    'birthdate' => $this->post('birthdate'),
                     'email' => $this->post('email'),
                     'password' => $this->post('password'),
+                    'address' => $this->post('address'),
+                    'neighborhood' => $this->post('neighborhood'),
+                    'postalcode' => $this->post('postalcode'),
+                    'state' => $this->post('state'),
+                    'country' => $this->post('country'),
+                    'homephone' => $this->post('homephone'),
+                    'mobilephone' => $this->post('mobilephone'),
                 ]);
                 $auth->logout();
                 $this->json($result);

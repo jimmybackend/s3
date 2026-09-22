@@ -133,8 +133,18 @@ class ArcadeCloudSetup {
     const values = {
       firstname: String(this.doc.getElementById('adminFirstname').value || ''),
       lastname: String(this.doc.getElementById('adminLastname').value || ''),
+      curp: String(this.doc.getElementById('adminCurp').value || ''),
+      gender: String(this.doc.getElementById('adminGender').value || ''),
+      birthdate: String(this.doc.getElementById('adminBirthdate').value || ''),
       email: String(this.doc.getElementById('adminEmail').value || ''),
-      password: String(this.doc.getElementById('adminPassword').value || '')
+      password: String(this.doc.getElementById('adminPassword').value || ''),
+      address: String(this.doc.getElementById('adminAddress').value || ''),
+      neighborhood: String(this.doc.getElementById('adminNeighborhood').value || ''),
+      postalcode: String(this.doc.getElementById('adminPostalcode').value || ''),
+      state: String(this.doc.getElementById('adminState').value || ''),
+      country: String(this.doc.getElementById('adminCountry').value || ''),
+      homephone: String(this.doc.getElementById('adminHomephone').value || ''),
+      mobilephone: String(this.doc.getElementById('adminMobilephone').value || '')
     };
     this.message('Validando los tres pasos y creando el superadmin…', 'warn');
     try {

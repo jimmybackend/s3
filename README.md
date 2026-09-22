@@ -85,6 +85,28 @@ Antes de instalar, prepara los datos con
 `drive/docs/FEDERATION_NODE_REPLICA_INSTALL.md`. Consulta también
 `drive/docs/FEDERATED_CLOUD_STATUS.md` y `drive/docs/FEDERATIONCLOUD.md`.
 
+## Instalación básica
+
+Con el repositorio ya clonado y el servidor preparado:
+
+```bash
+sudo bash drive/bin/install_arcadecloud.sh
+```
+
+El setup web posterior pide sólo tres bloques:
+
+```text
+1. MySQL
+2. AWS / S3
+3. Primer superadmin
+```
+
+SMTP, AWS temporal/control y mirror quedan en **Servidor → Configuración avanzada**. FederationCloud
+básico intenta configurarse automáticamente con la IPv4 pública EC2 y puede cambiarse después a un
+dominio sin regenerar la identidad del nodo.
+
+Consulta `drive/docs/INITIAL_SETUP.md` y `drive/docs/INSTALLATION_PREPARATION.md`.
+
 ## ArcadeLink
 
 `.arcadelink` es el pasaporte portable de un recurso ArcadeCloud.
@@ -369,6 +391,7 @@ composer install --no-dev --optimize-autoloader
 ## Documentación
 
 - `drive/ARCHITECTURE.md`: arquitectura y reglas obligatorias.
+- `drive/docs/INITIAL_SETUP.md`: instalación básica de tres pasos y finalización automática.
 - `drive/docs/INSTALLATION_PREPARATION.md`: datos que debes tener listos antes de ejecutar el instalador.
 - `drive/docs/FEDERATION_NODE_REPLICA_INSTALL.md`: instalación y troubleshooting de nodos y mirrors.
 - `drive/docs/FEDERATED_CLOUD_STATUS.md`: estado actual de la evolución hacia cloud federado.

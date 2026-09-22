@@ -850,7 +850,341 @@ primer superadmin
 
 ---
 
-# 18. Relación con el instalador futuro
+
+# 18. Dónde se guarda cada dato
+
+No todos los datos deben terminar en el mismo archivo. La separación recomendada es:
+
+- **configuración editable de ejecución** -> un solo archivo administrado;
+- **identidad criptográfica** -> archivo privado separado;
+- **usuarios** -> MySQL;
+- **estado temporal del instalador** -> archivos de control separados;
+- **Nginx/Certbot/systemd** -> configuración propia del sistema operativo.
+
+## Archivo principal recomendado
+
+Para instalaciones nuevas, la configuración normal de ArcadeCloud debe concentrarse en:
+
+```text
+/etc/arcadecloud-drive/runtime-env.json
+```
+
+Este archivo ya es la fuente administrada por ArcadeCloud y tiene precedencia sobre variables recibidas
+por PHP-FPM.
+
+Aquí deben quedar:
+
+```text
+MYSQL
+DB_HOST
+DB_PORT
+DB_USER
+DB_PASSWORD
+DB_NAME
+
+AWS / S3
+AWS_REGION
+AWS_S3_BUCKET
+AWS_ACCESS_KEY_ID
+AWS_SECRET_ACCESS_KEY
+AWS_SESSION_TOKEN                     (opcional)
+AWS_CONTROL_ACCESS_KEY_ID             (opcional)
+AWS_CONTROL_SECRET_ACCESS_KEY         (opcional)
+AWS_CONTROL_SESSION_TOKEN             (opcional)
+
+SMTP
+ARCADECLOUD_SMTP_HOST
+ARCADECLOUD_SMTP_PORT
+ARCADECLOUD_SMTP_SECURE
+ARCADECLOUD_SMTP_USERNAME
+ARCADECLOUD_SMTP_PASSWORD
+ARCADECLOUD_SMTP_FROM_EMAIL
+ARCADECLOUD_SMTP_FROM_NAME
+ARCADECLOUD_SMTP_REPLY_TO
+ARCADECLOUD_SMTP_BCC                  (opcional)
+ARCADECLOUD_SMTP_TIMEOUT
+ARCADECLOUD_SMTP_DEBUG
+
+FEDERATIONCLOUD BASE
+ARCADECLOUD_PUBLIC_URL
+ARCADECLOUD_FEDERATION_URL
+ARCADECLOUD_FEDERATION_ENABLED
+ARCADECLOUD_FEDERATION_SEED_URL
+```
+
+Ejemplo **sintético** de estructura:
+
+```json
+{
+  "DB_HOST": "db.example.internal",
+  "DB_PORT": "3306",
+  "DB_USER": "arcadecloud",
+  "DB_PASSWORD": "***",
+  "DB_NAME": "arcadecloud",
+  "AWS_REGION": "us-east-1",
+  "AWS_S3_BUCKET": "example-bucket",
+  "AWS_ACCESS_KEY_ID": "***",
+  "AWS_SECRET_ACCESS_KEY": "***",
+  "ARCADECLOUD_SMTP_HOST": "smtp.example.com",
+  "ARCADECLOUD_SMTP_PORT": "587",
+  "ARCADECLOUD_SMTP_SECURE": "tls",
+  "ARCADECLOUD_SMTP_USERNAME": "noreply@example.com",
+  "ARCADECLOUD_SMTP_PASSWORD": "***",
+  "ARCADECLOUD_SMTP_FROM_EMAIL": "noreply@example.com",
+  "ARCADECLOUD_SMTP_FROM_NAME": "ArcadeCloud Drive",
+  "ARCADECLOUD_SMTP_REPLY_TO": "support@example.com",
+  "ARCADECLOUD_SMTP_TIMEOUT": "20",
+  "ARCADECLOUD_SMTP_DEBUG": "false",
+  "ARCADECLOUD_PUBLIC_URL": "https://drive.example.com",
+  "ARCADECLOUD_FEDERATION_URL": "https://drive.example.com/federationcloud/",
+  "ARCADECLOUD_FEDERATION_ENABLED": "true",
+  "ARCADECLOUD_FEDERATION_SEED_URL": "https://seed.example.com/federationcloud/"
+}
+```
+
+El ejemplo usa valores ficticios. El archivo real nunca se versiona.
+
+## Excepción actual: configuración específica de mirror
+
+Actualmente las variables específicas de una réplica no forman parte de la lista administrable de
+`ManagedRuntimeEnvironment`. Por eso, **hasta que el código se unifique**, deben permanecer en:
+
+```text
+/etc/arcadecloud-drive/federation.env
+```
+
+Contenido mínimo de un mirror:
+
+```env
+ARCADECLOUD_FEDERATION_REPLICA_ORIGIN_URL=https://origin.example.com/federationcloud/
+ARCADECLOUD_FEDERATION_REPLICA_ROLE=mirror
+ARCADECLOUD_FEDERATION_REPLICA_SCOPE=all_allowed_resources
+```
+
+Para instalaciones nuevas no es necesario duplicar en `federation.env` las variables que ya estén en
+`runtime-env.json`.
+
+### Objetivo futuro de unificación
+
+El futuro instalador debería ampliar la configuración administrada para que también acepte:
+
+```text
+ARCADECLOUD_FEDERATION_REPLICA_ORIGIN_URL
+ARCADECLOUD_FEDERATION_REPLICA_ROLE
+ARCADECLOUD_FEDERATION_REPLICA_SCOPE
+```
+
+Cuando eso exista, una instalación nueva podrá usar **un único archivo de configuración runtime**:
+
+```text
+/etc/arcadecloud-drive/runtime-env.json
+```
+
+y `federation.env` quedará sólo como compatibilidad para instalaciones antiguas.
+
+## Identidad FederationCloud
+
+No debe mezclarse con `runtime-env.json`.
+
+Ruta:
+
+```text
+/etc/arcadecloud-drive/federation-node.json
+```
+
+Contiene la identidad criptográfica generada por ArcadeCloud:
+
+```text
+node_name
+node_id
+public_key
+private_key
+payload_key
+```
+
+Este archivo debe permanecer separado porque contiene material criptográfico privado y tiene permisos
+más restrictivos.
+
+El usuario sólo proporciona:
+
+```text
+node_name
+```
+
+ArcadeCloud genera el resto.
+
+## Primer superadmin
+
+Los datos del superadmin **no se guardan en un archivo de configuración**.
+
+Destino:
+
+```text
+MySQL
+tabla: Users
+```
+
+Se almacenan, entre otros:
+
+```text
+firstname
+lastname
+email
+password = hash
+system_role = superadmin
+userstatus = Activo
+```
+
+La contraseña en texto plano nunca se guarda en un archivo.
+
+## Tipo de nodo
+
+`Normal / origen / mirror` no necesita un archivo independiente.
+
+El runtime lo determina por su configuración:
+
+```text
+normal/origen:
+  no existe ARCADECLOUD_FEDERATION_REPLICA_ORIGIN_URL
+
+mirror:
+  ARCADECLOUD_FEDERATION_REPLICA_ORIGIN_URL configurada
+  ARCADECLOUD_FEDERATION_REPLICA_ROLE=mirror
+  ARCADECLOUD_FEDERATION_REPLICA_SCOPE=all_allowed_resources
+```
+
+## “Comparte MySQL” y “Comparte S3”
+
+Estas respuestas describen la topología de infraestructura; no son credenciales ni variables necesarias
+para que la aplicación funcione.
+
+Actualmente **no deben escribirse dentro de `runtime-env.json`**.
+
+El instalador futuro puede conservarlas como metadatos no secretos de instalación en:
+
+```text
+/etc/arcadecloud-drive/install-state.json
+```
+
+por ejemplo:
+
+```json
+{
+  "node_role": "mirror",
+  "shared_mysql": true,
+  "shared_s3": true
+}
+```
+
+Ese archivo sería informativo para diagnóstico; no debe convertirse en fuente de credenciales ni de
+autorización FederationCloud.
+
+## Dominio y HTTPS
+
+El dominio se refleja en:
+
+```text
+/etc/arcadecloud-drive/runtime-env.json
+  ARCADECLOUD_PUBLIC_URL
+  ARCADECLOUD_FEDERATION_URL
+```
+
+La configuración web pertenece a Nginx, normalmente bajo:
+
+```text
+/etc/nginx/conf.d/
+```
+
+El nombre exacto del vhost puede derivarse del dominio durante la instalación.
+
+Los certificados administrados por Certbot quedan fuera de ArcadeCloud, normalmente bajo:
+
+```text
+/etc/letsencrypt/live/<dominio>/
+```
+
+El DNS no se guarda en ArcadeCloud; pertenece al proveedor DNS del administrador.
+
+## Archivos temporales/de control del setup
+
+### Supervisor temporal
+
+```text
+/etc/arcadecloud-drive/bootstrap-auth.json
+```
+
+Se elimina al completar el primer superadmin.
+
+### Marca de setup terminado
+
+```text
+/etc/arcadecloud-drive/setup.lock
+```
+
+Evita reabrir accidentalmente el bootstrap inicial.
+
+### Configuración del helper privilegiado
+
+```text
+/etc/arcadecloud-drive/admin-helper.json
+```
+
+No contiene las credenciales DB/AWS/SMTP; describe rutas y usuario/grupo permitidos.
+
+### Configuración del updater
+
+```text
+/etc/arcadecloud-drive/updater.json
+```
+
+Describe el repositorio y el usuario que puede actualizarlo; no debe contener secretos runtime.
+
+## Resumen dato -> destino
+
+| Información | Destino |
+|---|---|
+| MySQL | `/etc/arcadecloud-drive/runtime-env.json` |
+| AWS/S3 | `/etc/arcadecloud-drive/runtime-env.json` |
+| SMTP | `/etc/arcadecloud-drive/runtime-env.json` |
+| URL pública FederationCloud | `/etc/arcadecloud-drive/runtime-env.json` |
+| Seed FederationCloud | `/etc/arcadecloud-drive/runtime-env.json` |
+| Mirror origin/role/scope, actualmente | `/etc/arcadecloud-drive/federation.env` |
+| `node_name` + identidad Ed25519 | `/etc/arcadecloud-drive/federation-node.json` |
+| Primer superadmin | MySQL, tabla `Users` |
+| Tipo de nodo | derivado de la configuración FederationCloud |
+| Comparte MySQL/S3 | no es runtime; opcionalmente `install-state.json` futuro |
+| Token bootstrap | `bootstrap-auth.json`, temporal |
+| Setup terminado | `setup.lock` |
+| Helper administrativo | `admin-helper.json` |
+| Updater | `updater.json` |
+| Vhost del dominio | `/etc/nginx/conf.d/` |
+| Certificados | `/etc/letsencrypt/live/<dominio>/` |
+
+## Recomendación
+
+Para una instalación nueva, evitar repartir DB/AWS/SMTP entre `drive.env`, `smtp.env` y otros
+EnvironmentFile salvo que una instalación heredada ya los use.
+
+El modelo recomendado es:
+
+```text
+/etc/arcadecloud-drive/
+├── runtime-env.json          <- configuración runtime principal
+├── federation-node.json      <- identidad privada, separada
+├── federation.env            <- sólo mirror mientras exista esta excepción
+├── admin-helper.json         <- configuración del helper
+├── updater.json              <- configuración del updater
+├── bootstrap-auth.json       <- temporal durante setup
+└── setup.lock                <- marca de instalación terminada
+```
+
+La aplicación mantiene compatibilidad con EnvironmentFile antiguos, pero las instalaciones nuevas
+deberían tener una sola fuente administrada para la configuración normal para reducir errores de
+precedencia, duplicación y diagnóstico.
+
+---
+
+# 19. Relación con el instalador futuro
 
 Este documento debe considerarse el **contrato de entrada** del futuro
 `install-arcadecloud.sh`.

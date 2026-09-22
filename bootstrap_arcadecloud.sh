@@ -53,7 +53,6 @@ if [[ ! -d "$APP_ROOT/.git" ]]; then
     git clone --branch "$BRANCH" --single-branch "$REPO_URL" "$APP_ROOT"
   else
     install -d -o "$REPO_USER" -g "$(id -gn "$REPO_USER")" -m 0755 "$APP_ROOT"
-    rmdir "$APP_ROOT"
     sudo -u "$REPO_USER" git clone --branch "$BRANCH" --single-branch "$REPO_URL" "$APP_ROOT"
   fi
 else

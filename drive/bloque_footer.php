@@ -115,6 +115,14 @@ $arcadeLinkShareJs = __DIR__ . '/js/arcadelink-share.js';
         </div>
         <div id="serverAdminHelperStatus" class="small text-muted mb-3">Consultando helper…</div>
 
+        <div class="btn-group btn-group-sm mb-3" role="group" aria-label="Modo de configuración">
+          <button type="button" id="btnServerAdminBasic" class="btn btn-info">Configuración básica</button>
+          <button type="button" id="btnServerAdminAdvanced" class="btn btn-outline-info">Configuración avanzada</button>
+        </div>
+        <div id="serverAdminModeHelp" class="small text-muted mb-3">
+          Básica muestra sólo MySQL, AWS/S3 y FederationCloud esencial. Correo, tokens AWS, mirrors y opciones especiales permanecen ocultos.
+        </div>
+
         <div class="d-flex justify-content-between align-items-center mb-2">
           <h6 class="mb-0">Variables disponibles</h6>
           <span id="serverAdminVariableCount" class="badge badge-secondary">—</span>

@@ -31,9 +31,12 @@ on:
       - 'drive/bin/arcadecloud-drive-admin-helper.php'
       - 'drive/bin/install_arcadecloud_admin_helper.sh'
       - 'drive/bin/install_arcadecloud.sh'
+      - 'drive/bin/install_arcadecloud_server.sh'
+      - 'bootstrap_arcadecloud.sh'
       - 'drive/tests/setup_bootstrap_smoke.php'
       - 'drive/docs/INITIAL_SETUP.md'
       - 'drive/docs/INSTALLATION_PREPARATION.md'
+      - 'drive/docs/AUTOMATED_INSTALLER.md'
       - '.github/workflows/initial-setup.yml'
   workflow_dispatch:
 

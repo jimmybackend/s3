@@ -72,13 +72,13 @@ https://TU-DOMINIO/setup/?token=TOKEN_GENERADO
 
 Si el token coincide, el servidor lo asocia a la sesión PHP y redirige inmediatamente a `/setup/` sin dejar el token en la URL. Después se solicita `arcadecloud / arcadecloud`.
 
-El token sigue siendo válido para activar una nueva sesión mientras el setup siga abierto. Si se pierde antes de completar la instalación, root puede generar uno nuevo:
+El instalador autónomo no obliga al operador a manipular el token. Genera o rota la activación mientras
+el setup siga abierto y muestra directamente una línea `URL DE SETUP` con la dirección completa lista
+para copiar al navegador. Si el instalador se ejecuta nuevamente antes de terminar, entrega una URL
+nueva y la anterior deja de ser la activación vigente.
 
-```bash
-sudo /usr/local/sbin/arcadecloud-drive-admin bootstrap-reset
-```
-
-`bootstrap-reset` no funciona después de cerrar la instalación.
+`bootstrap-reset` sigue disponible como herramienta administrativa de bajo nivel y no funciona después
+de cerrar la instalación.
 
 ## Flujo web
 

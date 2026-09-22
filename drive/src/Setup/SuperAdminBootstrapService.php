@@ -38,6 +38,13 @@ final class SuperAdminBootstrapService
                 ];
             }
 
+            if ($this->countUsers($db) !== 0) {
+                throw new RuntimeException(
+                    'La tabla Users ya contiene usuarios pero no existe un superadmin. '
+                    . 'El setup inicial no añadirá privilegios automáticamente sobre una base existente.'
+                );
+            }
+
             $firstName = trim((string)($input['firstname'] ?? ''));
             $lastName = trim((string)($input['lastname'] ?? ''));
             $email = strtolower(trim((string)($input['email'] ?? '')));
@@ -70,27 +77,41 @@ final class SuperAdminBootstrapService
             try {
                 $stmt = $db->prepare(
                     'INSERT INTO Users '
-                    . '(firstname, lastname, curp, gender, email, password, role, system_role, chat, userstatus) '
-                    . 'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+                    . '(firstname, lastname, curp, gender, birthdate, email, password, '
+                    . 'address, neighborhood, postalcode, state, country, homephone, mobilephone, '
+                    . 'role, system_role, chat, userstatus) '
+                    . 'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
                 );
                 if (!$stmt) throw new RuntimeException('No se pudo preparar la creación del superadmin.');
+
+                $types = str_repeat('s', 16) . 'is';
                 $stmt->bind_param(
-                    'ssssssssis',
+                    $types,
                     $firstName,
                     $lastName,
                     $curp,
                     $gender,
+                    $birthdate,
                     $email,
                     $hash,
+                    $address,
+                    $neighborhood,
+                    $postalcode,
+                    $state,
+                    $country,
+                    $homephone,
+                    $mobilephone,
                     $role,
                     $systemRole,
                     $chat,
                     $status
                 );
+
                 if (!$stmt->execute()) {
                     $stmt->close();
                     throw new RuntimeException('No se pudo registrar el superadmin.');
                 }
+
                 $userId = (int)$stmt->insert_id;
                 $stmt->close();
                 $db->commit();
@@ -207,6 +228,15 @@ final class SuperAdminBootstrapService
                 'El superadmin no quedó persistido correctamente en MySQL; el supervisor temporal se conserva.'
             );
         }
+    }
+
+    private function countUsers(mysqli $db): int
+    {
+        $result = $db->query('SELECT COUNT(*) AS total FROM Users');
+        if ($result === false) throw new RuntimeException('No se pudo verificar si la tabla Users está vacía.');
+        $row = $result->fetch_assoc();
+        $result->free();
+        return (int)($row['total'] ?? 0);
     }
 
     private function findExistingSuperadmin(mysqli $db): ?array

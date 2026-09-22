@@ -24,6 +24,7 @@
     "drive/setup/index.php",
     "drive/src/Admin/ManagedRuntimeEnvironment.php",
     "drive/src/Setup/BootstrapSetupAuth.php",
+    "drive/src/Setup/SetupEntryGuard.php",
     "drive/thumb.php",
     "drive/up.php",
     "drive/upload.php",
@@ -773,7 +774,7 @@
     },
     {
       "path": "drive/index.php",
-      "size": 2819,
+      "size": 3065,
       "active": true,
       "references": [
         "drive/bloque_archivos.php",
@@ -2158,6 +2159,15 @@
       ]
     },
     {
+      "path": "drive/src/Setup/SetupEntryGuard.php",
+      "size": 550,
+      "active": true,
+      "references": [
+        "drive/index.php",
+        "drive/tests/setup_entry_guard_smoke.php"
+      ]
+    },
+    {
       "path": "drive/src/Setup/SuperAdminBootstrapService.php",
       "size": 7648,
       "active": false,
@@ -2567,6 +2577,12 @@
     {
       "path": "drive/tests/setup_bootstrap_smoke.php",
       "size": 2145,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/tests/setup_entry_guard_smoke.php",
+      "size": 905,
       "active": false,
       "references": []
     },

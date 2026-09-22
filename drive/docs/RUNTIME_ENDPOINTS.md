@@ -40,6 +40,7 @@
 | `drive/setup/index.php` | `drive/bloque_archivos.php`, `drive/bloque_carpetas.php`, `drive/s3.php`, `drive/src/Http/Controller/ActivityCostController.php`, `drive/src/Http/Controller/AuthController.php`, `drive/src/Security/SessionManager.php`, `drive/up.php` |
 | `drive/src/Admin/ManagedRuntimeEnvironment.php` | `drive/app_bootstrap.php`, `drive/setup/api.php`, `drive/tests/server_admin_config_smoke.php` |
 | `drive/src/Setup/BootstrapSetupAuth.php` | `drive/setup/api.php`, `drive/setup/index.php`, `drive/tests/setup_bootstrap_smoke.php` |
+| `drive/src/Setup/SetupEntryGuard.php` | `drive/index.php`, `drive/tests/setup_entry_guard_smoke.php` |
 | `drive/thumb.php` | `drive/bloque_archivos.php`, `drive/js/imagenes.js` |
 | `drive/up.php` | `drive/src/Http/Controller/UploadCleanupController.php`, `drive/src/Upload/AdminMultipartUploadService.php`, `drive/tests/upload_catalog_registration_regression.php`, `drive/js/estilo.js` |
 | `drive/upload.php` | `drive/s3.php`, `drive/js/soportesMediaTypes.js`, `drive/js/subir-chunked.js`, `drive/js/subir-dropzone.js`, `drive/js/subir.js` |
@@ -361,6 +362,7 @@
 | `drive/tests/security_hardening_smoke.php` | ninguna |
 | `drive/tests/server_admin_config_smoke.php` | ninguna |
 | `drive/tests/setup_bootstrap_smoke.php` | ninguna |
+| `drive/tests/setup_entry_guard_smoke.php` | ninguna |
 | `drive/tests/smtp_config_smoke.php` | ninguna |
 | `drive/tests/sync_repository_regression.php` | ninguna |
 | `drive/tests/sync_schema_migrator_regression.php` | ninguna |

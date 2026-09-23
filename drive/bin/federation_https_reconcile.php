@@ -118,14 +118,6 @@ final class FederationHttpsReconciler
                 $hasCurrentCertificate = is_file($certDir . '/fullchain.pem')
                     && is_file($certDir . '/privkey.pem');
 
-                if (!$hasCurrentCertificate) {
-                    $this->writeAtomicText(
-                        $nginxIpConfig,
-                        $this->nginxChallengeConfig($host, $webroot)
-                    );
-                    $this->nginxReload($nginxBin, $systemctlBin);
-                }
-
                 $command = array_merge([
                     $certbotBin, 'certonly', '--non-interactive', '--agree-tos',
                     '--preferred-profile', 'shortlived',
@@ -144,7 +136,7 @@ final class FederationHttpsReconciler
 
                 $this->writeAtomicText(
                     $nginxIpConfig,
-                    $this->nginxDynamicIpConfig($host, $webroot, $backendHost)
+                    $this->nginxDynamicIpConfig($host)
                 );
                 $this->nginxReload($nginxBin, $systemctlBin);
             }
@@ -452,33 +444,11 @@ final class FederationHttpsReconciler
         return $host;
     }
 
-    private function nginxChallengeConfig(string $host, string $webroot): string
+    private function nginxDynamicIpConfig(string $ip): string
     {
-        return "# Managed by ArcadeCloud FederationCloud HTTPS.\n"
-            . "server {\n"
-            . "    listen 80;\n"
-            . "    server_name {$host};\n"
-            . "    root {$webroot};\n"
-            . '    location ^~ /.well-known/acme-challenge/ { try_files $uri =404; }' . "\n"
-            . "    location / { return 404; }\n"
-            . "}\n";
-    }
-
-    private function nginxDynamicIpConfig(
-        string $ip,
-        string $webroot,
-        string $backendHost
-    ): string {
         $certDir = '/etc/letsencrypt/live/' . $ip;
 
         return "# Managed by ArcadeCloud FederationCloud HTTPS. Do not edit manually.\n"
-            . "server {\n"
-            . "    listen 80;\n"
-            . "    server_name {$ip};\n"
-            . "    root {$webroot};\n"
-            . '    location ^~ /.well-known/acme-challenge/ { try_files $uri =404; }' . "\n"
-            . '    location / { return 301 https://$host$request_uri; }' . "\n"
-            . "}\n\n"
             . "server {\n"
             . "    listen 443 ssl;\n"
             . "    server_name {$ip};\n"
@@ -489,7 +459,7 @@ final class FederationHttpsReconciler
             . "    location / {\n"
             . "        proxy_pass http://127.0.0.1:80;\n"
             . "        proxy_http_version 1.1;\n"
-            . "        proxy_set_header Host {$backendHost};\n"
+            . '        proxy_set_header Host $host;' . "\n"
             . '        proxy_set_header X-Real-IP $remote_addr;' . "\n"
             . '        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;' . "\n"
             . "        proxy_set_header X-Forwarded-Proto https;\n"

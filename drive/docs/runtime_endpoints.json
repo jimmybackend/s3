@@ -215,7 +215,7 @@
     },
     {
       "path": "drive/bin/federation_catalog_migrate.php",
-      "size": 2586,
+      "size": 2845,
       "active": false,
       "references": [
         "drive/tests/federation_customs_contract_smoke.php",
@@ -2487,6 +2487,12 @@
       "references": []
     },
     {
+      "path": "drive/tests/database_schema_contract_smoke.php",
+      "size": 2635,
+      "active": false,
+      "references": []
+    },
+    {
       "path": "drive/tests/federation_access_message_smoke.php",
       "size": 2820,
       "active": false,
@@ -2500,7 +2506,7 @@
     },
     {
       "path": "drive/tests/federation_customs_contract_smoke.php",
-      "size": 6405,
+      "size": 6431,
       "active": false,
       "references": []
     },

@@ -345,6 +345,7 @@
 | `drive/tests/activity_costs_smoke.php` | ninguna |
 | `drive/tests/arcadelink_bulk_contract_regression.php` | ninguna |
 | `drive/tests/arcadelink_bundle_regression.php` | ninguna |
+| `drive/tests/database_schema_contract_smoke.php` | ninguna |
 | `drive/tests/federation_access_message_smoke.php` | ninguna |
 | `drive/tests/federation_catalog_event_smoke.php` | ninguna |
 | `drive/tests/federation_customs_contract_smoke.php` | ninguna |

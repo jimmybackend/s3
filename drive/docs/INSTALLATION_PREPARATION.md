@@ -88,9 +88,9 @@ El asistente web `/setup/` queda reducido a:
 Base de datos -> AWS/S3 -> primer superadmin
 ```
 
-La configuración básica deja el Drive utilizable por HTTP/IP aunque no exista dominio. FederationCloud
-conserva su identidad, pero permanece desactivado hasta que el superadmin configure explícitamente un
-endpoint HTTPS. Todo lo opcional permanece en No/no configurado hasta entonces.
+La configuración básica deja el Drive utilizable por HTTP/IP aunque no exista dominio y, cuando se
+detecta una IPv4 pública, activa FederationCloud/ArcadeLink sobre esa IP. Un dominio posterior exige
+HTTPS. Todo lo demás que sea opcional permanece en No/no configurado.
 
 ---
 
@@ -154,13 +154,13 @@ Cuando la obtiene, deriva:
 
 ```text
 ARCADECLOUD_PUBLIC_URL=http://IP_PUBLICA
-ARCADECLOUD_FEDERATION_URL=
-ARCADECLOUD_FEDERATION_ENABLED=false
+ARCADECLOUD_FEDERATION_URL=http://IP_PUBLICA/federationcloud/
+ARCADECLOUD_FEDERATION_ENABLED=true
 ```
 
-La IP HTTP es un endpoint válido y suficiente para dejar ArcadeCloud Drive instalado y operativo. Si no
-puede detectar una IP pública válida, **no bloquea el Drive**: lo deja preparado localmente y
-FederationCloud continúa desactivado.
+La IP HTTP es un endpoint válido y suficiente para dejar ArcadeCloud Drive y FederationCloud básico
+operativos. HTTP para FederationCloud se admite únicamente con una IP literal. Si no puede detectar una
+IP pública válida, **no bloquea el Drive**: lo deja preparado localmente y FederationCloud queda pendiente.
 
 Un dominio propio pertenece a Configuración avanzada. Cambiar posteriormente de IP a dominio no
 regenera `node_id`, Ed25519 ni `payload_key`.
@@ -474,13 +474,13 @@ detectar IPv4 pública
 -> generar node_name automáticamente
 -> generar identidad Ed25519
 -> PUBLIC_URL=http://IP
--> ARCADECLOUD_FEDERATION_ENABLED=false
--> FEDERATION_URL vacío
+-> ARCADECLOUD_FEDERATION_URL=http://IP/federationcloud/
+-> ARCADECLOUD_FEDERATION_ENABLED=true
 -> conservar seed predeterminado
 ```
 
-El Drive queda completamente utilizable por HTTP/IP. FederationCloud se habilita más adelante sólo si
-el superadmin configura un endpoint HTTPS explícito.
+El Drive, FederationCloud y ArcadeLink quedan utilizables por HTTP/IP en el modo básico. Si después se
+usa un dominio, el endpoint FederationCloud debe migrarse a HTTPS sin regenerar `node_id` ni llaves.
 
 El `node_name` automático puede cambiarse posteriormente sin cambiar `node_id` ni las llaves.
 

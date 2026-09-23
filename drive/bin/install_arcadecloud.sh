@@ -4,7 +4,8 @@ set -euo pipefail
 # ArcadeCloud Drive installer
 # Fase normal: prepara el servidor y abre el setup web de 3 pasos.
 # --finalize: después de completar /setup/, cierra la instalación básica.
-# FederationCloud sólo se activa si existe configuración HTTPS explícita.
+# FederationCloud se activa en modo básico sobre la IP pública literal.
+# Los dominios continúan exigiendo HTTPS.
 
 if [[ "${EUID}" -ne 0 ]]; then
   echo "ERROR: ejecuta este instalador con sudo/root." >&2
@@ -39,6 +40,7 @@ RUNTIME_ENV="$CONFIG_DIR/runtime-env.json"
 IDENTITY="$CONFIG_DIR/federation-node.json"
 SEEDS_JSON="$APP_ROOT/drive/config/federation-seeds.json"
 SERVER_PREP="$WEBROOT/bin/install_arcadecloud_server.sh"
+UPDATER_INSTALLER="$WEBROOT/bin/install_arcadecloud_updater.sh"
 
 fail() {
   echo "ERROR: $*" >&2
@@ -75,6 +77,7 @@ need sudo
 [[ -d "$APP_ROOT/.git" ]] || fail "$APP_ROOT no es un checkout Git de ArcadeCloud."
 [[ -f "$APP_ROOT/composer.json" ]] || fail "falta composer.json en $APP_ROOT."
 [[ -f "$WEBROOT/bin/install_arcadecloud_admin_helper.sh" ]] || fail "falta el instalador administrativo."
+[[ -f "$UPDATER_INSTALLER" ]] || fail "falta el instalador de ArcadeCloud Updater."
 [[ -f "$SEEDS_JSON" ]] || fail "falta drive/config/federation-seeds.json."
 
 pool_user_from_conf() {
@@ -162,6 +165,10 @@ install_helper() {
   bash "$WEBROOT/bin/install_arcadecloud_admin_helper.sh" --php-user="$PHP_USER"
 }
 
+install_updater() {
+  bash "$UPDATER_INSTALLER" --php-user="$PHP_USER" --repo-root="$APP_ROOT"
+}
+
 SETUP_ACTIVATION_URL=""
 
 prepare_setup_activation() {
@@ -238,15 +245,16 @@ import json, sys
 ip, seed = sys.argv[1], sys.argv[2]
 print(json.dumps({
     "ARCADECLOUD_PUBLIC_URL": f"http://{ip}",
-    "ARCADECLOUD_FEDERATION_URL": "",
-    "ARCADECLOUD_FEDERATION_ENABLED": "false",
+    "ARCADECLOUD_FEDERATION_URL": f"http://{ip}/federationcloud/",
+    "ARCADECLOUD_FEDERATION_ENABLED": "true",
     "ARCADECLOUD_FEDERATION_SEED_URL": seed,
 }, separators=(",", ":")))
 PY
 )"
     runtime_set_many "$payload"
     echo "✓ Drive básico preparado por HTTP con IP pública detectada: $public_ip"
-    echo "  FederationCloud conserva su identidad, pero queda desactivado hasta configurar un endpoint HTTPS."
+    echo "✓ FederationCloud/ArcadeLink activo en modo básico: http://$public_ip/federationcloud/"
+    echo "  Si luego usas un dominio, FederationCloud exigirá HTTPS sin regenerar la identidad del nodo."
   else
     payload="$(python3 - "$seed" <<'PY'
 import json, sys
@@ -321,9 +329,22 @@ try:
         data = json.load(f)
 except Exception:
     raise SystemExit(1)
+import ipaddress
+from urllib.parse import urlparse
+
 enabled = str(data.get("ARCADECLOUD_FEDERATION_ENABLED", "")).strip().lower()
-url = str(data.get("ARCADECLOUD_FEDERATION_URL", "")).strip().lower()
-ok = enabled in {"1", "true", "yes", "on"} and url.startswith("https://")
+url = str(data.get("ARCADECLOUD_FEDERATION_URL", "")).strip()
+ok = False
+if enabled in {"1", "true", "yes", "on"}:
+    parsed = urlparse(url)
+    if parsed.scheme == "https" and parsed.hostname:
+        ok = True
+    elif parsed.scheme == "http" and parsed.hostname:
+        try:
+            ipaddress.ip_address(parsed.hostname)
+            ok = True
+        except ValueError:
+            pass
 raise SystemExit(0 if ok else 1)
 PY
 }
@@ -347,32 +368,44 @@ if missing:
 PY
 
   bash "$WEBROOT/bin/install_arcadecloud_admin_helper.sh" --php-user="$PHP_USER"
+  install_updater
 
   if federation_runtime_enabled; then
     bash "$WEBROOT/bin/install_federation_sync_timer.sh"       --run-user="$PHP_USER"       --app-root="$APP_ROOT"       --interval-sec=120
 
-    if command -v certbot >/dev/null 2>&1 && command -v nginx >/dev/null 2>&1; then
-      bash "$WEBROOT/bin/install_federation_https_service.sh"         --run-user="$PHP_USER"         --app-root="$APP_ROOT"         --webroot="$WEBROOT"
+    federation_url="$(python3 - "$RUNTIME_ENV" <<'PY'
+import json, sys
+with open(sys.argv[1], encoding="utf-8") as f:
+    print(str(json.load(f).get("ARCADECLOUD_FEDERATION_URL", "")).strip())
+PY
+)"
 
-      if systemctl start arcadecloud-federation-https.service; then
-        systemctl enable --now arcadecloud-federation-https.timer
-        echo "✓ HTTPS FederationCloud reconciliado y timer habilitado."
+    if [[ "$federation_url" == https://* ]]; then
+      if command -v certbot >/dev/null 2>&1 && command -v nginx >/dev/null 2>&1; then
+        bash "$WEBROOT/bin/install_federation_https_service.sh" --run-user="$PHP_USER" --app-root="$APP_ROOT" --webroot="$WEBROOT"
+
+        if systemctl start arcadecloud-federation-https.service; then
+          systemctl enable --now arcadecloud-federation-https.timer
+          echo "✓ HTTPS FederationCloud reconciliado y timer habilitado."
+        else
+          echo "⚠ FederationCloud está activo, pero la reconciliación HTTPS quedó pendiente." >&2
+          echo "  Revisa: systemctl status arcadecloud-federation-https.service --no-pager" >&2
+        fi
       else
-        echo "⚠ Drive quedó instalado, pero FederationCloud HTTPS sigue pendiente." >&2
-        echo "  Revisa: systemctl status arcadecloud-federation-https.service --no-pager" >&2
+        echo "⚠ FederationCloud usa HTTPS, pero Certbot/Nginx no están disponibles para reconciliarlo." >&2
       fi
     else
-      echo "⚠ FederationCloud está habilitado, pero Certbot/Nginx no están disponibles para reconciliar HTTPS." >&2
+      echo "✓ FederationCloud opera en modo básico HTTP sobre IP literal; no se intenta Certbot."
     fi
 
-    systemctl is-active arcadecloud-federation-sync.timer >/dev/null       && echo "✓ FederationCloud sync timer activo."
+    systemctl is-active arcadecloud-federation-sync.timer >/dev/null && echo "✓ FederationCloud sync timer activo."
   else
-    echo "✓ FederationCloud permanece desactivado: no se exige dominio ni HTTPS para usar el Drive."
+    echo "⚠ FederationCloud no pudo activarse porque no hay un endpoint público válido."
   fi
 
   echo
   echo "ArcadeCloud Drive: instalación básica finalizada."
-  echo "La IP HTTP es válida como endpoint del Drive. Dominio, HTTPS y FederationCloud son opcionales."
+  echo "La IP HTTP es válida para Drive y FederationCloud básico. Un dominio posterior deberá usar HTTPS."
   echo "Las opciones avanzadas quedan disponibles dentro de Servidor -> Configuración avanzada."
 }
 
@@ -389,6 +422,7 @@ fi
 
 prepare_composer
 install_helper
+install_updater
 prepare_federation_basic
 prepare_setup_activation
 show_setup_url

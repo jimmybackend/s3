@@ -164,16 +164,18 @@ Ese estado ya es válido para usar ArcadeCloud Drive. La instalación básica gu
 
 ~~~text
 ARCADECLOUD_PUBLIC_URL=http://IP_PUBLICA
-ARCADECLOUD_FEDERATION_ENABLED=false
+ARCADECLOUD_FEDERATION_URL=http://IP_PUBLICA/federationcloud/
+ARCADECLOUD_FEDERATION_ENABLED=true
 ~~~
 
-La identidad FederationCloud se genera y conserva, pero FederationCloud no se activa hasta que el
-administrador configure explícitamente un endpoint HTTPS. No se crea un certificado autofirmado ni se
-fuerza al usuario a tener dominio.
+La identidad FederationCloud se genera y FederationCloud/ArcadeLink queda activo desde la instalación
+básica cuando existe una IPv4 pública. HTTP sólo se admite en este modo cuando el host es una IP literal.
+Si posteriormente se configura un dominio, FederationCloud exige HTTPS y conserva la misma identidad
+criptográfica del nodo.
 
 ## Setup básico
 
-Después de preparar servidor, Composer, helper e identidad, /setup/ solicita únicamente:
+Después de preparar servidor, Composer, helper administrativo, updater e identidad, /setup/ solicita únicamente:
 
 ~~~text
 1. MySQL
@@ -191,12 +193,10 @@ Después de cerrar correctamente /setup/:
 sudo bash drive/bin/install_arcadecloud.sh --finalize
 ~~~
 
-La finalización vuelve a ejecutar el preflight de forma idempotente y cierra la instalación básica.
-Si FederationCloud continúa desactivado, no instala sus timers ni intenta Certbot: el Drive permanece
-completamente utilizable por HTTP/IP.
-
-Sólo cuando el administrador haya habilitado FederationCloud y configurado una URL HTTPS explícita,
-la finalización instala sus timers y ejecuta la reconciliación HTTPS.
+La finalización vuelve a ejecutar el preflight de forma idempotente, instala/verifica también el helper
+de actualizaciones usado por **Acerca de** y cierra la instalación básica. Si FederationCloud está activo
+sobre una IP literal HTTP, instala su timer de sincronización pero no intenta Certbot. Si el endpoint
+FederationCloud usa HTTPS, además ejecuta la reconciliación HTTPS.
 
 ## Idempotencia y seguridad
 

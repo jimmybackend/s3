@@ -100,7 +100,9 @@ final class FederationDropService
             'drop_id' => $dropId,
             'owner_email' => $email,
             'owner_token_hash' => hash('sha256', $ownerToken),
+            'owner_token_ciphertext' => $this->encryptToken($ownerToken),
             'public_token_hash' => hash('sha256', $publicToken),
+            'public_token_ciphertext' => $this->encryptToken($publicToken),
             'source_domain' => $sourceDomain,
             'original_name' => $filename,
             's3_key' => $key,
@@ -149,7 +151,7 @@ final class FederationDropService
         );
         if ((string)$updated['Status'] === 'active') {
             $this->repository->createCentralPlacement($dropId, (string)$updated['CustodyNodeId']);
-            $this->sendActivationEmail($updated, $ownerToken);
+            $this->sendActivationEmail($updated);
         }
         return $this->ownerView($updated, $ownerToken);
     }
@@ -266,9 +268,7 @@ final class FederationDropService
         $updated = $this->repository->markPaid($dropId, $provider, $reference);
         if ((string)$updated['Status'] === 'active') {
             $this->repository->createCentralPlacement($dropId, (string)$updated['CustodyNodeId']);
-            // El owner token no se almacena en texto plano. El navegador ya lo conserva;
-            // el correo de activación se envía desde completeUpload cuando el pago ya existía,
-            // o mediante el enlace de gestión recuperable por un flujo de correo futuro.
+            $this->sendActivationEmail($updated);
         }
 
         return [
@@ -351,23 +351,54 @@ final class FederationDropService
             . '&t=' . rawurlencode($publicToken);
     }
 
-    private function sendActivationEmail(array $row, string $ownerToken): void
+    private function sendActivationEmail(array $row): void
     {
         try {
-            // Public token is deliberately not recoverable from the database. When payment
-            // follows upload, the browser retains it and presents the share URLs immediately.
-            // The owner management link remains recoverable from this email.
+            $ownerToken = $this->decryptToken((string)($row['OwnerTokenCiphertext'] ?? ''));
+            $publicToken = $this->decryptToken((string)($row['PublicTokenCiphertext'] ?? ''));
+            $dropId = (string)$row['DropId'];
+            $manageUrl = $this->config->publicUrl . '/?manage=' . rawurlencode($dropId)
+                . '&owner_token=' . rawurlencode($ownerToken);
+            $shareUrl = $this->publicDownloadUrl($dropId, $publicToken);
+            $arcadeLinkUrl = $this->config->publicUrl . '/arcadelink.php?id=' . rawurlencode($dropId)
+                . '&t=' . rawurlencode($publicToken);
+
             SmtpEmailService::fromEnvironment()->sendFederationDropAccess(
                 (string)$row['OwnerEmail'],
                 (string)$row['OriginalName'],
-                $this->config->publicUrl . '/?manage=' . rawurlencode((string)$row['DropId'])
-                    . '&owner_token=' . rawurlencode($ownerToken),
+                $shareUrl,
+                $manageUrl,
+                $arcadeLinkUrl,
                 (string)($row['ExpiresAt'] ?? ''),
                 (int)$row['MaxDownloads']
             );
         } catch (\Throwable $e) {
             error_log('[FederationDrop mail] ' . $e->getMessage());
         }
+    }
+
+    private function encryptToken(string $token): string
+    {
+        $key = hash('sha256', 'federationdrop-token|' . $this->config->webhookSecret, true);
+        $nonce = random_bytes(SODIUM_CRYPTO_SECRETBOX_NONCEBYTES);
+        $ciphertext = sodium_crypto_secretbox($token, $nonce, $key);
+        return FederationCodec::base64UrlEncode($nonce . $ciphertext);
+    }
+
+    private function decryptToken(string $encoded): string
+    {
+        $raw = FederationCodec::base64UrlDecode($encoded);
+        if (strlen($raw) <= SODIUM_CRYPTO_SECRETBOX_NONCEBYTES) {
+            throw new FederationException('Token FederationDrop cifrado inválido.', 500);
+        }
+        $nonce = substr($raw, 0, SODIUM_CRYPTO_SECRETBOX_NONCEBYTES);
+        $ciphertext = substr($raw, SODIUM_CRYPTO_SECRETBOX_NONCEBYTES);
+        $key = hash('sha256', 'federationdrop-token|' . $this->config->webhookSecret, true);
+        $plain = sodium_crypto_secretbox_open($ciphertext, $nonce, $key);
+        if (!is_string($plain) || $plain === '') {
+            throw new FederationException('No se pudo recuperar un token FederationDrop.', 500);
+        }
+        return $plain;
     }
 
     private function validatePlan(int $sizeBytes, int $days, int $downloads): void

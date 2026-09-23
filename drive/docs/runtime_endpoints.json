@@ -201,9 +201,11 @@
     },
     {
       "path": "drive/bin/arcadecloud-drive-admin-helper.php",
-      "size": 17358,
+      "size": 22554,
       "active": false,
-      "references": []
+      "references": [
+        "drive/tests/setup_finalize_contract_smoke.php"
+      ]
     },
     {
       "path": "drive/bin/arcadecloud-drive-updater.php",
@@ -1001,7 +1003,7 @@
     },
     {
       "path": "drive/setup/index.php",
-      "size": 5655,
+      "size": 5725,
       "active": true,
       "references": [
         "drive/bloque_archivos.php",
@@ -1073,10 +1075,11 @@
     },
     {
       "path": "drive/src/Admin/PrivilegedServerHelper.php",
-      "size": 4890,
+      "size": 5957,
       "active": false,
       "references": [
-        "drive/setup/api.php"
+        "drive/setup/api.php",
+        "drive/tests/setup_finalize_contract_smoke.php"
       ]
     },
     {
@@ -1526,9 +1529,11 @@
     },
     {
       "path": "drive/src/Federation/FederationNodeAdminService.php",
-      "size": 10193,
+      "size": 10914,
       "active": false,
-      "references": []
+      "references": [
+        "drive/tests/setup_finalize_contract_smoke.php"
+      ]
     },
     {
       "path": "drive/src/Federation/FederationNodeDescriptorValidator.php",
@@ -2169,10 +2174,11 @@
     },
     {
       "path": "drive/src/Setup/SuperAdminBootstrapService.php",
-      "size": 11495,
+      "size": 12108,
       "active": false,
       "references": [
-        "drive/setup/api.php"
+        "drive/setup/api.php",
+        "drive/tests/setup_finalize_contract_smoke.php"
       ]
     },
     {
@@ -2583,6 +2589,12 @@
     {
       "path": "drive/tests/setup_entry_guard_smoke.php",
       "size": 905,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/tests/setup_finalize_contract_smoke.php",
+      "size": 2556,
       "active": false,
       "references": []
     },

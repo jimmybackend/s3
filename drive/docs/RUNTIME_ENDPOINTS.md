@@ -53,7 +53,7 @@
 |---|---|
 | `drive/actualizar_ruta.php` | `drive/js/carpetas.js`, `drive/js/obtenerFiltros.js` |
 | `drive/background_tasks.php` | `drive/js/background-tasks.js` |
-| `drive/bin/arcadecloud-drive-admin-helper.php` | ninguna |
+| `drive/bin/arcadecloud-drive-admin-helper.php` | `drive/tests/setup_finalize_contract_smoke.php` |
 | `drive/bin/arcadecloud-drive-updater.php` | ninguna |
 | `drive/bin/federation_catalog_migrate.php` | `drive/tests/federation_customs_contract_smoke.php` |
 | `drive/bin/federation_endpoint_refresh.php` | `drive/bin/federation_https_reconcile.php`, `drive/tests/federation_customs_contract_smoke.php`, `drive/tests/federation_https_contract_smoke.php`, `drive/tests/federation_replica_reconnect_contract_smoke.php` |
@@ -139,7 +139,7 @@
 | `drive/src/Activity/TranscriptionCostAttribution.php` | ninguna |
 | `drive/src/Activity/TranscriptionReconciler.php` | ninguna |
 | `drive/src/Admin/ArcadeCloudUpdaterService.php` | ninguna |
-| `drive/src/Admin/PrivilegedServerHelper.php` | `drive/setup/api.php` |
+| `drive/src/Admin/PrivilegedServerHelper.php` | `drive/setup/api.php`, `drive/tests/setup_finalize_contract_smoke.php` |
 | `drive/src/Admin/ServerSettingsAdminService.php` | ninguna |
 | `drive/src/Application/AiFileSearchService.php` | ninguna |
 | `drive/src/Application/BackgroundWorkerLauncher.php` | ninguna |
@@ -203,7 +203,7 @@
 | `drive/src/Federation/FederationHttpClient.php` | `drive/bin/federation_provider_request.php`, `drive/tests/federation_replica_reconnect_contract_smoke.php` |
 | `drive/src/Federation/FederationIngressQueueRepository.php` | `drive/tests/federation_customs_contract_smoke.php` |
 | `drive/src/Federation/FederationLocationSelector.php` | `drive/tests/federation_replica_smoke.php` |
-| `drive/src/Federation/FederationNodeAdminService.php` | ninguna |
+| `drive/src/Federation/FederationNodeAdminService.php` | `drive/tests/setup_finalize_contract_smoke.php` |
 | `drive/src/Federation/FederationNodeDescriptorValidator.php` | `drive/bin/federation_provider_request.php`, `drive/tests/federation_directory_smoke.php` |
 | `drive/src/Federation/FederationNodeRepository.php` | `drive/tests/federation_customs_contract_smoke.php` |
 | `drive/src/Federation/FederationPeerSyncRepository.php` | ninguna |
@@ -296,7 +296,7 @@
 | `drive/src/Security/UserProfileValidator.php` | `drive/tests/user_profile_validator_smoke.php` |
 | `drive/src/Setup/SetupApiController.php` | `drive/setup/api.php` |
 | `drive/src/Setup/SetupConfigurationService.php` | `drive/setup/api.php` |
-| `drive/src/Setup/SuperAdminBootstrapService.php` | `drive/setup/api.php` |
+| `drive/src/Setup/SuperAdminBootstrapService.php` | `drive/setup/api.php`, `drive/tests/setup_finalize_contract_smoke.php` |
 | `drive/src/Sharing/ShareAccessService.php` | ninguna |
 | `drive/src/Sharing/ShareException.php` | ninguna |
 | `drive/src/Sharing/ShareFileRepository.php` | ninguna |
@@ -363,6 +363,7 @@
 | `drive/tests/server_admin_config_smoke.php` | ninguna |
 | `drive/tests/setup_bootstrap_smoke.php` | ninguna |
 | `drive/tests/setup_entry_guard_smoke.php` | ninguna |
+| `drive/tests/setup_finalize_contract_smoke.php` | ninguna |
 | `drive/tests/smtp_config_smoke.php` | ninguna |
 | `drive/tests/sync_repository_regression.php` | ninguna |
 | `drive/tests/sync_schema_migrator_regression.php` | ninguna |

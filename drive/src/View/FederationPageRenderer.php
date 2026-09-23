@@ -172,7 +172,11 @@ final class FederationPageRenderer
               </div>
             </div>
             <div class="federation-resource-actions">
-              <?php if (!empty($resource['can_open']) && !empty($resource['local']) && $raw !== ''): ?>
+              <?php if (!empty($resource['external_url']) && !empty($resource['can_open'])): ?>
+                <a class="btn btn-primary" rel="noopener noreferrer" href="<?= $h($resource['external_url']) ?>">
+                  <i class="fas fa-download mr-1"></i> Descargar
+                </a>
+              <?php elseif (!empty($resource['can_open']) && !empty($resource['local']) && $raw !== ''): ?>
                 <form method="post" class="m-0">
                   <input type="hidden" name="action" value="open">
                   <input type="hidden" name="arcadelink_text" value="<?= $h($raw) ?>">

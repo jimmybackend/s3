@@ -18,7 +18,7 @@ final class FederationDropRepository
             (DropId, OwnerEmail, OwnerTokenHash, OwnerTokenCiphertext, PublicTokenHash, PublicTokenCiphertext, SourceDomain, OriginalName, S3Key,
              MimeType, ExpectedSizeBytes, RetentionDays, MaxDownloads, AmountCents, Currency,
              PaymentStatus, Status, CustodyNodeId, CreatedAt)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', 'pending_upload', ?, UTC_TIMESTAMP(6))"
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', 'pending_payment', ?, UTC_TIMESTAMP(6))"
         );
         if (!$stmt) throw new FederationException('No se pudo preparar FederationDrop.', 500);
         $stmt->bind_param(

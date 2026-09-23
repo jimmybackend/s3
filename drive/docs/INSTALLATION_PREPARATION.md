@@ -274,8 +274,10 @@ El repositorio tiene **un solo SQL canónico**:
 adbbmis1_Cloud.sql
 ```
 
-Una base nueva y vacía para ArcadeCloud se crea/importa únicamente desde ese archivo. El dump contiene
-el esquema base y la sección completa FederationCloud, incluida `FederationEvents`.
+Una base nueva y vacía para ArcadeCloud se crea/importa únicamente desde ese archivo. El operador o
+instalador crea/selecciona primero la DB objetivo y luego importa el dump dentro de ella. El SQL canónico
+**no contiene `CREATE DATABASE` ni `USE`**, para impedir que una importación de prueba cambie accidentalmente
+a otra base. El dump contiene el esquema base y la sección completa FederationCloud, incluida `FederationEvents`.
 
 Para poder crear el primer superadmin debe existir la tabla:
 

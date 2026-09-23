@@ -117,14 +117,11 @@ final class FederationDropService
 
         $checkoutUrl = $this->checkoutUrl($dropId, (int)$quote['amount_cents'], $this->config->currency);
         $this->repository->setCheckoutUrl($dropId, $checkoutUrl);
-        $upload = $this->storage->presignedUpload($key, $mimeType, $sizeBytes);
 
         return [
             'ok' => true,
             'drop_id' => $dropId,
             'owner_token' => $ownerToken,
-            'public_token' => $publicToken,
-            'upload' => $upload,
             'quote' => $quote,
             'checkout_url' => $checkoutUrl,
             'status_url' => $this->config->publicUrl . '/?manage=' . rawurlencode($dropId),
@@ -133,11 +130,32 @@ final class FederationDropService
         ];
     }
 
+    public function authorizeUpload(string $dropId, string $ownerToken): array
+    {
+        $row = $this->requireOwner($dropId, $ownerToken);
+        if ((string)$row['PaymentStatus'] !== 'paid' || (string)$row['Status'] !== 'pending_upload') {
+            throw new FederationException('La subida FederationDrop se habilita únicamente después del pago confirmado.', 409);
+        }
+        if (!empty($row['UploadedAt'])) {
+            throw new FederationException('Este FederationDrop ya tiene un objeto subido.', 409);
+        }
+
+        return [
+            'ok' => true,
+            'drop_id' => $dropId,
+            'upload' => $this->storage->presignedUpload(
+                (string)$row['S3Key'],
+                (string)$row['MimeType'],
+                (int)$row['ExpectedSizeBytes']
+            ),
+        ];
+    }
+
     public function completeUpload(string $dropId, string $ownerToken): array
     {
         $row = $this->requireOwner($dropId, $ownerToken);
-        if (in_array((string)$row['Status'], ['deleted','expired','blocked'], true)) {
-            throw new FederationException('Este FederationDrop ya no acepta la subida.', 410);
+        if ((string)$row['PaymentStatus'] !== 'paid' || (string)$row['Status'] !== 'pending_upload') {
+            throw new FederationException('Este FederationDrop no tiene una subida pagada pendiente.', 409);
         }
         $verified = $this->storage->verifyUploaded(
             (string)$row['S3Key'],
@@ -262,11 +280,25 @@ final class FederationDropService
         );
 
         if ($status !== 'paid') {
-            return ['ok' => true, 'accepted' => true, 'duplicate' => !$inserted, 'status' => $status];
+            $updated = $this->repository->markPaymentState($dropId, $status, $provider, $reference);
+            if ($status === 'refunded' && $inserted) {
+                try {
+                    if (!empty($updated['UploadedAt'])) $this->storage->delete((string)$updated['S3Key']);
+                } catch (\Throwable $e) {
+                    error_log('[FederationDrop refund cleanup] ' . $e->getMessage());
+                }
+            }
+            return [
+                'ok' => true,
+                'accepted' => true,
+                'duplicate' => !$inserted,
+                'status' => (string)$updated['Status'],
+                'payment_status' => (string)$updated['PaymentStatus'],
+            ];
         }
 
         $updated = $this->repository->markPaid($dropId, $provider, $reference);
-        if ((string)$updated['Status'] === 'active') {
+        if ($inserted && (string)$updated['Status'] === 'active') {
             $this->repository->createCentralPlacement($dropId, (string)$updated['CustodyNodeId']);
             $this->sendActivationEmail($updated);
         }
@@ -325,6 +357,7 @@ final class FederationDropService
             'max_downloads' => (int)$row['MaxDownloads'],
             'download_count' => (int)$row['DownloadCount'],
             'checkout_url' => (string)($row['CheckoutUrl'] ?? ''),
+            'can_upload' => (string)$row['PaymentStatus'] === 'paid' && (string)$row['Status'] === 'pending_upload',
             'expires_at' => $row['ExpiresAt'],
             'manage_url' => $this->config->publicUrl . '/?manage=' . rawurlencode($dropId)
                 . '&owner_token=' . rawurlencode($ownerToken),

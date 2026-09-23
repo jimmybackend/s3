@@ -34,7 +34,7 @@
 | `drive/background_tasks.php` | 18 | thin endpoint | 0 | — | — | — | — |
 | `drive/bin/arcadecloud-drive-admin-helper.php` | 608 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/bin/arcadecloud-drive-updater.php` | 207 | class/module | 1 | — | — | — | — |
-| `drive/bin/federation_catalog_migrate.php` | 45 | thin cli entrypoint | 0 | — | — | — | — |
+| `drive/bin/federation_catalog_migrate.php` | 89 | thin cli entrypoint | 0 | — | ⚠️ | — | — |
 | `drive/bin/federation_endpoint_refresh.php` | 87 | thin cli entrypoint | 0 | — | — | — | — |
 | `drive/bin/federation_https_reconcile.php` | 474 | class/module | 1 | — | — | — | — |
 | `drive/bin/federation_identity_backup.php` | 49 | thin cli entrypoint | 0 | — | — | — | — |
@@ -363,7 +363,7 @@
 | `drive/tests/server_admin_config_smoke.php` | 111 | test script | 0 | — | — | — | — |
 | `drive/tests/setup_bootstrap_smoke.php` | 57 | test script | 0 | — | — | — | — |
 | `drive/tests/setup_entry_guard_smoke.php` | 38 | test script | 0 | — | — | — | — |
-| `drive/tests/setup_finalize_contract_smoke.php` | 42 | test script | 0 | — | — | — | — |
+| `drive/tests/setup_finalize_contract_smoke.php` | 50 | test script | 0 | — | — | — | — |
 | `drive/tests/smtp_config_smoke.php` | 49 | test script | 0 | — | — | — | — |
 | `drive/tests/sync_repository_regression.php` | 91 | test script | 0 | — | ⚠️ | — | — |
 | `drive/tests/sync_schema_migrator_regression.php` | 75 | test script | 0 | — | ⚠️ | — | — |

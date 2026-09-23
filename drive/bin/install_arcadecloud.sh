@@ -361,6 +361,17 @@ raise SystemExit(0 if ok else 1)
 PY
 }
 
+migrate_federation_schema() {
+  local migrator="$WEBROOT/bin/federation_catalog_migrate.php"
+  [[ -f "$migrator" ]] || fail "falta el migrador FederationCloud: $migrator"
+
+  echo "==> Migrando esquema FederationCloud antes del registro global."
+  if ! runuser -u "$PHP_USER" -- php "$migrator"; then
+    fail "No se pudo preparar el esquema FederationCloud en MySQL; el setup permanece abierto para reintentar."
+  fi
+  echo "✓ Esquema FederationCloud preparado antes del registro global."
+}
+
 finalize_installation() {
   local require_lock="${1:-1}"
   if [[ "$require_lock" -eq 1 ]]; then
@@ -396,6 +407,11 @@ PY
       --app-root="$APP_ROOT" \
       --webroot="$WEBROOT" \
       --certbot-bin="$certbot_bin"
+
+    # El reconciliador HTTPS también intenta republicar el descriptor al terminar.
+    # El catálogo/Aduana debe existir antes de arrancarlo o un nodo nuevo fallará
+    # con tablas como FederationEvents aún ausentes.
+    migrate_federation_schema
 
     if ! systemctl start arcadecloud-federation-https.service; then
       systemctl status arcadecloud-federation-https.service --no-pager >&2 || true

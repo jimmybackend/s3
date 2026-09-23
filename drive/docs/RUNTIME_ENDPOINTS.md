@@ -55,8 +55,8 @@
 | `drive/background_tasks.php` | `drive/js/background-tasks.js` |
 | `drive/bin/arcadecloud-drive-admin-helper.php` | `drive/tests/setup_finalize_contract_smoke.php` |
 | `drive/bin/arcadecloud-drive-updater.php` | ninguna |
-| `drive/bin/federation_catalog_migrate.php` | `drive/tests/federation_customs_contract_smoke.php` |
-| `drive/bin/federation_endpoint_refresh.php` | `drive/bin/federation_https_reconcile.php`, `drive/tests/federation_customs_contract_smoke.php`, `drive/tests/federation_https_contract_smoke.php`, `drive/tests/federation_replica_reconnect_contract_smoke.php` |
+| `drive/bin/federation_catalog_migrate.php` | `drive/tests/federation_customs_contract_smoke.php`, `drive/tests/setup_finalize_contract_smoke.php` |
+| `drive/bin/federation_endpoint_refresh.php` | `drive/bin/federation_https_reconcile.php`, `drive/tests/federation_customs_contract_smoke.php`, `drive/tests/federation_https_contract_smoke.php`, `drive/tests/federation_replica_reconnect_contract_smoke.php`, `drive/tests/setup_finalize_contract_smoke.php` |
 | `drive/bin/federation_https_reconcile.php` | `drive/tests/federation_https_contract_smoke.php` |
 | `drive/bin/federation_identity_backup.php` | ninguna |
 | `drive/bin/federation_identity_init.php` | ninguna |

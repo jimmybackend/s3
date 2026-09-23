@@ -99,7 +99,12 @@ se detenga esperando una respuesta interactiva.
 Para FederationCloud global, el nodo debe publicar un endpoint HTTPS verificable. Si el Certbot del
 sistema ya es 5.4 o superior se reutiliza. Si es más antiguo, ArcadeCloud instala un Certbot moderno
 aislado bajo `/opt/arcadecloud-certbot` y lo expone como
-`/usr/local/bin/arcadecloud-certbot`, sin reemplazar el paquete del sistema. Esto permite obtener
+`/usr/local/bin/arcadecloud-certbot`, sin reemplazar el paquete del sistema.
+
+Amazon Linux 2023 conserva `/usr/bin/python3` en Python 3.9 por compatibilidad del sistema. Como
+Certbot 5.4+ requiere Python 3.10 o superior, ArcadeCloud no cambia ese intérprete del sistema: selecciona
+un Python versionado compatible y, si hace falta, instala `python3.11` (y su paquete pip disponible)
+en paralelo. El entorno virtual de Certbot se crea con ese intérprete aislado. Esto permite obtener
 certificados HTTPS de IP pública durante la finalización cuando el nodo no tiene dominio.
 
 ## PHP-FPM

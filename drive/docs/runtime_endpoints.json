@@ -1025,13 +1025,13 @@
     },
     {
       "path": "drive/src/Activity/ActivityCostRepository.php",
-      "size": 6704,
+      "size": 7575,
       "active": false,
       "references": []
     },
     {
       "path": "drive/src/Activity/ActivityCostService.php",
-      "size": 5556,
+      "size": 5706,
       "active": false,
       "references": []
     },
@@ -1730,7 +1730,7 @@
     },
     {
       "path": "drive/src/Http/Controller/ActivityCostController.php",
-      "size": 2764,
+      "size": 2849,
       "active": false,
       "references": []
     },
@@ -2354,7 +2354,7 @@
     },
     {
       "path": "drive/src/View/ActivityCostPageRenderer.php",
-      "size": 17271,
+      "size": 19709,
       "active": false,
       "references": []
     },
@@ -2470,7 +2470,7 @@
     },
     {
       "path": "drive/tests/activity_costs_smoke.php",
-      "size": 7350,
+      "size": 8064,
       "active": false,
       "references": []
     },

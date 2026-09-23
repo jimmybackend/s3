@@ -297,6 +297,8 @@ idempotente delimitada por:
 
 Así el repositorio conserva una sola fuente SQL sin borrar datos al actualizar un nodo existente.
 
+El archivo canónico se mantiene alineado con el esquema funcional de producción, pero se sanea para instalación limpia: no incluye filas ligadas a un usuario existente (por ejemplo `UserPipelineFeatures`, `UserPreferences` o overrides `voice_main` de usuario). Sí incluye tablas runtime necesarias como `S3SyncSeen` y el índice vigente `uq_files3_user_path_key` de `FileS3`.
+
 ## Qué valida ArcadeCloud
 
 Antes de guardar el bloque DB intenta una conexión real. Si falla, no guarda el cambio.

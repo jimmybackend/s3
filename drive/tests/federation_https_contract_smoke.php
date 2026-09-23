@@ -14,6 +14,7 @@ $root = dirname(__DIR__);
 $reconcile = (string)file_get_contents($root . '/bin/federation_https_reconcile.php');
 $installer = (string)file_get_contents($root . '/bin/install_federation_https_service.sh');
 $refresh = (string)file_get_contents($root . '/bin/federation_endpoint_refresh.php');
+$serverInstaller = (string)file_get_contents($root . '/bin/install_arcadecloud_server.sh');
 
 httpsContractOk(str_contains($reconcile, '169.254.169.254/latest/api/token'), 'usa EC2 IMDSv2 para detectar IPv4 pública');
 httpsContractOk(str_contains($reconcile, 'X-aws-ec2-metadata-token-ttl-seconds'), 'solicita token IMDSv2');
@@ -25,6 +26,11 @@ httpsContractOk(str_contains($reconcile, "\$runtime['ARCADECLOUD_PUBLIC_URL']"),
 httpsContractOk(str_contains($reconcile, "\$runtime['ARCADECLOUD_FEDERATION_URL']"), 'actualiza federation_url administrada');
 httpsContractOk(str_contains($reconcile, 'federation_endpoint_refresh.php'), 'republica descriptor después de reconciliar endpoint');
 httpsContractOk(str_contains($reconcile, 'proxy_pass http://127.0.0.1:80'), 'modo IP sólo hace proxy hacia backend HTTP local');
+httpsContractOk(str_contains($reconcile, 'proxy_set_header Host $host;'), 'proxy HTTPS conserva el Host público para seleccionar el vhost ArcadeCloud');
+httpsContractOk(!str_contains($reconcile, 'nginxChallengeConfig'), 'reconciliador no crea un segundo vhost HTTP conflictivo');
+httpsContractOk(!str_contains($reconcile, '--backend-host'), 'reconciliador no sustituye el Host público por localhost');
+httpsContractOk(str_contains($serverInstaller, 'location ^~ /.well-known/acme-challenge/'), 'vhost HTTP principal permite explícitamente HTTP-01');
+httpsContractOk(str_contains($serverInstaller, 'location ~ /\\.'), 'protección de dotfiles permanece después de la excepción ACME');
 httpsContractOk(!str_contains($reconcile, 'shell_exec('), 'no usa shell_exec');
 httpsContractOk(!preg_match('/\bexec\s*\(/', $reconcile), 'no usa exec arbitrario');
 httpsContractOk(str_contains($reconcile, "['bypass_shell' => true]"), 'proc_open evita interpretación de shell para comandos externos');

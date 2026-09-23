@@ -250,7 +250,9 @@ final class ArcadeLinkService
             throw new FederationException('No se puede identificar una colección vacía.');
         }
         $message = 'arcadelink:v2:collection:' . implode('|', $resourceIds);
-        $digest = hash_hmac('sha256', $message, $this->identity->payloadKey(), true);
+        // El identificador de colección debe poder recalcularse en cualquier nodo.
+        // La autenticidad la aporta la firma Ed25519 del documento, no un HMAC local.
+        $digest = hash('sha256', $message, true);
         return 'arl_' . FederationCodec::base64UrlEncode(substr($digest, 0, 18));
     }
 

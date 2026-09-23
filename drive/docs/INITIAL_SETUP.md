@@ -139,11 +139,14 @@ actualizarla después. Si `Users` ya contiene registros pero no existe un supera
 detiene y no eleva privilegios automáticamente sobre una base existente.
 
 Después del INSERT vuelve a consultar MySQL para comprobar que ese mismo usuario quedó persistido.
-Sólo entonces elimina la credencial temporal `arcadecloud`.
+Sólo entonces inicia la finalización automática de HTTPS y FederationCloud. La credencial temporal
+`arcadecloud` se elimina únicamente cuando esa finalización termina correctamente.
 
 `arcadecloud` nunca se inserta en la tabla `Users`: sólo existe en el archivo temporal de bootstrap.
 
-Si ya existe un superadmin, no se crea otro: el setup simplemente completa el cierre del supervisor temporal.
+Si ya existe un superadmin, no se crea otro: el setup reutiliza ese usuario y ejecuta la misma
+finalización automática. Esto permite reinstalar ArcadeCloud sobre una base existente sin crear un
+segundo superadmin.
 
 
 
@@ -176,11 +179,8 @@ En una EC2 que todavía no tenga Git puede usarse el bootstrap de raíz
 `bootstrap_arcadecloud.sh`. Consulta `AUTOMATED_INSTALLER.md` para el contrato completo,
 idempotencia y archivos del sistema administrados.
 
-Después de completar los tres pasos:
-
-```bash
-sudo bash drive/bin/install_arcadecloud.sh --finalize
-```
+Al completar el tercer paso, el helper administrativo ejecuta automáticamente la finalización
+privilegiada. El operador no debe volver a SSH para una instalación básica.
 
 La finalización no exige dominio, pero FederationCloud global sí exige un endpoint HTTPS verificable.
 Con una IP pública literal, ArcadeCloud obtiene automáticamente un certificado IP compatible, cambia el
@@ -190,11 +190,15 @@ Sólo después instala el timer de sincronización y considera terminada la part
 
 ## Cierre irreversible del bootstrap
 
-Después de crear o detectar el primer superadmin, el helper:
+Después de crear o detectar el primer superadmin, el helper primero completa HTTPS, registro global,
+directorio y timers de FederationCloud. Sólo si todo termina correctamente:
 
 1. crea `/etc/arcadecloud-drive/setup.lock`;
 2. elimina `/etc/arcadecloud-drive/bootstrap-auth.json`;
 3. invalida la sesión temporal de setup.
+
+Si la finalización falla, no crea `setup.lock` ni elimina la credencial bootstrap. El operador puede
+corregir la causa y volver a pulsar el tercer paso; si el superadmin ya existe, no se duplica.
 
 A partir de ese momento `/setup/` sólo informa que la instalación está cerrada.
 

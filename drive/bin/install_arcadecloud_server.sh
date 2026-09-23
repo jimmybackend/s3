@@ -225,6 +225,41 @@ certbot_version_at_least_54() {
   (( major > 5 || (major == 5 && minor >= 4) ))
 }
 
+python_version_at_least_310() {
+  local bin="${1:-}"
+  [[ -n "$bin" ]] || return 1
+  "$bin" -c 'import sys; raise SystemExit(0 if sys.version_info >= (3, 10) else 1)' >/dev/null 2>&1
+}
+
+select_certbot_python() {
+  local candidate
+
+  # /usr/bin/python3 is intentionally Python 3.9 for the lifetime of AL2023.
+  # Use a namespaced newer Python for ArcadeCloud's isolated Certbot venv.
+  for candidate in python3.11 python3.12 python3.13 python3.14; do
+    if command_exists "$candidate" && python_version_at_least_310 "$(command -v "$candidate")"; then
+      command -v "$candidate"
+      return 0
+    fi
+  done
+
+  for candidate in python3.11 python3.12 python3.13 python3.14; do
+    if package_available "$candidate"; then
+      local packages=("$candidate")
+      package_available "$candidate-pip" && packages+=("$candidate-pip")
+      say "Instalando $candidate aislado para Certbot moderno." >&2
+      dnf install -y "${packages[@]}" >&2
+
+      if command_exists "$candidate" && python_version_at_least_310 "$(command -v "$candidate")"; then
+        command -v "$candidate"
+        return 0
+      fi
+    fi
+  done
+
+  fail "Certbot >= 5.4 requiere Python >= 3.10 y no pude obtener un intérprete compatible en Amazon Linux 2023."
+}
+
 install_modern_certbot_for_ip() {
   [[ "$SKIP_CERTBOT" -eq 0 ]] || return 0
 
@@ -243,13 +278,13 @@ install_modern_certbot_for_ip() {
     return 0
   fi
 
-  say "Preparando Certbot >= 5.4 en entorno aislado para HTTPS por IP."
-  if ! python3 -m venv "$CERTBOT_VENV" >/dev/null 2>&1; then
-    if package_available python3-pip; then
-      dnf install -y python3-pip
-    fi
-    python3 -m venv "$CERTBOT_VENV" >/dev/null 2>&1       || fail "Python no pudo crear $CERTBOT_VENV para instalar Certbot moderno."
-  fi
+  local certbot_python
+  certbot_python="$(select_certbot_python)"
+  say "Preparando Certbot >= 5.4 en entorno aislado con $certbot_python."
+
+  rm -rf "$CERTBOT_VENV"
+  "$certbot_python" -m venv "$CERTBOT_VENV" >/dev/null 2>&1 \
+    || fail "$certbot_python no pudo crear $CERTBOT_VENV para instalar Certbot moderno."
 
   "$CERTBOT_VENV/bin/python" -m pip install --upgrade pip >/dev/null
   "$CERTBOT_VENV/bin/python" -m pip install --upgrade 'certbot>=5.4' 'certbot-nginx>=5.4' >/dev/null

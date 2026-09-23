@@ -136,9 +136,14 @@ check(str_contains($html, 'Página 2 de 3'), 'Pagination label missing');
 check(str_contains($html, 'page=3'), 'Next-page link missing');
 check(str_contains($html, 'service=S3'), 'Pagination must preserve service filter');
 check(str_contains($html, 'action=upload'), 'Pagination must preserve action filter');
-check(
-    strpos($html, 'Actividad reciente') < strpos($html, 'Costo diario atribuido'),
-    'Recent activity must render immediately after the service/action breakdown'
-);
+$servicePos = strpos($html, 'Costo atribuido por servicio');
+$actionPos = strpos($html, 'Costo atribuido por operación');
+$recentPos = strpos($html, 'Actividad reciente');
+$dailyPos = strpos($html, 'Costo diario atribuido');
+check($servicePos !== false && $actionPos !== false && $recentPos !== false && $dailyPos !== false, 'Activity sections missing');
+check($servicePos < $actionPos && $actionPos < $recentPos && $recentPos < $dailyPos, 'Activity sections must be stacked in the requested order');
+check(str_contains($html, 'activity-breakdown-stack'), 'Stacked breakdown wrapper missing');
+check(!str_contains($html, 'activity-breakdown-row'), 'Old flex breakdown row must not render');
+check(str_contains($html, 'activity-costs.css?v=20260923-3'), 'Activity CSS cache-busting version missing');
 
 fwrite(STDOUT, "OK activity-costs smoke\n");

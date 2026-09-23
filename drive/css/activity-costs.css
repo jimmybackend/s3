@@ -1,5 +1,17 @@
 .activity-cost-page { min-height: 100vh; }
-.activity-shell { max-width: 1500px; margin: 0 auto; padding: 24px clamp(12px, 2vw, 28px); }
+.activity-cost-page .activity-shell.container-fluid {
+  display: block !important;
+  flex: none !important;
+  min-height: 100vh !important;
+  height: auto !important;
+  max-width: 1500px;
+  margin: 0 auto;
+  padding: 24px clamp(12px, 2vw, 28px);
+}
+.activity-cost-page .activity-shell .row {
+  flex: 0 0 auto !important;
+  min-height: auto !important;
+}
 .activity-header { gap: 16px; margin-bottom: 22px; }
 .activity-header h1 { font-size: clamp(1.65rem, 3vw, 2.35rem); margin: 0 0 4px; }
 .activity-eyebrow { font-size: .78rem; letter-spacing: .13em; text-transform: uppercase; opacity: .78; font-weight: 700; }
@@ -15,10 +27,28 @@
 .activity-badge.neutral { color: #6c757d; }
 .activity-notice { padding: 12px 14px; font-size: .92rem; }
 .activity-panel { padding: 16px; }
-.activity-breakdown-row { position: relative; z-index: 2; }
-.activity-detail-panel { position: relative; z-index: 1; clear: both; overflow: visible; }
+.activity-breakdown-stack {
+  display: block !important;
+  width: 100% !important;
+  clear: both;
+}
+.activity-breakdown-panel,
+.activity-detail-panel {
+  position: static !important;
+  display: block !important;
+  width: 100% !important;
+  height: auto !important;
+  min-height: 0 !important;
+  clear: both;
+  overflow: visible;
+}
 .activity-detail-heading { gap: 8px 16px; margin-bottom: 10px; }
-.activity-detail-scroll { position: relative; z-index: 1; }
+.activity-detail-scroll {
+  display: block;
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: visible;
+}
 .activity-pagination { gap: 10px; }
 .activity-pagination-label { font-weight: 700; font-variant-numeric: tabular-nums; }
 .activity-section-title { font-size: 1.08rem; font-weight: 700; margin-bottom: 14px; }
@@ -37,7 +67,7 @@ body.theme-light .activity-table thead th { color: #132238; background: #d9f7f2;
 body.theme-light .activity-filter-card label, body.theme-light .activity-stat-label, body.theme-light .activity-section-title, body.theme-light .activity-header p, body.theme-light .activity-header h1 { color: #132238; }
 body.vision-presbyopia .activity-table td, body.vision-presbyopia .activity-table th { padding-top: .8rem; padding-bottom: .8rem; }
 @media (max-width: 767.98px) {
-  .activity-shell { padding-top: 14px; }
+  .activity-cost-page .activity-shell.container-fluid { padding-top: 14px; }
   .activity-filter-card .form-group { margin-bottom: 12px; }
   .activity-filter-card .form-group:last-child { margin-bottom: 0; }
   .activity-detail-table { font-size: .9rem; }

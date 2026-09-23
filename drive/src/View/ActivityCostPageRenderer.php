@@ -103,7 +103,7 @@ final class ActivityCostPageRenderer
   <link rel="stylesheet" href="css/styles.css">
   <link rel="stylesheet" href="css/responsive.css">
   <link rel="stylesheet" href="css/vision-accessibility.css">
-  <link rel="stylesheet" href="css/activity-costs.css">
+  <link rel="stylesheet" href="css/activity-costs.css?v=20260923-3">
 </head>
 <body class="ui-theme theme-neon-green theme-dark vision-normal ascii-on activity-cost-page">
 <script>
@@ -190,18 +190,15 @@ final class ActivityCostPageRenderer
     <div class="activity-notice"><i class="fas fa-circle-info mr-1"></i> {$note}</div>
   </section>
 
-  <section class="row mt-4 activity-breakdown-row">
-    <div class="col-12 col-lg-6 mb-4">
-      <div class="activity-panel h-100">
-        <h2 class="activity-section-title">Costo atribuido por servicio</h2>
-        <div class="table-responsive"><table class="table table-sm activity-table"><thead><tr><th>Servicio</th><th>Operaciones</th><th class="text-right">Estimado</th></tr></thead><tbody>{$serviceRows}</tbody></table></div>
-      </div>
+  <section class="activity-breakdown-stack mt-4">
+    <div class="activity-panel activity-breakdown-panel mb-4">
+      <h2 class="activity-section-title">Costo atribuido por servicio</h2>
+      <div class="table-responsive"><table class="table table-sm activity-table"><thead><tr><th>Servicio</th><th>Operaciones</th><th class="text-right">Estimado</th></tr></thead><tbody>{$serviceRows}</tbody></table></div>
     </div>
-    <div class="col-12 col-lg-6 mb-4">
-      <div class="activity-panel h-100">
-        <h2 class="activity-section-title">Costo atribuido por operación</h2>
-        <div class="table-responsive"><table class="table table-sm activity-table"><thead><tr><th>Operación</th><th>Operaciones</th><th class="text-right">Estimado</th></tr></thead><tbody>{$actionRows}</tbody></table></div>
-      </div>
+
+    <div class="activity-panel activity-breakdown-panel mb-4">
+      <h2 class="activity-section-title">Costo atribuido por operación</h2>
+      <div class="table-responsive"><table class="table table-sm activity-table"><thead><tr><th>Operación</th><th>Operaciones</th><th class="text-right">Estimado</th></tr></thead><tbody>{$actionRows}</tbody></table></div>
     </div>
   </section>
 

@@ -113,6 +113,8 @@ final class ArcadeCloudDriveAdminHelper
                 $this->fail('El setup bootstrap no está activo; no se puede finalizar desde la web.', 17);
             }
 
+            $this->assertActiveSuperadminExists($runtimePath);
+
             $appRoot = $this->safeConfiguredPath($config, 'app_root', '/var/www/arcadecloud-drive');
             $phpUser = trim((string)($config['php_user'] ?? ''));
             if ($phpUser === '' || $phpUser === 'root') {
@@ -449,6 +451,58 @@ final class ArcadeCloudDriveAdminHelper
             'initial_password' => 'arcadecloud',
             'activation_token' => $token,
         ];
+    }
+
+    private function assertActiveSuperadminExists(string $runtimePath): void
+    {
+        if (!extension_loaded('mysqli')) {
+            $this->fail('PHP mysqli es obligatorio para validar el superadmin antes de finalizar.');
+        }
+
+        $runtime = $this->readRuntimeConfig($runtimePath);
+        foreach (['DB_HOST', 'DB_USER', 'DB_PASSWORD', 'DB_NAME'] as $name) {
+            if (!is_string($runtime[$name] ?? null) || trim((string)$runtime[$name]) === '') {
+                $this->fail('La configuración de base de datos está incompleta; no se puede finalizar.');
+            }
+        }
+
+        $portRaw = (string)($runtime['DB_PORT'] ?? '3306');
+        $port = filter_var($portRaw, FILTER_VALIDATE_INT, [
+            'options' => ['min_range' => 1, 'max_range' => 65535],
+        ]);
+        if ($port === false) {
+            $this->fail('DB_PORT no es válido; no se puede finalizar.');
+        }
+
+        $db = mysqli_init();
+        if (!$db) {
+            $this->fail('No se pudo inicializar MySQL para validar el superadmin.');
+        }
+        mysqli_options($db, MYSQLI_OPT_CONNECT_TIMEOUT, 8);
+        if (!@mysqli_real_connect(
+            $db,
+            (string)$runtime['DB_HOST'],
+            (string)$runtime['DB_USER'],
+            (string)$runtime['DB_PASSWORD'],
+            (string)$runtime['DB_NAME'],
+            (int)$port
+        )) {
+            $db->close();
+            $this->fail('No fue posible validar el superadmin en la base configurada.');
+        }
+
+        $result = @$db->query(
+            "SELECT id FROM Users WHERE system_role = 'superadmin' AND userstatus = 'Activo' LIMIT 1"
+        );
+        $found = $result !== false && $result->fetch_assoc() !== null;
+        if ($result !== false) {
+            $result->free();
+        }
+        $db->close();
+
+        if (!$found) {
+            $this->fail('No existe un superadmin activo; el setup no puede cerrarse.');
+        }
     }
 
     private function finalizeInstallation(string $appRoot, string $phpUser): string

@@ -106,9 +106,10 @@ jobs:
             mysql -h127.0.0.1 -P"$port" -uroot -parcade-test-root arcade_test -Nse "SHOW COLUMNS FROM FederationShares LIKE 'ImportedContentId'" | grep -q ImportedContentId
           done
 
-      - name: Validate full clean canonical schema on MySQL 8
+      - name: Validate full clean and repeatable canonical schema on MySQL 8
         run: |
           set -euo pipefail
+          mysql -h127.0.0.1 -P3308 -uroot -parcade-test-root < adbbmis1_Cloud.sql
           mysql -h127.0.0.1 -P3308 -uroot -parcade-test-root < adbbmis1_Cloud.sql
 
           test "$(mysql -h127.0.0.1 -P3308 -uroot -parcade-test-root -Nse "SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA='adbbmis1_Cloud'")" -eq 59

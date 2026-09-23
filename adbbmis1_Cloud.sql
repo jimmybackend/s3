@@ -2406,6 +2406,93 @@ CREATE TABLE IF NOT EXISTS FederationIngressQueue (
   KEY idx_federation_ingress_origin (OriginNodeId, ReceivedAt)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- FederationDrop paid temporary custody.
+-- The node that charges remains the primary custodian in phase 1.
+
+CREATE TABLE IF NOT EXISTS FederationDrops (
+  DropId varchar(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  OwnerEmail varchar(320) NOT NULL,
+  OwnerTokenHash char(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  OwnerTokenCiphertext varchar(512) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  PublicTokenHash char(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  PublicTokenCiphertext varchar(512) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  SourceDomain varchar(255) DEFAULT NULL,
+  OriginalName varchar(255) NOT NULL,
+  S3Key varchar(1024) NOT NULL,
+  MimeType varchar(128) NOT NULL DEFAULT 'application/octet-stream',
+  ExpectedSizeBytes bigint unsigned NOT NULL,
+  ActualSizeBytes bigint unsigned DEFAULT NULL,
+  ObjectEtag varchar(191) DEFAULT NULL,
+  RetentionDays int unsigned NOT NULL,
+  MaxDownloads int unsigned NOT NULL,
+  DownloadCount int unsigned NOT NULL DEFAULT 0,
+  AmountCents bigint unsigned NOT NULL,
+  Currency char(3) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  PaymentStatus enum('pending','paid','failed','refunded') NOT NULL DEFAULT 'pending',
+  PaymentProvider varchar(64) DEFAULT NULL,
+  PaymentReference varchar(191) DEFAULT NULL,
+  CheckoutUrl varchar(2048) DEFAULT NULL,
+  Status enum('pending_upload','pending_payment','active','expired','deleted','blocked') NOT NULL DEFAULT 'pending_upload',
+  CustodyNodeId varchar(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  CreatedAt datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+  UploadedAt datetime(6) DEFAULT NULL,
+  PaidAt datetime(6) DEFAULT NULL,
+  ExpiresAt datetime(6) DEFAULT NULL,
+  LastDownloadAt datetime(6) DEFAULT NULL,
+  DeletedAt datetime(6) DEFAULT NULL,
+  PRIMARY KEY (DropId),
+  KEY idx_fdrop_owner (OwnerEmail(191), CreatedAt),
+  KEY idx_fdrop_status_expiry (Status, ExpiresAt),
+  KEY idx_fdrop_payment (PaymentStatus, Status, CreatedAt),
+  KEY idx_fdrop_custody (CustodyNodeId, Status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS FederationDropPaymentEvents (
+  EventId varchar(96) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  DropId varchar(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  Provider varchar(64) NOT NULL,
+  ExternalReference varchar(191) NOT NULL,
+  AmountCents bigint unsigned NOT NULL,
+  Currency char(3) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  Status enum('paid','failed','refunded') NOT NULL,
+  PayloadHash char(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  ReceivedAt datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+  PRIMARY KEY (EventId),
+  KEY idx_fdrop_payment_drop (DropId, ReceivedAt),
+  KEY idx_fdrop_payment_reference (Provider, ExternalReference)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS FederationCommercialProviders (
+  NodeId varchar(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  DomainName varchar(255) NOT NULL,
+  Status enum('pending','active','suspended','revoked') NOT NULL DEFAULT 'pending',
+  CommissionBps smallint unsigned NOT NULL DEFAULT 0,
+  CapacityBytes bigint unsigned NOT NULL DEFAULT 0,
+  MaxFileBytes bigint unsigned NOT NULL DEFAULT 0,
+  RegionName varchar(128) DEFAULT NULL,
+  SettlementEmail varchar(320) DEFAULT NULL,
+  GuaranteeMode enum('central_copy','dual_replica') NOT NULL DEFAULT 'central_copy',
+  RequestedAt datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+  ApprovedAt datetime(6) DEFAULT NULL,
+  UpdatedAt datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
+  PRIMARY KEY (NodeId),
+  UNIQUE KEY uq_fcommercial_domain (DomainName),
+  KEY idx_fcommercial_status (Status, UpdatedAt)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS FederationDropPlacements (
+  DropId varchar(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  NodeId varchar(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  PlacementRole enum('primary','guarantee','provider') NOT NULL,
+  Status enum('queued','active','stale','revoked','deleted') NOT NULL DEFAULT 'queued',
+  CommissionBps smallint unsigned NOT NULL DEFAULT 0,
+  CreatedAt datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+  UpdatedAt datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
+  PRIMARY KEY (DropId, NodeId, PlacementRole),
+  KEY idx_fdrop_placement_node (NodeId, Status),
+  KEY idx_fdrop_placement_drop (DropId, Status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- ARCADECLOUD:FEDERATION_SCHEMA:END
 
 SET FOREIGN_KEY_CHECKS = @ARCADECLOUD_OLD_FOREIGN_KEY_CHECKS;

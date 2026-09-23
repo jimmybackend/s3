@@ -271,7 +271,7 @@ class ArcadeLinkShareModule {
 
     const form = this.document.createElement('form');
     form.method = 'POST';
-    form.action = 'federationcloud/bundle.php';
+    form.action = 'federationcloud/collection.php';
     form.style.display = 'none';
 
     const values = {

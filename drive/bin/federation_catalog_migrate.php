@@ -6,26 +6,29 @@ require_once dirname(__DIR__) . '/app_bootstrap.php';
 
 use ArcadeCloud\Drive\Core\ApplicationKernel;
 
-$sqlPaths = [
-    dirname(__DIR__) . '/sql/federation_global_catalog.sql',
-    dirname(__DIR__) . '/sql/federation_access_shares.sql',
-    dirname(__DIR__) . '/sql/federation_replicas.sql',
-    dirname(__DIR__) . '/sql/federation_ingress_queue.sql',
-];
-$parts = [];
-foreach ($sqlPaths as $sqlPath) {
-    if (!is_file($sqlPath) || !is_readable($sqlPath)) {
-        fwrite(STDERR, "No se encontró el esquema FederationCloud: {$sqlPath}\n");
-        exit(2);
-    }
-    $content = (string)file_get_contents($sqlPath);
-    if (trim($content) === '') {
-        fwrite(STDERR, "El esquema FederationCloud está vacío: {$sqlPath}\n");
-        exit(2);
-    }
-    $parts[] = $content;
+$schemaPath = dirname(__DIR__, 2) . '/adbbmis1_Cloud.sql';
+$startMarker = '-- ARCADECLOUD:FEDERATION_SCHEMA:BEGIN';
+$endMarker = '-- ARCADECLOUD:FEDERATION_SCHEMA:END';
+
+if (!is_file($schemaPath) || !is_readable($schemaPath)) {
+    fwrite(STDERR, "No se encontró el SQL canónico ArcadeCloud: {$schemaPath}\n");
+    exit(2);
 }
-$sql = implode("\n\n", $parts);
+
+$content = (string)file_get_contents($schemaPath);
+$start = strpos($content, $startMarker);
+$end = $start === false ? false : strpos($content, $endMarker, $start + strlen($startMarker));
+if ($start === false || $end === false || $end <= $start) {
+    fwrite(STDERR, "El SQL canónico no contiene la sección FederationCloud marcada.\n");
+    exit(2);
+}
+
+$sqlStart = $start + strlen($startMarker);
+$sql = trim(substr($content, $sqlStart, $end - $sqlStart));
+if ($sql === '') {
+    fwrite(STDERR, "La sección FederationCloud del SQL canónico está vacía.\n");
+    exit(2);
+}
 
 $db = ApplicationKernel::app()->db();
 if (!$db->multi_query($sql)) {
@@ -33,15 +36,22 @@ if (!$db->multi_query($sql)) {
     exit(1);
 }
 do {
-    if ($result = $db->store_result()) $result->free();
-    if (!$db->more_results()) break;
+    if ($result = $db->store_result()) {
+        $result->free();
+    }
+    if (!$db->more_results()) {
+        break;
+    }
 } while ($db->next_result());
+
 if ($db->errno) {
     fwrite(STDERR, "Error completando migración FederationCloud: {$db->error}\n");
     exit(1);
 }
 
 $requiredTables = [
+    'FederationNodes',
+    'FederationNodeAuthorizations',
     'FederationOriginCounters',
     'FederationEvents',
     'FederationClocks',
@@ -85,4 +95,4 @@ if ($missing !== []) {
     exit(1);
 }
 
-echo "OK: catálogo global, Aduana, solicitudes privadas, Shares y réplicas FederationCloud instalados/actualizados.\n";
+echo "OK: esquema FederationCloud completo instalado/actualizado desde adbbmis1_Cloud.sql.\n";

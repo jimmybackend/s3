@@ -179,6 +179,8 @@ fi
 delete_managed_ip_certificate
 
 units=(
+  arcadecloud-federation-drop-cleanup.timer
+  arcadecloud-federation-drop-cleanup.service
   arcadecloud-federation-sync.timer
   arcadecloud-federation-sync.service
   arcadecloud-federation-migrate.service

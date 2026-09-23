@@ -146,11 +146,11 @@ class ArcadeCloudSetup {
       homephone: String(this.doc.getElementById('adminHomephone').value || ''),
       mobilephone: String(this.doc.getElementById('adminMobilephone').value || '')
     };
-    this.message('Validando los tres pasos y creando el superadmin…', 'warn');
+    this.message('Validando los tres pasos, superadmin, HTTPS y FederationCloud…', 'warn');
     try {
       const body = new URLSearchParams({action: 'create_superadmin', ...values});
       const data = await this.post(body, true);
-      this.message(data.message || 'Instalación completada.', 'ok');
+      this.message(data.message || 'Instalación completa: HTTPS y FederationCloud finalizados.', 'ok');
       this.toggle('setupPanel', false);
       this.toggle('completedCard', true);
     } catch (error) {

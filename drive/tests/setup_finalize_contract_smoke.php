@@ -21,7 +21,7 @@ function checkFinalize(bool $condition, string $message): void
 
 checkFinalize(str_contains($helperInstaller, '"app_root": app_root'), 'helper installer persists fixed app_root');
 checkFinalize(str_contains($helper, "'setup_finalize' => true"), 'helper advertises setup_finalize capability');
-checkFinalize(str_contains($helper, "$action === 'bootstrap-finalize'"), 'helper exposes fixed bootstrap-finalize action');
+checkFinalize(str_contains($helper, "\$action === 'bootstrap-finalize'"), 'helper exposes fixed bootstrap-finalize action');
 checkFinalize(str_contains($helper, "'--finalize-from-setup'"), 'helper invokes guarded installer mode');
 checkFinalize(str_contains($helper, 'completeBootstrap($bootstrapAuthPath, $setupLockPath)'), 'helper closes bootstrap only inside privileged flow');
 checkFinalize(str_contains($privileged, 'finalizeBootstrapInstallation'), 'PHP facade exposes automatic finalization');

@@ -167,7 +167,8 @@ La interfaz muestra:
 - número de operaciones;
 - costo por servicio;
 - costo por operación;
-- actividad reciente inmediatamente debajo de los desgloses por servicio y operación;
+- desglose por servicio y desglose por operación en paneles independientes, apilados verticalmente para evitar solapamientos con el layout flex global del Drive;
+- actividad reciente inmediatamente debajo de esos dos paneles;
 - paginación server-side de actividad reciente, 25 eventos por página, conservando período/servicio/operación;
 - costo diario atribuido;
 - filtros Hoy / 7 días / Mes actual / Mes anterior, servicio y operación.

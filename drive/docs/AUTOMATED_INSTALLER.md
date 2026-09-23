@@ -194,16 +194,15 @@ Después de preparar servidor, Composer, helper administrativo, updater e identi
 
 SMTP, tokens AWS, credenciales de control y mirrors permanecen en Configuración avanzada.
 
-## Finalización
+## Finalización automática
 
-Después de cerrar correctamente /setup/:
+Al completar el tercer paso de /setup/, el helper privilegiado ejecuta automáticamente una acción fija
+de finalización. PHP-FPM no recibe una shell arbitraria: sólo puede solicitar al helper la operación
+compilada `bootstrap-finalize`, que usa el `app_root` y usuario PHP-FPM guardados por root durante
+la instalación.
 
-~~~bash
-sudo bash drive/bin/install_arcadecloud.sh --finalize
-~~~
-
-La finalización vuelve a ejecutar el preflight de forma idempotente, instala/verifica también el helper
-de actualizaciones usado por **Acerca de** y completa FederationCloud en este orden:
+La finalización instala/verifica también el helper de actualizaciones usado por **Acerca de** y completa
+FederationCloud en este orden:
 
 1. obtiene o valida HTTPS para dominio o IP pública;
 2. actualiza el endpoint firmado sin regenerar la identidad;
@@ -212,8 +211,13 @@ de actualizaciones usado por **Acerca de** y completa FederationCloud en este or
 5. instala el timer de sincronización;
 6. ejecuta una primera sincronización.
 
-Por tanto, una instalación básica con endpoint público no se declara federada sólo porque exista la
-identidad local: debe haber sido presentada y confirmada por el directorio global.
+Por tanto, una instalación básica con endpoint público no se declara terminada sólo porque exista la
+identidad local: debe haber sido presentada y confirmada por el directorio global. El helper crea
+`setup.lock` y retira el supervisor temporal únicamente después de esa confirmación. Si algo falla,
+el setup permanece abierto y el tercer paso puede reintentarse sin duplicar el superadmin.
+
+La opción administrativa `--finalize` se conserva para recuperación y compatibilidad con instalaciones
+anteriores que ya tengan el setup cerrado.
 
 ## Idempotencia y seguridad
 

@@ -16,12 +16,14 @@ on:
       - 'drive/bin/install_arcadecloud_admin_helper.sh'
       - 'drive/bin/install_arcadecloud.sh'
       - 'drive/bin/install_arcadecloud_server.sh'
+      - 'drive/bin/uninstall_arcadecloud.sh'
       - 'bootstrap_arcadecloud.sh'
       - 'drive/tests/setup_bootstrap_smoke.php'
       - 'drive/tests/setup_entry_guard_smoke.php'
       - 'drive/docs/INITIAL_SETUP.md'
       - 'drive/docs/INSTALLATION_PREPARATION.md'
       - 'drive/docs/AUTOMATED_INSTALLER.md'
+      - 'drive/docs/UNINSTALLATION.md'
       - '.github/workflows/initial-setup.yml'
   pull_request:
     paths:
@@ -79,6 +81,7 @@ jobs:
           bash -n drive/bin/install_arcadecloud_admin_helper.sh
           bash -n drive/bin/install_arcadecloud_server.sh
           bash -n drive/bin/install_arcadecloud.sh
+          bash -n drive/bin/uninstall_arcadecloud.sh
           bash -n bootstrap_arcadecloud.sh
 
       - name: Bootstrap authentication smoke test
@@ -136,6 +139,11 @@ jobs:
           grep -q "CERTBOT_VENV" drive/bin/install_arcadecloud_server.sh
           grep -q "certbot>=5.4" drive/bin/install_arcadecloud_server.sh
           grep -q "arcadecloud-certbot" drive/bin/install_arcadecloud_server.sh
+          grep -q -- "--dry-run" drive/bin/uninstall_arcadecloud.sh
+          grep -q "KEEP_REPOSITORY" drive/bin/uninstall_arcadecloud.sh
+          grep -q "KEEP_CONFIG" drive/bin/uninstall_arcadecloud.sh
+          grep -q "NO se eliminarán" drive/bin/uninstall_arcadecloud.sh
+          grep -q "Managed by ArcadeCloud installer." drive/bin/uninstall_arcadecloud.sh
           grep -q -- "--require-directory" drive/bin/federation_endpoint_refresh.php
           grep -q "dnf install -y" drive/bin/install_arcadecloud_server.sh
           grep -q "for candidate in php8.5 php8.4 php8.3 php8.2 php8.1" drive/bin/install_arcadecloud_server.sh

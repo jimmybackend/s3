@@ -1422,7 +1422,7 @@
     },
     {
       "path": "drive/src/Federation/FederationConfig.php",
-      "size": 3966,
+      "size": 4723,
       "active": false,
       "references": [
         "drive/bin/federation_provider_request.php",

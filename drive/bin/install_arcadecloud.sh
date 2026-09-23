@@ -22,6 +22,7 @@ SKIP_CERTBOT=0
 for arg in "$@"; do
   case "$arg" in
     --finalize) MODE="finalize" ;;
+    --finalize-from-setup) MODE="finalize-from-setup" ;;
     --app-root=*) APP_ROOT="${arg#*=}" ;;
     --php-user=*) PHP_USER="${arg#*=}" ;;
     --skip-composer) SKIP_COMPOSER=1 ;;
@@ -163,7 +164,9 @@ runtime_set_many() {
 }
 
 install_helper() {
-  bash "$WEBROOT/bin/install_arcadecloud_admin_helper.sh" --php-user="$PHP_USER"
+  bash "$WEBROOT/bin/install_arcadecloud_admin_helper.sh" \
+    --php-user="$PHP_USER" \
+    --app-root="$APP_ROOT"
 }
 
 install_updater() {
@@ -323,8 +326,8 @@ PY
   echo "Dominio y HTTPS: opcionales; pueden configurarse después desde el servidor."
 
   echo
-  echo "Cuando termines los tres pasos ejecuta:"
-  echo "  sudo bash $WEBROOT/bin/install_arcadecloud.sh --finalize --app-root=$APP_ROOT --php-user=$PHP_USER"
+  echo "Al completar el tercer paso, el setup finalizará automáticamente HTTPS,"
+  echo "registrará el nodo en FederationCloud, confirmará el directorio global y cerrará el supervisor temporal."
   echo
   echo "SMTP, tokens AWS, credenciales de control y mirrors se configuran después"
   echo "desde Servidor -> Configuración avanzada."
@@ -359,7 +362,10 @@ PY
 }
 
 finalize_installation() {
-  [[ -f "$CONFIG_DIR/setup.lock" ]] || fail "el setup básico aún no está cerrado. Completa MySQL, AWS/S3 y superadmin primero."
+  local require_lock="${1:-1}"
+  if [[ "$require_lock" -eq 1 ]]; then
+    [[ -f "$CONFIG_DIR/setup.lock" ]] || fail "el setup básico aún no está cerrado. Completa MySQL, AWS/S3 y superadmin primero."
+  fi
   [[ -r "$RUNTIME_ENV" ]] || fail "no se puede leer $RUNTIME_ENV."
 
   python3 - "$RUNTIME_ENV" <<'PY'
@@ -433,7 +439,16 @@ echo "Modo: $MODE"
 echo
 
 if [[ "$MODE" == "finalize" ]]; then
-  finalize_installation
+  finalize_installation 1
+  exit 0
+fi
+
+if [[ "$MODE" == "finalize-from-setup" ]]; then
+  [[ ! -f "$CONFIG_DIR/setup.lock" ]] || fail "el setup ya está cerrado; la finalización web no se repetirá."
+  [[ -f "$CONFIG_DIR/bootstrap-auth.json" ]] || fail "el supervisor bootstrap no está activo."
+  [[ -n "${SUDO_USER:-}" && "${SUDO_USER}" == "$PHP_USER" ]] \
+    || fail "--finalize-from-setup sólo puede ser invocado por el helper privilegiado desde PHP-FPM."
+  finalize_installation 0
   exit 0
 fi
 

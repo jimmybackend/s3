@@ -408,10 +408,13 @@ PY
       --webroot="$WEBROOT" \
       --certbot-bin="$certbot_bin"
 
-    # El reconciliador HTTPS también intenta republicar el descriptor al terminar.
-    # El catálogo/Aduana debe existir antes de arrancarlo o un nodo nuevo fallará
-    # con tablas como FederationEvents aún ausentes.
-    migrate_federation_schema
+    # El reconciliador HTTPS republica el descriptor al terminar. Por eso el
+    # catálogo/Aduana debe existir ANTES de arrancar ese servicio; de lo contrario
+    # un nodo nuevo puede intentar escribir FederationEvents antes de migrar MySQL.
+    if ! runuser -u "$PHP_USER" -- php "$WEBROOT/bin/federation_catalog_migrate.php"; then
+      fail "No se pudo crear/actualizar el esquema local FederationCloud antes de iniciar HTTPS."
+    fi
+    echo "✓ Esquema FederationCloud local instalado/actualizado antes de HTTPS."
 
     if ! systemctl start arcadecloud-federation-https.service; then
       systemctl status arcadecloud-federation-https.service --no-pager >&2 || true

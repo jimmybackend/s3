@@ -31,23 +31,18 @@ checkFinalize(!str_contains($superadmin, '$this->helper->completeBootstrapSetup(
 checkFinalize(str_contains($installer, '--finalize-from-setup'), 'installer accepts internal finalize-from-setup mode');
 checkFinalize(str_contains($installer, 'bootstrap-auth.json'), 'installer requires active bootstrap for web finalization');
 checkFinalize(str_contains($installer, 'SUDO_USER'), 'installer binds internal mode to PHP-FPM sudo caller');
+checkFinalize(str_contains($installer, 'federation_catalog_migrate.php'), 'finalization migrates FederationCloud schema before registration');
 checkFinalize(str_contains($installer, '--require-directory'), 'finalization requires global directory confirmation');
-checkFinalize(str_contains($installer, 'migrate_federation_schema'), 'finalization prepares FederationCloud schema');
+$migratePos = strpos($installer, 'federation_catalog_migrate.php');
+$httpsStartPos = strpos($installer, 'systemctl start arcadecloud-federation-https.service');
+$refreshPos = strpos($installer, 'federation_endpoint_refresh.php');
 checkFinalize(
-    str_contains(
-        $installer,
-        "    migrate_federation_schema\n\n    if ! systemctl start arcadecloud-federation-https.service"
-    ),
-    'FederationCloud schema migration runs immediately before HTTPS reconciliation'
-);
-$schemaCallPos = strpos(
-    $installer,
-    "    migrate_federation_schema\n\n    if ! systemctl start arcadecloud-federation-https.service"
-);
-$directoryPos = strpos($installer, 'federation_endpoint_refresh.php');
-checkFinalize(
-    $schemaCallPos !== false && $directoryPos !== false && $schemaCallPos < $directoryPos,
-    'FederationCloud schema exists before strict global directory registration'
+    $migratePos !== false
+        && $httpsStartPos !== false
+        && $refreshPos !== false
+        && $migratePos < $httpsStartPos
+        && $migratePos < $refreshPos,
+    'schema migration runs before HTTPS reconciliation and endpoint refresh'
 );
 checkFinalize(str_contains($nodeAdmin, "'ready' => false"), 'identity admin can expose pending identity state');
 

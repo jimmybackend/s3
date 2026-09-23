@@ -74,13 +74,13 @@ if ($token !== '') {
         <div class="field"><label>Teléfono de casa</label><input id="adminHomephone" maxlength="15"></div>
         <div class="field"><label>Teléfono móvil</label><input id="adminMobilephone" maxlength="15"></div>
       </div>
-      <div class="row" style="margin-top:14px"><button id="btnCreateSuperadmin">Crear superadmin y cerrar setup</button><button id="btnSetupLogout" class="secondary">Cerrar sesión temporal</button></div>
+      <div class="row" style="margin-top:14px"><button id="btnCreateSuperadmin">Crear superadmin y finalizar instalación</button><button id="btnSetupLogout" class="secondary">Cerrar sesión temporal</button></div>
     </div>
   </section>
 
   <section id="completedCard" class="card hidden">
     <h2>Instalación cerrada</h2>
-    <p>El supervisor temporal ya no está disponible.</p>
+    <p>El supervisor temporal ya no está disponible. HTTPS y FederationCloud quedaron finalizados y registrados.</p>
     <a class="button" href="../">Abrir ArcadeCloud Drive</a>
   </section>
 </main>

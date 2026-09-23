@@ -268,27 +268,34 @@ Obligatorios actualmente:
 
 ## Condición importante
 
-La base seleccionada debe contener el esquema ArcadeCloud. Para poder crear el primer superadmin debe
-existir la tabla:
+El repositorio tiene **un solo SQL canónico**:
+
+```text
+adbbmis1_Cloud.sql
+```
+
+Una base nueva y vacía para ArcadeCloud se crea/importa únicamente desde ese archivo. El dump contiene
+el esquema base y la sección completa FederationCloud, incluida `FederationEvents`.
+
+Para poder crear el primer superadmin debe existir la tabla:
 
 ```text
 Users
 ```
 
-El setup actual **prueba la conexión MySQL**, pero no importa automáticamente el dump SQL.
+El setup web **prueba la conexión MySQL**, pero no reimporta automáticamente el dump completo. Esto es
+deliberado porque `adbbmis1_Cloud.sql` contiene `DROP TABLE IF EXISTS` para recrear una base limpia.
 
-Por seguridad, el futuro instalador debe preguntar explícitamente:
+En una base ArcadeCloud ya existente nunca se ejecuta el dump completo. Las actualizaciones
+FederationCloud usan `drive/bin/federation_catalog_migrate.php`, que extrae exclusivamente la sección
+idempotente delimitada por:
 
 ```text
-¿Qué tipo de base usarás?
-
-1. Base nueva vacía para ArcadeCloud
-2. Base ArcadeCloud ya existente
+-- ARCADECLOUD:FEDERATION_SCHEMA:BEGIN
+-- ARCADECLOUD:FEDERATION_SCHEMA:END
 ```
 
-Si es nueva, el instalador puede ofrecer instalar/migrar el esquema.
-
-Si es existente, nunca debe reimportar ciegamente el dump maestro ni sobrescribir tablas.
+Así el repositorio conserva una sola fuente SQL sin borrar datos al actualizar un nodo existente.
 
 ## Qué valida ArcadeCloud
 

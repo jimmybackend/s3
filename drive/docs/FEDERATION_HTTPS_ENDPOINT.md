@@ -41,7 +41,17 @@ Los certificados para IP requieren:
 - autenticación `webroot`;
 - puertos 80 y 443 alcanzables desde Internet.
 
-El certificado IP no se instala automáticamente mediante el plugin Nginx. ArcadeCloud crea únicamente el vhost gestionado:
+El certificado IP no se instala automáticamente mediante el plugin Nginx. El vhost HTTP principal de ArcadeCloud incluye explícitamente:
+
+```nginx
+location ^~ /.well-known/acme-challenge/ {
+    try_files $uri =404;
+}
+```
+
+Esta excepción debe aparecer antes de la regla general que bloquea dotfiles. Así Certbot puede colocar el token HTTP-01 en el webroot del Drive y Let’s Encrypt puede leerlo por puerto 80 sin crear un segundo `server_name` conflictivo.
+
+Después de emitir el certificado, ArcadeCloud crea únicamente el vhost HTTPS gestionado:
 
 ```text
 /etc/nginx/conf.d/arcadecloud-federation-ip.conf
@@ -49,14 +59,13 @@ El certificado IP no se instala automáticamente mediante el plugin Nginx. Arcad
 
 Ese vhost:
 
-- sirve `/.well-known/acme-challenge/` desde el webroot del Drive en puerto 80;
-- redirige el resto de HTTP a HTTPS;
 - carga el certificado desde `/etc/letsencrypt/live/<IP>/`;
 - recibe HTTPS en la IP pública;
 - hace proxy únicamente al backend HTTP local `127.0.0.1:80`;
+- conserva el `Host` público original para que Nginx seleccione el vhost de ArcadeCloud en el backend;
 - nunca coloca credenciales AWS, DB, sesiones ni claves FederationCloud en Nginx.
 
-El `Host` usado hacia el backend local es configurable durante la instalación mediante `--backend-host=`. El valor por defecto es `localhost` para evitar que la petición HTTPS vuelva a caer en el mismo vhost IP y produzca un bucle.
+El vhost HTTP principal permanece disponible para HTTP-01 y para acceso HTTP durante bootstrap. FederationCloud publica sus URLs canónicas por HTTPS después de la emisión.
 
 ## EC2 con IP variable
 
@@ -162,7 +171,7 @@ Contiene solamente modo, host, URLs públicas, IP detectada, ruta pública del c
 - Para `domain`, el hostname debe resolver al servidor y el plugin Nginx de Certbot debe estar disponible.
 - Para `dynamic_ip`, Certbot debe ser 5.4+ y el webroot indicado debe corresponder al contenido servido por HTTP.
 - El Security Group debe permitir TCP 80 para HTTP-01 y TCP 443 para HTTPS.
-- El backend local en `127.0.0.1:80` debe servir ArcadeCloud para el `Host` configurado con `--backend-host`.
+- El backend local en `127.0.0.1:80` debe servir ArcadeCloud para el Host público de la IP.
 - Los nodos que actúan como seeds deberían preferir un dominio o endpoint estable, porque otros nodos necesitan una dirección confiable para descubrir el seed inicial.
 
 ## Límite deliberado

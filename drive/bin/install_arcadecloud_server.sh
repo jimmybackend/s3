@@ -504,6 +504,10 @@ server {
     index index.php index.html;
     client_max_body_size 32m;
 
+    location ^~ /.well-known/acme-challenge/ {
+        try_files \$uri =404;
+    }
+
     location / {
         try_files \$uri \$uri/ =404;
     }

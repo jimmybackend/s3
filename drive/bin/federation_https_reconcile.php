@@ -28,10 +28,7 @@ final class FederationHttpsReconciler
                 'state-path',
                 '/var/lib/arcadecloud-drive/federation-https-state.json'
             );
-            $backendHost = $this->validateSimpleHost(
-                $this->optionValue($argv, 'backend-host', 'localhost')
-            );
-            $runUser = $this->validateSimpleHost($this->optionValue($argv, 'run-user', 'nginx'));
+            $runUser = $this->validateSimpleName($this->optionValue($argv, 'run-user', 'nginx'));
             $appRoot = $this->optionValue($argv, 'app-root', dirname(__DIR__, 2));
             $phpBin = $this->optionValue($argv, 'php-bin', '/usr/bin/php');
             $certbotBin = $this->optionValue($argv, 'certbot-bin', '/usr/bin/certbot');
@@ -115,16 +112,6 @@ final class FederationHttpsReconciler
                 }
 
                 $certDir = '/etc/letsencrypt/live/' . $host;
-                $hasCurrentCertificate = is_file($certDir . '/fullchain.pem')
-                    && is_file($certDir . '/privkey.pem');
-
-                if (!$hasCurrentCertificate) {
-                    $this->writeAtomicText(
-                        $nginxIpConfig,
-                        $this->nginxChallengeConfig($host, $webroot)
-                    );
-                    $this->nginxReload($nginxBin, $systemctlBin);
-                }
 
                 $command = array_merge([
                     $certbotBin, 'certonly', '--non-interactive', '--agree-tos',
@@ -144,7 +131,7 @@ final class FederationHttpsReconciler
 
                 $this->writeAtomicText(
                     $nginxIpConfig,
-                    $this->nginxDynamicIpConfig($host, $webroot, $backendHost)
+                    $this->nginxDynamicIpConfig($host)
                 );
                 $this->nginxReload($nginxBin, $systemctlBin);
             }
@@ -442,43 +429,21 @@ final class FederationHttpsReconciler
         return ['--register-unsafely-without-email'];
     }
 
-    private function validateSimpleHost(string $host): string
+    private function validateSimpleName(string $value): string
     {
-        $host = strtolower(trim($host));
-        if ($host === '' || strlen($host) > 253 || !preg_match('/\A[a-z0-9._-]+\z/', $host)) {
-            throw new RuntimeException('backend-host inválido.');
+        $value = strtolower(trim($value));
+        if ($value === '' || strlen($value) > 253 || !preg_match('/\A[a-z0-9._-]+\z/', $value)) {
+            throw new RuntimeException('Valor simple inválido.');
         }
 
-        return $host;
+        return $value;
     }
 
-    private function nginxChallengeConfig(string $host, string $webroot): string
+    private function nginxDynamicIpConfig(string $ip): string
     {
-        return "# Managed by ArcadeCloud FederationCloud HTTPS.\n"
-            . "server {\n"
-            . "    listen 80;\n"
-            . "    server_name {$host};\n"
-            . "    root {$webroot};\n"
-            . '    location ^~ /.well-known/acme-challenge/ { try_files $uri =404; }' . "\n"
-            . "    location / { return 404; }\n"
-            . "}\n";
-    }
-
-    private function nginxDynamicIpConfig(
-        string $ip,
-        string $webroot,
-        string $backendHost
-    ): string {
         $certDir = '/etc/letsencrypt/live/' . $ip;
 
         return "# Managed by ArcadeCloud FederationCloud HTTPS. Do not edit manually.\n"
-            . "server {\n"
-            . "    listen 80;\n"
-            . "    server_name {$ip};\n"
-            . "    root {$webroot};\n"
-            . '    location ^~ /.well-known/acme-challenge/ { try_files $uri =404; }' . "\n"
-            . '    location / { return 301 https://$host$request_uri; }' . "\n"
-            . "}\n\n"
             . "server {\n"
             . "    listen 443 ssl;\n"
             . "    server_name {$ip};\n"
@@ -489,7 +454,7 @@ final class FederationHttpsReconciler
             . "    location / {\n"
             . "        proxy_pass http://127.0.0.1:80;\n"
             . "        proxy_http_version 1.1;\n"
-            . "        proxy_set_header Host {$backendHost};\n"
+            . '        proxy_set_header Host $host;' . "\n"
             . '        proxy_set_header X-Real-IP $remote_addr;' . "\n"
             . '        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;' . "\n"
             . "        proxy_set_header X-Forwarded-Proto https;\n"

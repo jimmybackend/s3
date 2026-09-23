@@ -9,7 +9,6 @@ fi
 RUN_USER=""
 APP_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd)"
 WEBROOT=""
-BACKEND_HOST="localhost"
 RUNTIME_ENV="/etc/arcadecloud-drive/runtime-env.json"
 DRIVE_ENV="/etc/arcadecloud-drive/drive.env"
 FEDERATION_ENV="/etc/arcadecloud-drive/federation.env"
@@ -28,7 +27,6 @@ for arg in "$@"; do
     --run-user=*) RUN_USER="${arg#*=}" ;;
     --app-root=*) APP_ROOT="${arg#*=}" ;;
     --webroot=*) WEBROOT="${arg#*=}" ;;
-    --backend-host=*) BACKEND_HOST="${arg#*=}" ;;
     --runtime-env=*) RUNTIME_ENV="${arg#*=}" ;;
     --drive-env=*) DRIVE_ENV="${arg#*=}" ;;
     --federation-env=*) FEDERATION_ENV="${arg#*=}" ;;
@@ -67,10 +65,6 @@ fi
 if [[ ! -d "$WEBROOT" ]]; then
   echo "ERROR: webroot no existe: $WEBROOT" >&2
   exit 3
-fi
-if [[ ! "$BACKEND_HOST" =~ ^[A-Za-z0-9._-]+$ ]]; then
-  echo "ERROR: --backend-host contiene caracteres inválidos." >&2
-  exit 2
 fi
 if [[ ! "$INTERVAL_HOURS" =~ ^[0-9]+$ ]] || (( INTERVAL_HOURS < 1 || INTERVAL_HOURS > 72 )); then
   echo "ERROR: --interval-hours debe estar entre 1 y 72." >&2
@@ -135,7 +129,7 @@ Type=oneshot
 WorkingDirectory=$APP_ROOT
 EnvironmentFile=-$DRIVE_ENV
 EnvironmentFile=-$FEDERATION_ENV
-ExecStart=$PHP_BIN $APP_ROOT/drive/bin/federation_https_reconcile.php --runtime-env=$RUNTIME_ENV --webroot=$WEBROOT --nginx-ip-config=$NGINX_IP_CONFIG --state-path=$STATE_PATH --backend-host=$BACKEND_HOST --run-user=$RUN_USER --app-root=$APP_ROOT --php-bin=$PHP_BIN --certbot-bin=$CERTBOT_BIN --nginx-bin=$NGINX_BIN --systemctl-bin=$SYSTEMCTL_BIN --curl-bin=$CURL_BIN --runuser-bin=$RUNUSER_BIN
+ExecStart=$PHP_BIN $APP_ROOT/drive/bin/federation_https_reconcile.php --runtime-env=$RUNTIME_ENV --webroot=$WEBROOT --nginx-ip-config=$NGINX_IP_CONFIG --state-path=$STATE_PATH --run-user=$RUN_USER --app-root=$APP_ROOT --php-bin=$PHP_BIN --certbot-bin=$CERTBOT_BIN --nginx-bin=$NGINX_BIN --systemctl-bin=$SYSTEMCTL_BIN --curl-bin=$CURL_BIN --runuser-bin=$RUNUSER_BIN
 TimeoutStartSec=300
 UMask=0027
 EOF
@@ -173,7 +167,7 @@ echo "Runtime administrado: $RUNTIME_ENV"
 echo "EnvironmentFile Drive: $DRIVE_ENV"
 echo "EnvironmentFile FederationCloud: $FEDERATION_ENV"
 echo "Webroot ACME: $WEBROOT"
-echo "Backend HTTP local para modo IP: 127.0.0.1:80 (Host: $BACKEND_HOST)"
+echo "Backend HTTP local para modo IP: 127.0.0.1:80 conservando el Host público."
 echo
 echo "IMPORTANTE: el instalador NO ejecutó Certbot ni habilitó el timer."
 echo "1) Primera prueba: sudo systemctl start arcadecloud-federation-https.service"

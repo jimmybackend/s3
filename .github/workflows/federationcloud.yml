@@ -13,6 +13,7 @@ on:
       - 'drive/federationcloud/**'
       - 'drive/bin/federation_*.php'
       - 'drive/bin/install_federation_https_service.sh'
+      - 'drive/bin/install_arcadecloud_server.sh'
       - 'drive/bin/install_federation_sync_timer.sh'
       - 'drive/config/federation-seeds.json'
       - 'drive/sql/federation_ingress_queue.sql'
@@ -49,6 +50,7 @@ on:
       - 'drive/federationcloud/**'
       - 'drive/bin/federation_*.php'
       - 'drive/bin/install_federation_https_service.sh'
+      - 'drive/bin/install_arcadecloud_server.sh'
       - 'drive/bin/install_federation_sync_timer.sh'
       - 'drive/config/federation-seeds.json'
       - 'drive/sql/federation_ingress_queue.sql'
@@ -123,6 +125,7 @@ jobs:
           set -euo pipefail
           node --check drive/js/federation-footer.js
           bash -n drive/bin/install_federation_https_service.sh
+          bash -n drive/bin/install_arcadecloud_server.sh
           bash -n drive/bin/install_federation_sync_timer.sh
 
       - name: FederationCloud cryptographic smoke test
@@ -185,6 +188,10 @@ jobs:
           grep -q -- "--preferred-profile" drive/bin/federation_https_reconcile.php
           grep -q "shortlived" drive/bin/federation_https_reconcile.php
           grep -q -- "--ip-address" drive/bin/federation_https_reconcile.php
+          grep -q "location ^~ /.well-known/acme-challenge/" drive/bin/install_arcadecloud_server.sh
+          grep -Fq 'proxy_set_header Host $host;' drive/bin/federation_https_reconcile.php
+          ! grep -q "nginxChallengeConfig" drive/bin/federation_https_reconcile.php
+          ! grep -q -- "--backend-host" drive/bin/federation_https_reconcile.php drive/bin/install_federation_https_service.sh
           grep -q -- "--require-directory" drive/bin/federation_endpoint_refresh.php
           grep -q "OnActiveSec=45s" drive/bin/install_federation_sync_timer.sh
           grep -q 'OnUnitInactiveSec=${INTERVAL_SEC}s' drive/bin/install_federation_sync_timer.sh

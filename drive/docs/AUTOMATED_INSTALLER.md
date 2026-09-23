@@ -96,8 +96,11 @@ valida su SHA-384 antes de instalarlo en /usr/local/bin/composer. Las comprobaci
 corren bajo sudo establecen COMPOSER_ALLOW_SUPERUSER=1 de forma explícita para que el instalador no
 se detenga esperando una respuesta interactiva.
 
-Certbot puede estar disponible en el sistema, pero la instalación básica no depende de él. Sin dominio
-ni endpoint HTTPS explícito, ArcadeCloud no intenta emitir certificados durante la finalización.
+Para FederationCloud global, el nodo debe publicar un endpoint HTTPS verificable. Si el Certbot del
+sistema ya es 5.4 o superior se reutiliza. Si es más antiguo, ArcadeCloud instala un Certbot moderno
+aislado bajo `/opt/arcadecloud-certbot` y lo expone como
+`/usr/local/bin/arcadecloud-certbot`, sin reemplazar el paquete del sistema. Esto permite obtener
+certificados HTTPS de IP pública durante la finalización cuando el nodo no tiene dominio.
 
 ## PHP-FPM
 
@@ -168,10 +171,11 @@ ARCADECLOUD_FEDERATION_URL=http://IP_PUBLICA/federationcloud/
 ARCADECLOUD_FEDERATION_ENABLED=true
 ~~~
 
-La identidad FederationCloud se genera y FederationCloud/ArcadeLink queda activo desde la instalación
-básica cuando existe una IPv4 pública. HTTP sólo se admite en este modo cuando el host es una IP literal.
-Si posteriormente se configura un dominio, FederationCloud exige HTTPS y conserva la misma identidad
-criptográfica del nodo.
+La identidad FederationCloud se genera durante esta fase, pero el HTTP por IP es únicamente el endpoint
+de bootstrap para completar `/setup/`. Al finalizar, ArcadeCloud obtiene HTTPS para la IP pública,
+actualiza `PUBLIC_URL` y `FEDERATION_URL`, presenta el descriptor firmado al seed primario y exige
+confirmación del directorio global. Si posteriormente se configura un dominio, la misma identidad
+criptográfica se conserva.
 
 ## Setup básico
 
@@ -194,9 +198,17 @@ sudo bash drive/bin/install_arcadecloud.sh --finalize
 ~~~
 
 La finalización vuelve a ejecutar el preflight de forma idempotente, instala/verifica también el helper
-de actualizaciones usado por **Acerca de** y cierra la instalación básica. Si FederationCloud está activo
-sobre una IP literal HTTP, instala su timer de sincronización pero no intenta Certbot. Si el endpoint
-FederationCloud usa HTTPS, además ejecuta la reconciliación HTTPS.
+de actualizaciones usado por **Acerca de** y completa FederationCloud en este orden:
+
+1. obtiene o valida HTTPS para dominio o IP pública;
+2. actualiza el endpoint firmado sin regenerar la identidad;
+3. ejecuta un registro estricto contra el seed primario;
+4. exige que el directorio global responda;
+5. instala el timer de sincronización;
+6. ejecuta una primera sincronización.
+
+Por tanto, una instalación básica con endpoint público no se declara federada sólo porque exista la
+identidad local: debe haber sido presentada y confirmada por el directorio global.
 
 ## Idempotencia y seguridad
 

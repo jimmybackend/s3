@@ -204,12 +204,18 @@ la instalación.
 La finalización instala/verifica también el helper de actualizaciones usado por **Acerca de** y completa
 FederationCloud en este orden:
 
-1. obtiene o valida HTTPS para dominio o IP pública;
-2. actualiza el endpoint firmado sin regenerar la identidad;
-3. ejecuta un registro estricto contra el seed primario;
-4. exige que el directorio global responda;
-5. instala el timer de sincronización;
-6. ejecuta una primera sincronización.
+1. instala el reconciliador HTTPS sin ejecutarlo todavía;
+2. aplica y verifica el esquema auxiliar FederationCloud en MySQL (catálogo, eventos, Shares, réplicas y Aduana);
+3. obtiene o valida HTTPS para dominio o IP pública;
+4. actualiza el endpoint firmado sin regenerar la identidad;
+5. ejecuta un registro estricto contra el seed primario;
+6. exige que el directorio global responda;
+7. instala el timer de sincronización;
+8. ejecuta una primera sincronización.
+
+La migración ocurre **antes** de arrancar el reconciliador HTTPS porque ese servicio también republica el
+descriptor al finalizar. De este modo un nodo nuevo nunca intenta crear su primer evento
+`node.upsert` antes de que exista `FederationEvents`.
 
 Por tanto, una instalación básica con endpoint público no se declara terminada sólo porque exista la
 identidad local: debe haber sido presentada y confirmada por el directorio global. El helper crea

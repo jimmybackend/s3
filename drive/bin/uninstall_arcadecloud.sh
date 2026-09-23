@@ -72,6 +72,14 @@ run() {
   "$@"
 }
 
+run_quiet() {
+  if [[ "$DRY_RUN" -eq 1 ]]; then
+    run "$@"
+    return 0
+  fi
+  "$@" >/dev/null 2>&1
+}
+
 remove_path() {
   local path="$1"
   [[ -e "$path" || -L "$path" ]] || return 0
@@ -91,8 +99,8 @@ remove_file_if_contains() {
 stop_unit() {
   local unit="$1"
   if systemctl cat "$unit" >/dev/null 2>&1 || [[ -e "/etc/systemd/system/$unit" ]]; then
-    run systemctl disable --now "$unit" >/dev/null 2>&1 || true
-    run systemctl stop "$unit" >/dev/null 2>&1 || true
+    run_quiet systemctl disable --now "$unit" || true
+    run_quiet systemctl stop "$unit" || true
   fi
 }
 
@@ -233,7 +241,7 @@ remove_path /tmp/arcadecloud-drive-thumbnails
 remove_path /tmp/arcadecloud-drive-cost-explorer-cache
 
 run systemctl daemon-reload
-run systemctl reset-failed >/dev/null 2>&1 || true
+run_quiet systemctl reset-failed || true
 
 if command -v nginx >/dev/null 2>&1; then
   if [[ "$DRY_RUN" -eq 1 ]]; then

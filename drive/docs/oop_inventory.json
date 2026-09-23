@@ -1,9 +1,9 @@
 {
   "summary": {
-    "php_total": 371,
+    "php_total": 372,
     "php_class_modules": 221,
     "php_needs_migration": 0,
-    "php_tests": 28,
+    "php_tests": 29,
     "js_total": 46,
     "js_class_modules": 46,
     "js_needs_migration": 0,
@@ -132,7 +132,7 @@
     },
     {
       "path": "drive/bin/federation_catalog_migrate.php",
-      "lines": 89,
+      "lines": 99,
       "kind": "thin cli entrypoint",
       "classes": 0,
       "functions": [],
@@ -4833,6 +4833,23 @@
         "expect",
         "openBundle",
         "assertNoSecretMarkers"
+      ],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/tests/database_schema_contract_smoke.php",
+      "lines": 76,
+      "kind": "test script",
+      "classes": 0,
+      "functions": [
+        "schemaContract"
       ],
       "session": false,
       "superglobals": [],

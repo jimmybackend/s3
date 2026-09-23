@@ -4,10 +4,10 @@
 
 ## Resumen
 
-- PHP analizados: **371**
+- PHP analizados: **372**
 - PHP que ya contienen clases/interfaces: **221**
 - PHP marcados para migración/revisión: **0**
-- Tests PHP separados del objetivo OOP de runtime: **28**
+- Tests PHP separados del objetivo OOP de runtime: **29**
 - JavaScript analizados: **46**
 - JavaScript que ya contienen clases: **46**
 - JavaScript sin clase/encapsulación OOP: **0**
@@ -34,7 +34,7 @@
 | `drive/background_tasks.php` | 18 | thin endpoint | 0 | — | — | — | — |
 | `drive/bin/arcadecloud-drive-admin-helper.php` | 608 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/bin/arcadecloud-drive-updater.php` | 207 | class/module | 1 | — | — | — | — |
-| `drive/bin/federation_catalog_migrate.php` | 89 | thin cli entrypoint | 0 | — | ⚠️ | — | — |
+| `drive/bin/federation_catalog_migrate.php` | 99 | thin cli entrypoint | 0 | — | ⚠️ | — | — |
 | `drive/bin/federation_endpoint_refresh.php` | 87 | thin cli entrypoint | 0 | — | — | — | — |
 | `drive/bin/federation_https_reconcile.php` | 474 | class/module | 1 | — | — | — | — |
 | `drive/bin/federation_identity_backup.php` | 49 | thin cli entrypoint | 0 | — | — | — | — |
@@ -345,6 +345,7 @@
 | `drive/tests/activity_costs_smoke.php` | 135 | test script | 0 | — | — | — | — |
 | `drive/tests/arcadelink_bulk_contract_regression.php` | 68 | test script | 0 | — | — | — | — |
 | `drive/tests/arcadelink_bundle_regression.php` | 142 | test script | 0 | — | — | — | — |
+| `drive/tests/database_schema_contract_smoke.php` | 76 | test script | 0 | — | — | — | — |
 | `drive/tests/federation_access_message_smoke.php` | 72 | test script | 0 | — | — | — | — |
 | `drive/tests/federation_catalog_event_smoke.php` | 60 | test script | 0 | — | — | — | — |
 | `drive/tests/federation_customs_contract_smoke.php` | 79 | test script | 0 | — | — | — | — |

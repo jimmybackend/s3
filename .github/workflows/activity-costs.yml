@@ -17,6 +17,7 @@ on:
       - 'drive/bin/move_job_worker.php'
       - 'drive/bin/sync_worker.php'
       - 'drive/config/activity-cost-pricing.json'
+      - 'drive/css/activity-costs.css'
       - 'drive/src/Activity/**'
       - 'drive/src/Aws/AwsCostService.php'
       - 'drive/src/Aws/ComprehendFileService.php'
@@ -154,6 +155,9 @@ jobs:
           grep -q "state() === 'owner'" drive/src/Http/Controller/ActivityCostController.php
           grep -q "state() !== 'owner'" drive/src/Http/Controller/AwsCostController.php
           grep -q 'COUNT(DISTINCT COALESCE' drive/src/Activity/ActivityCostRepository.php
+          grep -F -q 'LIMIT ? OFFSET ?' drive/src/Activity/ActivityCostRepository.php
+          grep -q 'recent_pagination' drive/src/Activity/ActivityCostRepository.php drive/src/View/ActivityCostPageRenderer.php
+          grep -q 'activity-detail-panel' drive/src/View/ActivityCostPageRenderer.php drive/css/activity-costs.css
           grep -q 'comprehend.nlp_unit' drive/src/Http/Controller/AwsFileController.php
           grep -q 's3_list_requests' drive/src/Application/FolderMutationService.php
           grep -q 'BackgroundWorkerLauncher' drive/src/Http/Controller/MoveJobController.php

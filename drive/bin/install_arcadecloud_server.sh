@@ -243,17 +243,19 @@ select_certbot_python() {
     fi
   done
 
-  if package_available python3.11; then
-    local packages=(python3.11)
-    package_available python3.11-pip && packages+=(python3.11-pip)
-    say "Instalando Python 3.11 aislado para Certbot moderno." >&2
-    dnf install -y "${packages[@]}" >&2
-  fi
+  for candidate in python3.11 python3.12 python3.13 python3.14; do
+    if package_available "$candidate"; then
+      local packages=("$candidate")
+      package_available "$candidate-pip" && packages+=("$candidate-pip")
+      say "Instalando $candidate aislado para Certbot moderno." >&2
+      dnf install -y "${packages[@]}" >&2
 
-  if command_exists python3.11 && python_version_at_least_310 "$(command -v python3.11)"; then
-    command -v python3.11
-    return 0
-  fi
+      if command_exists "$candidate" && python_version_at_least_310 "$(command -v "$candidate")"; then
+        command -v "$candidate"
+        return 0
+      fi
+    fi
+  done
 
   fail "Certbot >= 5.4 requiere Python >= 3.10 y no pude obtener un intérprete compatible en Amazon Linux 2023."
 }

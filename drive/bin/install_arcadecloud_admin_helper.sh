@@ -8,6 +8,7 @@ fi
 
 PHP_USER=""
 PHP_GROUP=""
+APP_ROOT=""
 IDENTITY_PATH="/etc/arcadecloud-drive/federation-node.json"
 RUNTIME_ENV_PATH="/etc/arcadecloud-drive/runtime-env.json"
 BOOTSTRAP_AUTH_PATH="/etc/arcadecloud-drive/bootstrap-auth.json"
@@ -18,6 +19,7 @@ for arg in "$@"; do
   case "$arg" in
     --php-user=*) PHP_USER="${arg#*=}" ;;
     --php-group=*) PHP_GROUP="${arg#*=}" ;;
+    --app-root=*) APP_ROOT="${arg#*=}" ;;
     --identity-path=*) IDENTITY_PATH="${arg#*=}" ;;
     --runtime-env-path=*) RUNTIME_ENV_PATH="${arg#*=}" ;;
     --bootstrap-auth-path=*) BOOTSTRAP_AUTH_PATH="${arg#*=}" ;;
@@ -54,6 +56,13 @@ for path_value in "$IDENTITY_PATH" "$RUNTIME_ENV_PATH" "$BOOTSTRAP_AUTH_PATH" "$
 done
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+[[ -n "$APP_ROOT" ]] || APP_ROOT="$(cd -- "$SCRIPT_DIR/../.." && pwd)"
+APP_ROOT="$(realpath "$APP_ROOT")"
+case "$APP_ROOT" in
+  /*) ;;
+  *) echo "ERROR: --app-root debe ser una ruta absoluta." >&2; exit 2 ;;
+esac
+
 SOURCE_HELPER="$SCRIPT_DIR/arcadecloud-drive-admin-helper.php"
 TARGET_HELPER="/usr/local/sbin/arcadecloud-drive-admin"
 CONFIG_DIR="/etc/arcadecloud-drive"
@@ -68,11 +77,12 @@ fi
 install -d -o root -g "$PHP_GROUP" -m 0750 "$CONFIG_DIR"
 install -o root -g root -m 0755 "$SOURCE_HELPER" "$TARGET_HELPER"
 
-python3 - "$CONFIG_FILE" "$IDENTITY_PATH" "$RUNTIME_ENV_PATH" "$BOOTSTRAP_AUTH_PATH" "$SETUP_LOCK_PATH" "$PHP_USER" "$PHP_GROUP" <<'PY'
+python3 - "$CONFIG_FILE" "$IDENTITY_PATH" "$RUNTIME_ENV_PATH" "$BOOTSTRAP_AUTH_PATH" "$SETUP_LOCK_PATH" "$PHP_USER" "$PHP_GROUP" "$APP_ROOT" <<'PY'
 import json, os, sys, tempfile
-path, identity, runtime, bootstrap_auth, setup_lock, user, group = sys.argv[1:]
+path, identity, runtime, bootstrap_auth, setup_lock, user, group, app_root = sys.argv[1:]
 data = {
-    "version": 2,
+    "version": 3,
+    "app_root": app_root,
     "identity_path": identity,
     "runtime_env_path": runtime,
     "bootstrap_auth_path": bootstrap_auth,
@@ -138,6 +148,7 @@ echo
 echo "OK: helper administrativo instalado."
 echo "PHP-FPM user: $PHP_USER"
 echo "PHP-FPM group: $PHP_GROUP"
+echo "App root: $APP_ROOT"
 echo "Identity: $IDENTITY_PATH"
 echo "Managed runtime env: $RUNTIME_ENV_PATH"
 echo "Bootstrap auth: $BOOTSTRAP_AUTH_PATH"

@@ -1296,6 +1296,355 @@ CREATE TABLE IF NOT EXISTS `TaskPlanRevisionSteps` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 ALTER TABLE `TaskReplanRequests` ADD KEY `idx_task_replan_claim` (`status`,`next_attempt_at`,`lease_expires_at`), ADD KEY `idx_task_replan_revision` (`revision_id_`), ADD KEY `idx_task_replan_reservation` (`reservation_id_`), ADD CONSTRAINT `fk_task_replan_revision` FOREIGN KEY (`revision_id_`) REFERENCES `TaskPlanRevisions` (`id_`) ON DELETE SET NULL, ADD CONSTRAINT `fk_task_replan_reservation` FOREIGN KEY (`reservation_id_`) REFERENCES `ProjectAutonomyReservations` (`id_`) ON DELETE SET NULL;
 
+
+-- --------------------------------------------------------
+-- ArcadeCloud FederationCloud extension tables for a clean import.
+-- Runtime migrations DO NOT execute these DROP statements.
+DROP TABLE IF EXISTS `FederationOriginCounters`;
+DROP TABLE IF EXISTS `FederationEvents`;
+DROP TABLE IF EXISTS `FederationClocks`;
+DROP TABLE IF EXISTS `FederatedResources`;
+DROP TABLE IF EXISTS `FederationResourceLocations`;
+DROP TABLE IF EXISTS `FederationPeerSyncState`;
+DROP TABLE IF EXISTS `FederationAccessRequests`;
+DROP TABLE IF EXISTS `FederationShares`;
+DROP TABLE IF EXISTS `FederationShareImportJobs`;
+DROP TABLE IF EXISTS `FederationReplicaJobs`;
+DROP TABLE IF EXISTS `FederationReplicaObjects`;
+DROP TABLE IF EXISTS `FederationIngressQueue`;
+
+-- ARCADECLOUD:FEDERATION_SCHEMA:BEGIN
+-- Canonical, idempotent FederationCloud schema.
+-- federation_catalog_migrate.php extracts only this marked section.
+
+CREATE TABLE IF NOT EXISTS `FederationNodes` (
+  `NodeId` varchar(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  `NodeName` varchar(64) CHARACTER SET ascii COLLATE ascii_general_ci DEFAULT NULL,
+  `PublicKey` varchar(128) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  `PublicUrl` varchar(512) NOT NULL,
+  `FederationUrl` varchar(512) NOT NULL,
+  `Status` enum('active','stale','blocked') NOT NULL DEFAULT 'active',
+  `FirstSeen` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `LastSeen` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`NodeId`),
+  UNIQUE KEY `uq_federation_nodes_name` (`NodeName`),
+  KEY `idx_federation_nodes_status_last_seen` (`Status`,`LastSeen`),
+  KEY `idx_federation_nodes_federation_url` (`FederationUrl`(191))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `FederationNodeAuthorizations` (
+  `id_` bigint UNSIGNED NOT NULL AUTO_INCREMENT,
+  `OriginNodeId` varchar(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  `ProviderNodeId` varchar(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  `Role` enum('provider','mirror') NOT NULL DEFAULT 'provider',
+  `Scope` enum('all_allowed_resources','selected_resources') NOT NULL DEFAULT 'all_allowed_resources',
+  `Status` enum('pending','active','revoked','blocked') NOT NULL DEFAULT 'pending',
+  `OriginSignature` varchar(256) CHARACTER SET ascii COLLATE ascii_bin DEFAULT NULL,
+  `RequestedAt` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `AuthorizedAt` datetime DEFAULT NULL,
+  `LastSeen` datetime DEFAULT NULL,
+  `RevokedAt` datetime DEFAULT NULL,
+  PRIMARY KEY (`id_`),
+  UNIQUE KEY `uq_federation_node_authorization` (`OriginNodeId`,`ProviderNodeId`),
+  KEY `idx_federation_provider` (`ProviderNodeId`,`Status`),
+  KEY `idx_federation_origin` (`OriginNodeId`,`Status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- FederationCloud decentralized global catalog
+-- Safe to run more than once on MySQL 8 / MariaDB versions that support JSON.
+
+CREATE TABLE IF NOT EXISTS FederationOriginCounters (
+  OriginNodeId varchar(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  LastSequence bigint unsigned NOT NULL DEFAULT 0,
+  UpdatedAt datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
+  PRIMARY KEY (OriginNodeId)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS FederationEvents (
+  EventId varchar(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  OriginNodeId varchar(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  OriginSequence bigint unsigned NOT NULL,
+  EventType varchar(48) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  EntityId varchar(128) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  PayloadJson json NOT NULL,
+  IssuedAt varchar(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL COMMENT 'Texto original firmado; no reformatear',
+  PublicKey varchar(128) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  Signature varchar(256) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  ReceivedAt datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+  PRIMARY KEY (EventId),
+  UNIQUE KEY uq_federation_event_origin_sequence (OriginNodeId, OriginSequence),
+  KEY idx_federation_event_origin_sequence (OriginNodeId, OriginSequence),
+  KEY idx_federation_event_received (ReceivedAt),
+  KEY idx_federation_event_entity (EntityId, EventType)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS FederationClocks (
+  OriginNodeId varchar(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  ContiguousSequence bigint unsigned NOT NULL DEFAULT 0,
+  UpdatedAt datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
+  PRIMARY KEY (OriginNodeId)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS FederatedResources (
+  ResourceId varchar(96) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  OriginNodeId varchar(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  OwnerUserId int DEFAULT NULL COMMENT 'Sólo se conserva en el nodo propietario; nunca se replica',
+  ResourceType varchar(32) NOT NULL DEFAULT 'file',
+  Title varchar(255) NOT NULL,
+  MediaType varchar(128) NOT NULL DEFAULT 'application/octet-stream',
+  SizeBytes bigint unsigned NOT NULL DEFAULT 0,
+  ContentId varchar(80) CHARACTER SET ascii COLLATE ascii_bin DEFAULT NULL,
+  Visibility enum('PUBLIC','UNLISTED','PRIVATE') NOT NULL DEFAULT 'UNLISTED',
+  DiscoveryPolicy enum('local_only','public_metadata','requestable_metadata') NOT NULL DEFAULT 'local_only',
+  Rights varchar(64) NOT NULL DEFAULT 'link_only',
+  OriginUrl varchar(512) NOT NULL,
+  FederationUrl varchar(512) NOT NULL,
+  ArcadeLinkJson mediumtext DEFAULT NULL,
+  LastOriginSequence bigint unsigned NOT NULL DEFAULT 0,
+  UpdatedAt datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+  Tombstoned tinyint(1) NOT NULL DEFAULT 0,
+  PRIMARY KEY (ResourceId),
+  KEY idx_fed_resource_origin (OriginNodeId, Tombstoned),
+  KEY idx_fed_resource_discovery (DiscoveryPolicy, Tombstoned, UpdatedAt),
+  KEY idx_fed_resource_content (ContentId),
+  KEY idx_fed_resource_media (MediaType),
+  FULLTEXT KEY ft_fed_resource_title (Title)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS FederationResourceLocations (
+  ResourceId varchar(96) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  NodeId varchar(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  LocationRole enum('origin','provider','mirror') NOT NULL DEFAULT 'origin',
+  Status enum('active','stale','revoked') NOT NULL DEFAULT 'active',
+  FederationUrl varchar(512) NOT NULL,
+  LastOriginSequence bigint unsigned NOT NULL DEFAULT 0,
+  LastSeenAt datetime(6) DEFAULT NULL,
+  UpdatedAt datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+  PRIMARY KEY (ResourceId, NodeId),
+  KEY idx_fed_location_node_status (NodeId, Status),
+  KEY idx_fed_location_resource_status (ResourceId, Status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS FederationPeerSyncState (
+  PeerNodeId varchar(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  LastAttemptAt datetime(6) DEFAULT NULL,
+  LastSuccessAt datetime(6) DEFAULT NULL,
+  ConsecutiveFailures int unsigned NOT NULL DEFAULT 0,
+  NextAttemptAt datetime(6) DEFAULT NULL,
+  LastError varchar(512) DEFAULT NULL,
+  LastPulledEvents int unsigned NOT NULL DEFAULT 0,
+  LastPushedEvents int unsigned NOT NULL DEFAULT 0,
+  UpdatedAt datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
+  PRIMARY KEY (PeerNodeId),
+  KEY idx_fed_peer_next_attempt (NextAttemptAt, ConsecutiveFailures)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- FederationCloud private access requests and logical Shares zone
+
+CREATE TABLE IF NOT EXISTS FederationAccessRequests (
+  RequestId varchar(96) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  Direction enum('outgoing','incoming') NOT NULL,
+  ResourceId varchar(96) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  LocalUserId int NOT NULL,
+  RemoteNodeId varchar(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  RemoteFederationUrl varchar(512) NOT NULL,
+  Status enum('queued','pending','approved','rejected','expired','failed') NOT NULL DEFAULT 'queued',
+  RequestJson mediumtext NOT NULL,
+  DecisionJson mediumtext DEFAULT NULL,
+  RequestedAt datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+  ExpiresAt datetime(6) NOT NULL,
+  LastAttemptAt datetime(6) DEFAULT NULL,
+  NextAttemptAt datetime(6) DEFAULT NULL,
+  Attempts int unsigned NOT NULL DEFAULT 0,
+  LastError varchar(512) DEFAULT NULL,
+  UpdatedAt datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
+  PRIMARY KEY (RequestId),
+  KEY idx_far_local_direction_status (LocalUserId, Direction, Status, UpdatedAt),
+  KEY idx_far_retry (Direction, Status, NextAttemptAt),
+  KEY idx_far_resource (ResourceId, Direction, Status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS FederationShares (
+  ShareId varchar(96) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  UserId int NOT NULL,
+  Direction enum('received','sent') NOT NULL,
+  ResourceId varchar(96) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  RemoteNodeId varchar(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  Title varchar(255) NOT NULL,
+  MediaType varchar(128) NOT NULL DEFAULT 'application/octet-stream',
+  Status enum('active','expired','revoked') NOT NULL DEFAULT 'active',
+  AccessUrl varchar(2048) DEFAULT NULL,
+  DecisionJson mediumtext NOT NULL,
+  ExpiresAt datetime(6) DEFAULT NULL,
+  LocalFileId int DEFAULT NULL,
+  LocalS3Key varchar(1024) DEFAULT NULL,
+  ImportedAt datetime(6) DEFAULT NULL,
+  ImportedResourceUpdatedAt datetime(6) DEFAULT NULL,
+  ImportedContentId varchar(80) CHARACTER SET ascii COLLATE ascii_bin DEFAULT NULL,
+  CreatedAt datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+  UpdatedAt datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
+  PRIMARY KEY (ShareId),
+  KEY idx_fshares_user_direction_status (UserId, Direction, Status, UpdatedAt),
+  KEY idx_fshares_resource (ResourceId, Status),
+  KEY idx_fshares_remote (RemoteNodeId, Status),
+  KEY idx_fshares_local_file (UserId, LocalFileId)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS FederationShareImportJobs (
+  ImportId varchar(96) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  UserId int NOT NULL,
+  ShareId varchar(96) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  ResourceId varchar(96) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  VersionKey char(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  ResourceUpdatedAt datetime(6) DEFAULT NULL,
+  Status enum('queued','processing','retry','completed','failed') NOT NULL DEFAULT 'queued',
+  Attempts int unsigned NOT NULL DEFAULT 0,
+  LastAttemptAt datetime(6) DEFAULT NULL,
+  NextAttemptAt datetime(6) DEFAULT NULL,
+  LastError varchar(512) DEFAULT NULL,
+  LocalFileId int DEFAULT NULL,
+  CreatedAt datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+  UpdatedAt datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
+  PRIMARY KEY (ImportId),
+  UNIQUE KEY uq_fshare_import_version (UserId, ShareId, VersionKey),
+  KEY idx_fshare_import_due (Status, NextAttemptAt, CreatedAt),
+  KEY idx_fshare_import_user (UserId, ShareId, UpdatedAt)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Portable upgrades for existing installations.
+-- Do not use `ADD COLUMN IF NOT EXISTS`: that syntax differs across MySQL/MariaDB versions.
+-- information_schema + prepared statements keeps this migration idempotent on both engines.
+
+SET @arcade_sql = IF(
+  (SELECT COUNT(*) FROM information_schema.COLUMNS
+   WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'FederationShares' AND COLUMN_NAME = 'LocalFileId') = 0,
+  'ALTER TABLE FederationShares ADD COLUMN LocalFileId int DEFAULT NULL AFTER ExpiresAt',
+  'SELECT 1'
+);
+PREPARE arcade_stmt FROM @arcade_sql;
+EXECUTE arcade_stmt;
+DEALLOCATE PREPARE arcade_stmt;
+
+SET @arcade_sql = IF(
+  (SELECT COUNT(*) FROM information_schema.COLUMNS
+   WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'FederationShares' AND COLUMN_NAME = 'LocalS3Key') = 0,
+  'ALTER TABLE FederationShares ADD COLUMN LocalS3Key varchar(1024) DEFAULT NULL AFTER LocalFileId',
+  'SELECT 1'
+);
+PREPARE arcade_stmt FROM @arcade_sql;
+EXECUTE arcade_stmt;
+DEALLOCATE PREPARE arcade_stmt;
+
+SET @arcade_sql = IF(
+  (SELECT COUNT(*) FROM information_schema.COLUMNS
+   WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'FederationShares' AND COLUMN_NAME = 'ImportedAt') = 0,
+  'ALTER TABLE FederationShares ADD COLUMN ImportedAt datetime(6) DEFAULT NULL AFTER LocalS3Key',
+  'SELECT 1'
+);
+PREPARE arcade_stmt FROM @arcade_sql;
+EXECUTE arcade_stmt;
+DEALLOCATE PREPARE arcade_stmt;
+
+SET @arcade_sql = IF(
+  (SELECT COUNT(*) FROM information_schema.COLUMNS
+   WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'FederationShares' AND COLUMN_NAME = 'ImportedResourceUpdatedAt') = 0,
+  'ALTER TABLE FederationShares ADD COLUMN ImportedResourceUpdatedAt datetime(6) DEFAULT NULL AFTER ImportedAt',
+  'SELECT 1'
+);
+PREPARE arcade_stmt FROM @arcade_sql;
+EXECUTE arcade_stmt;
+DEALLOCATE PREPARE arcade_stmt;
+
+SET @arcade_sql = IF(
+  (SELECT COUNT(*) FROM information_schema.COLUMNS
+   WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'FederationShares' AND COLUMN_NAME = 'ImportedContentId') = 0,
+  'ALTER TABLE FederationShares ADD COLUMN ImportedContentId varchar(80) CHARACTER SET ascii COLLATE ascii_bin DEFAULT NULL AFTER ImportedResourceUpdatedAt',
+  'SELECT 1'
+);
+PREPARE arcade_stmt FROM @arcade_sql;
+EXECUTE arcade_stmt;
+DEALLOCATE PREPARE arcade_stmt;
+
+SET @arcade_sql = IF(
+  (SELECT COUNT(*) FROM information_schema.STATISTICS
+   WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'FederationShares' AND INDEX_NAME = 'idx_fshares_local_file') = 0,
+  'ALTER TABLE FederationShares ADD INDEX idx_fshares_local_file (UserId, LocalFileId)',
+  'SELECT 1'
+);
+PREPARE arcade_stmt FROM @arcade_sql;
+EXECUTE arcade_stmt;
+DEALLOCATE PREPARE arcade_stmt;
+
+-- FederationCloud replica transfer/control plane.
+-- Local operational state only; it is NOT copied through FederationEvents.
+
+CREATE TABLE IF NOT EXISTS FederationReplicaJobs (
+  OfferId varchar(96) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  Direction enum('outgoing','incoming') NOT NULL,
+  ResourceId varchar(96) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  LocalUserId int DEFAULT NULL COMMENT 'Sólo significativo en la DB local; nunca viaja en el protocolo',
+  RemoteNodeId varchar(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  RemoteFederationUrl varchar(512) NOT NULL,
+  Role enum('provider','mirror') NOT NULL,
+  Status enum('queued','offered','transferring','stored','active','retry','failed','expired') NOT NULL DEFAULT 'queued',
+  SourceStorageRef varchar(1024) DEFAULT NULL COMMENT 'Sólo origen local; nunca se serializa al catálogo global',
+  OfferJson mediumtext DEFAULT NULL COMMENT 'Oferta privada firmada; nunca se gossip-ea',
+  LocalS3Key varchar(1024) DEFAULT NULL,
+  ContentId varchar(80) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  SizeBytes bigint unsigned NOT NULL DEFAULT 0,
+  Title varchar(255) NOT NULL,
+  MediaType varchar(128) NOT NULL DEFAULT 'application/octet-stream',
+  Attempts int unsigned NOT NULL DEFAULT 0,
+  NextAttemptAt datetime(6) DEFAULT NULL,
+  LastError varchar(512) DEFAULT NULL,
+  ExpiresAt datetime(6) DEFAULT NULL,
+  CreatedAt datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+  UpdatedAt datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
+  PRIMARY KEY (OfferId),
+  KEY idx_fed_replica_job_due (Direction, Status, NextAttemptAt),
+  KEY idx_fed_replica_job_resource (ResourceId, Direction, Status),
+  KEY idx_fed_replica_job_remote (RemoteNodeId, Status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS FederationReplicaObjects (
+  ResourceId varchar(96) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  OriginNodeId varchar(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  Role enum('provider','mirror') NOT NULL,
+  S3Key varchar(1024) NOT NULL,
+  ContentId varchar(80) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  SizeBytes bigint unsigned NOT NULL DEFAULT 0,
+  Status enum('stored','active','stale','revoked') NOT NULL DEFAULT 'stored',
+  VerifiedAt datetime(6) DEFAULT NULL,
+  UpdatedAt datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
+  PRIMARY KEY (ResourceId),
+  KEY idx_fed_replica_object_origin (OriginNodeId, Status),
+  KEY idx_fed_replica_object_status (Status, UpdatedAt)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS FederationIngressQueue (
+  id_ bigint unsigned NOT NULL AUTO_INCREMENT,
+  RequestId varchar(96) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  RequestType varchar(48) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  OriginNodeId varchar(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  TargetNodeId varchar(64) CHARACTER SET ascii COLLATE ascii_bin DEFAULT NULL,
+  DocumentationJson mediumtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
+  PayloadHash char(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  Priority smallint unsigned NOT NULL DEFAULT 100,
+  Status enum('queued','processing','retry','done','rejected','failed') NOT NULL DEFAULT 'queued',
+  Attempts smallint unsigned NOT NULL DEFAULT 0,
+  ReceivedAt datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+  AvailableAt datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+  StartedAt datetime(6) DEFAULT NULL,
+  FinishedAt datetime(6) DEFAULT NULL,
+  LastError varchar(512) DEFAULT NULL,
+  PRIMARY KEY (id_),
+  UNIQUE KEY uq_federation_ingress_request (RequestId),
+  KEY idx_federation_ingress_ready (Status, AvailableAt, Priority, id_),
+  KEY idx_federation_ingress_origin (OriginNodeId, ReceivedAt)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ARCADECLOUD:FEDERATION_SCHEMA:END
+
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

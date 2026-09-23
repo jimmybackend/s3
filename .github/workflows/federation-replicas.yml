@@ -16,7 +16,7 @@ on:
       - 'drive/js/federation-portal.js'
       - 'drive/bin/federation_sync.php'
       - 'drive/bin/federation_catalog_migrate.php'
-      - 'drive/sql/federation_replicas.sql'
+      - 'adbbmis1_Cloud.sql'
       - 'drive/tests/federation_replica_smoke.php'
       - 'drive/docs/FEDERATION_REPLICAS.md'
       - 'drive/docs/FEDERATION_NODE_REPLICA_INSTALL.md'
@@ -33,7 +33,7 @@ on:
       - 'drive/js/federation-portal.js'
       - 'drive/bin/federation_sync.php'
       - 'drive/bin/federation_catalog_migrate.php'
-      - 'drive/sql/federation_replicas.sql'
+      - 'adbbmis1_Cloud.sql'
       - 'drive/tests/federation_replica_smoke.php'
       - 'drive/docs/FEDERATION_REPLICAS.md'
       - 'drive/docs/FEDERATION_NODE_REPLICA_INSTALL.md'
@@ -79,8 +79,8 @@ jobs:
       - name: Replica security and architecture guards
         run: |
           set -euo pipefail
-          grep -q 'FederationReplicaJobs' drive/sql/federation_replicas.sql
-          grep -q 'FederationReplicaObjects' drive/sql/federation_replicas.sql
+          grep -q 'FederationReplicaJobs' adbbmis1_Cloud.sql
+          grep -q 'FederationReplicaObjects' adbbmis1_Cloud.sql
           grep -q 'all_allowed_resources' drive/src/Federation/FederationReplicaMessageCodec.php
           grep -q 'copy_allowed' drive/src/Federation/FederationReplicaService.php
           grep -q 'MAX_BYTES = 5368709120' drive/src/Federation/FederationReplicaDownloader.php

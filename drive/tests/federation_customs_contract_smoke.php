@@ -11,7 +11,7 @@ function customsOk(bool $condition, string $message): void
 }
 
 $root = dirname(__DIR__);
-$sql = (string)file_get_contents($root . '/sql/federation_ingress_queue.sql');
+$sql = (string)file_get_contents(dirname($root) . '/adbbmis1_Cloud.sql');
 $repo = (string)file_get_contents($root . '/src/Federation/FederationIngressQueueRepository.php');
 $customs = (string)file_get_contents($root . '/src/Federation/FederationCustomsService.php');
 $directory = (string)file_get_contents($root . '/src/Federation/FederationDirectoryService.php');
@@ -68,7 +68,7 @@ customsOk(str_contains($endpointRefresh, 'announceNodeIfChanged'), 'arranque/ref
 customsOk(str_contains($syncInstaller, 'OnActiveSec=45s'), 'sync arranca incluso si la ventana de boot ya pasó');
 customsOk(str_contains($syncInstaller, 'OnUnitInactiveSec=${INTERVAL_SEC}s'), 'worker oneshot se reprograma tras finalizar');
 customsOk(!str_contains($syncInstaller, 'OnUnitActiveSec=${INTERVAL_SEC}s'), 'sync no usa temporizador incompatible con oneshot');
-customsOk(str_contains($migrate, 'federation_ingress_queue.sql'), 'migración instala la cola de Aduana');
+customsOk(str_contains($migrate, 'ARCADECLOUD:FEDERATION_SCHEMA:BEGIN'), 'migración usa la sección FederationCloud del SQL canónico');
 
 customsOk(!preg_match('/AKIA[0-9A-Z]{16}/', $customs . $repo . $sql), 'Aduana no contiene credenciales AWS');
 customsOk(!str_contains($customs, 'secret_key'), 'Aduana no serializa clave privada de nodo');

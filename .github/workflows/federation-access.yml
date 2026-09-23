@@ -20,7 +20,7 @@ on:
       - 'drive/css/federation-portal.css'
       - 'drive/bin/federation_sync.php'
       - 'drive/bin/federation_catalog_migrate.php'
-      - 'drive/sql/federation_access_shares.sql'
+      - 'adbbmis1_Cloud.sql'
       - 'drive/tests/federation_access_message_smoke.php'
       - 'drive/docs/FEDERATION_ACCESS_AND_SHARES.md'
       - '.github/workflows/federation-access.yml'
@@ -39,7 +39,7 @@ on:
       - 'drive/css/federation-portal.css'
       - 'drive/bin/federation_sync.php'
       - 'drive/bin/federation_catalog_migrate.php'
-      - 'drive/sql/federation_access_shares.sql'
+      - 'adbbmis1_Cloud.sql'
       - 'drive/tests/federation_access_message_smoke.php'
       - 'drive/docs/FEDERATION_ACCESS_AND_SHARES.md'
       - '.github/workflows/federation-access.yml'
@@ -85,8 +85,8 @@ jobs:
       - name: Access privacy and portal guards
         run: |
           set -euo pipefail
-          grep -q 'FederationAccessRequests' drive/sql/federation_access_shares.sql
-          grep -q 'FederationShares' drive/sql/federation_access_shares.sql
+          grep -q 'FederationAccessRequests' adbbmis1_Cloud.sql
+          grep -q 'FederationShares' adbbmis1_Cloud.sql
           grep -q "access-request.php" drive/src/Federation/FederationHttpClient.php
           grep -q "access-status.php" drive/src/Federation/FederationHttpClient.php
           grep -q "X_FEDERATION_ACCESS_CSRF\|X-Federation-Access-CSRF" drive/src/Http/Controller/FederationAccessController.php drive/docs/FEDERATION_ACCESS_AND_SHARES.md

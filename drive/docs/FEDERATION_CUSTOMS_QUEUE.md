@@ -180,7 +180,7 @@ Una clave pública distinta para un Node ID existente sigue siendo un conflicto 
 
 ## Operación
 
-La migración `drive/bin/federation_catalog_migrate.php` instala también `drive/sql/federation_ingress_queue.sql`.
+La migración `drive/bin/federation_catalog_migrate.php` lee únicamente la sección marcada `ARCADECLOUD:FEDERATION_SCHEMA` dentro de `adbbmis1_Cloud.sql`; ese es el único archivo SQL canónico del repositorio.
 
 El mismo instalador del gossip crea y habilita el worker:
 

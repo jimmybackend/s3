@@ -17,7 +17,7 @@ on:
       - 'drive/bin/install_arcadecloud.sh'
       - 'drive/bin/install_federation_sync_timer.sh'
       - 'drive/config/federation-seeds.json'
-      - 'drive/sql/federation_ingress_queue.sql'
+      - 'adbbmis1_Cloud.sql'
       - 'drive/src/Federation/**'
       - 'drive/src/Http/Controller/FederationController.php'
       - 'drive/src/Http/Controller/FederationDirectoryController.php'
@@ -55,7 +55,7 @@ on:
       - 'drive/bin/install_arcadecloud.sh'
       - 'drive/bin/install_federation_sync_timer.sh'
       - 'drive/config/federation-seeds.json'
-      - 'drive/sql/federation_ingress_queue.sql'
+      - 'adbbmis1_Cloud.sql'
       - 'drive/src/Federation/**'
       - 'drive/src/Http/Controller/FederationController.php'
       - 'drive/src/Http/Controller/FederationDirectoryController.php'
@@ -174,7 +174,7 @@ jobs:
           grep -q '"registration": "automatic"' drive/config/federation-seeds.json
           grep -q 'CREATE TABLE IF NOT EXISTS `FederationNodes`' adbbmis1_Cloud.sql
           grep -q 'CREATE TABLE IF NOT EXISTS `FederationNodeAuthorizations`' adbbmis1_Cloud.sql
-          grep -q 'CREATE TABLE IF NOT EXISTS FederationIngressQueue' drive/sql/federation_ingress_queue.sql
+          grep -q 'CREATE TABLE IF NOT EXISTS FederationIngressQueue' adbbmis1_Cloud.sql
           grep -q '`NodeName` varchar(64) CHARACTER SET ascii COLLATE ascii_general_ci DEFAULT NULL' adbbmis1_Cloud.sql
           grep -q 'UNIQUE KEY `uq_federation_nodes_name` (`NodeName`)' adbbmis1_Cloud.sql
           grep -q "system_role" drive/src/Security/AuthenticationRepository.php

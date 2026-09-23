@@ -2432,7 +2432,7 @@ CREATE TABLE IF NOT EXISTS FederationDrops (
   PaymentProvider varchar(64) DEFAULT NULL,
   PaymentReference varchar(191) DEFAULT NULL,
   CheckoutUrl varchar(2048) DEFAULT NULL,
-  Status enum('pending_upload','pending_payment','active','expired','deleted','blocked') NOT NULL DEFAULT 'pending_upload',
+  Status enum('pending_upload','pending_payment','active','expired','deleted','blocked') NOT NULL DEFAULT 'pending_payment',
   CustodyNodeId varchar(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
   CreatedAt datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
   UploadedAt datetime(6) DEFAULT NULL,

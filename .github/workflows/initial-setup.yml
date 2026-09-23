@@ -64,6 +64,7 @@ jobs:
           php -l drive/src/Setup/SetupEntryGuard.php
           php -l drive/src/Setup/SetupConfigurationService.php
           php -l drive/src/Setup/SuperAdminBootstrapService.php
+          php -l drive/src/Federation/FederationConfig.php
           php -l drive/src/Admin/ManagedRuntimeEnvironment.php
           php -l drive/src/Admin/PrivilegedServerHelper.php
           php -l drive/bin/arcadecloud-drive-admin-helper.php
@@ -116,8 +117,8 @@ jobs:
           grep -q "install_arcadecloud.sh --finalize" drive/docs/INITIAL_SETUP.md
           grep -q "ARCADECLOUD_FEDERATION_ENABLED" drive/bin/install_arcadecloud.sh
           grep -Fq '"ARCADECLOUD_PUBLIC_URL": f"http://{ip}"' drive/bin/install_arcadecloud.sh
-          grep -Fq '"ARCADECLOUD_FEDERATION_URL": ""' drive/bin/install_arcadecloud.sh
-          grep -Fq '"ARCADECLOUD_FEDERATION_ENABLED": "false"' drive/bin/install_arcadecloud.sh
+          grep -Fq '"ARCADECLOUD_FEDERATION_URL": f"http://{ip}/federationcloud/"' drive/bin/install_arcadecloud.sh
+          grep -Fq '"ARCADECLOUD_FEDERATION_ENABLED": "true"' drive/bin/install_arcadecloud.sh
           grep -q "federation_runtime_enabled" drive/bin/install_arcadecloud.sh
           grep -q "prepare_setup_activation" drive/bin/install_arcadecloud.sh
           grep -q "bootstrap-reset" drive/bin/install_arcadecloud.sh
@@ -125,6 +126,8 @@ jobs:
           ! grep -q "Endpoint público objetivo después de HTTPS" drive/bin/install_arcadecloud.sh
           grep -q "identity-create" drive/bin/install_arcadecloud.sh
           grep -q "install_arcadecloud_server.sh" drive/bin/install_arcadecloud.sh
+          grep -q "install_arcadecloud_updater.sh" drive/bin/install_arcadecloud.sh
+          grep -q "install_updater" drive/bin/install_arcadecloud.sh
           grep -q "dnf install -y" drive/bin/install_arcadecloud_server.sh
           grep -q "for candidate in php8.5 php8.4 php8.3 php8.2 php8.1" drive/bin/install_arcadecloud_server.sh
           grep -Fq '"$php_family-fpm"' drive/bin/install_arcadecloud_server.sh

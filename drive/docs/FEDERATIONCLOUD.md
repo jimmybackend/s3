@@ -132,6 +132,24 @@ https://drive.esforzados.com/federationcloud/
 
 No se codifica dentro de la lógica PHP: está declarado en `drive/config/federation-seeds.json` y puede reemplazarse con la variable `ARCADECLOUD_FEDERATION_SEED_URL`.
 
+El mismo archivo publica también la ficha pública de bootstrap del primer nodo conocido:
+
+```text
+name: drive.esforzados.com
+public_url: https://drive.esforzados.com
+federation_url: https://drive.esforzados.com/federationcloud/
+role: primary-seed
+registration: automatic
+```
+
+Esta ficha contiene únicamente información pública de descubrimiento. No debe incluir credenciales MySQL/AWS,
+`secret_key`, `payload_key`, cookies, sesiones ni ningún otro secreto. `node_id` y `public_key` se obtienen y
+verifican desde el descriptor firmado `node.php` del servidor vivo; no se inventan ni se fijan manualmente en Git.
+
+Los nodos independientes se presentan directamente al seed mediante su descriptor firmado. Ese registro no requiere
+aprobación manual ni concede acceso a recursos ajenos; sirve para presencia y descubrimiento. Las autorizaciones
+especiales de provider/mirror continúan separadas y sí usan su flujo específico.
+
 Cada instalación posee su propia identidad Ed25519 y se anuncia al seed mediante `POST /federationcloud/register.php`. El anuncio contiene únicamente el descriptor público firmado. `node_name`, cuando existe, forma parte del descriptor firmado. Antes de persistir un nodo remoto, el seed valida protocolo, Node ID, nombre, clave y firma; valida HTTPS; consulta mediante el cliente SSRF-safe el `node.php` anunciado; vuelve a validar el descriptor recibido directamente; exige coincidencia de Node ID, clave, nombre y URLs; y sólo entonces actualiza `LastSeen`.
 
 El primer registro liga el Node ID a su clave, nombre y URLs. Un registro posterior puede actualizar el `node_name` únicamente cuando conserva exactamente el mismo Node ID, clave pública, Public URL y Federation URL y el descriptor nuevo está firmado por la misma identidad. Cambiar silenciosamente clave o URLs sigue siendo rechazado y requiere recuperación administrativa explícita.

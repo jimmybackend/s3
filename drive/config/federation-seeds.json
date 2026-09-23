@@ -2,5 +2,14 @@
   "version": 1,
   "seeds": [
     "https://drive.esforzados.com/federationcloud/"
+  ],
+  "bootstrap_nodes": [
+    {
+      "name": "drive.esforzados.com",
+      "public_url": "https://drive.esforzados.com",
+      "federation_url": "https://drive.esforzados.com/federationcloud/",
+      "role": "primary-seed",
+      "registration": "automatic"
+    }
   ]
 }

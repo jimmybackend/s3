@@ -9,6 +9,7 @@ use DateTimeZone;
 
 final class ActivityCostService
 {
+    private const RECENT_PAGE_SIZE = 25;
     public function __construct(
         private ActivityCostRepository $repository,
         private CostExplorerGateway $costExplorer,
@@ -24,18 +25,22 @@ final class ActivityCostService
         string $period,
         ?string $service,
         ?string $action,
-        bool $canViewRealAws
+        bool $canViewRealAws,
+        int $page = 1
     ): array {
         [$period, $start, $end, $label] = $this->period($period);
         $service = $this->filter($service);
         $action = $this->filter($action);
+        $page = max(1, $page);
 
         $data = $this->repository->dashboard(
             $userId,
             $start->format('Y-m-d H:i:s'),
             $end->format('Y-m-d H:i:s'),
             $service,
-            $action
+            $action,
+            $page,
+            self::RECENT_PAGE_SIZE
         );
 
         $estimated = (float)($data['totals']['estimated_cost'] ?? 0.0);

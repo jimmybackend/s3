@@ -190,7 +190,7 @@
 | `drive/src/Federation/FederationAccessService.php` | 242 | class/module | 1 | — | — | — | — |
 | `drive/src/Federation/FederationCatalogService.php` | 200 | class/module | 1 | — | — | — | — |
 | `drive/src/Federation/FederationCodec.php` | 54 | class/module | 1 | — | — | — | — |
-| `drive/src/Federation/FederationConfig.php` | 110 | class/module | 1 | — | — | — | — |
+| `drive/src/Federation/FederationConfig.php` | 129 | class/module | 1 | — | — | — | — |
 | `drive/src/Federation/FederationCustomsService.php` | 248 | class/module | 1 | — | — | — | — |
 | `drive/src/Federation/FederationDirectoryService.php` | 158 | class/module | 1 | — | — | — | — |
 | `drive/src/Federation/FederationEndpointResolver.php` | 127 | class/module | 1 | — | — | — | — |

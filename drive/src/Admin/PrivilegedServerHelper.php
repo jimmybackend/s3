@@ -53,6 +53,18 @@ final class PrivilegedServerHelper
         }
     }
 
+    public function supportsAutomaticSetupFinalize(): bool
+    {
+        try {
+            $status = $this->status();
+            return ($status['ok'] ?? false) === true
+                && (int)($status['version'] ?? 0) >= 5
+                && (bool)($status['capabilities']['setup_finalize'] ?? false);
+        } catch (RuntimeException) {
+            return false;
+        }
+    }
+
     public function setEnvironment(string $name, string $value): void
     {
         if (!ManagedRuntimeEnvironment::isAllowed($name)) throw new RuntimeException('Variable no permitida.');
@@ -79,6 +91,21 @@ final class PrivilegedServerHelper
             throw new RuntimeException('El helper administrativo no soporta cierre de setup; reinstálalo desde el repositorio actual.');
         }
         $this->run(['bootstrap-complete']);
+    }
+
+    public function finalizeBootstrapInstallation(): array
+    {
+        if (!$this->supportsAutomaticSetupFinalize()) {
+            throw new RuntimeException(
+                'El helper administrativo no soporta finalización automática; reinstálalo desde el repositorio actual.'
+            );
+        }
+        $result = $this->run(['bootstrap-finalize']);
+        $decoded = json_decode((string)$result['stdout'], true);
+        if (!is_array($decoded) || ($decoded['ok'] ?? null) !== true || ($decoded['finalized'] ?? null) !== true) {
+            throw new RuntimeException('El helper no confirmó la finalización automática.');
+        }
+        return $decoded;
     }
 
     public function createIdentity(string $nodeName): array

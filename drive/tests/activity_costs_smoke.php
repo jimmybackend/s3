@@ -123,12 +123,22 @@ $html = $renderer->render([
         'EstimatedCost' => '0.0000050000', 'Currency' => 'USD', 'PricingState' => 'complete',
         'Status' => 'ok', 'DurationMs' => 4, 'actor_user_id_' => 7,
     ]],
+    'recent_pagination' => ['page' => 2, 'per_page' => 25, 'total_items' => 70, 'total_pages' => 3, 'from' => 26, 'to' => 50],
     'filters' => ['services' => ['S3'], 'actions' => ['upload']],
-    'period' => 'month', 'period_label' => 'Mes actual', 'selected_service' => null, 'selected_action' => null,
+    'period' => 'month', 'period_label' => 'Mes actual', 'selected_service' => 'S3', 'selected_action' => 'upload',
     'real_aws' => null, 'real_aws_note' => 'Sólo atribuido', 'difference' => null,
 ], 7);
 check(str_contains($html, 'Actividad y costos'), 'Renderer missing page title');
 check(!str_contains($html, '<script>alert(1)</script>'), 'Visible file name must be escaped');
 check(str_contains($html, '&lt;script&gt;alert(1)&lt;/script&gt;'), 'Escaped visible file name missing');
+check(str_contains($html, 'Mostrando 26–50 de 70 eventos'), 'Paginated activity range missing');
+check(str_contains($html, 'Página 2 de 3'), 'Pagination label missing');
+check(str_contains($html, 'page=3'), 'Next-page link missing');
+check(str_contains($html, 'service=S3'), 'Pagination must preserve service filter');
+check(str_contains($html, 'action=upload'), 'Pagination must preserve action filter');
+check(
+    strpos($html, 'Actividad reciente') < strpos($html, 'Costo diario atribuido'),
+    'Recent activity must render immediately after the service/action breakdown'
+);
 
 fwrite(STDOUT, "OK activity-costs smoke\n");

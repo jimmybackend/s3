@@ -80,6 +80,11 @@ final class ActivityCostPageRenderer
         $actionRows = $this->summaryRows((array)($vm['by_action'] ?? []), 'action', true);
         $dailyRows = $this->dailyRows((array)($vm['daily'] ?? []));
         $recentRows = $this->recentRows((array)($vm['recent'] ?? []), $userId);
+        $recentPagination = is_array($vm['recent_pagination'] ?? null) ? $vm['recent_pagination'] : [];
+        $recentFrom = (int)($recentPagination['from'] ?? 0);
+        $recentTo = (int)($recentPagination['to'] ?? 0);
+        $recentTotal = (int)($recentPagination['total_items'] ?? count((array)($vm['recent'] ?? [])));
+        $pagination = $this->pagination($vm);
 
         $note = $this->e((string)($vm['real_aws_note'] ?? ''));
         $periodLabel = $this->e((string)($vm['period_label'] ?? 'Período'));
@@ -185,7 +190,7 @@ final class ActivityCostPageRenderer
     <div class="activity-notice"><i class="fas fa-circle-info mr-1"></i> {$note}</div>
   </section>
 
-  <section class="row mt-4">
+  <section class="row mt-4 activity-breakdown-row">
     <div class="col-12 col-lg-6 mb-4">
       <div class="activity-panel h-100">
         <h2 class="activity-section-title">Costo atribuido por servicio</h2>
@@ -200,22 +205,23 @@ final class ActivityCostPageRenderer
     </div>
   </section>
 
-  <section class="activity-panel mb-4">
-    <h2 class="activity-section-title">Costo diario atribuido</h2>
-    <div class="table-responsive"><table class="table table-sm activity-table"><thead><tr><th>Día</th><th>Operaciones</th><th class="text-right">Estimado</th></tr></thead><tbody>{$dailyRows}</tbody></table></div>
-  </section>
-
-  <section class="activity-panel mb-5">
-    <div class="d-flex flex-wrap justify-content-between align-items-center">
-      <h2 class="activity-section-title">Actividad reciente</h2>
-      <small>Máximo 100 eventos del filtro actual</small>
+  <section class="activity-panel activity-detail-panel mb-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center activity-detail-heading">
+      <h2 class="activity-section-title mb-1">Actividad reciente</h2>
+      <small>Mostrando {$recentFrom}–{$recentTo} de {$recentTotal} eventos del filtro actual</small>
     </div>
-    <div class="table-responsive">
+    <div class="table-responsive activity-detail-scroll">
       <table class="table table-sm activity-table activity-detail-table">
         <thead><tr><th>Fecha</th><th>Operación</th><th>Servicio</th><th>Quién</th><th>Archivo / referencia</th><th>Unidades</th><th class="text-right">Costo</th><th>Tipo</th><th>Estado</th></tr></thead>
         <tbody>{$recentRows}</tbody>
       </table>
     </div>
+    {$pagination}
+  </section>
+
+  <section class="activity-panel mb-5">
+    <h2 class="activity-section-title">Costo diario atribuido</h2>
+    <div class="table-responsive"><table class="table table-sm activity-table"><thead><tr><th>Día</th><th>Operaciones</th><th class="text-right">Estimado</th></tr></thead><tbody>{$dailyRows}</tbody></table></div>
   </section>
 </main>
 <script>
@@ -257,6 +263,41 @@ HTML;
             $html .= '<tr><td>' . $this->e((string)($row['day'] ?? '')) . '</td><td>' . (int)($row['operations'] ?? 0) . '</td><td class="text-right">' . $this->money((float)($row['estimated_cost'] ?? 0)) . '</td></tr>';
         }
         return $html;
+    }
+
+    private function pagination(array $vm): string
+    {
+        $pagination = is_array($vm['recent_pagination'] ?? null) ? $vm['recent_pagination'] : [];
+        $page = max(1, (int)($pagination['page'] ?? 1));
+        $totalPages = max(1, (int)($pagination['total_pages'] ?? 1));
+        if ($totalPages <= 1) return '';
+
+        $previous = $page > 1
+            ? '<a class="btn btn-sm btn-outline-primary" href="' . $this->e($this->pageUrl($vm, $page - 1)) . '"><i class="fas fa-chevron-left mr-1"></i>Anterior</a>'
+            : '<span class="btn btn-sm btn-outline-secondary disabled" aria-disabled="true"><i class="fas fa-chevron-left mr-1"></i>Anterior</span>';
+        $next = $page < $totalPages
+            ? '<a class="btn btn-sm btn-outline-primary" href="' . $this->e($this->pageUrl($vm, $page + 1)) . '">Siguiente<i class="fas fa-chevron-right ml-1"></i></a>'
+            : '<span class="btn btn-sm btn-outline-secondary disabled" aria-disabled="true">Siguiente<i class="fas fa-chevron-right ml-1"></i></span>';
+
+        return '<nav class="activity-pagination d-flex flex-wrap align-items-center justify-content-between mt-3" aria-label="Paginación de actividad">'
+            . $previous
+            . '<span class="activity-pagination-label">Página ' . $page . ' de ' . $totalPages . '</span>'
+            . $next
+            . '</nav>';
+    }
+
+    private function pageUrl(array $vm, int $page): string
+    {
+        $params = [
+            'period' => (string)($vm['period'] ?? 'month'),
+            'page' => max(1, $page),
+        ];
+        $service = trim((string)($vm['selected_service'] ?? ''));
+        $action = trim((string)($vm['selected_action'] ?? ''));
+        if ($service !== '') $params['service'] = $service;
+        if ($action !== '') $params['action'] = $action;
+
+        return 'activity_costs.php?' . http_build_query($params, '', '&', PHP_QUERY_RFC3986);
     }
 
     private function recentRows(array $rows, int $userId): string

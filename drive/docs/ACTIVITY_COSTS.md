@@ -167,8 +167,9 @@ La interfaz muestra:
 - número de operaciones;
 - costo por servicio;
 - costo por operación;
+- actividad reciente inmediatamente debajo de los desgloses por servicio y operación;
+- paginación server-side de actividad reciente, 25 eventos por página, conservando período/servicio/operación;
 - costo diario atribuido;
-- hasta 100 eventos recientes;
 - filtros Hoy / 7 días / Mes actual / Mes anterior, servicio y operación.
 
 La vista reutiliza los CSS del Drive, `vision-accessibility.css` y la preferencia `ui-theme-state`; no agrega una librería de gráficos.

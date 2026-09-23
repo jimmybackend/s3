@@ -15,6 +15,12 @@
 .activity-badge.neutral { color: #6c757d; }
 .activity-notice { padding: 12px 14px; font-size: .92rem; }
 .activity-panel { padding: 16px; }
+.activity-breakdown-row { position: relative; z-index: 2; }
+.activity-detail-panel { position: relative; z-index: 1; clear: both; overflow: visible; }
+.activity-detail-heading { gap: 8px 16px; margin-bottom: 10px; }
+.activity-detail-scroll { position: relative; z-index: 1; }
+.activity-pagination { gap: 10px; }
+.activity-pagination-label { font-weight: 700; font-variant-numeric: tabular-nums; }
 .activity-section-title { font-size: 1.08rem; font-weight: 700; margin-bottom: 14px; }
 .activity-table { margin-bottom: 0; color: inherit; }
 .activity-table th { white-space: nowrap; font-size: .78rem; text-transform: uppercase; letter-spacing: .03em; border-top: 0; }
@@ -35,4 +41,6 @@ body.vision-presbyopia .activity-table td, body.vision-presbyopia .activity-tabl
   .activity-filter-card .form-group { margin-bottom: 12px; }
   .activity-filter-card .form-group:last-child { margin-bottom: 0; }
   .activity-detail-table { font-size: .9rem; }
+  .activity-pagination { justify-content: center !important; }
+  .activity-pagination-label { width: 100%; text-align: center; order: -1; }
 }

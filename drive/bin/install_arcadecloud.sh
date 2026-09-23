@@ -404,6 +404,13 @@ PY
     systemctl enable --now arcadecloud-federation-https.timer
     echo "✓ Endpoint HTTPS FederationCloud listo y renovación automática habilitada."
 
+    # El endpoint refresh publica presencia mediante FederationEvents, por lo que
+    # el esquema FederationCloud debe existir antes del primer registro global.
+    if ! runuser -u "$PHP_USER" -- php "$WEBROOT/bin/federation_catalog_migrate.php"; then
+      fail "No se pudo crear/actualizar el esquema local FederationCloud antes del registro global."
+    fi
+    echo "✓ Esquema FederationCloud local instalado/actualizado."
+
     if ! runuser -u "$PHP_USER" -- php "$WEBROOT/bin/federation_endpoint_refresh.php" --require-directory; then
       fail "El nodo quedó localmente listo, pero drive.esforzados.com no confirmó su registro global."
     fi

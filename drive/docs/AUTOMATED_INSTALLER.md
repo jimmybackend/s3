@@ -206,10 +206,11 @@ FederationCloud en este orden:
 
 1. obtiene o valida HTTPS para dominio o IP pública;
 2. actualiza el endpoint firmado sin regenerar la identidad;
-3. ejecuta un registro estricto contra el seed primario;
-4. exige que el directorio global responda;
-5. instala el timer de sincronización;
-6. ejecuta una primera sincronización.
+3. crea/actualiza idempotentemente el esquema local FederationCloud;
+4. ejecuta un registro estricto contra el seed primario;
+5. exige que el directorio global responda;
+6. instala el timer de sincronización;
+7. ejecuta una primera sincronización.
 
 Por tanto, una instalación básica con endpoint público no se declara terminada sólo porque exista la
 identidad local: debe haber sido presentada y confirmada por el directorio global. El helper crea

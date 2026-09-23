@@ -31,7 +31,11 @@ checkFinalize(!str_contains($superadmin, '$this->helper->completeBootstrapSetup(
 checkFinalize(str_contains($installer, '--finalize-from-setup'), 'installer accepts internal finalize-from-setup mode');
 checkFinalize(str_contains($installer, 'bootstrap-auth.json'), 'installer requires active bootstrap for web finalization');
 checkFinalize(str_contains($installer, 'SUDO_USER'), 'installer binds internal mode to PHP-FPM sudo caller');
+checkFinalize(str_contains($installer, 'federation_catalog_migrate.php'), 'finalization migrates FederationCloud schema before registration');
 checkFinalize(str_contains($installer, '--require-directory'), 'finalization requires global directory confirmation');
+$migratePos = strpos($installer, 'federation_catalog_migrate.php');
+$refreshPos = strpos($installer, 'federation_endpoint_refresh.php');
+checkFinalize($migratePos !== false && $refreshPos !== false && $migratePos < $refreshPos, 'schema migration runs before endpoint refresh');
 checkFinalize(str_contains($nodeAdmin, "'ready' => false"), 'identity admin can expose pending identity state');
 
 fwrite(STDOUT, "setup finalize contract smoke: OK\n");

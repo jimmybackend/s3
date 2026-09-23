@@ -18,9 +18,7 @@ final class FederationConfig
     {
         $publicUrl = self::requiredUrl('ARCADECLOUD_PUBLIC_URL');
         $federationUrl = self::requiredUrl('ARCADECLOUD_FEDERATION_URL');
-        if (strtolower((string)parse_url($federationUrl, PHP_URL_SCHEME)) !== 'https') {
-            throw new FederationException('ARCADECLOUD_FEDERATION_URL debe usar HTTPS.', 500);
-        }
+        self::assertFederationTransport($publicUrl, $federationUrl);
         $identityPath = trim((string)(getenv('ARCADECLOUD_FEDERATION_IDENTITY') ?: ''));
         if ($identityPath === '') {
             $identityPath = '/etc/arcadecloud-drive/federation-node.json';
@@ -81,6 +79,27 @@ final class FederationConfig
             throw new FederationException($name . ' no debe contener credenciales, query ni fragmento.', 500);
         }
         return $value;
+    }
+
+    private static function assertFederationTransport(string $publicUrl, string $federationUrl): void
+    {
+        $federation = parse_url($federationUrl);
+        $public = parse_url($publicUrl);
+        $scheme = strtolower((string)($federation['scheme'] ?? ''));
+        $host = (string)($federation['host'] ?? '');
+
+        if ($scheme === 'https') return;
+
+        $publicScheme = strtolower((string)($public['scheme'] ?? ''));
+        $publicHost = (string)($public['host'] ?? '');
+        $isIp = filter_var($host, FILTER_VALIDATE_IP) !== false;
+
+        if ($scheme !== 'http' || !$isIp || $publicScheme !== 'http' || !hash_equals($publicHost, $host)) {
+            throw new FederationException(
+                'FederationCloud sólo admite HTTPS en dominios; HTTP se permite únicamente para la IP literal del nodo.',
+                500
+            );
+        }
     }
 
     private static function optionalHttpsUrl(string $name): ?string

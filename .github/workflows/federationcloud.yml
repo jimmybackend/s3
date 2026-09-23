@@ -196,7 +196,9 @@ jobs:
           ! grep -q "nginxChallengeConfig" drive/bin/federation_https_reconcile.php
           ! grep -q -- "--backend-host" drive/bin/federation_https_reconcile.php drive/bin/install_federation_https_service.sh
           grep -q -- "--require-directory" drive/bin/federation_endpoint_refresh.php
-          grep -q "migrate_federation_schema" drive/bin/install_arcadecloud.sh
+          finalize_body="$(sed -n '/^finalize_installation() {$/,/^}$/p' drive/bin/install_arcadecloud.sh)"
+          grep -q "migrate_federation_schema" <<<"$finalize_body"
+          ! grep -q "federation_catalog_migrate.php" <<<"$finalize_body"
           grep -q "FederationEvents" drive/bin/federation_catalog_migrate.php
           grep -q "FederationIngressQueue" drive/bin/federation_catalog_migrate.php
           grep -q "OnActiveSec=45s" drive/bin/install_federation_sync_timer.sh

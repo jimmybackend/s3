@@ -215,7 +215,7 @@ class ArcadeLinkShareModule {
       return;
     }
 
-    button.innerHTML = '<i class="fas fa-file-archive mr-1"></i> Descargar ArcadeLink ZIP';
+    button.innerHTML = '<i class="fas fa-link mr-1"></i> Descargar ArcadeLink';
   }
 
   updateDiscoveryHelp() {
@@ -266,8 +266,8 @@ class ArcadeLinkShareModule {
 
     const oldHtml = button.innerHTML;
     button.disabled = true;
-    button.innerHTML = '<span class="spinner-border spinner-border-sm mr-1" role="status" aria-hidden="true"></span> Generando ZIP…';
-    this.setStatus(`Firmando ${selected.length} ArcadeLink${selected.length === 1 ? '' : 's'} y creando un solo ArcadeLink…`, 'muted');
+    button.innerHTML = '<span class="spinner-border spinner-border-sm mr-1" role="status" aria-hidden="true"></span> Generando ArcadeLink…';
+    this.setStatus(`Firmando ${selected.length} recurso${selected.length === 1 ? '' : 's'} dentro de un solo ArcadeLink…`, 'muted');
 
     const form = this.document.createElement('form');
     form.method = 'POST';

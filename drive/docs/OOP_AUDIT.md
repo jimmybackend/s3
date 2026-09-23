@@ -324,7 +324,7 @@
 | `drive/src/Upload/SingleUploadService.php` | 104 | class/module | 1 | — | — | — | — |
 | `drive/src/Upload/UploadCatalogRepository.php` | 151 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Upload/UploadCleanupService.php` | 316 | class/module | 1 | — | ⚠️ | — | — |
-| `drive/src/View/ActivityCostPageRenderer.php` | 399 | class/module | 1 | — | — | — | — |
+| `drive/src/View/ActivityCostPageRenderer.php` | 396 | class/module | 1 | — | — | — | — |
 | `drive/src/View/Ec2PanelHelper.php` | 69 | class/module | 1 | — | — | — | — |
 | `drive/src/View/FederationPageRenderer.php` | 186 | class/module | 1 | — | — | — | — |
 | `drive/src/View/FederationPortalRenderer.php` | 159 | class/module | 1 | — | — | — | — |
@@ -342,7 +342,7 @@
 | `drive/subir_publico.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/sync_s3_to_db.php` | 5 | thin endpoint | 0 | — | — | — | — |
 | `drive/sync_status.php` | 5 | thin endpoint | 0 | — | — | — | — |
-| `drive/tests/activity_costs_smoke.php` | 145 | test script | 0 | — | — | — | — |
+| `drive/tests/activity_costs_smoke.php` | 150 | test script | 0 | — | — | — | — |
 | `drive/tests/arcadelink_bulk_contract_regression.php` | 68 | test script | 0 | — | — | — | — |
 | `drive/tests/arcadelink_bundle_regression.php` | 142 | test script | 0 | — | — | — | — |
 | `drive/tests/database_schema_contract_smoke.php` | 94 | test script | 0 | — | — | — | — |

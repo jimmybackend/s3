@@ -167,9 +167,10 @@ La fase inicial:
 8. genera automáticamente un `node_name`;
 9. detecta la IPv4 pública cuando es posible;
 10. guarda la IP pública como endpoint HTTP del Drive;
-11. activa FederationCloud/ArcadeLink sobre la IP pública literal cuando está disponible;
-12. instala el updater que usa **Acerca de** para consultar y aplicar actualizaciones;
-13. deja al operador únicamente los tres pasos web.
+11. prepara FederationCloud/ArcadeLink sobre la IP pública detectada;
+12. instala o selecciona Certbot compatible con HTTPS por IP cuando sea necesario;
+13. instala el updater que usa **Acerca de** para consultar y aplicar actualizaciones;
+14. deja al operador únicamente los tres pasos web.
 
 En una EC2 que todavía no tenga Git puede usarse el bootstrap de raíz
 `bootstrap_arcadecloud.sh`. Consulta `AUTOMATED_INSTALLER.md` para el contrato completo,
@@ -181,9 +182,11 @@ Después de completar los tres pasos:
 sudo bash drive/bin/install_arcadecloud.sh --finalize
 ```
 
-La finalización no exige dominio ni HTTPS. Con una IP pública literal, FederationCloud/ArcadeLink queda
-activo por HTTP y se instala su timer de sincronización sin solicitar certificado. Cuando se use un
-dominio, FederationCloud exige HTTPS.
+La finalización no exige dominio, pero FederationCloud global sí exige un endpoint HTTPS verificable.
+Con una IP pública literal, ArcadeCloud obtiene automáticamente un certificado IP compatible, cambia el
+endpoint federado a HTTPS, presenta el descriptor firmado al seed primario
+`https://drive.esforzados.com/federationcloud/` y comprueba que el directorio global respondió.
+Sólo después instala el timer de sincronización y considera terminada la parte federada.
 
 ## Cierre irreversible del bootstrap
 

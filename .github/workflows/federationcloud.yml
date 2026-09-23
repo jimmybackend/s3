@@ -185,6 +185,7 @@ jobs:
           grep -q -- "--preferred-profile" drive/bin/federation_https_reconcile.php
           grep -q "shortlived" drive/bin/federation_https_reconcile.php
           grep -q -- "--ip-address" drive/bin/federation_https_reconcile.php
+          grep -q -- "--require-directory" drive/bin/federation_endpoint_refresh.php
           grep -q "OnActiveSec=45s" drive/bin/install_federation_sync_timer.sh
           grep -q 'OnUnitInactiveSec=${INTERVAL_SEC}s' drive/bin/install_federation_sync_timer.sh
           grep -q "enqueueNodePresence" drive/src/Federation/FederationDirectoryService.php

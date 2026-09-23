@@ -10,6 +10,8 @@ use ArcadeCloud\Drive\Federation\FederationConfig;
 use ArcadeCloud\Drive\Federation\FederationDirectoryService;
 use ArcadeCloud\Drive\Federation\FederationReplicaPresenceService;
 
+$requireDirectory = in_array('--require-directory', $argv, true);
+
 try {
     $config = FederationConfig::fromEnvironment();
     if (!$config->enabled()) {
@@ -50,6 +52,10 @@ try {
     $registration = is_array($directory['registration'] ?? null) ? $directory['registration'] : null;
 
     if (($directory['degraded'] ?? false) === true) {
+        if ($requireDirectory) {
+            fwrite(STDERR, "ERROR: el endpoint local quedó listo, pero el seed no confirmó el directorio global.\n");
+            exit(2);
+        }
         fwrite(STDOUT, "WARN: endpoint local actualizado; el anuncio firmado quedó local y el directorio remoto se reintentará por gossip.\n");
         fwrite(STDOUT, "NODE_ID={$nodeId}\nENDPOINT={$endpoint}\n");
         if (is_array($presenceEvent) && isset($presenceEvent['event_id'])) {

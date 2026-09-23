@@ -36,6 +36,8 @@ FPM_LISTEN="127.0.0.1:9075"
 
 NGINX_CONF="/etc/nginx/conf.d/arcadecloud-drive.conf"
 MANAGED_MARKER="Managed by ArcadeCloud installer."
+CERTBOT_VENV="/opt/arcadecloud-certbot"
+ARCADECLOUD_CERTBOT_BIN="/usr/local/bin/arcadecloud-certbot"
 
 fail() {
   echo "ERROR: $*" >&2
@@ -211,6 +213,50 @@ install_certbot_if_available() {
   else
     echo "ADVERTENCIA: Certbot no está disponible en los repositorios configurados; HTTPS quedará pendiente." >&2
   fi
+}
+
+certbot_version_at_least_54() {
+  local bin="${1:-}"
+  [[ -n "$bin" && -x "$bin" ]] || return 1
+  local version
+  version="$("$bin" --version 2>/dev/null || true)"
+  [[ "$version" =~ certbot[[:space:]]+([0-9]+)\.([0-9]+) ]] || return 1
+  local major="${BASH_REMATCH[1]}" minor="${BASH_REMATCH[2]}"
+  (( major > 5 || (major == 5 && minor >= 4) ))
+}
+
+install_modern_certbot_for_ip() {
+  [[ "$SKIP_CERTBOT" -eq 0 ]] || return 0
+
+  local current=""
+  if [[ -x "$ARCADECLOUD_CERTBOT_BIN" ]]; then
+    current="$ARCADECLOUD_CERTBOT_BIN"
+  elif command_exists certbot; then
+    current="$(command -v certbot)"
+  fi
+
+  if certbot_version_at_least_54 "$current"; then
+    say "Certbot compatible con certificados IP: $("$current" --version 2>/dev/null)"
+    if [[ "$current" != "$ARCADECLOUD_CERTBOT_BIN" ]]; then
+      ln -sfn "$current" "$ARCADECLOUD_CERTBOT_BIN"
+    fi
+    return 0
+  fi
+
+  say "Preparando Certbot >= 5.4 en entorno aislado para HTTPS por IP."
+  if ! python3 -m venv "$CERTBOT_VENV" >/dev/null 2>&1; then
+    if package_available python3-pip; then
+      dnf install -y python3-pip
+    fi
+    python3 -m venv "$CERTBOT_VENV" >/dev/null 2>&1       || fail "Python no pudo crear $CERTBOT_VENV para instalar Certbot moderno."
+  fi
+
+  "$CERTBOT_VENV/bin/python" -m pip install --upgrade pip >/dev/null
+  "$CERTBOT_VENV/bin/python" -m pip install --upgrade 'certbot>=5.4' 'certbot-nginx>=5.4' >/dev/null
+  certbot_version_at_least_54 "$CERTBOT_VENV/bin/certbot"     || fail "Certbot moderno se instaló pero no cumple la versión mínima 5.4."
+
+  ln -sfn "$CERTBOT_VENV/bin/certbot" "$ARCADECLOUD_CERTBOT_BIN"
+  say "Certbot para ArcadeCloud: $("$ARCADECLOUD_CERTBOT_BIN" --version 2>/dev/null)"
 }
 
 configured_pool_user() {
@@ -492,6 +538,7 @@ say "Preflight automático de Amazon Linux 2023."
 install_packages
 install_composer
 install_certbot_if_available
+install_modern_certbot_for_ip
 configure_php_fpm
 configure_nginx
 validate_runtime
@@ -504,7 +551,9 @@ echo "PHP-FPM user: $PHP_USER"
 echo "PHP-FPM listen: $FPM_LISTEN"
 echo "Nginx: $(nginx -v 2>&1)"
 echo "Composer: $(COMPOSER_ALLOW_SUPERUSER=1 composer --version 2>/dev/null | head -1)"
-if command_exists certbot; then
+if [[ -x "$ARCADECLOUD_CERTBOT_BIN" ]]; then
+  echo "Certbot ArcadeCloud: $("$ARCADECLOUD_CERTBOT_BIN" --version 2>/dev/null)"
+elif command_exists certbot; then
   echo "Certbot: $(certbot --version 2>/dev/null)"
 else
   echo "Certbot: pendiente/no disponible"

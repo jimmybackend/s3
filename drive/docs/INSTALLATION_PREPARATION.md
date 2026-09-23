@@ -479,8 +479,10 @@ detectar IPv4 pública
 -> conservar seed predeterminado
 ```
 
-El Drive, FederationCloud y ArcadeLink quedan utilizables por HTTP/IP en el modo básico. Si después se
-usa un dominio, el endpoint FederationCloud debe migrarse a HTTPS sin regenerar `node_id` ni llaves.
+El HTTP por IP sirve para completar el setup inicial. Durante la finalización, FederationCloud convierte
+ese endpoint a HTTPS, presenta automáticamente el descriptor firmado al seed primario y valida la
+respuesta del directorio global. Si después se usa un dominio, el endpoint puede migrarse sin regenerar
+`node_id` ni llaves.
 
 El `node_name` automático puede cambiarse posteriormente sin cambiar `node_id` ni las llaves.
 
@@ -622,6 +624,8 @@ migración SUCCESS
 Nginx válido
 HTTPS válido
 endpoint FederationCloud accesible
+registro automático en seed confirmado
+directorio global accesible
 ```
 
 El operador no debe interpretar como error que un servicio `oneshot` quede:
@@ -649,7 +653,9 @@ Antes de declarar la instalación terminada, el instalador debe ejecutar un resu
 [OK] HTTPS
 [OK] Federation identity        (si se habilitó)
 [OK] Federation endpoint        (si se habilitó)
-[OK] sync timer                 (si se habilitó)
+[OK] registro en seed            (si se habilitó)
+[OK] directorio global           (si se habilitó)
+[OK] sync timer                  (si se habilitó)
 [OK] mirror authorization       (si aplica)
 ```
 

@@ -2354,7 +2354,7 @@
     },
     {
       "path": "drive/src/View/ActivityCostPageRenderer.php",
-      "size": 19709,
+      "size": 19653,
       "active": false,
       "references": []
     },
@@ -2470,7 +2470,7 @@
     },
     {
       "path": "drive/tests/activity_costs_smoke.php",
-      "size": 8064,
+      "size": 8691,
       "active": false,
       "references": []
     },

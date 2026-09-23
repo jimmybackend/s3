@@ -35,7 +35,7 @@
 | `drive/bin/arcadecloud-drive-admin-helper.php` | 473 | class/module | 1 | — | — | — | — |
 | `drive/bin/arcadecloud-drive-updater.php` | 207 | class/module | 1 | — | — | — | — |
 | `drive/bin/federation_catalog_migrate.php` | 45 | thin cli entrypoint | 0 | — | — | — | — |
-| `drive/bin/federation_endpoint_refresh.php` | 81 | thin cli entrypoint | 0 | — | — | — | — |
+| `drive/bin/federation_endpoint_refresh.php` | 87 | thin cli entrypoint | 0 | — | — | — | — |
 | `drive/bin/federation_https_reconcile.php` | 509 | class/module | 1 | — | — | — | — |
 | `drive/bin/federation_identity_backup.php` | 49 | thin cli entrypoint | 0 | — | — | — | — |
 | `drive/bin/federation_identity_init.php` | 33 | thin cli entrypoint | 0 | — | — | — | — |

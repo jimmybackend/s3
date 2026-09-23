@@ -147,7 +147,7 @@
     },
     {
       "path": "drive/bin/federation_endpoint_refresh.php",
-      "lines": 81,
+      "lines": 87,
       "kind": "thin cli entrypoint",
       "classes": 0,
       "functions": [],

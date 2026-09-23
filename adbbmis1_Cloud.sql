@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: localhost:3306
--- Tiempo de generación: 19-08-2026 a las 08:52:25
+-- Tiempo de generación: 23-09-2026 a las 12:12:01
 -- Versión del servidor: 8.0.46-37
 -- Versión de PHP: 8.4.24
 
@@ -16,6 +16,12 @@ SET time_zone = "+00:00";
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
 /*!40101 SET NAMES utf8mb4 */;
+
+--
+-- Base de datos: `adbbmis1_Cloud`
+--
+CREATE DATABASE IF NOT EXISTS `adbbmis1_Cloud` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
+USE `adbbmis1_Cloud`;
 
 -- --------------------------------------------------------
 
@@ -150,6 +156,38 @@ CREATE TABLE IF NOT EXISTS `ChunkEmbeddings` (
 -- --------------------------------------------------------
 
 --
+-- Estructura de tabla para la tabla `DriveActivityEvents`
+--
+
+DROP TABLE IF EXISTS `DriveActivityEvents`;
+CREATE TABLE IF NOT EXISTS `DriveActivityEvents` (
+  `id_` bigint UNSIGNED NOT NULL AUTO_INCREMENT,
+  `user_id_` int NOT NULL,
+  `actor_user_id_` int NOT NULL,
+  `Action` varchar(64) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `Service` varchar(64) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `FileId` int DEFAULT NULL,
+  `UnitsJson` text COLLATE utf8mb4_unicode_ci,
+  `EstimatedCost` decimal(20,10) DEFAULT NULL,
+  `Currency` char(3) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'USD',
+  `PriceSource` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `PricingState` varchar(16) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'unpriced',
+  `Status` varchar(16) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'ok',
+  `DurationMs` int UNSIGNED DEFAULT NULL,
+  `CorrelationId` varchar(96) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `MetadataJson` text COLLATE utf8mb4_unicode_ci,
+  `CreatedAt` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id_`),
+  UNIQUE KEY `uq_drive_activity_correlation` (`user_id_`,`Action`,`Service`,`CorrelationId`),
+  KEY `idx_drive_activity_user_date` (`user_id_`,`CreatedAt`),
+  KEY `idx_drive_activity_user_service_date` (`user_id_`,`Service`,`CreatedAt`),
+  KEY `idx_drive_activity_user_action_date` (`user_id_`,`Action`,`CreatedAt`),
+  KEY `idx_drive_activity_actor_date` (`actor_user_id_`,`CreatedAt`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Estructura de tabla para la tabla `EmbeddingJobs`
 --
 
@@ -172,89 +210,131 @@ CREATE TABLE IF NOT EXISTS `EmbeddingJobs` (
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `FileS3`
+-- Estructura de tabla para la tabla `FederatedResources`
 --
 
-DROP TABLE IF EXISTS `FileS3`;
-CREATE TABLE IF NOT EXISTS `FileS3` (
-  `id_` int NOT NULL AUTO_INCREMENT,
-  `Nombre` varchar(255) NOT NULL,
-  `Encriptado` varchar(255) NOT NULL,
-  `Tamano` bigint NOT NULL,
-  `Metadatos` mediumtext,
-  `Ruta` varchar(256) NOT NULL,
-  `Found` tinyint(1) NOT NULL DEFAULT '0',
-  `AccessType` enum('normal','secure','unlocked') NOT NULL DEFAULT 'normal',
-  `PasswordHash` varchar(255) DEFAULT NULL,
-  `SecureHint` varchar(255) DEFAULT NULL,
-  `SecureUpdatedAt` timestamp NULL DEFAULT NULL,
-  `Fecha` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `user_id_` int NOT NULL,
-  PRIMARY KEY (`id_`),
-  UNIQUE KEY `uq_files3_user_key` (`user_id_`,`Encriptado`),
-  KEY `user_id_` (`user_id_`),
-  KEY `idx_FileS3_Ruta` (`Ruta`(191)),
-  KEY `idx_FileS3_Found` (`Found`),
-  KEY `idx_FileS3_Access` (`AccessType`),
-  KEY `idx_FileS3_RutaFoundAccess` (`Ruta`(191),`Found`,`AccessType`),
-  KEY `idx_FileS3_UserRuta` (`user_id_`,`Ruta`(191),`Found`),
-  KEY `idx_files_user_found` (`user_id_`,`Found`),
-  KEY `idx_files_user_ruta` (`user_id_`,`Ruta`(191)),
-  KEY `idx_files_user_access_found` (`user_id_`,`AccessType`,`Found`)
-) ENGINE=InnoDB AUTO_INCREMENT=6899 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
--- --------------------------------------------------------
-
---
--- Estructura de tabla para la tabla `DriveActivityEvents`
---
-
-DROP TABLE IF EXISTS `DriveActivityEvents`;
-CREATE TABLE IF NOT EXISTS `DriveActivityEvents` (
-  `id_` bigint UNSIGNED NOT NULL AUTO_INCREMENT,
-  `user_id_` int NOT NULL,
-  `actor_user_id_` int NOT NULL,
-  `Action` varchar(64) NOT NULL,
-  `Service` varchar(64) NOT NULL,
-  `FileId` int DEFAULT NULL,
-  `UnitsJson` text DEFAULT NULL,
-  `EstimatedCost` decimal(20,10) DEFAULT NULL,
-  `Currency` char(3) NOT NULL DEFAULT 'USD',
-  `PriceSource` varchar(255) NOT NULL,
-  `PricingState` varchar(16) NOT NULL DEFAULT 'unpriced',
-  `Status` varchar(16) NOT NULL DEFAULT 'ok',
-  `DurationMs` int UNSIGNED DEFAULT NULL,
-  `CorrelationId` varchar(96) DEFAULT NULL,
-  `MetadataJson` text DEFAULT NULL,
-  `CreatedAt` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id_`),
-  KEY `idx_drive_activity_user_date` (`user_id_`,`CreatedAt`),
-  KEY `idx_drive_activity_user_service_date` (`user_id_`,`Service`,`CreatedAt`),
-  KEY `idx_drive_activity_user_action_date` (`user_id_`,`Action`,`CreatedAt`),
-  KEY `idx_drive_activity_actor_date` (`actor_user_id_`,`CreatedAt`),
-  UNIQUE KEY `uq_drive_activity_correlation` (`user_id_`,`Action`,`Service`,`CorrelationId`)
+DROP TABLE IF EXISTS `FederatedResources`;
+CREATE TABLE IF NOT EXISTS `FederatedResources` (
+  `ResourceId` varchar(96) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  `OriginNodeId` varchar(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  `OwnerUserId` int DEFAULT NULL COMMENT 'Sólo se conserva en el nodo propietario; nunca se replica',
+  `ResourceType` varchar(32) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'file',
+  `Title` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `MediaType` varchar(128) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'application/octet-stream',
+  `SizeBytes` bigint UNSIGNED NOT NULL DEFAULT '0',
+  `ContentId` varchar(80) CHARACTER SET ascii COLLATE ascii_bin DEFAULT NULL,
+  `Visibility` enum('PUBLIC','UNLISTED','PRIVATE') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'UNLISTED',
+  `DiscoveryPolicy` enum('local_only','public_metadata','requestable_metadata') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'local_only',
+  `Rights` varchar(64) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'link_only',
+  `OriginUrl` varchar(512) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `FederationUrl` varchar(512) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `ArcadeLinkJson` mediumtext COLLATE utf8mb4_unicode_ci,
+  `LastOriginSequence` bigint UNSIGNED NOT NULL DEFAULT '0',
+  `UpdatedAt` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+  `Tombstoned` tinyint(1) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`ResourceId`),
+  KEY `idx_fed_resource_origin` (`OriginNodeId`,`Tombstoned`),
+  KEY `idx_fed_resource_discovery` (`DiscoveryPolicy`,`Tombstoned`,`UpdatedAt`),
+  KEY `idx_fed_resource_content` (`ContentId`),
+  KEY `idx_fed_resource_media` (`MediaType`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `FederationNodes`
+-- Estructura de tabla para la tabla `FederationAccessRequests`
 --
 
-DROP TABLE IF EXISTS `FederationNodes`;
-CREATE TABLE IF NOT EXISTS `FederationNodes` (
-  `NodeId` varchar(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
-  `NodeName` varchar(64) CHARACTER SET ascii COLLATE ascii_general_ci DEFAULT NULL,
+DROP TABLE IF EXISTS `FederationAccessRequests`;
+CREATE TABLE IF NOT EXISTS `FederationAccessRequests` (
+  `RequestId` varchar(96) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  `Direction` enum('outgoing','incoming') COLLATE utf8mb4_unicode_ci NOT NULL,
+  `ResourceId` varchar(96) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  `LocalUserId` int NOT NULL,
+  `RemoteNodeId` varchar(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  `RemoteFederationUrl` varchar(512) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `Status` enum('queued','pending','approved','rejected','expired','failed') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'queued',
+  `RequestJson` mediumtext COLLATE utf8mb4_unicode_ci NOT NULL,
+  `DecisionJson` mediumtext COLLATE utf8mb4_unicode_ci,
+  `RequestedAt` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+  `ExpiresAt` datetime(6) NOT NULL,
+  `LastAttemptAt` datetime(6) DEFAULT NULL,
+  `NextAttemptAt` datetime(6) DEFAULT NULL,
+  `Attempts` int UNSIGNED NOT NULL DEFAULT '0',
+  `LastError` varchar(512) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `UpdatedAt` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
+  PRIMARY KEY (`RequestId`),
+  KEY `idx_far_local_direction_status` (`LocalUserId`,`Direction`,`Status`,`UpdatedAt`),
+  KEY `idx_far_retry` (`Direction`,`Status`,`NextAttemptAt`),
+  KEY `idx_far_resource` (`ResourceId`,`Direction`,`Status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `FederationClocks`
+--
+
+DROP TABLE IF EXISTS `FederationClocks`;
+CREATE TABLE IF NOT EXISTS `FederationClocks` (
+  `OriginNodeId` varchar(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  `ContiguousSequence` bigint UNSIGNED NOT NULL DEFAULT '0',
+  `UpdatedAt` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
+  PRIMARY KEY (`OriginNodeId`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `FederationEvents`
+--
+
+DROP TABLE IF EXISTS `FederationEvents`;
+CREATE TABLE IF NOT EXISTS `FederationEvents` (
+  `EventId` varchar(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  `OriginNodeId` varchar(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  `OriginSequence` bigint UNSIGNED NOT NULL,
+  `EventType` varchar(48) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  `EntityId` varchar(128) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  `PayloadJson` json NOT NULL,
+  `IssuedAt` varchar(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL COMMENT 'Texto original firmado; no reformatear',
   `PublicKey` varchar(128) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
-  `PublicUrl` varchar(512) NOT NULL,
-  `FederationUrl` varchar(512) NOT NULL,
-  `Status` enum('active','stale','blocked') NOT NULL DEFAULT 'active',
-  `FirstSeen` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `LastSeen` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`NodeId`),
-  UNIQUE KEY `uq_federation_nodes_name` (`NodeName`),
-  KEY `idx_federation_nodes_status_last_seen` (`Status`,`LastSeen`),
-  KEY `idx_federation_nodes_federation_url` (`FederationUrl`(191))
+  `Signature` varchar(256) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  `ReceivedAt` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+  PRIMARY KEY (`EventId`),
+  UNIQUE KEY `uq_federation_event_origin_sequence` (`OriginNodeId`,`OriginSequence`),
+  KEY `idx_federation_event_origin_sequence` (`OriginNodeId`,`OriginSequence`),
+  KEY `idx_federation_event_received` (`ReceivedAt`),
+  KEY `idx_federation_event_entity` (`EntityId`,`EventType`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `FederationIngressQueue`
+--
+
+DROP TABLE IF EXISTS `FederationIngressQueue`;
+CREATE TABLE IF NOT EXISTS `FederationIngressQueue` (
+  `id_` bigint UNSIGNED NOT NULL AUTO_INCREMENT,
+  `RequestId` varchar(96) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  `RequestType` varchar(48) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  `OriginNodeId` varchar(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  `TargetNodeId` varchar(64) CHARACTER SET ascii COLLATE ascii_bin DEFAULT NULL,
+  `DocumentationJson` mediumtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
+  `PayloadHash` char(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  `Priority` smallint UNSIGNED NOT NULL DEFAULT '100',
+  `Status` enum('queued','processing','retry','done','rejected','failed') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'queued',
+  `Attempts` smallint UNSIGNED NOT NULL DEFAULT '0',
+  `ReceivedAt` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+  `AvailableAt` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+  `StartedAt` datetime(6) DEFAULT NULL,
+  `FinishedAt` datetime(6) DEFAULT NULL,
+  `LastError` varchar(512) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  PRIMARY KEY (`id_`),
+  UNIQUE KEY `uq_federation_ingress_request` (`RequestId`),
+  KEY `idx_federation_ingress_ready` (`Status`,`AvailableAt`,`Priority`,`id_`),
+  KEY `idx_federation_ingress_origin` (`OriginNodeId`,`ReceivedAt`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -280,7 +360,237 @@ CREATE TABLE IF NOT EXISTS `FederationNodeAuthorizations` (
   UNIQUE KEY `uq_federation_node_authorization` (`OriginNodeId`,`ProviderNodeId`),
   KEY `idx_federation_provider` (`ProviderNodeId`,`Status`),
   KEY `idx_federation_origin` (`OriginNodeId`,`Status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `FederationNodes`
+--
+
+DROP TABLE IF EXISTS `FederationNodes`;
+CREATE TABLE IF NOT EXISTS `FederationNodes` (
+  `NodeId` varchar(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  `NodeName` varchar(64) CHARACTER SET ascii COLLATE ascii_general_ci DEFAULT NULL,
+  `PublicKey` varchar(128) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  `PublicUrl` varchar(512) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `FederationUrl` varchar(512) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `Status` enum('active','stale','blocked') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'active',
+  `FirstSeen` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `LastSeen` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`NodeId`),
+  UNIQUE KEY `uq_federation_nodes_name` (`NodeName`),
+  KEY `idx_federation_nodes_status_last_seen` (`Status`,`LastSeen`),
+  KEY `idx_federation_nodes_federation_url` (`FederationUrl`(191))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `FederationOriginCounters`
+--
+
+DROP TABLE IF EXISTS `FederationOriginCounters`;
+CREATE TABLE IF NOT EXISTS `FederationOriginCounters` (
+  `OriginNodeId` varchar(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  `LastSequence` bigint UNSIGNED NOT NULL DEFAULT '0',
+  `UpdatedAt` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
+  PRIMARY KEY (`OriginNodeId`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `FederationPeerSyncState`
+--
+
+DROP TABLE IF EXISTS `FederationPeerSyncState`;
+CREATE TABLE IF NOT EXISTS `FederationPeerSyncState` (
+  `PeerNodeId` varchar(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  `LastAttemptAt` datetime(6) DEFAULT NULL,
+  `LastSuccessAt` datetime(6) DEFAULT NULL,
+  `ConsecutiveFailures` int UNSIGNED NOT NULL DEFAULT '0',
+  `NextAttemptAt` datetime(6) DEFAULT NULL,
+  `LastError` varchar(512) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `LastPulledEvents` int UNSIGNED NOT NULL DEFAULT '0',
+  `LastPushedEvents` int UNSIGNED NOT NULL DEFAULT '0',
+  `UpdatedAt` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
+  PRIMARY KEY (`PeerNodeId`),
+  KEY `idx_fed_peer_next_attempt` (`NextAttemptAt`,`ConsecutiveFailures`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `FederationReplicaJobs`
+--
+
+DROP TABLE IF EXISTS `FederationReplicaJobs`;
+CREATE TABLE IF NOT EXISTS `FederationReplicaJobs` (
+  `OfferId` varchar(96) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  `Direction` enum('outgoing','incoming') COLLATE utf8mb4_unicode_ci NOT NULL,
+  `ResourceId` varchar(96) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  `LocalUserId` int DEFAULT NULL COMMENT 'Sólo significativo en la DB local; nunca viaja en el protocolo',
+  `RemoteNodeId` varchar(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  `RemoteFederationUrl` varchar(512) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `Role` enum('provider','mirror') COLLATE utf8mb4_unicode_ci NOT NULL,
+  `Status` enum('queued','offered','transferring','stored','active','retry','failed','expired') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'queued',
+  `SourceStorageRef` varchar(1024) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Sólo origen local; nunca se serializa al catálogo global',
+  `OfferJson` mediumtext COLLATE utf8mb4_unicode_ci COMMENT 'Oferta privada firmada; nunca se gossip-ea',
+  `LocalS3Key` varchar(1024) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `ContentId` varchar(80) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  `SizeBytes` bigint UNSIGNED NOT NULL DEFAULT '0',
+  `Title` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `MediaType` varchar(128) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'application/octet-stream',
+  `Attempts` int UNSIGNED NOT NULL DEFAULT '0',
+  `NextAttemptAt` datetime(6) DEFAULT NULL,
+  `LastError` varchar(512) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `ExpiresAt` datetime(6) DEFAULT NULL,
+  `CreatedAt` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+  `UpdatedAt` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
+  PRIMARY KEY (`OfferId`),
+  KEY `idx_fed_replica_job_due` (`Direction`,`Status`,`NextAttemptAt`),
+  KEY `idx_fed_replica_job_resource` (`ResourceId`,`Direction`,`Status`),
+  KEY `idx_fed_replica_job_remote` (`RemoteNodeId`,`Status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `FederationReplicaObjects`
+--
+
+DROP TABLE IF EXISTS `FederationReplicaObjects`;
+CREATE TABLE IF NOT EXISTS `FederationReplicaObjects` (
+  `ResourceId` varchar(96) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  `OriginNodeId` varchar(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  `Role` enum('provider','mirror') COLLATE utf8mb4_unicode_ci NOT NULL,
+  `S3Key` varchar(1024) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `ContentId` varchar(80) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  `SizeBytes` bigint UNSIGNED NOT NULL DEFAULT '0',
+  `Status` enum('stored','active','stale','revoked') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'stored',
+  `VerifiedAt` datetime(6) DEFAULT NULL,
+  `UpdatedAt` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
+  PRIMARY KEY (`ResourceId`),
+  KEY `idx_fed_replica_object_origin` (`OriginNodeId`,`Status`),
+  KEY `idx_fed_replica_object_status` (`Status`,`UpdatedAt`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `FederationResourceLocations`
+--
+
+DROP TABLE IF EXISTS `FederationResourceLocations`;
+CREATE TABLE IF NOT EXISTS `FederationResourceLocations` (
+  `ResourceId` varchar(96) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  `NodeId` varchar(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  `LocationRole` enum('origin','provider','mirror') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'origin',
+  `Status` enum('active','stale','revoked') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'active',
+  `FederationUrl` varchar(512) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `LastOriginSequence` bigint UNSIGNED NOT NULL DEFAULT '0',
+  `LastSeenAt` datetime(6) DEFAULT NULL,
+  `UpdatedAt` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+  PRIMARY KEY (`ResourceId`,`NodeId`),
+  KEY `idx_fed_location_node_status` (`NodeId`,`Status`),
+  KEY `idx_fed_location_resource_status` (`ResourceId`,`Status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `FederationShareImportJobs`
+--
+
+DROP TABLE IF EXISTS `FederationShareImportJobs`;
+CREATE TABLE IF NOT EXISTS `FederationShareImportJobs` (
+  `ImportId` varchar(96) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  `UserId` int NOT NULL,
+  `ShareId` varchar(96) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  `ResourceId` varchar(96) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  `VersionKey` char(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  `ResourceUpdatedAt` datetime(6) DEFAULT NULL,
+  `Status` enum('queued','processing','retry','completed','failed') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'queued',
+  `Attempts` int UNSIGNED NOT NULL DEFAULT '0',
+  `LastAttemptAt` datetime(6) DEFAULT NULL,
+  `NextAttemptAt` datetime(6) DEFAULT NULL,
+  `LastError` varchar(512) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `LocalFileId` int DEFAULT NULL,
+  `CreatedAt` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+  `UpdatedAt` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
+  PRIMARY KEY (`ImportId`),
+  UNIQUE KEY `uq_fshare_import_version` (`UserId`,`ShareId`,`VersionKey`),
+  KEY `idx_fshare_import_due` (`Status`,`NextAttemptAt`,`CreatedAt`),
+  KEY `idx_fshare_import_user` (`UserId`,`ShareId`,`UpdatedAt`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `FederationShares`
+--
+
+DROP TABLE IF EXISTS `FederationShares`;
+CREATE TABLE IF NOT EXISTS `FederationShares` (
+  `ShareId` varchar(96) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  `UserId` int NOT NULL,
+  `Direction` enum('received','sent') COLLATE utf8mb4_unicode_ci NOT NULL,
+  `ResourceId` varchar(96) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  `RemoteNodeId` varchar(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  `Title` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `MediaType` varchar(128) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'application/octet-stream',
+  `Status` enum('active','expired','revoked') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'active',
+  `AccessUrl` varchar(2048) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `DecisionJson` mediumtext COLLATE utf8mb4_unicode_ci NOT NULL,
+  `ExpiresAt` datetime(6) DEFAULT NULL,
+  `LocalFileId` int DEFAULT NULL,
+  `LocalS3Key` varchar(1024) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `ImportedAt` datetime(6) DEFAULT NULL,
+  `ImportedResourceUpdatedAt` datetime(6) DEFAULT NULL,
+  `ImportedContentId` varchar(80) CHARACTER SET ascii COLLATE ascii_bin DEFAULT NULL,
+  `CreatedAt` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+  `UpdatedAt` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
+  PRIMARY KEY (`ShareId`),
+  KEY `idx_fshares_user_direction_status` (`UserId`,`Direction`,`Status`,`UpdatedAt`),
+  KEY `idx_fshares_resource` (`ResourceId`,`Status`),
+  KEY `idx_fshares_remote` (`RemoteNodeId`,`Status`),
+  KEY `idx_fshares_local_file` (`UserId`,`LocalFileId`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `FileS3`
+--
+
+DROP TABLE IF EXISTS `FileS3`;
+CREATE TABLE IF NOT EXISTS `FileS3` (
+  `id_` int NOT NULL AUTO_INCREMENT,
+  `Nombre` varchar(255) NOT NULL,
+  `Encriptado` varchar(255) NOT NULL,
+  `Tamano` bigint NOT NULL,
+  `Metadatos` mediumtext,
+  `Ruta` varchar(256) NOT NULL,
+  `Found` tinyint(1) NOT NULL DEFAULT '0',
+  `AccessType` enum('normal','secure','unlocked') NOT NULL DEFAULT 'normal',
+  `PasswordHash` varchar(255) DEFAULT NULL,
+  `SecureHint` varchar(255) DEFAULT NULL,
+  `SecureUpdatedAt` timestamp NULL DEFAULT NULL,
+  `Fecha` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `user_id_` int NOT NULL,
+  PRIMARY KEY (`id_`),
+  UNIQUE KEY `uq_files3_user_path_key` (`user_id_`,`Ruta`,`Encriptado`),
+  KEY `user_id_` (`user_id_`),
+  KEY `idx_FileS3_Ruta` (`Ruta`(191)),
+  KEY `idx_FileS3_Found` (`Found`),
+  KEY `idx_FileS3_Access` (`AccessType`),
+  KEY `idx_FileS3_RutaFoundAccess` (`Ruta`(191),`Found`,`AccessType`),
+  KEY `idx_FileS3_UserRuta` (`user_id_`,`Ruta`(191),`Found`),
+  KEY `idx_files_user_found` (`user_id_`,`Found`),
+  KEY `idx_files_user_ruta` (`user_id_`,`Ruta`(191)),
+  KEY `idx_files_user_access_found` (`user_id_`,`AccessType`,`Found`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
 
@@ -376,6 +686,47 @@ CREATE TABLE IF NOT EXISTS `MemoryWriteEvents` (
 -- --------------------------------------------------------
 
 --
+-- Estructura de tabla para la tabla `NextWorkProposals`
+--
+
+DROP TABLE IF EXISTS `NextWorkProposals`;
+CREATE TABLE IF NOT EXISTS `NextWorkProposals` (
+  `id_` bigint UNSIGNED NOT NULL AUTO_INCREMENT,
+  `public_id` char(36) NOT NULL,
+  `user_id_` int NOT NULL,
+  `project_id_` int NOT NULL,
+  `source_task_id_` bigint UNSIGNED NOT NULL,
+  `autonomy_cycle_id_` bigint UNSIGNED NOT NULL,
+  `reservation_id_` bigint UNSIGNED DEFAULT NULL,
+  `spawned_task_id_` bigint UNSIGNED DEFAULT NULL,
+  `status` enum('pending_approval','authorized','spawning','spawned','rejected','failed') NOT NULL,
+  `dedupe_key` char(64) NOT NULL,
+  `payload_hash` char(64) NOT NULL,
+  `public_reason` varchar(800) NOT NULL,
+  `proposed_title` varchar(255) DEFAULT NULL,
+  `proposed_objective` text NOT NULL,
+  `evidence_json` json NOT NULL,
+  `authorization_reason` varchar(80) NOT NULL,
+  `decision_accounted` tinyint(1) NOT NULL DEFAULT '0',
+  `lock_version` int UNSIGNED NOT NULL DEFAULT '0',
+  `approved_at` datetime(6) DEFAULT NULL,
+  `rejected_at` datetime(6) DEFAULT NULL,
+  `spawned_at` datetime(6) DEFAULT NULL,
+  `created_at` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+  `updated_at` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
+  PRIMARY KEY (`id_`),
+  UNIQUE KEY `uq_next_work_proposal_public` (`public_id`),
+  UNIQUE KEY `uq_next_work_proposal_dedupe` (`autonomy_cycle_id_`,`dedupe_key`),
+  UNIQUE KEY `uq_next_work_proposal_reservation` (`reservation_id_`),
+  UNIQUE KEY `uq_next_work_proposal_spawned_task` (`spawned_task_id_`),
+  KEY `idx_next_work_proposal_owner_status` (`user_id_`,`project_id_`,`status`,`updated_at`),
+  KEY `idx_next_work_proposal_source` (`source_task_id_`,`created_at`),
+  KEY `fk_next_work_proposal_project` (`project_id_`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Estructura de tabla para la tabla `PhaseCache`
 --
 
@@ -393,6 +744,181 @@ CREATE TABLE IF NOT EXISTS `PhaseCache` (
   UNIQUE KEY `uq_phase_cache` (`cache_key`),
   KEY `idx_pcache_project` (`project_id_`),
   KEY `idx_pcache_expires` (`expires_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `PostTaskContinuations`
+--
+
+DROP TABLE IF EXISTS `PostTaskContinuations`;
+CREATE TABLE IF NOT EXISTS `PostTaskContinuations` (
+  `id_` bigint UNSIGNED NOT NULL AUTO_INCREMENT,
+  `public_id` char(36) NOT NULL,
+  `user_id_` int NOT NULL,
+  `project_id_` int NOT NULL,
+  `source_task_id_` bigint UNSIGNED NOT NULL,
+  `autonomy_cycle_id_` bigint UNSIGNED NOT NULL,
+  `proposal_id_` bigint UNSIGNED DEFAULT NULL,
+  `spawned_task_id_` bigint UNSIGNED DEFAULT NULL,
+  `status` enum('pending','processing','completed','waiting_user','waiting_approval','failed') NOT NULL DEFAULT 'pending',
+  `terminal_status` enum('completed','failed','cancelled') NOT NULL,
+  `depth` int UNSIGNED NOT NULL,
+  `decision_type` enum('stop','ask_user','propose_task') DEFAULT NULL,
+  `decision_json` json DEFAULT NULL,
+  `usage_json` json DEFAULT NULL,
+  `reason_code` varchar(80) DEFAULT NULL,
+  `public_reason` varchar(800) DEFAULT NULL,
+  `question` varchar(800) DEFAULT NULL,
+  `answer` varchar(2000) DEFAULT NULL,
+  `answered_at` datetime(6) DEFAULT NULL,
+  `answered_by_user_id_` int DEFAULT NULL,
+  `attempt_count` tinyint UNSIGNED NOT NULL DEFAULT '0',
+  `next_attempt_at` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+  `worker_id` varchar(128) DEFAULT NULL,
+  `lease_token` char(36) DEFAULT NULL,
+  `lease_expires_at` datetime(6) DEFAULT NULL,
+  `started_at` datetime(6) DEFAULT NULL,
+  `finished_at` datetime(6) DEFAULT NULL,
+  `created_at` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+  `updated_at` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
+  PRIMARY KEY (`id_`),
+  UNIQUE KEY `uq_post_task_continuation_public` (`public_id`),
+  UNIQUE KEY `uq_post_task_continuation_logical` (`autonomy_cycle_id_`,`source_task_id_`),
+  KEY `idx_post_task_continuation_claim` (`status`,`next_attempt_at`,`lease_expires_at`),
+  KEY `idx_post_task_continuation_owner` (`user_id_`,`project_id_`,`status`),
+  KEY `fk_post_task_continuation_project` (`project_id_`),
+  KEY `fk_post_task_continuation_source` (`source_task_id_`),
+  KEY `fk_post_task_continuation_proposal` (`proposal_id_`),
+  KEY `fk_post_task_continuation_spawned` (`spawned_task_id_`),
+  KEY `idx_post_task_continuation_answered_by` (`answered_by_user_id_`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `ProjectAutonomyCycles`
+--
+
+DROP TABLE IF EXISTS `ProjectAutonomyCycles`;
+CREATE TABLE IF NOT EXISTS `ProjectAutonomyCycles` (
+  `id_` bigint UNSIGNED NOT NULL AUTO_INCREMENT,
+  `public_id` char(36) NOT NULL,
+  `policy_id_` bigint UNSIGNED NOT NULL,
+  `user_id_` int NOT NULL,
+  `project_id_` int NOT NULL,
+  `status` enum('active','exhausted','closed','stopped') NOT NULL DEFAULT 'active',
+  `active_project_id_` int GENERATED ALWAYS AS (if((`status` = _utf8mb4'active'),`project_id_`,NULL)) VIRTUAL,
+  `decisions_consumed` int UNSIGNED NOT NULL DEFAULT '0',
+  `tasks_consumed` int UNSIGNED NOT NULL DEFAULT '0',
+  `replans_consumed` int UNSIGNED NOT NULL DEFAULT '0',
+  `input_tokens_consumed` bigint UNSIGNED NOT NULL DEFAULT '0',
+  `output_tokens_consumed` bigint UNSIGNED NOT NULL DEFAULT '0',
+  `tool_calls_consumed` int UNSIGNED NOT NULL DEFAULT '0',
+  `write_tool_calls_consumed` int UNSIGNED NOT NULL DEFAULT '0',
+  `runtime_seconds_consumed` int UNSIGNED NOT NULL DEFAULT '0',
+  `lock_version` int UNSIGNED NOT NULL DEFAULT '0',
+  `started_at` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+  `finished_at` datetime(6) DEFAULT NULL,
+  `created_at` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+  `updated_at` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
+  PRIMARY KEY (`id_`),
+  UNIQUE KEY `uq_project_autonomy_cycle_public` (`public_id`),
+  UNIQUE KEY `uq_project_autonomy_cycle_active` (`active_project_id_`),
+  KEY `idx_project_autonomy_cycle_owner` (`user_id_`,`project_id_`,`status`),
+  KEY `fk_project_autonomy_cycle_policy` (`policy_id_`),
+  KEY `fk_project_autonomy_cycle_project` (`project_id_`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `ProjectAutonomyCycleTasks`
+--
+
+DROP TABLE IF EXISTS `ProjectAutonomyCycleTasks`;
+CREATE TABLE IF NOT EXISTS `ProjectAutonomyCycleTasks` (
+  `id_` bigint UNSIGNED NOT NULL AUTO_INCREMENT,
+  `cycle_id_` bigint UNSIGNED NOT NULL,
+  `user_id_` int NOT NULL,
+  `project_id_` int NOT NULL,
+  `task_id_` bigint UNSIGNED NOT NULL,
+  `depth` int UNSIGNED NOT NULL DEFAULT '0',
+  `created_at` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+  PRIMARY KEY (`id_`),
+  UNIQUE KEY `uq_autonomy_cycle_task` (`cycle_id_`,`task_id_`),
+  UNIQUE KEY `uq_autonomy_task_cycle` (`task_id_`),
+  KEY `idx_autonomy_cycle_task_owner` (`user_id_`,`project_id_`),
+  KEY `fk_autonomy_cycle_task_project` (`project_id_`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `ProjectAutonomyPolicies`
+--
+
+DROP TABLE IF EXISTS `ProjectAutonomyPolicies`;
+CREATE TABLE IF NOT EXISTS `ProjectAutonomyPolicies` (
+  `id_` bigint UNSIGNED NOT NULL AUTO_INCREMENT,
+  `public_id` char(36) NOT NULL,
+  `user_id_` int NOT NULL,
+  `project_id_` int NOT NULL,
+  `mode` enum('disabled','supervised','automatic') NOT NULL DEFAULT 'disabled',
+  `status` enum('active','paused','stopped') NOT NULL DEFAULT 'active',
+  `stop_reason` varchar(80) DEFAULT NULL,
+  `max_tasks_per_cycle` int UNSIGNED DEFAULT NULL,
+  `max_decisions_per_cycle` int UNSIGNED DEFAULT NULL,
+  `max_descendant_depth` int UNSIGNED DEFAULT NULL,
+  `max_replans_per_cycle` int UNSIGNED DEFAULT NULL,
+  `max_runtime_seconds` int UNSIGNED DEFAULT NULL,
+  `max_input_tokens` int UNSIGNED DEFAULT NULL,
+  `max_output_tokens` int UNSIGNED DEFAULT NULL,
+  `max_tool_calls` int UNSIGNED DEFAULT NULL,
+  `max_write_tool_calls` int UNSIGNED DEFAULT NULL,
+  `lock_version` int UNSIGNED NOT NULL DEFAULT '0',
+  `created_at` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+  `updated_at` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
+  PRIMARY KEY (`id_`),
+  UNIQUE KEY `uq_project_autonomy_policy_public` (`public_id`),
+  UNIQUE KEY `uq_project_autonomy_policy_project` (`project_id_`),
+  KEY `idx_project_autonomy_policy_owner` (`user_id_`,`status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `ProjectAutonomyReservations`
+--
+
+DROP TABLE IF EXISTS `ProjectAutonomyReservations`;
+CREATE TABLE IF NOT EXISTS `ProjectAutonomyReservations` (
+  `id_` bigint UNSIGNED NOT NULL AUTO_INCREMENT,
+  `public_id` char(36) NOT NULL,
+  `cycle_id_` bigint UNSIGNED NOT NULL,
+  `user_id_` int NOT NULL,
+  `project_id_` int NOT NULL,
+  `idempotency_key` varchar(128) NOT NULL,
+  `status` enum('reserved','consumed','released') NOT NULL DEFAULT 'reserved',
+  `decisions` int UNSIGNED NOT NULL DEFAULT '0',
+  `tasks` int UNSIGNED NOT NULL DEFAULT '0',
+  `replans` int UNSIGNED NOT NULL DEFAULT '0',
+  `input_tokens` bigint UNSIGNED NOT NULL DEFAULT '0',
+  `output_tokens` bigint UNSIGNED NOT NULL DEFAULT '0',
+  `tool_calls` int UNSIGNED NOT NULL DEFAULT '0',
+  `write_tool_calls` int UNSIGNED NOT NULL DEFAULT '0',
+  `runtime_seconds` int UNSIGNED NOT NULL DEFAULT '0',
+  `descendant_depth` int UNSIGNED NOT NULL DEFAULT '0',
+  `created_at` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+  `updated_at` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
+  `consumed_at` datetime(6) DEFAULT NULL,
+  `released_at` datetime(6) DEFAULT NULL,
+  PRIMARY KEY (`id_`),
+  UNIQUE KEY `uq_project_autonomy_reservation_public` (`public_id`),
+  UNIQUE KEY `uq_project_autonomy_reservation_idempotency` (`cycle_id_`,`idempotency_key`),
+  KEY `idx_project_autonomy_reservation_owner` (`user_id_`,`project_id_`,`status`),
+  KEY `fk_project_autonomy_reservation_project` (`project_id_`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
@@ -443,7 +969,7 @@ CREATE TABLE IF NOT EXISTS `Projects` (
   UNIQUE KEY `uq_projects_user_slug` (`user_id_`,`slug`),
   UNIQUE KEY `uq_projects_user_rootprefix` (`user_id_`,`root_prefix`(255)),
   KEY `idx_projects_user` (`user_id_`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
 
@@ -553,7 +1079,25 @@ CREATE TABLE IF NOT EXISTS `S3Folders` (
   KEY `idx_user_access` (`user_id_`,`AccessType`),
   KEY `idx_user_parent_found_access` (`user_id_`,`ParentPrefix`(191),`Found`,`AccessType`),
   KEY `idx_folders_user_found` (`user_id_`,`Found`)
-) ENGINE=InnoDB AUTO_INCREMENT=333 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `S3SyncSeen`
+--
+
+DROP TABLE IF EXISTS `S3SyncSeen`;
+CREATE TABLE IF NOT EXISTS `S3SyncSeen` (
+  `sync_id` char(32) NOT NULL,
+  `user_id` bigint UNSIGNED NOT NULL,
+  `kind` varchar(10) NOT NULL,
+  `key_hash` char(64) NOT NULL,
+  `object_key` text NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`sync_id`,`user_id`,`kind`,`key_hash`),
+  KEY `idx_sync_user_created` (`user_id`,`created_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
 
@@ -621,6 +1165,359 @@ CREATE TABLE IF NOT EXISTS `SourceChunks` (
 -- --------------------------------------------------------
 
 --
+-- Estructura de tabla para la tabla `TaskArtifacts`
+--
+
+DROP TABLE IF EXISTS `TaskArtifacts`;
+CREATE TABLE IF NOT EXISTS `TaskArtifacts` (
+  `id_` bigint UNSIGNED NOT NULL AUTO_INCREMENT,
+  `execution_id_` bigint UNSIGNED NOT NULL,
+  `tool_call_id_` bigint UNSIGNED DEFAULT NULL,
+  `tool_call_identity` bigint UNSIGNED GENERATED ALWAYS AS (coalesce(`tool_call_id_`,0)) STORED,
+  `relation` enum('read','used','created','modified','generated') NOT NULL,
+  `resource_type` enum('project_source','source_chunk','file_version','file_s3') NOT NULL,
+  `resource_id` bigint UNSIGNED NOT NULL,
+  `created_at` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+  PRIMARY KEY (`id_`),
+  UNIQUE KEY `uq_task_artifacts_identity` (`execution_id_`,`tool_call_identity`,`relation`,`resource_type`,`resource_id`),
+  KEY `idx_task_artifacts_execution` (`execution_id_`,`id_`),
+  KEY `idx_task_artifacts_tool_call` (`tool_call_id_`,`id_`),
+  KEY `idx_task_artifacts_resource` (`resource_type`,`resource_id`,`id_`),
+  KEY `idx_task_artifacts_relation` (`relation`,`id_`)
+) ;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `TaskDependencies`
+--
+
+DROP TABLE IF EXISTS `TaskDependencies`;
+CREATE TABLE IF NOT EXISTS `TaskDependencies` (
+  `id_` bigint UNSIGNED NOT NULL AUTO_INCREMENT,
+  `task_id_` bigint UNSIGNED NOT NULL,
+  `depends_on_task_id_` bigint UNSIGNED NOT NULL,
+  `condition` enum('completed','terminal_success','terminal_any') NOT NULL DEFAULT 'completed',
+  `created_at` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+  PRIMARY KEY (`id_`),
+  UNIQUE KEY `uq_task_dependency` (`task_id_`,`depends_on_task_id_`),
+  KEY `idx_task_dependencies_reverse` (`depends_on_task_id_`,`task_id_`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `TaskEvents`
+--
+
+DROP TABLE IF EXISTS `TaskEvents`;
+CREATE TABLE IF NOT EXISTS `TaskEvents` (
+  `id_` bigint UNSIGNED NOT NULL AUTO_INCREMENT,
+  `task_id_` bigint UNSIGNED NOT NULL,
+  `step_id_` bigint UNSIGNED DEFAULT NULL,
+  `execution_id_` bigint UNSIGNED DEFAULT NULL,
+  `actor_type` enum('user','worker','system','agent') NOT NULL,
+  `actor_user_id_` int DEFAULT NULL,
+  `event_key` varchar(80) NOT NULL,
+  `from_status` varchar(32) DEFAULT NULL,
+  `to_status` varchar(32) DEFAULT NULL,
+  `summary` varchar(255) NOT NULL,
+  `details_json` json DEFAULT NULL,
+  `created_at` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+  PRIMARY KEY (`id_`),
+  KEY `idx_task_events_task` (`task_id_`,`id_`),
+  KEY `idx_task_events_step` (`step_id_`,`id_`),
+  KEY `idx_task_events_execution` (`execution_id_`,`id_`),
+  KEY `fk_task_events_actor_user` (`actor_user_id_`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `TaskExecutions`
+--
+
+DROP TABLE IF EXISTS `TaskExecutions`;
+CREATE TABLE IF NOT EXISTS `TaskExecutions` (
+  `id_` bigint UNSIGNED NOT NULL AUTO_INCREMENT,
+  `task_id_` bigint UNSIGNED NOT NULL,
+  `step_id_` bigint UNSIGNED DEFAULT NULL,
+  `trace_id` char(36) DEFAULT NULL,
+  `attempt_number` smallint UNSIGNED NOT NULL,
+  `agent_key` varchar(80) DEFAULT NULL,
+  `model_id` varchar(255) DEFAULT NULL,
+  `status` enum('queued','running','waiting','completed','failed','cancelled','abandoned') NOT NULL DEFAULT 'queued',
+  `worker_id` varchar(120) DEFAULT NULL,
+  `lease_token` char(36) DEFAULT NULL,
+  `lease_expires_at` datetime(6) DEFAULT NULL,
+  `started_at` datetime(6) DEFAULT NULL,
+  `heartbeat_at` datetime(6) DEFAULT NULL,
+  `finished_at` datetime(6) DEFAULT NULL,
+  `error_message` text,
+  `created_at` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+  PRIMARY KEY (`id_`),
+  UNIQUE KEY `uq_task_executions_trace` (`trace_id`),
+  UNIQUE KEY `uq_task_executions_attempt` (`step_id_`,`attempt_number`),
+  KEY `idx_task_executions_task` (`task_id_`),
+  KEY `idx_task_executions_status` (`status`),
+  KEY `idx_task_executions_lease` (`lease_expires_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `TaskPlanRevisions`
+--
+
+DROP TABLE IF EXISTS `TaskPlanRevisions`;
+CREATE TABLE IF NOT EXISTS `TaskPlanRevisions` (
+  `id_` bigint UNSIGNED NOT NULL AUTO_INCREMENT,
+  `public_id` char(36) NOT NULL,
+  `user_id_` int NOT NULL,
+  `project_id_` int NOT NULL,
+  `task_id_` bigint UNSIGNED NOT NULL,
+  `replan_request_id_` bigint UNSIGNED DEFAULT NULL,
+  `revision_number` int UNSIGNED NOT NULL,
+  `source_revision` int UNSIGNED NOT NULL DEFAULT '0',
+  `status` enum('historical','proposed','pending_approval','approved','applied','rejected','failed') NOT NULL,
+  `proposed_plan_json` json NOT NULL,
+  `planner_model` varchar(255) DEFAULT NULL,
+  `usage_json` json DEFAULT NULL,
+  `public_reason` varchar(500) NOT NULL,
+  `lock_version` int UNSIGNED NOT NULL DEFAULT '0',
+  `approved_at` datetime(6) DEFAULT NULL,
+  `rejected_at` datetime(6) DEFAULT NULL,
+  `applied_at` datetime(6) DEFAULT NULL,
+  `created_at` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+  `updated_at` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
+  PRIMARY KEY (`id_`),
+  UNIQUE KEY `uq_task_plan_revision_public` (`public_id`),
+  UNIQUE KEY `uq_task_plan_revision_number` (`task_id_`,`revision_number`),
+  UNIQUE KEY `uq_task_plan_revision_request` (`replan_request_id_`),
+  KEY `idx_task_plan_revision_owner` (`user_id_`,`project_id_`,`task_id_`),
+  KEY `fk_task_plan_revision_project` (`project_id_`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `TaskPlanRevisionSteps`
+--
+
+DROP TABLE IF EXISTS `TaskPlanRevisionSteps`;
+CREATE TABLE IF NOT EXISTS `TaskPlanRevisionSteps` (
+  `revision_id_` bigint UNSIGNED NOT NULL,
+  `step_id_` bigint UNSIGNED NOT NULL,
+  `logical_key` varchar(80) NOT NULL,
+  `position_in_revision` smallint UNSIGNED NOT NULL,
+  `created_at` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+  PRIMARY KEY (`revision_id_`,`step_id_`),
+  UNIQUE KEY `uq_task_plan_revision_position` (`revision_id_`,`position_in_revision`),
+  UNIQUE KEY `uq_task_plan_revision_logical` (`revision_id_`,`logical_key`),
+  KEY `idx_task_plan_revision_step` (`step_id_`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `TaskRecurrenceOccurrences`
+--
+
+DROP TABLE IF EXISTS `TaskRecurrenceOccurrences`;
+CREATE TABLE IF NOT EXISTS `TaskRecurrenceOccurrences` (
+  `id_` bigint UNSIGNED NOT NULL AUTO_INCREMENT,
+  `rule_id_` bigint UNSIGNED NOT NULL,
+  `logical_occurrence_at` datetime(6) NOT NULL COMMENT 'UTC identity of the civil slot',
+  `status` enum('reserved','materialized','skipped','failed') NOT NULL DEFAULT 'reserved',
+  `task_id_` bigint UNSIGNED DEFAULT NULL,
+  `failure_code` varchar(80) DEFAULT NULL,
+  `lock_version` int UNSIGNED NOT NULL DEFAULT '0',
+  `created_at` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+  `updated_at` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
+  PRIMARY KEY (`id_`),
+  UNIQUE KEY `uq_task_recurrence_occurrence` (`rule_id_`,`logical_occurrence_at`),
+  UNIQUE KEY `uq_task_recurrence_occurrence_task` (`task_id_`),
+  KEY `idx_task_recurrence_occurrence_status` (`status`,`updated_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `TaskRecurrenceRules`
+--
+
+DROP TABLE IF EXISTS `TaskRecurrenceRules`;
+CREATE TABLE IF NOT EXISTS `TaskRecurrenceRules` (
+  `id_` bigint UNSIGNED NOT NULL AUTO_INCREMENT,
+  `public_id` char(36) NOT NULL,
+  `user_id_` int NOT NULL,
+  `project_id_` int DEFAULT NULL,
+  `session_id_` int NOT NULL,
+  `status` enum('enabled','paused','cancelled') NOT NULL DEFAULT 'enabled',
+  `frequency` enum('daily','weekly') NOT NULL,
+  `weekday` tinyint UNSIGNED DEFAULT NULL COMMENT 'ISO-8601 1=Monday..7=Sunday; required only for weekly',
+  `local_time` time NOT NULL,
+  `timezone` varchar(64) NOT NULL,
+  `next_occurrence_at` datetime(6) NOT NULL COMMENT 'UTC instant',
+  `misfire_policy` enum('skip','run_once','catch_up') NOT NULL DEFAULT 'run_once',
+  `task_title` varchar(255) NOT NULL,
+  `task_objective` text NOT NULL,
+  `task_priority` enum('low','normal','high','urgent') NOT NULL DEFAULT 'normal',
+  `task_mode` enum('automatic','supervised') NOT NULL DEFAULT 'supervised',
+  `lock_version` int UNSIGNED NOT NULL DEFAULT '0',
+  `created_at` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+  `updated_at` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
+  PRIMARY KEY (`id_`),
+  UNIQUE KEY `uq_task_recurrence_rules_public` (`public_id`),
+  KEY `idx_task_recurrence_rules_due` (`status`,`next_occurrence_at`),
+  KEY `idx_task_recurrence_rules_owner` (`user_id_`,`status`),
+  KEY `fk_task_recurrence_rules_project` (`project_id_`),
+  KEY `fk_task_recurrence_rules_session` (`session_id_`)
+) ;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `TaskReplanRequests`
+--
+
+DROP TABLE IF EXISTS `TaskReplanRequests`;
+CREATE TABLE IF NOT EXISTS `TaskReplanRequests` (
+  `id_` bigint UNSIGNED NOT NULL AUTO_INCREMENT,
+  `public_id` char(36) NOT NULL,
+  `user_id_` int NOT NULL,
+  `project_id_` int NOT NULL,
+  `task_id_` bigint UNSIGNED NOT NULL,
+  `autonomy_cycle_id_` bigint UNSIGNED NOT NULL,
+  `source_step_id_` bigint UNSIGNED NOT NULL,
+  `revision_id_` bigint UNSIGNED DEFAULT NULL,
+  `reservation_id_` bigint UNSIGNED DEFAULT NULL,
+  `trigger_code` enum('validation_failed','dependency_invalidated','plan_no_longer_executable','explicit_replan_request') NOT NULL,
+  `failure_disposition` enum('logical_replan_candidate') NOT NULL DEFAULT 'logical_replan_candidate',
+  `status` enum('checkpointed','processing','proposed','pending_approval','approved','applied','rejected','failed') NOT NULL DEFAULT 'checkpointed',
+  `source_task_lock_version` int UNSIGNED NOT NULL,
+  `public_reason` varchar(500) NOT NULL,
+  `attempt_count` tinyint UNSIGNED NOT NULL DEFAULT '0',
+  `next_attempt_at` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+  `failure_reason` varchar(80) DEFAULT NULL,
+  `worker_id` varchar(128) DEFAULT NULL,
+  `lease_token` char(36) DEFAULT NULL,
+  `lease_expires_at` datetime(6) DEFAULT NULL,
+  `lock_version` int UNSIGNED NOT NULL DEFAULT '0',
+  `approved_at` datetime(6) DEFAULT NULL,
+  `applied_at` datetime(6) DEFAULT NULL,
+  `rejected_at` datetime(6) DEFAULT NULL,
+  `failed_at` datetime(6) DEFAULT NULL,
+  `created_at` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+  `updated_at` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
+  PRIMARY KEY (`id_`),
+  UNIQUE KEY `uq_task_replan_public` (`public_id`),
+  UNIQUE KEY `uq_task_replan_logical` (`task_id_`,`source_step_id_`,`trigger_code`,`source_task_lock_version`),
+  KEY `idx_task_replan_active` (`task_id_`,`status`,`updated_at`),
+  KEY `idx_task_replan_owner` (`user_id_`,`project_id_`,`status`),
+  KEY `fk_task_replan_project` (`project_id_`),
+  KEY `fk_task_replan_cycle` (`autonomy_cycle_id_`),
+  KEY `fk_task_replan_step` (`source_step_id_`),
+  KEY `idx_task_replan_claim` (`status`,`next_attempt_at`,`lease_expires_at`),
+  KEY `idx_task_replan_revision` (`revision_id_`),
+  KEY `idx_task_replan_reservation` (`reservation_id_`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `Tasks`
+--
+
+DROP TABLE IF EXISTS `Tasks`;
+CREATE TABLE IF NOT EXISTS `Tasks` (
+  `id_` bigint UNSIGNED NOT NULL AUTO_INCREMENT,
+  `public_id` char(36) NOT NULL,
+  `user_id_` int NOT NULL,
+  `created_by_user_id_` int NOT NULL,
+  `project_id_` int DEFAULT NULL,
+  `session_id_` int NOT NULL,
+  `origin_message_id_` int DEFAULT NULL,
+  `result_message_id_` int DEFAULT NULL,
+  `parent_task_id_` bigint UNSIGNED DEFAULT NULL,
+  `idempotency_key` varchar(128) DEFAULT NULL,
+  `origin_type` enum('chat','manual','retry','system') NOT NULL DEFAULT 'manual',
+  `mode` enum('supervised','automatic') NOT NULL DEFAULT 'supervised',
+  `title` varchar(255) NOT NULL,
+  `objective` text NOT NULL,
+  `status` enum('pending','ready','running','waiting_user','waiting_dependency','completed','failed','cancelled') NOT NULL DEFAULT 'pending',
+  `priority` enum('low','normal','high','urgent') NOT NULL DEFAULT 'normal',
+  `progress_percent` tinyint UNSIGNED NOT NULL DEFAULT '0',
+  `current_step_id_` bigint UNSIGNED DEFAULT NULL,
+  `max_attempts` smallint UNSIGNED NOT NULL DEFAULT '1',
+  `attempt_count` smallint UNSIGNED NOT NULL DEFAULT '0',
+  `scheduled_at` datetime(6) DEFAULT NULL,
+  `started_at` datetime(6) DEFAULT NULL,
+  `due_at` datetime(6) DEFAULT NULL,
+  `completed_at` datetime(6) DEFAULT NULL,
+  `cancel_requested_at` datetime(6) DEFAULT NULL,
+  `cancelled_at` datetime(6) DEFAULT NULL,
+  `last_heartbeat_at` datetime(6) DEFAULT NULL,
+  `result_summary` mediumtext,
+  `error_code` varchar(80) DEFAULT NULL,
+  `error_message` text,
+  `lock_version` int UNSIGNED NOT NULL DEFAULT '0',
+  `created_at` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+  `updated_at` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
+  PRIMARY KEY (`id_`),
+  UNIQUE KEY `uq_tasks_public_id` (`public_id`),
+  UNIQUE KEY `uq_tasks_user_idempotency` (`user_id_`,`idempotency_key`),
+  KEY `idx_tasks_user_status` (`user_id_`,`status`,`updated_at`),
+  KEY `idx_tasks_project_status` (`project_id_`,`status`,`priority`),
+  KEY `idx_tasks_origin_message` (`origin_message_id_`),
+  KEY `idx_tasks_result_message` (`result_message_id_`),
+  KEY `idx_tasks_parent` (`parent_task_id_`),
+  KEY `idx_tasks_queue` (`status`,`scheduled_at`,`priority`),
+  KEY `idx_tasks_heartbeat` (`status`,`last_heartbeat_at`),
+  KEY `idx_tasks_current_step` (`current_step_id_`),
+  KEY `idx_tasks_session` (`session_id_`,`updated_at`),
+  KEY `fk_tasks_creator` (`created_by_user_id_`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `TaskSteps`
+--
+
+DROP TABLE IF EXISTS `TaskSteps`;
+CREATE TABLE IF NOT EXISTS `TaskSteps` (
+  `id_` bigint UNSIGNED NOT NULL AUTO_INCREMENT,
+  `task_id_` bigint UNSIGNED NOT NULL,
+  `position` smallint UNSIGNED NOT NULL,
+  `step_key` varchar(80) NOT NULL,
+  `title` varchar(255) NOT NULL,
+  `description` text,
+  `step_type` enum('plan','model','tool','approval','wait','validation','finalize') NOT NULL,
+  `status` enum('pending','ready','running','waiting_user','waiting_dependency','completed','failed','cancelled','skipped') NOT NULL DEFAULT 'pending',
+  `progress_percent` tinyint UNSIGNED NOT NULL DEFAULT '0',
+  `agent_key` varchar(80) DEFAULT NULL,
+  `model_id` varchar(255) DEFAULT NULL,
+  `input_json` json DEFAULT NULL,
+  `checkpoint_json` json DEFAULT NULL,
+  `output_summary` mediumtext,
+  `error_message` text,
+  `attempt_count` smallint UNSIGNED NOT NULL DEFAULT '0',
+  `max_attempts` smallint UNSIGNED NOT NULL DEFAULT '1',
+  `lock_version` int UNSIGNED NOT NULL DEFAULT '0',
+  `started_at` datetime(6) DEFAULT NULL,
+  `completed_at` datetime(6) DEFAULT NULL,
+  `created_at` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+  `updated_at` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
+  PRIMARY KEY (`id_`),
+  UNIQUE KEY `uq_task_steps_key` (`task_id_`,`step_key`),
+  UNIQUE KEY `uq_task_steps_position` (`task_id_`,`position`),
+  KEY `idx_task_steps_status` (`task_id_`,`status`,`position`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Estructura de tabla para la tabla `TokenUsage`
 --
 
@@ -640,7 +1537,7 @@ CREATE TABLE IF NOT EXISTS `TokenUsage` (
   KEY `idx_tu_session` (`session_id_`),
   KEY `idx_tu_phase` (`phase`),
   KEY `fk_tu_message` (`message_id_`)
-) ENGINE=InnoDB AUTO_INCREMENT=2285 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
 
@@ -707,7 +1604,7 @@ CREATE TABLE IF NOT EXISTS `UserAIAgentConfigs` (
   KEY `idx_uac_user_active` (`user_id_`,`is_active`),
   KEY `idx_uac_group` (`agent_group`),
   KEY `idx_uac_agent_key` (`agent_key`)
-) ENGINE=InnoDB AUTO_INCREMENT=46 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
 -- Volcado de datos para la tabla `UserAIAgentConfigs`
@@ -766,11 +1663,12 @@ CREATE TABLE IF NOT EXISTS `UserPipelineFeatures` (
   PRIMARY KEY (`id_`),
   UNIQUE KEY `uq_user_pipeline_feature` (`user_id_`,`feature_key`),
   KEY `idx_upf_user_enabled` (`user_id_`,`is_enabled`)
-) ENGINE=InnoDB AUTO_INCREMENT=229 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
 -- Volcado de datos para la tabla `UserPipelineFeatures`
 --
+
 
 
 -- --------------------------------------------------------
@@ -798,11 +1696,12 @@ CREATE TABLE IF NOT EXISTS `UserPreferences` (
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id_`),
   UNIQUE KEY `uq_userpreferences_user` (`user_id_`)
-) ENGINE=InnoDB AUTO_INCREMENT=34 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
 -- Volcado de datos para la tabla `UserPreferences`
 --
+
 
 
 -- --------------------------------------------------------
@@ -852,97 +1751,22 @@ CREATE TABLE IF NOT EXISTS `Users` (
   `homephone` varchar(15) CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci DEFAULT NULL,
   `mobilephone` varchar(15) CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci DEFAULT NULL,
   `role` enum('Alumno','Docente','Administración','Finanzas','Recursos Humanos','Ventas','Marketing','Soporte','Servicio Social','Otros') CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci NOT NULL,
-  `system_role` enum('user','admin','superadmin') CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci NOT NULL DEFAULT 'user',
+  `system_role` enum('user','admin','superadmin') COLLATE utf8mb3_unicode_ci NOT NULL DEFAULT 'user',
   `registrationdate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `profilepicture` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci DEFAULT NULL,
   `chat` tinyint NOT NULL,
   `userstatus` enum('Activo','Inactivo') CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_unicode_ci;
 
 --
--- Fase 8.1: Task Orchestrator
+-- Índices para tablas volcadas
 --
-CREATE TABLE IF NOT EXISTS `Tasks` (
- `id_` bigint UNSIGNED NOT NULL AUTO_INCREMENT, `public_id` char(36) NOT NULL, `user_id_` int NOT NULL, `created_by_user_id_` int NOT NULL, `project_id_` int DEFAULT NULL, `session_id_` int NOT NULL, `origin_message_id_` int DEFAULT NULL, `result_message_id_` int DEFAULT NULL, `parent_task_id_` bigint UNSIGNED DEFAULT NULL, `idempotency_key` varchar(128) DEFAULT NULL,
- `origin_type` enum('chat','manual','retry','system') NOT NULL DEFAULT 'manual', `mode` enum('supervised','automatic') NOT NULL DEFAULT 'supervised', `title` varchar(255) NOT NULL, `objective` text NOT NULL, `status` enum('pending','ready','running','waiting_user','waiting_dependency','completed','failed','cancelled') NOT NULL DEFAULT 'pending', `priority` enum('low','normal','high','urgent') NOT NULL DEFAULT 'normal', `progress_percent` tinyint UNSIGNED NOT NULL DEFAULT 0, `current_step_id_` bigint UNSIGNED DEFAULT NULL, `max_attempts` smallint UNSIGNED NOT NULL DEFAULT 1, `attempt_count` smallint UNSIGNED NOT NULL DEFAULT 0,
- `scheduled_at` datetime(6) DEFAULT NULL, `started_at` datetime(6) DEFAULT NULL, `due_at` datetime(6) DEFAULT NULL, `completed_at` datetime(6) DEFAULT NULL, `cancel_requested_at` datetime(6) DEFAULT NULL, `cancelled_at` datetime(6) DEFAULT NULL, `last_heartbeat_at` datetime(6) DEFAULT NULL, `result_summary` mediumtext, `error_code` varchar(80) DEFAULT NULL, `error_message` text, `lock_version` int UNSIGNED NOT NULL DEFAULT 0, `created_at` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6), `updated_at` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
- PRIMARY KEY (`id_`), UNIQUE KEY `uq_tasks_public_id` (`public_id`), UNIQUE KEY `uq_tasks_user_idempotency` (`user_id_`,`idempotency_key`), KEY `idx_tasks_user_status` (`user_id_`,`status`,`updated_at`), KEY `idx_tasks_project_status` (`project_id_`,`status`,`priority`), KEY `idx_tasks_session` (`session_id_`,`updated_at`), KEY `idx_tasks_origin_message` (`origin_message_id_`), KEY `idx_tasks_result_message` (`result_message_id_`), KEY `idx_tasks_parent` (`parent_task_id_`), KEY `idx_tasks_queue` (`status`,`scheduled_at`,`priority`), KEY `idx_tasks_heartbeat` (`status`,`last_heartbeat_at`), KEY `idx_tasks_current_step` (`current_step_id_`),
- CONSTRAINT `fk_tasks_user` FOREIGN KEY (`user_id_`) REFERENCES `Users` (`id`) ON DELETE RESTRICT, CONSTRAINT `fk_tasks_creator` FOREIGN KEY (`created_by_user_id_`) REFERENCES `Users` (`id`) ON DELETE RESTRICT, CONSTRAINT `fk_tasks_project` FOREIGN KEY (`project_id_`) REFERENCES `Projects` (`id_`) ON DELETE SET NULL, CONSTRAINT `fk_tasks_session` FOREIGN KEY (`session_id_`) REFERENCES `ChatSessions` (`id_`) ON DELETE RESTRICT, CONSTRAINT `fk_tasks_origin_message` FOREIGN KEY (`origin_message_id_`) REFERENCES `ChatMessages` (`id_`) ON DELETE SET NULL, CONSTRAINT `fk_tasks_result_message` FOREIGN KEY (`result_message_id_`) REFERENCES `ChatMessages` (`id_`) ON DELETE SET NULL, CONSTRAINT `fk_tasks_parent` FOREIGN KEY (`parent_task_id_`) REFERENCES `Tasks` (`id_`) ON DELETE SET NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-CREATE TABLE IF NOT EXISTS `TaskSteps` (
- `id_` bigint UNSIGNED NOT NULL AUTO_INCREMENT, `task_id_` bigint UNSIGNED NOT NULL, `position` smallint UNSIGNED NOT NULL, `step_key` varchar(80) NOT NULL, `title` varchar(255) NOT NULL, `description` text, `step_type` enum('plan','model','tool','approval','wait','validation','finalize') NOT NULL, `status` enum('pending','ready','running','waiting_user','waiting_dependency','completed','failed','cancelled','skipped') NOT NULL DEFAULT 'pending', `progress_percent` tinyint UNSIGNED NOT NULL DEFAULT 0, `agent_key` varchar(80) DEFAULT NULL, `model_id` varchar(255) DEFAULT NULL, `input_json` json DEFAULT NULL, `checkpoint_json` json DEFAULT NULL, `output_summary` mediumtext, `error_message` text, `attempt_count` smallint UNSIGNED NOT NULL DEFAULT 0, `max_attempts` smallint UNSIGNED NOT NULL DEFAULT 1, `lock_version` int UNSIGNED NOT NULL DEFAULT 0, `started_at` datetime(6) DEFAULT NULL, `completed_at` datetime(6) DEFAULT NULL, `created_at` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6), `updated_at` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
- PRIMARY KEY (`id_`), UNIQUE KEY `uq_task_steps_key` (`task_id_`,`step_key`), UNIQUE KEY `uq_task_steps_position` (`task_id_`,`position`), KEY `idx_task_steps_status` (`task_id_`,`status`,`position`), CONSTRAINT `fk_task_steps_task` FOREIGN KEY (`task_id_`) REFERENCES `Tasks` (`id_`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-CREATE TABLE IF NOT EXISTS `TaskExecutions` (
- `id_` bigint UNSIGNED NOT NULL AUTO_INCREMENT, `task_id_` bigint UNSIGNED NOT NULL, `step_id_` bigint UNSIGNED DEFAULT NULL, `trace_id` char(36) DEFAULT NULL, `attempt_number` smallint UNSIGNED NOT NULL, `agent_key` varchar(80) DEFAULT NULL, `model_id` varchar(255) DEFAULT NULL, `status` enum('queued','running','waiting','completed','failed','cancelled','abandoned') NOT NULL DEFAULT 'queued', `worker_id` varchar(120) DEFAULT NULL, `lease_token` char(36) DEFAULT NULL, `lease_expires_at` datetime(6) DEFAULT NULL, `started_at` datetime(6) DEFAULT NULL, `heartbeat_at` datetime(6) DEFAULT NULL, `finished_at` datetime(6) DEFAULT NULL, `error_message` text, `created_at` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
- PRIMARY KEY (`id_`), UNIQUE KEY `uq_task_executions_trace` (`trace_id`), UNIQUE KEY `uq_task_executions_attempt` (`step_id_`,`attempt_number`), KEY `idx_task_executions_task` (`task_id_`), KEY `idx_task_executions_status` (`status`), KEY `idx_task_executions_lease` (`lease_expires_at`), CONSTRAINT `fk_task_executions_task` FOREIGN KEY (`task_id_`) REFERENCES `Tasks` (`id_`) ON DELETE CASCADE, CONSTRAINT `fk_task_executions_step` FOREIGN KEY (`step_id_`) REFERENCES `TaskSteps` (`id_`) ON DELETE SET NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-CREATE TABLE IF NOT EXISTS `TaskDependencies` (
- `id_` bigint UNSIGNED NOT NULL AUTO_INCREMENT, `task_id_` bigint UNSIGNED NOT NULL, `depends_on_task_id_` bigint UNSIGNED NOT NULL, `condition` enum('completed','terminal_success','terminal_any') NOT NULL DEFAULT 'completed', `created_at` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6), PRIMARY KEY (`id_`), UNIQUE KEY `uq_task_dependency` (`task_id_`,`depends_on_task_id_`), KEY `idx_task_dependencies_reverse` (`depends_on_task_id_`,`task_id_`), CONSTRAINT `fk_task_dependencies_task` FOREIGN KEY (`task_id_`) REFERENCES `Tasks` (`id_`) ON DELETE CASCADE, CONSTRAINT `fk_task_dependencies_required` FOREIGN KEY (`depends_on_task_id_`) REFERENCES `Tasks` (`id_`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-CREATE TABLE IF NOT EXISTS `TaskEvents` (
- `id_` bigint UNSIGNED NOT NULL AUTO_INCREMENT, `task_id_` bigint UNSIGNED NOT NULL, `step_id_` bigint UNSIGNED DEFAULT NULL, `execution_id_` bigint UNSIGNED DEFAULT NULL, `actor_type` enum('user','worker','system','agent') NOT NULL, `actor_user_id_` int DEFAULT NULL, `event_key` varchar(80) NOT NULL, `from_status` varchar(32) DEFAULT NULL, `to_status` varchar(32) DEFAULT NULL, `summary` varchar(255) NOT NULL, `details_json` json DEFAULT NULL, `created_at` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6), PRIMARY KEY (`id_`), KEY `idx_task_events_task` (`task_id_`,`id_`), KEY `idx_task_events_step` (`step_id_`,`id_`), KEY `idx_task_events_execution` (`execution_id_`,`id_`), CONSTRAINT `fk_task_events_task` FOREIGN KEY (`task_id_`) REFERENCES `Tasks` (`id_`) ON DELETE CASCADE, CONSTRAINT `fk_task_events_step` FOREIGN KEY (`step_id_`) REFERENCES `TaskSteps` (`id_`) ON DELETE SET NULL, CONSTRAINT `fk_task_events_execution` FOREIGN KEY (`execution_id_`) REFERENCES `TaskExecutions` (`id_`) ON DELETE SET NULL, CONSTRAINT `fk_task_events_actor_user` FOREIGN KEY (`actor_user_id_`) REFERENCES `Users` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
--- Fase 8.7B: resource_type + resource_id conserva referencias históricas sin
--- duplicar metadata privada ni impedir la eliminación física de los recursos.
--- tool_call_id_ también es débil porque ToolCalls depende por cascada de sesión/proyecto.
-CREATE TABLE IF NOT EXISTS `TaskArtifacts` (
- `id_` bigint UNSIGNED NOT NULL AUTO_INCREMENT, `execution_id_` bigint UNSIGNED NOT NULL, `tool_call_id_` bigint UNSIGNED DEFAULT NULL, `tool_call_identity` bigint UNSIGNED GENERATED ALWAYS AS (COALESCE(`tool_call_id_`,0)) STORED, `relation` enum('read','used','created','modified','generated') NOT NULL, `resource_type` enum('project_source','source_chunk','file_version','file_s3') NOT NULL, `resource_id` bigint UNSIGNED NOT NULL, `created_at` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
- PRIMARY KEY (`id_`), UNIQUE KEY `uq_task_artifacts_identity` (`execution_id_`,`tool_call_identity`,`relation`,`resource_type`,`resource_id`), KEY `idx_task_artifacts_execution` (`execution_id_`,`id_`), KEY `idx_task_artifacts_tool_call` (`tool_call_id_`,`id_`), KEY `idx_task_artifacts_resource` (`resource_type`,`resource_id`,`id_`), KEY `idx_task_artifacts_relation` (`relation`,`id_`),
- CONSTRAINT `fk_task_artifacts_execution` FOREIGN KEY (`execution_id_`) REFERENCES `TaskExecutions` (`id_`) ON DELETE CASCADE, CONSTRAINT `chk_task_artifacts_resource_id` CHECK (`resource_id` > 0), CONSTRAINT `chk_task_artifacts_tool_call_id` CHECK (`tool_call_id_` IS NULL OR `tool_call_id_` > 0)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
--- Fase 10D: reglas temporales y slots lógicos. No evalúa reglas ni crea Tasks automáticamente.
-CREATE TABLE IF NOT EXISTS `TaskRecurrenceRules` (
-  `id_` bigint UNSIGNED NOT NULL AUTO_INCREMENT,
-  `public_id` char(36) NOT NULL,
-  `user_id_` int NOT NULL,
-  `project_id_` int DEFAULT NULL,
-  `session_id_` int NOT NULL,
-  `status` enum('enabled','paused','cancelled') NOT NULL DEFAULT 'enabled',
-  `frequency` enum('daily','weekly') NOT NULL,
-  `weekday` tinyint UNSIGNED DEFAULT NULL COMMENT 'ISO-8601 1=Monday..7=Sunday; required only for weekly',
-  `local_time` time NOT NULL,
-  `timezone` varchar(64) NOT NULL,
-  `next_occurrence_at` datetime(6) NOT NULL COMMENT 'UTC instant',
-  `misfire_policy` enum('skip','run_once','catch_up') NOT NULL DEFAULT 'run_once',
-  `task_title` varchar(255) NOT NULL,
-  `task_objective` text NOT NULL,
-  `task_priority` enum('low','normal','high','urgent') NOT NULL DEFAULT 'normal',
-  `task_mode` enum('automatic','supervised') NOT NULL DEFAULT 'supervised',
-  `lock_version` int UNSIGNED NOT NULL DEFAULT 0,
-  `created_at` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
-  `updated_at` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
-  PRIMARY KEY (`id_`),
-  UNIQUE KEY `uq_task_recurrence_rules_public` (`public_id`),
-  KEY `idx_task_recurrence_rules_due` (`status`,`next_occurrence_at`),
-  KEY `idx_task_recurrence_rules_owner` (`user_id_`,`status`),
-  CONSTRAINT `fk_task_recurrence_rules_user` FOREIGN KEY (`user_id_`) REFERENCES `Users` (`id`) ON DELETE RESTRICT,
-  CONSTRAINT `fk_task_recurrence_rules_project` FOREIGN KEY (`project_id_`) REFERENCES `Projects` (`id_`) ON DELETE SET NULL,
-  CONSTRAINT `fk_task_recurrence_rules_session` FOREIGN KEY (`session_id_`) REFERENCES `ChatSessions` (`id_`) ON DELETE RESTRICT,
-  CONSTRAINT `chk_task_recurrence_rules_weekday` CHECK ((`frequency`='daily' AND `weekday` IS NULL) OR (`frequency`='weekly' AND `weekday` BETWEEN 1 AND 7))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
-CREATE TABLE IF NOT EXISTS `TaskRecurrenceOccurrences` (
-  `id_` bigint UNSIGNED NOT NULL AUTO_INCREMENT,
-  `rule_id_` bigint UNSIGNED NOT NULL,
-  `logical_occurrence_at` datetime(6) NOT NULL COMMENT 'UTC identity of the civil slot',
-  `status` enum('reserved','materialized','skipped','failed') NOT NULL DEFAULT 'reserved',
-  `task_id_` bigint UNSIGNED DEFAULT NULL,
-  `failure_code` varchar(80) DEFAULT NULL,
-  `lock_version` int UNSIGNED NOT NULL DEFAULT 0,
-  `created_at` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
-  `updated_at` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
-  PRIMARY KEY (`id_`),
-  UNIQUE KEY `uq_task_recurrence_occurrence` (`rule_id_`,`logical_occurrence_at`),
-  UNIQUE KEY `uq_task_recurrence_occurrence_task` (`task_id_`),
-  KEY `idx_task_recurrence_occurrence_status` (`status`,`updated_at`),
-  CONSTRAINT `fk_task_recurrence_occurrence_rule` FOREIGN KEY (`rule_id_`) REFERENCES `TaskRecurrenceRules` (`id_`) ON DELETE CASCADE,
-  CONSTRAINT `fk_task_recurrence_occurrence_task` FOREIGN KEY (`task_id_`) REFERENCES `Tasks` (`id_`) ON DELETE SET NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
-SET @fk_exists=(SELECT COUNT(*) FROM information_schema.REFERENTIAL_CONSTRAINTS WHERE CONSTRAINT_SCHEMA=DATABASE() AND CONSTRAINT_NAME='fk_tasks_current_step');
-SET @fk_sql=IF(@fk_exists=0,'ALTER TABLE Tasks ADD CONSTRAINT fk_tasks_current_step FOREIGN KEY (current_step_id_) REFERENCES TaskSteps(id_) ON DELETE SET NULL','SELECT 1'); PREPARE s FROM @fk_sql; EXECUTE s; DEALLOCATE PREPARE s;
+--
+-- Indices de la tabla `FederatedResources`
+--
+ALTER TABLE `FederatedResources` ADD FULLTEXT KEY `ft_fed_resource_title` (`Title`);
 
 --
 -- Restricciones para tablas volcadas
@@ -1006,10 +1830,65 @@ ALTER TABLE `MemoryWriteEvents`
   ADD CONSTRAINT `fk_mwe_user` FOREIGN KEY (`user_id_`) REFERENCES `Users` (`id`) ON DELETE CASCADE;
 
 --
+-- Filtros para la tabla `NextWorkProposals`
+--
+ALTER TABLE `NextWorkProposals`
+  ADD CONSTRAINT `fk_next_work_proposal_cycle` FOREIGN KEY (`autonomy_cycle_id_`) REFERENCES `ProjectAutonomyCycles` (`id_`) ON DELETE RESTRICT,
+  ADD CONSTRAINT `fk_next_work_proposal_project` FOREIGN KEY (`project_id_`) REFERENCES `Projects` (`id_`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_next_work_proposal_reservation` FOREIGN KEY (`reservation_id_`) REFERENCES `ProjectAutonomyReservations` (`id_`) ON DELETE SET NULL,
+  ADD CONSTRAINT `fk_next_work_proposal_source` FOREIGN KEY (`source_task_id_`) REFERENCES `Tasks` (`id_`) ON DELETE RESTRICT,
+  ADD CONSTRAINT `fk_next_work_proposal_spawned_task` FOREIGN KEY (`spawned_task_id_`) REFERENCES `Tasks` (`id_`) ON DELETE SET NULL,
+  ADD CONSTRAINT `fk_next_work_proposal_user` FOREIGN KEY (`user_id_`) REFERENCES `Users` (`id`) ON DELETE RESTRICT;
+
+--
 -- Filtros para la tabla `PhaseCache`
 --
 ALTER TABLE `PhaseCache`
   ADD CONSTRAINT `fk_pcache_project` FOREIGN KEY (`project_id_`) REFERENCES `Projects` (`id_`) ON DELETE CASCADE;
+
+--
+-- Filtros para la tabla `PostTaskContinuations`
+--
+ALTER TABLE `PostTaskContinuations`
+  ADD CONSTRAINT `fk_post_task_continuation_answered_by` FOREIGN KEY (`answered_by_user_id_`) REFERENCES `Users` (`id`) ON DELETE RESTRICT,
+  ADD CONSTRAINT `fk_post_task_continuation_cycle` FOREIGN KEY (`autonomy_cycle_id_`) REFERENCES `ProjectAutonomyCycles` (`id_`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_post_task_continuation_project` FOREIGN KEY (`project_id_`) REFERENCES `Projects` (`id_`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_post_task_continuation_proposal` FOREIGN KEY (`proposal_id_`) REFERENCES `NextWorkProposals` (`id_`) ON DELETE SET NULL,
+  ADD CONSTRAINT `fk_post_task_continuation_source` FOREIGN KEY (`source_task_id_`) REFERENCES `Tasks` (`id_`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_post_task_continuation_spawned` FOREIGN KEY (`spawned_task_id_`) REFERENCES `Tasks` (`id_`) ON DELETE SET NULL,
+  ADD CONSTRAINT `fk_post_task_continuation_user` FOREIGN KEY (`user_id_`) REFERENCES `Users` (`id`) ON DELETE RESTRICT;
+
+--
+-- Filtros para la tabla `ProjectAutonomyCycles`
+--
+ALTER TABLE `ProjectAutonomyCycles`
+  ADD CONSTRAINT `fk_project_autonomy_cycle_policy` FOREIGN KEY (`policy_id_`) REFERENCES `ProjectAutonomyPolicies` (`id_`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_project_autonomy_cycle_project` FOREIGN KEY (`project_id_`) REFERENCES `Projects` (`id_`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_project_autonomy_cycle_user` FOREIGN KEY (`user_id_`) REFERENCES `Users` (`id`) ON DELETE RESTRICT;
+
+--
+-- Filtros para la tabla `ProjectAutonomyCycleTasks`
+--
+ALTER TABLE `ProjectAutonomyCycleTasks`
+  ADD CONSTRAINT `fk_autonomy_cycle_task_cycle` FOREIGN KEY (`cycle_id_`) REFERENCES `ProjectAutonomyCycles` (`id_`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_autonomy_cycle_task_project` FOREIGN KEY (`project_id_`) REFERENCES `Projects` (`id_`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_autonomy_cycle_task_task` FOREIGN KEY (`task_id_`) REFERENCES `Tasks` (`id_`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_autonomy_cycle_task_user` FOREIGN KEY (`user_id_`) REFERENCES `Users` (`id`) ON DELETE RESTRICT;
+
+--
+-- Filtros para la tabla `ProjectAutonomyPolicies`
+--
+ALTER TABLE `ProjectAutonomyPolicies`
+  ADD CONSTRAINT `fk_project_autonomy_policy_project` FOREIGN KEY (`project_id_`) REFERENCES `Projects` (`id_`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_project_autonomy_policy_user` FOREIGN KEY (`user_id_`) REFERENCES `Users` (`id`) ON DELETE RESTRICT;
+
+--
+-- Filtros para la tabla `ProjectAutonomyReservations`
+--
+ALTER TABLE `ProjectAutonomyReservations`
+  ADD CONSTRAINT `fk_project_autonomy_reservation_cycle` FOREIGN KEY (`cycle_id_`) REFERENCES `ProjectAutonomyCycles` (`id_`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_project_autonomy_reservation_project` FOREIGN KEY (`project_id_`) REFERENCES `Projects` (`id_`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_project_autonomy_reservation_user` FOREIGN KEY (`user_id_`) REFERENCES `Users` (`id`) ON DELETE RESTRICT;
 
 --
 -- Filtros para la tabla `ProjectContext`
@@ -1060,6 +1939,97 @@ ALTER TABLE `SourceChunks`
   ADD CONSTRAINT `fk_chunks_source` FOREIGN KEY (`source_id_`) REFERENCES `ProjectSources` (`id_`) ON DELETE CASCADE;
 
 --
+-- Filtros para la tabla `TaskArtifacts`
+--
+ALTER TABLE `TaskArtifacts`
+  ADD CONSTRAINT `fk_task_artifacts_execution` FOREIGN KEY (`execution_id_`) REFERENCES `TaskExecutions` (`id_`) ON DELETE CASCADE;
+
+--
+-- Filtros para la tabla `TaskDependencies`
+--
+ALTER TABLE `TaskDependencies`
+  ADD CONSTRAINT `fk_task_dependencies_required` FOREIGN KEY (`depends_on_task_id_`) REFERENCES `Tasks` (`id_`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_task_dependencies_task` FOREIGN KEY (`task_id_`) REFERENCES `Tasks` (`id_`) ON DELETE CASCADE;
+
+--
+-- Filtros para la tabla `TaskEvents`
+--
+ALTER TABLE `TaskEvents`
+  ADD CONSTRAINT `fk_task_events_actor_user` FOREIGN KEY (`actor_user_id_`) REFERENCES `Users` (`id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `fk_task_events_execution` FOREIGN KEY (`execution_id_`) REFERENCES `TaskExecutions` (`id_`) ON DELETE SET NULL,
+  ADD CONSTRAINT `fk_task_events_step` FOREIGN KEY (`step_id_`) REFERENCES `TaskSteps` (`id_`) ON DELETE SET NULL,
+  ADD CONSTRAINT `fk_task_events_task` FOREIGN KEY (`task_id_`) REFERENCES `Tasks` (`id_`) ON DELETE CASCADE;
+
+--
+-- Filtros para la tabla `TaskExecutions`
+--
+ALTER TABLE `TaskExecutions`
+  ADD CONSTRAINT `fk_task_executions_step` FOREIGN KEY (`step_id_`) REFERENCES `TaskSteps` (`id_`) ON DELETE SET NULL,
+  ADD CONSTRAINT `fk_task_executions_task` FOREIGN KEY (`task_id_`) REFERENCES `Tasks` (`id_`) ON DELETE CASCADE;
+
+--
+-- Filtros para la tabla `TaskPlanRevisions`
+--
+ALTER TABLE `TaskPlanRevisions`
+  ADD CONSTRAINT `fk_task_plan_revision_project` FOREIGN KEY (`project_id_`) REFERENCES `Projects` (`id_`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_task_plan_revision_request` FOREIGN KEY (`replan_request_id_`) REFERENCES `TaskReplanRequests` (`id_`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_task_plan_revision_task` FOREIGN KEY (`task_id_`) REFERENCES `Tasks` (`id_`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_task_plan_revision_user` FOREIGN KEY (`user_id_`) REFERENCES `Users` (`id`) ON DELETE RESTRICT;
+
+--
+-- Filtros para la tabla `TaskPlanRevisionSteps`
+--
+ALTER TABLE `TaskPlanRevisionSteps`
+  ADD CONSTRAINT `fk_task_plan_revision_steps_revision` FOREIGN KEY (`revision_id_`) REFERENCES `TaskPlanRevisions` (`id_`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_task_plan_revision_steps_step` FOREIGN KEY (`step_id_`) REFERENCES `TaskSteps` (`id_`) ON DELETE RESTRICT;
+
+--
+-- Filtros para la tabla `TaskRecurrenceOccurrences`
+--
+ALTER TABLE `TaskRecurrenceOccurrences`
+  ADD CONSTRAINT `fk_task_recurrence_occurrence_rule` FOREIGN KEY (`rule_id_`) REFERENCES `TaskRecurrenceRules` (`id_`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_task_recurrence_occurrence_task` FOREIGN KEY (`task_id_`) REFERENCES `Tasks` (`id_`) ON DELETE SET NULL;
+
+--
+-- Filtros para la tabla `TaskRecurrenceRules`
+--
+ALTER TABLE `TaskRecurrenceRules`
+  ADD CONSTRAINT `fk_task_recurrence_rules_project` FOREIGN KEY (`project_id_`) REFERENCES `Projects` (`id_`) ON DELETE SET NULL,
+  ADD CONSTRAINT `fk_task_recurrence_rules_session` FOREIGN KEY (`session_id_`) REFERENCES `ChatSessions` (`id_`) ON DELETE RESTRICT,
+  ADD CONSTRAINT `fk_task_recurrence_rules_user` FOREIGN KEY (`user_id_`) REFERENCES `Users` (`id`) ON DELETE RESTRICT;
+
+--
+-- Filtros para la tabla `TaskReplanRequests`
+--
+ALTER TABLE `TaskReplanRequests`
+  ADD CONSTRAINT `fk_task_replan_cycle` FOREIGN KEY (`autonomy_cycle_id_`) REFERENCES `ProjectAutonomyCycles` (`id_`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_task_replan_project` FOREIGN KEY (`project_id_`) REFERENCES `Projects` (`id_`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_task_replan_reservation` FOREIGN KEY (`reservation_id_`) REFERENCES `ProjectAutonomyReservations` (`id_`) ON DELETE SET NULL,
+  ADD CONSTRAINT `fk_task_replan_revision` FOREIGN KEY (`revision_id_`) REFERENCES `TaskPlanRevisions` (`id_`) ON DELETE SET NULL,
+  ADD CONSTRAINT `fk_task_replan_step` FOREIGN KEY (`source_step_id_`) REFERENCES `TaskSteps` (`id_`) ON DELETE RESTRICT,
+  ADD CONSTRAINT `fk_task_replan_task` FOREIGN KEY (`task_id_`) REFERENCES `Tasks` (`id_`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_task_replan_user` FOREIGN KEY (`user_id_`) REFERENCES `Users` (`id`) ON DELETE RESTRICT;
+
+--
+-- Filtros para la tabla `Tasks`
+--
+ALTER TABLE `Tasks`
+  ADD CONSTRAINT `fk_tasks_creator` FOREIGN KEY (`created_by_user_id_`) REFERENCES `Users` (`id`) ON DELETE RESTRICT,
+  ADD CONSTRAINT `fk_tasks_current_step` FOREIGN KEY (`current_step_id_`) REFERENCES `TaskSteps` (`id_`) ON DELETE SET NULL,
+  ADD CONSTRAINT `fk_tasks_origin_message` FOREIGN KEY (`origin_message_id_`) REFERENCES `ChatMessages` (`id_`) ON DELETE SET NULL,
+  ADD CONSTRAINT `fk_tasks_parent` FOREIGN KEY (`parent_task_id_`) REFERENCES `Tasks` (`id_`) ON DELETE SET NULL,
+  ADD CONSTRAINT `fk_tasks_project` FOREIGN KEY (`project_id_`) REFERENCES `Projects` (`id_`) ON DELETE SET NULL,
+  ADD CONSTRAINT `fk_tasks_result_message` FOREIGN KEY (`result_message_id_`) REFERENCES `ChatMessages` (`id_`) ON DELETE SET NULL,
+  ADD CONSTRAINT `fk_tasks_session` FOREIGN KEY (`session_id_`) REFERENCES `ChatSessions` (`id_`) ON DELETE RESTRICT,
+  ADD CONSTRAINT `fk_tasks_user` FOREIGN KEY (`user_id_`) REFERENCES `Users` (`id`) ON DELETE RESTRICT;
+
+--
+-- Filtros para la tabla `TaskSteps`
+--
+ALTER TABLE `TaskSteps`
+  ADD CONSTRAINT `fk_task_steps_task` FOREIGN KEY (`task_id_`) REFERENCES `Tasks` (`id_`) ON DELETE CASCADE;
+
+--
 -- Filtros para la tabla `TokenUsage`
 --
 ALTER TABLE `TokenUsage`
@@ -1097,222 +2067,10 @@ ALTER TABLE `UserPreferences`
 ALTER TABLE `UserProceduralMemory`
   ADD CONSTRAINT `fk_upm_session` FOREIGN KEY (`source_session_id`) REFERENCES `ChatSessions` (`id_`) ON DELETE SET NULL,
   ADD CONSTRAINT `fk_upm_user` FOREIGN KEY (`user_id_`) REFERENCES `Users` (`id`) ON DELETE CASCADE;
--- Fase 11B: policy de autonomía por Project, ciclos durables y reservas idempotentes.
-CREATE TABLE IF NOT EXISTS `ProjectAutonomyPolicies` (
-  `id_` bigint UNSIGNED NOT NULL AUTO_INCREMENT,
-  `public_id` char(36) NOT NULL,
-  `user_id_` int NOT NULL,
-  `project_id_` int NOT NULL,
-  `mode` enum('disabled','supervised','automatic') NOT NULL DEFAULT 'disabled',
-  `status` enum('active','paused','stopped') NOT NULL DEFAULT 'active',
-  `stop_reason` varchar(80) DEFAULT NULL,
-  `max_tasks_per_cycle` int UNSIGNED DEFAULT NULL,
-  `max_decisions_per_cycle` int UNSIGNED DEFAULT NULL,
-  `max_descendant_depth` int UNSIGNED DEFAULT NULL,
-  `max_replans_per_cycle` int UNSIGNED DEFAULT NULL,
-  `max_runtime_seconds` int UNSIGNED DEFAULT NULL,
-  `max_input_tokens` int UNSIGNED DEFAULT NULL,
-  `max_output_tokens` int UNSIGNED DEFAULT NULL,
-  `max_tool_calls` int UNSIGNED DEFAULT NULL,
-  `max_write_tool_calls` int UNSIGNED DEFAULT NULL,
-  `lock_version` int UNSIGNED NOT NULL DEFAULT 0,
-  `created_at` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
-  `updated_at` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
-  PRIMARY KEY (`id_`),
-  UNIQUE KEY `uq_project_autonomy_policy_public` (`public_id`),
-  UNIQUE KEY `uq_project_autonomy_policy_project` (`project_id_`),
-  KEY `idx_project_autonomy_policy_owner` (`user_id_`,`status`),
-  CONSTRAINT `fk_project_autonomy_policy_user` FOREIGN KEY (`user_id_`) REFERENCES `Users` (`id`) ON DELETE RESTRICT,
-  CONSTRAINT `fk_project_autonomy_policy_project` FOREIGN KEY (`project_id_`) REFERENCES `Projects` (`id_`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
-CREATE TABLE IF NOT EXISTS `ProjectAutonomyCycles` (
-  `id_` bigint UNSIGNED NOT NULL AUTO_INCREMENT,
-  `public_id` char(36) NOT NULL,
-  `policy_id_` bigint UNSIGNED NOT NULL,
-  `user_id_` int NOT NULL,
-  `project_id_` int NOT NULL,
-  `status` enum('active','exhausted','closed','stopped') NOT NULL DEFAULT 'active',
-  `active_project_id_` int GENERATED ALWAYS AS (IF(`status`='active',`project_id_`,NULL)) VIRTUAL,
-  `decisions_consumed` int UNSIGNED NOT NULL DEFAULT 0,
-  `tasks_consumed` int UNSIGNED NOT NULL DEFAULT 0,
-  `replans_consumed` int UNSIGNED NOT NULL DEFAULT 0,
-  `input_tokens_consumed` bigint UNSIGNED NOT NULL DEFAULT 0,
-  `output_tokens_consumed` bigint UNSIGNED NOT NULL DEFAULT 0,
-  `tool_calls_consumed` int UNSIGNED NOT NULL DEFAULT 0,
-  `write_tool_calls_consumed` int UNSIGNED NOT NULL DEFAULT 0,
-  `runtime_seconds_consumed` int UNSIGNED NOT NULL DEFAULT 0,
-  `lock_version` int UNSIGNED NOT NULL DEFAULT 0,
-  `started_at` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
-  `finished_at` datetime(6) DEFAULT NULL,
-  `created_at` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
-  `updated_at` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
-  PRIMARY KEY (`id_`),
-  UNIQUE KEY `uq_project_autonomy_cycle_public` (`public_id`),
-  UNIQUE KEY `uq_project_autonomy_cycle_active` (`active_project_id_`),
-  KEY `idx_project_autonomy_cycle_owner` (`user_id_`,`project_id_`,`status`),
-  CONSTRAINT `fk_project_autonomy_cycle_policy` FOREIGN KEY (`policy_id_`) REFERENCES `ProjectAutonomyPolicies` (`id_`) ON DELETE CASCADE,
-  CONSTRAINT `fk_project_autonomy_cycle_user` FOREIGN KEY (`user_id_`) REFERENCES `Users` (`id`) ON DELETE RESTRICT,
-  CONSTRAINT `fk_project_autonomy_cycle_project` FOREIGN KEY (`project_id_`) REFERENCES `Projects` (`id_`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
-CREATE TABLE IF NOT EXISTS `ProjectAutonomyReservations` (
-  `id_` bigint UNSIGNED NOT NULL AUTO_INCREMENT,
-  `public_id` char(36) NOT NULL,
-  `cycle_id_` bigint UNSIGNED NOT NULL,
-  `user_id_` int NOT NULL,
-  `project_id_` int NOT NULL,
-  `idempotency_key` varchar(128) NOT NULL,
-  `status` enum('reserved','consumed','released') NOT NULL DEFAULT 'reserved',
-  `decisions` int UNSIGNED NOT NULL DEFAULT 0,
-  `tasks` int UNSIGNED NOT NULL DEFAULT 0,
-  `replans` int UNSIGNED NOT NULL DEFAULT 0,
-  `input_tokens` bigint UNSIGNED NOT NULL DEFAULT 0,
-  `output_tokens` bigint UNSIGNED NOT NULL DEFAULT 0,
-  `tool_calls` int UNSIGNED NOT NULL DEFAULT 0,
-  `write_tool_calls` int UNSIGNED NOT NULL DEFAULT 0,
-  `runtime_seconds` int UNSIGNED NOT NULL DEFAULT 0,
-  `descendant_depth` int UNSIGNED NOT NULL DEFAULT 0,
-  `created_at` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
-  `updated_at` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
-  `consumed_at` datetime(6) DEFAULT NULL,
-  `released_at` datetime(6) DEFAULT NULL,
-  PRIMARY KEY (`id_`),
-  UNIQUE KEY `uq_project_autonomy_reservation_public` (`public_id`),
-  UNIQUE KEY `uq_project_autonomy_reservation_idempotency` (`cycle_id_`,`idempotency_key`),
-  KEY `idx_project_autonomy_reservation_owner` (`user_id_`,`project_id_`,`status`),
-  CONSTRAINT `fk_project_autonomy_reservation_cycle` FOREIGN KEY (`cycle_id_`) REFERENCES `ProjectAutonomyCycles` (`id_`) ON DELETE CASCADE,
-  CONSTRAINT `fk_project_autonomy_reservation_user` FOREIGN KEY (`user_id_`) REFERENCES `Users` (`id`) ON DELETE RESTRICT,
-  CONSTRAINT `fk_project_autonomy_reservation_project` FOREIGN KEY (`project_id_`) REFERENCES `Projects` (`id_`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
-
--- Fase 11C: propuestas Next-Work durables, approval propio y lineage auditable.
-CREATE TABLE IF NOT EXISTS `NextWorkProposals` (
-  `id_` bigint UNSIGNED NOT NULL AUTO_INCREMENT,
-  `public_id` char(36) NOT NULL,
-  `user_id_` int NOT NULL,
-  `project_id_` int NOT NULL,
-  `source_task_id_` bigint UNSIGNED NOT NULL,
-  `autonomy_cycle_id_` bigint UNSIGNED NOT NULL,
-  `reservation_id_` bigint UNSIGNED DEFAULT NULL,
-  `spawned_task_id_` bigint UNSIGNED DEFAULT NULL,
-  `status` enum('pending_approval','authorized','spawning','spawned','rejected','failed') NOT NULL,
-  `dedupe_key` char(64) NOT NULL,
-  `payload_hash` char(64) NOT NULL,
-  `public_reason` varchar(800) NOT NULL,
-  `proposed_title` varchar(255) DEFAULT NULL,
-  `proposed_objective` text NOT NULL,
-  `evidence_json` json NOT NULL,
-  `authorization_reason` varchar(80) NOT NULL,
-  `decision_accounted` tinyint(1) NOT NULL DEFAULT 0,
-  `lock_version` int UNSIGNED NOT NULL DEFAULT 0,
-  `approved_at` datetime(6) DEFAULT NULL,
-  `rejected_at` datetime(6) DEFAULT NULL,
-  `spawned_at` datetime(6) DEFAULT NULL,
-  `created_at` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
-  `updated_at` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
-  PRIMARY KEY (`id_`),
-  UNIQUE KEY `uq_next_work_proposal_public` (`public_id`),
-  UNIQUE KEY `uq_next_work_proposal_dedupe` (`autonomy_cycle_id_`,`dedupe_key`),
-  UNIQUE KEY `uq_next_work_proposal_reservation` (`reservation_id_`),
-  UNIQUE KEY `uq_next_work_proposal_spawned_task` (`spawned_task_id_`),
-  KEY `idx_next_work_proposal_owner_status` (`user_id_`,`project_id_`,`status`,`updated_at`),
-  KEY `idx_next_work_proposal_source` (`source_task_id_`,`created_at`),
-  CONSTRAINT `fk_next_work_proposal_user` FOREIGN KEY (`user_id_`) REFERENCES `Users` (`id`) ON DELETE RESTRICT,
-  CONSTRAINT `fk_next_work_proposal_project` FOREIGN KEY (`project_id_`) REFERENCES `Projects` (`id_`) ON DELETE CASCADE,
-  CONSTRAINT `fk_next_work_proposal_source` FOREIGN KEY (`source_task_id_`) REFERENCES `Tasks` (`id_`) ON DELETE RESTRICT,
-  CONSTRAINT `fk_next_work_proposal_cycle` FOREIGN KEY (`autonomy_cycle_id_`) REFERENCES `ProjectAutonomyCycles` (`id_`) ON DELETE RESTRICT,
-  CONSTRAINT `fk_next_work_proposal_reservation` FOREIGN KEY (`reservation_id_`) REFERENCES `ProjectAutonomyReservations` (`id_`) ON DELETE SET NULL,
-  CONSTRAINT `fk_next_work_proposal_spawned_task` FOREIGN KEY (`spawned_task_id_`) REFERENCES `Tasks` (`id_`) ON DELETE SET NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
-
--- Fase 11D: asociación explícita root/cycle y oportunidades post-terminal reclamables.
-CREATE TABLE IF NOT EXISTS `ProjectAutonomyCycleTasks` (
- `id_` bigint UNSIGNED NOT NULL AUTO_INCREMENT, `cycle_id_` bigint UNSIGNED NOT NULL, `user_id_` int NOT NULL, `project_id_` int NOT NULL, `task_id_` bigint UNSIGNED NOT NULL, `depth` int UNSIGNED NOT NULL DEFAULT 0, `created_at` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
- PRIMARY KEY (`id_`), UNIQUE KEY `uq_autonomy_cycle_task` (`cycle_id_`,`task_id_`), UNIQUE KEY `uq_autonomy_task_cycle` (`task_id_`), KEY `idx_autonomy_cycle_task_owner` (`user_id_`,`project_id_`),
- CONSTRAINT `fk_autonomy_cycle_task_cycle` FOREIGN KEY (`cycle_id_`) REFERENCES `ProjectAutonomyCycles` (`id_`) ON DELETE CASCADE, CONSTRAINT `fk_autonomy_cycle_task_user` FOREIGN KEY (`user_id_`) REFERENCES `Users` (`id`) ON DELETE RESTRICT, CONSTRAINT `fk_autonomy_cycle_task_project` FOREIGN KEY (`project_id_`) REFERENCES `Projects` (`id_`) ON DELETE CASCADE, CONSTRAINT `fk_autonomy_cycle_task_task` FOREIGN KEY (`task_id_`) REFERENCES `Tasks` (`id_`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
-CREATE TABLE IF NOT EXISTS `PostTaskContinuations` (
- `id_` bigint UNSIGNED NOT NULL AUTO_INCREMENT, `public_id` char(36) NOT NULL, `user_id_` int NOT NULL, `project_id_` int NOT NULL, `source_task_id_` bigint UNSIGNED NOT NULL, `autonomy_cycle_id_` bigint UNSIGNED NOT NULL, `proposal_id_` bigint UNSIGNED DEFAULT NULL, `spawned_task_id_` bigint UNSIGNED DEFAULT NULL,
- `status` enum('pending','processing','completed','waiting_user','waiting_approval','failed') NOT NULL DEFAULT 'pending', `terminal_status` enum('completed','failed','cancelled') NOT NULL, `depth` int UNSIGNED NOT NULL, `decision_type` enum('stop','ask_user','propose_task') DEFAULT NULL, `decision_json` json DEFAULT NULL, `usage_json` json DEFAULT NULL, `reason_code` varchar(80) DEFAULT NULL, `public_reason` varchar(800) DEFAULT NULL, `question` varchar(800) DEFAULT NULL, `answer` varchar(2000) DEFAULT NULL, `answered_at` datetime(6) DEFAULT NULL, `answered_by_user_id_` int DEFAULT NULL,
- `attempt_count` tinyint UNSIGNED NOT NULL DEFAULT 0, `next_attempt_at` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6), `worker_id` varchar(128) DEFAULT NULL, `lease_token` char(36) DEFAULT NULL, `lease_expires_at` datetime(6) DEFAULT NULL, `started_at` datetime(6) DEFAULT NULL, `finished_at` datetime(6) DEFAULT NULL, `created_at` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6), `updated_at` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
- PRIMARY KEY (`id_`), UNIQUE KEY `uq_post_task_continuation_public` (`public_id`), UNIQUE KEY `uq_post_task_continuation_logical` (`autonomy_cycle_id_`,`source_task_id_`), KEY `idx_post_task_continuation_claim` (`status`,`next_attempt_at`,`lease_expires_at`), KEY `idx_post_task_continuation_owner` (`user_id_`,`project_id_`,`status`), KEY `idx_post_task_continuation_answered_by` (`answered_by_user_id_`),
- CONSTRAINT `fk_post_task_continuation_user` FOREIGN KEY (`user_id_`) REFERENCES `Users` (`id`) ON DELETE RESTRICT, CONSTRAINT `fk_post_task_continuation_answered_by` FOREIGN KEY (`answered_by_user_id_`) REFERENCES `Users` (`id`) ON DELETE RESTRICT, CONSTRAINT `fk_post_task_continuation_project` FOREIGN KEY (`project_id_`) REFERENCES `Projects` (`id_`) ON DELETE CASCADE, CONSTRAINT `fk_post_task_continuation_source` FOREIGN KEY (`source_task_id_`) REFERENCES `Tasks` (`id_`) ON DELETE CASCADE, CONSTRAINT `fk_post_task_continuation_cycle` FOREIGN KEY (`autonomy_cycle_id_`) REFERENCES `ProjectAutonomyCycles` (`id_`) ON DELETE CASCADE, CONSTRAINT `fk_post_task_continuation_proposal` FOREIGN KEY (`proposal_id_`) REFERENCES `NextWorkProposals` (`id_`) ON DELETE SET NULL, CONSTRAINT `fk_post_task_continuation_spawned` FOREIGN KEY (`spawned_task_id_`) REFERENCES `Tasks` (`id_`) ON DELETE SET NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
-
--- Fase 11E.0: disposición tipada y checkpoint durable; no genera ni aplica planes.
-CREATE TABLE IF NOT EXISTS `TaskReplanRequests` (
- `id_` bigint UNSIGNED NOT NULL AUTO_INCREMENT,
- `public_id` char(36) NOT NULL,
- `user_id_` int NOT NULL,
- `project_id_` int NOT NULL,
- `task_id_` bigint UNSIGNED NOT NULL,
- `autonomy_cycle_id_` bigint UNSIGNED NOT NULL,
- `source_step_id_` bigint UNSIGNED NOT NULL,
- `revision_id_` bigint UNSIGNED DEFAULT NULL,
- `reservation_id_` bigint UNSIGNED DEFAULT NULL,
- `trigger_code` enum('validation_failed','dependency_invalidated','plan_no_longer_executable','explicit_replan_request') NOT NULL,
- `failure_disposition` enum('logical_replan_candidate') NOT NULL DEFAULT 'logical_replan_candidate',
- `status` enum('checkpointed','processing','proposed','pending_approval','approved','applied','rejected','failed') NOT NULL DEFAULT 'checkpointed',
- `source_task_lock_version` int UNSIGNED NOT NULL,
- `public_reason` varchar(500) NOT NULL,
- `attempt_count` tinyint UNSIGNED NOT NULL DEFAULT 0,
- `next_attempt_at` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
- `failure_reason` varchar(80) DEFAULT NULL,
- `worker_id` varchar(128) DEFAULT NULL,
- `lease_token` char(36) DEFAULT NULL,
- `lease_expires_at` datetime(6) DEFAULT NULL,
- `lock_version` int UNSIGNED NOT NULL DEFAULT 0,
- `approved_at` datetime(6) DEFAULT NULL,
- `applied_at` datetime(6) DEFAULT NULL,
- `rejected_at` datetime(6) DEFAULT NULL,
- `failed_at` datetime(6) DEFAULT NULL,
- `created_at` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
- `updated_at` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
- PRIMARY KEY (`id_`),
- UNIQUE KEY `uq_task_replan_public` (`public_id`),
- UNIQUE KEY `uq_task_replan_logical` (`task_id_`,`source_step_id_`,`trigger_code`,`source_task_lock_version`),
- KEY `idx_task_replan_active` (`task_id_`,`status`,`updated_at`),
- KEY `idx_task_replan_owner` (`user_id_`,`project_id_`,`status`),
- CONSTRAINT `fk_task_replan_user` FOREIGN KEY (`user_id_`) REFERENCES `Users` (`id`) ON DELETE RESTRICT,
- CONSTRAINT `fk_task_replan_project` FOREIGN KEY (`project_id_`) REFERENCES `Projects` (`id_`) ON DELETE CASCADE,
- CONSTRAINT `fk_task_replan_task` FOREIGN KEY (`task_id_`) REFERENCES `Tasks` (`id_`) ON DELETE CASCADE,
- CONSTRAINT `fk_task_replan_cycle` FOREIGN KEY (`autonomy_cycle_id_`) REFERENCES `ProjectAutonomyCycles` (`id_`) ON DELETE CASCADE,
- CONSTRAINT `fk_task_replan_step` FOREIGN KEY (`source_step_id_`) REFERENCES `TaskSteps` (`id_`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
-
--- Fase 11E.1: revisiones versionadas y membresía histórica de Steps.
-CREATE TABLE IF NOT EXISTS `TaskPlanRevisions` (
- `id_` bigint UNSIGNED NOT NULL AUTO_INCREMENT, `public_id` char(36) NOT NULL, `user_id_` int NOT NULL, `project_id_` int NOT NULL, `task_id_` bigint UNSIGNED NOT NULL, `replan_request_id_` bigint UNSIGNED DEFAULT NULL, `revision_number` int UNSIGNED NOT NULL, `source_revision` int UNSIGNED NOT NULL DEFAULT 0, `status` enum('historical','proposed','pending_approval','approved','applied','rejected','failed') NOT NULL, `proposed_plan_json` json NOT NULL, `planner_model` varchar(255) DEFAULT NULL, `usage_json` json DEFAULT NULL, `public_reason` varchar(500) NOT NULL, `lock_version` int UNSIGNED NOT NULL DEFAULT 0, `approved_at` datetime(6) DEFAULT NULL, `rejected_at` datetime(6) DEFAULT NULL, `applied_at` datetime(6) DEFAULT NULL, `created_at` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6), `updated_at` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
- PRIMARY KEY (`id_`), UNIQUE KEY `uq_task_plan_revision_public` (`public_id`), UNIQUE KEY `uq_task_plan_revision_number` (`task_id_`,`revision_number`), UNIQUE KEY `uq_task_plan_revision_request` (`replan_request_id_`), KEY `idx_task_plan_revision_owner` (`user_id_`,`project_id_`,`task_id_`), CONSTRAINT `fk_task_plan_revision_user` FOREIGN KEY (`user_id_`) REFERENCES `Users` (`id`) ON DELETE RESTRICT, CONSTRAINT `fk_task_plan_revision_project` FOREIGN KEY (`project_id_`) REFERENCES `Projects` (`id_`) ON DELETE CASCADE, CONSTRAINT `fk_task_plan_revision_task` FOREIGN KEY (`task_id_`) REFERENCES `Tasks` (`id_`) ON DELETE CASCADE, CONSTRAINT `fk_task_plan_revision_request` FOREIGN KEY (`replan_request_id_`) REFERENCES `TaskReplanRequests` (`id_`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-CREATE TABLE IF NOT EXISTS `TaskPlanRevisionSteps` (
- `revision_id_` bigint UNSIGNED NOT NULL, `step_id_` bigint UNSIGNED NOT NULL, `logical_key` varchar(80) NOT NULL, `position_in_revision` smallint UNSIGNED NOT NULL, `created_at` timestamp(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6), PRIMARY KEY (`revision_id_`,`step_id_`), UNIQUE KEY `uq_task_plan_revision_position` (`revision_id_`,`position_in_revision`), UNIQUE KEY `uq_task_plan_revision_logical` (`revision_id_`,`logical_key`), KEY `idx_task_plan_revision_step` (`step_id_`), CONSTRAINT `fk_task_plan_revision_steps_revision` FOREIGN KEY (`revision_id_`) REFERENCES `TaskPlanRevisions` (`id_`) ON DELETE CASCADE, CONSTRAINT `fk_task_plan_revision_steps_step` FOREIGN KEY (`step_id_`) REFERENCES `TaskSteps` (`id_`) ON DELETE RESTRICT
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-ALTER TABLE `TaskReplanRequests` ADD KEY `idx_task_replan_claim` (`status`,`next_attempt_at`,`lease_expires_at`), ADD KEY `idx_task_replan_revision` (`revision_id_`), ADD KEY `idx_task_replan_reservation` (`reservation_id_`), ADD CONSTRAINT `fk_task_replan_revision` FOREIGN KEY (`revision_id_`) REFERENCES `TaskPlanRevisions` (`id_`) ON DELETE SET NULL, ADD CONSTRAINT `fk_task_replan_reservation` FOREIGN KEY (`reservation_id_`) REFERENCES `ProjectAutonomyReservations` (`id_`) ON DELETE SET NULL;
-
 
 -- --------------------------------------------------------
--- ArcadeCloud FederationCloud extension tables for a clean import.
--- Runtime migrations DO NOT execute these DROP statements.
-DROP TABLE IF EXISTS `FederationOriginCounters`;
-DROP TABLE IF EXISTS `FederationEvents`;
-DROP TABLE IF EXISTS `FederationClocks`;
-DROP TABLE IF EXISTS `FederatedResources`;
-DROP TABLE IF EXISTS `FederationResourceLocations`;
-DROP TABLE IF EXISTS `FederationPeerSyncState`;
-DROP TABLE IF EXISTS `FederationAccessRequests`;
-DROP TABLE IF EXISTS `FederationShares`;
-DROP TABLE IF EXISTS `FederationShareImportJobs`;
-DROP TABLE IF EXISTS `FederationReplicaJobs`;
-DROP TABLE IF EXISTS `FederationReplicaObjects`;
-DROP TABLE IF EXISTS `FederationIngressQueue`;
-
+-- ArcadeCloud runtime-safe FederationCloud migration section.
+-- The full dump above is for a NEW database; existing databases use only this marked block.
 -- ARCADECLOUD:FEDERATION_SCHEMA:BEGIN
 -- Canonical, idempotent FederationCloud schema.
 -- federation_catalog_migrate.php extracts only this marked section.

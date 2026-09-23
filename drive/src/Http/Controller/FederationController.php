@@ -5,7 +5,6 @@ namespace ArcadeCloud\Drive\Http\Controller;
 
 use ArcadeCloud\Drive\Activity\ActivityCostRecorder;
 use ArcadeCloud\Drive\Core\DriveApplication;
-use ArcadeCloud\Drive\Federation\ArcadeLinkBundleService;
 use ArcadeCloud\Drive\Federation\ArcadeLinkService;
 use ArcadeCloud\Drive\Federation\FederationException;
 use ArcadeCloud\Drive\Federation\FederationService;
@@ -51,6 +50,8 @@ final class FederationController
                     $inspected = $service->inspect($raw, $userId);
                     if ($userId > 0) {
                         $this->activity()->success($userId, 'arcadelink_resolve', 'FederationCloud', null, ['drive.no_direct_aws_charge' => 1], $started, [
+                            'collection' => !empty($inspected['collection']),
+                            'items' => (int)($inspected['item_count'] ?? 1),
                             'visibility' => (string)($inspected['resource']['visibility'] ?? ''),
                             'status' => (string)($inspected['resource']['status'] ?? ''),
                             'aws_direct' => false,
@@ -130,7 +131,7 @@ final class FederationController
                 'rights' => $rights,
                 'discovery_policy' => (string)($catalog['discovery_policy'] ?? $discoveryPolicy),
                 'source' => 'drive_share_modal',
-                'bundle' => 'portable_zip',
+                'artifact' => 'arcadelink',
                 'aws_direct' => false,
             ]);
             $this->sendArcadeLinkDownload($created);
@@ -193,7 +194,7 @@ final class FederationController
                 'visibility' => $visibility,
                 'rights' => $rights,
                 'discovery_policy' => (string)($catalog['discovery_policy'] ?? $discoveryPolicy),
-                'bundle' => 'portable_zip',
+                'artifact' => 'arcadelink',
                 'aws_direct' => false,
             ]);
             $this->sendArcadeLinkDownload($created);
@@ -206,31 +207,25 @@ final class FederationController
 
     private function sendArcadeLinkDownload(array $created): never
     {
-        $document = is_array($created['document'] ?? null) ? $created['document'] : [];
-        $portalUrl = (string)($document['federation_url'] ?? '');
-        $bundle = (new ArcadeLinkBundleService())->create([
-            [
-                'filename' => (string)($created['filename'] ?? 'resource.arcadelink'),
-                'content' => (string)($created['content'] ?? ''),
-            ],
-        ], $portalUrl);
+        $content = (string)($created['content'] ?? '');
+        if ($content === '' || strlen($content) > ArcadeLinkService::MAX_BYTES) {
+            throw new FederationException('No se pudo preparar el archivo ArcadeLink.', 500);
+        }
 
-        $path = (string)$bundle['path'];
-        $filename = preg_replace('/[^A-Za-z0-9._-]+/', '_', (string)$bundle['filename']) ?: 'ArcadeLink-portable.zip';
-        $size = is_file($path) ? filesize($path) : false;
+        $filename = preg_replace(
+            '/[^A-Za-z0-9._-]+/',
+            '_',
+            (string)($created['filename'] ?? 'recurso.arcadelink')
+        ) ?: 'recurso.arcadelink';
+        if (!str_ends_with(strtolower($filename), '.arcadelink')) {
+            $filename .= '.arcadelink';
+        }
 
-        header('Content-Type: application/zip');
+        header('Content-Type: application/json; charset=UTF-8');
         header('X-Content-Type-Options: nosniff');
         header('Content-Disposition: attachment; filename="' . $filename . '"');
-        if (is_int($size) || is_float($size)) {
-            header('Content-Length: ' . (string)$size);
-        }
-
-        $ok = readfile($path);
-        @unlink($path);
-        if ($ok === false) {
-            throw new FederationException('No se pudo enviar el ZIP ArcadeLink.', 500);
-        }
+        header('Content-Length: ' . (string)strlen($content));
+        echo $content;
         exit;
     }
 
@@ -245,7 +240,7 @@ final class FederationController
         $size = (int)($file['size'] ?? -1);
         $tmp = (string)($file['tmp_name'] ?? '');
         if (!preg_match('/\.arcadelink\z/i', $name) || $size <= 0 || $size > ArcadeLinkService::MAX_BYTES) {
-            throw new FederationException('El archivo debe terminar en .arcadelink y medir como máximo 64 KiB.');
+            throw new FederationException('El archivo debe terminar en .arcadelink y medir como máximo 4 MiB.');
         }
         if ($tmp === '' || !is_uploaded_file($tmp) || !is_readable($tmp)) {
             throw new FederationException('No se pudo validar el archivo subido.');

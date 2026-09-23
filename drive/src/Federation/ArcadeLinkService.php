@@ -7,7 +7,8 @@ use JsonException;
 
 final class ArcadeLinkService
 {
-    public const MAX_BYTES = 65536;
+    public const MAX_BYTES = 4194304;
+    public const MAX_COLLECTION_ITEMS = 500;
     private const VISIBILITIES = ['PUBLIC', 'UNLISTED', 'PRIVATE'];
     private const RIGHTS = ['copy_allowed', 'link_only', 'unknown_rights', 'user_owned_authorized'];
 
@@ -82,14 +83,46 @@ final class ArcadeLinkService
             'ciphertext' => FederationCodec::base64UrlEncode($ciphertext),
         ];
 
-        $signedBytes = FederationCodec::canonicalJson($document);
-        $document['signature'] = [
-            'alg' => 'Ed25519',
-            'key_id' => $this->identity->nodeId(),
-            'public_key' => $this->identity->publicKeyEncoded(),
-            'value' => FederationCodec::base64UrlEncode($this->identity->sign($signedBytes)),
+        return $this->signDocument($document);
+    }
+
+    /**
+     * @param array<int,array<string,mixed>> $documents
+     */
+    public function createCollection(array $documents, string $title = 'Archivos compartidos'): array
+    {
+        if ($documents === [] || count($documents) > self::MAX_COLLECTION_ITEMS) {
+            throw new FederationException('La colección ArcadeLink debe contener entre 1 y ' . self::MAX_COLLECTION_ITEMS . ' recursos.');
+        }
+
+        $items = [];
+        $resourceIds = [];
+        foreach ($documents as $document) {
+            if (!is_array($document) || array_is_list($document)) {
+                throw new FederationException('La colección contiene un ArcadeLink inválido.');
+            }
+            $this->validateFileDocument($document);
+            $this->verifySignature($document);
+            $items[] = $document;
+            $resourceIds[] = (string)$document['resource_id'];
+        }
+
+        $resourceId = $this->collectionResourceId($resourceIds);
+        $collection = [
+            'format' => 'arcadelink',
+            'version' => 2,
+            'resource_id' => $resourceId,
+            'origin_node_id' => $this->identity->nodeId(),
+            'origin' => $this->config->publicUrl(),
+            'federation_url' => $this->config->federationUrl(),
+            'resource_type' => 'collection',
+            'title' => $this->safeText($title, 255),
+            'item_count' => count($items),
+            'items' => $items,
+            'issued_at' => gmdate(DATE_ATOM),
         ];
-        return $document;
+
+        return $this->signDocument($collection);
     }
 
     public function encode(array $document, bool $pretty = true): string
@@ -102,35 +135,43 @@ final class ArcadeLinkService
     public function parse(string $raw): array
     {
         if ($raw === '' || strlen($raw) > self::MAX_BYTES) {
-            throw new FederationException('El archivo .arcadelink está vacío o excede 64 KiB.');
+            throw new FederationException('El archivo .arcadelink está vacío o excede 4 MiB.');
         }
         try {
-            $document = json_decode($raw, true, 16, JSON_THROW_ON_ERROR);
+            $document = json_decode($raw, true, 64, JSON_THROW_ON_ERROR);
         } catch (JsonException) {
             throw new FederationException('El archivo .arcadelink no contiene JSON válido.');
         }
         if (!is_array($document) || array_is_list($document)) {
             throw new FederationException('El documento ArcadeLink debe ser un objeto JSON.');
         }
-        $this->validateDocument($document);
-        $signature = $document['signature'];
-        $publicKey = FederationCodec::base64UrlDecode((string)$signature['public_key']);
-        $signatureBytes = FederationCodec::base64UrlDecode((string)$signature['value']);
-        $expectedNodeId = NodeIdentityService::nodeIdFromPublicKey($publicKey);
-        if (!hash_equals($expectedNodeId, (string)$document['origin_node_id'])
-            || !hash_equals($expectedNodeId, (string)$signature['key_id'])) {
-            throw new FederationException('La clave pública no corresponde al Node ID del ArcadeLink.');
+
+        $version = (int)($document['version'] ?? 0);
+        if ($version === 1) {
+            $this->validateFileDocument($document);
+        } elseif ($version === 2) {
+            $this->validateCollectionDocument($document);
+        } else {
+            throw new FederationException('Versión ArcadeLink no soportada.');
         }
-        $signed = $document;
-        unset($signed['signature']);
-        if (!NodeIdentityService::verify(FederationCodec::canonicalJson($signed), $signatureBytes, $publicKey)) {
-            throw new FederationException('La firma Ed25519 del ArcadeLink no es válida.');
+
+        $this->verifySignature($document);
+
+        if ($version === 2) {
+            foreach ($document['items'] as $item) {
+                $this->validateFileDocument($item);
+                $this->verifySignature($item);
+            }
         }
+
         return $document;
     }
 
     public function decryptLocalPayload(array $document): array
     {
+        if ((int)($document['version'] ?? 0) !== 1 || (string)($document['resource_type'] ?? '') !== 'file') {
+            throw new FederationException('Sólo un ArcadeLink de archivo contiene payload local.', 409);
+        }
         if (!hash_equals($this->identity->nodeId(), (string)($document['origin_node_id'] ?? ''))) {
             throw new FederationException('Este ArcadeLink no pertenece al nodo local.', 409);
         }
@@ -200,6 +241,21 @@ final class ArcadeLinkService
         return 'arl_' . FederationCodec::base64UrlEncode(substr($digest, 0, 18));
     }
 
+    /**
+     * @param array<int,string> $resourceIds
+     */
+    public function collectionResourceId(array $resourceIds): string
+    {
+        if ($resourceIds === []) {
+            throw new FederationException('No se puede identificar una colección vacía.');
+        }
+        $message = 'arcadelink:v2:collection:' . implode('|', $resourceIds);
+        // El identificador de colección debe poder recalcularse en cualquier nodo.
+        // La autenticidad la aporta la firma Ed25519 del documento, no un HMAC local.
+        $digest = hash('sha256', $message, true);
+        return 'arl_' . FederationCodec::base64UrlEncode(substr($digest, 0, 18));
+    }
+
     public function suggestedFilename(array $document): string
     {
         $base = trim((string)($document['title'] ?? 'recurso'));
@@ -211,7 +267,45 @@ final class ArcadeLinkService
         return $base . '.arcadelink';
     }
 
-    private function validateDocument(array $document): void
+    private function signDocument(array $document): array
+    {
+        $signedBytes = FederationCodec::canonicalJson($document);
+        $document['signature'] = [
+            'alg' => 'Ed25519',
+            'key_id' => $this->identity->nodeId(),
+            'public_key' => $this->identity->publicKeyEncoded(),
+            'value' => FederationCodec::base64UrlEncode($this->identity->sign($signedBytes)),
+        ];
+        return $document;
+    }
+
+    private function verifySignature(array $document): void
+    {
+        $signature = $document['signature'] ?? null;
+        if (!is_array($signature)
+            || ($signature['alg'] ?? null) !== 'Ed25519'
+            || !is_string($signature['key_id'] ?? null)
+            || !is_string($signature['public_key'] ?? null)
+            || !is_string($signature['value'] ?? null)) {
+            throw new FederationException('Firma ArcadeLink inválida.');
+        }
+
+        $publicKey = FederationCodec::base64UrlDecode((string)$signature['public_key']);
+        $signatureBytes = FederationCodec::base64UrlDecode((string)$signature['value']);
+        $expectedNodeId = NodeIdentityService::nodeIdFromPublicKey($publicKey);
+        if (!hash_equals($expectedNodeId, (string)($document['origin_node_id'] ?? ''))
+            || !hash_equals($expectedNodeId, (string)$signature['key_id'])) {
+            throw new FederationException('La clave pública no corresponde al Node ID del ArcadeLink.');
+        }
+
+        $signed = $document;
+        unset($signed['signature']);
+        if (!NodeIdentityService::verify(FederationCodec::canonicalJson($signed), $signatureBytes, $publicKey)) {
+            throw new FederationException('La firma Ed25519 del ArcadeLink no es válida.');
+        }
+    }
+
+    private function validateFileDocument(array $document): void
     {
         $requiredStrings = [
             'format' => 32, 'resource_id' => 96, 'origin_node_id' => 96,
@@ -225,14 +319,14 @@ final class ArcadeLinkService
             }
         }
         if ($document['format'] !== 'arcadelink' || (int)($document['version'] ?? 0) !== 1) {
-            throw new FederationException('Formato o versión ArcadeLink no soportados.');
+            throw new FederationException('Formato o versión ArcadeLink de archivo no soportados.');
         }
         if (!preg_match('/\Aarl_[A-Za-z0-9_-]{16,80}\z/', $document['resource_id'])
             || !preg_match('/\Aacn_[A-Za-z0-9_-]{16,80}\z/', $document['origin_node_id'])) {
             throw new FederationException('Identidad ArcadeLink inválida.');
         }
         if ($document['resource_type'] !== 'file') {
-            throw new FederationException('Tipo de recurso ArcadeLink no soportado en v1.');
+            throw new FederationException('Tipo de recurso ArcadeLink inválido.');
         }
         if (!in_array($document['visibility'], self::VISIBILITIES, true)
             || !in_array($document['rights'], self::RIGHTS, true)) {
@@ -248,27 +342,73 @@ final class ArcadeLinkService
         if ($contentId !== null && (!is_string($contentId) || !preg_match('/\Asha256:[a-f0-9]{64}\z/', $contentId))) {
             throw new FederationException('Content ID ArcadeLink inválido.');
         }
-        foreach (['origin', 'federation_url'] as $field) {
-            $parts = parse_url($document[$field]);
-            if (!is_array($parts) || !isset($parts['scheme'], $parts['host'])
-                || !in_array(strtolower((string)$parts['scheme']), ['http', 'https'], true)
-                || isset($parts['user']) || isset($parts['pass'])) {
-                throw new FederationException('URL ArcadeLink inválida: ' . $field . '.');
-            }
-        }
+        $this->validatePublicUrls($document);
         if (!is_array($document['payload'] ?? null)
             || ($document['payload']['alg'] ?? null) !== 'XChaCha20-Poly1305'
             || !is_string($document['payload']['nonce'] ?? null)
             || !is_string($document['payload']['ciphertext'] ?? null)) {
             throw new FederationException('Payload ArcadeLink inválido.');
         }
-        $signature = $document['signature'] ?? null;
-        if (!is_array($signature)
-            || ($signature['alg'] ?? null) !== 'Ed25519'
-            || !is_string($signature['key_id'] ?? null)
-            || !is_string($signature['public_key'] ?? null)
-            || !is_string($signature['value'] ?? null)) {
-            throw new FederationException('Firma ArcadeLink inválida.');
+    }
+
+    private function validateCollectionDocument(array $document): void
+    {
+        $requiredStrings = [
+            'format' => 32,
+            'resource_id' => 96,
+            'origin_node_id' => 96,
+            'origin' => 2048,
+            'federation_url' => 2048,
+            'resource_type' => 32,
+            'title' => 255,
+            'issued_at' => 64,
+        ];
+        foreach ($requiredStrings as $field => $max) {
+            if (!is_string($document[$field] ?? null) || $document[$field] === '' || strlen($document[$field]) > $max) {
+                throw new FederationException('Campo ArcadeLink de colección inválido: ' . $field . '.');
+            }
+        }
+        if ($document['format'] !== 'arcadelink'
+            || (int)($document['version'] ?? 0) !== 2
+            || $document['resource_type'] !== 'collection') {
+            throw new FederationException('Formato ArcadeLink de colección inválido.');
+        }
+        if (!preg_match('/\Aarl_[A-Za-z0-9_-]{16,80}\z/', $document['resource_id'])
+            || !preg_match('/\Aacn_[A-Za-z0-9_-]{16,80}\z/', $document['origin_node_id'])) {
+            throw new FederationException('Identidad ArcadeLink de colección inválida.');
+        }
+        $items = $document['items'] ?? null;
+        if (!is_array($items) || !array_is_list($items) || $items === [] || count($items) > self::MAX_COLLECTION_ITEMS) {
+            throw new FederationException('Items ArcadeLink de colección inválidos.');
+        }
+        if (!is_int($document['item_count'] ?? null) || $document['item_count'] !== count($items)) {
+            throw new FederationException('Conteo ArcadeLink de colección inconsistente.');
+        }
+        $this->validatePublicUrls($document);
+
+        $ids = [];
+        foreach ($items as $item) {
+            if (!is_array($item) || array_is_list($item)
+                || (int)($item['version'] ?? 0) !== 1
+                || (string)($item['resource_type'] ?? '') !== 'file') {
+                throw new FederationException('La colección sólo puede contener ArcadeLinks de archivo v1.');
+            }
+            $ids[] = (string)($item['resource_id'] ?? '');
+        }
+        if (!hash_equals($this->collectionResourceId($ids), (string)$document['resource_id'])) {
+            throw new FederationException('Resource ID de colección inconsistente.');
+        }
+    }
+
+    private function validatePublicUrls(array $document): void
+    {
+        foreach (['origin', 'federation_url'] as $field) {
+            $parts = parse_url((string)$document[$field]);
+            if (!is_array($parts) || !isset($parts['scheme'], $parts['host'])
+                || !in_array(strtolower((string)$parts['scheme']), ['http', 'https'], true)
+                || isset($parts['user']) || isset($parts['pass'])) {
+                throw new FederationException('URL ArcadeLink inválida: ' . $field . '.');
+            }
         }
     }
 

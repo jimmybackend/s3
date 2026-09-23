@@ -70,12 +70,98 @@ final class FederationService
         return $this->createLinkForFile($file, $userId, $visibility, $rights, $discoveryPolicy);
     }
 
+    /**
+     * Crea un único archivo .arcadelink que representa uno o muchos recursos.
+     *
+     * @param array<int,string> $storageRefs
+     */
+    public function createCollectionByStorageRefs(
+        int $userId,
+        array $storageRefs,
+        string $visibility,
+        string $rights,
+        string $discoveryPolicy = ''
+    ): array {
+        $this->ensureEnabled();
+        $storageRefs = array_values(array_unique(array_filter(array_map(
+            static fn(mixed $value): string => trim((string)$value),
+            $storageRefs
+        ), static fn(string $value): bool => $value !== '')));
+
+        if ($storageRefs === [] || count($storageRefs) > ArcadeLinkService::MAX_COLLECTION_ITEMS) {
+            throw new FederationException(
+                'Selecciona entre 1 y ' . ArcadeLinkService::MAX_COLLECTION_ITEMS . ' archivos para el ArcadeLink.',
+                400
+            );
+        }
+
+        if (count($storageRefs) === 1) {
+            return $this->createLinkByStorageRef(
+                $userId,
+                $storageRefs[0],
+                $visibility,
+                $rights,
+                $discoveryPolicy
+            ) + ['item_count' => 1, 'collection' => false];
+        }
+
+        $documents = [];
+        $fileIds = [];
+        foreach ($storageRefs as $storageRef) {
+            $created = $this->createLinkByStorageRef(
+                $userId,
+                $storageRef,
+                $visibility,
+                $rights,
+                $discoveryPolicy
+            );
+            $documents[] = $created['document'];
+            $fileIds[] = (int)$created['file_id'];
+        }
+
+        $title = 'Compartidos-' . count($documents) . '-archivos';
+        $document = $this->links->createCollection($documents, $title);
+
+        return [
+            'document' => $document,
+            'content' => $this->links->encode($document),
+            'filename' => $this->links->suggestedFilename($document),
+            'file_ids' => $fileIds,
+            'item_count' => count($documents),
+            'collection' => true,
+        ];
+    }
+
     public function inspect(string $raw, int $viewerUserId = 0): array
     {
         $this->ensureEnabled();
         $document = $this->links->parse($raw);
+
+        if ((int)($document['version'] ?? 0) === 2
+            && (string)($document['resource_type'] ?? '') === 'collection') {
+            $items = [];
+            foreach ($document['items'] as $item) {
+                $items[] = [
+                    'document' => $item,
+                    'resource' => $this->resolver->resolve($item, $viewerUserId, true),
+                    'raw' => $this->links->encode($item, false),
+                ];
+            }
+
+            return [
+                'document' => $document,
+                'collection' => true,
+                'title' => (string)$document['title'],
+                'item_count' => count($items),
+                'items' => $items,
+                'raw' => $this->links->encode($document, false),
+            ];
+        }
+
         return [
             'document' => $document,
+            'collection' => false,
+            'item_count' => 1,
             'resource' => $this->resolver->resolve($document, $viewerUserId, true),
             'raw' => $this->links->encode($document, false),
         ];
@@ -86,6 +172,9 @@ final class FederationService
         $this->ensureEnabled();
         $raw = is_array($arcadeLink) ? $this->links->encode($arcadeLink, false) : $arcadeLink;
         $document = $this->links->parse($raw);
+        if ((int)($document['version'] ?? 0) !== 1 || (string)($document['resource_type'] ?? '') !== 'file') {
+            throw new FederationException('La resolución remota acepta ArcadeLinks de archivo; las colecciones se resuelven elemento por elemento.', 409);
+        }
         if (!hash_equals($this->identity->nodeId(), (string)$document['origin_node_id'])) {
             throw new FederationException('Este nodo no es el origen del ArcadeLink.', 409);
         }
@@ -96,6 +185,9 @@ final class FederationService
     {
         $this->ensureEnabled();
         $document = $this->links->parse($raw);
+        if ((int)($document['version'] ?? 0) !== 1 || (string)($document['resource_type'] ?? '') !== 'file') {
+            throw new FederationException('Selecciona un archivo individual de la colección para abrirlo.', 409);
+        }
         $open = $this->resolver->requireOpenableLocal($document, $viewerUserId);
         $file = $open['file'];
         $payload = $open['payload'];

@@ -5,16 +5,16 @@ namespace ArcadeCloud\Drive\Http\Controller;
 
 use ArcadeCloud\Drive\Activity\ActivityCostRecorder;
 use ArcadeCloud\Drive\Core\DriveApplication;
-use ArcadeCloud\Drive\Federation\ArcadeLinkBundleService;
+use ArcadeCloud\Drive\Federation\ArcadeLinkService;
 use ArcadeCloud\Drive\Federation\FederationException;
 use ArcadeCloud\Drive\Federation\FederationService;
 use ArcadeCloud\Drive\Http\JsonResponse;
 use ArcadeCloud\Drive\Http\Request;
 use Throwable;
 
-final class FederationBundleController
+final class FederationCollectionController
 {
-    private const MAX_ITEMS = 500;
+    private const MAX_ITEMS = ArcadeLinkService::MAX_COLLECTION_ITEMS;
 
     public function __construct(
         private DriveApplication $app,
@@ -48,7 +48,7 @@ final class FederationBundleController
         if (count($keys) > self::MAX_ITEMS) {
             JsonResponse::send([
                 'ok' => false,
-                'error' => 'Selecciona como máximo ' . self::MAX_ITEMS . ' archivos por paquete.',
+                'error' => 'Selecciona como máximo ' . self::MAX_ITEMS . ' archivos por ArcadeLink.',
             ], 413);
         }
 
@@ -56,78 +56,63 @@ final class FederationBundleController
         $rights = $this->request->postString('rights', 'link_only');
         $discoveryPolicy = $this->request->postString('discovery_policy');
         $started = microtime(true);
-        $bundlePath = '';
 
         try {
             $service = new FederationService($this->app);
-            $links = [];
-            $portalUrl = '';
+            $created = $service->createCollectionByStorageRefs(
+                $userId,
+                $keys,
+                $visibility,
+                $rights,
+                $discoveryPolicy
+            );
 
-            foreach ($keys as $key) {
-                $created = $service->createLinkByStorageRef(
-                    $userId,
-                    $key,
-                    $visibility,
-                    $rights,
-                    $discoveryPolicy
-                );
-
-                $document = is_array($created['document'] ?? null) ? $created['document'] : [];
-                if ($portalUrl === '') {
-                    $portalUrl = (string)($document['federation_url'] ?? '');
-                }
-
-                $links[] = [
-                    'filename' => (string)($created['filename'] ?? 'resource.arcadelink'),
-                    'content' => (string)($created['content'] ?? ''),
-                ];
+            $content = (string)($created['content'] ?? '');
+            if ($content === '' || strlen($content) > ArcadeLinkService::MAX_BYTES) {
+                throw new FederationException('No se pudo preparar el archivo ArcadeLink.', 500);
             }
 
-            $bundle = (new ArcadeLinkBundleService())->create($links, $portalUrl);
-            $bundlePath = (string)$bundle['path'];
-            $filename = preg_replace('/[^A-Za-z0-9._-]+/', '_', (string)$bundle['filename']) ?: 'ArcadeLinks-portables.zip';
-            $size = is_file($bundlePath) ? filesize($bundlePath) : false;
+            $filename = preg_replace(
+                '/[^A-Za-z0-9._-]+/',
+                '_',
+                (string)($created['filename'] ?? 'Compartidos.arcadelink')
+            ) ?: 'Compartidos.arcadelink';
+            if (!str_ends_with(strtolower($filename), '.arcadelink')) {
+                $filename .= '.arcadelink';
+            }
 
+            $itemCount = max(1, (int)($created['item_count'] ?? count($keys)));
             $this->activity()->success(
                 $userId,
                 'arcadelink_create',
                 'FederationCloud',
                 null,
-                ['drive.no_direct_aws_charge' => max(1, count($links))],
+                ['drive.no_direct_aws_charge' => $itemCount],
                 $started,
                 [
-                    'items' => count($links),
+                    'items' => $itemCount,
                     'visibility' => $visibility,
                     'rights' => $rights,
                     'discovery_policy' => $discoveryPolicy,
                     'source' => 'drive_bulk_selection',
-                    'bundle' => 'portable_zip',
+                    'artifact' => 'arcadelink',
+                    'collection' => !empty($created['collection']),
                     'aws_direct' => false,
                 ]
             );
 
-            header('Content-Type: application/zip');
+            header('Content-Type: application/json; charset=UTF-8');
             header('X-Content-Type-Options: nosniff');
             header('Content-Disposition: attachment; filename="' . $filename . '"');
-            if (is_int($size) || is_float($size)) {
-                header('Content-Length: ' . (string)$size);
-            }
-
-            $ok = readfile($bundlePath);
-            @unlink($bundlePath);
-            $bundlePath = '';
-            if ($ok === false) {
-                throw new FederationException('No se pudo enviar el ZIP ArcadeLink.', 500);
-            }
+            header('Content-Length: ' . (string)strlen($content));
+            echo $content;
             exit;
         } catch (FederationException $error) {
-            if ($bundlePath !== '') @unlink($bundlePath);
             $this->activity()->failure($userId, 'arcadelink_create', 'FederationCloud', $started);
             JsonResponse::send(['ok' => false, 'error' => $error->getMessage()], $error->httpStatus());
         } catch (Throwable) {
-            if ($bundlePath !== '') @unlink($bundlePath);
             $this->activity()->failure($userId, 'arcadelink_create', 'FederationCloud', $started);
-            JsonResponse::send(['ok' => false, 'error' => 'No se pudo crear el paquete ArcadeLink.'], 500);
+            JsonResponse::send(['ok' => false, 'error' => 'No se pudo crear el ArcadeLink.'], 500);
         }
     }
 

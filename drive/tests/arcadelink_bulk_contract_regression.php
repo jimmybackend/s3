@@ -25,16 +25,19 @@ expectContract(str_contains($js, "prepareBulkShare()"), 'Bulk ArcadeLink action 
 expectContract(str_contains($js, "getElementById('arcadeLinkVisibility')"), 'Bulk flow must reuse visibility selector.');
 expectContract(str_contains($js, "getElementById('arcadeLinkRights')"), 'Bulk flow must reuse rights selector.');
 expectContract(str_contains($js, "getElementById('arcadeLinkDiscoveryPolicy')"), 'Bulk flow must reuse discovery policy selector.');
-expectContract(str_contains($js, "form.action = 'federationcloud/bundle.php'"), 'Bulk flow must submit to FederationCloud bundle endpoint.');
+expectContract(str_contains($js, "form.action = 'federationcloud/collection.php'"), 'Bulk flow must submit to FederationCloud collection endpoint.');
 expectContract(str_contains($js, "visibility,"), 'Bulk form must submit selected visibility.');
 expectContract(str_contains($js, "rights,"), 'Bulk form must submit selected rights.');
 expectContract(str_contains($js, "discovery_policy: discoveryPolicy"), 'Bulk form must submit selected discovery policy.');
 
-$bundleController = source($root, 'src/Http/Controller/FederationBundleController.php');
-expectContract(str_contains($bundleController, 'createLinkByStorageRef('), 'Bundle controller must create links through FederationService.');
-expectContract(str_contains($bundleController, '$userId,'), 'Bundle controller must pass authenticated user_id when creating links.');
-expectContract(str_contains($bundleController, "'drive.no_direct_aws_charge'"), 'ArcadeLink creation must remain classified as no direct AWS charge.');
-expectContract(str_contains($bundleController, "'aws_direct' => false"), 'ArcadeLink activity must state that it has no direct AWS transfer.');
+$collectionController = source($root, 'src/Http/Controller/FederationCollectionController.php');
+expectContract(str_contains($collectionController, 'createCollectionByStorageRefs('), 'Collection controller must create one ArcadeLink through FederationService.');
+expectContract(str_contains($collectionController, '$userId,'), 'Collection controller must pass authenticated user_id when creating the collection.');
+expectContract(str_contains($collectionController, "'drive.no_direct_aws_charge'"), 'ArcadeLink creation must remain classified as no direct AWS charge.');
+expectContract(str_contains($collectionController, "'artifact' => 'arcadelink'"), 'Bulk sharing must produce an ArcadeLink artifact, not a ZIP.');
+expectContract(str_contains($collectionController, "'aws_direct' => false"), 'ArcadeLink activity must state that it has no direct AWS transfer.');
+expectContract(!str_contains($collectionController, 'ZipArchive'), 'Collection controller must not use ZipArchive.');
+expectContract(!str_contains($collectionController, 'application/zip'), 'Collection controller must not emit ZIP content.');
 
 $federationService = source($root, 'src/Federation/FederationService.php');
 expectContract(str_contains($federationService, 'findOwnedFileByStorageRef($userId, $storageRef)'), 'FederationService must resolve storage refs for the authenticated user only.');
@@ -64,4 +67,4 @@ expectContract(str_contains($controllerSigned, '->redirect('), 'Download control
 expectContract(!str_contains($controllerSigned, '->attachment('), 'Signed download must not send the file body as an attachment from PHP.');
 expectContract(!str_contains($controllerSigned, 'readfile('), 'Signed download must not use readfile for the S3 object.');
 
-echo "OK ArcadeLink bulk and direct-download contracts\n";
+echo "OK ArcadeLink collection and direct-download contracts\n";

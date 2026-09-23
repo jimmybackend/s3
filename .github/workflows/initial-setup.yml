@@ -157,12 +157,15 @@ jobs:
           grep -q "SUDO_USER" drive/bin/install_arcadecloud.sh
           grep -q "arcadecloud-federation-https.service" drive/bin/install_arcadecloud.sh
           grep -q "federation_catalog_migrate.php" drive/bin/install_arcadecloud.sh
-          migrate_line="$(grep -n 'federation_catalog_migrate.php' drive/bin/install_arcadecloud.sh | head -1 | cut -d: -f1)"
-          https_line="$(grep -n 'systemctl start arcadecloud-federation-https.service' drive/bin/install_arcadecloud.sh | head -1 | cut -d: -f1)"
-          refresh_line="$(grep -n 'federation_endpoint_refresh.php.*--require-directory' drive/bin/install_arcadecloud.sh | head -1 | cut -d: -f1)"
+          finalize_body="$(sed -n '/^finalize_installation() {$/,/^}$/p' drive/bin/install_arcadecloud.sh)"
+          grep -q "migrate_federation_schema" <<<"$finalize_body"
+          ! grep -q "federation_catalog_migrate.php" <<<"$finalize_body"
+          migrate_line="$(grep -n 'migrate_federation_schema' <<<"$finalize_body" | head -1 | cut -d: -f1)"
+          https_line="$(grep -n 'systemctl start arcadecloud-federation-https.service' <<<"$finalize_body" | head -1 | cut -d: -f1)"
+          refresh_line="$(grep -n 'federation_endpoint_refresh.php.*--require-directory' <<<"$finalize_body" | head -1 | cut -d: -f1)"
           test -n "$migrate_line" -a -n "$https_line" -a -n "$refresh_line"
           test "$migrate_line" -lt "$https_line"
-          test "$migrate_line" -lt "$refresh_line"
+          test "$https_line" -lt "$refresh_line"
           grep -q -- "--require-directory" drive/bin/install_arcadecloud.sh
           grep -q "migrate_federation_schema" drive/bin/install_arcadecloud.sh
           grep -q "federation_catalog_migrate.php" drive/bin/install_arcadecloud.sh

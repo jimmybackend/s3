@@ -31,18 +31,38 @@ checkFinalize(!str_contains($superadmin, '$this->helper->completeBootstrapSetup(
 checkFinalize(str_contains($installer, '--finalize-from-setup'), 'installer accepts internal finalize-from-setup mode');
 checkFinalize(str_contains($installer, 'bootstrap-auth.json'), 'installer requires active bootstrap for web finalization');
 checkFinalize(str_contains($installer, 'SUDO_USER'), 'installer binds internal mode to PHP-FPM sudo caller');
-checkFinalize(str_contains($installer, 'federation_catalog_migrate.php'), 'finalization migrates FederationCloud schema before registration');
+checkFinalize(str_contains($installer, 'federation_catalog_migrate.php'), 'installer contains the FederationCloud migrator helper');
 checkFinalize(str_contains($installer, '--require-directory'), 'finalization requires global directory confirmation');
-$migratePos = strpos($installer, 'federation_catalog_migrate.php');
-$httpsStartPos = strpos($installer, 'systemctl start arcadecloud-federation-https.service');
-$refreshPos = strpos($installer, 'federation_endpoint_refresh.php');
+
+$finalizeStart = strpos($installer, "finalize_installation() {");
+$finalizeEnd = $finalizeStart === false
+    ? false
+    : strpos($installer, "\necho \"ArcadeCloud Drive Installer\"", $finalizeStart);
+checkFinalize(
+    $finalizeStart !== false && $finalizeEnd !== false && $finalizeEnd > $finalizeStart,
+    'finalize_installation body can be isolated for ordering checks'
+);
+
+$finalizeBody = substr($installer, $finalizeStart, $finalizeEnd - $finalizeStart);
+checkFinalize(
+    substr_count($finalizeBody, 'migrate_federation_schema') === 1,
+    'finalize_installation calls the single Federation schema migration helper exactly once'
+);
+checkFinalize(
+    !str_contains($finalizeBody, 'federation_catalog_migrate.php'),
+    'finalize_installation does not duplicate the migrator inline'
+);
+
+$migratePos = strpos($finalizeBody, 'migrate_federation_schema');
+$httpsStartPos = strpos($finalizeBody, 'systemctl start arcadecloud-federation-https.service');
+$refreshPos = strpos($finalizeBody, 'federation_endpoint_refresh.php');
 checkFinalize(
     $migratePos !== false
         && $httpsStartPos !== false
         && $refreshPos !== false
         && $migratePos < $httpsStartPos
-        && $migratePos < $refreshPos,
-    'schema migration runs before HTTPS reconciliation and endpoint refresh'
+        && $httpsStartPos < $refreshPos,
+    'finalize_installation orders schema migration before HTTPS and endpoint refresh'
 );
 checkFinalize(str_contains($nodeAdmin, "'ready' => false"), 'identity admin can expose pending identity state');
 

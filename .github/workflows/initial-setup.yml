@@ -38,6 +38,7 @@ on:
       - 'drive/bin/install_arcadecloud_admin_helper.sh'
       - 'drive/bin/install_arcadecloud.sh'
       - 'drive/bin/install_arcadecloud_server.sh'
+      - 'drive/bin/uninstall_arcadecloud.sh'
       - 'bootstrap_arcadecloud.sh'
       - 'drive/tests/setup_bootstrap_smoke.php'
       - 'drive/tests/setup_entry_guard_smoke.php'
@@ -144,6 +145,8 @@ jobs:
           grep -q "KEEP_CONFIG" drive/bin/uninstall_arcadecloud.sh
           grep -q "NO se eliminarán" drive/bin/uninstall_arcadecloud.sh
           grep -q "Managed by ArcadeCloud installer." drive/bin/uninstall_arcadecloud.sh
+          grep -q 'run_quiet systemctl disable --now' drive/bin/uninstall_arcadecloud.sh
+          grep -q 'run_quiet systemctl reset-failed' drive/bin/uninstall_arcadecloud.sh
           grep -q -- "--require-directory" drive/bin/federation_endpoint_refresh.php
           grep -q "dnf install -y" drive/bin/install_arcadecloud_server.sh
           grep -q "for candidate in php8.5 php8.4 php8.3 php8.2 php8.1" drive/bin/install_arcadecloud_server.sh

@@ -73,6 +73,7 @@ need curl
 need git
 need systemctl
 need sudo
+need runuser
 
 [[ -d "$APP_ROOT/.git" ]] || fail "$APP_ROOT no es un checkout Git de ArcadeCloud."
 [[ -f "$APP_ROOT/composer.json" ]] || fail "falta composer.json en $APP_ROOT."
@@ -169,6 +170,14 @@ install_updater() {
   bash "$UPDATER_INSTALLER" --php-user="$PHP_USER" --repo-root="$APP_ROOT"
 }
 
+select_certbot_bin() {
+  if [[ -x /usr/local/bin/arcadecloud-certbot ]]; then
+    printf '%s' /usr/local/bin/arcadecloud-certbot
+    return 0
+  fi
+  command -v certbot 2>/dev/null || true
+}
+
 SETUP_ACTIVATION_URL=""
 
 prepare_setup_activation() {
@@ -253,8 +262,8 @@ PY
 )"
     runtime_set_many "$payload"
     echo "✓ Drive básico preparado por HTTP con IP pública detectada: $public_ip"
-    echo "✓ FederationCloud/ArcadeLink activo en modo básico: http://$public_ip/federationcloud/"
-    echo "  Si luego usas un dominio, FederationCloud exigirá HTTPS sin regenerar la identidad del nodo."
+    echo "✓ FederationCloud/ArcadeLink preparado para finalizar sobre la IP pública."
+    echo "  Al cerrar el setup se solicitará HTTPS para la IP y el nodo se presentará automáticamente al seed."
   else
     payload="$(python3 - "$seed" <<'PY'
 import json, sys
@@ -371,41 +380,49 @@ PY
   install_updater
 
   if federation_runtime_enabled; then
-    bash "$WEBROOT/bin/install_federation_sync_timer.sh"       --run-user="$PHP_USER"       --app-root="$APP_ROOT"       --interval-sec=120
+    local certbot_bin
+    certbot_bin="$(select_certbot_bin)"
+    [[ -n "$certbot_bin" && -x "$certbot_bin" ]] \
+      || fail "FederationCloud necesita Certbot compatible para publicar un endpoint HTTPS verificable."
 
-    federation_url="$(python3 - "$RUNTIME_ENV" <<'PY'
-import json, sys
-with open(sys.argv[1], encoding="utf-8") as f:
-    print(str(json.load(f).get("ARCADECLOUD_FEDERATION_URL", "")).strip())
-PY
-)"
+    bash "$WEBROOT/bin/install_federation_https_service.sh" \
+      --run-user="$PHP_USER" \
+      --app-root="$APP_ROOT" \
+      --webroot="$WEBROOT" \
+      --certbot-bin="$certbot_bin"
 
-    if [[ "$federation_url" == https://* ]]; then
-      if command -v certbot >/dev/null 2>&1 && command -v nginx >/dev/null 2>&1; then
-        bash "$WEBROOT/bin/install_federation_https_service.sh" --run-user="$PHP_USER" --app-root="$APP_ROOT" --webroot="$WEBROOT"
+    if ! systemctl start arcadecloud-federation-https.service; then
+      systemctl status arcadecloud-federation-https.service --no-pager >&2 || true
+      fail "No se pudo obtener/verificar HTTPS para FederationCloud; el nodo global todavía no puede registrarse."
+    fi
+    systemctl enable --now arcadecloud-federation-https.timer
+    echo "✓ Endpoint HTTPS FederationCloud listo y renovación automática habilitada."
 
-        if systemctl start arcadecloud-federation-https.service; then
-          systemctl enable --now arcadecloud-federation-https.timer
-          echo "✓ HTTPS FederationCloud reconciliado y timer habilitado."
-        else
-          echo "⚠ FederationCloud está activo, pero la reconciliación HTTPS quedó pendiente." >&2
-          echo "  Revisa: systemctl status arcadecloud-federation-https.service --no-pager" >&2
-        fi
-      else
-        echo "⚠ FederationCloud usa HTTPS, pero Certbot/Nginx no están disponibles para reconciliarlo." >&2
-      fi
+    if ! runuser -u "$PHP_USER" -- php "$WEBROOT/bin/federation_endpoint_refresh.php" --require-directory; then
+      fail "El nodo quedó localmente listo, pero drive.esforzados.com no confirmó su registro global."
+    fi
+    echo "✓ Nodo presentado al seed global y directorio FederationCloud confirmado."
+
+    bash "$WEBROOT/bin/install_federation_sync_timer.sh" \
+      --run-user="$PHP_USER" \
+      --app-root="$APP_ROOT" \
+      --interval-sec=120
+
+    if systemctl start arcadecloud-federation-sync.service; then
+      echo "✓ Primera sincronización FederationCloud ejecutada."
     else
-      echo "✓ FederationCloud opera en modo básico HTTP sobre IP literal; no se intenta Certbot."
+      echo "⚠ El registro global quedó confirmado, pero la primera sincronización se reintentará por el timer." >&2
     fi
 
-    systemctl is-active arcadecloud-federation-sync.timer >/dev/null && echo "✓ FederationCloud sync timer activo."
+    systemctl is-active arcadecloud-federation-sync.timer >/dev/null \
+      && echo "✓ FederationCloud sync timer activo."
   else
-    echo "⚠ FederationCloud no pudo activarse porque no hay un endpoint público válido."
+    echo "⚠ No hay endpoint público válido; Drive quedó instalado, pero el nodo no puede entrar aún al directorio global." >&2
   fi
 
   echo
   echo "ArcadeCloud Drive: instalación básica finalizada."
-  echo "La IP HTTP es válida para Drive y FederationCloud básico. Un dominio posterior deberá usar HTTPS."
+  echo "Drive listo. FederationCloud/ArcadeLink queda publicado por HTTPS y registrado en el directorio global cuando existe endpoint público."
   echo "Las opciones avanzadas quedan disponibles dentro de Servidor -> Configuración avanzada."
 }
 

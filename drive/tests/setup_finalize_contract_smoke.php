@@ -34,8 +34,16 @@ checkFinalize(str_contains($installer, 'SUDO_USER'), 'installer binds internal m
 checkFinalize(str_contains($installer, 'federation_catalog_migrate.php'), 'finalization migrates FederationCloud schema before registration');
 checkFinalize(str_contains($installer, '--require-directory'), 'finalization requires global directory confirmation');
 $migratePos = strpos($installer, 'federation_catalog_migrate.php');
+$httpsStartPos = strpos($installer, 'systemctl start arcadecloud-federation-https.service');
 $refreshPos = strpos($installer, 'federation_endpoint_refresh.php');
-checkFinalize($migratePos !== false && $refreshPos !== false && $migratePos < $refreshPos, 'schema migration runs before endpoint refresh');
+checkFinalize(
+    $migratePos !== false
+        && $httpsStartPos !== false
+        && $refreshPos !== false
+        && $migratePos < $httpsStartPos
+        && $migratePos < $refreshPos,
+    'schema migration runs before HTTPS reconciliation and endpoint refresh'
+);
 checkFinalize(str_contains($nodeAdmin, "'ready' => false"), 'identity admin can expose pending identity state');
 
 fwrite(STDOUT, "setup finalize contract smoke: OK\n");

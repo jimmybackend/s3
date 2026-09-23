@@ -41,4 +41,48 @@ if ($db->errno) {
     exit(1);
 }
 
+$requiredTables = [
+    'FederationOriginCounters',
+    'FederationEvents',
+    'FederationClocks',
+    'FederatedResources',
+    'FederationResourceLocations',
+    'FederationPeerSyncState',
+    'FederationAccessRequests',
+    'FederationShares',
+    'FederationShareImportJobs',
+    'FederationReplicaJobs',
+    'FederationReplicaObjects',
+    'FederationIngressQueue',
+];
+
+$check = $db->prepare(
+    'SELECT 1 FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? LIMIT 1'
+);
+if (!$check) {
+    fwrite(STDERR, "No se pudo preparar la verificación del esquema FederationCloud: {$db->error}\n");
+    exit(1);
+}
+
+$missing = [];
+foreach ($requiredTables as $table) {
+    $check->bind_param('s', $table);
+    if (!$check->execute()) {
+        fwrite(STDERR, "No se pudo verificar la tabla {$table}: {$check->error}\n");
+        $check->close();
+        exit(1);
+    }
+    $check->store_result();
+    if ($check->num_rows !== 1) {
+        $missing[] = $table;
+    }
+    $check->free_result();
+}
+$check->close();
+
+if ($missing !== []) {
+    fwrite(STDERR, 'Migración incompleta; faltan tablas FederationCloud: ' . implode(', ', $missing) . "\n");
+    exit(1);
+}
+
 echo "OK: catálogo global, Aduana, solicitudes privadas, Shares y réplicas FederationCloud instalados/actualizados.\n";

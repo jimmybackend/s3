@@ -80,6 +80,11 @@ schemaContract(
     'DB limpia no incluye configuración voice_main ligada a un usuario existente'
 );
 
+schemaContract(str_contains($content, 'SET @ARCADECLOUD_OLD_FOREIGN_KEY_CHECKS = @@FOREIGN_KEY_CHECKS;'), 'dump completo conserva el estado previo de FOREIGN_KEY_CHECKS');
+schemaContract(str_contains($content, 'SET FOREIGN_KEY_CHECKS = 0;'), 'dump completo desactiva temporalmente validación FK para recreación');
+schemaContract(str_contains($content, 'SET FOREIGN_KEY_CHECKS = @ARCADECLOUD_OLD_FOREIGN_KEY_CHECKS;'), 'dump completo restaura FOREIGN_KEY_CHECKS al terminar');
+schemaContract(!str_contains($section, 'FOREIGN_KEY_CHECKS'), 'sección runtime FederationCloud no altera FOREIGN_KEY_CHECKS');
+
 schemaContract(str_contains($content, 'DROP TABLE IF EXISTS'), 'dump completo conserva semántica de recreación para DB limpia');
 
 fwrite(STDOUT, "Canonical database schema contract: OK\n");

@@ -194,6 +194,14 @@ Después de preparar servidor, Composer, helper administrativo, updater e identi
 
 SMTP, tokens AWS, credenciales de control y mirrors permanecen en Configuración avanzada.
 
+### SQL canónico
+
+`adbbmis1_Cloud.sql` en la raíz del repositorio es el único archivo SQL oficial. Una DB nueva puede
+cargarse completa desde ese archivo. Para una DB existente, la finalización nunca ejecuta el dump
+completo: `federation_catalog_migrate.php` extrae únicamente la sección
+`ARCADECLOUD:FEDERATION_SCHEMA`, que es idempotente e incluye todas las tablas FederationCloud,
+entre ellas `FederationEvents`.
+
 ## Finalización automática
 
 Al completar el tercer paso de /setup/, el helper privilegiado ejecuta automáticamente una acción fija

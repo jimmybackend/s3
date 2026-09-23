@@ -160,6 +160,8 @@ jobs:
           test "$migrate_line" -lt "$https_line"
           test "$migrate_line" -lt "$refresh_line"
           grep -q -- "--require-directory" drive/bin/install_arcadecloud.sh
+          grep -q "migrate_federation_schema" drive/bin/install_arcadecloud.sh
+          grep -q "federation_catalog_migrate.php" drive/bin/install_arcadecloud.sh
           grep -q "Nodo presentado al seed global" drive/bin/install_arcadecloud.sh
           grep -q "CERTBOT_VENV" drive/bin/install_arcadecloud_server.sh
           grep -q "certbot>=5.4" drive/bin/install_arcadecloud_server.sh

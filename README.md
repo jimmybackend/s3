@@ -93,11 +93,9 @@ dependencias del sistema que falten. Si la EC2 todavía no tiene Git ni el repos
 
 El setup web pide sólo **MySQL -> AWS/S3 -> primer superadmin**. El instalador genera identidad y
 nombre FederationCloud, detecta la IP pública cuando puede y deja lo opcional para **Servidor ->
-Configuración avanzada**. Después del setup se completa la infraestructura con:
-
-```bash
-sudo bash drive/bin/install_arcadecloud.sh --finalize
-```
+Configuración avanzada**. Al completar el tercer paso, el helper finaliza automáticamente HTTPS,
+registra el nodo en el seed global, confirma el directorio FederationCloud, instala la sincronización
+y sólo entonces cierra el setup temporal.
 
 Antes de instalar, consulta `drive/docs/INSTALLATION_PREPARATION.md`. Para nodos/mirrors avanzados
 continúa con `drive/docs/FEDERATION_NODE_REPLICA_INSTALL.md`. Consulta también

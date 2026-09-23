@@ -139,6 +139,9 @@ jobs:
           grep -q "Nodo presentado al seed global" drive/bin/install_arcadecloud.sh
           grep -q "CERTBOT_VENV" drive/bin/install_arcadecloud_server.sh
           grep -q "certbot>=5.4" drive/bin/install_arcadecloud_server.sh
+          grep -q "select_certbot_python" drive/bin/install_arcadecloud_server.sh
+          grep -q "python3.11" drive/bin/install_arcadecloud_server.sh
+          grep -q "python_version_at_least_310" drive/bin/install_arcadecloud_server.sh
           grep -q "arcadecloud-certbot" drive/bin/install_arcadecloud_server.sh
           grep -q -- "--dry-run" drive/bin/uninstall_arcadecloud.sh
           grep -q "KEEP_REPOSITORY" drive/bin/uninstall_arcadecloud.sh

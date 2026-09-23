@@ -70,6 +70,16 @@ foreach ($requiredTables as $table) {
     );
 }
 
+schemaContract(str_contains($content, 'CREATE TABLE IF NOT EXISTS `S3SyncSeen`'), 'SQL canónico incluye staging S3SyncSeen usado por SyncRepository');
+schemaContract(str_contains($content, 'UNIQUE KEY `uq_files3_user_path_key` (`user_id_`,`Ruta`,`Encriptado`)'), 'FileS3 usa identidad única por usuario+ruta+clave');
+schemaContract(!str_contains($content, 'UNIQUE KEY `uq_files3_user_key` (`user_id_`,`Encriptado`)'), 'índice histórico FileS3 ya no aparece en DB limpia');
+schemaContract(!str_contains($content, 'INSERT INTO `UserPipelineFeatures`'), 'DB limpia no incluye feature flags de un usuario existente');
+schemaContract(!str_contains($content, 'INSERT INTO `UserPreferences`'), 'DB limpia no incluye preferencias de un usuario existente');
+schemaContract(
+    preg_match("/\\(\\d+,\\s*'user',\\s*\\d+,\\s*'voice_main'/i", $content) !== 1,
+    'DB limpia no incluye configuración voice_main ligada a un usuario existente'
+);
+
 schemaContract(str_contains($content, 'DROP TABLE IF EXISTS'), 'dump completo conserva semántica de recreación para DB limpia');
 
 fwrite(STDOUT, "Canonical database schema contract: OK\n");

@@ -162,6 +162,10 @@ jobs:
           grep -q "provider-presence.php" drive/src/Federation/FederationHttpClient.php
           grep -q "ARCADECLOUD_FEDERATION_REPLICA_ORIGIN_URL" drive/src/Federation/FederationConfig.php
           grep -q "https://drive.esforzados.com/federationcloud/" drive/config/federation-seeds.json
+          grep -q '"bootstrap_nodes"' drive/config/federation-seeds.json
+          grep -q '"public_url": "https://drive.esforzados.com"' drive/config/federation-seeds.json
+          grep -q '"role": "primary-seed"' drive/config/federation-seeds.json
+          grep -q '"registration": "automatic"' drive/config/federation-seeds.json
           grep -q 'CREATE TABLE IF NOT EXISTS `FederationNodes`' adbbmis1_Cloud.sql
           grep -q 'CREATE TABLE IF NOT EXISTS `FederationNodeAuthorizations`' adbbmis1_Cloud.sql
           grep -q 'CREATE TABLE IF NOT EXISTS FederationIngressQueue' drive/sql/federation_ingress_queue.sql

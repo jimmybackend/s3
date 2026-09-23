@@ -34,8 +34,6 @@ final class FederationDropStorageService
             'Bucket' => $this->bucket,
             'Key' => $key,
             'ContentType' => $mimeType,
-            'ACL' => 'private',
-            'Metadata' => ['arcadecloud-drop' => '1'],
         ]);
         $request = $this->s3->createPresignedRequest($command, '+30 minutes');
         return [
@@ -77,7 +75,7 @@ final class FederationDropStorageService
             'Key' => $key,
             'ResponseContentDisposition' => 'attachment; filename="' . $filename . '"',
         ]);
-        $request = $this->s3->createPresignedRequest($command, '+10 minutes');
+        $request = $this->s3->createPresignedRequest($command, '+2 minutes');
         return (string)$request->getUri();
     }
 

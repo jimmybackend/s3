@@ -40,9 +40,10 @@ final class ActivityCostController
         $period = $this->request->queryString('period', 'month');
         $serviceFilter = $this->request->queryString('service');
         $actionFilter = $this->request->queryString('action');
+        $page = max(1, (int)$this->request->queryString('page', '1'));
 
         try {
-            $view = $service->dashboard($userId, $period, $serviceFilter, $actionFilter, $canViewRealAws);
+            $view = $service->dashboard($userId, $period, $serviceFilter, $actionFilter, $canViewRealAws, $page);
 
             if (($view['real_aws']['available'] ?? false) === true
                 && ($view['real_aws']['cached'] ?? true) === false) {
@@ -56,7 +57,7 @@ final class ActivityCostController
                     ['api_requests' => 1]
                 );
 
-                $view = $service->dashboard($userId, $period, $serviceFilter, $actionFilter, $canViewRealAws);
+                $view = $service->dashboard($userId, $period, $serviceFilter, $actionFilter, $canViewRealAws, $page);
             }
 
             $html = (new ActivityCostPageRenderer())->render($view, $userId);

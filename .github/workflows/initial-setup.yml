@@ -78,6 +78,7 @@ jobs:
           php -l drive/src/Admin/PrivilegedServerHelper.php
           php -l drive/bin/arcadecloud-drive-admin-helper.php
           php -l drive/bin/federation_endpoint_refresh.php
+          php -l drive/bin/federation_catalog_migrate.php
           php -l drive/tests/setup_bootstrap_smoke.php
           php -l drive/tests/setup_entry_guard_smoke.php
           php -l drive/tests/setup_finalize_contract_smoke.php
@@ -152,6 +153,8 @@ jobs:
           grep -q "SUDO_USER" drive/bin/install_arcadecloud.sh
           grep -q "arcadecloud-federation-https.service" drive/bin/install_arcadecloud.sh
           grep -q -- "--require-directory" drive/bin/install_arcadecloud.sh
+          grep -q "migrate_federation_schema" drive/bin/install_arcadecloud.sh
+          grep -q "federation_catalog_migrate.php" drive/bin/install_arcadecloud.sh
           grep -q "Nodo presentado al seed global" drive/bin/install_arcadecloud.sh
           grep -q "CERTBOT_VENV" drive/bin/install_arcadecloud_server.sh
           grep -q "certbot>=5.4" drive/bin/install_arcadecloud_server.sh

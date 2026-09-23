@@ -57,6 +57,17 @@ jobs:
           --health-interval=5s
           --health-timeout=5s
           --health-retries=10
+      mysql8:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: arcade-test-root
+        ports:
+          - 3308:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -parcade-test-root"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=15
     steps:
       - uses: actions/checkout@v4
         with:
@@ -94,6 +105,19 @@ jobs:
             mysql -h127.0.0.1 -P"$port" -uroot -parcade-test-root arcade_test -Nse "SHOW COLUMNS FROM FederationShares LIKE 'LocalFileId'" | grep -q LocalFileId
             mysql -h127.0.0.1 -P"$port" -uroot -parcade-test-root arcade_test -Nse "SHOW COLUMNS FROM FederationShares LIKE 'ImportedContentId'" | grep -q ImportedContentId
           done
+
+      - name: Validate full clean canonical schema on MySQL 8
+        run: |
+          set -euo pipefail
+          mysql -h127.0.0.1 -P3308 -uroot -parcade-test-root < adbbmis1_Cloud.sql
+
+          test "$(mysql -h127.0.0.1 -P3308 -uroot -parcade-test-root -Nse "SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA='adbbmis1_Cloud'")" -eq 59
+          mysql -h127.0.0.1 -P3308 -uroot -parcade-test-root adbbmis1_Cloud -Nse "SHOW TABLES LIKE 'S3SyncSeen'" | grep -q S3SyncSeen
+          mysql -h127.0.0.1 -P3308 -uroot -parcade-test-root adbbmis1_Cloud -Nse "SHOW INDEX FROM FileS3 WHERE Key_name='uq_files3_user_path_key'" | grep -q uq_files3_user_path_key
+          ! mysql -h127.0.0.1 -P3308 -uroot -parcade-test-root adbbmis1_Cloud -Nse "SHOW INDEX FROM FileS3 WHERE Key_name='uq_files3_user_key'" | grep -q uq_files3_user_key
+          test "$(mysql -h127.0.0.1 -P3308 -uroot -parcade-test-root adbbmis1_Cloud -Nse "SELECT COUNT(*) FROM UserPipelineFeatures")" -eq 0
+          test "$(mysql -h127.0.0.1 -P3308 -uroot -parcade-test-root adbbmis1_Cloud -Nse "SELECT COUNT(*) FROM UserPreferences")" -eq 0
+          test "$(mysql -h127.0.0.1 -P3308 -uroot -parcade-test-root adbbmis1_Cloud -Nse "SELECT COUNT(*) FROM UserAIAgentConfigs WHERE scope='user'")" -eq 0
 
       - name: Shares schema guards
         run: |

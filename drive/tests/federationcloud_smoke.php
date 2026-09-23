@@ -110,6 +110,35 @@ try {
     ok((int)$payload['version'] === 2 && $payload['storage_ref'] === 'stable-object-42.bin', 'ArcadeLink nuevo conserva referencia estable cifrada');
     ok($public['resource_id'] === $links->resourceIdForStorageRef(7, 'stable-object-42.bin'), 'Resource ID nuevo depende de referencia estable');
 
+    $secondFile = [
+        'id_' => 43,
+        'Nombre' => 'Segundo documento.txt',
+        'Encriptado' => 'stable-object-43.bin',
+        'Tamano' => 321,
+        'AccessType' => 'normal',
+    ];
+    $second = $links->create($secondFile, 7, 'sha256:' . str_repeat('b', 64), 'text/plain', 'PUBLIC', 'link_only');
+    $collection = $links->createCollection([$public, $second], 'Pruebas compartidas');
+    ok((int)$collection['version'] === 2, 'colección usa ArcadeLink v2');
+    ok($collection['resource_type'] === 'collection', 'colección declara resource_type collection');
+    ok((int)$collection['item_count'] === 2 && count($collection['items']) === 2, 'un ArcadeLink contiene varios recursos');
+    $parsedCollection = $links->parse($links->encode($collection));
+    ok((int)$parsedCollection['item_count'] === 2, 'lector valida colección completa');
+    ok(
+        $parsedCollection['resource_id'] === $links->collectionResourceId([$public['resource_id'], $second['resource_id']]),
+        'Resource ID de colección es portable y determinista'
+    );
+
+    $tamperedCollection = $collection;
+    $tamperedCollection['items'][1]['title'] = 'Alterado dentro de colección.txt';
+    $tamperedCollectionRejected = false;
+    try {
+        $links->parse($links->encode($tamperedCollection));
+    } catch (FederationException) {
+        $tamperedCollectionRejected = true;
+    }
+    ok($tamperedCollectionRejected, 'alterar un recurso interno invalida la colección');
+
     $legacy = legacyDocument($links, $identity, $config);
     $legacyParsed = $links->parse($links->encode($legacy));
     $legacyPayload = $links->decryptLocalPayload($legacyParsed);

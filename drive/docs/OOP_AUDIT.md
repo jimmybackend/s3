@@ -345,7 +345,7 @@
 | `drive/tests/activity_costs_smoke.php` | 135 | test script | 0 | — | — | — | — |
 | `drive/tests/arcadelink_bulk_contract_regression.php` | 68 | test script | 0 | — | — | — | — |
 | `drive/tests/arcadelink_bundle_regression.php` | 142 | test script | 0 | — | — | — | — |
-| `drive/tests/database_schema_contract_smoke.php` | 86 | test script | 0 | — | — | — | — |
+| `drive/tests/database_schema_contract_smoke.php` | 91 | test script | 0 | — | — | — | — |
 | `drive/tests/federation_access_message_smoke.php` | 72 | test script | 0 | — | — | — | — |
 | `drive/tests/federation_catalog_event_smoke.php` | 60 | test script | 0 | — | — | — | — |
 | `drive/tests/federation_customs_contract_smoke.php` | 79 | test script | 0 | — | — | — | — |

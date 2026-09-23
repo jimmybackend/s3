@@ -4845,7 +4845,7 @@
     },
     {
       "path": "drive/tests/database_schema_contract_smoke.php",
-      "lines": 86,
+      "lines": 91,
       "kind": "test script",
       "classes": 0,
       "functions": [

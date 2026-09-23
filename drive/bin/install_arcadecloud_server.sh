@@ -225,6 +225,39 @@ certbot_version_at_least_54() {
   (( major > 5 || (major == 5 && minor >= 4) ))
 }
 
+python_version_at_least_310() {
+  local bin="${1:-}"
+  [[ -n "$bin" ]] || return 1
+  "$bin" -c 'import sys; raise SystemExit(0 if sys.version_info >= (3, 10) else 1)' >/dev/null 2>&1
+}
+
+select_certbot_python() {
+  local candidate
+
+  # /usr/bin/python3 is intentionally Python 3.9 for the lifetime of AL2023.
+  # Use a namespaced newer Python for ArcadeCloud's isolated Certbot venv.
+  for candidate in python3.11 python3.12 python3.13 python3.14; do
+    if command_exists "$candidate" && python_version_at_least_310 "$(command -v "$candidate")"; then
+      command -v "$candidate"
+      return 0
+    fi
+  done
+
+  if package_available python3.11; then
+    local packages=(python3.11)
+    package_available python3.11-pip && packages+=(python3.11-pip)
+    say "Instalando Python 3.11 aislado para Certbot moderno."
+    dnf install -y "${packages[@]}"
+  fi
+
+  if command_exists python3.11 && python_version_at_least_310 "$(command -v python3.11)"; then
+    command -v python3.11
+    return 0
+  fi
+
+  fail "Certbot >= 5.4 requiere Python >= 3.10 y no pude obtener un intérprete compatible en Amazon Linux 2023."
+}
+
 install_modern_certbot_for_ip() {
   [[ "$SKIP_CERTBOT" -eq 0 ]] || return 0
 
@@ -243,13 +276,13 @@ install_modern_certbot_for_ip() {
     return 0
   fi
 
-  say "Preparando Certbot >= 5.4 en entorno aislado para HTTPS por IP."
-  if ! python3 -m venv "$CERTBOT_VENV" >/dev/null 2>&1; then
-    if package_available python3-pip; then
-      dnf install -y python3-pip
-    fi
-    python3 -m venv "$CERTBOT_VENV" >/dev/null 2>&1       || fail "Python no pudo crear $CERTBOT_VENV para instalar Certbot moderno."
-  fi
+  local certbot_python
+  certbot_python="$(select_certbot_python)"
+  say "Preparando Certbot >= 5.4 en entorno aislado con $certbot_python."
+
+  rm -rf "$CERTBOT_VENV"
+  "$certbot_python" -m venv "$CERTBOT_VENV" >/dev/null 2>&1 \
+    || fail "$certbot_python no pudo crear $CERTBOT_VENV para instalar Certbot moderno."
 
   "$CERTBOT_VENV/bin/python" -m pip install --upgrade pip >/dev/null
   "$CERTBOT_VENV/bin/python" -m pip install --upgrade 'certbot>=5.4' 'certbot-nginx>=5.4' >/dev/null
@@ -418,143 +451,3 @@ EOF
     printf '%s\n' "$test_output" >&2
     fail "la configuración php-fpm-drive generada no pasó la validación."
   }
-
-  systemctl daemon-reload
-  systemctl enable php-fpm-drive.service >/dev/null
-  if systemctl is-active --quiet php-fpm-drive.service; then
-    systemctl restart php-fpm-drive.service
-  else
-    systemctl start php-fpm-drive.service
-  fi
-
-  systemctl is-active --quiet php-fpm-drive.service || fail "php-fpm-drive.service no quedó activo."
-  say "php-fpm-drive configurado en $FPM_LISTEN como $PHP_USER:$php_group."
-}
-
-detect_public_ipv4() {
-  local token ip
-  token="$(curl -fsS --max-time 2 -X PUT     -H 'X-aws-ec2-metadata-token-ttl-seconds: 60'     http://169.254.169.254/latest/api/token 2>/dev/null || true)"
-  if [[ -n "$token" ]]; then
-    ip="$(curl -fsS --max-time 2       -H "X-aws-ec2-metadata-token: $token"       http://169.254.169.254/latest/meta-data/public-ipv4 2>/dev/null || true)"
-    [[ -n "$ip" ]] && { printf '%s' "$ip"; return 0; }
-  fi
-
-  curl -4fsS --max-time 4 https://checkip.amazonaws.com 2>/dev/null | tr -d '[:space:]' || true
-}
-
-configure_nginx() {
-  [[ -d "$WEBROOT" ]] || fail "no existe el DocumentRoot esperado: $WEBROOT"
-
-  local public_ip server_name backup=""
-  public_ip="$(detect_public_ipv4)"
-  server_name="${public_ip:-_}"
-
-  if [[ -e "$NGINX_CONF" ]] && ! is_managed_file "$NGINX_CONF"; then
-    fail "$NGINX_CONF ya existe y no está administrado por ArcadeCloud; no se sobrescribirá."
-  fi
-
-  if [[ -e "$NGINX_CONF" ]]; then
-    backup="$(mktemp)"
-    cp -a "$NGINX_CONF" "$backup"
-  fi
-
-  cat > "$NGINX_CONF" <<EOF
-# $MANAGED_MARKER
-server {
-    listen 80;
-    listen [::]:80;
-    server_name $server_name;
-
-    root $WEBROOT;
-    index index.php index.html;
-    client_max_body_size 32m;
-
-    location / {
-        try_files \$uri \$uri/ =404;
-    }
-
-    location ~ \.php$ {
-        try_files \$uri =404;
-        include fastcgi_params;
-        fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
-        fastcgi_param HTTP_PROXY "";
-        fastcgi_pass $FPM_LISTEN;
-    }
-
-    location ^~ /src/ { deny all; }
-    location ^~ /bin/ { deny all; }
-    location ^~ /vendor/ { deny all; }
-
-    location ~ /\. {
-        deny all;
-    }
-
-    location ~* \.(?:env|ini|log|sql|bak)$ {
-        deny all;
-    }
-}
-EOF
-
-  chmod 0644 "$NGINX_CONF"
-
-  if ! nginx -t; then
-    if [[ -n "$backup" ]]; then
-      cp -a "$backup" "$NGINX_CONF"
-    else
-      rm -f "$NGINX_CONF"
-    fi
-    rm -f "$backup"
-    fail "la configuración Nginx generada no pasó nginx -t; se restauró el estado anterior."
-  fi
-  rm -f "$backup"
-
-  systemctl enable nginx.service >/dev/null
-  if systemctl is-active --quiet nginx.service; then
-    systemctl reload nginx.service
-  else
-    systemctl start nginx.service
-  fi
-
-  systemctl is-active --quiet nginx.service || fail "nginx.service no quedó activo."
-  say "Nginx configurado para servir $WEBROOT por HTTP."
-  [[ -n "$public_ip" ]] && say "Endpoint HTTP inicial detectado: http://$public_ip/"
-}
-
-validate_runtime() {
-  local cmd
-  for cmd in php php-fpm nginx composer git curl python3 systemctl sudo; do
-    command_exists "$cmd" || fail "falta el comando requerido después de preparar el servidor: $cmd"
-  done
-
-  php -r 'exit(extension_loaded("pdo_mysql") ? 0 : 1);'     || fail "PHP quedó sin pdo_mysql/mysqlnd."
-  php -r 'exit(extension_loaded("mbstring") ? 0 : 1);'     || fail "PHP quedó sin mbstring."
-
-  nginx -t >/dev/null
-  systemctl is-active --quiet php-fpm-drive.service || fail "php-fpm-drive no está activo."
-  systemctl is-active --quiet nginx.service || fail "Nginx no está activo."
-}
-
-say "Preflight automático de Amazon Linux 2023."
-install_packages
-install_composer
-install_certbot_if_available
-install_modern_certbot_for_ip
-configure_php_fpm
-configure_nginx
-validate_runtime
-
-echo
-echo "PREPARACIÓN DEL SERVIDOR: OK"
-echo "PHP: $(php -r 'echo PHP_VERSION;')"
-echo "PHP-FPM service: php-fpm-drive.service"
-echo "PHP-FPM user: $PHP_USER"
-echo "PHP-FPM listen: $FPM_LISTEN"
-echo "Nginx: $(nginx -v 2>&1)"
-echo "Composer: $(COMPOSER_ALLOW_SUPERUSER=1 composer --version 2>/dev/null | head -1)"
-if [[ -x "$ARCADECLOUD_CERTBOT_BIN" ]]; then
-  echo "Certbot ArcadeCloud: $("$ARCADECLOUD_CERTBOT_BIN" --version 2>/dev/null)"
-elif command_exists certbot; then
-  echo "Certbot: $(certbot --version 2>/dev/null)"
-else
-  echo "Certbot: pendiente/no disponible"
-fi

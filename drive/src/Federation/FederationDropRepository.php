@@ -22,7 +22,7 @@ final class FederationDropRepository
         );
         if (!$stmt) throw new FederationException('No se pudo preparar FederationDrop.', 500);
         $stmt->bind_param(
-            'ssssssssiiiiiis',
+            'ssssssssiiiiss',
             $row['drop_id'],
             $row['owner_email'],
             $row['owner_token_hash'],

@@ -9,7 +9,9 @@ on:
       - 'drive/setup/**'
       - 'drive/index.php'
       - 'drive/js/setup.js'
+      - 'drive/js/federation-footer.js'
       - 'drive/src/Setup/**'
+      - 'drive/src/Federation/FederationNodeAdminService.php'
       - 'drive/src/Admin/ManagedRuntimeEnvironment.php'
       - 'drive/src/Admin/PrivilegedServerHelper.php'
       - 'drive/bin/arcadecloud-drive-admin-helper.php'
@@ -20,6 +22,7 @@ on:
       - 'bootstrap_arcadecloud.sh'
       - 'drive/tests/setup_bootstrap_smoke.php'
       - 'drive/tests/setup_entry_guard_smoke.php'
+      - 'drive/tests/setup_finalize_contract_smoke.php'
       - 'drive/docs/INITIAL_SETUP.md'
       - 'drive/docs/INSTALLATION_PREPARATION.md'
       - 'drive/docs/AUTOMATED_INSTALLER.md'
@@ -31,7 +34,9 @@ on:
       - 'drive/index.php'
       - 'drive/login.php'
       - 'drive/js/setup.js'
+      - 'drive/js/federation-footer.js'
       - 'drive/src/Setup/**'
+      - 'drive/src/Federation/FederationNodeAdminService.php'
       - 'drive/src/Admin/ManagedRuntimeEnvironment.php'
       - 'drive/src/Admin/PrivilegedServerHelper.php'
       - 'drive/bin/arcadecloud-drive-admin-helper.php'
@@ -42,6 +47,7 @@ on:
       - 'bootstrap_arcadecloud.sh'
       - 'drive/tests/setup_bootstrap_smoke.php'
       - 'drive/tests/setup_entry_guard_smoke.php'
+      - 'drive/tests/setup_finalize_contract_smoke.php'
       - 'drive/docs/INITIAL_SETUP.md'
       - 'drive/docs/INSTALLATION_PREPARATION.md'
       - 'drive/docs/AUTOMATED_INSTALLER.md'
@@ -74,11 +80,13 @@ jobs:
           php -l drive/bin/federation_endpoint_refresh.php
           php -l drive/tests/setup_bootstrap_smoke.php
           php -l drive/tests/setup_entry_guard_smoke.php
+          php -l drive/tests/setup_finalize_contract_smoke.php
 
       - name: Validate JavaScript and installer
         run: |
           set -euo pipefail
           node --check drive/js/setup.js
+          node --check drive/js/federation-footer.js
           bash -n drive/bin/install_arcadecloud_admin_helper.sh
           bash -n drive/bin/install_arcadecloud_server.sh
           bash -n drive/bin/install_arcadecloud.sh
@@ -89,6 +97,7 @@ jobs:
         run: |
           php drive/tests/setup_bootstrap_smoke.php
           php drive/tests/setup_entry_guard_smoke.php
+          php drive/tests/setup_finalize_contract_smoke.php
 
       - name: Setup security boundary guards
         run: |
@@ -98,6 +107,8 @@ jobs:
           grep -q "requireServerOperator" drive/bin/arcadecloud-drive-admin-helper.php
           grep -q "php_user" drive/bin/arcadecloud-drive-admin-helper.php
           grep -q "bootstrap-complete" drive/bin/arcadecloud-drive-admin-helper.php
+          grep -q "bootstrap-finalize" drive/bin/arcadecloud-drive-admin-helper.php
+          grep -q "setup_finalize" drive/bin/arcadecloud-drive-admin-helper.php
           grep -q "setup.lock" drive/src/Setup/BootstrapSetupAuth.php
           grep -q "SetupEntryGuard" drive/index.php
           grep -q "isSetupPending" drive/src/Setup/SetupEntryGuard.php
@@ -105,6 +116,8 @@ jobs:
           grep -q "'superadmin'" drive/src/Setup/SuperAdminBootstrapService.php
           grep -q "\$role = 'Administración'" drive/src/Setup/SuperAdminBootstrapService.php
           grep -q "assertPersistedSuperadmin" drive/src/Setup/SuperAdminBootstrapService.php
+          grep -q "finalizeBootstrapInstallation" drive/src/Setup/SuperAdminBootstrapService.php
+          ! grep -q "completeBootstrapSetup" drive/src/Setup/SuperAdminBootstrapService.php
           grep -q "adminBirthdate" drive/setup/index.php
           grep -q "adminMobilephone" drive/setup/index.php
           grep -q "'birthdate' => \$this->post('birthdate')" drive/src/Setup/SetupApiController.php
@@ -119,7 +132,7 @@ jobs:
           ! grep -q "AWS_SESSION_TOKEN" drive/js/setup.js
           grep -q "aws_ready" drive/src/Setup/SetupApiController.php
           grep -q "assertBasicConfigurationReady" drive/src/Setup/SuperAdminBootstrapService.php
-          grep -q "install_arcadecloud.sh --finalize" drive/docs/INITIAL_SETUP.md
+          grep -q "finalización automática" drive/docs/INITIAL_SETUP.md
           grep -q "ARCADECLOUD_FEDERATION_ENABLED" drive/bin/install_arcadecloud.sh
           grep -Fq '"ARCADECLOUD_PUBLIC_URL": f"http://{ip}"' drive/bin/install_arcadecloud.sh
           grep -Fq '"ARCADECLOUD_FEDERATION_URL": f"http://{ip}/federationcloud/"' drive/bin/install_arcadecloud.sh
@@ -134,6 +147,8 @@ jobs:
           grep -q "install_arcadecloud_updater.sh" drive/bin/install_arcadecloud.sh
           grep -q "install_updater" drive/bin/install_arcadecloud.sh
           grep -q "select_certbot_bin" drive/bin/install_arcadecloud.sh
+          grep -q -- "--finalize-from-setup" drive/bin/install_arcadecloud.sh
+          grep -q "SUDO_USER" drive/bin/install_arcadecloud.sh
           grep -q "arcadecloud-federation-https.service" drive/bin/install_arcadecloud.sh
           grep -q -- "--require-directory" drive/bin/install_arcadecloud.sh
           grep -q "Nodo presentado al seed global" drive/bin/install_arcadecloud.sh
@@ -163,6 +178,7 @@ jobs:
           grep -q "git pull --ff-only" bootstrap_arcadecloud.sh
           ! grep -Eq 'curl[^|]*\|[[:space:]]*(bash|sh)' drive/bin/install_arcadecloud_server.sh bootstrap_arcadecloud.sh
           grep -q "ARCADECLOUD_SMTP_BCC" drive/src/Admin/ManagedRuntimeEnvironment.php
+          grep -q "ready' => false" drive/src/Federation/FederationNodeAdminService.php
           ! grep -q "app_bootstrap.php" drive/setup/api.php
           ! grep -q "require.*db.php" drive/setup/api.php
           ! grep -Eq '\b(shell_exec|exec|system|passthru|popen)\s*\(' drive/setup/api.php drive/src/Setup/*.php

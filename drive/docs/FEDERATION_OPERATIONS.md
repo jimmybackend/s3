@@ -344,7 +344,7 @@ drive/bin/install_federation_https_service.sh
 
 drive/src/Federation/FederationCustomsService.php
 drive/src/Federation/FederationIngressQueueRepository.php
-drive/sql/federation_ingress_queue.sql
+adbbmis1_Cloud.sql
 drive/bin/federation_sync.php
 drive/bin/install_federation_sync_timer.sh
 

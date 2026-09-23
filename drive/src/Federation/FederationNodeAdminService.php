@@ -47,11 +47,29 @@ final class FederationNodeAdminService
             ];
         }
 
-        $descriptor = $this->validator->validate($this->identity->signedDescriptor($this->config));
-        return [
-            'ok' => true, 'configured' => true, 'ready' => true, 'enabled' => $this->config->enabled(),
-            'identity_path' => $path, 'node' => $this->summary($descriptor), 'diagnostics' => $diagnostics,
-        ];
+        try {
+            $descriptor = $this->validator->validate($this->identity->signedDescriptor($this->config));
+            return [
+                'ok' => true, 'configured' => true, 'ready' => true, 'enabled' => $this->config->enabled(),
+                'identity_path' => $path, 'node' => $this->summary($descriptor), 'diagnostics' => $diagnostics,
+            ];
+        } catch (FederationException $e) {
+            return [
+                'ok' => true,
+                'configured' => true,
+                'ready' => false,
+                'enabled' => $this->config->enabled(),
+                'identity_path' => $path,
+                'node' => [
+                    'node_id' => $this->identity->nodeId(),
+                    'node_name' => $this->identity->nodeName(),
+                    'public_url' => $this->config->publicUrl(),
+                    'federation_url' => $this->config->federationUrl(),
+                ],
+                'error' => $e->getMessage(),
+                'diagnostics' => $diagnostics,
+            ];
+        }
     }
 
     public function createNode(string $requestedName): array

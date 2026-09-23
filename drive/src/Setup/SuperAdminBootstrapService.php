@@ -28,13 +28,14 @@ final class SuperAdminBootstrapService
 
             $existing = $this->findExistingSuperadmin($db);
             if ($existing !== null) {
-                $this->helper->completeBootstrapSetup();
+                $this->finalizeInstallation();
                 return [
                     'ok' => true,
                     'completed' => true,
                     'existing_superadmin' => true,
                     'user_id' => (int)$existing['id'],
-                    'message' => 'Ya existía un superadmin. El supervisor temporal fue retirado y el setup quedó cerrado.',
+                    'federation_finalized' => true,
+                    'message' => 'Ya existía un superadmin. HTTPS, FederationCloud y el directorio global quedaron finalizados y el setup fue cerrado.',
                 ];
             }
 
@@ -148,20 +149,33 @@ final class SuperAdminBootstrapService
 
             $this->assertPersistedSuperadmin($db, $userId, $email);
 
-            // Sólo después de comprobar que el usuario real existe en MySQL se retira
-            // el supervisor temporal del setup.
-            $this->helper->completeBootstrapSetup();
+            // Sólo después de comprobar que el usuario real existe en MySQL se completa
+            // HTTPS/FederationCloud. El helper cierra el setup únicamente si todo termina bien.
+            $this->finalizeInstallation();
 
             return [
                 'ok' => true,
                 'completed' => true,
                 'existing_superadmin' => false,
                 'user_id' => $userId,
-                'message' => 'Superadmin creado. El supervisor temporal fue eliminado y /setup quedó cerrado.',
+                'federation_finalized' => true,
+                'message' => 'Superadmin creado. HTTPS, FederationCloud y el directorio global quedaron finalizados y /setup fue cerrado.',
             ];
         } finally {
             $db->close();
         }
+    }
+
+    private function finalizeInstallation(): void
+    {
+        if (!$this->helper->supportsAutomaticSetupFinalize()) {
+            throw new RuntimeException(
+                'El helper administrativo no soporta la finalización automática. '
+                . 'Actualiza el repositorio y reinstala el helper antes de cerrar el setup.'
+            );
+        }
+
+        $this->helper->finalizeBootstrapInstallation();
     }
 
     private function assertBasicConfigurationReady(): void

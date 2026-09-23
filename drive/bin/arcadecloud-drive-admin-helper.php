@@ -55,12 +55,13 @@ final class ArcadeCloudDriveAdminHelper
         if ($action === 'status') {
             fwrite(STDOUT, json_encode([
                 'ok' => true,
-                'version' => 4,
+                'version' => 5,
                 'capabilities' => [
                     'env_set_many' => true,
                     'db_aws_settings' => true,
                     'web_setup' => true,
                     'bootstrap_complete' => true,
+                    'setup_finalize' => true,
                     'managed_replica_settings' => true,
                 ],
                 'identity_path' => $identityPath,
@@ -101,6 +102,33 @@ final class ArcadeCloudDriveAdminHelper
                     JSON_UNESCAPED_SLASHES
                 ) . "\n"
             );
+            exit(0);
+        }
+
+        if ($action === 'bootstrap-finalize') {
+            if (is_file($setupLockPath)) {
+                $this->fail('La instalación ya está cerrada.', 17);
+            }
+            if (!is_file($bootstrapAuthPath)) {
+                $this->fail('El setup bootstrap no está activo; no se puede finalizar desde la web.', 17);
+            }
+
+            $this->assertActiveSuperadminExists($runtimePath);
+
+            $appRoot = $this->safeConfiguredPath($config, 'app_root', '/var/www/arcadecloud-drive');
+            $phpUser = trim((string)($config['php_user'] ?? ''));
+            if ($phpUser === '' || $phpUser === 'root') {
+                $this->fail('Usuario PHP-FPM inválido para finalizar la instalación.');
+            }
+
+            $summary = $this->finalizeInstallation($appRoot, $phpUser);
+            $this->completeBootstrap($bootstrapAuthPath, $setupLockPath);
+            fwrite(STDOUT, json_encode([
+                'ok' => true,
+                'finalized' => true,
+                'message' => 'Instalación básica y FederationCloud finalizados.',
+                'summary' => $summary,
+            ], JSON_UNESCAPED_SLASHES) . "\n");
             exit(0);
         }
 
@@ -423,6 +451,113 @@ final class ArcadeCloudDriveAdminHelper
             'initial_password' => 'arcadecloud',
             'activation_token' => $token,
         ];
+    }
+
+    private function assertActiveSuperadminExists(string $runtimePath): void
+    {
+        if (!extension_loaded('mysqli')) {
+            $this->fail('PHP mysqli es obligatorio para validar el superadmin antes de finalizar.');
+        }
+
+        $runtime = $this->readRuntimeConfig($runtimePath);
+        foreach (['DB_HOST', 'DB_USER', 'DB_PASSWORD', 'DB_NAME'] as $name) {
+            if (!is_string($runtime[$name] ?? null) || trim((string)$runtime[$name]) === '') {
+                $this->fail('La configuración de base de datos está incompleta; no se puede finalizar.');
+            }
+        }
+
+        $portRaw = (string)($runtime['DB_PORT'] ?? '3306');
+        $port = filter_var($portRaw, FILTER_VALIDATE_INT, [
+            'options' => ['min_range' => 1, 'max_range' => 65535],
+        ]);
+        if ($port === false) {
+            $this->fail('DB_PORT no es válido; no se puede finalizar.');
+        }
+
+        $db = mysqli_init();
+        if (!$db) {
+            $this->fail('No se pudo inicializar MySQL para validar el superadmin.');
+        }
+        mysqli_options($db, MYSQLI_OPT_CONNECT_TIMEOUT, 8);
+        if (!@mysqli_real_connect(
+            $db,
+            (string)$runtime['DB_HOST'],
+            (string)$runtime['DB_USER'],
+            (string)$runtime['DB_PASSWORD'],
+            (string)$runtime['DB_NAME'],
+            (int)$port
+        )) {
+            $db->close();
+            $this->fail('No fue posible validar el superadmin en la base configurada.');
+        }
+
+        $result = @$db->query(
+            "SELECT id FROM Users WHERE system_role = 'superadmin' AND userstatus = 'Activo' LIMIT 1"
+        );
+        $found = $result !== false && $result->fetch_assoc() !== null;
+        if ($result !== false) {
+            $result->free();
+        }
+        $db->close();
+
+        if (!$found) {
+            $this->fail('No existe un superadmin activo; el setup no puede cerrarse.');
+        }
+    }
+
+    private function finalizeInstallation(string $appRoot, string $phpUser): string
+    {
+        $installer = rtrim($appRoot, '/') . '/drive/bin/install_arcadecloud.sh';
+        if (!is_file($installer) || !is_readable($installer)) {
+            $this->fail('No se encontró el instalador ArcadeCloud en el app_root configurado.');
+        }
+
+        $tmp = tempnam('/tmp', 'arcadecloud-finalize-');
+        if (!is_string($tmp) || $tmp === '') {
+            $this->fail('No se pudo crear el log temporal de finalización.');
+        }
+        chmod($tmp, 0600);
+
+        $command = [
+            '/bin/bash',
+            $installer,
+            '--finalize-from-setup',
+            '--app-root=' . $appRoot,
+            '--php-user=' . $phpUser,
+            '--skip-system-bootstrap',
+        ];
+        $descriptors = [
+            0 => ['file', '/dev/null', 'r'],
+            1 => ['file', $tmp, 'a'],
+            2 => ['file', $tmp, 'a'],
+        ];
+
+        $process = proc_open($command, $descriptors, $pipes, null, null, ['bypass_shell' => true]);
+        if (!is_resource($process)) {
+            @unlink($tmp);
+            $this->fail('No se pudo iniciar la finalización privilegiada.');
+        }
+
+        $exit = proc_close($process);
+        $size = is_file($tmp) ? (int)filesize($tmp) : 0;
+        $offset = max(0, $size - 7000);
+        $output = is_file($tmp)
+            ? (string)file_get_contents($tmp, false, null, $offset, 7000)
+            : '';
+        @unlink($tmp);
+
+        if ($exit !== 0) {
+            $detail = trim($output);
+            $this->fail(
+                'La finalización automática falló; el setup permanece abierto para reintentar.'
+                . ($detail !== '' ? "\n" . $detail : ''),
+                70
+            );
+        }
+
+        $lines = preg_split('/\R/', trim($output)) ?: [];
+        $lines = array_values(array_filter($lines, static fn(string $line): bool => trim($line) !== ''));
+        return implode(' | ', array_slice($lines, -4));
     }
 
     private function completeBootstrap(string $authPath, string $lockPath): void

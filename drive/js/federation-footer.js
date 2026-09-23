@@ -94,7 +94,14 @@ class FederationFooterModule {
         this.fillIdentity(data.node);
         this.saveIdentityButton.dataset.action = 'rename';
         this.saveIdentityButton.innerHTML = '<i class="fas fa-save mr-1"></i>Guardar nombre';
-        this.showIdentityMessage('', '');
+        if (data.ready === false) {
+          this.showIdentityMessage(
+            data.error || 'La identidad existe, pero FederationCloud todavía está pendiente de HTTPS/registro global.',
+            'warning'
+          );
+        } else {
+          this.showIdentityMessage('', '');
+        }
         return;
       }
 

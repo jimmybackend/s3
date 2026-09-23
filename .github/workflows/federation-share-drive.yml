@@ -3,7 +3,7 @@ name: FederationCloud Shares to Drive validation
 on:
   pull_request:
     paths:
-      - 'drive/sql/federation_access_shares.sql'
+      - 'adbbmis1_Cloud.sql'
       - 'drive/src/Federation/FederationShareDrive*.php'
       - 'drive/src/Federation/FederationShareDownloader.php'
       - 'drive/src/Http/Controller/FederationShareDriveController.php'
@@ -17,7 +17,7 @@ on:
   push:
     branches: [main]
     paths:
-      - 'drive/sql/federation_access_shares.sql'
+      - 'adbbmis1_Cloud.sql'
       - 'drive/src/Federation/FederationShareDrive*.php'
       - 'drive/src/Federation/FederationShareDownloader.php'
       - 'drive/src/Http/Controller/FederationShareDriveController.php'
@@ -83,9 +83,13 @@ jobs:
           sudo apt-get update -qq
           sudo apt-get install -y -qq mariadb-client
 
+          sed -n '/^-- ARCADECLOUD:FEDERATION_SCHEMA:BEGIN$/,/^-- ARCADECLOUD:FEDERATION_SCHEMA:END$/p' adbbmis1_Cloud.sql > /tmp/arcadecloud-federation-schema.sql
+          grep -q 'FederationEvents' /tmp/arcadecloud-federation-schema.sql
+          grep -q 'FederationShares' /tmp/arcadecloud-federation-schema.sql
+
           for port in 3306 3307; do
-            mysql -h127.0.0.1 -P"$port" -uroot -parcade-test-root arcade_test < drive/sql/federation_access_shares.sql
-            mysql -h127.0.0.1 -P"$port" -uroot -parcade-test-root arcade_test < drive/sql/federation_access_shares.sql
+            mysql -h127.0.0.1 -P"$port" -uroot -parcade-test-root arcade_test < /tmp/arcadecloud-federation-schema.sql
+            mysql -h127.0.0.1 -P"$port" -uroot -parcade-test-root arcade_test < /tmp/arcadecloud-federation-schema.sql
             mysql -h127.0.0.1 -P"$port" -uroot -parcade-test-root arcade_test -Nse "SHOW TABLES LIKE 'FederationShareImportJobs'" | grep -q FederationShareImportJobs
             mysql -h127.0.0.1 -P"$port" -uroot -parcade-test-root arcade_test -Nse "SHOW COLUMNS FROM FederationShares LIKE 'LocalFileId'" | grep -q LocalFileId
             mysql -h127.0.0.1 -P"$port" -uroot -parcade-test-root arcade_test -Nse "SHOW COLUMNS FROM FederationShares LIKE 'ImportedContentId'" | grep -q ImportedContentId
@@ -94,16 +98,16 @@ jobs:
       - name: Shares schema guards
         run: |
           set -euo pipefail
-          grep -q 'LocalFileId' drive/sql/federation_access_shares.sql
-          grep -q 'LocalS3Key' drive/sql/federation_access_shares.sql
-          grep -q 'ImportedAt' drive/sql/federation_access_shares.sql
-          grep -q 'ImportedResourceUpdatedAt' drive/sql/federation_access_shares.sql
-          grep -q 'ImportedContentId' drive/sql/federation_access_shares.sql
-          grep -q 'FederationShareImportJobs' drive/sql/federation_access_shares.sql
-          grep -q 'uq_fshare_import_version' drive/sql/federation_access_shares.sql
-          grep -q 'information_schema.COLUMNS' drive/sql/federation_access_shares.sql
-          ! grep -q 'ADD COLUMN IF NOT EXISTS' drive/sql/federation_access_shares.sql
-          ! grep -q 'ADD INDEX IF NOT EXISTS' drive/sql/federation_access_shares.sql
+          grep -q 'LocalFileId' adbbmis1_Cloud.sql
+          grep -q 'LocalS3Key' adbbmis1_Cloud.sql
+          grep -q 'ImportedAt' adbbmis1_Cloud.sql
+          grep -q 'ImportedResourceUpdatedAt' adbbmis1_Cloud.sql
+          grep -q 'ImportedContentId' adbbmis1_Cloud.sql
+          grep -q 'FederationShareImportJobs' adbbmis1_Cloud.sql
+          grep -q 'uq_fshare_import_version' adbbmis1_Cloud.sql
+          grep -q 'information_schema.COLUMNS' adbbmis1_Cloud.sql
+          ! grep -q 'ADD COLUMN IF NOT EXISTS' adbbmis1_Cloud.sql
+          ! grep -q 'ADD INDEX IF NOT EXISTS' adbbmis1_Cloud.sql
 
       - name: DB-first and background storage guards
         run: |

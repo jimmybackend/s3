@@ -246,8 +246,8 @@ select_certbot_python() {
   if package_available python3.11; then
     local packages=(python3.11)
     package_available python3.11-pip && packages+=(python3.11-pip)
-    say "Instalando Python 3.11 aislado para Certbot moderno."
-    dnf install -y "${packages[@]}"
+    say "Instalando Python 3.11 aislado para Certbot moderno." >&2
+    dnf install -y "${packages[@]}" >&2
   fi
 
   if command_exists python3.11 && python_version_at_least_310 "$(command -v python3.11)"; then

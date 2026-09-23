@@ -109,16 +109,21 @@ jobs:
       - name: Validate full clean and repeatable canonical schema on MySQL 8
         run: |
           set -euo pipefail
-          mysql -h127.0.0.1 -P3308 -uroot -parcade-test-root < adbbmis1_Cloud.sql
-          mysql -h127.0.0.1 -P3308 -uroot -parcade-test-root < adbbmis1_Cloud.sql
+          mysql -h127.0.0.1 -P3308 -uroot -parcade-test-root -e "CREATE DATABASE arcade_clean_a CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci"
+          mysql -h127.0.0.1 -P3308 -uroot -parcade-test-root arcade_clean_a < adbbmis1_Cloud.sql
+          mysql -h127.0.0.1 -P3308 -uroot -parcade-test-root arcade_clean_a < adbbmis1_Cloud.sql
 
-          test "$(mysql -h127.0.0.1 -P3308 -uroot -parcade-test-root -Nse "SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA='adbbmis1_Cloud'")" -eq 59
-          mysql -h127.0.0.1 -P3308 -uroot -parcade-test-root adbbmis1_Cloud -Nse "SHOW TABLES LIKE 'S3SyncSeen'" | grep -q S3SyncSeen
-          mysql -h127.0.0.1 -P3308 -uroot -parcade-test-root adbbmis1_Cloud -Nse "SHOW INDEX FROM FileS3 WHERE Key_name='uq_files3_user_path_key'" | grep -q uq_files3_user_path_key
-          ! mysql -h127.0.0.1 -P3308 -uroot -parcade-test-root adbbmis1_Cloud -Nse "SHOW INDEX FROM FileS3 WHERE Key_name='uq_files3_user_key'" | grep -q uq_files3_user_key
-          test "$(mysql -h127.0.0.1 -P3308 -uroot -parcade-test-root adbbmis1_Cloud -Nse "SELECT COUNT(*) FROM UserPipelineFeatures")" -eq 0
-          test "$(mysql -h127.0.0.1 -P3308 -uroot -parcade-test-root adbbmis1_Cloud -Nse "SELECT COUNT(*) FROM UserPreferences")" -eq 0
-          test "$(mysql -h127.0.0.1 -P3308 -uroot -parcade-test-root adbbmis1_Cloud -Nse "SELECT COUNT(*) FROM UserAIAgentConfigs WHERE scope='user'")" -eq 0
+          test "$(mysql -h127.0.0.1 -P3308 -uroot -parcade-test-root -Nse "SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA='arcade_clean_a'")" -eq 59
+          mysql -h127.0.0.1 -P3308 -uroot -parcade-test-root arcade_clean_a -Nse "SHOW TABLES LIKE 'S3SyncSeen'" | grep -q S3SyncSeen
+          mysql -h127.0.0.1 -P3308 -uroot -parcade-test-root arcade_clean_a -Nse "SHOW INDEX FROM FileS3 WHERE Key_name='uq_files3_user_path_key'" | grep -q uq_files3_user_path_key
+          ! mysql -h127.0.0.1 -P3308 -uroot -parcade-test-root arcade_clean_a -Nse "SHOW INDEX FROM FileS3 WHERE Key_name='uq_files3_user_key'" | grep -q uq_files3_user_key
+          test "$(mysql -h127.0.0.1 -P3308 -uroot -parcade-test-root arcade_clean_a -Nse "SELECT COUNT(*) FROM UserPipelineFeatures")" -eq 0
+          test "$(mysql -h127.0.0.1 -P3308 -uroot -parcade-test-root arcade_clean_a -Nse "SELECT COUNT(*) FROM UserPreferences")" -eq 0
+          test "$(mysql -h127.0.0.1 -P3308 -uroot -parcade-test-root arcade_clean_a -Nse "SELECT COUNT(*) FROM UserAIAgentConfigs WHERE scope='user'")" -eq 0
+
+          mysql -h127.0.0.1 -P3308 -uroot -parcade-test-root -e "CREATE DATABASE arcade_clean_b CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci"
+          mysql -h127.0.0.1 -P3308 -uroot -parcade-test-root arcade_clean_b < adbbmis1_Cloud.sql
+          test "$(mysql -h127.0.0.1 -P3308 -uroot -parcade-test-root -Nse "SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA='arcade_clean_b'")" -eq 59
 
       - name: Shares schema guards
         run: |

@@ -1,9 +1,9 @@
 {
   "summary": {
-    "php_total": 370,
+    "php_total": 371,
     "php_class_modules": 221,
     "php_needs_migration": 0,
-    "php_tests": 27,
+    "php_tests": 28,
     "js_total": 46,
     "js_class_modules": 46,
     "js_needs_migration": 0,
@@ -102,13 +102,13 @@
     },
     {
       "path": "drive/bin/arcadecloud-drive-admin-helper.php",
-      "lines": 473,
+      "lines": 608,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
       "session": false,
       "superglobals": [],
-      "db": false,
+      "db": true,
       "s3": false,
       "bootstrap": false,
       "html": false,
@@ -1698,7 +1698,7 @@
     },
     {
       "path": "drive/src/Admin/PrivilegedServerHelper.php",
-      "lines": 123,
+      "lines": 150,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -2660,7 +2660,7 @@
     },
     {
       "path": "drive/src/Federation/FederationNodeAdminService.php",
-      "lines": 213,
+      "lines": 231,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -4101,7 +4101,7 @@
     },
     {
       "path": "drive/src/Setup/SuperAdminBootstrapService.php",
-      "lines": 276,
+      "lines": 290,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -5139,6 +5139,23 @@
       "issues": []
     },
     {
+      "path": "drive/tests/setup_finalize_contract_smoke.php",
+      "lines": 38,
+      "kind": "test script",
+      "classes": 0,
+      "functions": [
+        "checkFinalize"
+      ],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
       "path": "drive/tests/smtp_config_smoke.php",
       "lines": 49,
       "kind": "test script",
@@ -5945,7 +5962,7 @@
     },
     {
       "path": "drive/js/federation-footer.js",
-      "lines": 341,
+      "lines": 348,
       "kind": "class/module",
       "classes": [
         "FederationFooterModule"

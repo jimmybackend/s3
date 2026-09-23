@@ -4,10 +4,10 @@
 
 ## Resumen
 
-- PHP analizados: **370**
+- PHP analizados: **371**
 - PHP que ya contienen clases/interfaces: **221**
 - PHP marcados para migración/revisión: **0**
-- Tests PHP separados del objetivo OOP de runtime: **27**
+- Tests PHP separados del objetivo OOP de runtime: **28**
 - JavaScript analizados: **46**
 - JavaScript que ya contienen clases: **46**
 - JavaScript sin clase/encapsulación OOP: **0**
@@ -32,7 +32,7 @@
 | `drive/app_bootstrap.php` | 53 | bootstrap | 0 | — | ⚠️ | — | — |
 | `drive/aws.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/background_tasks.php` | 18 | thin endpoint | 0 | — | — | — | — |
-| `drive/bin/arcadecloud-drive-admin-helper.php` | 473 | class/module | 1 | — | — | — | — |
+| `drive/bin/arcadecloud-drive-admin-helper.php` | 608 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/bin/arcadecloud-drive-updater.php` | 207 | class/module | 1 | — | — | — | — |
 | `drive/bin/federation_catalog_migrate.php` | 45 | thin cli entrypoint | 0 | — | — | — | — |
 | `drive/bin/federation_endpoint_refresh.php` | 87 | thin cli entrypoint | 0 | — | — | — | — |
@@ -137,7 +137,7 @@
 | `drive/src/Activity/TranscriptionReconciler.php` | 315 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Admin/ArcadeCloudUpdaterService.php` | 85 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Admin/ManagedRuntimeEnvironment.php` | 240 | class/module | 1 | — | — | — | — |
-| `drive/src/Admin/PrivilegedServerHelper.php` | 123 | class/module | 1 | — | — | — | — |
+| `drive/src/Admin/PrivilegedServerHelper.php` | 150 | class/module | 1 | — | — | — | — |
 | `drive/src/Admin/ServerSettingsAdminService.php` | 211 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Application/AiFileSearchService.php` | 470 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Application/BackgroundWorkerLauncher.php` | 99 | class/module | 1 | — | — | — | — |
@@ -201,7 +201,7 @@
 | `drive/src/Federation/FederationHttpClient.php` | 162 | class/module | 1 | — | — | — | — |
 | `drive/src/Federation/FederationIngressQueueRepository.php` | 288 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Federation/FederationLocationSelector.php` | 66 | class/module | 1 | — | — | — | — |
-| `drive/src/Federation/FederationNodeAdminService.php` | 213 | class/module | 1 | — | — | — | — |
+| `drive/src/Federation/FederationNodeAdminService.php` | 231 | class/module | 1 | — | — | — | — |
 | `drive/src/Federation/FederationNodeDescriptorValidator.php` | 108 | class/module | 1 | — | — | — | — |
 | `drive/src/Federation/FederationNodeRepository.php` | 145 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Federation/FederationPeerSyncRepository.php` | 125 | class/module | 1 | — | ⚠️ | — | — |
@@ -296,7 +296,7 @@
 | `drive/src/Setup/SetupApiController.php` | 120 | class/module | 1 | — | — | — | — |
 | `drive/src/Setup/SetupConfigurationService.php` | 167 | class/module | 1 | — | — | — | — |
 | `drive/src/Setup/SetupEntryGuard.php` | 22 | class/module | 1 | — | — | — | — |
-| `drive/src/Setup/SuperAdminBootstrapService.php` | 276 | class/module | 1 | — | ⚠️ | — | — |
+| `drive/src/Setup/SuperAdminBootstrapService.php` | 290 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Sharing/ShareAccessService.php` | 105 | class/module | 1 | — | — | — | — |
 | `drive/src/Sharing/ShareException.php` | 22 | class/module | 1 | — | — | — | — |
 | `drive/src/Sharing/ShareFileRepository.php` | 72 | class/module | 1 | — | ⚠️ | — | — |
@@ -363,6 +363,7 @@
 | `drive/tests/server_admin_config_smoke.php` | 111 | test script | 0 | — | — | — | — |
 | `drive/tests/setup_bootstrap_smoke.php` | 57 | test script | 0 | — | — | — | — |
 | `drive/tests/setup_entry_guard_smoke.php` | 38 | test script | 0 | — | — | — | — |
+| `drive/tests/setup_finalize_contract_smoke.php` | 38 | test script | 0 | — | — | — | — |
 | `drive/tests/smtp_config_smoke.php` | 49 | test script | 0 | — | — | — | — |
 | `drive/tests/sync_repository_regression.php` | 91 | test script | 0 | — | ⚠️ | — | — |
 | `drive/tests/sync_schema_migrator_regression.php` | 75 | test script | 0 | — | ⚠️ | — | — |
@@ -417,7 +418,7 @@
 | `drive/js/elimina-multiple.js` | 104 | class/module | EliminaMultipleModule | — | — | — |
 | `drive/js/elimina-uno.js` | 122 | class/module | EliminaUnoModule | — | — | — |
 | `drive/js/estilo.js` | 267 | class/module | EstiloModule | — | — | — |
-| `drive/js/federation-footer.js` | 341 | class/module | FederationFooterModule | — | — | — |
+| `drive/js/federation-footer.js` | 348 | class/module | FederationFooterModule | — | — | — |
 | `drive/js/federation-page.js` | 95 | class/module | FederationPageModule | — | — | — |
 | `drive/js/federation-portal.js` | 416 | class/module | FederationPortalModule | — | — | — |
 | `drive/js/federation-share-drive.js` | 211 | class/module | FederationShareDriveModule | — | — | — |

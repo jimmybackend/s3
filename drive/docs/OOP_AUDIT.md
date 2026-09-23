@@ -4,8 +4,8 @@
 
 ## Resumen
 
-- PHP analizados: **372**
-- PHP que ya contienen clases/interfaces: **221**
+- PHP analizados: **371**
+- PHP que ya contienen clases/interfaces: **220**
 - PHP marcados para migración/revisión: **0**
 - Tests PHP separados del objetivo OOP de runtime: **29**
 - JavaScript analizados: **46**
@@ -74,7 +74,7 @@
 | `drive/federationcloud/access-request.php` | 11 | thin endpoint | 0 | — | — | — | — |
 | `drive/federationcloud/access-status.php` | 11 | thin endpoint | 0 | — | — | — | — |
 | `drive/federationcloud/access.php` | 11 | thin endpoint | 0 | — | — | — | — |
-| `drive/federationcloud/bundle.php` | 12 | thin endpoint | 0 | — | — | — | — |
+| `drive/federationcloud/collection.php` | 12 | thin endpoint | 0 | — | — | — | — |
 | `drive/federationcloud/create.php` | 13 | thin endpoint | 0 | — | — | — | — |
 | `drive/federationcloud/index.php` | 13 | thin endpoint | 0 | — | — | — | — |
 | `drive/federationcloud/name-availability.php` | 11 | thin endpoint | 0 | — | — | — | — |
@@ -181,8 +181,7 @@
 | `drive/src/Core/ApplicationKernel.php` | 38 | class/module | 1 | — | — | — | — |
 | `drive/src/Core/BackgroundWorkerLease.php` | 97 | class/module | 1 | — | — | — | — |
 | `drive/src/Core/DriveApplication.php` | 485 | class/module | 1 | — | — | ⚠️ | — |
-| `drive/src/Federation/ArcadeLinkBundleService.php` | 134 | class/module | 1 | — | — | — | — |
-| `drive/src/Federation/ArcadeLinkService.php` | 282 | class/module | 1 | — | — | — | — |
+| `drive/src/Federation/ArcadeLinkService.php` | 422 | class/module | 1 | — | — | — | — |
 | `drive/src/Federation/FederatedCatalogRepository.php` | 367 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Federation/FederatedResourceRepository.php` | 117 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Federation/FederationAccessMessageCodec.php` | 193 | class/module | 1 | — | — | — | — |
@@ -216,7 +215,7 @@
 | `drive/src/Federation/FederationReplicaService.php` | 349 | class/module | 1 | — | — | — | — |
 | `drive/src/Federation/FederationResolverService.php` | 185 | class/module | 1 | — | — | — | — |
 | `drive/src/Federation/FederationSeedConfig.php` | 83 | class/module | 1 | — | — | — | — |
-| `drive/src/Federation/FederationService.php` | 174 | class/module | 1 | — | — | — | — |
+| `drive/src/Federation/FederationService.php` | 266 | class/module | 1 | — | — | — | — |
 | `drive/src/Federation/FederationShareDownloader.php` | 188 | class/module | 1 | — | — | — | — |
 | `drive/src/Federation/FederationShareDriveRepository.php` | 350 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Federation/FederationShareDriveService.php` | 255 | class/module | 1 | — | — | — | — |
@@ -235,9 +234,9 @@
 | `drive/src/Http/Controller/BackgroundTaskCompatibilityController.php` | 245 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Http/Controller/BackgroundTaskController.php` | 754 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Http/Controller/FederationAccessController.php` | 123 | class/module | 1 | ⚠️ | — | — | — |
-| `drive/src/Http/Controller/FederationBundleController.php` | 146 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/FederationCatalogController.php` | 144 | class/module | 1 | — | — | — | — |
-| `drive/src/Http/Controller/FederationController.php` | 280 | class/module | 1 | — | — | — | — |
+| `drive/src/Http/Controller/FederationCollectionController.php` | 131 | class/module | 1 | — | — | — | — |
+| `drive/src/Http/Controller/FederationController.php` | 275 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/FederationDirectoryController.php` | 88 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/FederationNodeAdminController.php` | 46 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/FederationPortalController.php` | 41 | class/module | 1 | — | — | — | — |
@@ -326,7 +325,7 @@
 | `drive/src/Upload/UploadCleanupService.php` | 316 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/View/ActivityCostPageRenderer.php` | 396 | class/module | 1 | — | — | — | — |
 | `drive/src/View/Ec2PanelHelper.php` | 69 | class/module | 1 | — | — | — | — |
-| `drive/src/View/FederationPageRenderer.php` | 186 | class/module | 1 | — | — | — | — |
+| `drive/src/View/FederationPageRenderer.php` | 224 | class/module | 1 | — | — | — | — |
 | `drive/src/View/FederationPortalRenderer.php` | 159 | class/module | 1 | — | — | — | — |
 | `drive/src/View/FileIconResolver.php` | 136 | class/module | 1 | — | — | — | — |
 | `drive/src/View/FileViewHelper.php` | 108 | class/module | 1 | — | — | — | — |
@@ -343,8 +342,8 @@
 | `drive/sync_s3_to_db.php` | 5 | thin endpoint | 0 | — | — | — | — |
 | `drive/sync_status.php` | 5 | thin endpoint | 0 | — | — | — | — |
 | `drive/tests/activity_costs_smoke.php` | 150 | test script | 0 | — | — | — | — |
-| `drive/tests/arcadelink_bulk_contract_regression.php` | 68 | test script | 0 | — | — | — | — |
-| `drive/tests/arcadelink_bundle_regression.php` | 142 | test script | 0 | — | — | — | — |
+| `drive/tests/arcadelink_bulk_contract_regression.php` | 71 | test script | 0 | — | — | — | — |
+| `drive/tests/arcadelink_collection_regression.php` | 46 | test script | 0 | — | — | — | — |
 | `drive/tests/database_schema_contract_smoke.php` | 94 | test script | 0 | — | — | — | — |
 | `drive/tests/federation_access_message_smoke.php` | 72 | test script | 0 | — | — | — | — |
 | `drive/tests/federation_catalog_event_smoke.php` | 60 | test script | 0 | — | — | — | — |
@@ -356,7 +355,7 @@
 | `drive/tests/federation_provider_smoke.php` | 76 | test script | 0 | — | — | — | — |
 | `drive/tests/federation_replica_reconnect_contract_smoke.php` | 79 | test script | 0 | — | — | — | — |
 | `drive/tests/federation_replica_smoke.php` | 109 | test script | 0 | — | — | — | — |
-| `drive/tests/federationcloud_smoke.php` | 146 | test script | 0 | — | — | — | — |
+| `drive/tests/federationcloud_smoke.php` | 175 | test script | 0 | — | — | — | — |
 | `drive/tests/folder_document_sanitizer.php` | 49 | test script | 0 | — | — | — | — |
 | `drive/tests/password_credential_verifier_smoke.php` | 44 | test script | 0 | — | — | — | — |
 | `drive/tests/scoped_sync_repository_regression.php` | 96 | test script | 0 | — | ⚠️ | — | — |

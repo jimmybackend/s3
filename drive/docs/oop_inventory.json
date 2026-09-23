@@ -1,7 +1,7 @@
 {
   "summary": {
-    "php_total": 372,
-    "php_class_modules": 221,
+    "php_total": 371,
+    "php_class_modules": 220,
     "php_needs_migration": 0,
     "php_tests": 29,
     "js_total": 46,
@@ -745,7 +745,7 @@
       "issues": []
     },
     {
-      "path": "drive/federationcloud/bundle.php",
+      "path": "drive/federationcloud/collection.php",
       "lines": 12,
       "kind": "thin endpoint",
       "classes": 0,
@@ -2359,23 +2359,8 @@
       "issues": []
     },
     {
-      "path": "drive/src/Federation/ArcadeLinkBundleService.php",
-      "lines": 134,
-      "kind": "class/module",
-      "classes": 1,
-      "functions": [],
-      "session": false,
-      "superglobals": [],
-      "db": false,
-      "s3": false,
-      "bootstrap": false,
-      "html": true,
-      "namespace": true,
-      "issues": []
-    },
-    {
       "path": "drive/src/Federation/ArcadeLinkService.php",
-      "lines": 282,
+      "lines": 422,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -2885,7 +2870,7 @@
     },
     {
       "path": "drive/src/Federation/FederationService.php",
-      "lines": 174,
+      "lines": 266,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -3171,21 +3156,6 @@
       "issues": []
     },
     {
-      "path": "drive/src/Http/Controller/FederationBundleController.php",
-      "lines": 146,
-      "kind": "class/module",
-      "classes": 1,
-      "functions": [],
-      "session": false,
-      "superglobals": [],
-      "db": false,
-      "s3": false,
-      "bootstrap": false,
-      "html": false,
-      "namespace": true,
-      "issues": []
-    },
-    {
       "path": "drive/src/Http/Controller/FederationCatalogController.php",
       "lines": 144,
       "kind": "class/module",
@@ -3201,8 +3171,23 @@
       "issues": []
     },
     {
+      "path": "drive/src/Http/Controller/FederationCollectionController.php",
+      "lines": 131,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
       "path": "drive/src/Http/Controller/FederationController.php",
-      "lines": 280,
+      "lines": 275,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -4551,7 +4536,7 @@
     },
     {
       "path": "drive/src/View/FederationPageRenderer.php",
-      "lines": 186,
+      "lines": 224,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -4808,7 +4793,7 @@
     },
     {
       "path": "drive/tests/arcadelink_bulk_contract_regression.php",
-      "lines": 68,
+      "lines": 71,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -4825,14 +4810,13 @@
       "issues": []
     },
     {
-      "path": "drive/tests/arcadelink_bundle_regression.php",
-      "lines": 142,
+      "path": "drive/tests/arcadelink_collection_regression.php",
+      "lines": 46,
       "kind": "test script",
       "classes": 0,
       "functions": [
-        "expect",
-        "openBundle",
-        "assertNoSecretMarkers"
+        "collectionSource",
+        "expectCollection"
       ],
       "session": false,
       "superglobals": [],
@@ -5030,7 +5014,7 @@
     },
     {
       "path": "drive/tests/federationcloud_smoke.php",
-      "lines": 146,
+      "lines": 175,
       "kind": "test script",
       "classes": 0,
       "functions": [

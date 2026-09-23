@@ -41,6 +41,46 @@ final class SmtpEmailService
         $this->send($recipient, $subject, $htmlBody, $textBody);
     }
 
+    public function sendFederationDropAccess(
+        string $recipient,
+        string $filename,
+        string $shareUrl,
+        string $manageUrl,
+        string $arcadeLinkUrl,
+        string $expiresAt,
+        int $maxDownloads
+    ): void {
+        if (!filter_var($recipient, FILTER_VALIDATE_EMAIL)) {
+            throw new RuntimeException('FederationDrop requiere un correo válido.');
+        }
+
+        $safeFilename = htmlspecialchars($filename, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+        $safeShare = htmlspecialchars($shareUrl, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+        $safeManage = htmlspecialchars($manageUrl, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+        $safeArcade = htmlspecialchars($arcadeLinkUrl, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+        $safeExpires = htmlspecialchars($expiresAt, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+        $subject = 'Tu FederationDrop ya está disponible';
+        $textBody = "Tu archivo {$filename} ya está disponible.\n\n"
+            . "Descarga pública: {$shareUrl}\n"
+            . "ArcadeLink: {$arcadeLinkUrl}\n"
+            . "Administrar o eliminar: {$manageUrl}\n"
+            . "Vence: {$expiresAt}\n"
+            . "Máximo de descargas: {$maxDownloads}\n\n"
+            . "No compartas el enlace de administración.";
+        $htmlBody = '<!doctype html><html lang="es"><head><meta charset="utf-8"></head>'
+            . '<body style="font-family:Arial,sans-serif;color:#0f172a">'
+            . '<h2>FederationDrop activo</h2>'
+            . '<p><strong>' . $safeFilename . '</strong> ya está disponible.</p>'
+            . '<p><a href="' . $safeShare . '">Descargar archivo</a></p>'
+            . '<p><a href="' . $safeArcade . '">Descargar ArcadeLink</a></p>'
+            . '<p><a href="' . $safeManage . '">Administrar o eliminar</a></p>'
+            . '<p>Vence: ' . $safeExpires . '<br>Máximo de descargas: ' . max(1, $maxDownloads) . '</p>'
+            . '<p><strong>No compartas el enlace de administración.</strong></p>'
+            . '</body></html>';
+
+        $this->send($recipient, $subject, $htmlBody, $textBody);
+    }
+
     private function send(string $recipient, string $subject, string $htmlBody, string $textBody): void
     {
         $socket = null;

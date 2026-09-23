@@ -60,9 +60,17 @@ final class ActivityCostRepository
         $stmt->close();
     }
 
-    public function dashboard(int $userId, string $start, string $end, ?string $service, ?string $action): array
-    {
+    public function dashboard(
+        int $userId,
+        string $start,
+        string $end,
+        ?string $service,
+        ?string $action,
+        int $page = 1,
+        int $perPage = 25
+    ): array {
         [$where, $params] = $this->where($userId, $start, $end, $service, $action);
+        $perPage = max(1, min(100, $perPage));
 
         $totals = $this->one(
             "SELECT COUNT(DISTINCT COALESCE(e.`CorrelationId`, CONCAT('row:', e.id_))) AS operations,
@@ -98,6 +106,14 @@ final class ActivityCostRepository
             $params
         );
 
+        $recentTotal = (int)($this->one(
+            "SELECT COUNT(*) AS total FROM `DriveActivityEvents` e WHERE $where",
+            $params
+        )['total'] ?? 0);
+        $totalPages = max(1, (int)ceil($recentTotal / $perPage));
+        $page = max(1, min($page, $totalPages));
+        $offset = ($page - 1) * $perPage;
+
         $recent = $this->all(
             "SELECT e.id_, e.`CreatedAt`, e.`Action`, e.`Service`, e.`FileId`, e.`UnitsJson`,
                     e.`EstimatedCost`, e.`Currency`, e.`PricingState`, e.`Status`, e.`DurationMs`,
@@ -105,8 +121,9 @@ final class ActivityCostRepository
              FROM `DriveActivityEvents` e
              LEFT JOIN FileS3 f ON f.id_ = e.`FileId` AND f.user_id_ = e.`user_id_`
              WHERE $where
-             ORDER BY e.`CreatedAt` DESC, e.id_ DESC LIMIT 100",
-            $params
+             ORDER BY e.`CreatedAt` DESC, e.id_ DESC
+             LIMIT ? OFFSET ?",
+            array_merge($params, [$perPage, $offset])
         );
 
         return [
@@ -115,6 +132,14 @@ final class ActivityCostRepository
             'by_action' => $byAction,
             'daily' => $daily,
             'recent' => $recent,
+            'recent_pagination' => [
+                'page' => $page,
+                'per_page' => $perPage,
+                'total_items' => $recentTotal,
+                'total_pages' => $totalPages,
+                'from' => $recentTotal === 0 ? 0 : $offset + 1,
+                'to' => min($offset + count($recent), $recentTotal),
+            ],
             'filters' => $this->availableFilters($userId),
         ];
     }

@@ -310,7 +310,8 @@ final class FederationDropService
 
     private function ownerView(array $row, string $ownerToken): array
     {
-        $publicToken = null;
+        $publicToken = $this->decryptToken((string)($row['PublicTokenCiphertext'] ?? ''));
+        $dropId = (string)$row['DropId'];
         return [
             'ok' => true,
             'drop_id' => (string)$row['DropId'],
@@ -325,8 +326,11 @@ final class FederationDropService
             'download_count' => (int)$row['DownloadCount'],
             'checkout_url' => (string)($row['CheckoutUrl'] ?? ''),
             'expires_at' => $row['ExpiresAt'],
-            'manage_url' => $this->config->publicUrl . '/?manage=' . rawurlencode((string)$row['DropId'])
+            'manage_url' => $this->config->publicUrl . '/?manage=' . rawurlencode($dropId)
                 . '&owner_token=' . rawurlencode($ownerToken),
+            'share_url' => $this->publicDownloadUrl($dropId, $publicToken),
+            'arcadelink_url' => $this->config->publicUrl . '/arcadelink.php?id=' . rawurlencode($dropId)
+                . '&t=' . rawurlencode($publicToken),
         ];
     }
 

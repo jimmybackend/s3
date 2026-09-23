@@ -28,10 +28,7 @@ final class FederationHttpsReconciler
                 'state-path',
                 '/var/lib/arcadecloud-drive/federation-https-state.json'
             );
-            $backendHost = $this->validateSimpleHost(
-                $this->optionValue($argv, 'backend-host', 'localhost')
-            );
-            $runUser = $this->validateSimpleHost($this->optionValue($argv, 'run-user', 'nginx'));
+            $runUser = $this->validateSimpleName($this->optionValue($argv, 'run-user', 'nginx'));
             $appRoot = $this->optionValue($argv, 'app-root', dirname(__DIR__, 2));
             $phpBin = $this->optionValue($argv, 'php-bin', '/usr/bin/php');
             $certbotBin = $this->optionValue($argv, 'certbot-bin', '/usr/bin/certbot');
@@ -115,8 +112,6 @@ final class FederationHttpsReconciler
                 }
 
                 $certDir = '/etc/letsencrypt/live/' . $host;
-                $hasCurrentCertificate = is_file($certDir . '/fullchain.pem')
-                    && is_file($certDir . '/privkey.pem');
 
                 $command = array_merge([
                     $certbotBin, 'certonly', '--non-interactive', '--agree-tos',
@@ -434,14 +429,14 @@ final class FederationHttpsReconciler
         return ['--register-unsafely-without-email'];
     }
 
-    private function validateSimpleHost(string $host): string
+    private function validateSimpleName(string $value): string
     {
-        $host = strtolower(trim($host));
-        if ($host === '' || strlen($host) > 253 || !preg_match('/\A[a-z0-9._-]+\z/', $host)) {
-            throw new RuntimeException('backend-host inválido.');
+        $value = strtolower(trim($value));
+        if ($value === '' || strlen($value) > 253 || !preg_match('/\A[a-z0-9._-]+\z/', $value)) {
+            throw new RuntimeException('Valor simple inválido.');
         }
 
-        return $host;
+        return $value;
     }
 
     private function nginxDynamicIpConfig(string $ip): string

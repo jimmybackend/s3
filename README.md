@@ -97,6 +97,10 @@ Configuración avanzada**. Al completar el tercer paso, el helper finaliza autom
 registra el nodo en el seed global, confirma el directorio FederationCloud, instala la sincronización
 y sólo entonces cierra el setup temporal.
 
+El esquema de base de datos tiene una sola fuente canónica: `adbbmis1_Cloud.sql` en la raíz.
+Ese archivo contiene también todo FederationCloud, incluida `FederationEvents`; los migradores de una
+base existente extraen sólo su sección FederationCloud segura y no ejecutan los `DROP TABLE` del dump.
+
 Antes de instalar, consulta `drive/docs/INSTALLATION_PREPARATION.md`. Para nodos/mirrors avanzados
 continúa con `drive/docs/FEDERATION_NODE_REPLICA_INSTALL.md`. Consulta también
 `drive/docs/FEDERATED_CLOUD_STATUS.md` y `drive/docs/FEDERATIONCLOUD.md`.

@@ -85,6 +85,9 @@ schemaContract(str_contains($content, 'SET FOREIGN_KEY_CHECKS = 0;'), 'dump comp
 schemaContract(str_contains($content, 'SET FOREIGN_KEY_CHECKS = @ARCADECLOUD_OLD_FOREIGN_KEY_CHECKS;'), 'dump completo restaura FOREIGN_KEY_CHECKS al terminar');
 schemaContract(!str_contains($section, 'FOREIGN_KEY_CHECKS'), 'sección runtime FederationCloud no altera FOREIGN_KEY_CHECKS');
 
+schemaContract(!preg_match('/^\\s*CREATE\\s+DATABASE\\b/im', $content), 'SQL canónico no crea una base por nombre');
+schemaContract(!preg_match('/^\\s*USE\\s+[`A-Za-z0-9_]+\\s*;/im', $content), 'SQL canónico no cambia la DB seleccionada por el operador');
+
 schemaContract(str_contains($content, 'DROP TABLE IF EXISTS'), 'dump completo conserva semántica de recreación para DB limpia');
 
 fwrite(STDOUT, "Canonical database schema contract: OK\n");

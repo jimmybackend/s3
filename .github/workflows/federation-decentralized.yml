@@ -95,8 +95,10 @@ jobs:
           test -n "$migrate_line" -a -n "$timer_line"
           test "$migrate_line" -lt "$timer_line"
           finalize_migrate_line="$(grep -n 'federation_catalog_migrate.php' drive/bin/install_arcadecloud.sh | head -1 | cut -d: -f1)"
+          finalize_https_line="$(grep -n 'systemctl start arcadecloud-federation-https.service' drive/bin/install_arcadecloud.sh | head -1 | cut -d: -f1)"
           finalize_refresh_line="$(grep -n 'federation_endpoint_refresh.php.*--require-directory' drive/bin/install_arcadecloud.sh | head -1 | cut -d: -f1)"
-          test -n "$finalize_migrate_line" -a -n "$finalize_refresh_line"
+          test -n "$finalize_migrate_line" -a -n "$finalize_https_line" -a -n "$finalize_refresh_line"
+          test "$finalize_migrate_line" -lt "$finalize_https_line"
           test "$finalize_migrate_line" -lt "$finalize_refresh_line"
 
       - name: Signed event smoke test
@@ -110,6 +112,9 @@ jobs:
           grep -q 'FederatedResources' drive/sql/federation_global_catalog.sql
           grep -q 'FederationResourceLocations' drive/sql/federation_global_catalog.sql
           grep -q 'FederationPeerSyncState' drive/sql/federation_global_catalog.sql
+          grep -q "'FederationEvents'" drive/bin/federation_catalog_migrate.php
+          grep -q "'FederationIngressQueue'" drive/bin/federation_catalog_migrate.php
+          grep -q "information_schema.TABLES" drive/bin/federation_catalog_migrate.php
           grep -q 'ContiguousSequence' drive/src/Federation/FederationEventStore.php
           grep -q "sync-pull.php" drive/src/Federation/FederationHttpClient.php
           grep -q "sync-push.php" drive/src/Federation/FederationHttpClient.php

@@ -78,6 +78,7 @@ jobs:
           php -l drive/src/Admin/PrivilegedServerHelper.php
           php -l drive/bin/arcadecloud-drive-admin-helper.php
           php -l drive/bin/federation_endpoint_refresh.php
+          php -l drive/bin/federation_catalog_migrate.php
           php -l drive/tests/setup_bootstrap_smoke.php
           php -l drive/tests/setup_entry_guard_smoke.php
           php -l drive/tests/setup_finalize_contract_smoke.php
@@ -153,8 +154,10 @@ jobs:
           grep -q "arcadecloud-federation-https.service" drive/bin/install_arcadecloud.sh
           grep -q "federation_catalog_migrate.php" drive/bin/install_arcadecloud.sh
           migrate_line="$(grep -n 'federation_catalog_migrate.php' drive/bin/install_arcadecloud.sh | head -1 | cut -d: -f1)"
+          https_line="$(grep -n 'systemctl start arcadecloud-federation-https.service' drive/bin/install_arcadecloud.sh | head -1 | cut -d: -f1)"
           refresh_line="$(grep -n 'federation_endpoint_refresh.php.*--require-directory' drive/bin/install_arcadecloud.sh | head -1 | cut -d: -f1)"
-          test -n "$migrate_line" -a -n "$refresh_line"
+          test -n "$migrate_line" -a -n "$https_line" -a -n "$refresh_line"
+          test "$migrate_line" -lt "$https_line"
           test "$migrate_line" -lt "$refresh_line"
           grep -q -- "--require-directory" drive/bin/install_arcadecloud.sh
           grep -q "Nodo presentado al seed global" drive/bin/install_arcadecloud.sh

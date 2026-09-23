@@ -248,3 +248,17 @@ probar desde Internet, el Security Group de la EC2 debe permitir deliberadamente
 
 --skip-system-bootstrap existe para servidores administrados manualmente; no es la opción recomendada
 para una EC2 nueva.
+
+
+## Desinstalación
+
+El repositorio incluye `drive/bin/uninstall_arcadecloud.sh` para retirar de forma segura la instalación
+local. Antes de ejecutar el borrado real se recomienda:
+
+~~~bash
+sudo bash drive/bin/uninstall_arcadecloud.sh --dry-run
+~~~
+
+El desinstalador elimina servicios, timers, configuración local, helpers, runtime, identidad local,
+entorno Certbot administrado y checkout cuando puede demostrar que pertenecen a ArcadeCloud. No borra
+MySQL/S3 remotos ni paquetes compartidos del sistema. Consulta `drive/docs/UNINSTALLATION.md`.

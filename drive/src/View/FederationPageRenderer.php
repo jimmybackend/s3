@@ -13,8 +13,6 @@ final class FederationPageRenderer
         ?array $node = null
     ): void {
         $h = static fn(mixed $v): string => htmlspecialchars((string)$v, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
-        $resource = is_array($inspected['resource'] ?? null) ? $inspected['resource'] : null;
-        $raw = is_string($inspected['raw'] ?? null) ? $inspected['raw'] : '';
         $statusLabels = [
             'available' => 'Disponible',
             'not_available' => 'No disponible',
@@ -26,23 +24,44 @@ final class FederationPageRenderer
             'origin_unreachable' => 'Nodo origen no disponible',
         ];
 
-        $title = trim((string)($resource['title'] ?? ''));
-        $mediaType = strtolower(trim((string)($resource['media_type'] ?? $resource['resource_type'] ?? '')));
-        $extension = strtolower(pathinfo($title, PATHINFO_EXTENSION));
-        $fileIcon = 'fa-file';
-        if (str_starts_with($mediaType, 'image/') || in_array($extension, ['jpg','jpeg','png','gif','webp','bmp','avif','tif','tiff'], true)) {
-            $fileIcon = 'fa-file-image';
-        } elseif ($mediaType === 'application/pdf' || $extension === 'pdf') {
-            $fileIcon = 'fa-file-pdf';
-        } elseif (str_starts_with($mediaType, 'audio/') || in_array($extension, ['mp3','wav','ogg','opus','m4a','aac','flac'], true)) {
-            $fileIcon = 'fa-file-audio';
-        } elseif (str_starts_with($mediaType, 'video/') || in_array($extension, ['mp4','webm','mov','avi','mkv'], true)) {
-            $fileIcon = 'fa-file-video';
-        } elseif (str_starts_with($mediaType, 'text/') || in_array($extension, ['txt','md','html','css','js','php','py','json','csv','sql'], true)) {
-            $fileIcon = 'fa-file-lines';
-        } elseif (in_array($extension, ['zip','rar','7z','tar','gz'], true)) {
-            $fileIcon = 'fa-file-zipper';
+        $items = [];
+        if (is_array($inspected['items'] ?? null)) {
+            foreach ($inspected['items'] as $item) {
+                if (!is_array($item) || !is_array($item['resource'] ?? null)) continue;
+                $items[] = [
+                    'resource' => $item['resource'],
+                    'raw' => is_string($item['raw'] ?? null) ? $item['raw'] : '',
+                ];
+            }
+        } elseif (is_array($inspected['resource'] ?? null)) {
+            $items[] = [
+                'resource' => $inspected['resource'],
+                'raw' => is_string($inspected['raw'] ?? null) ? $inspected['raw'] : '',
+            ];
         }
+
+        $isCollection = !empty($inspected['collection']);
+        $collectionTitle = trim((string)($inspected['title'] ?? ''));
+        $iconFor = static function (array $resource): string {
+            $title = trim((string)($resource['title'] ?? ''));
+            $mediaType = strtolower(trim((string)($resource['media_type'] ?? $resource['resource_type'] ?? '')));
+            $extension = strtolower(pathinfo($title, PATHINFO_EXTENSION));
+            if (str_starts_with($mediaType, 'image/') || in_array($extension, ['jpg','jpeg','png','gif','webp','bmp','avif','tif','tiff'], true)) {
+                return 'fa-file-image';
+            }
+            if ($mediaType === 'application/pdf' || $extension === 'pdf') return 'fa-file-pdf';
+            if (str_starts_with($mediaType, 'audio/') || in_array($extension, ['mp3','wav','ogg','opus','m4a','aac','flac'], true)) {
+                return 'fa-file-audio';
+            }
+            if (str_starts_with($mediaType, 'video/') || in_array($extension, ['mp4','webm','mov','avi','mkv'], true)) {
+                return 'fa-file-video';
+            }
+            if (str_starts_with($mediaType, 'text/') || in_array($extension, ['txt','md','html','css','js','php','py','json','csv','sql'], true)) {
+                return 'fa-file-lines';
+            }
+            if (in_array($extension, ['zip','rar','7z','tar','gz'], true)) return 'fa-file-zipper';
+            return 'fa-file';
+        };
 
         $driveRoot = dirname(__DIR__, 2);
         $federationCssVersion = is_file($driveRoot . '/css/federation.css') ? (int)filemtime($driveRoot . '/css/federation.css') : 1;
@@ -81,9 +100,9 @@ final class FederationPageRenderer
     <div class="federation-title-row">
       <div>
         <h1><i class="fas fa-link mr-2"></i>Abrir ArcadeLink</h1>
-        <p class="federation-subtitle">Suelta un <code>.arcadelink</code> y Cloud Drive valida firma, origen y disponibilidad.</p>
+        <p class="federation-subtitle">Un solo <code>.arcadelink</code> puede representar un archivo o una colección completa.</p>
       </div>
-      <?php if ($resource): ?>
+      <?php if ($items !== []): ?>
         <a href="./" class="btn btn-outline-primary btn-sm">
           <i class="fas fa-rotate mr-1"></i> Validar otro ArcadeLink
         </a>
@@ -95,13 +114,13 @@ final class FederationPageRenderer
       <div class="alert alert-danger federation-alert" role="alert">
         <i class="fas fa-triangle-exclamation mr-1"></i><?= $h($error) ?>
       </div>
-    <?php elseif ($notice && !$resource): ?>
+    <?php elseif ($notice && $items === []): ?>
       <div class="alert alert-success federation-alert" role="status">
         <i class="fas fa-circle-check mr-1"></i><?= $h($notice) ?>
       </div>
     <?php endif; ?>
 
-    <?php if (!$resource): ?>
+    <?php if ($items === []): ?>
       <section class="federation-card p-3 p-md-4">
         <form method="post" enctype="multipart/form-data" id="inspectForm">
           <input type="hidden" name="action" value="inspect">
@@ -116,63 +135,82 @@ final class FederationPageRenderer
         </form>
       </section>
     <?php else: ?>
-      <section class="federation-card">
-        <div class="federation-resource">
-          <div class="federation-resource-icon" aria-hidden="true">
-            <i class="fas <?= $h($fileIcon) ?>"></i>
-          </div>
-          <div class="federation-resource-main">
-            <h2 class="federation-resource-name"><?= $h($title !== '' ? $title : 'Recurso ArcadeLink') ?></h2>
-            <div class="federation-resource-meta">
-              <span><?= $h(FileViewHelper::formatBytes((int)($resource['size_bytes'] ?? 0))) ?></span>
-              <span>·</span>
-              <span><?= $h($statusLabels[(string)($resource['status'] ?? '')] ?? (string)($resource['status'] ?? '')) ?></span>
-              <span class="badge badge-info"><?= $h($resource['visibility'] ?? '') ?></span>
-              <span class="badge badge-secondary"><?= $h($resource['rights'] ?? '') ?></span>
+      <div class="alert alert-success federation-alert" role="status">
+        <i class="fas fa-circle-check mr-1"></i>
+        <strong>ArcadeLink validado.</strong>
+        <?php if ($isCollection): ?>
+          <?= $h($collectionTitle !== '' ? $collectionTitle : 'Colección') ?> contiene <?= count($items) ?> recurso<?= count($items) === 1 ? '' : 's' ?>.
+        <?php else: ?>
+          Firma y origen comprobados.
+        <?php endif; ?>
+      </div>
+
+      <?php foreach ($items as $position => $item):
+          $resource = $item['resource'];
+          $raw = $item['raw'];
+          $title = trim((string)($resource['title'] ?? 'Recurso ArcadeLink'));
+          $mediaType = strtolower(trim((string)($resource['media_type'] ?? $resource['resource_type'] ?? 'application/octet-stream')));
+          $status = (string)($resource['status'] ?? '');
+          $fileIcon = $iconFor($resource);
+      ?>
+        <section class="federation-card mb-3">
+          <div class="federation-resource">
+            <div class="federation-resource-icon" aria-hidden="true">
+              <i class="fas <?= $h($fileIcon) ?>"></i>
+            </div>
+            <div class="federation-resource-main">
+              <?php if ($isCollection): ?>
+                <div class="small text-muted mb-1">Recurso <?= $position + 1 ?> de <?= count($items) ?></div>
+              <?php endif; ?>
+              <h2 class="federation-resource-name"><?= $h($title !== '' ? $title : 'Recurso ArcadeLink') ?></h2>
+              <div class="federation-resource-meta">
+                <span><?= $h(FileViewHelper::formatBytes((int)($resource['size_bytes'] ?? 0))) ?></span>
+                <span>·</span>
+                <span><?= $h($statusLabels[$status] ?? $status) ?></span>
+                <span class="badge badge-info"><?= $h($resource['visibility'] ?? '') ?></span>
+                <span class="badge badge-secondary"><?= $h($resource['rights'] ?? '') ?></span>
+              </div>
+            </div>
+            <div class="federation-resource-actions">
+              <?php if (!empty($resource['can_open']) && !empty($resource['local']) && $raw !== ''): ?>
+                <form method="post" class="m-0">
+                  <input type="hidden" name="action" value="open">
+                  <input type="hidden" name="arcadelink_text" value="<?= $h($raw) ?>">
+                  <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-arrow-up-right-from-square mr-1"></i> Abrir
+                  </button>
+                </form>
+              <?php elseif (empty($resource['local']) && !empty($resource['origin_reachable'])): ?>
+                <a class="btn btn-primary" rel="noopener noreferrer" href="<?= $h($resource['federation_url'] ?? '#') ?>">
+                  <i class="fas fa-network-wired mr-1"></i> Ir al nodo
+                </a>
+              <?php endif; ?>
             </div>
           </div>
-          <div class="federation-resource-actions">
-            <?php if (!empty($resource['can_open']) && !empty($resource['local']) && $raw !== ''): ?>
-              <form method="post" class="m-0">
-                <input type="hidden" name="action" value="open">
-                <input type="hidden" name="arcadelink_text" value="<?= $h($raw) ?>">
-                <button type="submit" class="btn btn-primary">
-                  <i class="fas fa-arrow-up-right-from-square mr-1"></i> Abrir
-                </button>
-              </form>
-            <?php elseif (empty($resource['local']) && !empty($resource['origin_reachable'])): ?>
-              <a class="btn btn-primary" rel="noopener noreferrer" href="<?= $h($resource['federation_url'] ?? '#') ?>">
-                <i class="fas fa-network-wired mr-1"></i> Ir al origen
-              </a>
-            <?php endif; ?>
-            <a href="./" class="btn btn-outline-secondary">
-              <i class="fas fa-link mr-1"></i> Otro
-            </a>
+
+          <div class="federation-verified-strip text-success">
+            <i class="fas fa-circle-check"></i>
+            <strong>Firma verificada</strong>
+            <span class="text-muted">· nodo <?= $h($resource['origin_node_id'] ?? '') ?></span>
           </div>
-        </div>
 
-        <div class="federation-verified-strip text-success">
-          <i class="fas fa-circle-check"></i>
-          <strong>ArcadeLink validado</strong>
-          <span class="text-muted">· firma Ed25519 <?= !empty($resource['signature_valid']) ? 'válida' : 'no verificada' ?></span>
-        </div>
-
-        <details class="federation-details mt-3">
-          <summary>Detalles del ArcadeLink</summary>
-          <dl class="federation-details-grid">
-            <dt>Resource ID</dt><dd><?= $h($resource['resource_id'] ?? '') ?></dd>
-            <dt>Nodo origen</dt><dd><?= $h($resource['origin_node_id'] ?? '') ?></dd>
-            <dt>Tipo</dt><dd><?= $h($mediaType !== '' ? $mediaType : 'application/octet-stream') ?></dd>
-            <dt>Content ID</dt><dd><?= $h($resource['content_id'] ?? 'No publicado') ?></dd>
-            <dt>Emitido</dt><dd><?= $h($resource['issued_at'] ?? '') ?></dd>
-          </dl>
-        </details>
-      </section>
+          <details class="federation-details mt-3">
+            <summary>Detalles del recurso</summary>
+            <dl class="federation-details-grid">
+              <dt>Resource ID</dt><dd><?= $h($resource['resource_id'] ?? '') ?></dd>
+              <dt>Nodo origen</dt><dd><?= $h($resource['origin_node_id'] ?? '') ?></dd>
+              <dt>Tipo</dt><dd><?= $h($mediaType !== '' ? $mediaType : 'application/octet-stream') ?></dd>
+              <dt>Content ID</dt><dd><?= $h($resource['content_id'] ?? 'No publicado') ?></dd>
+              <dt>Emitido</dt><dd><?= $h($resource['issued_at'] ?? '') ?></dd>
+            </dl>
+          </details>
+        </section>
+      <?php endforeach; ?>
     <?php endif; ?>
 
     <?php if ($node): ?>
       <div class="federation-node-hint">
-        Nodo <?= $h($node['node_name'] ?? $node['node_id'] ?? '') ?> · FederationCloud v1
+        Nodo <?= $h($node['node_name'] ?? $node['node_id'] ?? '') ?> · FederationCloud
       </div>
     <?php endif; ?>
   </div>

@@ -151,6 +151,11 @@ jobs:
           grep -q -- "--finalize-from-setup" drive/bin/install_arcadecloud.sh
           grep -q "SUDO_USER" drive/bin/install_arcadecloud.sh
           grep -q "arcadecloud-federation-https.service" drive/bin/install_arcadecloud.sh
+          grep -q "federation_catalog_migrate.php" drive/bin/install_arcadecloud.sh
+          migrate_line="$(grep -n 'federation_catalog_migrate.php' drive/bin/install_arcadecloud.sh | head -1 | cut -d: -f1)"
+          refresh_line="$(grep -n 'federation_endpoint_refresh.php.*--require-directory' drive/bin/install_arcadecloud.sh | head -1 | cut -d: -f1)"
+          test -n "$migrate_line" -a -n "$refresh_line"
+          test "$migrate_line" -lt "$refresh_line"
           grep -q -- "--require-directory" drive/bin/install_arcadecloud.sh
           grep -q "Nodo presentado al seed global" drive/bin/install_arcadecloud.sh
           grep -q "CERTBOT_VENV" drive/bin/install_arcadecloud_server.sh

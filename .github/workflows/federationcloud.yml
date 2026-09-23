@@ -14,6 +14,7 @@ on:
       - 'drive/bin/federation_*.php'
       - 'drive/bin/install_federation_https_service.sh'
       - 'drive/bin/install_arcadecloud_server.sh'
+      - 'drive/bin/install_arcadecloud.sh'
       - 'drive/bin/install_federation_sync_timer.sh'
       - 'drive/config/federation-seeds.json'
       - 'drive/sql/federation_ingress_queue.sql'
@@ -51,6 +52,7 @@ on:
       - 'drive/bin/federation_*.php'
       - 'drive/bin/install_federation_https_service.sh'
       - 'drive/bin/install_arcadecloud_server.sh'
+      - 'drive/bin/install_arcadecloud.sh'
       - 'drive/bin/install_federation_sync_timer.sh'
       - 'drive/config/federation-seeds.json'
       - 'drive/sql/federation_ingress_queue.sql'
@@ -126,6 +128,7 @@ jobs:
           node --check drive/js/federation-footer.js
           bash -n drive/bin/install_federation_https_service.sh
           bash -n drive/bin/install_arcadecloud_server.sh
+          bash -n drive/bin/install_arcadecloud.sh
           bash -n drive/bin/install_federation_sync_timer.sh
 
       - name: FederationCloud cryptographic smoke test
@@ -193,6 +196,9 @@ jobs:
           ! grep -q "nginxChallengeConfig" drive/bin/federation_https_reconcile.php
           ! grep -q -- "--backend-host" drive/bin/federation_https_reconcile.php drive/bin/install_federation_https_service.sh
           grep -q -- "--require-directory" drive/bin/federation_endpoint_refresh.php
+          grep -q "migrate_federation_schema" drive/bin/install_arcadecloud.sh
+          grep -q "FederationEvents" drive/bin/federation_catalog_migrate.php
+          grep -q "FederationIngressQueue" drive/bin/federation_catalog_migrate.php
           grep -q "OnActiveSec=45s" drive/bin/install_federation_sync_timer.sh
           grep -q 'OnUnitInactiveSec=${INTERVAL_SEC}s' drive/bin/install_federation_sync_timer.sh
           grep -q "enqueueNodePresence" drive/src/Federation/FederationDirectoryService.php

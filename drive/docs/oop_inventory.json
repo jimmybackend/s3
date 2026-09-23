@@ -5157,7 +5157,7 @@
     },
     {
       "path": "drive/tests/setup_finalize_contract_smoke.php",
-      "lines": 50,
+      "lines": 70,
       "kind": "test script",
       "classes": 0,
       "functions": [

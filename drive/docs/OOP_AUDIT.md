@@ -364,7 +364,7 @@
 | `drive/tests/server_admin_config_smoke.php` | 111 | test script | 0 | — | — | — | — |
 | `drive/tests/setup_bootstrap_smoke.php` | 57 | test script | 0 | — | — | — | — |
 | `drive/tests/setup_entry_guard_smoke.php` | 38 | test script | 0 | — | — | — | — |
-| `drive/tests/setup_finalize_contract_smoke.php` | 50 | test script | 0 | — | — | — | — |
+| `drive/tests/setup_finalize_contract_smoke.php` | 70 | test script | 0 | — | — | — | — |
 | `drive/tests/smtp_config_smoke.php` | 49 | test script | 0 | — | — | — | — |
 | `drive/tests/sync_repository_regression.php` | 91 | test script | 0 | — | ⚠️ | — | — |
 | `drive/tests/sync_schema_migrator_regression.php` | 75 | test script | 0 | — | ⚠️ | — | — |

@@ -24,7 +24,7 @@ on:
       - 'drive/bin/federation_sync.php'
       - 'drive/bin/install_federation_sync_timer.sh'
       - 'drive/bin/install_arcadecloud.sh'
-      - 'drive/sql/federation_global_catalog.sql'
+      - 'adbbmis1_Cloud.sql'
       - 'drive/tests/federation_catalog_event_smoke.php'
       - 'drive/docs/FEDERATION_DECENTRALIZED_CATALOG.md'
       - '.github/workflows/federation-decentralized.yml'
@@ -47,7 +47,7 @@ on:
       - 'drive/bin/federation_sync.php'
       - 'drive/bin/install_federation_sync_timer.sh'
       - 'drive/bin/install_arcadecloud.sh'
-      - 'drive/sql/federation_global_catalog.sql'
+      - 'adbbmis1_Cloud.sql'
       - 'drive/tests/federation_catalog_event_smoke.php'
       - 'drive/docs/FEDERATION_DECENTRALIZED_CATALOG.md'
       - '.github/workflows/federation-decentralized.yml'
@@ -107,11 +107,11 @@ jobs:
       - name: Decentralized catalog guards
         run: |
           set -euo pipefail
-          grep -q 'FederationEvents' drive/sql/federation_global_catalog.sql
-          grep -q 'FederationClocks' drive/sql/federation_global_catalog.sql
-          grep -q 'FederatedResources' drive/sql/federation_global_catalog.sql
-          grep -q 'FederationResourceLocations' drive/sql/federation_global_catalog.sql
-          grep -q 'FederationPeerSyncState' drive/sql/federation_global_catalog.sql
+          grep -q 'FederationEvents' adbbmis1_Cloud.sql
+          grep -q 'FederationClocks' adbbmis1_Cloud.sql
+          grep -q 'FederatedResources' adbbmis1_Cloud.sql
+          grep -q 'FederationResourceLocations' adbbmis1_Cloud.sql
+          grep -q 'FederationPeerSyncState' adbbmis1_Cloud.sql
           grep -q "'FederationEvents'" drive/bin/federation_catalog_migrate.php
           grep -q "'FederationIngressQueue'" drive/bin/federation_catalog_migrate.php
           grep -q "information_schema.TABLES" drive/bin/federation_catalog_migrate.php
@@ -123,7 +123,7 @@ jobs:
           grep -q "requestable_metadata" drive/src/Federation/FederationCatalogService.php
           grep -q "local_only" drive/src/Federation/FederationCatalogService.php
           grep -q "setup" drive/docs/FEDERATION_DECENTRALIZED_CATALOG.md || true
-          ! grep -Eq '(DB_PASSWORD|AWS_SECRET_ACCESS_KEY|ARCADECLOUD_SMTP_PASSWORD).*PayloadJson' drive/sql/federation_global_catalog.sql
+          ! grep -Eq '(DB_PASSWORD|AWS_SECRET_ACCESS_KEY|ARCADECLOUD_SMTP_PASSWORD).*PayloadJson' adbbmis1_Cloud.sql
           ! grep -Eq 'FROM Users|INTO Users|UPDATE Users' drive/src/Federation/FederationEventStore.php drive/src/Federation/FederatedCatalogRepository.php
 
       - name: Diff whitespace check

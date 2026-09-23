@@ -171,6 +171,36 @@ final class FederationDropRepository
         return $row;
     }
 
+    public function markPaymentState(
+        string $dropId,
+        string $status,
+        string $provider,
+        string $reference
+    ): array {
+        if (!in_array($status, ['failed', 'refunded'], true)) {
+            throw new FederationException('Estado de pago FederationDrop inválido.', 400);
+        }
+
+        $dropStatus = $status === 'refunded' ? 'blocked' : 'pending_payment';
+        $stmt = $this->db->prepare(
+            "UPDATE FederationDrops
+             SET PaymentStatus = ?, PaymentProvider = ?, PaymentReference = ?, Status = ?
+             WHERE DropId = ? AND Status NOT IN ('deleted','expired') LIMIT 1"
+        );
+        if (!$stmt) throw new FederationException('No se pudo preparar el estado de pago FederationDrop.', 500);
+        $stmt->bind_param('sssss', $status, $provider, $reference, $dropStatus, $dropId);
+        if (!$stmt->execute()) {
+            $message = $stmt->error;
+            $stmt->close();
+            throw new FederationException('No se pudo actualizar el pago FederationDrop: ' . $message, 500);
+        }
+        $stmt->close();
+
+        $row = $this->find($dropId);
+        if ($row === null) throw new FederationException('FederationDrop no encontrado.', 404);
+        return $row;
+    }
+
     public function createCentralPlacement(string $dropId, string $nodeId): void
     {
         $stmt = $this->db->prepare(

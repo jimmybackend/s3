@@ -2544,6 +2544,32 @@ CREATE TABLE IF NOT EXISTS FederationCommercialProviders (
   KEY idx_fcommercial_status (Status, UpdatedAt)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS FederationDropIngressObjects (
+  IngressId varchar(96) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  DropId varchar(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  CommerceNodeId varchar(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  IngressNodeId varchar(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  IngressFederationUrl varchar(1024) NOT NULL,
+  S3Key varchar(1024) DEFAULT NULL,
+  ExpectedSizeBytes bigint unsigned NOT NULL,
+  MimeType varchar(128) NOT NULL DEFAULT 'application/octet-stream',
+  ObjectEtag varchar(191) DEFAULT NULL,
+  GrantJson mediumtext NOT NULL,
+  Status enum('authorized','uploaded','pulling','centralized','deleted','failed') NOT NULL DEFAULT 'authorized',
+  Attempts int unsigned NOT NULL DEFAULT 0,
+  LastAttemptAt datetime(6) DEFAULT NULL,
+  NextAttemptAt datetime(6) DEFAULT NULL,
+  LastError varchar(512) DEFAULT NULL,
+  UploadedAt datetime(6) DEFAULT NULL,
+  CentralizedAt datetime(6) DEFAULT NULL,
+  CreatedAt datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+  UpdatedAt datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
+  PRIMARY KEY (IngressId),
+  UNIQUE KEY uq_fdrop_ingress_drop_node (DropId, IngressNodeId),
+  KEY idx_fdrop_ingress_due (Status, NextAttemptAt, CreatedAt),
+  KEY idx_fdrop_ingress_drop (DropId, Status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE IF NOT EXISTS FederationDropPlacements (
   DropId varchar(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
   NodeId varchar(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,

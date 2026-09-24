@@ -189,7 +189,7 @@ $h = static fn(string $value): string => htmlspecialchars(
         <div class="card-body d-flex flex-column p-2">
           <i class="fas fa-folder-open mb-2"></i>
           <h3 class="h5">Drive</h3>
-          
+
           <a class="btn btn-primary btn-sm" href="#login">Login</a>
         </div>
       </div>
@@ -198,7 +198,7 @@ $h = static fn(string $value): string => htmlspecialchars(
         <div class="card-body d-flex flex-column p-2">
           <i class="fas fa-link mb-2"></i>
           <h3 class="h5">ArcadeLink</h3>
-          
+
           <a class="btn btn-outline-primary btn-sm" href="<?= $h($arcadeLinkUrl) ?>">Abrir</a>
         </div>
       </div>
@@ -207,7 +207,7 @@ $h = static fn(string $value): string => htmlspecialchars(
         <div class="card-body d-flex flex-column p-2">
           <i class="fas fa-cloud-upload-alt mb-2"></i>
           <h3 class="h5">FederationDrop</h3>
-          
+
           <a class="btn btn-outline-primary btn-sm" href="<?= $h($federationDropUrl) ?>">Subir / pagar</a>
         </div>
       </div>
@@ -216,7 +216,7 @@ $h = static fn(string $value): string => htmlspecialchars(
         <div class="card-body d-flex flex-column p-2">
           <i class="fab fa-github mb-2"></i>
           <h3 class="h5">Repositorio</h3>
-          
+
           <a class="btn btn-outline-primary btn-sm" href="<?= $h($githubUrl) ?>" rel="noopener noreferrer">GitHub</a>
         </div>
       </div>

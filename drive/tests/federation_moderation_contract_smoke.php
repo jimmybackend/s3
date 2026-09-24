@@ -30,6 +30,9 @@ $controller = $read('drive/src/Http/Controller/FederationModerationController.ph
 $footer = $read('drive/bloque_footer.php');
 $portal = $read('drive/js/federation-portal.js');
 $dropJs = $read('drive/js/federation-drop.js');
+$uploadRepo = $read('drive/src/Upload/UploadCatalogRepository.php');
+$singleUpload = $read('drive/src/Upload/SingleUploadService.php');
+$publicDropzone = $read('drive/src/Upload/PublicDropzoneUploadService.php');
 $docs = $read('drive/docs/FEDERATION_CONTENT_MODERATION.md');
 
 foreach ([
@@ -56,5 +59,8 @@ $ok(str_contains($controller, "federation_moderation_csrf"), 'moderation decisio
 $ok(str_contains($footer, "footerFederationModeration"), 'superadmin footer exposes pending moderation count');
 $ok(str_contains($portal, "Reportar abuso"), 'federation catalog exposes abuse reporting');
 $ok(str_contains($dropJs, "report.php?type=drop"), 'FederationDrop exposes abuse reporting');
+$ok(str_contains($uploadRepo, 'isContentBlocked'), 'generic upload repository can query the denylist');
+$ok(str_contains($singleUpload, 'isContentBlocked($sha256)'), 'normal Drive upload rejects blocked bytes before S3 write');
+$ok(str_contains($publicDropzone, 'isContentBlocked($sha256)'), 'public dropzone rejects blocked bytes before S3 write');
 $ok(str_contains($docs, 'sin reembolso automático'), 'policy documents non-automatic refund rule');
 $ok(str_contains($docs, 'revisión'), 'policy documents human review');

@@ -1,7 +1,8 @@
 <?php
 declare(strict_types=1);
 
-$indexPath = dirname(__DIR__) . '/index.php';
+$root = dirname(__DIR__);
+$indexPath = $root . '/index.php';
 $source = file_get_contents($indexPath);
 if (!is_string($source)) {
     fwrite(STDERR, "FAIL: no se pudo leer drive/index.php\n");
@@ -33,42 +34,44 @@ indexHomeOk(
 );
 
 indexHomeOk(
-    str_contains($source, 'bootstrap/4.5.2')
-        && str_contains($source, 'font-awesome/6.0.0'),
-    'portada mantiene las mismas dependencias visuales base de s3.php'
+    str_contains($source, 'id="arcadeHomeCarousel"')
+        && str_contains($source, 'class="carousel slide public-carousel shadow-sm"')
+        && str_contains($source, 'data-interval="6500"'),
+    'portada usa carrusel visual Bootstrap'
+);
+
+foreach ([
+    'images/home/slide-aws.svg',
+    'images/home/slide-federation.svg',
+    'images/home/slide-drop.svg',
+] as $relative) {
+    indexHomeOk(
+        is_file($root . '/' . $relative),
+        'existe visual generado: ' . $relative
+    );
+    indexHomeOk(
+        str_contains($source, $relative),
+        'index usa visual generado: ' . $relative
+    );
+}
+
+indexHomeOk(
+    substr_count($source, 'class="carousel-item') === 3,
+    'carrusel contiene exactamente tres historias visuales'
 );
 
 indexHomeOk(
-    str_contains($source, 'id="inicio"')
-        && str_contains($source, 'id="aws"')
-        && str_contains($source, 'id="accesos"')
-        && str_contains($source, 'id="login"')
-        && str_contains($source, 'id="acerca"')
-        && str_contains($source, 'id="contacto"'),
-    'portada mantiene navegación pública compacta'
-);
-
-indexHomeOk(
-    str_contains($source, 'Textract')
-        && str_contains($source, 'Transcribe')
-        && str_contains($source, 'Polly')
-        && str_contains($source, 'Translate')
-        && str_contains($source, 'Rekognition')
-        && str_contains($source, 'Comprehend'),
-    'servicios AWS reales reciben protagonismo propio'
-);
-
-indexHomeOk(
-    str_contains($source, 'Una de las capacidades que distingue a ArcadeCloud.')
-        && str_contains($source, 'Los archivos almacenados en S3 pueden utilizar directamente servicios administrados de AWS desde el Drive.'),
-    'AWS se presenta como capacidad distintiva integrada al Drive'
+    str_contains($source, 'Amazon S3 + AWS')
+        && str_contains($source, 'FederationCloud')
+        && str_contains($source, 'FederationDrop'),
+    'carrusel cubre S3/AWS, federación y Drop sin bloques repetidos'
 );
 
 indexHomeOk(
     str_contains($source, '$arcadeLinkUrl = \'federationcloud/\'')
         && str_contains($source, '$githubUrl = \'https://github.com/jimmybackend/s3\'')
         && str_contains($source, 'Subir / pagar'),
-    'portada ofrece accesos directos a funciones reales'
+    'portada conserva accesos directos a funciones reales'
 );
 
 indexHomeOk(
@@ -100,9 +103,4 @@ indexHomeOk(
     'portada pública no arranca la aplicación completa'
 );
 
-indexHomeOk(
-    !str_contains($source, 'js/estilo.js'),
-    'portada no carga módulos privados del Drive sólo para copiar el aspecto visual'
-);
-
-echo "Public index native Drive UI smoke: OK\n";
+echo "Public index visual carousel smoke: OK\n";

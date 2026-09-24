@@ -7,6 +7,7 @@ require_once dirname(__DIR__) . '/app_bootstrap.php';
 use ArcadeCloud\Drive\Core\ApplicationKernel;
 use ArcadeCloud\Drive\Federation\FederationAccessService;
 use ArcadeCloud\Drive\Federation\FederationCustomsService;
+use ArcadeCloud\Drive\Federation\FederationDropService;
 use ArcadeCloud\Drive\Federation\FederationGossipService;
 use ArcadeCloud\Drive\Federation\FederationPublicImportService;
 use ArcadeCloud\Drive\Federation\FederationReplicaPresenceService;
@@ -100,6 +101,18 @@ try {
             'error' => 'La cola pública a Mi Drive no pudo procesarse en este ciclo.',
         ];
         error_log('[FederationCloud public import sync] ' . $e->getMessage());
+    }
+    try {
+        // Los Drops pagados que referencian un recurso PUBLIC se materializan
+        // directamente entre nubes. La copia central sólo se activa después
+        // de verificar tamaño y Content ID.
+        $result['drop_public_sources'] = (new FederationDropService($app))->syncPaidPublicSources(2);
+    } catch (Throwable $e) {
+        $result['drop_public_sources'] = [
+            'degraded' => true,
+            'error' => 'FederationDrop no pudo materializar recursos públicos pagados en este ciclo.',
+        ];
+        error_log('[FederationDrop public source sync] ' . $e->getMessage());
     }
     echo json_encode($result, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . "\n";
 } catch (Throwable $e) {

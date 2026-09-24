@@ -286,7 +286,10 @@ class MediaProcessingModule {
       this.document.dispatchEvent(new CustomEvent('drive:storage-changed'));
     } catch (error) {
       const message = error && error.message ? error.message : 'No se pudo crear la tarea multimedia.';
-      this.showStatus('danger', message.replace('[NODE_START_AUTH_REQUIRED] ', ''));
+      this.showStatus(
+        'danger',
+        message.replace(/^\[(NODE_START_AUTH_REQUIRED|NODE_RATE_REQUIRED)\]\s*/, '')
+      );
       if (message.includes('[NODE_START_AUTH_REQUIRED]')) {
         await this.loadNodeStatus();
       }

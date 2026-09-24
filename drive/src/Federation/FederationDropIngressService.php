@@ -289,6 +289,29 @@ final class FederationDropIngressService
         return $this->ingress->markRetry($ingressId, $error);
     }
 
+    public function cleanupLocalStale(int $days = 7, int $limit = 20): array
+    {
+        $processed = $deleted = $errors = 0;
+        foreach ($this->ingress->staleLocalObjects($days, $limit) as $row) {
+            $processed++;
+            try {
+                $key = (string)($row['S3Key'] ?? '');
+                if ($key !== '' && str_starts_with($key, 'FederationDropIngress/')) {
+                    $this->app->s3()->deleteObject([
+                        'Bucket' => $this->app->bucket(),
+                        'Key' => $key,
+                    ]);
+                }
+                $this->ingress->markDeleted((string)$row['IngressId']);
+                $deleted++;
+            } catch (\Throwable $e) {
+                $errors++;
+                error_log('[FederationDrop ingress cleanup] ' . $e->getMessage());
+            }
+        }
+        return compact('processed', 'deleted', 'errors');
+    }
+
     public function activeForDrop(string $dropId): ?array
     {
         return $this->ingress->activeForDrop($dropId);

@@ -48,7 +48,7 @@ final class MediaWorkerNodeSessionRepository
              VALUES (?,?,?,?,?,?,?,UTC_TIMESTAMP(),UTC_TIMESTAMP(),UTC_TIMESTAMP())"
         );
         if (!$stmt) throw new RuntimeException('No se pudo preparar la sesión del nodo multimedia.');
-        $stmt->bind_param('sssisss', $sessionId, $instanceId, $region, $userId, $instanceType, $hourlyUsd, $status);
+        $stmt->bind_param('sssisds', $sessionId, $instanceId, $region, $userId, $instanceType, $hourlyUsd, $status);
         if (!$stmt->execute()) {
             $error = $stmt->error;
             $stmt->close();

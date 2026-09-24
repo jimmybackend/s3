@@ -235,7 +235,7 @@ final class FederationDropService
 
     public function receivePaymentWebhook(string $rawBody, string $signature): array
     {
-        $this->config->assertReady();
+        $this->config->assertWebhookReady();
         $signature = strtolower(trim($signature));
         $expected = hash_hmac('sha256', $rawBody, $this->config->webhookSecret);
         if ($signature === '' || !hash_equals($expected, $signature)) {

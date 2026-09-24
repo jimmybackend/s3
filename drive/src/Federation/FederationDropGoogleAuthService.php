@@ -14,7 +14,6 @@ final class FederationDropGoogleAuthService
     private FederationDropAccountRepository $accounts;
     private FederationDropEncryptedCookie $stateCipher;
     private FederationDropEncryptedCookie $sessionCipher;
-    private FederationDropGoogleOidcClient $oidc;
 
     public function __construct(private DriveApplication $app)
     {
@@ -29,15 +28,6 @@ final class FederationDropGoogleAuthService
         $this->stateCipher = new FederationDropEncryptedCookie($secret, 'google-oidc-state');
         $this->sessionCipher = new FederationDropEncryptedCookie($secret, 'google-session');
 
-        $clientId = $this->config->clientId !== '' ? $this->config->clientId : 'not-configured';
-        $clientSecret = $this->config->clientSecret !== '' ? $this->config->clientSecret : 'not-configured';
-        $this->oidc = new FederationDropGoogleOidcClient(
-            FederationDropGoogleAuthConfig::ISSUER,
-            $clientId,
-            $clientSecret,
-            $this->config->callbackUrl(),
-            FederationDropGoogleAuthConfig::SCOPE
-        );
     }
 
     public function pageState(string $sessionCookie, string $sourceDomain = '', string $resourceId = ''): array
@@ -101,7 +91,7 @@ final class FederationDropGoogleAuthService
         ]);
 
         return [
-            'url' => $this->oidc->authorizationUrl($state, $nonce, $challenge),
+            'url' => $this->oidc()->authorizationUrl($state, $nonce, $challenge),
             'set_cookie' => $this->cookie(self::STATE_COOKIE, $cookie, 600, 'Lax'),
         ];
     }
@@ -128,7 +118,7 @@ final class FederationDropGoogleAuthService
             throw new FederationException('Estado Google OIDC inválido.', 400);
         }
 
-        $identity = $this->oidc->exchangeCode(
+        $identity = $this->oidc()->exchangeCode(
             $code,
             (string)($state['verifier'] ?? ''),
             (string)($state['nonce'] ?? '')
@@ -215,6 +205,18 @@ final class FederationDropGoogleAuthService
     public function clearSessionCookie(): string
     {
         return $this->clearCookie(self::SESSION_COOKIE);
+    }
+
+    private function oidc(): FederationDropGoogleOidcClient
+    {
+        $this->config->assertReady();
+        return new FederationDropGoogleOidcClient(
+            FederationDropGoogleAuthConfig::ISSUER,
+            $this->config->clientId,
+            $this->config->clientSecret,
+            $this->config->callbackUrl(),
+            FederationDropGoogleAuthConfig::SCOPE
+        );
     }
 
     private function cookie(string $name, string $value, int $maxAge, string $sameSite): string

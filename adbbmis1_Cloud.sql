@@ -2106,6 +2106,31 @@ CREATE TABLE IF NOT EXISTS `MediaProcessingJobs` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
+-- Sesiones de encendido bajo demanda del nodo multimedia
+--
+
+CREATE TABLE IF NOT EXISTS `MediaWorkerNodeSessions` (
+  `id_` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `SessionId` char(32) NOT NULL,
+  `InstanceId` varchar(32) NOT NULL,
+  `Region` varchar(32) NOT NULL,
+  `StartedByUserId` int NOT NULL,
+  `InstanceType` varchar(64) NOT NULL DEFAULT '',
+  `HourlyUsd` decimal(14,8) DEFAULT NULL,
+  `Status` varchar(20) NOT NULL,
+  `StartedAt` datetime NOT NULL,
+  `IdleSince` datetime DEFAULT NULL,
+  `StopRequestedAt` datetime DEFAULT NULL,
+  `StoppedAt` datetime DEFAULT NULL,
+  `LastError` text,
+  `CreatedAt` datetime NOT NULL,
+  `UpdatedAt` datetime NOT NULL,
+  PRIMARY KEY (`id_`),
+  UNIQUE KEY `uq_media_worker_session` (`SessionId`),
+  KEY `idx_media_worker_instance_status` (`InstanceId`,`Status`,`id_`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
 -- ArcadeCloud runtime-safe FederationCloud migration section.
 -- The full dump above is for a NEW database; existing databases use only this marked block.
 -- ARCADECLOUD:FEDERATION_SCHEMA:BEGIN

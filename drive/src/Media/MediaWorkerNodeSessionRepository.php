@@ -48,26 +48,6 @@ final class MediaWorkerNodeSessionRepository
              VALUES (?,?,?,?,?,?,?,UTC_TIMESTAMP(),UTC_TIMESTAMP(),UTC_TIMESTAMP())"
         );
         if (!$stmt) throw new RuntimeException('No se pudo preparar la sesión del nodo multimedia.');
-        $stmt->bind_param(
-            'sssisdss',
-            $sessionId,
-            $instanceId,
-            $region,
-            $userId,
-            $instanceType,
-            $hourlyUsd,
-            $status,
-            $status
-        );
-        // El último parámetro duplicado no pertenece al INSERT; bind_param exige exactamente 7 valores.
-        $stmt->close();
-
-        $stmt = $this->db->prepare(
-            "INSERT INTO MediaWorkerNodeSessions
-             (SessionId,InstanceId,Region,StartedByUserId,InstanceType,HourlyUsd,Status,StartedAt,CreatedAt,UpdatedAt)
-             VALUES (?,?,?,?,?,?,?,UTC_TIMESTAMP(),UTC_TIMESTAMP(),UTC_TIMESTAMP())"
-        );
-        if (!$stmt) throw new RuntimeException('No se pudo preparar la sesión del nodo multimedia.');
         $stmt->bind_param('sssisss', $sessionId, $instanceId, $region, $userId, $instanceType, $hourlyUsd, $status);
         if (!$stmt->execute()) {
             $error = $stmt->error;

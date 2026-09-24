@@ -1,9 +1,9 @@
 {
   "summary": {
-    "php_total": 428,
+    "php_total": 429,
     "php_class_modules": 255,
     "php_needs_migration": 0,
-    "php_tests": 35,
+    "php_tests": 36,
     "js_total": 48,
     "js_class_modules": 48,
     "js_needs_migration": 0,
@@ -417,7 +417,7 @@
     },
     {
       "path": "drive/bloque_archivos.php",
-      "lines": 702,
+      "lines": 705,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -1723,7 +1723,7 @@
     },
     {
       "path": "drive/s3.php",
-      "lines": 2236,
+      "lines": 2339,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -2512,7 +2512,7 @@
     },
     {
       "path": "drive/src/Console/MediaProcessingWorkerCommand.php",
-      "lines": 380,
+      "lines": 420,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -4485,7 +4485,7 @@
     },
     {
       "path": "drive/src/Media/MediaProcessingJobRepository.php",
-      "lines": 256,
+      "lines": 325,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -4500,7 +4500,7 @@
     },
     {
       "path": "drive/src/Media/MediaProcessingService.php",
-      "lines": 82,
+      "lines": 88,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -5917,6 +5917,23 @@
       "issues": []
     },
     {
+      "path": "drive/tests/media_processing_contract_smoke.php",
+      "lines": 34,
+      "kind": "test script",
+      "classes": 0,
+      "functions": [
+        "mediaContract"
+      ],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
       "path": "drive/tests/password_credential_verifier_smoke.php",
       "lines": 44,
       "kind": "test script",
@@ -6997,7 +7014,7 @@
     },
     {
       "path": "drive/js/media-processing.js",
-      "lines": 111,
+      "lines": 232,
       "kind": "class/module",
       "classes": [
         "MediaProcessingModule"

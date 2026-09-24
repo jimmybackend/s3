@@ -44,6 +44,7 @@ $nodeLabel = $sourceDomain !== '' ? $sourceDomain : 'este nodo';
 
 $stylesVersion = is_file(__DIR__ . '/css/styles.css') ? (int)filemtime(__DIR__ . '/css/styles.css') : 1;
 $responsiveVersion = is_file(__DIR__ . '/css/responsive.css') ? (int)filemtime(__DIR__ . '/css/responsive.css') : 1;
+
 $h = static fn(string $value): string => htmlspecialchars(
     $value,
     ENT_QUOTES | ENT_SUBSTITUTE,
@@ -55,8 +56,11 @@ $h = static fn(string $value): string => htmlspecialchars(
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="description" content="ArcadeCloud Drive: Amazon S3, servicios AWS, ArcadeLink, FederationCloud y FederationDrop.">
-  <title>Cloud Drive</title>
+  <meta
+    name="description"
+    content="ArcadeCloud Drive: Amazon S3, servicios AWS, FederationCloud, ArcadeLink y FederationDrop."
+  >
+  <title>ArcadeCloud Drive</title>
 
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -66,41 +70,244 @@ $h = static fn(string $value): string => htmlspecialchars(
   <link rel="stylesheet" href="css/responsive.css?v=<?= $responsiveVersion ?>">
 
   <style>
-    /* Sólo composición de portada. La identidad visual sigue viniendo de styles.css/responsive.css. */
-    .public-home { max-width: 1180px; margin: 0 auto; padding: 1.25rem 1rem 4rem; }
-    .public-intro { padding: 2.2rem 0 1rem; }
-    .public-intro h1 { font-size: clamp(2rem, 4vw, 3.4rem); font-weight: 800; margin-bottom: .35rem; }
-    .public-muted { color: var(--text-soft); }
-    .public-section { margin-top: 1.5rem; }
-    .public-carousel { overflow: hidden; border: 1px solid var(--border-soft); border-radius: 14px; background: var(--surface); }
-    .public-carousel .carousel-item { background: #06111f; }
-    .public-carousel img { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; }
-    .public-carousel .carousel-caption {
-      left: 5%; right: auto; bottom: 5%; text-align: left;
-      padding: .65rem; border-radius: .6rem;
-      background: rgba(0,0,0,.42); backdrop-filter: blur(4px);
+    /* Composición pública basada en la UI real del Drive. */
+    .home-shell {
+      max-width: 1500px;
+      margin: 0 auto;
+      padding: 1.2rem 1.1rem 2rem;
     }
-    .public-carousel .carousel-caption h2 { font-size: 1.15rem; margin-bottom: .5rem; }
-    .public-link-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .75rem; }
-    .public-link-grid .card { height: 100%; }
-    .public-link-grid .btn { margin-top: auto; }
-    .public-contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-    .public-contact-list { display: grid; gap: .6rem; }
-    .public-contact-list a,
-    .public-contact-list span { display: flex; align-items: center; gap: .7rem; }
-    .public-login-card { max-width: 460px; margin-left: auto; }
-    .public-kicker { color: var(--accent); font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+
+    .home-nav {
+      border-bottom: 1px solid rgba(84, 255, 136, .35);
+    }
+
+    .home-brand {
+      line-height: 1.05;
+    }
+
+    .home-brand-main {
+      display: block;
+      font-size: 1.38rem;
+      font-weight: 800;
+      letter-spacing: -.02em;
+    }
+
+    .home-brand-main strong {
+      color: #58ef86;
+    }
+
+    .home-brand-sub {
+      display: block;
+      color: var(--text-soft);
+      font-size: .75rem;
+      margin-top: .16rem;
+    }
+
+    .home-carousel {
+      overflow: hidden;
+      border: 1px solid rgba(74, 173, 255, .32);
+      border-radius: 15px;
+      background: #07111c;
+      box-shadow: 0 18px 45px rgba(0,0,0,.32);
+    }
+
+    .home-carousel .carousel-item {
+      background: #07111c;
+    }
+
+    .home-carousel .carousel-item img {
+      display: block;
+      width: 100%;
+      aspect-ratio: 1600 / 620;
+      object-fit: cover;
+    }
+
+    .home-carousel .carousel-indicators {
+      margin-bottom: .6rem;
+    }
+
+    .home-carousel .carousel-indicators li {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      border: 0;
+      background-color: rgba(255,255,255,.55);
+    }
+
+    .home-carousel .carousel-indicators .active {
+      background-color: #58ef86;
+    }
+
+    .home-carousel .carousel-control-prev,
+    .home-carousel .carousel-control-next {
+      width: 5.5%;
+    }
+
+    .home-slide-action {
+      position: absolute;
+      left: 4%;
+      bottom: 7%;
+      z-index: 4;
+    }
+
+    .home-slide-action .btn {
+      min-width: 180px;
+      border-width: 1px;
+      box-shadow: 0 8px 28px rgba(0,0,0,.35);
+    }
+
+    .home-links {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0,1fr));
+      gap: .9rem;
+      margin-top: 1.05rem;
+    }
+
+    .home-link-card {
+      display: flex;
+      align-items: center;
+      min-height: 104px;
+      padding: 1rem 1.1rem;
+      border: 1px solid rgba(84, 173, 230, .3);
+      border-radius: 13px;
+      background: rgba(10, 25, 40, .92);
+      color: inherit;
+      transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+    }
+
+    .home-link-card:hover {
+      color: inherit;
+      transform: translateY(-2px);
+      border-color: #58ef86;
+      box-shadow: 0 10px 28px rgba(0,0,0,.28);
+      text-decoration: none;
+    }
+
+    .home-link-icon {
+      width: 54px;
+      height: 54px;
+      flex: 0 0 54px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: .9rem;
+      border-radius: 14px;
+      background: rgba(84,255,136,.09);
+      color: #58ef86;
+      font-size: 1.65rem;
+    }
+
+    .home-link-card.arcadelink .home-link-icon {
+      color: #55baff;
+      background: rgba(85,186,255,.09);
+    }
+
+    .home-link-card.drop .home-link-icon {
+      color: #ad67ff;
+      background: rgba(173,103,255,.1);
+    }
+
+    .home-link-card.github .home-link-icon {
+      color: #fff;
+      background: rgba(255,255,255,.07);
+    }
+
+    .home-link-copy strong {
+      display: block;
+      color: #fff;
+      font-size: 1rem;
+    }
+
+    .home-link-copy small {
+      display: block;
+      margin-top: .18rem;
+      color: var(--text-soft);
+    }
+
+    .home-link-arrow {
+      margin-left: auto;
+      color: #58ef86;
+    }
+
+    .home-footer {
+      border-top: 1px solid rgba(84,173,230,.2);
+      margin-top: 1.35rem;
+      padding-top: 1.2rem;
+    }
+
+    .home-contact {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 1.15rem 2rem;
+    }
+
+    .home-contact a {
+      color: var(--text-soft);
+      text-decoration: none;
+    }
+
+    .home-contact a:hover {
+      color: #58ef86;
+    }
+
+    .home-modal .modal-content {
+      border: 1px solid rgba(84,173,230,.3);
+      background: #091827;
+      color: var(--text);
+      box-shadow: 0 24px 60px rgba(0,0,0,.45);
+    }
+
+    .home-modal .modal-header,
+    .home-modal .modal-footer {
+      border-color: rgba(84,173,230,.18);
+    }
+
+    .home-modal .close {
+      color: #fff;
+      text-shadow: none;
+      opacity: .8;
+    }
+
     @media (max-width: 991.98px) {
-      .public-link-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      .public-contact-grid { grid-template-columns: 1fr; }
-      .public-login-card { max-width: none; margin-left: 0; }
-      .public-carousel .carousel-caption { display: block !important; left: 3%; bottom: 3%; }
+      .home-links {
+        grid-template-columns: repeat(2, minmax(0,1fr));
+      }
+
+      .home-slide-action {
+        left: 3%;
+        bottom: 8%;
+      }
     }
+
     @media (max-width: 575.98px) {
-      .public-link-grid { grid-template-columns: 1fr; }
-      .public-home { padding-left: .65rem; padding-right: .65rem; }
-      .public-carousel .carousel-caption h2 { display: none; }
-      .public-carousel .carousel-caption { padding: .35rem; }
+      .home-shell {
+        padding-left: .55rem;
+        padding-right: .55rem;
+      }
+
+      .home-carousel {
+        border-radius: 10px;
+      }
+
+      .home-carousel .carousel-item img {
+        min-height: 285px;
+        object-fit: cover;
+      }
+
+      .home-slide-action .btn {
+        min-width: auto;
+        font-size: .75rem;
+        padding: .38rem .65rem;
+      }
+
+      .home-links {
+        grid-template-columns: 1fr;
+      }
+
+      .home-link-card {
+        min-height: 86px;
+      }
     }
   </style>
 
@@ -110,36 +317,42 @@ $h = static fn(string $value): string => htmlspecialchars(
 
 <body class="ui-theme theme-neon-green theme-dark vision-normal ascii-on">
 
-<nav class="navbar navbar-expand-lg navbar-dark px-3 drive-navbar">
+<nav class="navbar navbar-expand-lg navbar-dark px-3 drive-navbar home-nav">
   <a class="navbar-brand d-flex align-items-center" href="#inicio">
-    <img src="ellogo.png" width="48" height="38" class="drive-brand-logo mr-2" alt="Logo">
-    Cloud Drive
+    <img src="ellogo.png" width="50" height="40" class="drive-brand-logo mr-2" alt="ArcadeCloud Drive">
+    <span class="home-brand">
+      <span class="home-brand-main">ArcadeCloud <strong>Drive</strong></span>
+      <span class="home-brand-sub">Proyecto de jimmybackend</span>
+    </span>
   </a>
 
-  <button class="navbar-toggler ml-auto" type="button" data-toggle="collapse" data-target="#publicNav" aria-controls="publicNav" aria-expanded="false" aria-label="Abrir navegación">
+  <button
+    class="navbar-toggler ml-auto"
+    type="button"
+    data-toggle="collapse"
+    data-target="#publicNav"
+    aria-controls="publicNav"
+    aria-expanded="false"
+    aria-label="Abrir navegación"
+  >
     <span class="navbar-toggler-icon"></span>
   </button>
 
   <div class="collapse navbar-collapse" id="publicNav">
     <ul class="navbar-nav ml-auto align-items-lg-center">
-      <li class="nav-item"><a class="nav-link" href="#inicio">Inicio</a></li>
-      <li class="nav-item"><a class="nav-link" href="#accesos">Accesos</a></li>
-      <li class="nav-item"><a class="nav-link" href="#login">Login</a></li>
-      <li class="nav-item"><a class="nav-link" href="#acerca">Acerca de</a></li>
-      <li class="nav-item"><a class="nav-link" href="<?= $h($contactUrl) ?>">Contacto</a></li>
-
+      <li class="nav-item"><a class="nav-link" href="#inicio"><i class="fas fa-home mr-1"></i>Inicio</a></li>
+      <li class="nav-item"><a class="nav-link" href="<?= $h($arcadeLinkUrl) ?>"><i class="fas fa-project-diagram mr-1"></i>Federación</a></li>
+      <li class="nav-item"><a class="nav-link" href="<?= $h($federationDropUrl) ?>"><i class="fas fa-cloud-upload-alt mr-1"></i>Drop</a></li>
+      <li class="nav-item"><a class="nav-link" href="#" data-toggle="modal" data-target="#aboutModal"><i class="fas fa-info-circle mr-1"></i>Acerca de</a></li>
+      <li class="nav-item"><a class="nav-link" href="<?= $h($contactUrl) ?>"><i class="fas fa-envelope mr-1"></i>Contacto</a></li>
+      <li class="nav-item"><a class="nav-link" href="<?= $h($githubUrl) ?>" rel="noopener noreferrer"><i class="fab fa-github mr-1"></i>GitHub</a></li>
     </ul>
   </div>
 </nav>
 
-<main class="public-home">
-  <section id="inicio" class="public-intro">
-    <div class="public-kicker mb-2">ArcadeCloud Drive</div>
-    <h1>Amazon S3 · servicios AWS · transferencia federada</h1>
-  </section>
-
-  <section class="public-section">
-    <div id="arcadeHomeCarousel" class="carousel slide public-carousel shadow-sm" data-ride="carousel" data-interval="6500">
+<main id="inicio" class="home-shell">
+  <section>
+    <div id="arcadeHomeCarousel" class="carousel slide home-carousel" data-ride="carousel" data-interval="6500">
       <ol class="carousel-indicators">
         <li data-target="#arcadeHomeCarousel" data-slide-to="0" class="active"></li>
         <li data-target="#arcadeHomeCarousel" data-slide-to="1"></li>
@@ -148,26 +361,38 @@ $h = static fn(string $value): string => htmlspecialchars(
 
       <div class="carousel-inner">
         <div class="carousel-item active">
-          <img src="images/home/slide-aws.svg" alt="Amazon S3 y servicios AWS integrados en ArcadeCloud Drive">
-          <div class="carousel-caption">
-            <h2>Amazon S3 + AWS</h2>
-            <a class="btn btn-primary btn-sm" href="#login">Entrar al Drive</a>
+          <img
+            src="images/home/slide-aws.svg"
+            alt="Amazon S3 y servicios AWS integrados en ArcadeCloud Drive"
+          >
+          <div class="home-slide-action">
+            <button class="btn btn-outline-success" type="button" data-toggle="modal" data-target="#loginModal">
+              Explorar en el Drive <i class="fas fa-chevron-right ml-1"></i>
+            </button>
           </div>
         </div>
 
         <div class="carousel-item">
-          <img src="images/home/slide-federation.svg" alt="Transferencia federada entre nodos descentralizados">
-          <div class="carousel-caption">
-            <h2>FederationCloud</h2>
-            <a class="btn btn-primary btn-sm" href="<?= $h($arcadeLinkUrl) ?>">Abrir FederationCloud</a>
+          <img
+            src="images/home/slide-federation.svg"
+            alt="Red descentralizada FederationCloud entre nodos"
+          >
+          <div class="home-slide-action">
+            <a class="btn btn-outline-success" href="<?= $h($arcadeLinkUrl) ?>">
+              Abrir FederationCloud <i class="fas fa-chevron-right ml-1"></i>
+            </a>
           </div>
         </div>
 
         <div class="carousel-item">
-          <img src="images/home/slide-drop.svg" alt="FederationDrop para subir, pagar y compartir temporalmente">
-          <div class="carousel-caption">
-            <h2>FederationDrop</h2>
-            <a class="btn btn-primary btn-sm" href="<?= $h($federationDropUrl) ?>">Ir a FederationDrop</a>
+          <img
+            src="images/home/slide-drop.svg"
+            alt="FederationDrop para transferencias temporales"
+          >
+          <div class="home-slide-action">
+            <a class="btn btn-outline-success" href="<?= $h($federationDropUrl) ?>">
+              Ir a FederationDrop <i class="fas fa-chevron-right ml-1"></i>
+            </a>
           </div>
         </div>
       </div>
@@ -181,118 +406,110 @@ $h = static fn(string $value): string => htmlspecialchars(
     </div>
   </section>
 
-  <section id="accesos" class="public-section">
-    <div class="public-kicker mb-3">Accesos directos</div>
+  <section class="home-links" aria-label="Accesos directos">
+    <a class="home-link-card" href="#" data-toggle="modal" data-target="#loginModal">
+      <span class="home-link-icon"><i class="fas fa-folder-open"></i></span>
+      <span class="home-link-copy">
+        <strong>Acceso al nodo</strong>
+        <small>Inicia sesión en tu Drive</small>
+      </span>
+      <i class="fas fa-chevron-right home-link-arrow"></i>
+    </a>
 
-    <div class="public-link-grid">
-      <div class="card p-3 d-flex flex-column">
-        <div class="card-body d-flex flex-column p-2">
-          <i class="fas fa-folder-open mb-2"></i>
-          <h3 class="h5">Drive</h3>
+    <a class="home-link-card arcadelink" href="<?= $h($arcadeLinkUrl) ?>">
+      <span class="home-link-icon"><i class="fas fa-link"></i></span>
+      <span class="home-link-copy">
+        <strong>ArcadeLink</strong>
+        <small>Abre o comparte enlaces</small>
+      </span>
+      <i class="fas fa-chevron-right home-link-arrow"></i>
+    </a>
 
-          <a class="btn btn-primary btn-sm" href="#login">Login</a>
-        </div>
-      </div>
+    <a class="home-link-card drop" href="<?= $h($federationDropUrl) ?>">
+      <span class="home-link-icon"><i class="fas fa-cloud-upload-alt"></i></span>
+      <span class="home-link-copy">
+        <strong>FederationDrop</strong>
+        <small>Sube y comparte temporalmente</small>
+      </span>
+      <i class="fas fa-chevron-right home-link-arrow"></i>
+    </a>
 
-      <div class="card p-3 d-flex flex-column">
-        <div class="card-body d-flex flex-column p-2">
-          <i class="fas fa-link mb-2"></i>
-          <h3 class="h5">ArcadeLink</h3>
-
-          <a class="btn btn-outline-primary btn-sm" href="<?= $h($arcadeLinkUrl) ?>">Abrir</a>
-        </div>
-      </div>
-
-      <div class="card p-3 d-flex flex-column">
-        <div class="card-body d-flex flex-column p-2">
-          <i class="fas fa-cloud-upload-alt mb-2"></i>
-          <h3 class="h5">FederationDrop</h3>
-
-          <a class="btn btn-outline-primary btn-sm" href="<?= $h($federationDropUrl) ?>">Subir / pagar</a>
-        </div>
-      </div>
-
-      <div class="card p-3 d-flex flex-column">
-        <div class="card-body d-flex flex-column p-2">
-          <i class="fab fa-github mb-2"></i>
-          <h3 class="h5">Repositorio</h3>
-
-          <a class="btn btn-outline-primary btn-sm" href="<?= $h($githubUrl) ?>" rel="noopener noreferrer">GitHub</a>
-        </div>
-      </div>
-    </div>
+    <a class="home-link-card github" href="<?= $h($githubUrl) ?>" rel="noopener noreferrer">
+      <span class="home-link-icon"><i class="fab fa-github"></i></span>
+      <span class="home-link-copy">
+        <strong>GitHub</strong>
+        <small>Repositorio del proyecto</small>
+      </span>
+      <i class="fas fa-chevron-right home-link-arrow"></i>
+    </a>
   </section>
 
-  <section id="login" class="public-section">
-    <div class="row align-items-center">
-      <div class="col-lg-6 mb-3 mb-lg-0">
-        <div class="public-kicker mb-2">Acceso al nodo</div>
-        <h2 class="h3">Entrar a <?= $h($nodeLabel) ?></h2>
-      </div>
-
-      <div class="col-lg-6">
-        <div class="card public-login-card p-3 shadow-sm">
-          <div class="card-body">
-            <form action="psesion.php" method="POST">
-              <div class="form-group">
-                <label for="email">Correo electrónico</label>
-                <input class="form-control" id="email" name="email" type="email" autocomplete="username" required>
-              </div>
-              <div class="form-group">
-                <label for="password">Contraseña</label>
-                <input class="form-control" id="password" name="password" type="password" autocomplete="current-password" required>
-              </div>
-              <button class="btn btn-primary btn-block" type="submit">
-                <i class="fas fa-sign-in-alt mr-1"></i> Iniciar sesión
-              </button>
-            </form>
-          </div>
-        </div>
-      </div>
+  <footer id="contacto" class="home-footer">
+    <div class="home-contact">
+      <a href="mailto:<?= $h($authorEmail) ?>"><i class="fas fa-envelope mr-2"></i><?= $h($authorEmail) ?></a>
+      <a href="tel:<?= $h($contactPhoneHref) ?>"><i class="fas fa-phone mr-2"></i><?= $h($contactPhoneDisplay) ?></a>
+      <a href="mailto:<?= $h($supportEmail) ?>"><i class="fas fa-headset mr-2"></i><?= $h($supportEmail) ?></a>
+      <a href="<?= $h($githubUrl) ?>" rel="noopener noreferrer"><i class="fab fa-github mr-2"></i>jimmybackend/s3</a>
     </div>
-  </section>
-
-  <section id="acerca" class="public-section">
-    <div class="public-contact-grid">
-      <div class="card about-card p-3">
-        <div class="card-body">
-          <div class="public-kicker mb-2">Acerca de</div>
-          <h2 class="h4">ArcadeCloud Drive</h2>
-          <p class="public-muted">Proyecto de <strong>jimmybackend</strong>.</p>
-          <a class="btn btn-outline-primary btn-sm" href="<?= $h($githubUrl) ?>" rel="noopener noreferrer">
-            <i class="fab fa-github mr-1"></i> Ver proyecto
-          </a>
-        </div>
-      </div>
-
-      <div id="contacto" class="card about-card p-3">
-        <div class="card-body">
-          <div class="public-kicker mb-2">Contacto</div>
-          <div class="public-contact-list">
-            <a href="mailto:<?= $h($authorEmail) ?>">
-              <i class="fas fa-envelope"></i>
-              <span><?= $h($authorEmail) ?></span>
-            </a>
-            <a href="tel:<?= $h($contactPhoneHref) ?>">
-              <i class="fas fa-phone"></i>
-              <span><?= $h($contactPhoneDisplay) ?></span>
-            </a>
-            <a href="mailto:<?= $h($supportEmail) ?>">
-              <i class="fas fa-headset"></i>
-              <span><?= $h($supportEmail) ?></span>
-            </a>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
+  </footer>
 </main>
 
-<footer class="container-fluid border-top py-3">
-  <div class="container">
-    <small class="text-muted">ArcadeCloud Drive · jimmybackend</small>
+<div class="modal fade home-modal" id="loginModal" tabindex="-1" role="dialog" aria-labelledby="loginModalTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div>
+          <h5 class="modal-title" id="loginModalTitle">Acceso a <?= $h($nodeLabel) ?></h5>
+          <small class="text-muted">Credenciales registradas en este nodo</small>
+        </div>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+
+      <form action="psesion.php" method="POST">
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="email">Correo electrónico</label>
+            <input class="form-control" id="email" name="email" type="email" autocomplete="username" required>
+          </div>
+
+          <div class="form-group mb-0">
+            <label for="password">Contraseña</label>
+            <input class="form-control" id="password" name="password" type="password" autocomplete="current-password" required>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn btn-primary btn-block" type="submit">
+            <i class="fas fa-sign-in-alt mr-1"></i> Iniciar sesión
+          </button>
+        </div>
+      </form>
+    </div>
   </div>
-</footer>
+</div>
+
+<div class="modal fade home-modal" id="aboutModal" tabindex="-1" role="dialog" aria-labelledby="aboutModalTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="aboutModalTitle">ArcadeCloud Drive</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <p class="mb-2">Proyecto de <strong>jimmybackend</strong>.</p>
+        <p class="text-muted mb-3">Amazon S3 · servicios AWS · FederationCloud · FederationDrop.</p>
+        <a class="btn btn-outline-primary btn-sm" href="<?= $h($githubUrl) ?>" rel="noopener noreferrer">
+          <i class="fab fa-github mr-1"></i> Ver repositorio
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
 
 </body>
 </html>

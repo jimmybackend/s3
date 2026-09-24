@@ -59,6 +59,11 @@ final class FederationSyncCycleService
             'public import sync'
         );
         $result['federation_drop'] = (new FederationDropWorkerService($this->app))->syncPending();
+        $result['moderation_cleanup'] = $this->guarded(
+            fn(): array => (new FederationModerationService($this->app))->cleanupBlockedLocalContent(100),
+            ['degraded' => true, 'error' => 'No se pudo aplicar la lista federada de contenido bloqueado en este ciclo.'],
+            'moderation cleanup'
+        );
 
         return $result;
     }

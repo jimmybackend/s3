@@ -25,6 +25,7 @@ final class FederationDropPageRenderer
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="referrer" content="no-referrer">
   <title>FederationDrop · ArcadeCloud</title>
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -70,7 +71,7 @@ final class FederationDropPageRenderer
 
   <section class="drop-card mb-4" id="dropCreateCard">
     <h2 class="h5">Crear enlace temporal</h2>
-    <p class="drop-muted">El archivo se almacena en el nodo que cobra. La subida va directamente a S3 privado mediante una URL temporal.</p>
+    <p class="drop-muted">El nodo que cobra custodia el archivo. Primero se confirma el pago y sólo entonces se autoriza una subida temporal directa a S3 privado.</p>
     <form id="dropCreateForm">
       <div class="form-group">
         <label for="dropEmail">Correo del propietario</label>
@@ -97,7 +98,7 @@ final class FederationDropPageRenderer
           <div id="dropQuote" class="drop-price">—</div>
         </div>
         <button id="dropCreateButton" class="btn btn-info btn-lg" type="submit" <?= $ready ? '' : 'disabled' ?>>
-          Subir y continuar al pago
+          Crear orden y pagar
         </button>
       </div>
       <div id="dropProgress" class="mt-3 small drop-muted"></div>

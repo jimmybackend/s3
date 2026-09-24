@@ -37,6 +37,14 @@ final class PublicDropzoneUploadService
         $physicalName = $this->codec->createFileObjectName($nameOrig);
         $key = $prefix . $physicalName;
 
+        $sha256 = (string)(hash_file('sha256', $tmpPath) ?: '');
+        if ($sha256 === '') {
+            throw new RuntimeException('No se pudo calcular la huella SHA-256 del archivo.');
+        }
+        if ($this->repository->isContentBlocked($sha256)) {
+            throw new RuntimeException('Este contenido está bloqueado por moderación y no puede volver a subirse.');
+        }
+
         $metadata = [
             'ip_origen' => $this->safe((string)($requestMeta['remote_addr'] ?? 'desconocido')),
             'user_agent' => $this->safe((string)($requestMeta['user_agent'] ?? 'desconocido')),
@@ -48,7 +56,7 @@ final class PublicDropzoneUploadService
             'fecha' => date('Y-m-d'),
             'hora' => date('H:i:s'),
             'tamano_kb' => round($size / 1024, 2),
-            'hash_sha256' => (string)(hash_file('sha256', $tmpPath) ?: ''),
+            'hash_sha256' => $sha256,
             'ruta_s3' => $key,
         ];
 

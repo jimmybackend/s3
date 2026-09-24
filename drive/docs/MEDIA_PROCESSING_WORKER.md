@@ -248,3 +248,40 @@ ARCADECLOUD_FEDERATION_URL=http://IP_ACTUAL/federationcloud/
 Después ejecuta `federation_endpoint_refresh.php`. La identidad del nodo no cambia: conserva su Node ID y clave pública; sólo se actualiza su endpoint. Si FederationCloud no logra anunciarse, el worker multimedia puede seguir procesando S3/DB.
 
 El bootstrap de endpoint se ejecuta en un servicio systemd separado con privilegios administrativos. `arcadecloud-media-worker.service` continúa ejecutándose como usuario no privilegiado.
+
+
+## Qué acciones despiertan la EC2 potente
+
+En el diseño actual el nodo de alto rendimiento se solicita únicamente al crear un `MediaProcessingJob` para:
+
+- `split_video`;
+- `split_audio`;
+- `extract_mp3`.
+
+Amazon Transcribe no despierta esta EC2: Transcribe sigue siendo un servicio administrado de AWS y el servidor web sólo inicia/reconcilia el job. Las cargas y descargas normales tampoco encienden el worker multimedia.
+
+Para un nodo web pequeño como una t3.micro se recomienda:
+
+```text
+ARCADECLOUD_NODE_ROLE=web
+ARCADECLOUD_MEDIA_WORKER=false
+```
+
+y apuntar al worker remoto mediante:
+
+```text
+ARCADECLOUD_MEDIA_WORKER_INSTANCE_ID=i-...
+ARCADECLOUD_MEDIA_WORKER_REGION=...
+ARCADECLOUD_MEDIA_WORKER_HOURLY_USD=...
+ARCADECLOUD_MEDIA_WORKER_IDLE_GRACE_SECONDS=300
+```
+
+En la EC2 potente:
+
+```text
+ARCADECLOUD_NODE_ROLE=media-worker
+ARCADECLOUD_MEDIA_WORKER=true
+ARCADECLOUD_FEDERATION_DYNAMIC_IP=true
+```
+
+Toda esta configuración vive en `/etc/arcadecloud-drive/runtime-env.json` y puede administrarse mediante el instalador o la Configuración avanzada del superusuario.

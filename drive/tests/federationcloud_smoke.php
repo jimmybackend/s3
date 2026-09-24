@@ -139,6 +139,28 @@ try {
     }
     ok($tamperedCollectionRejected, 'alterar un recurso interno invalida la colección');
 
+    $drop = $links->createDrop([
+        'drop_id' => 'fdp_' . FederationCodec::base64UrlEncode(random_bytes(18)),
+        'title' => 'Entrega temporal.bin',
+        'size_bytes' => 9876,
+        'media_type' => 'application/octet-stream',
+        'download_url' => 'https://drive.example.test/federationdrop/d.php?id=fdp_test&t=synthetic',
+        'expires_at' => gmdate(DATE_ATOM, time() + 3600),
+    ]);
+    ok((int)$drop['version'] === 3 && $drop['resource_type'] === 'drop', 'FederationDrop usa ArcadeLink v3');
+    ok($drop['visibility'] === 'UNLISTED' && $drop['rights'] === 'copy_allowed', 'FederationDrop conserva política portable esperada');
+    $parsedDrop = $links->parse($links->encode($drop));
+    ok($parsedDrop['signature']['alg'] === 'Ed25519', 'ArcadeLink FederationDrop conserva firma Ed25519');
+    $tamperedDrop = $drop;
+    $tamperedDrop['download_url'] = 'https://attacker.example.test/file';
+    $tamperedDropRejected = false;
+    try {
+        $links->parse($links->encode($tamperedDrop));
+    } catch (FederationException) {
+        $tamperedDropRejected = true;
+    }
+    ok($tamperedDropRejected, 'alterar URL FederationDrop rompe la firma');
+
     $legacy = legacyDocument($links, $identity, $config);
     $legacyParsed = $links->parse($links->encode($legacy));
     $legacyPayload = $links->decryptLocalPayload($legacyParsed);

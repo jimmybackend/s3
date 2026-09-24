@@ -2474,7 +2474,7 @@ CREATE TABLE IF NOT EXISTS FederationDrops (
 SET @arcade_sql = IF(
   (SELECT COUNT(*) FROM information_schema.COLUMNS
    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'FederationDrops' AND COLUMN_NAME = 'SourceMode') = 0,
-  "ALTER TABLE FederationDrops ADD COLUMN SourceMode enum('upload','public_resource') NOT NULL DEFAULT 'upload' AFTER SourceDomain",
+  'ALTER TABLE FederationDrops ADD COLUMN SourceMode enum(''upload'',''public_resource'') NOT NULL DEFAULT ''upload'' AFTER SourceDomain',
   'SELECT 1'
 );
 PREPARE arcade_stmt FROM @arcade_sql;

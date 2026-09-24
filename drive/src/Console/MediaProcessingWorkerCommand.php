@@ -113,11 +113,29 @@ final class MediaProcessingWorkerCommand
         $this->assertDestinationAvailable($dest['key']);
 
         $out = $workDir . '/audio.mp3';
-        $this->runProcess([
-            'ffmpeg','-hide_banner','-loglevel','error','-y',
-            '-i',$sourcePath,'-vn','-map','0:a:0',
-            '-c:a','libmp3lame','-b:a','128k',$out,
-        ]);
+        if ($this->ffmpegHasEncoder('libmp3lame')) {
+            $this->runProcess([
+                'ffmpeg','-hide_banner','-loglevel','error','-y',
+                '-i',$sourcePath,'-vn','-map','0:a:0',
+                '-c:a','libmp3lame','-b:a','128k',$out,
+            ]);
+        } else {
+            $lame = $this->findExecutable('lame');
+            if ($lame === null) {
+                throw new RuntimeException(
+                    '[DEPENDENCY_MISSING] El nodo necesita libmp3lame en FFmpeg o el ejecutable lame para crear MP3.'
+                );
+            }
+
+            $wav = $workDir . '/audio-for-mp3.wav';
+            $this->runProcess([
+                'ffmpeg','-hide_banner','-loglevel','error','-y',
+                '-i',$sourcePath,'-vn','-map','0:a:0',
+                '-ac','2','-ar','44100','-c:a','pcm_s16le',$wav,
+            ]);
+            $this->runProcess([$lame, '-b', '128', '--quiet', $wav, $out]);
+            @unlink($wav);
+        }
         $this->jobs->progress((string)$job['job_id'], 75);
 
         return [$this->publish($job, $dest, $out, 'audio/mpeg', [
@@ -337,6 +355,15 @@ final class MediaProcessingWorkerCommand
             throw new RuntimeException('FFmpeg/FFprobe falló: ' . $detail);
         }
         return $capture ? $stdout : '';
+    }
+
+    private function ffmpegHasEncoder(string $encoder): bool
+    {
+        $output = $this->runProcess(
+            ['ffmpeg','-hide_banner','-encoders'],
+            true
+        );
+        return preg_match('/(?:^|\s)' . preg_quote($encoder, '/') . '(?:\s|$)/m', $output) === 1;
     }
 
     private function assertTools(): void

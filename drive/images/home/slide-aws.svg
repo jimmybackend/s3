@@ -1,38 +1,57 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
-<title id="title">Amazon S3 y servicios AWS en ArcadeCloud Drive</title>
-<desc id="desc">Un archivo almacenado en S3 se conecta visualmente con Textract, Transcribe, Polly, Translate, Rekognition y Comprehend.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 620">
 <defs>
-  <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#07111f"/><stop offset="1" stop-color="#0c2034"/></linearGradient>
-  <linearGradient id="cube" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#36ff8a"/><stop offset="1" stop-color="#12a95f"/></linearGradient>
+  <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#07111c"/><stop offset=".55" stop-color="#0a2331"/><stop offset="1" stop-color="#08111a"/></linearGradient>
+  <linearGradient id="cubeTop" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#77ffb6"/><stop offset="1" stop-color="#23e17e"/></linearGradient>
+  <linearGradient id="cubeL" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#19c96e"/><stop offset="1" stop-color="#087746"/></linearGradient>
+  <linearGradient id="cubeR" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#16a75c"/><stop offset="1" stop-color="#064b32"/></linearGradient>
   <filter id="glow"><feGaussianBlur stdDeviation="8" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  <filter id="shadow"><feDropShadow dx="0" dy="14" stdDeviation="18" flood-color="#000" flood-opacity=".55"/></filter>
+  <linearGradient id="panel" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#122941" stop-opacity=".96"/><stop offset="1" stop-color="#0a1727" stop-opacity=".96"/></linearGradient>
 </defs>
-<rect width="1600" height="900" fill="url(#bg)"/>
-<g opacity=".22" stroke="#2dcf93"><path d="M0 180h1600M0 360h1600M0 540h1600M0 720h1600"/><path d="M200 0v900M400 0v900M600 0v900M800 0v900M1000 0v900M1200 0v900M1400 0v900"/></g>
-
-<text x="90" y="110" fill="#f5fbff" font-family="Arial,sans-serif" font-size="60" font-weight="700">Amazon S3 + servicios AWS</text>
-<text x="92" y="165" fill="#a9bfd0" font-family="Arial,sans-serif" font-size="28">Más que almacenamiento: trabaja con tus archivos desde ArcadeCloud Drive.</text>
-
-<g transform="translate(600 245)" filter="url(#glow)">
-  <polygon points="200,0 360,85 200,170 40,85" fill="#49ffa1"/>
-  <polygon points="40,85 200,170 200,360 40,275" fill="#1bb76f"/>
-  <polygon points="360,85 200,170 200,360 360,275" fill="#0e8c57"/>
-  <text x="200" y="215" text-anchor="middle" fill="#02150e" font-family="Arial,sans-serif" font-size="78" font-weight="800">S3</text>
-</g>
-
-<g fill="none" stroke="#53ffc0" stroke-width="5" opacity=".88">
-  <path d="M760 445C600 420 500 350 390 315"/>
-  <path d="M760 445C590 485 500 535 390 565"/>
-  <path d="M840 445C1010 420 1105 345 1220 315"/>
-  <path d="M840 445C1010 500 1100 545 1220 565"/>
-  <path d="M800 540C800 650 800 690 800 750"/>
-  <path d="M800 350C800 260 800 240 800 225"/>
-</g>
+<rect width="1600" height="620" fill="url(#bg)"/>
+<circle cx="820" cy="300" r="260" fill="#0ad47a" opacity=".05"/>
 
 <g font-family="Arial,sans-serif">
-  <g transform="translate(130 240)"><rect width="280" height="140" rx="24" fill="#102941" stroke="#3ad6ff"/><text x="28" y="55" fill="#fff" font-size="30" font-weight="700">Textract</text><text x="28" y="98" fill="#9eb5c6" font-size="22">Extraer texto</text></g>
-  <g transform="translate(130 505)"><rect width="280" height="140" rx="24" fill="#102941" stroke="#8b6cff"/><text x="28" y="55" fill="#fff" font-size="30" font-weight="700">Transcribe</text><text x="28" y="98" fill="#9eb5c6" font-size="22">Audio / video a texto</text></g>
-  <g transform="translate(1190 240)"><rect width="280" height="140" rx="24" fill="#102941" stroke="#f79b43"/><text x="28" y="55" fill="#fff" font-size="30" font-weight="700">Rekognition</text><text x="28" y="98" fill="#9eb5c6" font-size="22">Analizar imágenes</text></g>
-  <g transform="translate(1190 505)"><rect width="280" height="140" rx="24" fill="#102941" stroke="#35e5b0"/><text x="28" y="55" fill="#fff" font-size="30" font-weight="700">Comprehend</text><text x="28" y="98" fill="#9eb5c6" font-size="22">Analizar texto</text></g>
-  <g transform="translate(620 695)"><rect width="360" height="130" rx="24" fill="#102941" stroke="#f5cf52"/><text x="180" y="55" text-anchor="middle" fill="#fff" font-size="30" font-weight="700">Polly · Translate</text><text x="180" y="95" text-anchor="middle" fill="#9eb5c6" font-size="21">Texto a voz · Traducción</text></g>
+  <text x="70" y="105" fill="#fff" font-size="58" font-weight="800">Archivos en <tspan fill="#58ef86">Amazon S3</tspan></text>
+  <text x="72" y="155" fill="#b3c6d5" font-size="28">Trabaja con tus archivos usando servicios AWS directamente.</text>
+
+  <g transform="translate(70 215)">
+    <g transform="translate(0 0)"><rect width="74" height="74" rx="16" fill="#7c38e8"/><text x="37" y="43" text-anchor="middle" fill="#fff" font-size="28">T</text><text x="37" y="101" text-anchor="middle" fill="#fff" font-size="16">Textract</text></g>
+    <g transform="translate(95 0)"><rect width="74" height="74" rx="16" fill="#12b9aa"/><text x="37" y="43" text-anchor="middle" fill="#fff" font-size="28">Tr</text><text x="37" y="101" text-anchor="middle" fill="#fff" font-size="16">Transcribe</text></g>
+    <g transform="translate(190 0)"><rect width="74" height="74" rx="16" fill="#ffb11e"/><text x="37" y="43" text-anchor="middle" fill="#fff" font-size="28">P</text><text x="37" y="101" text-anchor="middle" fill="#fff" font-size="16">Polly</text></g>
+    <g transform="translate(285 0)"><rect width="74" height="74" rx="16" fill="#f26a22"/><text x="37" y="43" text-anchor="middle" fill="#fff" font-size="28">A↔</text><text x="37" y="101" text-anchor="middle" fill="#fff" font-size="16">Translate</text></g>
+    <g transform="translate(380 0)"><rect width="74" height="74" rx="16" fill="#d31b8c"/><text x="37" y="43" text-anchor="middle" fill="#fff" font-size="28">◉</text><text x="37" y="101" text-anchor="middle" fill="#fff" font-size="16">Rekognition</text></g>
+    <g transform="translate(475 0)"><rect width="74" height="74" rx="16" fill="#316cf6"/><text x="37" y="43" text-anchor="middle" fill="#fff" font-size="28">C</text><text x="37" y="101" text-anchor="middle" fill="#fff" font-size="16">Comprehend</text></g>
+  </g>
+
+  <g transform="translate(640 115)" filter="url(#shadow)">
+    <path d="M180 30c33-65 132-49 143 20 52-6 92 28 92 72 0 48-42 87-94 87H92C41 209 0 172 0 126 0 84 36 49 82 47c19-39 66-58 98-17z" fill="#c8f7ff" opacity=".97"/>
+    <text x="210" y="143" text-anchor="middle" fill="#12243a" font-size="58" font-weight="700">aws</text>
+    <path d="M175 158c48 34 105 36 153 8" fill="none" stroke="#ff9d00" stroke-width="7" stroke-linecap="round"/>
+  </g>
+
+  <g transform="translate(660 280)" filter="url(#glow)">
+    <polygon points="160,0 310,82 160,165 10,82" fill="url(#cubeTop)"/>
+    <polygon points="10,82 160,165 160,345 10,260" fill="url(#cubeL)"/>
+    <polygon points="310,82 160,165 160,345 310,260" fill="url(#cubeR)"/>
+    <path d="M105 215h110M118 195l-13 20 13 20M202 195l13 20-13 20" fill="none" stroke="#d7ffe9" stroke-width="8" stroke-linecap="round"/>
+    <text x="160" y="292" text-anchor="middle" fill="#fff" font-size="64" font-weight="800">S3</text>
+  </g>
+
+  <g stroke="#27f79a" stroke-width="4" opacity=".75">
+    <path d="M950 365C1060 300 1110 258 1200 230"/><path d="M950 390C1085 390 1135 390 1200 390"/><path d="M950 420C1055 475 1110 500 1200 520"/>
+  </g>
+
+  <g transform="translate(1180 110)" filter="url(#shadow)">
+    <rect width="350" height="420" rx="28" fill="url(#panel)" stroke="#5ac7ff" stroke-width="2"/>
+    <g font-size="22" fill="#fff">
+      <g transform="translate(26 30)"><rect width="54" height="54" rx="13" fill="#7c38e8"/><text x="27" y="35" text-anchor="middle">T</text><text x="75" y="22" font-weight="700">Textract</text><text x="75" y="46" fill="#a7bac9" font-size="16">Extraer texto</text></g>
+      <g transform="translate(26 94)"><rect width="54" height="54" rx="13" fill="#12b9aa"/><text x="27" y="35" text-anchor="middle">Tr</text><text x="75" y="22" font-weight="700">Transcribe</text><text x="75" y="46" fill="#a7bac9" font-size="16">Audio y video a texto</text></g>
+      <g transform="translate(26 158)"><rect width="54" height="54" rx="13" fill="#ffb11e"/><text x="27" y="35" text-anchor="middle">P</text><text x="75" y="22" font-weight="700">Polly</text><text x="75" y="46" fill="#a7bac9" font-size="16">Texto a voz</text></g>
+      <g transform="translate(26 222)"><rect width="54" height="54" rx="13" fill="#f26a22"/><text x="27" y="35" text-anchor="middle">A↔</text><text x="75" y="22" font-weight="700">Translate</text><text x="75" y="46" fill="#a7bac9" font-size="16">Traducción</text></g>
+      <g transform="translate(26 286)"><rect width="54" height="54" rx="13" fill="#d31b8c"/><text x="27" y="35" text-anchor="middle">◉</text><text x="75" y="22" font-weight="700">Rekognition</text><text x="75" y="46" fill="#a7bac9" font-size="16">Análisis de imágenes</text></g>
+      <g transform="translate(26 350)"><rect width="54" height="54" rx="13" fill="#316cf6"/><text x="27" y="35" text-anchor="middle">C</text><text x="75" y="22" font-weight="700">Comprehend</text><text x="75" y="46" fill="#a7bac9" font-size="16">Análisis de texto</text></g>
+    </g>
+  </g>
 </g>
 </svg>

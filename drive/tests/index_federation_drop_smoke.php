@@ -35,9 +35,9 @@ indexHomeOk(
 
 indexHomeOk(
     str_contains($source, 'id="arcadeHomeCarousel"')
-        && str_contains($source, 'class="carousel slide public-carousel shadow-sm"')
+        && str_contains($source, 'class="carousel slide home-carousel"')
         && str_contains($source, 'data-interval="6500"'),
-    'portada usa carrusel visual Bootstrap'
+    'portada usa carrusel visual principal'
 );
 
 foreach ([
@@ -47,11 +47,11 @@ foreach ([
 ] as $relative) {
     indexHomeOk(
         is_file($root . '/' . $relative),
-        'existe visual generado: ' . $relative
+        'existe visual del carrusel: ' . $relative
     );
     indexHomeOk(
         str_contains($source, $relative),
-        'index usa visual generado: ' . $relative
+        'index usa visual del carrusel: ' . $relative
     );
 }
 
@@ -61,22 +61,25 @@ indexHomeOk(
 );
 
 indexHomeOk(
-    str_contains($source, 'Amazon S3 + AWS')
-        && str_contains($source, 'FederationCloud')
-        && str_contains($source, 'FederationDrop'),
-    'carrusel cubre S3/AWS, federación y Drop sin bloques repetidos'
+    str_contains($source, 'home-link-card')
+        && str_contains($source, 'Acceso al nodo')
+        && str_contains($source, 'ArcadeLink')
+        && str_contains($source, 'FederationDrop')
+        && str_contains($source, 'GitHub'),
+    'portada mantiene cuatro accesos directos visuales'
 );
 
 indexHomeOk(
-    str_contains($source, '$arcadeLinkUrl = \'federationcloud/\'')
-        && str_contains($source, '$githubUrl = \'https://github.com/jimmybackend/s3\'')
-        && str_contains($source, 'Subir / pagar'),
-    'portada conserva accesos directos a funciones reales'
+    str_contains($source, 'id="loginModal"')
+        && str_contains($source, 'data-target="#loginModal"')
+        && str_contains($source, 'form action="psesion.php" method="POST"'),
+    'login local se integra en modal sin añadir un bloque pesado'
 );
 
 indexHomeOk(
-    str_contains($source, 'form action="psesion.php" method="POST"'),
-    'login local permanece integrado'
+    str_contains($source, 'id="aboutModal"')
+        && str_contains($source, 'Proyecto de <strong>jimmybackend</strong>.'),
+    'Acerca de permanece breve y modal'
 );
 
 indexHomeOk(
@@ -103,4 +106,4 @@ indexHomeOk(
     'portada pública no arranca la aplicación completa'
 );
 
-echo "Public index visual carousel smoke: OK\n";
+echo "Public index approved mockup smoke: OK\n";

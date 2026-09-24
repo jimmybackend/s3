@@ -1,32 +1,43 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
-<title id="title">FederationCloud entre nodos descentralizados</title>
-<desc id="desc">Varios nodos independientes comparten recursos firmados. drive.esforzados.com aparece como portal principal, no como servidor obligatorio.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 620">
 <defs>
-  <radialGradient id="bg"><stop stop-color="#0b2b43"/><stop offset="1" stop-color="#06111f"/></radialGradient>
-  <filter id="glow"><feGaussianBlur stdDeviation="7" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  <radialGradient id="bg" cx=".5" cy=".5" r=".8"><stop stop-color="#0b3150"/><stop offset=".55" stop-color="#081a2c"/><stop offset="1" stop-color="#06111d"/></radialGradient>
+  <radialGradient id="globe"><stop stop-color="#1aa3ff"/><stop offset=".65" stop-color="#0a5fa4"/><stop offset="1" stop-color="#063052"/></radialGradient>
+  <filter id="glow"><feGaussianBlur stdDeviation="8" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  <filter id="shadow"><feDropShadow dx="0" dy="15" stdDeviation="18" flood-color="#000" flood-opacity=".55"/></filter>
+  <linearGradient id="srv" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#2c6aa0"/><stop offset="1" stop-color="#10263d"/></linearGradient>
 </defs>
-<rect width="1600" height="900" fill="url(#bg)"/>
-<g stroke="#1ed6ff" stroke-width="4" opacity=".7">
-  <path d="M250 230L560 420L300 675L770 700L1030 510L1330 690L1280 240L920 250L560 420L1030 510L1280 240"/>
-  <path d="M250 230L920 250M300 675L1030 510M560 420L1330 690"/>
-</g>
-<g fill="#0e2439" stroke="#45e7ff" stroke-width="4" filter="url(#glow)" font-family="Arial,sans-serif">
-  <g transform="translate(160 150)"><rect width="190" height="135" rx="22"/><circle cx="95" cy="48" r="22" fill="#3eff9a"/><text x="95" y="100" text-anchor="middle" fill="#fff" font-size="25">Nodo A</text></g>
-  <g transform="translate(205 610)"><rect width="190" height="135" rx="22"/><circle cx="95" cy="48" r="22" fill="#3eff9a"/><text x="95" y="100" text-anchor="middle" fill="#fff" font-size="25">Nodo B</text></g>
-  <g transform="translate(1180 150)"><rect width="190" height="135" rx="22"/><circle cx="95" cy="48" r="22" fill="#3eff9a"/><text x="95" y="100" text-anchor="middle" fill="#fff" font-size="25">Nodo C</text></g>
-  <g transform="translate(1220 620)"><rect width="190" height="135" rx="22"/><circle cx="95" cy="48" r="22" fill="#3eff9a"/><text x="95" y="100" text-anchor="middle" fill="#fff" font-size="25">Nodo D</text></g>
-</g>
+<rect width="1600" height="620" fill="url(#bg)"/>
+<g opacity=".18" stroke="#1aa3ff"><path d="M0 100h1600M0 200h1600M0 300h1600M0 400h1600M0 500h1600"/><path d="M160 0v620M320 0v620M480 0v620M640 0v620M800 0v620M960 0v620M1120 0v620M1280 0v620M1440 0v620"/></g>
 
-<g transform="translate(520 340)" filter="url(#glow)">
-  <rect width="560" height="190" rx="36" fill="#0b1e31" stroke="#57ff9e" stroke-width="5"/>
-  <text x="280" y="72" text-anchor="middle" fill="#fff" font-family="Arial,sans-serif" font-size="42" font-weight="700">drive.esforzados.com</text>
-  <text x="280" y="118" text-anchor="middle" fill="#71ffc0" font-family="Arial,sans-serif" font-size="25">Portal principal · catálogo · comercio</text>
-  <text x="280" y="158" text-anchor="middle" fill="#9fb7c8" font-family="Arial,sans-serif" font-size="20">La red sigue siendo descentralizada</text>
-</g>
+<g font-family="Arial,sans-serif">
+  <text x="75" y="100" fill="#fff" font-size="60" font-weight="800">Red de <tspan fill="#58ef86">nodos federados</tspan></text>
+  <text x="78" y="150" fill="#b2c5d4" font-size="28">Nodos descentralizados conectados con enlaces firmados y catálogo federado.</text>
 
-<text x="80" y="95" fill="#f5fbff" font-family="Arial,sans-serif" font-size="58" font-weight="700">Transferencia federada</text>
-<text x="82" y="145" fill="#a9bfd0" font-family="Arial,sans-serif" font-size="27">ArcadeLink y FederationCloud conectan nodos sin compartir credenciales internas.</text>
-<g font-family="Arial,sans-serif" font-size="22" fill="#d7e8f2">
-  <text x="615" y="615">firmas · catálogo · réplicas · failover</text>
+  <g stroke="#3fd5ff" stroke-width="5" fill="none" opacity=".9" filter="url(#glow)">
+    <path d="M290 275L680 355L420 505L820 420L1170 270L1320 455L680 355L1170 270"/>
+    <path d="M290 275L1170 270M420 505L1320 455"/>
+  </g>
+
+  <g transform="translate(690 215)" filter="url(#glow)">
+    <circle cx="180" cy="180" r="155" fill="url(#globe)" stroke="#56d9ff" stroke-width="5"/>
+    <ellipse cx="180" cy="180" rx="115" ry="155" fill="none" stroke="#86e7ff" opacity=".42"/>
+    <ellipse cx="180" cy="180" rx="155" ry="62" fill="none" stroke="#86e7ff" opacity=".42"/>
+    <path d="M45 180h270M180 25v310" stroke="#86e7ff" opacity=".35"/>
+    <rect x="40" y="145" width="280" height="72" rx="24" fill="#0b1c30" stroke="#62f7a7" stroke-width="4"/>
+    <text x="180" y="188" text-anchor="middle" fill="#fff" font-size="31" font-weight="700">drive.esforzados.com</text>
+  </g>
+
+  <g fill="url(#srv)" stroke="#50cfff" stroke-width="3" filter="url(#shadow)">
+    <g transform="translate(170 210)"><rect width="155" height="118" rx="18"/><rect x="24" y="25" width="107" height="20" rx="6" fill="#0b1725"/><rect x="24" y="56" width="107" height="20" rx="6" fill="#0b1725"/><circle cx="117" cy="35" r="6" fill="#58ef86"/><circle cx="117" cy="66" r="6" fill="#58ef86"/><text x="77" y="145" text-anchor="middle" fill="#fff" font-size="22">Nodo A</text></g>
+    <g transform="translate(300 445)"><rect width="155" height="118" rx="18"/><rect x="24" y="25" width="107" height="20" rx="6" fill="#0b1725"/><rect x="24" y="56" width="107" height="20" rx="6" fill="#0b1725"/><circle cx="117" cy="35" r="6" fill="#58ef86"/><circle cx="117" cy="66" r="6" fill="#58ef86"/><text x="77" y="145" text-anchor="middle" fill="#fff" font-size="22">Nodo B</text></g>
+    <g transform="translate(1180 190)"><rect width="155" height="118" rx="18"/><rect x="24" y="25" width="107" height="20" rx="6" fill="#0b1725"/><rect x="24" y="56" width="107" height="20" rx="6" fill="#0b1725"/><circle cx="117" cy="35" r="6" fill="#58ef86"/><circle cx="117" cy="66" r="6" fill="#58ef86"/><text x="77" y="145" text-anchor="middle" fill="#fff" font-size="22">Nodo C</text></g>
+    <g transform="translate(1270 420)"><rect width="155" height="118" rx="18"/><rect x="24" y="25" width="107" height="20" rx="6" fill="#0b1725"/><rect x="24" y="56" width="107" height="20" rx="6" fill="#0b1725"/><circle cx="117" cy="35" r="6" fill="#58ef86"/><circle cx="117" cy="66" r="6" fill="#58ef86"/><text x="77" y="145" text-anchor="middle" fill="#fff" font-size="22">Nodo D</text></g>
+  </g>
+
+  <g transform="translate(75 475)">
+    <rect width="390" height="80" rx="22" fill="#0a1d30" stroke="#42f28d" stroke-width="3"/>
+    <text x="28" y="33" fill="#fff" font-size="24" font-weight="700">FederationCloud</text>
+    <text x="28" y="61" fill="#9fb8ca" font-size="18">ArcadeLink · catálogo · réplicas · failover</text>
+  </g>
 </g>
 </svg>

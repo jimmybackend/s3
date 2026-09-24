@@ -40,6 +40,9 @@ final class FederationDropIngressController
             }
 
             $body = $this->jsonBody(65536);
+            if ($action === '') {
+                $action = strtolower(trim((string)($body['action'] ?? '')));
+            }
             $grant = $body['grant'] ?? null;
             if (!is_array($grant) || array_is_list($grant)) {
                 throw new FederationException('Grant FederationDrop ingress ausente.', 400);

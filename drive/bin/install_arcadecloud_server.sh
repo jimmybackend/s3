@@ -207,12 +207,9 @@ install_media_dependencies() {
 
   command_exists ffmpeg || fail "ffmpeg no quedó disponible después de instalar ffmpeg-free."
   command_exists ffprobe || fail "ffprobe no quedó disponible después de instalar ffmpeg-free."
+  command_exists lame || fail "lame no quedó disponible después de instalar el paquete lame."
 
-  if ! ffmpeg -hide_banner -encoders 2>/dev/null | grep -qE '(^|[[:space:]])libmp3lame([[:space:]]|$)'; then
-    fail "FFmpeg quedó instalado pero no expone el encoder libmp3lame requerido para Extraer MP3."
-  fi
-
-  say "Multimedia listo: $(ffmpeg -version 2>/dev/null | head -1)"
+  say "Multimedia listo: $(ffmpeg -version 2>/dev/null | head -1); $(lame --version 2>/dev/null | head -1)"
 }
 
 install_composer() {
@@ -623,7 +620,7 @@ validate_runtime() {
   if [[ "$NODE_ROLE" == "media-worker" || "$NODE_ROLE" == "combined" ]]; then
     command_exists ffmpeg || fail "rol $NODE_ROLE sin ffmpeg."
     command_exists ffprobe || fail "rol $NODE_ROLE sin ffprobe."
-    ffmpeg -hide_banner -encoders 2>/dev/null | grep -qE '(^|[[:space:]])libmp3lame([[:space:]]|$)'       || fail "rol $NODE_ROLE sin encoder libmp3lame."
+    command_exists lame || fail "rol $NODE_ROLE sin encoder MP3 de respaldo lame."
   fi
 
   nginx -t >/dev/null
@@ -653,7 +650,7 @@ echo "Composer: $(COMPOSER_ALLOW_SUPERUSER=1 composer --version 2>/dev/null | he
 if [[ "$NODE_ROLE" == "media-worker" || "$NODE_ROLE" == "combined" ]]; then
   echo "FFmpeg: $(ffmpeg -version 2>/dev/null | head -1)"
   echo "FFprobe: $(ffprobe -version 2>/dev/null | head -1)"
-  echo "MP3 encoder: libmp3lame"
+  echo "MP3 encoder: libmp3lame cuando esté disponible; fallback instalado: lame"
 fi
 if [[ -x "$ARCADECLOUD_CERTBOT_BIN" ]]; then
   echo "Certbot ArcadeCloud: $("$ARCADECLOUD_CERTBOT_BIN" --version 2>/dev/null)"

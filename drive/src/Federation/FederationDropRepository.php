@@ -70,6 +70,26 @@ final class FederationDropRepository
         return is_array($row) ? $row : null;
     }
 
+    public function findByPaymentReference(string $provider, string $reference): ?array
+    {
+        $stmt = $this->db->prepare(
+            'SELECT DropId FROM FederationDrops
+             WHERE PaymentProvider = ? AND PaymentReference = ?
+             ORDER BY CreatedAt DESC LIMIT 1'
+        );
+        if (!$stmt) throw new FederationException('No se pudo consultar la referencia de pago FederationDrop.', 500);
+        $stmt->bind_param('ss', $provider, $reference);
+        if (!$stmt->execute()) {
+            $message = $stmt->error;
+            $stmt->close();
+            throw new FederationException('No se pudo consultar la referencia de pago: ' . $message, 500);
+        }
+        $row = $stmt->get_result()->fetch_assoc();
+        $stmt->close();
+        if (!is_array($row) || !is_string($row['DropId'] ?? null)) return null;
+        return $this->find((string)$row['DropId']);
+    }
+
     public function setCheckoutUrl(string $dropId, string $checkoutUrl): void
     {
         $stmt = $this->db->prepare(

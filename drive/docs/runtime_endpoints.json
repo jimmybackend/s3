@@ -375,10 +375,11 @@
     },
     {
       "path": "drive/bloque_archivos.php",
-      "size": 25094,
+      "size": 25223,
       "active": true,
       "references": [
         "drive/s3.php",
+        "drive/tests/media_processing_contract_smoke.php",
         "drive/js/archivos.js",
         "drive/js/carpetas.js",
         "drive/js/elimina-multiple.js",
@@ -884,6 +885,7 @@
         "drive/s3.php",
         "drive/src/Federation/FederationDropService.php",
         "drive/tests/federationcloud_smoke.php",
+        "drive/tests/media_processing_contract_smoke.php",
         "drive/tests/setup_entry_guard_smoke.php",
         "drive/js/soportesMediaTypes.js",
         "drive/js/subir-chunked.js",
@@ -1152,7 +1154,7 @@
     },
     {
       "path": "drive/s3.php",
-      "size": 90722,
+      "size": 95162,
       "active": true,
       "references": [
         "drive/app_bootstrap.php",
@@ -1163,6 +1165,7 @@
         "drive/src/View/FederationPortalRenderer.php",
         "drive/src/View/PersonalAwsPageRenderer.php",
         "drive/tests/index_federation_drop_smoke.php",
+        "drive/tests/media_processing_contract_smoke.php",
         "drive/up.php",
         "drive/js/archivos.js",
         "drive/js/carpetas.js",
@@ -1510,9 +1513,11 @@
     },
     {
       "path": "drive/src/Console/MediaProcessingWorkerCommand.php",
-      "size": 13342,
+      "size": 15037,
       "active": false,
-      "references": []
+      "references": [
+        "drive/tests/media_processing_contract_smoke.php"
+      ]
     },
     {
       "path": "drive/src/Console/MoveJobWorkerCommand.php",
@@ -2484,15 +2489,19 @@
     },
     {
       "path": "drive/src/Media/MediaProcessingJobRepository.php",
-      "size": 9171,
+      "size": 11443,
       "active": false,
-      "references": []
+      "references": [
+        "drive/tests/media_processing_contract_smoke.php"
+      ]
     },
     {
       "path": "drive/src/Media/MediaProcessingService.php",
-      "size": 2777,
+      "size": 3122,
       "active": false,
-      "references": []
+      "references": [
+        "drive/tests/media_processing_contract_smoke.php"
+      ]
     },
     {
       "path": "drive/src/Media/ThumbnailService.php",
@@ -3078,6 +3087,12 @@
     {
       "path": "drive/tests/index_federation_drop_smoke.php",
       "size": 3778,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/tests/media_processing_contract_smoke.php",
+      "size": 1914,
       "active": false,
       "references": []
     },

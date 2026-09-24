@@ -127,13 +127,15 @@ Esto permite migrar una instalación existente de forma gradual: una variable pu
 
 Se pueden modificar como variables individuales desde la tabla Servidor.
 
-### FederationDrop y Stripe
+### FederationDrop, Stripe y Google
 
 Todos los nodos pueden conocer `ARCADECLOUD_DROP_COMMERCE_URL`, cuyo valor normal es el portal FederationDrop de `drive.esforzados.com`.
 
 Sólo el nodo comercial habilita `ARCADECLOUD_DROP_ENABLED` y configura `ARCADECLOUD_STRIPE_SECRET_KEY` y `ARCADECLOUD_STRIPE_WEBHOOK_SECRET`. Los nodos federados normales no necesitan credenciales Stripe.
 
-Las dos variables Stripe se marcan como secretos: el panel sólo indica si existen y nunca devuelve su valor al navegador.
+Las variables Stripe se marcan como secretos. Google FederationDrop añade `ARCADECLOUD_DROP_GOOGLE_ENABLED`, `ARCADECLOUD_DROP_GOOGLE_CLIENT_ID`, `ARCADECLOUD_DROP_GOOGLE_CLIENT_SECRET`, `ARCADECLOUD_DROP_GOOGLE_SESSION_SECRET` y `ARCADECLOUD_DROP_GOOGLE_SESSION_TTL`. El Client Secret y el secreto de sesión Google se redactan en el panel y nunca se devuelven al navegador.
+
+El cliente OAuth web de Google debe autorizar exactamente `https://drive.esforzados.com/federationdrop/google-callback.php`. Se puede reutilizar el mismo Client ID/Secret que MCMA si ese redirect URI se agrega al cliente existente.
 
 ### Base de datos
 

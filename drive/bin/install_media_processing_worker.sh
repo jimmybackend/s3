@@ -4,7 +4,9 @@ set -euo pipefail
 APP_ROOT="${1:-/var/www/arcadecloud-drive}"
 DRIVE_ROOT="${APP_ROOT}/drive"
 SERVICE="/etc/systemd/system/arcadecloud-media-worker.service"
+BOOTSTRAP_SERVICE="/etc/systemd/system/arcadecloud-media-node-bootstrap.service"
 TMP_ROOT="/var/lib/arcadecloud-media/tmp"
+DRIVE_ENV="${ARCADECLOUD_DRIVE_ENV:-/etc/arcadecloud-drive/drive.env}"
 
 if [[ "${EUID}" -ne 0 ]]; then
   echo "Ejecuta este instalador como root." >&2
@@ -23,23 +25,50 @@ if [[ ! -f "${DRIVE_ROOT}/bin/media_processing_worker.php" ]]; then
   exit 1
 fi
 
+if [[ ! -f "${DRIVE_ROOT}/bin/media_worker_node_bootstrap.sh" ]]; then
+  echo "No se encontró el bootstrap del nodo multimedia." >&2
+  exit 1
+fi
+
+chmod 0755 "${DRIVE_ROOT}/bin/media_worker_node_bootstrap.sh"
+
 mkdir -p "${TMP_ROOT}"
 chown -R nginx:nginx /var/lib/arcadecloud-media 2>/dev/null || true
 chmod 0750 /var/lib/arcadecloud-media "${TMP_ROOT}"
 
+cat > "${BOOTSTRAP_SERVICE}" <<EOF
+[Unit]
+Description=ArcadeCloud Media Node boot endpoint refresh
+After=network-online.target
+Wants=network-online.target
+Before=arcadecloud-media-worker.service
+
+[Service]
+Type=oneshot
+WorkingDirectory=${APP_ROOT}
+EnvironmentFile=-${DRIVE_ENV}
+Environment=ARCADECLOUD_DRIVE_ENV=${DRIVE_ENV}
+ExecStart=/usr/bin/bash ${DRIVE_ROOT}/bin/media_worker_node_bootstrap.sh ${APP_ROOT}
+NoNewPrivileges=true
+
+EOF
+
 cat > "${SERVICE}" <<EOF
 [Unit]
 Description=ArcadeCloud Media Processing Worker
-After=network-online.target
+After=network-online.target arcadecloud-media-node-bootstrap.service
 Wants=network-online.target
+Requires=arcadecloud-media-node-bootstrap.service
 
 [Service]
 Type=simple
 User=nginx
 Group=nginx
 WorkingDirectory=${APP_ROOT}
+EnvironmentFile=-${DRIVE_ENV}
 Environment=ARCADECLOUD_MEDIA_WORKER=1
 Environment=ARCADECLOUD_MEDIA_TMP=${TMP_ROOT}
+Environment=ARCADECLOUD_DRIVE_ENV=${DRIVE_ENV}
 ExecStart=/usr/bin/php ${DRIVE_ROOT}/bin/media_processing_worker.php --loop --sleep=5
 Restart=always
 RestartSec=5
@@ -53,9 +82,12 @@ WantedBy=multi-user.target
 EOF
 
 systemctl daemon-reload
+systemctl enable arcadecloud-media-node-bootstrap.service >/dev/null 2>&1 || true
 systemctl enable --now arcadecloud-media-worker.service
 systemctl --no-pager --full status arcadecloud-media-worker.service || true
 
 echo
 echo "Worker multimedia instalado."
 echo "IMPORTANTE: este nodo debe tener acceso privado a MariaDB y permisos IAM S3 GetObject/PutObject sobre el bucket del Drive."
+echo "Para autoapagado de su propia EC2 necesita ec2:DescribeInstances y ec2:StopInstances."
+echo "Si es réplica sin dominio, configura ARCADECLOUD_FEDERATION_DYNAMIC_IP=1 en ${DRIVE_ENV}."

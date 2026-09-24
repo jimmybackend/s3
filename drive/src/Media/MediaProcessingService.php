@@ -14,7 +14,8 @@ final class MediaProcessingService
 
     public function __construct(
         private FileRecordLocator $locator,
-        private MediaProcessingJobRepository $jobs
+        private MediaProcessingJobRepository $jobs,
+        private MediaWorkerNodeService $node
     ) {
     }
 
@@ -56,6 +57,9 @@ final class MediaProcessingService
             throw new RuntimeException('Operación multimedia no soportada.');
         }
 
+        $authorizedStart = $this->boolValue($input['authorize_node_start'] ?? false);
+        $node = $this->node->prepareForWork($userId, $authorizedStart);
+
         $job = $this->jobs->enqueue(
             $userId,
             $source,
@@ -70,12 +74,19 @@ final class MediaProcessingService
             'job' => $job,
             'message' => 'Tarea multimedia enviada al nodo de procesamiento. El archivo original se conservará intacto.',
             'max_source_bytes' => self::MAX_SOURCE_BYTES,
+            'node' => $node,
         ];
     }
 
     public function recent(int $userId): array
     {
         return ['ok' => true, 'jobs' => $this->jobs->recentForUser($userId)];
+    }
+
+    private function boolValue(mixed $value): bool
+    {
+        if (is_bool($value)) return $value;
+        return in_array(strtolower(trim((string)$value)), ['1','true','yes','on','si','sí'], true);
     }
 
     private function assertParts(int $parts): void

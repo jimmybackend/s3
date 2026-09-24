@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace ArcadeCloud\Drive\Aws;
 
 use ArcadeCloud\Drive\Activity\TranscriptionCostAttribution;
+use Aws\Exception\AwsException;
 use Aws\S3\S3Client;
 use Aws\TranscribeService\TranscribeServiceClient;
 use RuntimeException;
@@ -163,6 +164,8 @@ final class TranscriptionFileService
         $result = $this->transcribe->startTranscriptionJob($params);
         $job = $result['TranscriptionJob'] ?? [];
 
+        $physicalBase = pathinfo(basename($key), PATHINFO_FILENAME);
+
         return [
             'ok' => true,
             'jobName' => $jobName,
@@ -174,6 +177,9 @@ final class TranscriptionFileService
             'rutaDestino' => $route,
             'nombreBase' => $baseVisible,
             'subtitleFormats' => $subtitleFormats,
+            'awsOutputJsonKey' => $route . $jobName . '.json',
+            'driveOutputJsonKey' => $route . $physicalBase . '.json',
+            'driveOutputName' => $baseVisible . '.json',
         ];
     }
 
@@ -285,6 +291,234 @@ final class TranscriptionFileService
         return $response;
     }
 
+    public function recoverCompletedFromS3(
+        int $userId,
+        string $jobName,
+        string $requestedKey,
+        string $expectedAwsJsonKey = '',
+        array $subtitleFormats = [],
+        string $notBeforeUtc = ''
+    ): ?array {
+        $source = $this->locator->requireReadableByKey($userId, $requestedKey);
+        $sourceKey = (string)$source['_key'];
+        $route = $this->route((string)$source['Ruta']);
+        $physical = pathinfo(basename($sourceKey), PATHINFO_FILENAME);
+        $visible = pathinfo((string)$source['Nombre'], PATHINFO_FILENAME);
+        $canonicalJsonKey = $route . $physical . '.json';
+
+        $candidateKeys = array_values(array_unique(array_filter([
+            $canonicalJsonKey,
+            trim($expectedAwsJsonKey),
+            $jobName !== '' ? $route . $jobName . '.json' : '',
+        ], static fn(string $value): bool => $value !== '')));
+
+        $jsonObject = null;
+        $jsonKey = '';
+        foreach ($candidateKeys as $candidate) {
+            $object = $this->readS3ObjectIfExists($candidate);
+            if ($object !== null && $this->isFreshObject($object, $notBeforeUtc)) {
+                $jsonObject = $object;
+                $jsonKey = $candidate;
+                break;
+            }
+        }
+
+        if ($jsonObject === null) {
+            return null;
+        }
+
+        $jsonBody = (string)$jsonObject['body'];
+        $decoded = json_decode($jsonBody, true);
+        if (!is_array($decoded) || !is_array($decoded['results'] ?? null)) {
+            return null;
+        }
+
+        $costAttribution = TranscriptionCostAttribution::fromResult($decoded, []);
+        $costMetadata = [
+            'duration_seconds_observed' => $costAttribution['duration_seconds_observed'],
+            'billable_seconds_reference' => $costAttribution['billable_seconds_reference'],
+            'duration_source' => $costAttribution['duration_source'],
+            'pricing_region_reference' => $costAttribution['pricing_region_reference'],
+            'recovered_from_s3' => true,
+        ];
+
+        if (hash_equals($canonicalJsonKey, $jsonKey)) {
+            $savedJson = $this->registerExistingVariant(
+                $userId,
+                $source,
+                $jobName,
+                $canonicalJsonKey,
+                $visible . '.json',
+                (int)$jsonObject['size'],
+                'json',
+                'application/json',
+                $costMetadata
+            );
+        } else {
+            $savedJson = $this->storeVariant(
+                $userId,
+                $source,
+                $jobName,
+                '',
+                'COMPLETED',
+                $jsonBody,
+                'json',
+                'application/json',
+                array_merge(['recovered_aws_key' => $jsonKey], $costMetadata)
+            );
+        }
+
+        $saved = ['json' => $savedJson];
+        foreach (array_values(array_intersect($subtitleFormats, ['srt', 'vtt'])) as $ext) {
+            $canonicalKey = $route . $physical . '.' . $ext;
+            $rawKey = $jobName !== '' ? $route . $jobName . '.' . $ext : '';
+            $object = $this->readS3ObjectIfExists($canonicalKey);
+            $foundKey = $canonicalKey;
+
+            if ($object !== null && !$this->isFreshObject($object, $notBeforeUtc)) {
+                $object = null;
+            }
+            if ($object === null && $rawKey !== '') {
+                $object = $this->readS3ObjectIfExists($rawKey);
+                $foundKey = $rawKey;
+                if ($object !== null && !$this->isFreshObject($object, $notBeforeUtc)) {
+                    $object = null;
+                }
+            }
+            if ($object === null) continue;
+
+            $contentType = $ext === 'srt' ? 'application/x-subrip' : 'text/vtt';
+            if (hash_equals($canonicalKey, $foundKey)) {
+                $saved[$ext] = $this->registerExistingVariant(
+                    $userId,
+                    $source,
+                    $jobName,
+                    $canonicalKey,
+                    $visible . '.' . $ext,
+                    (int)$object['size'],
+                    $ext,
+                    $contentType,
+                    $costMetadata
+                );
+            } else {
+                $saved[$ext] = $this->storeVariant(
+                    $userId,
+                    $source,
+                    $jobName,
+                    '',
+                    'COMPLETED',
+                    (string)$object['body'],
+                    $ext,
+                    $contentType,
+                    array_merge(['recovered_aws_key' => $foundKey], $costMetadata)
+                );
+            }
+        }
+
+        return [
+            'ok' => true,
+            'jobName' => $jobName,
+            'status' => 'COMPLETED',
+            'texto' => (string)($decoded['results']['transcripts'][0]['transcript'] ?? ''),
+            'archivoKey' => $sourceKey,
+            'archivoNombre' => (string)$source['Nombre'],
+            'ruta' => (string)$source['Ruta'],
+            'json_s3_key' => (string)$savedJson['key'],
+            'json_nombre' => (string)$savedJson['nombre'],
+            'guardados' => $saved,
+            'cost_attribution' => $costAttribution,
+            'recovered_from_s3' => true,
+        ];
+    }
+
+    private function registerExistingVariant(
+        int $userId,
+        array $source,
+        string $job,
+        string $key,
+        string $name,
+        int $size,
+        string $ext,
+        string $contentType,
+        array $extra
+    ): array {
+        $route = $this->route((string)$source['Ruta']);
+        $meta = array_merge([
+            'tipo' => $contentType,
+            'servicio' => 'Amazon Transcribe',
+            'jobName' => $job,
+            'origen_nombre' => $source['Nombre'],
+            'origen_encriptado' => $source['_key'],
+            'destino_nombre' => $name,
+            'destino_encriptado' => $key,
+            'ruta' => $route,
+            'tamano_bytes' => $size,
+            'status' => 'COMPLETED',
+            'recovered_existing_s3_object' => true,
+            'extension' => $ext,
+            'fecha' => date('Y-m-d'),
+            'hora' => date('H:i:s'),
+        ], $extra);
+
+        $db = $this->generated->upsert($userId, $name, $key, $size, $meta, $route);
+
+        return [
+            'nombre' => $name,
+            'key' => $key,
+            'ruta' => $route,
+            'tamano' => $size,
+            'db_status' => $db,
+            's3_put' => false,
+        ];
+    }
+
+    private function readS3ObjectIfExists(string $key): ?array
+    {
+        $key = trim($key);
+        if ($key === '') return null;
+
+        try {
+            $head = $this->s3->headObject([
+                'Bucket' => $this->bucket,
+                'Key' => $key,
+            ]);
+            $obj = $this->s3->getObject([
+                'Bucket' => $this->bucket,
+                'Key' => $key,
+            ]);
+            $body = (string)$obj['Body'];
+            if ($body === '') return null;
+
+            $lastModified = $head['LastModified'] ?? null;
+            return [
+                'body' => $body,
+                'size' => max(0, (int)($head['ContentLength'] ?? strlen($body))),
+                'last_modified' => $lastModified instanceof \DateTimeInterface
+                    ? $lastModified->getTimestamp()
+                    : 0,
+            ];
+        } catch (AwsException $e) {
+            if ($e->getStatusCode() === 404
+                || in_array((string)$e->getAwsErrorCode(), ['NotFound','NoSuchKey'], true)) {
+                return null;
+            }
+            throw $e;
+        }
+    }
+
+    private function isFreshObject(array $object, string $notBeforeUtc): bool
+    {
+        $notBeforeUtc = trim($notBeforeUtc);
+        if ($notBeforeUtc === '') return true;
+
+        $created = strtotime($notBeforeUtc . ' UTC');
+        $modified = (int)($object['last_modified'] ?? 0);
+        if ($created === false || $modified <= 0) return true;
+
+        // Tolerancia de reloj de un minuto entre DB/AWS.
+        return $modified >= ($created - 60);
+    }
+
     private function storeVariant(
         int $userId,
         array $source,
@@ -345,6 +579,7 @@ final class TranscriptionFileService
             'ruta' => $route,
             'tamano' => $size,
             'db_status' => $db,
+            's3_put' => true,
         ];
     }
 

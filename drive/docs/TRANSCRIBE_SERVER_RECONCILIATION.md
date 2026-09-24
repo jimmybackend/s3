@@ -97,3 +97,30 @@ sudo journalctl -u arcadecloud-transcribe-reconcile.service -n 80 --no-pager
 - Cada job se identifica por el `CorrelationId` ya existente.
 - `DriveActivityEvents` conserva su UPSERT por correlación, por lo que la finalización no duplica el costo Transcribe.
 - Los eventos ya tasados dejan de ser candidatos del worker.
+
+
+## Recuperación por objeto S3 esperado
+
+El navegador no es responsable de cerrar una tarea. Los trabajos nuevos persisten en `DriveActivityEvents.MetadataJson`:
+
+- `job_name`;
+- `aws_output_key`;
+- `drive_output_key`;
+- `output_name`;
+- `output_route`;
+- formatos de subtítulo solicitados.
+
+El reconciliador primero ejecuta `GetTranscriptionJob` para el `job_name` exacto. Para eventos históricos sin ese dato conserva el escaneo por `CorrelationId`.
+
+Si AWS ya terminó pero el último paso de Drive no se ejecutó, o si el job histórico dejó de estar disponible en Transcribe, el reconciliador consulta únicamente las claves conocidas mediante `HeadObject/GetObject`. No usa `ListObjects`.
+
+Cuando encuentra el JSON esperado:
+
+1. valida que sea un resultado Transcribe;
+2. comprueba que `LastModified` corresponda a la tarea actual, evitando aceptar un resultado viejo;
+3. registra el JSON existente en `FileS3` con el usuario, nombre y ruta correctos;
+4. materializa/recupera SRT/VTT cuando corresponda;
+5. marca la actividad Transcribe como `COMPLETED`;
+6. el Centro de Tareas detecta la transición.
+
+Si el usuario sigue viendo la misma carpeta en Drive, `background-tasks.js` actualiza la ventana para que el archivo generado aparezca sin intervención manual. Si está en otra carpeta o la pestaña no está visible, no fuerza una recarga.

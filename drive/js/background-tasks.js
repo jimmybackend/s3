@@ -35,7 +35,8 @@ class BackgroundTaskCenter {
       'drive:transcribe-failed',
       'drive:polly-task-completed',
       'drive:polly-task-failed',
-      'drive:storage-changed'
+      'drive:storage-changed',
+      'background-tasks:refresh'
     ].forEach((name) => {
       this.document.addEventListener(name, () => this.window.setTimeout(() => this.refresh(), 350));
     });
@@ -394,12 +395,64 @@ class BackgroundTaskCenter {
       if (!before || before === now) return;
       if (now === 'completed') {
         this.notify(`Tarea terminada: ${task.title || task.category || 'Tarea'}.`, 'success', 6500);
+        this.refreshDriveIfRelevant(task);
       } else if (now === 'failed') {
         this.notify(`Tarea con error: ${task.title || task.category || 'Tarea'}.`, 'danger', 8500);
       } else if (now === 'cancelled') {
         this.notify(`Tarea detenida: ${task.title || task.category || 'Tarea'}.`, 'info', 6000);
       }
     });
+  }
+
+  refreshDriveIfRelevant(task) {
+    const kind = String(task && task.kind || '');
+    if (!['media', 'transcribe'].includes(kind)) return;
+
+    this.document.dispatchEvent(new CustomEvent('drive:storage-changed', {
+      detail: { source: 'background-task', task: task }
+    }));
+
+    if (this.document.visibilityState !== 'visible') return;
+    if (typeof this.window.rutaActual === 'undefined' && typeof this.window.DRIVE_INITIAL_ROUTE === 'undefined') {
+      return;
+    }
+
+    const meta = task && task.metadata && typeof task.metadata === 'object' ? task.metadata : {};
+    const expectedRoute = this.normalizeRoute(meta.output_route || '');
+    const currentRoute = this.normalizeRoute(
+      typeof this.window.rutaActual !== 'undefined'
+        ? this.window.rutaActual
+        : (this.window.DRIVE_INITIAL_ROUTE || '')
+    );
+    if (expectedRoute !== currentRoute) return;
+
+    const marker = 'drive-task-refresh:' + String(task.id || '');
+    try {
+      if (this.window.sessionStorage.getItem(marker) === '1') return;
+      this.window.sessionStorage.setItem(marker, '1');
+    } catch (_) {}
+
+    const reload = () => {
+      if (this.document.visibilityState === 'visible') {
+        this.window.location.reload();
+      }
+    };
+
+    const openModal = this.document.querySelector('.modal.show');
+    if (openModal && this.window.jQuery) {
+      this.window.jQuery(openModal).one('hidden.bs.modal', () => this.window.setTimeout(reload, 300));
+      return;
+    }
+
+    this.window.setTimeout(reload, 900);
+  }
+
+  normalizeRoute(value) {
+    return String(value || '')
+      .replace(/\\/g, '/')
+      .replace(/^\/+/, '')
+      .replace(/\/{2,}/g, '/')
+      .replace(/\/$/, '');
   }
 
   render() {

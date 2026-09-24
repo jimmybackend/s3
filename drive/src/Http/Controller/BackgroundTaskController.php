@@ -223,6 +223,8 @@ final class BackgroundTaskController extends AbstractJsonController
                     'engine' => (string)($meta['engine'] ?? ''),
                     'characters' => max(0, (int)($meta['characters'] ?? 0)),
                     'billable_seconds' => max(0, (int)($meta['billable_seconds_reference'] ?? 0)),
+                    'output_route' => (string)($meta['output_route'] ?? ''),
+                    'output_name' => (string)($meta['output_name'] ?? ''),
                 ],
             ];
         }
@@ -412,6 +414,7 @@ final class BackgroundTaskController extends AbstractJsonController
                     'overlap_before_seconds' => (int)($job['overlap_before'] ?? 0),
                     'overlap_after_seconds' => (int)($job['overlap_after'] ?? 0),
                     'outputs' => is_array($job['outputs'] ?? null) ? count($job['outputs']) : 0,
+                    'output_route' => (string)($job['source_route'] ?? ''),
                 ],
             ];
         }

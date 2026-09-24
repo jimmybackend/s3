@@ -42,7 +42,15 @@ final class AwsUnitPriceCatalog
 
     public static function default(): self
     {
-        return self::fromFile(dirname(__DIR__, 2) . '/config/activity-cost-pricing.json');
+        $catalog = self::fromFile(dirname(__DIR__, 2) . '/config/activity-cost-pricing.json');
+
+        $hourly = trim((string)(getenv('ARCADECLOUD_MEDIA_WORKER_HOURLY_USD') ?: ''));
+        if ($hourly !== '' && is_numeric($hourly) && (float)$hourly >= 0) {
+            $catalog->rates['ec2.media_worker_second'] = (float)$hourly / 3600;
+            $catalog->sourceId .= '; EC2 media worker hourly rate from ARCADECLOUD_MEDIA_WORKER_HOURLY_USD';
+        }
+
+        return $catalog;
     }
 
     public function estimate(array $units): array

@@ -1,0 +1,31 @@
+name: Transcribe reconciliation recovery
+
+on:
+  pull_request:
+    paths:
+      - 'drive/src/Aws/TranscriptionFileService.php'
+      - 'drive/src/Activity/TranscriptionReconciler.php'
+      - 'drive/src/Http/Controller/TranscriptionController.php'
+      - 'drive/src/Http/Controller/BackgroundTaskController.php'
+      - 'drive/js/background-tasks.js'
+      - 'drive/bin/transcribe_reconcile.php'
+      - 'drive/tests/transcribe_s3_recovery_contract_smoke.php'
+      - '.github/workflows/transcribe-reconciliation.yml'
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: PHP syntax
+        run: |
+          php -l drive/src/Aws/TranscriptionFileService.php
+          php -l drive/src/Activity/TranscriptionReconciler.php
+          php -l drive/src/Http/Controller/TranscriptionController.php
+          php -l drive/src/Http/Controller/BackgroundTaskController.php
+          php -l drive/bin/transcribe_reconcile.php
+          php -l drive/tests/transcribe_s3_recovery_contract_smoke.php
+      - name: JavaScript syntax
+        run: node --check drive/js/background-tasks.js
+      - name: Recovery contract
+        run: php drive/tests/transcribe_s3_recovery_contract_smoke.php

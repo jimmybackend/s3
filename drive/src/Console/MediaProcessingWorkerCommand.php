@@ -6,6 +6,7 @@ namespace ArcadeCloud\Drive\Console;
 use ArcadeCloud\Drive\Aws\GeneratedFileRepository;
 use ArcadeCloud\Drive\Core\DriveApplication;
 use ArcadeCloud\Drive\Media\MediaProcessingJobRepository;
+use ArcadeCloud\Drive\Media\MediaWorkerNodeService;
 use RuntimeException;
 
 final class MediaProcessingWorkerCommand
@@ -14,7 +15,8 @@ final class MediaProcessingWorkerCommand
     public function __construct(
         private DriveApplication $app,
         private MediaProcessingJobRepository $jobs,
-        private GeneratedFileRepository $generated
+        private GeneratedFileRepository $generated,
+        private MediaWorkerNodeService $node
     ) {
     }
 
@@ -29,10 +31,13 @@ final class MediaProcessingWorkerCommand
         do {
             $job = $this->jobs->claimNext($this->workerId());
             if ($job === null) {
+                $this->node->handleIdle($this->jobs);
                 if (!$loop) return 0;
                 sleep(max(1, min(60, $sleepSeconds)));
                 continue;
             }
+
+            $this->node->markBusy();
 
             try {
                 $outputs = $this->process($job);

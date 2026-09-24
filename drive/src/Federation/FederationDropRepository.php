@@ -184,8 +184,9 @@ final class FederationDropRepository
         if ($status === 'refunded') {
             $stmt = $this->db->prepare(
                 "UPDATE FederationDrops
-                 SET PaymentStatus = 'refunded', PaymentProvider = ?, PaymentReference = ?, Status = 'blocked'
-                 WHERE DropId = ? AND Status NOT IN ('deleted','expired') LIMIT 1"
+                 SET PaymentStatus = 'refunded', PaymentProvider = ?, PaymentReference = ?,
+                     Status = IF(Status IN ('deleted','expired'), Status, 'blocked')
+                 WHERE DropId = ? LIMIT 1"
             );
         } else {
             // Un evento failed tardío nunca degrada una orden que ya fue pagada.

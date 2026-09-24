@@ -22,6 +22,7 @@ $node = (string)file_get_contents($repo . '/drive/src/Media/MediaWorkerNodeServi
 $sessions = (string)file_get_contents($repo . '/drive/src/Media/MediaWorkerNodeSessionRepository.php');
 $bootstrap = (string)file_get_contents($repo . '/drive/bin/media_worker_node_bootstrap.sh');
 $tasksJs = (string)file_get_contents($repo . '/drive/js/background-tasks.js');
+$controller = (string)file_get_contents($repo . '/drive/src/Http/Controller/MediaProcessingController.php');
 
 mediaContract(str_contains($service, 'MAX_SOURCE_BYTES = 8 * 1024 * 1024 * 1024'), 'límite de origen fijado en 8 GB');
 mediaContract(!str_contains($service, 'MIN_SOURCE_BYTES'), 'no existe tamaño mínimo para procesar');
@@ -43,6 +44,8 @@ mediaContract(str_contains($sessions, 'MediaWorkerNodeSessions'), 'sesiones de e
 mediaContract(str_contains($bootstrap, 'latest/meta-data/public-ipv4'), 'réplica sin dominio refresca IPv4 por IMDSv2');
 mediaContract(str_contains($bootstrap, 'federation_endpoint_refresh.php'), 'réplica vuelve a anunciar FederationCloud al arrancar');
 mediaContract(str_contains($js, 'mediaNodeAuthorization'), 'modal pide consentimiento antes de encender el nodo');
+mediaContract(str_contains($controller, 'HTTP_X_DRIVE_CSRF'), 'acciones multimedia pagadas exigen CSRF');
+mediaContract(str_contains($js, "'X-Drive-CSRF'"), 'cliente multimedia envía token CSRF');
 mediaContract(str_contains($tasksJs, 'refreshDriveIfRelevant'), 'Drive refresca la carpeta visible al terminar salidas');
 
 fwrite(STDOUT, "Media processing UI/worker contract: OK\n");

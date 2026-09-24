@@ -898,7 +898,7 @@
     },
     {
       "path": "drive/index.php",
-      "size": 5299,
+      "size": 34140,
       "active": true,
       "references": [
         "drive/bloque_archivos.php",
@@ -1051,7 +1051,8 @@
       "active": true,
       "references": [
         "drive/index.php",
-        "drive/login.php"
+        "drive/login.php",
+        "drive/tests/index_federation_drop_smoke.php"
       ]
     },
     {
@@ -2933,7 +2934,7 @@
     },
     {
       "path": "drive/tests/index_federation_drop_smoke.php",
-      "size": 1479,
+      "size": 2684,
       "active": false,
       "references": []
     },

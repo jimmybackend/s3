@@ -106,6 +106,9 @@ final class FederationDropService
             'public_token_hash' => hash('sha256', $publicToken),
             'public_token_ciphertext' => $this->encryptToken($publicToken),
             'source_domain' => $sourceDomain,
+            'source_mode' => 'upload',
+            'source_resource_id' => null,
+            'source_content_id' => null,
             'original_name' => $filename,
             's3_key' => $key,
             'mime_type' => $mimeType,
@@ -137,9 +140,94 @@ final class FederationDropService
         ];
     }
 
+    public function createPublicResourceOrder(
+        string $email,
+        string $resourceId,
+        int $days,
+        int $downloads,
+        string $sourceDomain = ''
+    ): array {
+        $this->config->assertReady();
+        $email = strtolower(trim($email));
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL) || strlen($email) > 320) {
+            throw new FederationException('Escribe un correo válido para administrar el FederationDrop.', 400);
+        }
+        $resourceId = trim($resourceId);
+        if (!preg_match('/\Aarl_[A-Za-z0-9_-]{16,80}\z/', $resourceId)) {
+            throw new FederationException('Resource ID FederationCloud inválido.', 400);
+        }
+
+        $resource = (new FederatedCatalogRepository($this->app->db()))->find($resourceId);
+        if ($resource === null) throw new FederationException('El recurso público todavía no aparece en el catálogo de este nodo.', 404);
+        if ((string)$resource['Visibility'] !== 'PUBLIC' || (string)$resource['Rights'] !== 'copy_allowed') {
+            throw new FederationException('Sólo PUBLIC + copy_allowed puede convertirse en FederationDrop sin autorización privada.', 403);
+        }
+        $contentId = strtolower(trim((string)($resource['ContentId'] ?? '')));
+        if (!preg_match('/\Asha256:[a-f0-9]{64}\z/', $contentId)) {
+            throw new FederationException('El recurso público requiere Content ID SHA-256 para custodia comercial.', 409);
+        }
+
+        $sizeBytes = (int)$resource['SizeBytes'];
+        $this->validatePlan($sizeBytes, $days, $downloads);
+        $filename = $this->safeFilename((string)$resource['Title']);
+        $mimeType = $this->safeMime((string)$resource['MediaType']);
+        $sourceDomain = $this->normalizeSourceDomain($sourceDomain);
+        $quote = $this->quote($sizeBytes, $days, $downloads);
+
+        $dropId = 'fdp_' . FederationCodec::base64UrlEncode(random_bytes(18));
+        $ownerToken = FederationCodec::base64UrlEncode(random_bytes(32));
+        $publicToken = FederationCodec::base64UrlEncode(random_bytes(32));
+        $key = $this->storage->objectKey($dropId, $filename);
+        $custodyNodeId = $this->identity->nodeId();
+
+        $this->repository->create([
+            'drop_id' => $dropId,
+            'owner_email' => $email,
+            'owner_token_hash' => hash('sha256', $ownerToken),
+            'owner_token_ciphertext' => $this->encryptToken($ownerToken),
+            'public_token_hash' => hash('sha256', $publicToken),
+            'public_token_ciphertext' => $this->encryptToken($publicToken),
+            'source_domain' => $sourceDomain,
+            'source_mode' => 'public_resource',
+            'source_resource_id' => $resourceId,
+            'source_content_id' => $contentId,
+            'original_name' => $filename,
+            's3_key' => $key,
+            'mime_type' => $mimeType,
+            'expected_size_bytes' => $sizeBytes,
+            'retention_days' => $days,
+            'max_downloads' => $downloads,
+            'amount_cents' => (int)$quote['amount_cents'],
+            'currency' => $this->config->currency,
+            'custody_node_id' => $custodyNodeId,
+        ]);
+
+        $createdRow = $this->repository->find($dropId);
+        if ($createdRow === null) throw new FederationException('No se pudo recuperar la orden pública FederationDrop.', 500);
+        $checkout = $this->stripe()->createCheckout($createdRow);
+        $checkoutUrl = (string)$checkout['url'];
+        $this->repository->setCheckoutUrl($dropId, $checkoutUrl);
+
+        return [
+            'ok' => true,
+            'drop_id' => $dropId,
+            'owner_token' => $ownerToken,
+            'source_mode' => 'public_resource',
+            'resource_id' => $resourceId,
+            'quote' => $quote,
+            'checkout_url' => $checkoutUrl,
+            'status_url' => $this->config->publicUrl . '/?manage=' . rawurlencode($dropId),
+            'pending_expires_hours' => $this->config->pendingHours,
+            'custody_node_id' => $custodyNodeId,
+        ];
+    }
+
     public function authorizeUpload(string $dropId, string $ownerToken): array
     {
         $row = $this->requireOwner($dropId, $ownerToken);
+        if ((string)($row['SourceMode'] ?? 'upload') !== 'upload') {
+            throw new FederationException('Este FederationDrop se materializa directamente desde FederationCloud; no requiere volver a seleccionar el archivo.', 409);
+        }
         if ((string)$row['PaymentStatus'] !== 'paid' || (string)$row['Status'] !== 'pending_upload') {
             throw new FederationException('La subida FederationDrop se habilita únicamente después del pago confirmado.', 409);
         }
@@ -309,6 +397,79 @@ final class FederationDropService
         ];
     }
 
+    public function syncPaidPublicSources(int $limit = 2): array
+    {
+        if (!$this->config->enabled || !$this->config->isCommerceNode()) {
+            return ['processed' => 0, 'completed' => 0, 'errors' => 0];
+        }
+
+        $processed = $completed = $errors = 0;
+        $catalog = new FederatedCatalogRepository($this->app->db());
+        $resolver = new FederationReplicaResolverService($this->app);
+
+        foreach ($this->repository->paidPublicSourceCandidates($limit) as $row) {
+            $processed++;
+            $tmp = '';
+            try {
+                $resourceId = (string)($row['SourceResourceId'] ?? '');
+                $resource = $catalog->find($resourceId);
+                if ($resource === null
+                    || (string)$resource['Visibility'] !== 'PUBLIC'
+                    || (string)$resource['Rights'] !== 'copy_allowed') {
+                    throw new FederationException('La fuente FederationCloud dejó de estar disponible como recurso público.', 409);
+                }
+                if ((int)$resource['SizeBytes'] !== (int)$row['ExpectedSizeBytes']
+                    || !hash_equals(
+                        strtolower((string)($row['SourceContentId'] ?? '')),
+                        strtolower((string)($resource['ContentId'] ?? ''))
+                    )) {
+                    throw new FederationException('La fuente FederationCloud cambió después del pago; no se activará un contenido distinto.', 409);
+                }
+
+                $resolved = $resolver->publicSources($resourceId, FederationMultiSourceDownloader::MAX_SOURCES);
+                $urls = [];
+                foreach ((array)($resolved['sources'] ?? []) as $source) {
+                    if (is_array($source) && is_string($source['url'] ?? null) && $source['url'] !== '') {
+                        $urls[] = (string)$source['url'];
+                    }
+                }
+                $download = (new FederationMultiSourceDownloader())->download(
+                    $urls,
+                    (int)$row['ExpectedSizeBytes'],
+                    (string)$row['SourceContentId']
+                );
+                $tmp = (string)$download['path'];
+                $stored = $this->storage->storeFromLocalFile(
+                    (string)$row['S3Key'],
+                    $tmp,
+                    (string)$row['MimeType'],
+                    (int)$row['ExpectedSizeBytes'],
+                    [
+                        'federation-resource-id' => $resourceId,
+                        'federation-content-id' => substr((string)$row['SourceContentId'], 7),
+                        'federation-sources-used' => (string)max(1, (int)($download['sources_used'] ?? 1)),
+                    ]
+                );
+                $updated = $this->repository->markUploaded(
+                    (string)$row['DropId'],
+                    (int)$stored['size_bytes'],
+                    (string)$stored['etag'],
+                    (string)$stored['mime_type']
+                );
+                $this->repository->createCentralPlacement((string)$row['DropId'], (string)$updated['CustodyNodeId']);
+                $this->sendActivationEmail($updated);
+                $completed++;
+            } catch (Throwable $e) {
+                $errors++;
+                error_log('[FederationDrop public materialization] ' . $e->getMessage());
+            } finally {
+                if ($tmp !== '') @unlink($tmp);
+            }
+        }
+
+        return compact('processed', 'completed', 'errors');
+    }
+
     public function cleanup(int $limit = 100): array
     {
         $rows = $this->repository->cleanupCandidates($this->config->pendingHours, $limit);
@@ -355,7 +516,14 @@ final class FederationDropService
             'max_downloads' => (int)$row['MaxDownloads'],
             'download_count' => (int)$row['DownloadCount'],
             'checkout_url' => (string)($row['CheckoutUrl'] ?? ''),
-            'can_upload' => (string)$row['PaymentStatus'] === 'paid' && (string)$row['Status'] === 'pending_upload',
+            'source_mode' => (string)($row['SourceMode'] ?? 'upload'),
+            'source_resource_id' => is_string($row['SourceResourceId'] ?? null) ? (string)$row['SourceResourceId'] : null,
+            'can_upload' => (string)($row['SourceMode'] ?? 'upload') === 'upload'
+                && (string)$row['PaymentStatus'] === 'paid'
+                && (string)$row['Status'] === 'pending_upload',
+            'materializing' => (string)($row['SourceMode'] ?? 'upload') === 'public_resource'
+                && (string)$row['PaymentStatus'] === 'paid'
+                && (string)$row['Status'] === 'pending_upload',
             'expires_at' => $row['ExpiresAt'],
             'manage_url' => $this->config->publicUrl . '/?manage=' . rawurlencode($dropId)
                 . '&owner_token=' . rawurlencode($ownerToken),
@@ -394,7 +562,8 @@ final class FederationDropService
                 (string)$row['OriginalName'],
                 $manageUrl,
                 (int)$row['AmountCents'],
-                (string)$row['Currency']
+                (string)$row['Currency'],
+                (string)($row['SourceMode'] ?? 'upload') === 'public_resource'
             );
         } catch (\Throwable $e) {
             error_log('[FederationDrop payment mail] ' . $e->getMessage());

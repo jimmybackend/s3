@@ -15,16 +15,17 @@ final class FederationDropRepository
     {
         $stmt = $this->db->prepare(
             "INSERT INTO FederationDrops
-            (DropId, OwnerEmail, OwnerTokenHash, OwnerTokenCiphertext, PublicTokenHash, PublicTokenCiphertext,
+            (DropId, OwnerAccountId, OwnerEmail, OwnerTokenHash, OwnerTokenCiphertext, PublicTokenHash, PublicTokenCiphertext,
              SourceDomain, SourceMode, SourceResourceId, SourceContentId, OriginalName, S3Key,
              MimeType, ExpectedSizeBytes, RetentionDays, MaxDownloads, AmountCents, Currency,
              PaymentStatus, Status, CustodyNodeId, CreatedAt)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', 'pending_payment', ?, UTC_TIMESTAMP(6))"
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', 'pending_payment', ?, UTC_TIMESTAMP(6))"
         );
         if (!$stmt) throw new FederationException('No se pudo preparar FederationDrop.', 500);
         $stmt->bind_param(
-            'sssssssssssssiiiiss',
+            'ssssssssssssssiiiiss',
             $row['drop_id'],
+            $row['owner_account_id'] ?? null,
             $row['owner_email'],
             $row['owner_token_hash'],
             $row['owner_token_ciphertext'],
@@ -55,7 +56,7 @@ final class FederationDropRepository
     public function find(string $dropId): ?array
     {
         $stmt = $this->db->prepare(
-            'SELECT DropId, OwnerEmail, OwnerTokenHash, OwnerTokenCiphertext, PublicTokenHash, PublicTokenCiphertext,
+            'SELECT DropId, OwnerAccountId, OwnerEmail, OwnerTokenHash, OwnerTokenCiphertext, PublicTokenHash, PublicTokenCiphertext,
                     SourceDomain, SourceMode, SourceResourceId, SourceContentId, OriginalName, S3Key,
                     MimeType, ExpectedSizeBytes, ActualSizeBytes, ObjectEtag, RetentionDays, MaxDownloads,
                     DownloadCount, AmountCents, Currency, PaymentStatus, PaymentProvider, PaymentReference,

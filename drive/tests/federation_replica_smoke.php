@@ -92,6 +92,7 @@ try {
     $replicaRepoSource = (string)file_get_contents(dirname(__DIR__) . '/src/Federation/FederationReplicaRepository.php');
     $replicaServiceSource = (string)file_get_contents(dirname(__DIR__) . '/src/Federation/FederationReplicaService.php');
     $replicaResolverSource = (string)file_get_contents(dirname(__DIR__) . '/src/Federation/FederationReplicaResolverService.php');
+    $multiSourceSource = (string)file_get_contents(dirname(__DIR__) . '/src/Federation/FederationMultiSourceDownloader.php');
     replicaOk(str_contains($replicaRepoSource, 'incomingJobId'), 'incoming usa clave operacional distinta del offer_id saliente');
     replicaOk(str_contains($replicaRepoSource, 'r.OriginNodeId=?'), 'cola saliente queda ligada al OriginNodeId local');
     replicaOk(str_contains($replicaRepoSource, "JSON_EXTRACT(OfferJson, '$.target_node_id')"), 'cola entrante queda ligada al target_node_id firmado');
@@ -99,6 +100,11 @@ try {
     replicaOk(str_contains($replicaServiceSource, "due('incoming', \$this->identity->nodeId(), \$limit)"), 'worker entrante entrega su Node ID al repositorio');
     replicaOk(str_contains($replicaServiceSource, 'hasActiveLocalReplicaLocation'), 'servicio no confunde objetos compartidos con ubicación local');
     replicaOk(str_contains($replicaResolverSource, 'hasActiveLocalReplicaLocation'), 'resolver exige ubicación local anunciada antes de servir réplica');
+    replicaOk(str_contains($replicaResolverSource, 'publicSources'), 'resolver puede reunir varias fuentes públicas');
+    replicaOk(str_contains($replicaResolverSource, '->probe('), 'resolver prueba el URL S3 antes de redirigir al usuario');
+    replicaOk(str_contains($replicaServiceSource, 'FederationMultiSourceDownloader'), 'nuevas réplicas pueden transportarse desde varias fuentes');
+    replicaOk(str_contains($multiSourceSource, 'CURLOPT_RANGE'), 'transporte multisource usa rangos HTTP disjuntos');
+    replicaOk(str_contains($multiSourceSource, 'hash_final'), 'transporte multisource verifica SHA-256 después de ensamblar');
 
     echo "federation replica smoke: OK\n";
 } finally {

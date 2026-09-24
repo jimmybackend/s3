@@ -289,9 +289,12 @@ final class FederationDropService
         }
 
         $updated = $this->repository->markPaid($dropId, $provider, $reference);
-        if ($inserted && empty($payment['was_paid']) && (string)$updated['Status'] === 'active') {
-            $this->repository->createCentralPlacement($dropId, (string)$updated['CustodyNodeId']);
-            $this->sendActivationEmail($updated);
+        if ($inserted && empty($payment['was_paid'])) {
+            $this->sendPaymentReadyEmail($updated);
+            if ((string)$updated['Status'] === 'active') {
+                $this->repository->createCentralPlacement($dropId, (string)$updated['CustodyNodeId']);
+                $this->sendActivationEmail($updated);
+            }
         }
 
         return [
@@ -376,6 +379,26 @@ final class FederationDropService
     {
         return $this->config->publicUrl . '/d.php?id=' . rawurlencode($dropId)
             . '&t=' . rawurlencode($publicToken);
+    }
+
+    private function sendPaymentReadyEmail(array $row): void
+    {
+        try {
+            $ownerToken = $this->decryptToken((string)($row['OwnerTokenCiphertext'] ?? ''));
+            $dropId = (string)$row['DropId'];
+            $manageUrl = $this->config->publicUrl . '/?manage=' . rawurlencode($dropId)
+                . '&owner_token=' . rawurlencode($ownerToken);
+
+            SmtpEmailService::fromEnvironment()->sendFederationDropPaymentReady(
+                (string)$row['OwnerEmail'],
+                (string)$row['OriginalName'],
+                $manageUrl,
+                (int)$row['AmountCents'],
+                (string)$row['Currency']
+            );
+        } catch (\Throwable $e) {
+            error_log('[FederationDrop payment mail] ' . $e->getMessage());
+        }
     }
 
     private function sendActivationEmail(array $row): void

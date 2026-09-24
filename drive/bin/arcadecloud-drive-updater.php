@@ -52,6 +52,11 @@ final class ArcadeCloudDriveUpdater
                 $this->fail('La actualización terminó en un estado inesperado.', 70);
             }
 
+            $reconcile = $this->reconcileServices($config);
+            $message = $reconcile['ok']
+                ? 'ArcadeCloud se actualizó y sus servicios quedaron reconciliados. Recarga la página.'
+                : 'El código quedó actualizado, pero un servicio necesita revisión: ' . $reconcile['message'];
+
             fwrite(
                 STDOUT,
                 json_encode([
@@ -59,7 +64,10 @@ final class ArcadeCloudDriveUpdater
                     'updated' => true,
                     'previous_commit' => $before['local_commit'],
                     'local_commit' => $after['local_commit'],
-                    'message' => 'ArcadeCloud se actualizó mediante fast-forward seguro. Recarga la página.',
+                    'reconcile_ok' => $reconcile['ok'],
+                    'needs_attention' => !$reconcile['ok'],
+                    'reconcile_message' => $reconcile['message'],
+                    'message' => $message,
                 ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . "\n"
             );
             exit(0);
@@ -148,6 +156,11 @@ final class ArcadeCloudDriveUpdater
             $this->fail('Usuario del repositorio inválido.');
         }
 
+        $phpUser = trim((string)($config['php_user'] ?? ''));
+        if ($phpUser === '' || !preg_match('/\A[a-z_][a-z0-9_-]*[$]?\z/i', $phpUser)) {
+            $this->fail('Usuario PHP-FPM inválido en la configuración del updater.');
+        }
+
         $remote = $this->git($config, ['remote', 'get-url', 'origin'])['stdout'];
         $allowed = [
             'https://github.com/jimmybackend/s3.git',
@@ -159,6 +172,45 @@ final class ArcadeCloudDriveUpdater
         if (!in_array($remote, $allowed, true)) {
             $this->fail('El remoto origin no corresponde al repositorio oficial jimmybackend/s3.');
         }
+    }
+
+    private function reconcileServices(array $config): array
+    {
+        $script = rtrim((string)$config['repo_root'], '/')
+            . '/drive/bin/reconcile_arcadecloud_services.sh';
+        if (!is_file($script) || !is_readable($script)) {
+            return ['ok' => false, 'message' => 'falta el reconciliador de servicios del repositorio actualizado'];
+        }
+
+        $cmd = [
+            '/bin/bash',
+            $script,
+            '--app-root=' . (string)$config['repo_root'],
+            '--php-user=' . (string)$config['php_user'],
+        ];
+        $spec = [0 => ['file', '/dev/null', 'r'], 1 => ['pipe', 'w'], 2 => ['pipe', 'w']];
+        $proc = proc_open($cmd, $spec, $pipes, null, null, ['bypass_shell' => true]);
+        if (!is_resource($proc)) {
+            return ['ok' => false, 'message' => 'no se pudo iniciar la reconciliación'];
+        }
+
+        $stdout = stream_get_contents($pipes[1], 32769);
+        $stderr = stream_get_contents($pipes[2], 32769);
+        fclose($pipes[1]);
+        fclose($pipes[2]);
+        $exit = proc_close($proc);
+
+        $detail = trim((string)($stderr !== '' ? $stderr : $stdout));
+        if (strlen($detail) > 1000) {
+            $detail = substr($detail, -1000);
+        }
+
+        return [
+            'ok' => $exit === 0,
+            'message' => $exit === 0
+                ? 'servicios reconciliados'
+                : ($detail !== '' ? $detail : 'la reconciliación devolvió código ' . $exit),
+        ];
     }
 
     private function currentState(array $config, bool $fetch): array

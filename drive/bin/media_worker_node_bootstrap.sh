@@ -3,44 +3,31 @@ set -euo pipefail
 
 APP_ROOT="${1:-/var/www/arcadecloud-drive}"
 DRIVE_ROOT="${APP_ROOT}/drive"
-ENV_FILE="${ARCADECLOUD_DRIVE_ENV:-/etc/arcadecloud-drive/drive.env}"
+RUNTIME_ENV="${ARCADECLOUD_RUNTIME_ENV:-/etc/arcadecloud-drive/runtime-env.json}"
+ADMIN_HELPER="/usr/local/sbin/arcadecloud-drive-admin"
 
 log() {
   printf '[media-node-bootstrap] %s\n' "$*" >&2
 }
 
-set_env_value() {
+runtime_value() {
   local key="$1"
-  local value="$2"
-  local tmp
-
-  if [[ ! -f "$ENV_FILE" ]]; then
-    log "No existe $ENV_FILE; no se modificará la configuración FederationCloud."
-    return 1
-  fi
-
-  tmp="$(mktemp "${ENV_FILE}.XXXXXX")"
-  awk -v key="$key" -v value="$value" '
-    BEGIN { found=0 }
-    index($0, key "=") == 1 {
-      print key "=" value
-      found=1
-      next
-    }
-    { print }
-    END {
-      if (!found) print key "=" value
-    }
-  ' "$ENV_FILE" > "$tmp"
-
-  chmod --reference="$ENV_FILE" "$tmp" 2>/dev/null || chmod 0640 "$tmp"
-  chown --reference="$ENV_FILE" "$tmp" 2>/dev/null || true
-  mv -f "$tmp" "$ENV_FILE"
+  python3 - "$RUNTIME_ENV" "$key" <<'PY' 2>/dev/null || true
+import json, sys
+path, key = sys.argv[1:]
+try:
+    with open(path, encoding="utf-8") as f:
+        data=json.load(f)
+    value=data.get(key, "")
+    if isinstance(value, str):
+        print(value)
+except Exception:
+    pass
+PY
 }
 
 metadata_public_ipv4() {
   command -v curl >/dev/null 2>&1 || return 1
-
   local token
   token="$(curl -fsS --max-time 3 -X PUT     -H 'X-aws-ec2-metadata-token-ttl-seconds: 60'     http://169.254.169.254/latest/api/token 2>/dev/null || true)"
   [[ -n "$token" ]] || return 1
@@ -48,22 +35,31 @@ metadata_public_ipv4() {
   curl -fsS --max-time 3     -H "X-aws-ec2-metadata-token: $token"     http://169.254.169.254/latest/meta-data/public-ipv4 2>/dev/null
 }
 
-if [[ "${ARCADECLOUD_FEDERATION_DYNAMIC_IP:-0}" == "1" ]]; then
-  ipv4="$(metadata_public_ipv4 || true)"
-  if [[ "$ipv4" =~ ^([0-9]{1,3}\.){3}[0-9]{1,3}$ ]]; then
-    public_url="http://$ipv4"
-    federation_url="http://$ipv4/federationcloud/"
-
-    if set_env_value "ARCADECLOUD_PUBLIC_URL" "$public_url"; then
-      set_env_value "ARCADECLOUD_FEDERATION_URL" "$federation_url" || true
-      export ARCADECLOUD_PUBLIC_URL="$public_url"
-      export ARCADECLOUD_FEDERATION_URL="$federation_url"
-      log "Endpoint FederationCloud actualizado con la IPv4 pública actual."
+dynamic="$(runtime_value ARCADECLOUD_FEDERATION_DYNAMIC_IP)"
+case "${dynamic,,}" in
+  1|true|yes|on)
+    ipv4="$(metadata_public_ipv4 || true)"
+    if [[ "$ipv4" =~ ^([0-9]{1,3}\.){3}[0-9]{1,3}$ ]]; then
+      if [[ -x "$ADMIN_HELPER" ]]; then
+        payload="$(python3 - "$ipv4" <<'PY'
+import json,sys
+ip=sys.argv[1]
+print(json.dumps({
+  "ARCADECLOUD_PUBLIC_URL": f"http://{ip}",
+  "ARCADECLOUD_FEDERATION_URL": f"http://{ip}/federationcloud/"
+}, separators=(",",":")))
+PY
+)"
+        printf '%s' "$payload" | "$ADMIN_HELPER" env-set-many >/dev/null
+        log "Endpoint FederationCloud actualizado con la IPv4 pública actual."
+      else
+        log "Falta $ADMIN_HELPER; no se modificó el runtime administrado."
+      fi
+    else
+      log "No se pudo obtener una IPv4 pública por IMDSv2."
     fi
-  else
-    log "No se pudo obtener una IPv4 pública por IMDSv2; el worker multimedia continuará sin refrescar FederationCloud."
-  fi
-fi
+    ;;
+esac
 
 if [[ -x /usr/bin/php && -f "$DRIVE_ROOT/bin/federation_endpoint_refresh.php" ]]; then
   if command -v timeout >/dev/null 2>&1; then

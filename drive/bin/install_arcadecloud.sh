@@ -15,6 +15,12 @@ fi
 MODE="prepare"
 APP_ROOT=""
 PHP_USER=""
+NODE_ROLE=""
+MEDIA_WORKER_INSTANCE_ID=""
+MEDIA_WORKER_REGION=""
+MEDIA_WORKER_HOURLY_USD=""
+MEDIA_WORKER_IDLE_GRACE_SECONDS=""
+FEDERATION_DYNAMIC_IP=""
 SKIP_COMPOSER=0
 SKIP_SYSTEM_BOOTSTRAP=0
 SKIP_CERTBOT=0
@@ -23,8 +29,15 @@ for arg in "$@"; do
   case "$arg" in
     --finalize) MODE="finalize" ;;
     --finalize-from-setup) MODE="finalize-from-setup" ;;
+    --reconcile) MODE="reconcile" ;;
     --app-root=*) APP_ROOT="${arg#*=}" ;;
     --php-user=*) PHP_USER="${arg#*=}" ;;
+    --node-role=*) NODE_ROLE="${arg#*=}" ;;
+    --media-worker-instance-id=*) MEDIA_WORKER_INSTANCE_ID="${arg#*=}" ;;
+    --media-worker-region=*) MEDIA_WORKER_REGION="${arg#*=}" ;;
+    --media-worker-hourly-usd=*) MEDIA_WORKER_HOURLY_USD="${arg#*=}" ;;
+    --media-worker-idle-grace-seconds=*) MEDIA_WORKER_IDLE_GRACE_SECONDS="${arg#*=}" ;;
+    --federation-dynamic-ip) FEDERATION_DYNAMIC_IP="true" ;;
     --skip-composer) SKIP_COMPOSER=1 ;;
     --skip-system-bootstrap) SKIP_SYSTEM_BOOTSTRAP=1 ;;
     --skip-certbot) SKIP_CERTBOT=1 ;;
@@ -42,6 +55,7 @@ IDENTITY="$CONFIG_DIR/federation-node.json"
 SEEDS_JSON="$APP_ROOT/drive/config/federation-seeds.json"
 SERVER_PREP="$WEBROOT/bin/install_arcadecloud_server.sh"
 UPDATER_INSTALLER="$WEBROOT/bin/install_arcadecloud_updater.sh"
+SERVICE_RECONCILER="$WEBROOT/bin/reconcile_arcadecloud_services.sh"
 
 fail() {
   echo "ERROR: $*" >&2
@@ -53,6 +67,7 @@ need() {
 }
 
 prepare_system() {
+  [[ "$MODE" != "reconcile" ]] || return 0
   [[ "$SKIP_SYSTEM_BOOTSTRAP" -eq 0 ]] || return 0
   [[ -f "$SERVER_PREP" ]] || fail "falta el preparador de servidor: $SERVER_PREP"
 
@@ -80,6 +95,7 @@ need runuser
 [[ -f "$APP_ROOT/composer.json" ]] || fail "falta composer.json en $APP_ROOT."
 [[ -f "$WEBROOT/bin/install_arcadecloud_admin_helper.sh" ]] || fail "falta el instalador administrativo."
 [[ -f "$UPDATER_INSTALLER" ]] || fail "falta el instalador de ArcadeCloud Updater."
+[[ -f "$SERVICE_RECONCILER" ]] || fail "falta el reconciliador de servicios ArcadeCloud."
 [[ -f "$SEEDS_JSON" ]] || fail "falta drive/config/federation-seeds.json."
 
 pool_user_from_conf() {
@@ -161,6 +177,70 @@ PY
 runtime_set_many() {
   local json="$1"
   printf '%s' "$json" | /usr/local/sbin/arcadecloud-drive-admin env-set-many
+}
+
+runtime_value() {
+  local key="$1"
+  python3 - "$RUNTIME_ENV" "$key" <<'PY' 2>/dev/null || true
+import json,sys
+try:
+    data=json.load(open(sys.argv[1], encoding="utf-8"))
+    value=data.get(sys.argv[2],"")
+    if isinstance(value,str):
+        print(value)
+except Exception:
+    pass
+PY
+}
+
+persist_node_settings() {
+  local role payload existing
+  existing="$(runtime_value ARCADECLOUD_NODE_ROLE)"
+  role="$NODE_ROLE"
+  [[ -n "$role" ]] || role="$existing"
+  [[ -n "$role" ]] || role="web"
+
+  case "$role" in
+    web|media-worker|combined) ;;
+    *) fail "--node-role debe ser web, media-worker o combined." ;;
+  esac
+
+  if [[ -n "$MEDIA_WORKER_INSTANCE_ID" && ! "$MEDIA_WORKER_INSTANCE_ID" =~ ^i-[a-fA-F0-9]{8,17}$ ]]; then
+    fail "--media-worker-instance-id no tiene formato EC2 válido."
+  fi
+  if [[ -n "$MEDIA_WORKER_REGION" && ! "$MEDIA_WORKER_REGION" =~ ^[a-zA-Z0-9-]{3,64}$ ]]; then
+    fail "--media-worker-region contiene caracteres inválidos."
+  fi
+  if [[ -n "$MEDIA_WORKER_HOURLY_USD" && ! "$MEDIA_WORKER_HOURLY_USD" =~ ^[0-9]+([.][0-9]{1,8})?$ ]]; then
+    fail "--media-worker-hourly-usd debe ser un número USD positivo."
+  fi
+  if [[ -n "$MEDIA_WORKER_IDLE_GRACE_SECONDS" ]]; then
+    [[ "$MEDIA_WORKER_IDLE_GRACE_SECONDS" =~ ^[0-9]+$ ]] || fail "--media-worker-idle-grace-seconds debe ser entero."
+    (( MEDIA_WORKER_IDLE_GRACE_SECONDS >= 60 && MEDIA_WORKER_IDLE_GRACE_SECONDS <= 3600 ))       || fail "--media-worker-idle-grace-seconds debe estar entre 60 y 3600."
+  fi
+
+  payload="$(python3 - "$role" "$MEDIA_WORKER_INSTANCE_ID" "$MEDIA_WORKER_REGION"     "$MEDIA_WORKER_HOURLY_USD" "$MEDIA_WORKER_IDLE_GRACE_SECONDS" "$FEDERATION_DYNAMIC_IP" <<'PY'
+import json,sys
+role,instance,region,hourly,idle,dynamic=sys.argv[1:]
+data={
+  "ARCADECLOUD_NODE_ROLE": role,
+  "ARCADECLOUD_MEDIA_WORKER": "true" if role in {"media-worker","combined"} else "false",
+}
+if instance: data["ARCADECLOUD_MEDIA_WORKER_INSTANCE_ID"]=instance
+if region: data["ARCADECLOUD_MEDIA_WORKER_REGION"]=region
+if hourly: data["ARCADECLOUD_MEDIA_WORKER_HOURLY_USD"]=hourly
+if idle: data["ARCADECLOUD_MEDIA_WORKER_IDLE_GRACE_SECONDS"]=idle
+if dynamic: data["ARCADECLOUD_FEDERATION_DYNAMIC_IP"]="true"
+print(json.dumps(data,separators=(",",":")))
+PY
+)"
+  runtime_set_many "$payload"
+  echo "✓ Rol del nodo: $role"
+  [[ -z "$MEDIA_WORKER_INSTANCE_ID" ]] || echo "✓ EC2 multimedia controlada: $MEDIA_WORKER_INSTANCE_ID"
+}
+
+reconcile_services() {
+  bash "$SERVICE_RECONCILER" --app-root="$APP_ROOT" --php-user="$PHP_USER" --runtime-env="$RUNTIME_ENV"
 }
 
 install_helper() {
@@ -395,6 +475,7 @@ PY
 
   bash "$WEBROOT/bin/install_arcadecloud_admin_helper.sh" --php-user="$PHP_USER"
   install_updater
+  persist_node_settings
 
   if federation_runtime_enabled; then
     local certbot_bin
@@ -446,6 +527,8 @@ PY
     echo "⚠ No hay endpoint público válido; Drive quedó instalado, pero el nodo no puede entrar aún al directorio global." >&2
   fi
 
+  reconcile_services
+
   echo
   echo "ArcadeCloud Drive: instalación básica finalizada."
   echo "Drive listo. FederationCloud/ArcadeLink queda publicado por HTTPS y registrado en el directorio global cuando existe endpoint público."
@@ -457,6 +540,14 @@ echo "App root: $APP_ROOT"
 echo "PHP-FPM: $PHP_USER:$PHP_GROUP"
 echo "Modo: $MODE"
 echo
+
+if [[ "$MODE" == "reconcile" ]]; then
+  install_helper
+  install_updater
+  persist_node_settings
+  reconcile_services
+  exit 0
+fi
 
 if [[ "$MODE" == "finalize" ]]; then
   finalize_installation 1
@@ -475,6 +566,7 @@ fi
 prepare_composer
 install_helper
 install_updater
+persist_node_settings
 prepare_federation_basic
 prepare_setup_activation
 show_setup_url

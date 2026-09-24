@@ -157,7 +157,7 @@ class ArcadeCloudUpdaterModule {
       const data = await response.json();
       if (!response.ok || !data.ok) throw new Error(data.error || `HTTP ${response.status}`);
       this.status.textContent = data.message || 'ArcadeCloud actualizado. Recarga la página.';
-      this.status.className = 'small text-success';
+      this.status.className = data.needs_attention ? 'small text-warning' : 'small text-success';
       this.hideApply();
       this.password.value = '';
     } catch (error) {

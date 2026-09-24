@@ -43,10 +43,10 @@ SUDOERS="/etc/sudoers.d/arcadecloud-drive-updater"
 install -d -o root -g root -m 0755 "$CONFIG_DIR"
 install -o root -g root -m 0755 "$SOURCE" "$TARGET"
 
-python3 - "$CONFIG" "$REPO_ROOT" "$REPO_USER" <<'PY'
+python3 - "$CONFIG" "$REPO_ROOT" "$REPO_USER" "$PHP_USER" <<'PY'
 import json, os, sys, tempfile
-path, root, user = sys.argv[1:]
-data = {"version": 1, "repo_root": root, "repo_user": user}
+path, root, user, php_user = sys.argv[1:]
+data = {"version": 2, "repo_root": root, "repo_user": user, "php_user": php_user}
 fd, tmp = tempfile.mkstemp(prefix="updater-", dir=os.path.dirname(path), text=True)
 try:
     with os.fdopen(fd, "w") as f:

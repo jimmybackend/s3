@@ -22,6 +22,14 @@ final class ManagedRuntimeEnvironment
         'ARCADECLOUD_FEDERATION_REPLICA_ORIGIN_URL' => ['secret' => false, 'group' => 'FederationCloud avanzado'],
         'ARCADECLOUD_FEDERATION_REPLICA_ROLE' => ['secret' => false, 'group' => 'FederationCloud avanzado'],
         'ARCADECLOUD_FEDERATION_REPLICA_SCOPE' => ['secret' => false, 'group' => 'FederationCloud avanzado'],
+        'ARCADECLOUD_FEDERATION_DYNAMIC_IP' => ['secret' => false, 'group' => 'FederationCloud avanzado'],
+
+        'ARCADECLOUD_NODE_ROLE' => ['secret' => false, 'group' => 'Nodo y procesamiento'],
+        'ARCADECLOUD_MEDIA_WORKER' => ['secret' => false, 'group' => 'Nodo y procesamiento'],
+        'ARCADECLOUD_MEDIA_WORKER_INSTANCE_ID' => ['secret' => false, 'group' => 'Nodo y procesamiento'],
+        'ARCADECLOUD_MEDIA_WORKER_REGION' => ['secret' => false, 'group' => 'Nodo y procesamiento'],
+        'ARCADECLOUD_MEDIA_WORKER_HOURLY_USD' => ['secret' => false, 'group' => 'Nodo y procesamiento'],
+        'ARCADECLOUD_MEDIA_WORKER_IDLE_GRACE_SECONDS' => ['secret' => false, 'group' => 'Nodo y procesamiento'],
 
         'ARCADECLOUD_DROP_ENABLED' => ['secret' => false, 'group' => 'FederationDrop'],
         'ARCADECLOUD_DROP_PUBLIC_URL' => ['secret' => false, 'group' => 'FederationDrop'],
@@ -204,7 +212,7 @@ final class ManagedRuntimeEnvironment
             throw new RuntimeException($name . ' no puede quedar vacío.');
         }
 
-        if (in_array($name, ['ARCADECLOUD_FEDERATION_ENABLED', 'ARCADECLOUD_DROP_ENABLED', 'ARCADECLOUD_DROP_GOOGLE_ENABLED', 'ARCADECLOUD_SMTP_DEBUG'], true)) {
+        if (in_array($name, ['ARCADECLOUD_FEDERATION_ENABLED', 'ARCADECLOUD_FEDERATION_DYNAMIC_IP', 'ARCADECLOUD_MEDIA_WORKER', 'ARCADECLOUD_DROP_ENABLED', 'ARCADECLOUD_DROP_GOOGLE_ENABLED', 'ARCADECLOUD_SMTP_DEBUG'], true)) {
             $lower = strtolower($value);
             if (!in_array($lower, ['true', 'false', '1', '0', 'yes', 'no', 'on', 'off'], true)) {
                 throw new RuntimeException($name . ' debe ser true/false.');
@@ -288,6 +296,39 @@ final class ManagedRuntimeEnvironment
                 throw new RuntimeException('ARCADECLOUD_FEDERATION_REPLICA_SCOPE no es válido.');
             }
             return $lower;
+        }
+
+        if ($name === 'ARCADECLOUD_NODE_ROLE' && $value !== '') {
+            $lower = strtolower($value);
+            if (!in_array($lower, ['web', 'media-worker', 'combined'], true)) {
+                throw new RuntimeException('ARCADECLOUD_NODE_ROLE debe ser web, media-worker o combined.');
+            }
+            return $lower;
+        }
+
+        if ($name === 'ARCADECLOUD_MEDIA_WORKER_INSTANCE_ID' && $value !== ''
+            && !preg_match('/\Ai-[a-f0-9]{8,17}\z/i', $value)) {
+            throw new RuntimeException('ARCADECLOUD_MEDIA_WORKER_INSTANCE_ID no tiene formato EC2 válido.');
+        }
+
+        if ($name === 'ARCADECLOUD_MEDIA_WORKER_REGION' && $value !== ''
+            && !preg_match('/\A[a-z0-9-]{3,64}\z/i', $value)) {
+            throw new RuntimeException('ARCADECLOUD_MEDIA_WORKER_REGION contiene caracteres inválidos.');
+        }
+
+        if ($name === 'ARCADECLOUD_MEDIA_WORKER_HOURLY_USD' && $value !== '') {
+            if (!is_numeric($value) || (float)$value < 0 || (float)$value > 1000) {
+                throw new RuntimeException('ARCADECLOUD_MEDIA_WORKER_HOURLY_USD debe ser un costo horario USD válido.');
+            }
+            return rtrim(rtrim(number_format((float)$value, 8, '.', ''), '0'), '.');
+        }
+
+        if ($name === 'ARCADECLOUD_MEDIA_WORKER_IDLE_GRACE_SECONDS' && $value !== '') {
+            $seconds = filter_var($value, FILTER_VALIDATE_INT, ['options' => ['min_range' => 60, 'max_range' => 3600]]);
+            if ($seconds === false) {
+                throw new RuntimeException('ARCADECLOUD_MEDIA_WORKER_IDLE_GRACE_SECONDS debe estar entre 60 y 3600.');
+            }
+            return (string)$seconds;
         }
 
         if ($name === 'AWS_REGION' && $value !== '' && !preg_match('/\A[a-z0-9-]{3,64}\z/i', $value)) {

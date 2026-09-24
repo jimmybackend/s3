@@ -17,6 +17,7 @@ $reconciler = (string)file_get_contents($repo . '/drive/bin/reconcile_arcadeclou
 $uninstaller = (string)file_get_contents($repo . '/drive/bin/uninstall_arcadecloud.sh');
 $updater = (string)file_get_contents($repo . '/drive/bin/arcadecloud-drive-updater.php');
 $updaterInstaller = (string)file_get_contents($repo . '/drive/bin/install_arcadecloud_updater.sh');
+$updaterService = (string)file_get_contents($repo . '/drive/src/Admin/ArcadeCloudUpdaterService.php');
 $mediaInstaller = (string)file_get_contents($repo . '/drive/bin/install_media_processing_worker.sh');
 $bootstrap = (string)file_get_contents($repo . '/drive/bin/media_worker_node_bootstrap.sh');
 $managed = (string)file_get_contents($repo . '/drive/src/Admin/ManagedRuntimeEnvironment.php');
@@ -28,6 +29,17 @@ installerContract(str_contains($installer, '--media-worker-instance-id='), 'inst
 installerContract(str_contains($installer, 'persist_node_settings'), 'instalador persiste rol y configuración de media');
 installerContract(str_contains($installer, 'reconcile_services'), 'finalización invoca reconciliación de servicios');
 
+installerContract(
+    strpos($installer, 'pool_user_from_conf /etc/php-fpm-drive.d/arcadecloud-drive.conf')
+      < strpos($installer, 'ps -eo user=,comm='),
+    'detección prioriza el pool php-fpm-drive antes de procesos genéricos'
+);
+installerContract(
+    strpos($reconciler, 'pool_user_from_conf /etc/php-fpm-drive.d/arcadecloud-drive.conf')
+      < strpos($reconciler, 'ps -eo user=,comm='),
+    'reconciliador prioriza el pool php-fpm-drive'
+);
+
 installerContract(str_contains($reconciler, 'ROLE="web"'), 'rol seguro por defecto es web');
 installerContract(str_contains($reconciler, 'install_media_processing_worker.sh'), 'rol multimedia instala worker');
 installerContract(str_contains($reconciler, 'install_transcribe_reconcile_timer.sh'), 'rol web instala reconciliación Transcribe');
@@ -37,6 +49,10 @@ installerContract(str_contains($reconciler, 'systemctl restart php-fpm-drive.ser
 installerContract(str_contains($updater, 'reconcileServices'), 'updater web reconcilia servicios tras fast-forward');
 installerContract(str_contains($updater, "'needs_attention'"), 'updater informa si código quedó actualizado pero servicios requieren atención');
 installerContract(str_contains($updaterInstaller, '"php_user": php_user'), 'configuración del updater conserva usuario PHP-FPM');
+installerContract(str_contains($updaterInstaller, 'NOPASSWD: %s probe, %s check, %s apply'), 'sudoers limita updater a probe/check/apply');
+installerContract(str_contains($updaterInstaller, 'runuser -u "$PHP_USER" -- /usr/bin/sudo -n "$TARGET" probe'), 'instalador prueba NOPASSWD con el usuario web real');
+installerContract(str_contains($updater, "if ($action === 'probe')"), 'updater ofrece probe sin tocar Git');
+installerContract(str_contains($updaterService, 'perdió la autorización NOPASSWD'), 'UI traduce fallo sudo a diagnóstico ArcadeCloud');
 
 installerContract(str_contains($uninstaller, 'arcadecloud-media-worker.service'), 'desinstalador retira worker multimedia');
 installerContract(str_contains($uninstaller, 'arcadecloud-media-node-bootstrap.service'), 'desinstalador retira bootstrap multimedia');

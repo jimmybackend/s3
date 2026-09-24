@@ -421,7 +421,7 @@ final class FederationDropService
 
     private function encryptToken(string $token): string
     {
-        $key = hash('sha256', 'federationdrop-token|' . $this->config->webhookSecret, true);
+        $key = hash_hmac('sha256', 'federationdrop-token-v1', $this->identity->payloadKey(), true);
         $nonce = random_bytes(SODIUM_CRYPTO_SECRETBOX_NONCEBYTES);
         $ciphertext = sodium_crypto_secretbox($token, $nonce, $key);
         return FederationCodec::base64UrlEncode($nonce . $ciphertext);
@@ -435,7 +435,7 @@ final class FederationDropService
         }
         $nonce = substr($raw, 0, SODIUM_CRYPTO_SECRETBOX_NONCEBYTES);
         $ciphertext = substr($raw, SODIUM_CRYPTO_SECRETBOX_NONCEBYTES);
-        $key = hash('sha256', 'federationdrop-token|' . $this->config->webhookSecret, true);
+        $key = hash_hmac('sha256', 'federationdrop-token-v1', $this->identity->payloadKey(), true);
         $plain = sodium_crypto_secretbox_open($ciphertext, $nonce, $key);
         if (!is_string($plain) || $plain === '') {
             throw new FederationException('No se pudo recuperar un token FederationDrop.', 500);

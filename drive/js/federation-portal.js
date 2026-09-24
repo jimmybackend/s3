@@ -4,6 +4,7 @@ class FederationPortalModule {
     this.document = doc;
     this.csrf = '';
     this.replicaCsrf = '';
+    this.publicImportCsrf = '';
     this.localNodeId = String(doc.body?.dataset?.federationNodeId || '');
     this.state = { incoming: [], outgoing: [], shares: [], replicas: [] };
   }
@@ -12,6 +13,7 @@ class FederationPortalModule {
     this.bind();
     this.loadAccess();
     this.loadReplicas();
+    this.loadPublicImportCsrf();
     const query = new URLSearchParams(this.window.location.search).get('q');
     const input = this.document.getElementById('federationSearchInput');
     if (query && input) {
@@ -47,6 +49,13 @@ class FederationPortalModule {
         return;
       }
 
+      const publicImportButton = event.target?.closest?.('[data-federation-public-import]');
+      if (publicImportButton) {
+        event.preventDefault();
+        this.queuePublicImport(String(publicImportButton.dataset.federationPublicImport || ''), publicImportButton);
+        return;
+      }
+
       const decisionButton = event.target?.closest?.('[data-federation-decision]');
       if (decisionButton) {
         event.preventDefault();
@@ -69,6 +78,15 @@ class FederationPortalModule {
       this.renderAccess();
     } catch (error) {
       this.alert(error.message || 'No se pudieron cargar solicitudes y Shares.', 'danger');
+    }
+  }
+
+  async loadPublicImportCsrf() {
+    try {
+      const data = await this.fetchJson('public-drive.php', { credentials: 'same-origin', cache: 'no-store' });
+      this.publicImportCsrf = String(data.csrf || '');
+    } catch (_) {
+      this.publicImportCsrf = '';
     }
   }
 
@@ -148,8 +166,15 @@ class FederationPortalModule {
         open.href = `replica-open.php?resource_id=${encodeURIComponent(resourceId)}`;
         open.target = '_blank';
         open.rel = 'noopener';
-        open.innerHTML = '<i class="fas fa-bolt mr-1"></i>Abrir mejor copia';
+        open.innerHTML = '<i class="fas fa-download mr-1"></i>Descargar público';
         actions.appendChild(open);
+
+        const copy = this.document.createElement('button');
+        copy.type = 'button';
+        copy.className = 'btn btn-sm btn-outline-info mb-2';
+        copy.dataset.federationPublicImport = resourceId;
+        copy.innerHTML = '<i class="fas fa-folder-plus mr-1"></i>Agregar a Mi Drive';
+        actions.appendChild(copy);
       }
       if (originNodeId && this.localNodeId && originNodeId === this.localNodeId && rights === 'copy_allowed') {
         const replicate = this.document.createElement('button');
@@ -186,6 +211,43 @@ class FederationPortalModule {
       card.appendChild(actions);
       target.appendChild(card);
     });
+  }
+
+  async queuePublicImport(resourceId, button) {
+    if (!resourceId) return;
+    if (!this.publicImportCsrf) {
+      await this.loadPublicImportCsrf();
+      if (!this.publicImportCsrf) {
+        this.alert('No se pudo preparar la importación pública.', 'danger');
+        return;
+      }
+    }
+
+    const old = button.innerHTML;
+    button.disabled = true;
+    button.innerHTML = '<span class="spinner-border spinner-border-sm mr-1"></span>Encolando…';
+    try {
+      const body = new URLSearchParams();
+      body.set('action', 'queue');
+      body.set('resource_id', resourceId);
+      const data = await this.fetchJson('public-drive.php', {
+        method: 'POST',
+        credentials: 'same-origin',
+        cache: 'no-store',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+          'X-Federation-Public-Import-CSRF': this.publicImportCsrf
+        },
+        body: body.toString()
+      });
+      this.alert(String(data.message || 'Recurso público encolado para Mi Drive.'), 'success');
+      button.innerHTML = '<i class="fas fa-clock mr-1"></i>Copia en cola';
+    } catch (error) {
+      this.alert(error.message || 'No se pudo copiar el recurso público a Mi Drive.', 'danger');
+      button.innerHTML = old;
+    } finally {
+      button.disabled = false;
+    }
   }
 
   async queueReplica(resourceId, button) {

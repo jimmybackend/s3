@@ -5,15 +5,7 @@ declare(strict_types=1);
 require_once dirname(__DIR__) . '/app_bootstrap.php';
 
 use ArcadeCloud\Drive\Core\ApplicationKernel;
-use ArcadeCloud\Drive\Federation\FederationAccessService;
-use ArcadeCloud\Drive\Federation\FederationCustomsService;
-use ArcadeCloud\Drive\Federation\FederationDropIngressService;
-use ArcadeCloud\Drive\Federation\FederationDropService;
-use ArcadeCloud\Drive\Federation\FederationGossipService;
-use ArcadeCloud\Drive\Federation\FederationPublicImportService;
-use ArcadeCloud\Drive\Federation\FederationReplicaPresenceService;
-use ArcadeCloud\Drive\Federation\FederationReplicaService;
-use ArcadeCloud\Drive\Federation\FederationShareDriveService;
+use ArcadeCloud\Drive\Federation\FederationSyncCycleService;
 
 $lockPath = sys_get_temp_dir() . '/arcadecloud-federation-sync.lock';
 $lock = fopen($lockPath, 'c+');
@@ -28,115 +20,11 @@ if (!flock($lock, LOCK_EX | LOCK_NB)) {
 }
 
 try {
-    $app = ApplicationKernel::app();
-
-    // Una réplica configurada se presenta por iniciativa propia. El origen nunca
-    // sondea periódicamente a sus copias. Si ya está autorizada usa la puerta
-    // rápida de presencia; si es primera vez, cae a Aduana/Solicitudes.
-    try {
-        $replicaPresence = (new FederationReplicaPresenceService($app))->announce();
-    } catch (Throwable $e) {
-        $replicaPresence = [
-            'configured' => true,
-            'status' => 'degraded',
-            'available' => false,
-            'error' => 'No se pudo actualizar la presencia de la réplica en este ciclo.',
-        ];
-        error_log('[FederationCloud replica presence] ' . $e->getMessage());
-    }
-
-    // Aduana: como máximo UNA petición externa por ciclo. El lock de este worker
-    // garantiza que no haya dos procesadores pesados concurrentes.
-    try {
-        $customs = (new FederationCustomsService($app))->processNext();
-    } catch (Throwable $e) {
-        $customs = [
-            'degraded' => true,
-            'error' => 'La Aduana FederationCloud no pudo procesar su siguiente petición.',
-        ];
-        error_log('[FederationCloud customs] ' . $e->getMessage());
-    }
-
-    // Después de presencia/Aduana, gossip ya puede ver un nodo recién admitido
-    // y empujar su node.upsert firmado al origen y al resto de la federación.
-    $result = (new FederationGossipService($app))->syncOnce();
-    $result['replica_presence'] = $replicaPresence;
-    $result['customs'] = $customs;
-
-    try {
-        $result['access_requests'] = (new FederationAccessService($app))->syncPending(5);
-    } catch (Throwable $e) {
-        $result['access_requests'] = [
-            'degraded' => true,
-            'error' => 'La cola privada de solicitudes no pudo procesarse en este ciclo.',
-        ];
-        error_log('[FederationCloud access sync] ' . $e->getMessage());
-    }
-    try {
-        // Bloques pequeños: hasta 3 ofertas salientes y 2 descargas entrantes por ciclo.
-        $result['replicas'] = (new FederationReplicaService($app))->syncPending(3, 2);
-    } catch (Throwable $e) {
-        $result['replicas'] = [
-            'degraded' => true,
-            'error' => 'La cola de réplicas no pudo procesarse en este ciclo.',
-        ];
-        error_log('[FederationCloud replica sync] ' . $e->getMessage());
-    }
-    try {
-        // Agregar a Mi Drive se hace fuera de PHP-FPM: una copia por ciclo.
-        $result['share_imports'] = (new FederationShareDriveService($app))->syncPending(1);
-    } catch (Throwable $e) {
-        $result['share_imports'] = [
-            'degraded' => true,
-            'error' => 'La cola de Compartidos no pudo procesarse en este ciclo.',
-        ];
-        error_log('[FederationCloud Share import sync] ' . $e->getMessage());
-    }
-    try {
-        // Los PUBLIC + copy_allowed usan una cola separada de los grants privados.
-        // El downloader reparte rangos entre varias réplicas cuando existen.
-        $result['public_imports'] = (new FederationPublicImportService($app))->syncPending(1);
-    } catch (Throwable $e) {
-        $result['public_imports'] = [
-            'degraded' => true,
-            'error' => 'La cola pública a Mi Drive no pudo procesarse en este ciclo.',
-        ];
-        error_log('[FederationCloud public import sync] ' . $e->getMessage());
-    }
-    try {
-        // Los Drops pagados que referencian un recurso PUBLIC se materializan
-        // directamente entre nubes. La copia central sólo se activa después
-        // de verificar tamaño y Content ID.
-        $result['drop_public_sources'] = (new FederationDropService($app))->syncPaidPublicSources(2);
-    } catch (Throwable $e) {
-        $result['drop_public_sources'] = [
-            'degraded' => true,
-            'error' => 'FederationDrop no pudo materializar recursos públicos pagados en este ciclo.',
-        ];
-        error_log('[FederationDrop public source sync] ' . $e->getMessage());
-    }
-    try {
-        // Los uploads pagados pueden entrar por un nodo comercial cercano.
-        // El worker los migra a la custodia central antes de activar el Drop.
-        $result['drop_ingress'] = (new FederationDropService($app))->syncPaidIngressSources(2);
-    } catch (Throwable $e) {
-        $result['drop_ingress'] = [
-            'degraded' => true,
-            'error' => 'FederationDrop no pudo centralizar uploads ingress en este ciclo.',
-        ];
-        error_log('[FederationDrop ingress sync] ' . $e->getMessage());
-    }
-    try {
-        // Cada nodo retira objetos ingress temporales abandonados después de 7 días.
-        $result['drop_ingress_cleanup'] = (new FederationDropIngressService($app))->cleanupLocalStale(7, 20);
-    } catch (Throwable $e) {
-        $result['drop_ingress_cleanup'] = [
-            'degraded' => true,
-            'error' => 'No se pudieron limpiar ingress temporales en este ciclo.',
-        ];
-        error_log('[FederationDrop ingress cleanup sync] ' . $e->getMessage());
-    }
-    echo json_encode($result, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . "\n";
+    $result = (new FederationSyncCycleService(ApplicationKernel::app()))->syncOnce();
+    echo json_encode(
+        $result,
+        JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+    ) . "\n";
 } catch (Throwable $e) {
     fwrite(STDERR, "FederationCloud sync error: {$e->getMessage()}\n");
     flock($lock, LOCK_UN);

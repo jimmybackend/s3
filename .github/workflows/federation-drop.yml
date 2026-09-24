@@ -51,6 +51,9 @@ jobs:
           php -l drive/src/Federation/FederationDropRepository.php
           php -l drive/src/Federation/FederationDropStorageService.php
           php -l drive/src/Federation/FederationDropService.php
+          php -l drive/src/Federation/FederationDropStripeClient.php
+          php -l drive/src/Federation/FederationDropStripeWebhookVerifier.php
+          php -l drive/src/Federation/FederationDropStripeCheckoutService.php
           php -l drive/src/Federation/ArcadeLinkService.php
           php -l drive/src/Federation/FederationService.php
           php -l drive/src/Http/Controller/FederationDropController.php
@@ -66,6 +69,7 @@ jobs:
           php -l drive/federationdrop/d.php
           php -l drive/federationdrop/arcadelink.php
           php -l drive/tests/federation_drop_contract_smoke.php
+          php -l drive/tests/federation_drop_stripe_smoke.php
           php -l drive/tests/federationcloud_smoke.php
           php -l drive/tests/database_schema_contract_smoke.php
           php -l drive/tests/server_admin_config_smoke.php
@@ -87,6 +91,11 @@ jobs:
           set -euo pipefail
           php drive/tests/federation_drop_contract_smoke.php
 
+      - name: Stripe primitives regression
+        run: |
+          set -euo pipefail
+          php drive/tests/federation_drop_stripe_smoke.php
+
       - name: ArcadeLink cryptographic regression
         run: |
           set -euo pipefail
@@ -107,7 +116,9 @@ jobs:
           set -euo pipefail
           grep -q "PaymentStatus'] !== 'paid'" drive/src/Federation/FederationDropService.php
           grep -q 'LIMIT 1 FOR UPDATE' drive/src/Federation/FederationDropRepository.php
-          grep -q 'X-ArcadeCloud-Drop-Signature' drive/docs/FEDERATION_DROP.md
+          grep -q 'Stripe-Signature' drive/docs/FEDERATION_DROP.md
+          grep -q 'ARCADECLOUD_DROP_COMMERCE_URL' drive/docs/FEDERATION_DROP.md
+          grep -q 'drive.esforzados.com/federationdrop' drive/src/Federation/FederationDropConfig.php
           grep -q 'central_copy' drive/docs/FEDERATION_DROP.md
           grep -q 'federationdrop/badge.svg' drive/docs/FEDERATION_DROP.md
           ! grep -R "public-read" drive/src/Federation/FederationDrop*.php

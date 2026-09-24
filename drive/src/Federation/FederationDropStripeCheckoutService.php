@@ -35,6 +35,9 @@ final class FederationDropStripeCheckoutService
             'retention_days' => (string)(int)$row['RetentionDays'],
             'max_downloads' => (string)(int)$row['MaxDownloads'],
             'source_domain' => substr((string)($row['SourceDomain'] ?? ''), 0, 255),
+            'source_mode' => substr((string)($row['SourceMode'] ?? 'upload'), 0, 32),
+            'source_resource_id' => substr((string)($row['SourceResourceId'] ?? ''), 0, 96),
+            'source_content_id' => substr((string)($row['SourceContentId'] ?? ''), 0, 80),
         ];
 
         $name = 'FederationDrop · ' . trim((string)$row['OriginalName']);
@@ -233,6 +236,9 @@ final class FederationDropStripeCheckoutService
             (string)(int)($row['ExpectedSizeBytes'] ?? 0),
             (string)(int)($row['RetentionDays'] ?? 0),
             (string)(int)($row['MaxDownloads'] ?? 0),
+            (string)($row['SourceMode'] ?? 'upload'),
+            (string)($row['SourceResourceId'] ?? ''),
+            strtolower((string)($row['SourceContentId'] ?? '')),
         ]));
     }
 }

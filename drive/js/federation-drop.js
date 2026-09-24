@@ -373,9 +373,16 @@ class FederationDropApp {
       parts.push(`<p><a class="btn btn-info" target="_blank" rel="noopener noreferrer" href="${this.attr(status.checkout_url)}">Continuar al pago</a></p>`);
       parts.push('<p class="drop-muted small">El archivo no se subirá hasta que el pago sea confirmado.</p>');
     } else if (status.materializing) {
-      parts.push('<div class="alert alert-info mb-3">Pago confirmado. FederationCloud está trayendo el recurso público directamente desde las copias disponibles y verificará el SHA-256 antes de activarlo.</div>');
-      if (status.source_resource_id) {
-        parts.push(`<div class="drop-muted small mb-3">Fuente: ${this.escape(status.source_resource_id)}</div>`);
+      if (status.source_mode === 'public_resource') {
+        parts.push('<div class="alert alert-info mb-3">Pago confirmado. FederationCloud está trayendo el recurso público directamente desde las copias disponibles y verificará el SHA-256 antes de activarlo.</div>');
+        if (status.source_resource_id) {
+          parts.push(`<div class="drop-muted small mb-3">Fuente: ${this.escape(status.source_resource_id)}</div>`);
+        }
+      } else {
+        parts.push('<div class="alert alert-info mb-3">El nodo cercano ya recibió el archivo. FederationCloud lo está migrando a la custodia de drive.esforzados.com; el plazo contratado todavía no ha comenzado.</div>');
+        if (status.ingress_node_id) {
+          parts.push(`<div class="drop-muted small mb-3">Ingress temporal: ${this.escape(status.ingress_node_id)}</div>`);
+        }
       }
     } else if (status.can_upload) {
       parts.push('<div class="form-group"><label for="dropPaidFile">Pago confirmado. Selecciona el archivo de la orden para subirlo.</label><input id="dropPaidFile" class="form-control-file" type="file"></div>');

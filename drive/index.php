@@ -118,42 +118,20 @@ $h = static fn(string $value): string => htmlspecialchars(
     .home-carousel .carousel-item img {
       display: block;
       width: 100%;
-      aspect-ratio: 1600 / 620;
-      object-fit: cover;
+      height: auto;
+      object-fit: contain;
     }
 
-    .home-carousel .carousel-indicators {
-      margin-bottom: .6rem;
-    }
-
-    .home-carousel .carousel-indicators li {
-      width: 9px;
-      height: 9px;
-      border-radius: 50%;
-      border: 0;
-      background-color: rgba(255,255,255,.55);
-    }
-
-    .home-carousel .carousel-indicators .active {
-      background-color: #58ef86;
+    .home-carousel .carousel-item > a {
+      display: block;
+      width: 100%;
+      line-height: 0;
+      cursor: pointer;
     }
 
     .home-carousel .carousel-control-prev,
     .home-carousel .carousel-control-next {
       width: 5.5%;
-    }
-
-    .home-slide-action {
-      position: absolute;
-      left: 4%;
-      bottom: 7%;
-      z-index: 4;
-    }
-
-    .home-slide-action .btn {
-      min-width: 180px;
-      border-width: 1px;
-      box-shadow: 0 8px 28px rgba(0,0,0,.35);
     }
 
     .home-links {
@@ -273,11 +251,6 @@ $h = static fn(string $value): string => htmlspecialchars(
       .home-links {
         grid-template-columns: repeat(2, minmax(0,1fr));
       }
-
-      .home-slide-action {
-        left: 3%;
-        bottom: 8%;
-      }
     }
 
     @media (max-width: 575.98px) {
@@ -291,14 +264,10 @@ $h = static fn(string $value): string => htmlspecialchars(
       }
 
       .home-carousel .carousel-item img {
-        min-height: 285px;
-        object-fit: cover;
-      }
-
-      .home-slide-action .btn {
-        min-width: auto;
-        font-size: .75rem;
-        padding: .38rem .65rem;
+        width: 100%;
+        height: auto;
+        max-height: 42vh;
+        object-fit: contain;
       }
 
       .home-links {
@@ -353,47 +322,71 @@ $h = static fn(string $value): string => htmlspecialchars(
 <main id="inicio" class="home-shell">
   <section>
     <div id="arcadeHomeCarousel" class="carousel slide home-carousel" data-ride="carousel" data-interval="6500">
-      <ol class="carousel-indicators">
-        <li data-target="#arcadeHomeCarousel" data-slide-to="0" class="active"></li>
-        <li data-target="#arcadeHomeCarousel" data-slide-to="1"></li>
-        <li data-target="#arcadeHomeCarousel" data-slide-to="2"></li>
-      </ol>
-
       <div class="carousel-inner">
         <div class="carousel-item active">
-          <img
-            src="images/home/slide-aws.svg"
-            alt="Amazon S3 y servicios AWS integrados en ArcadeCloud Drive"
+          <a
+            href="#"
+            data-toggle="modal"
+            data-target="#loginModal"
+            aria-label="Explorar Amazon S3 y servicios AWS en ArcadeCloud Drive"
           >
-          <div class="home-slide-action">
-            <button class="btn btn-outline-success" type="button" data-toggle="modal" data-target="#loginModal">
-              Explorar en el Drive <i class="fas fa-chevron-right ml-1"></i>
-            </button>
-          </div>
+            <img
+              src="images/home/carousel-01-s3-aws.png"
+              alt="Archivos en Amazon S3 con servicios AWS integrados"
+            >
+          </a>
         </div>
 
         <div class="carousel-item">
-          <img
-            src="images/home/slide-federation.svg"
-            alt="Red descentralizada FederationCloud entre nodos"
+          <a
+            href="#"
+            data-toggle="modal"
+            data-target="#loginModal"
+            aria-label="Abrir ArcadeCloud Drive para trabajar con servicios AWS"
           >
-          <div class="home-slide-action">
-            <a class="btn btn-outline-success" href="<?= $h($arcadeLinkUrl) ?>">
-              Abrir FederationCloud <i class="fas fa-chevron-right ml-1"></i>
-            </a>
-          </div>
+            <img
+              src="images/home/carousel-02-s3-aws-alt.png"
+              alt="Amazon S3 y servicios AWS en ArcadeCloud Drive"
+            >
+          </a>
         </div>
 
         <div class="carousel-item">
-          <img
-            src="images/home/slide-drop.svg"
-            alt="FederationDrop para transferencias temporales"
+          <a
+            href="#"
+            data-toggle="modal"
+            data-target="#loginModal"
+            aria-label="Explorar servicios AWS desde ArcadeCloud Drive"
           >
-          <div class="home-slide-action">
-            <a class="btn btn-outline-success" href="<?= $h($federationDropUrl) ?>">
-              Ir a FederationDrop <i class="fas fa-chevron-right ml-1"></i>
-            </a>
-          </div>
+            <img
+              src="images/home/carousel-03-s3-servicios.png"
+              alt="Amazon S3 conectado con servicios AWS"
+            >
+          </a>
+        </div>
+
+        <div class="carousel-item">
+          <a
+            href="<?= $h($arcadeLinkUrl) ?>"
+            aria-label="Abrir FederationCloud"
+          >
+            <img
+              src="images/home/carousel-04-federationcloud.png"
+              alt="Transferencia federada entre nodos descentralizados"
+            >
+          </a>
+        </div>
+
+        <div class="carousel-item">
+          <a
+            href="<?= $h($federationDropUrl) ?>"
+            aria-label="Ir a FederationDrop"
+          >
+            <img
+              src="images/home/carousel-05-federationdrop.png"
+              alt="FederationDrop para compartir archivos temporalmente"
+            >
+          </a>
         </div>
       </div>
 

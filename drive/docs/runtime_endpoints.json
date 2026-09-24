@@ -14,6 +14,8 @@
     "drive/editor.php",
     "drive/federationcloud/index.php",
     "drive/federationcloud/portal.php",
+    "drive/federationdrop/d.php",
+    "drive/federationdrop/index.php",
     "drive/guardar_texto.php",
     "drive/index.php",
     "drive/leer_texto.php",
@@ -74,6 +76,7 @@
         "drive/aws.php",
         "drive/background_tasks.php",
         "drive/bin/federation_catalog_migrate.php",
+        "drive/bin/federation_drop_cleanup.php",
         "drive/bin/federation_endpoint_refresh.php",
         "drive/bin/federation_replica_presence.php",
         "drive/bin/federation_sync.php",
@@ -129,6 +132,10 @@
         "drive/federationcloud/sync-pull.php",
         "drive/federationcloud/sync-push.php",
         "drive/federationcloud/sync-status.php",
+        "drive/federationdrop/api.php",
+        "drive/federationdrop/arcadelink.php",
+        "drive/federationdrop/d.php",
+        "drive/federationdrop/index.php",
         "drive/generar_token.php",
         "drive/guardar_texto.php",
         "drive/leer_texto.php",
@@ -201,7 +208,7 @@
     },
     {
       "path": "drive/bin/arcadecloud-drive-admin-helper.php",
-      "size": 22554,
+      "size": 23066,
       "active": false,
       "references": [
         "drive/tests/setup_finalize_contract_smoke.php"
@@ -215,12 +222,18 @@
     },
     {
       "path": "drive/bin/federation_catalog_migrate.php",
-      "size": 2845,
+      "size": 2972,
       "active": false,
       "references": [
         "drive/tests/federation_customs_contract_smoke.php",
         "drive/tests/setup_finalize_contract_smoke.php"
       ]
+    },
+    {
+      "path": "drive/bin/federation_drop_cleanup.php",
+      "size": 667,
+      "active": false,
+      "references": []
     },
     {
       "path": "drive/bin/federation_endpoint_refresh.php",
@@ -617,6 +630,7 @@
       "active": true,
       "references": [
         "drive/bloque_carpetas.php",
+        "drive/src/View/FederationDropPageRenderer.php",
         "drive/js/arcadelink-share.js"
       ]
     },
@@ -760,6 +774,56 @@
       "size": 339,
       "active": false,
       "references": []
+    },
+    {
+      "path": "drive/federationdrop/api.php",
+      "size": 323,
+      "active": false,
+      "references": [
+        "drive/src/Federation/FederationDropService.php",
+        "drive/tests/federation_drop_contract_smoke.php",
+        "drive/js/federation-drop.js",
+        "drive/js/setup.js"
+      ]
+    },
+    {
+      "path": "drive/federationdrop/arcadelink.php",
+      "size": 330,
+      "active": false,
+      "references": [
+        "drive/src/Federation/FederationDropService.php"
+      ]
+    },
+    {
+      "path": "drive/federationdrop/d.php",
+      "size": 328,
+      "active": true,
+      "references": [
+        "drive/app_bootstrap.php",
+        "drive/index.php",
+        "drive/s3.php",
+        "drive/src/Federation/FederationDropService.php",
+        "drive/tests/federationcloud_smoke.php",
+        "drive/tests/setup_entry_guard_smoke.php",
+        "drive/js/soportesMediaTypes.js",
+        "drive/js/subir-chunked.js",
+        "drive/js/subir-dropzone.js",
+        "drive/js/subir.js"
+      ]
+    },
+    {
+      "path": "drive/federationdrop/index.php",
+      "size": 324,
+      "active": true,
+      "references": [
+        "drive/bloque_archivos.php",
+        "drive/bloque_carpetas.php",
+        "drive/s3.php",
+        "drive/src/Http/Controller/ActivityCostController.php",
+        "drive/src/Http/Controller/AuthController.php",
+        "drive/src/Security/SessionManager.php",
+        "drive/up.php"
+      ]
     },
     {
       "path": "drive/generar_token.php",
@@ -1001,6 +1065,9 @@
       "size": 529,
       "active": false,
       "references": [
+        "drive/src/Federation/FederationDropService.php",
+        "drive/tests/federation_drop_contract_smoke.php",
+        "drive/js/federation-drop.js",
         "drive/js/setup.js"
       ]
     },
@@ -1068,7 +1135,7 @@
     },
     {
       "path": "drive/src/Admin/ManagedRuntimeEnvironment.php",
-      "size": 11732,
+      "size": 14705,
       "active": true,
       "references": [
         "drive/app_bootstrap.php",
@@ -1349,7 +1416,7 @@
     },
     {
       "path": "drive/src/Federation/ArcadeLinkService.php",
-      "size": 19066,
+      "size": 23433,
       "active": false,
       "references": [
         "drive/bin/federation_provider_request.php",
@@ -1444,6 +1511,38 @@
       "active": false,
       "references": [
         "drive/tests/federation_customs_contract_smoke.php"
+      ]
+    },
+    {
+      "path": "drive/src/Federation/FederationDropConfig.php",
+      "size": 3885,
+      "active": false,
+      "references": [
+        "drive/tests/federation_drop_contract_smoke.php"
+      ]
+    },
+    {
+      "path": "drive/src/Federation/FederationDropRepository.php",
+      "size": 16442,
+      "active": false,
+      "references": [
+        "drive/tests/federation_drop_contract_smoke.php"
+      ]
+    },
+    {
+      "path": "drive/src/Federation/FederationDropService.php",
+      "size": 21646,
+      "active": false,
+      "references": [
+        "drive/tests/federation_drop_contract_smoke.php"
+      ]
+    },
+    {
+      "path": "drive/src/Federation/FederationDropStorageService.php",
+      "size": 3370,
+      "active": false,
+      "references": [
+        "drive/tests/federation_drop_contract_smoke.php"
       ]
     },
     {
@@ -1643,7 +1742,7 @@
     },
     {
       "path": "drive/src/Federation/FederationService.php",
-      "size": 9859,
+      "size": 11680,
       "active": false,
       "references": [
         "drive/tests/arcadelink_bulk_contract_regression.php",
@@ -1803,6 +1902,14 @@
       "size": 4610,
       "active": false,
       "references": []
+    },
+    {
+      "path": "drive/src/Http/Controller/FederationDropController.php",
+      "size": 6980,
+      "active": false,
+      "references": [
+        "drive/tests/federation_drop_contract_smoke.php"
+      ]
     },
     {
       "path": "drive/src/Http/Controller/FederationNodeAdminController.php",
@@ -2023,7 +2130,7 @@
     },
     {
       "path": "drive/src/Mail/SmtpEmailService.php",
-      "size": 10029,
+      "size": 12148,
       "active": false,
       "references": []
     },
@@ -2361,8 +2468,16 @@
       "references": []
     },
     {
+      "path": "drive/src/View/FederationDropPageRenderer.php",
+      "size": 6512,
+      "active": false,
+      "references": [
+        "drive/tests/federation_drop_contract_smoke.php"
+      ]
+    },
+    {
       "path": "drive/src/View/FederationPageRenderer.php",
-      "size": 11162,
+      "size": 11462,
       "active": false,
       "references": [
         "drive/tests/arcadelink_collection_regression.php"
@@ -2486,7 +2601,7 @@
     },
     {
       "path": "drive/tests/database_schema_contract_smoke.php",
-      "size": 4440,
+      "size": 4567,
       "active": false,
       "references": []
     },
@@ -2511,6 +2626,12 @@
     {
       "path": "drive/tests/federation_directory_smoke.php",
       "size": 4105,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/tests/federation_drop_contract_smoke.php",
+      "size": 5019,
       "active": false,
       "references": []
     },
@@ -2552,7 +2673,7 @@
     },
     {
       "path": "drive/tests/federationcloud_smoke.php",
-      "size": 7138,
+      "size": 8312,
       "active": false,
       "references": []
     },
@@ -2582,7 +2703,7 @@
     },
     {
       "path": "drive/tests/server_admin_config_smoke.php",
-      "size": 5989,
+      "size": 8297,
       "active": false,
       "references": []
     },

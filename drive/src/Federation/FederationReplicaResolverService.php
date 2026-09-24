@@ -43,6 +43,8 @@ final class FederationReplicaResolverService
                 'resource_id' => $resourceId,
                 'node_id' => $localNodeId,
                 'role' => 'origin',
+                'content_id' => (string)$resource['ContentId'],
+                'size_bytes' => (int)$resource['SizeBytes'],
                 'access_url' => $this->app->shareObjectStorage()->presignedUrl($storageRef, '+5 minutes'),
                 'expires_in' => 300,
             ];
@@ -68,43 +70,113 @@ final class FederationReplicaResolverService
     }
 
     /**
-     * Prueba ubicaciones en orden mirror -> provider -> origin.
-     * Un timeout no derriba la apertura: continúa con el siguiente candidato.
+     * Obtiene varias fuentes PUBLIC + copy_allowed, las prueba contra S3 y
+     * descarta ubicaciones con credenciales inválidas antes de entregarlas.
      */
-    public function openPreferred(string $resourceId): array
+    public function publicSources(string $resourceId, int $maxSources = 4): array
     {
-        $this->requirePublicCopyable($resourceId);
-        $ordered = $this->selector->ordered($this->catalog->locations($resourceId));
-        if ($ordered === []) throw new FederationException('No hay ubicación FederationCloud disponible para este recurso.', 503);
+        $resource = $this->requirePublicCopyable($resourceId);
+        $maxSources = max(1, min(FederationMultiSourceDownloader::MAX_SOURCES, $maxSources));
+        $locations = $this->selector->ordered($this->catalog->locations($resourceId));
 
+        if ($locations === []) {
+            $locations[] = [
+                'node_id' => (string)$resource['OriginNodeId'],
+                'role' => 'origin',
+                'status' => 'active',
+                'federation_url' => (string)$resource['FederationUrl'],
+            ];
+        }
+
+        $sources = [];
+        $seenNodes = [];
         $failures = [];
-        foreach ($ordered as $location) {
+        $probe = new FederationReplicaDownloader();
+
+        foreach ($locations as $location) {
+            if (count($sources) >= $maxSources) break;
+            $nodeId = (string)($location['node_id'] ?? '');
+            if ($nodeId === '' || isset($seenNodes[$nodeId])) continue;
             try {
-                if (hash_equals($this->identity->nodeId(), (string)$location['node_id'])) {
+                if (hash_equals($this->identity->nodeId(), $nodeId)) {
                     $result = $this->publicLocation($resourceId);
                 } else {
-                    $federationUrl = trim((string)$location['federation_url']);
+                    $federationUrl = trim((string)($location['federation_url'] ?? ''));
                     if ($federationUrl === '') throw new FederationException('Ubicación sin Federation URL.', 503);
                     $result = $this->http->postJson($federationUrl, 'replica-resolve.php', ['resource_id' => $resourceId]);
                 }
+
                 $url = trim((string)($result['access_url'] ?? ''));
                 $parts = parse_url($url);
-                if (empty($result['ok']) || !is_array($parts) || strtolower((string)($parts['scheme'] ?? '')) !== 'https' || !isset($parts['host'])) {
+                if (empty($result['ok']) || !is_array($parts)
+                    || strtolower((string)($parts['scheme'] ?? '')) !== 'https'
+                    || !isset($parts['host'])) {
                     throw new FederationException('La ubicación no devolvió acceso HTTPS válido.', 502);
                 }
-                return $result + [
-                    'preferred_location' => $location,
-                    'failover_attempts' => count($failures),
+
+                $remoteSize = isset($result['size_bytes']) ? (int)$result['size_bytes'] : (int)$resource['SizeBytes'];
+                $remoteContent = trim((string)($result['content_id'] ?? (string)$resource['ContentId']));
+                if ($remoteSize !== (int)$resource['SizeBytes']
+                    || !hash_equals(strtolower((string)$resource['ContentId']), strtolower($remoteContent))) {
+                    throw new FederationException('La ubicación no coincide con el contenido global.', 409);
+                }
+
+                // Un URL S3 firmado con una credencial inválida se detecta aquí y
+                // se continúa con otra réplica en lugar de enviar el error al usuario.
+                $probe->probe($url, (int)$resource['SizeBytes']);
+
+                $seenNodes[$nodeId] = true;
+                $sources[] = [
+                    'node_id' => $nodeId,
+                    'role' => (string)($location['role'] ?? $result['role'] ?? 'origin'),
+                    'url' => $url,
                 ];
             } catch (Throwable $e) {
                 $failures[] = [
-                    'node_id' => (string)$location['node_id'],
-                    'role' => (string)$location['role'],
+                    'node_id' => $nodeId,
+                    'role' => (string)($location['role'] ?? ''),
                     'error' => substr($e->getMessage(), 0, 180),
                 ];
             }
         }
-        throw new FederationException('Ninguna ubicación FederationCloud respondió con una copia válida.', 503);
+
+        if ($sources === []) {
+            throw new FederationException('Ninguna ubicación FederationCloud respondió con una copia pública válida.', 503);
+        }
+
+        return [
+            'ok' => true,
+            'resource_id' => $resourceId,
+            'content_id' => (string)$resource['ContentId'],
+            'size_bytes' => (int)$resource['SizeBytes'],
+            'title' => (string)$resource['Title'],
+            'media_type' => (string)$resource['MediaType'],
+            'sources' => $sources,
+            'failures' => $failures,
+        ];
+    }
+
+    /**
+     * Para una descarga simple usa la primera fuente que ya superó una prueba
+     * real de rango S3; si una clave AWS es inválida, se salta automáticamente.
+     */
+    public function openPreferred(string $resourceId): array
+    {
+        $resolved = $this->publicSources($resourceId, 1);
+        $source = $resolved['sources'][0];
+        return [
+            'ok' => true,
+            'resource_id' => $resourceId,
+            'content_id' => (string)$resolved['content_id'],
+            'size_bytes' => (int)$resolved['size_bytes'],
+            'access_url' => (string)$source['url'],
+            'preferred_location' => [
+                'node_id' => (string)$source['node_id'],
+                'role' => (string)$source['role'],
+                'status' => 'active',
+            ],
+            'failover_attempts' => count($resolved['failures']),
+        ];
     }
 
     private function hasActiveLocalReplicaLocation(string $resourceId, string $role): bool

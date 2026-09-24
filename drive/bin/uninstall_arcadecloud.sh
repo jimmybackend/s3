@@ -179,6 +179,8 @@ fi
 delete_managed_ip_certificate
 
 units=(
+  arcadecloud-media-worker.service
+  arcadecloud-media-node-bootstrap.service
   arcadecloud-federation-drop-cleanup.timer
   arcadecloud-federation-drop-cleanup.service
   arcadecloud-federation-sync.timer
@@ -233,6 +235,7 @@ else
 fi
 
 remove_path /var/lib/arcadecloud-drive
+remove_path /var/lib/arcadecloud-media
 remove_path /var/log/php-fpm-drive
 
 # Runtime caches created by ArcadeCloud only.

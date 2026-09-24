@@ -1,29 +1,45 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
-<title id="title">FederationDrop para transferencias temporales</title>
-<desc id="desc">Flujo visual de archivo, pago, subida privada, custodia temporal y enlace de descarga.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 620">
 <defs>
-  <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#120d28"/><stop offset=".55" stop-color="#07111f"/><stop offset="1" stop-color="#08241f"/></linearGradient>
+  <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#120c2d"/><stop offset=".52" stop-color="#091728"/><stop offset="1" stop-color="#06141e"/></linearGradient>
+  <linearGradient id="cloud" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#d8f4ff"/><stop offset=".55" stop-color="#74c8ff"/><stop offset="1" stop-color="#4c72ff"/></linearGradient>
+  <linearGradient id="file" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#7f55ff"/><stop offset="1" stop-color="#4c27c7"/></linearGradient>
   <filter id="glow"><feGaussianBlur stdDeviation="8" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  <filter id="shadow"><feDropShadow dx="0" dy="14" stdDeviation="18" flood-color="#000" flood-opacity=".55"/></filter>
 </defs>
-<rect width="1600" height="900" fill="url(#bg)"/>
-<text x="85" y="105" fill="#f7fbff" font-family="Arial,sans-serif" font-size="60" font-weight="700">FederationDrop</text>
-<text x="88" y="160" fill="#aabfd0" font-family="Arial,sans-serif" font-size="27">Sube · paga · comparte por tiempo y descargas</text>
-
-<g stroke="#8e6cff" stroke-width="6" fill="none" opacity=".88">
-  <path d="M330 450H540"/><path d="M745 450H950"/><path d="M1155 450H1370"/>
-</g>
-<g fill="#8e6cff"><polygon points="530,438 555,450 530,462"/><polygon points="940,438 965,450 940,462"/><polygon points="1360,438 1385,450 1360,462"/></g>
-
-<g font-family="Arial,sans-serif" filter="url(#glow)">
-  <g transform="translate(120 310)"><rect width="220" height="275" rx="30" fill="#111c32" stroke="#5f8cff" stroke-width="4"/><rect x="65" y="50" width="90" height="115" rx="10" fill="#6a7cff"/><path d="M135 50v35h20" fill="none" stroke="#fff" stroke-width="8"/><text x="110" y="215" text-anchor="middle" fill="#fff" font-size="28" font-weight="700">Archivo</text></g>
-  <g transform="translate(545 310)"><rect width="220" height="275" rx="30" fill="#111c32" stroke="#d067ff" stroke-width="4"/><circle cx="110" cy="108" r="58" fill="#6b2d8e"/><text x="110" y="120" text-anchor="middle" fill="#fff" font-size="44">$</text><text x="110" y="215" text-anchor="middle" fill="#fff" font-size="28" font-weight="700">Pago</text></g>
-  <g transform="translate(970 310)"><rect width="220" height="275" rx="30" fill="#111c32" stroke="#48ffc0" stroke-width="4"/><path d="M55 135c0-45 32-72 70-72 26 0 47 14 58 35 32 2 57 28 57 61 0 34-28 61-62 61H78c-40 0-73-32-73-72 0-31 20-58 50-68z" fill="#1e8f70"/><path d="M110 175V105M82 133l28-28 28 28" stroke="#fff" stroke-width="10" fill="none"/><text x="110" y="235" text-anchor="middle" fill="#fff" font-size="25" font-weight="700">S3 privado</text></g>
-  <g transform="translate(1380 310)"><rect width="150" height="275" rx="30" fill="#111c32" stroke="#5f8cff" stroke-width="4"/><circle cx="75" cy="100" r="44" fill="#245c9d"/><path d="M48 100h54M75 73v54" stroke="#fff" stroke-width="8"/><text x="75" y="205" text-anchor="middle" fill="#fff" font-size="24" font-weight="700">Enlace</text><text x="75" y="237" text-anchor="middle" fill="#9fb7c8" font-size="18">temporal</text></g>
-</g>
+<rect width="1600" height="620" fill="url(#bg)"/>
+<circle cx="1080" cy="315" r="250" fill="#754bff" opacity=".07"/>
 
 <g font-family="Arial,sans-serif">
-  <g transform="translate(320 675)"><rect width="300" height="90" rx="22" fill="#0d2032" stroke="#37dca7"/><text x="150" y="38" text-anchor="middle" fill="#fff" font-size="24" font-weight="700">Tiempo contratado</text><text x="150" y="66" text-anchor="middle" fill="#9fb7c8" font-size="18">1–30 días configurables</text></g>
-  <g transform="translate(650 675)"><rect width="300" height="90" rx="22" fill="#0d2032" stroke="#37dca7"/><text x="150" y="38" text-anchor="middle" fill="#fff" font-size="24" font-weight="700">Límite de descargas</text><text x="150" y="66" text-anchor="middle" fill="#9fb7c8" font-size="18">Controlado por la orden</text></g>
-  <g transform="translate(980 675)"><rect width="300" height="90" rx="22" fill="#0d2032" stroke="#37dca7"/><text x="150" y="38" text-anchor="middle" fill="#fff" font-size="24" font-weight="700">Custodia central</text><text x="150" y="66" text-anchor="middle" fill="#9fb7c8" font-size="18">drive.esforzados.com</text></g>
+  <text x="75" y="105" fill="#fff" font-size="64" font-weight="800">Federation<tspan fill="#9d59ff">Drop</tspan></text>
+  <text x="78" y="158" fill="#b9c8d5" font-size="29">Comparte temporalmente por tiempo y número de descargas.</text>
+
+  <g transform="translate(230 245)" filter="url(#shadow)">
+    <rect width="250" height="255" rx="28" fill="#101b2d" stroke="#655bff" stroke-width="3"/>
+    <path d="M72 50h80l34 34v106H72z" fill="url(#file)"/><path d="M152 50v34h34" fill="none" stroke="#dccfff" stroke-width="8"/>
+    <text x="125" y="222" text-anchor="middle" fill="#fff" font-size="27" font-weight="700">Archivo</text>
+  </g>
+
+  <g stroke="#9f66ff" stroke-width="7" fill="none"><path d="M500 372H680"/><path d="M945 372h170"/></g>
+  <g fill="#9f66ff"><polygon points="670,358 696,372 670,386"/><polygon points="1105,358 1131,372 1105,386"/></g>
+
+  <g transform="translate(690 205)" filter="url(#glow)">
+    <path d="M90 240c-52 0-90-36-90-82 0-42 34-77 80-81 19-48 68-77 119-63 30 8 53 27 68 54 54 2 97 42 97 91 0 50-46 91-103 91z" fill="url(#cloud)"/>
+    <circle cx="200" cy="85" r="55" fill="#0b1727" stroke="#ffd75e" stroke-width="8"/>
+    <path d="M200 85V50M200 85l26 18" stroke="#ffd75e" stroke-width="8" stroke-linecap="round"/>
+    <path d="M155 156h90l38 38v122H155z" fill="#13233a" stroke="#fff" stroke-width="5"/>
+    <path d="M245 156v38h38" fill="none" stroke="#fff" stroke-width="5"/>
+    <path d="M175 230h88M175 254h74M175 278h58" stroke="#91d7ff" stroke-width="7" stroke-linecap="round"/>
+  </g>
+
+  <g transform="translate(1160 200)" fill="#0d1e31" stroke="#55baff" stroke-width="3" filter="url(#shadow)">
+    <g transform="translate(0 0)"><circle cx="65" cy="65" r="62"/><circle cx="65" cy="45" r="23" fill="#d8e8f4" stroke="none"/><path d="M25 100c13-30 67-30 80 0" fill="#d8e8f4" stroke="none"/><path d="M145 65h115" stroke="#55baff" stroke-width="5"/><polygon points="250,53 276,65 250,77" fill="#55baff" stroke="none"/><circle cx="310" cy="65" r="36"/><path d="M310 44v42M292 68l18 18 18-18" stroke="#58ef86" stroke-width="7" fill="none"/></g>
+    <g transform="translate(0 155)"><circle cx="65" cy="65" r="62"/><circle cx="65" cy="45" r="23" fill="#d8e8f4" stroke="none"/><path d="M25 100c13-30 67-30 80 0" fill="#d8e8f4" stroke="none"/><path d="M145 65h115" stroke="#55baff" stroke-width="5"/><polygon points="250,53 276,65 250,77" fill="#55baff" stroke="none"/><circle cx="310" cy="65" r="36"/><path d="M310 44v42M292 68l18 18 18-18" stroke="#58ef86" stroke-width="7" fill="none"/></g>
+  </g>
+
+  <g transform="translate(75 475)">
+    <rect width="500" height="80" rx="22" fill="#0c1c2d" stroke="#8c55ff" stroke-width="3"/>
+    <text x="28" y="33" fill="#fff" font-size="24" font-weight="700">Pago · S3 privado · enlace temporal</text>
+    <text x="28" y="61" fill="#a8bbca" font-size="18">Sin cuenta del Drive · custodia comercial</text>
+  </g>
 </g>
 </svg>

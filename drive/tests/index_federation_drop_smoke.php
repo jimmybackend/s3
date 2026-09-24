@@ -22,56 +22,69 @@ indexDropOk(
     'index público construye FederationDrop desde el portal canónico'
 );
 indexDropOk(
-    str_contains($source, '$federationDropBadge = $canonicalHome . \'federationdrop/badge.svg\''),
-    'index público usa el badge oficial FederationDrop'
-);
-indexDropOk(
-    str_contains($source, '$_SERVER[\'HTTP_HOST\']'),
-    'index atribuye el dominio del nodo visitante'
-);
-indexDropOk(
-    str_contains($source, 'rawurlencode($sourceDomain)'),
-    'source del nodo se codifica antes de entrar en la URL'
-);
-indexDropOk(
-    str_contains($source, '¿No tienes cuenta en este nodo?'),
-    'visitante recibe una ruta explícita sin cuenta del Drive'
+    str_contains($source, '$_SERVER[\'HTTP_HOST\']')
+        && str_contains($source, 'rawurlencode($sourceDomain)'),
+    'index atribuye y codifica el dominio del nodo para FederationDrop'
 );
 indexDropOk(
     str_contains($source, 'id="home"')
-        && str_contains($source, 'id="servicios"')
+        && str_contains($source, 'id="archivos-aws"')
+        && str_contains($source, 'id="formas-de-uso"')
+        && str_contains($source, 'id="login"')
         && str_contains($source, 'id="acerca"')
-        && str_contains($source, 'id="contacto"')
-        && str_contains($source, 'id="acceso"'),
-    'index público es una landing de una sola página con Home, Servicios, Acerca, Contacto y Acceso'
+        && str_contains($source, 'id="contacto"'),
+    'index público mantiene una sola página con producto, flujos, login, acerca y contacto'
 );
 indexDropOk(
-    str_contains($source, '$canonicalHost = \'drive.esforzados.com\''),
-    'contacto se centraliza explícitamente en drive.esforzados.com'
+    str_contains($source, 'Amazon Textract')
+        && str_contains($source, 'Amazon Transcribe')
+        && str_contains($source, 'Amazon Polly')
+        && str_contains($source, 'Amazon Translate')
+        && str_contains($source, 'Amazon Rekognition')
+        && str_contains($source, 'Amazon Comprehend'),
+    'portada presenta las acciones AWS reales disponibles desde los archivos'
 );
 indexDropOk(
-    str_contains($source, '$contactUrl = $isCanonicalPortal ? \'#contacto\' : $canonicalHome . \'#contacto\''),
-    'nodos secundarios envían Contacto al portal principal'
+    str_contains($source, 'Usuario registrado del Drive')
+        && str_contains($source, 'Usuario de ArcadeLink')
+        && str_contains($source, 'Sólo transferir un archivo'),
+    'portada diferencia claramente tres formas de uso'
+);
+indexDropOk(
+    str_contains($source, 'La búsqueda global entre nodos requiere iniciar sesión.'),
+    'búsqueda federada queda presentada como función exclusiva de usuarios registrados'
+);
+indexDropOk(
+    str_contains($source, '$arcadeLinkUrl = \'federationcloud/\'')
+        && str_contains($source, 'Abrir ArcadeLink'),
+    'visitante puede ir al lector ArcadeLink sin convertirlo en búsqueda global'
+);
+indexDropOk(
+    str_contains($source, 'FederationDrop sin cuenta del Drive')
+        && str_contains($source, 'No necesita cuenta del Drive.'),
+    'FederationDrop se presenta como transferencia temporal sin cuenta del Drive'
 );
 indexDropOk(
     str_contains($source, 'form action="psesion.php" method="POST"'),
-    'login local permanece dentro de la portada pública'
+    'login local permanece integrado directamente en la portada'
 );
 indexDropOk(
-    str_contains($source, 'MySQL')
-        && str_contains($source, 'Amazon S3')
-        && str_contains($source, 'FederationCloud')
-        && str_contains($source, 'ArcadeLink')
-        && str_contains($source, 'FederationDrop'),
-    'landing presenta capacidades reales documentadas del repositorio'
+    str_contains($source, '$canonicalHost = \'drive.esforzados.com\'')
+        && str_contains($source, '$contactUrl = $isCanonicalPortal ? \'#contacto\' : $canonicalHome . \'#contacto\''),
+    'nodos secundarios centralizan Contacto en drive.esforzados.com'
+);
+indexDropOk(
+    str_contains($source, '$contactEmail = \'soporte@esforzados.com\'')
+        && str_contains($source, '$contactPhone = \'9611077442\''),
+    'acerca/contacto muestran correo y teléfono del proyecto'
 );
 indexDropOk(
     str_contains($source, 'SetupEntryGuard'),
-    'el acceso FederationDrop no elimina la protección de instalación inicial'
+    'la portada conserva la protección de instalación inicial'
 );
 indexDropOk(
-    !str_contains($source, "app_bootstrap.php"),
-    'index público no arranca la aplicación completa sólo para mostrar FederationDrop'
+    !str_contains($source, 'app_bootstrap.php'),
+    'la portada pública no arranca la aplicación completa'
 );
 
-echo "Public index FederationDrop smoke: OK\n";
+echo "Public index product smoke: OK\n";

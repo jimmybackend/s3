@@ -365,6 +365,7 @@
       "size": 23479,
       "active": true,
       "references": [
+        "drive/index.php",
         "drive/s3.php",
         "drive/js/archivos.js",
         "drive/js/carpetas.js",
@@ -898,7 +899,7 @@
     },
     {
       "path": "drive/index.php",
-      "size": 34140,
+      "size": 35557,
       "active": true,
       "references": [
         "drive/bloque_archivos.php",
@@ -2934,7 +2935,7 @@
     },
     {
       "path": "drive/tests/index_federation_drop_smoke.php",
-      "size": 2684,
+      "size": 3452,
       "active": false,
       "references": []
     },

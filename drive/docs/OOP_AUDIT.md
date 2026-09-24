@@ -110,7 +110,7 @@
 | `drive/federationdrop/index.php` | 11 | thin endpoint | 0 | — | — | — | — |
 | `drive/generar_token.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/guardar_texto.php` | 8 | thin endpoint | 0 | — | — | — | — |
-| `drive/index.php` | 903 | view/entrypoint | 0 | — | — | — | — |
+| `drive/index.php` | 584 | view/entrypoint | 0 | — | — | — | — |
 | `drive/leer_texto.php` | 8 | thin endpoint | 0 | — | — | — | — |
 | `drive/listar_carpetas.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/login.php` | 93 | view/entrypoint | 0 | — | — | — | — |
@@ -397,7 +397,7 @@
 | `drive/tests/federation_replica_smoke.php` | 115 | test script | 0 | — | — | — | — |
 | `drive/tests/federationcloud_smoke.php` | 197 | test script | 0 | — | — | — | — |
 | `drive/tests/folder_document_sanitizer.php` | 49 | test script | 0 | — | — | — | — |
-| `drive/tests/index_federation_drop_smoke.php` | 91 | test script | 0 | — | — | — | — |
+| `drive/tests/index_federation_drop_smoke.php` | 84 | test script | 0 | — | — | — | — |
 | `drive/tests/password_credential_verifier_smoke.php` | 44 | test script | 0 | — | — | — | — |
 | `drive/tests/scoped_sync_repository_regression.php` | 96 | test script | 0 | — | ⚠️ | — | — |
 | `drive/tests/security_hardening_smoke.php` | 59 | test script | 0 | — | — | — | — |

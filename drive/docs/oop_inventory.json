@@ -1286,7 +1286,7 @@
     },
     {
       "path": "drive/index.php",
-      "lines": 903,
+      "lines": 584,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -5661,16 +5661,14 @@
     },
     {
       "path": "drive/tests/index_federation_drop_smoke.php",
-      "lines": 91,
+      "lines": 84,
       "kind": "test script",
       "classes": 0,
       "functions": [
-        "indexDropOk"
+        "indexHomeOk"
       ],
       "session": false,
-      "superglobals": [
-        "SERVER"
-      ],
+      "superglobals": [],
       "db": false,
       "s3": false,
       "bootstrap": true,

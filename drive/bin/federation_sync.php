@@ -7,6 +7,7 @@ require_once dirname(__DIR__) . '/app_bootstrap.php';
 use ArcadeCloud\Drive\Core\ApplicationKernel;
 use ArcadeCloud\Drive\Federation\FederationAccessService;
 use ArcadeCloud\Drive\Federation\FederationCustomsService;
+use ArcadeCloud\Drive\Federation\FederationDropIngressService;
 use ArcadeCloud\Drive\Federation\FederationDropService;
 use ArcadeCloud\Drive\Federation\FederationGossipService;
 use ArcadeCloud\Drive\Federation\FederationPublicImportService;
@@ -124,6 +125,16 @@ try {
             'error' => 'FederationDrop no pudo centralizar uploads ingress en este ciclo.',
         ];
         error_log('[FederationDrop ingress sync] ' . $e->getMessage());
+    }
+    try {
+        // Cada nodo retira objetos ingress temporales abandonados después de 7 días.
+        $result['drop_ingress_cleanup'] = (new FederationDropIngressService($app))->cleanupLocalStale(7, 20);
+    } catch (Throwable $e) {
+        $result['drop_ingress_cleanup'] = [
+            'degraded' => true,
+            'error' => 'No se pudieron limpiar ingress temporales en este ciclo.',
+        ];
+        error_log('[FederationDrop ingress cleanup sync] ' . $e->getMessage());
     }
     echo json_encode($result, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . "\n";
 } catch (Throwable $e) {

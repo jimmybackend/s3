@@ -7,10 +7,12 @@ use ArcadeCloud\Drive\Aws\GeneratedFileRepository;
 use ArcadeCloud\Drive\Console\MediaProcessingWorkerCommand;
 use ArcadeCloud\Drive\Core\ApplicationKernel;
 use ArcadeCloud\Drive\Media\MediaProcessingJobRepository;
+use ArcadeCloud\Drive\Media\MediaWorkerNodeService;
 
 $app = ApplicationKernel::app();
 $jobs = new MediaProcessingJobRepository($app->db());
 $generated = new GeneratedFileRepository($app->db());
+$node = new MediaWorkerNodeService($app->db());
 
 $loop = in_array('--loop', $argv, true);
 $sleep = 5;
@@ -21,7 +23,7 @@ foreach ($argv as $arg) {
 }
 
 try {
-    exit((new MediaProcessingWorkerCommand($app, $jobs, $generated))->run($loop, $sleep));
+    exit((new MediaProcessingWorkerCommand($app, $jobs, $generated, $node))->run($loop, $sleep));
 } catch (Throwable $e) {
     fwrite(STDERR, '[media-worker] ' . $e->getMessage() . PHP_EOL);
     exit(1);

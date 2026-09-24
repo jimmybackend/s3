@@ -73,6 +73,7 @@ final class MediaWorkerNodeService
             'can_enqueue' => in_array($state, ['running','pending','stopped'], true),
             'idle_grace_seconds' => $this->idleGraceSeconds,
             'hourly_usd' => $this->hourlyUsd,
+            'cost_configured' => $this->hourlyUsd !== null,
             'session_active' => $active !== null,
         ];
     }
@@ -90,6 +91,13 @@ final class MediaWorkerNodeService
         }
 
         if ($state === 'stopped') {
+            if ($this->hourlyUsd === null) {
+                throw new RuntimeException(
+                    '[NODE_RATE_REQUIRED] Configura ARCADECLOUD_MEDIA_WORKER_HOURLY_USD '
+                    . 'antes de permitir encendidos pagados bajo demanda.'
+                );
+            }
+
             if (!$authorizedStart) {
                 throw new RuntimeException(
                     '[NODE_START_AUTH_REQUIRED] El nodo de alto rendimiento está apagado. '

@@ -82,6 +82,8 @@ MySQL conserva:
 - SHA-256 de ambos tokens para validación;
 - una copia cifrada con Sodium `secretbox` para poder reconstruir los enlaces que se envían al correo después de activar el servicio.
 
+La clave de ese cifrado se deriva de la identidad estable del nodo FederationCloud con separación de dominio; no depende del secreto del procesador de pagos. Por eso se puede rotar `ARCADECLOUD_DROP_WEBHOOK_SECRET` sin invalidar los tokens cifrados de Drops existentes.
+
 Los tokens no se almacenan en texto plano.
 
 La página de administración declara `Referrer-Policy: no-referrer` para evitar que un owner token de magic-link viaje como Referer a otro sitio.

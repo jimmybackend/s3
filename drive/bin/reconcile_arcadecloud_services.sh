@@ -40,10 +40,50 @@ except Exception:
 PY
 }
 
+pool_user_from_conf() {
+  local conf="$1"
+  [[ -r "$conf" ]] || return 1
+  awk -F= '
+    /^[[:space:]]*user[[:space:]]*=/ {
+      gsub(/[[:space:]]/, "", $2)
+      if ($2 != "") { print $2; exit }
+    }
+  ' "$conf"
+}
+
+detect_drive_php_user() {
+  local user=""
+
+  user="$(pool_user_from_conf /etc/php-fpm-drive.d/arcadecloud-drive.conf || true)"
+  [[ -n "$user" ]] && { printf '%s' "$user"; return 0; }
+
+  user="$(pool_user_from_conf /etc/php-fpm.d/arcadecloud-drive.conf || true)"
+  [[ -n "$user" ]] && { printf '%s' "$user"; return 0; }
+
+  if [[ -r /etc/php-fpm-drive.conf ]]; then
+    user="$(php-fpm -tt -y /etc/php-fpm-drive.conf 2>&1 | awk '
+      match($0, /(^|[[:space:]])user[[:space:]]*=[[:space:]]*[^[:space:];]+/) {
+        value = substr($0, RSTART, RLENGTH)
+        sub(/^.*user[[:space:]]*=[[:space:]]*/, "", value)
+        sub(/[[:space:];].*$/, "", value)
+        print value
+        exit
+      }
+    ' || true)"
+    [[ -n "$user" ]] && { printf '%s' "$user"; return 0; }
+  fi
+
+  user="$(pool_user_from_conf /etc/php-fpm.d/www.conf || true)"
+  [[ -n "$user" ]] && { printf '%s' "$user"; return 0; }
+
+  user="$(ps -eo user=,comm= 2>/dev/null | awk '$2 == "php-fpm" && $1 != "root" { print $1; exit }')"
+  [[ -n "$user" ]] && printf '%s' "$user"
+}
+
 if [[ -z "$PHP_USER" ]]; then
-  PHP_USER="$(ps -eo user=,comm= 2>/dev/null | awk '$2 == "php-fpm" && $1 != "root" { print $1; exit }')"
+  PHP_USER="$(detect_drive_php_user || true)"
 fi
-[[ -n "$PHP_USER" ]] || { echo "ERROR: no pude detectar el usuario PHP-FPM; usa --php-user." >&2; exit 2; }
+[[ -n "$PHP_USER" ]] || { echo "ERROR: no pude detectar el usuario del pool php-fpm-drive; usa --php-user." >&2; exit 2; }
 [[ "$PHP_USER" != "root" ]] || { echo "ERROR: PHP-FPM no debe ejecutar ArcadeCloud como root." >&2; exit 2; }
 id "$PHP_USER" >/dev/null 2>&1 || { echo "ERROR: usuario inexistente: $PHP_USER" >&2; exit 2; }
 

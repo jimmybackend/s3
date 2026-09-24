@@ -23,10 +23,16 @@ on:
       - 'drive/src/Http/Controller/FederationDirectoryController.php'
       - 'drive/src/Http/Controller/FederationProviderController.php'
       - 'drive/src/Http/Controller/FederationNodeAdminController.php'
+      - 'drive/src/Http/Controller/FederationModerationController.php'
       - 'drive/src/Security/AuthenticationRepository.php'
       - 'drive/src/Security/AuthenticationService.php'
       - 'drive/src/Security/SessionManager.php'
       - 'drive/src/View/FederationPageRenderer.php'
+      - 'drive/src/View/FederationReportPageRenderer.php'
+      - 'drive/src/View/FederationModerationPageRenderer.php'
+      - 'drive/src/Upload/UploadCatalogRepository.php'
+      - 'drive/src/Upload/SingleUploadService.php'
+      - 'drive/src/Upload/PublicDropzoneUploadService.php'
       - 'drive/tests/federationcloud_smoke.php'
       - 'drive/tests/federation_directory_smoke.php'
       - 'drive/tests/federation_provider_smoke.php'
@@ -35,12 +41,14 @@ on:
       - 'drive/tests/federation_https_contract_smoke.php'
       - 'drive/tests/federation_customs_contract_smoke.php'
       - 'drive/tests/federation_replica_reconnect_contract_smoke.php'
+      - 'drive/tests/federation_moderation_contract_smoke.php'
       - 'drive/docs/FEDERATIONCLOUD.md'
       - 'drive/docs/FEDERATION_PROVIDER_APPROVALS.md'
       - 'drive/docs/FEDERATION_HTTPS_ENDPOINT.md'
       - 'drive/docs/FEDERATION_CUSTOMS_QUEUE.md'
       - 'drive/docs/FEDERATION_OPERATIONS.md'
       - 'drive/docs/FEDERATION_NODE_REPLICA_INSTALL.md'
+      - 'drive/docs/FEDERATION_CONTENT_MODERATION.md'
       - 'drive/docs/INSTALLATION_PREPARATION.md'
       - 'adbbmis1_Cloud.sql'
       - 'drive/bloque_footer.php'
@@ -61,10 +69,16 @@ on:
       - 'drive/src/Http/Controller/FederationDirectoryController.php'
       - 'drive/src/Http/Controller/FederationProviderController.php'
       - 'drive/src/Http/Controller/FederationNodeAdminController.php'
+      - 'drive/src/Http/Controller/FederationModerationController.php'
       - 'drive/src/Security/AuthenticationRepository.php'
       - 'drive/src/Security/AuthenticationService.php'
       - 'drive/src/Security/SessionManager.php'
       - 'drive/src/View/FederationPageRenderer.php'
+      - 'drive/src/View/FederationReportPageRenderer.php'
+      - 'drive/src/View/FederationModerationPageRenderer.php'
+      - 'drive/src/Upload/UploadCatalogRepository.php'
+      - 'drive/src/Upload/SingleUploadService.php'
+      - 'drive/src/Upload/PublicDropzoneUploadService.php'
       - 'drive/tests/federationcloud_smoke.php'
       - 'drive/tests/federation_directory_smoke.php'
       - 'drive/tests/federation_provider_smoke.php'
@@ -73,12 +87,14 @@ on:
       - 'drive/tests/federation_https_contract_smoke.php'
       - 'drive/tests/federation_customs_contract_smoke.php'
       - 'drive/tests/federation_replica_reconnect_contract_smoke.php'
+      - 'drive/tests/federation_moderation_contract_smoke.php'
       - 'drive/docs/FEDERATIONCLOUD.md'
       - 'drive/docs/FEDERATION_PROVIDER_APPROVALS.md'
       - 'drive/docs/FEDERATION_HTTPS_ENDPOINT.md'
       - 'drive/docs/FEDERATION_CUSTOMS_QUEUE.md'
       - 'drive/docs/FEDERATION_OPERATIONS.md'
       - 'drive/docs/FEDERATION_NODE_REPLICA_INSTALL.md'
+      - 'drive/docs/FEDERATION_CONTENT_MODERATION.md'
       - 'drive/docs/INSTALLATION_PREPARATION.md'
       - 'adbbmis1_Cloud.sql'
       - 'drive/bloque_footer.php'
@@ -108,6 +124,12 @@ jobs:
           php -l drive/src/Http/Controller/FederationDirectoryController.php
           php -l drive/src/Http/Controller/FederationProviderController.php
           php -l drive/src/Http/Controller/FederationNodeAdminController.php
+          php -l drive/src/Http/Controller/FederationModerationController.php
+          php -l drive/src/View/FederationReportPageRenderer.php
+          php -l drive/src/View/FederationModerationPageRenderer.php
+          php -l drive/src/Upload/UploadCatalogRepository.php
+          php -l drive/src/Upload/SingleUploadService.php
+          php -l drive/src/Upload/PublicDropzoneUploadService.php
           php -l drive/src/Security/AuthenticationRepository.php
           php -l drive/src/Security/AuthenticationService.php
           php -l drive/src/Security/SessionManager.php
@@ -121,6 +143,7 @@ jobs:
           php -l drive/tests/federation_https_contract_smoke.php
           php -l drive/tests/federation_customs_contract_smoke.php
           php -l drive/tests/federation_replica_reconnect_contract_smoke.php
+          php -l drive/tests/federation_moderation_contract_smoke.php
 
       - name: Validate FederationCloud JavaScript and shell
         run: |
@@ -154,6 +177,9 @@ jobs:
 
       - name: FederationCloud authorized replica reconnect contract
         run: php drive/tests/federation_replica_reconnect_contract_smoke.php
+
+      - name: FederationCloud content moderation contract
+        run: php drive/tests/federation_moderation_contract_smoke.php
 
       - name: Security and architecture guards
         run: |

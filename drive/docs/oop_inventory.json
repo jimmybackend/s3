@@ -1,9 +1,9 @@
 {
   "summary": {
-    "php_total": 432,
+    "php_total": 433,
     "php_class_modules": 257,
     "php_needs_migration": 0,
-    "php_tests": 37,
+    "php_tests": 38,
     "js_total": 48,
     "js_class_modules": 48,
     "js_needs_migration": 0,
@@ -102,7 +102,7 @@
     },
     {
       "path": "drive/bin/arcadecloud-drive-admin-helper.php",
-      "lines": 620,
+      "lines": 624,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -117,7 +117,7 @@
     },
     {
       "path": "drive/bin/arcadecloud-drive-updater.php",
-      "lines": 207,
+      "lines": 259,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -1925,7 +1925,7 @@
     },
     {
       "path": "drive/src/Admin/ManagedRuntimeEnvironment.php",
-      "lines": 322,
+      "lines": 363,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -5943,6 +5943,23 @@
       "s3": false,
       "bootstrap": true,
       "html": true,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/tests/installer_service_reconcile_contract_smoke.php",
+      "lines": 63,
+      "kind": "test script",
+      "classes": 0,
+      "functions": [
+        "installerContract"
+      ],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
       "namespace": false,
       "issues": []
     },

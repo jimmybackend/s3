@@ -4,10 +4,10 @@
 
 ## Resumen
 
-- PHP analizados: **432**
+- PHP analizados: **433**
 - PHP que ya contienen clases/interfaces: **257**
 - PHP marcados para migración/revisión: **0**
-- Tests PHP separados del objetivo OOP de runtime: **37**
+- Tests PHP separados del objetivo OOP de runtime: **38**
 - JavaScript analizados: **48**
 - JavaScript que ya contienen clases: **48**
 - JavaScript sin clase/encapsulación OOP: **0**
@@ -32,8 +32,8 @@
 | `drive/app_bootstrap.php` | 53 | bootstrap | 0 | — | ⚠️ | — | — |
 | `drive/aws.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/background_tasks.php` | 18 | thin endpoint | 0 | — | — | — | — |
-| `drive/bin/arcadecloud-drive-admin-helper.php` | 620 | class/module | 1 | — | ⚠️ | — | — |
-| `drive/bin/arcadecloud-drive-updater.php` | 207 | class/module | 1 | — | — | — | — |
+| `drive/bin/arcadecloud-drive-admin-helper.php` | 624 | class/module | 1 | — | ⚠️ | — | — |
+| `drive/bin/arcadecloud-drive-updater.php` | 259 | class/module | 1 | — | — | — | — |
 | `drive/bin/federation_catalog_migrate.php` | 111 | thin cli entrypoint | 0 | — | ⚠️ | — | — |
 | `drive/bin/federation_drop_cleanup.php` | 19 | thin cli entrypoint | 0 | — | — | — | — |
 | `drive/bin/federation_endpoint_refresh.php` | 87 | thin cli entrypoint | 0 | — | — | — | — |
@@ -152,7 +152,7 @@
 | `drive/src/Activity/TranscriptionCostAttribution.php` | 117 | class/module | 1 | — | — | — | — |
 | `drive/src/Activity/TranscriptionReconciler.php` | 476 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Admin/ArcadeCloudUpdaterService.php` | 85 | class/module | 1 | — | ⚠️ | — | — |
-| `drive/src/Admin/ManagedRuntimeEnvironment.php` | 322 | class/module | 1 | — | — | — | — |
+| `drive/src/Admin/ManagedRuntimeEnvironment.php` | 363 | class/module | 1 | — | — | — | — |
 | `drive/src/Admin/PrivilegedServerHelper.php` | 150 | class/module | 1 | — | — | — | — |
 | `drive/src/Admin/ServerSettingsAdminService.php` | 211 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Application/AiFileSearchService.php` | 470 | class/module | 1 | — | ⚠️ | — | — |
@@ -416,6 +416,7 @@
 | `drive/tests/federationcloud_smoke.php` | 197 | test script | 0 | — | — | — | — |
 | `drive/tests/folder_document_sanitizer.php` | 49 | test script | 0 | — | — | — | — |
 | `drive/tests/index_federation_drop_smoke.php` | 121 | test script | 0 | — | — | — | — |
+| `drive/tests/installer_service_reconcile_contract_smoke.php` | 63 | test script | 0 | — | — | — | — |
 | `drive/tests/media_processing_contract_smoke.php` | 52 | test script | 0 | — | — | — | — |
 | `drive/tests/password_credential_verifier_smoke.php` | 44 | test script | 0 | — | — | — | — |
 | `drive/tests/scoped_sync_repository_regression.php` | 96 | test script | 0 | — | ⚠️ | — | — |

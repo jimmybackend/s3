@@ -153,7 +153,7 @@ Si este nodo cobra, este mismo nodo conserva la copia garantizada. Los nodos Fed
 
 El repositorio incluye `federationdrop/badge.svg` para enlazar el servicio desde dominios externos y un esquema de futuros proveedores comerciales con dominio fijo, capacidad, porcentaje `CommissionBps` y garantía `central_copy` o `dual_replica`. La colocación comercial externa permanece desactivada en esta primera fase.
 
-El procesador de pago concreto es intercambiable: FederationDrop expone un contrato de checkout + webhook HMAC y no incorpora una pasarela ficticia. Consulta `drive/docs/FEDERATION_DROP.md`.
+FederationDrop usa **Stripe Checkout** con precio dinámico calculado en el servidor y webhook validado mediante `Stripe-Signature`. Todos los nodos enlazan el botón comercial a `ARCADECLOUD_DROP_COMMERCE_URL`, cuyo valor por defecto es `https://drive.esforzados.com/federationdrop`; sólo ese nodo comercial necesita claves Stripe y custodia los archivos pagados en la fase 1. Consulta `drive/docs/FEDERATION_DROP.md`.
 
 ## FederationCloud
 

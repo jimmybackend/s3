@@ -80,7 +80,7 @@ if ($session->isSuperAdmin()) {
     try {
         $mediaWorkerDependencyWarning = (new \ArcadeCloud\Drive\Media\MediaProcessingJobRepository(
             $app->db()
-        ))->latestDependencyFailure();
+        ))->latestOperationalWarning();
     } catch (Throwable $e) {
         error_log('[ArcadeCloud media-warning] ' . $e->getMessage());
     }
@@ -320,10 +320,18 @@ if ($session->isSuperAdmin()) {
     <div class="d-flex align-items-start">
       <i class="fas fa-triangle-exclamation mr-2 mt-1"></i>
       <div>
-        <strong>Nodo multimedia incompleto.</strong>
-        Se detectó una tarea que no pudo ejecutarse porque faltan dependencias en el servidor de procesamiento.
-        Instala <strong>FFmpeg y FFprobe</strong> en ese nodo y reinicia
-        <code>arcadecloud-media-worker.service</code>.
+        <?php if (($mediaWorkerDependencyWarning['type'] ?? '') === 'dependency_missing'): ?>
+          <strong>Nodo multimedia incompleto.</strong>
+          Se detectó una tarea que no pudo ejecutarse porque faltan dependencias en el servidor de procesamiento.
+          Instala <strong>FFmpeg y FFprobe</strong> en ese nodo y reinicia
+          <code>arcadecloud-media-worker.service</code>.
+        <?php else: ?>
+          <strong>Nodo multimedia no disponible.</strong>
+          Hay una tarea en cola que ningún worker ha recogido durante más de 2 minutos.
+          Verifica que el nodo de procesamiento esté encendido, que
+          <code>arcadecloud-media-worker.service</code> esté activo y que tenga
+          <strong>FFmpeg y FFprobe</strong> instalados.
+        <?php endif; ?>
         <?php if (trim((string)($mediaWorkerDependencyWarning['worker_id'] ?? '')) !== ''): ?>
           <div class="small mt-1">
             Nodo: <code><?= htmlspecialchars((string)$mediaWorkerDependencyWarning['worker_id'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></code>

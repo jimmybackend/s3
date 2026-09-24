@@ -19,12 +19,15 @@ $envNames = [
     'ARCADECLOUD_PUBLIC_URL', 'ARCADECLOUD_FEDERATION_ENABLED',
     'ARCADECLOUD_FEDERATION_REPLICA_ORIGIN_URL', 'ARCADECLOUD_FEDERATION_REPLICA_ROLE',
     'ARCADECLOUD_FEDERATION_REPLICA_SCOPE', 'ARCADECLOUD_DROP_ENABLED',
-    'ARCADECLOUD_DROP_PUBLIC_URL', 'ARCADECLOUD_DROP_CHECKOUT_URL',
-    'ARCADECLOUD_DROP_WEBHOOK_SECRET', 'ARCADECLOUD_DROP_CURRENCY',
+    'ARCADECLOUD_DROP_PUBLIC_URL', 'ARCADECLOUD_DROP_COMMERCE_URL',
+    'ARCADECLOUD_STRIPE_SECRET_KEY', 'ARCADECLOUD_STRIPE_WEBHOOK_SECRET', 'ARCADECLOUD_DROP_CURRENCY',
     'ARCADECLOUD_DROP_MAX_DAYS', 'ARCADECLOUD_SMTP_HOST',
     'ARCADECLOUD_SMTP_PASSWORD', 'DB_HOST', 'DB_PORT', 'DB_USER', 'DB_PASSWORD', 'DB_NAME',
     'AWS_REGION', 'AWS_S3_BUCKET', 'AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY',
 ];
+$stripeKey = 'sk_' . 'test_' . 'synthetic_drop_key';
+$stripeWebhook = 'whsec_' . 'synthetic_drop_webhook';
+
 try {
     file_put_contents($path, "{}\n");
     serverAdminOk(ManagedRuntimeEnvironment::read($path) === [], 'acepta objeto JSON vacío creado por el instalador');
@@ -34,8 +37,9 @@ try {
         'ARCADECLOUD_FEDERATION_ENABLED' => 'true',
         'ARCADECLOUD_DROP_ENABLED' => 'true',
         'ARCADECLOUD_DROP_PUBLIC_URL' => 'https://drive.example.test/federationdrop',
-        'ARCADECLOUD_DROP_CHECKOUT_URL' => 'https://pay.example.test/drop',
-        'ARCADECLOUD_DROP_WEBHOOK_SECRET' => 'synthetic-drop-webhook-secret-1234567890',
+        'ARCADECLOUD_DROP_COMMERCE_URL' => 'https://drive.example.test/federationdrop',
+        'ARCADECLOUD_STRIPE_SECRET_KEY' => $stripeKey,
+        'ARCADECLOUD_STRIPE_WEBHOOK_SECRET' => $stripeWebhook,
         'ARCADECLOUD_DROP_CURRENCY' => 'MXN',
         'ARCADECLOUD_DROP_MAX_DAYS' => '30',
         'ARCADECLOUD_SMTP_HOST' => 'smtp.example.test',
@@ -55,7 +59,8 @@ try {
     ManagedRuntimeEnvironment::loadIntoProcess($path);
     serverAdminOk(getenv('ARCADECLOUD_PUBLIC_URL') === 'https://drive.example.test', 'carga variable ArcadeCloud');
     serverAdminOk(getenv('ARCADECLOUD_DROP_ENABLED') === 'true', 'carga FederationDrop administrado');
-    serverAdminOk(getenv('ARCADECLOUD_DROP_WEBHOOK_SECRET') === 'synthetic-drop-webhook-secret-1234567890', 'carga secreto FederationDrop');
+    serverAdminOk(getenv('ARCADECLOUD_STRIPE_SECRET_KEY') === $stripeKey, 'carga clave Stripe FederationDrop');
+    serverAdminOk(getenv('ARCADECLOUD_STRIPE_WEBHOOK_SECRET') === $stripeWebhook, 'carga secreto webhook Stripe FederationDrop');
     serverAdminOk(getenv('ARCADECLOUD_SMTP_PASSWORD') === 'synthetic-secret-only', 'carga secreto SMTP');
     serverAdminOk(getenv('DB_HOST') === 'db.example.test', 'carga DB_HOST administrado');
     serverAdminOk(getenv('DB_PASSWORD') === 'synthetic-db-secret', 'carga DB_PASSWORD administrado');
@@ -67,7 +72,8 @@ try {
     $byName = [];
     foreach ($state as $row) $byName[(string)$row['name']] = $row;
 
-    serverAdminOk(($byName['ARCADECLOUD_DROP_WEBHOOK_SECRET']['value'] ?? 'x') === '', 'no devuelve secreto FederationDrop al navegador');
+    serverAdminOk(($byName['ARCADECLOUD_STRIPE_SECRET_KEY']['value'] ?? 'x') === '', 'no devuelve clave Stripe al navegador');
+    serverAdminOk(($byName['ARCADECLOUD_STRIPE_WEBHOOK_SECRET']['value'] ?? 'x') === '', 'no devuelve secreto webhook Stripe al navegador');
     serverAdminOk(($byName['ARCADECLOUD_SMTP_PASSWORD']['value'] ?? 'x') === '', 'no devuelve SMTP password al navegador');
     serverAdminOk(($byName['DB_PASSWORD']['value'] ?? 'x') === '', 'no devuelve DB_PASSWORD al navegador');
     serverAdminOk(($byName['AWS_ACCESS_KEY_ID']['value'] ?? 'x') === '', 'no devuelve AWS access key al navegador');
@@ -111,8 +117,16 @@ try {
         'acepta duración FederationDrop administrada'
     );
     serverAdminOk(
-        ManagedRuntimeEnvironment::validateValue('ARCADECLOUD_DROP_WEBHOOK_SECRET', 'synthetic-drop-webhook-secret-1234567890') === 'synthetic-drop-webhook-secret-1234567890',
-        'acepta secreto FederationDrop suficiente'
+        ManagedRuntimeEnvironment::validateValue('ARCADECLOUD_DROP_COMMERCE_URL', 'https://drive.esforzados.com/federationdrop') === 'https://drive.esforzados.com/federationdrop',
+        'acepta portal comercial FederationDrop HTTPS'
+    );
+    serverAdminOk(
+        ManagedRuntimeEnvironment::validateValue('ARCADECLOUD_STRIPE_SECRET_KEY', $stripeKey) === $stripeKey,
+        'acepta clave Stripe FederationDrop'
+    );
+    serverAdminOk(
+        ManagedRuntimeEnvironment::validateValue('ARCADECLOUD_STRIPE_WEBHOOK_SECRET', $stripeWebhook) === $stripeWebhook,
+        'acepta secreto webhook Stripe FederationDrop'
     );
 
     $rejected = false;
@@ -132,12 +146,16 @@ try {
     serverAdminOk($rejected, 'Federation URL administrada exige HTTPS');
 
     $rejected = false;
-    try { ManagedRuntimeEnvironment::validateValue('ARCADECLOUD_DROP_CHECKOUT_URL', 'http://pay.example.test/drop'); } catch (RuntimeException) { $rejected = true; }
-    serverAdminOk($rejected, 'checkout FederationDrop exige HTTPS');
+    try { ManagedRuntimeEnvironment::validateValue('ARCADECLOUD_DROP_COMMERCE_URL', 'http://drive.example.test/federationdrop'); } catch (RuntimeException) { $rejected = true; }
+    serverAdminOk($rejected, 'portal comercial FederationDrop exige HTTPS');
 
     $rejected = false;
-    try { ManagedRuntimeEnvironment::validateValue('ARCADECLOUD_DROP_WEBHOOK_SECRET', 'short'); } catch (RuntimeException) { $rejected = true; }
-    serverAdminOk($rejected, 'rechaza secreto FederationDrop demasiado corto');
+    try { ManagedRuntimeEnvironment::validateValue('ARCADECLOUD_STRIPE_SECRET_KEY', 'invalid'); } catch (RuntimeException) { $rejected = true; }
+    serverAdminOk($rejected, 'rechaza clave Stripe con formato inválido');
+
+    $rejected = false;
+    try { ManagedRuntimeEnvironment::validateValue('ARCADECLOUD_STRIPE_WEBHOOK_SECRET', 'invalid'); } catch (RuntimeException) { $rejected = true; }
+    serverAdminOk($rejected, 'rechaza secreto webhook Stripe inválido');
 
     fwrite(STDOUT, "server admin config smoke: OK\n");
 } finally {

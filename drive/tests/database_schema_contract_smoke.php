@@ -60,6 +60,10 @@ $requiredTables = [
     'FederationReplicaJobs',
     'FederationReplicaObjects',
     'FederationIngressQueue',
+    'FederationDrops',
+    'FederationDropPaymentEvents',
+    'FederationCommercialProviders',
+    'FederationDropPlacements',
 ];
 
 foreach ($requiredTables as $table) {

@@ -18,7 +18,10 @@ $path = sys_get_temp_dir() . '/arcadecloud-runtime-env-' . bin2hex(random_bytes(
 $envNames = [
     'ARCADECLOUD_PUBLIC_URL', 'ARCADECLOUD_FEDERATION_ENABLED',
     'ARCADECLOUD_FEDERATION_REPLICA_ORIGIN_URL', 'ARCADECLOUD_FEDERATION_REPLICA_ROLE',
-    'ARCADECLOUD_FEDERATION_REPLICA_SCOPE', 'ARCADECLOUD_SMTP_HOST',
+    'ARCADECLOUD_FEDERATION_REPLICA_SCOPE', 'ARCADECLOUD_DROP_ENABLED',
+    'ARCADECLOUD_DROP_PUBLIC_URL', 'ARCADECLOUD_DROP_CHECKOUT_URL',
+    'ARCADECLOUD_DROP_WEBHOOK_SECRET', 'ARCADECLOUD_DROP_CURRENCY',
+    'ARCADECLOUD_DROP_MAX_DAYS', 'ARCADECLOUD_SMTP_HOST',
     'ARCADECLOUD_SMTP_PASSWORD', 'DB_HOST', 'DB_PORT', 'DB_USER', 'DB_PASSWORD', 'DB_NAME',
     'AWS_REGION', 'AWS_S3_BUCKET', 'AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY',
 ];
@@ -29,6 +32,12 @@ try {
     file_put_contents($path, json_encode([
         'ARCADECLOUD_PUBLIC_URL' => 'https://drive.example.test',
         'ARCADECLOUD_FEDERATION_ENABLED' => 'true',
+        'ARCADECLOUD_DROP_ENABLED' => 'true',
+        'ARCADECLOUD_DROP_PUBLIC_URL' => 'https://drive.example.test/federationdrop',
+        'ARCADECLOUD_DROP_CHECKOUT_URL' => 'https://pay.example.test/drop',
+        'ARCADECLOUD_DROP_WEBHOOK_SECRET' => 'synthetic-drop-webhook-secret-1234567890',
+        'ARCADECLOUD_DROP_CURRENCY' => 'MXN',
+        'ARCADECLOUD_DROP_MAX_DAYS' => '30',
         'ARCADECLOUD_SMTP_HOST' => 'smtp.example.test',
         'ARCADECLOUD_SMTP_PASSWORD' => 'synthetic-secret-only',
         'DB_HOST' => 'db.example.test',
@@ -45,6 +54,8 @@ try {
 
     ManagedRuntimeEnvironment::loadIntoProcess($path);
     serverAdminOk(getenv('ARCADECLOUD_PUBLIC_URL') === 'https://drive.example.test', 'carga variable ArcadeCloud');
+    serverAdminOk(getenv('ARCADECLOUD_DROP_ENABLED') === 'true', 'carga FederationDrop administrado');
+    serverAdminOk(getenv('ARCADECLOUD_DROP_WEBHOOK_SECRET') === 'synthetic-drop-webhook-secret-1234567890', 'carga secreto FederationDrop');
     serverAdminOk(getenv('ARCADECLOUD_SMTP_PASSWORD') === 'synthetic-secret-only', 'carga secreto SMTP');
     serverAdminOk(getenv('DB_HOST') === 'db.example.test', 'carga DB_HOST administrado');
     serverAdminOk(getenv('DB_PASSWORD') === 'synthetic-db-secret', 'carga DB_PASSWORD administrado');
@@ -56,6 +67,7 @@ try {
     $byName = [];
     foreach ($state as $row) $byName[(string)$row['name']] = $row;
 
+    serverAdminOk(($byName['ARCADECLOUD_DROP_WEBHOOK_SECRET']['value'] ?? 'x') === '', 'no devuelve secreto FederationDrop al navegador');
     serverAdminOk(($byName['ARCADECLOUD_SMTP_PASSWORD']['value'] ?? 'x') === '', 'no devuelve SMTP password al navegador');
     serverAdminOk(($byName['DB_PASSWORD']['value'] ?? 'x') === '', 'no devuelve DB_PASSWORD al navegador');
     serverAdminOk(($byName['AWS_ACCESS_KEY_ID']['value'] ?? 'x') === '', 'no devuelve AWS access key al navegador');
@@ -86,6 +98,22 @@ try {
         ManagedRuntimeEnvironment::validateValue('ARCADECLOUD_FEDERATION_REPLICA_ORIGIN_URL', 'https://origin.example.test/federationcloud/') === 'https://origin.example.test/federationcloud/',
         'acepta origin HTTPS de mirror'
     );
+    serverAdminOk(
+        ManagedRuntimeEnvironment::validateValue('ARCADECLOUD_DROP_PUBLIC_URL', 'https://drive.example.test/federationdrop') === 'https://drive.example.test/federationdrop',
+        'acepta FederationDrop HTTPS'
+    );
+    serverAdminOk(
+        ManagedRuntimeEnvironment::validateValue('ARCADECLOUD_DROP_CURRENCY', 'mxn') === 'MXN',
+        'normaliza moneda FederationDrop'
+    );
+    serverAdminOk(
+        ManagedRuntimeEnvironment::validateValue('ARCADECLOUD_DROP_MAX_DAYS', '365') === '365',
+        'acepta duración FederationDrop administrada'
+    );
+    serverAdminOk(
+        ManagedRuntimeEnvironment::validateValue('ARCADECLOUD_DROP_WEBHOOK_SECRET', 'synthetic-drop-webhook-secret-1234567890') === 'synthetic-drop-webhook-secret-1234567890',
+        'acepta secreto FederationDrop suficiente'
+    );
 
     $rejected = false;
     try { ManagedRuntimeEnvironment::validateValue('PATH', '/tmp'); } catch (RuntimeException) { $rejected = true; }
@@ -102,6 +130,14 @@ try {
     $rejected = false;
     try { ManagedRuntimeEnvironment::validateValue('ARCADECLOUD_FEDERATION_URL', 'http://node.example.test/federationcloud/'); } catch (RuntimeException) { $rejected = true; }
     serverAdminOk($rejected, 'Federation URL administrada exige HTTPS');
+
+    $rejected = false;
+    try { ManagedRuntimeEnvironment::validateValue('ARCADECLOUD_DROP_CHECKOUT_URL', 'http://pay.example.test/drop'); } catch (RuntimeException) { $rejected = true; }
+    serverAdminOk($rejected, 'checkout FederationDrop exige HTTPS');
+
+    $rejected = false;
+    try { ManagedRuntimeEnvironment::validateValue('ARCADECLOUD_DROP_WEBHOOK_SECRET', 'short'); } catch (RuntimeException) { $rejected = true; }
+    serverAdminOk($rejected, 'rechaza secreto FederationDrop demasiado corto');
 
     fwrite(STDOUT, "server admin config smoke: OK\n");
 } finally {

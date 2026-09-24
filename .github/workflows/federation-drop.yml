@@ -1,0 +1,119 @@
+name: FederationDrop commercial custody validation
+
+on:
+  pull_request:
+    branches: ['main']
+    paths:
+      - 'adbbmis1_Cloud.sql'
+      - 'drive/src/Federation/FederationDrop*.php'
+      - 'drive/src/Federation/ArcadeLinkService.php'
+      - 'drive/src/Federation/FederationService.php'
+      - 'drive/src/Http/Controller/FederationDropController.php'
+      - 'drive/src/View/FederationDropPageRenderer.php'
+      - 'drive/src/View/FederationPageRenderer.php'
+      - 'drive/src/Mail/SmtpEmailService.php'
+      - 'drive/src/Admin/ManagedRuntimeEnvironment.php'
+      - 'drive/bin/arcadecloud-drive-admin-helper.php'
+      - 'drive/bin/federation_drop_cleanup.php'
+      - 'drive/bin/install_federation_drop_cleanup_timer.sh'
+      - 'drive/bin/install_arcadecloud.sh'
+      - 'drive/bin/uninstall_arcadecloud.sh'
+      - 'drive/bin/federation_catalog_migrate.php'
+      - 'drive/federationdrop/**'
+      - 'drive/js/federation-drop.js'
+      - 'drive/tests/federation_drop_contract_smoke.php'
+      - 'drive/tests/federationcloud_smoke.php'
+      - 'drive/tests/database_schema_contract_smoke.php'
+      - 'drive/tests/server_admin_config_smoke.php'
+      - 'drive/docs/FEDERATION_DROP.md'
+      - '.github/workflows/federation-drop.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: PHP extensions
+        run: |
+          set -euo pipefail
+          php -m | grep -qi '^sodium$'
+
+      - name: PHP syntax
+        run: |
+          set -euo pipefail
+          php -l drive/src/Federation/FederationDropConfig.php
+          php -l drive/src/Federation/FederationDropRepository.php
+          php -l drive/src/Federation/FederationDropStorageService.php
+          php -l drive/src/Federation/FederationDropService.php
+          php -l drive/src/Federation/ArcadeLinkService.php
+          php -l drive/src/Federation/FederationService.php
+          php -l drive/src/Http/Controller/FederationDropController.php
+          php -l drive/src/View/FederationDropPageRenderer.php
+          php -l drive/src/View/FederationPageRenderer.php
+          php -l drive/src/Mail/SmtpEmailService.php
+          php -l drive/src/Admin/ManagedRuntimeEnvironment.php
+          php -l drive/bin/arcadecloud-drive-admin-helper.php
+          php -l drive/bin/federation_drop_cleanup.php
+          php -l drive/bin/federation_catalog_migrate.php
+          php -l drive/federationdrop/index.php
+          php -l drive/federationdrop/api.php
+          php -l drive/federationdrop/d.php
+          php -l drive/federationdrop/arcadelink.php
+          php -l drive/tests/federation_drop_contract_smoke.php
+          php -l drive/tests/federationcloud_smoke.php
+          php -l drive/tests/database_schema_contract_smoke.php
+          php -l drive/tests/server_admin_config_smoke.php
+
+      - name: JavaScript syntax
+        run: |
+          set -euo pipefail
+          node --check drive/js/federation-drop.js
+
+      - name: Shell syntax
+        run: |
+          set -euo pipefail
+          bash -n drive/bin/install_federation_drop_cleanup_timer.sh
+          bash -n drive/bin/install_arcadecloud.sh
+          bash -n drive/bin/uninstall_arcadecloud.sh
+
+      - name: FederationDrop contract regression
+        run: |
+          set -euo pipefail
+          php drive/tests/federation_drop_contract_smoke.php
+
+      - name: ArcadeLink cryptographic regression
+        run: |
+          set -euo pipefail
+          php drive/tests/federationcloud_smoke.php
+
+      - name: Canonical DB regression
+        run: |
+          set -euo pipefail
+          php drive/tests/database_schema_contract_smoke.php
+
+      - name: Managed settings regression
+        run: |
+          set -euo pipefail
+          php drive/tests/server_admin_config_smoke.php
+
+      - name: Security boundary checks
+        run: |
+          set -euo pipefail
+          grep -q "PaymentStatus'] !== 'paid'" drive/src/Federation/FederationDropService.php
+          grep -q 'LIMIT 1 FOR UPDATE' drive/src/Federation/FederationDropRepository.php
+          grep -q 'X-ArcadeCloud-Drop-Signature' drive/docs/FEDERATION_DROP.md
+          grep -q 'central_copy' drive/docs/FEDERATION_DROP.md
+          grep -q 'federationdrop/badge.svg' drive/docs/FEDERATION_DROP.md
+          ! grep -R "public-read" drive/src/Federation/FederationDrop*.php
+          ! grep -R "AWS_SECRET_ACCESS_KEY" drive/federationdrop drive/js/federation-drop.js
+
+      - name: Diff check
+        run: |
+          set -euo pipefail
+          git diff --check origin/main...HEAD

@@ -86,6 +86,40 @@ final class ArcadeLinkService
         return $this->signDocument($document);
     }
 
+    public function createDrop(array $drop): array
+    {
+        $dropId = trim((string)($drop['drop_id'] ?? ''));
+        $downloadUrl = trim((string)($drop['download_url'] ?? ''));
+        $expiresAt = trim((string)($drop['expires_at'] ?? ''));
+        if (!preg_match('/\Afdp_[A-Za-z0-9_-]{16,80}\z/', $dropId)) {
+            throw new FederationException('Drop ID ArcadeLink inválido.', 500);
+        }
+        if ($downloadUrl === '' || $expiresAt === '') {
+            throw new FederationException('FederationDrop incompleto para ArcadeLink.', 500);
+        }
+
+        $document = [
+            'format' => 'arcadelink',
+            'version' => 3,
+            'resource_id' => $this->dropResourceId($dropId),
+            'origin_node_id' => $this->identity->nodeId(),
+            'origin' => $this->config->publicUrl(),
+            'federation_url' => $this->config->federationUrl(),
+            'resource_type' => 'drop',
+            'title' => $this->safeText((string)($drop['title'] ?? 'FederationDrop'), 255),
+            'size_bytes' => max(0, (int)($drop['size_bytes'] ?? 0)),
+            'media_type' => $this->safeText((string)($drop['media_type'] ?? 'application/octet-stream'), 128),
+            'visibility' => 'UNLISTED',
+            'rights' => 'copy_allowed',
+            'content_id' => null,
+            'download_url' => $downloadUrl,
+            'expires_at' => $expiresAt,
+            'issued_at' => gmdate(DATE_ATOM),
+        ];
+
+        return $this->signDocument($document);
+    }
+
     /**
      * @param array<int,array<string,mixed>> $documents
      */
@@ -151,6 +185,8 @@ final class ArcadeLinkService
             $this->validateFileDocument($document);
         } elseif ($version === 2) {
             $this->validateCollectionDocument($document);
+        } elseif ($version === 3) {
+            $this->validateDropDocument($document);
         } else {
             throw new FederationException('Versión ArcadeLink no soportada.');
         }
@@ -238,6 +274,16 @@ final class ArcadeLinkService
         }
         $message = 'arcadelink:v1:stable-resource:' . $userId . ':' . $storageRef;
         $digest = hash_hmac('sha256', $message, $this->identity->payloadKey(), true);
+        return 'arl_' . FederationCodec::base64UrlEncode(substr($digest, 0, 18));
+    }
+
+    public function dropResourceId(string $dropId): string
+    {
+        $dropId = trim($dropId);
+        if (!preg_match('/\Afdp_[A-Za-z0-9_-]{16,80}\z/', $dropId)) {
+            throw new FederationException('Drop ID inválido.');
+        }
+        $digest = hash('sha256', 'arcadelink:v3:drop:' . $this->identity->nodeId() . ':' . $dropId, true);
         return 'arl_' . FederationCodec::base64UrlEncode(substr($digest, 0, 18));
     }
 
@@ -348,6 +394,54 @@ final class ArcadeLinkService
             || !is_string($document['payload']['nonce'] ?? null)
             || !is_string($document['payload']['ciphertext'] ?? null)) {
             throw new FederationException('Payload ArcadeLink inválido.');
+        }
+    }
+
+    private function validateDropDocument(array $document): void
+    {
+        $requiredStrings = [
+            'format' => 32,
+            'resource_id' => 96,
+            'origin_node_id' => 96,
+            'origin' => 2048,
+            'federation_url' => 2048,
+            'resource_type' => 32,
+            'title' => 255,
+            'media_type' => 128,
+            'visibility' => 16,
+            'rights' => 64,
+            'download_url' => 2048,
+            'expires_at' => 64,
+            'issued_at' => 64,
+        ];
+        foreach ($requiredStrings as $field => $max) {
+            if (!is_string($document[$field] ?? null) || $document[$field] === '' || strlen($document[$field]) > $max) {
+                throw new FederationException('Campo ArcadeLink FederationDrop inválido: ' . $field . '.');
+            }
+        }
+        if ($document['format'] !== 'arcadelink'
+            || (int)($document['version'] ?? 0) !== 3
+            || $document['resource_type'] !== 'drop'
+            || $document['visibility'] !== 'UNLISTED'
+            || $document['rights'] !== 'copy_allowed') {
+            throw new FederationException('Formato ArcadeLink FederationDrop inválido.');
+        }
+        if (!preg_match('/\Aarl_[A-Za-z0-9_-]{16,80}\z/', $document['resource_id'])
+            || !preg_match('/\Aacn_[A-Za-z0-9_-]{16,80}\z/', $document['origin_node_id'])) {
+            throw new FederationException('Identidad ArcadeLink FederationDrop inválida.');
+        }
+        if (!is_int($document['size_bytes'] ?? null) || $document['size_bytes'] < 0 || ($document['content_id'] ?? null) !== null) {
+            throw new FederationException('Metadatos ArcadeLink FederationDrop inválidos.');
+        }
+        $this->validatePublicUrls($document);
+        $parts = parse_url((string)$document['download_url']);
+        if (!is_array($parts) || !isset($parts['scheme'], $parts['host'])
+            || !in_array(strtolower((string)$parts['scheme']), ['http','https'], true)
+            || isset($parts['user']) || isset($parts['pass'])) {
+            throw new FederationException('URL de descarga FederationDrop inválida.');
+        }
+        if (strtotime((string)$document['expires_at']) === false) {
+            throw new FederationException('Vencimiento FederationDrop inválido.');
         }
     }
 

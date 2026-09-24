@@ -23,6 +23,19 @@ final class ManagedRuntimeEnvironment
         'ARCADECLOUD_FEDERATION_REPLICA_ROLE' => ['secret' => false, 'group' => 'FederationCloud avanzado'],
         'ARCADECLOUD_FEDERATION_REPLICA_SCOPE' => ['secret' => false, 'group' => 'FederationCloud avanzado'],
 
+        'ARCADECLOUD_DROP_ENABLED' => ['secret' => false, 'group' => 'FederationDrop'],
+        'ARCADECLOUD_DROP_PUBLIC_URL' => ['secret' => false, 'group' => 'FederationDrop'],
+        'ARCADECLOUD_DROP_CHECKOUT_URL' => ['secret' => false, 'group' => 'FederationDrop'],
+        'ARCADECLOUD_DROP_WEBHOOK_SECRET' => ['secret' => true, 'group' => 'FederationDrop', 'required' => true],
+        'ARCADECLOUD_DROP_CURRENCY' => ['secret' => false, 'group' => 'FederationDrop'],
+        'ARCADECLOUD_DROP_BASE_FEE_CENTS' => ['secret' => false, 'group' => 'FederationDrop'],
+        'ARCADECLOUD_DROP_STORAGE_GB_DAY_CENTS' => ['secret' => false, 'group' => 'FederationDrop'],
+        'ARCADECLOUD_DROP_EGRESS_GB_CENTS' => ['secret' => false, 'group' => 'FederationDrop'],
+        'ARCADECLOUD_DROP_PENDING_HOURS' => ['secret' => false, 'group' => 'FederationDrop'],
+        'ARCADECLOUD_DROP_MAX_DAYS' => ['secret' => false, 'group' => 'FederationDrop'],
+        'ARCADECLOUD_DROP_MAX_DOWNLOADS' => ['secret' => false, 'group' => 'FederationDrop'],
+        'ARCADECLOUD_DROP_MAX_FILE_BYTES' => ['secret' => false, 'group' => 'FederationDrop'],
+
         'ARCADECLOUD_SMTP_HOST' => ['secret' => false, 'group' => 'SMTP'],
         'ARCADECLOUD_SMTP_PORT' => ['secret' => false, 'group' => 'SMTP'],
         'ARCADECLOUD_SMTP_SECURE' => ['secret' => false, 'group' => 'SMTP'],
@@ -151,6 +164,12 @@ final class ManagedRuntimeEnvironment
             if ($value === '' && $required && !$allowEmpty) {
                 throw new RuntimeException($name . ' no puede quedar vacío.');
             }
+            if ($name === 'ARCADECLOUD_DROP_WEBHOOK_SECRET') {
+                $value = trim($value);
+                if (strlen($value) < 32 || preg_match('/[\x00-\x1F\x7F]/', $value)) {
+                    throw new RuntimeException('ARCADECLOUD_DROP_WEBHOOK_SECRET debe tener al menos 32 caracteres sin controles.');
+                }
+            }
             return $value;
         }
 
@@ -159,7 +178,7 @@ final class ManagedRuntimeEnvironment
             throw new RuntimeException($name . ' no puede quedar vacío.');
         }
 
-        if (in_array($name, ['ARCADECLOUD_FEDERATION_ENABLED', 'ARCADECLOUD_SMTP_DEBUG'], true)) {
+        if (in_array($name, ['ARCADECLOUD_FEDERATION_ENABLED', 'ARCADECLOUD_DROP_ENABLED', 'ARCADECLOUD_SMTP_DEBUG'], true)) {
             $lower = strtolower($value);
             if (!in_array($lower, ['true', 'false', '1', '0', 'yes', 'no', 'on', 'off'], true)) {
                 throw new RuntimeException($name . ' debe ser true/false.');
@@ -171,6 +190,35 @@ final class ManagedRuntimeEnvironment
             $port = filter_var($value, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1, 'max_range' => 65535]]);
             if ($port === false) throw new RuntimeException($name . ' debe ser un puerto entre 1 y 65535.');
             return (string)$port;
+        }
+
+        if (in_array($name, [
+            'ARCADECLOUD_DROP_BASE_FEE_CENTS',
+            'ARCADECLOUD_DROP_STORAGE_GB_DAY_CENTS',
+            'ARCADECLOUD_DROP_EGRESS_GB_CENTS',
+            'ARCADECLOUD_DROP_PENDING_HOURS',
+            'ARCADECLOUD_DROP_MAX_DAYS',
+            'ARCADECLOUD_DROP_MAX_DOWNLOADS',
+            'ARCADECLOUD_DROP_MAX_FILE_BYTES',
+        ], true)) {
+            if (!preg_match('/\A\d+\z/', $value)) throw new RuntimeException($name . ' debe ser un entero positivo o cero.');
+            $number = (int)$value;
+            $limits = [
+                'ARCADECLOUD_DROP_PENDING_HOURS' => [1, 72],
+                'ARCADECLOUD_DROP_MAX_DAYS' => [1, 3650],
+                'ARCADECLOUD_DROP_MAX_DOWNLOADS' => [1, 1000000],
+                'ARCADECLOUD_DROP_MAX_FILE_BYTES' => [1048576, 5368709120],
+            ];
+            if (isset($limits[$name]) && ($number < $limits[$name][0] || $number > $limits[$name][1])) {
+                throw new RuntimeException($name . ' está fuera del rango permitido.');
+            }
+            return (string)$number;
+        }
+
+        if ($name === 'ARCADECLOUD_DROP_CURRENCY') {
+            $upper = strtoupper($value);
+            if (!preg_match('/\A[A-Z]{3}\z/', $upper)) throw new RuntimeException('ARCADECLOUD_DROP_CURRENCY debe usar código ISO de 3 letras.');
+            return $upper;
         }
 
         if ($name === 'ARCADECLOUD_SMTP_TIMEOUT') {
@@ -222,12 +270,12 @@ final class ManagedRuntimeEnvironment
             throw new RuntimeException($name . ' contiene caracteres de control inválidos.');
         }
 
-        if (in_array($name, ['ARCADECLOUD_PUBLIC_URL', 'ARCADECLOUD_FEDERATION_URL', 'ARCADECLOUD_FEDERATION_SEED_URL', 'ARCADECLOUD_FEDERATION_REPLICA_ORIGIN_URL'], true) && $value !== '') {
+        if (in_array($name, ['ARCADECLOUD_PUBLIC_URL', 'ARCADECLOUD_FEDERATION_URL', 'ARCADECLOUD_FEDERATION_SEED_URL', 'ARCADECLOUD_FEDERATION_REPLICA_ORIGIN_URL', 'ARCADECLOUD_DROP_PUBLIC_URL', 'ARCADECLOUD_DROP_CHECKOUT_URL'], true) && $value !== '') {
             $parts = parse_url($value);
             if (!is_array($parts) || !isset($parts['scheme'], $parts['host'])) {
                 throw new RuntimeException($name . ' debe contener una URL válida.');
             }
-            if ($name !== 'ARCADECLOUD_PUBLIC_URL' && strtolower((string)$parts['scheme']) !== 'https') {
+            if (!in_array($name, ['ARCADECLOUD_PUBLIC_URL'], true) && strtolower((string)$parts['scheme']) !== 'https') {
                 throw new RuntimeException($name . ' debe usar HTTPS.');
             }
             if (isset($parts['user']) || isset($parts['pass']) || isset($parts['query']) || isset($parts['fragment'])) {

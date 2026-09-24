@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="520" height="120" viewBox="0 0 520 120" role="img" aria-labelledby="title desc">
+  <title id="title">Compartir con FederationDrop</title>
+  <desc id="desc">Botón para abrir FederationDrop de ArcadeCloud FederationCloud</desc>
+  <rect x="2" y="2" width="516" height="116" rx="22" fill="#0d1b2a" stroke="#70e1c2" stroke-width="4"/>
+  <path d="M70 79h64c15 0 27-10 27-24s-11-24-25-24c-5-17-20-28-39-28-22 0-40 16-43 37-15 1-26 11-26 25 0 8 4 14 10 18 7 5 16 6 32 6z" fill="#70e1c2"/>
+  <path d="M96 31v36m-15-15 15 15 15-15" fill="none" stroke="#07111f" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="185" y="51" fill="#ffffff" font-family="Arial, sans-serif" font-size="25" font-weight="700">FederationDrop</text>
+  <text x="185" y="82" fill="#9fb0c3" font-family="Arial, sans-serif" font-size="18">Compartir archivo temporal</text>
+</svg>

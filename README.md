@@ -139,6 +139,22 @@ Derechos v1:
 - `user_owned_authorized`;
 - `copy_allowed`.
 
+ArcadeLink mantiene compatibilidad incremental:
+
+- **v1**: un archivo;
+- **v2**: una colección de uno o muchos recursos firmados;
+- **v3**: un FederationDrop temporal pagado con enlace y vencimiento firmados.
+
+## FederationDrop
+
+`/federationdrop/` añade almacenamiento temporal comercial sin exigir una cuenta del Drive. El usuario crea una orden con correo, archivo, duración y máximo de descargas; el pago debe confirmarse **antes** de que el sistema emita una autorización temporal de subida a S3.
+
+Si este nodo cobra, este mismo nodo conserva la copia garantizada. Los nodos FederationCloud normales no reciben automáticamente objetos pagados.
+
+El repositorio incluye `federationdrop/badge.svg` para enlazar el servicio desde dominios externos y un esquema de futuros proveedores comerciales con dominio fijo, capacidad, porcentaje `CommissionBps` y garantía `central_copy` o `dual_replica`. La colocación comercial externa permanece desactivada en esta primera fase.
+
+El procesador de pago concreto es intercambiable: FederationDrop expone un contrato de checkout + webhook HMAC y no incorpora una pasarela ficticia. Consulta `drive/docs/FEDERATION_DROP.md`.
+
 ## FederationCloud
 
 Cada instalación puede tener identidad propia:
@@ -394,6 +410,7 @@ composer install --no-dev --optimize-autoloader
 - `drive/docs/FEDERATED_CLOUD_STATUS.md`: estado actual de la evolución hacia cloud federado.
 - `drive/docs/FEDERATIONCLOUD.md`: protocolo ArcadeLink/FederationCloud, seguridad y roadmap.
 - `drive/docs/FEDERATION_PROVIDER_APPROVALS.md`: autorización de proveedores.
+- `drive/docs/FEDERATION_DROP.md`: almacenamiento temporal pagado, custodia, webhook de pago, badge y proveedores comerciales.
 - `drive/docs/FEDERATION_NODE_RECOVERY.md`: continuidad y recuperación de identidad.
 - `drive/docs/RELEASE_V1_OOP.md`: baseline histórico del cierre OOP.
 - `drive/docs/ACTIVITY_COSTS.md`: auditoría y costos.

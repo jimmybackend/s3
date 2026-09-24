@@ -137,6 +137,40 @@ final class FederationService
         $this->ensureEnabled();
         $document = $this->links->parse($raw);
 
+        if ((int)($document['version'] ?? 0) === 3
+            && (string)($document['resource_type'] ?? '') === 'drop') {
+            $expiresAt = (string)($document['expires_at'] ?? '');
+            $available = $expiresAt !== '' && strtotime($expiresAt) !== false && strtotime($expiresAt) > time();
+            return [
+                'document' => $document,
+                'collection' => false,
+                'item_count' => 1,
+                'resource' => [
+                    'status' => $available ? 'available' : 'not_available',
+                    'resource_id' => (string)$document['resource_id'],
+                    'title' => (string)$document['title'],
+                    'resource_type' => 'drop',
+                    'size_bytes' => (int)$document['size_bytes'],
+                    'media_type' => (string)$document['media_type'],
+                    'origin_node_id' => (string)$document['origin_node_id'],
+                    'origin' => (string)$document['origin'],
+                    'federation_url' => (string)$document['federation_url'],
+                    'visibility' => 'UNLISTED',
+                    'rights' => 'copy_allowed',
+                    'content_id' => null,
+                    'issued_at' => (string)$document['issued_at'],
+                    'expires_at' => $expiresAt,
+                    'signature_valid' => true,
+                    'can_open' => $available,
+                    'can_download' => $available,
+                    'can_save' => false,
+                    'local' => hash_equals($this->identity->nodeId(), (string)$document['origin_node_id']),
+                    'external_url' => $available ? (string)$document['download_url'] : null,
+                ],
+                'raw' => $this->links->encode($document, false),
+            ];
+        }
+
         if ((int)($document['version'] ?? 0) === 2
             && (string)($document['resource_type'] ?? '') === 'collection') {
             $items = [];

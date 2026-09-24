@@ -64,6 +64,10 @@ $requiredTables = [
     'FederationReplicaJobs',
     'FederationReplicaObjects',
     'FederationIngressQueue',
+    'FederationDrops',
+    'FederationDropPaymentEvents',
+    'FederationCommercialProviders',
+    'FederationDropPlacements',
 ];
 
 $check = $db->prepare(

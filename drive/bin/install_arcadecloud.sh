@@ -430,6 +430,10 @@ PY
       --app-root="$APP_ROOT" \
       --interval-sec=120
 
+    bash "$WEBROOT/bin/install_federation_drop_cleanup_timer.sh" \
+      --run-user="$PHP_USER" \
+      --app-root="$APP_ROOT"
+
     if systemctl start arcadecloud-federation-sync.service; then
       echo "✓ Primera sincronización FederationCloud ejecutada."
     else

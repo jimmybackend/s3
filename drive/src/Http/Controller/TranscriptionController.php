@@ -35,6 +35,15 @@ final class TranscriptionController extends AbstractJsonController
                 [
                     'phase' => 'started',
                     'status' => (string)($result['status'] ?? 'UNKNOWN'),
+                    'job_name' => $jobName,
+                    'output_name' => (string)($result['driveOutputName'] ?? ''),
+                    'aws_output_key' => (string)($result['awsOutputJsonKey'] ?? ''),
+                    'drive_output_key' => (string)($result['driveOutputJsonKey'] ?? ''),
+                    'output_route' => (string)($result['rutaDestino'] ?? ''),
+                    'subtitle_formats' => is_array($result['subtitleFormats'] ?? null)
+                        ? $result['subtitleFormats']
+                        : [],
+                    'task_center_updated_at' => gmdate('c'),
                 ],
                 ActivityCostRecorder::correlation('transcribe', $jobName)
             );

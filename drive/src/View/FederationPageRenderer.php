@@ -161,6 +161,19 @@ final class FederationPageRenderer
           $mediaType = strtolower(trim((string)($resource['media_type'] ?? $resource['resource_type'] ?? 'application/octet-stream')));
           $status = (string)($resource['status'] ?? '');
           $fileIcon = $iconFor($resource);
+          $resourceId = trim((string)($resource['resource_id'] ?? ''));
+          $isPublicCopy = strtoupper((string)($resource['visibility'] ?? '')) === 'PUBLIC'
+              && (string)($resource['rights'] ?? '') === 'copy_allowed'
+              && $resourceId !== '';
+          $dropResourceUrl = $dropConfig->commerceUrl !== '' && $isPublicCopy
+              ? rtrim($dropConfig->commerceUrl, '/') . '/?' . http_build_query([
+                  'source' => $sourceHost,
+                  'resource_id' => $resourceId,
+              ], '', '&', PHP_QUERY_RFC3986)
+              : '';
+          $copyResourceUrl = $isPublicCopy
+              ? './portal.php?view=search&q=' . rawurlencode($resourceId)
+              : '';
       ?>
         <section class="federation-card mb-3">
           <div class="federation-resource">
@@ -200,6 +213,16 @@ final class FederationPageRenderer
               <?php elseif (empty($resource['local']) && !empty($resource['origin_reachable'])): ?>
                 <a class="btn btn-primary" rel="noopener noreferrer" href="<?= $h($resource['federation_url'] ?? '#') ?>">
                   <i class="fas fa-network-wired mr-1"></i> Ir al nodo
+                </a>
+              <?php endif; ?>
+              <?php if ($isPublicCopy && $copyResourceUrl !== ''): ?>
+                <a class="btn btn-outline-info" href="<?= $h($copyResourceUrl) ?>">
+                  <i class="fas fa-folder-plus mr-1"></i> Copiar a Mi Drive
+                </a>
+              <?php endif; ?>
+              <?php if ($isPublicCopy && $dropResourceUrl !== ''): ?>
+                <a class="btn btn-outline-warning" rel="noopener noreferrer" href="<?= $h($dropResourceUrl) ?>">
+                  <i class="fas fa-clock mr-1"></i> FederationDrop temporal
                 </a>
               <?php endif; ?>
             </div>

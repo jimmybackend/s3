@@ -21,7 +21,8 @@ final class FederationPortalRenderer
         $nodeId = is_array($node) ? (string)($node['node_id'] ?? '') : '';
         $dropConfig = FederationDropConfig::fromEnvironment();
         $sourceHost = (string)(parse_url((string)getenv('ARCADECLOUD_PUBLIC_URL'), PHP_URL_HOST) ?: '');
-        $dropUrl = rtrim($dropConfig->commerceUrl, '/') . '/?source=' . rawurlencode($sourceHost);
+        $dropCommerceBase = rtrim($dropConfig->commerceUrl, '/');
+        $dropUrl = $dropCommerceBase . '/?source=' . rawurlencode($sourceHost);
         ?>
 <!doctype html>
 <html lang="es">
@@ -38,7 +39,10 @@ final class FederationPortalRenderer
   <link rel="stylesheet" href="../css/federation-portal.css?v=<?= $portalCssVersion ?>">
   <script defer src="../js/theme-state-bridge.js?v=<?= $themeBridgeVersion ?>"></script>
 </head>
-<body class="ui-theme theme-neon-green theme-dark vision-normal ascii-on federation-portal-body" data-federation-node-id="<?= $h($nodeId) ?>">
+<body class="ui-theme theme-neon-green theme-dark vision-normal ascii-on federation-portal-body"
+  data-federation-node-id="<?= $h($nodeId) ?>"
+  data-federation-drop-url="<?= $h($dropCommerceBase) ?>"
+  data-federation-drop-source="<?= $h($sourceHost) ?>">
 <nav class="navbar navbar-expand-lg navbar-dark px-3 drive-navbar">
   <a class="navbar-brand d-flex align-items-center" href="../s3.php" title="Volver al Drive">
     <img src="../ellogo.png" width="48" height="38" class="drive-brand-logo mr-2" alt="Logo">

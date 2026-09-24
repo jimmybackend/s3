@@ -4,7 +4,6 @@ declare(strict_types=1);
 namespace ArcadeCloud\Drive\Federation;
 
 use ArcadeCloud\Drive\Core\DriveApplication;
-use ArcadeCloud\Drive\Mail\SmtpEmailService;
 use ArcadeCloud\Drive\View\FileViewHelper;
 
 final class FederationModerationService
@@ -96,7 +95,11 @@ final class FederationModerationService
             $email
         );
 
-        $this->notifySuperAdmins($row, (string)($target['Title'] ?? $targetId));
+        $this->audit('report.created', $contentId ?? '', $reportId, null, [
+            'target_type' => $targetType,
+            'target_id' => $targetId,
+            'category' => $category,
+        ]);
         return [
             'ok' => true,
             'report_id' => $reportId,
@@ -290,23 +293,6 @@ final class FederationModerationService
         } catch (\Throwable $e) {
             error_log('[Federation moderation delete] ' . $e->getMessage());
             return 0;
-        }
-    }
-
-    private function notifySuperAdmins(array $report, string $title): void
-    {
-        foreach ($this->repository->superAdminEmails() as $email) {
-            try {
-                SmtpEmailService::fromEnvironment()->sendFederationModerationAlert(
-                    $email,
-                    (string)$report['ReportId'],
-                    $title,
-                    (string)$report['Category'],
-                    (string)$report['Details']
-                );
-            } catch (\Throwable $e) {
-                error_log('[Federation moderation mail] ' . $e->getMessage());
-            }
         }
     }
 

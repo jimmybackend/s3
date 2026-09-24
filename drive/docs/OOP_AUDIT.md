@@ -4,10 +4,10 @@
 
 ## Resumen
 
-- PHP analizados: **401**
-- PHP que ya contienen clases/interfaces: **240**
+- PHP analizados: **411**
+- PHP que ya contienen clases/interfaces: **246**
 - PHP marcados para migración/revisión: **0**
-- Tests PHP separados del objetivo OOP de runtime: **32**
+- Tests PHP separados del objetivo OOP de runtime: **33**
 - JavaScript analizados: **47**
 - JavaScript que ya contienen clases: **47**
 - JavaScript sin clase/encapsulación OOP: **0**
@@ -32,9 +32,9 @@
 | `drive/app_bootstrap.php` | 53 | bootstrap | 0 | — | ⚠️ | — | — |
 | `drive/aws.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/background_tasks.php` | 18 | thin endpoint | 0 | — | — | — | — |
-| `drive/bin/arcadecloud-drive-admin-helper.php` | 616 | class/module | 1 | — | ⚠️ | — | — |
+| `drive/bin/arcadecloud-drive-admin-helper.php` | 620 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/bin/arcadecloud-drive-updater.php` | 207 | class/module | 1 | — | — | — | — |
-| `drive/bin/federation_catalog_migrate.php` | 105 | thin cli entrypoint | 0 | — | ⚠️ | — | — |
+| `drive/bin/federation_catalog_migrate.php` | 107 | thin cli entrypoint | 0 | — | ⚠️ | — | — |
 | `drive/bin/federation_drop_cleanup.php` | 19 | thin cli entrypoint | 0 | — | — | — | — |
 | `drive/bin/federation_endpoint_refresh.php` | 87 | thin cli entrypoint | 0 | — | — | — | — |
 | `drive/bin/federation_https_reconcile.php` | 474 | class/module | 1 | — | — | — | — |
@@ -104,6 +104,9 @@
 | `drive/federationdrop/api.php` | 11 | thin endpoint | 0 | — | — | — | — |
 | `drive/federationdrop/arcadelink.php` | 11 | thin endpoint | 0 | — | — | — | — |
 | `drive/federationdrop/d.php` | 11 | thin endpoint | 0 | — | — | — | — |
+| `drive/federationdrop/google-callback.php` | 11 | thin endpoint | 0 | — | — | — | — |
+| `drive/federationdrop/google-login.php` | 11 | thin endpoint | 0 | — | — | — | — |
+| `drive/federationdrop/google-logout.php` | 11 | thin endpoint | 0 | — | — | — | — |
 | `drive/federationdrop/index.php` | 11 | thin endpoint | 0 | — | — | — | — |
 | `drive/generar_token.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/guardar_texto.php` | 8 | thin endpoint | 0 | — | — | — | — |
@@ -143,7 +146,7 @@
 | `drive/src/Activity/TranscriptionCostAttribution.php` | 117 | class/module | 1 | — | — | — | — |
 | `drive/src/Activity/TranscriptionReconciler.php` | 315 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Admin/ArcadeCloudUpdaterService.php` | 85 | class/module | 1 | — | ⚠️ | — | — |
-| `drive/src/Admin/ManagedRuntimeEnvironment.php` | 296 | class/module | 1 | — | — | — | — |
+| `drive/src/Admin/ManagedRuntimeEnvironment.php` | 322 | class/module | 1 | — | — | — | — |
 | `drive/src/Admin/PrivilegedServerHelper.php` | 150 | class/module | 1 | — | — | — | — |
 | `drive/src/Admin/ServerSettingsAdminService.php` | 211 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Application/AiFileSearchService.php` | 470 | class/module | 1 | — | ⚠️ | — | — |
@@ -199,13 +202,18 @@
 | `drive/src/Federation/FederationConfig.php` | 129 | class/module | 1 | — | — | — | — |
 | `drive/src/Federation/FederationCustomsService.php` | 248 | class/module | 1 | — | — | — | — |
 | `drive/src/Federation/FederationDirectoryService.php` | 158 | class/module | 1 | — | — | — | — |
+| `drive/src/Federation/FederationDropAccountRepository.php` | 145 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Federation/FederationDropConfig.php` | 130 | class/module | 1 | — | — | — | — |
+| `drive/src/Federation/FederationDropEncryptedCookie.php` | 99 | class/module | 1 | — | — | — | — |
+| `drive/src/Federation/FederationDropGoogleAuthConfig.php` | 113 | class/module | 1 | — | — | — | — |
+| `drive/src/Federation/FederationDropGoogleAuthService.php` | 272 | class/module | 1 | — | — | — | — |
+| `drive/src/Federation/FederationDropGoogleOidcClient.php` | 374 | class/module | 1 | — | — | — | — |
 | `drive/src/Federation/FederationDropIngressCodec.php` | 111 | class/module | 1 | — | — | — | — |
 | `drive/src/Federation/FederationDropIngressDownloader.php` | 82 | class/module | 1 | — | — | — | — |
 | `drive/src/Federation/FederationDropIngressRepository.php` | 291 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Federation/FederationDropIngressService.php` | 395 | class/module | 1 | — | — | — | — |
-| `drive/src/Federation/FederationDropRepository.php` | 443 | class/module | 1 | — | ⚠️ | — | — |
-| `drive/src/Federation/FederationDropService.php` | 817 | class/module | 1 | — | — | — | — |
+| `drive/src/Federation/FederationDropRepository.php` | 452 | class/module | 1 | — | ⚠️ | — | — |
+| `drive/src/Federation/FederationDropService.php` | 833 | class/module | 1 | — | — | — | — |
 | `drive/src/Federation/FederationDropStorageService.php` | 130 | class/module | 1 | — | — | — | — |
 | `drive/src/Federation/FederationDropStripeCheckoutService.php` | 245 | class/module | 1 | — | — | — | — |
 | `drive/src/Federation/FederationDropStripeClient.php` | 109 | class/module | 1 | — | — | — | — |
@@ -261,7 +269,8 @@
 | `drive/src/Http/Controller/FederationCollectionController.php` | 131 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/FederationController.php` | 275 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/FederationDirectoryController.php` | 88 | class/module | 1 | — | — | — | — |
-| `drive/src/Http/Controller/FederationDropController.php` | 206 | class/module | 1 | — | — | — | — |
+| `drive/src/Http/Controller/FederationDropController.php` | 234 | class/module | 1 | — | — | — | — |
+| `drive/src/Http/Controller/FederationDropGoogleAuthController.php` | 120 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/FederationDropIngressController.php` | 108 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/FederationNodeAdminController.php` | 46 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/FederationPortalController.php` | 41 | class/module | 1 | — | — | — | — |
@@ -297,7 +306,7 @@
 | `drive/src/Http/Controller/UploadController.php` | 271 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/UserProfileController.php` | 115 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/JsonResponse.php` | 27 | class/module | 1 | — | — | — | — |
-| `drive/src/Http/Request.php` | 112 | class/module | 1 | — | — | — | — |
+| `drive/src/Http/Request.php` | 122 | class/module | 1 | — | — | — | — |
 | `drive/src/Mail/SmtpConfig.php` | 120 | class/module | 1 | — | — | — | — |
 | `drive/src/Mail/SmtpEmailService.php` | 346 | class/module | 1 | — | — | — | — |
 | `drive/src/Media/MediaPlaylistRepository.php` | 49 | class/module | 1 | — | ⚠️ | — | — |
@@ -351,7 +360,7 @@
 | `drive/src/Upload/UploadCleanupService.php` | 316 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/View/ActivityCostPageRenderer.php` | 396 | class/module | 1 | — | — | — | — |
 | `drive/src/View/Ec2PanelHelper.php` | 69 | class/module | 1 | — | — | — | — |
-| `drive/src/View/FederationDropPageRenderer.php` | 194 | class/module | 1 | — | — | — | — |
+| `drive/src/View/FederationDropPageRenderer.php` | 228 | class/module | 1 | — | — | — | — |
 | `drive/src/View/FederationPageRenderer.php` | 264 | class/module | 1 | — | — | — | — |
 | `drive/src/View/FederationPortalRenderer.php` | 169 | class/module | 1 | — | — | — | — |
 | `drive/src/View/FileIconResolver.php` | 136 | class/module | 1 | — | — | — | — |
@@ -371,12 +380,13 @@
 | `drive/tests/activity_costs_smoke.php` | 150 | test script | 0 | — | — | — | — |
 | `drive/tests/arcadelink_bulk_contract_regression.php` | 71 | test script | 0 | — | — | — | — |
 | `drive/tests/arcadelink_collection_regression.php` | 46 | test script | 0 | — | — | — | — |
-| `drive/tests/database_schema_contract_smoke.php` | 100 | test script | 0 | — | — | — | — |
+| `drive/tests/database_schema_contract_smoke.php` | 102 | test script | 0 | — | — | — | — |
 | `drive/tests/federation_access_message_smoke.php` | 72 | test script | 0 | — | — | — | — |
 | `drive/tests/federation_catalog_event_smoke.php` | 60 | test script | 0 | — | — | — | — |
 | `drive/tests/federation_customs_contract_smoke.php` | 80 | test script | 0 | — | — | — | — |
 | `drive/tests/federation_directory_smoke.php` | 102 | test script | 0 | — | — | — | — |
-| `drive/tests/federation_drop_contract_smoke.php` | 98 | test script | 0 | — | — | — | — |
+| `drive/tests/federation_drop_contract_smoke.php` | 115 | test script | 0 | — | — | — | — |
+| `drive/tests/federation_drop_google_oidc_smoke.php` | 159 | test script | 0 | — | — | — | — |
 | `drive/tests/federation_drop_ingress_smoke.php` | 117 | test script | 0 | — | — | — | — |
 | `drive/tests/federation_drop_stripe_smoke.php` | 97 | test script | 0 | — | — | — | — |
 | `drive/tests/federation_endpoint_resolver_smoke.php` | 95 | test script | 0 | — | — | — | — |
@@ -390,7 +400,7 @@
 | `drive/tests/password_credential_verifier_smoke.php` | 44 | test script | 0 | — | — | — | — |
 | `drive/tests/scoped_sync_repository_regression.php` | 96 | test script | 0 | — | ⚠️ | — | — |
 | `drive/tests/security_hardening_smoke.php` | 59 | test script | 0 | — | — | — | — |
-| `drive/tests/server_admin_config_smoke.php` | 165 | test script | 0 | — | — | — | — |
+| `drive/tests/server_admin_config_smoke.php` | 209 | test script | 0 | — | — | — | — |
 | `drive/tests/setup_bootstrap_smoke.php` | 57 | test script | 0 | — | — | — | — |
 | `drive/tests/setup_entry_guard_smoke.php` | 38 | test script | 0 | — | — | — | — |
 | `drive/tests/setup_finalize_contract_smoke.php` | 70 | test script | 0 | — | — | — | — |

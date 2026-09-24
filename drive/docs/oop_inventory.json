@@ -1,9 +1,9 @@
 {
   "summary": {
-    "php_total": 401,
-    "php_class_modules": 240,
+    "php_total": 411,
+    "php_class_modules": 246,
     "php_needs_migration": 0,
-    "php_tests": 32,
+    "php_tests": 33,
     "js_total": 47,
     "js_class_modules": 47,
     "js_needs_migration": 0,
@@ -102,7 +102,7 @@
     },
     {
       "path": "drive/bin/arcadecloud-drive-admin-helper.php",
-      "lines": 616,
+      "lines": 620,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -132,7 +132,7 @@
     },
     {
       "path": "drive/bin/federation_catalog_migrate.php",
-      "lines": 105,
+      "lines": 107,
       "kind": "thin cli entrypoint",
       "classes": 0,
       "functions": [],
@@ -1195,6 +1195,51 @@
       "issues": []
     },
     {
+      "path": "drive/federationdrop/google-callback.php",
+      "lines": 11,
+      "kind": "thin endpoint",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/federationdrop/google-login.php",
+      "lines": 11,
+      "kind": "thin endpoint",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/federationdrop/google-logout.php",
+      "lines": 11,
+      "kind": "thin endpoint",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
       "path": "drive/federationdrop/index.php",
       "lines": 11,
       "kind": "thin endpoint",
@@ -1788,7 +1833,7 @@
     },
     {
       "path": "drive/src/Admin/ManagedRuntimeEnvironment.php",
-      "lines": 296,
+      "lines": 322,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -2629,8 +2674,83 @@
       "issues": []
     },
     {
+      "path": "drive/src/Federation/FederationDropAccountRepository.php",
+      "lines": 145,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": true,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
       "path": "drive/src/Federation/FederationDropConfig.php",
       "lines": 130,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Federation/FederationDropEncryptedCookie.php",
+      "lines": 99,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Federation/FederationDropGoogleAuthConfig.php",
+      "lines": 113,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Federation/FederationDropGoogleAuthService.php",
+      "lines": 272,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Federation/FederationDropGoogleOidcClient.php",
+      "lines": 374,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -2705,7 +2825,7 @@
     },
     {
       "path": "drive/src/Federation/FederationDropRepository.php",
-      "lines": 443,
+      "lines": 452,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -2720,7 +2840,7 @@
     },
     {
       "path": "drive/src/Federation/FederationDropService.php",
-      "lines": 817,
+      "lines": 833,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -3562,7 +3682,22 @@
     },
     {
       "path": "drive/src/Http/Controller/FederationDropController.php",
-      "lines": 206,
+      "lines": 234,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Http/Controller/FederationDropGoogleAuthController.php",
+      "lines": 120,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -4102,12 +4237,13 @@
     },
     {
       "path": "drive/src/Http/Request.php",
-      "lines": 112,
+      "lines": 122,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
       "session": false,
       "superglobals": [
+        "COOKIE",
         "FILES",
         "GET",
         "POST",
@@ -4926,7 +5062,7 @@
     },
     {
       "path": "drive/src/View/FederationDropPageRenderer.php",
-      "lines": 194,
+      "lines": 228,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -5234,7 +5370,7 @@
     },
     {
       "path": "drive/tests/database_schema_contract_smoke.php",
-      "lines": 100,
+      "lines": 102,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -5319,12 +5455,31 @@
     },
     {
       "path": "drive/tests/federation_drop_contract_smoke.php",
-      "lines": 98,
+      "lines": 115,
       "kind": "test script",
       "classes": 0,
       "functions": [
         "dropSource",
         "dropOk"
+      ],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/tests/federation_drop_google_oidc_smoke.php",
+      "lines": 159,
+      "kind": "test script",
+      "classes": 0,
+      "functions": [
+        "googleDropOk",
+        "googleDropB64u",
+        "googleDropJsonB64u"
       ],
       "session": false,
       "superglobals": [],
@@ -5551,7 +5706,7 @@
     },
     {
       "path": "drive/tests/server_admin_config_smoke.php",
-      "lines": 165,
+      "lines": 209,
       "kind": "test script",
       "classes": 0,
       "functions": [

@@ -114,6 +114,17 @@ try {
         ];
         error_log('[FederationDrop public source sync] ' . $e->getMessage());
     }
+    try {
+        // Los uploads pagados pueden entrar por un nodo comercial cercano.
+        // El worker los migra a la custodia central antes de activar el Drop.
+        $result['drop_ingress'] = (new FederationDropService($app))->syncPaidIngressSources(2);
+    } catch (Throwable $e) {
+        $result['drop_ingress'] = [
+            'degraded' => true,
+            'error' => 'FederationDrop no pudo centralizar uploads ingress en este ciclo.',
+        ];
+        error_log('[FederationDrop ingress sync] ' . $e->getMessage());
+    }
     echo json_encode($result, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . "\n";
 } catch (Throwable $e) {
     fwrite(STDERR, "FederationCloud sync error: {$e->getMessage()}\n");

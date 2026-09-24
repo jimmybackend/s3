@@ -50,7 +50,14 @@ final class MediaWorkerNodeService
             ];
         }
 
-        $instance = $this->ec2->getInstance($this->instanceId);
+        try {
+            $instance = $this->ec2->getInstance($this->instanceId);
+        } catch (\Throwable $e) {
+            error_log('[ArcadeCloud media-node] EC2 describe failed: ' . $e->getMessage());
+            throw new RuntimeException(
+                'No se pudo consultar la EC2 multimedia. El superusuario debe revisar región y permisos IAM.'
+            );
+        }
         if (!is_array($instance)) {
             throw new RuntimeException('La EC2 configurada para procesamiento multimedia no existe o no es accesible.');
         }
@@ -117,7 +124,10 @@ final class MediaWorkerNodeService
                 $this->ec2?->start($this->instanceId);
             } catch (\Throwable $e) {
                 $this->sessions->markFailed((string)$session['session_id'], $e->getMessage());
-                throw $e;
+                error_log('[ArcadeCloud media-node] EC2 start failed: ' . $e->getMessage());
+                throw new RuntimeException(
+                    'No se pudo encender el nodo multimedia. El superusuario debe revisar los permisos ec2:StartInstances.'
+                );
             }
 
             $status['state'] = 'pending';

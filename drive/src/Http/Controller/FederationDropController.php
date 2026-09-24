@@ -65,6 +65,13 @@ final class FederationDropController
                 ), 201);
             }
 
+            if ($action === 'upload-authorize' && $this->request->method() === 'POST') {
+                JsonResponse::send($service->authorizeUpload(
+                    $this->request->postString('drop_id'),
+                    $this->request->postString('owner_token')
+                ));
+            }
+
             if ($action === 'upload-complete' && $this->request->method() === 'POST') {
                 JsonResponse::send($service->completeUpload(
                     $this->request->postString('drop_id'),

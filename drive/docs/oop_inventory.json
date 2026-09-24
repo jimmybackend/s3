@@ -1286,7 +1286,7 @@
     },
     {
       "path": "drive/index.php",
-      "lines": 299,
+      "lines": 516,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -5661,7 +5661,7 @@
     },
     {
       "path": "drive/tests/index_federation_drop_smoke.php",
-      "lines": 107,
+      "lines": 110,
       "kind": "test script",
       "classes": 0,
       "functions": [

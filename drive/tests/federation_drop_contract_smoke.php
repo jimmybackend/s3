@@ -54,7 +54,7 @@ dropOk(str_contains($googleAuth, 'code_challenge') || str_contains($googleAuth, 
 dropOk(str_contains($googleAuth, 'SESSION_COOKIE'), 'Google FederationDrop uses its own encrypted session cookie.');
 dropOk(str_contains($googleAccounts, "Provider='google'"), 'Google identity is stored separately from Drive Users.');
 dropOk(str_contains($controller, 'googleOwnerIdentity'), 'Order creation can use verified Google identity.');
-dropOk(str_contains($controller, "owner !== null ? (string)$owner['email']"), 'Verified Google email overrides browser-supplied owner email.');
+dropOk(str_contains($controller, 'owner !== null ? (string)$owner[\'email\']'), 'Verified Google email overrides browser-supplied owner email.');
 dropOk(str_contains($service, 'authorizeUpload('), 'Upload authorization is separated from order creation.');
 dropOk(str_contains($service, 'createPublicResourceOrder('), 'Public Federation resources can become paid Drops without browser re-upload.');
 dropOk(str_contains($service, 'syncPaidPublicSources('), 'Paid public Drops are materialized cloud-to-cloud.');

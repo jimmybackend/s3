@@ -114,7 +114,7 @@ final class FederationDropIngressRepository
         $stmt = $this->db->prepare(
             "SELECT IngressId FROM FederationDropIngressObjects
              WHERE DropId=? AND Status IN ('authorized','uploaded','pulling')
-             ORDER BY CreatedAt DESC LIMIT 1"
+             ORDER BY FIELD(Status,'pulling','uploaded','authorized'), CreatedAt DESC LIMIT 1"
         );
         if (!$stmt) return null;
         $stmt->bind_param('s', $dropId);
@@ -212,6 +212,26 @@ final class FederationDropIngressRepository
         $stmt->bind_param('s', $ingressId);
         $stmt->execute();
         $stmt->close();
+    }
+
+    public function staleLocalObjects(int $days = 7, int $limit = 20): array
+    {
+        $days = max(1, min(30, $days));
+        $limit = max(1, min(100, $limit));
+        $sql = "SELECT IngressId, S3Key
+                FROM FederationDropIngressObjects
+                WHERE S3Key IS NOT NULL
+                  AND S3Key <> ''
+                  AND Status IN ('authorized','uploaded','failed')
+                  AND CreatedAt <= DATE_SUB(UTC_TIMESTAMP(6), INTERVAL {$days} DAY)
+                ORDER BY CreatedAt ASC
+                LIMIT {$limit}";
+        $result = $this->db->query($sql);
+        if (!$result) throw new FederationException('No se pudieron consultar ingress temporales vencidos.', 500);
+        $rows = [];
+        while ($row = $result->fetch_assoc()) $rows[] = $row;
+        $result->free();
+        return $rows;
     }
 
     public function markDeleted(string $ingressId): void

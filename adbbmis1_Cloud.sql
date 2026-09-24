@@ -2274,6 +2274,26 @@ CREATE TABLE IF NOT EXISTS FederationShareImportJobs (
   KEY idx_fshare_import_user (UserId, ShareId, UpdatedAt)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS FederationPublicImportJobs (
+  ImportId varchar(96) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  UserId int NOT NULL,
+  ResourceId varchar(96) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  VersionKey char(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  Status enum('queued','processing','retry','completed','failed') NOT NULL DEFAULT 'queued',
+  Attempts int unsigned NOT NULL DEFAULT 0,
+  LastAttemptAt datetime(6) DEFAULT NULL,
+  NextAttemptAt datetime(6) DEFAULT NULL,
+  LastError varchar(512) DEFAULT NULL,
+  LocalFileId int DEFAULT NULL,
+  SourcesUsed tinyint unsigned NOT NULL DEFAULT 0,
+  CreatedAt datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+  UpdatedAt datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
+  PRIMARY KEY (ImportId),
+  UNIQUE KEY uq_fpublic_import_version (UserId, ResourceId, VersionKey),
+  KEY idx_fpublic_import_due (Status, NextAttemptAt, CreatedAt),
+  KEY idx_fpublic_import_user (UserId, ResourceId, UpdatedAt)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- Portable upgrades for existing installations.
 -- Do not use `ADD COLUMN IF NOT EXISTS`: that syntax differs across MySQL/MariaDB versions.
 -- information_schema + prepared statements keeps this migration idempotent on both engines.

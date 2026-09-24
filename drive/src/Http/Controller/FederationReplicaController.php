@@ -92,13 +92,9 @@ final class FederationReplicaController
             echo 'Método no permitido.';
             return;
         }
-        $session = $this->app->session();
-        $session->start();
-        if (!$session->isAuthenticated()) {
-            http_response_code(401);
-            echo 'Autenticación requerida.';
-            return;
-        }
+        // Este endpoint sólo resuelve PUBLIC + copy_allowed en el Service.
+        // Por eso no requiere sesión: la política pública se valida antes de emitir
+        // cualquier URL temporal S3.
         try {
             $resourceId = $this->request->queryString('resource_id');
             $result = (new FederationReplicaResolverService($this->app))->openPreferred($resourceId);

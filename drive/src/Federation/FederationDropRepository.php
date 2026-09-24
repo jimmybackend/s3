@@ -15,14 +15,15 @@ final class FederationDropRepository
     {
         $stmt = $this->db->prepare(
             "INSERT INTO FederationDrops
-            (DropId, OwnerEmail, OwnerTokenHash, OwnerTokenCiphertext, PublicTokenHash, PublicTokenCiphertext, SourceDomain, OriginalName, S3Key,
+            (DropId, OwnerEmail, OwnerTokenHash, OwnerTokenCiphertext, PublicTokenHash, PublicTokenCiphertext,
+             SourceDomain, SourceMode, SourceResourceId, SourceContentId, OriginalName, S3Key,
              MimeType, ExpectedSizeBytes, RetentionDays, MaxDownloads, AmountCents, Currency,
              PaymentStatus, Status, CustodyNodeId, CreatedAt)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', 'pending_payment', ?, UTC_TIMESTAMP(6))"
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', 'pending_payment', ?, UTC_TIMESTAMP(6))"
         );
         if (!$stmt) throw new FederationException('No se pudo preparar FederationDrop.', 500);
         $stmt->bind_param(
-            'ssssssssssiiiiss',
+            'sssssssssssssiiiiss',
             $row['drop_id'],
             $row['owner_email'],
             $row['owner_token_hash'],
@@ -30,6 +31,9 @@ final class FederationDropRepository
             $row['public_token_hash'],
             $row['public_token_ciphertext'],
             $row['source_domain'],
+            $row['source_mode'] ?? 'upload',
+            $row['source_resource_id'] ?? null,
+            $row['source_content_id'] ?? null,
             $row['original_name'],
             $row['s3_key'],
             $row['mime_type'],
@@ -51,7 +55,8 @@ final class FederationDropRepository
     public function find(string $dropId): ?array
     {
         $stmt = $this->db->prepare(
-            'SELECT DropId, OwnerEmail, OwnerTokenHash, OwnerTokenCiphertext, PublicTokenHash, PublicTokenCiphertext, SourceDomain, OriginalName, S3Key,
+            'SELECT DropId, OwnerEmail, OwnerTokenHash, OwnerTokenCiphertext, PublicTokenHash, PublicTokenCiphertext,
+                    SourceDomain, SourceMode, SourceResourceId, SourceContentId, OriginalName, S3Key,
                     MimeType, ExpectedSizeBytes, ActualSizeBytes, ObjectEtag, RetentionDays, MaxDownloads,
                     DownloadCount, AmountCents, Currency, PaymentStatus, PaymentProvider, PaymentReference,
                     CheckoutUrl, Status, CustodyNodeId, CreatedAt, UploadedAt, PaidAt, ExpiresAt,
@@ -68,6 +73,28 @@ final class FederationDropRepository
         $row = $stmt->get_result()->fetch_assoc();
         $stmt->close();
         return is_array($row) ? $row : null;
+    }
+
+    public function paidPublicSourceCandidates(int $limit = 5): array
+    {
+        $limit = max(1, min(20, $limit));
+        $result = $this->db->query(
+            "SELECT DropId FROM FederationDrops
+             WHERE SourceMode='public_resource'
+               AND PaymentStatus='paid'
+               AND Status='pending_upload'
+               AND UploadedAt IS NULL
+             ORDER BY PaidAt ASC, CreatedAt ASC
+             LIMIT {$limit}"
+        );
+        if (!$result) throw new FederationException('No se pudo consultar Drops públicos pagados.', 500);
+        $rows = [];
+        while ($row = $result->fetch_assoc()) {
+            $full = $this->find((string)$row['DropId']);
+            if ($full !== null) $rows[] = $full;
+        }
+        $result->free();
+        return $rows;
     }
 
     public function findByPaymentReference(string $provider, string $reference): ?array

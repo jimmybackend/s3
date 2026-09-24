@@ -127,6 +127,14 @@ Esto permite migrar una instalación existente de forma gradual: una variable pu
 
 Se pueden modificar como variables individuales desde la tabla Servidor.
 
+### FederationDrop y Stripe
+
+Todos los nodos pueden conocer `ARCADECLOUD_DROP_COMMERCE_URL`, cuyo valor normal es el portal FederationDrop de `drive.esforzados.com`.
+
+Sólo el nodo comercial habilita `ARCADECLOUD_DROP_ENABLED` y configura `ARCADECLOUD_STRIPE_SECRET_KEY` y `ARCADECLOUD_STRIPE_WEBHOOK_SECRET`. Los nodos federados normales no necesitan credenciales Stripe.
+
+Las dos variables Stripe se marcan como secretos: el panel sólo indica si existen y nunca devuelve su valor al navegador.
+
 ### Base de datos
 
 La aplicación usa:

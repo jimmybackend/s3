@@ -285,3 +285,13 @@ ARCADECLOUD_FEDERATION_DYNAMIC_IP=true
 ```
 
 Toda esta configuración vive en `/etc/arcadecloud-drive/runtime-env.json` y puede administrarse mediante el instalador o la Configuración avanzada del superusuario.
+
+
+## Instalación limpia de dependencias
+
+En Amazon Linux 2023, una instalación con `--node-role=media-worker` o `--node-role=combined`
+prepara automáticamente SPAL e instala `ffmpeg-free`, `lame` y `lame-libs`. El servicio no se
+activa si faltan `ffmpeg`, `ffprobe` o `lame`.
+
+La extracción MP3 prefiere el encoder `libmp3lame` de FFmpeg cuando existe. Si la build
+`ffmpeg-free` no lo expone, el worker genera PCM WAV temporal y ejecuta `lame` a 128 kbps.

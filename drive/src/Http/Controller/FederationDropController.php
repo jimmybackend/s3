@@ -174,7 +174,13 @@ final class FederationDropController
         $config = FederationDropGoogleAuthConfig::fromEnvironment();
         if (!$config->ready()) return null;
 
-        return (new FederationDropGoogleAuthService($this->app))->sessionIdentity($cookie);
+        try {
+            return (new FederationDropGoogleAuthService($this->app))->sessionIdentity($cookie);
+        } catch (FederationException) {
+            // FederationDrop remains usable by email if a stale/invalid Google
+            // cookie is present. A valid Google session still overrides POST email.
+            return null;
+        }
     }
 
     public function download(): never

@@ -12,12 +12,14 @@ fi
 
 APP_ROOT=""
 PHP_USER=""
+NODE_ROLE="web"
 SKIP_CERTBOT=0
 
 for arg in "$@"; do
   case "$arg" in
     --app-root=*) APP_ROOT="${arg#*=}" ;;
     --php-user=*) PHP_USER="${arg#*=}" ;;
+    --node-role=*) NODE_ROLE="${arg#*=}" ;;
     --skip-certbot) SKIP_CERTBOT=1 ;;
     *) echo "ERROR: argumento desconocido: $arg" >&2; exit 2 ;;
   esac
@@ -67,6 +69,11 @@ fi
 
 command_exists dnf || fail "Amazon Linux 2023 no tiene dnf disponible."
 
+case "$NODE_ROLE" in
+  web|media-worker|combined) ;;
+  *) fail "--node-role debe ser web, media-worker o combined." ;;
+esac
+
 package_available() {
   dnf -q list --available "$1" >/dev/null 2>&1 || rpm -q "$1" >/dev/null 2>&1
 }
@@ -114,6 +121,17 @@ install_packages() {
     "python3:python3"
     "tar:tar"
     "unzip:unzip"
+    "sudo:sudo"
+    "runuser:util-linux"
+    "flock:util-linux"
+    "timeout:coreutils"
+    "ps:procps-ng"
+    "pgrep:procps-ng"
+    "find:findutils"
+    "awk:gawk"
+    "grep:grep"
+    "sed:sed"
+    "openssl:openssl"
   )
 
   for pkg in "${command_packages[@]}"; do
@@ -161,6 +179,40 @@ install_packages() {
 
   command_exists php || fail "la familia $php_family se instaló pero no expuso el comando php."
   command_exists php-fpm || fail "la familia $php_family se instaló pero no expuso el comando php-fpm."
+}
+
+install_media_dependencies() {
+  [[ "$NODE_ROLE" == "media-worker" || "$NODE_ROLE" == "combined" ]] || return 0
+
+  say "Preparando dependencias multimedia para rol $NODE_ROLE."
+
+  if ! rpm -q spal-release >/dev/null 2>&1; then
+    package_available spal-release       || fail "spal-release no está disponible. Actualiza system-release de Amazon Linux 2023 a una versión con SPAL y vuelve a ejecutar el instalador."
+    dnf install -y spal-release
+  fi
+
+  local media_packages=(ffmpeg-free lame lame-libs)
+  local missing=()
+  local pkg
+  for pkg in "${media_packages[@]}"; do
+    if ! rpm -q "$pkg" >/dev/null 2>&1; then
+      package_available "$pkg"         || fail "paquete multimedia requerido no disponible en SPAL: $pkg"
+      missing+=("$pkg")
+    fi
+  done
+
+  if (( ${#missing[@]} > 0 )); then
+    dnf install -y "${missing[@]}"
+  fi
+
+  command_exists ffmpeg || fail "ffmpeg no quedó disponible después de instalar ffmpeg-free."
+  command_exists ffprobe || fail "ffprobe no quedó disponible después de instalar ffmpeg-free."
+
+  if ! ffmpeg -hide_banner -encoders 2>/dev/null | grep -qE '(^|[[:space:]])libmp3lame([[:space:]]|$)'; then
+    fail "FFmpeg quedó instalado pero no expone el encoder libmp3lame requerido para Extraer MP3."
+  fi
+
+  say "Multimedia listo: $(ffmpeg -version 2>/dev/null | head -1)"
 }
 
 install_composer() {
@@ -568,6 +620,12 @@ validate_runtime() {
   php -r 'exit(extension_loaded("pdo_mysql") ? 0 : 1);'     || fail "PHP quedó sin pdo_mysql/mysqlnd."
   php -r 'exit(extension_loaded("mbstring") ? 0 : 1);'     || fail "PHP quedó sin mbstring."
 
+  if [[ "$NODE_ROLE" == "media-worker" || "$NODE_ROLE" == "combined" ]]; then
+    command_exists ffmpeg || fail "rol $NODE_ROLE sin ffmpeg."
+    command_exists ffprobe || fail "rol $NODE_ROLE sin ffprobe."
+    ffmpeg -hide_banner -encoders 2>/dev/null | grep -qE '(^|[[:space:]])libmp3lame([[:space:]]|$)'       || fail "rol $NODE_ROLE sin encoder libmp3lame."
+  fi
+
   nginx -t >/dev/null
   systemctl is-active --quiet php-fpm-drive.service || fail "php-fpm-drive no está activo."
   systemctl is-active --quiet nginx.service || fail "Nginx no está activo."
@@ -575,6 +633,7 @@ validate_runtime() {
 
 say "Preflight automático de Amazon Linux 2023."
 install_packages
+install_media_dependencies
 install_composer
 install_certbot_if_available
 install_modern_certbot_for_ip
@@ -584,12 +643,18 @@ validate_runtime
 
 echo
 echo "PREPARACIÓN DEL SERVIDOR: OK"
+echo "Node role: $NODE_ROLE"
 echo "PHP: $(php -r 'echo PHP_VERSION;')"
 echo "PHP-FPM service: php-fpm-drive.service"
 echo "PHP-FPM user: $PHP_USER"
 echo "PHP-FPM listen: $FPM_LISTEN"
 echo "Nginx: $(nginx -v 2>&1)"
 echo "Composer: $(COMPOSER_ALLOW_SUPERUSER=1 composer --version 2>/dev/null | head -1)"
+if [[ "$NODE_ROLE" == "media-worker" || "$NODE_ROLE" == "combined" ]]; then
+  echo "FFmpeg: $(ffmpeg -version 2>/dev/null | head -1)"
+  echo "FFprobe: $(ffprobe -version 2>/dev/null | head -1)"
+  echo "MP3 encoder: libmp3lame"
+fi
 if [[ -x "$ARCADECLOUD_CERTBOT_BIN" ]]; then
   echo "Certbot ArcadeCloud: $("$ARCADECLOUD_CERTBOT_BIN" --version 2>/dev/null)"
 elif command_exists certbot; then

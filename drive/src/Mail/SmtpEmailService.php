@@ -41,6 +41,38 @@ final class SmtpEmailService
         $this->send($recipient, $subject, $htmlBody, $textBody);
     }
 
+    public function sendFederationDropPaymentReady(
+        string $recipient,
+        string $filename,
+        string $manageUrl,
+        int $amountCents,
+        string $currency
+    ): void {
+        if (!filter_var($recipient, FILTER_VALIDATE_EMAIL)) {
+            throw new RuntimeException('FederationDrop requiere un correo válido.');
+        }
+
+        $safeFilename = htmlspecialchars($filename, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+        $safeManage = htmlspecialchars($manageUrl, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+        $safeCurrency = htmlspecialchars(strtoupper($currency), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+        $amount = number_format(max(0, $amountCents) / 100, 2, '.', '');
+        $subject = 'Pago FederationDrop confirmado';
+        $textBody = "Stripe confirmó el pago de tu FederationDrop para {$filename}.\n\n"
+            . "Importe: {$amount} " . strtoupper($currency) . "\n"
+            . "Completa la subida desde: {$manageUrl}\n\n"
+            . "No compartas este enlace: permite administrar o eliminar el FederationDrop.";
+        $htmlBody = '<!doctype html><html lang="es"><head><meta charset="utf-8"></head>'
+            . '<body style="font-family:Arial,sans-serif;color:#0f172a">'
+            . '<h2>Pago confirmado</h2>'
+            . '<p>Stripe confirmó el pago para <strong>' . $safeFilename . '</strong>.</p>'
+            . '<p>Importe: <strong>' . $amount . ' ' . $safeCurrency . '</strong></p>'
+            . '<p><a href="' . $safeManage . '">Completar la subida del archivo</a></p>'
+            . '<p><strong>No compartas este enlace de administración.</strong></p>'
+            . '</body></html>';
+
+        $this->send($recipient, $subject, $htmlBody, $textBody);
+    }
+
     public function sendFederationDropAccess(
         string $recipient,
         string $filename,

@@ -19,6 +19,7 @@ final class MediaProcessingController extends AbstractJsonController
             $service = new MediaProcessingService($this->app->fileRecordLocator(), $jobs, $node);
 
             if ($this->request->method() === 'POST') {
+                $this->requireCsrf();
                 $result = $service->enqueue($userId, $this->request->allPost());
                 JsonResponse::send($result, 202);
             }
@@ -32,6 +33,15 @@ final class MediaProcessingController extends AbstractJsonController
             JsonResponse::send($recent);
         } catch (\Throwable $e) {
             $this->fail($e, 400);
+        }
+    }
+
+    private function requireCsrf(): void
+    {
+        $expected = (string)$this->app->session()->get('upload_csrf', '');
+        $sent = $this->request->serverString('HTTP_X_DRIVE_CSRF');
+        if ($expected === '' || $sent === '' || !hash_equals($expected, $sent)) {
+            JsonResponse::send(['ok' => false, 'error' => 'Token CSRF inválido. Recarga el Drive.'], 403);
         }
     }
 }

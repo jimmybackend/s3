@@ -557,6 +557,46 @@ $unlockClass = $unlocked ? 'btn-success' : 'btn-warning';
   </button>
 <?php endif; ?>
 
+<?php if ($esVideo): ?>
+  <button type="button"
+          class="btn btn-sm btn-outline-primary btn-accion-ia aws-file-action js-media-split-video"
+          data-key="<?= FileViewHelper::escape($s3key) ?>"
+          data-nombre="<?= FileViewHelper::escape($nombre) ?>"
+          data-toggle="tooltip"
+          data-placement="top"
+          title="Dividir video en partes en el nodo multimedia"
+          aria-label="Dividir video">
+    <i class="fas fa-scissors"></i>
+    <span class="aws-action-label">Dividir video</span>
+  </button>
+
+  <button type="button"
+          class="btn btn-sm btn-outline-primary btn-accion-ia aws-file-action js-media-extract-mp3"
+          data-key="<?= FileViewHelper::escape($s3key) ?>"
+          data-nombre="<?= FileViewHelper::escape($nombre) ?>"
+          data-toggle="tooltip"
+          data-placement="top"
+          title="Extraer audio MP3 en el nodo multimedia"
+          aria-label="Extraer MP3">
+    <i class="fas fa-file-audio"></i>
+    <span class="aws-action-label">Extraer MP3</span>
+  </button>
+<?php endif; ?>
+
+<?php if ($esAudio): ?>
+  <button type="button"
+          class="btn btn-sm btn-outline-primary btn-accion-ia aws-file-action js-media-split-audio"
+          data-key="<?= FileViewHelper::escape($s3key) ?>"
+          data-nombre="<?= FileViewHelper::escape($nombre) ?>"
+          data-toggle="tooltip"
+          data-placement="top"
+          title="Dividir audio en partes con solapamiento"
+          aria-label="Dividir audio">
+    <i class="fas fa-scissors"></i>
+    <span class="aws-action-label">Dividir audio</span>
+  </button>
+<?php endif; ?>
+
 <?php if ($editTxt): ?>
   <button type="button"
           class="btn btn-sm btn-primary btn-accion-ia aws-file-action js-polly"

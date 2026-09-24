@@ -106,9 +106,11 @@ final class FederationDropService
         string $mimeType,
         int $days,
         int $downloads,
-        string $sourceDomain = ''
+        string $sourceDomain = '',
+        ?string $ownerAccountId = null
     ): array {
         $this->config->assertReady();
+        $ownerAccountId = $this->normalizeOwnerAccountId($ownerAccountId);
         $email = strtolower(trim($email));
         if (!filter_var($email, FILTER_VALIDATE_EMAIL) || strlen($email) > 320) {
             throw new FederationException('Escribe un correo válido para administrar el FederationDrop.', 400);
@@ -126,6 +128,7 @@ final class FederationDropService
 
         $this->repository->create([
             'drop_id' => $dropId,
+            'owner_account_id' => $ownerAccountId,
             'owner_email' => $email,
             'owner_token_hash' => hash('sha256', $ownerToken),
             'owner_token_ciphertext' => $this->encryptToken($ownerToken),
@@ -171,9 +174,11 @@ final class FederationDropService
         string $resourceId,
         int $days,
         int $downloads,
-        string $sourceDomain = ''
+        string $sourceDomain = '',
+        ?string $ownerAccountId = null
     ): array {
         $this->config->assertReady();
+        $ownerAccountId = $this->normalizeOwnerAccountId($ownerAccountId);
         $email = strtolower(trim($email));
         if (!filter_var($email, FILTER_VALIDATE_EMAIL) || strlen($email) > 320) {
             throw new FederationException('Escribe un correo válido para administrar el FederationDrop.', 400);
@@ -208,6 +213,7 @@ final class FederationDropService
 
         $this->repository->create([
             'drop_id' => $dropId,
+            'owner_account_id' => $ownerAccountId,
             'owner_email' => $email,
             'owner_token_hash' => hash('sha256', $ownerToken),
             'owner_token_ciphertext' => $this->encryptToken($ownerToken),
@@ -792,6 +798,16 @@ final class FederationDropService
             return 'application/octet-stream';
         }
         return $mime;
+    }
+
+    private function normalizeOwnerAccountId(?string $accountId): ?string
+    {
+        if ($accountId === null || trim($accountId) === '') return null;
+        $accountId = trim($accountId);
+        if (!preg_match('/\Afda_[a-f0-9]{48}\z/', $accountId)) {
+            throw new FederationException('Cuenta FederationDrop inválida.', 400);
+        }
+        return $accountId;
     }
 
     private function normalizeSourceDomain(string $source): string

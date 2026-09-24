@@ -9,6 +9,8 @@ on:
       - 'drive/src/Federation/ArcadeLinkService.php'
       - 'drive/src/Federation/FederationService.php'
       - 'drive/src/Http/Controller/FederationDropController.php'
+      - 'drive/src/Http/Controller/FederationDropGoogleAuthController.php'
+      - 'drive/src/Http/Request.php'
       - 'drive/src/Http/Controller/FederationDropIngressController.php'
       - 'drive/src/View/FederationDropPageRenderer.php'
       - 'drive/src/View/FederationPageRenderer.php'
@@ -29,6 +31,7 @@ on:
       - 'drive/tests/federation_drop_contract_smoke.php'
       - 'drive/tests/federation_drop_stripe_smoke.php'
       - 'drive/tests/federation_drop_ingress_smoke.php'
+      - 'drive/tests/federation_drop_google_oidc_smoke.php'
       - 'drive/tests/federationcloud_smoke.php'
       - 'drive/tests/database_schema_contract_smoke.php'
       - 'drive/tests/server_admin_config_smoke.php'
@@ -50,11 +53,17 @@ jobs:
         run: |
           set -euo pipefail
           php -m | grep -qi '^sodium$'
+          php -m | grep -qi '^openssl$'
 
       - name: PHP syntax
         run: |
           set -euo pipefail
           php -l drive/src/Federation/FederationDropConfig.php
+          php -l drive/src/Federation/FederationDropGoogleAuthConfig.php
+          php -l drive/src/Federation/FederationDropEncryptedCookie.php
+          php -l drive/src/Federation/FederationDropGoogleOidcClient.php
+          php -l drive/src/Federation/FederationDropAccountRepository.php
+          php -l drive/src/Federation/FederationDropGoogleAuthService.php
           php -l drive/src/Federation/FederationDropRepository.php
           php -l drive/src/Federation/FederationDropStorageService.php
           php -l drive/src/Federation/FederationDropService.php
@@ -68,6 +77,8 @@ jobs:
           php -l drive/src/Federation/ArcadeLinkService.php
           php -l drive/src/Federation/FederationService.php
           php -l drive/src/Http/Controller/FederationDropController.php
+          php -l drive/src/Http/Controller/FederationDropGoogleAuthController.php
+          php -l drive/src/Http/Request.php
           php -l drive/src/Http/Controller/FederationDropIngressController.php
           php -l drive/src/View/FederationDropPageRenderer.php
           php -l drive/src/View/FederationPageRenderer.php
@@ -85,9 +96,13 @@ jobs:
           php -l drive/federationdrop/api.php
           php -l drive/federationdrop/d.php
           php -l drive/federationdrop/arcadelink.php
+          php -l drive/federationdrop/google-login.php
+          php -l drive/federationdrop/google-callback.php
+          php -l drive/federationdrop/google-logout.php
           php -l drive/tests/federation_drop_contract_smoke.php
           php -l drive/tests/federation_drop_stripe_smoke.php
           php -l drive/tests/federation_drop_ingress_smoke.php
+          php -l drive/tests/federation_drop_google_oidc_smoke.php
           php -l drive/tests/federationcloud_smoke.php
           php -l drive/tests/database_schema_contract_smoke.php
           php -l drive/tests/server_admin_config_smoke.php
@@ -118,6 +133,11 @@ jobs:
         run: |
           set -euo pipefail
           php drive/tests/federation_drop_ingress_smoke.php
+
+      - name: Google OIDC cryptographic regression
+        run: |
+          set -euo pipefail
+          php drive/tests/federation_drop_google_oidc_smoke.php
 
       - name: ArcadeLink cryptographic regression
         run: |
@@ -151,6 +171,11 @@ jobs:
           grep -q 'syncPaidIngressSources' drive/src/Federation/FederationDropWorkerService.php
           grep -q 'FederationDropWorkerService' drive/src/Federation/FederationSyncCycleService.php
           grep -q 'federationdrop/badge.svg' drive/docs/FEDERATION_DROP.md
+          grep -q 'ARCADECLOUD_DROP_GOOGLE_CLIENT_ID' drive/src/Admin/ManagedRuntimeEnvironment.php
+          grep -q 'ARCADECLOUD_DROP_GOOGLE_CLIENT_SECRET' drive/bin/arcadecloud-drive-admin-helper.php
+          grep -q 'google-callback.php' drive/docs/FEDERATION_DROP.md
+          grep -q 'OwnerAccountId' adbbmis1_Cloud.sql
+          grep -q 'FederationDropIdentities' adbbmis1_Cloud.sql
           ! grep -R "public-read" drive/src/Federation/FederationDrop*.php
           ! grep -R "AWS_SECRET_ACCESS_KEY" drive/federationdrop drive/js/federation-drop.js
 

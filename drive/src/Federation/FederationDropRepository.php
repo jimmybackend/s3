@@ -15,25 +15,34 @@ final class FederationDropRepository
     {
         $stmt = $this->db->prepare(
             "INSERT INTO FederationDrops
-            (DropId, OwnerEmail, OwnerTokenHash, OwnerTokenCiphertext, PublicTokenHash, PublicTokenCiphertext,
+            (DropId, OwnerAccountId, OwnerEmail, OwnerTokenHash, OwnerTokenCiphertext, PublicTokenHash, PublicTokenCiphertext,
              SourceDomain, SourceMode, SourceResourceId, SourceContentId, OriginalName, S3Key,
              MimeType, ExpectedSizeBytes, RetentionDays, MaxDownloads, AmountCents, Currency,
              PaymentStatus, Status, CustodyNodeId, CreatedAt)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', 'pending_payment', ?, UTC_TIMESTAMP(6))"
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', 'pending_payment', ?, UTC_TIMESTAMP(6))"
         );
         if (!$stmt) throw new FederationException('No se pudo preparar FederationDrop.', 500);
+
+        // mysqli::bind_param receives arguments by reference; normalize optional
+        // values into variables instead of passing null-coalescing expressions.
+        $ownerAccountId = isset($row['owner_account_id']) ? (string)$row['owner_account_id'] : null;
+        $sourceMode = isset($row['source_mode']) ? (string)$row['source_mode'] : 'upload';
+        $sourceResourceId = isset($row['source_resource_id']) ? (string)$row['source_resource_id'] : null;
+        $sourceContentId = isset($row['source_content_id']) ? (string)$row['source_content_id'] : null;
+
         $stmt->bind_param(
-            'sssssssssssssiiiiss',
+            'ssssssssssssssiiiiss',
             $row['drop_id'],
+            $ownerAccountId,
             $row['owner_email'],
             $row['owner_token_hash'],
             $row['owner_token_ciphertext'],
             $row['public_token_hash'],
             $row['public_token_ciphertext'],
             $row['source_domain'],
-            $row['source_mode'] ?? 'upload',
-            $row['source_resource_id'] ?? null,
-            $row['source_content_id'] ?? null,
+            $sourceMode,
+            $sourceResourceId,
+            $sourceContentId,
             $row['original_name'],
             $row['s3_key'],
             $row['mime_type'],
@@ -55,7 +64,7 @@ final class FederationDropRepository
     public function find(string $dropId): ?array
     {
         $stmt = $this->db->prepare(
-            'SELECT DropId, OwnerEmail, OwnerTokenHash, OwnerTokenCiphertext, PublicTokenHash, PublicTokenCiphertext,
+            'SELECT DropId, OwnerAccountId, OwnerEmail, OwnerTokenHash, OwnerTokenCiphertext, PublicTokenHash, PublicTokenCiphertext,
                     SourceDomain, SourceMode, SourceResourceId, SourceContentId, OriginalName, S3Key,
                     MimeType, ExpectedSizeBytes, ActualSizeBytes, ObjectEtag, RetentionDays, MaxDownloads,
                     DownloadCount, AmountCents, Currency, PaymentStatus, PaymentProvider, PaymentReference,

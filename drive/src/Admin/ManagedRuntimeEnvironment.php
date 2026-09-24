@@ -37,6 +37,12 @@ final class ManagedRuntimeEnvironment
         'ARCADECLOUD_DROP_MAX_DOWNLOADS' => ['secret' => false, 'group' => 'FederationDrop'],
         'ARCADECLOUD_DROP_MAX_FILE_BYTES' => ['secret' => false, 'group' => 'FederationDrop'],
 
+        'ARCADECLOUD_DROP_GOOGLE_ENABLED' => ['secret' => false, 'group' => 'FederationDrop Google'],
+        'ARCADECLOUD_DROP_GOOGLE_CLIENT_ID' => ['secret' => false, 'group' => 'FederationDrop Google'],
+        'ARCADECLOUD_DROP_GOOGLE_CLIENT_SECRET' => ['secret' => true, 'group' => 'FederationDrop Google', 'allow_empty' => true],
+        'ARCADECLOUD_DROP_GOOGLE_SESSION_SECRET' => ['secret' => true, 'group' => 'FederationDrop Google', 'allow_empty' => true],
+        'ARCADECLOUD_DROP_GOOGLE_SESSION_TTL' => ['secret' => false, 'group' => 'FederationDrop Google'],
+
         'ARCADECLOUD_SMTP_HOST' => ['secret' => false, 'group' => 'SMTP'],
         'ARCADECLOUD_SMTP_PORT' => ['secret' => false, 'group' => 'SMTP'],
         'ARCADECLOUD_SMTP_SECURE' => ['secret' => false, 'group' => 'SMTP'],
@@ -178,6 +184,18 @@ final class ManagedRuntimeEnvironment
                     throw new RuntimeException('ARCADECLOUD_STRIPE_WEBHOOK_SECRET no tiene formato válido.');
                 }
             }
+            if ($name === 'ARCADECLOUD_DROP_GOOGLE_CLIENT_SECRET' && $value !== '') {
+                $value = trim($value);
+                if (strlen($value) > 4096 || preg_match('/[\x00-\x20\x7F]/', $value)) {
+                    throw new RuntimeException('ARCADECLOUD_DROP_GOOGLE_CLIENT_SECRET no tiene formato válido.');
+                }
+            }
+            if ($name === 'ARCADECLOUD_DROP_GOOGLE_SESSION_SECRET' && $value !== '') {
+                $value = trim($value);
+                if (strlen($value) < 32 || preg_match('/[\x00-\x1F\x7F]/', $value)) {
+                    throw new RuntimeException('ARCADECLOUD_DROP_GOOGLE_SESSION_SECRET debe tener al menos 32 caracteres sin controles.');
+                }
+            }
             return $value;
         }
 
@@ -186,7 +204,7 @@ final class ManagedRuntimeEnvironment
             throw new RuntimeException($name . ' no puede quedar vacío.');
         }
 
-        if (in_array($name, ['ARCADECLOUD_FEDERATION_ENABLED', 'ARCADECLOUD_DROP_ENABLED', 'ARCADECLOUD_SMTP_DEBUG'], true)) {
+        if (in_array($name, ['ARCADECLOUD_FEDERATION_ENABLED', 'ARCADECLOUD_DROP_ENABLED', 'ARCADECLOUD_DROP_GOOGLE_ENABLED', 'ARCADECLOUD_SMTP_DEBUG'], true)) {
             $lower = strtolower($value);
             if (!in_array($lower, ['true', 'false', '1', '0', 'yes', 'no', 'on', 'off'], true)) {
                 throw new RuntimeException($name . ' debe ser true/false.');
@@ -208,6 +226,7 @@ final class ManagedRuntimeEnvironment
             'ARCADECLOUD_DROP_MAX_DAYS',
             'ARCADECLOUD_DROP_MAX_DOWNLOADS',
             'ARCADECLOUD_DROP_MAX_FILE_BYTES',
+            'ARCADECLOUD_DROP_GOOGLE_SESSION_TTL',
         ], true)) {
             if (!preg_match('/\A\d+\z/', $value)) throw new RuntimeException($name . ' debe ser un entero positivo o cero.');
             $number = (int)$value;
@@ -216,11 +235,18 @@ final class ManagedRuntimeEnvironment
                 'ARCADECLOUD_DROP_MAX_DAYS' => [1, 3650],
                 'ARCADECLOUD_DROP_MAX_DOWNLOADS' => [1, 1000000],
                 'ARCADECLOUD_DROP_MAX_FILE_BYTES' => [1048576, 5368709120],
+                'ARCADECLOUD_DROP_GOOGLE_SESSION_TTL' => [300, 604800],
             ];
             if (isset($limits[$name]) && ($number < $limits[$name][0] || $number > $limits[$name][1])) {
                 throw new RuntimeException($name . ' está fuera del rango permitido.');
             }
             return (string)$number;
+        }
+
+        if ($name === 'ARCADECLOUD_DROP_GOOGLE_CLIENT_ID' && $value !== '') {
+            if (strlen($value) > 512 || preg_match('/[\x00-\x20\x7F]/', $value)) {
+                throw new RuntimeException('ARCADECLOUD_DROP_GOOGLE_CLIENT_ID no tiene formato válido.');
+            }
         }
 
         if ($name === 'ARCADECLOUD_DROP_CURRENCY') {

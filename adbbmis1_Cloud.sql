@@ -2429,8 +2429,39 @@ CREATE TABLE IF NOT EXISTS FederationIngressQueue (
 -- FederationDrop paid temporary custody.
 -- The node that charges remains the primary custodian in phase 1.
 
+CREATE TABLE IF NOT EXISTS FederationDropAccounts (
+  AccountId varchar(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  PrimaryEmail varchar(320) NOT NULL,
+  DisplayName varchar(256) DEFAULT NULL,
+  PictureUrl varchar(1024) DEFAULT NULL,
+  Status enum('active','disabled') NOT NULL DEFAULT 'active',
+  CreatedAt datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+  LastLoginAt datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+  UpdatedAt datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
+  PRIMARY KEY (AccountId),
+  KEY idx_fdrop_account_email (PrimaryEmail(191), Status),
+  KEY idx_fdrop_account_login (Status, LastLoginAt)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS FederationDropIdentities (
+  IdentityHash char(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  AccountId varchar(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  Provider varchar(32) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  Issuer varchar(255) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  ProviderSubject varchar(255) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  Email varchar(320) NOT NULL,
+  EmailVerified tinyint(1) NOT NULL DEFAULT 0,
+  CreatedAt datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+  LastLoginAt datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+  UpdatedAt datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
+  PRIMARY KEY (IdentityHash),
+  KEY idx_fdrop_identity_account (AccountId, Provider),
+  KEY idx_fdrop_identity_provider (Provider, ProviderSubject(191))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE IF NOT EXISTS FederationDrops (
   DropId varchar(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  OwnerAccountId varchar(64) CHARACTER SET ascii COLLATE ascii_bin DEFAULT NULL,
   OwnerEmail varchar(320) NOT NULL,
   OwnerTokenHash char(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
   OwnerTokenCiphertext varchar(512) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
@@ -2464,12 +2495,33 @@ CREATE TABLE IF NOT EXISTS FederationDrops (
   LastDownloadAt datetime(6) DEFAULT NULL,
   DeletedAt datetime(6) DEFAULT NULL,
   PRIMARY KEY (DropId),
+  KEY idx_fdrop_owner_account (OwnerAccountId, CreatedAt),
   KEY idx_fdrop_owner (OwnerEmail(191), CreatedAt),
   KEY idx_fdrop_status_expiry (Status, ExpiresAt),
   KEY idx_fdrop_payment (PaymentStatus, Status, CreatedAt),
   KEY idx_fdrop_custody (CustodyNodeId, Status),
   KEY idx_fdrop_source (SourceMode, SourceResourceId, PaymentStatus, Status)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+SET @arcade_sql = IF(
+  (SELECT COUNT(*) FROM information_schema.COLUMNS
+   WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'FederationDrops' AND COLUMN_NAME = 'OwnerAccountId') = 0,
+  'ALTER TABLE FederationDrops ADD COLUMN OwnerAccountId varchar(64) CHARACTER SET ascii COLLATE ascii_bin DEFAULT NULL AFTER DropId',
+  'SELECT 1'
+);
+PREPARE arcade_stmt FROM @arcade_sql;
+EXECUTE arcade_stmt;
+DEALLOCATE PREPARE arcade_stmt;
+
+SET @arcade_sql = IF(
+  (SELECT COUNT(*) FROM information_schema.STATISTICS
+   WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'FederationDrops' AND INDEX_NAME = 'idx_fdrop_owner_account') = 0,
+  'ALTER TABLE FederationDrops ADD INDEX idx_fdrop_owner_account (OwnerAccountId, CreatedAt)',
+  'SELECT 1'
+);
+PREPARE arcade_stmt FROM @arcade_sql;
+EXECUTE arcade_stmt;
+DEALLOCATE PREPARE arcade_stmt;
 
 SET @arcade_sql = IF(
   (SELECT COUNT(*) FROM information_schema.COLUMNS

@@ -5,6 +5,8 @@ namespace ArcadeCloud\Drive\Http\Controller;
 
 use ArcadeCloud\Drive\Core\DriveApplication;
 use ArcadeCloud\Drive\Federation\ArcadeLinkService;
+use ArcadeCloud\Drive\Federation\FederationDropGoogleAuthConfig;
+use ArcadeCloud\Drive\Federation\FederationDropGoogleAuthService;
 use ArcadeCloud\Drive\Federation\FederationDropService;
 use ArcadeCloud\Drive\Federation\FederationException;
 use ArcadeCloud\Drive\Http\JsonResponse;
@@ -28,6 +30,11 @@ final class FederationDropController
         if ($resourceId !== '') {
             $state['source_resource'] = $service->publicResourceState($resourceId);
         }
+        $state['google_auth'] = (new FederationDropGoogleAuthService($this->app))->pageState(
+            $this->request->cookieString(FederationDropGoogleAuthService::SESSION_COOKIE),
+            $this->request->queryString('source'),
+            $resourceId
+        );
         (new FederationDropPageRenderer())->render(
             $state,
             $this->request->queryString('source'),
@@ -59,24 +66,28 @@ final class FederationDropController
             }
 
             if ($action === 'create' && $this->request->method() === 'POST') {
+                $owner = $this->googleOwnerIdentity();
                 JsonResponse::send($service->createOrder(
-                    $this->request->postString('email'),
+                    $owner !== null ? (string)$owner['email'] : $this->request->postString('email'),
                     $this->request->postString('filename'),
                     $this->request->postInt('size_bytes'),
                     $this->request->postString('mime_type', 'application/octet-stream'),
                     $this->request->postInt('days'),
                     $this->request->postInt('downloads'),
-                    $this->request->postString('source_domain')
+                    $this->request->postString('source_domain'),
+                    $owner !== null ? (string)$owner['account_id'] : null
                 ), 201);
             }
 
             if ($action === 'create-public-resource' && $this->request->method() === 'POST') {
+                $owner = $this->googleOwnerIdentity();
                 JsonResponse::send($service->createPublicResourceOrder(
-                    $this->request->postString('email'),
+                    $owner !== null ? (string)$owner['email'] : $this->request->postString('email'),
                     $this->request->postString('resource_id'),
                     $this->request->postInt('days'),
                     $this->request->postInt('downloads'),
-                    $this->request->postString('source_domain')
+                    $this->request->postString('source_domain'),
+                    $owner !== null ? (string)$owner['account_id'] : null
                 ), 201);
             }
 
@@ -152,6 +163,23 @@ final class FederationDropController
         } catch (Throwable $e) {
             error_log('[FederationDrop] ' . $e->getMessage());
             JsonResponse::send(['ok' => false, 'error' => 'FederationDrop no pudo completar la operación.'], 500);
+        }
+    }
+
+    private function googleOwnerIdentity(): ?array
+    {
+        $cookie = $this->request->cookieString(FederationDropGoogleAuthService::SESSION_COOKIE);
+        if ($cookie === '') return null;
+
+        $config = FederationDropGoogleAuthConfig::fromEnvironment();
+        if (!$config->ready()) return null;
+
+        try {
+            return (new FederationDropGoogleAuthService($this->app))->sessionIdentity($cookie);
+        } catch (FederationException) {
+            // FederationDrop remains usable by email if a stale/invalid Google
+            // cookie is present. A valid Google session still overrides POST email.
+            return null;
         }
     }
 

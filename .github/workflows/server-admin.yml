@@ -106,6 +106,10 @@ jobs:
           grep -q "ARCADECLOUD_STRIPE_WEBHOOK_SECRET" drive/bin/arcadecloud-drive-admin-helper.php
           grep -q "managed_federation_drop_settings" drive/bin/arcadecloud-drive-admin-helper.php
           grep -q "managed_federation_drop_stripe" drive/bin/arcadecloud-drive-admin-helper.php
+          grep -q "ARCADECLOUD_DROP_GOOGLE_CLIENT_ID" drive/src/Admin/ManagedRuntimeEnvironment.php
+          grep -q "ARCADECLOUD_DROP_GOOGLE_CLIENT_SECRET" drive/bin/arcadecloud-drive-admin-helper.php
+          grep -q "ARCADECLOUD_DROP_GOOGLE_SESSION_SECRET" drive/bin/arcadecloud-drive-admin-helper.php
+          grep -q "managed_federation_drop_google" drive/bin/arcadecloud-drive-admin-helper.php
           grep -q "managed_replica_settings" drive/bin/arcadecloud-drive-admin-helper.php
           grep -q "DB_HOST" drive/src/Admin/ManagedRuntimeEnvironment.php
           grep -q "DB_PASSWORD" drive/src/Admin/ManagedRuntimeEnvironment.php

@@ -65,6 +65,8 @@ $requiredTables = [
     'FederationReplicaJobs',
     'FederationReplicaObjects',
     'FederationIngressQueue',
+    'FederationDropAccounts',
+    'FederationDropIdentities',
     'FederationDrops',
     'FederationDropPaymentEvents',
     'FederationDropIngressObjects',

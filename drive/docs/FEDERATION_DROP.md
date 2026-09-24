@@ -206,6 +206,61 @@ ARCADECLOUD_DROP_EGRESS_GB_CENTS
 
 Así la tarifa final se puede cambiar sin modificar código y puede incorporar tanto costo real como el margen/donativo de mantenimiento de la herramienta.
 
+## Registro con Google
+
+FederationDrop incorpora primero Google como identidad social, reutilizando la misma técnica OIDC endurecida de MCMA:
+
+- Authorization Code;
+- PKCE S256;
+- `state` y `nonce`;
+- discovery OIDC HTTPS;
+- ID token RS256;
+- JWKS;
+- validación de issuer, audience, `azp`, `exp`, `nbf`, `iat`, nonce y subject;
+- correo Google obligatorio y `email_verified=true`;
+- cookie de sesión cifrada con AES-256-GCM, `Secure`, `HttpOnly` y `SameSite=Strict`.
+
+La identidad Google pertenece a FederationDrop. **No crea una fila en `Users` ni concede acceso al Drive.**
+
+Tablas:
+
+- `FederationDropAccounts`: cuenta ligera del propietario;
+- `FederationDropIdentities`: proveedor/issuer/subject verificado;
+- `FederationDrops.OwnerAccountId`: vínculo opcional entre la orden y la cuenta.
+
+El modo por correo sigue disponible. Cuando existe una sesión Google válida, el backend ignora el correo enviado por el formulario y usa el correo verificado por Google como propietario de la orden.
+
+### Reutilizar el cliente Google de MCMA
+
+Se pueden reutilizar el mismo Google OAuth Client ID y Client Secret que ya usa MCMA, siempre que el cliente web de Google tenga también autorizado **exactamente** este redirect URI:
+
+```text
+https://drive.esforzados.com/federationdrop/google-callback.php
+```
+
+El callback de MCMA no se sustituye; se agrega esta segunda URI autorizada al mismo cliente, si se desea compartir credenciales.
+
+Configuración FederationDrop:
+
+```text
+ARCADECLOUD_DROP_GOOGLE_ENABLED=true
+ARCADECLOUD_DROP_GOOGLE_CLIENT_ID=<MISMO_GOOGLE_CLIENT_ID_DE_MCMA>
+ARCADECLOUD_DROP_GOOGLE_CLIENT_SECRET=<MISMO_GOOGLE_CLIENT_SECRET_DE_MCMA>
+ARCADECLOUD_DROP_GOOGLE_SESSION_SECRET=<SECRETO_ALEATORIO_DE_32_O_MAS_CARACTERES>
+ARCADECLOUD_DROP_GOOGLE_SESSION_TTL=28800
+```
+
+El secreto de sesión debe ser propio de FederationDrop; no es necesario copiar el secreto de cookie de MCMA. El panel de servidor trata `ARCADECLOUD_DROP_GOOGLE_CLIENT_SECRET` y `ARCADECLOUD_DROP_GOOGLE_SESSION_SECRET` como secretos y nunca devuelve sus valores al navegador.
+
+Endpoints:
+
+```text
+GET  /federationdrop/google-login.php
+GET  /federationdrop/google-callback.php
+POST /federationdrop/google-logout.php
+```
+
+En **Subir / pagar**, el usuario puede elegir **Continuar con Google**. Al volver de Google, el formulario muestra la cuenta conectada, prellena el correo verificado y permite cambiar de cuenta cerrando la sesión FederationDrop.
 ## Stripe
 
 FederationDrop usa Stripe Checkout directamente, siguiendo la técnica ya probada en MCMA:
@@ -274,6 +329,12 @@ ARCADECLOUD_DROP_COMMERCE_URL=https://drive.esforzados.com/federationdrop
 ARCADECLOUD_STRIPE_SECRET_KEY=<CLAVE_SECRETA_STRIPE>
 ARCADECLOUD_STRIPE_WEBHOOK_SECRET=<SECRETO_ENDPOINT_WEBHOOK_STRIPE>
 
+ARCADECLOUD_DROP_GOOGLE_ENABLED=true
+ARCADECLOUD_DROP_GOOGLE_CLIENT_ID=<GOOGLE_CLIENT_ID>
+ARCADECLOUD_DROP_GOOGLE_CLIENT_SECRET=<GOOGLE_CLIENT_SECRET>
+ARCADECLOUD_DROP_GOOGLE_SESSION_SECRET=<SECRETO_32_PLUS>
+ARCADECLOUD_DROP_GOOGLE_SESSION_TTL=28800
+
 ARCADECLOUD_DROP_CURRENCY=MXN
 ARCADECLOUD_DROP_BASE_FEE_CENTS=VALOR
 ARCADECLOUD_DROP_STORAGE_GB_DAY_CENTS=VALOR
@@ -285,7 +346,7 @@ ARCADECLOUD_DROP_MAX_DOWNLOADS=1000
 ARCADECLOUD_DROP_MAX_FILE_BYTES=5368709120
 ```
 
-Las claves Stripe están marcadas como secretos en `ManagedRuntimeEnvironment`: la UI administrativa informa si están configuradas, pero no devuelve su contenido al navegador.
+Las claves Stripe y los secretos Google están marcados como secretos en `ManagedRuntimeEnvironment`: la UI administrativa informa si están configurados, pero no devuelve su contenido al navegador.
 
 ### Configuración de un nodo federado normal
 
@@ -554,6 +615,8 @@ Implementado en esta fase:
 - cotización configurable;
 - orden comercial;
 - pago antes de almacenamiento;
+- Google OIDC para registrar/identificar propietarios sin crear cuentas de Drive;
+- cookies Google cifradas y correo verificado ligado a la orden;
 - Stripe Checkout real con precio dinámico calculado en servidor;
 - webhook Stripe firmado, con tolerancia temporal e idempotencia;
 - portal comercial canónico `drive.esforzados.com` para todos los nodos;

@@ -127,6 +127,8 @@ jobs:
             mysql -h127.0.0.1 -P"$port" -uroot -parcade-test-root arcade_test -Nse "SHOW TABLES LIKE 'FederationShareImportJobs'" | grep -q FederationShareImportJobs
             mysql -h127.0.0.1 -P"$port" -uroot -parcade-test-root arcade_test -Nse "SHOW TABLES LIKE 'FederationPublicImportJobs'" | grep -q FederationPublicImportJobs
             mysql -h127.0.0.1 -P"$port" -uroot -parcade-test-root arcade_test -Nse "SHOW TABLES LIKE 'FederationDropIngressObjects'" | grep -q FederationDropIngressObjects
+            mysql -h127.0.0.1 -P"$port" -uroot -parcade-test-root arcade_test -Nse "SHOW TABLES LIKE 'FederationDropAccounts'" | grep -q FederationDropAccounts
+            mysql -h127.0.0.1 -P"$port" -uroot -parcade-test-root arcade_test -Nse "SHOW TABLES LIKE 'FederationDropIdentities'" | grep -q FederationDropIdentities
             mysql -h127.0.0.1 -P"$port" -uroot -parcade-test-root arcade_test -Nse "SHOW COLUMNS FROM FederationShares LIKE 'LocalFileId'" | grep -q LocalFileId
             mysql -h127.0.0.1 -P"$port" -uroot -parcade-test-root arcade_test -Nse "SHOW COLUMNS FROM FederationShares LIKE 'ImportedContentId'" | grep -q ImportedContentId
           done
@@ -138,7 +140,7 @@ jobs:
           mysql -h127.0.0.1 -P3308 -uroot -parcade-test-root arcade_clean_a < adbbmis1_Cloud.sql
           mysql -h127.0.0.1 -P3308 -uroot -parcade-test-root arcade_clean_a < adbbmis1_Cloud.sql
 
-          test "$(mysql -h127.0.0.1 -P3308 -uroot -parcade-test-root -Nse "SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA='arcade_clean_a'")" -eq 65
+          test "$(mysql -h127.0.0.1 -P3308 -uroot -parcade-test-root -Nse "SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA='arcade_clean_a'")" -eq 67
           mysql -h127.0.0.1 -P3308 -uroot -parcade-test-root arcade_clean_a -Nse "SHOW TABLES LIKE 'S3SyncSeen'" | grep -q S3SyncSeen
           mysql -h127.0.0.1 -P3308 -uroot -parcade-test-root arcade_clean_a -Nse "SHOW INDEX FROM FileS3 WHERE Key_name='uq_files3_user_path_key'" | grep -q uq_files3_user_path_key
           ! mysql -h127.0.0.1 -P3308 -uroot -parcade-test-root arcade_clean_a -Nse "SHOW INDEX FROM FileS3 WHERE Key_name='uq_files3_user_key'" | grep -q uq_files3_user_key
@@ -148,7 +150,7 @@ jobs:
 
           mysql -h127.0.0.1 -P3308 -uroot -parcade-test-root -e "CREATE DATABASE arcade_clean_b CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci"
           mysql -h127.0.0.1 -P3308 -uroot -parcade-test-root arcade_clean_b < adbbmis1_Cloud.sql
-          test "$(mysql -h127.0.0.1 -P3308 -uroot -parcade-test-root -Nse "SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA='arcade_clean_b'")" -eq 65
+          test "$(mysql -h127.0.0.1 -P3308 -uroot -parcade-test-root -Nse "SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA='arcade_clean_b'")" -eq 67
 
       - name: Shares schema guards
         run: |
@@ -162,6 +164,9 @@ jobs:
           grep -q 'uq_fshare_import_version' adbbmis1_Cloud.sql
           grep -q 'FederationPublicImportJobs' adbbmis1_Cloud.sql
           grep -q 'FederationDropIngressObjects' adbbmis1_Cloud.sql
+          grep -q 'FederationDropAccounts' adbbmis1_Cloud.sql
+          grep -q 'FederationDropIdentities' adbbmis1_Cloud.sql
+          grep -q 'OwnerAccountId' adbbmis1_Cloud.sql
           grep -q 'uq_fpublic_import_version' adbbmis1_Cloud.sql
           grep -q 'information_schema.COLUMNS' adbbmis1_Cloud.sql
           ! grep -q 'ADD COLUMN IF NOT EXISTS' adbbmis1_Cloud.sql

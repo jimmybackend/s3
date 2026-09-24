@@ -21,12 +21,18 @@ $envNames = [
     'ARCADECLOUD_FEDERATION_REPLICA_SCOPE', 'ARCADECLOUD_DROP_ENABLED',
     'ARCADECLOUD_DROP_PUBLIC_URL', 'ARCADECLOUD_DROP_COMMERCE_URL',
     'ARCADECLOUD_STRIPE_SECRET_KEY', 'ARCADECLOUD_STRIPE_WEBHOOK_SECRET', 'ARCADECLOUD_DROP_CURRENCY',
-    'ARCADECLOUD_DROP_MAX_DAYS', 'ARCADECLOUD_SMTP_HOST',
+    'ARCADECLOUD_DROP_MAX_DAYS',
+    'ARCADECLOUD_DROP_GOOGLE_ENABLED', 'ARCADECLOUD_DROP_GOOGLE_CLIENT_ID',
+    'ARCADECLOUD_DROP_GOOGLE_CLIENT_SECRET', 'ARCADECLOUD_DROP_GOOGLE_SESSION_SECRET',
+    'ARCADECLOUD_DROP_GOOGLE_SESSION_TTL', 'ARCADECLOUD_SMTP_HOST',
     'ARCADECLOUD_SMTP_PASSWORD', 'DB_HOST', 'DB_PORT', 'DB_USER', 'DB_PASSWORD', 'DB_NAME',
     'AWS_REGION', 'AWS_S3_BUCKET', 'AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY',
 ];
 $stripeKey = 'sk_' . 'test_' . 'synthetic_drop_key';
 $stripeWebhook = 'whsec_' . 'synthetic_drop_webhook';
+$googleClientId = 'synthetic-google-client.apps.exampleusercontent.com';
+$googleClientSecret = 'synthetic-google-client-secret';
+$googleSessionSecret = 'synthetic-google-session-secret-1234567890';
 
 try {
     file_put_contents($path, "{}\n");
@@ -42,6 +48,11 @@ try {
         'ARCADECLOUD_STRIPE_WEBHOOK_SECRET' => $stripeWebhook,
         'ARCADECLOUD_DROP_CURRENCY' => 'MXN',
         'ARCADECLOUD_DROP_MAX_DAYS' => '30',
+        'ARCADECLOUD_DROP_GOOGLE_ENABLED' => 'true',
+        'ARCADECLOUD_DROP_GOOGLE_CLIENT_ID' => $googleClientId,
+        'ARCADECLOUD_DROP_GOOGLE_CLIENT_SECRET' => $googleClientSecret,
+        'ARCADECLOUD_DROP_GOOGLE_SESSION_SECRET' => $googleSessionSecret,
+        'ARCADECLOUD_DROP_GOOGLE_SESSION_TTL' => '28800',
         'ARCADECLOUD_SMTP_HOST' => 'smtp.example.test',
         'ARCADECLOUD_SMTP_PASSWORD' => 'synthetic-secret-only',
         'DB_HOST' => 'db.example.test',
@@ -61,6 +72,9 @@ try {
     serverAdminOk(getenv('ARCADECLOUD_DROP_ENABLED') === 'true', 'carga FederationDrop administrado');
     serverAdminOk(getenv('ARCADECLOUD_STRIPE_SECRET_KEY') === $stripeKey, 'carga clave Stripe FederationDrop');
     serverAdminOk(getenv('ARCADECLOUD_STRIPE_WEBHOOK_SECRET') === $stripeWebhook, 'carga secreto webhook Stripe FederationDrop');
+    serverAdminOk(getenv('ARCADECLOUD_DROP_GOOGLE_CLIENT_ID') === $googleClientId, 'carga Google Client ID FederationDrop');
+    serverAdminOk(getenv('ARCADECLOUD_DROP_GOOGLE_CLIENT_SECRET') === $googleClientSecret, 'carga Google Client Secret FederationDrop');
+    serverAdminOk(getenv('ARCADECLOUD_DROP_GOOGLE_SESSION_SECRET') === $googleSessionSecret, 'carga secreto de sesión Google FederationDrop');
     serverAdminOk(getenv('ARCADECLOUD_SMTP_PASSWORD') === 'synthetic-secret-only', 'carga secreto SMTP');
     serverAdminOk(getenv('DB_HOST') === 'db.example.test', 'carga DB_HOST administrado');
     serverAdminOk(getenv('DB_PASSWORD') === 'synthetic-db-secret', 'carga DB_PASSWORD administrado');
@@ -74,6 +88,8 @@ try {
 
     serverAdminOk(($byName['ARCADECLOUD_STRIPE_SECRET_KEY']['value'] ?? 'x') === '', 'no devuelve clave Stripe al navegador');
     serverAdminOk(($byName['ARCADECLOUD_STRIPE_WEBHOOK_SECRET']['value'] ?? 'x') === '', 'no devuelve secreto webhook Stripe al navegador');
+    serverAdminOk(($byName['ARCADECLOUD_DROP_GOOGLE_CLIENT_SECRET']['value'] ?? 'x') === '', 'no devuelve Google Client Secret al navegador');
+    serverAdminOk(($byName['ARCADECLOUD_DROP_GOOGLE_SESSION_SECRET']['value'] ?? 'x') === '', 'no devuelve secreto de sesión Google al navegador');
     serverAdminOk(($byName['ARCADECLOUD_SMTP_PASSWORD']['value'] ?? 'x') === '', 'no devuelve SMTP password al navegador');
     serverAdminOk(($byName['DB_PASSWORD']['value'] ?? 'x') === '', 'no devuelve DB_PASSWORD al navegador');
     serverAdminOk(($byName['AWS_ACCESS_KEY_ID']['value'] ?? 'x') === '', 'no devuelve AWS access key al navegador');
@@ -128,6 +144,26 @@ try {
         ManagedRuntimeEnvironment::validateValue('ARCADECLOUD_STRIPE_WEBHOOK_SECRET', $stripeWebhook) === $stripeWebhook,
         'acepta secreto webhook Stripe FederationDrop'
     );
+    serverAdminOk(
+        ManagedRuntimeEnvironment::validateValue('ARCADECLOUD_DROP_GOOGLE_ENABLED', 'true') === 'true',
+        'acepta Google FederationDrop habilitado'
+    );
+    serverAdminOk(
+        ManagedRuntimeEnvironment::validateValue('ARCADECLOUD_DROP_GOOGLE_CLIENT_ID', $googleClientId) === $googleClientId,
+        'acepta Google Client ID FederationDrop'
+    );
+    serverAdminOk(
+        ManagedRuntimeEnvironment::validateValue('ARCADECLOUD_DROP_GOOGLE_CLIENT_SECRET', $googleClientSecret) === $googleClientSecret,
+        'acepta Google Client Secret FederationDrop'
+    );
+    serverAdminOk(
+        ManagedRuntimeEnvironment::validateValue('ARCADECLOUD_DROP_GOOGLE_SESSION_SECRET', $googleSessionSecret) === $googleSessionSecret,
+        'acepta secreto de sesión Google FederationDrop'
+    );
+    serverAdminOk(
+        ManagedRuntimeEnvironment::validateValue('ARCADECLOUD_DROP_GOOGLE_SESSION_TTL', '28800') === '28800',
+        'acepta TTL de sesión Google FederationDrop'
+    );
 
     $rejected = false;
     try { ManagedRuntimeEnvironment::validateValue('PATH', '/tmp'); } catch (RuntimeException) { $rejected = true; }
@@ -156,6 +192,14 @@ try {
     $rejected = false;
     try { ManagedRuntimeEnvironment::validateValue('ARCADECLOUD_STRIPE_WEBHOOK_SECRET', 'invalid'); } catch (RuntimeException) { $rejected = true; }
     serverAdminOk($rejected, 'rechaza secreto webhook Stripe inválido');
+
+    $rejected = false;
+    try { ManagedRuntimeEnvironment::validateValue('ARCADECLOUD_DROP_GOOGLE_SESSION_SECRET', 'short'); } catch (RuntimeException) { $rejected = true; }
+    serverAdminOk($rejected, 'rechaza secreto Google FederationDrop demasiado corto');
+
+    $rejected = false;
+    try { ManagedRuntimeEnvironment::validateValue('ARCADECLOUD_DROP_GOOGLE_SESSION_TTL', '60'); } catch (RuntimeException) { $rejected = true; }
+    serverAdminOk($rejected, 'rechaza TTL Google FederationDrop demasiado corto');
 
     fwrite(STDOUT, "server admin config smoke: OK\n");
 } finally {

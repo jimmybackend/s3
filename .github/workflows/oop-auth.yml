@@ -17,6 +17,7 @@ on:
       - 'drive/src/Http/Controller/AuthController.php'
       - 'drive/src/Core/DriveApplication.php'
       - 'drive/tests/password_credential_verifier_smoke.php'
+      - 'drive/tests/index_federation_drop_smoke.php'
       - '.github/workflows/oop-auth.yml'
   pull_request:
     paths:
@@ -31,6 +32,7 @@ on:
       - 'drive/src/Http/Controller/AuthController.php'
       - 'drive/src/Core/DriveApplication.php'
       - 'drive/tests/password_credential_verifier_smoke.php'
+      - 'drive/tests/index_federation_drop_smoke.php'
       - '.github/workflows/oop-auth.yml'
   workflow_dispatch:
 
@@ -54,11 +56,14 @@ jobs:
           php -l drive/src/Security/PasswordCredentialVerifier.php
           php -l drive/src/Security/SessionManager.php
           php -l drive/tests/password_credential_verifier_smoke.php
+          php -l drive/tests/index_federation_drop_smoke.php
           php -l drive/src/Http/Controller/AuthController.php
           php -l drive/src/Core/DriveApplication.php
 
-      - name: Password credential smoke test
-        run: php drive/tests/password_credential_verifier_smoke.php
+      - name: Authentication and public entry smoke tests
+        run: |
+          php drive/tests/password_credential_verifier_smoke.php
+          php drive/tests/index_federation_drop_smoke.php
 
       - name: Audit thin authentication endpoints
         run: |

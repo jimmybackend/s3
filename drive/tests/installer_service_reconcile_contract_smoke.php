@@ -13,6 +13,7 @@ function installerContract(bool $condition, string $message): void
 }
 
 $installer = (string)file_get_contents($repo . '/drive/bin/install_arcadecloud.sh');
+$serverPrep = (string)file_get_contents($repo . '/drive/bin/install_arcadecloud_server.sh');
 $reconciler = (string)file_get_contents($repo . '/drive/bin/reconcile_arcadecloud_services.sh');
 $uninstaller = (string)file_get_contents($repo . '/drive/bin/uninstall_arcadecloud.sh');
 $updater = (string)file_get_contents($repo . '/drive/bin/arcadecloud-drive-updater.php');
@@ -21,51 +22,21 @@ $mediaInstaller = (string)file_get_contents($repo . '/drive/bin/install_media_pr
 $bootstrap = (string)file_get_contents($repo . '/drive/bin/media_worker_node_bootstrap.sh');
 $managed = (string)file_get_contents($repo . '/drive/src/Admin/ManagedRuntimeEnvironment.php');
 $helper = (string)file_get_contents($repo . '/drive/bin/arcadecloud-drive-admin-helper.php');
-$serverPrep = (string)file_get_contents($repo . '/drive/bin/install_arcadecloud_server.sh');
 
 installerContract(str_contains($installer, '--reconcile'), 'instalador ofrece reconciliación idempotente');
 installerContract(str_contains($installer, '--node-role='), 'instalador distingue rol web/media-worker/combined');
 installerContract(str_contains($installer, '--media-worker-instance-id='), 'instalador puede guardar la EC2 multimedia controlada');
 installerContract(str_contains($installer, 'persist_node_settings'), 'instalador persiste rol y configuración de media');
 installerContract(str_contains($installer, 'reconcile_services'), 'finalización invoca reconciliación de servicios');
-installerContract(str_contains($installer, '--node-role="
+installerContract(
+    str_contains($installer, '--node-role="' . '$' . '{NODE_ROLE:-web}"'),
+    'rol llega al preparador del sistema'
+);
 
-installerContract(str_contains($reconciler, 'ROLE="web"'), 'rol seguro por defecto es web');
-installerContract(str_contains($reconciler, 'install_media_processing_worker.sh'), 'rol multimedia instala worker');
-installerContract(str_contains($reconciler, 'install_transcribe_reconcile_timer.sh'), 'rol web instala reconciliación Transcribe');
-installerContract(str_contains($reconciler, 'install_polly_reconcile_timer.sh'), 'rol web instala reconciliación Polly');
-installerContract(str_contains($reconciler, 'systemctl restart php-fpm-drive.service'), 'reconciliación reinicia PHP-FPM administrado');
-
-installerContract(str_contains($updater, 'reconcileServices'), 'updater web reconcilia servicios tras fast-forward');
-installerContract(str_contains($updater, "'needs_attention'"), 'updater informa si código quedó actualizado pero servicios requieren atención');
-installerContract(str_contains($updaterInstaller, '"php_user": php_user'), 'configuración del updater conserva usuario PHP-FPM');
-
-installerContract(str_contains($uninstaller, 'arcadecloud-media-worker.service'), 'desinstalador retira worker multimedia');
-installerContract(str_contains($uninstaller, 'arcadecloud-media-node-bootstrap.service'), 'desinstalador retira bootstrap multimedia');
-installerContract(str_contains($uninstaller, '/var/lib/arcadecloud-media'), 'desinstalador retira temporales locales multimedia');
-
-installerContract(str_contains($mediaInstaller, 'ARCADECLOUD_RUNTIME_ENV'), 'worker usa runtime administrado canónico');
-installerContract(!str_contains($mediaInstaller, 'User=nginx'), 'worker no fija nginx como usuario universal');
-installerContract(str_contains($bootstrap, 'runtime-env.json'), 'bootstrap de réplica usa runtime-env.json');
-installerContract(str_contains($bootstrap, 'arcadecloud-drive-admin'), 'bootstrap actualiza configuración mediante helper privilegiado');
-
-foreach ([
-    'ARCADECLOUD_NODE_ROLE',
-    'ARCADECLOUD_MEDIA_WORKER_INSTANCE_ID',
-    'ARCADECLOUD_MEDIA_WORKER_REGION',
-    'ARCADECLOUD_MEDIA_WORKER_HOURLY_USD',
-    'ARCADECLOUD_MEDIA_WORKER_IDLE_GRACE_SECONDS',
-    'ARCADECLOUD_FEDERATION_DYNAMIC_IP',
-] as $name) {
-    installerContract(str_contains($managed, "'{$name}'"), "runtime administrado permite {$name}");
-    installerContract(str_contains($helper, "'{$name}'"), "helper privilegiado permite {$name}");
-}
-
-fwrite(STDOUT, "Installer/service reconciliation contract: OK\n");
- . '{NODE_ROLE:-web}"'), 'rol llega al preparador del sistema');
+installerContract(str_contains($serverPrep, 'install_media_dependencies'), 'dependencias multimedia están encapsuladas por rol');
+installerContract(str_contains($serverPrep, 'spal-release'), 'media-worker prepara SPAL');
 installerContract(str_contains($serverPrep, 'ffmpeg-free'), 'media-worker instala FFmpeg desde AL2023 SPAL');
 installerContract(str_contains($serverPrep, 'lame-libs'), 'media-worker instala librerías LAME');
-installerContract(str_contains($serverPrep, 'install_media_dependencies'), 'dependencias multimedia están encapsuladas por rol');
 
 installerContract(str_contains($reconciler, 'ROLE="web"'), 'rol seguro por defecto es web');
 installerContract(str_contains($reconciler, 'install_media_processing_worker.sh'), 'rol multimedia instala worker');
@@ -82,6 +53,7 @@ installerContract(str_contains($uninstaller, 'arcadecloud-media-node-bootstrap.s
 installerContract(str_contains($uninstaller, '/var/lib/arcadecloud-media'), 'desinstalador retira temporales locales multimedia');
 
 installerContract(str_contains($mediaInstaller, 'ARCADECLOUD_RUNTIME_ENV'), 'worker usa runtime administrado canónico');
+installerContract(str_contains($mediaInstaller, 'php ffmpeg ffprobe lame'), 'worker exige herramientas multimedia completas');
 installerContract(!str_contains($mediaInstaller, 'User=nginx'), 'worker no fija nginx como usuario universal');
 installerContract(str_contains($bootstrap, 'runtime-env.json'), 'bootstrap de réplica usa runtime-env.json');
 installerContract(str_contains($bootstrap, 'arcadecloud-drive-admin'), 'bootstrap actualiza configuración mediante helper privilegiado');

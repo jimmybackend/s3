@@ -1,11 +1,11 @@
 {
   "summary": {
-    "php_total": 422,
-    "php_class_modules": 251,
+    "php_total": 428,
+    "php_class_modules": 255,
     "php_needs_migration": 0,
     "php_tests": 35,
-    "js_total": 47,
-    "js_class_modules": 47,
+    "js_total": 48,
+    "js_class_modules": 48,
     "js_needs_migration": 0,
     "js_compatibility_facades": 7
   },
@@ -296,6 +296,21 @@
       "issues": []
     },
     {
+      "path": "drive/bin/media_processing_worker.php",
+      "lines": 29,
+      "kind": "thin cli entrypoint",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
       "path": "drive/bin/move_job_worker.php",
       "lines": 11,
       "kind": "thin cli entrypoint",
@@ -402,7 +417,7 @@
     },
     {
       "path": "drive/bloque_archivos.php",
-      "lines": 662,
+      "lines": 702,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -1437,6 +1452,21 @@
       "issues": []
     },
     {
+      "path": "drive/media_processing.php",
+      "lines": 10,
+      "kind": "thin endpoint",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
       "path": "drive/move_multiple.php",
       "lines": 10,
       "kind": "thin endpoint",
@@ -1693,7 +1723,7 @@
     },
     {
       "path": "drive/s3.php",
-      "lines": 2234,
+      "lines": 2236,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -2468,6 +2498,21 @@
     {
       "path": "drive/src/Aws/TranslateFileService.php",
       "lines": 60,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Console/MediaProcessingWorkerCommand.php",
+      "lines": 380,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -3682,7 +3727,7 @@
     },
     {
       "path": "drive/src/Http/Controller/BackgroundTaskController.php",
-      "lines": 754,
+      "lines": 818,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -4073,6 +4118,21 @@
       "issues": []
     },
     {
+      "path": "drive/src/Http/Controller/MediaProcessingController.php",
+      "lines": 30,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
       "path": "drive/src/Http/Controller/MoveJobController.php",
       "lines": 164,
       "kind": "class/module",
@@ -4411,6 +4471,36 @@
     {
       "path": "drive/src/Media/MediaPlaylistService.php",
       "lines": 66,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Media/MediaProcessingJobRepository.php",
+      "lines": 256,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": true,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Media/MediaProcessingService.php",
+      "lines": 82,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -5507,7 +5597,7 @@
     },
     {
       "path": "drive/tests/database_schema_contract_smoke.php",
-      "lines": 102,
+      "lines": 103,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -6899,6 +6989,22 @@
       "functions": [],
       "window_assign": [
         "__floatingMediaBound"
+      ],
+      "window_func": [],
+      "top_vars": [],
+      "iife": false,
+      "issues": []
+    },
+    {
+      "path": "drive/js/media-processing.js",
+      "lines": 111,
+      "kind": "class/module",
+      "classes": [
+        "MediaProcessingModule"
+      ],
+      "functions": [],
+      "window_assign": [
+        "__mediaProcessingBound"
       ],
       "window_func": [],
       "top_vars": [],

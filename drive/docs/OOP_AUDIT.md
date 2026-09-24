@@ -4,12 +4,12 @@
 
 ## Resumen
 
-- PHP analizados: **422**
-- PHP que ya contienen clases/interfaces: **251**
+- PHP analizados: **428**
+- PHP que ya contienen clases/interfaces: **255**
 - PHP marcados para migración/revisión: **0**
 - Tests PHP separados del objetivo OOP de runtime: **35**
-- JavaScript analizados: **47**
-- JavaScript que ya contienen clases: **47**
+- JavaScript analizados: **48**
+- JavaScript que ya contienen clases: **48**
 - JavaScript sin clase/encapsulación OOP: **0**
 - JavaScript OOP con fachada `window` de compatibilidad: **7**
 
@@ -45,6 +45,7 @@
 | `drive/bin/federation_provider_request.php` | 90 | thin cli entrypoint | 0 | — | — | — | — |
 | `drive/bin/federation_replica_presence.php` | 21 | thin cli entrypoint | 0 | — | — | — | — |
 | `drive/bin/federation_sync.php` | 37 | thin cli entrypoint | 0 | — | — | — | — |
+| `drive/bin/media_processing_worker.php` | 29 | thin cli entrypoint | 0 | — | — | — | — |
 | `drive/bin/move_job_worker.php` | 11 | thin cli entrypoint | 0 | — | — | — | — |
 | `drive/bin/polly_reconcile.php` | 50 | thin cli entrypoint | 0 | — | — | — | — |
 | `drive/bin/sync_node_worker.php` | 75 | thin cli entrypoint | 0 | — | — | — | — |
@@ -52,7 +53,7 @@
 | `drive/bin/sync_worker.php` | 11 | thin cli entrypoint | 0 | — | — | — | — |
 | `drive/bin/transcribe_reconcile.php` | 54 | thin cli entrypoint | 0 | — | — | — | — |
 | `drive/bin/upload_cleanup.php` | 11 | thin cli entrypoint | 0 | — | — | — | — |
-| `drive/bloque_archivos.php` | 662 | view/entrypoint | 0 | ⚠️ | — | — | — |
+| `drive/bloque_archivos.php` | 702 | view/entrypoint | 0 | ⚠️ | — | — | — |
 | `drive/bloque_carpetas.php` | 226 | view/entrypoint | 0 | ⚠️ | — | — | — |
 | `drive/bloque_footer.php` | 207 | view/entrypoint | 0 | ⚠️ | — | — | — |
 | `drive/buscar_archivo.php` | 10 | thin endpoint | 0 | — | — | — | — |
@@ -120,6 +121,7 @@
 | `drive/login.php` | 93 | view/entrypoint | 0 | — | — | — | — |
 | `drive/logout.php` | 14 | thin endpoint | 0 | — | — | — | — |
 | `drive/media_playlist.php` | 10 | thin endpoint | 0 | — | — | — | — |
+| `drive/media_processing.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/move_multiple.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/move_task.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/move_task_status.php` | 10 | thin endpoint | 0 | — | — | — | — |
@@ -137,7 +139,7 @@
 | `drive/relock_file.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/renombrar_archivo.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/renombrar_carpeta.php` | 10 | thin endpoint | 0 | — | — | — | — |
-| `drive/s3.php` | 2234 | view/entrypoint | 0 | ⚠️ | — | — | — |
+| `drive/s3.php` | 2236 | view/entrypoint | 0 | ⚠️ | — | — | — |
 | `drive/server-settings.php` | 11 | thin endpoint | 0 | — | — | — | — |
 | `drive/set_file_security.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/setup/api.php` | 14 | thin endpoint | 0 | — | — | — | — |
@@ -189,6 +191,7 @@
 | `drive/src/Aws/TextractFileService.php` | 107 | class/module | 1 | — | — | — | — |
 | `drive/src/Aws/TranscriptionFileService.php` | 477 | class/module | 1 | — | — | — | — |
 | `drive/src/Aws/TranslateFileService.php` | 60 | class/module | 1 | — | — | — | — |
+| `drive/src/Console/MediaProcessingWorkerCommand.php` | 380 | class/module | 1 | — | — | — | — |
 | `drive/src/Console/MoveJobWorkerCommand.php` | 137 | class/module | 1 | — | — | — | — |
 | `drive/src/Console/SyncWorkerCommand.php` | 182 | class/module | 1 | — | — | — | — |
 | `drive/src/Console/UploadCleanupCommand.php` | 61 | class/module | 1 | — | — | — | — |
@@ -269,7 +272,7 @@
 | `drive/src/Http/Controller/AwsCostController.php` | 61 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/AwsFileController.php` | 338 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/BackgroundTaskCompatibilityController.php` | 245 | class/module | 1 | — | ⚠️ | — | — |
-| `drive/src/Http/Controller/BackgroundTaskController.php` | 754 | class/module | 1 | — | ⚠️ | — | — |
+| `drive/src/Http/Controller/BackgroundTaskController.php` | 818 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Http/Controller/FederationAccessController.php` | 123 | class/module | 1 | ⚠️ | — | — | — |
 | `drive/src/Http/Controller/FederationCatalogController.php` | 144 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/FederationCollectionController.php` | 131 | class/module | 1 | — | — | — | — |
@@ -295,6 +298,7 @@
 | `drive/src/Http/Controller/FolderQueryController.php` | 30 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/LegacyUploadController.php` | 154 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/MediaPlaylistController.php` | 35 | class/module | 1 | — | — | — | — |
+| `drive/src/Http/Controller/MediaProcessingController.php` | 30 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/MoveJobController.php` | 164 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/NavigationController.php` | 42 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/PersonalAwsController.php` | 74 | class/module | 1 | — | — | — | — |
@@ -318,6 +322,8 @@
 | `drive/src/Mail/SmtpEmailService.php` | 346 | class/module | 1 | — | — | — | — |
 | `drive/src/Media/MediaPlaylistRepository.php` | 49 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Media/MediaPlaylistService.php` | 66 | class/module | 1 | — | — | — | — |
+| `drive/src/Media/MediaProcessingJobRepository.php` | 256 | class/module | 1 | — | ⚠️ | — | — |
+| `drive/src/Media/MediaProcessingService.php` | 82 | class/module | 1 | — | — | — | — |
 | `drive/src/Media/ThumbnailService.php` | 380 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Security/AuthenticationRepository.php` | 75 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Security/AuthenticationService.php` | 55 | class/module | 1 | — | — | — | — |
@@ -389,7 +395,7 @@
 | `drive/tests/activity_costs_smoke.php` | 150 | test script | 0 | — | — | — | — |
 | `drive/tests/arcadelink_bulk_contract_regression.php` | 71 | test script | 0 | — | — | — | — |
 | `drive/tests/arcadelink_collection_regression.php` | 46 | test script | 0 | — | — | — | — |
-| `drive/tests/database_schema_contract_smoke.php` | 102 | test script | 0 | — | — | — | — |
+| `drive/tests/database_schema_contract_smoke.php` | 103 | test script | 0 | — | — | — | — |
 | `drive/tests/federation_access_message_smoke.php` | 72 | test script | 0 | — | — | — | — |
 | `drive/tests/federation_catalog_event_smoke.php` | 60 | test script | 0 | — | — | — | — |
 | `drive/tests/federation_customs_contract_smoke.php` | 80 | test script | 0 | — | — | — | — |
@@ -479,6 +485,7 @@
 | `drive/js/folder-document.js` | 430 | class/module | FolderDocumentModule | — | — | — |
 | `drive/js/imagenes.js` | 535 | class/module | ImagenesModule | — | getGaleriaGridSize, setGaleriaGridSize | window functions: getGaleriaGridSize, setGaleriaGridSize |
 | `drive/js/media-floating.js` | 696 | class/module | MediaFloatingApp | — | — | — |
+| `drive/js/media-processing.js` | 111 | class/module | MediaProcessingModule | — | — | — |
 | `drive/js/mediaFloating.js` | 38 | class/module | MediaFloatingModule | — | — | — |
 | `drive/js/move-tasks.js` | 248 | class/module | DriveMoveTasks | — | — | — |
 | `drive/js/obtenerFiltros.js` | 125 | class/module | ObtenerFiltrosModule | — | — | — |

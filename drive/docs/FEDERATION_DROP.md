@@ -44,9 +44,9 @@ drive.esforzados.com/federationdrop/
 crear orden
      |
      v
-pago externo
+Stripe Checkout
      |
-     | webhook HMAC confirmado
+     | Stripe-Signature verificada
      v
 autorizar PUT temporal
      |
@@ -82,7 +82,7 @@ MySQL conserva:
 - SHA-256 de ambos tokens para validación;
 - una copia cifrada con Sodium `secretbox` para poder reconstruir los enlaces que se envían al correo después de activar el servicio.
 
-La clave de ese cifrado se deriva de la identidad estable del nodo FederationCloud con separación de dominio; no depende del secreto del procesador de pagos. Por eso se puede rotar `ARCADECLOUD_DROP_WEBHOOK_SECRET` sin invalidar los tokens cifrados de Drops existentes.
+La clave de ese cifrado se deriva de la identidad estable del nodo FederationCloud con separación de dominio; no depende de las claves de Stripe. Por eso se pueden rotar `ARCADECLOUD_STRIPE_SECRET_KEY` y `ARCADECLOUD_STRIPE_WEBHOOK_SECRET` sin invalidar los tokens cifrados de Drops existentes.
 
 Los tokens no se almacenan en texto plano.
 
@@ -142,89 +142,75 @@ ARCADECLOUD_DROP_EGRESS_GB_CENTS
 
 Así la tarifa final se puede cambiar sin modificar código y puede incorporar tanto costo real como el margen/donativo de mantenimiento de la herramienta.
 
-## Pasarela de pago
+## Stripe
 
-El repositorio **no selecciona ni simula una pasarela de pago**. Actualmente no existe Stripe, PayPal, Mercado Pago u otro SDK de cobro en el proyecto.
+FederationDrop usa Stripe Checkout directamente, siguiendo la técnica ya probada en MCMA:
 
-FederationDrop define un adaptador neutral mediante:
+- la clave secreta Stripe sólo existe en el nodo comercial;
+- la orden y el precio se calculan primero en MySQL;
+- el navegador nunca decide el importe;
+- `client_reference_id` se liga a `drop_id`;
+- la metadata lleva `arcadecloud_drop_id`, tamaño, retención, descargas y una huella SHA-256 de la cotización;
+- la misma metadata se copia al PaymentIntent;
+- el webhook se valida con `Stripe-Signature`, HMAC-SHA256 y tolerancia de 300 segundos;
+- `livemode` debe coincidir con la clave configurada;
+- Stripe debe devolver exactamente el importe y la moneda guardados en `FederationDrops`;
+- `event_id` se registra en `FederationDropPaymentEvents`, por lo que los reintentos son idempotentes.
 
-```text
-ARCADECLOUD_DROP_CHECKOUT_URL
-ARCADECLOUD_DROP_WEBHOOK_SECRET
-```
+FederationDrop procesa:
 
-El checkout recibe:
+- `checkout.session.completed`;
+- `checkout.session.async_payment_succeeded`;
+- `checkout.session.async_payment_failed`;
+- `charge.refunded` para reembolso total.
 
-```text
-drop_id
-amount_cents
-currency
-return_url
-webhook_url
-signature
-```
+Un `failed` tardío no degrada una orden ya pagada. Un reembolso total bloquea el Drop y retira el objeto físico cuando existe.
 
-La firma del checkout cubre:
-
-```text
-drop_id | amount_cents | currency | return_url | webhook_url
-```
-
-con HMAC-SHA256 usando `ARCADECLOUD_DROP_WEBHOOK_SECRET`.
-
-El adaptador de pago debe comprobar esa firma antes de iniciar el cobro. No debe aceptar valores sustituidos por el navegador.
-
-Después de confirmar el pago, el adaptador envía un JSON al `webhook_url`:
-
-```json
-{
-  "event_id": "evt_unique",
-  "drop_id": "fdp_...",
-  "provider": "nombre-del-proveedor",
-  "reference": "referencia-del-cobro",
-  "status": "paid",
-  "amount_cents": 12345,
-  "currency": "MXN"
-}
-```
-
-Estados soportados:
-
-- `paid`
-- `failed`
-- `refunded`
-
-El cuerpo JSON **exacto** se firma:
+El endpoint que debe configurarse en Stripe es:
 
 ```text
-hex(HMAC-SHA256(raw_http_body, ARCADECLOUD_DROP_WEBHOOK_SECRET))
+https://drive.esforzados.com/federationdrop/api.php?action=stripe-webhook
 ```
 
-y se envía en:
+También se conserva `action=payment-webhook` como alias de transición, pero ambos exigen la cabecera nativa `Stripe-Signature`.
+
+### Portal comercial canónico
+
+Todos los nodos FederationCloud conocen:
 
 ```text
-X-ArcadeCloud-Drop-Signature: <hex>
+ARCADECLOUD_DROP_COMMERCE_URL=https://drive.esforzados.com/federationdrop
 ```
 
-FederationDrop verifica además que monto y moneda sean exactamente los almacenados en la orden.
+Ese valor tiene un default explícito a `drive.esforzados.com`.
 
-`event_id` es único, por lo que los reintentos del procesador son idempotentes.
+En un nodo externo, el botón **Subir / pagar** del portal FederationCloud y del lector ArcadeLink envía al usuario al portal comercial central y añade `?source=<dominio-del-nodo>`.
 
-Un evento `failed` tardío no puede degradar una orden ya pagada. Un `refunded` bloquea el Drop y retira su objeto físico cuando existe.
+El nodo externo:
 
-## Configuración
+- no crea la orden;
+- no recibe el dinero;
+- no conoce claves Stripe;
+- no recibe credenciales AWS comerciales;
+- no custodia el archivo pagado en fase 1.
 
-FederationDrop comienza desactivado. Poner `ARCADECLOUD_DROP_ENABLED=false` detiene **nuevas órdenes**, pero los webhooks firmados de órdenes ya iniciadas siguen siendo aceptados mientras el secreto del webhook permanezca configurado. Esto evita dejar un pago ya iniciado sin conciliación durante mantenimiento.
+Sólo el nodo cuya `ARCADECLOUD_DROP_PUBLIC_URL` coincide con `ARCADECLOUD_DROP_COMMERCE_URL` puede habilitar ventas y procesar webhooks comerciales.
 
-Ejemplo de valores **de referencia**, no una tarifa recomendada:
+### Configuración del nodo comercial
+
+FederationDrop comienza desactivado. `ARCADECLOUD_DROP_ENABLED=false` detiene nuevas órdenes, pero el nodo comercial sigue aceptando webhooks Stripe válidos de pagos ya iniciados mientras las claves Stripe continúen configuradas.
+
+Ejemplo de configuración:
 
 ```text
 ARCADECLOUD_DROP_ENABLED=true
 ARCADECLOUD_DROP_PUBLIC_URL=https://drive.esforzados.com/federationdrop
-ARCADECLOUD_DROP_CHECKOUT_URL=https://PAGO-EJEMPLO/checkout/federationdrop
-ARCADECLOUD_DROP_WEBHOOK_SECRET=GENERAR_UN_SECRETO_ALEATORIO_DE_AL_MENOS_32_CARACTERES
-ARCADECLOUD_DROP_CURRENCY=MXN
+ARCADECLOUD_DROP_COMMERCE_URL=https://drive.esforzados.com/federationdrop
 
+ARCADECLOUD_STRIPE_SECRET_KEY=<CLAVE_SECRETA_STRIPE>
+ARCADECLOUD_STRIPE_WEBHOOK_SECRET=<SECRETO_ENDPOINT_WEBHOOK_STRIPE>
+
+ARCADECLOUD_DROP_CURRENCY=MXN
 ARCADECLOUD_DROP_BASE_FEE_CENTS=VALOR
 ARCADECLOUD_DROP_STORAGE_GB_DAY_CENTS=VALOR
 ARCADECLOUD_DROP_EGRESS_GB_CENTS=VALOR
@@ -235,7 +221,18 @@ ARCADECLOUD_DROP_MAX_DOWNLOADS=1000
 ARCADECLOUD_DROP_MAX_FILE_BYTES=5368709120
 ```
 
-Estas variables están incluidas en `ManagedRuntimeEnvironment` y en la allowlist del helper administrativo; por tanto pueden administrarse desde Configuración avanzada del servidor.
+Las claves Stripe están marcadas como secretos en `ManagedRuntimeEnvironment`: la UI administrativa informa si están configuradas, pero no devuelve su contenido al navegador.
+
+### Configuración de un nodo federado normal
+
+No necesita Stripe. Basta con conocer el portal comercial:
+
+```text
+ARCADECLOUD_DROP_ENABLED=false
+ARCADECLOUD_DROP_COMMERCE_URL=https://drive.esforzados.com/federationdrop
+```
+
+El enlace comercial sigue funcionando aunque el nodo tenga otro dominio.
 
 ## S3 y CORS
 
@@ -476,8 +473,9 @@ Implementado en esta fase:
 - cotización configurable;
 - orden comercial;
 - pago antes de almacenamiento;
-- contrato de checkout neutral;
-- webhook firmado e idempotente;
+- Stripe Checkout real con precio dinámico calculado en servidor;
+- webhook Stripe firmado, con tolerancia temporal e idempotencia;
+- portal comercial canónico `drive.esforzados.com` para todos los nodos;
 - upload directo a S3 privado;
 - validación de tamaño del objeto;
 - enlaces públicos;
@@ -489,11 +487,10 @@ Implementado en esta fase:
 - badge para dominios externos;
 - esquema de proveedores/porcentajes/garantías.
 
-Pendiente deliberadamente de seleccionar proveedor:
+Pendiente para la fase comercial distribuida:
 
-- integración concreta con Stripe, PayPal, Mercado Pago u otra pasarela;
 - liquidación automática a proveedores comerciales;
 - asignación automática de objetos pagados a proveedores externos;
 - réplica comercial dual automática.
 
-Esas tres últimas funciones no deben activarse antes de tener la garantía de disponibilidad implementada.
+Estas funciones no deben activarse antes de tener la garantía de disponibilidad implementada. Stripe ya está integrado para el nodo comercial central.

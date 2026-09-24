@@ -228,8 +228,24 @@ final class FederationReplicaService
                     if (!is_array($offer) || array_is_list($offer)) throw new FederationException('Oferta almacenada inválida.', 500);
                     $offer = $this->codec->verifyOffer($offer);
                     $this->replicas->markTransferring($offerId);
-                    $download = (new FederationReplicaDownloader())->download(
-                        (string)$offer['source_url'],
+                    $sourceUrls = [];
+                    try {
+                        $resolvedSources = (new FederationReplicaResolverService($this->app))->publicSources(
+                            (string)$offer['resource_id'],
+                            FederationMultiSourceDownloader::MAX_SOURCES
+                        );
+                        foreach ((array)($resolvedSources['sources'] ?? []) as $source) {
+                            if (is_array($source) && is_string($source['url'] ?? null) && $source['url'] !== '') {
+                                $sourceUrls[] = (string)$source['url'];
+                            }
+                        }
+                    } catch (Throwable $sourceError) {
+                        error_log('[FederationCloud multisource discovery] ' . $sourceError->getMessage());
+                    }
+                    if ($sourceUrls === []) $sourceUrls[] = (string)$offer['source_url'];
+
+                    $download = (new FederationMultiSourceDownloader())->download(
+                        $sourceUrls,
                         (int)$offer['size_bytes'],
                         (string)$offer['content_id']
                     );

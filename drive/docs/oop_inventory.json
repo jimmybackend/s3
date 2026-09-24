@@ -1,11 +1,11 @@
 {
   "summary": {
-    "php_total": 371,
-    "php_class_modules": 220,
+    "php_total": 383,
+    "php_class_modules": 226,
     "php_needs_migration": 0,
-    "php_tests": 29,
-    "js_total": 46,
-    "js_class_modules": 46,
+    "php_tests": 30,
+    "js_total": 47,
+    "js_class_modules": 47,
     "js_needs_migration": 0,
     "js_compatibility_facades": 7
   },
@@ -102,7 +102,7 @@
     },
     {
       "path": "drive/bin/arcadecloud-drive-admin-helper.php",
-      "lines": 608,
+      "lines": 615,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -132,13 +132,28 @@
     },
     {
       "path": "drive/bin/federation_catalog_migrate.php",
-      "lines": 99,
+      "lines": 103,
       "kind": "thin cli entrypoint",
       "classes": 0,
       "functions": [],
       "session": false,
       "superglobals": [],
       "db": true,
+      "s3": false,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/bin/federation_drop_cleanup.php",
+      "lines": 19,
+      "kind": "thin cli entrypoint",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
       "s3": false,
       "bootstrap": true,
       "html": false,
@@ -1105,6 +1120,66 @@
       "issues": []
     },
     {
+      "path": "drive/federationdrop/api.php",
+      "lines": 11,
+      "kind": "thin endpoint",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/federationdrop/arcadelink.php",
+      "lines": 11,
+      "kind": "thin endpoint",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/federationdrop/d.php",
+      "lines": 11,
+      "kind": "thin endpoint",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/federationdrop/index.php",
+      "lines": 11,
+      "kind": "thin endpoint",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
       "path": "drive/generar_token.php",
       "lines": 10,
       "kind": "thin endpoint",
@@ -1683,7 +1758,7 @@
     },
     {
       "path": "drive/src/Admin/ManagedRuntimeEnvironment.php",
-      "lines": 240,
+      "lines": 288,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -2360,7 +2435,7 @@
     },
     {
       "path": "drive/src/Federation/ArcadeLinkService.php",
-      "lines": 422,
+      "lines": 516,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -2511,6 +2586,66 @@
     {
       "path": "drive/src/Federation/FederationDirectoryService.php",
       "lines": 158,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Federation/FederationDropConfig.php",
+      "lines": 95,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Federation/FederationDropRepository.php",
+      "lines": 375,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": true,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Federation/FederationDropService.php",
+      "lines": 496,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Federation/FederationDropStorageService.php",
+      "lines": 93,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -2870,7 +3005,7 @@
     },
     {
       "path": "drive/src/Federation/FederationService.php",
-      "lines": 266,
+      "lines": 300,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -3203,6 +3338,21 @@
     {
       "path": "drive/src/Http/Controller/FederationDirectoryController.php",
       "lines": 88,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Http/Controller/FederationDropController.php",
+      "lines": 168,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -3747,7 +3897,7 @@
     },
     {
       "path": "drive/src/Mail/SmtpEmailService.php",
-      "lines": 265,
+      "lines": 305,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -4535,8 +4685,23 @@
       "issues": []
     },
     {
+      "path": "drive/src/View/FederationDropPageRenderer.php",
+      "lines": 146,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": true,
+      "namespace": true,
+      "issues": []
+    },
+    {
       "path": "drive/src/View/FederationPageRenderer.php",
-      "lines": 224,
+      "lines": 228,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -4829,7 +4994,7 @@
     },
     {
       "path": "drive/tests/database_schema_contract_smoke.php",
-      "lines": 94,
+      "lines": 98,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -4902,6 +5067,24 @@
       "classes": 0,
       "functions": [
         "directoryOk"
+      ],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/tests/federation_drop_contract_smoke.php",
+      "lines": 65,
+      "kind": "test script",
+      "classes": 0,
+      "functions": [
+        "dropSource",
+        "dropOk"
       ],
       "session": false,
       "superglobals": [],
@@ -5014,7 +5197,7 @@
     },
     {
       "path": "drive/tests/federationcloud_smoke.php",
-      "lines": 175,
+      "lines": 197,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -5094,7 +5277,7 @@
     },
     {
       "path": "drive/tests/server_admin_config_smoke.php",
-      "lines": 111,
+      "lines": 147,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -5953,6 +6136,20 @@
       "kind": "class/module",
       "classes": [
         "EstiloModule"
+      ],
+      "functions": [],
+      "window_assign": [],
+      "window_func": [],
+      "top_vars": [],
+      "iife": false,
+      "issues": []
+    },
+    {
+      "path": "drive/js/federation-drop.js",
+      "lines": 315,
+      "kind": "class/module",
+      "classes": [
+        "FederationDropApp"
       ],
       "functions": [],
       "window_assign": [],

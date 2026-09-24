@@ -2229,5 +2229,7 @@ document.addEventListener('DOMContentLoaded', function () {
 })();
 </script>
 
+<script src="js/media-processing.js?v=<?= (int) filemtime(__DIR__ . '/js/media-processing.js') ?>"></script>
+
 </body>
 </html>

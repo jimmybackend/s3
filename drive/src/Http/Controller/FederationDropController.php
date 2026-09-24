@@ -80,10 +80,10 @@ final class FederationDropController
                 ), 201);
             }
 
-            if ($action === 'ingress-candidates' && $this->request->method() === 'GET') {
+            if ($action === 'ingress-candidates' && $this->request->method() === 'POST') {
                 JsonResponse::send($service->ingressCandidates(
-                    $this->request->queryString('drop_id'),
-                    $this->request->queryString('owner_token')
+                    $this->request->postString('drop_id'),
+                    $this->request->postString('owner_token')
                 ));
             }
 

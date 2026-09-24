@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace ArcadeCloud\Drive\View;
 
+use ArcadeCloud\Drive\Federation\FederationDropConfig;
+
 final class FederationPageRenderer
 {
     public function render(
@@ -13,6 +15,10 @@ final class FederationPageRenderer
         ?array $node = null
     ): void {
         $h = static fn(mixed $v): string => htmlspecialchars((string)$v, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+        $dropConfig = FederationDropConfig::fromEnvironment();
+        $sourceHost = (string)(parse_url((string)getenv('ARCADECLOUD_PUBLIC_URL'), PHP_URL_HOST) ?: '');
+        $dropUrl = rtrim($dropConfig->commerceUrl, '/') . '/?source=' . rawurlencode($sourceHost);
+
         $statusLabels = [
             'available' => 'Disponible',
             'not_available' => 'No disponible',
@@ -89,6 +95,9 @@ final class FederationPageRenderer
   </a>
   <div class="ml-auto d-flex align-items-center">
     <span class="small text-muted mr-3 d-none d-md-inline">FederationCloud</span>
+    <a class="btn btn-info btn-sm mr-2" rel="noopener noreferrer" href="<?= $h($dropUrl) ?>">
+      <i class="fas fa-cloud-arrow-up mr-1"></i> Subir / pagar
+    </a>
     <a class="btn btn-outline-light btn-sm" href="../s3.php">
       <i class="fas fa-arrow-left mr-1"></i> Drive
     </a>

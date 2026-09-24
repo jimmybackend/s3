@@ -6,6 +6,7 @@ namespace ArcadeCloud\Drive\Http\Controller;
 use ArcadeCloud\Drive\Activity\ActivityCostRecorder;
 use ArcadeCloud\Drive\Application\BackgroundWorkerLauncher;
 use ArcadeCloud\Drive\Http\JsonResponse;
+use ArcadeCloud\Drive\Media\MediaProcessingJobRepository;
 use ArcadeCloud\Drive\Sync\SyncJobStore;
 use RuntimeException;
 
@@ -54,6 +55,12 @@ final class BackgroundTaskController extends AbstractJsonController
                 $tasks = array_merge($tasks, $this->moveTasks($userId, $costs));
             } catch (\Throwable $e) {
                 $sourceErrors['move'] = $e->getMessage();
+            }
+
+            try {
+                $tasks = array_merge($tasks, $this->mediaTasks($userId));
+            } catch (\Throwable $e) {
+                $sourceErrors['media'] = $e->getMessage();
             }
 
             $tasks = array_values(array_filter($tasks, fn(array $task): bool => $this->shouldExpose($task)));
@@ -352,6 +359,63 @@ final class BackgroundTaskController extends AbstractJsonController
                 ],
             ];
         }
+        return $tasks;
+    }
+
+    private function mediaTasks(int $userId): array
+    {
+        $tasks = [];
+        $repo = new MediaProcessingJobRepository($this->app->db());
+
+        foreach ($repo->recentForUser($userId, 40) as $job) {
+            $status = strtolower((string)($job['status'] ?? 'queued'));
+            if (!in_array($status, ['queued','running','completed','failed','cancelled'], true)) {
+                $status = 'pending';
+            }
+
+            $operation = (string)($job['operation'] ?? '');
+            $category = match ($operation) {
+                'split_video' => 'División de video',
+                'split_audio' => 'División de audio',
+                'extract_mp3' => 'Extracción de MP3',
+                default => 'Procesamiento multimedia',
+            };
+            $detail = match ($status) {
+                'queued' => 'En espera de un nodo multimedia disponible.',
+                'running' => 'Procesando en el nodo multimedia.',
+                'completed' => 'Archivos generados y guardados en la misma carpeta.',
+                'failed' => (string)($job['error'] ?? 'El procesamiento multimedia falló.'),
+                default => 'Procesamiento multimedia.',
+            };
+
+            $progress = max(0, min(100, (int)($job['progress'] ?? 0)));
+            $tasks[] = [
+                'id' => 'media:' . (string)($job['job_id'] ?? ''),
+                'control_id' => 'media:' . (string)($job['job_id'] ?? ''),
+                'kind' => 'media',
+                'category' => $category,
+                'service' => 'FFmpeg Worker',
+                'provider' => 'ArcadeCloud',
+                'title' => (string)($job['source_name'] ?? 'Archivo multimedia'),
+                'status' => $status,
+                'progress' => in_array($status, ['running','completed'], true) ? $progress : null,
+                'progress_mode' => $status === 'running' ? 'determinate' : ($status === 'completed' ? 'determinate' : 'indeterminate'),
+                'detail' => $detail,
+                'created_at' => (string)($job['created_at'] ?? ''),
+                'updated_at' => (string)($job['updated_at'] ?? $job['created_at'] ?? ''),
+                'estimated_cost' => null,
+                'currency' => 'USD',
+                'pricing_state' => 'unpriced',
+                'actions' => [],
+                'metadata' => [
+                    'parts' => (int)($job['parts'] ?? 0),
+                    'overlap_before_seconds' => (int)($job['overlap_before'] ?? 0),
+                    'overlap_after_seconds' => (int)($job['overlap_after'] ?? 0),
+                    'outputs' => is_array($job['outputs'] ?? null) ? count($job['outputs']) : 0,
+                ],
+            ];
+        }
+
         return $tasks;
     }
 

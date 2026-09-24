@@ -1,0 +1,42 @@
+name: Media processing worker
+
+on:
+  pull_request:
+    paths:
+      - 'drive/src/Media/**'
+      - 'drive/src/Console/MediaProcessingWorkerCommand.php'
+      - 'drive/src/Http/Controller/MediaProcessingController.php'
+      - 'drive/src/Http/Controller/BackgroundTaskController.php'
+      - 'drive/bin/media_processing_worker.php'
+      - 'drive/bin/install_media_processing_worker.sh'
+      - 'drive/media_processing.php'
+      - 'drive/js/media-processing.js'
+      - 'drive/bloque_archivos.php'
+      - 'drive/s3.php'
+      - 'drive/tests/database_schema_contract_smoke.php'
+      - 'adbbmis1_Cloud.sql'
+      - '.github/workflows/media-processing.yml'
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: PHP syntax
+        run: |
+          php -l drive/src/Media/MediaProcessingJobRepository.php
+          php -l drive/src/Media/MediaProcessingService.php
+          php -l drive/src/Console/MediaProcessingWorkerCommand.php
+          php -l drive/src/Http/Controller/MediaProcessingController.php
+          php -l drive/src/Http/Controller/BackgroundTaskController.php
+          php -l drive/bin/media_processing_worker.php
+          php -l drive/media_processing.php
+          php -l drive/bloque_archivos.php
+          php -l drive/s3.php
+          php -l drive/tests/database_schema_contract_smoke.php
+      - name: JavaScript syntax
+        run: node --check drive/js/media-processing.js
+      - name: Shell syntax
+        run: bash -n drive/bin/install_media_processing_worker.sh
+      - name: Canonical schema contract
+        run: php drive/tests/database_schema_contract_smoke.php

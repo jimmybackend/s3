@@ -2074,6 +2074,38 @@ ALTER TABLE `UserProceduralMemory`
   ADD CONSTRAINT `fk_upm_user` FOREIGN KEY (`user_id_`) REFERENCES `Users` (`id`) ON DELETE CASCADE;
 
 -- --------------------------------------------------------
+-- Cola de procesamiento multimedia (worker FFmpeg dedicado)
+--
+
+CREATE TABLE IF NOT EXISTS `MediaProcessingJobs` (
+  `id_` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `JobId` char(32) NOT NULL,
+  `user_id_` int NOT NULL,
+  `SourceFileId` int NOT NULL,
+  `SourceKey` varchar(1024) NOT NULL,
+  `SourceName` varchar(512) NOT NULL,
+  `SourceRoute` varchar(1024) NOT NULL DEFAULT '',
+  `SourceBytes` bigint NOT NULL DEFAULT 0,
+  `Operation` varchar(32) NOT NULL,
+  `Parts` smallint NOT NULL DEFAULT 1,
+  `OverlapBefore` smallint NOT NULL DEFAULT 0,
+  `OverlapAfter` smallint NOT NULL DEFAULT 0,
+  `Status` varchar(20) NOT NULL DEFAULT 'queued',
+  `Progress` tinyint unsigned NOT NULL DEFAULT 0,
+  `WorkerId` varchar(191) DEFAULT NULL,
+  `OutputsJson` longtext,
+  `ErrorMessage` text,
+  `CreatedAt` datetime NOT NULL,
+  `UpdatedAt` datetime NOT NULL,
+  `StartedAt` datetime DEFAULT NULL,
+  `CompletedAt` datetime DEFAULT NULL,
+  PRIMARY KEY (`id_`),
+  UNIQUE KEY `uq_media_job_id` (`JobId`),
+  KEY `idx_media_user_created` (`user_id_`,`CreatedAt`),
+  KEY `idx_media_status_id` (`Status`,`id_`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
 -- ArcadeCloud runtime-safe FederationCloud migration section.
 -- The full dump above is for a NEW database; existing databases use only this marked block.
 -- ARCADECLOUD:FEDERATION_SCHEMA:BEGIN

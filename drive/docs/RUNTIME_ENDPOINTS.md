@@ -60,7 +60,7 @@
 | `drive/bin/arcadecloud-drive-updater.php` | ninguna |
 | `drive/bin/federation_catalog_migrate.php` | `drive/tests/federation_customs_contract_smoke.php`, `drive/tests/setup_finalize_contract_smoke.php` |
 | `drive/bin/federation_drop_cleanup.php` | ninguna |
-| `drive/bin/federation_endpoint_refresh.php` | `drive/bin/federation_https_reconcile.php`, `drive/tests/federation_customs_contract_smoke.php`, `drive/tests/federation_https_contract_smoke.php`, `drive/tests/federation_replica_reconnect_contract_smoke.php`, `drive/tests/setup_finalize_contract_smoke.php` |
+| `drive/bin/federation_endpoint_refresh.php` | `drive/bin/federation_https_reconcile.php`, `drive/tests/federation_customs_contract_smoke.php`, `drive/tests/federation_https_contract_smoke.php`, `drive/tests/federation_replica_reconnect_contract_smoke.php`, `drive/tests/media_processing_contract_smoke.php`, `drive/tests/setup_finalize_contract_smoke.php` |
 | `drive/bin/federation_https_reconcile.php` | `drive/tests/federation_https_contract_smoke.php` |
 | `drive/bin/federation_identity_backup.php` | ninguna |
 | `drive/bin/federation_identity_init.php` | ninguna |
@@ -153,7 +153,7 @@
 | `drive/src/Activity/AwsUnitPriceCatalog.php` | ninguna |
 | `drive/src/Activity/PollyTaskReconciler.php` | ninguna |
 | `drive/src/Activity/TranscriptionCostAttribution.php` | ninguna |
-| `drive/src/Activity/TranscriptionReconciler.php` | ninguna |
+| `drive/src/Activity/TranscriptionReconciler.php` | `drive/tests/transcribe_s3_recovery_contract_smoke.php` |
 | `drive/src/Admin/ArcadeCloudUpdaterService.php` | ninguna |
 | `drive/src/Admin/PrivilegedServerHelper.php` | `drive/setup/api.php`, `drive/tests/setup_finalize_contract_smoke.php` |
 | `drive/src/Admin/ServerSettingsAdminService.php` | ninguna |
@@ -191,7 +191,7 @@
 | `drive/src/Aws/RekognitionFileService.php` | ninguna |
 | `drive/src/Aws/SesEmailService.php` | ninguna |
 | `drive/src/Aws/TextractFileService.php` | ninguna |
-| `drive/src/Aws/TranscriptionFileService.php` | ninguna |
+| `drive/src/Aws/TranscriptionFileService.php` | `drive/tests/transcribe_s3_recovery_contract_smoke.php` |
 | `drive/src/Aws/TranslateFileService.php` | ninguna |
 | `drive/src/Console/MediaProcessingWorkerCommand.php` | `drive/tests/media_processing_contract_smoke.php` |
 | `drive/src/Console/MoveJobWorkerCommand.php` | ninguna |
@@ -274,7 +274,7 @@
 | `drive/src/Http/Controller/AwsCostController.php` | ninguna |
 | `drive/src/Http/Controller/AwsFileController.php` | ninguna |
 | `drive/src/Http/Controller/BackgroundTaskCompatibilityController.php` | ninguna |
-| `drive/src/Http/Controller/BackgroundTaskController.php` | ninguna |
+| `drive/src/Http/Controller/BackgroundTaskController.php` | `drive/tests/transcribe_s3_recovery_contract_smoke.php` |
 | `drive/src/Http/Controller/FederationAccessController.php` | ninguna |
 | `drive/src/Http/Controller/FederationCatalogController.php` | ninguna |
 | `drive/src/Http/Controller/FederationCollectionController.php` | `drive/tests/arcadelink_bulk_contract_regression.php`, `drive/tests/arcadelink_collection_regression.php` |
@@ -300,7 +300,7 @@
 | `drive/src/Http/Controller/FolderQueryController.php` | ninguna |
 | `drive/src/Http/Controller/LegacyUploadController.php` | ninguna |
 | `drive/src/Http/Controller/MediaPlaylistController.php` | ninguna |
-| `drive/src/Http/Controller/MediaProcessingController.php` | ninguna |
+| `drive/src/Http/Controller/MediaProcessingController.php` | `drive/tests/media_processing_contract_smoke.php` |
 | `drive/src/Http/Controller/MoveJobController.php` | ninguna |
 | `drive/src/Http/Controller/NavigationController.php` | ninguna |
 | `drive/src/Http/Controller/PersonalAwsController.php` | ninguna |
@@ -314,7 +314,7 @@
 | `drive/src/Http/Controller/SyncController.php` | ninguna |
 | `drive/src/Http/Controller/TextEditorController.php` | ninguna |
 | `drive/src/Http/Controller/ThumbnailController.php` | ninguna |
-| `drive/src/Http/Controller/TranscriptionController.php` | ninguna |
+| `drive/src/Http/Controller/TranscriptionController.php` | `drive/tests/transcribe_s3_recovery_contract_smoke.php` |
 | `drive/src/Http/Controller/UploadCleanupController.php` | ninguna |
 | `drive/src/Http/Controller/UploadController.php` | ninguna |
 | `drive/src/Http/Controller/UserProfileController.php` | ninguna |
@@ -326,6 +326,8 @@
 | `drive/src/Media/MediaPlaylistService.php` | ninguna |
 | `drive/src/Media/MediaProcessingJobRepository.php` | `drive/tests/media_processing_contract_smoke.php` |
 | `drive/src/Media/MediaProcessingService.php` | `drive/tests/media_processing_contract_smoke.php` |
+| `drive/src/Media/MediaWorkerNodeService.php` | `drive/tests/media_processing_contract_smoke.php` |
+| `drive/src/Media/MediaWorkerNodeSessionRepository.php` | `drive/tests/media_processing_contract_smoke.php` |
 | `drive/src/Media/ThumbnailService.php` | ninguna |
 | `drive/src/Security/AuthenticationRepository.php` | ninguna |
 | `drive/src/Security/AuthenticationService.php` | ninguna |
@@ -425,6 +427,7 @@
 | `drive/tests/smtp_config_smoke.php` | ninguna |
 | `drive/tests/sync_repository_regression.php` | ninguna |
 | `drive/tests/sync_schema_migrator_regression.php` | ninguna |
+| `drive/tests/transcribe_s3_recovery_contract_smoke.php` | ninguna |
 | `drive/tests/upload_catalog_registration_regression.php` | ninguna |
 | `drive/tests/user_identity_presenter_smoke.php` | ninguna |
 | `drive/tests/user_profile_validator_smoke.php` | ninguna |

@@ -257,6 +257,7 @@
         "drive/tests/federation_customs_contract_smoke.php",
         "drive/tests/federation_https_contract_smoke.php",
         "drive/tests/federation_replica_reconnect_contract_smoke.php",
+        "drive/tests/media_processing_contract_smoke.php",
         "drive/tests/setup_finalize_contract_smoke.php"
       ]
     },
@@ -317,7 +318,7 @@
     },
     {
       "path": "drive/bin/media_processing_worker.php",
-      "size": 839,
+      "size": 946,
       "active": false,
       "references": []
     },
@@ -1154,7 +1155,7 @@
     },
     {
       "path": "drive/s3.php",
-      "size": 95162,
+      "size": 96082,
       "active": true,
       "references": [
         "drive/app_bootstrap.php",
@@ -1238,7 +1239,7 @@
     },
     {
       "path": "drive/src/Activity/AwsUnitPriceCatalog.php",
-      "size": 2316,
+      "size": 2709,
       "active": false,
       "references": []
     },
@@ -1256,9 +1257,11 @@
     },
     {
       "path": "drive/src/Activity/TranscriptionReconciler.php",
-      "size": 11127,
+      "size": 17995,
       "active": false,
-      "references": []
+      "references": [
+        "drive/tests/transcribe_s3_recovery_contract_smoke.php"
+      ]
     },
     {
       "path": "drive/src/Admin/ArcadeCloudUpdaterService.php",
@@ -1501,9 +1504,11 @@
     },
     {
       "path": "drive/src/Aws/TranscriptionFileService.php",
-      "size": 16632,
+      "size": 25062,
       "active": false,
-      "references": []
+      "references": [
+        "drive/tests/transcribe_s3_recovery_contract_smoke.php"
+      ]
     },
     {
       "path": "drive/src/Aws/TranslateFileService.php",
@@ -1513,7 +1518,7 @@
     },
     {
       "path": "drive/src/Console/MediaProcessingWorkerCommand.php",
-      "size": 15037,
+      "size": 15227,
       "active": false,
       "references": [
         "drive/tests/media_processing_contract_smoke.php"
@@ -2167,9 +2172,11 @@
     },
     {
       "path": "drive/src/Http/Controller/BackgroundTaskController.php",
-      "size": 36365,
+      "size": 36593,
       "active": false,
-      "references": []
+      "references": [
+        "drive/tests/transcribe_s3_recovery_contract_smoke.php"
+      ]
     },
     {
       "path": "drive/src/Http/Controller/FederationAccessController.php",
@@ -2341,9 +2348,11 @@
     },
     {
       "path": "drive/src/Http/Controller/MediaProcessingController.php",
-      "size": 920,
+      "size": 1721,
       "active": false,
-      "references": []
+      "references": [
+        "drive/tests/media_processing_contract_smoke.php"
+      ]
     },
     {
       "path": "drive/src/Http/Controller/MoveJobController.php",
@@ -2425,9 +2434,11 @@
     },
     {
       "path": "drive/src/Http/Controller/TranscriptionController.php",
-      "size": 7693,
+      "size": 8301,
       "active": false,
-      "references": []
+      "references": [
+        "drive/tests/transcribe_s3_recovery_contract_smoke.php"
+      ]
     },
     {
       "path": "drive/src/Http/Controller/UploadCleanupController.php",
@@ -2489,7 +2500,7 @@
     },
     {
       "path": "drive/src/Media/MediaProcessingJobRepository.php",
-      "size": 11443,
+      "size": 11900,
       "active": false,
       "references": [
         "drive/tests/media_processing_contract_smoke.php"
@@ -2497,7 +2508,23 @@
     },
     {
       "path": "drive/src/Media/MediaProcessingService.php",
-      "size": 3122,
+      "size": 3565,
+      "active": false,
+      "references": [
+        "drive/tests/media_processing_contract_smoke.php"
+      ]
+    },
+    {
+      "path": "drive/src/Media/MediaWorkerNodeService.php",
+      "size": 8528,
+      "active": false,
+      "references": [
+        "drive/tests/media_processing_contract_smoke.php"
+      ]
+    },
+    {
+      "path": "drive/src/Media/MediaWorkerNodeSessionRepository.php",
+      "size": 7400,
       "active": false,
       "references": [
         "drive/tests/media_processing_contract_smoke.php"
@@ -2978,7 +3005,7 @@
     },
     {
       "path": "drive/tests/database_schema_contract_smoke.php",
-      "size": 4846,
+      "size": 5000,
       "active": false,
       "references": []
     },
@@ -3092,7 +3119,7 @@
     },
     {
       "path": "drive/tests/media_processing_contract_smoke.php",
-      "size": 1914,
+      "size": 3916,
       "active": false,
       "references": []
     },
@@ -3153,6 +3180,12 @@
     {
       "path": "drive/tests/sync_schema_migrator_regression.php",
       "size": 2461,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/tests/transcribe_s3_recovery_contract_smoke.php",
+      "size": 2469,
       "active": false,
       "references": []
     },

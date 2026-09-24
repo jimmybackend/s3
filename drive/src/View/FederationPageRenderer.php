@@ -193,6 +193,10 @@ final class FederationPageRenderer
                     <i class="fas fa-arrow-up-right-from-square mr-1"></i> Abrir
                   </button>
                 </form>
+              <?php elseif (!empty($resource['request_access_url'])): ?>
+                <a class="btn btn-warning" rel="noopener noreferrer" href="<?= $h($resource['request_access_url']) ?>">
+                  <i class="fas fa-key mr-1"></i> Solicitar clave / acceso
+                </a>
               <?php elseif (empty($resource['local']) && !empty($resource['origin_reachable'])): ?>
                 <a class="btn btn-primary" rel="noopener noreferrer" href="<?= $h($resource['federation_url'] ?? '#') ?>">
                   <i class="fas fa-network-wired mr-1"></i> Ir al nodo

@@ -78,7 +78,7 @@ final class FederationDropStripeCheckoutService
 
     public function handleWebhook(string $rawBody, string $signatureHeader): array
     {
-        $this->config->assertStripeReady();
+        $this->config->assertStripeWebhookReady();
         $event = $this->verifier->verify($rawBody, $signatureHeader);
 
         if (isset($event['livemode']) && is_bool($event['livemode'])

@@ -12,6 +12,12 @@ class FederationPortalModule {
     this.bind();
     this.loadAccess();
     this.loadReplicas();
+    const query = new URLSearchParams(this.window.location.search).get('q');
+    const input = this.document.getElementById('federationSearchInput');
+    if (query && input) {
+      input.value = query;
+      this.search();
+    }
     return this;
   }
 

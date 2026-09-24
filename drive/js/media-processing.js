@@ -186,8 +186,12 @@ class MediaProcessingModule {
       box.textContent = 'No hay una EC2 multimedia de encendido automático configurada. La tarea quedará en cola hasta que haya un worker disponible.';
     } else if (state === 'stopped') {
       box.className = 'alert alert-warning mb-3';
-      box.textContent = 'El nodo de alto rendimiento está APAGADO. Para esta tarea debes autorizar su encendido.';
-      authorizationWrap.classList.remove('d-none');
+      if (node.cost_configured === false) {
+        box.textContent = 'El nodo está APAGADO, pero falta configurar su tarifa de referencia antes de permitir un encendido pagado.';
+      } else {
+        box.textContent = 'El nodo de alto rendimiento está APAGADO. Para esta tarea debes autorizar su encendido.';
+        authorizationWrap.classList.remove('d-none');
+      }
     } else if (state === 'pending') {
       box.className = 'alert alert-info mb-3';
       box.textContent = 'El nodo de alto rendimiento se está encendiendo. La tarea puede enviarse y esperará al worker.';
@@ -226,8 +230,12 @@ class MediaProcessingModule {
 
     if (state === 'stopping') disabled = true;
     if (node.configured === true && state === 'stopped') {
-      const authorization = this.document.getElementById('mediaNodeAuthorization');
-      if (!authorization || !authorization.checked) disabled = true;
+      if (node.cost_configured === false) {
+        disabled = true;
+      } else {
+        const authorization = this.document.getElementById('mediaNodeAuthorization');
+        if (!authorization || !authorization.checked) disabled = true;
+      }
     }
 
     submit.disabled = disabled;

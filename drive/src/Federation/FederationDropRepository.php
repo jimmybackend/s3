@@ -181,14 +181,23 @@ final class FederationDropRepository
             throw new FederationException('Estado de pago FederationDrop inválido.', 400);
         }
 
-        $dropStatus = $status === 'refunded' ? 'blocked' : 'pending_payment';
-        $stmt = $this->db->prepare(
-            "UPDATE FederationDrops
-             SET PaymentStatus = ?, PaymentProvider = ?, PaymentReference = ?, Status = ?
-             WHERE DropId = ? AND Status NOT IN ('deleted','expired') LIMIT 1"
-        );
+        if ($status === 'refunded') {
+            $stmt = $this->db->prepare(
+                "UPDATE FederationDrops
+                 SET PaymentStatus = 'refunded', PaymentProvider = ?, PaymentReference = ?, Status = 'blocked'
+                 WHERE DropId = ? AND Status NOT IN ('deleted','expired') LIMIT 1"
+            );
+        } else {
+            // Un evento failed tardío nunca degrada una orden que ya fue pagada.
+            $stmt = $this->db->prepare(
+                "UPDATE FederationDrops
+                 SET PaymentStatus = 'failed', PaymentProvider = ?, PaymentReference = ?, Status = 'pending_payment'
+                 WHERE DropId = ? AND PaymentStatus IN ('pending','failed')
+                   AND Status = 'pending_payment' LIMIT 1"
+            );
+        }
         if (!$stmt) throw new FederationException('No se pudo preparar el estado de pago FederationDrop.', 500);
-        $stmt->bind_param('sssss', $status, $provider, $reference, $dropStatus, $dropId);
+        $stmt->bind_param('sss', $provider, $reference, $dropId);
         if (!$stmt->execute()) {
             $message = $stmt->error;
             $stmt->close();

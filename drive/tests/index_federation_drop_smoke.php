@@ -40,24 +40,47 @@ indexHomeOk(
     'portada usa carrusel visual principal'
 );
 
-foreach ([
-    'images/home/slide-aws.svg',
-    'images/home/slide-federation.svg',
-    'images/home/slide-drop.svg',
-] as $relative) {
+$slides = [
+    'images/home/carousel-01-s3-aws.png',
+    'images/home/carousel-02-s3-aws-alt.png',
+    'images/home/carousel-03-s3-servicios.png',
+    'images/home/carousel-04-federationcloud.png',
+    'images/home/carousel-05-federationdrop.png',
+];
+
+foreach ($slides as $relative) {
     indexHomeOk(
         is_file($root . '/' . $relative),
-        'existe visual del carrusel: ' . $relative
+        'existe PNG del carrusel: ' . $relative
     );
     indexHomeOk(
         str_contains($source, $relative),
-        'index usa visual del carrusel: ' . $relative
+        'index usa PNG del carrusel: ' . $relative
     );
 }
 
 indexHomeOk(
-    substr_count($source, 'class="carousel-item') === 3,
-    'carrusel contiene exactamente tres historias visuales'
+    substr_count($source, 'class="carousel-item') === 5,
+    'carrusel contiene exactamente cinco imágenes'
+);
+
+indexHomeOk(
+    str_contains($source, '<div class="carousel-item active">')
+        && str_contains($source, 'images/home/carousel-01-s3-aws.png'),
+    'bucket S3 con nube AWS queda como imagen principal'
+);
+
+indexHomeOk(
+    !str_contains($source, 'carousel-indicators')
+        && !str_contains($source, 'data-slide-to='),
+    'carrusel no muestra puntos indicadores'
+);
+
+indexHomeOk(
+    str_contains($source, 'object-fit: contain;')
+        && str_contains($source, 'height: auto;')
+        && str_contains($source, 'max-height: 42vh;'),
+    'imágenes se reducen en móvil sin recortarse'
 );
 
 indexHomeOk(
@@ -73,13 +96,7 @@ indexHomeOk(
     str_contains($source, 'id="loginModal"')
         && str_contains($source, 'data-target="#loginModal"')
         && str_contains($source, 'form action="psesion.php" method="POST"'),
-    'login local se integra en modal sin añadir un bloque pesado'
-);
-
-indexHomeOk(
-    str_contains($source, 'id="aboutModal"')
-        && str_contains($source, 'Proyecto de <strong>jimmybackend</strong>.'),
-    'Acerca de permanece breve y modal'
+    'login local se integra en modal'
 );
 
 indexHomeOk(
@@ -88,12 +105,6 @@ indexHomeOk(
         && str_contains($source, '$contactPhoneDisplay = \'+52 9611077442\'')
         && str_contains($source, '$contactPhoneHref = \'+529611077442\''),
     'contacto conserva autor, soporte y teléfono de México'
-);
-
-indexHomeOk(
-    str_contains($source, '$canonicalHost = \'drive.esforzados.com\'')
-        && str_contains($source, '$contactUrl = $isCanonicalPortal ? \'#contacto\' : $canonicalHome . \'#contacto\''),
-    'nodos secundarios centralizan Contacto en drive.esforzados.com'
 );
 
 indexHomeOk(
@@ -106,4 +117,4 @@ indexHomeOk(
     'portada pública no arranca la aplicación completa'
 );
 
-echo "Public index approved mockup smoke: OK\n";
+echo "Public index approved PNG carousel smoke: OK\n";

@@ -193,6 +193,7 @@ final class FederationDropService
             }
         }
         $this->repository->markDeleted($dropId);
+        $this->repository->setPlacementStatus($dropId, 'deleted');
         return ['ok' => true, 'status' => 'deleted'];
     }
 
@@ -284,6 +285,7 @@ final class FederationDropService
             if ($status === 'refunded' && $inserted) {
                 try {
                     if (!empty($updated['UploadedAt'])) $this->storage->delete((string)$updated['S3Key']);
+                    $this->repository->setPlacementStatus($dropId, 'revoked');
                 } catch (\Throwable $e) {
                     error_log('[FederationDrop refund cleanup] ' . $e->getMessage());
                 }
@@ -322,6 +324,7 @@ final class FederationDropService
                 $key = (string)($row['S3Key'] ?? '');
                 if ($key !== '') $this->storage->delete($key);
                 $this->repository->markExpired((string)$row['DropId']);
+                $this->repository->setPlacementStatus((string)$row['DropId'], 'deleted');
                 $deleted++;
             } catch (\Throwable $e) {
                 $errors++;

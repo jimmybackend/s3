@@ -52,7 +52,702 @@ jobs:
       - name: PHP extensions
         run: |
           set -euo pipefail
-          php -m | grep -qi '^sodium
+          php -m | grep -qi '^sodium      - name: PHP syntax
+        run: |
+          set -euo pipefail
+          php -l drive/src/Federation/FederationDropConfig.php
+          php -l drive/src/Federation/FederationDropGoogleAuthConfig.php
+          php -l drive/src/Federation/FederationDropEncryptedCookie.php
+          php -l drive/src/Federation/FederationDropGoogleOidcClient.php
+          php -l drive/src/Federation/FederationDropAccountRepository.php
+          php -l drive/src/Federation/FederationDropGoogleAuthService.php
+          php -l drive/src/Federation/FederationDropRepository.php
+          php -l drive/src/Federation/FederationDropStorageService.php
+          php -l drive/src/Federation/FederationDropService.php
+          php -l drive/src/Federation/FederationDropIngressCodec.php
+          php -l drive/src/Federation/FederationDropIngressRepository.php
+          php -l drive/src/Federation/FederationDropIngressDownloader.php
+          php -l drive/src/Federation/FederationDropIngressService.php
+          php -l drive/src/Federation/FederationDropStripeClient.php
+          php -l drive/src/Federation/FederationDropStripeWebhookVerifier.php
+          php -l drive/src/Federation/FederationDropStripeCheckoutService.php
+          php -l drive/src/Federation/ArcadeLinkService.php
+          php -l drive/src/Federation/FederationService.php
+          php -l drive/src/Http/Controller/FederationDropController.php
+          php -l drive/src/Http/Controller/FederationDropGoogleAuthController.php
+          php -l drive/src/Http/Request.php
+          php -l drive/src/Http/Controller/FederationDropIngressController.php
+          php -l drive/src/View/FederationDropPageRenderer.php
+          php -l drive/src/View/FederationPageRenderer.php
+          php -l drive/src/View/FederationPortalRenderer.php
+          php -l drive/src/Mail/SmtpEmailService.php
+          php -l drive/src/Admin/ManagedRuntimeEnvironment.php
+          php -l drive/bin/arcadecloud-drive-admin-helper.php
+          php -l drive/bin/federation_drop_cleanup.php
+          php -l drive/bin/federation_catalog_migrate.php
+          php -l drive/bin/federation_sync.php
+          php -l drive/src/Federation/FederationDropWorkerService.php
+          php -l drive/src/Federation/FederationSyncCycleService.php
+          php -l drive/federationcloud/drop-ingress.php
+          php -l drive/federationdrop/index.php
+          php -l drive/federationdrop/api.php
+          php -l drive/federationdrop/d.php
+          php -l drive/federationdrop/arcadelink.php
+          php -l drive/federationdrop/google-login.php
+          php -l drive/federationdrop/google-callback.php
+          php -l drive/federationdrop/google-logout.php
+          php -l drive/tests/federation_drop_contract_smoke.php
+          php -l drive/tests/federation_drop_stripe_smoke.php
+          php -l drive/tests/federation_drop_ingress_smoke.php
+          php -l drive/tests/federation_drop_google_oidc_smoke.php
+          php -l drive/tests/federationcloud_smoke.php
+          php -l drive/tests/database_schema_contract_smoke.php
+          php -l drive/tests/server_admin_config_smoke.php
+
+      - name: JavaScript syntax
+        run: |
+          set -euo pipefail
+          node --check drive/js/federation-drop.js
+
+      - name: Shell syntax
+        run: |
+          set -euo pipefail
+          bash -n drive/bin/install_federation_drop_cleanup_timer.sh
+          bash -n drive/bin/install_arcadecloud.sh
+          bash -n drive/bin/uninstall_arcadecloud.sh
+
+      - name: FederationDrop contract regression
+        run: |
+          set -euo pipefail
+          php drive/tests/federation_drop_contract_smoke.php
+
+      - name: Stripe primitives regression
+        run: |
+          set -euo pipefail
+          php drive/tests/federation_drop_stripe_smoke.php
+
+      - name: Ingress cryptographic regression
+        run: |
+          set -euo pipefail
+          php drive/tests/federation_drop_ingress_smoke.php
+
+      - name: Google OIDC cryptographic regression
+        run: |
+          set -euo pipefail
+          php drive/tests/federation_drop_google_oidc_smoke.php
+
+      - name: ArcadeLink cryptographic regression
+        run: |
+          set -euo pipefail
+          php drive/tests/federationcloud_smoke.php
+
+      - name: Canonical DB regression
+        run: |
+          set -euo pipefail
+          php drive/tests/database_schema_contract_smoke.php
+
+      - name: Managed settings regression
+        run: |
+          set -euo pipefail
+          php drive/tests/server_admin_config_smoke.php
+
+      - name: Security boundary checks
+        run: |
+          set -euo pipefail
+          grep -q "PaymentStatus'] !== 'paid'" drive/src/Federation/FederationDropService.php
+          grep -q 'LIMIT 1 FOR UPDATE' drive/src/Federation/FederationDropRepository.php
+          grep -q 'Stripe-Signature' drive/docs/FEDERATION_DROP.md
+          grep -q 'ARCADECLOUD_DROP_COMMERCE_URL' drive/docs/FEDERATION_DROP.md
+          grep -q 'drive.esforzados.com/federationdrop' drive/src/Federation/FederationDropConfig.php
+          grep -q 'central_copy' drive/docs/FEDERATION_DROP.md
+          grep -q 'FederationCommercialProviders' drive/src/Federation/FederationDropIngressRepository.php
+          grep -q "Status='active'" drive/src/Federation/FederationDropIngressRepository.php
+          grep -q 'LastSeen >= DATE_SUB' drive/src/Federation/FederationDropIngressRepository.php
+          grep -q 'FederationDropIngress/' drive/src/Federation/FederationDropIngressService.php
+          grep -q 'Access-Control-Allow-Origin' drive/src/Http/Controller/FederationDropIngressController.php
+          grep -q 'syncPaidIngressSources' drive/src/Federation/FederationDropWorkerService.php
+          grep -q 'FederationDropWorkerService' drive/src/Federation/FederationSyncCycleService.php
+          grep -q 'federationdrop/badge.svg' drive/docs/FEDERATION_DROP.md
+          grep -q 'ARCADECLOUD_DROP_GOOGLE_CLIENT_ID' drive/src/Admin/ManagedRuntimeEnvironment.php
+          grep -q 'ARCADECLOUD_DROP_GOOGLE_CLIENT_SECRET' drive/bin/arcadecloud-drive-admin-helper.php
+          grep -q 'google-callback.php' drive/docs/FEDERATION_DROP.md
+          grep -q 'OwnerAccountId' adbbmis1_Cloud.sql
+          grep -q 'FederationDropIdentities' adbbmis1_Cloud.sql
+          ! grep -R "public-read" drive/src/Federation/FederationDrop*.php
+          ! grep -R "AWS_SECRET_ACCESS_KEY" drive/federationdrop drive/js/federation-drop.js
+
+      - name: Diff check
+        run: |
+          set -euo pipefail
+          git diff --check origin/main...HEAD
+
+          php -m | grep -qi '^openssl
+
+      - name: PHP syntax
+        run: |
+          set -euo pipefail
+          php -l drive/src/Federation/FederationDropConfig.php
+          php -l drive/src/Federation/FederationDropRepository.php
+          php -l drive/src/Federation/FederationDropStorageService.php
+          php -l drive/src/Federation/FederationDropService.php
+          php -l drive/src/Federation/FederationDropIngressCodec.php
+          php -l drive/src/Federation/FederationDropIngressRepository.php
+          php -l drive/src/Federation/FederationDropIngressDownloader.php
+          php -l drive/src/Federation/FederationDropIngressService.php
+          php -l drive/src/Federation/FederationDropStripeClient.php
+          php -l drive/src/Federation/FederationDropStripeWebhookVerifier.php
+          php -l drive/src/Federation/FederationDropStripeCheckoutService.php
+          php -l drive/src/Federation/ArcadeLinkService.php
+          php -l drive/src/Federation/FederationService.php
+          php -l drive/src/Http/Controller/FederationDropController.php
+          php -l drive/src/Http/Controller/FederationDropIngressController.php
+          php -l drive/src/View/FederationDropPageRenderer.php
+          php -l drive/src/View/FederationPageRenderer.php
+          php -l drive/src/View/FederationPortalRenderer.php
+          php -l drive/src/Mail/SmtpEmailService.php
+          php -l drive/src/Admin/ManagedRuntimeEnvironment.php
+          php -l drive/bin/arcadecloud-drive-admin-helper.php
+          php -l drive/bin/federation_drop_cleanup.php
+          php -l drive/bin/federation_catalog_migrate.php
+          php -l drive/bin/federation_sync.php
+          php -l drive/src/Federation/FederationDropWorkerService.php
+          php -l drive/src/Federation/FederationSyncCycleService.php
+          php -l drive/federationcloud/drop-ingress.php
+          php -l drive/federationdrop/index.php
+          php -l drive/federationdrop/api.php
+          php -l drive/federationdrop/d.php
+          php -l drive/federationdrop/arcadelink.php
+          php -l drive/tests/federation_drop_contract_smoke.php
+          php -l drive/tests/federation_drop_stripe_smoke.php
+          php -l drive/tests/federation_drop_ingress_smoke.php
+          php -l drive/tests/federationcloud_smoke.php
+          php -l drive/tests/database_schema_contract_smoke.php
+          php -l drive/tests/server_admin_config_smoke.php
+
+      - name: JavaScript syntax
+        run: |
+          set -euo pipefail
+          node --check drive/js/federation-drop.js
+
+      - name: Shell syntax
+        run: |
+          set -euo pipefail
+          bash -n drive/bin/install_federation_drop_cleanup_timer.sh
+          bash -n drive/bin/install_arcadecloud.sh
+          bash -n drive/bin/uninstall_arcadecloud.sh
+
+      - name: FederationDrop contract regression
+        run: |
+          set -euo pipefail
+          php drive/tests/federation_drop_contract_smoke.php
+
+      - name: Stripe primitives regression
+        run: |
+          set -euo pipefail
+          php drive/tests/federation_drop_stripe_smoke.php
+
+      - name: Ingress cryptographic regression
+        run: |
+          set -euo pipefail
+          php drive/tests/federation_drop_ingress_smoke.php
+
+      - name: ArcadeLink cryptographic regression
+        run: |
+          set -euo pipefail
+          php drive/tests/federationcloud_smoke.php
+
+      - name: Canonical DB regression
+        run: |
+          set -euo pipefail
+          php drive/tests/database_schema_contract_smoke.php
+
+      - name: Managed settings regression
+        run: |
+          set -euo pipefail
+          php drive/tests/server_admin_config_smoke.php
+
+      - name: Security boundary checks
+        run: |
+          set -euo pipefail
+          grep -q "PaymentStatus'] !== 'paid'" drive/src/Federation/FederationDropService.php
+          grep -q 'LIMIT 1 FOR UPDATE' drive/src/Federation/FederationDropRepository.php
+          grep -q 'Stripe-Signature' drive/docs/FEDERATION_DROP.md
+          grep -q 'ARCADECLOUD_DROP_COMMERCE_URL' drive/docs/FEDERATION_DROP.md
+          grep -q 'drive.esforzados.com/federationdrop' drive/src/Federation/FederationDropConfig.php
+          grep -q 'central_copy' drive/docs/FEDERATION_DROP.md
+          grep -q 'FederationCommercialProviders' drive/src/Federation/FederationDropIngressRepository.php
+          grep -q "Status='active'" drive/src/Federation/FederationDropIngressRepository.php
+          grep -q 'LastSeen >= DATE_SUB' drive/src/Federation/FederationDropIngressRepository.php
+          grep -q 'FederationDropIngress/' drive/src/Federation/FederationDropIngressService.php
+          grep -q 'Access-Control-Allow-Origin' drive/src/Http/Controller/FederationDropIngressController.php
+          grep -q 'syncPaidIngressSources' drive/src/Federation/FederationDropWorkerService.php
+          grep -q 'FederationDropWorkerService' drive/src/Federation/FederationSyncCycleService.php
+          grep -q 'federationdrop/badge.svg' drive/docs/FEDERATION_DROP.md
+          ! grep -R "public-read" drive/src/Federation/FederationDrop*.php
+          ! grep -R "AWS_SECRET_ACCESS_KEY" drive/federationdrop drive/js/federation-drop.js
+
+      - name: Diff check
+        run: |
+          set -euo pipefail
+          git diff --check origin/main...HEAD
+
+
+      - name: PHP syntax
+        run: |
+          set -euo pipefail
+          php -l drive/src/Federation/FederationDropConfig.php
+          php -l drive/src/Federation/FederationDropRepository.php
+          php -l drive/src/Federation/FederationDropStorageService.php
+          php -l drive/src/Federation/FederationDropService.php
+          php -l drive/src/Federation/FederationDropIngressCodec.php
+          php -l drive/src/Federation/FederationDropIngressRepository.php
+          php -l drive/src/Federation/FederationDropIngressDownloader.php
+          php -l drive/src/Federation/FederationDropIngressService.php
+          php -l drive/src/Federation/FederationDropStripeClient.php
+          php -l drive/src/Federation/FederationDropStripeWebhookVerifier.php
+          php -l drive/src/Federation/FederationDropStripeCheckoutService.php
+          php -l drive/src/Federation/ArcadeLinkService.php
+          php -l drive/src/Federation/FederationService.php
+          php -l drive/src/Http/Controller/FederationDropController.php
+          php -l drive/src/Http/Controller/FederationDropIngressController.php
+          php -l drive/src/View/FederationDropPageRenderer.php
+          php -l drive/src/View/FederationPageRenderer.php
+          php -l drive/src/View/FederationPortalRenderer.php
+          php -l drive/src/Mail/SmtpEmailService.php
+          php -l drive/src/Admin/ManagedRuntimeEnvironment.php
+          php -l drive/bin/arcadecloud-drive-admin-helper.php
+          php -l drive/bin/federation_drop_cleanup.php
+          php -l drive/bin/federation_catalog_migrate.php
+          php -l drive/bin/federation_sync.php
+          php -l drive/src/Federation/FederationDropWorkerService.php
+          php -l drive/src/Federation/FederationSyncCycleService.php
+          php -l drive/federationcloud/drop-ingress.php
+          php -l drive/federationdrop/index.php
+          php -l drive/federationdrop/api.php
+          php -l drive/federationdrop/d.php
+          php -l drive/federationdrop/arcadelink.php
+          php -l drive/tests/federation_drop_contract_smoke.php
+          php -l drive/tests/federation_drop_stripe_smoke.php
+          php -l drive/tests/federation_drop_ingress_smoke.php
+          php -l drive/tests/federationcloud_smoke.php
+          php -l drive/tests/database_schema_contract_smoke.php
+          php -l drive/tests/server_admin_config_smoke.php
+
+      - name: JavaScript syntax
+        run: |
+          set -euo pipefail
+          node --check drive/js/federation-drop.js
+
+      - name: Shell syntax
+        run: |
+          set -euo pipefail
+          bash -n drive/bin/install_federation_drop_cleanup_timer.sh
+          bash -n drive/bin/install_arcadecloud.sh
+          bash -n drive/bin/uninstall_arcadecloud.sh
+
+      - name: FederationDrop contract regression
+        run: |
+          set -euo pipefail
+          php drive/tests/federation_drop_contract_smoke.php
+
+      - name: Stripe primitives regression
+        run: |
+          set -euo pipefail
+          php drive/tests/federation_drop_stripe_smoke.php
+
+      - name: Ingress cryptographic regression
+        run: |
+          set -euo pipefail
+          php drive/tests/federation_drop_ingress_smoke.php
+
+      - name: ArcadeLink cryptographic regression
+        run: |
+          set -euo pipefail
+          php drive/tests/federationcloud_smoke.php
+
+      - name: Canonical DB regression
+        run: |
+          set -euo pipefail
+          php drive/tests/database_schema_contract_smoke.php
+
+      - name: Managed settings regression
+        run: |
+          set -euo pipefail
+          php drive/tests/server_admin_config_smoke.php
+
+      - name: Security boundary checks
+        run: |
+          set -euo pipefail
+          grep -q "PaymentStatus'] !== 'paid'" drive/src/Federation/FederationDropService.php
+          grep -q 'LIMIT 1 FOR UPDATE' drive/src/Federation/FederationDropRepository.php
+          grep -q 'Stripe-Signature' drive/docs/FEDERATION_DROP.md
+          grep -q 'ARCADECLOUD_DROP_COMMERCE_URL' drive/docs/FEDERATION_DROP.md
+          grep -q 'drive.esforzados.com/federationdrop' drive/src/Federation/FederationDropConfig.php
+          grep -q 'central_copy' drive/docs/FEDERATION_DROP.md
+          grep -q 'FederationCommercialProviders' drive/src/Federation/FederationDropIngressRepository.php
+          grep -q "Status='active'" drive/src/Federation/FederationDropIngressRepository.php
+          grep -q 'LastSeen >= DATE_SUB' drive/src/Federation/FederationDropIngressRepository.php
+          grep -q 'FederationDropIngress/' drive/src/Federation/FederationDropIngressService.php
+          grep -q 'Access-Control-Allow-Origin' drive/src/Http/Controller/FederationDropIngressController.php
+          grep -q 'syncPaidIngressSources' drive/src/Federation/FederationDropWorkerService.php
+          grep -q 'FederationDropWorkerService' drive/src/Federation/FederationSyncCycleService.php
+          grep -q 'federationdrop/badge.svg' drive/docs/FEDERATION_DROP.md
+          ! grep -R "public-read" drive/src/Federation/FederationDrop*.php
+          ! grep -R "AWS_SECRET_ACCESS_KEY" drive/federationdrop drive/js/federation-drop.js
+
+      - name: Diff check
+        run: |
+          set -euo pipefail
+          git diff --check origin/main...HEAD
+
+          php -m | grep -qi '^openssl      - name: PHP syntax
+        run: |
+          set -euo pipefail
+          php -l drive/src/Federation/FederationDropConfig.php
+          php -l drive/src/Federation/FederationDropGoogleAuthConfig.php
+          php -l drive/src/Federation/FederationDropEncryptedCookie.php
+          php -l drive/src/Federation/FederationDropGoogleOidcClient.php
+          php -l drive/src/Federation/FederationDropAccountRepository.php
+          php -l drive/src/Federation/FederationDropGoogleAuthService.php
+          php -l drive/src/Federation/FederationDropRepository.php
+          php -l drive/src/Federation/FederationDropStorageService.php
+          php -l drive/src/Federation/FederationDropService.php
+          php -l drive/src/Federation/FederationDropIngressCodec.php
+          php -l drive/src/Federation/FederationDropIngressRepository.php
+          php -l drive/src/Federation/FederationDropIngressDownloader.php
+          php -l drive/src/Federation/FederationDropIngressService.php
+          php -l drive/src/Federation/FederationDropStripeClient.php
+          php -l drive/src/Federation/FederationDropStripeWebhookVerifier.php
+          php -l drive/src/Federation/FederationDropStripeCheckoutService.php
+          php -l drive/src/Federation/ArcadeLinkService.php
+          php -l drive/src/Federation/FederationService.php
+          php -l drive/src/Http/Controller/FederationDropController.php
+          php -l drive/src/Http/Controller/FederationDropGoogleAuthController.php
+          php -l drive/src/Http/Request.php
+          php -l drive/src/Http/Controller/FederationDropIngressController.php
+          php -l drive/src/View/FederationDropPageRenderer.php
+          php -l drive/src/View/FederationPageRenderer.php
+          php -l drive/src/View/FederationPortalRenderer.php
+          php -l drive/src/Mail/SmtpEmailService.php
+          php -l drive/src/Admin/ManagedRuntimeEnvironment.php
+          php -l drive/bin/arcadecloud-drive-admin-helper.php
+          php -l drive/bin/federation_drop_cleanup.php
+          php -l drive/bin/federation_catalog_migrate.php
+          php -l drive/bin/federation_sync.php
+          php -l drive/src/Federation/FederationDropWorkerService.php
+          php -l drive/src/Federation/FederationSyncCycleService.php
+          php -l drive/federationcloud/drop-ingress.php
+          php -l drive/federationdrop/index.php
+          php -l drive/federationdrop/api.php
+          php -l drive/federationdrop/d.php
+          php -l drive/federationdrop/arcadelink.php
+          php -l drive/federationdrop/google-login.php
+          php -l drive/federationdrop/google-callback.php
+          php -l drive/federationdrop/google-logout.php
+          php -l drive/tests/federation_drop_contract_smoke.php
+          php -l drive/tests/federation_drop_stripe_smoke.php
+          php -l drive/tests/federation_drop_ingress_smoke.php
+          php -l drive/tests/federation_drop_google_oidc_smoke.php
+          php -l drive/tests/federationcloud_smoke.php
+          php -l drive/tests/database_schema_contract_smoke.php
+          php -l drive/tests/server_admin_config_smoke.php
+
+      - name: JavaScript syntax
+        run: |
+          set -euo pipefail
+          node --check drive/js/federation-drop.js
+
+      - name: Shell syntax
+        run: |
+          set -euo pipefail
+          bash -n drive/bin/install_federation_drop_cleanup_timer.sh
+          bash -n drive/bin/install_arcadecloud.sh
+          bash -n drive/bin/uninstall_arcadecloud.sh
+
+      - name: FederationDrop contract regression
+        run: |
+          set -euo pipefail
+          php drive/tests/federation_drop_contract_smoke.php
+
+      - name: Stripe primitives regression
+        run: |
+          set -euo pipefail
+          php drive/tests/federation_drop_stripe_smoke.php
+
+      - name: Ingress cryptographic regression
+        run: |
+          set -euo pipefail
+          php drive/tests/federation_drop_ingress_smoke.php
+
+      - name: Google OIDC cryptographic regression
+        run: |
+          set -euo pipefail
+          php drive/tests/federation_drop_google_oidc_smoke.php
+
+      - name: ArcadeLink cryptographic regression
+        run: |
+          set -euo pipefail
+          php drive/tests/federationcloud_smoke.php
+
+      - name: Canonical DB regression
+        run: |
+          set -euo pipefail
+          php drive/tests/database_schema_contract_smoke.php
+
+      - name: Managed settings regression
+        run: |
+          set -euo pipefail
+          php drive/tests/server_admin_config_smoke.php
+
+      - name: Security boundary checks
+        run: |
+          set -euo pipefail
+          grep -q "PaymentStatus'] !== 'paid'" drive/src/Federation/FederationDropService.php
+          grep -q 'LIMIT 1 FOR UPDATE' drive/src/Federation/FederationDropRepository.php
+          grep -q 'Stripe-Signature' drive/docs/FEDERATION_DROP.md
+          grep -q 'ARCADECLOUD_DROP_COMMERCE_URL' drive/docs/FEDERATION_DROP.md
+          grep -q 'drive.esforzados.com/federationdrop' drive/src/Federation/FederationDropConfig.php
+          grep -q 'central_copy' drive/docs/FEDERATION_DROP.md
+          grep -q 'FederationCommercialProviders' drive/src/Federation/FederationDropIngressRepository.php
+          grep -q "Status='active'" drive/src/Federation/FederationDropIngressRepository.php
+          grep -q 'LastSeen >= DATE_SUB' drive/src/Federation/FederationDropIngressRepository.php
+          grep -q 'FederationDropIngress/' drive/src/Federation/FederationDropIngressService.php
+          grep -q 'Access-Control-Allow-Origin' drive/src/Http/Controller/FederationDropIngressController.php
+          grep -q 'syncPaidIngressSources' drive/src/Federation/FederationDropWorkerService.php
+          grep -q 'FederationDropWorkerService' drive/src/Federation/FederationSyncCycleService.php
+          grep -q 'federationdrop/badge.svg' drive/docs/FEDERATION_DROP.md
+          grep -q 'ARCADECLOUD_DROP_GOOGLE_CLIENT_ID' drive/src/Admin/ManagedRuntimeEnvironment.php
+          grep -q 'ARCADECLOUD_DROP_GOOGLE_CLIENT_SECRET' drive/bin/arcadecloud-drive-admin-helper.php
+          grep -q 'google-callback.php' drive/docs/FEDERATION_DROP.md
+          grep -q 'OwnerAccountId' adbbmis1_Cloud.sql
+          grep -q 'FederationDropIdentities' adbbmis1_Cloud.sql
+          ! grep -R "public-read" drive/src/Federation/FederationDrop*.php
+          ! grep -R "AWS_SECRET_ACCESS_KEY" drive/federationdrop drive/js/federation-drop.js
+
+      - name: Diff check
+        run: |
+          set -euo pipefail
+          git diff --check origin/main...HEAD
+
+          php -m | grep -qi '^openssl
+
+      - name: PHP syntax
+        run: |
+          set -euo pipefail
+          php -l drive/src/Federation/FederationDropConfig.php
+          php -l drive/src/Federation/FederationDropRepository.php
+          php -l drive/src/Federation/FederationDropStorageService.php
+          php -l drive/src/Federation/FederationDropService.php
+          php -l drive/src/Federation/FederationDropIngressCodec.php
+          php -l drive/src/Federation/FederationDropIngressRepository.php
+          php -l drive/src/Federation/FederationDropIngressDownloader.php
+          php -l drive/src/Federation/FederationDropIngressService.php
+          php -l drive/src/Federation/FederationDropStripeClient.php
+          php -l drive/src/Federation/FederationDropStripeWebhookVerifier.php
+          php -l drive/src/Federation/FederationDropStripeCheckoutService.php
+          php -l drive/src/Federation/ArcadeLinkService.php
+          php -l drive/src/Federation/FederationService.php
+          php -l drive/src/Http/Controller/FederationDropController.php
+          php -l drive/src/Http/Controller/FederationDropIngressController.php
+          php -l drive/src/View/FederationDropPageRenderer.php
+          php -l drive/src/View/FederationPageRenderer.php
+          php -l drive/src/View/FederationPortalRenderer.php
+          php -l drive/src/Mail/SmtpEmailService.php
+          php -l drive/src/Admin/ManagedRuntimeEnvironment.php
+          php -l drive/bin/arcadecloud-drive-admin-helper.php
+          php -l drive/bin/federation_drop_cleanup.php
+          php -l drive/bin/federation_catalog_migrate.php
+          php -l drive/bin/federation_sync.php
+          php -l drive/src/Federation/FederationDropWorkerService.php
+          php -l drive/src/Federation/FederationSyncCycleService.php
+          php -l drive/federationcloud/drop-ingress.php
+          php -l drive/federationdrop/index.php
+          php -l drive/federationdrop/api.php
+          php -l drive/federationdrop/d.php
+          php -l drive/federationdrop/arcadelink.php
+          php -l drive/tests/federation_drop_contract_smoke.php
+          php -l drive/tests/federation_drop_stripe_smoke.php
+          php -l drive/tests/federation_drop_ingress_smoke.php
+          php -l drive/tests/federationcloud_smoke.php
+          php -l drive/tests/database_schema_contract_smoke.php
+          php -l drive/tests/server_admin_config_smoke.php
+
+      - name: JavaScript syntax
+        run: |
+          set -euo pipefail
+          node --check drive/js/federation-drop.js
+
+      - name: Shell syntax
+        run: |
+          set -euo pipefail
+          bash -n drive/bin/install_federation_drop_cleanup_timer.sh
+          bash -n drive/bin/install_arcadecloud.sh
+          bash -n drive/bin/uninstall_arcadecloud.sh
+
+      - name: FederationDrop contract regression
+        run: |
+          set -euo pipefail
+          php drive/tests/federation_drop_contract_smoke.php
+
+      - name: Stripe primitives regression
+        run: |
+          set -euo pipefail
+          php drive/tests/federation_drop_stripe_smoke.php
+
+      - name: Ingress cryptographic regression
+        run: |
+          set -euo pipefail
+          php drive/tests/federation_drop_ingress_smoke.php
+
+      - name: ArcadeLink cryptographic regression
+        run: |
+          set -euo pipefail
+          php drive/tests/federationcloud_smoke.php
+
+      - name: Canonical DB regression
+        run: |
+          set -euo pipefail
+          php drive/tests/database_schema_contract_smoke.php
+
+      - name: Managed settings regression
+        run: |
+          set -euo pipefail
+          php drive/tests/server_admin_config_smoke.php
+
+      - name: Security boundary checks
+        run: |
+          set -euo pipefail
+          grep -q "PaymentStatus'] !== 'paid'" drive/src/Federation/FederationDropService.php
+          grep -q 'LIMIT 1 FOR UPDATE' drive/src/Federation/FederationDropRepository.php
+          grep -q 'Stripe-Signature' drive/docs/FEDERATION_DROP.md
+          grep -q 'ARCADECLOUD_DROP_COMMERCE_URL' drive/docs/FEDERATION_DROP.md
+          grep -q 'drive.esforzados.com/federationdrop' drive/src/Federation/FederationDropConfig.php
+          grep -q 'central_copy' drive/docs/FEDERATION_DROP.md
+          grep -q 'FederationCommercialProviders' drive/src/Federation/FederationDropIngressRepository.php
+          grep -q "Status='active'" drive/src/Federation/FederationDropIngressRepository.php
+          grep -q 'LastSeen >= DATE_SUB' drive/src/Federation/FederationDropIngressRepository.php
+          grep -q 'FederationDropIngress/' drive/src/Federation/FederationDropIngressService.php
+          grep -q 'Access-Control-Allow-Origin' drive/src/Http/Controller/FederationDropIngressController.php
+          grep -q 'syncPaidIngressSources' drive/src/Federation/FederationDropWorkerService.php
+          grep -q 'FederationDropWorkerService' drive/src/Federation/FederationSyncCycleService.php
+          grep -q 'federationdrop/badge.svg' drive/docs/FEDERATION_DROP.md
+          ! grep -R "public-read" drive/src/Federation/FederationDrop*.php
+          ! grep -R "AWS_SECRET_ACCESS_KEY" drive/federationdrop drive/js/federation-drop.js
+
+      - name: Diff check
+        run: |
+          set -euo pipefail
+          git diff --check origin/main...HEAD
+
+
+      - name: PHP syntax
+        run: |
+          set -euo pipefail
+          php -l drive/src/Federation/FederationDropConfig.php
+          php -l drive/src/Federation/FederationDropRepository.php
+          php -l drive/src/Federation/FederationDropStorageService.php
+          php -l drive/src/Federation/FederationDropService.php
+          php -l drive/src/Federation/FederationDropIngressCodec.php
+          php -l drive/src/Federation/FederationDropIngressRepository.php
+          php -l drive/src/Federation/FederationDropIngressDownloader.php
+          php -l drive/src/Federation/FederationDropIngressService.php
+          php -l drive/src/Federation/FederationDropStripeClient.php
+          php -l drive/src/Federation/FederationDropStripeWebhookVerifier.php
+          php -l drive/src/Federation/FederationDropStripeCheckoutService.php
+          php -l drive/src/Federation/ArcadeLinkService.php
+          php -l drive/src/Federation/FederationService.php
+          php -l drive/src/Http/Controller/FederationDropController.php
+          php -l drive/src/Http/Controller/FederationDropIngressController.php
+          php -l drive/src/View/FederationDropPageRenderer.php
+          php -l drive/src/View/FederationPageRenderer.php
+          php -l drive/src/View/FederationPortalRenderer.php
+          php -l drive/src/Mail/SmtpEmailService.php
+          php -l drive/src/Admin/ManagedRuntimeEnvironment.php
+          php -l drive/bin/arcadecloud-drive-admin-helper.php
+          php -l drive/bin/federation_drop_cleanup.php
+          php -l drive/bin/federation_catalog_migrate.php
+          php -l drive/bin/federation_sync.php
+          php -l drive/src/Federation/FederationDropWorkerService.php
+          php -l drive/src/Federation/FederationSyncCycleService.php
+          php -l drive/federationcloud/drop-ingress.php
+          php -l drive/federationdrop/index.php
+          php -l drive/federationdrop/api.php
+          php -l drive/federationdrop/d.php
+          php -l drive/federationdrop/arcadelink.php
+          php -l drive/tests/federation_drop_contract_smoke.php
+          php -l drive/tests/federation_drop_stripe_smoke.php
+          php -l drive/tests/federation_drop_ingress_smoke.php
+          php -l drive/tests/federationcloud_smoke.php
+          php -l drive/tests/database_schema_contract_smoke.php
+          php -l drive/tests/server_admin_config_smoke.php
+
+      - name: JavaScript syntax
+        run: |
+          set -euo pipefail
+          node --check drive/js/federation-drop.js
+
+      - name: Shell syntax
+        run: |
+          set -euo pipefail
+          bash -n drive/bin/install_federation_drop_cleanup_timer.sh
+          bash -n drive/bin/install_arcadecloud.sh
+          bash -n drive/bin/uninstall_arcadecloud.sh
+
+      - name: FederationDrop contract regression
+        run: |
+          set -euo pipefail
+          php drive/tests/federation_drop_contract_smoke.php
+
+      - name: Stripe primitives regression
+        run: |
+          set -euo pipefail
+          php drive/tests/federation_drop_stripe_smoke.php
+
+      - name: Ingress cryptographic regression
+        run: |
+          set -euo pipefail
+          php drive/tests/federation_drop_ingress_smoke.php
+
+      - name: ArcadeLink cryptographic regression
+        run: |
+          set -euo pipefail
+          php drive/tests/federationcloud_smoke.php
+
+      - name: Canonical DB regression
+        run: |
+          set -euo pipefail
+          php drive/tests/database_schema_contract_smoke.php
+
+      - name: Managed settings regression
+        run: |
+          set -euo pipefail
+          php drive/tests/server_admin_config_smoke.php
+
+      - name: Security boundary checks
+        run: |
+          set -euo pipefail
+          grep -q "PaymentStatus'] !== 'paid'" drive/src/Federation/FederationDropService.php
+          grep -q 'LIMIT 1 FOR UPDATE' drive/src/Federation/FederationDropRepository.php
+          grep -q 'Stripe-Signature' drive/docs/FEDERATION_DROP.md
+          grep -q 'ARCADECLOUD_DROP_COMMERCE_URL' drive/docs/FEDERATION_DROP.md
+          grep -q 'drive.esforzados.com/federationdrop' drive/src/Federation/FederationDropConfig.php
+          grep -q 'central_copy' drive/docs/FEDERATION_DROP.md
+          grep -q 'FederationCommercialProviders' drive/src/Federation/FederationDropIngressRepository.php
+          grep -q "Status='active'" drive/src/Federation/FederationDropIngressRepository.php
+          grep -q 'LastSeen >= DATE_SUB' drive/src/Federation/FederationDropIngressRepository.php
+          grep -q 'FederationDropIngress/' drive/src/Federation/FederationDropIngressService.php
+          grep -q 'Access-Control-Allow-Origin' drive/src/Http/Controller/FederationDropIngressController.php
+          grep -q 'syncPaidIngressSources' drive/src/Federation/FederationDropWorkerService.php
+          grep -q 'FederationDropWorkerService' drive/src/Federation/FederationSyncCycleService.php
+          grep -q 'federationdrop/badge.svg' drive/docs/FEDERATION_DROP.md
+          ! grep -R "public-read" drive/src/Federation/FederationDrop*.php
+          ! grep -R "AWS_SECRET_ACCESS_KEY" drive/federationdrop drive/js/federation-drop.js
+
+      - name: Diff check
+        run: |
+          set -euo pipefail
+          git diff --check origin/main...HEAD
+
 
       - name: PHP syntax
         run: |

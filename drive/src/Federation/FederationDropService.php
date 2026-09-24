@@ -5,7 +5,6 @@ namespace ArcadeCloud\Drive\Federation;
 
 use ArcadeCloud\Drive\Core\DriveApplication;
 use ArcadeCloud\Drive\Mail\SmtpEmailService;
-use JsonException;
 
 final class FederationDropService
 {
@@ -45,7 +44,10 @@ final class FederationDropService
             'max_downloads' => $this->config->maxDownloads,
             'max_file_bytes' => $this->config->maxFileBytes,
             'public_url' => $this->config->publicUrl,
-            'custody' => 'local_central',
+            'commerce_url' => $this->config->commerceUrl,
+            'commerce_node' => $this->config->isCommerceNode(),
+            'node_id' => $this->identity->nodeId(),
+            'custody' => $this->config->isCommerceNode() ? 'local_central' : 'commerce_redirect',
         ];
     }
 
@@ -115,7 +117,12 @@ final class FederationDropService
             'custody_node_id' => $custodyNodeId,
         ]);
 
-        $checkoutUrl = $this->checkoutUrl($dropId, (int)$quote['amount_cents'], $this->config->currency);
+        $createdRow = $this->repository->find($dropId);
+        if ($createdRow === null) {
+            throw new FederationException('No se pudo recuperar la orden FederationDrop para Stripe.', 500);
+        }
+        $checkout = $this->stripe()->createCheckout($createdRow);
+        $checkoutUrl = (string)$checkout['url'];
         $this->repository->setCheckoutUrl($dropId, $checkoutUrl);
 
         return [
@@ -235,39 +242,18 @@ final class FederationDropService
 
     public function receivePaymentWebhook(string $rawBody, string $signature): array
     {
-        $this->config->assertWebhookReady();
-        $signature = strtolower(trim($signature));
-        $expected = hash_hmac('sha256', $rawBody, $this->config->webhookSecret);
-        if ($signature === '' || !hash_equals($expected, $signature)) {
-            throw new FederationException('Firma de webhook FederationDrop inválida.', 401);
+        $payment = $this->stripe()->handleWebhook($rawBody, $signature);
+        if (empty($payment['processed'])) {
+            return ['ok' => true] + $payment;
         }
 
-        try {
-            $event = json_decode($rawBody, true, 16, JSON_THROW_ON_ERROR);
-        } catch (JsonException) {
-            throw new FederationException('Webhook FederationDrop no contiene JSON válido.', 400);
-        }
-        if (!is_array($event) || array_is_list($event)) {
-            throw new FederationException('Webhook FederationDrop inválido.', 400);
-        }
-
-        $eventId = $this->safeIdentifier((string)($event['event_id'] ?? ''), 96);
-        $dropId = $this->safeIdentifier((string)($event['drop_id'] ?? ''), 64);
-        $provider = $this->safeIdentifier((string)($event['provider'] ?? 'external'), 64);
-        $reference = $this->safeIdentifier((string)($event['reference'] ?? ''), 191);
-        $status = strtolower($this->safeIdentifier((string)($event['status'] ?? ''), 16));
-        $amount = (int)($event['amount_cents'] ?? -1);
-        $currency = strtoupper(trim((string)($event['currency'] ?? '')));
-
-        if ($eventId === '' || $dropId === '' || $reference === '' || !in_array($status, ['paid','failed','refunded'], true)) {
-            throw new FederationException('Campos de webhook FederationDrop incompletos.', 400);
-        }
-
-        $row = $this->repository->find($dropId);
-        if ($row === null) throw new FederationException('FederationDrop de pago no encontrado.', 404);
-        if ($amount !== (int)$row['AmountCents'] || !hash_equals((string)$row['Currency'], $currency)) {
-            throw new FederationException('El importe del pago no coincide con la orden FederationDrop.', 409);
-        }
+        $eventId = (string)$payment['event_id'];
+        $dropId = (string)$payment['drop_id'];
+        $provider = (string)$payment['provider'];
+        $reference = (string)$payment['reference'];
+        $status = (string)$payment['status'];
+        $amount = (int)$payment['amount_cents'];
+        $currency = (string)$payment['currency'];
 
         $inserted = $this->repository->recordPaymentEvent(
             $eventId,
@@ -287,20 +273,23 @@ final class FederationDropService
                     if (!empty($updated['UploadedAt'])) $this->storage->delete((string)$updated['S3Key']);
                     $this->repository->setPlacementStatus($dropId, 'revoked');
                 } catch (\Throwable $e) {
-                    error_log('[FederationDrop refund cleanup] ' . $e->getMessage());
+                    error_log('[FederationDrop Stripe refund cleanup] ' . $e->getMessage());
                 }
             }
             return [
                 'ok' => true,
                 'accepted' => true,
+                'processed' => true,
                 'duplicate' => !$inserted,
+                'event_id' => $eventId,
+                'event_type' => (string)($payment['event_type'] ?? ''),
                 'status' => (string)$updated['Status'],
                 'payment_status' => (string)$updated['PaymentStatus'],
             ];
         }
 
         $updated = $this->repository->markPaid($dropId, $provider, $reference);
-        if ($inserted && (string)$updated['Status'] === 'active') {
+        if ($inserted && empty($payment['was_paid']) && (string)$updated['Status'] === 'active') {
             $this->repository->createCentralPlacement($dropId, (string)$updated['CustodyNodeId']);
             $this->sendActivationEmail($updated);
         }
@@ -308,7 +297,10 @@ final class FederationDropService
         return [
             'ok' => true,
             'accepted' => true,
+            'processed' => true,
             'duplicate' => !$inserted,
+            'event_id' => $eventId,
+            'event_type' => (string)($payment['event_type'] ?? ''),
             'status' => (string)$updated['Status'],
             'payment_status' => (string)$updated['PaymentStatus'],
         ];
@@ -370,21 +362,14 @@ final class FederationDropService
         ];
     }
 
-    private function checkoutUrl(string $dropId, int $amountCents, string $currency): string
+    private function stripe(): FederationDropStripeCheckoutService
     {
-        $returnUrl = $this->config->publicUrl . '/?payment_return=' . rawurlencode($dropId);
-        $webhookUrl = $this->config->publicUrl . '/api.php?action=payment-webhook';
-        $canonical = implode('|', [$dropId, (string)$amountCents, $currency, $returnUrl, $webhookUrl]);
-        $signature = hash_hmac('sha256', $canonical, $this->config->webhookSecret);
-        $params = http_build_query([
-            'drop_id' => $dropId,
-            'amount_cents' => $amountCents,
-            'currency' => $currency,
-            'return_url' => $returnUrl,
-            'webhook_url' => $webhookUrl,
-            'signature' => $signature,
-        ], '', '&', PHP_QUERY_RFC3986);
-        return $this->config->checkoutUrl . (str_contains($this->config->checkoutUrl, '?') ? '&' : '?') . $params;
+        return new FederationDropStripeCheckoutService(
+            $this->config,
+            $this->repository,
+            new FederationDropStripeClient($this->config->stripeSecretKey),
+            new FederationDropStripeWebhookVerifier($this->config->stripeWebhookSecret)
+        );
     }
 
     private function publicDownloadUrl(string $dropId, string $publicToken): string

@@ -6,7 +6,7 @@ La regla de custodia es deliberadamente estricta:
 
 > **el nodo que cobra por la disponibilidad de un FederationDrop debe conservar una copia física garantizada del objeto durante el periodo vendido.**
 
-En la fase 1, cuando `drive.esforzados.com` cobra, el objeto queda almacenado en el S3 configurado por ese mismo Drive. Un nodo federado externo no puede convertirse automáticamente en la única copia de un recurso pagado.
+Cuando `drive.esforzados.com` cobra, la **custodia final garantizada** queda en el S3 configurado por ese mismo Drive. Un nodo comercial externo puede actuar como **ingress temporal** para acelerar la primera subida, pero el Drop no se activa ni empieza su retención hasta que `drive.esforzados.com` haya migrado y verificado su propia copia. El nodo ingress nunca se convierte por ese hecho en la única custodia pagada.
 
 ## Qué problema resuelve
 
@@ -62,6 +62,50 @@ FederationDrop activo
      +-- URL privada de administración/eliminación
 ```
 
+### Ingress temporal por nodo cercano
+
+Después del pago, un archivo nuevo puede seguir dos caminos:
+
+```text
+sin proveedor cercano
+navegador -> S3 drive.esforzados.com
+
+proveedor comercial cercano disponible
+navegador -> S3 ingress temporal
+           -> worker servidor-a-servidor
+           -> S3 drive.esforzados.com
+           -> activar Drop
+```
+
+Sólo aparecen como candidatos nodos presentes en `FederationCommercialProviders` con estado `active`, identidad FederationCloud activa y capacidad suficiente para el tamaño de la orden.
+
+El navegador mide latencia contra los endpoints `drop-ingress.php?action=probe` y elige el candidato que responde más rápido. Si ninguno responde, si CORS falla o si el PUT remoto no se completa, el cliente conserva el archivo seleccionado y cae a la subida central.
+
+La autorización ingress:
+
+- se crea únicamente después de `PaymentStatus=paid`;
+- está firmada Ed25519 por el nodo comercial;
+- liga `drop_id`, `ingress_id`, tamaño, MIME y Node ID destino;
+- expira;
+- sólo es aceptada por el Node ID firmado;
+- se valida además contra el descriptor público del portal comercial configurado.
+
+El objeto remoto vive bajo:
+
+```text
+FederationDropIngress/<commerce_node_id>/<drop_id>/<ingress_id>/...
+```
+
+Cuando el nodo remoto confirma el tamaño, el navegador registra el ingress en el nodo comercial. El worker de `drive.esforzados.com` obtiene una URL S3 temporal servidor-a-servidor, descarga en streaming, calcula SHA-256 durante la migración, almacena la copia central y sólo entonces:
+
+1. marca el Drop `active`;
+2. crea el placement `primary`;
+3. inicia `ExpiresAt`;
+4. envía el correo final;
+5. ordena borrar el objeto ingress temporal.
+
+Intentos abandonados se limpian automáticamente después de siete días.
+
 ### Pago antes de almacenar
 
 Una orden sin pagar **no recibe una URL de subida a S3**.
@@ -87,6 +131,26 @@ La clave de ese cifrado se deriva de la identidad estable del nodo FederationClo
 Los tokens no se almacenan en texto plano.
 
 La página de administración declara `Referrer-Policy: no-referrer` para evitar que un owner token de magic-link viaje como Referer a otro sitio.
+
+## ArcadeLink público, privado y FederationDrop
+
+El lector no debe tratar igual un recurso público que uno privado.
+
+Para un ArcadeLink v1 con:
+
+```text
+visibility = PUBLIC
+rights = copy_allowed
+```
+
+el lector ofrece descarga directa mediante el resolver de réplicas y **no exige sesión ni grant privado**. También ofrece:
+
+- **Copiar a Mi Drive**, que usa la cola `FederationPublicImportJobs`;
+- **FederationDrop temporal**, que envía el `resource_id` al portal comercial.
+
+En ese segundo caso el cliente no vuelve a seleccionar el archivo. Stripe cobra el servicio de retención/transferencia/descargas, y después del pago `drive.esforzados.com` materializa el recurso desde las copias FederationCloud disponibles verificando tamaño y Content ID SHA-256.
+
+Para un recurso `PRIVATE` o `requestable_metadata`, el lector no intenta reutilizar el flujo público. Muestra **Solicitar clave / acceso** y usa el protocolo existente de solicitud/aprobación del propietario.
 
 ## ArcadeLink v3
 
@@ -238,7 +302,7 @@ El enlace comercial sigue funcionando aunque el nodo tenga otro dominio.
 
 Los objetos permanecen privados. FederationDrop no usa `public-read`.
 
-Para que el navegador pueda ejecutar el PUT prefirmado directamente contra S3, el bucket debe permitir CORS desde el origen web del nodo comercial.
+Para que el navegador pueda ejecutar el PUT prefirmado directamente contra S3, el bucket central y los buckets de nodos comerciales que acepten ingress temporal deben permitir CORS desde el origen web del nodo comercial.
 
 Ejemplo conceptual para `drive.esforzados.com`:
 
@@ -374,6 +438,21 @@ El porcentaje usa basis points:
 500   = 5 %
 ```
 
+### FederationDropIngressObjects
+
+Cola/estado de objetos de ingreso temporal:
+
+- `IngressId`;
+- Drop y nodo comercial;
+- nodo ingress y Federation URL;
+- key S3 sólo en el nodo que recibe temporalmente;
+- tamaño/MIME esperado;
+- grant Ed25519;
+- estados `authorized/uploaded/pulling/centralized/deleted/failed`;
+- intentos y backoff.
+
+Esta tabla existe en todos los nodos, pero una instalación sólo tendrá `S3Key` para los ingress que ella haya recibido físicamente.
+
 ### FederationDropPlacements
 
 Registra dónde existe una copia pagada y con qué papel:
@@ -423,7 +502,7 @@ drive.esforzados.com
           operativo        garantía
 ```
 
-La colocación automática en proveedores externos **está deshabilitada en la fase 1**. Tener una fila `FederationCommercialProviders` no autoriza a que un proveedor se lleve la única copia.
+La colocación de **custodia final** en proveedores externos sigue deshabilitada. Un proveedor `active` sí puede utilizarse como **ingress temporal** después del pago, pero el Drop continúa pendiente hasta que exista la copia central verificada. Tener una fila `FederationCommercialProviders` nunca autoriza a que un proveedor se quede como única copia pagada.
 
 Sólo deberá activarse el reparto cuando el código pueda demostrar que existe la garantía requerida. Esto evita cobrar por una disponibilidad que dependa de un tercero que pueda apagar su nube.
 
@@ -479,6 +558,10 @@ Implementado en esta fase:
 - webhook Stripe firmado, con tolerancia temporal e idempotencia;
 - portal comercial canónico `drive.esforzados.com` para todos los nodos;
 - upload directo a S3 privado;
+- selección opcional por latencia de ingress comercial cercano;
+- migración servidor-a-servidor del ingress a custodia central;
+- grant Ed25519 específico por Drop/nodo/tamaño;
+- limpieza de ingress temporales abandonados;
 - validación de tamaño del objeto;
 - enlaces públicos;
 - límite transaccional de canjes;
@@ -487,7 +570,8 @@ Implementado en esta fase:
 - correo;
 - ArcadeLink v3;
 - badge para dominios externos;
-- esquema de proveedores/porcentajes/garantías.
+- esquema de proveedores/porcentajes/garantías;
+- FederationDrop directo desde un `resource_id` PUBLIC sin volver a seleccionar el archivo.
 
 Pendiente para la fase comercial distribuida:
 

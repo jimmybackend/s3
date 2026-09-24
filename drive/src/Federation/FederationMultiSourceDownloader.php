@@ -158,30 +158,30 @@ final class FederationMultiSourceDownloader
 
             $parts = [];
             foreach ($states as $index => $state) {
-                $ch = $state['handle'];
-                fflush($state['fh']);
-                fclose($state['fh']);
+                $ch = $state->handle;
+                fflush($state->fh);
+                fclose($state->fh);
                 $status = (int)curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
                 $curlError = curl_error($ch);
                 curl_multi_remove_handle($multi, $ch);
                 curl_close($ch);
 
-                $expected = (int)$state['expected'];
-                $ok = !$state['overflow']
+                $expected = (int)$state->expected;
+                $ok = !$state->overflow
                     && $status === 206
-                    && (int)$state['bytes'] === $expected
+                    && (int)$state->bytes === $expected
                     && $curlError === '';
 
                 if ($ok) {
                     $parts[$index] = [
-                        'path' => (string)$state['path'],
-                        'bytes' => (int)$state['bytes'],
-                        'url' => (string)$state['url'],
+                        'path' => (string)$state->path,
+                        'bytes' => (int)$state->bytes,
+                        'url' => (string)$state->url,
                     ];
                     continue;
                 }
 
-                @unlink((string)$state['path']);
+                @unlink((string)$state->path);
                 // Si una fuente falla, sólo ese rango se reintenta contra las
                 // demás copias; no se reinicia el archivo completo.
                 $segment = $segments[$index];
@@ -195,12 +195,12 @@ final class FederationMultiSourceDownloader
             return $parts;
         } catch (\Throwable $e) {
             foreach ($states as $state) {
-                if (is_resource($state['fh'] ?? null)) @fclose($state['fh']);
-                if (isset($state['handle'])) {
-                    @curl_multi_remove_handle($multi, $state['handle']);
-                    @curl_close($state['handle']);
+                if (isset($state->fh) && is_resource($state->fh)) @fclose($state->fh);
+                if (isset($state->handle) && $state->handle !== null) {
+                    @curl_multi_remove_handle($multi, $state->handle);
+                    @curl_close($state->handle);
                 }
-                if (isset($state['path'])) @unlink((string)$state['path']);
+                if (isset($state->path)) @unlink((string)$state->path);
             }
             if ($e instanceof FederationException) throw $e;
             throw new FederationException('No se pudo completar el transporte multisource.', 502);
@@ -209,7 +209,7 @@ final class FederationMultiSourceDownloader
         }
     }
 
-    /** @return array<string,mixed> */
+    /** @return object */
     private function createRangeHandle($multi, string $url, int $start, int $end): array
     {
         [$host, $ip] = $this->single->safeS3Target($url);
@@ -222,7 +222,7 @@ final class FederationMultiSourceDownloader
             throw new FederationException('No se pudo abrir segmento temporal.', 500);
         }
 
-        $state = [
+        $state = (object)[
             'path' => $tmp,
             'fh' => $fh,
             'bytes' => 0,
@@ -238,7 +238,7 @@ final class FederationMultiSourceDownloader
             @unlink($tmp);
             throw new FederationException('No se pudo iniciar rango federado.', 500);
         }
-        $state['handle'] = $ch;
+        $state->handle = $ch;
 
         curl_setopt_array($ch, [
             CURLOPT_FOLLOWLOCATION => false,
@@ -252,15 +252,15 @@ final class FederationMultiSourceDownloader
             CURLOPT_RETURNTRANSFER => false,
             CURLOPT_HEADER => false,
             CURLOPT_USERAGENT => 'ArcadeCloud-Federation-MultiSource/1',
-            CURLOPT_WRITEFUNCTION => function ($curl, string $chunk) use (&$state): int {
-                $next = (int)$state['bytes'] + strlen($chunk);
-                if ($next > (int)$state['expected']) {
-                    $state['overflow'] = true;
+            CURLOPT_WRITEFUNCTION => function ($curl, string $chunk) use ($state): int {
+                $next = (int)$state->bytes + strlen($chunk);
+                if ($next > (int)$state->expected) {
+                    $state->overflow = true;
                     return 0;
                 }
-                $written = fwrite($state['fh'], $chunk);
+                $written = fwrite($state->fh, $chunk);
                 if ($written !== strlen($chunk)) return 0;
-                $state['bytes'] = $next;
+                $state->bytes = $next;
                 return strlen($chunk);
             },
         ]);

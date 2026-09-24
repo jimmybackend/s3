@@ -83,7 +83,54 @@ final class FederationReplicaDownloader
         return ['path' => $tmp, 'bytes' => $bytes, 'content_id' => $actual];
     }
 
-    private function safeS3Target(string $url): array
+    public function probe(string $url, int $expectedSize): void
+    {
+        if (!extension_loaded('curl')) throw new FederationException('cURL es necesario para comprobar réplicas.', 503);
+        [$host, $ip] = $this->safeS3Target($url);
+
+        $ch = curl_init($url);
+        if ($ch === false) throw new FederationException('No se pudo comprobar la réplica.', 500);
+        $bytes = 0;
+        $options = [
+            CURLOPT_FOLLOWLOCATION => false,
+            CURLOPT_MAXREDIRS => 0,
+            CURLOPT_CONNECTTIMEOUT_MS => 3000,
+            CURLOPT_TIMEOUT => 10,
+            CURLOPT_PROTOCOLS => CURLPROTO_HTTPS,
+            CURLOPT_REDIR_PROTOCOLS => CURLPROTO_HTTPS,
+            CURLOPT_RESOLVE => [$host . ':443:' . $ip],
+            CURLOPT_RETURNTRANSFER => false,
+            CURLOPT_HEADER => false,
+            CURLOPT_USERAGENT => 'ArcadeCloud-Federation-Probe/1',
+        ];
+        if ($expectedSize === 0) {
+            $options[CURLOPT_NOBODY] = true;
+        } else {
+            $options[CURLOPT_RANGE] = '0-0';
+            $options[CURLOPT_WRITEFUNCTION] = static function ($curl, string $chunk) use (&$bytes): int {
+                $bytes += strlen($chunk);
+                return $bytes <= 1 ? strlen($chunk) : 0;
+            };
+        }
+        curl_setopt_array($ch, $options);
+        $ok = curl_exec($ch);
+        $status = (int)curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
+        $error = curl_error($ch);
+        curl_close($ch);
+
+        $valid = $expectedSize === 0
+            ? ($ok !== false && $status >= 200 && $status < 300)
+            : ($ok !== false && $status === 206 && $bytes === 1);
+        if (!$valid) {
+            throw new FederationException(
+                'La copia pública no respondió con una autorización S3 válida'
+                . ($error !== '' ? ': ' . $error : '.'),
+                502
+            );
+        }
+    }
+
+    public function safeS3Target(string $url): array
     {
         $parts = parse_url(trim($url));
         if (!is_array($parts) || strtolower((string)($parts['scheme'] ?? '')) !== 'https' || !isset($parts['host'])

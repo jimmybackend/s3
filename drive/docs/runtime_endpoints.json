@@ -172,6 +172,7 @@
         "drive/subir_publico.php",
         "drive/sync_s3_to_db.php",
         "drive/sync_status.php",
+        "drive/tests/index_federation_drop_smoke.php",
         "drive/thumb.php",
         "drive/token_audio.php",
         "drive/token_texto.php",
@@ -594,6 +595,7 @@
         "drive/src/Http/Controller/ActivityCostController.php",
         "drive/src/Http/Controller/AuthController.php",
         "drive/src/Security/SessionManager.php",
+        "drive/tests/index_federation_drop_smoke.php",
         "drive/up.php"
       ]
     },
@@ -874,6 +876,7 @@
         "drive/src/Http/Controller/ActivityCostController.php",
         "drive/src/Http/Controller/AuthController.php",
         "drive/src/Security/SessionManager.php",
+        "drive/tests/index_federation_drop_smoke.php",
         "drive/up.php"
       ]
     },
@@ -895,7 +898,7 @@
     },
     {
       "path": "drive/index.php",
-      "size": 3065,
+      "size": 5299,
       "active": true,
       "references": [
         "drive/bloque_archivos.php",
@@ -904,6 +907,7 @@
         "drive/src/Http/Controller/ActivityCostController.php",
         "drive/src/Http/Controller/AuthController.php",
         "drive/src/Security/SessionManager.php",
+        "drive/tests/index_federation_drop_smoke.php",
         "drive/up.php"
       ]
     },
@@ -1138,6 +1142,7 @@
         "drive/src/Http/Controller/ActivityCostController.php",
         "drive/src/Http/Controller/AuthController.php",
         "drive/src/Security/SessionManager.php",
+        "drive/tests/index_federation_drop_smoke.php",
         "drive/up.php"
       ]
     },
@@ -2923,6 +2928,12 @@
     {
       "path": "drive/tests/folder_document_sanitizer.php",
       "size": 1990,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/tests/index_federation_drop_smoke.php",
+      "size": 1479,
       "active": false,
       "references": []
     },

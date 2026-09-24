@@ -51,7 +51,32 @@ installerContract(str_contains($updater, "'needs_attention'"), 'updater informa 
 installerContract(str_contains($updaterInstaller, '"php_user": php_user'), 'configuración del updater conserva usuario PHP-FPM');
 installerContract(str_contains($updaterInstaller, 'NOPASSWD: %s probe, %s check, %s apply'), 'sudoers limita updater a probe/check/apply');
 installerContract(str_contains($updaterInstaller, 'runuser -u "$PHP_USER" -- /usr/bin/sudo -n "$TARGET" probe'), 'instalador prueba NOPASSWD con el usuario web real');
-installerContract(str_contains($updater, "if ($action === 'probe')"), 'updater ofrece probe sin tocar Git');
+installerContract(str_contains($updater, "if (" . '
+installerContract(str_contains($updaterService, 'perdió la autorización NOPASSWD'), 'UI traduce fallo sudo a diagnóstico ArcadeCloud');
+
+installerContract(str_contains($uninstaller, 'arcadecloud-media-worker.service'), 'desinstalador retira worker multimedia');
+installerContract(str_contains($uninstaller, 'arcadecloud-media-node-bootstrap.service'), 'desinstalador retira bootstrap multimedia');
+installerContract(str_contains($uninstaller, '/var/lib/arcadecloud-media'), 'desinstalador retira temporales locales multimedia');
+
+installerContract(str_contains($mediaInstaller, 'ARCADECLOUD_RUNTIME_ENV'), 'worker usa runtime administrado canónico');
+installerContract(!str_contains($mediaInstaller, 'User=nginx'), 'worker no fija nginx como usuario universal');
+installerContract(str_contains($bootstrap, 'runtime-env.json'), 'bootstrap de réplica usa runtime-env.json');
+installerContract(str_contains($bootstrap, 'arcadecloud-drive-admin'), 'bootstrap actualiza configuración mediante helper privilegiado');
+
+foreach ([
+    'ARCADECLOUD_NODE_ROLE',
+    'ARCADECLOUD_MEDIA_WORKER_INSTANCE_ID',
+    'ARCADECLOUD_MEDIA_WORKER_REGION',
+    'ARCADECLOUD_MEDIA_WORKER_HOURLY_USD',
+    'ARCADECLOUD_MEDIA_WORKER_IDLE_GRACE_SECONDS',
+    'ARCADECLOUD_FEDERATION_DYNAMIC_IP',
+] as $name) {
+    installerContract(str_contains($managed, "'{$name}'"), "runtime administrado permite {$name}");
+    installerContract(str_contains($helper, "'{$name}'"), "helper privilegiado permite {$name}");
+}
+
+fwrite(STDOUT, "Installer/service reconciliation contract: OK\n");
+ . "action === 'probe')"), 'updater ofrece probe sin tocar Git');
 installerContract(str_contains($updaterService, 'perdió la autorización NOPASSWD'), 'UI traduce fallo sudo a diagnóstico ArcadeCloud');
 
 installerContract(str_contains($uninstaller, 'arcadecloud-media-worker.service'), 'desinstalador retira worker multimedia');

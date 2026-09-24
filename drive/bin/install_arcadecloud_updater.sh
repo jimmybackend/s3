@@ -60,14 +60,20 @@ PY
 chown root:root "$CONFIG"
 chmod 0644 "$CONFIG"
 
-printf '%s ALL=(root) NOPASSWD: %s check, %s apply\n' "$PHP_USER" "$TARGET" "$TARGET" > "$SUDOERS"
+printf '%s ALL=(root) NOPASSWD: %s probe, %s check, %s apply\n' "$PHP_USER" "$TARGET" "$TARGET" "$TARGET" > "$SUDOERS"
 chmod 0440 "$SUDOERS"
 if command -v visudo >/dev/null 2>&1; then visudo -cf "$SUDOERS" >/dev/null; fi
 
 "$TARGET" check
 
+if ! runuser -u "$PHP_USER" -- /usr/bin/sudo -n "$TARGET" probe >/dev/null; then
+  echo "ERROR: la regla NOPASSWD del updater no funciona para el usuario PHP-FPM real: $PHP_USER" >&2
+  echo "Revisa $SUDOERS y el pool php-fpm-drive antes de usar el updater web." >&2
+  exit 3
+fi
+
 echo
-echo "OK: ArcadeCloud Updater instalado."
+echo "OK: ArcadeCloud Updater instalado y NOPASSWD verificado."
 echo "Repo: $REPO_ROOT"
 echo "Repo user: $REPO_USER"
 echo "PHP-FPM user: $PHP_USER"

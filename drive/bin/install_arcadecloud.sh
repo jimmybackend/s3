@@ -112,21 +112,35 @@ pool_user_from_conf() {
 detect_php_user() {
   local user=""
 
-  user="$(ps -eo user=,comm= 2>/dev/null | awk '
-    $2 == "php-fpm" && $1 != "root" { print $1; exit }
-  ')"
-  [[ -n "$user" ]] && { printf '%s' "$user"; return 0; }
-
+  # La fuente de verdad es el pool dedicado de ArcadeCloud, no cualquier
+  # proceso php-fpm del servidor (puede haber varios pools/apps).
   user="$(pool_user_from_conf /etc/php-fpm-drive.d/arcadecloud-drive.conf || true)"
   [[ -n "$user" ]] && { printf '%s' "$user"; return 0; }
 
   user="$(pool_user_from_conf /etc/php-fpm.d/arcadecloud-drive.conf || true)"
   [[ -n "$user" ]] && { printf '%s' "$user"; return 0; }
 
-  user="$(pool_user_from_conf /etc/php-fpm-drive.conf || true)"
+  if [[ -r /etc/php-fpm-drive.conf ]]; then
+    user="$(php-fpm -tt -y /etc/php-fpm-drive.conf 2>&1 | awk '
+      match($0, /(^|[[:space:]])user[[:space:]]*=[[:space:]]*[^[:space:];]+/) {
+        value = substr($0, RSTART, RLENGTH)
+        sub(/^.*user[[:space:]]*=[[:space:]]*/, "", value)
+        sub(/[[:space:];].*$/, "", value)
+        print value
+        exit
+      }
+    ' || true)"
+    [[ -n "$user" ]] && { printf '%s' "$user"; return 0; }
+  fi
+
+  # Compatibilidad con instalaciones antiguas sin pool dedicado.
+  user="$(pool_user_from_conf /etc/php-fpm.d/www.conf || true)"
   [[ -n "$user" ]] && { printf '%s' "$user"; return 0; }
 
-  user="$(pool_user_from_conf /etc/php-fpm.d/www.conf || true)"
+  # Último recurso: sólo cuando no existe configuración identificable.
+  user="$(ps -eo user=,comm= 2>/dev/null | awk '
+    $2 == "php-fpm" && $1 != "root" { print $1; exit }
+  ')"
   [[ -n "$user" ]] && printf '%s' "$user"
 }
 

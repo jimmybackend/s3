@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace ArcadeCloud\Drive\Http\Controller;
 
 use ArcadeCloud\Drive\Core\DriveApplication;
+use ArcadeCloud\Drive\Federation\FederationDropConfig;
 use ArcadeCloud\Drive\Federation\FederationDropGoogleAuthService;
 use ArcadeCloud\Drive\Federation\FederationException;
 use ArcadeCloud\Drive\Http\Request;
@@ -69,7 +70,7 @@ final class FederationDropGoogleAuthController
         try {
             $service = new FederationDropGoogleAuthService($this->app);
             $this->redirect(
-                rtrim((string)getenv('ARCADECLOUD_DROP_PUBLIC_URL'), '/') ?: '../federationdrop',
+                rtrim(FederationDropConfig::fromEnvironment()->publicUrl, '/') . '/',
                 [$service->clearSessionCookie()],
                 303
             );

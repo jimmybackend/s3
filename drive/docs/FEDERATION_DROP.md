@@ -278,7 +278,9 @@ drive/bin/federation_drop_cleanup.php
 elimina:
 
 - Drops activos cuyo `ExpiresAt` venció;
-- órdenes pendientes abandonadas después de `ARCADECLOUD_DROP_PENDING_HOURS`.
+- órdenes **no pagadas** abandonadas después de `ARCADECLOUD_DROP_PENDING_HOURS`.
+
+Una orden con pago confirmado y archivo todavía pendiente no se elimina por ese reloj: no consume almacenamiento y debe seguir recuperable para que el cliente pueda completar la subida posteriormente.
 
 El timer systemd se instala con:
 

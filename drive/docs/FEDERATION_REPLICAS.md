@@ -120,6 +120,33 @@ FederationCloud/Replicas/<origin_node_id>/<resource_id>
 
 en el bucket local del provider. Ese objeto no entra a `FileS3` ni a la navegación diaria del usuario.
 
+## Transporte multisource
+
+Cuando el catálogo conoce dos o más ubicaciones activas del mismo `PUBLIC + copy_allowed`, el receptor puede pedir hasta cuatro URLs S3 temporales y dividir el archivo en rangos HTTP disjuntos.
+
+```text
+mirror A  -> bytes 0..N
+provider B -> bytes N+1..M
+origin C   -> bytes M+1..fin
+                 |
+                 v
+          ensamblado temporal
+                 |
+          SHA-256 == Content ID
+```
+
+`FederationMultiSourceDownloader`:
+
+- usa `Range` y exige respuesta HTTP 206;
+- nunca confía en el orden de llegada: ensambla por offset;
+- limita el total al tamaño global conocido y a 5 GiB;
+- permite fallback de cada rango a otra fuente si una réplica falla;
+- calcula SHA-256 del archivo completo después del ensamblado.
+
+Si sólo existe una copia física todavía, no se finge multisource: esa transferencia necesariamente sale completa de la única fuente existente. El reparto comienza cuando existen varias copias verificadas.
+
+Las nuevas réplicas y las importaciones públicas a Mi Drive usan este transporte automáticamente cuando hay varias fuentes.
+
 ## Cuándo se anuncia una ubicación
 
 Un nodo receptor **no** anuncia `provider/mirror active` al recibir la oferta.
@@ -153,7 +180,7 @@ Dentro del mismo nivel se prefiere la ubicación más reciente.
 
 La búsqueda global devuelve `preferred_location`.
 
-Para `PUBLIC + copy_allowed`, `/federationcloud/replica-open.php` intenta cada ubicación en orden. Si un mirror no responde, prueba el siguiente provider y finalmente el origin.
+Para `PUBLIC + copy_allowed`, `/federationcloud/replica-open.php` no exige sesión: la política pública se valida en el backend antes de emitir una URL. El resolver intenta cada ubicación en orden, obtiene una URL S3 temporal y hace una prueba real de rango antes de redirigir. Si una credencial S3 está vencida/incorrecta o un mirror no responde, prueba el siguiente provider y finalmente el origin.
 
 Una ubicación remota responde por:
 
@@ -189,7 +216,7 @@ Usuario autenticado:
 
 ```text
 GET/POST /federationcloud/replica.php
-GET      /federationcloud/replica-open.php?resource_id=arl_...
+GET      /federationcloud/replica-open.php?resource_id=arl_...  (PUBLIC + copy_allowed, sin login)
 ```
 
 Máquina a máquina:
@@ -211,6 +238,10 @@ CI valida sin tráfico físico real:
 - sintaxis PHP/JS;
 - esquema y límites;
 - que las tablas privadas de réplica no entren al event log global;
-- que la ubicación se emita sólo después del paso de almacenamiento.
+- que la ubicación se emita sólo después del paso de almacenamiento;
+- reunión de varias fuentes públicas;
+- prueba real de URL S3 antes del redirect;
+- uso de rangos HTTP en transporte multisource;
+- verificación SHA-256 después de ensamblar.
 
 La transferencia real S3→provider, propagación del `location.upsert` y failover con un nodo apagado se dejan para la prueba física entre nodos. El protocolo y el código quedan preparados antes de esa prueba.

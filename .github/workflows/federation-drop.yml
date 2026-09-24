@@ -10,6 +10,7 @@ on:
       - 'drive/src/Federation/FederationService.php'
       - 'drive/src/Http/Controller/FederationDropController.php'
       - 'drive/src/Http/Controller/FederationDropGoogleAuthController.php'
+      - 'drive/src/Http/Request.php'
       - 'drive/src/Http/Controller/FederationDropIngressController.php'
       - 'drive/src/View/FederationDropPageRenderer.php'
       - 'drive/src/View/FederationPageRenderer.php'
@@ -76,6 +77,7 @@ jobs:
           php -l drive/src/Federation/FederationService.php
           php -l drive/src/Http/Controller/FederationDropController.php
           php -l drive/src/Http/Controller/FederationDropGoogleAuthController.php
+          php -l drive/src/Http/Request.php
           php -l drive/src/Http/Controller/FederationDropIngressController.php
           php -l drive/src/View/FederationDropPageRenderer.php
           php -l drive/src/View/FederationPageRenderer.php

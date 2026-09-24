@@ -38,6 +38,34 @@ indexDropOk(
     'visitante recibe una ruta explícita sin cuenta del Drive'
 );
 indexDropOk(
+    str_contains($source, 'id="home"')
+        && str_contains($source, 'id="servicios"')
+        && str_contains($source, 'id="acerca"')
+        && str_contains($source, 'id="contacto"')
+        && str_contains($source, 'id="acceso"'),
+    'index público es una landing de una sola página con Home, Servicios, Acerca, Contacto y Acceso'
+);
+indexDropOk(
+    str_contains($source, '$canonicalHost = \'drive.esforzados.com\''),
+    'contacto se centraliza explícitamente en drive.esforzados.com'
+);
+indexDropOk(
+    str_contains($source, '$contactUrl = $isCanonicalPortal ? \'#contacto\' : $canonicalHome . \'#contacto\''),
+    'nodos secundarios envían Contacto al portal principal'
+);
+indexDropOk(
+    str_contains($source, 'form action="psesion.php" method="POST"'),
+    'login local permanece dentro de la portada pública'
+);
+indexDropOk(
+    str_contains($source, 'MySQL')
+        && str_contains($source, 'Amazon S3')
+        && str_contains($source, 'FederationCloud')
+        && str_contains($source, 'ArcadeLink')
+        && str_contains($source, 'FederationDrop'),
+    'landing presenta capacidades reales documentadas del repositorio'
+);
+indexDropOk(
     str_contains($source, 'SetupEntryGuard'),
     'el acceso FederationDrop no elimina la protección de instalación inicial'
 );

@@ -11,6 +11,7 @@ on:
       - 'drive/src/Http/Controller/FederationDropController.php'
       - 'drive/src/View/FederationDropPageRenderer.php'
       - 'drive/src/View/FederationPageRenderer.php'
+      - 'drive/src/View/FederationPortalRenderer.php'
       - 'drive/src/Mail/SmtpEmailService.php'
       - 'drive/src/Admin/ManagedRuntimeEnvironment.php'
       - 'drive/bin/arcadecloud-drive-admin-helper.php'
@@ -59,6 +60,7 @@ jobs:
           php -l drive/src/Http/Controller/FederationDropController.php
           php -l drive/src/View/FederationDropPageRenderer.php
           php -l drive/src/View/FederationPageRenderer.php
+          php -l drive/src/View/FederationPortalRenderer.php
           php -l drive/src/Mail/SmtpEmailService.php
           php -l drive/src/Admin/ManagedRuntimeEnvironment.php
           php -l drive/bin/arcadecloud-drive-admin-helper.php

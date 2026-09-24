@@ -25,8 +25,9 @@ final class ManagedRuntimeEnvironment
 
         'ARCADECLOUD_DROP_ENABLED' => ['secret' => false, 'group' => 'FederationDrop'],
         'ARCADECLOUD_DROP_PUBLIC_URL' => ['secret' => false, 'group' => 'FederationDrop'],
-        'ARCADECLOUD_DROP_CHECKOUT_URL' => ['secret' => false, 'group' => 'FederationDrop'],
-        'ARCADECLOUD_DROP_WEBHOOK_SECRET' => ['secret' => true, 'group' => 'FederationDrop', 'required' => true],
+        'ARCADECLOUD_DROP_COMMERCE_URL' => ['secret' => false, 'group' => 'FederationDrop'],
+        'ARCADECLOUD_STRIPE_SECRET_KEY' => ['secret' => true, 'group' => 'FederationDrop Stripe', 'allow_empty' => true],
+        'ARCADECLOUD_STRIPE_WEBHOOK_SECRET' => ['secret' => true, 'group' => 'FederationDrop Stripe', 'allow_empty' => true],
         'ARCADECLOUD_DROP_CURRENCY' => ['secret' => false, 'group' => 'FederationDrop'],
         'ARCADECLOUD_DROP_BASE_FEE_CENTS' => ['secret' => false, 'group' => 'FederationDrop'],
         'ARCADECLOUD_DROP_STORAGE_GB_DAY_CENTS' => ['secret' => false, 'group' => 'FederationDrop'],
@@ -164,10 +165,17 @@ final class ManagedRuntimeEnvironment
             if ($value === '' && $required && !$allowEmpty) {
                 throw new RuntimeException($name . ' no puede quedar vacío.');
             }
-            if ($name === 'ARCADECLOUD_DROP_WEBHOOK_SECRET') {
+            if ($name === 'ARCADECLOUD_STRIPE_SECRET_KEY' && $value !== '') {
                 $value = trim($value);
-                if (strlen($value) < 32 || preg_match('/[\x00-\x1F\x7F]/', $value)) {
-                    throw new RuntimeException('ARCADECLOUD_DROP_WEBHOOK_SECRET debe tener al menos 32 caracteres sin controles.');
+                $prefixOk = str_starts_with($value, 'sk_') || str_starts_with($value, 'rk_');
+                if (!$prefixOk || preg_match('/[\x00-\x20\x7F]/', $value)) {
+                    throw new RuntimeException('ARCADECLOUD_STRIPE_SECRET_KEY no tiene formato válido.');
+                }
+            }
+            if ($name === 'ARCADECLOUD_STRIPE_WEBHOOK_SECRET' && $value !== '') {
+                $value = trim($value);
+                if (!str_starts_with($value, 'whsec_') || strlen($value) < 16 || preg_match('/[\x00-\x1F\x7F]/', $value)) {
+                    throw new RuntimeException('ARCADECLOUD_STRIPE_WEBHOOK_SECRET no tiene formato válido.');
                 }
             }
             return $value;
@@ -270,7 +278,7 @@ final class ManagedRuntimeEnvironment
             throw new RuntimeException($name . ' contiene caracteres de control inválidos.');
         }
 
-        if (in_array($name, ['ARCADECLOUD_PUBLIC_URL', 'ARCADECLOUD_FEDERATION_URL', 'ARCADECLOUD_FEDERATION_SEED_URL', 'ARCADECLOUD_FEDERATION_REPLICA_ORIGIN_URL', 'ARCADECLOUD_DROP_PUBLIC_URL', 'ARCADECLOUD_DROP_CHECKOUT_URL'], true) && $value !== '') {
+        if (in_array($name, ['ARCADECLOUD_PUBLIC_URL', 'ARCADECLOUD_FEDERATION_URL', 'ARCADECLOUD_FEDERATION_SEED_URL', 'ARCADECLOUD_FEDERATION_REPLICA_ORIGIN_URL', 'ARCADECLOUD_DROP_PUBLIC_URL', 'ARCADECLOUD_DROP_COMMERCE_URL'], true) && $value !== '') {
             $parts = parse_url($value);
             if (!is_array($parts) || !isset($parts['scheme'], $parts['host'])) {
                 throw new RuntimeException($name . ' debe contener una URL válida.');

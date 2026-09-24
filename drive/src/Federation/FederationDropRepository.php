@@ -22,19 +22,27 @@ final class FederationDropRepository
              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', 'pending_payment', ?, UTC_TIMESTAMP(6))"
         );
         if (!$stmt) throw new FederationException('No se pudo preparar FederationDrop.', 500);
+
+        // mysqli::bind_param receives arguments by reference; normalize optional
+        // values into variables instead of passing null-coalescing expressions.
+        $ownerAccountId = isset($row['owner_account_id']) ? (string)$row['owner_account_id'] : null;
+        $sourceMode = isset($row['source_mode']) ? (string)$row['source_mode'] : 'upload';
+        $sourceResourceId = isset($row['source_resource_id']) ? (string)$row['source_resource_id'] : null;
+        $sourceContentId = isset($row['source_content_id']) ? (string)$row['source_content_id'] : null;
+
         $stmt->bind_param(
             'ssssssssssssssiiiiss',
             $row['drop_id'],
-            $row['owner_account_id'] ?? null,
+            $ownerAccountId,
             $row['owner_email'],
             $row['owner_token_hash'],
             $row['owner_token_ciphertext'],
             $row['public_token_hash'],
             $row['public_token_ciphertext'],
             $row['source_domain'],
-            $row['source_mode'] ?? 'upload',
-            $row['source_resource_id'] ?? null,
-            $row['source_content_id'] ?? null,
+            $sourceMode,
+            $sourceResourceId,
+            $sourceContentId,
             $row['original_name'],
             $row['s3_key'],
             $row['mime_type'],

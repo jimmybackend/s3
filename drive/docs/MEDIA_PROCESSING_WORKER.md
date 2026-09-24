@@ -178,3 +178,73 @@ Además, cuando entra un superadmin al Drive:
 - si una tarea permanece en `queued` más de 2 minutos sin que ningún worker la reclame, aparece un aviso para comprobar que el nodo esté encendido y el servicio activo.
 
 Esto cubre tanto un worker incompleto como el caso en que todavía no se ha instalado/arrancado el nodo multimedia.
+
+
+## EC2 bajo demanda con autorización del usuario
+
+El Drive puede controlar una única EC2 multimedia configurada. El usuario no envía un Instance ID arbitrario; el servidor usa exclusivamente:
+
+```text
+ARCADECLOUD_MEDIA_WORKER_INSTANCE_ID=i-xxxxxxxxxxxxxxxxx
+ARCADECLOUD_MEDIA_WORKER_REGION=us-east-1
+ARCADECLOUD_MEDIA_WORKER_HOURLY_USD=0.000000
+ARCADECLOUD_MEDIA_WORKER_IDLE_GRACE_SECONDS=300
+```
+
+`ARCADECLOUD_MEDIA_WORKER_HOURLY_USD` debe contener la tarifa horaria de referencia de la instancia elegida. Si la EC2 está apagada y falta esa tarifa, Drive no permite un encendido pagado bajo demanda.
+
+Flujo:
+
+1. Drive consulta el estado de la EC2.
+2. Si está `stopped`, el modal pide autorización explícita al usuario.
+3. Al autorizar, se crea una sesión `MediaWorkerNodeSessions` y se llama a `Ec2Gateway::start()`.
+4. La tarea queda en `MediaProcessingJobs` mientras la EC2 inicia.
+5. El worker reclama y procesa la tarea.
+6. Cuando la cola queda vacía comienza el período de gracia.
+7. Después del período de gracia, el propio nodo llama a `Ec2Gateway::stop()`.
+8. La sesión registra segundos de uso mediante `ActivityCostRecorder` con la unidad `ec2.media_worker_second`.
+
+Los segundos se convierten a costo estimado a partir de `ARCADECLOUD_MEDIA_WORKER_HOURLY_USD`. El mínimo de referencia por sesión es 60 segundos.
+
+### IAM del Drive que enciende el nodo
+
+La identidad AWS usada por el Drive necesita, limitada a la EC2 multimedia cuando sea posible:
+
+```text
+ec2:DescribeInstances
+ec2:StartInstances
+```
+
+### IAM de la EC2 multimedia
+
+El rol de la instancia worker necesita:
+
+```text
+s3:GetObject
+s3:PutObject
+ec2:DescribeInstances
+ec2:StopInstances
+```
+
+`ec2:StopInstances` debe limitarse a su propio Instance ID. El flujo multimedia no requiere `s3:DeleteObject`.
+
+## Réplica FederationCloud sin dominio
+
+La EC2 multimedia también puede ser una réplica FederationCloud. Para un nodo sin dominio:
+
+```text
+ARCADECLOUD_FEDERATION_ENABLED=1
+ARCADECLOUD_FEDERATION_DYNAMIC_IP=1
+ARCADECLOUD_FEDERATION_REPLICA_ORIGIN_URL=https://drive.esforzados.com/federationcloud/
+```
+
+Al arrancar, `media_worker_node_bootstrap.sh` consulta la IPv4 pública actual con IMDSv2 y actualiza:
+
+```text
+ARCADECLOUD_PUBLIC_URL=http://IP_ACTUAL
+ARCADECLOUD_FEDERATION_URL=http://IP_ACTUAL/federationcloud/
+```
+
+Después ejecuta `federation_endpoint_refresh.php`. La identidad del nodo no cambia: conserva su Node ID y clave pública; sólo se actualiza su endpoint. Si FederationCloud no logra anunciarse, el worker multimedia puede seguir procesando S3/DB.
+
+El bootstrap de endpoint se ejecuta en un servicio systemd separado con privilegios administrativos. `arcadecloud-media-worker.service` continúa ejecutándose como usuario no privilegiado.

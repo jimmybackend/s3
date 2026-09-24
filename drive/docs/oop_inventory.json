@@ -1,9 +1,9 @@
 {
   "summary": {
-    "php_total": 411,
+    "php_total": 412,
     "php_class_modules": 246,
     "php_needs_migration": 0,
-    "php_tests": 33,
+    "php_tests": 34,
     "js_total": 47,
     "js_class_modules": 47,
     "js_needs_migration": 0,
@@ -1286,12 +1286,14 @@
     },
     {
       "path": "drive/index.php",
-      "lines": 98,
+      "lines": 157,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
       "session": false,
-      "superglobals": [],
+      "superglobals": [
+        "SERVER"
+      ],
       "db": false,
       "s3": false,
       "bootstrap": false,
@@ -5654,6 +5656,25 @@
       "s3": false,
       "bootstrap": false,
       "html": true,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/tests/index_federation_drop_smoke.php",
+      "lines": 50,
+      "kind": "test script",
+      "classes": 0,
+      "functions": [
+        "indexDropOk"
+      ],
+      "session": false,
+      "superglobals": [
+        "SERVER"
+      ],
+      "db": false,
+      "s3": false,
+      "bootstrap": true,
+      "html": false,
       "namespace": false,
       "issues": []
     },

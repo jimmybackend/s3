@@ -8,6 +8,30 @@ if ($setupGuard->isSetupPending()) {
     header('Location: setup/', true, 302);
     exit;
 }
+
+// El index público no arranca la aplicación completa ni concede una sesión.
+// Sólo atribuye el nodo de origen al portal comercial FederationDrop.
+$rawHost = strtolower(trim((string)($_SERVER['HTTP_HOST'] ?? '')));
+$sourceDomain = '';
+if ($rawHost !== '') {
+    $parsedHost = parse_url('http://' . $rawHost, PHP_URL_HOST);
+    if (is_string($parsedHost)) {
+        $candidate = strtolower(trim($parsedHost, '.'));
+        if ($candidate !== ''
+            && strlen($candidate) <= 255
+            && preg_match('/\A[a-z0-9.-]+\z/', $candidate)
+        ) {
+            $sourceDomain = $candidate;
+        }
+    }
+}
+
+$federationDropPortal = 'https://drive.esforzados.com/federationdrop/';
+$federationDropUrl = $federationDropPortal;
+if ($sourceDomain !== '') {
+    $federationDropUrl .= '?source=' . rawurlencode($sourceDomain);
+}
+$federationDropBadge = 'https://drive.esforzados.com/federationdrop/badge.svg';
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -45,6 +69,23 @@ if ($setupGuard->isSetupPending()) {
             max-height: 120px;
             width: 120px;
             object-fit: cover;
+        }
+
+        .federationdrop-entry {
+            border-top: 1px solid rgba(255, 255, 255, 0.18);
+            margin-top: 24px;
+            padding-top: 22px;
+            text-align: center;
+        }
+
+        .federationdrop-entry p {
+            margin-bottom: 12px;
+        }
+
+        .federationdrop-badge {
+            display: inline-block;
+            max-width: 100%;
+            height: auto;
         }
     </style>
 </head>
@@ -87,6 +128,24 @@ if ($setupGuard->isSetupPending()) {
                         Iniciar sesión
                     </button>
                 </form>
+
+                <div class="federationdrop-entry">
+                    <p class="mb-1"><strong>¿No tienes cuenta en este nodo?</strong></p>
+                    <p class="small text-muted">
+                        Puedes usar FederationDrop sin entrar al Drive. El pago y la custodia comercial
+                        se realizan en el portal canónico.
+                    </p>
+                    <a
+                        href="<?= htmlspecialchars($federationDropUrl, ENT_QUOTES, 'UTF-8') ?>"
+                        aria-label="Compartir con FederationDrop"
+                    >
+                        <img
+                            src="<?= htmlspecialchars($federationDropBadge, ENT_QUOTES, 'UTF-8') ?>"
+                            alt="Compartir con FederationDrop"
+                            class="federationdrop-badge"
+                        >
+                    </a>
+                </div>
 
             </div>
         </div>

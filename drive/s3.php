@@ -1289,7 +1289,25 @@ if ($session->isSuperAdmin()) {
           </div>
         </div>
 
-        <div class="form-group">
+        <div id="mediaNodeStatus" class="alert alert-secondary mb-3">
+          Comprobando el nodo de procesamiento…
+        </div>
+
+        <div id="mediaNodeAuthorizationWrap" class="alert alert-warning d-none">
+          <div class="custom-control custom-checkbox">
+            <input type="checkbox" class="custom-control-input" id="mediaNodeAuthorization">
+            <label class="custom-control-label font-weight-bold" for="mediaNodeAuthorization">
+              Autorizo encender la EC2 de alto rendimiento para esta tarea
+            </label>
+          </div>
+          <div class="small mt-2">
+            El tiempo de uso y su costo estimado quedarán registrados. El nodo se apagará automáticamente cuando quede ocioso.
+          </div>
+        </div>
+
+        <div id="mediaNodeCost" class="small text-muted mb-3"></div>
+
+        <div class="form-group" id="mediaSplitPartsGroup">
           <label for="mediaSplitParts" class="font-weight-bold">¿En cuántas partes lo deseas dividir?</label>
           <input id="mediaSplitParts"
                  type="number"
@@ -1304,13 +1322,13 @@ if ($session->isSuperAdmin()) {
           </small>
         </div>
 
-        <div class="alert alert-info mb-2">
+        <div class="alert alert-info mb-2" id="mediaSplitOverlapInfo">
           <i class="fas fa-microphone-lines mr-1"></i>
           <strong>Protección para transcripción:</strong>
           cada corte conserva 10 segundos antes y 10 segundos después para reducir el riesgo de perder una palabra.
         </div>
 
-        <div class="alert alert-light border mb-0">
+        <div class="alert alert-light border mb-0" id="mediaSplitResultInfo">
           <i class="fas fa-shield-alt mr-1"></i>
           El archivo original permanece intacto. Las partes se guardarán en la misma carpeta como
           <code>-parte1</code>, <code>-parte2</code>, etc.

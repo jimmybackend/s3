@@ -16,11 +16,16 @@ final class FederationDropPageRenderer
         $ready = !empty($state['ready']);
         $commerceNode = !empty($state['commerce_node']);
         $commerceUrl = rtrim((string)($state['commerce_url'] ?? ''), '/');
+        $sourceResource = is_array($state['source_resource'] ?? null) ? $state['source_resource'] : null;
+        $sourceResourceId = is_array($sourceResource) ? trim((string)($sourceResource['resource_id'] ?? '')) : '';
+        $sourceResourceValid = $sourceResourceId !== '' && empty($sourceResource['error']);
         $localHost = (string)(parse_url((string)($state['public_url'] ?? ''), PHP_URL_HOST) ?: '');
         $referralSource = trim($sourceDomain) !== '' ? trim($sourceDomain) : $localHost;
         $commerceEntry = $commerceUrl;
         if (!$commerceNode && $commerceUrl !== '') {
-            $commerceEntry .= '/?source=' . rawurlencode($referralSource);
+            $query = ['source' => $referralSource];
+            if ($sourceResourceId !== '') $query['resource_id'] = $sourceResourceId;
+            $commerceEntry .= '/?' . http_build_query($query, '', '&', PHP_QUERY_RFC3986);
         }
         $currency = (string)($state['currency'] ?? 'MXN');
         $maxDays = max(1, (int)($state['max_days'] ?? 30));
@@ -63,6 +68,10 @@ final class FederationDropPageRenderer
   data-manage="<?= $h($manageDropId) ?>"
   data-owner-token="<?= $h($ownerToken) ?>"
   data-payment-return="<?= $h($paymentReturn) ?>"
+  data-resource-id="<?= $h($sourceResourceValid ? $sourceResourceId : '') ?>"
+  data-resource-size="<?= $h($sourceResourceValid ? (string)($sourceResource['size_bytes'] ?? '') : '') ?>"
+  data-resource-title="<?= $h($sourceResourceValid ? (string)($sourceResource['title'] ?? '') : '') ?>"
+  data-resource-mime="<?= $h($sourceResourceValid ? (string)($sourceResource['media_type'] ?? '') : '') ?>"
 >
   <div class="d-flex align-items-center justify-content-between mb-4">
     <div>
@@ -91,20 +100,35 @@ final class FederationDropPageRenderer
     </div>
   <?php endif; ?>
 
+  <?php if ($commerceNode && is_array($sourceResource) && !empty($sourceResource['error'])): ?>
+    <div class="alert alert-warning"><?= $h($sourceResource['error']) ?></div>
+  <?php endif; ?>
+
   <?php if ($commerceNode): ?>
   <section class="drop-card mb-4" id="dropCreateCard">
-    <h2 class="h5">Crear enlace temporal</h2>
-    <p class="drop-muted">El nodo que cobra custodia el archivo. Primero se confirma el pago y sólo entonces se autoriza una subida temporal directa a S3 privado.</p>
+    <h2 class="h5"><?= $sourceResourceValid ? 'Custodiar recurso público temporalmente' : 'Crear enlace temporal' ?></h2>
+    <?php if ($sourceResourceValid): ?>
+      <p class="drop-muted">Este archivo ya existe en FederationCloud. Stripe cobra únicamente el servicio de retención/transferencia/descargas; después del pago, drive.esforzados.com lo trae directamente entre nubes y verifica su SHA-256.</p>
+      <div class="alert alert-info">
+        <strong><?= $h($sourceResource['title'] ?? 'Recurso FederationCloud') ?></strong><br>
+        <?= $h($this->formatBytes((int)($sourceResource['size_bytes'] ?? 0))) ?> ·
+        <code><?= $h($sourceResourceId) ?></code>
+      </div>
+    <?php else: ?>
+      <p class="drop-muted">El nodo que cobra custodia el archivo. Primero se confirma el pago y sólo entonces se autoriza una subida temporal directa a S3 privado.</p>
+    <?php endif; ?>
     <form id="dropCreateForm">
       <div class="form-group">
         <label for="dropEmail">Correo del propietario</label>
         <input class="form-control" id="dropEmail" name="email" type="email" maxlength="320" autocomplete="email" required>
       </div>
+      <?php if (!$sourceResourceValid): ?>
       <div class="form-group">
         <label for="dropFile">Archivo</label>
         <input class="form-control-file" id="dropFile" name="file" type="file" required>
         <small class="drop-muted">Máximo configurado: <?= $h($this->formatBytes($maxBytes)) ?>.</small>
       </div>
+      <?php endif; ?>
       <div class="form-row">
         <div class="form-group col-md-6">
           <label for="dropDays">Días disponible</label>

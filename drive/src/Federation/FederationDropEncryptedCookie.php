@@ -71,8 +71,8 @@ final class FederationDropEncryptedCookie
 
         try {
             $payload = json_decode($plaintext, true, 64, JSON_THROW_ON_ERROR);
-        } catch (JsonException $e) {
-            throw new FederationException('Sesión Google FederationDrop inválida.', 401, $e);
+        } catch (JsonException) {
+            throw new FederationException('Sesión Google FederationDrop inválida.', 401);
         }
         if (!is_array($payload) || array_is_list($payload)) {
             throw new FederationException('Sesión Google FederationDrop inválida.', 401);

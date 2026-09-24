@@ -1,0 +1,41 @@
+name: Installer service reconciliation
+
+on:
+  pull_request:
+    paths:
+      - 'drive/bin/install_arcadecloud.sh'
+      - 'drive/bin/uninstall_arcadecloud.sh'
+      - 'drive/bin/reconcile_arcadecloud_services.sh'
+      - 'drive/bin/install_arcadecloud_updater.sh'
+      - 'drive/bin/arcadecloud-drive-updater.php'
+      - 'drive/bin/install_media_processing_worker.sh'
+      - 'drive/bin/media_worker_node_bootstrap.sh'
+      - 'drive/bin/arcadecloud-drive-admin-helper.php'
+      - 'drive/src/Admin/ManagedRuntimeEnvironment.php'
+      - 'drive/js/arcadecloud-updater.js'
+      - 'drive/tests/installer_service_reconcile_contract_smoke.php'
+      - '.github/workflows/installer-service-reconcile.yml'
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: PHP syntax
+        run: |
+          php -l drive/bin/arcadecloud-drive-updater.php
+          php -l drive/bin/arcadecloud-drive-admin-helper.php
+          php -l drive/src/Admin/ManagedRuntimeEnvironment.php
+          php -l drive/tests/installer_service_reconcile_contract_smoke.php
+      - name: Shell syntax
+        run: |
+          bash -n drive/bin/install_arcadecloud.sh
+          bash -n drive/bin/uninstall_arcadecloud.sh
+          bash -n drive/bin/reconcile_arcadecloud_services.sh
+          bash -n drive/bin/install_arcadecloud_updater.sh
+          bash -n drive/bin/install_media_processing_worker.sh
+          bash -n drive/bin/media_worker_node_bootstrap.sh
+      - name: JavaScript syntax
+        run: node --check drive/js/arcadecloud-updater.js
+      - name: Contract
+        run: php drive/tests/installer_service_reconcile_contract_smoke.php

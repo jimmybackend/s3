@@ -103,6 +103,8 @@ try {
     ingressOk(str_contains($service, 'commerceUrl') && str_contains($service, 'commerce_federation_url'), 'nodo remoto liga grant al portal comercial configurado');
     ingressOk(str_contains($service, 'FederationDropIngress/'), 'objetos temporales usan namespace S3 aislado');
     ingressOk(str_contains($controller, 'Access-Control-Allow-Origin'), 'CORS se limita desde el controlador ingress');
+    ingressOk(str_contains($controller, "if ($action === '')"), 'acciones machine-to-machine pueden viajar dentro del JSON firmado');
+    ingressOk(str_contains($service, "'action' => 'source'") && str_contains($service, "'action' => 'delete'"), 'migración central usa acciones machine-to-machine explícitas');
     ingressOk(str_contains($js, 'measureIngressLatency'), 'navegador mide latencia de candidatos');
     ingressOk(str_contains($js, 'uploadDirect'), 'subida cercana conserva fallback central');
 

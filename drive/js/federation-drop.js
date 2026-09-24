@@ -147,7 +147,154 @@ class FederationDropApp {
   async uploadPaidFile(file) {
     if (!file || !this.currentDropId || !this.ownerToken) return;
     this.showError('');
-    this.setProgress('Pago confirmado. Solicitando autorización temporal de subida…');
+
+    try {
+      this.setProgress('Pago confirmado. Buscando un nodo de ingreso cercano…');
+      const nearby = await this.tryNearbyIngress(file);
+      if (nearby) {
+        this.pendingFile = null;
+        this.setProgress('Subida recibida por el nodo cercano. FederationCloud la está migrando a la custodia de drive.esforzados.com.');
+        this.startPaymentPolling();
+        await this.refreshStatus();
+        return;
+      }
+    } catch (error) {
+      console.warn('FederationDrop nearby ingress fallback:', error);
+      this.setProgress('El nodo cercano no pudo completar la subida; continuando directamente con drive.esforzados.com…');
+    }
+
+    await this.uploadDirect(file);
+  }
+
+  async tryNearbyIngress(file) {
+    const authBody = new URLSearchParams({
+      drop_id: this.currentDropId,
+      owner_token: this.ownerToken
+    });
+    const discovery = await this.request('api.php?action=ingress-candidates', {
+      method: 'POST',
+      body: authBody
+    });
+    const candidates = Array.isArray(discovery.candidates) ? discovery.candidates : [];
+    if (!candidates.length) return false;
+
+    const measured = await Promise.all(candidates.map(async (candidate) => {
+      const latency = await this.measureIngressLatency(String(candidate.probe_url || ''));
+      return Number.isFinite(latency) ? { candidate, latency } : null;
+    }));
+    const ranked = measured
+      .filter(Boolean)
+      .sort((a, b) => a.latency - b.latency);
+    if (!ranked.length) return false;
+
+    const selected = ranked[0].candidate;
+    this.setProgress(`Nodo cercano: ${String(selected.domain || selected.node_id || 'FederationCloud')} · autorizando subida temporal…`);
+
+    const authorizeBody = new URLSearchParams({
+      drop_id: this.currentDropId,
+      owner_token: this.ownerToken,
+      ingress_node_id: String(selected.node_id || '')
+    });
+    const ingress = await this.request('api.php?action=ingress-authorize', {
+      method: 'POST',
+      body: authorizeBody
+    });
+
+    let remoteAuthorized = false;
+    try {
+      const remote = await this.remoteJson(`${ingress.endpoint}?action=authorize`, {
+        action: 'authorize',
+        grant: ingress.grant
+      });
+      remoteAuthorized = true;
+
+      this.setProgress('Subiendo al nodo de ingreso más rápido…');
+      const headers = new Headers(remote.upload?.headers || {});
+      const uploadResponse = await fetch(String(remote.upload?.url || ''), {
+        method: 'PUT',
+        headers,
+        body: file
+      });
+      if (!uploadResponse.ok) throw new Error('El almacenamiento del nodo cercano rechazó la subida.');
+
+      this.setProgress('Verificando la subida en el nodo cercano…');
+      const completed = await this.remoteJson(`${ingress.endpoint}?action=complete`, {
+        action: 'complete',
+        grant: ingress.grant
+      });
+      if (String(completed.ingress_id || '') !== String(ingress.ingress_id || '')) {
+        throw new Error('El nodo cercano devolvió un identificador ingress inesperado.');
+      }
+
+      const registerBody = new URLSearchParams({
+        drop_id: this.currentDropId,
+        owner_token: this.ownerToken,
+        ingress_id: String(ingress.ingress_id || '')
+      });
+      await this.request('api.php?action=ingress-register', {
+        method: 'POST',
+        body: registerBody
+      });
+      return true;
+    } catch (error) {
+      if (remoteAuthorized) {
+        try {
+          await this.remoteJson(`${ingress.endpoint}?action=delete`, {
+            action: 'delete',
+            grant: ingress.grant
+          });
+        } catch (_) {}
+      }
+      throw error;
+    }
+  }
+
+  async measureIngressLatency(url) {
+    if (!url) return Number.POSITIVE_INFINITY;
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => controller.abort(), 1800);
+    const started = performance.now();
+    try {
+      const response = await fetch(url, {
+        method: 'GET',
+        mode: 'cors',
+        credentials: 'omit',
+        cache: 'no-store',
+        signal: controller.signal
+      });
+      if (!response.ok) return Number.POSITIVE_INFINITY;
+      const data = await response.json().catch(() => null);
+      if (!data || data.ok !== true) return Number.POSITIVE_INFINITY;
+      return performance.now() - started;
+    } catch (_) {
+      return Number.POSITIVE_INFINITY;
+    } finally {
+      window.clearTimeout(timeout);
+    }
+  }
+
+  async remoteJson(url, payload) {
+    const response = await fetch(url, {
+      method: 'POST',
+      mode: 'cors',
+      credentials: 'omit',
+      cache: 'no-store',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(payload || {})
+    });
+    let data = {};
+    try { data = await response.json(); } catch (_) {}
+    if (!response.ok || data.ok === false) {
+      throw new Error(data.error || `Nodo ingress HTTP ${response.status}`);
+    }
+    return data;
+  }
+
+  async uploadDirect(file) {
+    this.setProgress('Solicitando autorización temporal de subida central…');
     try {
       const authBody = new URLSearchParams({
         drop_id: this.currentDropId,
@@ -158,7 +305,7 @@ class FederationDropApp {
         body: authBody
       });
 
-      this.setProgress('Subiendo directamente al almacenamiento privado del nodo…');
+      this.setProgress('Subiendo directamente al almacenamiento privado de drive.esforzados.com…');
       const uploadHeaders = new Headers(auth.upload.headers || {});
       const response = await fetch(auth.upload.url, {
         method: 'PUT',

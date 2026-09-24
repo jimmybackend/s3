@@ -659,12 +659,12 @@ final class FederationDropService
             'can_upload' => (string)($row['SourceMode'] ?? 'upload') === 'upload'
                 && (string)$row['PaymentStatus'] === 'paid'
                 && (string)$row['Status'] === 'pending_upload'
-                && !is_array($activeIngress),
+                && (!is_array($activeIngress) || (string)$activeIngress['Status'] === 'authorized'),
             'ingress_status' => is_array($activeIngress) ? (string)$activeIngress['Status'] : null,
             'ingress_node_id' => is_array($activeIngress) ? (string)$activeIngress['IngressNodeId'] : null,
             'materializing' => (
                     (string)($row['SourceMode'] ?? 'upload') === 'public_resource'
-                    || is_array($activeIngress)
+                    || (is_array($activeIngress) && in_array((string)$activeIngress['Status'], ['uploaded','pulling'], true))
                 )
                 && (string)$row['PaymentStatus'] === 'paid'
                 && (string)$row['Status'] === 'pending_upload',

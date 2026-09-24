@@ -80,6 +80,14 @@ final class FederationDropConfig
         }
     }
 
+    public function assertStripeWebhookReady(): void
+    {
+        if (!$this->isCommerceNode()) {
+            throw new FederationException('Este nodo no puede procesar webhooks comerciales FederationDrop.', 503);
+        }
+        $this->assertStripeReady();
+    }
+
     public function assertStripeReady(): void
     {
         if (!preg_match('/^(?:sk|rk)_(?:test|live)_[A-Za-z0-9_]+$/', $this->stripeSecretKey)) {

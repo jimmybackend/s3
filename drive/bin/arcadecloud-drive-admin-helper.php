@@ -22,8 +22,8 @@ final class ArcadeCloudDriveAdminHelper
         'ARCADECLOUD_PUBLIC_URL', 'ARCADECLOUD_FEDERATION_URL', 'ARCADECLOUD_FEDERATION_ENABLED',
         'ARCADECLOUD_FEDERATION_SEED_URL', 'ARCADECLOUD_FEDERATION_REPLICA_ORIGIN_URL',
         'ARCADECLOUD_FEDERATION_REPLICA_ROLE', 'ARCADECLOUD_FEDERATION_REPLICA_SCOPE',
-        'ARCADECLOUD_DROP_ENABLED', 'ARCADECLOUD_DROP_PUBLIC_URL', 'ARCADECLOUD_DROP_CHECKOUT_URL',
-        'ARCADECLOUD_DROP_WEBHOOK_SECRET', 'ARCADECLOUD_DROP_CURRENCY',
+        'ARCADECLOUD_DROP_ENABLED', 'ARCADECLOUD_DROP_PUBLIC_URL', 'ARCADECLOUD_DROP_COMMERCE_URL',
+        'ARCADECLOUD_STRIPE_SECRET_KEY', 'ARCADECLOUD_STRIPE_WEBHOOK_SECRET', 'ARCADECLOUD_DROP_CURRENCY',
         'ARCADECLOUD_DROP_BASE_FEE_CENTS', 'ARCADECLOUD_DROP_STORAGE_GB_DAY_CENTS',
         'ARCADECLOUD_DROP_EGRESS_GB_CENTS', 'ARCADECLOUD_DROP_PENDING_HOURS',
         'ARCADECLOUD_DROP_MAX_DAYS', 'ARCADECLOUD_DROP_MAX_DOWNLOADS',
@@ -61,7 +61,7 @@ final class ArcadeCloudDriveAdminHelper
         if ($action === 'status') {
             fwrite(STDOUT, json_encode([
                 'ok' => true,
-                'version' => 6,
+                'version' => 7,
                 'capabilities' => [
                     'env_set_many' => true,
                     'db_aws_settings' => true,
@@ -70,6 +70,7 @@ final class ArcadeCloudDriveAdminHelper
                     'setup_finalize' => true,
                     'managed_replica_settings' => true,
                     'managed_federation_drop_settings' => true,
+                    'managed_federation_drop_stripe' => true,
                 ],
                 'identity_path' => $identityPath,
                 'identity_exists' => is_file($identityPath),

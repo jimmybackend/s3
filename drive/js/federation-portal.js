@@ -6,6 +6,8 @@ class FederationPortalModule {
     this.replicaCsrf = '';
     this.publicImportCsrf = '';
     this.localNodeId = String(doc.body?.dataset?.federationNodeId || '');
+    this.dropCommerceUrl = String(doc.body?.dataset?.federationDropUrl || '').replace(/\/$/, '');
+    this.dropSource = String(doc.body?.dataset?.federationDropSource || '');
     this.state = { incoming: [], outgoing: [], shares: [], replicas: [] };
   }
 
@@ -175,6 +177,17 @@ class FederationPortalModule {
         copy.dataset.federationPublicImport = resourceId;
         copy.innerHTML = '<i class="fas fa-folder-plus mr-1"></i>Agregar a Mi Drive';
         actions.appendChild(copy);
+
+        if (this.dropCommerceUrl) {
+          const paid = this.document.createElement('a');
+          paid.className = 'btn btn-sm btn-outline-warning mb-2';
+          const params = new URLSearchParams({resource_id: resourceId});
+          if (this.dropSource) params.set('source', this.dropSource);
+          paid.href = `${this.dropCommerceUrl}/?${params.toString()}`;
+          paid.rel = 'noopener noreferrer';
+          paid.innerHTML = '<i class="fas fa-clock mr-1"></i>FederationDrop temporal';
+          actions.appendChild(paid);
+        }
       }
       if (originNodeId && this.localNodeId && originNodeId === this.localNodeId && rights === 'copy_allowed') {
         const replicate = this.document.createElement('button');

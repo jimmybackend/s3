@@ -1,9 +1,9 @@
 {
   "summary": {
-    "php_total": 383,
-    "php_class_modules": 226,
+    "php_total": 401,
+    "php_class_modules": 240,
     "php_needs_migration": 0,
-    "php_tests": 30,
+    "php_tests": 32,
     "js_total": 47,
     "js_class_modules": 47,
     "js_needs_migration": 0,
@@ -102,7 +102,7 @@
     },
     {
       "path": "drive/bin/arcadecloud-drive-admin-helper.php",
-      "lines": 615,
+      "lines": 616,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -132,7 +132,7 @@
     },
     {
       "path": "drive/bin/federation_catalog_migrate.php",
-      "lines": 103,
+      "lines": 105,
       "kind": "thin cli entrypoint",
       "classes": 0,
       "functions": [],
@@ -282,7 +282,7 @@
     },
     {
       "path": "drive/bin/federation_sync.php",
-      "lines": 102,
+      "lines": 37,
       "kind": "thin cli entrypoint",
       "classes": 0,
       "functions": [],
@@ -790,6 +790,21 @@
       "issues": []
     },
     {
+      "path": "drive/federationcloud/drop-ingress.php",
+      "lines": 11,
+      "kind": "thin endpoint",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
       "path": "drive/federationcloud/index.php",
       "lines": 13,
       "kind": "thin endpoint",
@@ -926,6 +941,21 @@
     },
     {
       "path": "drive/federationcloud/providers.php",
+      "lines": 11,
+      "kind": "thin endpoint",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/federationcloud/public-drive.php",
       "lines": 11,
       "kind": "thin endpoint",
       "classes": 0,
@@ -1758,7 +1788,7 @@
     },
     {
       "path": "drive/src/Admin/ManagedRuntimeEnvironment.php",
-      "lines": 288,
+      "lines": 296,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -2600,7 +2630,67 @@
     },
     {
       "path": "drive/src/Federation/FederationDropConfig.php",
-      "lines": 95,
+      "lines": 130,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Federation/FederationDropIngressCodec.php",
+      "lines": 111,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Federation/FederationDropIngressDownloader.php",
+      "lines": 82,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Federation/FederationDropIngressRepository.php",
+      "lines": 291,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": true,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Federation/FederationDropIngressService.php",
+      "lines": 395,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -2615,7 +2705,7 @@
     },
     {
       "path": "drive/src/Federation/FederationDropRepository.php",
-      "lines": 375,
+      "lines": 443,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -2630,7 +2720,7 @@
     },
     {
       "path": "drive/src/Federation/FederationDropService.php",
-      "lines": 496,
+      "lines": 817,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -2645,7 +2735,67 @@
     },
     {
       "path": "drive/src/Federation/FederationDropStorageService.php",
-      "lines": 93,
+      "lines": 130,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Federation/FederationDropStripeCheckoutService.php",
+      "lines": 245,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Federation/FederationDropStripeClient.php",
+      "lines": 109,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Federation/FederationDropStripeWebhookVerifier.php",
+      "lines": 73,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Federation/FederationDropWorkerService.php",
+      "lines": 49,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -2735,7 +2885,7 @@
     },
     {
       "path": "drive/src/Federation/FederationHttpClient.php",
-      "lines": 162,
+      "lines": 163,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -2766,6 +2916,21 @@
     {
       "path": "drive/src/Federation/FederationLocationSelector.php",
       "lines": 66,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Federation/FederationMultiSourceDownloader.php",
+      "lines": 358,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -2884,8 +3049,38 @@
       "issues": []
     },
     {
+      "path": "drive/src/Federation/FederationPublicImportRepository.php",
+      "lines": 243,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": true,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Federation/FederationPublicImportService.php",
+      "lines": 184,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
       "path": "drive/src/Federation/FederationReplicaDownloader.php",
-      "lines": 112,
+      "lines": 159,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -2945,7 +3140,7 @@
     },
     {
       "path": "drive/src/Federation/FederationReplicaResolverService.php",
-      "lines": 145,
+      "lines": 217,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -2960,7 +3155,7 @@
     },
     {
       "path": "drive/src/Federation/FederationReplicaService.php",
-      "lines": 349,
+      "lines": 365,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -3005,7 +3200,7 @@
     },
     {
       "path": "drive/src/Federation/FederationService.php",
-      "lines": 300,
+      "lines": 319,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -3066,6 +3261,21 @@
     {
       "path": "drive/src/Federation/FederationSyncConfig.php",
       "lines": 36,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Federation/FederationSyncCycleService.php",
+      "lines": 76,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -3352,7 +3562,22 @@
     },
     {
       "path": "drive/src/Http/Controller/FederationDropController.php",
-      "lines": 168,
+      "lines": 206,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Http/Controller/FederationDropIngressController.php",
+      "lines": 108,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -3411,8 +3636,23 @@
       "issues": []
     },
     {
+      "path": "drive/src/Http/Controller/FederationPublicImportController.php",
+      "lines": 68,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
       "path": "drive/src/Http/Controller/FederationReplicaController.php",
-      "lines": 132,
+      "lines": 128,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -3897,7 +4137,7 @@
     },
     {
       "path": "drive/src/Mail/SmtpEmailService.php",
-      "lines": 305,
+      "lines": 346,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -4686,7 +4926,7 @@
     },
     {
       "path": "drive/src/View/FederationDropPageRenderer.php",
-      "lines": 146,
+      "lines": 194,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -4701,7 +4941,7 @@
     },
     {
       "path": "drive/src/View/FederationPageRenderer.php",
-      "lines": 228,
+      "lines": 264,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -4716,7 +4956,7 @@
     },
     {
       "path": "drive/src/View/FederationPortalRenderer.php",
-      "lines": 159,
+      "lines": 169,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -4994,7 +5234,7 @@
     },
     {
       "path": "drive/tests/database_schema_contract_smoke.php",
-      "lines": 98,
+      "lines": 100,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -5045,7 +5285,7 @@
     },
     {
       "path": "drive/tests/federation_customs_contract_smoke.php",
-      "lines": 79,
+      "lines": 80,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -5079,12 +5319,46 @@
     },
     {
       "path": "drive/tests/federation_drop_contract_smoke.php",
-      "lines": 65,
+      "lines": 98,
       "kind": "test script",
       "classes": 0,
       "functions": [
         "dropSource",
         "dropOk"
+      ],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/tests/federation_drop_ingress_smoke.php",
+      "lines": 117,
+      "kind": "test script",
+      "classes": 0,
+      "functions": [
+        "ingressOk"
+      ],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/tests/federation_drop_stripe_smoke.php",
+      "lines": 97,
+      "kind": "test script",
+      "classes": 0,
+      "functions": [
+        "stripeDropOk"
       ],
       "session": false,
       "superglobals": [],
@@ -5163,7 +5437,7 @@
     },
     {
       "path": "drive/tests/federation_replica_reconnect_contract_smoke.php",
-      "lines": 79,
+      "lines": 81,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -5180,7 +5454,7 @@
     },
     {
       "path": "drive/tests/federation_replica_smoke.php",
-      "lines": 109,
+      "lines": 115,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -5277,7 +5551,7 @@
     },
     {
       "path": "drive/tests/server_admin_config_smoke.php",
-      "lines": 147,
+      "lines": 165,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -6146,7 +6420,7 @@
     },
     {
       "path": "drive/js/federation-drop.js",
-      "lines": 315,
+      "lines": 487,
       "kind": "class/module",
       "classes": [
         "FederationDropApp"
@@ -6188,7 +6462,7 @@
     },
     {
       "path": "drive/js/federation-portal.js",
-      "lines": 416,
+      "lines": 497,
       "kind": "class/module",
       "classes": [
         "FederationPortalModule"

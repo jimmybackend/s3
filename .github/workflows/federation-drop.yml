@@ -23,6 +23,7 @@ on:
       - 'drive/federationdrop/**'
       - 'drive/js/federation-drop.js'
       - 'drive/tests/federation_drop_contract_smoke.php'
+      - 'drive/tests/federation_drop_stripe_smoke.php'
       - 'drive/tests/federationcloud_smoke.php'
       - 'drive/tests/database_schema_contract_smoke.php'
       - 'drive/tests/server_admin_config_smoke.php'

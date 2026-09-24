@@ -600,6 +600,9 @@ final class FederationDropService
                 );
                 $tmp = (string)$download['path'];
 
+                $moderation = new FederationModerationService($this->app);
+                $moderation->assertAllowed((string)$download['content_id']);
+
                 $stored = $this->storage->storeFromLocalFile(
                     (string)$row['S3Key'],
                     $tmp,
@@ -611,6 +614,13 @@ final class FederationDropService
                     ]
                 );
                 $this->repository->setSourceContentId((string)$row['DropId'], (string)$download['content_id']);
+                $moderation->rememberFingerprint(
+                    (string)$download['content_id'],
+                    'drop',
+                    (string)$row['DropId'],
+                    (string)$row['S3Key'],
+                    (string)$row['CustodyNodeId']
+                );
                 $updated = $this->repository->markUploaded(
                     (string)$row['DropId'],
                     (int)$stored['size_bytes'],

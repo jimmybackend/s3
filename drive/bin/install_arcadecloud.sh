@@ -71,7 +71,7 @@ prepare_system() {
   [[ "$SKIP_SYSTEM_BOOTSTRAP" -eq 0 ]] || return 0
   [[ -f "$SERVER_PREP" ]] || fail "falta el preparador de servidor: $SERVER_PREP"
 
-  local args=(--app-root="$APP_ROOT")
+  local args=(--app-root="$APP_ROOT" --node-role="${NODE_ROLE:-web}")
   [[ -n "$PHP_USER" ]] && args+=(--php-user="$PHP_USER")
   [[ "$SKIP_CERTBOT" -eq 1 ]] && args+=(--skip-certbot)
 

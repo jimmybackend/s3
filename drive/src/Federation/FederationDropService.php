@@ -248,6 +248,30 @@ final class FederationDropService
         ];
     }
 
+    public function ingressCandidates(string $dropId, string $ownerToken): array
+    {
+        return (new FederationDropIngressService($this->app))->candidates($dropId, $ownerToken);
+    }
+
+    public function authorizeIngress(string $dropId, string $ownerToken, string $ingressNodeId): array
+    {
+        return (new FederationDropIngressService($this->app))->authorizeCentral(
+            $dropId,
+            $ownerToken,
+            $ingressNodeId
+        );
+    }
+
+    public function registerIngressUploaded(string $dropId, string $ownerToken, string $ingressId): array
+    {
+        $result = (new FederationDropIngressService($this->app))->registerUploaded(
+            $dropId,
+            $ownerToken,
+            $ingressId
+        );
+        return $result + ['owner' => $this->ownerStatus($dropId, $ownerToken)];
+    }
+
     public function authorizeUpload(string $dropId, string $ownerToken): array
     {
         $row = $this->requireOwner($dropId, $ownerToken);
@@ -275,6 +299,9 @@ final class FederationDropService
     public function completeUpload(string $dropId, string $ownerToken): array
     {
         $row = $this->requireOwner($dropId, $ownerToken);
+        if ((string)($row['SourceMode'] ?? 'upload') !== 'upload') {
+            throw new FederationException('Este FederationDrop se materializa desde FederationCloud y no acepta upload-complete.', 409);
+        }
         if ((string)$row['PaymentStatus'] !== 'paid' || (string)$row['Status'] !== 'pending_upload') {
             throw new FederationException('Este FederationDrop no tiene una subida pagada pendiente.', 409);
         }
@@ -496,6 +523,81 @@ final class FederationDropService
         return compact('processed', 'completed', 'errors');
     }
 
+    public function syncPaidIngressSources(int $limit = 2): array
+    {
+        if (!$this->config->enabled || !$this->config->isCommerceNode()) {
+            return ['processed' => 0, 'completed' => 0, 'retry' => 0, 'failed' => 0];
+        }
+
+        $ingress = new FederationDropIngressService($this->app);
+        $processed = $completed = $retry = $failed = 0;
+
+        foreach ($ingress->dueCentral($limit) as $job) {
+            $ingressId = (string)$job['IngressId'];
+            if (!$ingress->claimCentral($ingressId)) continue;
+            $processed++;
+            $tmp = '';
+            try {
+                $row = $this->repository->find((string)$job['DropId']);
+                if ($row === null
+                    || (string)$row['PaymentStatus'] !== 'paid'
+                    || (string)$row['Status'] !== 'pending_upload'
+                    || (string)($row['SourceMode'] ?? 'upload') !== 'upload') {
+                    throw new FederationException('La orden pagada ya no admite migración ingress.', 409);
+                }
+
+                $source = $ingress->sourceForCentral($job);
+                $url = trim((string)($source['source_url'] ?? ''));
+                if ($url === '' || (int)($source['size_bytes'] ?? -1) !== (int)$row['ExpectedSizeBytes']) {
+                    throw new FederationException('El nodo ingress no devolvió una fuente válida.', 502);
+                }
+
+                $download = (new FederationDropIngressDownloader())->download(
+                    $url,
+                    (int)$row['ExpectedSizeBytes']
+                );
+                $tmp = (string)$download['path'];
+
+                $stored = $this->storage->storeFromLocalFile(
+                    (string)$row['S3Key'],
+                    $tmp,
+                    (string)$row['MimeType'],
+                    (int)$row['ExpectedSizeBytes'],
+                    [
+                        'federation-ingress-node' => (string)$job['IngressNodeId'],
+                        'federation-content-id' => substr((string)$download['content_id'], 7),
+                    ]
+                );
+                $this->repository->setSourceContentId((string)$row['DropId'], (string)$download['content_id']);
+                $updated = $this->repository->markUploaded(
+                    (string)$row['DropId'],
+                    (int)$stored['size_bytes'],
+                    (string)$stored['etag'],
+                    (string)$stored['mime_type']
+                );
+                $this->repository->createCentralPlacement((string)$row['DropId'], (string)$updated['CustodyNodeId']);
+                $ingress->markCentralized($ingressId);
+                $this->sendActivationEmail($updated);
+                $completed++;
+
+                try {
+                    $ingress->deleteRemoteAfterCentral($job);
+                } catch (\Throwable $cleanupError) {
+                    error_log('[FederationDrop ingress remote cleanup] ' . $cleanupError->getMessage());
+                }
+            } catch (\Throwable $e) {
+                $state = $ingress->markCentralRetry($ingressId, $e->getMessage());
+                if ($state === 'failed') $failed++;
+                else $retry++;
+                error_log('[FederationDrop ingress migration] ' . $e->getMessage());
+            } finally {
+                if ($tmp !== '') @unlink($tmp);
+            }
+        }
+
+        return compact('processed', 'completed', 'retry', 'failed');
+    }
+
     public function cleanup(int $limit = 100): array
     {
         $rows = $this->repository->cleanupCandidates($this->config->pendingHours, $limit);
@@ -529,6 +631,16 @@ final class FederationDropService
     {
         $publicToken = $this->decryptToken((string)($row['PublicTokenCiphertext'] ?? ''));
         $dropId = (string)$row['DropId'];
+        $activeIngress = null;
+        if ((string)($row['SourceMode'] ?? 'upload') === 'upload'
+            && (string)$row['PaymentStatus'] === 'paid'
+            && (string)$row['Status'] === 'pending_upload') {
+            try {
+                $activeIngress = (new FederationDropIngressService($this->app))->activeForDrop($dropId);
+            } catch (\Throwable) {
+                $activeIngress = null;
+            }
+        }
         return [
             'ok' => true,
             'drop_id' => (string)$row['DropId'],
@@ -546,8 +658,14 @@ final class FederationDropService
             'source_resource_id' => is_string($row['SourceResourceId'] ?? null) ? (string)$row['SourceResourceId'] : null,
             'can_upload' => (string)($row['SourceMode'] ?? 'upload') === 'upload'
                 && (string)$row['PaymentStatus'] === 'paid'
-                && (string)$row['Status'] === 'pending_upload',
-            'materializing' => (string)($row['SourceMode'] ?? 'upload') === 'public_resource'
+                && (string)$row['Status'] === 'pending_upload'
+                && !is_array($activeIngress),
+            'ingress_status' => is_array($activeIngress) ? (string)$activeIngress['Status'] : null,
+            'ingress_node_id' => is_array($activeIngress) ? (string)$activeIngress['IngressNodeId'] : null,
+            'materializing' => (
+                    (string)($row['SourceMode'] ?? 'upload') === 'public_resource'
+                    || is_array($activeIngress)
+                )
                 && (string)$row['PaymentStatus'] === 'paid'
                 && (string)$row['Status'] === 'pending_upload',
             'expires_at' => $row['ExpiresAt'],

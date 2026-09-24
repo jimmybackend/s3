@@ -8,6 +8,7 @@ use ArcadeCloud\Drive\Core\ApplicationKernel;
 use ArcadeCloud\Drive\Federation\FederationAccessService;
 use ArcadeCloud\Drive\Federation\FederationCustomsService;
 use ArcadeCloud\Drive\Federation\FederationGossipService;
+use ArcadeCloud\Drive\Federation\FederationPublicImportService;
 use ArcadeCloud\Drive\Federation\FederationReplicaPresenceService;
 use ArcadeCloud\Drive\Federation\FederationReplicaService;
 use ArcadeCloud\Drive\Federation\FederationShareDriveService;
@@ -88,6 +89,17 @@ try {
             'error' => 'La cola de Compartidos no pudo procesarse en este ciclo.',
         ];
         error_log('[FederationCloud Share import sync] ' . $e->getMessage());
+    }
+    try {
+        // Los PUBLIC + copy_allowed usan una cola separada de los grants privados.
+        // El downloader reparte rangos entre varias réplicas cuando existen.
+        $result['public_imports'] = (new FederationPublicImportService($app))->syncPending(1);
+    } catch (Throwable $e) {
+        $result['public_imports'] = [
+            'degraded' => true,
+            'error' => 'La cola pública a Mi Drive no pudo procesarse en este ciclo.',
+        ];
+        error_log('[FederationCloud public import sync] ' . $e->getMessage());
     }
     echo json_encode($result, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . "\n";
 } catch (Throwable $e) {

@@ -13,6 +13,7 @@
     "drive/ec2.php",
     "drive/editor.php",
     "drive/federationcloud/index.php",
+    "drive/federationcloud/moderation.php",
     "drive/federationcloud/portal.php",
     "drive/federationdrop/d.php",
     "drive/federationdrop/index.php",
@@ -112,6 +113,8 @@
         "drive/federationcloud/create.php",
         "drive/federationcloud/drop-ingress.php",
         "drive/federationcloud/index.php",
+        "drive/federationcloud/moderation-api.php",
+        "drive/federationcloud/moderation.php",
         "drive/federationcloud/name-availability.php",
         "drive/federationcloud/node-admin.php",
         "drive/federationcloud/node.php",
@@ -127,6 +130,8 @@
         "drive/federationcloud/replica-open.php",
         "drive/federationcloud/replica-resolve.php",
         "drive/federationcloud/replica.php",
+        "drive/federationcloud/report-api.php",
+        "drive/federationcloud/report.php",
         "drive/federationcloud/resolve.php",
         "drive/federationcloud/resource.php",
         "drive/federationcloud/search.php",
@@ -228,7 +233,7 @@
     },
     {
       "path": "drive/bin/federation_catalog_migrate.php",
-      "size": 3104,
+      "size": 3240,
       "active": false,
       "references": [
         "drive/tests/federation_customs_contract_smoke.php",
@@ -386,10 +391,11 @@
     },
     {
       "path": "drive/bloque_footer.php",
-      "size": 12610,
+      "size": 12932,
       "active": true,
       "references": [
-        "drive/s3.php"
+        "drive/s3.php",
+        "drive/tests/federation_moderation_contract_smoke.php"
       ]
     },
     {
@@ -594,9 +600,27 @@
         "drive/s3.php",
         "drive/src/Http/Controller/ActivityCostController.php",
         "drive/src/Http/Controller/AuthController.php",
+        "drive/src/Http/Controller/FederationModerationController.php",
         "drive/src/Security/SessionManager.php",
         "drive/tests/index_federation_drop_smoke.php",
         "drive/up.php"
+      ]
+    },
+    {
+      "path": "drive/federationcloud/moderation-api.php",
+      "size": 340,
+      "active": false,
+      "references": [
+        "drive/src/View/FederationModerationPageRenderer.php",
+        "drive/js/federation-footer.js"
+      ]
+    },
+    {
+      "path": "drive/federationcloud/moderation.php",
+      "size": 341,
+      "active": true,
+      "references": [
+        "drive/bloque_footer.php"
       ]
     },
     {
@@ -748,6 +772,24 @@
       ]
     },
     {
+      "path": "drive/federationcloud/report-api.php",
+      "size": 341,
+      "active": false,
+      "references": [
+        "drive/src/View/FederationReportPageRenderer.php"
+      ]
+    },
+    {
+      "path": "drive/federationcloud/report.php",
+      "size": 342,
+      "active": false,
+      "references": [
+        "drive/tests/federation_moderation_contract_smoke.php",
+        "drive/js/federation-drop.js",
+        "drive/js/federation-portal.js"
+      ]
+    },
+    {
       "path": "drive/federationcloud/resolve.php",
       "size": 428,
       "active": false,
@@ -808,8 +850,11 @@
       "size": 323,
       "active": false,
       "references": [
+        "drive/src/View/FederationModerationPageRenderer.php",
+        "drive/src/View/FederationReportPageRenderer.php",
         "drive/tests/federation_drop_contract_smoke.php",
         "drive/js/federation-drop.js",
+        "drive/js/federation-footer.js",
         "drive/js/setup.js"
       ]
     },
@@ -875,6 +920,7 @@
         "drive/s3.php",
         "drive/src/Http/Controller/ActivityCostController.php",
         "drive/src/Http/Controller/AuthController.php",
+        "drive/src/Http/Controller/FederationModerationController.php",
         "drive/src/Security/SessionManager.php",
         "drive/tests/index_federation_drop_smoke.php",
         "drive/up.php"
@@ -906,6 +952,7 @@
         "drive/s3.php",
         "drive/src/Http/Controller/ActivityCostController.php",
         "drive/src/Http/Controller/AuthController.php",
+        "drive/src/Http/Controller/FederationModerationController.php",
         "drive/src/Security/SessionManager.php",
         "drive/tests/index_federation_drop_smoke.php",
         "drive/up.php"
@@ -1128,8 +1175,11 @@
       "size": 529,
       "active": false,
       "references": [
+        "drive/src/View/FederationModerationPageRenderer.php",
+        "drive/src/View/FederationReportPageRenderer.php",
         "drive/tests/federation_drop_contract_smoke.php",
         "drive/js/federation-drop.js",
+        "drive/js/federation-footer.js",
         "drive/js/setup.js"
       ]
     },
@@ -1143,6 +1193,7 @@
         "drive/s3.php",
         "drive/src/Http/Controller/ActivityCostController.php",
         "drive/src/Http/Controller/AuthController.php",
+        "drive/src/Http/Controller/FederationModerationController.php",
         "drive/src/Security/SessionManager.php",
         "drive/tests/index_federation_drop_smoke.php",
         "drive/up.php"
@@ -1489,9 +1540,11 @@
     },
     {
       "path": "drive/src/Federation/FederatedCatalogRepository.php",
-      "size": 19198,
+      "size": 22318,
       "active": false,
-      "references": []
+      "references": [
+        "drive/tests/federation_moderation_contract_smoke.php"
+      ]
     },
     {
       "path": "drive/src/Federation/FederatedResourceRepository.php",
@@ -1523,7 +1576,7 @@
     },
     {
       "path": "drive/src/Federation/FederationCatalogService.php",
-      "size": 8968,
+      "size": 9509,
       "active": false,
       "references": [
         "drive/tests/federation_customs_contract_smoke.php"
@@ -1665,18 +1718,20 @@
     },
     {
       "path": "drive/src/Federation/FederationDropService.php",
-      "size": 37463,
+      "size": 39501,
       "active": false,
       "references": [
-        "drive/tests/federation_drop_contract_smoke.php"
+        "drive/tests/federation_drop_contract_smoke.php",
+        "drive/tests/federation_moderation_contract_smoke.php"
       ]
     },
     {
       "path": "drive/src/Federation/FederationDropStorageService.php",
-      "size": 4798,
+      "size": 6609,
       "active": false,
       "references": [
-        "drive/tests/federation_drop_contract_smoke.php"
+        "drive/tests/federation_drop_contract_smoke.php",
+        "drive/tests/federation_moderation_contract_smoke.php"
       ]
     },
     {
@@ -1722,10 +1777,11 @@
     },
     {
       "path": "drive/src/Federation/FederationEventCodec.php",
-      "size": 4862,
+      "size": 4920,
       "active": false,
       "references": [
-        "drive/tests/federation_catalog_event_smoke.php"
+        "drive/tests/federation_catalog_event_smoke.php",
+        "drive/tests/federation_moderation_contract_smoke.php"
       ]
     },
     {
@@ -1787,6 +1843,20 @@
       "active": false,
       "references": [
         "drive/tests/federation_replica_smoke.php"
+      ]
+    },
+    {
+      "path": "drive/src/Federation/FederationModerationRepository.php",
+      "size": 12551,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Federation/FederationModerationService.php",
+      "size": 12785,
+      "active": false,
+      "references": [
+        "drive/tests/federation_moderation_contract_smoke.php"
       ]
     },
     {
@@ -1968,10 +2038,11 @@
     },
     {
       "path": "drive/src/Federation/FederationSyncCycleService.php",
-      "size": 2784,
+      "size": 3114,
       "active": false,
       "references": [
         "drive/tests/federation_customs_contract_smoke.php",
+        "drive/tests/federation_moderation_contract_smoke.php",
         "drive/tests/federation_replica_reconnect_contract_smoke.php"
       ]
     },
@@ -2130,6 +2201,14 @@
       "active": false,
       "references": [
         "drive/tests/federation_drop_ingress_smoke.php"
+      ]
+    },
+    {
+      "path": "drive/src/Http/Controller/FederationModerationController.php",
+      "size": 4390,
+      "active": false,
+      "references": [
+        "drive/tests/federation_moderation_contract_smoke.php"
       ]
     },
     {
@@ -2642,9 +2721,11 @@
     },
     {
       "path": "drive/src/Upload/PublicDropzoneUploadService.php",
-      "size": 4465,
+      "size": 4816,
       "active": false,
-      "references": []
+      "references": [
+        "drive/tests/federation_moderation_contract_smoke.php"
+      ]
     },
     {
       "path": "drive/src/Upload/PublicMultipartUploadService.php",
@@ -2666,15 +2747,18 @@
     },
     {
       "path": "drive/src/Upload/SingleUploadService.php",
-      "size": 3148,
+      "size": 3503,
       "active": false,
-      "references": []
+      "references": [
+        "drive/tests/federation_moderation_contract_smoke.php"
+      ]
     },
     {
       "path": "drive/src/Upload/UploadCatalogRepository.php",
-      "size": 4435,
+      "size": 5307,
       "active": false,
       "references": [
+        "drive/tests/federation_moderation_contract_smoke.php",
         "drive/tests/upload_catalog_registration_regression.php"
       ]
     },
@@ -2705,6 +2789,12 @@
       ]
     },
     {
+      "path": "drive/src/View/FederationModerationPageRenderer.php",
+      "size": 3433,
+      "active": false,
+      "references": []
+    },
+    {
       "path": "drive/src/View/FederationPageRenderer.php",
       "size": 13556,
       "active": false,
@@ -2720,6 +2810,12 @@
       "references": [
         "drive/tests/federation_drop_contract_smoke.php"
       ]
+    },
+    {
+      "path": "drive/src/View/FederationReportPageRenderer.php",
+      "size": 3424,
+      "active": false,
+      "references": []
     },
     {
       "path": "drive/src/View/FileIconResolver.php",
@@ -2894,6 +2990,12 @@
     {
       "path": "drive/tests/federation_https_contract_smoke.php",
       "size": 5451,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/tests/federation_moderation_contract_smoke.php",
+      "size": 3724,
       "active": false,
       "references": []
     },

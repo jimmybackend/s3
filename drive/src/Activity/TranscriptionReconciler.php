@@ -283,7 +283,8 @@ final class TranscriptionReconciler
             $jobName,
             $fileKey,
             trim((string)($meta['aws_output_key'] ?? '')),
-            $subtitleFormats
+            $subtitleFormats,
+            (string)($event['CreatedAt'] ?? '')
         );
         if ($result === null) {
             return false;

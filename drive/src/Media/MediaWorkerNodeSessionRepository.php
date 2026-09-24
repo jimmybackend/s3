@@ -37,28 +37,48 @@ final class MediaWorkerNodeSessionRepository
         string $instanceType,
         ?float $hourlyUsd
     ): array {
-        $active = $this->activeForInstance($instanceId);
-        if ($active !== null) return $active;
-
-        $sessionId = bin2hex(random_bytes(16));
-        $status = 'starting';
-        $stmt = $this->db->prepare(
-            "INSERT INTO MediaWorkerNodeSessions
-             (SessionId,InstanceId,Region,StartedByUserId,InstanceType,HourlyUsd,Status,StartedAt,CreatedAt,UpdatedAt)
-             VALUES (?,?,?,?,?,?,?,UTC_TIMESTAMP(),UTC_TIMESTAMP(),UTC_TIMESTAMP())"
-        );
-        if (!$stmt) throw new RuntimeException('No se pudo preparar la sesión del nodo multimedia.');
-        $stmt->bind_param('sssisds', $sessionId, $instanceId, $region, $userId, $instanceType, $hourlyUsd, $status);
-        if (!$stmt->execute()) {
-            $error = $stmt->error;
-            $stmt->close();
-            throw new RuntimeException('No se pudo crear la sesión del nodo multimedia: ' . $error);
+        $lockName = 'media-worker-' . substr(hash('sha256', $instanceId), 0, 40);
+        $lock = $this->db->prepare('SELECT GET_LOCK(?, 5) AS acquired');
+        if (!$lock) throw new RuntimeException('No se pudo preparar el bloqueo del nodo multimedia.');
+        $lock->bind_param('s', $lockName);
+        $lock->execute();
+        $row = $lock->get_result()?->fetch_assoc();
+        $lock->close();
+        if ((int)($row['acquired'] ?? 0) !== 1) {
+            throw new RuntimeException('El nodo multimedia está siendo solicitado por otra tarea. Vuelve a intentar.');
         }
-        $stmt->close();
 
-        $active = $this->activeForInstance($instanceId);
-        if ($active === null) throw new RuntimeException('No se pudo recuperar la sesión del nodo multimedia.');
-        return $active;
+        try {
+            $active = $this->activeForInstance($instanceId);
+            if ($active !== null) return $active;
+
+            $sessionId = bin2hex(random_bytes(16));
+            $status = 'starting';
+            $stmt = $this->db->prepare(
+                "INSERT INTO MediaWorkerNodeSessions
+                 (SessionId,InstanceId,Region,StartedByUserId,InstanceType,HourlyUsd,Status,StartedAt,CreatedAt,UpdatedAt)
+                 VALUES (?,?,?,?,?,?,?,UTC_TIMESTAMP(),UTC_TIMESTAMP(),UTC_TIMESTAMP())"
+            );
+            if (!$stmt) throw new RuntimeException('No se pudo preparar la sesión del nodo multimedia.');
+            $stmt->bind_param('sssisds', $sessionId, $instanceId, $region, $userId, $instanceType, $hourlyUsd, $status);
+            if (!$stmt->execute()) {
+                $error = $stmt->error;
+                $stmt->close();
+                throw new RuntimeException('No se pudo crear la sesión del nodo multimedia: ' . $error);
+            }
+            $stmt->close();
+
+            $active = $this->activeForInstance($instanceId);
+            if ($active === null) throw new RuntimeException('No se pudo recuperar la sesión del nodo multimedia.');
+            return $active;
+        } finally {
+            $release = $this->db->prepare('SELECT RELEASE_LOCK(?)');
+            if ($release) {
+                $release->bind_param('s', $lockName);
+                $release->execute();
+                $release->close();
+            }
+        }
     }
 
     public function markRunning(string $sessionId): void

@@ -16,6 +16,8 @@ class FederationDropApp {
     this.refreshButton = document.getElementById('dropRefreshButton');
     this.currentDropId = '';
     this.ownerToken = '';
+    this.pendingFile = null;
+    this.pollTimer = null;
   }
 
   init() {
@@ -56,7 +58,7 @@ class FederationDropApp {
       });
       const data = await this.request('api.php?action=quote', { method: 'POST', body });
       this.quote.textContent = this.money(data.quote.amount_cents, data.quote.currency);
-    } catch (error) {
+    } catch (_) {
       if (this.quote) this.quote.textContent = 'No disponible';
     }
   }
@@ -71,7 +73,7 @@ class FederationDropApp {
     this.setBusy(true);
     this.showError('');
     try {
-      this.setProgress('Creando orden y preparando almacenamiento privado…');
+      this.setProgress('Creando orden segura…');
       const body = new URLSearchParams({
         email: String(this.email?.value || ''),
         filename: file.name,
@@ -84,35 +86,18 @@ class FederationDropApp {
       const order = await this.request('api.php?action=create', { method: 'POST', body });
       this.currentDropId = order.drop_id;
       this.ownerToken = order.owner_token;
+      this.pendingFile = file;
       sessionStorage.setItem(`federationdrop.owner.${order.drop_id}`, order.owner_token);
 
-      this.setProgress('Subiendo directamente al almacenamiento del nodo…');
-      const uploadHeaders = new Headers(order.upload.headers || {});
-      const response = await fetch(order.upload.url, {
-        method: 'PUT',
-        headers: uploadHeaders,
-        body: file
-      });
-      if (!response.ok) throw new Error('S3 rechazó la subida del archivo.');
-
-      this.setProgress('Verificando objeto y cerrando la subida…');
-      const completeBody = new URLSearchParams({
-        drop_id: order.drop_id,
-        owner_token: order.owner_token
-      });
-      const status = await this.request('api.php?action=upload-complete', {
-        method: 'POST',
-        body: completeBody
-      });
-
       this.showManage();
-      this.renderStatus(status);
-      if (status.payment_status !== 'paid' && order.checkout_url) {
-        this.setProgress('Archivo bajo custodia. Abriendo el pago…');
-        window.location.assign(order.checkout_url);
-        return;
+      await this.refreshStatus();
+      this.setProgress('Completa el pago en la ventana que se abrirá. El archivo todavía NO se ha subido.');
+
+      const paymentWindow = window.open(order.checkout_url, '_blank', 'noopener,noreferrer');
+      if (!paymentWindow) {
+        this.setProgress('El navegador bloqueó la ventana de pago. Usa “Continuar al pago” abajo y no cierres esta página.');
       }
-      this.setProgress('FederationDrop activo.');
+      this.startPaymentPolling();
     } catch (error) {
       this.showError(error?.message || 'No se pudo crear FederationDrop.');
       this.setProgress('');
@@ -121,8 +106,75 @@ class FederationDropApp {
     }
   }
 
+  startPaymentPolling() {
+    this.stopPaymentPolling();
+    let attempts = 0;
+    this.pollTimer = window.setInterval(async () => {
+      attempts += 1;
+      try {
+        const status = await this.refreshStatus();
+        if (status?.can_upload && this.pendingFile) {
+          this.stopPaymentPolling();
+          await this.uploadPaidFile(this.pendingFile);
+          return;
+        }
+        if (['active', 'deleted', 'expired', 'blocked'].includes(String(status?.status || ''))) {
+          this.stopPaymentPolling();
+        }
+      } catch (_) {}
+      if (attempts >= 200) this.stopPaymentPolling();
+    }, 3000);
+  }
+
+  stopPaymentPolling() {
+    if (this.pollTimer) window.clearInterval(this.pollTimer);
+    this.pollTimer = null;
+  }
+
+  async uploadPaidFile(file) {
+    if (!file || !this.currentDropId || !this.ownerToken) return;
+    this.showError('');
+    this.setProgress('Pago confirmado. Solicitando autorización temporal de subida…');
+    try {
+      const authBody = new URLSearchParams({
+        drop_id: this.currentDropId,
+        owner_token: this.ownerToken
+      });
+      const auth = await this.request('api.php?action=upload-authorize', {
+        method: 'POST',
+        body: authBody
+      });
+
+      this.setProgress('Subiendo directamente al almacenamiento privado del nodo…');
+      const uploadHeaders = new Headers(auth.upload.headers || {});
+      const response = await fetch(auth.upload.url, {
+        method: 'PUT',
+        headers: uploadHeaders,
+        body: file
+      });
+      if (!response.ok) throw new Error('S3 rechazó la subida del archivo.');
+
+      this.setProgress('Verificando el objeto pagado…');
+      const completeBody = new URLSearchParams({
+        drop_id: this.currentDropId,
+        owner_token: this.ownerToken
+      });
+      const status = await this.request('api.php?action=upload-complete', {
+        method: 'POST',
+        body: completeBody
+      });
+      this.pendingFile = null;
+      this.renderStatus(status);
+      this.setProgress('FederationDrop activo. Ya puedes compartir el enlace o su ArcadeLink.');
+    } catch (error) {
+      this.showError(error?.message || 'No se pudo subir el archivo pagado.');
+      this.setProgress('La orden sigue disponible; puedes volver a seleccionar el archivo desde Administración.');
+      await this.refreshStatus();
+    }
+  }
+
   async refreshStatus() {
-    if (!this.currentDropId || !this.ownerToken) return;
+    if (!this.currentDropId || !this.ownerToken) return null;
     try {
       const params = new URLSearchParams({
         action: 'status',
@@ -131,15 +183,17 @@ class FederationDropApp {
       });
       const status = await this.request(`api.php?${params.toString()}`, { method: 'GET' });
       this.renderStatus(status);
+      return status;
     } catch (error) {
       this.manageStatus.textContent = error?.message || 'No se pudo consultar FederationDrop.';
+      throw error;
     }
   }
 
   renderStatus(status) {
     this.showManage();
     const label = {
-      pending_upload: 'Pendiente de subida',
+      pending_upload: 'Pagado · pendiente de subir archivo',
       pending_payment: 'Pendiente de pago',
       active: 'Activo',
       expired: 'Vencido',
@@ -152,18 +206,31 @@ class FederationDropApp {
     parts.push(`<p><strong>${this.escape(status.filename)}</strong><br><span class="drop-muted">${this.escape(this.money(status.amount_cents, status.currency))}</span></p>`);
 
     if (status.status === 'active') {
-      parts.push(`<div class="mb-2"><strong>Descarga pública</strong><div class="drop-link"><a href="${this.attr(status.share_url)}">${this.escape(status.share_url)}</a></div></div>`);
-      parts.push(`<div class="mb-2"><strong>ArcadeLink</strong><div class="drop-link"><a href="${this.attr(status.arcadelink_url)}">${this.escape(status.arcadelink_url)}</a></div></div>`);
+      parts.push(`<div class="mb-2"><strong>Descarga pública</strong><div class="drop-link"><a rel="noopener noreferrer" href="${this.attr(status.share_url)}">${this.escape(status.share_url)}</a></div></div>`);
+      parts.push(`<div class="mb-2"><strong>ArcadeLink</strong><div class="drop-link"><a rel="noopener noreferrer" href="${this.attr(status.arcadelink_url)}">${this.escape(status.arcadelink_url)}</a></div></div>`);
       parts.push(`<div class="drop-muted small mb-3">Vence: ${this.escape(status.expires_at || '')}</div>`);
     } else if (status.payment_status !== 'paid' && status.checkout_url) {
-      parts.push(`<p><a class="btn btn-info" href="${this.attr(status.checkout_url)}">Continuar al pago</a></p>`);
+      parts.push(`<p><a class="btn btn-info" target="_blank" rel="noopener noreferrer" href="${this.attr(status.checkout_url)}">Continuar al pago</a></p>`);
+      parts.push('<p class="drop-muted small">El archivo no se subirá hasta que el pago sea confirmado.</p>');
+    } else if (status.can_upload) {
+      parts.push('<div class="form-group"><label for="dropPaidFile">Pago confirmado. Selecciona el archivo de la orden para subirlo.</label><input id="dropPaidFile" class="form-control-file" type="file"></div>');
+      parts.push('<button id="dropPaidUploadButton" type="button" class="btn btn-info btn-sm">Subir archivo pagado</button>');
     }
 
     if (!['deleted', 'expired'].includes(status.status)) {
-      parts.push('<button id="dropDeleteButton" type="button" class="btn btn-outline-danger btn-sm">Eliminar ahora</button>');
+      parts.push('<button id="dropDeleteButton" type="button" class="btn btn-outline-danger btn-sm ml-2">Eliminar ahora</button>');
     }
 
     this.manageBody.innerHTML = parts.join('');
+    const paidFile = document.getElementById('dropPaidFile');
+    document.getElementById('dropPaidUploadButton')?.addEventListener('click', () => {
+      const selected = paidFile?.files?.[0];
+      if (!selected) return this.showError('Selecciona el archivo que pagaste.');
+      if (status.size_bytes && Number(selected.size) !== Number(status.size_bytes)) {
+        return this.showError('El tamaño del archivo no coincide con la orden pagada.');
+      }
+      this.uploadPaidFile(selected);
+    });
     document.getElementById('dropDeleteButton')?.addEventListener('click', () => this.deleteCurrent());
   }
 
@@ -176,22 +243,24 @@ class FederationDropApp {
         owner_token: this.ownerToken
       });
       const result = await this.request('api.php?action=delete', { method: 'POST', body });
+      this.stopPaymentPolling();
       this.manageStatus.textContent = result.status === 'deleted' ? 'Eliminado' : String(result.status || '');
-      this.manageBody.innerHTML = '<p>El objeto fue retirado del almacenamiento.</p>';
+      this.manageBody.innerHTML = '<p>El FederationDrop fue retirado.</p>';
     } catch (error) {
       this.manageStatus.textContent = error?.message || 'No se pudo eliminar FederationDrop.';
     }
   }
 
   async request(url, options) {
+    const headers = {
+      'Accept': 'application/json',
+      ...(options?.body instanceof URLSearchParams ? {'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'} : {})
+    };
     const response = await fetch(url, {
       credentials: 'same-origin',
       cache: 'no-store',
-      headers: {
-        'Accept': 'application/json',
-        ...(options?.body instanceof URLSearchParams ? {'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'} : {})
-      },
-      ...options
+      ...options,
+      headers: {...headers, ...(options?.headers || {})}
     });
     let data = {};
     try { data = await response.json(); } catch (_) {}

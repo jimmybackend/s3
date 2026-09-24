@@ -24,32 +24,51 @@ indexHomeOk(
 );
 
 indexHomeOk(
-    str_contains($source, 'id="inicio"')
-        && str_contains($source, 'id="servicios"')
-        && str_contains($source, 'id="enlaces"')
-        && str_contains($source, 'id="login"')
-        && str_contains($source, 'id="acerca"')
-        && str_contains($source, 'id="contacto"'),
-    'portada conserva navegación simple de una sola página'
+    str_contains($source, 'css/styles.css?v=')
+        && str_contains($source, 'css/responsive.css?v=')
+        && str_contains($source, 'class="ui-theme theme-neon-green theme-dark vision-normal ascii-on"')
+        && str_contains($source, 'drive-navbar')
+        && str_contains($source, 'drive-brand-logo'),
+    'portada reutiliza la UI canónica de s3.php'
 );
 
 indexHomeOk(
-    str_contains($source, 'Drive sobre Amazon S3')
-        && str_contains($source, 'Servicios AWS')
-        && str_contains($source, 'FederationCloud'),
-    'portada resume el producto en tres capacidades sin repetir flujos'
+    str_contains($source, 'bootstrap/4.5.2')
+        && str_contains($source, 'font-awesome/6.0.0'),
+    'portada mantiene las mismas dependencias visuales base de s3.php'
+);
+
+indexHomeOk(
+    str_contains($source, 'id="inicio"')
+        && str_contains($source, 'id="aws"')
+        && str_contains($source, 'id="accesos"')
+        && str_contains($source, 'id="login"')
+        && str_contains($source, 'id="acerca"')
+        && str_contains($source, 'id="contacto"'),
+    'portada mantiene navegación pública compacta'
+);
+
+indexHomeOk(
+    str_contains($source, 'Textract')
+        && str_contains($source, 'Transcribe')
+        && str_contains($source, 'Polly')
+        && str_contains($source, 'Translate')
+        && str_contains($source, 'Rekognition')
+        && str_contains($source, 'Comprehend'),
+    'servicios AWS reales reciben protagonismo propio'
+);
+
+indexHomeOk(
+    str_contains($source, 'Una de las capacidades que distingue a ArcadeCloud.')
+        && str_contains($source, 'Los archivos almacenados en S3 pueden utilizar directamente servicios administrados de AWS desde el Drive.'),
+    'AWS se presenta como capacidad distintiva integrada al Drive'
 );
 
 indexHomeOk(
     str_contains($source, '$arcadeLinkUrl = \'federationcloud/\'')
         && str_contains($source, '$githubUrl = \'https://github.com/jimmybackend/s3\'')
         && str_contains($source, 'Subir / pagar'),
-    'portada ofrece navegación directa a páginas funcionales'
-);
-
-indexHomeOk(
-    str_contains($source, 'Textract, Transcribe, Polly, Translate, Rekognition y Comprehend'),
-    'servicios AWS reales se presentan una sola vez de forma compacta'
+    'portada ofrece accesos directos a funciones reales'
 );
 
 indexHomeOk(
@@ -58,10 +77,11 @@ indexHomeOk(
 );
 
 indexHomeOk(
-    str_contains($source, '$contactEmail = \'soporte@esforzados.com\'')
+    str_contains($source, '$authorEmail = \'jimmybackend@gmail.com\'')
+        && str_contains($source, '$supportEmail = \'soporte@esforzados.com\'')
         && str_contains($source, '$contactPhoneDisplay = \'+52 9611077442\'')
         && str_contains($source, '$contactPhoneHref = \'+529611077442\''),
-    'contacto usa correo central y teléfono mexicano completo'
+    'contacto conserva autor, soporte y teléfono de México'
 );
 
 indexHomeOk(
@@ -80,4 +100,9 @@ indexHomeOk(
     'portada pública no arranca la aplicación completa'
 );
 
-echo "Public index navigation smoke: OK\n";
+indexHomeOk(
+    !str_contains($source, 'js/estilo.js'),
+    'portada no carga módulos privados del Drive sólo para copiar el aspecto visual'
+);
+
+echo "Public index native Drive UI smoke: OK\n";

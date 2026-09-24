@@ -80,6 +80,42 @@ final class MediaProcessingJobRepository
         return array_map([$this, 'normalize'], $rows);
     }
 
+    public function latestOperationalWarning(): ?array
+    {
+        $dependency = $this->latestDependencyFailure();
+        if ($dependency !== null) {
+            $dependency['type'] = 'dependency_missing';
+            return $dependency;
+        }
+
+        $stmt = $this->db->prepare(
+            "SELECT JobId,CreatedAt
+             FROM MediaProcessingJobs
+             WHERE Status='queued'
+               AND CreatedAt <= DATE_SUB(UTC_TIMESTAMP(), INTERVAL 2 MINUTE)
+               AND CreatedAt >= DATE_SUB(UTC_TIMESTAMP(), INTERVAL 24 HOUR)
+             ORDER BY CreatedAt ASC,id_ ASC
+             LIMIT 1"
+        );
+        if (!$stmt) {
+            throw new RuntimeException('No se pudo comprobar la disponibilidad del nodo multimedia.');
+        }
+        $stmt->execute();
+        $row = $stmt->get_result()?->fetch_assoc();
+        $stmt->close();
+
+        if (!is_array($row)) {
+            return null;
+        }
+
+        return [
+            'type' => 'worker_unavailable',
+            'worker_id' => '',
+            'message' => 'Hay tareas multimedia en cola sin que un nodo las recoja.',
+            'updated_at' => (string)($row['CreatedAt'] ?? ''),
+        ];
+    }
+
     public function latestDependencyFailure(int $hours = 24): ?array
     {
         $hours = max(1, min(168, $hours));

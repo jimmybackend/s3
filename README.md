@@ -155,6 +155,8 @@ Un ArcadeLink `PUBLIC + copy_allowed` se puede descargar o copiar a Mi Drive sin
 
 El repositorio incluye `federationdrop/badge.svg` para enlazar el servicio desde dominios externos y el esquema de proveedores comerciales con dominio fijo, capacidad, porcentaje `CommissionBps` y garantía `central_copy` o `dual_replica`. Usar un proveedor como ingress no lo convierte en custodio final.
 
+FederationDrop puede registrar al propietario con **Google OIDC** usando Authorization Code + PKCE y la misma estrategia criptográfica que MCMA; esto crea una cuenta ligera FederationDrop, no una cuenta del Drive. El modo por correo sigue disponible. Cuando Google está conectado, el backend usa el correo verificado por Google para la orden.
+
 FederationDrop usa **Stripe Checkout** con precio dinámico calculado en el servidor y webhook validado mediante `Stripe-Signature`. Todos los nodos enlazan el botón comercial a `ARCADECLOUD_DROP_COMMERCE_URL`, cuyo valor por defecto es `https://drive.esforzados.com/federationdrop`; sólo ese nodo comercial necesita claves Stripe. Consulta `drive/docs/FEDERATION_DROP.md`.
 
 ## FederationCloud

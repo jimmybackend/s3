@@ -103,6 +103,49 @@ final class FederationDropStorageService
         return $this->verifyUploaded($key, $expectedBytes);
     }
 
+    public function contentId(string $key, int $expectedBytes): string
+    {
+        if ($key === '' || !str_starts_with($key, 'FederationDrops/')) {
+            throw new FederationException('Key FederationDrop inválida para huella digital.', 500);
+        }
+        try {
+            $result = $this->s3->getObject([
+                'Bucket' => $this->bucket,
+                'Key' => $key,
+            ]);
+        } catch (\Throwable) {
+            throw new FederationException('No se pudo leer el FederationDrop para calcular su huella.', 409);
+        }
+
+        $body = $result['Body'] ?? null;
+        if (!is_object($body) || !method_exists($body, 'read')) {
+            throw new FederationException('El almacenamiento no devolvió un stream verificable.', 500);
+        }
+
+        $hash = hash_init('sha256');
+        $bytes = 0;
+        try {
+            while (!$body->eof()) {
+                $chunk = $body->read(1048576);
+                if (!is_string($chunk) || $chunk === '') {
+                    if ($body->eof()) break;
+                    throw new FederationException('No se pudo completar la lectura para huella digital.', 500);
+                }
+                $bytes += strlen($chunk);
+                if ($bytes > $expectedBytes || $bytes > $this->config->maxFileBytes) {
+                    throw new FederationException('El contenido excede el tamaño autorizado durante la verificación.', 409);
+                }
+                hash_update($hash, $chunk);
+            }
+        } finally {
+            if (method_exists($body, 'close')) $body->close();
+        }
+        if ($bytes !== $expectedBytes) {
+            throw new FederationException('El tamaño cambió durante el cálculo de huella digital.', 409);
+        }
+        return 'sha256:' . hash_final($hash);
+    }
+
     public function presignedDownload(string $key, string $filename): string
     {
         $filename = str_replace(["\r", "\n", '"'], ['', '', "'"], basename($filename));

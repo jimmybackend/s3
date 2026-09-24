@@ -66,6 +66,43 @@ final class FederationDropStorageService
         ];
     }
 
+    public function storeFromLocalFile(
+        string $key,
+        string $path,
+        string $mimeType,
+        int $expectedBytes,
+        array $metadata = []
+    ): array {
+        if ($key === '' || !str_starts_with($key, 'FederationDrops/')) {
+            throw new FederationException('Key FederationDrop inválida.', 500);
+        }
+        if (!is_file($path) || !is_readable($path)) {
+            throw new FederationException('Fuente temporal FederationDrop no disponible.', 500);
+        }
+        if ($expectedBytes <= 0 || $expectedBytes > $this->config->maxFileBytes) {
+            throw new FederationException('Tamaño FederationDrop fuera del límite permitido.', 413);
+        }
+
+        $safeMetadata = [];
+        foreach ($metadata as $name => $value) {
+            $name = strtolower(trim((string)$name));
+            $value = trim((string)$value);
+            if ($name === '' || $value === '' || strlen($name) > 64 || strlen($value) > 512) continue;
+            if (!preg_match('/\A[a-z0-9-]+\z/', $name)) continue;
+            $safeMetadata[$name] = $value;
+        }
+
+        $this->s3->putObject([
+            'Bucket' => $this->bucket,
+            'Key' => $key,
+            'SourceFile' => $path,
+            'ContentType' => trim($mimeType) ?: 'application/octet-stream',
+            'Metadata' => $safeMetadata,
+        ]);
+
+        return $this->verifyUploaded($key, $expectedBytes);
+    }
+
     public function presignedDownload(string $key, string $filename): string
     {
         $filename = str_replace(["\r", "\n", '"'], ['', '', "'"], basename($filename));

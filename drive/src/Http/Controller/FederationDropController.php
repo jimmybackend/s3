@@ -23,8 +23,13 @@ final class FederationDropController
     public function page(): void
     {
         $service = new FederationDropService($this->app);
+        $state = $service->publicState();
+        $resourceId = trim($this->request->queryString('resource_id'));
+        if ($resourceId !== '') {
+            $state['source_resource'] = $service->publicResourceState($resourceId);
+        }
         (new FederationDropPageRenderer())->render(
-            $service->publicState(),
+            $state,
             $this->request->queryString('source'),
             $this->request->queryString('manage'),
             $this->request->queryString('owner_token'),
@@ -59,6 +64,16 @@ final class FederationDropController
                     $this->request->postString('filename'),
                     $this->request->postInt('size_bytes'),
                     $this->request->postString('mime_type', 'application/octet-stream'),
+                    $this->request->postInt('days'),
+                    $this->request->postInt('downloads'),
+                    $this->request->postString('source_domain')
+                ), 201);
+            }
+
+            if ($action === 'create-public-resource' && $this->request->method() === 'POST') {
+                JsonResponse::send($service->createPublicResourceOrder(
+                    $this->request->postString('email'),
+                    $this->request->postString('resource_id'),
                     $this->request->postInt('days'),
                     $this->request->postInt('downloads'),
                     $this->request->postString('source_domain')

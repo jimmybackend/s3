@@ -285,3 +285,75 @@ sudo bash drive/bin/uninstall_arcadecloud.sh --dry-run
 El desinstalador elimina servicios, timers, configuración local, helpers, runtime, identidad local,
 entorno Certbot administrado y checkout cuando puede demostrar que pertenecen a ArcadeCloud. No borra
 MySQL/S3 remotos ni paquetes compartidos del sistema. Consulta `drive/docs/UNINSTALLATION.md`.
+
+## Roles de nodo y reconciliación de servicios
+
+ArcadeCloud distingue tres roles persistidos en `runtime-env.json`:
+
+- `web`: nodo coordinador/web. Es el valor seguro por defecto y es el recomendado para `drive.esforzados.com` si corre en una t3.micro.
+- `media-worker`: nodo dedicado a FFmpeg/FFprobe. No ejecuta los reconciliadores web de Polly/Transcribe.
+- `combined`: web + worker multimedia en la misma EC2, útil sólo cuando la máquina tiene capacidad suficiente.
+
+Ejemplo para el nodo principal:
+
+```bash
+sudo bash drive/bin/install_arcadecloud.sh \
+  --node-role=web \
+  --media-worker-instance-id=i-0123456789abcdef0 \
+  --media-worker-region=us-east-1 \
+  --media-worker-hourly-usd=0.12345678 \
+  --media-worker-idle-grace-seconds=300
+```
+
+Ejemplo para la EC2 dedicada:
+
+```bash
+sudo bash drive/bin/install_arcadecloud.sh \
+  --node-role=media-worker \
+  --federation-dynamic-ip
+```
+
+El instalador no activa FFmpeg en un nodo `web`. Sólo `media-worker` y `combined` instalan/activan `arcadecloud-media-worker.service`.
+
+### Reconciliar una instalación existente
+
+```bash
+sudo bash drive/bin/install_arcadecloud.sh \
+  --reconcile \
+  --app-root=/var/www/arcadecloud-drive
+```
+
+La reconciliación es idempotente. Actualiza los helpers privilegiados, timers y servicios correspondientes al rol, reinicia `php-fpm-drive` cuando está activo y recarga Nginx sólo si `nginx -t` pasa.
+
+### Actualizador de “Acerca de”
+
+Las versiones nuevas de ArcadeCloud Updater hacen dos pasos:
+
+1. `git fetch` + fast-forward seguro de `main`;
+2. reconciliación de los servicios administrados con el código recién actualizado.
+
+Si Git se actualiza pero la reconciliación de un servicio falla, el updater informa que **el código sí quedó actualizado** y muestra una advertencia de servicio, en vez de fingir que el fast-forward no ocurrió.
+
+Para una instalación que todavía tenga el updater anterior a esta función, hay una transición única: después de recibir por primera vez esta versión se ejecuta `install_arcadecloud.sh --reconcile`. A partir de ahí las siguientes actualizaciones desde “Acerca de” hacen ambos pasos automáticamente.
+
+## Configuración canónica
+
+Las opciones del nodo multimedia usan exclusivamente:
+
+```text
+/etc/arcadecloud-drive/runtime-env.json
+```
+
+Variables administradas:
+
+```text
+ARCADECLOUD_NODE_ROLE
+ARCADECLOUD_MEDIA_WORKER
+ARCADECLOUD_MEDIA_WORKER_INSTANCE_ID
+ARCADECLOUD_MEDIA_WORKER_REGION
+ARCADECLOUD_MEDIA_WORKER_HOURLY_USD
+ARCADECLOUD_MEDIA_WORKER_IDLE_GRACE_SECONDS
+ARCADECLOUD_FEDERATION_DYNAMIC_IP
+```
+
+No debe mantenerse una segunda configuración multimedia en `drive.env`.

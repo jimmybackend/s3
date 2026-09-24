@@ -189,6 +189,21 @@ final class MediaProcessingJobRepository
         return $row ? $this->normalize($row) : null;
     }
 
+    public function hasActiveJobs(): bool
+    {
+        $result = $this->db->query(
+            "SELECT 1 FROM MediaProcessingJobs
+             WHERE Status IN ('queued','running')
+             LIMIT 1"
+        );
+        if (!$result) {
+            throw new RuntimeException('No se pudo comprobar la cola multimedia: ' . $this->db->error);
+        }
+        $active = $result->fetch_row() !== null;
+        $result->free();
+        return $active;
+    }
+
     public function progress(string $jobId, int $percent): void
     {
         $percent = max(0, min(99, $percent));

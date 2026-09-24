@@ -46,20 +46,25 @@ final class FederationDropConfig
         if (!$this->enabled) {
             throw new FederationException('FederationDrop está desactivado en este nodo.', 503);
         }
+        $this->assertWebhookReady();
         foreach ([$this->publicUrl, $this->checkoutUrl] as $url) {
             $parts = parse_url($url);
             if (!is_array($parts) || strtolower((string)($parts['scheme'] ?? '')) !== 'https' || empty($parts['host'])) {
                 throw new FederationException('FederationDrop requiere URLs HTTPS válidas.', 503);
             }
         }
+        if ($this->baseFeeCents + $this->storageGbDayCents + $this->egressGbCents <= 0) {
+            throw new FederationException('Configura una tarifa positiva para FederationDrop.', 503);
+        }
+    }
+
+    public function assertWebhookReady(): void
+    {
         if (strlen($this->webhookSecret) < 32) {
             throw new FederationException('FederationDrop requiere ARCADECLOUD_DROP_WEBHOOK_SECRET de al menos 32 caracteres.', 503);
         }
         if (!preg_match('/\A[A-Z]{3}\z/', $this->currency)) {
             throw new FederationException('Moneda FederationDrop inválida.', 503);
-        }
-        if ($this->baseFeeCents + $this->storageGbDayCents + $this->egressGbCents <= 0) {
-            throw new FederationException('Configura una tarifa positiva para FederationDrop.', 503);
         }
     }
 

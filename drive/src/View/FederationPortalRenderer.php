@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace ArcadeCloud\Drive\View;
 
+use ArcadeCloud\Drive\Federation\FederationDropConfig;
+
 final class FederationPortalRenderer
 {
     public function render(bool $authenticated, ?array $node = null): void
@@ -17,6 +19,9 @@ final class FederationPortalRenderer
         $portalJsVersion = is_file($driveRoot . '/js/federation-portal.js') ? (int)filemtime($driveRoot . '/js/federation-portal.js') : 1;
         $shareDriveJsVersion = is_file($driveRoot . '/js/federation-share-drive.js') ? (int)filemtime($driveRoot . '/js/federation-share-drive.js') : 1;
         $nodeId = is_array($node) ? (string)($node['node_id'] ?? '') : '';
+        $dropConfig = FederationDropConfig::fromEnvironment();
+        $sourceHost = (string)(parse_url((string)getenv('ARCADECLOUD_PUBLIC_URL'), PHP_URL_HOST) ?: '');
+        $dropUrl = rtrim($dropConfig->commerceUrl, '/') . '/?source=' . rawurlencode($sourceHost);
         ?>
 <!doctype html>
 <html lang="es">
@@ -40,6 +45,7 @@ final class FederationPortalRenderer
     Cloud Drive
   </a>
   <div class="ml-auto d-flex align-items-center flex-wrap">
+    <a class="btn btn-info btn-sm mr-2" rel="noopener noreferrer" href="<?= $h($dropUrl) ?>"><i class="fas fa-cloud-arrow-up mr-1"></i>Subir / pagar</a>
     <a class="btn btn-outline-info btn-sm mr-2" href="./"><i class="fas fa-link mr-1"></i>ArcadeLink</a>
     <a class="btn btn-outline-light btn-sm" href="../s3.php"><i class="fas fa-arrow-left mr-1"></i>Drive</a>
   </div>

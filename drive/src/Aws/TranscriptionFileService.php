@@ -461,6 +461,7 @@ final class TranscriptionFileService
             'ruta' => $route,
             'tamano' => $size,
             'db_status' => $db,
+            's3_put' => false,
         ];
     }
 
@@ -554,6 +555,7 @@ final class TranscriptionFileService
             'ruta' => $route,
             'tamano' => $size,
             'db_status' => $db,
+            's3_put' => true,
         ];
     }
 

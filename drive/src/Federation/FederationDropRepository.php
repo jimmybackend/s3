@@ -327,7 +327,9 @@ final class FederationDropRepository
             "SELECT DropId, S3Key, Status, PaymentStatus, UploadedAt, ExpiresAt, CreatedAt
              FROM FederationDrops
              WHERE (Status = 'active' AND ExpiresAt IS NOT NULL AND ExpiresAt <= UTC_TIMESTAMP(6))
-                OR (Status IN ('pending_upload','pending_payment') AND CreatedAt <= DATE_SUB(UTC_TIMESTAMP(6), INTERVAL {$pendingHours} HOUR))
+                OR (Status = 'pending_payment'
+                    AND PaymentStatus IN ('pending','failed')
+                    AND CreatedAt <= DATE_SUB(UTC_TIMESTAMP(6), INTERVAL {$pendingHours} HOUR))
              ORDER BY CreatedAt ASC LIMIT {$limit}";
         $result = $this->db->query($sql);
         if (!$result) throw new FederationException('No se pudo listar FederationDrops vencidos.', 500);

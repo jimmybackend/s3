@@ -93,18 +93,18 @@ final class FederationDropController
                 ));
             }
 
-            if ($action === 'payment-webhook' && $this->request->method() === 'POST') {
+            if (in_array($action, ['stripe-webhook', 'payment-webhook'], true) && $this->request->method() === 'POST') {
                 $length = (int)$this->request->serverString('CONTENT_LENGTH', '0');
-                if ($length <= 0 || $length > 65536) {
-                    JsonResponse::send(['ok' => false, 'error' => 'Webhook ausente o demasiado grande.'], 413);
+                if ($length <= 0 || $length > 1048576) {
+                    JsonResponse::send(['ok' => false, 'error' => 'Webhook Stripe ausente o demasiado grande.'], 413);
                 }
-                $raw = file_get_contents('php://input', false, null, 0, 65537);
-                if (!is_string($raw) || $raw === '' || strlen($raw) > 65536) {
-                    JsonResponse::send(['ok' => false, 'error' => 'Webhook FederationDrop inválido.'], 413);
+                $raw = file_get_contents('php://input', false, null, 0, 1048577);
+                if (!is_string($raw) || $raw === '' || strlen($raw) > 1048576) {
+                    JsonResponse::send(['ok' => false, 'error' => 'Webhook Stripe FederationDrop inválido.'], 413);
                 }
                 JsonResponse::send($service->receivePaymentWebhook(
                     $raw,
-                    $this->request->serverString('HTTP_X_ARCADECLOUD_DROP_SIGNATURE')
+                    $this->request->serverString('HTTP_STRIPE_SIGNATURE')
                 ));
             }
 

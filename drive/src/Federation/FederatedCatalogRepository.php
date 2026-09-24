@@ -34,6 +34,14 @@ final class FederatedCatalogRepository
             $this->applyLocationTombstone($event);
             return;
         }
+        if ($type === 'moderation.block') {
+            $this->applyModerationBlock($event);
+            return;
+        }
+        if ($type === 'moderation.unblock') {
+            $this->applyModerationUnblock($event);
+            return;
+        }
         throw new FederationException('Evento federado no materializable.', 400);
     }
 
@@ -324,6 +332,59 @@ final class FederatedCatalogRepository
         );
         if (!$stmt) throw new FederationException('No se pudo preparar baja de ubicación federada.', 500);
         $stmt->bind_param('issi', $sequence, $resourceId, $nodeId, $sequence);
+        $stmt->execute();
+        $stmt->close();
+    }
+
+    private function applyModerationBlock(array $event): void
+    {
+        $payload = $event['payload'];
+        $contentId = strtolower(trim((string)($payload['content_id'] ?? '')));
+        $originNodeId = (string)$event['origin_node_id'];
+        $responsible = (string)($payload['responsible_node_id'] ?? '');
+        $reason = strtolower(trim((string)($payload['reason_code'] ?? 'other')));
+        $reportId = trim((string)($payload['report_id'] ?? ''));
+        if (!preg_match('/\\Asha256:[a-f0-9]{64}\\z/', $contentId)
+            || !hash_equals($originNodeId, $responsible)
+            || !in_array($reason, ['spam','malware','illegal','abuse','copyright','other'], true)) {
+            throw new FederationException('Evento de bloqueo de contenido inválido.', 400);
+        }
+
+        $stmt = $this->db->prepare(
+            "INSERT INTO FederationModerationBlocks
+             (ContentId, OriginNodeId, ReasonCode, ReportId, EventId, Status, BlockedAt, UpdatedAt)
+             VALUES (?, ?, ?, ?, ?, 'active', UTC_TIMESTAMP(6), UTC_TIMESTAMP(6))
+             ON DUPLICATE KEY UPDATE ReasonCode=VALUES(ReasonCode), ReportId=COALESCE(VALUES(ReportId),ReportId),
+               EventId=VALUES(EventId), Status='active', BlockedAt=UTC_TIMESTAMP(6), UpdatedAt=UTC_TIMESTAMP(6)"
+        );
+        if (!$stmt) throw new FederationException('No se pudo materializar bloqueo federado.', 500);
+        $nullableReport = $reportId !== '' ? $reportId : null;
+        $eventId = (string)$event['event_id'];
+        $stmt->bind_param('sssss', $contentId, $originNodeId, $reason, $nullableReport, $eventId);
+        if (!$stmt->execute()) {
+            $message = $stmt->error;
+            $stmt->close();
+            throw new FederationException('No se pudo aplicar bloqueo federado: ' . $message, 500);
+        }
+        $stmt->close();
+    }
+
+    private function applyModerationUnblock(array $event): void
+    {
+        $payload = $event['payload'];
+        $contentId = strtolower(trim((string)($payload['content_id'] ?? '')));
+        $originNodeId = (string)$event['origin_node_id'];
+        $responsible = (string)($payload['responsible_node_id'] ?? '');
+        if (!preg_match('/\\Asha256:[a-f0-9]{64}\\z/', $contentId) || !hash_equals($originNodeId, $responsible)) {
+            throw new FederationException('Evento de desbloqueo de contenido inválido.', 400);
+        }
+        $eventId = (string)$event['event_id'];
+        $stmt = $this->db->prepare(
+            "UPDATE FederationModerationBlocks SET Status='revoked', EventId=?, UpdatedAt=UTC_TIMESTAMP(6)
+             WHERE ContentId=? AND OriginNodeId=?"
+        );
+        if (!$stmt) throw new FederationException('No se pudo materializar desbloqueo federado.', 500);
+        $stmt->bind_param('sss', $eventId, $contentId, $originNodeId);
         $stmt->execute();
         $stmt->close();
     }

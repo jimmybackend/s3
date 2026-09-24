@@ -55,6 +55,11 @@ $arcadeLinkShareJs = __DIR__ . '/js/arcadelink-share.js';
         data-toggle="modal" data-target="#modalServerAdmin" data-csrf="<?= $e($serverAdminCsrf) ?>" title="Configuración administrada del servidor">
         <i class="fas fa-tools mr-1" aria-hidden="true"></i>Servidor
       </button>
+      <span aria-hidden="true"> · </span>
+      <a id="btnFederationModeration" class="btn btn-link btn-sm p-0 align-baseline text-danger"
+        href="federationcloud/moderation.php" title="Revisar reportes de abuso FederationCloud">
+        Moderación: <strong id="footerFederationModeration">—</strong>
+      </a>
     <?php endif; ?>
     <span aria-hidden="true"> · </span>
     Espacio usado: <strong id="footerEspacioUsado" class="text-info"><?= $e($espacioUsadoFooter) ?></strong>

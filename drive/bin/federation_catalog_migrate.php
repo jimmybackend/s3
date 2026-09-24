@@ -72,6 +72,10 @@ $requiredTables = [
     'FederationDropIngressObjects',
     'FederationCommercialProviders',
     'FederationDropPlacements',
+    'FederationContentFingerprints',
+    'FederationAbuseReports',
+    'FederationModerationBlocks',
+    'FederationModerationActions',
 ];
 
 $check = $db->prepare(

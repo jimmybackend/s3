@@ -12,6 +12,8 @@ final class FederationEventCodec
         'resource.tombstone',
         'location.upsert',
         'location.tombstone',
+        'moderation.block',
+        'moderation.unblock',
     ];
 
     public function create(

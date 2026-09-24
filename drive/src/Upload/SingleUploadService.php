@@ -39,6 +39,14 @@ final class SingleUploadService
         $physicalName = $this->codec->createFileObjectName($originalName);
         $key = $this->normalizeKey($route . $physicalName);
 
+        $sha256 = (string)(hash_file('sha256', $tmpPath) ?: '');
+        if ($sha256 === '') {
+            throw new RuntimeException('No se pudo calcular la huella SHA-256 del archivo.');
+        }
+        if ($this->catalog->isContentBlocked($sha256)) {
+            throw new RuntimeException('Este contenido está bloqueado por moderación y no puede volver a subirse.');
+        }
+
         $this->s3->putObject([
             'Bucket' => $this->bucket,
             'Key' => $key,
@@ -52,7 +60,7 @@ final class SingleUploadService
             'user_agent' => $userAgent,
             'fecha' => date('Y-m-d'),
             'hora' => date('H:i:s'),
-            'hash_sha256' => @hash_file('sha256', $tmpPath) ?: null,
+            'hash_sha256' => $sha256,
         ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 
         try {

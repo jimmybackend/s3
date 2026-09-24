@@ -12,6 +12,28 @@ final class UploadCatalogRepository
     {
     }
 
+    public function isContentBlocked(string $sha256): bool
+    {
+        $sha256 = strtolower(trim($sha256));
+        if (str_starts_with($sha256, 'sha256:')) $sha256 = substr($sha256, 7);
+        if (!preg_match('/\A[a-f0-9]{64}\z/', $sha256)) {
+            throw new RuntimeException('Huella SHA-256 de subida inválida.');
+        }
+        $contentId = 'sha256:' . $sha256;
+        $stmt = $this->db->prepare(
+            "SELECT 1 FROM FederationModerationBlocks WHERE ContentId=? AND Status='active' LIMIT 1"
+        );
+        if (!$stmt) {
+            throw new RuntimeException('No se pudo consultar la lista de contenido bloqueado: ' . $this->db->error);
+        }
+        $stmt->bind_param('s', $contentId);
+        $stmt->execute();
+        $stmt->store_result();
+        $blocked = $stmt->num_rows > 0;
+        $stmt->close();
+        return $blocked;
+    }
+
     public function insert(array $row): int
     {
         $sql = "

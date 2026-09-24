@@ -11,6 +11,8 @@ class FederationFooterModule {
     this.saveIdentityButton = null;
     this.identityConfigured = true;
     this.csrf = '';
+    this.moderationButton = null;
+    this.moderationCount = null;
   }
 
   init() {
@@ -51,7 +53,31 @@ class FederationFooterModule {
         this.requestsButton.addEventListener('click', () => this.loadAdmin(true));
       }
     }
+
+    this.moderationButton = this.document.getElementById('btnFederationModeration');
+    this.moderationCount = this.document.getElementById('footerFederationModeration');
+    if (this.moderationButton && this.moderationCount) this.loadModerationCount();
+
     return this;
+  }
+
+  async loadModerationCount() {
+    try {
+      const response = await fetch('federationcloud/moderation-api.php', {
+        credentials: 'same-origin', cache: 'no-store',
+        headers: {'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest'}
+      });
+      const data = await response.json();
+      if (!response.ok || !data.ok) throw new Error(data.error || `HTTP ${response.status}`);
+      const reports = Array.isArray(data.reports) ? data.reports : [];
+      this.moderationCount.textContent = String(reports.length);
+      this.moderationButton.title = reports.length === 1
+        ? '1 reporte de abuso pendiente'
+        : `${reports.length} reportes de abuso pendientes`;
+    } catch (error) {
+      this.moderationCount.textContent = '—';
+      console.error('[federation-footer] No se pudo consultar moderación:', error);
+    }
   }
 
   async refresh(nodeTarget = this.nodeTarget, countTarget = this.countTarget) {

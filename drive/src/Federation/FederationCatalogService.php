@@ -96,8 +96,22 @@ final class FederationCatalogService
             'federation_url' => (string)($document['federation_url'] ?? $this->config->federationUrl()),
             'arcadelink' => $document,
         ];
+        $contentId = is_string($resourcePayload['content_id'] ?? null) ? strtolower(trim((string)$resourcePayload['content_id'])) : '';
+        if ($contentId !== '') {
+            (new FederationModerationService($this->app))->assertAllowed($contentId);
+        }
+
         $resourceEvent = $this->events->emit($this->identity, 'resource.upsert', $resourceId, $resourcePayload);
         $this->catalog->setLocalOwner($resourceId, $originNodeId, $ownerUserId);
+        if ($contentId !== '') {
+            (new FederationModerationService($this->app))->rememberFingerprint(
+                $contentId,
+                'resource',
+                $resourceId,
+                null,
+                $originNodeId
+            );
+        }
         $locationEvent = $this->events->emit($this->identity, 'location.upsert', $resourceId . '@' . $originNodeId, [
             'resource_id' => $resourceId,
             'node_id' => $originNodeId,

@@ -2565,7 +2565,7 @@ CREATE TABLE IF NOT EXISTS FederationDropIngressObjects (
   CreatedAt datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
   UpdatedAt datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
   PRIMARY KEY (IngressId),
-  UNIQUE KEY uq_fdrop_ingress_drop_node (DropId, IngressNodeId),
+  KEY idx_fdrop_ingress_drop_node (DropId, IngressNodeId, CreatedAt),
   KEY idx_fdrop_ingress_due (Status, NextAttemptAt, CreatedAt),
   KEY idx_fdrop_ingress_drop (DropId, Status)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

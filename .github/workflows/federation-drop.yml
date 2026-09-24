@@ -22,6 +22,7 @@ on:
       - 'drive/bin/uninstall_arcadecloud.sh'
       - 'drive/bin/federation_catalog_migrate.php'
       - 'drive/bin/federation_sync.php'
+      - 'drive/src/Federation/FederationSyncCycleService.php'
       - 'drive/federationcloud/drop-ingress.php'
       - 'drive/federationdrop/**'
       - 'drive/js/federation-drop.js'
@@ -77,6 +78,8 @@ jobs:
           php -l drive/bin/federation_drop_cleanup.php
           php -l drive/bin/federation_catalog_migrate.php
           php -l drive/bin/federation_sync.php
+          php -l drive/src/Federation/FederationDropWorkerService.php
+          php -l drive/src/Federation/FederationSyncCycleService.php
           php -l drive/federationcloud/drop-ingress.php
           php -l drive/federationdrop/index.php
           php -l drive/federationdrop/api.php
@@ -145,7 +148,8 @@ jobs:
           grep -q 'LastSeen >= DATE_SUB' drive/src/Federation/FederationDropIngressRepository.php
           grep -q 'FederationDropIngress/' drive/src/Federation/FederationDropIngressService.php
           grep -q 'Access-Control-Allow-Origin' drive/src/Http/Controller/FederationDropIngressController.php
-          grep -q 'syncPaidIngressSources' drive/bin/federation_sync.php
+          grep -q 'syncPaidIngressSources' drive/src/Federation/FederationDropWorkerService.php
+          grep -q 'FederationDropWorkerService' drive/src/Federation/FederationSyncCycleService.php
           grep -q 'federationdrop/badge.svg' drive/docs/FEDERATION_DROP.md
           ! grep -R "public-read" drive/src/Federation/FederationDrop*.php
           ! grep -R "AWS_SECRET_ACCESS_KEY" drive/federationdrop drive/js/federation-drop.js

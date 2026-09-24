@@ -56,6 +56,7 @@ jobs:
           php -l drive/src/Federation/FederationReplicaMessageCodec.php
           php -l drive/src/Federation/FederationReplicaRepository.php
           php -l drive/src/Federation/FederationReplicaDownloader.php
+          php -l drive/src/Federation/FederationMultiSourceDownloader.php
           php -l drive/src/Federation/FederationReplicaService.php
           php -l drive/src/Federation/FederationReplicaResolverService.php
           php -l drive/src/Federation/FederationCatalogService.php

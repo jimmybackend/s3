@@ -74,6 +74,17 @@ $extensiones_unicas = $vm->extensionesUnicas;
 $storageUsage = $app->storageUsageService()->getUsage($userId);
 $footerRutaActual = $app->folderQueryService()->displayPathForUser($userId, $basePrefix);
 $footerEspacioUsado = $storageUsage['formatted'];
+
+$mediaWorkerDependencyWarning = null;
+if ($session->isSuperAdmin()) {
+    try {
+        $mediaWorkerDependencyWarning = (new \ArcadeCloud\Drive\Media\MediaProcessingJobRepository(
+            $app->db()
+        ))->latestOperationalWarning();
+    } catch (Throwable $e) {
+        error_log('[ArcadeCloud media-warning] ' . $e->getMessage());
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -303,6 +314,36 @@ $footerEspacioUsado = $storageUsage['formatted'];
 </div>
 
 <div class="container-fluid drive-container">
+
+<?php if (is_array($mediaWorkerDependencyWarning)): ?>
+  <div class="alert alert-warning alert-dismissible fade show mt-3 mb-2" role="alert">
+    <div class="d-flex align-items-start">
+      <i class="fas fa-triangle-exclamation mr-2 mt-1"></i>
+      <div>
+        <?php if (($mediaWorkerDependencyWarning['type'] ?? '') === 'dependency_missing'): ?>
+          <strong>Nodo multimedia incompleto.</strong>
+          Se detectó una tarea que no pudo ejecutarse porque faltan dependencias en el servidor de procesamiento.
+          Instala <strong>FFmpeg y FFprobe</strong> en ese nodo y reinicia
+          <code>arcadecloud-media-worker.service</code>.
+        <?php else: ?>
+          <strong>Nodo multimedia no disponible.</strong>
+          Hay una tarea en cola que ningún worker ha recogido durante más de 2 minutos.
+          Verifica que el nodo de procesamiento esté encendido, que
+          <code>arcadecloud-media-worker.service</code> esté activo y que tenga
+          <strong>FFmpeg y FFprobe</strong> instalados.
+        <?php endif; ?>
+        <?php if (trim((string)($mediaWorkerDependencyWarning['worker_id'] ?? '')) !== ''): ?>
+          <div class="small mt-1">
+            Nodo: <code><?= htmlspecialchars((string)$mediaWorkerDependencyWarning['worker_id'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></code>
+          </div>
+        <?php endif; ?>
+      </div>
+    </div>
+    <button type="button" class="close" data-dismiss="alert" aria-label="Cerrar">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+<?php endif; ?>
 
   <div class="row drive-layout">
     <!-- Panel lateral -->
@@ -1224,6 +1265,68 @@ $footerEspacioUsado = $storageUsage['formatted'];
     </div>
   </div>
 </div>
+<!-- Modal Dividir audio/video -->
+<div class="modal fade" id="modalMediaSplit" tabindex="-1" role="dialog" aria-labelledby="mediaSplitTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header bg-dark text-white">
+        <h5 class="modal-title" id="mediaSplitTitle">
+          <i class="fas fa-scissors mr-2"></i>Dividir archivo
+        </h5>
+        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Cerrar">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <div id="mediaSplitStatus" class="alert d-none" role="alert"></div>
+
+        <div class="border rounded p-3 mb-3">
+          <div class="small text-muted">Archivo</div>
+          <div id="mediaSplitFile" class="font-weight-bold text-break">—</div>
+          <div class="small text-muted mt-2">
+            Tamaño: <strong id="mediaSplitSize">—</strong>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="mediaSplitParts" class="font-weight-bold">¿En cuántas partes lo deseas dividir?</label>
+          <input id="mediaSplitParts"
+                 type="number"
+                 class="form-control form-control-lg"
+                 min="2"
+                 max="50"
+                 step="1"
+                 value="2"
+                 inputmode="numeric">
+          <small class="form-text text-muted">
+            Puedes elegir entre 2 y 50 partes. No hay tamaño mínimo; el máximo por archivo es 8 GB.
+          </small>
+        </div>
+
+        <div class="alert alert-info mb-2">
+          <i class="fas fa-microphone-lines mr-1"></i>
+          <strong>Protección para transcripción:</strong>
+          cada corte conserva 10 segundos antes y 10 segundos después para reducir el riesgo de perder una palabra.
+        </div>
+
+        <div class="alert alert-light border mb-0">
+          <i class="fas fa-shield-alt mr-1"></i>
+          El archivo original permanece intacto. Las partes se guardarán en la misma carpeta como
+          <code>-parte1</code>, <code>-parte2</code>, etc.
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-primary" id="btnMediaSplitSubmit">
+          Enviar a procesamiento
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Modal Transcribir audio/video -->
 <div class="modal fade" id="modalTranscribir" tabindex="-1" role="dialog" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered modal-lg" role="document">

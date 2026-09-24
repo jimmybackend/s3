@@ -10,6 +10,7 @@ use RuntimeException;
 
 final class MediaProcessingWorkerCommand
 {
+    private const MAX_SOURCE_BYTES = 8 * 1024 * 1024 * 1024;
     public function __construct(
         private DriveApplication $app,
         private MediaProcessingJobRepository $jobs,
@@ -64,7 +65,19 @@ final class MediaProcessingWorkerCommand
 
         try {
             $this->assertTools();
-            $this->assertFreeSpace($tmpRoot, (int)$job['source_bytes']);
+
+            $head = $this->app->s3()->headObject([
+                'Bucket' => $this->app->bucket(),
+                'Key' => $sourceKey,
+            ]);
+            $actualBytes = max(0, (int)($head['ContentLength'] ?? 0));
+            if ($actualBytes > self::MAX_SOURCE_BYTES) {
+                throw new RuntimeException('[SOURCE_TOO_LARGE] El archivo supera el máximo de 8 GB para procesamiento multimedia.');
+            }
+            $this->assertFreeSpace(
+                $tmpRoot,
+                $actualBytes > 0 ? $actualBytes : (int)$job['source_bytes']
+            );
 
             $this->app->s3()->getObject([
                 'Bucket' => $this->app->bucket(),
@@ -310,18 +323,45 @@ final class MediaProcessingWorkerCommand
         fclose($pipes[2]);
         $code = proc_close($process);
         if ($code !== 0) {
-            throw new RuntimeException('FFmpeg/FFprobe falló: ' . trim($stderr));
+            $detail = trim($stderr);
+            if (stripos($detail, 'libmp3lame') !== false && stripos($detail, 'encoder') !== false) {
+                throw new RuntimeException(
+                    '[DEPENDENCY_MISSING] El FFmpeg del nodo multimedia no incluye el codificador libmp3lame requerido para crear MP3.'
+                );
+            }
+            throw new RuntimeException('FFmpeg/FFprobe falló: ' . $detail);
         }
         return $capture ? $stdout : '';
     }
 
     private function assertTools(): void
     {
-        foreach (['/usr/bin/ffmpeg','/usr/bin/ffprobe'] as $tool) {
-            if (!is_executable($tool)) {
-                throw new RuntimeException('Falta ' . basename($tool) . ' en el nodo multimedia.');
+        $missing = [];
+        foreach (['ffmpeg', 'ffprobe'] as $tool) {
+            if ($this->findExecutable($tool) === null) {
+                $missing[] = $tool;
             }
         }
+
+        if ($missing !== []) {
+            throw new RuntimeException(
+                '[DEPENDENCY_MISSING] El nodo multimedia ' . (gethostname() ?: 'worker')
+                . ' necesita instalar FFmpeg/FFprobe. Faltan: ' . implode(', ', $missing)
+                . '. Instala las dependencias y reinicia arcadecloud-media-worker.service.'
+            );
+        }
+    }
+
+    private function findExecutable(string $binary): ?string
+    {
+        $paths = explode(PATH_SEPARATOR, (string)(getenv('PATH') ?: '/usr/local/bin:/usr/bin:/bin'));
+        foreach ($paths as $path) {
+            $candidate = rtrim($path, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $binary;
+            if (is_file($candidate) && is_executable($candidate)) {
+                return $candidate;
+            }
+        }
+        return null;
     }
 
     private function assertFreeSpace(string $path, int $sourceBytes): void

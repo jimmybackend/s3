@@ -317,7 +317,10 @@ class MediaProcessingModule {
       method: 'POST',
       credentials: 'same-origin',
       cache: 'no-store',
-      headers: {'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'},
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+        'X-Drive-CSRF': String(this.window.DRIVE_UPLOAD_CSRF || '')
+      },
       body: body.toString()
     });
 

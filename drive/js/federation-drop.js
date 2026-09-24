@@ -17,6 +17,8 @@ class FederationDropApp {
     this.currentDropId = '';
     this.ownerToken = '';
     this.pendingFile = null;
+    this.resourceId = String(root?.dataset?.resourceId || '');
+    this.resourceSize = Number(root?.dataset?.resourceSize || 0);
     this.pollTimer = null;
   }
 
@@ -40,19 +42,21 @@ class FederationDropApp {
       this.showManage();
       this.refreshStatus();
     }
+    if (this.resourceId) this.refreshQuote();
   }
 
   async refreshQuote() {
     const file = this.file?.files?.[0];
+    const sizeBytes = this.resourceId ? this.resourceSize : Number(file?.size || 0);
     const days = Number(this.days?.value || 0);
     const downloads = Number(this.downloads?.value || 0);
-    if (!file || !days || !downloads) {
+    if (!sizeBytes || !days || !downloads) {
       if (this.quote) this.quote.textContent = '—';
       return;
     }
     try {
       const body = new URLSearchParams({
-        size_bytes: String(file.size),
+        size_bytes: String(sizeBytes),
         days: String(days),
         downloads: String(downloads)
       });
@@ -66,9 +70,10 @@ class FederationDropApp {
   async create(event) {
     event.preventDefault();
     const file = this.file?.files?.[0];
-    if (!file) return this.showError('Selecciona un archivo.');
+    if (!this.resourceId && !file) return this.showError('Selecciona un archivo.');
+    const sizeBytes = this.resourceId ? this.resourceSize : Number(file?.size || 0);
     const maxBytes = Number(this.root.dataset.maxBytes || 0);
-    if (maxBytes > 0 && file.size > maxBytes) return this.showError('El archivo excede el máximo permitido.');
+    if (maxBytes > 0 && sizeBytes > maxBytes) return this.showError('El archivo excede el máximo permitido.');
 
     this.setBusy(true);
     this.showError('');
@@ -76,22 +81,30 @@ class FederationDropApp {
       this.setProgress('Creando orden segura…');
       const body = new URLSearchParams({
         email: String(this.email?.value || ''),
-        filename: file.name,
-        size_bytes: String(file.size),
-        mime_type: file.type || 'application/octet-stream',
         days: String(this.days?.value || ''),
         downloads: String(this.downloads?.value || ''),
         source_domain: String(this.root.dataset.source || '')
       });
-      const order = await this.request('api.php?action=create', { method: 'POST', body });
+      let action = 'create';
+      if (this.resourceId) {
+        action = 'create-public-resource';
+        body.set('resource_id', this.resourceId);
+      } else {
+        body.set('filename', file.name);
+        body.set('size_bytes', String(file.size));
+        body.set('mime_type', file.type || 'application/octet-stream');
+      }
+      const order = await this.request(`api.php?action=${action}`, { method: 'POST', body });
       this.currentDropId = order.drop_id;
       this.ownerToken = order.owner_token;
-      this.pendingFile = file;
+      this.pendingFile = this.resourceId ? null : file;
       sessionStorage.setItem(`federationdrop.owner.${order.drop_id}`, order.owner_token);
 
       this.showManage();
       await this.refreshStatus();
-      this.setProgress('Completa el pago en la ventana que se abrirá. El archivo todavía NO se ha subido.');
+      this.setProgress(this.resourceId
+        ? 'Completa el pago. Después FederationCloud traerá el recurso directamente entre nubes; no tendrás que volver a seleccionarlo.'
+        : 'Completa el pago en la ventana que se abrirá. El archivo todavía NO se ha subido.');
 
       const paymentWindow = window.open(order.checkout_url, '_blank', 'noopener,noreferrer');
       if (!paymentWindow) {
@@ -193,7 +206,7 @@ class FederationDropApp {
   renderStatus(status) {
     this.showManage();
     const label = {
-      pending_upload: 'Pagado · pendiente de subir archivo',
+      pending_upload: status.materializing ? 'Pagado · trayendo recurso entre nubes' : 'Pagado · pendiente de subir archivo',
       pending_payment: 'Pendiente de pago',
       active: 'Activo',
       expired: 'Vencido',
@@ -212,6 +225,11 @@ class FederationDropApp {
     } else if (status.payment_status !== 'paid' && status.checkout_url) {
       parts.push(`<p><a class="btn btn-info" target="_blank" rel="noopener noreferrer" href="${this.attr(status.checkout_url)}">Continuar al pago</a></p>`);
       parts.push('<p class="drop-muted small">El archivo no se subirá hasta que el pago sea confirmado.</p>');
+    } else if (status.materializing) {
+      parts.push('<div class="alert alert-info mb-3">Pago confirmado. FederationCloud está trayendo el recurso público directamente desde las copias disponibles y verificará el SHA-256 antes de activarlo.</div>');
+      if (status.source_resource_id) {
+        parts.push(`<div class="drop-muted small mb-3">Fuente: ${this.escape(status.source_resource_id)}</div>`);
+      }
     } else if (status.can_upload) {
       parts.push('<div class="form-group"><label for="dropPaidFile">Pago confirmado. Selecciona el archivo de la orden para subirlo.</label><input id="dropPaidFile" class="form-control-file" type="file"></div>');
       parts.push('<button id="dropPaidUploadButton" type="button" class="btn btn-info btn-sm">Subir archivo pagado</button>');

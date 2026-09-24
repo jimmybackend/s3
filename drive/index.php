@@ -44,8 +44,6 @@ $nodeLabel = $sourceDomain !== '' ? $sourceDomain : 'este nodo';
 
 $stylesVersion = is_file(__DIR__ . '/css/styles.css') ? (int)filemtime(__DIR__ . '/css/styles.css') : 1;
 $responsiveVersion = is_file(__DIR__ . '/css/responsive.css') ? (int)filemtime(__DIR__ . '/css/responsive.css') : 1;
-$estiloVersion = is_file(__DIR__ . '/js/estilo.js') ? (int)filemtime(__DIR__ . '/js/estilo.js') : 1;
-
 $h = static fn(string $value): string => htmlspecialchars(
     $value,
     ENT_QUOTES | ENT_SUBSTITUTE,
@@ -127,31 +125,6 @@ $h = static fn(string $value): string => htmlspecialchars(
       <li class="nav-item"><a class="nav-link" href="#acerca">Acerca de</a></li>
       <li class="nav-item"><a class="nav-link" href="<?= $h($contactUrl) ?>">Contacto</a></li>
 
-      <li class="nav-item dropdown ml-lg-2">
-        <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="temaMenu" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-          <i class="fas fa-palette mr-1"></i><span class="drive-design-label">Diseño</span>
-        </a>
-        <div class="dropdown-menu dropdown-menu-right" id="temaMenuPanel" aria-labelledby="temaMenu" style="min-width:280px;">
-          <h6 class="dropdown-header">Color neón</h6>
-          <button class="dropdown-item js-set-theme" data-theme="theme-neon-green">Verde neón</button>
-          <button class="dropdown-item js-set-theme" data-theme="theme-neon-blue">Azul neón</button>
-          <button class="dropdown-item js-set-theme" data-theme="theme-neon-red">Rojo neón</button>
-          <button class="dropdown-item js-set-theme" data-theme="theme-neon-yellow">Amarillo neón</button>
-          <div class="dropdown-divider"></div>
-          <h6 class="dropdown-header">Modo</h6>
-          <button class="dropdown-item js-set-mode" data-mode="theme-dark">Oscuro</button>
-          <button class="dropdown-item js-set-mode" data-mode="theme-light">Claro</button>
-          <div class="dropdown-divider"></div>
-          <h6 class="dropdown-header">Visión</h6>
-          <button class="dropdown-item js-set-vision" data-vision="vision-normal">Normal</button>
-          <button class="dropdown-item js-set-vision" data-vision="vision-myopia">Miopía</button>
-          <button class="dropdown-item js-set-vision" data-vision="vision-protanopia">Protanopia</button>
-          <button class="dropdown-item js-set-vision" data-vision="vision-deuteranopia">Deuteranopia</button>
-          <button class="dropdown-item js-set-vision" data-vision="vision-tritanopia">Tritanopia</button>
-          <div class="dropdown-divider"></div>
-          <button class="dropdown-item" id="btnToggleAscii"><i class="fas fa-terminal mr-1"></i> Alternar ASCII</button>
-        </div>
-      </li>
     </ul>
   </div>
 </nav>
@@ -336,6 +309,5 @@ $h = static fn(string $value): string => htmlspecialchars(
   </div>
 </footer>
 
-<script src="js/estilo.js?v=<?= $estiloVersion ?>"></script>
 </body>
 </html>

@@ -11,13 +11,14 @@ final class Request
         private array $server,
         private array $query,
         private array $post,
-        private array $files = []
+        private array $files = [],
+        private array $cookies = []
     ) {
     }
 
     public static function fromGlobals(): self
     {
-        return new self($_SERVER, $_GET, $_POST, $_FILES);
+        return new self($_SERVER, $_GET, $_POST, $_FILES, $_COOKIE);
     }
 
     public function method(): string
@@ -82,6 +83,15 @@ final class Request
     {
         $value = $this->query[$name] ?? $default;
         return is_scalar($value) ? trim((string)$value) : $default;
+    }
+
+    public function cookieString(string $name, string $default = ''): string
+    {
+        $value = $this->cookies[$name] ?? $default;
+        if (is_array($value) || is_object($value)) {
+            return $default;
+        }
+        return trim((string)$value);
     }
 
     public function hasQuery(string $name): bool

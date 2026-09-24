@@ -10,6 +10,7 @@ final class MediaProcessingService
 {
     private const VIDEO = ['mp4','webm','mov','avi','mkv','m4v','ogv','ogg'];
     private const AUDIO = ['mp3','wav','ogg','opus','m4a','aac','flac','amr','webm'];
+    public const MAX_SOURCE_BYTES = 8 * 1024 * 1024 * 1024;
 
     public function __construct(
         private FileRecordLocator $locator,
@@ -25,6 +26,10 @@ final class MediaProcessingService
 
         $source = $this->locator->requireReadableByKey($userId, $key);
         $ext = strtolower((string)pathinfo((string)($source['Nombre'] ?? $key), PATHINFO_EXTENSION));
+        $sourceBytes = max(0, (int)($source['Tamano'] ?? 0));
+        if ($sourceBytes > self::MAX_SOURCE_BYTES) {
+            throw new RuntimeException('El procesamiento multimedia admite archivos de hasta 8 GB.');
+        }
 
         $parts = max(1, (int)($input['parts'] ?? 1));
         $before = max(0, min(60, (int)($input['overlap_before'] ?? 10)));
@@ -64,6 +69,7 @@ final class MediaProcessingService
             'ok' => true,
             'job' => $job,
             'message' => 'Tarea multimedia enviada al nodo de procesamiento. El archivo original se conservará intacto.',
+            'max_source_bytes' => self::MAX_SOURCE_BYTES,
         ];
     }
 

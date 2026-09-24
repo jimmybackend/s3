@@ -79,6 +79,8 @@ foreach ($requiredTables as $table) {
 }
 
 schemaContract(str_contains($content, 'CREATE TABLE IF NOT EXISTS `S3SyncSeen`'), 'SQL canónico incluye staging S3SyncSeen usado por SyncRepository');
+schemaContract(str_contains($content, 'CREATE TABLE IF NOT EXISTS `FileS3`'), 'SQL canónico incluye FileS3 para registrar salidas generadas');
+schemaContract(str_contains($content, 'CREATE TABLE IF NOT EXISTS `DriveActivityEvents`'), 'SQL canónico incluye DriveActivityEvents para tareas y costos');
 schemaContract(str_contains($content, 'CREATE TABLE IF NOT EXISTS `MediaProcessingJobs`'), 'SQL canónico incluye la cola del worker multimedia');
 schemaContract(str_contains($content, 'CREATE TABLE IF NOT EXISTS `MediaWorkerNodeSessions`'), 'SQL canónico incluye sesiones EC2 del nodo multimedia');
 schemaContract(str_contains($content, 'UNIQUE KEY `uq_files3_user_path_key` (`user_id_`,`Ruta`,`Encriptado`)'), 'FileS3 usa identidad única por usuario+ruta+clave');

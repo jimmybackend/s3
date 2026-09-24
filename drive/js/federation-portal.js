@@ -149,6 +149,7 @@ class FederationPortalModule {
       const visibility = String(row.visibility || row.Visibility || '');
       const rights = String(row.rights || row.Rights || '');
       const originNodeId = String(row.origin_node_id || row.OriginNodeId || '');
+      const federationUrl = String(row.federation_url || row.FederationUrl || '');
       const locations = Array.isArray(row.locations) ? row.locations : [];
       const preferred = row.preferred_location && typeof row.preferred_location === 'object' ? row.preferred_location : null;
 
@@ -188,6 +189,14 @@ class FederationPortalModule {
           paid.innerHTML = '<i class="fas fa-clock mr-1"></i>FederationDrop temporal';
           actions.appendChild(paid);
         }
+      }
+      if (resourceId && federationUrl) {
+        const report = this.document.createElement('a');
+        report.className = 'btn btn-sm btn-outline-danger mb-2';
+        report.href = `${federationUrl.replace(/\/$/, '')}/report.php?type=resource&id=${encodeURIComponent(resourceId)}`;
+        report.rel = 'nofollow noopener noreferrer';
+        report.innerHTML = '<i class="fas fa-flag mr-1"></i>Reportar abuso';
+        actions.appendChild(report);
       }
       if (originNodeId && this.localNodeId && originNodeId === this.localNodeId && rights === 'copy_allowed') {
         const replicate = this.document.createElement('button');

@@ -1,9 +1,9 @@
 {
   "summary": {
-    "php_total": 429,
-    "php_class_modules": 255,
+    "php_total": 432,
+    "php_class_modules": 257,
     "php_needs_migration": 0,
-    "php_tests": 36,
+    "php_tests": 37,
     "js_total": 48,
     "js_class_modules": 48,
     "js_needs_migration": 0,
@@ -297,7 +297,7 @@
     },
     {
       "path": "drive/bin/media_processing_worker.php",
-      "lines": 29,
+      "lines": 31,
       "kind": "thin cli entrypoint",
       "classes": 0,
       "functions": [],
@@ -1723,7 +1723,7 @@
     },
     {
       "path": "drive/s3.php",
-      "lines": 2339,
+      "lines": 2357,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -1848,7 +1848,7 @@
     },
     {
       "path": "drive/src/Activity/AwsUnitPriceCatalog.php",
-      "lines": 81,
+      "lines": 89,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -1893,7 +1893,7 @@
     },
     {
       "path": "drive/src/Activity/TranscriptionReconciler.php",
-      "lines": 315,
+      "lines": 476,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -2482,7 +2482,7 @@
     },
     {
       "path": "drive/src/Aws/TranscriptionFileService.php",
-      "lines": 477,
+      "lines": 712,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -2512,7 +2512,7 @@
     },
     {
       "path": "drive/src/Console/MediaProcessingWorkerCommand.php",
-      "lines": 420,
+      "lines": 425,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -3727,7 +3727,7 @@
     },
     {
       "path": "drive/src/Http/Controller/BackgroundTaskController.php",
-      "lines": 818,
+      "lines": 821,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -4119,7 +4119,7 @@
     },
     {
       "path": "drive/src/Http/Controller/MediaProcessingController.php",
-      "lines": 30,
+      "lines": 48,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -4329,7 +4329,7 @@
     },
     {
       "path": "drive/src/Http/Controller/TranscriptionController.php",
-      "lines": 215,
+      "lines": 224,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -4485,7 +4485,7 @@
     },
     {
       "path": "drive/src/Media/MediaProcessingJobRepository.php",
-      "lines": 325,
+      "lines": 340,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -4500,13 +4500,43 @@
     },
     {
       "path": "drive/src/Media/MediaProcessingService.php",
-      "lines": 88,
+      "lines": 99,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
       "session": false,
       "superglobals": [],
       "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Media/MediaWorkerNodeService.php",
+      "lines": 232,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Media/MediaWorkerNodeSessionRepository.php",
+      "lines": 202,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": true,
       "s3": false,
       "bootstrap": false,
       "html": false,
@@ -5597,7 +5627,7 @@
     },
     {
       "path": "drive/tests/database_schema_contract_smoke.php",
-      "lines": 103,
+      "lines": 104,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -5918,7 +5948,7 @@
     },
     {
       "path": "drive/tests/media_processing_contract_smoke.php",
-      "lines": 34,
+      "lines": 52,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -6085,6 +6115,23 @@
       "session": false,
       "superglobals": [],
       "db": true,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/tests/transcribe_s3_recovery_contract_smoke.php",
+      "lines": 36,
+      "kind": "test script",
+      "classes": 0,
+      "functions": [
+        "transcribeRecoveryContract"
+      ],
+      "session": false,
+      "superglobals": [],
+      "db": false,
       "s3": false,
       "bootstrap": false,
       "html": false,
@@ -6715,14 +6762,16 @@
     },
     {
       "path": "drive/js/background-tasks.js",
-      "lines": 631,
+      "lines": 684,
       "kind": "class/module",
       "classes": [
         "BackgroundTaskCenter"
       ],
       "functions": [],
       "window_assign": [
-        "ARCADECLOUD_UNIFIED_TASK_CENTER"
+        "ARCADECLOUD_UNIFIED_TASK_CENTER",
+        "DRIVE_INITIAL_ROUTE",
+        "rutaActual"
       ],
       "window_func": [],
       "top_vars": [],
@@ -7014,7 +7063,7 @@
     },
     {
       "path": "drive/js/media-processing.js",
-      "lines": 232,
+      "lines": 378,
       "kind": "class/module",
       "classes": [
         "MediaProcessingModule"

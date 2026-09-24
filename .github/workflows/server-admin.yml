@@ -101,6 +101,9 @@ jobs:
           grep -q "ARCADECLOUD_FEDERATION_REPLICA_ORIGIN_URL" drive/src/Admin/ManagedRuntimeEnvironment.php
           grep -q "ARCADECLOUD_FEDERATION_REPLICA_ROLE" drive/src/Admin/ManagedRuntimeEnvironment.php
           grep -q "ARCADECLOUD_FEDERATION_REPLICA_SCOPE" drive/src/Admin/ManagedRuntimeEnvironment.php
+          grep -q "ARCADECLOUD_DROP_WEBHOOK_SECRET" drive/src/Admin/ManagedRuntimeEnvironment.php
+          grep -q "ARCADECLOUD_DROP_WEBHOOK_SECRET" drive/bin/arcadecloud-drive-admin-helper.php
+          grep -q "managed_federation_drop_settings" drive/bin/arcadecloud-drive-admin-helper.php
           grep -q "managed_replica_settings" drive/bin/arcadecloud-drive-admin-helper.php
           grep -q "DB_HOST" drive/src/Admin/ManagedRuntimeEnvironment.php
           grep -q "DB_PASSWORD" drive/src/Admin/ManagedRuntimeEnvironment.php

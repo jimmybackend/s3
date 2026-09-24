@@ -34,7 +34,7 @@ fi
 id "$RUN_USER" >/dev/null 2>&1 || { echo "Usuario inexistente: $RUN_USER" >&2; exit 2; }
 RUN_GROUP="$(id -gn "$RUN_USER")"
 
-for bin in php ffmpeg ffprobe; do
+for bin in php ffmpeg ffprobe lame; do
   if ! command -v "${bin}" >/dev/null 2>&1; then
     echo "Falta ${bin}. Instálalo en el nodo antes de activar el worker." >&2
     exit 1
@@ -107,6 +107,7 @@ systemctl --no-pager --full status arcadecloud-media-worker.service || true
 
 echo
 echo "Worker multimedia instalado."
+echo "Dependencias multimedia: ffmpeg, ffprobe y lame disponibles."
 echo "IMPORTANTE: este nodo debe tener acceso privado a MariaDB y permisos IAM S3 GetObject/PutObject sobre el bucket del Drive."
 echo "Para autoapagado de su propia EC2 necesita ec2:DescribeInstances y ec2:StopInstances."
 echo "Runtime administrado: ${RUNTIME_ENV}"

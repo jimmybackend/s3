@@ -11,7 +11,8 @@ Operaciones iniciales:
 - dividir audio en 2 a 50 partes;
 - conservar siempre el archivo original;
 - guardar todos los resultados en la misma carpeta lógica del origen;
-- usar por defecto 10 segundos antes y 10 segundos después de cada frontera de división.
+- usar por defecto 10 segundos antes y 10 segundos después de cada frontera de división;
+- aceptar archivos pequeños sin tamaño mínimo y limitar cada origen a 8 GB.
 
 Ejemplo:
 
@@ -23,6 +24,8 @@ audiencia.mp3
 ```
 
 El solapamiento evita perder palabras durante una transcripción. Por diseño, los segmentos vecinos comparten hasta 20 segundos alrededor de la frontera: 10 segundos por cada lado.
+
+La interfaz usa un modal Bootstrap del Drive para elegir entre 2 y 50 partes. Ya no depende de `window.prompt`, de modo que funciona también en navegadores móviles/WebView donde esos diálogos pueden bloquearse.
 
 ## Arquitectura
 
@@ -108,7 +111,7 @@ Por defecto:
 /var/lib/arcadecloud-media/tmp
 ```
 
-Antes de descargar un objeto el worker exige aproximadamente 2.25 veces el tamaño del archivo como espacio libre cuando el tamaño es conocido. Los temporales se eliminan al terminar o fallar.
+Antes de descargar un objeto el worker consulta `HeadObject` en S3, rechaza cualquier origen real de más de 8 GB y exige aproximadamente 2.25 veces el tamaño del archivo como espacio libre. No existe tamaño mínimo. Los temporales se eliminan al terminar o fallar.
 
 ## Instalación del nodo
 
@@ -163,3 +166,15 @@ Si un destino ya existe, el trabajo falla antes de sobrescribirlo. El objeto fue
 Dividir video/audio usa `-c copy`: no recodifica y mantiene la calidad original. Los puntos reales pueden ajustarse a keyframes según el contenedor/códec.
 
 Extraer MP3 usa `libmp3lame` a 128 kbps, suficiente como formato de trabajo para voz y transcripción.
+
+
+## Avisos al superadmin
+
+El worker clasifica la ausencia de `ffmpeg`, `ffprobe` o del codificador MP3 requerido como `[DEPENDENCY_MISSING]`. El error queda en `MediaProcessingJobs` y el Centro de Tareas.
+
+Además, cuando entra un superadmin al Drive:
+
+- si hubo una falla reciente por dependencias, aparece un aviso para instalar FFmpeg/FFprobe y reiniciar `arcadecloud-media-worker.service`;
+- si una tarea permanece en `queued` más de 2 minutos sin que ningún worker la reclame, aparece un aviso para comprobar que el nodo esté encendido y el servicio activo.
+
+Esto cubre tanto un worker incompleto como el caso en que todavía no se ha instalado/arrancado el nodo multimedia.

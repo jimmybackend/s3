@@ -26,11 +26,11 @@ indexDropOk(
     'index público usa el badge oficial FederationDrop'
 );
 indexDropOk(
-    str_contains($source, "$_SERVER['HTTP_HOST']"),
+    str_contains($source, '$_SERVER[\'HTTP_HOST\']'),
     'index atribuye el dominio del nodo visitante'
 );
 indexDropOk(
-    str_contains($source, "rawurlencode($sourceDomain)"),
+    str_contains($source, 'rawurlencode($sourceDomain)'),
     'source del nodo se codifica antes de entrar en la URL'
 );
 indexDropOk(

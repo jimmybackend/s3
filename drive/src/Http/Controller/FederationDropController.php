@@ -80,6 +80,29 @@ final class FederationDropController
                 ), 201);
             }
 
+            if ($action === 'ingress-candidates' && $this->request->method() === 'GET') {
+                JsonResponse::send($service->ingressCandidates(
+                    $this->request->queryString('drop_id'),
+                    $this->request->queryString('owner_token')
+                ));
+            }
+
+            if ($action === 'ingress-authorize' && $this->request->method() === 'POST') {
+                JsonResponse::send($service->authorizeIngress(
+                    $this->request->postString('drop_id'),
+                    $this->request->postString('owner_token'),
+                    $this->request->postString('ingress_node_id')
+                ));
+            }
+
+            if ($action === 'ingress-register' && $this->request->method() === 'POST') {
+                JsonResponse::send($service->registerIngressUploaded(
+                    $this->request->postString('drop_id'),
+                    $this->request->postString('owner_token'),
+                    $this->request->postString('ingress_id')
+                ));
+            }
+
             if ($action === 'upload-authorize' && $this->request->method() === 'POST') {
                 JsonResponse::send($service->authorizeUpload(
                     $this->request->postString('drop_id'),

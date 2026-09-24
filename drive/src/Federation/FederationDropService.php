@@ -315,6 +315,30 @@ final class FederationDropService
             (string)$row['S3Key'],
             (int)$row['ExpectedSizeBytes']
         );
+        $contentId = $this->storage->contentId(
+            (string)$row['S3Key'],
+            (int)$verified['size_bytes']
+        );
+        $moderation = new FederationModerationService($this->app);
+        try {
+            $moderation->assertAllowed($contentId);
+        } catch (FederationException $e) {
+            try {
+                $this->storage->delete((string)$row['S3Key']);
+                $this->repository->markDeleted($dropId);
+                $this->repository->setPlacementStatus($dropId, 'deleted');
+            } catch (\Throwable $cleanupError) {
+                error_log('[FederationDrop blocked upload cleanup] ' . $cleanupError->getMessage());
+            }
+            throw $e;
+        }
+        $moderation->rememberFingerprint(
+            $contentId,
+            'drop',
+            $dropId,
+            (string)$row['S3Key'],
+            (string)$row['CustodyNodeId']
+        );
         $updated = $this->repository->markUploaded(
             $dropId,
             (int)$verified['size_bytes'],
@@ -353,6 +377,9 @@ final class FederationDropService
 
     public function downloadUrl(string $dropId, string $publicToken): string
     {
+        $moderation = new FederationModerationService($this->app);
+        $contentId = (new FederationModerationRepository($this->app->db()))->contentIdForDrop($dropId);
+        if ($contentId !== null) $moderation->assertAllowed($contentId);
         $row = $this->repository->claimDownload($dropId, hash('sha256', trim($publicToken)));
         return $this->storage->presignedDownload((string)$row['S3Key'], (string)$row['OriginalName']);
     }
@@ -492,6 +519,8 @@ final class FederationDropService
                         $urls[] = (string)$source['url'];
                     }
                 }
+                $moderation = new FederationModerationService($this->app);
+                $moderation->assertAllowed((string)$row['SourceContentId']);
                 $download = (new FederationMultiSourceDownloader())->download(
                     $urls,
                     (int)$row['ExpectedSizeBytes'],
@@ -508,6 +537,13 @@ final class FederationDropService
                         'federation-content-id' => substr((string)$row['SourceContentId'], 7),
                         'federation-sources-used' => (string)max(1, (int)($download['sources_used'] ?? 1)),
                     ]
+                );
+                $moderation->rememberFingerprint(
+                    (string)$row['SourceContentId'],
+                    'drop',
+                    (string)$row['DropId'],
+                    (string)$row['S3Key'],
+                    (string)$row['CustodyNodeId']
                 );
                 $updated = $this->repository->markUploaded(
                     (string)$row['DropId'],

@@ -296,7 +296,8 @@ final class TranscriptionFileService
         string $jobName,
         string $requestedKey,
         string $expectedAwsJsonKey = '',
-        array $subtitleFormats = []
+        array $subtitleFormats = [],
+        string $notBeforeUtc = ''
     ): ?array {
         $source = $this->locator->requireReadableByKey($userId, $requestedKey);
         $sourceKey = (string)$source['_key'];
@@ -315,7 +316,7 @@ final class TranscriptionFileService
         $jsonKey = '';
         foreach ($candidateKeys as $candidate) {
             $object = $this->readS3ObjectIfExists($candidate);
-            if ($object !== null) {
+            if ($object !== null && $this->isFreshObject($object, $notBeforeUtc)) {
                 $jsonObject = $object;
                 $jsonKey = $candidate;
                 break;
@@ -374,9 +375,15 @@ final class TranscriptionFileService
             $object = $this->readS3ObjectIfExists($canonicalKey);
             $foundKey = $canonicalKey;
 
+            if ($object !== null && !$this->isFreshObject($object, $notBeforeUtc)) {
+                $object = null;
+            }
             if ($object === null && $rawKey !== '') {
                 $object = $this->readS3ObjectIfExists($rawKey);
                 $foundKey = $rawKey;
+                if ($object !== null && !$this->isFreshObject($object, $notBeforeUtc)) {
+                    $object = null;
+                }
             }
             if ($object === null) continue;
 
@@ -482,9 +489,13 @@ final class TranscriptionFileService
             $body = (string)$obj['Body'];
             if ($body === '') return null;
 
+            $lastModified = $head['LastModified'] ?? null;
             return [
                 'body' => $body,
                 'size' => max(0, (int)($head['ContentLength'] ?? strlen($body))),
+                'last_modified' => $lastModified instanceof \DateTimeInterface
+                    ? $lastModified->getTimestamp()
+                    : 0,
             ];
         } catch (AwsException $e) {
             if ($e->getStatusCode() === 404
@@ -493,6 +504,19 @@ final class TranscriptionFileService
             }
             throw $e;
         }
+    }
+
+    private function isFreshObject(array $object, string $notBeforeUtc): bool
+    {
+        $notBeforeUtc = trim($notBeforeUtc);
+        if ($notBeforeUtc === '') return true;
+
+        $created = strtotime($notBeforeUtc . ' UTC');
+        $modified = (int)($object['last_modified'] ?? 0);
+        if ($created === false || $modified <= 0) return true;
+
+        // Tolerancia de reloj de un minuto entre DB/AWS.
+        return $modified >= ($created - 60);
     }
 
     private function storeVariant(

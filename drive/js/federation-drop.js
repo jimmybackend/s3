@@ -369,6 +369,7 @@ class FederationDropApp {
       parts.push(`<div class="mb-2"><strong>Descarga pública</strong><div class="drop-link"><a rel="noopener noreferrer" href="${this.attr(status.share_url)}">${this.escape(status.share_url)}</a></div></div>`);
       parts.push(`<div class="mb-2"><strong>ArcadeLink</strong><div class="drop-link"><a rel="noopener noreferrer" href="${this.attr(status.arcadelink_url)}">${this.escape(status.arcadelink_url)}</a></div></div>`);
       parts.push(`<div class="drop-muted small mb-3">Vence: ${this.escape(status.expires_at || '')}</div>`);
+      parts.push(`<div class="mt-3"><a class="btn btn-outline-danger btn-sm" rel="nofollow" href="../federationcloud/report.php?type=drop&id=${encodeURIComponent(status.drop_id)}">Reportar abuso o contenido dañino</a></div>`);
     } else if (status.payment_status !== 'paid' && status.checkout_url) {
       parts.push(`<p><a class="btn btn-info" target="_blank" rel="noopener noreferrer" href="${this.attr(status.checkout_url)}">Continuar al pago</a></p>`);
       parts.push('<p class="drop-muted small">El archivo no se subirá hasta que el pago sea confirmado.</p>');

@@ -63,6 +63,7 @@ $requiredTables = [
     'FederationIngressQueue',
     'FederationDrops',
     'FederationDropPaymentEvents',
+    'FederationDropIngressObjects',
     'FederationCommercialProviders',
     'FederationDropPlacements',
 ];

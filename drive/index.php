@@ -66,17 +66,21 @@ $h = static fn(string $value): string => htmlspecialchars(
   <link rel="stylesheet" href="css/responsive.css?v=<?= $responsiveVersion ?>">
 
   <style>
-    /* Sólo composición de portada. Colores, botones, cards y temas vienen de styles.css. */
-    .public-home { max-width: 1180px; margin: 0 auto; padding: 2rem 1rem 4rem; }
-    .public-hero { padding: 4rem 0 2rem; }
-    .public-hero h1 { font-size: clamp(2.2rem, 5vw, 4.5rem); line-height: 1.03; font-weight: 800; }
-    .public-hero .lead { max-width: 760px; }
-    .public-actions { display: flex; flex-wrap: wrap; gap: .65rem; }
-    .public-section { margin-top: 2.2rem; }
-    .public-section-title { margin-bottom: .35rem; }
-    .aws-service-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .75rem; }
-    .aws-service-item { min-height: 118px; }
-    .aws-service-item i { font-size: 1.35rem; }
+    /* Sólo composición de portada. La identidad visual sigue viniendo de styles.css/responsive.css. */
+    .public-home { max-width: 1180px; margin: 0 auto; padding: 1.25rem 1rem 4rem; }
+    .public-intro { padding: 2.2rem 0 1rem; }
+    .public-intro h1 { font-size: clamp(2rem, 4vw, 3.4rem); font-weight: 800; margin-bottom: .35rem; }
+    .public-muted { color: var(--text-soft); }
+    .public-section { margin-top: 1.5rem; }
+    .public-carousel { overflow: hidden; border: 1px solid var(--border-soft); border-radius: 14px; background: var(--surface); }
+    .public-carousel .carousel-item { background: #06111f; }
+    .public-carousel img { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; }
+    .public-carousel .carousel-caption {
+      left: 5%; right: auto; bottom: 5%; text-align: left;
+      padding: .65rem; border-radius: .6rem;
+      background: rgba(0,0,0,.42); backdrop-filter: blur(4px);
+    }
+    .public-carousel .carousel-caption h2 { font-size: 1.15rem; margin-bottom: .5rem; }
     .public-link-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .75rem; }
     .public-link-grid .card { height: 100%; }
     .public-link-grid .btn { margin-top: auto; }
@@ -86,18 +90,17 @@ $h = static fn(string $value): string => htmlspecialchars(
     .public-contact-list span { display: flex; align-items: center; gap: .7rem; }
     .public-login-card { max-width: 460px; margin-left: auto; }
     .public-kicker { color: var(--accent); font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
-    .public-muted { color: var(--text-soft); }
     @media (max-width: 991.98px) {
-      .public-hero { padding-top: 2.5rem; }
-      .aws-service-grid,
       .public-link-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .public-contact-grid { grid-template-columns: 1fr; }
       .public-login-card { max-width: none; margin-left: 0; }
+      .public-carousel .carousel-caption { display: block !important; left: 3%; bottom: 3%; }
     }
     @media (max-width: 575.98px) {
-      .aws-service-grid,
       .public-link-grid { grid-template-columns: 1fr; }
       .public-home { padding-left: .65rem; padding-right: .65rem; }
+      .public-carousel .carousel-caption h2 { display: none; }
+      .public-carousel .carousel-caption { padding: .35rem; }
     }
   </style>
 
@@ -119,7 +122,7 @@ $h = static fn(string $value): string => htmlspecialchars(
 
   <div class="collapse navbar-collapse" id="publicNav">
     <ul class="navbar-nav ml-auto align-items-lg-center">
-      <li class="nav-item"><a class="nav-link" href="#aws">AWS</a></li>
+      <li class="nav-item"><a class="nav-link" href="#inicio">Inicio</a></li>
       <li class="nav-item"><a class="nav-link" href="#accesos">Accesos</a></li>
       <li class="nav-item"><a class="nav-link" href="#login">Login</a></li>
       <li class="nav-item"><a class="nav-link" href="#acerca">Acerca de</a></li>
@@ -130,78 +133,63 @@ $h = static fn(string $value): string => htmlspecialchars(
 </nav>
 
 <main class="public-home">
-  <section id="inicio" class="public-hero">
-    <div class="public-kicker mb-2">ArcadeCloud Drive + FederationCloud</div>
-    <h1>Archivos en Amazon S3 con herramientas AWS integradas.</h1>
-    <p class="lead public-muted">
-      Guarda, organiza, procesa y comparte archivos desde la misma aplicación.
-    </p>
-    <div class="public-actions mt-4">
-      <a class="btn btn-primary" href="#login"><i class="fas fa-sign-in-alt mr-1"></i> Entrar al Drive</a>
-      <a class="btn btn-outline-primary" href="<?= $h($arcadeLinkUrl) ?>"><i class="fas fa-link mr-1"></i> ArcadeLink</a>
-      <a class="btn btn-outline-primary" href="<?= $h($federationDropUrl) ?>"><i class="fas fa-cloud-upload-alt mr-1"></i> FederationDrop</a>
-    </div>
+  <section id="inicio" class="public-intro">
+    <div class="public-kicker mb-2">ArcadeCloud Drive</div>
+    <h1>Amazon S3 · servicios AWS · transferencia federada</h1>
   </section>
 
-  <section id="aws" class="public-section">
-    <div class="card p-3 shadow-sm">
-      <div class="card-body">
-        <div class="public-kicker mb-2"><i class="fab fa-aws mr-1"></i> Servicios AWS</div>
-        <h2 class="public-section-title h3">Una de las capacidades que distingue a ArcadeCloud.</h2>
-        <p class="public-muted mb-4">
-          Los archivos almacenados en S3 pueden utilizar directamente servicios administrados de AWS desde el Drive.
-        </p>
+  <section class="public-section">
+    <div id="arcadeHomeCarousel" class="carousel slide public-carousel shadow-sm" data-ride="carousel" data-interval="6500">
+      <ol class="carousel-indicators">
+        <li data-target="#arcadeHomeCarousel" data-slide-to="0" class="active"></li>
+        <li data-target="#arcadeHomeCarousel" data-slide-to="1"></li>
+        <li data-target="#arcadeHomeCarousel" data-slide-to="2"></li>
+      </ol>
 
-        <div class="aws-service-grid">
-          <div class="card aws-service-item p-3">
-            <i class="fas fa-file-alt mb-2"></i>
-            <strong>Textract</strong>
-            <small class="text-muted">Extraer texto</small>
-          </div>
-          <div class="card aws-service-item p-3">
-            <i class="fas fa-microphone mb-2"></i>
-            <strong>Transcribe</strong>
-            <small class="text-muted">Audio y video a texto</small>
-          </div>
-          <div class="card aws-service-item p-3">
-            <i class="fas fa-volume-up mb-2"></i>
-            <strong>Polly</strong>
-            <small class="text-muted">Texto a voz</small>
-          </div>
-          <div class="card aws-service-item p-3">
-            <i class="fas fa-language mb-2"></i>
-            <strong>Translate</strong>
-            <small class="text-muted">Traducción</small>
-          </div>
-          <div class="card aws-service-item p-3">
-            <i class="fas fa-image mb-2"></i>
-            <strong>Rekognition</strong>
-            <small class="text-muted">Análisis de imágenes</small>
-          </div>
-          <div class="card aws-service-item p-3">
-            <i class="fas fa-brain mb-2"></i>
-            <strong>Comprehend</strong>
-            <small class="text-muted">Análisis de texto</small>
+      <div class="carousel-inner">
+        <div class="carousel-item active">
+          <img src="images/home/slide-aws.svg" alt="Amazon S3 y servicios AWS integrados en ArcadeCloud Drive">
+          <div class="carousel-caption">
+            <h2>Amazon S3 + AWS</h2>
+            <a class="btn btn-primary btn-sm" href="#login">Entrar al Drive</a>
           </div>
         </div>
 
-        <a class="btn btn-primary mt-4" href="#login">
-          <i class="fas fa-folder-open mr-1"></i> Entrar y trabajar con archivos
-        </a>
+        <div class="carousel-item">
+          <img src="images/home/slide-federation.svg" alt="Transferencia federada entre nodos descentralizados">
+          <div class="carousel-caption">
+            <h2>FederationCloud</h2>
+            <a class="btn btn-primary btn-sm" href="<?= $h($arcadeLinkUrl) ?>">Abrir FederationCloud</a>
+          </div>
+        </div>
+
+        <div class="carousel-item">
+          <img src="images/home/slide-drop.svg" alt="FederationDrop para subir, pagar y compartir temporalmente">
+          <div class="carousel-caption">
+            <h2>FederationDrop</h2>
+            <a class="btn btn-primary btn-sm" href="<?= $h($federationDropUrl) ?>">Ir a FederationDrop</a>
+          </div>
+        </div>
       </div>
+
+      <a class="carousel-control-prev" href="#arcadeHomeCarousel" role="button" data-slide="prev" aria-label="Anterior">
+        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+      </a>
+      <a class="carousel-control-next" href="#arcadeHomeCarousel" role="button" data-slide="next" aria-label="Siguiente">
+        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+      </a>
     </div>
   </section>
 
   <section id="accesos" class="public-section">
-    <div class="public-kicker mb-2">Accesos directos</div>
-    <h2 class="h3 mb-3">Ve a la función que necesitas.</h2>
+    <div class="public-kicker mb-3">Accesos directos</div>
 
     <div class="public-link-grid">
       <div class="card p-3 d-flex flex-column">
         <div class="card-body d-flex flex-column p-2">
           <i class="fas fa-folder-open mb-2"></i>
           <h3 class="h5">Drive</h3>
-          <p class="small text-muted">Para usuarios registrados del nodo.</p>
+
           <a class="btn btn-primary btn-sm" href="#login">Login</a>
         </div>
       </div>
@@ -210,7 +198,7 @@ $h = static fn(string $value): string => htmlspecialchars(
         <div class="card-body d-flex flex-column p-2">
           <i class="fas fa-link mb-2"></i>
           <h3 class="h5">ArcadeLink</h3>
-          <p class="small text-muted">Abrir o validar un enlace portable.</p>
+
           <a class="btn btn-outline-primary btn-sm" href="<?= $h($arcadeLinkUrl) ?>">Abrir</a>
         </div>
       </div>
@@ -219,7 +207,7 @@ $h = static fn(string $value): string => htmlspecialchars(
         <div class="card-body d-flex flex-column p-2">
           <i class="fas fa-cloud-upload-alt mb-2"></i>
           <h3 class="h5">FederationDrop</h3>
-          <p class="small text-muted">Transferencia temporal sin cuenta del Drive.</p>
+
           <a class="btn btn-outline-primary btn-sm" href="<?= $h($federationDropUrl) ?>">Subir / pagar</a>
         </div>
       </div>
@@ -228,7 +216,7 @@ $h = static fn(string $value): string => htmlspecialchars(
         <div class="card-body d-flex flex-column p-2">
           <i class="fab fa-github mb-2"></i>
           <h3 class="h5">Repositorio</h3>
-          <p class="small text-muted">Código y documentación del proyecto.</p>
+
           <a class="btn btn-outline-primary btn-sm" href="<?= $h($githubUrl) ?>" rel="noopener noreferrer">GitHub</a>
         </div>
       </div>
@@ -240,7 +228,6 @@ $h = static fn(string $value): string => htmlspecialchars(
       <div class="col-lg-6 mb-3 mb-lg-0">
         <div class="public-kicker mb-2">Acceso al nodo</div>
         <h2 class="h3">Entrar a <?= $h($nodeLabel) ?></h2>
-        <p class="public-muted mb-0">Usa las credenciales registradas en este nodo.</p>
       </div>
 
       <div class="col-lg-6">
@@ -271,9 +258,7 @@ $h = static fn(string $value): string => htmlspecialchars(
         <div class="card-body">
           <div class="public-kicker mb-2">Acerca de</div>
           <h2 class="h4">ArcadeCloud Drive</h2>
-          <p class="public-muted">
-            Proyecto de <strong>jimmybackend</strong> para Amazon S3, servicios AWS y transferencia federada.
-          </p>
+          <p class="public-muted">Proyecto de <strong>jimmybackend</strong>.</p>
           <a class="btn btn-outline-primary btn-sm" href="<?= $h($githubUrl) ?>" rel="noopener noreferrer">
             <i class="fab fa-github mr-1"></i> Ver proyecto
           </a>
@@ -305,7 +290,7 @@ $h = static fn(string $value): string => htmlspecialchars(
 
 <footer class="container-fluid border-top py-3">
   <div class="container">
-    <small class="text-muted">ArcadeCloud Drive · jimmybackend · Amazon S3 + servicios AWS + FederationCloud</small>
+    <small class="text-muted">ArcadeCloud Drive · jimmybackend</small>
   </div>
 </footer>
 

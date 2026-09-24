@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+<title id="title">FederationCloud entre nodos descentralizados</title>
+<desc id="desc">Varios nodos independientes comparten recursos firmados. drive.esforzados.com aparece como portal principal, no como servidor obligatorio.</desc>
+<defs>
+  <radialGradient id="bg"><stop stop-color="#0b2b43"/><stop offset="1" stop-color="#06111f"/></radialGradient>
+  <filter id="glow"><feGaussianBlur stdDeviation="7" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+</defs>
+<rect width="1600" height="900" fill="url(#bg)"/>
+<g stroke="#1ed6ff" stroke-width="4" opacity=".7">
+  <path d="M250 230L560 420L300 675L770 700L1030 510L1330 690L1280 240L920 250L560 420L1030 510L1280 240"/>
+  <path d="M250 230L920 250M300 675L1030 510M560 420L1330 690"/>
+</g>
+<g fill="#0e2439" stroke="#45e7ff" stroke-width="4" filter="url(#glow)" font-family="Arial,sans-serif">
+  <g transform="translate(160 150)"><rect width="190" height="135" rx="22"/><circle cx="95" cy="48" r="22" fill="#3eff9a"/><text x="95" y="100" text-anchor="middle" fill="#fff" font-size="25">Nodo A</text></g>
+  <g transform="translate(205 610)"><rect width="190" height="135" rx="22"/><circle cx="95" cy="48" r="22" fill="#3eff9a"/><text x="95" y="100" text-anchor="middle" fill="#fff" font-size="25">Nodo B</text></g>
+  <g transform="translate(1180 150)"><rect width="190" height="135" rx="22"/><circle cx="95" cy="48" r="22" fill="#3eff9a"/><text x="95" y="100" text-anchor="middle" fill="#fff" font-size="25">Nodo C</text></g>
+  <g transform="translate(1220 620)"><rect width="190" height="135" rx="22"/><circle cx="95" cy="48" r="22" fill="#3eff9a"/><text x="95" y="100" text-anchor="middle" fill="#fff" font-size="25">Nodo D</text></g>
+</g>
+
+<g transform="translate(520 340)" filter="url(#glow)">
+  <rect width="560" height="190" rx="36" fill="#0b1e31" stroke="#57ff9e" stroke-width="5"/>
+  <text x="280" y="72" text-anchor="middle" fill="#fff" font-family="Arial,sans-serif" font-size="42" font-weight="700">drive.esforzados.com</text>
+  <text x="280" y="118" text-anchor="middle" fill="#71ffc0" font-family="Arial,sans-serif" font-size="25">Portal principal · catálogo · comercio</text>
+  <text x="280" y="158" text-anchor="middle" fill="#9fb7c8" font-family="Arial,sans-serif" font-size="20">La red sigue siendo descentralizada</text>
+</g>
+
+<text x="80" y="95" fill="#f5fbff" font-family="Arial,sans-serif" font-size="58" font-weight="700">Transferencia federada</text>
+<text x="82" y="145" fill="#a9bfd0" font-family="Arial,sans-serif" font-size="27">ArcadeLink y FederationCloud conectan nodos sin compartir credenciales internas.</text>
+<g font-family="Arial,sans-serif" font-size="22" fill="#d7e8f2">
+  <text x="615" y="615">firmas · catálogo · réplicas · failover</text>
+</g>
+</svg>

@@ -15,6 +15,19 @@ final class ArcadeCloudDriveUpdater
         $config = $this->readConfig();
         $action = strtolower(trim((string)($argv[1] ?? 'check')));
 
+        if ($action === 'probe') {
+            fwrite(
+                STDOUT,
+                json_encode([
+                    'ok' => true,
+                    'action' => 'probe',
+                    'euid' => posix_geteuid(),
+                    'php_user' => (string)($config['php_user'] ?? ''),
+                ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . "\n"
+            );
+            exit(0);
+        }
+
         if ($action === 'check') {
             fwrite(
                 STDOUT,

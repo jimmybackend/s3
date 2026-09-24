@@ -18,11 +18,11 @@ function indexDropOk(bool $condition, string $message): void
 }
 
 indexDropOk(
-    str_contains($source, "https://drive.esforzados.com/federationdrop/"),
-    'index público apunta al portal canónico FederationDrop'
+    str_contains($source, "$federationDropPortal = $canonicalHome . 'federationdrop/'"),
+    'index público construye FederationDrop desde el portal canónico'
 );
 indexDropOk(
-    str_contains($source, "https://drive.esforzados.com/federationdrop/badge.svg"),
+    str_contains($source, "$federationDropBadge = $canonicalHome . 'federationdrop/badge.svg'"),
     'index público usa el badge oficial FederationDrop'
 );
 indexDropOk(

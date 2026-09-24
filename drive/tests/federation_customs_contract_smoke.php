@@ -21,6 +21,7 @@ $providerController = (string)file_get_contents($root . '/src/Http/Controller/Fe
 $providerService = (string)file_get_contents($root . '/src/Federation/FederationProviderAuthorizationService.php');
 $providerRepo = (string)file_get_contents($root . '/src/Federation/FederationProviderAuthorizationRepository.php');
 $sync = (string)file_get_contents($root . '/bin/federation_sync.php');
+$syncCycle = (string)file_get_contents($root . '/src/Federation/FederationSyncCycleService.php');
 $syncInstaller = (string)file_get_contents($root . '/bin/install_federation_sync_timer.sh');
 $endpointRefresh = (string)file_get_contents($root . '/bin/federation_endpoint_refresh.php');
 $migrate = (string)file_get_contents($root . '/bin/federation_catalog_migrate.php');
@@ -42,10 +43,10 @@ customsOk(str_contains($customs, "'shared_backend_authorization'"), 'Aduana sepa
 customsOk(str_contains($customs, "'requires_superadmin' => false"), 'presencia independiente no requiere superadmin');
 customsOk(str_contains($customs, "'requires_superadmin' => true"), 'backend compartido requiere superadmin');
 customsOk(str_contains($customs, 'processNext()'), 'Aduana expone procesamiento unitario');
-customsOk(substr_count($sync, '->processNext()') === 1, 'worker procesa como máximo una petición de Aduana por ciclo');
+customsOk(substr_count($syncCycle, '->processNext()') === 1, 'worker procesa como máximo una petición de Aduana por ciclo');
 customsOk(str_contains($sync, 'LOCK_EX | LOCK_NB'), 'worker FederationCloud conserva lock exclusivo');
-$customsPos = strpos($sync, '->processNext()');
-$gossipPos = strpos($sync, '->syncOnce()');
+$customsPos = strpos($syncCycle, '->processNext()');
+$gossipPos = strpos($syncCycle, 'FederationGossipService');
 customsOk($customsPos !== false && $gossipPos !== false && $customsPos < $gossipPos, 'Aduana procesa antes de gossip');
 
 customsOk(str_contains($directory, 'enqueueNodePresence'), 'register.php enruta presencia por Aduana');

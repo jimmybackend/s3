@@ -37,14 +37,14 @@ dropOk(str_contains($config, 'ARCADECLOUD_DROP_WEBHOOK_SECRET'), 'Payment webhoo
 dropOk(str_contains($service, 'authorizeUpload('), 'Upload authorization is separated from order creation.');
 dropOk(!str_contains(substr($service, strpos($service, 'public function createOrder'), strpos($service, 'public function authorizeUpload') - strpos($service, 'public function createOrder')), 'presignedUpload('), 'Unpaid order creation does not issue an S3 upload URL.');
 dropOk(str_contains($service, "PaymentStatus'] !== 'paid'"), 'Upload authorization requires confirmed payment.');
-dropOk(str_contains($service, "hash_hmac('sha256', $rawBody"), 'Payment webhook authenticates the exact raw body.');
-dropOk(str_contains($service, "hash_equals($expected, $signature)"), 'Payment webhook comparison is timing-safe.');
+dropOk(str_contains($service, 'hash_hmac(\'sha256\', $rawBody'), 'Payment webhook authenticates the exact raw body.');
+dropOk(str_contains($service, 'hash_equals($expected, $signature)'), 'Payment webhook comparison is timing-safe.');
 dropOk(str_contains($service, "status === 'refunded'"), 'Refunds revoke commercial availability.');
 dropOk(str_contains($repo, 'LIMIT 1 FOR UPDATE'), 'Download-limit claims are serialized in MySQL.');
 dropOk(str_contains($repo, 'DownloadCount = DownloadCount + 1'), 'Every public redemption consumes a download claim.');
-dropOk(str_contains($storage, "str_starts_with($key, 'FederationDrops/')"), 'Delete operation is confined to FederationDrop S3 namespace.');
+dropOk(str_contains($storage, 'str_starts_with($key, \'FederationDrops/\')'), 'Delete operation is confined to FederationDrop S3 namespace.');
 dropOk(!str_contains($storage, "'ACL' => 'public-read'"), 'FederationDrop never creates public S3 objects.');
-dropOk(str_contains($storage, "createPresignedRequest($command, '+30 minutes')"), 'Paid uploads use short-lived presigned S3 authorization.');
+dropOk(str_contains($storage, 'createPresignedRequest($command, \'+30 minutes\')'), 'Paid uploads use short-lived presigned S3 authorization.');
 dropOk(str_contains($controller, "action === 'payment-webhook'"), 'Payment webhook endpoint is explicit.');
 dropOk(str_contains($controller, "HTTP_X_ARCADECLOUD_DROP_SIGNATURE"), 'Controller reads a dedicated webhook signature header.');
 dropOk(str_contains($renderer, 'name="referrer" content="no-referrer"'), 'Management magic-link token is protected from Referrer leakage.');

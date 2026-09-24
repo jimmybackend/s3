@@ -35,11 +35,16 @@ if ($sourceDomain !== '') {
 
 $arcadeLinkUrl = 'federationcloud/';
 $githubUrl = 'https://github.com/jimmybackend/s3';
-$contactEmail = 'soporte@esforzados.com';
+$authorEmail = 'jimmybackend@gmail.com';
+$supportEmail = 'soporte@esforzados.com';
 $contactPhoneDisplay = '+52 9611077442';
 $contactPhoneHref = '+529611077442';
 $contactUrl = $isCanonicalPortal ? '#contacto' : $canonicalHome . '#contacto';
 $nodeLabel = $sourceDomain !== '' ? $sourceDomain : 'este nodo';
+
+$stylesVersion = is_file(__DIR__ . '/css/styles.css') ? (int)filemtime(__DIR__ . '/css/styles.css') : 1;
+$responsiveVersion = is_file(__DIR__ . '/css/responsive.css') ? (int)filemtime(__DIR__ . '/css/responsive.css') : 1;
+$estiloVersion = is_file(__DIR__ . '/js/estilo.js') ? (int)filemtime(__DIR__ . '/js/estilo.js') : 1;
 
 $h = static fn(string $value): string => htmlspecialchars(
     $value,
@@ -50,534 +55,287 @@ $h = static fn(string $value): string => htmlspecialchars(
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta
-        name="description"
-        content="ArcadeCloud Drive: archivos en Amazon S3, servicios AWS, FederationCloud, ArcadeLink y FederationDrop."
-    >
-    <meta name="theme-color" content="#07111f">
-    <title>ArcadeCloud Drive</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="ArcadeCloud Drive: Amazon S3, servicios AWS, ArcadeLink, FederationCloud y FederationDrop.">
+  <title>Cloud Drive</title>
 
-    <link rel="icon" href="ellogo.png" type="image/png">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <link rel="icon" href="ellogo.png" type="image/png">
 
-    <style>
-        :root {
-            --bg: #07111f;
-            --surface: #0d1d30;
-            --line: rgba(151, 211, 236, .16);
-            --text: #f4f8fb;
-            --muted: #9fb2c3;
-            --green: #35d3b5;
-            --blue: #55adff;
-        }
+  <link rel="stylesheet" href="css/styles.css?v=<?= $stylesVersion ?>">
+  <link rel="stylesheet" href="css/responsive.css?v=<?= $responsiveVersion ?>">
 
-        html { scroll-behavior: smooth; }
+  <style>
+    /* Sólo composición de portada. Colores, botones, cards y temas vienen de styles.css. */
+    .public-home { max-width: 1180px; margin: 0 auto; padding: 2rem 1rem 4rem; }
+    .public-hero { padding: 4rem 0 2rem; }
+    .public-hero h1 { font-size: clamp(2.2rem, 5vw, 4.5rem); line-height: 1.03; font-weight: 800; }
+    .public-hero .lead { max-width: 760px; }
+    .public-actions { display: flex; flex-wrap: wrap; gap: .65rem; }
+    .public-section { margin-top: 2.2rem; }
+    .public-section-title { margin-bottom: .35rem; }
+    .aws-service-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .75rem; }
+    .aws-service-item { min-height: 118px; }
+    .aws-service-item i { font-size: 1.35rem; }
+    .public-link-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .75rem; }
+    .public-link-grid .card { height: 100%; }
+    .public-link-grid .btn { margin-top: auto; }
+    .public-contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .public-contact-list { display: grid; gap: .6rem; }
+    .public-contact-list a,
+    .public-contact-list span { display: flex; align-items: center; gap: .7rem; }
+    .public-login-card { max-width: 460px; margin-left: auto; }
+    .public-kicker { color: var(--accent); font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }
+    .public-muted { color: var(--text-soft); }
+    @media (max-width: 991.98px) {
+      .public-hero { padding-top: 2.5rem; }
+      .aws-service-grid,
+      .public-link-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .public-contact-grid { grid-template-columns: 1fr; }
+      .public-login-card { max-width: none; margin-left: 0; }
+    }
+    @media (max-width: 575.98px) {
+      .aws-service-grid,
+      .public-link-grid { grid-template-columns: 1fr; }
+      .public-home { padding-left: .65rem; padding-right: .65rem; }
+    }
+  </style>
 
-        body {
-            margin: 0;
-            color: var(--text);
-            background:
-                radial-gradient(circle at 12% 8%, rgba(53, 211, 181, .12), transparent 34rem),
-                radial-gradient(circle at 90% 18%, rgba(85, 173, 255, .1), transparent 34rem),
-                var(--bg);
-            font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-        }
-
-        a { color: var(--green); }
-        a:hover { color: #83ead8; text-decoration: none; }
-
-        .topbar {
-            background: rgba(7, 17, 31, .94);
-            border-bottom: 1px solid var(--line);
-            backdrop-filter: blur(16px);
-        }
-
-        .topbar .navbar-brand,
-        .topbar .nav-link { color: #fff; }
-
-        .topbar .nav-link {
-            color: var(--muted);
-            font-weight: 650;
-        }
-
-        .topbar .nav-link:hover { color: #fff; }
-
-        .brand-logo {
-            width: 42px;
-            height: 42px;
-            border-radius: 12px;
-            object-fit: cover;
-        }
-
-        .hero {
-            min-height: 88vh;
-            display: flex;
-            align-items: center;
-            padding: 8rem 0 5rem;
-        }
-
-        .hero h1 {
-            max-width: 900px;
-            margin: 0 0 1.2rem;
-            color: #fff;
-            font-size: clamp(3rem, 7vw, 6rem);
-            line-height: .96;
-            letter-spacing: -.055em;
-            font-weight: 850;
-        }
-
-        .hero h1 span { color: var(--green); }
-
-        .hero p {
-            max-width: 760px;
-            color: var(--muted);
-            font-size: clamp(1.05rem, 2vw, 1.28rem);
-            line-height: 1.72;
-        }
-
-        .quick-actions {
-            display: flex;
-            flex-wrap: wrap;
-            gap: .75rem;
-            margin-top: 2rem;
-        }
-
-        .quick-actions .btn {
-            padding: .82rem 1.25rem;
-            border-radius: .8rem;
-            font-weight: 800;
-        }
-
-        .btn-main {
-            color: #04130f;
-            border: 0;
-            background: linear-gradient(135deg, var(--green), #8be8d7);
-        }
-
-        .btn-main:hover,
-        .btn-main:focus { color: #04130f; background: #8be8d7; }
-
-        .btn-ghost {
-            color: #e5f8f4;
-            border: 1px solid rgba(126, 230, 212, .4);
-            background: rgba(8, 24, 37, .52);
-        }
-
-        .btn-ghost:hover,
-        .btn-ghost:focus {
-            color: #fff;
-            border-color: var(--green);
-            background: rgba(53, 211, 181, .1);
-        }
-
-        .section { padding: 5.5rem 0; }
-
-        .section-soft {
-            border-top: 1px solid var(--line);
-            border-bottom: 1px solid var(--line);
-            background: rgba(10, 24, 40, .72);
-        }
-
-        .kicker {
-            color: var(--green);
-            font-size: .78rem;
-            font-weight: 850;
-            letter-spacing: .08em;
-            text-transform: uppercase;
-        }
-
-        .section h2 {
-            max-width: 780px;
-            margin: .6rem 0 1rem;
-            color: #fff;
-            font-size: clamp(2rem, 4vw, 3.2rem);
-            line-height: 1.08;
-            letter-spacing: -.04em;
-            font-weight: 850;
-        }
-
-        .section-copy {
-            max-width: 780px;
-            color: var(--muted);
-            line-height: 1.7;
-        }
-
-        .feature-grid,
-        .link-grid {
-            display: grid;
-            gap: 1rem;
-            margin-top: 2.4rem;
-        }
-
-        .feature-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-        .link-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-
-        .feature,
-        .external-card,
-        .login-card,
-        .about-card {
-            border: 1px solid var(--line);
-            border-radius: 1.15rem;
-            background: rgba(14, 30, 49, .88);
-        }
-
-        .feature { padding: 1.5rem; }
-
-        .feature i {
-            margin-bottom: 1rem;
-            color: var(--green);
-            font-size: 1.45rem;
-        }
-
-        .feature h3,
-        .external-card h3,
-        .about-card h3 {
-            color: #fff;
-            font-size: 1.05rem;
-            font-weight: 800;
-        }
-
-        .feature p,
-        .external-card p,
-        .about-card p {
-            margin-bottom: 0;
-            color: var(--muted);
-            line-height: 1.6;
-        }
-
-        .external-card {
-            display: flex;
-            min-height: 210px;
-            flex-direction: column;
-            padding: 1.35rem;
-        }
-
-        .external-card .icon {
-            width: 46px;
-            height: 46px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 1rem;
-            border-radius: 13px;
-            color: var(--green);
-            background: rgba(53, 211, 181, .1);
-        }
-
-        .external-card .btn { margin-top: auto; }
-
-        .split {
-            display: grid;
-            grid-template-columns: minmax(0, 1fr) minmax(340px, 460px);
-            gap: 2rem;
-            align-items: center;
-        }
-
-        .login-card,
-        .about-card { padding: 1.6rem; }
-
-        .login-card .form-control {
-            min-height: 49px;
-            color: #fff;
-            border: 1px solid rgba(168, 202, 225, .23);
-            border-radius: .78rem;
-            background: rgba(2, 11, 20, .62);
-        }
-
-        .login-card .form-control:focus {
-            color: #fff;
-            border-color: var(--green);
-            background: rgba(2, 11, 20, .78);
-            box-shadow: 0 0 0 .2rem rgba(53, 211, 181, .12);
-        }
-
-        .login-card label { color: #dbe7ee; font-weight: 650; }
-
-        .contact-list {
-            display: grid;
-            gap: .75rem;
-            margin-top: 1.2rem;
-        }
-
-        .contact-list a,
-        .contact-list span {
-            display: flex;
-            align-items: center;
-            gap: .7rem;
-            padding: .8rem .9rem;
-            border-radius: .8rem;
-            color: #dce8ef;
-            background: rgba(5, 16, 27, .48);
-        }
-
-        .contact-list i {
-            width: 20px;
-            color: var(--green);
-            text-align: center;
-        }
-
-        .footer {
-            padding: 2rem 0 2.5rem;
-            border-top: 1px solid var(--line);
-            color: #8096a7;
-            font-size: .87rem;
-        }
-
-        @media (max-width: 991.98px) {
-            .hero { min-height: auto; padding-top: 7.5rem; }
-            .feature-grid,
-            .link-grid { grid-template-columns: 1fr 1fr; }
-            .split { grid-template-columns: 1fr; }
-        }
-
-        @media (max-width: 575.98px) {
-            .section { padding: 4.3rem 0; }
-            .hero h1 { font-size: 3.1rem; }
-            .feature-grid,
-            .link-grid { grid-template-columns: 1fr; }
-        }
-    </style>
+  <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
 </head>
-<body>
 
-<nav class="navbar navbar-expand-lg navbar-dark topbar fixed-top">
-    <div class="container">
-        <a class="navbar-brand d-flex align-items-center" href="#inicio">
-            <img src="ellogo.png" class="brand-logo mr-2" alt="ArcadeCloud Drive">
-            <strong>ArcadeCloud Drive</strong>
+<body class="ui-theme theme-neon-green theme-dark vision-normal ascii-on">
+
+<nav class="navbar navbar-expand-lg navbar-dark px-3 drive-navbar">
+  <a class="navbar-brand d-flex align-items-center" href="#inicio">
+    <img src="ellogo.png" width="48" height="38" class="drive-brand-logo mr-2" alt="Logo">
+    Cloud Drive
+  </a>
+
+  <button class="navbar-toggler ml-auto" type="button" data-toggle="collapse" data-target="#publicNav" aria-controls="publicNav" aria-expanded="false" aria-label="Abrir navegación">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+
+  <div class="collapse navbar-collapse" id="publicNav">
+    <ul class="navbar-nav ml-auto align-items-lg-center">
+      <li class="nav-item"><a class="nav-link" href="#aws">AWS</a></li>
+      <li class="nav-item"><a class="nav-link" href="#accesos">Accesos</a></li>
+      <li class="nav-item"><a class="nav-link" href="#login">Login</a></li>
+      <li class="nav-item"><a class="nav-link" href="#acerca">Acerca de</a></li>
+      <li class="nav-item"><a class="nav-link" href="<?= $h($contactUrl) ?>">Contacto</a></li>
+
+      <li class="nav-item dropdown ml-lg-2">
+        <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="temaMenu" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          <i class="fas fa-palette mr-1"></i><span class="drive-design-label">Diseño</span>
         </a>
-
-        <button
-            class="navbar-toggler"
-            type="button"
-            data-toggle="collapse"
-            data-target="#publicNav"
-            aria-controls="publicNav"
-            aria-expanded="false"
-            aria-label="Abrir navegación"
-        >
-            <span class="navbar-toggler-icon"></span>
-        </button>
-
-        <div class="collapse navbar-collapse" id="publicNav">
-            <ul class="navbar-nav ml-auto align-items-lg-center">
-                <li class="nav-item"><a class="nav-link" href="#inicio">Inicio</a></li>
-                <li class="nav-item"><a class="nav-link" href="#servicios">Servicios</a></li>
-                <li class="nav-item"><a class="nav-link" href="#enlaces">Ir directo</a></li>
-                <li class="nav-item"><a class="nav-link" href="#acerca">Acerca de</a></li>
-                <li class="nav-item"><a class="nav-link" href="<?= $h($contactUrl) ?>">Contacto</a></li>
-            </ul>
+        <div class="dropdown-menu dropdown-menu-right" id="temaMenuPanel" aria-labelledby="temaMenu" style="min-width:280px;">
+          <h6 class="dropdown-header">Color neón</h6>
+          <button class="dropdown-item js-set-theme" data-theme="theme-neon-green">Verde neón</button>
+          <button class="dropdown-item js-set-theme" data-theme="theme-neon-blue">Azul neón</button>
+          <button class="dropdown-item js-set-theme" data-theme="theme-neon-red">Rojo neón</button>
+          <button class="dropdown-item js-set-theme" data-theme="theme-neon-yellow">Amarillo neón</button>
+          <div class="dropdown-divider"></div>
+          <h6 class="dropdown-header">Modo</h6>
+          <button class="dropdown-item js-set-mode" data-mode="theme-dark">Oscuro</button>
+          <button class="dropdown-item js-set-mode" data-mode="theme-light">Claro</button>
+          <div class="dropdown-divider"></div>
+          <h6 class="dropdown-header">Visión</h6>
+          <button class="dropdown-item js-set-vision" data-vision="vision-normal">Normal</button>
+          <button class="dropdown-item js-set-vision" data-vision="vision-myopia">Miopía</button>
+          <button class="dropdown-item js-set-vision" data-vision="vision-protanopia">Protanopia</button>
+          <button class="dropdown-item js-set-vision" data-vision="vision-deuteranopia">Deuteranopia</button>
+          <button class="dropdown-item js-set-vision" data-vision="vision-tritanopia">Tritanopia</button>
+          <div class="dropdown-divider"></div>
+          <button class="dropdown-item" id="btnToggleAscii"><i class="fas fa-terminal mr-1"></i> Alternar ASCII</button>
         </div>
-    </div>
+      </li>
+    </ul>
+  </div>
 </nav>
 
-<main>
-    <section id="inicio" class="hero">
-        <div class="container">
-            <h1>
-                Tus archivos en la nube,
-                <span>con herramientas para trabajar.</span>
-            </h1>
+<main class="public-home">
+  <section id="inicio" class="public-hero">
+    <div class="public-kicker mb-2">ArcadeCloud Drive + FederationCloud</div>
+    <h1>Archivos en Amazon S3 con herramientas AWS integradas.</h1>
+    <p class="lead public-muted">
+      Guarda, organiza, procesa y comparte archivos desde la misma aplicación.
+    </p>
+    <div class="public-actions mt-4">
+      <a class="btn btn-primary" href="#login"><i class="fas fa-sign-in-alt mr-1"></i> Entrar al Drive</a>
+      <a class="btn btn-outline-primary" href="<?= $h($arcadeLinkUrl) ?>"><i class="fas fa-link mr-1"></i> ArcadeLink</a>
+      <a class="btn btn-outline-primary" href="<?= $h($federationDropUrl) ?>"><i class="fas fa-cloud-upload-alt mr-1"></i> FederationDrop</a>
+    </div>
+  </section>
 
-            <p>
-                ArcadeCloud Drive combina almacenamiento en Amazon S3, servicios AWS y
-                FederationCloud en una interfaz simple para guardar, procesar, compartir
-                y mover archivos cuando lo necesitas.
-            </p>
+  <section id="aws" class="public-section">
+    <div class="card p-3 shadow-sm">
+      <div class="card-body">
+        <div class="public-kicker mb-2"><i class="fab fa-aws mr-1"></i> Servicios AWS</div>
+        <h2 class="public-section-title h3">Una de las capacidades que distingue a ArcadeCloud.</h2>
+        <p class="public-muted mb-4">
+          Los archivos almacenados en S3 pueden utilizar directamente servicios administrados de AWS desde el Drive.
+        </p>
 
-            <div class="quick-actions">
-                <a class="btn btn-main" href="#login">
-                    <i class="fa-solid fa-right-to-bracket mr-2"></i>Entrar al Drive
-                </a>
-                <a class="btn btn-ghost" href="<?= $h($arcadeLinkUrl) ?>">
-                    <i class="fa-solid fa-link mr-2"></i>Abrir ArcadeLink
-                </a>
-                <a class="btn btn-ghost" href="<?= $h($federationDropUrl) ?>">
-                    <i class="fa-solid fa-cloud-arrow-up mr-2"></i>FederationDrop
-                </a>
-            </div>
+        <div class="aws-service-grid">
+          <div class="card aws-service-item p-3">
+            <i class="fas fa-file-alt mb-2"></i>
+            <strong>Textract</strong>
+            <small class="text-muted">Extraer texto</small>
+          </div>
+          <div class="card aws-service-item p-3">
+            <i class="fas fa-microphone mb-2"></i>
+            <strong>Transcribe</strong>
+            <small class="text-muted">Audio y video a texto</small>
+          </div>
+          <div class="card aws-service-item p-3">
+            <i class="fas fa-volume-up mb-2"></i>
+            <strong>Polly</strong>
+            <small class="text-muted">Texto a voz</small>
+          </div>
+          <div class="card aws-service-item p-3">
+            <i class="fas fa-language mb-2"></i>
+            <strong>Translate</strong>
+            <small class="text-muted">Traducción</small>
+          </div>
+          <div class="card aws-service-item p-3">
+            <i class="fas fa-image mb-2"></i>
+            <strong>Rekognition</strong>
+            <small class="text-muted">Análisis de imágenes</small>
+          </div>
+          <div class="card aws-service-item p-3">
+            <i class="fas fa-brain mb-2"></i>
+            <strong>Comprehend</strong>
+            <small class="text-muted">Análisis de texto</small>
+          </div>
         </div>
-    </section>
 
-    <section id="servicios" class="section section-soft">
-        <div class="container">
-            <div class="kicker">Servicios</div>
-            <h2>Una aplicación, tres capacidades principales.</h2>
+        <a class="btn btn-primary mt-4" href="#login">
+          <i class="fas fa-folder-open mr-1"></i> Entrar y trabajar con archivos
+        </a>
+      </div>
+    </div>
+  </section>
 
-            <div class="feature-grid">
-                <article class="feature">
-                    <i class="fa-solid fa-folder-open"></i>
-                    <h3>Drive sobre Amazon S3</h3>
-                    <p>
-                        Organiza y administra archivos y carpetas con almacenamiento físico en S3.
-                    </p>
-                </article>
+  <section id="accesos" class="public-section">
+    <div class="public-kicker mb-2">Accesos directos</div>
+    <h2 class="h3 mb-3">Ve a la función que necesitas.</h2>
 
-                <article class="feature">
-                    <i class="fa-brands fa-aws"></i>
-                    <h3>Servicios AWS</h3>
-                    <p>
-                        Textract, Transcribe, Polly, Translate, Rekognition y Comprehend integrados al trabajo diario.
-                    </p>
-                </article>
-
-                <article class="feature">
-                    <i class="fa-solid fa-network-wired"></i>
-                    <h3>FederationCloud</h3>
-                    <p>
-                        ArcadeLink, búsqueda federada para usuarios registrados y transferencia temporal con FederationDrop.
-                    </p>
-                </article>
-            </div>
+    <div class="public-link-grid">
+      <div class="card p-3 d-flex flex-column">
+        <div class="card-body d-flex flex-column p-2">
+          <i class="fas fa-folder-open mb-2"></i>
+          <h3 class="h5">Drive</h3>
+          <p class="small text-muted">Para usuarios registrados del nodo.</p>
+          <a class="btn btn-primary btn-sm" href="#login">Login</a>
         </div>
-    </section>
+      </div>
 
-    <section id="enlaces" class="section">
-        <div class="container">
-            <div class="kicker">Ir directo</div>
-            <h2>Entra directamente a la herramienta que necesitas.</h2>
-
-            <div class="link-grid">
-                <article class="external-card">
-                    <div class="icon"><i class="fa-solid fa-right-to-bracket"></i></div>
-                    <h3>Drive</h3>
-                    <p>Acceso para usuarios registrados de este nodo.</p>
-                    <a class="btn btn-main mt-3" href="#login">Login</a>
-                </article>
-
-                <article class="external-card">
-                    <div class="icon"><i class="fa-solid fa-link"></i></div>
-                    <h3>ArcadeLink</h3>
-                    <p>Abre y valida un enlace portable recibido.</p>
-                    <a class="btn btn-ghost mt-3" href="<?= $h($arcadeLinkUrl) ?>">Abrir ArcadeLink</a>
-                </article>
-
-                <article class="external-card">
-                    <div class="icon"><i class="fa-solid fa-cloud-arrow-up"></i></div>
-                    <h3>FederationDrop</h3>
-                    <p>Transfiere un archivo sin necesitar cuenta del Drive.</p>
-                    <a class="btn btn-ghost mt-3" href="<?= $h($federationDropUrl) ?>">Subir / pagar</a>
-                </article>
-
-                <article class="external-card">
-                    <div class="icon"><i class="fa-brands fa-github"></i></div>
-                    <h3>Repositorio</h3>
-                    <p>Código, documentación y evolución pública del proyecto.</p>
-                    <a
-                        class="btn btn-ghost mt-3"
-                        href="<?= $h($githubUrl) ?>"
-                        rel="noopener noreferrer"
-                    >GitHub</a>
-                </article>
-            </div>
+      <div class="card p-3 d-flex flex-column">
+        <div class="card-body d-flex flex-column p-2">
+          <i class="fas fa-link mb-2"></i>
+          <h3 class="h5">ArcadeLink</h3>
+          <p class="small text-muted">Abrir o validar un enlace portable.</p>
+          <a class="btn btn-outline-primary btn-sm" href="<?= $h($arcadeLinkUrl) ?>">Abrir</a>
         </div>
-    </section>
+      </div>
 
-    <section id="login" class="section section-soft">
-        <div class="container">
-            <div class="split">
-                <div>
-                    <div class="kicker">Acceso</div>
-                    <h2>Entrar a <?= $h($nodeLabel) ?></h2>
-                    <p class="section-copy">
-                        Si tienes cuenta en este nodo, inicia sesión aquí.
-                    </p>
-                </div>
-
-                <div class="login-card">
-                    <form action="psesion.php" method="POST">
-                        <div class="form-group">
-                            <label for="email">Correo electrónico</label>
-                            <input
-                                class="form-control"
-                                id="email"
-                                name="email"
-                                type="email"
-                                autocomplete="username"
-                                required
-                            >
-                        </div>
-
-                        <div class="form-group">
-                            <label for="password">Contraseña</label>
-                            <input
-                                class="form-control"
-                                id="password"
-                                name="password"
-                                type="password"
-                                autocomplete="current-password"
-                                required
-                            >
-                        </div>
-
-                        <button class="btn btn-main btn-block py-3" type="submit">
-                            Iniciar sesión
-                        </button>
-                    </form>
-                </div>
-            </div>
+      <div class="card p-3 d-flex flex-column">
+        <div class="card-body d-flex flex-column p-2">
+          <i class="fas fa-cloud-upload-alt mb-2"></i>
+          <h3 class="h5">FederationDrop</h3>
+          <p class="small text-muted">Transferencia temporal sin cuenta del Drive.</p>
+          <a class="btn btn-outline-primary btn-sm" href="<?= $h($federationDropUrl) ?>">Subir / pagar</a>
         </div>
-    </section>
+      </div>
 
-    <section id="acerca" class="section">
-        <div class="container">
-            <div class="split">
-                <div>
-                    <div class="kicker">Acerca de</div>
-                    <h2>ArcadeCloud Drive + FederationCloud</h2>
-                    <p class="section-copy">
-                        Proyecto de <strong>jimmybackend</strong> para trabajar con archivos,
-                        servicios AWS y transferencia federada desde una misma plataforma.
-                    </p>
-
-                    <a
-                        class="btn btn-ghost mt-3"
-                        href="<?= $h($githubUrl) ?>"
-                        rel="noopener noreferrer"
-                    >
-                        <i class="fa-brands fa-github mr-2"></i>Ver proyecto
-                    </a>
-                </div>
-
-                <div id="contacto" class="about-card">
-                    <h3>Contacto</h3>
-                    <div class="contact-list">
-                        <a href="mailto:<?= $h($contactEmail) ?>">
-                            <i class="fa-solid fa-envelope"></i>
-                            <span><?= $h($contactEmail) ?></span>
-                        </a>
-
-                        <a href="tel:<?= $h($contactPhoneHref) ?>">
-                            <i class="fa-solid fa-phone"></i>
-                            <span><?= $h($contactPhoneDisplay) ?></span>
-                        </a>
-
-                        <span>
-                            <i class="fa-solid fa-globe"></i>
-                            <span>drive.esforzados.com</span>
-                        </span>
-                    </div>
-                </div>
-            </div>
+      <div class="card p-3 d-flex flex-column">
+        <div class="card-body d-flex flex-column p-2">
+          <i class="fab fa-github mb-2"></i>
+          <h3 class="h5">Repositorio</h3>
+          <p class="small text-muted">Código y documentación del proyecto.</p>
+          <a class="btn btn-outline-primary btn-sm" href="<?= $h($githubUrl) ?>" rel="noopener noreferrer">GitHub</a>
         </div>
-    </section>
+      </div>
+    </div>
+  </section>
+
+  <section id="login" class="public-section">
+    <div class="row align-items-center">
+      <div class="col-lg-6 mb-3 mb-lg-0">
+        <div class="public-kicker mb-2">Acceso al nodo</div>
+        <h2 class="h3">Entrar a <?= $h($nodeLabel) ?></h2>
+        <p class="public-muted mb-0">Usa las credenciales registradas en este nodo.</p>
+      </div>
+
+      <div class="col-lg-6">
+        <div class="card public-login-card p-3 shadow-sm">
+          <div class="card-body">
+            <form action="psesion.php" method="POST">
+              <div class="form-group">
+                <label for="email">Correo electrónico</label>
+                <input class="form-control" id="email" name="email" type="email" autocomplete="username" required>
+              </div>
+              <div class="form-group">
+                <label for="password">Contraseña</label>
+                <input class="form-control" id="password" name="password" type="password" autocomplete="current-password" required>
+              </div>
+              <button class="btn btn-primary btn-block" type="submit">
+                <i class="fas fa-sign-in-alt mr-1"></i> Iniciar sesión
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="acerca" class="public-section">
+    <div class="public-contact-grid">
+      <div class="card about-card p-3">
+        <div class="card-body">
+          <div class="public-kicker mb-2">Acerca de</div>
+          <h2 class="h4">ArcadeCloud Drive</h2>
+          <p class="public-muted">
+            Proyecto de <strong>jimmybackend</strong> para Amazon S3, servicios AWS y transferencia federada.
+          </p>
+          <a class="btn btn-outline-primary btn-sm" href="<?= $h($githubUrl) ?>" rel="noopener noreferrer">
+            <i class="fab fa-github mr-1"></i> Ver proyecto
+          </a>
+        </div>
+      </div>
+
+      <div id="contacto" class="card about-card p-3">
+        <div class="card-body">
+          <div class="public-kicker mb-2">Contacto</div>
+          <div class="public-contact-list">
+            <a href="mailto:<?= $h($authorEmail) ?>">
+              <i class="fas fa-envelope"></i>
+              <span><?= $h($authorEmail) ?></span>
+            </a>
+            <a href="tel:<?= $h($contactPhoneHref) ?>">
+              <i class="fas fa-phone"></i>
+              <span><?= $h($contactPhoneDisplay) ?></span>
+            </a>
+            <a href="mailto:<?= $h($supportEmail) ?>">
+              <i class="fas fa-headset"></i>
+              <span><?= $h($supportEmail) ?></span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
 </main>
 
-<footer class="footer">
-    <div class="container d-md-flex justify-content-between align-items-center">
-        <div>ArcadeCloud Drive · jimmybackend</div>
-        <div class="mt-2 mt-md-0">
-            <a href="#servicios" class="mr-3">Servicios</a>
-            <a href="#enlaces" class="mr-3">Ir directo</a>
-            <a href="<?= $h($contactUrl) ?>">Contacto</a>
-        </div>
-    </div>
+<footer class="container-fluid border-top py-3">
+  <div class="container">
+    <small class="text-muted">ArcadeCloud Drive · jimmybackend · Amazon S3 + servicios AWS + FederationCloud</small>
+  </div>
 </footer>
 
-<script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.slim.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/estilo.js?v=<?= $estiloVersion ?>"></script>
 </body>
 </html>

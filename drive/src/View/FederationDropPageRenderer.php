@@ -17,6 +17,11 @@ final class FederationDropPageRenderer
         $commerceNode = !empty($state['commerce_node']);
         $commerceUrl = rtrim((string)($state['commerce_url'] ?? ''), '/');
         $sourceResource = is_array($state['source_resource'] ?? null) ? $state['source_resource'] : null;
+        $googleAuth = is_array($state['google_auth'] ?? null) ? $state['google_auth'] : [];
+        $googleReady = !empty($googleAuth['ready']);
+        $googleIdentity = is_array($googleAuth['identity'] ?? null) ? $googleAuth['identity'] : null;
+        $googleEmail = is_array($googleIdentity) ? trim((string)($googleIdentity['email'] ?? '')) : '';
+        $googleName = is_array($googleIdentity) ? trim((string)($googleIdentity['name'] ?? '')) : '';
         $sourceResourceId = is_array($sourceResource) ? trim((string)($sourceResource['resource_id'] ?? '')) : '';
         $sourceResourceValid = $sourceResourceId !== '' && empty($sourceResource['error']);
         $localHost = (string)(parse_url((string)($state['public_url'] ?? ''), PHP_URL_HOST) ?: '');
@@ -118,9 +123,35 @@ final class FederationDropPageRenderer
       <p class="drop-muted">El nodo que cobra custodia el archivo. Primero se confirma el pago y sólo entonces se autoriza una subida temporal directa a S3 privado.</p>
     <?php endif; ?>
     <form id="dropCreateForm">
+      <?php if ($googleReady): ?>
+        <?php if ($googleIdentity !== null): ?>
+          <div class="alert alert-success d-flex flex-wrap align-items-center justify-content-between">
+            <div>
+              <strong><i class="fa-brands fa-google mr-1"></i> Cuenta Google conectada</strong><br>
+              <span><?= $h($googleName !== '' ? $googleName : $googleEmail) ?></span>
+              <?php if ($googleName !== '' && $googleEmail !== ''): ?>
+                <span class="drop-muted"> · <?= $h($googleEmail) ?></span>
+              <?php endif; ?>
+            </div>
+            <button class="btn btn-sm btn-outline-light mt-2 mt-md-0" type="submit" form="dropGoogleLogoutForm">Cambiar cuenta</button>
+          </div>
+        <?php else: ?>
+          <div class="mb-3">
+            <a class="btn btn-light btn-lg btn-block" rel="nofollow" href="<?= $h($googleAuth['login_url'] ?? 'google-login.php') ?>">
+              <i class="fa-brands fa-google mr-2"></i> Continuar con Google
+            </a>
+            <div class="text-center drop-muted small mt-2">o continúa sólo con tu correo</div>
+          </div>
+        <?php endif; ?>
+      <?php endif; ?>
+
       <div class="form-group">
         <label for="dropEmail">Correo del propietario</label>
-        <input class="form-control" id="dropEmail" name="email" type="email" maxlength="320" autocomplete="email" required>
+        <input class="form-control" id="dropEmail" name="email" type="email" maxlength="320" autocomplete="email"
+               value="<?= $h($googleEmail) ?>" <?= $googleIdentity !== null ? 'readonly' : '' ?> required>
+        <?php if ($googleIdentity !== null): ?>
+          <small class="drop-muted">Este correo fue verificado por Google y será el propietario de la orden.</small>
+        <?php endif; ?>
       </div>
       <?php if (!$sourceResourceValid): ?>
       <div class="form-group">
@@ -174,6 +205,9 @@ final class FederationDropPageRenderer
 &lt;/a&gt;</code></pre>
   </section>
 </main>
+<?php if ($commerceNode && $googleIdentity !== null): ?>
+<form id="dropGoogleLogoutForm" method="post" action="<?= $h($googleAuth['logout_url'] ?? 'google-logout.php') ?>" class="d-none"></form>
+<?php endif; ?>
 <script src="../js/federation-drop.js?v=<?= $jsVersion ?>"></script>
 </body>
 </html><?php

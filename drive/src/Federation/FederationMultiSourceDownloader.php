@@ -161,10 +161,12 @@ final class FederationMultiSourceDownloader
                 $ch = $state->handle;
                 fflush($state->fh);
                 fclose($state->fh);
+                $state->fh = null;
                 $status = (int)curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
                 $curlError = curl_error($ch);
                 curl_multi_remove_handle($multi, $ch);
                 curl_close($ch);
+                $state->handle = null;
 
                 $expected = (int)$state->expected;
                 $ok = !$state->overflow
@@ -210,7 +212,7 @@ final class FederationMultiSourceDownloader
     }
 
     /** @return object */
-    private function createRangeHandle($multi, string $url, int $start, int $end): array
+    private function createRangeHandle($multi, string $url, int $start, int $end): object
     {
         [$host, $ip] = $this->single->safeS3Target($url);
         $expected = $end - $start + 1;

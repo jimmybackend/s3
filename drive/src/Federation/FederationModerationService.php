@@ -249,11 +249,11 @@ final class FederationModerationService
         $hex = substr($contentId, 7);
         $files = $this->app->db()->prepare(
             "SELECT id_, Ruta, Encriptado FROM FileS3
-             WHERE Found=1 AND JSON_VALID(Metadatos)=1
+             WHERE Found=1
                AND LOWER(COALESCE(
-                 JSON_UNQUOTE(JSON_EXTRACT(Metadatos,'$.hash_sha256')),
-                 JSON_UNQUOTE(JSON_EXTRACT(Metadatos,'$.sha256')),
-                 JSON_UNQUOTE(JSON_EXTRACT(Metadatos,'$.checksum_sha256')),
+                 JSON_UNQUOTE(JSON_EXTRACT(IF(JSON_VALID(Metadatos), Metadatos, '{}'),'$.hash_sha256')),
+                 JSON_UNQUOTE(JSON_EXTRACT(IF(JSON_VALID(Metadatos), Metadatos, '{}'),'$.sha256')),
+                 JSON_UNQUOTE(JSON_EXTRACT(IF(JSON_VALID(Metadatos), Metadatos, '{}'),'$.checksum_sha256')),
                  ''
                )) IN (?, ?)"
         );

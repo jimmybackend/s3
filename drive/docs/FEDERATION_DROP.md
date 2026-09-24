@@ -293,7 +293,9 @@ El propietario puede retirar su Drop antes del vencimiento usando el enlace priv
 
 ## Correo
 
-Cuando pago y subida han quedado confirmados, SMTP envía al propietario:
+Cuando Stripe confirma el pago, SMTP envía primero un correo con el enlace privado para completar la subida. Así el cliente puede cerrar la pestaña del checkout y recuperar después su orden pagada.
+
+Cuando la subida queda verificada y el Drop pasa a activo, SMTP envía otro correo con:
 
 - URL pública;
 - URL para descargar el `.arcadelink`;

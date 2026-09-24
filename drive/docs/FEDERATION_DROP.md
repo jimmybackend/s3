@@ -214,7 +214,7 @@ Un evento `failed` tardío no puede degradar una orden ya pagada. Un `refunded` 
 
 ## Configuración
 
-FederationDrop comienza desactivado.
+FederationDrop comienza desactivado. Poner `ARCADECLOUD_DROP_ENABLED=false` detiene **nuevas órdenes**, pero los webhooks firmados de órdenes ya iniciadas siguen siendo aceptados mientras el secreto del webhook permanezca configurado. Esto evita dejar un pago ya iniciado sin conciliación durante mantenimiento.
 
 Ejemplo de valores **de referencia**, no una tarifa recomendada:
 

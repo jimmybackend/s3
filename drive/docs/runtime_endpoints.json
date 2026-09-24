@@ -81,6 +81,7 @@
         "drive/bin/federation_endpoint_refresh.php",
         "drive/bin/federation_replica_presence.php",
         "drive/bin/federation_sync.php",
+        "drive/bin/media_processing_worker.php",
         "drive/bin/move_job_worker.php",
         "drive/bin/polly_reconcile.php",
         "drive/bin/sync_node_worker.php",
@@ -152,6 +153,7 @@
         "drive/listar_carpetas.php",
         "drive/logout.php",
         "drive/media_playlist.php",
+        "drive/media_processing.php",
         "drive/move_multiple.php",
         "drive/move_task.php",
         "drive/move_task_status.php",
@@ -314,6 +316,12 @@
       ]
     },
     {
+      "path": "drive/bin/media_processing_worker.php",
+      "size": 839,
+      "active": false,
+      "references": []
+    },
+    {
       "path": "drive/bin/move_job_worker.php",
       "size": 199,
       "active": false,
@@ -367,7 +375,7 @@
     },
     {
       "path": "drive/bloque_archivos.php",
-      "size": 23479,
+      "size": 25094,
       "active": true,
       "references": [
         "drive/s3.php",
@@ -1002,6 +1010,14 @@
       ]
     },
     {
+      "path": "drive/media_processing.php",
+      "size": 291,
+      "active": false,
+      "references": [
+        "drive/js/media-processing.js"
+      ]
+    },
+    {
       "path": "drive/move_multiple.php",
       "size": 263,
       "active": false,
@@ -1136,7 +1152,7 @@
     },
     {
       "path": "drive/s3.php",
-      "size": 90612,
+      "size": 90722,
       "active": true,
       "references": [
         "drive/app_bootstrap.php",
@@ -1489,6 +1505,12 @@
     {
       "path": "drive/src/Aws/TranslateFileService.php",
       "size": 2890,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Console/MediaProcessingWorkerCommand.php",
+      "size": 13342,
       "active": false,
       "references": []
     },
@@ -2140,7 +2162,7 @@
     },
     {
       "path": "drive/src/Http/Controller/BackgroundTaskController.php",
-      "size": 33355,
+      "size": 36365,
       "active": false,
       "references": []
     },
@@ -2313,6 +2335,12 @@
       "references": []
     },
     {
+      "path": "drive/src/Http/Controller/MediaProcessingController.php",
+      "size": 920,
+      "active": false,
+      "references": []
+    },
+    {
       "path": "drive/src/Http/Controller/MoveJobController.php",
       "size": 6846,
       "active": false,
@@ -2451,6 +2479,18 @@
     {
       "path": "drive/src/Media/MediaPlaylistService.php",
       "size": 1762,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Media/MediaProcessingJobRepository.php",
+      "size": 9171,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Media/MediaProcessingService.php",
+      "size": 2777,
       "active": false,
       "references": []
     },
@@ -2929,7 +2969,7 @@
     },
     {
       "path": "drive/tests/database_schema_contract_smoke.php",
-      "size": 4699,
+      "size": 4846,
       "active": false,
       "references": []
     },

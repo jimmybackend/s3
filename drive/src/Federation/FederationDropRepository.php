@@ -258,6 +258,27 @@ final class FederationDropRepository
         return $row;
     }
 
+    public function setSourceContentId(string $dropId, string $contentId): void
+    {
+        $contentId = strtolower(trim($contentId));
+        if (!preg_match('/\Asha256:[a-f0-9]{64}\z/', $contentId)) {
+            throw new FederationException('Content ID FederationDrop inválido.', 400);
+        }
+        $stmt = $this->db->prepare(
+            "UPDATE FederationDrops
+             SET SourceContentId=?
+             WHERE DropId=? AND SourceMode='upload' AND Status='pending_upload' LIMIT 1"
+        );
+        if (!$stmt) throw new FederationException('No se pudo preparar Content ID FederationDrop.', 500);
+        $stmt->bind_param('ss', $contentId, $dropId);
+        if (!$stmt->execute()) {
+            $message = $stmt->error;
+            $stmt->close();
+            throw new FederationException('No se pudo guardar Content ID FederationDrop: ' . $message, 500);
+        }
+        $stmt->close();
+    }
+
     public function createCentralPlacement(string $dropId, string $nodeId): void
     {
         $stmt = $this->db->prepare(

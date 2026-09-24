@@ -369,14 +369,16 @@ final class FederationDropService
 
     private function checkoutUrl(string $dropId, int $amountCents, string $currency): string
     {
-        $canonical = $dropId . '|' . $amountCents . '|' . $currency;
+        $returnUrl = $this->config->publicUrl . '/?payment_return=' . rawurlencode($dropId);
+        $webhookUrl = $this->config->publicUrl . '/api.php?action=payment-webhook';
+        $canonical = implode('|', [$dropId, (string)$amountCents, $currency, $returnUrl, $webhookUrl]);
         $signature = hash_hmac('sha256', $canonical, $this->config->webhookSecret);
         $params = http_build_query([
             'drop_id' => $dropId,
             'amount_cents' => $amountCents,
             'currency' => $currency,
-            'return_url' => $this->config->publicUrl . '/?payment_return=' . rawurlencode($dropId),
-            'webhook_url' => $this->config->publicUrl . '/api.php?action=payment-webhook',
+            'return_url' => $returnUrl,
+            'webhook_url' => $webhookUrl,
             'signature' => $signature,
         ], '', '&', PHP_QUERY_RFC3986);
         return $this->config->checkoutUrl . (str_contains($this->config->checkoutUrl, '?') ? '&' : '?') . $params;

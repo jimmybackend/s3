@@ -228,6 +228,25 @@ final class FederationDropRepository
         $stmt->close();
     }
 
+    public function setPlacementStatus(string $dropId, string $status): void
+    {
+        if (!in_array($status, ['revoked', 'deleted'], true)) {
+            throw new FederationException('Estado de placement FederationDrop inválido.', 400);
+        }
+        $stmt = $this->db->prepare(
+            'UPDATE FederationDropPlacements SET Status = ?, UpdatedAt = UTC_TIMESTAMP(6)
+             WHERE DropId = ? AND Status IN (\'queued\',\'active\',\'stale\')'
+        );
+        if (!$stmt) throw new FederationException('No se pudo preparar el cierre de placements FederationDrop.', 500);
+        $stmt->bind_param('ss', $status, $dropId);
+        if (!$stmt->execute()) {
+            $message = $stmt->error;
+            $stmt->close();
+            throw new FederationException('No se pudo cerrar placements FederationDrop: ' . $message, 500);
+        }
+        $stmt->close();
+    }
+
     public function claimDownload(string $dropId, string $publicTokenHash): array
     {
         $this->db->begin_transaction();

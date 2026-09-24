@@ -51,6 +51,32 @@ final class FederationDropService
         ];
     }
 
+    public function publicResourceState(string $resourceId): ?array
+    {
+        $resourceId = trim($resourceId);
+        if ($resourceId === '') return null;
+        if (!preg_match('/\Aarl_[A-Za-z0-9_-]{16,80}\z/', $resourceId)) {
+            return ['error' => 'Resource ID FederationCloud inválido.'];
+        }
+        $resource = (new FederatedCatalogRepository($this->app->db()))->find($resourceId);
+        if ($resource === null) return ['error' => 'El recurso todavía no aparece en el catálogo FederationCloud de este nodo.'];
+        if ((string)$resource['Visibility'] !== 'PUBLIC' || (string)$resource['Rights'] !== 'copy_allowed') {
+            return ['error' => 'El recurso no es PUBLIC + copy_allowed; requiere autorización del propietario antes de cualquier custodia comercial.'];
+        }
+        $contentId = strtolower(trim((string)($resource['ContentId'] ?? '')));
+        if (!preg_match('/\Asha256:[a-f0-9]{64}\z/', $contentId)) {
+            return ['error' => 'El recurso público no tiene Content ID SHA-256 verificable.'];
+        }
+        return [
+            'resource_id' => $resourceId,
+            'title' => (string)$resource['Title'],
+            'media_type' => (string)$resource['MediaType'],
+            'size_bytes' => (int)$resource['SizeBytes'],
+            'content_id' => $contentId,
+            'origin_node_id' => (string)$resource['OriginNodeId'],
+        ];
+    }
+
     public function quote(int $sizeBytes, int $days, int $downloads): array
     {
         $this->config->assertReady();

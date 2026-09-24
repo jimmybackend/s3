@@ -149,11 +149,13 @@ ArcadeLink mantiene compatibilidad incremental:
 
 `/federationdrop/` añade almacenamiento temporal comercial sin exigir una cuenta del Drive. El usuario crea una orden con correo, archivo, duración y máximo de descargas; el pago debe confirmarse **antes** de que el sistema emita una autorización temporal de subida a S3.
 
-Si este nodo cobra, este mismo nodo conserva la copia garantizada. Los nodos FederationCloud normales no reciben automáticamente objetos pagados.
+Si `drive.esforzados.com` cobra, conserva siempre la **custodia final garantizada**. Después del pago, un proveedor comercial FederationCloud aprobado puede actuar únicamente como **ingress temporal**: el navegador mide latencia, sube al candidato elegible más rápido y el worker migra después el objeto servidor-a-servidor al S3 central. El Drop no se activa ni empieza su retención hasta verificar la copia central; si el ingress falla, la subida cae al S3 central.
 
-El repositorio incluye `federationdrop/badge.svg` para enlazar el servicio desde dominios externos y un esquema de futuros proveedores comerciales con dominio fijo, capacidad, porcentaje `CommissionBps` y garantía `central_copy` o `dual_replica`. La colocación comercial externa permanece desactivada en esta primera fase.
+Un ArcadeLink `PUBLIC + copy_allowed` se puede descargar o copiar a Mi Drive sin grant privado. Si hay varias réplicas, las copias servidor-a-servidor pueden repartir rangos entre hasta cuatro ubicaciones y validar el SHA-256 final. Los recursos privados continúan usando solicitud/aprobación de acceso. Un recurso público también puede convertirse directamente en FederationDrop por `resource_id`, sin volver a seleccionar el archivo: el cobro corresponde a retención, transferencia y descargas, no al contenido.
 
-FederationDrop usa **Stripe Checkout** con precio dinámico calculado en el servidor y webhook validado mediante `Stripe-Signature`. Todos los nodos enlazan el botón comercial a `ARCADECLOUD_DROP_COMMERCE_URL`, cuyo valor por defecto es `https://drive.esforzados.com/federationdrop`; sólo ese nodo comercial necesita claves Stripe y custodia los archivos pagados en la fase 1. Consulta `drive/docs/FEDERATION_DROP.md`.
+El repositorio incluye `federationdrop/badge.svg` para enlazar el servicio desde dominios externos y el esquema de proveedores comerciales con dominio fijo, capacidad, porcentaje `CommissionBps` y garantía `central_copy` o `dual_replica`. Usar un proveedor como ingress no lo convierte en custodio final.
+
+FederationDrop usa **Stripe Checkout** con precio dinámico calculado en el servidor y webhook validado mediante `Stripe-Signature`. Todos los nodos enlazan el botón comercial a `ARCADECLOUD_DROP_COMMERCE_URL`, cuyo valor por defecto es `https://drive.esforzados.com/federationdrop`; sólo ese nodo comercial necesita claves Stripe. Consulta `drive/docs/FEDERATION_DROP.md`.
 
 ## FederationCloud
 

@@ -177,7 +177,7 @@ final class FederationService
             foreach ($document['items'] as $item) {
                 $items[] = [
                     'document' => $item,
-                    'resource' => $this->resolver->resolve($item, $viewerUserId, true),
+                    'resource' => $this->decorateResolved($this->resolver->resolve($item, $viewerUserId, true)),
                     'raw' => $this->links->encode($item, false),
                 ];
             }
@@ -196,7 +196,7 @@ final class FederationService
             'document' => $document,
             'collection' => false,
             'item_count' => 1,
-            'resource' => $this->resolver->resolve($document, $viewerUserId, true),
+            'resource' => $this->decorateResolved($this->resolver->resolve($document, $viewerUserId, true)),
             'raw' => $this->links->encode($document, false),
         ];
     }
@@ -241,6 +241,25 @@ final class FederationService
             'owner_user_id' => (int)$payload['user_id'],
             'resource_id' => (string)$document['resource_id'],
         ];
+    }
+
+    private function decorateResolved(array $resource): array
+    {
+        $resourceId = trim((string)($resource['resource_id'] ?? ''));
+        $visibility = strtoupper((string)($resource['visibility'] ?? ''));
+        $rights = (string)($resource['rights'] ?? '');
+
+        if ($resourceId !== '' && $visibility === 'PUBLIC' && $rights === 'copy_allowed') {
+            $resource['can_open'] = true;
+            $resource['can_download'] = true;
+            $resource['external_url'] = rtrim($this->config->publicUrl(), '/')
+                . '/federationcloud/replica-open.php?resource_id=' . rawurlencode($resourceId);
+        } elseif ($resourceId !== '' && $visibility === 'PRIVATE') {
+            $resource['request_access_url'] = rtrim($this->config->publicUrl(), '/')
+                . '/federationcloud/portal.php?view=search&q=' . rawurlencode($resourceId);
+        }
+
+        return $resource;
     }
 
     public function config(): FederationConfig

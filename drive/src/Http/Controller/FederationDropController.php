@@ -23,8 +23,13 @@ final class FederationDropController
     public function page(): void
     {
         $service = new FederationDropService($this->app);
+        $state = $service->publicState();
+        $resourceId = trim($this->request->queryString('resource_id'));
+        if ($resourceId !== '') {
+            $state['source_resource'] = $service->publicResourceState($resourceId);
+        }
         (new FederationDropPageRenderer())->render(
-            $service->publicState(),
+            $state,
             $this->request->queryString('source'),
             $this->request->queryString('manage'),
             $this->request->queryString('owner_token'),
@@ -65,6 +70,39 @@ final class FederationDropController
                 ), 201);
             }
 
+            if ($action === 'create-public-resource' && $this->request->method() === 'POST') {
+                JsonResponse::send($service->createPublicResourceOrder(
+                    $this->request->postString('email'),
+                    $this->request->postString('resource_id'),
+                    $this->request->postInt('days'),
+                    $this->request->postInt('downloads'),
+                    $this->request->postString('source_domain')
+                ), 201);
+            }
+
+            if ($action === 'ingress-candidates' && $this->request->method() === 'POST') {
+                JsonResponse::send($service->ingressCandidates(
+                    $this->request->postString('drop_id'),
+                    $this->request->postString('owner_token')
+                ));
+            }
+
+            if ($action === 'ingress-authorize' && $this->request->method() === 'POST') {
+                JsonResponse::send($service->authorizeIngress(
+                    $this->request->postString('drop_id'),
+                    $this->request->postString('owner_token'),
+                    $this->request->postString('ingress_node_id')
+                ));
+            }
+
+            if ($action === 'ingress-register' && $this->request->method() === 'POST') {
+                JsonResponse::send($service->registerIngressUploaded(
+                    $this->request->postString('drop_id'),
+                    $this->request->postString('owner_token'),
+                    $this->request->postString('ingress_id')
+                ));
+            }
+
             if ($action === 'upload-authorize' && $this->request->method() === 'POST') {
                 JsonResponse::send($service->authorizeUpload(
                     $this->request->postString('drop_id'),
@@ -93,18 +131,18 @@ final class FederationDropController
                 ));
             }
 
-            if ($action === 'payment-webhook' && $this->request->method() === 'POST') {
+            if (in_array($action, ['stripe-webhook', 'payment-webhook'], true) && $this->request->method() === 'POST') {
                 $length = (int)$this->request->serverString('CONTENT_LENGTH', '0');
-                if ($length <= 0 || $length > 65536) {
-                    JsonResponse::send(['ok' => false, 'error' => 'Webhook ausente o demasiado grande.'], 413);
+                if ($length <= 0 || $length > 1048576) {
+                    JsonResponse::send(['ok' => false, 'error' => 'Webhook Stripe ausente o demasiado grande.'], 413);
                 }
-                $raw = file_get_contents('php://input', false, null, 0, 65537);
-                if (!is_string($raw) || $raw === '' || strlen($raw) > 65536) {
-                    JsonResponse::send(['ok' => false, 'error' => 'Webhook FederationDrop inválido.'], 413);
+                $raw = file_get_contents('php://input', false, null, 0, 1048577);
+                if (!is_string($raw) || $raw === '' || strlen($raw) > 1048576) {
+                    JsonResponse::send(['ok' => false, 'error' => 'Webhook Stripe FederationDrop inválido.'], 413);
                 }
                 JsonResponse::send($service->receivePaymentWebhook(
                     $raw,
-                    $this->request->serverString('HTTP_X_ARCADECLOUD_DROP_SIGNATURE')
+                    $this->request->serverString('HTTP_STRIPE_SIGNATURE')
                 ));
             }
 

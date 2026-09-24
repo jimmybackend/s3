@@ -14,6 +14,19 @@ final class FederationDropPageRenderer
     ): void {
         $h = static fn(mixed $value): string => htmlspecialchars((string)$value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
         $ready = !empty($state['ready']);
+        $commerceNode = !empty($state['commerce_node']);
+        $commerceUrl = rtrim((string)($state['commerce_url'] ?? ''), '/');
+        $sourceResource = is_array($state['source_resource'] ?? null) ? $state['source_resource'] : null;
+        $sourceResourceId = is_array($sourceResource) ? trim((string)($sourceResource['resource_id'] ?? '')) : '';
+        $sourceResourceValid = $sourceResourceId !== '' && empty($sourceResource['error']);
+        $localHost = (string)(parse_url((string)($state['public_url'] ?? ''), PHP_URL_HOST) ?: '');
+        $referralSource = trim($sourceDomain) !== '' ? trim($sourceDomain) : $localHost;
+        $commerceEntry = $commerceUrl;
+        if (!$commerceNode && $commerceUrl !== '') {
+            $query = ['source' => $referralSource];
+            if ($sourceResourceId !== '') $query['resource_id'] = $sourceResourceId;
+            $commerceEntry .= '/?' . http_build_query($query, '', '&', PHP_QUERY_RFC3986);
+        }
         $currency = (string)($state['currency'] ?? 'MXN');
         $maxDays = max(1, (int)($state['max_days'] ?? 30));
         $maxDownloads = max(1, (int)($state['max_downloads'] ?? 1000));
@@ -45,6 +58,8 @@ final class FederationDropPageRenderer
   id="federationDropApp"
   class="drop-shell"
   data-ready="<?= $ready ? '1' : '0' ?>"
+  data-commerce-node="<?= $commerceNode ? '1' : '0' ?>"
+  data-commerce-url="<?= $h($commerceEntry) ?>"
   data-currency="<?= $h($currency) ?>"
   data-max-days="<?= $maxDays ?>"
   data-max-downloads="<?= $maxDownloads ?>"
@@ -53,6 +68,10 @@ final class FederationDropPageRenderer
   data-manage="<?= $h($manageDropId) ?>"
   data-owner-token="<?= $h($ownerToken) ?>"
   data-payment-return="<?= $h($paymentReturn) ?>"
+  data-resource-id="<?= $h($sourceResourceValid ? $sourceResourceId : '') ?>"
+  data-resource-size="<?= $h($sourceResourceValid ? (string)($sourceResource['size_bytes'] ?? '') : '') ?>"
+  data-resource-title="<?= $h($sourceResourceValid ? (string)($sourceResource['title'] ?? '') : '') ?>"
+  data-resource-mime="<?= $h($sourceResourceValid ? (string)($sourceResource['media_type'] ?? '') : '') ?>"
 >
   <div class="d-flex align-items-center justify-content-between mb-4">
     <div>
@@ -62,26 +81,54 @@ final class FederationDropPageRenderer
     <a href="../federationcloud/portal.php" class="btn btn-outline-light btn-sm">FederationCloud</a>
   </div>
 
-  <?php if (!$ready): ?>
+  <?php if (!$commerceNode): ?>
+    <div class="alert alert-info">
+      <strong>El pago y la custodia se realizan en el portal comercial FederationDrop.</strong>
+      Este nodo no recibe el dinero ni almacena el archivo pagado.
+    </div>
+    <section class="drop-card mb-4">
+      <h2 class="h5">Subir, pagar y compartir</h2>
+      <p class="drop-muted">Continuarás en <code><?= $h($commerceUrl) ?></code>. El dominio de este nodo se conserva únicamente como referencia de procedencia.</p>
+      <a class="btn btn-info btn-lg" rel="noopener noreferrer" href="<?= $h($commerceEntry) ?>">
+        Ir a drive.esforzados.com
+      </a>
+    </section>
+  <?php elseif (!$ready): ?>
     <div class="alert alert-warning">
-      <strong>FederationDrop todavía no está habilitado para cobros.</strong>
+      <strong>FederationDrop todavía no está habilitado para cobros Stripe.</strong>
       <?= $h($state['error'] ?? 'Falta configuración comercial.') ?>
     </div>
   <?php endif; ?>
 
+  <?php if ($commerceNode && is_array($sourceResource) && !empty($sourceResource['error'])): ?>
+    <div class="alert alert-warning"><?= $h($sourceResource['error']) ?></div>
+  <?php endif; ?>
+
+  <?php if ($commerceNode): ?>
   <section class="drop-card mb-4" id="dropCreateCard">
-    <h2 class="h5">Crear enlace temporal</h2>
-    <p class="drop-muted">El nodo que cobra custodia el archivo. Primero se confirma el pago y sólo entonces se autoriza una subida temporal directa a S3 privado.</p>
+    <h2 class="h5"><?= $sourceResourceValid ? 'Custodiar recurso público temporalmente' : 'Crear enlace temporal' ?></h2>
+    <?php if ($sourceResourceValid): ?>
+      <p class="drop-muted">Este archivo ya existe en FederationCloud. Stripe cobra únicamente el servicio de retención/transferencia/descargas; después del pago, drive.esforzados.com lo trae directamente entre nubes y verifica su SHA-256.</p>
+      <div class="alert alert-info">
+        <strong><?= $h($sourceResource['title'] ?? 'Recurso FederationCloud') ?></strong><br>
+        <?= $h($this->formatBytes((int)($sourceResource['size_bytes'] ?? 0))) ?> ·
+        <code><?= $h($sourceResourceId) ?></code>
+      </div>
+    <?php else: ?>
+      <p class="drop-muted">El nodo que cobra custodia el archivo. Primero se confirma el pago y sólo entonces se autoriza una subida temporal directa a S3 privado.</p>
+    <?php endif; ?>
     <form id="dropCreateForm">
       <div class="form-group">
         <label for="dropEmail">Correo del propietario</label>
         <input class="form-control" id="dropEmail" name="email" type="email" maxlength="320" autocomplete="email" required>
       </div>
+      <?php if (!$sourceResourceValid): ?>
       <div class="form-group">
         <label for="dropFile">Archivo</label>
         <input class="form-control-file" id="dropFile" name="file" type="file" required>
         <small class="drop-muted">Máximo configurado: <?= $h($this->formatBytes($maxBytes)) ?>.</small>
       </div>
+      <?php endif; ?>
       <div class="form-row">
         <div class="form-group col-md-6">
           <label for="dropDays">Días disponible</label>
@@ -105,6 +152,7 @@ final class FederationDropPageRenderer
       <div id="dropError" class="alert alert-danger mt-3 d-none"></div>
     </form>
   </section>
+  <?php endif; ?>
 
   <section class="drop-card mb-4 d-none" id="dropManageCard">
     <div class="d-flex justify-content-between align-items-start">
@@ -119,10 +167,10 @@ final class FederationDropPageRenderer
 
   <section class="drop-card">
     <h2 class="h5">Pon FederationDrop en cualquier dominio</h2>
-    <p class="drop-muted">El sitio sólo publica la imagen/enlace. El cobro y la custodia siguen perteneciendo al nodo comercial configurado.</p>
-    <img class="drop-badge-preview mb-3" src="badge.svg" alt="Compartir con FederationDrop">
-    <pre class="mb-0 text-light"><code>&lt;a href="<?= $h($state['public_url'] ?? '') ?>/?source=tu-dominio.com"&gt;
-  &lt;img src="<?= $h($state['public_url'] ?? '') ?>/badge.svg" alt="Compartir con FederationDrop"&gt;
+    <p class="drop-muted">El sitio sólo publica la imagen/enlace. Todos los cobros y la custodia comercial apuntan al portal canónico.</p>
+    <img class="drop-badge-preview mb-3" src="<?= $h($commerceUrl) ?>/badge.svg" alt="Compartir con FederationDrop">
+    <pre class="mb-0 text-light"><code>&lt;a href="<?= $h($commerceUrl) ?>/?source=tu-dominio.com"&gt;
+  &lt;img src="<?= $h($commerceUrl) ?>/badge.svg" alt="Compartir con FederationDrop"&gt;
 &lt;/a&gt;</code></pre>
   </section>
 </main>

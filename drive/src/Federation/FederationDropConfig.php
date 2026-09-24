@@ -5,11 +5,14 @@ namespace ArcadeCloud\Drive\Federation;
 
 final class FederationDropConfig
 {
+    public const DEFAULT_COMMERCE_URL = 'https://drive.esforzados.com/federationdrop';
+
     public function __construct(
         public readonly bool $enabled,
         public readonly string $publicUrl,
-        public readonly string $checkoutUrl,
-        public readonly string $webhookSecret,
+        public readonly string $commerceUrl,
+        public readonly string $stripeSecretKey,
+        public readonly string $stripeWebhookSecret,
         public readonly string $currency,
         public readonly int $baseFeeCents,
         public readonly int $storageGbDayCents,
@@ -24,12 +27,15 @@ final class FederationDropConfig
     public static function fromEnvironment(): self
     {
         $base = rtrim(self::env('ARCADECLOUD_PUBLIC_URL'), '/');
-        $publicUrl = self::env('ARCADECLOUD_DROP_PUBLIC_URL', $base !== '' ? $base . '/federationdrop' : '');
+        $publicUrl = rtrim(self::env('ARCADECLOUD_DROP_PUBLIC_URL', $base !== '' ? $base . '/federationdrop' : ''), '/');
+        $commerceUrl = rtrim(self::env('ARCADECLOUD_DROP_COMMERCE_URL', self::DEFAULT_COMMERCE_URL), '/');
+
         return new self(
             self::envBool('ARCADECLOUD_DROP_ENABLED', false),
-            rtrim($publicUrl, '/'),
-            self::env('ARCADECLOUD_DROP_CHECKOUT_URL'),
-            self::env('ARCADECLOUD_DROP_WEBHOOK_SECRET'),
+            $publicUrl,
+            $commerceUrl,
+            self::env('ARCADECLOUD_STRIPE_SECRET_KEY'),
+            self::env('ARCADECLOUD_STRIPE_WEBHOOK_SECRET'),
             strtoupper(self::env('ARCADECLOUD_DROP_CURRENCY', 'MXN')),
             self::envInt('ARCADECLOUD_DROP_BASE_FEE_CENTS', 0, 0, 100000000),
             self::envInt('ARCADECLOUD_DROP_STORAGE_GB_DAY_CENTS', 0, 0, 100000000),
@@ -41,31 +47,60 @@ final class FederationDropConfig
         );
     }
 
+    public function isCommerceNode(): bool
+    {
+        return $this->normalizeUrl($this->publicUrl) !== ''
+            && hash_equals($this->normalizeUrl($this->commerceUrl), $this->normalizeUrl($this->publicUrl));
+    }
+
     public function assertReady(): void
     {
         if (!$this->enabled) {
-            throw new FederationException('FederationDrop está desactivado en este nodo.', 503);
+            throw new FederationException('FederationDrop comercial está desactivado en este nodo.', 503);
         }
-        $this->assertWebhookReady();
-        foreach ([$this->publicUrl, $this->checkoutUrl] as $url) {
+        if (!$this->isCommerceNode()) {
+            throw new FederationException('Este nodo no es el portal comercial FederationDrop. El cobro y la custodia pertenecen al nodo comercial configurado.', 503);
+        }
+
+        foreach ([$this->publicUrl, $this->commerceUrl] as $url) {
             $parts = parse_url($url);
-            if (!is_array($parts) || strtolower((string)($parts['scheme'] ?? '')) !== 'https' || empty($parts['host'])) {
-                throw new FederationException('FederationDrop requiere URLs HTTPS válidas.', 503);
+            if (!is_array($parts) || strtolower((string)($parts['scheme'] ?? '')) !== 'https' || empty($parts['host'])
+                || isset($parts['user']) || isset($parts['pass']) || isset($parts['query']) || isset($parts['fragment'])) {
+                throw new FederationException('FederationDrop requiere URLs HTTPS válidas sin credenciales, query ni fragmento.', 503);
             }
+        }
+
+        $this->assertStripeReady();
+
+        if (!preg_match('/\A[A-Z]{3}\z/', $this->currency)) {
+            throw new FederationException('Moneda FederationDrop inválida.', 503);
         }
         if ($this->baseFeeCents + $this->storageGbDayCents + $this->egressGbCents <= 0) {
             throw new FederationException('Configura una tarifa positiva para FederationDrop.', 503);
         }
     }
 
-    public function assertWebhookReady(): void
+    public function assertStripeWebhookReady(): void
     {
-        if (strlen($this->webhookSecret) < 32) {
-            throw new FederationException('FederationDrop requiere ARCADECLOUD_DROP_WEBHOOK_SECRET de al menos 32 caracteres.', 503);
+        if (!$this->isCommerceNode()) {
+            throw new FederationException('Este nodo no puede procesar webhooks comerciales FederationDrop.', 503);
         }
-        if (!preg_match('/\A[A-Z]{3}\z/', $this->currency)) {
-            throw new FederationException('Moneda FederationDrop inválida.', 503);
+        $this->assertStripeReady();
+    }
+
+    public function assertStripeReady(): void
+    {
+        if (!preg_match('/^(?:sk|rk)_(?:test|live)_[A-Za-z0-9_]+$/', $this->stripeSecretKey)) {
+            throw new FederationException('FederationDrop requiere una clave secreta Stripe válida.', 503);
         }
+        if (!str_starts_with($this->stripeWebhookSecret, 'whsec_') || strlen($this->stripeWebhookSecret) < 16) {
+            throw new FederationException('FederationDrop requiere un secreto webhook Stripe válido.', 503);
+        }
+    }
+
+    private function normalizeUrl(string $url): string
+    {
+        return rtrim(strtolower(trim($url)), '/');
     }
 
     private static function env(string $name, string $default = ''): string

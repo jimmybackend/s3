@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace ArcadeCloud\Drive\View;
 
+use ArcadeCloud\Drive\Federation\FederationDropConfig;
+
 final class FederationPageRenderer
 {
     public function render(
@@ -13,6 +15,10 @@ final class FederationPageRenderer
         ?array $node = null
     ): void {
         $h = static fn(mixed $v): string => htmlspecialchars((string)$v, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+        $dropConfig = FederationDropConfig::fromEnvironment();
+        $sourceHost = (string)(parse_url((string)getenv('ARCADECLOUD_PUBLIC_URL'), PHP_URL_HOST) ?: '');
+        $dropUrl = rtrim($dropConfig->commerceUrl, '/') . '/?source=' . rawurlencode($sourceHost);
+
         $statusLabels = [
             'available' => 'Disponible',
             'not_available' => 'No disponible',
@@ -89,6 +95,9 @@ final class FederationPageRenderer
   </a>
   <div class="ml-auto d-flex align-items-center">
     <span class="small text-muted mr-3 d-none d-md-inline">FederationCloud</span>
+    <a class="btn btn-info btn-sm mr-2" rel="noopener noreferrer" href="<?= $h($dropUrl) ?>">
+      <i class="fas fa-cloud-arrow-up mr-1"></i> Subir / pagar
+    </a>
     <a class="btn btn-outline-light btn-sm" href="../s3.php">
       <i class="fas fa-arrow-left mr-1"></i> Drive
     </a>
@@ -152,6 +161,19 @@ final class FederationPageRenderer
           $mediaType = strtolower(trim((string)($resource['media_type'] ?? $resource['resource_type'] ?? 'application/octet-stream')));
           $status = (string)($resource['status'] ?? '');
           $fileIcon = $iconFor($resource);
+          $resourceId = trim((string)($resource['resource_id'] ?? ''));
+          $isPublicCopy = strtoupper((string)($resource['visibility'] ?? '')) === 'PUBLIC'
+              && (string)($resource['rights'] ?? '') === 'copy_allowed'
+              && $resourceId !== '';
+          $dropResourceUrl = $dropConfig->commerceUrl !== '' && $isPublicCopy
+              ? rtrim($dropConfig->commerceUrl, '/') . '/?' . http_build_query([
+                  'source' => $sourceHost,
+                  'resource_id' => $resourceId,
+              ], '', '&', PHP_QUERY_RFC3986)
+              : '';
+          $copyResourceUrl = $isPublicCopy
+              ? './portal.php?view=search&q=' . rawurlencode($resourceId)
+              : '';
       ?>
         <section class="federation-card mb-3">
           <div class="federation-resource">
@@ -184,9 +206,23 @@ final class FederationPageRenderer
                     <i class="fas fa-arrow-up-right-from-square mr-1"></i> Abrir
                   </button>
                 </form>
+              <?php elseif (!empty($resource['request_access_url'])): ?>
+                <a class="btn btn-warning" rel="noopener noreferrer" href="<?= $h($resource['request_access_url']) ?>">
+                  <i class="fas fa-key mr-1"></i> Solicitar clave / acceso
+                </a>
               <?php elseif (empty($resource['local']) && !empty($resource['origin_reachable'])): ?>
                 <a class="btn btn-primary" rel="noopener noreferrer" href="<?= $h($resource['federation_url'] ?? '#') ?>">
                   <i class="fas fa-network-wired mr-1"></i> Ir al nodo
+                </a>
+              <?php endif; ?>
+              <?php if ($isPublicCopy && $copyResourceUrl !== ''): ?>
+                <a class="btn btn-outline-info" href="<?= $h($copyResourceUrl) ?>">
+                  <i class="fas fa-folder-plus mr-1"></i> Copiar a Mi Drive
+                </a>
+              <?php endif; ?>
+              <?php if ($isPublicCopy && $dropResourceUrl !== ''): ?>
+                <a class="btn btn-outline-warning" rel="noopener noreferrer" href="<?= $h($dropResourceUrl) ?>">
+                  <i class="fas fa-clock mr-1"></i> FederationDrop temporal
                 </a>
               <?php endif; ?>
             </div>

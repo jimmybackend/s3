@@ -19,6 +19,7 @@ $presence = (string)file_get_contents($root . '/src/Federation/FederationReplica
 $controller = (string)file_get_contents($root . '/src/Http/Controller/FederationProviderController.php');
 $endpoint = (string)file_get_contents($root . '/federationcloud/provider-presence.php');
 $sync = (string)file_get_contents($root . '/bin/federation_sync.php');
+$syncCycle = (string)file_get_contents($root . '/src/Federation/FederationSyncCycleService.php');
 $refresh = (string)file_get_contents($root . '/bin/federation_endpoint_refresh.php');
 $requestCli = (string)file_get_contents($root . '/bin/federation_provider_request.php');
 $replicas = (string)file_get_contents($root . '/src/Federation/FederationReplicaService.php');
@@ -55,14 +56,15 @@ reconnectOk(str_contains($presence, "postJson(\$originUrl, 'provider-request.php
 reconnectOk(str_contains($presence, "'relationship' => 'shared_backend'"), 'la copia identifica relación privilegiada explícitamente');
 reconnectOk(str_contains($presence, '->upsertVerified($origin)'), 'la copia aprende el origen como peer para gossip');
 
-$presencePos = strpos($sync, 'new FederationReplicaPresenceService');
-$customsPos = strpos($sync, 'new FederationCustomsService');
-$gossipPos = strpos($sync, 'new FederationGossipService');
+$presencePos = strpos($syncCycle, 'new FederationReplicaPresenceService');
+$customsPos = strpos($syncCycle, 'new FederationCustomsService');
+$gossipPos = strpos($syncCycle, 'new FederationGossipService');
 reconnectOk(
     $presencePos !== false && $customsPos !== false && $gossipPos !== false
         && $presencePos < $customsPos && $customsPos < $gossipPos,
     'worker refresca réplica, luego Aduana y después gossip'
 );
+reconnectOk(str_contains($sync, 'FederationSyncCycleService'), 'CLI del worker delega el ciclo en servicio OOP');
 reconnectOk(str_contains($refresh, 'new FederationReplicaPresenceService'), 'arranque/cambio de endpoint reanuncia réplica');
 reconnectOk(str_contains($requestCli, "'relationship' => 'shared_backend'"), 'CLI de alta inicial declara relación compartida');
 reconnectOk(str_contains($requestCli, 'random_bytes(24)'), 'CLI manual genera Request ID fresco para reautorizar tras revocación');

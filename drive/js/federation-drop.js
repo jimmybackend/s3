@@ -17,6 +17,8 @@ class FederationDropApp {
     this.currentDropId = '';
     this.ownerToken = '';
     this.pendingFile = null;
+    this.resourceId = String(root?.dataset?.resourceId || '');
+    this.resourceSize = Number(root?.dataset?.resourceSize || 0);
     this.pollTimer = null;
   }
 
@@ -40,19 +42,21 @@ class FederationDropApp {
       this.showManage();
       this.refreshStatus();
     }
+    if (this.resourceId) this.refreshQuote();
   }
 
   async refreshQuote() {
     const file = this.file?.files?.[0];
+    const sizeBytes = this.resourceId ? this.resourceSize : Number(file?.size || 0);
     const days = Number(this.days?.value || 0);
     const downloads = Number(this.downloads?.value || 0);
-    if (!file || !days || !downloads) {
+    if (!sizeBytes || !days || !downloads) {
       if (this.quote) this.quote.textContent = '—';
       return;
     }
     try {
       const body = new URLSearchParams({
-        size_bytes: String(file.size),
+        size_bytes: String(sizeBytes),
         days: String(days),
         downloads: String(downloads)
       });
@@ -66,9 +70,10 @@ class FederationDropApp {
   async create(event) {
     event.preventDefault();
     const file = this.file?.files?.[0];
-    if (!file) return this.showError('Selecciona un archivo.');
+    if (!this.resourceId && !file) return this.showError('Selecciona un archivo.');
+    const sizeBytes = this.resourceId ? this.resourceSize : Number(file?.size || 0);
     const maxBytes = Number(this.root.dataset.maxBytes || 0);
-    if (maxBytes > 0 && file.size > maxBytes) return this.showError('El archivo excede el máximo permitido.');
+    if (maxBytes > 0 && sizeBytes > maxBytes) return this.showError('El archivo excede el máximo permitido.');
 
     this.setBusy(true);
     this.showError('');
@@ -76,22 +81,30 @@ class FederationDropApp {
       this.setProgress('Creando orden segura…');
       const body = new URLSearchParams({
         email: String(this.email?.value || ''),
-        filename: file.name,
-        size_bytes: String(file.size),
-        mime_type: file.type || 'application/octet-stream',
         days: String(this.days?.value || ''),
         downloads: String(this.downloads?.value || ''),
         source_domain: String(this.root.dataset.source || '')
       });
-      const order = await this.request('api.php?action=create', { method: 'POST', body });
+      let action = 'create';
+      if (this.resourceId) {
+        action = 'create-public-resource';
+        body.set('resource_id', this.resourceId);
+      } else {
+        body.set('filename', file.name);
+        body.set('size_bytes', String(file.size));
+        body.set('mime_type', file.type || 'application/octet-stream');
+      }
+      const order = await this.request(`api.php?action=${action}`, { method: 'POST', body });
       this.currentDropId = order.drop_id;
       this.ownerToken = order.owner_token;
-      this.pendingFile = file;
+      this.pendingFile = this.resourceId ? null : file;
       sessionStorage.setItem(`federationdrop.owner.${order.drop_id}`, order.owner_token);
 
       this.showManage();
       await this.refreshStatus();
-      this.setProgress('Completa el pago en la ventana que se abrirá. El archivo todavía NO se ha subido.');
+      this.setProgress(this.resourceId
+        ? 'Completa el pago. Después FederationCloud traerá el recurso directamente entre nubes; no tendrás que volver a seleccionarlo.'
+        : 'Completa el pago en la ventana que se abrirá. El archivo todavía NO se ha subido.');
 
       const paymentWindow = window.open(order.checkout_url, '_blank', 'noopener,noreferrer');
       if (!paymentWindow) {
@@ -134,7 +147,154 @@ class FederationDropApp {
   async uploadPaidFile(file) {
     if (!file || !this.currentDropId || !this.ownerToken) return;
     this.showError('');
-    this.setProgress('Pago confirmado. Solicitando autorización temporal de subida…');
+
+    try {
+      this.setProgress('Pago confirmado. Buscando un nodo de ingreso cercano…');
+      const nearby = await this.tryNearbyIngress(file);
+      if (nearby) {
+        this.pendingFile = null;
+        this.setProgress('Subida recibida por el nodo cercano. FederationCloud la está migrando a la custodia de drive.esforzados.com.');
+        this.startPaymentPolling();
+        await this.refreshStatus();
+        return;
+      }
+    } catch (error) {
+      console.warn('FederationDrop nearby ingress fallback:', error);
+      this.setProgress('El nodo cercano no pudo completar la subida; continuando directamente con drive.esforzados.com…');
+    }
+
+    await this.uploadDirect(file);
+  }
+
+  async tryNearbyIngress(file) {
+    const authBody = new URLSearchParams({
+      drop_id: this.currentDropId,
+      owner_token: this.ownerToken
+    });
+    const discovery = await this.request('api.php?action=ingress-candidates', {
+      method: 'POST',
+      body: authBody
+    });
+    const candidates = Array.isArray(discovery.candidates) ? discovery.candidates : [];
+    if (!candidates.length) return false;
+
+    const measured = await Promise.all(candidates.map(async (candidate) => {
+      const latency = await this.measureIngressLatency(String(candidate.probe_url || ''));
+      return Number.isFinite(latency) ? { candidate, latency } : null;
+    }));
+    const ranked = measured
+      .filter(Boolean)
+      .sort((a, b) => a.latency - b.latency);
+    if (!ranked.length) return false;
+
+    const selected = ranked[0].candidate;
+    this.setProgress(`Nodo cercano: ${String(selected.domain || selected.node_id || 'FederationCloud')} · autorizando subida temporal…`);
+
+    const authorizeBody = new URLSearchParams({
+      drop_id: this.currentDropId,
+      owner_token: this.ownerToken,
+      ingress_node_id: String(selected.node_id || '')
+    });
+    const ingress = await this.request('api.php?action=ingress-authorize', {
+      method: 'POST',
+      body: authorizeBody
+    });
+
+    let remoteAuthorized = false;
+    try {
+      const remote = await this.remoteJson(`${ingress.endpoint}?action=authorize`, {
+        action: 'authorize',
+        grant: ingress.grant
+      });
+      remoteAuthorized = true;
+
+      this.setProgress('Subiendo al nodo de ingreso más rápido…');
+      const headers = new Headers(remote.upload?.headers || {});
+      const uploadResponse = await fetch(String(remote.upload?.url || ''), {
+        method: 'PUT',
+        headers,
+        body: file
+      });
+      if (!uploadResponse.ok) throw new Error('El almacenamiento del nodo cercano rechazó la subida.');
+
+      this.setProgress('Verificando la subida en el nodo cercano…');
+      const completed = await this.remoteJson(`${ingress.endpoint}?action=complete`, {
+        action: 'complete',
+        grant: ingress.grant
+      });
+      if (String(completed.ingress_id || '') !== String(ingress.ingress_id || '')) {
+        throw new Error('El nodo cercano devolvió un identificador ingress inesperado.');
+      }
+
+      const registerBody = new URLSearchParams({
+        drop_id: this.currentDropId,
+        owner_token: this.ownerToken,
+        ingress_id: String(ingress.ingress_id || '')
+      });
+      await this.request('api.php?action=ingress-register', {
+        method: 'POST',
+        body: registerBody
+      });
+      return true;
+    } catch (error) {
+      if (remoteAuthorized) {
+        try {
+          await this.remoteJson(`${ingress.endpoint}?action=delete`, {
+            action: 'delete',
+            grant: ingress.grant
+          });
+        } catch (_) {}
+      }
+      throw error;
+    }
+  }
+
+  async measureIngressLatency(url) {
+    if (!url) return Number.POSITIVE_INFINITY;
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => controller.abort(), 1800);
+    const started = performance.now();
+    try {
+      const response = await fetch(url, {
+        method: 'GET',
+        mode: 'cors',
+        credentials: 'omit',
+        cache: 'no-store',
+        signal: controller.signal
+      });
+      if (!response.ok) return Number.POSITIVE_INFINITY;
+      const data = await response.json().catch(() => null);
+      if (!data || data.ok !== true) return Number.POSITIVE_INFINITY;
+      return performance.now() - started;
+    } catch (_) {
+      return Number.POSITIVE_INFINITY;
+    } finally {
+      window.clearTimeout(timeout);
+    }
+  }
+
+  async remoteJson(url, payload) {
+    const response = await fetch(url, {
+      method: 'POST',
+      mode: 'cors',
+      credentials: 'omit',
+      cache: 'no-store',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(payload || {})
+    });
+    let data = {};
+    try { data = await response.json(); } catch (_) {}
+    if (!response.ok || data.ok === false) {
+      throw new Error(data.error || `Nodo ingress HTTP ${response.status}`);
+    }
+    return data;
+  }
+
+  async uploadDirect(file) {
+    this.setProgress('Solicitando autorización temporal de subida central…');
     try {
       const authBody = new URLSearchParams({
         drop_id: this.currentDropId,
@@ -145,7 +305,7 @@ class FederationDropApp {
         body: authBody
       });
 
-      this.setProgress('Subiendo directamente al almacenamiento privado del nodo…');
+      this.setProgress('Subiendo directamente al almacenamiento privado de drive.esforzados.com…');
       const uploadHeaders = new Headers(auth.upload.headers || {});
       const response = await fetch(auth.upload.url, {
         method: 'PUT',
@@ -193,7 +353,7 @@ class FederationDropApp {
   renderStatus(status) {
     this.showManage();
     const label = {
-      pending_upload: 'Pagado · pendiente de subir archivo',
+      pending_upload: status.materializing ? 'Pagado · trayendo recurso entre nubes' : 'Pagado · pendiente de subir archivo',
       pending_payment: 'Pendiente de pago',
       active: 'Activo',
       expired: 'Vencido',
@@ -212,6 +372,18 @@ class FederationDropApp {
     } else if (status.payment_status !== 'paid' && status.checkout_url) {
       parts.push(`<p><a class="btn btn-info" target="_blank" rel="noopener noreferrer" href="${this.attr(status.checkout_url)}">Continuar al pago</a></p>`);
       parts.push('<p class="drop-muted small">El archivo no se subirá hasta que el pago sea confirmado.</p>');
+    } else if (status.materializing) {
+      if (status.source_mode === 'public_resource') {
+        parts.push('<div class="alert alert-info mb-3">Pago confirmado. FederationCloud está trayendo el recurso público directamente desde las copias disponibles y verificará el SHA-256 antes de activarlo.</div>');
+        if (status.source_resource_id) {
+          parts.push(`<div class="drop-muted small mb-3">Fuente: ${this.escape(status.source_resource_id)}</div>`);
+        }
+      } else {
+        parts.push('<div class="alert alert-info mb-3">El nodo cercano ya recibió el archivo. FederationCloud lo está migrando a la custodia de drive.esforzados.com; el plazo contratado todavía no ha comenzado.</div>');
+        if (status.ingress_node_id) {
+          parts.push(`<div class="drop-muted small mb-3">Ingress temporal: ${this.escape(status.ingress_node_id)}</div>`);
+        }
+      }
     } else if (status.can_upload) {
       parts.push('<div class="form-group"><label for="dropPaidFile">Pago confirmado. Selecciona el archivo de la orden para subirlo.</label><input id="dropPaidFile" class="form-control-file" type="file"></div>');
       parts.push('<button id="dropPaidUploadButton" type="button" class="btn btn-info btn-sm">Subir archivo pagado</button>');

@@ -61,11 +61,13 @@ $requiredTables = [
     'FederationAccessRequests',
     'FederationShares',
     'FederationShareImportJobs',
+    'FederationPublicImportJobs',
     'FederationReplicaJobs',
     'FederationReplicaObjects',
     'FederationIngressQueue',
     'FederationDrops',
     'FederationDropPaymentEvents',
+    'FederationDropIngressObjects',
     'FederationCommercialProviders',
     'FederationDropPlacements',
 ];

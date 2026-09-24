@@ -183,6 +183,41 @@ ImportedResourceUpdatedAt
 
 Así Compartidos sigue diciendo de dónde vino el archivo aunque el usuario ya tenga una copia propia.
 
+## Recursos PUBLIC: copia sin grant privado
+
+Un recurso del catálogo con:
+
+```text
+visibility = PUBLIC
+rights = copy_allowed
+content_id = sha256:...
+```
+
+no necesita pasar por `FederationShares` ni por una aprobación privada para copiarse a Mi Drive.
+
+La búsqueda muestra **Descargar público** y **Agregar a Mi Drive**. La copia pública usa una cola separada:
+
+```text
+POST public-drive.php
+  -> FederationPublicImportJobs
+  -> worker FederationCloud
+  -> FederationReplicaResolverService::publicSources()
+  -> hasta 4 URLs S3 válidas
+  -> FederationMultiSourceDownloader
+  -> rangos HTTP disjuntos
+  -> ensamblado + SHA-256
+  -> SingleUploadService
+  -> DataN/ + FileS3
+```
+
+Si sólo existe una ubicación, el downloader usa una sola fuente. Si existen varias réplicas activas, reparte rangos entre ellas y valida el SHA-256 del archivo reconstruido antes de guardarlo.
+
+Esto corrige la frontera entre público y privado:
+
+- PUBLIC + copy_allowed: descarga/copia directa, sin “clave de acceso”;
+- PRIVATE/requestable: solicitud del propietario y grant temporal;
+- un error de credencial S3 en una ubicación pública no obliga al usuario a pedir una clave: el resolver prueba otra ubicación.
+
 ## Versiones nuevas
 
 Agregar a Mi Drive nunca sobrescribe silenciosamente la copia personal.
@@ -222,7 +257,8 @@ El importador de Compartidos:
 ```text
 solicitudes privadas: hasta 5 por ciclo
 réplicas: hasta 3 outgoing + 2 incoming por ciclo
-Agregar a Mi Drive: hasta 1 Share por ciclo
+Agregar a Mi Drive desde Share: hasta 1 por ciclo
+Importación PUBLIC: hasta 1 por ciclo
 ```
 
 `FederationShareImportJobs` registra estado, intentos, próximo intento y error resumido. Los fallos transitorios usan backoff; después de 5 intentos el trabajo queda `failed` y el usuario puede volver a encolarlo desde la UI.
@@ -249,11 +285,18 @@ GET  /federationcloud/access.php
 POST /federationcloud/access.php
 ```
 
-Copia a Mi Drive:
+Copia a Mi Drive desde un Share privado:
 
 ```text
 GET  /federationcloud/share-drive.php
 POST /federationcloud/share-drive.php
+```
+
+Copia de un recurso PUBLIC + copy_allowed:
+
+```text
+GET  /federationcloud/public-drive.php
+POST /federationcloud/public-drive.php
 ```
 
 `share-drive.php` GET devuelve el estado de los Shares recibidos, vínculo con `FileS3`, estado de importación y si existe una versión global posterior. POST acepta:
@@ -294,6 +337,7 @@ Incluye:
 FederationAccessRequests
 FederationShares
 FederationShareImportJobs
+FederationPublicImportJobs
 ```
 
 y agrega idempotentemente las columnas de vínculo con Mi Drive a instalaciones existentes.

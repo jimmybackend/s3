@@ -2274,6 +2274,26 @@ CREATE TABLE IF NOT EXISTS FederationShareImportJobs (
   KEY idx_fshare_import_user (UserId, ShareId, UpdatedAt)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS FederationPublicImportJobs (
+  ImportId varchar(96) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  UserId int NOT NULL,
+  ResourceId varchar(96) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  VersionKey char(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  Status enum('queued','processing','retry','completed','failed') NOT NULL DEFAULT 'queued',
+  Attempts int unsigned NOT NULL DEFAULT 0,
+  LastAttemptAt datetime(6) DEFAULT NULL,
+  NextAttemptAt datetime(6) DEFAULT NULL,
+  LastError varchar(512) DEFAULT NULL,
+  LocalFileId int DEFAULT NULL,
+  SourcesUsed tinyint unsigned NOT NULL DEFAULT 0,
+  CreatedAt datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+  UpdatedAt datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
+  PRIMARY KEY (ImportId),
+  UNIQUE KEY uq_fpublic_import_version (UserId, ResourceId, VersionKey),
+  KEY idx_fpublic_import_due (Status, NextAttemptAt, CreatedAt),
+  KEY idx_fpublic_import_user (UserId, ResourceId, UpdatedAt)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- Portable upgrades for existing installations.
 -- Do not use `ADD COLUMN IF NOT EXISTS`: that syntax differs across MySQL/MariaDB versions.
 -- information_schema + prepared statements keeps this migration idempotent on both engines.
@@ -2417,6 +2437,9 @@ CREATE TABLE IF NOT EXISTS FederationDrops (
   PublicTokenHash char(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
   PublicTokenCiphertext varchar(512) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
   SourceDomain varchar(255) DEFAULT NULL,
+  SourceMode enum('upload','public_resource') NOT NULL DEFAULT 'upload',
+  SourceResourceId varchar(96) CHARACTER SET ascii COLLATE ascii_bin DEFAULT NULL,
+  SourceContentId varchar(80) CHARACTER SET ascii COLLATE ascii_bin DEFAULT NULL,
   OriginalName varchar(255) NOT NULL,
   S3Key varchar(1024) NOT NULL,
   MimeType varchar(128) NOT NULL DEFAULT 'application/octet-stream',
@@ -2444,8 +2467,49 @@ CREATE TABLE IF NOT EXISTS FederationDrops (
   KEY idx_fdrop_owner (OwnerEmail(191), CreatedAt),
   KEY idx_fdrop_status_expiry (Status, ExpiresAt),
   KEY idx_fdrop_payment (PaymentStatus, Status, CreatedAt),
-  KEY idx_fdrop_custody (CustodyNodeId, Status)
+  KEY idx_fdrop_custody (CustodyNodeId, Status),
+  KEY idx_fdrop_source (SourceMode, SourceResourceId, PaymentStatus, Status)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+SET @arcade_sql = IF(
+  (SELECT COUNT(*) FROM information_schema.COLUMNS
+   WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'FederationDrops' AND COLUMN_NAME = 'SourceMode') = 0,
+  'ALTER TABLE FederationDrops ADD COLUMN SourceMode enum(''upload'',''public_resource'') NOT NULL DEFAULT ''upload'' AFTER SourceDomain',
+  'SELECT 1'
+);
+PREPARE arcade_stmt FROM @arcade_sql;
+EXECUTE arcade_stmt;
+DEALLOCATE PREPARE arcade_stmt;
+
+SET @arcade_sql = IF(
+  (SELECT COUNT(*) FROM information_schema.COLUMNS
+   WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'FederationDrops' AND COLUMN_NAME = 'SourceResourceId') = 0,
+  'ALTER TABLE FederationDrops ADD COLUMN SourceResourceId varchar(96) CHARACTER SET ascii COLLATE ascii_bin DEFAULT NULL AFTER SourceMode',
+  'SELECT 1'
+);
+PREPARE arcade_stmt FROM @arcade_sql;
+EXECUTE arcade_stmt;
+DEALLOCATE PREPARE arcade_stmt;
+
+SET @arcade_sql = IF(
+  (SELECT COUNT(*) FROM information_schema.COLUMNS
+   WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'FederationDrops' AND COLUMN_NAME = 'SourceContentId') = 0,
+  'ALTER TABLE FederationDrops ADD COLUMN SourceContentId varchar(80) CHARACTER SET ascii COLLATE ascii_bin DEFAULT NULL AFTER SourceResourceId',
+  'SELECT 1'
+);
+PREPARE arcade_stmt FROM @arcade_sql;
+EXECUTE arcade_stmt;
+DEALLOCATE PREPARE arcade_stmt;
+
+SET @arcade_sql = IF(
+  (SELECT COUNT(*) FROM information_schema.STATISTICS
+   WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'FederationDrops' AND INDEX_NAME = 'idx_fdrop_source') = 0,
+  'ALTER TABLE FederationDrops ADD INDEX idx_fdrop_source (SourceMode, SourceResourceId, PaymentStatus, Status)',
+  'SELECT 1'
+);
+PREPARE arcade_stmt FROM @arcade_sql;
+EXECUTE arcade_stmt;
+DEALLOCATE PREPARE arcade_stmt;
 
 CREATE TABLE IF NOT EXISTS FederationDropPaymentEvents (
   EventId varchar(96) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
@@ -2478,6 +2542,32 @@ CREATE TABLE IF NOT EXISTS FederationCommercialProviders (
   PRIMARY KEY (NodeId),
   UNIQUE KEY uq_fcommercial_domain (DomainName),
   KEY idx_fcommercial_status (Status, UpdatedAt)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS FederationDropIngressObjects (
+  IngressId varchar(96) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  DropId varchar(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  CommerceNodeId varchar(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  IngressNodeId varchar(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  IngressFederationUrl varchar(1024) NOT NULL,
+  S3Key varchar(1024) DEFAULT NULL,
+  ExpectedSizeBytes bigint unsigned NOT NULL,
+  MimeType varchar(128) NOT NULL DEFAULT 'application/octet-stream',
+  ObjectEtag varchar(191) DEFAULT NULL,
+  GrantJson mediumtext NOT NULL,
+  Status enum('authorized','uploaded','pulling','centralized','deleted','failed') NOT NULL DEFAULT 'authorized',
+  Attempts int unsigned NOT NULL DEFAULT 0,
+  LastAttemptAt datetime(6) DEFAULT NULL,
+  NextAttemptAt datetime(6) DEFAULT NULL,
+  LastError varchar(512) DEFAULT NULL,
+  UploadedAt datetime(6) DEFAULT NULL,
+  CentralizedAt datetime(6) DEFAULT NULL,
+  CreatedAt datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+  UpdatedAt datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
+  PRIMARY KEY (IngressId),
+  KEY idx_fdrop_ingress_drop_node (DropId, IngressNodeId, CreatedAt),
+  KEY idx_fdrop_ingress_due (Status, NextAttemptAt, CreatedAt),
+  KEY idx_fdrop_ingress_drop (DropId, Status)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS FederationDropPlacements (

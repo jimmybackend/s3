@@ -1,7 +1,7 @@
 {
   "summary": {
-    "php_total": 438,
-    "php_class_modules": 261,
+    "php_total": 439,
+    "php_class_modules": 262,
     "php_needs_migration": 0,
     "php_tests": 39,
     "js_total": 48,
@@ -1908,7 +1908,7 @@
     },
     {
       "path": "drive/src/Admin/ArcadeCloudUpdaterService.php",
-      "lines": 122,
+      "lines": 133,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -3186,8 +3186,23 @@
       "issues": []
     },
     {
+      "path": "drive/src/Federation/FederationModerationSchemaService.php",
+      "lines": 103,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": true,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
       "path": "drive/src/Federation/FederationModerationService.php",
-      "lines": 387,
+      "lines": 406,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -5877,7 +5892,7 @@
     },
     {
       "path": "drive/tests/federation_moderation_contract_smoke.php",
-      "lines": 80,
+      "lines": 89,
       "kind": "test script",
       "classes": 0,
       "functions": [],
@@ -6723,7 +6738,7 @@
     },
     {
       "path": "drive/js/arcadecloud-updater.js",
-      "lines": 222,
+      "lines": 228,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudUpdaterModule"

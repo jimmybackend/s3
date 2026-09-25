@@ -107,6 +107,7 @@
         "drive/eliminar_archivo.php",
         "drive/eliminar_carpeta.php",
         "drive/encriptar_archivo.php",
+        "drive/fastdrive-control.php",
         "drive/federationcloud/access-request.php",
         "drive/federationcloud/access-status.php",
         "drive/federationcloud/access.php",
@@ -222,9 +223,10 @@
     },
     {
       "path": "drive/bin/arcadecloud-drive-admin-helper.php",
-      "size": 23757,
+      "size": 23834,
       "active": false,
       "references": [
+        "drive/tests/fastdrive_control_contract_smoke.php",
         "drive/tests/installer_service_reconcile_contract_smoke.php",
         "drive/tests/setup_finalize_contract_smoke.php"
       ]
@@ -554,6 +556,14 @@
       ]
     },
     {
+      "path": "drive/fastdrive-control.php",
+      "size": 5458,
+      "active": false,
+      "references": [
+        "drive/tests/fastdrive_control_contract_smoke.php"
+      ]
+    },
+    {
       "path": "drive/federationcloud/access-request.php",
       "size": 334,
       "active": false,
@@ -613,6 +623,7 @@
       "references": [
         "drive/bloque_archivos.php",
         "drive/bloque_carpetas.php",
+        "drive/fastdrive-control.php",
         "drive/s3.php",
         "drive/src/Http/Controller/ActivityCostController.php",
         "drive/src/Http/Controller/AuthController.php",
@@ -944,6 +955,7 @@
       "references": [
         "drive/bloque_archivos.php",
         "drive/bloque_carpetas.php",
+        "drive/fastdrive-control.php",
         "drive/s3.php",
         "drive/src/Http/Controller/ActivityCostController.php",
         "drive/src/Http/Controller/AuthController.php",
@@ -977,6 +989,7 @@
       "references": [
         "drive/bloque_archivos.php",
         "drive/bloque_carpetas.php",
+        "drive/fastdrive-control.php",
         "drive/s3.php",
         "drive/src/Http/Controller/ActivityCostController.php",
         "drive/src/Http/Controller/AuthController.php",
@@ -1178,6 +1191,7 @@
       "references": [
         "drive/app_bootstrap.php",
         "drive/ec2.php",
+        "drive/fastdrive-control.php",
         "drive/src/Http/Controller/AuthController.php",
         "drive/src/View/ActivityCostPageRenderer.php",
         "drive/src/View/FederationModerationPageRenderer.php",
@@ -1231,6 +1245,7 @@
       "references": [
         "drive/bloque_archivos.php",
         "drive/bloque_carpetas.php",
+        "drive/fastdrive-control.php",
         "drive/s3.php",
         "drive/src/Http/Controller/ActivityCostController.php",
         "drive/src/Http/Controller/AuthController.php",
@@ -1295,12 +1310,21 @@
       ]
     },
     {
+      "path": "drive/src/Admin/FastDriveControlService.php",
+      "size": 5145,
+      "active": false,
+      "references": [
+        "drive/tests/fastdrive_control_contract_smoke.php"
+      ]
+    },
+    {
       "path": "drive/src/Admin/ManagedRuntimeEnvironment.php",
-      "size": 19975,
+      "size": 20170,
       "active": true,
       "references": [
         "drive/app_bootstrap.php",
         "drive/setup/api.php",
+        "drive/tests/fastdrive_control_contract_smoke.php",
         "drive/tests/installer_service_reconcile_contract_smoke.php",
         "drive/tests/server_admin_config_smoke.php"
       ]
@@ -3114,6 +3138,12 @@
     {
       "path": "drive/tests/database_schema_contract_smoke.php",
       "size": 5302,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/tests/fastdrive_control_contract_smoke.php",
+      "size": 2028,
       "active": false,
       "references": []
     },

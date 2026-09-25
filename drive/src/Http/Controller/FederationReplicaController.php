@@ -103,9 +103,13 @@ final class FederationReplicaController
             exit;
         } catch (FederationException $e) {
             http_response_code($e->httpStatus());
+            $internal = $e->getMessage();
+            $safeDiagnosticPrefix = 'No fue posible obtener el archivo desde los nodos disponibles. Diagnóstico FederationCloud:';
             $message = $e->httpStatus() >= 500
-                ? 'No fue posible obtener el archivo desde los nodos disponibles.'
-                : $e->getMessage();
+                ? (str_starts_with($internal, $safeDiagnosticPrefix)
+                    ? $internal
+                    : 'No fue posible obtener el archivo desde los nodos disponibles.')
+                : $internal;
             echo htmlspecialchars($message, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
         } catch (Throwable) {
             http_response_code(500);

@@ -153,7 +153,11 @@ final class FederationReplicaResolverService
             $this->logResolverEvent('all_candidates_failed', $resourceId, [
                 'attempts' => count($resolved['failures']),
             ]);
-            throw new FederationException('Ninguna ubicación FederationCloud respondió con una copia pública válida.', 503);
+            throw new FederationException(
+                'No fue posible obtener el archivo desde los nodos disponibles. Diagnóstico FederationCloud: '
+                . $this->publicFailureDiagnostic($resolved['failures']) . '.',
+                503
+            );
         }
 
         return [
@@ -224,6 +228,41 @@ final class FederationReplicaResolverService
         $decoded = json_decode($json, true, 32, JSON_THROW_ON_ERROR);
         if (!is_array($decoded) || array_is_list($decoded)) throw new FederationException('ArcadeLink del recurso inválido.', 500);
         return $decoded;
+    }
+
+    /**
+     * Produce un diagnóstico público acotado: nunca incluye URLs prefirmadas,
+     * claves S3, credenciales ni el mensaje cURL completo.
+     */
+    private function publicFailureDiagnostic(array $failures): string
+    {
+        $failure = $failures !== [] ? $failures[array_key_last($failures)] : [];
+        if (!is_array($failure)) $failure = [];
+
+        $role = strtolower(trim((string)($failure['role'] ?? 'unknown')));
+        if (!in_array($role, ['origin', 'provider', 'mirror'], true)) $role = 'unknown';
+
+        $category = strtolower(trim((string)($failure['category'] ?? 'unknown_failure')));
+        if (!preg_match('/\A[a-z0-9_]{1,40}\z/', $category)) $category = 'unknown_failure';
+
+        $resolverStatus = (int)($failure['http_status'] ?? 500);
+        if ($resolverStatus < 400 || $resolverStatus > 599) $resolverStatus = 500;
+
+        $parts = [
+            'role=' . $role,
+            'category=' . $category,
+            'resolver_http=' . $resolverStatus,
+        ];
+
+        $error = (string)($failure['error'] ?? '');
+        if (preg_match('/\bS3 HTTP ([0-9]{1,3}); cURL ([0-9]{1,3})\b/', $error, $match) === 1) {
+            $s3Status = (int)$match[1];
+            $curlCode = (int)$match[2];
+            if ($s3Status >= 0 && $s3Status <= 599) $parts[] = 's3_http=' . $s3Status;
+            if ($curlCode >= 0 && $curlCode <= 99) $parts[] = 'curl=' . $curlCode;
+        }
+
+        return implode(', ', $parts);
     }
 
     private function logResolverEvent(string $event, string $resourceId, array $details = []): void

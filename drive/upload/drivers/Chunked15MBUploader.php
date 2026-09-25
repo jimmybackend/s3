@@ -7,6 +7,7 @@ use Aws\S3\S3Client;
 require_once __DIR__ . '/../core/UploaderInterface.php';
 require_once __DIR__ . '/../repositories/FileS3Repository.php';
 require_once __DIR__ . '/../storage/UploadStateStore.php';
+require_once __DIR__ . '/../ModerationUploadGuard.php';
 
 final class Chunked15MBUploader implements UploaderInterface
 {
@@ -188,10 +189,20 @@ final class Chunked15MBUploader implements UploaderInterface
             'MultipartUpload' => ['Parts' => $parts],
         ]);
 
+        $filesize = (int)($meta['filesize'] ?? 0);
+        $guard = new ModerationUploadGuard($this->db, $this->s3, $this->bucket);
+        try {
+            $sha256 = $guard->verifyObjectAllowed($key, $filesize, true);
+        } catch (BlockedUploadException $e) {
+            if ($stateId !== '') {
+                $this->store->delete($stateId);
+            }
+            throw $e;
+        }
+
         $carpeta = dirname($key) . '/';
         $nombreEncriptado = basename($key);
         $nombreOriginal = (string)($meta['filename'] ?? 'archivo');
-        $filesize = (int)($meta['filesize'] ?? 0);
         $userId = (int)($req['_user_id'] ?? 0);
 
         $metadatos = json_encode([
@@ -202,6 +213,7 @@ final class Chunked15MBUploader implements UploaderInterface
             'usuario' => (string)($req['_usuario'] ?? 'usuario'),
             'fecha' => date('Y-m-d'),
             'hora' => date('H:i:s'),
+            'hash_sha256' => $sha256,
         ], JSON_UNESCAPED_UNICODE);
 
         $repo = new FileS3Repository($this->db);

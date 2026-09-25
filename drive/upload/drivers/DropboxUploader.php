@@ -7,6 +7,7 @@ use Aws\S3\S3Client;
 
 require_once __DIR__ . '/../core/UploaderInterface.php';
 require_once __DIR__ . '/../repositories/FileS3Repository.php';
+require_once __DIR__ . '/../ModerationUploadGuard.php';
 
 final class DropboxUploader implements UploaderInterface
 {
@@ -62,10 +63,27 @@ final class DropboxUploader implements UploaderInterface
             $nombreHash = $this->codec->createFileObjectName($nombreOriginal);
             $keyFinal = $rutaBase . $nombreHash;
 
+            $sha256 = (string)(@hash_file('sha256', $tmpFile) ?: '');
+            if ($sha256 === '') {
+                $resultados[] = [
+                    'estado' => 'error',
+                    'mensaje' => 'No se pudo calcular SHA-256 del archivo.',
+                ];
+                continue;
+            }
+
+            try {
+                (new ModerationUploadGuard($this->db, $this->s3, $this->bucket))
+                    ->assertSha256Allowed($sha256);
+            } catch (BlockedUploadException $e) {
+                $resultados[] = ['estado' => 'error', 'mensaje' => $e->getMessage()];
+                continue;
+            }
+
             $metadatosArray = [
                 'tipo' => @mime_content_type($tmpFile) ?: ($file['type'][$i] ?? 'application/octet-stream'),
                 'tamano_kb' => round((int)@filesize($tmpFile) / 1024, 2),
-                'hash_sha256' => @hash_file('sha256', $tmpFile) ?: '',
+                'hash_sha256' => $sha256,
                 'subido_por' => (string)($req['_usuario'] ?? 'usuario'),
                 'ip_origen' => (string)($req['_remote_addr'] ?? '0.0.0.0'),
                 'fecha' => date('Y-m-d'),

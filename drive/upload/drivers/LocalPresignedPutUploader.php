@@ -7,6 +7,7 @@ use Aws\S3\S3Client;
 
 require_once __DIR__ . '/../core/UploaderInterface.php';
 require_once __DIR__ . '/../repositories/FileS3Repository.php';
+require_once __DIR__ . '/../ModerationUploadGuard.php';
 
 final class LocalPresignedPutUploader implements UploaderInterface
 {
@@ -93,6 +94,12 @@ final class LocalPresignedPutUploader implements UploaderInterface
         $nombreEncriptado = $this->codec->createFileObjectName($nombreOriginal);
         $key = $rutaObjetivo . $nombreEncriptado;
 
+        $claimedSha256 = strtolower(trim((string)($req['sha256'] ?? '')));
+        if ($claimedSha256 !== '') {
+            (new ModerationUploadGuard($this->db, $this->s3, $this->bucket))
+                ->assertSha256Allowed($claimedSha256);
+        }
+
         $cmd = $this->s3->getCommand('PutObject', [
             'Bucket' => $this->bucket,
             'Key' => $key,
@@ -120,6 +127,7 @@ final class LocalPresignedPutUploader implements UploaderInterface
             'Ruta' => $rutaObjetivo,
             'key' => $key,
             'completed_file_id' => 0,
+            'claimed_sha256' => $claimedSha256,
         ];
         $this->savePendingUploads($pending);
 
@@ -240,6 +248,33 @@ final class LocalPresignedPutUploader implements UploaderInterface
             throw new RuntimeException('El tamaño recibido en S3 no coincide con el archivo original.');
         }
 
+        $guard = new ModerationUploadGuard($this->db, $this->s3, $this->bucket);
+        try {
+            $sha256 = $guard->verifyObjectAllowed($key, $realSize, true);
+        } catch (BlockedUploadException $e) {
+            unset($pendingUploads[$token]);
+            $this->savePendingUploads($pendingUploads);
+            throw $e;
+        }
+
+        $claimedSha256 = strtolower(trim((string)($pending['claimed_sha256'] ?? '')));
+        if ($claimedSha256 !== '') {
+            $claimedSha256 = str_starts_with($claimedSha256, 'sha256:')
+                ? substr($claimedSha256, 7)
+                : $claimedSha256;
+            if (!hash_equals($claimedSha256, $sha256)) {
+                try {
+                    $this->s3->deleteObject(['Bucket' => $this->bucket, 'Key' => $key]);
+                } catch (\Throwable) {
+                }
+                unset($pendingUploads[$token]);
+                $this->savePendingUploads($pendingUploads);
+                throw new RuntimeException(
+                    'La huella SHA-256 calculada por el servidor no coincide con la declarada antes de subir.'
+                );
+            }
+        }
+
         $existingId = $this->existingFileId($userId, $key);
         if ($existingId > 0) {
             $pendingUploads[$token]['completed_file_id'] = $existingId;
@@ -261,7 +296,10 @@ final class LocalPresignedPutUploader implements UploaderInterface
             'Nombre' => (string)$pending['Nombre'],
             'Encriptado' => (string)$pending['Encriptado'],
             'Tamano' => $realSize,
-            'Metadatos' => $pending['Metadatos'] ?? null,
+            'Metadatos' => $guard->mergeHashIntoMetadata(
+                is_string($pending['Metadatos'] ?? null) ? (string)$pending['Metadatos'] : null,
+                $sha256
+            ),
             'Ruta' => (string)$pending['Ruta'],
             'Found' => 1,
             'AccessType' => 'normal',

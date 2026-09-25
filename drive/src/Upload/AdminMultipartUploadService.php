@@ -109,10 +109,30 @@ final class AdminMultipartUploadService
                 ->format('Y-m-d H:i:s');
         }
 
+        $sha256 = $this->hashObject($key, $size);
+        if ($this->catalog->isContentBlocked($sha256)) {
+            try {
+                $this->s3->deleteObject([
+                    'Bucket' => $this->bucket,
+                    'Key' => $key,
+                ]);
+            } catch (\Throwable $cleanupError) {
+                throw new RuntimeException(
+                    'El contenido está bloqueado y no pudo limpiarse el objeto S3 temporal.',
+                    0,
+                    $cleanupError
+                );
+            }
+            throw new RuntimeException(
+                'Este contenido está bloqueado por moderación y no puede volver a subirse.'
+            );
+        }
+
         $metadata = json_encode([
             'source' => 'up.php',
             'uploaded_by_user_id' => $actorUserId,
             'uploaded_at_utc' => $uploadedAt,
+            'hash_sha256' => $sha256,
         ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 
         if ($metadata === false) {
@@ -149,5 +169,51 @@ final class AdminMultipartUploadService
         $result['registered_route'] = $route;
         $result['target_user_id'] = $targetUserId;
         $result['target_email'] = $targetEmail;
+    }
+
+    private function hashObject(string $key, int $expectedBytes): string
+    {
+        try {
+            $result = $this->s3->getObject([
+                'Bucket' => $this->bucket,
+                'Key' => $key,
+            ]);
+        } catch (\Throwable $e) {
+            throw new RuntimeException(
+                'No se pudo leer el multipart completado para verificar moderación.',
+                0,
+                $e
+            );
+        }
+
+        $body = $result['Body'] ?? null;
+        if (!is_object($body) || !method_exists($body, 'read') || !method_exists($body, 'eof')) {
+            throw new RuntimeException('S3 no devolvió un stream verificable para moderación.');
+        }
+
+        $hash = hash_init('sha256');
+        $bytes = 0;
+        try {
+            while (!$body->eof()) {
+                $chunk = $body->read(1048576);
+                if (!is_string($chunk) || $chunk === '') {
+                    if ($body->eof()) break;
+                    throw new RuntimeException('No se pudo completar SHA-256 del multipart.');
+                }
+                $bytes += strlen($chunk);
+                if ($expectedBytes > 0 && $bytes > $expectedBytes) {
+                    throw new RuntimeException('El multipart excedió el tamaño esperado durante SHA-256.');
+                }
+                hash_update($hash, $chunk);
+            }
+        } finally {
+            if (method_exists($body, 'close')) $body->close();
+        }
+
+        if ($expectedBytes > 0 && $bytes !== $expectedBytes) {
+            throw new RuntimeException('El tamaño del multipart cambió durante SHA-256.');
+        }
+
+        return hash_final($hash);
     }
 }

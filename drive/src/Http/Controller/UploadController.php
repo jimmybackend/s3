@@ -79,6 +79,7 @@ final class UploadController
             JsonResponse::send(['ok' => true] + $result);
         } catch (Throwable $e) {
             $session->closeWrite();
+
             if ($this->isCostBearingPhase($mode, $action)) {
                 $this->activity()->failure(
                     $userId,
@@ -88,6 +89,15 @@ final class UploadController
                     ['mode' => $mode, 'phase' => $action]
                 );
             }
+
+            if ($e instanceof \BlockedUploadException) {
+                JsonResponse::send([
+                    'ok' => false,
+                    'error' => $e->getMessage(),
+                    'moderation_blocked' => true,
+                ], 409);
+            }
+
             error_log('[ArcadeCloud upload] ' . $e::class . ': ' . $e->getMessage());
             JsonResponse::send([
                 'ok' => false,

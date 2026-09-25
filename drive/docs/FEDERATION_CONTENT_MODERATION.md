@@ -156,6 +156,22 @@ Cuando un reporte es confirmado y el contenido viola la política del servicio, 
 
 Esto no intenta anular obligaciones legales, contracargos, devoluciones exigidas por el procesador de pagos ni otros derechos que correspondan por ley. Stripe continúa siendo la fuente de verdad del estado del pago.
 
+## Bloqueo en todas las rutas de subida
+
+La denylist SHA-256 se aplica a todas las entradas activas de ArcadeCloud, no sólo a FederationDrop.
+
+- **Subida local / Dropzone (`local_put`)**: para archivos de hasta 256 MiB, el navegador calcula SHA-256 antes de pedir la URL presignada y el servidor puede rechazar el hash conocido antes del PUT. Al completar, ArcadeCloud vuelve a calcular autoritativamente SHA-256 desde S3 antes de registrar `FileS3`; si está bloqueado, elimina el objeto y no lo registra.
+- **Multipart / chunked**: las partes viajan directo navegador -> S3. Tras completar el objeto, ArcadeCloud calcula SHA-256 desde S3 y consulta la denylist antes de registrar el archivo. Si está bloqueado, elimina el objeto y descarta el estado reanudable.
+- **Multipart administrativo (`up.php`)**: después de completar S3 y antes de `upsertCompletedMultipart`, calcula SHA-256, consulta la denylist y elimina el objeto si está bloqueado.
+- **URL remota (`remote_url`)**: SHA-256 se calcula durante el streaming. Para archivos pequeños la denylist se consulta antes de `PutObject`; para multipart se consulta antes de `CompleteMultipartUpload`, abortando las partes si el contenido está bloqueado.
+- **Dropbox legacy**: calcula SHA-256 desde el archivo temporal y consulta la denylist antes de `PutObject`.
+- **SingleUploadService / PublicDropzoneUploadService**: calculan SHA-256 del temporal y consultan la denylist antes de escribir en S3.
+- **FederationDrop**: después de la transferencia calcula SHA-256 desde S3; si está bloqueado elimina el objeto y no activa el Drop.
+
+En rutas directas navegador -> S3, algunos bytes pueden existir temporalmente en S3 antes de que el servidor pueda verificar autoritativamente el archivo completo. La garantía es que una coincidencia bloqueada **no queda registrada, activa ni disponible**: se elimina antes de completar el flujo de ArcadeCloud.
+
+Todos los archivos aceptados guardan `hash_sha256` en sus metadatos cuando esa ruta dispone del hash, para reutilizarlo en ArcadeLink y moderación.
+
 ## Seguridad y límites
 
 - SHA-256 bloquea coincidencias byte por byte.

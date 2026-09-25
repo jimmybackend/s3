@@ -36,6 +36,15 @@ on:
       - 'drive/src/Upload/UploadCatalogRepository.php'
       - 'drive/src/Upload/SingleUploadService.php'
       - 'drive/src/Upload/PublicDropzoneUploadService.php'
+      - 'drive/src/Upload/AdminMultipartUploadService.php'
+      - 'drive/src/Http/Controller/UploadController.php'
+      - 'drive/upload/ModerationUploadGuard.php'
+      - 'drive/upload/drivers/LocalPresignedPutUploader.php'
+      - 'drive/upload/drivers/Chunked15MBUploader.php'
+      - 'drive/upload/drivers/RemoteUrlUploader.php'
+      - 'drive/upload/drivers/DropboxUploader.php'
+      - 'drive/js/subir.js'
+      - 'drive/js/subir-dropzone.js'
       - 'drive/tests/federationcloud_smoke.php'
       - 'drive/tests/federation_directory_smoke.php'
       - 'drive/tests/federation_provider_smoke.php'
@@ -85,6 +94,15 @@ on:
       - 'drive/src/Upload/UploadCatalogRepository.php'
       - 'drive/src/Upload/SingleUploadService.php'
       - 'drive/src/Upload/PublicDropzoneUploadService.php'
+      - 'drive/src/Upload/AdminMultipartUploadService.php'
+      - 'drive/src/Http/Controller/UploadController.php'
+      - 'drive/upload/ModerationUploadGuard.php'
+      - 'drive/upload/drivers/LocalPresignedPutUploader.php'
+      - 'drive/upload/drivers/Chunked15MBUploader.php'
+      - 'drive/upload/drivers/RemoteUrlUploader.php'
+      - 'drive/upload/drivers/DropboxUploader.php'
+      - 'drive/js/subir.js'
+      - 'drive/js/subir-dropzone.js'
       - 'drive/tests/federationcloud_smoke.php'
       - 'drive/tests/federation_directory_smoke.php'
       - 'drive/tests/federation_provider_smoke.php'
@@ -136,6 +154,13 @@ jobs:
           php -l drive/src/Upload/UploadCatalogRepository.php
           php -l drive/src/Upload/SingleUploadService.php
           php -l drive/src/Upload/PublicDropzoneUploadService.php
+          php -l drive/src/Upload/AdminMultipartUploadService.php
+          php -l drive/src/Http/Controller/UploadController.php
+          php -l drive/upload/ModerationUploadGuard.php
+          php -l drive/upload/drivers/LocalPresignedPutUploader.php
+          php -l drive/upload/drivers/Chunked15MBUploader.php
+          php -l drive/upload/drivers/RemoteUrlUploader.php
+          php -l drive/upload/drivers/DropboxUploader.php
           php -l drive/src/Security/AuthenticationRepository.php
           php -l drive/src/Security/AuthenticationService.php
           php -l drive/src/Security/SessionManager.php
@@ -155,6 +180,8 @@ jobs:
         run: |
           set -euo pipefail
           node --check drive/js/federation-footer.js
+          node --check drive/js/subir.js
+          node --check drive/js/subir-dropzone.js
           bash -n drive/bin/install_federation_https_service.sh
           bash -n drive/bin/install_arcadecloud_server.sh
           bash -n drive/bin/install_arcadecloud.sh

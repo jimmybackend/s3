@@ -896,6 +896,7 @@
         "drive/src/Federation/FederationDropService.php",
         "drive/tests/federation_moderation_contract_smoke.php",
         "drive/tests/federationcloud_smoke.php",
+        "drive/tests/fresh_install_contract_smoke.php",
         "drive/tests/media_processing_contract_smoke.php",
         "drive/tests/setup_entry_guard_smoke.php",
         "drive/upload/drivers/Chunked15MBUploader.php",
@@ -1541,9 +1542,10 @@
     },
     {
       "path": "drive/src/Console/MediaProcessingWorkerCommand.php",
-      "size": 15227,
+      "size": 16285,
       "active": false,
       "references": [
+        "drive/tests/fresh_install_contract_smoke.php",
         "drive/tests/media_processing_contract_smoke.php"
       ]
     },
@@ -2723,6 +2725,14 @@
       ]
     },
     {
+      "path": "drive/src/Setup/CanonicalDatabaseSchemaService.php",
+      "size": 4563,
+      "active": false,
+      "references": [
+        "drive/tests/fresh_install_contract_smoke.php"
+      ]
+    },
+    {
       "path": "drive/src/Setup/SetupApiController.php",
       "size": 4870,
       "active": false,
@@ -2732,10 +2742,11 @@
     },
     {
       "path": "drive/src/Setup/SetupConfigurationService.php",
-      "size": 6393,
+      "size": 7062,
       "active": false,
       "references": [
-        "drive/setup/api.php"
+        "drive/setup/api.php",
+        "drive/tests/fresh_install_contract_smoke.php"
       ]
     },
     {
@@ -3099,7 +3110,7 @@
     },
     {
       "path": "drive/tests/database_schema_contract_smoke.php",
-      "size": 5000,
+      "size": 5302,
       "active": false,
       "references": []
     },
@@ -3212,6 +3223,12 @@
       "references": []
     },
     {
+      "path": "drive/tests/fresh_install_contract_smoke.php",
+      "size": 3831,
+      "active": false,
+      "references": []
+    },
+    {
       "path": "drive/tests/index_federation_drop_smoke.php",
       "size": 3778,
       "active": false,
@@ -3219,13 +3236,13 @@
     },
     {
       "path": "drive/tests/installer_service_reconcile_contract_smoke.php",
-      "size": 11944,
+      "size": 12734,
       "active": false,
       "references": []
     },
     {
       "path": "drive/tests/media_processing_contract_smoke.php",
-      "size": 3916,
+      "size": 4143,
       "active": false,
       "references": []
     },

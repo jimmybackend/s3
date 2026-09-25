@@ -19,6 +19,8 @@ $uninstaller = (string)file_get_contents($repo . '/drive/bin/uninstall_arcadeclo
 $updater = (string)file_get_contents($repo . '/drive/bin/arcadecloud-drive-updater.php');
 $updaterInstaller = (string)file_get_contents($repo . '/drive/bin/install_arcadecloud_updater.sh');
 $updaterService = (string)file_get_contents($repo . '/drive/src/Admin/ArcadeCloudUpdaterService.php');
+$schemaMigrator = (string)file_get_contents($repo . '/drive/src/Federation/FederationSchemaMigrationService.php');
+$catalogMigrator = (string)file_get_contents($repo . '/drive/bin/federation_catalog_migrate.php');
 $updaterJs = (string)file_get_contents($repo . '/drive/js/arcadecloud-updater.js');
 $mediaInstaller = (string)file_get_contents($repo . '/drive/bin/install_media_processing_worker.sh');
 $bootstrap = (string)file_get_contents($repo . '/drive/bin/media_worker_node_bootstrap.sh');
@@ -76,6 +78,13 @@ installerContract(str_contains($reconciler, 'runuser -u "$PHP_USER" -- test -r "
 installerContract(str_contains($appBootstrap, "getenv('ARCADECLOUD_RUNTIME_ENV')"), 'bootstrap CLI acepta runtime administrado explícito');
 installerContract(str_contains($appBootstrap, 'loadIntoProcess($managedRuntimePath)'), 'bootstrap carga exactamente el runtime solicitado por el reconciliador');
 installerContract(str_contains($reconciler, 'Reconciliando esquema FederationCloud'), 'reconciliador hace visible la migración FederationCloud');
+installerContract(str_contains($reconciler, 'UPDATER_CONTEXT="yes"'), 'reconciliador detecta contexto del updater web');
+installerContract(str_contains($reconciler, 'reconciliación diferida al runtime web con conexión MySQL activa'), 'updater web no depende del entorno CLI para migrar FederationCloud');
+installerContract(str_contains($updaterService, 'FederationSchemaMigrationService($this->app->db())'), 'updater reconcilia FederationCloud usando la conexión MySQL web activa');
+installerContract(str_contains($updaterService, 'withFederationSchemaState($state, true)'), 'Buscar actualizaciones repara esquema faltante de forma idempotente');
+installerContract(str_contains($schemaMigrator, 'ARCADECLOUD:FEDERATION_SCHEMA:BEGIN'), 'servicio web usa la sección FederationCloud del SQL canónico');
+installerContract(str_contains($schemaMigrator, 'FederationAbuseReports'), 'servicio web verifica tablas de moderación');
+installerContract(str_contains($catalogMigrator, 'FederationSchemaMigrationService'), 'CLI reutiliza el mismo migrador de esquema que la web');
 installerContract(str_contains($reconciler, '--on-active=5s'), 'reconciliador programa el reinicio web después de devolver JSON');
 installerContract(str_contains($reconciler, '--immediate-php-restart'), 'reconciliador conserva reinicio inmediato explícito para operación manual');
 installerContract(str_contains($updater, 'array_merge($after'), 'respuesta apply incluye estado actualizado de rama y commits');

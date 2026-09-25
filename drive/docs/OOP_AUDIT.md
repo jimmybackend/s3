@@ -142,7 +142,7 @@
 | `drive/s3.php` | 2357 | view/entrypoint | 0 | ⚠️ | — | — | — |
 | `drive/server-settings.php` | 11 | thin endpoint | 0 | — | — | — | — |
 | `drive/set_file_security.php` | 10 | thin endpoint | 0 | — | — | — | — |
-| `drive/setup/api.php` | 14 | thin endpoint | 0 | — | — | — | — |
+| `drive/setup/api.php` | 15 | thin endpoint | 0 | — | — | — | — |
 | `drive/setup/index.php` | 90 | view/entrypoint | 0 | — | — | — | — |
 | `drive/src/Activity/ActivityCostRecorder.php` | 155 | class/module | 1 | — | — | — | — |
 | `drive/src/Activity/ActivityCostRepository.php` | 198 | class/module | 1 | — | ⚠️ | — | — |
@@ -423,7 +423,7 @@
 | `drive/tests/federation_replica_smoke.php` | 115 | test script | 0 | — | — | — | — |
 | `drive/tests/federationcloud_smoke.php` | 197 | test script | 0 | — | — | — | — |
 | `drive/tests/folder_document_sanitizer.php` | 49 | test script | 0 | — | — | — | — |
-| `drive/tests/fresh_install_contract_smoke.php` | 62 | test script | 0 | — | — | — | — |
+| `drive/tests/fresh_install_contract_smoke.php` | 67 | test script | 0 | — | — | — | — |
 | `drive/tests/index_federation_drop_smoke.php` | 121 | test script | 0 | — | — | — | — |
 | `drive/tests/installer_service_reconcile_contract_smoke.php` | 142 | test script | 0 | — | — | — | — |
 | `drive/tests/media_processing_contract_smoke.php` | 54 | test script | 0 | — | — | — | — |

@@ -1771,7 +1771,7 @@
     },
     {
       "path": "drive/setup/api.php",
-      "lines": 14,
+      "lines": 15,
       "kind": "thin endpoint",
       "classes": 0,
       "functions": [],
@@ -6055,7 +6055,7 @@
     },
     {
       "path": "drive/tests/fresh_install_contract_smoke.php",
-      "lines": 62,
+      "lines": 67,
       "kind": "test script",
       "classes": 0,
       "functions": [

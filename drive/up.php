@@ -195,6 +195,17 @@ $themeBridgeVersion = is_file(__DIR__ . '/js/theme-state-bridge.js') ? (int)file
     >
       Cambiar usuario
     </a>
+
+    <button
+      type="button"
+      id="refreshPageBtn"
+      class="btn secondary"
+      style="margin-left:10px;padding:6px 10px;"
+      title="Recargar esta página como F5"
+    >
+      <i class="fas fa-rotate-right" aria-hidden="true"></i>
+      Actualizar página
+    </button>
   </div>
   <h1>Subida reanudable a S3 (Directo)</h1>
   <p class="sub">
@@ -248,6 +259,7 @@ $themeBridgeVersion = is_file(__DIR__ . '/js/theme-state-bridge.js') ? (int)file
   const ADMIN_UPLOAD_CSRF =
     <?= json_encode($adminUploadCsrf, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
   const fileInput = $('file'), startBtn=$('startBtn'), pauseBtn=$('pauseBtn'), resumeBtn=$('resumeBtn');
+  const refreshPageBtn=$('refreshPageBtn');
   const bar=$('bar'), status=$('status'), fn=$('fn'), fs=$('fs'), uploadIdEl=$('uploadId'), s3keyEl=$('s3key');
   const resultBox=$('result'), resKey=$('resKey'), resUrl=$('resUrl'), resLink=$('resLink'), resLinkWrap=$('resLinkWrap');
 
@@ -356,21 +368,52 @@ $themeBridgeVersion = is_file(__DIR__ . '/js/theme-state-bridge.js') ? (int)file
 
   const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-  let state = {
-    paused:false, failed:false, file:null, uploadId:null, s3key:null, etags:{},
-    totalParts:0,
-    nextPart:1,
-    inFlight:0,
-    uploadedBytes:0,
-    aborters:new Map(),
-    progressBytes:new Map()
-  };
+  function createIdleState() {
+    return {
+      paused:false,
+      failed:false,
+      file:null,
+      uploadId:null,
+      s3key:null,
+      etags:{},
+      totalParts:0,
+      nextPart:1,
+      inFlight:0,
+      uploadedBytes:0,
+      aborters:new Map(),
+      progressBytes:new Map()
+    };
+  }
+
+  let state = createIdleState();
 
   const humanSize = (n)=>{const u=['B','KB','MB','GB','TB'];let i=0,v=n;while(v>1024&&i<u.length-1){v/=1024;i++;}return `${v.toFixed(1)} ${u[i]}`;};
   const msg = (t,c='')=>{const d=document.createElement('div'); if(c)d.classList.add(c); d.textContent=t; status.appendChild(d); status.scrollTop=status.scrollHeight;};
   const setProgress=(p)=>{
     bar.style.width = `${Math.max(0, Math.min(100, p))}%`;
   };
+
+  function resetUploaderForNextFile() {
+    for (const controller of state.aborters.values()) {
+      try { controller.abort(); } catch (_e) {}
+    }
+
+    state = createIdleState();
+
+    if (fileInput) fileInput.value = '';
+    fn.textContent = '—';
+    fs.textContent = '—';
+    uploadIdEl.textContent = '—';
+    s3keyEl.textContent = '—';
+
+    setProgress(0);
+
+    startBtn.disabled = false;
+    pauseBtn.disabled = true;
+    resumeBtn.disabled = true;
+
+    msg('Listo para seleccionar y subir otro archivo.', 'ok');
+  }
 
   function actualizarProgresoDirecto() {
     if (!state.file || !state.file.size) {
@@ -783,18 +826,23 @@ $themeBridgeVersion = is_file(__DIR__ . '/js/theme-state-bridge.js') ? (int)file
       if (r.url) { resLink.href = r.url; resLinkWrap.style.display='block'; }
       resultBox.style.display='block';
 
-      pauseBtn.disabled=true; resumeBtn.disabled=true;
+      resetUploaderForNextFile();
     }catch(e){
       if(e && e.moderationBlocked){
         msg(`Bloqueado por moderación: ${e.message}`,'err');
-        pauseBtn.disabled=true;
-        resumeBtn.disabled=true;
+        resetUploaderForNextFile();
         return;
       }
 
       msg(`Error al completar: ${e.message}`,'err');
       pauseBtn.disabled=true; resumeBtn.disabled=false;
     }
+  }
+
+  if (refreshPageBtn) {
+    refreshPageBtn.addEventListener('click', () => {
+      window.location.reload();
+    });
   }
 
   startBtn.addEventListener('click', initUpload);

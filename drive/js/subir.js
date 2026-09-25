@@ -53,13 +53,22 @@ class SubirModule {
           if (progressBar) progressBar.style.display = 'block';
 
           try {
-            // 1) Obtener URL firmada con destino inmutable.
+            // 1) Preflight SHA-256 cuando el navegador puede hacerlo sin cargar
+            // archivos enormes completos en memoria. El servidor vuelve a verificar
+            // autoritativamente desde S3 al completar.
+            const preflightSha256 = await sha256FileHex(archivo);
+            if (preflightSha256) {
+              setStatus(uploadResult, 'Verificando huella antes de subir…', 'primary');
+            }
+
+            // 2) Obtener URL firmada con destino inmutable.
             const initParams = new URLSearchParams({
               mode: 'local_put',
               action: 'init',
               nombre: archivo.name,
               ruta_objetivo: rutaObjetivo
             });
+            if (preflightSha256) initParams.set('sha256', preflightSha256);
             const resFirma = await fetch(API + '?mode=local_put&action=init', {
               method: 'POST',
               credentials: 'same-origin',
@@ -281,6 +290,18 @@ class SubirModule {
         if (!el) return;
         el.textContent = '';
         el.className = '';
+      }
+
+      async function sha256FileHex(file) {
+        const MAX_PREFLIGHT_BYTES = 256 * 1024 * 1024;
+        if (!file || !file.size || file.size > MAX_PREFLIGHT_BYTES) return '';
+        if (!window.crypto || !window.crypto.subtle || typeof file.arrayBuffer !== 'function') return '';
+
+        const buffer = await file.arrayBuffer();
+        const digest = await window.crypto.subtle.digest('SHA-256', buffer);
+        return Array.from(new Uint8Array(digest))
+          .map(byte => byte.toString(16).padStart(2, '0'))
+          .join('');
       }
 
       async function safeJson(resp) {

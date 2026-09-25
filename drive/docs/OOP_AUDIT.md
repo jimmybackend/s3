@@ -4,8 +4,8 @@
 
 ## Resumen
 
-- PHP analizados: **435**
-- PHP que ya contienen clases/interfaces: **258**
+- PHP analizados: **436**
+- PHP que ya contienen clases/interfaces: **259**
 - PHP marcados para migración/revisión: **0**
 - Tests PHP separados del objetivo OOP de runtime: **39**
 - JavaScript analizados: **48**
@@ -240,6 +240,7 @@
 | `drive/src/Federation/FederationNodeAdminService.php` | 231 | class/module | 1 | — | — | — | — |
 | `drive/src/Federation/FederationNodeDescriptorValidator.php` | 108 | class/module | 1 | — | — | — | — |
 | `drive/src/Federation/FederationNodeRepository.php` | 145 | class/module | 1 | — | ⚠️ | — | — |
+| `drive/src/Federation/FederationOriginStorageResolver.php` | 80 | class/module | 1 | — | — | — | — |
 | `drive/src/Federation/FederationPeerSyncRepository.php` | 125 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Federation/FederationProviderAuthorizationRepository.php` | 275 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Federation/FederationProviderAuthorizationService.php` | 326 | class/module | 1 | — | — | — | — |
@@ -250,15 +251,15 @@
 | `drive/src/Federation/FederationReplicaMessageCodec.php` | 154 | class/module | 1 | — | — | — | — |
 | `drive/src/Federation/FederationReplicaPresenceService.php` | 129 | class/module | 1 | — | — | — | — |
 | `drive/src/Federation/FederationReplicaRepository.php` | 294 | class/module | 1 | — | ⚠️ | — | — |
-| `drive/src/Federation/FederationReplicaResolverService.php` | 285 | class/module | 1 | — | — | — | — |
-| `drive/src/Federation/FederationReplicaService.php` | 365 | class/module | 1 | — | — | — | — |
+| `drive/src/Federation/FederationReplicaResolverService.php` | 282 | class/module | 1 | — | — | — | — |
+| `drive/src/Federation/FederationReplicaService.php` | 366 | class/module | 1 | — | — | — | — |
 | `drive/src/Federation/FederationResolverService.php` | 185 | class/module | 1 | — | — | — | — |
 | `drive/src/Federation/FederationSeedConfig.php` | 83 | class/module | 1 | — | — | — | — |
 | `drive/src/Federation/FederationService.php` | 319 | class/module | 1 | — | — | — | — |
 | `drive/src/Federation/FederationShareDownloader.php` | 188 | class/module | 1 | — | — | — | — |
 | `drive/src/Federation/FederationShareDriveRepository.php` | 350 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Federation/FederationShareDriveService.php` | 255 | class/module | 1 | — | — | — | — |
-| `drive/src/Federation/FederationSourceFailover.php` | 118 | class/module | 1 | — | — | — | — |
+| `drive/src/Federation/FederationSourceFailover.php` | 120 | class/module | 1 | — | — | — | — |
 | `drive/src/Federation/FederationSyncConfig.php` | 36 | class/module | 1 | — | — | — | — |
 | `drive/src/Federation/FederationSyncCycleService.php` | 81 | class/module | 1 | — | — | — | — |
 | `drive/src/Federation/NodeIdentityBackupService.php` | 228 | class/module | 1 | — | — | — | — |
@@ -412,7 +413,7 @@
 | `drive/tests/federation_moderation_contract_smoke.php` | 67 | test script | 0 | — | — | — | — |
 | `drive/tests/federation_node_name_admin_smoke.php` | 91 | test script | 0 | — | — | — | — |
 | `drive/tests/federation_provider_smoke.php` | 76 | test script | 0 | — | — | — | — |
-| `drive/tests/federation_public_download_failover_smoke.php` | 178 | test script | 0 | — | — | — | — |
+| `drive/tests/federation_public_download_failover_smoke.php` | 215 | test script | 0 | — | — | — | — |
 | `drive/tests/federation_replica_reconnect_contract_smoke.php` | 81 | test script | 0 | — | — | — | — |
 | `drive/tests/federation_replica_smoke.php` | 115 | test script | 0 | — | — | — | — |
 | `drive/tests/federationcloud_smoke.php` | 197 | test script | 0 | — | — | — | — |

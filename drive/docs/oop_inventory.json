@@ -1,7 +1,7 @@
 {
   "summary": {
-    "php_total": 435,
-    "php_class_modules": 258,
+    "php_total": 436,
+    "php_class_modules": 259,
     "php_needs_migration": 0,
     "php_tests": 39,
     "js_total": 48,
@@ -3246,6 +3246,21 @@
       "issues": []
     },
     {
+      "path": "drive/src/Federation/FederationOriginStorageResolver.php",
+      "lines": 80,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
       "path": "drive/src/Federation/FederationPeerSyncRepository.php",
       "lines": 125,
       "kind": "class/module",
@@ -3397,7 +3412,7 @@
     },
     {
       "path": "drive/src/Federation/FederationReplicaResolverService.php",
-      "lines": 285,
+      "lines": 282,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -3412,7 +3427,7 @@
     },
     {
       "path": "drive/src/Federation/FederationReplicaService.php",
-      "lines": 365,
+      "lines": 366,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -3517,7 +3532,7 @@
     },
     {
       "path": "drive/src/Federation/FederationSourceFailover.php",
-      "lines": 118,
+      "lines": 120,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -5879,7 +5894,7 @@
     },
     {
       "path": "drive/tests/federation_public_download_failover_smoke.php",
-      "lines": 178,
+      "lines": 215,
       "kind": "test script",
       "classes": 0,
       "functions": [

@@ -13,6 +13,8 @@ on:
       - 'drive/bin/arcadecloud-drive-admin-helper.php'
       - 'drive/src/Admin/ManagedRuntimeEnvironment.php'
       - 'drive/src/Admin/ArcadeCloudUpdaterService.php'
+      - 'drive/src/Federation/FederationSchemaMigrationService.php'
+      - 'drive/bin/federation_catalog_migrate.php'
       - 'drive/js/arcadecloud-updater.js'
       - 'drive/tests/installer_service_reconcile_contract_smoke.php'
       - '.github/workflows/installer-service-reconcile.yml'
@@ -28,6 +30,8 @@ jobs:
           php -l drive/bin/arcadecloud-drive-admin-helper.php
           php -l drive/src/Admin/ManagedRuntimeEnvironment.php
           php -l drive/src/Admin/ArcadeCloudUpdaterService.php
+          php -l drive/src/Federation/FederationSchemaMigrationService.php
+          php -l drive/bin/federation_catalog_migrate.php
           php -l drive/tests/installer_service_reconcile_contract_smoke.php
       - name: Shell syntax
         run: |

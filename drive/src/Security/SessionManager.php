@@ -7,53 +7,9 @@ final class SessionManager
 {
     public function start(): void
     {
-        if (session_status() === PHP_SESSION_ACTIVE) {
-            return;
+        if (session_status() !== PHP_SESSION_ACTIVE) {
+            session_start();
         }
-
-        if (PHP_SAPI !== 'cli') {
-            ini_set('session.use_strict_mode', '1');
-            ini_set('session.cookie_httponly', '1');
-
-            if (!headers_sent()) {
-                $current = session_get_cookie_params();
-                $secure = $this->isHttpsRequest();
-
-                session_set_cookie_params([
-                    'lifetime' => (int)($current['lifetime'] ?? 0),
-                    'path' => (string)($current['path'] ?? '/'),
-                    'domain' => (string)($current['domain'] ?? ''),
-                    'secure' => $secure,
-                    'httponly' => true,
-                    'samesite' => 'Lax',
-                ]);
-            }
-        }
-
-        session_start();
-    }
-
-    private function isHttpsRequest(): bool
-    {
-        $https = strtolower(trim((string)($_SERVER['HTTPS'] ?? '')));
-        if ($https !== '' && $https !== 'off' && $https !== '0') {
-            return true;
-        }
-
-        $forwarded = strtolower(trim((string)($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '')));
-        return $forwarded === 'https';
-    }
-
-    public function closeWrite(): void
-    {
-        if (session_status() === PHP_SESSION_ACTIVE) {
-            session_write_close();
-        }
-    }
-
-    public function snapshot(): array
-    {
-        return isset($_SESSION) && is_array($_SESSION) ? $_SESSION : [];
     }
 
     public function isAuthenticated(): bool
@@ -86,16 +42,6 @@ final class SessionManager
         return isset($_SESSION['usuario']) ? (string)$_SESSION['usuario'] : '';
     }
 
-    public function systemRole(): string
-    {
-        return isset($_SESSION['system_role']) ? trim((string)$_SESSION['system_role']) : 'user';
-    }
-
-    public function isSuperAdmin(): bool
-    {
-        return hash_equals('superadmin', $this->systemRole());
-    }
-
     public function get(string $key, mixed $default = null): mixed
     {
         return $_SESSION[$key] ?? $default;
@@ -109,63 +55,6 @@ final class SessionManager
     public function remove(string $key): void
     {
         unset($_SESSION[$key]);
-    }
-
-    public function incrementLoginAttempt(string $identifier): int
-    {
-        $this->start();
-
-        if (!isset($_SESSION['login_attempts']) || !is_array($_SESSION['login_attempts'])) {
-            $_SESSION['login_attempts'] = [];
-        }
-
-        $current = (int)($_SESSION['login_attempts'][$identifier] ?? 0);
-        $current++;
-        $_SESSION['login_attempts'][$identifier] = $current;
-
-        return $current;
-    }
-
-    public function establishAuthenticatedUser(
-        string $email,
-        int $userId,
-        string $role,
-        string $systemRole = 'user'
-    ): void {
-        $this->start();
-        session_regenerate_id(true);
-
-        $_SESSION['usuario'] = $email;
-        $_SESSION['user_id'] = $userId;
-        $_SESSION['role'] = $role;
-        $_SESSION['system_role'] = in_array($systemRole, ['user', 'admin', 'superadmin'], true)
-            ? $systemRole
-            : 'user';
-        $_SESSION['show_counts'] = false;
-        $_SESSION['show_metas'] = false;
-        $_SESSION['media_hidden'] = true;
-        $_SESSION['show_filters'] = true;
-    }
-
-    public function destroy(): void
-    {
-        $this->start();
-        $_SESSION = [];
-
-        if (ini_get('session.use_cookies')) {
-            $params = session_get_cookie_params();
-            setcookie(
-                session_name(),
-                '',
-                time() - 42000,
-                $params['path'],
-                $params['domain'],
-                (bool)$params['secure'],
-                (bool)$params['httponly']
-            );
-        }
-
-        session_destroy();
     }
 
     public function clearSecureAccessKeys(array $keys): void

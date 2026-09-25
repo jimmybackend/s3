@@ -17,6 +17,7 @@ on:
       - 'drive/descargar_archivo.php'
       - 'drive/download.php'
       - 'drive/js/arcadelink-share.js'
+      - 'drive/js/federation-page.js'
       - 'drive/tests/arcadelink_collection_regression.php'
       - 'drive/tests/arcadelink_bulk_contract_regression.php'
       - 'drive/tests/federationcloud_smoke.php'
@@ -62,6 +63,7 @@ jobs:
         run: |
           set -euo pipefail
           node --check drive/js/arcadelink-share.js
+          node --check drive/js/federation-page.js
 
       - name: Single-file collection regression
         run: |

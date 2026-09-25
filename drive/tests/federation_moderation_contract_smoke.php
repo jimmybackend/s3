@@ -134,5 +134,12 @@ $ok(str_contains($adminMultipart, "409"), 'admin multipart classifies blocked co
 $ok(str_contains($adminUploadPage, "moderation_blocked"), 'up.php returns a controlled moderation rejection');
 $ok(str_contains($adminUploadPage, "Bloqueado por moderación:"), 'up.php renders a friendly moderation message');
 $ok(str_contains($adminUploadPage, "payload && payload.error"), 'up.php client extracts JSON error instead of exposing raw response');
+$ok(str_contains($adminUploadPage, 'id="refreshPageBtn"'), 'admin uploader exposes a refresh-page button beside user controls');
+$ok(str_contains($adminUploadPage, 'window.location.reload()'), 'admin uploader refresh button performs a real page reload');
+$ok(str_contains($adminUploadPage, 'function resetUploaderForNextFile()'), 'admin uploader has an explicit post-upload reset');
+$ok(str_contains($adminUploadPage, 'state = createIdleState();'), 'admin uploader clears stale multipart client state');
+$ok(str_contains($adminUploadPage, "fileInput.value = '';"), 'admin uploader clears the previous file selection');
+$ok(str_contains($adminUploadPage, 'startBtn.disabled = false;'), 'admin uploader re-enables a new upload after reset');
+$ok(substr_count($adminUploadPage, 'resetUploaderForNextFile();') >= 2, 'admin uploader resets after success and moderation rejection');
 $ok(str_contains($docs, 'sin reembolso automático'), 'policy documents non-automatic refund rule');
 $ok(str_contains($docs, 'revisión'), 'policy documents human review');

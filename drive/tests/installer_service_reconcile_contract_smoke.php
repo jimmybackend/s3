@@ -34,7 +34,14 @@ installerContract(str_contains($installer, '--media-worker-instance-id='), 'inst
 installerContract(str_contains($installer, 'persist_node_settings'), 'instalador persiste rol y configuración de media');
 installerContract(str_contains($installer, 'reconcile_services'), 'finalización invoca reconciliación de servicios');
 installerContract(
-    str_contains($installer, '--node-role="' . '
+    str_contains($installer, '--node-role="' . '$' . '{NODE_ROLE:-web}"'),
+    'rol llega al preparador del sistema'
+);
+installerContract(str_contains($serverPrep, 'install_media_dependencies'), 'dependencias multimedia están encapsuladas por rol');
+installerContract(str_contains($serverPrep, 'spal-release'), 'media-worker prepara SPAL');
+installerContract(str_contains($serverPrep, 'ffmpeg-free'), 'media-worker instala FFmpeg desde AL2023 SPAL');
+installerContract(str_contains($serverPrep, 'lame-libs'), 'media-worker instala librerías LAME');
+
 $installerPoolPos = strpos($installer, 'pool_user_from_conf /etc/php-fpm-drive.d/arcadecloud-drive.conf');
 $installerPsPos = strpos($installer, 'ps -eo user=,comm=');
 installerContract(

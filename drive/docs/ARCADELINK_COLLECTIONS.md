@@ -11,7 +11,7 @@ Extensión:  .arcadelink
 Media type: application/vnd.arcadecloud.arcadelink
 ```
 
-Su serialización interna actual usa JSON firmado porque es portable y verificable, pero JSON es un detalle de implementación. ArcadeCloud siempre **genera, descarga, lee y presenta** el contenedor como ArcadeLink. Un gestor móvil antiguo pudo haber añadido accidentalmente `.json`; el lector conserva compatibilidad de importación para esos archivos históricos, pero ArcadeCloud nunca los genera como formato canónico.
+La serialización interna firmada es un detalle de implementación. ArcadeCloud **genera, descarga, lee y presenta exclusivamente archivos `.arcadelink`**. Cualquier archivo con otra extensión debe rechazarse y volver a generarse desde la acción Compartir.
 
 ## Un archivo
 
@@ -73,4 +73,4 @@ Modificar la metadata de un recurso, un elemento de la colección o la colecció
 
 ## Compatibilidad
 
-Los ArcadeLinks v1 existentes siguen siendo válidos. ArcadeLink v2 agrega colecciones sin romper el formato anterior.
+Los ArcadeLinks v1 y v2 existentes con extensión `.arcadelink` siguen siendo válidos. ArcadeLink v2 agrega colecciones sin romper el formato anterior. Archivos con otra extensión no forman parte del contrato ArcadeLink y deben generarse nuevamente.

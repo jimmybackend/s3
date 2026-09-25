@@ -274,10 +274,15 @@ final class FederationService
         string $rights,
         string $discoveryPolicy = ''
     ): array {
+        $contentId = $this->resources->contentId($file);
+        if (strtoupper(trim($visibility)) !== 'PRIVATE' && $contentId === null) {
+            $contentId = (new FederationContentFingerprintService($this->app))->ensureForFile($file);
+        }
+
         $document = $this->links->create(
             $file,
             $userId,
-            $this->resources->contentId($file),
+            $contentId,
             $this->resources->mediaType($file),
             $visibility,
             $rights

@@ -79,7 +79,7 @@ class ArcadeCloudUpdaterModule {
         credentials: 'same-origin', cache: 'no-store',
         headers: {'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest'}
       });
-      const data = await response.json();
+      const data = await this.readJsonResponse(response);
       if (!response.ok || !data.ok) throw new Error(data.error || `HTTP ${response.status}`);
       this.render(data);
     } catch (error) {
@@ -124,6 +124,8 @@ class ArcadeCloudUpdaterModule {
       const box = this.document.getElementById('arcadeCloudUpdateApplyBox');
       if (box) box.classList.add('d-none');
       this.status.textContent += ' Revisión manual requerida; el updater no forzará el repositorio.';
+    } else {
+      this.hideApply();
     }
   }
 
@@ -154,10 +156,18 @@ class ArcadeCloudUpdaterModule {
         },
         body: body.toString()
       });
-      const data = await response.json();
+      const data = await this.readJsonResponse(response);
       if (!response.ok || !data.ok) throw new Error(data.error || `HTTP ${response.status}`);
-      this.status.textContent = data.message || 'ArcadeCloud actualizado. Recarga la página.';
-      this.status.className = data.needs_attention ? 'small text-warning' : 'small text-success';
+      if (Object.prototype.hasOwnProperty.call(data, 'update_available')) {
+        this.render(data);
+      } else {
+        this.status.textContent = data.message || 'ArcadeCloud actualizado. Recarga la página.';
+        this.status.className = data.needs_attention ? 'small text-warning' : 'small text-success';
+      }
+      if (data.needs_attention) {
+        this.status.textContent = data.message || 'El código quedó actualizado, pero un servicio necesita revisión.';
+        this.status.className = 'small text-warning';
+      }
       this.hideApply();
       this.password.value = '';
     } catch (error) {
@@ -166,6 +176,18 @@ class ArcadeCloudUpdaterModule {
     } finally {
       this.applyButton.disabled = false;
       this.applyButton.innerHTML = '<i class="fas fa-download mr-1"></i>Actualizar ahora';
+    }
+  }
+
+  async readJsonResponse(response) {
+    const raw = await response.text();
+    try {
+      return JSON.parse(raw);
+    } catch {
+      throw new Error(
+        `El servidor devolvió una respuesta no JSON (HTTP ${response.status}). `
+        + 'La actualización puede haber terminado; pulsa Buscar actualizaciones para confirmar.'
+      );
     }
   }
 

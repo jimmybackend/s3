@@ -47,6 +47,8 @@ installerContract(str_contains($installer, 'systemctl show -p MainPID --value ph
 installerContract(str_contains($installer, '/proc/$pid/cmdline'), 'instalador inspecciona argumentos reales del master');
 installerContract(str_contains($reconciler, 'systemctl show -p MainPID --value php-fpm-drive.service'), 'reconciliador soporta instalaciones legacy sin pool en ruta nueva');
 installerContract(str_contains($reconciler, 'expanded_pool_user'), 'reconciliador expande la configuración efectiva de PHP-FPM');
+installerContract(str_contains($installer, 'target_listen="${2:-127.0.0.1:9075}"'), 'instalador selecciona el pool que escucha en 9075');
+installerContract(str_contains($reconciler, 'target_listen="${2:-127.0.0.1:9075}"'), 'reconciliador selecciona el pool que escucha en 9075');
 
 installerContract(str_contains($reconciler, 'ROLE="web"'), 'rol seguro por defecto es web');
 installerContract(str_contains($reconciler, 'install_media_processing_worker.sh'), 'rol multimedia instala worker');

@@ -4,10 +4,10 @@
 
 ## Resumen
 
-- PHP analizados: **443**
-- PHP que ya contienen clases/interfaces: **265**
-- PHP marcados para migración/revisión: **0**
-- Tests PHP separados del objetivo OOP de runtime: **40**
+- PHP analizados: **446**
+- PHP que ya contienen clases/interfaces: **266**
+- PHP marcados para migración/revisión: **1**
+- Tests PHP separados del objetivo OOP de runtime: **41**
 - JavaScript analizados: **48**
 - JavaScript que ya contienen clases: **48**
 - JavaScript sin clase/encapsulación OOP: **0**
@@ -32,7 +32,7 @@
 | `drive/app_bootstrap.php` | 62 | bootstrap | 0 | — | ⚠️ | — | — |
 | `drive/aws.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/background_tasks.php` | 18 | thin endpoint | 0 | — | — | — | — |
-| `drive/bin/arcadecloud-drive-admin-helper.php` | 624 | class/module | 1 | — | ⚠️ | — | — |
+| `drive/bin/arcadecloud-drive-admin-helper.php` | 625 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/bin/arcadecloud-drive-updater.php` | 274 | class/module | 1 | — | — | — | — |
 | `drive/bin/federation_catalog_migrate.php` | 18 | thin cli entrypoint | 0 | — | — | — | — |
 | `drive/bin/federation_drop_cleanup.php` | 19 | thin cli entrypoint | 0 | — | — | — | — |
@@ -73,6 +73,7 @@
 | `drive/eliminar_archivo.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/eliminar_carpeta.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/encriptar_archivo.php` | 10 | thin endpoint | 0 | — | — | — | — |
+| `drive/fastdrive-control.php` | 125 | view/entrypoint | 0 | — | — | — | global functions: fd_e |
 | `drive/federationcloud/access-request.php` | 11 | thin endpoint | 0 | — | — | — | — |
 | `drive/federationcloud/access-status.php` | 11 | thin endpoint | 0 | — | — | — | — |
 | `drive/federationcloud/access.php` | 11 | thin endpoint | 0 | — | — | — | — |
@@ -152,7 +153,8 @@
 | `drive/src/Activity/TranscriptionCostAttribution.php` | 117 | class/module | 1 | — | — | — | — |
 | `drive/src/Activity/TranscriptionReconciler.php` | 476 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Admin/ArcadeCloudUpdaterService.php` | 133 | class/module | 1 | — | ⚠️ | — | — |
-| `drive/src/Admin/ManagedRuntimeEnvironment.php` | 372 | class/module | 1 | — | — | — | — |
+| `drive/src/Admin/FastDriveControlService.php` | 143 | class/module | 1 | — | ⚠️ | — | — |
+| `drive/src/Admin/ManagedRuntimeEnvironment.php` | 374 | class/module | 1 | — | — | — | — |
 | `drive/src/Admin/PrivilegedServerHelper.php` | 150 | class/module | 1 | — | — | — | — |
 | `drive/src/Admin/ServerSettingsAdminService.php` | 211 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Application/AiFileSearchService.php` | 470 | class/module | 1 | — | ⚠️ | — | — |
@@ -405,6 +407,7 @@
 | `drive/tests/arcadelink_bulk_contract_regression.php` | 71 | test script | 0 | — | — | — | — |
 | `drive/tests/arcadelink_collection_regression.php` | 63 | test script | 0 | — | — | — | — |
 | `drive/tests/database_schema_contract_smoke.php` | 106 | test script | 0 | — | — | — | — |
+| `drive/tests/fastdrive_control_contract_smoke.php` | 31 | test script | 0 | — | — | — | — |
 | `drive/tests/federation_access_message_smoke.php` | 72 | test script | 0 | — | — | — | — |
 | `drive/tests/federation_catalog_event_smoke.php` | 60 | test script | 0 | — | — | — | — |
 | `drive/tests/federation_customs_contract_smoke.php` | 82 | test script | 0 | — | — | — | — |

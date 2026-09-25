@@ -112,3 +112,12 @@ sudo systemctl list-timers arcadecloud-federation-sync.timer --no-pager
 ```
 
 A peer being offline is not a schema or bootstrap failure. Once the local schema exists, peer failures are handled by FederationCloud backoff and eventual retry.
+
+
+## Web updater exception
+
+The **Acerca de -> Actualizaciones** flow does not require the FederationCloud schema migration to reconstruct CLI database credentials.
+
+When the reconciler detects that it was launched by `arcadecloud-drive-updater`, it finishes privileged service reconciliation and defers the database schema step to the authenticated web runtime. On the next updater check, `ArcadeCloudUpdaterService` uses the already-open `DriveApplication::db()` connection and runs the same canonical FederationCloud schema service idempotently.
+
+This avoids copying DB credentials between processes and makes legacy installations behave like the web application that is already connected successfully.

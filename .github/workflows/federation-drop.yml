@@ -8,6 +8,8 @@ on:
       - 'drive/src/Federation/FederationDrop*.php'
       - 'drive/src/Federation/ArcadeLinkService.php'
       - 'drive/src/Federation/FederationService.php'
+      - 'drive/src/Federation/FederationReplicaResolverService.php'
+      - 'drive/src/Federation/FederationSourceFailover.php'
       - 'drive/src/Http/Controller/FederationDropController.php'
       - 'drive/src/Http/Controller/FederationDropGoogleAuthController.php'
       - 'drive/src/Http/Request.php'

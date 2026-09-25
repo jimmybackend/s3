@@ -4,8 +4,8 @@
 
 ## Resumen
 
-- PHP analizados: **440**
-- PHP que ya contienen clases/interfaces: **263**
+- PHP analizados: **441**
+- PHP que ya contienen clases/interfaces: **264**
 - PHP marcados para migración/revisión: **0**
 - Tests PHP separados del objetivo OOP de runtime: **39**
 - JavaScript analizados: **48**
@@ -320,7 +320,7 @@
 | `drive/src/Http/Controller/ThumbnailController.php` | 110 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/TranscriptionController.php` | 224 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/UploadCleanupController.php` | 76 | class/module | 1 | — | — | — | — |
-| `drive/src/Http/Controller/UploadController.php` | 271 | class/module | 1 | — | — | — | — |
+| `drive/src/Http/Controller/UploadController.php` | 281 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/UserProfileController.php` | 115 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/JsonResponse.php` | 27 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Request.php` | 122 | class/module | 1 | — | — | — | — |
@@ -371,7 +371,7 @@
 | `drive/src/Sync/SyncJobStore.php` | 263 | class/module | 1 | — | — | — | — |
 | `drive/src/Sync/SyncRepository.php` | 499 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Sync/SyncSchemaMigrator.php` | 114 | class/module | 1 | — | ⚠️ | — | — |
-| `drive/src/Upload/AdminMultipartUploadService.php` | 154 | class/module | 1 | — | — | — | — |
+| `drive/src/Upload/AdminMultipartUploadService.php` | 220 | class/module | 1 | — | — | — | — |
 | `drive/src/Upload/PublicDropzoneUploadService.php` | 133 | class/module | 1 | — | — | — | — |
 | `drive/src/Upload/PublicMultipartUploadService.php` | 262 | class/module | 1 | — | — | — | — |
 | `drive/src/Upload/PublicSharedBrowserRepository.php` | 61 | class/module | 1 | — | ⚠️ | — | — |
@@ -414,7 +414,7 @@
 | `drive/tests/federation_drop_stripe_smoke.php` | 97 | test script | 0 | — | — | — | — |
 | `drive/tests/federation_endpoint_resolver_smoke.php` | 95 | test script | 0 | — | — | — | — |
 | `drive/tests/federation_https_contract_smoke.php` | 61 | test script | 0 | — | — | — | — |
-| `drive/tests/federation_moderation_contract_smoke.php` | 100 | test script | 0 | — | — | — | — |
+| `drive/tests/federation_moderation_contract_smoke.php` | 128 | test script | 0 | — | — | — | — |
 | `drive/tests/federation_node_name_admin_smoke.php` | 91 | test script | 0 | — | — | — | — |
 | `drive/tests/federation_provider_smoke.php` | 76 | test script | 0 | — | — | — | — |
 | `drive/tests/federation_public_download_failover_smoke.php` | 215 | test script | 0 | — | — | — | — |
@@ -450,13 +450,14 @@
 | `drive/up-clean.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/up.php` | 799 | view/entrypoint | 0 | ⚠️ | — | — | — |
 | `drive/update.php` | 11 | thin endpoint | 0 | — | — | — | — |
+| `drive/upload/ModerationUploadGuard.php` | 187 | class/module | 2 | — | ⚠️ | — | — |
 | `drive/upload/UploadFactory.php` | 60 | class/module | 1 | — | — | — | — |
 | `drive/upload/core/UploadResponse.php` | 15 | class/module | 1 | — | — | — | — |
 | `drive/upload/core/UploaderInterface.php` | 11 | class/module | 0 | — | — | — | — |
-| `drive/upload/drivers/Chunked15MBUploader.php` | 266 | class/module | 1 | — | — | — | — |
-| `drive/upload/drivers/DropboxUploader.php` | 129 | class/module | 1 | — | — | — | — |
-| `drive/upload/drivers/LocalPresignedPutUploader.php` | 287 | class/module | 1 | — | ⚠️ | — | — |
-| `drive/upload/drivers/RemoteUrlUploader.php` | 470 | class/module | 1 | — | — | — | — |
+| `drive/upload/drivers/Chunked15MBUploader.php` | 278 | class/module | 1 | — | — | — | — |
+| `drive/upload/drivers/DropboxUploader.php` | 147 | class/module | 1 | — | — | — | — |
+| `drive/upload/drivers/LocalPresignedPutUploader.php` | 325 | class/module | 1 | — | ⚠️ | — | — |
+| `drive/upload/drivers/RemoteUrlUploader.php` | 493 | class/module | 1 | — | — | — | — |
 | `drive/upload/repositories/FileS3Repository.php` | 86 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/upload/storage/UploadStateStore.php` | 51 | class/module | 1 | — | — | — | — |
 | `drive/upload.php` | 10 | thin endpoint | 0 | — | — | — | — |
@@ -512,8 +513,8 @@
 | `drive/js/soportesMediaTypes.js` | 397 | class/module | SoportesMediaTypesModule | — | — | — |
 | `drive/js/storage-usage.js` | 51 | class/module | StorageUsageModule | — | — | — |
 | `drive/js/subir-chunked.js` | 590 | class/module | SubirChunkedModule | — | — | — |
-| `drive/js/subir-dropzone.js` | 874 | class/module | SubirDropzoneModule | — | — | — |
-| `drive/js/subir.js` | 333 | class/module | SubirModule | — | — | — |
+| `drive/js/subir-dropzone.js` | 910 | class/module | SubirDropzoneModule | — | — | — |
+| `drive/js/subir.js` | 358 | class/module | SubirModule | — | — | — |
 | `drive/js/theme-state-bridge.js` | 73 | class/module | ThemeStateBridge | — | — | — |
 | `drive/js/transcribe-background.js` | 319 | class/module | TranscribeBackgroundModule | — | — | — |
 | `drive/js/upload-destination.js` | 63 | class/module | UploadDestinationModule | — | — | — |

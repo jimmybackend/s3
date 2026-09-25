@@ -1,7 +1,7 @@
 {
   "summary": {
-    "php_total": 440,
-    "php_class_modules": 263,
+    "php_total": 441,
+    "php_class_modules": 264,
     "php_needs_migration": 0,
     "php_tests": 39,
     "js_total": 48,
@@ -4449,7 +4449,7 @@
     },
     {
       "path": "drive/src/Http/Controller/UploadController.php",
-      "lines": 271,
+      "lines": 281,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -5229,7 +5229,7 @@
     },
     {
       "path": "drive/src/Upload/AdminMultipartUploadService.php",
-      "lines": 154,
+      "lines": 220,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -5907,7 +5907,7 @@
     },
     {
       "path": "drive/tests/federation_moderation_contract_smoke.php",
-      "lines": 100,
+      "lines": 128,
       "kind": "test script",
       "classes": 0,
       "functions": [],
@@ -6480,6 +6480,21 @@
       "issues": []
     },
     {
+      "path": "drive/upload/ModerationUploadGuard.php",
+      "lines": 187,
+      "kind": "class/module",
+      "classes": 2,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": true,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
       "path": "drive/upload/UploadFactory.php",
       "lines": 60,
       "kind": "class/module",
@@ -6526,7 +6541,7 @@
     },
     {
       "path": "drive/upload/drivers/Chunked15MBUploader.php",
-      "lines": 266,
+      "lines": 278,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -6541,7 +6556,7 @@
     },
     {
       "path": "drive/upload/drivers/DropboxUploader.php",
-      "lines": 129,
+      "lines": 147,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -6556,7 +6571,7 @@
     },
     {
       "path": "drive/upload/drivers/LocalPresignedPutUploader.php",
-      "lines": 287,
+      "lines": 325,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -6571,7 +6586,7 @@
     },
     {
       "path": "drive/upload/drivers/RemoteUrlUploader.php",
-      "lines": 470,
+      "lines": 493,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -7457,7 +7472,7 @@
     },
     {
       "path": "drive/js/subir-dropzone.js",
-      "lines": 874,
+      "lines": 910,
       "kind": "class/module",
       "classes": [
         "SubirDropzoneModule"
@@ -7474,7 +7489,7 @@
     },
     {
       "path": "drive/js/subir.js",
-      "lines": 333,
+      "lines": 358,
       "kind": "class/module",
       "classes": [
         "SubirModule"

@@ -230,7 +230,7 @@
     },
     {
       "path": "drive/bin/arcadecloud-drive-updater.php",
-      "size": 9632,
+      "size": 10222,
       "active": false,
       "references": [
         "drive/tests/installer_service_reconcile_contract_smoke.php"
@@ -1268,9 +1268,11 @@
     },
     {
       "path": "drive/src/Admin/ArcadeCloudUpdaterService.php",
-      "size": 3544,
+      "size": 4250,
       "active": false,
-      "references": []
+      "references": [
+        "drive/tests/installer_service_reconcile_contract_smoke.php"
+      ]
     },
     {
       "path": "drive/src/Admin/ManagedRuntimeEnvironment.php",
@@ -3123,7 +3125,7 @@
     },
     {
       "path": "drive/tests/installer_service_reconcile_contract_smoke.php",
-      "size": 4135,
+      "size": 7286,
       "active": false,
       "references": []
     },

@@ -154,7 +154,7 @@
 | `drive/src/Activity/PollyTaskReconciler.php` | ninguna |
 | `drive/src/Activity/TranscriptionCostAttribution.php` | ninguna |
 | `drive/src/Activity/TranscriptionReconciler.php` | `drive/tests/transcribe_s3_recovery_contract_smoke.php` |
-| `drive/src/Admin/ArcadeCloudUpdaterService.php` | ninguna |
+| `drive/src/Admin/ArcadeCloudUpdaterService.php` | `drive/tests/installer_service_reconcile_contract_smoke.php` |
 | `drive/src/Admin/PrivilegedServerHelper.php` | `drive/setup/api.php`, `drive/tests/setup_finalize_contract_smoke.php` |
 | `drive/src/Admin/ServerSettingsAdminService.php` | ninguna |
 | `drive/src/Application/AiFileSearchService.php` | ninguna |

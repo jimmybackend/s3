@@ -4,10 +4,10 @@
 
 ## Resumen
 
-- PHP analizados: **441**
-- PHP que ya contienen clases/interfaces: **264**
+- PHP analizados: **443**
+- PHP que ya contienen clases/interfaces: **265**
 - PHP marcados para migración/revisión: **0**
-- Tests PHP separados del objetivo OOP de runtime: **39**
+- Tests PHP separados del objetivo OOP de runtime: **40**
 - JavaScript analizados: **48**
 - JavaScript que ya contienen clases: **48**
 - JavaScript sin clase/encapsulación OOP: **0**
@@ -191,7 +191,7 @@
 | `drive/src/Aws/TextractFileService.php` | 107 | class/module | 1 | — | — | — | — |
 | `drive/src/Aws/TranscriptionFileService.php` | 712 | class/module | 1 | — | — | — | — |
 | `drive/src/Aws/TranslateFileService.php` | 60 | class/module | 1 | — | — | — | — |
-| `drive/src/Console/MediaProcessingWorkerCommand.php` | 425 | class/module | 1 | — | — | — | — |
+| `drive/src/Console/MediaProcessingWorkerCommand.php` | 452 | class/module | 1 | — | — | — | — |
 | `drive/src/Console/MoveJobWorkerCommand.php` | 137 | class/module | 1 | — | — | — | — |
 | `drive/src/Console/SyncWorkerCommand.php` | 182 | class/module | 1 | — | — | — | — |
 | `drive/src/Console/UploadCleanupCommand.php` | 61 | class/module | 1 | — | — | — | — |
@@ -348,8 +348,9 @@
 | `drive/src/Security/UserProfileService.php` | 183 | class/module | 1 | — | — | — | — |
 | `drive/src/Security/UserProfileValidator.php` | 96 | class/module | 1 | — | — | — | — |
 | `drive/src/Setup/BootstrapSetupAuth.php` | 181 | class/module | 1 | ⚠️ | — | — | — |
+| `drive/src/Setup/CanonicalDatabaseSchemaService.php` | 149 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Setup/SetupApiController.php` | 120 | class/module | 1 | — | — | — | — |
-| `drive/src/Setup/SetupConfigurationService.php` | 167 | class/module | 1 | — | — | — | — |
+| `drive/src/Setup/SetupConfigurationService.php` | 182 | class/module | 1 | — | — | — | — |
 | `drive/src/Setup/SetupEntryGuard.php` | 22 | class/module | 1 | — | — | — | — |
 | `drive/src/Setup/SuperAdminBootstrapService.php` | 290 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Sharing/ShareAccessService.php` | 105 | class/module | 1 | — | — | — | — |
@@ -403,7 +404,7 @@
 | `drive/tests/activity_costs_smoke.php` | 150 | test script | 0 | — | — | — | — |
 | `drive/tests/arcadelink_bulk_contract_regression.php` | 71 | test script | 0 | — | — | — | — |
 | `drive/tests/arcadelink_collection_regression.php` | 63 | test script | 0 | — | — | — | — |
-| `drive/tests/database_schema_contract_smoke.php` | 104 | test script | 0 | — | — | — | — |
+| `drive/tests/database_schema_contract_smoke.php` | 106 | test script | 0 | — | — | — | — |
 | `drive/tests/federation_access_message_smoke.php` | 72 | test script | 0 | — | — | — | — |
 | `drive/tests/federation_catalog_event_smoke.php` | 60 | test script | 0 | — | — | — | — |
 | `drive/tests/federation_customs_contract_smoke.php` | 82 | test script | 0 | — | — | — | — |
@@ -422,9 +423,10 @@
 | `drive/tests/federation_replica_smoke.php` | 115 | test script | 0 | — | — | — | — |
 | `drive/tests/federationcloud_smoke.php` | 197 | test script | 0 | — | — | — | — |
 | `drive/tests/folder_document_sanitizer.php` | 49 | test script | 0 | — | — | — | — |
+| `drive/tests/fresh_install_contract_smoke.php` | 62 | test script | 0 | — | — | — | — |
 | `drive/tests/index_federation_drop_smoke.php` | 121 | test script | 0 | — | — | — | — |
-| `drive/tests/installer_service_reconcile_contract_smoke.php` | 127 | test script | 0 | — | — | — | — |
-| `drive/tests/media_processing_contract_smoke.php` | 52 | test script | 0 | — | — | — | — |
+| `drive/tests/installer_service_reconcile_contract_smoke.php` | 137 | test script | 0 | — | — | — | — |
+| `drive/tests/media_processing_contract_smoke.php` | 54 | test script | 0 | — | — | — | — |
 | `drive/tests/password_credential_verifier_smoke.php` | 44 | test script | 0 | — | — | — | — |
 | `drive/tests/scoped_sync_repository_regression.php` | 96 | test script | 0 | — | ⚠️ | — | — |
 | `drive/tests/security_hardening_smoke.php` | 59 | test script | 0 | — | — | — | — |

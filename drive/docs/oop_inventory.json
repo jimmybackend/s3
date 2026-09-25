@@ -1,9 +1,9 @@
 {
   "summary": {
-    "php_total": 441,
-    "php_class_modules": 264,
+    "php_total": 443,
+    "php_class_modules": 265,
     "php_needs_migration": 0,
-    "php_tests": 39,
+    "php_tests": 40,
     "js_total": 48,
     "js_class_modules": 48,
     "js_needs_migration": 0,
@@ -2512,7 +2512,7 @@
     },
     {
       "path": "drive/src/Console/MediaProcessingWorkerCommand.php",
-      "lines": 425,
+      "lines": 452,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -4880,6 +4880,21 @@
       "issues": []
     },
     {
+      "path": "drive/src/Setup/CanonicalDatabaseSchemaService.php",
+      "lines": 149,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": true,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
       "path": "drive/src/Setup/SetupApiController.php",
       "lines": 120,
       "kind": "class/module",
@@ -4899,7 +4914,7 @@
     },
     {
       "path": "drive/src/Setup/SetupConfigurationService.php",
-      "lines": 167,
+      "lines": 182,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -5717,7 +5732,7 @@
     },
     {
       "path": "drive/tests/database_schema_contract_smoke.php",
-      "lines": 104,
+      "lines": 106,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -6039,6 +6054,23 @@
       "issues": []
     },
     {
+      "path": "drive/tests/fresh_install_contract_smoke.php",
+      "lines": 62,
+      "kind": "test script",
+      "classes": 0,
+      "functions": [
+        "freshInstallContract"
+      ],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
       "path": "drive/tests/index_federation_drop_smoke.php",
       "lines": 121,
       "kind": "test script",
@@ -6057,7 +6089,7 @@
     },
     {
       "path": "drive/tests/installer_service_reconcile_contract_smoke.php",
-      "lines": 127,
+      "lines": 137,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -6074,7 +6106,7 @@
     },
     {
       "path": "drive/tests/media_processing_contract_smoke.php",
-      "lines": 52,
+      "lines": 54,
       "kind": "test script",
       "classes": 0,
       "functions": [

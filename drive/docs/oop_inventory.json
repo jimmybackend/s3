@@ -1,9 +1,9 @@
 {
   "summary": {
-    "php_total": 433,
-    "php_class_modules": 257,
+    "php_total": 435,
+    "php_class_modules": 258,
     "php_needs_migration": 0,
-    "php_tests": 38,
+    "php_tests": 39,
     "js_total": 48,
     "js_class_modules": 48,
     "js_needs_migration": 0,
@@ -3112,7 +3112,7 @@
     },
     {
       "path": "drive/src/Federation/FederationHttpClient.php",
-      "lines": 163,
+      "lines": 184,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -3397,7 +3397,7 @@
     },
     {
       "path": "drive/src/Federation/FederationReplicaResolverService.php",
-      "lines": 217,
+      "lines": 246,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -3503,6 +3503,21 @@
     {
       "path": "drive/src/Federation/FederationShareDriveService.php",
       "lines": 255,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Federation/FederationSourceFailover.php",
+      "lines": 118,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -3939,7 +3954,7 @@
     },
     {
       "path": "drive/src/Http/Controller/FederationReplicaController.php",
-      "lines": 128,
+      "lines": 131,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -5852,6 +5867,25 @@
       "classes": 0,
       "functions": [
         "providerOk"
+      ],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/tests/federation_public_download_failover_smoke.php",
+      "lines": 176,
+      "kind": "test script",
+      "classes": 0,
+      "functions": [
+        "publicDownloadOk",
+        "publicDownloadNode",
+        "publicDownloadSuccess"
       ],
       "session": false,
       "superglobals": [],

@@ -31,6 +31,8 @@ final class ManagedRuntimeEnvironment
         'ARCADECLOUD_MEDIA_WORKER_REGION' => ['secret' => false, 'group' => 'Nodo y procesamiento'],
         'ARCADECLOUD_MEDIA_WORKER_HOURLY_USD' => ['secret' => false, 'group' => 'Nodo y procesamiento'],
         'ARCADECLOUD_MEDIA_WORKER_IDLE_GRACE_SECONDS' => ['secret' => false, 'group' => 'Nodo y procesamiento'],
+        'ARCADECLOUD_FASTDRIVE_INSTANCE_ID' => ['secret' => false, 'group' => 'Control FastDrive'],
+        'ARCADECLOUD_FASTDRIVE_REGION' => ['secret' => false, 'group' => 'Control FastDrive'],
 
         'ARCADECLOUD_DROP_ENABLED' => ['secret' => false, 'group' => 'FederationDrop'],
         'ARCADECLOUD_DROP_PUBLIC_URL' => ['secret' => false, 'group' => 'FederationDrop'],

@@ -5982,7 +5982,7 @@
     },
     {
       "path": "drive/tests/installer_service_reconcile_contract_smoke.php",
-      "lines": 94,
+      "lines": 102,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -6678,7 +6678,7 @@
     },
     {
       "path": "drive/js/arcadecloud-updater.js",
-      "lines": 192,
+      "lines": 214,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudUpdaterModule"

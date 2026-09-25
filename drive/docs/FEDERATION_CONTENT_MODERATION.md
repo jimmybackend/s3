@@ -65,9 +65,9 @@ para avisar que existen reportes pendientes.
 
 El superusuario debe leer el reporte y escribir el motivo de su decisión.
 
-### Rechazar
+### Rechazar / retirar
 
-`Rechazar` marca el reporte como `rejected`. No modifica el archivo ni la lista de bloqueo.
+`Rechazar / retirar` marca el reporte como `rejected`, lo saca de la cola de pendientes y no modifica el archivo ni la lista de bloqueo. El registro se conserva como auditoría; no se borra el historial de moderación.
 
 ### Confirmar y bloquear
 
@@ -78,8 +78,9 @@ El superusuario debe leer el reporte y escribir el motivo de su decisión.
 3. emite un evento Ed25519 `moderation.block`;
 4. materializa la huella en `FederationModerationBlocks`;
 5. ejecuta limpieza local;
-6. los demás nodos reciben el evento por el gossip normal y ejecutan su limpieza en el siguiente ciclo de sincronización;
-7. futuras operaciones FederationDrop que produzcan la misma huella son rechazadas.
+6. sólo después marca el reporte como confirmado y lo retira de la cola de pendientes;
+7. los demás nodos reciben el evento por el gossip normal y ejecutan su limpieza en el siguiente ciclo de sincronización;
+8. futuras operaciones FederationDrop que produzcan la misma huella son rechazadas.
 
 La limpieza local busca:
 
@@ -88,6 +89,12 @@ La limpieza local busca:
 - archivos `FileS3` cuyo metadata contenga `hash_sha256`, `sha256` o `checksum_sha256`.
 
 La evidencia de moderación conserva el hash, reporte, nodo, decisión y auditoría. No es necesario conservar los bytes del contenido retirado.
+
+### Revocar un bloqueo
+
+El superusuario puede revocar una huella activa emitida por **su propio nodo**. La acción exige motivo y CSRF, emite el evento firmado `moderation.unblock`, cambia el bloqueo a `revoked` y permite que esos mismos bytes vuelvan a subirse.
+
+Revocar una huella **no restaura** archivos ya eliminados de S3 o retirados de MySQL. Si fue una prueba o falso positivo, el propietario debe volver a subir una copia legítima después del desbloqueo. El reporte y la auditoría histórica se conservan.
 
 ## Propagación
 
@@ -149,14 +156,14 @@ Esto no intenta anular obligaciones legales, contracargos, devoluciones exigidas
 
 ## Migración
 
-Después de actualizar el repositorio:
+El actualizador integrado ejecuta automáticamente `drive/bin/federation_catalog_migrate.php` durante la reconciliación posterior al fast-forward. El migrador usa la sección FederationCloud del SQL canónico y crea las tablas de forma idempotente.
+
+Para diagnóstico o una instalación administrada manualmente también puede ejecutarse:
 
 ```bash
 cd /var/www/arcadecloud-drive
 php drive/bin/federation_catalog_migrate.php
 ```
-
-El migrador usa la sección FederationCloud del SQL canónico y las nuevas tablas usan `CREATE TABLE IF NOT EXISTS`.
 
 Después:
 

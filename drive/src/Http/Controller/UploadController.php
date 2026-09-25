@@ -79,6 +79,14 @@ final class UploadController
             JsonResponse::send(['ok' => true] + $result);
         } catch (Throwable $e) {
             $session->closeWrite();
+
+            if ($e instanceof \BlockedUploadException) {
+                JsonResponse::send([
+                    'ok' => false,
+                    'error' => $e->getMessage(),
+                    'moderation_blocked' => true,
+                ], 409);
+            }
             if ($this->isCostBearingPhase($mode, $action)) {
                 $this->activity()->failure(
                     $userId,

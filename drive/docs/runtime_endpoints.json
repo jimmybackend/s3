@@ -1570,7 +1570,7 @@
     },
     {
       "path": "drive/src/Federation/ArcadeLinkFileFormat.php",
-      "size": 1632,
+      "size": 1341,
       "active": false,
       "references": [
         "drive/tests/arcadelink_collection_regression.php"
@@ -2913,7 +2913,7 @@
     },
     {
       "path": "drive/src/View/FederationPageRenderer.php",
-      "size": 13662,
+      "size": 13592,
       "active": false,
       "references": [
         "drive/tests/arcadelink_collection_regression.php",
@@ -3042,7 +3042,7 @@
     },
     {
       "path": "drive/tests/arcadelink_collection_regression.php",
-      "size": 4676,
+      "size": 5218,
       "active": false,
       "references": []
     },

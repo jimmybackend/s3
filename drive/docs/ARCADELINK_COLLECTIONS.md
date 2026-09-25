@@ -74,3 +74,12 @@ Modificar la metadata de un recurso, un elemento de la colección o la colecció
 ## Compatibilidad
 
 Los ArcadeLinks v1 y v2 existentes con extensión `.arcadelink` siguen siendo válidos. ArcadeLink v2 agrega colecciones sin romper el formato anterior. Archivos con otra extensión no forman parte del contrato ArcadeLink y deben generarse nuevamente.
+
+
+## Validación de producción
+
+La matriz que separa pruebas manuales, cobertura CI y casos mult nodo pendientes está en:
+
+`drive/docs/ARCADELINK_PRODUCTION_VALIDATION.md`
+
+Al 24 de septiembre de 2026 se validó manualmente en producción tanto un ArcadeLink de **un recurso** como una colección de **tres recursos**, incluyendo la descarga correcta de todos los archivos.

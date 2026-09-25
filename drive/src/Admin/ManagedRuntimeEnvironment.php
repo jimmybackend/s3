@@ -23,6 +23,7 @@ final class ManagedRuntimeEnvironment
         'ARCADECLOUD_FEDERATION_REPLICA_ROLE' => ['secret' => false, 'group' => 'FederationCloud avanzado'],
         'ARCADECLOUD_FEDERATION_REPLICA_SCOPE' => ['secret' => false, 'group' => 'FederationCloud avanzado'],
         'ARCADECLOUD_FEDERATION_DYNAMIC_IP' => ['secret' => false, 'group' => 'FederationCloud avanzado'],
+        'ARCADECLOUD_TLS_TERMINATION' => ['secret' => false, 'group' => 'FederationCloud avanzado'],
 
         'ARCADECLOUD_NODE_ROLE' => ['secret' => false, 'group' => 'Nodo y procesamiento'],
         'ARCADECLOUD_MEDIA_WORKER' => ['secret' => false, 'group' => 'Nodo y procesamiento'],
@@ -281,6 +282,14 @@ final class ManagedRuntimeEnvironment
             return $lower;
         }
 
+
+        if ($name === 'ARCADECLOUD_TLS_TERMINATION' && $value !== '') {
+            $lower = strtolower($value);
+            if (!in_array($lower, ['local', 'gateway'], true)) {
+                throw new RuntimeException('ARCADECLOUD_TLS_TERMINATION debe ser local o gateway.');
+            }
+            return $lower;
+        }
 
         if ($name === 'ARCADECLOUD_FEDERATION_REPLICA_ROLE' && $value !== '') {
             $lower = strtolower($value);

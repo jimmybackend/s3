@@ -31,7 +31,7 @@
 | `drive/federationcloud/index.php` | `drive/bloque_archivos.php`, `drive/bloque_carpetas.php`, `drive/s3.php`, `drive/src/Http/Controller/ActivityCostController.php`, `drive/src/Http/Controller/AuthController.php`, `drive/src/Http/Controller/FederationModerationController.php`, `drive/src/Security/SessionManager.php`, `drive/src/View/FederationReportPageRenderer.php`, `drive/tests/index_federation_drop_smoke.php`, `drive/up.php` |
 | `drive/federationcloud/moderation.php` | `drive/bloque_footer.php` |
 | `drive/federationcloud/portal.php` | `drive/bloque_carpetas.php`, `drive/src/Federation/FederationService.php`, `drive/src/View/FederationDropPageRenderer.php`, `drive/src/View/FederationPageRenderer.php`, `drive/js/arcadelink-share.js` |
-| `drive/federationdrop/d.php` | `drive/app_bootstrap.php`, `drive/index.php`, `drive/s3.php`, `drive/src/Federation/FederationDropService.php`, `drive/tests/federationcloud_smoke.php`, `drive/tests/media_processing_contract_smoke.php`, `drive/tests/setup_entry_guard_smoke.php`, `drive/js/soportesMediaTypes.js`, `drive/js/subir-chunked.js`, `drive/js/subir-dropzone.js`, `drive/js/subir.js` |
+| `drive/federationdrop/d.php` | `drive/app_bootstrap.php`, `drive/index.php`, `drive/s3.php`, `drive/src/Federation/FederationDropService.php`, `drive/tests/federation_moderation_contract_smoke.php`, `drive/tests/federationcloud_smoke.php`, `drive/tests/media_processing_contract_smoke.php`, `drive/tests/setup_entry_guard_smoke.php`, `drive/upload/drivers/Chunked15MBUploader.php`, `drive/upload/drivers/DropboxUploader.php`, `drive/upload/drivers/LocalPresignedPutUploader.php`, `drive/upload/drivers/RemoteUrlUploader.php`, `drive/js/soportesMediaTypes.js`, `drive/js/subir-chunked.js`, `drive/js/subir-dropzone.js`, `drive/js/subir.js` |
 | `drive/federationdrop/index.php` | `drive/bloque_archivos.php`, `drive/bloque_carpetas.php`, `drive/s3.php`, `drive/src/Http/Controller/ActivityCostController.php`, `drive/src/Http/Controller/AuthController.php`, `drive/src/Http/Controller/FederationModerationController.php`, `drive/src/Security/SessionManager.php`, `drive/src/View/FederationReportPageRenderer.php`, `drive/tests/index_federation_drop_smoke.php`, `drive/up.php` |
 | `drive/guardar_texto.php` | `drive/editor.php` |
 | `drive/index.php` | `drive/bloque_archivos.php`, `drive/bloque_carpetas.php`, `drive/s3.php`, `drive/src/Http/Controller/ActivityCostController.php`, `drive/src/Http/Controller/AuthController.php`, `drive/src/Http/Controller/FederationModerationController.php`, `drive/src/Security/SessionManager.php`, `drive/src/View/FederationReportPageRenderer.php`, `drive/tests/index_federation_drop_smoke.php`, `drive/up.php` |
@@ -322,7 +322,7 @@
 | `drive/src/Http/Controller/ThumbnailController.php` | ninguna |
 | `drive/src/Http/Controller/TranscriptionController.php` | `drive/tests/transcribe_s3_recovery_contract_smoke.php` |
 | `drive/src/Http/Controller/UploadCleanupController.php` | ninguna |
-| `drive/src/Http/Controller/UploadController.php` | ninguna |
+| `drive/src/Http/Controller/UploadController.php` | `drive/tests/federation_moderation_contract_smoke.php` |
 | `drive/src/Http/Controller/UserProfileController.php` | ninguna |
 | `drive/src/Http/JsonResponse.php` | ninguna |
 | `drive/src/Http/Request.php` | ninguna |
@@ -371,7 +371,7 @@
 | `drive/src/Sync/SyncJobStore.php` | ninguna |
 | `drive/src/Sync/SyncRepository.php` | `drive/tests/scoped_sync_repository_regression.php`, `drive/tests/sync_repository_regression.php` |
 | `drive/src/Sync/SyncSchemaMigrator.php` | `drive/tests/sync_schema_migrator_regression.php` |
-| `drive/src/Upload/AdminMultipartUploadService.php` | ninguna |
+| `drive/src/Upload/AdminMultipartUploadService.php` | `drive/tests/federation_moderation_contract_smoke.php` |
 | `drive/src/Upload/PublicDropzoneUploadService.php` | `drive/tests/federation_moderation_contract_smoke.php` |
 | `drive/src/Upload/PublicMultipartUploadService.php` | ninguna |
 | `drive/src/Upload/PublicSharedBrowserRepository.php` | ninguna |
@@ -448,13 +448,14 @@
 | `drive/unlock_file.php` | `drive/js/archivos.js` |
 | `drive/up-clean.php` | ninguna |
 | `drive/update.php` | `drive/js/arcadecloud-updater.js` |
+| `drive/upload/ModerationUploadGuard.php` | `drive/tests/federation_moderation_contract_smoke.php`, `drive/upload/drivers/Chunked15MBUploader.php`, `drive/upload/drivers/DropboxUploader.php`, `drive/upload/drivers/LocalPresignedPutUploader.php`, `drive/upload/drivers/RemoteUrlUploader.php` |
 | `drive/upload/UploadFactory.php` | `drive/src/Core/DriveApplication.php` |
 | `drive/upload/core/UploadResponse.php` | ninguna |
 | `drive/upload/core/UploaderInterface.php` | `drive/tests/security_hardening_smoke.php`, `drive/upload/UploadFactory.php`, `drive/upload/drivers/Chunked15MBUploader.php`, `drive/upload/drivers/DropboxUploader.php`, `drive/upload/drivers/LocalPresignedPutUploader.php`, `drive/upload/drivers/RemoteUrlUploader.php` |
-| `drive/upload/drivers/Chunked15MBUploader.php` | `drive/upload/UploadFactory.php` |
-| `drive/upload/drivers/DropboxUploader.php` | `drive/upload/UploadFactory.php` |
-| `drive/upload/drivers/LocalPresignedPutUploader.php` | `drive/upload/UploadFactory.php` |
-| `drive/upload/drivers/RemoteUrlUploader.php` | `drive/tests/security_hardening_smoke.php`, `drive/upload/UploadFactory.php` |
+| `drive/upload/drivers/Chunked15MBUploader.php` | `drive/tests/federation_moderation_contract_smoke.php`, `drive/upload/UploadFactory.php` |
+| `drive/upload/drivers/DropboxUploader.php` | `drive/tests/federation_moderation_contract_smoke.php`, `drive/upload/UploadFactory.php` |
+| `drive/upload/drivers/LocalPresignedPutUploader.php` | `drive/tests/federation_moderation_contract_smoke.php`, `drive/upload/UploadFactory.php` |
+| `drive/upload/drivers/RemoteUrlUploader.php` | `drive/tests/federation_moderation_contract_smoke.php`, `drive/tests/security_hardening_smoke.php`, `drive/upload/UploadFactory.php` |
 | `drive/upload/repositories/FileS3Repository.php` | `drive/tests/security_hardening_smoke.php`, `drive/upload/drivers/Chunked15MBUploader.php`, `drive/upload/drivers/DropboxUploader.php`, `drive/upload/drivers/LocalPresignedPutUploader.php`, `drive/upload/drivers/RemoteUrlUploader.php` |
 | `drive/upload/storage/UploadStateStore.php` | `drive/upload/UploadFactory.php`, `drive/upload/drivers/Chunked15MBUploader.php` |
 | `drive/upload_audio_recording.php` | ninguna |

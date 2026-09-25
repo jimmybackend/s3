@@ -894,9 +894,14 @@
         "drive/index.php",
         "drive/s3.php",
         "drive/src/Federation/FederationDropService.php",
+        "drive/tests/federation_moderation_contract_smoke.php",
         "drive/tests/federationcloud_smoke.php",
         "drive/tests/media_processing_contract_smoke.php",
         "drive/tests/setup_entry_guard_smoke.php",
+        "drive/upload/drivers/Chunked15MBUploader.php",
+        "drive/upload/drivers/DropboxUploader.php",
+        "drive/upload/drivers/LocalPresignedPutUploader.php",
+        "drive/upload/drivers/RemoteUrlUploader.php",
         "drive/js/soportesMediaTypes.js",
         "drive/js/subir-chunked.js",
         "drive/js/subir-dropzone.js",
@@ -2527,9 +2532,11 @@
     },
     {
       "path": "drive/src/Http/Controller/UploadController.php",
-      "size": 10099,
+      "size": 10369,
       "active": false,
-      "references": []
+      "references": [
+        "drive/tests/federation_moderation_contract_smoke.php"
+      ]
     },
     {
       "path": "drive/src/Http/Controller/UserProfileController.php",
@@ -2870,9 +2877,11 @@
     },
     {
       "path": "drive/src/Upload/AdminMultipartUploadService.php",
-      "size": 4477,
+      "size": 6894,
       "active": false,
-      "references": []
+      "references": [
+        "drive/tests/federation_moderation_contract_smoke.php"
+      ]
     },
     {
       "path": "drive/src/Upload/PublicDropzoneUploadService.php",
@@ -3156,7 +3165,7 @@
     },
     {
       "path": "drive/tests/federation_moderation_contract_smoke.php",
-      "size": 7467,
+      "size": 10765,
       "active": false,
       "references": []
     },
@@ -3399,6 +3408,18 @@
       ]
     },
     {
+      "path": "drive/upload/ModerationUploadGuard.php",
+      "size": 5564,
+      "active": false,
+      "references": [
+        "drive/tests/federation_moderation_contract_smoke.php",
+        "drive/upload/drivers/Chunked15MBUploader.php",
+        "drive/upload/drivers/DropboxUploader.php",
+        "drive/upload/drivers/LocalPresignedPutUploader.php",
+        "drive/upload/drivers/RemoteUrlUploader.php"
+      ]
+    },
+    {
       "path": "drive/upload/UploadFactory.php",
       "size": 1802,
       "active": false,
@@ -3427,33 +3448,37 @@
     },
     {
       "path": "drive/upload/drivers/Chunked15MBUploader.php",
-      "size": 9272,
+      "size": 9711,
       "active": false,
       "references": [
+        "drive/tests/federation_moderation_contract_smoke.php",
         "drive/upload/UploadFactory.php"
       ]
     },
     {
       "path": "drive/upload/drivers/DropboxUploader.php",
-      "size": 4374,
+      "size": 5045,
       "active": false,
       "references": [
+        "drive/tests/federation_moderation_contract_smoke.php",
         "drive/upload/UploadFactory.php"
       ]
     },
     {
       "path": "drive/upload/drivers/LocalPresignedPutUploader.php",
-      "size": 9298,
+      "size": 10947,
       "active": false,
       "references": [
+        "drive/tests/federation_moderation_contract_smoke.php",
         "drive/upload/UploadFactory.php"
       ]
     },
     {
       "path": "drive/upload/drivers/RemoteUrlUploader.php",
-      "size": 16292,
+      "size": 17099,
       "active": false,
       "references": [
+        "drive/tests/federation_moderation_contract_smoke.php",
         "drive/tests/security_hardening_smoke.php",
         "drive/upload/UploadFactory.php"
       ]

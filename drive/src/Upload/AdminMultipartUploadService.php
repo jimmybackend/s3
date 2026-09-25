@@ -169,6 +169,8 @@ final class AdminMultipartUploadService
         $result['registered_route'] = $route;
         $result['target_user_id'] = $targetUserId;
         $result['target_email'] = $targetEmail;
+    }
+
     private function hashObject(string $key, int $expectedBytes): string
     {
         try {

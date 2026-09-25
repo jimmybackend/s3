@@ -5,6 +5,7 @@ namespace ArcadeCloud\Drive\Admin;
 
 use ArcadeCloud\Drive\Core\DriveApplication;
 use ArcadeCloud\Drive\Federation\FederationSchemaMigrationService;
+use ArcadeCloud\Drive\Federation\FederationModerationSchemaService;
 use ArcadeCloud\Drive\Security\SuperAdminReauthenticationService;
 use RuntimeException;
 use Throwable;
@@ -34,6 +35,16 @@ final class ArcadeCloudUpdaterService
 
     private function withFederationSchemaState(array $state, bool $reconcileMissing): array
     {
+        try {
+            $moderation = new FederationModerationSchemaService($this->app->db());
+            if ($reconcileMissing) $moderation->ensure();
+            $state['moderation_schema_ready'] = true;
+            $state['moderation_schema_message'] = 'Moderación FederationCloud preparada.';
+        } catch (Throwable $e) {
+            $state['moderation_schema_ready'] = false;
+            $state['moderation_schema_message'] = $e->getMessage();
+        }
+
         try {
             $migrator = new FederationSchemaMigrationService($this->app->db());
             $schema = $migrator->status();

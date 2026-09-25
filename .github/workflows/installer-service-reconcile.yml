@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - 'drive/bin/install_arcadecloud.sh'
+      - 'drive/bin/install_arcadecloud_server.sh'
       - 'drive/bin/uninstall_arcadecloud.sh'
       - 'drive/bin/reconcile_arcadecloud_services.sh'
       - 'drive/bin/install_arcadecloud_updater.sh'
@@ -12,11 +13,17 @@ on:
       - 'drive/bin/media_worker_node_bootstrap.sh'
       - 'drive/bin/arcadecloud-drive-admin-helper.php'
       - 'drive/src/Admin/ManagedRuntimeEnvironment.php'
+      - 'drive/src/Setup/SetupConfigurationService.php'
+      - 'drive/src/Setup/CanonicalDatabaseSchemaService.php'
+      - 'drive/src/Console/MediaProcessingWorkerCommand.php'
+      - 'adbbmis1_Cloud.sql'
+      - 'drive/docs/MINIMUM_REQUIREMENTS.md'
       - 'drive/src/Admin/ArcadeCloudUpdaterService.php'
       - 'drive/src/Federation/FederationSchemaMigrationService.php'
       - 'drive/bin/federation_catalog_migrate.php'
       - 'drive/js/arcadecloud-updater.js'
       - 'drive/tests/installer_service_reconcile_contract_smoke.php'
+      - 'drive/tests/fresh_install_contract_smoke.php'
       - '.github/workflows/installer-service-reconcile.yml'
 
 jobs:
@@ -29,13 +36,18 @@ jobs:
           php -l drive/bin/arcadecloud-drive-updater.php
           php -l drive/bin/arcadecloud-drive-admin-helper.php
           php -l drive/src/Admin/ManagedRuntimeEnvironment.php
+          php -l drive/src/Setup/SetupConfigurationService.php
+          php -l drive/src/Setup/CanonicalDatabaseSchemaService.php
+          php -l drive/src/Console/MediaProcessingWorkerCommand.php
           php -l drive/src/Admin/ArcadeCloudUpdaterService.php
           php -l drive/src/Federation/FederationSchemaMigrationService.php
           php -l drive/bin/federation_catalog_migrate.php
           php -l drive/tests/installer_service_reconcile_contract_smoke.php
+          php -l drive/tests/fresh_install_contract_smoke.php
       - name: Shell syntax
         run: |
           bash -n drive/bin/install_arcadecloud.sh
+          bash -n drive/bin/install_arcadecloud_server.sh
           bash -n drive/bin/uninstall_arcadecloud.sh
           bash -n drive/bin/reconcile_arcadecloud_services.sh
           bash -n drive/bin/install_arcadecloud_updater.sh
@@ -44,4 +56,6 @@ jobs:
       - name: JavaScript syntax
         run: node --check drive/js/arcadecloud-updater.js
       - name: Contract
-        run: php drive/tests/installer_service_reconcile_contract_smoke.php
+        run: |
+          php drive/tests/installer_service_reconcile_contract_smoke.php
+          php drive/tests/fresh_install_contract_smoke.php

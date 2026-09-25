@@ -22,11 +22,15 @@ final class SetupConfigurationService
     ];
 
     private PrivilegedServerHelper $helper;
+    private CanonicalDatabaseSchemaService $schema;
 
-    public function __construct(?PrivilegedServerHelper $helper = null)
-    {
+    public function __construct(
+        ?PrivilegedServerHelper $helper = null,
+        ?CanonicalDatabaseSchemaService $schema = null
+    ) {
         ManagedRuntimeEnvironment::loadIntoProcess();
         $this->helper = $helper ?? new PrivilegedServerHelper();
+        $this->schema = $schema ?? CanonicalDatabaseSchemaService::fromRepository();
     }
 
     public function state(): array
@@ -85,7 +89,10 @@ final class SetupConfigurationService
             return ['ok' => true, 'group' => $group, 'updated' => [], 'message' => 'No había cambios nuevos para guardar.'];
         }
 
-        if ($group === 'database') $this->testDatabaseConnection($validated);
+        $databaseSchema = null;
+        if ($group === 'database') {
+            $databaseSchema = $this->testDatabaseConnection($validated);
+        }
 
         $this->helper->setEnvironmentMany($validated);
         foreach ($validated as $name => $value) {
@@ -97,8 +104,11 @@ final class SetupConfigurationService
             'ok' => true,
             'group' => $group,
             'updated' => array_keys($validated),
+            'database_schema' => $databaseSchema,
             'message' => $group === 'database'
-                ? 'Conexión MySQL verificada y guardada.'
+                ? (($databaseSchema['initialized'] ?? false)
+                    ? 'Conexión MySQL verificada. La base vacía se inicializó con el esquema canónico y quedó guardada.'
+                    : 'Conexión MySQL verificada y guardada; una base existente no fue sobrescrita.')
                 : strtoupper($group) . ' guardado en la configuración administrada.',
         ];
     }
@@ -139,7 +149,7 @@ final class SetupConfigurationService
         return $value !== false && (string)$value !== '' ? (string)$value : $default;
     }
 
-    private function testDatabaseConnection(array $validated): void
+    private function testDatabaseConnection(array $validated): array
     {
         $host = $this->effectiveValue('DB_HOST', $validated);
         $user = $this->effectiveValue('DB_USER', $validated);
@@ -161,6 +171,11 @@ final class SetupConfigurationService
             throw new RuntimeException('No se guardó ningún cambio: no fue posible conectar con la base de datos indicada.');
         }
         @\mysqli_set_charset($probe, 'utf8mb4');
-        @\mysqli_close($probe);
+
+        try {
+            return $this->schema->initializeIfEmpty($probe);
+        } finally {
+            @\mysqli_close($probe);
+        }
     }
 }

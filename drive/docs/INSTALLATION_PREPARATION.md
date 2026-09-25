@@ -1139,3 +1139,16 @@ El instalador deberá:
 La guía técnica de instalación y mirrors está en
 `FEDERATION_NODE_REPLICA_INSTALL.md`, mientras que el setup web actual está documentado en
 `INITIAL_SETUP.md`.
+
+
+## Base de datos para una instalación nueva
+
+Si la base indicada en `/setup/` está completamente vacía, ArcadeCloud carga automáticamente
+`adbbmis1_Cloud.sql` y verifica las tablas críticas antes de guardar la configuración.
+
+La cuenta MySQL usada durante instalación debe poder ejecutar el DDL del esquema canónico
+(`CREATE`, `ALTER`, índices y los `DROP ... IF EXISTS` del dump). Si la base ya contiene cualquier
+tabla o vista, el setup **no** ejecuta el dump completo y conserva lo existente.
+
+Para requisitos de CPU, RAM, disco y dependencias por rol consulta
+`drive/docs/MINIMUM_REQUIREMENTS.md`.

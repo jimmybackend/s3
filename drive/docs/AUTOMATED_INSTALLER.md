@@ -74,6 +74,19 @@ Esto evita reemplazar proveedores válidos del sistema. En particular, las AMI d
 normalmente el comando `curl` mediante `curl-minimal`; ArcadeCloud lo acepta y no intenta sustituirlo
 por el paquete completo `curl`.
 
+Para `media-worker` y `combined`, el preparador recibe el rol desde `install_arcadecloud.sh` y añade
+automáticamente el repositorio oficial SPAL de Amazon Linux 2023 cuando hace falta. Instala:
+
+~~~text
+ffmpeg-free
+lame
+lame-libs
+~~~
+
+Después exige que existan `ffmpeg`, `ffprobe` y `lame`. La extracción MP3 usa `libmp3lame`
+directamente cuando FFmpeg lo expone y, si esa build no lo incluye, usa `lame` como fallback.
+El rol `web` no instala estas dependencias pesadas.
+
 PHP es especial en AL2023 porque los paquetes están versionados. El instalador detecta automáticamente
 la familia más nueva disponible, en este orden:
 
@@ -196,11 +209,17 @@ SMTP, tokens AWS, credenciales de control y mirrors permanecen en Configuración
 
 ### SQL canónico
 
-`adbbmis1_Cloud.sql` en la raíz del repositorio es el único archivo SQL oficial. Una DB nueva puede
-cargarse completa desde ese archivo. Para una DB existente, la finalización nunca ejecuta el dump
-completo: `federation_catalog_migrate.php` extrae únicamente la sección
-`ARCADECLOUD:FEDERATION_SCHEMA`, que es idempotente e incluye todas las tablas FederationCloud,
-entre ellas `FederationEvents`.
+`adbbmis1_Cloud.sql` en la raíz del repositorio es el único archivo SQL oficial.
+
+Cuando el paso MySQL de `/setup/` conecta a una base **completamente vacía**, ArcadeCloud importa
+automáticamente ese esquema antes de guardar la configuración. Al terminar valida al menos
+`Users`, `FileS3`, `DriveActivityEvents`, `MediaProcessingJobs` y
+`MediaWorkerNodeSessions`.
+
+Si la base ya contiene cualquier tabla o vista, el setup no ejecuta el dump completo porque contiene
+`DROP TABLE`; conserva los datos existentes. Para una DB existente, la finalización sólo usa
+migraciones seguras específicas, como `federation_catalog_migrate.php`, que extrae la sección
+`ARCADECLOUD:FEDERATION_SCHEMA` idempotente.
 
 ## Finalización automática
 
@@ -357,3 +376,10 @@ ARCADECLOUD_FEDERATION_DYNAMIC_IP
 ```
 
 No debe mantenerse una segunda configuración multimedia en `drive.env`.
+
+
+## Perfil mínimo
+
+Consulta `drive/docs/MINIMUM_REQUIREMENTS.md` antes de crear un nodo nuevo. Ahí quedan fijados los
+mínimos por rol, el espacio temporal requerido para archivos de hasta 8 GB y el inventario de
+dependencias que una instalación limpia debe resolver.

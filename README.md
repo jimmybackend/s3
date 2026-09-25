@@ -410,6 +410,7 @@ composer install --no-dev --optimize-autoloader
 
 - `drive/ARCHITECTURE.md`: arquitectura y reglas obligatorias.
 - `drive/docs/INSTALLATION_PREPARATION.md`: datos que debes tener listos antes de ejecutar el instalador.
+- `drive/docs/MINIMUM_REQUIREMENTS.md`: hardware mínimo por rol, dependencias automáticas y tablas críticas.
 - `drive/docs/FEDERATION_NODE_REPLICA_INSTALL.md`: instalación y troubleshooting de nodos y mirrors.
 - `drive/docs/FEDERATED_CLOUD_STATUS.md`: estado actual de la evolución hacia cloud federado.
 - `drive/docs/FEDERATIONCLOUD.md`: protocolo ArcadeLink/FederationCloud, seguridad y roadmap.

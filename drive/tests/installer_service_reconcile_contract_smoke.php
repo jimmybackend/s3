@@ -14,6 +14,7 @@ function installerContract(bool $condition, string $message): void
 }
 
 $installer = (string)file_get_contents($repo . '/drive/bin/install_arcadecloud.sh');
+$serverPrep = (string)file_get_contents($repo . '/drive/bin/install_arcadecloud_server.sh');
 $reconciler = (string)file_get_contents($repo . '/drive/bin/reconcile_arcadecloud_services.sh');
 $uninstaller = (string)file_get_contents($repo . '/drive/bin/uninstall_arcadecloud.sh');
 $updater = (string)file_get_contents($repo . '/drive/bin/arcadecloud-drive-updater.php');
@@ -32,6 +33,14 @@ installerContract(str_contains($installer, '--node-role='), 'instalador distingu
 installerContract(str_contains($installer, '--media-worker-instance-id='), 'instalador puede guardar la EC2 multimedia controlada');
 installerContract(str_contains($installer, 'persist_node_settings'), 'instalador persiste rol y configuración de media');
 installerContract(str_contains($installer, 'reconcile_services'), 'finalización invoca reconciliación de servicios');
+installerContract(
+    str_contains($installer, '--node-role="' . '$' . '{NODE_ROLE:-web}"'),
+    'rol llega al preparador del sistema'
+);
+installerContract(str_contains($serverPrep, 'install_media_dependencies'), 'dependencias multimedia están encapsuladas por rol');
+installerContract(str_contains($serverPrep, 'spal-release'), 'media-worker prepara SPAL');
+installerContract(str_contains($serverPrep, 'ffmpeg-free'), 'media-worker instala FFmpeg desde AL2023 SPAL');
+installerContract(str_contains($serverPrep, 'lame-libs'), 'media-worker instala librerías LAME');
 
 $installerPoolPos = strpos($installer, 'pool_user_from_conf /etc/php-fpm-drive.d/arcadecloud-drive.conf');
 $installerPsPos = strpos($installer, 'ps -eo user=,comm=');
@@ -107,6 +116,7 @@ installerContract(str_contains($uninstaller, 'arcadecloud-media-node-bootstrap.s
 installerContract(str_contains($uninstaller, '/var/lib/arcadecloud-media'), 'desinstalador retira temporales locales multimedia');
 
 installerContract(str_contains($mediaInstaller, 'ARCADECLOUD_RUNTIME_ENV'), 'worker usa runtime administrado canónico');
+installerContract(str_contains($mediaInstaller, 'php ffmpeg ffprobe lame'), 'worker exige herramientas multimedia completas');
 installerContract(!str_contains($mediaInstaller, 'User=nginx'), 'worker no fija nginx como usuario universal');
 installerContract(str_contains($bootstrap, 'runtime-env.json'), 'bootstrap de réplica usa runtime-env.json');
 installerContract(str_contains($bootstrap, 'arcadecloud-drive-admin'), 'bootstrap actualiza configuración mediante helper privilegiado');

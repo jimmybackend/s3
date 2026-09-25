@@ -28,6 +28,8 @@ mediaContract(str_contains($service, 'MAX_SOURCE_BYTES = 8 * 1024 * 1024 * 1024'
 mediaContract(!str_contains($service, 'MIN_SOURCE_BYTES'), 'no existe tamaño mínimo para procesar');
 mediaContract(str_contains($worker, "headObject(["), 'worker valida tamaño real con S3 HeadObject');
 mediaContract(str_contains($worker, '[DEPENDENCY_MISSING]'), 'worker clasifica dependencias faltantes');
+mediaContract(str_contains($worker, "ffmpegHasEncoder('libmp3lame')"), 'worker usa libmp3lame cuando está disponible');
+mediaContract(str_contains($worker, "findExecutable('lame')"), 'worker conserva fallback LAME para MP3');
 mediaContract(str_contains($jobs, 'latestOperationalWarning'), 'superadmin puede detectar worker ausente o incompleto');
 mediaContract(str_contains($page, 'id="modalMediaSplit"'), 'existe modal Bootstrap para dividir multimedia');
 mediaContract(str_contains($page, 'id="mediaSplitParts"'), 'modal pregunta cantidad de partes');

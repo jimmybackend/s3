@@ -18,6 +18,7 @@ $uninstaller = (string)file_get_contents($repo . '/drive/bin/uninstall_arcadeclo
 $updater = (string)file_get_contents($repo . '/drive/bin/arcadecloud-drive-updater.php');
 $updaterInstaller = (string)file_get_contents($repo . '/drive/bin/install_arcadecloud_updater.sh');
 $updaterService = (string)file_get_contents($repo . '/drive/src/Admin/ArcadeCloudUpdaterService.php');
+$updaterJs = (string)file_get_contents($repo . '/drive/js/arcadecloud-updater.js');
 $mediaInstaller = (string)file_get_contents($repo . '/drive/bin/install_media_processing_worker.sh');
 $bootstrap = (string)file_get_contents($repo . '/drive/bin/media_worker_node_bootstrap.sh');
 $managed = (string)file_get_contents($repo . '/drive/src/Admin/ManagedRuntimeEnvironment.php');
@@ -57,6 +58,13 @@ installerContract(str_contains($reconciler, 'install_polly_reconcile_timer.sh'),
 installerContract(str_contains($reconciler, 'systemctl restart php-fpm-drive.service'), 'reconciliación reinicia PHP-FPM administrado');
 
 installerContract(str_contains($updater, 'reconcileServices'), 'updater web reconcilia servicios tras fast-forward');
+installerContract(str_contains($updater, "'--defer-php-restart'"), 'updater web solicita reinicio diferido de PHP-FPM');
+installerContract(str_contains($reconciler, 'arcadecloud-drive-updater'), 'reconciliador detecta updater anterior durante la primera actualización del arreglo');
+installerContract(str_contains($reconciler, '--on-active=5s'), 'reconciliador programa el reinicio web después de devolver JSON');
+installerContract(str_contains($reconciler, '--immediate-php-restart'), 'reconciliador conserva reinicio inmediato explícito para operación manual');
+installerContract(str_contains($updater, 'array_merge($after'), 'respuesta apply incluye estado actualizado de rama y commits');
+installerContract(str_contains($updaterJs, 'readJsonResponse'), 'UI controla respuestas no JSON sin exponer HTML bruto');
+installerContract(str_contains($updaterJs, 'this.render(data)'), 'UI muestra inmediatamente el commit instalado tras aplicar');
 installerContract(!str_contains($updater, "'--php-user=' . (string)\$config['php_user']"), 'updater no impone php_user obsoleto al reconciliador');
 installerContract(str_contains($reconciler, 'DETECTED_PHP_USER="$(detect_drive_php_user || true)"'), 'reconciliador redetecta el usuario real de Drive en cada ejecución');
 installerContract(str_contains($reconciler, 'no coincide con el pool real de Drive'), 'reconciliador rechaza un php_user explícito incorrecto');

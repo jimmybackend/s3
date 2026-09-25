@@ -72,16 +72,15 @@ final class ArcadeCloudDriveUpdater
 
             fwrite(
                 STDOUT,
-                json_encode([
+                json_encode(array_merge($after, [
                     'ok' => true,
                     'updated' => true,
                     'previous_commit' => $before['local_commit'],
-                    'local_commit' => $after['local_commit'],
                     'reconcile_ok' => $reconcile['ok'],
                     'needs_attention' => !$reconcile['ok'],
                     'reconcile_message' => $reconcile['message'],
                     'message' => $message,
-                ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . "\n"
+                ]), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . "\n"
             );
             exit(0);
         }
@@ -202,6 +201,7 @@ final class ArcadeCloudDriveUpdater
             '/bin/bash',
             $script,
             '--app-root=' . (string)$config['repo_root'],
+            '--defer-php-restart',
         ];
         $spec = [0 => ['file', '/dev/null', 'r'], 1 => ['pipe', 'w'], 2 => ['pipe', 'w']];
         $proc = proc_open($cmd, $spec, $pipes, null, null, ['bypass_shell' => true]);

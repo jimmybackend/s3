@@ -3,6 +3,10 @@ declare(strict_types=1);
 
 use Aws\S3\S3Client;
 
+final class BlockedUploadException extends RuntimeException
+{
+}
+
 final class ModerationUploadGuard
 {
     public function __construct(
@@ -43,7 +47,7 @@ final class ModerationUploadGuard
     {
         $sha256 = $this->normalizeSha256($sha256);
         if ($this->isBlocked($sha256)) {
-            throw new RuntimeException(
+            throw new BlockedUploadException(
                 'Este contenido está bloqueado por moderación y no puede volver a subirse.'
             );
         }
@@ -136,7 +140,7 @@ final class ModerationUploadGuard
             }
         }
 
-        throw new RuntimeException(
+        throw new BlockedUploadException(
             'Este contenido está bloqueado por moderación y no puede volver a subirse.'
         );
     }

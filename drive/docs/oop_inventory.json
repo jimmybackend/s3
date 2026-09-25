@@ -5639,7 +5639,7 @@
     },
     {
       "path": "drive/tests/arcadelink_collection_regression.php",
-      "lines": 46,
+      "lines": 51,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -6994,7 +6994,7 @@
     },
     {
       "path": "drive/js/federation-page.js",
-      "lines": 95,
+      "lines": 100,
       "kind": "class/module",
       "classes": [
         "FederationPageModule"

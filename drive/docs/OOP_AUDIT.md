@@ -398,7 +398,7 @@
 | `drive/sync_status.php` | 5 | thin endpoint | 0 | — | — | — | — |
 | `drive/tests/activity_costs_smoke.php` | 150 | test script | 0 | — | — | — | — |
 | `drive/tests/arcadelink_bulk_contract_regression.php` | 71 | test script | 0 | — | — | — | — |
-| `drive/tests/arcadelink_collection_regression.php` | 46 | test script | 0 | — | — | — | — |
+| `drive/tests/arcadelink_collection_regression.php` | 51 | test script | 0 | — | — | — | — |
 | `drive/tests/database_schema_contract_smoke.php` | 104 | test script | 0 | — | — | — | — |
 | `drive/tests/federation_access_message_smoke.php` | 72 | test script | 0 | — | — | — | — |
 | `drive/tests/federation_catalog_event_smoke.php` | 60 | test script | 0 | — | — | — | — |
@@ -485,7 +485,7 @@
 | `drive/js/estilo.js` | 267 | class/module | EstiloModule | — | — | — |
 | `drive/js/federation-drop.js` | 488 | class/module | FederationDropApp | — | — | — |
 | `drive/js/federation-footer.js` | 374 | class/module | FederationFooterModule | — | — | — |
-| `drive/js/federation-page.js` | 95 | class/module | FederationPageModule | — | — | — |
+| `drive/js/federation-page.js` | 100 | class/module | FederationPageModule | — | — | — |
 | `drive/js/federation-portal.js` | 506 | class/module | FederationPortalModule | — | — | — |
 | `drive/js/federation-share-drive.js` | 211 | class/module | FederationShareDriveModule | — | — | — |
 | `drive/js/file-block.js` | 305 | class/module | FileBlockApp | — | — | — |

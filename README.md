@@ -413,6 +413,7 @@ composer install --no-dev --optimize-autoloader
 - `drive/docs/FEDERATION_NODE_REPLICA_INSTALL.md`: instalación y troubleshooting de nodos y mirrors.
 - `drive/docs/FEDERATED_CLOUD_STATUS.md`: estado actual de la evolución hacia cloud federado.
 - `drive/docs/FEDERATIONCLOUD.md`: protocolo ArcadeLink/FederationCloud, seguridad y roadmap.
+- `drive/docs/ARCADELINK_PRODUCTION_VALIDATION.md`: matriz de aceptación de ArcadeLink, pruebas manuales realizadas y escenarios mult nodo pendientes.
 - `drive/docs/FEDERATION_PROVIDER_APPROVALS.md`: autorización de proveedores.
 - `drive/docs/FEDERATION_DROP.md`: almacenamiento temporal pagado, custodia, webhook de pago, badge y proveedores comerciales.
 - `drive/docs/FEDERATION_NODE_RECOVERY.md`: continuidad y recuperación de identidad.

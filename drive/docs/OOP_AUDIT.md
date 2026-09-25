@@ -414,7 +414,7 @@
 | `drive/tests/federation_drop_stripe_smoke.php` | 97 | test script | 0 | — | — | — | — |
 | `drive/tests/federation_endpoint_resolver_smoke.php` | 95 | test script | 0 | — | — | — | — |
 | `drive/tests/federation_https_contract_smoke.php` | 61 | test script | 0 | — | — | — | — |
-| `drive/tests/federation_moderation_contract_smoke.php` | 139 | test script | 0 | — | — | — | — |
+| `drive/tests/federation_moderation_contract_smoke.php` | 146 | test script | 0 | — | — | — | — |
 | `drive/tests/federation_node_name_admin_smoke.php` | 91 | test script | 0 | — | — | — | — |
 | `drive/tests/federation_provider_smoke.php` | 76 | test script | 0 | — | — | — | — |
 | `drive/tests/federation_public_download_failover_smoke.php` | 215 | test script | 0 | — | — | — | — |
@@ -448,7 +448,7 @@
 | `drive/transcribir_iniciar.php` | 8 | thin endpoint | 0 | — | — | — | — |
 | `drive/unlock_file.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/up-clean.php` | 10 | thin endpoint | 0 | — | — | — | — |
-| `drive/up.php` | 833 | view/entrypoint | 0 | ⚠️ | — | — | — |
+| `drive/up.php` | 881 | view/entrypoint | 0 | ⚠️ | — | — | — |
 | `drive/update.php` | 11 | thin endpoint | 0 | — | — | — | — |
 | `drive/upload/ModerationUploadGuard.php` | 187 | class/module | 2 | — | ⚠️ | — | — |
 | `drive/upload/UploadFactory.php` | 60 | class/module | 1 | — | — | — | — |

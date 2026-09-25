@@ -5907,7 +5907,7 @@
     },
     {
       "path": "drive/tests/federation_moderation_contract_smoke.php",
-      "lines": 139,
+      "lines": 146,
       "kind": "test script",
       "classes": 0,
       "functions": [],
@@ -6446,7 +6446,7 @@
     },
     {
       "path": "drive/up.php",
-      "lines": 833,
+      "lines": 881,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],

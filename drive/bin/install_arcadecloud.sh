@@ -606,6 +606,36 @@ migrate_federation_schema() {
   echo "✓ Esquema FederationCloud preparado antes del registro global."
 }
 
+verify_gateway_https() {
+  local public_url federation_url
+  public_url="$(runtime_value ARCADECLOUD_PUBLIC_URL)"
+  federation_url="$(runtime_value ARCADECLOUD_FEDERATION_URL)"
+
+  python3 - "$public_url" "$federation_url" <<'PY' || fail "La configuración pública del gateway no es válida."
+import sys
+from urllib.parse import urlparse
+
+public_url, federation_url = [v.strip() for v in sys.argv[1:]]
+public = urlparse(public_url)
+federation = urlparse(federation_url)
+
+for label, parsed in (("public", public), ("federation", federation)):
+    if parsed.scheme != "https" or not parsed.hostname:
+        raise SystemExit(f"{label}: se requiere HTTPS con hostname.")
+    if parsed.username or parsed.password or parsed.query or parsed.fragment:
+        raise SystemExit(f"{label}: URL con componentes no permitidos.")
+
+expected = public_url.rstrip("/") + "/federationcloud/"
+if federation_url.rstrip("/") + "/" != expected:
+    raise SystemExit("La URL FederationCloud no corresponde al endpoint público del gateway.")
+PY
+
+  curl -fsS --max-time 10 -o /dev/null "$public_url/"     || fail "El endpoint HTTPS del gateway no responde: $public_url"
+  curl -fsS --max-time 10 -o /dev/null "${federation_url%/}/node.php"     || fail "FederationCloud no responde a través del gateway: ${federation_url%/}/node.php"
+
+  echo "✓ Gateway HTTPS verificado externamente: $public_url"
+}
+
 finalize_installation() {
   local require_lock="${1:-1}"
   if [[ "$require_lock" -eq 1 ]]; then
@@ -632,42 +662,41 @@ PY
   persist_node_settings
 
   if federation_runtime_enabled; then
-    local certbot_bin
-    certbot_bin="$(select_certbot_bin)"
-    [[ -n "$certbot_bin" && -x "$certbot_bin" ]] \
-      || fail "FederationCloud necesita Certbot compatible para publicar un endpoint HTTPS verificable."
+    local tls_mode
+    tls_mode="$(tls_termination_mode)"
 
-    bash "$WEBROOT/bin/install_federation_https_service.sh" \
-      --run-user="$PHP_USER" \
-      --app-root="$APP_ROOT" \
-      --webroot="$WEBROOT" \
-      --certbot-bin="$certbot_bin"
-
-    # El reconciliador HTTPS republica el descriptor al terminar. Por eso el
-    # catálogo/Aduana debe existir ANTES de arrancar ese servicio; de lo contrario
-    # un nodo nuevo puede intentar escribir FederationEvents antes de migrar MySQL.
+    # El catálogo/Aduana debe existir antes de publicar el descriptor del nodo.
     migrate_federation_schema
 
-    if ! systemctl start arcadecloud-federation-https.service; then
-      systemctl status arcadecloud-federation-https.service --no-pager >&2 || true
-      fail "No se pudo obtener/verificar HTTPS para FederationCloud; el nodo global todavía no puede registrarse."
+    if [[ "$tls_mode" == "gateway" ]]; then
+      # El certificado y su renovación pertenecen al gateway.
+      systemctl disable --now arcadecloud-federation-https.timer >/dev/null 2>&1 || true
+      systemctl stop arcadecloud-federation-https.service >/dev/null 2>&1 || true
+      verify_gateway_https
+      echo "✓ TLS público administrado por gateway; Certbot local omitido."
+    else
+      local certbot_bin
+      certbot_bin="$(select_certbot_bin)"
+      [[ -n "$certbot_bin" && -x "$certbot_bin" ]]         || fail "FederationCloud necesita Certbot compatible para publicar un endpoint HTTPS verificable."
+
+      bash "$WEBROOT/bin/install_federation_https_service.sh"         --run-user="$PHP_USER"         --app-root="$APP_ROOT"         --webroot="$WEBROOT"         --certbot-bin="$certbot_bin"
+
+      if ! systemctl start arcadecloud-federation-https.service; then
+        systemctl status arcadecloud-federation-https.service --no-pager >&2 || true
+        fail "No se pudo obtener/verificar HTTPS para FederationCloud; el nodo global todavía no puede registrarse."
+      fi
+      systemctl enable --now arcadecloud-federation-https.timer
+      echo "✓ Endpoint HTTPS FederationCloud listo y renovación automática habilitada."
     fi
-    systemctl enable --now arcadecloud-federation-https.timer
-    echo "✓ Endpoint HTTPS FederationCloud listo y renovación automática habilitada."
 
     if ! runuser -u "$PHP_USER" -- php "$WEBROOT/bin/federation_endpoint_refresh.php" --require-directory; then
       fail "El nodo quedó localmente listo, pero drive.esforzados.com no confirmó su registro global."
     fi
     echo "✓ Nodo presentado al seed global y directorio FederationCloud confirmado."
 
-    bash "$WEBROOT/bin/install_federation_sync_timer.sh" \
-      --run-user="$PHP_USER" \
-      --app-root="$APP_ROOT" \
-      --interval-sec=120
+    bash "$WEBROOT/bin/install_federation_sync_timer.sh"       --run-user="$PHP_USER"       --app-root="$APP_ROOT"       --interval-sec=120
 
-    bash "$WEBROOT/bin/install_federation_drop_cleanup_timer.sh" \
-      --run-user="$PHP_USER" \
-      --app-root="$APP_ROOT"
+    bash "$WEBROOT/bin/install_federation_drop_cleanup_timer.sh"       --run-user="$PHP_USER"       --app-root="$APP_ROOT"
 
     if systemctl start arcadecloud-federation-sync.service; then
       echo "✓ Primera sincronización FederationCloud ejecutada."
@@ -675,8 +704,7 @@ PY
       echo "⚠ El registro global quedó confirmado, pero la primera sincronización se reintentará por el timer." >&2
     fi
 
-    systemctl is-active arcadecloud-federation-sync.timer >/dev/null \
-      && echo "✓ FederationCloud sync timer activo."
+    systemctl is-active arcadecloud-federation-sync.timer >/dev/null       && echo "✓ FederationCloud sync timer activo."
   else
     echo "⚠ No hay endpoint público válido; Drive quedó instalado, pero el nodo no puede entrar aún al directorio global." >&2
   fi
@@ -685,7 +713,7 @@ PY
 
   echo
   echo "ArcadeCloud Drive: instalación básica finalizada."
-  echo "Drive listo. FederationCloud/ArcadeLink queda publicado por HTTPS y registrado en el directorio global cuando existe endpoint público."
+  echo "Drive listo. FederationCloud/ArcadeLink queda publicado por HTTPS (local o gateway) y registrado en el directorio global cuando existe endpoint público."
   echo "Las opciones avanzadas quedan disponibles dentro de Servidor -> Configuración avanzada."
 }
 

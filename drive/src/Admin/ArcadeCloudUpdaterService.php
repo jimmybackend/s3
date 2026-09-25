@@ -52,6 +52,18 @@ final class ArcadeCloudUpdaterService
         }
         if ($exit !== 0) {
             $message = trim($stderr);
+            $lower = strtolower($message);
+            if (str_contains($lower, 'sudo')
+                && (str_contains($lower, 'password is required')
+                    || str_contains($lower, 'a password is required')
+                    || str_contains($lower, 'not allowed to execute')
+                    || str_contains($lower, 'no tty present'))) {
+                throw new RuntimeException(
+                    'ArcadeCloud Updater perdió la autorización NOPASSWD del usuario php-fpm-drive. '
+                    . 'Ejecuta en el servidor: sudo bash drive/bin/install_arcadecloud.sh --reconcile '
+                    . '--app-root=/var/www/arcadecloud-drive'
+                );
+            }
             throw new RuntimeException($message !== '' ? $message : 'ArcadeCloud Updater rechazó la operación.');
         }
 

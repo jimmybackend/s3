@@ -40,10 +40,122 @@ except Exception:
 PY
 }
 
-if [[ -z "$PHP_USER" ]]; then
-  PHP_USER="$(ps -eo user=,comm= 2>/dev/null | awk '$2 == "php-fpm" && $1 != "root" { print $1; exit }')"
+pool_user_from_conf() {
+  local conf="$1"
+  [[ -r "$conf" ]] || return 1
+  awk -F= '
+    /^[[:space:]]*user[[:space:]]*=/ {
+      gsub(/[[:space:]]/, "", $2)
+      if ($2 != "") { print $2; exit }
+    }
+  ' "$conf"
+}
+
+drive_master_config() {
+  local pid arg prev=""
+  pid="$(systemctl show -p MainPID --value php-fpm-drive.service 2>/dev/null || true)"
+  [[ "$pid" =~ ^[0-9]+$ && "$pid" -gt 1 && -r "/proc/$pid/cmdline" ]] || return 1
+
+  while IFS= read -r -d '' arg; do
+    if [[ "$prev" == "-y" || "$prev" == "--fpm-config" ]]; then
+      [[ -r "$arg" ]] && { printf '%s' "$arg"; return 0; }
+    fi
+    case "$arg" in
+      --fpm-config=*)
+        arg="${arg#*=}"
+        [[ -r "$arg" ]] && { printf '%s' "$arg"; return 0; }
+        ;;
+    esac
+    prev="$arg"
+  done < "/proc/$pid/cmdline"
+
+  [[ -r /etc/php-fpm.conf ]] && printf '%s' /etc/php-fpm.conf
+}
+
+expanded_pool_user() {
+  local conf="$1"
+  local target_listen="${2:-127.0.0.1:9075}"
+  [[ -r "$conf" ]] || return 1
+
+  php-fpm -tt -y "$conf" 2>&1 | awk -v target="$target_listen" '
+    function clean(line) {
+      sub(/^.*NOTICE:[[:space:]]*/, "", line)
+      sub(/^[[:space:]]+/, "", line)
+      sub(/[[:space:]]+$/, "", line)
+      return line
+    }
+    function emit_if_match() {
+      if (listen == target && user != "") {
+        print user
+        exit
+      }
+    }
+    {
+      line = clean($0)
+      if (line ~ /^\[[^]]+\]$/) {
+        emit_if_match()
+        user = ""
+        listen = ""
+        next
+      }
+      if (line ~ /^user[[:space:]]*=/) {
+        sub(/^user[[:space:]]*=[[:space:]]*/, "", line)
+        sub(/[[:space:];].*$/, "", line)
+        user = line
+        next
+      }
+      if (line ~ /^listen[[:space:]]*=/) {
+        sub(/^listen[[:space:]]*=[[:space:]]*/, "", line)
+        sub(/[[:space:];].*$/, "", line)
+        listen = line
+        next
+      }
+    }
+    END {
+      emit_if_match()
+    }
+  '
+}
+
+detect_drive_php_user() {
+  local user="" master_conf=""
+
+  user="$(pool_user_from_conf /etc/php-fpm-drive.d/arcadecloud-drive.conf || true)"
+  [[ -n "$user" ]] && { printf '%s' "$user"; return 0; }
+
+  user="$(pool_user_from_conf /etc/php-fpm.d/arcadecloud-drive.conf || true)"
+  [[ -n "$user" ]] && { printf '%s' "$user"; return 0; }
+
+  master_conf="$(drive_master_config || true)"
+  if [[ -n "$master_conf" ]]; then
+    user="$(expanded_pool_user "$master_conf" || true)"
+    [[ -n "$user" ]] && { printf '%s' "$user"; return 0; }
+  fi
+
+  if [[ -r /etc/php-fpm-drive.conf ]]; then
+    user="$(expanded_pool_user /etc/php-fpm-drive.conf || true)"
+    [[ -n "$user" ]] && { printf '%s' "$user"; return 0; }
+  fi
+
+  user="$(pool_user_from_conf /etc/php-fpm.d/www.conf || true)"
+  [[ -n "$user" ]] && { printf '%s' "$user"; return 0; }
+
+  user="$(ps -eo user=,comm= 2>/dev/null | awk '$2 == "php-fpm" && $1 != "root" { print $1; exit }')"
+  [[ -n "$user" ]] && printf '%s' "$user"
+}
+
+DETECTED_PHP_USER="$(detect_drive_php_user || true)"
+
+if [[ -n "$DETECTED_PHP_USER" ]]; then
+  if [[ -n "$PHP_USER" && "$PHP_USER" != "$DETECTED_PHP_USER" ]]; then
+    echo "ERROR: --php-user=$PHP_USER no coincide con el pool real de Drive ($DETECTED_PHP_USER)." >&2
+    echo "No se modificarán permisos administrativos con un usuario PHP-FPM incorrecto." >&2
+    exit 2
+  fi
+  PHP_USER="$DETECTED_PHP_USER"
 fi
-[[ -n "$PHP_USER" ]] || { echo "ERROR: no pude detectar el usuario PHP-FPM; usa --php-user." >&2; exit 2; }
+
+[[ -n "$PHP_USER" ]] || { echo "ERROR: no pude detectar el usuario del pool php-fpm-drive; usa --php-user sólo después de verificarlo." >&2; exit 2; }
 [[ "$PHP_USER" != "root" ]] || { echo "ERROR: PHP-FPM no debe ejecutar ArcadeCloud como root." >&2; exit 2; }
 id "$PHP_USER" >/dev/null 2>&1 || { echo "ERROR: usuario inexistente: $PHP_USER" >&2; exit 2; }
 

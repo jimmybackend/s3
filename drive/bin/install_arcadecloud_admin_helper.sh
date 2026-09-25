@@ -125,6 +125,23 @@ if [[ -e "$SETUP_LOCK_PATH" ]]; then
   chmod 0644 "$SETUP_LOCK_PATH"
 fi
 
+# Contrato crítico: el mismo usuario que ejecuta PHP debe poder atravesar
+# /etc/arcadecloud-drive y leer los archivos administrados después del chown.
+runuser -u "$PHP_USER" -- test -x "$CONFIG_DIR" || {
+  echo "ERROR: $PHP_USER no puede atravesar $CONFIG_DIR después de preparar permisos." >&2
+  exit 4
+}
+runuser -u "$PHP_USER" -- test -r "$RUNTIME_ENV_PATH" || {
+  echo "ERROR: $PHP_USER no puede leer $RUNTIME_ENV_PATH después de preparar permisos." >&2
+  exit 4
+}
+if [[ -e "$IDENTITY_PATH" ]]; then
+  runuser -u "$PHP_USER" -- test -r "$IDENTITY_PATH" || {
+    echo "ERROR: $PHP_USER no puede leer $IDENTITY_PATH después de preparar permisos." >&2
+    exit 4
+  }
+fi
+
 printf '%s ALL=(root) NOPASSWD: %s\n' "$PHP_USER" "$TARGET_HELPER" > "$SUDOERS_FILE"
 chmod 0440 "$SUDOERS_FILE"
 if command -v visudo >/dev/null 2>&1; then

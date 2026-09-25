@@ -12,6 +12,7 @@ on:
       - 'drive/bin/media_worker_node_bootstrap.sh'
       - 'drive/bin/arcadecloud-drive-admin-helper.php'
       - 'drive/src/Admin/ManagedRuntimeEnvironment.php'
+      - 'drive/src/Admin/ArcadeCloudUpdaterService.php'
       - 'drive/js/arcadecloud-updater.js'
       - 'drive/tests/installer_service_reconcile_contract_smoke.php'
       - '.github/workflows/installer-service-reconcile.yml'
@@ -26,6 +27,7 @@ jobs:
           php -l drive/bin/arcadecloud-drive-updater.php
           php -l drive/bin/arcadecloud-drive-admin-helper.php
           php -l drive/src/Admin/ManagedRuntimeEnvironment.php
+          php -l drive/src/Admin/ArcadeCloudUpdaterService.php
           php -l drive/tests/installer_service_reconcile_contract_smoke.php
       - name: Shell syntax
         run: |

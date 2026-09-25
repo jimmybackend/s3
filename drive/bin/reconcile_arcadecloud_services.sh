@@ -144,10 +144,18 @@ detect_drive_php_user() {
   [[ -n "$user" ]] && printf '%s' "$user"
 }
 
-if [[ -z "$PHP_USER" ]]; then
-  PHP_USER="$(detect_drive_php_user || true)"
+DETECTED_PHP_USER="$(detect_drive_php_user || true)"
+
+if [[ -n "$DETECTED_PHP_USER" ]]; then
+  if [[ -n "$PHP_USER" && "$PHP_USER" != "$DETECTED_PHP_USER" ]]; then
+    echo "ERROR: --php-user=$PHP_USER no coincide con el pool real de Drive ($DETECTED_PHP_USER)." >&2
+    echo "No se modificarán permisos administrativos con un usuario PHP-FPM incorrecto." >&2
+    exit 2
+  fi
+  PHP_USER="$DETECTED_PHP_USER"
 fi
-[[ -n "$PHP_USER" ]] || { echo "ERROR: no pude detectar el usuario del pool php-fpm-drive; usa --php-user." >&2; exit 2; }
+
+[[ -n "$PHP_USER" ]] || { echo "ERROR: no pude detectar el usuario del pool php-fpm-drive; usa --php-user sólo después de verificarlo." >&2; exit 2; }
 [[ "$PHP_USER" != "root" ]] || { echo "ERROR: PHP-FPM no debe ejecutar ArcadeCloud como root." >&2; exit 2; }
 id "$PHP_USER" >/dev/null 2>&1 || { echo "ERROR: usuario inexistente: $PHP_USER" >&2; exit 2; }
 

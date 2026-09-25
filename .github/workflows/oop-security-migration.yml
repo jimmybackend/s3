@@ -46,6 +46,13 @@ jobs:
           grep -q "AccessType='unlocked'" drive/src/Security/FileSecurityRepository.php
           grep -q "AccessType='normal'" drive/src/Security/FileSecurityRepository.php
           grep -q 'clearSecureAccessKeys' drive/src/Security/SessionManager.php
+          grep -q 'function closeWrite(' drive/src/Security/SessionManager.php
+          grep -q 'function snapshot(' drive/src/Security/SessionManager.php
+          grep -q 'function systemRole(' drive/src/Security/SessionManager.php
+          grep -q 'function isSuperAdmin(' drive/src/Security/SessionManager.php
+          grep -q 'function incrementLoginAttempt(' drive/src/Security/SessionManager.php
+          grep -q 'function establishAuthenticatedUser(' drive/src/Security/SessionManager.php
+          grep -q 'function destroy(' drive/src/Security/SessionManager.php
 
       - name: Commit migration
         run: |

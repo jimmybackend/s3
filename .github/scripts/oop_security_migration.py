@@ -9,78 +9,32 @@ def write(path, content):
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(content, encoding='utf-8')
 
-# SessionManager centraliza compatibilidad de sesión y estado temporal.
+# SessionManager is a shared runtime dependency. Never regenerate it from this migration.
+# This guard makes stale migration templates fail closed instead of deleting session APIs.
 session_path = SRC / 'Security/SessionManager.php'
-write(session_path, r'''<?php
-declare(strict_types=1);
+required_session_methods = [
+    'closeWrite',
+    'snapshot',
+    'systemRole',
+    'isSuperAdmin',
+    'incrementLoginAttempt',
+    'establishAuthenticatedUser',
+    'destroy',
+    'clearSecureAccessKeys',
+]
+if not session_path.exists():
+    raise RuntimeError(f'Missing runtime dependency: {session_path}')
 
-namespace ArcadeCloud\Drive\Security;
-
-final class SessionManager
-{
-    public function start(): void
-    {
-        if (session_status() !== PHP_SESSION_ACTIVE) {
-            session_start();
-        }
-    }
-
-    public function isAuthenticated(): bool
-    {
-        return isset($_SESSION['usuario']) && trim((string)$_SESSION['usuario']) !== '';
-    }
-
-    public function requireAuthenticated(string $redirect = 'index.php'): void
-    {
-        if ($this->isAuthenticated()) {
-            return;
-        }
-        header('Location: ' . $redirect);
-        exit;
-    }
-
-    public function userId(): int
-    {
-        foreach (['user_id', 'user_id_', 'id_usuario', 'id_user', 'id'] as $key) {
-            $value = $_SESSION[$key] ?? null;
-            if ($value !== null && $value !== '' && ctype_digit((string)$value)) {
-                return (int)$value;
-            }
-        }
-        return 0;
-    }
-
-    public function userName(): string
-    {
-        return isset($_SESSION['usuario']) ? (string)$_SESSION['usuario'] : '';
-    }
-
-    public function get(string $key, mixed $default = null): mixed
-    {
-        return $_SESSION[$key] ?? $default;
-    }
-
-    public function set(string $key, mixed $value): void
-    {
-        $_SESSION[$key] = $value;
-    }
-
-    public function remove(string $key): void
-    {
-        unset($_SESSION[$key]);
-    }
-
-    public function clearSecureAccessKeys(array $keys): void
-    {
-        if (!isset($_SESSION['secure_ok_files']) || !is_array($_SESSION['secure_ok_files'])) {
-            return;
-        }
-        foreach (array_unique(array_filter(array_map('strval', $keys))) as $key) {
-            unset($_SESSION['secure_ok_files'][$key]);
-        }
-    }
-}
-''')
+session_source = session_path.read_text(encoding='utf-8')
+missing_session_methods = [
+    method for method in required_session_methods
+    if f'function {method}(' not in session_source
+]
+if missing_session_methods:
+    raise RuntimeError(
+        'SessionManager contract is incomplete; refusing to run migration: '
+        + ', '.join(missing_session_methods)
+    )
 
 write(SRC / 'Security/FileSecurityRepository.php', r'''<?php
 declare(strict_types=1);

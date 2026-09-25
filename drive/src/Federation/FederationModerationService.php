@@ -150,7 +150,13 @@ final class FederationModerationService
 
         $contentId = is_string($before['ContentId'] ?? null) ? (string)$before['ContentId'] : '';
         if ($contentId === '') {
-            throw new FederationException('El recurso todavía no tiene una huella SHA-256 verificable; no puede bloquearse globalmente por hash.', 409);
+            $contentId = $this->recoverReportContentId($before, $userId);
+        }
+        if ($contentId === '') {
+            throw new FederationException(
+                'No fue posible obtener una huella SHA-256 verificable del recurso original; no se aplicó ningún bloqueo.',
+                409
+            );
         }
         $contentId = $this->normalizeContentId($contentId);
 
@@ -341,6 +347,73 @@ final class FederationModerationService
         }
 
         return ['content_id' => $contentId, 'deleted_objects' => $deleted];
+    }
+
+    private function recoverReportContentId(array $report, int $userId): string
+    {
+        if ((string)($report['TargetType'] ?? '') !== 'resource') return '';
+
+        $resourceId = trim((string)($report['TargetId'] ?? ''));
+        $reportId = trim((string)($report['ReportId'] ?? ''));
+        if ($resourceId === '' || $reportId === '') return '';
+
+        $catalog = new FederatedCatalogRepository($this->app->db());
+        $resource = $catalog->find($resourceId);
+        if ($resource === null) {
+            throw new FederationException('El recurso federado reportado ya no está disponible para calcular su huella.', 409);
+        }
+
+        $originNodeId = trim((string)($resource['OriginNodeId'] ?? ''));
+        if ($originNodeId === '' || !hash_equals($this->identity->nodeId(), $originNodeId)) {
+            throw new FederationException('Sólo el nodo origen puede calcular y certificar la huella del recurso reportado.', 409);
+        }
+
+        $raw = trim((string)($resource['ArcadeLinkJson'] ?? ''));
+        if ($raw === '') {
+            throw new FederationException('El recurso no conserva un ArcadeLink firmado para localizar el archivo original.', 409);
+        }
+
+        $links = new ArcadeLinkService($this->config, $this->identity);
+        $document = $links->parse($raw);
+        if ((int)($document['version'] ?? 0) !== 1 || (string)($document['resource_type'] ?? '') !== 'file') {
+            throw new FederationException('El recurso reportado no corresponde a un ArcadeLink de archivo individual.', 409);
+        }
+
+        $payload = $links->decryptLocalPayload($document);
+        $ownerUserId = (int)($payload['user_id'] ?? 0);
+        $storageRef = trim((string)($payload['storage_ref'] ?? ''));
+        $fileId = (int)($payload['file_id'] ?? 0);
+
+        $resources = new FederatedResourceRepository($this->app->db());
+        $file = $storageRef !== ''
+            ? $resources->findOwnedFileByStorageRef($ownerUserId, $storageRef)
+            : null;
+        if ($file === null && $fileId > 0) {
+            $file = $resources->findOwnedFile($ownerUserId, $fileId);
+        }
+        if ($file === null) {
+            throw new FederationException('El archivo original ya no está disponible en FileS3 para calcular su huella.', 409);
+        }
+
+        $contentId = (new FederationContentFingerprintService($this->app))->ensureForFile($file);
+        $storageKey = $resources->storageKey($file);
+
+        $this->repository->rememberFingerprint(
+            $contentId,
+            'resource',
+            $resourceId,
+            $originNodeId,
+            $storageKey
+        );
+        $this->repository->attachContentIdToReport($reportId, $contentId);
+        $this->repository->attachContentIdToLocalResource($resourceId, $originNodeId, $contentId);
+        $this->audit('content.fingerprint_backfill', $contentId, $reportId, $userId, [
+            'resource_id' => $resourceId,
+            'file_id' => (int)($file['id_'] ?? 0),
+            'source' => 'origin_s3_stream',
+        ]);
+
+        return $contentId;
     }
 
     private function ensureModerationSchema(): void

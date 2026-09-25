@@ -5,6 +5,7 @@ namespace ArcadeCloud\Drive\Federation;
 
 use ArcadeCloud\Drive\Core\DriveApplication;
 use ArcadeCloud\Drive\View\FileViewHelper;
+use Throwable;
 
 final class FederationModerationService
 {
@@ -84,22 +85,30 @@ final class FederationModerationService
             ? $this->normalizeContentId((string)$target['ContentId'])
             : null;
         $reportId = 'far_' . FederationCodec::base64UrlEncode(random_bytes(18));
-        $row = $this->repository->createReport(
-            $reportId,
-            $targetType,
-            $targetId,
-            $contentId,
-            $targetNodeId,
-            $category,
-            $details,
-            $email
-        );
-
-        $this->audit('report.created', $contentId ?? '', $reportId, null, [
-            'target_type' => $targetType,
-            'target_id' => $targetId,
-            'category' => $category,
-        ]);
+        $db = $this->app->db();
+        $db->begin_transaction();
+        try {
+            $row = $this->repository->createReport(
+                $reportId,
+                $targetType,
+                $targetId,
+                $contentId,
+                $targetNodeId,
+                $category,
+                $details,
+                $email
+            );
+            $this->audit('report.created', $contentId ?? '', $reportId, null, [
+                'target_type' => $targetType,
+                'target_id' => $targetId,
+                'category' => $category,
+            ]);
+            $db->commit();
+        } catch (Throwable $e) {
+            $db->rollback();
+            if ($e instanceof FederationException) throw $e;
+            throw new FederationException('No se pudo registrar el reporte de forma completa.', 500);
+        }
         return [
             'ok' => true,
             'report_id' => $reportId,
@@ -110,10 +119,12 @@ final class FederationModerationService
 
     public function adminState(): array
     {
+        $nodeId = $this->identity->nodeId();
         return [
             'ok' => true,
-            'node_id' => $this->identity->nodeId(),
+            'node_id' => $nodeId,
             'reports' => $this->repository->pendingReports(),
+            'active_blocks' => $this->repository->activeBlocks($nodeId),
         ];
     }
 
@@ -154,8 +165,10 @@ final class FederationModerationService
             $payload
         );
 
-        $row = $this->repository->decideReport($reportId, 'confirmed', $userId, $reason);
+        // Primero bloqueamos y retiramos las copias administradas. Sólo después
+        // el reporte sale de pendientes.
         $cleanup = $this->cleanupContent($contentId);
+        $row = $this->repository->decideReport($reportId, 'confirmed', $userId, $reason);
         $this->audit('content.block', $contentId, $reportId, $userId, [
             'reason' => $reason,
             'event_id' => (string)$event['event_id'],
@@ -170,6 +183,51 @@ final class FederationModerationService
             'event_id' => (string)$event['event_id'],
             'cleanup' => $cleanup,
             'refund_policy' => 'no_automatic_refund_for_confirmed_prohibited_content',
+        ];
+    }
+
+    public function unblock(string $contentId, int $userId, string $reason): array
+    {
+        $contentId = $this->normalizeContentId($contentId);
+        $reason = trim($reason);
+        if ($userId <= 0) throw new FederationException('Superusuario inválido.', 403);
+        if ($reason === '' || strlen($reason) > 1000) {
+            throw new FederationException('Indica el motivo para revocar el bloqueo.', 400);
+        }
+
+        $nodeId = $this->identity->nodeId();
+        $block = $this->repository->activeBlock($contentId, $nodeId);
+        if ($block === null) {
+            throw new FederationException('El nodo actual no tiene un bloqueo activo propio para esa huella.', 404);
+        }
+
+        $reportId = is_string($block['ReportId'] ?? null) && $block['ReportId'] !== ''
+            ? (string)$block['ReportId']
+            : null;
+        $event = $this->events->emit(
+            $this->identity,
+            'moderation.unblock',
+            substr($contentId, 7),
+            [
+                'content_id' => $contentId,
+                'responsible_node_id' => $nodeId,
+                'report_id' => $reportId,
+                'reason' => $reason,
+            ]
+        );
+        $this->audit('content.unblock', $contentId, $reportId, $userId, [
+            'reason' => $reason,
+            'event_id' => (string)$event['event_id'],
+            'restores_deleted_bytes' => false,
+        ]);
+
+        return [
+            'ok' => true,
+            'unblocked' => true,
+            'content_id' => $contentId,
+            'event_id' => (string)$event['event_id'],
+            'restored' => false,
+            'message' => 'Huella desbloqueada. Los archivos ya eliminados no se restauran; pueden volver a subirse.',
         ];
     }
 

@@ -4,7 +4,6 @@ declare(strict_types=1);
 namespace ArcadeCloud\Drive\Federation;
 
 use ArcadeCloud\Drive\Core\DriveApplication;
-use Throwable;
 
 final class FederationReplicaResolverService
 {
@@ -12,7 +11,7 @@ final class FederationReplicaResolverService
     private NodeIdentityService $identity;
     private FederatedCatalogRepository $catalog;
     private FederationReplicaRepository $replicas;
-    private FederationLocationSelector $selector;
+    private FederationSourceFailover $failover;
     private FederationHttpClient $http;
 
     public function __construct(private DriveApplication $app)
@@ -21,7 +20,7 @@ final class FederationReplicaResolverService
         $this->identity = new NodeIdentityService($this->config->identityPath());
         $this->catalog = new FederatedCatalogRepository($app->db());
         $this->replicas = new FederationReplicaRepository($app->db());
-        $this->selector = new FederationLocationSelector();
+        $this->failover = new FederationSourceFailover();
         $this->http = new FederationHttpClient();
     }
 
@@ -77,33 +76,46 @@ final class FederationReplicaResolverService
     {
         $resource = $this->requirePublicCopyable($resourceId);
         $maxSources = max(1, min(FederationMultiSourceDownloader::MAX_SOURCES, $maxSources));
-        $locations = $this->selector->ordered($this->catalog->locations($resourceId));
+        $locations = $this->failover->candidates(
+            $this->catalog->locations($resourceId),
+            [
+                'node_id' => (string)$resource['OriginNodeId'],
+                'federation_url' => (string)$resource['FederationUrl'],
+                'updated_at' => $resource['UpdatedAt'] ?? null,
+            ]
+        );
 
         if ($locations === []) {
-            $locations[] = [
-                'node_id' => (string)$resource['OriginNodeId'],
-                'role' => 'origin',
-                'status' => 'active',
-                'federation_url' => (string)$resource['FederationUrl'],
-            ];
+            $this->logResolverEvent('zero_candidates', $resourceId);
+            throw new FederationException('No existe ningún proveedor FederationCloud válido para este recurso.', 503);
         }
 
-        $sources = [];
-        $seenNodes = [];
-        $failures = [];
         $probe = new FederationReplicaDownloader();
+        $resolved = $this->failover->collect(
+            $locations,
+            $maxSources,
+            function (array $location) use ($resourceId, $resource, $probe): array {
+                $nodeId = trim((string)($location['node_id'] ?? ''));
+                if ($nodeId === '') throw new FederationException('Candidato FederationCloud sin Node ID.', 400);
 
-        foreach ($locations as $location) {
-            if (count($sources) >= $maxSources) break;
-            $nodeId = (string)($location['node_id'] ?? '');
-            if ($nodeId === '' || isset($seenNodes[$nodeId])) continue;
-            try {
                 if (hash_equals($this->identity->nodeId(), $nodeId)) {
                     $result = $this->publicLocation($resourceId);
                 } else {
                     $federationUrl = trim((string)($location['federation_url'] ?? ''));
                     if ($federationUrl === '') throw new FederationException('Ubicación sin Federation URL.', 503);
-                    $result = $this->http->postJson($federationUrl, 'replica-resolve.php', ['resource_id' => $resourceId]);
+                    $result = $this->http->postJson(
+                        $federationUrl,
+                        'replica-resolve.php',
+                        ['resource_id' => $resourceId]
+                    );
+                }
+
+                $returnedNodeId = trim((string)($result['node_id'] ?? ''));
+                if ($returnedNodeId === '' || !hash_equals($nodeId, $returnedNodeId)) {
+                    throw new FederationException(
+                        'La identidad del nodo que respondió no coincide con el candidato firmado.',
+                        409
+                    );
                 }
 
                 $url = trim((string)($result['access_url'] ?? ''));
@@ -125,22 +137,22 @@ final class FederationReplicaResolverService
                 // se continúa con otra réplica en lugar de enviar el error al usuario.
                 $probe->probe($url, (int)$resource['SizeBytes']);
 
-                $seenNodes[$nodeId] = true;
-                $sources[] = [
+                return [
                     'node_id' => $nodeId,
                     'role' => (string)($location['role'] ?? $result['role'] ?? 'origin'),
                     'url' => $url,
                 ];
-            } catch (Throwable $e) {
-                $failures[] = [
-                    'node_id' => $nodeId,
-                    'role' => (string)($location['role'] ?? ''),
-                    'error' => substr($e->getMessage(), 0, 180),
-                ];
             }
+        );
+
+        foreach ($resolved['failures'] as $failure) {
+            $this->logResolverEvent('candidate_failed', $resourceId, is_array($failure) ? $failure : []);
         }
 
-        if ($sources === []) {
+        if ($resolved['sources'] === []) {
+            $this->logResolverEvent('all_candidates_failed', $resourceId, [
+                'attempts' => count($resolved['failures']),
+            ]);
             throw new FederationException('Ninguna ubicación FederationCloud respondió con una copia pública válida.', 503);
         }
 
@@ -151,8 +163,8 @@ final class FederationReplicaResolverService
             'size_bytes' => (int)$resource['SizeBytes'],
             'title' => (string)$resource['Title'],
             'media_type' => (string)$resource['MediaType'],
-            'sources' => $sources,
-            'failures' => $failures,
+            'sources' => $resolved['sources'],
+            'failures' => $resolved['failures'],
         ];
     }
 
@@ -212,5 +224,22 @@ final class FederationReplicaResolverService
         $decoded = json_decode($json, true, 32, JSON_THROW_ON_ERROR);
         if (!is_array($decoded) || array_is_list($decoded)) throw new FederationException('ArcadeLink del recurso inválido.', 500);
         return $decoded;
+    }
+
+    private function logResolverEvent(string $event, string $resourceId, array $details = []): void
+    {
+        $payload = [
+            'event' => $event,
+            'resource_id' => $resourceId,
+            'node_id' => $details['node_id'] ?? null,
+            'role' => $details['role'] ?? null,
+            'category' => $details['category'] ?? null,
+            'http_status' => $details['http_status'] ?? null,
+            'attempts' => $details['attempts'] ?? null,
+        ];
+        error_log(
+            '[ArcadeCloud Federation] '
+            . json_encode($payload, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PARTIAL_OUTPUT_ON_ERROR)
+        );
     }
 }

@@ -103,10 +103,13 @@ final class FederationReplicaController
             exit;
         } catch (FederationException $e) {
             http_response_code($e->httpStatus());
-            echo htmlspecialchars($e->getMessage(), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+            $message = $e->httpStatus() >= 500
+                ? 'No fue posible obtener el archivo desde los nodos disponibles.'
+                : $e->getMessage();
+            echo htmlspecialchars($message, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
         } catch (Throwable) {
             http_response_code(500);
-            echo 'No se pudo abrir el recurso federado.';
+            echo 'No fue posible obtener el archivo desde los nodos disponibles.';
         }
     }
 

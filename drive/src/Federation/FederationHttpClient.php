@@ -90,17 +90,24 @@ final class FederationHttpClient
         $error = curl_error($ch);
         curl_close($ch);
         if ($ok === false || $http < 200 || $http >= 300) {
+            $category = $ok === false
+                ? ((stripos($error, 'timed out') !== false || stripos($error, 'timeout') !== false) ? 'timeout' : 'offline')
+                : ($http >= 500 ? 'http_5xx' : 'http_4xx');
+            $this->logTransportFailure($host, $endpoint, $category, $http);
             throw new FederationException('El nodo FederationCloud no respondió correctamente' . ($error !== '' ? ': ' . $error : '.'), 502);
         }
         if ($contentType !== '' && !str_starts_with($contentType, 'application/json')) {
+            $this->logTransportFailure($host, $endpoint, 'unexpected_content_type', $http);
             throw new FederationException('El nodo remoto devolvió un tipo de contenido inesperado.', 502);
         }
         try {
             $decoded = json_decode($response, true, 32, JSON_THROW_ON_ERROR);
         } catch (JsonException) {
+            $this->logTransportFailure($host, $endpoint, 'invalid_json', $http);
             throw new FederationException('El nodo remoto devolvió JSON inválido.', 502);
         }
         if (!is_array($decoded) || array_is_list($decoded)) {
+            $this->logTransportFailure($host, $endpoint, 'invalid_response', $http);
             throw new FederationException('Respuesta federada remota inválida.', 502);
         }
         return $decoded;
@@ -158,5 +165,19 @@ final class FederationHttpClient
             FILTER_VALIDATE_IP,
             FILTER_FLAG_IPV4 | FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE
         ) !== false && $ip !== '169.254.169.254';
+    }
+
+    private function logTransportFailure(string $host, string $endpoint, string $category, int $httpStatus): void
+    {
+        error_log(
+            '[ArcadeCloud Federation] '
+            . json_encode([
+                'event' => 'federation_http_failure',
+                'host' => $host,
+                'endpoint' => $endpoint,
+                'category' => $category,
+                'http_status' => $httpStatus > 0 ? $httpStatus : null,
+            ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PARTIAL_OUTPUT_ON_ERROR)
+        );
     }
 }

@@ -180,7 +180,9 @@ Dentro del mismo nivel se prefiere la ubicación más reciente.
 
 La búsqueda global devuelve `preferred_location`.
 
-Para `PUBLIC + copy_allowed`, `/federationcloud/replica-open.php` no exige sesión: la política pública se valida en el backend antes de emitir una URL. El resolver intenta cada ubicación en orden, obtiene una URL S3 temporal y hace una prueba real de rango antes de redirigir. Si una credencial S3 está vencida/incorrecta o un mirror no responde, prueba el siguiente provider y finalmente el origin.
+Para `PUBLIC + copy_allowed`, `/federationcloud/replica-open.php` no exige sesión: la política pública se valida en el backend antes de emitir una URL. El botón **Descargar público** no divide la descarga del navegador entre nodos: prueba candidatos en orden y redirige al primer S3 temporal que responde correctamente. Si una credencial S3 está vencida/incorrecta o un mirror no responde, prueba el siguiente provider y finalmente el origin.
+
+El origen firmado en `FederatedResources` es siempre candidato. Si su `location.upsert` todavía no está materializado pero el recurso global conserva `OriginNodeId` y `FederationUrl` válidos, el resolver reconstruye únicamente ese candidato de origen desde el recurso firmado. La existencia de otro provider/mirror no puede ocultarlo. Para esta descarga no existe quorum ni mínimo de dos nodos: una sola fuente saludable es suficiente.
 
 Una ubicación remota responde por:
 
@@ -242,6 +244,10 @@ CI valida sin tráfico físico real:
 - reunión de varias fuentes públicas;
 - prueba real de URL S3 antes del redirect;
 - uso de rangos HTTP en transporte multisource;
-- verificación SHA-256 después de ensamblar.
+- verificación SHA-256 después de ensamblar;
+- descarga pública con un solo candidato;
+- failover primero/segundo/tercer candidato;
+- origen como fallback aunque falte su fila de ubicación;
+- rechazo de candidatos inválidos/no autorizados y límites de timeout.
 
 La transferencia real S3→provider, propagación del `location.upsert` y failover con un nodo apagado se dejan para la prueba física entre nodos. El protocolo y el código quedan preparados antes de esa prueba.

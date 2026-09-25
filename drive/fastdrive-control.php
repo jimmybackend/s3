@@ -66,10 +66,11 @@ try {
 $state = is_array($status) ? (string)($status['state'] ?? 'unknown') : 'unknown';
 $startAllowed = $state === 'stopped';
 
-function fd_e(string $value): string
-{
-    return htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
-}
+$escape = static fn (string $value): string => htmlspecialchars(
+    $value,
+    ENT_QUOTES | ENT_SUBSTITUTE,
+    'UTF-8'
+);
 ?><!doctype html>
 <html lang="es">
 <head>
@@ -88,25 +89,25 @@ h1{margin-top:0}dl{display:grid;grid-template-columns:160px 1fr;gap:8px 16px}dt{
   <h1>Control de FastDrive</h1>
   <p class="note">Este puente sólo puede consultar y encender la EC2 configurada como FastDrive. No acepta IDs enviados por el navegador.</p>
 
-  <?php if ($message !== ''): ?><p class="ok"><?= fd_e($message) ?></p><?php endif; ?>
-  <?php if ($error !== ''): ?><p class="err"><?= fd_e($error) ?></p><?php endif; ?>
+  <?php if ($message !== ''): ?><p class="ok"><?= $escape($message) ?></p><?php endif; ?>
+  <?php if ($error !== ''): ?><p class="err"><?= $escape($error) ?></p><?php endif; ?>
 
   <?php if (is_array($status)): ?>
   <dl>
-    <dt>Estado</dt><dd class="state"><?= fd_e($state) ?></dd>
-    <dt>Instancia</dt><dd><code><?= fd_e((string)$status['instance_id']) ?></code></dd>
-    <dt>Región</dt><dd><?= fd_e((string)$status['region']) ?></dd>
-    <dt>Tipo</dt><dd><?= fd_e((string)$status['instance_type']) ?></dd>
-    <dt>Zona</dt><dd><?= fd_e((string)$status['availability_zone']) ?></dd>
-    <dt>IPv4 privada</dt><dd><?= fd_e((string)$status['private_ip']) ?></dd>
-    <dt>IPv4 pública</dt><dd><?= fd_e((string)$status['public_ip']) ?></dd>
+    <dt>Estado</dt><dd class="state"><?= $escape($state) ?></dd>
+    <dt>Instancia</dt><dd><code><?= $escape((string)$status['instance_id']) ?></code></dd>
+    <dt>Región</dt><dd><?= $escape((string)$status['region']) ?></dd>
+    <dt>Tipo</dt><dd><?= $escape((string)$status['instance_type']) ?></dd>
+    <dt>Zona</dt><dd><?= $escape((string)$status['availability_zone']) ?></dd>
+    <dt>IPv4 privada</dt><dd><?= $escape((string)$status['private_ip']) ?></dd>
+    <dt>IPv4 pública</dt><dd><?= $escape((string)$status['public_ip']) ?></dd>
   </dl>
   <?php endif; ?>
 
   <div class="actions">
     <?php if ($startAllowed): ?>
       <form method="post" autocomplete="off">
-        <input type="hidden" name="csrf" value="<?= fd_e($csrf) ?>">
+        <input type="hidden" name="csrf" value="<?= $escape($csrf) ?>">
         <input type="hidden" name="action" value="start">
         <label for="current_password">Contraseña actual del superadmin</label>
         <input id="current_password" name="current_password" type="password" autocomplete="current-password" required>

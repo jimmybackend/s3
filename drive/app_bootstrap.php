@@ -26,10 +26,19 @@ putenv('AWS_EC2_METADATA_DISABLED=true');
 // Se carga antes de Config-s3.php/db.php. Si el archivo externo fue alterado o
 // quedó corrupto, no derriba todo el Drive: se ignora y se deja evidencia en log.
 require_once $managedEnvironmentPath;
+$managedRuntimeOverride = getenv('ARCADECLOUD_RUNTIME_ENV');
+$managedRuntimePath = is_string($managedRuntimeOverride) && trim($managedRuntimeOverride) !== ''
+    ? trim($managedRuntimeOverride)
+    : null;
 try {
-    \ArcadeCloud\Drive\Admin\ManagedRuntimeEnvironment::loadIntoProcess();
+    \ArcadeCloud\Drive\Admin\ManagedRuntimeEnvironment::loadIntoProcess($managedRuntimePath);
 } catch (Throwable $e) {
     error_log('[ArcadeCloud managed-env] ' . $e->getMessage());
+    // Un CLI privilegiado que pidió explícitamente un runtime concreto no debe
+    // continuar con una configuración DB/AWS vacía o distinta.
+    if ($managedRuntimePath !== null) {
+        throw new RuntimeException('No se pudo cargar el entorno administrado solicitado.', 0, $e);
+    }
 }
 
 require_once $autoloadPath;

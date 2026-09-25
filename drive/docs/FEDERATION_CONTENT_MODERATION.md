@@ -186,3 +186,10 @@ https://TU-DOMINIO/federationcloud/report.php
 Superusuario:
 https://TU-DOMINIO/federationcloud/moderation.php
 ```
+
+
+## Reconciliación desde el actualizador web
+
+En **Acerca de -> Actualizaciones**, la migración de tablas FederationCloud se ejecuta desde el runtime web autenticado usando la conexión MySQL ya abierta por ArcadeCloud. El reconciliador privilegiado detecta ese contexto y no exige reconstruir `DB_*` para lanzar el migrador CLI.
+
+Después de actualizar código, al recargar y pulsar **Buscar actualizaciones**, el servicio verifica el esquema y crea de forma idempotente las tablas faltantes desde la sección canónica de `adbbmis1_Cloud.sql`. La misma clase de migración sigue disponible para CLI y timers cuando esos procesos sí disponen de su entorno DB.

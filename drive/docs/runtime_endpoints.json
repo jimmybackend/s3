@@ -557,7 +557,7 @@
     },
     {
       "path": "drive/fastdrive-control.php",
-      "size": 5458,
+      "size": 5497,
       "active": false,
       "references": [
         "drive/tests/fastdrive_control_contract_smoke.php"

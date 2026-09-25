@@ -1937,6 +1937,14 @@
       ]
     },
     {
+      "path": "drive/src/Federation/FederationOriginStorageResolver.php",
+      "size": 3102,
+      "active": false,
+      "references": [
+        "drive/tests/federation_public_download_failover_smoke.php"
+      ]
+    },
+    {
       "path": "drive/src/Federation/FederationPeerSyncRepository.php",
       "size": 5870,
       "active": false,
@@ -2017,7 +2025,7 @@
     },
     {
       "path": "drive/src/Federation/FederationReplicaResolverService.php",
-      "size": 12686,
+      "size": 12409,
       "active": false,
       "references": [
         "drive/tests/federation_drop_contract_smoke.php",
@@ -2027,9 +2035,10 @@
     },
     {
       "path": "drive/src/Federation/FederationReplicaService.php",
-      "size": 18302,
+      "size": 18453,
       "active": false,
       "references": [
+        "drive/tests/federation_public_download_failover_smoke.php",
         "drive/tests/federation_replica_reconnect_contract_smoke.php",
         "drive/tests/federation_replica_smoke.php"
       ]
@@ -2077,7 +2086,7 @@
     },
     {
       "path": "drive/src/Federation/FederationSourceFailover.php",
-      "size": 4553,
+      "size": 4751,
       "active": false,
       "references": [
         "drive/tests/federation_public_download_failover_smoke.php"
@@ -2926,7 +2935,9 @@
       "path": "drive/src/View/FileViewHelper.php",
       "size": 3181,
       "active": false,
-      "references": []
+      "references": [
+        "drive/tests/federation_public_download_failover_smoke.php"
+      ]
     },
     {
       "path": "drive/src/View/FolderTreeRenderer.php",
@@ -3112,7 +3123,7 @@
     },
     {
       "path": "drive/tests/federation_public_download_failover_smoke.php",
-      "size": 9157,
+      "size": 11423,
       "active": false,
       "references": []
     },

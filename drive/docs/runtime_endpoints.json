@@ -3165,7 +3165,7 @@
     },
     {
       "path": "drive/tests/federation_moderation_contract_smoke.php",
-      "size": 11917,
+      "size": 12794,
       "active": false,
       "references": []
     },
@@ -3390,7 +3390,7 @@
     },
     {
       "path": "drive/up.php",
-      "size": 26193,
+      "size": 27239,
       "active": true,
       "references": [
         "drive/src/Http/Controller/UploadCleanupController.php",

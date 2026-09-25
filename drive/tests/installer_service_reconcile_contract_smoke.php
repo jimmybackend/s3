@@ -120,6 +120,10 @@ installerContract(str_contains($mediaInstaller, 'php ffmpeg ffprobe lame'), 'wor
 installerContract(!str_contains($mediaInstaller, 'User=nginx'), 'worker no fija nginx como usuario universal');
 installerContract(str_contains($bootstrap, 'runtime-env.json'), 'bootstrap de réplica usa runtime-env.json');
 installerContract(str_contains($bootstrap, 'arcadecloud-drive-admin'), 'bootstrap actualiza configuración mediante helper privilegiado');
+installerContract(str_contains($bootstrap, 'ARCADECLOUD_TLS_TERMINATION'), 'bootstrap multimedia conoce el modo de terminación TLS');
+installerContract(str_contains($bootstrap, 'TLS termina en gateway'), 'bootstrap multimedia no reemplaza dominio gateway por IP dinámica');
+installerContract(str_contains($installer, 'verify_gateway_https'), 'instalador verifica el gateway HTTPS antes de registrar FederationCloud');
+installerContract(str_contains($installer, 'systemctl disable --now arcadecloud-federation-https.timer'), 'modo gateway desactiva reconciliación TLS local');
 
 foreach ([
     'ARCADECLOUD_NODE_ROLE',
@@ -128,6 +132,7 @@ foreach ([
     'ARCADECLOUD_MEDIA_WORKER_HOURLY_USD',
     'ARCADECLOUD_MEDIA_WORKER_IDLE_GRACE_SECONDS',
     'ARCADECLOUD_FEDERATION_DYNAMIC_IP',
+    'ARCADECLOUD_TLS_TERMINATION',
 ] as $name) {
     installerContract(str_contains($managed, "'{$name}'"), "runtime administrado permite {$name}");
     installerContract(str_contains($helper, "'{$name}'"), "helper privilegiado permite {$name}");

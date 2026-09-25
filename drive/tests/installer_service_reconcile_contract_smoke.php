@@ -60,6 +60,8 @@ installerContract(str_contains($reconciler, 'systemctl restart php-fpm-drive.ser
 installerContract(str_contains($updater, 'reconcileServices'), 'updater web reconcilia servicios tras fast-forward');
 installerContract(str_contains($updater, "'--defer-php-restart'"), 'updater web solicita reinicio diferido de PHP-FPM');
 installerContract(str_contains($reconciler, 'arcadecloud-drive-updater'), 'reconciliador detecta updater anterior durante la primera actualización del arreglo');
+installerContract(str_contains($reconciler, 'federation_catalog_migrate.php'), 'reconciliador actualiza esquema FederationCloud después de git update');
+installerContract(str_contains($reconciler, 'Reconciliando esquema FederationCloud'), 'reconciliador hace visible la migración FederationCloud');
 installerContract(str_contains($reconciler, '--on-active=5s'), 'reconciliador programa el reinicio web después de devolver JSON');
 installerContract(str_contains($reconciler, '--immediate-php-restart'), 'reconciliador conserva reinicio inmediato explícito para operación manual');
 installerContract(str_contains($updater, 'array_merge($after'), 'respuesta apply incluye estado actualizado de rama y commits');

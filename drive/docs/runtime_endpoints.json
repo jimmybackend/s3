@@ -2877,7 +2877,7 @@
     },
     {
       "path": "drive/src/Upload/AdminMultipartUploadService.php",
-      "size": 6894,
+      "size": 6915,
       "active": false,
       "references": [
         "drive/tests/federation_moderation_contract_smoke.php"
@@ -3165,7 +3165,7 @@
     },
     {
       "path": "drive/tests/federation_moderation_contract_smoke.php",
-      "size": 10765,
+      "size": 11917,
       "active": false,
       "references": []
     },
@@ -3390,11 +3390,12 @@
     },
     {
       "path": "drive/up.php",
-      "size": 25377,
+      "size": 26193,
       "active": true,
       "references": [
         "drive/src/Http/Controller/UploadCleanupController.php",
         "drive/src/Upload/AdminMultipartUploadService.php",
+        "drive/tests/federation_moderation_contract_smoke.php",
         "drive/tests/upload_catalog_registration_regression.php",
         "drive/js/estilo.js"
       ]

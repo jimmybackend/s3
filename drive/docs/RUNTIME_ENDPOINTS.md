@@ -45,7 +45,7 @@
 | `drive/src/Setup/BootstrapSetupAuth.php` | `drive/setup/api.php`, `drive/setup/index.php`, `drive/tests/setup_bootstrap_smoke.php` |
 | `drive/src/Setup/SetupEntryGuard.php` | `drive/index.php`, `drive/tests/setup_entry_guard_smoke.php` |
 | `drive/thumb.php` | `drive/bloque_archivos.php`, `drive/js/imagenes.js` |
-| `drive/up.php` | `drive/src/Http/Controller/UploadCleanupController.php`, `drive/src/Upload/AdminMultipartUploadService.php`, `drive/tests/upload_catalog_registration_regression.php`, `drive/js/estilo.js` |
+| `drive/up.php` | `drive/src/Http/Controller/UploadCleanupController.php`, `drive/src/Upload/AdminMultipartUploadService.php`, `drive/tests/federation_moderation_contract_smoke.php`, `drive/tests/upload_catalog_registration_regression.php`, `drive/js/estilo.js` |
 | `drive/upload.php` | `drive/s3.php`, `drive/js/soportesMediaTypes.js`, `drive/js/subir-chunked.js`, `drive/js/subir-dropzone.js`, `drive/js/subir.js` |
 | `drive/validar_php.php` | `drive/editor.php` |
 | `drive/ver_archivo.php` | `drive/bloque_archivos.php`, `drive/src/Media/MediaPlaylistService.php`, `drive/js/archivos.js`, `drive/js/imagenes.js` |

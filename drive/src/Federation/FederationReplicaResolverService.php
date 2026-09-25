@@ -13,6 +13,7 @@ final class FederationReplicaResolverService
     private FederationReplicaRepository $replicas;
     private FederationSourceFailover $failover;
     private FederationHttpClient $http;
+    private FederationOriginStorageResolver $originStorage;
 
     public function __construct(private DriveApplication $app)
     {
@@ -22,6 +23,7 @@ final class FederationReplicaResolverService
         $this->replicas = new FederationReplicaRepository($app->db());
         $this->failover = new FederationSourceFailover();
         $this->http = new FederationHttpClient();
+        $this->originStorage = new FederationOriginStorageResolver($app, $this->config, $this->identity);
     }
 
     /** Devuelve acceso temporal desde el original local o desde una réplica local. */
@@ -31,12 +33,7 @@ final class FederationReplicaResolverService
         $localNodeId = $this->identity->nodeId();
 
         if (hash_equals($localNodeId, (string)$resource['OriginNodeId'])) {
-            $document = $this->decodeArcadeLink((string)($resource['ArcadeLinkJson'] ?? ''));
-            $arcade = new ArcadeLinkService($this->config, $this->identity);
-            $verified = $arcade->parse(FederationCodec::canonicalJson($document));
-            $payload = $arcade->decryptLocalPayload($verified);
-            $storageRef = trim((string)($payload['storage_ref'] ?? ''));
-            if ($storageRef === '') throw new FederationException('El origen local no conserva referencia física.', 409);
+            $storageKey = $this->originStorage->storageKey($resource);
             return [
                 'ok' => true,
                 'resource_id' => $resourceId,
@@ -44,7 +41,7 @@ final class FederationReplicaResolverService
                 'role' => 'origin',
                 'content_id' => (string)$resource['ContentId'],
                 'size_bytes' => (int)$resource['SizeBytes'],
-                'access_url' => $this->app->shareObjectStorage()->presignedUrl($storageRef, '+5 minutes'),
+                'access_url' => $this->app->shareObjectStorage()->presignedUrl($storageKey, '+5 minutes'),
                 'expires_in' => 300,
             ];
         }

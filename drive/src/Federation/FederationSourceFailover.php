@@ -98,6 +98,8 @@ final class FederationSourceFailover
         $message = strtolower($e->getMessage());
         $status = $e instanceof FederationException ? $e->httpStatus() : 500;
 
+        if (str_contains($message, 's3 http 404')) return 'resource_not_found';
+        if (str_contains($message, 's3 http 401') || str_contains($message, 's3 http 403')) return 'access_rejected';
         if (str_contains($message, 'timed out') || str_contains($message, 'timeout')) return 'timeout';
         if (str_contains($message, 'firma') || str_contains($message, 'descriptor')
             || str_contains($message, 'identidad') || str_contains($message, 'node id')) {

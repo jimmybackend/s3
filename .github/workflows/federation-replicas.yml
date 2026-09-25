@@ -10,6 +10,7 @@ on:
       - 'drive/src/Federation/FederationReplica*.php'
       - 'drive/src/Federation/FederationLocationSelector.php'
       - 'drive/src/Federation/FederationSourceFailover.php'
+      - 'drive/src/Federation/FederationOriginStorageResolver.php'
       - 'drive/src/Federation/FederationCatalogService.php'
       - 'drive/src/Federation/FederationHttpClient.php'
       - 'drive/src/Http/Controller/FederationReplicaController.php'
@@ -60,6 +61,7 @@ jobs:
           set -euo pipefail
           php -l drive/src/Federation/FederationLocationSelector.php
           php -l drive/src/Federation/FederationSourceFailover.php
+          php -l drive/src/Federation/FederationOriginStorageResolver.php
           php -l drive/src/Federation/FederationReplicaMessageCodec.php
           php -l drive/src/Federation/FederationReplicaRepository.php
           php -l drive/src/Federation/FederationReplicaDownloader.php

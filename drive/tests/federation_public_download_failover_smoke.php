@@ -4,10 +4,12 @@ declare(strict_types=1);
 require_once dirname(__DIR__) . '/src/Federation/FederationException.php';
 require_once dirname(__DIR__) . '/src/Federation/FederationLocationSelector.php';
 require_once dirname(__DIR__) . '/src/Federation/FederationSourceFailover.php';
+require_once dirname(__DIR__) . '/src/View/FileViewHelper.php';
 
 use ArcadeCloud\Drive\Federation\FederationException;
 use ArcadeCloud\Drive\Federation\FederationLocationSelector;
 use ArcadeCloud\Drive\Federation\FederationSourceFailover;
+use ArcadeCloud\Drive\View\FileViewHelper;
 
 function publicDownloadOk(bool $condition, string $message): void
 {
@@ -173,5 +175,40 @@ publicDownloadOk(str_contains($resolverSource, 'publicFailureDiagnostic'), 'CASE
 publicDownloadOk(str_contains($probeSource, 'S3 HTTP '), 'CASE 10: la prueba S3 conserva el HTTP upstream para diagnóstico seguro');
 publicDownloadOk(!str_contains($helperSource . $resolverSource, 'listObjects'), 'CASE 10: el arreglo no lista S3');
 publicDownloadOk(!str_contains($helperSource . $resolverSource, 'ListObjects'), 'CASE 10: el arreglo no usa ListObjects');
+
+
+// CASO 11: un 404 real de S3 es recurso ausente, no nodo offline.
+$result = $failover->collect(
+    $single,
+    1,
+    static function (array $candidate): array {
+        throw new FederationException(
+            'La copia pública no respondió con una autorización S3 válida (S3 HTTP 404; cURL 23): Failed writing body',
+            502
+        );
+    }
+);
+publicDownloadOk(
+    ($result['failures'][0]['category'] ?? '') === 'resource_not_found',
+    'CASE 11: S3 HTTP 404 se clasifica como objeto no encontrado'
+);
+
+// CASO 12: la key física se reconstruye con Ruta + Encriptado.
+publicDownloadOk(
+    FileViewHelper::buildS3Key('Data7/imagenes/', 'logo-hack.png') === 'Data7/imagenes/logo-hack.png',
+    'CASE 12: una referencia física corta se expande con su Ruta FileS3'
+);
+publicDownloadOk(
+    FileViewHelper::buildS3Key('Data7/imagenes/', 'Data7/imagenes/logo-hack.png') === 'Data7/imagenes/logo-hack.png',
+    'CASE 12: una key ya completa no se duplica'
+);
+$originStorageSource = (string)file_get_contents(dirname(__DIR__) . '/src/Federation/FederationOriginStorageResolver.php');
+$replicaServiceSource = (string)file_get_contents(dirname(__DIR__) . '/src/Federation/FederationReplicaService.php');
+publicDownloadOk(str_contains($originStorageSource, 'requireOpenableLocal'), 'CASE 12: origen se valida con la resolución ArcadeLink local existente');
+publicDownloadOk(str_contains($originStorageSource, '->storageKey((array)$open[\'file\'])'), 'CASE 12: origen obtiene la key canónica desde FileS3');
+publicDownloadOk(str_contains($resolverSource, '$this->originStorage->storageKey($resource)'), 'CASE 12: descarga pública usa la key canónica');
+publicDownloadOk(!str_contains($resolverSource, 'presignedUrl($storageRef'), 'CASE 12: descarga pública no firma storage_ref como Key S3');
+publicDownloadOk(str_contains($replicaServiceSource, '$this->originStorage->storageKey($sourceResource)'), 'CASE 12: retry de réplica sanea referencias históricas');
+publicDownloadOk(!str_contains($replicaServiceSource, 'presignedUrl((string)$job[\'SourceStorageRef\']'), 'CASE 12: réplica no vuelve a firmar una referencia histórica cruda');
 
 fwrite(STDOUT, "Federation public download failover smoke: OK\n");

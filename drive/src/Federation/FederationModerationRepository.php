@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace ArcadeCloud\Drive\Federation;
 
 use mysqli;
+use Throwable;
 
 final class FederationModerationRepository
 {
@@ -130,6 +131,43 @@ final class FederationModerationRepository
         return $rows;
     }
 
+    public function activeBlocks(string $originNodeId, int $limit = 100): array
+    {
+        $limit = max(1, min(200, $limit));
+        $stmt = $this->db->prepare(
+            "SELECT b.ContentId, b.OriginNodeId, b.ReasonCode, b.ReportId, b.EventId, b.BlockedAt, b.UpdatedAt,
+                    r.TargetType, r.TargetId, r.Category, r.DecisionReason
+             FROM FederationModerationBlocks b
+             LEFT JOIN FederationAbuseReports r ON r.ReportId=b.ReportId
+             WHERE b.Status='active' AND b.OriginNodeId=?
+             ORDER BY b.BlockedAt DESC LIMIT {$limit}"
+        );
+        if (!$stmt) throw new FederationException('No se pudieron consultar bloqueos activos.', 500);
+        $stmt->bind_param('s', $originNodeId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $rows = [];
+        while ($row = $result->fetch_assoc()) $rows[] = $row;
+        $stmt->close();
+        return $rows;
+    }
+
+    public function activeBlock(string $contentId, string $originNodeId): ?array
+    {
+        $contentId = $this->normalizeContentId($contentId);
+        $stmt = $this->db->prepare(
+            "SELECT ContentId, OriginNodeId, ReasonCode, ReportId, EventId, BlockedAt, UpdatedAt
+             FROM FederationModerationBlocks
+             WHERE ContentId=? AND OriginNodeId=? AND Status='active' LIMIT 1"
+        );
+        if (!$stmt) throw new FederationException('No se pudo consultar el bloqueo activo.', 500);
+        $stmt->bind_param('ss', $contentId, $originNodeId);
+        $stmt->execute();
+        $row = $stmt->get_result()->fetch_assoc();
+        $stmt->close();
+        return is_array($row) ? $row : null;
+    }
+
     public function decideReport(string $reportId, string $status, int $userId, string $reason): array
     {
         if (!in_array($status, ['confirmed','rejected'], true)) throw new FederationException('Decisión de moderación inválida.', 400);
@@ -234,7 +272,17 @@ final class FederationModerationRepository
         );
         if (!$stmt) throw new FederationException('No se pudo preparar la auditoría de moderación.', 500);
         $stmt->bind_param('ssssiss', $actionId, $action, $contentId, $reportId, $actorUserId, $nodeId, $detailsJson);
-        $stmt->execute();
+        try {
+            if (!$stmt->execute()) {
+                $message = $stmt->error;
+                $stmt->close();
+                throw new FederationException('No se pudo registrar la auditoría de moderación: ' . $message, 500);
+            }
+        } catch (Throwable $e) {
+            $stmt->close();
+            if ($e instanceof FederationException) throw $e;
+            throw new FederationException('No se pudo registrar la auditoría de moderación.', 500);
+        }
         $stmt->close();
     }
 

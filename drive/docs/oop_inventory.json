@@ -3172,7 +3172,7 @@
     },
     {
       "path": "drive/src/Federation/FederationModerationRepository.php",
-      "lines": 298,
+      "lines": 346,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -3187,7 +3187,7 @@
     },
     {
       "path": "drive/src/Federation/FederationModerationService.php",
-      "lines": 322,
+      "lines": 380,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -3909,7 +3909,7 @@
     },
     {
       "path": "drive/src/Http/Controller/FederationModerationController.php",
-      "lines": 108,
+      "lines": 117,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -5349,7 +5349,7 @@
     },
     {
       "path": "drive/src/View/FederationModerationPageRenderer.php",
-      "lines": 65,
+      "lines": 63,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -5394,7 +5394,7 @@
     },
     {
       "path": "drive/src/View/FederationReportPageRenderer.php",
-      "lines": 77,
+      "lines": 67,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -5862,7 +5862,7 @@
     },
     {
       "path": "drive/tests/federation_moderation_contract_smoke.php",
-      "lines": 67,
+      "lines": 77,
       "kind": "test script",
       "classes": 0,
       "functions": [],
@@ -6012,7 +6012,7 @@
     },
     {
       "path": "drive/tests/installer_service_reconcile_contract_smoke.php",
-      "lines": 102,
+      "lines": 104,
       "kind": "test script",
       "classes": 0,
       "functions": [

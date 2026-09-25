@@ -6012,7 +6012,7 @@
     },
     {
       "path": "drive/tests/installer_service_reconcile_contract_smoke.php",
-      "lines": 113,
+      "lines": 118,
       "kind": "test script",
       "classes": 0,
       "functions": [

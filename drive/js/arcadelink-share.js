@@ -348,7 +348,10 @@ class ArcadeLinkShareModule {
       const contentDisposition = response.headers.get('Content-Disposition') || '';
       const match = contentDisposition.match(/filename="?([^";]+)"?/i);
       const fallbackBase = (this.context.name || 'resource').replace(/[^A-Za-z0-9._-]+/g, '_');
-      const filename = match && match[1] ? match[1] : `${fallbackBase}.arcadelink`;
+      const responseName = match && match[1] ? String(match[1]).trim() : '';
+      const filename = responseName.toLowerCase().endsWith('.arcadelink')
+        ? responseName
+        : `${fallbackBase}.arcadelink`;
       const url = URL.createObjectURL(blob);
       const anchor = this.document.createElement('a');
       anchor.href = url;

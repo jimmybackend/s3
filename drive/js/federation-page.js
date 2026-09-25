@@ -66,10 +66,7 @@ class FederationPageModule {
   }
 
   isArcadeLinkFilename(name) {
-    const lower = String(name || '').trim().toLowerCase();
-    // .arcadelink.json sólo se admite para rescatar descargas históricas de Android.
-    // ArcadeCloud genera exclusivamente .arcadelink.
-    return lower.endsWith('.arcadelink') || lower.endsWith('.arcadelink.json');
+    return String(name || '').trim().toLowerCase().endsWith('.arcadelink');
   }
 
   setBusy(value, fileName = '') {

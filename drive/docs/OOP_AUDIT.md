@@ -4,8 +4,8 @@
 
 ## Resumen
 
-- PHP analizados: **436**
-- PHP que ya contienen clases/interfaces: **259**
+- PHP analizados: **437**
+- PHP que ya contienen clases/interfaces: **260**
 - PHP marcados para migración/revisión: **0**
 - Tests PHP separados del objetivo OOP de runtime: **39**
 - JavaScript analizados: **48**
@@ -198,6 +198,7 @@
 | `drive/src/Core/ApplicationKernel.php` | 38 | class/module | 1 | — | — | — | — |
 | `drive/src/Core/BackgroundWorkerLease.php` | 97 | class/module | 1 | — | — | — | — |
 | `drive/src/Core/DriveApplication.php` | 485 | class/module | 1 | — | — | ⚠️ | — |
+| `drive/src/Federation/ArcadeLinkFileFormat.php` | 47 | class/module | 1 | — | — | — | — |
 | `drive/src/Federation/ArcadeLinkService.php` | 516 | class/module | 1 | — | — | — | — |
 | `drive/src/Federation/FederatedCatalogRepository.php` | 428 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Federation/FederatedResourceRepository.php` | 117 | class/module | 1 | — | ⚠️ | — | — |
@@ -277,10 +278,10 @@
 | `drive/src/Http/Controller/BackgroundTaskController.php` | 821 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Http/Controller/FederationAccessController.php` | 123 | class/module | 1 | ⚠️ | — | — | — |
 | `drive/src/Http/Controller/FederationCatalogController.php` | 144 | class/module | 1 | — | — | — | — |
-| `drive/src/Http/Controller/FederationCollectionController.php` | 131 | class/module | 1 | — | — | — | — |
-| `drive/src/Http/Controller/FederationController.php` | 275 | class/module | 1 | — | — | — | — |
+| `drive/src/Http/Controller/FederationCollectionController.php` | 128 | class/module | 1 | — | — | — | — |
+| `drive/src/Http/Controller/FederationController.php` | 270 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/FederationDirectoryController.php` | 88 | class/module | 1 | — | — | — | — |
-| `drive/src/Http/Controller/FederationDropController.php` | 234 | class/module | 1 | — | — | — | — |
+| `drive/src/Http/Controller/FederationDropController.php` | 238 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/FederationDropGoogleAuthController.php` | 120 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/FederationDropIngressController.php` | 108 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/FederationModerationController.php` | 108 | class/module | 1 | — | — | — | — |
@@ -398,7 +399,7 @@
 | `drive/sync_status.php` | 5 | thin endpoint | 0 | — | — | — | — |
 | `drive/tests/activity_costs_smoke.php` | 150 | test script | 0 | — | — | — | — |
 | `drive/tests/arcadelink_bulk_contract_regression.php` | 71 | test script | 0 | — | — | — | — |
-| `drive/tests/arcadelink_collection_regression.php` | 51 | test script | 0 | — | — | — | — |
+| `drive/tests/arcadelink_collection_regression.php` | 59 | test script | 0 | — | — | — | — |
 | `drive/tests/database_schema_contract_smoke.php` | 104 | test script | 0 | — | — | — | — |
 | `drive/tests/federation_access_message_smoke.php` | 72 | test script | 0 | — | — | — | — |
 | `drive/tests/federation_catalog_event_smoke.php` | 60 | test script | 0 | — | — | — | — |
@@ -485,7 +486,7 @@
 | `drive/js/estilo.js` | 267 | class/module | EstiloModule | — | — | — |
 | `drive/js/federation-drop.js` | 488 | class/module | FederationDropApp | — | — | — |
 | `drive/js/federation-footer.js` | 374 | class/module | FederationFooterModule | — | — | — |
-| `drive/js/federation-page.js` | 100 | class/module | FederationPageModule | — | — | — |
+| `drive/js/federation-page.js` | 102 | class/module | FederationPageModule | — | — | — |
 | `drive/js/federation-portal.js` | 506 | class/module | FederationPortalModule | — | — | — |
 | `drive/js/federation-share-drive.js` | 211 | class/module | FederationShareDriveModule | — | — | — |
 | `drive/js/file-block.js` | 305 | class/module | FileBlockApp | — | — | — |

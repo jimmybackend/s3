@@ -1,7 +1,7 @@
 {
   "summary": {
-    "php_total": 436,
-    "php_class_modules": 259,
+    "php_total": 437,
+    "php_class_modules": 260,
     "php_needs_migration": 0,
     "php_tests": 39,
     "js_total": 48,
@@ -2616,6 +2616,21 @@
       "issues": []
     },
     {
+      "path": "drive/src/Federation/ArcadeLinkFileFormat.php",
+      "lines": 47,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
       "path": "drive/src/Federation/ArcadeLinkService.php",
       "lines": 516,
       "kind": "class/module",
@@ -3804,7 +3819,7 @@
     },
     {
       "path": "drive/src/Http/Controller/FederationCollectionController.php",
-      "lines": 131,
+      "lines": 128,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -3819,7 +3834,7 @@
     },
     {
       "path": "drive/src/Http/Controller/FederationController.php",
-      "lines": 275,
+      "lines": 270,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -3849,7 +3864,7 @@
     },
     {
       "path": "drive/src/Http/Controller/FederationDropController.php",
-      "lines": 234,
+      "lines": 238,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -5639,7 +5654,7 @@
     },
     {
       "path": "drive/tests/arcadelink_collection_regression.php",
-      "lines": 51,
+      "lines": 59,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -6994,7 +7009,7 @@
     },
     {
       "path": "drive/js/federation-page.js",
-      "lines": 100,
+      "lines": 102,
       "kind": "class/module",
       "classes": [
         "FederationPageModule"

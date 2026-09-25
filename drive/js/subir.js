@@ -79,9 +79,13 @@ class SubirModule {
               },
               body: initParams.toString()
             });
-            if (!resFirma.ok) throw new Error('Error HTTP init local_put: ' + resFirma.status);
-
             const json = await safeJson(resFirma);
+            if (!resFirma.ok) {
+              throw new Error(
+                (json && (json.error || json.message))
+                  || ('Error HTTP init local_put: ' + resFirma.status)
+              );
+            }
             if (!json || !json.url) throw new Error('Error al obtener URL firmada');
 
             // 2) PUT directo a S3 (fetch no expone progreso real)

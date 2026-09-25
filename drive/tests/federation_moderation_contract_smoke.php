@@ -34,6 +34,9 @@ $uploadRepo = $read('drive/src/Upload/UploadCatalogRepository.php');
 $singleUpload = $read('drive/src/Upload/SingleUploadService.php');
 $publicDropzone = $read('drive/src/Upload/PublicDropzoneUploadService.php');
 $docs = $read('drive/docs/FEDERATION_CONTENT_MODERATION.md');
+$reportView = $read('drive/src/View/FederationReportPageRenderer.php');
+$adminView = $read('drive/src/View/FederationModerationPageRenderer.php');
+$reconciler = $read('drive/bin/reconcile_arcadecloud_services.sh');
 
 foreach ([
     'FederationContentFingerprints',
@@ -56,6 +59,13 @@ $ok(str_contains($moderation, "FileS3"), 'cleanup includes Drive catalog objects
 $ok(str_contains($sync, "moderation_cleanup"), 'sync cycle runs moderation cleanup');
 $ok(str_contains($controller, "isSuperAdmin()"), 'moderation decisions require superadmin');
 $ok(str_contains($controller, "federation_moderation_csrf"), 'moderation decisions require CSRF');
+$ok(str_contains($moderation, "public function unblock("), 'superadmin can emit moderation unblock');
+$ok(str_contains($moderation, "'moderation.unblock'"), 'unblock is propagated as signed federation event');
+$ok(str_contains($moderation, '$cleanup = $this->cleanupContent($contentId);') && strpos($moderation, '$cleanup = $this->cleanupContent($contentId);') < strpos($moderation, 'decideReport($reportId, \'confirmed\''), 'cleanup occurs before report leaves pending queue');
+$ok(str_contains($reportView, '../css/styles.css'), 'public report page reuses Drive styles');
+$ok(str_contains($adminView, '../css/styles.css'), 'moderation admin reuses Drive styles');
+$ok(str_contains($adminView, 'Revocar bloqueo'), 'moderation admin exposes unblock control');
+$ok(str_contains($reconciler, 'federation_catalog_migrate.php'), 'updater reconcile installs moderation schema automatically');
 $ok(str_contains($footer, "footerFederationModeration"), 'superadmin footer exposes pending moderation count');
 $ok(str_contains($portal, "Reportar abuso"), 'federation catalog exposes abuse reporting');
 $ok(str_contains($dropJs, "report.php?type=drop"), 'FederationDrop exposes abuse reporting');

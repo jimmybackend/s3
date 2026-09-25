@@ -196,6 +196,17 @@ echo "App root: $APP_ROOT"
 echo "Rol: $ROLE"
 echo "Usuario runtime: $PHP_USER"
 
+# El updater puede introducir tablas FederationCloud nuevas. La migración canónica
+# es idempotente y debe ejecutarse antes de reactivar servicios que dependan de ellas.
+FEDERATION_MIGRATOR="$DRIVE_ROOT/bin/federation_catalog_migrate.php"
+if [[ -f "$FEDERATION_MIGRATOR" ]]; then
+  echo "==> Reconciliando esquema FederationCloud"
+  if ! php "$FEDERATION_MIGRATOR"; then
+    echo "ERROR: el código se actualizó, pero no se pudo reconciliar el esquema FederationCloud." >&2
+    exit 3
+  fi
+fi
+
 # Helpers privilegiados: siempre se refrescan después de un git update.
 bash "$DRIVE_ROOT/bin/install_arcadecloud_admin_helper.sh" --php-user="$PHP_USER" --app-root="$APP_ROOT"
 bash "$DRIVE_ROOT/bin/install_arcadecloud_updater.sh" --php-user="$PHP_USER" --repo-root="$APP_ROOT"

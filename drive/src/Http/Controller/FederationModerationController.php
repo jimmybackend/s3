@@ -91,6 +91,15 @@ final class FederationModerationController
             if ($expected === '' || $sent === '' || !hash_equals($expected, $sent)) {
                 JsonResponse::send(['ok' => false, 'error' => 'Token CSRF inválido. Recarga la página.'], 403);
             }
+            $action = strtolower(trim($this->request->postString('action')));
+            if ($action === 'unblock') {
+                JsonResponse::send($service->unblock(
+                    $this->request->postString('content_id'),
+                    $session->userId(),
+                    $this->request->postString('reason')
+                ));
+            }
+
             JsonResponse::send($service->decide(
                 $this->request->postString('report_id'),
                 $this->request->postString('decision'),

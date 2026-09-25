@@ -190,6 +190,34 @@ El grupo AWS también se persiste mediante una sola operación `env-set-many`.
 
 Las variables `AWS_CONTROL_*` permiten credenciales separadas para operaciones de control. Si no están configuradas, el código reutiliza las credenciales AWS generales. Si se configuran, access key y secret key deben existir juntas.
 
+## Control manual de FastDrive desde el nodo principal
+
+El nodo principal puede exponer un puente administrativo que **sólo consulta y enciende** una EC2
+FastDrive fija. El navegador no envía el instance ID y el endpoint no implementa StopInstances.
+
+Configura únicamente en el EC2 principal:
+
+```text
+ARCADECLOUD_FASTDRIVE_INSTANCE_ID=i-xxxxxxxxxxxxxxxxx
+ARCADECLOUD_FASTDRIVE_REGION=us-east-1
+```
+
+`drive/fastdrive-control.php` exige una sesión `system_role = superadmin`, CSRF válido y vuelve a
+verificar la contraseña actual del superadmin en **cada** intento de encendido. La orden AWS usa
+`Config::getAwsControlClientConfig()`: si existen `AWS_CONTROL_*`, se usan esas credenciales; de lo
+contrario se conservan las credenciales AWS generales.
+
+Permisos mínimos recomendados para las credenciales de control:
+
+```text
+ec2:DescribeInstances
+ec2:StartInstances
+```
+
+La política IAM debe limitar `ec2:StartInstances` al ARN de la instancia FastDrive concreta. El
+endpoint no depende de abrir MySQL a hosts adicionales; la DB sólo interviene para validar la sesión
+y la contraseña del superadmin.
+
 ## Secretos existentes
 
 Los secretos no se envían de vuelta al navegador. La UI muestra únicamente si están configurados.

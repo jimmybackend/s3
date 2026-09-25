@@ -10,6 +10,7 @@ on:
     paths:
       - 'drive/app_bootstrap.php'
       - 'drive/server-settings.php'
+      - 'drive/fastdrive-control.php'
       - 'drive/bloque_footer.php'
       - 'drive/js/server-admin.js'
       - 'drive/js/federation-footer.js'
@@ -26,6 +27,7 @@ on:
       - 'drive/src/Http/Controller/ServerSettingsAdminController.php'
       - 'drive/federationcloud/name-availability.php'
       - 'drive/tests/server_admin_config_smoke.php'
+      - 'drive/tests/fastdrive_control_contract_smoke.php'
       - 'drive/docs/SUPERADMIN_SERVER_SETTINGS.md'
       - 'drive/docs/RUNTIME_ENV_CONFIGURATION.md'
       - '.github/workflows/server-admin.yml'
@@ -33,6 +35,7 @@ on:
     paths:
       - 'drive/app_bootstrap.php'
       - 'drive/server-settings.php'
+      - 'drive/fastdrive-control.php'
       - 'drive/bloque_footer.php'
       - 'drive/js/server-admin.js'
       - 'drive/js/federation-footer.js'
@@ -49,6 +52,7 @@ on:
       - 'drive/src/Http/Controller/ServerSettingsAdminController.php'
       - 'drive/federationcloud/name-availability.php'
       - 'drive/tests/server_admin_config_smoke.php'
+      - 'drive/tests/fastdrive_control_contract_smoke.php'
       - 'drive/docs/SUPERADMIN_SERVER_SETTINGS.md'
       - 'drive/docs/RUNTIME_ENV_CONFIGURATION.md'
       - '.github/workflows/server-admin.yml'
@@ -68,9 +72,11 @@ jobs:
           set -euo pipefail
           php -l drive/app_bootstrap.php
           php -l drive/server-settings.php
+          php -l drive/fastdrive-control.php
           php -l drive/bloque_footer.php
           php -l drive/bin/arcadecloud-drive-admin-helper.php
           php -l drive/src/Admin/ManagedRuntimeEnvironment.php
+          php -l drive/src/Admin/FastDriveControlService.php
           php -l drive/src/Admin/PrivilegedServerHelper.php
           php -l drive/src/Admin/ServerSettingsAdminService.php
           php -l drive/src/Security/SuperAdminReauthenticationService.php
@@ -83,6 +89,7 @@ jobs:
           php -l drive/src/Http/Controller/ServerSettingsAdminController.php
           php -l drive/federationcloud/name-availability.php
           php -l drive/tests/server_admin_config_smoke.php
+          php -l drive/tests/fastdrive_control_contract_smoke.php
 
       - name: Validate JavaScript and installer
         run: |
@@ -93,6 +100,9 @@ jobs:
 
       - name: Managed environment smoke test
         run: php drive/tests/server_admin_config_smoke.php
+
+      - name: FastDrive control smoke test
+        run: php drive/tests/fastdrive_control_contract_smoke.php
 
       - name: Administrative boundary guards
         run: |

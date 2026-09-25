@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace ArcadeCloud\Drive\Http\Controller;
 
 use ArcadeCloud\Drive\Core\DriveApplication;
+use ArcadeCloud\Drive\Federation\ArcadeLinkFileFormat;
 use ArcadeCloud\Drive\Federation\ArcadeLinkService;
 use ArcadeCloud\Drive\Federation\FederationDropGoogleAuthConfig;
 use ArcadeCloud\Drive\Federation\FederationDropGoogleAuthService;
@@ -217,8 +218,11 @@ final class FederationDropController
             if ($content === '' || strlen($content) > ArcadeLinkService::MAX_BYTES) {
                 throw new FederationException('ArcadeLink FederationDrop inválido.', 500);
             }
-            $filename = preg_replace('/[^A-Za-z0-9._-]+/', '_', (string)$created['filename']) ?: 'FederationDrop.arcadelink';
-            header('Content-Type: application/json; charset=UTF-8');
+            $filename = ArcadeLinkFileFormat::canonicalFilename(
+                (string)$created['filename'],
+                'FederationDrop.arcadelink'
+            );
+            header('Content-Type: ' . ArcadeLinkFileFormat::MIME_TYPE);
             header('X-Content-Type-Options: nosniff');
             header('Content-Disposition: attachment; filename="' . $filename . '"');
             header('Content-Length: ' . strlen($content));

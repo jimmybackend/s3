@@ -2,6 +2,17 @@
 
 FederationCloud usa un único archivo `.arcadelink` como pasaporte portable.
 
+## Contrato de archivo
+
+ArcadeLink es un **tipo de archivo propio de ArcadeCloud**, no un archivo `.json` para el usuario:
+
+```text
+Extensión:  .arcadelink
+Media type: application/vnd.arcadecloud.arcadelink
+```
+
+Su serialización interna actual usa JSON firmado porque es portable y verificable, pero JSON es un detalle de implementación. ArcadeCloud siempre **genera, descarga, lee y presenta** el contenedor como ArcadeLink. Un gestor móvil antiguo pudo haber añadido accidentalmente `.json`; el lector conserva compatibilidad de importación para esos archivos históricos, pero ArcadeCloud nunca los genera como formato canónico.
+
 ## Un archivo
 
 Al compartir un solo recurso, el Drive descarga directamente:

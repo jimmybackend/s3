@@ -5,6 +5,7 @@ namespace ArcadeCloud\Drive\Http\Controller;
 
 use ArcadeCloud\Drive\Activity\ActivityCostRecorder;
 use ArcadeCloud\Drive\Core\DriveApplication;
+use ArcadeCloud\Drive\Federation\ArcadeLinkFileFormat;
 use ArcadeCloud\Drive\Federation\ArcadeLinkService;
 use ArcadeCloud\Drive\Federation\FederationException;
 use ArcadeCloud\Drive\Federation\FederationService;
@@ -72,14 +73,10 @@ final class FederationCollectionController
                 throw new FederationException('No se pudo preparar el archivo ArcadeLink.', 500);
             }
 
-            $filename = preg_replace(
-                '/[^A-Za-z0-9._-]+/',
-                '_',
-                (string)($created['filename'] ?? 'Compartidos.arcadelink')
-            ) ?: 'Compartidos.arcadelink';
-            if (!str_ends_with(strtolower($filename), '.arcadelink')) {
-                $filename .= '.arcadelink';
-            }
+            $filename = ArcadeLinkFileFormat::canonicalFilename(
+                (string)($created['filename'] ?? 'Compartidos.arcadelink'),
+                'Compartidos.arcadelink'
+            );
 
             $itemCount = max(1, (int)($created['item_count'] ?? count($keys)));
             $this->activity()->success(
@@ -101,7 +98,7 @@ final class FederationCollectionController
                 ]
             );
 
-            header('Content-Type: application/octet-stream');
+            header('Content-Type: ' . ArcadeLinkFileFormat::MIME_TYPE);
             header('X-Content-Type-Options: nosniff');
             header('Content-Disposition: attachment; filename="' . $filename . '"');
             header('Content-Length: ' . (string)strlen($content));

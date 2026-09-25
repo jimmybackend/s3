@@ -5,6 +5,7 @@ namespace ArcadeCloud\Drive\Http\Controller;
 
 use ArcadeCloud\Drive\Activity\ActivityCostRecorder;
 use ArcadeCloud\Drive\Core\DriveApplication;
+use ArcadeCloud\Drive\Federation\ArcadeLinkFileFormat;
 use ArcadeCloud\Drive\Federation\ArcadeLinkService;
 use ArcadeCloud\Drive\Federation\FederationException;
 use ArcadeCloud\Drive\Federation\FederationService;
@@ -212,16 +213,11 @@ final class FederationController
             throw new FederationException('No se pudo preparar el archivo ArcadeLink.', 500);
         }
 
-        $filename = preg_replace(
-            '/[^A-Za-z0-9._-]+/',
-            '_',
+        $filename = ArcadeLinkFileFormat::canonicalFilename(
             (string)($created['filename'] ?? 'recurso.arcadelink')
-        ) ?: 'recurso.arcadelink';
-        if (!str_ends_with(strtolower($filename), '.arcadelink')) {
-            $filename .= '.arcadelink';
-        }
+        );
 
-        header('Content-Type: application/octet-stream');
+        header('Content-Type: ' . ArcadeLinkFileFormat::MIME_TYPE);
         header('X-Content-Type-Options: nosniff');
         header('Content-Disposition: attachment; filename="' . $filename . '"');
         header('Content-Length: ' . (string)strlen($content));
@@ -239,8 +235,8 @@ final class FederationController
         $name = (string)($file['name'] ?? '');
         $size = (int)($file['size'] ?? -1);
         $tmp = (string)($file['tmp_name'] ?? '');
-        if (!preg_match('/\.arcadelink(?:\.json)?\z/i', $name) || $size <= 0 || $size > ArcadeLinkService::MAX_BYTES) {
-            throw new FederationException('El archivo debe terminar en .arcadelink o .arcadelink.json y medir como máximo 4 MiB.');
+        if (!ArcadeLinkFileFormat::acceptsFilename($name) || $size <= 0 || $size > ArcadeLinkService::MAX_BYTES) {
+            throw new FederationException('El archivo debe ser un ArcadeLink (.arcadelink) y medir como máximo 4 MiB.');
         }
         if ($tmp === '' || !is_uploaded_file($tmp) || !is_readable($tmp)) {
             throw new FederationException('No se pudo validar el archivo subido.');
@@ -248,8 +244,7 @@ final class FederationController
         if (class_exists('finfo')) {
             $finfo = new \finfo(FILEINFO_MIME_TYPE);
             $mime = strtolower((string)$finfo->file($tmp));
-            $allowed = ['application/json', 'text/plain', 'application/octet-stream', 'application/x-empty'];
-            if ($mime !== '' && !in_array($mime, $allowed, true) && !str_ends_with($mime, '+json')) {
+            if (!ArcadeLinkFileFormat::acceptsDetectedMime($mime)) {
                 throw new FederationException('MIME del ArcadeLink no permitido.');
             }
         }

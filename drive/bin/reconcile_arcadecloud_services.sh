@@ -9,12 +9,15 @@ fi
 APP_ROOT="/var/www/arcadecloud-drive"
 PHP_USER=""
 RUNTIME_ENV="/etc/arcadecloud-drive/runtime-env.json"
+DEFER_PHP_RESTART="auto"
 
 for arg in "$@"; do
   case "$arg" in
     --app-root=*) APP_ROOT="${arg#*=}" ;;
     --php-user=*) PHP_USER="${arg#*=}" ;;
     --runtime-env=*) RUNTIME_ENV="${arg#*=}" ;;
+    --defer-php-restart) DEFER_PHP_RESTART="yes" ;;
+    --immediate-php-restart) DEFER_PHP_RESTART="no" ;;
     *) echo "ERROR: argumento desconocido: $arg" >&2; exit 2 ;;
   esac
 done
@@ -24,6 +27,22 @@ DRIVE_ROOT="$APP_ROOT/drive"
 
 [[ -d "$APP_ROOT/.git" ]] || { echo "ERROR: $APP_ROOT no es un checkout ArcadeCloud." >&2; exit 2; }
 [[ -f "$RUNTIME_ENV" ]] || { echo "ERROR: falta runtime administrado: $RUNTIME_ENV" >&2; exit 2; }
+
+
+# Compatibilidad de bootstrap: la primera actualización que recibe este arreglo
+# todavía se ejecuta con el updater anterior. Detectamos ese padre para no
+# reiniciar PHP-FPM dentro de la misma petición HTTP que debe devolver JSON.
+if [[ "$DEFER_PHP_RESTART" == "auto" ]]; then
+  PARENT_CMD=""
+  if [[ -r "/proc/$PPID/cmdline" ]]; then
+    PARENT_CMD="$(tr '\0' ' ' < "/proc/$PPID/cmdline" 2>/dev/null || true)"
+  fi
+  if [[ "$PARENT_CMD" == *"arcadecloud-drive-updater"* ]]; then
+    DEFER_PHP_RESTART="yes"
+  else
+    DEFER_PHP_RESTART="no"
+  fi
+fi
 
 runtime_value() {
   local key="$1"
@@ -220,7 +239,19 @@ systemctl daemon-reload
 systemctl reset-failed >/dev/null 2>&1 || true
 
 if systemctl is-active --quiet php-fpm-drive.service; then
-  systemctl restart php-fpm-drive.service
+  if [[ "$DEFER_PHP_RESTART" == "yes" ]]; then
+    SYSTEMD_RUN="$(command -v systemd-run || true)"
+    SYSTEMCTL_BIN="$(command -v systemctl || true)"
+    if [[ -z "$SYSTEMD_RUN" || -z "$SYSTEMCTL_BIN" ]]; then
+      echo "ERROR: no se puede diferir el reinicio de PHP-FPM porque falta systemd-run/systemctl." >&2
+      exit 4
+    fi
+    RESTART_UNIT="arcadecloud-drive-php-restart-$(date +%s)-$"
+    "$SYSTEMD_RUN" --quiet --unit="$RESTART_UNIT" --on-active=5s       "$SYSTEMCTL_BIN" restart php-fpm-drive.service >/dev/null
+    echo "✓ Reinicio de php-fpm-drive programado después de responder al updater web."
+  else
+    systemctl restart php-fpm-drive.service
+  fi
 fi
 
 if command -v nginx >/dev/null 2>&1 && nginx -t >/dev/null 2>&1; then

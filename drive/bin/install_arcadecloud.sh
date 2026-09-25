@@ -376,20 +376,16 @@ prepare_setup_activation() {
   token="$(python3 -c 'import json,sys; print(json.load(sys.stdin).get("activation_token",""))' <<<"$result")"
   [[ "$token" =~ ^[a-f0-9]{64}$ ]] || fail "no se pudo generar el token temporal de setup."
 
-  public_ip="$(detect_public_ipv4 || true)"
-  if [[ -n "$public_ip" ]] && validate_public_ipv4 "$public_ip"; then
-    base_url="http://$public_ip"
-  else
-    public_url="$(python3 - "$RUNTIME_ENV" 2>/dev/null <<'PY' || true
-import json, sys
-try:
-    with open(sys.argv[1], encoding="utf-8") as f:
-        print((json.load(f).get("ARCADECLOUD_PUBLIC_URL") or "").rstrip("/"))
-except Exception:
-    pass
-PY
-)"
+  public_url="$(runtime_value ARCADECLOUD_PUBLIC_URL)"
+  if [[ "$(tls_termination_mode)" == "gateway" && -n "$public_url" ]]; then
     base_url="$public_url"
+  else
+    public_ip="$(detect_public_ipv4 || true)"
+    if [[ -n "$public_ip" ]] && validate_public_ipv4 "$public_ip"; then
+      base_url="http://$public_ip"
+    else
+      base_url="$public_url"
+    fi
   fi
 
   if [[ -n "$base_url" ]]; then
@@ -542,7 +538,9 @@ PY
   echo "  3. Primer superadmin"
   echo
 
-  if [[ -n "$public_ip" ]]; then
+  if [[ "$(tls_termination_mode)" == "gateway" && -n "$public_url" ]]; then
+    echo "Drive detrás de gateway: $public_url/"
+  elif [[ -n "$public_ip" ]]; then
     echo "Drive HTTP por IP: http://$public_ip/"
   elif [[ -n "$public_url" ]]; then
     echo "Drive: $public_url/"

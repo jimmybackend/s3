@@ -1925,7 +1925,7 @@
     },
     {
       "path": "drive/src/Admin/ManagedRuntimeEnvironment.php",
-      "lines": 363,
+      "lines": 372,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -4863,7 +4863,7 @@
     },
     {
       "path": "drive/src/Setup/BootstrapSetupAuth.php",
-      "lines": 181,
+      "lines": 183,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -6089,7 +6089,7 @@
     },
     {
       "path": "drive/tests/installer_service_reconcile_contract_smoke.php",
-      "lines": 137,
+      "lines": 142,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -6170,7 +6170,7 @@
     },
     {
       "path": "drive/tests/server_admin_config_smoke.php",
-      "lines": 209,
+      "lines": 218,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -6187,12 +6187,14 @@
     },
     {
       "path": "drive/tests/setup_bootstrap_smoke.php",
-      "lines": 57,
+      "lines": 61,
       "kind": "test script",
       "classes": 0,
       "functions": [],
       "session": false,
-      "superglobals": [],
+      "superglobals": [
+        "SERVER"
+      ],
       "db": false,
       "s3": false,
       "bootstrap": false,
@@ -6217,7 +6219,7 @@
     },
     {
       "path": "drive/tests/setup_finalize_contract_smoke.php",
-      "lines": 70,
+      "lines": 75,
       "kind": "test script",
       "classes": 0,
       "functions": [

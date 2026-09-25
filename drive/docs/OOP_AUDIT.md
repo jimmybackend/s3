@@ -152,7 +152,7 @@
 | `drive/src/Activity/TranscriptionCostAttribution.php` | 117 | class/module | 1 | — | — | — | — |
 | `drive/src/Activity/TranscriptionReconciler.php` | 476 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Admin/ArcadeCloudUpdaterService.php` | 133 | class/module | 1 | — | ⚠️ | — | — |
-| `drive/src/Admin/ManagedRuntimeEnvironment.php` | 363 | class/module | 1 | — | — | — | — |
+| `drive/src/Admin/ManagedRuntimeEnvironment.php` | 372 | class/module | 1 | — | — | — | — |
 | `drive/src/Admin/PrivilegedServerHelper.php` | 150 | class/module | 1 | — | — | — | — |
 | `drive/src/Admin/ServerSettingsAdminService.php` | 211 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Application/AiFileSearchService.php` | 470 | class/module | 1 | — | ⚠️ | — | — |
@@ -347,7 +347,7 @@
 | `drive/src/Security/UserProfileRepository.php` | 117 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Security/UserProfileService.php` | 183 | class/module | 1 | — | — | — | — |
 | `drive/src/Security/UserProfileValidator.php` | 96 | class/module | 1 | — | — | — | — |
-| `drive/src/Setup/BootstrapSetupAuth.php` | 181 | class/module | 1 | ⚠️ | — | — | — |
+| `drive/src/Setup/BootstrapSetupAuth.php` | 183 | class/module | 1 | ⚠️ | — | — | — |
 | `drive/src/Setup/CanonicalDatabaseSchemaService.php` | 149 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Setup/SetupApiController.php` | 120 | class/module | 1 | — | — | — | — |
 | `drive/src/Setup/SetupConfigurationService.php` | 182 | class/module | 1 | — | — | — | — |
@@ -425,15 +425,15 @@
 | `drive/tests/folder_document_sanitizer.php` | 49 | test script | 0 | — | — | — | — |
 | `drive/tests/fresh_install_contract_smoke.php` | 62 | test script | 0 | — | — | — | — |
 | `drive/tests/index_federation_drop_smoke.php` | 121 | test script | 0 | — | — | — | — |
-| `drive/tests/installer_service_reconcile_contract_smoke.php` | 137 | test script | 0 | — | — | — | — |
+| `drive/tests/installer_service_reconcile_contract_smoke.php` | 142 | test script | 0 | — | — | — | — |
 | `drive/tests/media_processing_contract_smoke.php` | 54 | test script | 0 | — | — | — | — |
 | `drive/tests/password_credential_verifier_smoke.php` | 44 | test script | 0 | — | — | — | — |
 | `drive/tests/scoped_sync_repository_regression.php` | 96 | test script | 0 | — | ⚠️ | — | — |
 | `drive/tests/security_hardening_smoke.php` | 59 | test script | 0 | — | — | — | — |
-| `drive/tests/server_admin_config_smoke.php` | 209 | test script | 0 | — | — | — | — |
-| `drive/tests/setup_bootstrap_smoke.php` | 57 | test script | 0 | — | — | — | — |
+| `drive/tests/server_admin_config_smoke.php` | 218 | test script | 0 | — | — | — | — |
+| `drive/tests/setup_bootstrap_smoke.php` | 61 | test script | 0 | — | — | — | — |
 | `drive/tests/setup_entry_guard_smoke.php` | 38 | test script | 0 | — | — | — | — |
-| `drive/tests/setup_finalize_contract_smoke.php` | 70 | test script | 0 | — | — | — | — |
+| `drive/tests/setup_finalize_contract_smoke.php` | 75 | test script | 0 | — | — | — | — |
 | `drive/tests/smtp_config_smoke.php` | 49 | test script | 0 | — | — | — | — |
 | `drive/tests/sync_repository_regression.php` | 91 | test script | 0 | — | ⚠️ | — | — |
 | `drive/tests/sync_schema_migrator_regression.php` | 75 | test script | 0 | — | ⚠️ | — | — |

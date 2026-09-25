@@ -284,6 +284,17 @@ except Exception:
 PY
 }
 
+tls_termination_mode() {
+  local mode="$TLS_TERMINATION"
+  [[ -n "$mode" ]] || mode="$(runtime_value ARCADECLOUD_TLS_TERMINATION)"
+  [[ -n "$mode" ]] || mode="local"
+  mode="${mode,,}"
+  case "$mode" in
+    local|gateway) printf '%s' "$mode" ;;
+    *) fail "ARCADECLOUD_TLS_TERMINATION debe ser local o gateway." ;;
+  esac
+}
+
 persist_node_settings() {
   local role payload existing
   existing="$(runtime_value ARCADECLOUD_NODE_ROLE)"

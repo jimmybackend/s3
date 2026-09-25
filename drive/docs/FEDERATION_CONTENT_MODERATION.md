@@ -156,7 +156,9 @@ Esto no intenta anular obligaciones legales, contracargos, devoluciones exigidas
 
 ## Migración
 
-El actualizador integrado ejecuta automáticamente `drive/bin/federation_catalog_migrate.php` durante la reconciliación posterior al fast-forward. La migración se ejecuta como el **usuario PHP-FPM real** y con `ARCADECLOUD_RUNTIME_ENV` apuntando al runtime administrado usado por esa instalación; así el CLI ve la misma configuración de base de datos que la aplicación web. El migrador usa la sección FederationCloud del SQL canónico y crea las tablas de forma idempotente.
+El actualizador integrado ejecuta automáticamente `drive/bin/federation_catalog_migrate.php` durante la reconciliación posterior al fast-forward. La migración se ejecuta como el **usuario PHP-FPM real**, hereda únicamente las variables de configuración permitidas del entorno efectivo de `php-fpm-drive` y aplica después `runtime-env.json` como override. Esto cubre instalaciones de producción donde `DB_*` todavía llega al pool PHP-FPM desde una fuente legacy distinta del JSON administrado. Ningún valor secreto se imprime en la salida del updater.
+
+El migrador usa la sección FederationCloud del SQL canónico y crea las tablas de forma idempotente.
 
 Para diagnóstico o una instalación administrada manualmente también puede ejecutarse:
 

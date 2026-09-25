@@ -6,6 +6,7 @@ use Aws\S3\S3Client;
 
 require_once __DIR__ . '/../core/UploaderInterface.php';
 require_once __DIR__ . '/../repositories/FileS3Repository.php';
+require_once __DIR__ . '/../ModerationUploadGuard.php';
 
 final class RemoteUrlUploader implements UploaderInterface
 {
@@ -296,6 +297,7 @@ final class RemoteUrlUploader implements UploaderInterface
         $partNumber = 1;
         $bytes = 0;
         $overflow = false;
+        $hash = hash_init('sha256');
 
         $stream = curl_init($url);
         if ($stream === false) {
@@ -325,7 +327,8 @@ final class RemoteUrlUploader implements UploaderInterface
                 $contentType,
                 $nombreOriginal,
                 &$bytes,
-                &$overflow
+                &$overflow,
+                &$hash
             ): int {
                 $next = $bytes + strlen($data);
                 if ($next > self::MAX_BYTES) {
@@ -333,6 +336,7 @@ final class RemoteUrlUploader implements UploaderInterface
                     return 0;
                 }
 
+                hash_update($hash, $data);
                 $buffer .= $data;
                 $bytes = $next;
 
@@ -394,6 +398,24 @@ final class RemoteUrlUploader implements UploaderInterface
             );
         }
 
+        $sha256 = hash_final($hash);
+        $guard = new ModerationUploadGuard($this->db, $this->s3, $this->bucket);
+        try {
+            $guard->assertSha256Allowed($sha256);
+        } catch (BlockedUploadException $e) {
+            if ($uploadId !== null) {
+                try {
+                    $this->s3->abortMultipartUpload([
+                        'Bucket' => $this->bucket,
+                        'Key' => $key,
+                        'UploadId' => $uploadId,
+                    ]);
+                } catch (\Throwable) {
+                }
+            }
+            throw $e;
+        }
+
         if ($uploadId === null) {
             $this->s3->putObject([
                 'Bucket' => $this->bucket,
@@ -427,6 +449,7 @@ final class RemoteUrlUploader implements UploaderInterface
             'source_url' => $this->metadataUrl($url),
             'content_type' => $contentType,
             'bytes' => $bytes,
+            'hash_sha256' => $sha256,
             'ip_origen' => (string)($req['_remote_addr'] ?? '0.0.0.0'),
             'usuario_envio' => (string)($req['_usuario'] ?? 'usuario'),
             'fecha' => date('Y-m-d'),

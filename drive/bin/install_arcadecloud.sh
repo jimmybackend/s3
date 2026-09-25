@@ -132,14 +132,45 @@ drive_master_config() {
 
 expanded_pool_user() {
   local conf="$1"
+  local target_listen="${2:-127.0.0.1:9075}"
   [[ -r "$conf" ]] || return 1
-  php-fpm -tt -y "$conf" 2>&1 | awk '
-    match($0, /(^|[[:space:]])user[[:space:]]*=[[:space:]]*[^[:space:];]+/) {
-      value = substr($0, RSTART, RLENGTH)
-      sub(/^.*user[[:space:]]*=[[:space:]]*/, "", value)
-      sub(/[[:space:];].*$/, "", value)
-      print value
-      exit
+
+  php-fpm -tt -y "$conf" 2>&1 | awk -v target="$target_listen" '
+    function clean(line) {
+      sub(/^.*NOTICE:[[:space:]]*/, "", line)
+      sub(/^[[:space:]]+/, "", line)
+      sub(/[[:space:]]+$/, "", line)
+      return line
+    }
+    function emit_if_match() {
+      if (listen == target && user != "") {
+        print user
+        exit
+      }
+    }
+    {
+      line = clean($0)
+      if (line ~ /^\[[^]]+\]$/) {
+        emit_if_match()
+        user = ""
+        listen = ""
+        next
+      }
+      if (line ~ /^user[[:space:]]*=/) {
+        sub(/^user[[:space:]]*=[[:space:]]*/, "", line)
+        sub(/[[:space:];].*$/, "", line)
+        user = line
+        next
+      }
+      if (line ~ /^listen[[:space:]]*=/) {
+        sub(/^listen[[:space:]]*=[[:space:]]*/, "", line)
+        sub(/[[:space:];].*$/, "", line)
+        listen = line
+        next
+      }
+    }
+    END {
+      emit_if_match()
     }
   '
 }

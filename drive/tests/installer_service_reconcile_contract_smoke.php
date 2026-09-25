@@ -62,7 +62,11 @@ installerContract(str_contains($updater, 'reconcileServices'), 'updater web reco
 installerContract(str_contains($updater, "'--defer-php-restart'"), 'updater web solicita reinicio diferido de PHP-FPM');
 installerContract(str_contains($reconciler, 'arcadecloud-drive-updater'), 'reconciliador detecta updater anterior durante la primera actualización del arreglo');
 installerContract(str_contains($reconciler, 'federation_catalog_migrate.php'), 'reconciliador actualiza esquema FederationCloud después de git update');
-installerContract(str_contains($reconciler, 'runuser -u "$PHP_USER" -- env ARCADECLOUD_RUNTIME_ENV="$RUNTIME_ENV"'), 'migración del updater usa el usuario PHP-FPM y runtime administrado real');
+installerContract(str_contains($reconciler, 'inherit_drive_fpm_environment'), 'migración hereda el entorno efectivo de php-fpm-drive');
+installerContract(str_contains($reconciler, '/proc/$pid/environ'), 'migración puede leer el entorno real del master y workers PHP-FPM sin imprimir secretos');
+installerContract(str_contains($reconciler, 'migration_env_name_allowed'), 'migración limita las variables heredadas a configuración ArcadeCloud/DB/AWS');
+installerContract(str_contains($reconciler, 'runuser --preserve-environment -u "$PHP_USER"'), 'migración conserva el entorno efectivo al bajar al usuario PHP-FPM');
+installerContract(str_contains($reconciler, 'export ARCADECLOUD_RUNTIME_ENV="$RUNTIME_ENV"'), 'runtime administrado se aplica como override del entorno heredado');
 installerContract(str_contains($reconciler, 'runuser -u "$PHP_USER" -- test -r "$RUNTIME_ENV"'), 'migración verifica lectura del runtime con el usuario PHP-FPM');
 installerContract(str_contains($appBootstrap, "getenv('ARCADECLOUD_RUNTIME_ENV')"), 'bootstrap CLI acepta runtime administrado explícito');
 installerContract(str_contains($appBootstrap, 'loadIntoProcess($managedRuntimePath)'), 'bootstrap carga exactamente el runtime solicitado por el reconciliador');

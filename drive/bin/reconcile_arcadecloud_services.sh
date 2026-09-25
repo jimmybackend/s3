@@ -59,6 +59,35 @@ except Exception:
 PY
 }
 
+migration_env_name_allowed() {
+  case "$1" in
+    DB_HOST|DB_PORT|DB_USER|DB_PASSWORD|DB_NAME|AWS_*|ARCADECLOUD_*) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
+import_process_environment() {
+  local pid="$1" entry name
+  [[ "$pid" =~ ^[0-9]+$ && "$pid" -gt 1 && -r "/proc/$pid/environ" ]] || return 0
+  while IFS= read -r -d '' entry; do
+    name="${entry%%=*}"
+    if migration_env_name_allowed "$name"; then
+      export "$entry"
+    fi
+  done < "/proc/$pid/environ"
+}
+
+inherit_drive_fpm_environment() {
+  local main_pid="" child_pid=""
+  main_pid="$(systemctl show -p MainPID --value php-fpm-drive.service 2>/dev/null || true)"
+  if [[ "$main_pid" =~ ^[0-9]+$ && "$main_pid" -gt 1 ]]; then
+    import_process_environment "$main_pid"
+    while IFS= read -r child_pid; do
+      [[ -n "$child_pid" ]] && import_process_environment "$child_pid"
+    done < <(pgrep -P "$main_pid" 2>/dev/null || true)
+  fi
+}
+
 pool_user_from_conf() {
   local conf="$1"
   [[ -r "$conf" ]] || return 1
@@ -207,8 +236,16 @@ if [[ -f "$FEDERATION_MIGRATOR" ]]; then
   fi
   PHP_BIN="$(command -v php || true)"
   [[ -n "$PHP_BIN" ]] || { echo "ERROR: PHP CLI no está disponible para migrar FederationCloud." >&2; exit 3; }
-  if ! runuser -u "$PHP_USER" -- env ARCADECLOUD_RUNTIME_ENV="$RUNTIME_ENV" "$PHP_BIN" "$FEDERATION_MIGRATOR"; then
-    echo "ERROR: el código se actualizó, pero no se pudo reconciliar el esquema FederationCloud con el entorno del PHP-FPM real." >&2
+
+  # Producción puede conservar DB_*/AWS_* en el entorno efectivo de PHP-FPM
+  # aunque runtime-env.json sólo tenga variables administradas más recientes.
+  # Heredamos únicamente nombres de configuración permitidos y nunca imprimimos
+  # sus valores. app_bootstrap.php aplica después runtime-env.json como override.
+  inherit_drive_fpm_environment
+  export ARCADECLOUD_RUNTIME_ENV="$RUNTIME_ENV"
+
+  if ! runuser --preserve-environment -u "$PHP_USER" -- "$PHP_BIN" "$FEDERATION_MIGRATOR"; then
+    echo "ERROR: el código se actualizó, pero no se pudo reconciliar el esquema FederationCloud con el entorno efectivo de php-fpm-drive." >&2
     exit 3
   fi
 fi

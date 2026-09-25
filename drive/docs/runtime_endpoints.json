@@ -1279,9 +1279,10 @@
     },
     {
       "path": "drive/src/Admin/ArcadeCloudUpdaterService.php",
-      "size": 5493,
+      "size": 6029,
       "active": false,
       "references": [
+        "drive/tests/federation_moderation_contract_smoke.php",
         "drive/tests/installer_service_reconcile_contract_smoke.php"
       ]
     },
@@ -1912,8 +1913,16 @@
       "references": []
     },
     {
+      "path": "drive/src/Federation/FederationModerationSchemaService.php",
+      "size": 4497,
+      "active": false,
+      "references": [
+        "drive/tests/federation_moderation_contract_smoke.php"
+      ]
+    },
+    {
       "path": "drive/src/Federation/FederationModerationService.php",
-      "size": 15495,
+      "size": 16019,
       "active": false,
       "references": [
         "drive/tests/federation_moderation_contract_smoke.php"
@@ -3136,7 +3145,7 @@
     },
     {
       "path": "drive/tests/federation_moderation_contract_smoke.php",
-      "size": 5115,
+      "size": 6267,
       "active": false,
       "references": []
     },

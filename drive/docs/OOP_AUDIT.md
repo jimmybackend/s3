@@ -6,7 +6,7 @@
 
 - PHP analizados: **446**
 - PHP que ya contienen clases/interfaces: **266**
-- PHP marcados para migración/revisión: **1**
+- PHP marcados para migración/revisión: **0**
 - Tests PHP separados del objetivo OOP de runtime: **41**
 - JavaScript analizados: **48**
 - JavaScript que ya contienen clases: **48**
@@ -73,7 +73,7 @@
 | `drive/eliminar_archivo.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/eliminar_carpeta.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/encriptar_archivo.php` | 10 | thin endpoint | 0 | — | — | — | — |
-| `drive/fastdrive-control.php` | 125 | view/entrypoint | 0 | — | — | — | global functions: fd_e |
+| `drive/fastdrive-control.php` | 126 | view/entrypoint | 0 | — | — | — | — |
 | `drive/federationcloud/access-request.php` | 11 | thin endpoint | 0 | — | — | — | — |
 | `drive/federationcloud/access-status.php` | 11 | thin endpoint | 0 | — | — | — | — |
 | `drive/federationcloud/access.php` | 11 | thin endpoint | 0 | — | — | — | — |

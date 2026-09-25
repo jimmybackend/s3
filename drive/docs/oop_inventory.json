@@ -2,7 +2,7 @@
   "summary": {
     "php_total": 446,
     "php_class_modules": 266,
-    "php_needs_migration": 1,
+    "php_needs_migration": 0,
     "php_tests": 41,
     "js_total": 48,
     "js_class_modules": 48,
@@ -731,12 +731,10 @@
     },
     {
       "path": "drive/fastdrive-control.php",
-      "lines": 125,
+      "lines": 126,
       "kind": "view/entrypoint",
       "classes": 0,
-      "functions": [
-        "fd_e"
-      ],
+      "functions": [],
       "session": false,
       "superglobals": [],
       "db": false,
@@ -744,9 +742,7 @@
       "bootstrap": true,
       "html": true,
       "namespace": false,
-      "issues": [
-        "global functions: fd_e"
-      ]
+      "issues": []
     },
     {
       "path": "drive/federationcloud/access-request.php",

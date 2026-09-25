@@ -12,6 +12,29 @@ final class FederationModerationRepository
     {
     }
 
+    public function schemaReady(): bool
+    {
+        $required = [
+            'FederationContentFingerprints',
+            'FederationAbuseReports',
+            'FederationModerationBlocks',
+            'FederationModerationActions',
+        ];
+        $quoted = implode(',', array_map(
+            static fn(string $name): string => "'" . $name . "'",
+            $required
+        ));
+        $result = $this->db->query(
+            "SELECT COUNT(*) AS TableCount
+             FROM information_schema.TABLES
+             WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME IN ({$quoted})"
+        );
+        if (!$result) return false;
+        $row = $result->fetch_assoc();
+        $result->free();
+        return (int)($row['TableCount'] ?? 0) === count($required);
+    }
+
     public function contentIdForDrop(string $dropId): ?string
     {
         $stmt = $this->db->prepare(

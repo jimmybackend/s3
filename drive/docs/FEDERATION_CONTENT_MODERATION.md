@@ -41,7 +41,7 @@ Categorías disponibles:
 - copyright
 - other
 
-El reporte no borra automáticamente contenido. Se registra como `pending` y requiere decisión humana.
+El reporte no borra automáticamente contenido. Se registra como `pending` y requiere decisión humana. La pantalla conserva accesos visibles para volver al lector **ArcadeLink** o al **Drive**.
 
 Los resultados del catálogo global incluyen un botón **Reportar abuso** que dirige el reporte al nodo de origen del recurso. Un FederationDrop activo también muestra el enlace de reporte en su panel de administración.
 
@@ -156,7 +156,7 @@ Esto no intenta anular obligaciones legales, contracargos, devoluciones exigidas
 
 ## Migración
 
-El actualizador integrado ejecuta automáticamente `drive/bin/federation_catalog_migrate.php` durante la reconciliación posterior al fast-forward. El migrador usa la sección FederationCloud del SQL canónico y crea las tablas de forma idempotente.
+El actualizador integrado ejecuta automáticamente `drive/bin/federation_catalog_migrate.php` durante la reconciliación posterior al fast-forward. La migración se ejecuta como el **usuario PHP-FPM real** y con `ARCADECLOUD_RUNTIME_ENV` apuntando al runtime administrado usado por esa instalación; así el CLI ve la misma configuración de base de datos que la aplicación web. El migrador usa la sección FederationCloud del SQL canónico y crea las tablas de forma idempotente.
 
 Para diagnóstico o una instalación administrada manualmente también puede ejecutarse:
 

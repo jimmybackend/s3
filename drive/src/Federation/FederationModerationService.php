@@ -57,6 +57,13 @@ final class FederationModerationService
         string $details,
         string $reporterEmail = ''
     ): array {
+        if (!$this->repository->schemaReady()) {
+            throw new FederationException(
+                'El esquema de moderación FederationCloud no está preparado en este nodo. Ejecuta la actualización/reconciliación del servidor y vuelve a intentar.',
+                503
+            );
+        }
+
         $targetType = strtolower(trim($targetType));
         $targetId = trim($targetId);
         $category = strtolower(trim($category));

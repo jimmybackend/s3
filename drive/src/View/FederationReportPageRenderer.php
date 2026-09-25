@@ -34,7 +34,10 @@ final class FederationReportPageRenderer
 </script>
 <nav class="navbar navbar-expand-lg navbar-dark px-3 drive-navbar">
   <a class="navbar-brand d-flex align-items-center" href="../s3.php"><img src="../ellogo.png" width="48" height="38" class="drive-brand-logo mr-2" alt="Logo"> Cloud Drive</a>
-  <div class="ml-auto d-flex"><a class="btn btn-outline-light btn-sm mr-2" href="./"><i class="fas fa-network-wired mr-1"></i> FederationCloud</a><a class="btn btn-outline-light btn-sm" href="../s3.php"><i class="fas fa-arrow-left mr-1"></i> Drive</a></div>
+  <div class="ml-auto d-flex flex-wrap">
+    <a class="btn btn-outline-info btn-sm mr-2 mb-1" href="./"><i class="fas fa-file-code mr-1"></i> Volver a ArcadeLink</a>
+    <a class="btn btn-outline-light btn-sm mb-1" href="../s3.php"><i class="fas fa-arrow-left mr-1"></i> Volver al Drive</a>
+  </div>
 </nav>
 <main class="moderation-shell">
   <div class="moderation-header"><div class="moderation-eyebrow">FederationCloud · Moderación</div><h1><i class="fas fa-flag mr-2"></i>Reportar abuso o contenido dañino</h1><p class="mb-0 text-muted">El reporte queda pendiente de revisión humana. No elimina contenido por sí solo.</p></div>

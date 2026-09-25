@@ -66,6 +66,9 @@ $ok(str_contains($reportView, '../css/styles.css'), 'public report page reuses D
 $ok(str_contains($adminView, '../css/styles.css'), 'moderation admin reuses Drive styles');
 $ok(str_contains($adminView, 'Revocar bloqueo'), 'moderation admin exposes unblock control');
 $ok(str_contains($reconciler, 'federation_catalog_migrate.php'), 'updater reconcile installs moderation schema automatically');
+$ok(str_contains($moderation, 'schemaReady()'), 'report fails clearly when moderation schema is missing');
+$ok(str_contains($reportView, 'Volver a ArcadeLink'), 'report page links back to ArcadeLink');
+$ok(str_contains($reportView, 'Volver al Drive'), 'report page links back to Drive');
 $ok(str_contains($footer, "footerFederationModeration"), 'superadmin footer exposes pending moderation count');
 $ok(str_contains($portal, "Reportar abuso"), 'federation catalog exposes abuse reporting');
 $ok(str_contains($dropJs, "report.php?type=drop"), 'FederationDrop exposes abuse reporting');

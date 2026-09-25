@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 $repo = dirname(__DIR__, 2);
+$appBootstrap = (string)file_get_contents($repo . '/drive/app_bootstrap.php');
 
 function installerContract(bool $condition, string $message): void
 {
@@ -61,6 +62,10 @@ installerContract(str_contains($updater, 'reconcileServices'), 'updater web reco
 installerContract(str_contains($updater, "'--defer-php-restart'"), 'updater web solicita reinicio diferido de PHP-FPM');
 installerContract(str_contains($reconciler, 'arcadecloud-drive-updater'), 'reconciliador detecta updater anterior durante la primera actualización del arreglo');
 installerContract(str_contains($reconciler, 'federation_catalog_migrate.php'), 'reconciliador actualiza esquema FederationCloud después de git update');
+installerContract(str_contains($reconciler, 'runuser -u "$PHP_USER" -- env ARCADECLOUD_RUNTIME_ENV="$RUNTIME_ENV"'), 'migración del updater usa el usuario PHP-FPM y runtime administrado real');
+installerContract(str_contains($reconciler, 'runuser -u "$PHP_USER" -- test -r "$RUNTIME_ENV"'), 'migración verifica lectura del runtime con el usuario PHP-FPM');
+installerContract(str_contains($appBootstrap, "getenv('ARCADECLOUD_RUNTIME_ENV')"), 'bootstrap CLI acepta runtime administrado explícito');
+installerContract(str_contains($appBootstrap, 'loadIntoProcess($managedRuntimePath)'), 'bootstrap carga exactamente el runtime solicitado por el reconciliador');
 installerContract(str_contains($reconciler, 'Reconciliando esquema FederationCloud'), 'reconciliador hace visible la migración FederationCloud');
 installerContract(str_contains($reconciler, '--on-active=5s'), 'reconciliador programa el reinicio web después de devolver JSON');
 installerContract(str_contains($reconciler, '--immediate-php-restart'), 'reconciliador conserva reinicio inmediato explícito para operación manual');

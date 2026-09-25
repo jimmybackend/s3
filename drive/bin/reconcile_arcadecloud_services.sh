@@ -201,8 +201,14 @@ echo "Usuario runtime: $PHP_USER"
 FEDERATION_MIGRATOR="$DRIVE_ROOT/bin/federation_catalog_migrate.php"
 if [[ -f "$FEDERATION_MIGRATOR" ]]; then
   echo "==> Reconciliando esquema FederationCloud"
-  if ! php "$FEDERATION_MIGRATOR"; then
-    echo "ERROR: el código se actualizó, pero no se pudo reconciliar el esquema FederationCloud." >&2
+  if ! runuser -u "$PHP_USER" -- test -r "$RUNTIME_ENV"; then
+    echo "ERROR: el usuario PHP-FPM $PHP_USER no puede leer $RUNTIME_ENV." >&2
+    exit 3
+  fi
+  PHP_BIN="$(command -v php || true)"
+  [[ -n "$PHP_BIN" ]] || { echo "ERROR: PHP CLI no está disponible para migrar FederationCloud." >&2; exit 3; }
+  if ! runuser -u "$PHP_USER" -- env ARCADECLOUD_RUNTIME_ENV="$RUNTIME_ENV" "$PHP_BIN" "$FEDERATION_MIGRATOR"; then
+    echo "ERROR: el código se actualizó, pero no se pudo reconciliar el esquema FederationCloud con el entorno del PHP-FPM real." >&2
     exit 3
   fi
 fi

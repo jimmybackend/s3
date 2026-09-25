@@ -25,6 +25,7 @@ $syncCycle = (string)file_get_contents($root . '/src/Federation/FederationSyncCy
 $syncInstaller = (string)file_get_contents($root . '/bin/install_federation_sync_timer.sh');
 $endpointRefresh = (string)file_get_contents($root . '/bin/federation_endpoint_refresh.php');
 $migrate = (string)file_get_contents($root . '/bin/federation_catalog_migrate.php');
+$schemaMigrator = (string)file_get_contents($root . '/src/Federation/FederationSchemaMigrationService.php');
 
 customsOk(str_contains($sql, 'CREATE TABLE IF NOT EXISTS FederationIngressQueue'), 'Aduana persiste en MySQL');
 customsOk(str_contains($sql, 'UNIQUE KEY uq_federation_ingress_request (RequestId)'), 'RequestId es idempotente');
@@ -69,7 +70,8 @@ customsOk(str_contains($endpointRefresh, 'announceNodeIfChanged'), 'arranque/ref
 customsOk(str_contains($syncInstaller, 'OnActiveSec=45s'), 'sync arranca incluso si la ventana de boot ya pasó');
 customsOk(str_contains($syncInstaller, 'OnUnitInactiveSec=${INTERVAL_SEC}s'), 'worker oneshot se reprograma tras finalizar');
 customsOk(!str_contains($syncInstaller, 'OnUnitActiveSec=${INTERVAL_SEC}s'), 'sync no usa temporizador incompatible con oneshot');
-customsOk(str_contains($migrate, 'ARCADECLOUD:FEDERATION_SCHEMA:BEGIN'), 'migración usa la sección FederationCloud del SQL canónico');
+customsOk(str_contains($schemaMigrator, 'ARCADECLOUD:FEDERATION_SCHEMA:BEGIN'), 'migración usa la sección FederationCloud del SQL canónico');
+customsOk(str_contains($migrate, 'FederationSchemaMigrationService'), 'CLI delega en el migrador FederationCloud compartido');
 
 customsOk(!preg_match('/AKIA[0-9A-Z]{16}/', $customs . $repo . $sql), 'Aduana no contiene credenciales AWS');
 customsOk(!str_contains($customs, 'secret_key'), 'Aduana no serializa clave privada de nodo');

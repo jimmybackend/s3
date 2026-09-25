@@ -29,15 +29,20 @@ DRIVE_ROOT="$APP_ROOT/drive"
 [[ -f "$RUNTIME_ENV" ]] || { echo "ERROR: falta runtime administrado: $RUNTIME_ENV" >&2; exit 2; }
 
 
+UPDATER_CONTEXT="no"
+PARENT_CMD=""
+if [[ -r "/proc/$PPID/cmdline" ]]; then
+  PARENT_CMD="$(tr '\0' ' ' < "/proc/$PPID/cmdline" 2>/dev/null || true)"
+fi
+if [[ "$PARENT_CMD" == *"arcadecloud-drive-updater"* ]]; then
+  UPDATER_CONTEXT="yes"
+fi
+
 # Compatibilidad de bootstrap: la primera actualización que recibe este arreglo
 # todavía se ejecuta con el updater anterior. Detectamos ese padre para no
 # reiniciar PHP-FPM dentro de la misma petición HTTP que debe devolver JSON.
 if [[ "$DEFER_PHP_RESTART" == "auto" ]]; then
-  PARENT_CMD=""
-  if [[ -r "/proc/$PPID/cmdline" ]]; then
-    PARENT_CMD="$(tr '\0' ' ' < "/proc/$PPID/cmdline" 2>/dev/null || true)"
-  fi
-  if [[ "$PARENT_CMD" == *"arcadecloud-drive-updater"* ]]; then
+  if [[ "$UPDATER_CONTEXT" == "yes" ]]; then
     DEFER_PHP_RESTART="yes"
   else
     DEFER_PHP_RESTART="no"
@@ -318,7 +323,10 @@ echo "Usuario runtime: $PHP_USER"
 # es idempotente y debe ejecutarse antes de reactivar servicios que dependan de ellas.
 FEDERATION_MIGRATOR="$DRIVE_ROOT/bin/federation_catalog_migrate.php"
 if [[ -f "$FEDERATION_MIGRATOR" ]]; then
-  echo "==> Reconciliando esquema FederationCloud"
+  if [[ "$UPDATER_CONTEXT" == "yes" ]]; then
+    echo "==> Esquema FederationCloud: reconciliación diferida al runtime web con conexión MySQL activa"
+  else
+    echo "==> Reconciliando esquema FederationCloud"
   if ! runuser -u "$PHP_USER" -- test -r "$RUNTIME_ENV"; then
     echo "ERROR: el usuario PHP-FPM $PHP_USER no puede leer $RUNTIME_ENV." >&2
     exit 3
@@ -337,8 +345,9 @@ if [[ -f "$FEDERATION_MIGRATOR" ]]; then
   verify_migration_database_environment || exit 3
 
   if ! runuser --preserve-environment -u "$PHP_USER" -- "$PHP_BIN" "$FEDERATION_MIGRATOR"; then
-    echo "ERROR: el código se actualizó, pero no se pudo reconciliar el esquema FederationCloud con el entorno efectivo de php-fpm-drive." >&2
+    echo "ERROR: no se pudo reconciliar el esquema FederationCloud con el entorno CLI efectivo de php-fpm-drive." >&2
     exit 3
+  fi
   fi
 fi
 

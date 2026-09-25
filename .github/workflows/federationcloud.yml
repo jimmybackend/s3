@@ -232,8 +232,9 @@ jobs:
           finalize_body="$(sed -n '/^finalize_installation() {$/,/^}$/p' drive/bin/install_arcadecloud.sh)"
           grep -q "migrate_federation_schema" <<<"$finalize_body"
           ! grep -q "federation_catalog_migrate.php" <<<"$finalize_body"
-          grep -q "FederationEvents" drive/bin/federation_catalog_migrate.php
-          grep -q "FederationIngressQueue" drive/bin/federation_catalog_migrate.php
+          grep -q "FederationEvents" drive/src/Federation/FederationSchemaMigrationService.php
+          grep -q "FederationIngressQueue" drive/src/Federation/FederationSchemaMigrationService.php
+          grep -q "FederationSchemaMigrationService" drive/bin/federation_catalog_migrate.php
           grep -q "OnActiveSec=45s" drive/bin/install_federation_sync_timer.sh
           grep -q 'OnUnitInactiveSec=${INTERVAL_SEC}s' drive/bin/install_federation_sync_timer.sh
           grep -q "enqueueNodePresence" drive/src/Federation/FederationDirectoryService.php

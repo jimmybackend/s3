@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace ArcadeCloud\Drive\Admin;
 
 use ArcadeCloud\Drive\Core\DriveApplication;
+use ArcadeCloud\Drive\Federation\FederationSchemaMigrationService;
 use ArcadeCloud\Drive\Security\SuperAdminReauthenticationService;
 use RuntimeException;
 use Throwable;
@@ -19,15 +20,39 @@ final class ArcadeCloudUpdaterService
     {
         $state = $this->run('check');
         $state['helper_available'] = true;
-        return $state;
+        return $this->withFederationSchemaState($state, true);
     }
 
     public function apply(string $currentPassword): array
     {
         (new SuperAdminReauthenticationService($this->app))->requireRecent($currentPassword);
         $result = $this->run('apply');
+        $result = $this->withFederationSchemaState($result, true);
         $this->audit((string)($result['previous_commit'] ?? ''), (string)($result['local_commit'] ?? ''));
         return $result;
+    }
+
+    private function withFederationSchemaState(array $state, bool $reconcileMissing): array
+    {
+        try {
+            $migrator = new FederationSchemaMigrationService($this->app->db());
+            $schema = $migrator->status();
+            if ($reconcileMissing && ($schema['ready'] ?? false) !== true) {
+                $schema = $migrator->reconcile();
+            }
+            $state['federation_schema_ready'] = (bool)($schema['ready'] ?? false);
+            $state['federation_schema_reconciled'] = (bool)($schema['reconciled'] ?? false);
+            $state['federation_schema_message'] = (string)($schema['message'] ?? (
+                ($schema['ready'] ?? false)
+                    ? 'Esquema FederationCloud preparado.'
+                    : 'Esquema FederationCloud pendiente.'
+            ));
+        } catch (Throwable $e) {
+            $state['federation_schema_ready'] = false;
+            $state['federation_schema_reconciled'] = false;
+            $state['federation_schema_message'] = $e->getMessage();
+        }
+        return $state;
     }
 
     private function run(string $action): array

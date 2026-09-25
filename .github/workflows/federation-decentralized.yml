@@ -21,6 +21,7 @@ on:
       - 'drive/src/Federation/FederationService.php'
       - 'drive/src/Http/Controller/FederationCatalogController.php'
       - 'drive/bin/federation_catalog_migrate.php'
+      - 'drive/src/Federation/FederationSchemaMigrationService.php'
       - 'drive/bin/federation_sync.php'
       - 'drive/bin/install_federation_sync_timer.sh'
       - 'drive/bin/install_arcadecloud.sh'
@@ -81,6 +82,7 @@ jobs:
           php -l drive/federationcloud/search.php
           php -l drive/federationcloud/resource.php
           php -l drive/bin/federation_catalog_migrate.php
+          php -l drive/src/Federation/FederationSchemaMigrationService.php
           php -l drive/bin/federation_sync.php
           php -l drive/tests/federation_catalog_event_smoke.php
 
@@ -112,9 +114,10 @@ jobs:
           grep -q 'FederatedResources' adbbmis1_Cloud.sql
           grep -q 'FederationResourceLocations' adbbmis1_Cloud.sql
           grep -q 'FederationPeerSyncState' adbbmis1_Cloud.sql
-          grep -q "'FederationEvents'" drive/bin/federation_catalog_migrate.php
-          grep -q "'FederationIngressQueue'" drive/bin/federation_catalog_migrate.php
-          grep -q "information_schema.TABLES" drive/bin/federation_catalog_migrate.php
+          grep -q "'FederationEvents'" drive/src/Federation/FederationSchemaMigrationService.php
+          grep -q "'FederationIngressQueue'" drive/src/Federation/FederationSchemaMigrationService.php
+          grep -q "information_schema.TABLES" drive/src/Federation/FederationSchemaMigrationService.php
+          grep -q "FederationSchemaMigrationService" drive/bin/federation_catalog_migrate.php
           grep -q 'ContiguousSequence' drive/src/Federation/FederationEventStore.php
           grep -q "sync-pull.php" drive/src/Federation/FederationHttpClient.php
           grep -q "sync-push.php" drive/src/Federation/FederationHttpClient.php

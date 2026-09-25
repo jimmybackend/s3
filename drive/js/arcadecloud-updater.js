@@ -109,10 +109,18 @@ class ArcadeCloudUpdaterModule {
     if (this.details) {
       const lines = Array.isArray(data.summary) ? data.summary : [];
       const list = lines.length ? `<ul class="mb-0 pl-4">${lines.map((line) => `<li>${this.escape(line)}</li>`).join('')}</ul>` : '';
+      let schemaLine = '';
+      if (Object.prototype.hasOwnProperty.call(data, 'federation_schema_ready')) {
+        const schemaClass = data.federation_schema_ready ? 'text-success' : 'text-warning';
+        const schemaMessage = data.federation_schema_message
+          || (data.federation_schema_ready ? 'Esquema preparado.' : 'Esquema pendiente.');
+        schemaLine = `<div class="${schemaClass}"><strong>FederationCloud DB:</strong> ${this.escape(schemaMessage)}</div>`;
+      }
       this.details.innerHTML = `
         <div><strong>Rama:</strong> ${this.escape(branch)}</div>
         <div><strong>Instalado:</strong> ${this.escape(local)}</div>
         <div><strong>Disponible:</strong> ${this.escape(remote)}</div>
+        ${schemaLine}
         ${dirty ? '<div class="text-danger"><strong>Atención:</strong> hay cambios locales sin guardar.</div>' : ''}
         ${list}`;
       this.details.classList.remove('d-none');

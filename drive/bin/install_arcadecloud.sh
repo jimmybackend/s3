@@ -412,14 +412,10 @@ prepare_composer() {
 }
 
 prepare_federation_basic() {
-  local public_ip seed node_name payload
-
-  public_ip="$(detect_public_ipv4 || true)"
-  if [[ -n "$public_ip" ]] && ! validate_public_ipv4 "$public_ip"; then
-    public_ip=""
-  fi
+  local public_ip seed node_name payload public_url tls_mode
 
   seed="$(primary_seed)"
+  tls_mode="$(tls_termination_mode)"
 
   if [[ ! -f "$IDENTITY" ]]; then
     node_name="arcadecloud-$(python3 - <<'PY'
@@ -433,6 +429,62 @@ PY
     echo "✓ Identidad FederationCloud existente conservada."
   fi
 
+  public_url="$PUBLIC_URL_OVERRIDE"
+  if [[ -z "$public_url" && "$tls_mode" == "gateway" ]]; then
+    public_url="$(runtime_value ARCADECLOUD_PUBLIC_URL)"
+  fi
+
+  if [[ -n "$public_url" ]]; then
+    public_url="$(python3 - "$public_url" "$tls_mode" <<'PY'
+import sys
+from urllib.parse import urlparse
+
+raw, mode = sys.argv[1:]
+url = raw.strip().rstrip("/")
+parts = urlparse(url)
+if parts.scheme not in {"http", "https"} or not parts.hostname:
+    raise SystemExit("ARCADECLOUD_PUBLIC_URL inválida.")
+if parts.username or parts.password or parts.query or parts.fragment:
+    raise SystemExit("ARCADECLOUD_PUBLIC_URL no admite credenciales, query ni fragmento.")
+if parts.path not in {"", "/"}:
+    raise SystemExit("ARCADECLOUD_PUBLIC_URL debe apuntar a la raíz pública del nodo.")
+if mode == "gateway" and parts.scheme != "https":
+    raise SystemExit("El modo gateway exige una ARCADECLOUD_PUBLIC_URL HTTPS.")
+print(url)
+PY
+)" || fail "No se pudo validar --public-url."
+
+    payload="$(python3 - "$public_url" "$seed" "$tls_mode" <<'PY'
+import json, sys
+public_url, seed, tls_mode = sys.argv[1:]
+print(json.dumps({
+    "ARCADECLOUD_PUBLIC_URL": public_url,
+    "ARCADECLOUD_FEDERATION_URL": public_url.rstrip("/") + "/federationcloud/",
+    "ARCADECLOUD_FEDERATION_ENABLED": "true",
+    "ARCADECLOUD_FEDERATION_SEED_URL": seed,
+    "ARCADECLOUD_TLS_TERMINATION": tls_mode,
+}, separators=(",", ":")))
+PY
+)"
+    runtime_set_many "$payload"
+    if [[ "$tls_mode" == "gateway" ]]; then
+      echo "✓ Endpoint público detrás de gateway: $public_url"
+      echo "✓ TLS termina en el gateway; esta EC2 no solicitará certificado local."
+    else
+      echo "✓ Endpoint público configurado: $public_url"
+    fi
+    return 0
+  fi
+
+  if [[ "$tls_mode" == "gateway" ]]; then
+    fail "El modo gateway requiere --public-url=https://DOMINIO o una ARCADECLOUD_PUBLIC_URL ya administrada."
+  fi
+
+  public_ip="$(detect_public_ipv4 || true)"
+  if [[ -n "$public_ip" ]] && ! validate_public_ipv4 "$public_ip"; then
+    public_ip=""
+  fi
+
   if [[ -n "$public_ip" ]]; then
     payload="$(python3 - "$public_ip" "$seed" <<'PY'
 import json, sys
@@ -442,6 +494,7 @@ print(json.dumps({
     "ARCADECLOUD_FEDERATION_URL": f"http://{ip}/federationcloud/",
     "ARCADECLOUD_FEDERATION_ENABLED": "true",
     "ARCADECLOUD_FEDERATION_SEED_URL": seed,
+    "ARCADECLOUD_TLS_TERMINATION": "local",
 }, separators=(",", ":")))
 PY
 )"
@@ -457,6 +510,7 @@ print(json.dumps({
     "ARCADECLOUD_FEDERATION_URL": "",
     "ARCADECLOUD_FEDERATION_ENABLED": "false",
     "ARCADECLOUD_FEDERATION_SEED_URL": sys.argv[1],
+    "ARCADECLOUD_TLS_TERMINATION": "local",
 }, separators=(",", ":")))
 PY
 )"

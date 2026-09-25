@@ -188,6 +188,19 @@ https://TU-DOMINIO/federationcloud/moderation.php
 ```
 
 
+## Migración aislada de moderación
+
+Las cuatro tablas de moderación tienen una ruta de migración propia e idempotente mediante `FederationModerationSchemaService`. Esto evita que un `ALTER` o una migración histórica de otra parte de FederationCloud impida crear:
+
+- `FederationContentFingerprints`
+- `FederationAbuseReports`
+- `FederationModerationBlocks`
+- `FederationModerationActions`
+
+`Reportar abuso` comprueba estas cuatro tablas. Si falta alguna, intenta crear únicamente el esquema de moderación con la conexión MySQL web ya activa y continúa el mismo reporte si la reparación termina correctamente. Si el usuario MySQL no tiene permiso para crear la tabla, se devuelve el nombre de la tabla y el error de MariaDB sin exponer credenciales.
+
+El updater también ejecuta esta migración aislada antes de intentar reconciliar el esquema FederationCloud completo, por lo que la moderación puede quedar operativa aunque una migración histórica no relacionada falle después.
+
 ## Reconciliación desde el actualizador web
 
 En **Acerca de -> Actualizaciones**, la migración de tablas FederationCloud se ejecuta desde el runtime web autenticado usando la conexión MySQL ya abierta por ArcadeCloud. El reconciliador privilegiado detecta ese contexto y no exige reconstruir `DB_*` para lanzar el migrador CLI.

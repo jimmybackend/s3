@@ -133,7 +133,7 @@ final class FederationPageRenderer
       <section class="federation-card p-3 p-md-4">
         <form method="post" enctype="multipart/form-data" id="inspectForm">
           <input type="hidden" name="action" value="inspect">
-          <input id="arcadeFile" class="federation-file-input" type="file" name="arcadelink_file" accept=".arcadelink,.arcadelink.json,application/vnd.arcadecloud.arcadelink,application/json,text/plain,application/octet-stream" required>
+          <input id="arcadeFile" class="federation-file-input" type="file" name="arcadelink_file" accept=".arcadelink,application/vnd.arcadecloud.arcadelink" required>
           <div id="dropZone" class="federation-dropzone" role="button" tabindex="0" aria-controls="arcadeFile">
             <div>
               <span id="dropZoneIcon" class="federation-dropzone-icon"><i class="fas fa-cloud-arrow-up"></i></span>

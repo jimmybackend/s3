@@ -1,7 +1,7 @@
 {
   "summary": {
-    "php_total": 439,
-    "php_class_modules": 262,
+    "php_total": 440,
+    "php_class_modules": 263,
     "php_needs_migration": 0,
     "php_tests": 39,
     "js_total": 48,
@@ -2766,6 +2766,21 @@
       "issues": []
     },
     {
+      "path": "drive/src/Federation/FederationContentFingerprintService.php",
+      "lines": 101,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": true,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
       "path": "drive/src/Federation/FederationCustomsService.php",
       "lines": 248,
       "kind": "class/module",
@@ -3172,7 +3187,7 @@
     },
     {
       "path": "drive/src/Federation/FederationModerationRepository.php",
-      "lines": 369,
+      "lines": 405,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -3202,7 +3217,7 @@
     },
     {
       "path": "drive/src/Federation/FederationModerationService.php",
-      "lines": 406,
+      "lines": 479,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -3517,7 +3532,7 @@
     },
     {
       "path": "drive/src/Federation/FederationService.php",
-      "lines": 319,
+      "lines": 324,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -5892,7 +5907,7 @@
     },
     {
       "path": "drive/tests/federation_moderation_contract_smoke.php",
-      "lines": 89,
+      "lines": 100,
       "kind": "test script",
       "classes": 0,
       "functions": [],

@@ -33,6 +33,8 @@ Both services run as the configured PHP-FPM user and load the same optional Envi
 
 `app_bootstrap.php` additionally loads `/etc/arcadecloud-drive/runtime-env.json` through `ManagedRuntimeEnvironment`, so values managed from the Server UI keep their normal precedence.
 
+During a web update, the reconciler also inherits the allowed `DB_*`, `AWS_*` and `ARCADECLOUD_*` variables from the **effective php-fpm-drive process environment** before running the migration. This is required for legacy/production installations where the web pool already receives DB credentials outside `runtime-env.json`. Values are never printed; only allowlisted variable names are copied into the migration process.
+
 The installer order is deliberately:
 
 ```text

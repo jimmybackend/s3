@@ -47,12 +47,16 @@ expectCollection(!str_contains($controller, 'ZipArchive'), 'Collection endpoint 
 expectCollection(!str_contains($singleController, 'ArcadeLinkBundleService'), 'Single sharing must not use a ZIP bundler.');
 expectCollection(str_contains($renderer, 'foreach ($items as $position => $item)'), 'Reader must render every collection item.');
 expectCollection(str_contains($renderer, 'application/vnd.arcadecloud.arcadelink'), 'File picker must advertise the native ArcadeLink media type.');
-expectCollection(str_contains($pageJs, "lower.endsWith('.arcadelink.json')"), 'Reader may rescue historical Android-added .json suffixes.');
+expectCollection(!str_contains($renderer, '.arcadelink.json'), 'File picker must reject non-canonical ArcadeLink suffixes.');
+expectCollection(!str_contains($pageJs, '.arcadelink.json'), 'Client reader must accept only .arcadelink files.');
+expectCollection(!str_contains($fileFormat, 'LEGACY_JSON_SUFFIX'), 'Native file contract must not keep a JSON-suffix compatibility path.');
 expectCollection(str_contains($singleController, 'ArcadeLinkFileFormat::acceptsFilename'), 'Server reader must validate the ArcadeLink file contract centrally.');
 expectCollection(!str_contains($singleController, "Content-Type: application/json"), 'Single ArcadeLink must not be presented as a JSON download.');
 expectCollection(!str_contains($controller, "Content-Type: application/json"), 'Collection ArcadeLink must not be presented as a JSON download.');
 expectCollection(!str_contains($dropController, "Content-Type: application/json; charset=UTF-8"), 'FederationDrop ArcadeLink must not be presented as a JSON download.');
 expectCollection(str_contains($js, "federationcloud/collection.php"), 'Frontend must use the collection endpoint.');
+expectCollection(str_contains($js, "'Accept': 'application/vnd.arcadecloud.arcadelink'"), 'Share must request the native ArcadeLink media type.');
+expectCollection(str_contains($js, "responseName.toLowerCase().endsWith('.arcadelink')"), 'Share must save the downloaded artifact only as .arcadelink.');
 expectCollection(!str_contains($js, 'ArcadeLink ZIP'), 'Frontend must not offer ZIP output.');
 
 echo "OK ArcadeLink single-file collection regression\n";

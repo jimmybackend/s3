@@ -69,6 +69,18 @@ El superusuario debe leer el reporte y escribir el motivo de su decisión.
 
 `Rechazar / retirar` marca el reporte como `rejected`, lo saca de la cola de pendientes y no modifica el archivo ni la lista de bloqueo. El registro se conserva como auditoría; no se borra el historial de moderación.
 
+### Huellas faltantes en archivos legacy
+
+Los archivos nuevos normalmente ya conservan `hash_sha256` en `FileS3.Metadatos`. Para archivos históricos que todavía no tengan esa huella:
+
+- al crear un ArcadeLink no privado, ArcadeCloud calcula SHA-256 leyendo el objeto original de S3 por stream una sola vez;
+- guarda la huella en `FileS3.Metadatos` para reutilizarla;
+- el ArcadeLink nuevo incluye su `content_id` y el catálogo registra `FederationContentFingerprints`;
+- si un reporte antiguo ya quedó pendiente con `ContentId=NULL`, **Confirmar y bloquear** recupera el ArcadeLink firmado del recurso, localiza el archivo original, calcula/persiste la huella y la adjunta al reporte antes de emitir el bloqueo;
+- si el objeto original ya no existe o cambia de tamaño durante el cálculo, no se bloquea ninguna huella dudosa.
+
+Los ArcadeLink `PRIVATE` no publican el Content ID dentro del documento. Si un caso de moderación autorizado requiere la huella, el nodo origen puede calcularla internamente durante la revisión.
+
 ### Confirmar y bloquear
 
 `Confirmar y bloquear`:

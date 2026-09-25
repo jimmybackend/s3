@@ -191,6 +191,42 @@ final class FederationModerationRepository
         return is_array($row) ? $row : null;
     }
 
+    public function attachContentIdToReport(string $reportId, string $contentId): void
+    {
+        $contentId = $this->normalizeContentId($contentId);
+        $stmt = $this->db->prepare(
+            "UPDATE FederationAbuseReports
+             SET ContentId=?, UpdatedAt=UTC_TIMESTAMP(6)
+             WHERE ReportId=? AND Status IN ('pending','reviewing') LIMIT 1"
+        );
+        if (!$stmt) throw new FederationException('No se pudo preparar la huella del reporte.', 500);
+        $stmt->bind_param('ss', $contentId, $reportId);
+        if (!$stmt->execute()) {
+            $message = $stmt->error;
+            $stmt->close();
+            throw new FederationException('No se pudo guardar la huella del reporte: ' . $message, 500);
+        }
+        $stmt->close();
+    }
+
+    public function attachContentIdToLocalResource(string $resourceId, string $originNodeId, string $contentId): void
+    {
+        $contentId = $this->normalizeContentId($contentId);
+        $stmt = $this->db->prepare(
+            "UPDATE FederatedResources
+             SET ContentId=?, UpdatedAt=UTC_TIMESTAMP(6)
+             WHERE ResourceId=? AND OriginNodeId=? AND Tombstoned=0 LIMIT 1"
+        );
+        if (!$stmt) throw new FederationException('No se pudo preparar la huella del recurso federado.', 500);
+        $stmt->bind_param('sss', $contentId, $resourceId, $originNodeId);
+        if (!$stmt->execute()) {
+            $message = $stmt->error;
+            $stmt->close();
+            throw new FederationException('No se pudo guardar la huella del recurso federado: ' . $message, 500);
+        }
+        $stmt->close();
+    }
+
     public function decideReport(string $reportId, string $status, int $userId, string $reason): array
     {
         if (!in_array($status, ['confirmed','rejected'], true)) throw new FederationException('Decisión de moderación inválida.', 400);

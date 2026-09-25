@@ -32,7 +32,7 @@ $pageJs = collectionSource($root, 'js/federation-page.js');
 expectCollection(str_contains($links, 'public function createCollection('), 'ArcadeLinkService must create v2 collections.');
 expectCollection(str_contains($links, "'resource_type' => 'collection'"), 'Collection must declare resource_type collection.');
 expectCollection(str_contains($links, "'items' => $items"), 'Collection must contain its signed resource documents.');
-expectCollection(str_contains($service, "foreach ($document['items'] as $item)"), 'Reader must resolve every resource stored inside a collection ArcadeLink.');
+expectCollection(str_contains($service, 'foreach ($document[\'items\'] as $item)'), 'Reader must resolve every resource stored inside a collection ArcadeLink.');
 expectCollection(str_contains($links, 'MAX_COLLECTION_ITEMS = 500'), 'Collection size limit must remain explicit.');
 expectCollection(str_contains($service, 'createCollectionByStorageRefs('), 'FederationService must create one collection from selected storage refs.');
 expectCollection(str_contains($service, "'collection' => true"), 'FederationService must identify collection inspection results.');

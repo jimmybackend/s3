@@ -114,10 +114,10 @@ $ok(str_contains($chunkedUpload, 'verifyObjectAllowed($key, $filesize, true)'), 
 $ok(strpos($chunkedUpload, 'verifyObjectAllowed($key, $filesize, true)') < strpos($chunkedUpload, '$repo->insertFile'), 'chunked moderation verification precedes catalog insert');
 $ok(str_contains($remoteUrlUpload, "hash_init('sha256')"), 'remote URL upload hashes bytes while streaming');
 $ok(str_contains($remoteUrlUpload, 'assertSha256Allowed($sha256)'), 'remote URL upload checks denylist before final materialization');
-$ok(strpos($remoteUrlUpload, 'assertSha256Allowed($sha256)') < strpos($remoteUrlUpload, "$this->s3->putObject(["), 'small remote URL upload checks denylist before PutObject');
-$ok(strpos($remoteUrlUpload, 'assertSha256Allowed($sha256)') < strpos($remoteUrlUpload, "$this->s3->completeMultipartUpload(["), 'multipart remote URL upload checks denylist before CompleteMultipartUpload');
+$ok(strpos($remoteUrlUpload, 'assertSha256Allowed($sha256)') < strpos($remoteUrlUpload, '$this->s3->putObject(['), 'small remote URL upload checks denylist before PutObject');
+$ok(strpos($remoteUrlUpload, 'assertSha256Allowed($sha256)') < strpos($remoteUrlUpload, '$this->s3->completeMultipartUpload(['), 'multipart remote URL upload checks denylist before CompleteMultipartUpload');
 $ok(str_contains($dropboxUpload, 'assertSha256Allowed($sha256)'), 'Dropbox upload checks denylist from local temp SHA-256');
-$ok(strpos($dropboxUpload, 'assertSha256Allowed($sha256)') < strpos($dropboxUpload, "$this->s3->putObject(["), 'Dropbox moderation check precedes S3 PutObject');
+$ok(strpos($dropboxUpload, 'assertSha256Allowed($sha256)') < strpos($dropboxUpload, '$this->s3->putObject(['), 'Dropbox moderation check precedes S3 PutObject');
 $ok(str_contains($adminMultipart, 'isContentBlocked($sha256)'), 'admin multipart checks denylist after authoritative S3 hash');
 $ok(strpos($adminMultipart, 'isContentBlocked($sha256)') < strpos($adminMultipart, 'upsertCompletedMultipart'), 'admin multipart moderation check precedes Drive registration');
 $ok(str_contains($uploadController, 'moderation_blocked'), 'upload API exposes a controlled moderation rejection');

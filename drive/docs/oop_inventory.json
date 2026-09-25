@@ -2617,7 +2617,7 @@
     },
     {
       "path": "drive/src/Federation/ArcadeLinkFileFormat.php",
-      "lines": 47,
+      "lines": 41,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -5654,7 +5654,7 @@
     },
     {
       "path": "drive/tests/arcadelink_collection_regression.php",
-      "lines": 59,
+      "lines": 63,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -6722,7 +6722,7 @@
     },
     {
       "path": "drive/js/arcadelink-share.js",
-      "lines": 384,
+      "lines": 387,
       "kind": "class/module",
       "classes": [
         "ArcadeLinkShareModule"
@@ -7009,7 +7009,7 @@
     },
     {
       "path": "drive/js/federation-page.js",
-      "lines": 102,
+      "lines": 99,
       "kind": "class/module",
       "classes": [
         "FederationPageModule"

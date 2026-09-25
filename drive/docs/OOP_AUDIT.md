@@ -198,7 +198,7 @@
 | `drive/src/Core/ApplicationKernel.php` | 38 | class/module | 1 | — | — | — | — |
 | `drive/src/Core/BackgroundWorkerLease.php` | 97 | class/module | 1 | — | — | — | — |
 | `drive/src/Core/DriveApplication.php` | 485 | class/module | 1 | — | — | ⚠️ | — |
-| `drive/src/Federation/ArcadeLinkFileFormat.php` | 47 | class/module | 1 | — | — | — | — |
+| `drive/src/Federation/ArcadeLinkFileFormat.php` | 41 | class/module | 1 | — | — | — | — |
 | `drive/src/Federation/ArcadeLinkService.php` | 516 | class/module | 1 | — | — | — | — |
 | `drive/src/Federation/FederatedCatalogRepository.php` | 428 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Federation/FederatedResourceRepository.php` | 117 | class/module | 1 | — | ⚠️ | — | — |
@@ -399,7 +399,7 @@
 | `drive/sync_status.php` | 5 | thin endpoint | 0 | — | — | — | — |
 | `drive/tests/activity_costs_smoke.php` | 150 | test script | 0 | — | — | — | — |
 | `drive/tests/arcadelink_bulk_contract_regression.php` | 71 | test script | 0 | — | — | — | — |
-| `drive/tests/arcadelink_collection_regression.php` | 59 | test script | 0 | — | — | — | — |
+| `drive/tests/arcadelink_collection_regression.php` | 63 | test script | 0 | — | — | — | — |
 | `drive/tests/database_schema_contract_smoke.php` | 104 | test script | 0 | — | — | — | — |
 | `drive/tests/federation_access_message_smoke.php` | 72 | test script | 0 | — | — | — | — |
 | `drive/tests/federation_catalog_event_smoke.php` | 60 | test script | 0 | — | — | — | — |
@@ -471,7 +471,7 @@
 | `drive/js/actualizar-hora.js` | 36 | class/module | ActualizarHoraModule | — | — | — |
 | `drive/js/ai-search.js` | 187 | class/module | DriveAiSearchModule | — | — | — |
 | `drive/js/arcadecloud-updater.js` | 214 | class/module | ArcadeCloudUpdaterModule | — | — | — |
-| `drive/js/arcadelink-share.js` | 384 | class/module | ArcadeLinkShareModule | — | — | — |
+| `drive/js/arcadelink-share.js` | 387 | class/module | ArcadeLinkShareModule | — | — | — |
 | `drive/js/archivos.js` | 2155 | class/module | ArchivosModule | — | abrirModalRenombrarArchivo, cerrarModalCompartir, setFileSecurity | window functions: abrirModalRenombrarArchivo, cerrarModalCompartir, setFileSecurity |
 | `drive/js/audiovideo.js` | 619 | class/module | AudiovideoModule | — | audioNext, audioPrev, reproducirVideoDesde, videoNext, videoPlayPause, videoPrev | window functions: audioNext, audioPrev, reproducirVideoDesde, videoNext, videoPlayPause, videoPrev, wavePlayPause |
 | `drive/js/aws-comprehend.js` | 342 | class/module | AwsComprehendModule, AwsFileActionRouter | — | — | — |
@@ -486,7 +486,7 @@
 | `drive/js/estilo.js` | 267 | class/module | EstiloModule | — | — | — |
 | `drive/js/federation-drop.js` | 488 | class/module | FederationDropApp | — | — | — |
 | `drive/js/federation-footer.js` | 374 | class/module | FederationFooterModule | — | — | — |
-| `drive/js/federation-page.js` | 102 | class/module | FederationPageModule | — | — | — |
+| `drive/js/federation-page.js` | 99 | class/module | FederationPageModule | — | — | — |
 | `drive/js/federation-portal.js` | 506 | class/module | FederationPortalModule | — | — | — |
 | `drive/js/federation-share-drive.js` | 211 | class/module | FederationShareDriveModule | — | — | — |
 | `drive/js/file-block.js` | 305 | class/module | FileBlockApp | — | — | — |

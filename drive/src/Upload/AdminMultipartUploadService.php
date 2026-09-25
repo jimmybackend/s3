@@ -216,6 +216,4 @@ final class AdminMultipartUploadService
 
         return hash_final($hash);
     }
-
-    }
 }

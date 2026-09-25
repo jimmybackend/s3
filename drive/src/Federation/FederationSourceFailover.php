@@ -26,11 +26,11 @@ final class FederationSourceFailover
     {
         $originNodeId = trim((string)($origin['node_id'] ?? ''));
         $originUrl = trim((string)($origin['federation_url'] ?? ''));
+        $ordered = $this->selector->ordered($locations);
         $hasOrigin = false;
 
-        foreach ($locations as $location) {
-            if (!is_array($location)) continue;
-            $nodeId = trim((string)($location['node_id'] ?? $location['NodeId'] ?? ''));
+        foreach ($ordered as $location) {
+            $nodeId = trim((string)($location['node_id'] ?? ''));
             if ($originNodeId !== '' && $nodeId !== '' && hash_equals($originNodeId, $nodeId)) {
                 $hasOrigin = true;
                 break;
@@ -38,7 +38,7 @@ final class FederationSourceFailover
         }
 
         if (!$hasOrigin && $originNodeId !== '' && $originUrl !== '') {
-            $locations[] = [
+            $ordered[] = [
                 'node_id' => $originNodeId,
                 'role' => 'origin',
                 'status' => 'active',
@@ -46,9 +46,10 @@ final class FederationSourceFailover
                 'last_seen_at' => $origin['last_seen_at'] ?? null,
                 'updated_at' => $origin['updated_at'] ?? null,
             ];
+            $ordered = $this->selector->ordered($ordered);
         }
 
-        return $this->selector->ordered($locations);
+        return $ordered;
     }
 
     /**

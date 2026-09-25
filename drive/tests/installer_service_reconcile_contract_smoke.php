@@ -63,6 +63,11 @@ installerContract(str_contains($updater, "'--defer-php-restart'"), 'updater web 
 installerContract(str_contains($reconciler, 'arcadecloud-drive-updater'), 'reconciliador detecta updater anterior durante la primera actualización del arreglo');
 installerContract(str_contains($reconciler, 'federation_catalog_migrate.php'), 'reconciliador actualiza esquema FederationCloud después de git update');
 installerContract(str_contains($reconciler, 'inherit_drive_fpm_environment'), 'migración hereda el entorno efectivo de php-fpm-drive');
+installerContract(str_contains($reconciler, 'import_drive_fpm_pool_environment'), 'migración importa directivas env[...] del pool php-fpm-drive');
+installerContract(str_contains($reconciler, 'php-fpm -tt -y "$conf"'), 'migración inspecciona la configuración efectiva del pool');
+installerContract(str_contains($reconciler, 'DB_HOST DB_USER DB_PASSWORD DB_NAME'), 'migración verifica las cuatro variables DB obligatorias antes de ejecutar PHP');
+installerContract(str_contains($reconciler, 'Fuentes DB para migración:'), 'updater informa sólo el origen de las variables DB');
+installerContract(str_contains($reconciler, 'php-fpm-pool'), 'diagnóstico distingue variables definidas en env[...] del pool');
 installerContract(str_contains($reconciler, '/proc/$pid/environ'), 'migración puede leer el entorno real del master y workers PHP-FPM sin imprimir secretos');
 installerContract(str_contains($reconciler, 'migration_env_name_allowed'), 'migración limita las variables heredadas a configuración ArcadeCloud/DB/AWS');
 installerContract(str_contains($reconciler, 'runuser --preserve-environment -u "$PHP_USER"'), 'migración conserva el entorno efectivo al bajar al usuario PHP-FPM');

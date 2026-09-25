@@ -156,7 +156,9 @@ Esto no intenta anular obligaciones legales, contracargos, devoluciones exigidas
 
 ## Migración
 
-El actualizador integrado ejecuta automáticamente `drive/bin/federation_catalog_migrate.php` durante la reconciliación posterior al fast-forward. La migración se ejecuta como el **usuario PHP-FPM real**, hereda únicamente las variables de configuración permitidas del entorno efectivo de `php-fpm-drive` y aplica después `runtime-env.json` como override. Esto cubre instalaciones de producción donde `DB_*` todavía llega al pool PHP-FPM desde una fuente legacy distinta del JSON administrado. Ningún valor secreto se imprime en la salida del updater.
+El actualizador integrado ejecuta automáticamente `drive/bin/federation_catalog_migrate.php` durante la reconciliación posterior al fast-forward. La migración se ejecuta como el **usuario PHP-FPM real** y reconstruye su entorno desde el proceso `php-fpm-drive`, las directivas `env[...]` del pool que escucha en `127.0.0.1:9075` y finalmente `runtime-env.json` como override.
+
+Antes de ejecutar PHP verifica `DB_HOST`, `DB_USER`, `DB_PASSWORD` y `DB_NAME`. El updater muestra únicamente de qué fuente obtuvo cada variable, nunca el valor ni la contraseña. Si una sigue ausente, la reconciliación se detiene con un diagnóstico explícito antes de entrar a `db.php`.
 
 El migrador usa la sección FederationCloud del SQL canónico y crea las tablas de forma idempotente.
 

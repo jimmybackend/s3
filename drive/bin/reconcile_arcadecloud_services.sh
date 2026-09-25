@@ -66,6 +66,8 @@ migration_env_name_allowed() {
   esac
 }
 
+declare -A MIGRATION_ENV_SOURCE=()
+
 import_process_environment() {
   local pid="$1" entry name
   [[ "$pid" =~ ^[0-9]+$ && "$pid" -gt 1 && -r "/proc/$pid/environ" ]] || return 0
@@ -73,6 +75,7 @@ import_process_environment() {
     name="${entry%%=*}"
     if migration_env_name_allowed "$name"; then
       export "$entry"
+      MIGRATION_ENV_SOURCE["$name"]="php-fpm-process"
     fi
   done < "/proc/$pid/environ"
 }
@@ -85,6 +88,92 @@ inherit_drive_fpm_environment() {
     while IFS= read -r child_pid; do
       [[ -n "$child_pid" ]] && import_process_environment "$child_pid"
     done < <(pgrep -P "$main_pid" 2>/dev/null || true)
+  fi
+}
+
+import_drive_fpm_pool_environment() {
+  local conf="" line="" name="" value=""
+  conf="$(drive_master_config || true)"
+  [[ -n "$conf" && -r "$conf" ]] || return 0
+
+  while IFS= read -r line; do
+    [[ "$line" =~ ^env\[([A-Za-z_][A-Za-z0-9_]*)\][[:space:]]*=[[:space:]]*(.*)$ ]] || continue
+    name="${BASH_REMATCH[1]}"
+    value="${BASH_REMATCH[2]}"
+    value="${value%"${value##*[![:space:]]}"}"
+    if migration_env_name_allowed "$name" && [[ -n "$value" ]]; then
+      export "$name=$value"
+      MIGRATION_ENV_SOURCE["$name"]="php-fpm-pool"
+    fi
+  done < <(
+    php-fpm -tt -y "$conf" 2>&1 | awk -v target="127.0.0.1:9075" '
+      function clean(line) {
+        sub(/^.*NOTICE:[[:space:]]*/, "", line)
+        sub(/^[[:space:]]+/, "", line)
+        sub(/[[:space:]]+$/, "", line)
+        return line
+      }
+      function flush(    i) {
+        if (listen == target) {
+          for (i = 1; i <= env_count; i++) print envs[i]
+        }
+        listen = ""
+        env_count = 0
+        delete envs
+      }
+      {
+        line = clean($0)
+        if (line ~ /^\[[^]]+\]$/) {
+          flush()
+          next
+        }
+        if (line ~ /^listen[[:space:]]*=/) {
+          sub(/^listen[[:space:]]*=[[:space:]]*/, "", line)
+          sub(/[[:space:];].*$/, "", line)
+          listen = line
+          next
+        }
+        if (line ~ /^env\[[A-Za-z_][A-Za-z0-9_]*\][[:space:]]*=/) {
+          envs[++env_count] = line
+        }
+      }
+      END { flush() }
+    '
+  )
+}
+
+db_runtime_source() {
+  local name="$1" managed=""
+  managed="$(runtime_value "$name")"
+  if [[ -n "$managed" ]]; then
+    printf '%s' "runtime-env"
+    return 0
+  fi
+  if [[ -n "${MIGRATION_ENV_SOURCE[$name]:-}" ]]; then
+    printf '%s' "${MIGRATION_ENV_SOURCE[$name]}"
+    return 0
+  fi
+  if [[ -n "${!name:-}" ]]; then
+    printf '%s' "inherited-shell"
+    return 0
+  fi
+  printf '%s' "missing"
+}
+
+verify_migration_database_environment() {
+  local name source missing=0
+  local required=(DB_HOST DB_USER DB_PASSWORD DB_NAME)
+  printf 'Fuentes DB para migración:'
+  for name in "${required[@]}"; do
+    source="$(db_runtime_source "$name")"
+    printf ' %s=%s' "$name" "$source"
+    [[ "$source" != "missing" ]] || missing=1
+  done
+  printf '\n'
+  if [[ "$missing" -ne 0 ]]; then
+    echo "ERROR: la aplicación web tiene conexión MySQL, pero el updater no pudo localizar todas las variables DB del runtime de PHP-FPM." >&2
+    echo "Revisa runtime-env.json, EnvironmentFile y directivas env[DB_*] del pool php-fpm-drive." >&2
+    return 1
   fi
 }
 
@@ -242,7 +331,10 @@ if [[ -f "$FEDERATION_MIGRATOR" ]]; then
   # Heredamos únicamente nombres de configuración permitidos y nunca imprimimos
   # sus valores. app_bootstrap.php aplica después runtime-env.json como override.
   inherit_drive_fpm_environment
+  import_drive_fpm_pool_environment
   export ARCADECLOUD_RUNTIME_ENV="$RUNTIME_ENV"
+
+  verify_migration_database_environment || exit 3
 
   if ! runuser --preserve-environment -u "$PHP_USER" -- "$PHP_BIN" "$FEDERATION_MIGRATOR"; then
     echo "ERROR: el código se actualizó, pero no se pudo reconciliar el esquema FederationCloud con el entorno efectivo de php-fpm-drive." >&2

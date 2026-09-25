@@ -68,7 +68,7 @@
     },
     {
       "path": "drive/app_bootstrap.php",
-      "size": 1892,
+      "size": 2411,
       "active": true,
       "references": [
         "drive/activity_costs.php",
@@ -180,6 +180,7 @@
         "drive/sync_s3_to_db.php",
         "drive/sync_status.php",
         "drive/tests/index_federation_drop_smoke.php",
+        "drive/tests/installer_service_reconcile_contract_smoke.php",
         "drive/thumb.php",
         "drive/token_audio.php",
         "drive/token_texto.php",
@@ -1902,13 +1903,13 @@
     },
     {
       "path": "drive/src/Federation/FederationModerationRepository.php",
-      "size": 14702,
+      "size": 15474,
       "active": false,
       "references": []
     },
     {
       "path": "drive/src/Federation/FederationModerationService.php",
-      "size": 15187,
+      "size": 15495,
       "active": false,
       "references": [
         "drive/tests/federation_moderation_contract_smoke.php"
@@ -2936,7 +2937,7 @@
     },
     {
       "path": "drive/src/View/FederationReportPageRenderer.php",
-      "size": 6024,
+      "size": 6066,
       "active": false,
       "references": [
         "drive/tests/federation_moderation_contract_smoke.php"
@@ -3122,7 +3123,7 @@
     },
     {
       "path": "drive/tests/federation_moderation_contract_smoke.php",
-      "size": 4827,
+      "size": 5115,
       "active": false,
       "references": []
     },
@@ -3176,7 +3177,7 @@
     },
     {
       "path": "drive/tests/installer_service_reconcile_contract_smoke.php",
-      "size": 8618,
+      "size": 9359,
       "active": false,
       "references": []
     },

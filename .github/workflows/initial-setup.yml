@@ -24,6 +24,8 @@ on:
       - 'drive/tests/setup_bootstrap_smoke.php'
       - 'drive/tests/setup_entry_guard_smoke.php'
       - 'drive/tests/setup_finalize_contract_smoke.php'
+      - 'drive/tests/fresh_install_contract_smoke.php'
+      - 'drive/docs/MINIMUM_REQUIREMENTS.md'
       - 'drive/docs/INITIAL_SETUP.md'
       - 'drive/docs/INSTALLATION_PREPARATION.md'
       - 'drive/docs/AUTOMATED_INSTALLER.md'
@@ -50,6 +52,8 @@ on:
       - 'drive/tests/setup_bootstrap_smoke.php'
       - 'drive/tests/setup_entry_guard_smoke.php'
       - 'drive/tests/setup_finalize_contract_smoke.php'
+      - 'drive/tests/fresh_install_contract_smoke.php'
+      - 'drive/docs/MINIMUM_REQUIREMENTS.md'
       - 'drive/docs/INITIAL_SETUP.md'
       - 'drive/docs/INSTALLATION_PREPARATION.md'
       - 'drive/docs/AUTOMATED_INSTALLER.md'
@@ -74,6 +78,7 @@ jobs:
           php -l drive/src/Setup/BootstrapSetupAuth.php
           php -l drive/src/Setup/SetupEntryGuard.php
           php -l drive/src/Setup/SetupConfigurationService.php
+          php -l drive/src/Setup/CanonicalDatabaseSchemaService.php
           php -l drive/src/Setup/SuperAdminBootstrapService.php
           php -l drive/src/Federation/FederationConfig.php
           php -l drive/src/Admin/ManagedRuntimeEnvironment.php
@@ -85,6 +90,7 @@ jobs:
           php -l drive/tests/setup_entry_guard_smoke.php
           php -l drive/tests/setup_finalize_contract_smoke.php
           php -l drive/tests/database_schema_contract_smoke.php
+          php -l drive/tests/fresh_install_contract_smoke.php
 
       - name: Validate JavaScript and installer
         run: |
@@ -103,6 +109,7 @@ jobs:
           php drive/tests/setup_entry_guard_smoke.php
           php drive/tests/setup_finalize_contract_smoke.php
           php drive/tests/database_schema_contract_smoke.php
+          php drive/tests/fresh_install_contract_smoke.php
 
       - name: Setup security boundary guards
         run: |

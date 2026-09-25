@@ -115,6 +115,7 @@ final class FederationReplicaDownloader
         curl_setopt_array($ch, $options);
         $ok = curl_exec($ch);
         $status = (int)curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
+        $errorCode = curl_errno($ch);
         $error = curl_error($ch);
         curl_close($ch);
 
@@ -124,6 +125,7 @@ final class FederationReplicaDownloader
         if (!$valid) {
             throw new FederationException(
                 'La copia pública no respondió con una autorización S3 válida'
+                . ' (S3 HTTP ' . $status . '; cURL ' . $errorCode . ')'
                 . ($error !== '' ? ': ' . $error : '.'),
                 502
             );

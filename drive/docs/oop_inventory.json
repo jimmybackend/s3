@@ -5229,7 +5229,7 @@
     },
     {
       "path": "drive/src/Upload/AdminMultipartUploadService.php",
-      "lines": 220,
+      "lines": 221,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -5907,7 +5907,7 @@
     },
     {
       "path": "drive/tests/federation_moderation_contract_smoke.php",
-      "lines": 128,
+      "lines": 139,
       "kind": "test script",
       "classes": 0,
       "functions": [],
@@ -6446,7 +6446,7 @@
     },
     {
       "path": "drive/up.php",
-      "lines": 799,
+      "lines": 833,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -7458,7 +7458,7 @@
     },
     {
       "path": "drive/js/subir-chunked.js",
-      "lines": 590,
+      "lines": 594,
       "kind": "class/module",
       "classes": [
         "SubirChunkedModule"

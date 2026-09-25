@@ -242,6 +242,8 @@
       "active": false,
       "references": [
         "drive/tests/federation_customs_contract_smoke.php",
+        "drive/tests/federation_moderation_contract_smoke.php",
+        "drive/tests/installer_service_reconcile_contract_smoke.php",
         "drive/tests/setup_finalize_contract_smoke.php"
       ]
     },
@@ -1167,8 +1169,10 @@
         "drive/ec2.php",
         "drive/src/Http/Controller/AuthController.php",
         "drive/src/View/ActivityCostPageRenderer.php",
+        "drive/src/View/FederationModerationPageRenderer.php",
         "drive/src/View/FederationPageRenderer.php",
         "drive/src/View/FederationPortalRenderer.php",
+        "drive/src/View/FederationReportPageRenderer.php",
         "drive/src/View/PersonalAwsPageRenderer.php",
         "drive/tests/index_federation_drop_smoke.php",
         "drive/tests/media_processing_contract_smoke.php",
@@ -1898,13 +1902,13 @@
     },
     {
       "path": "drive/src/Federation/FederationModerationRepository.php",
-      "size": 12551,
+      "size": 14702,
       "active": false,
       "references": []
     },
     {
       "path": "drive/src/Federation/FederationModerationService.php",
-      "size": 12785,
+      "size": 15187,
       "active": false,
       "references": [
         "drive/tests/federation_moderation_contract_smoke.php"
@@ -2278,7 +2282,7 @@
     },
     {
       "path": "drive/src/Http/Controller/FederationModerationController.php",
-      "size": 4390,
+      "size": 4757,
       "active": false,
       "references": [
         "drive/tests/federation_moderation_contract_smoke.php"
@@ -2907,9 +2911,11 @@
     },
     {
       "path": "drive/src/View/FederationModerationPageRenderer.php",
-      "size": 3433,
+      "size": 8669,
       "active": false,
-      "references": []
+      "references": [
+        "drive/tests/federation_moderation_contract_smoke.php"
+      ]
     },
     {
       "path": "drive/src/View/FederationPageRenderer.php",
@@ -2930,9 +2936,11 @@
     },
     {
       "path": "drive/src/View/FederationReportPageRenderer.php",
-      "size": 3424,
+      "size": 6024,
       "active": false,
-      "references": []
+      "references": [
+        "drive/tests/federation_moderation_contract_smoke.php"
+      ]
     },
     {
       "path": "drive/src/View/FileIconResolver.php",
@@ -3114,7 +3122,7 @@
     },
     {
       "path": "drive/tests/federation_moderation_contract_smoke.php",
-      "size": 3724,
+      "size": 4827,
       "active": false,
       "references": []
     },
@@ -3168,7 +3176,7 @@
     },
     {
       "path": "drive/tests/installer_service_reconcile_contract_smoke.php",
-      "size": 8317,
+      "size": 8618,
       "active": false,
       "references": []
     },

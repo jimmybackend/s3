@@ -57,6 +57,11 @@ installerContract(str_contains($reconciler, 'install_polly_reconcile_timer.sh'),
 installerContract(str_contains($reconciler, 'systemctl restart php-fpm-drive.service'), 'reconciliación reinicia PHP-FPM administrado');
 
 installerContract(str_contains($updater, 'reconcileServices'), 'updater web reconcilia servicios tras fast-forward');
+installerContract(!str_contains($updater, "'--php-user=' . (string)\$config['php_user']"), 'updater no impone php_user obsoleto al reconciliador');
+installerContract(str_contains($reconciler, 'DETECTED_PHP_USER="$(detect_drive_php_user || true)"'), 'reconciliador redetecta el usuario real de Drive en cada ejecución');
+installerContract(str_contains($reconciler, 'no coincide con el pool real de Drive'), 'reconciliador rechaza un php_user explícito incorrecto');
+installerContract(str_contains($helperInstaller = (string)file_get_contents($repo . '/drive/bin/install_arcadecloud_admin_helper.sh'), 'runuser -u "$PHP_USER" -- test -r "$RUNTIME_ENV_PATH"'), 'helper verifica lectura del runtime como el usuario PHP');
+installerContract(str_contains($helperInstaller, 'runuser -u "$PHP_USER" -- test -r "$IDENTITY_PATH"'), 'helper verifica lectura de identidad como el usuario PHP');
 installerContract(str_contains($updater, "'needs_attention'"), 'updater informa si código quedó actualizado pero servicios requieren atención');
 installerContract(str_contains($updaterInstaller, '"php_user": php_user'), 'configuración del updater conserva usuario PHP-FPM');
 installerContract(str_contains($updaterInstaller, 'NOPASSWD: %s probe, %s check, %s apply'), 'sudoers limita updater a probe/check/apply');

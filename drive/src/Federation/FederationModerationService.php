@@ -57,12 +57,7 @@ final class FederationModerationService
         string $details,
         string $reporterEmail = ''
     ): array {
-        if (!$this->repository->schemaReady()) {
-            throw new FederationException(
-                'El esquema de moderación FederationCloud no está preparado en este nodo. Ejecuta la actualización/reconciliación del servidor y vuelve a intentar.',
-                503
-            );
-        }
+        $this->ensureModerationSchema();
 
         $targetType = strtolower(trim($targetType));
         $targetId = trim($targetId);
@@ -126,6 +121,7 @@ final class FederationModerationService
 
     public function adminState(): array
     {
+        $this->ensureModerationSchema();
         $nodeId = $this->identity->nodeId();
         return [
             'ok' => true,
@@ -345,6 +341,29 @@ final class FederationModerationService
         }
 
         return ['content_id' => $contentId, 'deleted_objects' => $deleted];
+    }
+
+    private function ensureModerationSchema(): void
+    {
+        if ($this->repository->schemaReady()) return;
+
+        try {
+            (new FederationModerationSchemaService($this->app->db()))->ensure();
+        } catch (FederationException $e) {
+            throw $e;
+        } catch (Throwable $e) {
+            throw new FederationException(
+                'No se pudo preparar el esquema de moderación FederationCloud: ' . $e->getMessage(),
+                503
+            );
+        }
+
+        if (!$this->repository->schemaReady()) {
+            throw new FederationException(
+                'La migración de moderación terminó sin dejar disponibles todas las tablas requeridas.',
+                503
+            );
+        }
     }
 
     private function deleteKeyOnce(string $key, array &$seen): int

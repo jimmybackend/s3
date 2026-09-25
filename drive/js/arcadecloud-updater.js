@@ -116,6 +116,12 @@ class ArcadeCloudUpdaterModule {
           || (data.federation_schema_ready ? 'Esquema preparado.' : 'Esquema pendiente.');
         schemaLine = `<div class="${schemaClass}"><strong>FederationCloud DB:</strong> ${this.escape(schemaMessage)}</div>`;
       }
+      if (Object.prototype.hasOwnProperty.call(data, 'moderation_schema_ready')) {
+        const moderationClass = data.moderation_schema_ready ? 'text-success' : 'text-danger';
+        const moderationMessage = data.moderation_schema_message
+          || (data.moderation_schema_ready ? 'Moderación preparada.' : 'Moderación pendiente.');
+        schemaLine += `<div class="${moderationClass}"><strong>Moderación DB:</strong> ${this.escape(moderationMessage)}</div>`;
+      }
       this.details.innerHTML = `
         <div><strong>Rama:</strong> ${this.escape(branch)}</div>
         <div><strong>Instalado:</strong> ${this.escape(local)}</div>

@@ -222,7 +222,7 @@
     },
     {
       "path": "drive/bin/arcadecloud-drive-admin-helper.php",
-      "size": 23726,
+      "size": 23757,
       "active": false,
       "references": [
         "drive/tests/installer_service_reconcile_contract_smoke.php",
@@ -1294,7 +1294,7 @@
     },
     {
       "path": "drive/src/Admin/ManagedRuntimeEnvironment.php",
-      "size": 19543,
+      "size": 19975,
       "active": true,
       "references": [
         "drive/app_bootstrap.php",
@@ -2716,7 +2716,7 @@
     },
     {
       "path": "drive/src/Setup/BootstrapSetupAuth.php",
-      "size": 6062,
+      "size": 6260,
       "active": true,
       "references": [
         "drive/setup/api.php",
@@ -3236,7 +3236,7 @@
     },
     {
       "path": "drive/tests/installer_service_reconcile_contract_smoke.php",
-      "size": 12734,
+      "size": 13348,
       "active": false,
       "references": []
     },
@@ -3266,13 +3266,13 @@
     },
     {
       "path": "drive/tests/server_admin_config_smoke.php",
-      "size": 12312,
+      "size": 12908,
       "active": false,
       "references": []
     },
     {
       "path": "drive/tests/setup_bootstrap_smoke.php",
-      "size": 2145,
+      "size": 2364,
       "active": false,
       "references": []
     },
@@ -3284,7 +3284,7 @@
     },
     {
       "path": "drive/tests/setup_finalize_contract_smoke.php",
-      "size": 3999,
+      "size": 4660,
       "active": false,
       "references": []
     },

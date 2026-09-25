@@ -95,6 +95,10 @@ jobs:
           grep -q 'arcadeLinkDiscoveryPolicy' drive/js/arcadelink-share.js
           grep -q 'federationcloud/collection.php' drive/js/arcadelink-share.js
           grep -q 'application/vnd.arcadecloud.arcadelink' drive/src/Federation/ArcadeLinkFileFormat.php
+          ! grep -Fq '.arcadelink.json' drive/src/Federation/ArcadeLinkFileFormat.php
+          ! grep -Fq '.arcadelink.json' drive/js/federation-page.js
+          ! grep -Fq '.arcadelink.json' drive/src/View/FederationPageRenderer.php
+          grep -Fq "'Accept': 'application/vnd.arcadecloud.arcadelink'" drive/js/arcadelink-share.js
           grep -q 'FederationCollectionController' drive/federationcloud/collection.php
           ! grep -q 'application/zip' drive/src/Http/Controller/FederationController.php
           ! grep -q 'application/zip' drive/src/Http/Controller/FederationCollectionController.php

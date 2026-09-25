@@ -259,6 +259,29 @@ class SubirDropzoneModule {
     }
 
 
+    async function sha256FileHex(file) {
+      const MAX_PREFLIGHT_BYTES = 256 * 1024 * 1024;
+
+      if (
+        !file ||
+        !file.size ||
+        file.size > MAX_PREFLIGHT_BYTES ||
+        !window.crypto ||
+        !window.crypto.subtle ||
+        typeof file.arrayBuffer !== 'function'
+      ) {
+        return '';
+      }
+
+      const buffer = await file.arrayBuffer();
+      const digest = await window.crypto.subtle.digest('SHA-256', buffer);
+
+      return Array.from(new Uint8Array(digest))
+        .map(byte => byte.toString(16).padStart(2, '0'))
+        .join('');
+    }
+
+
     function putToS3(
       file,
       url
@@ -420,6 +443,16 @@ class SubirDropzoneModule {
         /*
          * 1. PHP crea intención + URL firmada.
          */
+        const preflightSha256 =
+          await sha256FileHex(file);
+
+        if (preflightSha256) {
+          setStatus(
+            file,
+            'Verificando huella antes de subir…'
+          );
+        }
+
         const init =
           await apiRequest(
             file,
@@ -429,7 +462,10 @@ class SubirDropzoneModule {
                 file.name,
 
               ruta_objetivo:
-                route
+                route,
+
+              sha256:
+                preflightSha256
             }
           );
 

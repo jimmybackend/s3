@@ -195,6 +195,36 @@ actualiza `PUBLIC_URL` y `FEDERATION_URL`, presenta el descriptor firmado al see
 confirmación del directorio global. Si posteriormente se configura un dominio, la misma identidad
 criptográfica se conserva.
 
+## Nodo detrás de un gateway HTTPS
+
+Cuando el DNS y el certificado público terminan en otra EC2 que actúa como reverse proxy, el backend
+no debe solicitar otro certificado ni anunciar su IPv4 pública dinámica. Se instala indicando el
+endpoint canónico y quién termina TLS:
+
+~~~bash
+sudo bash drive/bin/install_arcadecloud.sh \
+  --node-role=combined \
+  --public-url=https://fastdrive.example.com \
+  --tls-termination=gateway
+~~~
+
+Ese modo persiste:
+
+~~~text
+ARCADECLOUD_PUBLIC_URL=https://fastdrive.example.com
+ARCADECLOUD_FEDERATION_URL=https://fastdrive.example.com/federationcloud/
+ARCADECLOUD_TLS_TERMINATION=gateway
+~~~
+
+La finalización valida que el dominio HTTPS y `/federationcloud/node.php` respondan a través del
+gateway, migra el esquema, presenta el descriptor al seed y activa los timers FederationCloud, pero
+no instala ni ejecuta Certbot localmente. El Security Group del backend debe aceptar HTTP únicamente
+desde el gateway; esa frontera de red es la que hace confiables los encabezados
+`Host` y `X-Forwarded-Proto`.
+
+El bootstrap multimedia conserva el dominio cuando `ARCADECLOUD_TLS_TERMINATION=gateway`; aunque la
+EC2 tenga una IPv4 pública dinámica, no reemplaza el endpoint firmado con esa IP.
+
 ## Setup básico
 
 Después de preparar servidor, Composer, helper administrativo, updater e identidad, /setup/ solicita únicamente:
@@ -281,6 +311,8 @@ probar desde Internet, el Security Group de la EC2 debe permitir deliberadamente
 
 ~~~text
 --php-user=USUARIO
+--public-url=https://DOMINIO
+--tls-termination=local|gateway
 --skip-composer
 --skip-certbot
 --skip-system-bootstrap
@@ -373,6 +405,7 @@ ARCADECLOUD_MEDIA_WORKER_REGION
 ARCADECLOUD_MEDIA_WORKER_HOURLY_USD
 ARCADECLOUD_MEDIA_WORKER_IDLE_GRACE_SECONDS
 ARCADECLOUD_FEDERATION_DYNAMIC_IP
+ARCADECLOUD_TLS_TERMINATION
 ```
 
 No debe mantenerse una segunda configuración multimedia en `drive.env`.

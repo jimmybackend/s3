@@ -36,6 +36,12 @@ metadata_public_ipv4() {
 }
 
 dynamic="$(runtime_value ARCADECLOUD_FEDERATION_DYNAMIC_IP)"
+tls_termination="$(runtime_value ARCADECLOUD_TLS_TERMINATION)"
+if [[ "${tls_termination,,}" == "gateway" ]]; then
+  dynamic="false"
+  log "TLS termina en gateway; se conserva el dominio público administrado y se ignora la IPv4 dinámica."
+fi
+
 case "${dynamic,,}" in
   1|true|yes|on)
     ipv4="$(metadata_public_ipv4 || true)"

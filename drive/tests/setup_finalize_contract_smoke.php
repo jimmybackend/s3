@@ -33,6 +33,11 @@ checkFinalize(str_contains($installer, 'bootstrap-auth.json'), 'installer requir
 checkFinalize(str_contains($installer, 'SUDO_USER'), 'installer binds internal mode to PHP-FPM sudo caller');
 checkFinalize(str_contains($installer, 'federation_catalog_migrate.php'), 'installer contains the FederationCloud migrator helper');
 checkFinalize(str_contains($installer, '--require-directory'), 'finalization requires global directory confirmation');
+checkFinalize(str_contains($installer, '--tls-termination='), 'installer accepts an explicit TLS termination mode');
+checkFinalize(str_contains($installer, '--public-url='), 'installer accepts a canonical public URL for gateway deployments');
+checkFinalize(str_contains($installer, 'verify_gateway_https'), 'gateway finalization verifies the externally terminated HTTPS endpoint');
+checkFinalize(str_contains($installer, 'TLS público administrado por gateway; Certbot local omitido.'), 'gateway mode skips local Certbot explicitly');
+checkFinalize(str_contains($installer, 'ARCADECLOUD_TLS_TERMINATION'), 'gateway/local TLS mode persists in managed runtime');
 
 $finalizeStart = strpos($installer, "finalize_installation() {");
 $finalizeEnd = $finalizeStart === false

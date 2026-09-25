@@ -21,6 +21,8 @@ MEDIA_WORKER_REGION=""
 MEDIA_WORKER_HOURLY_USD=""
 MEDIA_WORKER_IDLE_GRACE_SECONDS=""
 FEDERATION_DYNAMIC_IP=""
+PUBLIC_URL_OVERRIDE=""
+TLS_TERMINATION=""
 SKIP_COMPOSER=0
 SKIP_SYSTEM_BOOTSTRAP=0
 SKIP_CERTBOT=0
@@ -38,12 +40,23 @@ for arg in "$@"; do
     --media-worker-hourly-usd=*) MEDIA_WORKER_HOURLY_USD="${arg#*=}" ;;
     --media-worker-idle-grace-seconds=*) MEDIA_WORKER_IDLE_GRACE_SECONDS="${arg#*=}" ;;
     --federation-dynamic-ip) FEDERATION_DYNAMIC_IP="true" ;;
+    --public-url=*) PUBLIC_URL_OVERRIDE="${arg#*=}" ;;
+    --tls-termination=*) TLS_TERMINATION="${arg#*=}" ;;
     --skip-composer) SKIP_COMPOSER=1 ;;
     --skip-system-bootstrap) SKIP_SYSTEM_BOOTSTRAP=1 ;;
     --skip-certbot) SKIP_CERTBOT=1 ;;
     *) echo "ERROR: argumento desconocido: $arg" >&2; exit 2 ;;
   esac
 done
+
+case "${TLS_TERMINATION,,}" in
+  ""|local|gateway) ;;
+  *) echo "ERROR: --tls-termination debe ser local o gateway." >&2; exit 2 ;;
+esac
+TLS_TERMINATION="${TLS_TERMINATION,,}"
+if [[ "$TLS_TERMINATION" == "gateway" ]]; then
+  SKIP_CERTBOT=1
+fi
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 [[ -n "$APP_ROOT" ]] || APP_ROOT="$(cd -- "$SCRIPT_DIR/../.." && pwd)"
@@ -271,6 +284,17 @@ except Exception:
 PY
 }
 
+tls_termination_mode() {
+  local mode="$TLS_TERMINATION"
+  [[ -n "$mode" ]] || mode="$(runtime_value ARCADECLOUD_TLS_TERMINATION)"
+  [[ -n "$mode" ]] || mode="local"
+  mode="${mode,,}"
+  case "$mode" in
+    local|gateway) printf '%s' "$mode" ;;
+    *) fail "ARCADECLOUD_TLS_TERMINATION debe ser local o gateway." ;;
+  esac
+}
+
 persist_node_settings() {
   local role payload existing
   existing="$(runtime_value ARCADECLOUD_NODE_ROLE)"
@@ -352,20 +376,16 @@ prepare_setup_activation() {
   token="$(python3 -c 'import json,sys; print(json.load(sys.stdin).get("activation_token",""))' <<<"$result")"
   [[ "$token" =~ ^[a-f0-9]{64}$ ]] || fail "no se pudo generar el token temporal de setup."
 
-  public_ip="$(detect_public_ipv4 || true)"
-  if [[ -n "$public_ip" ]] && validate_public_ipv4 "$public_ip"; then
-    base_url="http://$public_ip"
-  else
-    public_url="$(python3 - "$RUNTIME_ENV" 2>/dev/null <<'PY' || true
-import json, sys
-try:
-    with open(sys.argv[1], encoding="utf-8") as f:
-        print((json.load(f).get("ARCADECLOUD_PUBLIC_URL") or "").rstrip("/"))
-except Exception:
-    pass
-PY
-)"
+  public_url="$(runtime_value ARCADECLOUD_PUBLIC_URL)"
+  if [[ "$(tls_termination_mode)" == "gateway" && -n "$public_url" ]]; then
     base_url="$public_url"
+  else
+    public_ip="$(detect_public_ipv4 || true)"
+    if [[ -n "$public_ip" ]] && validate_public_ipv4 "$public_ip"; then
+      base_url="http://$public_ip"
+    else
+      base_url="$public_url"
+    fi
   fi
 
   if [[ -n "$base_url" ]]; then
@@ -388,14 +408,10 @@ prepare_composer() {
 }
 
 prepare_federation_basic() {
-  local public_ip seed node_name payload
-
-  public_ip="$(detect_public_ipv4 || true)"
-  if [[ -n "$public_ip" ]] && ! validate_public_ipv4 "$public_ip"; then
-    public_ip=""
-  fi
+  local public_ip seed node_name payload public_url tls_mode
 
   seed="$(primary_seed)"
+  tls_mode="$(tls_termination_mode)"
 
   if [[ ! -f "$IDENTITY" ]]; then
     node_name="arcadecloud-$(python3 - <<'PY'
@@ -409,6 +425,62 @@ PY
     echo "✓ Identidad FederationCloud existente conservada."
   fi
 
+  public_url="$PUBLIC_URL_OVERRIDE"
+  if [[ -z "$public_url" && "$tls_mode" == "gateway" ]]; then
+    public_url="$(runtime_value ARCADECLOUD_PUBLIC_URL)"
+  fi
+
+  if [[ -n "$public_url" ]]; then
+    public_url="$(python3 - "$public_url" "$tls_mode" <<'PY'
+import sys
+from urllib.parse import urlparse
+
+raw, mode = sys.argv[1:]
+url = raw.strip().rstrip("/")
+parts = urlparse(url)
+if parts.scheme not in {"http", "https"} or not parts.hostname:
+    raise SystemExit("ARCADECLOUD_PUBLIC_URL inválida.")
+if parts.username or parts.password or parts.query or parts.fragment:
+    raise SystemExit("ARCADECLOUD_PUBLIC_URL no admite credenciales, query ni fragmento.")
+if parts.path not in {"", "/"}:
+    raise SystemExit("ARCADECLOUD_PUBLIC_URL debe apuntar a la raíz pública del nodo.")
+if mode == "gateway" and parts.scheme != "https":
+    raise SystemExit("El modo gateway exige una ARCADECLOUD_PUBLIC_URL HTTPS.")
+print(url)
+PY
+)" || fail "No se pudo validar --public-url."
+
+    payload="$(python3 - "$public_url" "$seed" "$tls_mode" <<'PY'
+import json, sys
+public_url, seed, tls_mode = sys.argv[1:]
+print(json.dumps({
+    "ARCADECLOUD_PUBLIC_URL": public_url,
+    "ARCADECLOUD_FEDERATION_URL": public_url.rstrip("/") + "/federationcloud/",
+    "ARCADECLOUD_FEDERATION_ENABLED": "true",
+    "ARCADECLOUD_FEDERATION_SEED_URL": seed,
+    "ARCADECLOUD_TLS_TERMINATION": tls_mode,
+}, separators=(",", ":")))
+PY
+)"
+    runtime_set_many "$payload"
+    if [[ "$tls_mode" == "gateway" ]]; then
+      echo "✓ Endpoint público detrás de gateway: $public_url"
+      echo "✓ TLS termina en el gateway; esta EC2 no solicitará certificado local."
+    else
+      echo "✓ Endpoint público configurado: $public_url"
+    fi
+    return 0
+  fi
+
+  if [[ "$tls_mode" == "gateway" ]]; then
+    fail "El modo gateway requiere --public-url=https://DOMINIO o una ARCADECLOUD_PUBLIC_URL ya administrada."
+  fi
+
+  public_ip="$(detect_public_ipv4 || true)"
+  if [[ -n "$public_ip" ]] && ! validate_public_ipv4 "$public_ip"; then
+    public_ip=""
+  fi
+
   if [[ -n "$public_ip" ]]; then
     payload="$(python3 - "$public_ip" "$seed" <<'PY'
 import json, sys
@@ -418,6 +490,7 @@ print(json.dumps({
     "ARCADECLOUD_FEDERATION_URL": f"http://{ip}/federationcloud/",
     "ARCADECLOUD_FEDERATION_ENABLED": "true",
     "ARCADECLOUD_FEDERATION_SEED_URL": seed,
+    "ARCADECLOUD_TLS_TERMINATION": "local",
 }, separators=(",", ":")))
 PY
 )"
@@ -433,6 +506,7 @@ print(json.dumps({
     "ARCADECLOUD_FEDERATION_URL": "",
     "ARCADECLOUD_FEDERATION_ENABLED": "false",
     "ARCADECLOUD_FEDERATION_SEED_URL": sys.argv[1],
+    "ARCADECLOUD_TLS_TERMINATION": "local",
 }, separators=(",", ":")))
 PY
 )"
@@ -464,7 +538,9 @@ PY
   echo "  3. Primer superadmin"
   echo
 
-  if [[ -n "$public_ip" ]]; then
+  if [[ "$(tls_termination_mode)" == "gateway" && -n "$public_url" ]]; then
+    echo "Drive detrás de gateway: $public_url/"
+  elif [[ -n "$public_ip" ]]; then
     echo "Drive HTTP por IP: http://$public_ip/"
   elif [[ -n "$public_url" ]]; then
     echo "Drive: $public_url/"
@@ -530,6 +606,36 @@ migrate_federation_schema() {
   echo "✓ Esquema FederationCloud preparado antes del registro global."
 }
 
+verify_gateway_https() {
+  local public_url federation_url
+  public_url="$(runtime_value ARCADECLOUD_PUBLIC_URL)"
+  federation_url="$(runtime_value ARCADECLOUD_FEDERATION_URL)"
+
+  python3 - "$public_url" "$federation_url" <<'PY' || fail "La configuración pública del gateway no es válida."
+import sys
+from urllib.parse import urlparse
+
+public_url, federation_url = [v.strip() for v in sys.argv[1:]]
+public = urlparse(public_url)
+federation = urlparse(federation_url)
+
+for label, parsed in (("public", public), ("federation", federation)):
+    if parsed.scheme != "https" or not parsed.hostname:
+        raise SystemExit(f"{label}: se requiere HTTPS con hostname.")
+    if parsed.username or parsed.password or parsed.query or parsed.fragment:
+        raise SystemExit(f"{label}: URL con componentes no permitidos.")
+
+expected = public_url.rstrip("/") + "/federationcloud/"
+if federation_url.rstrip("/") + "/" != expected:
+    raise SystemExit("La URL FederationCloud no corresponde al endpoint público del gateway.")
+PY
+
+  curl -fsS --max-time 10 -o /dev/null "$public_url/"     || fail "El endpoint HTTPS del gateway no responde: $public_url"
+  curl -fsS --max-time 10 -o /dev/null "${federation_url%/}/node.php"     || fail "FederationCloud no responde a través del gateway: ${federation_url%/}/node.php"
+
+  echo "✓ Gateway HTTPS verificado externamente: $public_url"
+}
+
 finalize_installation() {
   local require_lock="${1:-1}"
   if [[ "$require_lock" -eq 1 ]]; then
@@ -556,42 +662,41 @@ PY
   persist_node_settings
 
   if federation_runtime_enabled; then
-    local certbot_bin
-    certbot_bin="$(select_certbot_bin)"
-    [[ -n "$certbot_bin" && -x "$certbot_bin" ]] \
-      || fail "FederationCloud necesita Certbot compatible para publicar un endpoint HTTPS verificable."
+    local tls_mode
+    tls_mode="$(tls_termination_mode)"
 
-    bash "$WEBROOT/bin/install_federation_https_service.sh" \
-      --run-user="$PHP_USER" \
-      --app-root="$APP_ROOT" \
-      --webroot="$WEBROOT" \
-      --certbot-bin="$certbot_bin"
-
-    # El reconciliador HTTPS republica el descriptor al terminar. Por eso el
-    # catálogo/Aduana debe existir ANTES de arrancar ese servicio; de lo contrario
-    # un nodo nuevo puede intentar escribir FederationEvents antes de migrar MySQL.
+    # El catálogo/Aduana debe existir antes de publicar el descriptor del nodo.
     migrate_federation_schema
 
-    if ! systemctl start arcadecloud-federation-https.service; then
-      systemctl status arcadecloud-federation-https.service --no-pager >&2 || true
-      fail "No se pudo obtener/verificar HTTPS para FederationCloud; el nodo global todavía no puede registrarse."
+    if [[ "$tls_mode" == "gateway" ]]; then
+      # El certificado y su renovación pertenecen al gateway.
+      systemctl disable --now arcadecloud-federation-https.timer >/dev/null 2>&1 || true
+      systemctl stop arcadecloud-federation-https.service >/dev/null 2>&1 || true
+      verify_gateway_https
+      echo "✓ TLS público administrado por gateway; Certbot local omitido."
+    else
+      local certbot_bin
+      certbot_bin="$(select_certbot_bin)"
+      [[ -n "$certbot_bin" && -x "$certbot_bin" ]]         || fail "FederationCloud necesita Certbot compatible para publicar un endpoint HTTPS verificable."
+
+      bash "$WEBROOT/bin/install_federation_https_service.sh"         --run-user="$PHP_USER"         --app-root="$APP_ROOT"         --webroot="$WEBROOT"         --certbot-bin="$certbot_bin"
+
+      if ! systemctl start arcadecloud-federation-https.service; then
+        systemctl status arcadecloud-federation-https.service --no-pager >&2 || true
+        fail "No se pudo obtener/verificar HTTPS para FederationCloud; el nodo global todavía no puede registrarse."
+      fi
+      systemctl enable --now arcadecloud-federation-https.timer
+      echo "✓ Endpoint HTTPS FederationCloud listo y renovación automática habilitada."
     fi
-    systemctl enable --now arcadecloud-federation-https.timer
-    echo "✓ Endpoint HTTPS FederationCloud listo y renovación automática habilitada."
 
     if ! runuser -u "$PHP_USER" -- php "$WEBROOT/bin/federation_endpoint_refresh.php" --require-directory; then
       fail "El nodo quedó localmente listo, pero drive.esforzados.com no confirmó su registro global."
     fi
     echo "✓ Nodo presentado al seed global y directorio FederationCloud confirmado."
 
-    bash "$WEBROOT/bin/install_federation_sync_timer.sh" \
-      --run-user="$PHP_USER" \
-      --app-root="$APP_ROOT" \
-      --interval-sec=120
+    bash "$WEBROOT/bin/install_federation_sync_timer.sh"       --run-user="$PHP_USER"       --app-root="$APP_ROOT"       --interval-sec=120
 
-    bash "$WEBROOT/bin/install_federation_drop_cleanup_timer.sh" \
-      --run-user="$PHP_USER" \
-      --app-root="$APP_ROOT"
+    bash "$WEBROOT/bin/install_federation_drop_cleanup_timer.sh"       --run-user="$PHP_USER"       --app-root="$APP_ROOT"
 
     if systemctl start arcadecloud-federation-sync.service; then
       echo "✓ Primera sincronización FederationCloud ejecutada."
@@ -599,8 +704,7 @@ PY
       echo "⚠ El registro global quedó confirmado, pero la primera sincronización se reintentará por el timer." >&2
     fi
 
-    systemctl is-active arcadecloud-federation-sync.timer >/dev/null \
-      && echo "✓ FederationCloud sync timer activo."
+    systemctl is-active arcadecloud-federation-sync.timer >/dev/null       && echo "✓ FederationCloud sync timer activo."
   else
     echo "⚠ No hay endpoint público válido; Drive quedó instalado, pero el nodo no puede entrar aún al directorio global." >&2
   fi
@@ -609,7 +713,7 @@ PY
 
   echo
   echo "ArcadeCloud Drive: instalación básica finalizada."
-  echo "Drive listo. FederationCloud/ArcadeLink queda publicado por HTTPS y registrado en el directorio global cuando existe endpoint público."
+  echo "Drive listo. FederationCloud/ArcadeLink queda publicado por HTTPS (local o gateway) y registrado en el directorio global cuando existe endpoint público."
   echo "Las opciones avanzadas quedan disponibles dentro de Servidor -> Configuración avanzada."
 }
 

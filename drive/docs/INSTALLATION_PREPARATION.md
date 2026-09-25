@@ -165,6 +165,10 @@ IP pública válida, **no bloquea el Drive**: lo deja preparado localmente y Fed
 Un dominio propio pertenece a Configuración avanzada. Cambiar posteriormente de IP a dominio no
 regenera `node_id`, Ed25519 ni `payload_key`.
 
+Si el dominio termina HTTPS en una EC2 gateway y el backend sólo recibe HTTP privado, se usa
+`--public-url=https://DOMINIO --tls-termination=gateway`. En ese modo el backend no obtiene
+certificado local y conserva siempre el dominio público aunque su IPv4 EC2 cambie.
+
 ---
 
 # 5. ETAPA 2 — Repositorio y dependencias
@@ -843,6 +847,7 @@ ARCADECLOUD_PUBLIC_URL
 ARCADECLOUD_FEDERATION_URL
 ARCADECLOUD_FEDERATION_ENABLED
 ARCADECLOUD_FEDERATION_SEED_URL
+ARCADECLOUD_TLS_TERMINATION
 ```
 
 Ejemplo **sintético** de estructura:

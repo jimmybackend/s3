@@ -167,7 +167,9 @@ final class BootstrapSetupAuth
     private function ensureSession(): void
     {
         if (session_status() === PHP_SESSION_ACTIVE) return;
-        $secure = isset($_SERVER['HTTPS']) && strtolower((string)$_SERVER['HTTPS']) !== 'off';
+        $https = strtolower(trim((string)($_SERVER['HTTPS'] ?? '')));
+        $forwardedProto = strtolower(trim(explode(',', (string)($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? ''))[0] ?? ''));
+        $secure = ($https !== '' && $https !== 'off' && $https !== '0') || $forwardedProto === 'https';
         session_set_cookie_params([
             'lifetime' => 0,
             'path' => '/',

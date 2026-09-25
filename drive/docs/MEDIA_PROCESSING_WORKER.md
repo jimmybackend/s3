@@ -250,6 +250,21 @@ Después ejecuta `federation_endpoint_refresh.php`. La identidad del nodo no cam
 El bootstrap de endpoint se ejecuta en un servicio systemd separado con privilegios administrativos. `arcadecloud-media-worker.service` continúa ejecutándose como usuario no privilegiado.
 
 
+## Nodo multimedia detrás de un gateway
+
+Si el nodo potente también sirve una aplicación web mediante un gateway estable, no debe usar el
+modo de IPv4 dinámica para FederationCloud. Configura:
+
+```text
+ARCADECLOUD_PUBLIC_URL=https://fastdrive.example.com
+ARCADECLOUD_FEDERATION_URL=https://fastdrive.example.com/federationcloud/
+ARCADECLOUD_TLS_TERMINATION=gateway
+ARCADECLOUD_FEDERATION_DYNAMIC_IP=false
+```
+
+En este modo `media_worker_node_bootstrap.sh` conserva el dominio administrado al arrancar y no lo
+sustituye por la IPv4 pública temporal de la EC2.
+
 ## Qué acciones despiertan la EC2 potente
 
 En el diseño actual el nodo de alto rendimiento se solicita únicamente al crear un `MediaProcessingJob` para:

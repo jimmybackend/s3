@@ -23,9 +23,13 @@ file_put_contents($authPath, json_encode([
 $checks = [];
 try {
     if (session_status() === PHP_SESSION_ACTIVE) session_write_close();
+    $_SERVER['HTTPS'] = '';
+    $_SERVER['HTTP_X_FORWARDED_PROTO'] = 'https';
     session_id('acsetup' . bin2hex(random_bytes(8)));
     $auth = new BootstrapSetupAuth($authPath, $lockPath);
 
+    $cookie = session_get_cookie_params();
+    $checks['forwarded HTTPS marks setup cookie secure'] = ($cookie['secure'] ?? false) === true;
     $checks['available before lock'] = $auth->isAvailable();
     $checks['reject wrong activation token'] = !$auth->acceptActivationToken(str_repeat('0', 64));
     $checks['accept activation token'] = $auth->acceptActivationToken($token);

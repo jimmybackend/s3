@@ -872,6 +872,7 @@
         "drive/src/View/FederationModerationPageRenderer.php",
         "drive/src/View/FederationReportPageRenderer.php",
         "drive/tests/federation_drop_contract_smoke.php",
+        "drive/tests/fresh_install_contract_smoke.php",
         "drive/js/federation-drop.js",
         "drive/js/federation-footer.js",
         "drive/js/setup.js"
@@ -1211,12 +1212,13 @@
     },
     {
       "path": "drive/setup/api.php",
-      "size": 529,
+      "size": 604,
       "active": false,
       "references": [
         "drive/src/View/FederationModerationPageRenderer.php",
         "drive/src/View/FederationReportPageRenderer.php",
         "drive/tests/federation_drop_contract_smoke.php",
+        "drive/tests/fresh_install_contract_smoke.php",
         "drive/js/federation-drop.js",
         "drive/js/federation-footer.js",
         "drive/js/setup.js"
@@ -2729,6 +2731,7 @@
       "size": 4563,
       "active": false,
       "references": [
+        "drive/setup/api.php",
         "drive/tests/fresh_install_contract_smoke.php"
       ]
     },
@@ -3224,7 +3227,7 @@
     },
     {
       "path": "drive/tests/fresh_install_contract_smoke.php",
-      "size": 3831,
+      "size": 4076,
       "active": false,
       "references": []
     },

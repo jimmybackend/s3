@@ -4,8 +4,8 @@
 
 ## Resumen
 
-- PHP analizados: **437**
-- PHP que ya contienen clases/interfaces: **260**
+- PHP analizados: **438**
+- PHP que ya contienen clases/interfaces: **261**
 - PHP marcados para migración/revisión: **0**
 - Tests PHP separados del objetivo OOP de runtime: **39**
 - JavaScript analizados: **48**
@@ -34,7 +34,7 @@
 | `drive/background_tasks.php` | 18 | thin endpoint | 0 | — | — | — | — |
 | `drive/bin/arcadecloud-drive-admin-helper.php` | 624 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/bin/arcadecloud-drive-updater.php` | 274 | class/module | 1 | — | — | — | — |
-| `drive/bin/federation_catalog_migrate.php` | 111 | thin cli entrypoint | 0 | — | ⚠️ | — | — |
+| `drive/bin/federation_catalog_migrate.php` | 18 | thin cli entrypoint | 0 | — | — | — | — |
 | `drive/bin/federation_drop_cleanup.php` | 19 | thin cli entrypoint | 0 | — | — | — | — |
 | `drive/bin/federation_endpoint_refresh.php` | 87 | thin cli entrypoint | 0 | — | — | — | — |
 | `drive/bin/federation_https_reconcile.php` | 474 | class/module | 1 | — | — | — | — |
@@ -151,7 +151,7 @@
 | `drive/src/Activity/PollyTaskReconciler.php` | 308 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Activity/TranscriptionCostAttribution.php` | 117 | class/module | 1 | — | — | — | — |
 | `drive/src/Activity/TranscriptionReconciler.php` | 476 | class/module | 1 | — | ⚠️ | — | — |
-| `drive/src/Admin/ArcadeCloudUpdaterService.php` | 97 | class/module | 1 | — | ⚠️ | — | — |
+| `drive/src/Admin/ArcadeCloudUpdaterService.php` | 122 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Admin/ManagedRuntimeEnvironment.php` | 363 | class/module | 1 | — | — | — | — |
 | `drive/src/Admin/PrivilegedServerHelper.php` | 150 | class/module | 1 | — | — | — | — |
 | `drive/src/Admin/ServerSettingsAdminService.php` | 211 | class/module | 1 | — | ⚠️ | — | — |
@@ -255,6 +255,7 @@
 | `drive/src/Federation/FederationReplicaResolverService.php` | 282 | class/module | 1 | — | — | — | — |
 | `drive/src/Federation/FederationReplicaService.php` | 366 | class/module | 1 | — | — | — | — |
 | `drive/src/Federation/FederationResolverService.php` | 185 | class/module | 1 | — | — | — | — |
+| `drive/src/Federation/FederationSchemaMigrationService.php` | 147 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Federation/FederationSeedConfig.php` | 83 | class/module | 1 | — | — | — | — |
 | `drive/src/Federation/FederationService.php` | 319 | class/module | 1 | — | — | — | — |
 | `drive/src/Federation/FederationShareDownloader.php` | 188 | class/module | 1 | — | — | — | — |
@@ -403,7 +404,7 @@
 | `drive/tests/database_schema_contract_smoke.php` | 104 | test script | 0 | — | — | — | — |
 | `drive/tests/federation_access_message_smoke.php` | 72 | test script | 0 | — | — | — | — |
 | `drive/tests/federation_catalog_event_smoke.php` | 60 | test script | 0 | — | — | — | — |
-| `drive/tests/federation_customs_contract_smoke.php` | 80 | test script | 0 | — | — | — | — |
+| `drive/tests/federation_customs_contract_smoke.php` | 82 | test script | 0 | — | — | — | — |
 | `drive/tests/federation_directory_smoke.php` | 102 | test script | 0 | — | — | — | — |
 | `drive/tests/federation_drop_contract_smoke.php` | 115 | test script | 0 | — | — | — | — |
 | `drive/tests/federation_drop_google_oidc_smoke.php` | 159 | test script | 0 | — | — | — | — |
@@ -420,7 +421,7 @@
 | `drive/tests/federationcloud_smoke.php` | 197 | test script | 0 | — | — | — | — |
 | `drive/tests/folder_document_sanitizer.php` | 49 | test script | 0 | — | — | — | — |
 | `drive/tests/index_federation_drop_smoke.php` | 121 | test script | 0 | — | — | — | — |
-| `drive/tests/installer_service_reconcile_contract_smoke.php` | 118 | test script | 0 | — | — | — | — |
+| `drive/tests/installer_service_reconcile_contract_smoke.php` | 127 | test script | 0 | — | — | — | — |
 | `drive/tests/media_processing_contract_smoke.php` | 52 | test script | 0 | — | — | — | — |
 | `drive/tests/password_credential_verifier_smoke.php` | 44 | test script | 0 | — | — | — | — |
 | `drive/tests/scoped_sync_repository_regression.php` | 96 | test script | 0 | — | ⚠️ | — | — |
@@ -470,7 +471,7 @@
 |---|---:|---|---|---|---|---|
 | `drive/js/actualizar-hora.js` | 36 | class/module | ActualizarHoraModule | — | — | — |
 | `drive/js/ai-search.js` | 187 | class/module | DriveAiSearchModule | — | — | — |
-| `drive/js/arcadecloud-updater.js` | 214 | class/module | ArcadeCloudUpdaterModule | — | — | — |
+| `drive/js/arcadecloud-updater.js` | 222 | class/module | ArcadeCloudUpdaterModule | — | — | — |
 | `drive/js/arcadelink-share.js` | 387 | class/module | ArcadeLinkShareModule | — | — | — |
 | `drive/js/archivos.js` | 2155 | class/module | ArchivosModule | — | abrirModalRenombrarArchivo, cerrarModalCompartir, setFileSecurity | window functions: abrirModalRenombrarArchivo, cerrarModalCompartir, setFileSecurity |
 | `drive/js/audiovideo.js` | 619 | class/module | AudiovideoModule | — | audioNext, audioPrev, reproducirVideoDesde, videoNext, videoPlayPause, videoPrev | window functions: audioNext, audioPrev, reproducirVideoDesde, videoNext, videoPlayPause, videoPrev, wavePlayPause |

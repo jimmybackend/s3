@@ -1,7 +1,7 @@
 {
   "summary": {
-    "php_total": 437,
-    "php_class_modules": 260,
+    "php_total": 438,
+    "php_class_modules": 261,
     "php_needs_migration": 0,
     "php_tests": 39,
     "js_total": 48,
@@ -132,13 +132,13 @@
     },
     {
       "path": "drive/bin/federation_catalog_migrate.php",
-      "lines": 111,
+      "lines": 18,
       "kind": "thin cli entrypoint",
       "classes": 0,
       "functions": [],
       "session": false,
       "superglobals": [],
-      "db": true,
+      "db": false,
       "s3": false,
       "bootstrap": true,
       "html": false,
@@ -1908,7 +1908,7 @@
     },
     {
       "path": "drive/src/Admin/ArcadeCloudUpdaterService.php",
-      "lines": 97,
+      "lines": 122,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -3464,6 +3464,21 @@
       "session": false,
       "superglobals": [],
       "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Federation/FederationSchemaMigrationService.php",
+      "lines": 147,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": true,
       "s3": false,
       "bootstrap": false,
       "html": false,
@@ -5723,7 +5738,7 @@
     },
     {
       "path": "drive/tests/federation_customs_contract_smoke.php",
-      "lines": 80,
+      "lines": 82,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -6012,7 +6027,7 @@
     },
     {
       "path": "drive/tests/installer_service_reconcile_contract_smoke.php",
-      "lines": 118,
+      "lines": 127,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -6708,7 +6723,7 @@
     },
     {
       "path": "drive/js/arcadecloud-updater.js",
-      "lines": 214,
+      "lines": 222,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudUpdaterModule"

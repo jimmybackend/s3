@@ -21,6 +21,8 @@ MEDIA_WORKER_REGION=""
 MEDIA_WORKER_HOURLY_USD=""
 MEDIA_WORKER_IDLE_GRACE_SECONDS=""
 FEDERATION_DYNAMIC_IP=""
+PUBLIC_URL_OVERRIDE=""
+TLS_TERMINATION=""
 SKIP_COMPOSER=0
 SKIP_SYSTEM_BOOTSTRAP=0
 SKIP_CERTBOT=0
@@ -38,12 +40,23 @@ for arg in "$@"; do
     --media-worker-hourly-usd=*) MEDIA_WORKER_HOURLY_USD="${arg#*=}" ;;
     --media-worker-idle-grace-seconds=*) MEDIA_WORKER_IDLE_GRACE_SECONDS="${arg#*=}" ;;
     --federation-dynamic-ip) FEDERATION_DYNAMIC_IP="true" ;;
+    --public-url=*) PUBLIC_URL_OVERRIDE="${arg#*=}" ;;
+    --tls-termination=*) TLS_TERMINATION="${arg#*=}" ;;
     --skip-composer) SKIP_COMPOSER=1 ;;
     --skip-system-bootstrap) SKIP_SYSTEM_BOOTSTRAP=1 ;;
     --skip-certbot) SKIP_CERTBOT=1 ;;
     *) echo "ERROR: argumento desconocido: $arg" >&2; exit 2 ;;
   esac
 done
+
+case "${TLS_TERMINATION,,}" in
+  ""|local|gateway) ;;
+  *) echo "ERROR: --tls-termination debe ser local o gateway." >&2; exit 2 ;;
+esac
+TLS_TERMINATION="${TLS_TERMINATION,,}"
+if [[ "$TLS_TERMINATION" == "gateway" ]]; then
+  SKIP_CERTBOT=1
+fi
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 [[ -n "$APP_ROOT" ]] || APP_ROOT="$(cd -- "$SCRIPT_DIR/../.." && pwd)"

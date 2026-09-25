@@ -66,9 +66,16 @@ if ($action !== '') {
             JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES
         );
     } catch (Throwable $error) {
-        http_response_code(500);
+        $status = (int)$error->getCode() === 409 ? 409 : 500;
+        http_response_code($status);
+
+        $payload = ['error' => $error->getMessage()];
+        if ($status === 409) {
+            $payload['moderation_blocked'] = true;
+        }
+
         echo json_encode(
-            ['error' => $error->getMessage()],
+            $payload,
             JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES
         );
     }
@@ -400,9 +407,29 @@ $themeBridgeVersion = is_file(__DIR__ . '/js/theme-state-bridge.js') ? (int)file
         form.append(k,v);
       }
     }
+
     const res=await fetch(location.pathname,{method:'POST',body:form,signal});
-    if(!res.ok){ const t=await res.text().catch(()=> ''); throw new Error(`HTTP ${res.status}: ${t || res.statusText}`); }
-    return res.json();
+    const raw=await res.text().catch(()=> '');
+    let payload=null;
+    try { payload=raw ? JSON.parse(raw) : null; } catch(_e) {}
+
+    if(!res.ok){
+      const error=new Error(
+        payload && payload.error
+          ? payload.error
+          : (`HTTP ${res.status}: ${raw || res.statusText}`)
+      );
+      if(payload && payload.moderation_blocked) {
+        error.moderationBlocked=true;
+      }
+      throw error;
+    }
+
+    if(!payload || typeof payload!=='object') {
+      throw new Error('El servidor no devolvió una respuesta JSON válida.');
+    }
+
+    return payload;
   }
 
   function calcNextMissingPart(et){const nums=Object.keys(et).map(n=>+n).sort((a,b)=>a-b); let e=1; for(const n of nums){ if(n!==e) return e; e++; } return e; }
@@ -758,6 +785,13 @@ $themeBridgeVersion = is_file(__DIR__ . '/js/theme-state-bridge.js') ? (int)file
 
       pauseBtn.disabled=true; resumeBtn.disabled=true;
     }catch(e){
+      if(e && e.moderationBlocked){
+        msg(`Bloqueado por moderación: ${e.message}`,'err');
+        pauseBtn.disabled=true;
+        resumeBtn.disabled=true;
+        return;
+      }
+
       msg(`Error al completar: ${e.message}`,'err');
       pauseBtn.disabled=true; resumeBtn.disabled=false;
     }

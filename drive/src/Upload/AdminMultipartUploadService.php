@@ -124,7 +124,8 @@ final class AdminMultipartUploadService
                 );
             }
             throw new RuntimeException(
-                'Este contenido está bloqueado por moderación y no puede volver a subirse.'
+                'Este contenido está bloqueado por moderación y no puede volver a subirse.',
+                409
             );
         }
 

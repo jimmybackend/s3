@@ -30,6 +30,9 @@ on:
       - 'drive/src/View/FederationPageRenderer.php'
       - 'drive/src/View/FederationReportPageRenderer.php'
       - 'drive/src/View/FederationModerationPageRenderer.php'
+      - 'drive/css/federation-moderation.css'
+      - 'drive/bin/reconcile_arcadecloud_services.sh'
+      - 'drive/tests/installer_service_reconcile_contract_smoke.php'
       - 'drive/src/Upload/UploadCatalogRepository.php'
       - 'drive/src/Upload/SingleUploadService.php'
       - 'drive/src/Upload/PublicDropzoneUploadService.php'
@@ -76,6 +79,9 @@ on:
       - 'drive/src/View/FederationPageRenderer.php'
       - 'drive/src/View/FederationReportPageRenderer.php'
       - 'drive/src/View/FederationModerationPageRenderer.php'
+      - 'drive/css/federation-moderation.css'
+      - 'drive/bin/reconcile_arcadecloud_services.sh'
+      - 'drive/tests/installer_service_reconcile_contract_smoke.php'
       - 'drive/src/Upload/UploadCatalogRepository.php'
       - 'drive/src/Upload/SingleUploadService.php'
       - 'drive/src/Upload/PublicDropzoneUploadService.php'
@@ -153,6 +159,7 @@ jobs:
           bash -n drive/bin/install_arcadecloud_server.sh
           bash -n drive/bin/install_arcadecloud.sh
           bash -n drive/bin/install_federation_sync_timer.sh
+          bash -n drive/bin/reconcile_arcadecloud_services.sh
 
       - name: FederationCloud cryptographic smoke test
         run: php drive/tests/federationcloud_smoke.php

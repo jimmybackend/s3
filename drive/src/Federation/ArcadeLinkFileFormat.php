@@ -6,28 +6,22 @@ namespace ArcadeCloud\Drive\Federation;
 /**
  * Contrato nativo del archivo ArcadeLink.
  *
- * ArcadeLink usa una serialización interna JSON firmada, pero su identidad
- * externa es un archivo .arcadelink con media type propio de ArcadeCloud.
+ * La serialización interna firmada es un detalle del protocolo; externamente
+ * sólo existe el archivo .arcadelink con media type propio de ArcadeCloud.
  */
 final class ArcadeLinkFileFormat
 {
     public const EXTENSION = '.arcadelink';
     public const MIME_TYPE = 'application/vnd.arcadecloud.arcadelink';
-    public const LEGACY_JSON_SUFFIX = '.arcadelink.json';
 
     public static function acceptsFilename(string $name): bool
     {
-        $name = strtolower(trim($name));
-        return str_ends_with($name, self::EXTENSION)
-            || str_ends_with($name, self::LEGACY_JSON_SUFFIX);
+        return str_ends_with(strtolower(trim($name)), self::EXTENSION);
     }
 
     public static function canonicalFilename(string $filename, string $fallback = 'recurso.arcadelink'): string
     {
         $filename = preg_replace('/[^A-Za-z0-9._-]+/', '_', trim($filename)) ?: $fallback;
-        if (str_ends_with(strtolower($filename), self::LEGACY_JSON_SUFFIX)) {
-            $filename = substr($filename, 0, -strlen('.json'));
-        }
         if (!str_ends_with(strtolower($filename), self::EXTENSION)) {
             $filename .= self::EXTENSION;
         }

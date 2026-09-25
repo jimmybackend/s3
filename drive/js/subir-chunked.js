@@ -401,7 +401,8 @@ class SubirChunkedModule {
             method: 'POST',
             headers: {
               'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
-              'X-Requested-With': 'XMLHttpRequest'
+              'X-Requested-With': 'XMLHttpRequest',
+              'X-Drive-CSRF': CSRF
             },
             credentials: 'same-origin',
             body: completeBody.toString()
@@ -409,6 +410,9 @@ class SubirChunkedModule {
 
           const completeJson = await safeJson(completeResp);
           if (!completeResp.ok || !completeJson || completeJson.ok === false) {
+            if (completeJson && completeJson.moderation_blocked) {
+              clearSession(file);
+            }
             throw new Error(
               (completeJson && completeJson.error)
                 ? completeJson.error

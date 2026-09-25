@@ -25,6 +25,7 @@ $syncCycle = (string)file_get_contents($root . '/src/Federation/FederationSyncCy
 $syncInstaller = (string)file_get_contents($root . '/bin/install_federation_sync_timer.sh');
 $endpointRefresh = (string)file_get_contents($root . '/bin/federation_endpoint_refresh.php');
 $migrate = (string)file_get_contents($root . '/bin/federation_catalog_migrate.php');
+$schemaMigrator = (string)file_get_contents($root . '/src/Federation/FederationSchemaMigrationService.php');
 
 customsOk(str_contains($sql, 'CREATE TABLE IF NOT EXISTS FederationIngressQueue'), 'Aduana persiste en MySQL');
 customsOk(str_contains($sql, 'UNIQUE KEY uq_federation_ingress_request (RequestId)'), 'RequestId es idempotente');

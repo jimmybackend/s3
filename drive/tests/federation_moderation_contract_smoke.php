@@ -61,7 +61,7 @@ $ok(str_contains($controller, "isSuperAdmin()"), 'moderation decisions require s
 $ok(str_contains($controller, "federation_moderation_csrf"), 'moderation decisions require CSRF');
 $ok(str_contains($moderation, "public function unblock("), 'superadmin can emit moderation unblock');
 $ok(str_contains($moderation, "'moderation.unblock'"), 'unblock is propagated as signed federation event');
-$ok(str_contains($moderation, '$cleanup = $this->cleanupContent($contentId);') && strpos($moderation, '$cleanup = $this->cleanupContent($contentId);') < strpos($moderation, "decideReport($reportId, 'confirmed'"), 'cleanup occurs before report leaves pending queue');
+$ok(str_contains($moderation, '$cleanup = $this->cleanupContent($contentId);') && strpos($moderation, '$cleanup = $this->cleanupContent($contentId);') < strpos($moderation, 'decideReport($reportId, \'confirmed\''), 'cleanup occurs before report leaves pending queue');
 $ok(str_contains($reportView, '../css/styles.css'), 'public report page reuses Drive styles');
 $ok(str_contains($adminView, '../css/styles.css'), 'moderation admin reuses Drive styles');
 $ok(str_contains($adminView, 'Revocar bloqueo'), 'moderation admin exposes unblock control');

@@ -195,11 +195,13 @@ final class ArcadeCloudDriveUpdater
             return ['ok' => false, 'message' => 'falta el reconciliador de servicios del repositorio actualizado'];
         }
 
+        // No reutilizar php_user guardado: puede haberse quedado obsoleto.
+        // El reconciliador detecta el usuario del pool real de Drive (puerto 9075)
+        // y vuelve a instalar updater/helper con ese usuario.
         $cmd = [
             '/bin/bash',
             $script,
             '--app-root=' . (string)$config['repo_root'],
-            '--php-user=' . (string)$config['php_user'],
         ];
         $spec = [0 => ['file', '/dev/null', 'r'], 1 => ['pipe', 'w'], 2 => ['pipe', 'w']];
         $proc = proc_open($cmd, $spec, $pipes, null, null, ['bypass_shell' => true]);

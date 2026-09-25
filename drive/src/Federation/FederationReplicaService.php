@@ -16,6 +16,7 @@ final class FederationReplicaService
     private FederationReplicaMessageCodec $codec;
     private FederationHttpClient $http;
     private FederationEventStore $events;
+    private FederationOriginStorageResolver $originStorage;
 
     public function __construct(private DriveApplication $app)
     {
@@ -27,6 +28,7 @@ final class FederationReplicaService
         $this->codec = new FederationReplicaMessageCodec();
         $this->http = new FederationHttpClient();
         $this->events = new FederationEventStore($app->db(), $this->catalog, new FederationEventCodec());
+        $this->originStorage = new FederationOriginStorageResolver($app, $this->config, $this->identity);
     }
 
     public function queueForResource(int $userId, string $resourceId, int $copies = 2): array
@@ -46,11 +48,10 @@ final class FederationReplicaService
             throw new FederationException('El recurso excede el límite de réplica de 5 GiB de esta versión.', 413);
         }
 
-        $document = $this->decodeArcadeLink((string)($resource['ArcadeLinkJson'] ?? ''));
-        $verified = (new ArcadeLinkService($this->config, $this->identity))->parse(FederationCodec::canonicalJson($document));
-        $payload = (new ArcadeLinkService($this->config, $this->identity))->decryptLocalPayload($verified);
-        $storageRef = trim((string)($payload['storage_ref'] ?? ''));
-        if ($storageRef === '') throw new FederationException('El recurso no conserva referencia física local.', 409);
+        // SourceStorageRef conserva la key S3 canónica actual reconstruida desde FileS3.
+        // El storage_ref cifrado del ArcadeLink es una referencia lógica y no se usa
+        // directamente como Key porque puede contener sólo Encriptado.
+        $storageRef = $this->originStorage->storageKey($resource);
 
         $locations = $this->catalog->locations($resourceId);
         $already = [];
@@ -190,7 +191,14 @@ final class FederationReplicaService
                     'key_id' => $this->identity->nodeId(),
                     'value' => (string)$authorization['OriginSignature'],
                 ];
-                $sourceUrl = $this->app->shareObjectStorage()->presignedUrl((string)$job['SourceStorageRef'], '+10 minutes');
+                // Re-resolver la key canónica en cada intento también sanea trabajos
+                // antiguos que hayan guardado sólo el storage_ref lógico.
+                $sourceResource = $this->catalog->find((string)$job['ResourceId']);
+                if ($sourceResource === null) {
+                    throw new FederationException('El recurso origen ya no existe en el catálogo local.', 404);
+                }
+                $sourceKey = $this->originStorage->storageKey($sourceResource);
+                $sourceUrl = $this->app->shareObjectStorage()->presignedUrl($sourceKey, '+10 minutes');
                 $offer = $this->codec->createOffer(
                     $this->identity,
                     (string)$job['RemoteNodeId'],
@@ -348,13 +356,6 @@ final class FederationReplicaService
     private function replicaS3Key(string $originNodeId, string $resourceId): string
     {
         return 'FederationCloud/Replicas/' . $originNodeId . '/' . $resourceId;
-    }
-
-    private function decodeArcadeLink(string $json): array
-    {
-        $decoded = json_decode($json, true, 32, JSON_THROW_ON_ERROR);
-        if (!is_array($decoded) || array_is_list($decoded)) throw new FederationException('ArcadeLink de recurso local inválido.', 500);
-        return $decoded;
     }
 
     private function ensureEnabled(): void

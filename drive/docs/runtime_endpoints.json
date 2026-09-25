@@ -1569,6 +1569,14 @@
       "references": []
     },
     {
+      "path": "drive/src/Federation/ArcadeLinkFileFormat.php",
+      "size": 1632,
+      "active": false,
+      "references": [
+        "drive/tests/arcadelink_collection_regression.php"
+      ]
+    },
+    {
       "path": "drive/src/Federation/ArcadeLinkService.php",
       "size": 23433,
       "active": false,
@@ -2222,7 +2230,7 @@
     },
     {
       "path": "drive/src/Http/Controller/FederationCollectionController.php",
-      "size": 4893,
+      "size": 4810,
       "active": false,
       "references": [
         "drive/tests/arcadelink_bulk_contract_regression.php",
@@ -2231,7 +2239,7 @@
     },
     {
       "path": "drive/src/Http/Controller/FederationController.php",
-      "size": 12690,
+      "size": 12430,
       "active": false,
       "references": [
         "drive/tests/arcadelink_collection_regression.php"
@@ -2245,9 +2253,10 @@
     },
     {
       "path": "drive/src/Http/Controller/FederationDropController.php",
-      "size": 10229,
+      "size": 10331,
       "active": false,
       "references": [
+        "drive/tests/arcadelink_collection_regression.php",
         "drive/tests/federation_drop_contract_smoke.php"
       ]
     },
@@ -2904,7 +2913,7 @@
     },
     {
       "path": "drive/src/View/FederationPageRenderer.php",
-      "size": 13598,
+      "size": 13662,
       "active": false,
       "references": [
         "drive/tests/arcadelink_collection_regression.php",
@@ -3033,7 +3042,7 @@
     },
     {
       "path": "drive/tests/arcadelink_collection_regression.php",
-      "size": 3599,
+      "size": 4676,
       "active": false,
       "references": []
     },

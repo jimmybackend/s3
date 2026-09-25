@@ -200,6 +200,7 @@
 | `drive/src/Core/ApplicationKernel.php` | ninguna |
 | `drive/src/Core/BackgroundWorkerLease.php` | ninguna |
 | `drive/src/Core/DriveApplication.php` | ninguna |
+| `drive/src/Federation/ArcadeLinkFileFormat.php` | `drive/tests/arcadelink_collection_regression.php` |
 | `drive/src/Federation/ArcadeLinkService.php` | `drive/bin/federation_provider_request.php`, `drive/tests/arcadelink_collection_regression.php`, `drive/tests/federationcloud_smoke.php` |
 | `drive/src/Federation/FederatedCatalogRepository.php` | `drive/tests/federation_moderation_contract_smoke.php` |
 | `drive/src/Federation/FederatedResourceRepository.php` | `drive/tests/arcadelink_bulk_contract_regression.php` |
@@ -282,7 +283,7 @@
 | `drive/src/Http/Controller/FederationCollectionController.php` | `drive/tests/arcadelink_bulk_contract_regression.php`, `drive/tests/arcadelink_collection_regression.php` |
 | `drive/src/Http/Controller/FederationController.php` | `drive/tests/arcadelink_collection_regression.php` |
 | `drive/src/Http/Controller/FederationDirectoryController.php` | ninguna |
-| `drive/src/Http/Controller/FederationDropController.php` | `drive/tests/federation_drop_contract_smoke.php` |
+| `drive/src/Http/Controller/FederationDropController.php` | `drive/tests/arcadelink_collection_regression.php`, `drive/tests/federation_drop_contract_smoke.php` |
 | `drive/src/Http/Controller/FederationDropGoogleAuthController.php` | `drive/tests/federation_drop_contract_smoke.php` |
 | `drive/src/Http/Controller/FederationDropIngressController.php` | `drive/tests/federation_drop_ingress_smoke.php` |
 | `drive/src/Http/Controller/FederationModerationController.php` | `drive/tests/federation_moderation_contract_smoke.php` |

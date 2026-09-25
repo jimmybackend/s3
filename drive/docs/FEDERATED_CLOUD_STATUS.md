@@ -1,6 +1,6 @@
 # Estado actual: ArcadeCloud Drive + FederationCloud
 
-Fecha: **21 de septiembre de 2026**.
+Fecha: **24 de septiembre de 2026**.
 
 ArcadeCloud Drive opera como plataforma de almacenamiento multiusuario con una capa FederationCloud
 funcional para identidad, descubrimiento, autorización, catálogo, ubicaciones, réplicas y failover por
@@ -92,7 +92,11 @@ La disponibilidad es temporal; la autorización permanece hasta revocación.
 
 ### ArcadeLink
 
-`.arcadelink` es el pasaporte portable y firmado de un recurso. Puede:
+`.arcadelink` es el tipo de archivo nativo y firmado de ArcadeCloud. El contrato externo es estricto: sólo la extensión `.arcadelink` es válida y el media type es `application/vnd.arcadecloud.arcadelink`.
+
+En producción ya se validó el flujo completo de un ArcadeLink con **un archivo** y de una colección con **tres archivos**, incluyendo lectura, presentación y descarga correcta de todos los recursos. La matriz detallada de pruebas y pendientes está en `ARCADELINK_PRODUCTION_VALIDATION.md`.
+
+Puede:
 
 1. crearse desde **Compartir**;
 2. conservar `resource_id`, procedencia, visibilidad y derechos;

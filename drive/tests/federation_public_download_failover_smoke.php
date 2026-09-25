@@ -209,6 +209,6 @@ publicDownloadOk(str_contains($originStorageSource, '->storageKey((array)$open[\
 publicDownloadOk(str_contains($resolverSource, '$this->originStorage->storageKey($resource)'), 'CASE 12: descarga pública usa la key canónica');
 publicDownloadOk(!str_contains($resolverSource, 'presignedUrl($storageRef'), 'CASE 12: descarga pública no firma storage_ref como Key S3');
 publicDownloadOk(str_contains($replicaServiceSource, '$this->originStorage->storageKey($sourceResource)'), 'CASE 12: retry de réplica sanea referencias históricas');
-publicDownloadOk(!str_contains($replicaServiceSource, "presignedUrl((string)$job['SourceStorageRef']"), 'CASE 12: réplica no vuelve a firmar una referencia histórica cruda');
+publicDownloadOk(!str_contains($replicaServiceSource, 'presignedUrl((string)$job[\'SourceStorageRef\']'), 'CASE 12: réplica no vuelve a firmar una referencia histórica cruda');
 
 fwrite(STDOUT, "Federation public download failover smoke: OK\n");

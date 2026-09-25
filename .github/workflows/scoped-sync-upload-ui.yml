@@ -25,7 +25,7 @@ jobs:
   lint-and-guards:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: PHP syntax
         run: |
           php -l drive/src/Sync/S3SyncService.php
@@ -77,7 +77,7 @@ jobs:
           --health-timeout=5s
           --health-retries=20
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Scoped sync and upload registration regressions
         env:
           TEST_DB_HOST: 127.0.0.1
@@ -105,7 +105,7 @@ jobs:
           --health-timeout=5s
           --health-retries=20
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Scoped sync and upload registration regressions
         env:
           TEST_DB_HOST: 127.0.0.1

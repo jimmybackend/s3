@@ -54,7 +54,7 @@ class FederationPageModule {
     const file = this.input.files && this.input.files[0];
     if (!file) return;
 
-    if (!String(file.name || '').toLowerCase().endsWith('.arcadelink')) {
+    if (!this.isArcadeLinkFilename(file.name)) {
       this.showError('Selecciona un archivo .arcadelink válido.');
       this.input.value = '';
       return;
@@ -63,6 +63,11 @@ class FederationPageModule {
     this.setBusy(true, file.name);
     if (typeof this.form.requestSubmit === 'function') this.form.requestSubmit();
     else this.form.submit();
+  }
+
+  isArcadeLinkFilename(name) {
+    const lower = String(name || '').trim().toLowerCase();
+    return lower.endsWith('.arcadelink') || lower.endsWith('.arcadelink.json');
   }
 
   setBusy(value, fileName = '') {

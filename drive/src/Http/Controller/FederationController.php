@@ -221,7 +221,7 @@ final class FederationController
             $filename .= '.arcadelink';
         }
 
-        header('Content-Type: application/json; charset=UTF-8');
+        header('Content-Type: application/octet-stream');
         header('X-Content-Type-Options: nosniff');
         header('Content-Disposition: attachment; filename="' . $filename . '"');
         header('Content-Length: ' . (string)strlen($content));
@@ -239,8 +239,8 @@ final class FederationController
         $name = (string)($file['name'] ?? '');
         $size = (int)($file['size'] ?? -1);
         $tmp = (string)($file['tmp_name'] ?? '');
-        if (!preg_match('/\.arcadelink\z/i', $name) || $size <= 0 || $size > ArcadeLinkService::MAX_BYTES) {
-            throw new FederationException('El archivo debe terminar en .arcadelink y medir como máximo 4 MiB.');
+        if (!preg_match('/\.arcadelink(?:\.json)?\z/i', $name) || $size <= 0 || $size > ArcadeLinkService::MAX_BYTES) {
+            throw new FederationException('El archivo debe terminar en .arcadelink o .arcadelink.json y medir como máximo 4 MiB.');
         }
         if ($tmp === '' || !is_uploaded_file($tmp) || !is_readable($tmp)) {
             throw new FederationException('No se pudo validar el archivo subido.');

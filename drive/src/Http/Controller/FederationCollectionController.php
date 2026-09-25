@@ -101,7 +101,7 @@ final class FederationCollectionController
                 ]
             );
 
-            header('Content-Type: application/json; charset=UTF-8');
+            header('Content-Type: application/octet-stream');
             header('X-Content-Type-Options: nosniff');
             header('Content-Disposition: attachment; filename="' . $filename . '"');
             header('Content-Length: ' . (string)strlen($content));

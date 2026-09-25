@@ -1673,6 +1673,14 @@
       ]
     },
     {
+      "path": "drive/src/Federation/FederationContentFingerprintService.php",
+      "size": 3704,
+      "active": false,
+      "references": [
+        "drive/tests/federation_moderation_contract_smoke.php"
+      ]
+    },
+    {
       "path": "drive/src/Federation/FederationCustomsService.php",
       "size": 10779,
       "active": false,
@@ -1908,9 +1916,11 @@
     },
     {
       "path": "drive/src/Federation/FederationModerationRepository.php",
-      "size": 15474,
+      "size": 17095,
       "active": false,
-      "references": []
+      "references": [
+        "drive/tests/federation_moderation_contract_smoke.php"
+      ]
     },
     {
       "path": "drive/src/Federation/FederationModerationSchemaService.php",
@@ -1922,7 +1932,7 @@
     },
     {
       "path": "drive/src/Federation/FederationModerationService.php",
-      "size": 16019,
+      "size": 19259,
       "active": false,
       "references": [
         "drive/tests/federation_moderation_contract_smoke.php"
@@ -2094,11 +2104,12 @@
     },
     {
       "path": "drive/src/Federation/FederationService.php",
-      "size": 12644,
+      "size": 12872,
       "active": false,
       "references": [
         "drive/tests/arcadelink_bulk_contract_regression.php",
-        "drive/tests/arcadelink_collection_regression.php"
+        "drive/tests/arcadelink_collection_regression.php",
+        "drive/tests/federation_moderation_contract_smoke.php"
       ]
     },
     {
@@ -3145,7 +3156,7 @@
     },
     {
       "path": "drive/tests/federation_moderation_contract_smoke.php",
-      "size": 6267,
+      "size": 7467,
       "active": false,
       "references": []
     },

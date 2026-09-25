@@ -210,6 +210,7 @@
 | `drive/src/Federation/FederationCatalogService.php` | `drive/tests/federation_customs_contract_smoke.php` |
 | `drive/src/Federation/FederationCodec.php` | `drive/bin/federation_identity_backup.php`, `drive/bin/federation_identity_init.php`, `drive/bin/federation_identity_name.php`, `drive/bin/federation_identity_restore.php`, `drive/bin/federation_provider_request.php`, `drive/tests/federation_access_message_smoke.php`, `drive/tests/federation_catalog_event_smoke.php`, `drive/tests/federation_directory_smoke.php`, `drive/tests/federation_drop_ingress_smoke.php`, `drive/tests/federation_node_name_admin_smoke.php`, `drive/tests/federation_provider_smoke.php`, `drive/tests/federation_replica_smoke.php`, `drive/tests/federationcloud_smoke.php` |
 | `drive/src/Federation/FederationConfig.php` | `drive/bin/federation_provider_request.php`, `drive/tests/federation_directory_smoke.php`, `drive/tests/federation_node_name_admin_smoke.php`, `drive/tests/federation_replica_reconnect_contract_smoke.php`, `drive/tests/federationcloud_smoke.php` |
+| `drive/src/Federation/FederationContentFingerprintService.php` | `drive/tests/federation_moderation_contract_smoke.php` |
 | `drive/src/Federation/FederationCustomsService.php` | `drive/tests/federation_customs_contract_smoke.php` |
 | `drive/src/Federation/FederationDirectoryService.php` | `drive/tests/federation_customs_contract_smoke.php` |
 | `drive/src/Federation/FederationDropAccountRepository.php` | `drive/tests/federation_drop_contract_smoke.php` |
@@ -237,7 +238,7 @@
 | `drive/src/Federation/FederationHttpClient.php` | `drive/bin/federation_provider_request.php`, `drive/tests/federation_public_download_failover_smoke.php`, `drive/tests/federation_replica_reconnect_contract_smoke.php` |
 | `drive/src/Federation/FederationIngressQueueRepository.php` | `drive/tests/federation_customs_contract_smoke.php` |
 | `drive/src/Federation/FederationLocationSelector.php` | `drive/tests/federation_public_download_failover_smoke.php`, `drive/tests/federation_replica_smoke.php` |
-| `drive/src/Federation/FederationModerationRepository.php` | ninguna |
+| `drive/src/Federation/FederationModerationRepository.php` | `drive/tests/federation_moderation_contract_smoke.php` |
 | `drive/src/Federation/FederationModerationSchemaService.php` | `drive/tests/federation_moderation_contract_smoke.php` |
 | `drive/src/Federation/FederationModerationService.php` | `drive/tests/federation_moderation_contract_smoke.php` |
 | `drive/src/Federation/FederationMultiSourceDownloader.php` | `drive/tests/federation_drop_contract_smoke.php`, `drive/tests/federation_replica_smoke.php` |
@@ -260,7 +261,7 @@
 | `drive/src/Federation/FederationResolverService.php` | ninguna |
 | `drive/src/Federation/FederationSchemaMigrationService.php` | `drive/tests/federation_customs_contract_smoke.php`, `drive/tests/installer_service_reconcile_contract_smoke.php` |
 | `drive/src/Federation/FederationSeedConfig.php` | `drive/tests/federation_directory_smoke.php` |
-| `drive/src/Federation/FederationService.php` | `drive/tests/arcadelink_bulk_contract_regression.php`, `drive/tests/arcadelink_collection_regression.php` |
+| `drive/src/Federation/FederationService.php` | `drive/tests/arcadelink_bulk_contract_regression.php`, `drive/tests/arcadelink_collection_regression.php`, `drive/tests/federation_moderation_contract_smoke.php` |
 | `drive/src/Federation/FederationShareDownloader.php` | ninguna |
 | `drive/src/Federation/FederationShareDriveRepository.php` | ninguna |
 | `drive/src/Federation/FederationShareDriveService.php` | ninguna |

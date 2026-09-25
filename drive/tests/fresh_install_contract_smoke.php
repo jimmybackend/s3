@@ -16,6 +16,7 @@ $installer = (string)file_get_contents($repo . '/drive/bin/install_arcadecloud.s
 $server = (string)file_get_contents($repo . '/drive/bin/install_arcadecloud_server.sh');
 $mediaInstaller = (string)file_get_contents($repo . '/drive/bin/install_media_processing_worker.sh');
 $worker = (string)file_get_contents($repo . '/drive/src/Console/MediaProcessingWorkerCommand.php');
+$setupApi = (string)file_get_contents($repo . '/drive/setup/api.php');
 $setup = (string)file_get_contents($repo . '/drive/src/Setup/SetupConfigurationService.php');
 $schemaService = (string)file_get_contents($repo . '/drive/src/Setup/CanonicalDatabaseSchemaService.php');
 $sql = (string)file_get_contents($repo . '/adbbmis1_Cloud.sql');
@@ -35,6 +36,10 @@ freshInstallContract(str_contains($worker, "ffmpegHasEncoder('libmp3lame')"), 'M
 freshInstallContract(str_contains($worker, "$" . "this->findExecutable('lame')"), 'MP3 tiene fallback con lame');
 freshInstallContract(str_contains($worker, "'pcm_s16le'"), 'fallback MP3 decodifica a PCM antes de LAME');
 
+freshInstallContract(
+    str_contains($setupApi, "/src/Setup/CanonicalDatabaseSchemaService.php"),
+    'setup API carga explícitamente el servicio de esquema canónico'
+);
 freshInstallContract(str_contains($setup, 'initializeIfEmpty'), 'setup MySQL inicializa una base vacía');
 freshInstallContract(str_contains($schemaService, 'objectCount'), 'bootstrap comprueba que la DB esté vacía');
 freshInstallContract(str_contains($schemaService, 'if ($objectsBefore > 0)'), 'DB existente nunca recibe el dump completo');

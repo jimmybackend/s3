@@ -45,6 +45,8 @@ on:
       - 'drive/upload/drivers/DropboxUploader.php'
       - 'drive/js/subir.js'
       - 'drive/js/subir-dropzone.js'
+      - 'drive/js/subir-chunked.js'
+      - 'drive/up.php'
       - 'drive/tests/federationcloud_smoke.php'
       - 'drive/tests/federation_directory_smoke.php'
       - 'drive/tests/federation_provider_smoke.php'
@@ -103,6 +105,8 @@ on:
       - 'drive/upload/drivers/DropboxUploader.php'
       - 'drive/js/subir.js'
       - 'drive/js/subir-dropzone.js'
+      - 'drive/js/subir-chunked.js'
+      - 'drive/up.php'
       - 'drive/tests/federationcloud_smoke.php'
       - 'drive/tests/federation_directory_smoke.php'
       - 'drive/tests/federation_provider_smoke.php'
@@ -156,6 +160,7 @@ jobs:
           php -l drive/src/Upload/PublicDropzoneUploadService.php
           php -l drive/src/Upload/AdminMultipartUploadService.php
           php -l drive/src/Http/Controller/UploadController.php
+          php -l drive/up.php
           php -l drive/upload/ModerationUploadGuard.php
           php -l drive/upload/drivers/LocalPresignedPutUploader.php
           php -l drive/upload/drivers/Chunked15MBUploader.php
@@ -182,6 +187,7 @@ jobs:
           node --check drive/js/federation-footer.js
           node --check drive/js/subir.js
           node --check drive/js/subir-dropzone.js
+          node --check drive/js/subir-chunked.js
           bash -n drive/bin/install_federation_https_service.sh
           bash -n drive/bin/install_arcadecloud_server.sh
           bash -n drive/bin/install_arcadecloud.sh

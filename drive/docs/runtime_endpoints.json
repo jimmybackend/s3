@@ -2222,7 +2222,7 @@
     },
     {
       "path": "drive/src/Http/Controller/FederationCollectionController.php",
-      "size": 4900,
+      "size": 4893,
       "active": false,
       "references": [
         "drive/tests/arcadelink_bulk_contract_regression.php",
@@ -2231,7 +2231,7 @@
     },
     {
       "path": "drive/src/Http/Controller/FederationController.php",
-      "size": 12667,
+      "size": 12690,
       "active": false,
       "references": [
         "drive/tests/arcadelink_collection_regression.php"
@@ -2904,7 +2904,7 @@
     },
     {
       "path": "drive/src/View/FederationPageRenderer.php",
-      "size": 13556,
+      "size": 13598,
       "active": false,
       "references": [
         "drive/tests/arcadelink_collection_regression.php",
@@ -3033,7 +3033,7 @@
     },
     {
       "path": "drive/tests/arcadelink_collection_regression.php",
-      "size": 2927,
+      "size": 3599,
       "active": false,
       "references": []
     },

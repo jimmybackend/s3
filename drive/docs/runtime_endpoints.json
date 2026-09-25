@@ -1984,7 +1984,7 @@
     },
     {
       "path": "drive/src/Federation/FederationReplicaDownloader.php",
-      "size": 7057,
+      "size": 7167,
       "active": false,
       "references": [
         "drive/tests/federation_drop_ingress_smoke.php",
@@ -2017,7 +2017,7 @@
     },
     {
       "path": "drive/src/Federation/FederationReplicaResolverService.php",
-      "size": 11085,
+      "size": 12686,
       "active": false,
       "references": [
         "drive/tests/federation_drop_contract_smoke.php",
@@ -2295,7 +2295,7 @@
     },
     {
       "path": "drive/src/Http/Controller/FederationReplicaController.php",
-      "size": 6413,
+      "size": 6686,
       "active": false,
       "references": [
         "drive/tests/federation_public_download_failover_smoke.php"
@@ -3112,7 +3112,7 @@
     },
     {
       "path": "drive/tests/federation_public_download_failover_smoke.php",
-      "size": 8892,
+      "size": 9157,
       "active": false,
       "references": []
     },

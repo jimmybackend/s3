@@ -3337,7 +3337,7 @@
     },
     {
       "path": "drive/src/Federation/FederationReplicaDownloader.php",
-      "lines": 159,
+      "lines": 161,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -3397,7 +3397,7 @@
     },
     {
       "path": "drive/src/Federation/FederationReplicaResolverService.php",
-      "lines": 246,
+      "lines": 285,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -3954,7 +3954,7 @@
     },
     {
       "path": "drive/src/Http/Controller/FederationReplicaController.php",
-      "lines": 131,
+      "lines": 135,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -5879,7 +5879,7 @@
     },
     {
       "path": "drive/tests/federation_public_download_failover_smoke.php",
-      "lines": 176,
+      "lines": 178,
       "kind": "test script",
       "classes": 0,
       "functions": [

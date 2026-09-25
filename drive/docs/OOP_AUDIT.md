@@ -246,11 +246,11 @@
 | `drive/src/Federation/FederationProviderGrant.php` | 101 | class/module | 1 | — | — | — | — |
 | `drive/src/Federation/FederationPublicImportRepository.php` | 243 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Federation/FederationPublicImportService.php` | 184 | class/module | 1 | — | — | — | — |
-| `drive/src/Federation/FederationReplicaDownloader.php` | 159 | class/module | 1 | — | — | — | — |
+| `drive/src/Federation/FederationReplicaDownloader.php` | 161 | class/module | 1 | — | — | — | — |
 | `drive/src/Federation/FederationReplicaMessageCodec.php` | 154 | class/module | 1 | — | — | — | — |
 | `drive/src/Federation/FederationReplicaPresenceService.php` | 129 | class/module | 1 | — | — | — | — |
 | `drive/src/Federation/FederationReplicaRepository.php` | 294 | class/module | 1 | — | ⚠️ | — | — |
-| `drive/src/Federation/FederationReplicaResolverService.php` | 246 | class/module | 1 | — | — | — | — |
+| `drive/src/Federation/FederationReplicaResolverService.php` | 285 | class/module | 1 | — | — | — | — |
 | `drive/src/Federation/FederationReplicaService.php` | 365 | class/module | 1 | — | — | — | — |
 | `drive/src/Federation/FederationResolverService.php` | 185 | class/module | 1 | — | — | — | — |
 | `drive/src/Federation/FederationSeedConfig.php` | 83 | class/module | 1 | — | — | — | — |
@@ -287,7 +287,7 @@
 | `drive/src/Http/Controller/FederationPortalController.php` | 41 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/FederationProviderController.php` | 178 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/FederationPublicImportController.php` | 68 | class/module | 1 | — | — | — | — |
-| `drive/src/Http/Controller/FederationReplicaController.php` | 131 | class/module | 1 | — | — | — | — |
+| `drive/src/Http/Controller/FederationReplicaController.php` | 135 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/FederationShareDriveController.php` | 68 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/FileAccessController.php` | 145 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/FileKeyRotationController.php` | 35 | class/module | 1 | — | — | — | — |
@@ -412,7 +412,7 @@
 | `drive/tests/federation_moderation_contract_smoke.php` | 67 | test script | 0 | — | — | — | — |
 | `drive/tests/federation_node_name_admin_smoke.php` | 91 | test script | 0 | — | — | — | — |
 | `drive/tests/federation_provider_smoke.php` | 76 | test script | 0 | — | — | — | — |
-| `drive/tests/federation_public_download_failover_smoke.php` | 176 | test script | 0 | — | — | — | — |
+| `drive/tests/federation_public_download_failover_smoke.php` | 178 | test script | 0 | — | — | — | — |
 | `drive/tests/federation_replica_reconnect_contract_smoke.php` | 81 | test script | 0 | — | — | — | — |
 | `drive/tests/federation_replica_smoke.php` | 115 | test script | 0 | — | — | — | — |
 | `drive/tests/federationcloud_smoke.php` | 197 | test script | 0 | — | — | — | — |

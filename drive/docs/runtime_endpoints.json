@@ -618,6 +618,7 @@
         "drive/src/Http/Controller/AuthController.php",
         "drive/src/Http/Controller/FederationModerationController.php",
         "drive/src/Security/SessionManager.php",
+        "drive/src/View/FederationReportPageRenderer.php",
         "drive/tests/index_federation_drop_smoke.php",
         "drive/up.php"
       ]
@@ -941,6 +942,7 @@
         "drive/src/Http/Controller/AuthController.php",
         "drive/src/Http/Controller/FederationModerationController.php",
         "drive/src/Security/SessionManager.php",
+        "drive/src/View/FederationReportPageRenderer.php",
         "drive/tests/index_federation_drop_smoke.php",
         "drive/up.php"
       ]
@@ -973,6 +975,7 @@
         "drive/src/Http/Controller/AuthController.php",
         "drive/src/Http/Controller/FederationModerationController.php",
         "drive/src/Security/SessionManager.php",
+        "drive/src/View/FederationReportPageRenderer.php",
         "drive/tests/index_federation_drop_smoke.php",
         "drive/up.php"
       ]
@@ -1225,6 +1228,7 @@
         "drive/src/Http/Controller/AuthController.php",
         "drive/src/Http/Controller/FederationModerationController.php",
         "drive/src/Security/SessionManager.php",
+        "drive/src/View/FederationReportPageRenderer.php",
         "drive/tests/index_federation_drop_smoke.php",
         "drive/up.php"
       ]
@@ -2937,7 +2941,7 @@
     },
     {
       "path": "drive/src/View/FederationReportPageRenderer.php",
-      "size": 6066,
+      "size": 6073,
       "active": false,
       "references": [
         "drive/tests/federation_moderation_contract_smoke.php"
@@ -3177,7 +3181,7 @@
     },
     {
       "path": "drive/tests/installer_service_reconcile_contract_smoke.php",
-      "size": 9359,
+      "size": 9948,
       "active": false,
       "references": []
     },

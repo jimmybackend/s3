@@ -251,3 +251,10 @@ CI valida sin tráfico físico real:
 - rechazo de candidatos inválidos/no autorizados y límites de timeout.
 
 La transferencia real S3→provider, propagación del `location.upsert` y failover con un nodo apagado se dejan para la prueba física entre nodos. El protocolo y el código quedan preparados antes de esa prueba.
+
+
+### Key S3 del nodo origen
+
+El `storage_ref` cifrado de un ArcadeLink es una referencia lógica al archivo local y **no se usa directamente como `Key` de S3**. Para servir el origen o generar una oferta de réplica, FederationCloud vuelve a validar el ArcadeLink contra `FileS3` y reconstruye la key física canónica con `Ruta + Encriptado`. Esto mantiene compatibilidad tanto con filas históricas que guardan sólo el nombre físico como con filas que ya conservan la key completa.
+
+Los retries de trabajos de réplica también vuelven a resolver esa key canónica, por lo que una cola antigua no queda atada a un `SourceStorageRef` incompleto.

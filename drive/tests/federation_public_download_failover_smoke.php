@@ -168,7 +168,9 @@ $controllerSource = (string)file_get_contents(dirname(__DIR__) . '/src/Http/Cont
 publicDownloadOk(str_contains($resolverSource, 'requirePublicCopyable'), 'CASE 10: conserva política PUBLIC + copy_allowed');
 publicDownloadOk(str_contains($resolverSource, "'replica-resolve.php'"), 'CASE 10: conserva resolución FederationCloud máquina-a-máquina');
 publicDownloadOk(str_contains($resolverSource, '->probe('), 'CASE 10: conserva prueba real de la fuente S3');
-publicDownloadOk(str_contains($controllerSource, 'No fue posible obtener el archivo desde los nodos disponibles.'), 'CASE 10: error público no revela detalle interno');
+publicDownloadOk(str_contains($controllerSource, 'Diagnóstico FederationCloud:'), 'CASE 10: el controlador sólo deja pasar el diagnóstico seguro marcado');
+publicDownloadOk(str_contains($resolverSource, 'publicFailureDiagnostic'), 'CASE 10: el resolver reduce fallos a campos públicos acotados');
+publicDownloadOk(str_contains($probeSource, 'S3 HTTP '), 'CASE 10: la prueba S3 conserva el HTTP upstream para diagnóstico seguro');
 publicDownloadOk(!str_contains($helperSource . $resolverSource, 'listObjects'), 'CASE 10: el arreglo no lista S3');
 publicDownloadOk(!str_contains($helperSource . $resolverSource, 'ListObjects'), 'CASE 10: el arreglo no usa ListObjects');
 

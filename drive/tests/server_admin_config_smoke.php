@@ -18,7 +18,7 @@ $path = sys_get_temp_dir() . '/arcadecloud-runtime-env-' . bin2hex(random_bytes(
 $envNames = [
     'ARCADECLOUD_PUBLIC_URL', 'ARCADECLOUD_FEDERATION_ENABLED',
     'ARCADECLOUD_FEDERATION_REPLICA_ORIGIN_URL', 'ARCADECLOUD_FEDERATION_REPLICA_ROLE',
-    'ARCADECLOUD_FEDERATION_REPLICA_SCOPE', 'ARCADECLOUD_DROP_ENABLED',
+    'ARCADECLOUD_FEDERATION_REPLICA_SCOPE', 'ARCADECLOUD_TLS_TERMINATION', 'ARCADECLOUD_DROP_ENABLED',
     'ARCADECLOUD_DROP_PUBLIC_URL', 'ARCADECLOUD_DROP_COMMERCE_URL',
     'ARCADECLOUD_STRIPE_SECRET_KEY', 'ARCADECLOUD_STRIPE_WEBHOOK_SECRET', 'ARCADECLOUD_DROP_CURRENCY',
     'ARCADECLOUD_DROP_MAX_DAYS',
@@ -41,6 +41,7 @@ try {
     file_put_contents($path, json_encode([
         'ARCADECLOUD_PUBLIC_URL' => 'https://drive.example.test',
         'ARCADECLOUD_FEDERATION_ENABLED' => 'true',
+        'ARCADECLOUD_TLS_TERMINATION' => 'gateway',
         'ARCADECLOUD_DROP_ENABLED' => 'true',
         'ARCADECLOUD_DROP_PUBLIC_URL' => 'https://drive.example.test/federationdrop',
         'ARCADECLOUD_DROP_COMMERCE_URL' => 'https://drive.example.test/federationdrop',
@@ -69,6 +70,7 @@ try {
 
     ManagedRuntimeEnvironment::loadIntoProcess($path);
     serverAdminOk(getenv('ARCADECLOUD_PUBLIC_URL') === 'https://drive.example.test', 'carga variable ArcadeCloud');
+    serverAdminOk(getenv('ARCADECLOUD_TLS_TERMINATION') === 'gateway', 'carga modo TLS gateway');
     serverAdminOk(getenv('ARCADECLOUD_DROP_ENABLED') === 'true', 'carga FederationDrop administrado');
     serverAdminOk(getenv('ARCADECLOUD_STRIPE_SECRET_KEY') === $stripeKey, 'carga clave Stripe FederationDrop');
     serverAdminOk(getenv('ARCADECLOUD_STRIPE_WEBHOOK_SECRET') === $stripeWebhook, 'carga secreto webhook Stripe FederationDrop');
@@ -108,6 +110,13 @@ try {
     );
     serverAdminOk(ManagedRuntimeEnvironment::validateValue('DB_PORT', '3306') === '3306', 'acepta puerto MySQL válido');
     serverAdminOk(ManagedRuntimeEnvironment::validateValue('AWS_S3_BUCKET', 'arcadecloud-test-bucket') === 'arcadecloud-test-bucket', 'acepta nombre S3 válido');
+    serverAdminOk(
+        ManagedRuntimeEnvironment::validateValue('ARCADECLOUD_TLS_TERMINATION', 'GATEWAY') === 'gateway',
+        'normaliza terminación TLS gateway'
+    );
+    $rejected = false;
+    try { ManagedRuntimeEnvironment::validateValue('ARCADECLOUD_TLS_TERMINATION', 'external-anything'); } catch (RuntimeException) { $rejected = true; }
+    serverAdminOk($rejected, 'rechaza modo TLS desconocido');
     serverAdminOk(
         ManagedRuntimeEnvironment::validateValue('ARCADECLOUD_FEDERATION_REPLICA_ROLE', 'mirror') === 'mirror',
         'acepta rol mirror administrado'

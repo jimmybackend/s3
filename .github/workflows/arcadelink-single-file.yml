@@ -5,10 +5,12 @@ on:
     branches: ['main']
     paths:
       - 'drive/src/Federation/ArcadeLinkService.php'
+      - 'drive/src/Federation/ArcadeLinkFileFormat.php'
       - 'drive/src/Federation/FederationService.php'
       - 'drive/src/Federation/FederatedResourceRepository.php'
       - 'drive/src/Http/Controller/FederationController.php'
       - 'drive/src/Http/Controller/FederationCollectionController.php'
+      - 'drive/src/Http/Controller/FederationDropController.php'
       - 'drive/src/View/FederationPageRenderer.php'
       - 'drive/src/Http/Controller/FileAccessController.php'
       - 'drive/src/Application/FileAccessService.php'
@@ -44,10 +46,12 @@ jobs:
         run: |
           set -euo pipefail
           php -l drive/src/Federation/ArcadeLinkService.php
+          php -l drive/src/Federation/ArcadeLinkFileFormat.php
           php -l drive/src/Federation/FederationService.php
           php -l drive/src/Federation/FederatedResourceRepository.php
           php -l drive/src/Http/Controller/FederationController.php
           php -l drive/src/Http/Controller/FederationCollectionController.php
+          php -l drive/src/Http/Controller/FederationDropController.php
           php -l drive/src/View/FederationPageRenderer.php
           php -l drive/src/Http/Controller/FileAccessController.php
           php -l drive/src/Application/FileAccessService.php
@@ -90,6 +94,7 @@ jobs:
           grep -q 'arcadeLinkRights' drive/js/arcadelink-share.js
           grep -q 'arcadeLinkDiscoveryPolicy' drive/js/arcadelink-share.js
           grep -q 'federationcloud/collection.php' drive/js/arcadelink-share.js
+          grep -q 'application/vnd.arcadecloud.arcadelink' drive/src/Federation/ArcadeLinkFileFormat.php
           grep -q 'FederationCollectionController' drive/federationcloud/collection.php
           ! grep -q 'application/zip' drive/src/Http/Controller/FederationController.php
           ! grep -q 'application/zip' drive/src/Http/Controller/FederationCollectionController.php

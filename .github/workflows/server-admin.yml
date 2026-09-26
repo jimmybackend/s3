@@ -11,6 +11,7 @@ on:
       - 'drive/app_bootstrap.php'
       - 'drive/server-settings.php'
       - 'drive/fastdrive-control.php'
+      - 'drive/fastdrive-wake.php'
       - 'drive/bloque_footer.php'
       - 'drive/js/server-admin.js'
       - 'drive/js/federation-footer.js'
@@ -19,6 +20,7 @@ on:
       - 'drive/bin/install_fastdrive_gateway.sh'
       - 'drive/src/Admin/**'
       - 'drive/src/Security/SuperAdminReauthenticationService.php'
+      - 'drive/src/Security/AuthenticationRepository.php'
       - 'drive/src/Federation/FederationNodeAdminService.php'
       - 'drive/src/Federation/FederationNodeRepository.php'
       - 'drive/src/Federation/FederationDirectoryService.php'
@@ -37,6 +39,7 @@ on:
       - 'drive/app_bootstrap.php'
       - 'drive/server-settings.php'
       - 'drive/fastdrive-control.php'
+      - 'drive/fastdrive-wake.php'
       - 'drive/bloque_footer.php'
       - 'drive/js/server-admin.js'
       - 'drive/js/federation-footer.js'
@@ -45,6 +48,7 @@ on:
       - 'drive/bin/install_fastdrive_gateway.sh'
       - 'drive/src/Admin/**'
       - 'drive/src/Security/SuperAdminReauthenticationService.php'
+      - 'drive/src/Security/AuthenticationRepository.php'
       - 'drive/src/Federation/FederationNodeAdminService.php'
       - 'drive/src/Federation/FederationNodeRepository.php'
       - 'drive/src/Federation/FederationDirectoryService.php'
@@ -75,13 +79,16 @@ jobs:
           php -l drive/app_bootstrap.php
           php -l drive/server-settings.php
           php -l drive/fastdrive-control.php
+          php -l drive/fastdrive-wake.php
           php -l drive/bloque_footer.php
           php -l drive/bin/arcadecloud-drive-admin-helper.php
           php -l drive/src/Admin/ManagedRuntimeEnvironment.php
           php -l drive/src/Admin/FastDriveControlService.php
+          php -l drive/src/Admin/FastDriveWakeService.php
           php -l drive/src/Admin/PrivilegedServerHelper.php
           php -l drive/src/Admin/ServerSettingsAdminService.php
           php -l drive/src/Security/SuperAdminReauthenticationService.php
+          php -l drive/src/Security/AuthenticationRepository.php
           php -l drive/src/Federation/FederationNodeAdminService.php
           php -l drive/src/Federation/FederationNodeRepository.php
           php -l drive/src/Federation/FederationDirectoryService.php

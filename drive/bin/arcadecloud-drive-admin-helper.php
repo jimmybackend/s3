@@ -69,7 +69,7 @@ final class ArcadeCloudDriveAdminHelper
         if ($action === 'status') {
             fwrite(STDOUT, json_encode([
                 'ok' => true,
-                'version' => 8,
+                'version' => 9,
                 'capabilities' => [
                     'env_set_many' => true,
                     'db_aws_settings' => true,
@@ -80,6 +80,8 @@ final class ArcadeCloudDriveAdminHelper
                     'managed_federation_drop_settings' => true,
                     'managed_federation_drop_stripe' => true,
                     'managed_federation_drop_google' => true,
+                    'server_console' => true,
+                    'memory_drop_caches' => true,
                 ],
                 'identity_path' => $identityPath,
                 'identity_exists' => is_file($identityPath),
@@ -204,6 +206,20 @@ final class ArcadeCloudDriveAdminHelper
             exit(0);
         }
 
+        if ($action === 'server-console') {
+            $commandId = trim((string)($argv[2] ?? ''));
+            $output = $this->runServerConsoleCommand($commandId);
+            fwrite(
+                STDOUT,
+                json_encode([
+                    'ok' => true,
+                    'command' => $commandId,
+                    'output' => $output,
+                ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . "\n"
+            );
+            exit(0);
+        }
+
         if ($action === 'identity-create') {
             $name = $this->normalizeNodeName((string)($argv[2] ?? ''));
             if (is_file($identityPath)) {
@@ -264,6 +280,117 @@ final class ArcadeCloudDriveAdminHelper
         }
 
         $this->fail('Acción no permitida.', 64);
+    }
+
+    private function runServerConsoleCommand(string $commandId): string
+    {
+        return match ($commandId) {
+            'memory' => $this->runFixedCommand(['/usr/bin/free', '-h']),
+            'disk' => $this->runFixedCommand(['/usr/bin/df', '-h', '-x', 'tmpfs', '-x', 'devtmpfs']),
+            'uptime' => $this->runFixedCommand(['/usr/bin/uptime']),
+            'top-memory' => $this->runFixedCommand(
+                ['/usr/bin/ps', '-eo', 'pid,user,%mem,%cpu,rss,comm', '--sort=-rss'],
+                [0],
+                26
+            ),
+            'nginx-status' => $this->runFixedCommand(
+                ['/usr/bin/systemctl', '--no-pager', '--full', 'status', 'nginx.service'],
+                [0, 3]
+            ),
+            'php-fpm-status' => $this->runFixedCommand(
+                ['/usr/bin/systemctl', '--no-pager', '--full', 'status', 'php-fpm-drive.service'],
+                [0, 3]
+            ),
+            'memory-clear' => $this->dropLinuxCaches(),
+            default => $this->fail('Comando de terminal no permitido.', 64),
+        };
+    }
+
+    private function dropLinuxCaches(): string
+    {
+        $before = $this->runFixedCommand(['/usr/bin/free', '-h']);
+        $this->runFixedCommand(['/usr/bin/sync']);
+
+        $dropCaches = '/proc/sys/vm/drop_caches';
+        if (!is_file($dropCaches) || !is_writable($dropCaches)) {
+            $this->fail('El kernel no permite escribir en /proc/sys/vm/drop_caches.', 77);
+        }
+
+        $written = file_put_contents($dropCaches, "3\n");
+        if ($written === false) {
+            $this->fail('No se pudo liberar la caché del kernel.', 74);
+        }
+
+        $after = $this->runFixedCommand(['/usr/bin/free', '-h']);
+        return "Caché del kernel liberada (page cache, dentries e inodes).\n"
+            . "No se terminaron procesos. El servidor puede leer más desde disco temporalmente.\n\n"
+            . "ANTES\n" . $before . "\n\nDESPUÉS\n" . $after;
+    }
+
+    /**
+     * Ejecuta exclusivamente argv compilado por este helper. Nunca recibe una
+     * línea de shell desde HTTP y bypass_shell impide interpretar metacaracteres.
+     *
+     * @param array<int,string> $command
+     * @param array<int,int> $allowedExitCodes
+     */
+    private function runFixedCommand(
+        array $command,
+        array $allowedExitCodes = [0],
+        int $maxLines = 0
+    ): string {
+        if (!function_exists('proc_open')) {
+            $this->fail('proc_open no está disponible para diagnósticos del servidor.', 69);
+        }
+
+        $executable = (string)($command[0] ?? '');
+        $allowedExecutables = [
+            '/usr/bin/free',
+            '/usr/bin/df',
+            '/usr/bin/uptime',
+            '/usr/bin/ps',
+            '/usr/bin/systemctl',
+            '/usr/bin/sync',
+        ];
+        if (!in_array($executable, $allowedExecutables, true) || !is_executable($executable)) {
+            $this->fail('Ejecutable de diagnóstico no disponible o no permitido.', 69);
+        }
+
+        $descriptors = [
+            0 => ['pipe', 'r'],
+            1 => ['pipe', 'w'],
+            2 => ['pipe', 'w'],
+        ];
+        $process = proc_open($command, $descriptors, $pipes, null, null, ['bypass_shell' => true]);
+        if (!is_resource($process)) {
+            $this->fail('No se pudo iniciar el diagnóstico del servidor.', 70);
+        }
+
+        fclose($pipes[0]);
+        $stdout = stream_get_contents($pipes[1], 65537);
+        $stderr = stream_get_contents($pipes[2], 8193);
+        fclose($pipes[1]);
+        fclose($pipes[2]);
+        $exit = proc_close($process);
+
+        if (!is_string($stdout) || strlen($stdout) > 65536 || !is_string($stderr) || strlen($stderr) > 8192) {
+            $this->fail('La salida del diagnóstico fue demasiado grande.', 75);
+        }
+        if (!in_array($exit, $allowedExitCodes, true)) {
+            $message = trim($stderr);
+            $this->fail($message !== '' ? $message : 'El diagnóstico terminó con error.', $exit > 0 ? $exit : 1);
+        }
+
+        $output = trim($stdout . ($stderr !== '' ? "\n" . $stderr : ''));
+        if ($maxLines > 0 && $output !== '') {
+            $lines = preg_split('/\R/', $output) ?: [];
+            if (count($lines) > $maxLines) {
+                $output = implode("\n", array_slice($lines, 0, $maxLines))
+                    . "\n… salida recortada por seguridad";
+            }
+        }
+
+        return $output;
     }
 
     private function fail(string $message, int $code = 1): never

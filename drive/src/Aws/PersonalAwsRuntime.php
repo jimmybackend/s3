@@ -29,6 +29,11 @@ final class PersonalAwsRuntime
         return $this->config;
     }
 
+    public function session(): SessionManager
+    {
+        return $this->session;
+    }
+
     public function access(): PersonalToolAccessService
     {
         return $this->access ??= new PersonalToolAccessService(

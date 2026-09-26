@@ -69,7 +69,7 @@ final class ArcadeCloudDriveAdminHelper
         if ($action === 'status') {
             fwrite(STDOUT, json_encode([
                 'ok' => true,
-                'version' => 10,
+                'version' => 11,
                 'capabilities' => [
                     'env_set_many' => true,
                     'db_aws_settings' => true,
@@ -326,12 +326,18 @@ final class ArcadeCloudDriveAdminHelper
             ),
             'arcadecloud-services' => $this->arcadeCloudServices(),
             'arcadecloud-timers' => $this->arcadeCloudTimers(),
+            'media-worker-status' => $this->runFixedCommand(
+                ['/usr/bin/systemctl', '--no-pager', '--full', 'status', 'arcadecloud-media-worker.service'],
+                [0, 3]
+            ),
+            'media-tools' => $this->mediaTools(),
             'logs-drive' => $this->tailFixedLog('/var/log/php-fpm-drive/error.log'),
             'logs-nginx' => $this->tailFixedLog('/var/log/nginx/error.log'),
             'logs-federation' => $this->journalUnit('arcadecloud-federation-sync.service'),
             'logs-polly' => $this->journalUnit('arcadecloud-polly-reconcile.service'),
             'logs-transcribe' => $this->journalUnit('arcadecloud-transcribe-reconcile.service'),
             'logs-drop' => $this->journalUnit('arcadecloud-federation-drop-cleanup.service'),
+            'logs-media' => $this->journalUnit('arcadecloud-media-worker.service'),
             'memory-clear' => $this->dropLinuxCaches(),
             default => $this->fail('Comando de terminal no permitido.', 64),
         };
@@ -389,6 +395,35 @@ final class ArcadeCloudDriveAdminHelper
         );
     }
 
+    private function mediaTools(): string
+    {
+        $lines = ['HERRAMIENTAS MULTIMEDIA LOCALES'];
+        foreach (['ffmpeg', 'ffprobe'] as $binary) {
+            $path = null;
+            foreach (['/usr/local/bin', '/usr/bin', '/bin'] as $dir) {
+                $candidate = $dir . '/' . $binary;
+                if (is_file($candidate) && is_executable($candidate)) {
+                    $path = $candidate;
+                    break;
+                }
+            }
+
+            if ($path === null) {
+                $lines[] = $binary . ': NO DISPONIBLE';
+                continue;
+            }
+
+            $version = $this->runFixedCommand([$path, '-version'], [0], 8);
+            $firstLine = trim((string)(preg_split('/\R/', $version)[0] ?? ''));
+            $lines[] = $binary . ': OK · ' . $path;
+            if ($firstLine !== '') {
+                $lines[] = '  ' . $firstLine;
+            }
+        }
+
+        return implode("\n", $lines);
+    }
+
     private function journalUnit(string $unit): string
     {
         $allowedUnits = [
@@ -396,6 +431,7 @@ final class ArcadeCloudDriveAdminHelper
             'arcadecloud-polly-reconcile.service',
             'arcadecloud-transcribe-reconcile.service',
             'arcadecloud-federation-drop-cleanup.service',
+            'arcadecloud-media-worker.service',
         ];
         if (!in_array($unit, $allowedUnits, true)) {
             $this->fail('Unidad de journal no permitida.', 64);

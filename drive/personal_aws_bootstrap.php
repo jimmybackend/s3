@@ -1,0 +1,73 @@
+<?php
+declare(strict_types=1);
+
+/**
+ * Bootstrap mínimo para aws.php/ec2.php.
+ *
+ * Estas herramientas deben seguir disponibles aunque MySQL no esté instalado
+ * o esté temporalmente desconectado, por lo que este bootstrap carga únicamente
+ * el entorno administrado, Composer, Config-s3.php y el autoload de Drive.
+ */
+if (defined('PERSONAL_AWS_BOOTSTRAP_LOADED')) {
+    return;
+}
+
+$PROJECT_ROOT = realpath(dirname(__DIR__));
+if ($PROJECT_ROOT === false) {
+    throw new RuntimeException('No se pudo resolver la raíz del proyecto.');
+}
+
+$autoloadPath = $PROJECT_ROOT . '/vendor/autoload.php';
+$configPath = $PROJECT_ROOT . '/Config-s3.php';
+$managedEnvironmentPath = __DIR__ . '/src/Admin/ManagedRuntimeEnvironment.php';
+
+foreach ([
+    'Composer' => $autoloadPath,
+    'Configuración' => $configPath,
+    'Entorno administrado' => $managedEnvironmentPath,
+] as $nombre => $ruta) {
+    if (!is_file($ruta)) {
+        throw new RuntimeException($nombre . ' no encontrado: ' . $ruta);
+    }
+}
+
+putenv('AWS_EC2_METADATA_DISABLED=true');
+
+require_once $managedEnvironmentPath;
+
+$managedRuntimeOverride = getenv('ARCADECLOUD_RUNTIME_ENV');
+$managedRuntimePath = is_string($managedRuntimeOverride) && trim($managedRuntimeOverride) !== ''
+    ? trim($managedRuntimeOverride)
+    : null;
+
+try {
+    \ArcadeCloud\Drive\Admin\ManagedRuntimeEnvironment::loadIntoProcess($managedRuntimePath);
+} catch (Throwable $e) {
+    error_log('[ArcadeCloud personal-aws managed-env] ' . $e->getMessage());
+
+    if ($managedRuntimePath !== null) {
+        throw new RuntimeException(
+            'No se pudo cargar el entorno administrado solicitado.',
+            0,
+            $e
+        );
+    }
+}
+
+require_once $autoloadPath;
+require_once $configPath;
+
+spl_autoload_register(static function (string $class): void {
+    $prefix = 'ArcadeCloud\\Drive\\';
+    if (strncmp($class, $prefix, strlen($prefix)) !== 0) {
+        return;
+    }
+
+    $relative = substr($class, strlen($prefix));
+    $file = __DIR__ . '/src/' . str_replace('\\', '/', $relative) . '.php';
+    if (is_file($file)) {
+        require_once $file;
+    }
+});
+
+define('PERSONAL_AWS_BOOTSTRAP_LOADED', true);

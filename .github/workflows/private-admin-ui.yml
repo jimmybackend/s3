@@ -6,7 +6,12 @@ on:
     paths:
       - 'drive/bloque_carpetas.php'
       - 'drive/ec2.php'
+      - 'drive/server-console.php'
       - 'drive/aws.php'
+      - 'drive/bin/arcadecloud-drive-admin-helper.php'
+      - 'drive/src/Admin/PrivilegedServerHelper.php'
+      - 'drive/src/Admin/ServerConsoleService.php'
+      - 'drive/src/Http/Controller/ServerConsoleController.php'
       - 'drive/personal_aws_bootstrap.php'
       - 'drive/src/Aws/PersonalAwsRuntime.php'
       - 'drive/src/Http/Controller/PersonalAwsController.php'
@@ -31,7 +36,12 @@ jobs:
           set -euo pipefail
           php -l drive/bloque_carpetas.php
           php -l drive/ec2.php
+          php -l drive/server-console.php
           php -l drive/aws.php
+          php -l drive/bin/arcadecloud-drive-admin-helper.php
+          php -l drive/src/Admin/PrivilegedServerHelper.php
+          php -l drive/src/Admin/ServerConsoleService.php
+          php -l drive/src/Http/Controller/ServerConsoleController.php
           php -l drive/personal_aws_bootstrap.php
           php -l drive/src/Aws/PersonalAwsRuntime.php
           php -l drive/src/Http/Controller/PersonalAwsController.php
@@ -48,6 +58,15 @@ jobs:
           ! grep -q "actionPasswordHash()" drive/ec2.php
           grep -q "action-modal-backdrop" drive/ec2.php
           grep -q "action-modal" drive/ec2.php
+
+      - name: Restricted server console contracts
+        run: |
+          set -euo pipefail
+          php drive/tests/server_console_contract_smoke.php
+          grep -q "isServerConsoleSuperAdmin" drive/ec2.php
+          grep -q "server-console.php" drive/ec2.php
+          grep -q "server_console" drive/bin/arcadecloud-drive-admin-helper.php
+          grep -q "bypass_shell" drive/bin/arcadecloud-drive-admin-helper.php
 
       - name: Theme integration contracts
         run: |

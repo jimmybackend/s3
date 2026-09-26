@@ -25,9 +25,10 @@ final class MediaProcessingController extends AbstractJsonController
             }
 
             if ($this->request->queryString('node_status') === '1') {
+                $sourceBytes = max(0, (int)$this->request->queryString('source_bytes'));
                 JsonResponse::send([
                     'ok' => true,
-                    'node' => $node->status(),
+                    'node' => $node->status($sourceBytes),
                     'warning' => $jobs->latestOperationalWarning(),
                 ]);
             }

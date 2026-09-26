@@ -7,10 +7,12 @@
 - Con sesión autenticada del Drive, únicamente `user_id = 1` puede utilizarlas.
 - Cualquier otro usuario autenticado recibe HTTP 403.
 - Sin sesión del Drive, se requiere la contraseña privada configurada fuera del repositorio.
-- `ec2.php` exige además una segunda contraseña para ejecutar acciones de encendido o apagado.
+- `ec2.php` vuelve a pedir la misma contraseña privada para autorizar acciones de encendido o apagado.
 - Las contraseñas y las semillas TOTP no se almacenan en Git ni dentro del webroot.
 
 ## Arquitectura de acceso y TOTP
+
+`aws.php` y `ec2.php` usan un bootstrap mínimo independiente de MySQL. Así, la contraseña privada y las funciones AWS personales siguen disponibles aunque la base de datos del Drive esté desconectada. Si existe una sesión normal del Drive, el control de propietario (`user_id = 1`) continúa aplicándose desde la sesión PHP.
 
 ```text
 aws.php
@@ -28,7 +30,7 @@ ec2.php
 
 Las semillas TOTP permanecen en el servidor. El navegador recibe identificadores y etiquetas de cuenta y, cuando se solicita, el código TOTP generado por el servidor.
 
-La contraseña de acciones de `ec2.php` se conserva únicamente como hash y se verifica con `password_verify()` antes de ejecutar `start` o `stop`.
+La misma `password_hash` privada que desbloquea estas herramientas se verifica con `password_verify()` antes de ejecutar `start` o `stop` en `ec2.php`.
 
 ## Configuración privada
 
@@ -49,7 +51,6 @@ Formato:
 ```json
 {
   "password_hash": "$2y$...HASH_DE_ACCESO...",
-  "action_password_hash": "$2y$...HASH_DE_ACCIONES...",
   "issuer": "ArcadeCloud",
   "accounts": {
     "aws-main": {

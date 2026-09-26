@@ -6,6 +6,10 @@ on:
     paths:
       - 'drive/bloque_carpetas.php'
       - 'drive/ec2.php'
+      - 'drive/aws.php'
+      - 'drive/personal_aws_bootstrap.php'
+      - 'drive/src/Aws/PersonalAwsRuntime.php'
+      - 'drive/src/Http/Controller/PersonalAwsController.php'
       - 'drive/src/View/PersonalAwsPageRenderer.php'
       - 'drive/css/personal-tools.css'
       - 'drive/js/theme-state-bridge.js'
@@ -27,7 +31,23 @@ jobs:
           set -euo pipefail
           php -l drive/bloque_carpetas.php
           php -l drive/ec2.php
+          php -l drive/aws.php
+          php -l drive/personal_aws_bootstrap.php
+          php -l drive/src/Aws/PersonalAwsRuntime.php
+          php -l drive/src/Http/Controller/PersonalAwsController.php
           php -l drive/src/View/PersonalAwsPageRenderer.php
+
+      - name: Personal AWS emergency access contracts
+        run: |
+          set -euo pipefail
+          grep -q "personal_aws_bootstrap.php" drive/aws.php
+          grep -q "personal_aws_bootstrap.php" drive/ec2.php
+          ! grep -q "app_bootstrap.php" drive/aws.php
+          ! grep -q "app_bootstrap.php" drive/ec2.php
+          grep -q "passwordHash()" drive/ec2.php
+          ! grep -q "actionPasswordHash()" drive/ec2.php
+          grep -q "action-modal-backdrop" drive/ec2.php
+          grep -q "action-modal" drive/ec2.php
 
       - name: Theme integration contracts
         run: |

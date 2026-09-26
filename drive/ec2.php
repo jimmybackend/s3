@@ -1,17 +1,17 @@
 <?php
 declare(strict_types=1);
 
-require_once __DIR__ . '/app_bootstrap.php';
+require_once __DIR__ . '/personal_aws_bootstrap.php';
 
-use ArcadeCloud\Drive\Core\ApplicationKernel;
+use ArcadeCloud\Drive\Aws\PersonalAwsRuntime;
 use ArcadeCloud\Drive\Http\Request;
 use ArcadeCloud\Drive\View\PersonalAwsPageRenderer;
 use ArcadeCloud\Drive\View\Ec2PanelHelper as H;
 use Aws\Exception\AwsException;
 
-$app = ApplicationKernel::app();
+$runtime = new PersonalAwsRuntime();
 $request = Request::fromGlobals();
-$access = $app->personalToolAccessService();
+$access = $runtime->access();
 $renderer = new PersonalAwsPageRenderer();
 $accessState = $access->state();
 
@@ -20,7 +20,7 @@ if ($accessState === 'forbidden') {
 }
 
 if ($accessState === 'locked') {
-    $configured = $app->personalAwsConfig()->isConfigured();
+    $configured = $runtime->config()->isConfigured();
 
     if (
         $request->method() === 'POST'
@@ -63,7 +63,7 @@ if (empty($_SESSION['csrf'])) {
     $_SESSION['csrf'] = bin2hex(random_bytes(16));
 }
 $csrf = $_SESSION['csrf'];
-$actionPasswordHash = $app->personalAwsConfig()->actionPasswordHash();
+$controlPasswordHash = $runtime->config()->passwordHash();
 
 // ===================== DOWNLOAD RDP =====================
 if (isset($_GET['download']) && $_GET['download'] === 'rdp') {
@@ -77,7 +77,7 @@ if (isset($_GET['download']) && $_GET['download'] === 'rdp') {
     $path = __DIR__ . '/' . RDP_FILE_NAME;
 
     try {
-        $panel = $app->ec2Gateway($region);
+        $panel = $runtime->ec2Gateway($region);
         $inst  = $panel->getInstance($id);
         if (!$inst) { http_response_code(404); echo "Instancia no encontrada"; exit; }
 
@@ -126,7 +126,7 @@ if (isset($_GET['ajax']) && $_GET['ajax'] === 'status') {
     $id = isset($_GET['id']) ? (string)$_GET['id'] : '';
     if (!$id) { echo json_encode(['ok'=>false,'error'=>'Falta id']); exit; }
     try {
-        $panel = $app->ec2Gateway($region);
+        $panel = $runtime->ec2Gateway($region);
         $inst = $panel->getInstance($id);
         if (!$inst) { echo json_encode(['ok'=>false,'error'=>'Instancia no encontrada']); exit; }
         $st   = (string)($inst['State']['Name'] ?? 'unknown');
@@ -158,11 +158,11 @@ if (isset($_POST['ajax']) && $_POST['ajax'] === 'action') {
     if (!$id || !in_array($action, ['start','stop'], true)) {
         echo json_encode(['ok'=>false,'error'=>'Parámetros inválidos']); exit;
     }
-    if ($pw === '' || $actionPasswordHash === '' || !password_verify($pw, $actionPasswordHash)) {
+    if ($pw === '' || $controlPasswordHash === '' || !password_verify($pw, $controlPasswordHash)) {
         echo json_encode(['ok'=>false,'error'=>'Clave requerida o incorrecta']); exit;
     }
     try {
-        $panel = $app->ec2Gateway($region);
+        $panel = $runtime->ec2Gateway($region);
         if ($action === 'start') $panel->start($id); else $panel->stop($id, $force);
         echo json_encode(['ok'=>true,'message'=>($action==='start'?'Se solicitó encender ':'Se solicitó detener ').$id.'.']);
     } catch (AwsException $e) {
@@ -183,7 +183,7 @@ if (isset($_GET['ajax']) && $_GET['ajax'] === 'rds_status') {
     if (!H::isManualDatabase($id, MANUAL_DATABASE_IDS)) { echo json_encode(['ok'=>false,'error'=>'Base de datos no permitida en este panel']); exit; }
 
     try {
-        $panel = $app->rdsGateway($region);
+        $panel = $runtime->rdsGateway($region);
         $target = $panel->getDatabaseTarget($id);
         if ($target === null) {
             echo json_encode([
@@ -231,12 +231,12 @@ if (isset($_POST['ajax']) && $_POST['ajax'] === 'rds_action') {
     if (!H::isManualDatabase($id, MANUAL_DATABASE_IDS)) {
         echo json_encode(['ok'=>false,'error'=>'Base de datos no permitida en este panel']); exit;
     }
-    if ($pw === '' || $actionPasswordHash === '' || !password_verify($pw, $actionPasswordHash)) {
+    if ($pw === '' || $controlPasswordHash === '' || !password_verify($pw, $controlPasswordHash)) {
         echo json_encode(['ok'=>false,'error'=>'Clave requerida o incorrecta']); exit;
     }
 
     try {
-        $panel = $app->rdsGateway($region);
+        $panel = $runtime->rdsGateway($region);
         $target = $panel->getDatabaseTarget($id);
         if ($target === null) {
             echo json_encode(['ok'=>false,'error'=>'Base de datos no encontrada como RDS Instance ni como Aurora/DB Cluster']); exit;
@@ -275,7 +275,7 @@ if (isset($_POST['ajax']) && $_POST['ajax'] === 'rds_action') {
 // ===================== Render (no-AJAX) =====================
 $err = null; $awsErr = null; $rdsErr = null; $list = []; $dbList = [];
 try {
-    $panel = $app->ec2Gateway($region);
+    $panel = $runtime->ec2Gateway($region);
     $list = $panel->listInstances($state);
 
     // Fallback defensivo: si AWS devuelve una lista vacía con filtro,
@@ -300,7 +300,7 @@ try {
 }
 
 try {
-    $rdsPanel = $app->rdsGateway($region);
+    $rdsPanel = $runtime->rdsGateway($region);
     $dbList = $rdsPanel->listConfiguredDatabases(MANUAL_DATABASE_IDS);
 } catch (AwsException $e) {
     $rdsErr = ($e->getAwsErrorCode()?:'AWS').': '.($e->getAwsErrorMessage()?:$e->getMessage());
@@ -347,11 +347,11 @@ th{position:sticky;top:0;background:#0e1430}
 .alert-err{background:#2a0e13;border:1px solid #6d1f2b}
 .spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.25);border-top-color:#fff;border-radius:50%;animation:spin 0.8s linear infinite;vertical-align:middle;margin-right:6px}
 @keyframes spin{to{transform:rotate(360deg)}}
-.modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;z-index:999}
-.modal{background:#121833;border:1px solid #26305a;border-radius:12px;padding:16px;max-width:380px;width:92%}
-.modal h3{margin:0 0 10px 0}
-.modal .row{justify-content:flex-end}
-.modal-backdrop.show{display:flex}
+.action-modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;z-index:2000;padding:16px}
+.action-modal{display:block;position:relative;background:#121833;border:1px solid #26305a;border-radius:12px;padding:16px;max-width:380px;width:92%;box-shadow:0 18px 60px rgba(0,0,0,.45)}
+.action-modal h3{margin:0 0 10px 0}
+.action-modal .row{justify-content:flex-end}
+.action-modal-backdrop.show{display:flex}
 kbd{background:#0d1230;border:1px solid #26305a;border-radius:6px;padding:2px 6px}
 a.rdp{display:inline-block;margin-left:10px;color:#8ab4ff;text-decoration:none;border:1px solid #2a3f7a;padding:4px 8px;border-radius:999px;font-size:12px}
 a.rdp:hover{opacity:.9}
@@ -526,11 +526,11 @@ code{word-break:break-all}
     </div>
 </main>
 
-<div class="modal-backdrop" id="modal">
-  <div class="modal">
+<div class="action-modal-backdrop" id="modal" aria-hidden="true">
+  <div class="action-modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
     <h3 id="modalTitle">Confirmar acción AWS</h3>
-    <p id="modalText">Para encender o detener se requiere la clave.</p>
-    <p class="note">Clave: <kbd>U*******@</kbd></p>
+    <p id="modalText">Para encender o detener se requiere la contraseña privada.</p>
+    <p class="note">Usa la misma contraseña privada con la que desbloqueas esta herramienta.</p>
     <input type="password" id="pw" placeholder="Clave" autocomplete="current-password" style="width:100%;margin:8px 0">
     <div class="row">
         <button id="cancel" type="button">Cancelar</button>
@@ -564,12 +564,13 @@ code{word-break:break-all}
 
   function showModal(title, text){
     modalTitle.textContent = title || 'Confirmar acción AWS';
-    modalText.textContent = text || 'Para encender o detener se requiere la clave.';
+    modalText.textContent = text || 'Para encender o detener se requiere la misma contraseña privada de acceso.';
     modal.classList.add('show');
+    modal.setAttribute('aria-hidden', 'false');
     pwInput.value='';
     setTimeout(()=>pwInput.focus(), 0);
   }
-  function hideModal(){ modal.classList.remove('show'); }
+  function hideModal(){ modal.classList.remove('show'); modal.setAttribute('aria-hidden', 'true'); }
 
   btnCancel.addEventListener('click', ()=>{ hideModal(); pendingAction=null; });
   btnConfirm.addEventListener('click', ()=>{
@@ -717,7 +718,7 @@ code{word-break:break-all}
       if (action==='stop' && !confirm('¿Detener EC2 '+id+'?')) return;
 
       pendingAction = {kind:'ec2', id, action, force};
-      showModal('Confirmar acción EC2', 'Para encender o detener la instancia '+id+' se requiere la clave.');
+      showModal('Confirmar acción EC2', 'Para encender o detener la instancia '+id+' se requiere la misma contraseña privada de acceso.');
     }, false);
   }
 
@@ -848,7 +849,7 @@ code{word-break:break-all}
       if (!confirm('¿Deseas '+verb+' manualmente la base de datos '+id+'?')) return;
 
       pendingAction = {kind:'rds', id, action, force:false};
-      showModal('Confirmar acción RDS', 'Para '+verb+' la base de datos '+id+' se requiere la clave.');
+      showModal('Confirmar acción RDS', 'Para '+verb+' la base de datos '+id+' se requiere la misma contraseña privada de acceso.');
     }, false);
   }
 

@@ -231,6 +231,10 @@ class MediaProcessingModule {
     try {
       const url = new URL(this.endpoint, this.window.location.href);
       url.searchParams.set('node_status', '1');
+      const sourceBytes = Number(this.currentButton && this.currentButton.dataset
+        ? this.currentButton.dataset.bytes || 0
+        : 0);
+      url.searchParams.set('source_bytes', String(Math.max(0, sourceBytes || 0)));
       url.searchParams.set('_', String(Date.now()));
       const response = await this.window.fetch(url.toString(), {
         method: 'GET',
@@ -281,6 +285,9 @@ class MediaProcessingModule {
     } else if (state === 'insufficient_capacity') {
       box.className = 'alert alert-danger mb-3';
       box.textContent = node.message || 'El nodo multimedia no cumple la capacidad mínima configurada.';
+    } else if (state === 'worker_inactive') {
+      box.className = 'alert alert-danger mb-3';
+      box.textContent = node.message || 'La máquina tiene capacidad, pero el worker multimedia local no está activo.';
     } else if (state === 'stopped') {
       box.className = 'alert alert-warning mb-3';
       if (node.cost_configured === false) {
@@ -334,7 +341,7 @@ class MediaProcessingModule {
     const state = String(node.state || '');
 
     if (node.configured === false) disabled = true;
-    if (['stopping', 'dependency_missing', 'insufficient_capacity'].includes(state)) disabled = true;
+    if (['stopping', 'dependency_missing', 'insufficient_capacity', 'worker_inactive'].includes(state)) disabled = true;
     if (node.configured === true && state === 'stopped') {
       if (node.cost_configured === false) {
         disabled = true;

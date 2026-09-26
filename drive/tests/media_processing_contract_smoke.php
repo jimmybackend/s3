@@ -97,4 +97,22 @@ mediaContract(str_contains($installer, 'install_media_dependencies'), 'instalado
 mediaContract(str_contains($installer, 'command_exists ffmpeg'), 'instalador verifica ffmpeg');
 mediaContract(str_contains($installer, 'command_exists ffprobe'), 'instalador verifica ffprobe');
 
+// Selección de nodo por capacidad real, no por etiqueta.
+mediaContract(str_contains($node, 'role_is_informational'), 'el rol del nodo es informativo y no decide la capacidad');
+mediaContract(str_contains($node, 'localWorkerActive()'), 'preflight comprueba que el worker local esté realmente activo');
+mediaContract(str_contains($node, 'temporary_space_required_bytes'), 'preflight calcula espacio temporal para el archivo seleccionado');
+mediaContract(str_contains($node, 'TEMP_SPACE_MULTIPLIER = 2.25'), 'preflight conserva reserva temporal de 2.25x');
+mediaContract(str_contains($node, "selection' => 'remote_fallback'"), 'EC2 remota se usa sólo como fallback del preflight local');
+mediaContract(str_contains($service, 'prepareForWork($userId, $authorizedStart, $sourceBytes)'), 'backend pasa el tamaño real registrado al preflight');
+mediaContract(str_contains($controller, "queryString('source_bytes')"), 'consulta de estado acepta tamaño del archivo para preflight');
+mediaContract(str_contains($js, "url.searchParams.set('source_bytes'"), 'modal envía tamaño del archivo al preflight');
+mediaContract(str_contains($js, "'worker_inactive'"), 'UI bloquea un nodo local cuyo worker no está activo');
+
+$preflightPos = strpos($worker, '$this->assertWorkerCapacity();');
+$claimPos = strpos($worker, '$this->jobs->claimNext($this->workerId())');
+mediaContract(
+    $preflightPos !== false && $claimPos !== false && $preflightPos < $claimPos,
+    'worker valida CPU/RAM antes de reclamar una tarea'
+);
+
 fwrite(STDOUT, "Media processing UI/worker contract: OK\n");

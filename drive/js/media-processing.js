@@ -92,6 +92,17 @@ class MediaProcessingModule {
     }[operation] || 'Procesar archivo';
   }
 
+  submitLabel(operation) {
+    return operation === 'extract_mp3' ? 'Extraer audio' : 'Iniciar división';
+  }
+
+  cleanServerMessage(message) {
+    return String(message || '').replace(
+      /^\[(NODE_START_AUTH_REQUIRED|NODE_RATE_REQUIRED|MEDIA_WORKER_UNAVAILABLE|DEPENDENCY_MISSING|CAPACITY_INSUFFICIENT)\]\s*/,
+      ''
+    );
+  }
+
   openModal(button, operation) {
     const key = (button.dataset.key || '').trim();
     const name = (button.dataset.nombre || key).trim();
@@ -114,6 +125,7 @@ class MediaProcessingModule {
     const authorization = this.document.getElementById('mediaNodeAuthorization');
     const authorizationWrap = this.document.getElementById('mediaNodeAuthorizationWrap');
     const nodeBox = this.document.getElementById('mediaNodeStatus');
+    const submit = this.document.getElementById('btnMediaSplitSubmit');
 
     if (title) title.textContent = this.operationLabel(operation);
     if (file) file.textContent = name || key;
@@ -132,6 +144,7 @@ class MediaProcessingModule {
     }
     if (authorization) authorization.checked = false;
     if (authorizationWrap) authorizationWrap.classList.add('d-none');
+    if (submit) submit.textContent = this.submitLabel(operation);
     if (nodeBox) {
       nodeBox.className = 'alert alert-secondary mb-3';
       nodeBox.textContent = 'Comprobando el nodo de procesamiento…';
@@ -238,8 +251,8 @@ class MediaProcessingModule {
       this.node = {configured: false, state: 'unknown', status_error: true};
       const box = this.document.getElementById('mediaNodeStatus');
       if (box) {
-        box.className = 'alert alert-warning mb-3';
-        box.textContent = 'No se pudo consultar la EC2 multimedia. La tarea puede quedar en cola hasta que haya un worker disponible.';
+        box.className = 'alert alert-danger mb-3';
+        box.textContent = 'No se pudo validar el nodo multimedia. Por seguridad no se enviará la tarea hasta poder comprobarlo.';
       }
     } finally {
       this.nodeStatusLoading = false;
@@ -295,7 +308,7 @@ class MediaProcessingModule {
     const warning = node.operational_warning;
     if (warning && warning.message) {
       box.className = 'alert alert-warning mb-3';
-      box.textContent += ' Aviso reciente: ' + String(warning.message).replace(/^\[DEPENDENCY_MISSING\]\s*/, '');
+      box.textContent += ' Aviso reciente: ' + this.cleanServerMessage(warning.message);
     }
 
     if (cost) {
@@ -380,7 +393,7 @@ class MediaProcessingModule {
       if (this.window.jQuery && this.window.jQuery.fn.modal) {
         this.window.setTimeout(() => {
           this.window.jQuery('#modalMediaSplit').modal('hide');
-          if (submit) submit.textContent = 'Enviar a procesamiento';
+          if (submit) submit.textContent = this.submitLabel(operation);
           if (partsInput && operation !== 'extract_mp3') partsInput.disabled = false;
         }, 450);
       }
@@ -388,7 +401,7 @@ class MediaProcessingModule {
       const message = error && error.message ? error.message : 'No se pudo crear la tarea multimedia.';
       this.showStatus(
         'danger',
-        message.replace(/^\[(NODE_START_AUTH_REQUIRED|NODE_RATE_REQUIRED)\]\s*/, '')
+        this.cleanServerMessage(message)
       );
       if (message.includes('[NODE_START_AUTH_REQUIRED]')) {
         await this.loadNodeStatus();

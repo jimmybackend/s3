@@ -362,7 +362,10 @@ code{word-break:break-all}
 .server-console-input-row{display:flex;gap:8px;align-items:center;margin-top:10px}
 .server-console-input-row .prompt{font:700 16px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#7dff7d}
 .server-console-input-row input{flex:1;min-width:0;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
-.server-console-shortcuts{margin:10px 0}
+.server-console-shortcuts{margin:10px 0;display:grid;gap:10px}
+.server-console-group{border:1px solid #273059;border-radius:10px;padding:10px;background:#0b1020}
+.server-console-group-title{font-size:12px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;margin:0 0 8px 0;opacity:.9}
+.server-console-group .row{gap:6px}
 .server-console-shortcuts button{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px}
 </style>
 <link rel="stylesheet" href="css/styles.css?v=<?= $stylesVersion ?>">
@@ -537,14 +540,60 @@ code{word-break:break-all}
     <div class="card" id="serverConsoleCard">
         <h2>Terminal del servidor · superusuario</h2>
         <p class="note">Consola restringida para diagnóstico del EC2. Acepta únicamente comandos exactos de la lista blanca; no abre una shell del sistema.</p>
-        <div class="row server-console-shortcuts">
-            <button type="button" data-console-command="free -h">free -h</button>
-            <button type="button" data-console-command="df -h">df -h</button>
-            <button type="button" data-console-command="uptime">uptime</button>
-            <button type="button" data-console-command="ps aux --sort=-%mem">procesos RAM</button>
-            <button type="button" data-console-command="systemctl status nginx">nginx</button>
-            <button type="button" data-console-command="systemctl status php-fpm-drive">php-fpm-drive</button>
-            <button type="button" data-console-command="memory-clear">Liberar caché Linux</button>
+        <div class="server-console-shortcuts">
+            <div class="server-console-group">
+                <div class="server-console-group-title">Terminal</div>
+                <div class="row">
+                    <button type="button" data-console-command="help">help</button>
+                    <button type="button" data-console-command="clear">clear</button>
+                    <button type="button" data-console-command="pwd">pwd</button>
+                    <button type="button" data-console-command="ls -lah">ls -lah</button>
+                </div>
+            </div>
+            <div class="server-console-group">
+                <div class="server-console-group-title">Servidor</div>
+                <div class="row">
+                    <button type="button" data-console-command="uname -a">uname -a</button>
+                    <button type="button" data-console-command="uptime">uptime</button>
+                    <button type="button" data-console-command="free -h">free -h</button>
+                    <button type="button" data-console-command="df -h">df -h</button>
+                    <button type="button" data-console-command="ps aux --sort=-%mem">procesos RAM</button>
+                </div>
+            </div>
+            <div class="server-console-group">
+                <div class="server-console-group-title">Repositorio local</div>
+                <div class="row">
+                    <button type="button" data-console-command="git status">git status</button>
+                    <button type="button" data-console-command="git log -10 --oneline">últimos commits</button>
+                    <button type="button" data-console-command="du -sh .">tamaño repo</button>
+                </div>
+            </div>
+            <div class="server-console-group">
+                <div class="server-console-group-title">Servicios y tareas</div>
+                <div class="row">
+                    <button type="button" data-console-command="systemctl status nginx">nginx</button>
+                    <button type="button" data-console-command="systemctl status php-fpm-drive">php-fpm-drive</button>
+                    <button type="button" data-console-command="arcadecloud services">servicios ArcadeCloud</button>
+                    <button type="button" data-console-command="arcadecloud timers">timers / tareas</button>
+                </div>
+            </div>
+            <div class="server-console-group">
+                <div class="server-console-group-title">Logs locales</div>
+                <div class="row">
+                    <button type="button" data-console-command="logs drive">Drive / PHP-FPM</button>
+                    <button type="button" data-console-command="logs nginx">Nginx</button>
+                    <button type="button" data-console-command="logs federation">Federation</button>
+                    <button type="button" data-console-command="logs polly">Polly</button>
+                    <button type="button" data-console-command="logs transcribe">Transcribe</button>
+                    <button type="button" data-console-command="logs drop">FederationDrop</button>
+                </div>
+            </div>
+            <div class="server-console-group">
+                <div class="server-console-group-title">Mantenimiento</div>
+                <div class="row">
+                    <button type="button" data-console-command="memory-clear">Liberar caché Linux</button>
+                </div>
+            </div>
         </div>
         <pre id="serverConsoleOutput" class="server-console-output" aria-live="polite">ArcadeCloud restricted server console
 Escribe help para ver los comandos permitidos.</pre>
@@ -772,6 +821,17 @@ Escribe help para ver los comandos permitidos.</pre>
     command = String(command || '').trim();
     if (!serverConsoleCard || !command) return;
 
+    if (command === 'clear') {
+      if (serverConsoleOutput) {
+        serverConsoleOutput.textContent = '';
+      }
+      if (serverConsoleInput) {
+        serverConsoleInput.value = '';
+        serverConsoleInput.focus();
+      }
+      return;
+    }
+
     if (command === 'memory-clear' && !pw) {
       if (!confirm('Esto ejecutará sync y liberará page cache, dentries e inodes del kernel. No mata procesos, pero puede aumentar temporalmente las lecturas de disco. ¿Continuar?')) return;
       pendingAction = {kind:'console', command};
@@ -798,7 +858,11 @@ Escribe help para ver los comandos permitidos.</pre>
       });
       const data = await res.json();
       if (!res.ok || !data.ok) throw new Error(data.error || ('HTTP '+res.status));
-      appendConsole(data.output || '(sin salida)');
+      if (data.client_action === 'clear') {
+        if (serverConsoleOutput) serverConsoleOutput.textContent = '';
+      } else {
+        appendConsole(data.output || '(sin salida)');
+      }
     }catch(e){
       appendConsole('ERROR: ' + (e.message || String(e)));
     }finally{

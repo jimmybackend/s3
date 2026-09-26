@@ -91,6 +91,16 @@ final class ServerConsoleService
             'label' => 'Timers y tareas programadas de ArcadeCloud',
             'requires_password' => false,
         ],
+        'systemctl status arcadecloud-media-worker' => [
+            'id' => 'media-worker-status',
+            'label' => 'Estado del worker FFmpeg de este servidor',
+            'requires_password' => false,
+        ],
+        'media tools' => [
+            'id' => 'media-tools',
+            'label' => 'Disponibilidad y versión de FFmpeg/FFprobe',
+            'requires_password' => false,
+        ],
         'logs drive' => [
             'id' => 'logs-drive',
             'label' => 'Últimas líneas de PHP-FPM Drive',
@@ -119,6 +129,11 @@ final class ServerConsoleService
         'logs drop' => [
             'id' => 'logs-drop',
             'label' => 'Journal de limpieza FederationDrop',
+            'requires_password' => false,
+        ],
+        'logs media' => [
+            'id' => 'logs-media',
+            'label' => 'Últimos errores y actividad del worker multimedia',
             'requires_password' => false,
         ],
         'memory-clear' => [

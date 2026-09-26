@@ -13,11 +13,14 @@ on:
       - 'drive/bin/media_worker_node_bootstrap.sh'
       - 'drive/media_processing.php'
       - 'drive/js/media-processing.js'
+      - 'drive/js/aws-comprehend.js'
       - 'drive/js/background-tasks.js'
       - 'drive/bloque_archivos.php'
       - 'drive/s3.php'
       - 'drive/tests/database_schema_contract_smoke.php'
       - 'drive/tests/media_processing_contract_smoke.php'
+      - 'drive/tests/media_processing_small_file_smoke.sh'
+      - 'drive/bin/install_arcadecloud_server.sh'
       - 'adbbmis1_Cloud.sql'
       - '.github/workflows/media-processing.yml'
 
@@ -45,12 +48,21 @@ jobs:
       - name: JavaScript syntax
         run: |
           node --check drive/js/media-processing.js
+          node --check drive/js/aws-comprehend.js
           node --check drive/js/background-tasks.js
       - name: Shell syntax
         run: |
           bash -n drive/bin/install_media_processing_worker.sh
           bash -n drive/bin/media_worker_node_bootstrap.sh
+          bash -n drive/tests/media_processing_small_file_smoke.sh
       - name: Canonical schema contract
         run: php drive/tests/database_schema_contract_smoke.php
       - name: Media processing contract
         run: php drive/tests/media_processing_contract_smoke.php
+      - name: Small-file FFmpeg integration
+        run: |
+          if ! command -v ffmpeg >/dev/null 2>&1 || ! command -v ffprobe >/dev/null 2>&1; then
+            sudo apt-get update
+            sudo apt-get install -y ffmpeg
+          fi
+          bash drive/tests/media_processing_small_file_smoke.sh

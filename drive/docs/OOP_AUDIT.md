@@ -74,7 +74,7 @@
 | `drive/eliminar_carpeta.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/encriptar_archivo.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/fastdrive-control.php` | 142 | view/entrypoint | 0 | — | — | — | — |
-| `drive/fastdrive-wake.php` | 147 | view/entrypoint | 0 | — | — | — | — |
+| `drive/fastdrive-wake.php` | 188 | view/entrypoint | 0 | — | — | — | — |
 | `drive/federationcloud/access-request.php` | 11 | thin endpoint | 0 | — | — | — | — |
 | `drive/federationcloud/access-status.php` | 11 | thin endpoint | 0 | — | — | — | — |
 | `drive/federationcloud/access.php` | 11 | thin endpoint | 0 | — | — | — | — |

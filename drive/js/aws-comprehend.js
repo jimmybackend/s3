@@ -278,8 +278,20 @@ class AwsFileActionRouter {
   }
 
   buttonFromEvent(event) {
+    // Este router sólo es dueño de las acciones AWS que enumera activate().
+    // Los botones multimedia comparten el estilo .aws-file-action, pero tienen
+    // su propio módulo; capturarlos aquí bloqueaba su click posterior en touch.
+    const selector = [
+      '.aws-file-action.js-textract',
+      '.aws-file-action.js-rekognition',
+      '.aws-file-action.js-traducir',
+      '.aws-file-action.js-polly',
+      '.aws-file-action.js-transcribir',
+      '.aws-file-action.js-comprehend'
+    ].join(',');
+
     return event.target && event.target.closest
-      ? event.target.closest('.aws-file-action')
+      ? event.target.closest(selector)
       : null;
   }
 

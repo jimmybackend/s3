@@ -102,7 +102,7 @@
     },
     {
       "path": "drive/bin/arcadecloud-drive-admin-helper.php",
-      "lines": 914,
+      "lines": 950,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -650,7 +650,7 @@
     },
     {
       "path": "drive/ec2.php",
-      "lines": 1056,
+      "lines": 1059,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -1771,7 +1771,7 @@
     },
     {
       "path": "drive/s3.php",
-      "lines": 2357,
+      "lines": 2359,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -2050,7 +2050,7 @@
     },
     {
       "path": "drive/src/Admin/ServerConsoleService.php",
-      "lines": 247,
+      "lines": 262,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -2637,7 +2637,7 @@
     },
     {
       "path": "drive/src/Console/MediaProcessingWorkerCommand.php",
-      "lines": 452,
+      "lines": 481,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -4334,7 +4334,7 @@
     },
     {
       "path": "drive/src/Http/Controller/MediaProcessingController.php",
-      "lines": 48,
+      "lines": 52,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -4745,7 +4745,7 @@
     },
     {
       "path": "drive/src/Media/MediaWorkerNodeService.php",
-      "lines": 232,
+      "lines": 358,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -6263,7 +6263,7 @@
     },
     {
       "path": "drive/tests/media_processing_contract_smoke.php",
-      "lines": 54,
+      "lines": 101,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -6344,7 +6344,7 @@
     },
     {
       "path": "drive/tests/server_console_contract_smoke.php",
-      "lines": 107,
+      "lines": 116,
       "kind": "test script",
       "classes": 0,
       "functions": [],
@@ -7080,7 +7080,7 @@
     },
     {
       "path": "drive/js/aws-comprehend.js",
-      "lines": 342,
+      "lines": 354,
       "kind": "class/module",
       "classes": [
         "AwsComprehendModule",
@@ -7410,7 +7410,7 @@
     },
     {
       "path": "drive/js/media-processing.js",
-      "lines": 378,
+      "lines": 491,
       "kind": "class/module",
       "classes": [
         "MediaProcessingModule"

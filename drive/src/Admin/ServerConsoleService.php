@@ -8,11 +8,47 @@ use InvalidArgumentException;
 
 final class ServerConsoleService
 {
-    /** @var array<string,array{id:string,label:string,requires_password:bool}> */
+    /** @var array<string,array{id:string,label:string,requires_password:bool,client_only?:bool}> */
     private const COMMANDS = [
         'help' => [
             'id' => 'help',
             'label' => 'Mostrar comandos permitidos',
+            'requires_password' => false,
+        ],
+        'clear' => [
+            'id' => 'clear',
+            'label' => 'Limpiar la pantalla de la terminal',
+            'requires_password' => false,
+            'client_only' => true,
+        ],
+        'pwd' => [
+            'id' => 'repo-pwd',
+            'label' => 'Ruta local donde está instalado ArcadeCloud',
+            'requires_password' => false,
+        ],
+        'ls -lah' => [
+            'id' => 'repo-list',
+            'label' => 'Archivos del directorio raíz del repositorio',
+            'requires_password' => false,
+        ],
+        'git status' => [
+            'id' => 'repo-status',
+            'label' => 'Estado, rama y cambios locales del repositorio',
+            'requires_password' => false,
+        ],
+        'git log -10 --oneline' => [
+            'id' => 'repo-log',
+            'label' => 'Últimos 10 commits instalados',
+            'requires_password' => false,
+        ],
+        'du -sh .' => [
+            'id' => 'repo-size',
+            'label' => 'Espacio ocupado por el repositorio local',
+            'requires_password' => false,
+        ],
+        'uname -a' => [
+            'id' => 'system-uname',
+            'label' => 'Kernel y plataforma del servidor',
             'requires_password' => false,
         ],
         'free -h' => [
@@ -45,6 +81,46 @@ final class ServerConsoleService
             'label' => 'Estado de PHP-FPM Drive',
             'requires_password' => false,
         ],
+        'arcadecloud services' => [
+            'id' => 'arcadecloud-services',
+            'label' => 'Servicios ArcadeCloud, Nginx y PHP-FPM instalados en este servidor',
+            'requires_password' => false,
+        ],
+        'arcadecloud timers' => [
+            'id' => 'arcadecloud-timers',
+            'label' => 'Timers y tareas programadas de ArcadeCloud',
+            'requires_password' => false,
+        ],
+        'logs drive' => [
+            'id' => 'logs-drive',
+            'label' => 'Últimas líneas de PHP-FPM Drive',
+            'requires_password' => false,
+        ],
+        'logs nginx' => [
+            'id' => 'logs-nginx',
+            'label' => 'Últimos errores de Nginx',
+            'requires_password' => false,
+        ],
+        'logs federation' => [
+            'id' => 'logs-federation',
+            'label' => 'Journal de FederationCloud sync',
+            'requires_password' => false,
+        ],
+        'logs polly' => [
+            'id' => 'logs-polly',
+            'label' => 'Journal del reconciliador Polly',
+            'requires_password' => false,
+        ],
+        'logs transcribe' => [
+            'id' => 'logs-transcribe',
+            'label' => 'Journal del reconciliador Transcribe',
+            'requires_password' => false,
+        ],
+        'logs drop' => [
+            'id' => 'logs-drop',
+            'label' => 'Journal de limpieza FederationDrop',
+            'requires_password' => false,
+        ],
         'memory-clear' => [
             'id' => 'memory-clear',
             'label' => 'sync + liberar page cache, dentries e inodes',
@@ -71,7 +147,7 @@ final class ServerConsoleService
             'commands' => $this->publicCommands(),
             'install_command' => 'sudo bash ' . $driveRoot
                 . '/bin/install_arcadecloud_admin_helper.sh --php-user=' . $runtimeUser,
-            'security_boundary' => 'Sólo se aceptan comandos exactos de la lista blanca; no existe shell arbitraria.',
+            'security_boundary' => 'Los comandos se ejecutan sólo en este servidor y únicamente desde una lista exacta; no existe shell arbitraria.',
         ];
     }
 
@@ -90,6 +166,16 @@ final class ServerConsoleService
                 'ok' => true,
                 'command' => $command,
                 'output' => $this->helpText(),
+                'requires_password' => false,
+            ];
+        }
+
+        if (($definition['client_only'] ?? false) === true) {
+            return [
+                'ok' => true,
+                'command' => $command,
+                'output' => '',
+                'client_action' => 'clear',
                 'requires_password' => false,
             ];
         }
@@ -140,7 +226,7 @@ final class ServerConsoleService
     {
         $lines = [
             'ArcadeCloud restricted server console',
-            'Sólo superadmin · comandos exactos permitidos:',
+            'Servidor local únicamente · sesión superadmin · comandos exactos permitidos:',
             '',
         ];
 
@@ -150,8 +236,10 @@ final class ServerConsoleService
         }
 
         $lines[] = '';
+        $lines[] = 'clear sólo limpia esta pantalla; no ejecuta nada en Linux.';
+        $lines[] = 'pwd, ls y Git siempre trabajan sobre la instalación local configurada del repositorio.';
+        $lines[] = 'Los comandos de logs muestran sólo las últimas líneas del servidor donde abriste ec2.php.';
         $lines[] = 'memory-clear no termina procesos: ejecuta sync y libera cachés del kernel.';
-        $lines[] = 'Liberar caché puede aumentar temporalmente las lecturas de disco; úsalo para diagnóstico, no como mantenimiento periódico.';
 
         return implode("\n", $lines);
     }

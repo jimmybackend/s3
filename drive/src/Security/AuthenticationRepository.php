@@ -34,6 +34,32 @@ final class AuthenticationRepository
         return is_array($row) ? $row : null;
     }
 
+    /** @return array<int,array{id:int,password:string}> */
+    public function findActiveSuperAdmins(): array
+    {
+        $result = $this->db->query(
+            "SELECT id, password
+             FROM Users
+             WHERE system_role = 'superadmin'
+               AND userstatus = 'Activo'
+             ORDER BY id ASC"
+        );
+        if (!$result) {
+            throw new RuntimeException('No se pudo consultar a los superadministradores activos.');
+        }
+
+        $rows = [];
+        while ($row = $result->fetch_assoc()) {
+            $rows[] = [
+                'id' => (int)($row['id'] ?? 0),
+                'password' => (string)($row['password'] ?? ''),
+            ];
+        }
+        $result->free();
+
+        return $rows;
+    }
+
     public function updatePasswordHash(int $userId, string $passwordHash): void
     {
         $stmt = $this->db->prepare('UPDATE Users SET password = ? WHERE id = ? LIMIT 1');

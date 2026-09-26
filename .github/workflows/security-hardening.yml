@@ -85,6 +85,7 @@ jobs:
           php drive/tests/security_hardening_smoke.php
           php drive/tests/federation_https_contract_smoke.php
           php drive/tests/setup_bootstrap_smoke.php
+          php drive/tests/server_console_contract_smoke.php
 
       - name: Security contract checks
         shell: bash

@@ -26,7 +26,7 @@
 | `drive/costos_aws.php` | `drive/s3.php` |
 | `drive/delete_multiple.php` | `drive/s3.php`, `drive/js/elimina-multiple.js`, `drive/js/file-block.js` |
 | `drive/descargar_archivo.php` | `drive/bloque_archivos.php`, `drive/tests/arcadelink_bulk_contract_regression.php` |
-| `drive/ec2.php` | `drive/personal_aws_bootstrap.php`, `drive/s3.php`, `drive/src/View/PersonalAwsPageRenderer.php`, `drive/js/estilo.js` |
+| `drive/ec2.php` | `drive/personal_aws_bootstrap.php`, `drive/s3.php`, `drive/src/View/PersonalAwsPageRenderer.php`, `drive/tests/server_console_contract_smoke.php`, `drive/js/estilo.js` |
 | `drive/editor.php` | `drive/bloque_archivos.php`, `drive/js/editar-txt.js` |
 | `drive/federationcloud/index.php` | `drive/bloque_archivos.php`, `drive/bloque_carpetas.php`, `drive/fastdrive-control.php`, `drive/s3.php`, `drive/src/Http/Controller/ActivityCostController.php`, `drive/src/Http/Controller/AuthController.php`, `drive/src/Http/Controller/FederationModerationController.php`, `drive/src/Security/SessionManager.php`, `drive/src/View/FederationReportPageRenderer.php`, `drive/tests/index_federation_drop_smoke.php`, `drive/up.php` |
 | `drive/federationcloud/moderation.php` | `drive/bloque_footer.php` |
@@ -38,9 +38,10 @@
 | `drive/leer_texto.php` | `drive/editor.php` |
 | `drive/login.php` | `drive/src/Federation/FederationDropGoogleAuthService.php`, `drive/src/View/FederationDropPageRenderer.php` |
 | `drive/logout.php` | `drive/s3.php`, `drive/src/Federation/FederationDropGoogleAuthService.php`, `drive/src/View/FederationDropPageRenderer.php` |
-| `drive/personal_aws_bootstrap.php` | `drive/aws.php`, `drive/ec2.php` |
+| `drive/personal_aws_bootstrap.php` | `drive/aws.php`, `drive/ec2.php`, `drive/server-console.php`, `drive/tests/server_console_contract_smoke.php` |
 | `drive/psesion.php` | `drive/index.php`, `drive/login.php`, `drive/tests/index_federation_drop_smoke.php` |
 | `drive/s3.php` | `drive/app_bootstrap.php`, `drive/ec2.php`, `drive/fastdrive-control.php`, `drive/personal_aws_bootstrap.php`, `drive/src/Http/Controller/AuthController.php`, `drive/src/View/ActivityCostPageRenderer.php`, `drive/src/View/FederationModerationPageRenderer.php`, `drive/src/View/FederationPageRenderer.php`, `drive/src/View/FederationPortalRenderer.php`, `drive/src/View/FederationReportPageRenderer.php`, `drive/src/View/PersonalAwsPageRenderer.php`, `drive/tests/index_federation_drop_smoke.php`, `drive/tests/media_processing_contract_smoke.php`, `drive/up.php`, `drive/js/archivos.js`, `drive/js/carpetas.js`, `drive/js/federation-share-drive.js`, `drive/js/subir.js` |
+| `drive/server-console.php` | `drive/ec2.php`, `drive/tests/server_console_contract_smoke.php` |
 | `drive/setup/index.php` | `drive/bloque_archivos.php`, `drive/bloque_carpetas.php`, `drive/fastdrive-control.php`, `drive/s3.php`, `drive/src/Http/Controller/ActivityCostController.php`, `drive/src/Http/Controller/AuthController.php`, `drive/src/Http/Controller/FederationModerationController.php`, `drive/src/Security/SessionManager.php`, `drive/src/View/FederationReportPageRenderer.php`, `drive/tests/index_federation_drop_smoke.php`, `drive/up.php` |
 | `drive/src/Admin/ManagedRuntimeEnvironment.php` | `drive/app_bootstrap.php`, `drive/personal_aws_bootstrap.php`, `drive/setup/api.php`, `drive/tests/fastdrive_control_contract_smoke.php`, `drive/tests/installer_service_reconcile_contract_smoke.php`, `drive/tests/server_admin_config_smoke.php` |
 | `drive/src/Setup/BootstrapSetupAuth.php` | `drive/setup/api.php`, `drive/setup/index.php`, `drive/tests/setup_bootstrap_smoke.php` |
@@ -57,7 +58,7 @@
 |---|---|
 | `drive/actualizar_ruta.php` | `drive/js/carpetas.js`, `drive/js/obtenerFiltros.js` |
 | `drive/background_tasks.php` | `drive/js/background-tasks.js` |
-| `drive/bin/arcadecloud-drive-admin-helper.php` | `drive/tests/fastdrive_control_contract_smoke.php`, `drive/tests/installer_service_reconcile_contract_smoke.php`, `drive/tests/setup_finalize_contract_smoke.php` |
+| `drive/bin/arcadecloud-drive-admin-helper.php` | `drive/tests/fastdrive_control_contract_smoke.php`, `drive/tests/installer_service_reconcile_contract_smoke.php`, `drive/tests/server_console_contract_smoke.php`, `drive/tests/setup_finalize_contract_smoke.php` |
 | `drive/bin/arcadecloud-drive-updater.php` | `drive/tests/installer_service_reconcile_contract_smoke.php` |
 | `drive/bin/federation_catalog_migrate.php` | `drive/tests/federation_customs_contract_smoke.php`, `drive/tests/federation_moderation_contract_smoke.php`, `drive/tests/installer_service_reconcile_contract_smoke.php`, `drive/tests/setup_finalize_contract_smoke.php` |
 | `drive/bin/federation_drop_cleanup.php` | ninguna |
@@ -160,7 +161,8 @@
 | `drive/src/Admin/ArcadeCloudUpdaterService.php` | `drive/tests/federation_moderation_contract_smoke.php`, `drive/tests/installer_service_reconcile_contract_smoke.php` |
 | `drive/src/Admin/FastDriveControlService.php` | `drive/tests/fastdrive_control_contract_smoke.php` |
 | `drive/src/Admin/FastDriveWakeService.php` | `drive/tests/fastdrive_control_contract_smoke.php` |
-| `drive/src/Admin/PrivilegedServerHelper.php` | `drive/setup/api.php`, `drive/tests/setup_finalize_contract_smoke.php` |
+| `drive/src/Admin/PrivilegedServerHelper.php` | `drive/setup/api.php`, `drive/tests/server_console_contract_smoke.php`, `drive/tests/setup_finalize_contract_smoke.php` |
+| `drive/src/Admin/ServerConsoleService.php` | `drive/tests/server_console_contract_smoke.php` |
 | `drive/src/Admin/ServerSettingsAdminService.php` | ninguna |
 | `drive/src/Application/AiFileSearchService.php` | ninguna |
 | `drive/src/Application/BackgroundWorkerLauncher.php` | ninguna |
@@ -320,6 +322,7 @@
 | `drive/src/Http/Controller/PublicShareController.php` | ninguna |
 | `drive/src/Http/Controller/PublicSharedBrowserController.php` | ninguna |
 | `drive/src/Http/Controller/PublicUploadController.php` | ninguna |
+| `drive/src/Http/Controller/ServerConsoleController.php` | `drive/tests/server_console_contract_smoke.php` |
 | `drive/src/Http/Controller/ServerSettingsAdminController.php` | ninguna |
 | `drive/src/Http/Controller/ShareController.php` | ninguna |
 | `drive/src/Http/Controller/StorageUsageController.php` | ninguna |
@@ -438,6 +441,7 @@
 | `drive/tests/scoped_sync_repository_regression.php` | ninguna |
 | `drive/tests/security_hardening_smoke.php` | ninguna |
 | `drive/tests/server_admin_config_smoke.php` | ninguna |
+| `drive/tests/server_console_contract_smoke.php` | ninguna |
 | `drive/tests/setup_bootstrap_smoke.php` | ninguna |
 | `drive/tests/setup_entry_guard_smoke.php` | ninguna |
 | `drive/tests/setup_finalize_contract_smoke.php` | ninguna |

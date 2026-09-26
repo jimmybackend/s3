@@ -25,6 +25,7 @@
     "drive/personal_aws_bootstrap.php",
     "drive/psesion.php",
     "drive/s3.php",
+    "drive/server-console.php",
     "drive/setup/index.php",
     "drive/src/Admin/ManagedRuntimeEnvironment.php",
     "drive/src/Setup/BootstrapSetupAuth.php",
@@ -224,11 +225,12 @@
     },
     {
       "path": "drive/bin/arcadecloud-drive-admin-helper.php",
-      "size": 23834,
+      "size": 28843,
       "active": false,
       "references": [
         "drive/tests/fastdrive_control_contract_smoke.php",
         "drive/tests/installer_service_reconcile_contract_smoke.php",
+        "drive/tests/server_console_contract_smoke.php",
         "drive/tests/setup_finalize_contract_smoke.php"
       ]
     },
@@ -514,12 +516,13 @@
     },
     {
       "path": "drive/ec2.php",
-      "size": 37635,
+      "size": 43890,
       "active": true,
       "references": [
         "drive/personal_aws_bootstrap.php",
         "drive/s3.php",
         "drive/src/View/PersonalAwsPageRenderer.php",
+        "drive/tests/server_console_contract_smoke.php",
         "drive/js/estilo.js"
       ]
     },
@@ -1106,7 +1109,9 @@
       "active": true,
       "references": [
         "drive/aws.php",
-        "drive/ec2.php"
+        "drive/ec2.php",
+        "drive/server-console.php",
+        "drive/tests/server_console_contract_smoke.php"
       ]
     },
     {
@@ -1227,6 +1232,15 @@
         "drive/js/carpetas.js",
         "drive/js/federation-share-drive.js",
         "drive/js/subir.js"
+      ]
+    },
+    {
+      "path": "drive/server-console.php",
+      "size": 289,
+      "active": true,
+      "references": [
+        "drive/ec2.php",
+        "drive/tests/server_console_contract_smoke.php"
       ]
     },
     {
@@ -1361,11 +1375,20 @@
     },
     {
       "path": "drive/src/Admin/PrivilegedServerHelper.php",
-      "size": 5957,
+      "size": 7149,
       "active": false,
       "references": [
         "drive/setup/api.php",
+        "drive/tests/server_console_contract_smoke.php",
         "drive/tests/setup_finalize_contract_smoke.php"
+      ]
+    },
+    {
+      "path": "drive/src/Admin/ServerConsoleService.php",
+      "size": 5357,
+      "active": false,
+      "references": [
+        "drive/tests/server_console_contract_smoke.php"
       ]
     },
     {
@@ -1548,7 +1571,7 @@
     },
     {
       "path": "drive/src/Aws/PersonalAwsRuntime.php",
-      "size": 1482,
+      "size": 1572,
       "active": false,
       "references": []
     },
@@ -2545,6 +2568,14 @@
       "references": []
     },
     {
+      "path": "drive/src/Http/Controller/ServerConsoleController.php",
+      "size": 2573,
+      "active": false,
+      "references": [
+        "drive/tests/server_console_contract_smoke.php"
+      ]
+    },
+    {
       "path": "drive/src/Http/Controller/ServerSettingsAdminController.php",
       "size": 3292,
       "active": false,
@@ -3338,6 +3369,12 @@
     {
       "path": "drive/tests/server_admin_config_smoke.php",
       "size": 12908,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/tests/server_console_contract_smoke.php",
+      "size": 2520,
       "active": false,
       "references": []
     },

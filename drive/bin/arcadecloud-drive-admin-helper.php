@@ -69,7 +69,7 @@ final class ArcadeCloudDriveAdminHelper
         if ($action === 'status') {
             fwrite(STDOUT, json_encode([
                 'ok' => true,
-                'version' => 9,
+                'version' => 10,
                 'capabilities' => [
                     'env_set_many' => true,
                     'db_aws_settings' => true,
@@ -208,7 +208,8 @@ final class ArcadeCloudDriveAdminHelper
 
         if ($action === 'server-console') {
             $commandId = trim((string)($argv[2] ?? ''));
-            $output = $this->runServerConsoleCommand($commandId);
+            $appRoot = $this->safeConfiguredPath($config, 'app_root', '/var/www/arcadecloud-drive');
+            $output = $this->runServerConsoleCommand($commandId, $appRoot);
             fwrite(
                 STDOUT,
                 json_encode([
@@ -282,9 +283,31 @@ final class ArcadeCloudDriveAdminHelper
         $this->fail('Acción no permitida.', 64);
     }
 
-    private function runServerConsoleCommand(string $commandId): string
+    private function runServerConsoleCommand(string $commandId, string $appRoot): string
     {
         return match ($commandId) {
+            'repo-pwd' => $appRoot,
+            'repo-list' => $this->runFixedCommand(
+                ['/usr/bin/ls', '-lah'],
+                [0],
+                100,
+                $appRoot
+            ),
+            'repo-status' => $this->runGitCommand(
+                $appRoot,
+                ['status', '--short', '--branch']
+            ),
+            'repo-log' => $this->runGitCommand(
+                $appRoot,
+                ['log', '-10', '--oneline', '--decorate']
+            ),
+            'repo-size' => $this->runFixedCommand(
+                ['/usr/bin/du', '-sh', '.'],
+                [0],
+                20,
+                $appRoot
+            ),
+            'system-uname' => $this->runFixedCommand(['/usr/bin/uname', '-a']),
             'memory' => $this->runFixedCommand(['/usr/bin/free', '-h']),
             'disk' => $this->runFixedCommand(['/usr/bin/df', '-h', '-x', 'tmpfs', '-x', 'devtmpfs']),
             'uptime' => $this->runFixedCommand(['/usr/bin/uptime']),
@@ -301,9 +324,137 @@ final class ArcadeCloudDriveAdminHelper
                 ['/usr/bin/systemctl', '--no-pager', '--full', 'status', 'php-fpm-drive.service'],
                 [0, 3]
             ),
+            'arcadecloud-services' => $this->arcadeCloudServices(),
+            'arcadecloud-timers' => $this->arcadeCloudTimers(),
+            'logs-drive' => $this->tailFixedLog('/var/log/php-fpm-drive/error.log'),
+            'logs-nginx' => $this->tailFixedLog('/var/log/nginx/error.log'),
+            'logs-federation' => $this->journalUnit('arcadecloud-federation-sync.service'),
+            'logs-polly' => $this->journalUnit('arcadecloud-polly-reconcile.service'),
+            'logs-transcribe' => $this->journalUnit('arcadecloud-transcribe-reconcile.service'),
+            'logs-drop' => $this->journalUnit('arcadecloud-federation-drop-cleanup.service'),
             'memory-clear' => $this->dropLinuxCaches(),
             default => $this->fail('Comando de terminal no permitido.', 64),
         };
+    }
+
+    /** @param array<int,string> $args */
+    private function runGitCommand(string $appRoot, array $args): string
+    {
+        $command = [
+            '/usr/bin/git',
+            '-c',
+            'safe.directory=' . $appRoot,
+            '-C',
+            $appRoot,
+        ];
+        foreach ($args as $arg) {
+            $command[] = $arg;
+        }
+
+        return $this->runFixedCommand($command, [0], 120, $appRoot);
+    }
+
+    private function arcadeCloudServices(): string
+    {
+        $output = $this->runFixedCommand([
+            '/usr/bin/systemctl',
+            'list-units',
+            '--type=service',
+            '--all',
+            '--no-pager',
+            '--plain',
+        ]);
+
+        return $this->filterDiagnosticLines(
+            $output,
+            ['arcadecloud-', 'php-fpm-drive.service', 'nginx.service'],
+            'SERVICIOS LOCALES ARCADECLOUD / DRIVE'
+        );
+    }
+
+    private function arcadeCloudTimers(): string
+    {
+        $output = $this->runFixedCommand([
+            '/usr/bin/systemctl',
+            'list-timers',
+            '--all',
+            '--no-pager',
+            '--plain',
+        ]);
+
+        return $this->filterDiagnosticLines(
+            $output,
+            ['arcadecloud-'],
+            'TIMERS / TAREAS PROGRAMADAS ARCADECLOUD'
+        );
+    }
+
+    private function journalUnit(string $unit): string
+    {
+        $allowedUnits = [
+            'arcadecloud-federation-sync.service',
+            'arcadecloud-polly-reconcile.service',
+            'arcadecloud-transcribe-reconcile.service',
+            'arcadecloud-federation-drop-cleanup.service',
+        ];
+        if (!in_array($unit, $allowedUnits, true)) {
+            $this->fail('Unidad de journal no permitida.', 64);
+        }
+
+        return $this->runFixedCommand([
+            '/usr/bin/journalctl',
+            '-u',
+            $unit,
+            '-n',
+            '80',
+            '--no-pager',
+            '-o',
+            'short-iso',
+        ], [0], 100);
+    }
+
+    private function tailFixedLog(string $path): string
+    {
+        $allowedPaths = [
+            '/var/log/php-fpm-drive/error.log',
+            '/var/log/nginx/error.log',
+        ];
+        if (!in_array($path, $allowedPaths, true)) {
+            $this->fail('Archivo de log no permitido.', 64);
+        }
+        if (!is_file($path) || !is_readable($path)) {
+            return 'Log no disponible en este servidor: ' . $path;
+        }
+
+        return $this->runFixedCommand(
+            ['/usr/bin/tail', '-n', '80', $path],
+            [0],
+            100
+        );
+    }
+
+    /**
+     * @param array<int,string> $needles
+     */
+    private function filterDiagnosticLines(string $output, array $needles, string $title): string
+    {
+        $lines = preg_split('/\R/', $output) ?: [];
+        $matches = [];
+
+        foreach ($lines as $line) {
+            foreach ($needles as $needle) {
+                if (str_contains($line, $needle)) {
+                    $matches[] = $line;
+                    break;
+                }
+            }
+        }
+
+        if ($matches === []) {
+            return $title . "\nNo se encontraron unidades instaladas que coincidan.";
+        }
+
+        return $title . "\n" . implode("\n", array_slice($matches, 0, 80));
     }
 
     private function dropLinuxCaches(): string
@@ -337,7 +488,8 @@ final class ArcadeCloudDriveAdminHelper
     private function runFixedCommand(
         array $command,
         array $allowedExitCodes = [0],
-        int $maxLines = 0
+        int $maxLines = 0,
+        ?string $cwd = null
     ): string {
         if (!function_exists('proc_open')) {
             $this->fail('proc_open no está disponible para diagnósticos del servidor.', 69);
@@ -351,6 +503,12 @@ final class ArcadeCloudDriveAdminHelper
             '/usr/bin/ps',
             '/usr/bin/systemctl',
             '/usr/bin/sync',
+            '/usr/bin/ls',
+            '/usr/bin/du',
+            '/usr/bin/uname',
+            '/usr/bin/git',
+            '/usr/bin/journalctl',
+            '/usr/bin/tail',
         ];
         if (!in_array($executable, $allowedExecutables, true) || !is_executable($executable)) {
             $this->fail('Ejecutable de diagnóstico no disponible o no permitido.', 69);
@@ -361,7 +519,11 @@ final class ArcadeCloudDriveAdminHelper
             1 => ['pipe', 'w'],
             2 => ['pipe', 'w'],
         ];
-        $process = proc_open($command, $descriptors, $pipes, null, null, ['bypass_shell' => true]);
+        if ($cwd !== null && (!is_dir($cwd) || $cwd === '' || $cwd[0] !== '/')) {
+            $this->fail('Directorio de trabajo de diagnóstico inválido.', 64);
+        }
+
+        $process = proc_open($command, $descriptors, $pipes, $cwd, null, ['bypass_shell' => true]);
         if (!is_resource($process)) {
             $this->fail('No se pudo iniciar el diagnóstico del servidor.', 70);
         }

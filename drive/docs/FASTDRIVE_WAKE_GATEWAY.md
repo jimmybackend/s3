@@ -12,20 +12,19 @@
 
 Cuando FastDrive responde, Nginx pasa el tráfico normalmente al upstream privado.
 
-Cuando el upstream no acepta conexión o expira (`502`/`504`), el gateway redirige al control administrativo del EC2 pequeño:
+Cuando el upstream no acepta conexión o expira (`502`/`504`), Nginx hace un fallback **interno** hacia `drive/fastdrive-wake.php` en el EC2 pequeño. El navegador permanece en `https://fastdrive.esforzados.com/`; no se redirige a `drive.esforzados.com`.
 
-`https://drive.esforzados.com/fastdrive-control.php?gateway=1`
+La pantalla local:
 
-Ese control conserva las defensas existentes:
+1. sólo es ejecutable desde el vhost FastDrive mediante un parámetro FastCGI interno;
+2. usa CSRF;
+3. acepta únicamente la contraseña de un usuario `Activo` con `system_role=superadmin`;
+4. limita a cinco intentos fallidos por IP durante 15 minutos;
+5. nunca registra la contraseña;
+6. lee el Instance ID exclusivamente del entorno del servidor;
+7. sólo permite `StartInstances`.
 
-1. sesión autenticada;
-2. `system_role=superadmin`;
-3. CSRF;
-4. contraseña actual del superadmin en cada intento;
-5. Instance ID leído exclusivamente del entorno del servidor;
-6. sólo se permite `StartInstances`, nunca seleccionar otro ID desde el navegador.
-
-Después de que AWS acepte el arranque, el modo gateway reintenta automáticamente `https://fastdrive.esforzados.com/`. En cuanto el upstream privado vuelve a responder, Nginx entrega el `index.php` de FastDrive.
+Después de que AWS acepte el arranque, la misma URL se reintenta automáticamente. Mientras FastDrive no responda, el pequeño sigue mostrando el estado de arranque. En cuanto `172.31.14.35` vuelve a responder, Nginx entrega el `index.php` del FastDrive grande sin cambiar de dominio.
 
 ## Instalación en el EC2 pequeño
 
@@ -48,7 +47,8 @@ El instalador:
 - hace respaldo del vhost anterior;
 - conserva HTTPS;
 - mantiene el proxy hacia `172.31.14.35`;
-- intercepta únicamente `502` y `504`;
+- intercepta únicamente `502` y `504` mediante una ubicación Nginx interna;
+- sirve la autorización localmente con PHP-FPM `127.0.0.1:9075`;
 - ejecuta `nginx -t`;
 - restaura el vhost anterior si la validación falla;
 - recarga Nginx únicamente después de una configuración válida.

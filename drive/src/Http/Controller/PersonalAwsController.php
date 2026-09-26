@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace ArcadeCloud\Drive\Http\Controller;
 
-use ArcadeCloud\Drive\Core\DriveApplication;
+use ArcadeCloud\Drive\Aws\PersonalAwsRuntime;
 use ArcadeCloud\Drive\Http\Request;
 use ArcadeCloud\Drive\View\PersonalAwsPageRenderer;
 use Throwable;
@@ -11,7 +11,7 @@ use Throwable;
 final class PersonalAwsController
 {
     public function __construct(
-        private DriveApplication $app,
+        private PersonalAwsRuntime $runtime,
         private Request $request,
         private PersonalAwsPageRenderer $renderer = new PersonalAwsPageRenderer()
     ) {
@@ -25,7 +25,7 @@ final class PersonalAwsController
         header('X-Frame-Options: DENY');
         header('X-Content-Type-Options: nosniff');
 
-        $access = $this->app->personalToolAccessService();
+        $access = $this->runtime->access();
         $state = $access->state();
 
         if ($state === 'forbidden') {
@@ -41,13 +41,13 @@ final class PersonalAwsController
 
                 usleep(350000);
                 $this->renderer->locked(
-                    $this->app->personalAwsConfig()->passwordHash() !== '',
+                    $this->runtime->config()->passwordHash() !== '',
                     'Acceso no autorizado.'
                 );
             }
 
             $this->renderer->locked(
-                $this->app->personalAwsConfig()->passwordHash() !== ''
+                $this->runtime->config()->passwordHash() !== ''
             );
         }
 
@@ -56,7 +56,7 @@ final class PersonalAwsController
 
         if ($this->request->method() === 'POST' && $this->request->postString('action') === 'generate') {
             try {
-                $result = $this->app->personalTotpService()->generate(
+                $result = $this->runtime->totp()->generate(
                     $this->request->postString('account_id')
                 );
             } catch (Throwable $e) {
@@ -65,7 +65,7 @@ final class PersonalAwsController
         }
 
         $this->renderer->tool(
-            $this->app->personalTotpService()->accounts(),
+            $this->runtime->totp()->accounts(),
             $result,
             $error
         );

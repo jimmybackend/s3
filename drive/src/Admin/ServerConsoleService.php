@@ -60,12 +60,17 @@ final class ServerConsoleService
 
     public function state(): array
     {
+        $runtimeUser = $this->runtimeUser();
+        $driveRoot = dirname(__DIR__, 2);
+
         return [
             'ok' => true,
             'helper_available' => $this->helper->available(),
             'helper_console_ready' => $this->helper->supportsServerConsole(),
             'helper_path' => PrivilegedServerHelper::HELPER_PATH,
             'commands' => $this->publicCommands(),
+            'install_command' => 'sudo bash ' . $driveRoot
+                . '/bin/install_arcadecloud_admin_helper.sh --php-user=' . $runtimeUser,
             'security_boundary' => 'Sólo se aceptan comandos exactos de la lista blanca; no existe shell arbitraria.',
         ];
     }
@@ -117,6 +122,18 @@ final class ServerConsoleService
             ];
         }
         return $rows;
+    }
+
+    private function runtimeUser(): string
+    {
+        if (function_exists('posix_geteuid') && function_exists('posix_getpwuid')) {
+            $info = posix_getpwuid(posix_geteuid());
+            if (is_array($info) && is_string($info['name'] ?? null) && $info['name'] !== '') {
+                return $info['name'];
+            }
+        }
+
+        return 'USUARIO_PHP_FPM';
     }
 
     private function helpText(): string

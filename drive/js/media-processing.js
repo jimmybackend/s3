@@ -9,6 +9,7 @@ class MediaProcessingModule {
     this.node = null;
     this.nodeStatusLoading = false;
     this.fileTooLarge = false;
+    this.durationProbeId = 0;
   }
 
   init() {
@@ -41,6 +42,18 @@ class MediaProcessingModule {
       unit++;
     }
     return (unit === 0 ? Math.round(size) : size.toFixed(size >= 10 ? 1 : 2)) + ' ' + units[unit];
+  }
+
+  formatDuration(seconds) {
+    const value = Number(seconds);
+    if (!Number.isFinite(value) || value <= 0) return 'No disponible';
+    const total = Math.max(0, Math.round(value));
+    const hours = Math.floor(total / 3600);
+    const minutes = Math.floor((total % 3600) / 60);
+    const secs = total % 60;
+    const mm = String(minutes).padStart(2, '0');
+    const ss = String(secs).padStart(2, '0');
+    return hours > 0 ? hours + ':' + mm + ':' + ss : minutes + ':' + ss;
   }
 
   money(value) {
@@ -79,6 +92,17 @@ class MediaProcessingModule {
     }[operation] || 'Procesar archivo';
   }
 
+  submitLabel(operation) {
+    return operation === 'extract_mp3' ? 'Extraer audio' : 'Iniciar división';
+  }
+
+  cleanServerMessage(message) {
+    return String(message || '').replace(
+      /^\[(NODE_START_AUTH_REQUIRED|NODE_RATE_REQUIRED|MEDIA_WORKER_UNAVAILABLE|DEPENDENCY_MISSING|CAPACITY_INSUFFICIENT)\]\s*/,
+      ''
+    );
+  }
+
   openModal(button, operation) {
     const key = (button.dataset.key || '').trim();
     const name = (button.dataset.nombre || key).trim();
@@ -93,6 +117,7 @@ class MediaProcessingModule {
     const title = this.document.getElementById('mediaSplitTitle');
     const file = this.document.getElementById('mediaSplitFile');
     const size = this.document.getElementById('mediaSplitSize');
+    const duration = this.document.getElementById('mediaSplitDuration');
     const parts = this.document.getElementById('mediaSplitParts');
     const partsGroup = this.document.getElementById('mediaSplitPartsGroup');
     const overlap = this.document.getElementById('mediaSplitOverlapInfo');
@@ -100,10 +125,12 @@ class MediaProcessingModule {
     const authorization = this.document.getElementById('mediaNodeAuthorization');
     const authorizationWrap = this.document.getElementById('mediaNodeAuthorizationWrap');
     const nodeBox = this.document.getElementById('mediaNodeStatus');
+    const submit = this.document.getElementById('btnMediaSplitSubmit');
 
     if (title) title.textContent = this.operationLabel(operation);
     if (file) file.textContent = name || key;
     if (size) size.textContent = this.formatBytes(bytes);
+    if (duration) duration.textContent = 'Consultando…';
     if (parts) {
       parts.value = '2';
       parts.disabled = operation === 'extract_mp3';
@@ -117,6 +144,7 @@ class MediaProcessingModule {
     }
     if (authorization) authorization.checked = false;
     if (authorizationWrap) authorizationWrap.classList.add('d-none');
+    if (submit) submit.textContent = this.submitLabel(operation);
     if (nodeBox) {
       nodeBox.className = 'alert alert-secondary mb-3';
       nodeBox.textContent = 'Comprobando el nodo de procesamiento…';
@@ -130,11 +158,71 @@ class MediaProcessingModule {
     if (this.window.jQuery && this.window.jQuery.fn.modal) {
       this.window.jQuery('#modalMediaSplit').modal('show');
       this.loadNodeStatus();
+      this.loadDuration(button, operation);
     } else {
       alert('No se pudo abrir el formulario de procesamiento. Recarga la página e inténtalo de nuevo.');
     }
 
     this.updateSubmitAvailability();
+  }
+
+  async loadDuration(button, operation) {
+    const output = this.document.getElementById('mediaSplitDuration');
+    if (!output) return;
+
+    const key = (button && button.dataset && button.dataset.key || '').trim();
+    if (!key) {
+      output.textContent = 'No disponible';
+      return;
+    }
+
+    const probeId = ++this.durationProbeId;
+    const endpoint = operation === 'split_audio' ? 'token_audio.php' : 'token_video.php';
+    let media = null;
+    let timeoutId = null;
+
+    try {
+      const response = await this.window.fetch(endpoint, {
+        method: 'POST',
+        credentials: 'same-origin',
+        cache: 'no-store',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: new URLSearchParams({archivo: key}).toString()
+      });
+      const data = await response.json();
+      if (!response.ok || !data || data.estado !== 'ok' || !data.url) {
+        throw new Error((data && data.mensaje) || 'No se pudo consultar la duración.');
+      }
+
+      media = this.document.createElement(operation === 'split_audio' ? 'audio' : 'video');
+      media.preload = 'metadata';
+      media.muted = true;
+
+      const seconds = await new Promise((resolve, reject) => {
+        timeoutId = this.window.setTimeout(() => reject(new Error('Tiempo de espera agotado.')), 8000);
+        media.onloadedmetadata = () => resolve(Number(media.duration));
+        media.onerror = () => reject(new Error('El navegador no pudo leer los metadatos multimedia.'));
+        media.src = String(data.url);
+        if (typeof media.load === 'function') media.load();
+      });
+
+      if (probeId === this.durationProbeId) {
+        output.textContent = this.formatDuration(seconds);
+      }
+    } catch (_) {
+      if (probeId === this.durationProbeId) {
+        output.textContent = 'Se validará con FFprobe en el nodo';
+      }
+    } finally {
+      if (timeoutId) this.window.clearTimeout(timeoutId);
+      if (media) {
+        media.removeAttribute('src');
+        if (typeof media.load === 'function') media.load();
+      }
+    }
   }
 
   async loadNodeStatus() {
@@ -155,13 +243,16 @@ class MediaProcessingModule {
         throw new Error((data && data.error) || 'No se pudo consultar el nodo multimedia.');
       }
       this.node = data.node || {configured: false, state: 'unconfigured'};
+      if (data.warning && typeof data.warning === 'object') {
+        this.node.operational_warning = data.warning;
+      }
       this.renderNodeStatus();
     } catch (error) {
       this.node = {configured: false, state: 'unknown', status_error: true};
       const box = this.document.getElementById('mediaNodeStatus');
       if (box) {
-        box.className = 'alert alert-warning mb-3';
-        box.textContent = 'No se pudo consultar la EC2 multimedia. La tarea puede quedar en cola hasta que haya un worker disponible.';
+        box.className = 'alert alert-danger mb-3';
+        box.textContent = 'No se pudo validar el nodo multimedia. Por seguridad no se enviará la tarea hasta poder comprobarlo.';
       }
     } finally {
       this.nodeStatusLoading = false;
@@ -182,8 +273,14 @@ class MediaProcessingModule {
     authorization.checked = false;
 
     if (node.configured !== true) {
-      box.className = 'alert alert-warning mb-3';
-      box.textContent = 'No hay una EC2 multimedia de encendido automático configurada. La tarea quedará en cola hasta que haya un worker disponible.';
+      box.className = 'alert alert-danger mb-3';
+      box.textContent = node.message || 'No hay un nodo multimedia configurado para esta instalación.';
+    } else if (state === 'dependency_missing') {
+      box.className = 'alert alert-danger mb-3';
+      box.textContent = node.message || 'El nodo multimedia no tiene FFmpeg/FFprobe disponibles.';
+    } else if (state === 'insufficient_capacity') {
+      box.className = 'alert alert-danger mb-3';
+      box.textContent = node.message || 'El nodo multimedia no cumple la capacidad mínima configurada.';
     } else if (state === 'stopped') {
       box.className = 'alert alert-warning mb-3';
       if (node.cost_configured === false) {
@@ -197,13 +294,21 @@ class MediaProcessingModule {
       box.textContent = 'El nodo de alto rendimiento se está encendiendo. La tarea puede enviarse y esperará al worker.';
     } else if (state === 'running') {
       box.className = 'alert alert-success mb-3';
-      box.textContent = 'Nodo de alto rendimiento disponible.';
+      box.textContent = node.mode === 'local'
+        ? 'Worker multimedia local disponible: FFmpeg/FFprobe y capacidad mínima verificados.'
+        : 'Nodo EC2 multimedia disponible. FFmpeg y capacidad se validarán nuevamente al tomar la tarea.';
     } else if (state === 'stopping') {
       box.className = 'alert alert-danger mb-3';
       box.textContent = 'El nodo se está apagando. Espera a que termine antes de enviar otra tarea.';
     } else {
       box.className = 'alert alert-warning mb-3';
       box.textContent = 'Estado del nodo multimedia: ' + state + '.';
+    }
+
+    const warning = node.operational_warning;
+    if (warning && warning.message) {
+      box.className = 'alert alert-warning mb-3';
+      box.textContent += ' Aviso reciente: ' + this.cleanServerMessage(warning.message);
     }
 
     if (cost) {
@@ -228,7 +333,8 @@ class MediaProcessingModule {
     const node = this.node || {};
     const state = String(node.state || '');
 
-    if (state === 'stopping') disabled = true;
+    if (node.configured === false) disabled = true;
+    if (['stopping', 'dependency_missing', 'insufficient_capacity'].includes(state)) disabled = true;
     if (node.configured === true && state === 'stopped') {
       if (node.cost_configured === false) {
         disabled = true;
@@ -284,11 +390,18 @@ class MediaProcessingModule {
       if (submit) submit.textContent = 'Tarea creada';
       this.document.dispatchEvent(new CustomEvent('background-tasks:refresh'));
       this.document.dispatchEvent(new CustomEvent('drive:storage-changed'));
+      if (this.window.jQuery && this.window.jQuery.fn.modal) {
+        this.window.setTimeout(() => {
+          this.window.jQuery('#modalMediaSplit').modal('hide');
+          if (submit) submit.textContent = this.submitLabel(operation);
+          if (partsInput && operation !== 'extract_mp3') partsInput.disabled = false;
+        }, 450);
+      }
     } catch (error) {
       const message = error && error.message ? error.message : 'No se pudo crear la tarea multimedia.';
       this.showStatus(
         'danger',
-        message.replace(/^\[(NODE_START_AUTH_REQUIRED|NODE_RATE_REQUIRED)\]\s*/, '')
+        this.cleanServerMessage(message)
       );
       if (message.includes('[NODE_START_AUTH_REQUIRED]')) {
         await this.loadNodeStatus();

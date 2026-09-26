@@ -12,6 +12,8 @@ use RuntimeException;
 final class MediaProcessingWorkerCommand
 {
     private const MAX_SOURCE_BYTES = 8 * 1024 * 1024 * 1024;
+    private const MIN_VCPU = 2;
+    private const MIN_VISIBLE_MEMORY_BYTES = 7 * 1024 * 1024 * 1024;
     public function __construct(
         private DriveApplication $app,
         private MediaProcessingJobRepository $jobs,
@@ -70,6 +72,7 @@ final class MediaProcessingWorkerCommand
 
         try {
             $this->assertTools();
+            $this->assertWorkerCapacity();
 
             $head = $this->app->s3()->headObject([
                 'Bucket' => $this->app->bucket(),
@@ -380,6 +383,32 @@ final class MediaProcessingWorkerCommand
                 '[DEPENDENCY_MISSING] El nodo multimedia ' . (gethostname() ?: 'worker')
                 . ' necesita instalar FFmpeg/FFprobe. Faltan: ' . implode(', ', $missing)
                 . '. Instala las dependencias y reinicia arcadecloud-media-worker.service.'
+            );
+        }
+    }
+
+    private function assertWorkerCapacity(): void
+    {
+        $cpu = 0;
+        $cpuInfo = @file_get_contents('/proc/cpuinfo');
+        if (is_string($cpuInfo) && $cpuInfo !== '') {
+            preg_match_all('/^processor\s*:/m', $cpuInfo, $matches);
+            $cpu = count($matches[0] ?? []);
+        }
+
+        $memoryBytes = 0;
+        $memInfo = @file_get_contents('/proc/meminfo');
+        if (is_string($memInfo) && preg_match('/^MemTotal:\s+(\d+)\s+kB/im', $memInfo, $match) === 1) {
+            $memoryBytes = (int)$match[1] * 1024;
+        }
+
+        if ($cpu < self::MIN_VCPU || $memoryBytes < self::MIN_VISIBLE_MEMORY_BYTES) {
+            $memoryGiB = $memoryBytes > 0 ? round($memoryBytes / (1024 ** 3), 1) : 0;
+            throw new RuntimeException(
+                '[CAPACITY_INSUFFICIENT] El nodo multimedia no cumple el mínimo soportado: '
+                . self::MIN_VCPU . ' vCPU y una instancia de 8 GiB de RAM. '
+                . 'Detectado: ' . $cpu . ' vCPU, ' . $memoryGiB . ' GiB visibles. '
+                . 'Configura un media worker con capacidad suficiente; un nodo web pequeño no debe ejecutar este trabajo.'
             );
         }
     }

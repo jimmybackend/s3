@@ -1,7 +1,7 @@
 {
   "summary": {
-    "php_total": 446,
-    "php_class_modules": 266,
+    "php_total": 448,
+    "php_class_modules": 267,
     "php_needs_migration": 0,
     "php_tests": 41,
     "js_total": 48,
@@ -737,6 +737,24 @@
       "functions": [],
       "session": false,
       "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": true,
+      "html": true,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/fastdrive-wake.php",
+      "lines": 147,
+      "kind": "view/entrypoint",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [
+        "POST",
+        "SERVER"
+      ],
       "db": false,
       "s3": false,
       "bootstrap": true,
@@ -1948,6 +1966,21 @@
       "superglobals": [
         "SERVER"
       ],
+      "db": true,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Admin/FastDriveWakeService.php",
+      "lines": 183,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
       "db": true,
       "s3": false,
       "bootstrap": false,
@@ -4682,7 +4715,7 @@
     },
     {
       "path": "drive/src/Security/AuthenticationRepository.php",
-      "lines": 75,
+      "lines": 101,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -5781,7 +5814,7 @@
     },
     {
       "path": "drive/tests/fastdrive_control_contract_smoke.php",
-      "lines": 40,
+      "lines": 54,
       "kind": "test script",
       "classes": 0,
       "functions": [

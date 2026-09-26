@@ -1633,7 +1633,7 @@
     },
     {
       "path": "drive/src/Console/MediaProcessingWorkerCommand.php",
-      "size": 17608,
+      "size": 18240,
       "active": false,
       "references": [
         "drive/tests/fresh_install_contract_smoke.php",
@@ -2525,7 +2525,7 @@
     },
     {
       "path": "drive/src/Http/Controller/MediaProcessingController.php",
-      "size": 1848,
+      "size": 1949,
       "active": false,
       "references": [
         "drive/tests/media_processing_contract_smoke.php"
@@ -2695,7 +2695,7 @@
     },
     {
       "path": "drive/src/Media/MediaProcessingService.php",
-      "size": 3565,
+      "size": 3579,
       "active": false,
       "references": [
         "drive/tests/media_processing_contract_smoke.php"
@@ -2703,7 +2703,7 @@
     },
     {
       "path": "drive/src/Media/MediaWorkerNodeService.php",
-      "size": 13774,
+      "size": 17098,
       "active": false,
       "references": [
         "drive/tests/media_processing_contract_smoke.php"
@@ -3350,7 +3350,7 @@
     },
     {
       "path": "drive/tests/media_processing_contract_smoke.php",
-      "size": 8184,
+      "size": 9695,
       "active": false,
       "references": []
     },

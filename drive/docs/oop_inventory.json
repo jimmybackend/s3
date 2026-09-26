@@ -1,9 +1,9 @@
 {
   "summary": {
-    "php_total": 450,
-    "php_class_modules": 269,
+    "php_total": 454,
+    "php_class_modules": 271,
     "php_needs_migration": 0,
-    "php_tests": 41,
+    "php_tests": 42,
     "js_total": 48,
     "js_class_modules": 48,
     "js_needs_migration": 0,
@@ -102,7 +102,7 @@
     },
     {
       "path": "drive/bin/arcadecloud-drive-admin-helper.php",
-      "lines": 625,
+      "lines": 752,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -650,7 +650,7 @@
     },
     {
       "path": "drive/ec2.php",
-      "lines": 860,
+      "lines": 992,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -1788,6 +1788,21 @@
       "issues": []
     },
     {
+      "path": "drive/server-console.php",
+      "lines": 12,
+      "kind": "thin endpoint",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
       "path": "drive/server-settings.php",
       "lines": 11,
       "kind": "thin endpoint",
@@ -2020,7 +2035,22 @@
     },
     {
       "path": "drive/src/Admin/PrivilegedServerHelper.php",
-      "lines": 150,
+      "lines": 183,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Admin/ServerConsoleService.php",
+      "lines": 159,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -2472,7 +2502,7 @@
     },
     {
       "path": "drive/src/Aws/PersonalAwsRuntime.php",
-      "lines": 56,
+      "lines": 61,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -4423,6 +4453,21 @@
       "issues": []
     },
     {
+      "path": "drive/src/Http/Controller/ServerConsoleController.php",
+      "lines": 72,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
       "path": "drive/src/Http/Controller/ServerSettingsAdminController.php",
       "lines": 73,
       "kind": "class/module",
@@ -6288,6 +6333,21 @@
       "functions": [
         "serverAdminOk"
       ],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/tests/server_console_contract_smoke.php",
+      "lines": 74,
+      "kind": "test script",
+      "classes": 0,
+      "functions": [],
       "session": false,
       "superglobals": [],
       "db": false,

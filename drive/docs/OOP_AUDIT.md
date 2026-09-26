@@ -4,10 +4,10 @@
 
 ## Resumen
 
-- PHP analizados: **450**
-- PHP que ya contienen clases/interfaces: **269**
+- PHP analizados: **454**
+- PHP que ya contienen clases/interfaces: **271**
 - PHP marcados para migración/revisión: **0**
-- Tests PHP separados del objetivo OOP de runtime: **41**
+- Tests PHP separados del objetivo OOP de runtime: **42**
 - JavaScript analizados: **48**
 - JavaScript que ya contienen clases: **48**
 - JavaScript sin clase/encapsulación OOP: **0**
@@ -32,7 +32,7 @@
 | `drive/app_bootstrap.php` | 62 | bootstrap | 0 | — | ⚠️ | — | — |
 | `drive/aws.php` | 12 | thin endpoint | 0 | — | — | — | — |
 | `drive/background_tasks.php` | 18 | thin endpoint | 0 | — | — | — | — |
-| `drive/bin/arcadecloud-drive-admin-helper.php` | 625 | class/module | 1 | — | ⚠️ | — | — |
+| `drive/bin/arcadecloud-drive-admin-helper.php` | 752 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/bin/arcadecloud-drive-updater.php` | 274 | class/module | 1 | — | — | — | — |
 | `drive/bin/federation_catalog_migrate.php` | 18 | thin cli entrypoint | 0 | — | — | — | — |
 | `drive/bin/federation_drop_cleanup.php` | 19 | thin cli entrypoint | 0 | — | — | — | — |
@@ -68,7 +68,7 @@
 | `drive/download.php` | 8 | thin endpoint | 0 | — | — | — | — |
 | `drive/download_multiple.php` | 8 | thin endpoint | 0 | — | — | — | — |
 | `drive/ec2-cron.php` | 39 | thin endpoint | 0 | — | — | — | — |
-| `drive/ec2.php` | 860 | view/entrypoint | 0 | ⚠️ | — | — | — |
+| `drive/ec2.php` | 992 | view/entrypoint | 0 | ⚠️ | — | — | — |
 | `drive/editor.php` | 485 | view/entrypoint | 0 | — | — | — | — |
 | `drive/eliminar_archivo.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/eliminar_carpeta.php` | 10 | thin endpoint | 0 | — | — | — | — |
@@ -143,6 +143,7 @@
 | `drive/renombrar_archivo.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/renombrar_carpeta.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/s3.php` | 2357 | view/entrypoint | 0 | ⚠️ | — | — | — |
+| `drive/server-console.php` | 12 | thin endpoint | 0 | — | — | — | — |
 | `drive/server-settings.php` | 11 | thin endpoint | 0 | — | — | — | — |
 | `drive/set_file_security.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/setup/api.php` | 15 | thin endpoint | 0 | — | — | — | — |
@@ -158,7 +159,8 @@
 | `drive/src/Admin/FastDriveControlService.php` | 143 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Admin/FastDriveWakeService.php` | 183 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Admin/ManagedRuntimeEnvironment.php` | 374 | class/module | 1 | — | — | — | — |
-| `drive/src/Admin/PrivilegedServerHelper.php` | 150 | class/module | 1 | — | — | — | — |
+| `drive/src/Admin/PrivilegedServerHelper.php` | 183 | class/module | 1 | — | — | — | — |
+| `drive/src/Admin/ServerConsoleService.php` | 159 | class/module | 1 | — | — | — | — |
 | `drive/src/Admin/ServerSettingsAdminService.php` | 211 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Application/AiFileSearchService.php` | 470 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Application/BackgroundWorkerLauncher.php` | 99 | class/module | 1 | — | — | — | — |
@@ -188,7 +190,7 @@
 | `drive/src/Aws/FileRecordLocator.php` | 75 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Aws/GeneratedFileRepository.php` | 36 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Aws/PersonalAwsConfig.php` | 122 | class/module | 1 | — | — | — | — |
-| `drive/src/Aws/PersonalAwsRuntime.php` | 56 | class/module | 1 | — | — | — | — |
+| `drive/src/Aws/PersonalAwsRuntime.php` | 61 | class/module | 1 | — | — | — | — |
 | `drive/src/Aws/PersonalTotpService.php` | 44 | class/module | 1 | — | — | — | — |
 | `drive/src/Aws/PollyFileService.php` | 546 | class/module | 1 | — | — | — | — |
 | `drive/src/Aws/RdsGateway.php` | 233 | class/module | 1 | — | — | — | — |
@@ -318,6 +320,7 @@
 | `drive/src/Http/Controller/PublicShareController.php` | 209 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/PublicSharedBrowserController.php` | 76 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/PublicUploadController.php` | 81 | class/module | 1 | — | — | — | — |
+| `drive/src/Http/Controller/ServerConsoleController.php` | 72 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/ServerSettingsAdminController.php` | 73 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/ShareController.php` | 78 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/StorageUsageController.php` | 28 | class/module | 1 | — | — | — | — |
@@ -438,6 +441,7 @@
 | `drive/tests/scoped_sync_repository_regression.php` | 96 | test script | 0 | — | ⚠️ | — | — |
 | `drive/tests/security_hardening_smoke.php` | 59 | test script | 0 | — | — | — | — |
 | `drive/tests/server_admin_config_smoke.php` | 218 | test script | 0 | — | — | — | — |
+| `drive/tests/server_console_contract_smoke.php` | 74 | test script | 0 | — | — | — | — |
 | `drive/tests/setup_bootstrap_smoke.php` | 61 | test script | 0 | — | — | — | — |
 | `drive/tests/setup_entry_guard_smoke.php` | 38 | test script | 0 | — | — | — | — |
 | `drive/tests/setup_finalize_contract_smoke.php` | 75 | test script | 0 | — | — | — | — |

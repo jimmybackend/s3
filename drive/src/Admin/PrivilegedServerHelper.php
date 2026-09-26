@@ -70,7 +70,7 @@ final class PrivilegedServerHelper
         try {
             $status = $this->status();
             return ($status['ok'] ?? false) === true
-                && (int)($status['version'] ?? 0) >= 9
+                && (int)($status['version'] ?? 0) >= 10
                 && (bool)($status['capabilities']['server_console'] ?? false);
         } catch (RuntimeException) {
             return false;

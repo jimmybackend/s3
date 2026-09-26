@@ -10,6 +10,10 @@ use RuntimeException;
 
 final class MediaWorkerNodeService
 {
+    private const MIN_VCPU = 2;
+    // Una instancia de 8 GiB expone algo menos a Linux por memoria reservada.
+    private const MIN_VISIBLE_MEMORY_BYTES = 7 * 1024 * 1024 * 1024;
+
     private string $instanceId;
     private string $region;
     private int $idleGraceSeconds;
@@ -42,12 +46,7 @@ final class MediaWorkerNodeService
     public function status(): array
     {
         if ($this->instanceId === '' || $this->ec2 === null) {
-            return [
-                'configured' => false,
-                'state' => 'unconfigured',
-                'authorization_required' => false,
-                'message' => 'No hay una EC2 multimedia configurada para encendido bajo demanda.',
-            ];
+            return $this->localStatus();
         }
 
         try {
@@ -72,6 +71,7 @@ final class MediaWorkerNodeService
 
         return [
             'configured' => true,
+            'mode' => 'ec2',
             'instance_id' => $this->instanceId,
             'region' => $this->region,
             'instance_type' => (string)($instance['InstanceType'] ?? ''),
@@ -89,10 +89,25 @@ final class MediaWorkerNodeService
     {
         $status = $this->status();
         if (($status['configured'] ?? false) !== true) {
-            return $status;
+            throw new RuntimeException(
+                '[MEDIA_WORKER_UNAVAILABLE] ' . (string)($status['message']
+                    ?? 'No hay un nodo multimedia configurado para esta instalación.')
+            );
         }
 
         $state = (string)($status['state'] ?? 'unknown');
+        if ($state === 'dependency_missing') {
+            throw new RuntimeException(
+                '[DEPENDENCY_MISSING] ' . (string)($status['message']
+                    ?? 'El nodo multimedia no tiene FFmpeg/FFprobe disponibles.')
+            );
+        }
+        if ($state === 'insufficient_capacity') {
+            throw new RuntimeException(
+                '[CAPACITY_INSUFFICIENT] ' . (string)($status['message']
+                    ?? 'El nodo multimedia no cumple la capacidad mínima.')
+            );
+        }
         if (in_array($state, ['running','pending'], true)) {
             return $status;
         }
@@ -192,6 +207,117 @@ final class MediaWorkerNodeService
         $this->recordSessionCost($active, 'auto_stop_idle');
         $this->sessions->markStopRequested((string)$active['session_id']);
         $this->ec2->stop($this->instanceId, false);
+    }
+
+    private function localStatus(): array
+    {
+        $role = strtolower(trim((string)(getenv('ARCADECLOUD_NODE_ROLE') ?: 'web')));
+        if (!in_array($role, ['media-worker', 'combined'], true)) {
+            return [
+                'configured' => false,
+                'mode' => 'none',
+                'state' => 'unconfigured',
+                'authorization_required' => false,
+                'can_enqueue' => false,
+                'role' => $role,
+                'message' => 'Este nodo tiene rol web y no hay una EC2 multimedia configurada. Configura ARCADECLOUD_MEDIA_WORKER_INSTANCE_ID o asigna un nodo media-worker/combined.',
+            ];
+        }
+
+        $ffmpeg = $this->findExecutable('ffmpeg');
+        $ffprobe = $this->findExecutable('ffprobe');
+        $capacity = $this->localCapacity();
+
+        if ($ffmpeg === null || $ffprobe === null) {
+            $missing = [];
+            if ($ffmpeg === null) $missing[] = 'ffmpeg';
+            if ($ffprobe === null) $missing[] = 'ffprobe';
+            return array_merge($capacity, [
+                'configured' => true,
+                'mode' => 'local',
+                'state' => 'dependency_missing',
+                'authorization_required' => false,
+                'can_enqueue' => false,
+                'role' => $role,
+                'ffmpeg_available' => $ffmpeg !== null,
+                'ffprobe_available' => $ffprobe !== null,
+                'message' => 'El nodo multimedia no tiene FFmpeg/FFprobe disponibles. Faltan: ' . implode(', ', $missing) . '. Ejecuta la reconciliación/instalador del nodo; no se instalarán paquetes desde esta petición web.',
+            ]);
+        }
+
+        if (($capacity['capacity_sufficient'] ?? false) !== true) {
+            return array_merge($capacity, [
+                'configured' => true,
+                'mode' => 'local',
+                'state' => 'insufficient_capacity',
+                'authorization_required' => false,
+                'can_enqueue' => false,
+                'role' => $role,
+                'ffmpeg_available' => true,
+                'ffprobe_available' => true,
+                'message' => 'El nodo multimedia local no cumple el mínimo soportado de 2 vCPU y una instancia de 8 GiB de RAM. Usa un media worker con capacidad suficiente.',
+            ]);
+        }
+
+        return array_merge($capacity, [
+            'configured' => true,
+            'mode' => 'local',
+            'state' => 'running',
+            'authorization_required' => false,
+            'can_enqueue' => true,
+            'role' => $role,
+            'ffmpeg_available' => true,
+            'ffprobe_available' => true,
+            'idle_grace_seconds' => $this->idleGraceSeconds,
+            'hourly_usd' => null,
+            'cost_configured' => true,
+            'session_active' => false,
+            'message' => 'Worker multimedia local disponible.',
+        ]);
+    }
+
+    private function localCapacity(): array
+    {
+        $cpu = 0;
+        $cpuInfo = @file_get_contents('/proc/cpuinfo');
+        if (is_string($cpuInfo) && $cpuInfo !== '') {
+            preg_match_all('/^processor\s*:/m', $cpuInfo, $matches);
+            $cpu = count($matches[0] ?? []);
+        }
+
+        $memoryBytes = 0;
+        $memInfo = @file_get_contents('/proc/meminfo');
+        if (is_string($memInfo) && preg_match('/^MemTotal:\s+(\d+)\s+kB/im', $memInfo, $match) === 1) {
+            $memoryBytes = (int)$match[1] * 1024;
+        }
+
+        // Si el SO no expone una métrica, no fingimos capacidad: un worker
+        // compatible debe poder demostrarla antes de aceptar el job.
+        $sufficient = $cpu >= self::MIN_VCPU
+            && $memoryBytes >= self::MIN_VISIBLE_MEMORY_BYTES;
+
+        return [
+            'vcpu' => $cpu,
+            'memory_bytes' => $memoryBytes,
+            'capacity_sufficient' => $sufficient,
+            'minimum_vcpu' => self::MIN_VCPU,
+            'minimum_memory_bytes' => self::MIN_VISIBLE_MEMORY_BYTES,
+        ];
+    }
+
+    private function findExecutable(string $binary): ?string
+    {
+        if (!preg_match('/^[a-z0-9._-]+$/i', $binary)) {
+            return null;
+        }
+        $paths = explode(PATH_SEPARATOR, (string)(getenv('PATH') ?: '/usr/local/bin:/usr/bin:/bin'));
+        foreach ($paths as $path) {
+            $candidate = rtrim($path, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $binary;
+            if (is_file($candidate) && is_executable($candidate)) {
+                return $candidate;
+            }
+        }
+        return null;
     }
 
     private function finalizeStoppedSession(array $session, string $reason): void

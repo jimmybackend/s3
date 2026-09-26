@@ -1286,6 +1286,8 @@ if ($session->isSuperAdmin()) {
           <div id="mediaSplitFile" class="font-weight-bold text-break">—</div>
           <div class="small text-muted mt-2">
             Tamaño: <strong id="mediaSplitSize">—</strong>
+            <span class="mx-1">·</span>
+            Duración: <strong id="mediaSplitDuration">—</strong>
           </div>
         </div>
 

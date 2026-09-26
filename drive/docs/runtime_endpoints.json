@@ -225,7 +225,7 @@
     },
     {
       "path": "drive/bin/arcadecloud-drive-admin-helper.php",
-      "size": 34057,
+      "size": 35416,
       "active": false,
       "references": [
         "drive/tests/fastdrive_control_contract_smoke.php",
@@ -516,7 +516,7 @@
     },
     {
       "path": "drive/ec2.php",
-      "size": 47368,
+      "size": 47696,
       "active": true,
       "references": [
         "drive/personal_aws_bootstrap.php",
@@ -1063,6 +1063,7 @@
       "size": 291,
       "active": false,
       "references": [
+        "drive/tests/media_processing_contract_smoke.php",
         "drive/js/media-processing.js"
       ]
     },
@@ -1212,7 +1213,7 @@
     },
     {
       "path": "drive/s3.php",
-      "size": 96082,
+      "size": 96191,
       "active": true,
       "references": [
         "drive/app_bootstrap.php",
@@ -1386,7 +1387,7 @@
     },
     {
       "path": "drive/src/Admin/ServerConsoleService.php",
-      "size": 8639,
+      "size": 9235,
       "active": false,
       "references": [
         "drive/tests/server_console_contract_smoke.php"
@@ -1556,13 +1557,17 @@
       "path": "drive/src/Aws/FileRecordLocator.php",
       "size": 2320,
       "active": false,
-      "references": []
+      "references": [
+        "drive/tests/media_processing_contract_smoke.php"
+      ]
     },
     {
       "path": "drive/src/Aws/GeneratedFileRepository.php",
       "size": 1683,
       "active": false,
-      "references": []
+      "references": [
+        "drive/tests/media_processing_contract_smoke.php"
+      ]
     },
     {
       "path": "drive/src/Aws/PersonalAwsConfig.php",
@@ -1628,7 +1633,7 @@
     },
     {
       "path": "drive/src/Console/MediaProcessingWorkerCommand.php",
-      "size": 16285,
+      "size": 17608,
       "active": false,
       "references": [
         "drive/tests/fresh_install_contract_smoke.php",
@@ -2520,7 +2525,7 @@
     },
     {
       "path": "drive/src/Http/Controller/MediaProcessingController.php",
-      "size": 1721,
+      "size": 1848,
       "active": false,
       "references": [
         "drive/tests/media_processing_contract_smoke.php"
@@ -2698,7 +2703,7 @@
     },
     {
       "path": "drive/src/Media/MediaWorkerNodeService.php",
-      "size": 8528,
+      "size": 13774,
       "active": false,
       "references": [
         "drive/tests/media_processing_contract_smoke.php"
@@ -3345,7 +3350,7 @@
     },
     {
       "path": "drive/tests/media_processing_contract_smoke.php",
-      "size": 4143,
+      "size": 8184,
       "active": false,
       "references": []
     },
@@ -3375,7 +3380,7 @@
     },
     {
       "path": "drive/tests/server_console_contract_smoke.php",
-      "size": 3846,
+      "size": 4416,
       "active": false,
       "references": []
     },
@@ -3453,7 +3458,8 @@
       "size": 267,
       "active": false,
       "references": [
-        "drive/src/Sharing/ShareLinkService.php"
+        "drive/src/Sharing/ShareLinkService.php",
+        "drive/js/media-processing.js"
       ]
     },
     {
@@ -3471,7 +3477,8 @@
       "active": false,
       "references": [
         "drive/src/Sharing/ShareLinkService.php",
-        "drive/js/audiovideo.js"
+        "drive/js/audiovideo.js",
+        "drive/js/media-processing.js"
       ]
     },
     {

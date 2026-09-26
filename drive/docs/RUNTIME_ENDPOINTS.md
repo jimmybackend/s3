@@ -131,7 +131,7 @@
 | `drive/generar_token.php` | `drive/js/archivos.js` |
 | `drive/listar_carpetas.php` | `drive/js/carpetas.js` |
 | `drive/media_playlist.php` | `drive/js/media-floating.js` |
-| `drive/media_processing.php` | `drive/js/media-processing.js` |
+| `drive/media_processing.php` | `drive/tests/media_processing_contract_smoke.php`, `drive/js/media-processing.js` |
 | `drive/move_multiple.php` | ninguna |
 | `drive/move_task.php` | `drive/js/move-tasks.js` |
 | `drive/move_task_status.php` | `drive/js/move-tasks.js` |
@@ -189,8 +189,8 @@
 | `drive/src/Aws/Ec2CronLogger.php` | ninguna |
 | `drive/src/Aws/Ec2Gateway.php` | ninguna |
 | `drive/src/Aws/FileMetadataRepository.php` | ninguna |
-| `drive/src/Aws/FileRecordLocator.php` | ninguna |
-| `drive/src/Aws/GeneratedFileRepository.php` | ninguna |
+| `drive/src/Aws/FileRecordLocator.php` | `drive/tests/media_processing_contract_smoke.php` |
+| `drive/src/Aws/GeneratedFileRepository.php` | `drive/tests/media_processing_contract_smoke.php` |
 | `drive/src/Aws/PersonalAwsConfig.php` | ninguna |
 | `drive/src/Aws/PersonalAwsRuntime.php` | ninguna |
 | `drive/src/Aws/PersonalTotpService.php` | ninguna |
@@ -452,9 +452,9 @@
 | `drive/tests/upload_catalog_registration_regression.php` | ninguna |
 | `drive/tests/user_identity_presenter_smoke.php` | ninguna |
 | `drive/tests/user_profile_validator_smoke.php` | ninguna |
-| `drive/token_audio.php` | `drive/src/Sharing/ShareLinkService.php` |
+| `drive/token_audio.php` | `drive/src/Sharing/ShareLinkService.php`, `drive/js/media-processing.js` |
 | `drive/token_texto.php` | `drive/src/Sharing/ShareLinkService.php`, `drive/tests/federation_access_message_smoke.php` |
-| `drive/token_video.php` | `drive/src/Sharing/ShareLinkService.php`, `drive/js/audiovideo.js` |
+| `drive/token_video.php` | `drive/src/Sharing/ShareLinkService.php`, `drive/js/audiovideo.js`, `drive/js/media-processing.js` |
 | `drive/traducir_archivo.php` | `drive/js/polly.js` |
 | `drive/transcribir_estado.php` | `drive/js/polly.js`, `drive/js/transcribe-background.js` |
 | `drive/transcribir_iniciar.php` | `drive/js/polly.js`, `drive/js/transcribe-background.js` |

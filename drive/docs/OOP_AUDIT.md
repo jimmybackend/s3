@@ -32,7 +32,7 @@
 | `drive/app_bootstrap.php` | 62 | bootstrap | 0 | — | ⚠️ | — | — |
 | `drive/aws.php` | 12 | thin endpoint | 0 | — | — | — | — |
 | `drive/background_tasks.php` | 18 | thin endpoint | 0 | — | — | — | — |
-| `drive/bin/arcadecloud-drive-admin-helper.php` | 752 | class/module | 1 | — | ⚠️ | — | — |
+| `drive/bin/arcadecloud-drive-admin-helper.php` | 914 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/bin/arcadecloud-drive-updater.php` | 274 | class/module | 1 | — | — | — | — |
 | `drive/bin/federation_catalog_migrate.php` | 18 | thin cli entrypoint | 0 | — | — | — | — |
 | `drive/bin/federation_drop_cleanup.php` | 19 | thin cli entrypoint | 0 | — | — | — | — |
@@ -68,7 +68,7 @@
 | `drive/download.php` | 8 | thin endpoint | 0 | — | — | — | — |
 | `drive/download_multiple.php` | 8 | thin endpoint | 0 | — | — | — | — |
 | `drive/ec2-cron.php` | 39 | thin endpoint | 0 | — | — | — | — |
-| `drive/ec2.php` | 992 | view/entrypoint | 0 | ⚠️ | — | — | — |
+| `drive/ec2.php` | 1056 | view/entrypoint | 0 | ⚠️ | — | — | — |
 | `drive/editor.php` | 485 | view/entrypoint | 0 | — | — | — | — |
 | `drive/eliminar_archivo.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/eliminar_carpeta.php` | 10 | thin endpoint | 0 | — | — | — | — |
@@ -160,7 +160,7 @@
 | `drive/src/Admin/FastDriveWakeService.php` | 183 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Admin/ManagedRuntimeEnvironment.php` | 374 | class/module | 1 | — | — | — | — |
 | `drive/src/Admin/PrivilegedServerHelper.php` | 183 | class/module | 1 | — | — | — | — |
-| `drive/src/Admin/ServerConsoleService.php` | 159 | class/module | 1 | — | — | — | — |
+| `drive/src/Admin/ServerConsoleService.php` | 247 | class/module | 1 | — | — | — | — |
 | `drive/src/Admin/ServerSettingsAdminService.php` | 211 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Application/AiFileSearchService.php` | 470 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Application/BackgroundWorkerLauncher.php` | 99 | class/module | 1 | — | — | — | — |
@@ -441,7 +441,7 @@
 | `drive/tests/scoped_sync_repository_regression.php` | 96 | test script | 0 | — | ⚠️ | — | — |
 | `drive/tests/security_hardening_smoke.php` | 59 | test script | 0 | — | — | — | — |
 | `drive/tests/server_admin_config_smoke.php` | 218 | test script | 0 | — | — | — | — |
-| `drive/tests/server_console_contract_smoke.php` | 74 | test script | 0 | — | — | — | — |
+| `drive/tests/server_console_contract_smoke.php` | 107 | test script | 0 | — | — | — | — |
 | `drive/tests/setup_bootstrap_smoke.php` | 61 | test script | 0 | — | — | — | — |
 | `drive/tests/setup_entry_guard_smoke.php` | 38 | test script | 0 | — | — | — | — |
 | `drive/tests/setup_finalize_contract_smoke.php` | 75 | test script | 0 | — | — | — | — |

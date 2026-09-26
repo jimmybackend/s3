@@ -102,7 +102,7 @@
     },
     {
       "path": "drive/bin/arcadecloud-drive-admin-helper.php",
-      "lines": 752,
+      "lines": 914,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -650,7 +650,7 @@
     },
     {
       "path": "drive/ec2.php",
-      "lines": 992,
+      "lines": 1056,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -2050,7 +2050,7 @@
     },
     {
       "path": "drive/src/Admin/ServerConsoleService.php",
-      "lines": 159,
+      "lines": 247,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -6344,7 +6344,7 @@
     },
     {
       "path": "drive/tests/server_console_contract_smoke.php",
-      "lines": 74,
+      "lines": 107,
       "kind": "test script",
       "classes": 0,
       "functions": [],

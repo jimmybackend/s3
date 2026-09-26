@@ -108,6 +108,7 @@
         "drive/eliminar_carpeta.php",
         "drive/encriptar_archivo.php",
         "drive/fastdrive-control.php",
+        "drive/fastdrive-wake.php",
         "drive/federationcloud/access-request.php",
         "drive/federationcloud/access-status.php",
         "drive/federationcloud/access.php",
@@ -558,6 +559,14 @@
     {
       "path": "drive/fastdrive-control.php",
       "size": 6351,
+      "active": false,
+      "references": [
+        "drive/tests/fastdrive_control_contract_smoke.php"
+      ]
+    },
+    {
+      "path": "drive/fastdrive-wake.php",
+      "size": 6192,
       "active": false,
       "references": [
         "drive/tests/fastdrive_control_contract_smoke.php"
@@ -1312,6 +1321,14 @@
     {
       "path": "drive/src/Admin/FastDriveControlService.php",
       "size": 5145,
+      "active": false,
+      "references": [
+        "drive/tests/fastdrive_control_contract_smoke.php"
+      ]
+    },
+    {
+      "path": "drive/src/Admin/FastDriveWakeService.php",
+      "size": 6312,
       "active": false,
       "references": [
         "drive/tests/fastdrive_control_contract_smoke.php"
@@ -2652,9 +2669,11 @@
     },
     {
       "path": "drive/src/Security/AuthenticationRepository.php",
-      "size": 2232,
+      "size": 2989,
       "active": false,
-      "references": []
+      "references": [
+        "drive/tests/fastdrive_control_contract_smoke.php"
+      ]
     },
     {
       "path": "drive/src/Security/AuthenticationService.php",
@@ -3143,7 +3162,7 @@
     },
     {
       "path": "drive/tests/fastdrive_control_contract_smoke.php",
-      "size": 3146,
+      "size": 4749,
       "active": false,
       "references": []
     },

@@ -575,6 +575,8 @@ code{word-break:break-all}
                     <button type="button" data-console-command="systemctl status php-fpm-drive">php-fpm-drive</button>
                     <button type="button" data-console-command="arcadecloud services">servicios ArcadeCloud</button>
                     <button type="button" data-console-command="arcadecloud timers">timers / tareas</button>
+                    <button type="button" data-console-command="systemctl status arcadecloud-media-worker">media worker</button>
+                    <button type="button" data-console-command="media tools">FFmpeg / FFprobe</button>
                 </div>
             </div>
             <div class="server-console-group">
@@ -586,6 +588,7 @@ code{word-break:break-all}
                     <button type="button" data-console-command="logs polly">Polly</button>
                     <button type="button" data-console-command="logs transcribe">Transcribe</button>
                     <button type="button" data-console-command="logs drop">FederationDrop</button>
+                    <button type="button" data-console-command="logs media">Multimedia</button>
                 </div>
             </div>
             <div class="server-console-group">

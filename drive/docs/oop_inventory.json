@@ -2637,7 +2637,7 @@
     },
     {
       "path": "drive/src/Console/MediaProcessingWorkerCommand.php",
-      "lines": 481,
+      "lines": 496,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -4334,7 +4334,7 @@
     },
     {
       "path": "drive/src/Http/Controller/MediaProcessingController.php",
-      "lines": 52,
+      "lines": 53,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -4745,7 +4745,7 @@
     },
     {
       "path": "drive/src/Media/MediaWorkerNodeService.php",
-      "lines": 358,
+      "lines": 445,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -6263,7 +6263,7 @@
     },
     {
       "path": "drive/tests/media_processing_contract_smoke.php",
-      "lines": 101,
+      "lines": 119,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -7410,7 +7410,7 @@
     },
     {
       "path": "drive/js/media-processing.js",
-      "lines": 491,
+      "lines": 498,
       "kind": "class/module",
       "classes": [
         "MediaProcessingModule"

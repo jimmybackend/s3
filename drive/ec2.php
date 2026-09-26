@@ -64,6 +64,8 @@ if (empty($_SESSION['csrf'])) {
 }
 $csrf = $_SESSION['csrf'];
 $controlPasswordHash = $runtime->config()->passwordHash();
+$session = $runtime->session();
+$isServerConsoleSuperAdmin = $session->isAuthenticated() && $session->isSuperAdmin();
 
 // ===================== DOWNLOAD RDP =====================
 if (isset($_GET['download']) && $_GET['download'] === 'rdp') {
@@ -356,6 +358,12 @@ kbd{background:#0d1230;border:1px solid #26305a;border-radius:6px;padding:2px 6p
 a.rdp{display:inline-block;margin-left:10px;color:#8ab4ff;text-decoration:none;border:1px solid #2a3f7a;padding:4px 8px;border-radius:999px;font-size:12px}
 a.rdp:hover{opacity:.9}
 code{word-break:break-all}
+.server-console-output{background:#030703;color:#b7ffb7;border:1px solid #315a31;border-radius:10px;padding:14px;min-height:220px;max-height:440px;overflow:auto;white-space:pre-wrap;word-break:break-word;font:13px/1.45 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+.server-console-input-row{display:flex;gap:8px;align-items:center;margin-top:10px}
+.server-console-input-row .prompt{font:700 16px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#7dff7d}
+.server-console-input-row input{flex:1;min-width:0;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+.server-console-shortcuts{margin:10px 0}
+.server-console-shortcuts button{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px}
 </style>
 <link rel="stylesheet" href="css/styles.css?v=<?= $stylesVersion ?>">
 <link rel="stylesheet" href="css/responsive.css?v=<?= $responsiveVersion ?>">
@@ -524,6 +532,30 @@ code{word-break:break-all}
             </tbody>
         </table>
     </div>
+
+    <?php if ($isServerConsoleSuperAdmin): ?>
+    <div class="card" id="serverConsoleCard">
+        <h2>Terminal del servidor · superusuario</h2>
+        <p class="note">Consola restringida para diagnóstico del EC2. Acepta únicamente comandos exactos de la lista blanca; no abre una shell del sistema.</p>
+        <div class="row server-console-shortcuts">
+            <button type="button" data-console-command="free -h">free -h</button>
+            <button type="button" data-console-command="df -h">df -h</button>
+            <button type="button" data-console-command="uptime">uptime</button>
+            <button type="button" data-console-command="ps aux --sort=-%mem">procesos RAM</button>
+            <button type="button" data-console-command="systemctl status nginx">nginx</button>
+            <button type="button" data-console-command="systemctl status php-fpm-drive">php-fpm-drive</button>
+            <button type="button" data-console-command="memory-clear">Liberar caché Linux</button>
+        </div>
+        <pre id="serverConsoleOutput" class="server-console-output" aria-live="polite">ArcadeCloud restricted server console
+Escribe help para ver los comandos permitidos.</pre>
+        <div class="server-console-input-row">
+            <span class="prompt">$</span>
+            <input type="text" id="serverConsoleInput" autocomplete="off" spellcheck="false" placeholder="free -h">
+            <button type="button" id="serverConsoleRun">Ejecutar</button>
+        </div>
+        <p class="note mb-0" id="serverConsoleStatus">Sólo visible para una sesión superadmin autenticada.</p>
+    </div>
+    <?php endif; ?>
 </main>
 
 <div class="action-modal-backdrop" id="modal" aria-hidden="true">
@@ -585,6 +617,8 @@ code{word-break:break-all}
       pendingAction = null;
       if (p.kind === 'rds') {
         doRdsAction(p.id, p.action, pw);
+      } else if (p.kind === 'console') {
+        runConsoleCommand(p.command, pw);
       } else {
         doAction(p.id, p.action, p.force, pw);
       }
@@ -701,6 +735,104 @@ code{word-break:break-all}
     }catch(e){
       alert(String(e));
     }
+  }
+
+  const serverConsoleCard = document.getElementById('serverConsoleCard');
+  const serverConsoleOutput = document.getElementById('serverConsoleOutput');
+  const serverConsoleInput = document.getElementById('serverConsoleInput');
+  const serverConsoleRun = document.getElementById('serverConsoleRun');
+  const serverConsoleStatus = document.getElementById('serverConsoleStatus');
+
+  function appendConsole(text){
+    if (!serverConsoleOutput) return;
+    const current = serverConsoleOutput.textContent || '';
+    serverConsoleOutput.textContent = current + (current ? '\n' : '') + String(text || '');
+    serverConsoleOutput.scrollTop = serverConsoleOutput.scrollHeight;
+  }
+
+  async function loadConsoleState(){
+    if (!serverConsoleCard) return;
+    try{
+      const res = await fetch('server-console.php', {credentials:'same-origin', cache:'no-store'});
+      const data = await res.json();
+      if (!res.ok || !data.ok) throw new Error(data.error || 'No se pudo consultar la terminal.');
+      if (serverConsoleStatus) {
+        if (data.helper_console_ready) {
+          serverConsoleStatus.textContent = 'Helper privilegiado listo · comandos restringidos activos.';
+        } else {
+          serverConsoleStatus.textContent = 'El helper necesita actualizarse una vez. Ejecuta en SSH: ' + (data.install_command || '');
+        }
+      }
+    }catch(e){
+      if (serverConsoleStatus) serverConsoleStatus.textContent = e.message || String(e);
+    }
+  }
+
+  async function runConsoleCommand(command, pw){
+    command = String(command || '').trim();
+    if (!serverConsoleCard || !command) return;
+
+    if (command === 'memory-clear' && !pw) {
+      if (!confirm('Esto ejecutará sync y liberará page cache, dentries e inodes del kernel. No mata procesos, pero puede aumentar temporalmente las lecturas de disco. ¿Continuar?')) return;
+      pendingAction = {kind:'console', command};
+      showModal(
+        'Liberar caché Linux',
+        'Confirma con la misma contraseña privada de acceso. La acción no termina procesos.'
+      );
+      return;
+    }
+
+    appendConsole('$ ' + command);
+    if (serverConsoleRun) serverConsoleRun.disabled = true;
+    try{
+      const fd = new FormData();
+      fd.append('csrf', csrf);
+      fd.append('command', command);
+      if (pw) fd.append('access_password', pw);
+
+      const res = await fetch('server-console.php', {
+        method:'POST',
+        body:fd,
+        credentials:'same-origin',
+        cache:'no-store'
+      });
+      const data = await res.json();
+      if (!res.ok || !data.ok) throw new Error(data.error || ('HTTP '+res.status));
+      appendConsole(data.output || '(sin salida)');
+    }catch(e){
+      appendConsole('ERROR: ' + (e.message || String(e)));
+    }finally{
+      if (serverConsoleRun) serverConsoleRun.disabled = false;
+      if (serverConsoleInput) {
+        serverConsoleInput.value = '';
+        serverConsoleInput.focus();
+      }
+    }
+  }
+
+  if (serverConsoleCard) {
+    serverConsoleCard.addEventListener('click', function(ev){
+      const btn = ev.target.closest('button[data-console-command]');
+      if (!btn) return;
+      ev.preventDefault();
+      runConsoleCommand(btn.getAttribute('data-console-command') || '');
+    });
+
+    if (serverConsoleRun) {
+      serverConsoleRun.addEventListener('click', function(){
+        runConsoleCommand(serverConsoleInput ? serverConsoleInput.value : '');
+      });
+    }
+
+    if (serverConsoleInput) {
+      serverConsoleInput.addEventListener('keydown', function(ev){
+        if (ev.key !== 'Enter') return;
+        ev.preventDefault();
+        runConsoleCommand(serverConsoleInput.value);
+      });
+    }
+
+    loadConsoleState();
   }
 
   const ec2Table = document.getElementById('tbl');

@@ -31,6 +31,21 @@ final class MediaProcessingWorkerCommand
         }
 
         do {
+            // Un nodo incapaz no debe reclamar un job para fallarlo después.
+            // El preflight se ejecuta antes de tocar la cola y se repite dentro
+            // de process() como defensa ante cambios de capacidad.
+            try {
+                $this->assertTools();
+                $this->assertWorkerCapacity();
+            } catch (\Throwable $e) {
+                error_log('[ArcadeCloud media-worker preflight] ' . $e->getMessage());
+                if (!$loop) {
+                    throw $e;
+                }
+                sleep(max(30, min(300, $sleepSeconds)));
+                continue;
+            }
+
             $job = $this->jobs->claimNext($this->workerId());
             if ($job === null) {
                 $this->node->handleIdle($this->jobs);

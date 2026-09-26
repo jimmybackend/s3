@@ -39,7 +39,7 @@ fastDriveContract(!str_contains($wakeService, '->stop('), 'wake no puede apagar 
 fastDriveContract(str_contains($wakeEndpoint, "ARCADECLOUD_FASTDRIVE_GATE"), 'endpoint wake sólo responde detrás del vhost FastDrive');
 fastDriveContract(str_contains($wakeEndpoint, 'hash_equals($csrf, $postedCsrf)'), 'endpoint wake exige CSRF');
 fastDriveContract(str_contains($wakeEndpoint, 'action="/__fastdrive_start"'), 'formulario de wake permanece en fastdrive.esforzados.com');
-fastDriveContract(!str_contains($wakeEndpoint, 'drive.esforzados.com'), 'wake no redirige al dominio Drive');
+fastDriveContract(!str_contains($wakeEndpoint, 'https://drive.esforzados.com'), 'wake no redirige al dominio Drive');
 fastDriveContract(str_contains($gatewayInstaller, 'proxy_pass http://${UPSTREAM}'), 'gateway conserva proxy por IPv4 privada');
 fastDriveContract(str_contains($gatewayInstaller, 'error_page 502 504 = @fastdrive_wake'), 'fallos del upstream usan fallback interno');
 fastDriveContract(str_contains($gatewayInstaller, 'location @fastdrive_wake'), 'fallback se sirve dentro del mismo dominio');

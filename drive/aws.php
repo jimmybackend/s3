@@ -1,9 +1,11 @@
 <?php
 declare(strict_types=1);
 
-require_once __DIR__ . '/app_bootstrap.php';
+require_once __DIR__ . '/personal_aws_bootstrap.php';
+
+$runtime = new \ArcadeCloud\Drive\Aws\PersonalAwsRuntime();
 
 (new \ArcadeCloud\Drive\Http\Controller\PersonalAwsController(
-    \ArcadeCloud\Drive\Core\ApplicationKernel::app(),
+    $runtime,
     \ArcadeCloud\Drive\Http\Request::fromGlobals()
 ))->handle();

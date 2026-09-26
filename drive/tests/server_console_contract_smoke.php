@@ -41,8 +41,8 @@ $contracts = [
     [$files['controller'], 'isSuperAdmin()', 'control superadmin'],
     [$files['controller'], "session->get('csrf'", 'CSRF'],
     [$files['service'], 'password_verify', 'revalidación memory-clear'],
-    [$files['service'], "if ($command === 'help')", 'help local'],
-    [$files['helper_client'], "run(['server-console', $commandId])", 'ID interno helper'],
+    [$files['service'], "if (\$command === 'help')", 'help local'],
+    [$files['helper_client'], "run(['server-console', \$commandId])", 'ID interno helper'],
     [$files['helper'], "'server-console'", 'acción helper'],
     [$files['helper'], "'memory-clear'", 'drop caches allowlisted'],
     [$files['helper'], "['bypass_shell' => true]", 'bypass shell'],
@@ -58,7 +58,7 @@ foreach ($contracts as [$haystack, $needle, $label]) {
     }
 }
 
-if (str_contains($files['helper'], '$argv[2] ??') && !str_contains($files['helper'], 'runServerConsoleCommand($commandId)')) {
+if (str_contains($files['helper'], '\$argv[2] ??') && !str_contains($files['helper'], 'runServerConsoleCommand(\$commandId)')) {
     fwrite(STDERR, "El comando web no está encapsulado por la lista blanca.\n");
     exit(1);
 }

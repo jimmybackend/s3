@@ -65,6 +65,18 @@ final class PrivilegedServerHelper
         }
     }
 
+    public function supportsServerConsole(): bool
+    {
+        try {
+            $status = $this->status();
+            return ($status['ok'] ?? false) === true
+                && (int)($status['version'] ?? 0) >= 9
+                && (bool)($status['capabilities']['server_console'] ?? false);
+        } catch (RuntimeException) {
+            return false;
+        }
+    }
+
     public function setEnvironment(string $name, string $value): void
     {
         if (!ManagedRuntimeEnvironment::isAllowed($name)) throw new RuntimeException('Variable no permitida.');
@@ -119,6 +131,27 @@ final class PrivilegedServerHelper
     public function renameIdentity(string $nodeName): void
     {
         $this->run(['identity-rename', $nodeName]);
+    }
+
+    public function runServerConsole(string $commandId): string
+    {
+        if (!$this->supportsServerConsole()) {
+            throw new RuntimeException(
+                'El helper administrativo necesita actualizarse para habilitar la terminal del servidor.'
+            );
+        }
+
+        if (!preg_match('/\A[a-z0-9-]{1,40}\z/', $commandId)) {
+            throw new RuntimeException('Comando administrativo no permitido.');
+        }
+
+        $result = $this->run(['server-console', $commandId]);
+        $decoded = json_decode((string)$result['stdout'], true);
+        if (!is_array($decoded) || ($decoded['ok'] ?? null) !== true) {
+            throw new RuntimeException('El helper no confirmó la ejecución del diagnóstico.');
+        }
+
+        return trim((string)($decoded['output'] ?? ''));
     }
 
     private function run(array $args, string $stdin = ''): array

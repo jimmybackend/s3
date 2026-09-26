@@ -731,7 +731,7 @@
     },
     {
       "path": "drive/fastdrive-control.php",
-      "lines": 126,
+      "lines": 142,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -5781,7 +5781,7 @@
     },
     {
       "path": "drive/tests/fastdrive_control_contract_smoke.php",
-      "lines": 31,
+      "lines": 40,
       "kind": "test script",
       "classes": 0,
       "functions": [

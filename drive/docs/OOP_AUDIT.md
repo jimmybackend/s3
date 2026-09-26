@@ -73,7 +73,7 @@
 | `drive/eliminar_archivo.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/eliminar_carpeta.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/encriptar_archivo.php` | 10 | thin endpoint | 0 | — | — | — | — |
-| `drive/fastdrive-control.php` | 126 | view/entrypoint | 0 | — | — | — | — |
+| `drive/fastdrive-control.php` | 142 | view/entrypoint | 0 | — | — | — | — |
 | `drive/federationcloud/access-request.php` | 11 | thin endpoint | 0 | — | — | — | — |
 | `drive/federationcloud/access-status.php` | 11 | thin endpoint | 0 | — | — | — | — |
 | `drive/federationcloud/access.php` | 11 | thin endpoint | 0 | — | — | — | — |
@@ -407,7 +407,7 @@
 | `drive/tests/arcadelink_bulk_contract_regression.php` | 71 | test script | 0 | — | — | — | — |
 | `drive/tests/arcadelink_collection_regression.php` | 63 | test script | 0 | — | — | — | — |
 | `drive/tests/database_schema_contract_smoke.php` | 106 | test script | 0 | — | — | — | — |
-| `drive/tests/fastdrive_control_contract_smoke.php` | 31 | test script | 0 | — | — | — | — |
+| `drive/tests/fastdrive_control_contract_smoke.php` | 40 | test script | 0 | — | — | — | — |
 | `drive/tests/federation_access_message_smoke.php` | 72 | test script | 0 | — | — | — | — |
 | `drive/tests/federation_catalog_event_smoke.php` | 60 | test script | 0 | — | — | — | — |
 | `drive/tests/federation_customs_contract_smoke.php` | 82 | test script | 0 | — | — | — | — |

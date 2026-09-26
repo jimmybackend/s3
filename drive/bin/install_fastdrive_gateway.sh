@@ -7,16 +7,18 @@ if [[ "${EUID}" -ne 0 ]]; then
 fi
 
 DOMAIN="fastdrive.esforzados.com"
-CONTROL_URL="https://drive.esforzados.com/fastdrive-control.php?gateway=1"
 UPSTREAM="172.31.14.35"
+FPM_LISTEN="127.0.0.1:9075"
 NGINX_CONF="/etc/nginx/conf.d/fastdrive.esforzados.com.conf"
 BACKUP_DIR="/etc/nginx/arcadecloud-backups"
 CERT_DIR="/etc/letsencrypt/live/${DOMAIN}"
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+APP_ROOT="$(cd -- "$SCRIPT_DIR/../.." && pwd)"
+WAKE_SCRIPT="$APP_ROOT/drive/fastdrive-wake.php"
 
 for arg in "$@"; do
   case "$arg" in
     --domain=*) DOMAIN="${arg#*=}"; CERT_DIR="/etc/letsencrypt/live/${DOMAIN}" ;;
-    --control-url=*) CONTROL_URL="${arg#*=}" ;;
     --upstream=*) UPSTREAM="${arg#*=}" ;;
     --nginx-conf=*) NGINX_CONF="${arg#*=}" ;;
     *) echo "ERROR: argumento desconocido: $arg" >&2; exit 2 ;;
@@ -25,7 +27,7 @@ done
 
 [[ "$DOMAIN" =~ ^[A-Za-z0-9.-]+$ ]] || { echo "ERROR: dominio inválido." >&2; exit 2; }
 [[ "$UPSTREAM" =~ ^[0-9]{1,3}(\.[0-9]{1,3}){3}$ ]] || { echo "ERROR: IPv4 privada inválida." >&2; exit 2; }
-[[ "$CONTROL_URL" == https://* ]] || { echo "ERROR: control-url debe usar HTTPS." >&2; exit 2; }
+[[ -r "$WAKE_SCRIPT" ]] || { echo "ERROR: falta $WAKE_SCRIPT" >&2; exit 3; }
 
 for required in nginx "${CERT_DIR}/fullchain.pem" "${CERT_DIR}/privkey.pem"; do
   if [[ "$required" == "nginx" ]]; then
@@ -76,7 +78,29 @@ server {
         proxy_buffering off;
 
         proxy_intercept_errors on;
-        error_page 502 504 =302 ${CONTROL_URL};
+        error_page 502 504 = @fastdrive_wake;
+    }
+
+    location = /__fastdrive_start {
+        include fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME ${WAKE_SCRIPT};
+        fastcgi_param SCRIPT_NAME /fastdrive-wake.php;
+        fastcgi_param HTTPS on;
+        fastcgi_param HTTP_X_FORWARDED_PROTO https;
+        fastcgi_param ARCADECLOUD_FASTDRIVE_GATE 1;
+        fastcgi_param ARCADECLOUD_FASTDRIVE_GATE_ACTION start;
+        fastcgi_pass ${FPM_LISTEN};
+    }
+
+    location @fastdrive_wake {
+        include fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME ${WAKE_SCRIPT};
+        fastcgi_param SCRIPT_NAME /fastdrive-wake.php;
+        fastcgi_param HTTPS on;
+        fastcgi_param HTTP_X_FORWARDED_PROTO https;
+        fastcgi_param ARCADECLOUD_FASTDRIVE_GATE 1;
+        fastcgi_param ARCADECLOUD_FASTDRIVE_GATE_ACTION status;
+        fastcgi_pass ${FPM_LISTEN};
     }
 
     listen 443 ssl;
@@ -113,5 +137,6 @@ fi
 echo "OK: gateway FastDrive instalado."
 echo "Dominio: https://${DOMAIN}/"
 echo "Upstream privado: http://${UPSTREAM}"
-echo "Control superadmin: ${CONTROL_URL}"
+echo "Wake local: ${WAKE_SCRIPT}"
+echo "PHP-FPM local: ${FPM_LISTEN}"
 [[ -n "$backup" ]] && echo "Backup: ${backup}"

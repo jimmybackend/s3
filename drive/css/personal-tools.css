@@ -185,6 +185,7 @@ body.personal-tool-page {
 
 .personal-tool-page .result,
 .personal-tool-page .modal,
+.personal-tool-page .action-modal,
 .personal-tool-page .tool-panel {
   background: var(--panel-bg2) !important;
   color: var(--text-strong) !important;
@@ -289,7 +290,8 @@ body.ui-theme.theme-light.personal-tool-page .error {
   border-color: rgba(220, 40, 70, .55) !important;
 }
 
-.personal-tool-page .modal-backdrop {
+.personal-tool-page .modal-backdrop,
+.personal-tool-page .action-modal-backdrop {
   background: rgba(0,0,0,.55) !important;
 }
 

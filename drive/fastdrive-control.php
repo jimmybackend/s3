@@ -10,6 +10,9 @@ use Aws\Exception\AwsException;
 
 $app = ApplicationKernel::app();
 $request = Request::fromGlobals();
+$gatewayMode = $request->queryString('gateway') === '1'
+    || $request->postString('gateway') === '1';
+$gatewayTarget = 'https://fastdrive.esforzados.com/';
 $session = $app->session();
 $session->start();
 $session->requireAuthenticated('index.php');
@@ -65,6 +68,7 @@ try {
 
 $state = is_array($status) ? (string)($status['state'] ?? 'unknown') : 'unknown';
 $startAllowed = $state === 'stopped';
+$gatewayWaiting = $gatewayMode && in_array($state, ['pending', 'running'], true);
 
 $escape = static fn (string $value): string => htmlspecialchars(
     $value,
@@ -85,9 +89,13 @@ h1{margin-top:0}dl{display:grid;grid-template-columns:160px 1fr;gap:8px 16px}dt{
 </head>
 <body>
 <main>
-  <p><a href="s3.php">← Volver al Drive</a></p>
-  <h1>Control de FastDrive</h1>
-  <p class="note">Este puente sólo puede consultar y encender la EC2 configurada como FastDrive. No acepta IDs enviados por el navegador.</p>
+  <?php if (!$gatewayMode): ?><p><a href="s3.php">← Volver al Drive</a></p><?php endif; ?>
+  <h1><?= $gatewayMode ? 'Autorizar FastDrive' : 'Control de FastDrive' ?></h1>
+  <?php if ($gatewayMode): ?>
+    <p class="note">FastDrive está apagado o todavía no responde. Sólo un superadmin autenticado puede autorizar su encendido.</p>
+  <?php else: ?>
+    <p class="note">Este puente sólo puede consultar y encender la EC2 configurada como FastDrive. No acepta IDs enviados por el navegador.</p>
+  <?php endif; ?>
 
   <?php if ($message !== ''): ?><p class="ok"><?= $escape($message) ?></p><?php endif; ?>
   <?php if ($error !== ''): ?><p class="err"><?= $escape($error) ?></p><?php endif; ?>
@@ -109,6 +117,7 @@ h1{margin-top:0}dl{display:grid;grid-template-columns:160px 1fr;gap:8px 16px}dt{
       <form method="post" autocomplete="off">
         <input type="hidden" name="csrf" value="<?= $escape($csrf) ?>">
         <input type="hidden" name="action" value="start">
+        <?php if ($gatewayMode): ?><input type="hidden" name="gateway" value="1"><?php endif; ?>
         <label for="current_password">Contraseña actual del superadmin</label>
         <input id="current_password" name="current_password" type="password" autocomplete="current-password" required>
         <button type="submit" onclick="return confirm('¿Autorizar el encendido de FastDrive?');">Encender FastDrive</button>
@@ -121,5 +130,12 @@ h1{margin-top:0}dl{display:grid;grid-template-columns:160px 1fr;gap:8px 16px}dt{
     <?php endif; ?>
   </div>
 </main>
+<?php if ($gatewayWaiting): ?>
+<script>
+setTimeout(function () {
+  window.location.replace(<?= json_encode($gatewayTarget, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>);
+}, 4000);
+</script>
+<?php endif; ?>
 </body>
 </html>

@@ -58,7 +58,7 @@ foreach ($contracts as [$haystack, $needle, $label]) {
     }
 }
 
-if (str_contains($files['helper'], '\$argv[2] ??') && !str_contains($files['helper'], 'runServerConsoleCommand(\$commandId)')) {
+if (str_contains($files['helper'], '$argv[2] ??') && !str_contains($files['helper'], 'runServerConsoleCommand($commandId)')) {
     fwrite(STDERR, "El comando web no está encapsulado por la lista blanca.\n");
     exit(1);
 }

@@ -225,7 +225,7 @@
     },
     {
       "path": "drive/bin/arcadecloud-drive-admin-helper.php",
-      "size": 28843,
+      "size": 34057,
       "active": false,
       "references": [
         "drive/tests/fastdrive_control_contract_smoke.php",
@@ -516,11 +516,12 @@
     },
     {
       "path": "drive/ec2.php",
-      "size": 43890,
+      "size": 47368,
       "active": true,
       "references": [
         "drive/personal_aws_bootstrap.php",
         "drive/s3.php",
+        "drive/src/Admin/ServerConsoleService.php",
         "drive/src/View/PersonalAwsPageRenderer.php",
         "drive/tests/server_console_contract_smoke.php",
         "drive/js/estilo.js"
@@ -1375,7 +1376,7 @@
     },
     {
       "path": "drive/src/Admin/PrivilegedServerHelper.php",
-      "size": 7149,
+      "size": 7150,
       "active": false,
       "references": [
         "drive/setup/api.php",
@@ -1385,7 +1386,7 @@
     },
     {
       "path": "drive/src/Admin/ServerConsoleService.php",
-      "size": 5357,
+      "size": 8639,
       "active": false,
       "references": [
         "drive/tests/server_console_contract_smoke.php"
@@ -3374,7 +3375,7 @@
     },
     {
       "path": "drive/tests/server_console_contract_smoke.php",
-      "size": 2520,
+      "size": 3846,
       "active": false,
       "references": []
     },

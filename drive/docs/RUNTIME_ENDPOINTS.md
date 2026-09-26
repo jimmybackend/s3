@@ -26,7 +26,7 @@
 | `drive/costos_aws.php` | `drive/s3.php` |
 | `drive/delete_multiple.php` | `drive/s3.php`, `drive/js/elimina-multiple.js`, `drive/js/file-block.js` |
 | `drive/descargar_archivo.php` | `drive/bloque_archivos.php`, `drive/tests/arcadelink_bulk_contract_regression.php` |
-| `drive/ec2.php` | `drive/personal_aws_bootstrap.php`, `drive/s3.php`, `drive/src/View/PersonalAwsPageRenderer.php`, `drive/tests/server_console_contract_smoke.php`, `drive/js/estilo.js` |
+| `drive/ec2.php` | `drive/personal_aws_bootstrap.php`, `drive/s3.php`, `drive/src/Admin/ServerConsoleService.php`, `drive/src/View/PersonalAwsPageRenderer.php`, `drive/tests/server_console_contract_smoke.php`, `drive/js/estilo.js` |
 | `drive/editor.php` | `drive/bloque_archivos.php`, `drive/js/editar-txt.js` |
 | `drive/federationcloud/index.php` | `drive/bloque_archivos.php`, `drive/bloque_carpetas.php`, `drive/fastdrive-control.php`, `drive/s3.php`, `drive/src/Http/Controller/ActivityCostController.php`, `drive/src/Http/Controller/AuthController.php`, `drive/src/Http/Controller/FederationModerationController.php`, `drive/src/Security/SessionManager.php`, `drive/src/View/FederationReportPageRenderer.php`, `drive/tests/index_federation_drop_smoke.php`, `drive/up.php` |
 | `drive/federationcloud/moderation.php` | `drive/bloque_footer.php` |

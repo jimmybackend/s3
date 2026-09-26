@@ -22,6 +22,7 @@
     "drive/leer_texto.php",
     "drive/login.php",
     "drive/logout.php",
+    "drive/personal_aws_bootstrap.php",
     "drive/psesion.php",
     "drive/s3.php",
     "drive/setup/index.php",
@@ -74,7 +75,6 @@
         "drive/activity_costs.php",
         "drive/actualizar_ruta.php",
         "drive/api/upload.php",
-        "drive/aws.php",
         "drive/background_tasks.php",
         "drive/bin/federation_catalog_migrate.php",
         "drive/bin/federation_drop_cleanup.php",
@@ -103,7 +103,6 @@
         "drive/download.php",
         "drive/download_multiple.php",
         "drive/ec2-cron.php",
-        "drive/ec2.php",
         "drive/eliminar_archivo.php",
         "drive/eliminar_carpeta.php",
         "drive/encriptar_archivo.php",
@@ -205,10 +204,11 @@
     },
     {
       "path": "drive/aws.php",
-      "size": 260,
+      "size": 290,
       "active": true,
       "references": [
         "drive/ec2.php",
+        "drive/personal_aws_bootstrap.php",
         "drive/s3.php",
         "drive/src/Http/Controller/PersonalAwsController.php",
         "drive/js/estilo.js"
@@ -514,9 +514,10 @@
     },
     {
       "path": "drive/ec2.php",
-      "size": 37169,
+      "size": 37635,
       "active": true,
       "references": [
+        "drive/personal_aws_bootstrap.php",
         "drive/s3.php",
         "drive/src/View/PersonalAwsPageRenderer.php",
         "drive/js/estilo.js"
@@ -913,6 +914,7 @@
       "references": [
         "drive/app_bootstrap.php",
         "drive/index.php",
+        "drive/personal_aws_bootstrap.php",
         "drive/s3.php",
         "drive/src/Federation/FederationDropService.php",
         "drive/tests/federation_moderation_contract_smoke.php",
@@ -1099,6 +1101,15 @@
       ]
     },
     {
+      "path": "drive/personal_aws_bootstrap.php",
+      "size": 2795,
+      "active": true,
+      "references": [
+        "drive/aws.php",
+        "drive/ec2.php"
+      ]
+    },
+    {
       "path": "drive/polly_cargar_texto.php",
       "size": 257,
       "active": false,
@@ -1201,6 +1212,7 @@
         "drive/app_bootstrap.php",
         "drive/ec2.php",
         "drive/fastdrive-control.php",
+        "drive/personal_aws_bootstrap.php",
         "drive/src/Http/Controller/AuthController.php",
         "drive/src/View/ActivityCostPageRenderer.php",
         "drive/src/View/FederationModerationPageRenderer.php",
@@ -1340,6 +1352,7 @@
       "active": true,
       "references": [
         "drive/app_bootstrap.php",
+        "drive/personal_aws_bootstrap.php",
         "drive/setup/api.php",
         "drive/tests/fastdrive_control_contract_smoke.php",
         "drive/tests/installer_service_reconcile_contract_smoke.php",
@@ -1530,6 +1543,12 @@
     {
       "path": "drive/src/Aws/PersonalAwsConfig.php",
       "size": 3147,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Aws/PersonalAwsRuntime.php",
+      "size": 1482,
       "active": false,
       "references": []
     },
@@ -2497,7 +2516,7 @@
     },
     {
       "path": "drive/src/Http/Controller/PersonalAwsController.php",
-      "size": 2214,
+      "size": 2170,
       "active": false,
       "references": []
     },

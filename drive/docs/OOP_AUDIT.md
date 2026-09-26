@@ -4,8 +4,8 @@
 
 ## Resumen
 
-- PHP analizados: **448**
-- PHP que ya contienen clases/interfaces: **267**
+- PHP analizados: **450**
+- PHP que ya contienen clases/interfaces: **269**
 - PHP marcados para migración/revisión: **0**
 - Tests PHP separados del objetivo OOP de runtime: **41**
 - JavaScript analizados: **48**
@@ -30,7 +30,7 @@
 | `drive/actualizar_ruta.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/api/upload.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/app_bootstrap.php` | 62 | bootstrap | 0 | — | ⚠️ | — | — |
-| `drive/aws.php` | 10 | thin endpoint | 0 | — | — | — | — |
+| `drive/aws.php` | 12 | thin endpoint | 0 | — | — | — | — |
 | `drive/background_tasks.php` | 18 | thin endpoint | 0 | — | — | — | — |
 | `drive/bin/arcadecloud-drive-admin-helper.php` | 625 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/bin/arcadecloud-drive-updater.php` | 274 | class/module | 1 | — | — | — | — |
@@ -68,7 +68,7 @@
 | `drive/download.php` | 8 | thin endpoint | 0 | — | — | — | — |
 | `drive/download_multiple.php` | 8 | thin endpoint | 0 | — | — | — | — |
 | `drive/ec2-cron.php` | 39 | thin endpoint | 0 | — | — | — | — |
-| `drive/ec2.php` | 859 | view/entrypoint | 0 | ⚠️ | — | — | — |
+| `drive/ec2.php` | 860 | view/entrypoint | 0 | ⚠️ | — | — | — |
 | `drive/editor.php` | 485 | view/entrypoint | 0 | — | — | — | — |
 | `drive/eliminar_archivo.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/eliminar_carpeta.php` | 10 | thin endpoint | 0 | — | — | — | — |
@@ -129,6 +129,7 @@
 | `drive/move_task_status.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/mover_archivo.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/mover_carpeta.php` | 10 | thin endpoint | 0 | — | — | — | — |
+| `drive/personal_aws_bootstrap.php` | 86 | class/module | 1 | — | — | — | — |
 | `drive/polly_cargar_texto.php` | 8 | thin endpoint | 0 | — | — | — | — |
 | `drive/polly_list_voices.php` | 8 | thin endpoint | 0 | — | — | — | — |
 | `drive/polly_task_status.php` | 8 | thin endpoint | 0 | — | — | — | — |
@@ -187,6 +188,7 @@
 | `drive/src/Aws/FileRecordLocator.php` | 75 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Aws/GeneratedFileRepository.php` | 36 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Aws/PersonalAwsConfig.php` | 122 | class/module | 1 | — | — | — | — |
+| `drive/src/Aws/PersonalAwsRuntime.php` | 56 | class/module | 1 | — | — | — | — |
 | `drive/src/Aws/PersonalTotpService.php` | 44 | class/module | 1 | — | — | — | — |
 | `drive/src/Aws/PollyFileService.php` | 546 | class/module | 1 | — | — | — | — |
 | `drive/src/Aws/RdsGateway.php` | 233 | class/module | 1 | — | — | — | — |

@@ -1,7 +1,7 @@
 {
   "summary": {
-    "php_total": 448,
-    "php_class_modules": 267,
+    "php_total": 450,
+    "php_class_modules": 269,
     "php_needs_migration": 0,
     "php_tests": 41,
     "js_total": 48,
@@ -72,7 +72,7 @@
     },
     {
       "path": "drive/aws.php",
-      "lines": 10,
+      "lines": 12,
       "kind": "thin endpoint",
       "classes": 0,
       "functions": [],
@@ -80,7 +80,7 @@
       "superglobals": [],
       "db": false,
       "s3": false,
-      "bootstrap": true,
+      "bootstrap": false,
       "html": false,
       "namespace": false,
       "issues": []
@@ -650,7 +650,7 @@
     },
     {
       "path": "drive/ec2.php",
-      "lines": 859,
+      "lines": 860,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -662,7 +662,7 @@
       ],
       "db": false,
       "s3": false,
-      "bootstrap": true,
+      "bootstrap": false,
       "html": true,
       "namespace": false,
       "issues": []
@@ -1575,6 +1575,21 @@
       "issues": []
     },
     {
+      "path": "drive/personal_aws_bootstrap.php",
+      "lines": 86,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
       "path": "drive/polly_cargar_texto.php",
       "lines": 8,
       "kind": "thin endpoint",
@@ -2443,6 +2458,21 @@
     {
       "path": "drive/src/Aws/PersonalAwsConfig.php",
       "lines": 122,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Aws/PersonalAwsRuntime.php",
+      "lines": 56,
       "kind": "class/module",
       "classes": 1,
       "functions": [],

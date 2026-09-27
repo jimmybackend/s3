@@ -47,6 +47,7 @@ class ArcadeCloudOsTerminal {
       const password = this.privatePassword ? this.privatePassword.value : '';
       const command = this.pendingPrivateCommand;
       if (!command) return;
+      this.pendingPrivateCommand = '';
       this.hidePrivateConfirm(false);
       this.execute(command, password);
     });
@@ -61,9 +62,12 @@ class ArcadeCloudOsTerminal {
   }
 
   async ensureState() {
-    if (this.loaded || this.loading) {
+    if (this.loaded) {
       this.inputEl?.focus();
-      return;
+      return true;
+    }
+    if (this.loading) {
+      return false;
     }
 
     this.loading = true;
@@ -100,11 +104,13 @@ class ArcadeCloudOsTerminal {
 
       this.loaded = true;
       this.inputEl?.focus();
+      return true;
     } catch (error) {
       this.setStatus(
         error && error.message ? error.message : 'No se pudo consultar la terminal.',
         'error'
       );
+      return false;
     } finally {
       this.loading = false;
     }
@@ -187,7 +193,8 @@ class ArcadeCloudOsTerminal {
     command = String(command || '').trim();
     if (!command) return;
 
-    await this.ensureState();
+    const ready = await this.ensureState();
+    if (!ready && !this.loaded) return;
 
     if (command === 'clear') {
       if (this.outputEl) this.outputEl.textContent = '';

@@ -1257,7 +1257,9 @@
       "active": true,
       "references": [
         "drive/ec2.php",
-        "drive/tests/server_console_contract_smoke.php"
+        "drive/so.php",
+        "drive/tests/server_console_contract_smoke.php",
+        "drive/tests/web_os_contract_smoke.php"
       ]
     },
     {
@@ -1312,10 +1314,11 @@
     },
     {
       "path": "drive/so.php",
-      "size": 68913,
+      "size": 72676,
       "active": true,
       "references": [
         "drive/s3.php",
+        "drive/tests/server_console_contract_smoke.php",
         "drive/tests/web_os_contract_smoke.php",
         "drive/js/so-folders.js",
         "drive/js/so.js"
@@ -1418,7 +1421,8 @@
       "size": 9235,
       "active": false,
       "references": [
-        "drive/tests/server_console_contract_smoke.php"
+        "drive/tests/server_console_contract_smoke.php",
+        "drive/tests/web_os_contract_smoke.php"
       ]
     },
     {
@@ -2608,7 +2612,8 @@
       "size": 2573,
       "active": false,
       "references": [
-        "drive/tests/server_console_contract_smoke.php"
+        "drive/tests/server_console_contract_smoke.php",
+        "drive/tests/web_os_contract_smoke.php"
       ]
     },
     {
@@ -3418,7 +3423,7 @@
     },
     {
       "path": "drive/tests/server_console_contract_smoke.php",
-      "size": 4416,
+      "size": 5219,
       "active": false,
       "references": []
     },
@@ -3484,7 +3489,7 @@
     },
     {
       "path": "drive/tests/web_os_contract_smoke.php",
-      "size": 13489,
+      "size": 15770,
       "active": false,
       "references": []
     },

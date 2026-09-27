@@ -378,6 +378,189 @@ body.arcade-os{
   aspect-ratio:16/9;max-height:52vh;object-fit:contain
 }
 
+/* ===== Terminal restringida de Mi nodo ===== */
+.os-terminal-window{
+  min-width:520px;
+  min-height:420px;
+}
+.os-terminal-body{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  padding:12px;
+  background:#050b12;
+}
+.os-terminal-note{
+  display:flex;
+  align-items:flex-start;
+  gap:9px;
+  padding:9px 11px;
+  border:1px solid rgba(116,196,255,.18);
+  border-radius:9px;
+  background:rgba(38,198,255,.055);
+  color:var(--os-soft);
+  font-size:.74rem;
+  line-height:1.35;
+}
+.os-terminal-note i{color:var(--os-accent);margin-top:2px}
+.os-terminal-status{
+  min-height:30px;
+  display:flex;
+  align-items:center;
+  padding:7px 9px;
+  border-radius:8px;
+  background:rgba(255,255,255,.025);
+  border:1px solid rgba(255,255,255,.06);
+  color:var(--os-soft);
+  font-size:.72rem;
+}
+.os-terminal-status.is-ready{color:#9df6bc;border-color:rgba(87,227,137,.25)}
+.os-terminal-status.is-warning{color:#ffe09a;border-color:rgba(255,209,102,.28)}
+.os-terminal-status.is-error{color:#ffb2b2;border-color:rgba(255,107,107,.28)}
+.os-terminal-commands{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:8px;
+  max-height:210px;
+  overflow:auto;
+  padding-right:2px;
+}
+.os-terminal-command-group{
+  min-width:0;
+  border:1px solid rgba(116,196,255,.13);
+  border-radius:9px;
+  background:rgba(255,255,255,.018);
+  padding:8px;
+}
+.os-terminal-command-group-title{
+  margin-bottom:7px;
+  color:var(--os-soft);
+  font-size:.66rem;
+  font-weight:800;
+  text-transform:uppercase;
+  letter-spacing:.04em;
+}
+.os-terminal-command-buttons{
+  display:flex;
+  flex-wrap:wrap;
+  gap:5px;
+}
+.os-terminal-command-buttons button{
+  min-width:0;
+  border:1px solid rgba(116,196,255,.2);
+  border-radius:7px;
+  background:#081421;
+  color:#b7ffb7;
+  padding:5px 7px;
+  cursor:pointer;
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  font-size:.67rem;
+}
+.os-terminal-command-buttons button:hover:not(:disabled){
+  border-color:var(--os-accent);
+  background:rgba(38,198,255,.08);
+}
+.os-terminal-command-buttons button:disabled{opacity:.45;cursor:not-allowed}
+.os-terminal-command-buttons code{
+  color:inherit;
+  white-space:nowrap;
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+.os-terminal-command-buttons .fa-lock{color:#ffd166;font-size:.58rem}
+.os-terminal-loading{
+  grid-column:1/-1;
+  padding:12px;
+  color:var(--os-soft);
+  text-align:center;
+  font-size:.75rem;
+}
+.os-terminal-output{
+  flex:1;
+  min-height:180px;
+  margin:0;
+  overflow:auto;
+  white-space:pre-wrap;
+  word-break:break-word;
+  border:1px solid #315a31;
+  border-radius:9px;
+  background:#020702;
+  color:#b7ffb7;
+  padding:11px;
+  font:12px/1.45 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+.os-terminal-input-row{
+  display:flex;
+  align-items:center;
+  gap:7px;
+}
+.os-terminal-prompt{
+  color:#7dff7d;
+  font:800 15px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+.os-terminal-input-row input{
+  flex:1;
+  min-width:0;
+  border:1px solid rgba(116,196,255,.2);
+  border-radius:8px;
+  background:#071421;
+  color:#b7ffb7;
+  padding:8px 10px;
+  outline:none;
+  font:12px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+.os-terminal-input-row input:focus{border-color:var(--os-accent)}
+.os-terminal-input-row button,
+.os-terminal-private-actions button{
+  border:1px solid rgba(116,196,255,.22);
+  border-radius:8px;
+  background:#10243a;
+  color:var(--os-text);
+  padding:8px 10px;
+  cursor:pointer;
+}
+.os-terminal-input-row button:disabled{opacity:.45;cursor:not-allowed}
+.os-terminal-private-confirm{
+  position:absolute;
+  inset:52px 14px 14px;
+  z-index:30;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  gap:10px;
+  padding:18px;
+  border:1px solid rgba(255,209,102,.34);
+  border-radius:10px;
+  background:rgba(5,14,24,.98);
+  box-shadow:0 18px 60px rgba(0,0,0,.55);
+}
+.os-terminal-private-confirm[hidden]{display:none!important}
+.os-terminal-private-confirm p{
+  margin:.4rem 0 0;
+  color:var(--os-soft);
+  font-size:.75rem;
+}
+.os-terminal-private-confirm code{color:#ffd166}
+.os-terminal-private-confirm input{
+  width:100%;
+  border:1px solid rgba(255,209,102,.3);
+  border-radius:8px;
+  background:#071421;
+  color:var(--os-text);
+  padding:9px 10px;
+}
+.os-terminal-private-actions{
+  display:flex;
+  justify-content:flex-end;
+  gap:7px;
+}
+.os-terminal-private-actions button.is-danger{
+  border-color:rgba(255,107,107,.35);
+  color:#ffb2b2;
+}
+
+
 .os-context-divider{
   height:1px;
   margin:5px 4px;
@@ -524,4 +707,8 @@ body.arcade-os{
     left:6px!important;right:6px!important;bottom:56px!important;top:auto!important;width:auto!important
   }
   .os-media-overlay-header{cursor:default}
+  .os-terminal-window{min-width:0;min-height:0}
+  .os-terminal-commands{grid-template-columns:1fr;max-height:170px}
+  .os-terminal-input-row button span{display:none}
+  .os-terminal-input-row button{width:42px;flex:0 0 42px}
 }

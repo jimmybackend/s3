@@ -2637,7 +2637,7 @@
     },
     {
       "path": "drive/src/Console/MediaProcessingWorkerCommand.php",
-      "lines": 754,
+      "lines": 833,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -6263,7 +6263,7 @@
     },
     {
       "path": "drive/tests/media_processing_contract_smoke.php",
-      "lines": 148,
+      "lines": 153,
       "kind": "test script",
       "classes": 0,
       "functions": [

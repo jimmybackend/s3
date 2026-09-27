@@ -166,6 +166,8 @@ webOsContract(str_contains($paths['js'], 'async refreshExplorer('), 'shell actua
 webOsContract(str_contains($paths['js'], "current.replaceWith(next)"), 'navegación reemplaza sólo la región de Mis datos');
 webOsContract(str_contains($paths['js'], "fetch(url.toString()"), 'navegación de carpetas usa solicitud parcial');
 webOsContract(str_contains($paths['js'], "bindHistoryNavigation()"), 'historial atrás/adelante conserva navegación viva');
+webOsContract(str_contains($paths['js'], "#explorerWindow a[data-explorer-route]"), 'sólo enlaces reales pueden navegar o refrescar Mis datos');
+webOsContract(!str_contains($paths['js'], "#explorerWindow [data-explorer-route]"), 'clics sobre archivos no ascienden al contenedor de ruta');
 webOsContract(str_contains($paths['folders_js'], "ArcadeCloudOsShell.refreshExplorer"), 'acciones de carpeta delegan navegación al shell');
 webOsContract(str_contains($paths['folders_js'], 'rebind()'), 'acciones se vuelven a enlazar tras refrescar Mis datos');
 webOsContract(str_contains($paths['css'], '.os-entry-thumbnail'), 'miniaturas tienen estilo dentro de Mis datos');

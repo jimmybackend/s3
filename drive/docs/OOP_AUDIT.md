@@ -8,10 +8,10 @@
 - PHP que ya contienen clases/interfaces: **272**
 - PHP marcados para migración/revisión: **0**
 - Tests PHP separados del objetivo OOP de runtime: **43**
-- JavaScript analizados: **49**
-- JavaScript que ya contienen clases: **49**
+- JavaScript analizados: **50**
+- JavaScript que ya contienen clases: **50**
 - JavaScript sin clase/encapsulación OOP: **0**
-- JavaScript OOP con fachada `window` de compatibilidad: **7**
+- JavaScript OOP con fachada `window` de compatibilidad: **8**
 
 ## Criterio
 
@@ -148,7 +148,7 @@
 | `drive/set_file_security.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/setup/api.php` | 15 | thin endpoint | 0 | — | — | — | — |
 | `drive/setup/index.php` | 90 | view/entrypoint | 0 | — | — | — | — |
-| `drive/so.php` | 1076 | view/entrypoint | 0 | — | — | — | — |
+| `drive/so.php` | 1282 | view/entrypoint | 0 | — | — | — | — |
 | `drive/src/Activity/ActivityCostRecorder.php` | 155 | class/module | 1 | — | — | — | — |
 | `drive/src/Activity/ActivityCostRepository.php` | 198 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Activity/ActivityCostService.php` | 153 | class/module | 1 | — | — | — | — |
@@ -454,7 +454,7 @@
 | `drive/tests/upload_catalog_registration_regression.php` | 125 | test script | 0 | — | ⚠️ | — | — |
 | `drive/tests/user_identity_presenter_smoke.php` | 30 | test script | 0 | — | — | — | — |
 | `drive/tests/user_profile_validator_smoke.php` | 72 | test script | 0 | — | — | — | — |
-| `drive/tests/web_os_contract_smoke.php` | 114 | test script | 0 | — | — | — | — |
+| `drive/tests/web_os_contract_smoke.php` | 147 | test script | 0 | — | — | — | — |
 | `drive/thumb.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/token_audio.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/token_texto.php` | 10 | thin endpoint | 0 | — | — | — | — |
@@ -497,7 +497,7 @@
 | `drive/js/aws-comprehend.js` | 354 | class/module | AwsComprehendModule, AwsFileActionRouter | — | — | — |
 | `drive/js/background-task-feedback.js` | 180 | class/module | BackgroundTaskFeedbackModule | — | — | — |
 | `drive/js/background-tasks.js` | 713 | class/module | BackgroundTaskCenter | — | — | — |
-| `drive/js/carpetas.js` | 1105 | class/module | CarpetasModule | — | actualizarBloqueCarpetas | window functions: actualizarBloqueCarpetas |
+| `drive/js/carpetas.js` | 1196 | class/module | CarpetasModule | — | actualizarBloqueCarpetas | window functions: actualizarBloqueCarpetas |
 | `drive/js/descarga-multiple.js` | 114 | class/module | DescargaMultipleModule | — | — | — |
 | `drive/js/descarga-uno.js` | 110 | class/module | DescargaUnoModule | — | — | — |
 | `drive/js/editar-txt.js` | 68 | class/module | EditarTxtModule | — | — | — |
@@ -511,7 +511,7 @@
 | `drive/js/federation-share-drive.js` | 211 | class/module | FederationShareDriveModule | — | — | — |
 | `drive/js/file-block.js` | 305 | class/module | FileBlockApp | — | — | — |
 | `drive/js/filtros.js` | 97 | class/module | FiltrosModule | — | — | — |
-| `drive/js/folder-document.js` | 430 | class/module | FolderDocumentModule | — | — | — |
+| `drive/js/folder-document.js` | 464 | class/module | FolderDocumentModule | — | openFolderDocumentCreator | window functions: openFolderDocumentCreator |
 | `drive/js/imagenes.js` | 535 | class/module | ImagenesModule | — | getGaleriaGridSize, setGaleriaGridSize | window functions: getGaleriaGridSize, setGaleriaGridSize |
 | `drive/js/media-floating.js` | 696 | class/module | MediaFloatingApp | — | — | — |
 | `drive/js/media-processing.js` | 498 | class/module | MediaProcessingModule | — | — | — |
@@ -525,7 +525,8 @@
 | `drive/js/recargarPagina.js` | 27 | class/module | RecargarPaginaModule | — | — | — |
 | `drive/js/server-admin.js` | 405 | class/module | ServerAdminModule | — | — | — |
 | `drive/js/setup.js` | 192 | class/module | ArcadeCloudSetup | — | — | — |
-| `drive/js/sincronizar.js` | 262 | class/module | SincronizarModule | — | triggerSyncFolderS3, triggerSyncS3 | window functions: triggerSyncFolderS3, triggerSyncS3 |
+| `drive/js/sincronizar.js` | 264 | class/module | SincronizarModule | — | triggerSyncFolderS3, triggerSyncS3 | window functions: triggerSyncFolderS3, triggerSyncS3 |
+| `drive/js/so-folders.js` | 384 | class/module | ArcadeCloudOsFolderActions | — | — | — |
 | `drive/js/so.js` | 656 | class/module | ArcadeCloudOsShell | — | — | — |
 | `drive/js/soportesMediaTypes.js` | 397 | class/module | SoportesMediaTypesModule | — | — | — |
 | `drive/js/storage-usage.js` | 51 | class/module | StorageUsageModule | — | — | — |

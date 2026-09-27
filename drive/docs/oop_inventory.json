@@ -4,10 +4,10 @@
     "php_class_modules": 272,
     "php_needs_migration": 0,
     "php_tests": 43,
-    "js_total": 49,
-    "js_class_modules": 49,
+    "js_total": 50,
+    "js_class_modules": 50,
     "js_needs_migration": 0,
-    "js_compatibility_facades": 7
+    "js_compatibility_facades": 8
   },
   "php": [
     {
@@ -1866,7 +1866,7 @@
     },
     {
       "path": "drive/so.php",
-      "lines": 1076,
+      "lines": 1282,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -6550,7 +6550,7 @@
     },
     {
       "path": "drive/tests/web_os_contract_smoke.php",
-      "lines": 114,
+      "lines": 147,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -7178,13 +7178,14 @@
     },
     {
       "path": "drive/js/carpetas.js",
-      "lines": 1105,
+      "lines": 1196,
       "kind": "class/module",
       "classes": [
         "CarpetasModule"
       ],
       "functions": [],
       "window_assign": [
+        "ArcadeFolderActions",
         "__bindArbolCarpetas",
         "actualizarBloqueCarpetas",
         "actualizarBloqueFooter",
@@ -7403,7 +7404,7 @@
     },
     {
       "path": "drive/js/folder-document.js",
-      "lines": 430,
+      "lines": 464,
       "kind": "class/module",
       "classes": [
         "FolderDocumentModule"
@@ -7411,12 +7412,17 @@
       "functions": [],
       "window_assign": [
         "__arcadeFolderDocumentBound",
-        "actualizarBloqueArchivos"
+        "actualizarBloqueArchivos",
+        "openFolderDocumentCreator"
       ],
-      "window_func": [],
+      "window_func": [
+        "openFolderDocumentCreator"
+      ],
       "top_vars": [],
       "iife": true,
-      "issues": []
+      "issues": [
+        "window functions: openFolderDocumentCreator"
+      ]
     },
     {
       "path": "drive/js/imagenes.js",
@@ -7661,7 +7667,7 @@
     },
     {
       "path": "drive/js/sincronizar.js",
-      "lines": 262,
+      "lines": 264,
       "kind": "class/module",
       "classes": [
         "SincronizarModule"
@@ -7682,6 +7688,22 @@
       "issues": [
         "window functions: triggerSyncFolderS3, triggerSyncS3"
       ]
+    },
+    {
+      "path": "drive/js/so-folders.js",
+      "lines": 384,
+      "kind": "class/module",
+      "classes": [
+        "ArcadeCloudOsFolderActions"
+      ],
+      "functions": [],
+      "window_assign": [
+        "ArcadeCloudOsFolders"
+      ],
+      "window_func": [],
+      "top_vars": [],
+      "iife": false,
+      "issues": []
     },
     {
       "path": "drive/js/so.js",

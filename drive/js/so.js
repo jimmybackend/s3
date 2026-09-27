@@ -17,6 +17,8 @@ class ArcadeCloudOsShell {
     this.activeFile = null;
     this.mediaOverlay = null;
     this.explorerLoading = false;
+    this.fileTapState = new WeakMap();
+    this.fileSecondClickMs = 320;
   }
 
   init() {
@@ -286,37 +288,94 @@ class ArcadeCloudOsShell {
     if (control) control.hidden = !visible;
   }
 
+  selectedFileEntries() {
+    return Array.from(this.document.querySelectorAll('.os-file-entry.is-selected'));
+  }
+
+  setFileSelected(entry, selected) {
+    if (!entry) return;
+    const on = Boolean(selected);
+    entry.classList.toggle('is-selected', on);
+    entry.setAttribute('aria-pressed', on ? 'true' : 'false');
+  }
+
+  toggleFileSelection(entry) {
+    if (!entry) return false;
+    const selected = !entry.classList.contains('is-selected');
+    this.setFileSelected(entry, selected);
+    return selected;
+  }
+
+  clearFileSelection() {
+    this.selectedFileEntries().forEach((entry) => this.setFileSelected(entry, false));
+    this.fileTapState = new WeakMap();
+  }
+
+  prepareFileContext(entry) {
+    const selected = this.selectedFileEntries();
+    if (!entry.classList.contains('is-selected')) {
+      selected.forEach((item) => this.setFileSelected(item, false));
+      this.setFileSelected(entry, true);
+    }
+    return this.selectedFileEntries();
+  }
+
   showContext(entry, x, y) {
     if (!this.context || !entry || !this.contextName) return;
 
+    const selected = this.prepareFileContext(entry);
+    const count = selected.length;
+    const multi = count > 1;
+
     this.activeFile = entry;
-    this.contextName.textContent = entry.dataset.name || 'Archivo';
+    this.contextName.textContent = multi
+      ? count + ' archivos seleccionados'
+      : (entry.dataset.name || 'Archivo');
 
     const locked = entry.dataset.locked === '1';
     const ext = String(entry.dataset.ext || '').toLowerCase();
 
-    this.setContextAction('open', !locked && Boolean(entry.dataset.openUrl));
-    this.setContextAction('edit', !locked && Boolean(entry.dataset.editUrl));
-    this.setContextAction('download', !locked && Boolean(entry.dataset.downloadUrl));
+    this.setContextAction('open', !multi && !locked && Boolean(entry.dataset.openUrl));
+    this.setContextAction('edit', !multi && !locked && Boolean(entry.dataset.editUrl));
+    this.setContextAction('download', !multi && !locked && Boolean(entry.dataset.downloadUrl));
+    this.setContextAction('classic', !multi);
 
-    this.setContextAction('textract', !locked && entry.dataset.textract === '1');
-    this.setContextAction('transcribe', !locked && entry.dataset.transcribe === '1');
-    this.setContextAction('polly', !locked && entry.dataset.polly === '1');
-    this.setContextAction('translate', !locked && entry.dataset.translate === '1');
-    this.setContextAction('rekognition', !locked && entry.dataset.rekognition === '1');
-    this.setContextAction('comprehend', !locked && entry.dataset.comprehend === '1');
-    this.setContextAction('split-video', !locked && entry.dataset.video === '1');
-    this.setContextAction('extract-mp3', !locked && entry.dataset.video === '1');
-    this.setContextAction('split-audio', !locked && entry.dataset.audio === '1');
+    this.setContextAction('textract', !multi && !locked && entry.dataset.textract === '1');
+    this.setContextAction('transcribe', !multi && !locked && entry.dataset.transcribe === '1');
+    this.setContextAction('polly', !multi && !locked && entry.dataset.polly === '1');
+    this.setContextAction('translate', !multi && !locked && entry.dataset.translate === '1');
+    this.setContextAction('rekognition', !multi && !locked && entry.dataset.rekognition === '1');
+    this.setContextAction('comprehend', !multi && !locked && entry.dataset.comprehend === '1');
+    this.setContextAction('split-video', !multi && !locked && entry.dataset.video === '1');
+    this.setContextAction('extract-mp3', !multi && !locked && entry.dataset.video === '1');
+    this.setContextAction('split-audio', !multi && !locked && entry.dataset.audio === '1');
+
+    const copy = this.context.querySelector('[data-os-clipboard-action="copy"][data-os-clipboard-kind="file"]');
+    const cut = this.context.querySelector('[data-os-clipboard-action="cut"][data-os-clipboard-kind="file"]');
+    const share = this.context.querySelector('[data-os-clipboard-action="share"][data-os-clipboard-kind="file"]');
+    const remove = this.context.querySelector('[data-os-clipboard-action="delete"][data-os-clipboard-kind="file"]');
+
+    if (copy) {
+      const label = copy.querySelector('span');
+      if (label) label.textContent = multi ? 'Copiar ' + count + ' archivos' : 'Copiar';
+    }
+    if (cut) {
+      const label = cut.querySelector('span');
+      if (label) label.textContent = multi ? 'Cortar / mover ' + count + ' archivos' : 'Cortar / mover';
+    }
+    if (share) share.hidden = multi;
+    if (remove) remove.hidden = multi;
 
     const serviceButtons = Array.from(this.context.querySelectorAll('[data-service-action]'));
     const divider = this.context.querySelector('[data-service-divider]');
     if (divider) divider.hidden = !serviceButtons.some((button) => !button.hidden);
 
-    if (locked) {
-      this.contextName.textContent = (entry.dataset.name || 'Archivo') + ' · protegido';
-    } else if (ext) {
-      this.contextName.textContent = (entry.dataset.name || 'Archivo') + ' · .' + ext;
+    if (!multi) {
+      if (locked) {
+        this.contextName.textContent = (entry.dataset.name || 'Archivo') + ' · protegido';
+      } else if (ext) {
+        this.contextName.textContent = (entry.dataset.name || 'Archivo') + ' · .' + ext;
+      }
     }
 
     this.context.hidden = false;
@@ -329,8 +388,7 @@ class ArcadeCloudOsShell {
     this.document.querySelectorAll('.os-file-entry').forEach((entry) => {
       if (entry.dataset.osFileBound === '1') return;
       entry.dataset.osFileBound = '1';
-
-      entry.addEventListener('dblclick', () => this.openFileEntry(entry, false));
+      entry.setAttribute('aria-pressed', entry.classList.contains('is-selected') ? 'true' : 'false');
 
       entry.addEventListener('contextmenu', (event) => {
         event.preventDefault();
@@ -338,9 +396,27 @@ class ArcadeCloudOsShell {
       });
 
       entry.addEventListener('click', (event) => {
-        if (!event.target.closest('.os-entry-menu')) return;
-        const rect = entry.getBoundingClientRect();
-        this.showContext(entry, rect.right - 20, rect.top + 30);
+        const menu = event.target.closest('.os-entry-menu');
+        if (menu) {
+          event.preventDefault();
+          const rect = entry.getBoundingClientRect();
+          this.showContext(entry, rect.right - 20, rect.top + 30);
+          return;
+        }
+
+        event.preventDefault();
+
+        const now = Date.now();
+        const previous = Number(this.fileTapState.get(entry) || 0);
+        if (previous > 0 && (now - previous) <= this.fileSecondClickMs) {
+          this.fileTapState.delete(entry);
+          if (!entry.classList.contains('is-selected')) this.setFileSelected(entry, true);
+          this.openFileEntry(entry, false);
+          return;
+        }
+
+        this.fileTapState.set(entry, now);
+        this.toggleFileSelection(entry);
       });
     });
   }

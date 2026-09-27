@@ -51,7 +51,6 @@ if [[ ! -f "${DRIVE_ROOT}/bin/media_worker_node_bootstrap.sh" ]]; then
   exit 1
 fi
 
-chmod 0755 "${DRIVE_ROOT}/bin/media_worker_node_bootstrap.sh"
 
 mkdir -p "${TMP_ROOT}"
 chown -R "$RUN_USER:$RUN_GROUP" /var/lib/arcadecloud-media

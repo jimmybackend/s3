@@ -113,10 +113,10 @@ mediaContract(str_contains($worker, 'transcodeVideoSegment('), 'división tiene 
 mediaContract(str_contains($worker, "ffmpegHasEncoder('libx264')"), 'fallback usa H.264 cuando está disponible');
 mediaContract(str_contains($worker, 'assertMediaOutput('), 'cada segmento se valida con FFprobe antes de publicarse');
 mediaContract(str_contains($worker, 'stream_select($read, $write, $except'), 'ejecución FFmpeg drena stdout/stderr concurrentemente sin bloquear pipes');
-mediaContract(str_contains($worker, "stream_set_blocking($pipes[1], false)"), 'captura FFmpeg usa pipes no bloqueantes');
+mediaContract(str_contains($worker, 'stream_set_blocking($pipes[1], false)'), 'captura FFmpeg usa pipes no bloqueantes');
 mediaContract(str_contains($worker, "'-nostdin'"), 'FFmpeg no espera entrada interactiva del worker');
 mediaContract(str_contains($worker, "'-fflags','+genpts'"), 'división regenera timestamps cuando el origen los trae incompletos');
-mediaContract(str_contains($worker, "if ($this->ffmpegHasEncoder('mpeg4')) $encoders[] = 'mpeg4';"), 'fallback prueba MPEG-4 si H.264 no puede recodificar');
+mediaContract(str_contains($worker, "if (\$this->ffmpegHasEncoder('mpeg4')) \$encoders[] = 'mpeg4';"), 'fallback prueba MPEG-4 si H.264 no puede recodificar');
 mediaContract(str_contains($worker, "'-max_muxing_queue_size','4096'"), 'fallback amplía cola de multiplexado para archivos complejos');
 mediaContract(str_contains($worker, 'FFmpeg/FFprobe falló (código '), 'errores FFmpeg conservan código de salida y diagnóstico');
 mediaContract(str_contains($worker, "probeDuration(\$sourcePath)"), 'duración real de división se obtiene con FFprobe');

@@ -102,7 +102,10 @@ EOF
 
 systemctl daemon-reload
 systemctl enable arcadecloud-media-node-bootstrap.service >/dev/null 2>&1 || true
-systemctl enable --now arcadecloud-media-worker.service
+systemctl enable arcadecloud-media-worker.service >/dev/null 2>&1
+# Un update de Git puede cambiar el PHP del worker mientras el proceso viejo sigue
+# vivo. Reiniciar garantiza que cada reconciliación cargue el código recién instalado.
+systemctl restart arcadecloud-media-worker.service
 systemctl --no-pager --full status arcadecloud-media-worker.service || true
 
 echo

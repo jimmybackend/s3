@@ -47,6 +47,7 @@ $currentRoute = $app->userStoragePath()->normalizeForUser(
     (string)($_GET['ruta'] ?? $userRoot),
     $userId
 );
+$session->set('ruta_actual', $currentRoute);
 $visibleRoute = $app->folderQueryService()->displayPathForUser($userId, $currentRoute);
 
 $page = max(1, (int)($_GET['pagina'] ?? 1));

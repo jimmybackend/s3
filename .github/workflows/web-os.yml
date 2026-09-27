@@ -7,6 +7,16 @@ on:
       - 'drive/s3.php'
       - 'drive/css/so.css'
       - 'drive/js/so.js'
+      - 'drive/js/so-folders.js'
+      - 'drive/js/carpetas.js'
+      - 'drive/js/folder-document.js'
+      - 'drive/js/sincronizar.js'
+      - 'drive/js/move-tasks.js'
+      - 'drive/js/so-folders.js'
+      - 'drive/js/carpetas.js'
+      - 'drive/js/folder-document.js'
+      - 'drive/js/sincronizar.js'
+      - 'drive/js/move-tasks.js'
       - 'drive/src/System/**'
       - 'drive/tests/web_os_contract_smoke.php'
       - '.github/workflows/web-os.yml'
@@ -34,5 +44,13 @@ jobs:
           php -l drive/so.php
           php -l drive/src/System/NodeCapabilityService.php
           php -l drive/tests/web_os_contract_smoke.php
+      - name: JavaScript syntax
+        run: |
+          node --check drive/js/so.js
+          node --check drive/js/so-folders.js
+          node --check drive/js/carpetas.js
+          node --check drive/js/folder-document.js
+          node --check drive/js/sincronizar.js
+          node --check drive/js/move-tasks.js
       - name: Web OS contract
         run: php drive/tests/web_os_contract_smoke.php

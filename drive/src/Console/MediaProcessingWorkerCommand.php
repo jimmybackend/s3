@@ -60,7 +60,12 @@ final class MediaProcessingWorkerCommand
                 $outputs = $this->process($job);
                 $this->jobs->complete((string)$job['job_id'], $outputs);
             } catch (\Throwable $e) {
-                $this->jobs->fail((string)$job['job_id'], $e->getMessage());
+                $jobId = (string)$job['job_id'];
+                if (str_starts_with($e->getMessage(), '[CANCELLED]')) {
+                    $this->jobs->markCancelled($jobId, 'Tarea cancelada por el usuario.');
+                } else {
+                    $this->jobs->fail($jobId, $e->getMessage());
+                }
                 error_log('[ArcadeCloud media-worker] ' . $e->getMessage());
             }
         } while ($loop);
@@ -82,7 +87,9 @@ final class MediaProcessingWorkerCommand
         }
 
         $sourceKey = (string)$job['source_key'];
-        $sourceExt = strtolower((string)pathinfo($sourceKey, PATHINFO_EXTENSION));
+        // El formato pertenece al nombre lógico del archivo, no a la clave física
+        // de S3. La clave puede ser opaca y no conservar una extensión multimedia.
+        $sourceExt = $this->logicalSourceExtension($job, (string)$job['operation']);
         $sourcePath = $workDir . '/source.' . ($sourceExt !== '' ? $sourceExt : 'bin');
 
         try {
@@ -112,6 +119,7 @@ final class MediaProcessingWorkerCommand
             }
 
             $this->jobs->progress($jobId, 10);
+            $this->assertNotCancelled($jobId);
 
             $outputs = match ((string)$job['operation']) {
                 'extract_mp3' => $this->extractMp3($job, $sourcePath, $workDir),
@@ -127,6 +135,8 @@ final class MediaProcessingWorkerCommand
 
     private function extractMp3(array $job, string $sourcePath, string $workDir): array
     {
+        $jobId = (string)$job['job_id'];
+        $this->assertNotCancelled($jobId);
         $dest = $this->destination($job, 1, 'mp3', false);
         $this->assertDestinationAvailable($dest['key']);
 
@@ -154,7 +164,8 @@ final class MediaProcessingWorkerCommand
             $this->runProcess([$lame, '-b', '128', '--quiet', $wav, $out]);
             @unlink($wav);
         }
-        $this->jobs->progress((string)$job['job_id'], 75);
+        $this->assertNotCancelled($jobId);
+        $this->jobs->progress($jobId, 75);
 
         return [$this->publish($job, $dest, $out, 'audio/mpeg', [
             'media_operation' => 'extract_mp3',
@@ -172,8 +183,7 @@ final class MediaProcessingWorkerCommand
         }
 
         $segment = $duration / $parts;
-        $sourceExt = strtolower((string)pathinfo((string)$job['source_key'], PATHINFO_EXTENSION));
-        if ($sourceExt === '') $sourceExt = (string)$job['operation'] === 'split_video' ? 'mp4' : 'mp3';
+        $sourceExt = $this->logicalSourceExtension($job, (string)$job['operation']);
 
         $destinations = [];
         for ($i = 1; $i <= $parts; $i++) {
@@ -183,6 +193,7 @@ final class MediaProcessingWorkerCommand
 
         $localFiles = [];
         for ($i = 1; $i <= $parts; $i++) {
+            $this->assertNotCancelled((string)$job['job_id']);
             $coreStart = ($i - 1) * $segment;
             $coreEnd = $i === $parts ? $duration : $i * $segment;
             $start = max(0.0, $coreStart - ($i > 1 ? $before : 0));
@@ -212,6 +223,7 @@ final class MediaProcessingWorkerCommand
 
         $outputs = [];
         foreach ($localFiles as $i => $local) {
+            $this->assertNotCancelled((string)$job['job_id']);
             $mime = (string)$job['operation'] === 'split_video'
                 ? $this->videoMime($sourceExt)
                 : $this->audioMime($sourceExt);
@@ -289,6 +301,11 @@ final class MediaProcessingWorkerCommand
         if ($isVideo && in_array($sourceExt, ['mp4','m4v','mov'], true)) {
             $command[] = '-movflags';
             $command[] = '+faststart';
+        }
+        $muxer = $this->outputMuxer($sourceExt, $isVideo);
+        if ($muxer !== '') {
+            $command[] = '-f';
+            $command[] = $muxer;
         }
         $command[] = $out;
 
@@ -374,6 +391,10 @@ final class MediaProcessingWorkerCommand
         $command = array_merge($command, ['-avoid_negative_ts','make_zero']);
         if (in_array($sourceExt, ['mp4','m4v','mov'], true)) {
             $command = array_merge($command, ['-movflags','+faststart']);
+        }
+        $muxer = $this->outputMuxer($sourceExt, true);
+        if ($muxer !== '') {
+            $command = array_merge($command, ['-f',$muxer]);
         }
         $command[] = $out;
 
@@ -499,6 +520,18 @@ final class MediaProcessingWorkerCommand
 
     private function runProcess(array $command, bool $capture = false): string
     {
+        $binary = (string)($command[0] ?? '');
+        if ($binary === '') {
+            throw new RuntimeException('Comando multimedia vacío.');
+        }
+        if (!str_contains($binary, DIRECTORY_SEPARATOR)) {
+            $resolved = $this->findExecutable($binary);
+            if ($resolved === null) {
+                throw new RuntimeException('[DEPENDENCY_MISSING] No se encontró el ejecutable multimedia: ' . $binary . '.');
+            }
+            $command[0] = $resolved;
+        }
+
         // Archivos temporales en vez de pipes: FFmpeg puede producir suficiente
         // stderr para llenar un pipe y bloquear proc_open si stdout/stderr se leen
         // secuencialmente. Así evitamos ese deadlock y conservamos el diagnóstico.
@@ -604,6 +637,43 @@ final class MediaProcessingWorkerCommand
                 . 'Detectado: ' . $cpu . ' vCPU, ' . $memoryGiB . ' GiB visibles. '
                 . 'Configura un media worker con capacidad suficiente; un nodo web pequeño no debe ejecutar este trabajo.'
             );
+        }
+    }
+
+    private function logicalSourceExtension(array $job, string $operation): string
+    {
+        $logical = strtolower((string)pathinfo((string)($job['source_name'] ?? ''), PATHINFO_EXTENSION));
+        $physical = strtolower((string)pathinfo((string)($job['source_key'] ?? ''), PATHINFO_EXTENSION));
+        $ext = $logical !== '' ? $logical : $physical;
+
+        if ($operation === 'split_video') {
+            return in_array($ext, ['mp4','m4v','mov','mkv','webm','ogv','ogg'], true) ? $ext : 'mp4';
+        }
+        if ($operation === 'split_audio') {
+            return in_array($ext, ['mp3','wav','ogg','opus','m4a','aac','flac','webm'], true) ? $ext : 'mp3';
+        }
+        return $ext !== '' ? $ext : 'bin';
+    }
+
+    private function outputMuxer(string $ext, bool $video): string
+    {
+        return match ($ext) {
+            'mp4','m4v','mov' => 'mp4',
+            'mkv' => 'matroska',
+            'webm' => 'webm',
+            'ogv','ogg' => 'ogg',
+            'mp3' => 'mp3',
+            'wav' => 'wav',
+            'flac' => 'flac',
+            'm4a','aac' => $video ? 'mp4' : 'adts',
+            default => '',
+        };
+    }
+
+    private function assertNotCancelled(string $jobId): void
+    {
+        if ($jobId !== '' && $this->jobs->isCancellationRequested($jobId)) {
+            throw new RuntimeException('[CANCELLED] Detención solicitada por el usuario.');
         }
     }
 

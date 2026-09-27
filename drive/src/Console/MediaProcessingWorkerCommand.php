@@ -545,13 +545,99 @@ final class MediaProcessingWorkerCommand
 
     private function probeDuration(string $path): float
     {
+        $errors = [];
+
+        try {
+            $result = $this->runProcess([
+                'ffprobe','-v','error',
+                '-show_entries','format=duration',
+                '-of','default=noprint_wrappers=1:nokey=1',
+                $path,
+            ], true);
+            $duration = $this->parseDurationNumber($result);
+            if ($duration > 0.0) {
+                return $duration;
+            }
+            $errors[] = 'ffprobe devolvió duración vacía o cero';
+        } catch (\Throwable $e) {
+            $errors[] = 'ffprobe: ' . $e->getMessage();
+        }
+
+        try {
+            $duration = $this->probeDurationWithFfmpeg($path);
+            if ($duration > 0.0) {
+                error_log('[ArcadeCloud media-worker] duración obtenida mediante fallback FFmpeg.');
+                return $duration;
+            }
+            $errors[] = 'fallback FFmpeg devolvió duración cero';
+        } catch (\Throwable $e) {
+            $errors[] = 'fallback FFmpeg: ' . $e->getMessage();
+        }
+
+        throw new RuntimeException(
+            'No se pudo determinar la duración del archivo. ' . implode(' | ', $errors)
+        );
+    }
+
+    private function probeDurationWithFfmpeg(string $path): float
+    {
         $result = $this->runProcess([
-            'ffprobe','-v','error',
-            '-show_entries','format=duration',
-            '-of','default=noprint_wrappers=1:nokey=1',
-            $path,
+            'ffmpeg','-hide_banner','-loglevel','error','-nostdin','-y',
+            '-fflags','+genpts',
+            '-i',$path,
+            '-map','0:v:0?',
+            '-map','0:a:0?',
+            '-c','copy',
+            '-f','null','/dev/null',
+            '-progress','pipe:1',
+            '-nostats',
         ], true);
-        return (float)trim($result);
+
+        $best = 0.0;
+        foreach (preg_split('/\R/', $result) ?: [] as $line) {
+            $line = trim($line);
+            if ($line === '') continue;
+
+            if (str_starts_with($line, 'out_time_us=')) {
+                $micros = (int)substr($line, strlen('out_time_us='));
+                if ($micros > 0) {
+                    $best = max($best, $micros / 1000000);
+                }
+                continue;
+            }
+
+            if (str_starts_with($line, 'out_time=')) {
+                $seconds = $this->parseClockDuration(substr($line, strlen('out_time=')));
+                if ($seconds > 0.0) {
+                    $best = max($best, $seconds);
+                }
+            }
+        }
+
+        return $best;
+    }
+
+    private function parseDurationNumber(string $value): float
+    {
+        $value = trim($value);
+        if ($value === '' || !is_numeric($value)) return 0.0;
+        $duration = (float)$value;
+        return is_finite($duration) && $duration > 0.0 ? $duration : 0.0;
+    }
+
+    private function parseClockDuration(string $value): float
+    {
+        $parts = explode(':', trim($value));
+        if (count($parts) !== 3) return 0.0;
+        if (!is_numeric($parts[0]) || !is_numeric($parts[1]) || !is_numeric($parts[2])) {
+            return 0.0;
+        }
+
+        $seconds = ((float)$parts[0] * 3600)
+            + ((float)$parts[1] * 60)
+            + (float)$parts[2];
+
+        return is_finite($seconds) && $seconds > 0.0 ? $seconds : 0.0;
     }
 
     private function runProcess(array $command, bool $capture = false): string

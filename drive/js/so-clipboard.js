@@ -38,7 +38,7 @@ class ArcadeCloudOsClipboard {
     if (this.document.querySelector('link[data-os-clipboard-style]')) return;
     const link = this.document.createElement('link');
     link.rel = 'stylesheet';
-    link.href = 'css/so-clipboard.css?v=20260927-1';
+    link.href = 'css/so-clipboard.css?v=20260927-2';
     link.setAttribute('data-os-clipboard-style', '1');
     this.document.head.appendChild(link);
   }
@@ -46,6 +46,7 @@ class ArcadeCloudOsClipboard {
   ensureUi() {
     this.injectFileActions();
     this.injectFolderActions();
+    this.injectPasteToolbar();
     this.ensureTransferHud();
   }
 
@@ -92,6 +93,29 @@ class ArcadeCloudOsClipboard {
     menu.appendChild(copy);
     menu.appendChild(cut);
     menu.appendChild(paste);
+  }
+
+  injectPasteToolbar() {
+    const toolbar = this.document.querySelector('#osExplorerLive .os-explorer-toolbar');
+    if (!toolbar || toolbar.querySelector('[data-os-paste-current]')) return;
+
+    const button = this.document.createElement('button');
+    button.type = 'button';
+    button.className = 'os-toolbar-paste os-clipboard-paste';
+    button.dataset.osClipboardAction = 'paste';
+    button.dataset.osPasteCurrent = '1';
+    button.hidden = true;
+
+    const icon = this.document.createElement('i');
+    icon.className = 'fas fa-paste';
+    const label = this.document.createElement('span');
+    label.textContent = 'Pegar aquí';
+
+    button.appendChild(icon);
+    button.appendChild(label);
+
+    const pager = toolbar.querySelector('.os-folder-pagination');
+    toolbar.insertBefore(button, pager || null);
   }
 
   ensureTransferHud() {
@@ -391,13 +415,32 @@ class ArcadeCloudOsClipboard {
 
   updatePasteControls() {
     const hasClipboard = Boolean(this.clipboard);
+    const visibleFiles = this.document.querySelectorAll('#osExplorerLive .os-file-entry').length;
+    const fullPage = visibleFiles >= 20;
+
     this.document.querySelectorAll('.os-clipboard-paste').forEach((button) => {
-      button.hidden = !hasClipboard;
+      const isToolbarPaste = button.dataset.osPasteCurrent === '1';
+      const visible = hasClipboard && (!isToolbarPaste || fullPage);
+
+      button.hidden = !visible;
       button.disabled = !hasClipboard;
-      if (hasClipboard) {
-        button.title = 'Pegar ' + String(this.clipboard.name || 'elemento') + ' aquí';
-      } else {
+
+      if (!hasClipboard) {
         button.title = 'No hay nada para pegar';
+        return;
+      }
+
+      const moving = String(this.clipboard.mode || '') === 'move';
+      const actionLabel = moving ? 'Mover aquí' : 'Copiar aquí';
+      const name = String(this.clipboard.name || 'elemento');
+
+      button.title = actionLabel + ': ' + name;
+
+      if (isToolbarPaste) {
+        const icon = button.querySelector('i');
+        const label = button.querySelector('span');
+        if (icon) icon.className = moving ? 'fas fa-arrow-right-to-bracket' : 'fas fa-paste';
+        if (label) label.textContent = actionLabel;
       }
     });
   }

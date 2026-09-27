@@ -18,6 +18,7 @@ $paths = [
     'console_controller' => $root . '/src/Http/Controller/ServerConsoleController.php',
     'console_service' => $root . '/src/Admin/ServerConsoleService.php',
     'federation_js' => $root . '/js/so-federation.js',
+    'federation_portal_js' => $root . '/js/federation-portal.js',
     'federation_admin_js' => $root . '/js/federation-os-admin.js',
     'federation_admin_renderer' => $root . '/src/View/FederationOsAdminRenderer.php',
     'federation_admin_controller' => $root . '/src/Http/Controller/FederationOsAdminController.php',
@@ -200,6 +201,8 @@ webOsContract(str_contains($paths['shell'], 'data-federation-view="moderation"')
 webOsContract(str_contains($paths['shell'], 'federationcloud/portal.php?embed=1'), 'portal FederationCloud usa modo embebido');
 webOsContract(str_contains($paths['federation_js'], "federationcloud/os-admin.php?embed=1"), 'Acerca de carga administración dentro de la aplicación');
 webOsContract(str_contains($paths['federation_js'], "federationcloud/moderation.php?embed=1"), 'moderación permanece dentro de la aplicación');
+webOsContract(str_contains($paths['federation_portal_js'], "this.embedded"), 'acciones de recursos detectan el modo Web OS');
+webOsContract(str_contains($paths['federation_portal_js'], 'Abrir / descargar'), 'catálogo ofrece abrir o descargar recursos');
 webOsContract(str_contains($paths['css'], '.os-federation-window'), 'ventana FederationCloud tiene estilo propio');
 
 $launcherStart = strpos($paths['shell'], '<div class="os-launcher" id="osLauncher"');

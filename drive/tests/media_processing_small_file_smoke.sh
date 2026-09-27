@@ -36,7 +36,7 @@ for i in 1 2 3; do
   out="$tmp/video-parte${i}.mp4"
   ffmpeg -hide_banner -loglevel error -y \
     -ss "$start" -i "$src" -t "$length" \
-    -map 0:v:0 -map 0:a? -sn -dn -map_metadata -1 -map_chapters -1 \
+    -map 0:v:0 -map 0:a:0? -sn -dn -map_metadata -1 -map_chapters -1 \
     -c copy -avoid_negative_ts make_zero -movflags +faststart -f mp4 "$out"
   test -s "$out"
 done

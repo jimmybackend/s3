@@ -457,7 +457,7 @@
 | `drive/tests/upload_catalog_registration_regression.php` | 125 | test script | 0 | — | ⚠️ | — | — |
 | `drive/tests/user_identity_presenter_smoke.php` | 30 | test script | 0 | — | — | — | — |
 | `drive/tests/user_profile_validator_smoke.php` | 72 | test script | 0 | — | — | — | — |
-| `drive/tests/web_os_clipboard_contract_smoke.php` | 64 | test script | 0 | — | — | — | — |
+| `drive/tests/web_os_clipboard_contract_smoke.php` | 65 | test script | 0 | — | — | — | — |
 | `drive/tests/web_os_contract_smoke.php` | 246 | test script | 0 | — | — | — | — |
 | `drive/thumb.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/token_audio.php` | 10 | thin endpoint | 0 | — | — | — | — |
@@ -531,7 +531,7 @@
 | `drive/js/server-admin.js` | 407 | class/module | ServerAdminModule | — | — | — |
 | `drive/js/setup.js` | 192 | class/module | ArcadeCloudSetup | — | — | — |
 | `drive/js/sincronizar.js` | 264 | class/module | SincronizarModule | — | triggerSyncFolderS3, triggerSyncS3 | window functions: triggerSyncFolderS3, triggerSyncS3 |
-| `drive/js/so-clipboard.js` | 797 | class/module | ArcadeCloudOsClipboard | — | — | — |
+| `drive/js/so-clipboard.js` | 794 | class/module | ArcadeCloudOsClipboard | — | — | — |
 | `drive/js/so-federation.js` | 129 | class/module | ArcadeCloudOsFederationApp | — | — | — |
 | `drive/js/so-folders.js` | 425 | class/module | ArcadeCloudOsFolderActions | — | — | — |
 | `drive/js/so-terminal.js` | 300 | class/module | ArcadeCloudOsTerminal | — | — | — |

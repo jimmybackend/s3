@@ -23,6 +23,7 @@ $sessions = (string)file_get_contents($repo . '/drive/src/Media/MediaWorkerNodeS
 $bootstrap = (string)file_get_contents($repo . '/drive/bin/media_worker_node_bootstrap.sh');
 $tasksJs = (string)file_get_contents($repo . '/drive/js/background-tasks.js');
 $controller = (string)file_get_contents($repo . '/drive/src/Http/Controller/MediaProcessingController.php');
+$backgroundController = (string)file_get_contents($repo . '/drive/src/Http/Controller/BackgroundTaskController.php');
 $awsRouter = (string)file_get_contents($repo . '/drive/js/aws-comprehend.js');
 $locator = (string)file_get_contents($repo . '/drive/src/Aws/FileRecordLocator.php');
 $generated = (string)file_get_contents($repo . '/drive/src/Aws/GeneratedFileRepository.php');
@@ -73,6 +74,13 @@ mediaContract(str_contains($js, "modal('hide')"), 'modal se cierra después de c
 
 // Creación/validación del job.
 mediaContract(str_contains($jobs, 'INSERT INTO MediaProcessingJobs'), 'división/extracción crean job persistente');
+mediaContract(str_contains($jobs, 'cancelForUser('), 'tareas multimedia pueden cancelarse');
+mediaContract(str_contains($jobs, 'retryForUser('), 'tareas multimedia fallidas pueden reintentarse');
+mediaContract(str_contains($jobs, 'deleteForUser('), 'tareas multimedia terminales pueden eliminarse del centro');
+mediaContract(str_contains($jobs, 'isCancellationRequested('), 'worker puede detectar detención solicitada');
+mediaContract(str_contains($backgroundController, "str_starts_with(\$controlId, 'media:')"), 'centro de tareas enruta acciones multimedia');
+mediaContract(str_contains($backgroundController, "'Reintentar'"), 'centro ofrece Reintentar para multimedia fallida');
+mediaContract(str_contains($backgroundController, "'Eliminar de Tareas'"), 'centro ofrece eliminar tareas multimedia terminales');
 mediaContract(str_contains($service, "if (\$operation === 'split_video')"), 'backend acepta división de video');
 mediaContract(str_contains($service, "} elseif (\$operation === 'extract_mp3')"), 'backend acepta extracción MP3');
 mediaContract(str_contains($service, 'Operación multimedia no soportada.'), 'operación inválida es rechazada');
@@ -84,6 +92,7 @@ mediaContract(str_contains($locator, 'WHERE user_id_ = ? AND Found = 1'), 'local
 mediaContract(str_contains($controller, 'guardAuthenticated()'), 'endpoint multimedia exige sesión autenticada');
 mediaContract(str_contains($controller, 'requireCsrf()'), 'endpoint multimedia conserva CSRF');
 mediaContract(str_contains($worker, 'proc_open($command'), 'FFmpeg usa argv controlado mediante proc_open');
+mediaContract(str_contains($worker, '$command[0] = $resolved;'), 'FFmpeg/FFprobe usan ruta ejecutable resuelta');
 mediaContract(!str_contains($worker, 'shell_exec('), 'worker no usa shell_exec');
 mediaContract(!str_contains($worker, 'passthru('), 'worker no usa passthru');
 
@@ -92,6 +101,11 @@ mediaContract(str_contains($node, 'dependency_missing'), 'preflight local inform
 mediaContract(str_contains($node, 'insufficient_capacity'), 'preflight local informa capacidad insuficiente');
 mediaContract(str_contains($worker, '[CAPACITY_INSUFFICIENT]'), 'worker revalida CPU/RAM antes de procesar');
 mediaContract(str_contains($worker, "'-c','copy'"), 'división intenta stream copy sin recomprimir');
+mediaContract(str_contains($worker, "pathinfo((string)(\$job['source_name'] ?? ''), PATHINFO_EXTENSION)"), 'formato multimedia se deriva del nombre lógico y no de la clave física S3');
+mediaContract(str_contains($worker, 'logicalSourceExtension('), 'worker normaliza extensión lógica de salida');
+mediaContract(str_contains($worker, 'outputMuxer('), 'worker fija el muxer de salida cuando el formato es conocido');
+mediaContract(str_contains($worker, 'assertNotCancelled('), 'worker respeta cancelación en puntos seguros');
+mediaContract(str_contains($worker, "str_starts_with(\$e->getMessage(), '[CANCELLED]')"), 'cancelación no se registra como fallo');
 mediaContract(str_contains($worker, "'-map','0:v:0'"), 'división de video limita el mapeo a la pista principal de video');
 mediaContract(str_contains($worker, "'-map','0:a?'"), 'división de video conserva audio opcional sin mapear streams extraños');
 mediaContract(!str_contains($worker, "'-map','0',"), 'división no vuelve a mapear indiscriminadamente todos los streams');

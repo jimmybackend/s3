@@ -4,12 +4,12 @@
 
 ## Resumen
 
-- PHP analizados: **457**
-- PHP que ya contienen clases/interfaces: **272**
+- PHP analizados: **460**
+- PHP que ya contienen clases/interfaces: **274**
 - PHP marcados para migración/revisión: **0**
 - Tests PHP separados del objetivo OOP de runtime: **43**
-- JavaScript analizados: **51**
-- JavaScript que ya contienen clases: **51**
+- JavaScript analizados: **53**
+- JavaScript que ya contienen clases: **53**
 - JavaScript sin clase/encapsulación OOP: **0**
 - JavaScript OOP con fachada `window` de compatibilidad: **8**
 
@@ -88,7 +88,8 @@
 | `drive/federationcloud/node-admin.php` | 12 | thin endpoint | 0 | — | — | — | — |
 | `drive/federationcloud/node.php` | 13 | thin endpoint | 0 | — | — | — | — |
 | `drive/federationcloud/nodes.php` | 12 | thin endpoint | 0 | — | — | — | — |
-| `drive/federationcloud/portal.php` | 11 | thin endpoint | 0 | — | — | — | — |
+| `drive/federationcloud/os-admin.php` | 16 | thin endpoint | 0 | — | — | — | — |
+| `drive/federationcloud/portal.php` | 15 | thin endpoint | 0 | — | — | — | — |
 | `drive/federationcloud/provider-admin.php` | 11 | thin endpoint | 0 | — | — | — | — |
 | `drive/federationcloud/provider-presence.php` | 11 | thin endpoint | 0 | — | — | — | — |
 | `drive/federationcloud/provider-request.php` | 11 | thin endpoint | 0 | — | — | — | — |
@@ -148,7 +149,7 @@
 | `drive/set_file_security.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/setup/api.php` | 15 | thin endpoint | 0 | — | — | — | — |
 | `drive/setup/index.php` | 90 | view/entrypoint | 0 | — | — | — | — |
-| `drive/so.php` | 1373 | view/entrypoint | 0 | — | — | — | — |
+| `drive/so.php` | 1433 | view/entrypoint | 0 | — | — | — | — |
 | `drive/src/Activity/ActivityCostRecorder.php` | 155 | class/module | 1 | — | — | — | — |
 | `drive/src/Activity/ActivityCostRepository.php` | 198 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Activity/ActivityCostService.php` | 153 | class/module | 1 | — | — | — | — |
@@ -296,9 +297,10 @@
 | `drive/src/Http/Controller/FederationDropController.php` | 238 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/FederationDropGoogleAuthController.php` | 120 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/FederationDropIngressController.php` | 108 | class/module | 1 | — | — | — | — |
-| `drive/src/Http/Controller/FederationModerationController.php` | 117 | class/module | 1 | — | — | — | — |
+| `drive/src/Http/Controller/FederationModerationController.php` | 120 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/FederationNodeAdminController.php` | 46 | class/module | 1 | — | — | — | — |
-| `drive/src/Http/Controller/FederationPortalController.php` | 41 | class/module | 1 | — | — | — | — |
+| `drive/src/Http/Controller/FederationOsAdminController.php` | 52 | class/module | 1 | — | — | — | — |
+| `drive/src/Http/Controller/FederationPortalController.php` | 44 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/FederationProviderController.php` | 178 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/FederationPublicImportController.php` | 68 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/FederationReplicaController.php` | 135 | class/module | 1 | — | — | — | — |
@@ -395,8 +397,9 @@
 | `drive/src/View/Ec2PanelHelper.php` | 69 | class/module | 1 | — | — | — | — |
 | `drive/src/View/FederationDropPageRenderer.php` | 228 | class/module | 1 | — | — | — | — |
 | `drive/src/View/FederationModerationPageRenderer.php` | 63 | class/module | 1 | — | — | — | — |
+| `drive/src/View/FederationOsAdminRenderer.php` | 193 | class/module | 1 | — | — | — | — |
 | `drive/src/View/FederationPageRenderer.php` | 264 | class/module | 1 | — | — | — | — |
-| `drive/src/View/FederationPortalRenderer.php` | 169 | class/module | 1 | — | — | — | — |
+| `drive/src/View/FederationPortalRenderer.php` | 171 | class/module | 1 | — | — | — | — |
 | `drive/src/View/FederationReportPageRenderer.php` | 70 | class/module | 1 | — | — | — | — |
 | `drive/src/View/FileIconResolver.php` | 136 | class/module | 1 | — | — | — | — |
 | `drive/src/View/FileViewHelper.php` | 108 | class/module | 1 | — | — | — | — |
@@ -454,7 +457,7 @@
 | `drive/tests/upload_catalog_registration_regression.php` | 125 | test script | 0 | — | ⚠️ | — | — |
 | `drive/tests/user_identity_presenter_smoke.php` | 30 | test script | 0 | — | — | — | — |
 | `drive/tests/user_profile_validator_smoke.php` | 72 | test script | 0 | — | — | — | — |
-| `drive/tests/web_os_contract_smoke.php` | 183 | test script | 0 | — | — | — | — |
+| `drive/tests/web_os_contract_smoke.php` | 232 | test script | 0 | — | — | — | — |
 | `drive/thumb.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/token_audio.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/token_texto.php` | 10 | thin endpoint | 0 | — | — | — | — |
@@ -506,8 +509,9 @@
 | `drive/js/estilo.js` | 267 | class/module | EstiloModule | — | — | — |
 | `drive/js/federation-drop.js` | 488 | class/module | FederationDropApp | — | — | — |
 | `drive/js/federation-footer.js` | 374 | class/module | FederationFooterModule | — | — | — |
+| `drive/js/federation-os-admin.js` | 323 | class/module | FederationOsAdminModule | — | — | — |
 | `drive/js/federation-page.js` | 99 | class/module | FederationPageModule | — | — | — |
-| `drive/js/federation-portal.js` | 506 | class/module | FederationPortalModule | — | — | — |
+| `drive/js/federation-portal.js` | 507 | class/module | FederationPortalModule | — | — | — |
 | `drive/js/federation-share-drive.js` | 211 | class/module | FederationShareDriveModule | — | — | — |
 | `drive/js/file-block.js` | 305 | class/module | FileBlockApp | — | — | — |
 | `drive/js/filtros.js` | 97 | class/module | FiltrosModule | — | — | — |
@@ -523,9 +527,10 @@
 | `drive/js/polly.js` | 1008 | class/module | PollyModule | — | abrirModalGrabarAudio, abrirModalPolly, abrirModalRekognition, abrirModalTraducir, abrirModalTranscribir, copiarTextract | window functions: abrirModalGrabarAudio, abrirModalPolly, abrirModalRekognition, abrirModalTraducir, abrirModalTranscribir, copiarTextract, copiarTraducido, copiarTx |
 | `drive/js/profile.js` | 289 | class/module | UserProfileModule | — | — | — |
 | `drive/js/recargarPagina.js` | 27 | class/module | RecargarPaginaModule | — | — | — |
-| `drive/js/server-admin.js` | 405 | class/module | ServerAdminModule | — | — | — |
+| `drive/js/server-admin.js` | 407 | class/module | ServerAdminModule | — | — | — |
 | `drive/js/setup.js` | 192 | class/module | ArcadeCloudSetup | — | — | — |
 | `drive/js/sincronizar.js` | 264 | class/module | SincronizarModule | — | triggerSyncFolderS3, triggerSyncS3 | window functions: triggerSyncFolderS3, triggerSyncS3 |
+| `drive/js/so-federation.js` | 129 | class/module | ArcadeCloudOsFederationApp | — | — | — |
 | `drive/js/so-folders.js` | 417 | class/module | ArcadeCloudOsFolderActions | — | — | — |
 | `drive/js/so-terminal.js` | 300 | class/module | ArcadeCloudOsTerminal | — | — | — |
 | `drive/js/so.js` | 864 | class/module | ArcadeCloudOsShell | — | — | — |

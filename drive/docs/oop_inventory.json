@@ -1,11 +1,11 @@
 {
   "summary": {
-    "php_total": 457,
-    "php_class_modules": 272,
+    "php_total": 460,
+    "php_class_modules": 274,
     "php_needs_migration": 0,
     "php_tests": 43,
-    "js_total": 51,
-    "js_class_modules": 51,
+    "js_total": 53,
+    "js_class_modules": 53,
     "js_needs_migration": 0,
     "js_compatibility_facades": 8
   },
@@ -958,8 +958,23 @@
       "issues": []
     },
     {
+      "path": "drive/federationcloud/os-admin.php",
+      "lines": 16,
+      "kind": "thin endpoint",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
       "path": "drive/federationcloud/portal.php",
-      "lines": 11,
+      "lines": 15,
       "kind": "thin endpoint",
       "classes": 0,
       "functions": [],
@@ -1866,7 +1881,7 @@
     },
     {
       "path": "drive/so.php",
-      "lines": 1373,
+      "lines": 1433,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -4097,7 +4112,7 @@
     },
     {
       "path": "drive/src/Http/Controller/FederationModerationController.php",
-      "lines": 117,
+      "lines": 120,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -4126,8 +4141,23 @@
       "issues": []
     },
     {
+      "path": "drive/src/Http/Controller/FederationOsAdminController.php",
+      "lines": 52,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
       "path": "drive/src/Http/Controller/FederationPortalController.php",
-      "lines": 41,
+      "lines": 44,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -5596,6 +5626,21 @@
       "issues": []
     },
     {
+      "path": "drive/src/View/FederationOsAdminRenderer.php",
+      "lines": 193,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": true,
+      "namespace": true,
+      "issues": []
+    },
+    {
       "path": "drive/src/View/FederationPageRenderer.php",
       "lines": 264,
       "kind": "class/module",
@@ -5612,7 +5657,7 @@
     },
     {
       "path": "drive/src/View/FederationPortalRenderer.php",
-      "lines": 169,
+      "lines": 171,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -6550,7 +6595,7 @@
     },
     {
       "path": "drive/tests/web_os_contract_smoke.php",
-      "lines": 183,
+      "lines": 232,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -7326,6 +7371,22 @@
       "issues": []
     },
     {
+      "path": "drive/js/federation-os-admin.js",
+      "lines": 323,
+      "kind": "class/module",
+      "classes": [
+        "FederationOsAdminModule"
+      ],
+      "functions": [],
+      "window_assign": [
+        "FederationOsAdmin"
+      ],
+      "window_func": [],
+      "top_vars": [],
+      "iife": false,
+      "issues": []
+    },
+    {
       "path": "drive/js/federation-page.js",
       "lines": 99,
       "kind": "class/module",
@@ -7341,7 +7402,7 @@
     },
     {
       "path": "drive/js/federation-portal.js",
-      "lines": 506,
+      "lines": 507,
       "kind": "class/module",
       "classes": [
         "FederationPortalModule"
@@ -7639,7 +7700,7 @@
     },
     {
       "path": "drive/js/server-admin.js",
-      "lines": 405,
+      "lines": 407,
       "kind": "class/module",
       "classes": [
         "ServerAdminModule"
@@ -7688,6 +7749,22 @@
       "issues": [
         "window functions: triggerSyncFolderS3, triggerSyncS3"
       ]
+    },
+    {
+      "path": "drive/js/so-federation.js",
+      "lines": 129,
+      "kind": "class/module",
+      "classes": [
+        "ArcadeCloudOsFederationApp"
+      ],
+      "functions": [],
+      "window_assign": [
+        "ArcadeCloudOsFederation"
+      ],
+      "window_func": [],
+      "top_vars": [],
+      "iife": false,
+      "issues": []
     },
     {
       "path": "drive/js/so-folders.js",

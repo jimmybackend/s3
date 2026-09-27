@@ -1866,7 +1866,7 @@
     },
     {
       "path": "drive/so.php",
-      "lines": 1282,
+      "lines": 1297,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -6550,7 +6550,7 @@
     },
     {
       "path": "drive/tests/web_os_contract_smoke.php",
-      "lines": 147,
+      "lines": 161,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -7691,7 +7691,7 @@
     },
     {
       "path": "drive/js/so-folders.js",
-      "lines": 384,
+      "lines": 417,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudOsFolderActions"
@@ -7707,14 +7707,15 @@
     },
     {
       "path": "drive/js/so.js",
-      "lines": 656,
+      "lines": 864,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudOsShell"
       ],
       "functions": [],
       "window_assign": [
-        "ArcadeCloudOsShell"
+        "ArcadeCloudOsShell",
+        "rutaActual"
       ],
       "window_func": [],
       "top_vars": [],

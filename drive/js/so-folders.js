@@ -68,13 +68,13 @@ class ArcadeCloudOsFolderActions {
   }
 
   currentFolderFromDom() {
-    const bar = this.document.querySelector('.os-folder-commandbar');
-    if (!bar) return this.current;
+    const host = this.document.querySelector('.os-explorer-body[data-current-folder-route]');
+    if (!host) return this.current;
 
     return this.normalizeFolder({
-      route: bar.dataset.currentFolderRoute || this.current.route,
-      name: bar.dataset.currentFolderName || this.current.name,
-      is_root: bar.dataset.currentFolderRoot || (this.current.isRoot ? '1' : '0')
+      route: host.dataset.currentFolderRoute || this.current.route,
+      name: host.dataset.currentFolderName || this.current.name,
+      is_root: host.dataset.currentFolderRoot || (this.current.isRoot ? '1' : '0')
     });
   }
 
@@ -126,11 +126,13 @@ class ArcadeCloudOsFolderActions {
     if (!body || body.dataset.osFolderBlankBound === '1') return;
     body.dataset.osFolderBlankBound = '1';
 
-    body.addEventListener('contextmenu', (event) => {
+    const showCurrentFolderMenu = (event) => {
       if (event.target.closest('.os-entry')) return;
 
       event.preventDefault();
       event.stopPropagation();
+
+      this.window.ArcadeCloudOsShell?.clearFileSelection?.();
 
       this.showContext(
         this.currentFolderFromDom(),
@@ -138,6 +140,12 @@ class ArcadeCloudOsFolderActions {
         event.clientY,
         true
       );
+    };
+
+    body.addEventListener('contextmenu', showCurrentFolderMenu);
+    body.addEventListener('click', (event) => {
+      if (event.button !== undefined && event.button !== 0) return;
+      showCurrentFolderMenu(event);
     });
   }
 

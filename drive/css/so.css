@@ -106,21 +106,6 @@ a{text-decoration:none;color:inherit}
   box-shadow:inset 0 0 0 1px rgba(38,198,255,.14)
 }
 .os-page-button.is-disabled{opacity:.3;cursor:default;pointer-events:none}
-.os-folder-commandbar{
-  min-height:42px;display:flex;align-items:center;gap:6px;padding:6px 10px;
-  background:rgba(7,19,32,.84);border-bottom:1px solid var(--os-border);overflow-x:auto
-}
-.os-folder-commandbar button{
-  flex:0 0 auto;border:1px solid rgba(116,196,255,.22);border-radius:8px;
-  background:rgba(255,255,255,.025);color:var(--os-text);padding:6px 9px;
-  display:inline-flex;align-items:center;gap:6px;cursor:pointer;font-size:.76rem
-}
-.os-folder-commandbar button:hover:not(:disabled){
-  border-color:var(--os-accent);background:rgba(38,198,255,.08);color:var(--os-accent-2)
-}
-.os-folder-commandbar button.is-danger{color:#ff9b9b}
-.os-folder-commandbar button:disabled{opacity:.32;cursor:not-allowed}
-.os-folder-command-status{margin-left:auto;min-width:0;color:var(--os-soft);font-size:.7rem;white-space:nowrap}
 .os-explorer-body{padding:12px}
 .os-entry-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:8px;align-content:start}
 .os-entry{
@@ -129,6 +114,17 @@ a{text-decoration:none;color:inherit}
   gap:5px;padding:8px;position:relative;cursor:default;text-align:center;min-width:0
 }
 .os-entry:hover,.os-entry:focus{background:rgba(38,198,255,.08);border-color:rgba(38,198,255,.22);outline:none}
+.os-file-entry{touch-action:manipulation}
+.os-file-entry.is-selected{
+  background:rgba(38,198,255,.14);border-color:var(--os-accent);
+  box-shadow:inset 0 0 0 1px rgba(38,198,255,.22),0 0 12px rgba(38,198,255,.12)
+}
+.os-file-entry.is-selected::before{
+  content:"✓";position:absolute;left:6px;top:6px;z-index:3;
+  width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  background:var(--os-accent);color:#00131f;font-size:.8rem;font-weight:900;
+  box-shadow:0 2px 8px rgba(0,0,0,.3)
+}
 .os-folder-entry{cursor:pointer}
 .os-entry-icon{font-size:2.4rem;color:var(--os-accent);filter:drop-shadow(0 0 7px rgba(38,198,255,.16))}
 .os-entry-thumb-wrap{
@@ -254,10 +250,6 @@ a{text-decoration:none;color:inherit}
   .os-stat-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
   .os-entry-grid{grid-template-columns:repeat(auto-fill,minmax(94px,1fr))}
   .os-storage{display:none}
-  .os-folder-commandbar{padding:5px 6px}
-  .os-folder-commandbar button{padding:7px 9px}
-  .os-folder-commandbar button span{display:none}
-  .os-folder-command-status{display:none}
   .os-start{min-width:49px;width:49px;padding:0;justify-content:center}
   .os-task-item{min-width:72px;max-width:94px}
   .os-task-button{min-width:40px;padding:0 7px;justify-content:center}

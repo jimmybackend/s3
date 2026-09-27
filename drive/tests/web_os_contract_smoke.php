@@ -127,13 +127,14 @@ webOsContract(str_contains($paths['shell'], 'href="logout.php"'), 'lanzador cons
 webOsContract(str_contains($paths['logout'], "\$this->redirect('index.php')"), 'cerrar sesión termina en index.php');
 
 // Acciones de carpetas dentro del Web OS.
-webOsContract(str_contains($paths['shell'], 'class="os-folder-commandbar"'), 'Mis datos tiene barra de acciones de carpeta');
-webOsContract(str_contains($paths['shell'], 'data-current-folder-action="sync"'), 'barra de carpeta incluye sincronizar');
-webOsContract(str_contains($paths['shell'], 'data-current-folder-action="create-document"'), 'barra de carpeta incluye crear archivo');
-webOsContract(str_contains($paths['shell'], 'data-current-folder-action="move"'), 'barra de carpeta incluye mover');
-webOsContract(str_contains($paths['shell'], 'data-current-folder-action="rename"'), 'barra de carpeta incluye editar nombre');
-webOsContract(str_contains($paths['shell'], 'data-current-folder-action="delete"'), 'barra de carpeta incluye eliminar');
+webOsContract(!str_contains($paths['shell'], 'class="os-folder-commandbar"'), 'Mis datos ya no muestra barra superior de acciones de carpeta');
+webOsContract(str_contains($paths['shell'], 'data-current-folder-route='), 'el área interior conserva la ruta de la carpeta actual');
 webOsContract(str_contains($paths['shell'], 'id="folderContextMenu"'), 'carpetas tienen menú contextual propio');
+webOsContract(str_contains($paths['shell'], 'data-folder-action="sync"'), 'menú de carpeta incluye sincronizar');
+webOsContract(str_contains($paths['shell'], 'data-folder-action="create-document"'), 'menú de carpeta incluye crear archivo');
+webOsContract(str_contains($paths['shell'], 'data-folder-action="move"'), 'menú de carpeta incluye mover');
+webOsContract(str_contains($paths['shell'], 'data-folder-action="rename"'), 'menú de carpeta incluye editar nombre');
+webOsContract(str_contains($paths['shell'], 'data-folder-action="delete"'), 'menú de carpeta incluye eliminar');
 webOsContract(str_contains($paths['shell'], 'data-folder-route='), 'cada carpeta visible conserva su ruta');
 webOsContract(str_contains($paths['shell'], 'id="modalCrearDocumentoCarpeta"'), 'crear archivo reutiliza el flujo de documento por carpeta');
 webOsContract(str_contains($paths['shell'], 'id="modalMoverCarpeta"'), 'mover carpeta reutiliza el modal existente');
@@ -144,7 +145,9 @@ webOsContract(str_contains($paths['shell'], 'js/sincronizar.js'), 'sincronizaci�
 webOsContract(str_contains($paths['shell'], 'js/folder-document.js'), 'creación de archivo reutiliza servicio existente');
 
 webOsContract(str_contains($paths['folders_js'], 'bindBlankAreaContext()'), 'espacio vacío de carpeta ofrece menú contextual');
-webOsContract(str_contains($paths['folders_js'], "addEventListener('contextmenu'"), 'menú contextual responde a clic derecho');
+webOsContract(str_contains($paths['folders_js'], "body.addEventListener('click'"), 'toque/clic en espacio vacío abre acciones de carpeta');
+webOsContract(str_contains($paths['folders_js'], "addEventListener('contextmenu'"), 'menú contextual responde también a clic derecho');
+webOsContract(str_contains($paths['folders_js'], "ArcadeCloudOsShell?.clearFileSelection?.()"), 'abrir acciones de carpeta limpia selección de archivos');
 webOsContract(str_contains($paths['folders_js'], "triggerSyncFolderS3"), 'acción sincronizar usa sincronización existente');
 webOsContract(str_contains($paths['folders_js'], "openFolderDocumentCreator"), 'crear archivo usa creador existente');
 webOsContract(str_contains($paths['folders_js'], "ArcadeFolderActions"), 'mover/editar/eliminar usan acciones compartidas');
@@ -153,7 +156,7 @@ webOsContract(str_contains($paths['folders_js'], "drive:move-task-completed"), '
 webOsContract(str_contains($paths['folders_shared'], 'window.ArcadeFolderActions'), 'módulo clásico expone acciones de carpeta seguras al SO');
 webOsContract(str_contains($paths['folder_document'], 'window.openFolderDocumentCreator'), 'creador de documento expone entrada reutilizable');
 webOsContract(!str_contains($paths['sync'], "if (!btn) {\n      return this;"), 'sincronización de carpeta funciona sin botón global');
-webOsContract(str_contains($paths['css'], '.os-folder-commandbar'), 'barra de acciones de carpeta tiene estilo Web OS');
+webOsContract(!str_contains($paths['css'], '.os-folder-commandbar'), 'CSS ya no conserva la barra superior retirada');
 
 // Navegación viva, miniaturas y multimedia flotante.
 webOsContract(str_contains($paths['shell'], 'id="osExplorerLive"'), 'Mis datos tiene región reemplazable sin recargar el SO');

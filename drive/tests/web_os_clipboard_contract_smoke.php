@@ -4,6 +4,7 @@ declare(strict_types=1);
 $root = dirname(__DIR__);
 
 $files = [
+    'shell' => $root . '/js/so.js',
     'clipboard' => $root . '/js/so-clipboard.js',
     'moveTasks' => $root . '/js/move-tasks.js',
     'fileService' => $root . '/src/Application/FileMutationService.php',
@@ -31,7 +32,13 @@ $assert = static function (bool $condition, string $message): void {
 };
 
 $assert(str_contains($files['clipboard'], 'longPressMs = 560'), 'pulsación larga abre acciones');
-$assert(str_contains($files['clipboard'], "openFileEntry?.(entry, false)"), 'clic corto abre archivos');
+$assert(str_contains($files['shell'], 'fileSecondClickMs = 320'), 'segundo clic en 320 ms abre el archivo');
+$assert(str_contains($files['shell'], 'toggleFileSelection(entry)'), 'clic simple alterna selección de archivo');
+$assert(str_contains($files['shell'], 'selectedFileEntries()'), 'shell expone selección múltiple');
+$assert(str_contains($files['shell'], "classList.toggle('is-selected'"), 'selección mantiene estado visual');
+$assert(str_contains($files['clipboard'], 'captureFiles(entry, mode)'), 'portapapeles captura uno o varios archivos');
+$assert(str_contains($files['clipboard'], 'keys.length + \' archivos\''), 'portapapeles etiqueta lotes múltiples');
+$assert(str_contains($files['clipboard'], 'JSON.stringify(keys)'), 'pegar envía todos los archivos seleccionados');
 $assert(str_contains($files['clipboard'], "data-os-clipboard-action"), 'menús incorporan acciones de portapapeles');
 $assert(str_contains($files['clipboard'], "operation: item.mode"), 'pegar conserva copy o move');
 $assert(str_contains($files['clipboard'], "generar_token.php"), 'menú del SO puede compartir archivos');

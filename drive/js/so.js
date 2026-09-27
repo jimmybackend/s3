@@ -574,4 +574,4 @@ class ArcadeCloudOsShell {
   }
 }
 
-new ArcadeCloudOsShell(window, document).init();
+window.ArcadeCloudOsShell = new ArcadeCloudOsShell(window, document).init();

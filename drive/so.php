@@ -53,8 +53,13 @@ $visibleRoute = $app->folderQueryService()->displayPathForUser($userId, $current
 $page = max(1, (int)($_GET['pagina'] ?? 1));
 $fileState = $app->fileListService()->load($userId, $currentRoute, [
     'pagina' => $page,
-    'limite' => 60,
+    'limite' => 20,
 ]);
+$page = max(1, (int)($fileState['page'] ?? 1));
+$pages = max(1, (int)($fileState['pages'] ?? 1));
+$fileTotal = max(0, (int)($fileState['total'] ?? 0));
+$pagerStart = max(1, min($page - 1, max(1, $pages - 2)));
+$pagerEnd = min($pages, $pagerStart + 2);
 $files = $fileState['rows'];
 $storageUsage = $app->storageUsageService()->getUsage($userId);
 
@@ -184,7 +189,11 @@ $currentFolderName = $currentIsRoot
         </div>
       </div>
 
-      <div id="osExplorerLive" class="os-explorer-live" data-explorer-route="<?= $e($currentRoute) ?>">
+      <div id="osExplorerLive"
+           class="os-explorer-live"
+           data-explorer-route="<?= $e($currentRoute) ?>"
+           data-explorer-page="<?= $page ?>"
+           data-explorer-pages="<?= $pages ?>">
       <div class="os-explorer-toolbar">
         <?php if ($currentPrefix !== $rootPrefix): ?>
           <a class="os-tool-button" href="so.php?ruta=<?= rawurlencode($parentRoute) ?>" data-explorer-route="<?= $e($parentRoute) ?>" title="Subir una carpeta">
@@ -193,7 +202,11 @@ $currentFolderName = $currentIsRoot
         <?php else: ?>
           <span class="os-tool-button is-disabled" aria-hidden="true"><i class="fas fa-arrow-up"></i></span>
         <?php endif; ?>
-        <a class="os-tool-button" href="so.php?ruta=<?= rawurlencode($currentRoute) ?>" data-explorer-route="<?= $e($currentRoute) ?>" title="Actualizar">
+        <a class="os-tool-button"
+           href="so.php?ruta=<?= rawurlencode($currentRoute) ?>&pagina=<?= $page ?>"
+           data-explorer-route="<?= $e($currentRoute) ?>"
+           data-explorer-page="<?= $page ?>"
+           title="Actualizar">
           <i class="fas fa-rotate"></i>
         </a>
         <div class="os-address">
@@ -201,6 +214,55 @@ $currentFolderName = $currentIsRoot
           <span><?= $e($visibleRoute) ?></span>
         </div>
         <span class="os-storage"><?= $e((string)($storageUsage['formatted'] ?? '0 B')) ?> usados</span>
+        <nav class="os-folder-pagination" aria-label="Páginas de archivos">
+          <?php if ($page > 1): ?>
+            <a href="so.php?ruta=<?= rawurlencode($currentRoute) ?>&pagina=1"
+               data-explorer-route="<?= $e($currentRoute) ?>"
+               data-explorer-page="1"
+               class="os-page-button"
+               title="Primera página"
+               aria-label="Primera página">&lt;|</a>
+            <a href="so.php?ruta=<?= rawurlencode($currentRoute) ?>&pagina=<?= $page - 1 ?>"
+               data-explorer-route="<?= $e($currentRoute) ?>"
+               data-explorer-page="<?= $page - 1 ?>"
+               class="os-page-button"
+               title="Página anterior"
+               aria-label="Página anterior">&lt;</a>
+          <?php else: ?>
+            <span class="os-page-button is-disabled" aria-hidden="true">&lt;|</span>
+            <span class="os-page-button is-disabled" aria-hidden="true">&lt;</span>
+          <?php endif; ?>
+
+          <?php for ($pagerPage = $pagerStart; $pagerPage <= $pagerEnd; $pagerPage++): ?>
+            <?php if ($pagerPage === $page): ?>
+              <span class="os-page-button is-active" aria-current="page"><?= $pagerPage ?></span>
+            <?php else: ?>
+              <a href="so.php?ruta=<?= rawurlencode($currentRoute) ?>&pagina=<?= $pagerPage ?>"
+                 data-explorer-route="<?= $e($currentRoute) ?>"
+                 data-explorer-page="<?= $pagerPage ?>"
+                 class="os-page-button"
+                 aria-label="Página <?= $pagerPage ?>"><?= $pagerPage ?></a>
+            <?php endif; ?>
+          <?php endfor; ?>
+
+          <?php if ($page < $pages): ?>
+            <a href="so.php?ruta=<?= rawurlencode($currentRoute) ?>&pagina=<?= $page + 1 ?>"
+               data-explorer-route="<?= $e($currentRoute) ?>"
+               data-explorer-page="<?= $page + 1 ?>"
+               class="os-page-button"
+               title="Página siguiente"
+               aria-label="Página siguiente">&gt;</a>
+            <a href="so.php?ruta=<?= rawurlencode($currentRoute) ?>&pagina=<?= $pages ?>"
+               data-explorer-route="<?= $e($currentRoute) ?>"
+               data-explorer-page="<?= $pages ?>"
+               class="os-page-button"
+               title="Última página"
+               aria-label="Última página">|&gt;</a>
+          <?php else: ?>
+            <span class="os-page-button is-disabled" aria-hidden="true">&gt;</span>
+            <span class="os-page-button is-disabled" aria-hidden="true">|&gt;</span>
+          <?php endif; ?>
+        </nav>
       </div>
 
       <div class="os-folder-commandbar"
@@ -320,7 +382,7 @@ $currentFolderName = $currentIsRoot
       </div>
 
       <div class="os-statusbar">
-        <span><?= count($folders) ?> carpetas · <?= (int)$fileState['total'] ?> archivos</span>
+        <span><?= count($folders) ?> carpetas · <?= $fileTotal ?> archivos · Página <?= $page ?> de <?= $pages ?></span>
         <a href="s3.php"><i class="fas fa-arrow-up-right-from-square"></i> Abrir Drive clásico</a>
       </div>
       </div>

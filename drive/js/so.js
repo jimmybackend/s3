@@ -352,7 +352,8 @@ class ArcadeCloudOsShell {
 
       event.preventDefault();
       const route = String(link.dataset.explorerRoute || '').trim();
-      if (route) this.refreshExplorer(route);
+      const page = Math.max(1, parseInt(String(link.dataset.explorerPage || '1'), 10) || 1);
+      if (route) this.refreshExplorer(route, { page });
     });
   }
 
@@ -360,8 +361,9 @@ class ArcadeCloudOsShell {
     this.window.addEventListener('popstate', () => {
       const url = new URL(this.window.location.href);
       const route = String(url.searchParams.get('ruta') || this.window.rutaActual || '').trim();
+      const page = Math.max(1, parseInt(String(url.searchParams.get('pagina') || '1'), 10) || 1);
       if (route) {
-        this.refreshExplorer(route, { updateHistory: false });
+        this.refreshExplorer(route, { updateHistory: false, page });
       }
     });
   }
@@ -375,12 +377,19 @@ class ArcadeCloudOsShell {
     const current = this.document.getElementById('osExplorerLive');
     if (!current) return false;
 
+    const currentRoute = String(current.dataset.explorerRoute || '').trim();
+    const currentPage = Math.max(1, parseInt(String(current.dataset.explorerPage || '1'), 10) || 1);
+    const requestedPage = options.page !== undefined
+      ? Math.max(1, parseInt(String(options.page), 10) || 1)
+      : (route === currentRoute ? currentPage : 1);
+
     this.explorerLoading = true;
     current.classList.add('is-loading');
 
     try {
       const url = new URL('so.php', this.window.location.href);
       url.searchParams.set('ruta', route);
+      url.searchParams.set('pagina', String(requestedPage));
       url.searchParams.set('_os_fragment', 'explorer');
 
       const response = await fetch(url.toString(), {
@@ -407,16 +416,20 @@ class ArcadeCloudOsShell {
       current.replaceWith(next);
 
       const nextRoute = String(next.dataset.explorerRoute || route).trim();
+      const nextPage = Math.max(1, parseInt(String(next.dataset.explorerPage || requestedPage), 10) || 1);
       this.window.rutaActual = nextRoute;
 
       if (options.updateHistory !== false) {
         const browserUrl = new URL(this.window.location.href);
         browserUrl.searchParams.set('ruta', nextRoute);
+        if (nextPage > 1) browserUrl.searchParams.set('pagina', String(nextPage));
+        else browserUrl.searchParams.delete('pagina');
         browserUrl.searchParams.delete('_os_fragment');
+        const state = { arcadeRoute: nextRoute, arcadePage: nextPage };
         if (options.replaceHistory === false) {
-          this.window.history.pushState({ arcadeRoute: nextRoute }, '', browserUrl.toString());
+          this.window.history.pushState(state, '', browserUrl.toString());
         } else {
-          this.window.history.replaceState({ arcadeRoute: nextRoute }, '', browserUrl.toString());
+          this.window.history.replaceState(state, '', browserUrl.toString());
         }
       }
 
@@ -430,7 +443,7 @@ class ArcadeCloudOsShell {
       }
 
       this.document.dispatchEvent(new CustomEvent('arcadeos:explorer-updated', {
-        detail: { route: nextRoute }
+        detail: { route: nextRoute, page: nextPage }
       }));
 
       return true;

@@ -271,6 +271,10 @@ class PollyBackgroundModule {
       this.window.DriveMoveTasks.notify(message, type, timeout);
       return;
     }
+    if (this.window.ArcadeCloudOsShell && typeof this.window.ArcadeCloudOsShell.notify === 'function') {
+      this.window.ArcadeCloudOsShell.notify(message, type, timeout);
+      return;
+    }
     this.alert(message);
   }
 

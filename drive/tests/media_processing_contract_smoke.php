@@ -27,11 +27,14 @@ $awsRouter = (string)file_get_contents($repo . '/drive/js/aws-comprehend.js');
 $locator = (string)file_get_contents($repo . '/drive/src/Aws/FileRecordLocator.php');
 $generated = (string)file_get_contents($repo . '/drive/src/Aws/GeneratedFileRepository.php');
 $installer = (string)file_get_contents($repo . '/drive/bin/install_arcadecloud_server.sh');
+$mainInstaller = (string)file_get_contents($repo . '/drive/bin/install_arcadecloud.sh');
 
 mediaContract(str_contains($service, 'MAX_SOURCE_BYTES = 8 * 1024 * 1024 * 1024'), 'límite de origen fijado en 8 GB');
 mediaContract(!str_contains($service, 'MIN_SOURCE_BYTES'), 'no existe tamaño mínimo para procesar');
 mediaContract(str_contains($worker, "headObject(["), 'worker valida tamaño real con S3 HeadObject');
 mediaContract(str_contains($worker, '[DEPENDENCY_MISSING]'), 'worker clasifica dependencias faltantes');
+mediaContract(str_contains($worker, 'mediaWorkerAuthorized()'), 'worker normaliza bandera de autorización multimedia');
+mediaContract(str_contains($worker, "['1','true','yes','on']"), 'worker acepta valores booleanos equivalentes a 1');
 mediaContract(str_contains($worker, "ffmpegHasEncoder('libmp3lame')"), 'worker usa libmp3lame cuando está disponible');
 mediaContract(str_contains($worker, "findExecutable('lame')"), 'worker conserva fallback LAME para MP3');
 mediaContract(str_contains($jobs, 'latestOperationalWarning'), 'superadmin puede detectar worker ausente o incompleto');
@@ -89,6 +92,14 @@ mediaContract(str_contains($node, 'dependency_missing'), 'preflight local inform
 mediaContract(str_contains($node, 'insufficient_capacity'), 'preflight local informa capacidad insuficiente');
 mediaContract(str_contains($worker, '[CAPACITY_INSUFFICIENT]'), 'worker revalida CPU/RAM antes de procesar');
 mediaContract(str_contains($worker, "'-c','copy'"), 'división intenta stream copy sin recomprimir');
+mediaContract(str_contains($worker, "'-map','0:v:0'"), 'división de video limita el mapeo a la pista principal de video');
+mediaContract(str_contains($worker, "'-map','0:a?'"), 'división de video conserva audio opcional sin mapear streams extraños');
+mediaContract(!str_contains($worker, "'-map','0',"), 'división no vuelve a mapear indiscriminadamente todos los streams');
+mediaContract(str_contains($worker, 'transcodeVideoSegment('), 'división tiene fallback automático de recodificación');
+mediaContract(str_contains($worker, "ffmpegHasEncoder('libx264')"), 'fallback usa H.264 cuando está disponible');
+mediaContract(str_contains($worker, 'assertMediaOutput('), 'cada segmento se valida con FFprobe antes de publicarse');
+mediaContract(str_contains($worker, "tempnam(sys_get_temp_dir(), 'arcadecloud-ff-out-')"), 'ejecución FFmpeg evita deadlock de pipes con buffers temporales');
+mediaContract(str_contains($worker, 'FFmpeg/FFprobe falló (código '), 'errores FFmpeg conservan código de salida y diagnóstico');
 mediaContract(str_contains($worker, "probeDuration(\$sourcePath)"), 'duración real de división se obtiene con FFprobe');
 mediaContract(str_contains($worker, "'ACL' => 'private'"), 'resultados se guardan privados en S3');
 mediaContract(str_contains($worker, '$this->generated->upsert('), 'worker registra resultados en FileS3');
@@ -96,6 +107,10 @@ mediaContract(str_contains($generated, "INSERT INTO FileS3"), 'repositorio usa F
 mediaContract(str_contains($installer, 'install_media_dependencies'), 'instalador prepara dependencias multimedia por rol');
 mediaContract(str_contains($installer, 'command_exists ffmpeg'), 'instalador verifica ffmpeg');
 mediaContract(str_contains($installer, 'command_exists ffprobe'), 'instalador verifica ffprobe');
+mediaContract(
+    str_contains($mainInstaller, '"ARCADECLOUD_MEDIA_WORKER": "1" if role in {"media-worker","combined"} else "0"'),
+    'instalador persiste bandera multimedia compatible con el worker'
+);
 
 // Selección de nodo por capacidad real, no por etiqueta.
 mediaContract(str_contains($node, 'role_is_informational'), 'el rol del nodo es informativo y no decide la capacidad');

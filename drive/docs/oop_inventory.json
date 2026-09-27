@@ -6595,7 +6595,7 @@
     },
     {
       "path": "drive/tests/web_os_clipboard_contract_smoke.php",
-      "lines": 56,
+      "lines": 64,
       "kind": "test script",
       "classes": 0,
       "functions": [],
@@ -7767,7 +7767,7 @@
     },
     {
       "path": "drive/js/so-clipboard.js",
-      "lines": 754,
+      "lines": 797,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudOsClipboard"

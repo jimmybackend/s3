@@ -8,8 +8,8 @@
 - PHP que ya contienen clases/interfaces: **272**
 - PHP marcados para migración/revisión: **0**
 - Tests PHP separados del objetivo OOP de runtime: **43**
-- JavaScript analizados: **50**
-- JavaScript que ya contienen clases: **50**
+- JavaScript analizados: **51**
+- JavaScript que ya contienen clases: **51**
 - JavaScript sin clase/encapsulación OOP: **0**
 - JavaScript OOP con fachada `window` de compatibilidad: **8**
 
@@ -148,7 +148,7 @@
 | `drive/set_file_security.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/setup/api.php` | 15 | thin endpoint | 0 | — | — | — | — |
 | `drive/setup/index.php` | 90 | view/entrypoint | 0 | — | — | — | — |
-| `drive/so.php` | 1297 | view/entrypoint | 0 | — | — | — | — |
+| `drive/so.php` | 1373 | view/entrypoint | 0 | — | — | — | — |
 | `drive/src/Activity/ActivityCostRecorder.php` | 155 | class/module | 1 | — | — | — | — |
 | `drive/src/Activity/ActivityCostRepository.php` | 198 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Activity/ActivityCostService.php` | 153 | class/module | 1 | — | — | — | — |
@@ -443,7 +443,7 @@
 | `drive/tests/scoped_sync_repository_regression.php` | 96 | test script | 0 | — | ⚠️ | — | — |
 | `drive/tests/security_hardening_smoke.php` | 59 | test script | 0 | — | — | — | — |
 | `drive/tests/server_admin_config_smoke.php` | 218 | test script | 0 | — | — | — | — |
-| `drive/tests/server_console_contract_smoke.php` | 116 | test script | 0 | — | — | — | — |
+| `drive/tests/server_console_contract_smoke.php` | 128 | test script | 0 | — | — | — | — |
 | `drive/tests/setup_bootstrap_smoke.php` | 61 | test script | 0 | — | — | — | — |
 | `drive/tests/setup_entry_guard_smoke.php` | 38 | test script | 0 | — | — | — | — |
 | `drive/tests/setup_finalize_contract_smoke.php` | 75 | test script | 0 | — | — | — | — |
@@ -454,7 +454,7 @@
 | `drive/tests/upload_catalog_registration_regression.php` | 125 | test script | 0 | — | ⚠️ | — | — |
 | `drive/tests/user_identity_presenter_smoke.php` | 30 | test script | 0 | — | — | — | — |
 | `drive/tests/user_profile_validator_smoke.php` | 72 | test script | 0 | — | — | — | — |
-| `drive/tests/web_os_contract_smoke.php` | 161 | test script | 0 | — | — | — | — |
+| `drive/tests/web_os_contract_smoke.php` | 183 | test script | 0 | — | — | — | — |
 | `drive/thumb.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/token_audio.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/token_texto.php` | 10 | thin endpoint | 0 | — | — | — | — |
@@ -527,6 +527,7 @@
 | `drive/js/setup.js` | 192 | class/module | ArcadeCloudSetup | — | — | — |
 | `drive/js/sincronizar.js` | 264 | class/module | SincronizarModule | — | triggerSyncFolderS3, triggerSyncS3 | window functions: triggerSyncFolderS3, triggerSyncS3 |
 | `drive/js/so-folders.js` | 417 | class/module | ArcadeCloudOsFolderActions | — | — | — |
+| `drive/js/so-terminal.js` | 300 | class/module | ArcadeCloudOsTerminal | — | — | — |
 | `drive/js/so.js` | 864 | class/module | ArcadeCloudOsShell | — | — | — |
 | `drive/js/soportesMediaTypes.js` | 397 | class/module | SoportesMediaTypesModule | — | — | — |
 | `drive/js/storage-usage.js` | 51 | class/module | StorageUsageModule | — | — | — |

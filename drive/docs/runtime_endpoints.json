@@ -1633,7 +1633,7 @@
     },
     {
       "path": "drive/src/Console/MediaProcessingWorkerCommand.php",
-      "size": 18240,
+      "size": 24710,
       "active": false,
       "references": [
         "drive/tests/fresh_install_contract_smoke.php",
@@ -3350,7 +3350,7 @@
     },
     {
       "path": "drive/tests/media_processing_contract_smoke.php",
-      "size": 9695,
+      "size": 11256,
       "active": false,
       "references": []
     },

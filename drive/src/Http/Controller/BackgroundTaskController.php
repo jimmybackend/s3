@@ -124,6 +124,8 @@ final class BackgroundTaskController extends AbstractJsonController
                 $message = $this->handleSyncAction($userId, substr($controlId, 5), $action);
             } elseif (str_starts_with($controlId, 'move:')) {
                 $message = $this->handleMoveAction($userId, substr($controlId, 5), $action);
+            } elseif (str_starts_with($controlId, 'media:')) {
+                $message = $this->handleMediaAction($userId, substr($controlId, 6), $action);
             } elseif (str_starts_with($controlId, 'activity:')) {
                 $message = $this->handleActivityAction($userId, (int)substr($controlId, 9), $action);
             } else {
@@ -370,10 +372,12 @@ final class BackgroundTaskController extends AbstractJsonController
         $repo = new MediaProcessingJobRepository($this->app->db());
 
         foreach ($repo->recentForUser($userId, 40) as $job) {
-            $status = strtolower((string)($job['status'] ?? 'queued'));
-            if (!in_array($status, ['queued','running','completed','failed','cancelled'], true)) {
-                $status = 'pending';
-            }
+            $rawStatus = strtolower((string)($job['status'] ?? 'queued'));
+            $status = match ($rawStatus) {
+                'cancel_requested' => 'stopping',
+                'queued','running','completed','failed','cancelled' => $rawStatus,
+                default => 'pending',
+            };
 
             $operation = (string)($job['operation'] ?? '');
             $category = match ($operation) {
@@ -385,10 +389,24 @@ final class BackgroundTaskController extends AbstractJsonController
             $detail = match ($status) {
                 'queued' => 'En espera de un nodo multimedia disponible.',
                 'running' => 'Procesando en el nodo multimedia.',
+                'stopping' => 'Detención solicitada; el worker se detendrá en el siguiente punto seguro.',
                 'completed' => 'Archivos generados y guardados en la misma carpeta.',
                 'failed' => (string)($job['error'] ?? 'El procesamiento multimedia falló.'),
+                'cancelled' => 'Tarea multimedia cancelada.',
                 default => 'Procesamiento multimedia.',
             };
+
+            $actions = [];
+            if (in_array($status, ['queued','pending'], true)) {
+                $actions[] = $this->uiAction('cancel', 'Cancelar', 'danger', true);
+            } elseif ($status === 'running') {
+                $actions[] = $this->uiAction('cancel', 'Detener', 'danger', true);
+            } elseif (in_array($status, ['failed','cancelled'], true)) {
+                $actions[] = $this->uiAction('retry', 'Reintentar', 'primary', false);
+                $actions[] = $this->uiAction('delete', 'Eliminar de Tareas', 'muted', true);
+            } elseif ($status === 'completed') {
+                $actions[] = $this->uiAction('delete', 'Eliminar de Tareas', 'muted', true);
+            }
 
             $progress = max(0, min(100, (int)($job['progress'] ?? 0)));
             $tasks[] = [
@@ -401,14 +419,14 @@ final class BackgroundTaskController extends AbstractJsonController
                 'title' => (string)($job['source_name'] ?? 'Archivo multimedia'),
                 'status' => $status,
                 'progress' => in_array($status, ['running','completed'], true) ? $progress : null,
-                'progress_mode' => $status === 'running' ? 'determinate' : ($status === 'completed' ? 'determinate' : 'indeterminate'),
+                'progress_mode' => in_array($status, ['running','completed'], true) ? 'determinate' : 'indeterminate',
                 'detail' => $detail,
                 'created_at' => (string)($job['created_at'] ?? ''),
                 'updated_at' => (string)($job['updated_at'] ?? $job['created_at'] ?? ''),
                 'estimated_cost' => null,
                 'currency' => 'USD',
                 'pricing_state' => 'unpriced',
-                'actions' => [],
+                'actions' => $actions,
                 'metadata' => [
                     'parts' => (int)($job['parts'] ?? 0),
                     'overlap_before_seconds' => (int)($job['overlap_before'] ?? 0),
@@ -420,6 +438,39 @@ final class BackgroundTaskController extends AbstractJsonController
         }
 
         return $tasks;
+    }
+
+    private function handleMediaAction(int $userId, string $jobId, string $action): string
+    {
+        if (!preg_match('/^[a-f0-9]{32}$/', $jobId)) {
+            throw new RuntimeException('Tarea multimedia inválida.');
+        }
+
+        $repo = new MediaProcessingJobRepository($this->app->db());
+        $job = $repo->getForUser($userId, $jobId);
+        $status = strtolower((string)($job['status'] ?? 'queued'));
+
+        if ($action === 'cancel') {
+            $result = $repo->cancelForUser($userId, $jobId);
+            return $result === 'cancel_requested'
+                ? 'Se solicitó detener la tarea multimedia en el siguiente punto seguro.'
+                : 'Tarea multimedia cancelada.';
+        }
+
+        if ($action === 'retry') {
+            if (!in_array($status, ['failed','cancelled'], true)) {
+                throw new RuntimeException('Sólo una tarea fallida o cancelada puede reintentarse.');
+            }
+            $repo->retryForUser($userId, $jobId);
+            return 'Tarea multimedia puesta de nuevo en cola.';
+        }
+
+        if ($action === 'delete') {
+            $repo->deleteForUser($userId, $jobId);
+            return 'Tarea multimedia eliminada de Tareas.';
+        }
+
+        throw new RuntimeException('Acción multimedia no permitida.');
     }
 
     private function handleSyncAction(int $userId, string $jobId, string $action): string

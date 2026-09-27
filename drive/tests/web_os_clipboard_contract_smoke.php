@@ -46,7 +46,7 @@ $assert(str_contains($files['clipboard'], 'injectPasteToolbar()'), 'SO crea bot�
 $assert(str_contains($files['clipboard'], 'visibleFiles >= 20'), 'botón superior sólo aparece cuando la página tiene 20 archivos');
 $assert(str_contains($files['clipboard'], "'Mover aquí'"), 'botón superior distingue movimiento');
 $assert(str_contains($files['clipboard'], "'Copiar aquí'"), 'botón superior distingue copia');
-$assert(str_contains($files['clipboard'], "data.osPasteCurrent"), 'botón superior se identifica como destino actual');
+$assert(str_contains($files['clipboard'], "dataset.osPasteCurrent"), 'botón superior se identifica como destino actual');
 $assert(str_contains($files['clipboardCss'], '.os-toolbar-paste'), 'botón superior tiene estilo propio');
 $assert(str_contains($files['moveTasks'], 'so-clipboard.js?v=20260927-2'), 'cambio de portapapeles invalida caché del navegador');
 $assert(str_contains($files['clipboard'], "generar_token.php"), 'menú del SO puede compartir archivos');

@@ -123,6 +123,7 @@
         "drive/federationcloud/node-admin.php",
         "drive/federationcloud/node.php",
         "drive/federationcloud/nodes.php",
+        "drive/federationcloud/os-admin.php",
         "drive/federationcloud/portal.php",
         "drive/federationcloud/provider-admin.php",
         "drive/federationcloud/provider-presence.php",
@@ -647,6 +648,7 @@
         "drive/src/Http/Controller/ActivityCostController.php",
         "drive/src/Http/Controller/AuthController.php",
         "drive/src/Http/Controller/FederationModerationController.php",
+        "drive/src/Http/Controller/FederationOsAdminController.php",
         "drive/src/Security/SessionManager.php",
         "drive/src/View/FederationReportPageRenderer.php",
         "drive/tests/index_federation_drop_smoke.php",
@@ -660,7 +662,9 @@
       "active": false,
       "references": [
         "drive/src/View/FederationModerationPageRenderer.php",
-        "drive/js/federation-footer.js"
+        "drive/tests/web_os_contract_smoke.php",
+        "drive/js/federation-footer.js",
+        "drive/js/federation-os-admin.js"
       ]
     },
     {
@@ -668,7 +672,10 @@
       "size": 341,
       "active": true,
       "references": [
-        "drive/bloque_footer.php"
+        "drive/bloque_footer.php",
+        "drive/src/View/FederationOsAdminRenderer.php",
+        "drive/tests/web_os_contract_smoke.php",
+        "drive/js/so-federation.js"
       ]
     },
     {
@@ -710,19 +717,32 @@
       "active": false,
       "references": [
         "drive/src/Federation/FederationHttpClient.php",
-        "drive/js/federation-footer.js"
+        "drive/js/federation-footer.js",
+        "drive/js/federation-os-admin.js"
+      ]
+    },
+    {
+      "path": "drive/federationcloud/os-admin.php",
+      "size": 432,
+      "active": false,
+      "references": [
+        "drive/tests/web_os_contract_smoke.php",
+        "drive/js/so-federation.js"
       ]
     },
     {
       "path": "drive/federationcloud/portal.php",
-      "size": 354,
+      "size": 416,
       "active": true,
       "references": [
         "drive/bloque_carpetas.php",
+        "drive/so.php",
         "drive/src/Federation/FederationService.php",
         "drive/src/View/FederationDropPageRenderer.php",
         "drive/src/View/FederationPageRenderer.php",
-        "drive/js/arcadelink-share.js"
+        "drive/tests/web_os_contract_smoke.php",
+        "drive/js/arcadelink-share.js",
+        "drive/js/so-federation.js"
       ]
     },
     {
@@ -730,7 +750,9 @@
       "size": 336,
       "active": false,
       "references": [
-        "drive/js/federation-footer.js"
+        "drive/tests/web_os_contract_smoke.php",
+        "drive/js/federation-footer.js",
+        "drive/js/federation-os-admin.js"
       ]
     },
     {
@@ -904,8 +926,10 @@
         "drive/src/View/FederationReportPageRenderer.php",
         "drive/tests/federation_drop_contract_smoke.php",
         "drive/tests/fresh_install_contract_smoke.php",
+        "drive/tests/web_os_contract_smoke.php",
         "drive/js/federation-drop.js",
         "drive/js/federation-footer.js",
+        "drive/js/federation-os-admin.js",
         "drive/js/setup.js"
       ]
     },
@@ -982,6 +1006,7 @@
         "drive/src/Http/Controller/ActivityCostController.php",
         "drive/src/Http/Controller/AuthController.php",
         "drive/src/Http/Controller/FederationModerationController.php",
+        "drive/src/Http/Controller/FederationOsAdminController.php",
         "drive/src/Security/SessionManager.php",
         "drive/src/View/FederationReportPageRenderer.php",
         "drive/tests/index_federation_drop_smoke.php",
@@ -1018,6 +1043,7 @@
         "drive/src/Http/Controller/ActivityCostController.php",
         "drive/src/Http/Controller/AuthController.php",
         "drive/src/Http/Controller/FederationModerationController.php",
+        "drive/src/Http/Controller/FederationOsAdminController.php",
         "drive/src/Security/SessionManager.php",
         "drive/src/View/FederationReportPageRenderer.php",
         "drive/tests/index_federation_drop_smoke.php",
@@ -1267,6 +1293,7 @@
       "size": 324,
       "active": false,
       "references": [
+        "drive/src/View/FederationOsAdminRenderer.php",
         "drive/js/server-admin.js"
       ]
     },
@@ -1287,8 +1314,10 @@
         "drive/src/View/FederationReportPageRenderer.php",
         "drive/tests/federation_drop_contract_smoke.php",
         "drive/tests/fresh_install_contract_smoke.php",
+        "drive/tests/web_os_contract_smoke.php",
         "drive/js/federation-drop.js",
         "drive/js/federation-footer.js",
+        "drive/js/federation-os-admin.js",
         "drive/js/setup.js"
       ]
     },
@@ -1305,6 +1334,7 @@
         "drive/src/Http/Controller/ActivityCostController.php",
         "drive/src/Http/Controller/AuthController.php",
         "drive/src/Http/Controller/FederationModerationController.php",
+        "drive/src/Http/Controller/FederationOsAdminController.php",
         "drive/src/Security/SessionManager.php",
         "drive/src/View/FederationReportPageRenderer.php",
         "drive/tests/index_federation_drop_smoke.php",
@@ -1314,7 +1344,7 @@
     },
     {
       "path": "drive/so.php",
-      "size": 72676,
+      "size": 76002,
       "active": true,
       "references": [
         "drive/s3.php",
@@ -2448,7 +2478,7 @@
     },
     {
       "path": "drive/src/Http/Controller/FederationModerationController.php",
-      "size": 4757,
+      "size": 4837,
       "active": false,
       "references": [
         "drive/tests/federation_moderation_contract_smoke.php"
@@ -2461,10 +2491,20 @@
       "references": []
     },
     {
-      "path": "drive/src/Http/Controller/FederationPortalController.php",
-      "size": 968,
+      "path": "drive/src/Http/Controller/FederationOsAdminController.php",
+      "size": 1419,
       "active": false,
-      "references": []
+      "references": [
+        "drive/tests/web_os_contract_smoke.php"
+      ]
+    },
+    {
+      "path": "drive/src/Http/Controller/FederationPortalController.php",
+      "size": 1109,
+      "active": false,
+      "references": [
+        "drive/tests/web_os_contract_smoke.php"
+      ]
     },
     {
       "path": "drive/src/Http/Controller/FederationProviderController.php",
@@ -3110,10 +3150,19 @@
     },
     {
       "path": "drive/src/View/FederationModerationPageRenderer.php",
-      "size": 8669,
+      "size": 8781,
       "active": false,
       "references": [
-        "drive/tests/federation_moderation_contract_smoke.php"
+        "drive/tests/federation_moderation_contract_smoke.php",
+        "drive/tests/web_os_contract_smoke.php"
+      ]
+    },
+    {
+      "path": "drive/src/View/FederationOsAdminRenderer.php",
+      "size": 10228,
+      "active": false,
+      "references": [
+        "drive/tests/web_os_contract_smoke.php"
       ]
     },
     {
@@ -3127,10 +3176,11 @@
     },
     {
       "path": "drive/src/View/FederationPortalRenderer.php",
-      "size": 10744,
+      "size": 10914,
       "active": false,
       "references": [
-        "drive/tests/federation_drop_contract_smoke.php"
+        "drive/tests/federation_drop_contract_smoke.php",
+        "drive/tests/web_os_contract_smoke.php"
       ]
     },
     {
@@ -3489,7 +3539,7 @@
     },
     {
       "path": "drive/tests/web_os_contract_smoke.php",
-      "size": 15770,
+      "size": 20866,
       "active": false,
       "references": []
     },

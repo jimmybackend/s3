@@ -10,7 +10,6 @@ class ArcadeCloudOsClipboard {
     this.activeTransfer = this.restoreTransfer();
     this.pressState = new WeakMap();
     this.suppressUntil = new WeakMap();
-    this.clickTimers = new WeakMap();
     this.actionsBound = false;
     this.eventsBound = false;
   }
@@ -47,7 +46,6 @@ class ArcadeCloudOsClipboard {
   ensureUi() {
     this.injectFileActions();
     this.injectFolderActions();
-    this.injectPasteToolbar();
     this.ensureTransferHud();
   }
 
@@ -94,27 +92,6 @@ class ArcadeCloudOsClipboard {
     menu.appendChild(copy);
     menu.appendChild(cut);
     menu.appendChild(paste);
-  }
-
-  injectPasteToolbar() {
-    this.document.querySelectorAll('.os-folder-commandbar').forEach((bar) => {
-      if (bar.querySelector('[data-os-paste-current]')) return;
-
-      const button = this.document.createElement('button');
-      button.type = 'button';
-      button.className = 'os-clipboard-paste';
-      button.dataset.osClipboardAction = 'paste';
-      button.dataset.osPasteCurrent = '1';
-      button.title = 'Pegar aquí';
-
-      const icon = this.document.createElement('i');
-      icon.className = 'fas fa-paste';
-      const text = this.document.createElement('span');
-      text.textContent = 'Pegar';
-      button.appendChild(icon);
-      button.appendChild(text);
-      bar.appendChild(button);
-    });
   }
 
   ensureTransferHud() {
@@ -194,7 +171,7 @@ class ArcadeCloudOsClipboard {
         if (!entry) return;
 
         if (action === 'copy' || action === 'cut') {
-          this.captureFile(entry, action === 'copy' ? 'copy' : 'move');
+          this.captureFiles(entry, action === 'copy' ? 'copy' : 'move');
         } else if (action === 'share') {
           await this.shareFile(entry);
         } else if (action === 'delete') {
@@ -231,20 +208,6 @@ class ArcadeCloudOsClipboard {
       }
     }, true);
 
-    this.document.addEventListener('dblclick', (event) => {
-      const target = event.target instanceof Element ? event.target : null;
-      const entry = target ? target.closest('.os-file-entry') : null;
-      if (!entry || target?.closest('.os-entry-menu')) return;
-
-      const timer = this.clickTimers.get(entry);
-      if (timer) this.window.clearTimeout(timer);
-      this.clickTimers.delete(entry);
-
-      event.preventDefault();
-      event.stopImmediatePropagation();
-      this.window.ArcadeCloudOsShell?.openFileEntry?.(entry, false);
-    }, true);
-
     this.document.addEventListener('arcadeos:explorer-updated', () => {
       this.ensureUi();
       this.bindEntries();
@@ -273,24 +236,6 @@ class ArcadeCloudOsClipboard {
       if (entry.dataset.osClipboardBound === '1') return;
       entry.dataset.osClipboardBound = '1';
       this.bindLongPress(entry, 'file');
-
-      entry.addEventListener('click', (event) => {
-        const target = event.target instanceof Element ? event.target : null;
-        if (target?.closest('.os-entry-menu')) return;
-
-        const until = Number(this.suppressUntil.get(entry) || 0);
-        if (until > Date.now()) return;
-
-        event.preventDefault();
-        const previous = this.clickTimers.get(entry);
-        if (previous) this.window.clearTimeout(previous);
-
-        const timer = this.window.setTimeout(() => {
-          this.clickTimers.delete(entry);
-          this.window.ArcadeCloudOsShell?.openFileEntry?.(entry, false);
-        }, 170);
-        this.clickTimers.set(entry, timer);
-      });
     });
 
     this.document.querySelectorAll('.os-folder-entry').forEach((entry) => {
@@ -354,23 +299,42 @@ class ArcadeCloudOsClipboard {
     });
   }
 
-  captureFile(entry, mode) {
-    if (String(entry.dataset.locked || '0') === '1') {
-      this.notify('Desbloquea el archivo antes de copiarlo o moverlo.', 'warning');
+  captureFiles(entry, mode) {
+    const shell = this.window.ArcadeCloudOsShell;
+    const selected = typeof shell?.selectedFileEntries === 'function'
+      ? shell.selectedFileEntries()
+      : [];
+
+    const entries = entry.classList.contains('is-selected') && selected.length > 0
+      ? selected
+      : [entry];
+
+    const locked = entries.find((item) => String(item.dataset.locked || '0') === '1');
+    if (locked) {
+      this.notify('Desbloquea los archivos protegidos antes de copiarlos o moverlos.', 'warning');
       return;
     }
 
-    const key = String(entry.dataset.key || '').trim();
-    if (!key) {
-      this.notify('No se pudo identificar el archivo.', 'warning');
+    const keys = Array.from(new Set(entries
+      .map((item) => String(item.dataset.key || '').trim())
+      .filter(Boolean)));
+
+    if (keys.length === 0) {
+      this.notify('No se pudieron identificar los archivos seleccionados.', 'warning');
       return;
     }
+
+    const name = keys.length === 1
+      ? String(entries[0]?.dataset?.name || keys[0])
+      : keys.length + ' archivos';
 
     this.setClipboard({
       kind: 'file',
       mode,
-      key,
-      name: String(entry.dataset.name || key),
+      key: keys[0],
+      keys,
+      name,
+      count: keys.length,
       sourceRoute: this.currentRoute()
     });
   }
@@ -463,7 +427,16 @@ class ArcadeCloudOsClipboard {
     };
 
     if (item.kind === 'file') {
-      payload.archivos_json = JSON.stringify([item.key]);
+      const keys = Array.isArray(item.keys) && item.keys.length > 0
+        ? item.keys.map((key) => String(key || '').trim()).filter(Boolean)
+        : [String(item.key || '').trim()].filter(Boolean);
+
+      if (keys.length === 0) {
+        this.notify('No hay archivos válidos para transferir.', 'warning');
+        return;
+      }
+
+      payload.archivos_json = JSON.stringify(keys);
       payload.nueva_ruta = destination;
     } else {
       payload.origen = item.route;
@@ -735,10 +708,6 @@ class ArcadeCloudOsClipboard {
   }
 
   currentRoute() {
-    const command = this.document.querySelector('.os-folder-commandbar');
-    const route = String(command?.dataset.currentFolderRoute || '').trim();
-    if (route) return route;
-
     const explorer = this.document.getElementById('osExplorerLive');
     return String(explorer?.dataset.explorerRoute || this.window.DRIVE_INITIAL_ROUTE || '').trim();
   }

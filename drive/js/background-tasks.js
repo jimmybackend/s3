@@ -404,7 +404,7 @@ class BackgroundTaskCenter {
     });
   }
 
-  refreshDriveIfRelevant(task) {
+  async refreshDriveIfRelevant(task) {
     const kind = String(task && task.kind || '');
     if (!['media', 'transcribe'].includes(kind)) return;
 
@@ -419,32 +419,57 @@ class BackgroundTaskCenter {
 
     const meta = task && task.metadata && typeof task.metadata === 'object' ? task.metadata : {};
     const expectedRoute = this.normalizeRoute(meta.output_route || '');
-    const currentRoute = this.normalizeRoute(
-      typeof this.window.rutaActual !== 'undefined'
-        ? this.window.rutaActual
-        : (this.window.DRIVE_INITIAL_ROUTE || '')
-    );
+    const rawCurrentRoute = typeof this.window.rutaActual !== 'undefined'
+      ? this.window.rutaActual
+      : (this.window.DRIVE_INITIAL_ROUTE || '');
+    const currentRoute = this.normalizeRoute(rawCurrentRoute);
     if (expectedRoute !== currentRoute) return;
 
-    const marker = 'drive-task-refresh:' + String(task.id || '');
-    try {
-      if (this.window.sessionStorage.getItem(marker) === '1') return;
-      this.window.sessionStorage.setItem(marker, '1');
-    } catch (_) {}
+    // No recargar la página completa al terminar trabajos multimedia.
+    // El Drive ya dispone de un refresco AJAX del bloque de archivos que
+    // conserva ruta, página, filtros y el estado del Centro de Tareas.
+    if (typeof this.window.actualizarBloqueArchivos !== 'function') {
+      if (this.window.console) {
+        this.window.console.warn(
+          '[background-tasks] actualizarBloqueArchivos no está disponible; se conserva la página sin recargar.'
+        );
+      }
+      return;
+    }
 
-    const reload = () => {
-      if (this.document.visibilityState === 'visible') {
-        this.window.location.reload();
+    const refreshBlock = async () => {
+      try {
+        let context = {};
+        if (typeof this.window.getBloqueArchivosContext === 'function') {
+          const current = this.window.getBloqueArchivosContext();
+          if (current && typeof current === 'object') {
+            context = Object.assign({}, current);
+          }
+        }
+
+        if (!context.ruta && rawCurrentRoute) context.ruta = String(rawCurrentRoute);
+        if (!context.pagina) context.pagina = 1;
+
+        await this.window.actualizarBloqueArchivos(context);
+      } catch (error) {
+        if (this.window.console) {
+          this.window.console.warn(
+            '[background-tasks] no se pudo refrescar el bloque de archivos:',
+            error
+          );
+        }
       }
     };
 
     const openModal = this.document.querySelector('.modal.show');
     if (openModal && this.window.jQuery) {
-      this.window.jQuery(openModal).one('hidden.bs.modal', () => this.window.setTimeout(reload, 300));
+      this.window.jQuery(openModal).one('hidden.bs.modal', () => {
+        this.window.setTimeout(() => { void refreshBlock(); }, 150);
+      });
       return;
     }
 
-    this.window.setTimeout(reload, 900);
+    await refreshBlock();
   }
 
   normalizeRoute(value) {

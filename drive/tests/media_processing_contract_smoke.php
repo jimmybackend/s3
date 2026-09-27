@@ -57,6 +57,9 @@ mediaContract(str_contains($js, 'mediaNodeAuthorization'), 'modal pide consentim
 mediaContract(str_contains($controller, 'HTTP_X_DRIVE_CSRF'), 'acciones multimedia pagadas exigen CSRF');
 mediaContract(str_contains($js, "'X-Drive-CSRF'"), 'cliente multimedia envía token CSRF');
 mediaContract(str_contains($tasksJs, 'refreshDriveIfRelevant'), 'Drive refresca la carpeta visible al terminar salidas');
+mediaContract(str_contains($tasksJs, 'this.window.actualizarBloqueArchivos'), 'tareas terminadas refrescan sólo el bloque de archivos por AJAX');
+mediaContract(str_contains($tasksJs, 'this.window.getBloqueArchivosContext'), 'refresco parcial conserva ruta, página y filtros actuales');
+mediaContract(!str_contains($tasksJs, 'this.window.location.reload()'), 'tareas multimedia no recargan la página completa al terminar');
 
 // Regresión del click: el router AWS no debe secuestrar botones multimedia que sólo comparten estilo.
 mediaContract(

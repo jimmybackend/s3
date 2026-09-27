@@ -126,6 +126,14 @@ installerContract(str_contains($mediaInstaller, 'ARCADECLOUD_RUNTIME_ENV'), 'wor
 installerContract(str_contains($mediaInstaller, 'php ffmpeg ffprobe lame'), 'worker exige herramientas multimedia completas');
 installerContract(str_contains($mediaInstaller, 'systemctl restart arcadecloud-media-worker.service'), 'actualización reinicia worker para cargar código nuevo');
 installerContract(!str_contains($mediaInstaller, 'enable --now arcadecloud-media-worker.service'), 'instalador no deja proceso multimedia viejo tras actualizar código');
+installerContract(
+    !str_contains($mediaInstaller, 'chmod 0755 "${DRIVE_ROOT}/bin/media_worker_node_bootstrap.sh"'),
+    'reconciliación multimedia no modifica el modo Git del bootstrap rastreado'
+);
+installerContract(
+    str_contains($mediaInstaller, 'ExecStart=/usr/bin/bash ${DRIVE_ROOT}/bin/media_worker_node_bootstrap.sh'),
+    'bootstrap multimedia se ejecuta mediante bash sin requerir bit ejecutable'
+);
 installerContract(!str_contains($mediaInstaller, 'User=nginx'), 'worker no fija nginx como usuario universal');
 installerContract(str_contains($bootstrap, 'runtime-env.json'), 'bootstrap de réplica usa runtime-env.json');
 installerContract(str_contains($bootstrap, 'arcadecloud-drive-admin'), 'bootstrap actualiza configuración mediante helper privilegiado');

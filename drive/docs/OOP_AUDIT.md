@@ -33,7 +33,7 @@
 | `drive/aws.php` | 12 | thin endpoint | 0 | — | — | — | — |
 | `drive/background_tasks.php` | 18 | thin endpoint | 0 | — | — | — | — |
 | `drive/bin/arcadecloud-drive-admin-helper.php` | 950 | class/module | 1 | — | ⚠️ | — | — |
-| `drive/bin/arcadecloud-drive-updater.php` | 274 | class/module | 1 | — | — | — | — |
+| `drive/bin/arcadecloud-drive-updater.php` | 313 | class/module | 1 | — | — | — | — |
 | `drive/bin/federation_catalog_migrate.php` | 18 | thin cli entrypoint | 0 | — | — | — | — |
 | `drive/bin/federation_drop_cleanup.php` | 19 | thin cli entrypoint | 0 | — | — | — | — |
 | `drive/bin/federation_endpoint_refresh.php` | 87 | thin cli entrypoint | 0 | — | — | — | — |
@@ -280,7 +280,7 @@
 | `drive/src/Http/ByteRange.php` | 45 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/AbstractJsonController.php` | 81 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/ActivityCostController.php` | 82 | class/module | 1 | — | — | — | — |
-| `drive/src/Http/Controller/ArcadeCloudUpdateController.php` | 48 | class/module | 1 | — | — | — | — |
+| `drive/src/Http/Controller/ArcadeCloudUpdateController.php` | 55 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/AudioRecordingUploadController.php` | 108 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/AuthController.php` | 114 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/AwsCostController.php` | 61 | class/module | 1 | — | — | — | — |
@@ -435,8 +435,8 @@
 | `drive/tests/folder_document_sanitizer.php` | 49 | test script | 0 | — | — | — | — |
 | `drive/tests/fresh_install_contract_smoke.php` | 67 | test script | 0 | — | — | — | — |
 | `drive/tests/index_federation_drop_smoke.php` | 121 | test script | 0 | — | — | — | — |
-| `drive/tests/installer_service_reconcile_contract_smoke.php` | 144 | test script | 0 | — | — | — | — |
-| `drive/tests/media_processing_contract_smoke.php` | 160 | test script | 0 | — | — | — | — |
+| `drive/tests/installer_service_reconcile_contract_smoke.php` | 151 | test script | 0 | — | — | — | — |
+| `drive/tests/media_processing_contract_smoke.php` | 164 | test script | 0 | — | — | — | — |
 | `drive/tests/password_credential_verifier_smoke.php` | 44 | test script | 0 | — | — | — | — |
 | `drive/tests/scoped_sync_repository_regression.php` | 96 | test script | 0 | — | ⚠️ | — | — |
 | `drive/tests/security_hardening_smoke.php` | 59 | test script | 0 | — | — | — | — |
@@ -487,7 +487,7 @@
 |---|---:|---|---|---|---|---|
 | `drive/js/actualizar-hora.js` | 36 | class/module | ActualizarHoraModule | — | — | — |
 | `drive/js/ai-search.js` | 187 | class/module | DriveAiSearchModule | — | — | — |
-| `drive/js/arcadecloud-updater.js` | 228 | class/module | ArcadeCloudUpdaterModule | — | — | — |
+| `drive/js/arcadecloud-updater.js` | 247 | class/module | ArcadeCloudUpdaterModule | — | — | — |
 | `drive/js/arcadelink-share.js` | 387 | class/module | ArcadeLinkShareModule | — | — | — |
 | `drive/js/archivos.js` | 2155 | class/module | ArchivosModule | — | abrirModalRenombrarArchivo, cerrarModalCompartir, setFileSecurity | window functions: abrirModalRenombrarArchivo, cerrarModalCompartir, setFileSecurity |
 | `drive/js/audiovideo.js` | 619 | class/module | AudiovideoModule | — | audioNext, audioPrev, reproducirVideoDesde, videoNext, videoPlayPause, videoPrev | window functions: audioNext, audioPrev, reproducirVideoDesde, videoNext, videoPlayPause, videoPrev, wavePlayPause |

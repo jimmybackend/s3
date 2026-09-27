@@ -117,7 +117,7 @@
     },
     {
       "path": "drive/bin/arcadecloud-drive-updater.php",
-      "lines": 274,
+      "lines": 313,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -3852,7 +3852,7 @@
     },
     {
       "path": "drive/src/Http/Controller/ArcadeCloudUpdateController.php",
-      "lines": 48,
+      "lines": 55,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -6246,7 +6246,7 @@
     },
     {
       "path": "drive/tests/installer_service_reconcile_contract_smoke.php",
-      "lines": 144,
+      "lines": 151,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -6263,7 +6263,7 @@
     },
     {
       "path": "drive/tests/media_processing_contract_smoke.php",
-      "lines": 160,
+      "lines": 164,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -6974,7 +6974,7 @@
     },
     {
       "path": "drive/js/arcadecloud-updater.js",
-      "lines": 228,
+      "lines": 247,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudUpdaterModule"

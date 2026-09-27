@@ -10,6 +10,7 @@ on:
       - 'drive/js/so-terminal.js'
       - 'drive/js/so-federation.js'
       - 'drive/js/federation-os-admin.js'
+      - 'drive/js/federation-portal.js'
       - 'drive/css/federation-os-admin.css'
       - 'drive/federationcloud/os-admin.php'
       - 'drive/src/Http/Controller/FederationOsAdminController.php'
@@ -39,6 +40,7 @@ on:
       - 'drive/js/so-terminal.js'
       - 'drive/js/so-federation.js'
       - 'drive/js/federation-os-admin.js'
+      - 'drive/js/federation-portal.js'
       - 'drive/css/federation-os-admin.css'
       - 'drive/federationcloud/os-admin.php'
       - 'drive/src/Http/Controller/FederationOsAdminController.php'
@@ -73,6 +75,7 @@ jobs:
           node --check drive/js/so-terminal.js
           node --check drive/js/so-federation.js
           node --check drive/js/federation-os-admin.js
+          node --check drive/js/federation-portal.js
           node --check drive/js/so-folders.js
           node --check drive/js/carpetas.js
           node --check drive/js/folder-document.js

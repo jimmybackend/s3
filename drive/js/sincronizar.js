@@ -81,6 +81,7 @@ class SincronizarModule {
     }
 
     async function runSync(prefix = '', label = '', triggerButton = btn) {
+      let completed = false;
       if (busy) {
         status('Ya existe una sincronización en curso para este usuario.', 'primary');
         return;
@@ -181,6 +182,7 @@ class SincronizarModule {
             );
 
             await refreshDrive();
+            completed = true;
             break;
           }
 
@@ -208,6 +210,8 @@ class SincronizarModule {
           triggerButton.innerHTML = oldHtml;
         }
       }
+
+      return completed;
     }
 
     if (btn) {

@@ -1,0 +1,49 @@
+html,body{min-height:100%;background:#06111d;color:#e9f5ff}
+body.federation-os-admin{margin:0}
+.federation-os-admin-shell{max-width:1180px;margin:0 auto;padding:18px}
+.federation-os-admin.is-embedded .federation-os-admin-shell{max-width:none;padding:12px}
+.federation-os-about-header{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;margin-bottom:12px}
+.federation-os-about-header h1{font-size:1.35rem;margin:.2rem 0}
+.federation-os-about-header p{color:#9db4c8;margin:0}
+.federation-os-eyebrow{font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;color:#26c6ff;font-weight:800}
+.federation-os-jumpbar{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 12px}
+.federation-os-jumpbar a{display:inline-flex;align-items:center;gap:7px;padding:7px 10px;border:1px solid rgba(116,196,255,.2);border-radius:8px;background:#0a1828;color:#e9f5ff;text-decoration:none;font-size:.76rem}
+.federation-os-jumpbar a:hover{border-color:#26c6ff;background:rgba(38,198,255,.08);color:#bfefff}
+.federation-os-card{background:#0b1a2a;border:1px solid rgba(116,196,255,.2);border-radius:12px;padding:14px;margin-bottom:12px;box-shadow:0 10px 30px rgba(0,0,0,.18)}
+.federation-os-section-title{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px}
+.federation-os-section-title.compact{margin-top:15px}
+.federation-os-section-title>div{display:flex;align-items:center;gap:8px;font-weight:800}
+.federation-os-section-title i{color:#26c6ff}
+.federation-os-stat-grid{display:grid;grid-template-columns:repeat(4,minmax(130px,1fr));gap:8px;margin-bottom:10px}
+.federation-os-stat-grid.two{grid-template-columns:repeat(2,minmax(160px,1fr))}
+.federation-os-stat-grid article{min-width:0;background:#071421;border:1px solid rgba(255,255,255,.07);border-radius:9px;padding:10px}
+.federation-os-stat-grid span{display:block;color:#9db4c8;font-size:.68rem;margin-bottom:4px}
+.federation-os-stat-grid strong{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.83rem}
+.federation-os-detail-list{border:1px solid rgba(255,255,255,.07);border-radius:9px;overflow:hidden}
+.federation-os-detail-list>div{display:grid;grid-template-columns:150px minmax(0,1fr);gap:10px;padding:8px 10px;border-bottom:1px solid rgba(255,255,255,.06);font-size:.75rem}
+.federation-os-detail-list>div:last-child{border-bottom:0}
+.federation-os-detail-list span{color:#9db4c8}
+.federation-os-detail-list strong{overflow-wrap:anywhere}
+.federation-os-peer-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:8px}
+.federation-os-peer-card,.federation-os-provider-card{background:#071421;border:1px solid rgba(255,255,255,.07);border-radius:9px;padding:10px}
+.federation-os-peer-head,.federation-os-provider-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.federation-os-help{color:#9db4c8;font-size:.75rem;margin-bottom:12px}
+.federation-os-empty{padding:12px;border:1px dashed rgba(116,196,255,.16);border-radius:8px;color:#9db4c8;font-size:.75rem;text-align:center}
+.federation-os-provider-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
+.federation-os-action{border:1px solid rgba(116,196,255,.2);border-radius:7px;background:#10243a;color:#e9f5ff;padding:6px 9px;cursor:pointer;font-size:.72rem}
+.federation-os-action.is-success{border-color:rgba(87,227,137,.35);color:#9df6bc}
+.federation-os-action.is-danger{border-color:rgba(255,107,107,.35);color:#ffb2b2}
+.federation-os-action:disabled{opacity:.45;cursor:not-allowed}
+.federation-os-settings-table{max-height:360px;overflow:auto;border:1px solid rgba(116,196,255,.15);border-radius:8px}
+.federation-os-admin .form-control{background:#071421;color:#e9f5ff;border-color:rgba(116,196,255,.22)}
+.federation-os-admin .form-control:focus{background:#071421;color:#e9f5ff;border-color:#26c6ff;box-shadow:0 0 0 .15rem rgba(38,198,255,.12)}
+.federation-os-admin .table-dark{background:#071421}
+.federation-os-admin code{color:#8fe8ff}
+@media(max-width:760px){
+  .federation-os-admin-shell{padding:8px}
+  .federation-os-about-header{align-items:stretch;flex-direction:column}
+  .federation-os-stat-grid,.federation-os-stat-grid.two{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .federation-os-detail-list>div{grid-template-columns:1fr}
+  .federation-os-peer-grid{grid-template-columns:1fr}
+  .federation-os-jumpbar a span{display:none}
+}

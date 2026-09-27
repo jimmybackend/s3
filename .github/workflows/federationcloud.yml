@@ -24,12 +24,18 @@ on:
       - 'drive/src/Http/Controller/FederationProviderController.php'
       - 'drive/src/Http/Controller/FederationNodeAdminController.php'
       - 'drive/src/Http/Controller/FederationModerationController.php'
+      - 'drive/src/Http/Controller/FederationPortalController.php'
+      - 'drive/src/Http/Controller/FederationOsAdminController.php'
       - 'drive/src/Security/AuthenticationRepository.php'
       - 'drive/src/Security/AuthenticationService.php'
       - 'drive/src/Security/SessionManager.php'
       - 'drive/src/View/FederationPageRenderer.php'
       - 'drive/src/View/FederationReportPageRenderer.php'
       - 'drive/src/View/FederationModerationPageRenderer.php'
+      - 'drive/src/View/FederationPortalRenderer.php'
+      - 'drive/src/View/FederationOsAdminRenderer.php'
+      - 'drive/js/federation-os-admin.js'
+      - 'drive/css/federation-os-admin.css'
       - 'drive/css/federation-moderation.css'
       - 'drive/bin/reconcile_arcadecloud_services.sh'
       - 'drive/tests/installer_service_reconcile_contract_smoke.php'
@@ -84,12 +90,18 @@ on:
       - 'drive/src/Http/Controller/FederationProviderController.php'
       - 'drive/src/Http/Controller/FederationNodeAdminController.php'
       - 'drive/src/Http/Controller/FederationModerationController.php'
+      - 'drive/src/Http/Controller/FederationPortalController.php'
+      - 'drive/src/Http/Controller/FederationOsAdminController.php'
       - 'drive/src/Security/AuthenticationRepository.php'
       - 'drive/src/Security/AuthenticationService.php'
       - 'drive/src/Security/SessionManager.php'
       - 'drive/src/View/FederationPageRenderer.php'
       - 'drive/src/View/FederationReportPageRenderer.php'
       - 'drive/src/View/FederationModerationPageRenderer.php'
+      - 'drive/src/View/FederationPortalRenderer.php'
+      - 'drive/src/View/FederationOsAdminRenderer.php'
+      - 'drive/js/federation-os-admin.js'
+      - 'drive/css/federation-os-admin.css'
       - 'drive/css/federation-moderation.css'
       - 'drive/bin/reconcile_arcadecloud_services.sh'
       - 'drive/tests/installer_service_reconcile_contract_smoke.php'
@@ -153,6 +165,10 @@ jobs:
           php -l drive/src/Http/Controller/FederationProviderController.php
           php -l drive/src/Http/Controller/FederationNodeAdminController.php
           php -l drive/src/Http/Controller/FederationModerationController.php
+          php -l drive/src/Http/Controller/FederationPortalController.php
+          php -l drive/src/Http/Controller/FederationOsAdminController.php
+          php -l drive/src/View/FederationPortalRenderer.php
+          php -l drive/src/View/FederationOsAdminRenderer.php
           php -l drive/src/View/FederationReportPageRenderer.php
           php -l drive/src/View/FederationModerationPageRenderer.php
           php -l drive/src/Upload/UploadCatalogRepository.php
@@ -185,6 +201,7 @@ jobs:
         run: |
           set -euo pipefail
           node --check drive/js/federation-footer.js
+          node --check drive/js/federation-os-admin.js
           node --check drive/js/subir.js
           node --check drive/js/subir-dropzone.js
           node --check drive/js/subir-chunked.js

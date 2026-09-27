@@ -5,6 +5,7 @@ namespace ArcadeCloud\Drive\Http\Controller;
 
 use ArcadeCloud\Drive\Core\DriveApplication;
 use ArcadeCloud\Drive\Federation\FederationService;
+use ArcadeCloud\Drive\Http\Request;
 use ArcadeCloud\Drive\View\FederationPortalRenderer;
 use Throwable;
 
@@ -12,7 +13,8 @@ final class FederationPortalController
 {
     public function __construct(
         private DriveApplication $app,
-        private FederationPortalRenderer $renderer
+        private FederationPortalRenderer $renderer,
+        private Request $request
     ) {
     }
 
@@ -35,6 +37,7 @@ final class FederationPortalController
             http_response_code(401);
         }
 
-        $this->renderer->render($authenticated, $node);
+        $embed = $this->request->queryString('embed') === '1';
+        $this->renderer->render($authenticated, $node, $embed);
     }
 }

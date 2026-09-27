@@ -193,3 +193,25 @@ body.ui-theme.theme-dark.federation-portal-body .federation-portal-tabs .nav-lin
     margin-right: 0 !important;
   }
 }
+
+
+/* Embedded inside ArcadeCloud OS */
+body.federation-portal-embedded{
+  min-height:100vh;
+  background:#06111d;
+}
+body.federation-portal-embedded .federation-portal-shell{
+  max-width:none;
+  width:100%;
+  padding:.8rem;
+  margin:0;
+}
+body.federation-portal-embedded .federation-portal-content{
+  margin-top:0;
+}
+body.federation-portal-embedded .tab-pane{
+  padding-top:0;
+}
+body.federation-portal-embedded .federation-panel{
+  border-radius:10px;
+}

@@ -378,6 +378,74 @@ body.arcade-os{
   aspect-ratio:16/9;max-height:52vh;object-fit:contain
 }
 
+/* ===== FederationCloud como aplicación del Web OS ===== */
+.os-federation-window{
+  min-width:620px;
+  min-height:440px;
+}
+.os-federation-toolbar{
+  min-height:44px;
+  display:flex;
+  align-items:center;
+  gap:5px;
+  padding:6px 8px;
+  border-bottom:1px solid var(--os-border);
+  background:rgba(7,19,32,.92);
+  overflow-x:auto;
+}
+.os-federation-toolbar button{
+  flex:0 0 auto;
+  border:1px solid rgba(116,196,255,.18);
+  border-radius:8px;
+  background:rgba(255,255,255,.02);
+  color:var(--os-soft);
+  padding:7px 10px;
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
+  cursor:pointer;
+  font-size:.74rem;
+}
+.os-federation-toolbar button:hover,
+.os-federation-toolbar button.is-active{
+  border-color:var(--os-accent);
+  background:rgba(38,198,255,.09);
+  color:var(--os-text);
+}
+.os-federation-toolbar button.is-active{
+  box-shadow:inset 0 -2px 0 var(--os-accent);
+}
+.os-federation-toolbar-spacer{flex:1 1 auto;min-width:12px}
+.os-federation-body{
+  position:relative;
+  padding:0;
+  overflow:hidden;
+  background:#06111d;
+}
+.os-federation-frame{
+  display:block;
+  width:100%;
+  height:100%;
+  min-height:100%;
+  border:0;
+  background:#06111d;
+}
+.os-federation-frame.is-loading{opacity:.58}
+.os-federation-loading{
+  position:absolute;
+  inset:0;
+  z-index:5;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:9px;
+  background:rgba(5,14,24,.68);
+  color:var(--os-text);
+  font-size:.8rem;
+  pointer-events:none;
+}
+.os-federation-loading[hidden]{display:none!important}
+
 /* ===== Terminal restringida de Mi nodo ===== */
 .os-terminal-window{
   min-width:520px;
@@ -707,6 +775,11 @@ body.arcade-os{
     left:6px!important;right:6px!important;bottom:56px!important;top:auto!important;width:auto!important
   }
   .os-media-overlay-header{cursor:default}
+  .os-federation-window{min-width:0;min-height:0}
+  .os-federation-toolbar{padding:5px}
+  .os-federation-toolbar button{padding:8px 9px}
+  .os-federation-toolbar button span{display:none}
+  .os-federation-toolbar-spacer{min-width:2px}
   .os-terminal-window{min-width:0;min-height:0}
   .os-terminal-commands{grid-template-columns:1fr;max-height:170px}
   .os-terminal-input-row button span{display:none}

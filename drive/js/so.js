@@ -401,7 +401,7 @@ class ArcadeCloudOsShell {
       const parsed = new DOMParser().parseFromString(html, 'text/html');
       const next = parsed.getElementById('osExplorerLive');
       if (!next) {
-        throw new Error('La respuesta del Explorador no es válida.');
+        throw new Error('La respuesta de Mis datos no es válida.');
       }
 
       current.replaceWith(next);
@@ -435,7 +435,7 @@ class ArcadeCloudOsShell {
 
       return true;
     } catch (error) {
-      this.notify(error && error.message ? error.message : 'No se pudo actualizar el Explorador.', 'warning');
+      this.notify(error && error.message ? error.message : 'No se pudo actualizar Mis datos.', 'warning');
       return false;
     } finally {
       this.explorerLoading = false;

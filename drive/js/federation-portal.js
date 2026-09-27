@@ -8,6 +8,7 @@ class FederationPortalModule {
     this.localNodeId = String(doc.body?.dataset?.federationNodeId || '');
     this.dropCommerceUrl = String(doc.body?.dataset?.federationDropUrl || '').replace(/\/$/, '');
     this.dropSource = String(doc.body?.dataset?.federationDropSource || '');
+    this.embedded = Boolean(doc.body?.classList.contains('federation-portal-embedded'));
     this.state = { incoming: [], outgoing: [], shares: [], replicas: [] };
   }
 
@@ -167,9 +168,9 @@ class FederationPortalModule {
         const open = this.document.createElement('a');
         open.className = 'btn btn-sm btn-info mb-2';
         open.href = `replica-open.php?resource_id=${encodeURIComponent(resourceId)}`;
-        open.target = '_blank';
+        open.target = this.embedded ? '_self' : '_blank';
         open.rel = 'noopener';
-        open.innerHTML = '<i class="fas fa-download mr-1"></i>Descargar público';
+        open.innerHTML = '<i class="fas fa-arrow-up-right-from-square mr-1"></i>Abrir / descargar';
         actions.appendChild(open);
 
         const copy = this.document.createElement('button');
@@ -454,7 +455,7 @@ class FederationPortalModule {
         const link = this.document.createElement('a');
         link.className = 'btn btn-info btn-sm mt-2';
         link.href = accessUrl;
-        link.target = '_blank';
+        link.target = this.embedded ? '_self' : '_blank';
         link.rel = 'noopener noreferrer';
         link.innerHTML = '<i class="fas fa-arrow-up-right-from-square mr-1"></i>Abrir acceso';
         card.appendChild(link);

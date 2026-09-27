@@ -88,6 +88,10 @@ mediaContract(str_contains($service, "if (\$operation === 'split_video')"), 'bac
 mediaContract(str_contains($service, "} elseif (\$operation === 'extract_mp3')"), 'backend acepta extracción MP3');
 mediaContract(str_contains($service, 'Operación multimedia no soportada.'), 'operación inválida es rechazada');
 mediaContract(str_contains($service, 'La cantidad de partes debe estar entre 2 y 50.'), 'cantidad de partes inválida es rechazada');
+mediaContract(str_contains($js, "overlap_before: '3'"), 'cliente multimedia usa 3 segundos antes del corte');
+mediaContract(str_contains($js, "overlap_after: '3'"), 'cliente multimedia usa 3 segundos después del corte');
+mediaContract(str_contains($service, "['overlap_before'] ?? 3"), 'backend usa 3 segundos antes por defecto');
+mediaContract(str_contains($service, "['overlap_after'] ?? 3"), 'backend usa 3 segundos después por defecto');
 
 // Seguridad y aislamiento.
 mediaContract(str_contains($service, 'requireReadableByKey($userId, $key)'), 'servicio valida archivo contra propietario autenticado');

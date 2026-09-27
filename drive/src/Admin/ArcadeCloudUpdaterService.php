@@ -24,10 +24,10 @@ final class ArcadeCloudUpdaterService
         return $this->withFederationSchemaState($state, true);
     }
 
-    public function apply(string $currentPassword): array
+    public function apply(string $currentPassword, bool $stashLocalChanges = false): array
     {
         (new SuperAdminReauthenticationService($this->app))->requireRecent($currentPassword);
-        $result = $this->run('apply');
+        $result = $this->run($stashLocalChanges ? 'apply-stash' : 'apply');
         $result = $this->withFederationSchemaState($result, true);
         $this->audit((string)($result['previous_commit'] ?? ''), (string)($result['local_commit'] ?? ''));
         return $result;
@@ -68,7 +68,7 @@ final class ArcadeCloudUpdaterService
 
     private function run(string $action): array
     {
-        if (!in_array($action, ['check', 'apply'], true)) throw new RuntimeException('Acción de actualización no permitida.');
+        if (!in_array($action, ['check', 'apply', 'apply-stash'], true)) throw new RuntimeException('Acción de actualización no permitida.');
         if (!function_exists('proc_open') || !is_executable(self::SUDO) || !is_executable(self::HELPER)) {
             throw new RuntimeException($this->installMessage());
         }

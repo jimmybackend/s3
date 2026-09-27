@@ -106,10 +106,17 @@ installerContract(str_contains($helperInstaller = (string)file_get_contents($rep
 installerContract(str_contains($helperInstaller, 'runuser -u "$PHP_USER" -- test -r "$IDENTITY_PATH"'), 'helper verifica lectura de identidad como el usuario PHP');
 installerContract(str_contains($updater, "'needs_attention'"), 'updater informa si código quedó actualizado pero servicios requieren atención');
 installerContract(str_contains($updaterInstaller, '"php_user": php_user'), 'configuración del updater conserva usuario PHP-FPM');
-installerContract(str_contains($updaterInstaller, 'NOPASSWD: %s probe, %s check, %s apply'), 'sudoers limita updater a probe/check/apply');
+installerContract(str_contains($updaterInstaller, 'NOPASSWD: %s probe, %s check, %s apply, %s apply-stash'), 'sudoers limita updater a probe/check/apply/apply-stash');
 installerContract(str_contains($updaterInstaller, 'runuser -u "$PHP_USER" -- /usr/bin/sudo -n "$TARGET" probe'), 'instalador prueba NOPASSWD con el usuario web real');
 installerContract(str_contains($updater, "if (" . '$' . "action === 'probe')"), 'updater ofrece probe sin tocar Git');
 installerContract(str_contains($updaterService, 'perdió la autorización NOPASSWD'), 'UI traduce fallo sudo a diagnóstico ArcadeCloud');
+installerContract(str_contains($updater, "'apply-stash'"), 'updater ofrece guardado local explícito antes de actualizar');
+installerContract(str_contains($updater, "'stash', 'push', '--include-untracked'"), 'updater conserva cambios locales mediante git stash');
+installerContract(str_contains($updater, "'dirty_files'"), 'check del updater devuelve archivos que ensucian el checkout');
+installerContract(str_contains($updater, "'can_apply_with_stash'"), 'updater distingue actualización segura con stash');
+installerContract(str_contains($updaterService, "'apply-stash' : 'apply'"), 'servicio web selecciona acción segura con stash');
+installerContract(str_contains($updaterJs, "'apply_stash'"), 'UI permite guardar cambios y actualizar');
+installerContract(str_contains($updaterJs, 'Guardar cambios y actualizar'), 'UI explica la opción de stash al superusuario');
 
 installerContract(str_contains($uninstaller, 'arcadecloud-media-worker.service'), 'desinstalador retira worker multimedia');
 installerContract(str_contains($uninstaller, 'arcadecloud-media-node-bootstrap.service'), 'desinstalador retira bootstrap multimedia');

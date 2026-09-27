@@ -11,7 +11,7 @@ Operaciones iniciales:
 - dividir audio en 2 a 50 partes;
 - conservar siempre el archivo original;
 - guardar todos los resultados en la misma carpeta lógica del origen;
-- usar por defecto 10 segundos antes y 10 segundos después de cada frontera de división;
+- usar por defecto 3 segundos antes y 3 segundos después de cada frontera de división;
 - aceptar archivos pequeños sin tamaño mínimo y limitar cada origen a 8 GB.
 
 Ejemplo:
@@ -23,7 +23,7 @@ audiencia-parte2.mp4
 audiencia.mp3
 ```
 
-El solapamiento evita perder palabras durante una transcripción. Por diseño, los segmentos vecinos comparten hasta 20 segundos alrededor de la frontera: 10 segundos por cada lado.
+El solapamiento evita perder palabras durante una transcripción. Por diseño, cada frontera comparte 3 segundos anteriores y 3 segundos posteriores (6 segundos alrededor del corte). Este valor busca proteger frases partidas sin repetir demasiado contenido al localizar o revisar una transcripción.
 
 La interfaz usa un modal Bootstrap del Drive para elegir entre 2 y 50 partes. Ya no depende de `window.prompt`, de modo que funciona también en navegadores móviles/WebView donde esos diálogos pueden bloquearse.
 
@@ -163,7 +163,9 @@ Si un destino ya existe, el trabajo falla antes de sobrescribirlo. El objeto fue
 
 ## Calidad
 
-Dividir video/audio usa `-c copy`: no recodifica y mantiene la calidad original. Los puntos reales pueden ajustarse a keyframes según el contenedor/códec.
+Dividir video/audio intenta primero `-c copy`: no recodifica y mantiene la calidad original. Los puntos reales pueden ajustarse a keyframes según el contenedor/códec.
+
+Para video, el worker limita el mapeo a la pista principal de video y a la pista principal de audio opcional, evita streams auxiliares problemáticos, regenera timestamps cuando es necesario y fija el muxer de salida. Si la copia directa falla en un contenedor soportado, intenta recodificación automática y valida cada parte antes de publicarla. La duración se consulta primero con FFprobe; si FFprobe falla, existe un fallback con FFmpeg para no convertir esa lectura en un punto único de fallo.
 
 Extraer MP3 usa `libmp3lame` a 128 kbps, suficiente como formato de trabajo para voz y transcripción.
 
@@ -310,3 +312,15 @@ activa si faltan `ffmpeg`, `ffprobe` o `lame`.
 
 La extracción MP3 prefiere el encoder `libmp3lame` de FFmpeg cuando existe. Si la build
 `ffmpeg-free` no lo expone, el worker genera PCM WAV temporal y ejecuta `lame` a 128 kbps.
+
+
+## Centro de Tareas y actualización de la vista
+
+Las tareas multimedia se administran desde el Centro de Tareas:
+
+- una tarea en cola puede cancelarse;
+- una tarea en ejecución puede solicitar detención segura;
+- una tarea fallida o cancelada puede reintentarse o eliminarse de la lista;
+- una tarea terminada puede quitarse del historial visible sin eliminar sus archivos.
+
+Cuando una extracción o división termina, el Drive actualiza por AJAX únicamente el bloque de archivos de la carpeta visible. No se recarga la página completa y se conservan ruta, página, filtros y estado del Centro de Tareas.

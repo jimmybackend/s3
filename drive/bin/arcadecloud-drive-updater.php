@@ -39,21 +39,49 @@ final class ArcadeCloudDriveUpdater
             exit(0);
         }
 
-        if ($action === 'apply') {
+        if (in_array($action, ['apply', 'apply-stash'], true)) {
             $before = $this->currentState($config, true);
             if (!$before['update_available']) {
                 $this->fail('ArcadeCloud ya está actualizado.', 17);
             }
-            if (!$before['can_apply']) {
-                if ($before['branch'] !== 'main') {
-                    $this->fail('La actualización web sólo está permitida desde la rama main.', 17);
+            if ($before['branch'] !== 'main') {
+                $this->fail('La actualización web sólo está permitida desde la rama main.', 17);
+            }
+            if ($before['ahead'] > 0) {
+                $this->fail('El repositorio local tiene commits no publicados.', 17);
+            }
+
+            $stashCreated = false;
+            $stashMessage = '';
+
+            if ($before['dirty']) {
+                if ($action !== 'apply-stash') {
+                    $this->fail(
+                        'El repositorio tiene cambios locales. Usa la opción web para guardarlos temporalmente y actualizar.',
+                        17
+                    );
                 }
-                if ($before['dirty']) {
-                    $this->fail('El repositorio tiene cambios locales. No se actualizará automáticamente.', 17);
+
+                $label = 'arcadecloud-web-update-'
+                    . gmdate('Ymd-His')
+                    . '-'
+                    . substr((string)$before['local_commit'], 0, 12);
+
+                $stash = $this->git($config, [
+                    'stash', 'push', '--include-untracked', '-m', $label,
+                ]);
+                $stashMessage = trim((string)$stash['stdout']);
+                $stashCreated = !str_contains(strtolower($stashMessage), 'no local changes to save');
+
+                $clean = $this->currentState($config, false);
+                if ($clean['dirty']) {
+                    $this->fail(
+                        'No fue posible dejar limpio el checkout después de guardar los cambios locales. '
+                        . 'Revisa permisos/archivos del repositorio.',
+                        17
+                    );
                 }
-                if ($before['ahead'] > 0) {
-                    $this->fail('El repositorio local tiene commits no publicados.', 17);
-                }
+            } elseif (!$before['can_apply']) {
                 $this->fail('La actualización no es fast-forward segura.', 17);
             }
 
@@ -67,8 +95,11 @@ final class ArcadeCloudDriveUpdater
 
             $reconcile = $this->reconcileServices($config);
             $message = $reconcile['ok']
-                ? 'ArcadeCloud se actualizó y sus servicios quedaron reconciliados. Recarga la página.'
+                ? 'ArcadeCloud se actualizó y sus servicios quedaron reconciliados.'
                 : 'El código quedó actualizado, pero un servicio necesita revisión: ' . $reconcile['message'];
+            if ($stashCreated) {
+                $message .= ' Los cambios locales anteriores quedaron guardados en git stash y no se restauraron automáticamente.';
+            }
 
             fwrite(
                 STDOUT,
@@ -76,6 +107,8 @@ final class ArcadeCloudDriveUpdater
                     'ok' => true,
                     'updated' => true,
                     'previous_commit' => $before['local_commit'],
+                    'stash_created' => $stashCreated,
+                    'stash_message' => $stashMessage,
                     'reconcile_ok' => $reconcile['ok'],
                     'needs_attention' => !$reconcile['ok'],
                     'reconcile_message' => $reconcile['message'],
@@ -234,7 +267,11 @@ final class ArcadeCloudDriveUpdater
 
         $branch = $this->git($config, ['rev-parse', '--abbrev-ref', 'HEAD'])['stdout'];
         $local = $this->git($config, ['rev-parse', 'HEAD'])['stdout'];
-        $dirty = $this->git($config, ['status', '--porcelain'])['stdout'] !== '';
+        $dirtyOutput = $this->git($config, ['status', '--porcelain=v1', '--untracked-files=all'])['stdout'];
+        $dirty = $dirtyOutput !== '';
+        $dirtyFiles = $dirtyOutput === ''
+            ? []
+            : array_slice(preg_split('/\R/', $dirtyOutput) ?: [], 0, 25);
 
         if ($fetch) {
             $this->git($config, ['fetch', '--quiet', '--prune', 'origin', 'main']);
@@ -260,10 +297,12 @@ final class ArcadeCloudDriveUpdater
             'local_commit' => $local,
             'remote_commit' => $remote,
             'dirty' => $dirty,
+            'dirty_files' => array_values(array_filter(array_map('strval', $dirtyFiles))),
             'behind' => $behind,
             'ahead' => $ahead,
             'update_available' => $behind > 0,
             'can_apply' => $branch === 'main' && !$dirty && $ahead === 0 && $behind > 0,
+            'can_apply_with_stash' => $branch === 'main' && $dirty && $ahead === 0 && $behind > 0,
             'summary' => array_values(array_filter(array_map('strval', $summary))),
             'checked_at' => gmdate(DATE_ATOM),
         ];

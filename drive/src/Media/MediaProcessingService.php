@@ -33,8 +33,8 @@ final class MediaProcessingService
         }
 
         $parts = max(1, (int)($input['parts'] ?? 1));
-        $before = max(0, min(60, (int)($input['overlap_before'] ?? 10)));
-        $after = max(0, min(60, (int)($input['overlap_after'] ?? 10)));
+        $before = max(0, min(60, (int)($input['overlap_before'] ?? 3)));
+        $after = max(0, min(60, (int)($input['overlap_after'] ?? 3)));
 
         if ($operation === 'split_video') {
             if (!in_array($ext, self::VIDEO, true)) {

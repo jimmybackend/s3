@@ -60,7 +60,7 @@ PY
 chown root:root "$CONFIG"
 chmod 0644 "$CONFIG"
 
-printf '%s ALL=(root) NOPASSWD: %s probe, %s check, %s apply\n' "$PHP_USER" "$TARGET" "$TARGET" "$TARGET" > "$SUDOERS"
+printf '%s ALL=(root) NOPASSWD: %s probe, %s check, %s apply, %s apply-stash\n' "$PHP_USER" "$TARGET" "$TARGET" "$TARGET" "$TARGET" > "$SUDOERS"
 chmod 0440 "$SUDOERS"
 if command -v visudo >/dev/null 2>&1; then visudo -cf "$SUDOERS" >/dev/null; fi
 

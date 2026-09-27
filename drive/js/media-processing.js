@@ -431,8 +431,8 @@ class MediaProcessingModule {
       archivo: key,
       operation: operation,
       parts: String(parts || 1),
-      overlap_before: '10',
-      overlap_after: '10',
+      overlap_before: '3',
+      overlap_after: '3',
       authorize_node_start: authorizeNodeStart ? '1' : '0'
     });
 

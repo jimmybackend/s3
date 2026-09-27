@@ -34,8 +34,15 @@ final class ArcadeCloudUpdateController
             }
 
             $action = strtolower(trim($this->request->postString('action', '')));
-            if ($action !== 'apply') JsonResponse::send(['ok' => false, 'error' => 'Acción no permitida.'], 400);
-            JsonResponse::send($service->apply($this->request->postString('current_password')));
+            if (!in_array($action, ['apply', 'apply_stash'], true)) {
+                JsonResponse::send(['ok' => false, 'error' => 'Acción no permitida.'], 400);
+            }
+            JsonResponse::send(
+                $service->apply(
+                    $this->request->postString('current_password'),
+                    $action === 'apply_stash'
+                )
+            );
         } catch (InvalidArgumentException $e) {
             JsonResponse::send(['ok' => false, 'error' => $e->getMessage()], 403);
         } catch (RuntimeException $e) {

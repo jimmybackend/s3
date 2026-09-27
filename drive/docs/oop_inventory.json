@@ -6610,7 +6610,7 @@
     },
     {
       "path": "drive/tests/web_os_contract_smoke.php",
-      "lines": 244,
+      "lines": 246,
       "kind": "test script",
       "classes": 0,
       "functions": [

@@ -24,6 +24,7 @@ class ArcadeCloudOsShell {
     this.windows.forEach((win) => this.bindWindow(win));
     this.bindStartMenu();
     this.bindExplorerNavigation();
+    this.bindHistoryNavigation();
     this.bindFiles();
     this.bindContextActions();
     this.bindTaskContext();
@@ -355,6 +356,16 @@ class ArcadeCloudOsShell {
     });
   }
 
+  bindHistoryNavigation() {
+    this.window.addEventListener('popstate', () => {
+      const url = new URL(this.window.location.href);
+      const route = String(url.searchParams.get('ruta') || this.window.rutaActual || '').trim();
+      if (route) {
+        this.refreshExplorer(route, { updateHistory: false });
+      }
+    });
+  }
+
   async refreshExplorer(route, options = {}) {
     if (this.explorerLoading) return false;
 
@@ -398,13 +409,15 @@ class ArcadeCloudOsShell {
       const nextRoute = String(next.dataset.explorerRoute || route).trim();
       this.window.rutaActual = nextRoute;
 
-      const browserUrl = new URL(this.window.location.href);
-      browserUrl.searchParams.set('ruta', nextRoute);
-      browserUrl.searchParams.delete('_os_fragment');
-      if (options.replaceHistory === false) {
-        this.window.history.pushState({ arcadeRoute: nextRoute }, '', browserUrl.toString());
-      } else {
-        this.window.history.replaceState({ arcadeRoute: nextRoute }, '', browserUrl.toString());
+      if (options.updateHistory !== false) {
+        const browserUrl = new URL(this.window.location.href);
+        browserUrl.searchParams.set('ruta', nextRoute);
+        browserUrl.searchParams.delete('_os_fragment');
+        if (options.replaceHistory === false) {
+          this.window.history.pushState({ arcadeRoute: nextRoute }, '', browserUrl.toString());
+        } else {
+          this.window.history.replaceState({ arcadeRoute: nextRoute }, '', browserUrl.toString());
+        }
       }
 
       this.bindFiles();

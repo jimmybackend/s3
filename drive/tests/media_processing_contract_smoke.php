@@ -119,7 +119,11 @@ mediaContract(str_contains($worker, "'-fflags','+genpts'"), 'división regenera 
 mediaContract(str_contains($worker, "if (\$this->ffmpegHasEncoder('mpeg4')) \$encoders[] = 'mpeg4';"), 'fallback prueba MPEG-4 si H.264 no puede recodificar');
 mediaContract(str_contains($worker, "'-max_muxing_queue_size','4096'"), 'fallback amplía cola de multiplexado para archivos complejos');
 mediaContract(str_contains($worker, 'FFmpeg/FFprobe falló (código '), 'errores FFmpeg conservan código de salida y diagnóstico');
-mediaContract(str_contains($worker, "probeDuration(\$sourcePath)"), 'duración real de división se obtiene con FFprobe');
+mediaContract(str_contains($worker, "probeDuration(\$sourcePath)"), 'duración real de división se obtiene en el worker');
+mediaContract(str_contains($worker, 'probeDurationWithFfmpeg('), 'duración tiene fallback mediante FFmpeg si FFprobe falla');
+mediaContract(str_contains($worker, "'-progress','pipe:1'"), 'fallback FFmpeg obtiene duración mediante progreso estructurado');
+mediaContract(str_contains($worker, "str_starts_with(\$line, 'out_time_us=')"), 'fallback interpreta duración en microsegundos');
+mediaContract(str_contains($worker, "'-f','null','/dev/null'"), 'fallback mide duración sin generar archivo de salida');
 mediaContract(str_contains($worker, "'ACL' => 'private'"), 'resultados se guardan privados en S3');
 mediaContract(str_contains($worker, '$this->generated->upsert('), 'worker registra resultados en FileS3');
 mediaContract(str_contains($generated, "INSERT INTO FileS3"), 'repositorio usa FileS3 real para archivos generados');

@@ -11,14 +11,14 @@ done
 tmp="$(mktemp -d)"
 trap 'rm -rf "$tmp"' EXIT
 
-src="$tmp/video.mp4"
+src="$tmp/object-with-opaque-key"
 mp3="$tmp/video.mp3"
 
 # Archivo deliberadamente pequeño: demuestra que no existe un mínimo artificial.
 ffmpeg -hide_banner -loglevel error -y \
   -f lavfi -i "testsrc=size=160x90:rate=10:duration=6" \
   -f lavfi -i "sine=frequency=880:sample_rate=44100:duration=6" \
-  -c:v mpeg4 -g 10 -c:a aac -shortest "$src"
+  -c:v mpeg4 -g 10 -c:a aac -shortest -f mp4 "$src"
 
 duration="$(ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "$src")"
 awk -v d="$duration" 'BEGIN { if (!(d > 5.0 && d < 7.0)) exit 1 }'
@@ -35,7 +35,9 @@ for i in 1 2 3; do
   esac
   out="$tmp/video-parte${i}.mp4"
   ffmpeg -hide_banner -loglevel error -y \
-    -ss "$start" -i "$src" -t "$length" -map 0 -c copy -avoid_negative_ts make_zero "$out"
+    -ss "$start" -i "$src" -t "$length" \
+    -map 0:v:0 -map 0:a? -sn -dn -map_metadata -1 -map_chapters -1 \
+    -c copy -avoid_negative_ts make_zero -movflags +faststart -f mp4 "$out"
   test -s "$out"
 done
 

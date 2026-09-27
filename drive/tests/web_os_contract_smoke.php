@@ -58,4 +58,32 @@ webOsContract(str_contains($paths['js'], 'data-window-drag-handle'), 'ventanas s
 webOsContract(str_contains($paths['css'], '.os-taskbar'), 'existe barra de tareas');
 webOsContract(str_contains($paths['css'], '@media (max-width:800px)'), 'shell conserva experiencia móvil');
 
+// Workbench dentro de so.php.
+webOsContract(str_contains($paths['shell'], 'data-file-action="textract"'), 'acciones de archivo incluyen Textract');
+webOsContract(str_contains($paths['shell'], 'data-file-action="transcribe"'), 'acciones de archivo incluyen Transcribe');
+webOsContract(str_contains($paths['shell'], 'data-file-action="polly"'), 'acciones de archivo incluyen Polly');
+webOsContract(str_contains($paths['shell'], 'data-file-action="translate"'), 'acciones de archivo incluyen Translate');
+webOsContract(str_contains($paths['shell'], 'data-file-action="rekognition"'), 'acciones de archivo incluyen Rekognition');
+webOsContract(str_contains($paths['shell'], 'data-file-action="comprehend"'), 'acciones de archivo incluyen Comprehend');
+webOsContract(str_contains($paths['shell'], 'id="modalMediaSplit"'), 'procesamiento multimedia conserva su configuración dentro del OS');
+webOsContract(str_contains($paths['shell'], 'id="modalTranscribir"'), 'Transcribe conserva su diálogo de configuración dentro del OS');
+webOsContract(str_contains($paths['shell'], 'id="modalPollyTTS"'), 'Polly conserva su diálogo de configuración dentro del OS');
+webOsContract(str_contains($paths['shell'], 'js/background-tasks.js'), 'OS carga Centro unificado de Tareas');
+webOsContract(str_contains($paths['shell'], 'js/media-processing.js'), 'OS reutiliza procesamiento multimedia validado');
+webOsContract(str_contains($paths['shell'], 'js/aws-comprehend.js'), 'OS reutiliza módulo Comprehend');
+webOsContract(str_contains($paths['shell'], 'Disco usado'), 'Mi nodo muestra espacio de disco usado');
+webOsContract(str_contains($paths['shell'], 'Disco total'), 'Mi nodo muestra tamaño total de disco');
+
+webOsContract(str_contains($paths['js'], 'createViewerWindow('), 'archivos se abren en ventanas del Web OS');
+webOsContract(str_contains($paths['js'], 'os-viewer-video'), 'video usa visor interno');
+webOsContract(str_contains($paths['js'], 'os-viewer-audio'), 'audio usa visor interno');
+webOsContract(str_contains($paths['js'], 'os-viewer-image'), 'imagen usa visor interno');
+webOsContract(str_contains($paths['js'], 'os-viewer-frame'), 'texto/PDF pueden vivir en ventana interna');
+webOsContract(!str_contains($paths['js'], "window.open("), 'apertura normal ya no crea pestañas nuevas');
+webOsContract(str_contains($paths['js'], "invokeMediaProcessing(entry, 'split_video')"), 'video puede abrir procesamiento desde sus acciones');
+webOsContract(str_contains($paths['js'], "invokeGlobal('abrirModalTranscribir'"), 'Transcribe se abre desde el archivo seleccionado');
+webOsContract(str_contains($paths['js'], 'weekday:'), 'reloj muestra fecha además de hora');
+webOsContract(str_contains($paths['css'], '#backgroundTaskButton'), 'Centro de Tareas queda sobre la barra del OS');
+webOsContract(str_contains($paths['css'], '.os-document-window'), 'ventanas de documentos tienen estilo propio');
+
 echo "WEB_OS_CONTRACT_OK\n";

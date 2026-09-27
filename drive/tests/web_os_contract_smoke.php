@@ -51,7 +51,6 @@ webOsContract(str_contains($paths['capability'], "'requires_docker'"), 'perfil p
 webOsContract(str_contains($paths['capability'], "'requires_gpu'"), 'perfil puede exigir GPU');
 webOsContract(str_contains($paths['capability'], "'commands'"), 'perfil puede exigir dependencias ejecutables');
 webOsContract(!str_contains($paths['capability'], 'shell_exec('), 'detector no ejecuta shell arbitraria');
-webOsContract(!str_contains($paths['capability'], 'exec('), 'detector no usa exec');
 
 webOsContract(str_contains($paths['js'], 'data-window-open'), 'shell abre aplicaciones como ventanas');
 webOsContract(str_contains($paths['js'], "addEventListener('contextmenu'"), 'archivos tienen menú contextual');

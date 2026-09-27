@@ -15,12 +15,16 @@ class ArcadeCloudOsShell {
     this.zCounter = 200;
     this.viewerCounter = 0;
     this.activeFile = null;
+    this.mediaOverlay = null;
+    this.explorerLoading = false;
   }
 
   init() {
     this.bindLaunchers();
     this.windows.forEach((win) => this.bindWindow(win));
     this.bindStartMenu();
+    this.bindExplorerNavigation();
+    this.bindHistoryNavigation();
     this.bindFiles();
     this.bindContextActions();
     this.bindTaskContext();
@@ -323,6 +327,9 @@ class ArcadeCloudOsShell {
 
   bindFiles() {
     this.document.querySelectorAll('.os-file-entry').forEach((entry) => {
+      if (entry.dataset.osFileBound === '1') return;
+      entry.dataset.osFileBound = '1';
+
       entry.addEventListener('dblclick', () => this.openFileEntry(entry, false));
 
       entry.addEventListener('contextmenu', (event) => {
@@ -336,6 +343,105 @@ class ArcadeCloudOsShell {
         this.showContext(entry, rect.right - 20, rect.top + 30);
       });
     });
+  }
+
+  bindExplorerNavigation() {
+    this.document.addEventListener('click', (event) => {
+      const link = event.target.closest('#explorerWindow [data-explorer-route]');
+      if (!link) return;
+
+      event.preventDefault();
+      const route = String(link.dataset.explorerRoute || '').trim();
+      if (route) this.refreshExplorer(route);
+    });
+  }
+
+  bindHistoryNavigation() {
+    this.window.addEventListener('popstate', () => {
+      const url = new URL(this.window.location.href);
+      const route = String(url.searchParams.get('ruta') || this.window.rutaActual || '').trim();
+      if (route) {
+        this.refreshExplorer(route, { updateHistory: false });
+      }
+    });
+  }
+
+  async refreshExplorer(route, options = {}) {
+    if (this.explorerLoading) return false;
+
+    route = String(route || '').trim();
+    if (!route) return false;
+
+    const current = this.document.getElementById('osExplorerLive');
+    if (!current) return false;
+
+    this.explorerLoading = true;
+    current.classList.add('is-loading');
+
+    try {
+      const url = new URL('so.php', this.window.location.href);
+      url.searchParams.set('ruta', route);
+      url.searchParams.set('_os_fragment', 'explorer');
+
+      const response = await fetch(url.toString(), {
+        method: 'GET',
+        credentials: 'same-origin',
+        cache: 'no-store',
+        headers: {
+          'X-Requested-With': 'XMLHttpRequest',
+          'X-ArcadeCloud-OS-Fragment': 'explorer'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('No se pudo abrir la carpeta.');
+      }
+
+      const html = await response.text();
+      const parsed = new DOMParser().parseFromString(html, 'text/html');
+      const next = parsed.getElementById('osExplorerLive');
+      if (!next) {
+        throw new Error('La respuesta del Explorador no es válida.');
+      }
+
+      current.replaceWith(next);
+
+      const nextRoute = String(next.dataset.explorerRoute || route).trim();
+      this.window.rutaActual = nextRoute;
+
+      if (options.updateHistory !== false) {
+        const browserUrl = new URL(this.window.location.href);
+        browserUrl.searchParams.set('ruta', nextRoute);
+        browserUrl.searchParams.delete('_os_fragment');
+        if (options.replaceHistory === false) {
+          this.window.history.pushState({ arcadeRoute: nextRoute }, '', browserUrl.toString());
+        } else {
+          this.window.history.replaceState({ arcadeRoute: nextRoute }, '', browserUrl.toString());
+        }
+      }
+
+      this.bindFiles();
+
+      if (
+        this.window.ArcadeCloudOsFolders &&
+        typeof this.window.ArcadeCloudOsFolders.rebind === 'function'
+      ) {
+        this.window.ArcadeCloudOsFolders.rebind();
+      }
+
+      this.document.dispatchEvent(new CustomEvent('arcadeos:explorer-updated', {
+        detail: { route: nextRoute }
+      }));
+
+      return true;
+    } catch (error) {
+      this.notify(error && error.message ? error.message : 'No se pudo actualizar el Explorador.', 'warning');
+      return false;
+    } finally {
+      this.explorerLoading = false;
+      const live = this.document.getElementById('osExplorerLive');
+      if (live) live.classList.remove('is-loading');
+    }
   }
 
   viewerIcon(ext) {
@@ -367,6 +473,19 @@ class ArcadeCloudOsShell {
 
     const useEditor = Boolean(editUrl) && (forceEdit || this.isTextExtension(ext));
     const sourceUrl = useEditor ? editUrl : openUrl;
+
+    if (!useEditor && this.isAudioExtension(ext)) {
+      this.openMediaOverlay(name, ext, sourceUrl, 'audio');
+      this.hideContext();
+      return;
+    }
+
+    if (!useEditor && this.isVideoExtension(ext)) {
+      this.openMediaOverlay(name, ext, sourceUrl, 'video');
+      this.hideContext();
+      return;
+    }
+
     const win = this.createViewerWindow(name, ext, sourceUrl, useEditor);
     this.registerWindow(win);
     this.hideContext();
@@ -374,6 +493,116 @@ class ArcadeCloudOsShell {
 
   isTextExtension(ext) {
     return ['txt','md','markdown','html','htm','css','js','json','csv','sql','php','py','srt','vtt','log','xml','yaml','yml'].includes(ext);
+  }
+
+  isAudioExtension(ext) {
+    return ['mp3','wav','ogg','opus','m4a','aac','flac'].includes(ext);
+  }
+
+  isVideoExtension(ext) {
+    return ['mp4','webm','mov','avi','mkv','m4v','mpeg','mpg'].includes(ext);
+  }
+
+  closeMediaOverlay() {
+    if (!this.mediaOverlay) return;
+    const media = this.mediaOverlay.querySelector('audio,video');
+    if (media) {
+      try { media.pause(); } catch (_) {}
+      media.removeAttribute('src');
+      try { media.load(); } catch (_) {}
+    }
+    this.mediaOverlay.remove();
+    this.mediaOverlay = null;
+  }
+
+  openMediaOverlay(name, ext, sourceUrl, kind) {
+    this.closeMediaOverlay();
+
+    const overlay = this.document.createElement('section');
+    overlay.className = 'os-media-overlay is-' + kind;
+    overlay.setAttribute('role', 'dialog');
+    overlay.setAttribute('aria-label', name);
+
+    const header = this.document.createElement('div');
+    header.className = 'os-media-overlay-header';
+
+    const title = this.document.createElement('div');
+    title.className = 'os-media-overlay-title';
+    title.innerHTML = '<i class="fas ' + (kind === 'video' ? 'fa-film' : 'fa-wave-square') + '"></i><span></span>';
+    const titleText = title.querySelector('span');
+    if (titleText) titleText.textContent = name;
+
+    const close = this.document.createElement('button');
+    close.type = 'button';
+    close.className = 'os-media-overlay-close';
+    close.setAttribute('aria-label', 'Cerrar reproductor');
+    close.innerHTML = '<i class="fas fa-xmark"></i>';
+    close.addEventListener('click', () => this.closeMediaOverlay());
+
+    header.appendChild(title);
+    header.appendChild(close);
+    overlay.appendChild(header);
+
+    const media = this.document.createElement(kind);
+    media.className = 'os-media-overlay-player';
+    media.src = sourceUrl;
+    media.controls = true;
+    media.preload = 'metadata';
+
+    if (kind === 'video') {
+      media.playsInline = true;
+    }
+
+    overlay.appendChild(media);
+    this.document.body.appendChild(overlay);
+    this.mediaOverlay = overlay;
+    this.bindMediaOverlayDrag(overlay, header);
+
+    try {
+      const promise = media.play();
+      if (promise && typeof promise.catch === 'function') promise.catch(() => {});
+    } catch (_) {}
+  }
+
+  bindMediaOverlayDrag(overlay, handle) {
+    if (!overlay || !handle) return;
+
+    handle.addEventListener('pointerdown', (event) => {
+      if (event.target.closest('button')) return;
+      if (this.window.matchMedia('(max-width: 700px)').matches) return;
+
+      const rect = overlay.getBoundingClientRect();
+      const startX = event.clientX;
+      const startY = event.clientY;
+
+      try { handle.setPointerCapture(event.pointerId); } catch (_) {}
+
+      const move = (moveEvent) => {
+        const left = Math.max(6, Math.min(
+          this.window.innerWidth - rect.width - 6,
+          rect.left + moveEvent.clientX - startX
+        ));
+        const top = Math.max(6, Math.min(
+          this.window.innerHeight - rect.height - 54,
+          rect.top + moveEvent.clientY - startY
+        ));
+
+        overlay.style.left = left + 'px';
+        overlay.style.top = top + 'px';
+        overlay.style.right = 'auto';
+        overlay.style.bottom = 'auto';
+      };
+
+      const stop = () => {
+        handle.removeEventListener('pointermove', move);
+        handle.removeEventListener('pointerup', stop);
+        handle.removeEventListener('pointercancel', stop);
+      };
+
+      handle.addEventListener('pointermove', move);
+      handle.addEventListener('pointerup', stop);
+      handle.addEventListener('pointercancel', stop);
+    });
   }
 
   createViewerWindow(name, ext, sourceUrl, useEditor) {
@@ -452,27 +681,6 @@ class ArcadeCloudOsShell {
       img.src = sourceUrl;
       img.alt = name;
       wrapper.appendChild(img);
-      return wrapper;
-    }
-
-    if (['mp3','wav','ogg','opus','m4a','aac','flac'].includes(ext)) {
-      const audio = this.document.createElement('audio');
-      audio.className = 'os-viewer-audio';
-      audio.src = sourceUrl;
-      audio.controls = true;
-      audio.preload = 'metadata';
-      wrapper.appendChild(audio);
-      return wrapper;
-    }
-
-    if (['mp4','webm','mov','avi','mkv','m4v','mpeg','mpg'].includes(ext)) {
-      const video = this.document.createElement('video');
-      video.className = 'os-viewer-video';
-      video.src = sourceUrl;
-      video.controls = true;
-      video.preload = 'metadata';
-      video.playsInline = true;
-      wrapper.appendChild(video);
       return wrapper;
     }
 

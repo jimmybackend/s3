@@ -80,8 +80,8 @@ webOsContract(str_contains($paths['shell'], 'Disco usado'), 'Mi nodo muestra esp
 webOsContract(str_contains($paths['shell'], 'Disco total'), 'Mi nodo muestra tamaño total de disco');
 
 webOsContract(str_contains($paths['js'], 'createViewerWindow('), 'archivos se abren en ventanas del Web OS');
-webOsContract(str_contains($paths['js'], 'os-viewer-video'), 'video usa visor interno');
-webOsContract(str_contains($paths['js'], 'os-viewer-audio'), 'audio usa visor interno');
+webOsContract(str_contains($paths['js'], 'openMediaOverlay('), 'audio/video usan reproductor flotante');
+webOsContract(str_contains($paths['js'], "overlay.className = 'os-media-overlay is-' + kind"), 'reproductor multimedia queda superpuesto al SO');
 webOsContract(str_contains($paths['js'], 'os-viewer-image'), 'imagen usa visor interno');
 webOsContract(str_contains($paths['js'], 'os-viewer-frame'), 'texto/PDF pueden vivir en ventana interna');
 webOsContract(!str_contains($paths['js'], "window.open("), 'apertura normal ya no crea pestañas nuevas');
@@ -142,5 +142,19 @@ webOsContract(str_contains($paths['folders_shared'], 'window.ArcadeFolderActions
 webOsContract(str_contains($paths['folder_document'], 'window.openFolderDocumentCreator'), 'creador de documento expone entrada reutilizable');
 webOsContract(!str_contains($paths['sync'], "if (!btn) {\n      return this;"), 'sincronización de carpeta funciona sin botón global');
 webOsContract(str_contains($paths['css'], '.os-folder-commandbar'), 'barra de acciones de carpeta tiene estilo Web OS');
+
+// Navegación viva, miniaturas y multimedia flotante.
+webOsContract(str_contains($paths['shell'], 'id="osExplorerLive"'), 'Explorador tiene región reemplazable sin recargar el SO');
+webOsContract(str_contains($paths['shell'], "thumb.php?key="), 'imágenes del Explorador reutilizan ThumbnailService');
+webOsContract(str_contains($paths['shell'], 'class="os-entry-thumbnail"'), 'miniaturas se muestran en los iconos de imagen');
+webOsContract(str_contains($paths['js'], 'async refreshExplorer('), 'shell actualiza sólo la ventana Explorador');
+webOsContract(str_contains($paths['js'], "current.replaceWith(next)"), 'navegación reemplaza sólo la región del Explorador');
+webOsContract(str_contains($paths['js'], "fetch(url.toString()"), 'navegación de carpetas usa solicitud parcial');
+webOsContract(str_contains($paths['js'], "bindHistoryNavigation()"), 'historial atrás/adelante conserva navegación viva');
+webOsContract(str_contains($paths['folders_js'], "ArcadeCloudOsShell.refreshExplorer"), 'acciones de carpeta delegan navegación al shell');
+webOsContract(str_contains($paths['folders_js'], 'rebind()'), 'acciones se vuelven a enlazar tras refrescar Explorador');
+webOsContract(str_contains($paths['css'], '.os-entry-thumbnail'), 'miniaturas tienen estilo dentro del Explorador');
+webOsContract(str_contains($paths['css'], '.os-media-overlay'), 'audio/video tienen componente flotante');
+webOsContract(str_contains($paths['css'], 'z-index:20000'), 'reproductor queda por encima de ventanas y modales');
 
 echo "WEB_OS_CONTRACT_OK\n";

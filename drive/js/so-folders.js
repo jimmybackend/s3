@@ -21,6 +21,14 @@ class ArcadeCloudOsFolderActions {
     return this;
   }
 
+  rebind() {
+    this.current = this.currentFolderFromDom();
+    this.bindFolderEntries();
+    this.bindCurrentFolderToolbar();
+    this.bindBlankAreaContext();
+    return this;
+  }
+
   normalizeRoute(value) {
     let route = String(value || '')
       .replace(/\\/g, '/')
@@ -80,6 +88,15 @@ class ArcadeCloudOsFolderActions {
 
   bindFolderEntries() {
     this.document.querySelectorAll('.os-folder-entry').forEach((entry) => {
+      if (entry.dataset.osFolderBound === '1') return;
+      entry.dataset.osFolderBound = '1';
+
+      entry.addEventListener('click', (event) => {
+        if (event.target.closest('.os-folder-entry-menu')) return;
+        event.preventDefault();
+        this.navigate(this.folderFromEntry(entry).route, false);
+      });
+
       entry.addEventListener('contextmenu', (event) => {
         event.preventDefault();
         event.stopPropagation();
@@ -106,7 +123,8 @@ class ArcadeCloudOsFolderActions {
 
   bindBlankAreaContext() {
     const body = this.document.querySelector('.os-explorer-body');
-    if (!body) return;
+    if (!body || body.dataset.osFolderBlankBound === '1') return;
+    body.dataset.osFolderBlankBound = '1';
 
     body.addEventListener('contextmenu', (event) => {
       if (event.target.closest('.os-entry')) return;
@@ -125,6 +143,9 @@ class ArcadeCloudOsFolderActions {
 
   bindCurrentFolderToolbar() {
     this.document.querySelectorAll('[data-current-folder-action]').forEach((button) => {
+      if (button.dataset.osFolderActionBound === '1') return;
+      button.dataset.osFolderActionBound = '1';
+
       button.addEventListener('click', async (event) => {
         event.preventDefault();
         if (button.disabled) return;
@@ -222,7 +243,7 @@ class ArcadeCloudOsFolderActions {
     }
 
     if (action === 'open') {
-      this.navigate(folder.route);
+      this.navigate(folder.route, false);
       return;
     }
 
@@ -356,9 +377,21 @@ class ArcadeCloudOsFolderActions {
     });
   }
 
-  navigate(route) {
+  navigate(route, replaceHistory = true) {
     route = this.normalizeRoute(route || this.current.route);
     if (!route) return;
+
+    if (
+      this.window.ArcadeCloudOsShell &&
+      typeof this.window.ArcadeCloudOsShell.refreshExplorer === 'function'
+    ) {
+      this.window.ArcadeCloudOsShell
+        .refreshExplorer(route, { replaceHistory })
+        .then((ok) => {
+          if (ok) this.current = this.currentFolderFromDom();
+        });
+      return;
+    }
 
     const url = new URL('so.php', this.window.location.href);
     url.searchParams.set('ruta', route);

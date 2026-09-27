@@ -47,6 +47,7 @@ $currentRoute = $app->userStoragePath()->normalizeForUser(
     (string)($_GET['ruta'] ?? $userRoot),
     $userId
 );
+$session->set('ruta_actual', $currentRoute);
 $visibleRoute = $app->folderQueryService()->displayPathForUser($userId, $currentRoute);
 
 $page = max(1, (int)($_GET['pagina'] ?? 1));
@@ -178,15 +179,16 @@ $currentFolderName = $currentIsRoot
         </div>
       </div>
 
+      <div id="osExplorerLive" class="os-explorer-live" data-explorer-route="<?= $e($currentRoute) ?>">
       <div class="os-explorer-toolbar">
         <?php if ($currentPrefix !== $rootPrefix): ?>
-          <a class="os-tool-button" href="so.php?ruta=<?= rawurlencode($parentRoute) ?>" title="Subir una carpeta">
+          <a class="os-tool-button" href="so.php?ruta=<?= rawurlencode($parentRoute) ?>" data-explorer-route="<?= $e($parentRoute) ?>" title="Subir una carpeta">
             <i class="fas fa-arrow-up"></i>
           </a>
         <?php else: ?>
           <span class="os-tool-button is-disabled" aria-hidden="true"><i class="fas fa-arrow-up"></i></span>
         <?php endif; ?>
-        <a class="os-tool-button" href="so.php?ruta=<?= rawurlencode($currentRoute) ?>" title="Actualizar">
+        <a class="os-tool-button" href="so.php?ruta=<?= rawurlencode($currentRoute) ?>" data-explorer-route="<?= $e($currentRoute) ?>" title="Actualizar">
           <i class="fas fa-rotate"></i>
         </a>
         <div class="os-address">
@@ -245,6 +247,7 @@ $currentFolderName = $currentIsRoot
               $locked = FileViewHelper::isLocked($row);
               $key = FileViewHelper::buildS3Key((string)($row['Ruta'] ?? ''), (string)($row['Encriptado'] ?? ''));
               $keyQ = rawurlencode($key);
+              $thumbUrl = 'thumb.php?key=' . $keyQ . '&w=160&h=120&fit=cover';
               $openUrl = $locked ? '' : 'ver_archivo.php?archivo=' . $keyQ;
               $downloadUrl = $locked ? '' : 'descargar_archivo.php?archivo=' . $keyQ . '&nombre=' . rawurlencode($name);
               $editUrl = (!$locked && in_array($ext, $textExtensions, true))
@@ -282,9 +285,20 @@ $currentFolderName = $currentIsRoot
                     data-polly="<?= $canPolly ? '1' : '0' ?>"
                     title="<?= $e($name) ?>">
               <span class="os-entry-menu" aria-hidden="true"><i class="fas fa-ellipsis-vertical"></i></span>
-              <span class="os-entry-icon os-file-type-<?= $e($icon['category']) ?>">
-                <i class="fas <?= $e($locked ? 'fa-lock' : $icon['icon']) ?>"></i>
-              </span>
+              <?php if ($isImage && !$locked): ?>
+                <span class="os-entry-thumb-wrap">
+                  <img class="os-entry-thumbnail"
+                       src="<?= $e($thumbUrl) ?>"
+                       width="96" height="72"
+                       loading="lazy"
+                       decoding="async"
+                       alt="Miniatura de <?= $e($name) ?>">
+                </span>
+              <?php else: ?>
+                <span class="os-entry-icon os-file-type-<?= $e($icon['category']) ?>">
+                  <i class="fas <?= $e($locked ? 'fa-lock' : $icon['icon']) ?>"></i>
+                </span>
+              <?php endif; ?>
               <span class="os-entry-name"><?= $e($name) ?></span>
               <span class="os-entry-meta"><?= $e($locked ? 'Protegido' : $formatBytes((int)($row['Tamano'] ?? 0))) ?></span>
             </button>
@@ -303,6 +317,7 @@ $currentFolderName = $currentIsRoot
       <div class="os-statusbar">
         <span><?= count($folders) ?> carpetas · <?= (int)$fileState['total'] ?> archivos</span>
         <a href="s3.php"><i class="fas fa-arrow-up-right-from-square"></i> Abrir Drive clásico</a>
+      </div>
       </div>
     </section>
 

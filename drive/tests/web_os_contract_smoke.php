@@ -9,6 +9,7 @@ $paths = [
     'js' => $root . '/js/so.js',
     'capability' => $root . '/src/System/NodeCapabilityService.php',
     'drive' => $root . '/s3.php',
+    'logout' => $root . '/src/Http/Controller/AuthController.php',
 ];
 
 foreach ($paths as $name => $path) {
@@ -85,5 +86,28 @@ webOsContract(str_contains($paths['js'], "invokeGlobal('abrirModalTranscribir'")
 webOsContract(str_contains($paths['js'], 'weekday:'), 'reloj muestra fecha además de hora');
 webOsContract(str_contains($paths['css'], '#backgroundTaskButton'), 'Centro de Tareas queda sobre la barra del OS');
 webOsContract(str_contains($paths['css'], '.os-document-window'), 'ventanas de documentos tienen estilo propio');
+
+// Escritorio simplificado y controles de ventanas.
+webOsContract(!str_contains($paths['shell'], 'class="os-topbar"'), 'Web OS ya no usa barra superior');
+webOsContract(str_contains($paths['shell'], '<span>Mi nodo</span>'), 'escritorio incluye Mi nodo');
+webOsContract(str_contains($paths['shell'], '<span>Mis documentos</span>'), 'escritorio incluye Mis documentos');
+webOsContract(str_contains($paths['shell'], '<span>Aplicaciones</span>'), 'escritorio incluye Aplicaciones');
+$desktopNode = strpos($paths['shell'], '<span>Mi nodo</span>');
+$desktopDocs = strpos($paths['shell'], '<span>Mis documentos</span>');
+$desktopApps = strpos($paths['shell'], '<span>Aplicaciones</span>');
+webOsContract(
+    $desktopNode !== false && $desktopDocs !== false && $desktopApps !== false
+    && $desktopNode < $desktopDocs && $desktopDocs < $desktopApps,
+    'accesos del escritorio respetan Mi nodo -> Mis documentos -> Aplicaciones'
+);
+webOsContract(str_contains($paths['shell'], 'class="fas fa-gear"'), 'botón inferior izquierdo usa engranaje');
+webOsContract(str_contains($paths['shell'], 'os-launcher-profile'), 'perfil del usuario vive dentro del lanzador');
+webOsContract(str_contains($paths['shell'], 'data-task-action="maximize"'), 'barra de tareas ofrece maximizar/restaurar');
+webOsContract(str_contains($paths['shell'], 'data-task-action="close"'), 'barra de tareas ofrece cerrar');
+webOsContract(str_contains($paths['js'], 'showTaskContext('), 'barra de tareas abre menú de ventana');
+webOsContract(str_contains($paths['js'], "ext === 'pdf' ? 'min(820px, 72vw)'"), 'PDF abre con tamaño inicial más compacto');
+webOsContract(str_contains($paths['css'], 'flex:0 0 auto'), 'controles de ventana no se encogen fuera de vista');
+webOsContract(str_contains($paths['shell'], 'href="logout.php"'), 'lanzador conserva cierre de sesión');
+webOsContract(str_contains($paths['logout'], "\$this->redirect('index.php')"), 'cerrar sesión termina en index.php');
 
 echo "WEB_OS_CONTRACT_OK\n";

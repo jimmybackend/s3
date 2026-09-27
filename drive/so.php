@@ -148,50 +148,23 @@ $diskUsedPercent = $diskTotalBytes > 0 ? round(($diskUsedBytes / $diskTotalBytes
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
 </head>
 <body class="arcade-os">
-  <header class="os-topbar">
-    <div class="os-brand">
-      <img src="ellogo.png" alt="" width="34" height="28">
-      <div>
-        <strong>ArcadeCloud OS</strong>
-        <small>Estación de trabajo en la nube</small>
-      </div>
-    </div>
-    <div class="os-node-chip" title="Nodo actual">
-      <i class="fas fa-server"></i>
-      <span><?= $e($nodeName) ?></span>
-    </div>
-    <div class="os-user">
-      <?php if ($userAvatarUrl !== ''): ?>
-        <img src="<?= $e($userAvatarUrl) ?>" alt="Perfil">
-      <?php else: ?>
-        <span class="os-avatar"><?= $e($userInitials) ?></span>
-      <?php endif; ?>
-      <span><?= $e($userAlias) ?></span>
-    </div>
-  </header>
-
   <main class="os-desktop" id="osDesktop">
-    <button class="os-desktop-icon" type="button" data-window-open="explorerWindow">
-      <span class="os-icon-tile"><i class="fas fa-folder-open"></i></span>
-      <span>Mis archivos</span>
-    </button>
-
     <button class="os-desktop-icon" type="button" data-window-open="nodeWindow">
       <span class="os-icon-tile"><i class="fas fa-server"></i></span>
       <span>Mi nodo</span>
     </button>
 
-    <a class="os-desktop-icon" href="s3.php">
-      <span class="os-icon-tile"><i class="fas fa-hard-drive"></i></span>
-      <span>Drive clásico</span>
-    </a>
+    <button class="os-desktop-icon" type="button" data-window-open="explorerWindow">
+      <span class="os-icon-tile"><i class="fas fa-folder-open"></i></span>
+      <span>Mis documentos</span>
+    </button>
 
     <button class="os-desktop-icon" type="button" data-window-open="appsWindow">
       <span class="os-icon-tile"><i class="fas fa-shapes"></i></span>
       <span>Aplicaciones</span>
     </button>
 
-    <section class="os-window is-open is-active" id="explorerWindow" data-window-title="Explorador" style="left:7vw;top:8vh;width:min(1050px,86vw);height:min(680px,72vh);">
+    <section class="os-window" id="explorerWindow" data-window-title="Explorador" style="left:7vw;top:8vh;width:min(1050px,86vw);height:min(680px,72vh);">
       <div class="os-window-titlebar" data-window-drag-handle>
         <div class="os-window-title"><i class="fas fa-folder-open"></i><span>Explorador</span></div>
         <div class="os-window-controls">
@@ -1051,20 +1024,34 @@ $diskUsedPercent = $diskTotalBytes > 0 ? round(($diskUsedBytes / $diskTotalBytes
 
   <div class="os-launcher" id="osLauncher" hidden>
     <div class="os-launcher-header">
-      <strong>ArcadeCloud OS</strong>
-      <span><?= $e($userAlias) ?></span>
+      <div class="os-launcher-profile">
+        <?php if ($userAvatarUrl !== ''): ?>
+          <img src="<?= $e($userAvatarUrl) ?>" alt="Perfil">
+        <?php else: ?>
+          <span class="os-avatar"><?= $e($userInitials) ?></span>
+        <?php endif; ?>
+        <div>
+          <strong><?= $e($userAlias) ?></strong>
+          <span>ArcadeCloud OS</span>
+        </div>
+      </div>
     </div>
-    <button type="button" data-window-open="explorerWindow"><i class="fas fa-folder-open"></i> Explorador</button>
     <button type="button" data-window-open="nodeWindow"><i class="fas fa-server"></i> Mi nodo</button>
+    <button type="button" data-window-open="explorerWindow"><i class="fas fa-folder-open"></i> Mis archivos</button>
     <button type="button" data-window-open="appsWindow"><i class="fas fa-shapes"></i> Aplicaciones</button>
     <a href="s3.php"><i class="fas fa-hard-drive"></i> Drive clásico</a>
     <a href="logout.php" class="is-danger"><i class="fas fa-right-from-bracket"></i> Cerrar sesión</a>
   </div>
 
+  <div class="os-task-context" id="osTaskContext" hidden>
+    <div class="os-context-name" id="osTaskContextName">Ventana</div>
+    <button type="button" data-task-action="maximize"><i class="far fa-square"></i><span>Maximizar</span></button>
+    <button type="button" data-task-action="close" class="is-danger"><i class="fas fa-xmark"></i><span>Cerrar</span></button>
+  </div>
+
   <footer class="os-taskbar">
-    <button type="button" class="os-start" id="osStart" aria-expanded="false">
-      <img src="ellogo.png" alt="" width="25" height="21">
-      <span>ArcadeCloud</span>
+    <button type="button" class="os-start" id="osStart" aria-expanded="false" title="Herramientas" aria-label="Herramientas">
+      <i class="fas fa-gear"></i>
     </button>
     <div class="os-task-buttons" id="osTaskButtons"></div>
     <div class="os-clock" id="osClock"></div>

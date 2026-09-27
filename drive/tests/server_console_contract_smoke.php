@@ -10,6 +10,8 @@ $files = [
     'service' => $root . '/src/Admin/ServerConsoleService.php',
     'helper_client' => $root . '/src/Admin/PrivilegedServerHelper.php',
     'helper' => $root . '/bin/arcadecloud-drive-admin-helper.php',
+    'web_os' => $root . '/so.php',
+    'web_os_terminal' => $root . '/js/so-terminal.js',
 ];
 
 foreach ($files as $name => $path) {
@@ -88,6 +90,12 @@ $contracts = [
     [$files['ec2'], 'data-console-command="media tools"', 'botón FFmpeg/FFprobe'],
     [$files['ec2'], 'data-console-command="logs media"', 'botón logs multimedia'],
     [$files['endpoint'], 'personal_aws_bootstrap.php', 'bootstrap sin DB'],
+    [$files['web_os'], 'id="terminalWindow"', 'ventana terminal en Web OS'],
+    [$files['web_os'], 'ARCADECLOUD_OS_SERVER_CONSOLE', 'configuración terminal Web OS'],
+    [$files['web_os'], "if (\$isSuperAdmin):", 'visibilidad terminal Web OS sólo superadmin'],
+    [$files['web_os_terminal'], "endpoint", 'Web OS reutiliza endpoint restringido'],
+    [$files['web_os_terminal'], "body.append('csrf'", 'Web OS envía CSRF'],
+    [$files['web_os_terminal'], "command === 'memory-clear'", 'Web OS revalida mantenimiento sensible'],
 ];
 
 foreach ($contracts as [$haystack, $needle, $label]) {
@@ -108,6 +116,10 @@ if (
 foreach (['shell_exec(', 'exec(', 'system(', 'passthru(', 'popen('] as $forbidden) {
     if (str_contains($files['helper'], $forbidden)) {
         fwrite(STDERR, "Helper contiene ejecución de shell prohibida: {$forbidden}\n");
+        exit(1);
+    }
+    if (str_contains($files['web_os_terminal'], $forbidden)) {
+        fwrite(STDERR, "Terminal Web OS contiene ejecución local prohibida: {$forbidden}\n");
         exit(1);
     }
 }

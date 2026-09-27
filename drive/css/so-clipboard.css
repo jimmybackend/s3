@@ -9,6 +9,20 @@
 .os-clipboard-paste:not([hidden]) i{
   color:#8be9ff;
 }
+.os-toolbar-paste{
+  flex:0 0 auto;height:34px;padding:0 10px;border:1px solid rgba(38,198,255,.45);
+  border-radius:8px;background:rgba(38,198,255,.11);color:var(--os-text);
+  display:inline-flex;align-items:center;justify-content:center;gap:7px;
+  font-size:.74rem;font-weight:800;white-space:nowrap;cursor:pointer
+}
+.os-toolbar-paste:hover:not(:disabled){
+  border-color:var(--os-accent);background:rgba(38,198,255,.18);color:var(--os-accent-2)
+}
+.os-toolbar-paste[hidden]{display:none!important}
+.os-toolbar-paste:disabled{opacity:.4;cursor:not-allowed}
+@media (max-width:800px){
+  .os-toolbar-paste{order:2;margin-left:auto;height:32px;padding:0 9px}
+}
 .os-transfer-hud{
   position:fixed;
   right:18px;

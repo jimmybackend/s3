@@ -101,3 +101,18 @@ git stash drop 'stash@{N}'
 ```
 
 Los stashes creados por el updater web se identifican con el prefijo `arcadecloud-web-update-`.
+
+
+## Verificación del updater web después de una migración
+
+Cuando se instala una versión nueva del helper del updater, conviene verificar el flujo con un commit remoto inocuo, por ejemplo un cambio únicamente documental. El objetivo es comprobar desde la propia interfaz que:
+
+1. **Buscar actualizaciones** detecta que `origin/main` está por delante.
+2. Si el checkout está limpio, aparece **Actualizar ahora**.
+3. Si el checkout sólo tiene cambios locales y no tiene commits locales por delante, aparece **Guardar cambios y actualizar**.
+4. Tras aplicar la actualización, **Instalado** y **Disponible** muestran el mismo commit.
+5. Una segunda comprobación debe indicar que ArcadeCloud está actualizado.
+
+Un commit documental no necesita reiniciar ni alterar la configuración del nodo por sí mismo; el updater sigue ejecutando la reconciliación normal después del fast-forward. Esta prueba sirve para validar el mecanismo web sin introducir un cambio funcional adicional.
+
+Si la interfaz sigue mostrando **Atención: hay cambios locales sin guardar** después de quedar actualizado, eso describe el working tree del checkout local. La actualización puede estar instalada correctamente aunque aún exista un archivo modificado o no rastreado. La versión moderna del updater enumera esos cambios y permite guardarlos explícitamente en stash en la siguiente actualización remota segura.

@@ -383,6 +383,14 @@ $currentFolderName = $currentIsRoot
       <div class="os-window-body">
         <div class="os-app-grid">
           <button type="button" class="os-app-card is-ready" data-window-open="explorerWindow"><i class="fas fa-folder-open"></i><strong>Mis datos</strong><span>Disponible</span></button>
+          <button type="button" class="os-app-card is-ready" data-window-open="federationWindow" data-open-federation>
+            <i class="fas fa-globe"></i><strong>FederationCloud</strong><span>Compartidos y red</span>
+          </button>
+          <?php if ($isSuperAdmin): ?>
+          <button type="button" class="os-app-card is-ready" data-window-open="terminalWindow" data-open-terminal>
+            <i class="fas fa-terminal"></i><strong>Terminal</strong><span>Mi nodo</span>
+          </button>
+          <?php endif; ?>
           <a class="os-app-card is-ready" href="s3.php"><i class="fas fa-hard-drive"></i><strong>Drive clásico</strong><span>Disponible</span></a>
           <button type="button" class="os-app-card" disabled><i class="fas fa-file-word"></i><strong>Office</strong><span>Próximamente</span></button>
           <button type="button" class="os-app-card" disabled><i class="fas fa-pen-ruler"></i><strong>Diagramas</strong><span>Próximamente</span></button>
@@ -393,6 +401,60 @@ $currentFolderName = $currentIsRoot
           <button type="button" class="os-app-card" disabled><i class="fas fa-cubes"></i><strong>3D</strong><span>Próximamente</span></button>
           <button type="button" class="os-app-card" disabled><i class="fas fa-earth-americas"></i><strong>Mapas</strong><span>Próximamente</span></button>
         </div>
+      </div>
+    </section>
+
+    <section class="os-window os-federation-window"
+             id="federationWindow"
+             data-window-title="FederationCloud"
+             style="left:5vw;top:5vh;width:min(1180px,90vw);height:min(760px,82vh);">
+      <div class="os-window-titlebar" data-window-drag-handle>
+        <div class="os-window-title"><i class="fas fa-globe"></i><span>FederationCloud</span></div>
+        <div class="os-window-controls">
+          <button type="button" data-window-minimize aria-label="Minimizar"><i class="fas fa-minus"></i></button>
+          <button type="button" data-window-maximize aria-label="Maximizar"><i class="far fa-square"></i></button>
+          <button type="button" data-window-close aria-label="Cerrar"><i class="fas fa-xmark"></i></button>
+        </div>
+      </div>
+
+      <div class="os-federation-toolbar" id="federationToolbar" role="toolbar" aria-label="Herramientas FederationCloud">
+        <button type="button" class="is-active" data-federation-view="search" title="Buscar en el catálogo global">
+          <i class="fas fa-search"></i><span>Buscar</span>
+        </button>
+        <button type="button" data-federation-view="requests" title="Solicitudes de acceso">
+          <i class="fas fa-inbox"></i><span>Solicitudes</span>
+        </button>
+        <button type="button" data-federation-view="shares" title="Archivos compartidos">
+          <i class="fas fa-folder-tree"></i><span>Compartidos</span>
+        </button>
+        <button type="button" data-federation-view="replicas" title="Trabajos de réplica">
+          <i class="fas fa-copy"></i><span>Réplicas</span>
+        </button>
+        <span class="os-federation-toolbar-spacer"></span>
+        <button type="button" data-federation-view="about" title="Nodo, red y administración">
+          <i class="fas fa-circle-info"></i><span>Acerca de</span>
+        </button>
+        <?php if ($isSuperAdmin): ?>
+        <button type="button" data-federation-view="moderation" title="Moderación FederationCloud">
+          <i class="fas fa-shield-halved"></i><span>Moderación</span>
+        </button>
+        <?php endif; ?>
+      </div>
+
+      <div class="os-window-body os-federation-body">
+        <div class="os-federation-loading" id="federationFrameLoading" hidden>
+          <i class="fas fa-circle-notch fa-spin"></i><span>Cargando FederationCloud…</span>
+        </div>
+        <iframe id="federationFrame"
+                class="os-federation-frame"
+                src="federationcloud/portal.php?embed=1&amp;view=search"
+                title="Aplicación FederationCloud"
+                referrerpolicy="same-origin"></iframe>
+      </div>
+
+      <div class="os-statusbar">
+        <span><i class="fas fa-network-wired mr-1"></i>FederationCloud · sesión actual</span>
+        <span id="federationWindowStatus">Catálogo global</span>
       </div>
     </section>
 
@@ -1313,9 +1375,6 @@ Escribe help o usa uno de los botones disponibles.</pre>
     <button type="button" data-window-open="nodeWindow"><i class="fas fa-server"></i> Mi nodo</button>
     <button type="button" data-window-open="explorerWindow"><i class="fas fa-folder-open"></i> Mis datos</button>
     <button type="button" data-window-open="appsWindow"><i class="fas fa-shapes"></i> Aplicaciones</button>
-    <?php if ($isSuperAdmin): ?>
-      <button type="button" data-window-open="terminalWindow" data-open-terminal><i class="fas fa-terminal"></i> Terminal</button>
-    <?php endif; ?>
     <a href="s3.php"><i class="fas fa-hard-drive"></i> Drive clásico</a>
     <a href="logout.php" class="is-danger"><i class="fas fa-right-from-bracket"></i> Cerrar sesión</a>
   </div>
@@ -1364,6 +1423,7 @@ Escribe help o usa uno de los botones disponibles.</pre>
   <script src="js/folder-document.js?v=<?= (int)filemtime(__DIR__ . '/js/folder-document.js') ?>"></script>
   <script src="js/sincronizar.js?v=<?= (int)filemtime(__DIR__ . '/js/sincronizar.js') ?>"></script>
   <script src="js/so-folders.js?v=<?= (int)filemtime(__DIR__ . '/js/so-folders.js') ?>"></script>
+  <script src="js/so-federation.js?v=<?= (int)filemtime(__DIR__ . '/js/so-federation.js') ?>"></script>
   <?php if ($isSuperAdmin): ?>
   <script src="js/so-terminal.js?v=<?= (int)filemtime(__DIR__ . '/js/so-terminal.js') ?>"></script>
   <?php endif; ?>

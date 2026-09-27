@@ -236,7 +236,7 @@
     },
     {
       "path": "drive/bin/arcadecloud-drive-updater.php",
-      "size": 10216,
+      "size": 11972,
       "active": false,
       "references": [
         "drive/tests/installer_service_reconcile_contract_smoke.php"
@@ -1339,7 +1339,7 @@
     },
     {
       "path": "drive/src/Admin/ArcadeCloudUpdaterService.php",
-      "size": 6029,
+      "size": 6114,
       "active": false,
       "references": [
         "drive/tests/federation_moderation_contract_smoke.php",
@@ -2308,7 +2308,7 @@
     },
     {
       "path": "drive/src/Http/Controller/ArcadeCloudUpdateController.php",
-      "size": 2233,
+      "size": 2411,
       "active": false,
       "references": []
     },
@@ -2696,7 +2696,7 @@
     },
     {
       "path": "drive/src/Media/MediaProcessingService.php",
-      "size": 3579,
+      "size": 3577,
       "active": false,
       "references": [
         "drive/tests/media_processing_contract_smoke.php"
@@ -3345,13 +3345,13 @@
     },
     {
       "path": "drive/tests/installer_service_reconcile_contract_smoke.php",
-      "size": 13683,
+      "size": 14582,
       "active": false,
       "references": []
     },
     {
       "path": "drive/tests/media_processing_contract_smoke.php",
-      "size": 14546,
+      "size": 14990,
       "active": false,
       "references": []
     },

@@ -10,6 +10,10 @@ $paths = [
     'capability' => $root . '/src/System/NodeCapabilityService.php',
     'drive' => $root . '/s3.php',
     'logout' => $root . '/src/Http/Controller/AuthController.php',
+    'folders_js' => $root . '/js/so-folders.js',
+    'folders_shared' => $root . '/js/carpetas.js',
+    'folder_document' => $root . '/js/folder-document.js',
+    'sync' => $root . '/js/sincronizar.js',
 ];
 
 foreach ($paths as $name => $path) {
@@ -109,5 +113,34 @@ webOsContract(str_contains($paths['js'], "ext === 'pdf' ? 'min(820px, 72vw)'"), 
 webOsContract(str_contains($paths['css'], 'flex:0 0 auto'), 'controles de ventana no se encogen fuera de vista');
 webOsContract(str_contains($paths['shell'], 'href="logout.php"'), 'lanzador conserva cierre de sesión');
 webOsContract(str_contains($paths['logout'], "\$this->redirect('index.php')"), 'cerrar sesión termina en index.php');
+
+// Acciones de carpetas dentro del Web OS.
+webOsContract(str_contains($paths['shell'], 'class="os-folder-commandbar"'), 'Explorador tiene barra de acciones de carpeta');
+webOsContract(str_contains($paths['shell'], 'data-current-folder-action="sync"'), 'barra de carpeta incluye sincronizar');
+webOsContract(str_contains($paths['shell'], 'data-current-folder-action="create-document"'), 'barra de carpeta incluye crear archivo');
+webOsContract(str_contains($paths['shell'], 'data-current-folder-action="move"'), 'barra de carpeta incluye mover');
+webOsContract(str_contains($paths['shell'], 'data-current-folder-action="rename"'), 'barra de carpeta incluye editar nombre');
+webOsContract(str_contains($paths['shell'], 'data-current-folder-action="delete"'), 'barra de carpeta incluye eliminar');
+webOsContract(str_contains($paths['shell'], 'id="folderContextMenu"'), 'carpetas tienen menú contextual propio');
+webOsContract(str_contains($paths['shell'], 'data-folder-route='), 'cada carpeta visible conserva su ruta');
+webOsContract(str_contains($paths['shell'], 'id="modalCrearDocumentoCarpeta"'), 'crear archivo reutiliza el flujo de documento por carpeta');
+webOsContract(str_contains($paths['shell'], 'id="modalMoverCarpeta"'), 'mover carpeta reutiliza el modal existente');
+webOsContract(str_contains($paths['shell'], 'id="modalRenombrar"'), 'editar carpeta reutiliza el modal de renombrar');
+webOsContract(str_contains($paths['shell'], 'id="modalEliminarCarpeta"'), 'eliminar carpeta reutiliza confirmación existente');
+webOsContract(str_contains($paths['shell'], 'js/move-tasks.js'), 'movimientos de carpeta mantienen tareas en segundo plano');
+webOsContract(str_contains($paths['shell'], 'js/sincronizar.js'), 'sincronización reutiliza módulo existente');
+webOsContract(str_contains($paths['shell'], 'js/folder-document.js'), 'creación de archivo reutiliza servicio existente');
+
+webOsContract(str_contains($paths['folders_js'], 'bindBlankAreaContext()'), 'espacio vacío de carpeta ofrece menú contextual');
+webOsContract(str_contains($paths['folders_js'], "addEventListener('contextmenu'"), 'menú contextual responde a clic derecho');
+webOsContract(str_contains($paths['folders_js'], "triggerSyncFolderS3"), 'acción sincronizar usa sincronización existente');
+webOsContract(str_contains($paths['folders_js'], "openFolderDocumentCreator"), 'crear archivo usa creador existente');
+webOsContract(str_contains($paths['folders_js'], "ArcadeFolderActions"), 'mover/editar/eliminar usan acciones compartidas');
+webOsContract(str_contains($paths['folders_js'], "drive:move-task-completed"), 'movimiento refresca el Explorador al terminar');
+
+webOsContract(str_contains($paths['folders_shared'], 'window.ArcadeFolderActions'), 'módulo clásico expone acciones de carpeta seguras al SO');
+webOsContract(str_contains($paths['folder_document'], 'window.openFolderDocumentCreator'), 'creador de documento expone entrada reutilizable');
+webOsContract(!str_contains($paths['sync'], "if (!btn) {\n      return this;"), 'sincronización de carpeta funciona sin botón global');
+webOsContract(str_contains($paths['css'], '.os-folder-commandbar'), 'barra de acciones de carpeta tiene estilo Web OS');
 
 echo "WEB_OS_CONTRACT_OK\n";

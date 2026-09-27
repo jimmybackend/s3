@@ -150,6 +150,36 @@ class CarpetasModule {
         }
       }
 
+      function safeShowModal(modalEl) {
+        if (!modalEl) return false;
+
+        if (window.jQuery && window.jQuery.fn && window.jQuery.fn.modal) {
+          try {
+            window.jQuery(modalEl).modal('show');
+            return true;
+          } catch (_) {}
+        }
+
+        if (window.bootstrap && window.bootstrap.Modal) {
+          try {
+            const inst = window.bootstrap.Modal.getInstance(modalEl) || new window.bootstrap.Modal(modalEl);
+            inst.show();
+            return true;
+          } catch (_) {}
+        }
+
+        return false;
+      }
+
+      function dispatchFolderMutation(kind, detail) {
+        try {
+          document.dispatchEvent(new CustomEvent('drive:folder-mutated', {
+            detail: Object.assign({ kind: String(kind || '') }, detail || {})
+          }));
+          document.dispatchEvent(new Event('drive:storage-changed'));
+        } catch (_) {}
+      }
+
       function safeSetText(el, txt) {
         if (!el) return;
         el.textContent = (txt == null ? '' : String(txt));
@@ -440,8 +470,11 @@ class CarpetasModule {
         // relatedTarget (Bootstrap) o fallback
         const btn = evt && evt.relatedTarget ? evt.relatedTarget : null;
 
-        const origen = getRutaFromElement(btn) || (btn ? (btn.getAttribute('data-route') || btn.getAttribute('data-ruta') || '') : '');
-        const nombre = (btn && (btn.getAttribute('data-name') || btn.getAttribute('data-nombre'))) || baseNameOf(origen);
+        const origen = getRutaFromElement(btn)
+          || String(modal.dataset.folderRoute || '').trim();
+        const nombre = (btn && (btn.getAttribute('data-name') || btn.getAttribute('data-nombre')))
+          || String(modal.dataset.folderName || '').trim()
+          || baseNameOf(origen);
 
         const $origen  = $id(CFG.ids.moverOrigen);
         const $nombre  = $id(CFG.ids.moverNombre);
@@ -520,6 +553,12 @@ class CarpetasModule {
           destino
         });
 
+        try {
+          document.dispatchEvent(new CustomEvent('drive:folder-move-scheduled', {
+            detail: { route: origen, destination: destino }
+          }));
+        } catch (_) {}
+
         safeHideModal(modal);
 
       } catch (err) {
@@ -541,8 +580,10 @@ class CarpetasModule {
         const btn = evt && evt.relatedTarget ? evt.relatedTarget : null;
 
         // tu renombrar-carpeta.js usa data-actual + data-nombre
-        const ruta = btn ? (btn.getAttribute('data-actual') || '') : '';
-        const nombre = btn ? (btn.getAttribute('data-nombre') || '') : '';
+        const ruta = (btn ? (btn.getAttribute('data-actual') || '') : '')
+          || String(modal.dataset.folderRoute || '').trim();
+        const nombre = (btn ? (btn.getAttribute('data-nombre') || '') : '')
+          || String(modal.dataset.folderName || '').trim();
 
         const $ruta  = $id(CFG.ids.renombrarRuta);
         const $act   = $id(CFG.ids.nombreActual);
@@ -658,6 +699,12 @@ class CarpetasModule {
           } catch (_) {}
         }
 
+        dispatchFolderMutation('rename', {
+          route: ruta,
+          current_route: rutaActualizada,
+          name: nuevo
+        });
+
       } catch (err) {
         console.error(err);
         alert(err && err.message ? err.message : 'Error al renombrar carpeta.');
@@ -694,8 +741,10 @@ class CarpetasModule {
 
         const btn = evt && evt.relatedTarget ? evt.relatedTarget : null;
 
-        const ruta = btn ? (btn.getAttribute('data-route') || '') : '';
-        const nombre = btn ? (btn.getAttribute('data-name') || '') : '';
+        const ruta = (btn ? (btn.getAttribute('data-route') || '') : '')
+          || String(modal.dataset.folderRoute || '').trim();
+        const nombre = (btn ? (btn.getAttribute('data-name') || '') : '')
+          || String(modal.dataset.folderName || '').trim();
 
         const $ruta = $id(CFG.ids.eliminarRuta);
         const $nom  = $id(CFG.ids.eliminarNombre);
@@ -778,6 +827,11 @@ class CarpetasModule {
           } catch (_) {}
         }
 
+        dispatchFolderMutation('delete', {
+          route: ruta,
+          current_route: rutaActualizada
+        });
+
       } catch (err) {
         console.error(err);
         alert(err && err.message ? err.message : 'Error al eliminar carpeta.');
@@ -797,9 +851,10 @@ class CarpetasModule {
       const btn = evt && evt.relatedTarget ? evt.relatedTarget : null;
 
       const ruta = String(
+        getRutaFromElement(btn) ||
+        modal.dataset.folderRoute ||
         document.getElementById('archivosContexto')?.dataset?.rutaActual ||
         window.rutaActual ||
-        getRutaFromElement(btn) ||
         ''
       ).trim();
 
@@ -925,6 +980,12 @@ class CarpetasModule {
             });
           } catch (_) {}
         }
+
+        dispatchFolderMutation('create', {
+          route: ruta,
+          current_route: rutaActualizada,
+          name: nueva
+        });
 
       } catch (err) {
         console.error(err);
@@ -1079,6 +1140,36 @@ class CarpetasModule {
 
       // API pública principal
       window.cargarCarpetas = cargarCarpetasCompat;
+
+      window.ArcadeFolderActions = {
+        openMove: function (route, name) {
+          const modal = $id(CFG.ids.modalMoverCarpeta);
+          if (!modal) return false;
+          modal.dataset.folderRoute = String(route || '');
+          modal.dataset.folderName = String(name || '');
+          return safeShowModal(modal);
+        },
+        openRename: function (route, name) {
+          const modal = $id(CFG.ids.modalRenombrar);
+          if (!modal) return false;
+          modal.dataset.folderRoute = String(route || '');
+          modal.dataset.folderName = String(name || '');
+          return safeShowModal(modal);
+        },
+        openDelete: function (route, name) {
+          const modal = $id(CFG.ids.modalEliminarCarpeta);
+          if (!modal) return false;
+          modal.dataset.folderRoute = String(route || '');
+          modal.dataset.folderName = String(name || '');
+          return safeShowModal(modal);
+        },
+        openCreateFolder: function (route) {
+          const modal = $id(CFG.ids.modalCrearCarpeta);
+          if (!modal) return false;
+          modal.dataset.folderRoute = String(route || '');
+          return safeShowModal(modal);
+        }
+      };
 
       // Inicialización inmediata (no depende de DOMContentLoaded)
       bindDelegationGlobal();

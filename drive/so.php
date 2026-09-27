@@ -265,28 +265,6 @@ $currentFolderName = $currentIsRoot
         </nav>
       </div>
 
-      <div class="os-folder-commandbar"
-           data-current-folder-route="<?= $e($currentRoute) ?>"
-           data-current-folder-name="<?= $e($currentFolderName) ?>"
-           data-current-folder-root="<?= $currentIsRoot ? '1' : '0' ?>">
-        <button type="button" data-current-folder-action="sync" title="Sincronizar esta carpeta desde S3">
-          <i class="fas fa-rotate"></i><span>Sincronizar</span>
-        </button>
-        <button type="button" data-current-folder-action="create-document" title="Crear archivo de texto en esta carpeta">
-          <i class="fas fa-file-circle-plus"></i><span>Crear archivo</span>
-        </button>
-        <button type="button" data-current-folder-action="move" title="<?= $currentIsRoot ? 'La raíz del usuario no se puede mover' : 'Mover esta carpeta' ?>" <?= $currentIsRoot ? 'disabled' : '' ?>>
-          <i class="fas fa-arrows-alt"></i><span>Mover</span>
-        </button>
-        <button type="button" data-current-folder-action="rename" title="<?= $currentIsRoot ? 'La raíz del usuario no se puede renombrar' : 'Editar nombre de esta carpeta' ?>" <?= $currentIsRoot ? 'disabled' : '' ?>>
-          <i class="fas fa-pen"></i><span>Editar</span>
-        </button>
-        <button type="button" class="is-danger" data-current-folder-action="delete" title="<?= $currentIsRoot ? 'La raíz del usuario no se puede eliminar' : 'Eliminar esta carpeta' ?>" <?= $currentIsRoot ? 'disabled' : '' ?>>
-          <i class="fas fa-trash"></i><span>Eliminar</span>
-        </button>
-        <span class="os-folder-command-status"><span id="syncStatus" aria-live="polite"></span></span>
-      </div>
-
       <div class="os-window-body os-explorer-body"
            data-current-folder-route="<?= $e($currentRoute) ?>"
            data-current-folder-name="<?= $e($currentFolderName) ?>"

@@ -423,7 +423,7 @@ class ArcadeCloudOsShell {
 
   bindExplorerNavigation() {
     this.document.addEventListener('click', (event) => {
-      const link = event.target.closest('#explorerWindow [data-explorer-route]');
+      const link = event.target.closest('#explorerWindow a[data-explorer-route]');
       if (!link) return;
 
       event.preventDefault();

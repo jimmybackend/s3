@@ -64,7 +64,10 @@ final class FederationModerationController
         }
         $token = bin2hex(random_bytes(24));
         $session->set('federation_moderation_csrf', $token);
-        (new FederationModerationPageRenderer())->render($token);
+        (new FederationModerationPageRenderer())->render(
+            $token,
+            $this->request->queryString('embed') === '1'
+        );
     }
 
     public function adminApi(): never

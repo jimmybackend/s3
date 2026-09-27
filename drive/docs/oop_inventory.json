@@ -2637,7 +2637,7 @@
     },
     {
       "path": "drive/src/Console/MediaProcessingWorkerCommand.php",
-      "lines": 681,
+      "lines": 754,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -3942,7 +3942,7 @@
     },
     {
       "path": "drive/src/Http/Controller/BackgroundTaskController.php",
-      "lines": 821,
+      "lines": 872,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -4715,7 +4715,7 @@
     },
     {
       "path": "drive/src/Media/MediaProcessingJobRepository.php",
-      "lines": 340,
+      "lines": 460,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -6263,7 +6263,7 @@
     },
     {
       "path": "drive/tests/media_processing_contract_smoke.php",
-      "lines": 134,
+      "lines": 148,
       "kind": "test script",
       "classes": 0,
       "functions": [

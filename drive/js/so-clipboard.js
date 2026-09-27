@@ -1,0 +1,784 @@
+class ArcadeCloudOsClipboard {
+  constructor(win, doc) {
+    this.window = win;
+    this.document = doc;
+    this.storageKey = 'arcadecloud.osClipboard';
+    this.transferKey = 'arcadecloud.osClipboardTransfer';
+    this.longPressMs = 560;
+    this.moveTolerance = 12;
+    this.clipboard = this.restoreClipboard();
+    this.activeTransfer = this.restoreTransfer();
+    this.pressState = new WeakMap();
+    this.suppressUntil = new WeakMap();
+    this.clickTimers = new WeakMap();
+    this.actionsBound = false;
+    this.eventsBound = false;
+  }
+
+  init() {
+    this.ensureStyles();
+    this.ensureUi();
+    this.bindActions();
+    this.bindGlobalEvents();
+    this.bindEntries();
+    this.updatePasteControls();
+
+    if (this.activeTransfer && this.activeTransfer.jobId) {
+      this.showTransfer({
+        operation: this.activeTransfer.operation,
+        name: this.activeTransfer.name,
+        progress: null,
+        message: 'Recuperando estado de la transferencia…'
+      });
+    }
+
+    return this;
+  }
+
+  ensureStyles() {
+    if (this.document.querySelector('link[data-os-clipboard-style]')) return;
+    const link = this.document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = 'css/so-clipboard.css?v=20260927-1';
+    link.setAttribute('data-os-clipboard-style', '1');
+    this.document.head.appendChild(link);
+  }
+
+  ensureUi() {
+    this.injectFileActions();
+    this.injectFolderActions();
+    this.injectPasteToolbar();
+    this.ensureTransferHud();
+  }
+
+  makeContextButton(action, kind, icon, label, extraClass) {
+    const button = this.document.createElement('button');
+    button.type = 'button';
+    button.dataset.osClipboardAction = action;
+    if (kind) button.dataset.osClipboardKind = kind;
+    if (extraClass) button.className = extraClass;
+
+    const i = this.document.createElement('i');
+    i.className = icon;
+    const span = this.document.createElement('span');
+    span.textContent = label;
+    button.appendChild(i);
+    button.appendChild(span);
+    return button;
+  }
+
+  injectFileActions() {
+    const menu = this.document.getElementById('fileContextMenu');
+    if (!menu || menu.querySelector('[data-os-clipboard-action="copy"][data-os-clipboard-kind="file"]')) return;
+
+    const divider = menu.querySelector('[data-service-divider]');
+    const anchor = divider || null;
+    const copy = this.makeContextButton('copy', 'file', 'fas fa-copy', 'Copiar');
+    const cut = this.makeContextButton('cut', 'file', 'fas fa-scissors', 'Cortar / mover');
+    const share = this.makeContextButton('share', 'file', 'fas fa-share-nodes', 'Compartir');
+    const remove = this.makeContextButton('delete', 'file', 'fas fa-trash', 'Eliminar', 'is-danger');
+
+    [copy, cut, share, remove].forEach((button) => menu.insertBefore(button, anchor));
+  }
+
+  injectFolderActions() {
+    const menu = this.document.getElementById('folderContextMenu');
+    if (!menu || menu.querySelector('[data-os-clipboard-action="copy"][data-os-clipboard-kind="folder"]')) return;
+
+    const copy = this.makeContextButton('copy', 'folder', 'fas fa-copy', 'Copiar carpeta');
+    const cut = this.makeContextButton('cut', 'folder', 'fas fa-scissors', 'Cortar / mover');
+    const paste = this.makeContextButton('paste', 'folder', 'fas fa-paste', 'Pegar dentro');
+    paste.classList.add('os-clipboard-paste');
+    paste.dataset.osPasteTarget = 'folder';
+
+    menu.appendChild(copy);
+    menu.appendChild(cut);
+    menu.appendChild(paste);
+  }
+
+  injectPasteToolbar() {
+    this.document.querySelectorAll('.os-folder-commandbar').forEach((bar) => {
+      if (bar.querySelector('[data-os-paste-current]')) return;
+
+      const button = this.document.createElement('button');
+      button.type = 'button';
+      button.className = 'os-clipboard-paste';
+      button.dataset.osClipboardAction = 'paste';
+      button.dataset.osPasteCurrent = '1';
+      button.title = 'Pegar aquí';
+
+      const icon = this.document.createElement('i');
+      icon.className = 'fas fa-paste';
+      const text = this.document.createElement('span');
+      text.textContent = 'Pegar';
+      button.appendChild(icon);
+      button.appendChild(text);
+      bar.appendChild(button);
+    });
+  }
+
+  ensureTransferHud() {
+    let hud = this.document.getElementById('osTransferHud');
+    if (hud) return hud;
+
+    hud = this.document.createElement('section');
+    hud.id = 'osTransferHud';
+    hud.className = 'os-transfer-hud';
+    hud.hidden = true;
+    hud.setAttribute('role', 'status');
+    hud.setAttribute('aria-live', 'polite');
+
+    const head = this.document.createElement('div');
+    head.className = 'os-transfer-head';
+    const icon = this.document.createElement('i');
+    icon.className = 'fas fa-cloud-arrow-up';
+    const title = this.document.createElement('strong');
+    title.dataset.osTransferTitle = '1';
+    const percent = this.document.createElement('span');
+    percent.className = 'os-transfer-percent';
+    percent.dataset.osTransferPercent = '1';
+    head.appendChild(icon);
+    head.appendChild(title);
+    head.appendChild(percent);
+
+    const detail = this.document.createElement('div');
+    detail.className = 'os-transfer-detail';
+    detail.dataset.osTransferDetail = '1';
+
+    const row = this.document.createElement('div');
+    row.className = 'os-transfer-row';
+    const track = this.document.createElement('div');
+    track.className = 'os-transfer-track';
+    track.dataset.osTransferTrack = '1';
+    const bar = this.document.createElement('div');
+    bar.className = 'os-transfer-bar';
+    bar.dataset.osTransferBar = '1';
+    track.appendChild(bar);
+    row.appendChild(track);
+
+    hud.appendChild(head);
+    hud.appendChild(detail);
+    hud.appendChild(row);
+    this.document.body.appendChild(hud);
+    return hud;
+  }
+
+  bindActions() {
+    if (this.actionsBound) return;
+    this.actionsBound = true;
+
+    this.document.addEventListener('click', async (event) => {
+      const target = event.target instanceof Element ? event.target : null;
+      const button = target ? target.closest('[data-os-clipboard-action]') : null;
+      if (!button) return;
+
+      event.preventDefault();
+      event.stopPropagation();
+
+      const action = String(button.dataset.osClipboardAction || '');
+      const kind = String(button.dataset.osClipboardKind || '');
+
+      if (action === 'paste') {
+        let destination = this.currentRoute();
+        if (button.dataset.osPasteTarget === 'folder') {
+          const folder = this.window.ArcadeCloudOsFolders?.activeFolder;
+          if (folder && folder.route) destination = String(folder.route);
+          this.window.ArcadeCloudOsFolders?.hideContext?.();
+        }
+        await this.paste(destination);
+        return;
+      }
+
+      if (kind === 'file') {
+        const entry = this.window.ArcadeCloudOsShell?.activeFile;
+        if (!entry) return;
+
+        if (action === 'copy' || action === 'cut') {
+          this.captureFile(entry, action === 'copy' ? 'copy' : 'move');
+        } else if (action === 'share') {
+          await this.shareFile(entry);
+        } else if (action === 'delete') {
+          await this.deleteFile(entry);
+        }
+        this.window.ArcadeCloudOsShell?.hideContext?.();
+        return;
+      }
+
+      if (kind === 'folder') {
+        const folder = this.window.ArcadeCloudOsFolders?.activeFolder;
+        if (!folder) return;
+        if (action === 'copy' || action === 'cut') {
+          this.captureFolder(folder, action === 'copy' ? 'copy' : 'move');
+        }
+        this.window.ArcadeCloudOsFolders?.hideContext?.();
+      }
+    });
+  }
+
+  bindGlobalEvents() {
+    if (this.eventsBound) return;
+    this.eventsBound = true;
+
+    this.document.addEventListener('click', (event) => {
+      const target = event.target instanceof Element ? event.target : null;
+      const entry = target ? target.closest('.os-file-entry, .os-folder-entry') : null;
+      if (!entry) return;
+      const until = Number(this.suppressUntil.get(entry) || 0);
+      if (until > Date.now()) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        this.suppressUntil.delete(entry);
+      }
+    }, true);
+
+    this.document.addEventListener('dblclick', (event) => {
+      const target = event.target instanceof Element ? event.target : null;
+      const entry = target ? target.closest('.os-file-entry') : null;
+      if (!entry || target?.closest('.os-entry-menu')) return;
+
+      const timer = this.clickTimers.get(entry);
+      if (timer) this.window.clearTimeout(timer);
+      this.clickTimers.delete(entry);
+
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      this.window.ArcadeCloudOsShell?.openFileEntry?.(entry, false);
+    }, true);
+
+    this.document.addEventListener('arcadeos:explorer-updated', () => {
+      this.ensureUi();
+      this.bindEntries();
+      this.updatePasteControls();
+    });
+
+    this.document.addEventListener('drive:move-task-progress', (event) => {
+      this.onTransferProgress(event.detail || {});
+    });
+
+    this.document.addEventListener('drive:move-task-completed', (event) => {
+      this.onTransferCompleted(event.detail || {});
+    });
+
+    this.document.addEventListener('drive:move-task-failed', (event) => {
+      this.onTransferFailed(event.detail || {}, false);
+    });
+
+    this.document.addEventListener('drive:move-task-cancelled', (event) => {
+      this.onTransferFailed(event.detail || {}, true);
+    });
+  }
+
+  bindEntries() {
+    this.document.querySelectorAll('.os-file-entry').forEach((entry) => {
+      if (entry.dataset.osClipboardBound === '1') return;
+      entry.dataset.osClipboardBound = '1';
+      this.bindLongPress(entry, 'file');
+
+      entry.addEventListener('click', (event) => {
+        const target = event.target instanceof Element ? event.target : null;
+        if (target?.closest('.os-entry-menu')) return;
+
+        const until = Number(this.suppressUntil.get(entry) || 0);
+        if (until > Date.now()) return;
+
+        event.preventDefault();
+        const previous = this.clickTimers.get(entry);
+        if (previous) this.window.clearTimeout(previous);
+
+        const timer = this.window.setTimeout(() => {
+          this.clickTimers.delete(entry);
+          this.window.ArcadeCloudOsShell?.openFileEntry?.(entry, false);
+        }, 170);
+        this.clickTimers.set(entry, timer);
+      });
+    });
+
+    this.document.querySelectorAll('.os-folder-entry').forEach((entry) => {
+      if (entry.dataset.osClipboardBound === '1') return;
+      entry.dataset.osClipboardBound = '1';
+      this.bindLongPress(entry, 'folder');
+    });
+  }
+
+  bindLongPress(entry, kind) {
+    const clear = () => {
+      const state = this.pressState.get(entry);
+      if (!state) return;
+      if (state.timer) this.window.clearTimeout(state.timer);
+      entry.classList.remove('is-os-pressed');
+      this.pressState.delete(entry);
+    };
+
+    entry.addEventListener('pointerdown', (event) => {
+      if (event.button !== undefined && event.button !== 0) return;
+      const target = event.target instanceof Element ? event.target : null;
+      if (target?.closest('.os-entry-menu, .os-folder-entry-menu')) return;
+
+      clear();
+      const state = {
+        x: event.clientX,
+        y: event.clientY,
+        pointerId: event.pointerId,
+        fired: false,
+        timer: null
+      };
+
+      state.timer = this.window.setTimeout(() => {
+        state.fired = true;
+        entry.classList.add('is-os-pressed');
+        this.suppressUntil.set(entry, Date.now() + 900);
+
+        if (kind === 'file') {
+          this.window.ArcadeCloudOsShell?.showContext?.(entry, state.x, state.y);
+        } else {
+          const folders = this.window.ArcadeCloudOsFolders;
+          if (folders && typeof folders.folderFromEntry === 'function') {
+            folders.showContext(folders.folderFromEntry(entry), state.x, state.y, false);
+          }
+        }
+      }, this.longPressMs);
+
+      this.pressState.set(entry, state);
+    });
+
+    entry.addEventListener('pointermove', (event) => {
+      const state = this.pressState.get(entry);
+      if (!state || state.pointerId !== event.pointerId || state.fired) return;
+      const dx = Math.abs(event.clientX - state.x);
+      const dy = Math.abs(event.clientY - state.y);
+      if (dx > this.moveTolerance || dy > this.moveTolerance) clear();
+    });
+
+    ['pointerup', 'pointercancel', 'lostpointercapture'].forEach((name) => {
+      entry.addEventListener(name, () => clear());
+    });
+  }
+
+  captureFile(entry, mode) {
+    if (String(entry.dataset.locked || '0') === '1') {
+      this.notify('Desbloquea el archivo antes de copiarlo o moverlo.', 'warning');
+      return;
+    }
+
+    const key = String(entry.dataset.key || '').trim();
+    if (!key) {
+      this.notify('No se pudo identificar el archivo.', 'warning');
+      return;
+    }
+
+    this.setClipboard({
+      kind: 'file',
+      mode,
+      key,
+      name: String(entry.dataset.name || key),
+      sourceRoute: this.currentRoute()
+    });
+  }
+
+  captureFolder(folder, mode) {
+    const root = String(this.window.ARCADECLOUD_OS_ROOT_ROUTE || '').trim();
+    const route = String(folder.route || '').trim();
+    if (!route || folder.isRoot || (root && this.sameRoute(route, root))) {
+      this.notify('La carpeta raíz no se puede copiar ni mover.', 'warning');
+      return;
+    }
+
+    this.setClipboard({
+      kind: 'folder',
+      mode,
+      route,
+      name: String(folder.name || 'Carpeta'),
+      sourceRoute: String(folder.parent || this.currentRoute())
+    });
+  }
+
+  setClipboard(item) {
+    this.clipboard = Object.assign({ version: 1, createdAt: Date.now() }, item);
+    try {
+      this.window.sessionStorage.setItem(this.storageKey, JSON.stringify(this.clipboard));
+    } catch (_) {}
+
+    this.updatePasteControls();
+    const verb = item.mode === 'copy' ? 'copiar' : 'mover';
+    this.notify(
+      String(item.name || 'Elemento') + ' listo para ' + verb + '. Navega a la carpeta destino y pulsa Pegar.',
+      'success'
+    );
+  }
+
+  clearClipboard() {
+    this.clipboard = null;
+    try { this.window.sessionStorage.removeItem(this.storageKey); } catch (_) {}
+    this.updatePasteControls();
+  }
+
+  restoreClipboard() {
+    try {
+      const raw = this.window.sessionStorage.getItem(this.storageKey);
+      const parsed = raw ? JSON.parse(raw) : null;
+      if (!parsed || !['file', 'folder'].includes(parsed.kind) || !['copy', 'move'].includes(parsed.mode)) {
+        return null;
+      }
+      return parsed;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  updatePasteControls() {
+    const hasClipboard = Boolean(this.clipboard);
+    this.document.querySelectorAll('.os-clipboard-paste').forEach((button) => {
+      button.hidden = !hasClipboard;
+      button.disabled = !hasClipboard;
+      if (hasClipboard) {
+        button.title = 'Pegar ' + String(this.clipboard.name || 'elemento') + ' aquí';
+      } else {
+        button.title = 'No hay nada para pegar';
+      }
+    });
+  }
+
+  async paste(destination) {
+    const item = this.clipboard;
+    if (!item) {
+      this.notify('Primero copia o corta un archivo o carpeta.', 'warning');
+      return;
+    }
+
+    destination = String(destination || this.currentRoute()).trim();
+    if (!destination) {
+      this.notify('No se pudo identificar la carpeta destino.', 'warning');
+      return;
+    }
+
+    if (!this.window.DriveMoveTasks || typeof this.window.DriveMoveTasks.start !== 'function') {
+      this.notify('El servicio de transferencias no está disponible.', 'danger');
+      return;
+    }
+
+    const payload = {
+      type: item.kind === 'file' ? 'files' : 'folder',
+      operation: item.mode,
+      ruta_actual: this.currentRoute()
+    };
+
+    if (item.kind === 'file') {
+      payload.archivos_json = JSON.stringify([item.key]);
+      payload.nueva_ruta = destination;
+    } else {
+      payload.origen = item.route;
+      payload.destino = destination;
+    }
+
+    this.showTransfer({
+      operation: item.mode,
+      name: item.name,
+      progress: 0,
+      message: item.mode === 'copy' ? 'Preparando copia…' : 'Preparando movimiento…'
+    });
+
+    try {
+      const started = await this.window.DriveMoveTasks.start(payload);
+      this.activeTransfer = {
+        jobId: String(started.job_id),
+        operation: item.mode,
+        kind: item.kind,
+        name: item.name,
+        clearClipboardOnSuccess: item.mode === 'move'
+      };
+      this.persistTransfer();
+    } catch (error) {
+      this.hideTransferSoon(2500);
+      this.notify('No se pudo iniciar la transferencia: ' + (error?.message || error), 'danger');
+    }
+  }
+
+  onTransferProgress(detail) {
+    if (!this.activeTransfer || String(detail.job_id || '') !== String(this.activeTransfer.jobId || '')) {
+      return;
+    }
+
+    const raw = detail.progress;
+    const progress = raw === null || raw === undefined || raw === ''
+      ? null
+      : Math.max(0, Math.min(100, Number(raw)));
+
+    this.showTransfer({
+      operation: String(detail.operation || this.activeTransfer.operation || 'move'),
+      name: this.activeTransfer.name,
+      progress: Number.isFinite(progress) ? progress : null,
+      message: String(detail.mensaje || ''),
+      processed: Number(detail.processed_items || 0),
+      requested: Number(detail.requested_items || 0)
+    });
+  }
+
+  async onTransferCompleted(detail) {
+    if (!this.activeTransfer || String(detail.job_id || '') !== String(this.activeTransfer.jobId || '')) {
+      return;
+    }
+
+    const finished = this.activeTransfer;
+    this.activeTransfer = null;
+    this.persistTransfer();
+
+    this.showTransfer({
+      operation: String(detail.operation || finished.operation || 'move'),
+      name: finished.name,
+      progress: 100,
+      message: String(detail.mensaje || 'Transferencia completada.')
+    });
+
+    if (finished.clearClipboardOnSuccess) this.clearClipboard();
+
+    const route = this.currentRoute();
+    if (route && this.window.ArcadeCloudOsShell?.refreshExplorer) {
+      try {
+        await this.window.ArcadeCloudOsShell.refreshExplorer(route, { replaceHistory: true });
+      } catch (_) {}
+    }
+
+    this.hideTransferSoon(1600);
+  }
+
+  onTransferFailed(detail, cancelled) {
+    if (!this.activeTransfer || String(detail.job_id || '') !== String(this.activeTransfer.jobId || '')) {
+      return;
+    }
+
+    const failed = this.activeTransfer;
+    this.activeTransfer = null;
+    this.persistTransfer();
+
+    this.showTransfer({
+      operation: failed.operation,
+      name: failed.name,
+      progress: null,
+      message: cancelled
+        ? String(detail.mensaje || 'Transferencia cancelada.')
+        : String(detail.error || detail.mensaje || 'La transferencia falló.')
+    });
+    this.hideTransferSoon(4500);
+  }
+
+  persistTransfer() {
+    try {
+      if (this.activeTransfer) {
+        this.window.sessionStorage.setItem(this.transferKey, JSON.stringify(this.activeTransfer));
+      } else {
+        this.window.sessionStorage.removeItem(this.transferKey);
+      }
+    } catch (_) {}
+  }
+
+  restoreTransfer() {
+    try {
+      const raw = this.window.sessionStorage.getItem(this.transferKey);
+      const parsed = raw ? JSON.parse(raw) : null;
+      return parsed && parsed.jobId ? parsed : null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  showTransfer(state) {
+    const hud = this.ensureTransferHud();
+    const title = hud.querySelector('[data-os-transfer-title]');
+    const detail = hud.querySelector('[data-os-transfer-detail]');
+    const percent = hud.querySelector('[data-os-transfer-percent]');
+    const track = hud.querySelector('[data-os-transfer-track]');
+    const bar = hud.querySelector('[data-os-transfer-bar]');
+
+    const copying = String(state.operation || 'move') === 'copy';
+    if (title) title.textContent = (copying ? 'Copiando · ' : 'Moviendo · ') + String(state.name || 'elemento');
+
+    let message = String(state.message || '');
+    const requested = Number(state.requested || 0);
+    const processed = Number(state.processed || 0);
+    if (requested > 0 && processed >= 0) {
+      message += (message ? ' · ' : '') + processed + ' de ' + requested;
+    }
+    if (detail) detail.textContent = message;
+
+    const value = state.progress;
+    const determinate = value !== null && value !== undefined && Number.isFinite(Number(value));
+    if (track) track.classList.toggle('is-indeterminate', !determinate);
+    if (bar) bar.style.width = determinate ? Math.max(0, Math.min(100, Number(value))) + '%' : '38%';
+    if (percent) percent.textContent = determinate ? Math.round(Number(value)) + '%' : '…';
+
+    hud.hidden = false;
+  }
+
+  hideTransferSoon(delay) {
+    this.window.setTimeout(() => {
+      const hud = this.document.getElementById('osTransferHud');
+      if (hud && !this.activeTransfer) hud.hidden = true;
+    }, Math.max(0, Number(delay || 0)));
+  }
+
+  async shareFile(entry) {
+    if (String(entry.dataset.locked || '0') === '1') {
+      this.notify('Desbloquea el archivo antes de compartirlo.', 'warning');
+      return;
+    }
+
+    const key = String(entry.dataset.key || '').trim();
+    const ext = String(entry.dataset.ext || '').toLowerCase();
+    if (!key) return;
+
+    const rawDays = this.window.prompt('¿Cuántos días debe funcionar el enlace compartido?', '1');
+    if (rawDays === null) return;
+    const days = Math.max(1, Math.min(3650, parseInt(rawDays || '1', 10) || 1));
+
+    try {
+      const body = new URLSearchParams({
+        archivo: key,
+        tipo: this.shareTypeForExtension(ext),
+        dias: String(days)
+      });
+      const response = await this.window.fetch('generar_token.php', {
+        method: 'POST',
+        credentials: 'same-origin',
+        cache: 'no-store',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        body
+      });
+      const text = await response.text();
+      let json = null;
+      try { json = JSON.parse(text); } catch (_) {}
+      if (!response.ok || !json || json.estado !== 'ok' || !json.url) {
+        throw new Error(json?.mensaje || text || ('HTTP ' + response.status));
+      }
+
+      const copied = await this.copyText(String(json.url));
+      if (copied) {
+        this.notify('Enlace compartido creado y copiado al portapapeles.', 'success');
+      } else {
+        this.window.prompt('Enlace compartido', String(json.url));
+      }
+    } catch (error) {
+      this.notify('No se pudo compartir: ' + (error?.message || error), 'danger');
+    }
+  }
+
+  async deleteFile(entry) {
+    if (String(entry.dataset.locked || '0') === '1') {
+      this.notify('Desbloquea el archivo antes de eliminarlo.', 'warning');
+      return;
+    }
+
+    const key = String(entry.dataset.key || '').trim();
+    const name = String(entry.dataset.name || key);
+    if (!key) return;
+    if (!this.window.confirm('¿Eliminar “' + name + '”?')) return;
+
+    try {
+      const response = await this.window.fetch('eliminar_archivo.php', {
+        method: 'POST',
+        credentials: 'same-origin',
+        cache: 'no-store',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: new URLSearchParams({ archivo: key })
+      });
+      const text = await response.text();
+      let json = null;
+      try { json = JSON.parse(text); } catch (_) {}
+      if (!response.ok || !json || json.ok !== true) {
+        throw new Error(json?.error || json?.mensaje || text || ('HTTP ' + response.status));
+      }
+
+      this.notify('Archivo eliminado correctamente.', 'success');
+      const route = this.currentRoute();
+      if (route && this.window.ArcadeCloudOsShell?.refreshExplorer) {
+        await this.window.ArcadeCloudOsShell.refreshExplorer(route, { replaceHistory: true });
+      }
+    } catch (error) {
+      this.notify('No se pudo eliminar: ' + (error?.message || error), 'danger');
+    }
+  }
+
+  shareTypeForExtension(ext) {
+    if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'avif', 'tif', 'tiff'].includes(ext)) return 'imagen';
+    if (['mp4', 'webm', 'mov', 'avi', 'mkv'].includes(ext)) return 'video';
+    if (['mp3', 'wav', 'ogg', 'opus', 'm4a', 'flac', 'amr'].includes(ext)) return 'audio';
+    return 'otro';
+  }
+
+  async copyText(value) {
+    try {
+      if (this.window.navigator.clipboard?.writeText) {
+        await this.window.navigator.clipboard.writeText(value);
+        return true;
+      }
+    } catch (_) {}
+
+    try {
+      const area = this.document.createElement('textarea');
+      area.value = value;
+      area.style.position = 'fixed';
+      area.style.opacity = '0';
+      this.document.body.appendChild(area);
+      area.focus();
+      area.select();
+      const ok = this.document.execCommand('copy');
+      area.remove();
+      return Boolean(ok);
+    } catch (_) {
+      return false;
+    }
+  }
+
+  currentRoute() {
+    const command = this.document.querySelector('.os-folder-commandbar');
+    const route = String(command?.dataset.currentFolderRoute || '').trim();
+    if (route) return route;
+
+    const explorer = this.document.getElementById('osExplorerLive');
+    return String(explorer?.dataset.explorerRoute || this.window.DRIVE_INITIAL_ROUTE || '').trim();
+  }
+
+  sameRoute(a, b) {
+    const normalize = (value) => {
+      value = String(value || '').replace(/\\/g, '/').replace(/\/+/g, '/').replace(/^\/+/, '');
+      return value ? value.replace(/\/+$/, '') + '/' : '';
+    };
+    return normalize(a) === normalize(b);
+  }
+
+  notify(message, type) {
+    if (this.window.ArcadeCloudOsShell?.notify) {
+      this.window.ArcadeCloudOsShell.notify(message, type || 'info');
+      return;
+    }
+    if (type === 'danger') this.window.alert(message);
+    else console.log('[ArcadeCloud OS]', message);
+  }
+}
+
+(function bootArcadeCloudOsClipboard(win, doc) {
+  let attempts = 0;
+  const boot = () => {
+    if (!doc.getElementById('osExplorerLive')) return;
+    if (win.ArcadeCloudOsClipboard instanceof ArcadeCloudOsClipboard) return;
+
+    if (!win.ArcadeCloudOsShell || !win.ArcadeCloudOsFolders || !win.DriveMoveTasks) {
+      attempts++;
+      if (attempts < 80) win.setTimeout(boot, 50);
+      return;
+    }
+
+    win.ArcadeCloudOsClipboard = new ArcadeCloudOsClipboard(win, doc).init();
+  };
+
+  if (doc.readyState === 'loading') {
+    doc.addEventListener('DOMContentLoaded', boot, { once: true });
+  } else {
+    boot();
+  }
+})(window, document);

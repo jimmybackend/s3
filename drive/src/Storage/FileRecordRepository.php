@@ -58,6 +58,58 @@ final class FileRecordRepository
         return $row;
     }
 
+    public function visibleNameExists(int $userId, string $route, string $name): bool
+    {
+        $route = $this->normalizePrefix($route);
+        $stmt = $this->db->prepare(
+            'SELECT 1 FROM FileS3 WHERE user_id_ = ? AND Ruta = ? AND Nombre = ? AND Found = 1 LIMIT 1'
+        );
+        if (!$stmt) throw new RuntimeException('No se pudo validar el nombre del archivo: ' . $this->db->error);
+        $stmt->bind_param('iss', $userId, $route, $name);
+        $stmt->execute();
+        $stmt->store_result();
+        $exists = $stmt->num_rows > 0;
+        $stmt->close();
+        return $exists;
+    }
+
+    public function duplicateFrom(
+        int $userId,
+        int $sourceId,
+        string $visibleName,
+        string $route,
+        string $encrypted
+    ): int {
+        $route = $this->normalizePrefix($route);
+        $encrypted = $this->normalizeKey($encrypted);
+
+        $stmt = $this->db->prepare(
+            "INSERT INTO FileS3
+                (Nombre, Encriptado, Tamano, Metadatos, Ruta, Found, AccessType,
+                 PasswordHash, SecureHint, SecureUpdatedAt, Fecha, user_id_)
+             SELECT ?, ?, Tamano, Metadatos, ?, 1, AccessType,
+                    PasswordHash, SecureHint, SecureUpdatedAt, NOW(), user_id_
+             FROM FileS3
+             WHERE id_ = ? AND user_id_ = ?
+             LIMIT 1"
+        );
+        if (!$stmt) throw new RuntimeException('No se pudo preparar la copia FileS3: ' . $this->db->error);
+        $stmt->bind_param('sssii', $visibleName, $encrypted, $route, $sourceId, $userId);
+        if (!$stmt->execute()) {
+            $error = $stmt->error ?: $this->db->error;
+            $stmt->close();
+            throw new RuntimeException('No se pudo registrar la copia del archivo: ' . $error);
+        }
+        if ($stmt->affected_rows !== 1) {
+            $stmt->close();
+            throw new RuntimeException('No se encontró el registro origen para copiar.');
+        }
+        $id = (int)($stmt->insert_id ?: $this->db->insert_id);
+        $stmt->close();
+        if ($id <= 0) throw new RuntimeException('No se pudo obtener el identificador de la copia.');
+        return $id;
+    }
+
     public function renameVisible(int $userId, int $id, string $name): void
     {
         $stmt = $this->db->prepare('UPDATE FileS3 SET Nombre = ? WHERE id_ = ? AND user_id_ = ?');

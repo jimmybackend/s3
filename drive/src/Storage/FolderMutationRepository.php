@@ -140,6 +140,90 @@ final class FolderMutationRepository
         }
     }
 
+    public function copyTree(
+        int $userId,
+        string $oldPrefix,
+        string $newPrefix,
+        string $newRootName,
+        string $newRootParent
+    ): array {
+        $this->db->begin_transaction();
+        try {
+            $folders = $this->foldersUnder($userId, $oldPrefix);
+            if ($folders === []) throw new RuntimeException('La carpeta origen no existe en S3Folders.');
+
+            $folderStmt = $this->db->prepare(
+                "INSERT INTO S3Folders
+                    (user_id_, Prefix, Nombre, ParentPrefix, Found, AccessType, PasswordHash, SecureHint, SecureUpdatedAt)
+                 SELECT user_id_, ?, ?, ?, 1, AccessType, PasswordHash, SecureHint, SecureUpdatedAt
+                 FROM S3Folders
+                 WHERE id_ = ? AND user_id_ = ?
+                 LIMIT 1"
+            );
+            if (!$folderStmt) throw new RuntimeException('No se pudo preparar la copia de carpetas: ' . $this->db->error);
+
+            $foldersCopied = 0;
+            foreach ($folders as $folder) {
+                $current = $this->normalizePrefix((string)$folder['Prefix']);
+                $suffix = substr($current, strlen($oldPrefix));
+                $next = $this->normalizePrefix($newPrefix . $suffix);
+                $parent = $current === $oldPrefix
+                    ? $newRootParent
+                    : $this->rewriteParent((string)($folder['ParentPrefix'] ?? ''), $oldPrefix, $newPrefix);
+                $name = $current === $oldPrefix ? $newRootName : (string)($folder['Nombre'] ?? '');
+                $id = (int)$folder['id_'];
+
+                $folderStmt->bind_param('sssii', $next, $name, $parent, $id, $userId);
+                if (!$folderStmt->execute() || $folderStmt->affected_rows !== 1) {
+                    throw new RuntimeException('No se pudo copiar S3Folders: ' . ($folderStmt->error ?: $this->db->error));
+                }
+                $foldersCopied++;
+            }
+            $folderStmt->close();
+
+            $files = $this->filesUnder($userId, $oldPrefix);
+            $fileStmt = $this->db->prepare(
+                "INSERT INTO FileS3
+                    (Nombre, Encriptado, Tamano, Metadatos, Ruta, Found, AccessType,
+                     PasswordHash, SecureHint, SecureUpdatedAt, Fecha, user_id_)
+                 SELECT Nombre, ?, Tamano, Metadatos, ?, 1, AccessType,
+                        PasswordHash, SecureHint, SecureUpdatedAt, NOW(), user_id_
+                 FROM FileS3
+                 WHERE id_ = ? AND user_id_ = ?
+                 LIMIT 1"
+            );
+            if (!$fileStmt) throw new RuntimeException('No se pudo preparar la copia de archivos de carpeta: ' . $this->db->error);
+
+            $filesCopied = 0;
+            foreach ($files as $file) {
+                $route = $this->normalizePrefix((string)$file['Ruta']);
+                if (!str_starts_with($route, $oldPrefix)) {
+                    throw new RuntimeException('Ruta de archivo fuera del árbol origen.');
+                }
+
+                $basename = basename(str_replace('\\', '/', trim((string)$file['Encriptado'])));
+                if ($basename === '') throw new RuntimeException('Archivo con Encriptado inválido.');
+
+                $nextRoute = $this->normalizePrefix($newPrefix . substr($route, strlen($oldPrefix)));
+                $nextEncrypted = $this->normalizeKey($nextRoute . $basename);
+                $id = (int)$file['id_'];
+
+                $fileStmt->bind_param('ssii', $nextEncrypted, $nextRoute, $id, $userId);
+                if (!$fileStmt->execute() || $fileStmt->affected_rows !== 1) {
+                    throw new RuntimeException('No se pudo copiar FileS3: ' . ($fileStmt->error ?: $this->db->error));
+                }
+                $filesCopied++;
+            }
+            $fileStmt->close();
+
+            $this->db->commit();
+            return ['foldersCopied' => $foldersCopied, 'filesCopied' => $filesCopied];
+        } catch (\Throwable $error) {
+            $this->db->rollback();
+            throw $error;
+        }
+    }
+
     public function deleteTree(int $userId, string $prefix): array
     {
         $this->db->begin_transaction();

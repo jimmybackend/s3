@@ -6,7 +6,9 @@ on:
       - 'drive/so.php'
       - 'drive/s3.php'
       - 'drive/css/so.css'
+      - 'drive/css/so-clipboard.css'
       - 'drive/js/so.js'
+      - 'drive/js/so-clipboard.js'
       - 'drive/js/so-terminal.js'
       - 'drive/js/so-federation.js'
       - 'drive/js/federation-os-admin.js'
@@ -22,13 +24,16 @@ on:
       - 'drive/js/folder-document.js'
       - 'drive/js/sincronizar.js'
       - 'drive/js/move-tasks.js'
-      - 'drive/js/so-folders.js'
-      - 'drive/js/carpetas.js'
-      - 'drive/js/folder-document.js'
-      - 'drive/js/sincronizar.js'
-      - 'drive/js/move-tasks.js'
+      - 'drive/src/Application/FileMutationService.php'
+      - 'drive/src/Application/FolderMutationService.php'
+      - 'drive/src/Application/MoveJobService.php'
+      - 'drive/src/Storage/FileRecordRepository.php'
+      - 'drive/src/Storage/FolderMutationRepository.php'
+      - 'drive/src/Http/Controller/MoveJobController.php'
+      - 'drive/src/Console/MoveJobWorkerCommand.php'
       - 'drive/src/System/**'
       - 'drive/tests/web_os_contract_smoke.php'
+      - 'drive/tests/web_os_clipboard_contract_smoke.php'
       - '.github/workflows/web-os.yml'
   push:
     branches: [ main ]
@@ -36,7 +41,9 @@ on:
       - 'drive/so.php'
       - 'drive/s3.php'
       - 'drive/css/so.css'
+      - 'drive/css/so-clipboard.css'
       - 'drive/js/so.js'
+      - 'drive/js/so-clipboard.js'
       - 'drive/js/so-terminal.js'
       - 'drive/js/so-federation.js'
       - 'drive/js/federation-os-admin.js'
@@ -47,8 +54,21 @@ on:
       - 'drive/src/View/FederationOsAdminRenderer.php'
       - 'drive/src/Http/Controller/FederationPortalController.php'
       - 'drive/src/View/FederationPortalRenderer.php'
+      - 'drive/js/so-folders.js'
+      - 'drive/js/carpetas.js'
+      - 'drive/js/folder-document.js'
+      - 'drive/js/sincronizar.js'
+      - 'drive/js/move-tasks.js'
+      - 'drive/src/Application/FileMutationService.php'
+      - 'drive/src/Application/FolderMutationService.php'
+      - 'drive/src/Application/MoveJobService.php'
+      - 'drive/src/Storage/FileRecordRepository.php'
+      - 'drive/src/Storage/FolderMutationRepository.php'
+      - 'drive/src/Http/Controller/MoveJobController.php'
+      - 'drive/src/Console/MoveJobWorkerCommand.php'
       - 'drive/src/System/**'
       - 'drive/tests/web_os_contract_smoke.php'
+      - 'drive/tests/web_os_clipboard_contract_smoke.php'
       - '.github/workflows/web-os.yml'
 
 permissions:
@@ -68,10 +88,19 @@ jobs:
           php -l drive/src/View/FederationOsAdminRenderer.php
           php -l drive/src/Http/Controller/FederationPortalController.php
           php -l drive/src/View/FederationPortalRenderer.php
+          php -l drive/src/Application/FileMutationService.php
+          php -l drive/src/Application/FolderMutationService.php
+          php -l drive/src/Application/MoveJobService.php
+          php -l drive/src/Storage/FileRecordRepository.php
+          php -l drive/src/Storage/FolderMutationRepository.php
+          php -l drive/src/Http/Controller/MoveJobController.php
+          php -l drive/src/Console/MoveJobWorkerCommand.php
           php -l drive/tests/web_os_contract_smoke.php
+          php -l drive/tests/web_os_clipboard_contract_smoke.php
       - name: JavaScript syntax
         run: |
           node --check drive/js/so.js
+          node --check drive/js/so-clipboard.js
           node --check drive/js/so-terminal.js
           node --check drive/js/so-federation.js
           node --check drive/js/federation-os-admin.js
@@ -82,4 +111,6 @@ jobs:
           node --check drive/js/sincronizar.js
           node --check drive/js/move-tasks.js
       - name: Web OS contract
-        run: php drive/tests/web_os_contract_smoke.php
+        run: |
+          php drive/tests/web_os_contract_smoke.php
+          php drive/tests/web_os_clipboard_contract_smoke.php

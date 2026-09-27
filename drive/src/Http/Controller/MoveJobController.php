@@ -20,6 +20,11 @@ final class MoveJobController extends AbstractJsonController
             $this->requirePost();
             $userId = $this->guardAuthenticated();
             $type = strtolower(trim($this->request->postString('type')));
+            $operation = strtolower(trim($this->request->postString('operation')));
+            if ($operation === '') $operation = 'move';
+            if (!in_array($operation, ['move', 'copy'], true)) {
+                throw new RuntimeException('Operación de transferencia inválida.');
+            }
 
             if ($type === 'files') {
                 $refs = $this->keysFromRequest();
@@ -58,14 +63,15 @@ final class MoveJobController extends AbstractJsonController
                     $userId,
                     $refs,
                     $destination,
-                    $createdDestination
+                    $createdDestination,
+                    $operation
                 );
             } elseif ($type === 'folder') {
                 $origin = $this->requireNonEmpty($this->request->postString('origen'), 'Falta la carpeta origen.');
                 $destination = $this->requireNonEmpty($this->request->postString('destino'), 'Falta la carpeta destino.');
-                $job = $this->app->moveJobService()->queueFolder($userId, $origin, $destination);
+                $job = $this->app->moveJobService()->queueFolder($userId, $origin, $destination, $operation);
             } else {
-                throw new RuntimeException('Tipo de movimiento inválido.');
+                throw new RuntimeException('Tipo de transferencia inválido.');
             }
 
             $jobId = (string)$job['id'];
@@ -86,7 +92,10 @@ final class MoveJobController extends AbstractJsonController
                 'estado' => 'queued',
                 'job_id' => $jobId,
                 'type' => $type,
-                'mensaje' => 'Movimiento enviado al servidor. Puedes salir de la página; Tareas conservará el estado.',
+                'operation' => $operation,
+                'mensaje' => $operation === 'copy'
+                    ? 'Copia enviada al servidor. Puedes seguir navegando mientras termina.'
+                    : 'Movimiento enviado al servidor. Puedes seguir navegando mientras termina.',
             ], 202);
         } catch (\Throwable $error) {
             $this->fail($error, 400);
@@ -106,9 +115,11 @@ final class MoveJobController extends AbstractJsonController
             $type = (string)($job['type'] ?? '');
             $payload = is_array($job['payload'] ?? null) ? $job['payload'] : [];
             $result = is_array($job['result'] ?? null) ? $job['result'] : [];
+            $operation = strtolower((string)($payload['operation'] ?? 'move'));
+            if (!in_array($operation, ['move', 'copy'], true)) $operation = 'move';
 
             $rutaActual = null;
-            if ($status === 'completed' && $type === 'folder') {
+            if ($status === 'completed' && $type === 'folder' && $operation === 'move') {
                 $origin = (string)($payload['origin'] ?? '');
                 $final = (string)($result['destino'] ?? '');
                 if ($origin !== '' && $final !== '') {
@@ -134,15 +145,34 @@ final class MoveJobController extends AbstractJsonController
                 }
             }
 
+            $requestedItems = $type === 'files'
+                ? count(is_array($payload['refs'] ?? null) ? $payload['refs'] : [])
+                : 1;
+            $processedItems = $type === 'files'
+                ? max(0, (int)($result['total'] ?? 0))
+                : ($status === 'completed' ? 1 : 0);
+
+            $progress = null;
+            if ($status === 'completed') {
+                $progress = 100;
+            } elseif ($type === 'files' && $requestedItems > 0) {
+                $progress = max(0, min(99, (int)floor(($processedItems / $requestedItems) * 100)));
+            }
+
             JsonResponse::send([
                 'ok' => true,
                 'job_id' => $jobId,
                 'type' => $type,
+                'operation' => $operation,
                 'estado' => $status,
                 'mensaje' => (string)($job['message'] ?? ''),
                 'error' => in_array($status, ['failed', 'error'], true) ? (string)($job['error'] ?? '') : null,
                 'ruta_actual' => $rutaActual,
+                'destination' => $destination,
                 'destino_visible' => $destinationLabel,
+                'processed_items' => $processedItems,
+                'requested_items' => $requestedItems,
+                'progress' => $progress,
                 'created_at' => $job['created_at'] ?? null,
                 'updated_at' => $job['updated_at'] ?? null,
             ]);

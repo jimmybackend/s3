@@ -4,16 +4,21 @@ declare(strict_types=1);
 namespace ArcadeCloud\Drive\Application;
 
 use ArcadeCloud\Drive\Storage\FileRecordRepository;
+use ArcadeCloud\Drive\Storage\StorageObjectNameCodec;
 use Aws\S3\S3Client;
 use RuntimeException;
 
 final class FileMutationService
 {
+    private StorageObjectNameCodec $codec;
+
     public function __construct(
         private FileRecordRepository $files,
         private S3Client $s3,
-        private string $bucket
+        private string $bucket,
+        ?StorageObjectNameCodec $codec = null
     ) {
+        $this->codec = $codec ?? new StorageObjectNameCodec();
     }
 
     public function delete(int $userId, int|string $ref): array
@@ -92,6 +97,66 @@ final class FileMutationService
         return ['total' => $total, 'ruta_nueva' => $newRoute, 'estado' => 'movidos'];
     }
 
+    public function copy(int $userId, int|string $ref, string $newRoute): array
+    {
+        $file = $this->files->requireByRef($userId, $ref, true);
+        $oldKey = (string)$file['_key'];
+        $newRoute = $this->files->normalizePrefix($newRoute);
+        $visibleName = $this->uniqueCopyName(
+            $userId,
+            $newRoute,
+            trim((string)($file['Nombre'] ?? '')) ?: basename($oldKey)
+        );
+        $physicalName = $this->codec->createFileObjectName($visibleName);
+        $newKey = $this->files->normalizeKey($newRoute . $physicalName);
+
+        $this->s3->copyObject([
+            'Bucket' => $this->bucket,
+            'CopySource' => $this->bucket . '/' . $oldKey,
+            'Key' => $newKey,
+            'ACL' => 'private',
+            'MetadataDirective' => 'COPY',
+        ]);
+
+        try {
+            $newId = $this->files->duplicateFrom(
+                $userId,
+                (int)$file['id_'],
+                $visibleName,
+                $newRoute,
+                $newKey
+            );
+        } catch (\Throwable $error) {
+            try {
+                $this->s3->deleteObject(['Bucket' => $this->bucket, 'Key' => $newKey]);
+            } catch (\Throwable) {
+            }
+            throw $error;
+        }
+
+        return [
+            'id' => $newId,
+            'source_id' => (int)$file['id_'],
+            'nombre' => $visibleName,
+            'ruta_nueva' => $newRoute,
+            'key_s3' => $newKey,
+            'old_key' => $oldKey,
+            'estado' => 'copiado',
+        ];
+    }
+
+    public function copyMany(int $userId, array $refs, string $newRoute): array
+    {
+        if ($refs === []) throw new RuntimeException('No hay archivos seleccionados.');
+        $newRoute = $this->files->normalizePrefix($newRoute);
+        $total = 0;
+        foreach ($refs as $ref) {
+            $this->copy($userId, is_int($ref) ? $ref : (string)$ref, $newRoute);
+            $total++;
+        }
+        return ['total' => $total, 'ruta_nueva' => $newRoute, 'estado' => 'copiados'];
+    }
+
     public function rename(int $userId, int|string $ref, string $newName): array
     {
         $newName = trim($newName);
@@ -114,5 +179,26 @@ final class FileMutationService
             's3_modificado' => false,
             'encriptado_modificado' => false,
         ];
+    }
+
+    private function uniqueCopyName(int $userId, string $route, string $name): string
+    {
+        if (!$this->files->visibleNameExists($userId, $route, $name)) {
+            return $name;
+        }
+
+        $dot = strrpos($name, '.');
+        $stem = $dot !== false && $dot > 0 ? substr($name, 0, $dot) : $name;
+        $extension = $dot !== false && $dot > 0 ? substr($name, $dot) : '';
+
+        for ($number = 1; $number <= 1000; $number++) {
+            $suffix = $number === 1 ? ' - copia' : ' - copia ' . $number;
+            $candidate = $stem . $suffix . $extension;
+            if (!$this->files->visibleNameExists($userId, $route, $candidate)) {
+                return $candidate;
+            }
+        }
+
+        throw new RuntimeException('No se pudo generar un nombre disponible para la copia.');
     }
 }

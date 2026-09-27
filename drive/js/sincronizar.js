@@ -10,10 +10,6 @@ class SincronizarModule {
     const btn = document.getElementById('btnSyncS3');
     const host = document.getElementById('syncStatus');
 
-    if (!btn) {
-      return this;
-    }
-
     let busy = false;
 
     function status(text, type = 'muted') {
@@ -62,9 +58,9 @@ class SincronizarModule {
     }
 
     function setControlsDisabled(disabled) {
-      btn.disabled = disabled;
+      if (btn) btn.disabled = disabled;
       document
-        .querySelectorAll('.js-sync-folder')
+        .querySelectorAll('.js-sync-folder, [data-current-folder-action="sync"], [data-folder-action="sync"]')
         .forEach((button) => {
           button.disabled = disabled;
         });
@@ -214,10 +210,12 @@ class SincronizarModule {
       }
     }
 
-    btn.addEventListener('click', (event) => {
-      event.preventDefault();
-      runSync('', '', btn);
-    });
+    if (btn) {
+      btn.addEventListener('click', (event) => {
+        event.preventDefault();
+        runSync('', '', btn);
+      });
+    }
 
     document.addEventListener('click', (event) => {
       const folderButton = event.target?.closest?.('.js-sync-folder');

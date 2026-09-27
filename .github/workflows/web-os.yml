@@ -1,0 +1,38 @@
+name: ArcadeCloud Web OS
+
+on:
+  pull_request:
+    paths:
+      - 'drive/so.php'
+      - 'drive/s3.php'
+      - 'drive/css/so.css'
+      - 'drive/js/so.js'
+      - 'drive/src/System/**'
+      - 'drive/tests/web_os_contract_smoke.php'
+      - '.github/workflows/web-os.yml'
+  push:
+    branches: [ main ]
+    paths:
+      - 'drive/so.php'
+      - 'drive/s3.php'
+      - 'drive/css/so.css'
+      - 'drive/js/so.js'
+      - 'drive/src/System/**'
+      - 'drive/tests/web_os_contract_smoke.php'
+      - '.github/workflows/web-os.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  web-os-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: PHP syntax
+        run: |
+          php -l drive/so.php
+          php -l drive/src/System/NodeCapabilityService.php
+          php -l drive/tests/web_os_contract_smoke.php
+      - name: Web OS contract
+        run: php drive/tests/web_os_contract_smoke.php

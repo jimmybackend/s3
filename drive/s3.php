@@ -217,6 +217,10 @@ if ($session->isSuperAdmin()) {
             <i class="fas fa-receipt"></i> Actividad y costos
           </a>
 
+          <a class="dropdown-item" href="so.php">
+            <i class="fas fa-desktop"></i> ArcadeCloud OS
+          </a>
+
           <?php if ($canViewRealAws): ?>
           <button class="dropdown-item" data-toggle="modal" data-target="#modalCostosAws">
               <i class="fas fa-chart-line"></i> Costos AWS

@@ -250,10 +250,6 @@ a{text-decoration:none;color:inherit}
   .os-stat-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
   .os-entry-grid{grid-template-columns:repeat(auto-fill,minmax(94px,1fr))}
   .os-storage{display:none}
-  .os-folder-commandbar{padding:5px 6px}
-  .os-folder-commandbar button{padding:7px 9px}
-  .os-folder-commandbar button span{display:none}
-  .os-folder-command-status{display:none}
   .os-start{min-width:49px;width:49px;padding:0;justify-content:center}
   .os-task-item{min-width:72px;max-width:94px}
   .os-task-button{min-width:40px;padding:0 7px;justify-content:center}

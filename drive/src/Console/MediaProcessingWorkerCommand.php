@@ -273,7 +273,8 @@ final class MediaProcessingWorkerCommand
         $isVideo = $operation === 'split_video';
 
         $command = [
-            'ffmpeg','-hide_banner','-loglevel','error','-y',
+            'ffmpeg','-hide_banner','-loglevel','warning','-nostdin','-y',
+            '-fflags','+genpts',
             '-ss',sprintf('%.3f',$start),
             '-i',$sourcePath,
             '-t',sprintf('%.3f',$length),
@@ -282,7 +283,7 @@ final class MediaProcessingWorkerCommand
         if ($isVideo) {
             $command = array_merge($command, [
                 '-map','0:v:0',
-                '-map','0:a?',
+                '-map','0:a:0?',
                 '-sn','-dn',
                 '-map_metadata','-1',
                 '-map_chapters','-1',
@@ -335,8 +336,19 @@ final class MediaProcessingWorkerCommand
                 . '; se reintentará recodificando: ' . $copyError->getMessage()
             );
 
-            $this->transcodeVideoSegment($sourcePath, $out, $sourceExt, $start, $length, $part);
-            $this->assertMediaOutput($out, $part);
+            try {
+                $this->transcodeVideoSegment($sourcePath, $out, $sourceExt, $start, $length, $part);
+                $this->assertMediaOutput($out, $part);
+            } catch (\Throwable $transcodeError) {
+                @unlink($out);
+                throw new RuntimeException(
+                    'Parte ' . $part . ': fallaron copia directa y recodificación. '
+                    . 'Recodificación: ' . $transcodeError->getMessage()
+                    . ' | Copia directa: ' . $copyError->getMessage(),
+                    0,
+                    $transcodeError
+                );
+            }
         }
     }
 
@@ -360,12 +372,13 @@ final class MediaProcessingWorkerCommand
         }
 
         $command = [
-            'ffmpeg','-hide_banner','-loglevel','error','-y',
+            'ffmpeg','-hide_banner','-loglevel','warning','-nostdin','-y',
+            '-fflags','+genpts',
             '-i',$sourcePath,
             '-ss',sprintf('%.3f',$start),
             '-t',sprintf('%.3f',$length),
             '-map','0:v:0',
-            '-map','0:a?',
+            '-map','0:a:0?',
             '-sn','-dn',
             '-map_metadata','-1',
             '-map_chapters','-1',
@@ -376,10 +389,13 @@ final class MediaProcessingWorkerCommand
             $command = array_merge($command, [
                 '-preset','veryfast',
                 '-crf','18',
-                '-pix_fmt','yuv420p',
+                '-vf','scale=trunc(iw/2)*2:trunc(ih/2)*2,format=yuv420p',
             ]);
         } else {
-            $command = array_merge($command, ['-q:v','2']);
+            $command = array_merge($command, [
+                '-q:v','2',
+                '-vf','scale=trunc(iw/2)*2:trunc(ih/2)*2,format=yuv420p',
+            ]);
         }
 
         if ($this->ffmpegHasEncoder('aac')) {
@@ -390,7 +406,10 @@ final class MediaProcessingWorkerCommand
             $command = array_merge($command, ['-c:a','copy']);
         }
 
-        $command = array_merge($command, ['-avoid_negative_ts','make_zero']);
+        $command = array_merge($command, [
+            '-max_muxing_queue_size','4096',
+            '-avoid_negative_ts','make_zero',
+        ]);
         if (in_array($sourceExt, ['mp4','m4v','mov'], true)) {
             $command = array_merge($command, ['-movflags','+faststart']);
         }
@@ -534,59 +553,104 @@ final class MediaProcessingWorkerCommand
             $command[0] = $resolved;
         }
 
-        // Archivos temporales en vez de pipes: FFmpeg puede producir suficiente
-        // stderr para llenar un pipe y bloquear proc_open si stdout/stderr se leen
-        // secuencialmente. Así evitamos ese deadlock y conservamos el diagnóstico.
-        $stdoutPath = tempnam(sys_get_temp_dir(), 'arcadecloud-ff-out-');
-        $stderrPath = tempnam(sys_get_temp_dir(), 'arcadecloud-ff-err-');
-        if ($stdoutPath === false || $stderrPath === false) {
-            if (is_string($stdoutPath)) @unlink($stdoutPath);
-            if (is_string($stderrPath)) @unlink($stderrPath);
-            throw new RuntimeException('No se pudo crear el buffer temporal para FFmpeg/FFprobe.');
-        }
-
         $descriptors = [
             0 => ['file', '/dev/null', 'r'],
-            1 => ['file', $stdoutPath, 'w'],
-            2 => ['file', $stderrPath, 'w'],
+            1 => ['pipe', 'w'],
+            2 => ['pipe', 'w'],
         ];
+        $process = proc_open($command, $descriptors, $pipes);
+        if (!is_resource($process)) {
+            throw new RuntimeException('No se pudo iniciar FFmpeg/FFprobe.');
+        }
+
+        $stdout = '';
+        $stderr = '';
+        $lastStatus = null;
+        $limit = 256 * 1024;
+
+        stream_set_blocking($pipes[1], false);
+        stream_set_blocking($pipes[2], false);
 
         try {
-            $process = proc_open($command, $descriptors, $pipes);
-            if (!is_resource($process)) {
-                throw new RuntimeException('No se pudo iniciar FFmpeg/FFprobe.');
+            while (true) {
+                $read = [];
+                if (!feof($pipes[1])) $read[] = $pipes[1];
+                if (!feof($pipes[2])) $read[] = $pipes[2];
+
+                if ($read !== []) {
+                    $write = null;
+                    $except = null;
+                    $selected = @stream_select($read, $write, $except, 0, 200000);
+                    if ($selected !== false && $selected > 0) {
+                        foreach ($read as $stream) {
+                            $chunk = (string)fread($stream, 8192);
+                            if ($chunk === '') continue;
+                            if ($stream === $pipes[1] && strlen($stdout) < $limit) {
+                                $stdout .= substr($chunk, 0, $limit - strlen($stdout));
+                            } elseif ($stream === $pipes[2] && strlen($stderr) < $limit) {
+                                $stderr .= substr($chunk, 0, $limit - strlen($stderr));
+                            }
+                        }
+                    }
+                } else {
+                    usleep(20000);
+                }
+
+                $status = proc_get_status($process);
+                $lastStatus = $status;
+                if (!$status['running']) {
+                    break;
+                }
             }
 
-            $code = proc_close($process);
-            $stdout = (string)(@file_get_contents($stdoutPath) ?: '');
-            $stderr = (string)(@file_get_contents($stderrPath) ?: '');
+            $tail = stream_get_contents($pipes[1]);
+            if (is_string($tail) && $tail !== '' && strlen($stdout) < $limit) {
+                $stdout .= substr($tail, 0, $limit - strlen($stdout));
+            }
+            $tail = stream_get_contents($pipes[2]);
+            if (is_string($tail) && $tail !== '' && strlen($stderr) < $limit) {
+                $stderr .= substr($tail, 0, $limit - strlen($stderr));
+            }
+        } finally {
+            fclose($pipes[1]);
+            fclose($pipes[2]);
+        }
 
-            if ($code !== 0) {
-                $detail = trim($stderr);
-                if ($detail === '') {
-                    $detail = trim($stdout);
-                }
-                if ($detail === '') {
-                    $detail = 'el proceso terminó sin texto de diagnóstico';
-                }
-                $detail = mb_substr($detail, 0, 3200);
+        $code = proc_close($process);
+        if ($code === -1 && is_array($lastStatus)) {
+            $observed = (int)($lastStatus['exitcode'] ?? -1);
+            if ($observed >= 0) {
+                $code = $observed;
+            }
+        }
 
-                if (stripos($detail, 'libmp3lame') !== false && stripos($detail, 'encoder') !== false) {
-                    throw new RuntimeException(
-                        '[DEPENDENCY_MISSING] El FFmpeg del nodo multimedia no incluye el codificador libmp3lame requerido para crear MP3.'
-                    );
-                }
+        if ($code !== 0) {
+            $detail = trim($stderr);
+            if ($detail === '') {
+                $detail = trim($stdout);
+            }
+            if ($detail === '') {
+                $signaled = is_array($lastStatus) && !empty($lastStatus['signaled']);
+                $signal = is_array($lastStatus) ? (int)($lastStatus['termsig'] ?? 0) : 0;
+                $detail = 'sin texto de diagnóstico'
+                    . ($signaled ? ' · señal=' . $signal : '')
+                    . ' · stdout=' . strlen($stdout)
+                    . ' bytes · stderr=' . strlen($stderr) . ' bytes';
+            }
+            $detail = mb_substr($detail, 0, 3200);
 
+            if (stripos($detail, 'libmp3lame') !== false && stripos($detail, 'encoder') !== false) {
                 throw new RuntimeException(
-                    'FFmpeg/FFprobe falló (código ' . $code . '): ' . $detail
+                    '[DEPENDENCY_MISSING] El FFmpeg del nodo multimedia no incluye el codificador libmp3lame requerido para crear MP3.'
                 );
             }
 
-            return $capture ? $stdout : '';
-        } finally {
-            @unlink($stdoutPath);
-            @unlink($stderrPath);
+            throw new RuntimeException(
+                'FFmpeg/FFprobe falló (código ' . $code . '): ' . $detail
+            );
         }
+
+        return $capture ? $stdout : '';
     }
 
     private function ffmpegHasEncoder(string $encoder): bool

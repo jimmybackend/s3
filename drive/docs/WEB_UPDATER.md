@@ -116,3 +116,37 @@ Cuando se instala una versión nueva del helper del updater, conviene verificar 
 Un commit documental no necesita reiniciar ni alterar la configuración del nodo por sí mismo; el updater sigue ejecutando la reconciliación normal después del fast-forward. Esta prueba sirve para validar el mecanismo web sin introducir un cambio funcional adicional.
 
 Si la interfaz sigue mostrando **Atención: hay cambios locales sin guardar** después de quedar actualizado, eso describe el working tree del checkout local. La actualización puede estar instalada correctamente aunque aún exista un archivo modificado o no rastreado. La versión moderna del updater enumera esos cambios y permite guardarlos explícitamente en stash en la siguiente actualización remota segura.
+
+
+## Incidencia histórica: bootstrap multimedia marcaba el repo como sucio
+
+Se identificó una causa concreta de falsos bloqueos del updater en nodos `combined` o `media-worker`.
+
+El instalador multimedia ejecutaba:
+
+```bash
+chmod 0755 drive/bin/media_worker_node_bootstrap.sh
+```
+
+pero Git registra ese archivo como `100644`. El contenido no cambiaba, pero Git detectaba:
+
+```text
+mode change 100644 => 100755 drive/bin/media_worker_node_bootstrap.sh
+```
+
+Eso bastaba para que el updater considerara sucio el checkout y rechazara el fast-forward automático.
+
+El `chmod` era innecesario porque el servicio systemd invoca el bootstrap explícitamente mediante:
+
+```text
+ExecStart=/usr/bin/bash .../media_worker_node_bootstrap.sh ...
+```
+
+Por tanto, el instalador ya no modifica el bit ejecutable de ese archivo rastreado. En una instalación afectada anteriormente basta restaurar el modo registrado por Git una vez:
+
+```bash
+cd /var/www/arcadecloud-drive
+git restore --source=HEAD --worktree drive/bin/media_worker_node_bootstrap.sh
+```
+
+Después, `git status --short` debe quedar vacío salvo que existan otros cambios locales reales. A partir de esta corrección, futuras reconciliaciones del worker no deben volver a ensuciar el repositorio por ese archivo.

@@ -300,6 +300,10 @@ class TranscribeBackgroundModule {
   notify(message, type = 'info', timeout = 5000) {
     if (this.window.DriveMoveTasks && typeof this.window.DriveMoveTasks.notify === 'function') {
       this.window.DriveMoveTasks.notify(message, type, timeout);
+      return;
+    }
+    if (this.window.ArcadeCloudOsShell && typeof this.window.ArcadeCloudOsShell.notify === 'function') {
+      this.window.ArcadeCloudOsShell.notify(message, type, timeout);
     }
   }
 

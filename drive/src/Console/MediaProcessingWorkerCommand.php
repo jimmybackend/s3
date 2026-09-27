@@ -360,66 +360,81 @@ final class MediaProcessingWorkerCommand
         float $length,
         int $part
     ): void {
-        $videoEncoder = $this->ffmpegHasEncoder('libx264')
-            ? 'libx264'
-            : ($this->ffmpegHasEncoder('mpeg4') ? 'mpeg4' : '');
+        $encoders = [];
+        if ($this->ffmpegHasEncoder('libx264')) $encoders[] = 'libx264';
+        if ($this->ffmpegHasEncoder('mpeg4')) $encoders[] = 'mpeg4';
 
-        if ($videoEncoder === '') {
+        if ($encoders === []) {
             throw new RuntimeException(
                 '[DEPENDENCY_MISSING] La copia directa falló y FFmpeg no ofrece libx264 ni mpeg4 '
                 . 'para recodificar la parte ' . $part . '.'
             );
         }
 
-        $command = [
-            'ffmpeg','-hide_banner','-loglevel','warning','-nostdin','-y',
-            '-fflags','+genpts',
-            '-i',$sourcePath,
-            '-ss',sprintf('%.3f',$start),
-            '-t',sprintf('%.3f',$length),
-            '-map','0:v:0',
-            '-map','0:a:0?',
-            '-sn','-dn',
-            '-map_metadata','-1',
-            '-map_chapters','-1',
-            '-c:v',$videoEncoder,
-        ];
+        $errors = [];
+        foreach ($encoders as $videoEncoder) {
+            @unlink($out);
+            $command = [
+                'ffmpeg','-hide_banner','-loglevel','warning','-nostdin','-y',
+                '-fflags','+genpts',
+                '-i',$sourcePath,
+                '-ss',sprintf('%.3f',$start),
+                '-t',sprintf('%.3f',$length),
+                '-map','0:v:0',
+                '-map','0:a:0?',
+                '-sn','-dn',
+                '-map_metadata','-1',
+                '-map_chapters','-1',
+                '-c:v',$videoEncoder,
+            ];
 
-        if ($videoEncoder === 'libx264') {
+            if ($videoEncoder === 'libx264') {
+                $command = array_merge($command, [
+                    '-preset','veryfast',
+                    '-crf','18',
+                    '-vf','scale=trunc(iw/2)*2:trunc(ih/2)*2,format=yuv420p',
+                ]);
+            } else {
+                $command = array_merge($command, [
+                    '-q:v','2',
+                    '-vf','scale=trunc(iw/2)*2:trunc(ih/2)*2,format=yuv420p',
+                ]);
+            }
+
+            if ($this->ffmpegHasEncoder('aac')) {
+                $command = array_merge($command, ['-c:a','aac','-b:a','160k']);
+            } else {
+                $command = array_merge($command, ['-c:a','copy']);
+            }
+
             $command = array_merge($command, [
-                '-preset','veryfast',
-                '-crf','18',
-                '-vf','scale=trunc(iw/2)*2:trunc(ih/2)*2,format=yuv420p',
+                '-max_muxing_queue_size','4096',
+                '-avoid_negative_ts','make_zero',
             ]);
-        } else {
-            $command = array_merge($command, [
-                '-q:v','2',
-                '-vf','scale=trunc(iw/2)*2:trunc(ih/2)*2,format=yuv420p',
-            ]);
+            if (in_array($sourceExt, ['mp4','m4v','mov'], true)) {
+                $command = array_merge($command, ['-movflags','+faststart']);
+            }
+            $muxer = $this->outputMuxer($sourceExt, true);
+            if ($muxer !== '') {
+                $command = array_merge($command, ['-f',$muxer]);
+            }
+            $command[] = $out;
+
+            try {
+                $this->runProcess($command);
+                return;
+            } catch (\Throwable $e) {
+                $errors[] = $videoEncoder . ': ' . $e->getMessage();
+                error_log(
+                    '[ArcadeCloud media-worker] recodificación ' . $videoEncoder
+                    . ' falló en parte ' . $part . ': ' . $e->getMessage()
+                );
+            }
         }
 
-        if ($this->ffmpegHasEncoder('aac')) {
-            $command = array_merge($command, ['-c:a','aac','-b:a','160k']);
-        } else {
-            // Si AAC no está disponible, conservar el audio original sigue siendo
-            // preferible a descartar la pista. FFmpeg validará el contenedor.
-            $command = array_merge($command, ['-c:a','copy']);
-        }
-
-        $command = array_merge($command, [
-            '-max_muxing_queue_size','4096',
-            '-avoid_negative_ts','make_zero',
-        ]);
-        if (in_array($sourceExt, ['mp4','m4v','mov'], true)) {
-            $command = array_merge($command, ['-movflags','+faststart']);
-        }
-        $muxer = $this->outputMuxer($sourceExt, true);
-        if ($muxer !== '') {
-            $command = array_merge($command, ['-f',$muxer]);
-        }
-        $command[] = $out;
-
-        $this->runProcess($command);
+        throw new RuntimeException(
+            'No se pudo recodificar la parte ' . $part . '. ' . implode(' | ', $errors)
+        );
     }
 
     private function assertMediaOutput(string $path, int $part): void

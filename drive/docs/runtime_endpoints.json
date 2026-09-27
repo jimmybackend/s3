@@ -1058,7 +1058,8 @@
         "drive/s3.php",
         "drive/so.php",
         "drive/src/Federation/FederationDropGoogleAuthService.php",
-        "drive/src/View/FederationDropPageRenderer.php"
+        "drive/src/View/FederationDropPageRenderer.php",
+        "drive/tests/web_os_contract_smoke.php"
       ]
     },
     {
@@ -1311,7 +1312,7 @@
     },
     {
       "path": "drive/so.php",
-      "size": 55717,
+      "size": 55534,
       "active": true,
       "references": [
         "drive/s3.php",
@@ -2348,7 +2349,8 @@
       "size": 3411,
       "active": false,
       "references": [
-        "drive/tests/federation_drop_contract_smoke.php"
+        "drive/tests/federation_drop_contract_smoke.php",
+        "drive/tests/web_os_contract_smoke.php"
       ]
     },
     {
@@ -3480,7 +3482,7 @@
     },
     {
       "path": "drive/tests/web_os_contract_smoke.php",
-      "size": 6469,
+      "size": 8492,
       "active": false,
       "references": []
     },

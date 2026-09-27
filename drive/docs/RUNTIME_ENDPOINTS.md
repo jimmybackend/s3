@@ -37,7 +37,7 @@
 | `drive/index.php` | `drive/bloque_archivos.php`, `drive/bloque_carpetas.php`, `drive/fastdrive-control.php`, `drive/s3.php`, `drive/so.php`, `drive/src/Http/Controller/ActivityCostController.php`, `drive/src/Http/Controller/AuthController.php`, `drive/src/Http/Controller/FederationModerationController.php`, `drive/src/Security/SessionManager.php`, `drive/src/View/FederationReportPageRenderer.php`, `drive/tests/index_federation_drop_smoke.php`, `drive/tests/web_os_contract_smoke.php`, `drive/up.php` |
 | `drive/leer_texto.php` | `drive/editor.php` |
 | `drive/login.php` | `drive/src/Federation/FederationDropGoogleAuthService.php`, `drive/src/View/FederationDropPageRenderer.php` |
-| `drive/logout.php` | `drive/s3.php`, `drive/so.php`, `drive/src/Federation/FederationDropGoogleAuthService.php`, `drive/src/View/FederationDropPageRenderer.php` |
+| `drive/logout.php` | `drive/s3.php`, `drive/so.php`, `drive/src/Federation/FederationDropGoogleAuthService.php`, `drive/src/View/FederationDropPageRenderer.php`, `drive/tests/web_os_contract_smoke.php` |
 | `drive/personal_aws_bootstrap.php` | `drive/aws.php`, `drive/ec2.php`, `drive/server-console.php`, `drive/tests/server_console_contract_smoke.php` |
 | `drive/psesion.php` | `drive/index.php`, `drive/login.php`, `drive/tests/index_federation_drop_smoke.php` |
 | `drive/s3.php` | `drive/app_bootstrap.php`, `drive/ec2.php`, `drive/fastdrive-control.php`, `drive/personal_aws_bootstrap.php`, `drive/so.php`, `drive/src/Http/Controller/AuthController.php`, `drive/src/View/ActivityCostPageRenderer.php`, `drive/src/View/FederationModerationPageRenderer.php`, `drive/src/View/FederationPageRenderer.php`, `drive/src/View/FederationPortalRenderer.php`, `drive/src/View/FederationReportPageRenderer.php`, `drive/src/View/PersonalAwsPageRenderer.php`, `drive/tests/index_federation_drop_smoke.php`, `drive/tests/media_processing_contract_smoke.php`, `drive/tests/web_os_contract_smoke.php`, `drive/up.php`, `drive/js/archivos.js`, `drive/js/carpetas.js`, `drive/js/federation-share-drive.js`, `drive/js/so.js`, `drive/js/subir.js` |
@@ -285,7 +285,7 @@
 | `drive/src/Http/Controller/ActivityCostController.php` | ninguna |
 | `drive/src/Http/Controller/ArcadeCloudUpdateController.php` | ninguna |
 | `drive/src/Http/Controller/AudioRecordingUploadController.php` | ninguna |
-| `drive/src/Http/Controller/AuthController.php` | `drive/tests/federation_drop_contract_smoke.php` |
+| `drive/src/Http/Controller/AuthController.php` | `drive/tests/federation_drop_contract_smoke.php`, `drive/tests/web_os_contract_smoke.php` |
 | `drive/src/Http/Controller/AwsCostController.php` | ninguna |
 | `drive/src/Http/Controller/AwsFileController.php` | ninguna |
 | `drive/src/Http/Controller/BackgroundTaskCompatibilityController.php` | ninguna |

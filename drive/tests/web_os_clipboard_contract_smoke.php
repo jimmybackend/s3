@@ -6,6 +6,7 @@ $root = dirname(__DIR__);
 $files = [
     'shell' => $root . '/js/so.js',
     'clipboard' => $root . '/js/so-clipboard.js',
+    'clipboardCss' => $root . '/css/so-clipboard.css',
     'moveTasks' => $root . '/js/move-tasks.js',
     'fileService' => $root . '/src/Application/FileMutationService.php',
     'fileRepo' => $root . '/src/Storage/FileRecordRepository.php',
@@ -41,6 +42,13 @@ $assert(str_contains($files['clipboard'], 'keys.length + \' archivos\''), 'porta
 $assert(str_contains($files['clipboard'], 'JSON.stringify(keys)'), 'pegar envía todos los archivos seleccionados');
 $assert(str_contains($files['clipboard'], "data-os-clipboard-action"), 'menús incorporan acciones de portapapeles');
 $assert(str_contains($files['clipboard'], "operation: item.mode"), 'pegar conserva copy o move');
+$assert(str_contains($files['clipboard'], 'injectPasteToolbar()'), 'SO crea botón temporal para pegar en carpeta llena');
+$assert(str_contains($files['clipboard'], 'visibleFiles >= 20'), 'botón superior sólo aparece cuando la página tiene 20 archivos');
+$assert(str_contains($files['clipboard'], "'Mover aquí'"), 'botón superior distingue movimiento');
+$assert(str_contains($files['clipboard'], "'Copiar aquí'"), 'botón superior distingue copia');
+$assert(str_contains($files['clipboard'], "data.osPasteCurrent"), 'botón superior se identifica como destino actual');
+$assert(str_contains($files['clipboardCss'], '.os-toolbar-paste'), 'botón superior tiene estilo propio');
+$assert(str_contains($files['moveTasks'], 'so-clipboard.js?v=20260927-2'), 'cambio de portapapeles invalida caché del navegador');
 $assert(str_contains($files['clipboard'], "generar_token.php"), 'menú del SO puede compartir archivos');
 $assert(str_contains($files['clipboard'], "eliminar_archivo.php"), 'menú del SO puede eliminar archivos');
 $assert(str_contains($files['clipboard'], "osTransferHud"), 'SO muestra medidor de transferencia');

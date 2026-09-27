@@ -90,6 +90,21 @@ a{text-decoration:none;color:inherit}
 }
 .os-address span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .os-storage{font-size:.76rem;color:var(--os-soft);white-space:nowrap}
+.os-folder-commandbar{
+  min-height:42px;display:flex;align-items:center;gap:6px;padding:6px 10px;
+  background:rgba(7,19,32,.84);border-bottom:1px solid var(--os-border);overflow-x:auto
+}
+.os-folder-commandbar button{
+  flex:0 0 auto;border:1px solid rgba(116,196,255,.22);border-radius:8px;
+  background:rgba(255,255,255,.025);color:var(--os-text);padding:6px 9px;
+  display:inline-flex;align-items:center;gap:6px;cursor:pointer;font-size:.76rem
+}
+.os-folder-commandbar button:hover:not(:disabled){
+  border-color:var(--os-accent);background:rgba(38,198,255,.08);color:var(--os-accent-2)
+}
+.os-folder-commandbar button.is-danger{color:#ff9b9b}
+.os-folder-commandbar button:disabled{opacity:.32;cursor:not-allowed}
+.os-folder-command-status{margin-left:auto;min-width:0;color:var(--os-soft);font-size:.7rem;white-space:nowrap}
 .os-explorer-body{padding:12px}
 .os-entry-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:8px;align-content:start}
 .os-entry{
@@ -188,7 +203,9 @@ a{text-decoration:none;color:inherit}
   width:100%;border:0;background:transparent;color:var(--os-text);padding:8px 9px;border-radius:7px;text-align:left;cursor:pointer;display:flex;align-items:center;gap:9px
 }
 .os-file-context button:hover{background:rgba(38,198,255,.1)}
+.os-file-context button.is-danger{color:#ff9b9b}
 .os-file-context button[hidden]{display:none!important}
+.os-folder-context{width:250px}
 
 .os-task-context{
   position:fixed;z-index:9750;width:210px;padding:6px;background:rgba(7,20,34,.98);
@@ -213,6 +230,10 @@ a{text-decoration:none;color:inherit}
   .os-stat-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
   .os-entry-grid{grid-template-columns:repeat(auto-fill,minmax(94px,1fr))}
   .os-storage{display:none}
+  .os-folder-commandbar{padding:5px 6px}
+  .os-folder-commandbar button{padding:7px 9px}
+  .os-folder-commandbar button span{display:none}
+  .os-folder-command-status{display:none}
   .os-start{min-width:49px;width:49px;padding:0;justify-content:center}
   .os-task-item{min-width:72px;max-width:94px}
   .os-task-button{min-width:40px;padding:0 7px;justify-content:center}
@@ -392,6 +413,17 @@ body.arcade-os{
 }
 .arcade-os .modal .table{
   color:var(--os-text)!important;
+}
+.arcade-os .folder-document-editor{
+  min-height:250px;max-height:52vh;overflow:auto;padding:.85rem;
+  border:1px solid var(--os-border);border-radius:.55rem;background:#071421;
+  color:var(--os-text);line-height:1.5;outline:none
+}
+.arcade-os .folder-document-editor:focus{
+  border-color:var(--os-accent);box-shadow:0 0 0 .15rem rgba(38,198,255,.12)
+}
+.arcade-os .folder-document-editor:empty::before{
+  content:attr(data-placeholder);color:var(--os-soft);pointer-events:none
 }
 
 /* Centro unificado de Tareas sobre la barra del sistema. */

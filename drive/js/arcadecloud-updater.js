@@ -9,6 +9,7 @@ class ArcadeCloudUpdaterModule {
     this.status = null;
     this.details = null;
     this.csrf = '';
+    this.applyAction = 'apply';
   }
 
   init() {
@@ -42,7 +43,7 @@ class ArcadeCloudUpdaterModule {
           <div class="form-group mb-2">
             <label for="arcadeCloudUpdatePassword" class="mb-1">Contraseña actual de superusuario</label>
             <input id="arcadeCloudUpdatePassword" type="password" class="form-control form-control-sm" autocomplete="current-password">
-            <small class="form-text text-muted">La actualización sólo se permite si main está limpio y puede avanzar por fast-forward.</small>
+            <small id="arcadeCloudUpdateApplyHelp" class="form-text text-muted">La actualización usa fast-forward. Si existen cambios locales, podrás guardarlos primero en git stash.</small>
           </div>
           <button type="button" id="btnArcadeCloudApplyUpdate" class="btn btn-warning btn-sm">
             <i class="fas fa-download mr-1"></i>Actualizar ahora
@@ -97,6 +98,7 @@ class ArcadeCloudUpdaterModule {
     const branch = String(data.branch || '');
     const behind = Number(data.behind || 0);
     const dirty = Boolean(data.dirty);
+    const canStashAndApply = Boolean(data.can_apply_with_stash);
 
     if (!data.update_available) {
       this.status.textContent = `✓ ArcadeCloud está actualizado · ${local || 'commit desconocido'}`;
@@ -122,36 +124,53 @@ class ArcadeCloudUpdaterModule {
           || (data.moderation_schema_ready ? 'Moderación preparada.' : 'Moderación pendiente.');
         schemaLine += `<div class="${moderationClass}"><strong>Moderación DB:</strong> ${this.escape(moderationMessage)}</div>`;
       }
+      const dirtyFiles = Array.isArray(data.dirty_files) ? data.dirty_files : [];
+      const dirtyList = dirty && dirtyFiles.length
+        ? `<div class="mt-1"><strong>Cambios locales:</strong><ul class="mb-1 pl-4">${dirtyFiles.map((line) => `<li><code>${this.escape(line)}</code></li>`).join('')}</ul></div>`
+        : '';
       this.details.innerHTML = `
         <div><strong>Rama:</strong> ${this.escape(branch)}</div>
         <div><strong>Instalado:</strong> ${this.escape(local)}</div>
         <div><strong>Disponible:</strong> ${this.escape(remote)}</div>
         ${schemaLine}
         ${dirty ? '<div class="text-danger"><strong>Atención:</strong> hay cambios locales sin guardar.</div>' : ''}
+        ${dirtyList}
         ${list}`;
       this.details.classList.remove('d-none');
     }
 
     if (data.update_available && data.can_apply) {
+      this.applyAction = 'apply';
       this.document.getElementById('arcadeCloudUpdateApplyBox')?.classList.remove('d-none');
-    } else if (data.update_available && !data.can_apply) {
+      if (this.applyButton) this.applyButton.innerHTML = '<i class="fas fa-download mr-1"></i>Actualizar ahora';
+    } else if (data.update_available && canStashAndApply) {
+      this.applyAction = 'apply_stash';
+      this.document.getElementById('arcadeCloudUpdateApplyBox')?.classList.remove('d-none');
+      if (this.applyButton) this.applyButton.innerHTML = '<i class="fas fa-box-archive mr-1"></i>Guardar cambios y actualizar';
+      this.status.textContent += ' Puedes guardar los cambios locales en git stash y actualizar sin perderlos.';
+    } else if (data.update_available) {
+      this.applyAction = '';
       const box = this.document.getElementById('arcadeCloudUpdateApplyBox');
       if (box) box.classList.add('d-none');
       this.status.textContent += ' Revisión manual requerida; el updater no forzará el repositorio.';
     } else {
+      this.applyAction = '';
       this.hideApply();
     }
   }
 
   async apply() {
-    if (!this.applyButton || !this.password || !this.csrf) return;
+    if (!this.applyButton || !this.password || !this.csrf || !this.applyAction) return;
     const currentPassword = String(this.password.value || '');
     if (!currentPassword) {
       this.status.textContent = 'Escribe tu contraseña actual de superusuario para confirmar.';
       this.status.className = 'small text-warning';
       return;
     }
-    if (!this.window.confirm('ArcadeCloud avanzará main por fast-forward a la versión disponible. ¿Continuar?')) return;
+    const confirmation = this.applyAction === 'apply_stash'
+      ? 'ArcadeCloud guardará los cambios locales en git stash, avanzará main por fast-forward y NO restaurará esos cambios automáticamente. ¿Continuar?'
+      : 'ArcadeCloud avanzará main por fast-forward a la versión disponible. ¿Continuar?';
+    if (!this.window.confirm(confirmation)) return;
 
     this.applyButton.disabled = true;
     this.applyButton.textContent = 'Actualizando…';
@@ -159,7 +178,7 @@ class ArcadeCloudUpdaterModule {
     this.status.className = 'small text-info';
     try {
       const body = new URLSearchParams();
-      body.set('action', 'apply');
+      body.set('action', this.applyAction);
       body.set('current_password', currentPassword);
       const response = await fetch('update.php', {
         method: 'POST', credentials: 'same-origin', cache: 'no-store',

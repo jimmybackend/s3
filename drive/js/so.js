@@ -9,6 +9,9 @@ class ArcadeCloudOsShell {
     this.startButton = doc.getElementById('osStart');
     this.context = doc.getElementById('fileContextMenu');
     this.contextName = doc.getElementById('fileContextName');
+    this.taskContext = doc.getElementById('osTaskContext');
+    this.taskContextName = doc.getElementById('osTaskContextName');
+    this.activeTaskWindow = null;
     this.zCounter = 200;
     this.viewerCounter = 0;
     this.activeFile = null;
@@ -20,6 +23,7 @@ class ArcadeCloudOsShell {
     this.bindStartMenu();
     this.bindFiles();
     this.bindContextActions();
+    this.bindTaskContext();
     this.bindDocumentDismiss();
     this.bindTaskRefresh();
     this.updateClock();
@@ -115,15 +119,20 @@ class ArcadeCloudOsShell {
       const hasHistory = isVisible || win.dataset.minimized === '1';
       if (!hasHistory) return;
 
+      const item = this.document.createElement('div');
+      item.className = 'os-task-item' + (win.classList.contains('is-active') ? ' is-active' : '');
+
       const button = this.document.createElement('button');
       button.type = 'button';
-      button.className = 'os-task-button' + (win.classList.contains('is-active') ? ' is-active' : '');
+      button.className = 'os-task-button';
       button.innerHTML = '<i class="far fa-window-maximize"></i><span></span>';
 
       const label = button.querySelector('span');
       if (label) label.textContent = win.dataset.windowTitle || 'Ventana';
 
       button.addEventListener('click', () => {
+        this.hideTaskContext();
+
         if (win.classList.contains('is-open') && win.classList.contains('is-active')) {
           this.minimizeWindow(win);
           return;
@@ -134,7 +143,26 @@ class ArcadeCloudOsShell {
         this.activateWindow(win);
       });
 
-      this.taskButtons.appendChild(button);
+      button.addEventListener('contextmenu', (event) => {
+        event.preventDefault();
+        this.showTaskContext(win, event.clientX, event.clientY);
+      });
+
+      const more = this.document.createElement('button');
+      more.type = 'button';
+      more.className = 'os-task-more';
+      more.setAttribute('aria-label', 'Opciones de ventana');
+      more.title = 'Opciones de ventana';
+      more.innerHTML = '<i class="fas fa-ellipsis-vertical"></i>';
+      more.addEventListener('click', (event) => {
+        event.stopPropagation();
+        const rect = more.getBoundingClientRect();
+        this.showTaskContext(win, rect.right - 8, rect.top - 6);
+      });
+
+      item.appendChild(button);
+      item.appendChild(more);
+      this.taskButtons.appendChild(item);
     });
   }
 
@@ -143,6 +171,51 @@ class ArcadeCloudOsShell {
     this.launcher.hidden = true;
     this.startButton.classList.remove('is-open');
     this.startButton.setAttribute('aria-expanded', 'false');
+  }
+
+  hideTaskContext() {
+    if (!this.taskContext) return;
+    this.taskContext.hidden = true;
+    this.activeTaskWindow = null;
+  }
+
+  showTaskContext(win, x, y) {
+    if (!this.taskContext || !win) return;
+
+    this.activeTaskWindow = win;
+    if (this.taskContextName) {
+      this.taskContextName.textContent = win.dataset.windowTitle || 'Ventana';
+    }
+
+    const maximizeLabel = this.taskContext.querySelector('[data-task-action="maximize"] span');
+    if (maximizeLabel) {
+      maximizeLabel.textContent = win.classList.contains('is-maximized') ? 'Restaurar' : 'Maximizar';
+    }
+
+    this.taskContext.hidden = false;
+    const rect = this.taskContext.getBoundingClientRect();
+    this.taskContext.style.left = Math.max(4, Math.min(x, this.window.innerWidth - rect.width - 4)) + 'px';
+    this.taskContext.style.top = Math.max(4, Math.min(y, this.window.innerHeight - rect.height - 52)) + 'px';
+  }
+
+  bindTaskContext() {
+    if (!this.taskContext) return;
+
+    this.taskContext.querySelector('[data-task-action="maximize"]')?.addEventListener('click', () => {
+      const win = this.activeTaskWindow;
+      if (!win) return;
+      win.dataset.minimized = '0';
+      win.classList.add('is-open');
+      this.toggleMaximize(win);
+      this.hideTaskContext();
+    });
+
+    this.taskContext.querySelector('[data-task-action="close"]')?.addEventListener('click', () => {
+      const win = this.activeTaskWindow;
+      if (!win) return;
+      this.closeWindow(win);
+      this.hideTaskContext();
+    });
   }
 
   bindLaunchers() {
@@ -310,14 +383,15 @@ class ArcadeCloudOsShell {
 
     win.id = id;
     win.className = 'os-window os-document-window is-open';
+    if (ext === 'pdf') win.classList.add('os-pdf-window');
     win.dataset.windowTitle = name;
     win.dataset.dynamicWindow = '1';
 
     const offset = (this.viewerCounter % 6) * 24;
-    win.style.left = (9 + offset / 10) + 'vw';
-    win.style.top = (7 + offset / 12) + 'vh';
-    win.style.width = 'min(980px, 82vw)';
-    win.style.height = 'min(680px, 74vh)';
+    win.style.left = (7 + offset / 12) + 'vw';
+    win.style.top = (5 + offset / 14) + 'vh';
+    win.style.width = ext === 'pdf' ? 'min(820px, 72vw)' : 'min(920px, 78vw)';
+    win.style.height = ext === 'pdf' ? 'min(610px, 68vh)' : 'min(650px, 72vh)';
 
     const titlebar = this.document.createElement('div');
     titlebar.className = 'os-window-titlebar';
@@ -509,6 +583,10 @@ class ArcadeCloudOsShell {
 
       if (!event.target.closest('#osLauncher') && !event.target.closest('#osStart')) {
         this.closeLauncher();
+      }
+
+      if (!event.target.closest('#osTaskContext') && !event.target.closest('.os-task-more')) {
+        this.hideTaskContext();
       }
     });
   }

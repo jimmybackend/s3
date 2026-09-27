@@ -5,7 +5,7 @@ namespace ArcadeCloud\Drive\View;
 
 final class FederationModerationPageRenderer
 {
-    public function render(string $csrf): void
+    public function render(string $csrf, bool $embed = false): void
     {
         $driveRoot = dirname(__DIR__, 2);
         $cssVersion = is_file($driveRoot . '/css/federation-moderation.css') ? (int)filemtime($driveRoot . '/css/federation-moderation.css') : 1;
@@ -26,11 +26,11 @@ final class FederationModerationPageRenderer
 <link rel="stylesheet" href="../css/vision-accessibility.css">
 <link rel="stylesheet" href="../css/federation-moderation.css?v=<?= $cssVersion ?>">
 </head>
-<body class="ui-theme theme-neon-green theme-dark vision-normal ascii-on">
+<body class="ui-theme theme-neon-green theme-dark vision-normal ascii-on<?= $embed ? ' federation-moderation-embedded' : '' ?>">
 <script>
 (function(){try{const s=JSON.parse(localStorage.getItem('ui-theme-state')||'{}'),b=document.body;['theme-neon-green','theme-neon-blue','theme-neon-red','theme-neon-yellow','theme-dark','theme-light','vision-normal','vision-myopia','vision-presbyopia','vision-protanopia','vision-deuteranopia','vision-tritanopia'].forEach(c=>b.classList.remove(c));b.classList.add(s.theme||'theme-neon-green',s.mode||'theme-dark',s.vision||'vision-normal');if(s.ascii===false)b.classList.remove('ascii-on')}catch(e){}})();
 </script>
-<nav class="navbar navbar-expand-lg navbar-dark px-3 drive-navbar"><a class="navbar-brand d-flex align-items-center" href="../s3.php"><img src="../ellogo.png" width="48" height="38" class="drive-brand-logo mr-2" alt="Logo"> Cloud Drive</a><div class="ml-auto"><a class="btn btn-outline-light btn-sm" href="../s3.php"><i class="fas fa-arrow-left mr-1"></i> Volver al Drive</a></div></nav>
+<?php if (!$embed): ?><nav class="navbar navbar-expand-lg navbar-dark px-3 drive-navbar"><a class="navbar-brand d-flex align-items-center" href="../s3.php"><img src="../ellogo.png" width="48" height="38" class="drive-brand-logo mr-2" alt="Logo"> Cloud Drive</a><div class="ml-auto"><a class="btn btn-outline-light btn-sm" href="../s3.php"><i class="fas fa-arrow-left mr-1"></i> Volver al Drive</a></div></nav><?php endif; ?>
 <main class="moderation-shell">
   <div class="moderation-header"><div class="moderation-eyebrow">FederationCloud · Superusuario</div><h1><i class="fas fa-shield-halved mr-2"></i>Moderación</h1><p class="text-muted mb-0">Revisión humana, bloqueo por huella y auditoría federada.</p></div>
   <div id="status" class="alert d-none" role="status"></div>

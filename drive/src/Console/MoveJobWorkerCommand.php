@@ -41,6 +41,10 @@ final class MoveJobWorkerCommand
             $status = (string)($final['status'] ?? '');
             $payload = is_array($final['payload'] ?? null) ? $final['payload'] : [];
             $result = is_array($final['result'] ?? null) ? $final['result'] : [];
+            $operation = strtolower((string)($payload['operation'] ?? 'move'));
+            if (!in_array($operation, ['move', 'copy'], true)) $operation = 'move';
+            $copying = $operation === 'copy';
+
             $correlation = ActivityCostRecorder::correlation('move-job', $jobId);
             $activity = ActivityCostRecorder::fromDatabase($app->db());
 
@@ -51,17 +55,17 @@ final class MoveJobWorkerCommand
             if ($type === 'files') {
                 $total = max(0, (int)($result['total'] ?? 0));
                 if ($total > 0) {
-                    $units = [
-                        's3.copy_request' => $total,
-                        's3.delete_request' => $total,
-                    ];
+                    $units = ['s3.copy_request' => $total];
+                    if (!$copying) {
+                        $units['s3.delete_request'] = $total;
+                    }
                     if (($payload['created_destination'] ?? false) === true) {
                         $units['s3.put_request'] = 1;
                     }
 
                     $activity->success(
                         $userId,
-                        'move',
+                        $copying ? 'copy' : 'move',
                         'S3',
                         null,
                         $units,
@@ -69,6 +73,7 @@ final class MoveJobWorkerCommand
                         [
                             'items' => $total,
                             'requested_items' => max($total, (int)($result['requested_total'] ?? $total)),
+                            'operation' => $operation,
                             'async' => true,
                             'job_status' => $status,
                             'created_destination' => (bool)($payload['created_destination'] ?? false),
@@ -79,10 +84,10 @@ final class MoveJobWorkerCommand
                 } elseif ($status === 'failed') {
                     $activity->failure(
                         $userId,
-                        'move',
+                        $copying ? 'copy' : 'move',
                         'S3',
                         $started,
-                        ['async' => true, 'worker' => 'move_job_worker'],
+                        ['operation' => $operation, 'async' => true, 'worker' => 'move_job_worker'],
                         $correlation
                     );
                 }
@@ -91,19 +96,21 @@ final class MoveJobWorkerCommand
                     's3.list_request' => max(0, (int)($result['s3_list_requests'] ?? 0)),
                     's3.copy_request' => max(0, (int)($result['s3_copy_requests'] ?? 0)),
                     's3.delete_request' => max(0, (int)($result['s3_delete_requests'] ?? 0)),
+                    's3.put_request' => max(0, (int)($result['s3_put_requests'] ?? 0)),
                 ];
                 $hasUnits = array_sum($units) > 0;
 
                 if ($hasUnits || $status === 'completed') {
                     $activity->success(
                         $userId,
-                        'folder_move',
+                        $copying ? 'folder_copy' : 'folder_move',
                         'S3',
                         null,
                         $units,
                         $started,
                         [
                             'items' => max(0, (int)($result['s3_copy_requests'] ?? 0)),
+                            'operation' => $operation,
                             'async' => true,
                             'job_status' => $status,
                             'worker' => 'move_job_worker',
@@ -113,10 +120,10 @@ final class MoveJobWorkerCommand
                 } elseif ($status === 'failed') {
                     $activity->failure(
                         $userId,
-                        'folder_move',
+                        $copying ? 'folder_copy' : 'folder_move',
                         'S3',
                         $started,
-                        ['async' => true, 'worker' => 'move_job_worker'],
+                        ['operation' => $operation, 'async' => true, 'worker' => 'move_job_worker'],
                         $correlation
                     );
                 }

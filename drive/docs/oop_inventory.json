@@ -6246,7 +6246,7 @@
     },
     {
       "path": "drive/tests/installer_service_reconcile_contract_smoke.php",
-      "lines": 142,
+      "lines": 144,
       "kind": "test script",
       "classes": 0,
       "functions": [

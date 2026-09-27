@@ -415,14 +415,11 @@ class ArcadeCloudOsClipboard {
 
   updatePasteControls() {
     const hasClipboard = Boolean(this.clipboard);
-    const visibleFiles = this.document.querySelectorAll('#osExplorerLive .os-file-entry').length;
-    const fullPage = visibleFiles >= 20;
 
     this.document.querySelectorAll('.os-clipboard-paste').forEach((button) => {
       const isToolbarPaste = button.dataset.osPasteCurrent === '1';
-      const visible = hasClipboard && (!isToolbarPaste || fullPage);
 
-      button.hidden = !visible;
+      button.hidden = !hasClipboard;
       button.disabled = !hasClipboard;
 
       if (!hasClipboard) {
@@ -431,7 +428,7 @@ class ArcadeCloudOsClipboard {
       }
 
       const moving = String(this.clipboard.mode || '') === 'move';
-      const actionLabel = moving ? 'Mover aquí' : 'Copiar aquí';
+      const actionLabel = moving ? 'Mover aquí' : 'Pegar aquí';
       const name = String(this.clipboard.name || 'elemento');
 
       button.title = actionLabel + ': ' + name;

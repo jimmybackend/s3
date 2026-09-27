@@ -222,7 +222,7 @@ webOsContract(str_contains($paths['federation_admin_renderer'], 'modalServerAdmi
 webOsContract(str_contains($paths['federation_admin_renderer'], 'federationAboutModeration'), 'Acerca de integra moderación');
 webOsContract(str_contains($paths['federation_admin_js'], "provider-admin.php"), 'solicitudes reutilizan endpoint de proveedores');
 webOsContract(str_contains($paths['federation_admin_js'], "moderation-api.php"), 'Acerca de consulta moderación existente');
-webOsContract(str_contains($paths['server_admin_js'], 'data.endpoint'), 'configuración del servidor acepta endpoint reutilizable');
+webOsContract(str_contains($paths['server_admin_js'], 'dataset.endpoint'), 'configuración del servidor acepta endpoint reutilizable');
 webOsContract(str_contains($paths['moderation_renderer'], 'federation-moderation-embedded'), 'moderación soporta modo embebido');
 
 echo "WEB_OS_CONTRACT_OK\n";

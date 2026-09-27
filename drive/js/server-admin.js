@@ -20,6 +20,7 @@ class ServerAdminModule {
     this.reauthRequired = true;
     this.reauthExpiresIn = 0;
     this.mode = 'basic';
+    this.endpoint = 'server-settings.php';
     this.basicNames = new Set([
       'DB_HOST', 'DB_PORT', 'DB_USER', 'DB_PASSWORD', 'DB_NAME',
       'AWS_REGION', 'AWS_S3_BUCKET', 'AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY',
@@ -47,6 +48,7 @@ class ServerAdminModule {
     if (!this.button || !this.modal || !this.saveButton || !this.groupSaveButton || !this.select || !this.tableBody || !this.valueInput || !this.passwordInput || !this.singleEditor || !this.groupEditor || !this.groupFields || !this.groupTitle) return this;
 
     this.csrf = String(this.button.dataset.csrf || '');
+    this.endpoint = String(this.button.dataset.endpoint || 'server-settings.php');
     if (this.modal.parentElement !== this.document.body) this.document.body.appendChild(this.modal);
     if (this.window.jQuery) this.window.jQuery(this.modal).on('shown.bs.modal', () => this.load());
     else this.button.addEventListener('click', () => this.load());
@@ -88,7 +90,7 @@ class ServerAdminModule {
   async load(preferredName = '', preferredGroup = '') {
     this.showMessage('Cargando configuración administrada…', 'info');
     try {
-      const response = await fetch('server-settings.php', {
+      const response = await fetch(this.endpoint, {
         credentials: 'same-origin', cache: 'no-store',
         headers: {'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest'}
       });
@@ -370,7 +372,7 @@ class ServerAdminModule {
   }
 
   async post(body) {
-    const response = await fetch('server-settings.php', {
+    const response = await fetch(this.endpoint, {
       method: 'POST', credentials: 'same-origin', cache: 'no-store',
       headers: {
         'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest',

@@ -27,6 +27,7 @@
     "drive/s3.php",
     "drive/server-console.php",
     "drive/setup/index.php",
+    "drive/so.php",
     "drive/src/Admin/ManagedRuntimeEnvironment.php",
     "drive/src/Setup/BootstrapSetupAuth.php",
     "drive/src/Setup/SetupEntryGuard.php",
@@ -176,6 +177,7 @@
         "drive/s3.php",
         "drive/server-settings.php",
         "drive/set_file_security.php",
+        "drive/so.php",
         "drive/storage_usage.php",
         "drive/subir_archivo.php",
         "drive/subir_publico.php",
@@ -484,6 +486,7 @@
       "active": true,
       "references": [
         "drive/bloque_archivos.php",
+        "drive/so.php",
         "drive/tests/arcadelink_bulk_contract_regression.php"
       ]
     },
@@ -533,6 +536,7 @@
       "active": true,
       "references": [
         "drive/bloque_archivos.php",
+        "drive/so.php",
         "drive/js/editar-txt.js"
       ]
     },
@@ -639,12 +643,14 @@
         "drive/bloque_carpetas.php",
         "drive/fastdrive-control.php",
         "drive/s3.php",
+        "drive/so.php",
         "drive/src/Http/Controller/ActivityCostController.php",
         "drive/src/Http/Controller/AuthController.php",
         "drive/src/Http/Controller/FederationModerationController.php",
         "drive/src/Security/SessionManager.php",
         "drive/src/View/FederationReportPageRenderer.php",
         "drive/tests/index_federation_drop_smoke.php",
+        "drive/tests/web_os_contract_smoke.php",
         "drive/up.php"
       ]
     },
@@ -972,12 +978,14 @@
         "drive/bloque_carpetas.php",
         "drive/fastdrive-control.php",
         "drive/s3.php",
+        "drive/so.php",
         "drive/src/Http/Controller/ActivityCostController.php",
         "drive/src/Http/Controller/AuthController.php",
         "drive/src/Http/Controller/FederationModerationController.php",
         "drive/src/Security/SessionManager.php",
         "drive/src/View/FederationReportPageRenderer.php",
         "drive/tests/index_federation_drop_smoke.php",
+        "drive/tests/web_os_contract_smoke.php",
         "drive/up.php"
       ]
     },
@@ -1006,12 +1014,14 @@
         "drive/bloque_carpetas.php",
         "drive/fastdrive-control.php",
         "drive/s3.php",
+        "drive/so.php",
         "drive/src/Http/Controller/ActivityCostController.php",
         "drive/src/Http/Controller/AuthController.php",
         "drive/src/Http/Controller/FederationModerationController.php",
         "drive/src/Security/SessionManager.php",
         "drive/src/View/FederationReportPageRenderer.php",
         "drive/tests/index_federation_drop_smoke.php",
+        "drive/tests/web_os_contract_smoke.php",
         "drive/up.php"
       ]
     },
@@ -1046,6 +1056,7 @@
       "active": true,
       "references": [
         "drive/s3.php",
+        "drive/so.php",
         "drive/src/Federation/FederationDropGoogleAuthService.php",
         "drive/src/View/FederationDropPageRenderer.php"
       ]
@@ -1213,13 +1224,14 @@
     },
     {
       "path": "drive/s3.php",
-      "size": 96191,
+      "size": 96315,
       "active": true,
       "references": [
         "drive/app_bootstrap.php",
         "drive/ec2.php",
         "drive/fastdrive-control.php",
         "drive/personal_aws_bootstrap.php",
+        "drive/so.php",
         "drive/src/Http/Controller/AuthController.php",
         "drive/src/View/ActivityCostPageRenderer.php",
         "drive/src/View/FederationModerationPageRenderer.php",
@@ -1229,10 +1241,12 @@
         "drive/src/View/PersonalAwsPageRenderer.php",
         "drive/tests/index_federation_drop_smoke.php",
         "drive/tests/media_processing_contract_smoke.php",
+        "drive/tests/web_os_contract_smoke.php",
         "drive/up.php",
         "drive/js/archivos.js",
         "drive/js/carpetas.js",
         "drive/js/federation-share-drive.js",
+        "drive/js/so.js",
         "drive/js/subir.js"
       ]
     },
@@ -1284,13 +1298,24 @@
         "drive/bloque_carpetas.php",
         "drive/fastdrive-control.php",
         "drive/s3.php",
+        "drive/so.php",
         "drive/src/Http/Controller/ActivityCostController.php",
         "drive/src/Http/Controller/AuthController.php",
         "drive/src/Http/Controller/FederationModerationController.php",
         "drive/src/Security/SessionManager.php",
         "drive/src/View/FederationReportPageRenderer.php",
         "drive/tests/index_federation_drop_smoke.php",
+        "drive/tests/web_os_contract_smoke.php",
         "drive/up.php"
+      ]
+    },
+    {
+      "path": "drive/so.php",
+      "size": 17971,
+      "active": true,
+      "references": [
+        "drive/s3.php",
+        "drive/tests/web_os_contract_smoke.php"
       ]
     },
     {
@@ -2990,6 +3015,14 @@
       ]
     },
     {
+      "path": "drive/src/System/NodeCapabilityService.php",
+      "size": 8545,
+      "active": false,
+      "references": [
+        "drive/tests/web_os_contract_smoke.php"
+      ]
+    },
+    {
       "path": "drive/src/Upload/AdminMultipartUploadService.php",
       "size": 6915,
       "active": false,
@@ -3446,6 +3479,12 @@
       "references": []
     },
     {
+      "path": "drive/tests/web_os_contract_smoke.php",
+      "size": 3571,
+      "active": false,
+      "references": []
+    },
+    {
       "path": "drive/thumb.php",
       "size": 256,
       "active": true,
@@ -3689,6 +3728,7 @@
       "active": true,
       "references": [
         "drive/bloque_archivos.php",
+        "drive/so.php",
         "drive/src/Media/MediaPlaylistService.php",
         "drive/js/archivos.js",
         "drive/js/imagenes.js"

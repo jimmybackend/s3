@@ -169,6 +169,15 @@ webOsContract(str_contains($paths['css'], '.os-entry-thumbnail'), 'miniaturas ti
 webOsContract(str_contains($paths['css'], '.os-media-overlay'), 'audio/video tienen componente flotante');
 webOsContract(str_contains($paths['css'], 'z-index:20000'), 'reproductor queda por encima de ventanas y modales');
 
+webOsContract(str_contains($paths['shell'], "'limite' => 20"), 'Mis datos pagina archivos de 20 en 20');
+webOsContract(str_contains($paths['shell'], 'class="os-folder-pagination"'), 'cada carpeta muestra paginador superior');
+webOsContract(str_contains($paths['shell'], 'data-explorer-page='), 'paginador conserva número de página');
+webOsContract(str_contains($paths['shell'], 'Primera página'), 'paginador ofrece salto a primera página');
+webOsContract(str_contains($paths['shell'], 'Última página'), 'paginador ofrece salto a última página');
+webOsContract(str_contains($paths['js'], "url.searchParams.set('pagina'"), 'navegación AJAX solicita la página seleccionada');
+webOsContract(str_contains($paths['js'], 'arcadePage: nextPage'), 'historial conserva página actual');
+webOsContract(str_contains($paths['css'], '.os-folder-pagination'), 'paginador tiene estilo propio en el Web OS');
+
 // Terminal restringida y nomenclatura única Mis datos.
 webOsContract(!str_contains($paths['shell'], '>Mis documentos<'), 'Web OS ya no muestra Mis documentos');
 webOsContract(!str_contains($paths['shell'], '> Mis archivos</button>'), 'Web OS ya no muestra Mis archivos');

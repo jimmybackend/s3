@@ -89,7 +89,7 @@
 | `drive/download.php` | ninguna |
 | `drive/download_multiple.php` | ninguna |
 | `drive/ec2-cron.php` | ninguna |
-| `drive/eliminar_archivo.php` | `drive/js/archivos.js`, `drive/js/elimina-uno.js` |
+| `drive/eliminar_archivo.php` | `drive/tests/web_os_clipboard_contract_smoke.php`, `drive/js/archivos.js`, `drive/js/elimina-uno.js`, `drive/js/so-clipboard.js` |
 | `drive/eliminar_carpeta.php` | `drive/js/carpetas.js` |
 | `drive/encriptar_archivo.php` | `drive/js/archivos.js` |
 | `drive/fastdrive-control.php` | `drive/tests/fastdrive_control_contract_smoke.php` |
@@ -130,7 +130,7 @@
 | `drive/federationdrop/google-callback.php` | `drive/src/Federation/FederationDropGoogleAuthConfig.php`, `drive/tests/federation_drop_google_oidc_smoke.php` |
 | `drive/federationdrop/google-login.php` | `drive/src/Federation/FederationDropGoogleAuthService.php`, `drive/src/View/FederationDropPageRenderer.php` |
 | `drive/federationdrop/google-logout.php` | `drive/src/Federation/FederationDropGoogleAuthService.php`, `drive/src/View/FederationDropPageRenderer.php` |
-| `drive/generar_token.php` | `drive/js/archivos.js` |
+| `drive/generar_token.php` | `drive/tests/web_os_clipboard_contract_smoke.php`, `drive/js/archivos.js`, `drive/js/so-clipboard.js` |
 | `drive/listar_carpetas.php` | `drive/js/carpetas.js` |
 | `drive/media_playlist.php` | `drive/js/media-floating.js` |
 | `drive/media_processing.php` | `drive/tests/media_processing_contract_smoke.php`, `drive/js/media-processing.js` |
@@ -173,12 +173,12 @@
 | `drive/src/Application/FileAccessService.php` | `drive/tests/arcadelink_bulk_contract_regression.php` |
 | `drive/src/Application/FileKeyRotationService.php` | ninguna |
 | `drive/src/Application/FileListService.php` | ninguna |
-| `drive/src/Application/FileMutationService.php` | ninguna |
+| `drive/src/Application/FileMutationService.php` | `drive/tests/web_os_clipboard_contract_smoke.php` |
 | `drive/src/Application/FileSearchService.php` | ninguna |
 | `drive/src/Application/FolderDocumentService.php` | `drive/tests/folder_document_sanitizer.php` |
-| `drive/src/Application/FolderMutationService.php` | ninguna |
+| `drive/src/Application/FolderMutationService.php` | `drive/tests/web_os_clipboard_contract_smoke.php` |
 | `drive/src/Application/FolderQueryService.php` | ninguna |
-| `drive/src/Application/MoveJobService.php` | ninguna |
+| `drive/src/Application/MoveJobService.php` | `drive/tests/web_os_clipboard_contract_smoke.php` |
 | `drive/src/Application/PhpLintService.php` | ninguna |
 | `drive/src/Application/TemporaryZip.php` | ninguna |
 | `drive/src/Application/TextFileService.php` | ninguna |
@@ -318,7 +318,7 @@
 | `drive/src/Http/Controller/LegacyUploadController.php` | ninguna |
 | `drive/src/Http/Controller/MediaPlaylistController.php` | ninguna |
 | `drive/src/Http/Controller/MediaProcessingController.php` | `drive/tests/media_processing_contract_smoke.php` |
-| `drive/src/Http/Controller/MoveJobController.php` | ninguna |
+| `drive/src/Http/Controller/MoveJobController.php` | `drive/tests/web_os_clipboard_contract_smoke.php` |
 | `drive/src/Http/Controller/NavigationController.php` | ninguna |
 | `drive/src/Http/Controller/PersonalAwsController.php` | ninguna |
 | `drive/src/Http/Controller/PollyTaskController.php` | ninguna |
@@ -371,8 +371,8 @@
 | `drive/src/Sharing/ShareLinkService.php` | ninguna |
 | `drive/src/Sharing/ShareObjectStorage.php` | ninguna |
 | `drive/src/Sharing/ShareTokenStore.php` | ninguna |
-| `drive/src/Storage/FileRecordRepository.php` | ninguna |
-| `drive/src/Storage/FolderMutationRepository.php` | ninguna |
+| `drive/src/Storage/FileRecordRepository.php` | `drive/tests/web_os_clipboard_contract_smoke.php` |
+| `drive/src/Storage/FolderMutationRepository.php` | `drive/tests/web_os_clipboard_contract_smoke.php` |
 | `drive/src/Storage/FolderRepository.php` | ninguna |
 | `drive/src/Storage/MoveJobStore.php` | ninguna |
 | `drive/src/Storage/StorageObjectNameCodec.php` | ninguna |
@@ -457,6 +457,7 @@
 | `drive/tests/upload_catalog_registration_regression.php` | ninguna |
 | `drive/tests/user_identity_presenter_smoke.php` | ninguna |
 | `drive/tests/user_profile_validator_smoke.php` | ninguna |
+| `drive/tests/web_os_clipboard_contract_smoke.php` | ninguna |
 | `drive/tests/web_os_contract_smoke.php` | ninguna |
 | `drive/token_audio.php` | `drive/src/Sharing/ShareLinkService.php`, `drive/js/media-processing.js` |
 | `drive/token_texto.php` | `drive/src/Sharing/ShareLinkService.php`, `drive/tests/federation_access_message_smoke.php` |

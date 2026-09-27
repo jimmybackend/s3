@@ -546,8 +546,10 @@
       "size": 264,
       "active": false,
       "references": [
+        "drive/tests/web_os_clipboard_contract_smoke.php",
         "drive/js/archivos.js",
-        "drive/js/elimina-uno.js"
+        "drive/js/elimina-uno.js",
+        "drive/js/so-clipboard.js"
       ]
     },
     {
@@ -1019,7 +1021,9 @@
       "size": 254,
       "active": false,
       "references": [
-        "drive/js/archivos.js"
+        "drive/tests/web_os_clipboard_contract_smoke.php",
+        "drive/js/archivos.js",
+        "drive/js/so-clipboard.js"
       ]
     },
     {
@@ -1507,9 +1511,11 @@
     },
     {
       "path": "drive/src/Application/FileMutationService.php",
-      "size": 4252,
+      "size": 7335,
       "active": false,
-      "references": []
+      "references": [
+        "drive/tests/web_os_clipboard_contract_smoke.php"
+      ]
     },
     {
       "path": "drive/src/Application/FileSearchService.php",
@@ -1527,9 +1533,11 @@
     },
     {
       "path": "drive/src/Application/FolderMutationService.php",
-      "size": 8396,
+      "size": 12545,
       "active": false,
-      "references": []
+      "references": [
+        "drive/tests/web_os_clipboard_contract_smoke.php"
+      ]
     },
     {
       "path": "drive/src/Application/FolderQueryService.php",
@@ -1539,9 +1547,11 @@
     },
     {
       "path": "drive/src/Application/MoveJobService.php",
-      "size": 7544,
+      "size": 9415,
       "active": false,
-      "references": []
+      "references": [
+        "drive/tests/web_os_clipboard_contract_smoke.php"
+      ]
     },
     {
       "path": "drive/src/Application/PhpLintService.php",
@@ -1704,7 +1714,7 @@
     },
     {
       "path": "drive/src/Console/MoveJobWorkerCommand.php",
-      "size": 5045,
+      "size": 5621,
       "active": false,
       "references": []
     },
@@ -2607,9 +2617,11 @@
     },
     {
       "path": "drive/src/Http/Controller/MoveJobController.php",
-      "size": 6846,
+      "size": 8387,
       "active": false,
-      "references": []
+      "references": [
+        "drive/tests/web_os_clipboard_contract_smoke.php"
+      ]
     },
     {
       "path": "drive/src/Http/Controller/NavigationController.php",
@@ -2982,15 +2994,19 @@
     },
     {
       "path": "drive/src/Storage/FileRecordRepository.php",
-      "size": 4535,
+      "size": 6700,
       "active": false,
-      "references": []
+      "references": [
+        "drive/tests/web_os_clipboard_contract_smoke.php"
+      ]
     },
     {
       "path": "drive/src/Storage/FolderMutationRepository.php",
-      "size": 10303,
+      "size": 14353,
       "active": false,
-      "references": []
+      "references": [
+        "drive/tests/web_os_clipboard_contract_smoke.php"
+      ]
     },
     {
       "path": "drive/src/Storage/FolderRepository.php",
@@ -3534,6 +3550,12 @@
     {
       "path": "drive/tests/user_profile_validator_smoke.php",
       "size": 1915,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/tests/web_os_clipboard_contract_smoke.php",
+      "size": 2577,
       "active": false,
       "references": []
     },

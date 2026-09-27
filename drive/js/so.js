@@ -21,6 +21,7 @@
   const openWindow = (id) => {
     const win = document.getElementById(id);
     if (!win) return;
+    win.dataset.minimized = '0';
     win.classList.add('is-open');
     win.hidden = false;
     activateWindow(win);
@@ -29,6 +30,7 @@
 
   const closeWindow = (win) => {
     if (!win) return;
+    win.dataset.minimized = '0';
     win.classList.remove('is-open', 'is-active');
     syncTaskbar();
   };

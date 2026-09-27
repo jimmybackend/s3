@@ -18,7 +18,7 @@ Usuario
       -> S3 privado
 ```
 
-La interfaz podrá presentar conceptos como **Mi nodo**, **Mi nodo** y la raíz lógica del usuario:
+La interfaz podrá presentar **Mi nodo** y la raíz lógica del usuario:
 
 ```text
 user_id = 1 -> Data/
@@ -101,6 +101,50 @@ Responsabilidades previstas:
 El mismo nodo podrá ofrecer varias funciones sólo cuando ArcadeCloud pueda impedir competencia peligrosa entre tareas incompatibles.
 
 ## Estado actual
+
+### Carpetas y Bloc de notas
+
+Las carpetas también son objetos operables dentro del Web OS. No deben quedar reducidas a un simple enlace de navegación.
+
+Acciones previstas sobre una carpeta, reutilizando los servicios/endpoints actuales siempre que existan:
+
+- [ ] abrir carpeta en una ventana del Explorador;
+- [ ] sincronizar carpeta;
+- [ ] renombrar/editar nombre;
+- [ ] mover carpeta;
+- [ ] eliminar carpeta con confirmación;
+- [ ] crear archivo de texto dentro de la carpeta;
+- [ ] refrescar únicamente la ventana/carpeta afectada después de una operación;
+- [ ] mostrar tareas largas en el Centro unificado de Tareas;
+- [ ] respetar `user_id_` y `UserStoragePath` en todas las operaciones.
+
+El Web OS tendrá un **Bloc de notas de ArcadeCloud** para crear texto sin salir del escritorio:
+
+```text
+Carpeta
+  -> Nuevo
+      -> Documento de texto
+          -> ventana Bloc de notas
+              -> pegar/escribir texto
+              -> indicar nombre
+              -> elegir extensión permitida
+              -> Guardar / Cancelar
+```
+
+Requisitos del Bloc de notas:
+
+- [ ] se abre dentro de una ventana movible/minimizable/maximizable del SO;
+- [ ] el destino queda ligado a la carpeta desde la que se creó;
+- [ ] nombre obligatorio y validado;
+- [ ] extensiones iniciales seguras: `.txt`, `.md`, `.json`, `.csv`, `.log`;
+- [ ] no aceptar `../`, rutas absolutas ni separadores que permitan traversal;
+- [ ] guardar mediante servicio backend de ArcadeCloud, nunca con credenciales S3 en navegador;
+- [ ] objeto S3 privado;
+- [ ] registrar inmediatamente el nuevo archivo en `FileS3`;
+- [ ] respetar nombre visible / nombre físico;
+- [ ] actualizar sólo la ventana del Explorador afectada;
+- [ ] ofrecer **Guardar** y **Cancelar**;
+- [ ] si el nombre ya existe, pedir decisión explícita antes de sobrescribir o crear copia.
 
 ### Base de ArcadeCloud
 
@@ -375,6 +419,7 @@ Toda aplicación integrada deberá respetar:
 ## Orden de implementación propuesto
 
 - [ ] **Fase 0 — diseño del ArcadeCloud Web OS.**
+- [ ] Fase 0.1 — acciones de carpetas + Bloc de notas dentro del Web OS.
 - [ ] Fase 1 — `NodeCapabilityService` genérico.
 - [ ] Fase 2 — `ResourceModeManager`.
 - [ ] Fase 3 — nuevo shell/escritorio y ventanas.

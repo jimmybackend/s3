@@ -262,16 +262,17 @@ class FederationOsAdminModule {
   }
 
   async fetchJson(url, options = {}) {
-    const response = await fetch(url, {
+    const requestOptions = {
+      ...options,
       credentials: 'same-origin',
       cache: 'no-store',
       headers: {
         'Accept': 'application/json',
         'X-Requested-With': 'XMLHttpRequest',
         ...(options.headers || {})
-      },
-      ...options
-    });
+      }
+    };
+    const response = await fetch(url, requestOptions);
 
     const raw = await response.text();
     let data = null;

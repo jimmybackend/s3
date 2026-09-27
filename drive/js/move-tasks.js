@@ -37,15 +37,20 @@ class DriveMoveTasks {
       throw new Error(
         (json && (json.error || json.mensaje)) ||
         text ||
-        `HTTP ${response.status}`
+        ('HTTP ' + response.status)
       );
     }
 
     const jobId = String(json.job_id);
     this.remember(jobId);
-    this.notify(json.mensaje || 'Movimiento enviado a segundo plano.', 'info', 5500);
+    this.notify(json.mensaje || 'Transferencia enviada a segundo plano.', 'info', 5500);
+    this.dispatch('drive:move-task-progress', Object.assign({ progress: 0 }, json));
     this.watch(jobId);
-    this.dispatch('drive:background-task-started', { kind: 'move', job_id: jobId });
+    this.dispatch('drive:background-task-started', {
+      kind: 'move',
+      operation: String(json.operation || payload?.operation || 'move'),
+      job_id: jobId
+    });
     return json;
   }
 
@@ -76,17 +81,18 @@ class DriveMoveTasks {
         try { json = JSON.parse(text); } catch (_) {}
 
         if (!response.ok || !json || json.ok !== true) {
-          throw new Error((json && (json.error || json.mensaje)) || text || `HTTP ${response.status}`);
+          throw new Error((json && (json.error || json.mensaje)) || text || ('HTTP ' + response.status));
         }
 
         state.networkErrors = 0;
         const status = String(json.estado || '');
+        this.dispatch('drive:move-task-progress', json);
 
         if (status === 'completed') {
           state.stopped = true;
           this.active.delete(jobId);
           this.forget(jobId);
-          this.notify(json.mensaje || 'Movimiento completado.', 'success', 6000);
+          this.notify(json.mensaje || 'Transferencia completada.', 'success', 6000);
           await this.refreshUi(json);
           this.dispatch('drive:move-task-completed', json);
           return;
@@ -96,7 +102,7 @@ class DriveMoveTasks {
           state.stopped = true;
           this.active.delete(jobId);
           this.forget(jobId);
-          this.notify(json.error || json.mensaje || 'No se pudo completar el movimiento.', 'danger', 9000);
+          this.notify(json.error || json.mensaje || 'No se pudo completar la transferencia.', 'danger', 9000);
           this.dispatch('drive:move-task-failed', json);
           return;
         }
@@ -105,7 +111,7 @@ class DriveMoveTasks {
           state.stopped = true;
           this.active.delete(jobId);
           this.forget(jobId);
-          this.notify(json.mensaje || 'Movimiento detenido.', 'info', 6000);
+          this.notify(json.mensaje || 'Transferencia detenida.', 'info', 6000);
           this.dispatch('drive:move-task-cancelled', json);
           return;
         }
@@ -175,7 +181,7 @@ class DriveMoveTasks {
       this.document.body.appendChild(box);
     }
 
-    box.className = `alert alert-${type} shadow`;
+    box.className = 'alert alert-' + type + ' shadow';
     box.textContent = String(message || '');
     box.style.display = 'block';
 
@@ -237,11 +243,30 @@ window.ARCADECLOUD_UNIFIED_TASK_CENTER = true;
   ];
 
   scripts.forEach(([name, src]) => {
-    if (doc.querySelector(`script[data-${name}]`)) return;
+    if (doc.querySelector('script[data-' + name + ']')) return;
     const script = doc.createElement('script');
     script.src = src;
     script.async = false;
-    script.setAttribute(`data-${name}`, '1');
+    script.setAttribute('data-' + name, '1');
     doc.head.appendChild(script);
   });
+})(window, document);
+
+(function loadWebOsClipboard(win, doc) {
+  const load = () => {
+    if (!doc.getElementById('osExplorerLive')) return;
+    if (doc.querySelector('script[data-os-clipboard]')) return;
+
+    const script = doc.createElement('script');
+    script.src = 'js/so-clipboard.js?v=20260927-1';
+    script.async = false;
+    script.setAttribute('data-os-clipboard', '1');
+    doc.head.appendChild(script);
+  };
+
+  if (doc.readyState === 'loading') {
+    doc.addEventListener('DOMContentLoaded', load, { once: true });
+  } else {
+    load();
+  }
 })(window, document);

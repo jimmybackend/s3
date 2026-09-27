@@ -347,6 +347,17 @@ class FolderDocumentModule {
       const savedName = data.data && data.data.nombre_original ? data.data.nombre_original : name;
       setMessage('Guardado: ' + savedName, 'success');
 
+      try {
+        document.dispatchEvent(new CustomEvent('drive:folder-document-created', {
+          detail: {
+            route: route,
+            name: savedName,
+            data: data.data || {}
+          }
+        }));
+        document.dispatchEvent(new Event('drive:storage-changed'));
+      } catch (_) {}
+
       if (sameRoute(route, window.rutaActual || '')) {
         try {
           if (typeof window.actualizarBloqueArchivos === 'function') {
@@ -423,6 +434,29 @@ class FolderDocumentModule {
     event.preventDefault();
     saveDocument(form);
   });
+
+  window.openFolderDocumentCreator = function openFolderDocumentCreator(route, name) {
+    const action = document.createElement('button');
+    action.setAttribute('data-route', String(route || ''));
+    action.setAttribute('data-name', String(name || route || ''));
+    openForFolder(action);
+
+    if (window.jQuery && window.jQuery.fn && typeof window.jQuery.fn.modal === 'function') {
+      window.jQuery('#modalCrearDocumentoCarpeta').modal('show');
+      return true;
+    }
+
+    if (window.bootstrap && window.bootstrap.Modal) {
+      const modal = byId('modalCrearDocumentoCarpeta');
+      if (modal) {
+        const instance = window.bootstrap.Modal.getInstance(modal) || new window.bootstrap.Modal(modal);
+        instance.show();
+        return true;
+      }
+    }
+
+    return false;
+  };
   }
 }
 

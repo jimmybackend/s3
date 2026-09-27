@@ -7,4 +7,8 @@ use ArcadeCloud\Drive\Core\ApplicationKernel;
 use ArcadeCloud\Drive\Http\Controller\FederationPortalController;
 use ArcadeCloud\Drive\View\FederationPortalRenderer;
 
-(new FederationPortalController(ApplicationKernel::app(), new FederationPortalRenderer()))->index();
+(new FederationPortalController(
+    ApplicationKernel::app(),
+    new FederationPortalRenderer(),
+    \ArcadeCloud\Drive\Http\Request::fromGlobals()
+))->index();

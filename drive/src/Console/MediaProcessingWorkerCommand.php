@@ -221,9 +221,11 @@ final class MediaProcessingWorkerCommand
             );
         }
 
+        // Antes de publicar comprobamos una última vez la cancelación. A partir
+        // de aquí publicamos el conjunto completo para no dejar sólo algunas partes.
+        $this->assertNotCancelled((string)$job['job_id']);
         $outputs = [];
         foreach ($localFiles as $i => $local) {
-            $this->assertNotCancelled((string)$job['job_id']);
             $mime = (string)$job['operation'] === 'split_video'
                 ? $this->videoMime($sourceExt)
                 : $this->audioMime($sourceExt);
@@ -665,7 +667,8 @@ final class MediaProcessingWorkerCommand
             'mp3' => 'mp3',
             'wav' => 'wav',
             'flac' => 'flac',
-            'm4a','aac' => $video ? 'mp4' : 'adts',
+            'm4a' => 'mp4',
+            'aac' => 'adts',
             default => '',
         };
     }

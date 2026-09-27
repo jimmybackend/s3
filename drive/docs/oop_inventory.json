@@ -1,11 +1,11 @@
 {
   "summary": {
-    "php_total": 454,
-    "php_class_modules": 271,
+    "php_total": 457,
+    "php_class_modules": 272,
     "php_needs_migration": 0,
-    "php_tests": 42,
-    "js_total": 48,
-    "js_class_modules": 48,
+    "php_tests": 43,
+    "js_total": 49,
+    "js_class_modules": 49,
     "js_needs_migration": 0,
     "js_compatibility_facades": 7
   },
@@ -1771,7 +1771,7 @@
     },
     {
       "path": "drive/s3.php",
-      "lines": 2359,
+      "lines": 2363,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -1860,6 +1860,24 @@
       "db": false,
       "s3": false,
       "bootstrap": false,
+      "html": true,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/so.php",
+      "lines": 361,
+      "kind": "view/entrypoint",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [
+        "GET",
+        "SERVER"
+      ],
+      "db": false,
+      "s3": false,
+      "bootstrap": true,
       "html": true,
       "namespace": false,
       "issues": []
@@ -5383,6 +5401,21 @@
       "issues": []
     },
     {
+      "path": "drive/src/System/NodeCapabilityService.php",
+      "lines": 251,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
       "path": "drive/src/Upload/AdminMultipartUploadService.php",
       "lines": 221,
       "kind": "class/module",
@@ -6516,6 +6549,23 @@
       "issues": []
     },
     {
+      "path": "drive/tests/web_os_contract_smoke.php",
+      "lines": 62,
+      "kind": "test script",
+      "classes": 0,
+      "functions": [
+        "webOsContract"
+      ],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
       "path": "drive/thumb.php",
       "lines": 10,
       "kind": "thin endpoint",
@@ -7632,6 +7682,20 @@
       "issues": [
         "window functions: triggerSyncFolderS3, triggerSyncS3"
       ]
+    },
+    {
+      "path": "drive/js/so.js",
+      "lines": 275,
+      "kind": "class/module",
+      "classes": [
+        "ArcadeCloudOsShell"
+      ],
+      "functions": [],
+      "window_assign": [],
+      "window_func": [],
+      "top_vars": [],
+      "iife": false,
+      "issues": []
     },
     {
       "path": "drive/js/soportesMediaTypes.js",

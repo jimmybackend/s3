@@ -117,6 +117,8 @@ installerContract(str_contains($uninstaller, '/var/lib/arcadecloud-media'), 'des
 
 installerContract(str_contains($mediaInstaller, 'ARCADECLOUD_RUNTIME_ENV'), 'worker usa runtime administrado canónico');
 installerContract(str_contains($mediaInstaller, 'php ffmpeg ffprobe lame'), 'worker exige herramientas multimedia completas');
+installerContract(str_contains($mediaInstaller, 'systemctl restart arcadecloud-media-worker.service'), 'actualización reinicia worker para cargar código nuevo');
+installerContract(!str_contains($mediaInstaller, 'enable --now arcadecloud-media-worker.service'), 'instalador no deja proceso multimedia viejo tras actualizar código');
 installerContract(!str_contains($mediaInstaller, 'User=nginx'), 'worker no fija nginx como usuario universal');
 installerContract(str_contains($bootstrap, 'runtime-env.json'), 'bootstrap de réplica usa runtime-env.json');
 installerContract(str_contains($bootstrap, 'arcadecloud-drive-admin'), 'bootstrap actualiza configuración mediante helper privilegiado');

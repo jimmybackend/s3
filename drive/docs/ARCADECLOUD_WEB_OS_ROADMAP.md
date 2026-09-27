@@ -18,7 +18,7 @@ Usuario
       -> S3 privado
 ```
 
-La interfaz podrá presentar conceptos como **Mi PC**, **Mi nodo** y la raíz lógica del usuario:
+La interfaz podrá presentar conceptos como **Mi nodo**, **Mi nodo** y la raíz lógica del usuario:
 
 ```text
 user_id = 1 -> Data/

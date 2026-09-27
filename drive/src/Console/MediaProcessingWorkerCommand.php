@@ -24,9 +24,9 @@ final class MediaProcessingWorkerCommand
 
     public function run(bool $loop = false, int $sleepSeconds = 5): int
     {
-        if ((string)getenv('ARCADECLOUD_MEDIA_WORKER') !== '1') {
+        if (!$this->mediaWorkerAuthorized()) {
             throw new RuntimeException(
-                'Este proceso sólo puede ejecutarse en un nodo autorizado con ARCADECLOUD_MEDIA_WORKER=1.'
+                'Este proceso sólo puede ejecutarse en un nodo autorizado con ARCADECLOUD_MEDIA_WORKER=1/true.'
             );
         }
 
@@ -190,20 +190,15 @@ final class MediaProcessingWorkerCommand
             $length = max(0.1, $end - $start);
             $out = $workDir . '/part-' . $i . '.' . $sourceExt;
 
-            $this->runProcess([
-                'ffmpeg','-hide_banner','-loglevel','error','-y',
-                '-ss',sprintf('%.3f',$start),
-                '-i',$sourcePath,
-                '-t',sprintf('%.3f',$length),
-                '-map','0',
-                '-c','copy',
-                '-avoid_negative_ts','make_zero',
+            $this->createSplitSegment(
+                (string)$job['operation'],
+                $sourcePath,
                 $out,
-            ]);
-
-            if (!is_file($out) || filesize($out) === 0) {
-                throw new RuntimeException('FFmpeg no produjo correctamente la parte ' . $i . '.');
-            }
+                $sourceExt,
+                $start,
+                $length,
+                $i
+            );
             $localFiles[$i] = [
                 'path' => $out,
                 'start_seconds' => round($start, 3),
@@ -242,6 +237,161 @@ final class MediaProcessingWorkerCommand
         }
 
         return $outputs;
+    }
+
+    /**
+     * Divide un segmento con una estrategia de dos niveles:
+     * 1) stream-copy sólo de video/audio para conservar calidad y velocidad;
+     * 2) si el contenedor/timestamps no permiten copiar, recodifica el segmento.
+     *
+     * Nunca se mapean streams de datos, adjuntos o subtítulos de forma genérica:
+     * son una causa frecuente de fallos al remuxear MP4 reales.
+     */
+    private function createSplitSegment(
+        string $operation,
+        string $sourcePath,
+        string $out,
+        string $sourceExt,
+        float $start,
+        float $length,
+        int $part
+    ): void {
+        $isVideo = $operation === 'split_video';
+
+        $command = [
+            'ffmpeg','-hide_banner','-loglevel','error','-y',
+            '-ss',sprintf('%.3f',$start),
+            '-i',$sourcePath,
+            '-t',sprintf('%.3f',$length),
+        ];
+
+        if ($isVideo) {
+            $command = array_merge($command, [
+                '-map','0:v:0',
+                '-map','0:a?',
+                '-sn','-dn',
+                '-map_metadata','-1',
+                '-map_chapters','-1',
+                '-c','copy',
+            ]);
+        } else {
+            $command = array_merge($command, [
+                '-map','0:a:0',
+                '-vn','-sn','-dn',
+                '-map_metadata','-1',
+                '-map_chapters','-1',
+                '-c','copy',
+            ]);
+        }
+
+        $command[] = '-avoid_negative_ts';
+        $command[] = 'make_zero';
+        if ($isVideo && in_array($sourceExt, ['mp4','m4v','mov'], true)) {
+            $command[] = '-movflags';
+            $command[] = '+faststart';
+        }
+        $command[] = $out;
+
+        try {
+            $this->runProcess($command);
+            $this->assertMediaOutput($out, $part);
+            return;
+        } catch (\Throwable $copyError) {
+            @unlink($out);
+
+            // El fallback de recodificación se usa para contenedores de video
+            // compatibles. Para audio u otros contenedores conservamos el error
+            // preciso del intento seguro, sin producir un archivo engañoso.
+            if (!$isVideo || !in_array($sourceExt, ['mp4','m4v','mov','mkv'], true)) {
+                throw new RuntimeException(
+                    'No se pudo dividir la parte ' . $part . ' mediante copia segura: '
+                    . $copyError->getMessage(),
+                    0,
+                    $copyError
+                );
+            }
+
+            error_log(
+                '[ArcadeCloud media-worker] stream-copy falló en parte ' . $part
+                . '; se reintentará recodificando: ' . $copyError->getMessage()
+            );
+
+            $this->transcodeVideoSegment($sourcePath, $out, $sourceExt, $start, $length, $part);
+            $this->assertMediaOutput($out, $part);
+        }
+    }
+
+    private function transcodeVideoSegment(
+        string $sourcePath,
+        string $out,
+        string $sourceExt,
+        float $start,
+        float $length,
+        int $part
+    ): void {
+        $videoEncoder = $this->ffmpegHasEncoder('libx264')
+            ? 'libx264'
+            : ($this->ffmpegHasEncoder('mpeg4') ? 'mpeg4' : '');
+
+        if ($videoEncoder === '') {
+            throw new RuntimeException(
+                '[DEPENDENCY_MISSING] La copia directa falló y FFmpeg no ofrece libx264 ni mpeg4 '
+                . 'para recodificar la parte ' . $part . '.'
+            );
+        }
+
+        $command = [
+            'ffmpeg','-hide_banner','-loglevel','error','-y',
+            '-i',$sourcePath,
+            '-ss',sprintf('%.3f',$start),
+            '-t',sprintf('%.3f',$length),
+            '-map','0:v:0',
+            '-map','0:a?',
+            '-sn','-dn',
+            '-map_metadata','-1',
+            '-map_chapters','-1',
+            '-c:v',$videoEncoder,
+        ];
+
+        if ($videoEncoder === 'libx264') {
+            $command = array_merge($command, [
+                '-preset','veryfast',
+                '-crf','18',
+                '-pix_fmt','yuv420p',
+            ]);
+        } else {
+            $command = array_merge($command, ['-q:v','2']);
+        }
+
+        if ($this->ffmpegHasEncoder('aac')) {
+            $command = array_merge($command, ['-c:a','aac','-b:a','160k']);
+        } else {
+            // Si AAC no está disponible, conservar el audio original sigue siendo
+            // preferible a descartar la pista. FFmpeg validará el contenedor.
+            $command = array_merge($command, ['-c:a','copy']);
+        }
+
+        $command = array_merge($command, ['-avoid_negative_ts','make_zero']);
+        if (in_array($sourceExt, ['mp4','m4v','mov'], true)) {
+            $command = array_merge($command, ['-movflags','+faststart']);
+        }
+        $command[] = $out;
+
+        $this->runProcess($command);
+    }
+
+    private function assertMediaOutput(string $path, int $part): void
+    {
+        if (!is_file($path) || (int)filesize($path) <= 0) {
+            throw new RuntimeException('FFmpeg no produjo correctamente la parte ' . $part . '.');
+        }
+
+        $duration = $this->probeDuration($path);
+        if (!is_finite($duration) || $duration <= 0.05) {
+            throw new RuntimeException(
+                'La parte ' . $part . ' fue creada pero FFprobe no la considera reproducible.'
+            );
+        }
     }
 
     private function publish(
@@ -349,30 +499,59 @@ final class MediaProcessingWorkerCommand
 
     private function runProcess(array $command, bool $capture = false): string
     {
+        // Archivos temporales en vez de pipes: FFmpeg puede producir suficiente
+        // stderr para llenar un pipe y bloquear proc_open si stdout/stderr se leen
+        // secuencialmente. Así evitamos ese deadlock y conservamos el diagnóstico.
+        $stdoutPath = tempnam(sys_get_temp_dir(), 'arcadecloud-ff-out-');
+        $stderrPath = tempnam(sys_get_temp_dir(), 'arcadecloud-ff-err-');
+        if ($stdoutPath === false || $stderrPath === false) {
+            if (is_string($stdoutPath)) @unlink($stdoutPath);
+            if (is_string($stderrPath)) @unlink($stderrPath);
+            throw new RuntimeException('No se pudo crear el buffer temporal para FFmpeg/FFprobe.');
+        }
+
         $descriptors = [
             0 => ['file', '/dev/null', 'r'],
-            1 => ['pipe', 'w'],
-            2 => ['pipe', 'w'],
+            1 => ['file', $stdoutPath, 'w'],
+            2 => ['file', $stderrPath, 'w'],
         ];
-        $process = proc_open($command, $descriptors, $pipes);
-        if (!is_resource($process)) {
-            throw new RuntimeException('No se pudo iniciar FFmpeg/FFprobe.');
-        }
-        $stdout = stream_get_contents($pipes[1]) ?: '';
-        $stderr = stream_get_contents($pipes[2]) ?: '';
-        fclose($pipes[1]);
-        fclose($pipes[2]);
-        $code = proc_close($process);
-        if ($code !== 0) {
-            $detail = trim($stderr);
-            if (stripos($detail, 'libmp3lame') !== false && stripos($detail, 'encoder') !== false) {
+
+        try {
+            $process = proc_open($command, $descriptors, $pipes);
+            if (!is_resource($process)) {
+                throw new RuntimeException('No se pudo iniciar FFmpeg/FFprobe.');
+            }
+
+            $code = proc_close($process);
+            $stdout = (string)(@file_get_contents($stdoutPath) ?: '');
+            $stderr = (string)(@file_get_contents($stderrPath) ?: '');
+
+            if ($code !== 0) {
+                $detail = trim($stderr);
+                if ($detail === '') {
+                    $detail = trim($stdout);
+                }
+                if ($detail === '') {
+                    $detail = 'el proceso terminó sin texto de diagnóstico';
+                }
+                $detail = mb_substr($detail, 0, 3200);
+
+                if (stripos($detail, 'libmp3lame') !== false && stripos($detail, 'encoder') !== false) {
+                    throw new RuntimeException(
+                        '[DEPENDENCY_MISSING] El FFmpeg del nodo multimedia no incluye el codificador libmp3lame requerido para crear MP3.'
+                    );
+                }
+
                 throw new RuntimeException(
-                    '[DEPENDENCY_MISSING] El FFmpeg del nodo multimedia no incluye el codificador libmp3lame requerido para crear MP3.'
+                    'FFmpeg/FFprobe falló (código ' . $code . '): ' . $detail
                 );
             }
-            throw new RuntimeException('FFmpeg/FFprobe falló: ' . $detail);
+
+            return $capture ? $stdout : '';
+        } finally {
+            @unlink($stdoutPath);
+            @unlink($stderrPath);
         }
-        return $capture ? $stdout : '';
     }
 
     private function ffmpegHasEncoder(string $encoder): bool
@@ -426,6 +605,12 @@ final class MediaProcessingWorkerCommand
                 . 'Configura un media worker con capacidad suficiente; un nodo web pequeño no debe ejecutar este trabajo.'
             );
         }
+    }
+
+    private function mediaWorkerAuthorized(): bool
+    {
+        $value = strtolower(trim((string)(getenv('ARCADECLOUD_MEDIA_WORKER') ?: '')));
+        return in_array($value, ['1','true','yes','on'], true);
     }
 
     private function findExecutable(string $binary): ?string

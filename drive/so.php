@@ -215,7 +215,7 @@ $currentFolderName = $currentIsRoot
         <button type="button" class="is-danger" data-current-folder-action="delete" title="<?= $currentIsRoot ? 'La raíz del usuario no se puede eliminar' : 'Eliminar esta carpeta' ?>" <?= $currentIsRoot ? 'disabled' : '' ?>>
           <i class="fas fa-trash"></i><span>Eliminar</span>
         </button>
-        <span id="syncStatus" class="os-folder-command-status" aria-live="polite"></span>
+        <span class="os-folder-command-status"><span id="syncStatus" aria-live="polite"></span></span>
       </div>
 
       <div class="os-window-body os-explorer-body"

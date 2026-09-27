@@ -288,7 +288,7 @@
 | `drive/src/Http/Controller/AwsCostController.php` | ninguna |
 | `drive/src/Http/Controller/AwsFileController.php` | ninguna |
 | `drive/src/Http/Controller/BackgroundTaskCompatibilityController.php` | ninguna |
-| `drive/src/Http/Controller/BackgroundTaskController.php` | `drive/tests/transcribe_s3_recovery_contract_smoke.php` |
+| `drive/src/Http/Controller/BackgroundTaskController.php` | `drive/tests/media_processing_contract_smoke.php`, `drive/tests/transcribe_s3_recovery_contract_smoke.php` |
 | `drive/src/Http/Controller/FederationAccessController.php` | ninguna |
 | `drive/src/Http/Controller/FederationCatalogController.php` | ninguna |
 | `drive/src/Http/Controller/FederationCollectionController.php` | `drive/tests/arcadelink_bulk_contract_regression.php`, `drive/tests/arcadelink_collection_regression.php` |

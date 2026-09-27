@@ -1633,7 +1633,7 @@
     },
     {
       "path": "drive/src/Console/MediaProcessingWorkerCommand.php",
-      "size": 24710,
+      "size": 27682,
       "active": false,
       "references": [
         "drive/tests/fresh_install_contract_smoke.php",
@@ -2346,9 +2346,10 @@
     },
     {
       "path": "drive/src/Http/Controller/BackgroundTaskController.php",
-      "size": 36593,
+      "size": 39010,
       "active": false,
       "references": [
+        "drive/tests/media_processing_contract_smoke.php",
         "drive/tests/transcribe_s3_recovery_contract_smoke.php"
       ]
     },
@@ -2687,7 +2688,7 @@
     },
     {
       "path": "drive/src/Media/MediaProcessingJobRepository.php",
-      "size": 11900,
+      "size": 16850,
       "active": false,
       "references": [
         "drive/tests/media_processing_contract_smoke.php"
@@ -3350,7 +3351,7 @@
     },
     {
       "path": "drive/tests/media_processing_contract_smoke.php",
-      "size": 11256,
+      "size": 12964,
       "active": false,
       "references": []
     },

@@ -553,6 +553,12 @@ class CarpetasModule {
           destino
         });
 
+        try {
+          document.dispatchEvent(new CustomEvent('drive:folder-move-scheduled', {
+            detail: { route: origen, destination: destino }
+          }));
+        } catch (_) {}
+
         safeHideModal(modal);
 
       } catch (err) {

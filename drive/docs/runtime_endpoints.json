@@ -1312,12 +1312,13 @@
     },
     {
       "path": "drive/so.php",
-      "size": 68105,
+      "size": 68913,
       "active": true,
       "references": [
         "drive/s3.php",
         "drive/tests/web_os_contract_smoke.php",
-        "drive/js/so-folders.js"
+        "drive/js/so-folders.js",
+        "drive/js/so.js"
       ]
     },
     {
@@ -3483,7 +3484,7 @@
     },
     {
       "path": "drive/tests/web_os_contract_smoke.php",
-      "size": 11897,
+      "size": 13489,
       "active": false,
       "references": []
     },
@@ -3493,6 +3494,8 @@
       "active": true,
       "references": [
         "drive/bloque_archivos.php",
+        "drive/so.php",
+        "drive/tests/web_os_contract_smoke.php",
         "drive/js/imagenes.js"
       ]
     },

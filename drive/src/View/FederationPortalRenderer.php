@@ -7,7 +7,7 @@ use ArcadeCloud\Drive\Federation\FederationDropConfig;
 
 final class FederationPortalRenderer
 {
-    public function render(bool $authenticated, ?array $node = null): void
+    public function render(bool $authenticated, ?array $node = null, bool $embed = false): void
     {
         $h = static fn(mixed $value): string => htmlspecialchars((string)$value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
         $driveRoot = dirname(__DIR__, 2);
@@ -39,10 +39,11 @@ final class FederationPortalRenderer
   <link rel="stylesheet" href="../css/federation-portal.css?v=<?= $portalCssVersion ?>">
   <script defer src="../js/theme-state-bridge.js?v=<?= $themeBridgeVersion ?>"></script>
 </head>
-<body class="ui-theme theme-neon-green theme-dark vision-normal ascii-on federation-portal-body"
+<body class="ui-theme theme-neon-green theme-dark vision-normal ascii-on federation-portal-body<?= $embed ? ' federation-portal-embedded' : '' ?>"
   data-federation-node-id="<?= $h($nodeId) ?>"
   data-federation-drop-url="<?= $h($dropCommerceBase) ?>"
   data-federation-drop-source="<?= $h($sourceHost) ?>">
+<?php if (!$embed): ?>
 <nav class="navbar navbar-expand-lg navbar-dark px-3 drive-navbar">
   <a class="navbar-brand d-flex align-items-center" href="../s3.php" title="Volver al Drive">
     <img src="../ellogo.png" width="48" height="38" class="drive-brand-logo mr-2" alt="Logo">
@@ -54,9 +55,10 @@ final class FederationPortalRenderer
     <a class="btn btn-outline-light btn-sm" href="../s3.php"><i class="fas fa-arrow-left mr-1"></i>Drive</a>
   </div>
 </nav>
+<?php endif; ?>
 
 <main class="federation-portal-shell">
-  <div class="federation-portal-header">
+  <div class="federation-portal-header<?= $embed ? ' d-none' : '' ?>">
     <div>
       <h1><i class="fas fa-globe mr-2"></i>FederationCloud</h1>
       <p class="text-muted mb-0">Catálogo global local, solicitudes, Shares y réplicas físicas sin listar S3 ni depender de un nodo matriz.</p>
@@ -77,7 +79,7 @@ final class FederationPortalRenderer
   <?php else: ?>
     <div id="federationPortalAlert" class="alert d-none" role="alert"></div>
 
-    <ul class="nav nav-tabs federation-portal-tabs" id="federationPortalTabs" role="tablist">
+    <ul class="nav nav-tabs federation-portal-tabs<?= $embed ? ' d-none' : '' ?>" id="federationPortalTabs" role="tablist">
       <li class="nav-item"><a class="nav-link active" data-toggle="tab" href="#federationSearchPane" role="tab"><i class="fas fa-search mr-1"></i>Buscar global</a></li>
       <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#federationRequestsPane" role="tab"><i class="fas fa-inbox mr-1"></i>Solicitudes <span id="federationIncomingBadge" class="badge badge-warning ml-1">0</span></a></li>
       <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#federationSharesPane" role="tab"><i class="fas fa-folder-tree mr-1"></i>Compartidos <span id="federationSharesBadge" class="badge badge-info ml-1">0</span></a></li>

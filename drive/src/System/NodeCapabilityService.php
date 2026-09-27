@@ -164,10 +164,13 @@ final class NodeCapabilityService
 
     private function gpuPresent(): bool
     {
-        if (glob('/dev/nvidia*') !== []) {
+        $nvidia = glob('/dev/nvidia*');
+        if (is_array($nvidia) && $nvidia !== []) {
             return true;
         }
-        return glob('/dev/dri/renderD*') !== [];
+
+        $dri = glob('/dev/dri/renderD*');
+        return is_array($dri) && $dri !== [];
     }
 
     private function findExecutable(string $name): ?string

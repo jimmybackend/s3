@@ -258,7 +258,7 @@ window.ARCADECLOUD_UNIFIED_TASK_CENTER = true;
     if (doc.querySelector('script[data-os-clipboard]')) return;
 
     const script = doc.createElement('script');
-    script.src = 'js/so-clipboard.js?v=20260927-1';
+    script.src = 'js/so-clipboard.js?v=20260927-2';
     script.async = false;
     script.setAttribute('data-os-clipboard', '1');
     doc.head.appendChild(script);

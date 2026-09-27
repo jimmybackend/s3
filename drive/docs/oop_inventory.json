@@ -6263,7 +6263,7 @@
     },
     {
       "path": "drive/tests/media_processing_contract_smoke.php",
-      "lines": 157,
+      "lines": 160,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -7109,7 +7109,7 @@
     },
     {
       "path": "drive/js/background-tasks.js",
-      "lines": 684,
+      "lines": 709,
       "kind": "class/module",
       "classes": [
         "BackgroundTaskCenter"
@@ -7118,6 +7118,7 @@
       "window_assign": [
         "ARCADECLOUD_UNIFIED_TASK_CENTER",
         "DRIVE_INITIAL_ROUTE",
+        "getBloqueArchivosContext",
         "rutaActual"
       ],
       "window_func": [],

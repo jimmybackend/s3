@@ -80,6 +80,126 @@ final class MediaProcessingJobRepository
         return array_map([$this, 'normalize'], $rows);
     }
 
+    public function getForUser(int $userId, string $jobId): array
+    {
+        return $this->requireOwned($userId, $jobId);
+    }
+
+    public function cancelForUser(int $userId, string $jobId): string
+    {
+        $job = $this->requireOwned($userId, $jobId);
+        $status = strtolower((string)($job['status'] ?? 'queued'));
+
+        if ($status === 'queued') {
+            $stmt = $this->db->prepare(
+                "UPDATE MediaProcessingJobs
+                 SET Status='cancelled',ErrorMessage='Cancelada por el usuario.',
+                     CompletedAt=UTC_TIMESTAMP(),UpdatedAt=UTC_TIMESTAMP()
+                 WHERE user_id_=? AND JobId=? AND Status='queued'"
+            );
+            if (!$stmt || !$stmt->execute([$userId, $jobId])) {
+                $error = $stmt ? $stmt->error : $this->db->error;
+                if ($stmt) $stmt->close();
+                throw new RuntimeException('No se pudo cancelar la tarea multimedia: ' . $error);
+            }
+            $stmt->close();
+            return 'cancelled';
+        }
+
+        if ($status === 'running') {
+            $stmt = $this->db->prepare(
+                "UPDATE MediaProcessingJobs
+                 SET Status='cancel_requested',ErrorMessage='Detención solicitada por el usuario.',
+                     UpdatedAt=UTC_TIMESTAMP()
+                 WHERE user_id_=? AND JobId=? AND Status='running'"
+            );
+            if (!$stmt || !$stmt->execute([$userId, $jobId])) {
+                $error = $stmt ? $stmt->error : $this->db->error;
+                if ($stmt) $stmt->close();
+                throw new RuntimeException('No se pudo solicitar la detención multimedia: ' . $error);
+            }
+            $stmt->close();
+            return 'cancel_requested';
+        }
+
+        if (in_array($status, ['completed','failed','cancelled'], true)) {
+            return $status;
+        }
+
+        throw new RuntimeException('La tarea multimedia no se puede cancelar en su estado actual.');
+    }
+
+    public function isCancellationRequested(string $jobId): bool
+    {
+        $stmt = $this->db->prepare(
+            "SELECT Status FROM MediaProcessingJobs WHERE JobId=? LIMIT 1"
+        );
+        if (!$stmt) return false;
+        $stmt->bind_param('s', $jobId);
+        $stmt->execute();
+        $row = $stmt->get_result()?->fetch_assoc();
+        $stmt->close();
+        return strtolower((string)($row['Status'] ?? '')) === 'cancel_requested';
+    }
+
+    public function markCancelled(string $jobId, string $message = 'Tarea cancelada por el usuario.'): void
+    {
+        $message = mb_substr(trim($message), 0, 4000);
+        $stmt = $this->db->prepare(
+            "UPDATE MediaProcessingJobs
+             SET Status='cancelled',ErrorMessage=?,CompletedAt=UTC_TIMESTAMP(),UpdatedAt=UTC_TIMESTAMP()
+             WHERE JobId=? AND Status IN ('running','cancel_requested')"
+        );
+        if (!$stmt) return;
+        $stmt->bind_param('ss', $message, $jobId);
+        $stmt->execute();
+        $stmt->close();
+    }
+
+    public function retryForUser(int $userId, string $jobId): array
+    {
+        $job = $this->requireOwned($userId, $jobId);
+        $status = strtolower((string)($job['status'] ?? ''));
+
+        if (!in_array($status, ['failed','cancelled'], true)) {
+            throw new RuntimeException('Sólo una tarea fallida o cancelada puede reintentarse.');
+        }
+
+        $stmt = $this->db->prepare(
+            "UPDATE MediaProcessingJobs
+             SET Status='queued',Progress=0,WorkerId=NULL,OutputsJson=NULL,ErrorMessage=NULL,
+                 StartedAt=NULL,CompletedAt=NULL,UpdatedAt=UTC_TIMESTAMP()
+             WHERE user_id_=? AND JobId=? AND Status IN ('failed','cancelled')"
+        );
+        if (!$stmt || !$stmt->execute([$userId, $jobId])) {
+            $error = $stmt ? $stmt->error : $this->db->error;
+            if ($stmt) $stmt->close();
+            throw new RuntimeException('No se pudo reintentar la tarea multimedia: ' . $error);
+        }
+        $stmt->close();
+        return $this->requireOwned($userId, $jobId);
+    }
+
+    public function deleteForUser(int $userId, string $jobId): void
+    {
+        $job = $this->requireOwned($userId, $jobId);
+        $status = strtolower((string)($job['status'] ?? ''));
+        if (!in_array($status, ['completed','failed','cancelled'], true)) {
+            throw new RuntimeException('Una tarea multimedia activa debe cancelarse antes de eliminarla.');
+        }
+
+        $stmt = $this->db->prepare(
+            "DELETE FROM MediaProcessingJobs
+             WHERE user_id_=? AND JobId=? AND Status IN ('completed','failed','cancelled')"
+        );
+        if (!$stmt || !$stmt->execute([$userId, $jobId])) {
+            $error = $stmt ? $stmt->error : $this->db->error;
+            if ($stmt) $stmt->close();
+            throw new RuntimeException('No se pudo eliminar la tarea multimedia: ' . $error);
+        }
+        $stmt->close();
+    }
+
     public function latestOperationalWarning(): ?array
     {
         $dependency = $this->latestDependencyFailure();
@@ -193,7 +313,7 @@ final class MediaProcessingJobRepository
     {
         $result = $this->db->query(
             "SELECT 1 FROM MediaProcessingJobs
-             WHERE Status IN ('queued','running')
+             WHERE Status IN ('queued','running','cancel_requested')
              LIMIT 1"
         );
         if (!$result) {

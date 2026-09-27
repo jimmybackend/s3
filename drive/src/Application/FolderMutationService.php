@@ -139,6 +139,97 @@ final class FolderMutationService
         ] + $updated;
     }
 
+    public function copy(int $userId, string $origin, string $destination): array
+    {
+        $base = $this->paths->rootForUser($userId);
+        $origin = $this->paths->normalizeForUser($origin, $userId);
+        $destination = $this->paths->normalizeForUser($destination, $userId);
+        if ($origin === $base) throw new RuntimeException('No puedes copiar la carpeta raíz.');
+        if (str_starts_with($destination, $origin)) {
+            throw new RuntimeException('No puedes copiar una carpeta dentro de sí misma.');
+        }
+
+        $source = $this->folders->requireActive($userId, $origin);
+        $this->folders->requireActive($userId, $destination);
+
+        $sourceName = trim((string)($source['Nombre'] ?? ''));
+        if ($sourceName === '') $sourceName = basename(rtrim($origin, '/'));
+        $copyName = $this->uniqueCopyName($userId, $destination, $sourceName);
+        $physical = $this->codec->createFolderObjectName($copyName);
+        $final = $this->normalizePrefix($destination . $physical);
+
+        $copiedKeys = [];
+        $listRequests = 0;
+        $copyRequests = 0;
+        $putRequests = 1;
+
+        $this->s3->putObject([
+            'Bucket' => $this->bucket,
+            'Key' => $final,
+            'Body' => '',
+            'ACL' => 'private',
+            'ContentType' => 'application/x-directory',
+        ]);
+        $copiedKeys[] = ['Key' => $final];
+
+        try {
+            $continuation = null;
+            do {
+                $params = ['Bucket' => $this->bucket, 'Prefix' => $origin, 'MaxKeys' => 1000];
+                if ($continuation) $params['ContinuationToken'] = $continuation;
+                $objects = $this->s3->listObjectsV2($params);
+                $listRequests++;
+
+                foreach (($objects['Contents'] ?? []) as $object) {
+                    $oldKey = (string)($object['Key'] ?? '');
+                    if ($oldKey === '' || $oldKey === $origin) continue;
+
+                    $newKey = $final . substr($oldKey, strlen($origin));
+                    $this->s3->copyObject([
+                        'Bucket' => $this->bucket,
+                        'CopySource' => rawurlencode($this->bucket . '/' . $oldKey),
+                        'Key' => $newKey,
+                        'ACL' => 'private',
+                        'MetadataDirective' => 'COPY',
+                    ]);
+                    $copyRequests++;
+                    $copiedKeys[] = ['Key' => $newKey];
+                }
+
+                $continuation = !empty($objects['IsTruncated'])
+                    ? ($objects['NextContinuationToken'] ?? null)
+                    : null;
+            } while ($continuation);
+
+            $catalog = $this->folders->copyTree(
+                $userId,
+                $origin,
+                $final,
+                $copyName,
+                $destination
+            );
+        } catch (\Throwable $error) {
+            foreach (array_chunk($copiedKeys, 1000) as $chunk) {
+                try {
+                    $this->deleteObjects($chunk);
+                } catch (\Throwable) {
+                }
+            }
+            throw $error;
+        }
+
+        return [
+            'origen' => $origin,
+            'destino' => $final,
+            'nombre' => $copyName,
+            's3_list_requests' => $listRequests,
+            's3_copy_requests' => $copyRequests,
+            's3_put_requests' => $putRequests,
+            's3_delete_requests' => 0,
+            'estado' => 'copiada',
+        ] + $catalog;
+    }
+
     public function delete(int $userId, string $route): array
     {
         $base = $this->paths->rootForUser($userId);
@@ -178,6 +269,23 @@ final class FolderMutationService
             'folders_deleted' => $deleted['folders'],
             'parent' => $this->parentPrefix($route) ?: $base,
         ];
+    }
+
+    private function uniqueCopyName(int $userId, string $parent, string $name): string
+    {
+        if (!$this->folders->visibleNameExists($userId, $parent, $name)) {
+            return $name;
+        }
+
+        for ($number = 1; $number <= 1000; $number++) {
+            $suffix = $number === 1 ? ' - copia' : ' - copia ' . $number;
+            $candidate = $name . $suffix;
+            if (!$this->folders->visibleNameExists($userId, $parent, $candidate)) {
+                return $candidate;
+            }
+        }
+
+        throw new RuntimeException('No se pudo generar un nombre disponible para la copia de la carpeta.');
     }
 
     private function validateName(string $name): string

@@ -17,7 +17,7 @@ Pantalla principal propuesta:
 │ ArcadeCloud                         Nodo: FastDrive   usuario │
 ├──────────────────────────────────────────────────────────────┤
 │                                                              │
-│  [ Mi PC / Mi nodo ]     [ Data / DataN ]    [ Papelera ]    │
+│  [ Mi nodo ]     [ Data / DataN ]    [ Papelera ]    │
 │                                                              │
 │  Escritorio                                                   │
 │                                                              │
@@ -37,15 +37,12 @@ La apariencia puede recordar a un equipo de cómputo, pero la terminología debe
 - aplicación client-side;
 - aplicación server-side.
 
-## Mi PC / Mi nodo
+## Mi nodo
 
-**Mi PC** será la vista humana.
-
-Puede mostrar:
+**Mi nodo** será la entrada humana al entorno del usuario autenticado.\n\nArcadeCloud resuelve internamente su raíz y jamás enumera las raíces de otros usuarios. Puede mostrar:
 
 ```text
-Mi PC
-  ├─ Mis archivos
+Mi nodo\n  ├─ Mis archivos
   │   └─ DataN/
   ├─ Compartidos
   ├─ FederationCloud
@@ -73,6 +70,12 @@ FastDrive
 ```
 
 Los valores deberán provenir del backend; nunca codificarse en la UI.
+
+
+
+### Raíz visible del usuario
+
+El escritorio no muestra un selector global con `Data/`, `Data2/`, ..., `DataN/`. La raíz se calcula exclusivamente desde el `user_id_` autenticado mediante `UserStoragePath::rootForUser()` y sólo esa raíz puede navegarse en la sesión. Los nombres físicos de otras raíces no se presentan al usuario.
 
 ## Explorador de archivos
 

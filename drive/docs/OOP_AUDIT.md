@@ -199,7 +199,7 @@
 | `drive/src/Aws/TextractFileService.php` | 107 | class/module | 1 | — | — | — | — |
 | `drive/src/Aws/TranscriptionFileService.php` | 712 | class/module | 1 | — | — | — | — |
 | `drive/src/Aws/TranslateFileService.php` | 60 | class/module | 1 | — | — | — | — |
-| `drive/src/Console/MediaProcessingWorkerCommand.php` | 496 | class/module | 1 | — | — | — | — |
+| `drive/src/Console/MediaProcessingWorkerCommand.php` | 681 | class/module | 1 | — | — | — | — |
 | `drive/src/Console/MoveJobWorkerCommand.php` | 137 | class/module | 1 | — | — | — | — |
 | `drive/src/Console/SyncWorkerCommand.php` | 182 | class/module | 1 | — | — | — | — |
 | `drive/src/Console/UploadCleanupCommand.php` | 61 | class/module | 1 | — | — | — | — |
@@ -436,7 +436,7 @@
 | `drive/tests/fresh_install_contract_smoke.php` | 67 | test script | 0 | — | — | — | — |
 | `drive/tests/index_federation_drop_smoke.php` | 121 | test script | 0 | — | — | — | — |
 | `drive/tests/installer_service_reconcile_contract_smoke.php` | 142 | test script | 0 | — | — | — | — |
-| `drive/tests/media_processing_contract_smoke.php` | 119 | test script | 0 | — | — | — | — |
+| `drive/tests/media_processing_contract_smoke.php` | 134 | test script | 0 | — | — | — | — |
 | `drive/tests/password_credential_verifier_smoke.php` | 44 | test script | 0 | — | — | — | — |
 | `drive/tests/scoped_sync_repository_regression.php` | 96 | test script | 0 | — | ⚠️ | — | — |
 | `drive/tests/security_hardening_smoke.php` | 59 | test script | 0 | — | — | — | — |

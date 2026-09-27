@@ -326,7 +326,7 @@ import json,sys
 role,instance,region,hourly,idle,dynamic=sys.argv[1:]
 data={
   "ARCADECLOUD_NODE_ROLE": role,
-  "ARCADECLOUD_MEDIA_WORKER": "true" if role in {"media-worker","combined"} else "false",
+  "ARCADECLOUD_MEDIA_WORKER": "1" if role in {"media-worker","combined"} else "0",
 }
 if instance: data["ARCADECLOUD_MEDIA_WORKER_INSTANCE_ID"]=instance
 if region: data["ARCADECLOUD_MEDIA_WORKER_REGION"]=region

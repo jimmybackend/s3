@@ -4,12 +4,12 @@
 
 ## Resumen
 
-- PHP analizados: **460**
+- PHP analizados: **461**
 - PHP que ya contienen clases/interfaces: **274**
 - PHP marcados para migración/revisión: **0**
-- Tests PHP separados del objetivo OOP de runtime: **43**
-- JavaScript analizados: **53**
-- JavaScript que ya contienen clases: **53**
+- Tests PHP separados del objetivo OOP de runtime: **44**
+- JavaScript analizados: **54**
+- JavaScript que ya contienen clases: **54**
 - JavaScript sin clase/encapsulación OOP: **0**
 - JavaScript OOP con fachada `window` de compatibilidad: **8**
 
@@ -171,12 +171,12 @@
 | `drive/src/Application/FileAccessService.php` | 114 | class/module | 1 | — | — | — | — |
 | `drive/src/Application/FileKeyRotationService.php` | 67 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Application/FileListService.php` | 155 | class/module | 1 | — | ⚠️ | — | — |
-| `drive/src/Application/FileMutationService.php` | 119 | class/module | 1 | — | — | — | — |
+| `drive/src/Application/FileMutationService.php` | 205 | class/module | 1 | — | — | — | — |
 | `drive/src/Application/FileSearchService.php` | 104 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Application/FolderDocumentService.php` | 298 | class/module | 1 | — | ⚠️ | — | — |
-| `drive/src/Application/FolderMutationService.php` | 214 | class/module | 1 | — | — | — | — |
+| `drive/src/Application/FolderMutationService.php` | 322 | class/module | 1 | — | — | — | — |
 | `drive/src/Application/FolderQueryService.php` | 152 | class/module | 1 | — | — | — | — |
-| `drive/src/Application/MoveJobService.php` | 194 | class/module | 1 | — | — | — | — |
+| `drive/src/Application/MoveJobService.php` | 240 | class/module | 1 | — | — | — | — |
 | `drive/src/Application/PhpLintService.php` | 70 | class/module | 1 | — | — | — | — |
 | `drive/src/Application/TemporaryZip.php` | 27 | class/module | 1 | — | — | — | — |
 | `drive/src/Application/TextFileService.php` | 157 | class/module | 1 | — | — | — | — |
@@ -202,7 +202,7 @@
 | `drive/src/Aws/TranscriptionFileService.php` | 712 | class/module | 1 | — | — | — | — |
 | `drive/src/Aws/TranslateFileService.php` | 60 | class/module | 1 | — | — | — | — |
 | `drive/src/Console/MediaProcessingWorkerCommand.php` | 919 | class/module | 1 | — | — | — | — |
-| `drive/src/Console/MoveJobWorkerCommand.php` | 137 | class/module | 1 | — | — | — | — |
+| `drive/src/Console/MoveJobWorkerCommand.php` | 144 | class/module | 1 | — | — | — | — |
 | `drive/src/Console/SyncWorkerCommand.php` | 182 | class/module | 1 | — | — | — | — |
 | `drive/src/Console/UploadCleanupCommand.php` | 61 | class/module | 1 | — | — | — | — |
 | `drive/src/Core/ApplicationKernel.php` | 38 | class/module | 1 | — | — | — | — |
@@ -316,7 +316,7 @@
 | `drive/src/Http/Controller/LegacyUploadController.php` | 154 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/MediaPlaylistController.php` | 35 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/MediaProcessingController.php` | 53 | class/module | 1 | — | — | — | — |
-| `drive/src/Http/Controller/MoveJobController.php` | 164 | class/module | 1 | — | — | — | — |
+| `drive/src/Http/Controller/MoveJobController.php` | 194 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/NavigationController.php` | 42 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/PersonalAwsController.php` | 74 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/PollyTaskController.php` | 347 | class/module | 1 | — | ⚠️ | — | — |
@@ -371,8 +371,8 @@
 | `drive/src/Sharing/ShareLinkService.php` | 78 | class/module | 1 | — | — | — | — |
 | `drive/src/Sharing/ShareObjectStorage.php` | 37 | class/module | 1 | — | — | — | — |
 | `drive/src/Sharing/ShareTokenStore.php` | 132 | class/module | 1 | — | — | — | — |
-| `drive/src/Storage/FileRecordRepository.php` | 122 | class/module | 1 | — | ⚠️ | — | — |
-| `drive/src/Storage/FolderMutationRepository.php` | 239 | class/module | 1 | — | ⚠️ | — | — |
+| `drive/src/Storage/FileRecordRepository.php` | 174 | class/module | 1 | — | ⚠️ | — | — |
+| `drive/src/Storage/FolderMutationRepository.php` | 323 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Storage/FolderRepository.php` | 108 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Storage/MoveJobStore.php` | 315 | class/module | 1 | — | — | — | — |
 | `drive/src/Storage/StorageObjectNameCodec.php` | 104 | class/module | 1 | — | — | — | — |
@@ -457,6 +457,7 @@
 | `drive/tests/upload_catalog_registration_regression.php` | 125 | test script | 0 | — | ⚠️ | — | — |
 | `drive/tests/user_identity_presenter_smoke.php` | 30 | test script | 0 | — | — | — | — |
 | `drive/tests/user_profile_validator_smoke.php` | 72 | test script | 0 | — | — | — | — |
+| `drive/tests/web_os_clipboard_contract_smoke.php` | 49 | test script | 0 | — | — | — | — |
 | `drive/tests/web_os_contract_smoke.php` | 232 | test script | 0 | — | — | — | — |
 | `drive/thumb.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/token_audio.php` | 10 | thin endpoint | 0 | — | — | — | — |
@@ -520,7 +521,7 @@
 | `drive/js/media-floating.js` | 696 | class/module | MediaFloatingApp | — | — | — |
 | `drive/js/media-processing.js` | 498 | class/module | MediaProcessingModule | — | — | — |
 | `drive/js/mediaFloating.js` | 38 | class/module | MediaFloatingModule | — | — | — |
-| `drive/js/move-tasks.js` | 248 | class/module | DriveMoveTasks | — | — | — |
+| `drive/js/move-tasks.js` | 273 | class/module | DriveMoveTasks | — | — | — |
 | `drive/js/obtenerFiltros.js` | 125 | class/module | ObtenerFiltrosModule | — | — | — |
 | `drive/js/pdf-pantalla-completa.js` | 45 | class/module | PdfPantallaCompletaModule | — | — | — |
 | `drive/js/polly-background.js` | 305 | class/module | PollyBackgroundModule | — | — | — |
@@ -530,6 +531,7 @@
 | `drive/js/server-admin.js` | 407 | class/module | ServerAdminModule | — | — | — |
 | `drive/js/setup.js` | 192 | class/module | ArcadeCloudSetup | — | — | — |
 | `drive/js/sincronizar.js` | 264 | class/module | SincronizarModule | — | triggerSyncFolderS3, triggerSyncS3 | window functions: triggerSyncFolderS3, triggerSyncS3 |
+| `drive/js/so-clipboard.js` | 785 | class/module | ArcadeCloudOsClipboard | — | — | — |
 | `drive/js/so-federation.js` | 129 | class/module | ArcadeCloudOsFederationApp | — | — | — |
 | `drive/js/so-folders.js` | 417 | class/module | ArcadeCloudOsFolderActions | — | — | — |
 | `drive/js/so-terminal.js` | 300 | class/module | ArcadeCloudOsTerminal | — | — | — |

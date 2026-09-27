@@ -1,11 +1,11 @@
 {
   "summary": {
-    "php_total": 460,
+    "php_total": 461,
     "php_class_modules": 274,
     "php_needs_migration": 0,
-    "php_tests": 43,
-    "js_total": 53,
-    "js_class_modules": 53,
+    "php_tests": 44,
+    "js_total": 54,
+    "js_class_modules": 54,
     "js_needs_migration": 0,
     "js_compatibility_facades": 8
   },
@@ -2220,7 +2220,7 @@
     },
     {
       "path": "drive/src/Application/FileMutationService.php",
-      "lines": 119,
+      "lines": 205,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -2265,7 +2265,7 @@
     },
     {
       "path": "drive/src/Application/FolderMutationService.php",
-      "lines": 214,
+      "lines": 322,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -2295,7 +2295,7 @@
     },
     {
       "path": "drive/src/Application/MoveJobService.php",
-      "lines": 194,
+      "lines": 240,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -2685,7 +2685,7 @@
     },
     {
       "path": "drive/src/Console/MoveJobWorkerCommand.php",
-      "lines": 137,
+      "lines": 144,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -4397,7 +4397,7 @@
     },
     {
       "path": "drive/src/Http/Controller/MoveJobController.php",
-      "lines": 164,
+      "lines": 194,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -5237,7 +5237,7 @@
     },
     {
       "path": "drive/src/Storage/FileRecordRepository.php",
-      "lines": 122,
+      "lines": 174,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -5252,7 +5252,7 @@
     },
     {
       "path": "drive/src/Storage/FolderMutationRepository.php",
-      "lines": 239,
+      "lines": 323,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -6594,6 +6594,21 @@
       "issues": []
     },
     {
+      "path": "drive/tests/web_os_clipboard_contract_smoke.php",
+      "lines": 49,
+      "kind": "test script",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
       "path": "drive/tests/web_os_contract_smoke.php",
       "lines": 232,
       "kind": "test script",
@@ -7558,7 +7573,7 @@
     },
     {
       "path": "drive/js/move-tasks.js",
-      "lines": 248,
+      "lines": 273,
       "kind": "class/module",
       "classes": [
         "DriveMoveTasks"
@@ -7749,6 +7764,20 @@
       "issues": [
         "window functions: triggerSyncFolderS3, triggerSyncS3"
       ]
+    },
+    {
+      "path": "drive/js/so-clipboard.js",
+      "lines": 785,
+      "kind": "class/module",
+      "classes": [
+        "ArcadeCloudOsClipboard"
+      ],
+      "functions": [],
+      "window_assign": [],
+      "window_func": [],
+      "top_vars": [],
+      "iife": false,
+      "issues": []
     },
     {
       "path": "drive/js/so-federation.js",

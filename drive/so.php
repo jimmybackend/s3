@@ -133,6 +133,10 @@ $diskTotalBytes = max(0, (int)($nodeSnapshot['disk_total_bytes'] ?? 0));
 $diskFreeBytes = max(0, (int)($nodeSnapshot['disk_free_bytes'] ?? 0));
 $diskUsedBytes = max(0, $diskTotalBytes - $diskFreeBytes);
 $diskUsedPercent = $diskTotalBytes > 0 ? round(($diskUsedBytes / $diskTotalBytes) * 100, 1) : 0.0;
+$currentIsRoot = $currentPrefix === $rootPrefix;
+$currentFolderName = $currentIsRoot
+    ? rtrim($rootPrefix, '/')
+    : basename(rtrim($currentPrefix, '/'));
 ?>
 <!doctype html>
 <html lang="es">
@@ -192,12 +196,41 @@ $diskUsedPercent = $diskTotalBytes > 0 ? round(($diskUsedBytes / $diskTotalBytes
         <span class="os-storage"><?= $e((string)($storageUsage['formatted'] ?? '0 B')) ?> usados</span>
       </div>
 
-      <div class="os-window-body os-explorer-body">
+      <div class="os-folder-commandbar"
+           data-current-folder-route="<?= $e($currentRoute) ?>"
+           data-current-folder-name="<?= $e($currentFolderName) ?>"
+           data-current-folder-root="<?= $currentIsRoot ? '1' : '0' ?>">
+        <button type="button" data-current-folder-action="sync" title="Sincronizar esta carpeta desde S3">
+          <i class="fas fa-rotate"></i><span>Sincronizar</span>
+        </button>
+        <button type="button" data-current-folder-action="create-document" title="Crear archivo de texto en esta carpeta">
+          <i class="fas fa-file-circle-plus"></i><span>Crear archivo</span>
+        </button>
+        <button type="button" data-current-folder-action="move" title="<?= $currentIsRoot ? 'La raíz del usuario no se puede mover' : 'Mover esta carpeta' ?>" <?= $currentIsRoot ? 'disabled' : '' ?>>
+          <i class="fas fa-arrows-alt"></i><span>Mover</span>
+        </button>
+        <button type="button" data-current-folder-action="rename" title="<?= $currentIsRoot ? 'La raíz del usuario no se puede renombrar' : 'Editar nombre de esta carpeta' ?>" <?= $currentIsRoot ? 'disabled' : '' ?>>
+          <i class="fas fa-pen"></i><span>Editar</span>
+        </button>
+        <button type="button" class="is-danger" data-current-folder-action="delete" title="<?= $currentIsRoot ? 'La raíz del usuario no se puede eliminar' : 'Eliminar esta carpeta' ?>" <?= $currentIsRoot ? 'disabled' : '' ?>>
+          <i class="fas fa-trash"></i><span>Eliminar</span>
+        </button>
+        <span id="syncStatus" class="os-folder-command-status" aria-live="polite"></span>
+      </div>
+
+      <div class="os-window-body os-explorer-body"
+           data-current-folder-route="<?= $e($currentRoute) ?>"
+           data-current-folder-name="<?= $e($currentFolderName) ?>"
+           data-current-folder-root="<?= $currentIsRoot ? '1' : '0' ?>">
         <div class="os-entry-grid">
           <?php foreach ($folders as $folder): ?>
             <a class="os-entry os-folder-entry"
                href="so.php?ruta=<?= rawurlencode((string)$folder['prefix']) ?>"
+               data-folder-route="<?= $e((string)$folder['prefix']) ?>"
+               data-folder-name="<?= $e((string)$folder['name']) ?>"
+               data-folder-root="0"
                title="<?= $e($folder['name']) ?>">
+              <span class="os-entry-menu os-folder-entry-menu" aria-hidden="true"><i class="fas fa-ellipsis-vertical"></i></span>
               <span class="os-entry-icon"><i class="fas fa-folder"></i></span>
               <span class="os-entry-name"><?= $e($folder['name']) ?></span>
               <span class="os-entry-meta">Carpeta</span>
@@ -344,6 +377,18 @@ $diskUsedPercent = $diskTotalBytes > 0 ? round(($diskUsedBytes / $diskTotalBytes
     </section>
   </main>
 
+  <div class="os-file-context os-folder-context" id="folderContextMenu" hidden>
+    <div class="os-context-name" id="folderContextName">Carpeta</div>
+    <button type="button" data-folder-action="open"><i class="fas fa-folder-open"></i>Abrir</button>
+    <button type="button" data-folder-action="sync"><i class="fas fa-rotate"></i>Sincronizar desde S3</button>
+    <button type="button" data-folder-action="create-document"><i class="fas fa-file-circle-plus"></i>Crear archivo</button>
+    <button type="button" data-folder-action="create-folder"><i class="fas fa-folder-plus"></i>Nueva subcarpeta</button>
+    <div class="os-context-divider" data-folder-mutating-divider></div>
+    <button type="button" data-folder-action="move" data-folder-mutating><i class="fas fa-arrows-alt"></i>Mover</button>
+    <button type="button" data-folder-action="rename" data-folder-mutating><i class="fas fa-pen"></i>Editar nombre</button>
+    <button type="button" class="is-danger" data-folder-action="delete" data-folder-mutating><i class="fas fa-trash"></i>Eliminar</button>
+  </div>
+
   <div class="os-file-context" id="fileContextMenu" hidden>
     <div class="os-context-name" id="fileContextName">Archivo</div>
     <button type="button" data-file-action="open"><i class="fas fa-eye"></i>Abrir en ventana</button>
@@ -361,6 +406,156 @@ $diskUsedPercent = $diskTotalBytes > 0 ? round(($diskUsedBytes / $diskTotalBytes
     <button type="button" data-file-action="split-audio" data-service-action><i class="fas fa-scissors"></i>Dividir audio</button>
     <div class="os-context-divider"></div>
     <button type="button" data-file-action="classic"><i class="fas fa-hard-drive"></i>Abrir en Drive clásico</button>
+  </div>
+
+  <div class="os-folder-dialogs">
+    <div class="modal fade" id="modalCrearDocumentoCarpeta" tabindex="-1" role="dialog" aria-labelledby="folderDocumentTitle" aria-hidden="true">
+      <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <form id="formCrearDocumentoCarpeta" class="modal-content" autocomplete="off">
+          <div class="modal-header">
+            <div>
+              <h5 class="modal-title" id="folderDocumentTitle"><i class="fas fa-file-alt mr-2"></i>Crear archivo desde texto</h5>
+              <small class="text-muted">Carpeta: <span id="folderDocumentFolderName"></span></small>
+            </div>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar"><span aria-hidden="true">&times;</span></button>
+          </div>
+          <div class="modal-body">
+            <input type="hidden" id="folderDocumentRoute" name="route" value="">
+            <div id="folderDocumentMessage" class="alert d-none" role="alert"></div>
+            <div class="form-row">
+              <div class="form-group col-md-8">
+                <label for="folderDocumentName">Nombre</label>
+                <input type="text" class="form-control" id="folderDocumentName" name="name" maxlength="180" placeholder="Mi documento" required>
+              </div>
+              <div class="form-group col-md-4">
+                <label for="folderDocumentFormat">Guardar como</label>
+                <select class="form-control" id="folderDocumentFormat" name="format">
+                  <option value="html" selected>HTML (.html)</option>
+                  <option value="md">Markdown (.md)</option>
+                  <option value="txt">Texto (.txt)</option>
+                </select>
+              </div>
+            </div>
+            <div class="d-flex align-items-center justify-content-between mb-2 flex-wrap">
+              <label class="mb-1" for="folderDocumentEditor">Contenido</label>
+              <button type="button" class="btn btn-sm btn-outline-primary mb-1" id="folderDocumentPaste">
+                <i class="fas fa-paste mr-1"></i>Pegar desde portapapeles
+              </button>
+            </div>
+            <div id="folderDocumentEditor"
+                 class="folder-document-editor"
+                 contenteditable="true"
+                 role="textbox"
+                 aria-multiline="true"
+                 data-placeholder="Escribe o pega aquí el contenido..."></div>
+            <small id="folderDocumentFormatHelp" class="form-text text-muted mt-2"></small>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+            <button type="submit" class="btn btn-primary" id="folderDocumentSave">
+              <i class="fas fa-save mr-1"></i>Guardar en esta carpeta
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="modal fade" id="modalCrearCarpeta" tabindex="-1" role="dialog" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered" role="document">
+        <form id="formCrearCarpeta" class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Nueva subcarpeta</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar"><span aria-hidden="true">&times;</span></button>
+          </div>
+          <div class="modal-body">
+            <input type="hidden" name="ruta" id="crearCarpetaRuta" value="<?= $e($currentRoute) ?>">
+            <div class="form-group">
+              <label for="crearCarpetaNombre">Nombre</label>
+              <input type="text" class="form-control" name="nueva" id="crearCarpetaNombre" placeholder="Nueva carpeta" required>
+            </div>
+            <small class="text-muted">Ruta actual: <span id="crearCarpetaRutaTexto"><?= $e($currentRoute) ?></span></small>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+            <button type="submit" class="btn btn-primary" id="btnCrearCarpeta">Crear</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="modal fade" id="modalMoverCarpeta" tabindex="-1" role="dialog" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered" role="document">
+        <form class="modal-content" id="formMoverCarpeta" novalidate onsubmit="return false;">
+          <div class="modal-header">
+            <h5 class="modal-title"><i class="fas fa-arrows-alt mr-2"></i>Mover carpeta</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar"><span aria-hidden="true">&times;</span></button>
+          </div>
+          <div class="modal-body">
+            <input type="hidden" id="moverOrigen" name="origen">
+            <div class="form-group">
+              <label>Carpeta a mover</label>
+              <input type="text" class="form-control" id="moverNombre" readonly>
+              <small class="form-text text-muted">Ruta: <span id="moverOrigenLabel" class="text-monospace"></span></small>
+            </div>
+            <div class="form-group">
+              <label for="moverDestino">Destino</label>
+              <select id="moverDestino" name="destino" class="form-control" required>
+                <option value="">— Selecciona —</option>
+              </select>
+              <small class="form-text text-muted">La carpeta se moverá como <code id="moverPreview"></code>.</small>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" id="btnMoverCarpeta" class="btn btn-primary">Mover</button>
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="modal fade" id="modalRenombrar" tabindex="-1" role="dialog" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered" role="document">
+        <form class="modal-content">
+          <input type="hidden" name="ruta" id="renombrarRuta">
+          <div class="modal-header">
+            <h5 class="modal-title">Editar nombre de carpeta</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar"><span aria-hidden="true">&times;</span></button>
+          </div>
+          <div class="modal-body">
+            <input type="hidden" name="nombre_actual" id="nombreActual">
+            <div class="form-group">
+              <label for="nuevoNombre">Nuevo nombre</label>
+              <input type="text" name="nuevo_nombre" id="nuevoNombre" class="form-control" required>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-primary">Guardar</button>
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="modal fade" id="modalEliminarCarpeta" tabindex="-1" role="dialog" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered" role="document">
+        <form id="formEliminarCarpeta" class="modal-content">
+          <div class="modal-header bg-danger text-white">
+            <h5 class="modal-title">Eliminar carpeta</h5>
+            <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
+          </div>
+          <div class="modal-body">
+            <input type="hidden" name="ruta" id="eliminarRuta">
+            <p>Vas a eliminar <strong id="eliminarNombre"></strong> y todo su contenido.</p>
+            <p class="mb-2">Para confirmar, escribe <code>eliminar</code>:</p>
+            <input type="text" id="eliminarConfirm" class="form-control" placeholder="eliminar" autocomplete="off">
+          </div>
+          <div class="modal-footer">
+            <button type="submit" id="btnEliminarAceptar" class="btn btn-danger" disabled>Eliminar</button>
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+          </div>
+        </form>
+      </div>
+    </div>
   </div>
 
   <div class="os-service-dialogs">
@@ -1062,14 +1257,25 @@ $diskUsedPercent = $diskTotalBytes > 0 ? round(($diskUsedBytes / $diskTotalBytes
     window.DRIVE_INITIAL_ROUTE = <?= json_encode($currentRoute, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
     window.rutaActual = <?= json_encode($currentRoute, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
     window.AWS_BUCKET_NAME = <?= json_encode($app->bucket(), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
+    window.ARCADECLOUD_OS_ROOT_ROUTE = <?= json_encode($userRoot, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
+    window.ARCADECLOUD_OS_CURRENT_FOLDER = <?= json_encode([
+      'route' => $currentRoute,
+      'name' => $currentFolderName,
+      'is_root' => $currentIsRoot,
+    ], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
   </script>
   <script src="js/polly.js?v=<?= (int)filemtime(__DIR__ . '/js/polly.js') ?>"></script>
   <script src="js/aws-comprehend.js?v=<?= (int)filemtime(__DIR__ . '/js/aws-comprehend.js') ?>"></script>
   <script src="js/media-processing.js?v=<?= (int)filemtime(__DIR__ . '/js/media-processing.js') ?>"></script>
-  <script src="js/background-task-feedback.js?v=<?= (int)filemtime(__DIR__ . '/js/background-task-feedback.js') ?>"></script>
-  <script src="js/polly-background.js?v=<?= (int)filemtime(__DIR__ . '/js/polly-background.js') ?>"></script>
-  <script src="js/transcribe-background.js?v=<?= (int)filemtime(__DIR__ . '/js/transcribe-background.js') ?>"></script>
-  <script src="js/background-tasks.js?v=<?= (int)filemtime(__DIR__ . '/js/background-tasks.js') ?>"></script>
+  <script data-background-task-feedback src="js/background-task-feedback.js?v=<?= (int)filemtime(__DIR__ . '/js/background-task-feedback.js') ?>"></script>
+  <script data-polly-background src="js/polly-background.js?v=<?= (int)filemtime(__DIR__ . '/js/polly-background.js') ?>"></script>
+  <script data-transcribe-background src="js/transcribe-background.js?v=<?= (int)filemtime(__DIR__ . '/js/transcribe-background.js') ?>"></script>
+  <script data-background-tasks src="js/background-tasks.js?v=<?= (int)filemtime(__DIR__ . '/js/background-tasks.js') ?>"></script>
+  <script src="js/move-tasks.js?v=<?= (int)filemtime(__DIR__ . '/js/move-tasks.js') ?>"></script>
+  <script src="js/carpetas.js?v=<?= (int)filemtime(__DIR__ . '/js/carpetas.js') ?>"></script>
+  <script src="js/folder-document.js?v=<?= (int)filemtime(__DIR__ . '/js/folder-document.js') ?>"></script>
+  <script src="js/sincronizar.js?v=<?= (int)filemtime(__DIR__ . '/js/sincronizar.js') ?>"></script>
+  <script src="js/so-folders.js?v=<?= (int)filemtime(__DIR__ . '/js/so-folders.js') ?>"></script>
   <script src="js/so.js?v=<?= (int)filemtime(__DIR__ . '/js/so.js') ?>"></script>
 </body>
 </html>

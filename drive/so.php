@@ -119,6 +119,11 @@ $e = static fn(mixed $value): string => FileViewHelper::escape($value);
 $formatBytes = static fn(int $bytes): string => FileViewHelper::formatBytes($bytes);
 $load = $nodeSnapshot['load_average'] ?? [0, 0, 0];
 $isSuperAdmin = $session->isSuperAdmin();
+$serverConsoleCsrf = (string)$session->get('csrf', '');
+if ($isSuperAdmin && !preg_match('/\A[a-f0-9]{32,128}\z/', $serverConsoleCsrf)) {
+    $serverConsoleCsrf = bin2hex(random_bytes(16));
+    $session->set('csrf', $serverConsoleCsrf);
+}
 
 $textExtensions = ['txt','md','markdown','html','htm','css','js','json','csv','sql','php','py','srt','vtt','log','xml','yaml','yml'];
 $imageExtensions = ['jpg','jpeg','png','gif','webp','bmp','avif','tif','tiff'];
@@ -161,7 +166,7 @@ $currentFolderName = $currentIsRoot
 
     <button class="os-desktop-icon" type="button" data-window-open="explorerWindow">
       <span class="os-icon-tile"><i class="fas fa-folder-open"></i></span>
-      <span>Mis documentos</span>
+      <span>Mis datos</span>
     </button>
 
     <button class="os-desktop-icon" type="button" data-window-open="appsWindow">
@@ -169,9 +174,9 @@ $currentFolderName = $currentIsRoot
       <span>Aplicaciones</span>
     </button>
 
-    <section class="os-window" id="explorerWindow" data-window-title="Explorador" style="left:7vw;top:8vh;width:min(1050px,86vw);height:min(680px,72vh);">
+    <section class="os-window" id="explorerWindow" data-window-title="Mis datos" style="left:7vw;top:8vh;width:min(1050px,86vw);height:min(680px,72vh);">
       <div class="os-window-titlebar" data-window-drag-handle>
-        <div class="os-window-title"><i class="fas fa-folder-open"></i><span>Explorador</span></div>
+        <div class="os-window-title"><i class="fas fa-folder-open"></i><span>Mis datos</span></div>
         <div class="os-window-controls">
           <button type="button" data-window-minimize aria-label="Minimizar"><i class="fas fa-minus"></i></button>
           <button type="button" data-window-maximize aria-label="Maximizar"><i class="far fa-square"></i></button>
@@ -377,7 +382,7 @@ $currentFolderName = $currentIsRoot
       </div>
       <div class="os-window-body">
         <div class="os-app-grid">
-          <button type="button" class="os-app-card is-ready" data-window-open="explorerWindow"><i class="fas fa-folder-open"></i><strong>Explorador</strong><span>Disponible</span></button>
+          <button type="button" class="os-app-card is-ready" data-window-open="explorerWindow"><i class="fas fa-folder-open"></i><strong>Mis datos</strong><span>Disponible</span></button>
           <a class="os-app-card is-ready" href="s3.php"><i class="fas fa-hard-drive"></i><strong>Drive clásico</strong><span>Disponible</span></a>
           <button type="button" class="os-app-card" disabled><i class="fas fa-file-word"></i><strong>Office</strong><span>Próximamente</span></button>
           <button type="button" class="os-app-card" disabled><i class="fas fa-pen-ruler"></i><strong>Diagramas</strong><span>Próximamente</span></button>
@@ -390,6 +395,65 @@ $currentFolderName = $currentIsRoot
         </div>
       </div>
     </section>
+
+    <?php if ($isSuperAdmin): ?>
+    <section class="os-window os-terminal-window"
+             id="terminalWindow"
+             data-window-title="Terminal"
+             style="left:12vw;top:9vh;width:min(900px,82vw);height:min(660px,74vh);">
+      <div class="os-window-titlebar" data-window-drag-handle>
+        <div class="os-window-title"><i class="fas fa-terminal"></i><span>Terminal · Mi nodo</span></div>
+        <div class="os-window-controls">
+          <button type="button" data-window-minimize aria-label="Minimizar"><i class="fas fa-minus"></i></button>
+          <button type="button" data-window-maximize aria-label="Maximizar"><i class="far fa-square"></i></button>
+          <button type="button" data-window-close aria-label="Cerrar"><i class="fas fa-xmark"></i></button>
+        </div>
+      </div>
+      <div class="os-window-body os-terminal-body">
+        <div class="os-terminal-note">
+          <i class="fas fa-shield-halved"></i>
+          <span>Terminal restringida del servidor local. Sólo ejecuta los comandos exactos permitidos por ArcadeCloud; no abre una shell Linux arbitraria.</span>
+        </div>
+
+        <div id="osTerminalStatus" class="os-terminal-status" aria-live="polite">
+          Abre la terminal para consultar las opciones disponibles en este nodo.
+        </div>
+
+        <div id="osTerminalCommands" class="os-terminal-commands" aria-label="Comandos permitidos">
+          <div class="os-terminal-loading"><i class="fas fa-circle-notch fa-spin"></i> Cargando comandos…</div>
+        </div>
+
+        <pre id="osTerminalOutput" class="os-terminal-output" aria-live="polite">ArcadeCloud restricted server console
+Escribe help o usa uno de los botones disponibles.</pre>
+
+        <div class="os-terminal-input-row">
+          <span class="os-terminal-prompt">$</span>
+          <input type="text"
+                 id="osTerminalInput"
+                 autocomplete="off"
+                 autocapitalize="none"
+                 spellcheck="false"
+                 placeholder="free -h">
+          <button type="button" id="osTerminalRun"><i class="fas fa-play"></i><span>Ejecutar</span></button>
+        </div>
+
+        <div class="os-terminal-private-confirm" id="osTerminalPrivateConfirm" hidden>
+          <div>
+            <strong>Liberar caché Linux</strong>
+            <p>Esta acción ejecuta <code>sync</code> y libera page cache, dentries e inodes. No termina procesos.</p>
+          </div>
+          <input type="password"
+                 id="osTerminalPrivatePassword"
+                 autocomplete="current-password"
+                 placeholder="Contraseña privada">
+          <div class="os-terminal-private-actions">
+            <button type="button" id="osTerminalPrivateCancel">Cancelar</button>
+            <button type="button" id="osTerminalPrivateAccept" class="is-danger">Confirmar</button>
+          </div>
+        </div>
+      </div>
+    </section>
+    <?php endif; ?>
   </main>
 
   <div class="os-file-context os-folder-context" id="folderContextMenu" hidden>
@@ -1247,8 +1311,11 @@ $currentFolderName = $currentIsRoot
       </div>
     </div>
     <button type="button" data-window-open="nodeWindow"><i class="fas fa-server"></i> Mi nodo</button>
-    <button type="button" data-window-open="explorerWindow"><i class="fas fa-folder-open"></i> Mis archivos</button>
+    <button type="button" data-window-open="explorerWindow"><i class="fas fa-folder-open"></i> Mis datos</button>
     <button type="button" data-window-open="appsWindow"><i class="fas fa-shapes"></i> Aplicaciones</button>
+    <?php if ($isSuperAdmin): ?>
+      <button type="button" data-window-open="terminalWindow" data-open-terminal><i class="fas fa-terminal"></i> Terminal</button>
+    <?php endif; ?>
     <a href="s3.php"><i class="fas fa-hard-drive"></i> Drive clásico</a>
     <a href="logout.php" class="is-danger"><i class="fas fa-right-from-bracket"></i> Cerrar sesión</a>
   </div>
@@ -1278,6 +1345,12 @@ $currentFolderName = $currentIsRoot
       'name' => $currentFolderName,
       'is_root' => $currentIsRoot,
     ], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
+    <?php if ($isSuperAdmin): ?>
+    window.ARCADECLOUD_OS_SERVER_CONSOLE = {
+      endpoint: 'server-console.php',
+      csrf: <?= json_encode($serverConsoleCsrf, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>
+    };
+    <?php endif; ?>
   </script>
   <script src="js/polly.js?v=<?= (int)filemtime(__DIR__ . '/js/polly.js') ?>"></script>
   <script src="js/aws-comprehend.js?v=<?= (int)filemtime(__DIR__ . '/js/aws-comprehend.js') ?>"></script>
@@ -1291,6 +1364,9 @@ $currentFolderName = $currentIsRoot
   <script src="js/folder-document.js?v=<?= (int)filemtime(__DIR__ . '/js/folder-document.js') ?>"></script>
   <script src="js/sincronizar.js?v=<?= (int)filemtime(__DIR__ . '/js/sincronizar.js') ?>"></script>
   <script src="js/so-folders.js?v=<?= (int)filemtime(__DIR__ . '/js/so-folders.js') ?>"></script>
+  <?php if ($isSuperAdmin): ?>
+  <script src="js/so-terminal.js?v=<?= (int)filemtime(__DIR__ . '/js/so-terminal.js') ?>"></script>
+  <?php endif; ?>
   <script src="js/so.js?v=<?= (int)filemtime(__DIR__ . '/js/so.js') ?>"></script>
 </body>
 </html>

@@ -14,6 +14,9 @@ $paths = [
     'folders_shared' => $root . '/js/carpetas.js',
     'folder_document' => $root . '/js/folder-document.js',
     'sync' => $root . '/js/sincronizar.js',
+    'terminal_js' => $root . '/js/so-terminal.js',
+    'console_controller' => $root . '/src/Http/Controller/ServerConsoleController.php',
+    'console_service' => $root . '/src/Admin/ServerConsoleService.php',
 ];
 
 foreach ($paths as $name => $path) {
@@ -94,15 +97,15 @@ webOsContract(str_contains($paths['css'], '.os-document-window'), 'ventanas de d
 // Escritorio simplificado y controles de ventanas.
 webOsContract(!str_contains($paths['shell'], 'class="os-topbar"'), 'Web OS ya no usa barra superior');
 webOsContract(str_contains($paths['shell'], '<span>Mi nodo</span>'), 'escritorio incluye Mi nodo');
-webOsContract(str_contains($paths['shell'], '<span>Mis documentos</span>'), 'escritorio incluye Mis documentos');
+webOsContract(str_contains($paths['shell'], '<span>Mis datos</span>'), 'escritorio incluye Mis datos');
 webOsContract(str_contains($paths['shell'], '<span>Aplicaciones</span>'), 'escritorio incluye Aplicaciones');
 $desktopNode = strpos($paths['shell'], '<span>Mi nodo</span>');
-$desktopDocs = strpos($paths['shell'], '<span>Mis documentos</span>');
+$desktopData = strpos($paths['shell'], '<span>Mis datos</span>');
 $desktopApps = strpos($paths['shell'], '<span>Aplicaciones</span>');
 webOsContract(
-    $desktopNode !== false && $desktopDocs !== false && $desktopApps !== false
-    && $desktopNode < $desktopDocs && $desktopDocs < $desktopApps,
-    'accesos del escritorio respetan Mi nodo -> Mis documentos -> Aplicaciones'
+    $desktopNode !== false && $desktopData !== false && $desktopApps !== false
+    && $desktopNode < $desktopData && $desktopData < $desktopApps,
+    'accesos del escritorio respetan Mi nodo -> Mis datos -> Aplicaciones'
 );
 webOsContract(str_contains($paths['shell'], 'class="fas fa-gear"'), 'botón inferior izquierdo usa engranaje');
 webOsContract(str_contains($paths['shell'], 'os-launcher-profile'), 'perfil del usuario vive dentro del lanzador');
@@ -115,7 +118,7 @@ webOsContract(str_contains($paths['shell'], 'href="logout.php"'), 'lanzador cons
 webOsContract(str_contains($paths['logout'], "\$this->redirect('index.php')"), 'cerrar sesión termina en index.php');
 
 // Acciones de carpetas dentro del Web OS.
-webOsContract(str_contains($paths['shell'], 'class="os-folder-commandbar"'), 'Explorador tiene barra de acciones de carpeta');
+webOsContract(str_contains($paths['shell'], 'class="os-folder-commandbar"'), 'Mis datos tiene barra de acciones de carpeta');
 webOsContract(str_contains($paths['shell'], 'data-current-folder-action="sync"'), 'barra de carpeta incluye sincronizar');
 webOsContract(str_contains($paths['shell'], 'data-current-folder-action="create-document"'), 'barra de carpeta incluye crear archivo');
 webOsContract(str_contains($paths['shell'], 'data-current-folder-action="move"'), 'barra de carpeta incluye mover');
@@ -136,7 +139,7 @@ webOsContract(str_contains($paths['folders_js'], "addEventListener('contextmenu'
 webOsContract(str_contains($paths['folders_js'], "triggerSyncFolderS3"), 'acción sincronizar usa sincronización existente');
 webOsContract(str_contains($paths['folders_js'], "openFolderDocumentCreator"), 'crear archivo usa creador existente');
 webOsContract(str_contains($paths['folders_js'], "ArcadeFolderActions"), 'mover/editar/eliminar usan acciones compartidas');
-webOsContract(str_contains($paths['folders_js'], "drive:move-task-completed"), 'movimiento refresca el Explorador al terminar');
+webOsContract(str_contains($paths['folders_js'], "drive:move-task-completed"), 'movimiento refresca Mis datos al terminar');
 
 webOsContract(str_contains($paths['folders_shared'], 'window.ArcadeFolderActions'), 'módulo clásico expone acciones de carpeta seguras al SO');
 webOsContract(str_contains($paths['folder_document'], 'window.openFolderDocumentCreator'), 'creador de documento expone entrada reutilizable');
@@ -144,17 +147,36 @@ webOsContract(!str_contains($paths['sync'], "if (!btn) {\n      return this;"), 
 webOsContract(str_contains($paths['css'], '.os-folder-commandbar'), 'barra de acciones de carpeta tiene estilo Web OS');
 
 // Navegación viva, miniaturas y multimedia flotante.
-webOsContract(str_contains($paths['shell'], 'id="osExplorerLive"'), 'Explorador tiene región reemplazable sin recargar el SO');
-webOsContract(str_contains($paths['shell'], "thumb.php?key="), 'imágenes del Explorador reutilizan ThumbnailService');
+webOsContract(str_contains($paths['shell'], 'id="osExplorerLive"'), 'Mis datos tiene región reemplazable sin recargar el SO');
+webOsContract(str_contains($paths['shell'], "thumb.php?key="), 'imágenes de Mis datos reutilizan ThumbnailService');
 webOsContract(str_contains($paths['shell'], 'class="os-entry-thumbnail"'), 'miniaturas se muestran en los iconos de imagen');
-webOsContract(str_contains($paths['js'], 'async refreshExplorer('), 'shell actualiza sólo la ventana Explorador');
-webOsContract(str_contains($paths['js'], "current.replaceWith(next)"), 'navegación reemplaza sólo la región del Explorador');
+webOsContract(str_contains($paths['js'], 'async refreshExplorer('), 'shell actualiza sólo la ventana Mis datos');
+webOsContract(str_contains($paths['js'], "current.replaceWith(next)"), 'navegación reemplaza sólo la región de Mis datos');
 webOsContract(str_contains($paths['js'], "fetch(url.toString()"), 'navegación de carpetas usa solicitud parcial');
 webOsContract(str_contains($paths['js'], "bindHistoryNavigation()"), 'historial atrás/adelante conserva navegación viva');
 webOsContract(str_contains($paths['folders_js'], "ArcadeCloudOsShell.refreshExplorer"), 'acciones de carpeta delegan navegación al shell');
-webOsContract(str_contains($paths['folders_js'], 'rebind()'), 'acciones se vuelven a enlazar tras refrescar Explorador');
-webOsContract(str_contains($paths['css'], '.os-entry-thumbnail'), 'miniaturas tienen estilo dentro del Explorador');
+webOsContract(str_contains($paths['folders_js'], 'rebind()'), 'acciones se vuelven a enlazar tras refrescar Mis datos');
+webOsContract(str_contains($paths['css'], '.os-entry-thumbnail'), 'miniaturas tienen estilo dentro de Mis datos');
 webOsContract(str_contains($paths['css'], '.os-media-overlay'), 'audio/video tienen componente flotante');
 webOsContract(str_contains($paths['css'], 'z-index:20000'), 'reproductor queda por encima de ventanas y modales');
+
+// Terminal restringida y nomenclatura única Mis datos.
+webOsContract(!str_contains($paths['shell'], '>Mis documentos<'), 'Web OS ya no muestra Mis documentos');
+webOsContract(!str_contains($paths['shell'], '> Mis archivos</button>'), 'Web OS ya no muestra Mis archivos');
+webOsContract(!str_contains($paths['shell'], '>Explorador<'), 'Web OS ya no muestra Explorador como nombre visible');
+webOsContract(str_contains($paths['shell'], 'data-window-title="Mis datos"'), 'ventana de archivos se llama Mis datos');
+webOsContract(str_contains($paths['shell'], '<strong>Mis datos</strong>'), 'Aplicaciones usa el nombre Mis datos');
+webOsContract(str_contains($paths['shell'], 'id="terminalWindow"'), 'SO incluye ventana Terminal para superadmin');
+webOsContract(str_contains($paths['shell'], "if (\$isSuperAdmin): ?>\n    <section class=\"os-window os-terminal-window\""), 'Terminal se renderiza sólo dentro del guard superadmin');
+webOsContract(str_contains($paths['shell'], 'data-open-terminal'), 'menú inferior izquierdo abre Terminal');
+webOsContract(str_contains($paths['shell'], 'ARCADECLOUD_OS_SERVER_CONSOLE'), 'SO expone configuración temporal de terminal');
+webOsContract(str_contains($paths['shell'], 'server-console.php'), 'Terminal reutiliza endpoint restringido existente');
+webOsContract(str_contains($paths['terminal_js'], 'data-terminal-command'), 'Terminal renderiza opciones ejecutables');
+webOsContract(str_contains($paths['terminal_js'], "command === 'memory-clear'"), 'mantenimiento conserva confirmación reforzada');
+webOsContract(str_contains($paths['terminal_js'], "body.append('csrf'"), 'Terminal envía CSRF al endpoint');
+webOsContract(str_contains($paths['console_controller'], 'isSuperAdmin()'), 'endpoint conserva autorización superadmin');
+webOsContract(str_contains($paths['console_service'], 'Comando no permitido'), 'servidor mantiene allowlist exacta');
+webOsContract(!str_contains($paths['terminal_js'], 'shell_exec('), 'Terminal del SO no ejecuta shell directa');
+webOsContract(!str_contains($paths['terminal_js'], 'exec('), 'Terminal del SO no usa exec local');
 
 echo "WEB_OS_CONTRACT_OK\n";

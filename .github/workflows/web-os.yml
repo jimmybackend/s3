@@ -7,6 +7,7 @@ on:
       - 'drive/s3.php'
       - 'drive/css/so.css'
       - 'drive/js/so.js'
+      - 'drive/js/so-terminal.js'
       - 'drive/js/so-folders.js'
       - 'drive/js/carpetas.js'
       - 'drive/js/folder-document.js'
@@ -27,6 +28,7 @@ on:
       - 'drive/s3.php'
       - 'drive/css/so.css'
       - 'drive/js/so.js'
+      - 'drive/js/so-terminal.js'
       - 'drive/src/System/**'
       - 'drive/tests/web_os_contract_smoke.php'
       - '.github/workflows/web-os.yml'
@@ -47,6 +49,7 @@ jobs:
       - name: JavaScript syntax
         run: |
           node --check drive/js/so.js
+          node --check drive/js/so-terminal.js
           node --check drive/js/so-folders.js
           node --check drive/js/carpetas.js
           node --check drive/js/folder-document.js

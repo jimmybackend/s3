@@ -1866,7 +1866,7 @@
     },
     {
       "path": "drive/so.php",
-      "lines": 361,
+      "lines": 1089,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -6550,7 +6550,7 @@
     },
     {
       "path": "drive/tests/web_os_contract_smoke.php",
-      "lines": 62,
+      "lines": 90,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -7159,7 +7159,7 @@
     },
     {
       "path": "drive/js/background-tasks.js",
-      "lines": 709,
+      "lines": 713,
       "kind": "class/module",
       "classes": [
         "BackgroundTaskCenter"
@@ -7545,7 +7545,7 @@
     },
     {
       "path": "drive/js/polly-background.js",
-      "lines": 301,
+      "lines": 305,
       "kind": "class/module",
       "classes": [
         "PollyBackgroundModule"
@@ -7685,13 +7685,15 @@
     },
     {
       "path": "drive/js/so.js",
-      "lines": 275,
+      "lines": 578,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudOsShell"
       ],
       "functions": [],
-      "window_assign": [],
+      "window_assign": [
+        "ArcadeCloudOsShell"
+      ],
       "window_func": [],
       "top_vars": [],
       "iife": false,
@@ -7790,7 +7792,7 @@
     },
     {
       "path": "drive/js/transcribe-background.js",
-      "lines": 319,
+      "lines": 323,
       "kind": "class/module",
       "classes": [
         "TranscribeBackgroundModule"

@@ -17,6 +17,14 @@ $paths = [
     'terminal_js' => $root . '/js/so-terminal.js',
     'console_controller' => $root . '/src/Http/Controller/ServerConsoleController.php',
     'console_service' => $root . '/src/Admin/ServerConsoleService.php',
+    'federation_js' => $root . '/js/so-federation.js',
+    'federation_admin_js' => $root . '/js/federation-os-admin.js',
+    'federation_admin_renderer' => $root . '/src/View/FederationOsAdminRenderer.php',
+    'federation_admin_controller' => $root . '/src/Http/Controller/FederationOsAdminController.php',
+    'federation_portal_renderer' => $root . '/src/View/FederationPortalRenderer.php',
+    'federation_portal_controller' => $root . '/src/Http/Controller/FederationPortalController.php',
+    'moderation_renderer' => $root . '/src/View/FederationModerationPageRenderer.php',
+    'server_admin_js' => $root . '/js/server-admin.js',
 ];
 
 foreach ($paths as $name => $path) {
@@ -168,7 +176,7 @@ webOsContract(str_contains($paths['shell'], 'data-window-title="Mis datos"'), 'v
 webOsContract(str_contains($paths['shell'], '<strong>Mis datos</strong>'), 'Aplicaciones usa el nombre Mis datos');
 webOsContract(str_contains($paths['shell'], 'id="terminalWindow"'), 'SO incluye ventana Terminal para superadmin');
 webOsContract(str_contains($paths['shell'], "if (\$isSuperAdmin): ?>\n    <section class=\"os-window os-terminal-window\""), 'Terminal se renderiza sólo dentro del guard superadmin');
-webOsContract(str_contains($paths['shell'], 'data-open-terminal'), 'menú inferior izquierdo abre Terminal');
+webOsContract(str_contains($paths['shell'], 'data-open-terminal'), 'Aplicaciones puede abrir Terminal');
 webOsContract(str_contains($paths['shell'], 'ARCADECLOUD_OS_SERVER_CONSOLE'), 'SO expone configuración temporal de terminal');
 webOsContract(str_contains($paths['shell'], 'server-console.php'), 'Terminal reutiliza endpoint restringido existente');
 webOsContract(str_contains($paths['terminal_js'], 'data-terminal-command'), 'Terminal renderiza opciones ejecutables');
@@ -178,5 +186,43 @@ webOsContract(str_contains($paths['console_controller'], 'isSuperAdmin()'), 'end
 webOsContract(str_contains($paths['console_service'], 'Comando no permitido'), 'servidor mantiene allowlist exacta');
 webOsContract(!str_contains($paths['terminal_js'], 'shell_exec('), 'Terminal del SO no ejecuta shell directa');
 webOsContract(!str_contains($paths['terminal_js'], 'exec('), 'Terminal del SO no usa exec local');
+
+// FederationCloud como aplicación nativa del Web OS.
+webOsContract(str_contains($paths['shell'], 'data-window-open="federationWindow"'), 'Aplicaciones abre FederationCloud como ventana');
+webOsContract(str_contains($paths['shell'], 'id="federationWindow"'), 'Web OS incluye ventana FederationCloud');
+webOsContract(str_contains($paths['shell'], 'id="federationFrame"'), 'FederationCloud se ejecuta dentro de la ventana');
+webOsContract(str_contains($paths['shell'], 'data-federation-view="search"'), 'FederationCloud ofrece buscar');
+webOsContract(str_contains($paths['shell'], 'data-federation-view="requests"'), 'FederationCloud ofrece solicitudes');
+webOsContract(str_contains($paths['shell'], 'data-federation-view="shares"'), 'FederationCloud ofrece compartidos');
+webOsContract(str_contains($paths['shell'], 'data-federation-view="replicas"'), 'FederationCloud ofrece réplicas');
+webOsContract(str_contains($paths['shell'], 'data-federation-view="about"'), 'FederationCloud ofrece Acerca de');
+webOsContract(str_contains($paths['shell'], 'data-federation-view="moderation"'), 'superadmin tiene acceso directo a moderación');
+webOsContract(str_contains($paths['shell'], 'federationcloud/portal.php?embed=1'), 'portal FederationCloud usa modo embebido');
+webOsContract(str_contains($paths['federation_js'], "federationcloud/os-admin.php?embed=1"), 'Acerca de carga administración dentro de la aplicación');
+webOsContract(str_contains($paths['federation_js'], "federationcloud/moderation.php?embed=1"), 'moderación permanece dentro de la aplicación');
+webOsContract(str_contains($paths['css'], '.os-federation-window'), 'ventana FederationCloud tiene estilo propio');
+
+$launcherStart = strpos($paths['shell'], '<div class="os-launcher" id="osLauncher"');
+$launcherEnd = $launcherStart === false ? false : strpos($paths['shell'], '<div class="os-task-context"', $launcherStart);
+$launcherMarkup = ($launcherStart !== false && $launcherEnd !== false)
+    ? substr($paths['shell'], $launcherStart, $launcherEnd - $launcherStart)
+    : '';
+webOsContract($launcherMarkup !== '', 'lanzador inferior se puede inspeccionar');
+webOsContract(!str_contains($launcherMarkup, 'terminalWindow'), 'Terminal ya no aparece en el menú inferior izquierdo');
+webOsContract(str_contains($paths['shell'], '<strong>Terminal</strong>'), 'Terminal aparece dentro de Aplicaciones');
+
+webOsContract(str_contains($paths['federation_portal_controller'], "queryString('embed')"), 'portal soporta modo embebido desde Controller');
+webOsContract(str_contains($paths['federation_portal_renderer'], 'federation-portal-embedded'), 'portal embebido elimina chrome duplicado');
+webOsContract(str_contains($paths['federation_admin_controller'], 'federation_provider_csrf'), 'Acerca de prepara CSRF de solicitudes de proveedores');
+webOsContract(str_contains($paths['federation_admin_controller'], 'server_admin_csrf'), 'Acerca de prepara CSRF de configuración del servidor');
+webOsContract(str_contains($paths['federation_admin_renderer'], 'federationAboutNode'), 'Acerca de muestra datos del nodo');
+webOsContract(str_contains($paths['federation_admin_renderer'], 'federationAboutPeerList'), 'Acerca de muestra nodos conectados');
+webOsContract(str_contains($paths['federation_admin_renderer'], 'federationProviderPendingList'), 'Acerca de muestra solicitudes de proveedor');
+webOsContract(str_contains($paths['federation_admin_renderer'], 'modalServerAdmin'), 'Acerca de integra configuración del servidor');
+webOsContract(str_contains($paths['federation_admin_renderer'], 'federationAboutModeration'), 'Acerca de integra moderación');
+webOsContract(str_contains($paths['federation_admin_js'], "provider-admin.php"), 'solicitudes reutilizan endpoint de proveedores');
+webOsContract(str_contains($paths['federation_admin_js'], "moderation-api.php"), 'Acerca de consulta moderación existente');
+webOsContract(str_contains($paths['server_admin_js'], 'data.endpoint'), 'configuración del servidor acepta endpoint reutilizable');
+webOsContract(str_contains($paths['moderation_renderer'], 'federation-moderation-embedded'), 'moderación soporta modo embebido');
 
 echo "WEB_OS_CONTRACT_OK\n";

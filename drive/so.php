@@ -1434,6 +1434,7 @@ Escribe help o usa uno de los botones disponibles.</pre>
   </footer>
 
   <script>
+    window.UPLOAD_API = 'api/upload.php';
     window.DRIVE_UPLOAD_CSRF = <?= json_encode($uploadCsrf, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
     window.DRIVE_INITIAL_ROUTE = <?= json_encode($currentRoute, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
     window.rutaActual = <?= json_encode($currentRoute, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
@@ -1468,5 +1469,6 @@ Escribe help o usa uno de los botones disponibles.</pre>
   <script src="js/so-terminal.js?v=<?= (int)filemtime(__DIR__ . '/js/so-terminal.js') ?>"></script>
   <?php endif; ?>
   <script src="js/so.js?v=<?= (int)filemtime(__DIR__ . '/js/so.js') ?>"></script>
+  <script src="js/so-screenshot-paste.js?v=<?= (int)filemtime(__DIR__ . '/js/so-screenshot-paste.js') ?>"></script>
 </body>
 </html>

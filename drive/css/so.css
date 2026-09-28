@@ -84,6 +84,16 @@ a{text-decoration:none;color:inherit}
 }
 .os-tool-button:hover{border-color:var(--os-accent);color:var(--os-accent-2)}
 .os-tool-button.is-disabled{opacity:.35}
+.os-screenshot-paste{
+  flex:0 0 auto;height:34px;padding:0 10px;display:inline-flex;align-items:center;justify-content:center;gap:7px;
+  border:1px solid rgba(116,196,255,.26);border-radius:8px;background:rgba(255,255,255,.035);
+  color:var(--os-text);font-size:.74rem;font-weight:800;white-space:nowrap;cursor:pointer
+}
+.os-screenshot-paste i{color:var(--os-accent)}
+.os-screenshot-paste:hover:not(:disabled){
+  border-color:var(--os-accent);background:rgba(38,198,255,.1);color:var(--os-accent-2)
+}
+.os-screenshot-paste:disabled{opacity:.55;cursor:wait}
 .os-address{
   flex:1;min-width:0;height:34px;padding:0 11px;display:flex;align-items:center;gap:8px;border:1px solid var(--os-border);
   border-radius:8px;background:rgba(0,0,0,.18);color:var(--os-soft);font-size:.82rem
@@ -798,6 +808,7 @@ body.arcade-os{
 @media (max-width:800px){
   .os-explorer-toolbar{flex-wrap:wrap}
   .os-address{order:1;flex:1 1 calc(100% - 90px)}
+  .os-screenshot-paste{order:2;margin-left:auto;height:32px;padding:0 9px}
   .os-storage{order:2;margin-left:auto}
   .os-folder-pagination{order:3;width:100%;justify-content:flex-end;margin-left:0}
   .os-page-button{min-width:34px;height:32px}

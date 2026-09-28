@@ -6,6 +6,7 @@ $root = dirname(__DIR__);
 $files = [
     'shell' => $root . '/js/so.js',
     'clipboard' => $root . '/js/so-clipboard.js',
+    'screenshot' => $root . '/js/so-screenshot-paste.js',
     'clipboardCss' => $root . '/css/so-clipboard.css',
     'moveTasks' => $root . '/js/move-tasks.js',
     'fileService' => $root . '/src/Application/FileMutationService.php',
@@ -60,5 +61,18 @@ $assert(str_contains($files['folderService'], 'public function copy('), 'servici
 $assert(str_contains($files['folderRepo'], 'copyTree'), 'copia duplica catálogo de carpetas y archivos');
 $assert(str_contains($files['moveService'], "['move', 'copy']"), 'job en segundo plano acepta copy y move');
 $assert(str_contains($files['moveController'], "'progress' => \$progress"), 'estado del job expone porcentaje');
+$assert(str_contains($files['screenshot'], "navigator.clipboard.read"), 'botón puede leer imágenes del portapapeles');
+$assert(str_contains($files['screenshot'], "addEventListener('paste'"), 'Ctrl+V/Pegar captura imagen dentro de Mis datos');
+$assert(str_contains($files['screenshot'], "startsWith('image/')"), 'pegado sólo procesa contenido de imagen');
+$assert(str_contains($files['screenshot'], "isEditableTarget"), 'pegado no invade inputs ni editores de texto');
+$assert(str_contains($files['screenshot'], "toPng(sourceBlob)"), 'imagen pegada se normaliza a PNG');
+$assert(str_contains($files['screenshot'], "'image/png'"), 'subida de screenshot usa PNG');
+$assert(str_contains($files['screenshot'], "return 'screenshot-'"), 'nombre automático antepone screenshot y fecha/hora');
+$assert(str_contains($files['screenshot'], "ruta_objetivo: route"), 'screenshot se fija a la carpeta actual');
+$assert(str_contains($files['screenshot'], "mode=local_put&action=init"), 'screenshot reutiliza inicio de subida OOP');
+$assert(str_contains($files['screenshot'], "mode=local_put&action=complete"), 'screenshot confirma FileS3 después de S3');
+$assert(str_contains($files['screenshot'], "'X-Drive-CSRF': csrf"), 'screenshot conserva protección CSRF');
+$assert(str_contains($files['screenshot'], "page: 1"), 'screenshot refresca la carpeta para mostrar el PNG nuevo');
+
 
 fwrite(STDOUT, "Contrato Web OS clipboard correcto.\n");

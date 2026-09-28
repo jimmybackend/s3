@@ -59,10 +59,10 @@ final class OfficeWorkstationClient
             throw new RuntimeException('Solicitud documental Workstation inválida.');
         }
 
-        $payload = json_encode([
+        $payload = http_build_query([
             'session_id' => $sessionId,
             'control_token' => $controlToken,
-        ], JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
+        ], '', '&', PHP_QUERY_RFC3986);
 
         $errno = 0;
         $errstr = '';
@@ -81,7 +81,7 @@ final class OfficeWorkstationClient
         $request = "POST /__arcadecloud_office_document HTTP/1.0\r\n"
             . "Host: office.esforzados.com\r\n"
             . "X-ArcadeCloud-Office-Document-Action: " . $action . "\r\n"
-            . "Content-Type: application/json\r\n"
+            . "Content-Type: application/x-www-form-urlencoded\r\n"
             . "Content-Length: " . strlen($payload) . "\r\n"
             . "Connection: close\r\n\r\n"
             . $payload;

@@ -58,6 +58,21 @@ $fileState = $app->fileListService()->load($userId, $currentRoute, [
 $page = max(1, (int)($fileState['page'] ?? 1));
 $pages = max(1, (int)($fileState['pages'] ?? 1));
 $fileTotal = max(0, (int)($fileState['total'] ?? 0));
+$folderFileTotal = max(0, (int)($fileState['folder_total'] ?? $fileTotal));
+$folderBytes = max(0, (int)($fileState['folder_bytes'] ?? 0));
+$pageVisibleFiles = 0;
+$pageLockedFiles = 0;
+$pageProtectedOpenFiles = 0;
+foreach (($fileState['rows'] ?? []) as $folderInfoRow) {
+    if (FileViewHelper::isLocked($folderInfoRow)) {
+        $pageLockedFiles++;
+        continue;
+    }
+    $pageVisibleFiles++;
+    if (FileViewHelper::hasSecurity($folderInfoRow)) {
+        $pageProtectedOpenFiles++;
+    }
+}
 $pagerStart = max(1, min($page - 1, max(1, $pages - 2)));
 $pagerEnd = min($pages, $pagerStart + 2);
 $files = $fileState['rows'];
@@ -169,6 +184,7 @@ $currentFolderName = $currentIsRoot
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
   <link rel="stylesheet" href="css/so.css?v=<?= (int)filemtime(__DIR__ . '/css/so.css') ?>">
   <link rel="stylesheet" href="css/upload-center.css?v=<?= (int)filemtime(__DIR__ . '/css/upload-center.css') ?>">
+  <link rel="stylesheet" href="css/compute-node-idle.css?v=<?= (int)filemtime(__DIR__ . '/css/compute-node-idle.css') ?>">
   <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
 </head>
@@ -204,34 +220,79 @@ $currentFolderName = $currentIsRoot
            data-explorer-route="<?= $e($currentRoute) ?>"
            data-explorer-page="<?= $page ?>"
            data-explorer-pages="<?= $pages ?>">
+      <div class="os-explorer-pathrow">
+        <div class="os-address" title="<?= $e($visibleRoute) ?>">
+          <i class="fas fa-folder"></i>
+          <span><?= $e($visibleRoute) ?></span>
+        </div>
+      </div>
+
       <div class="os-explorer-toolbar">
         <?php if ($currentPrefix !== $rootPrefix): ?>
-          <a class="os-tool-button" href="so.php?ruta=<?= rawurlencode($parentRoute) ?>" data-explorer-route="<?= $e($parentRoute) ?>" title="Subir una carpeta">
+          <a class="os-tool-button"
+             href="so.php?ruta=<?= rawurlencode($parentRoute) ?>"
+             data-explorer-route="<?= $e($parentRoute) ?>"
+             title="Subir una carpeta"
+             aria-label="Subir una carpeta">
             <i class="fas fa-arrow-up"></i>
           </a>
         <?php else: ?>
           <span class="os-tool-button is-disabled" aria-hidden="true"><i class="fas fa-arrow-up"></i></span>
         <?php endif; ?>
+
         <a class="os-tool-button"
            href="so.php?ruta=<?= rawurlencode($currentRoute) ?>&pagina=<?= $page ?>"
            data-explorer-route="<?= $e($currentRoute) ?>"
            data-explorer-page="<?= $page ?>"
-           title="Actualizar">
+           title="Actualizar carpeta"
+           aria-label="Actualizar carpeta">
           <i class="fas fa-rotate"></i>
         </a>
-        <div class="os-address">
-          <i class="fas fa-folder"></i>
-          <span><?= $e($visibleRoute) ?></span>
-        </div>
-        <span class="os-storage"><?= $e((string)($storageUsage['formatted'] ?? '0 B')) ?> usados</span>
+
+        <button type="button"
+                class="os-tool-button"
+                data-current-folder-action="sync"
+                title="Sincronizar esta carpeta con S3"
+                aria-label="Sincronizar esta carpeta con S3">
+          <i class="fas fa-arrows-rotate"></i>
+        </button>
+
         <button type="button"
                 class="os-tool-button os-upload-launch"
                 data-drive-upload-center
-                title="Subir a esta carpeta"
-                aria-label="Subir a esta carpeta">
+                title="Subir archivos a esta carpeta"
+                aria-label="Subir archivos a esta carpeta">
           <i class="fas fa-cloud-arrow-up"></i>
           <span>Subir</span>
         </button>
+
+        <button type="button"
+                class="os-tool-button"
+                data-folder-info
+                aria-expanded="false"
+                title="Información de la carpeta"
+                aria-label="Información de la carpeta">
+          <i class="fas fa-circle-info"></i>
+        </button>
+
+        <div class="os-selection-actions" data-selection-actions hidden>
+          <button type="button"
+                  class="os-tool-button"
+                  data-selection-action="download"
+                  title="Descargar seleccionados"
+                  aria-label="Descargar seleccionados">
+            <i class="fas fa-download"></i>
+          </button>
+          <button type="button"
+                  class="os-tool-button is-danger"
+                  data-selection-action="delete"
+                  title="Eliminar seleccionados"
+                  aria-label="Eliminar seleccionados">
+            <i class="fas fa-trash"></i>
+          </button>
+          <span class="os-selection-count" data-selection-count>0</span>
+        </div>
+
         <nav class="os-folder-pagination" aria-label="Páginas de archivos">
           <?php if ($page > 1): ?>
             <a href="so.php?ruta=<?= rawurlencode($currentRoute) ?>&pagina=1"
@@ -281,6 +342,23 @@ $currentFolderName = $currentIsRoot
             <span class="os-page-button is-disabled" aria-hidden="true">|&gt;</span>
           <?php endif; ?>
         </nav>
+      </div>
+
+      <div class="os-folder-info-panel" data-folder-info-panel hidden>
+        <div class="os-folder-info-head">
+          <strong><i class="fas fa-circle-info"></i> Información de carpeta</strong>
+          <button type="button" data-folder-info-close aria-label="Cerrar"><i class="fas fa-xmark"></i></button>
+        </div>
+        <div class="os-folder-info-grid">
+          <div><span>Ruta</span><strong><?= $e($visibleRoute) ?></strong></div>
+          <div><span>Archivos</span><strong><?= $folderFileTotal ?></strong></div>
+          <div><span>Peso</span><strong><?= $e($formatBytes($folderBytes)) ?></strong></div>
+          <div><span>Subcarpetas</span><strong><?= count($folders) ?></strong></div>
+          <div><span>Visibles (página)</span><strong><?= $pageVisibleFiles ?></strong></div>
+          <div><span>Bloqueados (página)</span><strong><?= $pageLockedFiles ?></strong></div>
+          <div><span>Protegidos abiertos</span><strong><?= $pageProtectedOpenFiles ?></strong></div>
+          <div><span>Filtrados / paginados</span><strong><?= $fileTotal ?></strong></div>
+        </div>
       </div>
 
       <div class="os-window-body os-explorer-body"
@@ -337,6 +415,7 @@ $currentFolderName = $currentIsRoot
                     data-edit-url="<?= $e($editUrl) ?>"
                     data-classic-url="s3.php"
                     data-locked="<?= $locked ? '1' : '0' ?>"
+                    data-has-security="<?= FileViewHelper::hasSecurity($row) ? '1' : '0' ?>"
                     data-image="<?= $isImage ? '1' : '0' ?>"
                     data-audio="<?= $isAudio ? '1' : '0' ?>"
                     data-video="<?= $isVideo ? '1' : '0' ?>"
@@ -603,6 +682,10 @@ Escribe help o usa uno de los botones disponibles.</pre>
     <button type="button" data-file-action="split-video" data-service-action><i class="fas fa-scissors"></i>Dividir video</button>
     <button type="button" data-file-action="extract-mp3" data-service-action><i class="fas fa-file-audio"></i>Extraer MP3</button>
     <button type="button" data-file-action="split-audio" data-service-action><i class="fas fa-scissors"></i>Dividir audio</button>
+    <div class="os-context-divider"></div>
+    <button type="button" data-file-action="security-lock"><i class="fas fa-lock"></i><span>Bloquear con contraseña</span></button>
+    <button type="button" data-file-action="security-unlock"><i class="fas fa-lock-open"></i><span>Desbloquear</span></button>
+    <button type="button" data-file-action="security-relock"><i class="fas fa-lock"></i><span>Bloquear de nuevo</span></button>
     <div class="os-context-divider"></div>
     <button type="button" data-file-action="classic"><i class="fas fa-hard-drive"></i>Abrir en Drive clásico</button>
   </div>
@@ -1469,6 +1552,7 @@ Escribe help o usa uno de los botones disponibles.</pre>
 
   <div class="os-task-context" id="osTaskContext" hidden>
     <div class="os-context-name" id="osTaskContextName">Ventana</div>
+    <button type="button" data-task-action="minimize"><i class="fas fa-minus"></i><span>Minimizar</span></button>
     <button type="button" data-task-action="maximize"><i class="far fa-square"></i><span>Maximizar</span></button>
     <button type="button" data-task-action="close" class="is-danger"><i class="fas fa-xmark"></i><span>Cerrar</span></button>
   </div>
@@ -1522,6 +1606,7 @@ Escribe help o usa uno de los botones disponibles.</pre>
   <script src="js/upload-destination.js?v=<?= (int)filemtime(__DIR__ . '/js/upload-destination.js') ?>"></script>
   <script src="js/upload-center.js?v=<?= (int)filemtime(__DIR__ . '/js/upload-center.js') ?>"></script>
   <script data-drive-updater src="js/arcadecloud-updater.js?v=<?= (int)filemtime(__DIR__ . '/js/arcadecloud-updater.js') ?>"></script>
+  <script src="js/compute-node-idle.js?v=<?= (int)filemtime(__DIR__ . '/js/compute-node-idle.js') ?>"></script>
   <script src="js/so.js?v=<?= (int)filemtime(__DIR__ . '/js/so.js') ?>"></script>
 </body>
 </html>

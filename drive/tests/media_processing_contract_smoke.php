@@ -49,6 +49,15 @@ mediaContract(str_contains($node, 'ARCADECLOUD_MEDIA_WORKER_INSTANCE_ID'), 'nodo
 mediaContract(str_contains($node, 'ARCADECLOUD_MEDIA_WORKER_HOURLY_USD'), 'encendido pagado requiere tarifa de referencia');
 mediaContract(str_contains($node, '->start($this->instanceId)'), 'servicio puede encender la EC2 configurada');
 mediaContract(str_contains($node, '->stop($this->instanceId, false)'), 'servicio puede apagar la EC2 tras inactividad');
+mediaContract(str_contains($node, 'IDLE_WARNING_SECONDS = 30'), 'autoapagado deja aviso de 30 segundos');
+mediaContract(str_contains($node, "?: 600"), 'inactividad mínima del nodo es de 10 minutos');
+mediaContract(str_contains($node, 'touchInteractiveActivity'), 'actividad interactiva evita apagar un nodo en uso');
+mediaContract(str_contains($node, 'requestIdleStop'), 'apagado desde UI usa servicio seguro');
+mediaContract(str_contains($node, "(\$idle['warning'] ?? false) !== true"), 'apagado manual sólo funciona durante ventana de inactividad');
+mediaContract(str_contains($controller, "postString('node_activity')"), 'controlador acepta heartbeat de s3/so');
+mediaContract(str_contains($controller, "queryString('idle_status')"), 'controlador expone estado para cuenta regresiva');
+mediaContract(str_contains($controller, '$node->handleIdle($jobs)'), 'polling de s3/so también avanza la detección de inactividad');
+mediaContract(str_contains($controller, "postString('node_shutdown_now')"), 'controlador acepta apagado tras advertencia');
 mediaContract(str_contains($node, 'ec2.media_worker_second'), 'sesión EC2 registra segundos facturables');
 mediaContract(str_contains($sessions, 'MediaWorkerNodeSessions'), 'sesiones de encendido quedan persistidas');
 mediaContract(str_contains($bootstrap, 'latest/meta-data/public-ipv4'), 'réplica sin dominio refresca IPv4 por IMDSv2');

@@ -318,7 +318,7 @@ persist_node_settings() {
   fi
   if [[ -n "$MEDIA_WORKER_IDLE_GRACE_SECONDS" ]]; then
     [[ "$MEDIA_WORKER_IDLE_GRACE_SECONDS" =~ ^[0-9]+$ ]] || fail "--media-worker-idle-grace-seconds debe ser entero."
-    (( MEDIA_WORKER_IDLE_GRACE_SECONDS >= 60 && MEDIA_WORKER_IDLE_GRACE_SECONDS <= 3600 ))       || fail "--media-worker-idle-grace-seconds debe estar entre 60 y 3600."
+    (( MEDIA_WORKER_IDLE_GRACE_SECONDS >= 600 && MEDIA_WORKER_IDLE_GRACE_SECONDS <= 3600 ))       || fail "--media-worker-idle-grace-seconds debe estar entre 600 y 3600."
   fi
 
   payload="$(python3 - "$role" "$MEDIA_WORKER_INSTANCE_ID" "$MEDIA_WORKER_REGION"     "$MEDIA_WORKER_HOURLY_USD" "$MEDIA_WORKER_IDLE_GRACE_SECONDS" "$FEDERATION_DYNAMIC_IP" <<'PY'

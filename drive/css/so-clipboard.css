@@ -21,7 +21,7 @@
 .os-toolbar-paste[hidden]{display:none!important}
 .os-toolbar-paste:disabled{opacity:.4;cursor:not-allowed}
 @media (max-width:800px){
-  .os-toolbar-paste{order:2;margin-left:auto;height:32px;padding:0 9px}
+  .os-toolbar-paste{height:32px;padding:0 9px}
 }
 .os-transfer-hud{
   position:fixed;

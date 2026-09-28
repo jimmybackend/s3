@@ -190,7 +190,7 @@ El Drive puede controlar una única EC2 multimedia configurada. El usuario no en
 ARCADECLOUD_MEDIA_WORKER_INSTANCE_ID=i-xxxxxxxxxxxxxxxxx
 ARCADECLOUD_MEDIA_WORKER_REGION=us-east-1
 ARCADECLOUD_MEDIA_WORKER_HOURLY_USD=0.000000
-ARCADECLOUD_MEDIA_WORKER_IDLE_GRACE_SECONDS=300
+ARCADECLOUD_MEDIA_WORKER_IDLE_GRACE_SECONDS=600
 ```
 
 `ARCADECLOUD_MEDIA_WORKER_HOURLY_USD` debe contener la tarifa horaria de referencia de la instancia elegida. Si la EC2 está apagada y falta esa tarifa, Drive no permite un encendido pagado bajo demanda.
@@ -290,7 +290,7 @@ y apuntar al worker remoto mediante:
 ARCADECLOUD_MEDIA_WORKER_INSTANCE_ID=i-...
 ARCADECLOUD_MEDIA_WORKER_REGION=...
 ARCADECLOUD_MEDIA_WORKER_HOURLY_USD=...
-ARCADECLOUD_MEDIA_WORKER_IDLE_GRACE_SECONDS=300
+ARCADECLOUD_MEDIA_WORKER_IDLE_GRACE_SECONDS=600
 ```
 
 En la EC2 potente:

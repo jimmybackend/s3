@@ -9,11 +9,13 @@ on:
       - 'drive/css/so.css'
       - 'drive/css/so-clipboard.css'
       - 'drive/css/upload-center.css'
+      - 'drive/css/compute-node-idle.css'
       - 'drive/js/so.js'
       - 'drive/js/so-clipboard.js'
       - 'drive/js/upload-center.js'
       - 'drive/js/upload-destination.js'
       - 'drive/js/background-tasks.js'
+      - 'drive/js/compute-node-idle.js'
       - 'drive/js/arcadecloud-updater.js'
       - 'drive/js/so-screenshot-paste.js'
       - 'drive/js/so-terminal.js'
@@ -37,6 +39,9 @@ on:
       - 'drive/src/Storage/FileRecordRepository.php'
       - 'drive/src/Storage/FolderMutationRepository.php'
       - 'drive/src/Http/Controller/MoveJobController.php'
+      - 'drive/src/Http/Controller/MediaProcessingController.php'
+      - 'drive/src/Http/Controller/AuthController.php'
+      - 'drive/src/Media/MediaWorkerNodeService.php'
       - 'drive/src/Console/MoveJobWorkerCommand.php'
       - 'drive/src/System/**'
       - 'drive/tests/web_os_contract_smoke.php'
@@ -51,11 +56,13 @@ on:
       - 'drive/css/so.css'
       - 'drive/css/so-clipboard.css'
       - 'drive/css/upload-center.css'
+      - 'drive/css/compute-node-idle.css'
       - 'drive/js/so.js'
       - 'drive/js/so-clipboard.js'
       - 'drive/js/upload-center.js'
       - 'drive/js/upload-destination.js'
       - 'drive/js/background-tasks.js'
+      - 'drive/js/compute-node-idle.js'
       - 'drive/js/arcadecloud-updater.js'
       - 'drive/js/so-screenshot-paste.js'
       - 'drive/js/so-terminal.js'
@@ -79,6 +86,9 @@ on:
       - 'drive/src/Storage/FileRecordRepository.php'
       - 'drive/src/Storage/FolderMutationRepository.php'
       - 'drive/src/Http/Controller/MoveJobController.php'
+      - 'drive/src/Http/Controller/MediaProcessingController.php'
+      - 'drive/src/Http/Controller/AuthController.php'
+      - 'drive/src/Media/MediaWorkerNodeService.php'
       - 'drive/src/Console/MoveJobWorkerCommand.php'
       - 'drive/src/System/**'
       - 'drive/tests/web_os_contract_smoke.php'
@@ -108,6 +118,9 @@ jobs:
           php -l drive/src/Storage/FileRecordRepository.php
           php -l drive/src/Storage/FolderMutationRepository.php
           php -l drive/src/Http/Controller/MoveJobController.php
+          php -l drive/src/Http/Controller/MediaProcessingController.php
+          php -l drive/src/Http/Controller/AuthController.php
+          php -l drive/src/Media/MediaWorkerNodeService.php
           php -l drive/src/Console/MoveJobWorkerCommand.php
           php -l drive/tests/web_os_contract_smoke.php
           php -l drive/tests/web_os_clipboard_contract_smoke.php
@@ -118,6 +131,7 @@ jobs:
           node --check drive/js/upload-center.js
           node --check drive/js/upload-destination.js
           node --check drive/js/background-tasks.js
+          node --check drive/js/compute-node-idle.js
           node --check drive/js/arcadecloud-updater.js
           node --check drive/js/so-screenshot-paste.js
           node --check drive/js/so-terminal.js

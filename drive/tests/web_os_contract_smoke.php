@@ -30,6 +30,10 @@ $paths = [
     'upload_center' => $root . '/js/upload-center.js',
     'updater_js' => $root . '/js/arcadecloud-updater.js',
     'update_controller' => $root . '/src/Http/Controller/ArcadeCloudUpdateController.php',
+    'compute_idle_js' => $root . '/js/compute-node-idle.js',
+    'compute_idle_css' => $root . '/css/compute-node-idle.css',
+    'media_node' => $root . '/src/Media/MediaWorkerNodeService.php',
+    'media_controller' => $root . '/src/Http/Controller/MediaProcessingController.php',
 ];
 
 foreach ($paths as $name => $path) {
@@ -63,6 +67,7 @@ webOsContract(str_contains($paths['shell'], '>Mi nodo<'), 'interfaz usa Mi nodo'
 webOsContract(str_contains($paths['shell'], 'NodeCapabilityService'), 'Mi nodo usa detector de capacidad');
 webOsContract(str_contains($paths['shell'], 'FileViewHelper::isLocked($row)'), 'archivos protegidos no se abren como normales');
 webOsContract(str_contains($paths['shell'], 'Drive clásico'), 'existe retorno explícito al Drive clásico');
+webOsContract(str_contains($paths['logout'], "\$this->redirect('so.php')"), 'login autenticado abre ArcadeCloud OS como experiencia principal');
 
 webOsContract(str_contains($paths['capability'], '/proc/meminfo'), 'capacidad lee RAM real');
 webOsContract(str_contains($paths['capability'], '/sys/devices/system/cpu/online'), 'capacidad lee CPU real');
@@ -128,8 +133,11 @@ webOsContract(
 );
 webOsContract(str_contains($paths['shell'], 'class="fas fa-gear"'), 'botón inferior izquierdo usa engranaje');
 webOsContract(str_contains($paths['shell'], 'os-launcher-profile'), 'perfil del usuario vive dentro del lanzador');
-webOsContract(str_contains($paths['shell'], 'data-task-action="maximize"'), 'barra de tareas ofrece maximizar/restaurar');
+webOsContract(str_contains($paths['shell'], 'data-task-action="minimize"'), 'barra de tareas ofrece minimizar ventana abierta');
+webOsContract(str_contains($paths['shell'], 'data-task-action="maximize"'), 'barra de tareas ofrece maximizar ventana minimizada');
 webOsContract(str_contains($paths['shell'], 'data-task-action="close"'), 'barra de tareas ofrece cerrar');
+webOsContract(str_contains($paths['js'], "minimize.hidden = minimized"), 'tres puntos ocultan minimizar cuando la ventana ya está minimizada');
+webOsContract(str_contains($paths['js'], "maximize.hidden = !minimized"), 'tres puntos ofrecen maximizar sólo cuando la ventana está minimizada');
 webOsContract(str_contains($paths['js'], 'showTaskContext('), 'barra de tareas abre menú de ventana');
 webOsContract(str_contains($paths['js'], "ext === 'pdf' ? 'min(820px, 72vw)'"), 'PDF abre con tamaño inicial más compacto');
 webOsContract(str_contains($paths['css'], 'flex:0 0 auto'), 'controles de ventana no se encogen fuera de vista');
@@ -179,7 +187,16 @@ webOsContract(!str_contains($paths['css'], '.os-folder-commandbar'), 'CSS ya no 
 // Navegación viva, miniaturas y multimedia flotante.
 webOsContract(str_contains($paths['shell'], 'id="osExplorerLive"'), 'Mis datos tiene región reemplazable sin recargar el SO');
 webOsContract(str_contains($paths['shell'], "window.UPLOAD_API = 'api/upload.php'"), 'Web OS expone API OOP de subida');
+webOsContract(str_contains($paths['shell'], 'class="os-explorer-pathrow"'), 'ruta de carpeta vive arriba de los controles');
+webOsContract(str_contains($paths['shell'], 'data-current-folder-action="sync"'), 'barra compacta permite sincronizar la carpeta actual');
 webOsContract(str_contains($paths['shell'], 'data-drive-upload-center'), 'Web OS ofrece Subir dentro de la carpeta');
+webOsContract(str_contains($paths['shell'], 'data-folder-info'), 'barra compacta ofrece información de carpeta');
+webOsContract(str_contains($paths['shell'], 'data-selection-action="download"'), 'selección múltiple ofrece descarga');
+webOsContract(str_contains($paths['shell'], 'data-selection-action="delete"'), 'selección múltiple ofrece eliminación');
+webOsContract(str_contains($paths['shell'], 'Información de carpeta'), 'panel muestra resumen de la carpeta');
+webOsContract(str_contains($paths['shell'], 'Visibles (página)'), 'información incluye archivos visibles');
+webOsContract(str_contains($paths['shell'], 'Bloqueados (página)'), 'información incluye archivos bloqueados');
+webOsContract(str_contains($paths['css'], 'overflow-x:auto'), 'acciones y paginación permanecen en una sola línea desplazable en móvil');
 webOsContract(str_contains($paths['shell'], 'js/upload-destination.js'), 'Web OS carga destino inmutable de subida');
 webOsContract(str_contains($paths['shell'], 'js/upload-center.js'), 'Web OS carga centro unificado de subida');
 webOsContract(!str_contains($paths['shell'], 'js/so-screenshot-paste.js'), 'pegado de screenshot ya no se ejecuta fuera del centro Subir');
@@ -205,6 +222,32 @@ webOsContract(str_contains($paths['shell'], 'Última página'), 'paginador ofrec
 webOsContract(str_contains($paths['js'], "url.searchParams.set('pagina'"), 'navegación AJAX solicita la página seleccionada');
 webOsContract(str_contains($paths['js'], 'arcadePage: nextPage'), 'historial conserva página actual');
 webOsContract(str_contains($paths['css'], '.os-folder-pagination'), 'paginador tiene estilo propio en el Web OS');
+webOsContract(str_contains($paths['js'], "form.action = 'download_multiple.php'"), 'descarga múltiple reutiliza endpoint seguro existente');
+webOsContract(str_contains($paths['js'], "'delete_multiple.php'"), 'eliminación múltiple reutiliza endpoint existente');
+webOsContract(str_contains($paths['shell'], 'data-file-action="security-lock"'), 'menú de archivo permite bloquear con contraseña');
+webOsContract(str_contains($paths['shell'], 'data-file-action="security-unlock"'), 'menú de archivo permite desbloquear');
+webOsContract(str_contains($paths['shell'], 'data-file-action="security-relock"'), 'menú de archivo permite volver a bloquear');
+webOsContract(str_contains($paths['js'], "'set_file_security.php'"), 'bloqueo reutiliza FileSecurityController');
+webOsContract(str_contains($paths['js'], "'unlock_file.php'"), 'desbloqueo reutiliza FileSecurityController');
+webOsContract(str_contains($paths['js'], "'relock_file.php'"), 'rebloqueo reutiliza FileSecurityController');
+
+// Autoapagado del nodo grande por inactividad.
+webOsContract(str_contains($paths['drive'], 'js/compute-node-idle.js'), 'Drive clásico vigila inactividad del nodo grande');
+webOsContract(str_contains($paths['shell'], 'js/compute-node-idle.js'), 'Web OS vigila inactividad del nodo grande');
+webOsContract(str_contains($paths['compute_idle_js'], "this.pollMs = 5000"), 'estado de inactividad se consulta periódicamente');
+webOsContract(str_contains($paths['compute_idle_js'], "node_activity: '1'"), 'actividad real reinicia contador del nodo');
+webOsContract(str_contains($paths['compute_idle_js'], "node_shutdown_now: '1'"), 'aviso permite solicitar apagado seguro');
+webOsContract(str_contains($paths['compute_idle_js'], 'Han pasado 10 minutos sin actividad'), 'aviso explica umbral de diez minutos');
+webOsContract(str_contains($paths['compute_idle_js'], 'data-compute-idle-count'), 'aviso muestra cuenta regresiva');
+webOsContract(str_contains($paths['media_node'], 'IDLE_WARNING_SECONDS = 30'), 'backend reserva treinta segundos para advertencia');
+webOsContract(str_contains($paths['media_node'], "?: 600"), 'backend usa diez minutos de inactividad por defecto');
+webOsContract(str_contains($paths['media_node'], 'touchInteractiveActivity'), 'actividad de s3/so se registra en la sesión EC2');
+webOsContract(str_contains($paths['media_node'], 'requestIdleStop'), 'apagado interactivo pasa por servicio del nodo');
+webOsContract(str_contains($paths['media_node'], "(\$idle['warning'] ?? false) !== true"), 'StopInstances interactivo sólo se permite durante aviso de inactividad');
+webOsContract(str_contains($paths['media_controller'], "queryString('idle_status')"), 'endpoint expone estado de inactividad');
+webOsContract(str_contains($paths['media_controller'], "postString('node_activity')"), 'endpoint acepta heartbeat autenticado');
+webOsContract(str_contains($paths['media_controller'], "postString('node_shutdown_now')"), 'endpoint acepta apagado desde advertencia');
+webOsContract(str_contains($paths['compute_idle_css'], '.compute-idle-warning'), 'aviso de apagado tiene UI compartida');
 
 // Terminal restringida y nomenclatura única Mis datos.
 webOsContract(!str_contains($paths['shell'], '>Mis documentos<'), 'Web OS ya no muestra Mis documentos');

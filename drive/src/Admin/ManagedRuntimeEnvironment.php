@@ -335,9 +335,9 @@ final class ManagedRuntimeEnvironment
         }
 
         if ($name === 'ARCADECLOUD_MEDIA_WORKER_IDLE_GRACE_SECONDS' && $value !== '') {
-            $seconds = filter_var($value, FILTER_VALIDATE_INT, ['options' => ['min_range' => 60, 'max_range' => 3600]]);
+            $seconds = filter_var($value, FILTER_VALIDATE_INT, ['options' => ['min_range' => 600, 'max_range' => 3600]]);
             if ($seconds === false) {
-                throw new RuntimeException('ARCADECLOUD_MEDIA_WORKER_IDLE_GRACE_SECONDS debe estar entre 60 y 3600.');
+                throw new RuntimeException('ARCADECLOUD_MEDIA_WORKER_IDLE_GRACE_SECONDS debe estar entre 600 y 3600.');
             }
             return (string)$seconds;
         }

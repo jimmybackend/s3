@@ -275,7 +275,7 @@ No abrir 5900, 5901 ni 6080 en el Security Group.
 
 ## Fase 3 — documentos reales de FileS3/S3
 
-ArcadeCloud Office puede abrir un archivo concreto desde **Mis datos**. El navegador nunca envía una key S3 arbitraria al subdominio Office: envía el `FileS3.id_` al launcher autenticado, el launcher vuelve a validar `user_id_`, `Found=1`, seguridad y extensión, y guarda ese `file_id` dentro del token temporal de lanzamiento.
+ArcadeCloud Office puede abrir un archivo concreto desde **Mis datos**. El navegador nunca envía una key S3 arbitraria al subdominio Office: envía el `FileS3.id_` al launcher autenticado, el launcher vuelve a validar `user_id_`, `Found=1`, seguridad y extensión. El token mantiene en MySQL sólo su hash y el usuario; cuando se abre un documento, el `file_id` viaja como contexto del token y vuelve a validarse contra `FileS3` al crear la sesión documental. Así no se requiere `ALTER TABLE` durante una petición web.
 
 Extensiones iniciales:
 
@@ -289,7 +289,7 @@ Flujo:
 Mis datos
   -> doble clic / Abrir con Office
   -> office-launch.php?file_id=<id>
-  -> token de un solo uso (usuario + file_id en MySQL)
+  -> token de un solo uso (hash + usuario en MySQL; file_id como contexto revalidado)
   -> office.esforzados.com
   -> lease de escritorio
   -> OfficeDocumentSession

@@ -133,7 +133,7 @@
 | `drive/mover_archivo.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/mover_carpeta.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/node-status.php` | 10 | thin endpoint | 0 | — | — | — | — |
-| `drive/office-gateway.php` | 554 | view/entrypoint | 0 | — | — | — | — |
+| `drive/office-gateway.php` | 585 | view/entrypoint | 0 | — | — | — | — |
 | `drive/office-launch.php` | 77 | thin endpoint | 0 | — | — | — | — |
 | `drive/personal_aws_bootstrap.php` | 86 | class/module | 1 | — | — | — | — |
 | `drive/polly_cargar_texto.php` | 8 | thin endpoint | 0 | — | — | — | — |
@@ -356,8 +356,8 @@
 | `drive/src/Media/MediaWorkerNodeService.php` | 579 | class/module | 1 | — | — | — | — |
 | `drive/src/Media/MediaWorkerNodeSessionRepository.php` | 202 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Media/ThumbnailService.php` | 380 | class/module | 1 | — | ⚠️ | — | — |
-| `drive/src/Office/OfficeDocumentSessionRepository.php` | 282 | class/module | 1 | — | ⚠️ | — | — |
-| `drive/src/Office/OfficeDocumentStorageService.php` | 451 | class/module | 1 | — | ⚠️ | — | — |
+| `drive/src/Office/OfficeDocumentSessionRepository.php` | 295 | class/module | 1 | — | ⚠️ | — | — |
+| `drive/src/Office/OfficeDocumentStorageService.php` | 483 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Office/OfficeGatewayService.php` | 147 | class/module | 1 | — | — | — | — |
 | `drive/src/Office/OfficeLaunchTokenRepository.php` | 164 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Office/OfficeSchemaMigrationService.php` | 141 | class/module | 1 | — | ⚠️ | — | — |
@@ -460,7 +460,7 @@
 | `drive/tests/index_federation_drop_smoke.php` | 121 | test script | 0 | — | — | — | — |
 | `drive/tests/installer_service_reconcile_contract_smoke.php` | 194 | test script | 0 | — | — | — | — |
 | `drive/tests/media_processing_contract_smoke.php` | 173 | test script | 0 | — | — | — | — |
-| `drive/tests/office_gateway_contract_smoke.php` | 242 | test script | 0 | — | — | — | — |
+| `drive/tests/office_gateway_contract_smoke.php` | 258 | test script | 0 | — | — | — | — |
 | `drive/tests/password_credential_verifier_smoke.php` | 44 | test script | 0 | — | — | — | — |
 | `drive/tests/scoped_sync_repository_regression.php` | 96 | test script | 0 | — | ⚠️ | — | — |
 | `drive/tests/security_hardening_smoke.php` | 59 | test script | 0 | — | — | — | — |

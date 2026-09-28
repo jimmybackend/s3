@@ -31,6 +31,8 @@ $helper = (string)file_get_contents($repo . '/drive/bin/arcadecloud-drive-admin-
 installerContract(str_contains($installer, '--reconcile'), 'instalador ofrece reconciliación idempotente');
 installerContract(str_contains($installer, '--node-role='), 'instalador distingue rol web/media-worker/combined');
 installerContract(str_contains($installer, '--media-worker-instance-id='), 'instalador puede guardar la EC2 multimedia controlada');
+installerContract(str_contains($installer, 'MEDIA_WORKER_IDLE_GRACE_SECONDS >= 600'), 'instalador exige al menos diez minutos de inactividad');
+installerContract(str_contains($managed, "'min_range' => 600"), 'runtime administrado conserva mínimo de diez minutos');
 installerContract(str_contains($installer, 'persist_node_settings'), 'instalador persiste rol y configuración de media');
 installerContract(str_contains($installer, 'reconcile_services'), 'finalización invoca reconciliación de servicios');
 installerContract(

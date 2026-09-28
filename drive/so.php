@@ -735,6 +735,7 @@ Escribe help o usa uno de los botones disponibles.</pre>
     <button type="button" data-file-action="security-lock"><i class="fas fa-lock"></i><span>Bloquear con contraseña</span></button>
     <button type="button" data-file-action="security-unlock"><i class="fas fa-lock-open"></i><span>Desbloquear</span></button>
     <button type="button" data-file-action="security-relock"><i class="fas fa-lock"></i><span>Bloquear de nuevo</span></button>
+    <button type="button" class="is-danger" data-file-action="security-unsecure"><i class="fas fa-shield-virus"></i><span>Quitar protección</span></button>
     <div class="os-context-divider"></div>
     <button type="button" data-file-action="classic"><i class="fas fa-hard-drive"></i>Abrir en Drive clásico</button>
   </div>

@@ -29,7 +29,14 @@ if (
     exit('La URL de Office no está configurada correctamente.');
 }
 
-$repo = new OfficeLaunchTokenRepository($app->db());
+try {
+    $repo = new OfficeLaunchTokenRepository($app->db());
+} catch (Throwable $e) {
+    error_log('[Office launch] token repository error: ' . $e->getMessage());
+    http_response_code(503);
+    exit('No se pudo preparar el lanzamiento de Office. Revisa el estado de la base de datos.');
+}
+
 $fileId = max(0, (int)($_GET['file_id'] ?? 0));
 
 if ($fileId > 0) {
@@ -44,14 +51,20 @@ if ($fileId > 0) {
         if (!in_array($extension, $allowed, true)) {
             throw new RuntimeException('Este tipo de archivo no se puede abrir con ArcadeCloud Office.');
         }
-
-        $token = $repo->issueForFile($userId, $fileId, 120);
     } catch (Throwable $e) {
         http_response_code(400);
         exit(htmlspecialchars($e->getMessage(), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'));
     }
-} else {
-    $token = $repo->issue($userId, 120);
+}
+
+try {
+    $token = $fileId > 0
+        ? $repo->issueForFile($userId, $fileId, 120)
+        : $repo->issue($userId, 120);
+} catch (Throwable $e) {
+    error_log('[Office launch] token issue error: ' . $e->getMessage());
+    http_response_code(503);
+    exit('No se pudo crear el enlace temporal de Office. Inténtalo nuevamente.');
 }
 
 $separator = str_contains($officeUrl, '?') ? '&' : '?';

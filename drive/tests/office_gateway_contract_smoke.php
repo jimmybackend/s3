@@ -40,8 +40,10 @@ officeGatewayContract(
 officeGatewayContract(
     str_contains($launch, "requireAuthenticated('index.php')")
     && str_contains($launch, 'OfficeLaunchTokenRepository')
+    && str_contains($launch, '[Office launch] token repository error:')
+    && str_contains($launch, '[Office launch] token issue error:')
     && str_contains($launch, 'launch='),
-    'launcher exige sesión Drive y emite token temporal'
+    'launcher exige sesión Drive, controla fallos y emite token temporal'
 );
 
 officeGatewayContract(
@@ -113,10 +115,12 @@ officeGatewayContract(
 );
 
 officeGatewayContract(
-    str_contains($tokens, 'FileId')
-    && str_contains($tokens, 'issueForFile')
-    && str_contains($tokens, 'consumeContext'),
-    'token de lanzamiento conserva file_id sólo en MySQL'
+    str_contains($tokens, 'issueForFile')
+    && str_contains($tokens, "return \$this->issue(\$userId, \$ttlSeconds) . '.' . \$fileId;")
+    && str_contains($tokens, "SELECT UserId FROM OfficeLaunchTokens")
+    && !str_contains($tokens, 'ALTER TABLE OfficeLaunchTokens')
+    && !str_contains($tokens, '(TokenHash,UserId,FileId,CreatedAt,ExpiresAt)'),
+    'launcher evita ALTER en runtime y transporta file_id en contexto revalidado'
 );
 
 officeGatewayContract(

@@ -159,6 +159,7 @@ $currentFolderName = $currentIsRoot
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
   <link rel="stylesheet" href="css/so.css?v=<?= (int)filemtime(__DIR__ . '/css/so.css') ?>">
+  <link rel="stylesheet" href="css/upload-center.css?v=<?= (int)filemtime(__DIR__ . '/css/upload-center.css') ?>">
   <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
 </head>
@@ -214,6 +215,14 @@ $currentFolderName = $currentIsRoot
           <span><?= $e($visibleRoute) ?></span>
         </div>
         <span class="os-storage"><?= $e((string)($storageUsage['formatted'] ?? '0 B')) ?> usados</span>
+        <button type="button"
+                class="os-tool-button os-upload-launch"
+                data-drive-upload-center
+                title="Subir a esta carpeta"
+                aria-label="Subir a esta carpeta">
+          <i class="fas fa-cloud-arrow-up"></i>
+          <span>Subir</span>
+        </button>
         <nav class="os-folder-pagination" aria-label="Páginas de archivos">
           <?php if ($page > 1): ?>
             <a href="so.php?ruta=<?= rawurlencode($currentRoute) ?>&pagina=1"
@@ -1468,7 +1477,8 @@ Escribe help o usa uno de los botones disponibles.</pre>
   <?php if ($isSuperAdmin): ?>
   <script src="js/so-terminal.js?v=<?= (int)filemtime(__DIR__ . '/js/so-terminal.js') ?>"></script>
   <?php endif; ?>
+  <script src="js/upload-destination.js?v=<?= (int)filemtime(__DIR__ . '/js/upload-destination.js') ?>"></script>
+  <script src="js/upload-center.js?v=<?= (int)filemtime(__DIR__ . '/js/upload-center.js') ?>"></script>
   <script src="js/so.js?v=<?= (int)filemtime(__DIR__ . '/js/so.js') ?>"></script>
-  <script src="js/so-screenshot-paste.js?v=<?= (int)filemtime(__DIR__ . '/js/so-screenshot-paste.js') ?>"></script>
 </body>
 </html>

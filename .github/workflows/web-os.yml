@@ -14,6 +14,7 @@ on:
       - 'drive/js/upload-center.js'
       - 'drive/js/upload-destination.js'
       - 'drive/js/background-tasks.js'
+      - 'drive/js/arcadecloud-updater.js'
       - 'drive/js/so-screenshot-paste.js'
       - 'drive/js/so-terminal.js'
       - 'drive/js/so-federation.js'
@@ -55,6 +56,7 @@ on:
       - 'drive/js/upload-center.js'
       - 'drive/js/upload-destination.js'
       - 'drive/js/background-tasks.js'
+      - 'drive/js/arcadecloud-updater.js'
       - 'drive/js/so-screenshot-paste.js'
       - 'drive/js/so-terminal.js'
       - 'drive/js/so-federation.js'
@@ -116,6 +118,7 @@ jobs:
           node --check drive/js/upload-center.js
           node --check drive/js/upload-destination.js
           node --check drive/js/background-tasks.js
+          node --check drive/js/arcadecloud-updater.js
           node --check drive/js/so-screenshot-paste.js
           node --check drive/js/so-terminal.js
           node --check drive/js/so-federation.js

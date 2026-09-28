@@ -83,8 +83,9 @@ officeGatewayContract(
     && str_contains($gateway, 'assertActiveInteractiveOwner')
     && str_contains($officeInstaller, 'location = /__office_auth')
     && str_contains($officeInstaller, 'internal;')
-    && str_contains($officeInstaller, 'auth_request /__office_auth;'),
-    'noVNC y WebSocket requieren sesión Office activa antes del proxy'
+    && str_contains($officeInstaller, 'auth_request /__office_auth;')
+    && substr_count($officeInstaller, 'fastcgi_param HTTP_COOKIE \\$http_cookie;') >= 5,
+    'noVNC y WebSocket requieren sesión Office activa y FastCGI recibe la cookie'
 );
 
 officeGatewayContract(

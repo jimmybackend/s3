@@ -210,6 +210,37 @@ a{text-decoration:none;color:inherit}
 .os-capability-list>div:last-child{border-bottom:0}
 .os-capability-list span{color:var(--os-soft)}
 .os-capability-list strong{text-align:right;overflow:hidden;text-overflow:ellipsis}
+.os-node-memory-value{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.os-node-memory-value strong{min-width:0;flex:1}
+.os-node-broom{
+  width:32px;height:32px;flex:0 0 32px;border-radius:8px;border:1px solid rgba(38,198,255,.3);
+  background:rgba(38,198,255,.08);color:var(--os-accent-2);cursor:pointer
+}
+.os-node-broom:hover{background:rgba(38,198,255,.16);border-color:var(--os-accent)}
+.os-node-live-head{
+  min-height:34px;margin:0 0 8px;display:flex;align-items:center;justify-content:space-between;gap:10px;
+  color:var(--os-soft);font-size:.68rem
+}
+.os-node-live-head button{
+  border:1px solid var(--os-border);border-radius:8px;background:rgba(255,255,255,.025);color:var(--os-text);
+  padding:5px 9px;cursor:pointer;font-size:.7rem
+}
+.os-node-live-head button:hover{border-color:var(--os-accent);color:var(--os-accent-2)}
+#nodeWindow.is-node-loading .os-window-body{opacity:.7}
+.os-share-modal .modal-content{
+  background:#0d1b2c;color:var(--os-text);border:1px solid var(--os-border);border-radius:13px;
+  box-shadow:0 24px 80px rgba(0,0,0,.55)
+}
+.os-share-modal .modal-header,.os-share-modal .modal-footer{border-color:rgba(116,196,255,.16)}
+.os-share-modal .close{color:var(--os-text);text-shadow:none;opacity:.82}
+.os-share-modal .form-control,.os-share-modal .input-group-text{
+  background:#091523;color:var(--os-text);border-color:rgba(116,196,255,.22)
+}
+.os-share-modal .form-control:focus{
+  background:#091523;color:var(--os-text);border-color:var(--os-accent);box-shadow:0 0 0 .15rem rgba(38,198,255,.12)
+}
+.os-share-modal code{color:var(--os-accent-2)}
+.os-share-modal .border-top{border-color:rgba(116,196,255,.16)!important}
 .is-ready{color:var(--os-ok)!important}
 .is-missing{color:#ff9b9b!important}
 .is-neutral{color:var(--os-soft)!important}

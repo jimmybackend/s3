@@ -1,7 +1,7 @@
 {
   "summary": {
-    "php_total": 477,
-    "php_class_modules": 282,
+    "php_total": 478,
+    "php_class_modules": 283,
     "php_needs_migration": 0,
     "php_tests": 46,
     "js_total": 61,
@@ -1636,7 +1636,7 @@
     },
     {
       "path": "drive/office-gateway.php",
-      "lines": 380,
+      "lines": 401,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -4992,7 +4992,7 @@
     },
     {
       "path": "drive/src/Office/OfficeGatewayService.php",
-      "lines": 118,
+      "lines": 96,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -5008,6 +5008,21 @@
     {
       "path": "drive/src/Office/OfficeLaunchTokenRepository.php",
       "lines": 133,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": true,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Office/OfficeSessionLeaseRepository.php",
+      "lines": 175,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -6557,7 +6572,7 @@
     },
     {
       "path": "drive/tests/office_gateway_contract_smoke.php",
-      "lines": 151,
+      "lines": 164,
       "kind": "test script",
       "classes": 0,
       "functions": [

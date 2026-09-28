@@ -4,8 +4,8 @@
 
 ## Resumen
 
-- PHP analizados: **477**
-- PHP que ya contienen clases/interfaces: **282**
+- PHP analizados: **478**
+- PHP que ya contienen clases/interfaces: **283**
 - PHP marcados para migración/revisión: **0**
 - Tests PHP separados del objetivo OOP de runtime: **46**
 - JavaScript analizados: **61**
@@ -133,7 +133,7 @@
 | `drive/mover_archivo.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/mover_carpeta.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/node-status.php` | 10 | thin endpoint | 0 | — | — | — | — |
-| `drive/office-gateway.php` | 380 | view/entrypoint | 0 | — | — | — | — |
+| `drive/office-gateway.php` | 401 | view/entrypoint | 0 | — | — | — | — |
 | `drive/office-launch.php` | 39 | thin endpoint | 0 | — | — | — | — |
 | `drive/personal_aws_bootstrap.php` | 86 | class/module | 1 | — | — | — | — |
 | `drive/polly_cargar_texto.php` | 8 | thin endpoint | 0 | — | — | — | — |
@@ -355,8 +355,9 @@
 | `drive/src/Media/MediaWorkerNodeService.php` | 579 | class/module | 1 | — | — | — | — |
 | `drive/src/Media/MediaWorkerNodeSessionRepository.php` | 202 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Media/ThumbnailService.php` | 380 | class/module | 1 | — | ⚠️ | — | — |
-| `drive/src/Office/OfficeGatewayService.php` | 118 | class/module | 1 | — | — | — | — |
+| `drive/src/Office/OfficeGatewayService.php` | 96 | class/module | 1 | — | — | — | — |
 | `drive/src/Office/OfficeLaunchTokenRepository.php` | 133 | class/module | 1 | — | ⚠️ | — | — |
+| `drive/src/Office/OfficeSessionLeaseRepository.php` | 175 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Office/OfficeWorkstationClient.php` | 80 | class/module | 1 | — | — | — | — |
 | `drive/src/Security/AuthenticationRepository.php` | 101 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Security/AuthenticationService.php` | 55 | class/module | 1 | — | — | — | — |
@@ -455,7 +456,7 @@
 | `drive/tests/index_federation_drop_smoke.php` | 121 | test script | 0 | — | — | — | — |
 | `drive/tests/installer_service_reconcile_contract_smoke.php` | 161 | test script | 0 | — | — | — | — |
 | `drive/tests/media_processing_contract_smoke.php` | 173 | test script | 0 | — | — | — | — |
-| `drive/tests/office_gateway_contract_smoke.php` | 151 | test script | 0 | — | — | — | — |
+| `drive/tests/office_gateway_contract_smoke.php` | 164 | test script | 0 | — | — | — | — |
 | `drive/tests/password_credential_verifier_smoke.php` | 44 | test script | 0 | — | — | — | — |
 | `drive/tests/scoped_sync_repository_regression.php` | 96 | test script | 0 | — | ⚠️ | — | — |
 | `drive/tests/security_hardening_smoke.php` | 59 | test script | 0 | — | — | — | — |

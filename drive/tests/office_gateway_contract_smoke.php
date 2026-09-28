@@ -21,6 +21,7 @@ $leaseRepo = (string)file_get_contents($repo . '/drive/src/Office/OfficeSessionL
 $documentRepo = (string)file_get_contents($repo . '/drive/src/Office/OfficeDocumentSessionRepository.php');
 $documentStorage = (string)file_get_contents($repo . '/drive/src/Office/OfficeDocumentStorageService.php');
 $workstationDocument = (string)file_get_contents($repo . '/drive/workstation-document.php');
+$documentController = (string)file_get_contents($repo . '/drive/src/Http/Controller/OfficeDocumentController.php');
 $workstationClient = (string)file_get_contents($repo . '/drive/src/Office/OfficeWorkstationClient.php');
 $control = (string)file_get_contents($repo . '/drive/workstation-control.php');
 $helperClient = (string)file_get_contents($repo . '/drive/src/Admin/PrivilegedServerHelper.php');
@@ -139,10 +140,12 @@ officeGatewayContract(
 );
 
 officeGatewayContract(
-    str_contains($workstationDocument, "['prepare', 'sync', 'close']")
+    str_contains($workstationDocument, 'OfficeDocumentController')
+    && str_contains($documentController, "['prepare', 'sync', 'close']")
+    && str_contains($documentController, 'OfficeDocumentStorageService')
     && str_contains($internalInstaller, '/__arcadecloud_office_document')
     && str_contains($workstationClient, '/__arcadecloud_office_document'),
-    'agente documental sólo opera prepare/sync/close por red privada'
+    'agente documental usa Controller OOP y sólo opera prepare/sync/close por red privada'
 );
 
 officeGatewayContract(

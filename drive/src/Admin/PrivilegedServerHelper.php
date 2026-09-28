@@ -145,6 +145,54 @@ final class PrivilegedServerHelper
         $this->run(['identity-rename', $nodeName]);
     }
 
+
+    public function supportsWorkstationControl(): bool
+    {
+        try {
+            $status = $this->status();
+            return ($status['ok'] ?? false) === true
+                && (int)($status['version'] ?? 0) >= 13
+                && (bool)($status['capabilities']['workstation_control'] ?? false);
+        } catch (RuntimeException) {
+            return false;
+        }
+    }
+
+    public function workstationStatus(): array
+    {
+        return $this->workstationControl('workstation-status');
+    }
+
+    public function startWorkstation(): array
+    {
+        return $this->workstationControl('workstation-start');
+    }
+
+    public function stopWorkstation(): array
+    {
+        return $this->workstationControl('workstation-stop');
+    }
+
+    private function workstationControl(string $action): array
+    {
+        if (!$this->supportsWorkstationControl()) {
+            throw new RuntimeException(
+                'El helper administrativo no soporta control Workstation; reinstálalo desde el repositorio actual.'
+            );
+        }
+        if (!in_array($action, ['workstation-status', 'workstation-start', 'workstation-stop'], true)) {
+            throw new RuntimeException('Acción Workstation no permitida.');
+        }
+
+        $result = $this->run([$action]);
+        $decoded = json_decode((string)$result['stdout'], true);
+        if (!is_array($decoded) || ($decoded['ok'] ?? null) !== true) {
+            throw new RuntimeException('El helper no confirmó el estado de Workstation.');
+        }
+
+        return $decoded;
+    }
+
     public function runServerConsole(string $commandId): string
     {
         if (!$this->supportsServerConsole()) {

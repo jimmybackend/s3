@@ -1636,7 +1636,7 @@
     },
     {
       "path": "drive/office-gateway.php",
-      "lines": 354,
+      "lines": 380,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -4992,7 +4992,7 @@
     },
     {
       "path": "drive/src/Office/OfficeGatewayService.php",
-      "lines": 100,
+      "lines": 118,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -6557,7 +6557,7 @@
     },
     {
       "path": "drive/tests/office_gateway_contract_smoke.php",
-      "lines": 140,
+      "lines": 150,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -6843,7 +6843,7 @@
     },
     {
       "path": "drive/tests/workstation_phase1_contract_smoke.php",
-      "lines": 40,
+      "lines": 43,
       "kind": "test script",
       "classes": 0,
       "functions": [

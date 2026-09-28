@@ -102,7 +102,7 @@
     },
     {
       "path": "drive/bin/arcadecloud-drive-admin-helper.php",
-      "lines": 950,
+      "lines": 1096,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -1911,7 +1911,7 @@
     },
     {
       "path": "drive/so.php",
-      "lines": 1685,
+      "lines": 1722,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -2098,7 +2098,7 @@
     },
     {
       "path": "drive/src/Admin/PrivilegedServerHelper.php",
-      "lines": 183,
+      "lines": 195,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -2128,7 +2128,7 @@
     },
     {
       "path": "drive/src/Admin/ServerMaintenanceJobStore.php",
-      "lines": 182,
+      "lines": 186,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -2143,7 +2143,7 @@
     },
     {
       "path": "drive/src/Admin/ServerMaintenanceService.php",
-      "lines": 95,
+      "lines": 119,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -4065,7 +4065,7 @@
     },
     {
       "path": "drive/src/Http/Controller/BackgroundTaskController.php",
-      "lines": 943,
+      "lines": 945,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -4517,7 +4517,7 @@
     },
     {
       "path": "drive/src/Http/Controller/NodeStatusController.php",
-      "lines": 104,
+      "lines": 110,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -6527,7 +6527,7 @@
     },
     {
       "path": "drive/tests/server_console_contract_smoke.php",
-      "lines": 128,
+      "lines": 138,
       "kind": "test script",
       "classes": 0,
       "functions": [],
@@ -6715,7 +6715,7 @@
     },
     {
       "path": "drive/tests/web_os_contract_smoke.php",
-      "lines": 356,
+      "lines": 367,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -7932,7 +7932,7 @@
     },
     {
       "path": "drive/js/so-node.js",
-      "lines": 208,
+      "lines": 239,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudOsNodeMonitor"

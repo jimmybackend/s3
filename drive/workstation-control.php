@@ -21,7 +21,7 @@ $respond = static function (array $payload, int $status = 200): never {
 };
 
 $action = strtolower(trim((string)($_SERVER['HTTP_X_ARCADECLOUD_WORKSTATION_ACTION'] ?? 'status')));
-if (!in_array($action, ['status', 'start', 'stop'], true)) {
+if (!in_array($action, ['status', 'start'], true)) {
     $respond(['ok' => false, 'error' => 'Acción Workstation no permitida.'], 400);
 }
 
@@ -29,7 +29,7 @@ $method = strtoupper((string)($_SERVER['REQUEST_METHOD'] ?? 'GET'));
 if ($action === 'status' && $method !== 'GET') {
     $respond(['ok' => false, 'error' => 'Método no permitido.'], 405);
 }
-if (in_array($action, ['start', 'stop'], true) && $method !== 'POST') {
+if ($action === 'start' && $method !== 'POST') {
     $respond(['ok' => false, 'error' => 'Método no permitido.'], 405);
 }
 
@@ -43,7 +43,6 @@ try {
 
     $result = match ($action) {
         'start' => $helper->startWorkstation(),
-        'stop' => $helper->stopWorkstation(),
         default => $helper->workstationStatus(),
     };
 

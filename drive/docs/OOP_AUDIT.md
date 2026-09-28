@@ -4,8 +4,8 @@
 
 ## Resumen
 
-- PHP analizados: **482**
-- PHP que ya contienen clases/interfaces: **286**
+- PHP analizados: **483**
+- PHP que ya contienen clases/interfaces: **287**
 - PHP marcados para migración/revisión: **0**
 - Tests PHP separados del objetivo OOP de runtime: **46**
 - JavaScript analizados: **61**
@@ -134,7 +134,7 @@
 | `drive/mover_carpeta.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/node-status.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/office-gateway.php` | 554 | view/entrypoint | 0 | — | — | — | — |
-| `drive/office-launch.php` | 75 | thin endpoint | 0 | — | — | — | — |
+| `drive/office-launch.php` | 77 | thin endpoint | 0 | — | — | — | — |
 | `drive/personal_aws_bootstrap.php` | 86 | class/module | 1 | — | — | — | — |
 | `drive/polly_cargar_texto.php` | 8 | thin endpoint | 0 | — | — | — | — |
 | `drive/polly_list_voices.php` | 8 | thin endpoint | 0 | — | — | — | — |
@@ -162,7 +162,7 @@
 | `drive/src/Activity/PollyTaskReconciler.php` | 308 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Activity/TranscriptionCostAttribution.php` | 117 | class/module | 1 | — | — | — | — |
 | `drive/src/Activity/TranscriptionReconciler.php` | 476 | class/module | 1 | — | ⚠️ | — | — |
-| `drive/src/Admin/ArcadeCloudUpdaterService.php` | 133 | class/module | 1 | — | ⚠️ | — | — |
+| `drive/src/Admin/ArcadeCloudUpdaterService.php` | 160 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Admin/FastDriveControlService.php` | 143 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Admin/FastDriveWakeService.php` | 183 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Admin/ManagedRuntimeEnvironment.php` | 374 | class/module | 1 | — | — | — | — |
@@ -360,6 +360,7 @@
 | `drive/src/Office/OfficeDocumentStorageService.php` | 451 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Office/OfficeGatewayService.php` | 147 | class/module | 1 | — | — | — | — |
 | `drive/src/Office/OfficeLaunchTokenRepository.php` | 164 | class/module | 1 | — | ⚠️ | — | — |
+| `drive/src/Office/OfficeSchemaMigrationService.php` | 141 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Office/OfficeSessionLeaseRepository.php` | 189 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Office/OfficeWorkstationClient.php` | 178 | class/module | 1 | — | — | — | — |
 | `drive/src/Security/AuthenticationRepository.php` | 101 | class/module | 1 | — | ⚠️ | — | — |
@@ -377,7 +378,7 @@
 | `drive/src/Security/UserProfileService.php` | 183 | class/module | 1 | — | — | — | — |
 | `drive/src/Security/UserProfileValidator.php` | 96 | class/module | 1 | — | — | — | — |
 | `drive/src/Setup/BootstrapSetupAuth.php` | 183 | class/module | 1 | ⚠️ | — | — | — |
-| `drive/src/Setup/CanonicalDatabaseSchemaService.php` | 149 | class/module | 1 | — | ⚠️ | — | — |
+| `drive/src/Setup/CanonicalDatabaseSchemaService.php` | 152 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Setup/SetupApiController.php` | 120 | class/module | 1 | — | — | — | — |
 | `drive/src/Setup/SetupConfigurationService.php` | 182 | class/module | 1 | — | — | — | — |
 | `drive/src/Setup/SetupEntryGuard.php` | 22 | class/module | 1 | — | — | — | — |
@@ -435,7 +436,7 @@
 | `drive/tests/activity_costs_smoke.php` | 150 | test script | 0 | — | — | — | — |
 | `drive/tests/arcadelink_bulk_contract_regression.php` | 71 | test script | 0 | — | — | — | — |
 | `drive/tests/arcadelink_collection_regression.php` | 63 | test script | 0 | — | — | — | — |
-| `drive/tests/database_schema_contract_smoke.php` | 106 | test script | 0 | — | — | — | — |
+| `drive/tests/database_schema_contract_smoke.php` | 125 | test script | 0 | — | — | — | — |
 | `drive/tests/fastdrive_control_contract_smoke.php` | 54 | test script | 0 | — | — | — | — |
 | `drive/tests/federation_access_message_smoke.php` | 72 | test script | 0 | — | — | — | — |
 | `drive/tests/federation_catalog_event_smoke.php` | 60 | test script | 0 | — | — | — | — |
@@ -455,11 +456,11 @@
 | `drive/tests/federation_replica_smoke.php` | 115 | test script | 0 | — | — | — | — |
 | `drive/tests/federationcloud_smoke.php` | 197 | test script | 0 | — | — | — | — |
 | `drive/tests/folder_document_sanitizer.php` | 49 | test script | 0 | — | — | — | — |
-| `drive/tests/fresh_install_contract_smoke.php` | 67 | test script | 0 | — | — | — | — |
+| `drive/tests/fresh_install_contract_smoke.php` | 76 | test script | 0 | — | — | — | — |
 | `drive/tests/index_federation_drop_smoke.php` | 121 | test script | 0 | — | — | — | — |
-| `drive/tests/installer_service_reconcile_contract_smoke.php` | 188 | test script | 0 | — | — | — | — |
+| `drive/tests/installer_service_reconcile_contract_smoke.php` | 194 | test script | 0 | — | — | — | — |
 | `drive/tests/media_processing_contract_smoke.php` | 173 | test script | 0 | — | — | — | — |
-| `drive/tests/office_gateway_contract_smoke.php` | 232 | test script | 0 | — | — | — | — |
+| `drive/tests/office_gateway_contract_smoke.php` | 242 | test script | 0 | — | — | — | — |
 | `drive/tests/password_credential_verifier_smoke.php` | 44 | test script | 0 | — | — | — | — |
 | `drive/tests/scoped_sync_repository_regression.php` | 96 | test script | 0 | — | ⚠️ | — | — |
 | `drive/tests/security_hardening_smoke.php` | 59 | test script | 0 | — | — | — | — |
@@ -515,7 +516,7 @@
 |---|---:|---|---|---|---|---|
 | `drive/js/actualizar-hora.js` | 36 | class/module | ActualizarHoraModule | — | — | — |
 | `drive/js/ai-search.js` | 187 | class/module | DriveAiSearchModule | — | — | — |
-| `drive/js/arcadecloud-updater.js` | 249 | class/module | ArcadeCloudUpdaterModule | — | — | — |
+| `drive/js/arcadecloud-updater.js` | 255 | class/module | ArcadeCloudUpdaterModule | — | — | — |
 | `drive/js/arcadelink-share.js` | 396 | class/module | ArcadeLinkShareModule | — | — | — |
 | `drive/js/archivos.js` | 2170 | class/module | ArchivosModule | — | abrirModalRenombrarArchivo, cerrarModalCompartir, setFileSecurity | window functions: abrirModalRenombrarArchivo, cerrarModalCompartir, setFileSecurity |
 | `drive/js/audiovideo.js` | 619 | class/module | AudiovideoModule | — | audioNext, audioPrev, reproducirVideoDesde, videoNext, videoPlayPause, videoPrev | window functions: audioNext, audioPrev, reproducirVideoDesde, videoNext, videoPlayPause, videoPrev, wavePlayPause |

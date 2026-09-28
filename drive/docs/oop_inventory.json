@@ -1,7 +1,7 @@
 {
   "summary": {
-    "php_total": 482,
-    "php_class_modules": 286,
+    "php_total": 483,
+    "php_class_modules": 287,
     "php_needs_migration": 0,
     "php_tests": 46,
     "js_total": 61,
@@ -1655,7 +1655,7 @@
     },
     {
       "path": "drive/office-launch.php",
-      "lines": 75,
+      "lines": 77,
       "kind": "thin endpoint",
       "classes": 0,
       "functions": [],
@@ -2085,7 +2085,7 @@
     },
     {
       "path": "drive/src/Admin/ArcadeCloudUpdaterService.php",
-      "lines": 133,
+      "lines": 160,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -5068,6 +5068,21 @@
       "issues": []
     },
     {
+      "path": "drive/src/Office/OfficeSchemaMigrationService.php",
+      "lines": 141,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": true,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
       "path": "drive/src/Office/OfficeSessionLeaseRepository.php",
       "lines": 189,
       "kind": "class/module",
@@ -5330,7 +5345,7 @@
     },
     {
       "path": "drive/src/Setup/CanonicalDatabaseSchemaService.php",
-      "lines": 149,
+      "lines": 152,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -6211,7 +6226,7 @@
     },
     {
       "path": "drive/tests/database_schema_contract_smoke.php",
-      "lines": 106,
+      "lines": 125,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -6551,7 +6566,7 @@
     },
     {
       "path": "drive/tests/fresh_install_contract_smoke.php",
-      "lines": 67,
+      "lines": 76,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -6585,7 +6600,7 @@
     },
     {
       "path": "drive/tests/installer_service_reconcile_contract_smoke.php",
-      "lines": 188,
+      "lines": 194,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -6619,7 +6634,7 @@
     },
     {
       "path": "drive/tests/office_gateway_contract_smoke.php",
-      "lines": 232,
+      "lines": 242,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -7411,7 +7426,7 @@
     },
     {
       "path": "drive/js/arcadecloud-updater.js",
-      "lines": 249,
+      "lines": 255,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudUpdaterModule"

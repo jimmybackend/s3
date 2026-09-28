@@ -1,0 +1,255 @@
+# ArcadeCloud Remote Workstation — Fase 1
+
+## Objetivo
+
+Validar una estación gráfica aislada en el nodo de cómputo sin modificar el worker multimedia existente.
+
+Arquitectura validada físicamente:
+
+```
+Amazon Linux 2023 host
+  -> Docker 25
+    -> Ubuntu 24.04
+      -> XFCE
+      -> LibreOffice
+      -> TigerVNC (sólo localhost dentro del contenedor)
+      -> noVNC/websockify
+  -> 127.0.0.1:6080 únicamente
+```
+
+Esta fase todavía no integra S3, FileS3, ArcadeCloud OS ni el broker definitivo de sesiones.
+
+## Hallazgos de la instalación real
+
+La prueba se realizó sobre un nodo Amazon Linux 2023 x86_64 de 4 vCPU y aproximadamente 8 GiB RAM que ya ejecutaba el worker multimedia.
+
+Se confirmó:
+
+- Docker puede instalarse sin detener Nginx, PHP-FPM Drive ni `arcadecloud-media-worker.service`.
+- Ubuntu 24.04 puede tener ocupado el UID 1000. Workstation usa UID/GID 10001 para evitar colisiones.
+- `/etc/arcadecloud-drive` pertenece al runtime de ArcadeCloud. El instalador Workstation no debe cambiar su propietario o modo ni tocar `runtime-env.json`.
+- En la instalación observada PHP-FPM Drive corre como `apache`; `runtime-env.json` debe seguir siendo legible por ese usuario/grupo.
+- Cambiar accidentalmente `/etc/arcadecloud-drive` a `root:root 0750` impide que PHP-FPM lea la configuración administrada y puede hacer fallar el login aunque la DB remota esté sana.
+- noVNC funcionó correctamente detrás de Nginx manteniendo el binding Docker en `127.0.0.1:6080`.
+- El contenedor se validó con límite de 5 GiB RAM, 3 CPU y `--shm-size=512m`.
+- El escritorio XFCE quedó accesible desde navegador y el worker multimedia permaneció activo.
+
+## Aislamiento
+
+- El puerto VNC 5900/5901 no se publica en el host.
+- noVNC se publica exclusivamente en `127.0.0.1:6080`.
+- El contenedor no recibe el socket Docker.
+- El contenedor no recibe credenciales AWS.
+- El contenedor corre como usuario no-root UID/GID 10001 y con capabilities eliminadas.
+- El workspace está separado de `/var/lib/arcadecloud-media`.
+- El instalador y desinstalador no modifican `arcadecloud-media-worker.service`.
+- Workstation queda deshabilitada al boot en Fase 1. El futuro broker la inicia sólo cuando existe una sesión Office.
+
+## Instalación
+
+Desde el checkout de la rama de prueba:
+
+```bash
+sudo bash drive/bin/install_workstation_node.sh /var/www/arcadecloud-drive
+```
+
+El instalador valida Amazon Linux 2023, x86_64, mínimo 4 vCPU y 7 GB de RAM visibles; instala Docker sólo si falta, construye la imagen y crea `arcadecloud-workstation.service`.
+
+No altera los permisos de `/etc/arcadecloud-drive` ni de `runtime-env.json`.
+
+## Acceso web
+
+La arquitectura definitiva será:
+
+```
+navegador
+  -> HTTPS
+  -> office.esforzados.com/session/<token>
+  -> Nginx / broker autenticado
+  -> 127.0.0.1:6080
+  -> noVNC
+  -> TigerVNC
+  -> XFCE / LibreOffice
+```
+
+El acceso temporal por IP utilizado durante la prueba física no forma parte del diseño final.
+
+La contraseña VNC se genera localmente en `/etc/arcadecloud-drive/workstation.env` con modo 0600 y no se guarda en Git.
+
+## Workspace
+
+Los documentos de prueba viven en:
+
+```
+/var/lib/arcadecloud-office/phase1-workspace/
+```
+
+Desde LibreOffice se ven como `/workspace`.
+
+## Health
+
+```bash
+php drive/bin/workstation_health.php
+```
+
+Debe devolver `"ok": true`.
+
+## Validación manual de Fase 1
+
+1. Confirmar que el contenedor Workstation está activo.
+2. Entrar mediante el proxy web temporal o el broker.
+3. Confirmar escritorio XFCE en navegador.
+4. Abrir Writer y guardar un ODT/DOCX en `/workspace`.
+5. Abrir Calc y guardar un ODS/XLSX.
+6. Abrir Impress y guardar un ODP/PPTX.
+7. Reiniciar sólo `arcadecloud-workstation.service` y comprobar que los archivos siguen en el workspace.
+8. Confirmar que `arcadecloud-media-worker.service` continúa activo.
+9. Medir CPU/RAM antes de continuar a Fase 2.
+
+## Desinstalación
+
+```bash
+sudo bash drive/bin/uninstall_workstation_node.sh
+```
+
+Conserva workspace y credenciales locales. `--purge` los elimina. Docker y el worker multimedia nunca se desinstalan.
+
+## Siguiente fase
+
+La Fase 2 añadirá el broker de sesiones temporales, autenticación web, sincronización controlada de archivos y coordinación de recursos. No se expondrá el Docker socket a PHP y no se publicará VNC directamente a Internet.
+
+
+## Fase 2 — lanzamiento desde ArcadeCloud OS
+
+El acceso de usuario se inicia desde el mismo `so.php` de Drive o FastDrive:
+
+```
+Aplicaciones -> Office
+        |
+        v
+drive/office-launch.php
+        |
+        | token aleatorio de un solo uso, 120 s
+        v
+https://office.esforzados.com/?launch=...
+```
+
+`OfficeLaunchTokenRepository` persiste únicamente SHA-256 del token en MySQL. El token se consume una sola vez y permite que el subdominio Office conozca el usuario que inició la sesión sin compartir cookies entre subdominios.
+
+Si la EC2 grande está apagada, el gateway Office reutiliza `FastDriveWakeService`: muestra la autorización de superadministrador, valida la contraseña actual, aplica el mismo límite de intentos y solicita `StartInstances` únicamente sobre la instancia configurada.
+
+Si la EC2 ya está encendida, no se solicita una segunda autorización para arrancar el contenedor Office.
+
+## Dos gateways, una sola EC2
+
+### EC2 pequeño — gateway público
+
+`drive/bin/install_office_gateway.sh` prepara:
+
+```
+Internet
+  -> https://office.esforzados.com
+  -> EC2 pequeño / Nginx / TLS
+  -> office-gateway.php
+  -> red privada
+  -> 172.31.14.35
+```
+
+El EC2 pequeño mantiene el certificado Let's Encrypt y nunca expone VNC.
+
+### EC2 grande — gateway privado
+
+`drive/bin/install_workstation_internal_gateway.sh` prepara el vhost interno:
+
+```
+172.31.83.240
+  -> EC2 grande :80
+  -> /__arcadecloud_workstation
+       -> PHP-FPM
+       -> helper privilegiado
+       -> systemctl start arcadecloud-workstation.service
+
+  -> /vnc.html + /websockify
+       -> 127.0.0.1:6080
+```
+
+El endpoint de control sólo permite `status` y `start`. No ofrece una orden web de parada. El apagado continúa bajo el mecanismo seguro de inactividad del nodo.
+
+## Concurrencia inicial
+
+La primera versión mantiene `MAX_OFFICE_SESSIONS=1`. Antes de mostrar el escritorio, Office consulta la sesión activa del nodo. Si pertenece a otro usuario, el segundo lanzamiento queda esperando y nunca comparte el mismo XFCE/LibreOffice.
+
+## Inactividad de Office y apagado
+
+Office reutiliza `MediaWorkerNodeService` y `MediaWorkerNodeSessions`.
+
+La pestaña Office observa actividad real de:
+
+- teclado;
+- click/toque;
+- movimiento de puntero;
+- rueda/scroll;
+- regreso de la pestaña al primer plano.
+
+Los heartbeats se limitan a uno cada 20 segundos. Un heartbeat llama `touchInteractiveActivity()` y limpia el inicio de inactividad.
+
+Si no hay actividad:
+
+1. el worker marca la sesión como idle;
+2. se esperan al menos 600 segundos;
+3. la pestaña muestra una advertencia de 30 segundos;
+4. si no se reanuda la actividad y no existen trabajos multimedia, el mecanismo existente solicita apagar la EC2;
+5. si hay FFmpeg/multimedia activo, el apagado queda bloqueado.
+
+El umbral sigue controlado por `ARCADECLOUD_MEDIA_WORKER_IDLE_GRACE_SECONDS`, cuyo mínimo en código es 600 segundos.
+
+## Guardado de documentos
+
+La inactividad del navegador **no sustituye guardar el documento**.
+
+En esta fase:
+
+- LibreOffice trabaja sobre `/workspace`;
+- un guardado explícito de LibreOffice persiste en el volumen del host;
+- reiniciar sólo el contenedor conserva ese workspace;
+- todavía no se sincroniza automáticamente un documento de `FileS3` de regreso a S3.
+
+La fase de archivos implementará:
+
+```
+FileS3/S3 -> workspace temporal por sesión
+              |
+              +-> guardado explícito/checkpoint
+              |
+              +-> control de versión/ETag
+              |
+              +-> sincronización segura a S3 + FileS3
+```
+
+Antes de apagar una sesión Office se debe realizar el checkpoint/sync final. Nunca se debe sobrescribir silenciosamente una versión que cambió en otra sesión.
+
+## Instalación del gateway público
+
+En el EC2 pequeño, después de que DNS y Certbot hayan preparado `office.esforzados.com`:
+
+```bash
+cd /var/www/arcadecloud-drive
+sudo bash drive/bin/install_office_gateway.sh
+```
+
+Valores por defecto validados:
+
+- dominio: `office.esforzados.com`;
+- upstream privado: `172.31.14.35`;
+- PHP-FPM Drive: `127.0.0.1:9075`.
+
+## Instalación del gateway privado
+
+En el EC2 grande:
+
+```bash
+cd /var/www/arcadecloud-drive
+sudo bash drive/bin/install_workstation_internal_gateway.sh --gateway-ip=172.31.83.240
+```
+
+No abrir 5900, 5901 ni 6080 en el Security Group.

@@ -66,7 +66,7 @@ $contracts = [
     [$files['service'], "'client_action' => 'clear'", 'clear local'],
     [$files['helper_client'], "version'] ?? 0) >= 11", 'helper v11'],
     [$files['helper_client'], "run(['server-console', \$commandId])", 'ID interno helper'],
-    [$files['helper'], "'version' => 12", 'helper versión 12'],
+    [$files['helper'], "'version' => 13", 'helper versión 13'],
     [$files['helper'], "'repo-pwd'", 'pwd local'],
     [$files['helper'], "'repo-status'", 'git status local'],
     [$files['helper'], "'arcadecloud-services'", 'servicios locales'],

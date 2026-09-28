@@ -353,7 +353,7 @@ sudo bash drive/bin/install_arcadecloud.sh \
   --media-worker-instance-id=i-0123456789abcdef0 \
   --media-worker-region=us-east-1 \
   --media-worker-hourly-usd=0.12345678 \
-  --media-worker-idle-grace-seconds=300
+  --media-worker-idle-grace-seconds=600
 ```
 
 Ejemplo para la EC2 dedicada:

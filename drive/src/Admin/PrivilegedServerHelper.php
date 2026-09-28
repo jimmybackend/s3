@@ -77,6 +77,18 @@ final class PrivilegedServerHelper
         }
     }
 
+    public function supportsDiskCleanup(): bool
+    {
+        try {
+            $status = $this->status();
+            return ($status['ok'] ?? false) === true
+                && (int)($status['version'] ?? 0) >= 12
+                && (bool)($status['capabilities']['disk_cleanup'] ?? false);
+        } catch (RuntimeException) {
+            return false;
+        }
+    }
+
     public function setEnvironment(string $name, string $value): void
     {
         if (!ManagedRuntimeEnvironment::isAllowed($name)) throw new RuntimeException('Variable no permitida.');

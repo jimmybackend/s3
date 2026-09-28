@@ -521,6 +521,8 @@ class ArcadeCloudOsShell {
       const url = new URL('so.php', this.window.location.href);
       url.searchParams.set('ruta', route);
       url.searchParams.set('pagina', String(requestedPage));
+      const search = String(options.search || '').trim();
+      if (search) url.searchParams.set('buscar', search);
       url.searchParams.set('_os_fragment', 'explorer');
 
       const response = await fetch(url.toString(), {
@@ -601,7 +603,7 @@ class ArcadeCloudOsShell {
     if (!entry) return;
 
     if (entry.dataset.locked === '1') {
-      this.notify('Este archivo está protegido. Ábrelo desde el Drive clásico para desbloquearlo.', 'warning');
+      this.unlockFile(entry);
       return;
     }
 
@@ -978,74 +980,60 @@ class ArcadeCloudOsShell {
   async protectFile(entry) {
     const key = String(entry?.dataset?.key || '');
     if (!key) return;
-
-    const password = this.window.prompt('Contraseña para proteger este archivo:');
-    if (password === null) return;
-    if (password.length < 4) {
-      this.notify('La contraseña debe tener al menos 4 caracteres.', 'warning');
+    const security = this.window.ArcadeCloudFileSecurity;
+    if (!security?.protect) {
+      this.notify('El módulo de seguridad no está disponible.', 'warning');
       return;
     }
 
-    const confirm = this.window.prompt('Repite la contraseña:');
-    if (confirm === null || confirm !== password) {
-      this.notify('Las contraseñas no coinciden.', 'warning');
-      return;
+    try {
+      const changed = await security.protect(key);
+      if (changed) await this.refreshCurrentExplorer();
+    } catch (error) {
+      this.notify(error?.message || 'No se pudo proteger el archivo.', 'danger');
     }
-
-    const hint = this.window.prompt('Pista opcional para recordar la contraseña:', '') ?? '';
-    await this.postFileSecurity('set_file_security.php', {
-      mode: 'secure',
-      key,
-      password,
-      secure_hint: hint
-    }, 'Archivo protegido.');
   }
 
   async unlockFile(entry) {
     const key = String(entry?.dataset?.key || '');
     if (!key) return;
-    const password = this.window.prompt('Contraseña para desbloquear este archivo:');
-    if (password === null) return;
+    const security = this.window.ArcadeCloudFileSecurity;
+    if (!security?.unlock) {
+      this.notify('El módulo de seguridad no está disponible.', 'warning');
+      return;
+    }
 
-    await this.postFileSecurity('unlock_file.php', {
-      key,
-      password
-    }, 'Archivo desbloqueado temporalmente.');
+    try {
+      const changed = await security.unlock(key, String(entry.dataset.hint || ''));
+      if (changed) await this.refreshCurrentExplorer();
+    } catch (error) {
+      this.notify(error?.message || 'No se pudo desbloquear el archivo.', 'danger');
+    }
   }
 
   async relockFile(entry) {
     const key = String(entry?.dataset?.key || '');
     if (!key) return;
-    await this.postFileSecurity('relock_file.php', { key }, 'Archivo bloqueado de nuevo.');
+    const security = this.window.ArcadeCloudFileSecurity;
+    if (!security?.relock) {
+      this.notify('El módulo de seguridad no está disponible.', 'warning');
+      return;
+    }
+
+    try {
+      const changed = await security.relock(key);
+      if (changed) await this.refreshCurrentExplorer();
+    } catch (error) {
+      this.notify(error?.message || 'No se pudo bloquear de nuevo.', 'danger');
+    }
   }
 
-  async postFileSecurity(endpoint, payload, successMessage) {
-    try {
-      const response = await this.window.fetch(endpoint, {
-        method: 'POST',
-        credentials: 'same-origin',
-        cache: 'no-store',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
-          'X-Requested-With': 'XMLHttpRequest'
-        },
-        body: new URLSearchParams(payload).toString()
-      });
-      const data = await response.json();
-      if (!response.ok || data?.ok !== true) {
-        throw new Error(data?.msg || data?.error || 'No se pudo cambiar la seguridad del archivo.');
-      }
-
-      this.notify(successMessage, 'success');
-      this.hideContext();
-
-      const live = this.document.getElementById('osExplorerLive');
-      const route = String(live?.dataset.explorerRoute || this.window.DRIVE_INITIAL_ROUTE || '');
-      const page = Math.max(1, parseInt(String(live?.dataset.explorerPage || '1'), 10) || 1);
-      await this.refreshExplorer(route, { page, replaceHistory: true });
-    } catch (error) {
-      this.notify(error?.message || 'No se pudo cambiar la seguridad del archivo.', 'danger');
-    }
+  async refreshCurrentExplorer() {
+    this.hideContext();
+    const live = this.document.getElementById('osExplorerLive');
+    const route = String(live?.dataset.explorerRoute || this.window.DRIVE_INITIAL_ROUTE || '');
+    const page = Math.max(1, parseInt(String(live?.dataset.explorerPage || '1'), 10) || 1);
+    if (route) await this.refreshExplorer(route, { page, replaceHistory: true });
   }
 
   bindContextActions() {

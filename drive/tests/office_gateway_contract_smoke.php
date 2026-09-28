@@ -132,8 +132,10 @@ officeGatewayContract(
     && str_contains($documentStorage, 'putObject')
     && str_contains($documentStorage, 'expected_etag')
     && str_contains($documentStorage, 'saveConflict')
-    && str_contains($documentStorage, 'duplicateFrom'),
-    'documento Office baja de S3, valida ETag, sincroniza y protege conflictos'
+    && str_contains($documentStorage, 'duplicateFrom')
+    && str_contains($documentStorage, 'adoptConflict')
+    && str_contains($documentRepo, 'adoptConflict'),
+    'documento Office baja de S3, valida ETag y continúa sobre una copia si hay conflicto'
 );
 
 officeGatewayContract(

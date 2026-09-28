@@ -168,6 +168,31 @@ final class PrivilegedServerHelper
         return $this->workstationControl('workstation-start');
     }
 
+    public function supportsWorkstationDocumentOpen(): bool
+    {
+        try {
+            $status = $this->status();
+            return ($status['ok'] ?? false) === true
+                && (int)($status['version'] ?? 0) >= 14
+                && (bool)($status['capabilities']['workstation_document_open'] ?? false);
+        } catch (RuntimeException) {
+            return false;
+        }
+    }
+
+    public function openWorkstationDocument(string $workspaceRelative): void
+    {
+        $workspaceRelative = trim(str_replace('\\', '/', $workspaceRelative));
+        if (
+            !$this->supportsWorkstationDocumentOpen()
+            || !preg_match('/\Asessions\/[a-f0-9]{32}\/[A-Za-z0-9._ ()\[\]-]{1,220}\z/u', $workspaceRelative)
+        ) {
+            throw new RuntimeException('Documento Workstation no permitido.');
+        }
+
+        $this->run(['workstation-open-document', $workspaceRelative]);
+    }
+
     private function workstationControl(string $action): array
     {
         if (!$this->supportsWorkstationControl()) {

@@ -22,10 +22,22 @@ class ArcadeCloudOsNodeMonitor {
         this.openMemoryModal();
       }
 
+      const disk = target.closest('[data-node-disk-clean]');
+      if (disk) {
+        event.preventDefault();
+        this.openDiskModal();
+      }
+
       const submit = target.closest('[data-node-memory-submit]');
       if (submit) {
         event.preventDefault();
-        this.queueMemoryClear();
+        this.queueMaintenance('memory-clear');
+      }
+
+      const diskSubmit = target.closest('[data-node-disk-submit]');
+      if (diskSubmit) {
+        event.preventDefault();
+        this.queueMaintenance('disk-clean');
       }
 
       const refresh = target.closest('[data-node-refresh]');
@@ -125,13 +137,30 @@ class ArcadeCloudOsNodeMonitor {
     if (jq && typeof jq(modal).modal === 'function') jq(modal).modal('show');
   }
 
-  async queueMemoryClear() {
+  openDiskModal() {
+    const modal = this.document.getElementById('nodeDiskCleanModal');
+    if (!modal) return;
+    const input = modal.querySelector('[data-node-disk-password]');
+    const status = modal.querySelector('[data-node-disk-status]');
+    if (input) input.value = '';
+    if (status) {
+      status.textContent = 'La limpieza se ejecutará sólo cuando no haya tareas activas.';
+      status.className = 'small text-muted';
+    }
+    const jq = this.window.jQuery || this.window.$;
+    if (jq && typeof jq(modal).modal === 'function') jq(modal).modal('show');
+  }
+
+  async queueMaintenance(action) {
     if (this.busy) return;
-    const modal = this.document.getElementById('nodeMemoryClearModal');
-    const input = modal?.querySelector('[data-node-memory-password]');
-    const status = modal?.querySelector('[data-node-memory-status]');
-    const button = modal?.querySelector('[data-node-memory-submit]');
+
+    const isDisk = action === 'disk-clean';
+    const modal = this.document.getElementById(isDisk ? 'nodeDiskCleanModal' : 'nodeMemoryClearModal');
+    const input = modal?.querySelector(isDisk ? '[data-node-disk-password]' : '[data-node-memory-password]');
+    const status = modal?.querySelector(isDisk ? '[data-node-disk-status]' : '[data-node-memory-status]');
+    const button = modal?.querySelector(isDisk ? '[data-node-disk-submit]' : '[data-node-memory-submit]');
     const password = String(input?.value || '');
+
     if (!password) {
       if (status) {
         status.textContent = 'Escribe la contraseña privada.';
@@ -158,12 +187,14 @@ class ArcadeCloudOsNodeMonitor {
           'X-Requested-With': 'XMLHttpRequest'
         },
         body: new URLSearchParams({
-          action: 'memory-clear',
+          action,
           access_password: password
         }).toString()
       });
       const data = await response.json();
-      if (!response.ok || data?.ok !== true) throw new Error(data?.error || 'No se pudo programar la limpieza.');
+      if (!response.ok || data?.ok !== true) {
+        throw new Error(data?.error || 'No se pudo programar el mantenimiento.');
+      }
 
       if (status) {
         status.textContent = String(data.message || 'Mantenimiento programado.');
@@ -179,7 +210,7 @@ class ArcadeCloudOsNodeMonitor {
       }, 1000);
     } catch (error) {
       if (status) {
-        status.textContent = error?.message || 'No se pudo programar la limpieza.';
+        status.textContent = error?.message || 'No se pudo programar el mantenimiento.';
         status.className = 'small text-danger';
       }
     } finally {

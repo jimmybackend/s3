@@ -102,6 +102,8 @@ if ($session->isSuperAdmin()) {
   <link rel="stylesheet" href="css/styles.css?v=<?= (int) filemtime(__DIR__ . '/css/styles.css') ?>">
   <link rel="stylesheet"
         href="css/responsive.css?v=<?= (int) filemtime(__DIR__ . '/css/responsive.css') ?>">
+  <link rel="stylesheet"
+        href="css/upload-center.css?v=<?= (int) filemtime(__DIR__ . '/css/upload-center.css') ?>">
 
 
   <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
@@ -1959,7 +1961,8 @@ if ($session->isSuperAdmin()) {
   window.DRIVE_INITIAL_ROUTE = <?= json_encode($basePrefix) ?>;
   window.rutaActual = <?= json_encode($basePrefix) ?>;
 </script>
-<script src="js/upload-destination.js"></script>
+<script src="js/upload-destination.js?v=<?= (int) filemtime(__DIR__ . '/js/upload-destination.js') ?>"></script>
+<script src="js/upload-center.js?v=<?= (int) filemtime(__DIR__ . '/js/upload-center.js') ?>"></script>
 <script src="js/subir-dropzone.js"></script>
 <script src="js/subir.js"></script>
 <script src="js/ver-metadatos.js"></script>

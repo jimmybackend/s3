@@ -30,11 +30,22 @@ class UploadDestinationModule {
       }
 
       async function afterSuccess(route) {
-        try { document.dispatchEvent(new Event('drive:storage-changed')); } catch (_) {}
+        try {
+          document.dispatchEvent(new CustomEvent('drive:storage-changed', {
+            detail: { source: 'upload', route: route }
+          }));
+        } catch (_) {}
 
-        // Solo consultamos MySQL para refrescar la lista si el usuario sigue en
-        // la misma carpeta donde terminó la subida.
-        if (sameRoute(route, currentRoute()) && typeof window.actualizarBloqueArchivos === 'function') {
+        // La subida conserva el destino capturado al iniciar. Sólo refrescamos
+        // visualmente si el usuario sigue mirando esa misma carpeta.
+        if (!sameRoute(route, currentRoute())) return;
+
+        if (window.ArcadeCloudOsShell && typeof window.ArcadeCloudOsShell.refreshExplorer === 'function') {
+          await window.ArcadeCloudOsShell.refreshExplorer(route, { page: 1, replaceHistory: true });
+          return;
+        }
+
+        if (typeof window.actualizarBloqueArchivos === 'function') {
           await window.actualizarBloqueArchivos({ ruta: route, pagina: 1 });
         }
       }

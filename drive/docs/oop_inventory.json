@@ -1881,7 +1881,7 @@
     },
     {
       "path": "drive/so.php",
-      "lines": 1485,
+      "lines": 1528,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -6595,7 +6595,7 @@
     },
     {
       "path": "drive/tests/web_os_clipboard_contract_smoke.php",
-      "lines": 98,
+      "lines": 104,
       "kind": "test script",
       "classes": 0,
       "functions": [],
@@ -6610,7 +6610,7 @@
     },
     {
       "path": "drive/tests/web_os_contract_smoke.php",
-      "lines": 251,
+      "lines": 269,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -7084,7 +7084,7 @@
     },
     {
       "path": "drive/js/arcadecloud-updater.js",
-      "lines": 247,
+      "lines": 249,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudUpdaterModule"
@@ -7219,7 +7219,7 @@
     },
     {
       "path": "drive/js/background-tasks.js",
-      "lines": 785,
+      "lines": 1024,
       "kind": "class/module",
       "classes": [
         "BackgroundTaskCenter"
@@ -7845,7 +7845,7 @@
     },
     {
       "path": "drive/js/so.js",
-      "lines": 953,
+      "lines": 964,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudOsShell"
@@ -7969,7 +7969,7 @@
     },
     {
       "path": "drive/js/upload-center.js",
-      "lines": 917,
+      "lines": 938,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudUploadCenter"

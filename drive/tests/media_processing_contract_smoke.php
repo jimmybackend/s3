@@ -56,6 +56,7 @@ mediaContract(str_contains($node, 'requestIdleStop'), 'apagado desde UI usa serv
 mediaContract(str_contains($node, "($idle['warning'] ?? false) !== true"), 'apagado manual sólo funciona durante ventana de inactividad');
 mediaContract(str_contains($controller, "postString('node_activity')"), 'controlador acepta heartbeat de s3/so');
 mediaContract(str_contains($controller, "queryString('idle_status')"), 'controlador expone estado para cuenta regresiva');
+mediaContract(str_contains($controller, '$node->handleIdle($jobs)'), 'polling de s3/so también avanza la detección de inactividad');
 mediaContract(str_contains($controller, "postString('node_shutdown_now')"), 'controlador acepta apagado tras advertencia');
 mediaContract(str_contains($node, 'ec2.media_worker_second'), 'sesión EC2 registra segundos facturables');
 mediaContract(str_contains($sessions, 'MediaWorkerNodeSessions'), 'sesiones de encendido quedan persistidas');

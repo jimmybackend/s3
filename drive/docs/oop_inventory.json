@@ -6557,7 +6557,7 @@
     },
     {
       "path": "drive/tests/office_gateway_contract_smoke.php",
-      "lines": 150,
+      "lines": 151,
       "kind": "test script",
       "classes": 0,
       "functions": [

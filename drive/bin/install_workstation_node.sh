@@ -31,7 +31,7 @@ fi
 systemctl enable --now docker
 
 mkdir -p "$STATE_ROOT" "$WORKSPACE" "$(dirname "$ENV_FILE")"
-chmod 0750 "$STATE_ROOT" "$WORKSPACE"
+chmod 0750 "$STATE_ROOT"\nchown 1000:1000 "$WORKSPACE"\nchmod 0750 "$WORKSPACE"
 
 if [[ ! -f "$ENV_FILE" ]]; then
   umask 077

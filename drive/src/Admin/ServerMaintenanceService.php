@@ -18,15 +18,30 @@ final class ServerMaintenanceService
 
     public function queueMemoryClear(int $userId, string $accessPassword): array
     {
+        return $this->queueMaintenance($userId, 'memory-clear', $accessPassword);
+    }
+
+    public function queueDiskCleanup(int $userId, string $accessPassword): array
+    {
+        return $this->queueMaintenance($userId, 'disk-clean', $accessPassword);
+    }
+
+    private function queueMaintenance(int $userId, string $action, string $accessPassword): array
+    {
         $hash = $this->app->personalAwsConfig()->passwordHash();
         if ($accessPassword === '' || $hash === '' || !password_verify($accessPassword, $hash)) {
             throw new RuntimeException('Contraseña privada incorrecta.');
         }
-        if (!$this->helper->supportsServerConsole()) {
+
+        if ($action === 'disk-clean') {
+            if (!$this->helper->supportsDiskCleanup()) {
+                throw new RuntimeException('Actualiza el helper administrativo antes de limpiar el disco.');
+            }
+        } elseif (!$this->helper->supportsServerConsole()) {
             throw new RuntimeException('Actualiza el helper administrativo antes de usar la escobilla.');
         }
 
-        $job = $this->store->create($userId, 'memory-clear');
+        $job = $this->store->create($userId, $action);
         if (($job['already_queued'] ?? false) !== true) {
             (new BackgroundWorkerLauncher(dirname(__DIR__, 2)))->launchMaintenance((string)$job['id']);
         }
@@ -70,22 +85,31 @@ final class ServerMaintenanceService
             ]);
         }
 
+        $action = (string)($job['action'] ?? 'memory-clear');
+        $isDisk = $action === 'disk-clean';
+
         try {
             $this->store->update($jobId, [
                 'status' => 'running',
-                'message' => 'Liberando cachés de memoria del servidor.',
+                'message' => $isDisk
+                    ? 'Limpiando temporales y logs archivados seguros.'
+                    : 'Liberando cachés de memoria del servidor.',
             ]);
-            $output = $this->helper->runServerConsole('memory-clear');
+            $output = $this->helper->runServerConsole($isDisk ? 'disk-clean' : 'memory-clear');
             return $this->store->update($jobId, [
                 'status' => 'completed',
-                'message' => 'Memoria liberada de forma segura.',
+                'message' => $isDisk
+                    ? 'Limpieza segura de disco completada.'
+                    : 'Memoria liberada de forma segura.',
                 'output' => $output,
                 'completed_at' => gmdate('c'),
             ]);
         } catch (\Throwable $error) {
             return $this->store->update($jobId, [
                 'status' => 'failed',
-                'message' => 'No se pudo liberar la memoria.',
+                'message' => $isDisk
+                    ? 'No se pudo completar la limpieza segura de disco.'
+                    : 'No se pudo liberar la memoria.',
                 'error' => $error->getMessage(),
                 'completed_at' => gmdate('c'),
             ]);

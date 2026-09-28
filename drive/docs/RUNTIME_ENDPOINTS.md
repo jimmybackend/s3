@@ -82,7 +82,7 @@
 | `drive/bin/sync_worker.php` | `drive/src/Application/BackgroundWorkerLauncher.php` |
 | `drive/bin/transcribe_reconcile.php` | `drive/src/Application/BackgroundWorkerLauncher.php` |
 | `drive/bin/upload_cleanup.php` | `drive/src/Http/Controller/UploadCleanupController.php` |
-| `drive/buscar_archivo.php` | `drive/js/ai-search.js`, `drive/js/archivos.js` |
+| `drive/buscar_archivo.php` | `drive/tests/web_os_contract_smoke.php`, `drive/js/ai-search.js`, `drive/js/archivos.js`, `drive/js/so-search.js` |
 | `drive/comprehend_archivo.php` | `drive/js/aws-comprehend.js` |
 | `drive/crear_carpeta.php` | `drive/js/carpetas.js` |
 | `drive/create_folder_document.php` | `drive/js/folder-document.js` |
@@ -149,11 +149,11 @@
 | `drive/procesar_textract.php` | `drive/js/polly.js` |
 | `drive/profile.php` | `drive/js/profile.js` |
 | `drive/rekognition_labels.php` | `drive/js/polly.js` |
-| `drive/relock_file.php` | `drive/tests/web_os_contract_smoke.php`, `drive/js/archivos.js`, `drive/js/so.js` |
+| `drive/relock_file.php` | `drive/tests/web_os_contract_smoke.php`, `drive/js/archivos.js`, `drive/js/file-security.js` |
 | `drive/renombrar_archivo.php` | `drive/js/archivos.js` |
 | `drive/renombrar_carpeta.php` | `drive/js/carpetas.js` |
 | `drive/server-settings.php` | `drive/src/View/FederationOsAdminRenderer.php`, `drive/js/server-admin.js` |
-| `drive/set_file_security.php` | `drive/tests/web_os_contract_smoke.php`, `drive/js/archivos.js`, `drive/js/so.js` |
+| `drive/set_file_security.php` | `drive/tests/web_os_contract_smoke.php`, `drive/js/archivos.js`, `drive/js/file-security.js` |
 | `drive/setup/api.php` | `drive/src/View/FederationModerationPageRenderer.php`, `drive/src/View/FederationReportPageRenderer.php`, `drive/tests/federation_drop_contract_smoke.php`, `drive/tests/fresh_install_contract_smoke.php`, `drive/tests/web_os_contract_smoke.php`, `drive/js/federation-drop.js`, `drive/js/federation-footer.js`, `drive/js/federation-os-admin.js`, `drive/js/setup.js` |
 | `drive/src/Activity/ActivityCostRecorder.php` | ninguna |
 | `drive/src/Activity/ActivityCostRepository.php` | ninguna |
@@ -171,15 +171,15 @@
 | `drive/src/Admin/ServerMaintenanceService.php` | `drive/tests/web_os_contract_smoke.php` |
 | `drive/src/Admin/ServerSettingsAdminService.php` | ninguna |
 | `drive/src/Admin/ServerTaskActivityProbe.php` | `drive/tests/web_os_contract_smoke.php` |
-| `drive/src/Application/AiFileSearchService.php` | ninguna |
+| `drive/src/Application/AiFileSearchService.php` | `drive/tests/web_os_contract_smoke.php` |
 | `drive/src/Application/BackgroundWorkerLauncher.php` | `drive/tests/web_os_contract_smoke.php` |
 | `drive/src/Application/DrivePageService.php` | ninguna |
 | `drive/src/Application/DrivePageViewModel.php` | ninguna |
 | `drive/src/Application/FileAccessService.php` | `drive/tests/arcadelink_bulk_contract_regression.php` |
 | `drive/src/Application/FileKeyRotationService.php` | ninguna |
-| `drive/src/Application/FileListService.php` | ninguna |
+| `drive/src/Application/FileListService.php` | `drive/tests/web_os_contract_smoke.php` |
 | `drive/src/Application/FileMutationService.php` | `drive/tests/web_os_clipboard_contract_smoke.php` |
-| `drive/src/Application/FileSearchService.php` | ninguna |
+| `drive/src/Application/FileSearchService.php` | `drive/tests/web_os_contract_smoke.php` |
 | `drive/src/Application/FolderDocumentService.php` | `drive/tests/folder_document_sanitizer.php` |
 | `drive/src/Application/FolderMutationService.php` | `drive/tests/web_os_clipboard_contract_smoke.php` |
 | `drive/src/Application/FolderQueryService.php` | ninguna |
@@ -316,7 +316,7 @@
 | `drive/src/Http/Controller/FileAccessController.php` | `drive/tests/arcadelink_bulk_contract_regression.php` |
 | `drive/src/Http/Controller/FileKeyRotationController.php` | ninguna |
 | `drive/src/Http/Controller/FileMutationController.php` | ninguna |
-| `drive/src/Http/Controller/FileSearchController.php` | ninguna |
+| `drive/src/Http/Controller/FileSearchController.php` | `drive/tests/web_os_contract_smoke.php` |
 | `drive/src/Http/Controller/FileSecurityController.php` | ninguna |
 | `drive/src/Http/Controller/FolderDocumentController.php` | ninguna |
 | `drive/src/Http/Controller/FolderMutationController.php` | ninguna |
@@ -472,7 +472,7 @@
 | `drive/traducir_archivo.php` | `drive/js/polly.js` |
 | `drive/transcribir_estado.php` | `drive/js/polly.js`, `drive/js/transcribe-background.js` |
 | `drive/transcribir_iniciar.php` | `drive/js/polly.js`, `drive/js/transcribe-background.js` |
-| `drive/unlock_file.php` | `drive/tests/web_os_contract_smoke.php`, `drive/js/archivos.js`, `drive/js/so.js` |
+| `drive/unlock_file.php` | `drive/tests/web_os_contract_smoke.php`, `drive/js/archivos.js`, `drive/js/file-security.js` |
 | `drive/up-clean.php` | ninguna |
 | `drive/update.php` | `drive/js/arcadecloud-updater.js` |
 | `drive/upload/ModerationUploadGuard.php` | `drive/tests/federation_moderation_contract_smoke.php`, `drive/upload/drivers/Chunked15MBUploader.php`, `drive/upload/drivers/DropboxUploader.php`, `drive/upload/drivers/LocalPresignedPutUploader.php`, `drive/upload/drivers/RemoteUrlUploader.php` |

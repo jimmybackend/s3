@@ -443,8 +443,10 @@
       "size": 259,
       "active": false,
       "references": [
+        "drive/tests/web_os_contract_smoke.php",
         "drive/js/ai-search.js",
-        "drive/js/archivos.js"
+        "drive/js/archivos.js",
+        "drive/js/so-search.js"
       ]
     },
     {
@@ -1275,7 +1277,7 @@
       "references": [
         "drive/tests/web_os_contract_smoke.php",
         "drive/js/archivos.js",
-        "drive/js/so.js"
+        "drive/js/file-security.js"
       ]
     },
     {
@@ -1296,7 +1298,7 @@
     },
     {
       "path": "drive/s3.php",
-      "size": 96849,
+      "size": 96952,
       "active": true,
       "references": [
         "drive/app_bootstrap.php",
@@ -1349,7 +1351,7 @@
       "references": [
         "drive/tests/web_os_contract_smoke.php",
         "drive/js/archivos.js",
-        "drive/js/so.js"
+        "drive/js/file-security.js"
       ]
     },
     {
@@ -1391,7 +1393,7 @@
     },
     {
       "path": "drive/so.php",
-      "size": 90986,
+      "size": 96715,
       "active": true,
       "references": [
         "drive/s3.php",
@@ -1536,9 +1538,11 @@
     },
     {
       "path": "drive/src/Application/AiFileSearchService.php",
-      "size": 16776,
+      "size": 16801,
       "active": false,
-      "references": []
+      "references": [
+        "drive/tests/web_os_contract_smoke.php"
+      ]
     },
     {
       "path": "drive/src/Application/BackgroundWorkerLauncher.php",
@@ -1576,9 +1580,11 @@
     },
     {
       "path": "drive/src/Application/FileListService.php",
-      "size": 5058,
+      "size": 5068,
       "active": false,
-      "references": []
+      "references": [
+        "drive/tests/web_os_contract_smoke.php"
+      ]
     },
     {
       "path": "drive/src/Application/FileMutationService.php",
@@ -1590,9 +1596,11 @@
     },
     {
       "path": "drive/src/Application/FileSearchService.php",
-      "size": 3211,
+      "size": 5105,
       "active": false,
-      "references": []
+      "references": [
+        "drive/tests/web_os_contract_smoke.php"
+      ]
     },
     {
       "path": "drive/src/Application/FolderDocumentService.php",
@@ -2649,9 +2657,11 @@
     },
     {
       "path": "drive/src/Http/Controller/FileSearchController.php",
-      "size": 2106,
+      "size": 2539,
       "active": false,
-      "references": []
+      "references": [
+        "drive/tests/web_os_contract_smoke.php"
+      ]
     },
     {
       "path": "drive/src/Http/Controller/FileSecurityController.php",
@@ -3657,7 +3667,7 @@
     },
     {
       "path": "drive/tests/web_os_contract_smoke.php",
-      "size": 36487,
+      "size": 41127,
       "active": false,
       "references": []
     },
@@ -3733,7 +3743,7 @@
       "references": [
         "drive/tests/web_os_contract_smoke.php",
         "drive/js/archivos.js",
-        "drive/js/so.js"
+        "drive/js/file-security.js"
       ]
     },
     {

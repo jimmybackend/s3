@@ -6,7 +6,13 @@ $root = dirname(__DIR__);
 $files = [
     'shell' => $root . '/js/so.js',
     'clipboard' => $root . '/js/so-clipboard.js',
-    'screenshot' => $root . '/js/so-screenshot-paste.js',
+    'uploadCenter' => $root . '/js/upload-center.js',
+    'uploadDestination' => $root . '/js/upload-destination.js',
+    'backgroundTasks' => $root . '/js/background-tasks.js',
+    'uploadCenterCss' => $root . '/css/upload-center.css',
+    'classicFiles' => $root . '/bloque_archivos.php',
+    'classicShell' => $root . '/s3.php',
+    'webOsShell' => $root . '/so.php',
     'clipboardCss' => $root . '/css/so-clipboard.css',
     'moveTasks' => $root . '/js/move-tasks.js',
     'fileService' => $root . '/src/Application/FileMutationService.php',
@@ -61,18 +67,31 @@ $assert(str_contains($files['folderService'], 'public function copy('), 'servici
 $assert(str_contains($files['folderRepo'], 'copyTree'), 'copia duplica catálogo de carpetas y archivos');
 $assert(str_contains($files['moveService'], "['move', 'copy']"), 'job en segundo plano acepta copy y move');
 $assert(str_contains($files['moveController'], "'progress' => \$progress"), 'estado del job expone porcentaje');
-$assert(str_contains($files['screenshot'], "navigator.clipboard.read"), 'botón puede leer imágenes del portapapeles');
-$assert(str_contains($files['screenshot'], "addEventListener('paste'"), 'Ctrl+V/Pegar captura imagen dentro de Mis datos');
-$assert(str_contains($files['screenshot'], "startsWith('image/')"), 'pegado sólo procesa contenido de imagen');
-$assert(str_contains($files['screenshot'], "isEditableTarget"), 'pegado no invade inputs ni editores de texto');
-$assert(str_contains($files['screenshot'], "toPng(sourceBlob)"), 'imagen pegada se normaliza a PNG');
-$assert(str_contains($files['screenshot'], "'image/png'"), 'subida de screenshot usa PNG');
-$assert(str_contains($files['screenshot'], "return 'screenshot-'"), 'nombre automático antepone screenshot y fecha/hora');
-$assert(str_contains($files['screenshot'], "ruta_objetivo: route"), 'screenshot se fija a la carpeta actual');
-$assert(str_contains($files['screenshot'], "mode=local_put&action=init"), 'screenshot reutiliza inicio de subida OOP');
-$assert(str_contains($files['screenshot'], "mode=local_put&action=complete"), 'screenshot confirma FileS3 después de S3');
-$assert(str_contains($files['screenshot'], "'X-Drive-CSRF': csrf"), 'screenshot conserva protección CSRF');
-$assert(str_contains($files['screenshot'], "page: 1"), 'screenshot refresca la carpeta para mostrar el PNG nuevo');
+$assert(str_contains($files['classicFiles'], 'data-drive-upload-center'), 'Drive clásico ofrece Subir dentro del bloque de archivos');
+$assert(str_contains($files['webOsShell'], 'data-drive-upload-center'), 'Web OS ofrece Subir dentro de Mis datos');
+$assert(str_contains($files['classicShell'], 'js/upload-center.js'), 'Drive clásico carga el mismo centro de subida');
+$assert(str_contains($files['webOsShell'], 'js/upload-center.js'), 'Web OS carga el mismo centro de subida');
+$assert(str_contains($files['uploadCenter'], "navigator.clipboard.read"), 'portapapeles se consulta desde el centro de subida');
+$assert(str_contains($files['uploadCenter'], 'async open()'), 'revisión de portapapeles nace al abrir Subir');
+$assert(str_contains($files['uploadCenter'], 'await this.inspectClipboard()'), 'Subir revisa imagen/texto sólo bajo acción del usuario');
+$assert(str_contains($files['uploadCenter'], "data-upload-paste-image"), 'centro ofrece pegar imagen cuando existe');
+$assert(str_contains($files['uploadCenter'], "data-upload-paste-text"), 'centro ofrece pegar texto cuando existe');
+$assert(str_contains($files['uploadCenter'], "this.timestampName('screenshot', 'png')"), 'imagen del portapapeles se guarda como screenshot PNG con fecha/hora');
+$assert(str_contains($files['uploadCenter'], "this.timestampName('clipboard', 'txt')"), 'texto del portapapeles se guarda como TXT con fecha/hora');
+$assert(str_contains($files['uploadCenter'], 'data-upload-dropzone'), 'centro ofrece Dropzone/múltiples archivos');
+$assert(str_contains($files['uploadCenter'], "mode=remote_url&action=init"), 'centro conserva subida desde enlace');
+$assert(str_contains($files['uploadCenter'], "mode=chunked&action=init"), 'centro conserva multipart para archivos grandes');
+$assert(str_contains($files['uploadCenter'], "mode=local_put&action=init"), 'centro conserva subida directa local_put');
+$assert(str_contains($files['uploadCenter'], "mode=local_put&action=complete"), 'subida directa confirma FileS3');
+$assert(str_contains($files['uploadCenter'], "'X-Drive-CSRF': this.csrf"), 'centro de subida conserva CSRF');
+$assert(str_contains($files['uploadCenter'], "destination: String(route || '')"), 'cada tarea fija su carpeta destino al crearse');
+$assert(str_contains($files['uploadCenter'], "this.localQueue"), 'subidas múltiples continúan en una cola independiente del modal');
+$assert(str_contains($files['uploadCenter'], "taskSnapshots()"), 'administrador expone subidas al Centro de Tareas');
+$assert(str_contains($files['backgroundTasks'], "'drive:client-upload-task'"), 'Centro de Tareas recibe progreso de subidas del navegador');
+$assert(str_contains($files['backgroundTasks'], "task.kind === 'upload'"), 'Centro de Tareas renderiza destino y progreso de subida');
+$assert(str_contains($files['uploadDestination'], "ArcadeCloudOsShell.refreshExplorer"), 'destino compartido refresca Web OS sin cambiar de carpeta');
+$assert(str_contains($files['uploadDestination'], "actualizarBloqueArchivos"), 'destino compartido refresca Drive clásico sin recargar página');
+$assert(str_contains($files['uploadCenterCss'], '.drive-upload-center'), 'centro de subida tiene UI compartida');
 
 
 fwrite(STDOUT, "Contrato Web OS clipboard correcto.\n");

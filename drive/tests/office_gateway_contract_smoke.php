@@ -71,6 +71,13 @@ officeGatewayContract(
 );
 
 officeGatewayContract(
+    str_contains($gatewayService, 'assertInteractiveOwner')
+    && str_contains($gatewayService, 'MediaWorkerNodeSessionRepository')
+    && str_contains($gateway, "mode === 'office-busy'"),
+    'MAX_OFFICE_SESSIONS=1 impide compartir el mismo escritorio entre usuarios'
+);
+
+officeGatewayContract(
     str_contains($gatewayService, 'hasActiveJobs()')
     && str_contains($gateway, 'Hay una tarea multimedia activa'),
     'Office espera si FFmpeg/multimedia ya está trabajando'

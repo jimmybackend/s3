@@ -400,8 +400,10 @@ class ArcadeCloudOsShell {
     this.setContextAction('split-audio', !multi && !locked && entry.dataset.audio === '1');
 
     const hasSecurity = entry.dataset.hasSecurity === '1';
+    const unlockedSecurity = entry.dataset.unlocked === '1';
     this.setContextAction('security-unlock', !multi && locked);
     this.setContextAction('security-relock', !multi && !locked && hasSecurity);
+    this.setContextAction('security-unsecure', !multi && !locked && hasSecurity && unlockedSecurity);
     this.setContextAction('security-lock', !multi && !locked && !hasSecurity);
 
     const copy = this.context.querySelector('[data-os-clipboard-action="copy"][data-os-clipboard-kind="file"]');
@@ -1028,6 +1030,23 @@ class ArcadeCloudOsShell {
     }
   }
 
+  async unsecureFile(entry) {
+    const key = String(entry?.dataset?.key || '');
+    if (!key) return;
+    const security = this.window.ArcadeCloudFileSecurity;
+    if (!security?.unsecure) {
+      this.notify('El módulo de seguridad no está disponible.', 'warning');
+      return;
+    }
+
+    try {
+      const changed = await security.unsecure(key);
+      if (changed) await this.refreshCurrentExplorer();
+    } catch (error) {
+      this.notify(error?.message || 'No se pudo quitar la protección.', 'danger');
+    }
+  }
+
   async refreshCurrentExplorer() {
     this.hideContext();
     const live = this.document.getElementById('osExplorerLive');
@@ -1076,6 +1095,11 @@ class ArcadeCloudOsShell {
 
     if (action === 'security-relock') {
       this.relockFile(entry);
+      return;
+    }
+
+    if (action === 'security-unsecure') {
+      this.unsecureFile(entry);
       return;
     }
 

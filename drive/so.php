@@ -241,14 +241,6 @@ $currentFolderName = $currentIsRoot
         <?php endif; ?>
 
         <button type="button"
-                class="os-tool-button"
-                data-current-folder-action="sync"
-                title="Sincronizar esta carpeta con S3"
-                aria-label="Sincronizar esta carpeta con S3">
-          <i class="fas fa-cloud-arrow-down"></i>
-        </button>
-
-        <button type="button"
                 class="os-tool-button os-upload-launch"
                 data-drive-upload-center
                 title="Subir archivos a esta carpeta"
@@ -265,24 +257,6 @@ $currentFolderName = $currentIsRoot
                 aria-label="Información de la carpeta">
           <i class="fas fa-circle-info"></i>
         </button>
-
-        <div class="os-selection-actions" data-selection-actions hidden>
-          <button type="button"
-                  class="os-tool-button"
-                  data-selection-action="download"
-                  title="Descargar seleccionados"
-                  aria-label="Descargar seleccionados">
-            <i class="fas fa-download"></i>
-          </button>
-          <button type="button"
-                  class="os-tool-button is-danger"
-                  data-selection-action="delete"
-                  title="Eliminar seleccionados"
-                  aria-label="Eliminar seleccionados">
-            <i class="fas fa-trash"></i>
-          </button>
-          <span class="os-selection-count" data-selection-count>0</span>
-        </div>
 
         <nav class="os-folder-pagination" aria-label="Páginas de archivos">
           <?php if ($page > 1): ?>
@@ -687,6 +661,13 @@ Escribe help o usa uno de los botones disponibles.</pre>
     <button type="button" data-file-action="open"><i class="fas fa-eye"></i><span>Abrir en ventana</span></button>
     <button type="button" data-file-action="edit"><i class="fas fa-pen"></i>Editar texto</button>
     <button type="button" data-file-action="download"><i class="fas fa-download"></i>Descargar</button>
+    <div class="os-context-divider" data-selection-context-divider hidden></div>
+    <button type="button" data-selection-context="download" data-selection-action="download" hidden>
+      <i class="fas fa-download"></i><span>Descargar seleccionados</span>
+    </button>
+    <button type="button" class="is-danger" data-selection-context="delete" data-selection-action="delete" hidden>
+      <i class="fas fa-trash"></i><span>Eliminar seleccionados</span>
+    </button>
     <div class="os-context-divider" data-service-divider></div>
     <button type="button" data-file-action="textract" data-service-action><i class="fas fa-file-lines"></i>Textract · Extraer texto</button>
     <button type="button" data-file-action="transcribe" data-service-action><i class="fas fa-wave-square"></i>Transcribe · Audio a texto</button>

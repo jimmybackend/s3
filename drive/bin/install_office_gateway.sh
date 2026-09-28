@@ -58,6 +58,7 @@ server {
         fastcgi_param SCRIPT_NAME /office-gateway.php;
         fastcgi_param HTTPS on;
         fastcgi_param HTTP_X_FORWARDED_PROTO https;
+        fastcgi_param HTTP_COOKIE \$http_cookie;
         fastcgi_param ARCADECLOUD_OFFICE_GATE 1;
         fastcgi_param ARCADECLOUD_OFFICE_GATE_ACTION view;
         fastcgi_pass ${FPM_LISTEN};
@@ -69,6 +70,7 @@ server {
         fastcgi_param SCRIPT_NAME /office-gateway.php;
         fastcgi_param HTTPS on;
         fastcgi_param HTTP_X_FORWARDED_PROTO https;
+        fastcgi_param HTTP_COOKIE \$http_cookie;
         fastcgi_param ARCADECLOUD_OFFICE_GATE 1;
         fastcgi_param ARCADECLOUD_OFFICE_GATE_ACTION start;
         fastcgi_pass ${FPM_LISTEN};
@@ -80,6 +82,7 @@ server {
         fastcgi_param SCRIPT_NAME /office-gateway.php;
         fastcgi_param HTTPS on;
         fastcgi_param HTTP_X_FORWARDED_PROTO https;
+        fastcgi_param HTTP_COOKIE \$http_cookie;
         fastcgi_param ARCADECLOUD_OFFICE_GATE 1;
         fastcgi_param ARCADECLOUD_OFFICE_GATE_ACTION activity;
         fastcgi_pass ${FPM_LISTEN};
@@ -91,6 +94,7 @@ server {
         fastcgi_param SCRIPT_NAME /office-gateway.php;
         fastcgi_param HTTPS on;
         fastcgi_param HTTP_X_FORWARDED_PROTO https;
+        fastcgi_param HTTP_COOKIE \$http_cookie;
         fastcgi_param ARCADECLOUD_OFFICE_GATE 1;
         fastcgi_param ARCADECLOUD_OFFICE_GATE_ACTION idle;
         fastcgi_pass ${FPM_LISTEN};
@@ -103,6 +107,7 @@ server {
         fastcgi_param SCRIPT_NAME /office-gateway.php;
         fastcgi_param HTTPS on;
         fastcgi_param HTTP_X_FORWARDED_PROTO https;
+        fastcgi_param HTTP_COOKIE \$http_cookie;
         fastcgi_param ARCADECLOUD_OFFICE_GATE 1;
         fastcgi_param ARCADECLOUD_OFFICE_GATE_ACTION auth;
         fastcgi_pass ${FPM_LISTEN};
@@ -138,6 +143,7 @@ server {
         fastcgi_param SCRIPT_NAME /office-gateway.php;
         fastcgi_param HTTPS on;
         fastcgi_param HTTP_X_FORWARDED_PROTO https;
+        fastcgi_param HTTP_COOKIE \$http_cookie;
         fastcgi_param ARCADECLOUD_OFFICE_GATE 1;
         fastcgi_param ARCADECLOUD_OFFICE_GATE_ACTION view;
         fastcgi_pass ${FPM_LISTEN};

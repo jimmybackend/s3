@@ -69,7 +69,7 @@ final class ArcadeCloudDriveAdminHelper
         if ($action === 'status') {
             fwrite(STDOUT, json_encode([
                 'ok' => true,
-                'version' => 13,
+                'version' => 14,
                 'capabilities' => [
                     'env_set_many' => true,
                     'db_aws_settings' => true,
@@ -84,6 +84,7 @@ final class ArcadeCloudDriveAdminHelper
                     'memory_drop_caches' => true,
                     'disk_cleanup' => true,
                     'workstation_control' => true,
+                    'workstation_document_open' => true,
                 ],
                 'identity_path' => $identityPath,
                 'identity_exists' => is_file($identityPath),
@@ -253,6 +254,51 @@ final class ArcadeCloudDriveAdminHelper
                     'state' => $activeState,
                     'enabled' => $enabledState === 'enabled',
                     'enabled_state' => $enabledState,
+                ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . "\n"
+            );
+            exit(0);
+        }
+
+        if ($action === 'workstation-open-document') {
+            $relative = trim(str_replace('\\\\', '/', (string)($argv[2] ?? '')));
+            if (
+                !preg_match('/\\Asessions\\/[a-f0-9]{32}\\/[^\\/\\x00-\\x1F\\x7F]{1,220}\\z/u', $relative)
+            ) {
+                $this->fail('Ruta de documento Workstation inválida.', 64);
+            }
+
+            $workspaceRoot = '/var/lib/arcadecloud-office/phase1-workspace';
+            $hostPath = $workspaceRoot . '/' . $relative;
+            $realWorkspace = realpath($workspaceRoot);
+            $realDocument = realpath($hostPath);
+            if (
+                $realWorkspace === false
+                || $realDocument === false
+                || !is_file($realDocument)
+                || !str_starts_with($realDocument, rtrim($realWorkspace, '/') . '/')
+            ) {
+                $this->fail('Documento Workstation no encontrado.', 2);
+            }
+
+            $this->runFixedCommand([
+                '/usr/bin/docker',
+                'exec',
+                '-d',
+                '--user',
+                '10001',
+                'arcadecloud-workstation',
+                'libreoffice',
+                '--nologo',
+                '--norestore',
+                '/workspace/' . $relative,
+            ]);
+
+            fwrite(
+                STDOUT,
+                json_encode([
+                    'ok' => true,
+                    'action' => $action,
+                    'workspace_relative' => $relative,
                 ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . "\n"
             );
             exit(0);
@@ -727,6 +773,7 @@ final class ArcadeCloudDriveAdminHelper
             '/usr/bin/git',
             '/usr/bin/journalctl',
             '/usr/bin/tail',
+            '/usr/bin/docker',
         ];
         if (!in_array($executable, $allowedExecutables, true) || !is_executable($executable)) {
             $this->fail('Ejecutable de diagnóstico no disponible o no permitido.', 69);

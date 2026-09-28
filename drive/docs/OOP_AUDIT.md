@@ -457,7 +457,7 @@
 | `drive/tests/folder_document_sanitizer.php` | 49 | test script | 0 | — | — | — | — |
 | `drive/tests/fresh_install_contract_smoke.php` | 67 | test script | 0 | — | — | — | — |
 | `drive/tests/index_federation_drop_smoke.php` | 121 | test script | 0 | — | — | — | — |
-| `drive/tests/installer_service_reconcile_contract_smoke.php` | 161 | test script | 0 | — | — | — | — |
+| `drive/tests/installer_service_reconcile_contract_smoke.php` | 188 | test script | 0 | — | — | — | — |
 | `drive/tests/media_processing_contract_smoke.php` | 173 | test script | 0 | — | — | — | — |
 | `drive/tests/office_gateway_contract_smoke.php` | 228 | test script | 0 | — | — | — | — |
 | `drive/tests/password_credential_verifier_smoke.php` | 44 | test script | 0 | — | — | — | — |
@@ -477,7 +477,7 @@
 | `drive/tests/user_profile_validator_smoke.php` | 72 | test script | 0 | — | — | — | — |
 | `drive/tests/web_os_clipboard_contract_smoke.php` | 109 | test script | 0 | — | — | — | — |
 | `drive/tests/web_os_contract_smoke.php` | 427 | test script | 0 | — | — | — | — |
-| `drive/tests/workstation_phase1_contract_smoke.php` | 47 | test script | 0 | — | — | — | — |
+| `drive/tests/workstation_phase1_contract_smoke.php` | 51 | test script | 0 | — | — | — | — |
 | `drive/thumb.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/token_audio.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/token_texto.php` | 10 | thin endpoint | 0 | — | — | — | — |

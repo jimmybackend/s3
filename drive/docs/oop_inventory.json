@@ -6585,7 +6585,7 @@
     },
     {
       "path": "drive/tests/installer_service_reconcile_contract_smoke.php",
-      "lines": 161,
+      "lines": 188,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -6905,7 +6905,7 @@
     },
     {
       "path": "drive/tests/workstation_phase1_contract_smoke.php",
-      "lines": 47,
+      "lines": 51,
       "kind": "test script",
       "classes": 0,
       "functions": [

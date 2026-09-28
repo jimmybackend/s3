@@ -274,6 +274,10 @@ class ArcadeCloudOsShell {
       this.startButton.classList.toggle('is-open', shouldOpen);
       this.startButton.setAttribute('aria-expanded', shouldOpen ? 'true' : 'false');
     });
+
+    this.launcher.querySelector('[data-os-about]')?.addEventListener('click', () => {
+      this.closeLauncher();
+    });
   }
 
   hideContext() {
@@ -336,6 +340,13 @@ class ArcadeCloudOsShell {
     const ext = String(entry.dataset.ext || '').toLowerCase();
 
     this.setContextAction('open', !multi && !locked && Boolean(entry.dataset.openUrl));
+    const openControl = this.context.querySelector('[data-file-action="open"]');
+    const openLabel = openControl?.querySelector('span');
+    const openIcon = openControl?.querySelector('i');
+    const mediaFile = entry.dataset.audio === '1' || entry.dataset.video === '1';
+    if (openLabel) openLabel.textContent = mediaFile ? 'Reproducir' : 'Abrir en ventana';
+    if (openIcon) openIcon.className = mediaFile ? 'fas fa-play' : 'fas fa-eye';
+
     this.setContextAction('edit', !multi && !locked && Boolean(entry.dataset.editUrl));
     this.setContextAction('download', !multi && !locked && Boolean(entry.dataset.downloadUrl));
     this.setContextAction('classic', !multi);

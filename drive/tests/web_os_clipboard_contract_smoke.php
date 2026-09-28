@@ -92,6 +92,12 @@ $assert(str_contains($files['backgroundTasks'], "task.kind === 'upload'"), 'Cent
 $assert(str_contains($files['uploadDestination'], "ArcadeCloudOsShell.refreshExplorer"), 'destino compartido refresca Web OS sin cambiar de carpeta');
 $assert(str_contains($files['uploadDestination'], "actualizarBloqueArchivos"), 'destino compartido refresca Drive clásico sin recargar página');
 $assert(str_contains($files['uploadCenterCss'], '.drive-upload-center'), 'centro de subida tiene UI compartida');
+$assert(str_contains($files['uploadCenter'], 'dismissTask(id)'), 'tareas de subida terminadas admiten limpieza segura');
+$assert(str_contains($files['uploadCenter'], "id: 'dismiss'"), 'subidas terminales conservan eliminación individual');
+$assert(str_contains($files['backgroundTasks'], 'data-bg-task-select'), 'Centro de Tareas permite seleccionar terminales');
+$assert(str_contains($files['backgroundTasks'], 'removeSelectedTasks()'), 'Centro de Tareas elimina un grupo seleccionado');
+$assert(str_contains($files['backgroundTasks'], 'cleanupTerminalTasks()'), 'Centro de Tareas limpia finalizadas en bloque');
+$assert(str_contains($files['backgroundTasks'], 'Promise.allSettled'), 'limpieza masiva procesa lotes sin abortar por un fallo individual');
 
 
 fwrite(STDOUT, "Contrato Web OS clipboard correcto.\n");

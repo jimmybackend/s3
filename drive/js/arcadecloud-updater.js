@@ -18,8 +18,10 @@ class ArcadeCloudUpdaterModule {
       if (!modal || this.document.getElementById('arcadeCloudUpdateSection')) return;
 
       const serverButton = this.document.getElementById('btnServerAdmin');
-      if (!serverButton) return; // sólo superadmin
-      this.csrf = String(serverButton.dataset.csrf || '');
+      const configuredCsrf = String(this.window.ARCADECLOUD_UPDATER?.csrf || '');
+      if (!serverButton && !configuredCsrf) return; // sólo superadmin
+      this.csrf = configuredCsrf || String(serverButton?.dataset?.csrf || '');
+      if (!this.csrf) return;
 
       const body = modal.querySelector('.modal-body');
       if (!body) return;

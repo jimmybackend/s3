@@ -26,6 +26,10 @@ $paths = [
     'federation_portal_controller' => $root . '/src/Http/Controller/FederationPortalController.php',
     'moderation_renderer' => $root . '/src/View/FederationModerationPageRenderer.php',
     'server_admin_js' => $root . '/js/server-admin.js',
+    'background_tasks' => $root . '/js/background-tasks.js',
+    'upload_center' => $root . '/js/upload-center.js',
+    'updater_js' => $root . '/js/arcadecloud-updater.js',
+    'update_controller' => $root . '/src/Http/Controller/ArcadeCloudUpdateController.php',
 ];
 
 foreach ($paths as $name => $path) {
@@ -93,6 +97,7 @@ webOsContract(str_contains($paths['shell'], 'Disco total'), 'Mi nodo muestra tam
 
 webOsContract(str_contains($paths['js'], 'createViewerWindow('), 'archivos se abren en ventanas del Web OS');
 webOsContract(str_contains($paths['js'], 'openMediaOverlay('), 'audio/video usan reproductor flotante');
+webOsContract(str_contains($paths['js'], "mediaFile ? 'Reproducir' : 'Abrir en ventana'"), 'menú de audio/video usa Reproducir en vez de Abrir');
 webOsContract(str_contains($paths['js'], "overlay.className = 'os-media-overlay is-' + kind"), 'reproductor multimedia queda superpuesto al SO');
 webOsContract(str_contains($paths['js'], 'os-viewer-image'), 'imagen usa visor interno');
 webOsContract(str_contains($paths['js'], 'os-viewer-frame'), 'texto/PDF pueden vivir en ventana interna');
@@ -101,6 +106,11 @@ webOsContract(str_contains($paths['js'], "invokeMediaProcessing(entry, 'split_vi
 webOsContract(str_contains($paths['js'], "invokeGlobal('abrirModalTranscribir'"), 'Transcribe se abre desde el archivo seleccionado');
 webOsContract(str_contains($paths['js'], 'weekday:'), 'reloj muestra fecha además de hora');
 webOsContract(str_contains($paths['css'], '#backgroundTaskButton'), 'Centro de Tareas queda sobre la barra del OS');
+webOsContract(str_contains($paths['background_tasks'], 'data-bg-task-remove-selected'), 'Centro de Tareas permite eliminar selección múltiple');
+webOsContract(str_contains($paths['background_tasks'], 'data-bg-task-clean-terminal'), 'Centro de Tareas permite limpiar terminadas/fallidas');
+webOsContract(str_contains($paths['background_tasks'], 'bulkRemoveTasks(tasks)'), 'limpieza masiva usa un flujo único');
+webOsContract(str_contains($paths['background_tasks'], "['completed', 'failed', 'cancelled']"), 'sólo tareas terminales entran en limpieza');
+webOsContract(str_contains($paths['upload_center'], 'dismissTask(id)'), 'subidas terminadas también pueden limpiarse del Centro de Tareas');
 webOsContract(str_contains($paths['css'], '.os-document-window'), 'ventanas de documentos tienen estilo propio');
 
 // Escritorio simplificado y controles de ventanas.
@@ -123,6 +133,14 @@ webOsContract(str_contains($paths['shell'], 'data-task-action="close"'), 'barra 
 webOsContract(str_contains($paths['js'], 'showTaskContext('), 'barra de tareas abre menú de ventana');
 webOsContract(str_contains($paths['js'], "ext === 'pdf' ? 'min(820px, 72vw)'"), 'PDF abre con tamaño inicial más compacto');
 webOsContract(str_contains($paths['css'], 'flex:0 0 auto'), 'controles de ventana no se encogen fuera de vista');
+webOsContract(str_contains($paths['shell'], 'data-os-about'), 'engranaje muestra Acerca de / Actualizar');
+webOsContract(str_contains($paths['shell'], 'id="modalAcercaArcadeCloud"'), 'Web OS incluye diálogo Acerca de');
+webOsContract(str_contains($paths['shell'], 'js/arcadecloud-updater.js'), 'Acerca de del Web OS reutiliza actualizador existente');
+webOsContract(str_contains($paths['shell'], 'ARCADECLOUD_UPDATER'), 'Web OS entrega configuración del actualizador al superadmin');
+webOsContract(str_contains($paths['shell'], 'server_admin_csrf'), 'Web OS prepara CSRF de actualización');
+webOsContract(str_contains($paths['updater_js'], 'ARCADECLOUD_UPDATER?.csrf'), 'actualizador acepta configuración segura del Web OS');
+webOsContract(str_contains($paths['update_controller'], 'isSuperAdmin()'), 'backend de actualización exige superadmin');
+webOsContract(str_contains($paths['update_controller'], 'HTTP_X_SERVER_ADMIN_CSRF'), 'backend de actualización conserva CSRF');
 webOsContract(str_contains($paths['shell'], 'href="logout.php"'), 'lanzador conserva cierre de sesión');
 webOsContract(str_contains($paths['logout'], "\$this->redirect('index.php')"), 'cerrar sesión termina en index.php');
 

@@ -637,7 +637,12 @@ class ArcadeCloudUploadCenter {
   }
 
   completeTask(id, detail) {
-    this.updateTask(id, { status: 'completed', progress: 100, detail: detail || 'Subida terminada.' });
+    this.updateTask(id, {
+      status: 'completed',
+      progress: 100,
+      detail: detail || 'Subida terminada.',
+      actions: [{ id: 'dismiss', label: 'Eliminar de Tareas', tone: 'muted', confirm: true }]
+    });
   }
 
   failTask(id, error, suffix = '') {
@@ -645,9 +650,25 @@ class ArcadeCloudUploadCenter {
     this.updateTask(id, {
       status: 'failed',
       progress: 100,
-      detail: message + (suffix ? ' ' + suffix : '')
+      detail: message + (suffix ? ' ' + suffix : ''),
+      actions: [{ id: 'dismiss', label: 'Eliminar de Tareas', tone: 'muted', confirm: true }]
     });
     this.notify('Subida con error: ' + message, 'danger');
+  }
+
+  dismissTask(id) {
+    const key = String(id || '');
+    const task = this.tasks.get(key);
+    if (!task) return false;
+
+    const status = String(task.status || '').toLowerCase();
+    if (!['completed', 'failed', 'cancelled'].includes(status)) return false;
+
+    this.tasks.delete(key);
+    this.document.dispatchEvent(new CustomEvent('drive:client-upload-task', {
+      detail: { removed: key }
+    }));
+    return true;
   }
 
   taskSnapshots() {

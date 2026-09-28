@@ -11,6 +11,9 @@ on:
       - 'drive/css/upload-center.css'
       - 'drive/css/compute-node-idle.css'
       - 'drive/js/so.js'
+      - 'drive/js/so-node.js'
+      - 'drive/js/so-share.js'
+      - 'drive/js/arcadelink-share.js'
       - 'drive/js/so-clipboard.js'
       - 'drive/js/upload-center.js'
       - 'drive/js/upload-destination.js'
@@ -39,6 +42,17 @@ on:
       - 'drive/src/Storage/FileRecordRepository.php'
       - 'drive/src/Storage/FolderMutationRepository.php'
       - 'drive/src/Http/Controller/MoveJobController.php'
+      - 'drive/src/Http/Controller/NodeStatusController.php'
+      - 'drive/node-status.php'
+      - 'drive/src/Admin/ServerMaintenanceJobStore.php'
+      - 'drive/src/Admin/ServerMaintenanceService.php'
+      - 'drive/src/Admin/ServerTaskActivityProbe.php'
+      - 'drive/src/Console/ServerMaintenanceWorkerCommand.php'
+      - 'drive/bin/server_maintenance_worker.php'
+      - 'drive/src/Application/BackgroundWorkerLauncher.php'
+      - 'drive/src/Sync/SyncJobStore.php'
+      - 'drive/src/Storage/MoveJobStore.php'
+      - 'drive/src/Http/Controller/BackgroundTaskController.php'
       - 'drive/src/Http/Controller/MediaProcessingController.php'
       - 'drive/src/Http/Controller/AuthController.php'
       - 'drive/src/Media/MediaWorkerNodeService.php'
@@ -58,6 +72,9 @@ on:
       - 'drive/css/upload-center.css'
       - 'drive/css/compute-node-idle.css'
       - 'drive/js/so.js'
+      - 'drive/js/so-node.js'
+      - 'drive/js/so-share.js'
+      - 'drive/js/arcadelink-share.js'
       - 'drive/js/so-clipboard.js'
       - 'drive/js/upload-center.js'
       - 'drive/js/upload-destination.js'
@@ -86,6 +103,17 @@ on:
       - 'drive/src/Storage/FileRecordRepository.php'
       - 'drive/src/Storage/FolderMutationRepository.php'
       - 'drive/src/Http/Controller/MoveJobController.php'
+      - 'drive/src/Http/Controller/NodeStatusController.php'
+      - 'drive/node-status.php'
+      - 'drive/src/Admin/ServerMaintenanceJobStore.php'
+      - 'drive/src/Admin/ServerMaintenanceService.php'
+      - 'drive/src/Admin/ServerTaskActivityProbe.php'
+      - 'drive/src/Console/ServerMaintenanceWorkerCommand.php'
+      - 'drive/bin/server_maintenance_worker.php'
+      - 'drive/src/Application/BackgroundWorkerLauncher.php'
+      - 'drive/src/Sync/SyncJobStore.php'
+      - 'drive/src/Storage/MoveJobStore.php'
+      - 'drive/src/Http/Controller/BackgroundTaskController.php'
       - 'drive/src/Http/Controller/MediaProcessingController.php'
       - 'drive/src/Http/Controller/AuthController.php'
       - 'drive/src/Media/MediaWorkerNodeService.php'
@@ -118,6 +146,17 @@ jobs:
           php -l drive/src/Storage/FileRecordRepository.php
           php -l drive/src/Storage/FolderMutationRepository.php
           php -l drive/src/Http/Controller/MoveJobController.php
+          php -l drive/src/Http/Controller/NodeStatusController.php
+          php -l drive/node-status.php
+          php -l drive/src/Admin/ServerMaintenanceJobStore.php
+          php -l drive/src/Admin/ServerMaintenanceService.php
+          php -l drive/src/Admin/ServerTaskActivityProbe.php
+          php -l drive/src/Console/ServerMaintenanceWorkerCommand.php
+          php -l drive/bin/server_maintenance_worker.php
+          php -l drive/src/Application/BackgroundWorkerLauncher.php
+          php -l drive/src/Sync/SyncJobStore.php
+          php -l drive/src/Storage/MoveJobStore.php
+          php -l drive/src/Http/Controller/BackgroundTaskController.php
           php -l drive/src/Http/Controller/MediaProcessingController.php
           php -l drive/src/Http/Controller/AuthController.php
           php -l drive/src/Media/MediaWorkerNodeService.php
@@ -127,6 +166,9 @@ jobs:
       - name: JavaScript syntax
         run: |
           node --check drive/js/so.js
+          node --check drive/js/so-node.js
+          node --check drive/js/so-share.js
+          node --check drive/js/arcadelink-share.js
           node --check drive/js/so-clipboard.js
           node --check drive/js/upload-center.js
           node --check drive/js/upload-destination.js

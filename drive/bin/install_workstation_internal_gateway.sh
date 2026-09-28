@@ -62,6 +62,8 @@ server {
         fastcgi_param SCRIPT_FILENAME ${DOCUMENT_SCRIPT};
         fastcgi_param SCRIPT_NAME /workstation-document.php;
         fastcgi_param ARCADECLOUD_OFFICE_DOCUMENT_GATE 1;
+        fastcgi_read_timeout 180s;
+        fastcgi_send_timeout 30s;
         fastcgi_pass ${FPM_LISTEN};
     }
 

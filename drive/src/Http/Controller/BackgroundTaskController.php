@@ -179,7 +179,7 @@ final class BackgroundTaskController extends AbstractJsonController
                 'category' => 'Mantenimiento del servidor',
                 'service' => 'ArcadeCloud OS',
                 'provider' => 'EC2 local',
-                'title' => 'Liberar memoria RAM',
+                'title' => 'Liberar cachés de memoria',
                 'status' => $status,
                 'progress' => $status === 'completed' ? 100 : null,
                 'progress_mode' => in_array($status, ['queued','running'], true) ? 'indeterminate' : 'determinate',

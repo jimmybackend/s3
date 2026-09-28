@@ -1,11 +1,11 @@
 {
   "summary": {
-    "php_total": 461,
-    "php_class_modules": 274,
+    "php_total": 468,
+    "php_class_modules": 279,
     "php_needs_migration": 0,
     "php_tests": 44,
-    "js_total": 57,
-    "js_class_modules": 57,
+    "js_total": 59,
+    "js_class_modules": 59,
     "js_needs_migration": 0,
     "js_compatibility_facades": 8
   },
@@ -328,6 +328,21 @@
     {
       "path": "drive/bin/polly_reconcile.php",
       "lines": 50,
+      "kind": "thin cli entrypoint",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/bin/server_maintenance_worker.php",
+      "lines": 7,
       "kind": "thin cli entrypoint",
       "classes": 0,
       "functions": [],
@@ -1590,6 +1605,21 @@
       "issues": []
     },
     {
+      "path": "drive/node-status.php",
+      "lines": 10,
+      "kind": "thin endpoint",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
       "path": "drive/personal_aws_bootstrap.php",
       "lines": 86,
       "kind": "class/module",
@@ -1881,7 +1911,7 @@
     },
     {
       "path": "drive/so.php",
-      "lines": 1613,
+      "lines": 1685,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -2097,6 +2127,36 @@
       "issues": []
     },
     {
+      "path": "drive/src/Admin/ServerMaintenanceJobStore.php",
+      "lines": 182,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Admin/ServerMaintenanceService.php",
+      "lines": 95,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
       "path": "drive/src/Admin/ServerSettingsAdminService.php",
       "lines": 211,
       "kind": "class/module",
@@ -2106,6 +2166,21 @@
       "superglobals": [
         "SERVER"
       ],
+      "db": true,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Admin/ServerTaskActivityProbe.php",
+      "lines": 65,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
       "db": true,
       "s3": false,
       "bootstrap": false,
@@ -2130,7 +2205,7 @@
     },
     {
       "path": "drive/src/Application/BackgroundWorkerLauncher.php",
-      "lines": 99,
+      "lines": 107,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -2686,6 +2761,21 @@
     {
       "path": "drive/src/Console/MoveJobWorkerCommand.php",
       "lines": 144,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Console/ServerMaintenanceWorkerCommand.php",
+      "lines": 32,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -3975,7 +4065,7 @@
     },
     {
       "path": "drive/src/Http/Controller/BackgroundTaskController.php",
-      "lines": 872,
+      "lines": 943,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -4413,6 +4503,21 @@
     {
       "path": "drive/src/Http/Controller/NavigationController.php",
       "lines": 42,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Http/Controller/NodeStatusController.php",
+      "lines": 104,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -5282,7 +5387,7 @@
     },
     {
       "path": "drive/src/Storage/MoveJobStore.php",
-      "lines": 315,
+      "lines": 335,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -5387,7 +5492,7 @@
     },
     {
       "path": "drive/src/Sync/SyncJobStore.php",
-      "lines": 263,
+      "lines": 282,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -6595,7 +6700,7 @@
     },
     {
       "path": "drive/tests/web_os_clipboard_contract_smoke.php",
-      "lines": 104,
+      "lines": 109,
       "kind": "test script",
       "classes": 0,
       "functions": [],
@@ -6610,7 +6715,7 @@
     },
     {
       "path": "drive/tests/web_os_contract_smoke.php",
-      "lines": 312,
+      "lines": 356,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -7098,7 +7203,7 @@
     },
     {
       "path": "drive/js/arcadelink-share.js",
-      "lines": 387,
+      "lines": 396,
       "kind": "class/module",
       "classes": [
         "ArcadeLinkShareModule"
@@ -7781,7 +7886,7 @@
     },
     {
       "path": "drive/js/so-clipboard.js",
-      "lines": 794,
+      "lines": 760,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudOsClipboard"
@@ -7826,6 +7931,20 @@
       "issues": []
     },
     {
+      "path": "drive/js/so-node.js",
+      "lines": 208,
+      "kind": "class/module",
+      "classes": [
+        "ArcadeCloudOsNodeMonitor"
+      ],
+      "functions": [],
+      "window_assign": [],
+      "window_func": [],
+      "top_vars": [],
+      "iife": false,
+      "issues": []
+    },
+    {
       "path": "drive/js/so-screenshot-paste.js",
       "lines": 335,
       "kind": "class/module",
@@ -7835,6 +7954,22 @@
       "functions": [],
       "window_assign": [
         "createImageBitmap"
+      ],
+      "window_func": [],
+      "top_vars": [],
+      "iife": false,
+      "issues": []
+    },
+    {
+      "path": "drive/js/so-share.js",
+      "lines": 179,
+      "kind": "class/module",
+      "classes": [
+        "ArcadeCloudOsShare"
+      ],
+      "functions": [],
+      "window_assign": [
+        "__shareContext"
       ],
       "window_func": [],
       "top_vars": [],
@@ -7859,7 +7994,7 @@
     },
     {
       "path": "drive/js/so.js",
-      "lines": 1209,
+      "lines": 1221,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudOsShell"

@@ -240,21 +240,12 @@ $currentFolderName = $currentIsRoot
           <span class="os-tool-button is-disabled" aria-hidden="true"><i class="fas fa-arrow-up"></i></span>
         <?php endif; ?>
 
-        <a class="os-tool-button"
-           href="so.php?ruta=<?= rawurlencode($currentRoute) ?>&pagina=<?= $page ?>"
-           data-explorer-route="<?= $e($currentRoute) ?>"
-           data-explorer-page="<?= $page ?>"
-           title="Actualizar carpeta"
-           aria-label="Actualizar carpeta">
-          <i class="fas fa-rotate"></i>
-        </a>
-
         <button type="button"
                 class="os-tool-button"
                 data-current-folder-action="sync"
                 title="Sincronizar esta carpeta con S3"
                 aria-label="Sincronizar esta carpeta con S3">
-          <i class="fas fa-arrows-rotate"></i>
+          <i class="fas fa-cloud-arrow-down"></i>
         </button>
 
         <button type="button"
@@ -482,27 +473,41 @@ $currentFolderName = $currentIsRoot
         </div>
 
         <div class="os-stat-grid">
-          <article><span>Instancia</span><strong><?= $e((string)($nodeSnapshot['instance_type'] ?: 'no identificada')) ?></strong></article>
-          <article><span>vCPU</span><strong><?= (int)$nodeSnapshot['vcpu'] ?></strong></article>
-          <article><span>RAM total</span><strong><?= $e($formatBytes((int)$nodeSnapshot['memory_total_bytes'])) ?></strong></article>
-          <article><span>RAM disponible</span><strong><?= $e($formatBytes((int)$nodeSnapshot['memory_available_bytes'])) ?></strong></article>
-          <article><span>Disco total</span><strong><?= $e($formatBytes($diskTotalBytes)) ?></strong></article>
-          <article><span>Disco usado</span><strong><?= $e($formatBytes($diskUsedBytes)) ?> · <?= $e((string)$diskUsedPercent) ?>%</strong></article>
-          <article><span>Disco libre</span><strong><?= $e($formatBytes($diskFreeBytes)) ?></strong></article>
-          <article><span>Swap</span><strong><?= $e($formatBytes((int)$nodeSnapshot['swap_total_bytes'])) ?></strong></article>
-          <article><span>Carga</span><strong><?= $e(implode(' · ', array_map('strval', $load))) ?></strong></article>
-          <article><span>Rol</span><strong><?= $e((string)$nodeSnapshot['role']) ?></strong></article>
+          <article><span>Instancia</span><strong data-node-field="instance_type"><?= $e((string)($nodeSnapshot['instance_type'] ?: 'no identificada')) ?></strong></article>
+          <article><span>vCPU</span><strong data-node-field="vcpu"><?= (int)$nodeSnapshot['vcpu'] ?></strong></article>
+          <article><span>RAM total</span><strong data-node-field="memory_total"><?= $e($formatBytes((int)$nodeSnapshot['memory_total_bytes'])) ?></strong></article>
+          <article class="os-node-memory-card">
+            <span>RAM disponible</span>
+            <div class="os-node-memory-value">
+              <strong data-node-field="memory_available"><?= $e($formatBytes((int)$nodeSnapshot['memory_available_bytes'])) ?></strong>
+              <?php if ($isSuperAdmin): ?>
+              <button type="button" class="os-node-broom" data-node-memory-clear title="Liberar cachés de memoria de forma segura" aria-label="Liberar memoria">
+                <i class="fas fa-broom"></i>
+              </button>
+              <?php endif; ?>
+            </div>
+          </article>
+          <article><span>Disco total</span><strong data-node-field="disk_total"><?= $e($formatBytes($diskTotalBytes)) ?></strong></article>
+          <article><span>Disco usado</span><strong data-node-field="disk_used"><?= $e($formatBytes($diskUsedBytes)) ?> · <?= $e((string)$diskUsedPercent) ?>%</strong></article>
+          <article><span>Disco libre</span><strong data-node-field="disk_free"><?= $e($formatBytes($diskFreeBytes)) ?></strong></article>
+          <article><span>Swap</span><strong data-node-field="swap"><?= $e($formatBytes((int)$nodeSnapshot['swap_total_bytes'])) ?></strong></article>
+          <article><span>Carga</span><strong data-node-field="load"><?= $e(implode(' · ', array_map('strval', $load))) ?></strong></article>
+          <article><span>Rol</span><strong data-node-field="role"><?= $e((string)$nodeSnapshot['role']) ?></strong></article>
         </div>
 
+        <div class="os-node-live-head">
+          <small data-node-updated>Datos tomados al abrir ArcadeCloud OS</small>
+          <button type="button" data-node-refresh title="Actualizar ahora"><i class="fas fa-rotate"></i> Actualizar</button>
+        </div>
         <div class="os-capability-list">
-          <div><span>FFmpeg</span><strong class="<?= $nodeSnapshot['ffmpeg_available'] ? 'is-ready' : 'is-missing' ?>"><?= $nodeSnapshot['ffmpeg_available'] ? 'Disponible' : 'No disponible' ?></strong></div>
-          <div><span>FFprobe</span><strong class="<?= $nodeSnapshot['ffprobe_available'] ? 'is-ready' : 'is-missing' ?>"><?= $nodeSnapshot['ffprobe_available'] ? 'Disponible' : 'No disponible' ?></strong></div>
-          <div><span>Docker</span><strong class="<?= $nodeSnapshot['docker_installed'] ? 'is-ready' : 'is-missing' ?>"><?= $nodeSnapshot['docker_installed'] ? 'Instalado' : 'No instalado' ?></strong></div>
-          <div><span>GPU</span><strong class="<?= $nodeSnapshot['gpu_present'] ? 'is-ready' : 'is-neutral' ?>"><?= $nodeSnapshot['gpu_present'] ? 'Detectada' : 'No detectada' ?></strong></div>
+          <div><span>FFmpeg</span><strong data-node-capability="ffmpeg" class="<?= $nodeSnapshot['ffmpeg_available'] ? 'is-ready' : 'is-missing' ?>"><?= $nodeSnapshot['ffmpeg_available'] ? 'Disponible' : 'No disponible' ?></strong></div>
+          <div><span>FFprobe</span><strong data-node-capability="ffprobe" class="<?= $nodeSnapshot['ffprobe_available'] ? 'is-ready' : 'is-missing' ?>"><?= $nodeSnapshot['ffprobe_available'] ? 'Disponible' : 'No disponible' ?></strong></div>
+          <div><span>Docker</span><strong data-node-capability="docker" class="<?= $nodeSnapshot['docker_installed'] ? 'is-ready' : 'is-missing' ?>"><?= $nodeSnapshot['docker_installed'] ? 'Instalado' : 'No instalado' ?></strong></div>
+          <div><span>GPU</span><strong data-node-capability="gpu" class="<?= $nodeSnapshot['gpu_present'] ? 'is-ready' : 'is-neutral' ?>"><?= $nodeSnapshot['gpu_present'] ? 'Detectada' : 'No detectada' ?></strong></div>
           <div><span>Raíz de almacenamiento</span><strong><?= $e($visibleRoute) ?></strong></div>
           <div><span>Espacio del usuario en S3</span><strong><?= $e((string)($storageUsage['formatted'] ?? '0 B')) ?></strong></div>
           <?php if ($isSuperAdmin && (string)$nodeSnapshot['instance_id'] !== ''): ?>
-            <div><span>EC2 Instance ID</span><strong><?= $e((string)$nodeSnapshot['instance_id']) ?></strong></div>
+            <div><span>EC2 Instance ID</span><strong data-node-field="instance_id"><?= $e((string)$nodeSnapshot['instance_id']) ?></strong></div>
           <?php endif; ?>
         </div>
       </div>
@@ -1528,6 +1533,62 @@ Escribe help o usa uno de los botones disponibles.</pre>
     </div>
   </div>
 
+  <div class="modal fade os-share-modal" id="modalCompartir" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title"><i class="fas fa-share-nodes mr-2"></i>Compartir archivo</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar"><span aria-hidden="true">&times;</span></button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group mb-2">
+            <label for="diasCompartir" class="mb-1">Días de vigencia</label>
+            <div class="input-group">
+              <input type="number" id="diasCompartir" class="form-control" min="1" max="3650" step="1" value="1" inputmode="numeric">
+              <div class="input-group-append"><span class="input-group-text">día(s)</span></div>
+            </div>
+            <small class="form-text text-muted">Expira el: <strong id="fechaExpiraLabel">—</strong></small>
+          </div>
+          <div class="form-group mb-1">
+            <label for="enlaceCompartido" class="mb-1">Enlace directo</label>
+            <div class="input-group">
+              <input type="text" class="form-control" id="enlaceCompartido" readonly>
+              <div class="input-group-append">
+                <button class="btn btn-outline-info" type="button" id="btnCopyLink"><i class="fas fa-copy mr-1"></i>Copiar</button>
+              </div>
+            </div>
+            <small id="copyStatus" class="form-text" style="opacity:0;transition:opacity .2s">&nbsp;</small>
+            <small id="sharePanelStatus" class="small text-muted">El enlace se generará con la expiración indicada.</small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <?php if ($isSuperAdmin): ?>
+  <div class="modal fade os-share-modal" id="nodeMemoryClearModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title"><i class="fas fa-broom mr-2"></i>Liberar memoria del nodo</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar"><span aria-hidden="true">&times;</span></button>
+        </div>
+        <div class="modal-body">
+          <p class="small text-muted">Ejecuta <code>sync</code> y libera page cache, dentries e inodes. No termina procesos.</p>
+          <p class="small text-info">Si existen tareas de procesamiento, quedará en la cola y se ejecutará después de ellas.</p>
+          <label for="nodeMemoryPassword">Contraseña privada</label>
+          <input type="password" class="form-control" id="nodeMemoryPassword" data-node-memory-password autocomplete="current-password">
+          <div class="mt-2 small text-muted" data-node-memory-status>Lista para programarse.</div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-info" data-node-memory-submit><i class="fas fa-broom mr-1"></i>Programar limpieza</button>
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <?php endif; ?>
+
   <div class="os-launcher" id="osLauncher" hidden>
     <div class="os-launcher-header">
       <div class="os-launcher-profile">
@@ -1546,6 +1607,7 @@ Escribe help o usa uno de los botones disponibles.</pre>
     <button type="button" data-window-open="explorerWindow"><i class="fas fa-folder-open"></i> Mis datos</button>
     <button type="button" data-window-open="appsWindow"><i class="fas fa-shapes"></i> Aplicaciones</button>
     <a href="s3.php"><i class="fas fa-hard-drive"></i> Drive clásico</a>
+    <button type="button" data-os-reload><i class="fas fa-rotate-right"></i> Actualizar ArcadeCloud OS</button>
     <button type="button" data-os-about data-toggle="modal" data-target="#modalAcercaArcadeCloud"><i class="fas fa-circle-info"></i> Acerca de / Actualizar</button>
     <a href="logout.php" class="is-danger"><i class="fas fa-right-from-bracket"></i> Cerrar sesión</a>
   </div>
@@ -1585,6 +1647,13 @@ Escribe help o usa uno de los botones disponibles.</pre>
     window.ARCADECLOUD_UPDATER = {
       csrf: <?= json_encode($serverAdminCsrf, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>
     };
+    window.ARCADECLOUD_OS_NODE = {
+      endpoint: 'node-status.php',
+      csrf: <?= json_encode($serverAdminCsrf, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>,
+      superadmin: true
+    };
+    <?php else: ?>
+    window.ARCADECLOUD_OS_NODE = { endpoint: 'node-status.php', csrf: '', superadmin: false };
     <?php endif; ?>
   </script>
   <script src="js/polly.js?v=<?= (int)filemtime(__DIR__ . '/js/polly.js') ?>"></script>
@@ -1607,6 +1676,9 @@ Escribe help o usa uno de los botones disponibles.</pre>
   <script src="js/upload-center.js?v=<?= (int)filemtime(__DIR__ . '/js/upload-center.js') ?>"></script>
   <script data-drive-updater src="js/arcadecloud-updater.js?v=<?= (int)filemtime(__DIR__ . '/js/arcadecloud-updater.js') ?>"></script>
   <script src="js/compute-node-idle.js?v=<?= (int)filemtime(__DIR__ . '/js/compute-node-idle.js') ?>"></script>
+  <script src="js/arcadelink-share.js?v=<?= (int)filemtime(__DIR__ . '/js/arcadelink-share.js') ?>"></script>
+  <script src="js/so-share.js?v=<?= (int)filemtime(__DIR__ . '/js/so-share.js') ?>"></script>
+  <script src="js/so-node.js?v=<?= (int)filemtime(__DIR__ . '/js/so-node.js') ?>"></script>
   <script src="js/so.js?v=<?= (int)filemtime(__DIR__ . '/js/so.js') ?>"></script>
 </body>
 </html>

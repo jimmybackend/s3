@@ -7,6 +7,8 @@ use ArcadeCloud\Drive\Admin\FastDriveWakeService;
 use ArcadeCloud\Drive\Core\DriveApplication;
 use ArcadeCloud\Drive\Media\MediaProcessingJobRepository;
 use ArcadeCloud\Drive\Media\MediaWorkerNodeService;
+use ArcadeCloud\Drive\Media\MediaWorkerNodeSessionRepository;
+use RuntimeException;
 
 final class OfficeGatewayService
 {
@@ -34,6 +36,26 @@ final class OfficeGatewayService
     public function authorizeAndStart(string $password, string $ipAddress): array
     {
         return $this->wake->authorizeAndStart($password, $ipAddress);
+    }
+
+    public function assertInteractiveOwner(int $userId, string $instanceId): void
+    {
+        if ($userId <= 0 || $instanceId === '') {
+            throw new RuntimeException('Sesión Office inválida.');
+        }
+
+        $active = (new MediaWorkerNodeSessionRepository($this->app->db()))
+            ->activeForInstance($instanceId);
+        if ($active === null) {
+            return;
+        }
+
+        $owner = (int)($active['started_by_user_id'] ?? 0);
+        if ($owner > 0 && $owner !== $userId) {
+            throw new RuntimeException(
+                'Office ya está reservado por otra sesión del nodo. Espera a que termine o se apague por inactividad.'
+            );
+        }
     }
 
     /**

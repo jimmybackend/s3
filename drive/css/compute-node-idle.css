@@ -1,0 +1,27 @@
+.compute-idle-warning{
+  position:fixed;inset:0;z-index:30000;display:flex;align-items:center;justify-content:center;padding:16px
+}
+.compute-idle-warning[hidden]{display:none!important}
+.compute-idle-backdrop{position:absolute;inset:0;background:rgba(3,8,15,.72);backdrop-filter:blur(4px)}
+.compute-idle-card{
+  position:relative;z-index:1;width:min(440px,94vw);padding:22px;border-radius:16px;
+  border:1px solid rgba(80,190,255,.35);background:#0b1827;color:#eef8ff;
+  box-shadow:0 24px 80px rgba(0,0,0,.55);text-align:center
+}
+.compute-idle-icon{font-size:2rem;color:#f0b84f;margin-bottom:8px}
+.compute-idle-card h3{margin:0 0 8px;font-size:1.15rem}
+.compute-idle-card p{margin:0;color:#a9bfd2;line-height:1.45}
+.compute-idle-count{display:block;margin-top:12px;font-size:3rem;line-height:1;color:#58d9ff}
+.compute-idle-seconds{display:block;margin-top:3px;color:#a9bfd2;font-size:.78rem;text-transform:uppercase;letter-spacing:.08em}
+.compute-idle-actions{display:flex;gap:9px;justify-content:center;margin-top:18px;flex-wrap:wrap}
+.compute-idle-actions button{
+  min-height:40px;padding:8px 14px;border-radius:9px;border:1px solid rgba(80,190,255,.35);
+  background:rgba(80,190,255,.12);color:#eef8ff;font-weight:800;cursor:pointer
+}
+.compute-idle-actions button.is-danger{border-color:rgba(255,100,100,.45);color:#ffc1c1;background:rgba(255,80,80,.1)}
+.compute-idle-actions button:disabled{opacity:.55;cursor:wait}
+.compute-idle-card small{display:block;margin-top:12px;color:#7f98ae}
+@media(max-width:575px){
+  .compute-idle-card{padding:18px 14px}
+  .compute-idle-actions button{flex:1 1 140px}
+}

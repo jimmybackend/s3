@@ -243,7 +243,7 @@ webOsContract(str_contains($paths['media_node'], 'IDLE_WARNING_SECONDS = 30'), '
 webOsContract(str_contains($paths['media_node'], "?: 600"), 'backend usa diez minutos de inactividad por defecto');
 webOsContract(str_contains($paths['media_node'], 'touchInteractiveActivity'), 'actividad de s3/so se registra en la sesión EC2');
 webOsContract(str_contains($paths['media_node'], 'requestIdleStop'), 'apagado interactivo pasa por servicio del nodo');
-webOsContract(str_contains($paths['media_node'], "($idle['warning'] ?? false) !== true"), 'StopInstances interactivo sólo se permite durante aviso de inactividad');
+webOsContract(str_contains($paths['media_node'], "(\$idle['warning'] ?? false) !== true"), 'StopInstances interactivo sólo se permite durante aviso de inactividad');
 webOsContract(str_contains($paths['media_controller'], "queryString('idle_status')"), 'endpoint expone estado de inactividad');
 webOsContract(str_contains($paths['media_controller'], "postString('node_activity')"), 'endpoint acepta heartbeat autenticado');
 webOsContract(str_contains($paths['media_controller'], "postString('node_shutdown_now')"), 'endpoint acepta apagado desde advertencia');

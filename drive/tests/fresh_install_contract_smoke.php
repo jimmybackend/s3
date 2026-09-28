@@ -46,7 +46,16 @@ freshInstallContract(str_contains($schemaService, 'if ($objectsBefore > 0)'), 'D
 freshInstallContract(str_contains($schemaService, 'adbbmis1_Cloud.sql'), 'bootstrap usa exclusivamente el SQL canónico');
 freshInstallContract(str_contains($schemaService, 'multi_query'), 'bootstrap importa el SQL canónico en DB vacía');
 
-foreach (['Users','FileS3','DriveActivityEvents','MediaProcessingJobs','MediaWorkerNodeSessions'] as $table) {
+foreach ([
+    'Users',
+    'FileS3',
+    'DriveActivityEvents',
+    'MediaProcessingJobs',
+    'MediaWorkerNodeSessions',
+    'OfficeLaunchTokens',
+    'OfficeSessionLeases',
+    'OfficeDocumentSessions',
+] as $table) {
     freshInstallContract(
         str_contains($schemaService, "'{$table}'"),
         "bootstrap verifica {$table}"

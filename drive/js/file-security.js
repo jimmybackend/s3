@@ -9,7 +9,7 @@ class ArcadeCloudFileSecurity {
     return String(key || '')
       .trim()
       .replace(/\\/g, '/')
-      .replace(/\/+/, '/')
+      .replace(/\/+/g, '/')
       .replace(/^\/+/, '');
   }
 

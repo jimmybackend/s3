@@ -635,46 +635,12 @@ class ArcadeCloudOsClipboard {
       return;
     }
 
-    const key = String(entry.dataset.key || '').trim();
-    const ext = String(entry.dataset.ext || '').toLowerCase();
-    if (!key) return;
-
-    const rawDays = this.window.prompt('¿Cuántos días debe funcionar el enlace compartido?', '1');
-    if (rawDays === null) return;
-    const days = Math.max(1, Math.min(3650, parseInt(rawDays || '1', 10) || 1));
-
-    try {
-      const body = new URLSearchParams({
-        archivo: key,
-        tipo: this.shareTypeForExtension(ext),
-        dias: String(days)
-      });
-      const response = await this.window.fetch('generar_token.php', {
-        method: 'POST',
-        credentials: 'same-origin',
-        cache: 'no-store',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
-          'X-Requested-With': 'XMLHttpRequest'
-        },
-        body
-      });
-      const text = await response.text();
-      let json = null;
-      try { json = JSON.parse(text); } catch (_) {}
-      if (!response.ok || !json || json.estado !== 'ok' || !json.url) {
-        throw new Error(json?.mensaje || text || ('HTTP ' + response.status));
-      }
-
-      const copied = await this.copyText(String(json.url));
-      if (copied) {
-        this.notify('Enlace compartido creado y copiado al portapapeles.', 'success');
-      } else {
-        this.window.prompt('Enlace compartido', String(json.url));
-      }
-    } catch (error) {
-      this.notify('No se pudo compartir: ' + (error?.message || error), 'danger');
+    if (this.window.ArcadeCloudOsShare?.open) {
+      this.window.ArcadeCloudOsShare.open(entry);
+      return;
     }
+
+    this.notify('El panel completo de compartir todavía no está disponible. Actualiza ArcadeCloud OS.', 'warning');
   }
 
   async deleteFile(entry) {

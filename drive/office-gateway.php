@@ -39,6 +39,10 @@ $action = (string)($_SERVER['ARCADECLOUD_OFFICE_GATE_ACTION'] ?? 'view');
 $officeUserId = (int)$session->get('office_user_id', 0);
 $officeSessionKey = strtolower(trim((string)$session->get('office_session_key', '')));
 $officeInstanceId = trim((string)$session->get('office_instance_id', ''));
+$officeFileId = max(0, (int)$session->get('office_file_id', 0));
+$officeDocumentSessionId = strtolower(trim((string)$session->get('office_document_session_id', '')));
+$officeDocumentToken = strtolower(trim((string)$session->get('office_document_token', '')));
+$officeDocumentName = trim((string)$session->get('office_document_name', ''));
 
 if ($officeUserId > 0 && !preg_match('/^[a-f0-9]{64}$/', $officeSessionKey)) {
     $officeSessionKey = bin2hex(random_bytes(32));
@@ -63,6 +67,51 @@ if ($action === 'auth') {
         error_log('[Office gateway] auth error: ' . $e->getMessage());
         http_response_code(401);
         exit;
+    }
+}
+
+if ($action === 'document-sync' || $action === 'document-close') {
+    if (
+        $officeUserId <= 0
+        || !preg_match('/^[a-f0-9]{64}$/', $officeSessionKey)
+        || !preg_match('/^i-[0-9a-f]{8,17}$/i', $officeInstanceId)
+        || !preg_match('/^[a-f0-9]{32}$/', $officeDocumentSessionId)
+        || !preg_match('/^[a-f0-9]{64}$/', $officeDocumentToken)
+    ) {
+        $json(['ok' => false, 'error' => 'Sesión documental Office no autorizada.'], 401);
+    }
+    if (strtoupper((string)($_SERVER['REQUEST_METHOD'] ?? 'GET')) !== 'POST') {
+        $json(['ok' => false, 'error' => 'Método no permitido.'], 405);
+    }
+
+    try {
+        $office->assertOfficeSession($officeUserId, $officeInstanceId, $officeSessionKey);
+        $nodeStatus = $office->nodeStatus();
+        $privateIp = trim((string)($nodeStatus['private_ip'] ?? ''));
+        if ($privateIp === '') {
+            throw new RuntimeException('El nodo Office no publicó su IP privada.');
+        }
+
+        $result = $action === 'document-close'
+            ? $office->closeDocument($privateIp, $officeDocumentSessionId, $officeDocumentToken)
+            : $office->syncDocument($privateIp, $officeDocumentSessionId, $officeDocumentToken);
+
+        if ($action === 'document-close') {
+            $office->releaseOfficeSession($officeUserId, $officeInstanceId, $officeSessionKey);
+            foreach ([
+                'office_document_session_id',
+                'office_document_token',
+                'office_document_file_id',
+                'office_document_name',
+            ] as $key) {
+                $session->remove($key);
+            }
+        }
+
+        $json(['ok' => true, 'document' => $result]);
+    } catch (Throwable $e) {
+        error_log('[Office gateway] document sync error: ' . $e->getMessage());
+        $json(['ok' => false, 'error' => $e->getMessage()], 409);
     }
 }
 
@@ -95,12 +144,24 @@ if ($action === 'activity' || $action === 'idle') {
 $launch = is_scalar($_GET['launch'] ?? null) ? strtolower(trim((string)$_GET['launch'])) : '';
 if ($launch !== '') {
     try {
-        $consumedUserId = $office->consumeLaunch($launch);
+        $launchContext = $office->consumeLaunchContext($launch);
+        $consumedUserId = (int)($launchContext['user_id'] ?? 0);
+        $consumedFileId = max(0, (int)($launchContext['file_id'] ?? 0));
         if ($consumedUserId <= 0) {
             $session->set('office_gateway_error', 'El enlace de Office caducó o ya fue utilizado.');
         } else {
             $officeUserId = $consumedUserId;
+            $officeFileId = $consumedFileId;
             $session->set('office_user_id', $officeUserId);
+            $session->set('office_file_id', $officeFileId);
+            foreach ([
+                'office_document_session_id',
+                'office_document_token',
+                'office_document_file_id',
+                'office_document_name',
+            ] as $key) {
+                $session->remove($key);
+            }
             if (!preg_match('/^[a-f0-9]{64}$/', $officeSessionKey)) {
                 $officeSessionKey = bin2hex(random_bytes(32));
                 $session->set('office_session_key', $officeSessionKey);
@@ -202,6 +263,34 @@ if ($officeUserId > 0) {
                     $office->claimOfficeSession($officeUserId, $instanceId, $officeSessionKey);
                     $officeInstanceId = $instanceId;
                     $session->set('office_instance_id', $officeInstanceId);
+
+                    if ($officeFileId > 0) {
+                        $documentMatches = preg_match('/^[a-f0-9]{32}$/', $officeDocumentSessionId)
+                            && preg_match('/^[a-f0-9]{64}$/', $officeDocumentToken)
+                            && (int)$session->get('office_document_file_id', 0) === $officeFileId;
+
+                        if (!$documentMatches) {
+                            $document = $office->createDocumentSession(
+                                $officeUserId,
+                                $officeFileId,
+                                $instanceId
+                            );
+                            $officeDocumentSessionId = (string)$document['session_id'];
+                            $officeDocumentToken = (string)$document['control_token'];
+                            $officeDocumentName = (string)$document['name'];
+
+                            $session->set('office_document_session_id', $officeDocumentSessionId);
+                            $session->set('office_document_token', $officeDocumentToken);
+                            $session->set('office_document_file_id', $officeFileId);
+                            $session->set('office_document_name', $officeDocumentName);
+
+                            $office->prepareDocument(
+                                $privateIp,
+                                $officeDocumentSessionId,
+                                $officeDocumentToken
+                            );
+                        }
+                    }
                 }
             } catch (RuntimeException $e) {
                 $officeBusy = str_contains($e->getMessage(), 'reservado por otra sesión')
@@ -261,11 +350,18 @@ button{width:100%;margin-top:12px;padding:13px;border:1px solid var(--accent);bo
 .office-stage{position:fixed;inset:0;background:#061726}.office-stage iframe{border:0;width:100%;height:100%;display:block}
 .idle-warning{position:fixed;z-index:50;inset:0;display:grid;place-items:center;background:#0009}.idle-warning[hidden]{display:none}.idle-card{width:min(480px,90vw);padding:24px;border:1px solid #d49935;border-radius:14px;background:#111c25;text-align:center;box-shadow:0 22px 70px #000b}.idle-count{font-size:42px;color:#ffc660}.idle-card button{max-width:260px}
 .small{font-size:12px;color:var(--soft)}
+.office-document-badge{position:fixed;z-index:40;right:12px;top:10px;max-width:min(520px,70vw);padding:7px 11px;border:1px solid #2f8c59;border-radius:9px;background:#061726e8;color:#dfffea;font-size:12px;box-shadow:0 6px 24px #0007}
+.office-document-badge.is-conflict{border-color:#d49935;color:#ffd993}
 </style>
 </head>
 <body>
 <?php if ($mode === 'ready'): ?>
 <div class="office-stage">
+  <?php if ($officeFileId > 0 && $officeDocumentName !== ''): ?>
+  <div class="office-document-badge" id="officeDocumentBadge">
+    <?= $escape($officeDocumentName) ?> · sincronizado con ArcadeCloud
+  </div>
+  <?php endif; ?>
   <iframe id="officeFrame"
           src="/vnc.html?path=websockify&amp;resize=remote&amp;autoconnect=true"
           title="ArcadeCloud Office"
@@ -289,6 +385,41 @@ button{width:100%;margin-top:12px;padding:13px;border:1px solid var(--accent);bo
   let lastActivitySent = 0;
   let remaining = null;
   const throttleMs = 20000;
+  const hasDocument = <?= ($officeFileId > 0 && preg_match('/^[a-f0-9]{32}$/', $officeDocumentSessionId)) ? 'true' : 'false' ?>;
+  const documentBadge = document.getElementById('officeDocumentBadge');
+
+  async function syncDocument() {
+    if (!hasDocument) return;
+    try {
+      const r = await fetch('/__office_document_sync', {
+        method: 'POST',
+        credentials: 'same-origin',
+        cache: 'no-store',
+        headers: {'X-Requested-With':'XMLHttpRequest'}
+      });
+      const data = await r.json();
+      if (!r.ok || data?.ok !== true) throw new Error(data?.error || 'No se pudo sincronizar');
+      const doc = data.document || {};
+      if (documentBadge) {
+        if (doc.conflict === true) {
+          documentBadge.classList.add('is-conflict');
+          documentBadge.textContent = 'Conflicto protegido: ' + String(doc.conflict_name || 'se creó una copia');
+        } else {
+          documentBadge.classList.remove('is-conflict');
+          documentBadge.textContent = <?= json_encode($officeDocumentName, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?> + ' · guardado en ArcadeCloud';
+        }
+      }
+    } catch (e) {
+      if (documentBadge) documentBadge.textContent = 'Pendiente de sincronizar · ' + String(e?.message || '');
+    }
+  }
+
+  function closeDocument() {
+    if (!hasDocument) return;
+    try {
+      navigator.sendBeacon('/__office_document_close', new Blob([''], {type:'text/plain'}));
+    } catch (_) {}
+  }
 
   async function activity(force = false) {
     const now = Date.now();
@@ -346,6 +477,8 @@ button{width:100%;margin-top:12px;padding:13px;border:1px solid var(--accent);bo
   }
 
   setInterval(pollIdle, 5000);
+  if (hasDocument) setInterval(syncDocument, 60000);
+  window.addEventListener('beforeunload', closeDocument);
   setInterval(() => {
     if (remaining === null) return;
     remaining = Math.max(0, remaining - 1);

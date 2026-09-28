@@ -1393,7 +1393,7 @@
     },
     {
       "path": "drive/so.php",
-      "size": 96715,
+      "size": 97444,
       "active": true,
       "references": [
         "drive/s3.php",
@@ -1580,7 +1580,7 @@
     },
     {
       "path": "drive/src/Application/FileListService.php",
-      "size": 5068,
+      "size": 5109,
       "active": false,
       "references": [
         "drive/tests/web_os_contract_smoke.php"
@@ -2657,7 +2657,7 @@
     },
     {
       "path": "drive/src/Http/Controller/FileSearchController.php",
-      "size": 2539,
+      "size": 2621,
       "active": false,
       "references": [
         "drive/tests/web_os_contract_smoke.php"
@@ -3667,7 +3667,7 @@
     },
     {
       "path": "drive/tests/web_os_contract_smoke.php",
-      "size": 41127,
+      "size": 42094,
       "active": false,
       "references": []
     },

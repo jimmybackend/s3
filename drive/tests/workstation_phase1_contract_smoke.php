@@ -32,6 +32,9 @@ workstationContract(!str_contains($install, '/var/run/docker.sock'), 'Docker soc
 workstationContract(!str_contains($install, '5900:'), 'puerto VNC no se publica en el host');
 workstationContract(!str_contains($install, 'aws_access_key'), 'instalador no incorpora credenciales AWS');
 workstationContract(str_contains($install, '/var/lib/arcadecloud-office'), 'workspace queda separado del media worker');
+workstationContract(str_contains($install, '"$WORKSPACE/sessions"'), 'instalador prepara workspace por sesión documental');
+workstationContract(str_contains($install, 'chmod 2770 "$WORKSPACE" "$WORKSPACE/sessions"'), 'workspace usa setgid y no permisos globales');
+workstationContract(str_contains($install, '--group-add $PHP_GID'), 'contenedor comparte únicamente el grupo PHP-FPM para documentos');
 workstationContract(!str_contains($install, 'chown root:root /etc/arcadecloud-drive'), 'instalador no rompe el grupo PHP-FPM del directorio administrado');
 workstationContract(!str_contains($install, 'chmod 0750 /etc/arcadecloud-drive'), 'instalador no reemplaza permisos del directorio runtime administrado');
 workstationContract(!preg_match('/(?:chown|chmod)[^\\n]*runtime-env\\.json/', $install), 'instalador Workstation no cambia permisos de runtime-env.json');

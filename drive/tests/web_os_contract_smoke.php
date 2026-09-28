@@ -252,6 +252,15 @@ webOsContract(str_contains($paths['shell'], 'js/so-node.js'), 'Web OS carga moni
 webOsContract(str_contains($paths['shell'], 'node-status.php'), 'Mi nodo usa endpoint dedicado de estado');
 webOsContract(str_contains($paths['shell'], 'data-node-field="memory_available"'), 'RAM disponible se actualiza en vivo');
 webOsContract(str_contains($paths['shell'], 'data-node-memory-clear'), 'superadmin dispone de escobilla de memoria');
+webOsContract(str_contains($paths['shell'], 'data-node-field="disk_used"'), 'Mi nodo muestra disco usado en vivo');
+webOsContract(str_contains($paths['shell'], 'data-node-disk-clean'), 'superadmin dispone de escobilla para liberar disco');
+webOsContract(str_contains($paths['shell'], 'id="nodeDiskCleanModal"'), 'limpieza de disco explica exactamente qué puede borrar');
+webOsContract(str_contains($paths['node_js'], "'disk-clean'"), 'UI programa limpieza de disco como mantenimiento');
+webOsContract(str_contains($paths['node_controller'], "'disk-clean'"), 'endpoint restringe limpieza de disco a acción conocida');
+webOsContract(str_contains($paths['maintenance_service'], 'queueDiskCleanup'), 'servicio encola limpieza de disco');
+webOsContract(str_contains($paths['maintenance_service'], 'ServerTaskActivityProbe'), 'limpieza de disco espera a las tareas activas');
+webOsContract(str_contains($paths['maintenance_store'], "['memory-clear', 'disk-clean']"), 'cola sólo admite mantenimiento conocido');
+
 webOsContract(str_contains($paths['node_js'], 'ArcadeCloudOsNodeMonitor'), 'monitor de nodo tiene módulo propio');
 webOsContract(str_contains($paths['node_js'], "data-window-open=\"nodeWindow\""), 'abrir Mi nodo consulta estado actual');
 webOsContract(str_contains($paths['node_js'], "action: 'memory-clear'"), 'escobilla programa mantenimiento seguro');

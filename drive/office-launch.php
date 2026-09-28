@@ -5,6 +5,7 @@ require_once __DIR__ . '/app_bootstrap.php';
 
 use ArcadeCloud\Drive\Core\ApplicationKernel;
 use ArcadeCloud\Drive\Office\OfficeLaunchTokenRepository;
+use ArcadeCloud\Drive\Office\OfficeSchemaMigrationService;
 use ArcadeCloud\Drive\View\FileViewHelper;
 
 $app = ApplicationKernel::app();
@@ -30,11 +31,12 @@ if (
 }
 
 try {
+    (new OfficeSchemaMigrationService($app->db()))->ensure();
     $repo = new OfficeLaunchTokenRepository($app->db());
 } catch (Throwable $e) {
-    error_log('[Office launch] token repository error: ' . $e->getMessage());
+    error_log('[Office launch] schema/token repository error: ' . $e->getMessage());
     http_response_code(503);
-    exit('No se pudo preparar el lanzamiento de Office. Revisa el estado de la base de datos.');
+    exit('No se pudo preparar el esquema de ArcadeCloud Office. Revisa la base de datos.');
 }
 
 $fileId = max(0, (int)($_GET['file_id'] ?? 0));

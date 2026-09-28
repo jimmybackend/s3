@@ -147,6 +147,13 @@ foreach ($filas as $row) {
       </button>
 
       <button type="button"
+              class="btn btn-sm btn-success drive-upload-launch"
+              data-drive-upload-center>
+        <i class="fas fa-cloud-arrow-up"></i>
+        Subir
+      </button>
+
+      <button type="button"
               class="btn btn-sm btn-danger"
               data-file-bulk-action="delete">
         <i class="fas fa-trash-alt mr-1"></i>

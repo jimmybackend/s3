@@ -296,7 +296,7 @@ class BackgroundTaskCenter {
         <div class="bg-task-head">
           <div>
             <strong>Tareas en segundo plano</strong>
-            <small>Continúan en el servidor aunque salgas de esta pantalla.</small>
+            <small>Las tareas del servidor continúan aunque navegues; las subidas del navegador requieren mantener abierta la pestaña.</small>
           </div>
           <button class="bg-task-close" type="button" data-bg-task-close aria-label="Cerrar">×</button>
         </div>

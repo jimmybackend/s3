@@ -135,27 +135,32 @@ $session->remove('office_gateway_error');
 $session->remove('office_gateway_message');
 
 $state = 'unknown';
+$instanceId = '';
 $privateIp = '';
 $workstationActive = false;
 $waiting = false;
 $canStart = false;
 $mediaBusy = false;
+$officeBusy = false;
 
 if ($officeUserId > 0) {
     try {
         $nodeStatus = $office->nodeStatus();
         $state = (string)($nodeStatus['state'] ?? 'unknown');
+        $instanceId = trim((string)($nodeStatus['instance_id'] ?? ''));
         $privateIp = trim((string)($nodeStatus['private_ip'] ?? ''));
         $canStart = $state === 'stopped';
         $waiting = in_array($state, ['pending', 'stopping', 'shutting-down'], true);
 
         if ($state === 'running') {
             try {
+                $office->assertInteractiveOwner($officeUserId, $instanceId);
                 $prepared = $office->prepareWorkstation($privateIp);
                 $workstationActive = (bool)($prepared['active'] ?? false);
                 $mediaBusy = (bool)($prepared['media_busy'] ?? false);
             } catch (RuntimeException $e) {
-                $waiting = true;
+                $officeBusy = str_contains($e->getMessage(), 'reservado por otra sesión');
+                $waiting = !$officeBusy;
                 $error = $error !== '' ? $error : $e->getMessage();
             }
 
@@ -177,6 +182,8 @@ if ($officeUserId <= 0) {
     $mode = 'launch-required';
 } elseif ($canStart) {
     $mode = 'start-required';
+} elseif ($officeBusy) {
+    $mode = 'office-busy';
 } elseif ($mediaBusy && !$workstationActive) {
     $mode = 'media-busy';
 } elseif ($workstationActive) {
@@ -320,6 +327,11 @@ button{width:100%;margin-top:12px;padding:13px;border:1px solid var(--accent);bo
       <input id="current_password" name="current_password" type="password" autocomplete="current-password" maxlength="4096" required autofocus>
       <button type="submit">Encender y abrir Office</button>
     </form>
+  <?php elseif ($mode === 'office-busy'): ?>
+    <h1>Office está en uso</h1>
+    <p>La primera versión permite una sola sesión de escritorio. Espera a que la sesión actual termine o el nodo se apague por inactividad.</p>
+    <?php if ($error !== ''): ?><div class="err"><?= $escape($error) ?></div><?php endif; ?>
+    <div class="state">Reintentando automáticamente…</div>
   <?php elseif ($mode === 'media-busy'): ?>
     <h1>Nodo ocupado</h1>
     <p>Hay una tarea multimedia activa. Office esperará para no competir por CPU y memoria con FFmpeg.</p>
@@ -333,7 +345,7 @@ button{width:100%;margin-top:12px;padding:13px;border:1px solid var(--accent);bo
   <?php endif; ?>
   <p class="small">Office se ejecuta en la EC2 grande. La inactividad real de teclado, mouse o toque alimenta el apagado seguro de 10 minutos; una tarea multimedia activa bloquea el apagado.</p>
 </main></div>
-<?php if ($waiting || $mode === 'media-busy'): ?>
+<?php if ($waiting || $mode === 'media-busy' || $mode === 'office-busy'): ?>
 <script>setTimeout(() => location.replace('/'), 4000);</script>
 <?php endif; ?>
 <?php endif; ?>

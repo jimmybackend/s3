@@ -29,6 +29,8 @@ class ArcadeCloudOsShell {
     this.bindHistoryNavigation();
     this.bindFiles();
     this.bindContextActions();
+    this.bindFolderInfo();
+    this.bindSelectionActions();
     this.bindTaskContext();
     this.bindDocumentDismiss();
     this.bindTaskRefresh();
@@ -193,10 +195,14 @@ class ArcadeCloudOsShell {
       this.taskContextName.textContent = win.dataset.windowTitle || 'Ventana';
     }
 
-    const maximizeLabel = this.taskContext.querySelector('[data-task-action="maximize"] span');
-    if (maximizeLabel) {
-      maximizeLabel.textContent = win.classList.contains('is-maximized') ? 'Restaurar' : 'Maximizar';
-    }
+    const minimized = win.dataset.minimized === '1' || !win.classList.contains('is-open');
+    const minimize = this.taskContext.querySelector('[data-task-action="minimize"]');
+    const maximize = this.taskContext.querySelector('[data-task-action="maximize"]');
+    if (minimize) minimize.hidden = minimized;
+    if (maximize) maximize.hidden = !minimized;
+
+    const maximizeLabel = maximize?.querySelector('span');
+    if (maximizeLabel) maximizeLabel.textContent = 'Maximizar';
 
     this.taskContext.hidden = false;
     const rect = this.taskContext.getBoundingClientRect();
@@ -207,12 +213,19 @@ class ArcadeCloudOsShell {
   bindTaskContext() {
     if (!this.taskContext) return;
 
+    this.taskContext.querySelector('[data-task-action="minimize"]')?.addEventListener('click', () => {
+      const win = this.activeTaskWindow;
+      if (!win) return;
+      this.minimizeWindow(win);
+      this.hideTaskContext();
+    });
+
     this.taskContext.querySelector('[data-task-action="maximize"]')?.addEventListener('click', () => {
       const win = this.activeTaskWindow;
       if (!win) return;
       win.dataset.minimized = '0';
-      win.classList.add('is-open');
-      this.toggleMaximize(win);
+      win.classList.add('is-open', 'is-maximized');
+      this.activateWindow(win);
       this.hideTaskContext();
     });
 
@@ -301,6 +314,7 @@ class ArcadeCloudOsShell {
     const on = Boolean(selected);
     entry.classList.toggle('is-selected', on);
     entry.setAttribute('aria-pressed', on ? 'true' : 'false');
+    this.updateSelectionActions();
   }
 
   toggleFileSelection(entry) {
@@ -360,6 +374,11 @@ class ArcadeCloudOsShell {
     this.setContextAction('split-video', !multi && !locked && entry.dataset.video === '1');
     this.setContextAction('extract-mp3', !multi && !locked && entry.dataset.video === '1');
     this.setContextAction('split-audio', !multi && !locked && entry.dataset.audio === '1');
+
+    const hasSecurity = entry.dataset.hasSecurity === '1';
+    this.setContextAction('security-unlock', !multi && locked);
+    this.setContextAction('security-relock', !multi && !locked && hasSecurity);
+    this.setContextAction('security-lock', !multi && !locked && !hasSecurity);
 
     const copy = this.context.querySelector('[data-os-clipboard-action="copy"][data-os-clipboard-kind="file"]');
     const cut = this.context.querySelector('[data-os-clipboard-action="cut"][data-os-clipboard-kind="file"]');
@@ -430,6 +449,7 @@ class ArcadeCloudOsShell {
         this.toggleFileSelection(entry);
       });
     });
+    this.updateSelectionActions();
   }
 
   bindExplorerNavigation() {
@@ -792,6 +812,216 @@ class ArcadeCloudOsShell {
     return wrapper;
   }
 
+  bindFolderInfo() {
+    this.document.addEventListener('click', (event) => {
+      const target = event.target instanceof Element ? event.target : null;
+      if (!target) return;
+
+      const button = target.closest('[data-folder-info]');
+      if (button) {
+        event.preventDefault();
+        event.stopPropagation();
+        const live = button.closest('#osExplorerLive');
+        const panel = live?.querySelector('[data-folder-info-panel]');
+        if (!panel) return;
+        const open = panel.hidden;
+        panel.hidden = !open;
+        button.setAttribute('aria-expanded', open ? 'true' : 'false');
+        return;
+      }
+
+      const close = target.closest('[data-folder-info-close]');
+      if (close) {
+        const panel = close.closest('[data-folder-info-panel]');
+        if (panel) panel.hidden = true;
+        const live = close.closest('#osExplorerLive');
+        live?.querySelector('[data-folder-info]')?.setAttribute('aria-expanded', 'false');
+        return;
+      }
+
+      if (!target.closest('[data-folder-info-panel]')) {
+        this.document.querySelectorAll('[data-folder-info-panel]').forEach((panel) => {
+          panel.hidden = true;
+        });
+        this.document.querySelectorAll('[data-folder-info]').forEach((control) => {
+          control.setAttribute('aria-expanded', 'false');
+        });
+      }
+    });
+  }
+
+  bindSelectionActions() {
+    this.document.addEventListener('click', async (event) => {
+      const target = event.target instanceof Element ? event.target : null;
+      const button = target?.closest('[data-selection-action]');
+      if (!button) return;
+
+      event.preventDefault();
+      event.stopPropagation();
+
+      const action = String(button.dataset.selectionAction || '');
+      if (action === 'download') {
+        this.downloadSelectedFiles();
+      } else if (action === 'delete') {
+        await this.deleteSelectedFiles();
+      }
+    });
+  }
+
+  updateSelectionActions() {
+    const selected = this.selectedFileEntries();
+    const host = this.document.querySelector('#osExplorerLive [data-selection-actions]');
+    if (!host) return;
+    host.hidden = selected.length === 0;
+
+    const count = host.querySelector('[data-selection-count]');
+    if (count) count.textContent = String(selected.length);
+
+    const hasLocked = selected.some((entry) => entry.dataset.locked === '1');
+    host.querySelectorAll('button').forEach((button) => {
+      button.disabled = selected.length === 0 || hasLocked;
+    });
+  }
+
+  downloadSelectedFiles() {
+    const selected = this.selectedFileEntries();
+    if (!selected.length) return;
+    if (selected.some((entry) => entry.dataset.locked === '1')) {
+      this.notify('Desbloquea los archivos protegidos antes de descargarlos en grupo.', 'warning');
+      return;
+    }
+
+    const form = this.document.createElement('form');
+    form.method = 'POST';
+    form.action = 'download_multiple.php';
+    form.target = '_blank';
+    form.hidden = true;
+
+    selected.forEach((entry) => {
+      const key = String(entry.dataset.key || '');
+      if (!key) return;
+      const input = this.document.createElement('input');
+      input.type = 'hidden';
+      input.name = 'archivos[]';
+      input.value = key;
+      form.appendChild(input);
+    });
+
+    this.document.body.appendChild(form);
+    form.submit();
+    form.remove();
+  }
+
+  async deleteSelectedFiles() {
+    const selected = this.selectedFileEntries();
+    if (!selected.length) return;
+    if (selected.some((entry) => entry.dataset.locked === '1')) {
+      this.notify('Desbloquea los archivos protegidos antes de eliminarlos.', 'warning');
+      return;
+    }
+
+    const keys = selected.map((entry) => String(entry.dataset.key || '')).filter(Boolean);
+    if (!keys.length) return;
+    if (!this.window.confirm('¿Eliminar ' + keys.length + ' archivo(s) seleccionados?')) return;
+
+    try {
+      const response = await this.window.fetch('delete_multiple.php', {
+        method: 'POST',
+        credentials: 'same-origin',
+        cache: 'no-store',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: new URLSearchParams({ archivos_json: JSON.stringify(keys) }).toString()
+      });
+      const data = await response.json();
+      if (!response.ok || data?.ok !== true) {
+        throw new Error(data?.error || data?.mensaje || 'No se pudieron eliminar los archivos.');
+      }
+      this.notify('Archivos eliminados correctamente.', 'success');
+      const live = this.document.getElementById('osExplorerLive');
+      const route = String(live?.dataset.explorerRoute || this.window.DRIVE_INITIAL_ROUTE || '');
+      const page = Math.max(1, parseInt(String(live?.dataset.explorerPage || '1'), 10) || 1);
+      await this.refreshExplorer(route, { page, replaceHistory: true });
+    } catch (error) {
+      this.notify(error?.message || 'No se pudieron eliminar los archivos.', 'danger');
+    }
+  }
+
+  async protectFile(entry) {
+    const key = String(entry?.dataset?.key || '');
+    if (!key) return;
+
+    const password = this.window.prompt('Contraseña para proteger este archivo:');
+    if (password === null) return;
+    if (password.length < 4) {
+      this.notify('La contraseña debe tener al menos 4 caracteres.', 'warning');
+      return;
+    }
+
+    const confirm = this.window.prompt('Repite la contraseña:');
+    if (confirm === null || confirm !== password) {
+      this.notify('Las contraseñas no coinciden.', 'warning');
+      return;
+    }
+
+    const hint = this.window.prompt('Pista opcional para recordar la contraseña:', '') ?? '';
+    await this.postFileSecurity('set_file_security.php', {
+      mode: 'secure',
+      key,
+      password,
+      secure_hint: hint
+    }, 'Archivo protegido.');
+  }
+
+  async unlockFile(entry) {
+    const key = String(entry?.dataset?.key || '');
+    if (!key) return;
+    const password = this.window.prompt('Contraseña para desbloquear este archivo:');
+    if (password === null) return;
+
+    await this.postFileSecurity('unlock_file.php', {
+      key,
+      password
+    }, 'Archivo desbloqueado temporalmente.');
+  }
+
+  async relockFile(entry) {
+    const key = String(entry?.dataset?.key || '');
+    if (!key) return;
+    await this.postFileSecurity('relock_file.php', { key }, 'Archivo bloqueado de nuevo.');
+  }
+
+  async postFileSecurity(endpoint, payload, successMessage) {
+    try {
+      const response = await this.window.fetch(endpoint, {
+        method: 'POST',
+        credentials: 'same-origin',
+        cache: 'no-store',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: new URLSearchParams(payload).toString()
+      });
+      const data = await response.json();
+      if (!response.ok || data?.ok !== true) {
+        throw new Error(data?.msg || data?.error || 'No se pudo cambiar la seguridad del archivo.');
+      }
+
+      this.notify(successMessage, 'success');
+      this.hideContext();
+
+      const live = this.document.getElementById('osExplorerLive');
+      const route = String(live?.dataset.explorerRoute || this.window.DRIVE_INITIAL_ROUTE || '');
+      const page = Math.max(1, parseInt(String(live?.dataset.explorerPage || '1'), 10) || 1);
+      await this.refreshExplorer(route, { page, replaceHistory: true });
+    } catch (error) {
+      this.notify(error?.message || 'No se pudo cambiar la seguridad del archivo.', 'danger');
+    }
+  }
+
   bindContextActions() {
     this.context?.querySelectorAll('[data-file-action]').forEach((button) => {
       button.addEventListener('click', () => this.runFileAction(button.dataset.fileAction || ''));
@@ -817,6 +1047,21 @@ class ArcadeCloudOsShell {
     if (action === 'download' && entry.dataset.downloadUrl) {
       this.window.location.href = entry.dataset.downloadUrl;
       this.hideContext();
+      return;
+    }
+
+    if (action === 'security-lock') {
+      this.protectFile(entry);
+      return;
+    }
+
+    if (action === 'security-unlock') {
+      this.unlockFile(entry);
+      return;
+    }
+
+    if (action === 'security-relock') {
+      this.relockFile(entry);
       return;
     }
 

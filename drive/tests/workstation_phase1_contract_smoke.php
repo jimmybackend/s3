@@ -21,6 +21,9 @@ workstationContract(str_contains($dockerfile, 'xfce4'), 'imagen instala escritor
 workstationContract(str_contains($dockerfile, 'novnc') && str_contains($dockerfile, 'tigervnc'), 'imagen incluye noVNC y TigerVNC');
 workstationContract(str_contains($dockerfile, '--uid 10001') && str_contains($dockerfile, '--gid 10001'), 'usuario Office usa UID/GID aislado y no colisiona con UID 1000');
 workstationContract(str_contains($entry, '-localhost yes'), 'VNC sólo acepta conexiones internas del contenedor');
+workstationContract(str_contains($entry, '-SecurityTypes None'), 'VNC no solicita una segunda contraseña porque ArcadeCloud protege el acceso web');
+workstationContract(!str_contains($entry, 'VNC_PASSWORD') && !str_contains($entry, 'vncpasswd'), 'entrypoint no administra credenciales VNC');
+workstationContract(!str_contains($install, 'VNC_PASSWORD='), 'instalador no genera contraseña VNC');
 workstationContract(str_contains($install, '--publish 127.0.0.1:6080:6080'), 'noVNC sólo se publica en loopback del host');
 workstationContract(str_contains($install, '--shm-size=512m'), 'escritorio dispone de shared memory explícita');
 workstationContract(str_contains($install, '--security-opt=no-new-privileges:true'), 'contenedor impide escalamiento de privilegios');

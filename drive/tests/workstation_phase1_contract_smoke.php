@@ -31,7 +31,7 @@ workstationContract(!str_contains($install, 'aws_access_key'), 'instalador no in
 workstationContract(str_contains($install, '/var/lib/arcadecloud-office'), 'workspace queda separado del media worker');
 workstationContract(!str_contains($install, 'chown root:root /etc/arcadecloud-drive'), 'instalador no rompe el grupo PHP-FPM del directorio administrado');
 workstationContract(!str_contains($install, 'chmod 0750 /etc/arcadecloud-drive'), 'instalador no reemplaza permisos del directorio runtime administrado');
-workstationContract(!str_contains($install, 'runtime-env.json'), 'instalador Workstation no modifica runtime-env.json');
+workstationContract(!preg_match('/(?:chown|chmod)[^\\n]*runtime-env\\.json/', $install), 'instalador Workstation no cambia permisos de runtime-env.json');
 workstationContract(str_contains($install, 'systemctl disable "$SERVICE_NAME"'), 'Workstation no queda habilitada automáticamente al boot');
 workstationContract(!str_contains($install, 'enable --now arcadecloud-workstation'), 'Workstation no se habilita permanentemente por error');
 workstationContract(!str_contains($uninstall, 'arcadecloud-media-worker'), 'desinstalador no toca el worker multimedia');

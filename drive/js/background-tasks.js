@@ -21,6 +21,8 @@ class BackgroundTaskCenter {
     this.timer = null;
     this.filter = 'all';
     this.busy = new Set();
+    this.selected = new Set();
+    this.bulkBusy = false;
   }
 
   init() {
@@ -150,6 +152,24 @@ class BackgroundTaskCenter {
           color:var(--text, #222) !important;
           border:1px solid var(--border, rgba(0,0,0,.15)) !important;
         }
+        .bg-task-bulk {
+          display:flex; flex-wrap:wrap; gap:.45rem; align-items:center; padding:.55rem .75rem;
+          border-bottom:1px solid var(--border-soft, rgba(0,0,0,.08));
+          background:var(--panel-bg, transparent) !important;
+        }
+        .bg-task-select-all {
+          display:inline-flex; align-items:center; gap:.4rem; margin:0;
+          color:var(--text-soft, #666) !important; font-size:.76rem; font-weight:700;
+        }
+        .bg-task-select-all input, .bg-task-item-select input { width:16px; height:16px; }
+        .bg-task-bulk-action {
+          min-height:34px; padding:.3rem .58rem; border-radius:8px !important;
+          border:1px solid var(--border, rgba(0,0,0,.15)) !important;
+          background:var(--bg3, #fff) !important; color:var(--text, #222) !important;
+          font-size:.75rem; font-weight:700;
+        }
+        .bg-task-bulk-action.danger { border-color:rgba(220,38,38,.42) !important; color:#b91c1c !important; }
+        .bg-task-bulk-action:disabled { opacity:.48; cursor:not-allowed; }
         .bg-task-summary {
           display:flex; flex-wrap:wrap; gap:.4rem; padding:.62rem .75rem;
           border-bottom:1px solid var(--border-soft, rgba(0,0,0,.08));
@@ -173,6 +193,8 @@ class BackgroundTaskCenter {
         }
         .bg-task-item:last-child { margin-bottom:0; }
         .bg-task-row { display:flex; justify-content:space-between; align-items:flex-start; gap:.7rem; }
+        .bg-task-title-wrap { display:flex; align-items:flex-start; gap:.55rem; min-width:0; }
+        .bg-task-item-select { flex:0 0 auto; display:flex; align-items:center; padding-top:.15rem; }
         .bg-task-kind {
           color:var(--accent, #0ea5e9) !important;
           font-size:.72rem; font-weight:800; text-transform:uppercase; letter-spacing:.035em;
@@ -289,6 +311,18 @@ class BackgroundTaskCenter {
           </select>
           <button class="bg-task-refresh" type="button" data-bg-task-refresh title="Actualizar">↻</button>
         </div>
+        <div class="bg-task-bulk">
+          <label class="bg-task-select-all">
+            <input type="checkbox" data-bg-task-select-visible>
+            <span>Seleccionar visibles</span>
+          </label>
+          <button type="button" class="bg-task-bulk-action" data-bg-task-remove-selected disabled>
+            Eliminar seleccionadas
+          </button>
+          <button type="button" class="bg-task-bulk-action danger" data-bg-task-clean-terminal>
+            Limpiar terminadas/fallidas
+          </button>
+        </div>
         <div class="bg-task-summary"></div>
         <div class="bg-task-list"></div>
         <div class="bg-task-warning" style="display:none"></div>
@@ -304,9 +338,37 @@ class BackgroundTaskCenter {
         this.render();
       });
       panel.addEventListener('click', (event) => {
+        const clean = event.target.closest('[data-bg-task-clean-terminal]');
+        if (clean) {
+          this.cleanupTerminalTasks();
+          return;
+        }
+
+        const removeSelected = event.target.closest('[data-bg-task-remove-selected]');
+        if (removeSelected) {
+          this.removeSelectedTasks();
+          return;
+        }
+
         const button = event.target.closest('[data-bg-task-action]');
         if (!button) return;
         this.performAction(button);
+      });
+
+      panel.addEventListener('change', (event) => {
+        const selectVisible = event.target.closest('[data-bg-task-select-visible]');
+        if (selectVisible) {
+          this.selectVisibleTerminalTasks(Boolean(selectVisible.checked));
+          return;
+        }
+
+        const checkbox = event.target.closest('[data-bg-task-select]');
+        if (!checkbox) return;
+        const id = String(checkbox.dataset.bgTaskSelect || '');
+        if (!id) return;
+        if (checkbox.checked) this.selected.add(id);
+        else this.selected.delete(id);
+        this.renderBulkControls();
       });
 
       this.document.body.appendChild(panel);
@@ -354,6 +416,7 @@ class BackgroundTaskCenter {
       ...client,
       ...this.serverTasks
     ];
+    this.pruneSelection();
 
     const base = this.serverSummary || {
       active: 0,
@@ -409,27 +472,16 @@ class BackgroundTaskCenter {
     button.textContent = 'Procesando…';
 
     try {
-      const body = new URLSearchParams();
-      body.set('task_id', taskId);
-      body.set('task_action', action);
-      const response = await this.window.fetch(this.endpoint, {
-        method: 'POST',
-        credentials: 'same-origin',
-        cache: 'no-store',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
-          'X-Requested-With': 'XMLHttpRequest'
-        },
-        body: body.toString()
-      });
-      const text = await response.text();
-      let json = null;
-      try { json = JSON.parse(text); } catch (_) {}
-      if (!response.ok || !json || json.ok !== true) {
-        throw new Error((json && json.error) || text || `HTTP ${response.status}`);
+      const task = this.tasks.find((item) => String(item.control_id || item.id || '') === taskId || String(item.id || '') === taskId);
+      if (task && String(task.kind || '') === 'upload' && action === 'dismiss') {
+        this.dismissClientUpload(task);
+        this.mergeClientTasks();
+        this.render();
+      } else {
+        const json = await this.requestTaskAction(taskId, action);
+        this.notify(json.message || `${label} solicitada.`, 'success', 6000);
+        await this.refresh();
       }
-      this.notify(json.message || `${label} solicitada.`, 'success', 6000);
-      await this.refresh();
     } catch (error) {
       this.notify(error && error.message ? error.message : 'No se pudo ejecutar la acción.', 'danger', 8500);
     } finally {
@@ -439,6 +491,182 @@ class BackgroundTaskCenter {
         button.textContent = original;
       }
     }
+  }
+
+  async requestTaskAction(taskId, action) {
+    const body = new URLSearchParams();
+    body.set('task_id', String(taskId || ''));
+    body.set('task_action', String(action || ''));
+
+    const response = await this.window.fetch(this.endpoint, {
+      method: 'POST',
+      credentials: 'same-origin',
+      cache: 'no-store',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+        'X-Requested-With': 'XMLHttpRequest'
+      },
+      body: body.toString()
+    });
+
+    const text = await response.text();
+    let json = null;
+    try { json = JSON.parse(text); } catch (_) {}
+    if (!response.ok || !json || json.ok !== true) {
+      throw new Error((json && json.error) || text || `HTTP ${response.status}`);
+    }
+    return json;
+  }
+
+  isTerminalTask(task) {
+    return ['completed', 'failed', 'cancelled'].includes(this.normalizeStatus(task && task.status));
+  }
+
+  removalAction(task) {
+    if (!task || !this.isTerminalTask(task)) return null;
+
+    if (String(task.kind || '') === 'upload') {
+      return {
+        controlId: String(task.id || ''),
+        action: 'dismiss'
+      };
+    }
+
+    const actions = Array.isArray(task.actions) ? task.actions : [];
+    const action = actions.find((item) => ['delete', 'dismiss'].includes(String(item && item.id || '')));
+    if (!action) return null;
+
+    return {
+      controlId: String(task.control_id || task.id || ''),
+      action: String(action.id || '')
+    };
+  }
+
+  pruneSelection() {
+    const removable = new Set(
+      this.tasks
+        .filter((task) => this.removalAction(task))
+        .map((task) => String(task.id || ''))
+    );
+    Array.from(this.selected).forEach((id) => {
+      if (!removable.has(id)) this.selected.delete(id);
+    });
+  }
+
+  selectedTasks() {
+    return this.tasks.filter((task) => this.selected.has(String(task.id || '')) && this.removalAction(task));
+  }
+
+  visibleRemovableTasks() {
+    return this.tasks.filter((task) => this.matchesFilter(task) && this.removalAction(task));
+  }
+
+  selectVisibleTerminalTasks(selected) {
+    this.visibleRemovableTasks().forEach((task) => {
+      const id = String(task.id || '');
+      if (!id) return;
+      if (selected) this.selected.add(id);
+      else this.selected.delete(id);
+    });
+    this.render();
+  }
+
+  renderBulkControls() {
+    const panel = this.document.getElementById('backgroundTaskPanel');
+    if (!panel) return;
+
+    const selectedTasks = this.selectedTasks();
+    const removeButton = panel.querySelector('[data-bg-task-remove-selected]');
+    if (removeButton) {
+      removeButton.disabled = this.bulkBusy || selectedTasks.length === 0;
+      removeButton.textContent = selectedTasks.length
+        ? `Eliminar seleccionadas (${selectedTasks.length})`
+        : 'Eliminar seleccionadas';
+    }
+
+    const cleanButton = panel.querySelector('[data-bg-task-clean-terminal]');
+    if (cleanButton) {
+      cleanButton.disabled = this.bulkBusy || !this.tasks.some((task) => this.removalAction(task));
+      cleanButton.textContent = this.bulkBusy ? 'Limpiando…' : 'Limpiar terminadas/fallidas';
+    }
+
+    const visible = this.visibleRemovableTasks();
+    const selectVisible = panel.querySelector('[data-bg-task-select-visible]');
+    if (selectVisible) {
+      const selectedVisible = visible.filter((task) => this.selected.has(String(task.id || ''))).length;
+      selectVisible.checked = visible.length > 0 && selectedVisible === visible.length;
+      selectVisible.indeterminate = selectedVisible > 0 && selectedVisible < visible.length;
+      selectVisible.disabled = visible.length === 0 || this.bulkBusy;
+    }
+  }
+
+  async removeSelectedTasks() {
+    const tasks = this.selectedTasks();
+    if (!tasks.length || this.bulkBusy) return;
+    if (!this.window.confirm(`¿Eliminar ${tasks.length} tarea(s) seleccionada(s) de la lista?`)) return;
+    await this.bulkRemoveTasks(tasks);
+  }
+
+  async cleanupTerminalTasks() {
+    if (this.bulkBusy) return;
+    const tasks = this.tasks.filter((task) => this.removalAction(task));
+    if (!tasks.length) {
+      this.notify('No hay tareas terminadas o fallidas para limpiar.', 'info', 4500);
+      return;
+    }
+    if (!this.window.confirm(`¿Limpiar ${tasks.length} tarea(s) terminada(s), fallida(s) o cancelada(s)?`)) return;
+    await this.bulkRemoveTasks(tasks);
+  }
+
+  async bulkRemoveTasks(tasks) {
+    this.bulkBusy = true;
+    this.renderBulkControls();
+
+    let removed = 0;
+    let failed = 0;
+    const pending = Array.from(tasks);
+
+    for (let offset = 0; offset < pending.length; offset += 5) {
+      const batch = pending.slice(offset, offset + 5);
+      const results = await Promise.allSettled(batch.map(async (task) => {
+        const removal = this.removalAction(task);
+        if (!removal) throw new Error('La tarea ya no se puede eliminar.');
+
+        if (String(task.kind || '') === 'upload') {
+          if (!this.dismissClientUpload(task)) throw new Error('No se pudo quitar la subida del centro.');
+          return;
+        }
+
+        await this.requestTaskAction(removal.controlId, removal.action);
+      }));
+
+      results.forEach((result) => {
+        if (result.status === 'fulfilled') removed += 1;
+        else failed += 1;
+      });
+    }
+
+    tasks.forEach((task) => this.selected.delete(String(task.id || '')));
+    this.bulkBusy = false;
+
+    try {
+      await this.refresh();
+    } catch (_) {
+      this.mergeClientTasks();
+      this.render();
+    }
+
+    if (failed > 0) {
+      this.notify(`Se eliminaron ${removed} tarea(s); ${failed} no pudieron eliminarse.`, 'warning', 8500);
+    } else {
+      this.notify(`Se limpiaron ${removed} tarea(s).`, 'success', 6000);
+    }
+  }
+
+  dismissClientUpload(task) {
+    const manager = this.window.ArcadeCloudUploadManager;
+    if (!manager || typeof manager.dismissTask !== 'function') return false;
+    return manager.dismissTask(String(task && task.id || ''));
   }
 
   notifyTransitions(previous) {
@@ -583,6 +811,8 @@ class BackgroundTaskCenter {
         warning.textContent = '';
       }
     }
+
+    this.renderBulkControls();
   }
 
   matchesFilter(task) {
@@ -641,14 +871,23 @@ class BackgroundTaskCenter {
     const actionHtml = actions.length
       ? `<div class="bg-task-actions">${actions.map((action) => this.actionHtml(task, action)).join('')}</div>`
       : '';
+    const selectable = Boolean(this.removalAction(task));
+    const taskId = String(task.id || '');
+    const checked = selectable && this.selected.has(taskId) ? ' checked' : '';
+    const selectorHtml = selectable
+      ? `<label class="bg-task-item-select" title="Seleccionar para limpiar"><input type="checkbox" data-bg-task-select="${this.escapeHtml(taskId)}"${checked}></label>`
+      : '';
 
     return `
       <article class="bg-task-item">
         <div class="bg-task-row">
-          <div>
-            <div class="bg-task-kind">${this.escapeHtml(task.category || task.kind || 'Tarea')}</div>
-            <div class="bg-task-title">${this.escapeHtml(task.title || 'Tarea')}</div>
-            <div class="bg-task-service">${this.escapeHtml(task.service || '')}${task.provider ? ' · ' + this.escapeHtml(task.provider) : ''}</div>
+          <div class="bg-task-title-wrap">
+            ${selectorHtml}
+            <div>
+              <div class="bg-task-kind">${this.escapeHtml(task.category || task.kind || 'Tarea')}</div>
+              <div class="bg-task-title">${this.escapeHtml(task.title || 'Tarea')}</div>
+              <div class="bg-task-service">${this.escapeHtml(task.service || '')}${task.provider ? ' · ' + this.escapeHtml(task.provider) : ''}</div>
+            </div>
           </div>
           <span class="bg-task-badge bg-task-${status}">${this.escapeHtml(label)}</span>
         </div>

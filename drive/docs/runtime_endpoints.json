@@ -63,6 +63,9 @@
       "active": true,
       "references": [
         "drive/s3.php",
+        "drive/so.php",
+        "drive/tests/web_os_contract_smoke.php",
+        "drive/js/so-screenshot-paste.js",
         "drive/js/soportesMediaTypes.js",
         "drive/js/subir-chunked.js",
         "drive/js/subir-dropzone.js",
@@ -952,16 +955,19 @@
         "drive/index.php",
         "drive/personal_aws_bootstrap.php",
         "drive/s3.php",
+        "drive/so.php",
         "drive/src/Federation/FederationDropService.php",
         "drive/tests/federation_moderation_contract_smoke.php",
         "drive/tests/federationcloud_smoke.php",
         "drive/tests/fresh_install_contract_smoke.php",
         "drive/tests/media_processing_contract_smoke.php",
         "drive/tests/setup_entry_guard_smoke.php",
+        "drive/tests/web_os_contract_smoke.php",
         "drive/upload/drivers/Chunked15MBUploader.php",
         "drive/upload/drivers/DropboxUploader.php",
         "drive/upload/drivers/LocalPresignedPutUploader.php",
         "drive/upload/drivers/RemoteUrlUploader.php",
+        "drive/js/so-screenshot-paste.js",
         "drive/js/soportesMediaTypes.js",
         "drive/js/subir-chunked.js",
         "drive/js/subir-dropzone.js",
@@ -1348,7 +1354,7 @@
     },
     {
       "path": "drive/so.php",
-      "size": 77432,
+      "size": 77590,
       "active": true,
       "references": [
         "drive/s3.php",
@@ -3555,13 +3561,13 @@
     },
     {
       "path": "drive/tests/web_os_clipboard_contract_smoke.php",
-      "size": 4303,
+      "size": 5731,
       "active": false,
       "references": []
     },
     {
       "path": "drive/tests/web_os_contract_smoke.php",
-      "size": 22476,
+      "size": 22709,
       "active": false,
       "references": []
     },
@@ -3767,6 +3773,9 @@
       "active": true,
       "references": [
         "drive/s3.php",
+        "drive/so.php",
+        "drive/tests/web_os_contract_smoke.php",
+        "drive/js/so-screenshot-paste.js",
         "drive/js/soportesMediaTypes.js",
         "drive/js/subir-chunked.js",
         "drive/js/subir-dropzone.js",

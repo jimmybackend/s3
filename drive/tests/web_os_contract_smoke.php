@@ -253,9 +253,9 @@ webOsContract(str_contains($paths['js'], "'delete_multiple.php'"), 'eliminación
 webOsContract(str_contains($paths['shell'], 'data-file-action="security-lock"'), 'menú de archivo permite bloquear con contraseña');
 webOsContract(str_contains($paths['shell'], 'data-file-action="security-unlock"'), 'menú de archivo permite desbloquear');
 webOsContract(str_contains($paths['shell'], 'data-file-action="security-relock"'), 'menú de archivo permite volver a bloquear');
-webOsContract(str_contains($paths['js'], "'set_file_security.php'"), 'bloqueo reutiliza FileSecurityController');
-webOsContract(str_contains($paths['js'], "'unlock_file.php'"), 'desbloqueo reutiliza FileSecurityController');
-webOsContract(str_contains($paths['js'], "'relock_file.php'"), 'rebloqueo reutiliza FileSecurityController');
+webOsContract(str_contains($paths['security_js'], "'set_file_security.php'"), 'bloqueo reutiliza FileSecurityController');
+webOsContract(str_contains($paths['security_js'], "'unlock_file.php'"), 'desbloqueo reutiliza FileSecurityController');
+webOsContract(str_contains($paths['security_js'], "'relock_file.php'"), 'rebloqueo reutiliza FileSecurityController');
 
 // Mi nodo en vivo, mantenimiento seguro y compartir completo.
 webOsContract(str_contains($paths['shell'], 'js/so-node.js'), 'Web OS carga monitor de nodo en vivo');

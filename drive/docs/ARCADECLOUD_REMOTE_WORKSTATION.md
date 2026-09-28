@@ -387,3 +387,12 @@ Tablas obligatorias:
 `OfficeSchemaMigrationService` comprueba y crea las tablas faltantes usando únicamente esa sección del SQL canónico. El updater web muestra el estado **ArcadeCloud Office DB** y reconcilia tablas faltantes con la conexión MySQL activa. `office-launch.php` también ejecuta una comprobación idempotente antes de emitir el token, para impedir que una instalación parcialmente actualizada avance hacia Office con un esquema incompleto.
 
 Una base nueva recibe las tres tablas al importar el SQL canónico completo.
+
+
+### Archivo catalogado pero ausente en S3
+
+Si `FileS3` conserva `Found=1` pero la key física ya no existe, Office no abre un Writer vacío. La sesión documental pasa a `failed` y el gateway muestra **Documento no preparado** con una instrucción de sincronizar desde S3 la carpeta real del archivo.
+
+Este caso suele indicar que MySQL y S3 quedaron desalineados después de mover/copiar objetos fuera del flujo normal o antes de completar una sincronización. La reparación correcta es usar la sincronización S3 existente de ArcadeCloud; Office no recorre ni adivina keys del bucket.
+
+Las sesiones documentales `failed` se consideran cerradas para limpieza y pueden purgarse después del periodo de retención local.

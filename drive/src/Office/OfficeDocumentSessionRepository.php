@@ -180,6 +180,19 @@ final class OfficeDocumentSessionRepository
         $stmt->close();
     }
 
+    public function markFailed(string $sessionId): void
+    {
+        $stmt = $this->db->prepare(
+            "UPDATE OfficeDocumentSessions SET Status='failed',ClosedAt=UTC_TIMESTAMP(),UpdatedAt=UTC_TIMESTAMP() WHERE SessionId=?"
+        );
+        if (!$stmt) {
+            return;
+        }
+        $stmt->bind_param('s', $sessionId);
+        $stmt->execute();
+        $stmt->close();
+    }
+
     public function markClosed(string $sessionId): void
     {
         $stmt = $this->db->prepare(
@@ -215,7 +228,7 @@ final class OfficeDocumentSessionRepository
     public function deleteClosed(string $sessionId): void
     {
         $stmt = $this->db->prepare(
-            "DELETE FROM OfficeDocumentSessions WHERE SessionId=? AND Status='closed'"
+            "DELETE FROM OfficeDocumentSessions WHERE SessionId=? AND Status IN ('closed','failed')"
         );
         if (!$stmt) return;
         $stmt->bind_param('s', $sessionId);

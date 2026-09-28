@@ -38,24 +38,30 @@ final class NodeStatusController extends AbstractJsonController
             }
 
             $action = $this->request->postString('action');
-            if ($action !== 'memory-clear') {
+            if (!in_array($action, ['memory-clear', 'disk-clean'], true)) {
                 throw new RuntimeException('Acción de nodo no permitida.');
             }
 
-            $result = (new ServerMaintenanceService(
+            $maintenance = new ServerMaintenanceService(
                 $this->app,
                 new ServerMaintenanceJobStore(),
                 new PrivilegedServerHelper()
-            ))->queueMemoryClear(
-                $userId,
-                $this->request->postRawString('access_password')
             );
+            $password = $this->request->postRawString('access_password');
+            $result = $action === 'disk-clean'
+                ? $maintenance->queueDiskCleanup($userId, $password)
+                : $maintenance->queueMemoryClear($userId, $password);
 
+            $waiting = (int)($result['blocking']['active'] ?? 0) > 0;
             JsonResponse::send([
                 'ok' => true,
-                'message' => ((int)($result['blocking']['active'] ?? 0) > 0)
-                    ? 'La limpieza quedó en Tareas y esperará a que terminen los procesos activos.'
-                    : 'La limpieza de memoria quedó programada.',
+                'message' => $action === 'disk-clean'
+                    ? ($waiting
+                        ? 'La limpieza de disco quedó en Tareas y esperará a que terminen los procesos activos.'
+                        : 'La limpieza segura de disco quedó programada.')
+                    : ($waiting
+                        ? 'La limpieza quedó en Tareas y esperará a que terminen los procesos activos.'
+                        : 'La limpieza de memoria quedó programada.'),
                 'maintenance' => $result,
                 'node' => $this->snapshot(),
             ], 202);

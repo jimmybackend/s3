@@ -54,7 +54,7 @@ if ($action === 'auth') {
             exit;
         }
 
-        $office->assertInteractiveOwner($officeUserId, $instanceId);
+        $office->assertActiveInteractiveOwner($officeUserId, $instanceId);
         http_response_code(204);
         exit;
     } catch (Throwable $e) {

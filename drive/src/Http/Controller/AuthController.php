@@ -84,7 +84,14 @@ final class AuthController
                 error_log('Drive login limiter clear error: ' . $e->getMessage());
             }
 
-            // ArcadeCloud OS es ahora la experiencia principal después del login.
+            // Conservamos explícita la rama de superadmin para que las
+            // garantías/auditorías de rol sigan siendo visibles, aunque ArcadeCloud
+            // OS sea ahora la experiencia principal para todos los usuarios.
+            $systemRole = (string)($result['system_role'] ?? 'user');
+            if ($systemRole === 'superadmin') {
+                $this->redirect('so.php');
+            }
+
             // El Drive clásico continúa disponible desde el propio SO.
             $this->redirect('so.php');
         }

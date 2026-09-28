@@ -72,6 +72,7 @@ jobs:
           php -l drive/src/Office/OfficeGatewayService.php
           php -l drive/src/Office/OfficeDocumentSessionRepository.php
           php -l drive/src/Office/OfficeDocumentStorageService.php
+          php -l drive/src/Office/OfficeSchemaMigrationService.php
           php -l drive/src/Office/OfficeSessionLeaseRepository.php
           php -l drive/src/Office/OfficeWorkstationClient.php
           php -l drive/src/Admin/PrivilegedServerHelper.php

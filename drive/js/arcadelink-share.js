@@ -29,14 +29,10 @@ class ArcadeLinkShareModule {
 
       if (shareButton) {
         const row = shareButton.closest('.file-row');
-        this.bulkKeys = [];
-        this.context = {
-          key: String(shareButton.dataset.key || '').trim(),
-          name: String((row && row.dataset.nombre) || '').trim()
-        };
-        this.ensurePanel();
-        this.updateContextLabel();
-        this.updateDownloadButton();
+        this.prepareSingle(
+          String(shareButton.dataset.key || '').trim(),
+          String((row && row.dataset.nombre) || '').trim()
+        );
         return;
       }
 
@@ -94,6 +90,19 @@ class ArcadeLinkShareModule {
     const gallery = actions.querySelector('#btnVerGaleria');
     if (gallery) actions.insertBefore(button, gallery);
     else actions.appendChild(button);
+  }
+
+  prepareSingle(key, name = '') {
+    this.bulkKeys = [];
+    this.context = {
+      key: String(key || '').trim(),
+      name: String(name || '').trim()
+    };
+    this.ensurePanel();
+    this.updateContextLabel();
+    this.updateDiscoveryHelp();
+    this.updateDownloadButton();
+    return this;
   }
 
   selectedKeys() {

@@ -43,6 +43,14 @@ final class BackgroundWorkerLauncher
         $this->launch('move_job_worker.php', [$jobId]);
     }
 
+    public function launchMaintenance(string $jobId): void
+    {
+        if (!preg_match('/^[a-f0-9]{32}$/', $jobId)) {
+            throw new RuntimeException('Tarea de mantenimiento inválida.');
+        }
+        $this->launch('server_maintenance_worker.php', [$jobId]);
+    }
+
     public function launchReconcile(string $kind): void
     {
         $script = match (strtolower(trim($kind))) {

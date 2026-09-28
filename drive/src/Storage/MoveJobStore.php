@@ -210,6 +210,26 @@ final class MoveJobStore
         return array_slice($rows, 0, $limit);
     }
 
+    public function hasActiveJobs(): bool
+    {
+        foreach (glob($this->directory . '/*.json') ?: [] as $path) {
+            $id = basename($path, '.json');
+            if (!preg_match('/^[a-f0-9]{32}$/', $id)) {
+                continue;
+            }
+            try {
+                $job = $this->reconcileStaleJob($this->get($id));
+            } catch (\Throwable) {
+                continue;
+            }
+            $status = strtolower((string)($job['status'] ?? ''));
+            if (in_array($status, ['queued', 'pending', 'running', 'cancel_requested'], true)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private function reconcileStaleJob(array $job): array
     {
         $status = strtolower((string)($job['status'] ?? ''));

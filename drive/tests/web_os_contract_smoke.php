@@ -27,6 +27,7 @@ $paths = [
     'moderation_renderer' => $root . '/src/View/FederationModerationPageRenderer.php',
     'server_admin_js' => $root . '/js/server-admin.js',
     'background_tasks' => $root . '/js/background-tasks.js',
+    'background_controller' => $root . '/src/Http/Controller/BackgroundTaskController.php',
     'upload_center' => $root . '/js/upload-center.js',
     'updater_js' => $root . '/js/arcadecloud-updater.js',
     'update_controller' => $root . '/src/Http/Controller/ArcadeCloudUpdateController.php',
@@ -34,6 +35,17 @@ $paths = [
     'compute_idle_css' => $root . '/css/compute-node-idle.css',
     'media_node' => $root . '/src/Media/MediaWorkerNodeService.php',
     'media_controller' => $root . '/src/Http/Controller/MediaProcessingController.php',
+    'node_js' => $root . '/js/so-node.js',
+    'share_js' => $root . '/js/so-share.js',
+    'arcadelink_share' => $root . '/js/arcadelink-share.js',
+    'node_controller' => $root . '/src/Http/Controller/NodeStatusController.php',
+    'maintenance_service' => $root . '/src/Admin/ServerMaintenanceService.php',
+    'maintenance_store' => $root . '/src/Admin/ServerMaintenanceJobStore.php',
+    'maintenance_probe' => $root . '/src/Admin/ServerTaskActivityProbe.php',
+    'maintenance_worker' => $root . '/src/Console/ServerMaintenanceWorkerCommand.php',
+    'worker_launcher' => $root . '/src/Application/BackgroundWorkerLauncher.php',
+    'sync_store' => $root . '/src/Sync/SyncJobStore.php',
+    'move_store' => $root . '/src/Storage/MoveJobStore.php',
 ];
 
 foreach ($paths as $name => $path) {
@@ -141,6 +153,8 @@ webOsContract(str_contains($paths['js'], "maximize.hidden = !minimized"), 'tres 
 webOsContract(str_contains($paths['js'], 'showTaskContext('), 'barra de tareas abre menú de ventana');
 webOsContract(str_contains($paths['js'], "ext === 'pdf' ? 'min(820px, 72vw)'"), 'PDF abre con tamaño inicial más compacto');
 webOsContract(str_contains($paths['css'], 'flex:0 0 auto'), 'controles de ventana no se encogen fuera de vista');
+webOsContract(str_contains($paths['shell'], 'data-os-reload'), 'engranaje ofrece recargar ArcadeCloud OS');
+webOsContract(str_contains($paths['js'], 'this.window.location.reload()'), 'Actualizar ArcadeCloud OS hace recarga completa');
 webOsContract(str_contains($paths['shell'], 'data-os-about'), 'engranaje muestra Acerca de / Actualizar');
 webOsContract(str_contains($paths['shell'], 'id="modalAcercaArcadeCloud"'), 'Web OS incluye diálogo Acerca de');
 webOsContract(str_contains($paths['shell'], 'js/arcadecloud-updater.js'), 'Acerca de del Web OS reutiliza actualizador existente');
@@ -189,6 +203,8 @@ webOsContract(str_contains($paths['shell'], 'id="osExplorerLive"'), 'Mis datos t
 webOsContract(str_contains($paths['shell'], "window.UPLOAD_API = 'api/upload.php'"), 'Web OS expone API OOP de subida');
 webOsContract(str_contains($paths['shell'], 'class="os-explorer-pathrow"'), 'ruta de carpeta vive arriba de los controles');
 webOsContract(str_contains($paths['shell'], 'data-current-folder-action="sync"'), 'barra compacta permite sincronizar la carpeta actual');
+webOsContract(!str_contains($paths['shell'], 'title="Actualizar carpeta"'), 'Mis datos ya no duplica refresco y sincronización');
+webOsContract(str_contains($paths['shell'], 'fa-cloud-arrow-down'), 'sincronización usa icono de nube inequívoco');
 webOsContract(str_contains($paths['shell'], 'data-drive-upload-center'), 'Web OS ofrece Subir dentro de la carpeta');
 webOsContract(str_contains($paths['shell'], 'data-folder-info'), 'barra compacta ofrece información de carpeta');
 webOsContract(str_contains($paths['shell'], 'data-selection-action="download"'), 'selección múltiple ofrece descarga');
@@ -230,6 +246,34 @@ webOsContract(str_contains($paths['shell'], 'data-file-action="security-relock"'
 webOsContract(str_contains($paths['js'], "'set_file_security.php'"), 'bloqueo reutiliza FileSecurityController');
 webOsContract(str_contains($paths['js'], "'unlock_file.php'"), 'desbloqueo reutiliza FileSecurityController');
 webOsContract(str_contains($paths['js'], "'relock_file.php'"), 'rebloqueo reutiliza FileSecurityController');
+
+// Mi nodo en vivo, mantenimiento seguro y compartir completo.
+webOsContract(str_contains($paths['shell'], 'js/so-node.js'), 'Web OS carga monitor de nodo en vivo');
+webOsContract(str_contains($paths['shell'], 'node-status.php'), 'Mi nodo usa endpoint dedicado de estado');
+webOsContract(str_contains($paths['shell'], 'data-node-field="memory_available"'), 'RAM disponible se actualiza en vivo');
+webOsContract(str_contains($paths['shell'], 'data-node-memory-clear'), 'superadmin dispone de escobilla de memoria');
+webOsContract(str_contains($paths['node_js'], 'ArcadeCloudOsNodeMonitor'), 'monitor de nodo tiene módulo propio');
+webOsContract(str_contains($paths['node_js'], "data-window-open=\"nodeWindow\""), 'abrir Mi nodo consulta estado actual');
+webOsContract(str_contains($paths['node_js'], "action: 'memory-clear'"), 'escobilla programa mantenimiento seguro');
+webOsContract(str_contains($paths['node_controller'], 'NodeCapabilityService'), 'endpoint vuelve a medir capacidad real');
+webOsContract(str_contains($paths['node_controller'], 'isSuperAdmin()'), 'mantenimiento del nodo exige superadmin');
+webOsContract(str_contains($paths['node_controller'], 'HTTP_X_SERVER_ADMIN_CSRF'), 'mantenimiento conserva CSRF de administración');
+webOsContract(str_contains($paths['maintenance_service'], "runServerConsole('memory-clear')"), 'mantenimiento reutiliza comando privilegiado existente');
+webOsContract(str_contains($paths['maintenance_service'], 'ServerTaskActivityProbe'), 'limpieza espera a las tareas activas');
+webOsContract(str_contains($paths['maintenance_probe'], 'hasActiveJobs()'), 'sonda revisa colas persistentes antes de limpiar');
+webOsContract(str_contains($paths['sync_store'], 'public function hasActiveJobs()'), 'sincronización expone estado activo a mantenimiento');
+webOsContract(str_contains($paths['move_store'], 'public function hasActiveJobs()'), 'movimientos exponen estado activo a mantenimiento');
+webOsContract(str_contains($paths['maintenance_store'], "'status' => 'waiting'"), 'limpieza puede quedar esperando en cola');
+webOsContract(str_contains($paths['background_controller'], 'maintenance:'), 'Centro de Tareas integra mantenimiento del servidor');
+webOsContract(str_contains($paths['worker_launcher'], 'launchMaintenance'), 'limpieza se ejecuta en worker desacoplado del navegador');
+webOsContract(str_contains($paths['maintenance_worker'], 'ServerMaintenanceService'), 'worker de mantenimiento reutiliza el servicio OOP');
+
+webOsContract(str_contains($paths['shell'], 'id="modalCompartir"'), 'Web OS incluye panel de compartir propio');
+webOsContract(str_contains($paths['shell'], 'js/arcadelink-share.js'), 'Web OS reutiliza opciones FederationCloud del Drive clásico');
+webOsContract(str_contains($paths['shell'], 'js/so-share.js'), 'Web OS carga controlador de compartir sin prompts');
+webOsContract(str_contains($paths['share_js'], "generar_token.php"), 'panel genera enlace directo con vigencia');
+webOsContract(str_contains($paths['arcadelink_share'], 'prepareSingle('), 'ArcadeLink expone contexto reutilizable para el SO');
+webOsContract(str_contains($paths['arcadelink_share'], 'federationcloud/create.php'), 'panel conserva publicación FederationCloud');
 
 // Autoapagado del nodo grande por inactividad.
 webOsContract(str_contains($paths['drive'], 'js/compute-node-idle.js'), 'Drive clásico vigila inactividad del nodo grande');

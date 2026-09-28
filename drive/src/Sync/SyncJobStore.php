@@ -151,6 +151,25 @@ final class SyncJobStore
         return array_slice($rows, 0, $limit);
     }
 
+    public function hasActiveJobs(): bool
+    {
+        foreach (glob($this->dir . '/*.json') ?: [] as $file) {
+            $raw = @file_get_contents($file);
+            if (!is_string($raw) || $raw === '') {
+                continue;
+            }
+            $job = json_decode($raw, true);
+            if (!is_array($job)) {
+                continue;
+            }
+            $state = strtolower((string)($job['state'] ?? ''));
+            if (in_array($state, ['queued', 'pending', 'running', 'cancel_requested'], true)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public function lockPath(int $userId): string
     {
         return $this->dir . '/user-' . $userId . '.lock';

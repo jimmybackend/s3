@@ -77,6 +77,9 @@ class ArcadeCloudOsShell {
     win.classList.add('is-open');
     win.hidden = false;
     this.activateWindow(win);
+    if (id === 'nodeWindow') {
+      this.window.ArcadeCloudOsNodeMonitor?.refresh?.();
+    }
     this.closeLauncher();
   }
 
@@ -149,6 +152,9 @@ class ArcadeCloudOsShell {
         win.dataset.minimized = '0';
         win.classList.add('is-open');
         this.activateWindow(win);
+        if (win.id === 'nodeWindow') {
+          this.window.ArcadeCloudOsNodeMonitor?.refresh?.();
+        }
       });
 
       button.addEventListener('contextmenu', (event) => {
@@ -286,6 +292,12 @@ class ArcadeCloudOsShell {
       this.launcher.hidden = !shouldOpen;
       this.startButton.classList.toggle('is-open', shouldOpen);
       this.startButton.setAttribute('aria-expanded', shouldOpen ? 'true' : 'false');
+    });
+
+    this.launcher.querySelector('[data-os-reload]')?.addEventListener('click', (event) => {
+      event.preventDefault();
+      this.closeLauncher();
+      this.window.location.reload();
     });
 
     this.launcher.querySelector('[data-os-about]')?.addEventListener('click', () => {

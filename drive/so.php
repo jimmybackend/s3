@@ -130,6 +130,15 @@ if ($isSuperAdmin && !preg_match('/\A[a-f0-9]{32,128}\z/', $serverConsoleCsrf)) 
     $session->set('csrf', $serverConsoleCsrf);
 }
 
+$serverAdminCsrf = '';
+if ($isSuperAdmin) {
+    $serverAdminCsrf = (string)$session->get('server_admin_csrf', '');
+    if (!preg_match('/\A[a-f0-9]{64}\z/', $serverAdminCsrf)) {
+        $serverAdminCsrf = bin2hex(random_bytes(32));
+        $session->set('server_admin_csrf', $serverAdminCsrf);
+    }
+}
+
 $textExtensions = ['txt','md','markdown','html','htm','css','js','json','csv','sql','php','py','srt','vtt','log','xml','yaml','yml'];
 $imageExtensions = ['jpg','jpeg','png','gif','webp','bmp','avif','tif','tiff'];
 $audioExtensions = ['mp3','wav','ogg','opus','m4a','aac','flac'];
@@ -581,7 +590,7 @@ Escribe help o usa uno de los botones disponibles.</pre>
 
   <div class="os-file-context" id="fileContextMenu" hidden>
     <div class="os-context-name" id="fileContextName">Archivo</div>
-    <button type="button" data-file-action="open"><i class="fas fa-eye"></i>Abrir en ventana</button>
+    <button type="button" data-file-action="open"><i class="fas fa-eye"></i><span>Abrir en ventana</span></button>
     <button type="button" data-file-action="edit"><i class="fas fa-pen"></i>Editar texto</button>
     <button type="button" data-file-action="download"><i class="fas fa-download"></i>Descargar</button>
     <div class="os-context-divider" data-service-divider></div>
@@ -1407,6 +1416,35 @@ Escribe help o usa uno de los botones disponibles.</pre>
 
   </div>
 
+  <div class="modal fade" id="modalAcercaArcadeCloud" tabindex="-1" role="dialog" aria-labelledby="modalAcercaArcadeCloudLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <div>
+            <h5 class="modal-title" id="modalAcercaArcadeCloudLabel"><i class="fas fa-cloud mr-2"></i>ArcadeCloud Drive</h5>
+            <small class="text-muted">Drive web para Amazon S3</small>
+          </div>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar"><span aria-hidden="true">&times;</span></button>
+        </div>
+        <div class="modal-body">
+          <p><strong>ArcadeCloud Drive</strong> mantiene la navegación y organización lógica en MySQL mientras Amazon S3 conserva el almacenamiento físico de los archivos.</p>
+          <div class="alert alert-info">
+            <strong>Software libre.</strong> ArcadeCloud Drive se distribuye bajo GNU General Public License v3.0 (GPLv3).
+          </div>
+          <div class="mb-3">
+            <div><strong>Proyecto / autor:</strong> jimmybackend</div>
+            <div><strong>Repositorio:</strong> github.com/jimmybackend/s3</div>
+            <div><strong>Licencia:</strong> GNU GPL v3.0</div>
+          </div>
+          <small class="d-block text-muted mt-3">La sección de actualización sólo se muestra a superusuarios y reutiliza el actualizador seguro del Drive clásico.</small>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="os-launcher" id="osLauncher" hidden>
     <div class="os-launcher-header">
       <div class="os-launcher-profile">
@@ -1425,6 +1463,7 @@ Escribe help o usa uno de los botones disponibles.</pre>
     <button type="button" data-window-open="explorerWindow"><i class="fas fa-folder-open"></i> Mis datos</button>
     <button type="button" data-window-open="appsWindow"><i class="fas fa-shapes"></i> Aplicaciones</button>
     <a href="s3.php"><i class="fas fa-hard-drive"></i> Drive clásico</a>
+    <button type="button" data-os-about data-toggle="modal" data-target="#modalAcercaArcadeCloud"><i class="fas fa-circle-info"></i> Acerca de / Actualizar</button>
     <a href="logout.php" class="is-danger"><i class="fas fa-right-from-bracket"></i> Cerrar sesión</a>
   </div>
 
@@ -1459,6 +1498,9 @@ Escribe help o usa uno de los botones disponibles.</pre>
       endpoint: 'server-console.php',
       csrf: <?= json_encode($serverConsoleCsrf, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>
     };
+    window.ARCADECLOUD_UPDATER = {
+      csrf: <?= json_encode($serverAdminCsrf, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>
+    };
     <?php endif; ?>
   </script>
   <script src="js/polly.js?v=<?= (int)filemtime(__DIR__ . '/js/polly.js') ?>"></script>
@@ -1479,6 +1521,7 @@ Escribe help o usa uno de los botones disponibles.</pre>
   <?php endif; ?>
   <script src="js/upload-destination.js?v=<?= (int)filemtime(__DIR__ . '/js/upload-destination.js') ?>"></script>
   <script src="js/upload-center.js?v=<?= (int)filemtime(__DIR__ . '/js/upload-center.js') ?>"></script>
+  <script data-drive-updater src="js/arcadecloud-updater.js?v=<?= (int)filemtime(__DIR__ . '/js/arcadecloud-updater.js') ?>"></script>
   <script src="js/so.js?v=<?= (int)filemtime(__DIR__ . '/js/so.js') ?>"></script>
 </body>
 </html>

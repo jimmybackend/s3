@@ -1937,6 +1937,7 @@ if ($session->isSuperAdmin()) {
 
 <script src="js/move-tasks.js?v=<?= (int) filemtime(__DIR__ . '/js/move-tasks.js') ?>"></script>
 <script src="js/carpetas.js?v=<?= (int) filemtime(__DIR__ . '/js/carpetas.js') ?>"></script>
+<script src="js/file-security.js?v=<?= (int) filemtime(__DIR__ . '/js/file-security.js') ?>"></script>
 <script src="js/archivos.js?v=<?= (int) filemtime(__DIR__ . '/js/archivos.js') ?>"></script>
 <script src="js/file-block.js?v=<?= (int) filemtime(__DIR__ . '/js/file-block.js') ?>"></script>
 

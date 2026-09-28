@@ -67,6 +67,7 @@ jobs:
           php -l drive/office-gateway.php
           php -l drive/workstation-control.php
           php -l drive/workstation-document.php
+          php -l drive/src/Http/Controller/OfficeDocumentController.php
           php -l drive/src/Office/OfficeLaunchTokenRepository.php
           php -l drive/src/Office/OfficeGatewayService.php
           php -l drive/src/Office/OfficeDocumentSessionRepository.php

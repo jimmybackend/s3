@@ -263,7 +263,24 @@ final class OfficeDocumentStorageService
             throw $e;
         }
 
-        $this->sessions->markConflict((string)$session['session_id'], $conflictFileId);
+        $conflictHead = $this->app->s3()->headObject([
+            'Bucket' => $this->app->bucket(),
+            'Key' => $conflictKey,
+        ]);
+        $conflictEtag = $this->normalizeEtag((string)($conflictHead['ETag'] ?? ''));
+        if ($conflictEtag === '') {
+            throw new RuntimeException('S3 no confirmó el ETag de la copia de conflicto Office.');
+        }
+
+        $this->sessions->adoptConflict(
+            (string)$session['session_id'],
+            $conflictFileId,
+            $conflictKey,
+            $conflictName,
+            $conflictEtag,
+            $mtime,
+            $size
+        );
         if ($close) {
             $this->sessions->markClosed((string)$session['session_id']);
         }
@@ -275,7 +292,8 @@ final class OfficeDocumentStorageService
             'conflict_file_id' => $conflictFileId,
             'conflict_name' => $conflictName,
             'closed' => $close,
-            'status' => $close ? 'closed' : 'conflict',
+            'status' => $close ? 'closed' : 'ready',
+            'etag' => $conflictEtag,
             'mtime' => $mtime,
             'size' => $size,
         ];

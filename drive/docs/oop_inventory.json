@@ -4,8 +4,8 @@
     "php_class_modules": 274,
     "php_needs_migration": 0,
     "php_tests": 44,
-    "js_total": 54,
-    "js_class_modules": 54,
+    "js_total": 55,
+    "js_class_modules": 55,
     "js_needs_migration": 0,
     "js_compatibility_facades": 8
   },
@@ -1881,7 +1881,7 @@
     },
     {
       "path": "drive/so.php",
-      "lines": 1473,
+      "lines": 1475,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -6595,7 +6595,7 @@
     },
     {
       "path": "drive/tests/web_os_clipboard_contract_smoke.php",
-      "lines": 65,
+      "lines": 79,
       "kind": "test script",
       "classes": 0,
       "functions": [],
@@ -6610,7 +6610,7 @@
     },
     {
       "path": "drive/tests/web_os_contract_smoke.php",
-      "lines": 246,
+      "lines": 248,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -7805,6 +7805,22 @@
       "functions": [],
       "window_assign": [
         "ArcadeCloudOsFolders"
+      ],
+      "window_func": [],
+      "top_vars": [],
+      "iife": false,
+      "issues": []
+    },
+    {
+      "path": "drive/js/so-screenshot-paste.js",
+      "lines": 335,
+      "kind": "class/module",
+      "classes": [
+        "ArcadeCloudOsScreenshotPaste"
+      ],
+      "functions": [],
+      "window_assign": [
+        "createImageBitmap"
       ],
       "window_func": [],
       "top_vars": [],

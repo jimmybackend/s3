@@ -22,6 +22,7 @@
     "drive/leer_texto.php",
     "drive/login.php",
     "drive/logout.php",
+    "drive/node-status.php",
     "drive/personal_aws_bootstrap.php",
     "drive/psesion.php",
     "drive/s3.php",
@@ -90,6 +91,7 @@
         "drive/bin/media_processing_worker.php",
         "drive/bin/move_job_worker.php",
         "drive/bin/polly_reconcile.php",
+        "drive/bin/server_maintenance_worker.php",
         "drive/bin/sync_node_worker.php",
         "drive/bin/sync_schema_migrate.php",
         "drive/bin/sync_worker.php",
@@ -167,6 +169,7 @@
         "drive/move_task_status.php",
         "drive/mover_archivo.php",
         "drive/mover_carpeta.php",
+        "drive/node-status.php",
         "drive/polly_cargar_texto.php",
         "drive/polly_list_voices.php",
         "drive/polly_task_status.php",
@@ -351,6 +354,14 @@
     {
       "path": "drive/bin/polly_reconcile.php",
       "size": 1418,
+      "active": false,
+      "references": [
+        "drive/src/Application/BackgroundWorkerLauncher.php"
+      ]
+    },
+    {
+      "path": "drive/bin/server_maintenance_worker.php",
+      "size": 199,
       "active": false,
       "references": [
         "drive/src/Application/BackgroundWorkerLauncher.php"
@@ -635,6 +646,8 @@
       "size": 427,
       "active": false,
       "references": [
+        "drive/tests/web_os_clipboard_contract_smoke.php",
+        "drive/tests/web_os_contract_smoke.php",
         "drive/js/arcadelink-share.js"
       ]
     },
@@ -1036,8 +1049,9 @@
       "active": false,
       "references": [
         "drive/tests/web_os_clipboard_contract_smoke.php",
+        "drive/tests/web_os_contract_smoke.php",
         "drive/js/archivos.js",
-        "drive/js/so-clipboard.js"
+        "drive/js/so-share.js"
       ]
     },
     {
@@ -1160,6 +1174,16 @@
       "active": false,
       "references": [
         "drive/js/carpetas.js"
+      ]
+    },
+    {
+      "path": "drive/node-status.php",
+      "size": 261,
+      "active": true,
+      "references": [
+        "drive/so.php",
+        "drive/tests/web_os_contract_smoke.php",
+        "drive/js/so-node.js"
       ]
     },
     {
@@ -1367,7 +1391,7 @@
     },
     {
       "path": "drive/so.php",
-      "size": 84586,
+      "size": 89401,
       "active": true,
       "references": [
         "drive/s3.php",
@@ -1481,10 +1505,34 @@
       ]
     },
     {
+      "path": "drive/src/Admin/ServerMaintenanceJobStore.php",
+      "size": 6495,
+      "active": false,
+      "references": [
+        "drive/tests/web_os_contract_smoke.php"
+      ]
+    },
+    {
+      "path": "drive/src/Admin/ServerMaintenanceService.php",
+      "size": 3392,
+      "active": false,
+      "references": [
+        "drive/tests/web_os_contract_smoke.php"
+      ]
+    },
+    {
       "path": "drive/src/Admin/ServerSettingsAdminService.php",
       "size": 9619,
       "active": false,
       "references": []
+    },
+    {
+      "path": "drive/src/Admin/ServerTaskActivityProbe.php",
+      "size": 2278,
+      "active": false,
+      "references": [
+        "drive/tests/web_os_contract_smoke.php"
+      ]
     },
     {
       "path": "drive/src/Application/AiFileSearchService.php",
@@ -1494,9 +1542,11 @@
     },
     {
       "path": "drive/src/Application/BackgroundWorkerLauncher.php",
-      "size": 2998,
+      "size": 3278,
       "active": false,
-      "references": []
+      "references": [
+        "drive/tests/web_os_contract_smoke.php"
+      ]
     },
     {
       "path": "drive/src/Application/DrivePageService.php",
@@ -1738,6 +1788,14 @@
       "size": 5621,
       "active": false,
       "references": []
+    },
+    {
+      "path": "drive/src/Console/ServerMaintenanceWorkerCommand.php",
+      "size": 926,
+      "active": false,
+      "references": [
+        "drive/tests/web_os_contract_smoke.php"
+      ]
     },
     {
       "path": "drive/src/Console/SyncWorkerCommand.php",
@@ -2442,11 +2500,12 @@
     },
     {
       "path": "drive/src/Http/Controller/BackgroundTaskController.php",
-      "size": 39010,
+      "size": 42094,
       "active": false,
       "references": [
         "drive/tests/media_processing_contract_smoke.php",
-        "drive/tests/transcribe_s3_recovery_contract_smoke.php"
+        "drive/tests/transcribe_s3_recovery_contract_smoke.php",
+        "drive/tests/web_os_contract_smoke.php"
       ]
     },
     {
@@ -2652,6 +2711,14 @@
       "size": 1111,
       "active": false,
       "references": []
+    },
+    {
+      "path": "drive/src/Http/Controller/NodeStatusController.php",
+      "size": 4866,
+      "active": false,
+      "references": [
+        "drive/tests/web_os_contract_smoke.php"
+      ]
     },
     {
       "path": "drive/src/Http/Controller/PersonalAwsController.php",
@@ -3041,9 +3108,11 @@
     },
     {
       "path": "drive/src/Storage/MoveJobStore.php",
-      "size": 9919,
+      "size": 10581,
       "active": false,
-      "references": []
+      "references": [
+        "drive/tests/web_os_contract_smoke.php"
+      ]
     },
     {
       "path": "drive/src/Storage/StorageObjectNameCodec.php",
@@ -3083,9 +3152,11 @@
     },
     {
       "path": "drive/src/Sync/SyncJobStore.php",
-      "size": 7684,
+      "size": 8294,
       "active": false,
-      "references": []
+      "references": [
+        "drive/tests/web_os_contract_smoke.php"
+      ]
     },
     {
       "path": "drive/src/Sync/SyncRepository.php",
@@ -3580,13 +3651,13 @@
     },
     {
       "path": "drive/tests/web_os_clipboard_contract_smoke.php",
-      "size": 8618,
+      "size": 9091,
       "active": false,
       "references": []
     },
     {
       "path": "drive/tests/web_os_contract_smoke.php",
-      "size": 30232,
+      "size": 34779,
       "active": false,
       "references": []
     },

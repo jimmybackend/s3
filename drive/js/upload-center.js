@@ -650,6 +650,21 @@ class ArcadeCloudUploadCenter {
     this.notify('Subida con error: ' + message, 'danger');
   }
 
+  dismissTask(id) {
+    const key = String(id || '');
+    const task = this.tasks.get(key);
+    if (!task) return false;
+
+    const status = String(task.status || '').toLowerCase();
+    if (!['completed', 'failed', 'cancelled'].includes(status)) return false;
+
+    this.tasks.delete(key);
+    this.document.dispatchEvent(new CustomEvent('drive:client-upload-task', {
+      detail: { removed: key }
+    }));
+    return true;
+  }
+
   taskSnapshots() {
     const cutoff = Date.now() - this.terminalKeepMs;
     return Array.from(this.tasks.values())

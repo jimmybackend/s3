@@ -160,6 +160,8 @@ webOsContract(!str_contains($paths['css'], '.os-folder-commandbar'), 'CSS ya no 
 
 // Navegación viva, miniaturas y multimedia flotante.
 webOsContract(str_contains($paths['shell'], 'id="osExplorerLive"'), 'Mis datos tiene región reemplazable sin recargar el SO');
+webOsContract(str_contains($paths['shell'], "window.UPLOAD_API = 'api/upload.php'"), 'Web OS expone API OOP de subida');
+webOsContract(str_contains($paths['shell'], 'js/so-screenshot-paste.js'), 'Web OS carga pegado de screenshot');
 webOsContract(str_contains($paths['shell'], "thumb.php?key="), 'imágenes de Mis datos reutilizan ThumbnailService');
 webOsContract(str_contains($paths['shell'], 'class="os-entry-thumbnail"'), 'miniaturas se muestran en los iconos de imagen');
 webOsContract(str_contains($paths['js'], 'async refreshExplorer('), 'shell actualiza sólo la ventana Mis datos');

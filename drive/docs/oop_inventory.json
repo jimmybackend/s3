@@ -1911,7 +1911,7 @@
     },
     {
       "path": "drive/so.php",
-      "lines": 1722,
+      "lines": 1703,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -6715,7 +6715,7 @@
     },
     {
       "path": "drive/tests/web_os_contract_smoke.php",
-      "lines": 367,
+      "lines": 370,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -7994,7 +7994,7 @@
     },
     {
       "path": "drive/js/so.js",
-      "lines": 1221,
+      "lines": 1235,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudOsShell"

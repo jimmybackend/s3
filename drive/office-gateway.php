@@ -3,11 +3,8 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/app_bootstrap.php';
 
-use ArcadeCloud\Drive\Admin\FastDriveWakeService;
 use ArcadeCloud\Drive\Core\ApplicationKernel;
-use ArcadeCloud\Drive\Media\MediaProcessingJobRepository;
-use ArcadeCloud\Drive\Media\MediaWorkerNodeService;
-use ArcadeCloud\Drive\Office\OfficeLaunchTokenRepository;
+use ArcadeCloud\Drive\Office\OfficeGatewayService;
 use Aws\Exception\AwsException;
 
 if ((string)($_SERVER['ARCADECLOUD_OFFICE_GATE'] ?? '') !== '1') {
@@ -18,6 +15,7 @@ if ((string)($_SERVER['ARCADECLOUD_OFFICE_GATE'] ?? '') !== '1') {
 $app = ApplicationKernel::app();
 $session = $app->session();
 $session->start();
+$office = new OfficeGatewayService($app);
 
 header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
 header('Pragma: no-cache');
@@ -37,59 +35,6 @@ $json = static function (array $payload, int $status = 200): never {
     exit;
 };
 
-/** @return array<string,mixed> */
-$workstationRequest = static function (string $privateIp, string $action): array {
-    if (filter_var($privateIp, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) === false) {
-        throw new RuntimeException('El nodo de cómputo no publicó una IPv4 privada válida.');
-    }
-    if (!in_array($action, ['status', 'start'], true)) {
-        throw new RuntimeException('Acción Workstation no permitida.');
-    }
-
-    $errno = 0;
-    $errstr = '';
-    $socket = @stream_socket_client(
-        'tcp://' . $privateIp . ':80',
-        $errno,
-        $errstr,
-        3,
-        STREAM_CLIENT_CONNECT
-    );
-    if (!is_resource($socket)) {
-        throw new RuntimeException('Workstation todavía no responde en la red privada.');
-    }
-
-    stream_set_timeout($socket, 5);
-    $method = $action === 'status' ? 'GET' : 'POST';
-    $request = $method . " /__arcadecloud_workstation HTTP/1.0\r\n"
-        . "Host: office.esforzados.com\r\n"
-        . "X-ArcadeCloud-Workstation-Action: " . $action . "\r\n"
-        . "Connection: close\r\n"
-        . "Content-Length: 0\r\n\r\n";
-
-    fwrite($socket, $request);
-    $response = stream_get_contents($socket, 131073);
-    fclose($socket);
-
-    if (!is_string($response) || $response === '' || strlen($response) > 131072) {
-        throw new RuntimeException('Respuesta Workstation inválida.');
-    }
-
-    [$headers, $body] = array_pad(preg_split("/\r?\n\r?\n/", $response, 2) ?: [], 2, '');
-    if (!preg_match('/^HTTP\/\d(?:\.\d)?\s+(\d{3})/i', $headers, $match)) {
-        throw new RuntimeException('Workstation devolvió una respuesta HTTP inválida.');
-    }
-
-    $status = (int)$match[1];
-    $decoded = json_decode(trim($body), true);
-    if ($status !== 200 || !is_array($decoded) || ($decoded['ok'] ?? null) !== true) {
-        $message = is_array($decoded) ? trim((string)($decoded['error'] ?? '')) : '';
-        throw new RuntimeException($message !== '' ? $message : 'Workstation rechazó la solicitud.');
-    }
-
-    return $decoded;
-};
-
 $action = (string)($_SERVER['ARCADECLOUD_OFFICE_GATE_ACTION'] ?? 'view');
 $officeUserId = (int)$session->get('office_user_id', 0);
 
@@ -99,18 +44,14 @@ if ($action === 'activity' || $action === 'idle') {
     }
 
     try {
-        $node = new MediaWorkerNodeService($app->db());
         if ($action === 'activity') {
             if (strtoupper((string)($_SERVER['REQUEST_METHOD'] ?? 'GET')) !== 'POST') {
                 $json(['ok' => false, 'error' => 'Método no permitido.'], 405);
             }
-            $idle = $node->touchInteractiveActivity($officeUserId);
-            $json(['ok' => true, 'idle' => $idle]);
+            $json(['ok' => true, 'idle' => $office->touchActivity($officeUserId)]);
         }
 
-        $jobs = new MediaProcessingJobRepository($app->db());
-        $node->handleIdle($jobs);
-        $json(['ok' => true, 'idle' => $node->idleStatus()]);
+        $json(['ok' => true, 'idle' => $office->idleStatus()]);
     } catch (Throwable $e) {
         error_log('[Office gateway] activity/idle error: ' . $e->getMessage());
         $json(['ok' => false, 'error' => 'No se pudo actualizar el estado del nodo.'], 503);
@@ -120,8 +61,7 @@ if ($action === 'activity' || $action === 'idle') {
 $launch = is_scalar($_GET['launch'] ?? null) ? strtolower(trim((string)$_GET['launch'])) : '';
 if ($launch !== '') {
     try {
-        $tokens = new OfficeLaunchTokenRepository($app->db());
-        $consumedUserId = $tokens->consume($launch);
+        $consumedUserId = $office->consumeLaunch($launch);
         if ($consumedUserId <= 0) {
             $session->set('office_gateway_error', 'El enlace de Office caducó o ya fue utilizado.');
         } else {
@@ -169,8 +109,10 @@ if ($action === 'start') {
             ? (string)$_POST['current_password']
             : '';
 
-        $wake = new FastDriveWakeService($app);
-        $wake->authorizeAndStart($password, (string)($_SERVER['REMOTE_ADDR'] ?? ''));
+        $office->authorizeAndStart(
+            $password,
+            (string)($_SERVER['REMOTE_ADDR'] ?? '')
+        );
         $session->set('office_gateway_message', 'Autorización correcta. El nodo Office se está iniciando.');
         $session->set($csrfKey, bin2hex(random_bytes(32)));
     } catch (RuntimeException $e) {
@@ -201,24 +143,17 @@ $mediaBusy = false;
 
 if ($officeUserId > 0) {
     try {
-        $wake = new FastDriveWakeService($app);
-        $nodeStatus = $wake->status();
+        $nodeStatus = $office->nodeStatus();
         $state = (string)($nodeStatus['state'] ?? 'unknown');
         $privateIp = trim((string)($nodeStatus['private_ip'] ?? ''));
         $canStart = $state === 'stopped';
         $waiting = in_array($state, ['pending', 'stopping', 'shutting-down'], true);
 
         if ($state === 'running') {
-            $jobs = new MediaProcessingJobRepository($app->db());
-            $mediaBusy = $jobs->hasActiveJobs();
-
             try {
-                $control = $workstationRequest($privateIp, 'status');
-                $workstationActive = (bool)($control['active'] ?? false);
-                if (!$workstationActive && !$mediaBusy) {
-                    $control = $workstationRequest($privateIp, 'start');
-                    $workstationActive = (bool)($control['active'] ?? false);
-                }
+                $prepared = $office->prepareWorkstation($privateIp);
+                $workstationActive = (bool)($prepared['active'] ?? false);
+                $mediaBusy = (bool)($prepared['media_busy'] ?? false);
             } catch (RuntimeException $e) {
                 $waiting = true;
                 $error = $error !== '' ? $error : $e->getMessage();
@@ -226,8 +161,7 @@ if ($officeUserId > 0) {
 
             if ($workstationActive) {
                 try {
-                    $node = new MediaWorkerNodeService($app->db());
-                    $node->touchInteractiveActivity($officeUserId);
+                    $office->touchActivity($officeUserId);
                 } catch (Throwable $e) {
                     error_log('[Office gateway] initial activity error: ' . $e->getMessage());
                 }

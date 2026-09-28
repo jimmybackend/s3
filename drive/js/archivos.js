@@ -1685,6 +1685,9 @@ class ArchivosModule {
       async function lockFileByKey(key) {
         key = normalizeKey(key);
         if (!key) return false;
+        if (window.ArcadeCloudFileSecurity?.protect) {
+          return window.ArcadeCloudFileSecurity.protect(key);
+        }
 
         const data = await openSecurityModal({
           title: 'Proteger con contraseña',
@@ -1714,6 +1717,12 @@ class ArchivosModule {
       async function unlockFileByKey(key, btn) {
         key = normalizeKey(key);
         if (!key) return false;
+        if (window.ArcadeCloudFileSecurity?.unlock) {
+          return window.ArcadeCloudFileSecurity.unlock(
+            key,
+            btn && btn.dataset ? (btn.dataset.hint || '') : ''
+          );
+        }
 
         const data = await openSecurityModal({
           title: 'Desbloquear archivo',
@@ -1746,6 +1755,9 @@ class ArchivosModule {
       async function relockFileByKey(key) {
         key = normalizeKey(key);
         if (!key) return false;
+        if (window.ArcadeCloudFileSecurity?.relock) {
+          return window.ArcadeCloudFileSecurity.relock(key);
+        }
 
         const j = await postFormAcceptJSON('relock_file.php', { key });
         if (!j?.ok) throw new Error(j?.msg || 'No se pudo bloquear de nuevo');
@@ -1755,6 +1767,9 @@ class ArchivosModule {
       async function unsecureFileByKey(key) {
         key = normalizeKey(key);
         if (!key) return false;
+        if (window.ArcadeCloudFileSecurity?.unsecure) {
+          return window.ArcadeCloudFileSecurity.unsecure(key);
+        }
         if (!confirm('¿Quitar la protección con contraseña de este archivo?')) return false;
 
         const j = await postFormAcceptJSON('set_file_security.php', {

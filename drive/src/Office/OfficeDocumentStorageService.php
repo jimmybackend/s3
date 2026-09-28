@@ -6,6 +6,7 @@ namespace ArcadeCloud\Drive\Office;
 use ArcadeCloud\Drive\Admin\PrivilegedServerHelper;
 use ArcadeCloud\Drive\Core\DriveApplication;
 use ArcadeCloud\Drive\View\FileViewHelper;
+use Aws\Exception\AwsException;
 use RuntimeException;
 use Throwable;
 
@@ -36,76 +37,93 @@ final class OfficeDocumentStorageService
         $session = $this->sessions->requireAuthorized($sessionId, $controlToken);
         $userId = (int)$session['user_id'];
         $fileId = (int)$session['file_id'];
+        $key = '';
 
-        $row = $this->app->fileRecordRepository()->requireByRef($userId, $fileId, true);
-        $this->assertEditableOfficeFile($row);
-
-        $key = (string)($row['_key'] ?? '');
-        if ($key === '' || !hash_equals((string)$session['original_key'], $key)) {
-            throw new RuntimeException('El archivo cambió de ubicación antes de abrir Office.');
-        }
-
-        $visibleName = $this->safeWorkspaceName((string)($row['Nombre'] ?? ''), $fileId);
-        $relative = 'sessions/' . $sessionId . '/' . $visibleName;
-        $directory = $this->workspaceRoot . '/sessions/' . $sessionId;
-        $target = $this->workspaceRoot . '/' . $relative;
-
-        $this->ensureWorkspace($directory);
-
-        $head = $this->app->s3()->headObject([
-            'Bucket' => $this->app->bucket(),
-            'Key' => $key,
-        ]);
-        $etag = $this->normalizeEtag((string)($head['ETag'] ?? ''));
-        if ($etag === '') {
-            throw new RuntimeException('S3 no devolvió ETag para el documento.');
-        }
-
-        $tmp = $target . '.download-' . bin2hex(random_bytes(6));
         try {
-            $this->app->s3()->getObject([
+            $row = $this->app->fileRecordRepository()->requireByRef($userId, $fileId, true);
+            $this->assertEditableOfficeFile($row);
+
+            $key = (string)($row['_key'] ?? '');
+            if ($key === '' || !hash_equals((string)$session['original_key'], $key)) {
+                throw new RuntimeException('El archivo cambió de ubicación antes de abrir Office.');
+            }
+
+            $visibleName = $this->safeWorkspaceName((string)($row['Nombre'] ?? ''), $fileId);
+            $relative = 'sessions/' . $sessionId . '/' . $visibleName;
+            $directory = $this->workspaceRoot . '/sessions/' . $sessionId;
+            $target = $this->workspaceRoot . '/' . $relative;
+
+            $this->ensureWorkspace($directory);
+
+            $head = $this->app->s3()->headObject([
                 'Bucket' => $this->app->bucket(),
                 'Key' => $key,
-                'SaveAs' => $tmp,
             ]);
-            if (!is_file($tmp)) {
-                throw new RuntimeException('S3 no entregó el archivo temporal de Office.');
+            $etag = $this->normalizeEtag((string)($head['ETag'] ?? ''));
+            if ($etag === '') {
+                throw new RuntimeException('S3 no devolvió ETag para el documento.');
             }
-            @chmod($tmp, 0660);
-            if (!rename($tmp, $target)) {
-                throw new RuntimeException('No se pudo instalar el archivo en el workspace Office.');
+
+            $tmp = $target . '.download-' . bin2hex(random_bytes(6));
+            try {
+                $this->app->s3()->getObject([
+                    'Bucket' => $this->app->bucket(),
+                    'Key' => $key,
+                    'SaveAs' => $tmp,
+                ]);
+                if (!is_file($tmp)) {
+                    throw new RuntimeException('S3 no entregó el archivo temporal de Office.');
+                }
+                @chmod($tmp, 0660);
+                if (!rename($tmp, $target)) {
+                    throw new RuntimeException('No se pudo instalar el archivo en el workspace Office.');
+                }
+            } catch (Throwable $e) {
+                @unlink($tmp);
+                throw $e;
             }
+
+            clearstatcache(true, $target);
+            $mtime = (int)(@filemtime($target) ?: time());
+            $size = (int)(@filesize($target) ?: 0);
+
+            $this->sessions->markPrepared($sessionId, $relative, $etag, $mtime, $size);
+
+            $helper = new PrivilegedServerHelper();
+            if (!$helper->supportsWorkstationDocumentOpen()) {
+                throw new RuntimeException(
+                    'El helper del nodo necesita actualizarse para abrir documentos Office.'
+                );
+            }
+            $helper->openWorkstationDocument($relative);
+
+            $this->cleanupClosedWorkspaces();
+
+            return [
+                'ok' => true,
+                'session_id' => $sessionId,
+                'file_id' => $fileId,
+                'name' => (string)($row['Nombre'] ?? $visibleName),
+                'workspace_relative' => $relative,
+                'etag' => $etag,
+                'size' => $size,
+                'status' => 'ready',
+            ];
         } catch (Throwable $e) {
-            @unlink($tmp);
+            $this->sessions->markFailed($sessionId);
+
+            if ($this->isMissingS3Object($e)) {
+                $safeKey = $key !== '' ? $key : '(key desconocida)';
+                throw new RuntimeException(
+                    'El catálogo FileS3 apunta a un objeto que ya no existe en S3: '
+                    . $safeKey
+                    . '. Sincroniza desde S3 la carpeta donde está el archivo '
+                    . 'y vuelve a abrirlo con Office.'
+                );
+            }
+
             throw $e;
         }
-
-        clearstatcache(true, $target);
-        $mtime = (int)(@filemtime($target) ?: time());
-        $size = (int)(@filesize($target) ?: 0);
-
-        $this->sessions->markPrepared($sessionId, $relative, $etag, $mtime, $size);
-
-        $helper = new PrivilegedServerHelper();
-        if (!$helper->supportsWorkstationDocumentOpen()) {
-            throw new RuntimeException(
-                'El helper del nodo necesita actualizarse para abrir documentos Office.'
-            );
-        }
-        $helper->openWorkstationDocument($relative);
-
-        $this->cleanupClosedWorkspaces();
-
-        return [
-            'ok' => true,
-            'session_id' => $sessionId,
-            'file_id' => $fileId,
-            'name' => (string)($row['Nombre'] ?? $visibleName),
-            'workspace_relative' => $relative,
-            'etag' => $etag,
-            'size' => $size,
-            'status' => 'ready',
-        ];
     }
 
     /** @return array<string,mixed> */
@@ -407,6 +425,20 @@ final class OfficeDocumentStorageService
     private function normalizeEtag(string $etag): string
     {
         return trim(trim($etag), '"');
+    }
+
+    private function isMissingS3Object(Throwable $error): bool
+    {
+        if ($error instanceof AwsException) {
+            $status = $error->getStatusCode();
+            $code = strtolower((string)$error->getAwsErrorCode());
+            return $status === 404 || in_array($code, ['nosuchkey', 'notfound', 'nosuchobject'], true);
+        }
+
+        $message = strtolower($error->getMessage());
+        return str_contains($message, 'nosuchkey')
+            || str_contains($message, 'specified key does not exist')
+            || str_contains($message, 'not found');
     }
 
     private function cleanupClosedWorkspaces(): void

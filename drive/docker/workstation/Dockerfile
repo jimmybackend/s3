@@ -11,7 +11,8 @@ RUN apt-get update \
       tigervnc-tools xfce4 xfce4-terminal xterm \
  && rm -rf /var/lib/apt/lists/*
 
-RUN useradd --create-home --uid 1000 --shell /bin/bash arcade \
+RUN groupadd --gid 10001 arcade \
+ && useradd --create-home --uid 10001 --gid 10001 --shell /bin/bash arcade \
  && mkdir -p /workspace /home/arcade/.vnc \
  && chown -R arcade:arcade /workspace /home/arcade
 

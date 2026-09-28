@@ -1,7 +1,18 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-APP_ROOT="${1:-/var/www/arcadecloud-drive}"
+APP_ROOT="/var/www/arcadecloud-drive"
+RECONCILE_ONLY=0
+
+for arg in "$@"; do
+  case "$arg" in
+    --app-root=*) APP_ROOT="${arg#*=}" ;;
+    --reconcile) RECONCILE_ONLY=1 ;;
+    /*) APP_ROOT="$arg" ;;
+    *) echo "Argumento Workstation desconocido: $arg" >&2; exit 2 ;;
+  esac
+done
+
 APP_ROOT="$(realpath "$APP_ROOT")"
 DRIVE_ROOT="$APP_ROOT/drive"
 IMAGE="arcadecloud/workstation:phase1"
@@ -15,6 +26,11 @@ OFFICE_UID=10001
 OFFICE_GID=10001
 PHP_GROUP="${ARCADECLOUD_PHP_GROUP:-apache}"
 PHP_GID=""
+WAS_ACTIVE=0
+
+if systemctl is-active --quiet "$SERVICE_NAME" 2>/dev/null; then
+  WAS_ACTIVE=1
+fi
 
 [[ "${EUID}" -eq 0 ]] || { echo "Ejecuta como root." >&2; exit 1; }
 [[ -f /etc/os-release ]] || { echo "No se pudo detectar el sistema operativo." >&2; exit 1; }
@@ -98,6 +114,19 @@ systemctl daemon-reload
 # El broker/Resource Mode Manager será quien lo inicie cuando exista una
 # sesión Office. Así un arranque exclusivo para multimedia no consume GUI.
 systemctl disable "$SERVICE_NAME" >/dev/null 2>&1 || true
+
+if [[ "$RECONCILE_ONLY" -eq 1 ]]; then
+  if [[ "$WAS_ACTIVE" -eq 1 ]]; then
+    echo "✓ Workstation estaba activa: no se reinicia durante la actualización; la nueva imagen/unidad se aplicará en la próxima sesión."
+  else
+    systemctl stop "$SERVICE_NAME" >/dev/null 2>&1 || true
+    echo "✓ Workstation reconciliada y permanece apagada hasta que Office la solicite."
+  fi
+  echo "Workspace Office: $WORKSPACE"
+  echo "Sesiones documentales: $WORKSPACE/sessions (grupo $PHP_GROUP/$PHP_GID)"
+  exit 0
+fi
+
 systemctl restart "$SERVICE_NAME"
 
 echo "Esperando health local..."

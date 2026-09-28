@@ -314,6 +314,10 @@ case "$ROLE" in
   *) echo "ERROR: rol de nodo inválido: $ROLE" >&2; exit 2 ;;
 esac
 
+OFFICE_DOMAIN="${ARCADECLOUD_OFFICE_DOMAIN:-office.esforzados.com}"
+OFFICE_UPSTREAM="${ARCADECLOUD_OFFICE_UPSTREAM:-172.31.14.35}"
+OFFICE_GATEWAY_IP="${ARCADECLOUD_OFFICE_GATEWAY_IP:-172.31.83.240}"
+
 echo "==> Reconciliando ArcadeCloud"
 echo "App root: $APP_ROOT"
 echo "Rol: $ROLE"
@@ -354,6 +358,27 @@ fi
 # Helpers privilegiados: siempre se refrescan después de un git update.
 bash "$DRIVE_ROOT/bin/install_arcadecloud_admin_helper.sh" --php-user="$PHP_USER" --app-root="$APP_ROOT"
 bash "$DRIVE_ROOT/bin/install_arcadecloud_updater.sh" --php-user="$PHP_USER" --repo-root="$APP_ROOT"
+
+# Office tiene piezas fuera de Git (Nginx, systemd, imagen Docker y permisos).
+# Si ya existe evidencia de una instalación Office, el updater la reconcilia
+# con el código nuevo en vez de dejar infraestructura obsoleta.
+if [[ "$ROLE" == "web" || "$ROLE" == "combined" ]]; then
+  OFFICE_CERT_DIR="/etc/letsencrypt/live/$OFFICE_DOMAIN"
+  OFFICE_PUBLIC_CONF="/etc/nginx/conf.d/$OFFICE_DOMAIN.conf"
+  if [[ -r "$OFFICE_CERT_DIR/fullchain.pem" && -r "$OFFICE_CERT_DIR/privkey.pem" ]]; then
+    echo "==> Reconciliando gateway público Office"
+    bash "$DRIVE_ROOT/bin/install_office_gateway.sh"       --domain="$OFFICE_DOMAIN"       --upstream="$OFFICE_UPSTREAM"       --nginx-conf="$OFFICE_PUBLIC_CONF"
+  fi
+fi
+
+if [[ "$ROLE" == "media-worker" || "$ROLE" == "combined" ]]; then
+  if systemctl cat arcadecloud-workstation.service >/dev/null 2>&1       || [[ -d /var/lib/arcadecloud-office ]]; then
+    echo "==> Reconciliando Workstation Office instalada"
+    ARCADECLOUD_PHP_GROUP="$(id -gn "$PHP_USER")"       bash "$DRIVE_ROOT/bin/install_workstation_node.sh"         --app-root="$APP_ROOT"         --reconcile
+
+    bash "$DRIVE_ROOT/bin/install_workstation_internal_gateway.sh"       --domain="$OFFICE_DOMAIN"       --gateway-ip="$OFFICE_GATEWAY_IP"
+  fi
+fi
 
 if [[ "$ROLE" == "web" || "$ROLE" == "combined" ]]; then
   bash "$DRIVE_ROOT/bin/install_transcribe_reconcile_timer.sh"     --run-user="$PHP_USER" --app-root="$APP_ROOT"

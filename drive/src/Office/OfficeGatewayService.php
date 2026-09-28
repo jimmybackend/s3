@@ -7,6 +7,7 @@ use ArcadeCloud\Drive\Admin\FastDriveWakeService;
 use ArcadeCloud\Drive\Core\DriveApplication;
 use ArcadeCloud\Drive\Media\MediaProcessingJobRepository;
 use ArcadeCloud\Drive\Media\MediaWorkerNodeService;
+use ArcadeCloud\Drive\View\FileViewHelper;
 use RuntimeException;
 
 final class OfficeGatewayService
@@ -25,6 +26,51 @@ final class OfficeGatewayService
     public function consumeLaunch(string $token): int
     {
         return (new OfficeLaunchTokenRepository($this->app->db()))->consume($token);
+    }
+
+    /** @return array{user_id:int,file_id:?int} */
+    public function consumeLaunchContext(string $token): array
+    {
+        return (new OfficeLaunchTokenRepository($this->app->db()))->consumeContext($token);
+    }
+
+    /** @return array{session_id:string,control_token:string,name:string} */
+    public function createDocumentSession(int $userId, int $fileId, string $instanceId): array
+    {
+        $row = $this->app->fileRecordRepository()->requireByRef($userId, $fileId, true);
+        if (FileViewHelper::isLocked($row)) {
+            throw new RuntimeException('Desbloquea el archivo antes de abrirlo con Office.');
+        }
+        $name = trim((string)($row['Nombre'] ?? ''));
+        $ext = FileViewHelper::extension($name);
+        if (!in_array($ext, ['doc','docx','odt','rtf','xls','xlsx','ods','ppt','pptx','odp'], true)) {
+            throw new RuntimeException('Este archivo no es compatible con ArcadeCloud Office.');
+        }
+
+        $session = (new OfficeDocumentSessionRepository($this->app->db()))->create(
+            $userId,
+            $fileId,
+            $instanceId,
+            (string)($row['_key'] ?? ''),
+            $name
+        );
+        $session['name'] = $name;
+        return $session;
+    }
+
+    public function prepareDocument(string $privateIp, string $sessionId, string $token): array
+    {
+        return $this->workstation->prepareDocument($privateIp, $sessionId, $token);
+    }
+
+    public function syncDocument(string $privateIp, string $sessionId, string $token): array
+    {
+        return $this->workstation->syncDocument($privateIp, $sessionId, $token);
+    }
+
+    public function closeDocument(string $privateIp, string $sessionId, string $token): array
+    {
+        return $this->workstation->closeDocument($privateIp, $sessionId, $token);
     }
 
     /** @return array<string,mixed> */
@@ -52,6 +98,11 @@ final class OfficeGatewayService
     public function touchOfficeSession(int $userId, string $instanceId, string $sessionKey): void
     {
         $this->leases->touch($userId, $instanceId, $sessionKey);
+    }
+
+    public function releaseOfficeSession(int $userId, string $instanceId, string $sessionKey): void
+    {
+        $this->leases->release($userId, $instanceId, $sessionKey);
     }
 
     /**

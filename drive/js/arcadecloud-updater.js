@@ -126,6 +126,12 @@ class ArcadeCloudUpdaterModule {
           || (data.moderation_schema_ready ? 'Moderación preparada.' : 'Moderación pendiente.');
         schemaLine += `<div class="${moderationClass}"><strong>Moderación DB:</strong> ${this.escape(moderationMessage)}</div>`;
       }
+      if (Object.prototype.hasOwnProperty.call(data, 'office_schema_ready')) {
+        const officeClass = data.office_schema_ready ? 'text-success' : 'text-danger';
+        const officeMessage = data.office_schema_message
+          || (data.office_schema_ready ? 'Esquema Office preparado.' : 'Esquema Office pendiente.');
+        schemaLine += `<div class="${officeClass}"><strong>ArcadeCloud Office DB:</strong> ${this.escape(officeMessage)}</div>`;
+      }
       const dirtyFiles = Array.isArray(data.dirty_files) ? data.dirty_files : [];
       const dirtyList = dirty && dirtyFiles.length
         ? `<div class="mt-1"><strong>Cambios locales:</strong><ul class="mb-1 pl-4">${dirtyFiles.map((line) => `<li><code>${this.escape(line)}</code></li>`).join('')}</ul></div>`

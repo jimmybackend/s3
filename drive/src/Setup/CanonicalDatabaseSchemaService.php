@@ -14,6 +14,9 @@ final class CanonicalDatabaseSchemaService
         'DriveActivityEvents',
         'MediaProcessingJobs',
         'MediaWorkerNodeSessions',
+        'OfficeLaunchTokens',
+        'OfficeSessionLeases',
+        'OfficeDocumentSessions',
     ];
 
     public function __construct(

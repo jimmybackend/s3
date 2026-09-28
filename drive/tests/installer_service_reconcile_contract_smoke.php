@@ -21,6 +21,7 @@ $updater = (string)file_get_contents($repo . '/drive/bin/arcadecloud-drive-updat
 $updaterInstaller = (string)file_get_contents($repo . '/drive/bin/install_arcadecloud_updater.sh');
 $updaterService = (string)file_get_contents($repo . '/drive/src/Admin/ArcadeCloudUpdaterService.php');
 $schemaMigrator = (string)file_get_contents($repo . '/drive/src/Federation/FederationSchemaMigrationService.php');
+$officeSchemaMigrator = (string)file_get_contents($repo . '/drive/src/Office/OfficeSchemaMigrationService.php');
 $catalogMigrator = (string)file_get_contents($repo . '/drive/bin/federation_catalog_migrate.php');
 $updaterJs = (string)file_get_contents($repo . '/drive/js/arcadecloud-updater.js');
 $mediaInstaller = (string)file_get_contents($repo . '/drive/bin/install_media_processing_worker.sh');
@@ -120,6 +121,11 @@ installerContract(str_contains($reconciler, 'UPDATER_CONTEXT="yes"'), 'reconcili
 installerContract(str_contains($reconciler, 'reconciliación diferida al runtime web con conexión MySQL activa'), 'updater web no depende del entorno CLI para migrar FederationCloud');
 installerContract(str_contains($updaterService, 'FederationSchemaMigrationService($this->app->db())'), 'updater reconcilia FederationCloud usando la conexión MySQL web activa');
 installerContract(str_contains($updaterService, 'withFederationSchemaState($state, true)'), 'Buscar actualizaciones repara esquema faltante de forma idempotente');
+installerContract(str_contains($updaterService, 'OfficeSchemaMigrationService($this->app->db())'), 'updater reconcilia esquema Office usando conexión web');
+installerContract(str_contains($updaterService, 'withOfficeSchemaState($state, true)'), 'Buscar actualizaciones repara tablas Office faltantes');
+installerContract(str_contains($officeSchemaMigrator, 'ARCADECLOUD:OFFICE_SCHEMA:BEGIN'), 'migrador Office usa sección marcada del SQL canónico');
+installerContract(str_contains($officeSchemaMigrator, 'OfficeDocumentSessions'), 'migrador Office verifica la tabla documental');
+installerContract(str_contains($updaterJs, 'ArcadeCloud Office DB:'), 'UI del updater muestra estado del esquema Office');
 installerContract(str_contains($schemaMigrator, 'ARCADECLOUD:FEDERATION_SCHEMA:BEGIN'), 'servicio web usa la sección FederationCloud del SQL canónico');
 installerContract(str_contains($schemaMigrator, 'FederationAbuseReports'), 'servicio web verifica tablas de moderación');
 installerContract(str_contains($catalogMigrator, 'FederationSchemaMigrationService'), 'CLI reutiliza el mismo migrador de esquema que la web');

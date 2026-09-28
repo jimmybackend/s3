@@ -2133,6 +2133,66 @@ CREATE TABLE IF NOT EXISTS `MediaWorkerNodeSessions` (
 -- --------------------------------------------------------
 -- ArcadeCloud runtime-safe FederationCloud migration section.
 -- The full dump above is for a NEW database; existing databases use only this marked block.
+-- --------------------------------------------------------
+-- ArcadeCloud Office runtime-safe migration section.
+-- Existing installations may execute only this marked block.
+-- ARCADECLOUD:OFFICE_SCHEMA:BEGIN
+
+CREATE TABLE IF NOT EXISTS `OfficeLaunchTokens` (
+  id_ bigint unsigned NOT NULL AUTO_INCREMENT,
+  TokenHash char(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  UserId int NOT NULL,
+  CreatedAt datetime NOT NULL,
+  ExpiresAt datetime NOT NULL,
+  ConsumedAt datetime DEFAULT NULL,
+  PRIMARY KEY (id_),
+  UNIQUE KEY uq_office_launch_token_hash (TokenHash),
+  KEY idx_office_launch_expiry (ExpiresAt),
+  KEY idx_office_launch_user (UserId, CreatedAt)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `OfficeSessionLeases` (
+  id_ bigint unsigned NOT NULL AUTO_INCREMENT,
+  InstanceId varchar(32) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  UserId int NOT NULL,
+  SessionKeyHash char(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  ClaimedAt datetime NOT NULL,
+  LastActivityAt datetime NOT NULL,
+  ExpiresAt datetime NOT NULL,
+  UpdatedAt datetime NOT NULL,
+  PRIMARY KEY (id_),
+  UNIQUE KEY uq_office_session_instance (InstanceId),
+  KEY idx_office_session_expiry (ExpiresAt),
+  KEY idx_office_session_user (UserId, ExpiresAt)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `OfficeDocumentSessions` (
+  id_ bigint unsigned NOT NULL AUTO_INCREMENT,
+  SessionId char(32) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  ControlTokenHash char(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  UserId int NOT NULL,
+  FileId bigint unsigned NOT NULL,
+  InstanceId varchar(32) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  OriginalKey varchar(1024) NOT NULL,
+  VisibleName varchar(255) NOT NULL,
+  WorkspaceRelative varchar(512) DEFAULT NULL,
+  ExpectedETag varchar(255) DEFAULT NULL,
+  LastWorkspaceMtime bigint NOT NULL DEFAULT 0,
+  LastWorkspaceSize bigint NOT NULL DEFAULT 0,
+  Status varchar(20) NOT NULL,
+  ConflictFileId bigint unsigned DEFAULT NULL,
+  LastSyncedAt datetime DEFAULT NULL,
+  CreatedAt datetime NOT NULL,
+  UpdatedAt datetime NOT NULL,
+  ClosedAt datetime DEFAULT NULL,
+  PRIMARY KEY (id_),
+  UNIQUE KEY uq_office_document_session (SessionId),
+  KEY idx_office_document_user_status (UserId, Status, id_),
+  KEY idx_office_document_file_status (FileId, Status, id_)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ARCADECLOUD:OFFICE_SCHEMA:END
+
 -- ARCADECLOUD:FEDERATION_SCHEMA:BEGIN
 -- Canonical, idempotent FederationCloud schema.
 -- federation_catalog_migrate.php extracts only this marked section.

@@ -6,6 +6,7 @@ namespace ArcadeCloud\Drive\Admin;
 use ArcadeCloud\Drive\Core\DriveApplication;
 use ArcadeCloud\Drive\Federation\FederationSchemaMigrationService;
 use ArcadeCloud\Drive\Federation\FederationModerationSchemaService;
+use ArcadeCloud\Drive\Office\OfficeSchemaMigrationService;
 use ArcadeCloud\Drive\Security\SuperAdminReauthenticationService;
 use RuntimeException;
 use Throwable;
@@ -21,7 +22,8 @@ final class ArcadeCloudUpdaterService
     {
         $state = $this->run('check');
         $state['helper_available'] = true;
-        return $this->withFederationSchemaState($state, true);
+        $state = $this->withFederationSchemaState($state, true);
+        return $this->withOfficeSchemaState($state, true);
     }
 
     public function apply(string $currentPassword, bool $stashLocalChanges = false): array
@@ -29,6 +31,7 @@ final class ArcadeCloudUpdaterService
         (new SuperAdminReauthenticationService($this->app))->requireRecent($currentPassword);
         $result = $this->run($stashLocalChanges ? 'apply-stash' : 'apply');
         $result = $this->withFederationSchemaState($result, true);
+        $result = $this->withOfficeSchemaState($result, true);
         $this->audit((string)($result['previous_commit'] ?? ''), (string)($result['local_commit'] ?? ''));
         return $result;
     }
@@ -63,6 +66,30 @@ final class ArcadeCloudUpdaterService
             $state['federation_schema_reconciled'] = false;
             $state['federation_schema_message'] = $e->getMessage();
         }
+        return $state;
+    }
+
+    private function withOfficeSchemaState(array $state, bool $reconcileMissing): array
+    {
+        try {
+            $migrator = new OfficeSchemaMigrationService($this->app->db());
+            $schema = $migrator->status();
+            if ($reconcileMissing && ($schema['ready'] ?? false) !== true) {
+                $schema = $migrator->reconcile();
+            }
+            $state['office_schema_ready'] = (bool)($schema['ready'] ?? false);
+            $state['office_schema_reconciled'] = (bool)($schema['reconciled'] ?? false);
+            $state['office_schema_message'] = (string)($schema['message'] ?? (
+                ($schema['ready'] ?? false)
+                    ? 'Esquema ArcadeCloud Office preparado.'
+                    : 'Esquema ArcadeCloud Office pendiente.'
+            ));
+        } catch (Throwable $e) {
+            $state['office_schema_ready'] = false;
+            $state['office_schema_reconciled'] = false;
+            $state['office_schema_message'] = $e->getMessage();
+        }
+
         return $state;
     }
 

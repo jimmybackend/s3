@@ -5,6 +5,8 @@ $repo = dirname(__DIR__, 2);
 $canonical = $repo . '/adbbmis1_Cloud.sql';
 $startMarker = '-- ARCADECLOUD:FEDERATION_SCHEMA:BEGIN';
 $endMarker = '-- ARCADECLOUD:FEDERATION_SCHEMA:END';
+$officeStartMarker = '-- ARCADECLOUD:OFFICE_SCHEMA:BEGIN';
+$officeEndMarker = '-- ARCADECLOUD:OFFICE_SCHEMA:END';
 
 function schemaContract(bool $condition, string $message): void
 {
@@ -37,6 +39,8 @@ schemaContract(is_readable($canonical), 'SQL canónico legible');
 $content = (string)file_get_contents($canonical);
 schemaContract(substr_count($content, $startMarker) === 1, 'existe un único marcador FederationCloud BEGIN');
 schemaContract(substr_count($content, $endMarker) === 1, 'existe un único marcador FederationCloud END');
+schemaContract(substr_count($content, $officeStartMarker) === 1, 'existe un único marcador Office BEGIN');
+schemaContract(substr_count($content, $officeEndMarker) === 1, 'existe un único marcador Office END');
 
 $start = strpos($content, $startMarker);
 $end = strpos($content, $endMarker);
@@ -44,6 +48,21 @@ schemaContract($start !== false && $end !== false && $end > $start, 'sección Fe
 
 $section = substr($content, $start + strlen($startMarker), $end - ($start + strlen($startMarker)));
 schemaContract(!preg_match('/\bDROP\s+TABLE\b/i', $section), 'sección de migración FederationCloud no contiene DROP TABLE');
+
+$officeStart = strpos($content, $officeStartMarker);
+$officeEnd = strpos($content, $officeEndMarker);
+schemaContract($officeStart !== false && $officeEnd !== false && $officeEnd > $officeStart, 'sección Office bien delimitada');
+$officeSection = substr(
+    $content,
+    $officeStart + strlen($officeStartMarker),
+    $officeEnd - ($officeStart + strlen($officeStartMarker))
+);
+schemaContract(!preg_match('/\bDROP\s+TABLE\b/i', $officeSection), 'sección Office no contiene DROP TABLE');
+foreach (['OfficeLaunchTokens','OfficeSessionLeases','OfficeDocumentSessions'] as $table) {
+    $pattern = '/CREATE\s+TABLE\s+IF\s+NOT\s+EXISTS\s+[\x60]?' . preg_quote($table, '/') . '[\x60]?/i';
+    schemaContract(preg_match($pattern, $officeSection) === 1, "tabla {$table} presente en sección Office");
+}
+
 
 $requiredTables = [
     'FederationNodes',

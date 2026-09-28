@@ -20,8 +20,30 @@ final class MediaProcessingController extends AbstractJsonController
 
             if ($this->request->method() === 'POST') {
                 $this->requireCsrf();
+
+                if ($this->request->postString('node_activity') === '1') {
+                    JsonResponse::send([
+                        'ok' => true,
+                        'idle' => $node->touchInteractiveActivity($userId),
+                    ]);
+                }
+
+                if ($this->request->postString('node_shutdown_now') === '1') {
+                    JsonResponse::send([
+                        'ok' => true,
+                        'idle' => $node->requestIdleStop($jobs),
+                    ]);
+                }
+
                 $result = $service->enqueue($userId, $this->request->allPost());
                 JsonResponse::send($result, 202);
+            }
+
+            if ($this->request->queryString('idle_status') === '1') {
+                JsonResponse::send([
+                    'ok' => true,
+                    'idle' => $node->idleStatus(),
+                ]);
             }
 
             if ($this->request->queryString('node_status') === '1') {

@@ -1,8 +1,8 @@
 # ArcadeCloud Web OS — roadmap de integración
 
-Estado: **plan maestro inicial**.
+Estado: **roadmap activo; shell Web OS implementado y en producción**.
 
-Este documento define el rumbo para evolucionar ArcadeCloud Drive desde un gestor de archivos DB-first hacia un **entorno de trabajo web federado**, sin convertirlo en un sistema operativo local ni romper los principios actuales de MySQL, S3, seguridad y FederationCloud.
+Este documento define el rumbo para continuar evolucionando ArcadeCloud Drive como **entorno de trabajo web federado**. El shell de ArcadeCloud Web OS ya está implementado y es la experiencia principal después del login. El estado verificable de lo que funciona hoy se mantiene en `ARCADECLOUD_WEB_OS_STATUS.md`.
 
 ## Idea central
 
@@ -101,6 +101,29 @@ Responsabilidades previstas:
 El mismo nodo podrá ofrecer varias funciones sólo cuando ArcadeCloud pueda impedir competencia peligrosa entre tareas incompatibles.
 
 ## Estado actual
+
+### Shell Web OS ya implementado
+
+La etapa de shell/prototipo dejó de ser pendiente. Actualmente ya existen:
+
+- [x] `so.php` como experiencia principal después del login;
+- [x] escritorio, launcher, barra de tareas y ventanas;
+- [x] Mis datos con navegación DB-first y paginación;
+- [x] copiar/cortar/pegar/mover entre carpetas;
+- [x] centro unificado de subida;
+- [x] Centro de Tareas;
+- [x] Mi nodo con métricas en vivo;
+- [x] mantenimiento de memoria/disco encolado;
+- [x] autoapagado del nodo de cómputo por inactividad;
+- [x] seguridad de archivos compartida con el Drive clásico;
+- [x] compartir con ArcadeLink/FederationCloud;
+- [x] Buscar como aplicación, en modo normal e IA;
+- [x] salto desde resultados a la carpeta/página real del archivo;
+- [x] Acerca de / Actualizar dentro del SO;
+- [x] acceso explícito al Drive clásico.
+
+El shell ya no es el siguiente entregable: es la base sobre la que se integrarán Office, navegador remoto, edición de video y otras aplicaciones.
+
 
 ### Carpetas y Bloc de notas
 
@@ -418,9 +441,10 @@ Toda aplicación integrada deberá respetar:
 
 ## Orden de implementación propuesto
 
-- [ ] **Fase 0 — diseño del ArcadeCloud Web OS.**
-- [ ] Fase 0.1 — acciones de carpetas + Bloc de notas dentro del Web OS.
-- [ ] Fase 1 — `NodeCapabilityService` genérico.
+- [x] **Fase 0 — diseño y shell funcional del ArcadeCloud Web OS.**
+- [x] Fase 0.1 — acciones principales de archivos/carpetas y herramientas base dentro del Web OS.
+- [x] Fase 1 base — `NodeCapabilityService` y Mi nodo con capacidad/métricas reales.
+- [ ] Fase 1.1 — ampliar perfiles de capacidad a todas las aplicaciones futuras.
 - [ ] Fase 2 — `ResourceModeManager`.
 - [ ] Fase 3 — nuevo shell/escritorio y ventanas.
 - [ ] Fase 4 — Office.

@@ -53,7 +53,7 @@ mediaContract(str_contains($node, 'IDLE_WARNING_SECONDS = 30'), 'autoapagado dej
 mediaContract(str_contains($node, "?: 600"), 'inactividad mínima del nodo es de 10 minutos');
 mediaContract(str_contains($node, 'touchInteractiveActivity'), 'actividad interactiva evita apagar un nodo en uso');
 mediaContract(str_contains($node, 'requestIdleStop'), 'apagado desde UI usa servicio seguro');
-mediaContract(str_contains($node, "($idle['warning'] ?? false) !== true"), 'apagado manual sólo funciona durante ventana de inactividad');
+mediaContract(str_contains($node, "(\$idle['warning'] ?? false) !== true"), 'apagado manual sólo funciona durante ventana de inactividad');
 mediaContract(str_contains($controller, "postString('node_activity')"), 'controlador acepta heartbeat de s3/so');
 mediaContract(str_contains($controller, "queryString('idle_status')"), 'controlador expone estado para cuenta regresiva');
 mediaContract(str_contains($controller, '$node->handleIdle($jobs)'), 'polling de s3/so también avanza la detección de inactividad');

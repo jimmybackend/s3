@@ -14,6 +14,7 @@ final class MediaWorkerNodeService
     // Una instancia de 8 GiB expone algo menos a Linux por memoria reservada.
     private const MIN_VISIBLE_MEMORY_BYTES = 7 * 1024 * 1024 * 1024;
     private const TEMP_SPACE_MULTIPLIER = 2.25;
+    private const IDLE_WARNING_SECONDS = 30;
 
     private string $instanceId;
     private string $region;
@@ -27,9 +28,12 @@ final class MediaWorkerNodeService
     {
         $this->instanceId = trim((string)(getenv('ARCADECLOUD_MEDIA_WORKER_INSTANCE_ID') ?: ''));
         $this->region = trim((string)(getenv('ARCADECLOUD_MEDIA_WORKER_REGION') ?: getenv('AWS_REGION') ?: 'us-east-1'));
+        // El nodo grande permanece disponible 10 minutos desde la última
+        // actividad real. Después se abre una ventana adicional de 30 s para
+        // que la interfaz pueda avisar y cancelar el apagado.
         $this->idleGraceSeconds = max(
-            60,
-            min(3600, (int)(getenv('ARCADECLOUD_MEDIA_WORKER_IDLE_GRACE_SECONDS') ?: 300))
+            600,
+            min(3600, (int)(getenv('ARCADECLOUD_MEDIA_WORKER_IDLE_GRACE_SECONDS') ?: 600))
         );
 
         $hourly = trim((string)(getenv('ARCADECLOUD_MEDIA_WORKER_HOURLY_USD') ?: ''));
@@ -153,6 +157,124 @@ final class MediaWorkerNodeService
         }
     }
 
+    public function touchInteractiveActivity(int $userId): array
+    {
+        if ($this->instanceId === '' || $this->ec2 === null) {
+            return [
+                'configured' => false,
+                'state' => 'unconfigured',
+                'message' => 'No hay una EC2 de alto rendimiento configurada.',
+            ];
+        }
+
+        $instance = $this->ec2->getInstance($this->instanceId);
+        if (!is_array($instance)) {
+            throw new RuntimeException('No se pudo consultar la EC2 de alto rendimiento.');
+        }
+
+        $state = Ec2Gateway::stateName($instance);
+        if ($state !== 'running') {
+            return $this->idleStatus();
+        }
+
+        $active = $this->sessions->activeForInstance($this->instanceId);
+        if ($active === null) {
+            $active = $this->sessions->create(
+                $userId,
+                $this->instanceId,
+                $this->region,
+                (string)($instance['InstanceType'] ?? ''),
+                $this->hourlyUsd
+            );
+        }
+
+        $this->sessions->clearIdle((string)$active['session_id']);
+        return $this->idleStatus();
+    }
+
+    public function idleStatus(): array
+    {
+        if ($this->instanceId === '' || $this->ec2 === null) {
+            return [
+                'configured' => false,
+                'state' => 'unconfigured',
+                'idle_grace_seconds' => $this->idleGraceSeconds,
+                'warning_seconds' => self::IDLE_WARNING_SECONDS,
+                'warning' => false,
+                'shutdown_in_seconds' => null,
+            ];
+        }
+
+        $instance = $this->ec2->getInstance($this->instanceId);
+        $state = is_array($instance) ? Ec2Gateway::stateName($instance) : 'unknown';
+        $active = $this->sessions->activeForInstance($this->instanceId);
+
+        if ($active !== null && $state === 'stopped') {
+            $this->finalizeStoppedSession($active, 'stopped_detected');
+            $active = null;
+        }
+
+        $idleSince = $active !== null ? trim((string)($active['idle_since'] ?? '')) : '';
+        $idleElapsed = 0;
+        if ($idleSince !== '') {
+            $idleTs = strtotime($idleSince . ' UTC');
+            if ($idleTs !== false) {
+                $idleElapsed = max(0, time() - $idleTs);
+            }
+        }
+
+        $warning = $state === 'running'
+            && $idleSince !== ''
+            && $idleElapsed >= $this->idleGraceSeconds;
+        $shutdownIn = $warning
+            ? max(0, $this->idleGraceSeconds + self::IDLE_WARNING_SECONDS - $idleElapsed)
+            : null;
+
+        return [
+            'configured' => true,
+            'mode' => 'ec2',
+            'instance_id' => $this->instanceId,
+            'region' => $this->region,
+            'state' => $state,
+            'session_active' => $active !== null,
+            'session_status' => $active !== null ? (string)($active['status'] ?? '') : '',
+            'idle_since' => $idleSince,
+            'idle_elapsed_seconds' => $idleElapsed,
+            'idle_grace_seconds' => $this->idleGraceSeconds,
+            'warning_seconds' => self::IDLE_WARNING_SECONDS,
+            'warning' => $warning,
+            'shutdown_in_seconds' => $shutdownIn,
+        ];
+    }
+
+    public function requestIdleStop(MediaProcessingJobRepository $jobs): array
+    {
+        if ($jobs->hasActiveJobs()) {
+            throw new RuntimeException('El nodo tiene tareas multimedia activas y no se puede apagar.');
+        }
+        if ($this->instanceId === '' || $this->ec2 === null) {
+            throw new RuntimeException('No hay una EC2 de alto rendimiento configurada.');
+        }
+
+        $instance = $this->ec2->getInstance($this->instanceId);
+        $state = is_array($instance) ? Ec2Gateway::stateName($instance) : 'unknown';
+        if ($state === 'stopped' || $state === 'stopping') {
+            return $this->idleStatus();
+        }
+        if ($state !== 'running') {
+            throw new RuntimeException('El nodo no está en un estado que permita apagarlo de forma segura.');
+        }
+
+        $active = $this->sessions->activeForInstance($this->instanceId);
+        if ($active !== null) {
+            $this->recordSessionCost($active, 'interactive_idle_stop');
+            $this->sessions->markStopRequested((string)$active['session_id']);
+        }
+
+        $this->ec2->stop($this->instanceId, false);
+        return $this->idleStatus();
+    }
+
     public function handleIdle(MediaProcessingJobRepository $jobs): void
     {
         if ($this->instanceId === '' || $this->ec2 === null) return;
@@ -172,7 +294,10 @@ final class MediaWorkerNodeService
         }
 
         $idleTs = strtotime($idleSince . ' UTC');
-        if ($idleTs === false || (time() - $idleTs) < $this->idleGraceSeconds) {
+        if (
+            $idleTs === false
+            || (time() - $idleTs) < ($this->idleGraceSeconds + self::IDLE_WARNING_SECONDS)
+        ) {
             return;
         }
 
@@ -226,6 +351,7 @@ final class MediaWorkerNodeService
             'authorization_required' => $state === 'stopped',
             'can_enqueue' => in_array($state, ['running','pending','stopped'], true),
             'idle_grace_seconds' => $this->idleGraceSeconds,
+            'idle_warning_seconds' => self::IDLE_WARNING_SECONDS,
             'hourly_usd' => $this->hourlyUsd,
             'cost_configured' => $this->hourlyUsd !== null,
             'session_active' => $active !== null,

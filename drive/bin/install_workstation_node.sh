@@ -6,10 +6,13 @@ APP_ROOT="$(realpath "$APP_ROOT")"
 DRIVE_ROOT="$APP_ROOT/drive"
 IMAGE="arcadecloud/workstation:phase1"
 CONTAINER="arcadecloud-workstation"
+SERVICE_NAME="arcadecloud-workstation.service"
 STATE_ROOT="/var/lib/arcadecloud-office"
 WORKSPACE="$STATE_ROOT/phase1-workspace"
 ENV_FILE="/etc/arcadecloud-drive/workstation.env"
-SERVICE="/etc/systemd/system/arcadecloud-workstation.service"
+SERVICE="/etc/systemd/system/$SERVICE_NAME"
+OFFICE_UID=10001
+OFFICE_GID=10001
 
 [[ "${EUID}" -eq 0 ]] || { echo "Ejecuta como root." >&2; exit 1; }
 [[ -f /etc/os-release ]] || { echo "No se pudo detectar el sistema operativo." >&2; exit 1; }
@@ -30,8 +33,15 @@ if ! command -v docker >/dev/null 2>&1; then
 fi
 systemctl enable --now docker
 
-mkdir -p "$STATE_ROOT" "$WORKSPACE" "$(dirname "$ENV_FILE")"
-chmod 0750 "$STATE_ROOT"\nchown 1000:1000 "$WORKSPACE"\nchmod 0750 "$WORKSPACE"
+mkdir -p "$STATE_ROOT" "$WORKSPACE"
+chmod 0750 "$STATE_ROOT"
+chown "$OFFICE_UID:$OFFICE_GID" "$WORKSPACE"
+chmod 0750 "$WORKSPACE"
+
+# ArcadeCloud ya administra /etc/arcadecloud-drive y su grupo PHP-FPM.
+# Crear la ruta si falta, pero nunca cambiar propietario/modo del directorio
+# ni de runtime-env.json desde el instalador de Workstation.
+mkdir -p "$(dirname "$ENV_FILE")"
 
 if [[ ! -f "$ENV_FILE" ]]; then
   umask 077
@@ -42,6 +52,7 @@ VNC_GEOMETRY=1600x900
 VNC_DEPTH=24
 EOF
 fi
+chown root:root "$ENV_FILE"
 chmod 0600 "$ENV_FILE"
 
 docker build -t "$IMAGE" "$DRIVE_ROOT/docker/workstation"
@@ -60,7 +71,7 @@ ExecStart=/usr/bin/docker run --rm --name $CONTAINER \
   --env-file $ENV_FILE \
   --publish 127.0.0.1:6080:6080 \
   --volume $WORKSPACE:/workspace \
-  --memory=5g --cpus=3 \
+  --memory=5g --cpus=3 --shm-size=512m \
   --security-opt=no-new-privileges:true \
   --cap-drop=ALL \
   $IMAGE
@@ -75,7 +86,12 @@ WantedBy=multi-user.target
 EOF
 
 systemctl daemon-reload
-systemctl enable --now arcadecloud-workstation.service
+
+# Fase 1: el servicio queda disponible pero NO habilitado al boot.
+# El broker/Resource Mode Manager será quien lo inicie cuando exista una
+# sesión Office. Así un arranque exclusivo para multimedia no consume GUI.
+systemctl disable "$SERVICE_NAME" >/dev/null 2>&1 || true
+systemctl restart "$SERVICE_NAME"
 
 echo "Esperando health local..."
 for _ in {1..30}; do
@@ -85,11 +101,12 @@ for _ in {1..30}; do
     echo "Fase 1 instalada. noVNC sólo escucha en 127.0.0.1:6080."
     echo "Workspace de prueba: $WORKSPACE"
     echo "La contraseña VNC permanece sólo en $ENV_FILE."
+    echo "Workstation queda deshabilitada al boot; se inicia sólo bajo demanda."
     exit 0
   fi
   sleep 2
 done
 
-systemctl --no-pager --full status arcadecloud-workstation.service || true
+systemctl --no-pager --full status "$SERVICE_NAME" || true
 echo "La workstation no alcanzó estado saludable." >&2
 exit 1

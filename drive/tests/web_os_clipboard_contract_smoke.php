@@ -21,6 +21,8 @@ $files = [
     'folderRepo' => $root . '/src/Storage/FolderMutationRepository.php',
     'moveService' => $root . '/src/Application/MoveJobService.php',
     'moveController' => $root . '/src/Http/Controller/MoveJobController.php',
+    'share' => $root . '/js/so-share.js',
+    'arcadelinkShare' => $root . '/js/arcadelink-share.js',
 ];
 
 foreach ($files as $name => $path) {
@@ -56,8 +58,11 @@ $assert(str_contains($files['clipboard'], "'Mover aquí'"), 'botón superior dis
 $assert(str_contains($files['clipboard'], "'Pegar aquí'"), 'botón superior distingue copia');
 $assert(str_contains($files['clipboard'], "dataset.osPasteCurrent"), 'botón superior se identifica como destino actual');
 $assert(str_contains($files['clipboardCss'], '.os-toolbar-paste'), 'botón superior tiene estilo propio');
-$assert(str_contains($files['moveTasks'], 'so-clipboard.js?v=20260927-3'), 'cambio de portapapeles invalida caché del navegador');
-$assert(str_contains($files['clipboard'], "generar_token.php"), 'menú del SO puede compartir archivos');
+$assert(str_contains($files['moveTasks'], 'so-clipboard.js?v=20260927-4'), 'cambio de compartir invalida caché del navegador');
+$assert(str_contains($files['clipboard'], 'ArcadeCloudOsShare?.open'), 'menú del SO abre panel completo de compartir');
+$assert(!str_contains($files['clipboard'], "¿Cuántos días debe funcionar"), 'compartir ya no usa prompt del navegador');
+$assert(str_contains($files['share'], "generar_token.php"), 'panel completo genera enlace directo');
+$assert(str_contains($files['arcadelinkShare'], 'federationcloud/create.php'), 'panel completo conserva ArcadeLink FederationCloud');
 $assert(str_contains($files['clipboard'], "eliminar_archivo.php"), 'menú del SO puede eliminar archivos');
 $assert(str_contains($files['clipboard'], "osTransferHud"), 'SO muestra medidor de transferencia');
 $assert(str_contains($files['moveTasks'], "drive:move-task-progress"), 'polling publica progreso al SO');

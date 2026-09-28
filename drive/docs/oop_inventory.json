@@ -4,8 +4,8 @@
     "php_class_modules": 274,
     "php_needs_migration": 0,
     "php_tests": 44,
-    "js_total": 56,
-    "js_class_modules": 56,
+    "js_total": 57,
+    "js_class_modules": 57,
     "js_needs_migration": 0,
     "js_compatibility_facades": 8
   },
@@ -1786,7 +1786,7 @@
     },
     {
       "path": "drive/s3.php",
-      "lines": 2366,
+      "lines": 2369,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -1881,7 +1881,7 @@
     },
     {
       "path": "drive/so.php",
-      "lines": 1528,
+      "lines": 1613,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -3915,7 +3915,7 @@
     },
     {
       "path": "drive/src/Http/Controller/AuthController.php",
-      "lines": 114,
+      "lines": 119,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -4382,7 +4382,7 @@
     },
     {
       "path": "drive/src/Http/Controller/MediaProcessingController.php",
-      "lines": 53,
+      "lines": 79,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -4793,7 +4793,7 @@
     },
     {
       "path": "drive/src/Media/MediaWorkerNodeService.php",
-      "lines": 445,
+      "lines": 579,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -6324,7 +6324,7 @@
     },
     {
       "path": "drive/tests/installer_service_reconcile_contract_smoke.php",
-      "lines": 159,
+      "lines": 161,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -6341,7 +6341,7 @@
     },
     {
       "path": "drive/tests/media_processing_contract_smoke.php",
-      "lines": 164,
+      "lines": 173,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -6610,7 +6610,7 @@
     },
     {
       "path": "drive/tests/web_os_contract_smoke.php",
-      "lines": 269,
+      "lines": 312,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -7268,6 +7268,20 @@
       ]
     },
     {
+      "path": "drive/js/compute-node-idle.js",
+      "lines": 239,
+      "kind": "class/module",
+      "classes": [
+        "ArcadeCloudComputeIdleGuard"
+      ],
+      "functions": [],
+      "window_assign": [],
+      "window_func": [],
+      "top_vars": [],
+      "iife": false,
+      "issues": []
+    },
+    {
       "path": "drive/js/descarga-multiple.js",
       "lines": 114,
       "kind": "class/module",
@@ -7845,7 +7859,7 @@
     },
     {
       "path": "drive/js/so.js",
-      "lines": 964,
+      "lines": 1209,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudOsShell"

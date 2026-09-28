@@ -156,6 +156,10 @@ a{text-decoration:none;color:inherit}
   box-shadow:inset 0 0 0 1px rgba(38,198,255,.14)
 }
 .os-page-button.is-disabled{opacity:.3;cursor:default;pointer-events:none}
+.os-page-ellipsis{
+  min-width:22px;height:30px;padding:0 3px;display:inline-flex;align-items:center;justify-content:center;
+  color:var(--os-soft);font-size:.8rem;font-weight:800;letter-spacing:.08em
+}
 .os-explorer-body{padding:12px}
 .os-entry-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:8px;align-content:start}
 .os-entry{

@@ -1,6 +1,7 @@
 <?php
 declare(strict_types=1);
 
+use ArcadeCloud\Drive\Application\FileListService;
 use ArcadeCloud\Drive\System\NodeCapabilityService;
 use ArcadeCloud\Drive\View\FileIconResolver;
 use ArcadeCloud\Drive\View\FileViewHelper;
@@ -53,7 +54,7 @@ $visibleRoute = $app->folderQueryService()->displayPathForUser($userId, $current
 $page = max(1, (int)($_GET['pagina'] ?? 1));
 $fileState = $app->fileListService()->load($userId, $currentRoute, [
     'pagina' => $page,
-    'limite' => 20,
+    'limite' => FileListService::WEB_OS_PAGE_SIZE,
     'buscar' => (string)($_GET['buscar'] ?? ''),
 ]);
 $page = max(1, (int)($fileState['page'] ?? 1));
@@ -74,8 +75,27 @@ foreach (($fileState['rows'] ?? []) as $folderInfoRow) {
         $pageProtectedOpenFiles++;
     }
 }
-$pagerStart = max(1, min($page - 1, max(1, $pages - 2)));
-$pagerEnd = min($pages, $pagerStart + 2);
+$pagerPageSet = [];
+foreach ([
+    [1, min(3, $pages)],
+    [max(1, $page - 2), min($pages, $page + 2)],
+    [max(1, $pages - 2), $pages],
+] as [$rangeStart, $rangeEnd]) {
+    for ($pagerPageNumber = $rangeStart; $pagerPageNumber <= $rangeEnd; $pagerPageNumber++) {
+        $pagerPageSet[$pagerPageNumber] = true;
+    }
+}
+ksort($pagerPageSet, SORT_NUMERIC);
+
+$pagerItems = [];
+$pagerPrevious = null;
+foreach (array_keys($pagerPageSet) as $pagerPageNumber) {
+    if ($pagerPrevious !== null && ($pagerPageNumber - $pagerPrevious) > 1) {
+        $pagerItems[] = null;
+    }
+    $pagerItems[] = $pagerPageNumber;
+    $pagerPrevious = $pagerPageNumber;
+}
 $files = $fileState['rows'];
 $storageUsage = $app->storageUsageService()->getUsage($userId);
 
@@ -278,17 +298,19 @@ $currentFolderName = $currentIsRoot
             <span class="os-page-button is-disabled" aria-hidden="true">&lt;</span>
           <?php endif; ?>
 
-          <?php for ($pagerPage = $pagerStart; $pagerPage <= $pagerEnd; $pagerPage++): ?>
-            <?php if ($pagerPage === $page): ?>
-              <span class="os-page-button is-active" aria-current="page"><?= $pagerPage ?></span>
+          <?php foreach ($pagerItems as $pagerItem): ?>
+            <?php if ($pagerItem === null): ?>
+              <span class="os-page-ellipsis" aria-hidden="true">…</span>
+            <?php elseif ($pagerItem === $page): ?>
+              <span class="os-page-button is-active" aria-current="page"><?= $pagerItem ?></span>
             <?php else: ?>
-              <a href="so.php?ruta=<?= rawurlencode($currentRoute) ?>&pagina=<?= $pagerPage ?>"
+              <a href="so.php?ruta=<?= rawurlencode($currentRoute) ?>&pagina=<?= $pagerItem ?>"
                  data-explorer-route="<?= $e($currentRoute) ?>"
-                 data-explorer-page="<?= $pagerPage ?>"
+                 data-explorer-page="<?= $pagerItem ?>"
                  class="os-page-button"
-                 aria-label="Página <?= $pagerPage ?>"><?= $pagerPage ?></a>
+                 aria-label="Página <?= $pagerItem ?>"><?= $pagerItem ?></a>
             <?php endif; ?>
-          <?php endfor; ?>
+          <?php endforeach; ?>
 
           <?php if ($page < $pages): ?>
             <a href="so.php?ruta=<?= rawurlencode($currentRoute) ?>&pagina=<?= $page + 1 ?>"

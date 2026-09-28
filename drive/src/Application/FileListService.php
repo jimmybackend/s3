@@ -9,6 +9,8 @@ use RuntimeException;
 
 final class FileListService
 {
+    public const WEB_OS_PAGE_SIZE = 30;
+
     public function __construct(private mysqli $db)
     {
     }

@@ -5,6 +5,8 @@ DISPLAY_NUMBER="${DISPLAY_NUMBER:-1}"
 VNC_GEOMETRY="${VNC_GEOMETRY:-1600x900}"
 VNC_DEPTH="${VNC_DEPTH:-24}"
 VNC_PASSWORD="${VNC_PASSWORD:-}"
+DISPLAY=":${DISPLAY_NUMBER}"
+export DISPLAY
 
 if [[ -z "$VNC_PASSWORD" || "${#VNC_PASSWORD}" -lt 8 ]]; then
   echo "VNC_PASSWORD debe contener al menos 8 caracteres." >&2
@@ -39,11 +41,15 @@ VNC_PORT="$((5900 + DISPLAY_NUMBER))"
 websockify --web=/usr/share/novnc/ 0.0.0.0:6080 "127.0.0.1:${VNC_PORT}" &
 PROXY_PID=$!
 
-sleep 1
+sleep 3
 kill -0 "$PROXY_PID" 2>/dev/null || {
   echo "noVNC/websockify no pudo iniciar." >&2
   exit 1
 }
+
+# Fase 1: abrir el centro de LibreOffice automáticamente una vez disponible XFCE.
+# En fases posteriores el broker podrá abrir directamente el archivo solicitado.
+nohup libreoffice --nologo --norestore >/tmp/libreoffice.log 2>&1 &
 
 echo "ArcadeCloud Workstation lista en noVNC :6080."
 wait "$PROXY_PID"

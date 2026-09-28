@@ -40,6 +40,10 @@ final class MediaProcessingController extends AbstractJsonController
             }
 
             if ($this->request->queryString('idle_status') === '1') {
+                // La UI también participa en la observación de inactividad. Esto
+                // permite iniciar/continuar el contador aunque el nodo esté
+                // encendido para una app interactiva y no tenga un job multimedia.
+                $node->handleIdle($jobs);
                 JsonResponse::send([
                     'ok' => true,
                     'idle' => $node->idleStatus(),

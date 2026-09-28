@@ -4,8 +4,8 @@
     "php_class_modules": 274,
     "php_needs_migration": 0,
     "php_tests": 44,
-    "js_total": 55,
-    "js_class_modules": 55,
+    "js_total": 56,
+    "js_class_modules": 56,
     "js_needs_migration": 0,
     "js_compatibility_facades": 8
   },
@@ -417,7 +417,7 @@
     },
     {
       "path": "drive/bloque_archivos.php",
-      "lines": 705,
+      "lines": 719,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -1786,7 +1786,7 @@
     },
     {
       "path": "drive/s3.php",
-      "lines": 2363,
+      "lines": 2366,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -1881,7 +1881,7 @@
     },
     {
       "path": "drive/so.php",
-      "lines": 1475,
+      "lines": 1485,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -6595,7 +6595,7 @@
     },
     {
       "path": "drive/tests/web_os_clipboard_contract_smoke.php",
-      "lines": 79,
+      "lines": 98,
       "kind": "test script",
       "classes": 0,
       "functions": [],
@@ -6610,7 +6610,7 @@
     },
     {
       "path": "drive/tests/web_os_contract_smoke.php",
-      "lines": 248,
+      "lines": 251,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -7219,7 +7219,7 @@
     },
     {
       "path": "drive/js/background-tasks.js",
-      "lines": 713,
+      "lines": 785,
       "kind": "class/module",
       "classes": [
         "BackgroundTaskCenter"
@@ -7968,8 +7968,22 @@
       "issues": []
     },
     {
+      "path": "drive/js/upload-center.js",
+      "lines": 917,
+      "kind": "class/module",
+      "classes": [
+        "ArcadeCloudUploadCenter"
+      ],
+      "functions": [],
+      "window_assign": [],
+      "window_func": [],
+      "top_vars": [],
+      "iife": false,
+      "issues": []
+    },
+    {
       "path": "drive/js/upload-destination.js",
-      "lines": 63,
+      "lines": 74,
       "kind": "class/module",
       "classes": [
         "UploadDestinationModule"

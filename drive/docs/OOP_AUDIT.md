@@ -8,8 +8,8 @@
 - PHP que ya contienen clases/interfaces: **274**
 - PHP marcados para migración/revisión: **0**
 - Tests PHP separados del objetivo OOP de runtime: **44**
-- JavaScript analizados: **55**
-- JavaScript que ya contienen clases: **55**
+- JavaScript analizados: **56**
+- JavaScript que ya contienen clases: **56**
 - JavaScript sin clase/encapsulación OOP: **0**
 - JavaScript OOP con fachada `window` de compatibilidad: **8**
 
@@ -53,7 +53,7 @@
 | `drive/bin/sync_worker.php` | 11 | thin cli entrypoint | 0 | — | — | — | — |
 | `drive/bin/transcribe_reconcile.php` | 54 | thin cli entrypoint | 0 | — | — | — | — |
 | `drive/bin/upload_cleanup.php` | 11 | thin cli entrypoint | 0 | — | — | — | — |
-| `drive/bloque_archivos.php` | 705 | view/entrypoint | 0 | ⚠️ | — | — | — |
+| `drive/bloque_archivos.php` | 719 | view/entrypoint | 0 | ⚠️ | — | — | — |
 | `drive/bloque_carpetas.php` | 226 | view/entrypoint | 0 | ⚠️ | — | — | — |
 | `drive/bloque_footer.php` | 207 | view/entrypoint | 0 | ⚠️ | — | — | — |
 | `drive/buscar_archivo.php` | 10 | thin endpoint | 0 | — | — | — | — |
@@ -143,13 +143,13 @@
 | `drive/relock_file.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/renombrar_archivo.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/renombrar_carpeta.php` | 10 | thin endpoint | 0 | — | — | — | — |
-| `drive/s3.php` | 2363 | view/entrypoint | 0 | ⚠️ | — | — | — |
+| `drive/s3.php` | 2366 | view/entrypoint | 0 | ⚠️ | — | — | — |
 | `drive/server-console.php` | 12 | thin endpoint | 0 | — | — | — | — |
 | `drive/server-settings.php` | 11 | thin endpoint | 0 | — | — | — | — |
 | `drive/set_file_security.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/setup/api.php` | 15 | thin endpoint | 0 | — | — | — | — |
 | `drive/setup/index.php` | 90 | view/entrypoint | 0 | — | — | — | — |
-| `drive/so.php` | 1475 | view/entrypoint | 0 | — | — | — | — |
+| `drive/so.php` | 1485 | view/entrypoint | 0 | — | — | — | — |
 | `drive/src/Activity/ActivityCostRecorder.php` | 155 | class/module | 1 | — | — | — | — |
 | `drive/src/Activity/ActivityCostRepository.php` | 198 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Activity/ActivityCostService.php` | 153 | class/module | 1 | — | — | — | — |
@@ -457,8 +457,8 @@
 | `drive/tests/upload_catalog_registration_regression.php` | 125 | test script | 0 | — | ⚠️ | — | — |
 | `drive/tests/user_identity_presenter_smoke.php` | 30 | test script | 0 | — | — | — | — |
 | `drive/tests/user_profile_validator_smoke.php` | 72 | test script | 0 | — | — | — | — |
-| `drive/tests/web_os_clipboard_contract_smoke.php` | 79 | test script | 0 | — | — | — | — |
-| `drive/tests/web_os_contract_smoke.php` | 248 | test script | 0 | — | — | — | — |
+| `drive/tests/web_os_clipboard_contract_smoke.php` | 98 | test script | 0 | — | — | — | — |
+| `drive/tests/web_os_contract_smoke.php` | 251 | test script | 0 | — | — | — | — |
 | `drive/thumb.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/token_audio.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/token_texto.php` | 10 | thin endpoint | 0 | — | — | — | — |
@@ -500,7 +500,7 @@
 | `drive/js/audiovideo.js` | 619 | class/module | AudiovideoModule | — | audioNext, audioPrev, reproducirVideoDesde, videoNext, videoPlayPause, videoPrev | window functions: audioNext, audioPrev, reproducirVideoDesde, videoNext, videoPlayPause, videoPrev, wavePlayPause |
 | `drive/js/aws-comprehend.js` | 354 | class/module | AwsComprehendModule, AwsFileActionRouter | — | — | — |
 | `drive/js/background-task-feedback.js` | 180 | class/module | BackgroundTaskFeedbackModule | — | — | — |
-| `drive/js/background-tasks.js` | 713 | class/module | BackgroundTaskCenter | — | — | — |
+| `drive/js/background-tasks.js` | 785 | class/module | BackgroundTaskCenter | — | — | — |
 | `drive/js/carpetas.js` | 1196 | class/module | CarpetasModule | — | actualizarBloqueCarpetas | window functions: actualizarBloqueCarpetas |
 | `drive/js/descarga-multiple.js` | 114 | class/module | DescargaMultipleModule | — | — | — |
 | `drive/js/descarga-uno.js` | 110 | class/module | DescargaUnoModule | — | — | — |
@@ -544,7 +544,8 @@
 | `drive/js/subir.js` | 358 | class/module | SubirModule | — | — | — |
 | `drive/js/theme-state-bridge.js` | 73 | class/module | ThemeStateBridge | — | — | — |
 | `drive/js/transcribe-background.js` | 323 | class/module | TranscribeBackgroundModule | — | — | — |
-| `drive/js/upload-destination.js` | 63 | class/module | UploadDestinationModule | — | — | — |
+| `drive/js/upload-center.js` | 917 | class/module | ArcadeCloudUploadCenter | — | — | — |
+| `drive/js/upload-destination.js` | 74 | class/module | UploadDestinationModule | — | — | — |
 | `drive/js/ver-metadatos.js` | 75 | class/module | VerMetadatosModule | — | verMetadatos | window functions: verMetadatos |
 | `drive/js/ver-pdf.js` | 112 | class/module | VerPdfModule | — | — | — |
 

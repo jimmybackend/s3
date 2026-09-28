@@ -474,8 +474,10 @@
       "active": true,
       "references": [
         "drive/s3.php",
+        "drive/tests/web_os_contract_smoke.php",
         "drive/js/elimina-multiple.js",
-        "drive/js/file-block.js"
+        "drive/js/file-block.js",
+        "drive/js/so.js"
       ]
     },
     {
@@ -515,7 +517,10 @@
       "path": "drive/download_multiple.php",
       "size": 254,
       "active": false,
-      "references": []
+      "references": [
+        "drive/tests/web_os_contract_smoke.php",
+        "drive/js/so.js"
+      ]
     },
     {
       "path": "drive/ec2-cron.php",
@@ -1115,6 +1120,7 @@
       "active": false,
       "references": [
         "drive/tests/media_processing_contract_smoke.php",
+        "drive/js/compute-node-idle.js",
         "drive/js/media-processing.js"
       ]
     },
@@ -1243,7 +1249,9 @@
       "size": 261,
       "active": false,
       "references": [
-        "drive/js/archivos.js"
+        "drive/tests/web_os_contract_smoke.php",
+        "drive/js/archivos.js",
+        "drive/js/so.js"
       ]
     },
     {
@@ -1264,7 +1272,7 @@
     },
     {
       "path": "drive/s3.php",
-      "size": 96606,
+      "size": 96849,
       "active": true,
       "references": [
         "drive/app_bootstrap.php",
@@ -1272,7 +1280,6 @@
         "drive/fastdrive-control.php",
         "drive/personal_aws_bootstrap.php",
         "drive/so.php",
-        "drive/src/Http/Controller/AuthController.php",
         "drive/src/View/ActivityCostPageRenderer.php",
         "drive/src/View/FederationModerationPageRenderer.php",
         "drive/src/View/FederationPageRenderer.php",
@@ -1316,7 +1323,9 @@
       "size": 262,
       "active": false,
       "references": [
-        "drive/js/archivos.js"
+        "drive/tests/web_os_contract_smoke.php",
+        "drive/js/archivos.js",
+        "drive/js/so.js"
       ]
     },
     {
@@ -1358,10 +1367,11 @@
     },
     {
       "path": "drive/so.php",
-      "size": 80591,
+      "size": 84586,
       "active": true,
       "references": [
         "drive/s3.php",
+        "drive/src/Http/Controller/AuthController.php",
         "drive/tests/server_console_contract_smoke.php",
         "drive/tests/web_os_clipboard_contract_smoke.php",
         "drive/tests/web_os_contract_smoke.php",
@@ -1440,7 +1450,7 @@
     },
     {
       "path": "drive/src/Admin/ManagedRuntimeEnvironment.php",
-      "size": 20170,
+      "size": 20172,
       "active": true,
       "references": [
         "drive/app_bootstrap.php",
@@ -2405,7 +2415,7 @@
     },
     {
       "path": "drive/src/Http/Controller/AuthController.php",
-      "size": 3411,
+      "size": 3656,
       "active": false,
       "references": [
         "drive/tests/federation_drop_contract_smoke.php",
@@ -2622,10 +2632,11 @@
     },
     {
       "path": "drive/src/Http/Controller/MediaProcessingController.php",
-      "size": 1949,
+      "size": 3004,
       "active": false,
       "references": [
-        "drive/tests/media_processing_contract_smoke.php"
+        "drive/tests/media_processing_contract_smoke.php",
+        "drive/tests/web_os_contract_smoke.php"
       ]
     },
     {
@@ -2803,10 +2814,11 @@
     },
     {
       "path": "drive/src/Media/MediaWorkerNodeService.php",
-      "size": 17098,
+      "size": 22366,
       "active": false,
       "references": [
-        "drive/tests/media_processing_contract_smoke.php"
+        "drive/tests/media_processing_contract_smoke.php",
+        "drive/tests/web_os_contract_smoke.php"
       ]
     },
     {
@@ -3466,13 +3478,13 @@
     },
     {
       "path": "drive/tests/installer_service_reconcile_contract_smoke.php",
-      "size": 14999,
+      "size": 15265,
       "active": false,
       "references": []
     },
     {
       "path": "drive/tests/media_processing_contract_smoke.php",
-      "size": 14990,
+      "size": 16040,
       "active": false,
       "references": []
     },
@@ -3574,7 +3586,7 @@
     },
     {
       "path": "drive/tests/web_os_contract_smoke.php",
-      "size": 25176,
+      "size": 30232,
       "active": false,
       "references": []
     },
@@ -3648,7 +3660,9 @@
       "size": 261,
       "active": false,
       "references": [
-        "drive/js/archivos.js"
+        "drive/tests/web_os_contract_smoke.php",
+        "drive/js/archivos.js",
+        "drive/js/so.js"
       ]
     },
     {

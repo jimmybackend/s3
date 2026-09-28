@@ -24,7 +24,7 @@
 | `drive/bloque_carpetas.php` | `drive/s3.php`, `drive/js/carpetas.js`, `drive/js/obtenerFiltros.js` |
 | `drive/bloque_footer.php` | `drive/s3.php`, `drive/tests/federation_moderation_contract_smoke.php` |
 | `drive/costos_aws.php` | `drive/s3.php` |
-| `drive/delete_multiple.php` | `drive/s3.php`, `drive/js/elimina-multiple.js`, `drive/js/file-block.js` |
+| `drive/delete_multiple.php` | `drive/s3.php`, `drive/tests/web_os_contract_smoke.php`, `drive/js/elimina-multiple.js`, `drive/js/file-block.js`, `drive/js/so.js` |
 | `drive/descargar_archivo.php` | `drive/bloque_archivos.php`, `drive/so.php`, `drive/tests/arcadelink_bulk_contract_regression.php` |
 | `drive/ec2.php` | `drive/personal_aws_bootstrap.php`, `drive/s3.php`, `drive/src/Admin/ServerConsoleService.php`, `drive/src/View/PersonalAwsPageRenderer.php`, `drive/tests/server_console_contract_smoke.php`, `drive/js/estilo.js` |
 | `drive/editor.php` | `drive/bloque_archivos.php`, `drive/so.php`, `drive/js/editar-txt.js` |
@@ -40,10 +40,10 @@
 | `drive/logout.php` | `drive/s3.php`, `drive/so.php`, `drive/src/Federation/FederationDropGoogleAuthService.php`, `drive/src/View/FederationDropPageRenderer.php`, `drive/tests/web_os_contract_smoke.php` |
 | `drive/personal_aws_bootstrap.php` | `drive/aws.php`, `drive/ec2.php`, `drive/server-console.php`, `drive/tests/server_console_contract_smoke.php` |
 | `drive/psesion.php` | `drive/index.php`, `drive/login.php`, `drive/tests/index_federation_drop_smoke.php` |
-| `drive/s3.php` | `drive/app_bootstrap.php`, `drive/ec2.php`, `drive/fastdrive-control.php`, `drive/personal_aws_bootstrap.php`, `drive/so.php`, `drive/src/Http/Controller/AuthController.php`, `drive/src/View/ActivityCostPageRenderer.php`, `drive/src/View/FederationModerationPageRenderer.php`, `drive/src/View/FederationPageRenderer.php`, `drive/src/View/FederationPortalRenderer.php`, `drive/src/View/FederationReportPageRenderer.php`, `drive/src/View/PersonalAwsPageRenderer.php`, `drive/tests/index_federation_drop_smoke.php`, `drive/tests/media_processing_contract_smoke.php`, `drive/tests/web_os_clipboard_contract_smoke.php`, `drive/tests/web_os_contract_smoke.php`, `drive/up.php`, `drive/js/archivos.js`, `drive/js/carpetas.js`, `drive/js/federation-share-drive.js`, `drive/js/so.js`, `drive/js/subir.js` |
+| `drive/s3.php` | `drive/app_bootstrap.php`, `drive/ec2.php`, `drive/fastdrive-control.php`, `drive/personal_aws_bootstrap.php`, `drive/so.php`, `drive/src/View/ActivityCostPageRenderer.php`, `drive/src/View/FederationModerationPageRenderer.php`, `drive/src/View/FederationPageRenderer.php`, `drive/src/View/FederationPortalRenderer.php`, `drive/src/View/FederationReportPageRenderer.php`, `drive/src/View/PersonalAwsPageRenderer.php`, `drive/tests/index_federation_drop_smoke.php`, `drive/tests/media_processing_contract_smoke.php`, `drive/tests/web_os_clipboard_contract_smoke.php`, `drive/tests/web_os_contract_smoke.php`, `drive/up.php`, `drive/js/archivos.js`, `drive/js/carpetas.js`, `drive/js/federation-share-drive.js`, `drive/js/so.js`, `drive/js/subir.js` |
 | `drive/server-console.php` | `drive/ec2.php`, `drive/so.php`, `drive/tests/server_console_contract_smoke.php`, `drive/tests/web_os_contract_smoke.php` |
 | `drive/setup/index.php` | `drive/bloque_archivos.php`, `drive/bloque_carpetas.php`, `drive/fastdrive-control.php`, `drive/s3.php`, `drive/so.php`, `drive/src/Http/Controller/ActivityCostController.php`, `drive/src/Http/Controller/AuthController.php`, `drive/src/Http/Controller/FederationModerationController.php`, `drive/src/Http/Controller/FederationOsAdminController.php`, `drive/src/Security/SessionManager.php`, `drive/src/View/FederationReportPageRenderer.php`, `drive/tests/index_federation_drop_smoke.php`, `drive/tests/web_os_contract_smoke.php`, `drive/up.php` |
-| `drive/so.php` | `drive/s3.php`, `drive/tests/server_console_contract_smoke.php`, `drive/tests/web_os_clipboard_contract_smoke.php`, `drive/tests/web_os_contract_smoke.php`, `drive/js/so-folders.js`, `drive/js/so.js` |
+| `drive/so.php` | `drive/s3.php`, `drive/src/Http/Controller/AuthController.php`, `drive/tests/server_console_contract_smoke.php`, `drive/tests/web_os_clipboard_contract_smoke.php`, `drive/tests/web_os_contract_smoke.php`, `drive/js/so-folders.js`, `drive/js/so.js` |
 | `drive/src/Admin/ManagedRuntimeEnvironment.php` | `drive/app_bootstrap.php`, `drive/personal_aws_bootstrap.php`, `drive/setup/api.php`, `drive/tests/fastdrive_control_contract_smoke.php`, `drive/tests/installer_service_reconcile_contract_smoke.php`, `drive/tests/server_admin_config_smoke.php` |
 | `drive/src/Setup/BootstrapSetupAuth.php` | `drive/setup/api.php`, `drive/setup/index.php`, `drive/tests/setup_bootstrap_smoke.php` |
 | `drive/src/Setup/SetupEntryGuard.php` | `drive/index.php`, `drive/tests/setup_entry_guard_smoke.php` |
@@ -87,7 +87,7 @@
 | `drive/descargar.php` | `drive/js/descarga-uno.js` |
 | `drive/descargar_zip.php` | `drive/js/descarga-multiple.js`, `drive/js/file-block.js` |
 | `drive/download.php` | ninguna |
-| `drive/download_multiple.php` | ninguna |
+| `drive/download_multiple.php` | `drive/tests/web_os_contract_smoke.php`, `drive/js/so.js` |
 | `drive/ec2-cron.php` | ninguna |
 | `drive/eliminar_archivo.php` | `drive/tests/web_os_clipboard_contract_smoke.php`, `drive/js/archivos.js`, `drive/js/elimina-uno.js`, `drive/js/so-clipboard.js` |
 | `drive/eliminar_carpeta.php` | `drive/js/carpetas.js` |
@@ -133,7 +133,7 @@
 | `drive/generar_token.php` | `drive/tests/web_os_clipboard_contract_smoke.php`, `drive/js/archivos.js`, `drive/js/so-clipboard.js` |
 | `drive/listar_carpetas.php` | `drive/js/carpetas.js` |
 | `drive/media_playlist.php` | `drive/js/media-floating.js` |
-| `drive/media_processing.php` | `drive/tests/media_processing_contract_smoke.php`, `drive/js/media-processing.js` |
+| `drive/media_processing.php` | `drive/tests/media_processing_contract_smoke.php`, `drive/js/compute-node-idle.js`, `drive/js/media-processing.js` |
 | `drive/move_multiple.php` | ninguna |
 | `drive/move_task.php` | `drive/js/move-tasks.js` |
 | `drive/move_task_status.php` | `drive/js/move-tasks.js` |
@@ -147,11 +147,11 @@
 | `drive/procesar_textract.php` | `drive/js/polly.js` |
 | `drive/profile.php` | `drive/js/profile.js` |
 | `drive/rekognition_labels.php` | `drive/js/polly.js` |
-| `drive/relock_file.php` | `drive/js/archivos.js` |
+| `drive/relock_file.php` | `drive/tests/web_os_contract_smoke.php`, `drive/js/archivos.js`, `drive/js/so.js` |
 | `drive/renombrar_archivo.php` | `drive/js/archivos.js` |
 | `drive/renombrar_carpeta.php` | `drive/js/carpetas.js` |
 | `drive/server-settings.php` | `drive/src/View/FederationOsAdminRenderer.php`, `drive/js/server-admin.js` |
-| `drive/set_file_security.php` | `drive/js/archivos.js` |
+| `drive/set_file_security.php` | `drive/tests/web_os_contract_smoke.php`, `drive/js/archivos.js`, `drive/js/so.js` |
 | `drive/setup/api.php` | `drive/src/View/FederationModerationPageRenderer.php`, `drive/src/View/FederationReportPageRenderer.php`, `drive/tests/federation_drop_contract_smoke.php`, `drive/tests/fresh_install_contract_smoke.php`, `drive/tests/web_os_contract_smoke.php`, `drive/js/federation-drop.js`, `drive/js/federation-footer.js`, `drive/js/federation-os-admin.js`, `drive/js/setup.js` |
 | `drive/src/Activity/ActivityCostRecorder.php` | ninguna |
 | `drive/src/Activity/ActivityCostRepository.php` | ninguna |
@@ -317,7 +317,7 @@
 | `drive/src/Http/Controller/FolderQueryController.php` | ninguna |
 | `drive/src/Http/Controller/LegacyUploadController.php` | ninguna |
 | `drive/src/Http/Controller/MediaPlaylistController.php` | ninguna |
-| `drive/src/Http/Controller/MediaProcessingController.php` | `drive/tests/media_processing_contract_smoke.php` |
+| `drive/src/Http/Controller/MediaProcessingController.php` | `drive/tests/media_processing_contract_smoke.php`, `drive/tests/web_os_contract_smoke.php` |
 | `drive/src/Http/Controller/MoveJobController.php` | `drive/tests/web_os_clipboard_contract_smoke.php` |
 | `drive/src/Http/Controller/NavigationController.php` | ninguna |
 | `drive/src/Http/Controller/PersonalAwsController.php` | ninguna |
@@ -344,7 +344,7 @@
 | `drive/src/Media/MediaPlaylistService.php` | ninguna |
 | `drive/src/Media/MediaProcessingJobRepository.php` | `drive/tests/media_processing_contract_smoke.php` |
 | `drive/src/Media/MediaProcessingService.php` | `drive/tests/media_processing_contract_smoke.php` |
-| `drive/src/Media/MediaWorkerNodeService.php` | `drive/tests/media_processing_contract_smoke.php` |
+| `drive/src/Media/MediaWorkerNodeService.php` | `drive/tests/media_processing_contract_smoke.php`, `drive/tests/web_os_contract_smoke.php` |
 | `drive/src/Media/MediaWorkerNodeSessionRepository.php` | `drive/tests/media_processing_contract_smoke.php` |
 | `drive/src/Media/ThumbnailService.php` | ninguna |
 | `drive/src/Security/AuthenticationRepository.php` | `drive/tests/fastdrive_control_contract_smoke.php` |
@@ -465,7 +465,7 @@
 | `drive/traducir_archivo.php` | `drive/js/polly.js` |
 | `drive/transcribir_estado.php` | `drive/js/polly.js`, `drive/js/transcribe-background.js` |
 | `drive/transcribir_iniciar.php` | `drive/js/polly.js`, `drive/js/transcribe-background.js` |
-| `drive/unlock_file.php` | `drive/js/archivos.js` |
+| `drive/unlock_file.php` | `drive/tests/web_os_contract_smoke.php`, `drive/js/archivos.js`, `drive/js/so.js` |
 | `drive/up-clean.php` | ninguna |
 | `drive/update.php` | `drive/js/arcadecloud-updater.js` |
 | `drive/upload/ModerationUploadGuard.php` | `drive/tests/federation_moderation_contract_smoke.php`, `drive/upload/drivers/Chunked15MBUploader.php`, `drive/upload/drivers/DropboxUploader.php`, `drive/upload/drivers/LocalPresignedPutUploader.php`, `drive/upload/drivers/RemoteUrlUploader.php` |

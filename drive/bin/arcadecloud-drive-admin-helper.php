@@ -69,7 +69,7 @@ final class ArcadeCloudDriveAdminHelper
         if ($action === 'status') {
             fwrite(STDOUT, json_encode([
                 'ok' => true,
-                'version' => 12,
+                'version' => 13,
                 'capabilities' => [
                     'env_set_many' => true,
                     'db_aws_settings' => true,
@@ -83,6 +83,7 @@ final class ArcadeCloudDriveAdminHelper
                     'server_console' => true,
                     'memory_drop_caches' => true,
                     'disk_cleanup' => true,
+                    'workstation_control' => true,
                 ],
                 'identity_path' => $identityPath,
                 'identity_exists' => is_file($identityPath),
@@ -217,6 +218,41 @@ final class ArcadeCloudDriveAdminHelper
                     'ok' => true,
                     'command' => $commandId,
                     'output' => $output,
+                ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . "\n"
+            );
+            exit(0);
+        }
+
+        if (in_array($action, ['workstation-status', 'workstation-start'], true)) {
+            $unit = 'arcadecloud-workstation.service';
+            $unitPath = '/etc/systemd/system/' . $unit;
+            if (!is_file($unitPath)) {
+                $this->fail('Workstation no está instalada en este nodo.', 2);
+            }
+
+            if ($action === 'workstation-start') {
+                $this->runFixedCommand(['/usr/bin/systemctl', 'start', $unit]);
+            }
+
+            $activeState = trim($this->runFixedCommand(
+                ['/usr/bin/systemctl', 'is-active', $unit],
+                [0, 3]
+            ));
+            $enabledState = trim($this->runFixedCommand(
+                ['/usr/bin/systemctl', 'is-enabled', $unit],
+                [0, 1]
+            ));
+
+            fwrite(
+                STDOUT,
+                json_encode([
+                    'ok' => true,
+                    'action' => $action,
+                    'service' => $unit,
+                    'active' => $activeState === 'active',
+                    'state' => $activeState,
+                    'enabled' => $enabledState === 'enabled',
+                    'enabled_state' => $enabledState,
                 ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . "\n"
             );
             exit(0);

@@ -175,6 +175,10 @@ El EC2 pequeño mantiene el certificado Let's Encrypt y nunca expone VNC.
 
 El endpoint de control sólo permite `status` y `start`. No ofrece una orden web de parada. El apagado continúa bajo el mecanismo seguro de inactividad del nodo.
 
+## Concurrencia inicial
+
+La primera versión mantiene `MAX_OFFICE_SESSIONS=1`. Antes de mostrar el escritorio, Office consulta la sesión activa del nodo. Si pertenece a otro usuario, el segundo lanzamiento queda esperando y nunca comparte el mismo XFCE/LibreOffice.
+
 ## Inactividad de Office y apagado
 
 Office reutiliza `MediaWorkerNodeService` y `MediaWorkerNodeSessions`.

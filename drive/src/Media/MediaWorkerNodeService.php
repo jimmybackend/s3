@@ -256,6 +256,14 @@ final class MediaWorkerNodeService
             throw new RuntimeException('No hay una EC2 de alto rendimiento configurada.');
         }
 
+        // El endpoint de apagado interactivo sólo es válido durante la ventana
+        // de aviso por inactividad. Así un usuario autenticado no puede usarlo
+        // como un StopInstances genérico fuera del flujo previsto.
+        $idle = $this->idleStatus();
+        if (($idle['warning'] ?? false) !== true) {
+            throw new RuntimeException('El nodo todavía no alcanzó el período de inactividad para apagarse.');
+        }
+
         $instance = $this->ec2->getInstance($this->instanceId);
         $state = is_array($instance) ? Ec2Gateway::stateName($instance) : 'unknown';
         if ($state === 'stopped' || $state === 'stopping') {

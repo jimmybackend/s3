@@ -22,6 +22,7 @@ workstationContract(str_contains($dockerfile, 'novnc') && str_contains($dockerfi
 workstationContract(str_contains($dockerfile, '--uid 10001') && str_contains($dockerfile, '--gid 10001'), 'usuario Office usa UID/GID aislado y no colisiona con UID 1000');
 workstationContract(str_contains($entry, '-localhost yes'), 'VNC sólo acepta conexiones internas del contenedor');
 workstationContract(str_contains($entry, '-SecurityTypes None'), 'VNC no solicita una segunda contraseña porque ArcadeCloud protege el acceso web');
+workstationContract(str_contains($entry, 'umask 0007'), 'LibreOffice conserva archivos nuevos escribibles por el grupo compartido');
 workstationContract(!str_contains($entry, 'VNC_PASSWORD') && !str_contains($entry, 'vncpasswd'), 'entrypoint no administra credenciales VNC');
 workstationContract(!str_contains($install, 'VNC_PASSWORD='), 'instalador no genera contraseña VNC');
 workstationContract(str_contains($install, '--publish 127.0.0.1:6080:6080'), 'noVNC sólo se publica en loopback del host');
@@ -32,6 +33,9 @@ workstationContract(!str_contains($install, '/var/run/docker.sock'), 'Docker soc
 workstationContract(!str_contains($install, '5900:'), 'puerto VNC no se publica en el host');
 workstationContract(!str_contains($install, 'aws_access_key'), 'instalador no incorpora credenciales AWS');
 workstationContract(str_contains($install, '/var/lib/arcadecloud-office'), 'workspace queda separado del media worker');
+workstationContract(str_contains($install, '"$WORKSPACE/sessions"'), 'instalador prepara workspace por sesión documental');
+workstationContract(str_contains($install, 'chmod 2770 "$WORKSPACE" "$WORKSPACE/sessions"'), 'workspace usa setgid y no permisos globales');
+workstationContract(str_contains($install, '--group-add $PHP_GID'), 'contenedor comparte únicamente el grupo PHP-FPM para documentos');
 workstationContract(!str_contains($install, 'chown root:root /etc/arcadecloud-drive'), 'instalador no rompe el grupo PHP-FPM del directorio administrado');
 workstationContract(!str_contains($install, 'chmod 0750 /etc/arcadecloud-drive'), 'instalador no reemplaza permisos del directorio runtime administrado');
 workstationContract(!preg_match('/(?:chown|chmod)[^\\n]*runtime-env\\.json/', $install), 'instalador Workstation no cambia permisos de runtime-env.json');

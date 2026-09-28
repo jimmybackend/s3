@@ -18,6 +18,10 @@ $tokens = (string)file_get_contents($repo . '/drive/src/Office/OfficeLaunchToken
 $gateway = (string)file_get_contents($repo . '/drive/office-gateway.php');
 $gatewayService = (string)file_get_contents($repo . '/drive/src/Office/OfficeGatewayService.php');
 $leaseRepo = (string)file_get_contents($repo . '/drive/src/Office/OfficeSessionLeaseRepository.php');
+$documentRepo = (string)file_get_contents($repo . '/drive/src/Office/OfficeDocumentSessionRepository.php');
+$documentStorage = (string)file_get_contents($repo . '/drive/src/Office/OfficeDocumentStorageService.php');
+$workstationDocument = (string)file_get_contents($repo . '/drive/workstation-document.php');
+$documentController = (string)file_get_contents($repo . '/drive/src/Http/Controller/OfficeDocumentController.php');
 $workstationClient = (string)file_get_contents($repo . '/drive/src/Office/OfficeWorkstationClient.php');
 $control = (string)file_get_contents($repo . '/drive/workstation-control.php');
 $helperClient = (string)file_get_contents($repo . '/drive/src/Admin/PrivilegedServerHelper.php');
@@ -102,6 +106,64 @@ officeGatewayContract(
 );
 
 officeGatewayContract(
+    str_contains($so, 'data-office-url=')
+    && str_contains($so, 'office-launch.php?file_id=')
+    && str_contains($so, 'Abrir con Office'),
+    'Mis datos enlaza archivos Office por FileS3.id_'
+);
+
+officeGatewayContract(
+    str_contains($tokens, 'FileId')
+    && str_contains($tokens, 'issueForFile')
+    && str_contains($tokens, 'consumeContext'),
+    'token de lanzamiento conserva file_id sólo en MySQL'
+);
+
+officeGatewayContract(
+    str_contains($documentRepo, 'OfficeDocumentSessions')
+    && str_contains($documentRepo, 'ControlTokenHash')
+    && str_contains($documentRepo, "hash('sha256', \$controlToken)")
+    && !str_contains($documentRepo, 'ControlToken VARCHAR'),
+    'sesión documental guarda hash del token interno'
+);
+
+officeGatewayContract(
+    str_contains($documentStorage, 'headObject')
+    && str_contains($documentStorage, 'getObject')
+    && str_contains($documentStorage, 'putObject')
+    && str_contains($documentStorage, 'expected_etag')
+    && str_contains($documentStorage, 'saveConflict')
+    && str_contains($documentStorage, 'duplicateFrom')
+    && str_contains($documentStorage, 'adoptConflict')
+    && str_contains($documentRepo, 'adoptConflict'),
+    'documento Office baja de S3, valida ETag y continúa sobre una copia si hay conflicto'
+);
+
+officeGatewayContract(
+    str_contains($workstationDocument, 'OfficeDocumentController')
+    && str_contains($documentController, "['prepare', 'sync', 'close']")
+    && str_contains($documentController, 'OfficeDocumentStorageService')
+    && str_contains($internalInstaller, '/__arcadecloud_office_document')
+    && str_contains($workstationClient, '/__arcadecloud_office_document'),
+    'agente documental usa Controller OOP y sólo opera prepare/sync/close por red privada'
+);
+
+officeGatewayContract(
+    str_contains($gateway, 'Ya hay un documento abierto en esta sesión Office')
+    && str_contains($gateway, 'existingDocumentFileId')
+    && str_contains($gateway, 'existingDocumentSessionId'),
+    'una sesión Office no mezcla dos documentos distintos entre pestañas'
+);
+
+officeGatewayContract(
+    str_contains($gateway, '/__office_document_sync')
+    && str_contains($gateway, '/__office_document_close')
+    && str_contains($gateway, 'setInterval(syncDocument, 60000)')
+    && str_contains($gateway, "navigator.sendBeacon('/__office_document_close'"),
+    'pestaña Office sincroniza periódicamente y al cerrar'
+);
+
+officeGatewayContract(
     str_contains($gatewayService, 'hasActiveJobs()')
     && str_contains($gateway, 'Hay una tarea multimedia activa'),
     'Office espera si FFmpeg/multimedia ya está trabajando'
@@ -129,11 +191,13 @@ officeGatewayContract(
 );
 
 officeGatewayContract(
-    str_contains($helper, "'version' => 13")
+    str_contains($helper, "'version' => 14")
     && str_contains($helper, "'workstation_control' => true")
+    && str_contains($helper, "'workstation_document_open' => true")
+    && str_contains($helper, "'workstation-open-document'")
     && str_contains($helper, "'workstation-start'")
     && !str_contains($helper, "'workstation-stop'"),
-    'helper privilegiado no expone parada Workstation directa'
+    'helper privilegiado abre documentos allowlisted y no expone parada Workstation directa'
 );
 
 officeGatewayContract(

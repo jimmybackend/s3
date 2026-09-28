@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
+umask 0007
 
 DISPLAY_NUMBER="${DISPLAY_NUMBER:-1}"
 VNC_GEOMETRY="${VNC_GEOMETRY:-1600x900}"

@@ -138,6 +138,20 @@ final class OfficeSessionLeaseRepository
         $stmt->close();
     }
 
+    public function release(int $userId, string $instanceId, string $sessionKey): void
+    {
+        $this->assertInputs($userId, $instanceId, $sessionKey);
+        $hash = hash('sha256', $sessionKey);
+        $stmt = $this->db->prepare(
+            'UPDATE OfficeSessionLeases SET ExpiresAt=UTC_TIMESTAMP(),UpdatedAt=UTC_TIMESTAMP() '
+            . 'WHERE InstanceId=? AND UserId=? AND SessionKeyHash=?'
+        );
+        if (!$stmt) return;
+        $stmt->bind_param('sis', $instanceId, $userId, $hash);
+        $stmt->execute();
+        $stmt->close();
+    }
+
     private function assertInputs(int $userId, string $instanceId, string $sessionKey): void
     {
         if (

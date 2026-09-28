@@ -100,6 +100,30 @@ server {
         fastcgi_pass ${FPM_LISTEN};
     }
 
+    location = /__office_document_sync {
+        include fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME ${GATE_SCRIPT};
+        fastcgi_param SCRIPT_NAME /office-gateway.php;
+        fastcgi_param HTTPS on;
+        fastcgi_param HTTP_X_FORWARDED_PROTO https;
+        fastcgi_param HTTP_COOKIE \$http_cookie;
+        fastcgi_param ARCADECLOUD_OFFICE_GATE 1;
+        fastcgi_param ARCADECLOUD_OFFICE_GATE_ACTION document-sync;
+        fastcgi_pass ${FPM_LISTEN};
+    }
+
+    location = /__office_document_close {
+        include fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME ${GATE_SCRIPT};
+        fastcgi_param SCRIPT_NAME /office-gateway.php;
+        fastcgi_param HTTPS on;
+        fastcgi_param HTTP_X_FORWARDED_PROTO https;
+        fastcgi_param HTTP_COOKIE \$http_cookie;
+        fastcgi_param ARCADECLOUD_OFFICE_GATE 1;
+        fastcgi_param ARCADECLOUD_OFFICE_GATE_ACTION document-close;
+        fastcgi_pass ${FPM_LISTEN};
+    }
+
     location = /__office_auth {
         internal;
         include fastcgi_params;

@@ -126,7 +126,12 @@ webOsContract(str_contains($paths['js'], "mediaFile ? 'Reproducir' : 'Abrir en v
 webOsContract(str_contains($paths['js'], "overlay.className = 'os-media-overlay is-' + kind"), 'reproductor multimedia queda superpuesto al SO');
 webOsContract(str_contains($paths['js'], 'os-viewer-image'), 'imagen usa visor interno');
 webOsContract(str_contains($paths['js'], 'os-viewer-frame'), 'texto/PDF pueden vivir en ventana interna');
-webOsContract(!str_contains($paths['js'], "window.open("), 'apertura normal ya no crea pestañas nuevas');
+webOsContract(
+    substr_count($paths['js'], 'this.window.open(') === 2
+    && str_contains($paths['js'], "this.window.open(officeUrl, '_blank')")
+    && str_contains($paths['js'], "this.window.open(entry.dataset.officeUrl, '_blank')"),
+    'sólo Office abre pestañas nuevas desde Mis datos'
+);
 webOsContract(str_contains($paths['js'], "invokeMediaProcessing(entry, 'split_video')"), 'video puede abrir procesamiento desde sus acciones');
 webOsContract(str_contains($paths['js'], "invokeGlobal('abrirModalTranscribir'"), 'Transcribe se abre desde el archivo seleccionado');
 webOsContract(str_contains($paths['js'], 'weekday:'), 'reloj muestra fecha además de hora');

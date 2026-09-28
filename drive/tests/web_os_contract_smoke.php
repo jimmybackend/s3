@@ -11,6 +11,7 @@ $paths = [
     'drive' => $root . '/s3.php',
     'logout' => $root . '/src/Http/Controller/AuthController.php',
     'folders_js' => $root . '/js/so-folders.js',
+    'clipboard_js' => $root . '/js/so-clipboard.js',
     'folders_shared' => $root . '/js/carpetas.js',
     'folder_document' => $root . '/js/folder-document.js',
     'sync' => $root . '/js/sincronizar.js',

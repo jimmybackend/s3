@@ -104,6 +104,8 @@ if ($session->isSuperAdmin()) {
         href="css/responsive.css?v=<?= (int) filemtime(__DIR__ . '/css/responsive.css') ?>">
   <link rel="stylesheet"
         href="css/upload-center.css?v=<?= (int) filemtime(__DIR__ . '/css/upload-center.css') ?>">
+  <link rel="stylesheet"
+        href="css/compute-node-idle.css?v=<?= (int) filemtime(__DIR__ . '/css/compute-node-idle.css') ?>">
 
 
   <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
@@ -2360,6 +2362,7 @@ document.addEventListener('DOMContentLoaded', function () {
 </script>
 
 <script src="js/media-processing.js?v=<?= (int) filemtime(__DIR__ . '/js/media-processing.js') ?>"></script>
+<script src="js/compute-node-idle.js?v=<?= (int) filemtime(__DIR__ . '/js/compute-node-idle.js') ?>"></script>
 
 </body>
 </html>

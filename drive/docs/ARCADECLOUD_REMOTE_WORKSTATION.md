@@ -367,3 +367,23 @@ PHP-FPM y el usuario del contenedor comparten únicamente `phase1-workspace/sess
 ### Limpieza
 
 Las sesiones cerradas permanecen temporalmente para permitir el guardado final y diagnósticos. En aperturas posteriores, los workspaces cerrados con más de 30 minutos se eliminan de forma segura y su fila documental se purga.
+
+
+## Esquema de base de datos Office
+
+Las tablas de Office forman parte del SQL canónico `adbbmis1_Cloud.sql` dentro de la sección idempotente:
+
+```
+-- ARCADECLOUD:OFFICE_SCHEMA:BEGIN
+-- ARCADECLOUD:OFFICE_SCHEMA:END
+```
+
+Tablas obligatorias:
+
+- `OfficeLaunchTokens`: tokens de lanzamiento de un solo uso;
+- `OfficeSessionLeases`: propietario y expiración del escritorio interactivo;
+- `OfficeDocumentSessions`: relación entre usuario, `FileS3.id_`, instancia, key S3, ETag y workspace.
+
+`OfficeSchemaMigrationService` comprueba y crea las tablas faltantes usando únicamente esa sección del SQL canónico. El updater web muestra el estado **ArcadeCloud Office DB** y reconcilia tablas faltantes con la conexión MySQL activa. `office-launch.php` también ejecuta una comprobación idempotente antes de emitir el token, para impedir que una instalación parcialmente actualizada avance hacia Office con un esquema incompleto.
+
+Una base nueva recibe las tres tablas al importar el SQL canónico completo.

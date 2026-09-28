@@ -11,6 +11,9 @@ on:
       - 'drive/css/upload-center.css'
       - 'drive/css/compute-node-idle.css'
       - 'drive/js/so.js'
+      - 'drive/js/file-security.js'
+      - 'drive/js/so-search.js'
+      - 'drive/js/archivos.js'
       - 'drive/js/so-node.js'
       - 'drive/js/so-share.js'
       - 'drive/js/arcadelink-share.js'
@@ -39,6 +42,11 @@ on:
       - 'drive/src/Application/FileMutationService.php'
       - 'drive/src/Application/FolderMutationService.php'
       - 'drive/src/Application/MoveJobService.php'
+      - 'drive/src/Application/FileSearchService.php'
+      - 'drive/src/Application/AiFileSearchService.php'
+      - 'drive/src/Application/FileListService.php'
+      - 'drive/src/Http/Controller/FileSearchController.php'
+      - 'drive/buscar_archivo.php'
       - 'drive/src/Storage/FileRecordRepository.php'
       - 'drive/src/Storage/FolderMutationRepository.php'
       - 'drive/src/Http/Controller/MoveJobController.php'
@@ -72,6 +80,9 @@ on:
       - 'drive/css/upload-center.css'
       - 'drive/css/compute-node-idle.css'
       - 'drive/js/so.js'
+      - 'drive/js/file-security.js'
+      - 'drive/js/so-search.js'
+      - 'drive/js/archivos.js'
       - 'drive/js/so-node.js'
       - 'drive/js/so-share.js'
       - 'drive/js/arcadelink-share.js'
@@ -100,6 +111,11 @@ on:
       - 'drive/src/Application/FileMutationService.php'
       - 'drive/src/Application/FolderMutationService.php'
       - 'drive/src/Application/MoveJobService.php'
+      - 'drive/src/Application/FileSearchService.php'
+      - 'drive/src/Application/AiFileSearchService.php'
+      - 'drive/src/Application/FileListService.php'
+      - 'drive/src/Http/Controller/FileSearchController.php'
+      - 'drive/buscar_archivo.php'
       - 'drive/src/Storage/FileRecordRepository.php'
       - 'drive/src/Storage/FolderMutationRepository.php'
       - 'drive/src/Http/Controller/MoveJobController.php'
@@ -143,6 +159,11 @@ jobs:
           php -l drive/src/Application/FileMutationService.php
           php -l drive/src/Application/FolderMutationService.php
           php -l drive/src/Application/MoveJobService.php
+          php -l drive/src/Application/FileSearchService.php
+          php -l drive/src/Application/AiFileSearchService.php
+          php -l drive/src/Application/FileListService.php
+          php -l drive/src/Http/Controller/FileSearchController.php
+          php -l drive/buscar_archivo.php
           php -l drive/src/Storage/FileRecordRepository.php
           php -l drive/src/Storage/FolderMutationRepository.php
           php -l drive/src/Http/Controller/MoveJobController.php
@@ -166,6 +187,9 @@ jobs:
       - name: JavaScript syntax
         run: |
           node --check drive/js/so.js
+          node --check drive/js/file-security.js
+          node --check drive/js/so-search.js
+          node --check drive/js/archivos.js
           node --check drive/js/so-node.js
           node --check drive/js/so-share.js
           node --check drive/js/arcadelink-share.js

@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace ArcadeCloud\Drive\Http\Controller;
 
 use ArcadeCloud\Drive\Application\AiFileSearchService;
+use ArcadeCloud\Drive\Application\FileListService;
 use ArcadeCloud\Drive\Application\FileSearchService;
 use ArcadeCloud\Drive\Http\JsonResponse;
 use Throwable;
@@ -18,7 +19,7 @@ final class FileSearchController extends AbstractJsonController
             $locateId = (int)$this->request->postString('localizar_id', '0');
             if ($locateId > 0) {
                 $location = (new FileSearchService($this->app->db()))
-                    ->locate($userId, $locateId, 20);
+                    ->locate($userId, $locateId, FileListService::WEB_OS_PAGE_SIZE);
 
                 JsonResponse::send([
                     'estado' => 'ok',

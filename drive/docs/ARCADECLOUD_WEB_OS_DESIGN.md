@@ -1,10 +1,10 @@
-# Diseño inicial — ArcadeCloud Web OS
+# ArcadeCloud Web OS — diseño base
 
-Estado: **Fase 0 / diseño funcional**.
+Estado: **shell implementado y operativo**. La descripción actual de producción vive en `ARCADECLOUD_WEB_OS_STATUS.md`; este documento conserva las decisiones de diseño que dieron origen al shell.
 
 ## Objetivo
 
-Cambiar la experiencia de FastDrive desde una página tradicional de gestor de archivos hacia un **escritorio web**, conservando la arquitectura backend existente.
+ArcadeCloud ya cambió la experiencia principal desde una página tradicional de gestor de archivos hacia un **escritorio web**, conservando la arquitectura backend existente.
 
 No se reemplazan `FileS3`, `S3Folders`, S3, sesiones, permisos ni FederationCloud. El escritorio será una nueva capa de presentación y orquestación.
 
@@ -289,17 +289,19 @@ En móvil:
 
 ## Primer entregable funcional de la Fase 0
 
-Antes de integrar Office se debe construir un prototipo sin romper el Drive actual:
+La Fase 0 ya está completada como baseline funcional:
 
-- [ ] shell de escritorio;
-- [ ] barra de tareas;
-- [ ] launcher;
-- [ ] ventana de Explorador;
-- [ ] ventana Centro de Tareas;
-- [ ] ventana Mi nodo;
-- [ ] integración con los bloques existentes de archivos/carpetas;
-- [ ] acciones actuales siguen funcionando;
-- [ ] fallback al diseño actual durante la transición;
-- [ ] sin cambios en el esquema de almacenamiento.
+- [x] shell de escritorio;
+- [x] barra de tareas;
+- [x] launcher;
+- [x] ventana de Explorador / Mis datos;
+- [x] Centro de Tareas;
+- [x] ventana Mi nodo con métricas en vivo;
+- [x] integración con archivos y carpetas existentes;
+- [x] acciones actuales siguen funcionando mediante servicios/endpoints existentes;
+- [x] fallback explícito al Drive clásico;
+- [x] sin una segunda fuente de verdad ni cambios del principio DB-first.
 
-Cuando este shell sea estable, las aplicaciones nuevas se conectarán al mismo contrato.
+El shell ya es estable y es la experiencia principal después del login. Las aplicaciones nuevas se conectan sobre este contrato en lugar de crear interfaces paralelas.
+
+Estado funcional detallado: `drive/docs/ARCADECLOUD_WEB_OS_STATUS.md`.

@@ -72,9 +72,19 @@ officeGatewayContract(
 
 officeGatewayContract(
     str_contains($gatewayService, 'assertInteractiveOwner')
+    && str_contains($gatewayService, 'assertActiveInteractiveOwner')
     && str_contains($gatewayService, 'MediaWorkerNodeSessionRepository')
     && str_contains($gateway, "mode === 'office-busy'"),
     'MAX_OFFICE_SESSIONS=1 impide compartir el mismo escritorio entre usuarios'
+);
+
+officeGatewayContract(
+    str_contains($gateway, "$action === 'auth'")
+    && str_contains($gateway, 'assertActiveInteractiveOwner')
+    && str_contains($officeInstaller, 'location = /__office_auth')
+    && str_contains($officeInstaller, 'internal;')
+    && str_contains($officeInstaller, 'auth_request /__office_auth;'),
+    'noVNC y WebSocket requieren sesión Office activa antes del proxy'
 );
 
 officeGatewayContract(

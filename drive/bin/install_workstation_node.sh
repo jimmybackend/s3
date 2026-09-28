@@ -45,9 +45,7 @@ mkdir -p "$(dirname "$ENV_FILE")"
 
 if [[ ! -f "$ENV_FILE" ]]; then
   umask 077
-  PASSWORD="$(openssl rand -hex 12)"
   cat > "$ENV_FILE" <<EOF
-VNC_PASSWORD=$PASSWORD
 VNC_GEOMETRY=1600x900
 VNC_DEPTH=24
 EOF
@@ -100,7 +98,7 @@ for _ in {1..30}; do
     echo
     echo "Fase 1 instalada. noVNC sólo escucha en 127.0.0.1:6080."
     echo "Workspace de prueba: $WORKSPACE"
-    echo "La contraseña VNC permanece sólo en $ENV_FILE."
+    echo "La autenticación del escritorio la controla ArcadeCloud; no se solicita contraseña VNC."
     echo "Workstation queda deshabilitada al boot; se inicia sólo bajo demanda."
     exit 0
   fi

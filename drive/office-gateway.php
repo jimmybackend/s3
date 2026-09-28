@@ -38,6 +38,32 @@ $json = static function (array $payload, int $status = 200): never {
 $action = (string)($_SERVER['ARCADECLOUD_OFFICE_GATE_ACTION'] ?? 'view');
 $officeUserId = (int)$session->get('office_user_id', 0);
 
+if ($action === 'auth') {
+    if ($officeUserId <= 0) {
+        http_response_code(401);
+        exit;
+    }
+
+    try {
+        $nodeStatus = $office->nodeStatus();
+        $state = (string)($nodeStatus['state'] ?? 'unknown');
+        $instanceId = trim((string)($nodeStatus['instance_id'] ?? ''));
+
+        if ($state !== 'running' || $instanceId === '') {
+            http_response_code(401);
+            exit;
+        }
+
+        $office->assertActiveInteractiveOwner($officeUserId, $instanceId);
+        http_response_code(204);
+        exit;
+    } catch (Throwable $e) {
+        error_log('[Office gateway] auth error: ' . $e->getMessage());
+        http_response_code(401);
+        exit;
+    }
+}
+
 if ($action === 'activity' || $action === 'idle') {
     if ($officeUserId <= 0) {
         $json(['ok' => false, 'error' => 'Sesión Office no autorizada.'], 401);

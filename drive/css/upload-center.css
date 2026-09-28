@@ -68,6 +68,13 @@
 .drive-upload-launch{
   display:inline-flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap
 }
+.os-tool-button.os-upload-launch{
+  width:auto!important;min-width:34px;padding:0 10px
+}
+@media(max-width:800px){
+  .os-tool-button.os-upload-launch span{display:none}
+  .os-tool-button.os-upload-launch{width:34px!important;padding:0}
+}
 body.drive-upload-open{overflow:hidden}
 @media(max-width:700px){
   .drive-upload-center{padding:6px}

@@ -284,7 +284,7 @@
 | `drive/src/Http/ByteRange.php` | ninguna |
 | `drive/src/Http/Controller/AbstractJsonController.php` | ninguna |
 | `drive/src/Http/Controller/ActivityCostController.php` | ninguna |
-| `drive/src/Http/Controller/ArcadeCloudUpdateController.php` | ninguna |
+| `drive/src/Http/Controller/ArcadeCloudUpdateController.php` | `drive/tests/web_os_contract_smoke.php` |
 | `drive/src/Http/Controller/AudioRecordingUploadController.php` | ninguna |
 | `drive/src/Http/Controller/AuthController.php` | `drive/tests/federation_drop_contract_smoke.php`, `drive/tests/web_os_contract_smoke.php` |
 | `drive/src/Http/Controller/AwsCostController.php` | ninguna |

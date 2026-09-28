@@ -58,6 +58,24 @@ final class OfficeGatewayService
         }
     }
 
+    public function assertActiveInteractiveOwner(int $userId, string $instanceId): void
+    {
+        if ($userId <= 0 || $instanceId === '') {
+            throw new RuntimeException('Sesión Office inválida.');
+        }
+
+        $active = (new MediaWorkerNodeSessionRepository($this->app->db()))
+            ->activeForInstance($instanceId);
+        if ($active === null) {
+            throw new RuntimeException('No existe una sesión Office activa para este navegador.');
+        }
+
+        $owner = (int)($active['started_by_user_id'] ?? 0);
+        if ($owner <= 0 || $owner !== $userId) {
+            throw new RuntimeException('Esta sesión Office pertenece a otro usuario.');
+        }
+    }
+
     /**
      * @return array{active:bool,media_busy:bool,control:array<string,mixed>|null}
      */

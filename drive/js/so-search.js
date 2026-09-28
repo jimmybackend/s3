@@ -146,6 +146,7 @@ class ArcadeCloudOsSearch {
       button.className = 'os-search-result';
       button.dataset.osSearchOpen = '1';
       button.dataset.type = type;
+      button.dataset.id = String(row.id || '');
       button.dataset.route = route;
       button.dataset.key = key;
       button.dataset.name = name;
@@ -197,30 +198,58 @@ class ArcadeCloudOsSearch {
     if (!shell?.refreshExplorer) return;
 
     const type = String(button.dataset.type || 'archivo');
-    const route = String(button.dataset.route || '').trim();
+    let route = String(button.dataset.route || '').trim();
     const key = String(button.dataset.key || '').trim();
     const name = String(button.dataset.name || '').trim();
-    if (!route) return;
-
-    const explorer = this.document.getElementById('explorerWindow');
-    if (explorer && typeof shell.openWindow === 'function') {
-      shell.openWindow(explorer);
-    }
+    const id = Math.max(0, parseInt(String(button.dataset.id || '0'), 10) || 0);
+    let page = 1;
 
     button.classList.add('is-opening');
 
     try {
+      if (type === 'archivo' && id > 0) {
+        const response = await this.window.fetch('buscar_archivo.php', {
+          method: 'POST',
+          credentials: 'same-origin',
+          cache: 'no-store',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+            'X-Requested-With': 'XMLHttpRequest'
+          },
+          body: new URLSearchParams({ localizar_id: String(id) }).toString()
+        });
+        const data = await response.json();
+        if (!response.ok || data?.estado !== 'ok' || !data?.archivo) {
+          throw new Error(data?.mensaje || 'No se pudo localizar el archivo.');
+        }
+        route = String(data.archivo.ruta || route).trim();
+        page = Math.max(1, parseInt(String(data.archivo.pagina || '1'), 10) || 1);
+      }
+
+      if (!route) throw new Error('El resultado no tiene una carpeta válida.');
+
+      const explorer = this.document.getElementById('explorerWindow');
+      if (explorer && typeof shell.openWindow === 'function') {
+        shell.openWindow(explorer);
+      }
+
       const ok = await shell.refreshExplorer(route, {
-        page: 1,
-        search: type === 'archivo' ? name : '',
+        page,
         replaceHistory: false
       });
       if (!ok) return;
 
-      const selector = key
-        ? '.os-file-entry[data-key="' + this.cssEscape(key) + '"]'
-        : '.os-file-entry[data-name="' + this.cssEscape(name) + '"]';
-      const entry = type === 'archivo' ? this.document.querySelector(selector) : null;
+      let entry = null;
+      if (type === 'archivo') {
+        if (key) {
+          entry = Array.from(this.document.querySelectorAll('.os-file-entry'))
+            .find((item) => String(item.dataset.key || '') === key) || null;
+        }
+        if (!entry && name) {
+          entry = Array.from(this.document.querySelectorAll('.os-file-entry'))
+            .find((item) => String(item.dataset.name || '') === name) || null;
+        }
+      }
 
       if (entry) {
         entry.classList.add('is-search-target');
@@ -229,6 +258,11 @@ class ArcadeCloudOsSearch {
       }
 
       if (explorer) shell.activateWindow?.(explorer);
+    } catch (error) {
+      this.window.ArcadeCloudOsShell?.notify?.(
+        error?.message || 'No se pudo abrir la carpeta del resultado.',
+        'warning'
+      );
     } finally {
       button.classList.remove('is-opening');
     }

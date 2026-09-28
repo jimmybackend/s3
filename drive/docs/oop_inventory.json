@@ -1655,7 +1655,7 @@
     },
     {
       "path": "drive/office-launch.php",
-      "lines": 62,
+      "lines": 75,
       "kind": "thin endpoint",
       "classes": 0,
       "functions": [],
@@ -5054,7 +5054,7 @@
     },
     {
       "path": "drive/src/Office/OfficeLaunchTokenRepository.php",
-      "lines": 162,
+      "lines": 164,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -6619,7 +6619,7 @@
     },
     {
       "path": "drive/tests/office_gateway_contract_smoke.php",
-      "lines": 228,
+      "lines": 232,
       "kind": "test script",
       "classes": 0,
       "functions": [

@@ -134,7 +134,7 @@
 | `drive/mover_carpeta.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/node-status.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/office-gateway.php` | 554 | view/entrypoint | 0 | — | — | — | — |
-| `drive/office-launch.php` | 62 | thin endpoint | 0 | — | — | — | — |
+| `drive/office-launch.php` | 75 | thin endpoint | 0 | — | — | — | — |
 | `drive/personal_aws_bootstrap.php` | 86 | class/module | 1 | — | — | — | — |
 | `drive/polly_cargar_texto.php` | 8 | thin endpoint | 0 | — | — | — | — |
 | `drive/polly_list_voices.php` | 8 | thin endpoint | 0 | — | — | — | — |
@@ -359,7 +359,7 @@
 | `drive/src/Office/OfficeDocumentSessionRepository.php` | 282 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Office/OfficeDocumentStorageService.php` | 451 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Office/OfficeGatewayService.php` | 147 | class/module | 1 | — | — | — | — |
-| `drive/src/Office/OfficeLaunchTokenRepository.php` | 162 | class/module | 1 | — | ⚠️ | — | — |
+| `drive/src/Office/OfficeLaunchTokenRepository.php` | 164 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Office/OfficeSessionLeaseRepository.php` | 189 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Office/OfficeWorkstationClient.php` | 178 | class/module | 1 | — | — | — | — |
 | `drive/src/Security/AuthenticationRepository.php` | 101 | class/module | 1 | — | ⚠️ | — | — |
@@ -459,7 +459,7 @@
 | `drive/tests/index_federation_drop_smoke.php` | 121 | test script | 0 | — | — | — | — |
 | `drive/tests/installer_service_reconcile_contract_smoke.php` | 188 | test script | 0 | — | — | — | — |
 | `drive/tests/media_processing_contract_smoke.php` | 173 | test script | 0 | — | — | — | — |
-| `drive/tests/office_gateway_contract_smoke.php` | 228 | test script | 0 | — | — | — | — |
+| `drive/tests/office_gateway_contract_smoke.php` | 232 | test script | 0 | — | — | — | — |
 | `drive/tests/password_credential_verifier_smoke.php` | 44 | test script | 0 | — | — | — | — |
 | `drive/tests/scoped_sync_repository_regression.php` | 96 | test script | 0 | — | ⚠️ | — | — |
 | `drive/tests/security_hardening_smoke.php` | 59 | test script | 0 | — | — | — | — |

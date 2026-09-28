@@ -266,6 +266,7 @@ TXT;
 
         return [
             'ref' => 'f:' . $id,
+            'id' => $id,
             'tipo' => 'archivo',
             'nombre' => $name !== '' ? $name : 'Archivo sin nombre',
             'ruta' => $route,

@@ -15,6 +15,7 @@ function officeGatewayContract(bool $condition, string $message): void
 $so = (string)file_get_contents($repo . '/drive/so.php');
 $launch = (string)file_get_contents($repo . '/drive/office-launch.php');
 $tokens = (string)file_get_contents($repo . '/drive/src/Office/OfficeLaunchTokenRepository.php');
+$officeSchema = (string)file_get_contents($repo . '/drive/src/Office/OfficeSchemaMigrationService.php');
 $gateway = (string)file_get_contents($repo . '/drive/office-gateway.php');
 $gatewayService = (string)file_get_contents($repo . '/drive/src/Office/OfficeGatewayService.php');
 $leaseRepo = (string)file_get_contents($repo . '/drive/src/Office/OfficeSessionLeaseRepository.php');
@@ -40,10 +41,19 @@ officeGatewayContract(
 officeGatewayContract(
     str_contains($launch, "requireAuthenticated('index.php')")
     && str_contains($launch, 'OfficeLaunchTokenRepository')
-    && str_contains($launch, '[Office launch] token repository error:')
+    && str_contains($launch, 'OfficeSchemaMigrationService')
+    && str_contains($launch, '[Office launch] schema/token repository error:')
     && str_contains($launch, '[Office launch] token issue error:')
     && str_contains($launch, 'launch='),
     'launcher exige sesión Drive, controla fallos y emite token temporal'
+);
+
+officeGatewayContract(
+    str_contains($officeSchema, 'OfficeLaunchTokens')
+    && str_contains($officeSchema, 'OfficeSessionLeases')
+    && str_contains($officeSchema, 'OfficeDocumentSessions')
+    && str_contains($officeSchema, 'ARCADECLOUD:OFFICE_SCHEMA:BEGIN'),
+    'launcher y updater disponen de migración canónica para las tres tablas Office'
 );
 
 officeGatewayContract(

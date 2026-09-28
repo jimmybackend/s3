@@ -69,7 +69,8 @@
         "drive/js/soportesMediaTypes.js",
         "drive/js/subir-chunked.js",
         "drive/js/subir-dropzone.js",
-        "drive/js/subir.js"
+        "drive/js/subir.js",
+        "drive/js/upload-center.js"
       ]
     },
     {
@@ -393,11 +394,12 @@
     },
     {
       "path": "drive/bloque_archivos.php",
-      "size": 25223,
+      "size": 25636,
       "active": true,
       "references": [
         "drive/s3.php",
         "drive/tests/media_processing_contract_smoke.php",
+        "drive/tests/web_os_clipboard_contract_smoke.php",
         "drive/js/archivos.js",
         "drive/js/carpetas.js",
         "drive/js/elimina-multiple.js",
@@ -971,7 +973,8 @@
         "drive/js/soportesMediaTypes.js",
         "drive/js/subir-chunked.js",
         "drive/js/subir-dropzone.js",
-        "drive/js/subir.js"
+        "drive/js/subir.js",
+        "drive/js/upload-center.js"
       ]
     },
     {
@@ -1261,7 +1264,7 @@
     },
     {
       "path": "drive/s3.php",
-      "size": 96315,
+      "size": 96606,
       "active": true,
       "references": [
         "drive/app_bootstrap.php",
@@ -1278,6 +1281,7 @@
         "drive/src/View/PersonalAwsPageRenderer.php",
         "drive/tests/index_federation_drop_smoke.php",
         "drive/tests/media_processing_contract_smoke.php",
+        "drive/tests/web_os_clipboard_contract_smoke.php",
         "drive/tests/web_os_contract_smoke.php",
         "drive/up.php",
         "drive/js/archivos.js",
@@ -1354,11 +1358,12 @@
     },
     {
       "path": "drive/so.php",
-      "size": 77590,
+      "size": 78125,
       "active": true,
       "references": [
         "drive/s3.php",
         "drive/tests/server_console_contract_smoke.php",
+        "drive/tests/web_os_clipboard_contract_smoke.php",
         "drive/tests/web_os_contract_smoke.php",
         "drive/js/so-folders.js",
         "drive/js/so.js"
@@ -3561,13 +3566,13 @@
     },
     {
       "path": "drive/tests/web_os_clipboard_contract_smoke.php",
-      "size": 5731,
+      "size": 7862,
       "active": false,
       "references": []
     },
     {
       "path": "drive/tests/web_os_contract_smoke.php",
-      "size": 22709,
+      "size": 23085,
       "active": false,
       "references": []
     },
@@ -3779,7 +3784,8 @@
         "drive/js/soportesMediaTypes.js",
         "drive/js/subir-chunked.js",
         "drive/js/subir-dropzone.js",
-        "drive/js/subir.js"
+        "drive/js/subir.js",
+        "drive/js/upload-center.js"
       ]
     },
     {

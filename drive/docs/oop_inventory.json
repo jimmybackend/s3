@@ -1911,7 +1911,7 @@
     },
     {
       "path": "drive/so.php",
-      "lines": 1813,
+      "lines": 1835,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -2280,7 +2280,7 @@
     },
     {
       "path": "drive/src/Application/FileListService.php",
-      "lines": 155,
+      "lines": 157,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -4367,7 +4367,7 @@
     },
     {
       "path": "drive/src/Http/Controller/FileSearchController.php",
-      "lines": 77,
+      "lines": 78,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -6715,7 +6715,7 @@
     },
     {
       "path": "drive/tests/web_os_contract_smoke.php",
-      "lines": 415,
+      "lines": 422,
       "kind": "test script",
       "classes": 0,
       "functions": [

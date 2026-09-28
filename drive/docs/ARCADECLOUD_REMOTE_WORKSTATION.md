@@ -271,3 +271,99 @@ sudo bash drive/bin/install_workstation_internal_gateway.sh --gateway-ip=172.31.
 ```
 
 No abrir 5900, 5901 ni 6080 en el Security Group.
+
+
+## Fase 3 — documentos reales de FileS3/S3
+
+ArcadeCloud Office puede abrir un archivo concreto desde **Mis datos**. El navegador nunca envía una key S3 arbitraria al subdominio Office: envía el `FileS3.id_` al launcher autenticado, el launcher vuelve a validar `user_id_`, `Found=1`, seguridad y extensión, y guarda ese `file_id` dentro del token temporal de lanzamiento.
+
+Extensiones iniciales:
+
+- Writer: `.doc`, `.docx`, `.odt`, `.rtf`;
+- Calc: `.xls`, `.xlsx`, `.ods`;
+- Impress: `.ppt`, `.pptx`, `.odp`.
+
+Flujo:
+
+```
+Mis datos
+  -> doble clic / Abrir con Office
+  -> office-launch.php?file_id=<id>
+  -> token de un solo uso (usuario + file_id en MySQL)
+  -> office.esforzados.com
+  -> lease de escritorio
+  -> OfficeDocumentSession
+  -> nodo grande / agente privado
+  -> HEAD + GET del objeto S3
+  -> /var/lib/arcadecloud-office/phase1-workspace/sessions/<session>/Nombre.docx
+  -> docker exec allowlisted
+  -> LibreOffice abre /workspace/sessions/<session>/Nombre.docx
+```
+
+### Separación por archivo y usuario
+
+`OfficeDocumentSessions` liga de forma explícita:
+
+- `SessionId`;
+- `UserId`;
+- `FileId`;
+- `InstanceId`;
+- key S3 original;
+- nombre visible;
+- ruta relativa del workspace;
+- ETag esperado;
+- mtime/tamaño local;
+- estado y posible copia de conflicto.
+
+El token interno del agente no se guarda en claro: MySQL conserva sólo `ControlTokenHash = SHA-256(token)`.
+
+### Guardado y sincronización
+
+La pestaña Office solicita un checkpoint cada 60 segundos. El agente del nodo compara `mtime + size`; si LibreOffice no escribió cambios, no hace ningún PUT.
+
+Si el workspace cambió:
+
+1. vuelve a localizar `FileS3` por `file_id + user_id_`;
+2. comprueba que `Found=1` y que la key física no cambió;
+3. hace `HEAD` del objeto actual;
+4. compara el ETag con el último ETag conocido;
+5. sólo si coincide, sube el archivo a la misma key;
+6. confirma el nuevo ETag;
+7. actualiza `FileS3.Tamano` y `Fecha`;
+8. registra el checkpoint en `OfficeDocumentSessions`.
+
+Al cerrar la pestaña se usa `sendBeacon` hacia `/__office_document_close`; el servidor ejecuta un sync final y sólo después libera el lease del escritorio.
+
+### Conflictos
+
+ArcadeCloud nunca sobrescribe silenciosamente un objeto que cambió mientras estaba abierto en Office. Si la key o el ETag remoto ya no coinciden, el contenido del workspace se guarda como un archivo nuevo:
+
+```
+Documento.docx
+Documento (conflicto Office YYYY-MM-DD HH-mm-ss).docx
+```
+
+La copia física recibe una nueva key mediante `StorageObjectNameCodec` y se registra como un nuevo `FileS3`.
+
+### Seguridad del nodo
+
+El endpoint documental del EC2 grande:
+
+```
+/__arcadecloud_office_document
+```
+
+sólo acepta `prepare`, `sync` y `close`, sólo por POST y sólo desde el gateway pequeño permitido por Nginx. Cada llamada requiere `SessionId + control token`.
+
+El contenedor no recibe:
+
+- credenciales AWS;
+- Docker socket;
+- bucket completo;
+- rutas de otros usuarios.
+
+PHP-FPM y el usuario del contenedor comparten únicamente `phase1-workspace/sessions` mediante un grupo suplementario y permisos `2770`.
+
+### Limpieza
+
+Las sesiones cerradas permanecen temporalmente para permitir el guardado final y diagnósticos. En aperturas posteriores, los workspaces cerrados con más de 30 minutos se eliminan de forma segura y su fila documental se purga.

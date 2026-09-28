@@ -77,7 +77,7 @@ final class FileListService
                        Found, AccessType, PasswordHash, SecureHint, SecureUpdatedAt, Fecha, user_id_
                 FROM FileS3
                 WHERE {$where}
-                ORDER BY Fecha DESC
+                ORDER BY Fecha DESC, id_ DESC
                 LIMIT ? OFFSET ?";
 
         $stmt = $this->prepare($sql);

@@ -179,6 +179,7 @@ $textExtensions = ['txt','md','markdown','html','htm','css','js','json','csv','s
 $imageExtensions = ['jpg','jpeg','png','gif','webp','bmp','avif','tif','tiff'];
 $audioExtensions = ['mp3','wav','ogg','opus','m4a','aac','flac'];
 $videoExtensions = ['mp4','webm','mov','avi','mkv','m4v','mpeg','mpg'];
+$officeExtensions = ['doc','docx','odt','rtf','xls','xlsx','ods','ppt','pptx','odp'];
 $textractExtensions = ['jpg','jpeg','png','tif','tiff','pdf'];
 $translateExtensions = ['txt','pdf','jpg','jpeg','png','tif','tiff'];
 $rekognitionExtensions = ['jpg','jpeg','png'];
@@ -370,6 +371,7 @@ $currentFolderName = $currentIsRoot
 
           <?php foreach ($files as $row): ?>
             <?php
+              $fileId = (int)($row['id_'] ?? 0);
               $name = (string)($row['Nombre'] ?? '');
               $ext = FileViewHelper::extension($name);
               $icon = FileIconResolver::resolve($ext);
@@ -391,9 +393,13 @@ $currentFolderName = $currentIsRoot
               $canTranscribe = in_array($ext, $transcribeExtensions, true);
               $canComprehend = in_array($ext, $comprehendExtensions, true);
               $canPolly = in_array($ext, ['txt','md'], true);
+              $officeUrl = (!$locked && $fileId > 0 && in_array($ext, $officeExtensions, true))
+                  ? 'office-launch.php?file_id=' . $fileId
+                  : '';
             ?>
             <button type="button"
                     class="os-entry os-file-entry<?= $locked ? ' is-locked' : '' ?>"
+                    data-file-id="<?= $fileId ?>"
                     data-name="<?= $e($name) ?>"
                     data-ext="<?= $e($ext) ?>"
                     data-key="<?= $e($key) ?>"
@@ -401,6 +407,7 @@ $currentFolderName = $currentIsRoot
                     data-open-url="<?= $e($openUrl) ?>"
                     data-download-url="<?= $e($downloadUrl) ?>"
                     data-edit-url="<?= $e($editUrl) ?>"
+                    data-office-url="<?= $e($officeUrl) ?>"
                     data-classic-url="s3.php"
                     data-locked="<?= $locked ? '1' : '0' ?>"
                     data-has-security="<?= FileViewHelper::hasSecurity($row) ? '1' : '0' ?>"
@@ -734,6 +741,7 @@ Escribe help o usa uno de los botones disponibles.</pre>
   <div class="os-file-context" id="fileContextMenu" hidden>
     <div class="os-context-name" id="fileContextName">Archivo</div>
     <button type="button" data-file-action="open"><i class="fas fa-eye"></i><span>Abrir en ventana</span></button>
+    <button type="button" data-file-action="office"><i class="fas fa-file-word"></i><span>Abrir con Office</span></button>
     <button type="button" data-file-action="edit"><i class="fas fa-pen"></i>Editar texto</button>
     <button type="button" data-file-action="download"><i class="fas fa-download"></i>Descargar</button>
     <div class="os-context-divider" data-selection-context-divider hidden></div>

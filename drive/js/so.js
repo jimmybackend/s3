@@ -288,6 +288,12 @@ class ArcadeCloudOsShell {
       this.startButton.setAttribute('aria-expanded', shouldOpen ? 'true' : 'false');
     });
 
+    this.launcher.querySelector('[data-os-reload]')?.addEventListener('click', (event) => {
+      event.preventDefault();
+      this.closeLauncher();
+      this.window.location.reload();
+    });
+
     this.launcher.querySelector('[data-os-about]')?.addEventListener('click', () => {
       this.closeLauncher();
     });

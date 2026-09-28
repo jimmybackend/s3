@@ -149,14 +149,33 @@ final class OfficeDocumentSessionRepository
         $stmt->close();
     }
 
-    public function markConflict(string $sessionId, int $conflictFileId): void
-    {
+    public function adoptConflict(
+        string $sessionId,
+        int $conflictFileId,
+        string $conflictKey,
+        string $conflictName,
+        string $etag,
+        int $mtime,
+        int $size
+    ): void {
         $stmt = $this->db->prepare(
             "UPDATE OfficeDocumentSessions "
-            . "SET Status='conflict',ConflictFileId=?,UpdatedAt=UTC_TIMESTAMP() WHERE SessionId=?"
+            . "SET FileId=?,OriginalKey=?,VisibleName=?,ExpectedETag=?,"
+            . "LastWorkspaceMtime=?,LastWorkspaceSize=?,Status='ready',ConflictFileId=?,"
+            . "LastSyncedAt=UTC_TIMESTAMP(),UpdatedAt=UTC_TIMESTAMP() WHERE SessionId=?"
         );
         if (!$stmt) throw new RuntimeException('No se pudo registrar el conflicto Office.');
-        $stmt->bind_param('is', $conflictFileId, $sessionId);
+        $stmt->bind_param(
+            'isssiiis',
+            $conflictFileId,
+            $conflictKey,
+            $conflictName,
+            $etag,
+            $mtime,
+            $size,
+            $conflictFileId,
+            $sessionId
+        );
         $stmt->execute();
         $stmt->close();
     }

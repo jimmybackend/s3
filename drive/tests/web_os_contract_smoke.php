@@ -240,8 +240,15 @@ webOsContract(str_contains($paths['css'], '.os-entry-thumbnail'), 'miniaturas ti
 webOsContract(str_contains($paths['css'], '.os-media-overlay'), 'audio/video tienen componente flotante');
 webOsContract(str_contains($paths['css'], 'z-index:20000'), 'reproductor queda por encima de ventanas y modales');
 
-webOsContract(str_contains($paths['shell'], "'limite' => 20"), 'Mis datos pagina archivos de 20 en 20');
+webOsContract(str_contains($paths['file_list_service'], 'public const WEB_OS_PAGE_SIZE = 30'), 'Mis datos define 30 archivos por página');
+webOsContract(str_contains($paths['shell'], "'limite' => FileListService::WEB_OS_PAGE_SIZE"), 'Mis datos usa el tamaño de página compartido');
+webOsContract(str_contains($paths['search_controller'], 'FileListService::WEB_OS_PAGE_SIZE'), 'Buscar localiza resultados con el mismo tamaño de página');
 webOsContract(str_contains($paths['shell'], 'class="os-folder-pagination"'), 'cada carpeta muestra paginador superior');
+webOsContract(str_contains($paths['shell'], '[1, min(3, $pages)]'), 'paginador conserva las tres primeras páginas');
+webOsContract(str_contains($paths['shell'], '[max(1, $pages - 2), $pages]'), 'paginador conserva las tres últimas páginas');
+webOsContract(str_contains($paths['shell'], '[max(1, $page - 2), min($pages, $page + 2)]'), 'paginador muestra páginas cercanas a la actual');
+webOsContract(str_contains($paths['shell'], 'class="os-page-ellipsis"'), 'paginador separa saltos largos con puntos suspensivos');
+webOsContract(str_contains($paths['css'], '.os-page-ellipsis'), 'puntos suspensivos tienen estilo compacto');
 webOsContract(str_contains($paths['shell'], 'data-explorer-page='), 'paginador conserva número de página');
 webOsContract(str_contains($paths['shell'], 'Primera página'), 'paginador ofrece salto a primera página');
 webOsContract(str_contains($paths['shell'], 'Última página'), 'paginador ofrece salto a última página');

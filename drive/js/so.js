@@ -377,6 +377,18 @@ class ArcadeCloudOsShell {
     this.setContextAction('download', !multi && !locked && Boolean(entry.dataset.downloadUrl));
     this.setContextAction('classic', !multi);
 
+    const selectionDownload = this.context.querySelector('[data-selection-context="download"]');
+    const selectionDelete = this.context.querySelector('[data-selection-context="delete"]');
+    const selectionDivider = this.context.querySelector('[data-selection-context-divider]');
+    const selectionHasLocked = selected.some((item) => item.dataset.locked === '1');
+
+    if (selectionDivider) selectionDivider.hidden = !multi;
+    [selectionDownload, selectionDelete].forEach((control) => {
+      if (!control) return;
+      control.hidden = !multi;
+      control.disabled = !multi || selectionHasLocked;
+    });
+
     this.setContextAction('textract', !multi && !locked && entry.dataset.textract === '1');
     this.setContextAction('transcribe', !multi && !locked && entry.dataset.transcribe === '1');
     this.setContextAction('polly', !multi && !locked && entry.dataset.polly === '1');
@@ -874,8 +886,10 @@ class ArcadeCloudOsShell {
       const action = String(button.dataset.selectionAction || '');
       if (action === 'download') {
         this.downloadSelectedFiles();
+        this.hideContext();
       } else if (action === 'delete') {
         await this.deleteSelectedFiles();
+        this.hideContext();
       }
     });
   }

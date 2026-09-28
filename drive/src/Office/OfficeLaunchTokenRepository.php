@@ -15,19 +15,6 @@ final class OfficeLaunchTokenRepository
 
     public function issue(int $userId, int $ttlSeconds = 120): string
     {
-        return $this->issueContext($userId, null, $ttlSeconds);
-    }
-
-    public function issueForFile(int $userId, int $fileId, int $ttlSeconds = 120): string
-    {
-        if ($fileId <= 0) {
-            throw new RuntimeException('Archivo inválido para iniciar Office.');
-        }
-        return $this->issueContext($userId, $fileId, $ttlSeconds);
-    }
-
-    private function issueContext(int $userId, ?int $fileId, int $ttlSeconds): string
-    {
         if ($userId <= 0) {
             throw new RuntimeException('Usuario inválido para iniciar Office.');
         }
@@ -41,13 +28,13 @@ final class OfficeLaunchTokenRepository
 
         $stmt = $this->db->prepare(
             'INSERT INTO OfficeLaunchTokens '
-            . '(TokenHash,UserId,FileId,CreatedAt,ExpiresAt) '
-            . 'VALUES (?,?,?,UTC_TIMESTAMP(),?)'
+            . '(TokenHash,UserId,CreatedAt,ExpiresAt) '
+            . 'VALUES (?,?,UTC_TIMESTAMP(),?)'
         );
         if (!$stmt) {
             throw new RuntimeException('No se pudo preparar el lanzamiento de Office.');
         }
-        $stmt->bind_param('siis', $hash, $userId, $fileId, $expiresAt);
+        $stmt->bind_param('sis', $hash, $userId, $expiresAt);
         if (!$stmt->execute()) {
             $error = $stmt->error;
             $stmt->close();
@@ -56,6 +43,15 @@ final class OfficeLaunchTokenRepository
         $stmt->close();
 
         return $token;
+    }
+
+    public function issueForFile(int $userId, int $fileId, int $ttlSeconds = 120): string
+    {
+        if ($fileId <= 0) {
+            throw new RuntimeException('Archivo inválido para iniciar Office.');
+        }
+
+        return $this->issue($userId, $ttlSeconds) . '.' . $fileId;
     }
 
     public function consume(string $token): int
@@ -68,16 +64,31 @@ final class OfficeLaunchTokenRepository
     public function consumeContext(string $token): array
     {
         $token = strtolower(trim($token));
-        if (!preg_match('/\A[a-f0-9]{64}\z/', $token)) {
+        $parts = explode('.', $token, 2);
+        $baseToken = (string)($parts[0] ?? '');
+        $fileId = null;
+
+        if (!preg_match('/\A[a-f0-9]{64}\z/', $baseToken)) {
             return ['user_id' => 0, 'file_id' => null];
         }
 
-        $hash = hash('sha256', $token);
+        if (isset($parts[1]) && $parts[1] !== '') {
+            if (!preg_match('/\A[1-9][0-9]{0,18}\z/', $parts[1])) {
+                return ['user_id' => 0, 'file_id' => null];
+            }
+            $parsedFileId = (int)$parts[1];
+            if ($parsedFileId <= 0) {
+                return ['user_id' => 0, 'file_id' => null];
+            }
+            $fileId = $parsedFileId;
+        }
+
+        $hash = hash('sha256', $baseToken);
         $this->db->begin_transaction();
 
         try {
             $stmt = $this->db->prepare(
-                'SELECT UserId,FileId FROM OfficeLaunchTokens '
+                'SELECT UserId FROM OfficeLaunchTokens '
                 . 'WHERE TokenHash=? AND ConsumedAt IS NULL AND ExpiresAt>UTC_TIMESTAMP() '
                 . 'LIMIT 1 FOR UPDATE'
             );
@@ -90,9 +101,6 @@ final class OfficeLaunchTokenRepository
             $stmt->close();
 
             $userId = is_array($row) ? (int)($row['UserId'] ?? 0) : 0;
-            $fileId = is_array($row) && $row['FileId'] !== null
-                ? (int)$row['FileId']
-                : null;
             if ($userId <= 0) {
                 $this->db->rollback();
                 return ['user_id' => 0, 'file_id' => null];
@@ -139,7 +147,6 @@ CREATE TABLE IF NOT EXISTS OfficeLaunchTokens (
   id_ BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   TokenHash CHAR(64) NOT NULL,
   UserId INT NOT NULL,
-  FileId BIGINT UNSIGNED NULL,
   CreatedAt DATETIME NOT NULL,
   ExpiresAt DATETIME NOT NULL,
   ConsumedAt DATETIME NULL,
@@ -151,11 +158,6 @@ CREATE TABLE IF NOT EXISTS OfficeLaunchTokens (
 SQL;
         if (!$this->db->query($sql)) {
             throw new RuntimeException('No se pudo preparar OfficeLaunchTokens: ' . $this->db->error);
-        }
-        if (!$this->db->query(
-            'ALTER TABLE OfficeLaunchTokens ADD COLUMN IF NOT EXISTS FileId BIGINT UNSIGNED NULL AFTER UserId'
-        )) {
-            throw new RuntimeException('No se pudo actualizar OfficeLaunchTokens: ' . $this->db->error);
         }
     }
 }

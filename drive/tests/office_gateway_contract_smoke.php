@@ -16,6 +16,8 @@ $so = (string)file_get_contents($repo . '/drive/so.php');
 $launch = (string)file_get_contents($repo . '/drive/office-launch.php');
 $tokens = (string)file_get_contents($repo . '/drive/src/Office/OfficeLaunchTokenRepository.php');
 $gateway = (string)file_get_contents($repo . '/drive/office-gateway.php');
+$gatewayService = (string)file_get_contents($repo . '/drive/src/Office/OfficeGatewayService.php');
+$workstationClient = (string)file_get_contents($repo . '/drive/src/Office/OfficeWorkstationClient.php');
 $control = (string)file_get_contents($repo . '/drive/workstation-control.php');
 $helperClient = (string)file_get_contents($repo . '/drive/src/Admin/PrivilegedServerHelper.php');
 $helper = (string)file_get_contents($repo . '/drive/bin/arcadecloud-drive-admin-helper.php');
@@ -46,17 +48,17 @@ officeGatewayContract(
 );
 
 officeGatewayContract(
-    str_contains($gateway, 'FastDriveWakeService')
-    && str_contains($gateway, 'authorizeAndStart')
+    str_contains($gatewayService, 'FastDriveWakeService')
+    && str_contains($gatewayService, 'authorizeAndStart')
     && str_contains($gateway, 'current_password'),
     'gateway Office reutiliza autorización superadmin para encender la EC2'
 );
 
 officeGatewayContract(
-    str_contains($gateway, 'MediaWorkerNodeService')
-    && str_contains($gateway, 'touchInteractiveActivity')
-    && str_contains($gateway, 'handleIdle')
-    && str_contains($gateway, 'MediaProcessingJobRepository'),
+    str_contains($gatewayService, 'MediaWorkerNodeService')
+    && str_contains($gatewayService, 'touchInteractiveActivity')
+    && str_contains($gatewayService, 'handleIdle')
+    && str_contains($gatewayService, 'MediaProcessingJobRepository'),
     'Office reutiliza actividad e inactividad segura del nodo de cómputo'
 );
 
@@ -69,9 +71,17 @@ officeGatewayContract(
 );
 
 officeGatewayContract(
-    str_contains($gateway, 'hasActiveJobs()')
+    str_contains($gatewayService, 'hasActiveJobs()')
     && str_contains($gateway, 'Hay una tarea multimedia activa'),
     'Office espera si FFmpeg/multimedia ya está trabajando'
+);
+
+officeGatewayContract(
+    str_contains($workstationClient, 'stream_socket_client')
+    && str_contains($workstationClient, 'HTTP/1.0')
+    && str_contains($workstationClient, '/__arcadecloud_workstation')
+    && str_contains($workstationClient, "['status', 'start']"),
+    'cliente Workstation sólo llama al endpoint privado fijo'
 );
 
 officeGatewayContract(

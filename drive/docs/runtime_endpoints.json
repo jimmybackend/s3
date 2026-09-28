@@ -235,7 +235,7 @@
     },
     {
       "path": "drive/bin/arcadecloud-drive-admin-helper.php",
-      "size": 35416,
+      "size": 41196,
       "active": false,
       "references": [
         "drive/tests/fastdrive_control_contract_smoke.php",
@@ -1391,7 +1391,7 @@
     },
     {
       "path": "drive/so.php",
-      "size": 89401,
+      "size": 91576,
       "active": true,
       "references": [
         "drive/s3.php",
@@ -1487,7 +1487,7 @@
     },
     {
       "path": "drive/src/Admin/PrivilegedServerHelper.php",
-      "size": 7150,
+      "size": 7523,
       "active": false,
       "references": [
         "drive/setup/api.php",
@@ -1506,7 +1506,7 @@
     },
     {
       "path": "drive/src/Admin/ServerMaintenanceJobStore.php",
-      "size": 6495,
+      "size": 6747,
       "active": false,
       "references": [
         "drive/tests/web_os_contract_smoke.php"
@@ -1514,7 +1514,7 @@
     },
     {
       "path": "drive/src/Admin/ServerMaintenanceService.php",
-      "size": 3392,
+      "size": 4408,
       "active": false,
       "references": [
         "drive/tests/web_os_contract_smoke.php"
@@ -2500,7 +2500,7 @@
     },
     {
       "path": "drive/src/Http/Controller/BackgroundTaskController.php",
-      "size": 42094,
+      "size": 42213,
       "active": false,
       "references": [
         "drive/tests/media_processing_contract_smoke.php",
@@ -2714,7 +2714,7 @@
     },
     {
       "path": "drive/src/Http/Controller/NodeStatusController.php",
-      "size": 4866,
+      "size": 5347,
       "active": false,
       "references": [
         "drive/tests/web_os_contract_smoke.php"
@@ -3585,7 +3585,7 @@
     },
     {
       "path": "drive/tests/server_console_contract_smoke.php",
-      "size": 5219,
+      "size": 6019,
       "active": false,
       "references": []
     },
@@ -3657,7 +3657,7 @@
     },
     {
       "path": "drive/tests/web_os_contract_smoke.php",
-      "size": 34779,
+      "size": 36039,
       "active": false,
       "references": []
     },

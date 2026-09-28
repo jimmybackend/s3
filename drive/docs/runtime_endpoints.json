@@ -1210,7 +1210,7 @@
     },
     {
       "path": "drive/office-gateway.php",
-      "size": 24017,
+      "size": 25823,
       "active": false,
       "references": [
         "drive/tests/office_gateway_contract_smoke.php"
@@ -2964,7 +2964,7 @@
     },
     {
       "path": "drive/src/Office/OfficeDocumentSessionRepository.php",
-      "size": 9927,
+      "size": 10336,
       "active": false,
       "references": [
         "drive/tests/office_gateway_contract_smoke.php"
@@ -2972,7 +2972,7 @@
     },
     {
       "path": "drive/src/Office/OfficeDocumentStorageService.php",
-      "size": 15991,
+      "size": 17436,
       "active": false,
       "references": [
         "drive/tests/office_gateway_contract_smoke.php"
@@ -3678,7 +3678,7 @@
     },
     {
       "path": "drive/tests/office_gateway_contract_smoke.php",
-      "size": 11045,
+      "size": 11748,
       "active": false,
       "references": []
     },

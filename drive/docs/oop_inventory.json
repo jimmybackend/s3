@@ -1,7 +1,7 @@
 {
   "summary": {
-    "php_total": 478,
-    "php_class_modules": 283,
+    "php_total": 482,
+    "php_class_modules": 286,
     "php_needs_migration": 0,
     "php_tests": 46,
     "js_total": 61,
@@ -102,7 +102,7 @@
     },
     {
       "path": "drive/bin/arcadecloud-drive-admin-helper.php",
-      "lines": 1132,
+      "lines": 1179,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -1636,7 +1636,7 @@
     },
     {
       "path": "drive/office-gateway.php",
-      "lines": 401,
+      "lines": 554,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -1655,12 +1655,14 @@
     },
     {
       "path": "drive/office-launch.php",
-      "lines": 39,
+      "lines": 62,
       "kind": "thin endpoint",
       "classes": 0,
       "functions": [],
       "session": false,
-      "superglobals": [],
+      "superglobals": [
+        "GET"
+      ],
       "db": false,
       "s3": false,
       "bootstrap": true,
@@ -1960,7 +1962,7 @@
     },
     {
       "path": "drive/so.php",
-      "lines": 1835,
+      "lines": 1843,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -2147,7 +2149,7 @@
     },
     {
       "path": "drive/src/Admin/PrivilegedServerHelper.php",
-      "lines": 238,
+      "lines": 263,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -4580,6 +4582,21 @@
       "issues": []
     },
     {
+      "path": "drive/src/Http/Controller/OfficeDocumentController.php",
+      "lines": 53,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": true,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
       "path": "drive/src/Http/Controller/PersonalAwsController.php",
       "lines": 74,
       "kind": "class/module",
@@ -4991,8 +5008,38 @@
       "issues": []
     },
     {
+      "path": "drive/src/Office/OfficeDocumentSessionRepository.php",
+      "lines": 282,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": true,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Office/OfficeDocumentStorageService.php",
+      "lines": 451,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": true,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
       "path": "drive/src/Office/OfficeGatewayService.php",
-      "lines": 96,
+      "lines": 147,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -5007,7 +5054,7 @@
     },
     {
       "path": "drive/src/Office/OfficeLaunchTokenRepository.php",
-      "lines": 133,
+      "lines": 162,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -5022,7 +5069,7 @@
     },
     {
       "path": "drive/src/Office/OfficeSessionLeaseRepository.php",
-      "lines": 175,
+      "lines": 189,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -5037,7 +5084,7 @@
     },
     {
       "path": "drive/src/Office/OfficeWorkstationClient.php",
-      "lines": 80,
+      "lines": 178,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -6572,7 +6619,7 @@
     },
     {
       "path": "drive/tests/office_gateway_contract_smoke.php",
-      "lines": 164,
+      "lines": 228,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -6841,7 +6888,7 @@
     },
     {
       "path": "drive/tests/web_os_contract_smoke.php",
-      "lines": 422,
+      "lines": 427,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -6858,7 +6905,7 @@
     },
     {
       "path": "drive/tests/workstation_phase1_contract_smoke.php",
-      "lines": 43,
+      "lines": 47,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -7308,6 +7355,21 @@
       "superglobals": [
         "SERVER"
       ],
+      "db": false,
+      "s3": false,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/workstation-document.php",
+      "lines": 10,
+      "kind": "thin endpoint",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
       "db": false,
       "s3": false,
       "bootstrap": true,
@@ -8182,7 +8244,7 @@
     },
     {
       "path": "drive/js/so.js",
-      "lines": 1247,
+      "lines": 1265,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudOsShell"

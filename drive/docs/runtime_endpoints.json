@@ -1218,7 +1218,7 @@
     },
     {
       "path": "drive/office-launch.php",
-      "size": 2559,
+      "size": 2682,
       "active": true,
       "references": [
         "drive/so.php",
@@ -1491,7 +1491,7 @@
     },
     {
       "path": "drive/src/Admin/ArcadeCloudUpdaterService.php",
-      "size": 6114,
+      "size": 7341,
       "active": false,
       "references": [
         "drive/tests/federation_moderation_contract_smoke.php",
@@ -2995,6 +2995,15 @@
       ]
     },
     {
+      "path": "drive/src/Office/OfficeSchemaMigrationService.php",
+      "size": 4312,
+      "active": false,
+      "references": [
+        "drive/tests/installer_service_reconcile_contract_smoke.php",
+        "drive/tests/office_gateway_contract_smoke.php"
+      ]
+    },
+    {
       "path": "drive/src/Office/OfficeSessionLeaseRepository.php",
       "size": 7160,
       "active": false,
@@ -3114,7 +3123,7 @@
     },
     {
       "path": "drive/src/Setup/CanonicalDatabaseSchemaService.php",
-      "size": 4563,
+      "size": 4658,
       "active": false,
       "references": [
         "drive/setup/api.php",
@@ -3525,7 +3534,7 @@
     },
     {
       "path": "drive/tests/database_schema_contract_smoke.php",
-      "size": 5302,
+      "size": 6428,
       "active": false,
       "references": []
     },
@@ -3645,7 +3654,7 @@
     },
     {
       "path": "drive/tests/fresh_install_contract_smoke.php",
-      "size": 4076,
+      "size": 4186,
       "active": false,
       "references": []
     },
@@ -3657,7 +3666,7 @@
     },
     {
       "path": "drive/tests/installer_service_reconcile_contract_smoke.php",
-      "size": 16862,
+      "size": 17681,
       "active": false,
       "references": []
     },
@@ -3669,7 +3678,7 @@
     },
     {
       "path": "drive/tests/office_gateway_contract_smoke.php",
-      "size": 10515,
+      "size": 11045,
       "active": false,
       "references": []
     },

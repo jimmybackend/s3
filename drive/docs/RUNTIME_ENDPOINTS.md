@@ -362,6 +362,7 @@
 | `drive/src/Office/OfficeDocumentStorageService.php` | `drive/tests/office_gateway_contract_smoke.php` |
 | `drive/src/Office/OfficeGatewayService.php` | `drive/tests/office_gateway_contract_smoke.php` |
 | `drive/src/Office/OfficeLaunchTokenRepository.php` | `drive/tests/office_gateway_contract_smoke.php` |
+| `drive/src/Office/OfficeSchemaMigrationService.php` | `drive/tests/installer_service_reconcile_contract_smoke.php`, `drive/tests/office_gateway_contract_smoke.php` |
 | `drive/src/Office/OfficeSessionLeaseRepository.php` | `drive/tests/office_gateway_contract_smoke.php` |
 | `drive/src/Office/OfficeWorkstationClient.php` | `drive/tests/office_gateway_contract_smoke.php` |
 | `drive/src/Security/AuthenticationRepository.php` | `drive/tests/fastdrive_control_contract_smoke.php` |

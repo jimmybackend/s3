@@ -26,7 +26,7 @@ final class ServerMaintenanceJobStore
 
     public function create(int $userId, string $action): array
     {
-        if ($userId <= 0 || $action !== 'memory-clear') {
+        if ($userId <= 0 || !in_array($action, ['memory-clear', 'disk-clean'], true)) {
             throw new RuntimeException('Tarea de mantenimiento inválida.');
         }
         $existing = $this->activeForAction($action);
@@ -41,7 +41,9 @@ final class ServerMaintenanceJobStore
             'user_id' => $userId,
             'action' => $action,
             'status' => 'queued',
-            'message' => 'Liberación de memoria enviada a la cola.',
+            'message' => $action === 'disk-clean'
+                ? 'Limpieza segura de disco enviada a la cola.'
+                : 'Liberación de memoria enviada a la cola.',
             'created_at' => $now,
             'updated_at' => $now,
             'started_at' => '',
@@ -136,7 +138,9 @@ final class ServerMaintenanceJobStore
         }
         $this->update($id, [
             'status' => 'cancelled',
-            'message' => 'Liberación de memoria cancelada.',
+            'message' => (string)($job['action'] ?? '') === 'disk-clean'
+                ? 'Limpieza de disco cancelada.'
+                : 'Liberación de memoria cancelada.',
             'completed_at' => gmdate('c'),
         ]);
     }

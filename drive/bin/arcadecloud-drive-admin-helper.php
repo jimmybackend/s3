@@ -69,7 +69,7 @@ final class ArcadeCloudDriveAdminHelper
         if ($action === 'status') {
             fwrite(STDOUT, json_encode([
                 'ok' => true,
-                'version' => 11,
+                'version' => 12,
                 'capabilities' => [
                     'env_set_many' => true,
                     'db_aws_settings' => true,
@@ -82,6 +82,7 @@ final class ArcadeCloudDriveAdminHelper
                     'managed_federation_drop_google' => true,
                     'server_console' => true,
                     'memory_drop_caches' => true,
+                    'disk_cleanup' => true,
                 ],
                 'identity_path' => $identityPath,
                 'identity_exists' => is_file($identityPath),
@@ -339,6 +340,7 @@ final class ArcadeCloudDriveAdminHelper
             'logs-drop' => $this->journalUnit('arcadecloud-federation-drop-cleanup.service'),
             'logs-media' => $this->journalUnit('arcadecloud-media-worker.service'),
             'memory-clear' => $this->dropLinuxCaches(),
+            'disk-clean' => $this->cleanupDiskSafely(),
             default => $this->fail('Comando de terminal no permitido.', 64),
         };
     }
@@ -491,6 +493,150 @@ final class ArcadeCloudDriveAdminHelper
         }
 
         return $title . "\n" . implode("\n", array_slice($matches, 0, 80));
+    }
+
+    private function cleanupDiskSafely(): string
+    {
+        $beforeFree = @disk_free_space('/');
+        $before = $this->runFixedCommand(['/usr/bin/df', '-h', '/'], [0], 20);
+        $now = time();
+        $deletedFiles = 0;
+        $deletedBytes = 0;
+
+        // Temporales que ArcadeCloud crea directamente en /tmp. Nunca se
+        // recorre /tmp completo ni se eliminan colas, uploads o sesiones.
+        $tempCutoff = $now - 86400;
+        $tmp = rtrim(sys_get_temp_dir(), '/');
+        $prefixes = [
+            'arcadecloud-share-',
+            'arcadecloud-replica-',
+            'arcadecloud-drop-ingress-',
+            'arcadecloud-multisource-',
+            'arcadecloud-range-',
+            'arcade-doc-',
+            'drive_zip_',
+            'drive_s3_',
+        ];
+        foreach ($prefixes as $prefix) {
+            foreach (glob($tmp . '/' . $prefix . '*', GLOB_NOSORT) ?: [] as $path) {
+                $this->deleteOldRegularFile($path, $tempCutoff, $deletedFiles, $deletedBytes);
+            }
+        }
+
+        // Caché de costos: es completamente regenerable. Sólo se retiran
+        // entradas antiguas, nunca la carpeta ni enlaces simbólicos.
+        $this->cleanupOldFilesInDirectory(
+            $tmp . '/arcadecloud-drive-cost-explorer-cache',
+            $tempCutoff,
+            $deletedFiles,
+            $deletedBytes
+        );
+
+        // Logs rotados: conserva siempre los logs activos. Sólo se consideran
+        // archivos rotados/archivados con al menos 14 días.
+        $logCutoff = $now - (14 * 86400);
+        foreach (['/var/log/nginx', '/var/log/php-fpm-drive'] as $logDir) {
+            $this->cleanupRotatedLogs($logDir, $logCutoff, $deletedFiles, $deletedBytes);
+        }
+
+        // journalctl --vacuum sólo elimina journals archivados; nunca el journal
+        // activo. Las dos cotas evitan que el journal crezca sin límite.
+        $journalMessages = [];
+        foreach ([
+            ['/usr/bin/journalctl', '--vacuum-time=14d', '--no-pager'],
+            ['/usr/bin/journalctl', '--vacuum-size=128M', '--no-pager'],
+        ] as $command) {
+            try {
+                $message = trim($this->runFixedCommand($command, [0], 20));
+                if ($message !== '') $journalMessages[] = $message;
+            } catch (\Throwable $error) {
+                $journalMessages[] = 'Journal no reducido: ' . $error->getMessage();
+            }
+        }
+
+        $this->runFixedCommand(['/usr/bin/sync']);
+        clearstatcache(true, '/');
+        $afterFree = @disk_free_space('/');
+        $after = $this->runFixedCommand(['/usr/bin/df', '-h', '/'], [0], 20);
+        $measuredFreed = is_float($beforeFree) && is_float($afterFree)
+            ? max(0, (int)round($afterFree - $beforeFree))
+            : 0;
+
+        return "Limpieza segura de disco completada.\n"
+            . "Archivos retirados: {$deletedFiles}.\n"
+            . "Tamaño conocido retirado: " . $this->humanBytes($deletedBytes) . ".\n"
+            . "Espacio libre recuperado medido: " . $this->humanBytes($measuredFreed) . ".\n"
+            . "No se tocaron archivos de usuario, S3, base de datos, uploads activos, colas ni logs actuales.\n\n"
+            . "ANTES\n" . $before . "\n\nDESPUÉS\n" . $after
+            . ($journalMessages !== [] ? "\n\nJOURNAL\n" . implode("\n", $journalMessages) : '');
+    }
+
+    private function deleteOldRegularFile(
+        string $path,
+        int $cutoff,
+        int &$deletedFiles,
+        int &$deletedBytes
+    ): void {
+        if ($path === '' || is_link($path) || !is_file($path)) return;
+        $mtime = @filemtime($path);
+        if (!is_int($mtime) || $mtime >= $cutoff) return;
+        $size = @filesize($path);
+        if (@unlink($path)) {
+            $deletedFiles++;
+            if (is_int($size) && $size > 0) $deletedBytes += $size;
+        }
+    }
+
+    private function cleanupOldFilesInDirectory(
+        string $directory,
+        int $cutoff,
+        int &$deletedFiles,
+        int &$deletedBytes
+    ): void {
+        if ($directory === '' || is_link($directory) || !is_dir($directory)) return;
+        $real = realpath($directory);
+        if (!is_string($real) || $real !== $directory) return;
+
+        foreach (scandir($directory) ?: [] as $name) {
+            if ($name === '.' || $name === '..') continue;
+            $path = $directory . '/' . $name;
+            if (is_link($path) || is_dir($path)) continue;
+            $this->deleteOldRegularFile($path, $cutoff, $deletedFiles, $deletedBytes);
+        }
+    }
+
+    private function cleanupRotatedLogs(
+        string $directory,
+        int $cutoff,
+        int &$deletedFiles,
+        int &$deletedBytes
+    ): void {
+        if ($directory === '' || is_link($directory) || !is_dir($directory)) return;
+        foreach (scandir($directory) ?: [] as $name) {
+            if ($name === '.' || $name === '..') continue;
+            if (!preg_match('/(?:\\.gz|\\.old|\\.[1-9](?:\\.gz)?|-\\d{8}(?:\\.gz)?|-\\d{4}-\\d{2}-\\d{2}(?:\\.gz)?)\\z/', $name)) {
+                continue;
+            }
+            $this->deleteOldRegularFile(
+                $directory . '/' . $name,
+                $cutoff,
+                $deletedFiles,
+                $deletedBytes
+            );
+        }
+    }
+
+    private function humanBytes(int $bytes): string
+    {
+        $value = max(0, $bytes);
+        $units = ['B', 'KB', 'MB', 'GB', 'TB'];
+        $index = 0;
+        $display = (float)$value;
+        while ($display >= 1024 && $index < count($units) - 1) {
+            $display /= 1024;
+            $index++;
+        }
+        return number_format($display, $index === 0 ? 0 : 2, '.', '') . ' ' . $units[$index];
     }
 
     private function dropLinuxCaches(): string

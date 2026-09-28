@@ -488,7 +488,17 @@ $currentFolderName = $currentIsRoot
             </div>
           </article>
           <article><span>Disco total</span><strong data-node-field="disk_total"><?= $e($formatBytes($diskTotalBytes)) ?></strong></article>
-          <article><span>Disco usado</span><strong data-node-field="disk_used"><?= $e($formatBytes($diskUsedBytes)) ?> · <?= $e((string)$diskUsedPercent) ?>%</strong></article>
+          <article class="os-node-memory-card">
+            <span>Disco usado</span>
+            <div class="os-node-memory-value">
+              <strong data-node-field="disk_used"><?= $e($formatBytes($diskUsedBytes)) ?> · <?= $e((string)$diskUsedPercent) ?>%</strong>
+              <?php if ($isSuperAdmin): ?>
+              <button type="button" class="os-node-broom" data-node-disk-clean title="Liberar temporales y logs archivados de forma segura" aria-label="Liberar espacio de disco">
+                <i class="fas fa-broom"></i>
+              </button>
+              <?php endif; ?>
+            </div>
+          </article>
           <article><span>Disco libre</span><strong data-node-field="disk_free"><?= $e($formatBytes($diskFreeBytes)) ?></strong></article>
           <article><span>Swap</span><strong data-node-field="swap"><?= $e($formatBytes((int)$nodeSnapshot['swap_total_bytes'])) ?></strong></article>
           <article><span>Carga</span><strong data-node-field="load"><?= $e(implode(' · ', array_map('strval', $load))) ?></strong></article>
@@ -1582,6 +1592,33 @@ Escribe help o usa uno de los botones disponibles.</pre>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-info" data-node-memory-submit><i class="fas fa-broom mr-1"></i>Programar limpieza</button>
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade os-share-modal" id="nodeDiskCleanModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title"><i class="fas fa-hard-drive mr-2"></i>Liberar espacio de disco</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar"><span aria-hidden="true">&times;</span></button>
+        </div>
+        <div class="modal-body">
+          <p class="small text-muted">Limpia únicamente temporales conocidos de ArcadeCloud, cachés regenerables, logs rotados antiguos y journal archivado.</p>
+          <ul class="small text-muted pl-3 mb-2">
+            <li>No borra archivos de usuarios ni objetos S3.</li>
+            <li>No toca base de datos, sesiones, uploads activos ni colas.</li>
+            <li>No elimina logs actuales.</li>
+          </ul>
+          <p class="small text-info">Si existen tareas de procesamiento, quedará en la cola y se ejecutará después de ellas.</p>
+          <label for="nodeDiskPassword">Contraseña privada</label>
+          <input type="password" class="form-control" id="nodeDiskPassword" data-node-disk-password autocomplete="current-password">
+          <div class="mt-2 small text-muted" data-node-disk-status>Lista para programarse.</div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-info" data-node-disk-submit><i class="fas fa-broom mr-1"></i>Programar limpieza</button>
           <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
         </div>
       </div>

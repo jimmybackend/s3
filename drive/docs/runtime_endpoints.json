@@ -23,6 +23,7 @@
     "drive/login.php",
     "drive/logout.php",
     "drive/node-status.php",
+    "drive/office-launch.php",
     "drive/personal_aws_bootstrap.php",
     "drive/psesion.php",
     "drive/s3.php",
@@ -170,6 +171,8 @@
         "drive/mover_archivo.php",
         "drive/mover_carpeta.php",
         "drive/node-status.php",
+        "drive/office-gateway.php",
+        "drive/office-launch.php",
         "drive/polly_cargar_texto.php",
         "drive/polly_list_voices.php",
         "drive/polly_task_status.php",
@@ -210,7 +213,8 @@
         "drive/validar_php.php",
         "drive/ver.php",
         "drive/ver_archivo.php",
-        "drive/ver_pdf.php"
+        "drive/ver_pdf.php",
+        "drive/workstation-control.php"
       ]
     },
     {
@@ -235,11 +239,12 @@
     },
     {
       "path": "drive/bin/arcadecloud-drive-admin-helper.php",
-      "size": 41196,
+      "size": 42566,
       "active": false,
       "references": [
         "drive/tests/fastdrive_control_contract_smoke.php",
         "drive/tests/installer_service_reconcile_contract_smoke.php",
+        "drive/tests/office_gateway_contract_smoke.php",
         "drive/tests/server_console_contract_smoke.php",
         "drive/tests/setup_finalize_contract_smoke.php"
       ]
@@ -401,6 +406,14 @@
       "active": false,
       "references": [
         "drive/src/Http/Controller/UploadCleanupController.php"
+      ]
+    },
+    {
+      "path": "drive/bin/workstation_health.php",
+      "size": 922,
+      "active": false,
+      "references": [
+        "drive/tests/workstation_phase1_contract_smoke.php"
       ]
     },
     {
@@ -670,6 +683,7 @@
         "drive/bloque_archivos.php",
         "drive/bloque_carpetas.php",
         "drive/fastdrive-control.php",
+        "drive/office-launch.php",
         "drive/s3.php",
         "drive/so.php",
         "drive/src/Http/Controller/ActivityCostController.php",
@@ -679,6 +693,7 @@
         "drive/src/Security/SessionManager.php",
         "drive/src/View/FederationReportPageRenderer.php",
         "drive/tests/index_federation_drop_smoke.php",
+        "drive/tests/office_gateway_contract_smoke.php",
         "drive/tests/web_os_contract_smoke.php",
         "drive/up.php"
       ]
@@ -1032,6 +1047,7 @@
         "drive/bloque_archivos.php",
         "drive/bloque_carpetas.php",
         "drive/fastdrive-control.php",
+        "drive/office-launch.php",
         "drive/s3.php",
         "drive/so.php",
         "drive/src/Http/Controller/ActivityCostController.php",
@@ -1041,6 +1057,7 @@
         "drive/src/Security/SessionManager.php",
         "drive/src/View/FederationReportPageRenderer.php",
         "drive/tests/index_federation_drop_smoke.php",
+        "drive/tests/office_gateway_contract_smoke.php",
         "drive/tests/web_os_contract_smoke.php",
         "drive/up.php"
       ]
@@ -1072,6 +1089,7 @@
         "drive/bloque_archivos.php",
         "drive/bloque_carpetas.php",
         "drive/fastdrive-control.php",
+        "drive/office-launch.php",
         "drive/s3.php",
         "drive/so.php",
         "drive/src/Http/Controller/ActivityCostController.php",
@@ -1081,6 +1099,7 @@
         "drive/src/Security/SessionManager.php",
         "drive/src/View/FederationReportPageRenderer.php",
         "drive/tests/index_federation_drop_smoke.php",
+        "drive/tests/office_gateway_contract_smoke.php",
         "drive/tests/web_os_contract_smoke.php",
         "drive/up.php"
       ]
@@ -1186,6 +1205,23 @@
         "drive/so.php",
         "drive/tests/web_os_contract_smoke.php",
         "drive/js/so-node.js"
+      ]
+    },
+    {
+      "path": "drive/office-gateway.php",
+      "size": 14911,
+      "active": false,
+      "references": [
+        "drive/tests/office_gateway_contract_smoke.php"
+      ]
+    },
+    {
+      "path": "drive/office-launch.php",
+      "size": 1169,
+      "active": true,
+      "references": [
+        "drive/so.php",
+        "drive/tests/office_gateway_contract_smoke.php"
       ]
     },
     {
@@ -1378,6 +1414,7 @@
         "drive/bloque_archivos.php",
         "drive/bloque_carpetas.php",
         "drive/fastdrive-control.php",
+        "drive/office-launch.php",
         "drive/s3.php",
         "drive/so.php",
         "drive/src/Http/Controller/ActivityCostController.php",
@@ -1387,17 +1424,19 @@
         "drive/src/Security/SessionManager.php",
         "drive/src/View/FederationReportPageRenderer.php",
         "drive/tests/index_federation_drop_smoke.php",
+        "drive/tests/office_gateway_contract_smoke.php",
         "drive/tests/web_os_contract_smoke.php",
         "drive/up.php"
       ]
     },
     {
       "path": "drive/so.php",
-      "size": 97444,
+      "size": 97473,
       "active": true,
       "references": [
         "drive/s3.php",
         "drive/src/Http/Controller/AuthController.php",
+        "drive/tests/office_gateway_contract_smoke.php",
         "drive/tests/server_console_contract_smoke.php",
         "drive/tests/web_os_clipboard_contract_smoke.php",
         "drive/tests/web_os_contract_smoke.php",
@@ -1489,10 +1528,11 @@
     },
     {
       "path": "drive/src/Admin/PrivilegedServerHelper.php",
-      "size": 7523,
+      "size": 8946,
       "active": false,
       "references": [
         "drive/setup/api.php",
+        "drive/tests/office_gateway_contract_smoke.php",
         "drive/tests/server_console_contract_smoke.php",
         "drive/tests/setup_finalize_contract_smoke.php"
       ]
@@ -2895,6 +2935,7 @@
       "active": false,
       "references": [
         "drive/tests/media_processing_contract_smoke.php",
+        "drive/tests/office_gateway_contract_smoke.php",
         "drive/tests/web_os_contract_smoke.php"
       ]
     },
@@ -2911,6 +2952,30 @@
       "size": 13754,
       "active": false,
       "references": []
+    },
+    {
+      "path": "drive/src/Office/OfficeGatewayService.php",
+      "size": 3100,
+      "active": false,
+      "references": [
+        "drive/tests/office_gateway_contract_smoke.php"
+      ]
+    },
+    {
+      "path": "drive/src/Office/OfficeLaunchTokenRepository.php",
+      "size": 4026,
+      "active": false,
+      "references": [
+        "drive/tests/office_gateway_contract_smoke.php"
+      ]
+    },
+    {
+      "path": "drive/src/Office/OfficeWorkstationClient.php",
+      "size": 2633,
+      "active": false,
+      "references": [
+        "drive/tests/office_gateway_contract_smoke.php"
+      ]
     },
     {
       "path": "drive/src/Security/AuthenticationRepository.php",
@@ -3570,6 +3635,12 @@
       "references": []
     },
     {
+      "path": "drive/tests/office_gateway_contract_smoke.php",
+      "size": 5896,
+      "active": false,
+      "references": []
+    },
+    {
       "path": "drive/tests/password_credential_verifier_smoke.php",
       "size": 1558,
       "active": false,
@@ -3668,6 +3739,12 @@
     {
       "path": "drive/tests/web_os_contract_smoke.php",
       "size": 42094,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/tests/workstation_phase1_contract_smoke.php",
+      "size": 3390,
       "active": false,
       "references": []
     },
@@ -3935,6 +4012,14 @@
       "active": false,
       "references": [
         "drive/js/ver-pdf.js"
+      ]
+    },
+    {
+      "path": "drive/workstation-control.php",
+      "size": 1769,
+      "active": false,
+      "references": [
+        "drive/tests/office_gateway_contract_smoke.php"
       ]
     }
   ]

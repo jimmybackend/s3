@@ -3657,7 +3657,7 @@
     },
     {
       "path": "drive/tests/installer_service_reconcile_contract_smoke.php",
-      "size": 15265,
+      "size": 16862,
       "active": false,
       "references": []
     },
@@ -3777,7 +3777,7 @@
     },
     {
       "path": "drive/tests/workstation_phase1_contract_smoke.php",
-      "size": 4322,
+      "size": 4847,
       "active": false,
       "references": []
     },

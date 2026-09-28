@@ -54,6 +54,7 @@ $page = max(1, (int)($_GET['pagina'] ?? 1));
 $fileState = $app->fileListService()->load($userId, $currentRoute, [
     'pagina' => $page,
     'limite' => 20,
+    'buscar' => (string)($_GET['buscar'] ?? ''),
 ]);
 $page = max(1, (int)($fileState['page'] ?? 1));
 $pages = max(1, (int)($fileState['pages'] ?? 1));
@@ -381,6 +382,8 @@ $currentFolderName = $currentIsRoot
                     data-classic-url="s3.php"
                     data-locked="<?= $locked ? '1' : '0' ?>"
                     data-has-security="<?= FileViewHelper::hasSecurity($row) ? '1' : '0' ?>"
+                    data-unlocked="<?= (($row['AccessType'] ?? 'normal') === 'unlocked') ? '1' : '0' ?>"
+                    data-hint="<?= $e((string)($row['SecureHint'] ?? '')) ?>"
                     data-image="<?= $isImage ? '1' : '0' ?>"
                     data-audio="<?= $isAudio ? '1' : '0' ?>"
                     data-video="<?= $isVideo ? '1' : '0' ?>"
@@ -509,6 +512,9 @@ $currentFolderName = $currentIsRoot
       <div class="os-window-body">
         <div class="os-app-grid">
           <button type="button" class="os-app-card is-ready" data-window-open="explorerWindow"><i class="fas fa-folder-open"></i><strong>Mis datos</strong><span>Disponible</span></button>
+          <button type="button" class="os-app-card is-ready" data-window-open="searchWindow" data-open-search>
+            <i class="fas fa-magnifying-glass"></i><strong>Buscar</strong><span>Normal + IA</span>
+          </button>
           <button type="button" class="os-app-card is-ready" data-window-open="federationWindow" data-open-federation>
             <i class="fas fa-globe"></i><strong>FederationCloud</strong><span>Compartidos y red</span>
           </button>
@@ -526,6 +532,53 @@ $currentFolderName = $currentIsRoot
           <button type="button" class="os-app-card" disabled><i class="fas fa-file-pdf"></i><strong>PDF</strong><span>Próximamente</span></button>
           <button type="button" class="os-app-card" disabled><i class="fas fa-cubes"></i><strong>3D</strong><span>Próximamente</span></button>
           <button type="button" class="os-app-card" disabled><i class="fas fa-earth-americas"></i><strong>Mapas</strong><span>Próximamente</span></button>
+        </div>
+      </div>
+    </section>
+
+    <section class="os-window os-search-window"
+             id="searchWindow"
+             data-window-title="Buscar"
+             style="left:13vw;top:9vh;width:min(860px,84vw);height:min(650px,76vh);">
+      <div class="os-window-titlebar" data-window-drag-handle>
+        <div class="os-window-title"><i class="fas fa-magnifying-glass"></i><span>Buscar</span></div>
+        <div class="os-window-controls">
+          <button type="button" data-window-minimize aria-label="Minimizar"><i class="fas fa-minus"></i></button>
+          <button type="button" data-window-maximize aria-label="Maximizar"><i class="far fa-square"></i></button>
+          <button type="button" data-window-close aria-label="Cerrar"><i class="fas fa-xmark"></i></button>
+        </div>
+      </div>
+
+      <div class="os-window-body os-search-body">
+        <div class="os-search-mode" role="group" aria-label="Modo de búsqueda">
+          <button type="button" data-os-search-mode="normal" aria-pressed="true">
+            <i class="fas fa-font"></i><span>Normal</span>
+          </button>
+          <button type="button" data-os-search-mode="ai" aria-pressed="false">
+            <i class="fas fa-wand-magic-sparkles"></i><span>Con IA</span>
+          </button>
+        </div>
+
+        <form id="osSearchForm" class="os-search-form" autocomplete="off">
+          <div class="os-search-input-row">
+            <i class="fas fa-magnifying-glass"></i>
+            <input type="search"
+                   id="osSearchInput"
+                   maxlength="600"
+                   placeholder="factura, fact*, *.pdf, *2026*"
+                   aria-label="Buscar archivos"
+                   required>
+            <button type="submit"><i class="fas fa-search"></i><span>Buscar</span></button>
+          </div>
+          <small id="osSearchHelp">Busca por nombre: factura, fact*, *.pdf, *2026* o usa ? para un carácter.</small>
+        </form>
+
+        <div id="osSearchResults" class="os-search-results" aria-live="polite">
+          <div class="os-search-empty">
+            <i class="fas fa-magnifying-glass"></i>
+            <strong>Busca en todo Mi Drive</strong>
+            <span>Los resultados salen del catálogo MySQL del usuario; no se lista S3.</span>
+          </div>
         </div>
       </div>
     </section>
@@ -684,6 +737,60 @@ Escribe help o usa uno de los botones disponibles.</pre>
     <button type="button" data-file-action="security-relock"><i class="fas fa-lock"></i><span>Bloquear de nuevo</span></button>
     <div class="os-context-divider"></div>
     <button type="button" data-file-action="classic"><i class="fas fa-hard-drive"></i>Abrir en Drive clásico</button>
+  </div>
+
+  <!-- Modal compartido: Seguridad del archivo -->
+  <div class="modal fade" id="securityFileModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content security-modal-content">
+        <div class="modal-header">
+          <h5 id="secModalTitle" class="modal-title">Seguridad del archivo</h5>
+          <button type="button" class="close" aria-label="Cerrar" data-sec-close>
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="security-help" id="secModalText"></div>
+          <div class="security-help">
+            Archivo: <strong class="security-file-name" id="secFileName">—</strong>
+          </div>
+          <div class="security-hint-box" id="secHintBox" style="display:none;"></div>
+
+          <div class="mb-3" id="secPasswordField">
+            <label for="secPasswordInput" class="form-label">Contraseña</label>
+            <div class="input-group">
+              <input type="password" id="secPasswordInput" class="form-control" autocomplete="new-password">
+              <button type="button" class="btn btn-toggle-pass" data-sec-toggle="secPasswordInput">Ver</button>
+            </div>
+          </div>
+
+          <div class="mb-3" id="secConfirmField" style="display:none;">
+            <label for="secConfirmInput" class="form-label">Confirmar contraseña</label>
+            <div class="input-group">
+              <input type="password" id="secConfirmInput" class="form-control" autocomplete="new-password">
+              <button type="button" class="btn btn-toggle-pass" data-sec-toggle="secConfirmInput">Ver</button>
+            </div>
+          </div>
+
+          <div class="mb-3" id="secHintField" style="display:none;">
+            <label for="secHintInput" class="form-label">Pista para recordar</label>
+            <input type="text" id="secHintInput" class="form-control" maxlength="255" placeholder="Opcional">
+          </div>
+
+          <label class="sec-check-row" id="secShowAllRow" style="display:none;">
+            <input type="checkbox" id="secShowAllCheckbox"> Mostrar contraseñas
+          </label>
+
+          <div class="security-error" id="secModalError"></div>
+        </div>
+        <div class="modal-footer">
+          <div class="security-actions w-100">
+            <button type="button" class="btn btn-secondary" data-sec-cancel>Cancelar</button>
+            <button type="button" class="btn btn-primary" data-sec-accept>Aceptar</button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <div class="os-folder-dialogs">
@@ -1694,6 +1801,8 @@ Escribe help o usa uno de los botones disponibles.</pre>
   <script src="js/upload-center.js?v=<?= (int)filemtime(__DIR__ . '/js/upload-center.js') ?>"></script>
   <script data-drive-updater src="js/arcadecloud-updater.js?v=<?= (int)filemtime(__DIR__ . '/js/arcadecloud-updater.js') ?>"></script>
   <script src="js/compute-node-idle.js?v=<?= (int)filemtime(__DIR__ . '/js/compute-node-idle.js') ?>"></script>
+  <script src="js/file-security.js?v=<?= (int)filemtime(__DIR__ . '/js/file-security.js') ?>"></script>
+  <script src="js/so-search.js?v=<?= (int)filemtime(__DIR__ . '/js/so-search.js') ?>"></script>
   <script src="js/arcadelink-share.js?v=<?= (int)filemtime(__DIR__ . '/js/arcadelink-share.js') ?>"></script>
   <script src="js/so-share.js?v=<?= (int)filemtime(__DIR__ . '/js/so-share.js') ?>"></script>
   <script src="js/so-node.js?v=<?= (int)filemtime(__DIR__ . '/js/so-node.js') ?>"></script>

@@ -617,10 +617,9 @@ class ArcadeCloudOsShell {
     const ext = String(entry.dataset.ext || '').toLowerCase();
 
     if (officeUrl && !forceEdit) {
-      const opened = this.window.open(officeUrl, '_blank', 'noopener');
-      if (!opened) {
-        this.notify('El navegador bloqueó la nueva pestaña de Office.', 'warning');
-      }
+      const opened = this.window.open(officeUrl, '_blank');
+      if (opened) opened.opener = null;
+      else this.notify('El navegador bloqueó la nueva pestaña de Office.', 'warning');
       this.hideContext();
       return;
     }
@@ -1084,8 +1083,9 @@ class ArcadeCloudOsShell {
     }
 
     if (action === 'office' && entry.dataset.officeUrl) {
-      const opened = this.window.open(entry.dataset.officeUrl, '_blank', 'noopener');
-      if (!opened) this.notify('El navegador bloqueó la nueva pestaña de Office.', 'warning');
+      const opened = this.window.open(entry.dataset.officeUrl, '_blank');
+      if (opened) opened.opener = null;
+      else this.notify('El navegador bloqueó la nueva pestaña de Office.', 'warning');
       this.hideContext();
       return;
     }

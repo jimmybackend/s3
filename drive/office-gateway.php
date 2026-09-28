@@ -43,6 +43,7 @@ $officeFileId = max(0, (int)$session->get('office_file_id', 0));
 $officeDocumentSessionId = strtolower(trim((string)$session->get('office_document_session_id', '')));
 $officeDocumentToken = strtolower(trim((string)$session->get('office_document_token', '')));
 $officeDocumentName = trim((string)$session->get('office_document_name', ''));
+$officeDocumentReady = (bool)$session->get('office_document_ready', false);
 
 if ($officeUserId > 0 && !preg_match('/^[a-f0-9]{64}$/', $officeSessionKey)) {
     $officeSessionKey = bin2hex(random_bytes(32));
@@ -103,6 +104,7 @@ if ($action === 'document-sync' || $action === 'document-close') {
                 'office_document_token',
                 'office_document_file_id',
                 'office_document_name',
+                'office_document_ready',
             ] as $key) {
                 $session->remove($key);
             }
@@ -154,11 +156,13 @@ if ($launch !== '') {
             0,
             (int)$session->get('office_document_file_id', 0)
         );
+        $existingDocumentReady = (bool)$session->get('office_document_ready', false);
 
         if ($consumedUserId <= 0) {
             $session->set('office_gateway_error', 'El enlace de Office caducó o ya fue utilizado.');
         } elseif (
-            preg_match('/^[a-f0-9]{32}$/', $existingDocumentSessionId)
+            $existingDocumentReady
+            && preg_match('/^[a-f0-9]{32}$/', $existingDocumentSessionId)
             && $existingDocumentFileId > 0
             && $consumedFileId !== $existingDocumentFileId
         ) {
@@ -172,15 +176,23 @@ if ($launch !== '') {
             $session->set('office_user_id', $officeUserId);
             $session->set('office_file_id', $officeFileId);
 
-            if (!preg_match('/^[a-f0-9]{32}$/', $existingDocumentSessionId)) {
+            if (
+                !$existingDocumentReady
+                || !preg_match('/^[a-f0-9]{32}$/', $existingDocumentSessionId)
+            ) {
                 foreach ([
                     'office_document_session_id',
                     'office_document_token',
                     'office_document_file_id',
                     'office_document_name',
+                    'office_document_ready',
                 ] as $key) {
                     $session->remove($key);
                 }
+                $officeDocumentSessionId = '';
+                $officeDocumentToken = '';
+                $officeDocumentName = '';
+                $officeDocumentReady = false;
             }
             if (!preg_match('/^[a-f0-9]{64}$/', $officeSessionKey)) {
                 $officeSessionKey = bin2hex(random_bytes(32));
@@ -303,18 +315,27 @@ if ($officeUserId > 0) {
                             $session->set('office_document_token', $officeDocumentToken);
                             $session->set('office_document_file_id', $officeFileId);
                             $session->set('office_document_name', $officeDocumentName);
+                            $session->set('office_document_ready', false);
+                            $officeDocumentReady = false;
 
                             $office->prepareDocument(
                                 $privateIp,
                                 $officeDocumentSessionId,
                                 $officeDocumentToken
                             );
+
+                            $session->set('office_document_ready', true);
+                            $officeDocumentReady = true;
                         }
                     }
                 }
             } catch (RuntimeException $e) {
                 $officeBusy = str_contains($e->getMessage(), 'reservado por otra sesión')
                     || str_contains($e->getMessage(), 'solicitado por otra sesión');
+                if ($officeFileId > 0 && !$officeBusy) {
+                    $session->set('office_document_ready', false);
+                    $officeDocumentReady = false;
+                }
                 $waiting = !$officeBusy;
                 $error = $error !== '' ? $error : $e->getMessage();
             }
@@ -342,6 +363,8 @@ if ($officeUserId <= 0) {
     $mode = 'office-busy';
 } elseif ($mediaBusy && !$workstationActive) {
     $mode = 'media-busy';
+} elseif ($workstationActive && $officeFileId > 0 && !$officeDocumentReady) {
+    $mode = 'document-error';
 } elseif ($workstationActive) {
     $mode = 'ready';
 } else {
@@ -527,6 +550,14 @@ button{width:100%;margin-top:12px;padding:13px;border:1px solid var(--accent);bo
       <input id="current_password" name="current_password" type="password" autocomplete="current-password" maxlength="4096" required autofocus>
       <button type="submit">Encender y abrir Office</button>
     </form>
+  <?php elseif ($mode === 'document-error'): ?>
+    <h1>Documento no preparado</h1>
+    <p>LibreOffice está disponible, pero ArcadeCloud no pudo copiar este archivo desde S3 al workspace de edición.</p>
+    <?php if ($officeDocumentName !== ''): ?>
+      <div class="state">Archivo: <?= $escape($officeDocumentName) ?></div>
+    <?php endif; ?>
+    <?php if ($error !== ''): ?><div class="err"><?= $escape($error) ?></div><?php endif; ?>
+    <p class="small">Vuelve a <strong>Mis datos</strong>, usa <strong>Sincronizar desde S3</strong> en la carpeta donde realmente está el archivo y vuelve a abrirlo con Office. Si el archivo fue movido entre carpetas, sincroniza una vez la raíz del usuario.</p>
   <?php elseif ($mode === 'office-busy'): ?>
     <h1>Office está en uso</h1>
     <p>La primera versión permite una sola sesión de escritorio. Espera a que la sesión actual termine o el nodo se apague por inactividad.</p>

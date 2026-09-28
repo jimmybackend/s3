@@ -2138,7 +2138,7 @@ CREATE TABLE IF NOT EXISTS `MediaWorkerNodeSessions` (
 -- Existing installations may execute only this marked block.
 -- ARCADECLOUD:OFFICE_SCHEMA:BEGIN
 
-CREATE TABLE IF NOT EXISTS OfficeLaunchTokens (
+CREATE TABLE IF NOT EXISTS `OfficeLaunchTokens` (
   id_ bigint unsigned NOT NULL AUTO_INCREMENT,
   TokenHash char(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
   UserId int NOT NULL,
@@ -2151,7 +2151,7 @@ CREATE TABLE IF NOT EXISTS OfficeLaunchTokens (
   KEY idx_office_launch_user (UserId, CreatedAt)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE IF NOT EXISTS OfficeSessionLeases (
+CREATE TABLE IF NOT EXISTS `OfficeSessionLeases` (
   id_ bigint unsigned NOT NULL AUTO_INCREMENT,
   InstanceId varchar(32) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
   UserId int NOT NULL,
@@ -2166,7 +2166,7 @@ CREATE TABLE IF NOT EXISTS OfficeSessionLeases (
   KEY idx_office_session_user (UserId, ExpiresAt)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE IF NOT EXISTS OfficeDocumentSessions (
+CREATE TABLE IF NOT EXISTS `OfficeDocumentSessions` (
   id_ bigint unsigned NOT NULL AUTO_INCREMENT,
   SessionId char(32) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
   ControlTokenHash char(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,

@@ -5,6 +5,7 @@ namespace ArcadeCloud\Drive\Http\Controller;
 
 use ArcadeCloud\Drive\Activity\ActivityCostRecorder;
 use ArcadeCloud\Drive\Application\BackgroundWorkerLauncher;
+use ArcadeCloud\Drive\Admin\ServerMaintenanceJobStore;
 use ArcadeCloud\Drive\Http\JsonResponse;
 use ArcadeCloud\Drive\Media\MediaProcessingJobRepository;
 use ArcadeCloud\Drive\Sync\SyncJobStore;
@@ -61,6 +62,12 @@ final class BackgroundTaskController extends AbstractJsonController
                 $tasks = array_merge($tasks, $this->mediaTasks($userId));
             } catch (\Throwable $e) {
                 $sourceErrors['media'] = $e->getMessage();
+            }
+
+            try {
+                $tasks = array_merge($tasks, $this->maintenanceTasks($userId));
+            } catch (\Throwable $e) {
+                $sourceErrors['maintenance'] = $e->getMessage();
             }
 
             $tasks = array_values(array_filter($tasks, fn(array $task): bool => $this->shouldExpose($task)));
@@ -128,6 +135,8 @@ final class BackgroundTaskController extends AbstractJsonController
                 $message = $this->handleMediaAction($userId, substr($controlId, 6), $action);
             } elseif (str_starts_with($controlId, 'activity:')) {
                 $message = $this->handleActivityAction($userId, (int)substr($controlId, 9), $action);
+            } elseif (str_starts_with($controlId, 'maintenance:')) {
+                $message = $this->handleMaintenanceAction($userId, substr($controlId, 12), $action);
             } else {
                 throw new RuntimeException('Tipo de tarea no reconocido.');
             }
@@ -139,6 +148,68 @@ final class BackgroundTaskController extends AbstractJsonController
         } catch (\Throwable $e) {
             JsonResponse::send(['ok' => false, 'error' => $e->getMessage()], 400);
         }
+    }
+
+    private function maintenanceTasks(int $userId): array
+    {
+        $tasks = [];
+        foreach ((new ServerMaintenanceJobStore())->recentForUser($userId, 20) as $job) {
+            $raw = strtolower((string)($job['status'] ?? 'queued'));
+            $status = match ($raw) {
+                'waiting' => 'queued',
+                'running' => 'running',
+                'completed' => 'completed',
+                'failed' => 'failed',
+                'cancelled' => 'cancelled',
+                default => 'queued',
+            };
+            $id = (string)($job['id'] ?? '');
+            $actions = [];
+            if (in_array($raw, ['queued','waiting'], true)) {
+                $actions[] = $this->uiAction('cancel', 'Cancelar', 'danger', true);
+            }
+            if (in_array($raw, ['completed','failed','cancelled'], true)) {
+                $actions[] = $this->uiAction('delete', 'Eliminar de Tareas', 'muted', true);
+            }
+
+            $tasks[] = [
+                'id' => 'maintenance:' . $id,
+                'control_id' => 'maintenance:' . $id,
+                'kind' => 'maintenance',
+                'category' => 'Mantenimiento del servidor',
+                'service' => 'ArcadeCloud OS',
+                'provider' => 'EC2 local',
+                'title' => 'Liberar memoria RAM',
+                'status' => $status,
+                'progress' => $status === 'completed' ? 100 : null,
+                'progress_mode' => in_array($status, ['queued','running'], true) ? 'indeterminate' : 'determinate',
+                'detail' => (string)($job['message'] ?? ''),
+                'created_at' => (string)($job['created_at'] ?? ''),
+                'updated_at' => (string)($job['updated_at'] ?? ''),
+                'estimated_cost' => null,
+                'currency' => 'USD',
+                'pricing_state' => 'unpriced',
+                'actions' => $actions,
+                'metadata' => [
+                    'action' => (string)($job['action'] ?? ''),
+                ],
+            ];
+        }
+        return $tasks;
+    }
+
+    private function handleMaintenanceAction(int $userId, string $jobId, string $action): string
+    {
+        $store = new ServerMaintenanceJobStore();
+        if ($action === 'cancel') {
+            $store->cancelForUser($userId, $jobId);
+            return 'Mantenimiento cancelado.';
+        }
+        if ($action === 'delete' || $action === 'dismiss') {
+            $store->deleteForUser($userId, $jobId);
+            return 'Tarea de mantenimiento eliminada.';
+        }
+        throw new RuntimeException('Acción de mantenimiento no permitida.');
     }
 
     private function activityTasks(int $userId, array $costs): array

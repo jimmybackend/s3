@@ -1218,7 +1218,7 @@
     },
     {
       "path": "drive/office-launch.php",
-      "size": 2094,
+      "size": 2559,
       "active": true,
       "references": [
         "drive/so.php",
@@ -2988,7 +2988,7 @@
     },
     {
       "path": "drive/src/Office/OfficeLaunchTokenRepository.php",
-      "size": 5290,
+      "size": 5196,
       "active": false,
       "references": [
         "drive/tests/office_gateway_contract_smoke.php"
@@ -3669,7 +3669,7 @@
     },
     {
       "path": "drive/tests/office_gateway_contract_smoke.php",
-      "size": 10114,
+      "size": 10515,
       "active": false,
       "references": []
     },

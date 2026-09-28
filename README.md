@@ -18,6 +18,9 @@ La migración incremental del backend heredado a arquitectura orientada a objeto
 - almacenamiento físico en Amazon S3;
 - actividad y costos;
 - servicios AWS;
+- **ArcadeCloud Web OS** como experiencia principal después del login;
+- escritorio con ventanas, barra de tareas, Mis datos, Buscar, Mi nodo y Centro de Tareas;
+- subida unificada, portapapeles, seguridad de archivos y mantenimiento del nodo desde el SO;
 - **FederationCloud**;
 - **ArcadeLink** portable y firmado;
 - identidad Ed25519 por nodo;
@@ -104,6 +107,39 @@ base existente extraen sólo su sección FederationCloud segura y no ejecutan lo
 Antes de instalar, consulta `drive/docs/INSTALLATION_PREPARATION.md`. Para nodos/mirrors avanzados
 continúa con `drive/docs/FEDERATION_NODE_REPLICA_INSTALL.md`. Consulta también
 `drive/docs/FEDERATED_CLOUD_STATUS.md` y `drive/docs/FEDERATIONCLOUD.md`.
+
+## ArcadeCloud Web OS
+
+ArcadeCloud Drive ya dispone de un **escritorio web funcional** en `drive/so.php`. Después del login, el usuario entra al Web OS y puede regresar al Drive clásico `s3.php` cuando lo necesite.
+
+El shell actual incluye:
+
+- **Mis datos** con navegación DB-first, paginación, miniaturas y acciones contextuales;
+- copiar/cortar/pegar/mover entre carpetas;
+- centro compartido de subida con archivos, Dropzone, URL, multipart/chunks y portapapeles;
+- **Buscar** como aplicación con modo normal e IA;
+- salto desde un resultado hasta la carpeta y página real del archivo;
+- seguridad de archivos compartida con el Drive clásico;
+- panel completo de Compartir con ArcadeLink/FederationCloud;
+- **Centro de Tareas** para trabajos y mantenimiento;
+- **Mi nodo** con CPU/RAM/disco/capacidades en vivo;
+- limpieza segura de memoria y disco encolada después de tareas activas;
+- política de autoapagado del nodo de cómputo tras inactividad;
+- menú Acerca de / Actualizar integrado al SO.
+
+El Web OS no cambia las reglas de almacenamiento: MySQL sigue siendo la fuente de verdad de navegación y S3 el almacenamiento físico.
+
+Estado funcional y archivos implicados:
+
+`drive/docs/ARCADECLOUD_WEB_OS_STATUS.md`
+
+Diseño base:
+
+`drive/docs/ARCADECLOUD_WEB_OS_DESIGN.md`
+
+Roadmap de aplicaciones futuras:
+
+`drive/docs/ARCADECLOUD_WEB_OS_ROADMAP.md`
 
 ## ArcadeLink
 
@@ -409,6 +445,9 @@ composer install --no-dev --optimize-autoloader
 ## Documentación
 
 - `drive/ARCHITECTURE.md`: arquitectura y reglas obligatorias.
+- `drive/docs/ARCADECLOUD_WEB_OS_STATUS.md`: estado funcional actual del ArcadeCloud Web OS.
+- `drive/docs/ARCADECLOUD_WEB_OS_DESIGN.md`: decisiones de diseño del shell Web OS.
+- `drive/docs/ARCADECLOUD_WEB_OS_ROADMAP.md`: aplicaciones y fases futuras del Web OS.
 - `drive/docs/INSTALLATION_PREPARATION.md`: datos que debes tener listos antes de ejecutar el instalador.
 - `drive/docs/MINIMUM_REQUIREMENTS.md`: hardware mínimo por rol, dependencias automáticas y tablas críticas.
 - `drive/docs/FEDERATION_NODE_REPLICA_INSTALL.md`: instalación y troubleshooting de nodos y mirrors.

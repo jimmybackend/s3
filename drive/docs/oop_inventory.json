@@ -4,8 +4,8 @@
     "php_class_modules": 279,
     "php_needs_migration": 0,
     "php_tests": 44,
-    "js_total": 59,
-    "js_class_modules": 59,
+    "js_total": 61,
+    "js_class_modules": 61,
     "js_needs_migration": 0,
     "js_compatibility_facades": 8
   },
@@ -1816,7 +1816,7 @@
     },
     {
       "path": "drive/s3.php",
-      "lines": 2369,
+      "lines": 2370,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -1911,7 +1911,7 @@
     },
     {
       "path": "drive/so.php",
-      "lines": 1703,
+      "lines": 1813,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -2190,7 +2190,7 @@
     },
     {
       "path": "drive/src/Application/AiFileSearchService.php",
-      "lines": 470,
+      "lines": 471,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -2310,7 +2310,7 @@
     },
     {
       "path": "drive/src/Application/FileSearchService.php",
-      "lines": 104,
+      "lines": 159,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -4367,7 +4367,7 @@
     },
     {
       "path": "drive/src/Http/Controller/FileSearchController.php",
-      "lines": 65,
+      "lines": 77,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -6715,7 +6715,7 @@
     },
     {
       "path": "drive/tests/web_os_contract_smoke.php",
-      "lines": 370,
+      "lines": 415,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -7217,7 +7217,7 @@
     },
     {
       "path": "drive/js/archivos.js",
-      "lines": 2155,
+      "lines": 2170,
       "kind": "class/module",
       "classes": [
         "ArchivosModule"
@@ -7576,6 +7576,20 @@
         "obtenerFiltros",
         "rutaActual"
       ],
+      "window_func": [],
+      "top_vars": [],
+      "iife": false,
+      "issues": []
+    },
+    {
+      "path": "drive/js/file-security.js",
+      "lines": 325,
+      "kind": "class/module",
+      "classes": [
+        "ArcadeCloudFileSecurity"
+      ],
+      "functions": [],
+      "window_assign": [],
       "window_func": [],
       "top_vars": [],
       "iife": false,
@@ -7961,6 +7975,20 @@
       "issues": []
     },
     {
+      "path": "drive/js/so-search.js",
+      "lines": 285,
+      "kind": "class/module",
+      "classes": [
+        "ArcadeCloudOsSearch"
+      ],
+      "functions": [],
+      "window_assign": [],
+      "window_func": [],
+      "top_vars": [],
+      "iife": false,
+      "issues": []
+    },
+    {
       "path": "drive/js/so-share.js",
       "lines": 179,
       "kind": "class/module",
@@ -7994,7 +8022,7 @@
     },
     {
       "path": "drive/js/so.js",
-      "lines": 1235,
+      "lines": 1247,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudOsShell"

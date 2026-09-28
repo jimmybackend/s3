@@ -61,7 +61,7 @@ $workstationRequest = static function (string $privateIp, string $action): array
 
     stream_set_timeout($socket, 5);
     $method = $action === 'status' ? 'GET' : 'POST';
-    $request = $method . " /__arcadecloud_workstation HTTP/1.1\r\n"
+    $request = $method . " /__arcadecloud_workstation HTTP/1.0\r\n"
         . "Host: office.esforzados.com\r\n"
         . "X-ArcadeCloud-Workstation-Action: " . $action . "\r\n"
         . "Connection: close\r\n"

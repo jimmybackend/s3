@@ -263,11 +263,11 @@ webOsContract(str_contains($paths['maintenance_store'], "['memory-clear', 'disk-
 
 webOsContract(str_contains($paths['node_js'], 'ArcadeCloudOsNodeMonitor'), 'monitor de nodo tiene módulo propio');
 webOsContract(str_contains($paths['node_js'], "data-window-open=\"nodeWindow\""), 'abrir Mi nodo consulta estado actual');
-webOsContract(str_contains($paths['node_js'], "action: 'memory-clear'"), 'escobilla programa mantenimiento seguro');
+webOsContract(str_contains($paths['node_js'], "queueMaintenance('memory-clear')"), 'escobilla de memoria usa mantenimiento seguro');
 webOsContract(str_contains($paths['node_controller'], 'NodeCapabilityService'), 'endpoint vuelve a medir capacidad real');
 webOsContract(str_contains($paths['node_controller'], 'isSuperAdmin()'), 'mantenimiento del nodo exige superadmin');
 webOsContract(str_contains($paths['node_controller'], 'HTTP_X_SERVER_ADMIN_CSRF'), 'mantenimiento conserva CSRF de administración');
-webOsContract(str_contains($paths['maintenance_service'], "runServerConsole('memory-clear')"), 'mantenimiento reutiliza comando privilegiado existente');
+webOsContract(str_contains($paths['maintenance_service'], "runServerConsole($isDisk ? 'disk-clean' : 'memory-clear')"), 'mantenimiento reutiliza comandos privilegiados allowlisted');
 webOsContract(str_contains($paths['maintenance_service'], 'ServerTaskActivityProbe'), 'limpieza espera a las tareas activas');
 webOsContract(str_contains($paths['maintenance_probe'], 'hasActiveJobs()'), 'sonda revisa colas persistentes antes de limpiar');
 webOsContract(str_contains($paths['sync_store'], 'public function hasActiveJobs()'), 'sincronización expone estado activo a mantenimiento');

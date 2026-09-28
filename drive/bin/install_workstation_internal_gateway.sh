@@ -14,6 +14,7 @@ BACKUP_DIR="/etc/nginx/arcadecloud-backups"
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 APP_ROOT="$(cd -- "$SCRIPT_DIR/../.." && pwd)"
 CONTROL_SCRIPT="$APP_ROOT/drive/workstation-control.php"
+DOCUMENT_SCRIPT="$APP_ROOT/drive/workstation-document.php"
 
 for arg in "$@"; do
   case "$arg" in
@@ -27,6 +28,7 @@ done
 [[ "$DOMAIN" =~ ^[A-Za-z0-9.-]+$ ]] || { echo "ERROR: dominio inválido." >&2; exit 2; }
 [[ "$GATEWAY_IP" =~ ^[0-9]{1,3}(\.[0-9]{1,3}){3}$ ]] || { echo "ERROR: IPv4 del gateway inválida." >&2; exit 2; }
 [[ -r "$CONTROL_SCRIPT" ]] || { echo "ERROR: falta $CONTROL_SCRIPT" >&2; exit 3; }
+[[ -r "$DOCUMENT_SCRIPT" ]] || { echo "ERROR: falta $DOCUMENT_SCRIPT" >&2; exit 3; }
 command -v nginx >/dev/null 2>&1 || { echo "ERROR: nginx no está instalado." >&2; exit 3; }
 
 mkdir -p "$BACKUP_DIR"
@@ -52,6 +54,14 @@ server {
         fastcgi_param SCRIPT_FILENAME ${CONTROL_SCRIPT};
         fastcgi_param SCRIPT_NAME /workstation-control.php;
         fastcgi_param ARCADECLOUD_WORKSTATION_GATE 1;
+        fastcgi_pass ${FPM_LISTEN};
+    }
+
+    location = /__arcadecloud_office_document {
+        include fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME ${DOCUMENT_SCRIPT};
+        fastcgi_param SCRIPT_NAME /workstation-document.php;
+        fastcgi_param ARCADECLOUD_OFFICE_DOCUMENT_GATE 1;
         fastcgi_pass ${FPM_LISTEN};
     }
 

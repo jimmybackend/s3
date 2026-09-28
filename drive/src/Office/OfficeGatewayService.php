@@ -7,18 +7,19 @@ use ArcadeCloud\Drive\Admin\FastDriveWakeService;
 use ArcadeCloud\Drive\Core\DriveApplication;
 use ArcadeCloud\Drive\Media\MediaProcessingJobRepository;
 use ArcadeCloud\Drive\Media\MediaWorkerNodeService;
-use ArcadeCloud\Drive\Media\MediaWorkerNodeSessionRepository;
 use RuntimeException;
 
 final class OfficeGatewayService
 {
     private FastDriveWakeService $wake;
     private OfficeWorkstationClient $workstation;
+    private OfficeSessionLeaseRepository $leases;
 
     public function __construct(private DriveApplication $app)
     {
         $this->wake = new FastDriveWakeService($app);
         $this->workstation = new OfficeWorkstationClient();
+        $this->leases = new OfficeSessionLeaseRepository($app->db());
     }
 
     public function consumeLaunch(string $token): int
@@ -38,42 +39,19 @@ final class OfficeGatewayService
         return $this->wake->authorizeAndStart($password, $ipAddress);
     }
 
-    public function assertInteractiveOwner(int $userId, string $instanceId): void
+    public function claimOfficeSession(int $userId, string $instanceId, string $sessionKey): void
     {
-        if ($userId <= 0 || $instanceId === '') {
-            throw new RuntimeException('Sesión Office inválida.');
-        }
-
-        $active = (new MediaWorkerNodeSessionRepository($this->app->db()))
-            ->activeForInstance($instanceId);
-        if ($active === null) {
-            return;
-        }
-
-        $owner = (int)($active['started_by_user_id'] ?? 0);
-        if ($owner > 0 && $owner !== $userId) {
-            throw new RuntimeException(
-                'Office ya está reservado por otra sesión del nodo. Espera a que termine o se apague por inactividad.'
-            );
-        }
+        $this->leases->claim($userId, $instanceId, $sessionKey);
     }
 
-    public function assertActiveInteractiveOwner(int $userId, string $instanceId): void
+    public function assertOfficeSession(int $userId, string $instanceId, string $sessionKey): void
     {
-        if ($userId <= 0 || $instanceId === '') {
-            throw new RuntimeException('Sesión Office inválida.');
-        }
+        $this->leases->assertOwner($userId, $instanceId, $sessionKey);
+    }
 
-        $active = (new MediaWorkerNodeSessionRepository($this->app->db()))
-            ->activeForInstance($instanceId);
-        if ($active === null) {
-            throw new RuntimeException('No existe una sesión Office activa para este navegador.');
-        }
-
-        $owner = (int)($active['started_by_user_id'] ?? 0);
-        if ($owner <= 0 || $owner !== $userId) {
-            throw new RuntimeException('Esta sesión Office pertenece a otro usuario.');
-        }
+    public function touchOfficeSession(int $userId, string $instanceId, string $sessionKey): void
+    {
+        $this->leases->touch($userId, $instanceId, $sessionKey);
     }
 
     /**

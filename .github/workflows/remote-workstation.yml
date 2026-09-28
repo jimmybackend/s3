@@ -64,6 +64,7 @@ jobs:
           php -l drive/workstation-control.php
           php -l drive/src/Office/OfficeLaunchTokenRepository.php
           php -l drive/src/Office/OfficeGatewayService.php
+          php -l drive/src/Office/OfficeSessionLeaseRepository.php
           php -l drive/src/Office/OfficeWorkstationClient.php
           php -l drive/src/Admin/PrivilegedServerHelper.php
           php -l drive/bin/arcadecloud-drive-admin-helper.php

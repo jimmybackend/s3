@@ -17,6 +17,7 @@ $launch = (string)file_get_contents($repo . '/drive/office-launch.php');
 $tokens = (string)file_get_contents($repo . '/drive/src/Office/OfficeLaunchTokenRepository.php');
 $gateway = (string)file_get_contents($repo . '/drive/office-gateway.php');
 $gatewayService = (string)file_get_contents($repo . '/drive/src/Office/OfficeGatewayService.php');
+$leaseRepo = (string)file_get_contents($repo . '/drive/src/Office/OfficeSessionLeaseRepository.php');
 $workstationClient = (string)file_get_contents($repo . '/drive/src/Office/OfficeWorkstationClient.php');
 $control = (string)file_get_contents($repo . '/drive/workstation-control.php');
 $helperClient = (string)file_get_contents($repo . '/drive/src/Admin/PrivilegedServerHelper.php');
@@ -71,21 +72,33 @@ officeGatewayContract(
 );
 
 officeGatewayContract(
-    str_contains($gatewayService, 'assertInteractiveOwner')
-    && str_contains($gatewayService, 'assertActiveInteractiveOwner')
-    && str_contains($gatewayService, 'MediaWorkerNodeSessionRepository')
+    str_contains($gatewayService, 'claimOfficeSession')
+    && str_contains($gatewayService, 'assertOfficeSession')
+    && str_contains($gatewayService, 'touchOfficeSession')
+    && !str_contains($gatewayService, 'MediaWorkerNodeSessionRepository')
     && str_contains($gateway, "mode === 'office-busy'"),
-    'MAX_OFFICE_SESSIONS=1 impide compartir el mismo escritorio entre usuarios'
+    'MAX_OFFICE_SESSIONS=1 usa lease Office dedicado y no una sesión multimedia'
+);
+
+officeGatewayContract(
+    str_contains($leaseRepo, 'OfficeSessionLeases')
+    && str_contains($leaseRepo, "hash('sha256', \$sessionKey)")
+    && str_contains($leaseRepo, 'GET_LOCK')
+    && str_contains($leaseRepo, 'ExpiresAt>UTC_TIMESTAMP()')
+    && !str_contains($leaseRepo, 'SessionKey VARCHAR'),
+    'lease Office guarda sólo hash, serializa reclamos y expira por inactividad'
 );
 
 officeGatewayContract(
     str_contains($gateway, "$action === 'auth'")
-    && str_contains($gateway, 'assertActiveInteractiveOwner')
+    && str_contains($gateway, 'assertOfficeSession')
+    && str_contains($gateway, "office_session_key")
+    && str_contains($gateway, "office_instance_id")
     && str_contains($officeInstaller, 'location = /__office_auth')
     && str_contains($officeInstaller, 'internal;')
     && str_contains($officeInstaller, 'auth_request /__office_auth;')
     && substr_count($officeInstaller, 'fastcgi_param HTTP_COOKIE \\$http_cookie;') >= 5,
-    'noVNC y WebSocket requieren sesión Office activa y FastCGI recibe la cookie'
+    'noVNC y WebSocket requieren lease Office del mismo navegador y cookie FastCGI'
 );
 
 officeGatewayContract(

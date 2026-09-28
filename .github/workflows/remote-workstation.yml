@@ -1,0 +1,44 @@
+name: Remote workstation phase 1
+
+on:
+  pull_request:
+    paths:
+      - 'drive/docker/workstation/**'
+      - 'drive/bin/install_workstation_node.sh'
+      - 'drive/bin/uninstall_workstation_node.sh'
+      - 'drive/bin/workstation_health.php'
+      - 'drive/tests/workstation_phase1_contract_smoke.php'
+      - 'drive/docs/ARCADECLOUD_REMOTE_WORKSTATION.md'
+      - '.github/workflows/remote-workstation.yml'
+  push:
+    branches:
+      - feat/remote-workstation-phase1
+    paths:
+      - 'drive/docker/workstation/**'
+      - 'drive/bin/install_workstation_node.sh'
+      - 'drive/bin/uninstall_workstation_node.sh'
+      - 'drive/bin/workstation_health.php'
+      - 'drive/tests/workstation_phase1_contract_smoke.php'
+      - '.github/workflows/remote-workstation.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Shell syntax
+        run: |
+          bash -n drive/docker/workstation/entrypoint.sh
+          bash -n drive/bin/install_workstation_node.sh
+          bash -n drive/bin/uninstall_workstation_node.sh
+      - name: PHP syntax
+        run: |
+          php -l drive/bin/workstation_health.php
+          php -l drive/tests/workstation_phase1_contract_smoke.php
+      - name: Workstation contract
+        run: php drive/tests/workstation_phase1_contract_smoke.php
+      - name: Build workstation image
+        run: docker build -t arcadecloud/workstation:ci drive/docker/workstation

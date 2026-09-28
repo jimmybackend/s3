@@ -13,6 +13,8 @@ ENV_FILE="/etc/arcadecloud-drive/workstation.env"
 SERVICE="/etc/systemd/system/$SERVICE_NAME"
 OFFICE_UID=10001
 OFFICE_GID=10001
+PHP_GROUP="${ARCADECLOUD_PHP_GROUP:-apache}"
+PHP_GID=""
 
 [[ "${EUID}" -eq 0 ]] || { echo "Ejecuta como root." >&2; exit 1; }
 [[ -f /etc/os-release ]] || { echo "No se pudo detectar el sistema operativo." >&2; exit 1; }
@@ -33,10 +35,16 @@ if ! command -v docker >/dev/null 2>&1; then
 fi
 systemctl enable --now docker
 
-mkdir -p "$STATE_ROOT" "$WORKSPACE"
+PHP_GID="$(getent group "$PHP_GROUP" | cut -d: -f3)"
+[[ "$PHP_GID" =~ ^[0-9]+$ ]] || {
+  echo "No se pudo resolver el GID del grupo PHP-FPM: $PHP_GROUP" >&2
+  exit 3
+}
+
+mkdir -p "$STATE_ROOT" "$WORKSPACE" "$WORKSPACE/sessions"
 chmod 0750 "$STATE_ROOT"
-chown "$OFFICE_UID:$OFFICE_GID" "$WORKSPACE"
-chmod 0750 "$WORKSPACE"
+chown "$OFFICE_UID:$PHP_GID" "$WORKSPACE" "$WORKSPACE/sessions"
+chmod 2770 "$WORKSPACE" "$WORKSPACE/sessions"
 
 # ArcadeCloud ya administra /etc/arcadecloud-drive y su grupo PHP-FPM.
 # Crear la ruta si falta, pero nunca cambiar propietario/modo del directorio
@@ -69,6 +77,7 @@ ExecStart=/usr/bin/docker run --rm --name $CONTAINER \
   --env-file $ENV_FILE \
   --publish 127.0.0.1:6080:6080 \
   --volume $WORKSPACE:/workspace \
+  --group-add $PHP_GID \
   --memory=5g --cpus=3 --shm-size=512m \
   --security-opt=no-new-privileges:true \
   --cap-drop=ALL \
@@ -97,7 +106,8 @@ for _ in {1..30}; do
     php "$DRIVE_ROOT/bin/workstation_health.php"
     echo
     echo "Fase 1 instalada. noVNC sólo escucha en 127.0.0.1:6080."
-    echo "Workspace de prueba: $WORKSPACE"
+    echo "Workspace Office: $WORKSPACE"
+    echo "Sesiones documentales: $WORKSPACE/sessions (grupo $PHP_GROUP/$PHP_GID)"
     echo "La autenticación del escritorio la controla ArcadeCloud; no se solicita contraseña VNC."
     echo "Workstation queda deshabilitada al boot; se inicia sólo bajo demanda."
     exit 0

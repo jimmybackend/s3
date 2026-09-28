@@ -69,7 +69,7 @@ final class OfficeLaunchTokenRepository
     {
         $token = strtolower(trim($token));
         if (!preg_match('/\A[a-f0-9]{64}\z/', $token)) {
-            return 0;
+            return ['user_id' => 0, 'file_id' => null];
         }
 
         $hash = hash('sha256', $token);

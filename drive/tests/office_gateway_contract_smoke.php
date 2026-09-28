@@ -144,6 +144,13 @@ officeGatewayContract(
 );
 
 officeGatewayContract(
+    str_contains($gateway, 'Ya hay un documento abierto en esta sesión Office')
+    && str_contains($gateway, 'existingDocumentFileId')
+    && str_contains($gateway, 'existingDocumentSessionId'),
+    'una sesión Office no mezcla dos documentos distintos entre pestañas'
+);
+
+officeGatewayContract(
     str_contains($gateway, '/__office_document_sync')
     && str_contains($gateway, '/__office_document_close')
     && str_contains($gateway, 'setInterval(syncDocument, 60000)')

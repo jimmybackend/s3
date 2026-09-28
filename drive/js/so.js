@@ -373,6 +373,7 @@ class ArcadeCloudOsShell {
     if (openLabel) openLabel.textContent = mediaFile ? 'Reproducir' : 'Abrir en ventana';
     if (openIcon) openIcon.className = mediaFile ? 'fas fa-play' : 'fas fa-eye';
 
+    this.setContextAction('office', !multi && !locked && Boolean(entry.dataset.officeUrl));
     this.setContextAction('edit', !multi && !locked && Boolean(entry.dataset.editUrl));
     this.setContextAction('download', !multi && !locked && Boolean(entry.dataset.downloadUrl));
     this.setContextAction('classic', !multi);
@@ -611,8 +612,18 @@ class ArcadeCloudOsShell {
 
     const openUrl = String(entry.dataset.openUrl || '');
     const editUrl = String(entry.dataset.editUrl || '');
+    const officeUrl = String(entry.dataset.officeUrl || '');
     const name = String(entry.dataset.name || 'Archivo');
     const ext = String(entry.dataset.ext || '').toLowerCase();
+
+    if (officeUrl && !forceEdit) {
+      const opened = this.window.open(officeUrl, '_blank', 'noopener');
+      if (!opened) {
+        this.notify('El navegador bloqueó la nueva pestaña de Office.', 'warning');
+      }
+      this.hideContext();
+      return;
+    }
 
     if (!openUrl && !editUrl) {
       this.notify('Este archivo no tiene un visor disponible todavía.', 'warning');
@@ -1069,6 +1080,13 @@ class ArcadeCloudOsShell {
 
     if (action === 'open') {
       this.openFileEntry(entry, false);
+      return;
+    }
+
+    if (action === 'office' && entry.dataset.officeUrl) {
+      const opened = this.window.open(entry.dataset.officeUrl, '_blank', 'noopener');
+      if (!opened) this.notify('El navegador bloqueó la nueva pestaña de Office.', 'warning');
+      this.hideContext();
       return;
     }
 

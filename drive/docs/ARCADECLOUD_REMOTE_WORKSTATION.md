@@ -343,7 +343,7 @@ Documento.docx
 Documento (conflicto Office YYYY-MM-DD HH-mm-ss).docx
 ```
 
-La copia física recibe una nueva key mediante `StorageObjectNameCodec` y se registra como un nuevo `FileS3`.
+La copia física recibe una nueva key mediante `StorageObjectNameCodec` y se registra como un nuevo `FileS3`. Después de crearla, esa copia se convierte en el destino activo de la sesión para que los siguientes guardados continúen sobre el mismo archivo de conflicto y no creen copias repetidas.
 
 ### Seguridad del nodo
 

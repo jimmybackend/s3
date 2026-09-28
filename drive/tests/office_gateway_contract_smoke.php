@@ -154,6 +154,14 @@ officeGatewayContract(
 );
 
 officeGatewayContract(
+    str_contains($documentStorage, 'isMissingS3Object')
+    && str_contains($documentStorage, 'Sincroniza desde S3 la carpeta donde está el archivo')
+    && str_contains($documentRepo, 'markFailed')
+    && str_contains($documentRepo, "Status='failed'"),
+    'preparación Office marca failed y explica cuando FileS3 apunta a una key S3 inexistente'
+);
+
+officeGatewayContract(
     str_contains($workstationDocument, 'OfficeDocumentController')
     && str_contains($documentController, "['prepare', 'sync', 'close']")
     && str_contains($documentController, 'OfficeDocumentStorageService')
@@ -167,6 +175,14 @@ officeGatewayContract(
     && str_contains($gateway, 'existingDocumentFileId')
     && str_contains($gateway, 'existingDocumentSessionId'),
     'una sesión Office no mezcla dos documentos distintos entre pestañas'
+);
+
+officeGatewayContract(
+    str_contains($gateway, 'office_document_ready')
+    && str_contains($gateway, "mode = 'document-error'")
+    && str_contains($gateway, 'Documento no preparado')
+    && str_contains($gateway, 'Sincronizar desde S3'),
+    'gateway no muestra Writer listo cuando la preparación documental falló'
 );
 
 officeGatewayContract(

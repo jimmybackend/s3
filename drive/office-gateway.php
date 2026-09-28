@@ -37,24 +37,26 @@ $json = static function (array $payload, int $status = 200): never {
 
 $action = (string)($_SERVER['ARCADECLOUD_OFFICE_GATE_ACTION'] ?? 'view');
 $officeUserId = (int)$session->get('office_user_id', 0);
+$officeSessionKey = strtolower(trim((string)$session->get('office_session_key', '')));
+$officeInstanceId = trim((string)$session->get('office_instance_id', ''));
+
+if ($officeUserId > 0 && !preg_match('/^[a-f0-9]{64}$/', $officeSessionKey)) {
+    $officeSessionKey = bin2hex(random_bytes(32));
+    $session->set('office_session_key', $officeSessionKey);
+}
 
 if ($action === 'auth') {
-    if ($officeUserId <= 0) {
+    if (
+        $officeUserId <= 0
+        || !preg_match('/^[a-f0-9]{64}$/', $officeSessionKey)
+        || !preg_match('/^i-[0-9a-f]{8,17}$/i', $officeInstanceId)
+    ) {
         http_response_code(401);
         exit;
     }
 
     try {
-        $nodeStatus = $office->nodeStatus();
-        $state = (string)($nodeStatus['state'] ?? 'unknown');
-        $instanceId = trim((string)($nodeStatus['instance_id'] ?? ''));
-
-        if ($state !== 'running' || $instanceId === '') {
-            http_response_code(401);
-            exit;
-        }
-
-        $office->assertActiveInteractiveOwner($officeUserId, $instanceId);
+        $office->assertOfficeSession($officeUserId, $officeInstanceId, $officeSessionKey);
         http_response_code(204);
         exit;
     } catch (Throwable $e) {
@@ -65,7 +67,11 @@ if ($action === 'auth') {
 }
 
 if ($action === 'activity' || $action === 'idle') {
-    if ($officeUserId <= 0) {
+    if (
+        $officeUserId <= 0
+        || !preg_match('/^[a-f0-9]{64}$/', $officeSessionKey)
+        || !preg_match('/^i-[0-9a-f]{8,17}$/i', $officeInstanceId)
+    ) {
         $json(['ok' => false, 'error' => 'Sesión Office no autorizada.'], 401);
     }
 
@@ -74,9 +80,11 @@ if ($action === 'activity' || $action === 'idle') {
             if (strtoupper((string)($_SERVER['REQUEST_METHOD'] ?? 'GET')) !== 'POST') {
                 $json(['ok' => false, 'error' => 'Método no permitido.'], 405);
             }
+            $office->touchOfficeSession($officeUserId, $officeInstanceId, $officeSessionKey);
             $json(['ok' => true, 'idle' => $office->touchActivity($officeUserId)]);
         }
 
+        $office->assertOfficeSession($officeUserId, $officeInstanceId, $officeSessionKey);
         $json(['ok' => true, 'idle' => $office->idleStatus()]);
     } catch (Throwable $e) {
         error_log('[Office gateway] activity/idle error: ' . $e->getMessage());
@@ -93,6 +101,12 @@ if ($launch !== '') {
         } else {
             $officeUserId = $consumedUserId;
             $session->set('office_user_id', $officeUserId);
+            if (!preg_match('/^[a-f0-9]{64}$/', $officeSessionKey)) {
+                $officeSessionKey = bin2hex(random_bytes(32));
+                $session->set('office_session_key', $officeSessionKey);
+            }
+            $session->remove('office_instance_id');
+            $officeInstanceId = '';
             $session->set('office_gateway_started_at', gmdate(DATE_ATOM));
         }
     } catch (Throwable $e) {
@@ -180,18 +194,25 @@ if ($officeUserId > 0) {
 
         if ($state === 'running') {
             try {
-                $office->assertInteractiveOwner($officeUserId, $instanceId);
                 $prepared = $office->prepareWorkstation($privateIp);
                 $workstationActive = (bool)($prepared['active'] ?? false);
                 $mediaBusy = (bool)($prepared['media_busy'] ?? false);
+
+                if ($workstationActive) {
+                    $office->claimOfficeSession($officeUserId, $instanceId, $officeSessionKey);
+                    $officeInstanceId = $instanceId;
+                    $session->set('office_instance_id', $officeInstanceId);
+                }
             } catch (RuntimeException $e) {
-                $officeBusy = str_contains($e->getMessage(), 'reservado por otra sesión');
+                $officeBusy = str_contains($e->getMessage(), 'reservado por otra sesión')
+                    || str_contains($e->getMessage(), 'solicitado por otra sesión');
                 $waiting = !$officeBusy;
                 $error = $error !== '' ? $error : $e->getMessage();
             }
 
-            if ($workstationActive) {
+            if ($workstationActive && !$officeBusy) {
                 try {
+                    $office->touchOfficeSession($officeUserId, $officeInstanceId, $officeSessionKey);
                     $office->touchActivity($officeUserId);
                 } catch (Throwable $e) {
                     error_log('[Office gateway] initial activity error: ' . $e->getMessage());

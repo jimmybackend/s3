@@ -5,6 +5,8 @@ class BackgroundTaskCenter {
     this.endpoint = 'background_tasks.php';
     this.pollMs = 5000;
     this.tasks = [];
+    this.serverTasks = [];
+    this.serverSummary = null;
     this.summary = {
       active: 0,
       queued: 0,
@@ -39,6 +41,13 @@ class BackgroundTaskCenter {
       'background-tasks:refresh'
     ].forEach((name) => {
       this.document.addEventListener(name, () => this.window.setTimeout(() => this.refresh(), 350));
+    });
+
+    this.document.addEventListener('drive:client-upload-task', () => {
+      const previous = new Map(this.tasks.map((task) => [String(task.id), String(task.status)]));
+      this.mergeClientTasks();
+      this.render();
+      this.notifyTransitions(previous);
     });
 
     return this;
@@ -322,9 +331,10 @@ class BackgroundTaskCenter {
       }
 
       const previous = new Map(this.tasks.map((task) => [String(task.id), String(task.status)]));
-      this.tasks = Array.isArray(json.tasks) ? json.tasks : [];
-      this.summary = json.summary || this.summary;
+      this.serverTasks = Array.isArray(json.tasks) ? json.tasks : [];
+      this.serverSummary = json.summary || null;
       this.sourceErrors = json.source_errors || {};
+      this.mergeClientTasks();
       this.render();
       this.notifyTransitions(previous);
     } catch (error) {
@@ -332,6 +342,50 @@ class BackgroundTaskCenter {
       this.sourceErrors = { endpoint: error && error.message ? String(error.message) : 'Estado no disponible' };
       this.render();
     }
+  }
+
+  mergeClientTasks() {
+    const client = this.window.ArcadeCloudUploadManager &&
+      typeof this.window.ArcadeCloudUploadManager.taskSnapshots === 'function'
+      ? this.window.ArcadeCloudUploadManager.taskSnapshots()
+      : [];
+
+    this.tasks = [
+      ...client,
+      ...this.serverTasks
+    ];
+
+    const base = this.serverSummary || {
+      active: 0,
+      queued: 0,
+      running: 0,
+      stopping: 0,
+      failed: 0,
+      completed_recent: 0,
+      cancelled_recent: 0
+    };
+
+    this.summary = { ...base };
+
+    client.forEach((task) => {
+      const status = this.normalizeStatus(task.status);
+      if (['queued', 'pending', 'running', 'stopping'].includes(status)) {
+        this.summary.active = Number(this.summary.active || 0) + 1;
+      }
+      if (status === 'queued' || status === 'pending') {
+        this.summary.queued = Number(this.summary.queued || 0) + 1;
+      } else if (status === 'running') {
+        this.summary.running = Number(this.summary.running || 0) + 1;
+      } else if (status === 'stopping') {
+        this.summary.stopping = Number(this.summary.stopping || 0) + 1;
+      } else if (status === 'failed') {
+        this.summary.failed = Number(this.summary.failed || 0) + 1;
+      } else if (status === 'completed') {
+        this.summary.completed_recent = Number(this.summary.completed_recent || 0) + 1;
+      } else if (status === 'cancelled') {
+        this.summary.cancelled_recent = Number(this.summary.cancelled_recent || 0) + 1;
+      }
+    });
   }
 
   async performAction(button) {
@@ -563,6 +617,11 @@ class BackgroundTaskCenter {
       if (Number(meta.processed_items || 0) > 0) details.push(`Procesados: ${Number(meta.processed_items)}`);
       if (meta.destination) details.push(`Destino: ${String(meta.destination)}`);
     }
+    if (task.kind === 'upload') {
+      if (meta.destination) details.push(`Destino: ${String(meta.destination)}`);
+      if (Number(meta.bytes_total || 0) > 0) details.push(`Tamaño: ${this.formatBytes(Number(meta.bytes_total))}`);
+      if (meta.source) details.push(`Origen: ${String(meta.source)}`);
+    }
     if (task.kind === 'polly') {
       if (meta.engine) details.push(`Motor: ${String(meta.engine)}`);
       if (Number(meta.characters || 0) > 0) details.push(`Caracteres: ${Number(meta.characters)}`);
@@ -631,6 +690,11 @@ class BackgroundTaskCenter {
       }
     }
 
+    if (task.kind === 'upload' && Number.isFinite(Number(task.progress))) {
+      const pct = Math.max(1, Math.min(99, Math.round(Number(task.progress))));
+      return { cssClass: 'determinate', widthStyle: `width:${pct}%` };
+    }
+
     return { cssClass: 'indeterminate', widthStyle: '' };
   }
 
@@ -666,6 +730,14 @@ class BackgroundTaskCenter {
     } catch (_) {
       return date.toLocaleString();
     }
+  }
+
+  formatBytes(bytes) {
+    const value = Number(bytes || 0);
+    if (!Number.isFinite(value) || value <= 0) return '0 B';
+    const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+    const index = Math.min(units.length - 1, Math.floor(Math.log(value) / Math.log(1024)));
+    return (value / Math.pow(1024, index)).toFixed(index === 0 ? 0 : 1) + ' ' + units[index];
   }
 
   money(value, currency) {

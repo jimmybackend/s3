@@ -1209,7 +1209,7 @@
     },
     {
       "path": "drive/office-gateway.php",
-      "size": 15613,
+      "size": 16870,
       "active": false,
       "references": [
         "drive/tests/office_gateway_contract_smoke.php"
@@ -2955,7 +2955,7 @@
     },
     {
       "path": "drive/src/Office/OfficeGatewayService.php",
-      "size": 3803,
+      "size": 2990,
       "active": false,
       "references": [
         "drive/tests/office_gateway_contract_smoke.php"
@@ -2964,6 +2964,14 @@
     {
       "path": "drive/src/Office/OfficeLaunchTokenRepository.php",
       "size": 4026,
+      "active": false,
+      "references": [
+        "drive/tests/office_gateway_contract_smoke.php"
+      ]
+    },
+    {
+      "path": "drive/src/Office/OfficeSessionLeaseRepository.php",
+      "size": 6596,
       "active": false,
       "references": [
         "drive/tests/office_gateway_contract_smoke.php"
@@ -3636,7 +3644,7 @@
     },
     {
       "path": "drive/tests/office_gateway_contract_smoke.php",
-      "size": 6463,
+      "size": 7096,
       "active": false,
       "references": []
     },

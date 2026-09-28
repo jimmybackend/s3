@@ -15,6 +15,18 @@ final class FileSearchController extends AbstractJsonController
         try {
             $this->requirePost();
             $userId = $this->guardAuthenticated();
+            $locateId = (int)$this->request->postString('localizar_id', '0');
+            if ($locateId > 0) {
+                $location = (new FileSearchService($this->app->db()))
+                    ->locate($userId, $locateId, 20);
+
+                JsonResponse::send([
+                    'estado' => 'ok',
+                    'modo' => 'localizar',
+                    'archivo' => $location,
+                ]);
+            }
+
             $term = $this->request->postString('termino');
             $mode = strtolower($this->request->postString('modo', 'normal'));
 

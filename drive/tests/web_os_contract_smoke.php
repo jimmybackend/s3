@@ -47,6 +47,13 @@ $paths = [
     'worker_launcher' => $root . '/src/Application/BackgroundWorkerLauncher.php',
     'sync_store' => $root . '/src/Sync/SyncJobStore.php',
     'move_store' => $root . '/src/Storage/MoveJobStore.php',
+    'security_js' => $root . '/js/file-security.js',
+    'classic_files_js' => $root . '/js/archivos.js',
+    'search_js' => $root . '/js/so-search.js',
+    'search_controller' => $root . '/src/Http/Controller/FileSearchController.php',
+    'search_service' => $root . '/src/Application/FileSearchService.php',
+    'ai_search_service' => $root . '/src/Application/AiFileSearchService.php',
+    'file_list_service' => $root . '/src/Application/FileListService.php',
 ];
 
 foreach ($paths as $name => $path) {
@@ -246,9 +253,9 @@ webOsContract(str_contains($paths['js'], "'delete_multiple.php'"), 'eliminación
 webOsContract(str_contains($paths['shell'], 'data-file-action="security-lock"'), 'menú de archivo permite bloquear con contraseña');
 webOsContract(str_contains($paths['shell'], 'data-file-action="security-unlock"'), 'menú de archivo permite desbloquear');
 webOsContract(str_contains($paths['shell'], 'data-file-action="security-relock"'), 'menú de archivo permite volver a bloquear');
-webOsContract(str_contains($paths['js'], "'set_file_security.php'"), 'bloqueo reutiliza FileSecurityController');
-webOsContract(str_contains($paths['js'], "'unlock_file.php'"), 'desbloqueo reutiliza FileSecurityController');
-webOsContract(str_contains($paths['js'], "'relock_file.php'"), 'rebloqueo reutiliza FileSecurityController');
+webOsContract(str_contains($paths['security_js'], "'set_file_security.php'"), 'bloqueo reutiliza FileSecurityController');
+webOsContract(str_contains($paths['security_js'], "'unlock_file.php'"), 'desbloqueo reutiliza FileSecurityController');
+webOsContract(str_contains($paths['security_js'], "'relock_file.php'"), 'rebloqueo reutiliza FileSecurityController');
 
 // Mi nodo en vivo, mantenimiento seguro y compartir completo.
 webOsContract(str_contains($paths['shell'], 'js/so-node.js'), 'Web OS carga monitor de nodo en vivo');
@@ -288,6 +295,44 @@ webOsContract(str_contains($paths['shell'], 'js/so-share.js'), 'Web OS carga con
 webOsContract(str_contains($paths['share_js'], "generar_token.php"), 'panel genera enlace directo con vigencia');
 webOsContract(str_contains($paths['arcadelink_share'], 'prepareSingle('), 'ArcadeLink expone contexto reutilizable para el SO');
 webOsContract(str_contains($paths['arcadelink_share'], 'federationcloud/create.php'), 'panel conserva publicación FederationCloud');
+
+// Seguridad de archivos compartida entre Drive clásico y Web OS.
+webOsContract(str_contains($paths['drive'], 'js/file-security.js'), 'Drive clásico carga seguridad compartida');
+webOsContract(str_contains($paths['shell'], 'js/file-security.js'), 'Web OS carga seguridad compartida');
+webOsContract(str_contains($paths['shell'], 'id="securityFileModal"'), 'Web OS usa el mismo panel completo de seguridad');
+webOsContract(str_contains($paths['shell'], 'id="secConfirmInput"'), 'panel de seguridad confirma contraseña');
+webOsContract(str_contains($paths['shell'], 'id="secHintInput"'), 'panel de seguridad conserva pista');
+webOsContract(str_contains($paths['shell'], 'id="secShowAllCheckbox"'), 'panel permite mostrar u ocultar contraseñas');
+webOsContract(str_contains($paths['shell'], 'data-hint='), 'Mis datos conserva la pista del archivo protegido');
+webOsContract(str_contains($paths['shell'], 'data-unlocked='), 'Mis datos conserva estado desbloqueado');
+webOsContract(str_contains($paths['shell'], 'data-file-action="security-unsecure"'), 'Web OS permite quitar protección igual que el Drive clásico');
+webOsContract(str_contains($paths['security_js'], 'class ArcadeCloudFileSecurity'), 'seguridad vive en módulo compartido');
+webOsContract(str_contains($paths['security_js'], "askConfirm: true"), 'proteger exige confirmación de contraseña');
+webOsContract(str_contains($paths['security_js'], "askHint: true"), 'proteger permite pista');
+webOsContract(str_contains($paths['security_js'], "unlock_file.php"), 'desbloqueo reutiliza endpoint existente');
+webOsContract(str_contains($paths['security_js'], "relock_file.php"), 'rebloqueo reutiliza endpoint existente');
+webOsContract(str_contains($paths['classic_files_js'], 'ArcadeCloudFileSecurity?.protect'), 'bloque de archivos delega protección al módulo compartido');
+webOsContract(str_contains($paths['js'], 'ArcadeCloudFileSecurity'), 'Web OS delega seguridad al mismo módulo');
+webOsContract(str_contains($paths['js'], 'this.unlockFile(entry);'), 'abrir archivo bloqueado inicia desbloqueo dentro del SO');
+
+// Buscar como aplicación nativa del Web OS.
+webOsContract(str_contains($paths['shell'], 'data-window-open="searchWindow"'), 'Aplicaciones incluye Buscar');
+webOsContract(str_contains($paths['shell'], 'id="searchWindow"'), 'Buscar funciona como ventana del SO');
+webOsContract(str_contains($paths['shell'], 'data-os-search-mode="normal"'), 'Buscar ofrece modo normal');
+webOsContract(str_contains($paths['shell'], 'data-os-search-mode="ai"'), 'Buscar ofrece modo IA');
+webOsContract(str_contains($paths['shell'], 'js/so-search.js'), 'Web OS carga aplicación Buscar');
+webOsContract(str_contains($paths['search_js'], "buscar_archivo.php"), 'Buscar reutiliza endpoint OOP existente');
+webOsContract(str_contains($paths['search_js'], "modo: this.mode"), 'app envía normal o IA al mismo controlador');
+webOsContract(str_contains($paths['search_js'], "localizar_id"), 'resultado consulta su página real antes de abrir');
+webOsContract(str_contains($paths['search_js'], 'shell.refreshExplorer(route'), 'resultado abre Mis datos en la carpeta encontrada');
+webOsContract(str_contains($paths['search_js'], 'is-search-target'), 'archivo encontrado queda resaltado');
+webOsContract(str_contains($paths['search_controller'], "postString('localizar_id'"), 'controlador localiza un resultado autenticado');
+webOsContract(str_contains($paths['search_service'], 'public function locate('), 'servicio calcula carpeta y página real del archivo');
+webOsContract(str_contains($paths['search_service'], 'user_id_ = ?'), 'localización permanece limitada al usuario autenticado');
+webOsContract(str_contains($paths['ai_search_service'], "'id' => \$id"), 'resultados IA conservan id de archivo para localizarlo');
+webOsContract(str_contains($paths['file_list_service'], 'ORDER BY Fecha DESC, id_ DESC'), 'paginación usa orden determinista para localizar resultados');
+webOsContract(!str_contains($paths['search_service'], 'listObjects'), 'búsqueda normal nunca lista S3');
+webOsContract(!str_contains($paths['ai_search_service'], 'listObjects'), 'búsqueda IA nunca lista S3');
 
 // Autoapagado del nodo grande por inactividad.
 webOsContract(str_contains($paths['drive'], 'js/compute-node-idle.js'), 'Drive clásico vigila inactividad del nodo grande');

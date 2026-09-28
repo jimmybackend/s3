@@ -85,6 +85,61 @@ final class FileSearchService
         return $rows;
     }
 
+    /** @return array{id:int,ruta:string,nombre:string,pagina:int} */
+    public function locate(int $userId, int $fileId, int $limit = 20): array
+    {
+        if ($userId <= 0 || $fileId <= 0) {
+            throw new RuntimeException('Archivo inválido para localizar.');
+        }
+
+        $limit = max(5, min(100, $limit));
+        $stmt = $this->db->prepare(
+            "SELECT id_, Nombre, Ruta, Fecha
+             FROM FileS3
+             WHERE id_ = ? AND user_id_ = ? AND Found = 1
+             LIMIT 1"
+        );
+        if (!$stmt) {
+            throw new RuntimeException('No se pudo preparar la localización: ' . $this->db->error);
+        }
+        $stmt->bind_param('ii', $fileId, $userId);
+        $stmt->execute();
+        $row = $stmt->get_result()->fetch_assoc();
+        $stmt->close();
+
+        if (!is_array($row)) {
+            throw new RuntimeException('El archivo ya no está disponible.');
+        }
+
+        $route = (string)($row['Ruta'] ?? '');
+        $date = (string)($row['Fecha'] ?? '');
+
+        $count = $this->db->prepare(
+            "SELECT COUNT(*) AS before_count
+             FROM FileS3
+             WHERE user_id_ = ?
+               AND Ruta = ?
+               AND Found = 1
+               AND (Fecha > ? OR (Fecha = ? AND id_ > ?))"
+        );
+        if (!$count) {
+            throw new RuntimeException('No se pudo calcular la página del archivo: ' . $this->db->error);
+        }
+        $count->bind_param('isssi', $userId, $route, $date, $date, $fileId);
+        $count->execute();
+        $countRow = $count->get_result()->fetch_assoc() ?: [];
+        $count->close();
+
+        $before = max(0, (int)($countRow['before_count'] ?? 0));
+
+        return [
+            'id' => $fileId,
+            'ruta' => $route,
+            'nombre' => (string)($row['Nombre'] ?? ''),
+            'pagina' => intdiv($before, $limit) + 1,
+        ];
+    }
+
     private function toLikePattern(string $term): string
     {
         $hasWildcard = str_contains($term, '*') || str_contains($term, '?');

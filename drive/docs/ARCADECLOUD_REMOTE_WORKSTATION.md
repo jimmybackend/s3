@@ -74,7 +74,7 @@ navegador
 
 El acceso temporal por IP utilizado durante la prueba física no forma parte del diseño final.
 
-La contraseña VNC se genera localmente en `/etc/arcadecloud-drive/workstation.env` con modo 0600 y no se guarda en Git.
+LibreOffice ya no solicita una segunda contraseña VNC. TigerVNC usa `SecurityTypes None`, pero permanece encerrado en localhost y el acceso público a `vnc.html`/`websockify` está protegido por la sesión temporal de ArcadeCloud mediante `auth_request`. Entrar directamente a esas rutas sin una sesión Office activa devuelve 401.
 
 ## Workspace
 
@@ -174,6 +174,24 @@ El EC2 pequeño mantiene el certificado Let's Encrypt y nunca expone VNC.
 ```
 
 El endpoint de control sólo permite `status` y `start`. No ofrece una orden web de parada. El apagado continúa bajo el mecanismo seguro de inactividad del nodo.
+
+## Autenticación del escritorio
+
+La identidad del usuario vive en ArcadeCloud, no en VNC.
+
+Flujo:
+
+```
+Drive/FastDrive autenticado
+  -> token Office de un solo uso
+  -> sesión en office.esforzados.com
+  -> Nginx auth_request
+  -> valida usuario + dueño activo de la sesión
+  -> vnc.html / WebSocket
+  -> TigerVNC sin prompt adicional
+```
+
+Esto elimina la contraseña VNC visible sin exponer el escritorio. El EC2 grande sigue aceptando tráfico Office sólo desde el gateway pequeño por red privada, y no publica 5900/5901/6080 a Internet.
 
 ## Concurrencia inicial
 

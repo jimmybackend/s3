@@ -147,20 +147,40 @@ if ($launch !== '') {
         $launchContext = $office->consumeLaunchContext($launch);
         $consumedUserId = (int)($launchContext['user_id'] ?? 0);
         $consumedFileId = max(0, (int)($launchContext['file_id'] ?? 0));
+        $existingDocumentSessionId = strtolower(trim(
+            (string)$session->get('office_document_session_id', '')
+        ));
+        $existingDocumentFileId = max(
+            0,
+            (int)$session->get('office_document_file_id', 0)
+        );
+
         if ($consumedUserId <= 0) {
             $session->set('office_gateway_error', 'El enlace de Office caducó o ya fue utilizado.');
+        } elseif (
+            preg_match('/^[a-f0-9]{32}$/', $existingDocumentSessionId)
+            && $existingDocumentFileId > 0
+            && $consumedFileId !== $existingDocumentFileId
+        ) {
+            $session->set(
+                'office_gateway_error',
+                'Ya hay un documento abierto en esta sesión Office. Ciérralo antes de abrir otro.'
+            );
         } else {
             $officeUserId = $consumedUserId;
             $officeFileId = $consumedFileId;
             $session->set('office_user_id', $officeUserId);
             $session->set('office_file_id', $officeFileId);
-            foreach ([
-                'office_document_session_id',
-                'office_document_token',
-                'office_document_file_id',
-                'office_document_name',
-            ] as $key) {
-                $session->remove($key);
+
+            if (!preg_match('/^[a-f0-9]{32}$/', $existingDocumentSessionId)) {
+                foreach ([
+                    'office_document_session_id',
+                    'office_document_token',
+                    'office_document_file_id',
+                    'office_document_name',
+                ] as $key) {
+                    $session->remove($key);
+                }
             }
             if (!preg_match('/^[a-f0-9]{64}$/', $officeSessionKey)) {
                 $officeSessionKey = bin2hex(random_bytes(32));

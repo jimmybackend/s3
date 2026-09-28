@@ -27,6 +27,7 @@ $paths = [
     'moderation_renderer' => $root . '/src/View/FederationModerationPageRenderer.php',
     'server_admin_js' => $root . '/js/server-admin.js',
     'background_tasks' => $root . '/js/background-tasks.js',
+    'background_controller' => $root . '/src/Http/Controller/BackgroundTaskController.php',
     'upload_center' => $root . '/js/upload-center.js',
     'updater_js' => $root . '/js/arcadecloud-updater.js',
     'update_controller' => $root . '/src/Http/Controller/ArcadeCloudUpdateController.php',
@@ -263,7 +264,7 @@ webOsContract(str_contains($paths['maintenance_probe'], 'hasActiveJobs()'), 'son
 webOsContract(str_contains($paths['sync_store'], 'public function hasActiveJobs()'), 'sincronización expone estado activo a mantenimiento');
 webOsContract(str_contains($paths['move_store'], 'public function hasActiveJobs()'), 'movimientos exponen estado activo a mantenimiento');
 webOsContract(str_contains($paths['maintenance_store'], "'status' => 'waiting'"), 'limpieza puede quedar esperando en cola');
-webOsContract(str_contains($paths['background_tasks'], 'maintenance:'), 'Centro de Tareas integra mantenimiento del servidor');
+webOsContract(str_contains($paths['background_controller'], 'maintenance:'), 'Centro de Tareas integra mantenimiento del servidor');
 webOsContract(str_contains($paths['worker_launcher'], 'launchMaintenance'), 'limpieza se ejecuta en worker desacoplado del navegador');
 webOsContract(str_contains($paths['maintenance_worker'], 'ServerMaintenanceService'), 'worker de mantenimiento reutiliza el servicio OOP');
 

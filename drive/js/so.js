@@ -77,6 +77,9 @@ class ArcadeCloudOsShell {
     win.classList.add('is-open');
     win.hidden = false;
     this.activateWindow(win);
+    if (id === 'nodeWindow') {
+      this.window.ArcadeCloudOsNodeMonitor?.refresh?.();
+    }
     this.closeLauncher();
   }
 
@@ -149,6 +152,9 @@ class ArcadeCloudOsShell {
         win.dataset.minimized = '0';
         win.classList.add('is-open');
         this.activateWindow(win);
+        if (win.id === 'nodeWindow') {
+          this.window.ArcadeCloudOsNodeMonitor?.refresh?.();
+        }
       });
 
       button.addEventListener('contextmenu', (event) => {

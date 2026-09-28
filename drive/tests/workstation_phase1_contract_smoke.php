@@ -40,6 +40,10 @@ workstationContract(!str_contains($install, 'chown root:root /etc/arcadecloud-dr
 workstationContract(!str_contains($install, 'chmod 0750 /etc/arcadecloud-drive'), 'instalador no reemplaza permisos del directorio runtime administrado');
 workstationContract(!preg_match('/(?:chown|chmod)[^\\n]*runtime-env\\.json/', $install), 'instalador Workstation no cambia permisos de runtime-env.json');
 workstationContract(str_contains($install, 'systemctl disable "$SERVICE_NAME"'), 'Workstation no queda habilitada automáticamente al boot');
+workstationContract(str_contains($install, '--reconcile'), 'instalador Workstation acepta reconciliación desde updater');
+workstationContract(str_contains($install, 'WAS_ACTIVE'), 'reconciliación conoce si el escritorio ya estaba activo');
+workstationContract(str_contains($install, 'no se reinicia durante la actualización'), 'updater no corta una sesión Office activa');
+workstationContract(str_contains($install, 'permanece apagada hasta que Office la solicite'), 'updater no enciende Workstation si estaba apagada');
 workstationContract(!str_contains($install, 'enable --now arcadecloud-workstation'), 'Workstation no se habilita permanentemente por error');
 workstationContract(!str_contains($uninstall, 'arcadecloud-media-worker'), 'desinstalador no toca el worker multimedia');
 workstationContract(str_contains($health, "fsockopen('127.0.0.1', 6080"), 'health comprueba noVNC local');

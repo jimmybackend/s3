@@ -24,6 +24,9 @@ $schemaMigrator = (string)file_get_contents($repo . '/drive/src/Federation/Feder
 $catalogMigrator = (string)file_get_contents($repo . '/drive/bin/federation_catalog_migrate.php');
 $updaterJs = (string)file_get_contents($repo . '/drive/js/arcadecloud-updater.js');
 $mediaInstaller = (string)file_get_contents($repo . '/drive/bin/install_media_processing_worker.sh');
+$workstationInstaller = (string)file_get_contents($repo . '/drive/bin/install_workstation_node.sh');
+$officeGatewayInstaller = (string)file_get_contents($repo . '/drive/bin/install_office_gateway.sh');
+$officeInternalInstaller = (string)file_get_contents($repo . '/drive/bin/install_workstation_internal_gateway.sh');
 $bootstrap = (string)file_get_contents($repo . '/drive/bin/media_worker_node_bootstrap.sh');
 $managed = (string)file_get_contents($repo . '/drive/src/Admin/ManagedRuntimeEnvironment.php');
 $helper = (string)file_get_contents($repo . '/drive/bin/arcadecloud-drive-admin-helper.php');
@@ -70,6 +73,30 @@ installerContract(str_contains($reconciler, 'install_media_processing_worker.sh'
 installerContract(str_contains($reconciler, 'install_transcribe_reconcile_timer.sh'), 'rol web instala reconciliación Transcribe');
 installerContract(str_contains($reconciler, 'install_polly_reconcile_timer.sh'), 'rol web instala reconciliación Polly');
 installerContract(str_contains($reconciler, 'systemctl restart php-fpm-drive.service'), 'reconciliación reinicia PHP-FPM administrado');
+installerContract(
+    str_contains($reconciler, 'install_office_gateway.sh')
+    && str_contains($reconciler, 'OFFICE_CERT_DIR')
+    && str_contains($reconciler, '--upstream="$OFFICE_UPSTREAM"'),
+    'updater reconcilia gateway Office público cuando existe su certificado'
+);
+installerContract(
+    str_contains($reconciler, 'install_workstation_node.sh')
+    && str_contains($reconciler, '--reconcile')
+    && str_contains($reconciler, 'install_workstation_internal_gateway.sh'),
+    'updater reconcilia Workstation e internal gateway cuando Office ya estaba instalado'
+);
+installerContract(
+    str_contains($workstationInstaller, 'RECONCILE_ONLY=1')
+    && str_contains($workstationInstaller, 'WAS_ACTIVE')
+    && str_contains($workstationInstaller, 'no se reinicia durante la actualización')
+    && str_contains($workstationInstaller, 'permanece apagada hasta que Office la solicite'),
+    'reconciliación Workstation no enciende ni reinicia el escritorio durante updater'
+);
+installerContract(
+    str_contains($officeGatewayInstaller, 'Managed by ArcadeCloud Office gateway installer')
+    && str_contains($officeInternalInstaller, 'Managed by ArcadeCloud Workstation internal gateway installer'),
+    'Nginx Office queda administrado por instaladores idempotentes'
+);
 
 installerContract(str_contains($updater, 'reconcileServices'), 'updater web reconcilia servicios tras fast-forward');
 installerContract(str_contains($updater, "'--defer-php-restart'"), 'updater web solicita reinicio diferido de PHP-FPM');

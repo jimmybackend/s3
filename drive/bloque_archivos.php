@@ -120,6 +120,13 @@ foreach ($filas as $row) {
       <i class="fas fa-chevron-down ml-1"></i>
     </button>
 
+    <button type="button"
+            class="btn btn-sm btn-success drive-upload-launch"
+            data-drive-upload-center>
+      <i class="fas fa-cloud-arrow-up mr-1"></i>
+      Subir
+    </button>
+
   </div>
 
   <div id="bulkActionsPanel"

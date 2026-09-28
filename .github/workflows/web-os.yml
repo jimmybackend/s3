@@ -9,6 +9,7 @@ on:
       - 'drive/css/so-clipboard.css'
       - 'drive/js/so.js'
       - 'drive/js/so-clipboard.js'
+      - 'drive/js/so-screenshot-paste.js'
       - 'drive/js/so-terminal.js'
       - 'drive/js/so-federation.js'
       - 'drive/js/federation-os-admin.js'
@@ -44,6 +45,7 @@ on:
       - 'drive/css/so-clipboard.css'
       - 'drive/js/so.js'
       - 'drive/js/so-clipboard.js'
+      - 'drive/js/so-screenshot-paste.js'
       - 'drive/js/so-terminal.js'
       - 'drive/js/so-federation.js'
       - 'drive/js/federation-os-admin.js'
@@ -101,6 +103,7 @@ jobs:
         run: |
           node --check drive/js/so.js
           node --check drive/js/so-clipboard.js
+          node --check drive/js/so-screenshot-paste.js
           node --check drive/js/so-terminal.js
           node --check drive/js/so-federation.js
           node --check drive/js/federation-os-admin.js

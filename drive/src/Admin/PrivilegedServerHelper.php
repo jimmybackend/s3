@@ -168,11 +168,6 @@ final class PrivilegedServerHelper
         return $this->workstationControl('workstation-start');
     }
 
-    public function stopWorkstation(): array
-    {
-        return $this->workstationControl('workstation-stop');
-    }
-
     private function workstationControl(string $action): array
     {
         if (!$this->supportsWorkstationControl()) {
@@ -180,7 +175,7 @@ final class PrivilegedServerHelper
                 'El helper administrativo no soporta control Workstation; reinstálalo desde el repositorio actual.'
             );
         }
-        if (!in_array($action, ['workstation-status', 'workstation-start', 'workstation-stop'], true)) {
+        if (!in_array($action, ['workstation-status', 'workstation-start'], true)) {
             throw new RuntimeException('Acción Workstation no permitida.');
         }
 

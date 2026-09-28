@@ -96,7 +96,21 @@ server {
         fastcgi_pass ${FPM_LISTEN};
     }
 
+    location = /__office_auth {
+        internal;
+        include fastcgi_params;
+        fastcgi_param SCRIPT_FILENAME ${GATE_SCRIPT};
+        fastcgi_param SCRIPT_NAME /office-gateway.php;
+        fastcgi_param HTTPS on;
+        fastcgi_param HTTP_X_FORWARDED_PROTO https;
+        fastcgi_param ARCADECLOUD_OFFICE_GATE 1;
+        fastcgi_param ARCADECLOUD_OFFICE_GATE_ACTION auth;
+        fastcgi_pass ${FPM_LISTEN};
+    }
+
     location / {
+        auth_request /__office_auth;
+
         proxy_pass http://${UPSTREAM};
         proxy_http_version 1.1;
 

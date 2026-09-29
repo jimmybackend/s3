@@ -66,6 +66,10 @@ mediaContract(str_contains($controller, '$node->handleIdle($jobs)'), 'polling de
 mediaContract(str_contains($controller, "postString('node_shutdown_now')"), 'controlador acepta apagado tras advertencia');
 mediaContract(str_contains($node, 'ec2.media_worker_second'), 'sesión EC2 registra segundos facturables');
 mediaContract(str_contains($sessions, 'MediaWorkerNodeSessions'), 'sesiones de encendido quedan persistidas');
+mediaContract(str_contains($sessions, 'finalizeStoppingForInstance'), 'repositorio puede cerrar sesiones stopping obsoletas al confirmar AWS stopped');
+mediaContract(str_contains($node, "(string)(\$active['status'] ?? '') === 'stopping'"), 'autoapagado distingue una orden stopping de una sesión activa');
+mediaContract(str_contains($node, "if (\$state === 'stopped')"), 'sesión stopping sólo se finaliza cuando AWS confirma stopped');
+mediaContract(str_contains($node, "\$this->sessions->markStopped((string)\$active['session_id']);"), 'actividad nueva invalida stopping obsoleto antes de crear sesión nueva');
 mediaContract(str_contains($bootstrap, 'latest/meta-data/public-ipv4'), 'réplica sin dominio refresca IPv4 por IMDSv2');
 mediaContract(str_contains($bootstrap, 'federation_endpoint_refresh.php'), 'réplica vuelve a anunciar FederationCloud al arrancar');
 mediaContract(str_contains($js, 'mediaNodeAuthorization'), 'modal pide consentimiento antes de encender el nodo');

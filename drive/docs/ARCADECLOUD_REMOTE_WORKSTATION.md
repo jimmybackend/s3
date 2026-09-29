@@ -173,7 +173,7 @@ El EC2 pequeño mantiene el certificado Let's Encrypt y nunca expone VNC.
        -> 127.0.0.1:6080
 ```
 
-El endpoint de control sólo permite `status` y `start`. No ofrece una orden web de parada. El apagado continúa bajo el mecanismo seguro de inactividad del nodo.
+El endpoint interno de Workstation sólo permite `status` y `start`; no expone una parada directa del contenedor al navegador. Además del autoapagado por inactividad, el panel administrativo de FastDrive puede solicitar `StopInstances` sobre la EC2 fija cuando un superadmin se reautentica y no existen tareas ni sesiones Office activas.
 
 ## Autenticación del escritorio
 

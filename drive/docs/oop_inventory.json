@@ -2134,7 +2134,7 @@
     },
     {
       "path": "drive/src/Admin/FastDriveWakeService.php",
-      "lines": 183,
+      "lines": 191,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -4979,7 +4979,7 @@
     },
     {
       "path": "drive/src/Media/MediaWorkerNodeService.php",
-      "lines": 600,
+      "lines": 621,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -4994,7 +4994,7 @@
     },
     {
       "path": "drive/src/Media/MediaWorkerNodeSessionRepository.php",
-      "lines": 202,
+      "lines": 219,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -6273,7 +6273,7 @@
     },
     {
       "path": "drive/tests/fastdrive_control_contract_smoke.php",
-      "lines": 72,
+      "lines": 73,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -6647,7 +6647,7 @@
     },
     {
       "path": "drive/tests/media_processing_contract_smoke.php",
-      "lines": 179,
+      "lines": 183,
       "kind": "test script",
       "classes": 0,
       "functions": [

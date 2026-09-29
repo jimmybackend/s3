@@ -126,6 +126,23 @@ final class MediaWorkerNodeSessionRepository
         );
     }
 
+    public function finalizeStoppingForInstance(string $instanceId): void
+    {
+        $stmt = $this->db->prepare(
+            "UPDATE MediaWorkerNodeSessions
+             SET Status='stopped',
+                 StoppedAt=COALESCE(StoppedAt,UTC_TIMESTAMP()),
+                 UpdatedAt=UTC_TIMESTAMP()
+             WHERE InstanceId=? AND Status='stopping'"
+        );
+        if (!$stmt) {
+            throw new RuntimeException('No se pudo reconciliar la sesión detenida del nodo multimedia.');
+        }
+        $stmt->bind_param('s', $instanceId);
+        $stmt->execute();
+        $stmt->close();
+    }
+
     public function markFailed(string $sessionId, string $message): void
     {
         $message = mb_substr(trim($message), 0, 4000);

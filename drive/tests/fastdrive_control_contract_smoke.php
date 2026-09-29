@@ -53,6 +53,7 @@ fastDriveContract(str_contains($wakeService, 'findActiveSuperAdmins()'), 'wake v
 fastDriveContract(str_contains($wakeService, 'password_verify($password, $hash)'), 'wake verifica hash real del superadmin');
 fastDriveContract(str_contains($wakeService, 'MAX_FAILED_ATTEMPTS = 5'), 'wake limita intentos fallidos');
 fastDriveContract(str_contains($wakeService, '->start($instanceId)'), 'wake sólo inicia el target configurado');
+fastDriveContract(str_contains($wakeService, 'finalizeStoppingForInstance'), 'wake reconcilia sesión stopping cuando AWS confirma stopped antes de arrancar');
 fastDriveContract(!str_contains($wakeService, '->stop('), 'wake no puede apagar instancias');
 fastDriveContract(str_contains($wakeEndpoint, "ARCADECLOUD_FASTDRIVE_GATE"), 'endpoint wake sólo responde detrás del vhost FastDrive');
 fastDriveContract(str_contains($wakeEndpoint, 'hash_equals($csrf, $postedCsrf)'), 'endpoint wake exige CSRF');

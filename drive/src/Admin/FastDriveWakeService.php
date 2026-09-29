@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace ArcadeCloud\Drive\Admin;
 
 use ArcadeCloud\Drive\Core\DriveApplication;
+use ArcadeCloud\Drive\Media\MediaWorkerNodeSessionRepository;
 use RuntimeException;
 use Throwable;
 
@@ -55,6 +56,13 @@ final class FastDriveWakeService
 
         $state = (string)($instance['State']['Name'] ?? 'unknown');
         if ($state === 'stopped') {
+            // AWS es la fuente de verdad del estado físico. Si la ejecución
+            // anterior quedó registrada como "stopping", se cierra antes de
+            // volver a encender para que un IdleSince viejo no apague de nuevo
+            // una instancia recién arrancada.
+            (new MediaWorkerNodeSessionRepository($this->app->db()))
+                ->finalizeStoppingForInstance($instanceId);
+
             $gateway->start($instanceId);
             $this->audit($userId, $ipAddress, $instanceId, true);
             return ['state' => 'pending', 'changed' => true];

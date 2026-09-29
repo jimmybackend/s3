@@ -1651,7 +1651,7 @@
     },
     {
       "path": "drive/office-gateway.php",
-      "lines": 597,
+      "lines": 606,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -6664,7 +6664,7 @@
     },
     {
       "path": "drive/tests/office_gateway_contract_smoke.php",
-      "lines": 265,
+      "lines": 272,
       "kind": "test script",
       "classes": 0,
       "functions": [

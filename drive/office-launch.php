@@ -40,6 +40,10 @@ try {
 }
 
 $fileId = max(0, (int)($_GET['file_id'] ?? 0));
+$target = strtolower(trim((string)($_GET['target'] ?? 'novnc')));
+if (!in_array($target, ['novnc', 'guacamole'], true)) {
+    $target = 'novnc';
+}
 
 if ($fileId > 0) {
     try {
@@ -72,5 +76,5 @@ try {
 $separator = str_contains($officeUrl, '?') ? '&' : '?';
 header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
 header('Pragma: no-cache');
-header('Location: ' . $officeUrl . $separator . 'launch=' . rawurlencode($token), true, 302);
+header('Location: ' . $officeUrl . $separator . 'launch=' . rawurlencode($token) . '&target=' . rawurlencode($target), true, 302);
 exit;

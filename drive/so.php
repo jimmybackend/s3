@@ -563,7 +563,8 @@ $currentFolderName = $currentIsRoot
           <?php endif; ?>
           <a class="os-app-card is-ready" href="s3.php"><i class="fas fa-hard-drive"></i><strong>Drive clásico</strong><span>Disponible</span></a>
           <a class="os-app-card is-ready" href="office-launch.php" target="_blank" rel="noopener"><i class="fas fa-file-word"></i><strong>Office</strong><span>Disponible</span></a>
-          <a class="os-app-card is-ready" href="office-launch.php" target="_blank" rel="noopener" title="Abrir escritorio Linux remoto"><i class="fab fa-linux"></i><strong>Linux XFCE</strong><span>Escritorio remoto</span></a>
+          <a class="os-app-card is-ready" href="office-launch.php" target="_blank" rel="noopener" title="Abrir escritorio Linux remoto por noVNC"><i class="fab fa-linux"></i><strong>Linux XFCE</strong><span>noVNC</span></a>
+          <a class="os-app-card is-ready" href="office-launch.php?target=guacamole" target="_blank" rel="noopener" title="Abrir escritorio Linux remoto por Guacamole RDP"><i class="fas fa-headset"></i><strong>Guacamole RDP</strong><span>Audio + micrófono</span></a>
           <button type="button" class="os-app-card" disabled><i class="fas fa-pen-ruler"></i><strong>Diagramas</strong><span>Próximamente</span></button>
           <button type="button" class="os-app-card" disabled><i class="fas fa-image"></i><strong>Imagen</strong><span>Próximamente</span></button>
           <button type="button" class="os-app-card" disabled><i class="fas fa-wave-square"></i><strong>Audio</strong><span>Próximamente</span></button>

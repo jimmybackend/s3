@@ -4,12 +4,12 @@
 
 ## Resumen
 
-- PHP analizados: **483**
+- PHP analizados: **484**
 - PHP que ya contienen clases/interfaces: **287**
 - PHP marcados para migración/revisión: **0**
 - Tests PHP separados del objetivo OOP de runtime: **46**
-- JavaScript analizados: **61**
-- JavaScript que ya contienen clases: **61**
+- JavaScript analizados: **62**
+- JavaScript que ya contienen clases: **62**
 - JavaScript sin clase/encapsulación OOP: **0**
 - JavaScript OOP con fachada `window` de compatibilidad: **8**
 
@@ -75,7 +75,8 @@
 | `drive/eliminar_archivo.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/eliminar_carpeta.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/encriptar_archivo.php` | 10 | thin endpoint | 0 | — | — | — | — |
-| `drive/fastdrive-control.php` | 142 | view/entrypoint | 0 | — | — | — | — |
+| `drive/fastdrive-control.php` | 163 | view/entrypoint | 0 | — | — | — | — |
+| `drive/fastdrive-power.php` | 62 | thin endpoint | 0 | — | — | — | — |
 | `drive/fastdrive-wake.php` | 188 | view/entrypoint | 0 | — | — | — | — |
 | `drive/federationcloud/access-request.php` | 11 | thin endpoint | 0 | — | — | — | — |
 | `drive/federationcloud/access-status.php` | 11 | thin endpoint | 0 | — | — | — | — |
@@ -154,7 +155,7 @@
 | `drive/set_file_security.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/setup/api.php` | 15 | thin endpoint | 0 | — | — | — | — |
 | `drive/setup/index.php` | 90 | view/entrypoint | 0 | — | — | — | — |
-| `drive/so.php` | 1843 | view/entrypoint | 0 | — | — | — | — |
+| `drive/so.php` | 1899 | view/entrypoint | 0 | — | — | — | — |
 | `drive/src/Activity/ActivityCostRecorder.php` | 155 | class/module | 1 | — | — | — | — |
 | `drive/src/Activity/ActivityCostRepository.php` | 198 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Activity/ActivityCostService.php` | 153 | class/module | 1 | — | — | — | — |
@@ -163,7 +164,7 @@
 | `drive/src/Activity/TranscriptionCostAttribution.php` | 117 | class/module | 1 | — | — | — | — |
 | `drive/src/Activity/TranscriptionReconciler.php` | 476 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Admin/ArcadeCloudUpdaterService.php` | 160 | class/module | 1 | — | ⚠️ | — | — |
-| `drive/src/Admin/FastDriveControlService.php` | 143 | class/module | 1 | — | ⚠️ | — | — |
+| `drive/src/Admin/FastDriveControlService.php` | 332 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Admin/FastDriveWakeService.php` | 183 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Admin/ManagedRuntimeEnvironment.php` | 374 | class/module | 1 | — | — | — | — |
 | `drive/src/Admin/PrivilegedServerHelper.php` | 263 | class/module | 1 | — | — | — | — |
@@ -437,7 +438,7 @@
 | `drive/tests/arcadelink_bulk_contract_regression.php` | 71 | test script | 0 | — | — | — | — |
 | `drive/tests/arcadelink_collection_regression.php` | 63 | test script | 0 | — | — | — | — |
 | `drive/tests/database_schema_contract_smoke.php` | 125 | test script | 0 | — | — | — | — |
-| `drive/tests/fastdrive_control_contract_smoke.php` | 54 | test script | 0 | — | — | — | — |
+| `drive/tests/fastdrive_control_contract_smoke.php` | 67 | test script | 0 | — | — | — | — |
 | `drive/tests/federation_access_message_smoke.php` | 72 | test script | 0 | — | — | — | — |
 | `drive/tests/federation_catalog_event_smoke.php` | 60 | test script | 0 | — | — | — | — |
 | `drive/tests/federation_customs_contract_smoke.php` | 82 | test script | 0 | — | — | — | — |
@@ -477,8 +478,8 @@
 | `drive/tests/user_identity_presenter_smoke.php` | 30 | test script | 0 | — | — | — | — |
 | `drive/tests/user_profile_validator_smoke.php` | 72 | test script | 0 | — | — | — | — |
 | `drive/tests/web_os_clipboard_contract_smoke.php` | 109 | test script | 0 | — | — | — | — |
-| `drive/tests/web_os_contract_smoke.php` | 427 | test script | 0 | — | — | — | — |
-| `drive/tests/workstation_phase1_contract_smoke.php` | 51 | test script | 0 | — | — | — | — |
+| `drive/tests/web_os_contract_smoke.php` | 444 | test script | 0 | — | — | — | — |
+| `drive/tests/workstation_phase1_contract_smoke.php` | 57 | test script | 0 | — | — | — | — |
 | `drive/thumb.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/token_audio.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/token_texto.php` | 10 | thin endpoint | 0 | — | — | — | — |
@@ -559,6 +560,7 @@
 | `drive/js/so-federation.js` | 129 | class/module | ArcadeCloudOsFederationApp | — | — | — |
 | `drive/js/so-folders.js` | 425 | class/module | ArcadeCloudOsFolderActions | — | — | — |
 | `drive/js/so-node.js` | 239 | class/module | ArcadeCloudOsNodeMonitor | — | — | — |
+| `drive/js/so-power.js` | 108 | class/module | ArcadeCloudFastDrivePower | — | — | — |
 | `drive/js/so-screenshot-paste.js` | 335 | class/module | ArcadeCloudOsScreenshotPaste | — | — | — |
 | `drive/js/so-search.js` | 285 | class/module | ArcadeCloudOsSearch | — | — | — |
 | `drive/js/so-share.js` | 179 | class/module | ArcadeCloudOsShare | — | — | — |

@@ -5,6 +5,7 @@ namespace ArcadeCloud\Drive\Media;
 
 use ArcadeCloud\Drive\Activity\ActivityCostRecorder;
 use ArcadeCloud\Drive\Aws\Ec2Gateway;
+use ArcadeCloud\Drive\System\Ec2InstanceIdentityService;
 use mysqli;
 use RuntimeException;
 
@@ -27,7 +28,27 @@ final class MediaWorkerNodeService
     public function __construct(private mysqli $db)
     {
         $this->instanceId = trim((string)(getenv('ARCADECLOUD_MEDIA_WORKER_INSTANCE_ID') ?: ''));
-        $this->region = trim((string)(getenv('ARCADECLOUD_MEDIA_WORKER_REGION') ?: getenv('AWS_REGION') ?: 'us-east-1'));
+        $this->region = trim((string)(getenv('ARCADECLOUD_MEDIA_WORKER_REGION') ?: getenv('AWS_REGION') ?: ''));
+
+        // En un nodo grande instalado como media-worker/combined no obligamos a
+        // duplicar su propio Instance ID en runtime-env.json. IMDSv2 permite que
+        // la EC2 se identifique a sí misma de forma segura y mantenga operativo
+        // el autoapagado aunque la variable administrada no exista.
+        $role = strtolower(trim((string)(getenv('ARCADECLOUD_NODE_ROLE') ?: 'web')));
+        if (
+            $this->instanceId === ''
+            && in_array($role, ['media-worker', 'combined'], true)
+        ) {
+            $identity = (new Ec2InstanceIdentityService())->current();
+            $this->instanceId = trim((string)($identity['instance_id'] ?? ''));
+            if ($this->region === '') {
+                $this->region = trim((string)($identity['region'] ?? ''));
+            }
+        }
+
+        if ($this->region === '') {
+            $this->region = 'us-east-1';
+        }
         // El nodo grande permanece disponible 10 minutos desde la última
         // actividad real. Después se abre una ventana adicional de 30 s para
         // que la interfaz pueda avisar y cancelar el apagado.

@@ -199,6 +199,15 @@ final class MediaWorkerNodeService
         }
 
         $active = $this->sessions->activeForInstance($this->instanceId);
+
+        // Si AWS está realmente running pero la DB conserva una sesión
+        // "stopping" de la ejecución anterior, esa sesión ya no describe el
+        // ciclo actual. Se finaliza y la actividad abre una sesión limpia.
+        if ($active !== null && (string)($active['status'] ?? '') === 'stopping') {
+            $this->sessions->markStopped((string)$active['session_id']);
+            $active = null;
+        }
+
         if ($active === null) {
             $active = $this->sessions->create(
                 $userId,
@@ -310,6 +319,18 @@ final class MediaWorkerNodeService
 
         $active = $this->sessions->activeForInstance($this->instanceId);
         if ($active === null) return;
+
+        // Una sesión "stopping" representa una orden de apagado ya emitida.
+        // Nunca se reutiliza su IdleSince para enviar otro StopInstances. AWS
+        // decide el estado físico; si ya está stopped cerramos el registro.
+        if ((string)($active['status'] ?? '') === 'stopping') {
+            $instance = $this->ec2->getInstance($this->instanceId);
+            $state = is_array($instance) ? Ec2Gateway::stateName($instance) : 'unknown';
+            if ($state === 'stopped') {
+                $this->finalizeStoppedSession($active, 'stopped_detected');
+            }
+            return;
+        }
 
         if ($jobs->hasActiveJobs()) {
             $this->sessions->clearIdle((string)$active['session_id']);

@@ -1522,7 +1522,7 @@
     },
     {
       "path": "drive/src/Admin/FastDriveWakeService.php",
-      "size": 6312,
+      "size": 6789,
       "active": false,
       "references": [
         "drive/tests/fastdrive_control_contract_smoke.php"
@@ -2954,7 +2954,7 @@
     },
     {
       "path": "drive/src/Media/MediaWorkerNodeService.php",
-      "size": 23322,
+      "size": 24367,
       "active": false,
       "references": [
         "drive/tests/media_processing_contract_smoke.php",
@@ -2964,7 +2964,7 @@
     },
     {
       "path": "drive/src/Media/MediaWorkerNodeSessionRepository.php",
-      "size": 7400,
+      "size": 8009,
       "active": false,
       "references": [
         "drive/tests/media_processing_contract_smoke.php"
@@ -3563,7 +3563,7 @@
     },
     {
       "path": "drive/tests/fastdrive_control_contract_smoke.php",
-      "size": 6886,
+      "size": 7046,
       "active": false,
       "references": []
     },
@@ -3695,7 +3695,7 @@
     },
     {
       "path": "drive/tests/media_processing_contract_smoke.php",
-      "size": 16758,
+      "size": 17374,
       "active": false,
       "references": []
     },

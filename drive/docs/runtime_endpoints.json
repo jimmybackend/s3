@@ -1223,7 +1223,7 @@
     },
     {
       "path": "drive/office-gateway.php",
-      "size": 25823,
+      "size": 26563,
       "active": false,
       "references": [
         "drive/tests/office_gateway_contract_smoke.php"
@@ -1231,7 +1231,7 @@
     },
     {
       "path": "drive/office-launch.php",
-      "size": 2682,
+      "size": 2866,
       "active": true,
       "references": [
         "drive/so.php",
@@ -1446,7 +1446,7 @@
     },
     {
       "path": "drive/so.php",
-      "size": 100927,
+      "size": 101192,
       "active": true,
       "references": [
         "drive/s3.php",
@@ -3803,7 +3803,7 @@
     },
     {
       "path": "drive/tests/web_os_contract_smoke.php",
-      "size": 44110,
+      "size": 44400,
       "active": false,
       "references": []
     },

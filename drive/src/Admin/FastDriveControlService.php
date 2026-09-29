@@ -128,6 +128,51 @@ final class FastDriveControlService
         ];
     }
 
+    public function forceStop(string $currentPassword): array
+    {
+        $this->requireSuperAdmin();
+
+        // Este apagado omite los bloqueos funcionales de tareas/Office, pero
+        // mantiene reautenticación y solicita a AWS un stop normal (Force=false)
+        // para reducir riesgo de corrupción del filesystem.
+        (new SuperAdminReauthenticationService($this->app))->verify($currentPassword);
+
+        [$instanceId, $region] = $this->target();
+        $gateway = $this->app->ec2Gateway($region);
+        $instance = $gateway->getInstance($instanceId);
+        if (!is_array($instance)) {
+            throw new RuntimeException('La instancia FastDrive configurada no fue encontrada en AWS.');
+        }
+
+        $state = (string)($instance['State']['Name'] ?? 'unknown');
+        if (in_array($state, ['stopped', 'stopping'], true)) {
+            return [
+                'ok' => true,
+                'changed' => false,
+                'message' => 'FastDrive ya está apagado o apagándose.',
+                'state' => $state,
+            ];
+        }
+        if ($state !== 'running') {
+            throw new RuntimeException(
+                "FastDrive está en estado '{$state}'. El apagado forzado de ArcadeCloud sólo se permite desde 'running'."
+            );
+        }
+
+        // Deliberadamente NO se eliminan ni se marcan como terminados jobs,
+        // sesiones ni colas. Permanecen registradas para diagnóstico/reintento
+        // después del siguiente arranque.
+        $gateway->stop($instanceId, false);
+        $this->auditForcedStop($instanceId);
+
+        return [
+            'ok' => true,
+            'changed' => true,
+            'message' => 'AWS aceptó el apagado inmediato de FastDrive. Las colas y registros de tareas no fueron eliminados.',
+            'state' => 'stopping',
+        ];
+    }
+
     private function hasActiveOfficeSession(string $instanceId): bool
     {
         $stmt = $this->app->db()->prepare(
@@ -206,6 +251,32 @@ final class FastDriveControlService
             'public_ip' => (string)($instance['PublicIpAddress'] ?? ''),
             'availability_zone' => (string)($instance['Placement']['AvailabilityZone'] ?? ''),
         ];
+    }
+
+    private function auditForcedStop(string $instanceId): void
+    {
+        try {
+            $userId = $this->app->session()->userId();
+            if ($userId <= 0) return;
+
+            $ip = isset($_SERVER['REMOTE_ADDR'])
+                ? substr((string)$_SERVER['REMOTE_ADDR'], 0, 45)
+                : '';
+            $action = 'Otro';
+            $details = 'Superadmin autorizó apagado forzado de ArcadeCloud para FastDrive EC2 '
+                . $instanceId . '; colas y registros se conservaron.';
+
+            $stmt = $this->app->db()->prepare(
+                'INSERT INTO AccessControl (user_id, date_time, action, ip_address, action_details) '
+                . 'VALUES (?, NOW(), ?, ?, ?)'
+            );
+            if (!$stmt) return;
+            $stmt->bind_param('isss', $userId, $action, $ip, $details);
+            $stmt->execute();
+            $stmt->close();
+        } catch (Throwable) {
+            // La auditoría no debe convertir un StopInstances exitoso en error.
+        }
     }
 
     private function auditStop(string $instanceId): void

@@ -20,6 +20,7 @@ CONTAINER="arcadecloud-workstation"
 SERVICE_NAME="arcadecloud-workstation.service"
 STATE_ROOT="/var/lib/arcadecloud-office"
 WORKSPACE="$STATE_ROOT/phase1-workspace"
+PERSISTENT_HOME="$STATE_ROOT/home/arcade"
 ENV_FILE="/etc/arcadecloud-drive/workstation.env"
 SERVICE="/etc/systemd/system/$SERVICE_NAME"
 OFFICE_UID=10001
@@ -57,10 +58,12 @@ PHP_GID="$(getent group "$PHP_GROUP" | cut -d: -f3)"
   exit 3
 }
 
-mkdir -p "$STATE_ROOT" "$WORKSPACE" "$WORKSPACE/sessions"
+mkdir -p "$STATE_ROOT" "$WORKSPACE" "$WORKSPACE/sessions" "$PERSISTENT_HOME" "$PERSISTENT_HOME/Projects" "$PERSISTENT_HOME/Downloads"
 chmod 0750 "$STATE_ROOT"
 chown "$OFFICE_UID:$PHP_GID" "$WORKSPACE" "$WORKSPACE/sessions"
 chmod 2770 "$WORKSPACE" "$WORKSPACE/sessions"
+chown -R "$OFFICE_UID:$OFFICE_GID" "$PERSISTENT_HOME"
+chmod 0700 "$PERSISTENT_HOME"
 
 # ArcadeCloud ya administra /etc/arcadecloud-drive y su grupo PHP-FPM.
 # Crear la ruta si falta, pero nunca cambiar propietario/modo del directorio
@@ -93,6 +96,7 @@ ExecStart=/usr/bin/docker run --rm --name $CONTAINER \
   --env-file $ENV_FILE \
   --publish 127.0.0.1:6080:6080 \
   --volume $WORKSPACE:/workspace \
+  --volume $PERSISTENT_HOME:/home/arcade \
   --group-add $PHP_GID \
   --memory=5g --cpus=3 --shm-size=512m \
   --security-opt=no-new-privileges:true \
@@ -123,6 +127,7 @@ if [[ "$RECONCILE_ONLY" -eq 1 ]]; then
     echo "✓ Workstation reconciliada y permanece apagada hasta que Office la solicite."
   fi
   echo "Workspace Office: $WORKSPACE"
+  echo "Home persistente Linux: $PERSISTENT_HOME"
   echo "Sesiones documentales: $WORKSPACE/sessions (grupo $PHP_GROUP/$PHP_GID)"
   exit 0
 fi
@@ -136,6 +141,7 @@ for _ in {1..30}; do
     echo
     echo "Fase 1 instalada. noVNC sólo escucha en 127.0.0.1:6080."
     echo "Workspace Office: $WORKSPACE"
+    echo "Home persistente Linux: $PERSISTENT_HOME"
     echo "Sesiones documentales: $WORKSPACE/sessions (grupo $PHP_GROUP/$PHP_GID)"
     echo "La autenticación del escritorio la controla ArcadeCloud; no se solicita contraseña VNC."
     echo "Workstation queda deshabilitada al boot; se inicia sólo bajo demanda."

@@ -1651,7 +1651,7 @@
     },
     {
       "path": "drive/office-gateway.php",
-      "lines": 585,
+      "lines": 597,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -1670,7 +1670,7 @@
     },
     {
       "path": "drive/office-launch.php",
-      "lines": 77,
+      "lines": 81,
       "kind": "thin endpoint",
       "classes": 0,
       "functions": [],
@@ -1977,7 +1977,7 @@
     },
     {
       "path": "drive/so.php",
-      "lines": 1899,
+      "lines": 1900,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -6933,7 +6933,7 @@
     },
     {
       "path": "drive/tests/web_os_contract_smoke.php",
-      "lines": 444,
+      "lines": 446,
       "kind": "test script",
       "classes": 0,
       "functions": [

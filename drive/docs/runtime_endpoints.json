@@ -2954,7 +2954,7 @@
     },
     {
       "path": "drive/src/Media/MediaWorkerNodeService.php",
-      "size": 24367,
+      "size": 25328,
       "active": false,
       "references": [
         "drive/tests/media_processing_contract_smoke.php",
@@ -3695,13 +3695,13 @@
     },
     {
       "path": "drive/tests/media_processing_contract_smoke.php",
-      "size": 17374,
+      "size": 17692,
       "active": false,
       "references": []
     },
     {
       "path": "drive/tests/office_gateway_contract_smoke.php",
-      "size": 11748,
+      "size": 12108,
       "active": false,
       "references": []
     },

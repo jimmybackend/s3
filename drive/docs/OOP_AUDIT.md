@@ -4,8 +4,8 @@
 
 ## Resumen
 
-- PHP analizados: **484**
-- PHP que ya contienen clases/interfaces: **287**
+- PHP analizados: **485**
+- PHP que ya contienen clases/interfaces: **288**
 - PHP marcados para migración/revisión: **0**
 - Tests PHP separados del objetivo OOP de runtime: **46**
 - JavaScript analizados: **62**
@@ -164,7 +164,7 @@
 | `drive/src/Activity/TranscriptionCostAttribution.php` | 117 | class/module | 1 | — | — | — | — |
 | `drive/src/Activity/TranscriptionReconciler.php` | 476 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Admin/ArcadeCloudUpdaterService.php` | 160 | class/module | 1 | — | ⚠️ | — | — |
-| `drive/src/Admin/FastDriveControlService.php` | 332 | class/module | 1 | — | ⚠️ | — | — |
+| `drive/src/Admin/FastDriveControlService.php` | 349 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Admin/FastDriveWakeService.php` | 183 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Admin/ManagedRuntimeEnvironment.php` | 374 | class/module | 1 | — | — | — | — |
 | `drive/src/Admin/PrivilegedServerHelper.php` | 263 | class/module | 1 | — | — | — | — |
@@ -354,7 +354,7 @@
 | `drive/src/Media/MediaPlaylistService.php` | 66 | class/module | 1 | — | — | — | — |
 | `drive/src/Media/MediaProcessingJobRepository.php` | 460 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Media/MediaProcessingService.php` | 99 | class/module | 1 | — | — | — | — |
-| `drive/src/Media/MediaWorkerNodeService.php` | 579 | class/module | 1 | — | — | — | — |
+| `drive/src/Media/MediaWorkerNodeService.php` | 600 | class/module | 1 | — | — | — | — |
 | `drive/src/Media/MediaWorkerNodeSessionRepository.php` | 202 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Media/ThumbnailService.php` | 380 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Office/OfficeDocumentSessionRepository.php` | 295 | class/module | 1 | — | ⚠️ | — | — |
@@ -403,6 +403,7 @@
 | `drive/src/Sync/SyncJobStore.php` | 282 | class/module | 1 | — | — | — | — |
 | `drive/src/Sync/SyncRepository.php` | 499 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Sync/SyncSchemaMigrator.php` | 114 | class/module | 1 | — | ⚠️ | — | — |
+| `drive/src/System/Ec2InstanceIdentityService.php` | 107 | class/module | 1 | — | — | — | — |
 | `drive/src/System/NodeCapabilityService.php` | 251 | class/module | 1 | — | — | — | — |
 | `drive/src/Upload/AdminMultipartUploadService.php` | 221 | class/module | 1 | — | — | — | — |
 | `drive/src/Upload/PublicDropzoneUploadService.php` | 133 | class/module | 1 | — | — | — | — |
@@ -438,7 +439,7 @@
 | `drive/tests/arcadelink_bulk_contract_regression.php` | 71 | test script | 0 | — | — | — | — |
 | `drive/tests/arcadelink_collection_regression.php` | 63 | test script | 0 | — | — | — | — |
 | `drive/tests/database_schema_contract_smoke.php` | 125 | test script | 0 | — | — | — | — |
-| `drive/tests/fastdrive_control_contract_smoke.php` | 67 | test script | 0 | — | — | — | — |
+| `drive/tests/fastdrive_control_contract_smoke.php` | 72 | test script | 0 | — | — | — | — |
 | `drive/tests/federation_access_message_smoke.php` | 72 | test script | 0 | — | — | — | — |
 | `drive/tests/federation_catalog_event_smoke.php` | 60 | test script | 0 | — | — | — | — |
 | `drive/tests/federation_customs_contract_smoke.php` | 82 | test script | 0 | — | — | — | — |
@@ -460,7 +461,7 @@
 | `drive/tests/fresh_install_contract_smoke.php` | 76 | test script | 0 | — | — | — | — |
 | `drive/tests/index_federation_drop_smoke.php` | 121 | test script | 0 | — | — | — | — |
 | `drive/tests/installer_service_reconcile_contract_smoke.php` | 194 | test script | 0 | — | — | — | — |
-| `drive/tests/media_processing_contract_smoke.php` | 173 | test script | 0 | — | — | — | — |
+| `drive/tests/media_processing_contract_smoke.php` | 179 | test script | 0 | — | — | — | — |
 | `drive/tests/office_gateway_contract_smoke.php` | 258 | test script | 0 | — | — | — | — |
 | `drive/tests/password_credential_verifier_smoke.php` | 44 | test script | 0 | — | — | — | — |
 | `drive/tests/scoped_sync_repository_regression.php` | 96 | test script | 0 | — | ⚠️ | — | — |

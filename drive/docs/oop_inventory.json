@@ -1,7 +1,7 @@
 {
   "summary": {
-    "php_total": 484,
-    "php_class_modules": 287,
+    "php_total": 485,
+    "php_class_modules": 288,
     "php_needs_migration": 0,
     "php_tests": 46,
     "js_total": 62,
@@ -2117,7 +2117,7 @@
     },
     {
       "path": "drive/src/Admin/FastDriveControlService.php",
-      "lines": 332,
+      "lines": 349,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -4979,7 +4979,7 @@
     },
     {
       "path": "drive/src/Media/MediaWorkerNodeService.php",
-      "lines": 579,
+      "lines": 600,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -5722,6 +5722,21 @@
       "issues": []
     },
     {
+      "path": "drive/src/System/Ec2InstanceIdentityService.php",
+      "lines": 107,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
       "path": "drive/src/System/NodeCapabilityService.php",
       "lines": 251,
       "kind": "class/module",
@@ -6258,7 +6273,7 @@
     },
     {
       "path": "drive/tests/fastdrive_control_contract_smoke.php",
-      "lines": 67,
+      "lines": 72,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -6632,7 +6647,7 @@
     },
     {
       "path": "drive/tests/media_processing_contract_smoke.php",
-      "lines": 173,
+      "lines": 179,
       "kind": "test script",
       "classes": 0,
       "functions": [

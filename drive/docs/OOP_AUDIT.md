@@ -354,7 +354,7 @@
 | `drive/src/Media/MediaPlaylistService.php` | 66 | class/module | 1 | — | — | — | — |
 | `drive/src/Media/MediaProcessingJobRepository.php` | 460 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Media/MediaProcessingService.php` | 99 | class/module | 1 | — | — | — | — |
-| `drive/src/Media/MediaWorkerNodeService.php` | 621 | class/module | 1 | — | — | — | — |
+| `drive/src/Media/MediaWorkerNodeService.php` | 640 | class/module | 1 | — | — | — | — |
 | `drive/src/Media/MediaWorkerNodeSessionRepository.php` | 219 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Media/ThumbnailService.php` | 380 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Office/OfficeDocumentSessionRepository.php` | 295 | class/module | 1 | — | ⚠️ | — | — |
@@ -461,8 +461,8 @@
 | `drive/tests/fresh_install_contract_smoke.php` | 76 | test script | 0 | — | — | — | — |
 | `drive/tests/index_federation_drop_smoke.php` | 121 | test script | 0 | — | — | — | — |
 | `drive/tests/installer_service_reconcile_contract_smoke.php` | 194 | test script | 0 | — | — | — | — |
-| `drive/tests/media_processing_contract_smoke.php` | 183 | test script | 0 | — | — | — | — |
-| `drive/tests/office_gateway_contract_smoke.php` | 258 | test script | 0 | — | — | — | — |
+| `drive/tests/media_processing_contract_smoke.php` | 185 | test script | 0 | — | — | — | — |
+| `drive/tests/office_gateway_contract_smoke.php` | 265 | test script | 0 | — | — | — | — |
 | `drive/tests/password_credential_verifier_smoke.php` | 44 | test script | 0 | — | — | — | — |
 | `drive/tests/scoped_sync_repository_regression.php` | 96 | test script | 0 | — | ⚠️ | — | — |
 | `drive/tests/security_hardening_smoke.php` | 59 | test script | 0 | — | — | — | — |

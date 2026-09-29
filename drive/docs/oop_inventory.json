@@ -4979,7 +4979,7 @@
     },
     {
       "path": "drive/src/Media/MediaWorkerNodeService.php",
-      "lines": 621,
+      "lines": 640,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -6647,7 +6647,7 @@
     },
     {
       "path": "drive/tests/media_processing_contract_smoke.php",
-      "lines": 183,
+      "lines": 185,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -6664,7 +6664,7 @@
     },
     {
       "path": "drive/tests/office_gateway_contract_smoke.php",
-      "lines": 258,
+      "lines": 265,
       "kind": "test script",
       "classes": 0,
       "functions": [

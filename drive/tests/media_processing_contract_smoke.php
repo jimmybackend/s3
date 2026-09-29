@@ -47,6 +47,8 @@ mediaContract(str_contains($js, "jQuery('#modalMediaSplit').modal('show')"), 'bo
 mediaContract(substr_count($block, 'data-bytes="<?= (int)$tamano ?>"') >= 3, 'acciones multimedia publican tamaño del archivo');
 mediaContract(str_contains($service, 'authorize_node_start'), 'backend exige autorización explícita para encendido bajo demanda');
 mediaContract(str_contains($node, 'ARCADECLOUD_MEDIA_WORKER_INSTANCE_ID'), 'nodo EC2 se limita a una instancia configurada');
+mediaContract(str_contains($node, 'ARCADECLOUD_FASTDRIVE_INSTANCE_ID'), 'gateway web puede reutilizar el target FastDrive explícito para actividad interactiva');
+mediaContract(str_contains($node, "!in_array(\$role, ['media-worker', 'combined'], true)"), 'fallback FastDrive sólo aplica fuera del nodo de cómputo');
 mediaContract(str_contains($node, 'Ec2InstanceIdentityService'), 'nodo grande puede autoidentificarse por IMDSv2');
 mediaContract(str_contains($node, "['media-worker', 'combined']"), 'autoidentificación sólo aplica a roles de cómputo');
 mediaContract(str_contains($identity, '/meta-data/instance-id'), 'identidad EC2 obtiene Instance ID por IMDSv2');

@@ -254,4 +254,11 @@ officeGatewayContract(
     'autoapagado existente conserva mínimo de 10 minutos y protege trabajos multimedia'
 );
 
+officeGatewayContract(
+    str_contains($node, "getenv('ARCADECLOUD_FASTDRIVE_INSTANCE_ID')")
+    && str_contains($node, "getenv('ARCADECLOUD_FASTDRIVE_REGION')")
+    && str_contains($node, "!in_array(\$role, ['media-worker', 'combined'], true)"),
+    'gateway Office reutiliza el target FastDrive administrado para tocar el mismo contador de inactividad'
+);
+
 fwrite(STDOUT, "Office gateway contract: OK\n");

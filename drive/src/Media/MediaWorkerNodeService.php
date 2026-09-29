@@ -30,11 +30,30 @@ final class MediaWorkerNodeService
         $this->instanceId = trim((string)(getenv('ARCADECLOUD_MEDIA_WORKER_INSTANCE_ID') ?: ''));
         $this->region = trim((string)(getenv('ARCADECLOUD_MEDIA_WORKER_REGION') ?: getenv('AWS_REGION') ?: ''));
 
+        $role = strtolower(trim((string)(getenv('ARCADECLOUD_NODE_ROLE') ?: 'web')));
+
+        // En el gateway pequeño Office/Drive no ejecuta el worker, pero sí debe
+        // poder tocar y consultar la misma sesión de inactividad del FastDrive.
+        // Si no hay target multimedia explícito, reutiliza únicamente el target
+        // FastDrive administrado del gateway. Así office.esforzados.com y
+        // fastdrive.esforzados.com escriben sobre la misma EC2 y la misma sesión.
+        if (
+            $this->instanceId === ''
+            && !in_array($role, ['media-worker', 'combined'], true)
+        ) {
+            $fastDriveInstanceId = trim((string)(getenv('ARCADECLOUD_FASTDRIVE_INSTANCE_ID') ?: ''));
+            if (preg_match('/^i-[0-9a-f]{8,17}$/i', $fastDriveInstanceId)) {
+                $this->instanceId = $fastDriveInstanceId;
+                if ($this->region === '') {
+                    $this->region = trim((string)(getenv('ARCADECLOUD_FASTDRIVE_REGION') ?: ''));
+                }
+            }
+        }
+
         // En un nodo grande instalado como media-worker/combined no obligamos a
         // duplicar su propio Instance ID en runtime-env.json. IMDSv2 permite que
         // la EC2 se identifique a sí misma de forma segura y mantenga operativo
         // el autoapagado aunque la variable administrada no exista.
-        $role = strtolower(trim((string)(getenv('ARCADECLOUD_NODE_ROLE') ?: 'web')));
         if (
             $this->instanceId === ''
             && in_array($role, ['media-worker', 'combined'], true)

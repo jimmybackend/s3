@@ -14,9 +14,11 @@ Amazon Linux 2023 host
       -> LibreOffice
       -> Google Chrome
       -> Git + AWS CLI v2
-      -> TigerVNC (sólo localhost dentro del contenedor)
-      -> noVNC/websockify
-  -> 127.0.0.1:6080 únicamente
+      -> TigerVNC + noVNC/websockify
+      -> XRDP + PipeWire (audio/micrófono)
+  -> noVNC en 127.0.0.1:6080
+  -> Guacamole en 127.0.0.1:8085/guacamole/
+  -> XRDP sólo por la red Docker interna arcadecloud-office
 ```
 
 Esta fase todavía no integra S3, FileS3, ArcadeCloud OS ni el broker definitivo de sesiones.
@@ -33,6 +35,9 @@ Se confirmó:
 - En la instalación observada PHP-FPM Drive corre como `apache`; `runtime-env.json` debe seguir siendo legible por ese usuario/grupo.
 - Cambiar accidentalmente `/etc/arcadecloud-drive` a `root:root 0750` impide que PHP-FPM lea la configuración administrada y puede hacer fallar el login aunque la DB remota esté sana.
 - noVNC funcionó correctamente detrás de Nginx manteniendo el binding Docker en `127.0.0.1:6080`.
+- Apache Guacamole 1.6.0 + guacd + MySQL 8.4 se ejecutan en contenedores separados sobre la red Docker `arcadecloud-office`.
+- XRDP usa `pipewire-module-xrdp` para salida de audio y micrófono. El perfil validado usa 16 bits de color y desactiva efectos visuales para reducir tráfico.
+- El host continúa siendo Amazon Linux 2023; Ubuntu 24.04 existe únicamente dentro de la imagen Docker Workstation.
 - El contenedor se validó con límite de 5 GiB RAM, 3 CPU y `--shm-size=512m`.
 - El escritorio XFCE quedó accesible desde navegador y el worker multimedia permaneció activo.
 - La imagen Workstation incluye Google Chrome, Git y AWS CLI v2 para uso de desarrollo.
@@ -40,8 +45,9 @@ Se confirmó:
 
 ## Aislamiento
 
-- El puerto VNC 5900/5901 no se publica en el host.
+- Los puertos VNC 5900/5901 y XRDP 3389 no se publican en Internet.
 - noVNC se publica exclusivamente en `127.0.0.1:6080`.
+- Guacamole web se publica exclusivamente en `127.0.0.1:8085`; Nginx lo expone como `/guacamole/` sólo detrás del gateway autenticado de Office.
 - El contenedor no recibe el socket Docker.
 - El contenedor no recibe credenciales AWS automáticamente. AWS CLI está instalado, pero la autorización S3 debe configurarse de forma explícita y con privilegios mínimos.
 - El contenedor corre como usuario no-root UID/GID 10001 y con capabilities eliminadas.
@@ -177,6 +183,12 @@ El EC2 pequeño mantiene el certificado Let's Encrypt y nunca expone VNC.
 
   -> /vnc.html + /websockify
        -> 127.0.0.1:6080
+
+  -> /guacamole/
+       -> 127.0.0.1:8085/guacamole/
+       -> guacd
+       -> XRDP :3389 en la red Docker
+       -> XFCE + PipeWire
 ```
 
 El endpoint interno de Workstation sólo permite `status` y `start`; no expone una parada directa del contenedor al navegador. Además del autoapagado por inactividad, el panel administrativo de FastDrive puede solicitar `StopInstances` sobre la EC2 fija cuando un superadmin se reautentica y no existen tareas ni sesiones Office activas.
@@ -422,3 +434,22 @@ Persistencia:
 El código de los repositorios debe trabajar sobre el filesystem local/EBS y usar Git para versionado. S3 continúa siendo almacenamiento de objetos y respaldo; no se trata como filesystem POSIX para un checkout Git.
 
 El apagado automático por inactividad permanece activo. El superadmin también dispone de un botón de apagado explícito en el perfil del Web OS. Ese control conserva los registros/colas existentes y solicita un StopInstances normal a AWS; una tarea que estuviera ejecutándose puede requerir reintento al volver a arrancar.
+
+
+## Audio y micrófono por Guacamole
+
+El escritorio noVNC se conserva como acceso compatible. Para audio y micrófono se usa la ruta RDP:
+
+```
+office.esforzados.com/guacamole/
+  -> Apache Guacamole
+  -> guacd
+  -> arcadecloud-workstation:3389
+  -> XRDP/Xorg
+  -> PipeWire
+  -> xrdp-sink / xrdp-source
+```
+
+La imagen Workstation instala `pipewire`, `pipewire-pulse`, `wireplumber`, `pipewire-module-xrdp`, `pulseaudio-utils`, `xrdp` y `xorgxrdp`. El módulo XRDP usa un quantum de 1024 en la imagen validada para reducir latencia.
+
+El instalador `install_workstation_node.sh` crea y conserva `/etc/arcadecloud-drive/rdp.env`, conecta Workstation a la red `arcadecloud-office` y aplica sólo las capabilities requeridas para iniciar XRDP y cambiar al usuario `arcade`. `install_guacamole_node.sh` conserva la base MySQL y no cambia una contraseña administrativa de Guacamole que el usuario ya haya modificado.

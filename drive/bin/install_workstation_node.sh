@@ -22,6 +22,8 @@ STATE_ROOT="/var/lib/arcadecloud-office"
 WORKSPACE="$STATE_ROOT/phase1-workspace"
 PERSISTENT_HOME="$STATE_ROOT/home/arcade"
 ENV_FILE="/etc/arcadecloud-drive/workstation.env"
+RDP_ENV_FILE="/etc/arcadecloud-drive/rdp.env"
+OFFICE_NETWORK="arcadecloud-office"
 SERVICE="/etc/systemd/system/$SERVICE_NAME"
 OFFICE_UID=10001
 OFFICE_GID=10001
@@ -80,7 +82,24 @@ fi
 chown root:root "$ENV_FILE"
 chmod 0600 "$ENV_FILE"
 
+if [[ ! -f "$RDP_ENV_FILE" ]]; then
+  umask 077
+  RDP_PASSWORD="$(openssl rand -hex 24)"
+  cat > "$RDP_ENV_FILE" <<EOF
+ARCADECLOUD_RDP_PASSWORD=$RDP_PASSWORD
+EOF
+fi
+chown root:root "$RDP_ENV_FILE"
+chmod 0600 "$RDP_ENV_FILE"
+
+docker network inspect "$OFFICE_NETWORK" >/dev/null 2>&1 \
+  || docker network create "$OFFICE_NETWORK" >/dev/null
+
 docker build -t "$IMAGE" "$DRIVE_ROOT/docker/workstation"
+
+if [[ -x "$DRIVE_ROOT/bin/install_guacamole_node.sh" ]]; then
+  bash "$DRIVE_ROOT/bin/install_guacamole_node.sh"
+fi
 
 cat > "$SERVICE" <<EOF
 [Unit]
@@ -94,6 +113,8 @@ Type=simple
 ExecStartPre=-/usr/bin/docker rm -f $CONTAINER
 ExecStart=/usr/bin/docker run --rm --name $CONTAINER \
   --env-file $ENV_FILE \
+  --env-file $RDP_ENV_FILE \
+  --network $OFFICE_NETWORK \
   --publish 127.0.0.1:6080:6080 \
   --volume $WORKSPACE:/workspace \
   --volume $PERSISTENT_HOME:/home/arcade \
@@ -101,6 +122,11 @@ ExecStart=/usr/bin/docker run --rm --name $CONTAINER \
   --memory=5g --cpus=3 --shm-size=512m \
   --security-opt=no-new-privileges:true \
   --cap-drop=ALL \
+  --cap-add=SETUID \
+  --cap-add=SETGID \
+  --cap-add=CHOWN \
+  --cap-add=DAC_OVERRIDE \
+  --cap-add=FOWNER \
   $IMAGE
 ExecStop=/usr/bin/docker stop -t 20 $CONTAINER
 Restart=on-failure
@@ -121,7 +147,7 @@ systemctl disable "$SERVICE_NAME" >/dev/null 2>&1 || true
 
 if [[ "$RECONCILE_ONLY" -eq 1 ]]; then
   if [[ "$WAS_ACTIVE" -eq 1 ]]; then
-    echo "✓ Workstation estaba activa: no se reinicia durante la actualización; la nueva imagen/unidad se aplicará en la próxima sesión."
+    echo "✓ Workstation estaba activa: no se reinicia durante la actualización; la nueva imagen/unidad XRDP/audio se aplicará en la próxima sesión."
   else
     systemctl stop "$SERVICE_NAME" >/dev/null 2>&1 || true
     echo "✓ Workstation reconciliada y permanece apagada hasta que Office la solicite."
@@ -139,7 +165,7 @@ for _ in {1..30}; do
   if php "$DRIVE_ROOT/bin/workstation_health.php" >/dev/null 2>&1; then
     php "$DRIVE_ROOT/bin/workstation_health.php"
     echo
-    echo "Fase 1 instalada. noVNC sólo escucha en 127.0.0.1:6080."
+    echo "Fase 1 instalada. noVNC sólo escucha en 127.0.0.1:6080; XRDP queda accesible únicamente por la red Docker Office."
     echo "Workspace Office: $WORKSPACE"
     echo "Home persistente Linux: $PERSISTENT_HOME"
     echo "Sesiones documentales: $WORKSPACE/sessions (grupo $PHP_GROUP/$PHP_GID)"

@@ -9,6 +9,8 @@ RUN apt-get update \
       ca-certificates curl dbus-x11 fonts-dejavu-core fonts-liberation fonts-noto-core \
       git gnupg libreoffice libreoffice-gtk3 novnc python3-websockify \
       tigervnc-standalone-server tigervnc-tools unzip wget xfce4 xfce4-terminal xterm xdg-utils \
+      pipewire pipewire-pulse wireplumber pipewire-audio-client-libraries \
+      pipewire-module-xrdp pavucontrol pulseaudio-utils alsa-utils xrdp xorgxrdp \
  && install -d -m 0755 /etc/apt/keyrings \
  && curl -fsSL https://dl.google.com/linux/linux_signing_key.pub \
       | gpg --dearmor -o /etc/apt/keyrings/google-chrome.gpg \
@@ -19,6 +21,7 @@ RUN apt-get update \
  && curl -fsSL "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o /tmp/awscliv2.zip \
  && unzip -q /tmp/awscliv2.zip -d /tmp \
  && /tmp/aws/install \
+ && sed -i 's/QUANTUMVAL=2048/QUANTUMVAL=1024/' /usr/libexec/pipewire-module-xrdp/load_pw_modules.sh \
  && rm -rf /tmp/aws /tmp/awscliv2.zip /var/lib/apt/lists/*
 
 RUN groupadd --gid 10001 arcade \
@@ -33,8 +36,7 @@ COPY arcadecloud-chrome.desktop /usr/share/applications/arcadecloud-chrome.deskt
 RUN chmod 0755 /usr/local/bin/arcadecloud-workstation-entrypoint /usr/local/bin/arcadecloud-chrome \
  && chmod 0644 /usr/share/xfce4/helpers/arcadecloud-chrome.desktop /usr/share/applications/arcadecloud-chrome.desktop
 
-USER arcade
 WORKDIR /home/arcade
 
-EXPOSE 6080
+EXPOSE 6080 3389
 ENTRYPOINT ["/usr/local/bin/arcadecloud-workstation-entrypoint"]

@@ -67,6 +67,25 @@ server {
         fastcgi_pass ${FPM_LISTEN};
     }
 
+    location /guacamole/ {
+        proxy_pass http://127.0.0.1:8085/guacamole/;
+        proxy_http_version 1.1;
+
+        proxy_set_header Host \$host;
+        proxy_set_header X-Real-IP \$remote_addr;
+        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto https;
+
+        proxy_set_header Upgrade \$http_upgrade;
+        proxy_set_header Connection "upgrade";
+
+        proxy_connect_timeout 5s;
+        proxy_read_timeout 86400;
+        proxy_send_timeout 86400;
+        proxy_buffering off;
+        proxy_request_buffering off;
+    }
+
     location / {
         proxy_pass http://127.0.0.1:6080;
         proxy_http_version 1.1;
@@ -109,5 +128,6 @@ echo "OK: gateway interno Workstation instalado."
 echo "Dominio interno: ${DOMAIN}"
 echo "Control plane permitido: ${GATEWAY_IP}"
 echo "noVNC local: 127.0.0.1:6080"
-echo "Workstation permanece sin publicar 5900/5901/6080 a Internet."
+echo "Guacamole local: 127.0.0.1:8085/guacamole/"
+echo "Workstation permanece sin publicar 5900/5901/6080/3389 a Internet."
 [[ -n "$backup" ]] && echo "Backup: ${backup}"

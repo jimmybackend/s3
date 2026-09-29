@@ -18,6 +18,9 @@ $health = (string)file_get_contents($repo . '/drive/bin/workstation_health.php')
 workstationContract(str_contains($dockerfile, 'FROM ubuntu:24.04'), 'runtime gráfico usa Ubuntu estable aislado del host');
 workstationContract(str_contains($dockerfile, 'libreoffice'), 'imagen instala LibreOffice');
 workstationContract(str_contains($dockerfile, 'xfce4'), 'imagen instala escritorio XFCE');
+workstationContract(str_contains($dockerfile, 'google-chrome-stable'), 'imagen instala Google Chrome');
+workstationContract(str_contains($dockerfile, 'git'), 'imagen instala Git para repositorios');
+workstationContract(str_contains($dockerfile, 'awscli.amazonaws.com'), 'imagen instala AWS CLI v2');
 workstationContract(str_contains($dockerfile, 'novnc') && str_contains($dockerfile, 'tigervnc'), 'imagen incluye noVNC y TigerVNC');
 workstationContract(str_contains($dockerfile, '--uid 10001') && str_contains($dockerfile, '--gid 10001'), 'usuario Office usa UID/GID aislado y no colisiona con UID 1000');
 workstationContract(str_contains($entry, '-localhost yes'), 'VNC sólo acepta conexiones internas del contenedor');
@@ -33,6 +36,9 @@ workstationContract(!str_contains($install, '/var/run/docker.sock'), 'Docker soc
 workstationContract(!str_contains($install, '5900:'), 'puerto VNC no se publica en el host');
 workstationContract(!str_contains($install, 'aws_access_key'), 'instalador no incorpora credenciales AWS');
 workstationContract(str_contains($install, '/var/lib/arcadecloud-office'), 'workspace queda separado del media worker');
+workstationContract(str_contains($install, 'PERSISTENT_HOME='), 'Workstation declara home Linux persistente');
+workstationContract(str_contains($install, '--volume $PERSISTENT_HOME:/home/arcade'), 'home del usuario sobrevive reconstrucciones del contenedor');
+workstationContract(str_contains($install, '"$PERSISTENT_HOME/Projects"'), 'home persistente prepara carpeta Projects');
 workstationContract(str_contains($install, '"$WORKSPACE/sessions"'), 'instalador prepara workspace por sesión documental');
 workstationContract(str_contains($install, 'chmod 2770 "$WORKSPACE" "$WORKSPACE/sessions"'), 'workspace usa setgid y no permisos globales');
 workstationContract(str_contains($install, '--group-add $PHP_GID'), 'contenedor comparte únicamente el grupo PHP-FPM para documentos');

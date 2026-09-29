@@ -12,6 +12,7 @@ function fastDriveContract(bool $condition, string $message): void
 $root = dirname(__DIR__);
 $service = (string)file_get_contents($root . '/src/Admin/FastDriveControlService.php');
 $endpoint = (string)file_get_contents($root . '/fastdrive-control.php');
+$powerEndpoint = (string)file_get_contents($root . '/fastdrive-power.php');
 $managed = (string)file_get_contents($root . '/src/Admin/ManagedRuntimeEnvironment.php');
 $helper = (string)file_get_contents($root . '/bin/arcadecloud-drive-admin-helper.php');
 $gatewayInstaller = (string)file_get_contents($root . '/bin/install_fastdrive_gateway.sh');
@@ -32,6 +33,12 @@ fastDriveContract(!str_contains($endpoint, "postString('id')"), 'navegador no pu
 fastDriveContract(str_contains($endpoint, "['start', 'stop']"), 'endpoint limita acciones manuales a start/stop');
 fastDriveContract(str_contains($endpoint, '$service->stop($password)'), 'endpoint puede solicitar apagado seguro');
 fastDriveContract(str_contains($endpoint, 'Apagar FastDrive'), 'UI ofrece botón de apagado cuando la instancia está running');
+fastDriveContract(str_contains($service, 'public function forceStop('), 'servicio expone apagado forzado reautenticado');
+fastDriveContract(str_contains($service, '->stop($instanceId, false)'), 'apagado forzado de ArcadeCloud solicita stop normal de AWS');
+fastDriveContract(str_contains($service, 'colas y registros de tareas no fueron eliminados'), 'apagado forzado conserva registros de trabajos');
+fastDriveContract(str_contains($powerEndpoint, "postString('action') !== 'force-stop'"), 'endpoint rápido sólo acepta force-stop');
+fastDriveContract(str_contains($powerEndpoint, 'fastdrive_control_csrf'), 'endpoint rápido exige CSRF dedicado');
+fastDriveContract(str_contains($powerEndpoint, '->forceStop('), 'endpoint rápido delega en servicio de control');
 fastDriveContract(str_contains($managed, "'ARCADECLOUD_FASTDRIVE_INSTANCE_ID'"), 'runtime administrado permite instance id FastDrive');
 fastDriveContract(str_contains($managed, "'ARCADECLOUD_FASTDRIVE_REGION'"), 'runtime administrado permite región FastDrive');
 fastDriveContract(str_contains($helper, "'ARCADECLOUD_FASTDRIVE_INSTANCE_ID'"), 'helper privilegiado permite persistir instance id FastDrive');

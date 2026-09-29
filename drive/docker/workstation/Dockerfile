@@ -6,21 +6,31 @@ ENV DEBIAN_FRONTEND=noninteractive \
 
 RUN apt-get update \
  && apt-get install -y --no-install-recommends \
-      ca-certificates dbus-x11 fonts-dejavu-core fonts-liberation fonts-noto-core \
-      libreoffice libreoffice-gtk3 novnc python3-websockify tigervnc-standalone-server \
-      tigervnc-tools xfce4 xfce4-terminal xterm \
- && rm -rf /var/lib/apt/lists/*
+      ca-certificates curl dbus-x11 fonts-dejavu-core fonts-liberation fonts-noto-core \
+      git gnupg libreoffice libreoffice-gtk3 novnc python3-websockify \
+      tigervnc-standalone-server tigervnc-tools unzip wget xfce4 xfce4-terminal xterm xdg-utils \
+ && install -d -m 0755 /etc/apt/keyrings \
+ && curl -fsSL https://dl.google.com/linux/linux_signing_key.pub \
+      | gpg --dearmor -o /etc/apt/keyrings/google-chrome.gpg \
+ && echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/google-chrome.gpg] https://dl.google.com/linux/chrome/deb/ stable main" \
+      > /etc/apt/sources.list.d/google-chrome.list \
+ && apt-get update \
+ && apt-get install -y --no-install-recommends google-chrome-stable \
+ && curl -fsSL "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o /tmp/awscliv2.zip \
+ && unzip -q /tmp/awscliv2.zip -d /tmp \
+ && /tmp/aws/install \
+ && rm -rf /tmp/aws /tmp/awscliv2.zip /var/lib/apt/lists/*
 
 RUN groupadd --gid 10001 arcade \
  && useradd --create-home --uid 10001 --gid 10001 --shell /bin/bash arcade \
- && mkdir -p /workspace /home/arcade/.vnc \
+ && mkdir -p /workspace /home/arcade/.vnc /home/arcade/Projects /home/arcade/Downloads \
  && chown -R arcade:arcade /workspace /home/arcade
 
 COPY entrypoint.sh /usr/local/bin/arcadecloud-workstation-entrypoint
 RUN chmod 0755 /usr/local/bin/arcadecloud-workstation-entrypoint
 
 USER arcade
-WORKDIR /workspace
+WORKDIR /home/arcade
 
 EXPOSE 6080
 ENTRYPOINT ["/usr/local/bin/arcadecloud-workstation-entrypoint"]

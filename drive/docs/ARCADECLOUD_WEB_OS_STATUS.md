@@ -78,8 +78,8 @@ ventana minimizada
 El menú del engranaje incluye actualmente, entre otras opciones:
 
 - acceso al Drive clásico;
-- **Actualizar ArcadeCloud OS**, que recarga la interfaz completa;
-- **Acerca de / Actualizar**;
+- **Actualizar**, que recarga la interfaz completa;
+- **Acerca de**;
 - cierre de sesión.
 
 El panel **Acerca de / Actualizar** reutiliza el actualizador seguro existente de ArcadeCloud. No existe un segundo mecanismo de actualización para el SO.
@@ -531,7 +531,7 @@ El aviso ofrece:
 
 Una tarea multimedia activa bloquea el apagado.
 
-El apagado interactivo sólo se acepta durante la ventana válida de inactividad; no funciona como un `StopInstances` genérico para cualquier usuario autenticado.
+El apagado interactivo por inactividad sólo se acepta durante la ventana válida de inactividad. Adicionalmente, el perfil del superadmin ofrece un botón explícito de apagado de FastDrive que vuelve a pedir la contraseña actual, conserva los registros de tareas y solicita el stop de la EC2 fija sin permitir que el navegador elija un Instance ID.
 
 Configuración relevante:
 
@@ -551,7 +551,8 @@ Entre las piezas ya integradas o visibles se encuentran:
 - Mi nodo;
 - Centro de Tareas;
 - Terminal restringida a superadmin;
-- Acerca de / Actualizar;
+- Acerca de;
+- Linux XFCE (escritorio remoto autenticado);
 - reproductores/visores internos;
 - Bloc de notas / editor de texto donde corresponde.
 
@@ -561,7 +562,7 @@ No debe confundirse el shell operativo con integraciones que siguen siendo roadm
 
 Aún son futuras o están en evaluación, entre otras:
 
-- navegador Chromium remoto dentro de una ventana;
+- navegador remoto embebido dentro de una ventana del Web OS (Google Chrome ya está instalado dentro del escritorio XFCE);
 - Collabora / ONLYOFFICE;
 - OpenCut u otro editor de video completo;
 - editor de imagen avanzado;

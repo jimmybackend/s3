@@ -38,19 +38,28 @@ if ($request->method() === 'POST') {
     $postedCsrf = $request->postRawString('csrf');
     if ($postedCsrf === '' || !hash_equals($csrf, $postedCsrf)) {
         $error = 'Token CSRF inválido. Recarga la página e inténtalo otra vez.';
-    } elseif ($request->postString('action') !== 'start') {
-        $error = 'Acción no permitida.';
     } else {
-        try {
-            $result = $service->start($request->postRawString('current_password'));
-            $message = (string)($result['message'] ?? 'Orden enviada a AWS.');
-        } catch (AwsException $e) {
-            error_log('[FastDrive control] AWS start error: ' . $e->getMessage());
-            $error = ($e->getAwsErrorCode() ?: 'AWS') . ': '
-                . ($e->getAwsErrorMessage() ?: 'No se pudo encender FastDrive.');
-        } catch (Throwable $e) {
-            error_log('[FastDrive control] start error: ' . $e->getMessage());
-            $error = $e->getMessage();
+        $action = $request->postString('action');
+        if (!in_array($action, ['start', 'stop'], true)) {
+            $error = 'Acción no permitida.';
+        } else {
+            try {
+                $password = $request->postRawString('current_password');
+                $result = $action === 'start'
+                    ? $service->start($password)
+                    : $service->stop($password);
+                $message = (string)($result['message'] ?? 'Orden enviada a AWS.');
+            } catch (AwsException $e) {
+                error_log('[FastDrive control] AWS ' . $action . ' error: ' . $e->getMessage());
+                $fallback = $action === 'start'
+                    ? 'No se pudo encender FastDrive.'
+                    : 'No se pudo apagar FastDrive.';
+                $error = ($e->getAwsErrorCode() ?: 'AWS') . ': '
+                    . ($e->getAwsErrorMessage() ?: $fallback);
+            } catch (Throwable $e) {
+                error_log('[FastDrive control] ' . $action . ' error: ' . $e->getMessage());
+                $error = $e->getMessage();
+            }
         }
     }
 }
@@ -68,6 +77,7 @@ try {
 
 $state = is_array($status) ? (string)($status['state'] ?? 'unknown') : 'unknown';
 $startAllowed = $state === 'stopped';
+$stopAllowed = !$gatewayMode && $state === 'running';
 $gatewayWaiting = $gatewayMode && in_array($state, ['pending', 'running'], true);
 
 $escape = static fn (string $value): string => htmlspecialchars(
@@ -94,7 +104,7 @@ h1{margin-top:0}dl{display:grid;grid-template-columns:160px 1fr;gap:8px 16px}dt{
   <?php if ($gatewayMode): ?>
     <p class="note">FastDrive está apagado o todavía no responde. Sólo un superadmin autenticado puede autorizar su encendido.</p>
   <?php else: ?>
-    <p class="note">Este puente sólo puede consultar y encender la EC2 configurada como FastDrive. No acepta IDs enviados por el navegador.</p>
+    <p class="note">Este puente sólo controla la EC2 configurada como FastDrive. No acepta IDs enviados por el navegador. El apagado manual exige reautenticación y se bloquea si hay tareas o sesiones Office activas.</p>
   <?php endif; ?>
 
   <?php if ($message !== ''): ?><p class="ok"><?= $escape($message) ?></p><?php endif; ?>
@@ -122,11 +132,22 @@ h1{margin-top:0}dl{display:grid;grid-template-columns:160px 1fr;gap:8px 16px}dt{
         <input id="current_password" name="current_password" type="password" autocomplete="current-password" required>
         <button type="submit" onclick="return confirm('¿Autorizar el encendido de FastDrive?');">Encender FastDrive</button>
       </form>
-    <?php elseif ($state === 'running' || $state === 'pending'): ?>
-      <p><strong>FastDrive ya está encendido o iniciándose.</strong></p>
+    <?php elseif ($stopAllowed): ?>
+      <form method="post" autocomplete="off">
+        <input type="hidden" name="csrf" value="<?= $escape($csrf) ?>">
+        <input type="hidden" name="action" value="stop">
+        <label for="current_password_stop">Contraseña actual del superadmin</label>
+        <input id="current_password_stop" name="current_password" type="password" autocomplete="current-password" required>
+        <button type="submit" onclick="return confirm('¿Apagar FastDrive? La orden sólo continuará si no hay tareas ni sesiones Office activas.');">Apagar FastDrive</button>
+        <p class="note">No usa apagado forzado. Si hay trabajo activo, ArcadeCloud rechazará la orden.</p>
+      </form>
+    <?php elseif ($state === 'pending'): ?>
+      <p><strong>FastDrive se está iniciando.</strong></p>
+    <?php elseif ($state === 'stopping'): ?>
+      <p><strong>FastDrive se está apagando.</strong></p>
     <?php else: ?>
-      <button type="button" disabled>Encender FastDrive</button>
-      <p class="note">El botón sólo se habilita cuando AWS reporta la instancia como <code>stopped</code>.</p>
+      <button type="button" disabled>Control no disponible</button>
+      <p class="note">El control manual sólo se habilita en estados seguros de AWS.</p>
     <?php endif; ?>
   </div>
 </main>

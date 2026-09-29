@@ -23,9 +23,15 @@ fastDriveContract(str_contains($service, "getenv('ARCADECLOUD_FASTDRIVE_INSTANCE
 fastDriveContract(str_contains($service, 'SuperAdminReauthenticationService'), 'encendido reautentica superadmin');
 fastDriveContract(str_contains($service, '->verify($currentPassword)'), 'cada encendido exige contraseña y no reutiliza elevación temporal');
 fastDriveContract(str_contains($service, '->start($instanceId)'), 'servicio puede iniciar únicamente el target configurado');
-fastDriveContract(!str_contains($service, '->stop('), 'control dedicado no puede apagar instancias');
+fastDriveContract(str_contains($service, 'public function stop('), 'control dedicado expone apagado manual seguro');
+fastDriveContract(str_contains($service, '->stop($instanceId, false)'), 'apagado manual nunca usa Force');
+fastDriveContract(str_contains($service, 'ServerTaskActivityProbe'), 'apagado manual comprueba tareas activas');
+fastDriveContract(str_contains($service, 'OfficeSessionLeases'), 'apagado manual comprueba sesión Office activa');
+fastDriveContract(str_contains($service, 'OfficeDocumentSessions'), 'apagado manual comprueba documentos Office activos');
 fastDriveContract(!str_contains($endpoint, "postString('id')"), 'navegador no puede seleccionar un instance-id');
-fastDriveContract(str_contains($endpoint, "postString('action') !== 'start'"), 'endpoint rechaza acciones distintas de start');
+fastDriveContract(str_contains($endpoint, "['start', 'stop']"), 'endpoint limita acciones manuales a start/stop');
+fastDriveContract(str_contains($endpoint, '$service->stop($password)'), 'endpoint puede solicitar apagado seguro');
+fastDriveContract(str_contains($endpoint, 'Apagar FastDrive'), 'UI ofrece botón de apagado cuando la instancia está running');
 fastDriveContract(str_contains($managed, "'ARCADECLOUD_FASTDRIVE_INSTANCE_ID'"), 'runtime administrado permite instance id FastDrive');
 fastDriveContract(str_contains($managed, "'ARCADECLOUD_FASTDRIVE_REGION'"), 'runtime administrado permite región FastDrive');
 fastDriveContract(str_contains($helper, "'ARCADECLOUD_FASTDRIVE_INSTANCE_ID'"), 'helper privilegiado permite persistir instance id FastDrive');

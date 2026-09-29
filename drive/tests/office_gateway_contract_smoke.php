@@ -257,7 +257,7 @@ officeGatewayContract(
 officeGatewayContract(
     str_contains($node, "getenv('ARCADECLOUD_FASTDRIVE_INSTANCE_ID')")
     && str_contains($node, "getenv('ARCADECLOUD_FASTDRIVE_REGION')")
-    && str_contains($node, "!in_array($role, ['media-worker', 'combined'], true)"),
+    && str_contains($node, "!in_array(\$role, ['media-worker', 'combined'], true)"),
     'gateway Office reutiliza el target FastDrive administrado para tocar el mismo contador de inactividad'
 );
 

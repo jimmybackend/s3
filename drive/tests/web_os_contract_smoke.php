@@ -424,7 +424,9 @@ webOsContract($launcherMarkup !== '', 'lanzador inferior se puede inspeccionar')
 webOsContract(!str_contains($launcherMarkup, 'terminalWindow'), 'Terminal ya no aparece en el menú inferior izquierdo');
 webOsContract(str_contains($paths['shell'], '<strong>Terminal</strong>'), 'Terminal aparece dentro de Aplicaciones');
 webOsContract(str_contains($paths['shell'], '<strong>Linux XFCE</strong>'), 'Aplicaciones incluye acceso explícito al escritorio Linux');
-webOsContract(str_contains($paths['shell'], 'href="office-launch.php" target="_blank" rel="noopener" title="Abrir escritorio Linux remoto"'), 'Linux XFCE reutiliza el gateway autenticado noVNC');
+webOsContract(str_contains($paths['shell'], 'href="office-launch.php" target="_blank" rel="noopener" title="Abrir escritorio Linux remoto por noVNC"'), 'Linux XFCE reutiliza el gateway autenticado noVNC');
+webOsContract(str_contains($paths['shell'], '<strong>Guacamole RDP</strong>'), 'Aplicaciones incluye acceso explícito a Guacamole RDP');
+webOsContract(str_contains($paths['shell'], 'href="office-launch.php?target=guacamole"'), 'Guacamole usa el launcher autenticado de Office');
 
 webOsContract(str_contains($paths['federation_portal_controller'], "queryString('embed')"), 'portal soporta modo embebido desde Controller');
 webOsContract(str_contains($paths['federation_portal_renderer'], 'federation-portal-embedded'), 'portal embebido elimina chrome duplicado');

@@ -192,8 +192,10 @@ Las variables `AWS_CONTROL_*` permiten credenciales separadas para operaciones d
 
 ## Control manual de FastDrive desde el nodo principal
 
-El nodo principal puede exponer un puente administrativo que **sólo consulta y enciende** una EC2
-FastDrive fija. El navegador no envía el instance ID y el endpoint no implementa StopInstances.
+El nodo principal puede exponer un puente administrativo que consulta, enciende y permite un
+**apagado manual seguro** de una EC2 FastDrive fija. El navegador nunca envía el instance ID.
+El apagado sólo está disponible para superadmin, vuelve a exigir la contraseña actual, no usa
+`Force` y se rechaza si existen tareas o sesiones Office activas.
 
 Configura únicamente en el EC2 principal:
 
@@ -212,11 +214,13 @@ Permisos mínimos recomendados para las credenciales de control:
 ```text
 ec2:DescribeInstances
 ec2:StartInstances
+ec2:StopInstances
 ```
 
-La política IAM debe limitar `ec2:StartInstances` al ARN de la instancia FastDrive concreta. El
-endpoint no depende de abrir MySQL a hosts adicionales; la DB sólo interviene para validar la sesión
-y la contraseña del superadmin.
+La política IAM debe limitar tanto `ec2:StartInstances` como `ec2:StopInstances` al ARN de la
+instancia FastDrive concreta. Antes de detenerla, ArcadeCloud comprueba las tareas conocidas del
+servidor y las sesiones Office activas. El endpoint no depende de abrir MySQL a hosts adicionales;
+la DB interviene para validar la sesión, la contraseña y las protecciones de trabajo activo.
 
 ## Secretos existentes
 

@@ -86,6 +86,8 @@ El acceso temporal por IP utilizado durante la prueba física no forma parte del
 
 XFCE puede abrirse directamente desde **Aplicaciones -> Linux XFCE** en ArcadeCloud OS. Ese acceso reutiliza el mismo launcher autenticado de `office.esforzados.com`; no publica VNC.
 
+ArcadeCloud OS también ofrece **Aplicaciones -> Guacamole RDP**. Ambos accesos pasan por `office-launch.php`: Linux XFCE conserva noVNC y Guacamole RDP abre `/guacamole/` con audio y micrófono.
+
 LibreOffice ya no solicita una segunda contraseña VNC. TigerVNC usa `SecurityTypes None`, pero permanece encerrado en localhost y el acceso público a `vnc.html`/`websockify` está protegido por la sesión temporal de ArcadeCloud mediante `auth_request`. Entrar directamente a esas rutas sin una sesión Office activa devuelve 401.
 
 ## Workspace

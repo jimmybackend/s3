@@ -44,6 +44,10 @@ $officeDocumentSessionId = strtolower(trim((string)$session->get('office_documen
 $officeDocumentToken = strtolower(trim((string)$session->get('office_document_token', '')));
 $officeDocumentName = trim((string)$session->get('office_document_name', ''));
 $officeDocumentReady = (bool)$session->get('office_document_ready', false);
+$officeDesktopTarget = strtolower(trim((string)$session->get('office_desktop_target', 'novnc')));
+if (!in_array($officeDesktopTarget, ['novnc', 'guacamole'], true)) {
+    $officeDesktopTarget = 'novnc';
+}
 
 if ($officeUserId > 0 && !preg_match('/^[a-f0-9]{64}$/', $officeSessionKey)) {
     $officeSessionKey = bin2hex(random_bytes(32));
@@ -144,6 +148,12 @@ if ($action === 'activity' || $action === 'idle') {
 }
 
 $launch = is_scalar($_GET['launch'] ?? null) ? strtolower(trim((string)$_GET['launch'])) : '';
+$requestedDesktopTarget = is_scalar($_GET['target'] ?? null)
+    ? strtolower(trim((string)$_GET['target']))
+    : 'novnc';
+if (!in_array($requestedDesktopTarget, ['novnc', 'guacamole'], true)) {
+    $requestedDesktopTarget = 'novnc';
+}
 if ($launch !== '') {
     try {
         $launchContext = $office->consumeLaunchContext($launch);
@@ -175,6 +185,8 @@ if ($launch !== '') {
             $officeFileId = $consumedFileId;
             $session->set('office_user_id', $officeUserId);
             $session->set('office_file_id', $officeFileId);
+            $officeDesktopTarget = $requestedDesktopTarget;
+            $session->set('office_desktop_target', $officeDesktopTarget);
 
             if (
                 !$existingDocumentReady
@@ -406,9 +418,9 @@ button{width:100%;margin-top:12px;padding:13px;border:1px solid var(--accent);bo
   </div>
   <?php endif; ?>
   <iframe id="officeFrame"
-          src="/vnc.html?path=websockify&amp;resize=remote&amp;autoconnect=true"
-          title="ArcadeCloud Office"
-          allow="clipboard-read; clipboard-write"></iframe>
+          src="<?= $officeDesktopTarget === 'guacamole' ? '/guacamole/' : '/vnc.html?path=websockify&amp;resize=remote&amp;autoconnect=true' ?>"
+          title="<?= $officeDesktopTarget === 'guacamole' ? 'ArcadeCloud Guacamole RDP' : 'ArcadeCloud Office' ?>"
+          allow="microphone; autoplay; clipboard-read; clipboard-write"></iframe>
 </div>
 <div class="idle-warning" id="officeIdleWarning" hidden>
   <div class="idle-card">

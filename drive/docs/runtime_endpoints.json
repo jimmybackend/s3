@@ -12,6 +12,7 @@
     "drive/descargar_archivo.php",
     "drive/ec2.php",
     "drive/editor.php",
+    "drive/fastdrive-power.php",
     "drive/federationcloud/index.php",
     "drive/federationcloud/moderation.php",
     "drive/federationcloud/portal.php",
@@ -116,6 +117,7 @@
         "drive/eliminar_carpeta.php",
         "drive/encriptar_archivo.php",
         "drive/fastdrive-control.php",
+        "drive/fastdrive-power.php",
         "drive/fastdrive-wake.php",
         "drive/federationcloud/access-request.php",
         "drive/federationcloud/access-status.php",
@@ -607,10 +609,21 @@
     },
     {
       "path": "drive/fastdrive-control.php",
-      "size": 6351,
+      "size": 7652,
       "active": false,
       "references": [
         "drive/tests/fastdrive_control_contract_smoke.php"
+      ]
+    },
+    {
+      "path": "drive/fastdrive-power.php",
+      "size": 2101,
+      "active": true,
+      "references": [
+        "drive/so.php",
+        "drive/tests/fastdrive_control_contract_smoke.php",
+        "drive/tests/web_os_contract_smoke.php",
+        "drive/js/so-power.js"
       ]
     },
     {
@@ -1222,7 +1235,8 @@
       "active": true,
       "references": [
         "drive/so.php",
-        "drive/tests/office_gateway_contract_smoke.php"
+        "drive/tests/office_gateway_contract_smoke.php",
+        "drive/tests/web_os_contract_smoke.php"
       ]
     },
     {
@@ -1432,7 +1446,7 @@
     },
     {
       "path": "drive/so.php",
-      "size": 98020,
+      "size": 100927,
       "active": true,
       "references": [
         "drive/s3.php",
@@ -1500,7 +1514,7 @@
     },
     {
       "path": "drive/src/Admin/FastDriveControlService.php",
-      "size": 5145,
+      "size": 12377,
       "active": false,
       "references": [
         "drive/tests/fastdrive_control_contract_smoke.php"
@@ -3540,7 +3554,7 @@
     },
     {
       "path": "drive/tests/fastdrive_control_contract_smoke.php",
-      "size": 4757,
+      "size": 6305,
       "active": false,
       "references": []
     },
@@ -3780,13 +3794,13 @@
     },
     {
       "path": "drive/tests/web_os_contract_smoke.php",
-      "size": 42285,
+      "size": 44110,
       "active": false,
       "references": []
     },
     {
       "path": "drive/tests/workstation_phase1_contract_smoke.php",
-      "size": 4847,
+      "size": 5528,
       "active": false,
       "references": []
     },

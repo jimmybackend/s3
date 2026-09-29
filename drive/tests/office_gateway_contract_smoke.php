@@ -65,6 +65,13 @@ officeGatewayContract(
 );
 
 officeGatewayContract(
+    str_contains($gateway, "header('Location: /guacamole/#/', true, 302)")
+    && str_contains($gateway, "$officeDesktopTarget === 'guacamole'")
+    && str_contains($gateway, "$officeFileId === 0"),
+    'launcher Guacamole redirige al frontend nativo /guacamole/#/ cuando la sesión ya está lista'
+);
+
+officeGatewayContract(
     str_contains($gatewayService, 'FastDriveWakeService')
     && str_contains($gatewayService, 'authorizeAndStart')
     && str_contains($gateway, 'current_password'),

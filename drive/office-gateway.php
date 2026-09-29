@@ -384,6 +384,15 @@ if ($officeUserId <= 0) {
     $waiting = true;
 }
 
+if (
+    $mode === 'ready'
+    && $officeDesktopTarget === 'guacamole'
+    && $officeFileId === 0
+) {
+    header('Location: /guacamole/#/', true, 302);
+    exit;
+}
+
 header("Content-Security-Policy: default-src 'self'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src 'self' data: blob:; frame-src 'self'; connect-src 'self' https: wss:; base-uri 'none'; form-action 'self'; frame-ancestors 'self'");
 ?><!doctype html>
 <html lang="es">

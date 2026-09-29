@@ -12,6 +12,8 @@ Amazon Linux 2023 host
     -> Ubuntu 24.04
       -> XFCE
       -> LibreOffice
+      -> Google Chrome
+      -> Git + AWS CLI v2
       -> TigerVNC (sólo localhost dentro del contenedor)
       -> noVNC/websockify
   -> 127.0.0.1:6080 únicamente
@@ -33,13 +35,15 @@ Se confirmó:
 - noVNC funcionó correctamente detrás de Nginx manteniendo el binding Docker en `127.0.0.1:6080`.
 - El contenedor se validó con límite de 5 GiB RAM, 3 CPU y `--shm-size=512m`.
 - El escritorio XFCE quedó accesible desde navegador y el worker multimedia permaneció activo.
+- La imagen Workstation incluye Google Chrome, Git y AWS CLI v2 para uso de desarrollo.
+- `/home/arcade` se monta desde `/var/lib/arcadecloud-office/home/arcade`, por lo que perfil de Chrome, configuración Git y `Projects/` sobreviven reconstrucciones del contenedor y reinicios de la EC2.
 
 ## Aislamiento
 
 - El puerto VNC 5900/5901 no se publica en el host.
 - noVNC se publica exclusivamente en `127.0.0.1:6080`.
 - El contenedor no recibe el socket Docker.
-- El contenedor no recibe credenciales AWS.
+- El contenedor no recibe credenciales AWS automáticamente. AWS CLI está instalado, pero la autorización S3 debe configurarse de forma explícita y con privilegios mínimos.
 - El contenedor corre como usuario no-root UID/GID 10001 y con capabilities eliminadas.
 - El workspace está separado de `/var/lib/arcadecloud-media`.
 - El instalador y desinstalador no modifican `arcadecloud-media-worker.service`.
@@ -73,6 +77,8 @@ navegador
 ```
 
 El acceso temporal por IP utilizado durante la prueba física no forma parte del diseño final.
+
+XFCE puede abrirse directamente desde **Aplicaciones -> Linux XFCE** en ArcadeCloud OS. Ese acceso reutiliza el mismo launcher autenticado de `office.esforzados.com`; no publica VNC.
 
 LibreOffice ya no solicita una segunda contraseña VNC. TigerVNC usa `SecurityTypes None`, pero permanece encerrado en localhost y el acceso público a `vnc.html`/`websockify` está protegido por la sesión temporal de ArcadeCloud mediante `auth_request`. Entrar directamente a esas rutas sin una sesión Office activa devuelve 401.
 
@@ -396,3 +402,23 @@ Si `FileS3` conserva `Found=1` pero la key física ya no existe, Office no abre 
 Este caso suele indicar que MySQL y S3 quedaron desalineados después de mover/copiar objetos fuera del flujo normal o antes de completar una sincronización. La reparación correcta es usar la sincronización S3 existente de ArcadeCloud; Office no recorre ni adivina keys del bucket.
 
 Las sesiones documentales `failed` se consideran cerradas para limpieza y pueden purgarse después del periodo de retención local.
+
+
+## Workstation personal de desarrollo
+
+La Workstation también puede usarse como escritorio Linux personal sin abrir un documento Office concreto.
+
+Persistencia:
+
+```text
+/var/lib/arcadecloud-office/home/arcade
+  -> /home/arcade
+      -> Projects/
+      -> Downloads/
+      -> .config/   (incluido perfil de Chrome)
+      -> .gitconfig
+```
+
+El código de los repositorios debe trabajar sobre el filesystem local/EBS y usar Git para versionado. S3 continúa siendo almacenamiento de objetos y respaldo; no se trata como filesystem POSIX para un checkout Git.
+
+El apagado automático por inactividad permanece activo. El superadmin también dispone de un botón de apagado explícito en el perfil del Web OS. Ese control conserva los registros/colas existentes y solicita un StopInstances normal a AWS; una tarea que estuviera ejecutándose puede requerir reintento al volver a arrancar.

@@ -294,6 +294,20 @@ a{text-decoration:none;color:inherit}
 .os-launcher-profile img,.os-launcher-profile .os-avatar{width:42px;height:42px;border-radius:50%;object-fit:cover;flex:0 0 42px}
 .os-launcher-header strong,.os-launcher-header span{display:block}
 .os-launcher-header span{font-size:.72rem;color:var(--os-soft);margin-top:3px}
+.os-launcher .os-launcher-power{
+  width:38px;height:38px;flex:0 0 38px;margin-left:auto;padding:0;border:1px solid rgba(255,107,107,.32);
+  border-radius:9px;background:rgba(255,107,107,.08);color:#ff9b9b;display:inline-flex;align-items:center;
+  justify-content:center;cursor:pointer
+}
+.os-launcher .os-launcher-power:hover{background:rgba(255,107,107,.16);border-color:#ff8b8b;color:#ffd0d0}
+.os-power-modal{background:#0d1b2c;color:var(--os-text);border:1px solid var(--os-border)}
+.os-power-modal .modal-header,.os-power-modal .modal-footer{border-color:rgba(116,196,255,.16)}
+.os-power-modal .close{color:var(--os-text);text-shadow:none}
+.os-power-modal .form-control{background:#091523;color:var(--os-text);border-color:rgba(116,196,255,.22)}
+.os-power-warning{padding:10px;border-radius:8px;background:rgba(255,107,107,.08);border:1px solid rgba(255,107,107,.2);color:#ffd2d2}
+.os-power-message{min-height:22px;margin-top:10px;font-size:.82rem}
+.os-power-message.is-danger,.os-power-message.is-warning{color:#ffb1b1}
+.os-power-message.is-success{color:var(--os-ok)}
 .os-launcher button,.os-launcher a{
   width:100%;border:0;background:transparent;color:var(--os-text);padding:10px;border-radius:8px;text-align:left;display:flex;align-items:center;gap:9px;cursor:pointer
 }

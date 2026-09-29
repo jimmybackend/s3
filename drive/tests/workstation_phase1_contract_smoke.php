@@ -11,6 +11,8 @@ function workstationContract(bool $condition, string $message): void {
 }
 $dockerfile = (string)file_get_contents($repo . '/drive/docker/workstation/Dockerfile');
 $entry = (string)file_get_contents($repo . '/drive/docker/workstation/entrypoint.sh');
+$chromeLauncher = (string)file_get_contents($repo . '/drive/docker/workstation/arcadecloud-chrome');
+$chromeHelper = (string)file_get_contents($repo . '/drive/docker/workstation/arcadecloud-chrome-helper.desktop');
 $install = (string)file_get_contents($repo . '/drive/bin/install_workstation_node.sh');
 $uninstall = (string)file_get_contents($repo . '/drive/bin/uninstall_workstation_node.sh');
 $health = (string)file_get_contents($repo . '/drive/bin/workstation_health.php');
@@ -19,6 +21,11 @@ workstationContract(str_contains($dockerfile, 'FROM ubuntu:24.04'), 'runtime gr√
 workstationContract(str_contains($dockerfile, 'libreoffice'), 'imagen instala LibreOffice');
 workstationContract(str_contains($dockerfile, 'xfce4'), 'imagen instala escritorio XFCE');
 workstationContract(str_contains($dockerfile, 'google-chrome-stable'), 'imagen instala Google Chrome');
+workstationContract(str_contains($dockerfile, 'arcadecloud-chrome-helper.desktop'), 'imagen registra Chrome como helper XFCE');
+workstationContract(str_contains($entry, 'WebBrowser=arcadecloud-chrome'), 'XFCE usa Chrome desde el icono de navegador');
+workstationContract(str_contains($chromeLauncher, 'SingletonLock'), 'launcher limpia locks obsoletos de Chrome');
+workstationContract(str_contains($chromeLauncher, '--disable-dev-shm-usage'), 'launcher aplica ajuste de shared memory');
+workstationContract(str_contains($chromeHelper, 'X-XFCE-Category=WebBrowser'), 'helper declara categor√≠a navegador XFCE');
 workstationContract(str_contains($dockerfile, 'git'), 'imagen instala Git para repositorios');
 workstationContract(str_contains($dockerfile, 'awscli.amazonaws.com'), 'imagen instala AWS CLI v2');
 workstationContract(str_contains($dockerfile, 'novnc') && str_contains($dockerfile, 'tigervnc'), 'imagen incluye noVNC y TigerVNC');

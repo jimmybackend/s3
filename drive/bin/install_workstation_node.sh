@@ -97,6 +97,10 @@ docker network inspect "$OFFICE_NETWORK" >/dev/null 2>&1 \
 
 docker build -t "$IMAGE" "$DRIVE_ROOT/docker/workstation"
 
+if [[ -x "$DRIVE_ROOT/bin/install_guacamole_node.sh" ]]; then
+  bash "$DRIVE_ROOT/bin/install_guacamole_node.sh"
+fi
+
 cat > "$SERVICE" <<EOF
 [Unit]
 Description=ArcadeCloud Remote Workstation Phase 1

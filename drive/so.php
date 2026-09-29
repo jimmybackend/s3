@@ -175,6 +175,15 @@ if ($isSuperAdmin) {
     }
 }
 
+$fastDrivePowerCsrf = '';
+if ($isSuperAdmin) {
+    $fastDrivePowerCsrf = (string)$session->get('fastdrive_control_csrf', '');
+    if (!preg_match('/\A[a-f0-9]{64}\z/', $fastDrivePowerCsrf)) {
+        $fastDrivePowerCsrf = bin2hex(random_bytes(32));
+        $session->set('fastdrive_control_csrf', $fastDrivePowerCsrf);
+    }
+}
+
 $textExtensions = ['txt','md','markdown','html','htm','css','js','json','csv','sql','php','py','srt','vtt','log','xml','yaml','yml'];
 $imageExtensions = ['jpg','jpeg','png','gif','webp','bmp','avif','tif','tiff'];
 $audioExtensions = ['mp3','wav','ogg','opus','m4a','aac','flac'];
@@ -554,6 +563,7 @@ $currentFolderName = $currentIsRoot
           <?php endif; ?>
           <a class="os-app-card is-ready" href="s3.php"><i class="fas fa-hard-drive"></i><strong>Drive clásico</strong><span>Disponible</span></a>
           <a class="os-app-card is-ready" href="office-launch.php" target="_blank" rel="noopener"><i class="fas fa-file-word"></i><strong>Office</strong><span>Disponible</span></a>
+          <a class="os-app-card is-ready" href="office-launch.php" target="_blank" rel="noopener" title="Abrir escritorio Linux remoto"><i class="fab fa-linux"></i><strong>Linux XFCE</strong><span>Escritorio remoto</span></a>
           <button type="button" class="os-app-card" disabled><i class="fas fa-pen-ruler"></i><strong>Diagramas</strong><span>Próximamente</span></button>
           <button type="button" class="os-app-card" disabled><i class="fas fa-image"></i><strong>Imagen</strong><span>Próximamente</span></button>
           <button type="button" class="os-app-card" disabled><i class="fas fa-wave-square"></i><strong>Audio</strong><span>Próximamente</span></button>
@@ -1757,16 +1767,55 @@ Escribe help o usa uno de los botones disponibles.</pre>
           <strong><?= $e($userAlias) ?></strong>
           <span>ArcadeCloud OS</span>
         </div>
+        <?php if ($isSuperAdmin): ?>
+        <button type="button"
+                class="os-launcher-power"
+                data-fastdrive-force-stop
+                title="Apagar FastDrive"
+                aria-label="Apagar FastDrive">
+          <i class="fas fa-power-off"></i>
+        </button>
+        <?php endif; ?>
       </div>
     </div>
     <button type="button" data-window-open="nodeWindow"><i class="fas fa-server"></i> Mi nodo</button>
     <button type="button" data-window-open="explorerWindow"><i class="fas fa-folder-open"></i> Mis datos</button>
     <button type="button" data-window-open="appsWindow"><i class="fas fa-shapes"></i> Aplicaciones</button>
     <a href="s3.php"><i class="fas fa-hard-drive"></i> Drive clásico</a>
-    <button type="button" data-os-reload><i class="fas fa-rotate-right"></i> Actualizar ArcadeCloud OS</button>
-    <button type="button" data-os-about data-toggle="modal" data-target="#modalAcercaArcadeCloud"><i class="fas fa-circle-info"></i> Acerca de / Actualizar</button>
+    <button type="button" data-os-reload><i class="fas fa-rotate-right"></i> Actualizar</button>
+    <button type="button" data-os-about data-toggle="modal" data-target="#modalAcercaArcadeCloud"><i class="fas fa-circle-info"></i> Acerca de</button>
     <a href="logout.php" class="is-danger"><i class="fas fa-right-from-bracket"></i> Cerrar sesión</a>
   </div>
+
+  <?php if ($isSuperAdmin): ?>
+  <div class="modal fade" id="fastDrivePowerModal" tabindex="-1" role="dialog" aria-labelledby="fastDrivePowerTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content os-power-modal">
+        <div class="modal-header">
+          <h5 class="modal-title" id="fastDrivePowerTitle"><i class="fas fa-power-off mr-2"></i>Apagar FastDrive</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar"><span aria-hidden="true">&times;</span></button>
+        </div>
+        <div class="modal-body">
+          <p>Esta orden apaga la EC2 grande aunque ArcadeCloud detecte tareas o una sesión gráfica activa.</p>
+          <p class="os-power-warning"><strong>Los registros y colas no se eliminan.</strong> Una tarea que esté ejecutándose se interrumpe y puede necesitar reintento después del siguiente arranque.</p>
+          <label for="fastDrivePowerPassword">Contraseña actual del superadmin</label>
+          <input type="password"
+                 class="form-control"
+                 id="fastDrivePowerPassword"
+                 autocomplete="current-password"
+                 placeholder="Contraseña">
+          <div id="fastDrivePowerMessage" class="os-power-message" aria-live="polite"></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-danger" data-fastdrive-power-accept>
+            <i class="fas fa-power-off mr-1"></i>Apagar ahora
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <?php endif; ?>
 
   <div class="os-task-context" id="osTaskContext" hidden>
     <div class="os-context-name" id="osTaskContextName">Ventana</div>
@@ -1803,6 +1852,10 @@ Escribe help o usa uno de los botones disponibles.</pre>
     window.ARCADECLOUD_UPDATER = {
       csrf: <?= json_encode($serverAdminCsrf, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>
     };
+    window.ARCADECLOUD_FASTDRIVE_POWER = {
+      endpoint: 'fastdrive-power.php',
+      csrf: <?= json_encode($fastDrivePowerCsrf, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>
+    };
     window.ARCADECLOUD_OS_NODE = {
       endpoint: 'node-status.php',
       csrf: <?= json_encode($serverAdminCsrf, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>,
@@ -1832,6 +1885,9 @@ Escribe help o usa uno de los botones disponibles.</pre>
   <script src="js/upload-center.js?v=<?= (int)filemtime(__DIR__ . '/js/upload-center.js') ?>"></script>
   <script data-drive-updater src="js/arcadecloud-updater.js?v=<?= (int)filemtime(__DIR__ . '/js/arcadecloud-updater.js') ?>"></script>
   <script src="js/compute-node-idle.js?v=<?= (int)filemtime(__DIR__ . '/js/compute-node-idle.js') ?>"></script>
+  <?php if ($isSuperAdmin): ?>
+  <script src="js/so-power.js?v=<?= (int)filemtime(__DIR__ . '/js/so-power.js') ?>"></script>
+  <?php endif; ?>
   <script src="js/file-security.js?v=<?= (int)filemtime(__DIR__ . '/js/file-security.js') ?>"></script>
   <script src="js/so-search.js?v=<?= (int)filemtime(__DIR__ . '/js/so-search.js') ?>"></script>
   <script src="js/arcadelink-share.js?v=<?= (int)filemtime(__DIR__ . '/js/arcadelink-share.js') ?>"></script>

@@ -5,6 +5,7 @@ namespace ArcadeCloud\Drive\Admin;
 
 use ArcadeCloud\Drive\Core\DriveApplication;
 use ArcadeCloud\Drive\Security\SuperAdminReauthenticationService;
+use ArcadeCloud\Drive\System\Ec2InstanceIdentityService;
 use RuntimeException;
 use Throwable;
 
@@ -211,13 +212,29 @@ final class FastDriveControlService
         $instanceId = trim((string)(getenv('ARCADECLOUD_FASTDRIVE_INSTANCE_ID') ?: ''));
         $region = trim((string)(getenv('ARCADECLOUD_FASTDRIVE_REGION') ?: ''));
 
+        // En el propio FastDrive permitimos autoidentificación por IMDSv2. En
+        // nodos web/gateway seguimos exigiendo el Instance ID explícito para no
+        // correr el riesgo de apagar la EC2 equivocada.
+        $role = strtolower(trim((string)(getenv('ARCADECLOUD_NODE_ROLE') ?: 'web')));
+        if (
+            $instanceId === ''
+            && in_array($role, ['media-worker', 'combined'], true)
+        ) {
+            $identity = (new Ec2InstanceIdentityService())->current();
+            $instanceId = trim((string)($identity['instance_id'] ?? ''));
+            if ($region === '') {
+                $region = trim((string)($identity['region'] ?? ''));
+            }
+        }
+
         if ($instanceId === '') {
             throw new RuntimeException(
-                'Control FastDrive no configurado: falta ARCADECLOUD_FASTDRIVE_INSTANCE_ID en este nodo.'
+                'Control FastDrive no configurado: falta un Instance ID explícito '
+                . 'y este nodo no pudo autoidentificarse por IMDSv2.'
             );
         }
         if (!preg_match('/^i-[0-9a-f]{8,17}$/i', $instanceId)) {
-            throw new RuntimeException('ARCADECLOUD_FASTDRIVE_INSTANCE_ID no contiene un ID EC2 válido.');
+            throw new RuntimeException('El Instance ID de FastDrive no es válido.');
         }
         if ($region === '') {
             $region = \Config::getRegion();

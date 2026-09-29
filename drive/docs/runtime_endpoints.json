@@ -1514,7 +1514,7 @@
     },
     {
       "path": "drive/src/Admin/FastDriveControlService.php",
-      "size": 12377,
+      "size": 13162,
       "active": false,
       "references": [
         "drive/tests/fastdrive_control_contract_smoke.php"
@@ -2954,7 +2954,7 @@
     },
     {
       "path": "drive/src/Media/MediaWorkerNodeService.php",
-      "size": 22366,
+      "size": 23322,
       "active": false,
       "references": [
         "drive/tests/media_processing_contract_smoke.php",
@@ -3307,6 +3307,15 @@
       ]
     },
     {
+      "path": "drive/src/System/Ec2InstanceIdentityService.php",
+      "size": 3033,
+      "active": false,
+      "references": [
+        "drive/tests/fastdrive_control_contract_smoke.php",
+        "drive/tests/media_processing_contract_smoke.php"
+      ]
+    },
+    {
       "path": "drive/src/System/NodeCapabilityService.php",
       "size": 8545,
       "active": false,
@@ -3554,7 +3563,7 @@
     },
     {
       "path": "drive/tests/fastdrive_control_contract_smoke.php",
-      "size": 6305,
+      "size": 6886,
       "active": false,
       "references": []
     },
@@ -3686,7 +3695,7 @@
     },
     {
       "path": "drive/tests/media_processing_contract_smoke.php",
-      "size": 16040,
+      "size": 16758,
       "active": false,
       "references": []
     },

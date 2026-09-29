@@ -8,8 +8,14 @@ VNC_DEPTH="${VNC_DEPTH:-24}"
 DISPLAY=":${DISPLAY_NUMBER}"
 export DISPLAY
 
-mkdir -p "$HOME/.vnc" /workspace
+mkdir -p "$HOME/.vnc" "$HOME/.config/xfce4" /workspace
 chmod 700 "$HOME/.vnc"
+
+# El icono de navegador de XFCE usa el helper WebBrowser. Lo apuntamos a
+# ArcadeCloud Chrome para que el usuario no tenga que abrir terminal.
+cat > "$HOME/.config/xfce4/helpers.rc" <<'EOF'
+WebBrowser=arcadecloud-chrome
+EOF
 
 cat > "$HOME/.vnc/xstartup" <<'EOF'
 #!/bin/sh

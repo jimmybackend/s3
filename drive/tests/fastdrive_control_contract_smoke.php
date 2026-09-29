@@ -19,8 +19,13 @@ $gatewayInstaller = (string)file_get_contents($root . '/bin/install_fastdrive_ga
 $wakeService = (string)file_get_contents($root . '/src/Admin/FastDriveWakeService.php');
 $wakeEndpoint = (string)file_get_contents($root . '/fastdrive-wake.php');
 $authRepository = (string)file_get_contents($root . '/src/Security/AuthenticationRepository.php');
+$identity = (string)file_get_contents($root . '/src/System/Ec2InstanceIdentityService.php');
 
 fastDriveContract(str_contains($service, "getenv('ARCADECLOUD_FASTDRIVE_INSTANCE_ID')"), 'target FastDrive sale de configuración del servidor');
+fastDriveContract(str_contains($service, 'Ec2InstanceIdentityService'), 'FastDrive local puede autoidentificarse por IMDSv2');
+fastDriveContract(str_contains($service, "['media-worker', 'combined']"), 'fallback IMDS no se activa en gateway web');
+fastDriveContract(str_contains($identity, '/meta-data/instance-id'), 'servicio de identidad obtiene Instance ID local');
+fastDriveContract(str_contains($identity, 'X-aws-ec2-metadata-token-ttl-seconds'), 'servicio de identidad usa IMDSv2');
 fastDriveContract(str_contains($service, 'SuperAdminReauthenticationService'), 'encendido reautentica superadmin');
 fastDriveContract(str_contains($service, '->verify($currentPassword)'), 'cada encendido exige contraseña y no reutiliza elevación temporal');
 fastDriveContract(str_contains($service, '->start($instanceId)'), 'servicio puede iniciar únicamente el target configurado');

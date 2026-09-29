@@ -29,6 +29,7 @@ $locator = (string)file_get_contents($repo . '/drive/src/Aws/FileRecordLocator.p
 $generated = (string)file_get_contents($repo . '/drive/src/Aws/GeneratedFileRepository.php');
 $installer = (string)file_get_contents($repo . '/drive/bin/install_arcadecloud_server.sh');
 $mainInstaller = (string)file_get_contents($repo . '/drive/bin/install_arcadecloud.sh');
+$identity = (string)file_get_contents($repo . '/drive/src/System/Ec2InstanceIdentityService.php');
 
 mediaContract(str_contains($service, 'MAX_SOURCE_BYTES = 8 * 1024 * 1024 * 1024'), 'límite de origen fijado en 8 GB');
 mediaContract(!str_contains($service, 'MIN_SOURCE_BYTES'), 'no existe tamaño mínimo para procesar');
@@ -46,6 +47,11 @@ mediaContract(str_contains($js, "jQuery('#modalMediaSplit').modal('show')"), 'bo
 mediaContract(substr_count($block, 'data-bytes="<?= (int)$tamano ?>"') >= 3, 'acciones multimedia publican tamaño del archivo');
 mediaContract(str_contains($service, 'authorize_node_start'), 'backend exige autorización explícita para encendido bajo demanda');
 mediaContract(str_contains($node, 'ARCADECLOUD_MEDIA_WORKER_INSTANCE_ID'), 'nodo EC2 se limita a una instancia configurada');
+mediaContract(str_contains($node, 'Ec2InstanceIdentityService'), 'nodo grande puede autoidentificarse por IMDSv2');
+mediaContract(str_contains($node, "['media-worker', 'combined']"), 'autoidentificación sólo aplica a roles de cómputo');
+mediaContract(str_contains($identity, '/meta-data/instance-id'), 'identidad EC2 obtiene Instance ID por IMDSv2');
+mediaContract(str_contains($identity, '/dynamic/instance-identity/document'), 'identidad EC2 obtiene región desde documento firmado por metadata');
+mediaContract(str_contains($identity, 'X-aws-ec2-metadata-token-ttl-seconds'), 'identidad EC2 exige token IMDSv2');
 mediaContract(str_contains($node, 'ARCADECLOUD_MEDIA_WORKER_HOURLY_USD'), 'encendido pagado requiere tarifa de referencia');
 mediaContract(str_contains($node, '->start($this->instanceId)'), 'servicio puede encender la EC2 configurada');
 mediaContract(str_contains($node, '->stop($this->instanceId, false)'), 'servicio puede apagar la EC2 tras inactividad');

@@ -34,6 +34,8 @@ $paths = [
     'update_controller' => $root . '/src/Http/Controller/ArcadeCloudUpdateController.php',
     'compute_idle_js' => $root . '/js/compute-node-idle.js',
     'compute_idle_css' => $root . '/css/compute-node-idle.css',
+    'power_js' => $root . '/js/so-power.js',
+    'power_endpoint' => $root . '/fastdrive-power.php',
     'media_node' => $root . '/src/Media/MediaWorkerNodeService.php',
     'media_controller' => $root . '/src/Http/Controller/MediaProcessingController.php',
     'node_js' => $root . '/js/so-node.js',
@@ -167,8 +169,11 @@ webOsContract(str_contains($paths['js'], 'showTaskContext('), 'barra de tareas a
 webOsContract(str_contains($paths['js'], "ext === 'pdf' ? 'min(820px, 72vw)'"), 'PDF abre con tamaño inicial más compacto');
 webOsContract(str_contains($paths['css'], 'flex:0 0 auto'), 'controles de ventana no se encogen fuera de vista');
 webOsContract(str_contains($paths['shell'], 'data-os-reload'), 'engranaje ofrece recargar ArcadeCloud OS');
-webOsContract(str_contains($paths['js'], 'this.window.location.reload()'), 'Actualizar ArcadeCloud OS hace recarga completa');
-webOsContract(str_contains($paths['shell'], 'data-os-about'), 'engranaje muestra Acerca de / Actualizar');
+webOsContract(str_contains($paths['shell'], '> Actualizar</button>'), 'menú inferior usa etiqueta breve Actualizar');
+webOsContract(!str_contains($paths['shell'], 'Actualizar ArcadeCloud OS</button>'), 'menú inferior no repite ArcadeCloud OS en Actualizar');
+webOsContract(str_contains($paths['js'], 'this.window.location.reload()'), 'Actualizar hace recarga completa');
+webOsContract(str_contains($paths['shell'], 'data-os-about'), 'engranaje muestra Acerca de');
+webOsContract(!str_contains($paths['shell'], 'Acerca de / Actualizar</button>'), 'Acerca de no se mezcla con la acción Actualizar');
 webOsContract(str_contains($paths['shell'], 'id="modalAcercaArcadeCloud"'), 'Web OS incluye diálogo Acerca de');
 webOsContract(str_contains($paths['shell'], 'js/arcadecloud-updater.js'), 'Acerca de del Web OS reutiliza actualizador existente');
 webOsContract(str_contains($paths['shell'], 'ARCADECLOUD_UPDATER'), 'Web OS entrega configuración del actualizador al superadmin');
@@ -364,6 +369,16 @@ webOsContract(str_contains($paths['media_controller'], "postString('node_activit
 webOsContract(str_contains($paths['media_controller'], "postString('node_shutdown_now')"), 'endpoint acepta apagado desde advertencia');
 webOsContract(str_contains($paths['compute_idle_css'], '.compute-idle-warning'), 'aviso de apagado tiene UI compartida');
 
+// Apagado manual forzado desde el perfil del Web OS.
+webOsContract(str_contains($paths['shell'], 'data-fastdrive-force-stop'), 'perfil superadmin muestra botón de apagado FastDrive');
+webOsContract(str_contains($paths['shell'], 'id="fastDrivePowerModal"'), 'apagado solicita contraseña en diálogo propio');
+webOsContract(str_contains($paths['shell'], 'js/so-power.js'), 'Web OS carga controlador de apagado');
+webOsContract(str_contains($paths['power_js'], "action: 'force-stop'"), 'controlador solicita únicamente apagado forzado');
+webOsContract(str_contains($paths['power_js'], 'current_password'), 'apagado envía contraseña actual para reautenticación');
+webOsContract(str_contains($paths['power_endpoint'], 'isSuperAdmin()'), 'endpoint de apagado exige superadmin');
+webOsContract(str_contains($paths['power_endpoint'], 'fastdrive_control_csrf'), 'endpoint de apagado exige CSRF dedicado');
+webOsContract(str_contains($paths['power_endpoint'], '->forceStop('), 'endpoint delega el apagado al servicio OOP');
+
 // Terminal restringida y nomenclatura única Mis datos.
 webOsContract(!str_contains($paths['shell'], '>Mis documentos<'), 'Web OS ya no muestra Mis documentos');
 webOsContract(!str_contains($paths['shell'], '> Mis archivos</button>'), 'Web OS ya no muestra Mis archivos');
@@ -408,6 +423,8 @@ $launcherMarkup = ($launcherStart !== false && $launcherEnd !== false)
 webOsContract($launcherMarkup !== '', 'lanzador inferior se puede inspeccionar');
 webOsContract(!str_contains($launcherMarkup, 'terminalWindow'), 'Terminal ya no aparece en el menú inferior izquierdo');
 webOsContract(str_contains($paths['shell'], '<strong>Terminal</strong>'), 'Terminal aparece dentro de Aplicaciones');
+webOsContract(str_contains($paths['shell'], '<strong>Linux XFCE</strong>'), 'Aplicaciones incluye acceso explícito al escritorio Linux');
+webOsContract(str_contains($paths['shell'], 'href="office-launch.php" target="_blank" rel="noopener" title="Abrir escritorio Linux remoto"'), 'Linux XFCE reutiliza el gateway autenticado noVNC');
 
 webOsContract(str_contains($paths['federation_portal_controller'], "queryString('embed')"), 'portal soporta modo embebido desde Controller');
 webOsContract(str_contains($paths['federation_portal_renderer'], 'federation-portal-embedded'), 'portal embebido elimina chrome duplicado');

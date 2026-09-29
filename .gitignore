@@ -28,6 +28,8 @@
 
 # Local backups and dumps that may contain secrets
 *.bak
+*.bak.*
+*.bak-*
 *.backup
 *.dump
 *.sql.gz

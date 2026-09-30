@@ -143,7 +143,7 @@
 | `drive/node-status.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/office-gateway.php` | 606 | view/entrypoint | 0 | — | — | — | — |
 | `drive/office-launch.php` | 81 | thin endpoint | 0 | — | — | — | — |
-| `drive/os-preferences.php` | 41 | thin endpoint | 0 | — | — | — | — |
+| `drive/os-preferences.php` | 51 | thin endpoint | 0 | — | — | — | — |
 | `drive/personal_aws_bootstrap.php` | 86 | class/module | 1 | — | — | — | — |
 | `drive/polly_cargar_texto.php` | 8 | thin endpoint | 0 | — | — | — | — |
 | `drive/polly_list_voices.php` | 8 | thin endpoint | 0 | — | — | — | — |
@@ -163,7 +163,7 @@
 | `drive/set_file_security.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/setup/api.php` | 15 | thin endpoint | 0 | — | — | — | — |
 | `drive/setup/index.php` | 90 | view/entrypoint | 0 | — | — | — | — |
-| `drive/so.php` | 1930 | view/entrypoint | 0 | — | — | — | — |
+| `drive/so.php` | 1983 | view/entrypoint | 0 | — | — | — | — |
 | `drive/src/Activity/ActivityCostRecorder.php` | 155 | class/module | 1 | — | — | — | — |
 | `drive/src/Activity/ActivityCostRepository.php` | 198 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Activity/ActivityCostService.php` | 153 | class/module | 1 | — | — | — | — |
@@ -489,7 +489,7 @@
 | `drive/tests/user_identity_presenter_smoke.php` | 30 | test script | 0 | — | — | — | — |
 | `drive/tests/user_profile_validator_smoke.php` | 72 | test script | 0 | — | — | — | — |
 | `drive/tests/web_os_clipboard_contract_smoke.php` | 109 | test script | 0 | — | — | — | — |
-| `drive/tests/web_os_contract_smoke.php` | 463 | test script | 0 | — | — | — | — |
+| `drive/tests/web_os_contract_smoke.php` | 480 | test script | 0 | — | — | — | — |
 | `drive/tests/workstation_phase1_contract_smoke.php` | 64 | test script | 0 | — | — | — | — |
 | `drive/thumb.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/token_audio.php` | 10 | thin endpoint | 0 | — | — | — | — |
@@ -567,7 +567,7 @@
 | `drive/js/server-admin.js` | 407 | class/module | ServerAdminModule | — | — | — |
 | `drive/js/setup.js` | 192 | class/module | ArcadeCloudSetup | — | — | — |
 | `drive/js/sincronizar.js` | 264 | class/module | SincronizarModule | — | triggerSyncFolderS3, triggerSyncS3 | window functions: triggerSyncFolderS3, triggerSyncS3 |
-| `drive/js/so-appearance.js` | 105 | class/module | ArcadeCloudOsAppearance | — | — | — |
+| `drive/js/so-appearance.js` | 155 | class/module | ArcadeCloudOsAppearance | — | — | — |
 | `drive/js/so-clipboard.js` | 760 | class/module | ArcadeCloudOsClipboard | — | — | — |
 | `drive/js/so-federation.js` | 129 | class/module | ArcadeCloudOsFederationApp | — | — | — |
 | `drive/js/so-folders.js` | 425 | class/module | ArcadeCloudOsFolderActions | — | — | — |

@@ -1736,7 +1736,7 @@
     },
     {
       "path": "drive/os-preferences.php",
-      "lines": 41,
+      "lines": 51,
       "kind": "thin endpoint",
       "classes": 0,
       "functions": [],
@@ -2043,7 +2043,7 @@
     },
     {
       "path": "drive/so.php",
-      "lines": 1930,
+      "lines": 1983,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -7029,7 +7029,7 @@
     },
     {
       "path": "drive/tests/web_os_contract_smoke.php",
-      "lines": 463,
+      "lines": 480,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -8550,7 +8550,7 @@
     },
     {
       "path": "drive/js/so-appearance.js",
-      "lines": 105,
+      "lines": 155,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudOsAppearance"
@@ -9089,7 +9089,7 @@
     },
     {
       "path": "drive/docs/runtime_endpoints.json",
-      "bytes": 111055,
+      "bytes": 111994,
       "valid": true,
       "root_type": "object",
       "keys": [

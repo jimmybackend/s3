@@ -8,6 +8,10 @@ $paths = [
     'css' => $root . '/css/so.css',
     'js' => $root . '/js/so.js',
     'appearance_js' => $root . '/js/so-appearance.js',
+    'preferences_endpoint' => $root . '/os-preferences.php',
+    'preferences_repository' => $root . '/src/Security/UserOsPreferencesRepository.php',
+    'preferences_schema' => $root . '/src/Security/UserOsPreferencesSchemaService.php',
+    'updater_service' => $root . '/src/Admin/ArcadeCloudUpdaterService.php',
     'capability' => $root . '/src/System/NodeCapabilityService.php',
     'drive' => $root . '/s3.php',
     'logout' => $root . '/src/Http/Controller/AuthController.php',
@@ -242,6 +246,12 @@ webOsContract(str_contains($paths['shell'], 'class="os-entry-thumbnail"'), 'mini
 webOsContract(str_contains($paths['shell'], 'data-file-action="wallpaper"'), 'cada imagen ofrece usarla como fondo de pantalla');
 webOsContract(str_contains($paths['shell'], 'id="osWindowOpacity"'), 'apariencia permite regular la transparencia de ventanas');
 webOsContract(str_contains($paths['shell'], 'id="osMenuOpacity"'), 'apariencia permite regular la transparencia de menús');
+webOsContract(str_contains($paths['shell'], 'ARCADECLOUD_OS_APPEARANCE'), 'preferencias guardadas se entregan al Web OS');
+webOsContract(str_contains($paths['appearance_js'], 'saveRemote()'), 'apariencia persiste cambios en el usuario');
+webOsContract(str_contains($paths['preferences_repository'], 'os_preferences'), 'repositorio almacena preferencias JSON');
+webOsContract(str_contains($paths['preferences_schema'], 'information_schema.COLUMNS'), 'migración comprueba el campo antes del ALTER TABLE');
+webOsContract(str_contains($paths['updater_service'], 'UserOsPreferencesSchemaService'), 'actualización ejecuta la migración de preferencias');
+webOsContract(str_contains($paths['css'], 'background-size:contain'), 'fondo completo se adapta a escritorio y móvil');
 webOsContract(str_contains($paths['shell'], 'js/so-appearance.js'), 'Web OS carga el controlador de apariencia');
 webOsContract(str_contains($paths['appearance_js'], 'localStorage.setItem'), 'la apariencia elegida persiste en el navegador');
 webOsContract(str_contains($paths['appearance_js'], 'setWallpaper(url, name)'), 'el controlador puede aplicar una imagen seleccionada como fondo');

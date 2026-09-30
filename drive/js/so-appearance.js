@@ -4,6 +4,7 @@ class ArcadeCloudOsAppearance {
     this.document = doc;
     this.storageKey = 'arcadecloud-os-appearance-v1';
     this.defaults = { wallpaper: '', wallpaperName: '', windowOpacity: 94, menuOpacity: 98 };
+    this.remote = win.ARCADECLOUD_OS_APPEARANCE || {};
     this.state = this.load();
   }
 
@@ -24,7 +25,10 @@ class ArcadeCloudOsAppearance {
   load() {
     try {
       const saved = JSON.parse(this.window.localStorage.getItem(this.storageKey) || '{}');
-      return Object.assign({}, this.defaults, saved && typeof saved === 'object' ? saved : {});
+      const local = saved && typeof saved === 'object' ? saved : {};
+      const remote = this.remote.preferences && typeof this.remote.preferences === 'object'
+        ? this.remote.preferences : {};
+      return Object.assign({}, this.defaults, local, remote);
     } catch (_) {
       return Object.assign({}, this.defaults);
     }
@@ -32,6 +36,20 @@ class ArcadeCloudOsAppearance {
 
   save() {
     try { this.window.localStorage.setItem(this.storageKey, JSON.stringify(this.state)); } catch (_) {}
+    this.saveRemote();
+  }
+
+  saveRemote() {
+    if (!this.remote.endpoint || !this.remote.csrf) return;
+    this.window.clearTimeout(this.saveTimer);
+    this.saveTimer = this.window.setTimeout(() => {
+      this.window.fetch(this.remote.endpoint, {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': this.remote.csrf },
+        body: JSON.stringify(this.state)
+      }).catch(() => {});
+    }, 250);
   }
 
   clamp(value) {

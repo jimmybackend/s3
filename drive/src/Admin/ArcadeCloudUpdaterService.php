@@ -8,6 +8,7 @@ use ArcadeCloud\Drive\Federation\FederationSchemaMigrationService;
 use ArcadeCloud\Drive\Federation\FederationModerationSchemaService;
 use ArcadeCloud\Drive\Office\OfficeSchemaMigrationService;
 use ArcadeCloud\Drive\Security\SuperAdminReauthenticationService;
+use ArcadeCloud\Drive\Security\UserOsPreferencesSchemaService;
 use RuntimeException;
 use Throwable;
 
@@ -30,6 +31,7 @@ final class ArcadeCloudUpdaterService
     {
         (new SuperAdminReauthenticationService($this->app))->requireRecent($currentPassword);
         $result = $this->run($stashLocalChanges ? 'apply-stash' : 'apply');
+        (new UserOsPreferencesSchemaService($this->app->db()))->ensure();
         $result = $this->withFederationSchemaState($result, true);
         $result = $this->withOfficeSchemaState($result, true);
         $this->audit((string)($result['previous_commit'] ?? ''), (string)($result['local_commit'] ?? ''));

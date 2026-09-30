@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 use ArcadeCloud\Drive\Application\FileListService;
 use ArcadeCloud\Drive\System\NodeCapabilityService;
+use ArcadeCloud\Drive\Security\UserOsPreferencesRepository;
 use ArcadeCloud\Drive\View\FileIconResolver;
 use ArcadeCloud\Drive\View\FileViewHelper;
 
@@ -27,6 +28,7 @@ $userIdentifier = $session->userName();
 $userAlias = \ArcadeCloud\Drive\View\UserIdentityPresenter::alias($userIdentifier);
 $userInitials = \ArcadeCloud\Drive\View\UserIdentityPresenter::initials($userIdentifier);
 $userAvatarUrl = '';
+$osPreferences = [];
 
 try {
     $profile = $app->userProfileService()->profile($userId);
@@ -35,6 +37,12 @@ try {
     $userAvatarUrl = (string)($profile['avatar_url'] ?? '');
 } catch (Throwable) {
     // El shell puede funcionar con las iniciales aunque el perfil no cargue.
+}
+
+try {
+    $osPreferences = (new UserOsPreferencesRepository($app->db()))->find($userId);
+} catch (Throwable $error) {
+    error_log('[ArcadeCloud OS preferences] ' . $error->getMessage());
 }
 
 $uploadCsrf = (string)$session->get('upload_csrf', '');
@@ -1852,6 +1860,11 @@ Escribe help o usa uno de los botones disponibles.</pre>
   <script>
     window.UPLOAD_API = 'api/upload.php';
     window.DRIVE_UPLOAD_CSRF = <?= json_encode($uploadCsrf, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
+    window.ARCADECLOUD_OS_APPEARANCE = {
+      endpoint: 'os-preferences.php',
+      csrf: window.DRIVE_UPLOAD_CSRF,
+      preferences: <?= json_encode($osPreferences, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>
+    };
     window.DRIVE_INITIAL_ROUTE = <?= json_encode($currentRoute, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
     window.rutaActual = <?= json_encode($currentRoute, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
     window.AWS_BUCKET_NAME = <?= json_encode($app->bucket(), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;

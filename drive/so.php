@@ -414,6 +414,7 @@ $currentFolderName = $currentIsRoot
                     data-key="<?= $e($key) ?>"
                     data-bytes="<?= (int)($row['Tamano'] ?? 0) ?>"
                     data-open-url="<?= $e($openUrl) ?>"
+                    data-wallpaper-url="<?= $isImage && !$locked ? $e('ver_archivo.php?archivo=' . $keyQ) : '' ?>"
                     data-download-url="<?= $e($downloadUrl) ?>"
                     data-edit-url="<?= $e($editUrl) ?>"
                     data-office-url="<?= $e($officeUrl) ?>"
@@ -755,6 +756,7 @@ Escribe help o usa uno de los botones disponibles.</pre>
     <button type="button" data-file-action="office"><i class="fas fa-file-word"></i><span>Abrir con Office</span></button>
     <button type="button" data-file-action="edit"><i class="fas fa-pen"></i>Editar texto</button>
     <button type="button" data-file-action="download"><i class="fas fa-download"></i>Descargar</button>
+    <button type="button" data-file-action="wallpaper"><i class="fas fa-panorama"></i><span>Usar como fondo de pantalla</span></button>
     <div class="os-context-divider" data-selection-context-divider hidden></div>
     <button type="button" data-selection-context="download" data-selection-action="download" hidden>
       <i class="fas fa-download"></i><span>Descargar seleccionados</span>
@@ -1783,6 +1785,20 @@ Escribe help o usa uno de los botones disponibles.</pre>
     <button type="button" data-window-open="explorerWindow"><i class="fas fa-folder-open"></i> Mis datos</button>
     <button type="button" data-window-open="appsWindow"><i class="fas fa-shapes"></i> Aplicaciones</button>
     <a href="s3.php"><i class="fas fa-hard-drive"></i> Drive clásico</a>
+    <section class="os-appearance" aria-labelledby="osAppearanceTitle">
+      <div class="os-appearance-title" id="osAppearanceTitle"><i class="fas fa-palette"></i> Apariencia</div>
+      <label for="osWindowOpacity">
+        <span>Transparencia de ventanas</span>
+        <output id="osWindowOpacityValue">94%</output>
+      </label>
+      <input type="range" id="osWindowOpacity" min="35" max="100" step="1" value="94">
+      <label for="osMenuOpacity">
+        <span>Transparencia de menús</span>
+        <output id="osMenuOpacityValue">98%</output>
+      </label>
+      <input type="range" id="osMenuOpacity" min="35" max="100" step="1" value="98">
+      <button type="button" data-os-reset-wallpaper><i class="fas fa-image"></i> Restaurar fondo original</button>
+    </section>
     <button type="button" data-os-reload><i class="fas fa-rotate-right"></i> Actualizar</button>
     <button type="button" data-os-about data-toggle="modal" data-target="#modalAcercaArcadeCloud"><i class="fas fa-circle-info"></i> Acerca de</button>
     <a href="logout.php" class="is-danger"><i class="fas fa-right-from-bracket"></i> Cerrar sesión</a>
@@ -1894,6 +1910,7 @@ Escribe help o usa uno de los botones disponibles.</pre>
   <script src="js/arcadelink-share.js?v=<?= (int)filemtime(__DIR__ . '/js/arcadelink-share.js') ?>"></script>
   <script src="js/so-share.js?v=<?= (int)filemtime(__DIR__ . '/js/so-share.js') ?>"></script>
   <script src="js/so-node.js?v=<?= (int)filemtime(__DIR__ . '/js/so-node.js') ?>"></script>
+  <script src="js/so-appearance.js?v=<?= (int)filemtime(__DIR__ . '/js/so-appearance.js') ?>"></script>
   <script src="js/so.js?v=<?= (int)filemtime(__DIR__ . '/js/so.js') ?>"></script>
 </body>
 </html>

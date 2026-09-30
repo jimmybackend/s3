@@ -7,6 +7,7 @@ $paths = [
     'shell' => $root . '/so.php',
     'css' => $root . '/css/so.css',
     'js' => $root . '/js/so.js',
+    'appearance_js' => $root . '/js/so-appearance.js',
     'capability' => $root . '/src/System/NodeCapabilityService.php',
     'drive' => $root . '/s3.php',
     'logout' => $root . '/src/Http/Controller/AuthController.php',
@@ -238,6 +239,12 @@ webOsContract(str_contains($paths['shell'], 'js/upload-center.js'), 'Web OS carg
 webOsContract(!str_contains($paths['shell'], 'js/so-screenshot-paste.js'), 'pegado de screenshot ya no se ejecuta fuera del centro Subir');
 webOsContract(str_contains($paths['shell'], "thumb.php?key="), 'imágenes de Mis datos reutilizan ThumbnailService');
 webOsContract(str_contains($paths['shell'], 'class="os-entry-thumbnail"'), 'miniaturas se muestran en los iconos de imagen');
+webOsContract(str_contains($paths['shell'], 'data-file-action="wallpaper"'), 'cada imagen ofrece usarla como fondo de pantalla');
+webOsContract(str_contains($paths['shell'], 'id="osWindowOpacity"'), 'apariencia permite regular la transparencia de ventanas');
+webOsContract(str_contains($paths['shell'], 'id="osMenuOpacity"'), 'apariencia permite regular la transparencia de menús');
+webOsContract(str_contains($paths['shell'], 'js/so-appearance.js'), 'Web OS carga el controlador de apariencia');
+webOsContract(str_contains($paths['appearance_js'], 'localStorage.setItem'), 'la apariencia elegida persiste en el navegador');
+webOsContract(str_contains($paths['appearance_js'], 'setWallpaper(url, name)'), 'el controlador puede aplicar una imagen seleccionada como fondo');
 webOsContract(str_contains($paths['js'], 'async refreshExplorer('), 'shell actualiza sólo la ventana Mis datos');
 webOsContract(str_contains($paths['js'], "current.replaceWith(next)"), 'navegación reemplaza sólo la región de Mis datos');
 webOsContract(str_contains($paths['js'], "fetch(url.toString()"), 'navegación de carpetas usa solicitud parcial');

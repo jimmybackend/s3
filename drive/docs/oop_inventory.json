@@ -4,8 +4,8 @@
     "php_class_modules": 289,
     "php_needs_migration": 0,
     "php_tests": 46,
-    "js_total": 62,
-    "js_class_modules": 62,
+    "js_total": 63,
+    "js_class_modules": 63,
     "js_needs_migration": 0,
     "js_compatibility_facades": 8,
     "ajax_clients": 46,
@@ -2011,7 +2011,7 @@
     },
     {
       "path": "drive/so.php",
-      "lines": 1900,
+      "lines": 1917,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -6967,7 +6967,7 @@
     },
     {
       "path": "drive/tests/web_os_contract_smoke.php",
-      "lines": 446,
+      "lines": 453,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -8487,6 +8487,29 @@
       ]
     },
     {
+      "path": "drive/js/so-appearance.js",
+      "lines": 87,
+      "kind": "class/module",
+      "classes": [
+        "ArcadeCloudOsAppearance"
+      ],
+      "functions": [],
+      "window_assign": [
+        "ArcadeCloudOsAppearance"
+      ],
+      "window_func": [],
+      "top_vars": [],
+      "iife": false,
+      "ajax": {
+        "fetch": 0,
+        "xhr": 0,
+        "jquery": 0,
+        "json_consumers": 0,
+        "response_checks": 0
+      },
+      "issues": []
+    },
+    {
       "path": "drive/js/so-clipboard.js",
       "lines": 760,
       "kind": "class/module",
@@ -8689,7 +8712,7 @@
     },
     {
       "path": "drive/js/so.js",
-      "lines": 1265,
+      "lines": 1272,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudOsShell"

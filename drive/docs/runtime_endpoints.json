@@ -49,6 +49,7 @@
       "references": [
         "drive/bloque_carpetas.php",
         "drive/s3.php",
+        "drive/so.php",
         "drive/src/View/ActivityCostPageRenderer.php"
       ]
     },
@@ -231,6 +232,7 @@
         "drive/ec2.php",
         "drive/personal_aws_bootstrap.php",
         "drive/s3.php",
+        "drive/so.php",
         "drive/src/Http/Controller/PersonalAwsController.php",
         "drive/js/estilo.js"
       ]
@@ -567,6 +569,7 @@
       "references": [
         "drive/personal_aws_bootstrap.php",
         "drive/s3.php",
+        "drive/so.php",
         "drive/src/Admin/ServerConsoleService.php",
         "drive/src/View/PersonalAwsPageRenderer.php",
         "drive/tests/server_console_contract_smoke.php",
@@ -1250,7 +1253,7 @@
     },
     {
       "path": "drive/os-preferences.php",
-      "size": 1688,
+      "size": 2127,
       "active": true,
       "references": [
         "drive/so.php",
@@ -1464,7 +1467,7 @@
     },
     {
       "path": "drive/so.php",
-      "size": 102843,
+      "size": 107481,
       "active": true,
       "references": [
         "drive/s3.php",
@@ -3838,7 +3841,7 @@
     },
     {
       "path": "drive/tests/web_os_contract_smoke.php",
-      "size": 46316,
+      "size": 48532,
       "active": false,
       "references": []
     },

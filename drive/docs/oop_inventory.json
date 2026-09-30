@@ -1,15 +1,15 @@
 {
   "summary": {
-    "php_total": 487,
-    "php_class_modules": 289,
+    "php_total": 491,
+    "php_class_modules": 291,
     "php_needs_migration": 0,
     "php_tests": 46,
     "js_total": 63,
     "js_class_modules": 63,
     "js_needs_migration": 0,
     "js_compatibility_facades": 8,
-    "ajax_clients": 46,
-    "ajax_calls": 98,
+    "ajax_clients": 47,
+    "ajax_calls": 99,
     "json_total": 4,
     "json_invalid": 0
   },
@@ -1594,6 +1594,21 @@
       "issues": []
     },
     {
+      "path": "drive/migrations/20260930_add_users_os_preferences.php",
+      "lines": 13,
+      "kind": "thin endpoint",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
       "path": "drive/move_multiple.php",
       "lines": 10,
       "kind": "thin endpoint",
@@ -1711,6 +1726,23 @@
       "session": false,
       "superglobals": [
         "GET"
+      ],
+      "db": false,
+      "s3": false,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/os-preferences.php",
+      "lines": 41,
+      "kind": "thin endpoint",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [
+        "SERVER"
       ],
       "db": false,
       "s3": false,
@@ -2011,7 +2043,7 @@
     },
     {
       "path": "drive/so.php",
-      "lines": 1917,
+      "lines": 1930,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -2134,7 +2166,7 @@
     },
     {
       "path": "drive/src/Admin/ArcadeCloudUpdaterService.php",
-      "lines": 160,
+      "lines": 162,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -5330,6 +5362,36 @@
       "issues": []
     },
     {
+      "path": "drive/src/Security/UserOsPreferencesRepository.php",
+      "lines": 47,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": true,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Security/UserOsPreferencesSchemaService.php",
+      "lines": 34,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": true,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
       "path": "drive/src/Security/UserProfileRepository.php",
       "lines": 117,
       "kind": "class/module",
@@ -6967,7 +7029,7 @@
     },
     {
       "path": "drive/tests/web_os_contract_smoke.php",
-      "lines": 453,
+      "lines": 463,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -8488,7 +8550,7 @@
     },
     {
       "path": "drive/js/so-appearance.js",
-      "lines": 87,
+      "lines": 105,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudOsAppearance"
@@ -8501,7 +8563,7 @@
       "top_vars": [],
       "iife": false,
       "ajax": {
-        "fetch": 0,
+        "fetch": 1,
         "xhr": 0,
         "jquery": 0,
         "json_consumers": 0,

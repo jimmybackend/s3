@@ -4,15 +4,15 @@
 
 ## Resumen
 
-- PHP analizados: **487**
-- PHP que ya contienen clases/interfaces: **289**
+- PHP analizados: **491**
+- PHP que ya contienen clases/interfaces: **291**
 - PHP marcados para migración/revisión: **0**
 - Tests PHP separados del objetivo OOP de runtime: **46**
 - JavaScript analizados: **63**
 - JavaScript que ya contienen clases: **63**
 - JavaScript sin clase/encapsulación OOP: **0**
 - JavaScript OOP con fachada `window` de compatibilidad: **8**
-- Clientes AJAX detectados: **46** módulos / **98** llamadas
+- Clientes AJAX detectados: **47** módulos / **99** llamadas
 - JSON analizados: **4**; inválidos: **0**
 
 ## Criterio
@@ -134,6 +134,7 @@
 | `drive/logout.php` | 14 | thin endpoint | 0 | — | — | — | — |
 | `drive/media_playlist.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/media_processing.php` | 10 | thin endpoint | 0 | — | — | — | — |
+| `drive/migrations/20260930_add_users_os_preferences.php` | 13 | thin endpoint | 0 | — | — | — | — |
 | `drive/move_multiple.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/move_task.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/move_task_status.php` | 10 | thin endpoint | 0 | — | — | — | — |
@@ -142,6 +143,7 @@
 | `drive/node-status.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/office-gateway.php` | 606 | view/entrypoint | 0 | — | — | — | — |
 | `drive/office-launch.php` | 81 | thin endpoint | 0 | — | — | — | — |
+| `drive/os-preferences.php` | 41 | thin endpoint | 0 | — | — | — | — |
 | `drive/personal_aws_bootstrap.php` | 86 | class/module | 1 | — | — | — | — |
 | `drive/polly_cargar_texto.php` | 8 | thin endpoint | 0 | — | — | — | — |
 | `drive/polly_list_voices.php` | 8 | thin endpoint | 0 | — | — | — | — |
@@ -161,7 +163,7 @@
 | `drive/set_file_security.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/setup/api.php` | 15 | thin endpoint | 0 | — | — | — | — |
 | `drive/setup/index.php` | 90 | view/entrypoint | 0 | — | — | — | — |
-| `drive/so.php` | 1917 | view/entrypoint | 0 | — | — | — | — |
+| `drive/so.php` | 1930 | view/entrypoint | 0 | — | — | — | — |
 | `drive/src/Activity/ActivityCostRecorder.php` | 155 | class/module | 1 | — | — | — | — |
 | `drive/src/Activity/ActivityCostRepository.php` | 198 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Activity/ActivityCostService.php` | 153 | class/module | 1 | — | — | — | — |
@@ -169,7 +171,7 @@
 | `drive/src/Activity/PollyTaskReconciler.php` | 308 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Activity/TranscriptionCostAttribution.php` | 117 | class/module | 1 | — | — | — | — |
 | `drive/src/Activity/TranscriptionReconciler.php` | 476 | class/module | 1 | — | ⚠️ | — | — |
-| `drive/src/Admin/ArcadeCloudUpdaterService.php` | 160 | class/module | 1 | — | ⚠️ | — | — |
+| `drive/src/Admin/ArcadeCloudUpdaterService.php` | 162 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Admin/FastDriveControlService.php` | 349 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Admin/FastDriveWakeService.php` | 191 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Admin/ManagedRuntimeEnvironment.php` | 374 | class/module | 1 | — | — | — | — |
@@ -381,6 +383,8 @@
 | `drive/src/Security/SessionManager.php` | 181 | class/module | 1 | ⚠️ | — | — | — |
 | `drive/src/Security/SuperAdminReauthenticationService.php` | 89 | class/module | 1 | — | — | — | — |
 | `drive/src/Security/UserDirectoryRepository.php` | 72 | class/module | 1 | — | ⚠️ | — | — |
+| `drive/src/Security/UserOsPreferencesRepository.php` | 47 | class/module | 1 | — | ⚠️ | — | — |
+| `drive/src/Security/UserOsPreferencesSchemaService.php` | 34 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Security/UserProfileRepository.php` | 117 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Security/UserProfileService.php` | 183 | class/module | 1 | — | — | — | — |
 | `drive/src/Security/UserProfileValidator.php` | 96 | class/module | 1 | — | — | — | — |
@@ -485,7 +489,7 @@
 | `drive/tests/user_identity_presenter_smoke.php` | 30 | test script | 0 | — | — | — | — |
 | `drive/tests/user_profile_validator_smoke.php` | 72 | test script | 0 | — | — | — | — |
 | `drive/tests/web_os_clipboard_contract_smoke.php` | 109 | test script | 0 | — | — | — | — |
-| `drive/tests/web_os_contract_smoke.php` | 453 | test script | 0 | — | — | — | — |
+| `drive/tests/web_os_contract_smoke.php` | 463 | test script | 0 | — | — | — | — |
 | `drive/tests/workstation_phase1_contract_smoke.php` | 64 | test script | 0 | — | — | — | — |
 | `drive/thumb.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/token_audio.php` | 10 | thin endpoint | 0 | — | — | — | — |
@@ -563,7 +567,7 @@
 | `drive/js/server-admin.js` | 407 | class/module | ServerAdminModule | — | — | — |
 | `drive/js/setup.js` | 192 | class/module | ArcadeCloudSetup | — | — | — |
 | `drive/js/sincronizar.js` | 264 | class/module | SincronizarModule | — | triggerSyncFolderS3, triggerSyncS3 | window functions: triggerSyncFolderS3, triggerSyncS3 |
-| `drive/js/so-appearance.js` | 87 | class/module | ArcadeCloudOsAppearance | — | — | — |
+| `drive/js/so-appearance.js` | 105 | class/module | ArcadeCloudOsAppearance | — | — | — |
 | `drive/js/so-clipboard.js` | 760 | class/module | ArcadeCloudOsClipboard | — | — | — |
 | `drive/js/so-federation.js` | 129 | class/module | ArcadeCloudOsFederationApp | — | — | — |
 | `drive/js/so-folders.js` | 425 | class/module | ArcadeCloudOsFolderActions | — | — | — |
@@ -621,6 +625,7 @@
 | `drive/js/server-admin.js` | 2 | 0 | 0 | 2 | 6 |
 | `drive/js/setup.js` | 2 | 0 | 0 | 2 | 6 |
 | `drive/js/sincronizar.js` | 1 | 0 | 0 | 0 | 3 |
+| `drive/js/so-appearance.js` | 1 | 0 | 0 | 0 | 0 |
 | `drive/js/so-clipboard.js` | 1 | 0 | 0 | 0 | 3 |
 | `drive/js/so-node.js` | 2 | 0 | 0 | 2 | 4 |
 | `drive/js/so-power.js` | 1 | 0 | 0 | 1 | 2 |

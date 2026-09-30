@@ -25,6 +25,7 @@
     "drive/logout.php",
     "drive/node-status.php",
     "drive/office-launch.php",
+    "drive/os-preferences.php",
     "drive/personal_aws_bootstrap.php",
     "drive/psesion.php",
     "drive/s3.php",
@@ -167,6 +168,7 @@
         "drive/logout.php",
         "drive/media_playlist.php",
         "drive/media_processing.php",
+        "drive/migrations/20260930_add_users_os_preferences.php",
         "drive/move_multiple.php",
         "drive/move_task.php",
         "drive/move_task_status.php",
@@ -175,6 +177,7 @@
         "drive/node-status.php",
         "drive/office-gateway.php",
         "drive/office-launch.php",
+        "drive/os-preferences.php",
         "drive/polly_cargar_texto.php",
         "drive/polly_list_voices.php",
         "drive/polly_task_status.php",
@@ -1174,6 +1177,12 @@
       ]
     },
     {
+      "path": "drive/migrations/20260930_add_users_os_preferences.php",
+      "size": 318,
+      "active": false,
+      "references": []
+    },
+    {
       "path": "drive/move_multiple.php",
       "size": 263,
       "active": false,
@@ -1236,6 +1245,15 @@
       "references": [
         "drive/so.php",
         "drive/tests/office_gateway_contract_smoke.php",
+        "drive/tests/web_os_contract_smoke.php"
+      ]
+    },
+    {
+      "path": "drive/os-preferences.php",
+      "size": 1688,
+      "active": true,
+      "references": [
+        "drive/so.php",
         "drive/tests/web_os_contract_smoke.php"
       ]
     },
@@ -1446,7 +1464,7 @@
     },
     {
       "path": "drive/so.php",
-      "size": 102331,
+      "size": 102843,
       "active": true,
       "references": [
         "drive/s3.php",
@@ -1505,11 +1523,12 @@
     },
     {
       "path": "drive/src/Admin/ArcadeCloudUpdaterService.php",
-      "size": 7341,
+      "size": 7478,
       "active": false,
       "references": [
         "drive/tests/federation_moderation_contract_smoke.php",
-        "drive/tests/installer_service_reconcile_contract_smoke.php"
+        "drive/tests/installer_service_reconcile_contract_smoke.php",
+        "drive/tests/web_os_contract_smoke.php"
       ]
     },
     {
@@ -3106,6 +3125,22 @@
       "references": []
     },
     {
+      "path": "drive/src/Security/UserOsPreferencesRepository.php",
+      "size": 1522,
+      "active": false,
+      "references": [
+        "drive/tests/web_os_contract_smoke.php"
+      ]
+    },
+    {
+      "path": "drive/src/Security/UserOsPreferencesSchemaService.php",
+      "size": 1009,
+      "active": false,
+      "references": [
+        "drive/tests/web_os_contract_smoke.php"
+      ]
+    },
+    {
       "path": "drive/src/Security/UserProfileRepository.php",
       "size": 3779,
       "active": false,
@@ -3803,7 +3838,7 @@
     },
     {
       "path": "drive/tests/web_os_contract_smoke.php",
-      "size": 45229,
+      "size": 46316,
       "active": false,
       "references": []
     },

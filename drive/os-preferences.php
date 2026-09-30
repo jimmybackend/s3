@@ -26,13 +26,23 @@ try {
     if (!is_array($payload)) {
         JsonResponse::error('Configuración inválida.', 400);
     }
-    $preferences = [
+    $appearance = [
+        'theme' => in_array(($payload['theme'] ?? ''), ['light', 'dark'], true)
+            ? (string)$payload['theme']
+            : 'dark',
         'wallpaper' => mb_substr((string)($payload['wallpaper'] ?? ''), 0, 4096),
         'wallpaperName' => mb_substr((string)($payload['wallpaperName'] ?? ''), 0, 255),
+        'wallpaperEnabled' => filter_var(
+            $payload['wallpaperEnabled'] ?? true,
+            FILTER_VALIDATE_BOOLEAN,
+            FILTER_NULL_ON_FAILURE
+        ) ?? true,
         'windowOpacity' => max(35, min(100, (int)($payload['windowOpacity'] ?? 94))),
         'menuOpacity' => max(35, min(100, (int)($payload['menuOpacity'] ?? 98))),
     ];
-    (new UserOsPreferencesRepository($app->db()))->save($session->userId(), $preferences);
+    $repository = new UserOsPreferencesRepository($app->db());
+    $preferences = array_replace($repository->find($session->userId()), $appearance);
+    $repository->save($session->userId(), $preferences);
     JsonResponse::send(['ok' => true]);
 } catch (Throwable $error) {
     error_log('[ArcadeCloud os-preferences] ' . $error->getMessage());

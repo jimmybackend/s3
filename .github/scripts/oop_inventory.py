@@ -12,8 +12,10 @@ SKIP_PARTS = {'.git', 'vendor', 'node_modules'}
 
 def files_with_suffix(suffix):
     out = []
-    for p in DRIVE.rglob(f'*{suffix}'):
+    for p in ROOT.rglob(f'*{suffix}'):
         if any(part in SKIP_PARTS for part in p.parts):
+            continue
+        if p.name == 'composer.lock':
             continue
         out.append(p)
     return sorted(out)
@@ -48,7 +50,7 @@ def php_info(p):
 
     if path.startswith('drive/tests/'):
         kind = 'test script'
-    elif p.name == 'app_bootstrap.php':
+    elif path in {'db.php', 'drive/app_bootstrap.php'}:
         kind = 'bootstrap'
     elif classes or interfaces or traits:
         kind = 'class/module'
@@ -92,6 +94,11 @@ def js_info(p):
     window_func = sorted(set(re.findall(r'window\.([A-Za-z_$][\w$]*)\s*=\s*(?:async\s+)?function\b', text)))
     top_vars = re.findall(r'(?m)^(?:var|let|const)\s+([A-Za-z_$][\w$]*)', text)
     iife = bool(re.search(r'\(function\s*\(', text))
+    fetch_calls = len(re.findall(r'\bfetch\s*\(', text))
+    xhr_calls = len(re.findall(r'\bnew\s+XMLHttpRequest\s*\(', text))
+    jquery_ajax_calls = len(re.findall(r'\$\.(?:ajax|get|post)\s*\(', text))
+    json_consumers = len(re.findall(r'\.json\s*\(', text))
+    response_checks = len(re.findall(r'\.(?:ok|status)\b', text))
     lines = text.count('\n') + 1
     if classes:
         kind = 'class/module'
@@ -112,11 +119,55 @@ def js_info(p):
         'path': rel(p), 'lines': lines, 'kind': kind, 'classes': classes,
         'functions': global_funcs, 'window_assign': window_assign,
         'window_func': window_func, 'top_vars': top_vars, 'iife': iife,
+        'ajax': {
+            'fetch': fetch_calls,
+            'xhr': xhr_calls,
+            'jquery': jquery_ajax_calls,
+            'json_consumers': json_consumers,
+            'response_checks': response_checks,
+        },
         'issues': issues,
+    }
+
+
+def json_info(p):
+    text = p.read_text(encoding='utf-8', errors='strict')
+    error = None
+    value = None
+    try:
+        value = json.loads(text)
+    except (json.JSONDecodeError, UnicodeDecodeError) as exc:
+        error = str(exc)
+
+    if isinstance(value, dict):
+        root_type = 'object'
+        keys = sorted(str(key) for key in value.keys())
+    elif isinstance(value, list):
+        root_type = 'array'
+        keys = []
+    elif value is None and error:
+        root_type = 'invalid'
+        keys = []
+    else:
+        root_type = type(value).__name__
+        keys = []
+
+    return {
+        'path': rel(p),
+        'bytes': len(text.encode('utf-8')),
+        'valid': error is None,
+        'root_type': root_type,
+        'keys': keys,
+        'error': error,
     }
 
 php = [php_info(p) for p in files_with_suffix('.php')]
 js = [js_info(p) for p in files_with_suffix('.js')]
+json_files = [
+    json_info(p)
+    for p in files_with_suffix('.json')
+    if rel(p) != 'drive/docs/oop_inventory.json'
+]
 
 summary = {
     'php_total': len(php),
@@ -132,6 +183,13 @@ summary = {
     'js_class_modules': sum(1 for x in js if x['classes']),
     'js_needs_migration': sum(1 for x in js if not x['classes'] or x['functions']),
     'js_compatibility_facades': sum(1 for x in js if x['classes'] and x['window_func']),
+    'ajax_clients': sum(1 for x in js if sum(x['ajax'][key] for key in ('fetch', 'xhr', 'jquery'))),
+    'ajax_calls': sum(
+        sum(x['ajax'][key] for key in ('fetch', 'xhr', 'jquery'))
+        for x in js
+    ),
+    'json_total': len(json_files),
+    'json_invalid': sum(1 for x in json_files if not x['valid']),
 }
 
 lines = [
@@ -149,6 +207,8 @@ lines = [
     f"- JavaScript que ya contienen clases: **{summary['js_class_modules']}**",
     f"- JavaScript sin clase/encapsulación OOP: **{summary['js_needs_migration']}**",
     f"- JavaScript OOP con fachada `window` de compatibilidad: **{summary['js_compatibility_facades']}**",
+    f"- Clientes AJAX detectados: **{summary['ajax_clients']}** módulos / **{summary['ajax_calls']}** llamadas",
+    f"- JSON analizados: **{summary['json_total']}**; inválidos: **{summary['json_invalid']}**",
     '',
     '## Criterio',
     '',
@@ -158,6 +218,8 @@ lines = [
     '- Tests: se auditan, pero no cuentan como deuda OOP del runtime.',
     '- Vistas: pueden contener HTML; funciones JavaScript incrustadas no se confunden con funciones PHP.',
     '- JavaScript: comportamiento en clases; `window` sólo como fachada de compatibilidad explícita.',
+    '- AJAX: es un mecanismo de transporte, no un paradigma; se revisa dentro de la clase cliente que lo posee.',
+    '- JSON: es un formato de datos, no código OOP; se valida sintaxis, tipo raíz y contrato en sus consumidores.',
     '',
     '## PHP',
     '',
@@ -181,6 +243,58 @@ for x in js:
 
 lines += [
     '',
+    '## AJAX y contratos JSON',
+    '',
+    '| Cliente JavaScript | `fetch` | XHR | jQuery AJAX | Lecturas JSON | Comprobaciones de respuesta |',
+    '|---|---:|---:|---:|---:|---:|',
+]
+for x in js:
+    ajax = x['ajax']
+    if not sum(ajax[key] for key in ('fetch', 'xhr', 'jquery')):
+        continue
+    lines.append(
+        f"| `{x['path']}` | {ajax['fetch']} | {ajax['xhr']} | {ajax['jquery']} | "
+        f"{ajax['json_consumers']} | {ajax['response_checks']} |"
+    )
+
+lines += [
+    '',
+    '### Archivos JSON',
+    '',
+    '| Archivo | Válido | Tipo raíz | Claves raíz |',
+    '|---|:---:|---|---|',
+]
+for x in json_files:
+    details = ', '.join(f'`{key}`' for key in x['keys']) or '—'
+    if x['error']:
+        details = x['error'].replace('|', '/')
+    lines.append(
+        f"| `{x['path']}` | {'sí' if x['valid'] else 'no'} | {x['root_type']} | {details} |"
+    )
+
+lines += [
+    '',
+    '## Dictamen',
+    '',
+    '- **PHP runtime:** consistente estructuralmente con entrypoints delgados y capas Controller/Service/Repository. '
+    'Las vistas, bootstraps y tests son excepciones deliberadas; convertirlos en clases no aportaría encapsulación.',
+    '- **JavaScript:** todos los archivos están encapsulados en clases. Las fachadas globales existentes son deuda de '
+    'compatibilidad, no lógica procedural nueva; deben reducirse sólo al migrar sus consumidores HTML.',
+    '- **AJAX:** las llamadas permanecen dentro de módulos OOP. La cantidad de lecturas JSON y comprobaciones es una '
+    'señal heurística, no una prueba de corrección: los contratos funcionales continúan cubiertos por smoke tests.',
+    '- **JSON:** los documentos válidos se consideran DTO/configuración. No corresponde convertir datos JSON a clases; '
+    'la conversión a objetos tipados debe ocurrir en el límite PHP/JavaScript cuando el dominio lo requiera.',
+    '',
+    '### Prioridades de mantenimiento',
+    '',
+    '1. No añadir SQL, SDK AWS ni acceso directo a superglobales en entrypoints.',
+    '2. Centralizar gradualmente transporte AJAX repetido en colaboradores inyectables, sin romper URLs públicas.',
+    '3. Mantener las fachadas `window` como adaptadores mínimos y evitar estado de negocio global.',
+    '4. Validar todo JSON al cargarlo y versionar explícitamente los payloads federados persistentes.',
+]
+
+lines += [
+    '',
     '## Objetivo de refactorización',
     '',
     '```text',
@@ -196,5 +310,10 @@ lines += [
 ]
 
 (DOCS / 'OOP_AUDIT.md').write_text('\n'.join(lines) + '\n', encoding='utf-8')
-(DOCS / 'oop_inventory.json').write_text(json.dumps({'summary': summary, 'php': php, 'js': js}, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+(DOCS / 'oop_inventory.json').write_text(json.dumps({
+    'summary': summary,
+    'php': php,
+    'js': js,
+    'json': json_files,
+}, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
 print(json.dumps(summary, ensure_ascii=False))

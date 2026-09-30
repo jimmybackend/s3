@@ -1759,6 +1759,7 @@ CREATE TABLE IF NOT EXISTS `Users` (
   `system_role` enum('user','admin','superadmin') COLLATE utf8mb3_unicode_ci NOT NULL DEFAULT 'user',
   `registrationdate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `profilepicture` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci DEFAULT NULL,
+  `os_preferences` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `chat` tinyint NOT NULL,
   `userstatus` enum('Activo','Inactivo') CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci NOT NULL,
   PRIMARY KEY (`id`)

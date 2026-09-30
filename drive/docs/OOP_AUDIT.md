@@ -4,14 +4,16 @@
 
 ## Resumen
 
-- PHP analizados: **485**
-- PHP que ya contienen clases/interfaces: **288**
+- PHP analizados: **487**
+- PHP que ya contienen clases/interfaces: **289**
 - PHP marcados para migración/revisión: **0**
 - Tests PHP separados del objetivo OOP de runtime: **46**
 - JavaScript analizados: **62**
 - JavaScript que ya contienen clases: **62**
 - JavaScript sin clase/encapsulación OOP: **0**
 - JavaScript OOP con fachada `window` de compatibilidad: **8**
+- Clientes AJAX detectados: **46** módulos / **98** llamadas
+- JSON analizados: **4**; inválidos: **0**
 
 ## Criterio
 
@@ -21,11 +23,15 @@
 - Tests: se auditan, pero no cuentan como deuda OOP del runtime.
 - Vistas: pueden contener HTML; funciones JavaScript incrustadas no se confunden con funciones PHP.
 - JavaScript: comportamiento en clases; `window` sólo como fachada de compatibilidad explícita.
+- AJAX: es un mecanismo de transporte, no un paradigma; se revisa dentro de la clase cliente que lo posee.
+- JSON: es un formato de datos, no código OOP; se valida sintaxis, tipo raíz y contrato en sus consumidores.
 
 ## PHP
 
 | Archivo | Líneas | Tipo detectado | Clases | Sesión | DB | AWS/S3 | Observaciones |
 |---|---:|---|---:|:---:|:---:|:---:|---|
+| `Config-s3.php` | 324 | class/module | 1 | — | — | — | — |
+| `db.php` | 51 | bootstrap | 0 | — | ⚠️ | — | — |
 | `drive/activity_costs.php` | 8 | thin endpoint | 0 | — | — | — | — |
 | `drive/actualizar_ruta.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/api/upload.php` | 10 | thin endpoint | 0 | — | — | — | — |
@@ -578,6 +584,80 @@
 | `drive/js/upload-destination.js` | 74 | class/module | UploadDestinationModule | — | — | — |
 | `drive/js/ver-metadatos.js` | 75 | class/module | VerMetadatosModule | — | verMetadatos | window functions: verMetadatos |
 | `drive/js/ver-pdf.js` | 112 | class/module | VerPdfModule | — | — | — |
+
+## AJAX y contratos JSON
+
+| Cliente JavaScript | `fetch` | XHR | jQuery AJAX | Lecturas JSON | Comprobaciones de respuesta |
+|---|---:|---:|---:|---:|---:|
+| `drive/js/ai-search.js` | 1 | 0 | 0 | 1 | 2 |
+| `drive/js/arcadecloud-updater.js` | 2 | 0 | 0 | 0 | 30 |
+| `drive/js/arcadelink-share.js` | 1 | 0 | 0 | 0 | 2 |
+| `drive/js/archivos.js` | 3 | 0 | 0 | 1 | 22 |
+| `drive/js/audiovideo.js` | 1 | 0 | 0 | 1 | 0 |
+| `drive/js/aws-comprehend.js` | 1 | 0 | 0 | 0 | 3 |
+| `drive/js/background-tasks.js` | 2 | 0 | 0 | 0 | 14 |
+| `drive/js/carpetas.js` | 2 | 0 | 0 | 2 | 11 |
+| `drive/js/compute-node-idle.js` | 3 | 0 | 0 | 3 | 6 |
+| `drive/js/descarga-multiple.js` | 1 | 0 | 0 | 0 | 2 |
+| `drive/js/descarga-uno.js` | 1 | 0 | 0 | 0 | 2 |
+| `drive/js/elimina-multiple.js` | 2 | 0 | 0 | 1 | 3 |
+| `drive/js/elimina-uno.js` | 2 | 0 | 0 | 1 | 3 |
+| `drive/js/federation-drop.js` | 5 | 0 | 0 | 3 | 16 |
+| `drive/js/federation-footer.js` | 6 | 0 | 0 | 6 | 18 |
+| `drive/js/federation-os-admin.js` | 1 | 0 | 0 | 0 | 3 |
+| `drive/js/federation-portal.js` | 1 | 0 | 0 | 0 | 11 |
+| `drive/js/federation-share-drive.js` | 1 | 0 | 0 | 0 | 5 |
+| `drive/js/file-block.js` | 1 | 0 | 0 | 1 | 2 |
+| `drive/js/file-security.js` | 1 | 0 | 0 | 0 | 6 |
+| `drive/js/folder-document.js` | 1 | 0 | 0 | 1 | 2 |
+| `drive/js/media-floating.js` | 1 | 0 | 0 | 1 | 3 |
+| `drive/js/media-processing.js` | 3 | 0 | 0 | 3 | 5 |
+| `drive/js/move-tasks.js` | 2 | 0 | 0 | 0 | 6 |
+| `drive/js/obtenerFiltros.js` | 3 | 0 | 0 | 0 | 0 |
+| `drive/js/polly-background.js` | 1 | 0 | 0 | 0 | 3 |
+| `drive/js/polly.js` | 0 | 0 | 2 | 0 | 8 |
+| `drive/js/profile.js` | 2 | 0 | 0 | 1 | 4 |
+| `drive/js/server-admin.js` | 2 | 0 | 0 | 2 | 6 |
+| `drive/js/setup.js` | 2 | 0 | 0 | 2 | 6 |
+| `drive/js/sincronizar.js` | 1 | 0 | 0 | 0 | 3 |
+| `drive/js/so-clipboard.js` | 1 | 0 | 0 | 0 | 3 |
+| `drive/js/so-node.js` | 2 | 0 | 0 | 2 | 4 |
+| `drive/js/so-power.js` | 1 | 0 | 0 | 1 | 2 |
+| `drive/js/so-screenshot-paste.js` | 3 | 0 | 0 | 1 | 7 |
+| `drive/js/so-search.js` | 2 | 0 | 0 | 1 | 2 |
+| `drive/js/so-share.js` | 1 | 0 | 0 | 0 | 1 |
+| `drive/js/so-terminal.js` | 2 | 0 | 0 | 2 | 5 |
+| `drive/js/so.js` | 2 | 0 | 0 | 1 | 3 |
+| `drive/js/soportesMediaTypes.js` | 2 | 1 | 0 | 2 | 9 |
+| `drive/js/storage-usage.js` | 1 | 0 | 0 | 1 | 3 |
+| `drive/js/subir-chunked.js` | 4 | 1 | 0 | 1 | 11 |
+| `drive/js/subir-dropzone.js` | 1 | 1 | 0 | 0 | 12 |
+| `drive/js/subir.js` | 4 | 0 | 0 | 1 | 11 |
+| `drive/js/transcribe-background.js` | 1 | 0 | 0 | 0 | 7 |
+| `drive/js/upload-center.js` | 8 | 2 | 0 | 1 | 21 |
+
+### Archivos JSON
+
+| Archivo | Válido | Tipo raíz | Claves raíz |
+|---|:---:|---|---|
+| `composer.json` | sí | object | `require` |
+| `drive/config/activity-cost-pricing.json` | sí | object | `currency`, `notes`, `rates`, `region_reference`, `source_id`, `version` |
+| `drive/config/federation-seeds.json` | sí | object | `bootstrap_nodes`, `seeds`, `version` |
+| `drive/docs/runtime_endpoints.json` | sí | object | `active`, `rows` |
+
+## Dictamen
+
+- **PHP runtime:** consistente estructuralmente con entrypoints delgados y capas Controller/Service/Repository. Las vistas, bootstraps y tests son excepciones deliberadas; convertirlos en clases no aportaría encapsulación.
+- **JavaScript:** todos los archivos están encapsulados en clases. Las fachadas globales existentes son deuda de compatibilidad, no lógica procedural nueva; deben reducirse sólo al migrar sus consumidores HTML.
+- **AJAX:** las llamadas permanecen dentro de módulos OOP. La cantidad de lecturas JSON y comprobaciones es una señal heurística, no una prueba de corrección: los contratos funcionales continúan cubiertos por smoke tests.
+- **JSON:** los documentos válidos se consideran DTO/configuración. No corresponde convertir datos JSON a clases; la conversión a objetos tipados debe ocurrir en el límite PHP/JavaScript cuando el dominio lo requiera.
+
+### Prioridades de mantenimiento
+
+1. No añadir SQL, SDK AWS ni acceso directo a superglobales en entrypoints.
+2. Centralizar gradualmente transporte AJAX repetido en colaboradores inyectables, sin romper URLs públicas.
+3. Mantener las fachadas `window` como adaptadores mínimos y evitar estado de negocio global.
+4. Validar todo JSON al cargarlo y versionar explícitamente los payloads federados persistentes.
 
 ## Objetivo de refactorización
 

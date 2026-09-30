@@ -59,6 +59,9 @@ jobs:
           from pathlib import Path
           p = Path('drive/docs/oop_inventory.json')
           data = json.loads(p.read_text())
+          assert data['summary']['php_needs_migration'] == 0
+          assert data['summary']['js_needs_migration'] == 0
+          assert data['summary']['json_invalid'] == 0
           print('=== PHP_HEURISTIC_REVIEW ===')
           for x in data['php']:
               if x['kind'] in {'procedural endpoint','endpoint with logic'} or x['functions']:

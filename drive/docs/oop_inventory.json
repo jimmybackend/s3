@@ -1,15 +1,49 @@
 {
   "summary": {
-    "php_total": 485,
-    "php_class_modules": 288,
+    "php_total": 487,
+    "php_class_modules": 289,
     "php_needs_migration": 0,
     "php_tests": 46,
     "js_total": 62,
     "js_class_modules": 62,
     "js_needs_migration": 0,
-    "js_compatibility_facades": 8
+    "js_compatibility_facades": 8,
+    "ajax_clients": 46,
+    "ajax_calls": 98,
+    "json_total": 4,
+    "json_invalid": 0
   },
   "php": [
+    {
+      "path": "Config-s3.php",
+      "lines": 324,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "db.php",
+      "lines": 51,
+      "kind": "bootstrap",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": true,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
     {
       "path": "drive/activity_costs.php",
       "lines": 8,
@@ -7438,6 +7472,13 @@
       "window_func": [],
       "top_vars": [],
       "iife": false,
+      "ajax": {
+        "fetch": 0,
+        "xhr": 0,
+        "jquery": 0,
+        "json_consumers": 0,
+        "response_checks": 0
+      },
       "issues": []
     },
     {
@@ -7452,6 +7493,13 @@
       "window_func": [],
       "top_vars": [],
       "iife": false,
+      "ajax": {
+        "fetch": 1,
+        "xhr": 0,
+        "jquery": 0,
+        "json_consumers": 1,
+        "response_checks": 2
+      },
       "issues": []
     },
     {
@@ -7466,6 +7514,13 @@
       "window_func": [],
       "top_vars": [],
       "iife": false,
+      "ajax": {
+        "fetch": 2,
+        "xhr": 0,
+        "jquery": 0,
+        "json_consumers": 0,
+        "response_checks": 30
+      },
       "issues": []
     },
     {
@@ -7480,6 +7535,13 @@
       "window_func": [],
       "top_vars": [],
       "iife": false,
+      "ajax": {
+        "fetch": 1,
+        "xhr": 0,
+        "jquery": 0,
+        "json_consumers": 0,
+        "response_checks": 2
+      },
       "issues": []
     },
     {
@@ -7518,6 +7580,13 @@
       ],
       "top_vars": [],
       "iife": true,
+      "ajax": {
+        "fetch": 3,
+        "xhr": 0,
+        "jquery": 0,
+        "json_consumers": 1,
+        "response_checks": 22
+      },
       "issues": [
         "window functions: abrirModalRenombrarArchivo, cerrarModalCompartir, setFileSecurity"
       ]
@@ -7556,6 +7625,13 @@
       ],
       "top_vars": [],
       "iife": true,
+      "ajax": {
+        "fetch": 1,
+        "xhr": 0,
+        "jquery": 0,
+        "json_consumers": 1,
+        "response_checks": 0
+      },
       "issues": [
         "window functions: audioNext, audioPrev, reproducirVideoDesde, videoNext, videoPlayPause, videoPrev, wavePlayPause"
       ]
@@ -7573,6 +7649,13 @@
       "window_func": [],
       "top_vars": [],
       "iife": false,
+      "ajax": {
+        "fetch": 1,
+        "xhr": 0,
+        "jquery": 0,
+        "json_consumers": 0,
+        "response_checks": 3
+      },
       "issues": []
     },
     {
@@ -7587,6 +7670,13 @@
       "window_func": [],
       "top_vars": [],
       "iife": false,
+      "ajax": {
+        "fetch": 0,
+        "xhr": 0,
+        "jquery": 0,
+        "json_consumers": 0,
+        "response_checks": 0
+      },
       "issues": []
     },
     {
@@ -7606,6 +7696,13 @@
       "window_func": [],
       "top_vars": [],
       "iife": false,
+      "ajax": {
+        "fetch": 2,
+        "xhr": 0,
+        "jquery": 0,
+        "json_consumers": 0,
+        "response_checks": 14
+      },
       "issues": []
     },
     {
@@ -7635,6 +7732,13 @@
       ],
       "top_vars": [],
       "iife": true,
+      "ajax": {
+        "fetch": 2,
+        "xhr": 0,
+        "jquery": 0,
+        "json_consumers": 2,
+        "response_checks": 11
+      },
       "issues": [
         "window functions: actualizarBloqueCarpetas"
       ]
@@ -7651,6 +7755,13 @@
       "window_func": [],
       "top_vars": [],
       "iife": false,
+      "ajax": {
+        "fetch": 3,
+        "xhr": 0,
+        "jquery": 0,
+        "json_consumers": 3,
+        "response_checks": 6
+      },
       "issues": []
     },
     {
@@ -7665,6 +7776,13 @@
       "window_func": [],
       "top_vars": [],
       "iife": true,
+      "ajax": {
+        "fetch": 1,
+        "xhr": 0,
+        "jquery": 0,
+        "json_consumers": 0,
+        "response_checks": 2
+      },
       "issues": []
     },
     {
@@ -7679,6 +7797,13 @@
       "window_func": [],
       "top_vars": [],
       "iife": true,
+      "ajax": {
+        "fetch": 1,
+        "xhr": 0,
+        "jquery": 0,
+        "json_consumers": 0,
+        "response_checks": 2
+      },
       "issues": []
     },
     {
@@ -7695,6 +7820,13 @@
       "window_func": [],
       "top_vars": [],
       "iife": false,
+      "ajax": {
+        "fetch": 0,
+        "xhr": 0,
+        "jquery": 0,
+        "json_consumers": 0,
+        "response_checks": 0
+      },
       "issues": []
     },
     {
@@ -7711,6 +7843,13 @@
       "window_func": [],
       "top_vars": [],
       "iife": true,
+      "ajax": {
+        "fetch": 2,
+        "xhr": 0,
+        "jquery": 0,
+        "json_consumers": 1,
+        "response_checks": 3
+      },
       "issues": []
     },
     {
@@ -7727,6 +7866,13 @@
       "window_func": [],
       "top_vars": [],
       "iife": true,
+      "ajax": {
+        "fetch": 2,
+        "xhr": 0,
+        "jquery": 0,
+        "json_consumers": 1,
+        "response_checks": 3
+      },
       "issues": []
     },
     {
@@ -7741,6 +7887,13 @@
       "window_func": [],
       "top_vars": [],
       "iife": false,
+      "ajax": {
+        "fetch": 0,
+        "xhr": 0,
+        "jquery": 0,
+        "json_consumers": 0,
+        "response_checks": 0
+      },
       "issues": []
     },
     {
@@ -7755,6 +7908,13 @@
       "window_func": [],
       "top_vars": [],
       "iife": false,
+      "ajax": {
+        "fetch": 5,
+        "xhr": 0,
+        "jquery": 0,
+        "json_consumers": 3,
+        "response_checks": 16
+      },
       "issues": []
     },
     {
@@ -7769,6 +7929,13 @@
       "window_func": [],
       "top_vars": [],
       "iife": false,
+      "ajax": {
+        "fetch": 6,
+        "xhr": 0,
+        "jquery": 0,
+        "json_consumers": 6,
+        "response_checks": 18
+      },
       "issues": []
     },
     {
@@ -7785,6 +7952,13 @@
       "window_func": [],
       "top_vars": [],
       "iife": false,
+      "ajax": {
+        "fetch": 1,
+        "xhr": 0,
+        "jquery": 0,
+        "json_consumers": 0,
+        "response_checks": 3
+      },
       "issues": []
     },
     {
@@ -7799,6 +7973,13 @@
       "window_func": [],
       "top_vars": [],
       "iife": false,
+      "ajax": {
+        "fetch": 0,
+        "xhr": 0,
+        "jquery": 0,
+        "json_consumers": 0,
+        "response_checks": 0
+      },
       "issues": []
     },
     {
@@ -7813,6 +7994,13 @@
       "window_func": [],
       "top_vars": [],
       "iife": false,
+      "ajax": {
+        "fetch": 1,
+        "xhr": 0,
+        "jquery": 0,
+        "json_consumers": 0,
+        "response_checks": 11
+      },
       "issues": []
     },
     {
@@ -7827,6 +8015,13 @@
       "window_func": [],
       "top_vars": [],
       "iife": false,
+      "ajax": {
+        "fetch": 1,
+        "xhr": 0,
+        "jquery": 0,
+        "json_consumers": 0,
+        "response_checks": 5
+      },
       "issues": []
     },
     {
@@ -7846,6 +8041,13 @@
       "window_func": [],
       "top_vars": [],
       "iife": false,
+      "ajax": {
+        "fetch": 1,
+        "xhr": 0,
+        "jquery": 0,
+        "json_consumers": 1,
+        "response_checks": 2
+      },
       "issues": []
     },
     {
@@ -7860,6 +8062,13 @@
       "window_func": [],
       "top_vars": [],
       "iife": false,
+      "ajax": {
+        "fetch": 1,
+        "xhr": 0,
+        "jquery": 0,
+        "json_consumers": 0,
+        "response_checks": 6
+      },
       "issues": []
     },
     {
@@ -7876,6 +8085,13 @@
       "window_func": [],
       "top_vars": [],
       "iife": false,
+      "ajax": {
+        "fetch": 0,
+        "xhr": 0,
+        "jquery": 0,
+        "json_consumers": 0,
+        "response_checks": 0
+      },
       "issues": []
     },
     {
@@ -7896,6 +8112,13 @@
       ],
       "top_vars": [],
       "iife": true,
+      "ajax": {
+        "fetch": 1,
+        "xhr": 0,
+        "jquery": 0,
+        "json_consumers": 1,
+        "response_checks": 2
+      },
       "issues": [
         "window functions: openFolderDocumentCreator"
       ]
@@ -7921,6 +8144,13 @@
       ],
       "top_vars": [],
       "iife": true,
+      "ajax": {
+        "fetch": 0,
+        "xhr": 0,
+        "jquery": 0,
+        "json_consumers": 0,
+        "response_checks": 0
+      },
       "issues": [
         "window functions: getGaleriaGridSize, setGaleriaGridSize"
       ]
@@ -7939,6 +8169,13 @@
       "window_func": [],
       "top_vars": [],
       "iife": false,
+      "ajax": {
+        "fetch": 1,
+        "xhr": 0,
+        "jquery": 0,
+        "json_consumers": 1,
+        "response_checks": 3
+      },
       "issues": []
     },
     {
@@ -7955,6 +8192,13 @@
       "window_func": [],
       "top_vars": [],
       "iife": false,
+      "ajax": {
+        "fetch": 3,
+        "xhr": 0,
+        "jquery": 0,
+        "json_consumers": 3,
+        "response_checks": 5
+      },
       "issues": []
     },
     {
@@ -7969,6 +8213,13 @@
       "window_func": [],
       "top_vars": [],
       "iife": false,
+      "ajax": {
+        "fetch": 0,
+        "xhr": 0,
+        "jquery": 0,
+        "json_consumers": 0,
+        "response_checks": 0
+      },
       "issues": []
     },
     {
@@ -7989,6 +8240,13 @@
       "window_func": [],
       "top_vars": [],
       "iife": false,
+      "ajax": {
+        "fetch": 2,
+        "xhr": 0,
+        "jquery": 0,
+        "json_consumers": 0,
+        "response_checks": 6
+      },
       "issues": []
     },
     {
@@ -8007,6 +8265,13 @@
       "window_func": [],
       "top_vars": [],
       "iife": true,
+      "ajax": {
+        "fetch": 3,
+        "xhr": 0,
+        "jquery": 0,
+        "json_consumers": 0,
+        "response_checks": 0
+      },
       "issues": []
     },
     {
@@ -8023,6 +8288,13 @@
       "window_func": [],
       "top_vars": [],
       "iife": false,
+      "ajax": {
+        "fetch": 0,
+        "xhr": 0,
+        "jquery": 0,
+        "json_consumers": 0,
+        "response_checks": 0
+      },
       "issues": []
     },
     {
@@ -8037,6 +8309,13 @@
       "window_func": [],
       "top_vars": [],
       "iife": false,
+      "ajax": {
+        "fetch": 1,
+        "xhr": 0,
+        "jquery": 0,
+        "json_consumers": 0,
+        "response_checks": 3
+      },
       "issues": []
     },
     {
@@ -8079,6 +8358,13 @@
       ],
       "top_vars": [],
       "iife": true,
+      "ajax": {
+        "fetch": 0,
+        "xhr": 0,
+        "jquery": 2,
+        "json_consumers": 0,
+        "response_checks": 8
+      },
       "issues": [
         "window functions: abrirModalGrabarAudio, abrirModalPolly, abrirModalRekognition, abrirModalTraducir, abrirModalTranscribir, copiarTextract, copiarTraducido, copiarTx"
       ]
@@ -8095,6 +8381,13 @@
       "window_func": [],
       "top_vars": [],
       "iife": false,
+      "ajax": {
+        "fetch": 2,
+        "xhr": 0,
+        "jquery": 0,
+        "json_consumers": 1,
+        "response_checks": 4
+      },
       "issues": []
     },
     {
@@ -8111,6 +8404,13 @@
       "window_func": [],
       "top_vars": [],
       "iife": false,
+      "ajax": {
+        "fetch": 0,
+        "xhr": 0,
+        "jquery": 0,
+        "json_consumers": 0,
+        "response_checks": 0
+      },
       "issues": []
     },
     {
@@ -8125,6 +8425,13 @@
       "window_func": [],
       "top_vars": [],
       "iife": false,
+      "ajax": {
+        "fetch": 2,
+        "xhr": 0,
+        "jquery": 0,
+        "json_consumers": 2,
+        "response_checks": 6
+      },
       "issues": []
     },
     {
@@ -8139,6 +8446,13 @@
       "window_func": [],
       "top_vars": [],
       "iife": false,
+      "ajax": {
+        "fetch": 2,
+        "xhr": 0,
+        "jquery": 0,
+        "json_consumers": 2,
+        "response_checks": 6
+      },
       "issues": []
     },
     {
@@ -8161,6 +8475,13 @@
       ],
       "top_vars": [],
       "iife": false,
+      "ajax": {
+        "fetch": 1,
+        "xhr": 0,
+        "jquery": 0,
+        "json_consumers": 0,
+        "response_checks": 3
+      },
       "issues": [
         "window functions: triggerSyncFolderS3, triggerSyncS3"
       ]
@@ -8177,6 +8498,13 @@
       "window_func": [],
       "top_vars": [],
       "iife": false,
+      "ajax": {
+        "fetch": 1,
+        "xhr": 0,
+        "jquery": 0,
+        "json_consumers": 0,
+        "response_checks": 3
+      },
       "issues": []
     },
     {
@@ -8193,6 +8521,13 @@
       "window_func": [],
       "top_vars": [],
       "iife": false,
+      "ajax": {
+        "fetch": 0,
+        "xhr": 0,
+        "jquery": 0,
+        "json_consumers": 0,
+        "response_checks": 3
+      },
       "issues": []
     },
     {
@@ -8209,6 +8544,13 @@
       "window_func": [],
       "top_vars": [],
       "iife": false,
+      "ajax": {
+        "fetch": 0,
+        "xhr": 0,
+        "jquery": 0,
+        "json_consumers": 0,
+        "response_checks": 0
+      },
       "issues": []
     },
     {
@@ -8223,6 +8565,13 @@
       "window_func": [],
       "top_vars": [],
       "iife": false,
+      "ajax": {
+        "fetch": 2,
+        "xhr": 0,
+        "jquery": 0,
+        "json_consumers": 2,
+        "response_checks": 4
+      },
       "issues": []
     },
     {
@@ -8239,6 +8588,13 @@
       "window_func": [],
       "top_vars": [],
       "iife": false,
+      "ajax": {
+        "fetch": 1,
+        "xhr": 0,
+        "jquery": 0,
+        "json_consumers": 1,
+        "response_checks": 2
+      },
       "issues": []
     },
     {
@@ -8255,6 +8611,13 @@
       "window_func": [],
       "top_vars": [],
       "iife": false,
+      "ajax": {
+        "fetch": 3,
+        "xhr": 0,
+        "jquery": 0,
+        "json_consumers": 1,
+        "response_checks": 7
+      },
       "issues": []
     },
     {
@@ -8269,6 +8632,13 @@
       "window_func": [],
       "top_vars": [],
       "iife": false,
+      "ajax": {
+        "fetch": 2,
+        "xhr": 0,
+        "jquery": 0,
+        "json_consumers": 1,
+        "response_checks": 2
+      },
       "issues": []
     },
     {
@@ -8285,6 +8655,13 @@
       "window_func": [],
       "top_vars": [],
       "iife": false,
+      "ajax": {
+        "fetch": 1,
+        "xhr": 0,
+        "jquery": 0,
+        "json_consumers": 0,
+        "response_checks": 1
+      },
       "issues": []
     },
     {
@@ -8301,6 +8678,13 @@
       "window_func": [],
       "top_vars": [],
       "iife": false,
+      "ajax": {
+        "fetch": 2,
+        "xhr": 0,
+        "jquery": 0,
+        "json_consumers": 2,
+        "response_checks": 5
+      },
       "issues": []
     },
     {
@@ -8318,6 +8702,13 @@
       "window_func": [],
       "top_vars": [],
       "iife": false,
+      "ajax": {
+        "fetch": 2,
+        "xhr": 0,
+        "jquery": 0,
+        "json_consumers": 1,
+        "response_checks": 3
+      },
       "issues": []
     },
     {
@@ -8332,6 +8723,13 @@
       "window_func": [],
       "top_vars": [],
       "iife": true,
+      "ajax": {
+        "fetch": 2,
+        "xhr": 1,
+        "jquery": 0,
+        "json_consumers": 2,
+        "response_checks": 9
+      },
       "issues": []
     },
     {
@@ -8348,6 +8746,13 @@
       "window_func": [],
       "top_vars": [],
       "iife": false,
+      "ajax": {
+        "fetch": 1,
+        "xhr": 0,
+        "jquery": 0,
+        "json_consumers": 1,
+        "response_checks": 3
+      },
       "issues": []
     },
     {
@@ -8362,6 +8767,13 @@
       "window_func": [],
       "top_vars": [],
       "iife": true,
+      "ajax": {
+        "fetch": 4,
+        "xhr": 1,
+        "jquery": 0,
+        "json_consumers": 1,
+        "response_checks": 11
+      },
       "issues": []
     },
     {
@@ -8379,6 +8791,13 @@
       "window_func": [],
       "top_vars": [],
       "iife": false,
+      "ajax": {
+        "fetch": 1,
+        "xhr": 1,
+        "jquery": 0,
+        "json_consumers": 0,
+        "response_checks": 12
+      },
       "issues": []
     },
     {
@@ -8393,6 +8812,13 @@
       "window_func": [],
       "top_vars": [],
       "iife": true,
+      "ajax": {
+        "fetch": 4,
+        "xhr": 0,
+        "jquery": 0,
+        "json_consumers": 1,
+        "response_checks": 11
+      },
       "issues": []
     },
     {
@@ -8409,6 +8835,13 @@
       "window_func": [],
       "top_vars": [],
       "iife": false,
+      "ajax": {
+        "fetch": 0,
+        "xhr": 0,
+        "jquery": 0,
+        "json_consumers": 0,
+        "response_checks": 0
+      },
       "issues": []
     },
     {
@@ -8425,6 +8858,13 @@
       "window_func": [],
       "top_vars": [],
       "iife": true,
+      "ajax": {
+        "fetch": 1,
+        "xhr": 0,
+        "jquery": 0,
+        "json_consumers": 0,
+        "response_checks": 7
+      },
       "issues": []
     },
     {
@@ -8439,6 +8879,13 @@
       "window_func": [],
       "top_vars": [],
       "iife": false,
+      "ajax": {
+        "fetch": 8,
+        "xhr": 2,
+        "jquery": 0,
+        "json_consumers": 1,
+        "response_checks": 21
+      },
       "issues": []
     },
     {
@@ -8456,6 +8903,13 @@
       "window_func": [],
       "top_vars": [],
       "iife": false,
+      "ajax": {
+        "fetch": 0,
+        "xhr": 0,
+        "jquery": 0,
+        "json_consumers": 0,
+        "response_checks": 0
+      },
       "issues": []
     },
     {
@@ -8474,6 +8928,13 @@
       ],
       "top_vars": [],
       "iife": false,
+      "ajax": {
+        "fetch": 0,
+        "xhr": 0,
+        "jquery": 0,
+        "json_consumers": 0,
+        "response_checks": 0
+      },
       "issues": [
         "window functions: verMetadatos"
       ]
@@ -8493,7 +8954,64 @@
       "window_func": [],
       "top_vars": [],
       "iife": true,
+      "ajax": {
+        "fetch": 0,
+        "xhr": 0,
+        "jquery": 0,
+        "json_consumers": 0,
+        "response_checks": 0
+      },
       "issues": []
+    }
+  ],
+  "json": [
+    {
+      "path": "composer.json",
+      "bytes": 142,
+      "valid": true,
+      "root_type": "object",
+      "keys": [
+        "require"
+      ],
+      "error": null
+    },
+    {
+      "path": "drive/config/activity-cost-pricing.json",
+      "bytes": 1250,
+      "valid": true,
+      "root_type": "object",
+      "keys": [
+        "currency",
+        "notes",
+        "rates",
+        "region_reference",
+        "source_id",
+        "version"
+      ],
+      "error": null
+    },
+    {
+      "path": "drive/config/federation-seeds.json",
+      "bytes": 356,
+      "valid": true,
+      "root_type": "object",
+      "keys": [
+        "bootstrap_nodes",
+        "seeds",
+        "version"
+      ],
+      "error": null
+    },
+    {
+      "path": "drive/docs/runtime_endpoints.json",
+      "bytes": 111055,
+      "valid": true,
+      "root_type": "object",
+      "keys": [
+        "active",
+        "rows"
+      ],
+      "error": null
     }
   ]
 }

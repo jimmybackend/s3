@@ -1446,7 +1446,7 @@
     },
     {
       "path": "drive/so.php",
-      "size": 101192,
+      "size": 102331,
       "active": true,
       "references": [
         "drive/s3.php",
@@ -3803,7 +3803,7 @@
     },
     {
       "path": "drive/tests/web_os_contract_smoke.php",
-      "size": 44400,
+      "size": 45229,
       "active": false,
       "references": []
     },

@@ -376,6 +376,7 @@ class ArcadeCloudOsShell {
     this.setContextAction('office', !multi && !locked && Boolean(entry.dataset.officeUrl));
     this.setContextAction('edit', !multi && !locked && Boolean(entry.dataset.editUrl));
     this.setContextAction('download', !multi && !locked && Boolean(entry.dataset.downloadUrl));
+    this.setContextAction('wallpaper', !multi && !locked && entry.dataset.image === '1' && Boolean(entry.dataset.wallpaperUrl));
     this.setContextAction('classic', !multi);
 
     const selectionDownload = this.context.querySelector('[data-selection-context="download"]');
@@ -1097,6 +1098,12 @@ class ArcadeCloudOsShell {
 
     if (action === 'download' && entry.dataset.downloadUrl) {
       this.window.location.href = entry.dataset.downloadUrl;
+      this.hideContext();
+      return;
+    }
+
+    if (action === 'wallpaper' && entry.dataset.wallpaperUrl) {
+      this.window.ArcadeCloudOsAppearance?.setWallpaper(entry.dataset.wallpaperUrl, name);
       this.hideContext();
       return;
     }

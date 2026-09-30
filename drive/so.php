@@ -168,6 +168,7 @@ $e = static fn(mixed $value): string => FileViewHelper::escape($value);
 $formatBytes = static fn(int $bytes): string => FileViewHelper::formatBytes($bytes);
 $load = $nodeSnapshot['load_average'] ?? [0, 0, 0];
 $isSuperAdmin = $session->isSuperAdmin();
+$canViewPersonalTools = $app->personalToolAccessService()->state() === 'owner';
 $serverConsoleCsrf = (string)$session->get('csrf', '');
 if ($isSuperAdmin && !preg_match('/\A[a-f0-9]{32,128}\z/', $serverConsoleCsrf)) {
     $serverConsoleCsrf = bin2hex(random_bytes(16));
@@ -744,6 +745,70 @@ Escribe help o usa uno de los botones disponibles.</pre>
       </div>
     </section>
     <?php endif; ?>
+
+    <section class="os-window os-settings-window" id="settingsWindow" data-window-title="Configuración" style="left:18vw;top:7vh;width:min(760px,82vw);height:min(720px,80vh);">
+      <div class="os-window-titlebar" data-window-drag-handle>
+        <div class="os-window-title"><i class="fas fa-gear"></i><span>Configuración</span></div>
+        <div class="os-window-controls">
+          <button type="button" data-window-minimize aria-label="Minimizar"><i class="fas fa-minus"></i></button>
+          <button type="button" data-window-maximize aria-label="Maximizar"><i class="far fa-square"></i></button>
+          <button type="button" data-window-close aria-label="Cerrar"><i class="fas fa-xmark"></i></button>
+        </div>
+      </div>
+      <div class="os-window-body os-settings-body">
+        <header class="os-settings-heading"><span>Apariencia</span><p>Personaliza este escritorio. Los cambios se aplican y guardan al instante.</p></header>
+        <div class="os-appearance-preview" id="osAppearancePreview" aria-label="Vista previa del escritorio"><span></span><i></i><b></b></div>
+        <fieldset class="os-settings-group">
+          <legend>Tema</legend>
+          <div class="os-choice-row" role="radiogroup" aria-label="Tema">
+            <button type="button" data-os-theme="light" role="radio"><i class="fas fa-sun"></i> Claro</button>
+            <button type="button" data-os-theme="dark" role="radio"><i class="fas fa-moon"></i> Oscuro</button>
+          </div>
+        </fieldset>
+        <fieldset class="os-settings-group">
+          <legend>Fondo del escritorio</legend>
+          <div class="os-wallpaper-grid">
+            <button type="button" class="os-wallpaper-choice is-original" data-os-wallpaper-choice="original"><span></span><strong>Fondo original</strong></button>
+            <button type="button" class="os-wallpaper-choice is-none" data-os-wallpaper-choice="none"><span><i class="fas fa-ban"></i></span><strong>Sin imagen</strong></button>
+            <button type="button" class="os-wallpaper-choice is-current" data-os-wallpaper-choice="current" hidden><span></span><strong data-os-current-wallpaper>Imagen elegida</strong></button>
+          </div>
+          <small>También puedes elegir cualquier imagen desde su menú contextual en “Mis datos”.</small>
+        </fieldset>
+        <fieldset class="os-settings-group os-opacity-controls">
+          <legend>Transparencia</legend>
+          <label for="osWindowOpacity"><span>Transparencia de ventanas</span><output id="osWindowOpacityValue">94%</output></label>
+          <input type="range" id="osWindowOpacity" min="35" max="100" step="1" value="94">
+          <label for="osMenuOpacity"><span>Transparencia de menús</span><output id="osMenuOpacityValue">98%</output></label>
+          <input type="range" id="osMenuOpacity" min="35" max="100" step="1" value="98">
+        </fieldset>
+        <button type="button" class="os-settings-reset" data-os-reset-appearance><i class="fas fa-arrow-rotate-left"></i> Restaurar configuración de apariencia</button>
+      </div>
+    </section>
+
+    <section class="os-window os-links-window" id="linksWindow" data-window-title="Enlaces" style="left:27vw;top:12vh;width:min(600px,72vw);height:min(520px,70vh);">
+      <div class="os-window-titlebar" data-window-drag-handle>
+        <div class="os-window-title"><i class="fas fa-link"></i><span>Enlaces</span></div>
+        <div class="os-window-controls">
+          <button type="button" data-window-minimize aria-label="Minimizar"><i class="fas fa-minus"></i></button>
+          <button type="button" data-window-maximize aria-label="Maximizar"><i class="far fa-square"></i></button>
+          <button type="button" data-window-close aria-label="Cerrar"><i class="fas fa-xmark"></i></button>
+        </div>
+      </div>
+      <div class="os-window-body">
+        <div class="os-links-grid">
+          <a href="activity_costs.php"><i class="fas fa-receipt"></i><span><strong>Actividad y costos</strong><small>Consumo de tu cuenta</small></span></a>
+          <a href="s3.php"><i class="fas fa-rotate"></i><span><strong>Sincronización S3</strong><small>Disponible en Drive clásico</small></span></a>
+          <?php if ($canViewPersonalTools): ?>
+          <a href="aws.php" target="_blank" rel="noopener"><i class="fab fa-aws"></i><span><strong>AWS y códigos TOTP</strong><small>Herramienta personal autorizada</small></span></a>
+          <a href="ec2.php" target="_blank" rel="noopener"><i class="fas fa-server"></i><span><strong>Gestión EC2</strong><small>Instancias y herramientas del servidor</small></span></a>
+          <a href="activity_costs.php"><i class="fas fa-chart-line"></i><span><strong>Costos AWS</strong><small>Costos reales para el propietario</small></span></a>
+          <?php endif; ?>
+          <?php if ($isSuperAdmin): ?>
+          <a href="ec2.php#serverConsolePanel" target="_blank" rel="noopener"><i class="fas fa-terminal"></i><span><strong>Consola del servidor</strong><small>Acceso restringido a superadmin</small></span></a>
+          <?php endif; ?>
+        </div>
+      </div>
+    </section>
   </main>
 
   <div class="os-file-context os-folder-context" id="folderContextMenu" hidden>
@@ -1793,20 +1858,8 @@ Escribe help o usa uno de los botones disponibles.</pre>
     <button type="button" data-window-open="explorerWindow"><i class="fas fa-folder-open"></i> Mis datos</button>
     <button type="button" data-window-open="appsWindow"><i class="fas fa-shapes"></i> Aplicaciones</button>
     <a href="s3.php"><i class="fas fa-hard-drive"></i> Drive clásico</a>
-    <section class="os-appearance" aria-labelledby="osAppearanceTitle">
-      <div class="os-appearance-title" id="osAppearanceTitle"><i class="fas fa-palette"></i> Apariencia</div>
-      <label for="osWindowOpacity">
-        <span>Transparencia de ventanas</span>
-        <output id="osWindowOpacityValue">94%</output>
-      </label>
-      <input type="range" id="osWindowOpacity" min="35" max="100" step="1" value="94">
-      <label for="osMenuOpacity">
-        <span>Transparencia de menús</span>
-        <output id="osMenuOpacityValue">98%</output>
-      </label>
-      <input type="range" id="osMenuOpacity" min="35" max="100" step="1" value="98">
-      <button type="button" data-os-reset-wallpaper><i class="fas fa-image"></i> Restaurar fondo original</button>
-    </section>
+    <button type="button" data-window-open="settingsWindow"><i class="fas fa-gear"></i> Configuración</button>
+    <button type="button" data-window-open="linksWindow"><i class="fas fa-link"></i> Enlaces</button>
     <button type="button" data-os-reload><i class="fas fa-rotate-right"></i> Actualizar</button>
     <button type="button" data-os-about data-toggle="modal" data-target="#modalAcercaArcadeCloud"><i class="fas fa-circle-info"></i> Acerca de</button>
     <a href="logout.php" class="is-danger"><i class="fas fa-right-from-bracket"></i> Cerrar sesión</a>

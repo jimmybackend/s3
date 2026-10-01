@@ -593,6 +593,8 @@ $isExplorerFragment = (string)($_GET['_os_fragment'] ?? '') === 'explorer';
           <a class="os-app-card is-ready" href="office-launch.php" target="_blank" rel="noopener"><i class="fas fa-file-word"></i><strong>Office</strong><span>Disponible</span></a>
           <a class="os-app-card is-ready" href="office-launch.php" target="_blank" rel="noopener" title="Abrir escritorio Linux remoto por noVNC"><i class="fab fa-linux"></i><strong>Linux XFCE</strong><span>noVNC</span></a>
           <a class="os-app-card is-ready" href="office-launch.php?target=guacamole" target="_blank" rel="noopener" title="Abrir escritorio Linux remoto por Guacamole RDP"><i class="fas fa-headset"></i><strong>Guacamole RDP</strong><span>Audio + micrófono</span></a>
+          <a class="os-app-card is-ready" href="https://office.esforzados.com/" target="_blank" rel="noopener" title="Suite ofimática en la nube (enlace directo)"><i class="fas fa-file-lines"></i><strong>Office Web</strong><span>Enlace directo</span></a>
+          <a class="os-app-card is-ready" href="https://kde.esforzados.com/" target="_blank" rel="noopener" title="Abrir escritorio KDE Plasma remoto por Guacamole"><i class="fas fa-desktop"></i><strong>KDE Plasma</strong><span>Guacamole</span></a>
           <button type="button" class="os-app-card" disabled><i class="fas fa-pen-ruler"></i><strong>Diagramas</strong><span>Próximamente</span></button>
           <button type="button" class="os-app-card" disabled><i class="fas fa-image"></i><strong>Imagen</strong><span>Próximamente</span></button>
           <button type="button" class="os-app-card" disabled><i class="fas fa-wave-square"></i><strong>Audio</strong><span>Próximamente</span></button>
@@ -822,6 +824,10 @@ Escribe help o usa uno de los botones disponibles.</pre>
           <a href="#terminalWindow" data-window-open="terminalWindow"><i class="fas fa-terminal"></i><span><strong>Consola del servidor</strong><small>Acceso restringido a superadmin</small></span></a>
           <?php endif; ?>
           <a href="#federationWindow" data-window-open="federationWindow" data-open-federation><i class="fas fa-globe"></i><span><strong>FederationCloud</strong><small>Red y contenido compartido</small></span></a>
+          <a href="office-launch.php" target="_blank" rel="noopener"><i class="fas fa-file-word"></i><span><strong>Office</strong><small>Suite ofimática (launcher autenticado)</small></span></a>
+          <a href="office-launch.php" target="_blank" rel="noopener" title="Abrir escritorio Linux remoto por noVNC"><i class="fab fa-linux"></i><span><strong>Linux XFCE</strong><small>Escritorio remoto por noVNC</small></span></a>
+          <a href="office-launch.php?target=guacamole" target="_blank" rel="noopener" title="Abrir escritorio Linux remoto por Guacamole RDP"><i class="fas fa-headset"></i><span><strong>Guacamole RDP</strong><small>Audio + micrófono</small></span></a>
+          <a href="https://kde.esforzados.com/" target="_blank" rel="noopener" title="Abrir escritorio KDE Plasma remoto"><i class="fas fa-desktop"></i><span><strong>KDE Plasma</strong><small>Escritorio remoto KDE</small></span></a>
         </div>
       </div>
     </section>

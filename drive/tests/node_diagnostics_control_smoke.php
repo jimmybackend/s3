@@ -33,7 +33,8 @@ nodeContract(str_contains($control, 'SuperAdminReauthenticationService'), 'accio
 nodeContract(str_contains($helper, "if (!isset(\$catalog[\$componentId])"), 'helper root vuelve a validar catálogo y acción');
 nodeContract(!str_contains($controller, "postString('service')"), 'frontend no puede enviar nombres de unit systemd');
 nodeContract(str_contains($helper, "'start', '--no-block', \$unit"), 'run-now no bloquea PHP');
-nodeContract(str_contains($runtime, "['stopped', 'stopping']"), 'FastDrive detenido conserva salud neutral');
+nodeContract(str_contains($runtime, 'localAutoShutdown') && str_contains($runtime, "['media-worker', 'combined']"), 'autoapagado sólo se incorpora al nodo local de cómputo');
+nodeContract(str_contains($runtime, '!hash_equals($localInstanceId, $targetInstanceId)'), 'autoapagado rechaza un target EC2 que no coincida con la instancia local');
 nodeContract(str_contains($runtime, "'idle_timeout_seconds'=>\$timeout"), 'autoapagado usa timeout real del backend');
 nodeContract(str_contains($js, 'else this.stopPolling()'), 'polling se detiene al cerrar Mi nodo');
 nodeContract(str_contains($js, "s.critical") === false, 'UI no deriva controles críticos de datos libres');

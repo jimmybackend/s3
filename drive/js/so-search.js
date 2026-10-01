@@ -228,7 +228,7 @@ class ArcadeCloudOsSearch {
 
       if (!route) throw new Error('El resultado no tiene una carpeta válida.');
 
-      const explorer = this.document.getElementById('explorerWindow');
+      const explorer = this.document.querySelector('.os-explorer-window');
       if (explorer && typeof shell.openWindow === 'function') {
         shell.openWindow(explorer);
       }

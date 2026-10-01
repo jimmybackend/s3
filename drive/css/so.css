@@ -329,7 +329,7 @@ a{text-decoration:none;color:inherit}
   font-size:1.05rem
 }
 .os-start:hover,.os-start.is-open{background:rgba(38,198,255,.1)}
-.os-task-buttons{flex:1;display:flex;min-width:0;height:100%;overflow:hidden}
+.os-task-buttons{flex:1;display:flex;min-width:0;height:100%;overflow-x:auto;overflow-y:hidden;scrollbar-width:thin}
 .os-task-item{
   display:flex;align-items:stretch;min-width:126px;max-width:220px;height:100%;
   border-right:1px solid rgba(255,255,255,.04)
@@ -341,6 +341,7 @@ a{text-decoration:none;color:inherit}
 }
 .os-task-item.is-active .os-task-button{color:var(--os-text)}
 .os-task-button span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.os-task-button[data-window-id]{scroll-snap-align:start}
 .os-task-more{
   width:32px;flex:0 0 32px;border:0;background:transparent;color:var(--os-soft);cursor:pointer
 }

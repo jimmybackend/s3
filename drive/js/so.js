@@ -59,11 +59,21 @@ class ArcadeCloudOsShell {
     if (!win) return;
     if (!this.windows.includes(win)) this.windows.push(win);
     this.bindWindow(win);
+    if (this.window.ArcadeCloudWindowManager) {
+      const app = this.window.ArcadeCloudDesktop?.appFor?.(win) || 'window';
+      this.window.ArcadeCloudWindowManager.register(win, app);
+      this.window.ArcadeCloudWindowManager.focus(win);
+      return;
+    }
     this.activateWindow(win);
   }
 
   activateWindow(win) {
     if (!win) return;
+    if (this.window.ArcadeCloudWindowManager?.record(win)) {
+      this.window.ArcadeCloudWindowManager.focus(win);
+      return;
+    }
     this.windows.forEach((item) => item.classList.remove('is-active'));
     win.classList.add('is-active', 'is-open');
     win.style.zIndex = String(++this.zCounter);
@@ -85,6 +95,11 @@ class ArcadeCloudOsShell {
 
   closeWindow(win) {
     if (!win) return;
+    if (this.window.ArcadeCloudWindowManager?.record(win)) {
+      this.window.ArcadeCloudWindowManager.close(win);
+      this.windows = this.windows.filter((item) => item !== win);
+      return;
+    }
     win.dataset.minimized = '0';
     win.classList.remove('is-open', 'is-active');
 
@@ -102,6 +117,10 @@ class ArcadeCloudOsShell {
 
   minimizeWindow(win) {
     if (!win) return;
+    if (this.window.ArcadeCloudWindowManager?.record(win)) {
+      this.window.ArcadeCloudWindowManager.minimize(win);
+      return;
+    }
     win.classList.remove('is-open', 'is-active');
     win.dataset.minimized = '1';
 
@@ -115,11 +134,19 @@ class ArcadeCloudOsShell {
 
   toggleMaximize(win) {
     if (!win) return;
+    if (this.window.ArcadeCloudWindowManager?.record(win)) {
+      this.window.ArcadeCloudWindowManager.toggleMaximize(win);
+      return;
+    }
     win.classList.toggle('is-maximized');
     this.activateWindow(win);
   }
 
   syncTaskbar() {
+    if (this.window.ArcadeCloudWindowManager) {
+      this.window.ArcadeCloudWindowManager.syncTaskbar();
+      return;
+    }
     if (!this.taskButtons) return;
     this.taskButtons.innerHTML = '';
 
@@ -136,6 +163,7 @@ class ArcadeCloudOsShell {
       const button = this.document.createElement('button');
       button.type = 'button';
       button.className = 'os-task-button';
+      button.dataset.windowId = win.dataset.windowId || '';
       button.innerHTML = '<i class="far fa-window-maximize"></i><span></span>';
 
       const label = button.querySelector('span');
@@ -318,7 +346,7 @@ class ArcadeCloudOsShell {
   }
 
   selectedFileEntries() {
-    const activeExplorer = this.document.querySelector('.os-explorer-window.is-active, #explorerWindow.is-active');
+    const activeExplorer = this.document.querySelector('.os-explorer-window.is-active');
     return Array.from((activeExplorer || this.document).querySelectorAll('.os-file-entry.is-selected'));
   }
 
@@ -483,7 +511,7 @@ class ArcadeCloudOsShell {
 
   bindExplorerNavigation() {
     this.document.addEventListener('click', (event) => {
-      const link = event.target.closest('#explorerWindow a[data-explorer-route]');
+      const link = event.target.closest('.os-explorer-window a[data-explorer-route]');
       if (!link) return;
 
       event.preventDefault();
@@ -510,7 +538,7 @@ class ArcadeCloudOsShell {
     route = String(route || '').trim();
     if (!route) return false;
 
-    const current = this.document.getElementById('osExplorerLive');
+    const current = this.document.querySelector('.os-explorer-window.is-active .os-explorer-live');
     if (!current) return false;
 
     const currentRoute = String(current.dataset.explorerRoute || '').trim();
@@ -546,7 +574,7 @@ class ArcadeCloudOsShell {
 
       const html = await response.text();
       const parsed = new DOMParser().parseFromString(html, 'text/html');
-      const next = parsed.getElementById('osExplorerLive');
+      const next = parsed.querySelector('.os-explorer-live');
       if (!next) {
         throw new Error('La respuesta de Mis datos no es válida.');
       }
@@ -590,7 +618,7 @@ class ArcadeCloudOsShell {
       return false;
     } finally {
       this.explorerLoading = false;
-      const live = this.document.getElementById('osExplorerLive');
+      const live = this.document.querySelector('.os-explorer-window.is-active .os-explorer-live');
       if (live) live.classList.remove('is-loading');
     }
   }
@@ -861,7 +889,7 @@ class ArcadeCloudOsShell {
       if (button) {
         event.preventDefault();
         event.stopPropagation();
-        const live = button.closest('#osExplorerLive');
+        const live = button.closest('.os-explorer-live');
         const panel = live?.querySelector('[data-folder-info-panel]');
         if (!panel) return;
         const open = panel.hidden;
@@ -874,7 +902,7 @@ class ArcadeCloudOsShell {
       if (close) {
         const panel = close.closest('[data-folder-info-panel]');
         if (panel) panel.hidden = true;
-        const live = close.closest('#osExplorerLive');
+        const live = close.closest('.os-explorer-live');
         live?.querySelector('[data-folder-info]')?.setAttribute('aria-expanded', 'false');
         return;
       }
@@ -912,7 +940,7 @@ class ArcadeCloudOsShell {
 
   updateSelectionActions() {
     const selected = this.selectedFileEntries();
-    const host = this.document.querySelector('#osExplorerLive [data-selection-actions]');
+    const host = this.document.querySelector('.os-explorer-window.is-active .os-explorer-live [data-selection-actions]');
     if (!host) return;
     host.hidden = selected.length === 0;
 
@@ -982,7 +1010,7 @@ class ArcadeCloudOsShell {
         throw new Error(data?.error || data?.mensaje || 'No se pudieron eliminar los archivos.');
       }
       this.notify('Archivos eliminados correctamente.', 'success');
-      const live = this.document.getElementById('osExplorerLive');
+      const live = this.document.querySelector('.os-explorer-window.is-active .os-explorer-live');
       const route = String(live?.dataset.explorerRoute || this.window.DRIVE_INITIAL_ROUTE || '');
       const page = Math.max(1, parseInt(String(live?.dataset.explorerPage || '1'), 10) || 1);
       await this.refreshExplorer(route, { page, replaceHistory: true });
@@ -1061,7 +1089,7 @@ class ArcadeCloudOsShell {
 
   async refreshCurrentExplorer() {
     this.hideContext();
-    const live = this.document.getElementById('osExplorerLive');
+    const live = this.document.querySelector('.os-explorer-window.is-active .os-explorer-live');
     const route = String(live?.dataset.explorerRoute || this.window.DRIVE_INITIAL_ROUTE || '');
     const page = Math.max(1, parseInt(String(live?.dataset.explorerPage || '1'), 10) || 1);
     if (route) await this.refreshExplorer(route, { page, replaceHistory: true });

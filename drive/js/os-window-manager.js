@@ -456,7 +456,7 @@ class ArcadeCloudExplorerWindow {
       if (crumb) { event.preventDefault(); this.navigate(crumb.dataset.addressRoute); return; }
       if (target.closest('[data-explorer-address]')) { if (!target.closest('[data-address-route]')) this.editAddress(); return; }
       const link = target.closest('a[data-explorer-route]');
-      if (link) { event.preventDefault(); this.navigate(link.dataset.explorerRoute, { page: +link.dataset.explorerPage || 1 }); return; }
+      if (link) { event.preventDefault(); event.stopPropagation(); this.navigate(link.dataset.explorerRoute, { page: +link.dataset.explorerPage || 1 }); return; }
       const suggestion = target.closest('[data-suggestion-route]');
       if (suggestion) { event.preventDefault(); event.stopPropagation(); this.navigate(suggestion.dataset.suggestionRoute); return; }
       const folder = target.closest('.os-folder-entry');
@@ -529,6 +529,9 @@ class ArcadeCloudExplorerWindow {
 
   async navigate(value, options = {}) {
     const route = this.normalize(value);
+    const requestedScroll = options.scroll !== undefined
+      ? Math.max(0, Number(options.scroll) || 0)
+      : (options.preserveScroll || route === this.route ? (this.live?.scrollTop || 0) : 0);
     if (!options.fromHistory && !options.replace && route !== this.route) {
       this.history.push({ route: this.route, page: this.page, scroll: this.live?.scrollTop || 0 });
       this.future = [];
@@ -555,6 +558,10 @@ class ArcadeCloudExplorerWindow {
       this.runtime.window.ArcadeCloudOsClipboard?.bindEntries?.(this.win);
       this.runtime.window.ArcadeCloudOsClipboard?.injectPasteToolbar?.(this.win);
       this.runtime.window.ArcadeCloudOsFolders?.rebind?.(this.win);
+      this.scroll = requestedScroll;
+      const restoreScroll = () => { if (this.live && this.route === route) this.live.scrollTop = requestedScroll; };
+      if (typeof this.runtime.window.requestAnimationFrame === 'function') this.runtime.window.requestAnimationFrame(restoreScroll);
+      else this.runtime.window.setTimeout(restoreScroll, 0);
       this.runtime.document.dispatchEvent(new CustomEvent('arcadeos:explorer-updated', { detail: { windowId: this.id, route, page: this.page } }));
       this.runtime.bus.emit('route-changed', { windowId: this.id, route, page: this.page });
     } catch (error) {
@@ -567,10 +574,13 @@ class ArcadeCloudExplorerWindow {
     if (!box) { box = this.runtime.document.createElement('div'); box.className = 'os-explorer-error'; this.live?.prepend(box); }
     box.textContent = message;
   }
-  back() { const item = this.history.pop(); if (item) { this.future.push({ route: this.route, page: this.page, scroll: this.live?.scrollTop || 0 }); this.navigate(item.route, { page: item.page, fromHistory: true, replace: true }); } }
-  forward() { const item = this.future.pop(); if (item) { this.history.push({ route: this.route, page: this.page, scroll: this.live?.scrollTop || 0 }); this.navigate(item.route, { page: item.page, fromHistory: true, replace: true }); } }
+  back() { const item = this.history.pop(); if (item) { this.future.push({ route: this.route, page: this.page, scroll: this.live?.scrollTop || 0 }); this.navigate(item.route, { page: item.page, scroll: item.scroll, fromHistory: true, replace: true }); } }
+  forward() { const item = this.future.pop(); if (item) { this.history.push({ route: this.route, page: this.page, scroll: this.live?.scrollTop || 0 }); this.navigate(item.route, { page: item.page, scroll: item.scroll, fromHistory: true, replace: true }); } }
   up() { const root = `${this.runtime.root.replace(/\/+$/, '')}/`; if (this.route !== root) { const bits = this.route.replace(/\/+$/, '').split('/'); bits.pop(); this.navigate(`${bits.join('/')}/`); } }
-  updateTitle() { this.runtime.manager.setTitle(this.id, `Mis datos — ${this.virtual()}`); }
+  updateTitle() {
+    const parts = this.virtual().split('/').filter(Boolean);
+    this.runtime.manager.setTitle(this.id, `Mis datos — ${parts.pop() || '/'}`);
+  }
 
   bindDragDrop() {
     const start = event => {
@@ -596,7 +606,6 @@ class ArcadeCloudExplorerWindow {
         if (entries.length) clipboard?.captureFiles?.(entries[0], choice, { sourceWindowId: data.sourceWindowId, sourceRoute: data.sourceRoute, entries });
       }
       await clipboard?.paste?.(destinationRoute, { destinationWindowId: this.id });
-      this.runtime.bus.emit(choice === 'copy' ? 'file-copied' : 'file-moved', { sourceRoute: data.sourceRoute, destinationRoute });
     };
     this.win.addEventListener('dragstart', start); this.win.addEventListener('dragover', over); this.win.addEventListener('dragleave', leave); this.win.addEventListener('drop', drop);
     this.cleanup.push(() => this.win.removeEventListener('dragstart', start), () => this.win.removeEventListener('dragover', over), () => this.win.removeEventListener('dragleave', leave), () => this.win.removeEventListener('drop', drop));
@@ -633,13 +642,52 @@ class ArcadeCloudDesktopRuntime {
       if (tool) { event.preventDefault(); this.openTool(tool.href, tool.dataset.toolTitle || tool.textContent.trim(), tool.dataset.osTool); }
     }, true);
     this.document.addEventListener('pointerdown', event => { const element = event.target.closest('.os-window'); if (element) this.manager.focus(element); }, true);
+    this.document.addEventListener('keydown', event => {
+      if (!(event.ctrlKey || event.metaKey) || event.key.toLowerCase() !== 'l') return;
+      if (event.target?.closest?.('input,textarea,[contenteditable="true"]')) return;
+      const active = this.manager.activeId ? this.explorers.get(this.manager.activeId) : null;
+      if (!active) return;
+      event.preventDefault(); active.editAddress();
+    });
     ['file-moved','file-copied','file-deleted','folder-created','upload-completed','task-completed'].forEach(type => this.bus.on(type, event => this.refreshAffected(event.detail)));
+    this.bus.on('filesystem:changed', event => this.refreshAffected(event.detail));
     this.document.addEventListener('drive:move-task-completed', event => {
       const active = this.window.ArcadeCloudOsClipboard?.activeTransfer;
       if (active && String(active.jobId || '') === String(event.detail?.job_id || '')) return;
       this.bus.emit('task-completed', event.detail || {});
     });
-    this.document.addEventListener('drive:storage-changed', event => this.bus.emit('upload-completed', event.detail || {}));
+    this.document.addEventListener('drive:storage-changed', event => {
+      const detail = event.detail || {};
+      // Route-less notifications (for example quota or media metadata changes)
+      // only mark the UI stale; refreshing every open Explorer would defeat
+      // route-aware synchronization.
+      if (detail.route) this.bus.emit('upload-completed', detail);
+    });
+    this.document.addEventListener('drive:folder-mutated', event => {
+      const detail = event.detail || {};
+      const route = String(detail.route || '');
+      const kind = String(detail.kind || '');
+      if (kind === 'rename' || kind === 'delete') {
+        this.explorers.forEach(explorer => {
+          if (!route || explorer.normalize(route) !== explorer.route) return;
+          const destination = kind === 'rename'
+            ? `${this.parentRoute(route)}${String(detail.name || '').replace(/^\/+|\/+$/g, '')}/`
+            : this.parentRoute(route);
+          explorer.navigate(destination, { replace: true });
+        });
+      }
+      const sourceRoute = kind === 'create' ? route : this.parentRoute(route);
+      const destinationRoute = kind === 'rename' ? this.parentRoute(route) : String(detail.destination || '');
+      this.emitFilesystemChanged({
+        operation: `folder-${kind || 'changed'}`,
+        sourceRoute,
+        destinationRoute,
+        route: kind === 'create' ? route : ''
+      });
+    });
+    this.document.addEventListener('drive:folder-document-created', event => {
+      this.emitFilesystemChanged({ operation: 'document-created', destinationRoute: event.detail?.route || '' });
+    });
     this.observer = new MutationObserver(records => records.forEach(record => record.addedNodes.forEach(node => {
       if (!(node instanceof Element) || !node.matches('.os-window')) return;
       const app = this.appFor(node); const registered = this.manager.register(node, app); this.bindWindowChrome(node);
@@ -869,10 +917,22 @@ class ArcadeCloudDesktopRuntime {
     button.innerHTML = '<i class="fas fa-up-right-from-square"></i> Abrir en nueva ventana'; menu.querySelector('[data-folder-action="open"]')?.after(button);
   }
 
+  parentRoute(route) {
+    const normalized = String(route || '').replace(/\\/g, '/').replace(/\/+$/, '');
+    const index = normalized.lastIndexOf('/');
+    return index < 0 ? this.root : `${normalized.slice(0, index)}/`;
+  }
+
+  emitFilesystemChanged(detail = {}) {
+    this.bus.emit('filesystem:changed', detail);
+  }
+
   refreshAffected(detail = {}) {
     const affected = [detail.sourceRoute, detail.destinationRoute || detail.destination, detail.route].filter(Boolean);
     this.explorers.forEach(explorer => {
-      if (!affected.length || affected.some(route => explorer.normalize(route) === explorer.route)) explorer.navigate(explorer.route, { replace: true, page: explorer.page });
+      if (!affected.length || affected.some(route => explorer.normalize(route) === explorer.route)) {
+        explorer.navigate(explorer.route, { replace: true, page: explorer.page, preserveScroll: true });
+      }
     });
   }
 }

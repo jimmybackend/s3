@@ -522,6 +522,7 @@ class ArcadeCloudOsClipboard {
         sourceWindowId: String(item.sourceWindowId || ''),
         destinationRoute: destination,
         destinationWindowId: String(context.destinationWindowId || ''),
+        items: Array.isArray(item.items) ? [...item.items] : [],
         clearClipboardOnSuccess: item.mode === 'move'
       };
       this.persistTransfer();
@@ -569,15 +570,14 @@ class ArcadeCloudOsClipboard {
 
     if (finished.clearClipboardOnSuccess) this.clearClipboard();
 
-    const refreshIds = new Set([finished.destinationWindowId]);
-    if (finished.operation === 'move') refreshIds.add(finished.sourceWindowId);
-    for (const id of refreshIds) {
-      const explorer = id ? this.window.ArcadeCloudDesktop?.explorers?.get(id) : null;
-      if (!explorer?.navigate) continue;
-      try {
-        await explorer.navigate(explorer.route, { replace: true, page: explorer.page });
-      } catch (_) {}
-    }
+    this.window.ArcadeCloudDesktop?.emitFilesystemChanged?.({
+      operation: finished.operation,
+      sourceRoute: finished.sourceRoute,
+      destinationRoute: finished.destinationRoute,
+      sourceWindowId: finished.sourceWindowId,
+      destinationWindowId: finished.destinationWindowId,
+      items: finished.items || []
+    });
 
     this.hideTransferSoon(1600);
   }

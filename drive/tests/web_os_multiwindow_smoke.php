@@ -31,6 +31,8 @@ $assert(str_contains($files['runtime'], "data-folder-open-new"), 'carpetas ofrec
 $assert(str_contains($files['runtime'], 'application/x-arcadecloud-items'), 'drag and drop usa payload privado');
 $assert(str_contains($files['runtime'], "clipboard?.paste?.(destinationRoute, { destinationWindowId: this.id })"), 'drop reutiliza backend de portapapeles y conserva Explorer destino');
 $assert(str_contains($files['runtime'], "'file-moved','file-copied','file-deleted','folder-created','upload-completed','task-completed'"), 'EventBus sincroniza cambios');
+$assert(str_contains($files['runtime'], "this.bus.on('filesystem:changed'") && str_contains($files['runtime'], 'emitFilesystemChanged(detail = {})'), 'EventBus expone filesystem:changed sin crear un segundo bus');
+$assert(str_contains($files['runtime'], 'preserveScroll: true') && str_contains($files['runtime'], 'scroll: item.scroll'), 'refresh e historial conservan scroll por Explorer');
 $assert(str_contains($files['runtime'], 'record.cleanup.forEach'), 'cierre libera recursos registrados');
 $assert(str_contains($files['runtime'], 'this.zCounter > 900'), 'z-index se compacta antes de crecer sin límite');
 $assert(str_contains($files['shell'], 'data-node-access="<?= $isSuperAdmin'), 'Mi nodo distingue acceso visual');

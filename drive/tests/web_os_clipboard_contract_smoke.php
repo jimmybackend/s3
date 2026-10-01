@@ -15,6 +15,7 @@ $files = [
     'webOsShell' => $root . '/so.php',
     'clipboardCss' => $root . '/css/so-clipboard.css',
     'moveTasks' => $root . '/js/move-tasks.js',
+    'runtime' => $root . '/js/os-window-manager.js',
     'fileService' => $root . '/src/Application/FileMutationService.php',
     'fileRepo' => $root . '/src/Storage/FileRecordRepository.php',
     'folderService' => $root . '/src/Application/FolderMutationService.php',
@@ -55,7 +56,7 @@ $assert(str_contains($files['clipboard'], "operation: item.mode"), 'pegar conser
 $assert(str_contains($files['clipboard'], 'sourceWindowId: context.sourceWindowId') && str_contains($files['clipboard'], 'sourceRoute: context.sourceRoute') && str_contains($files['clipboard'], 'items: keys'), 'portapapeles global conserva origen, elementos y operación');
 $assert(str_contains($files['clipboard'], 'ruta_actual: String(item.sourceRoute || this.currentRoute())'), 'pegado conserva la ruta de origen aunque la misma Explorer navegue');
 $assert(str_contains($files['clipboard'], 'destinationWindowId: String(context.destinationWindowId || \'\')'), 'pegado identifica la Explorer destino sin exigir otra ventana');
-$assert(str_contains($files['clipboard'], 'refreshIds.add(finished.sourceWindowId)') && str_contains($files['clipboard'], 'explorers?.get(id)'), 'movimiento refresca Explorer origen y destino sin duplicar la misma ventana');
+$assert(str_contains($files['clipboard'], 'emitFilesystemChanged?.({') && str_contains($files['runtime'], "this.bus.on('filesystem:changed'") && str_contains($files['runtime'], 'refreshAffected(detail = {})'), 'movimiento publica rutas y refresca todas las Explorer afectadas mediante el EventBus');
 $assert(str_contains($files['moveTasks'], 'ArcadeCloudOsClipboard?.activeTransfer'), 'tarea gestionada por el OS omite refresco global legacy');
 $assert(str_contains($files['clipboard'], 'injectPasteToolbar()'), 'SO crea botón temporal para pegar en la carpeta actual');
 $assert(!str_contains($files['clipboard'], 'visibleFiles >= 20'), 'botón superior ya no depende de una página llena');

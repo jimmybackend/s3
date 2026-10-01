@@ -259,21 +259,3 @@ window.ARCADECLOUD_UNIFIED_TASK_CENTER = true;
   });
 })(window, document);
 
-(function loadWebOsClipboard(win, doc) {
-  const load = () => {
-    if (!doc.querySelector('.os-explorer-live')) return;
-    if (doc.querySelector('script[data-os-clipboard]')) return;
-
-    const script = doc.createElement('script');
-    script.src = 'js/so-clipboard.js?v=20261001-1';
-    script.async = false;
-    script.setAttribute('data-os-clipboard', '1');
-    doc.head.appendChild(script);
-  };
-
-  if (doc.readyState === 'loading') {
-    doc.addEventListener('DOMContentLoaded', load, { once: true });
-  } else {
-    load();
-  }
-})(window, document);

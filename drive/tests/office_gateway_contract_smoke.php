@@ -66,8 +66,8 @@ officeGatewayContract(
 
 officeGatewayContract(
     str_contains($gateway, "header('Location: /guacamole/#/', true, 302)")
-    && str_contains($gateway, "$officeDesktopTarget === 'guacamole'")
-    && str_contains($gateway, "$officeFileId === 0"),
+    && str_contains($gateway, "\$officeDesktopTarget === 'guacamole'")
+    && str_contains($gateway, "\$officeFileId === 0"),
     'launcher Guacamole redirige al frontend nativo /guacamole/#/ cuando la sesión ya está lista'
 );
 
@@ -113,7 +113,7 @@ officeGatewayContract(
 );
 
 officeGatewayContract(
-    str_contains($gateway, "$action === 'auth'")
+    str_contains($gateway, "\$action === 'auth'")
     && str_contains($gateway, 'assertOfficeSession')
     && str_contains($gateway, "office_session_key")
     && str_contains($gateway, "office_instance_id")
@@ -228,13 +228,13 @@ officeGatewayContract(
 );
 
 officeGatewayContract(
-    str_contains($helper, "'version' => 14")
+    str_contains($helper, "'version' => 15")
     && str_contains($helper, "'workstation_control' => true")
     && str_contains($helper, "'workstation_document_open' => true")
-    && str_contains($helper, "'workstation-open-document'")
-    && str_contains($helper, "'workstation-start'")
-    && !str_contains($helper, "'workstation-stop'"),
-    'helper privilegiado abre documentos allowlisted y no expone parada Workstation directa'
+    && str_contains($helper, "if (\$action === 'workstation-open-document')")
+    && str_contains($helper, "['workstation-status', 'workstation-start']")
+    && !str_contains($helper, "if (\$action === 'workstation-stop')"),
+    'helper privilegiado abre documentos allowlisted y no expone una acción directa workstation-stop'
 );
 
 officeGatewayContract(

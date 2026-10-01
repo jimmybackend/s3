@@ -56,6 +56,8 @@ $assert(str_contains($files['clipboard'], "operation: item.mode"), 'pegar conser
 $assert(str_contains($files['clipboard'], 'sourceWindowId: context.sourceWindowId') && str_contains($files['clipboard'], 'sourceRoute: context.sourceRoute') && str_contains($files['clipboard'], 'items: keys'), 'portapapeles global conserva origen, elementos y operación');
 $assert(str_contains($files['clipboard'], 'ruta_actual: String(item.sourceRoute || this.currentRoute())'), 'pegado conserva la ruta de origen aunque la misma Explorer navegue');
 $assert(str_contains($files['clipboard'], 'destinationWindowId: String(context.destinationWindowId || \'\')'), 'pegado identifica la Explorer destino sin exigir otra ventana');
+$assert(str_contains($files['runtime'], 'chooseDropOperation(data.keys.length') && str_contains($files['runtime'], "clipboard?.paste?.(destinationRoute, { destinationWindowId: this.id })"), 'drag/drop entre Explorers ejecuta la misma transferencia copy/move hacia la ventana destino');
+$assert(str_contains($files['shell'], "querySelectorAll('.os-explorer-window').forEach") && str_contains($files['shell'], "owner.querySelectorAll('.os-file-entry.is-selected')"), 'acciones de selección se mantienen independientes por cada ventana Explorer');
 $assert(str_contains($files['clipboard'], 'emitFilesystemChanged?.({') && str_contains($files['runtime'], "this.bus.on('filesystem:changed'") && str_contains($files['runtime'], 'refreshAffected(detail = {})'), 'movimiento publica rutas y refresca todas las Explorer afectadas mediante el EventBus');
 $assert(str_contains($files['moveTasks'], 'ArcadeCloudOsClipboard?.activeTransfer'), 'tarea gestionada por el OS omite refresco global legacy');
 $assert(str_contains($files['clipboard'], 'injectPasteToolbar()'), 'SO crea botón temporal para pegar en la carpeta actual');
@@ -64,7 +66,8 @@ $assert(str_contains($files['clipboard'], 'button.hidden = !hasClipboard'), 'bot
 $assert(str_contains($files['clipboard'], "moving ? 'Mover aquí' : 'Copiar aquí'"), 'botón superior identifica claramente la operación pendiente');
 $assert(str_contains($files['clipboard'], "dataset.osPasteCurrent"), 'botón superior se identifica como destino actual');
 $assert(str_contains($files['clipboardCss'], '.os-toolbar-paste'), 'botón superior tiene estilo propio');
-$assert(str_contains($files['moveTasks'], 'so-clipboard.js?v=20261001-1'), 'cambio de clipboard invalida caché del navegador');
+$assert(str_contains($files['webOsShell'], 'js/so-clipboard.js?v=<?= (int)filemtime') && !str_contains($files['moveTasks'], 'loadWebOsClipboard'), 'Web OS carga el clipboard de forma determinista aunque todavía no exista una Explorer');
+$assert(str_contains($files['clipboard'], 'static boot(win = window, doc = document)') && !str_contains($files['clipboard'], "querySelector('.os-explorer-live')) return"), 'clipboard puede iniciar antes de crear ventanas Explorer dinámicas');
 $assert(str_contains($files['clipboard'], 'ArcadeCloudOsShare?.open'), 'menú del SO abre panel completo de compartir');
 $assert(!str_contains($files['clipboard'], "¿Cuántos días debe funcionar"), 'compartir ya no usa prompt del navegador');
 $assert(str_contains($files['share'], "generar_token.php"), 'panel completo genera enlace directo');
@@ -85,6 +88,7 @@ $assert(str_contains($files['webOsShell'], 'js/upload-center.js'), 'Web OS carga
 $assert(str_contains($files['uploadCenter'], "navigator.clipboard.read"), 'portapapeles se consulta desde el centro de subida');
 $assert(str_contains($files['uploadCenter'], 'async open(context = null)'), 'revisión de portapapeles nace al abrir Subir con contexto de Explorer');
 $assert(str_contains($files['uploadCenter'], 'this.open(this.contextForButton(button))'), 'el botón Subir entrega su Explorer propietario');
+$assert(str_contains($files['uploadDestination'], "activeExplorerRoute = document.querySelector('.os-explorer-window.is-active .os-explorer-live')") && str_contains($files['uploadDestination'], 'contextFromElement(element)'), 'destino de subida prioriza la Explorer propietaria/activa y no una ruta global obsoleta');
 $assert(str_contains($files['uploadCenter'], 'await this.inspectClipboard()'), 'Subir revisa imagen/texto sólo bajo acción del usuario');
 $assert(str_contains($files['uploadCenter'], "data-upload-paste-image"), 'centro ofrece pegar imagen cuando existe');
 $assert(str_contains($files['uploadCenter'], "data-upload-paste-text"), 'centro ofrece pegar texto cuando existe');

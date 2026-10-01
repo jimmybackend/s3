@@ -815,17 +815,19 @@ class ArcadeCloudOsShell {
   }
 
   updateSelectionActions() {
-    const selected = this.selectedFileEntries();
-    const host = this.document.querySelector('.os-explorer-window.is-active .os-explorer-live [data-selection-actions]');
-    if (!host) return;
-    host.hidden = selected.length === 0;
+    this.document.querySelectorAll('.os-explorer-window').forEach((owner) => {
+      const host = owner.querySelector('.os-explorer-live [data-selection-actions]');
+      if (!host) return;
+      const selected = Array.from(owner.querySelectorAll('.os-file-entry.is-selected'));
+      host.hidden = selected.length === 0;
 
-    const count = host.querySelector('[data-selection-count]');
-    if (count) count.textContent = String(selected.length);
+      const count = host.querySelector('[data-selection-count]');
+      if (count) count.textContent = String(selected.length);
 
-    const hasLocked = selected.some((entry) => entry.dataset.locked === '1');
-    host.querySelectorAll('button').forEach((button) => {
-      button.disabled = selected.length === 0 || hasLocked;
+      const hasLocked = selected.some((entry) => entry.dataset.locked === '1');
+      host.querySelectorAll('button').forEach((button) => {
+        button.disabled = selected.length === 0 || hasLocked;
+      });
     });
   }
 

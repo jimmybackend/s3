@@ -777,29 +777,20 @@ class ArcadeCloudOsClipboard {
     }
     console[type === 'danger' ? 'error' : 'log']('[ArcadeCloud OS]', message);
   }
-}
+  static boot(win = window, doc = document) {
+    if (win.ArcadeCloudOsClipboard instanceof ArcadeCloudOsClipboard) return win.ArcadeCloudOsClipboard;
 
-function bootArcadeCloudOsClipboard(win, doc) {
-  let attempts = 0;
-  const boot = () => {
-    if (!doc.querySelector('.os-explorer-live')) return;
-    if (win.ArcadeCloudOsClipboard instanceof ArcadeCloudOsClipboard) return;
-
+    // The OS starts without an Explorer DOM node and creates Explorer windows
+    // dynamically. Clipboard state must therefore boot with the desktop, not
+    // wait for .os-explorer-live to already exist.
     if (!win.ArcadeCloudOsShell || !win.ArcadeCloudOsFolders || !win.DriveMoveTasks) {
-      attempts++;
-      if (attempts < 80) win.setTimeout(boot, 50);
-      return;
+      return null;
     }
 
     win.ArcadeCloudOsClipboard = new ArcadeCloudOsClipboard(win, doc).init();
-  };
-
-  if (doc.readyState === 'loading') {
-    doc.addEventListener('DOMContentLoaded', boot, { once: true });
-  } else {
-    boot();
+    return win.ArcadeCloudOsClipboard;
   }
 }
 
 if (typeof module !== 'undefined') module.exports = { ArcadeCloudOsClipboard };
-if (typeof window !== 'undefined' && typeof document !== 'undefined') bootArcadeCloudOsClipboard(window, document);
+if (typeof window !== 'undefined' && typeof document !== 'undefined') ArcadeCloudOsClipboard.boot(window, document);

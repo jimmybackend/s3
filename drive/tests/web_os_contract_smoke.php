@@ -7,6 +7,8 @@ $paths = [
     'shell' => $root . '/so.php',
     'css' => $root . '/css/so.css',
     'js' => $root . '/js/so.js',
+    'desktop_shell' => $root . '/js/desktop-shell.js',
+    'page_resource_manager' => $root . '/js/page-resource-manager.js',
     'window_manager_js' => $root . '/js/os-window-manager.js',
     'appearance_js' => $root . '/js/so-appearance.js',
     'preferences_endpoint' => $root . '/os-preferences.php',
@@ -111,8 +113,8 @@ webOsContract(str_contains($paths['js'], "addEventListener('contextmenu'"), 'arc
 webOsContract(str_contains($paths['js'], 'data-window-drag-handle'), 'ventanas son arrastrables en escritorio');
 webOsContract(str_contains($paths['css'], '.os-taskbar'), 'existe barra de tareas');
 webOsContract(str_contains($paths['shell'], 'id="backgroundTaskButton"') && str_contains($paths['shell'], 'os-task-center-button'), 'Centro de Tareas vive como icono con contador en la barra de tareas');
-webOsContract(str_contains($paths['shell'], 'id="pageManagerWindow"') && str_contains($paths['desktop_shell_stage5'], "data-shell-action=\"page-manager\""), 'menú contextual del escritorio abre Administrador de la página');
-webOsContract(str_contains(file_get_contents(__DIR__ . '/../js/page-resource-manager.js'), 'performance?.memory') && str_contains(file_get_contents(__DIR__ . '/../js/page-resource-manager.js'), "getEntriesByType?.('resource')"), 'Administrador mide recursos del navegador sin consultar métricas EC2');
+webOsContract(str_contains($paths['shell'], 'id="pageManagerWindow"') && str_contains($paths['desktop_shell'], "data-shell-action=\"page-manager\""), 'menú contextual del escritorio abre Administrador de la página');
+webOsContract(str_contains($paths['page_resource_manager'], 'performance?.memory') && str_contains($paths['page_resource_manager'], "getEntriesByType?.('resource')"), 'Administrador mide recursos del navegador sin consultar métricas EC2');
 webOsContract(str_contains($paths['css'], '@media (max-width:800px)'), 'shell conserva experiencia móvil');
 
 // Workbench dentro de so.php.

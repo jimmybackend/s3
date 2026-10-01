@@ -479,7 +479,7 @@ $currentFolderName = $currentIsRoot
       </div>
     </section>
 
-    <section class="os-window" id="nodeWindow" data-window-title="Mi nodo" style="left:10vw;top:8vh;width:min(1040px,88vw);height:min(760px,80vh);">
+    <section class="os-window" id="nodeWindow" data-window-title="Mi nodo" data-node-access="<?= $isSuperAdmin ? 'superadmin' : 'standard' ?>" style="left:10vw;top:8vh;width:min(1040px,88vw);height:min(760px,80vh);">
       <div class="os-window-titlebar" data-window-drag-handle>
         <div class="os-window-title"><i class="fas fa-server"></i><span>Mi nodo</span></div>
         <div class="os-window-controls">
@@ -493,7 +493,7 @@ $currentFolderName = $currentIsRoot
           <span class="os-node-large-icon"><i class="fas fa-server"></i></span>
           <div>
             <h2><?= $e($nodeName) ?></h2>
-            <p>Salud y diagnóstico operacional de ArcadeCloud. Las métricas se actualizan sin recargar el escritorio.</p>
+            <p><?= $isSuperAdmin ? 'Salud y diagnóstico operacional de ArcadeCloud. Las métricas se actualizan sin recargar el escritorio.' : 'Estado general y uso seguro de recursos del nodo.' ?></p>
           </div>
         </div>
 
@@ -502,8 +502,10 @@ $currentFolderName = $currentIsRoot
           <button type="button" data-node-tab="fastdrive" role="tab" aria-selected="false">FastDrive</button>
         </div>
 
-        <div class="os-stat-grid os-node-legacy-summary">
+        <div class="os-stat-grid os-node-legacy-summary<?= $isSuperAdmin ? '' : ' is-standard' ?>">
+          <?php if ($isSuperAdmin): ?>
           <article><span>Instancia</span><strong data-node-field="instance_type"><?= $e((string)($nodeSnapshot['instance_type'] ?: 'no identificada')) ?></strong></article>
+          <?php endif; ?>
           <article><span>vCPU</span><strong data-node-field="vcpu"><?= (int)$nodeSnapshot['vcpu'] ?></strong></article>
           <article><span>RAM total</span><strong data-node-field="memory_total"><?= $e($formatBytes((int)$nodeSnapshot['memory_total_bytes'])) ?></strong></article>
           <article class="os-node-memory-card">
@@ -530,9 +532,9 @@ $currentFolderName = $currentIsRoot
             </div>
           </article>
           <article><span>Disco libre</span><strong data-node-field="disk_free"><?= $e($formatBytes($diskFreeBytes)) ?></strong></article>
-          <article><span>Swap</span><strong data-node-field="swap"><?= $e($formatBytes((int)$nodeSnapshot['swap_total_bytes'])) ?></strong></article>
+          <?php if ($isSuperAdmin): ?><article><span>Swap</span><strong data-node-field="swap"><?= $e($formatBytes((int)$nodeSnapshot['swap_total_bytes'])) ?></strong></article><?php endif; ?>
           <article><span>Carga</span><strong data-node-field="load"><?= $e(implode(' · ', array_map('strval', $load))) ?></strong></article>
-          <article><span>Rol</span><strong data-node-field="role"><?= $e((string)$nodeSnapshot['role']) ?></strong></article>
+          <?php if ($isSuperAdmin): ?><article><span>Rol</span><strong data-node-field="role"><?= $e((string)$nodeSnapshot['role']) ?></strong></article><?php endif; ?>
         </div>
 
         <div class="os-node-live-head">
@@ -543,10 +545,12 @@ $currentFolderName = $currentIsRoot
           <p class="os-node-placeholder">Abre Mi nodo o pulsa Actualizar para consultar el diagnóstico.</p>
         </div>
         <div class="os-capability-list">
+          <?php if ($isSuperAdmin): ?>
           <div><span>FFmpeg</span><strong data-node-capability="ffmpeg" class="<?= $nodeSnapshot['ffmpeg_available'] ? 'is-ready' : 'is-missing' ?>"><?= $nodeSnapshot['ffmpeg_available'] ? 'Disponible' : 'No disponible' ?></strong></div>
           <div><span>FFprobe</span><strong data-node-capability="ffprobe" class="<?= $nodeSnapshot['ffprobe_available'] ? 'is-ready' : 'is-missing' ?>"><?= $nodeSnapshot['ffprobe_available'] ? 'Disponible' : 'No disponible' ?></strong></div>
           <div><span>Docker</span><strong data-node-capability="docker" class="<?= $nodeSnapshot['docker_installed'] ? 'is-ready' : 'is-missing' ?>"><?= $nodeSnapshot['docker_installed'] ? 'Instalado' : 'No instalado' ?></strong></div>
           <div><span>GPU</span><strong data-node-capability="gpu" class="<?= $nodeSnapshot['gpu_present'] ? 'is-ready' : 'is-neutral' ?>"><?= $nodeSnapshot['gpu_present'] ? 'Detectada' : 'No detectada' ?></strong></div>
+          <?php endif; ?>
           <div><span>Raíz de almacenamiento</span><strong><?= $e($visibleRoute) ?></strong></div>
           <div><span>Espacio del usuario en S3</span><strong><?= $e((string)($storageUsage['formatted'] ?? '0 B')) ?></strong></div>
           <?php if ($isSuperAdmin && (string)$nodeSnapshot['instance_id'] !== ''): ?>
@@ -804,12 +808,12 @@ Escribe help o usa uno de los botones disponibles.</pre>
       </div>
       <div class="os-window-body">
         <div class="os-links-grid">
-          <a href="activity_costs.php"><i class="fas fa-receipt"></i><span><strong>Actividad y costos</strong><small>Consumo de tu cuenta</small></span></a>
+          <a href="activity_costs.php" data-os-tool="activity-costs" data-tool-title="Actividad y costos"><i class="fas fa-receipt"></i><span><strong>Actividad y costos</strong><small>Consumo de tu cuenta</small></span></a>
           <a href="s3.php"><i class="fas fa-rotate"></i><span><strong>Sincronización S3</strong><small>Disponible en Drive clásico</small></span></a>
           <?php if ($canViewPersonalTools): ?>
           <a href="aws.php" target="_blank" rel="noopener"><i class="fab fa-aws"></i><span><strong>AWS y códigos TOTP</strong><small>Herramienta personal autorizada</small></span></a>
           <a href="ec2.php" target="_blank" rel="noopener"><i class="fas fa-server"></i><span><strong>Gestión EC2</strong><small>Instancias y herramientas del servidor</small></span></a>
-          <a href="activity_costs.php"><i class="fas fa-chart-line"></i><span><strong>Costos AWS</strong><small>Costos reales para el propietario</small></span></a>
+          <a href="activity_costs.php" data-os-tool="activity-costs" data-tool-title="Costos AWS"><i class="fas fa-chart-line"></i><span><strong>Costos AWS</strong><small>Costos reales para el propietario</small></span></a>
           <?php endif; ?>
           <?php if ($isSuperAdmin): ?>
           <a href="ec2.php#serverConsolePanel" target="_blank" rel="noopener"><i class="fas fa-terminal"></i><span><strong>Consola del servidor</strong><small>Acceso restringido a superadmin</small></span></a>
@@ -1986,5 +1990,6 @@ Escribe help o usa uno de los botones disponibles.</pre>
   <script src="js/so-node.js?v=<?= (int)filemtime(__DIR__ . '/js/so-node.js') ?>"></script>
   <script src="js/so-appearance.js?v=<?= (int)filemtime(__DIR__ . '/js/so-appearance.js') ?>"></script>
   <script src="js/so.js?v=<?= (int)filemtime(__DIR__ . '/js/so.js') ?>"></script>
+  <script src="js/os-window-manager.js?v=<?= (int)filemtime(__DIR__ . '/js/os-window-manager.js') ?>"></script>
 </body>
 </html>

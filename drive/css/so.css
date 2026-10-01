@@ -1096,3 +1096,21 @@ body.arcade-os{
   .os-search-result{grid-template-columns:36px minmax(0,1fr) auto;padding:8px}
   .os-search-result-icon{width:34px;height:34px}
 }
+/* Multi-window desktop runtime */
+.os-window.is-active{box-shadow:0 24px 70px rgba(0,0,0,.38),0 0 0 1px rgba(93,188,255,.55)}
+.os-explorer-navigation{display:flex;align-items:center;gap:6px}
+.os-address-action{flex:0 0 34px;width:34px;height:34px;border:0;border-radius:9px;background:rgba(127,127,127,.14);color:inherit}
+.os-address-action:hover{background:rgba(79,158,255,.24)}
+.os-address-editable{flex:1;min-width:120px;cursor:text;display:flex;align-items:center;gap:8px}
+.os-breadcrumb{display:flex;align-items:center;gap:5px;min-width:0;overflow:auto;white-space:nowrap}
+.os-breadcrumb button{border:0;background:transparent;color:inherit;padding:3px 5px;border-radius:6px}
+.os-breadcrumb button:hover{background:rgba(127,127,127,.18)}
+.os-address-editable input{width:100%;border:0;outline:0;background:transparent;color:inherit;font:inherit}
+.os-window.is-loading .os-explorer-body{opacity:.5;pointer-events:none}
+.os-explorer-error{margin:10px;padding:10px 12px;border-radius:9px;background:rgba(220,53,69,.15);color:#ff8894}
+.os-window.is-drop-target{box-shadow:0 0 0 3px #55aaff,0 24px 70px rgba(0,0,0,.4)}
+.os-window.is-drop-target .os-explorer-body::after{content:'Soltar para copiar o mover aquí';position:absolute;inset:20%;display:grid;place-items:center;border:2px dashed #55aaff;border-radius:18px;background:rgba(20,65,110,.78);color:#fff;font-weight:700;z-index:20;pointer-events:none}
+.os-explorer-body{position:relative}
+.os-tool-body{overflow:auto;padding:18px}
+.os-task-buttons{overflow-x:auto;scrollbar-width:thin}
+@media(max-width:800px){.os-explorer-navigation{gap:3px}.os-address-action{width:30px;flex-basis:30px}.os-window.os-explorer-window,.os-tool-window{inset:8px 6px 58px!important;width:auto!important;height:auto!important;max-width:none!important;max-height:none!important}.os-breadcrumb span{display:none}.os-window.is-drop-target .os-explorer-body::after{inset:10%}}

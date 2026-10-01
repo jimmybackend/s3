@@ -1,15 +1,15 @@
 {
   "summary": {
-    "php_total": 500,
+    "php_total": 501,
     "php_class_modules": 294,
     "php_needs_migration": 0,
-    "php_tests": 51,
+    "php_tests": 52,
     "js_total": 65,
     "js_class_modules": 65,
     "js_needs_migration": 1,
     "js_compatibility_facades": 8,
-    "ajax_clients": 48,
-    "ajax_calls": 104,
+    "ajax_clients": 49,
+    "ajax_calls": 106,
     "json_total": 4,
     "json_invalid": 0
   },
@@ -714,7 +714,7 @@
     },
     {
       "path": "drive/ec2.php",
-      "lines": 1059,
+      "lines": 1060,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -2060,7 +2060,7 @@
     },
     {
       "path": "drive/so.php",
-      "lines": 1992,
+      "lines": 2000,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -7112,7 +7112,7 @@
     },
     {
       "path": "drive/tests/web_os_clipboard_contract_smoke.php",
-      "lines": 111,
+      "lines": 110,
       "kind": "test script",
       "classes": 0,
       "functions": [],
@@ -7139,6 +7139,21 @@
       "s3": false,
       "bootstrap": false,
       "html": true,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/tests/web_os_interactions_theme_smoke.php",
+      "lines": 28,
+      "kind": "test script",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
       "namespace": false,
       "issues": []
     },
@@ -8191,13 +8206,15 @@
     },
     {
       "path": "drive/js/federation-portal.js",
-      "lines": 507,
+      "lines": 509,
       "kind": "class/module",
       "classes": [
         "FederationPortalModule"
       ],
       "functions": [],
-      "window_assign": [],
+      "window_assign": [
+        "FederationPortalModule"
+      ],
       "window_func": [],
       "top_vars": [],
       "iife": false,
@@ -8212,13 +8229,15 @@
     },
     {
       "path": "drive/js/federation-share-drive.js",
-      "lines": 211,
+      "lines": 214,
       "kind": "class/module",
       "classes": [
         "FederationShareDriveModule"
       ],
       "functions": [],
-      "window_assign": [],
+      "window_assign": [
+        "FederationShareDriveModule"
+      ],
       "window_func": [],
       "top_vars": [],
       "iife": false,
@@ -8483,7 +8502,7 @@
     },
     {
       "path": "drive/js/os-window-manager.js",
-      "lines": 761,
+      "lines": 825,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudEventBus",
@@ -8749,7 +8768,7 @@
     },
     {
       "path": "drive/js/so-clipboard.js",
-      "lines": 776,
+      "lines": 780,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudOsClipboard"
@@ -8770,7 +8789,7 @@
     },
     {
       "path": "drive/js/so-federation.js",
-      "lines": 129,
+      "lines": 87,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudOsFederationApp"
@@ -8783,11 +8802,11 @@
       "top_vars": [],
       "iife": false,
       "ajax": {
-        "fetch": 0,
+        "fetch": 2,
         "xhr": 0,
         "jquery": 0,
         "json_consumers": 0,
-        "response_checks": 3
+        "response_checks": 5
       },
       "issues": []
     },
@@ -8950,7 +8969,7 @@
     },
     {
       "path": "drive/js/so.js",
-      "lines": 1183,
+      "lines": 1152,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudOsShell"

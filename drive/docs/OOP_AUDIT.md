@@ -4,15 +4,15 @@
 
 ## Resumen
 
-- PHP analizados: **500**
+- PHP analizados: **501**
 - PHP que ya contienen clases/interfaces: **294**
 - PHP marcados para migración/revisión: **0**
-- Tests PHP separados del objetivo OOP de runtime: **51**
+- Tests PHP separados del objetivo OOP de runtime: **52**
 - JavaScript analizados: **65**
 - JavaScript que ya contienen clases: **65**
 - JavaScript sin clase/encapsulación OOP: **1**
 - JavaScript OOP con fachada `window` de compatibilidad: **8**
-- Clientes AJAX detectados: **48** módulos / **104** llamadas
+- Clientes AJAX detectados: **49** módulos / **106** llamadas
 - JSON analizados: **4**; inválidos: **0**
 
 ## Criterio
@@ -76,7 +76,7 @@
 | `drive/download.php` | 8 | thin endpoint | 0 | — | — | — | — |
 | `drive/download_multiple.php` | 8 | thin endpoint | 0 | — | — | — | — |
 | `drive/ec2-cron.php` | 39 | thin endpoint | 0 | — | — | — | — |
-| `drive/ec2.php` | 1059 | view/entrypoint | 0 | ⚠️ | — | — | — |
+| `drive/ec2.php` | 1060 | view/entrypoint | 0 | ⚠️ | — | — | — |
 | `drive/editor.php` | 485 | view/entrypoint | 0 | — | — | — | — |
 | `drive/eliminar_archivo.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/eliminar_carpeta.php` | 10 | thin endpoint | 0 | — | — | — | — |
@@ -164,7 +164,7 @@
 | `drive/set_file_security.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/setup/api.php` | 15 | thin endpoint | 0 | — | — | — | — |
 | `drive/setup/index.php` | 90 | view/entrypoint | 0 | — | — | — | — |
-| `drive/so.php` | 1992 | view/entrypoint | 0 | — | — | — | — |
+| `drive/so.php` | 2000 | view/entrypoint | 0 | — | — | — | — |
 | `drive/src/Activity/ActivityCostRecorder.php` | 155 | class/module | 1 | — | — | — | — |
 | `drive/src/Activity/ActivityCostRepository.php` | 198 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Activity/ActivityCostService.php` | 153 | class/module | 1 | — | — | — | — |
@@ -494,8 +494,9 @@
 | `drive/tests/upload_catalog_registration_regression.php` | 125 | test script | 0 | — | ⚠️ | — | — |
 | `drive/tests/user_identity_presenter_smoke.php` | 30 | test script | 0 | — | — | — | — |
 | `drive/tests/user_profile_validator_smoke.php` | 72 | test script | 0 | — | — | — | — |
-| `drive/tests/web_os_clipboard_contract_smoke.php` | 111 | test script | 0 | — | — | — | — |
+| `drive/tests/web_os_clipboard_contract_smoke.php` | 110 | test script | 0 | — | — | — | — |
 | `drive/tests/web_os_contract_smoke.php` | 482 | test script | 0 | — | — | — | — |
+| `drive/tests/web_os_interactions_theme_smoke.php` | 28 | test script | 0 | — | — | — | — |
 | `drive/tests/web_os_multiwindow_smoke.php` | 60 | test script | 0 | — | — | — | — |
 | `drive/tests/web_os_pending_fixes_smoke.php` | 40 | test script | 0 | — | — | — | — |
 | `drive/tests/web_os_theme_contract_smoke.php` | 29 | test script | 0 | — | — | — | — |
@@ -556,8 +557,8 @@
 | `drive/js/federation-footer.js` | 374 | class/module | FederationFooterModule | — | — | — |
 | `drive/js/federation-os-admin.js` | 323 | class/module | FederationOsAdminModule | — | — | — |
 | `drive/js/federation-page.js` | 99 | class/module | FederationPageModule | — | — | — |
-| `drive/js/federation-portal.js` | 507 | class/module | FederationPortalModule | — | — | — |
-| `drive/js/federation-share-drive.js` | 211 | class/module | FederationShareDriveModule | — | — | — |
+| `drive/js/federation-portal.js` | 509 | class/module | FederationPortalModule | — | — | — |
+| `drive/js/federation-share-drive.js` | 214 | class/module | FederationShareDriveModule | — | — | — |
 | `drive/js/file-block.js` | 305 | class/module | FileBlockApp | — | — | — |
 | `drive/js/file-security.js` | 325 | class/module | ArcadeCloudFileSecurity | — | — | — |
 | `drive/js/filtros.js` | 97 | class/module | FiltrosModule | — | — | — |
@@ -568,7 +569,7 @@
 | `drive/js/mediaFloating.js` | 38 | class/module | MediaFloatingModule | — | — | — |
 | `drive/js/move-tasks.js` | 273 | class/module | DriveMoveTasks | — | — | — |
 | `drive/js/obtenerFiltros.js` | 125 | class/module | ObtenerFiltrosModule | — | — | — |
-| `drive/js/os-window-manager.js` | 761 | class/module | ArcadeCloudEventBus, ArcadeCloudWindowLayoutConfig, ArcadeCloudWindowManager, ExplorerWindowFactory, ArcadeCloudExplorerWindow, ArcadeCloudDesktopRuntime | — | — | — |
+| `drive/js/os-window-manager.js` | 825 | class/module | ArcadeCloudEventBus, ArcadeCloudWindowLayoutConfig, ArcadeCloudWindowManager, ExplorerWindowFactory, ArcadeCloudExplorerWindow, ArcadeCloudDesktopRuntime | — | — | — |
 | `drive/js/pdf-pantalla-completa.js` | 45 | class/module | PdfPantallaCompletaModule | — | — | — |
 | `drive/js/polly-background.js` | 305 | class/module | PollyBackgroundModule | — | — | — |
 | `drive/js/polly.js` | 1008 | class/module | PollyModule | — | abrirModalGrabarAudio, abrirModalPolly, abrirModalRekognition, abrirModalTraducir, abrirModalTranscribir, copiarTextract | window functions: abrirModalGrabarAudio, abrirModalPolly, abrirModalRekognition, abrirModalTraducir, abrirModalTranscribir, copiarTextract, copiarTraducido, copiarTx |
@@ -578,8 +579,8 @@
 | `drive/js/setup.js` | 192 | class/module | ArcadeCloudSetup | — | — | — |
 | `drive/js/sincronizar.js` | 264 | class/module | SincronizarModule | — | triggerSyncFolderS3, triggerSyncS3 | window functions: triggerSyncFolderS3, triggerSyncS3 |
 | `drive/js/so-appearance.js` | 155 | class/module | ArcadeCloudOsAppearance | — | — | — |
-| `drive/js/so-clipboard.js` | 776 | class/module | ArcadeCloudOsClipboard | — | — | — |
-| `drive/js/so-federation.js` | 129 | class/module | ArcadeCloudOsFederationApp | — | — | — |
+| `drive/js/so-clipboard.js` | 780 | class/module | ArcadeCloudOsClipboard | — | — | — |
+| `drive/js/so-federation.js` | 87 | class/module | ArcadeCloudOsFederationApp | — | — | — |
 | `drive/js/so-folders.js` | 439 | class/module | ArcadeCloudOsFolderActions | — | — | — |
 | `drive/js/so-node.js` | 184 | class/module | ArcadeCloudOsNodeMonitor | — | — | — |
 | `drive/js/so-power.js` | 108 | class/module | ArcadeCloudFastDrivePower | — | — | — |
@@ -587,7 +588,7 @@
 | `drive/js/so-search.js` | 285 | class/module | ArcadeCloudOsSearch | — | — | — |
 | `drive/js/so-share.js` | 179 | class/module | ArcadeCloudOsShare | — | — | — |
 | `drive/js/so-terminal.js` | 314 | class/module | ArcadeCloudOsTerminal | — | — | — |
-| `drive/js/so.js` | 1183 | class/module | ArcadeCloudOsShell | — | — | — |
+| `drive/js/so.js` | 1152 | class/module | ArcadeCloudOsShell | — | — | — |
 | `drive/js/soportesMediaTypes.js` | 397 | class/module | SoportesMediaTypesModule | — | — | — |
 | `drive/js/storage-usage.js` | 51 | class/module | StorageUsageModule | — | — | — |
 | `drive/js/subir-chunked.js` | 594 | class/module | SubirChunkedModule | — | — | — |
@@ -639,6 +640,7 @@
 | `drive/js/sincronizar.js` | 1 | 0 | 0 | 0 | 3 |
 | `drive/js/so-appearance.js` | 1 | 0 | 0 | 0 | 0 |
 | `drive/js/so-clipboard.js` | 1 | 0 | 0 | 0 | 3 |
+| `drive/js/so-federation.js` | 2 | 0 | 0 | 0 | 5 |
 | `drive/js/so-node.js` | 3 | 0 | 0 | 3 | 7 |
 | `drive/js/so-power.js` | 1 | 0 | 0 | 1 | 2 |
 | `drive/js/so-screenshot-paste.js` | 3 | 0 | 0 | 1 | 7 |

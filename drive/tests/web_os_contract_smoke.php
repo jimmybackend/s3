@@ -478,7 +478,7 @@ webOsContract(str_contains($paths['federation_admin_js'], "moderation-api.php"),
 webOsContract(str_contains($paths['server_admin_js'], 'dataset.endpoint'), 'configuración del servidor acepta endpoint reutilizable');
 webOsContract(str_contains($paths['moderation_renderer'], 'federation-moderation-embedded'), 'moderación soporta modo embebido');
 
-$assert(str_contains($files['so'], 'id="osTaskCenterButton"') && str_contains($files['so'], 'os-task-center-count'), 'Centro de Tareas está integrado como icono con contador en la barra del OS');
-$assert(str_contains($files['so'], 'id="pageMonitorWindow"') && str_contains($files['so'], 'data-page-monitor'), 'Administrador de la página existe como ventana nativa');
+webOsContract(str_contains($paths['shell'], 'id="osTaskCenterButton"') && str_contains($paths['shell'], 'os-task-center-count'), 'Centro de Tareas está integrado como icono con contador en la barra del OS');
+webOsContract(str_contains($paths['shell'], 'id="pageMonitorWindow"') && str_contains($paths['shell'], 'data-page-monitor'), 'Administrador de la página existe como ventana nativa');
 
 echo "WEB_OS_CONTRACT_OK\n";

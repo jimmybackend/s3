@@ -1,9 +1,9 @@
 {
   "summary": {
-    "php_total": 496,
+    "php_total": 497,
     "php_class_modules": 294,
     "php_needs_migration": 0,
-    "php_tests": 48,
+    "php_tests": 49,
     "js_total": 63,
     "js_class_modules": 63,
     "js_needs_migration": 0,
@@ -5866,7 +5866,7 @@
     },
     {
       "path": "drive/src/System/NodeRuntimeStatusService.php",
-      "lines": 425,
+      "lines": 435,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -6807,7 +6807,7 @@
     },
     {
       "path": "drive/tests/node_diagnostics_contract_smoke.php",
-      "lines": 36,
+      "lines": 44,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -7122,6 +7122,23 @@
       "s3": false,
       "bootstrap": false,
       "html": true,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/tests/web_os_theme_contract_smoke.php",
+      "lines": 29,
+      "kind": "test script",
+      "classes": 0,
+      "functions": [
+        "themeContract"
+      ],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
       "namespace": false,
       "issues": []
     },
@@ -8736,7 +8753,7 @@
         "xhr": 0,
         "jquery": 0,
         "json_consumers": 3,
-        "response_checks": 8
+        "response_checks": 7
       },
       "issues": []
     },
@@ -9170,7 +9187,7 @@
     },
     {
       "path": "drive/docs/runtime_endpoints.json",
-      "bytes": 112626,
+      "bytes": 113350,
       "valid": true,
       "root_type": "object",
       "keys": [

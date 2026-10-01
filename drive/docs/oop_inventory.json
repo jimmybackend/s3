@@ -4,9 +4,9 @@
     "php_class_modules": 294,
     "php_needs_migration": 0,
     "php_tests": 55,
-    "js_total": 72,
+    "js_total": 73,
     "js_class_modules": 69,
-    "js_needs_migration": 6,
+    "js_needs_migration": 7,
     "js_compatibility_facades": 8,
     "ajax_clients": 49,
     "ajax_calls": 106,
@@ -151,7 +151,7 @@
     },
     {
       "path": "drive/bin/arcadecloud-drive-updater.php",
-      "lines": 313,
+      "lines": 321,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -2461,7 +2461,7 @@
     },
     {
       "path": "drive/src/Application/FileMutationService.php",
-      "lines": 205,
+      "lines": 209,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -2506,7 +2506,7 @@
     },
     {
       "path": "drive/src/Application/FolderMutationService.php",
-      "lines": 322,
+      "lines": 330,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -2536,7 +2536,7 @@
     },
     {
       "path": "drive/src/Application/MoveJobService.php",
-      "lines": 240,
+      "lines": 251,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -6792,7 +6792,7 @@
     },
     {
       "path": "drive/tests/installer_service_reconcile_contract_smoke.php",
-      "lines": 194,
+      "lines": 197,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -7114,7 +7114,7 @@
     },
     {
       "path": "drive/tests/web_os_clipboard_contract_smoke.php",
-      "lines": 115,
+      "lines": 116,
       "kind": "test script",
       "classes": 0,
       "functions": [],
@@ -7500,7 +7500,7 @@
     },
     {
       "path": "drive/upload/drivers/Chunked15MBUploader.php",
-      "lines": 278,
+      "lines": 270,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -7773,7 +7773,7 @@
     },
     {
       "path": "drive/js/arcadecloud-updater.js",
-      "lines": 255,
+      "lines": 260,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudUpdaterModule"
@@ -8883,7 +8883,7 @@
     },
     {
       "path": "drive/js/so-clipboard.js",
-      "lines": 794,
+      "lines": 806,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudOsClipboard"
@@ -8998,7 +8998,7 @@
     },
     {
       "path": "drive/js/so-screenshot-paste.js",
-      "lines": 335,
+      "lines": 341,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudOsScreenshotPaste"
@@ -9268,7 +9268,7 @@
     },
     {
       "path": "drive/js/upload-center.js",
-      "lines": 938,
+      "lines": 960,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudUploadCenter"
@@ -9289,7 +9289,7 @@
     },
     {
       "path": "drive/js/upload-destination.js",
-      "lines": 74,
+      "lines": 94,
       "kind": "class/module",
       "classes": [
         "UploadDestinationModule"
@@ -9515,7 +9515,7 @@
     },
     {
       "path": "drive/tests/web_os_same_explorer_clipboard_functional.js",
-      "lines": 73,
+      "lines": 76,
       "kind": "procedural script",
       "classes": [],
       "functions": [
@@ -9545,6 +9545,36 @@
       "issues": [
         "top-level functions: assert, storage",
         "top-level state: requests, refreshed, filesystemEvents, explorer, win, doc, clipboard, entries",
+        "no ES class"
+      ]
+    },
+    {
+      "path": "drive/tests/web_os_upload_context_functional.js",
+      "lines": 44,
+      "kind": "procedural script",
+      "classes": [],
+      "functions": [
+        "assert",
+        "button"
+      ],
+      "window_assign": [],
+      "window_func": [],
+      "top_vars": [
+        "routeLabel",
+        "doc",
+        "center"
+      ],
+      "iife": false,
+      "ajax": {
+        "fetch": 0,
+        "xhr": 0,
+        "jquery": 0,
+        "json_consumers": 0,
+        "response_checks": 0
+      },
+      "issues": [
+        "top-level functions: assert, button",
+        "top-level state: routeLabel, doc, center",
         "no ES class"
       ]
     }
@@ -9589,7 +9619,7 @@
     },
     {
       "path": "drive/docs/runtime_endpoints.json",
-      "bytes": 115414,
+      "bytes": 115797,
       "valid": true,
       "root_type": "object",
       "keys": [

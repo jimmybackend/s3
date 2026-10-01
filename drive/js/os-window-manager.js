@@ -66,6 +66,20 @@ class ArcadeCloudWindowManager {
       .sort((a, b) => b.lastFocused - a.lastFocused)[0] || null;
   }
 
+  get activeId() {
+    return [...this.registry.values()].find(record => record.focused && record.status === 'open')?.id || null;
+  }
+
+  openRecords() {
+    return [...this.registry.values()].filter(record => ['open', 'minimized'].includes(record.status));
+  }
+
+  focusMostRecent(excludeId = '') {
+    const next = this.openRecords().filter(record => record.id !== excludeId && !record.minimized)
+      .sort((a, b) => b.lastFocused - a.lastFocused)[0];
+    if (next) this.focus(next.id);
+  }
+
   register(element, app = 'window', state = {}, cleanup) {
     if (!element) return null;
     const definition = this.apps.get(app);
@@ -163,6 +177,8 @@ class ArcadeCloudWindowManager {
     record.element.dataset.minimized = '1';
     record.element.classList.remove('is-open', 'is-active');
     this.syncTaskbar();
+    this.bus.emit('window-minimized', { windowId: record.id, app: record.app });
+    this.focusMostRecent(record.id);
   }
 
   toggleMaximize(elementOrId) {
@@ -291,6 +307,7 @@ class ArcadeCloudWindowManager {
     const detail = { windowId: record.id, app: record.app, lifecycle: record.lifecycle };
     this.bus.emit('window-closed', detail);
     this.document.dispatchEvent(new CustomEvent('arcadeos:window-closed', { detail }));
+    this.focusMostRecent(record.id);
   }
 
   syncTaskbar() {
@@ -299,7 +316,7 @@ class ArcadeCloudWindowManager {
     this.registry.forEach(record => {
       if (!['open', 'minimized'].includes(record.status)) return;
       const item = this.document.createElement('div');
-      item.className = `os-task-item${record.focused ? ' is-active' : ''}`;
+      item.className = `os-task-item${record.focused ? ' is-active' : ''}${record.minimized ? ' is-minimized' : ''}`;
       item.dataset.windowId = record.id;
       const button = this.document.createElement('button');
       button.type = 'button';
@@ -307,7 +324,11 @@ class ArcadeCloudWindowManager {
       button.dataset.windowId = record.id;
       const icon = this.apps.get(record.app)?.icon || 'fa-window-maximize';
       button.innerHTML = `<i class="fas ${icon}"></i><span></span>`;
-      button.querySelector('span').textContent = record.element.dataset.windowTitle || this.apps.get(record.app)?.title || 'Ventana';
+      const title = record.element.dataset.windowTitle || this.apps.get(record.app)?.title || 'Ventana';
+      button.querySelector('span').textContent = title;
+      button.title = title;
+      button.setAttribute?.('aria-label', `${title}${record.minimized ? ', minimizada' : record.focused ? ', activa' : ', abierta'}`);
+      button.setAttribute?.('aria-current', record.focused ? 'true' : 'false');
       button.addEventListener('click', () => {
         if (record.focused && !record.minimized) this.minimize(record.id);
         else this.open(record.id);
@@ -642,13 +663,6 @@ class ArcadeCloudDesktopRuntime {
       if (tool) { event.preventDefault(); this.openTool(tool.href, tool.dataset.toolTitle || tool.textContent.trim(), tool.dataset.osTool); }
     }, true);
     this.document.addEventListener('pointerdown', event => { const element = event.target.closest('.os-window'); if (element) this.manager.focus(element); }, true);
-    this.document.addEventListener('keydown', event => {
-      if (!(event.ctrlKey || event.metaKey) || event.key.toLowerCase() !== 'l') return;
-      if (event.target?.closest?.('input,textarea,[contenteditable="true"]')) return;
-      const active = this.manager.activeId ? this.explorers.get(this.manager.activeId) : null;
-      if (!active) return;
-      event.preventDefault(); active.editAddress();
-    });
     ['file-moved','file-copied','file-deleted','folder-created','upload-completed','task-completed'].forEach(type => this.bus.on(type, event => this.refreshAffected(event.detail)));
     this.bus.on('filesystem:changed', event => this.refreshAffected(event.detail));
     this.document.addEventListener('drive:move-task-completed', event => {

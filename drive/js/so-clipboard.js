@@ -476,7 +476,8 @@ class ArcadeCloudOsClipboard {
       return;
     }
 
-    if (!this.window.DriveMoveTasks || typeof this.window.DriveMoveTasks.start !== 'function') {
+    const operations = this.window.ArcadeCloudFilesystemOperations;
+    if (!operations || typeof operations.startTransfer !== 'function') {
       this.notify('El servicio de transferencias no está disponible.', 'danger');
       return;
     }
@@ -512,7 +513,15 @@ class ArcadeCloudOsClipboard {
     });
 
     try {
-      const started = await this.window.DriveMoveTasks.start(payload);
+      const { result: started } = await operations.startTransfer({
+        type: item.mode,
+        items: Array.isArray(item.items) ? [...item.items] : [],
+        sourceRoute: String(item.sourceRoute || ''),
+        destinationRoute: destination,
+        sourceWindowId: String(item.sourceWindowId || ''),
+        destinationWindowId: String(context.destinationWindowId || ''),
+        progress: null
+      }, payload);
       this.activeTransfer = {
         jobId: String(started.job_id),
         operation: item.mode,
@@ -597,7 +606,9 @@ class ArcadeCloudOsClipboard {
       progress: null,
       message: cancelled
         ? String(detail.mensaje || 'Transferencia cancelada.')
-        : String(detail.error || detail.mensaje || 'La transferencia falló.')
+        : String(detail.error || detail.mensaje || 'La transferencia falló.'),
+      processed: Number(detail.processed_items || 0),
+      requested: Number(detail.requested_items || 0)
     });
     this.hideTransferSoon(4500);
   }
@@ -680,31 +691,24 @@ class ArcadeCloudOsClipboard {
     const key = String(entry.dataset.key || '').trim();
     const name = String(entry.dataset.name || key);
     if (!key) return;
-    if (!this.window.confirm('¿Eliminar “' + name + '”?')) return;
+    const operations = this.window.ArcadeCloudFilesystemOperations;
+    if (!operations) {
+      this.notify('El servicio de operaciones no está disponible.', 'danger');
+      return;
+    }
+    const confirmed = await operations.confirm({
+      title: 'Eliminar archivo',
+      message: 'Se eliminará “' + name + '” de forma permanente.',
+      confirmLabel: 'Eliminar',
+      danger: true
+    });
+    if (!confirmed) return;
 
     try {
-      const response = await this.window.fetch('eliminar_archivo.php', {
-        method: 'POST',
-        credentials: 'same-origin',
-        cache: 'no-store',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
-          'X-Requested-With': 'XMLHttpRequest'
-        },
-        body: new URLSearchParams({ archivo: key })
-      });
-      const text = await response.text();
-      let json = null;
-      try { json = JSON.parse(text); } catch (_) {}
-      if (!response.ok || !json || json.ok !== true) {
-        throw new Error(json?.error || json?.mensaje || text || ('HTTP ' + response.status));
-      }
-
+      const route = String(entry.closest('.os-explorer-live')?.dataset.explorerRoute || this.currentRoute());
+      await operations.run({ type: 'delete', items: [key], sourceRoute: route },
+        () => operations.request('eliminar_archivo.php', { archivo: key }));
       this.notify('Archivo eliminado correctamente.', 'success');
-      const route = this.currentRoute();
-      if (route && this.window.ArcadeCloudOsShell?.refreshExplorer) {
-        await this.window.ArcadeCloudOsShell.refreshExplorer(route, { replaceHistory: true });
-      }
     } catch (error) {
       this.notify('No se pudo eliminar: ' + (error?.message || error), 'danger');
     }
@@ -759,8 +763,7 @@ class ArcadeCloudOsClipboard {
       this.window.ArcadeCloudOsShell.notify(message, type || 'info');
       return;
     }
-    if (type === 'danger') this.window.alert(message);
-    else console.log('[ArcadeCloud OS]', message);
+    console[type === 'danger' ? 'error' : 'log']('[ArcadeCloud OS]', message);
   }
 }
 

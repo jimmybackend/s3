@@ -1,6 +1,7 @@
 'use strict';
 
 const { ArcadeCloudOsClipboard } = require('../js/so-clipboard.js');
+const { ArcadeCloudFilesystemOperations } = require('../js/filesystem-operations.js');
 
 function assert(value, message) {
   if (!value) throw new Error(message);
@@ -30,6 +31,7 @@ const win = {
   setTimeout
 };
 const doc = { querySelectorAll: () => [] };
+win.ArcadeCloudFilesystemOperations = new ArcadeCloudFilesystemOperations(win, doc);
 const clipboard = new ArcadeCloudOsClipboard(win, doc);
 clipboard.notify = () => {};
 clipboard.showTransfer = () => {};

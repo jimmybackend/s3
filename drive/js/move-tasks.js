@@ -44,7 +44,9 @@ class DriveMoveTasks {
     const jobId = String(json.job_id);
     this.remember(jobId);
     this.notify(json.mensaje || 'Transferencia enviada a segundo plano.', 'info', 5500);
-    this.dispatch('drive:move-task-progress', Object.assign({ progress: 0 }, json));
+    this.dispatch('drive:move-task-progress', Object.assign({
+      progress: String(payload?.type || '') === 'files' ? 0 : null
+    }, json));
     this.watch(jobId);
     this.dispatch('drive:background-task-started', {
       kind: 'move',

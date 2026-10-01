@@ -1967,6 +1967,7 @@ Escribe help o usa uno de los botones disponibles.</pre>
   <script data-polly-background src="js/polly-background.js?v=<?= (int)filemtime(__DIR__ . '/js/polly-background.js') ?>"></script>
   <script data-transcribe-background src="js/transcribe-background.js?v=<?= (int)filemtime(__DIR__ . '/js/transcribe-background.js') ?>"></script>
   <script data-background-tasks src="js/background-tasks.js?v=<?= (int)filemtime(__DIR__ . '/js/background-tasks.js') ?>"></script>
+  <script src="js/filesystem-operations.js?v=<?= (int)filemtime(__DIR__ . '/js/filesystem-operations.js') ?>"></script>
   <script src="js/move-tasks.js?v=<?= (int)filemtime(__DIR__ . '/js/move-tasks.js') ?>"></script>
   <script src="js/carpetas.js?v=<?= (int)filemtime(__DIR__ . '/js/carpetas.js') ?>"></script>
   <script src="js/folder-document.js?v=<?= (int)filemtime(__DIR__ . '/js/folder-document.js') ?>"></script>

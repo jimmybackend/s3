@@ -61,6 +61,11 @@ body.arcade-os.os-theme-light .os-desktop:not(.has-custom-wallpaper){background-
 body.arcade-os.os-wallpaper-none .os-desktop{background-image:none!important}
 body.arcade-os.os-theme-light .os-window-titlebar{background:linear-gradient(180deg,rgba(231,243,251,.98),rgba(209,229,242,.98))}
 body.arcade-os.os-theme-light .os-launcher,body.arcade-os.os-theme-light .os-file-context,body.arcade-os.os-theme-light .os-task-context{background:rgba(240,248,253,var(--os-menu-opacity))}
+.os-operation-dialog-backdrop{position:fixed;inset:0;z-index:5000;display:grid;place-items:center;padding:18px;background:var(--os-overlay)}
+.os-operation-dialog{width:min(440px,100%);padding:20px;border:1px solid var(--os-border);border-radius:13px;background:var(--os-surface);color:var(--os-text);box-shadow:var(--os-shadow)}
+.os-operation-dialog h2{margin:0 0 10px;font-size:1.05rem}.os-operation-dialog p{margin:0;color:var(--os-soft);white-space:pre-line}
+.os-operation-dialog-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:20px}.os-operation-dialog-actions button{padding:8px 13px;border:1px solid var(--os-border);border-radius:8px;background:var(--os-button-bg);color:var(--os-button-text);cursor:pointer}
+.os-operation-dialog-actions .is-primary{border-color:var(--os-accent);color:var(--os-accent-2)}.os-operation-dialog-actions .is-danger{border-color:var(--os-danger);color:var(--os-danger-text)}
 button,a{font:inherit}
 a{text-decoration:none;color:inherit}
 .os-topbar{

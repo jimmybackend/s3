@@ -58,7 +58,21 @@ class ArcadeCloudOsTerminal {
       this.privateAccept?.click();
     });
 
+    this.document.addEventListener('arcadeos:window-opened', (event) => {
+      if (event.detail?.app === 'terminal') this.ensureState();
+    });
+    this.document.addEventListener('arcadeos:window-closed', (event) => {
+      if (event.detail?.app === 'terminal') this.resetVisualSession();
+    });
+
     return this;
+  }
+
+  resetVisualSession() {
+    this.pendingPrivateCommand = '';
+    this.hidePrivateConfirm();
+    this.setBusy(false);
+    if (this.inputEl) this.inputEl.value = '';
   }
 
   async ensureState() {

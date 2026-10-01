@@ -23,7 +23,7 @@ class ArcadeCloudWindowManager {
   }
 
   registerApp(app, definition) {
-    this.apps.set(app, Object.assign({ multiInstance: false, title: app, icon: 'fa-window-maximize' }, definition));
+    this.apps.set(app, Object.assign({ multiInstance: false, lifecycle: 'persistent', title: app, icon: 'fa-window-maximize' }, definition));
   }
 
   nextId(app) {
@@ -51,15 +51,17 @@ class ArcadeCloudWindowManager {
     const id = element.dataset.windowId || this.nextId(app);
     element.dataset.windowId = id;
     element.dataset.appId = app;
+    const lifecycle = element.dataset.windowLifecycle || definition?.lifecycle || (element.dataset.dynamicWindow === '1' ? 'dynamic' : 'persistent');
+    element.dataset.windowLifecycle = lifecycle;
     let record = this.registry.get(id);
     if (!record) {
       record = {
         id, app, element, state, cleanup: new Set(), taskButton: null,
+        lifecycle, status: element.classList.contains('is-open') ? 'open' : 'registered',
         focused: false, minimized: element.dataset.minimized === '1',
         maximized: false, compact: false, lastFocused: 0, geometry: null
       };
       this.registry.set(id, record);
-      this.bus.emit('window-opened', { windowId: id, app });
     } else {
       record.element = element;
       record.state = state || record.state;
@@ -78,8 +80,9 @@ class ArcadeCloudWindowManager {
 
   focus(elementOrId) {
     const record = this.record(elementOrId);
-    if (!record) return;
+    if (!record || !['open', 'minimized'].includes(record.status)) return;
     record.minimized = false;
+    record.status = 'open';
     record.element.dataset.minimized = '0';
     record.element.hidden = false;
     record.element.classList.add('is-open');
@@ -94,6 +97,24 @@ class ArcadeCloudWindowManager {
     this.bus.emit('window-focused', { windowId: record.id, app: record.app });
   }
 
+  open(elementOrId) {
+    const record = this.record(elementOrId);
+    if (!record) return null;
+    const wasClosed = !['open', 'minimized'].includes(record.status);
+    record.status = 'open';
+    record.minimized = false;
+    record.element.dataset.minimized = '0';
+    record.element.hidden = false;
+    record.element.classList.add('is-open');
+    this.focus(record.id);
+    if (wasClosed) {
+      const detail = { windowId: record.id, app: record.app, lifecycle: record.lifecycle };
+      this.bus.emit('window-opened', detail);
+      this.document.dispatchEvent(new CustomEvent('arcadeos:window-opened', { detail }));
+    }
+    return record;
+  }
+
   compactZ() {
     [...this.registry.values()].sort((a, b) => (+a.element.style.zIndex || 0) - (+b.element.style.zIndex || 0))
       .forEach((record, index) => { record.element.style.zIndex = String(200 + index); });
@@ -102,8 +123,9 @@ class ArcadeCloudWindowManager {
 
   minimize(elementOrId) {
     const record = this.record(elementOrId);
-    if (!record) return;
+    if (!record || record.status !== 'open') return;
     record.minimized = true;
+    record.status = 'minimized';
     record.focused = false;
     record.element.dataset.minimized = '1';
     record.element.classList.remove('is-open', 'is-active');
@@ -178,23 +200,31 @@ class ArcadeCloudWindowManager {
   close(elementOrId) {
     const record = this.record(elementOrId);
     if (!record) return;
-    record.cleanup.forEach(callback => { try { callback(); } catch (_) {} });
-    record.cleanup.clear();
+    const dynamic = record.lifecycle === 'dynamic';
+    if (dynamic) {
+      record.cleanup.forEach(callback => { try { callback(); } catch (_) {} });
+      record.cleanup.clear();
+    }
     record.element.querySelectorAll('audio,video').forEach(media => {
-      try { media.pause(); media.removeAttribute('src'); media.load(); } catch (_) {}
+      try { media.pause(); if (dynamic) { media.removeAttribute('src'); media.load(); } } catch (_) {}
     });
     clearTimeout(this.preferenceTimers.get(record.id)); this.preferenceTimers.delete(record.id);
-    if (record.element.dataset.dynamicWindow === '1' || record.app === 'explorer' || ['image','pdf','text','viewer'].includes(record.app)) record.element.remove();
-    else { record.element.classList.remove('is-open', 'is-active'); record.element.dataset.minimized = '0'; }
-    this.registry.delete(record.id);
+    record.status = 'closed'; record.focused = false; record.minimized = false;
+    record.element.classList.remove('is-open', 'is-active'); record.element.dataset.minimized = '0';
+    if (dynamic) {
+      record.element.remove(); this.registry.delete(record.id);
+    }
     this.syncTaskbar();
-    this.bus.emit('window-closed', { windowId: record.id, app: record.app });
+    const detail = { windowId: record.id, app: record.app, lifecycle: record.lifecycle };
+    this.bus.emit('window-closed', detail);
+    this.document.dispatchEvent(new CustomEvent('arcadeos:window-closed', { detail }));
   }
 
   syncTaskbar() {
     if (!this.taskbar) return;
     this.taskbar.replaceChildren();
     this.registry.forEach(record => {
+      if (!['open', 'minimized'].includes(record.status)) return;
       const item = this.document.createElement('div');
       item.className = `os-task-item${record.focused ? ' is-active' : ''}`;
       item.dataset.windowId = record.id;
@@ -207,7 +237,7 @@ class ArcadeCloudWindowManager {
       button.querySelector('span').textContent = record.element.dataset.windowTitle || this.apps.get(record.app)?.title || 'Ventana';
       button.addEventListener('click', () => {
         if (record.focused && !record.minimized) this.minimize(record.id);
-        else this.focus(record.id);
+        else this.open(record.id);
       });
       item.append(button);
       this.taskbar.append(item);
@@ -449,13 +479,19 @@ class ArcadeCloudDesktopRuntime {
 
   init() {
     this.registerApplications();
-    this.document.querySelectorAll('.os-window.is-open').forEach(element => this.manager.register(element, this.appFor(element)));
+    this.document.querySelectorAll('.os-window').forEach(element => this.manager.register(element, this.appFor(element)));
     this.document.querySelectorAll('.os-explorer-window.is-open').forEach(element => this.attachExplorer(element));
     this.document.querySelectorAll('.os-window').forEach(element => this.bindWindowChrome(element));
     this.document.addEventListener('click', event => {
       const target = event.target instanceof Element ? event.target : null; if (!target) return;
       const launch = target.closest('[data-window-open="explorerWindow"],[data-app-open="explorer"]');
       if (launch) { event.preventDefault(); event.stopImmediatePropagation(); this.openExplorer(this.root, { forceNew: true }); return; }
+      const staticLaunch = target.closest('[data-window-open]');
+      if (staticLaunch) {
+        const element = this.document.getElementById(staticLaunch.dataset.windowOpen);
+        const record = element && this.manager.record(element);
+        if (record) { event.preventDefault(); event.stopImmediatePropagation(); this.manager.open(record.id); return; }
+      }
       const newer = target.closest('[data-folder-open-new]');
       if (newer) { event.preventDefault(); event.stopPropagation(); this.openExplorer(this.window.ArcadeCloudOsFolders?.activeFolder?.route || newer.dataset.folderOpenNew, { forceNew: true }); this.window.ArcadeCloudOsFolders?.hideContext?.(); }
       const tool = target.closest('[data-os-tool]');
@@ -477,8 +513,8 @@ class ArcadeCloudDesktopRuntime {
   }
 
   registerApplications() {
-    [['explorer',true,'Mis datos','fa-folder-open'],['image',true,'Imagen','fa-file-image'],['pdf',true,'PDF','fa-file-pdf'],['text',true,'Texto','fa-file-lines'],['viewer',true,'Archivo','fa-file'],['tool',false,'Herramienta','fa-toolbox'],['node',false,'Mi nodo','fa-server'],['settings',false,'Configuración','fa-gear'],['terminal',false,'Terminal','fa-terminal']]
-      .forEach(([app,multiInstance,title,icon]) => this.manager.registerApp(app, { multiInstance, title, icon }));
+    [['explorer',true,'dynamic','Mis datos','fa-folder-open'],['image',true,'dynamic','Imagen','fa-file-image'],['pdf',true,'dynamic','PDF','fa-file-pdf'],['text',true,'dynamic','Texto','fa-file-lines'],['viewer',true,'dynamic','Archivo','fa-file'],['tool',true,'dynamic','Herramienta','fa-toolbox'],['node',false,'persistent','Mi nodo','fa-server'],['settings',false,'persistent','Configuración','fa-gear'],['links',false,'persistent','Enlaces','fa-link'],['terminal',false,'persistent','Terminal','fa-terminal']]
+      .forEach(([app,multiInstance,lifecycle,title,icon]) => this.manager.registerApp(app, { multiInstance, lifecycle, title, icon }));
   }
 
   appFor(element) {
@@ -490,6 +526,7 @@ class ArcadeCloudDesktopRuntime {
       return 'viewer';
     }
     if (element.id === 'nodeWindow') return 'node'; if (element.id === 'settingsWindow') return 'settings'; if (element.id === 'terminalWindow') return 'terminal';
+    if (element.id === 'linksWindow') return 'links';
     return element.dataset.appId || element.id?.replace(/Window$/, '') || 'window';
   }
 

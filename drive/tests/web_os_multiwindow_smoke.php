@@ -39,5 +39,9 @@ $assert(str_contains($files['node'], 'private function publicSnapshot'), 'endpoi
 $assert(str_contains($files['nodeUi'], 'this.config.superadmin !== true'), 'usuario normal recibe panel simplificado');
 $assert(str_contains($files['shell'], 'data-os-tool="activity-costs"'), 'actividad/costos abre herramienta interna');
 $assert(str_contains($files['css'], '.os-window.is-drop-target'), 'destino drag tiene estado visual');
+$assert(!str_contains($files['shell'], 'data-initial-explorer'), 'el shell inicia sin Explorer preabierto');
+$assert(str_contains($files['runtime'], 'forceNew: true') && !str_contains($files['runtime'], 'this.openExplorer(this.root, { reuse: true })'), 'cada clic en Mis datos solicita una instancia nueva');
+$assert(str_contains($files['runtime'], 'windowPreferences') && str_contains($files['runtime'], 'ResizeObserver'), 'WindowManager aplica y observa tamaño preferido por aplicación');
+$assert(str_contains($files['runtime'], 'Math.round(preferred.width / 2)') && str_contains($files['runtime'], 'Math.round(preferred.height / 2)'), 'botón de tamaño alterna a aproximadamente 50 por ciento');
 
 fwrite(STDOUT, "Web OS multiwindow smoke passed.\n");

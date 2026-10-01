@@ -225,7 +225,8 @@ final class NodeRuntimeStatusService
 
     private function federation(): array
     {
-        $out = ['enabled' => false, 'known' => null, 'recently_seen' => null, 'available' => null, 'unavailable' => null];
+        $out = ['enabled' => false, 'known' => null, 'recently_seen' => null, 'reachable' => null, 'unreachable' => null, 'available' => null, 'unavailable' => null,
+            'reachability_definition' => 'Alcanzable = registro administrativo activo visto por FederationCloud en los últimos 15 minutos.'];
         try {
             $config = FederationConfig::fromEnvironment();
             $identity = new NodeIdentityService($config->identityPath());
@@ -235,10 +236,18 @@ final class NodeRuntimeStatusService
                 'seed_configured' => trim((string)(getenv('ARCADECLOUD_FEDERATION_SEED_URL') ?: '')) !== '']);
             $result = $this->app->db()->query("SELECT COUNT(*) known, SUM(LastSeen >= DATE_SUB(UTC_TIMESTAMP(), INTERVAL 15 MINUTE)) recent, SUM(Status='active' AND LastSeen >= DATE_SUB(UTC_TIMESTAMP(), INTERVAL 15 MINUTE)) available, MAX(LastSeen) last_sync FROM FederationNodes");
             $row = $result?->fetch_assoc(); $result?->free();
-            if (is_array($row)) { $out['known']=(int)$row['known']; $out['recently_seen']=(int)$row['recent']; $out['available']=(int)$row['available']; $out['unavailable']=max(0,$out['known']-$out['available']); $out['last_sync_at']=$row['last_sync']; }
+            if (is_array($row)) { $out['known']=(int)$row['known']; $out['recently_seen']=(int)$row['recent']; $out['reachable']=(int)$row['available']; $out['unreachable']=max(0,$out['known']-$out['reachable']); $out['available']=$out['reachable']; $out['unavailable']=$out['unreachable']; $out['last_sync_at']=$row['last_sync']; }
             $peers = $this->app->db()->query("SELECT NodeId, NodeName, Status, LastSeen, FederationUrl FROM FederationNodes ORDER BY LastSeen DESC LIMIT 50");
             $out['nodes'] = [];
-            while ($peer = $peers?->fetch_assoc()) $out['nodes'][] = ['node_id_short'=>substr((string)$peer['NodeId'],0,12),'name'=>(string)($peer['NodeName']??''),'status'=>(string)$peer['Status'],'last_seen'=>(string)$peer['LastSeen'],'url'=>$this->safePublicUrl((string)$peer['FederationUrl'])];
+            while ($peer = $peers?->fetch_assoc()) {
+                $lastSeen = (string)($peer['LastSeen'] ?? '');
+                $recent = $lastSeen !== '' && ($seenAt = strtotime($lastSeen . ' UTC')) !== false && $seenAt >= time() - 900;
+                $administrativelyActive = (string)$peer['Status'] === 'active';
+                $out['nodes'][] = ['node_id_short'=>substr((string)$peer['NodeId'],0,12),'name'=>(string)($peer['NodeName']??''),
+                    'registered'=>true,'administratively_active'=>$administrativelyActive,'status'=>(string)$peer['Status'],
+                    'recently_seen'=>$recent,'reachable'=>$administrativelyActive && $recent,'last_seen'=>$lastSeen,
+                    'url'=>$this->safePublicUrl((string)$peer['FederationUrl'])];
+            }
             $peers?->free();
         } catch (Throwable) { $out['message'] = 'Estado de FederationCloud no disponible.'; }
         return $out;
@@ -263,12 +272,13 @@ final class NodeRuntimeStatusService
 
     private function nginx(array $services): array
     {
-        $test = $this->executable('nginx') ? $this->command(['nginx', '-t'], 2.0) : ['ok' => false, 'output' => '', 'code' => 127];
-        $versionProbe = $this->executable('nginx') ? $this->command(['nginx', '-v'], 1.0) : ['output' => ''];
+        $installed = $this->executable('nginx');
+        $test = $installed ? $this->command(['nginx', '-t'], 2.0) : ['ok' => false, 'output' => 'El comando nginx no está disponible en PATH.', 'code' => 127];
+        $versionProbe = $installed ? $this->command(['nginx', '-v'], 1.0) : ['output' => ''];
         $message = $this->sanitizeLine($test['output']);
         $permission = !$test['ok'] && (str_contains(strtolower($message), 'permission denied') || str_contains(strtolower($message), 'operation not permitted'));
         $stats = $this->processStats('nginx');
-        return ['service' => $this->service($services, 'nginx.service'), 'version' => $this->sanitizeLine($versionProbe['output']), 'config_status' => $test['ok'] ? 'ok' : ($permission ? 'permission_denied' : 'error'),
+        return ['service' => $this->service($services, 'nginx.service'), 'version' => $this->sanitizeLine($versionProbe['output']), 'config_status' => $test['ok'] ? 'ok' : (!$installed ? 'command_unavailable' : ($permission ? 'permission_denied' : 'error')),
             'config_ok' => (bool)$test['ok'], 'config_message' => $permission ? 'No disponible por permisos' : $message,
             'memory_bytes' => $stats['memory_bytes'], 'processes' => $stats['count'], 'stub_status_available' => false];
     }

@@ -1995,6 +1995,7 @@ Escribe help o usa uno de los botones disponibles.</pre>
   <script src="js/os-window-manager.js?v=<?= (int)filemtime(__DIR__ . '/js/os-window-manager.js') ?>"></script>
   <script src="js/file-applications.js?v=<?= (int)filemtime(__DIR__ . '/js/file-applications.js') ?>"></script>
   <script src="js/so.js?v=<?= (int)filemtime(__DIR__ . '/js/so.js') ?>"></script>
+  <script src="js/so-clipboard.js?v=<?= (int)filemtime(__DIR__ . '/js/so-clipboard.js') ?>"></script>
   <script src="js/desktop-shell.js?v=<?= (int)filemtime(__DIR__ . '/js/desktop-shell.js') ?>"></script>
 </body>
 </html>

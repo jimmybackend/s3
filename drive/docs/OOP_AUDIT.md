@@ -4,7 +4,7 @@
 
 ## Resumen
 
-- PHP analizados: **499**
+- PHP analizados: **500**
 - PHP que ya contienen clases/interfaces: **294**
 - PHP marcados para migración/revisión: **0**
 - Tests PHP separados del objetivo OOP de runtime: **51**
@@ -12,7 +12,7 @@
 - JavaScript que ya contienen clases: **65**
 - JavaScript sin clase/encapsulación OOP: **1**
 - JavaScript OOP con fachada `window` de compatibilidad: **8**
-- Clientes AJAX detectados: **48** módulos / **103** llamadas
+- Clientes AJAX detectados: **48** módulos / **104** llamadas
 - JSON analizados: **4**; inválidos: **0**
 
 ## Criterio
@@ -125,6 +125,7 @@
 | `drive/federationdrop/google-login.php` | 11 | thin endpoint | 0 | — | — | — | — |
 | `drive/federationdrop/google-logout.php` | 11 | thin endpoint | 0 | — | — | — | — |
 | `drive/federationdrop/index.php` | 11 | thin endpoint | 0 | — | — | — | — |
+| `drive/folder-suggestions.php` | 36 | thin endpoint | 0 | — | — | — | — |
 | `drive/generar_token.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/guardar_texto.php` | 8 | thin endpoint | 0 | — | — | — | — |
 | `drive/index.php` | 509 | view/entrypoint | 0 | — | — | — | — |
@@ -163,7 +164,7 @@
 | `drive/set_file_security.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/setup/api.php` | 15 | thin endpoint | 0 | — | — | — | — |
 | `drive/setup/index.php` | 90 | view/entrypoint | 0 | — | — | — | — |
-| `drive/so.php` | 1999 | view/entrypoint | 0 | — | — | — | — |
+| `drive/so.php` | 1986 | view/entrypoint | 0 | — | — | — | — |
 | `drive/src/Activity/ActivityCostRecorder.php` | 155 | class/module | 1 | — | — | — | — |
 | `drive/src/Activity/ActivityCostRepository.php` | 198 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Activity/ActivityCostService.php` | 153 | class/module | 1 | — | — | — | — |
@@ -403,7 +404,7 @@
 | `drive/src/Sharing/ShareTokenStore.php` | 132 | class/module | 1 | — | — | — | — |
 | `drive/src/Storage/FileRecordRepository.php` | 174 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Storage/FolderMutationRepository.php` | 323 | class/module | 1 | — | ⚠️ | — | — |
-| `drive/src/Storage/FolderRepository.php` | 108 | class/module | 1 | — | ⚠️ | — | — |
+| `drive/src/Storage/FolderRepository.php` | 133 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Storage/MoveJobStore.php` | 335 | class/module | 1 | — | — | — | — |
 | `drive/src/Storage/StorageObjectNameCodec.php` | 104 | class/module | 1 | — | — | — | — |
 | `drive/src/Storage/StorageUsageService.php` | 103 | class/module | 1 | — | ⚠️ | — | — |
@@ -475,7 +476,7 @@
 | `drive/tests/index_federation_drop_smoke.php` | 121 | test script | 0 | — | — | — | — |
 | `drive/tests/installer_service_reconcile_contract_smoke.php` | 194 | test script | 0 | — | — | — | — |
 | `drive/tests/media_processing_contract_smoke.php` | 185 | test script | 0 | — | — | — | — |
-| `drive/tests/node_diagnostics_contract_smoke.php` | 48 | test script | 0 | — | — | — | — |
+| `drive/tests/node_diagnostics_contract_smoke.php` | 49 | test script | 0 | — | — | — | — |
 | `drive/tests/node_diagnostics_control_smoke.php` | 42 | test script | 0 | — | — | — | — |
 | `drive/tests/office_gateway_contract_smoke.php` | 272 | test script | 0 | — | — | — | — |
 | `drive/tests/password_credential_verifier_smoke.php` | 44 | test script | 0 | — | — | — | — |
@@ -495,7 +496,7 @@
 | `drive/tests/user_profile_validator_smoke.php` | 72 | test script | 0 | — | — | — | — |
 | `drive/tests/web_os_clipboard_contract_smoke.php` | 109 | test script | 0 | — | — | — | — |
 | `drive/tests/web_os_contract_smoke.php` | 481 | test script | 0 | — | — | — | — |
-| `drive/tests/web_os_multiwindow_smoke.php` | 48 | test script | 0 | — | — | — | — |
+| `drive/tests/web_os_multiwindow_smoke.php` | 57 | test script | 0 | — | — | — | — |
 | `drive/tests/web_os_pending_fixes_smoke.php` | 40 | test script | 0 | — | — | — | — |
 | `drive/tests/web_os_theme_contract_smoke.php` | 29 | test script | 0 | — | — | — | — |
 | `drive/tests/workstation_phase1_contract_smoke.php` | 64 | test script | 0 | — | — | — | — |
@@ -567,7 +568,7 @@
 | `drive/js/mediaFloating.js` | 38 | class/module | MediaFloatingModule | — | — | — |
 | `drive/js/move-tasks.js` | 273 | class/module | DriveMoveTasks | — | — | — |
 | `drive/js/obtenerFiltros.js` | 125 | class/module | ObtenerFiltrosModule | — | — | — |
-| `drive/js/os-window-manager.js` | 623 | class/module | ArcadeCloudEventBus, ArcadeCloudWindowManager, ExplorerWindowFactory, ArcadeCloudExplorerWindow, ArcadeCloudDesktopRuntime | — | — | — |
+| `drive/js/os-window-manager.js` | 682 | class/module | ArcadeCloudEventBus, ArcadeCloudWindowManager, ExplorerWindowFactory, ArcadeCloudExplorerWindow, ArcadeCloudDesktopRuntime | — | — | — |
 | `drive/js/pdf-pantalla-completa.js` | 45 | class/module | PdfPantallaCompletaModule | — | — | — |
 | `drive/js/polly-background.js` | 305 | class/module | PollyBackgroundModule | — | — | — |
 | `drive/js/polly.js` | 1008 | class/module | PollyModule | — | abrirModalGrabarAudio, abrirModalPolly, abrirModalRekognition, abrirModalTraducir, abrirModalTranscribir, copiarTextract | window functions: abrirModalGrabarAudio, abrirModalPolly, abrirModalRekognition, abrirModalTraducir, abrirModalTranscribir, copiarTextract, copiarTraducido, copiarTx |
@@ -629,7 +630,7 @@
 | `drive/js/media-processing.js` | 3 | 0 | 0 | 3 | 5 |
 | `drive/js/move-tasks.js` | 2 | 0 | 0 | 0 | 6 |
 | `drive/js/obtenerFiltros.js` | 3 | 0 | 0 | 0 | 0 |
-| `drive/js/os-window-manager.js` | 3 | 0 | 0 | 0 | 10 |
+| `drive/js/os-window-manager.js` | 4 | 0 | 0 | 1 | 11 |
 | `drive/js/polly-background.js` | 1 | 0 | 0 | 0 | 3 |
 | `drive/js/polly.js` | 0 | 0 | 2 | 0 | 8 |
 | `drive/js/profile.js` | 2 | 0 | 0 | 1 | 4 |

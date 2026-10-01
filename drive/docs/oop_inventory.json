@@ -1,6 +1,6 @@
 {
   "summary": {
-    "php_total": 499,
+    "php_total": 500,
     "php_class_modules": 294,
     "php_needs_migration": 0,
     "php_tests": 51,
@@ -9,7 +9,7 @@
     "js_needs_migration": 1,
     "js_compatibility_facades": 8,
     "ajax_clients": 48,
-    "ajax_calls": 103,
+    "ajax_calls": 104,
     "json_total": 4,
     "json_invalid": 0
   },
@@ -1457,6 +1457,23 @@
       "issues": []
     },
     {
+      "path": "drive/folder-suggestions.php",
+      "lines": 36,
+      "kind": "thin endpoint",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [
+        "GET"
+      ],
+      "db": false,
+      "s3": false,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
       "path": "drive/generar_token.php",
       "lines": 10,
       "kind": "thin endpoint",
@@ -2043,7 +2060,7 @@
     },
     {
       "path": "drive/so.php",
-      "lines": 1999,
+      "lines": 1986,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -5671,7 +5688,7 @@
     },
     {
       "path": "drive/src/Storage/FolderRepository.php",
-      "lines": 108,
+      "lines": 133,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -6807,7 +6824,7 @@
     },
     {
       "path": "drive/tests/node_diagnostics_contract_smoke.php",
-      "lines": 48,
+      "lines": 49,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -7127,7 +7144,7 @@
     },
     {
       "path": "drive/tests/web_os_multiwindow_smoke.php",
-      "lines": 48,
+      "lines": 57,
       "kind": "test script",
       "classes": 0,
       "functions": [],
@@ -8466,7 +8483,7 @@
     },
     {
       "path": "drive/js/os-window-manager.js",
-      "lines": 623,
+      "lines": 682,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudEventBus",
@@ -8486,11 +8503,11 @@
       "top_vars": [],
       "iife": false,
       "ajax": {
-        "fetch": 3,
+        "fetch": 4,
         "xhr": 0,
         "jquery": 0,
-        "json_consumers": 0,
-        "response_checks": 10
+        "json_consumers": 1,
+        "response_checks": 11
       },
       "issues": []
     },

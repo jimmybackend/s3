@@ -380,7 +380,24 @@ a{text-decoration:none;color:inherit}
   width:32px;flex:0 0 32px;border:0;background:transparent;color:var(--os-soft);cursor:pointer
 }
 .os-task-more:hover{background:rgba(255,255,255,.08);color:var(--os-text)}
+.os-task-center-button{
+  position:relative;flex:0 0 48px;width:48px;height:100%;border:0;border-left:1px solid var(--os-border);
+  background:transparent;color:var(--os-soft);display:inline-flex;align-items:center;justify-content:center;cursor:pointer
+}
+.os-task-center-button:hover,.os-task-center-button[aria-expanded="true"]{background:rgba(38,198,255,.1);color:var(--os-text)}
+.os-task-center-count{
+  position:absolute;right:4px;top:4px;min-width:18px;height:18px;padding:0 4px;border-radius:999px;
+  display:inline-flex;align-items:center;justify-content:center;background:var(--os-accent);color:#03131d;
+  font-size:.62rem;font-weight:900;line-height:1
+}
 .os-clock{padding:0 15px;font-size:.75rem;color:var(--os-soft);white-space:nowrap}
+.os-page-monitor-body{display:grid;align-content:start;gap:14px}
+.os-page-monitor-heading p{margin:4px 0 0;color:var(--os-soft);font-size:.78rem}
+.os-page-monitor-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.os-page-monitor-grid article{min-width:0;padding:12px;border:1px solid var(--os-border);border-radius:10px;background:var(--os-surface-subtle)}
+.os-page-monitor-grid span,.os-page-monitor-grid small{display:block;color:var(--os-soft);font-size:.7rem}
+.os-page-monitor-grid strong{display:block;margin:5px 0 3px;color:var(--os-accent-2);font-size:1.15rem;overflow-wrap:anywhere}
+.os-page-monitor-note{padding:10px 12px;border:1px solid var(--os-divider);border-radius:9px;color:var(--os-soft);font-size:.75rem;background:var(--os-surface-subtle)}
 .os-launcher{
   position:fixed;left:7px;bottom:53px;width:300px;max-height:70vh;overflow:auto;z-index:9600;
   background:rgba(8,22,37,var(--os-menu-opacity));border:1px solid var(--os-border);border-radius:13px;box-shadow:0 20px 60px rgba(0,0,0,.5);padding:8px
@@ -498,6 +515,8 @@ body.os-theme-light .os-appearance-preview{background-image:linear-gradient(145d
   .os-settings-body{padding:12px;gap:12px}.os-appearance-preview{height:92px}.os-wallpaper-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.os-links-grid{grid-template-columns:1fr}
   .os-task-more{width:28px;flex-basis:28px}
   .os-clock{font-size:.66rem;padding:0 8px}
+  .os-task-center-button{flex-basis:44px;width:44px}
+  .os-page-monitor-grid{grid-template-columns:1fr}
   .os-launcher{left:4px;bottom:50px;width:calc(100vw - 8px)}
 }
 

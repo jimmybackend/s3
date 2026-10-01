@@ -760,6 +760,32 @@ Escribe help o usa uno de los botones disponibles.</pre>
     </section>
     <?php endif; ?>
 
+    <section class="os-window os-page-monitor-window" id="pageMonitorWindow" data-window-title="Administrador de la página">
+      <div class="os-window-titlebar" data-window-drag-handle>
+        <div class="os-window-title"><i class="fas fa-chart-line"></i><span>Administrador de la página</span></div>
+        <div class="os-window-controls">
+          <button type="button" data-window-minimize aria-label="Minimizar"><i class="fas fa-minus"></i></button>
+          <button type="button" data-window-maximize aria-label="Maximizar"><i class="far fa-square"></i></button>
+          <button type="button" data-window-close aria-label="Cerrar"><i class="fas fa-xmark"></i></button>
+        </div>
+      </div>
+      <div class="os-window-body os-page-monitor-body" data-page-monitor>
+        <header class="os-page-monitor-heading">
+          <strong>Recursos de esta pestaña</strong>
+          <p>Mide el navegador y ArcadeCloud OS en esta página; no son recursos del EC2.</p>
+        </header>
+        <div class="os-page-monitor-grid">
+          <article><span>Memoria JS usada</span><strong data-page-memory-used>—</strong><small data-page-memory-detail>Compatibilidad del navegador pendiente</small></article>
+          <article><span>DOM</span><strong data-page-dom-nodes>—</strong><small>Nodos actualmente cargados</small></article>
+          <article><span>Ventanas</span><strong data-page-windows>—</strong><small data-page-window-detail>Abiertas en ArcadeCloud OS</small></article>
+          <article><span>Tareas</span><strong data-page-tasks>—</strong><small>Activas en el centro de tareas</small></article>
+          <article><span>Recursos cargados</span><strong data-page-resources>—</strong><small>JS, CSS, imágenes y solicitudes</small></article>
+          <article><span>Tiempo abierta</span><strong data-page-uptime>—</strong><small>Desde la navegación actual</small></article>
+        </div>
+        <div class="os-page-monitor-note" data-page-memory-note>La memoria exacta depende de las APIs que permita el navegador.</div>
+      </div>
+    </section>
+
     <section class="os-window os-settings-window" id="settingsWindow" data-window-title="Configuración">
       <div class="os-window-titlebar" data-window-drag-handle>
         <div class="os-window-title"><i class="fas fa-gear"></i><span>Configuración</span></div>
@@ -1919,6 +1945,9 @@ Escribe help o usa uno de los botones disponibles.</pre>
       <i class="fas fa-gear"></i>
     </button>
     <div class="os-task-buttons" id="osTaskButtons"></div>
+    <button type="button" class="os-task-center-button" id="osTaskCenterButton" aria-label="Tareas en segundo plano" title="Tareas en segundo plano">
+      <i class="fas fa-list-check"></i><span class="os-task-center-count">0</span>
+    </button>
     <div class="os-clock" id="osClock"></div>
   </footer>
 
@@ -1996,6 +2025,7 @@ Escribe help o usa uno de los botones disponibles.</pre>
   <script src="js/file-applications.js?v=<?= (int)filemtime(__DIR__ . '/js/file-applications.js') ?>"></script>
   <script src="js/so.js?v=<?= (int)filemtime(__DIR__ . '/js/so.js') ?>"></script>
   <script src="js/so-clipboard.js?v=<?= (int)filemtime(__DIR__ . '/js/so-clipboard.js') ?>"></script>
+  <script src="js/page-task-manager.js?v=<?= (int)filemtime(__DIR__ . '/js/page-task-manager.js') ?>"></script>
   <script src="js/desktop-shell.js?v=<?= (int)filemtime(__DIR__ . '/js/desktop-shell.js') ?>"></script>
 </body>
 </html>

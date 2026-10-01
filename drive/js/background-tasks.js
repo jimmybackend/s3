@@ -76,9 +76,10 @@ class BackgroundTaskCenter {
       const style = this.document.createElement('style');
       style.id = 'backgroundTaskCenterStyle';
       style.textContent = `
-        #backgroundTaskButton {
+        #backgroundTaskButton { display:none !important; }
+        #backgroundTaskButton.bg-task-legacy-floating {
           position:fixed; right:1rem; bottom:1rem; z-index:2075;
-          display:inline-flex; align-items:center; gap:.35rem;
+          display:inline-flex !important; align-items:center; gap:.35rem;
           min-height:46px; padding:.68rem .9rem;
           border-radius:14px !important;
           background:var(--panel-solid, #fff) !important;
@@ -87,7 +88,7 @@ class BackgroundTaskCenter {
           box-shadow:0 12px 30px rgba(0,0,0,.22), 0 0 16px rgba(var(--accent-rgb, 14,165,233), .12) !important;
           font-weight:700;
         }
-        #backgroundTaskButton:hover {
+        #backgroundTaskButton.bg-task-legacy-floating:hover {
           color:var(--accent, #0ea5e9) !important;
           border-color:rgba(var(--accent-rgb, 14,165,233), .72) !important;
         }
@@ -273,19 +274,25 @@ class BackgroundTaskCenter {
       this.document.head.appendChild(style);
     }
 
-    if (!this.document.getElementById('backgroundTaskButton')) {
-      const button = this.document.createElement('button');
+    let button = this.document.getElementById('osTaskCenterButton');
+    if (!button && !this.document.getElementById('backgroundTaskButton')) {
+      button = this.document.createElement('button');
       button.type = 'button';
       button.id = 'backgroundTaskButton';
+      button.className = 'bg-task-legacy-floating';
+      button.innerHTML = 'Tareas <span class="bg-task-count">0</span>';
+      this.document.body.appendChild(button);
+    }
+    button = button || this.document.getElementById('backgroundTaskButton');
+    if (button && button.dataset.taskCenterBound !== '1') {
+      button.dataset.taskCenterBound = '1';
       button.setAttribute('aria-controls', 'backgroundTaskPanel');
       button.setAttribute('aria-expanded', 'false');
-      button.innerHTML = 'Tareas <span class="bg-task-count">0</span>';
       button.addEventListener('click', () => {
         this.open = !this.open;
         this.render();
         if (this.open) this.refresh();
       });
-      this.document.body.appendChild(button);
     }
 
     if (!this.document.getElementById('backgroundTaskPanel')) {
@@ -764,12 +771,12 @@ class BackgroundTaskCenter {
 
   render() {
     this.ensureUi();
-    const button = this.document.getElementById('backgroundTaskButton');
+    const button = this.document.getElementById('osTaskCenterButton') || this.document.getElementById('backgroundTaskButton');
     const panel = this.document.getElementById('backgroundTaskPanel');
     if (!button || !panel) return;
 
     const active = Number(this.summary && this.summary.active || 0);
-    const count = button.querySelector('.bg-task-count');
+    const count = button.querySelector('.bg-task-count, .os-task-center-count');
     if (count) count.textContent = String(active);
     button.setAttribute('aria-expanded', this.open ? 'true' : 'false');
     panel.classList.toggle('bg-task-open', this.open);

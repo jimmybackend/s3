@@ -1265,7 +1265,9 @@
       "references": [
         "drive/so.php",
         "drive/tests/office_gateway_contract_smoke.php",
-        "drive/tests/web_os_contract_smoke.php"
+        "drive/tests/web_os_contract_smoke.php",
+        "drive/tests/web_os_remote_applications_smoke.php",
+        "drive/tests/web_os_desktop_shell_functional.js"
       ]
     },
     {
@@ -1421,7 +1423,8 @@
         "drive/ec2.php",
         "drive/so.php",
         "drive/tests/server_console_contract_smoke.php",
-        "drive/tests/web_os_contract_smoke.php"
+        "drive/tests/web_os_contract_smoke.php",
+        "drive/tests/web_os_remote_applications_smoke.php"
       ]
     },
     {
@@ -1485,7 +1488,7 @@
     },
     {
       "path": "drive/so.php",
-      "size": 110741,
+      "size": 109714,
       "active": true,
       "references": [
         "drive/s3.php",
@@ -1500,6 +1503,7 @@
         "drive/tests/web_os_interactions_theme_smoke.php",
         "drive/tests/web_os_multiwindow_smoke.php",
         "drive/tests/web_os_pending_fixes_smoke.php",
+        "drive/tests/web_os_remote_applications_smoke.php",
         "drive/tests/web_os_theme_contract_smoke.php",
         "drive/js/os-window-manager.js",
         "drive/js/so.js"
@@ -3914,7 +3918,7 @@
     },
     {
       "path": "drive/tests/web_os_contract_smoke.php",
-      "size": 49171,
+      "size": 49179,
       "active": false,
       "references": []
     },
@@ -3945,6 +3949,12 @@
     {
       "path": "drive/tests/web_os_pending_fixes_smoke.php",
       "size": 4760,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/tests/web_os_remote_applications_smoke.php",
+      "size": 3777,
       "active": false,
       "references": []
     },

@@ -11,9 +11,10 @@ class UploadDestinationModule {
       'use strict';
 
       function currentRoute() {
+        const activeExplorerRoute = document.querySelector('.os-explorer-window.is-active .os-explorer-live')?.dataset?.explorerRoute;
         const contextRoute = document.getElementById('archivosContexto')?.dataset?.rutaActual;
         const footerRoute = document.getElementById('footerRutaActual')?.textContent;
-        return String(contextRoute || window.rutaActual || window.DRIVE_INITIAL_ROUTE || footerRoute || '').trim();
+        return String(activeExplorerRoute || contextRoute || window.rutaActual || window.DRIVE_INITIAL_ROUTE || footerRoute || '').trim();
       }
 
       function normalize(route) {

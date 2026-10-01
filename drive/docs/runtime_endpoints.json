@@ -263,7 +263,7 @@
     },
     {
       "path": "drive/bin/arcadecloud-drive-updater.php",
-      "size": 11972,
+      "size": 12591,
       "active": false,
       "references": [
         "drive/tests/installer_service_reconcile_contract_smoke.php"
@@ -1703,7 +1703,7 @@
     },
     {
       "path": "drive/src/Application/FileMutationService.php",
-      "size": 7335,
+      "size": 7558,
       "active": false,
       "references": [
         "drive/tests/web_os_clipboard_contract_smoke.php"
@@ -1727,7 +1727,7 @@
     },
     {
       "path": "drive/src/Application/FolderMutationService.php",
-      "size": 12545,
+      "size": 12794,
       "active": false,
       "references": [
         "drive/tests/web_os_clipboard_contract_smoke.php"
@@ -1741,7 +1741,7 @@
     },
     {
       "path": "drive/src/Application/MoveJobService.php",
-      "size": 9415,
+      "size": 9905,
       "active": false,
       "references": [
         "drive/tests/web_os_clipboard_contract_smoke.php"
@@ -3792,7 +3792,7 @@
     },
     {
       "path": "drive/tests/installer_service_reconcile_contract_smoke.php",
-      "size": 17681,
+      "size": 18085,
       "active": false,
       "references": []
     },
@@ -3912,7 +3912,7 @@
     },
     {
       "path": "drive/tests/web_os_clipboard_contract_smoke.php",
-      "size": 10339,
+      "size": 10520,
       "active": false,
       "references": []
     },
@@ -4112,7 +4112,7 @@
     },
     {
       "path": "drive/upload/drivers/Chunked15MBUploader.php",
-      "size": 9711,
+      "size": 9462,
       "active": false,
       "references": [
         "drive/tests/federation_moderation_contract_smoke.php",

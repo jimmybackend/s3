@@ -616,7 +616,6 @@ final class ArcadeCloudDriveAdminHelper
     private function cleanupDiskSafely(): string
     {
         $beforeFree = @disk_free_space('/');
-        $before = $this->runFixedCommand(['/usr/bin/df', '-h', '/'], [0], 20);
         $now = time();
         $deletedFiles = 0;
         $deletedBytes = 0;
@@ -649,6 +648,7 @@ final class ArcadeCloudDriveAdminHelper
             $deletedFiles,
             $deletedBytes
         );
+        $temporaryBytes = $deletedBytes;
 
         // Logs rotados: conserva siempre los logs activos. Sólo se consideran
         // archivos rotados/archivados con al menos 14 días.
@@ -656,6 +656,7 @@ final class ArcadeCloudDriveAdminHelper
         foreach (['/var/log/nginx', '/var/log/php-fpm-drive'] as $logDir) {
             $this->cleanupRotatedLogs($logDir, $logCutoff, $deletedFiles, $deletedBytes);
         }
+        $logBytes = max(0, $deletedBytes - $temporaryBytes);
 
         // journalctl --vacuum sólo elimina journals archivados; nunca el journal
         // activo. Las dos cotas evitan que el journal crezca sin límite.
@@ -675,18 +676,21 @@ final class ArcadeCloudDriveAdminHelper
         $this->runFixedCommand(['/usr/bin/sync']);
         clearstatcache(true, '/');
         $afterFree = @disk_free_space('/');
-        $after = $this->runFixedCommand(['/usr/bin/df', '-h', '/'], [0], 20);
         $measuredFreed = is_float($beforeFree) && is_float($afterFree)
             ? max(0, (int)round($afterFree - $beforeFree))
             : 0;
+        $otherSafeBytes = max(0, $measuredFreed - $deletedBytes);
 
-        return "Limpieza segura de disco completada.\n"
+        return "Limpieza completada\n"
+            . "Liberado: " . $this->humanBytes(max($measuredFreed, $deletedBytes)) . ".\n\n"
+            . "Temporales: " . $this->humanBytes($temporaryBytes) . ".\n"
+            . "Logs: " . $this->humanBytes($logBytes) . ".\n"
+            . "Otros seguros: " . $this->humanBytes($otherSafeBytes) . ".\n"
             . "Archivos retirados: {$deletedFiles}.\n"
             . "Tamaño conocido retirado: " . $this->humanBytes($deletedBytes) . ".\n"
             . "Espacio libre recuperado medido: " . $this->humanBytes($measuredFreed) . ".\n"
-            . "No se tocaron archivos de usuario, S3, base de datos, uploads activos, colas ni logs actuales.\n\n"
-            . "ANTES\n" . $before . "\n\nDESPUÉS\n" . $after
-            . ($journalMessages !== [] ? "\n\nJOURNAL\n" . implode("\n", $journalMessages) : '');
+            . "No se tocaron archivos de usuario, S3, base de datos, uploads activos, colas ni logs actuales."
+            . ($journalMessages !== [] ? "\nJournal archivado revisado de forma segura." : '');
     }
 
     private function deleteOldRegularFile(

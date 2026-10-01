@@ -83,14 +83,19 @@ class ArcadeCloudOsShell {
   openWindow(id) {
     const win = this.document.getElementById(id);
     if (!win) return;
-    win.dataset.minimized = '0';
-    win.classList.add('is-open');
-    win.hidden = false;
     if (this.window.ArcadeCloudWindowManager && !this.window.ArcadeCloudWindowManager.record(win)) {
       const app = this.window.ArcadeCloudDesktop?.appFor?.(win) || id.replace(/Window$/, '');
       this.window.ArcadeCloudWindowManager.register(win, app);
       this.window.ArcadeCloudDesktop?.bindWindowChrome?.(win);
     }
+    if (this.window.ArcadeCloudWindowManager?.record(win)) {
+      this.window.ArcadeCloudWindowManager.open(win);
+      this.closeLauncher();
+      return;
+    }
+    win.dataset.minimized = '0';
+    win.classList.add('is-open');
+    win.hidden = false;
     this.activateWindow(win);
     if (id === 'nodeWindow') {
       this.window.ArcadeCloudOsNodeMonitor?.refresh?.();
@@ -102,7 +107,7 @@ class ArcadeCloudOsShell {
     if (!win) return;
     if (this.window.ArcadeCloudWindowManager?.record(win)) {
       this.window.ArcadeCloudWindowManager.close(win);
-      this.windows = this.windows.filter((item) => item !== win);
+      if (win.dataset.windowLifecycle === 'dynamic') this.windows = this.windows.filter((item) => item !== win);
       return;
     }
     win.dataset.minimized = '0';

@@ -1,12 +1,12 @@
 {
   "summary": {
-    "php_total": 501,
+    "php_total": 502,
     "php_class_modules": 294,
     "php_needs_migration": 0,
-    "php_tests": 52,
-    "js_total": 68,
-    "js_class_modules": 66,
-    "js_needs_migration": 4,
+    "php_tests": 53,
+    "js_total": 70,
+    "js_class_modules": 68,
+    "js_needs_migration": 5,
     "js_compatibility_facades": 8,
     "ajax_clients": 49,
     "ajax_calls": 106,
@@ -2060,7 +2060,7 @@
     },
     {
       "path": "drive/so.php",
-      "lines": 1999,
+      "lines": 2006,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -7145,6 +7145,21 @@
       "issues": []
     },
     {
+      "path": "drive/tests/web_os_file_applications_smoke.php",
+      "lines": 21,
+      "kind": "test script",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
       "path": "drive/tests/web_os_interactions_theme_smoke.php",
       "lines": 30,
       "kind": "test script",
@@ -8253,6 +8268,29 @@
       "issues": []
     },
     {
+      "path": "drive/js/file-applications.js",
+      "lines": 204,
+      "kind": "class/module",
+      "classes": [
+        "ArcadeCloudFileApplicationService"
+      ],
+      "functions": [],
+      "window_assign": [
+        "ArcadeCloudFileApplications"
+      ],
+      "window_func": [],
+      "top_vars": [],
+      "iife": false,
+      "ajax": {
+        "fetch": 0,
+        "xhr": 0,
+        "jquery": 0,
+        "json_consumers": 0,
+        "response_checks": 0
+      },
+      "issues": []
+    },
+    {
       "path": "drive/js/file-block.js",
       "lines": 305,
       "kind": "class/module",
@@ -8997,7 +9035,7 @@
     },
     {
       "path": "drive/js/so.js",
-      "lines": 1164,
+      "lines": 1187,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudOsShell"
@@ -9270,6 +9308,45 @@
         "response_checks": 0
       },
       "issues": []
+    },
+    {
+      "path": "drive/tests/web_os_file_applications_functional.js",
+      "lines": 54,
+      "kind": "class/module",
+      "classes": [
+        "Bus"
+      ],
+      "functions": [
+        "assert"
+      ],
+      "window_assign": [],
+      "window_func": [],
+      "top_vars": [
+        "apps",
+        "manager",
+        "runtime",
+        "service",
+        "image1",
+        "image2",
+        "pdf1",
+        "pdf2",
+        "i1",
+        "audio",
+        "video",
+        "text",
+        "oldName"
+      ],
+      "iife": false,
+      "ajax": {
+        "fetch": 0,
+        "xhr": 0,
+        "jquery": 0,
+        "json_consumers": 0,
+        "response_checks": 0
+      },
+      "issues": [
+        "top-level functions: assert"
+      ]
     },
     {
       "path": "drive/tests/web_os_filesystem_operations_functional.js",

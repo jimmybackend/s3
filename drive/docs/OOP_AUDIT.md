@@ -4,13 +4,13 @@
 
 ## Resumen
 
-- PHP analizados: **501**
+- PHP analizados: **502**
 - PHP que ya contienen clases/interfaces: **294**
 - PHP marcados para migración/revisión: **0**
-- Tests PHP separados del objetivo OOP de runtime: **52**
-- JavaScript analizados: **68**
-- JavaScript que ya contienen clases: **66**
-- JavaScript sin clase/encapsulación OOP: **4**
+- Tests PHP separados del objetivo OOP de runtime: **53**
+- JavaScript analizados: **70**
+- JavaScript que ya contienen clases: **68**
+- JavaScript sin clase/encapsulación OOP: **5**
 - JavaScript OOP con fachada `window` de compatibilidad: **8**
 - Clientes AJAX detectados: **49** módulos / **106** llamadas
 - JSON analizados: **4**; inválidos: **0**
@@ -164,7 +164,7 @@
 | `drive/set_file_security.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/setup/api.php` | 15 | thin endpoint | 0 | — | — | — | — |
 | `drive/setup/index.php` | 90 | view/entrypoint | 0 | — | — | — | — |
-| `drive/so.php` | 1999 | view/entrypoint | 0 | — | — | — | — |
+| `drive/so.php` | 2006 | view/entrypoint | 0 | — | — | — | — |
 | `drive/src/Activity/ActivityCostRecorder.php` | 155 | class/module | 1 | — | — | — | — |
 | `drive/src/Activity/ActivityCostRepository.php` | 198 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Activity/ActivityCostService.php` | 153 | class/module | 1 | — | — | — | — |
@@ -496,6 +496,7 @@
 | `drive/tests/user_profile_validator_smoke.php` | 72 | test script | 0 | — | — | — | — |
 | `drive/tests/web_os_clipboard_contract_smoke.php` | 115 | test script | 0 | — | — | — | — |
 | `drive/tests/web_os_contract_smoke.php` | 482 | test script | 0 | — | — | — | — |
+| `drive/tests/web_os_file_applications_smoke.php` | 21 | test script | 0 | — | — | — | — |
 | `drive/tests/web_os_interactions_theme_smoke.php` | 30 | test script | 0 | — | — | — | — |
 | `drive/tests/web_os_multiwindow_smoke.php` | 62 | test script | 0 | — | — | — | — |
 | `drive/tests/web_os_pending_fixes_smoke.php` | 49 | test script | 0 | — | — | — | — |
@@ -559,6 +560,7 @@
 | `drive/js/federation-page.js` | 99 | class/module | FederationPageModule | — | — | — |
 | `drive/js/federation-portal.js` | 509 | class/module | FederationPortalModule | — | — | — |
 | `drive/js/federation-share-drive.js` | 214 | class/module | FederationShareDriveModule | — | — | — |
+| `drive/js/file-applications.js` | 204 | class/module | ArcadeCloudFileApplicationService | — | — | — |
 | `drive/js/file-block.js` | 305 | class/module | FileBlockApp | — | — | — |
 | `drive/js/file-security.js` | 325 | class/module | ArcadeCloudFileSecurity | — | — | — |
 | `drive/js/filesystem-operations.js` | 191 | class/module | ArcadeCloudFilesystemOperations | — | — | — |
@@ -589,7 +591,7 @@
 | `drive/js/so-search.js` | 285 | class/module | ArcadeCloudOsSearch | — | — | — |
 | `drive/js/so-share.js` | 179 | class/module | ArcadeCloudOsShare | — | — | — |
 | `drive/js/so-terminal.js` | 314 | class/module | ArcadeCloudOsTerminal | — | — | — |
-| `drive/js/so.js` | 1164 | class/module | ArcadeCloudOsShell | — | — | — |
+| `drive/js/so.js` | 1187 | class/module | ArcadeCloudOsShell | — | — | — |
 | `drive/js/soportesMediaTypes.js` | 397 | class/module | SoportesMediaTypesModule | — | — | — |
 | `drive/js/storage-usage.js` | 51 | class/module | StorageUsageModule | — | — | — |
 | `drive/js/subir-chunked.js` | 594 | class/module | SubirChunkedModule | — | — | — |
@@ -601,6 +603,7 @@
 | `drive/js/upload-destination.js` | 74 | class/module | UploadDestinationModule | — | — | — |
 | `drive/js/ver-metadatos.js` | 75 | class/module | VerMetadatosModule | — | verMetadatos | window functions: verMetadatos |
 | `drive/js/ver-pdf.js` | 112 | class/module | VerPdfModule | — | — | — |
+| `drive/tests/web_os_file_applications_functional.js` | 54 | class/module | Bus | assert | — | top-level functions: assert |
 | `drive/tests/web_os_filesystem_operations_functional.js` | 52 | procedural script | — | assert | — | top-level functions: assert; top-level state: events, busEvents, doc, win, service; no ES class |
 | `drive/tests/web_os_multiwindow_functional.js` | 125 | class/module | Classes, ElementStub | windowStub, assert | — | top-level functions: windowStub, assert |
 | `drive/tests/web_os_same_explorer_clipboard_functional.js` | 73 | procedural script | — | assert, storage | — | top-level functions: assert, storage; top-level state: requests, refreshed, filesystemEvents, explorer, win, doc, clipboard, entries; no ES class |

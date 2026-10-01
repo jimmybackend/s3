@@ -222,7 +222,7 @@ webOsContract(!str_contains($paths['sync'], "if (!btn) {\n      return this;"), 
 webOsContract(!str_contains($paths['css'], '.os-folder-commandbar'), 'CSS ya no conserva la barra superior retirada');
 
 // Navegación viva, miniaturas y multimedia flotante.
-webOsContract(str_contains($paths['shell'], 'id="osExplorerLive"'), 'Mis datos tiene región reemplazable sin recargar el SO');
+webOsContract(str_contains($paths['shell'], 'class="os-explorer-live"'), 'Mis datos tiene región reemplazable sin recargar el SO');
 webOsContract(str_contains($paths['shell'], "window.UPLOAD_API = 'api/upload.php'"), 'Web OS expone API OOP de subida');
 webOsContract(str_contains($paths['shell'], 'class="os-explorer-pathrow"'), 'ruta de carpeta vive arriba de los controles');
 webOsContract(!str_contains($paths['shell'], 'data-current-folder-action="sync"'), 'barra de carpeta ya no muestra sincronización con icono de descarga');
@@ -273,7 +273,7 @@ webOsContract(str_contains($paths['js'], 'async refreshExplorer('), 'shell actua
 webOsContract(str_contains($paths['js'], "current.replaceWith(next)"), 'navegación reemplaza sólo la región de Mis datos');
 webOsContract(str_contains($paths['js'], "fetch(url.toString()"), 'navegación de carpetas usa solicitud parcial');
 webOsContract(str_contains($paths['js'], "bindHistoryNavigation()"), 'historial atrás/adelante conserva navegación viva');
-webOsContract(str_contains($paths['js'], "#explorerWindow a[data-explorer-route]"), 'sólo enlaces reales pueden navegar o refrescar Mis datos');
+webOsContract(str_contains($paths['js'], ".os-explorer-window a[data-explorer-route]"), 'sólo enlaces reales pueden navegar o refrescar Mis datos');
 webOsContract(!str_contains($paths['js'], "#explorerWindow [data-explorer-route]"), 'clics sobre archivos no ascienden al contenedor de ruta');
 webOsContract(str_contains($paths['folders_js'], "ArcadeCloudOsShell.refreshExplorer"), 'acciones de carpeta delegan navegación al shell');
 webOsContract(str_contains($paths['folders_js'], 'rebind()'), 'acciones se vuelven a enlazar tras refrescar Mis datos');

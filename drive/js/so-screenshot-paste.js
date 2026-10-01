@@ -13,7 +13,7 @@ class ArcadeCloudOsScreenshotPaste {
   }
 
   ensureButton() {
-    const toolbar = this.document.querySelector('#osExplorerLive .os-explorer-toolbar');
+    const toolbar = this.document.querySelector('.os-explorer-window.is-active .os-explorer-toolbar, .os-explorer-live .os-explorer-toolbar');
     if (!toolbar || toolbar.querySelector('[data-os-screenshot-paste]')) return;
 
     const button = this.document.createElement('button');
@@ -207,7 +207,7 @@ class ArcadeCloudOsScreenshotPaste {
   }
 
   currentRoute() {
-    const explorer = this.document.getElementById('osExplorerLive');
+    const explorer = this.document.querySelector('.os-explorer-window.is-active .os-explorer-live');
     return String(explorer?.dataset.explorerRoute || this.window.DRIVE_INITIAL_ROUTE || '').trim();
   }
 
@@ -316,7 +316,7 @@ class ArcadeCloudOsScreenshotPaste {
 
 (function bootArcadeCloudOsScreenshotPaste(win, doc) {
   const boot = () => {
-    if (!doc.getElementById('osExplorerLive')) return;
+    if (!doc.querySelector('.os-explorer-live')) return;
 
     if (win.ArcadeCloudOsScreenshotPaste instanceof ArcadeCloudOsScreenshotPaste) {
       win.ArcadeCloudOsScreenshotPaste.ensureButton();

@@ -1,143 +1,503 @@
-/* ArcadeCloud OS multi-window runtime. Deliberately framework-free so Drive's
- * existing controllers/endpoints remain the single source of storage truth. */
+/* ArcadeCloud OS window runtime. Storage operations intentionally stay in the
+ * existing Drive controllers; this module owns window/application state. */
 class ArcadeCloudEventBus extends EventTarget {
   emit(type, detail = {}) { this.dispatchEvent(new CustomEvent(type, { detail })); }
-  on(type, listener, options) { this.addEventListener(type, listener, options); return () => this.removeEventListener(type, listener, options); }
+  on(type, listener, options) {
+    this.addEventListener(type, listener, options);
+    return () => this.removeEventListener(type, listener, options);
+  }
 }
 
 class ArcadeCloudWindowManager {
   constructor(win, doc, bus) {
-    this.window = win; this.document = doc; this.bus = bus;
-    this.registry = new Map(); this.apps = new Map(); this.counter = 0; this.zBase = 200; this.zLimit = 900;
+    this.window = win;
+    this.document = doc;
+    this.bus = bus;
+    this.registry = new Map();
+    this.apps = new Map();
+    this.counter = 0;
+    this.zCounter = 200;
+    this.taskbar = doc.getElementById('osTaskButtons');
   }
-  registerApp(name, definition) { this.apps.set(name, Object.assign({ multiInstance: false }, definition)); }
-  nextId(app) { this.counter += 1; return app + '-' + this.counter; }
-  register(element, app = 'window', state = {}) {
+
+  registerApp(app, definition) {
+    this.apps.set(app, Object.assign({ multiInstance: false, title: app, icon: 'fa-window-maximize' }, definition));
+  }
+
+  nextId(app) {
+    this.counter += 1;
+    return `${app}-${Date.now().toString(36)}-${this.counter.toString(36)}`;
+  }
+
+  record(elementOrId) {
+    const id = typeof elementOrId === 'string' ? elementOrId : elementOrId?.dataset?.windowId;
+    return id ? this.registry.get(id) : null;
+  }
+
+  last(app) {
+    return [...this.registry.values()].filter(record => record.app === app)
+      .sort((a, b) => b.lastFocused - a.lastFocused)[0] || null;
+  }
+
+  register(element, app = 'window', state = {}, cleanup) {
     if (!element) return null;
-    let id = element.dataset.windowId;
-    if (!id) { id = this.nextId(app); element.dataset.windowId = id; }
+    const definition = this.apps.get(app);
+    if (definition && !definition.multiInstance) {
+      const existing = this.last(app);
+      if (existing && existing.element !== element) return existing;
+    }
+    const id = element.dataset.windowId || this.nextId(app);
+    element.dataset.windowId = id;
     element.dataset.appId = app;
-    const record = this.registry.get(id) || { id, app, element, state, cleanup: new Set() };
-    record.element = element; record.state = state || record.state; this.registry.set(id, record);
-    this.bus.emit('window-opened', { windowId: id, app });
+    let record = this.registry.get(id);
+    if (!record) {
+      record = {
+        id, app, element, state, cleanup: new Set(), taskButton: null,
+        focused: false, minimized: element.dataset.minimized === '1',
+        maximized: element.classList.contains('is-maximized'), lastFocused: 0, geometry: null
+      };
+      this.registry.set(id, record);
+      this.bus.emit('window-opened', { windowId: id, app });
+    } else {
+      record.element = element;
+      record.state = state || record.state;
+    }
+    if (typeof cleanup === 'function') record.cleanup.add(cleanup);
+    this.syncTaskbar();
     return record;
   }
-  addCleanup(id, callback) { const record = this.registry.get(id); if (record && typeof callback === 'function') record.cleanup.add(callback); }
-  focus(element) {
-    const record = this.record(element); if (!record) return;
-    const ordered = [...this.registry.values()].filter((item) => item.element?.isConnected && item.element.classList.contains('is-open'));
-    if (++this.zBase >= this.zLimit) { ordered.sort((a, b) => (+a.element.style.zIndex || 0) - (+b.element.style.zIndex || 0)).forEach((item, i) => { item.element.style.zIndex = String(200 + i); }); this.zBase = 200 + ordered.length; }
-    ordered.forEach((item) => item.element.classList.toggle('is-active', item.id === record.id));
-    element.style.zIndex = String(++this.zBase); this.bus.emit('window-focused', { windowId: record.id, app: record.app });
+
+  addCleanup(id, callback) {
+    const record = this.registry.get(id);
+    if (record && typeof callback === 'function') record.cleanup.add(callback);
   }
-  record(elementOrId) { const id = typeof elementOrId === 'string' ? elementOrId : elementOrId?.dataset?.windowId; return id ? this.registry.get(id) : null; }
-  close(element) {
-    const record = this.record(element); if (!record) return;
-    record.cleanup.forEach((fn) => { try { fn(); } catch (_) {} }); record.cleanup.clear();
-    this.registry.delete(record.id); this.bus.emit('window-closed', { windowId: record.id, app: record.app });
+
+  focus(elementOrId) {
+    const record = this.record(elementOrId);
+    if (!record) return;
+    record.minimized = false;
+    record.element.dataset.minimized = '0';
+    record.element.hidden = false;
+    record.element.classList.add('is-open');
+    this.registry.forEach(item => {
+      item.focused = item.id === record.id;
+      item.element.classList.toggle('is-active', item.focused);
+    });
+    record.lastFocused = Date.now();
+    if (++this.zCounter > 900) this.compactZ();
+    record.element.style.zIndex = String(++this.zCounter);
+    this.syncTaskbar();
+    this.bus.emit('window-focused', { windowId: record.id, app: record.app });
+  }
+
+  compactZ() {
+    [...this.registry.values()].sort((a, b) => (+a.element.style.zIndex || 0) - (+b.element.style.zIndex || 0))
+      .forEach((record, index) => { record.element.style.zIndex = String(200 + index); });
+    this.zCounter = 200 + this.registry.size;
+  }
+
+  minimize(elementOrId) {
+    const record = this.record(elementOrId);
+    if (!record) return;
+    record.minimized = true;
+    record.focused = false;
+    record.element.dataset.minimized = '1';
+    record.element.classList.remove('is-open', 'is-active');
+    this.syncTaskbar();
+  }
+
+  toggleMaximize(elementOrId) {
+    const record = this.record(elementOrId);
+    if (!record) return;
+    if (!record.maximized) {
+      const style = record.element.style;
+      record.geometry = { left: style.left, top: style.top, width: style.width, height: style.height };
+    }
+    record.maximized = !record.maximized;
+    record.element.classList.toggle('is-maximized', record.maximized);
+    if (!record.maximized && record.geometry) Object.assign(record.element.style, record.geometry);
+    this.focus(record.id);
+  }
+
+  setTitle(elementOrId, title) {
+    const record = this.record(elementOrId);
+    if (!record) return;
+    record.element.dataset.windowTitle = title;
+    const label = record.element.querySelector('.os-window-title span');
+    if (label) label.textContent = title;
+    this.syncTaskbar();
+  }
+
+  close(elementOrId) {
+    const record = this.record(elementOrId);
+    if (!record) return;
+    record.cleanup.forEach(callback => { try { callback(); } catch (_) {} });
+    record.cleanup.clear();
+    record.element.querySelectorAll('audio,video').forEach(media => {
+      try { media.pause(); media.removeAttribute('src'); media.load(); } catch (_) {}
+    });
+    record.element.remove();
+    this.registry.delete(record.id);
+    this.syncTaskbar();
+    this.bus.emit('window-closed', { windowId: record.id, app: record.app });
+  }
+
+  syncTaskbar() {
+    if (!this.taskbar) return;
+    this.taskbar.replaceChildren();
+    this.registry.forEach(record => {
+      const item = this.document.createElement('div');
+      item.className = `os-task-item${record.focused ? ' is-active' : ''}`;
+      item.dataset.windowId = record.id;
+      const button = this.document.createElement('button');
+      button.type = 'button';
+      button.className = 'os-task-button';
+      button.dataset.windowId = record.id;
+      const icon = this.apps.get(record.app)?.icon || 'fa-window-maximize';
+      button.innerHTML = `<i class="fas ${icon}"></i><span></span>`;
+      button.querySelector('span').textContent = record.element.dataset.windowTitle || this.apps.get(record.app)?.title || 'Ventana';
+      button.addEventListener('click', () => {
+        if (record.focused && !record.minimized) this.minimize(record.id);
+        else this.focus(record.id);
+      });
+      item.append(button);
+      this.taskbar.append(item);
+      record.taskButton = button;
+    });
+  }
+}
+
+class ExplorerWindowFactory {
+  constructor(runtime) { this.runtime = runtime; }
+
+  create(route) {
+    const doc = this.runtime.document;
+    const element = doc.createElement('section');
+    element.className = 'os-window os-explorer-window is-open';
+    element.dataset.windowTitle = 'Mis datos — /';
+    element.dataset.minimized = '0';
+    const offset = (this.runtime.explorers.size % 8) * 26;
+    element.style.cssText = `left:calc(7vw + ${offset}px);top:calc(7vh + ${offset}px);width:min(1050px,86vw);height:min(680px,72vh)`;
+    element.innerHTML = '<div class="os-window-titlebar" data-window-drag-handle><div class="os-window-title"><i class="fas fa-folder-open"></i><span>Mis datos — /</span></div><div class="os-window-controls"><button type="button" data-window-minimize aria-label="Minimizar"><i class="fas fa-minus"></i></button><button type="button" data-window-maximize aria-label="Maximizar"><i class="far fa-square"></i></button><button type="button" data-window-close aria-label="Cerrar"><i class="fas fa-xmark"></i></button></div></div><div class="os-explorer-live" data-explorer-route=""><div class="os-explorer-pathrow"></div><div class="os-explorer-loading">Cargando…</div></div>';
+    this.runtime.document.getElementById('osDesktop')?.append(element);
+    const controller = this.runtime.attachExplorer(element, route);
+    this.runtime.bindWindowChrome(element);
+    controller.navigate(route || this.runtime.root, { replace: true });
+    this.runtime.manager.focus(element);
+    return controller;
   }
 }
 
 class ArcadeCloudExplorerWindow {
-  constructor(runtime, win, route) {
-    this.runtime = runtime; this.window = win; this.id = win.dataset.windowId;
-    this.live = win.querySelector('.os-explorer-live'); this.history = []; this.future = [];
-    this.route = route || this.live?.dataset.explorerRoute || runtime.root; this.page = 1;
-    this.selection = new Set(); this.controller = null; this.sequence = 0; this.cleanup = [];
-    this.installChrome(); this.bind(); this.updateTitle();
+  constructor(runtime, element, route) {
+    this.runtime = runtime;
+    this.win = element;
+    this.id = element.dataset.windowId;
+    this.live = element.querySelector('.os-explorer-live');
+    this.route = this.normalize(route || this.live?.dataset.explorerRoute || runtime.root);
+    this.page = +(this.live?.dataset.explorerPage || 1);
+    this.history = [];
+    this.future = [];
+    this.selection = new Set();
+    this.scroll = 0;
+    this.loading = false;
+    this.error = null;
+    this.controller = null;
+    this.sequence = 0;
+    this.cleanup = [];
+    this.installChrome();
+    this.bind();
+    this.updateTitle();
   }
+
   normalize(value) {
     let path = String(value || '').trim().replace(/\\/g, '/');
     if (/\0|(^|\/)\.\.?(\/|$)/.test(path)) throw new Error('La ruta contiene segmentos no permitidos.');
     path = path.replace(/\/+/g, '/');
     const root = this.runtime.root.replace(/^\/+|\/+$/g, '');
-    if (path === '/' || path === '') return root + '/';
-    path = path.replace(/^\/+/, '').replace(/\/+$/, '');
-    if (path !== root && !path.startsWith(root + '/')) path = root + '/' + path;
-    return path.replace(/\/+/g, '/') + '/';
+    if (!path || path === '/') return `${root}/`;
+    path = path.replace(/^\/+|\/+$/g, '');
+    if (path !== root && !path.startsWith(`${root}/`)) path = `${root}/${path}`;
+    return `${path.replace(/\/+/g, '/')}/`;
   }
+
   virtual(route = this.route) {
-    const root = this.runtime.root.replace(/^\/+|\/+$/g, ''); let path = String(route).replace(/^\/+|\/+$/g, '');
-    if (path === root) return '/'; if (path.startsWith(root + '/')) path = path.slice(root.length + 1); return '/' + path;
+    const root = this.runtime.root.replace(/^\/+|\/+$/g, '');
+    let path = String(route).replace(/^\/+|\/+$/g, '');
+    if (path === root) return '/';
+    if (path.startsWith(`${root}/`)) path = path.slice(root.length + 1);
+    return `/${path}`;
   }
+
   installChrome() {
-    if (!this.live) return;
-    const row = this.live.querySelector('.os-explorer-pathrow'); if (!row) return;
-    row.replaceChildren(); row.classList.add('os-explorer-navigation');
-    const buttons = [['back','fa-arrow-left','Atrás'],['forward','fa-arrow-right','Adelante'],['up','fa-arrow-up','Subir'],['refresh','fa-rotate','Actualizar']];
-    buttons.forEach(([action, icon, label]) => { const b = document.createElement('button'); b.type='button'; b.className='os-address-action'; b.dataset.explorerAction=action; b.title=label; b.setAttribute('aria-label',label); b.innerHTML='<i class="fas '+icon+'"></i>'; row.append(b); });
-    const address = document.createElement('div'); address.className='os-address os-address-editable'; address.dataset.explorerAddress='';
-    address.innerHTML='<i class="fas fa-folder"></i><div class="os-breadcrumb" data-explorer-breadcrumb></div><input type="text" data-explorer-address-input aria-label="Dirección de carpeta" autocomplete="off" spellcheck="false" hidden>';
-    row.append(address); this.address = address.querySelector('input'); this.breadcrumb = address.querySelector('[data-explorer-breadcrumb]'); this.renderAddress();
+    const row = this.live?.querySelector('.os-explorer-pathrow');
+    if (!row) return;
+    row.replaceChildren();
+    row.classList.add('os-explorer-navigation');
+    [['back','fa-arrow-left','Atrás'],['forward','fa-arrow-right','Adelante'],['up','fa-arrow-up','Subir'],['refresh','fa-rotate','Actualizar'],['new','fa-window-restore','Nueva ventana']].forEach(([action, icon, label]) => {
+      const button = this.runtime.document.createElement('button');
+      button.type = 'button'; button.className = 'os-address-action'; button.dataset.explorerAction = action;
+      button.title = label; button.setAttribute('aria-label', label); button.innerHTML = `<i class="fas ${icon}"></i>`;
+      row.append(button);
+    });
+    const address = this.runtime.document.createElement('div');
+    address.className = 'os-address os-address-editable';
+    address.dataset.explorerAddress = '';
+    address.innerHTML = '<i class="fas fa-folder"></i><div class="os-breadcrumb" data-explorer-breadcrumb></div><input type="text" data-explorer-address-input aria-label="Dirección de carpeta" autocomplete="off" spellcheck="false" hidden>';
+    row.append(address);
+    this.address = address.querySelector('input');
+    this.breadcrumb = address.querySelector('[data-explorer-breadcrumb]');
+    this.renderAddress();
   }
+
   renderAddress() {
-    if (!this.breadcrumb) return; const virtual = this.virtual(); this.breadcrumb.replaceChildren();
-    const parts = virtual.split('/').filter(Boolean); const root = document.createElement('button'); root.type='button'; root.textContent='Mi Drive'; root.dataset.addressRoute='/'; this.breadcrumb.append(root);
-    let accumulated=''; parts.forEach((part) => { accumulated += '/' + part; const sep=document.createElement('span'); sep.textContent='›'; const b=document.createElement('button'); b.type='button'; b.textContent=part; b.dataset.addressRoute=accumulated; this.breadcrumb.append(sep,b); });
-    if (this.address) this.address.value = virtual;
+    if (!this.breadcrumb) return;
+    this.breadcrumb.replaceChildren();
+    const rootButton = this.runtime.document.createElement('button');
+    rootButton.type = 'button'; rootButton.textContent = 'Mi Drive'; rootButton.dataset.addressRoute = '/';
+    this.breadcrumb.append(rootButton);
+    let accumulated = '';
+    this.virtual().split('/').filter(Boolean).forEach(part => {
+      accumulated += `/${part}`;
+      const separator = this.runtime.document.createElement('span'); separator.textContent = '›';
+      const button = this.runtime.document.createElement('button'); button.type = 'button'; button.textContent = part; button.dataset.addressRoute = accumulated;
+      this.breadcrumb.append(separator, button);
+    });
+    if (this.address) this.address.value = this.virtual();
   }
-  editAddress() { if (!this.address) return; this.breadcrumb.hidden=true; this.address.hidden=false; this.address.value=this.virtual(); this.address.focus(); this.address.select(); }
-  stopEditing() { if (!this.address) return; this.address.hidden=true; this.breadcrumb.hidden=false; }
+
+  editAddress() { if (this.address) { this.breadcrumb.hidden = true; this.address.hidden = false; this.address.value = this.virtual(); this.address.focus(); this.address.select(); } }
+  stopEditing() { if (this.address) { this.address.hidden = true; this.breadcrumb.hidden = false; } }
+
   bind() {
-    const click = (event) => {
-      const target = event.target instanceof Element ? event.target : null; if (!target) return;
-      const action=target.closest('[data-explorer-action]')?.dataset.explorerAction;
-      if (action) { event.preventDefault(); if(action==='back')this.back(); else if(action==='forward')this.forward(); else if(action==='up')this.up(); else this.navigate(this.route,{replace:true,page:this.page}); return; }
-      const crumb=target.closest('[data-address-route]'); if(crumb){event.preventDefault();this.navigate(crumb.dataset.addressRoute);return;}
-      if(target.closest('[data-explorer-address]')) { if(!target.closest('[data-address-route]')) this.editAddress(); return; }
-      const link=target.closest('a[data-explorer-route]'); if(link){event.preventDefault();this.navigate(link.dataset.explorerRoute,{page:+link.dataset.explorerPage||1});return;}
-      const folder=target.closest('.os-folder-entry'); if(folder && event.detail===2){event.preventDefault();this.navigate(folder.dataset.folderRoute);}
+    const click = event => {
+      const target = event.target instanceof Element ? event.target : null;
+      if (!target) return;
+      const action = target.closest('[data-explorer-action]')?.dataset.explorerAction;
+      if (action) {
+        event.preventDefault();
+        if (action === 'new') this.runtime.openExplorer(this.route, { forceNew: true });
+        else if (action === 'back') this.back(); else if (action === 'forward') this.forward();
+        else if (action === 'up') this.up(); else this.navigate(this.route, { replace: true, page: this.page });
+        return;
+      }
+      const crumb = target.closest('[data-address-route]');
+      if (crumb) { event.preventDefault(); this.navigate(crumb.dataset.addressRoute); return; }
+      if (target.closest('[data-explorer-address]')) { if (!target.closest('[data-address-route]')) this.editAddress(); return; }
+      const link = target.closest('a[data-explorer-route]');
+      if (link) { event.preventDefault(); this.navigate(link.dataset.explorerRoute, { page: +link.dataset.explorerPage || 1 }); return; }
+      const folder = target.closest('.os-folder-entry');
+      if (folder && event.detail === 2) { event.preventDefault(); this.navigate(folder.dataset.folderRoute); }
     };
-    const keydown=(event)=>{ if(event.target===this.address){if(event.key==='Enter'){event.preventDefault();try{this.navigate(this.address.value);}catch(error){this.runtime.notify(error.message,'warning');}}else if(event.key==='Escape'){this.stopEditing();}return;}if(event.target.closest('input,textarea,[contenteditable]'))return;const selected=[...this.win.querySelectorAll('.os-file-entry.is-selected')]; if(event.ctrlKey&&event.key.toLowerCase()==='l'){event.preventDefault();this.editAddress();}else if(event.altKey&&event.key==='ArrowLeft'){event.preventDefault();this.back();}else if(event.altKey&&event.key==='ArrowRight'){event.preventDefault();this.forward();}else if(event.ctrlKey&&['c','x'].includes(event.key.toLowerCase())&&selected.length){event.preventDefault();window.ArcadeCloudOsClipboard?.captureFiles?.(selected[0],event.key.toLowerCase()==='c'?'copy':'move');}else if(event.ctrlKey&&event.key.toLowerCase()==='v'){event.preventDefault();window.ArcadeCloudOsClipboard?.paste?.(this.route);}else if(event.key==='Delete'&&selected.length){event.preventDefault();window.ArcadeCloudOsShell?.deleteSelectedFiles?.();}else if(event.key==='Enter'&&selected.length===1){event.preventDefault();window.ArcadeCloudOsShell?.openFileEntry?.(selected[0],false);}else if(event.key==='Backspace'){event.preventDefault();this.back();}};
-    this.win.addEventListener('click',click); this.win.addEventListener('keydown',keydown); this.cleanup.push(()=>this.win.removeEventListener('click',click),()=>this.win.removeEventListener('keydown',keydown));
+    const keydown = event => {
+      if (event.target === this.address) {
+        if (event.key === 'Enter') { event.preventDefault(); this.navigate(this.address.value); }
+        else if (event.key === 'Escape') this.stopEditing();
+        return;
+      }
+      if (event.target.closest('input,textarea,[contenteditable]')) return;
+      const selected = [...this.win.querySelectorAll('.os-file-entry.is-selected')];
+      if (event.ctrlKey && event.key.toLowerCase() === 'l') { event.preventDefault(); this.editAddress(); }
+      else if (event.altKey && event.key === 'ArrowLeft') { event.preventDefault(); this.back(); }
+      else if (event.altKey && event.key === 'ArrowRight') { event.preventDefault(); this.forward(); }
+      else if (event.ctrlKey && ['c','x'].includes(event.key.toLowerCase()) && selected.length) {
+        event.preventDefault(); this.runtime.window.ArcadeCloudOsClipboard?.captureFiles?.(selected[0], event.key.toLowerCase() === 'c' ? 'copy' : 'move', { sourceWindowId: this.id, sourceRoute: this.route, entries: selected });
+      } else if (event.ctrlKey && event.key.toLowerCase() === 'v') { event.preventDefault(); this.runtime.window.ArcadeCloudOsClipboard?.paste?.(this.route); }
+      else if (event.key === 'Delete' && selected.length) { event.preventDefault(); this.runtime.window.ArcadeCloudOsShell?.deleteSelectedFiles?.(); }
+      else if (event.key === 'Enter' && selected.length === 1) { event.preventDefault(); this.runtime.window.ArcadeCloudOsShell?.openFileEntry?.(selected[0], false, { sourceWindowId: this.id }); }
+    };
+    this.win.addEventListener('click', click);
+    this.win.addEventListener('keydown', keydown);
+    this.cleanup.push(() => this.win.removeEventListener('click', click), () => this.win.removeEventListener('keydown', keydown));
     this.bindDragDrop();
   }
-  async navigate(value, options={}) {
-    const route=this.normalize(value); if(!options.fromHistory && !options.replace && route!==this.route){this.history.push({route:this.route,page:this.page,scroll:this.live?.scrollTop||0});this.future=[];}
-    this.controller?.abort(); this.controller=new AbortController(); const request=++this.sequence; this.win.classList.add('is-loading');
-    try { const url=new URL('so.php',location.href); url.searchParams.set('ruta',route); url.searchParams.set('pagina',String(options.page||1)); url.searchParams.set('_os_fragment','explorer');
-      const response=await fetch(url,{credentials:'same-origin',cache:'no-store',signal:this.controller.signal,headers:{'X-Requested-With':'XMLHttpRequest'}}); if(!response.ok)throw new Error('No fue posible cargar esta carpeta.');
-      const parsed=new DOMParser().parseFromString(await response.text(),'text/html'); const replacement=parsed.querySelector('#osExplorerLive'); if(!replacement)throw new Error('La respuesta del explorador no es válida.'); if(request!==this.sequence)return;
-      replacement.removeAttribute('id'); replacement.dataset.explorerInstance=this.id; replacement.querySelectorAll('.os-file-entry,.os-folder-entry').forEach(entry=>entry.draggable=true); this.live.replaceWith(replacement); this.live=replacement; this.route=route; this.page=+replacement.dataset.explorerPage||1; this.installChrome(); this.renderAddress(); this.updateTitle();
-      window.ArcadeCloudOsShell?.bindFiles?.(); window.ArcadeCloudOsClipboard?.bindEntries?.(); window.ArcadeCloudOsClipboard?.injectPasteToolbar?.(); window.ArcadeCloudOsFolders?.bindEntries?.();
-      this.runtime.bus.emit('route-changed',{windowId:this.id,route});
-    } catch(error){if(error?.name!=='AbortError'){this.showError(error?.message||'No fue posible cargar esta carpeta.');}}
-    finally {if(request===this.sequence)this.win.classList.remove('is-loading');}
+
+  async navigate(value, options = {}) {
+    const route = this.normalize(value);
+    if (!options.fromHistory && !options.replace && route !== this.route) {
+      this.history.push({ route: this.route, page: this.page, scroll: this.live?.scrollTop || 0 });
+      this.future = [];
+    }
+    this.controller?.abort();
+    this.controller = new AbortController();
+    const request = ++this.sequence;
+    this.loading = true; this.error = null; this.win.classList.add('is-loading');
+    try {
+      const url = new URL('so.php', this.runtime.window.location.href);
+      url.searchParams.set('ruta', route); url.searchParams.set('pagina', String(options.page || 1)); url.searchParams.set('_os_fragment', 'explorer');
+      const response = await this.runtime.window.fetch(url, { credentials: 'same-origin', cache: 'no-store', signal: this.controller.signal, headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+      if (!response.ok) throw new Error('No fue posible cargar esta carpeta.');
+      const parsed = new DOMParser().parseFromString(await response.text(), 'text/html');
+      const replacement = parsed.querySelector('.os-explorer-live');
+      if (!replacement) throw new Error('La respuesta del explorador no es válida.');
+      if (request !== this.sequence) return;
+      replacement.dataset.explorerInstance = this.id;
+      replacement.querySelectorAll('.os-file-entry,.os-folder-entry').forEach(entry => { entry.draggable = true; });
+      this.scroll = this.live?.scrollTop || 0;
+      this.live.replaceWith(replacement); this.live = replacement; this.route = route; this.page = +replacement.dataset.explorerPage || 1; this.selection.clear();
+      this.installChrome(); this.updateTitle();
+      this.runtime.window.ArcadeCloudOsShell?.bindFiles?.();
+      this.runtime.window.ArcadeCloudOsClipboard?.bindEntries?.();
+      this.runtime.window.ArcadeCloudOsClipboard?.injectPasteToolbar?.();
+      this.runtime.window.ArcadeCloudOsFolders?.bindEntries?.();
+      this.runtime.bus.emit('route-changed', { windowId: this.id, route, page: this.page });
+    } catch (error) {
+      if (error?.name !== 'AbortError') { this.error = error?.message || 'No fue posible cargar esta carpeta.'; this.showError(this.error); }
+    } finally { if (request === this.sequence) { this.loading = false; this.win.classList.remove('is-loading'); } }
   }
-  showError(message){let box=this.win.querySelector('.os-explorer-error');if(!box){box=document.createElement('div');box.className='os-explorer-error';this.live?.prepend(box);}box.textContent=message;}
-  back(){const item=this.history.pop();if(!item)return;this.future.push({route:this.route,page:this.page});this.navigate(item.route,{page:item.page,fromHistory:true,replace:true});}
-  forward(){const item=this.future.pop();if(!item)return;this.history.push({route:this.route,page:this.page});this.navigate(item.route,{page:item.page,fromHistory:true,replace:true});}
-  up(){const root=this.runtime.root.replace(/\/+$/,'')+'/';if(this.route===root)return;const bits=this.route.replace(/\/+$/,'').split('/');bits.pop();this.navigate(bits.join('/')+'/');}
-  updateTitle(){const title='Mis datos — '+this.virtual();this.win.dataset.windowTitle=title;this.win.querySelector('.os-window-title span').textContent=title;window.ArcadeCloudOsShell?.syncTaskbar?.();}
-  bindDragDrop(){
-    const start=(event)=>{const entry=event.target.closest('.os-file-entry,.os-folder-entry');if(!entry)return;const selected=[...this.win.querySelectorAll('.os-file-entry.is-selected')];const entries=entry.classList.contains('is-selected')&&selected.length?selected:[entry];const payload={sourceWindowId:this.id,sourceRoute:this.route,kind:entry.classList.contains('os-folder-entry')?'folder':'file',keys:entries.map(x=>x.dataset.key||x.dataset.folderRoute).filter(Boolean)};event.dataTransfer.effectAllowed='copyMove';event.dataTransfer.setData('application/x-arcadecloud-items',JSON.stringify(payload));event.dataTransfer.setData('text/plain',entries.length+' elemento(s)');};
-    const over=(event)=>{if(!event.dataTransfer.types.includes('application/x-arcadecloud-items'))return;event.preventDefault();this.win.classList.add('is-drop-target');event.dataTransfer.dropEffect=event.ctrlKey?'copy':'move';};
-    const leave=(event)=>{if(!this.win.contains(event.relatedTarget))this.win.classList.remove('is-drop-target');};
-    const drop=async(event)=>{event.preventDefault();this.win.classList.remove('is-drop-target');let data;try{data=JSON.parse(event.dataTransfer.getData('application/x-arcadecloud-items'));}catch(_){return;}const folder=event.target.closest('.os-folder-entry');const destination=folder?.dataset.folderRoute||this.route;if(!data?.keys?.length)return;const mode=event.ctrlKey?'copy':(this.window.confirm('Aceptar: mover aquí.\nCancelar: copiar aquí.')?'move':'copy');try{if(data.kind==='folder'){window.ArcadeCloudOsClipboard.captureFolder({route:data.keys[0],name:data.keys[0].split('/').filter(Boolean).pop()},mode);}else{const source=this.runtime.explorers.get(data.sourceWindowId);const entries=data.keys.map(k=>source?.win.querySelector('.os-file-entry[data-key="'+CSS.escape(k)+'"]')).filter(Boolean);if(entries.length){entries.forEach(e=>e.classList.add('is-selected'));window.ArcadeCloudOsClipboard.captureFiles(entries[0],mode);}}await window.ArcadeCloudOsClipboard.paste(destination);this.runtime.bus.emit(mode==='copy'?'file-copied':'file-moved',{sourceRoute:data.sourceRoute,destination});}catch(error){this.runtime.notify(error?.message||'No se pudo transferir la selección.','danger');}};
-    this.win.querySelectorAll('.os-file-entry,.os-folder-entry').forEach(e=>e.draggable=true); this.win.addEventListener('dragstart',start);this.win.addEventListener('dragover',over);this.win.addEventListener('dragleave',leave);this.win.addEventListener('drop',drop);this.cleanup.push(()=>{this.win.removeEventListener('dragstart',start);this.win.removeEventListener('dragover',over);this.win.removeEventListener('dragleave',leave);this.win.removeEventListener('drop',drop);});
+
+  showError(message) {
+    let box = this.win.querySelector('.os-explorer-error');
+    if (!box) { box = this.runtime.document.createElement('div'); box.className = 'os-explorer-error'; this.live?.prepend(box); }
+    box.textContent = message;
   }
-  destroy(){this.controller?.abort();this.cleanup.splice(0).forEach(fn=>fn());}
+  back() { const item = this.history.pop(); if (item) { this.future.push({ route: this.route, page: this.page, scroll: this.live?.scrollTop || 0 }); this.navigate(item.route, { page: item.page, fromHistory: true, replace: true }); } }
+  forward() { const item = this.future.pop(); if (item) { this.history.push({ route: this.route, page: this.page, scroll: this.live?.scrollTop || 0 }); this.navigate(item.route, { page: item.page, fromHistory: true, replace: true }); } }
+  up() { const root = `${this.runtime.root.replace(/\/+$/, '')}/`; if (this.route !== root) { const bits = this.route.replace(/\/+$/, '').split('/'); bits.pop(); this.navigate(`${bits.join('/')}/`); } }
+  updateTitle() { this.runtime.manager.setTitle(this.id, `Mis datos — ${this.virtual()}`); }
+
+  bindDragDrop() {
+    const start = event => {
+      const entry = event.target.closest('.os-file-entry,.os-folder-entry'); if (!entry) return;
+      const selected = [...this.win.querySelectorAll('.os-file-entry.is-selected')];
+      const entries = entry.classList.contains('is-selected') && selected.length ? selected : [entry];
+      const payload = { sourceWindowId: this.id, sourceRoute: this.route, kind: entry.classList.contains('os-folder-entry') ? 'folder' : 'file', keys: entries.map(item => item.dataset.key || item.dataset.folderRoute).filter(Boolean) };
+      event.dataTransfer.effectAllowed = 'copyMove'; event.dataTransfer.setData('application/x-arcadecloud-items', JSON.stringify(payload));
+    };
+    const over = event => { if ([...event.dataTransfer.types].includes('application/x-arcadecloud-items')) { event.preventDefault(); this.win.classList.add('is-drop-target'); } };
+    const leave = event => { if (!this.win.contains(event.relatedTarget)) this.win.classList.remove('is-drop-target'); };
+    const drop = async event => {
+      event.preventDefault(); this.win.classList.remove('is-drop-target');
+      let data; try { data = JSON.parse(event.dataTransfer.getData('application/x-arcadecloud-items')); } catch (_) { return; }
+      if (!data?.keys?.length || data.sourceWindowId === this.id && data.sourceRoute === this.route) return;
+      const destinationRoute = event.target.closest('.os-folder-entry')?.dataset.folderRoute || this.route;
+      const choice = this.runtime.chooseDropOperation(data.keys.length, destinationRoute); if (!choice) return;
+      const clipboard = this.runtime.window.ArcadeCloudOsClipboard;
+      if (data.kind === 'folder') clipboard?.captureFolder?.({ route: data.keys[0], parent: data.sourceRoute, name: data.keys[0].split('/').filter(Boolean).pop() }, choice, { sourceWindowId: data.sourceWindowId, sourceRoute: data.sourceRoute });
+      else {
+        const source = this.runtime.explorers.get(data.sourceWindowId);
+        const entries = data.keys.map(key => source?.win.querySelector(`.os-file-entry[data-key="${CSS.escape(key)}"]`)).filter(Boolean);
+        if (entries.length) clipboard?.captureFiles?.(entries[0], choice, { sourceWindowId: data.sourceWindowId, sourceRoute: data.sourceRoute, entries });
+      }
+      await clipboard?.paste?.(destinationRoute);
+      this.runtime.bus.emit(choice === 'copy' ? 'file-copied' : 'file-moved', { sourceRoute: data.sourceRoute, destinationRoute });
+    };
+    this.win.addEventListener('dragstart', start); this.win.addEventListener('dragover', over); this.win.addEventListener('dragleave', leave); this.win.addEventListener('drop', drop);
+    this.cleanup.push(() => this.win.removeEventListener('dragstart', start), () => this.win.removeEventListener('dragover', over), () => this.win.removeEventListener('dragleave', leave), () => this.win.removeEventListener('drop', drop));
+  }
+
+  destroy() { this.controller?.abort(); this.cleanup.splice(0).forEach(callback => callback()); }
 }
 
 class ArcadeCloudDesktopRuntime {
-  constructor(win,doc){this.window=win;this.document=doc;this.bus=new ArcadeCloudEventBus();this.manager=new ArcadeCloudWindowManager(win,doc,this.bus);this.explorers=new Map();this.root=String(win.ARCADECLOUD_OS_ROOT_ROUTE||'');}
-  init(){
-    document.querySelectorAll('.os-window').forEach(el=>this.manager.register(el,this.appFor(el))); const base=document.getElementById('explorerWindow');if(base)this.attachExplorer(base);
-    document.addEventListener('click',(event)=>{const target=event.target instanceof Element?event.target:null;if(!target)return;const launch=target.closest('[data-window-open="explorerWindow"]');if(launch){event.preventDefault();event.stopImmediatePropagation();this.openExplorer(this.root);return;}const newer=target.closest('[data-folder-open-new]');if(newer){event.preventDefault();event.stopPropagation();const route=window.ArcadeCloudOsFolders?.activeFolder?.route||newer.dataset.folderOpenNew;this.openExplorer(route);window.ArcadeCloudOsFolders?.hideContext?.();return;}const tool=target.closest('[data-os-tool]');if(tool){event.preventDefault();this.openTool(tool.href,tool.dataset.toolTitle||tool.textContent.trim());}},true);
-    document.addEventListener('pointerdown',(e)=>{const w=e.target.closest('.os-window');if(w)this.manager.focus(w);},true);
-    document.addEventListener('click',(e)=>{const close=e.target.closest('[data-window-close]');if(!close)return;const w=close.closest('.os-window');const record=this.manager.record(w);if(record?.app==='explorer'){this.explorers.get(record.id)?.destroy();this.explorers.delete(record.id);}setTimeout(()=>{this.manager.close(w);if(w&&!w.id)w.remove();},0);},true);
-    ['file-moved','file-copied','file-deleted','upload-completed','task-completed'].forEach(type=>this.bus.on(type,(e)=>this.refreshAffected(e.detail)));
-    document.addEventListener('drive:move-task-completed',(e)=>this.bus.emit('task-completed',e.detail||{}));document.addEventListener('drive:storage-changed',(e)=>this.bus.emit('upload-completed',e.detail||{}));
-    this.observer=new MutationObserver((records)=>records.forEach(record=>record.addedNodes.forEach(node=>{if(!(node instanceof Element)||!node.matches('.os-window')||node.dataset.windowId)return;this.manager.register(node,this.appFor(node));})));this.observer.observe(document.getElementById('osDesktop')||document.body,{childList:true});
-    this.enhanceFolderMenu(); window.ArcadeCloudEventBus=this.bus;window.ArcadeCloudWindowManager=this.manager;window.ArcadeCloudDesktop=this;return this;
+  constructor(win, doc) {
+    this.window = win; this.document = doc; this.bus = new ArcadeCloudEventBus();
+    this.manager = new ArcadeCloudWindowManager(win, doc, this.bus); this.explorers = new Map();
+    this.root = String(win.ARCADECLOUD_OS_ROOT_ROUTE || ''); this.factory = new ExplorerWindowFactory(this);
   }
-  appFor(el){if(el.id==='explorerWindow'||el.classList.contains('os-explorer-window'))return'explorer';if(el.classList.contains('os-document-window'))return'viewer';return el.id?.replace(/Window$/,'')||'window';}
-  attachExplorer(el){const record=this.manager.record(el)||this.manager.register(el,'explorer');el.classList.add('os-explorer-window');const controller=new ArcadeCloudExplorerWindow(this,el,el.querySelector('.os-explorer-live')?.dataset.explorerRoute);this.explorers.set(record.id,controller);this.manager.addCleanup(record.id,()=>controller.destroy());return controller;}
-  openExplorer(route){const base=document.getElementById('explorerWindow');if(base&&!base.classList.contains('is-open')&&base.dataset.minimized!=='1'){window.ArcadeCloudOsShell?.openWindow?.('explorerWindow');const controller=this.explorers.get(base.dataset.windowId);if(route&&controller)controller.navigate(route,{replace:true});return controller;}const clone=base.cloneNode(true);clone.removeAttribute('id');clone.querySelector('#osExplorerLive')?.removeAttribute('id');clone.querySelectorAll('[id]').forEach(el=>el.removeAttribute('id'));clone.dataset.windowId='';clone.dataset.minimized='0';clone.classList.add('is-open','os-explorer-window');const offset=(this.explorers.size%7)*26;clone.style.left=(8+offset/14)+'vw';clone.style.top=(7+offset/16)+'vh';document.getElementById('osDesktop')?.append(clone);const record=this.manager.register(clone,'explorer');window.ArcadeCloudOsShell?.registerWindow?.(clone);const controller=this.attachExplorer(clone);if(route&&controller.normalize(route)!==controller.route)controller.navigate(route,{replace:true});this.manager.focus(clone);return controller;}
-  enhanceFolderMenu(){const menu=document.getElementById('folderContextMenu');if(!menu||menu.querySelector('[data-folder-open-new]'))return;const button=document.createElement('button');button.type='button';button.dataset.folderOpenNew='';button.innerHTML='<i class="fas fa-up-right-from-square"></i> Abrir en nueva ventana';const open=menu.querySelector('[data-folder-action="open"]');open?.after(button);}
-  async openTool(url,title){const el=document.createElement('section');el.className='os-window os-tool-window is-open';el.dataset.windowTitle=title;el.style.cssText='left:14vw;top:9vh;width:min(980px,82vw);height:min(680px,76vh)';el.innerHTML='<div class="os-window-titlebar" data-window-drag-handle><div class="os-window-title"><i class="fas fa-toolbox"></i><span></span></div><div class="os-window-controls"><button type="button" data-window-minimize aria-label="Minimizar"><i class="fas fa-minus"></i></button><button type="button" data-window-maximize aria-label="Maximizar"><i class="far fa-square"></i></button><button type="button" data-window-close aria-label="Cerrar"><i class="fas fa-xmark"></i></button></div></div><div class="os-window-body os-tool-body"><div class="os-tool-loading">Cargando…</div></div>';el.querySelector('.os-window-title span').textContent=title;document.getElementById('osDesktop')?.append(el);const record=this.manager.register(el,'tool');window.ArcadeCloudOsShell?.registerWindow?.(el);const controller=new AbortController();this.manager.addCleanup(record.id,()=>controller.abort());try{const response=await fetch(url,{credentials:'same-origin',cache:'no-store',signal:controller.signal,headers:{'X-Requested-With':'XMLHttpRequest'}});if(!response.ok)throw new Error('No fue posible cargar la herramienta.');const parsed=new DOMParser().parseFromString(await response.text(),'text/html');const content=parsed.querySelector('main,.container,.container-fluid')||parsed.body;content.querySelectorAll('script,link[rel="stylesheet"],nav').forEach(node=>node.remove());const body=el.querySelector('.os-tool-body');body.replaceChildren(...Array.from(content.childNodes).map(node=>document.importNode(node,true)));this.bus.emit('tool-opened',{windowId:record.id,url});}catch(error){if(error?.name!=='AbortError')el.querySelector('.os-tool-body').textContent=error?.message||'No fue posible cargar la herramienta.';}return el;}
-  refreshAffected(detail){this.explorers.forEach(explorer=>{if(!detail?.sourceRoute&&!detail?.destination){explorer.navigate(explorer.route,{replace:true,page:explorer.page});return;}if([detail.sourceRoute,detail.destination].includes(explorer.route))explorer.navigate(explorer.route,{replace:true,page:explorer.page});});}
-  notify(message,type){window.ArcadeCloudOsShell?.notify?.(message,type);}
+
+  init() {
+    this.registerApplications();
+    this.document.querySelectorAll('.os-window').forEach(element => this.manager.register(element, this.appFor(element)));
+    this.document.querySelectorAll('.os-explorer-window').forEach(element => this.attachExplorer(element));
+    this.document.querySelectorAll('.os-window').forEach(element => this.bindWindowChrome(element));
+    this.document.addEventListener('click', event => {
+      const target = event.target instanceof Element ? event.target : null; if (!target) return;
+      const launch = target.closest('[data-window-open="explorerWindow"],[data-app-open="explorer"]');
+      if (launch) { event.preventDefault(); event.stopImmediatePropagation(); this.openExplorer(this.root, { reuse: true }); return; }
+      const newer = target.closest('[data-folder-open-new]');
+      if (newer) { event.preventDefault(); event.stopPropagation(); this.openExplorer(this.window.ArcadeCloudOsFolders?.activeFolder?.route || newer.dataset.folderOpenNew, { forceNew: true }); this.window.ArcadeCloudOsFolders?.hideContext?.(); }
+      const tool = target.closest('[data-os-tool]');
+      if (tool) { event.preventDefault(); this.openTool(tool.href, tool.dataset.toolTitle || tool.textContent.trim()); }
+    }, true);
+    this.document.addEventListener('pointerdown', event => { const element = event.target.closest('.os-window'); if (element) this.manager.focus(element); }, true);
+    ['file-moved','file-copied','file-deleted','folder-created','upload-completed','task-completed'].forEach(type => this.bus.on(type, event => this.refreshAffected(event.detail)));
+    this.document.addEventListener('drive:move-task-completed', event => this.bus.emit('task-completed', event.detail || {}));
+    this.document.addEventListener('drive:storage-changed', event => this.bus.emit('upload-completed', event.detail || {}));
+    this.observer = new MutationObserver(records => records.forEach(record => record.addedNodes.forEach(node => {
+      if (!(node instanceof Element) || !node.matches('.os-window')) return;
+      const app = this.appFor(node); const registered = this.manager.register(node, app); this.bindWindowChrome(node);
+      if (registered.element !== node) node.remove();
+    })));
+    this.observer.observe(this.document.getElementById('osDesktop') || this.document.body, { childList: true });
+    this.enhanceFolderMenu();
+    this.window.ArcadeCloudEventBus = this.bus; this.window.ArcadeCloudWindowManager = this.manager; this.window.ArcadeCloudDesktop = this;
+    const initial = this.manager.last('explorer'); if (initial) this.manager.focus(initial.id);
+    return this;
+  }
+
+  registerApplications() {
+    [['explorer',true,'Mis datos','fa-folder-open'],['image',true,'Imagen','fa-file-image'],['pdf',true,'PDF','fa-file-pdf'],['text',true,'Texto','fa-file-lines'],['viewer',true,'Archivo','fa-file'],['tool',false,'Herramienta','fa-toolbox'],['node',false,'Mi nodo','fa-server'],['settings',false,'Configuración','fa-gear'],['terminal',false,'Terminal','fa-terminal']]
+      .forEach(([app,multiInstance,title,icon]) => this.manager.registerApp(app, { multiInstance, title, icon }));
+  }
+
+  appFor(element) {
+    if (element.classList.contains('os-explorer-window')) return 'explorer';
+    if (element.classList.contains('os-document-window')) {
+      if (element.classList.contains('os-pdf-window')) return 'pdf';
+      if (element.querySelector('.os-viewer-image')) return 'image';
+      if (/Editor/.test(element.querySelector('.os-statusbar')?.textContent || '')) return 'text';
+      return 'viewer';
+    }
+    if (element.id === 'nodeWindow') return 'node'; if (element.id === 'settingsWindow') return 'settings'; if (element.id === 'terminalWindow') return 'terminal';
+    return element.dataset.appId || element.id?.replace(/Window$/, '') || 'window';
+  }
+
+  bindWindowChrome(element) {
+    if (element.dataset.managerBound === '1') return; element.dataset.managerBound = '1';
+    element.querySelector('[data-window-close]')?.addEventListener('click', event => { event.stopImmediatePropagation(); const id = element.dataset.windowId; this.explorers.delete(id); this.manager.close(id); });
+    element.querySelector('[data-window-minimize]')?.addEventListener('click', event => { event.stopImmediatePropagation(); this.manager.minimize(element); });
+    element.querySelector('[data-window-maximize]')?.addEventListener('click', event => { event.stopImmediatePropagation(); this.manager.toggleMaximize(element); });
+  }
+
+  attachExplorer(element, route) {
+    element.classList.add('os-explorer-window');
+    const record = this.manager.record(element) || this.manager.register(element, 'explorer');
+    if (this.explorers.has(record.id)) return this.explorers.get(record.id);
+    const controller = new ArcadeCloudExplorerWindow(this, element, route || element.querySelector('.os-explorer-live')?.dataset.explorerRoute);
+    record.state = controller; this.explorers.set(record.id, controller); this.manager.addCleanup(record.id, () => controller.destroy());
+    return controller;
+  }
+
+  openExplorer(route, options = {}) {
+    const existing = this.manager.last('explorer');
+    if (options.reuse && existing) { this.manager.focus(existing.id); return this.explorers.get(existing.id); }
+    return this.factory.create(route || this.root);
+  }
+
+  chooseDropOperation(count, destination) {
+    const answer = this.window.prompt(`Transferir ${count} elemento(s) a ${destination}\nEscribe "mover", "copiar" o "cancelar".`, 'mover');
+    if (!answer || /^cancel/i.test(answer)) return null;
+    return /^cop/i.test(answer) ? 'copy' : 'move';
+  }
+
+  openTool(url, title) {
+    const existing = this.manager.last('tool');
+    if (existing) { this.manager.focus(existing.id); return existing.element; }
+    const element = this.document.createElement('section');
+    element.className = 'os-window os-tool-window is-open'; element.dataset.windowTitle = title;
+    element.style.cssText = 'left:14vw;top:9vh;width:min(980px,82vw);height:min(680px,76vh)';
+    element.innerHTML = '<div class="os-window-titlebar" data-window-drag-handle><div class="os-window-title"><i class="fas fa-toolbox"></i><span></span></div><div class="os-window-controls"><button type="button" data-window-minimize aria-label="Minimizar"><i class="fas fa-minus"></i></button><button type="button" data-window-maximize aria-label="Maximizar"><i class="far fa-square"></i></button><button type="button" data-window-close aria-label="Cerrar"><i class="fas fa-xmark"></i></button></div></div><div class="os-window-body os-tool-body"><iframe class="os-viewer-frame" title="Herramienta"></iframe></div>';
+    element.querySelector('.os-window-title span').textContent = title;
+    const frame = element.querySelector('iframe'); frame.title = title; frame.src = url;
+    this.document.getElementById('osDesktop')?.append(element);
+    this.manager.register(element, 'tool', { url }); this.bindWindowChrome(element); this.manager.focus(element);
+    return element;
+  }
+
+  enhanceFolderMenu() {
+    const menu = this.document.getElementById('folderContextMenu'); if (!menu || menu.querySelector('[data-folder-open-new]')) return;
+    const button = this.document.createElement('button'); button.type = 'button'; button.dataset.folderOpenNew = '';
+    button.innerHTML = '<i class="fas fa-up-right-from-square"></i> Abrir en nueva ventana'; menu.querySelector('[data-folder-action="open"]')?.after(button);
+  }
+
+  refreshAffected(detail = {}) {
+    const affected = [detail.sourceRoute, detail.destinationRoute || detail.destination, detail.route].filter(Boolean);
+    this.explorers.forEach(explorer => {
+      if (!affected.length || affected.some(route => explorer.normalize(route) === explorer.route)) explorer.navigate(explorer.route, { replace: true, page: explorer.page });
+    });
+  }
 }
 
-window.addEventListener('DOMContentLoaded',()=>{window.ArcadeCloudDesktopRuntime=new ArcadeCloudDesktopRuntime(window,document).init();});
+if (typeof module !== 'undefined') module.exports = { ArcadeCloudEventBus, ArcadeCloudWindowManager, ExplorerWindowFactory, ArcadeCloudExplorerWindow, ArcadeCloudDesktopRuntime };
+if (typeof window !== 'undefined') window.addEventListener('DOMContentLoaded', () => { window.ArcadeCloudDesktopRuntime = new ArcadeCloudDesktopRuntime(window, document).init(); });

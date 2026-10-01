@@ -254,7 +254,7 @@ window.ARCADECLOUD_UNIFIED_TASK_CENTER = true;
 
 (function loadWebOsClipboard(win, doc) {
   const load = () => {
-    if (!doc.getElementById('osExplorerLive')) return;
+    if (!doc.querySelector('.os-explorer-live')) return;
     if (doc.querySelector('script[data-os-clipboard]')) return;
 
     const script = doc.createElement('script');

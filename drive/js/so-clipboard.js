@@ -96,7 +96,11 @@ class ArcadeCloudOsClipboard {
   }
 
   injectPasteToolbar() {
-    const toolbar = this.document.querySelector('#osExplorerLive .os-explorer-toolbar');
+    const toolbars = this.document.querySelectorAll('.os-explorer-live .os-explorer-toolbar');
+    toolbars.forEach((toolbar) => this.injectPasteButton(toolbar));
+  }
+
+  injectPasteButton(toolbar) {
     if (!toolbar || toolbar.querySelector('[data-os-paste-current]')) return;
 
     const button = this.document.createElement('button');
@@ -323,9 +327,9 @@ class ArcadeCloudOsClipboard {
     });
   }
 
-  captureFiles(entry, mode) {
+  captureFiles(entry, mode, context = {}) {
     const shell = this.window.ArcadeCloudOsShell;
-    const selected = typeof shell?.selectedFileEntries === 'function'
+    const selected = Array.isArray(context.entries) ? context.entries : typeof shell?.selectedFileEntries === 'function'
       ? shell.selectedFileEntries()
       : [];
 
@@ -359,11 +363,12 @@ class ArcadeCloudOsClipboard {
       keys,
       name,
       count: keys.length,
-      sourceRoute: this.currentRoute()
+      sourceWindowId: context.sourceWindowId || entry.closest('.os-window')?.dataset.windowId || '',
+      sourceRoute: context.sourceRoute || entry.closest('.os-explorer-live')?.dataset.explorerRoute || this.currentRoute()
     });
   }
 
-  captureFolder(folder, mode) {
+  captureFolder(folder, mode, context = {}) {
     const root = String(this.window.ARCADECLOUD_OS_ROOT_ROUTE || '').trim();
     const route = String(folder.route || '').trim();
     if (!route || folder.isRoot || (root && this.sameRoute(route, root))) {
@@ -376,7 +381,8 @@ class ArcadeCloudOsClipboard {
       mode,
       route,
       name: String(folder.name || 'Carpeta'),
-      sourceRoute: String(folder.parent || this.currentRoute())
+      sourceWindowId: context.sourceWindowId || '',
+      sourceRoute: String(context.sourceRoute || folder.parent || this.currentRoute())
     });
   }
 
@@ -714,7 +720,7 @@ class ArcadeCloudOsClipboard {
   }
 
   currentRoute() {
-    const explorer = this.document.getElementById('osExplorerLive');
+    const explorer = this.document.querySelector('.os-explorer-window.is-active .os-explorer-live');
     return String(explorer?.dataset.explorerRoute || this.window.DRIVE_INITIAL_ROUTE || '').trim();
   }
 
@@ -739,7 +745,7 @@ class ArcadeCloudOsClipboard {
 (function bootArcadeCloudOsClipboard(win, doc) {
   let attempts = 0;
   const boot = () => {
-    if (!doc.getElementById('osExplorerLive')) return;
+    if (!doc.querySelector('.os-explorer-live')) return;
     if (win.ArcadeCloudOsClipboard instanceof ArcadeCloudOsClipboard) return;
 
     if (!win.ArcadeCloudOsShell || !win.ArcadeCloudOsFolders || !win.DriveMoveTasks) {

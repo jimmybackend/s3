@@ -258,7 +258,7 @@ class ArcadeCloudUploadCenter {
     if (this.window.DriveUploadDestination?.capture) {
       return this.window.DriveUploadDestination.capture();
     }
-    const explorer = this.document.getElementById('osExplorerLive');
+    const explorer = this.document.querySelector('.os-explorer-window.is-active .os-explorer-live, .os-explorer-live');
     const context = this.document.getElementById('archivosContexto');
     const raw = String(
       context?.dataset?.rutaActual ||

@@ -20,17 +20,17 @@ $assert = static function (bool $ok, string $message): void {
 
 $assert(str_contains($files['runtime'], 'class ArcadeCloudWindowManager'), 'WindowManager central existe');
 $assert(str_contains($files['runtime'], 'nextId(app)'), 'cada ventana recibe windowId único');
-$assert(str_contains($files['runtime'], "register(el,'explorer')"), 'exploradores se registran como instancias');
-$assert(str_contains($files['runtime'], 'this.history = []; this.future = []'), 'historial es independiente por explorador');
-$assert(str_contains($files['runtime'], "event.ctrlKey&&event.key.toLowerCase()==='l'"), 'Ctrl+L enfoca dirección');
+$assert(str_contains($files['runtime'], "register(element, 'explorer')"), 'exploradores se registran como instancias');
+$assert(str_contains($files['runtime'], 'this.history = [];') && str_contains($files['runtime'], 'this.future = [];'), 'historial es independiente por explorador');
+$assert(str_contains($files['runtime'], "event.key.toLowerCase() === 'l'"), 'Ctrl+L enfoca dirección');
 $assert(str_contains($files['runtime'], "(^|\\/)\\.\\.?(\\/|$)"), 'normalizador rechaza traversal');
 $assert(str_contains($files['runtime'], 'new AbortController()'), 'navegación cancela fetch obsoleto');
 $assert(str_contains($files['runtime'], "data-folder-open-new"), 'carpetas ofrecen abrir en ventana nueva');
 $assert(str_contains($files['runtime'], 'application/x-arcadecloud-items'), 'drag and drop usa payload privado');
-$assert(str_contains($files['runtime'], 'ArcadeCloudOsClipboard.paste(destination)'), 'drop reutiliza backend de portapapeles');
-$assert(str_contains($files['runtime'], "'file-moved','file-copied','file-deleted','upload-completed','task-completed'"), 'EventBus sincroniza cambios');
+$assert(str_contains($files['runtime'], "clipboard?.paste?.(destinationRoute)"), 'drop reutiliza backend de portapapeles');
+$assert(str_contains($files['runtime'], "'file-moved','file-copied','file-deleted','folder-created','upload-completed','task-completed'"), 'EventBus sincroniza cambios');
 $assert(str_contains($files['runtime'], 'record.cleanup.forEach'), 'cierre libera recursos registrados');
-$assert(str_contains($files['runtime'], 'this.zLimit = 900'), 'z-index se compacta antes de crecer sin límite');
+$assert(str_contains($files['runtime'], 'this.zCounter > 900'), 'z-index se compacta antes de crecer sin límite');
 $assert(str_contains($files['shell'], 'data-node-access="<?= $isSuperAdmin'), 'Mi nodo distingue acceso visual');
 $assert(str_contains($files['shell'], 'data-node-memory-clear') && str_contains($files['shell'], 'data-node-disk-clean'), 'escobillas continúan disponibles');
 $assert(str_contains($files['node'], 'if (!$isSuperAdmin)') && substr_count($files['node'], 'publicSnapshot(') >= 3, 'backend filtra diagnóstico normal y FastDrive');

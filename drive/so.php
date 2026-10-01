@@ -235,7 +235,7 @@ $currentFolderName = $currentIsRoot
       <span>Mi nodo</span>
     </button>
 
-    <button class="os-desktop-icon" type="button" data-window-open="explorerWindow">
+    <button class="os-desktop-icon" type="button" data-app-open="explorer">
       <span class="os-icon-tile"><i class="fas fa-folder-open"></i></span>
       <span>Mis datos</span>
     </button>
@@ -245,7 +245,7 @@ $currentFolderName = $currentIsRoot
       <span>Aplicaciones</span>
     </button>
 
-    <section class="os-window" id="explorerWindow" data-window-title="Mis datos" style="left:7vw;top:8vh;width:min(1050px,86vw);height:min(680px,72vh);">
+    <section class="os-window os-explorer-window is-open" data-window-title="Mis datos" data-initial-explorer="1" style="left:7vw;top:8vh;width:min(1050px,86vw);height:min(680px,72vh);">
       <div class="os-window-titlebar" data-window-drag-handle>
         <div class="os-window-title"><i class="fas fa-folder-open"></i><span>Mis datos</span></div>
         <div class="os-window-controls">
@@ -255,8 +255,7 @@ $currentFolderName = $currentIsRoot
         </div>
       </div>
 
-      <div id="osExplorerLive"
-           class="os-explorer-live"
+      <div class="os-explorer-live"
            data-explorer-route="<?= $e($currentRoute) ?>"
            data-explorer-page="<?= $page ?>"
            data-explorer-pages="<?= $pages ?>">
@@ -571,7 +570,7 @@ $currentFolderName = $currentIsRoot
       </div>
       <div class="os-window-body">
         <div class="os-app-grid">
-          <button type="button" class="os-app-card is-ready" data-window-open="explorerWindow"><i class="fas fa-folder-open"></i><strong>Mis datos</strong><span>Disponible</span></button>
+          <button type="button" class="os-app-card is-ready" data-app-open="explorer"><i class="fas fa-folder-open"></i><strong>Mis datos</strong><span>Disponible</span></button>
           <button type="button" class="os-app-card is-ready" data-window-open="searchWindow" data-open-search>
             <i class="fas fa-magnifying-glass"></i><strong>Buscar</strong><span>Normal + IA</span>
           </button>
@@ -1867,7 +1866,7 @@ Escribe help o usa uno de los botones disponibles.</pre>
       </div>
     </div>
     <button type="button" data-window-open="nodeWindow"><i class="fas fa-server"></i> Mi nodo</button>
-    <button type="button" data-window-open="explorerWindow"><i class="fas fa-folder-open"></i> Mis datos</button>
+    <button type="button" data-app-open="explorer"><i class="fas fa-folder-open"></i> Mis datos</button>
     <button type="button" data-window-open="appsWindow"><i class="fas fa-shapes"></i> Aplicaciones</button>
     <a href="s3.php"><i class="fas fa-hard-drive"></i> Drive clásico</a>
     <button type="button" data-window-open="settingsWindow"><i class="fas fa-gear"></i> Configuración</button>

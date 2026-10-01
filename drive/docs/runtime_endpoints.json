@@ -1479,6 +1479,7 @@
         "drive/tests/server_console_contract_smoke.php",
         "drive/tests/web_os_clipboard_contract_smoke.php",
         "drive/tests/web_os_contract_smoke.php",
+        "drive/tests/web_os_theme_contract_smoke.php",
         "drive/js/so-folders.js",
         "drive/js/so.js"
       ]
@@ -3145,7 +3146,8 @@
       "size": 1522,
       "active": false,
       "references": [
-        "drive/tests/web_os_contract_smoke.php"
+        "drive/tests/web_os_contract_smoke.php",
+        "drive/tests/web_os_theme_contract_smoke.php"
       ]
     },
     {
@@ -3377,7 +3379,7 @@
     },
     {
       "path": "drive/src/System/NodeRuntimeStatusService.php",
-      "size": 27868,
+      "size": 28725,
       "active": false,
       "references": [
         "drive/tests/node_diagnostics_contract_smoke.php",
@@ -3770,7 +3772,7 @@
     },
     {
       "path": "drive/tests/node_diagnostics_contract_smoke.php",
-      "size": 3232,
+      "size": 4726,
       "active": false,
       "references": []
     },
@@ -3885,6 +3887,12 @@
     {
       "path": "drive/tests/web_os_contract_smoke.php",
       "size": 48532,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/tests/web_os_theme_contract_smoke.php",
+      "size": 2138,
       "active": false,
       "references": []
     },

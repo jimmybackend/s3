@@ -7,8 +7,7 @@ use ArcadeCloud\Drive\Admin\PrivilegedServerHelper;
 use ArcadeCloud\Drive\Admin\ServerMaintenanceJobStore;
 use ArcadeCloud\Drive\Admin\ServerMaintenanceService;
 use ArcadeCloud\Drive\Http\JsonResponse;
-use ArcadeCloud\Drive\System\NodeCapabilityService;
-use ArcadeCloud\Drive\View\FileViewHelper;
+use ArcadeCloud\Drive\System\NodeRuntimeStatusService;
 use RuntimeException;
 
 final class NodeStatusController extends AbstractJsonController
@@ -19,9 +18,14 @@ final class NodeStatusController extends AbstractJsonController
             $userId = $this->guardAuthenticated();
 
             if ($this->request->method() === 'GET') {
+                $status = new NodeRuntimeStatusService($this->app);
+                $local = $status->local(dirname(__DIR__, 3));
                 JsonResponse::send([
                     'ok' => true,
-                    'node' => $this->snapshot(),
+                    // node remains the legacy-compatible local payload.
+                    'node' => $local,
+                    'local' => $local,
+                    'fastdrive' => $status->fastDrive(),
                 ]);
             }
 
@@ -75,35 +79,7 @@ final class NodeStatusController extends AbstractJsonController
 
     private function snapshot(): array
     {
-        $snapshot = (new NodeCapabilityService())->snapshot(dirname(__DIR__, 3));
-        $diskTotal = max(0, (int)($snapshot['disk_total_bytes'] ?? 0));
-        $diskFree = max(0, (int)($snapshot['disk_free_bytes'] ?? 0));
-        $diskUsed = max(0, $diskTotal - $diskFree);
-        $diskUsedPercent = $diskTotal > 0 ? round(($diskUsed / $diskTotal) * 100, 1) : 0.0;
-
-        return [
-            'generated_at' => gmdate('c'),
-            'hostname' => (string)($snapshot['hostname'] ?? ''),
-            'role' => (string)($snapshot['role'] ?? ''),
-            'instance_id' => (string)($snapshot['instance_id'] ?? ''),
-            'instance_type' => (string)($snapshot['instance_type'] ?? ''),
-            'availability_zone' => (string)($snapshot['availability_zone'] ?? ''),
-            'vcpu' => (int)($snapshot['vcpu'] ?? 0),
-            'memory_total_bytes' => (int)($snapshot['memory_total_bytes'] ?? 0),
-            'memory_total' => FileViewHelper::formatBytes((int)($snapshot['memory_total_bytes'] ?? 0)),
-            'memory_available_bytes' => (int)($snapshot['memory_available_bytes'] ?? 0),
-            'memory_available' => FileViewHelper::formatBytes((int)($snapshot['memory_available_bytes'] ?? 0)),
-            'swap_total' => FileViewHelper::formatBytes((int)($snapshot['swap_total_bytes'] ?? 0)),
-            'swap_free' => FileViewHelper::formatBytes((int)($snapshot['swap_free_bytes'] ?? 0)),
-            'disk_total' => FileViewHelper::formatBytes($diskTotal),
-            'disk_used' => FileViewHelper::formatBytes($diskUsed),
-            'disk_used_percent' => $diskUsedPercent,
-            'disk_free' => FileViewHelper::formatBytes($diskFree),
-            'load_average' => array_values((array)($snapshot['load_average'] ?? [0,0,0])),
-            'ffmpeg_available' => (bool)($snapshot['ffmpeg_available'] ?? false),
-            'ffprobe_available' => (bool)($snapshot['ffprobe_available'] ?? false),
-            'docker_installed' => (bool)($snapshot['docker_installed'] ?? false),
-            'gpu_present' => (bool)($snapshot['gpu_present'] ?? false),
-        ];
+        // NodeRuntimeStatusService vuelve a medir mediante NodeCapabilityService.
+        return (new NodeRuntimeStatusService($this->app))->local(dirname(__DIR__, 3));
     }
 }

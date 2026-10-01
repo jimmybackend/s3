@@ -4,13 +4,13 @@
 
 ## Resumen
 
-- PHP analizados: **502**
+- PHP analizados: **503**
 - PHP que ya contienen clases/interfaces: **294**
 - PHP marcados para migración/revisión: **0**
-- Tests PHP separados del objetivo OOP de runtime: **53**
-- JavaScript analizados: **70**
-- JavaScript que ya contienen clases: **68**
-- JavaScript sin clase/encapsulación OOP: **5**
+- Tests PHP separados del objetivo OOP de runtime: **54**
+- JavaScript analizados: **72**
+- JavaScript que ya contienen clases: **69**
+- JavaScript sin clase/encapsulación OOP: **6**
 - JavaScript OOP con fachada `window` de compatibilidad: **8**
 - Clientes AJAX detectados: **49** módulos / **106** llamadas
 - JSON analizados: **4**; inválidos: **0**
@@ -164,7 +164,7 @@
 | `drive/set_file_security.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/setup/api.php` | 15 | thin endpoint | 0 | — | — | — | — |
 | `drive/setup/index.php` | 90 | view/entrypoint | 0 | — | — | — | — |
-| `drive/so.php` | 2006 | view/entrypoint | 0 | — | — | — | — |
+| `drive/so.php` | 2007 | view/entrypoint | 0 | — | — | — | — |
 | `drive/src/Activity/ActivityCostRecorder.php` | 155 | class/module | 1 | — | — | — | — |
 | `drive/src/Activity/ActivityCostRepository.php` | 198 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Activity/ActivityCostService.php` | 153 | class/module | 1 | — | — | — | — |
@@ -496,6 +496,7 @@
 | `drive/tests/user_profile_validator_smoke.php` | 72 | test script | 0 | — | — | — | — |
 | `drive/tests/web_os_clipboard_contract_smoke.php` | 115 | test script | 0 | — | — | — | — |
 | `drive/tests/web_os_contract_smoke.php` | 482 | test script | 0 | — | — | — | — |
+| `drive/tests/web_os_desktop_shell_smoke.php` | 20 | test script | 0 | — | — | — | — |
 | `drive/tests/web_os_file_applications_smoke.php` | 21 | test script | 0 | — | — | — | — |
 | `drive/tests/web_os_interactions_theme_smoke.php` | 30 | test script | 0 | — | — | — | — |
 | `drive/tests/web_os_multiwindow_smoke.php` | 62 | test script | 0 | — | — | — | — |
@@ -550,6 +551,7 @@
 | `drive/js/compute-node-idle.js` | 239 | class/module | ArcadeCloudComputeIdleGuard | — | — | — |
 | `drive/js/descarga-multiple.js` | 114 | class/module | DescargaMultipleModule | — | — | — |
 | `drive/js/descarga-uno.js` | 110 | class/module | DescargaUnoModule | — | — | — |
+| `drive/js/desktop-shell.js` | 151 | class/module | ArcadeCloudDesktopShell | — | — | — |
 | `drive/js/editar-txt.js` | 68 | class/module | EditarTxtModule | — | — | — |
 | `drive/js/elimina-multiple.js` | 104 | class/module | EliminaMultipleModule | — | — | — |
 | `drive/js/elimina-uno.js` | 122 | class/module | EliminaUnoModule | — | — | — |
@@ -572,7 +574,7 @@
 | `drive/js/mediaFloating.js` | 38 | class/module | MediaFloatingModule | — | — | — |
 | `drive/js/move-tasks.js` | 280 | class/module | DriveMoveTasks | — | — | — |
 | `drive/js/obtenerFiltros.js` | 125 | class/module | ObtenerFiltrosModule | — | — | — |
-| `drive/js/os-window-manager.js` | 946 | class/module | ArcadeCloudEventBus, ArcadeCloudWindowLayoutConfig, ArcadeCloudWindowManager, ExplorerWindowFactory, ArcadeCloudExplorerWindow, ArcadeCloudDesktopRuntime | — | — | — |
+| `drive/js/os-window-manager.js` | 960 | class/module | ArcadeCloudEventBus, ArcadeCloudWindowLayoutConfig, ArcadeCloudWindowManager, ExplorerWindowFactory, ArcadeCloudExplorerWindow, ArcadeCloudDesktopRuntime | — | — | — |
 | `drive/js/pdf-pantalla-completa.js` | 45 | class/module | PdfPantallaCompletaModule | — | — | — |
 | `drive/js/polly-background.js` | 305 | class/module | PollyBackgroundModule | — | — | — |
 | `drive/js/polly.js` | 1008 | class/module | PollyModule | — | abrirModalGrabarAudio, abrirModalPolly, abrirModalRekognition, abrirModalTraducir, abrirModalTranscribir, copiarTextract | window functions: abrirModalGrabarAudio, abrirModalPolly, abrirModalRekognition, abrirModalTraducir, abrirModalTranscribir, copiarTextract, copiarTraducido, copiarTx |
@@ -603,6 +605,7 @@
 | `drive/js/upload-destination.js` | 74 | class/module | UploadDestinationModule | — | — | — |
 | `drive/js/ver-metadatos.js` | 75 | class/module | VerMetadatosModule | — | verMetadatos | window functions: verMetadatos |
 | `drive/js/ver-pdf.js` | 112 | class/module | VerPdfModule | — | — | — |
+| `drive/tests/web_os_desktop_shell_functional.js` | 22 | procedural script | — | assert | — | top-level functions: assert; top-level state: editable, records, instance; no ES class |
 | `drive/tests/web_os_file_applications_functional.js` | 54 | class/module | Bus | assert | — | top-level functions: assert |
 | `drive/tests/web_os_filesystem_operations_functional.js` | 52 | procedural script | — | assert | — | top-level functions: assert; top-level state: events, busEvents, doc, win, service; no ES class |
 | `drive/tests/web_os_multiwindow_functional.js` | 125 | class/module | Classes, ElementStub | windowStub, assert | — | top-level functions: windowStub, assert |
@@ -638,7 +641,7 @@
 | `drive/js/media-processing.js` | 3 | 0 | 0 | 3 | 5 |
 | `drive/js/move-tasks.js` | 2 | 0 | 0 | 0 | 6 |
 | `drive/js/obtenerFiltros.js` | 3 | 0 | 0 | 0 | 0 |
-| `drive/js/os-window-manager.js` | 5 | 0 | 0 | 2 | 14 |
+| `drive/js/os-window-manager.js` | 5 | 0 | 0 | 2 | 16 |
 | `drive/js/polly-background.js` | 1 | 0 | 0 | 0 | 3 |
 | `drive/js/polly.js` | 0 | 0 | 2 | 0 | 8 |
 | `drive/js/profile.js` | 2 | 0 | 0 | 1 | 4 |

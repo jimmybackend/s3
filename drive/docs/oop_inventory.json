@@ -1,12 +1,12 @@
 {
   "summary": {
-    "php_total": 502,
+    "php_total": 503,
     "php_class_modules": 294,
     "php_needs_migration": 0,
-    "php_tests": 53,
-    "js_total": 70,
-    "js_class_modules": 68,
-    "js_needs_migration": 5,
+    "php_tests": 54,
+    "js_total": 72,
+    "js_class_modules": 69,
+    "js_needs_migration": 6,
     "js_compatibility_facades": 8,
     "ajax_clients": 49,
     "ajax_calls": 106,
@@ -2060,7 +2060,7 @@
     },
     {
       "path": "drive/so.php",
-      "lines": 2006,
+      "lines": 2007,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -7145,6 +7145,21 @@
       "issues": []
     },
     {
+      "path": "drive/tests/web_os_desktop_shell_smoke.php",
+      "lines": 20,
+      "kind": "test script",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
       "path": "drive/tests/web_os_file_applications_smoke.php",
       "lines": 21,
       "kind": "test script",
@@ -8046,6 +8061,29 @@
       "issues": []
     },
     {
+      "path": "drive/js/desktop-shell.js",
+      "lines": 151,
+      "kind": "class/module",
+      "classes": [
+        "ArcadeCloudDesktopShell"
+      ],
+      "functions": [],
+      "window_assign": [
+        "ArcadeCloudDesktopShell"
+      ],
+      "window_func": [],
+      "top_vars": [],
+      "iife": false,
+      "ajax": {
+        "fetch": 0,
+        "xhr": 0,
+        "jquery": 0,
+        "json_consumers": 0,
+        "response_checks": 3
+      },
+      "issues": []
+    },
+    {
       "path": "drive/js/editar-txt.js",
       "lines": 68,
       "kind": "class/module",
@@ -8563,7 +8601,7 @@
     },
     {
       "path": "drive/js/os-window-manager.js",
-      "lines": 946,
+      "lines": 960,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudEventBus",
@@ -8589,7 +8627,7 @@
         "xhr": 0,
         "jquery": 0,
         "json_consumers": 2,
-        "response_checks": 14
+        "response_checks": 16
       },
       "issues": []
     },
@@ -9310,6 +9348,35 @@
       "issues": []
     },
     {
+      "path": "drive/tests/web_os_desktop_shell_functional.js",
+      "lines": 22,
+      "kind": "procedural script",
+      "classes": [],
+      "functions": [
+        "assert"
+      ],
+      "window_assign": [],
+      "window_func": [],
+      "top_vars": [
+        "editable",
+        "records",
+        "instance"
+      ],
+      "iife": false,
+      "ajax": {
+        "fetch": 0,
+        "xhr": 0,
+        "jquery": 0,
+        "json_consumers": 0,
+        "response_checks": 0
+      },
+      "issues": [
+        "top-level functions: assert",
+        "top-level state: editable, records, instance",
+        "no ES class"
+      ]
+    },
+    {
       "path": "drive/tests/web_os_file_applications_functional.js",
       "lines": 54,
       "kind": "class/module",
@@ -9503,7 +9570,7 @@
     },
     {
       "path": "drive/docs/runtime_endpoints.json",
-      "bytes": 115020,
+      "bytes": 115221,
       "valid": true,
       "root_type": "object",
       "keys": [

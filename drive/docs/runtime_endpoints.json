@@ -247,11 +247,12 @@
     },
     {
       "path": "drive/bin/arcadecloud-drive-admin-helper.php",
-      "size": 44282,
+      "size": 46948,
       "active": false,
       "references": [
         "drive/tests/fastdrive_control_contract_smoke.php",
         "drive/tests/installer_service_reconcile_contract_smoke.php",
+        "drive/tests/node_diagnostics_control_smoke.php",
         "drive/tests/office_gateway_contract_smoke.php",
         "drive/tests/server_console_contract_smoke.php",
         "drive/tests/setup_finalize_contract_smoke.php"
@@ -1566,8 +1567,16 @@
       ]
     },
     {
+      "path": "drive/src/Admin/NodeServiceControlService.php",
+      "size": 2362,
+      "active": false,
+      "references": [
+        "drive/tests/node_diagnostics_control_smoke.php"
+      ]
+    },
+    {
       "path": "drive/src/Admin/PrivilegedServerHelper.php",
-      "size": 9863,
+      "size": 11000,
       "active": false,
       "references": [
         "drive/setup/api.php",
@@ -2803,10 +2812,11 @@
     },
     {
       "path": "drive/src/Http/Controller/NodeStatusController.php",
-      "size": 3670,
+      "size": 4146,
       "active": false,
       "references": [
         "drive/tests/node_diagnostics_contract_smoke.php",
+        "drive/tests/node_diagnostics_control_smoke.php",
         "drive/tests/web_os_contract_smoke.php"
       ]
     },
@@ -3367,10 +3377,19 @@
     },
     {
       "path": "drive/src/System/NodeRuntimeStatusService.php",
-      "size": 20951,
+      "size": 27868,
       "active": false,
       "references": [
-        "drive/tests/node_diagnostics_contract_smoke.php"
+        "drive/tests/node_diagnostics_contract_smoke.php",
+        "drive/tests/node_diagnostics_control_smoke.php"
+      ]
+    },
+    {
+      "path": "drive/src/System/NodeServiceCatalog.php",
+      "size": 4867,
+      "active": false,
+      "references": [
+        "drive/tests/node_diagnostics_control_smoke.php"
       ]
     },
     {
@@ -3752,6 +3771,12 @@
     {
       "path": "drive/tests/node_diagnostics_contract_smoke.php",
       "size": 3232,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/tests/node_diagnostics_control_smoke.php",
+      "size": 3185,
       "active": false,
       "references": []
     },

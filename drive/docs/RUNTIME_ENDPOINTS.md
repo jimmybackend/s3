@@ -63,7 +63,7 @@
 |---|---|
 | `drive/actualizar_ruta.php` | `drive/js/carpetas.js`, `drive/js/obtenerFiltros.js` |
 | `drive/background_tasks.php` | `drive/js/background-tasks.js` |
-| `drive/bin/arcadecloud-drive-admin-helper.php` | `drive/tests/fastdrive_control_contract_smoke.php`, `drive/tests/installer_service_reconcile_contract_smoke.php`, `drive/tests/office_gateway_contract_smoke.php`, `drive/tests/server_console_contract_smoke.php`, `drive/tests/setup_finalize_contract_smoke.php` |
+| `drive/bin/arcadecloud-drive-admin-helper.php` | `drive/tests/fastdrive_control_contract_smoke.php`, `drive/tests/installer_service_reconcile_contract_smoke.php`, `drive/tests/node_diagnostics_control_smoke.php`, `drive/tests/office_gateway_contract_smoke.php`, `drive/tests/server_console_contract_smoke.php`, `drive/tests/setup_finalize_contract_smoke.php` |
 | `drive/bin/arcadecloud-drive-updater.php` | `drive/tests/installer_service_reconcile_contract_smoke.php` |
 | `drive/bin/federation_catalog_migrate.php` | `drive/tests/federation_customs_contract_smoke.php`, `drive/tests/federation_moderation_contract_smoke.php`, `drive/tests/installer_service_reconcile_contract_smoke.php`, `drive/tests/setup_finalize_contract_smoke.php` |
 | `drive/bin/federation_drop_cleanup.php` | ninguna |
@@ -171,6 +171,7 @@
 | `drive/src/Admin/ArcadeCloudUpdaterService.php` | `drive/tests/federation_moderation_contract_smoke.php`, `drive/tests/installer_service_reconcile_contract_smoke.php`, `drive/tests/web_os_contract_smoke.php` |
 | `drive/src/Admin/FastDriveControlService.php` | `drive/tests/fastdrive_control_contract_smoke.php` |
 | `drive/src/Admin/FastDriveWakeService.php` | `drive/tests/fastdrive_control_contract_smoke.php` |
+| `drive/src/Admin/NodeServiceControlService.php` | `drive/tests/node_diagnostics_control_smoke.php` |
 | `drive/src/Admin/PrivilegedServerHelper.php` | `drive/setup/api.php`, `drive/tests/office_gateway_contract_smoke.php`, `drive/tests/server_console_contract_smoke.php`, `drive/tests/setup_finalize_contract_smoke.php` |
 | `drive/src/Admin/ServerConsoleService.php` | `drive/tests/server_console_contract_smoke.php`, `drive/tests/web_os_contract_smoke.php` |
 | `drive/src/Admin/ServerMaintenanceJobStore.php` | `drive/tests/web_os_contract_smoke.php` |
@@ -332,7 +333,7 @@
 | `drive/src/Http/Controller/MediaProcessingController.php` | `drive/tests/media_processing_contract_smoke.php`, `drive/tests/web_os_contract_smoke.php` |
 | `drive/src/Http/Controller/MoveJobController.php` | `drive/tests/web_os_clipboard_contract_smoke.php` |
 | `drive/src/Http/Controller/NavigationController.php` | ninguna |
-| `drive/src/Http/Controller/NodeStatusController.php` | `drive/tests/node_diagnostics_contract_smoke.php`, `drive/tests/web_os_contract_smoke.php` |
+| `drive/src/Http/Controller/NodeStatusController.php` | `drive/tests/node_diagnostics_contract_smoke.php`, `drive/tests/node_diagnostics_control_smoke.php`, `drive/tests/web_os_contract_smoke.php` |
 | `drive/src/Http/Controller/OfficeDocumentController.php` | `drive/tests/office_gateway_contract_smoke.php` |
 | `drive/src/Http/Controller/PersonalAwsController.php` | ninguna |
 | `drive/src/Http/Controller/PollyTaskController.php` | ninguna |
@@ -409,7 +410,8 @@
 | `drive/src/Sync/SyncSchemaMigrator.php` | `drive/tests/sync_schema_migrator_regression.php` |
 | `drive/src/System/Ec2InstanceIdentityService.php` | `drive/tests/fastdrive_control_contract_smoke.php`, `drive/tests/media_processing_contract_smoke.php` |
 | `drive/src/System/NodeCapabilityService.php` | `drive/tests/node_diagnostics_contract_smoke.php`, `drive/tests/web_os_contract_smoke.php` |
-| `drive/src/System/NodeRuntimeStatusService.php` | `drive/tests/node_diagnostics_contract_smoke.php` |
+| `drive/src/System/NodeRuntimeStatusService.php` | `drive/tests/node_diagnostics_contract_smoke.php`, `drive/tests/node_diagnostics_control_smoke.php` |
+| `drive/src/System/NodeServiceCatalog.php` | `drive/tests/node_diagnostics_control_smoke.php` |
 | `drive/src/Upload/AdminMultipartUploadService.php` | `drive/tests/federation_moderation_contract_smoke.php` |
 | `drive/src/Upload/PublicDropzoneUploadService.php` | `drive/tests/federation_moderation_contract_smoke.php` |
 | `drive/src/Upload/PublicMultipartUploadService.php` | ninguna |
@@ -468,6 +470,7 @@
 | `drive/tests/installer_service_reconcile_contract_smoke.php` | ninguna |
 | `drive/tests/media_processing_contract_smoke.php` | ninguna |
 | `drive/tests/node_diagnostics_contract_smoke.php` | ninguna |
+| `drive/tests/node_diagnostics_control_smoke.php` | ninguna |
 | `drive/tests/office_gateway_contract_smoke.php` | ninguna |
 | `drive/tests/password_credential_verifier_smoke.php` | ninguna |
 | `drive/tests/scoped_sync_repository_regression.php` | ninguna |

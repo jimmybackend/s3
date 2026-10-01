@@ -18,7 +18,9 @@ $ok(str_contains($windows, "element.style.left =") && str_contains($windows, "el
 $ok(str_contains($windows, "event.target.closest('button,input,select,textarea,a,[contenteditable=\"true\"]')"), 'controles interactivos no inician drag');
 $ok(str_contains($shell, 'data-selection-action="cut"') && str_contains($shell, '> Cortar</button>'), 'toolbar expone Cortar');
 $ok(str_contains($clipboard, "operation = mode === 'copy' ? 'copy' : 'cut'") && str_contains($clipboard, "operation: item.mode"), 'clipboard conserva intención cut y traduce al contrato move del backend');
-$ok(substr_count($clipboard, "'Pegar aquí'") >= 2, 'destinos muestran Pegar aquí');
+$ok(str_contains($clipboard, "moving ? 'Mover aquí' : 'Copiar aquí'"), 'destinos muestran la operación pendiente');
+$ok(!str_contains($windows, 'this.window.prompt(`Transferir') && str_contains($windows, "className = 'os-decision-dialog'") && str_contains($windows, "data-os-decision=\"cancel\""), 'drag/drop usa diálogo del OS con cancelación');
+$ok(str_contains($styles, '.os-decision-dialog') && str_contains($styles, 'var(--os-surface)'), 'diálogo de transferencia usa tokens del tema claro/oscuro');
 $ok(str_contains($styles, '.os-tool-body>.os-app') && str_contains($styles, 'var(--os-input-bg)') && str_contains($styles, '.os-federation-app'), 'apps internas comparten tokens vivos del OS');
 $ok(!str_contains($shell, 'id="federationFrame"') && str_contains($shell, 'id="federationApp"'), 'FederationCloud se integra sin iframe');
 $ok(str_contains($windows, 'index\\.php') && str_contains($windows, 'intentó abandonar ArcadeCloud OS'), 'cargador bloquea redirección de herramienta al index');

@@ -6,7 +6,9 @@ $read = static fn(string $path): string => (string)file_get_contents($root . '/'
 $shell = $read('so.php');
 $node = $read('js/so-node.js');
 $windows = $read('js/os-window-manager.js');
+$styles = $read('css/so.css');
 $controller = $read('src/Http/Controller/NodeStatusController.php');
+$totpController = $read('src/Http/Controller/PersonalAwsController.php');
 $probe = $read('src/Admin/ServerTaskActivityProbe.php');
 $helper = $read('bin/arcadecloud-drive-admin-helper.php');
 $ok = static function (bool $condition, string $message): void {
@@ -33,6 +35,9 @@ $ok(str_contains($windows, "this.manager.register(element, app") && str_contains
 $ok(str_contains($windows, "page.querySelector('main')") && !str_contains($windows, '<iframe class="os-viewer-frame" title="Herramienta"'), 'cargador importa sólo main, sin iframe ni navbar global');
 $ok(str_contains($windows, "form.matches('[data-os-totp-form]')") && str_contains($windows, 'submitTotpForm(body, target, data, form)'), 'Generador TOTP usa envío AJAX dentro de su ventana');
 $ok(str_contains($windows, "'X-ArcadeCloud-Embed': '1'") && str_contains($windows, 'payload.result.code'), 'Generador TOTP consume resultado JSON sin navegar');
+$ok(str_contains($windows, "contentType.includes('application/json')"), 'Generador TOTP valida el contrato JSON antes de decodificar');
+$ok(str_contains($totpController, "queryString('arcadecloud_os')") && str_contains($totpController, "JsonResponse::send(['ok' => false"), 'endpoint TOTP conserva JSON tras proxy y también en errores de acceso');
+$ok(str_contains($node, "'os-node-card os-node-card-wide'") && str_contains($styles, '.os-node-card-wide{grid-column:1/-1}'), 'Recursos ocupa todas las columnas del layout interior');
 
 $ok(str_contains($node, 'updateIdleCountdown()') && str_contains($node, 'this.idleRemaining - 1'), 'countdown local actualiza cada segundo');
 $ok(str_contains($node, 'setInterval(() => { if (this.isOpen()) this.refresh()') && str_contains($node, '}, 30000)'), 'polling real permanece en 30 segundos');

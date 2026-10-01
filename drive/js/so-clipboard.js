@@ -73,7 +73,7 @@ class ArcadeCloudOsClipboard {
     const divider = menu.querySelector('[data-service-divider]');
     const anchor = divider || null;
     const copy = this.makeContextButton('copy', 'file', 'fas fa-copy', 'Copiar');
-    const cut = this.makeContextButton('cut', 'file', 'fas fa-scissors', 'Cortar');
+    const cut = this.makeContextButton('cut', 'file', 'fas fa-scissors', 'Mover');
     const share = this.makeContextButton('share', 'file', 'fas fa-share-nodes', 'Compartir');
     const remove = this.makeContextButton('delete', 'file', 'fas fa-trash', 'Eliminar', 'is-danger');
 
@@ -85,7 +85,7 @@ class ArcadeCloudOsClipboard {
     if (!menu || menu.querySelector('[data-os-clipboard-action="copy"][data-os-clipboard-kind="folder"]')) return;
 
     const copy = this.makeContextButton('copy', 'folder', 'fas fa-copy', 'Copiar carpeta');
-    const cut = this.makeContextButton('cut', 'folder', 'fas fa-scissors', 'Cortar');
+    const cut = this.makeContextButton('cut', 'folder', 'fas fa-scissors', 'Mover carpeta');
     const paste = this.makeContextButton('paste', 'folder', 'fas fa-paste', 'Pegar dentro');
     paste.classList.add('os-clipboard-paste');
     paste.dataset.osPasteTarget = 'folder';
@@ -449,7 +449,7 @@ class ArcadeCloudOsClipboard {
       }
 
       const moving = String(this.clipboard.mode || '') === 'move';
-      const actionLabel = 'Pegar aquí';
+      const actionLabel = moving ? 'Mover aquí' : 'Copiar aquí';
       const name = String(this.clipboard.name || 'elemento');
 
       button.title = actionLabel + ': ' + name;
@@ -519,6 +519,7 @@ class ArcadeCloudOsClipboard {
         kind: item.kind,
         name: item.name,
         sourceRoute: String(item.sourceRoute || ''),
+        sourceWindowId: String(item.sourceWindowId || ''),
         destinationRoute: destination,
         destinationWindowId: String(context.destinationWindowId || ''),
         clearClipboardOnSuccess: item.mode === 'move'
@@ -568,10 +569,11 @@ class ArcadeCloudOsClipboard {
 
     if (finished.clearClipboardOnSuccess) this.clearClipboard();
 
-    const explorer = finished.destinationWindowId
-      ? this.window.ArcadeCloudDesktop?.explorers?.get(finished.destinationWindowId)
-      : null;
-    if (explorer?.navigate) {
+    const refreshIds = new Set([finished.destinationWindowId]);
+    if (finished.operation === 'move') refreshIds.add(finished.sourceWindowId);
+    for (const id of refreshIds) {
+      const explorer = id ? this.window.ArcadeCloudDesktop?.explorers?.get(id) : null;
+      if (!explorer?.navigate) continue;
       try {
         await explorer.navigate(explorer.route, { replace: true, page: explorer.page });
       } catch (_) {}

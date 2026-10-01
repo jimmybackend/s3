@@ -587,7 +587,7 @@ class ArcadeCloudExplorerWindow {
       let data; try { data = JSON.parse(event.dataTransfer.getData('application/x-arcadecloud-items')); } catch (_) { return; }
       if (!data?.keys?.length || data.sourceWindowId === this.id && data.sourceRoute === this.route) return;
       const destinationRoute = event.target.closest('.os-folder-entry')?.dataset.folderRoute || this.route;
-      const choice = this.runtime.chooseDropOperation(data.keys.length, destinationRoute); if (!choice) return;
+      const choice = await this.runtime.chooseDropOperation(data.keys.length, data.sourceRoute, destinationRoute); if (!choice) return;
       const clipboard = this.runtime.window.ArcadeCloudOsClipboard;
       if (data.kind === 'folder') clipboard?.captureFolder?.({ route: data.keys[0], parent: data.sourceRoute, name: data.keys[0].split('/').filter(Boolean).pop() }, choice, { sourceWindowId: data.sourceWindowId, sourceRoute: data.sourceRoute });
       else {
@@ -738,10 +738,32 @@ class ArcadeCloudDesktopRuntime {
     return this.factory.create(route || this.root);
   }
 
-  chooseDropOperation(count, destination) {
-    const answer = this.window.prompt(`Transferir ${count} elemento(s) a ${destination}\nEscribe "mover", "copiar" o "cancelar".`, 'mover');
-    if (!answer || /^cancel/i.test(answer)) return null;
-    return /^cop/i.test(answer) ? 'copy' : 'move';
+  chooseDropOperation(count, source, destination) {
+    return new Promise(resolve => {
+      const overlay = this.document.createElement('div');
+      overlay.className = 'os-decision-overlay';
+      overlay.setAttribute('role', 'presentation');
+      const dialog = this.document.createElement('section');
+      dialog.className = 'os-decision-dialog';
+      dialog.setAttribute('role', 'dialog');
+      dialog.setAttribute('aria-modal', 'true');
+      dialog.setAttribute('aria-labelledby', 'osTransferDecisionTitle');
+      const noun = Number(count) === 1 ? '1 elemento' : `${Number(count)} elementos`;
+      dialog.innerHTML = '<header><h2 id="osTransferDecisionTitle">Mover o copiar</h2></header><div class="os-decision-body"><p data-os-decision-question></p><dl><dt>Origen</dt><dd data-os-decision-source></dd><dt>Destino</dt><dd data-os-decision-destination></dd></dl></div><footer><button type="button" class="os-decision-primary" data-os-decision="move"><i class="fas fa-arrow-right"></i> Mover</button><button type="button" data-os-decision="copy"><i class="fas fa-copy"></i> Copiar</button><button type="button" data-os-decision="cancel">Cancelar</button></footer>';
+      dialog.querySelector('[data-os-decision-question]').textContent = `¿Qué deseas hacer con ${noun}?`;
+      dialog.querySelector('[data-os-decision-source]').textContent = String(source || '—');
+      dialog.querySelector('[data-os-decision-destination]').textContent = String(destination || '—');
+      overlay.append(dialog); this.document.body.append(overlay);
+      const finish = choice => { this.document.removeEventListener('keydown', onKey); overlay.remove(); resolve(choice); };
+      const onKey = event => { if (event.key === 'Escape') { event.preventDefault(); finish(null); } };
+      overlay.addEventListener('click', event => {
+        const button = event.target.closest?.('[data-os-decision]');
+        if (button) finish(button.dataset.osDecision === 'cancel' ? null : button.dataset.osDecision);
+        else if (event.target === overlay) finish(null);
+      });
+      this.document.addEventListener('keydown', onKey);
+      dialog.querySelector('[data-os-decision="move"]')?.focus();
+    });
   }
 
   async openTool(url, title, toolId = 'tool') {
@@ -793,6 +815,8 @@ class ArcadeCloudDesktopRuntime {
         method: 'POST', body: data, credentials: 'same-origin', cache: 'no-store',
         headers: { 'X-ArcadeCloud-Embed': '1', 'X-Requested-With': 'XMLHttpRequest', Accept: 'application/json' }
       });
+      const contentType = String(response.headers?.get('Content-Type') || '').toLowerCase();
+      if (!contentType.includes('application/json')) throw new Error(`El endpoint TOTP respondió ${response.status} con ${contentType || 'un contenido no identificado'} en lugar de JSON.`);
       const payload = await response.json();
       if (!response.ok || payload?.ok !== true || !payload.result) throw new Error(payload?.error || 'No se pudo generar el código.');
       const result = body.querySelector('[data-totp-result]');

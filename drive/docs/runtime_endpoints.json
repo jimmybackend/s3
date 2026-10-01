@@ -1500,7 +1500,6 @@
         "drive/tests/web_os_pending_fixes_smoke.php",
         "drive/tests/web_os_theme_contract_smoke.php",
         "drive/js/os-window-manager.js",
-        "drive/js/so-folders.js",
         "drive/js/so.js"
       ]
     },
@@ -3907,7 +3906,7 @@
     },
     {
       "path": "drive/tests/web_os_clipboard_contract_smoke.php",
-      "size": 10211,
+      "size": 10339,
       "active": false,
       "references": []
     },
@@ -3925,7 +3924,7 @@
     },
     {
       "path": "drive/tests/web_os_multiwindow_smoke.php",
-      "size": 6426,
+      "size": 6817,
       "active": false,
       "references": []
     },

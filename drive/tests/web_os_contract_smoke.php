@@ -229,7 +229,7 @@ webOsContract(!str_contains($paths['shell'], 'data-current-folder-action="sync"'
 webOsContract(!str_contains($paths['shell'], 'fa-cloud-arrow-down'), 'barra de carpeta elimina el icono ambiguo de descarga');
 webOsContract(str_contains($paths['shell'], 'data-drive-upload-center'), 'Web OS deja Subir como acción principal de carpeta');
 webOsContract(str_contains($paths['shell'], 'data-folder-info'), 'barra compacta deja Información de carpeta');
-webOsContract(!str_contains($paths['shell'], 'data-selection-actions'), 'descarga y papelera múltiples ya no ocupan la barra de carpeta');
+webOsContract(str_contains($paths['shell'], 'data-selection-actions') && str_contains($paths['shell'], 'data-selection-action="copy"') && str_contains($paths['shell'], 'data-selection-action="move"'), 'selección múltiple muestra barra contextual con copiar y mover');
 webOsContract(str_contains($paths['shell'], 'data-selection-context="download"'), 'selección múltiple conserva descarga en menú contextual');
 webOsContract(str_contains($paths['shell'], 'data-selection-context="delete"'), 'selección múltiple conserva eliminación en menú contextual');
 webOsContract(str_contains($paths['js'], 'selectionDivider.hidden = !multi'), 'acciones múltiples sólo aparecen con selección múltiple');
@@ -277,7 +277,7 @@ webOsContract(str_contains($paths['js'], "bindHistoryNavigation()"), 'historial 
 webOsContract(str_contains($paths['js'], ".os-explorer-window a[data-explorer-route]"), 'sólo enlaces reales pueden navegar o refrescar Mis datos');
 webOsContract(!str_contains($paths['js'], "#explorerWindow [data-explorer-route]"), 'clics sobre archivos no ascienden al contenedor de ruta');
 webOsContract(str_contains($paths['folders_js'], "ArcadeCloudOsShell.refreshExplorer"), 'acciones de carpeta delegan navegación al shell');
-webOsContract(str_contains($paths['folders_js'], 'rebind()'), 'acciones se vuelven a enlazar tras refrescar Mis datos');
+webOsContract(str_contains($paths['folders_js'], 'rebind(root = this.document)'), 'acciones se vuelven a enlazar de forma acotada tras refrescar Mis datos');
 webOsContract(str_contains($paths['css'], '.os-entry-thumbnail'), 'miniaturas tienen estilo dentro de Mis datos');
 webOsContract(str_contains($paths['css'], '.os-media-overlay'), 'audio/video tienen componente flotante');
 webOsContract(str_contains($paths['css'], 'z-index:20000'), 'reproductor queda por encima de ventanas y modales');

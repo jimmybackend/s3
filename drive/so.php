@@ -269,6 +269,14 @@ $isExplorerFragment = (string)($_GET['_os_fragment'] ?? '') === 'explorer';
       </div>
 
       <div class="os-explorer-toolbar">
+        <div class="os-selection-actions" data-selection-actions hidden>
+          <strong><span data-selection-count>0</span> seleccionados</strong>
+          <button type="button" data-selection-action="copy"><i class="fas fa-copy"></i> Copiar</button>
+          <button type="button" data-selection-action="move"><i class="fas fa-scissors"></i> Mover</button>
+          <button type="button" data-selection-action="download"><i class="fas fa-download"></i> Descargar</button>
+          <button type="button" data-selection-action="delete"><i class="fas fa-trash"></i> Eliminar</button>
+          <button type="button" data-selection-action="more"><i class="fas fa-ellipsis"></i> Más…</button>
+        </div>
         <?php if ($currentPrefix !== $rootPrefix): ?>
           <a class="os-tool-button"
              href="so.php?ruta=<?= rawurlencode($parentRoute) ?>"
@@ -816,6 +824,7 @@ Escribe help o usa uno de los botones disponibles.</pre>
   <div class="os-file-context os-folder-context" id="folderContextMenu" hidden>
     <div class="os-context-name" id="folderContextName">Carpeta</div>
     <button type="button" data-folder-action="open"><i class="fas fa-folder-open"></i>Abrir</button>
+    <button type="button" data-folder-action="open-new"><i class="fas fa-window-restore"></i>Abrir en nueva ventana</button>
     <button type="button" data-folder-action="sync"><i class="fas fa-rotate"></i>Sincronizar desde S3</button>
     <button type="button" data-folder-action="create-document"><i class="fas fa-file-circle-plus"></i>Crear archivo</button>
     <button type="button" data-folder-action="create-folder"><i class="fas fa-folder-plus"></i>Nueva subcarpeta</button>

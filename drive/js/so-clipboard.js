@@ -95,8 +95,8 @@ class ArcadeCloudOsClipboard {
     menu.appendChild(paste);
   }
 
-  injectPasteToolbar() {
-    const toolbars = this.document.querySelectorAll('.os-explorer-live .os-explorer-toolbar');
+  injectPasteToolbar(root = this.document) {
+    const toolbars = root.querySelectorAll('.os-explorer-live .os-explorer-toolbar');
     toolbars.forEach((toolbar) => this.injectPasteButton(toolbar));
   }
 
@@ -259,14 +259,14 @@ class ArcadeCloudOsClipboard {
     });
   }
 
-  bindEntries() {
-    this.document.querySelectorAll('.os-file-entry').forEach((entry) => {
+  bindEntries(root = this.document) {
+    root.querySelectorAll('.os-file-entry').forEach((entry) => {
       if (entry.dataset.osClipboardBound === '1') return;
       entry.dataset.osClipboardBound = '1';
       this.bindLongPress(entry, 'file');
     });
 
-    this.document.querySelectorAll('.os-folder-entry').forEach((entry) => {
+    root.querySelectorAll('.os-folder-entry').forEach((entry) => {
       if (entry.dataset.osClipboardBound === '1') return;
       entry.dataset.osClipboardBound = '1';
       this.bindLongPress(entry, 'folder');
@@ -322,6 +322,8 @@ class ArcadeCloudOsClipboard {
       if (dx > this.moveTolerance || dy > this.moveTolerance) clear();
     });
 
+    entry.addEventListener('dragstart', clear);
+
     ['pointerup', 'pointercancel', 'lostpointercapture'].forEach((name) => {
       entry.addEventListener(name, () => clear());
     });
@@ -359,8 +361,10 @@ class ArcadeCloudOsClipboard {
     this.setClipboard({
       kind: 'file',
       mode,
+      operation: mode,
       key: keys[0],
       keys,
+      items: keys,
       name,
       count: keys.length,
       sourceWindowId: context.sourceWindowId || entry.closest('.os-window')?.dataset.windowId || '',
@@ -379,7 +383,9 @@ class ArcadeCloudOsClipboard {
     this.setClipboard({
       kind: 'folder',
       mode,
+      operation: mode,
       route,
+      items: [route],
       name: String(folder.name || 'Carpeta'),
       sourceWindowId: context.sourceWindowId || '',
       sourceRoute: String(context.sourceRoute || folder.parent || this.currentRoute())
@@ -387,6 +393,8 @@ class ArcadeCloudOsClipboard {
   }
 
   setClipboard(item) {
+    item.operation = item.operation || item.mode;
+    item.items = Array.isArray(item.items) ? item.items : (item.keys || (item.route ? [item.route] : []));
     this.clipboard = Object.assign({ version: 1, createdAt: Date.now() }, item);
     try {
       this.window.sessionStorage.setItem(this.storageKey, JSON.stringify(this.clipboard));
@@ -468,7 +476,7 @@ class ArcadeCloudOsClipboard {
 
     const payload = {
       type: item.kind === 'file' ? 'files' : 'folder',
-      operation: item.mode,
+      operation: item.operation || item.mode,
       ruta_actual: this.currentRoute()
     };
 

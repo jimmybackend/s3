@@ -318,6 +318,14 @@ a{text-decoration:none;color:inherit}
 }
 .os-share-modal .modal-header,.os-share-modal .modal-footer{border-color:rgba(116,196,255,.16)}
 .os-share-modal .close{color:var(--os-text);text-shadow:none;opacity:.82}
+.os-decision-overlay{position:fixed;inset:0;z-index:1100;display:grid;place-items:center;padding:18px;background:rgba(2,8,14,.66);backdrop-filter:blur(4px)}
+.os-decision-dialog{width:min(440px,100%);overflow:hidden;border:1px solid var(--os-border);border-radius:14px;background:var(--os-surface);color:var(--os-text);box-shadow:0 24px 80px rgba(0,0,0,.58);font-family:inherit}
+.os-decision-dialog header,.os-decision-dialog footer{padding:13px 16px;border-color:var(--os-divider)}
+.os-decision-dialog header{border-bottom:1px solid var(--os-divider)}.os-decision-dialog h2{margin:0;font-size:1rem}
+.os-decision-body{padding:16px}.os-decision-body p{margin:0 0 13px}.os-decision-body dl{display:grid;grid-template-columns:auto minmax(0,1fr);gap:7px 12px;margin:0;font-size:.82rem}.os-decision-body dt{color:var(--os-soft)}.os-decision-body dd{margin:0;overflow-wrap:anywhere}
+.os-decision-dialog footer{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap;border-top:1px solid var(--os-divider)}
+.os-decision-dialog button{border:1px solid var(--os-border);border-radius:8px;padding:7px 12px;background:var(--os-button-bg);color:var(--os-button-text);cursor:pointer}.os-decision-dialog button:hover,.os-decision-dialog button:focus-visible{border-color:var(--os-accent);outline:none}.os-decision-dialog .os-decision-primary{background:var(--os-accent);color:#03131d;border-color:var(--os-accent)}
+@media(max-width:520px){.os-decision-dialog footer{display:grid;grid-template-columns:1fr}.os-decision-dialog button{width:100%}}
 .os-share-modal .form-control,.os-share-modal .input-group-text{
   background:var(--os-input-bg);color:var(--os-text);border-color:rgba(116,196,255,.22)
 }

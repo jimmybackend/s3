@@ -55,12 +55,12 @@ $assert(str_contains($files['clipboard'], "operation: item.mode"), 'pegar conser
 $assert(str_contains($files['clipboard'], 'sourceWindowId: context.sourceWindowId') && str_contains($files['clipboard'], 'sourceRoute: context.sourceRoute') && str_contains($files['clipboard'], 'items: keys'), 'portapapeles global conserva origen, elementos y operación');
 $assert(str_contains($files['clipboard'], 'ruta_actual: String(item.sourceRoute || this.currentRoute())'), 'pegado conserva la ruta de origen aunque la misma Explorer navegue');
 $assert(str_contains($files['clipboard'], 'destinationWindowId: String(context.destinationWindowId || \'\')'), 'pegado identifica la Explorer destino sin exigir otra ventana');
-$assert(str_contains($files['clipboard'], 'this.window.ArcadeCloudDesktop?.explorers?.get(finished.destinationWindowId)'), 'finalización refresca solamente la Explorer destino');
+$assert(str_contains($files['clipboard'], 'refreshIds.add(finished.sourceWindowId)') && str_contains($files['clipboard'], 'explorers?.get(id)'), 'movimiento refresca Explorer origen y destino sin duplicar la misma ventana');
 $assert(str_contains($files['moveTasks'], 'ArcadeCloudOsClipboard?.activeTransfer'), 'tarea gestionada por el OS omite refresco global legacy');
 $assert(str_contains($files['clipboard'], 'injectPasteToolbar()'), 'SO crea botón temporal para pegar en la carpeta actual');
 $assert(!str_contains($files['clipboard'], 'visibleFiles >= 20'), 'botón superior ya no depende de una página llena');
 $assert(str_contains($files['clipboard'], 'button.hidden = !hasClipboard'), 'botón superior permanece visible mientras exista portapapeles');
-$assert(!str_contains($files['clipboard'], "'Mover aquí'") && str_contains($files['clipboard'], "const actionLabel = 'Pegar aquí'"), 'botón superior usa Pegar aquí para copy y cut');
+$assert(str_contains($files['clipboard'], "moving ? 'Mover aquí' : 'Copiar aquí'"), 'botón superior identifica claramente la operación pendiente');
 $assert(str_contains($files['clipboard'], "dataset.osPasteCurrent"), 'botón superior se identifica como destino actual');
 $assert(str_contains($files['clipboardCss'], '.os-toolbar-paste'), 'botón superior tiene estilo propio');
 $assert(str_contains($files['moveTasks'], 'so-clipboard.js?v=20261001-1'), 'cambio de clipboard invalida caché del navegador');

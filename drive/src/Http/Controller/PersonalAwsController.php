@@ -30,10 +30,16 @@ final class PersonalAwsController
         $state = $access->state();
 
         if ($state === 'forbidden') {
+            if ($this->isEmbeddedRequest()) {
+                JsonResponse::send(['ok' => false, 'result' => null, 'error' => 'Esta herramienta personal no está disponible para esta cuenta.'], 403);
+            }
             $this->renderer->forbidden();
         }
 
         if ($state === 'locked') {
+            if ($this->isEmbeddedRequest() && $this->request->postString('action') === 'generate') {
+                JsonResponse::send(['ok' => false, 'result' => null, 'error' => 'La sesión de la herramienta TOTP está bloqueada.'], 401);
+            }
             if ($this->request->method() === 'POST' && $this->request->postString('action') === 'unlock') {
                 if ($access->unlock($this->request->postRawString('access_password'))) {
                     header('Location: aws.php');
@@ -82,6 +88,13 @@ final class PersonalAwsController
 
     private function isEmbeddedRequest(): bool
     {
-        return trim((string)($_SERVER['HTTP_X_ARCADECLOUD_EMBED'] ?? '')) === '1';
+        if (trim((string)($_SERVER['HTTP_X_ARCADECLOUD_EMBED'] ?? '')) === '1') {
+            return true;
+        }
+
+        // Some reverse proxies do not forward custom request headers. The OS
+        // also sends this same-origin query marker so the endpoint can retain
+        // its JSON contract rather than rendering a complete HTML document.
+        return $this->request->queryString('arcadecloud_os') === '1';
     }
 }

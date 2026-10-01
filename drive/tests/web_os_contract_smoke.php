@@ -234,7 +234,7 @@ webOsContract(str_contains($paths['shell'], 'data-selection-actions') && str_con
 webOsContract(str_contains($paths['shell'], 'data-selection-context="download"'), 'selección múltiple conserva descarga en menú contextual');
 webOsContract(str_contains($paths['shell'], 'data-selection-context="delete"'), 'selección múltiple conserva eliminación en menú contextual');
 webOsContract(str_contains($paths['js'], 'selectionDivider.hidden = !multi'), 'acciones múltiples sólo aparecen con selección múltiple');
-webOsContract(str_contains($paths['clipboard_js'], "const actionLabel = 'Pegar aquí'"), 'Pegar aquí permanece visible para copy y cut');
+webOsContract(str_contains($paths['clipboard_js'], "moving ? 'Mover aquí' : 'Copiar aquí'"), 'destino distingue Copiar aquí de Mover aquí');
 webOsContract(str_contains($paths['shell'], 'Información de carpeta'), 'panel muestra resumen de la carpeta');
 webOsContract(str_contains($paths['shell'], 'Visibles (página)'), 'información incluye archivos visibles');
 webOsContract(str_contains($paths['shell'], 'Bloqueados (página)'), 'información incluye archivos bloqueados');

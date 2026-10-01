@@ -1486,7 +1486,7 @@
     },
     {
       "path": "drive/so.php",
-      "size": 107789,
+      "size": 108628,
       "active": true,
       "references": [
         "drive/s3.php",
@@ -3905,19 +3905,19 @@
     },
     {
       "path": "drive/tests/web_os_clipboard_contract_smoke.php",
-      "size": 9129,
+      "size": 9531,
       "active": false,
       "references": []
     },
     {
       "path": "drive/tests/web_os_contract_smoke.php",
-      "size": 48863,
+      "size": 49030,
       "active": false,
       "references": []
     },
     {
       "path": "drive/tests/web_os_multiwindow_smoke.php",
-      "size": 5520,
+      "size": 6216,
       "active": false,
       "references": []
     },

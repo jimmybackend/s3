@@ -1,15 +1,15 @@
 {
   "summary": {
-    "php_total": 493,
-    "php_class_modules": 292,
+    "php_total": 496,
+    "php_class_modules": 294,
     "php_needs_migration": 0,
-    "php_tests": 47,
+    "php_tests": 48,
     "js_total": 63,
     "js_class_modules": 63,
     "js_needs_migration": 0,
     "js_compatibility_facades": 8,
     "ajax_clients": 47,
-    "ajax_calls": 99,
+    "ajax_calls": 100,
     "json_total": 4,
     "json_invalid": 0
   },
@@ -136,7 +136,7 @@
     },
     {
       "path": "drive/bin/arcadecloud-drive-admin-helper.php",
-      "lines": 1179,
+      "lines": 1215,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -2229,8 +2229,25 @@
       "issues": []
     },
     {
+      "path": "drive/src/Admin/NodeServiceControlService.php",
+      "lines": 51,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [
+        "SERVER"
+      ],
+      "db": true,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
       "path": "drive/src/Admin/PrivilegedServerHelper.php",
-      "lines": 263,
+      "lines": 284,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -4649,7 +4666,7 @@
     },
     {
       "path": "drive/src/Http/Controller/NodeStatusController.php",
-      "lines": 86,
+      "lines": 95,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -5849,13 +5866,28 @@
     },
     {
       "path": "drive/src/System/NodeRuntimeStatusService.php",
-      "lines": 334,
+      "lines": 425,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
       "session": false,
       "superglobals": [],
       "db": true,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/System/NodeServiceCatalog.php",
+      "lines": 35,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
       "s3": false,
       "bootstrap": false,
       "html": false,
@@ -6776,6 +6808,23 @@
     {
       "path": "drive/tests/node_diagnostics_contract_smoke.php",
       "lines": 36,
+      "kind": "test script",
+      "classes": 0,
+      "functions": [
+        "nodeContract"
+      ],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/tests/node_diagnostics_control_smoke.php",
+      "lines": 42,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -8672,7 +8721,7 @@
     },
     {
       "path": "drive/js/so-node.js",
-      "lines": 112,
+      "lines": 135,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudOsNodeMonitor"
@@ -8683,11 +8732,11 @@
       "top_vars": [],
       "iife": false,
       "ajax": {
-        "fetch": 2,
+        "fetch": 3,
         "xhr": 0,
         "jquery": 0,
-        "json_consumers": 2,
-        "response_checks": 4
+        "json_consumers": 3,
+        "response_checks": 8
       },
       "issues": []
     },
@@ -9121,7 +9170,7 @@
     },
     {
       "path": "drive/docs/runtime_endpoints.json",
-      "bytes": 112066,
+      "bytes": 112626,
       "valid": true,
       "root_type": "object",
       "keys": [

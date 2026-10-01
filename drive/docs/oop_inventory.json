@@ -8483,7 +8483,7 @@
     },
     {
       "path": "drive/js/os-window-manager.js",
-      "lines": 729,
+      "lines": 761,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudEventBus",
@@ -8950,7 +8950,7 @@
     },
     {
       "path": "drive/js/so.js",
-      "lines": 1316,
+      "lines": 1183,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudOsShell"
@@ -9226,7 +9226,7 @@
     },
     {
       "path": "drive/tests/web_os_multiwindow_functional.js",
-      "lines": 119,
+      "lines": 125,
       "kind": "class/module",
       "classes": [
         "Classes",
@@ -9246,6 +9246,7 @@
         "node",
         "settings",
         "links",
+        "terminal",
         "aborts",
         "explorers",
         "replacementExplorer",
@@ -9265,7 +9266,7 @@
         "xhr": 0,
         "jquery": 0,
         "json_consumers": 0,
-        "response_checks": 6
+        "response_checks": 7
       },
       "issues": [
         "top-level functions: windowStub, assert"

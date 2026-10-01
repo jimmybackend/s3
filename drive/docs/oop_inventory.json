@@ -1,15 +1,15 @@
 {
   "summary": {
-    "php_total": 498,
+    "php_total": 499,
     "php_class_modules": 294,
     "php_needs_migration": 0,
-    "php_tests": 50,
+    "php_tests": 51,
     "js_total": 65,
     "js_class_modules": 65,
     "js_needs_migration": 1,
     "js_compatibility_facades": 8,
     "ajax_clients": 48,
-    "ajax_calls": 101,
+    "ajax_calls": 102,
     "json_total": 4,
     "json_invalid": 0
   },
@@ -136,7 +136,7 @@
     },
     {
       "path": "drive/bin/arcadecloud-drive-admin-helper.php",
-      "lines": 1215,
+      "lines": 1219,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -2043,7 +2043,7 @@
     },
     {
       "path": "drive/so.php",
-      "lines": 1995,
+      "lines": 1996,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -2324,7 +2324,7 @@
     },
     {
       "path": "drive/src/Admin/ServerTaskActivityProbe.php",
-      "lines": 65,
+      "lines": 87,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -7141,6 +7141,21 @@
       "issues": []
     },
     {
+      "path": "drive/tests/web_os_pending_fixes_smoke.php",
+      "lines": 40,
+      "kind": "test script",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
       "path": "drive/tests/web_os_theme_contract_smoke.php",
       "lines": 29,
       "kind": "test script",
@@ -8451,7 +8466,7 @@
     },
     {
       "path": "drive/js/os-window-manager.js",
-      "lines": 504,
+      "lines": 535,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudEventBus",
@@ -8471,11 +8486,11 @@
       "top_vars": [],
       "iife": false,
       "ajax": {
-        "fetch": 1,
+        "fetch": 2,
         "xhr": 0,
         "jquery": 0,
         "json_consumers": 0,
-        "response_checks": 1
+        "response_checks": 2
       },
       "issues": []
     },
@@ -8783,7 +8798,7 @@
     },
     {
       "path": "drive/js/so-node.js",
-      "lines": 146,
+      "lines": 183,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudOsNodeMonitor"

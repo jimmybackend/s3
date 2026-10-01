@@ -4,8 +4,8 @@
     "php_class_modules": 294,
     "php_needs_migration": 0,
     "php_tests": 55,
-    "js_total": 73,
-    "js_class_modules": 69,
+    "js_total": 74,
+    "js_class_modules": 70,
     "js_needs_migration": 6,
     "js_compatibility_facades": 8,
     "ajax_clients": 49,
@@ -2060,7 +2060,7 @@
     },
     {
       "path": "drive/so.php",
-      "lines": 2002,
+      "lines": 2032,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -7129,7 +7129,7 @@
     },
     {
       "path": "drive/tests/web_os_contract_smoke.php",
-      "lines": 482,
+      "lines": 485,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -7950,7 +7950,7 @@
     },
     {
       "path": "drive/js/background-tasks.js",
-      "lines": 1024,
+      "lines": 1031,
       "kind": "class/module",
       "classes": [
         "BackgroundTaskCenter"
@@ -8077,7 +8077,7 @@
     },
     {
       "path": "drive/js/desktop-shell.js",
-      "lines": 172,
+      "lines": 173,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudDesktopShell"
@@ -8643,6 +8643,29 @@
         "jquery": 0,
         "json_consumers": 2,
         "response_checks": 16
+      },
+      "issues": []
+    },
+    {
+      "path": "drive/js/page-task-manager.js",
+      "lines": 54,
+      "kind": "class/module",
+      "classes": [
+        "ArcadeCloudPageTaskManager"
+      ],
+      "functions": [],
+      "window_assign": [
+        "ArcadeCloudPageTaskManager"
+      ],
+      "window_func": [],
+      "top_vars": [],
+      "iife": false,
+      "ajax": {
+        "fetch": 0,
+        "xhr": 0,
+        "jquery": 0,
+        "json_consumers": 0,
+        "response_checks": 2
       },
       "issues": []
     },

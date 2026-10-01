@@ -132,6 +132,11 @@ class DriveMoveTasks {
   }
 
   async refreshUi(status) {
+    const managedTransfer = this.window.ArcadeCloudOsClipboard?.activeTransfer;
+    if (managedTransfer && String(managedTransfer.jobId || '') === String(status?.job_id || '')) {
+      return;
+    }
+
     const route = String(status?.ruta_actual || '').trim();
     if (route) this.window.rutaActual = route;
 
@@ -258,7 +263,7 @@ window.ARCADECLOUD_UNIFIED_TASK_CENTER = true;
     if (doc.querySelector('script[data-os-clipboard]')) return;
 
     const script = doc.createElement('script');
-    script.src = 'js/so-clipboard.js?v=20260927-4';
+    script.src = 'js/so-clipboard.js?v=20261001-1';
     script.async = false;
     script.setAttribute('data-os-clipboard', '1');
     doc.head.appendChild(script);

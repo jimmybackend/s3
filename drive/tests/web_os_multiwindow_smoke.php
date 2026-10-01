@@ -29,7 +29,7 @@ $assert(str_contains($files['runtime'], "(^|\\/)\\.\\.?(\\/|$)"), 'normalizador 
 $assert(str_contains($files['runtime'], 'new AbortController()'), 'navegación cancela fetch obsoleto');
 $assert(str_contains($files['runtime'], "data-folder-open-new"), 'carpetas ofrecen abrir en ventana nueva');
 $assert(str_contains($files['runtime'], 'application/x-arcadecloud-items'), 'drag and drop usa payload privado');
-$assert(str_contains($files['runtime'], "clipboard?.paste?.(destinationRoute)"), 'drop reutiliza backend de portapapeles');
+$assert(str_contains($files['runtime'], "clipboard?.paste?.(destinationRoute, { destinationWindowId: this.id })"), 'drop reutiliza backend de portapapeles y conserva Explorer destino');
 $assert(str_contains($files['runtime'], "'file-moved','file-copied','file-deleted','folder-created','upload-completed','task-completed'"), 'EventBus sincroniza cambios');
 $assert(str_contains($files['runtime'], 'record.cleanup.forEach'), 'cierre libera recursos registrados');
 $assert(str_contains($files['runtime'], 'this.zCounter > 900'), 'z-index se compacta antes de crecer sin límite');

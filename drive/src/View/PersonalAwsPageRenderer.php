@@ -68,25 +68,23 @@ final class PersonalAwsPageRenderer
             . '<h1>Generador TOTP personal</h1>'
             . '<p class="muted">Las semillas permanecen en el servidor y no se envían al navegador.</p>';
 
-        if ($error !== '') {
-            echo '<p class="error">' . self::e($error) . '</p>';
-        }
-
+        echo '<p class="error" data-totp-error' . ($error === '' ? ' hidden' : '') . '>' . self::e($error) . '</p>';
+        echo '<section class="result" data-totp-result' . ($result === null ? ' hidden' : '') . '>';
         if ($result !== null) {
-            echo '<section class="result"><div class="muted">' . self::e($result['label']) . '</div>'
+            echo '<div class="muted" data-totp-label>' . self::e($result['label']) . '</div>'
                 . '<div class="otp" id="otp-code" role="button" tabindex="0" aria-label="Copiar código TOTP">' . self::e($result['code']) . '</div>'
                 . '<div class="copy-hint" id="copy-status" aria-live="polite">Toca el código para copiar</div>'
                 . '<div>Válido aproximadamente <span id="timer">' . (int)$result['remaining'] . '</span> s</div>';
             if ($result['note'] !== '') {
                 echo '<div class="note">' . nl2br(self::e($result['note'])) . '</div>';
             }
-            echo '</section>';
         }
+        echo '</section>';
 
         if ($accounts === []) {
             echo '<p class="error">No hay cuentas TOTP configuradas en el archivo privado del servidor.</p>';
         } else {
-            echo '<form method="post" autocomplete="off">'
+            echo '<form method="post" autocomplete="off" data-os-totp-form>'
                 . '<input type="hidden" name="action" value="generate">'
                 . '<label for="account_id">Cuenta</label>'
                 . '<select id="account_id" name="account_id" required>'

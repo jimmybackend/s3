@@ -8,11 +8,11 @@
 - PHP que ya contienen clases/interfaces: **294**
 - PHP marcados para migración/revisión: **0**
 - Tests PHP separados del objetivo OOP de runtime: **52**
-- JavaScript analizados: **66**
-- JavaScript que ya contienen clases: **65**
-- JavaScript sin clase/encapsulación OOP: **3**
+- JavaScript analizados: **68**
+- JavaScript que ya contienen clases: **66**
+- JavaScript sin clase/encapsulación OOP: **4**
 - JavaScript OOP con fachada `window` de compatibilidad: **8**
-- Clientes AJAX detectados: **49** módulos / **107** llamadas
+- Clientes AJAX detectados: **49** módulos / **106** llamadas
 - JSON analizados: **4**; inválidos: **0**
 
 ## Criterio
@@ -164,7 +164,7 @@
 | `drive/set_file_security.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/setup/api.php` | 15 | thin endpoint | 0 | — | — | — | — |
 | `drive/setup/index.php` | 90 | view/entrypoint | 0 | — | — | — | — |
-| `drive/so.php` | 1998 | view/entrypoint | 0 | — | — | — | — |
+| `drive/so.php` | 1999 | view/entrypoint | 0 | — | — | — | — |
 | `drive/src/Activity/ActivityCostRecorder.php` | 155 | class/module | 1 | — | — | — | — |
 | `drive/src/Activity/ActivityCostRepository.php` | 198 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Activity/ActivityCostService.php` | 153 | class/module | 1 | — | — | — | — |
@@ -561,13 +561,14 @@
 | `drive/js/federation-share-drive.js` | 214 | class/module | FederationShareDriveModule | — | — | — |
 | `drive/js/file-block.js` | 305 | class/module | FileBlockApp | — | — | — |
 | `drive/js/file-security.js` | 325 | class/module | ArcadeCloudFileSecurity | — | — | — |
+| `drive/js/filesystem-operations.js` | 191 | class/module | ArcadeCloudFilesystemOperations | — | — | — |
 | `drive/js/filtros.js` | 97 | class/module | FiltrosModule | — | — | — |
 | `drive/js/folder-document.js` | 464 | class/module | FolderDocumentModule | — | openFolderDocumentCreator | window functions: openFolderDocumentCreator |
 | `drive/js/imagenes.js` | 535 | class/module | ImagenesModule | — | getGaleriaGridSize, setGaleriaGridSize | window functions: getGaleriaGridSize, setGaleriaGridSize |
 | `drive/js/media-floating.js` | 696 | class/module | MediaFloatingApp | — | — | — |
 | `drive/js/media-processing.js` | 498 | class/module | MediaProcessingModule | — | — | — |
 | `drive/js/mediaFloating.js` | 38 | class/module | MediaFloatingModule | — | — | — |
-| `drive/js/move-tasks.js` | 278 | class/module | DriveMoveTasks | — | — | — |
+| `drive/js/move-tasks.js` | 280 | class/module | DriveMoveTasks | — | — | — |
 | `drive/js/obtenerFiltros.js` | 125 | class/module | ObtenerFiltrosModule | — | — | — |
 | `drive/js/os-window-manager.js` | 946 | class/module | ArcadeCloudEventBus, ArcadeCloudWindowLayoutConfig, ArcadeCloudWindowManager, ExplorerWindowFactory, ArcadeCloudExplorerWindow, ArcadeCloudDesktopRuntime | — | — | — |
 | `drive/js/pdf-pantalla-completa.js` | 45 | class/module | PdfPantallaCompletaModule | — | — | — |
@@ -579,7 +580,7 @@
 | `drive/js/setup.js` | 192 | class/module | ArcadeCloudSetup | — | — | — |
 | `drive/js/sincronizar.js` | 264 | class/module | SincronizarModule | — | triggerSyncFolderS3, triggerSyncS3 | window functions: triggerSyncFolderS3, triggerSyncS3 |
 | `drive/js/so-appearance.js` | 155 | class/module | ArcadeCloudOsAppearance | — | — | — |
-| `drive/js/so-clipboard.js` | 791 | class/module | ArcadeCloudOsClipboard | bootArcadeCloudOsClipboard | — | top-level functions: bootArcadeCloudOsClipboard |
+| `drive/js/so-clipboard.js` | 794 | class/module | ArcadeCloudOsClipboard | bootArcadeCloudOsClipboard | — | top-level functions: bootArcadeCloudOsClipboard |
 | `drive/js/so-federation.js` | 87 | class/module | ArcadeCloudOsFederationApp | — | — | — |
 | `drive/js/so-folders.js` | 442 | class/module | ArcadeCloudOsFolderActions | — | — | — |
 | `drive/js/so-node.js` | 184 | class/module | ArcadeCloudOsNodeMonitor | — | — | — |
@@ -600,8 +601,9 @@
 | `drive/js/upload-destination.js` | 74 | class/module | UploadDestinationModule | — | — | — |
 | `drive/js/ver-metadatos.js` | 75 | class/module | VerMetadatosModule | — | verMetadatos | window functions: verMetadatos |
 | `drive/js/ver-pdf.js` | 112 | class/module | VerPdfModule | — | — | — |
+| `drive/tests/web_os_filesystem_operations_functional.js` | 52 | procedural script | — | assert | — | top-level functions: assert; top-level state: events, busEvents, doc, win, service; no ES class |
 | `drive/tests/web_os_multiwindow_functional.js` | 125 | class/module | Classes, ElementStub | windowStub, assert | — | top-level functions: windowStub, assert |
-| `drive/tests/web_os_same_explorer_clipboard_functional.js` | 71 | procedural script | — | assert, storage | — | top-level functions: assert, storage; top-level state: requests, refreshed, filesystemEvents, explorer, win, doc, clipboard, entries; no ES class |
+| `drive/tests/web_os_same_explorer_clipboard_functional.js` | 73 | procedural script | — | assert, storage | — | top-level functions: assert, storage; top-level state: requests, refreshed, filesystemEvents, explorer, win, doc, clipboard, entries; no ES class |
 
 ## AJAX y contratos JSON
 
@@ -627,6 +629,7 @@
 | `drive/js/federation-share-drive.js` | 1 | 0 | 0 | 0 | 5 |
 | `drive/js/file-block.js` | 1 | 0 | 0 | 1 | 2 |
 | `drive/js/file-security.js` | 1 | 0 | 0 | 0 | 6 |
+| `drive/js/filesystem-operations.js` | 1 | 0 | 0 | 0 | 8 |
 | `drive/js/folder-document.js` | 1 | 0 | 0 | 1 | 2 |
 | `drive/js/media-floating.js` | 1 | 0 | 0 | 1 | 3 |
 | `drive/js/media-processing.js` | 3 | 0 | 0 | 3 | 5 |
@@ -640,7 +643,6 @@
 | `drive/js/setup.js` | 2 | 0 | 0 | 2 | 6 |
 | `drive/js/sincronizar.js` | 1 | 0 | 0 | 0 | 3 |
 | `drive/js/so-appearance.js` | 1 | 0 | 0 | 0 | 0 |
-| `drive/js/so-clipboard.js` | 1 | 0 | 0 | 0 | 3 |
 | `drive/js/so-federation.js` | 2 | 0 | 0 | 0 | 5 |
 | `drive/js/so-node.js` | 3 | 0 | 0 | 3 | 7 |
 | `drive/js/so-power.js` | 1 | 0 | 0 | 1 | 2 |
@@ -648,7 +650,7 @@
 | `drive/js/so-search.js` | 2 | 0 | 0 | 1 | 2 |
 | `drive/js/so-share.js` | 1 | 0 | 0 | 0 | 1 |
 | `drive/js/so-terminal.js` | 2 | 0 | 0 | 2 | 5 |
-| `drive/js/so.js` | 2 | 0 | 0 | 1 | 3 |
+| `drive/js/so.js` | 1 | 0 | 0 | 0 | 1 |
 | `drive/js/soportesMediaTypes.js` | 2 | 1 | 0 | 2 | 9 |
 | `drive/js/storage-usage.js` | 1 | 0 | 0 | 1 | 3 |
 | `drive/js/subir-chunked.js` | 4 | 1 | 0 | 1 | 11 |

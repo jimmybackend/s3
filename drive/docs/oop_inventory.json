@@ -4,12 +4,12 @@
     "php_class_modules": 294,
     "php_needs_migration": 0,
     "php_tests": 52,
-    "js_total": 66,
-    "js_class_modules": 65,
-    "js_needs_migration": 3,
+    "js_total": 68,
+    "js_class_modules": 66,
+    "js_needs_migration": 4,
     "js_compatibility_facades": 8,
     "ajax_clients": 49,
-    "ajax_calls": 107,
+    "ajax_calls": 106,
     "json_total": 4,
     "json_invalid": 0
   },
@@ -2060,7 +2060,7 @@
     },
     {
       "path": "drive/so.php",
-      "lines": 1998,
+      "lines": 1999,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -8300,6 +8300,27 @@
       "issues": []
     },
     {
+      "path": "drive/js/filesystem-operations.js",
+      "lines": 191,
+      "kind": "class/module",
+      "classes": [
+        "ArcadeCloudFilesystemOperations"
+      ],
+      "functions": [],
+      "window_assign": [],
+      "window_func": [],
+      "top_vars": [],
+      "iife": false,
+      "ajax": {
+        "fetch": 1,
+        "xhr": 0,
+        "jquery": 0,
+        "json_consumers": 0,
+        "response_checks": 8
+      },
+      "issues": []
+    },
+    {
       "path": "drive/js/filtros.js",
       "lines": 97,
       "kind": "class/module",
@@ -8452,7 +8473,7 @@
     },
     {
       "path": "drive/js/move-tasks.js",
-      "lines": 278,
+      "lines": 280,
       "kind": "class/module",
       "classes": [
         "DriveMoveTasks"
@@ -8771,7 +8792,7 @@
     },
     {
       "path": "drive/js/so-clipboard.js",
-      "lines": 791,
+      "lines": 794,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudOsClipboard"
@@ -8784,11 +8805,11 @@
       "top_vars": [],
       "iife": false,
       "ajax": {
-        "fetch": 1,
+        "fetch": 0,
         "xhr": 0,
         "jquery": 0,
         "json_consumers": 0,
-        "response_checks": 3
+        "response_checks": 0
       },
       "issues": [
         "top-level functions: bootArcadeCloudOsClipboard"
@@ -8990,11 +9011,11 @@
       "top_vars": [],
       "iife": false,
       "ajax": {
-        "fetch": 2,
+        "fetch": 1,
         "xhr": 0,
         "jquery": 0,
-        "json_consumers": 1,
-        "response_checks": 3
+        "json_consumers": 0,
+        "response_checks": 1
       },
       "issues": []
     },
@@ -9251,6 +9272,37 @@
       "issues": []
     },
     {
+      "path": "drive/tests/web_os_filesystem_operations_functional.js",
+      "lines": 52,
+      "kind": "procedural script",
+      "classes": [],
+      "functions": [
+        "assert"
+      ],
+      "window_assign": [],
+      "window_func": [],
+      "top_vars": [
+        "events",
+        "busEvents",
+        "doc",
+        "win",
+        "service"
+      ],
+      "iife": false,
+      "ajax": {
+        "fetch": 0,
+        "xhr": 0,
+        "jquery": 0,
+        "json_consumers": 0,
+        "response_checks": 4
+      },
+      "issues": [
+        "top-level functions: assert",
+        "top-level state: events, busEvents, doc, win, service",
+        "no ES class"
+      ]
+    },
+    {
       "path": "drive/tests/web_os_multiwindow_functional.js",
       "lines": 125,
       "kind": "class/module",
@@ -9300,7 +9352,7 @@
     },
     {
       "path": "drive/tests/web_os_same_explorer_clipboard_functional.js",
-      "lines": 71,
+      "lines": 73,
       "kind": "procedural script",
       "classes": [],
       "functions": [
@@ -9374,7 +9426,7 @@
     },
     {
       "path": "drive/docs/runtime_endpoints.json",
-      "bytes": 115054,
+      "bytes": 115020,
       "valid": true,
       "root_type": "object",
       "keys": [

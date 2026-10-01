@@ -702,3 +702,13 @@ La autorización continúa en `ver_archivo.php`, `editor.php`, endpoints de desc
 **Funciones corregidas:** audio y video dejaron de compartir un overlay destructivo; la selección del visor dejó de estar dispersa por extensión en el flujo principal; imágenes/PDF/textos repetidos ahora aplican identidad estable y política de focus.
 
 **Funciones nuevas/completadas:** registro tipado, resolución MIME-first, `openFile`, instancias documentales aisladas, reproductores como ventanas, diálogo “Abrir con…”, coordinación multimedia, notificaciones rename/delete/modify y cleanup por instancia.
+
+## Etapa 5: Desktop Shell
+
+`ArcadeCloudDesktopShell` integra, sin duplicarlos, el `ArcadeCloudWindowManager`, su registro de aplicaciones y `ArcadeCloudEventBus`. El manager publica `activeId`, conserva el orden MRU mediante `lastFocused` y continúa siendo la autoridad de apertura, foco, minimizar, restaurar, cierre, geometría y botones de tareas. La taskbar refleja estados activo, abierto y minimizado; mantiene una tarea por instancia, títulos accesibles y overflow horizontal.
+
+La ventana **Aplicaciones** se construye desde las definiciones lanzables que existen en el registro y en el DOM. Los handlers exclusivos de archivos no aparecen como lanzadores. Su búsqueda es local y admite flechas, Enter y Escape. Los singleton se restauran a través del manager y Mis datos conserva la creación explícita multiinstancia.
+
+El router global de teclado comprueba primero el elemento enfocado. Inputs, textareas, `contenteditable`, terminales y editores conservan copiar, cortar, pegar y Delete nativos. Fuera de ellos enruta Ctrl/Cmd+L y las operaciones existentes del Explorer activo. Alt+Tab usa sólo registros abiertos/minimizados, ordenados por uso reciente; al soltar Alt restaura y enfoca la selección.
+
+El menú contextual del fondo sólo ofrece acciones reales (Explorer, Configuración y refresco de Explorers). Menús, selector, diálogos y notificaciones ocupan capas definidas de la shell. Las notificaciones son de sesión, no modales, se apilan hasta cinco y escuchan `notification:show` y los estados finales de `filesystem:operation`; una tarea en ejecución sigue siendo tarea y sólo su resultado final produce una notificación resumida.

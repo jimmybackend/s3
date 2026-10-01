@@ -1488,7 +1488,7 @@
     },
     {
       "path": "drive/so.php",
-      "size": 109714,
+      "size": 109428,
       "active": true,
       "references": [
         "drive/s3.php",
@@ -2839,7 +2839,7 @@
     },
     {
       "path": "drive/src/Http/Controller/NodeStatusController.php",
-      "size": 5991,
+      "size": 6354,
       "active": false,
       "references": [
         "drive/tests/node_diagnostics_contract_smoke.php",
@@ -3402,7 +3402,7 @@
     },
     {
       "path": "drive/src/System/NodeCapabilityService.php",
-      "size": 8545,
+      "size": 8877,
       "active": false,
       "references": [
         "drive/tests/node_diagnostics_contract_smoke.php",
@@ -3411,7 +3411,7 @@
     },
     {
       "path": "drive/src/System/NodeRuntimeStatusService.php",
-      "size": 28725,
+      "size": 27636,
       "active": false,
       "references": [
         "drive/tests/node_diagnostics_contract_smoke.php",
@@ -3804,13 +3804,13 @@
     },
     {
       "path": "drive/tests/node_diagnostics_contract_smoke.php",
-      "size": 5851,
+      "size": 6151,
       "active": false,
       "references": []
     },
     {
       "path": "drive/tests/node_diagnostics_control_smoke.php",
-      "size": 3185,
+      "size": 3419,
       "active": false,
       "references": []
     },

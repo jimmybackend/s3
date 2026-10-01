@@ -527,6 +527,13 @@ body.arcade-os{
   overflow:hidden;
   background:var(--os-surface);
 }
+.os-viewer-body.is-loading{position:relative}
+.os-viewer-body.is-loading::after{content:'Cargando…';position:absolute;inset:0;display:grid;place-items:center;background:var(--os-surface);color:var(--os-soft);z-index:3}
+.os-viewer-toolbar{position:absolute;z-index:4;top:8px;right:8px;display:flex;gap:6px;padding:5px;border:1px solid var(--os-border);border-radius:9px;background:var(--os-surface);box-shadow:0 5px 20px rgba(0,0,0,.28)}
+.os-viewer-toolbar a,.os-viewer-toolbar button{display:flex;align-items:center;gap:6px;border:0;border-radius:6px;padding:6px 9px;background:var(--os-button-bg);color:var(--os-button-text);text-decoration:none;cursor:pointer}
+.os-viewer-error{height:100%;display:grid;place-content:center;justify-items:center;gap:8px;padding:24px;text-align:center;color:var(--os-text)}
+.os-viewer-error i{font-size:2rem;color:#e4a44b}.os-viewer-error p{margin:0}
+.os-open-with-apps{display:grid;gap:8px}.os-open-with-apps button{display:flex;align-items:center;gap:10px;text-align:left;font-weight:700}.os-open-with-apps i{width:20px;color:var(--os-accent)}
 
 .os-viewer-content{
   width:100%;

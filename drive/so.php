@@ -405,6 +405,9 @@ $isExplorerFragment = (string)($_GET['_os_fragment'] ?? '') === 'explorer';
               $fileId = (int)($row['id_'] ?? 0);
               $name = (string)($row['Nombre'] ?? '');
               $ext = FileViewHelper::extension($name);
+              $storedMetadata = json_decode((string)($row['Metadatos'] ?? ''), true);
+              $storedMetadata = is_array($storedMetadata) ? $storedMetadata : [];
+              $mime = strtolower(trim((string)($storedMetadata['mime_type'] ?? $storedMetadata['content_type'] ?? $storedMetadata['mime'] ?? '')));
               $icon = FileIconResolver::resolve($ext);
               $locked = FileViewHelper::isLocked($row);
               $key = FileViewHelper::buildS3Key((string)($row['Ruta'] ?? ''), (string)($row['Encriptado'] ?? ''));
@@ -433,8 +436,10 @@ $isExplorerFragment = (string)($_GET['_os_fragment'] ?? '') === 'explorer';
                     data-file-id="<?= $fileId ?>"
                     data-name="<?= $e($name) ?>"
                     data-ext="<?= $e($ext) ?>"
+                    data-mime="<?= $e($mime) ?>"
                     data-key="<?= $e($key) ?>"
                     data-bytes="<?= (int)($row['Tamano'] ?? 0) ?>"
+                    data-updated-at="<?= $e((string)($row['Fecha'] ?? '')) ?>"
                     data-open-url="<?= $e($openUrl) ?>"
                     data-wallpaper-url="<?= $isImage && !$locked ? $e('ver_archivo.php?archivo=' . $keyQ) : '' ?>"
                     data-download-url="<?= $e($downloadUrl) ?>"
@@ -838,6 +843,7 @@ Escribe help o usa uno de los botones disponibles.</pre>
   <div class="os-file-context" id="fileContextMenu" hidden>
     <div class="os-context-name" id="fileContextName">Archivo</div>
     <button type="button" data-file-action="open"><i class="fas fa-eye"></i><span>Abrir en ventana</span></button>
+    <button type="button" data-file-action="open-with"><i class="fas fa-table-list"></i><span>Abrir con…</span></button>
     <button type="button" data-file-action="office"><i class="fas fa-file-word"></i><span>Abrir con Office</span></button>
     <button type="button" data-file-action="edit"><i class="fas fa-pen"></i>Editar texto</button>
     <button type="button" data-file-action="download"><i class="fas fa-download"></i>Descargar</button>
@@ -1993,6 +1999,7 @@ Escribe help o usa uno de los botones disponibles.</pre>
   <script src="js/so-node.js?v=<?= (int)filemtime(__DIR__ . '/js/so-node.js') ?>"></script>
   <script src="js/so-appearance.js?v=<?= (int)filemtime(__DIR__ . '/js/so-appearance.js') ?>"></script>
   <script src="js/os-window-manager.js?v=<?= (int)filemtime(__DIR__ . '/js/os-window-manager.js') ?>"></script>
+  <script src="js/file-applications.js?v=<?= (int)filemtime(__DIR__ . '/js/file-applications.js') ?>"></script>
   <script src="js/so.js?v=<?= (int)filemtime(__DIR__ . '/js/so.js') ?>"></script>
 </body>
 </html>

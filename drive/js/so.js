@@ -245,6 +245,8 @@ class ArcadeCloudOsShell {
     const ext = String(entry.dataset.ext || '').toLowerCase();
 
     this.setContextAction('open', !multi && !locked && Boolean(entry.dataset.openUrl));
+    const fileApps = this.window.ArcadeCloudFileApplications;
+    this.setContextAction('open-with', !multi && !locked && Boolean(fileApps) && fileApps.applicationsFor(fileApps.fileFromEntry(entry)).length > 1);
     const openControl = this.context.querySelector('[data-file-action="open"]');
     const openLabel = openControl?.querySelector('span');
     const openIcon = openControl?.querySelector('i');
@@ -499,6 +501,17 @@ class ArcadeCloudOsShell {
 
     if (entry.dataset.locked === '1') {
       this.unlockFile(entry);
+      return;
+    }
+
+    const fileApplications = this.window.ArcadeCloudFileApplications;
+    if (fileApplications) {
+      try {
+        const file = fileApplications.fileFromEntry(entry);
+        const appId = forceEdit ? 'text' : undefined;
+        fileApplications.openFile(file, { appId });
+      } catch (error) { this.notify(error?.message || 'No se pudo abrir el archivo.', 'warning'); }
+      this.hideContext();
       return;
     }
 
@@ -964,7 +977,7 @@ class ArcadeCloudOsShell {
     });
   }
 
-  runFileAction(action) {
+  async runFileAction(action) {
     if (!this.activeFile) return;
     const entry = this.activeFile;
     const key = String(entry.dataset.key || '');
@@ -972,6 +985,16 @@ class ArcadeCloudOsShell {
 
     if (action === 'open') {
       this.openFileEntry(entry, false);
+      return;
+    }
+
+    if (action === 'open-with') {
+      const service = this.window.ArcadeCloudFileApplications;
+      const appId = await service?.chooseApplication(entry);
+      if (appId) {
+        try { service.openFile(entry, { appId }); } catch (error) { this.notify(error?.message || 'No se pudo abrir el archivo.', 'warning'); }
+      }
+      this.hideContext();
       return;
     }
 

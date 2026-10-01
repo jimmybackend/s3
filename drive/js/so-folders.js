@@ -72,11 +72,13 @@ class ArcadeCloudOsFolderActions {
     const host = root.querySelector('.os-explorer-body[data-current-folder-route]');
     if (!host) return this.current;
 
-    return this.normalizeFolder({
+    const folder = this.normalizeFolder({
       route: host.dataset.currentFolderRoute || this.current.route,
       name: host.dataset.currentFolderName || this.current.name,
       is_root: host.dataset.currentFolderRoot || (this.current.isRoot ? '1' : '0')
     });
+    folder.sourceWindowId = host.closest('.os-window')?.dataset.windowId || '';
+    return folder;
   }
 
   folderFromEntry(entry) {
@@ -317,6 +319,7 @@ class ArcadeCloudOsFolderActions {
 
   bindMutationEvents() {
     this.document.addEventListener('drive:folder-document-created', (event) => {
+      if (this.window.ArcadeCloudDesktop) return;
       const route = event.detail && event.detail.route
         ? this.normalizeRoute(event.detail.route)
         : '';
@@ -327,6 +330,7 @@ class ArcadeCloudOsFolderActions {
     });
 
     this.document.addEventListener('drive:folder-mutated', (event) => {
+      if (this.window.ArcadeCloudDesktop) return;
       const detail = event.detail || {};
       const kind = String(detail.kind || '');
       const route = this.normalizeRoute(detail.route || '');
@@ -372,6 +376,7 @@ class ArcadeCloudOsFolderActions {
     });
 
     this.document.addEventListener('drive:move-task-completed', () => {
+      if (this.window.ArcadeCloudDesktop) return;
       if (!this.pendingMove) return;
 
       const pending = this.pendingMove;
@@ -415,9 +420,7 @@ class ArcadeCloudOsFolderActions {
       return;
     }
 
-    const url = new URL('so.php', this.window.location.href);
-    url.searchParams.set('ruta', route);
-    this.window.location.assign(url.toString());
+    this.notify('No hay una ventana de Mis datos disponible para navegar.', 'warning');
   }
 
   notify(message, type) {

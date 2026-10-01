@@ -383,6 +383,18 @@ class ArcadeCloudOsShell {
   }
 
   async refreshExplorer(route, options = {}) {
+    const activeWindow = this.document.querySelector('.os-explorer-window.is-active');
+    const controller = activeWindow?.dataset.windowId
+      ? this.window.ArcadeCloudDesktop?.explorers?.get(activeWindow.dataset.windowId)
+      : null;
+    if (controller?.navigate) {
+      await controller.navigate(route, {
+        page: options.page,
+        replace: options.replaceHistory !== false,
+        preserveScroll: options.preserveScroll === true
+      });
+      return true;
+    }
     if (this.explorerLoading) return false;
 
     route = String(route || '').trim();
@@ -772,9 +784,9 @@ class ArcadeCloudOsShell {
       event.stopPropagation();
 
       const action = String(button.dataset.selectionAction || '');
-      const selected = this.selectedFileEntries();
-      const active = this.document.querySelector('.os-explorer-window.is-active');
-      const context = { sourceWindowId: active?.dataset.windowId || '', sourceRoute: active?.querySelector('.os-explorer-live')?.dataset.explorerRoute || '', entries: selected };
+      const owner = button.closest('.os-explorer-window');
+      const selected = Array.from(owner?.querySelectorAll('.os-file-entry.is-selected') || []);
+      const context = { sourceWindowId: owner?.dataset.windowId || '', sourceRoute: owner?.querySelector('.os-explorer-live')?.dataset.explorerRoute || '', entries: selected };
       if (action === 'copy' || action === 'cut') {
         if (selected[0]) this.window.ArcadeCloudOsClipboard?.captureFiles?.(selected[0], action, context);
       } else if (action === 'more') {

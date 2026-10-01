@@ -4,15 +4,15 @@
 
 ## Resumen
 
-- PHP analizados: **497**
+- PHP analizados: **498**
 - PHP que ya contienen clases/interfaces: **294**
 - PHP marcados para migración/revisión: **0**
-- Tests PHP separados del objetivo OOP de runtime: **49**
-- JavaScript analizados: **63**
-- JavaScript que ya contienen clases: **63**
+- Tests PHP separados del objetivo OOP de runtime: **50**
+- JavaScript analizados: **64**
+- JavaScript que ya contienen clases: **64**
 - JavaScript sin clase/encapsulación OOP: **0**
 - JavaScript OOP con fachada `window` de compatibilidad: **8**
-- Clientes AJAX detectados: **47** módulos / **100** llamadas
+- Clientes AJAX detectados: **48** módulos / **102** llamadas
 - JSON analizados: **4**; inválidos: **0**
 
 ## Criterio
@@ -163,7 +163,7 @@
 | `drive/set_file_security.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/setup/api.php` | 15 | thin endpoint | 0 | — | — | — | — |
 | `drive/setup/index.php` | 90 | view/entrypoint | 0 | — | — | — | — |
-| `drive/so.php` | 1991 | view/entrypoint | 0 | — | — | — | — |
+| `drive/so.php` | 1996 | view/entrypoint | 0 | — | — | — | — |
 | `drive/src/Activity/ActivityCostRecorder.php` | 155 | class/module | 1 | — | — | — | — |
 | `drive/src/Activity/ActivityCostRepository.php` | 198 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Activity/ActivityCostService.php` | 153 | class/module | 1 | — | — | — | — |
@@ -337,7 +337,7 @@
 | `drive/src/Http/Controller/MediaProcessingController.php` | 79 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/MoveJobController.php` | 194 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/NavigationController.php` | 42 | class/module | 1 | — | — | — | — |
-| `drive/src/Http/Controller/NodeStatusController.php` | 95 | class/module | 1 | — | — | — | — |
+| `drive/src/Http/Controller/NodeStatusController.php` | 133 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/OfficeDocumentController.php` | 53 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Http/Controller/PersonalAwsController.php` | 74 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/PollyTaskController.php` | 347 | class/module | 1 | — | ⚠️ | — | — |
@@ -495,6 +495,7 @@
 | `drive/tests/user_profile_validator_smoke.php` | 72 | test script | 0 | — | — | — | — |
 | `drive/tests/web_os_clipboard_contract_smoke.php` | 109 | test script | 0 | — | — | — | — |
 | `drive/tests/web_os_contract_smoke.php` | 480 | test script | 0 | — | — | — | — |
+| `drive/tests/web_os_multiwindow_smoke.php` | 44 | test script | 0 | — | — | — | — |
 | `drive/tests/web_os_theme_contract_smoke.php` | 29 | test script | 0 | — | — | — | — |
 | `drive/tests/workstation_phase1_contract_smoke.php` | 64 | test script | 0 | — | — | — | — |
 | `drive/thumb.php` | 10 | thin endpoint | 0 | — | — | — | — |
@@ -565,6 +566,7 @@
 | `drive/js/mediaFloating.js` | 38 | class/module | MediaFloatingModule | — | — | — |
 | `drive/js/move-tasks.js` | 273 | class/module | DriveMoveTasks | — | — | — |
 | `drive/js/obtenerFiltros.js` | 125 | class/module | ObtenerFiltrosModule | — | — | — |
+| `drive/js/os-window-manager.js` | 144 | class/module | ArcadeCloudEventBus, ArcadeCloudWindowManager, ArcadeCloudExplorerWindow, ArcadeCloudDesktopRuntime | — | — | — |
 | `drive/js/pdf-pantalla-completa.js` | 45 | class/module | PdfPantallaCompletaModule | — | — | — |
 | `drive/js/polly-background.js` | 305 | class/module | PollyBackgroundModule | — | — | — |
 | `drive/js/polly.js` | 1008 | class/module | PollyModule | — | abrirModalGrabarAudio, abrirModalPolly, abrirModalRekognition, abrirModalTraducir, abrirModalTranscribir, copiarTextract | window functions: abrirModalGrabarAudio, abrirModalPolly, abrirModalRekognition, abrirModalTraducir, abrirModalTranscribir, copiarTextract, copiarTraducido, copiarTx |
@@ -577,13 +579,13 @@
 | `drive/js/so-clipboard.js` | 760 | class/module | ArcadeCloudOsClipboard | — | — | — |
 | `drive/js/so-federation.js` | 129 | class/module | ArcadeCloudOsFederationApp | — | — | — |
 | `drive/js/so-folders.js` | 425 | class/module | ArcadeCloudOsFolderActions | — | — | — |
-| `drive/js/so-node.js` | 135 | class/module | ArcadeCloudOsNodeMonitor | — | — | — |
+| `drive/js/so-node.js` | 146 | class/module | ArcadeCloudOsNodeMonitor | — | — | — |
 | `drive/js/so-power.js` | 108 | class/module | ArcadeCloudFastDrivePower | — | — | — |
 | `drive/js/so-screenshot-paste.js` | 335 | class/module | ArcadeCloudOsScreenshotPaste | — | — | — |
 | `drive/js/so-search.js` | 285 | class/module | ArcadeCloudOsSearch | — | — | — |
 | `drive/js/so-share.js` | 179 | class/module | ArcadeCloudOsShare | — | — | — |
 | `drive/js/so-terminal.js` | 300 | class/module | ArcadeCloudOsTerminal | — | — | — |
-| `drive/js/so.js` | 1272 | class/module | ArcadeCloudOsShell | — | — | — |
+| `drive/js/so.js` | 1273 | class/module | ArcadeCloudOsShell | — | — | — |
 | `drive/js/soportesMediaTypes.js` | 397 | class/module | SoportesMediaTypesModule | — | — | — |
 | `drive/js/storage-usage.js` | 51 | class/module | StorageUsageModule | — | — | — |
 | `drive/js/subir-chunked.js` | 594 | class/module | SubirChunkedModule | — | — | — |
@@ -625,6 +627,7 @@
 | `drive/js/media-processing.js` | 3 | 0 | 0 | 3 | 5 |
 | `drive/js/move-tasks.js` | 2 | 0 | 0 | 0 | 6 |
 | `drive/js/obtenerFiltros.js` | 3 | 0 | 0 | 0 | 0 |
+| `drive/js/os-window-manager.js` | 2 | 0 | 0 | 0 | 2 |
 | `drive/js/polly-background.js` | 1 | 0 | 0 | 0 | 3 |
 | `drive/js/polly.js` | 0 | 0 | 2 | 0 | 8 |
 | `drive/js/profile.js` | 2 | 0 | 0 | 1 | 4 |

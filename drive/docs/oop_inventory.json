@@ -1,15 +1,15 @@
 {
   "summary": {
-    "php_total": 497,
+    "php_total": 498,
     "php_class_modules": 294,
     "php_needs_migration": 0,
-    "php_tests": 49,
-    "js_total": 63,
-    "js_class_modules": 63,
+    "php_tests": 50,
+    "js_total": 64,
+    "js_class_modules": 64,
     "js_needs_migration": 0,
     "js_compatibility_facades": 8,
-    "ajax_clients": 47,
-    "ajax_calls": 100,
+    "ajax_clients": 48,
+    "ajax_calls": 102,
     "json_total": 4,
     "json_invalid": 0
   },
@@ -2043,7 +2043,7 @@
     },
     {
       "path": "drive/so.php",
-      "lines": 1991,
+      "lines": 1996,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -4666,7 +4666,7 @@
     },
     {
       "path": "drive/src/Http/Controller/NodeStatusController.php",
-      "lines": 95,
+      "lines": 133,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -7126,6 +7126,21 @@
       "issues": []
     },
     {
+      "path": "drive/tests/web_os_multiwindow_smoke.php",
+      "lines": 44,
+      "kind": "test script",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
       "path": "drive/tests/web_os_theme_contract_smoke.php",
       "lines": 29,
       "kind": "test script",
@@ -8435,6 +8450,35 @@
       "issues": []
     },
     {
+      "path": "drive/js/os-window-manager.js",
+      "lines": 144,
+      "kind": "class/module",
+      "classes": [
+        "ArcadeCloudEventBus",
+        "ArcadeCloudWindowManager",
+        "ArcadeCloudExplorerWindow",
+        "ArcadeCloudDesktopRuntime"
+      ],
+      "functions": [],
+      "window_assign": [
+        "ArcadeCloudDesktop",
+        "ArcadeCloudDesktopRuntime",
+        "ArcadeCloudEventBus",
+        "ArcadeCloudWindowManager"
+      ],
+      "window_func": [],
+      "top_vars": [],
+      "iife": false,
+      "ajax": {
+        "fetch": 2,
+        "xhr": 0,
+        "jquery": 0,
+        "json_consumers": 0,
+        "response_checks": 2
+      },
+      "issues": []
+    },
+    {
       "path": "drive/js/pdf-pantalla-completa.js",
       "lines": 45,
       "kind": "class/module",
@@ -8738,7 +8782,7 @@
     },
     {
       "path": "drive/js/so-node.js",
-      "lines": 135,
+      "lines": 146,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudOsNodeMonitor"
@@ -8872,7 +8916,7 @@
     },
     {
       "path": "drive/js/so.js",
-      "lines": 1272,
+      "lines": 1273,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudOsShell"
@@ -9187,7 +9231,7 @@
     },
     {
       "path": "drive/docs/runtime_endpoints.json",
-      "bytes": 113350,
+      "bytes": 113600,
       "valid": true,
       "root_type": "object",
       "keys": [

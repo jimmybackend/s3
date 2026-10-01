@@ -12,7 +12,6 @@ class ArcadeCloudOsShell {
     this.taskContext = doc.getElementById('osTaskContext');
     this.taskContextName = doc.getElementById('osTaskContextName');
     this.activeTaskWindow = null;
-    this.zCounter = 200;
     this.viewerCounter = 0;
     this.activeFile = null;
     this.mediaOverlay = null;
@@ -43,180 +42,48 @@ class ArcadeCloudOsShell {
   bindWindow(win) {
     if (!win || win.dataset.osBound === '1') return;
     win.dataset.osBound = '1';
-
     win.addEventListener('pointerdown', () => this.activateWindow(win));
-    win.querySelector('[data-window-close]')?.addEventListener('click', () => this.closeWindow(win));
-    win.querySelector('[data-window-minimize]')?.addEventListener('click', () => this.minimizeWindow(win));
-    win.querySelector('[data-window-maximize]')?.addEventListener('click', () => this.toggleMaximize(win));
-
     const handle = win.querySelector('[data-window-drag-handle]');
-    if (handle) {
-      handle.addEventListener('pointerdown', (event) => this.beginDrag(event, win, handle));
-    }
+    if (handle) handle.addEventListener('pointerdown', (event) => this.beginDrag(event, win, handle));
   }
 
+  // Shell launches and coordinates applications; WindowManager exclusively owns
+  // registration, visibility, focus, taskbar, and lifecycle transitions.
   registerWindow(win) {
     if (!win) return;
     if (!this.windows.includes(win)) this.windows.push(win);
     this.bindWindow(win);
-    if (this.window.ArcadeCloudWindowManager) {
-      const app = this.window.ArcadeCloudDesktop?.appFor?.(win) || 'window';
-      this.window.ArcadeCloudWindowManager.register(win, app);
-      this.window.ArcadeCloudWindowManager.focus(win);
-      return;
-    }
-    this.activateWindow(win);
+    const manager = this.window.ArcadeCloudWindowManager;
+    if (!manager) return;
+    const app = this.window.ArcadeCloudDesktop?.appFor?.(win) || 'window';
+    manager.register(win, app);
+    this.window.ArcadeCloudDesktop?.bindWindowChrome?.(win);
+    manager.open(win);
   }
 
-  activateWindow(win) {
-    if (!win) return;
-    if (this.window.ArcadeCloudWindowManager?.record(win)) {
-      this.window.ArcadeCloudWindowManager.focus(win);
-      return;
-    }
-    this.windows.forEach((item) => item.classList.remove('is-active'));
-    win.classList.add('is-active', 'is-open');
-    win.style.zIndex = String(++this.zCounter);
-    this.syncTaskbar();
-  }
+  activateWindow(win) { this.window.ArcadeCloudWindowManager?.focus(win); }
 
   openWindow(id) {
     const win = this.document.getElementById(id);
-    if (!win) return;
-    if (this.window.ArcadeCloudWindowManager && !this.window.ArcadeCloudWindowManager.record(win)) {
-      const app = this.window.ArcadeCloudDesktop?.appFor?.(win) || id.replace(/Window$/, '');
-      this.window.ArcadeCloudWindowManager.register(win, app);
+    const manager = this.window.ArcadeCloudWindowManager;
+    if (!win || !manager) return;
+    if (!manager.record(win)) {
+      manager.register(win, this.window.ArcadeCloudDesktop?.appFor?.(win) || id.replace(/Window$/, ''));
       this.window.ArcadeCloudDesktop?.bindWindowChrome?.(win);
     }
-    if (this.window.ArcadeCloudWindowManager?.record(win)) {
-      this.window.ArcadeCloudWindowManager.open(win);
-      this.closeLauncher();
-      return;
-    }
-    win.dataset.minimized = '0';
-    win.classList.add('is-open');
-    win.hidden = false;
-    this.activateWindow(win);
-    if (id === 'nodeWindow') {
-      this.window.ArcadeCloudOsNodeMonitor?.refresh?.();
-    }
+    manager.open(win);
     this.closeLauncher();
   }
 
   closeWindow(win) {
-    if (!win) return;
-    if (this.window.ArcadeCloudWindowManager?.record(win)) {
-      this.window.ArcadeCloudWindowManager.close(win);
-      if (win.dataset.windowLifecycle === 'dynamic') this.windows = this.windows.filter((item) => item !== win);
-      return;
-    }
-    win.dataset.minimized = '0';
-    win.classList.remove('is-open', 'is-active');
-
-    if (win.dataset.dynamicWindow === '1') {
-      const media = win.querySelector('audio,video');
-      if (media) {
-        try { media.pause(); } catch (_) {}
-      }
-      win.remove();
-      this.windows = this.windows.filter((item) => item !== win);
-    }
-
-    this.syncTaskbar();
+    const record = this.window.ArcadeCloudWindowManager?.record(win);
+    this.window.ArcadeCloudWindowManager?.close(win);
+    if (record?.lifecycle === 'dynamic') this.windows = this.windows.filter((item) => item !== win);
   }
 
-  minimizeWindow(win) {
-    if (!win) return;
-    if (this.window.ArcadeCloudWindowManager?.record(win)) {
-      this.window.ArcadeCloudWindowManager.minimize(win);
-      return;
-    }
-    win.classList.remove('is-open', 'is-active');
-    win.dataset.minimized = '1';
-
-    const media = win.querySelector('audio,video');
-    if (media) {
-      try { media.pause(); } catch (_) {}
-    }
-
-    this.syncTaskbar();
-  }
-
-  toggleMaximize(win) {
-    if (!win) return;
-    if (this.window.ArcadeCloudWindowManager?.record(win)) {
-      this.window.ArcadeCloudWindowManager.toggleMaximize(win);
-      return;
-    }
-    win.classList.toggle('is-maximized');
-    this.activateWindow(win);
-  }
-
-  syncTaskbar() {
-    if (this.window.ArcadeCloudWindowManager) {
-      this.window.ArcadeCloudWindowManager.syncTaskbar();
-      return;
-    }
-    if (!this.taskButtons) return;
-    this.taskButtons.innerHTML = '';
-
-    this.windows = this.windows.filter((win) => win && win.isConnected);
-
-    this.windows.forEach((win) => {
-      const isVisible = win.classList.contains('is-open');
-      const hasHistory = isVisible || win.dataset.minimized === '1';
-      if (!hasHistory) return;
-
-      const item = this.document.createElement('div');
-      item.className = 'os-task-item' + (win.classList.contains('is-active') ? ' is-active' : '');
-
-      const button = this.document.createElement('button');
-      button.type = 'button';
-      button.className = 'os-task-button';
-      button.dataset.windowId = win.dataset.windowId || '';
-      button.innerHTML = '<i class="far fa-window-maximize"></i><span></span>';
-
-      const label = button.querySelector('span');
-      if (label) label.textContent = win.dataset.windowTitle || 'Ventana';
-
-      button.addEventListener('click', () => {
-        this.hideTaskContext();
-
-        if (win.classList.contains('is-open') && win.classList.contains('is-active')) {
-          this.minimizeWindow(win);
-          return;
-        }
-
-        win.dataset.minimized = '0';
-        win.classList.add('is-open');
-        this.activateWindow(win);
-        if (win.id === 'nodeWindow') {
-          this.window.ArcadeCloudOsNodeMonitor?.refresh?.();
-        }
-      });
-
-      button.addEventListener('contextmenu', (event) => {
-        event.preventDefault();
-        this.showTaskContext(win, event.clientX, event.clientY);
-      });
-
-      const more = this.document.createElement('button');
-      more.type = 'button';
-      more.className = 'os-task-more';
-      more.setAttribute('aria-label', 'Opciones de ventana');
-      more.title = 'Opciones de ventana';
-      more.innerHTML = '<i class="fas fa-ellipsis-vertical"></i>';
-      more.addEventListener('click', (event) => {
-        event.stopPropagation();
-        const rect = more.getBoundingClientRect();
-        this.showTaskContext(win, rect.right - 8, rect.top - 6);
-      });
-
-      item.appendChild(button);
-      item.appendChild(more);
-      this.taskButtons.appendChild(item);
-    });
-  }
+  minimizeWindow(win) { this.window.ArcadeCloudWindowManager?.minimize(win); }
+  toggleMaximize(win) { this.window.ArcadeCloudWindowManager?.toggleMaximize(win); }
+  syncTaskbar() { this.window.ArcadeCloudWindowManager?.syncTaskbar(); }
 
   closeLauncher() {
     if (!this.launcher || !this.startButton) return;
@@ -267,9 +134,9 @@ class ArcadeCloudOsShell {
     this.taskContext.querySelector('[data-task-action="maximize"]')?.addEventListener('click', () => {
       const win = this.activeTaskWindow;
       if (!win) return;
-      win.dataset.minimized = '0';
-      win.classList.add('is-open', 'is-maximized');
-      this.activateWindow(win);
+      const manager = this.window.ArcadeCloudWindowManager;
+      manager?.open(win);
+      if (!manager?.record(win)?.maximized) manager?.toggleMaximize(win);
       this.hideTaskContext();
     });
 
@@ -813,7 +680,7 @@ class ArcadeCloudOsShell {
     const win = this.document.createElement('section');
 
     win.id = id;
-    win.className = 'os-window os-document-window is-open';
+    win.className = 'os-window os-document-window';
     if (ext === 'pdf') win.classList.add('os-pdf-window');
     win.dataset.windowTitle = name;
     win.dataset.dynamicWindow = '1';

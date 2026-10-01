@@ -79,12 +79,13 @@ class ArcadeCloudWindowManager {
     const lifecycle = element.dataset.windowLifecycle || definition?.lifecycle || (element.dataset.dynamicWindow === '1' ? 'dynamic' : 'persistent');
     element.dataset.windowLifecycle = lifecycle;
     let record = this.registry.get(id);
+    const isNew = !record;
     if (!record) {
       record = {
         id, app, element, state, cleanup: new Set(), taskButton: null,
-        lifecycle, status: element.classList.contains('is-open') ? 'open' : 'registered',
-        focused: false, minimized: element.dataset.minimized === '1',
-        maximized: false, compact: false, lastFocused: 0, geometry: null
+        lifecycle, multiInstance: Boolean(definition?.multiInstance), status: 'registered', open: false,
+        focused: false, minimized: false, maximized: false, compact: false,
+        lastFocused: 0, geometry: null, preferredGeometry: null
       };
       this.registry.set(id, record);
     } else {
@@ -92,7 +93,12 @@ class ArcadeCloudWindowManager {
       record.state = state || record.state;
     }
     if (typeof cleanup === 'function') record.cleanup.add(cleanup);
-    this.applyInitialGeometry(app, element);
+    if (!isNew) return record;
+    // Registration is deliberately inert: templates and persistent applications
+    // never become visible, focused, or represented in the taskbar until open().
+    element.classList.remove('is-open', 'is-active', 'is-maximized');
+    element.dataset.minimized = '0';
+    record.preferredGeometry = this.applyInitialGeometry(app, element);
     this.observeResize(record);
     this.syncTaskbar();
     return record;
@@ -108,6 +114,7 @@ class ArcadeCloudWindowManager {
     if (!record || !['open', 'minimized'].includes(record.status)) return;
     record.minimized = false;
     record.status = 'open';
+    record.open = true;
     record.element.dataset.minimized = '0';
     record.element.hidden = false;
     record.element.classList.add('is-open');
@@ -150,6 +157,7 @@ class ArcadeCloudWindowManager {
     const record = this.record(elementOrId);
     if (!record || record.status !== 'open') return;
     record.minimized = true;
+    record.open = true;
     record.status = 'minimized';
     record.focused = false;
     record.element.dataset.minimized = '1';
@@ -170,7 +178,10 @@ class ArcadeCloudWindowManager {
     }
     record.maximized = !record.maximized;
     record.element.classList.toggle('is-maximized', record.maximized);
-    if (!record.maximized && record.geometry) Object.assign(record.element.style, record.geometry);
+    if (!record.maximized && record.geometry) {
+      Object.assign(record.element.style, record.geometry);
+      record.preferredGeometry = { ...record.geometry };
+    }
     this.focus(record.id);
   }
 
@@ -213,7 +224,7 @@ class ArcadeCloudWindowManager {
 
   applyInitialGeometry(app, element) {
     element.classList.remove('is-maximized', 'is-compact');
-    if (this.window.innerWidth <= ArcadeCloudWindowLayoutConfig.MOBILE_BREAKPOINT) return;
+    if (this.window.innerWidth <= ArcadeCloudWindowLayoutConfig.MOBILE_BREAKPOINT) return null;
     const geometry = this.preferred(app);
     const step = (this.layoutSequence++ % 7) * 32;
     const baseLeft = Math.round(this.window.innerWidth * .04);
@@ -222,6 +233,7 @@ class ArcadeCloudWindowManager {
     element.style.height = `${geometry.height}px`;
     element.style.left = `${Math.min(baseLeft + step, this.window.innerWidth - geometry.width - 8)}px`;
     element.style.top = `${Math.min(baseTop + step, this.window.innerHeight - geometry.height - 58)}px`;
+    return { left: element.style.left, top: element.style.top, width: element.style.width, height: element.style.height };
   }
 
   observeResize(record) {
@@ -233,7 +245,9 @@ class ArcadeCloudWindowManager {
       if (record.maximized || !record.element.classList.contains('is-open')) return;
       const box = entries[0]?.contentRect; if (!box?.width || !box?.height) return;
       clearTimeout(this.preferenceTimers.get(record.id));
-      this.preferenceTimers.set(record.id, setTimeout(() => this.savePreference(record.app, Math.round(box.width), Math.round(box.height)), 400));
+      const preferred = this.clampGeometry(record.app, { width: Math.round(box.width), height: Math.round(box.height) });
+      record.preferredGeometry = { ...record.preferredGeometry, width: `${preferred.width}px`, height: `${preferred.height}px` };
+      this.preferenceTimers.set(record.id, setTimeout(() => this.savePreference(record.app, preferred.width, preferred.height), 400));
     });
     observer.observe(record.element); this.addCleanup(record.id, () => { observer.disconnect(); delete record.element.dataset.resizeObserved; });
   }
@@ -268,10 +282,10 @@ class ArcadeCloudWindowManager {
       try { media.pause(); if (dynamic) { media.removeAttribute('src'); media.load(); } } catch (_) {}
     });
     clearTimeout(this.preferenceTimers.get(record.id)); this.preferenceTimers.delete(record.id);
-    record.status = 'closed'; record.focused = false; record.minimized = false;
+    record.status = 'closed'; record.open = false; record.focused = false; record.minimized = false;
     record.element.classList.remove('is-open', 'is-active'); record.element.dataset.minimized = '0';
     if (dynamic) {
-      record.element.remove(); this.registry.delete(record.id);
+      record.element.remove(); this.registry.delete(record.id); record.taskButton = null;
     }
     this.syncTaskbar();
     const detail = { windowId: record.id, app: record.app, lifecycle: record.lifecycle };
@@ -298,7 +312,21 @@ class ArcadeCloudWindowManager {
         if (record.focused && !record.minimized) this.minimize(record.id);
         else this.open(record.id);
       });
+      button.addEventListener('contextmenu', event => {
+        event.preventDefault();
+        this.window.ArcadeCloudOsShell?.showTaskContext?.(record.element, event.clientX, event.clientY);
+      });
       item.append(button);
+      const more = this.document.createElement('button');
+      more.type = 'button'; more.className = 'os-task-more'; more.title = 'Opciones de ventana';
+      more.setAttribute?.('aria-label', 'Opciones de ventana');
+      more.innerHTML = '<i class="fas fa-ellipsis-vertical"></i>';
+      more.addEventListener('click', event => {
+        event.stopPropagation();
+        const rect = more.getBoundingClientRect?.() || { right: 8, top: 8 };
+        this.window.ArcadeCloudOsShell?.showTaskContext?.(record.element, rect.right - 8, rect.top - 6);
+      });
+      item.append(more);
       this.taskbar.append(item);
       record.taskButton = button;
     });
@@ -311,7 +339,7 @@ class ExplorerWindowFactory {
   create(route) {
     const doc = this.runtime.document;
     const element = doc.createElement('section');
-    element.className = 'os-window os-explorer-window is-open';
+    element.className = 'os-window os-explorer-window';
     element.dataset.windowTitle = 'Mis datos — /';
     element.dataset.minimized = '0';
     element.dataset.dynamicWindow = '1';
@@ -319,8 +347,8 @@ class ExplorerWindowFactory {
     this.runtime.document.getElementById('osDesktop')?.append(element);
     const controller = this.runtime.attachExplorer(element, route);
     this.runtime.bindWindowChrome(element);
+    this.runtime.manager.open(element);
     controller.navigate(route || this.runtime.root, { replace: true });
-    this.runtime.manager.focus(element);
     return controller;
   }
 }
@@ -670,12 +698,12 @@ class ArcadeCloudDesktopRuntime {
     const existing = this.manager.last(app);
     if (existing) { this.manager.focus(existing.id); return existing.element; }
     const element = this.document.createElement('section');
-    element.className = 'os-window os-tool-window is-open'; element.dataset.windowTitle = title;
+    element.className = 'os-window os-tool-window'; element.dataset.windowTitle = title;
     element.dataset.dynamicWindow = '1';
     element.innerHTML = '<div class="os-window-titlebar" data-window-drag-handle><div class="os-window-title"><i class="fas fa-toolbox"></i><span></span></div><div class="os-window-controls"><button type="button" data-window-minimize aria-label="Minimizar"><i class="fas fa-minus"></i></button><button type="button" data-window-maximize aria-label="Maximizar"><i class="far fa-square"></i></button><button type="button" data-window-close aria-label="Cerrar"><i class="fas fa-xmark"></i></button></div></div><div class="os-window-body os-tool-body"><p class="os-node-placeholder">Cargando…</p></div>';
     element.querySelector('.os-window-title span').textContent = title;
     this.document.getElementById('osDesktop')?.append(element);
-    this.manager.register(element, app, { url, toolId }); this.bindWindowChrome(element); this.manager.focus(element);
+    this.manager.register(element, app, { url, toolId }); this.bindWindowChrome(element); this.manager.open(element);
     const body = element.querySelector('.os-tool-body');
     body.addEventListener('click', event => {
       const link = event.target.closest?.('a[href]');
@@ -725,4 +753,8 @@ class ArcadeCloudDesktopRuntime {
 }
 
 if (typeof module !== 'undefined') module.exports = { ArcadeCloudEventBus, ArcadeCloudWindowLayoutConfig, ArcadeCloudWindowManager, ExplorerWindowFactory, ArcadeCloudExplorerWindow, ArcadeCloudDesktopRuntime };
-if (typeof window !== 'undefined') window.addEventListener('DOMContentLoaded', () => { window.ArcadeCloudDesktopRuntime = new ArcadeCloudDesktopRuntime(window, document).init(); });
+if (typeof window !== 'undefined') {
+  // Loaded at the end of <body>: boot before the legacy shell so it can only
+  // coordinate actions and cannot become a competing lifecycle owner.
+  window.ArcadeCloudDesktopRuntime = new ArcadeCloudDesktopRuntime(window, document).init();
+}

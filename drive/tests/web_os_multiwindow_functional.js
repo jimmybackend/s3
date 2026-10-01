@@ -41,6 +41,7 @@ manager.registerApp('pdf', { multiInstance: true, lifecycle: 'dynamic', title: '
 manager.registerApp('settings', { multiInstance: false, title: 'Configuración', icon: 'fa-gear' });
 manager.registerApp('node', { multiInstance: false, lifecycle: 'persistent', title: 'Mi nodo', icon: 'fa-server' });
 manager.registerApp('links', { multiInstance: false, lifecycle: 'persistent', title: 'Enlaces', icon: 'fa-link' });
+manager.registerApp('terminal', { multiInstance: false, lifecycle: 'persistent', title: 'Terminal', icon: 'fa-terminal' });
 
 function windowStub(title, open = true) { const element = new ElementStub(); element.dataset.windowTitle = title; element.classList.add('os-window'); if (open) element.classList.add('is-open'); return element; }
 function assert(value, message) { if (!value) throw new Error(message); process.stdout.write(`OK: ${message}\n`); }
@@ -48,7 +49,9 @@ function assert(value, message) { if (!value) throw new Error(message); process.
 const node = manager.register(windowStub('Mi nodo', false), 'node');
 const settings = manager.register(windowStub('Configuración', false), 'settings');
 const links = manager.register(windowStub('Enlaces', false), 'links');
-assert(manager.registry.size === 3 && taskbar.children.length === 0, 'inicio registra persistentes cerradas y deja taskbar vacía');
+const terminal = manager.register(windowStub('Terminal', true), 'terminal');
+assert(!terminal.open && terminal.status === 'registered' && !terminal.element.classList.contains('is-open'), 'register es inerte aunque el DOM llegue marcado abierto');
+assert(manager.registry.size === 4 && taskbar.children.length === 0, 'inicio registra persistentes cerradas y deja taskbar vacía');
 assert(manager.last('explorer') === null, 'inicio no crea ninguna ventana Explorer');
 for (let cycle = 0; cycle < 5; cycle += 1) {
   manager.open(node.id); assert(node.status === 'open' && node.element.classList.contains('is-open'), `Mi nodo abre en ciclo ${cycle + 1}`);
@@ -69,7 +72,8 @@ const explorers = [
   manager.register(windowStub('Mis datos — /Fotos'), 'explorer', { route: '/Fotos', history: [], future: [], selection: new Set(), controller: aborts[1] }),
   manager.register(windowStub('Mis datos — /Documentos'), 'explorer', { route: '/Documentos', history: [], future: [], selection: new Set(), controller: aborts[2] })
 ];
-assert(manager.registry.size === 6, 'cada uno de tres clics agrega exactamente un Explorer al registry');
+explorers.forEach(record => manager.open(record.id));
+assert(manager.registry.size === 7, 'cada uno de tres clics agrega exactamente un Explorer al registry');
 assert(new Set(explorers.map(record => record.id)).size === 3, 'los tres windowId son diferentes');
 assert(new Set(explorers.map(record => record.state.route)).size === 3, 'las rutas Explorer son independientes');
 assert(new Set(explorers.map(record => record.state.history)).size === 3, 'los historiales Explorer son independientes');
@@ -78,10 +82,11 @@ assert(taskbar.children.length === 3 && taskbar.children.every(item => item.data
 explorers[0].state.route = '/Legal'; explorers[0].state.history.push('/'); explorers[0].state.controller.abort();
 assert(explorers[1].state.route === '/Fotos' && !aborts[1].signal.aborted, 'navegar/cancelar A no cambia ni aborta B');
 manager.close(explorers[1].id);
-assert(manager.registry.size === 5 && manager.record(explorers[0].id) && manager.record(explorers[2].id), 'cerrar B destruye sólo la instancia dinámica y conserva A y C');
+assert(manager.registry.size === 6 && manager.record(explorers[0].id) && manager.record(explorers[2].id), 'cerrar B destruye sólo la instancia dinámica y conserva A y C');
 assert(taskbar.children.length === 2, 'cerrar B elimina solamente su tarea');
 const replacementExplorer = manager.register(windowStub('Mis datos — /Nueva'), 'explorer', { route: '/Nueva', history: [], future: [], selection: new Set() });
-assert(manager.registry.size === 6 && manager.record(replacementExplorer.id), 'otro clic en Mis datos crea una instancia tras cerrar Explorer');
+manager.open(replacementExplorer.id);
+assert(manager.registry.size === 7 && manager.record(replacementExplorer.id), 'otro clic en Mis datos crea una instancia tras cerrar Explorer');
 manager.close(replacementExplorer.id);
 
 const imageA = manager.register(windowStub('foto1.jpg'), 'image', { src: '/foto1.jpg', zoom: 1 });
@@ -112,6 +117,7 @@ manager.preferences.explorer = { width: 1824, height: 972 };
 const legacy = manager.preferred('explorer');
 assert(legacy.width === Math.round(1920 * .42) && legacy.height === Math.round((1080 - 52) * .42), 'preferencia legacy 95vw x 90vh vuelve al default pequeño');
 const tool = manager.register(windowStub('Actividad y costos'), 'tool-activity-costs');
+manager.open(tool.id); manager.open(node.id); manager.open(links.id); manager.open(terminal.id);
 assert(parseFloat(tool.element.style.width) <= 1920 * .5 && parseFloat(tool.element.style.height) <= 1080 * .55, 'herramienta nueva ocupa como máximo 50% x 55%');
 assert([explorers[0], explorers[2], tool, node].every(record => !record.element.classList.contains('is-maximized')), 'Explorer A, Explorer B, herramienta y Mi nodo pueden coexistir sin nacer maximizados');
 assert(manager.registry.has(explorers[0].id) && manager.registry.has(explorers[2].id), 'maximizar no elimina ventanas del registry');

@@ -475,7 +475,7 @@
 | `drive/tests/index_federation_drop_smoke.php` | 121 | test script | 0 | — | — | — | — |
 | `drive/tests/installer_service_reconcile_contract_smoke.php` | 194 | test script | 0 | — | — | — | — |
 | `drive/tests/media_processing_contract_smoke.php` | 185 | test script | 0 | — | — | — | — |
-| `drive/tests/node_diagnostics_contract_smoke.php` | 44 | test script | 0 | — | — | — | — |
+| `drive/tests/node_diagnostics_contract_smoke.php` | 48 | test script | 0 | — | — | — | — |
 | `drive/tests/node_diagnostics_control_smoke.php` | 42 | test script | 0 | — | — | — | — |
 | `drive/tests/office_gateway_contract_smoke.php` | 272 | test script | 0 | — | — | — | — |
 | `drive/tests/password_credential_verifier_smoke.php` | 44 | test script | 0 | — | — | — | — |
@@ -567,7 +567,7 @@
 | `drive/js/mediaFloating.js` | 38 | class/module | MediaFloatingModule | — | — | — |
 | `drive/js/move-tasks.js` | 273 | class/module | DriveMoveTasks | — | — | — |
 | `drive/js/obtenerFiltros.js` | 125 | class/module | ObtenerFiltrosModule | — | — | — |
-| `drive/js/os-window-manager.js` | 586 | class/module | ArcadeCloudEventBus, ArcadeCloudWindowManager, ExplorerWindowFactory, ArcadeCloudExplorerWindow, ArcadeCloudDesktopRuntime | — | — | — |
+| `drive/js/os-window-manager.js` | 623 | class/module | ArcadeCloudEventBus, ArcadeCloudWindowManager, ExplorerWindowFactory, ArcadeCloudExplorerWindow, ArcadeCloudDesktopRuntime | — | — | — |
 | `drive/js/pdf-pantalla-completa.js` | 45 | class/module | PdfPantallaCompletaModule | — | — | — |
 | `drive/js/polly-background.js` | 305 | class/module | PollyBackgroundModule | — | — | — |
 | `drive/js/polly.js` | 1008 | class/module | PollyModule | — | abrirModalGrabarAudio, abrirModalPolly, abrirModalRekognition, abrirModalTraducir, abrirModalTranscribir, copiarTextract | window functions: abrirModalGrabarAudio, abrirModalPolly, abrirModalRekognition, abrirModalTraducir, abrirModalTranscribir, copiarTextract, copiarTraducido, copiarTx |
@@ -580,13 +580,13 @@
 | `drive/js/so-clipboard.js` | 766 | class/module | ArcadeCloudOsClipboard | — | — | — |
 | `drive/js/so-federation.js` | 129 | class/module | ArcadeCloudOsFederationApp | — | — | — |
 | `drive/js/so-folders.js` | 425 | class/module | ArcadeCloudOsFolderActions | — | — | — |
-| `drive/js/so-node.js` | 183 | class/module | ArcadeCloudOsNodeMonitor | — | — | — |
+| `drive/js/so-node.js` | 184 | class/module | ArcadeCloudOsNodeMonitor | — | — | — |
 | `drive/js/so-power.js` | 108 | class/module | ArcadeCloudFastDrivePower | — | — | — |
 | `drive/js/so-screenshot-paste.js` | 335 | class/module | ArcadeCloudOsScreenshotPaste | — | — | — |
 | `drive/js/so-search.js` | 285 | class/module | ArcadeCloudOsSearch | — | — | — |
 | `drive/js/so-share.js` | 179 | class/module | ArcadeCloudOsShare | — | — | — |
-| `drive/js/so-terminal.js` | 300 | class/module | ArcadeCloudOsTerminal | — | — | — |
-| `drive/js/so.js` | 1306 | class/module | ArcadeCloudOsShell | — | — | — |
+| `drive/js/so-terminal.js` | 314 | class/module | ArcadeCloudOsTerminal | — | — | — |
+| `drive/js/so.js` | 1311 | class/module | ArcadeCloudOsShell | — | — | — |
 | `drive/js/soportesMediaTypes.js` | 397 | class/module | SoportesMediaTypesModule | — | — | — |
 | `drive/js/storage-usage.js` | 51 | class/module | StorageUsageModule | — | — | — |
 | `drive/js/subir-chunked.js` | 594 | class/module | SubirChunkedModule | — | — | — |
@@ -598,7 +598,7 @@
 | `drive/js/upload-destination.js` | 74 | class/module | UploadDestinationModule | — | — | — |
 | `drive/js/ver-metadatos.js` | 75 | class/module | VerMetadatosModule | — | verMetadatos | window functions: verMetadatos |
 | `drive/js/ver-pdf.js` | 112 | class/module | VerPdfModule | — | — | — |
-| `drive/tests/web_os_multiwindow_functional.js` | 85 | class/module | Classes, ElementStub | windowStub, assert | — | top-level functions: windowStub, assert |
+| `drive/tests/web_os_multiwindow_functional.js` | 108 | class/module | Classes, ElementStub | windowStub, assert | — | top-level functions: windowStub, assert |
 
 ## AJAX y contratos JSON
 
@@ -629,7 +629,7 @@
 | `drive/js/media-processing.js` | 3 | 0 | 0 | 3 | 5 |
 | `drive/js/move-tasks.js` | 2 | 0 | 0 | 0 | 6 |
 | `drive/js/obtenerFiltros.js` | 3 | 0 | 0 | 0 | 0 |
-| `drive/js/os-window-manager.js` | 3 | 0 | 0 | 0 | 2 |
+| `drive/js/os-window-manager.js` | 3 | 0 | 0 | 0 | 10 |
 | `drive/js/polly-background.js` | 1 | 0 | 0 | 0 | 3 |
 | `drive/js/polly.js` | 0 | 0 | 2 | 0 | 8 |
 | `drive/js/profile.js` | 2 | 0 | 0 | 1 | 4 |

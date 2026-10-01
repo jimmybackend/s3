@@ -6807,7 +6807,7 @@
     },
     {
       "path": "drive/tests/node_diagnostics_contract_smoke.php",
-      "lines": 44,
+      "lines": 48,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -8466,7 +8466,7 @@
     },
     {
       "path": "drive/js/os-window-manager.js",
-      "lines": 586,
+      "lines": 623,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudEventBus",
@@ -8490,7 +8490,7 @@
         "xhr": 0,
         "jquery": 0,
         "json_consumers": 0,
-        "response_checks": 2
+        "response_checks": 10
       },
       "issues": []
     },
@@ -8798,7 +8798,7 @@
     },
     {
       "path": "drive/js/so-node.js",
-      "lines": 183,
+      "lines": 184,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudOsNodeMonitor"
@@ -8909,7 +8909,7 @@
     },
     {
       "path": "drive/js/so-terminal.js",
-      "lines": 300,
+      "lines": 314,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudOsTerminal"
@@ -8932,7 +8932,7 @@
     },
     {
       "path": "drive/js/so.js",
-      "lines": 1306,
+      "lines": 1311,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudOsShell"
@@ -9208,7 +9208,7 @@
     },
     {
       "path": "drive/tests/web_os_multiwindow_functional.js",
-      "lines": 85,
+      "lines": 108,
       "kind": "class/module",
       "classes": [
         "Classes",
@@ -9224,8 +9224,12 @@
         "taskbar",
         "documentStub",
         "manager",
+        "node",
+        "settings",
+        "links",
         "aborts",
         "explorers",
+        "replacementExplorer",
         "imageA",
         "imageB",
         "pdfA",
@@ -9239,7 +9243,7 @@
         "xhr": 0,
         "jquery": 0,
         "json_consumers": 0,
-        "response_checks": 0
+        "response_checks": 6
       },
       "issues": [
         "top-level functions: windowStub, assert"

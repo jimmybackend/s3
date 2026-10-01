@@ -1,9 +1,9 @@
 {
   "summary": {
-    "php_total": 491,
-    "php_class_modules": 291,
+    "php_total": 493,
+    "php_class_modules": 292,
     "php_needs_migration": 0,
-    "php_tests": 46,
+    "php_tests": 47,
     "js_total": 63,
     "js_class_modules": 63,
     "js_needs_migration": 0,
@@ -2043,7 +2043,7 @@
     },
     {
       "path": "drive/so.php",
-      "lines": 1983,
+      "lines": 1991,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -4649,7 +4649,7 @@
     },
     {
       "path": "drive/src/Http/Controller/NodeStatusController.php",
-      "lines": 110,
+      "lines": 86,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -5848,6 +5848,21 @@
       "issues": []
     },
     {
+      "path": "drive/src/System/NodeRuntimeStatusService.php",
+      "lines": 334,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": true,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
       "path": "drive/src/Upload/AdminMultipartUploadService.php",
       "lines": 221,
       "kind": "class/module",
@@ -6748,6 +6763,23 @@
       "classes": 0,
       "functions": [
         "mediaContract"
+      ],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/tests/node_diagnostics_contract_smoke.php",
+      "lines": 36,
+      "kind": "test script",
+      "classes": 0,
+      "functions": [
+        "nodeContract"
       ],
       "session": false,
       "superglobals": [],
@@ -8640,7 +8672,7 @@
     },
     {
       "path": "drive/js/so-node.js",
-      "lines": 239,
+      "lines": 112,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudOsNodeMonitor"
@@ -9089,7 +9121,7 @@
     },
     {
       "path": "drive/docs/runtime_endpoints.json",
-      "bytes": 111994,
+      "bytes": 112066,
       "valid": true,
       "root_type": "object",
       "keys": [

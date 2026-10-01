@@ -64,7 +64,8 @@ $assert(str_contains($files['clipboard'], 'button.hidden = !hasClipboard'), 'bot
 $assert(str_contains($files['clipboard'], "moving ? 'Mover aquí' : 'Copiar aquí'"), 'botón superior identifica claramente la operación pendiente');
 $assert(str_contains($files['clipboard'], "dataset.osPasteCurrent"), 'botón superior se identifica como destino actual');
 $assert(str_contains($files['clipboardCss'], '.os-toolbar-paste'), 'botón superior tiene estilo propio');
-$assert(str_contains($files['moveTasks'], 'so-clipboard.js?v=20261001-1'), 'cambio de clipboard invalida caché del navegador');
+$assert(str_contains($files['webOsShell'], 'js/so-clipboard.js?v=<?= (int)filemtime') && !str_contains($files['moveTasks'], 'loadWebOsClipboard'), 'Web OS carga el clipboard de forma determinista aunque todavía no exista una Explorer');
+$assert(str_contains($files['clipboard'], 'static boot(win = window, doc = document)') && !str_contains($files['clipboard'], "querySelector('.os-explorer-live')) return"), 'clipboard puede iniciar antes de crear ventanas Explorer dinámicas');
 $assert(str_contains($files['clipboard'], 'ArcadeCloudOsShare?.open'), 'menú del SO abre panel completo de compartir');
 $assert(!str_contains($files['clipboard'], "¿Cuántos días debe funcionar"), 'compartir ya no usa prompt del navegador');
 $assert(str_contains($files['share'], "generar_token.php"), 'panel completo genera enlace directo');

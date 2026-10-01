@@ -6,7 +6,7 @@
     "php_tests": 55,
     "js_total": 73,
     "js_class_modules": 69,
-    "js_needs_migration": 7,
+    "js_needs_migration": 6,
     "js_compatibility_facades": 8,
     "ajax_clients": 49,
     "ajax_calls": 106,
@@ -2060,7 +2060,7 @@
     },
     {
       "path": "drive/so.php",
-      "lines": 2001,
+      "lines": 2002,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -7114,7 +7114,7 @@
     },
     {
       "path": "drive/tests/web_os_clipboard_contract_smoke.php",
-      "lines": 116,
+      "lines": 120,
       "kind": "test script",
       "classes": 0,
       "functions": [],
@@ -8564,7 +8564,7 @@
     },
     {
       "path": "drive/js/move-tasks.js",
-      "lines": 280,
+      "lines": 261,
       "kind": "class/module",
       "classes": [
         "DriveMoveTasks"
@@ -8883,14 +8883,12 @@
     },
     {
       "path": "drive/js/so-clipboard.js",
-      "lines": 806,
+      "lines": 797,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudOsClipboard"
       ],
-      "functions": [
-        "bootArcadeCloudOsClipboard"
-      ],
+      "functions": [],
       "window_assign": [],
       "window_func": [],
       "top_vars": [],
@@ -8902,9 +8900,7 @@
         "json_consumers": 0,
         "response_checks": 0
       },
-      "issues": [
-        "top-level functions: bootArcadeCloudOsClipboard"
-      ]
+      "issues": []
     },
     {
       "path": "drive/js/so-federation.js",
@@ -9088,7 +9084,7 @@
     },
     {
       "path": "drive/js/so.js",
-      "lines": 1187,
+      "lines": 1189,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudOsShell"
@@ -9289,7 +9285,7 @@
     },
     {
       "path": "drive/js/upload-destination.js",
-      "lines": 94,
+      "lines": 95,
       "kind": "class/module",
       "classes": [
         "UploadDestinationModule"

@@ -10,7 +10,7 @@
 - Tests PHP separados del objetivo OOP de runtime: **55**
 - JavaScript analizados: **73**
 - JavaScript que ya contienen clases: **69**
-- JavaScript sin clase/encapsulación OOP: **7**
+- JavaScript sin clase/encapsulación OOP: **6**
 - JavaScript OOP con fachada `window` de compatibilidad: **8**
 - Clientes AJAX detectados: **49** módulos / **106** llamadas
 - JSON analizados: **4**; inválidos: **0**
@@ -164,7 +164,7 @@
 | `drive/set_file_security.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/setup/api.php` | 15 | thin endpoint | 0 | — | — | — | — |
 | `drive/setup/index.php` | 90 | view/entrypoint | 0 | — | — | — | — |
-| `drive/so.php` | 2001 | view/entrypoint | 0 | — | — | — | — |
+| `drive/so.php` | 2002 | view/entrypoint | 0 | — | — | — | — |
 | `drive/src/Activity/ActivityCostRecorder.php` | 155 | class/module | 1 | — | — | — | — |
 | `drive/src/Activity/ActivityCostRepository.php` | 198 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Activity/ActivityCostService.php` | 153 | class/module | 1 | — | — | — | — |
@@ -494,7 +494,7 @@
 | `drive/tests/upload_catalog_registration_regression.php` | 125 | test script | 0 | — | ⚠️ | — | — |
 | `drive/tests/user_identity_presenter_smoke.php` | 30 | test script | 0 | — | — | — | — |
 | `drive/tests/user_profile_validator_smoke.php` | 72 | test script | 0 | — | — | — | — |
-| `drive/tests/web_os_clipboard_contract_smoke.php` | 116 | test script | 0 | — | — | — | — |
+| `drive/tests/web_os_clipboard_contract_smoke.php` | 120 | test script | 0 | — | — | — | — |
 | `drive/tests/web_os_contract_smoke.php` | 482 | test script | 0 | — | — | — | — |
 | `drive/tests/web_os_desktop_shell_smoke.php` | 20 | test script | 0 | — | — | — | — |
 | `drive/tests/web_os_file_applications_smoke.php` | 21 | test script | 0 | — | — | — | — |
@@ -573,7 +573,7 @@
 | `drive/js/media-floating.js` | 696 | class/module | MediaFloatingApp | — | — | — |
 | `drive/js/media-processing.js` | 498 | class/module | MediaProcessingModule | — | — | — |
 | `drive/js/mediaFloating.js` | 38 | class/module | MediaFloatingModule | — | — | — |
-| `drive/js/move-tasks.js` | 280 | class/module | DriveMoveTasks | — | — | — |
+| `drive/js/move-tasks.js` | 261 | class/module | DriveMoveTasks | — | — | — |
 | `drive/js/obtenerFiltros.js` | 125 | class/module | ObtenerFiltrosModule | — | — | — |
 | `drive/js/os-window-manager.js` | 960 | class/module | ArcadeCloudEventBus, ArcadeCloudWindowLayoutConfig, ArcadeCloudWindowManager, ExplorerWindowFactory, ArcadeCloudExplorerWindow, ArcadeCloudDesktopRuntime | — | — | — |
 | `drive/js/pdf-pantalla-completa.js` | 45 | class/module | PdfPantallaCompletaModule | — | — | — |
@@ -585,7 +585,7 @@
 | `drive/js/setup.js` | 192 | class/module | ArcadeCloudSetup | — | — | — |
 | `drive/js/sincronizar.js` | 264 | class/module | SincronizarModule | — | triggerSyncFolderS3, triggerSyncS3 | window functions: triggerSyncFolderS3, triggerSyncS3 |
 | `drive/js/so-appearance.js` | 155 | class/module | ArcadeCloudOsAppearance | — | — | — |
-| `drive/js/so-clipboard.js` | 806 | class/module | ArcadeCloudOsClipboard | bootArcadeCloudOsClipboard | — | top-level functions: bootArcadeCloudOsClipboard |
+| `drive/js/so-clipboard.js` | 797 | class/module | ArcadeCloudOsClipboard | — | — | — |
 | `drive/js/so-federation.js` | 87 | class/module | ArcadeCloudOsFederationApp | — | — | — |
 | `drive/js/so-folders.js` | 442 | class/module | ArcadeCloudOsFolderActions | — | — | — |
 | `drive/js/so-node.js` | 208 | class/module | ArcadeCloudOsNodeMonitor | — | — | — |
@@ -594,7 +594,7 @@
 | `drive/js/so-search.js` | 285 | class/module | ArcadeCloudOsSearch | — | — | — |
 | `drive/js/so-share.js` | 179 | class/module | ArcadeCloudOsShare | — | — | — |
 | `drive/js/so-terminal.js` | 314 | class/module | ArcadeCloudOsTerminal | — | — | — |
-| `drive/js/so.js` | 1187 | class/module | ArcadeCloudOsShell | — | — | — |
+| `drive/js/so.js` | 1189 | class/module | ArcadeCloudOsShell | — | — | — |
 | `drive/js/soportesMediaTypes.js` | 397 | class/module | SoportesMediaTypesModule | — | — | — |
 | `drive/js/storage-usage.js` | 51 | class/module | StorageUsageModule | — | — | — |
 | `drive/js/subir-chunked.js` | 594 | class/module | SubirChunkedModule | — | — | — |
@@ -603,7 +603,7 @@
 | `drive/js/theme-state-bridge.js` | 73 | class/module | ThemeStateBridge | — | — | — |
 | `drive/js/transcribe-background.js` | 323 | class/module | TranscribeBackgroundModule | — | — | — |
 | `drive/js/upload-center.js` | 960 | class/module | ArcadeCloudUploadCenter | — | — | — |
-| `drive/js/upload-destination.js` | 94 | class/module | UploadDestinationModule | — | — | — |
+| `drive/js/upload-destination.js` | 95 | class/module | UploadDestinationModule | — | — | — |
 | `drive/js/ver-metadatos.js` | 75 | class/module | VerMetadatosModule | — | verMetadatos | window functions: verMetadatos |
 | `drive/js/ver-pdf.js` | 112 | class/module | VerPdfModule | — | — | — |
 | `drive/tests/web_os_desktop_shell_functional.js` | 40 | procedural script | — | assert | — | top-level functions: assert; top-level state: editable, records, instance, registered, declarative, launcher, remoteApps; no ES class |

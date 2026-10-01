@@ -310,9 +310,9 @@ webOsContract(str_contains($paths['security_js'], "'relock_file.php'"), 'rebloqu
 webOsContract(str_contains($paths['shell'], 'js/so-node.js'), 'Web OS carga monitor de nodo en vivo');
 webOsContract(str_contains($paths['shell'], 'node-status.php'), 'Mi nodo usa endpoint dedicado de estado');
 webOsContract(str_contains($paths['shell'], 'data-node-field="memory_available"'), 'RAM disponible se actualiza en vivo');
-webOsContract(str_contains($paths['shell'], 'data-node-memory-clear'), 'superadmin dispone de escobilla de memoria');
+webOsContract(str_contains($paths['node_js'], 'data-node-memory-clear'), 'superadmin dispone de escobilla de memoria en Recursos moderno');
 webOsContract(str_contains($paths['shell'], 'data-node-field="disk_used"'), 'Mi nodo muestra disco usado en vivo');
-webOsContract(str_contains($paths['shell'], 'data-node-disk-clean'), 'superadmin dispone de escobilla para liberar disco');
+webOsContract(str_contains($paths['node_js'], 'data-node-disk-clean'), 'superadmin dispone de escobilla de disco en Recursos moderno');
 webOsContract(str_contains($paths['shell'], 'id="nodeDiskCleanModal"'), 'limpieza de disco explica exactamente qué puede borrar');
 webOsContract(str_contains($paths['node_js'], "'disk-clean'"), 'UI programa limpieza de disco como mantenimiento');
 webOsContract(str_contains($paths['node_controller'], "'disk-clean'"), 'endpoint restringe limpieza de disco a acción conocida');

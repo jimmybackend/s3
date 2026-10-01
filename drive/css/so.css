@@ -1108,6 +1108,12 @@ body.arcade-os{
 .os-breadcrumb button{border:0;background:transparent;color:inherit;padding:3px 5px;border-radius:6px}
 .os-breadcrumb button:hover{background:rgba(127,127,127,.18)}
 .os-address-editable input{width:100%;border:0;outline:0;background:transparent;color:inherit;font:inherit}
+.os-address-editable{position:relative;overflow:visible}
+.os-address-suggestions{position:absolute;z-index:40;left:0;right:0;top:calc(100% + 6px);max-height:240px;overflow:auto;border:1px solid var(--os-border);border-radius:10px;background:var(--os-surface);box-shadow:var(--os-shadow);padding:5px}
+.os-address-suggestions[hidden]{display:none}
+.os-address-suggestions button{display:block;width:100%;border:0;border-radius:7px;padding:8px 10px;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;background:transparent;color:var(--os-text)}
+.os-address-suggestions button:hover,.os-address-suggestions button.is-active{background:rgba(38,198,255,.16);color:var(--os-accent-2)}
+.os-node-resource-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:9px}
 .os-window.is-loading .os-explorer-body{opacity:.5;pointer-events:none}
 .os-explorer-error{margin:10px;padding:10px 12px;border-radius:9px;background:rgba(220,53,69,.15);color:#ff8894}
 .os-window.is-drop-target{box-shadow:0 0 0 3px #55aaff,0 24px 70px rgba(0,0,0,.4)}

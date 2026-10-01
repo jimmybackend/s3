@@ -504,21 +504,14 @@ $isExplorerFragment = (string)($_GET['_os_fragment'] ?? '') === 'explorer';
           <button type="button" data-node-tab="fastdrive" role="tab" aria-selected="false">FastDrive</button>
         </div>
 
-        <div class="os-stat-grid os-node-legacy-summary<?= $isSuperAdmin ? '' : ' is-standard' ?>">
-          <?php if ($isSuperAdmin): ?>
-          <article><span>Instancia</span><strong data-node-field="instance_type"><?= $e((string)($nodeSnapshot['instance_type'] ?: 'no identificada')) ?></strong></article>
-          <?php endif; ?>
+        <?php if (!$isSuperAdmin): ?>
+        <div class="os-stat-grid os-node-legacy-summary is-standard">
           <article><span>vCPU</span><strong data-node-field="vcpu"><?= (int)$nodeSnapshot['vcpu'] ?></strong></article>
           <article><span>RAM total</span><strong data-node-field="memory_total"><?= $e($formatBytes((int)$nodeSnapshot['memory_total_bytes'])) ?></strong></article>
           <article class="os-node-memory-card">
             <span>RAM disponible</span>
             <div class="os-node-memory-value">
               <strong data-node-field="memory_available"><?= $e($formatBytes((int)$nodeSnapshot['memory_available_bytes'])) ?></strong>
-              <?php if ($isSuperAdmin): ?>
-              <button type="button" class="os-node-broom" data-node-memory-clear title="Liberar cachés de memoria de forma segura" aria-label="Liberar memoria">
-                <i class="fas fa-broom"></i>
-              </button>
-              <?php endif; ?>
             </div>
           </article>
           <article><span>Disco total</span><strong data-node-field="disk_total"><?= $e($formatBytes($diskTotalBytes)) ?></strong></article>
@@ -526,18 +519,12 @@ $isExplorerFragment = (string)($_GET['_os_fragment'] ?? '') === 'explorer';
             <span>Disco usado</span>
             <div class="os-node-memory-value">
               <strong data-node-field="disk_used"><?= $e($formatBytes($diskUsedBytes)) ?> · <?= $e((string)$diskUsedPercent) ?>%</strong>
-              <?php if ($isSuperAdmin): ?>
-              <button type="button" class="os-node-broom" data-node-disk-clean title="Liberar temporales y logs archivados de forma segura" aria-label="Liberar espacio de disco">
-                <i class="fas fa-broom"></i>
-              </button>
-              <?php endif; ?>
             </div>
           </article>
           <article><span>Disco libre</span><strong data-node-field="disk_free"><?= $e($formatBytes($diskFreeBytes)) ?></strong></article>
-          <?php if ($isSuperAdmin): ?><article><span>Swap</span><strong data-node-field="swap"><?= $e($formatBytes((int)$nodeSnapshot['swap_total_bytes'])) ?></strong></article><?php endif; ?>
           <article><span>Carga</span><strong data-node-field="load"><?= $e(implode(' · ', array_map('strval', $load))) ?></strong></article>
-          <?php if ($isSuperAdmin): ?><article><span>Rol</span><strong data-node-field="role"><?= $e((string)$nodeSnapshot['role']) ?></strong></article><?php endif; ?>
         </div>
+        <?php endif; ?>
 
         <div class="os-node-live-head">
           <small data-node-updated>Datos tomados al abrir ArcadeCloud OS</small>

@@ -21,12 +21,18 @@ final class NodeStatusController extends AbstractJsonController
             if ($this->request->method() === 'GET') {
                 $status = new NodeRuntimeStatusService($this->app);
                 $local = $status->local(dirname(__DIR__, 3));
+                $fastDrive = $status->fastDrive();
+                $isSuperAdmin = $this->app->session()->isSuperAdmin();
+                if (!$isSuperAdmin) {
+                    $local = $this->publicSnapshot($local);
+                    $fastDrive = $this->publicSnapshot($fastDrive);
+                }
                 JsonResponse::send([
                     'ok' => true,
                     // node remains the legacy-compatible local payload.
                     'node' => $local,
                     'local' => $local,
-                    'fastdrive' => $status->fastDrive(),
+                    'fastdrive' => $fastDrive,
                 ]);
             }
 
@@ -90,5 +96,37 @@ final class NodeStatusController extends AbstractJsonController
     {
         // NodeRuntimeStatusService vuelve a medir mediante NodeCapabilityService.
         return (new NodeRuntimeStatusService($this->app))->local(dirname(__DIR__, 3));
+    }
+
+    /**
+     * Node status is useful to every signed-in user, but process, service, network,
+     * database and host identity details are administration data. Keep this
+     * allow-list here (rather than relying on the OS renderer) so a normal user
+     * cannot obtain those fields by calling the JSON endpoint directly.
+     */
+    private function publicSnapshot(array $node): array
+    {
+        $resources = is_array($node['resources'] ?? null) ? $node['resources'] : [];
+        $federation = is_array($node['federation'] ?? null) ? $node['federation'] : [];
+        $health = is_array($node['health'] ?? null) ? $node['health'] : [];
+
+        return [
+            'generated_at' => (string)($node['generated_at'] ?? ''),
+            'available' => (bool)($node['available'] ?? true),
+            'health' => [
+                'state' => (string)($health['state'] ?? 'neutral'),
+                'label' => (string)($health['label'] ?? 'No disponible'),
+            ],
+            'resources' => [
+                'vcpu' => (int)($resources['vcpu'] ?? $node['vcpu'] ?? 0),
+                'load_average' => array_slice((array)($resources['load_average'] ?? $node['load_average'] ?? []), 0, 3),
+                'memory' => (array)($resources['memory'] ?? []),
+                'disk' => (array)($resources['disk'] ?? []),
+            ],
+            'federation' => [
+                'enabled' => (bool)($federation['enabled'] ?? false),
+                'available' => (bool)($federation['available'] ?? false),
+            ],
+        ];
     }
 }

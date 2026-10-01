@@ -318,7 +318,8 @@ class ArcadeCloudOsShell {
   }
 
   selectedFileEntries() {
-    return Array.from(this.document.querySelectorAll('.os-file-entry.is-selected'));
+    const activeExplorer = this.document.querySelector('.os-explorer-window.is-active, #explorerWindow.is-active');
+    return Array.from((activeExplorer || this.document).querySelectorAll('.os-file-entry.is-selected'));
   }
 
   setFileSelected(entry, selected) {

@@ -53,6 +53,17 @@ class ArcadeCloudOsNodeMonitor {
   }
 
   renderLocal(root, node) {
+    if (this.config.superadmin !== true) {
+      root.append(
+        this.healthCard(node),
+        this.resourceCard(node.resources || {}),
+        this.card('FederationCloud', [[
+          'Estado',
+          node.federation?.enabled ? 'Activo' : 'No activo'
+        ]])
+      );
+      return;
+    }
     root.append(this.healthCard(node), this.resourceCard(node.resources || {}), this.servicesCard(node.services || []), this.processesCard(node.processes || []),
       this.phpNginxCard(node.php || {}, node.nginx || {}), this.databaseCard(node.database || {}), this.usersCard(node.users || {}),
       this.federationCard(node.federation || {}), this.activityCard(node.activity || {}), this.programsCard(node.programs || []), this.networkCard(node.network || {}, node));

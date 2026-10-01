@@ -76,31 +76,8 @@ class BackgroundTaskCenter {
       const style = this.document.createElement('style');
       style.id = 'backgroundTaskCenterStyle';
       style.textContent = `
-        #backgroundTaskButton {
-          position:fixed; right:1rem; bottom:1rem; z-index:2075;
-          display:inline-flex; align-items:center; gap:.35rem;
-          min-height:46px; padding:.68rem .9rem;
-          border-radius:14px !important;
-          background:var(--panel-solid, #fff) !important;
-          color:var(--text-strong, #111) !important;
-          border:1px solid rgba(var(--accent-rgb, 14,165,233), .46) !important;
-          box-shadow:0 12px 30px rgba(0,0,0,.22), 0 0 16px rgba(var(--accent-rgb, 14,165,233), .12) !important;
-          font-weight:700;
-        }
-        #backgroundTaskButton:hover {
-          color:var(--accent, #0ea5e9) !important;
-          border-color:rgba(var(--accent-rgb, 14,165,233), .72) !important;
-        }
-        #backgroundTaskButton .bg-task-count {
-          display:inline-flex; align-items:center; justify-content:center;
-          min-width:1.7rem; height:1.7rem; padding:0 .4rem;
-          border-radius:999px;
-          background:var(--accent, #0ea5e9) !important;
-          color:var(--bg, #fff) !important;
-          font-size:.82rem; font-weight:800;
-        }
         #backgroundTaskPanel {
-          position:fixed; right:1rem; bottom:4.9rem; z-index:2074;
+          position:fixed; right:1rem; bottom:3.5rem; z-index:2074;
           width:min(500px, calc(100vw - 2rem));
           max-height:min(80vh, 760px);
           overflow:hidden; display:none;
@@ -259,9 +236,8 @@ class BackgroundTaskCenter {
         }
         @keyframes bgTaskMove { from { transform:translateX(-55%); } to { transform:translateX(145%); } }
         @media (max-width:575.98px) {
-          #backgroundTaskButton { right:.65rem; bottom:.65rem; }
           #backgroundTaskPanel {
-            right:.55rem; left:.55rem; bottom:4.55rem; width:auto;
+            right:.55rem; left:.55rem; bottom:3.5rem; width:auto;
             max-height:78vh; border-radius:14px;
           }
           .bg-task-head { padding:.8rem .82rem; }
@@ -273,19 +249,29 @@ class BackgroundTaskCenter {
       this.document.head.appendChild(style);
     }
 
-    if (!this.document.getElementById('backgroundTaskButton')) {
-      const button = this.document.createElement('button');
+    let button = this.document.getElementById('backgroundTaskButton');
+    if (!button) {
+      button = this.document.createElement('button');
       button.type = 'button';
       button.id = 'backgroundTaskButton';
+      button.className = 'os-task-center-button';
       button.setAttribute('aria-controls', 'backgroundTaskPanel');
       button.setAttribute('aria-expanded', 'false');
-      button.innerHTML = 'Tareas <span class="bg-task-count">0</span>';
+      button.setAttribute('title', 'Tareas');
+      button.setAttribute('aria-label', 'Abrir tareas');
+      button.innerHTML = '<i class="fas fa-list-check"></i><span class="bg-task-count">0</span>';
+      const taskbar = this.document.querySelector('.os-taskbar');
+      const clock = this.document.getElementById('osClock');
+      if (taskbar) taskbar.insertBefore(button, clock || null);
+      else this.document.body.appendChild(button);
+    }
+    if (!button.dataset.taskCenterBound) {
+      button.dataset.taskCenterBound = '1';
       button.addEventListener('click', () => {
         this.open = !this.open;
         this.render();
         if (this.open) this.refresh();
       });
-      this.document.body.appendChild(button);
     }
 
     if (!this.document.getElementById('backgroundTaskPanel')) {

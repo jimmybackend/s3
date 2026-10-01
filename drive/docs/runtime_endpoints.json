@@ -162,6 +162,7 @@
         "drive/federationdrop/google-login.php",
         "drive/federationdrop/google-logout.php",
         "drive/federationdrop/index.php",
+        "drive/folder-suggestions.php",
         "drive/generar_token.php",
         "drive/guardar_texto.php",
         "drive/leer_texto.php",
@@ -707,6 +708,7 @@
         "drive/bloque_archivos.php",
         "drive/bloque_carpetas.php",
         "drive/fastdrive-control.php",
+        "drive/folder-suggestions.php",
         "drive/office-launch.php",
         "drive/s3.php",
         "drive/so.php",
@@ -1072,6 +1074,7 @@
         "drive/bloque_archivos.php",
         "drive/bloque_carpetas.php",
         "drive/fastdrive-control.php",
+        "drive/folder-suggestions.php",
         "drive/office-launch.php",
         "drive/s3.php",
         "drive/so.php",
@@ -1085,6 +1088,15 @@
         "drive/tests/office_gateway_contract_smoke.php",
         "drive/tests/web_os_contract_smoke.php",
         "drive/up.php"
+      ]
+    },
+    {
+      "path": "drive/folder-suggestions.php",
+      "size": 1797,
+      "active": false,
+      "references": [
+        "drive/tests/web_os_multiwindow_smoke.php",
+        "drive/js/os-window-manager.js"
       ]
     },
     {
@@ -1114,6 +1126,7 @@
         "drive/bloque_archivos.php",
         "drive/bloque_carpetas.php",
         "drive/fastdrive-control.php",
+        "drive/folder-suggestions.php",
         "drive/office-launch.php",
         "drive/s3.php",
         "drive/so.php",
@@ -1455,6 +1468,7 @@
         "drive/bloque_archivos.php",
         "drive/bloque_carpetas.php",
         "drive/fastdrive-control.php",
+        "drive/folder-suggestions.php",
         "drive/office-launch.php",
         "drive/s3.php",
         "drive/so.php",
@@ -1472,7 +1486,7 @@
     },
     {
       "path": "drive/so.php",
-      "size": 108982,
+      "size": 107789,
       "active": true,
       "references": [
         "drive/s3.php",
@@ -3295,9 +3309,11 @@
     },
     {
       "path": "drive/src/Storage/FolderRepository.php",
-      "size": 2858,
+      "size": 4034,
       "active": false,
-      "references": []
+      "references": [
+        "drive/tests/web_os_multiwindow_smoke.php"
+      ]
     },
     {
       "path": "drive/src/Storage/MoveJobStore.php",
@@ -3781,7 +3797,7 @@
     },
     {
       "path": "drive/tests/node_diagnostics_contract_smoke.php",
-      "size": 5650,
+      "size": 5851,
       "active": false,
       "references": []
     },
@@ -3895,19 +3911,19 @@
     },
     {
       "path": "drive/tests/web_os_contract_smoke.php",
-      "size": 48829,
+      "size": 48863,
       "active": false,
       "references": []
     },
     {
       "path": "drive/tests/web_os_multiwindow_smoke.php",
-      "size": 3960,
+      "size": 5520,
       "active": false,
       "references": []
     },
     {
       "path": "drive/tests/web_os_pending_fixes_smoke.php",
-      "size": 3470,
+      "size": 3492,
       "active": false,
       "references": []
     },

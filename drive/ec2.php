@@ -625,6 +625,7 @@ Escribe help para ver los comandos permitidos.</pre>
 
 <script>
 (function(){
+  const ec2Endpoint = new URL('ec2.php', window.location.href);
   const csrf = "<?= H::e($csrf) ?>";
   const region = "<?= H::e($region) ?>";
   const RDP_INSTANCE_ID = "<?= H::e(RDP_INSTANCE_ID) ?>";
@@ -754,7 +755,7 @@ Escribe help para ver los comandos permitidos.</pre>
 
   async function fetchStatus(id){
     try{
-      const url = `?ajax=status&id=${encodeURIComponent(id)}&region=${encodeURIComponent(region)}&_=${Date.now()}`;
+      const url = new URL(ec2Endpoint); url.search = `?ajax=status&id=${encodeURIComponent(id)}&region=${encodeURIComponent(region)}&_=${Date.now()}`;
       const res = await fetch(url, {credentials:'same-origin'});
       return await res.json();
     }catch(e){ return {ok:false,error:String(e)}; }
@@ -773,7 +774,7 @@ Escribe help para ver los comandos permitidos.</pre>
       if (force) fd.append('force','1');
       fd.append('pw', pw || '');
 
-      const res = await fetch(window.location.href, {method:'POST', body:fd, credentials:'same-origin'});
+      const res = await fetch(ec2Endpoint, {method:'POST', body:fd, credentials:'same-origin'});
       const data = await res.json();
       if (!data.ok){
         alert(data.error || 'Error');
@@ -984,7 +985,7 @@ Escribe help para ver los comandos permitidos.</pre>
 
   async function fetchRdsStatus(id){
     try{
-      const url = `?ajax=rds_status&id=${encodeURIComponent(id)}&region=${encodeURIComponent(region)}&_=${Date.now()}`;
+      const url = new URL(ec2Endpoint); url.search = `?ajax=rds_status&id=${encodeURIComponent(id)}&region=${encodeURIComponent(region)}&_=${Date.now()}`;
       const res = await fetch(url, {credentials:'same-origin'});
       return await res.json();
     }catch(e){ return {ok:false,error:String(e)}; }
@@ -1018,7 +1019,7 @@ Escribe help para ver los comandos permitidos.</pre>
       fd.append('action', action);
       fd.append('pw', pw || '');
 
-      const res = await fetch(window.location.href, {method:'POST', body:fd, credentials:'same-origin'});
+      const res = await fetch(ec2Endpoint, {method:'POST', body:fd, credentials:'same-origin'});
       const data = await res.json();
       if (!data.ok){
         alert(data.error || 'Error');

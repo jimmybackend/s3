@@ -6,6 +6,7 @@ class FederationShareDriveModule {
     this.rows = [];
     this.observer = null;
     this.pollTimer = null;
+    this.baseUrl = doc.body?.classList.contains('federation-portal-embedded') ? 'federationcloud/' : '';
   }
 
   init() {
@@ -176,7 +177,7 @@ class FederationShareDriveModule {
 
   async fetchJson(url, options = {}) {
     const headers = { Accept: 'application/json', ...(options.headers || {}) };
-    const response = await fetch(url, { ...options, headers });
+    const response = await fetch(new URL(this.baseUrl + url, this.window.location.href), { ...options, headers });
     const text = await response.text();
     let data = null;
     try { data = text ? JSON.parse(text) : {}; } catch (_) { data = null; }
@@ -208,4 +209,5 @@ class FederationShareDriveModule {
   }
 }
 
-FederationShareDriveModule.boot();
+window.FederationShareDriveModule = FederationShareDriveModule;
+if (document.body?.classList.contains('federation-portal-body')) FederationShareDriveModule.boot();

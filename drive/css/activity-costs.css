@@ -1,4 +1,4 @@
-.activity-cost-page { min-height: 100vh; }
+.activity-cost-page, .os-tool-body .activity-shell { min-height: 100%; color: var(--os-text, inherit); background: var(--os-bg, transparent); }
 .activity-cost-page .activity-shell.container-fluid {
   display: block !important;
   flex: none !important;
@@ -60,7 +60,11 @@
 .activity-status { display: inline-block; padding: 2px 7px; border-radius: 999px; font-size: .72rem; font-weight: 800; }
 .activity-status.ok { color: #2f9e44; border: 1px solid currentColor; }
 .activity-status.error { color: #c92a2a; border: 1px solid currentColor; }
-body.theme-dark .activity-filter-card, body.theme-dark .activity-stat-card, body.theme-dark .activity-panel, body.theme-dark .activity-notice { background: rgba(0,0,0,.28); }
+body.theme-dark .activity-filter-card, body.theme-dark .activity-stat-card, body.theme-dark .activity-panel, body.theme-dark .activity-notice,
+.arcade-os .activity-filter-card,.arcade-os .activity-stat-card,.arcade-os .activity-panel,.arcade-os .activity-notice { background: var(--os-surface); color: var(--os-text); border-color: var(--os-border); }
+.arcade-os .activity-table,.arcade-os .activity-table th,.arcade-os .activity-table td,.arcade-os .activity-filter-card label,.arcade-os .activity-section-title,.arcade-os .activity-header { color: var(--os-text); border-color: var(--os-divider); }
+.arcade-os .activity-table thead th { background: var(--os-surface-2); }
+.arcade-os .activity-cost-page .text-muted,.arcade-os .activity-shell small { color: var(--os-soft)!important; }
 body.theme-light .activity-filter-card, body.theme-light .activity-stat-card, body.theme-light .activity-panel, body.theme-light .activity-notice { background: #fff; color: #132238; }
 body.theme-light .activity-table { color: #132238; }
 body.theme-light .activity-table thead th { color: #132238; background: #d9f7f2; }

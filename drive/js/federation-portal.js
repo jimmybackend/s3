@@ -9,6 +9,7 @@ class FederationPortalModule {
     this.dropCommerceUrl = String(doc.body?.dataset?.federationDropUrl || '').replace(/\/$/, '');
     this.dropSource = String(doc.body?.dataset?.federationDropSource || '');
     this.embedded = Boolean(doc.body?.classList.contains('federation-portal-embedded'));
+    this.baseUrl = this.embedded ? 'federationcloud/' : '';
     this.state = { incoming: [], outgoing: [], shares: [], replicas: [] };
   }
 
@@ -466,7 +467,7 @@ class FederationPortalModule {
 
   async fetchJson(url, options = {}) {
     const headers = { Accept: 'application/json', ...(options.headers || {}) };
-    const response = await fetch(url, { ...options, headers });
+    const response = await fetch(new URL(this.baseUrl + url, this.window.location.href), { ...options, headers });
     const text = await response.text();
     let data = null;
     try { data = text ? JSON.parse(text) : {}; } catch (_) { data = null; }
@@ -503,4 +504,5 @@ class FederationPortalModule {
   }
 }
 
-FederationPortalModule.boot();
+window.FederationPortalModule = FederationPortalModule;
+if (document.body?.classList.contains('federation-portal-body')) FederationPortalModule.boot();

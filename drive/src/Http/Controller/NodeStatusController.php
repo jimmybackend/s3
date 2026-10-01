@@ -108,10 +108,17 @@ final class NodeStatusController extends AbstractJsonController
         $resources = is_array($node['resources'] ?? null) ? $node['resources'] : [];
         $federation = is_array($node['federation'] ?? null) ? $node['federation'] : [];
         $health = is_array($node['health'] ?? null) ? $node['health'] : [];
+        $identity = is_array($node['identity'] ?? null) ? $node['identity'] : [];
 
         return [
+            'scope' => 'local',
             'generated_at' => (string)($node['generated_at'] ?? ''),
             'available' => (bool)($node['available'] ?? true),
+            'identity' => [
+                'display_name' => (string)($identity['display_name'] ?? ''),
+                'node_name' => (string)($identity['node_name'] ?? ''),
+                'role' => (string)($identity['role'] ?? ''),
+            ],
             'health' => [
                 'state' => (string)($health['state'] ?? 'neutral'),
                 'label' => (string)($health['label'] ?? 'No disponible'),

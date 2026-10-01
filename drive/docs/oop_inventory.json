@@ -9,7 +9,7 @@
     "js_needs_migration": 1,
     "js_compatibility_facades": 8,
     "ajax_clients": 48,
-    "ajax_calls": 102,
+    "ajax_calls": 103,
     "json_total": 4,
     "json_invalid": 0
   },
@@ -1736,7 +1736,7 @@
     },
     {
       "path": "drive/os-preferences.php",
-      "lines": 51,
+      "lines": 66,
       "kind": "thin endpoint",
       "classes": 0,
       "functions": [],
@@ -2043,7 +2043,7 @@
     },
     {
       "path": "drive/so.php",
-      "lines": 1996,
+      "lines": 1999,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -7110,7 +7110,7 @@
     },
     {
       "path": "drive/tests/web_os_contract_smoke.php",
-      "lines": 480,
+      "lines": 481,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -7127,7 +7127,7 @@
     },
     {
       "path": "drive/tests/web_os_multiwindow_smoke.php",
-      "lines": 44,
+      "lines": 48,
       "kind": "test script",
       "classes": 0,
       "functions": [],
@@ -8466,7 +8466,7 @@
     },
     {
       "path": "drive/js/os-window-manager.js",
-      "lines": 535,
+      "lines": 586,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudEventBus",
@@ -8486,7 +8486,7 @@
       "top_vars": [],
       "iife": false,
       "ajax": {
-        "fetch": 2,
+        "fetch": 3,
         "xhr": 0,
         "jquery": 0,
         "json_consumers": 0,
@@ -8932,7 +8932,7 @@
     },
     {
       "path": "drive/js/so.js",
-      "lines": 1301,
+      "lines": 1306,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudOsShell"
@@ -9208,7 +9208,7 @@
     },
     {
       "path": "drive/tests/web_os_multiwindow_functional.js",
-      "lines": 77,
+      "lines": 85,
       "kind": "class/module",
       "classes": [
         "Classes",
@@ -9286,7 +9286,7 @@
     },
     {
       "path": "drive/docs/runtime_endpoints.json",
-      "bytes": 113882,
+      "bytes": 114345,
       "valid": true,
       "root_type": "object",
       "keys": [

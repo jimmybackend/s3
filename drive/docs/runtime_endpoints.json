@@ -2854,9 +2854,11 @@
     },
     {
       "path": "drive/src/Http/Controller/PersonalAwsController.php",
-      "size": 2622,
+      "size": 3431,
       "active": false,
-      "references": []
+      "references": [
+        "drive/tests/web_os_pending_fixes_smoke.php"
+      ]
     },
     {
       "path": "drive/src/Http/Controller/PollyTaskController.php",
@@ -3905,19 +3907,19 @@
     },
     {
       "path": "drive/tests/web_os_clipboard_contract_smoke.php",
-      "size": 10201,
+      "size": 10211,
       "active": false,
       "references": []
     },
     {
       "path": "drive/tests/web_os_contract_smoke.php",
-      "size": 49165,
+      "size": 49171,
       "active": false,
       "references": []
     },
     {
       "path": "drive/tests/web_os_interactions_theme_smoke.php",
-      "size": 2261,
+      "size": 2686,
       "active": false,
       "references": []
     },
@@ -3929,7 +3931,7 @@
     },
     {
       "path": "drive/tests/web_os_pending_fixes_smoke.php",
-      "size": 4122,
+      "size": 4760,
       "active": false,
       "references": []
     },

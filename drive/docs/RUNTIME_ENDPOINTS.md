@@ -336,7 +336,7 @@
 | `drive/src/Http/Controller/NavigationController.php` | ninguna |
 | `drive/src/Http/Controller/NodeStatusController.php` | `drive/tests/node_diagnostics_contract_smoke.php`, `drive/tests/node_diagnostics_control_smoke.php`, `drive/tests/web_os_contract_smoke.php`, `drive/tests/web_os_multiwindow_smoke.php`, `drive/tests/web_os_pending_fixes_smoke.php` |
 | `drive/src/Http/Controller/OfficeDocumentController.php` | `drive/tests/office_gateway_contract_smoke.php` |
-| `drive/src/Http/Controller/PersonalAwsController.php` | ninguna |
+| `drive/src/Http/Controller/PersonalAwsController.php` | `drive/tests/web_os_pending_fixes_smoke.php` |
 | `drive/src/Http/Controller/PollyTaskController.php` | ninguna |
 | `drive/src/Http/Controller/PublicShareController.php` | ninguna |
 | `drive/src/Http/Controller/PublicSharedBrowserController.php` | ninguna |

@@ -22,6 +22,8 @@ final class NodeCapabilityService
             'instance_id' => (string)($imds['instance_id'] ?? ''),
             'instance_type' => (string)($imds['instance_type'] ?? ''),
             'availability_zone' => (string)($imds['availability_zone'] ?? ''),
+            'private_ip' => (string)($imds['private_ip'] ?? ''),
+            'public_ip' => (string)($imds['public_ip'] ?? ''),
             'vcpu' => $this->cpuCount(),
             'memory_total_bytes' => (int)($memory['MemTotal'] ?? 0),
             'memory_available_bytes' => (int)($memory['MemAvailable'] ?? 0),
@@ -210,6 +212,8 @@ final class NodeCapabilityService
             'instance_id' => $this->curlMetadata(self::IMDS_BASE . '/meta-data/instance-id', $headers),
             'instance_type' => $this->curlMetadata(self::IMDS_BASE . '/meta-data/instance-type', $headers),
             'availability_zone' => $this->curlMetadata(self::IMDS_BASE . '/meta-data/placement/availability-zone', $headers),
+            'private_ip' => $this->curlMetadata(self::IMDS_BASE . '/meta-data/local-ipv4', $headers),
+            'public_ip' => $this->curlMetadata(self::IMDS_BASE . '/meta-data/public-ipv4', $headers),
         ];
     }
 

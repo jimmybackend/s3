@@ -16,7 +16,7 @@ class ArcadeCloudPageTaskManager {
     const records = this.manager.openRecords ? this.manager.openRecords() : [];
     const open = records.filter(record => record.status === 'open').length;
     const minimized = records.filter(record => record.status === 'minimized').length;
-    const taskCenter = this.window.ArcadeCloudBackgroundTaskCenter;
+    const taskCenter = this.window.BackgroundTaskCenter;
     this.set('[data-page-dom-nodes]', this.document.getElementsByTagName('*').length.toLocaleString());
     this.set('[data-page-windows]', String(records.length));
     this.set('[data-page-window-detail]', `${open} abiertas · ${minimized} minimizadas`);

@@ -2060,7 +2060,7 @@
     },
     {
       "path": "drive/so.php",
-      "lines": 1995,
+      "lines": 1992,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -7127,7 +7127,7 @@
     },
     {
       "path": "drive/tests/web_os_contract_smoke.php",
-      "lines": 481,
+      "lines": 482,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -8483,10 +8483,11 @@
     },
     {
       "path": "drive/js/os-window-manager.js",
-      "lines": 685,
+      "lines": 729,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudEventBus",
+        "ArcadeCloudWindowLayoutConfig",
         "ArcadeCloudWindowManager",
         "ExplorerWindowFactory",
         "ArcadeCloudExplorerWindow",
@@ -8748,7 +8749,7 @@
     },
     {
       "path": "drive/js/so-clipboard.js",
-      "lines": 774,
+      "lines": 776,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudOsClipboard"
@@ -8949,7 +8950,7 @@
     },
     {
       "path": "drive/js/so.js",
-      "lines": 1322,
+      "lines": 1316,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudOsShell"
@@ -9225,7 +9226,7 @@
     },
     {
       "path": "drive/tests/web_os_multiwindow_functional.js",
-      "lines": 108,
+      "lines": 119,
       "kind": "class/module",
       "classes": [
         "Classes",
@@ -9240,6 +9241,7 @@
       "top_vars": [
         "taskbar",
         "documentStub",
+        "windowStubApi",
         "manager",
         "node",
         "settings",
@@ -9252,7 +9254,10 @@
         "pdfA",
         "pdfB",
         "clipboard",
-        "backendRequest"
+        "backendRequest",
+        "restored",
+        "legacy",
+        "tool"
       ],
       "iife": false,
       "ajax": {

@@ -21,18 +21,17 @@ final class NodeStatusController extends AbstractJsonController
             if ($this->request->method() === 'GET') {
                 $status = new NodeRuntimeStatusService($this->app);
                 $local = $status->local(dirname(__DIR__, 3));
-                $fastDrive = $status->fastDrive();
-                $isSuperAdmin = $this->app->session()->isSuperAdmin();
-                if (!$isSuperAdmin) {
+                if (!$this->app->session()->isSuperAdmin()) {
                     $local = $this->publicSnapshot($local);
-                    $fastDrive = $this->publicSnapshot($fastDrive);
                 }
                 JsonResponse::send([
                     'ok' => true,
-                    // node remains the legacy-compatible local payload.
+                    // Mi nodo is deliberately scoped to the server handling this request.
+                    // FederationCloud owns remote-node discovery; this endpoint never accepts
+                    // or resolves a remote node target.
+                    'scope' => 'local',
                     'node' => $local,
                     'local' => $local,
-                    'fastdrive' => $fastDrive,
                 ]);
             }
 

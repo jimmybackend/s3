@@ -479,7 +479,7 @@ class ArcadeCloudExplorerWindow {
       else if (event.altKey && event.key === 'ArrowRight') { event.preventDefault(); this.forward(); }
       else if (event.ctrlKey && ['c','x'].includes(event.key.toLowerCase()) && selected.length) {
         event.preventDefault(); this.runtime.window.ArcadeCloudOsClipboard?.captureFiles?.(selected[0], event.key.toLowerCase() === 'c' ? 'copy' : 'move', { sourceWindowId: this.id, sourceRoute: this.route, entries: selected });
-      } else if (event.ctrlKey && event.key.toLowerCase() === 'v') { event.preventDefault(); this.runtime.window.ArcadeCloudOsClipboard?.paste?.(this.route); }
+      } else if (event.ctrlKey && event.key.toLowerCase() === 'v') { event.preventDefault(); this.runtime.window.ArcadeCloudOsClipboard?.paste?.(this.route, { destinationWindowId: this.id }); }
       else if (event.key === 'Delete' && selected.length) { event.preventDefault(); this.runtime.window.ArcadeCloudOsShell?.deleteSelectedFiles?.(); }
       else if (event.key === 'Enter' && selected.length === 1) { event.preventDefault(); this.runtime.window.ArcadeCloudOsShell?.openFileEntry?.(selected[0], false, { sourceWindowId: this.id }); }
     };
@@ -595,7 +595,7 @@ class ArcadeCloudExplorerWindow {
         const entries = data.keys.map(key => source?.win.querySelector(`.os-file-entry[data-key="${CSS.escape(key)}"]`)).filter(Boolean);
         if (entries.length) clipboard?.captureFiles?.(entries[0], choice, { sourceWindowId: data.sourceWindowId, sourceRoute: data.sourceRoute, entries });
       }
-      await clipboard?.paste?.(destinationRoute);
+      await clipboard?.paste?.(destinationRoute, { destinationWindowId: this.id });
       this.runtime.bus.emit(choice === 'copy' ? 'file-copied' : 'file-moved', { sourceRoute: data.sourceRoute, destinationRoute });
     };
     this.win.addEventListener('dragstart', start); this.win.addEventListener('dragover', over); this.win.addEventListener('dragleave', leave); this.win.addEventListener('drop', drop);
@@ -634,7 +634,11 @@ class ArcadeCloudDesktopRuntime {
     }, true);
     this.document.addEventListener('pointerdown', event => { const element = event.target.closest('.os-window'); if (element) this.manager.focus(element); }, true);
     ['file-moved','file-copied','file-deleted','folder-created','upload-completed','task-completed'].forEach(type => this.bus.on(type, event => this.refreshAffected(event.detail)));
-    this.document.addEventListener('drive:move-task-completed', event => this.bus.emit('task-completed', event.detail || {}));
+    this.document.addEventListener('drive:move-task-completed', event => {
+      const active = this.window.ArcadeCloudOsClipboard?.activeTransfer;
+      if (active && String(active.jobId || '') === String(event.detail?.job_id || '')) return;
+      this.bus.emit('task-completed', event.detail || {});
+    });
     this.document.addEventListener('drive:storage-changed', event => this.bus.emit('upload-completed', event.detail || {}));
     this.observer = new MutationObserver(records => records.forEach(record => record.addedNodes.forEach(node => {
       if (!(node instanceof Element) || !node.matches('.os-window')) return;
@@ -762,6 +766,10 @@ class ArcadeCloudDesktopRuntime {
       event.preventDefault();
       const target = new URL(form.action || url, this.window.location.href);
       const data = new FormData(form);
+      if (form.matches('[data-os-totp-form]')) {
+        this.submitTotpForm(body, target, data, form);
+        return;
+      }
       if ((form.method || 'get').toLowerCase() === 'get') data.forEach((value, key) => target.searchParams.set(key, String(value)));
       this.loadToolContent(body, target.toString(), (form.method || 'get').toLowerCase() === 'post' ? { method: 'POST', body: data } : {})
         .catch(error => { body.textContent = error?.message || 'No se pudo ejecutar la herramienta.'; });
@@ -772,6 +780,35 @@ class ArcadeCloudDesktopRuntime {
       body.textContent = error?.message || 'No se pudo abrir la herramienta.';
     }
     return element;
+  }
+
+  async submitTotpForm(body, target, data, form) {
+    const button = form.querySelector('button[type="submit"],button:not([type])');
+    const previous = button?.textContent || '';
+    if (button) { button.disabled = true; button.textContent = 'Generando…'; }
+    const errorBox = body.querySelector('[data-totp-error]');
+    try {
+      target.searchParams.set('arcadecloud_os', '1');
+      const response = await this.window.fetch(target.toString(), {
+        method: 'POST', body: data, credentials: 'same-origin', cache: 'no-store',
+        headers: { 'X-ArcadeCloud-Embed': '1', 'X-Requested-With': 'XMLHttpRequest', Accept: 'application/json' }
+      });
+      const payload = await response.json();
+      if (!response.ok || payload?.ok !== true || !payload.result) throw new Error(payload?.error || 'No se pudo generar el código.');
+      const result = body.querySelector('[data-totp-result]');
+      if (!result) throw new Error('La ventana TOTP no contiene el área de resultado.');
+      result.hidden = false;
+      result.innerHTML = '<div class="muted" data-totp-label></div><div class="otp" id="otp-code" role="button" tabindex="0" aria-label="Copiar código TOTP"></div><div class="copy-hint" id="copy-status" aria-live="polite">Toca el código para copiar</div><div>Válido aproximadamente <span id="timer"></span> s</div>';
+      result.querySelector('[data-totp-label]').textContent = String(payload.result.label || '');
+      result.querySelector('#otp-code').textContent = String(payload.result.code || '');
+      result.querySelector('#timer').textContent = String(payload.result.remaining || 0);
+      if (payload.result.note) { const note = this.document.createElement('div'); note.className = 'note'; note.textContent = String(payload.result.note); result.append(note); }
+      if (errorBox) { errorBox.hidden = true; errorBox.textContent = ''; }
+    } catch (error) {
+      if (errorBox) { errorBox.hidden = false; errorBox.textContent = error?.message || 'No se pudo generar el código.'; }
+    } finally {
+      if (button) { button.disabled = false; button.textContent = previous; }
+    }
   }
 
   async loadToolContent(body, url, options = {}) {

@@ -53,13 +53,17 @@ $assert(str_contains($files['clipboard'], 'JSON.stringify(keys)'), 'pegar envía
 $assert(str_contains($files['clipboard'], "data-os-clipboard-action"), 'menús incorporan acciones de portapapeles');
 $assert(str_contains($files['clipboard'], "operation: item.mode"), 'pegar conserva copy o move');
 $assert(str_contains($files['clipboard'], 'sourceWindowId: context.sourceWindowId') && str_contains($files['clipboard'], 'sourceRoute: context.sourceRoute') && str_contains($files['clipboard'], 'items: keys'), 'portapapeles global conserva origen, elementos y operación');
+$assert(str_contains($files['clipboard'], 'ruta_actual: String(item.sourceRoute || this.currentRoute())'), 'pegado conserva la ruta de origen aunque la misma Explorer navegue');
+$assert(str_contains($files['clipboard'], 'destinationWindowId: String(context.destinationWindowId || \'\')'), 'pegado identifica la Explorer destino sin exigir otra ventana');
+$assert(str_contains($files['clipboard'], 'this.window.ArcadeCloudDesktop?.explorers?.get(finished.destinationWindowId)'), 'finalización refresca solamente la Explorer destino');
+$assert(str_contains($files['moveTasks'], 'ArcadeCloudOsClipboard?.activeTransfer'), 'tarea gestionada por el OS omite refresco global legacy');
 $assert(str_contains($files['clipboard'], 'injectPasteToolbar()'), 'SO crea botón temporal para pegar en la carpeta actual');
 $assert(!str_contains($files['clipboard'], 'visibleFiles >= 20'), 'botón superior ya no depende de una página llena');
 $assert(str_contains($files['clipboard'], 'button.hidden = !hasClipboard'), 'botón superior permanece visible mientras exista portapapeles');
 $assert(!str_contains($files['clipboard'], "'Mover aquí'") && str_contains($files['clipboard'], "const actionLabel = 'Pegar aquí'"), 'botón superior usa Pegar aquí para copy y cut');
 $assert(str_contains($files['clipboard'], "dataset.osPasteCurrent"), 'botón superior se identifica como destino actual');
 $assert(str_contains($files['clipboardCss'], '.os-toolbar-paste'), 'botón superior tiene estilo propio');
-$assert(str_contains($files['moveTasks'], 'so-clipboard.js?v=20260927-4'), 'cambio de compartir invalida caché del navegador');
+$assert(str_contains($files['moveTasks'], 'so-clipboard.js?v=20261001-1'), 'cambio de clipboard invalida caché del navegador');
 $assert(str_contains($files['clipboard'], 'ArcadeCloudOsShare?.open'), 'menú del SO abre panel completo de compartir');
 $assert(!str_contains($files['clipboard'], "¿Cuántos días debe funcionar"), 'compartir ya no usa prompt del navegador');
 $assert(str_contains($files['share'], "generar_token.php"), 'panel completo genera enlace directo');

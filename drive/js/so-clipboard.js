@@ -192,7 +192,8 @@ class ArcadeCloudOsClipboard {
           if (folder && folder.route) destination = String(folder.route);
           this.window.ArcadeCloudOsFolders?.hideContext?.();
         }
-        await this.paste(destination);
+        const destinationWindowId = button.closest('.os-window')?.dataset.windowId || '';
+        await this.paste(destination, { destinationWindowId });
         return;
       }
 
@@ -462,7 +463,7 @@ class ArcadeCloudOsClipboard {
     });
   }
 
-  async paste(destination) {
+  async paste(destination, context = {}) {
     const item = this.clipboard;
     if (!item) {
       this.notify('Primero copia o corta un archivo o carpeta.', 'warning');
@@ -483,7 +484,7 @@ class ArcadeCloudOsClipboard {
     const payload = {
       type: item.kind === 'file' ? 'files' : 'folder',
       operation: item.mode,
-      ruta_actual: this.currentRoute()
+      ruta_actual: String(item.sourceRoute || this.currentRoute())
     };
 
     if (item.kind === 'file') {
@@ -517,6 +518,9 @@ class ArcadeCloudOsClipboard {
         operation: item.mode,
         kind: item.kind,
         name: item.name,
+        sourceRoute: String(item.sourceRoute || ''),
+        destinationRoute: destination,
+        destinationWindowId: String(context.destinationWindowId || ''),
         clearClipboardOnSuccess: item.mode === 'move'
       };
       this.persistTransfer();
@@ -564,10 +568,12 @@ class ArcadeCloudOsClipboard {
 
     if (finished.clearClipboardOnSuccess) this.clearClipboard();
 
-    const route = this.currentRoute();
-    if (route && this.window.ArcadeCloudOsShell?.refreshExplorer) {
+    const explorer = finished.destinationWindowId
+      ? this.window.ArcadeCloudDesktop?.explorers?.get(finished.destinationWindowId)
+      : null;
+    if (explorer?.navigate) {
       try {
-        await this.window.ArcadeCloudOsShell.refreshExplorer(route, { replaceHistory: true });
+        await explorer.navigate(explorer.route, { replace: true, page: explorer.page });
       } catch (_) {}
     }
 
@@ -756,7 +762,7 @@ class ArcadeCloudOsClipboard {
   }
 }
 
-(function bootArcadeCloudOsClipboard(win, doc) {
+function bootArcadeCloudOsClipboard(win, doc) {
   let attempts = 0;
   const boot = () => {
     if (!doc.querySelector('.os-explorer-live')) return;
@@ -776,4 +782,7 @@ class ArcadeCloudOsClipboard {
   } else {
     boot();
   }
-})(window, document);
+}
+
+if (typeof module !== 'undefined') module.exports = { ArcadeCloudOsClipboard };
+if (typeof window !== 'undefined' && typeof document !== 'undefined') bootArcadeCloudOsClipboard(window, document);

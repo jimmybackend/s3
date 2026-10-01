@@ -22,13 +22,17 @@ $ok(str_contains($node, 'updateMemoryFields(data.node || {})') && str_contains($
 $ok(str_contains($probe, "'office' => \$this->hasActiveOfficeSessions()") && substr_count($probe, 'hasActiveJobs()') >= 3, 'limpieza espera Office, sync, move y media activos');
 $ok(str_contains($helper, 'Temporales:') && str_contains($helper, 'Logs:') && str_contains($helper, 'Otros seguros:'), 'resultado de disco informa bytes por categoría sin rutas');
 
-foreach (['activity-costs', 'aws', 'ec2', 's3-sync'] as $tool) {
+foreach (['activity-costs', 'aws', 'ec2'] as $tool) {
     $ok(str_contains($shell, 'data-os-tool="' . $tool . '"'), "{$tool} abre como herramienta interna");
 }
+$ok(!str_contains($shell, 'data-os-tool="s3-sync"') && !str_contains($shell, 'data-tool-title="Costos AWS"'), 'Enlaces omite sincronización S3 y el acceso redundante Costos AWS');
+$ok(str_contains($shell, 'data-tool-title="Actividad y costos"'), 'Enlaces conserva Actividad y costos');
 $ok(str_contains($shell, 'data-window-open="terminalWindow"') && str_contains($shell, 'data-window-open="federationWindow"'), 'Consola y Federation reutilizan ventanas internas existentes');
 $ok(!str_contains($shell, 'href="aws.php" target="_blank"') && !str_contains($shell, 'href="ec2.php" target="_blank"'), 'herramientas propias no fuerzan navegación externa');
 $ok(str_contains($windows, "this.manager.register(element, app") && str_contains($windows, "const app = 'tool-'"), 'WindowManager registra una tarea independiente por herramienta');
 $ok(str_contains($windows, "page.querySelector('main')") && !str_contains($windows, '<iframe class="os-viewer-frame" title="Herramienta"'), 'cargador importa sólo main, sin iframe ni navbar global');
+$ok(str_contains($windows, "form.matches('[data-os-totp-form]')") && str_contains($windows, 'submitTotpForm(body, target, data, form)'), 'Generador TOTP usa envío AJAX dentro de su ventana');
+$ok(str_contains($windows, "'X-ArcadeCloud-Embed': '1'") && str_contains($windows, 'payload.result.code'), 'Generador TOTP consume resultado JSON sin navegar');
 
 $ok(str_contains($node, 'updateIdleCountdown()') && str_contains($node, 'this.idleRemaining - 1'), 'countdown local actualiza cada segundo');
 $ok(str_contains($node, 'setInterval(() => { if (this.isOpen()) this.refresh()') && str_contains($node, '}, 30000)'), 'polling real permanece en 30 segundos');

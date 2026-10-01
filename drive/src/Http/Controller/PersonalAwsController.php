@@ -5,6 +5,7 @@ namespace ArcadeCloud\Drive\Http\Controller;
 
 use ArcadeCloud\Drive\Aws\PersonalAwsRuntime;
 use ArcadeCloud\Drive\Http\Request;
+use ArcadeCloud\Drive\Http\JsonResponse;
 use ArcadeCloud\Drive\View\PersonalAwsPageRenderer;
 use Throwable;
 
@@ -62,6 +63,14 @@ final class PersonalAwsController
             } catch (Throwable $e) {
                 $error = $e->getMessage();
             }
+
+            if ($this->isEmbeddedRequest()) {
+                JsonResponse::send([
+                    'ok' => $error === '',
+                    'result' => $result,
+                    'error' => $error,
+                ], $error === '' ? 200 : 422);
+            }
         }
 
         $this->renderer->tool(
@@ -69,5 +78,10 @@ final class PersonalAwsController
             $result,
             $error
         );
+    }
+
+    private function isEmbeddedRequest(): bool
+    {
+        return trim((string)($_SERVER['HTTP_X_ARCADECLOUD_EMBED'] ?? '')) === '1';
     }
 }

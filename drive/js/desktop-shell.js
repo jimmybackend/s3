@@ -39,15 +39,36 @@ class ArcadeCloudDesktopShell {
       terminal: { target: 'terminalWindow' }, search: { target: 'searchWindow', title: 'Buscar', icon: 'fa-magnifying-glass' },
       federation: { target: 'federationWindow', title: 'FederationCloud', icon: 'fa-globe' }, apps: { target: 'appsWindow' }
     };
-    return Object.entries(targets).filter(([id, spec]) => id !== 'apps' && (id === 'explorer' || this.document.getElementById(spec.target))).map(([id, spec]) => {
+    const applications = Object.entries(targets).filter(([id, spec]) => id !== 'apps' && (id === 'explorer' || this.document.getElementById(spec.target))).map(([id, spec]) => {
       const registered = this.manager.apps.get(id) || {};
       return { id, title: spec.title || registered.title || id, icon: spec.icon || registered.icon || 'fa-window-maximize', launch: spec.launch || (() => this.launchTarget(spec.target)) };
+    });
+    this.manager.apps.forEach((definition, id) => {
+      if (!definition.launchable || typeof definition.launch !== 'function' || applications.some(app => app.id === id)) return;
+      applications.push({ id, title: definition.title || id, icon: definition.icon || 'fa-window-maximize', launch: definition.launch });
+    });
+    return applications;
+  }
+
+  registerDeclarativeApplications(appsWindow) {
+    appsWindow.querySelectorAll('[data-launcher-app]').forEach(element => {
+      const id = String(element.dataset.launcherApp || '');
+      const href = element.getAttribute('href');
+      if (!id || !href) return;
+      const title = element.querySelector('strong')?.textContent?.trim() || id;
+      const icon = [...(element.querySelector('i')?.classList || [])].find(name => name.startsWith('fa-')) || 'fa-arrow-up-right-from-square';
+      const target = element.getAttribute('target') || '_self';
+      this.manager.registerApp(id, {
+        multiInstance: true, lifecycle: 'external', launchable: true, title, icon,
+        launch: () => this.window.open(href, target, target === '_blank' ? 'noopener' : undefined)
+      });
     });
   }
 
   buildLauncher() {
     const appsWindow = this.document.getElementById('appsWindow'); const body = appsWindow?.querySelector('.os-window-body');
     if (!body) return;
+    this.registerDeclarativeApplications(appsWindow);
     body.innerHTML = '<label class="os-app-search"><i class="fas fa-magnifying-glass"></i><input type="search" autocomplete="off" placeholder="Buscar aplicaciones" aria-label="Buscar aplicaciones"></label><div class="os-app-grid" role="listbox" aria-label="Aplicaciones"></div><p class="os-app-empty" hidden>No hay aplicaciones coincidentes.</p>';
     this.launcherInput = body.querySelector('input'); this.launcherGrid = body.querySelector('.os-app-grid'); this.launcherEmpty = body.querySelector('.os-app-empty');
     this.apps = this.launchableApplications(); this.renderApplications('');

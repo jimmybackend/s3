@@ -2060,7 +2060,7 @@
     },
     {
       "path": "drive/so.php",
-      "lines": 2006,
+      "lines": 2001,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -4683,7 +4683,7 @@
     },
     {
       "path": "drive/src/Http/Controller/NodeStatusController.php",
-      "lines": 133,
+      "lines": 139,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -5870,7 +5870,7 @@
     },
     {
       "path": "drive/src/System/NodeCapabilityService.php",
-      "lines": 251,
+      "lines": 255,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -5885,7 +5885,7 @@
     },
     {
       "path": "drive/src/System/NodeRuntimeStatusService.php",
-      "lines": 435,
+      "lines": 453,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -6826,7 +6826,7 @@
     },
     {
       "path": "drive/tests/node_diagnostics_contract_smoke.php",
-      "lines": 49,
+      "lines": 50,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -6843,7 +6843,7 @@
     },
     {
       "path": "drive/tests/node_diagnostics_control_smoke.php",
-      "lines": 42,
+      "lines": 43,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -8954,7 +8954,7 @@
     },
     {
       "path": "drive/js/so-node.js",
-      "lines": 184,
+      "lines": 208,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudOsNodeMonitor"
@@ -8969,7 +8969,7 @@
         "xhr": 0,
         "jquery": 0,
         "json_consumers": 3,
-        "response_checks": 7
+        "response_checks": 6
       },
       "issues": []
     },

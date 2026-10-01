@@ -164,7 +164,7 @@
 | `drive/set_file_security.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/setup/api.php` | 15 | thin endpoint | 0 | — | — | — | — |
 | `drive/setup/index.php` | 90 | view/entrypoint | 0 | — | — | — | — |
-| `drive/so.php` | 2006 | view/entrypoint | 0 | — | — | — | — |
+| `drive/so.php` | 2001 | view/entrypoint | 0 | — | — | — | — |
 | `drive/src/Activity/ActivityCostRecorder.php` | 155 | class/module | 1 | — | — | — | — |
 | `drive/src/Activity/ActivityCostRepository.php` | 198 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Activity/ActivityCostService.php` | 153 | class/module | 1 | — | — | — | — |
@@ -338,7 +338,7 @@
 | `drive/src/Http/Controller/MediaProcessingController.php` | 79 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/MoveJobController.php` | 194 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/NavigationController.php` | 42 | class/module | 1 | — | — | — | — |
-| `drive/src/Http/Controller/NodeStatusController.php` | 133 | class/module | 1 | — | — | — | — |
+| `drive/src/Http/Controller/NodeStatusController.php` | 139 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/OfficeDocumentController.php` | 53 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Http/Controller/PersonalAwsController.php` | 101 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/PollyTaskController.php` | 347 | class/module | 1 | — | ⚠️ | — | — |
@@ -416,8 +416,8 @@
 | `drive/src/Sync/SyncRepository.php` | 499 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Sync/SyncSchemaMigrator.php` | 114 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/System/Ec2InstanceIdentityService.php` | 107 | class/module | 1 | — | — | — | — |
-| `drive/src/System/NodeCapabilityService.php` | 251 | class/module | 1 | — | — | — | — |
-| `drive/src/System/NodeRuntimeStatusService.php` | 435 | class/module | 1 | — | ⚠️ | — | — |
+| `drive/src/System/NodeCapabilityService.php` | 255 | class/module | 1 | — | — | — | — |
+| `drive/src/System/NodeRuntimeStatusService.php` | 453 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/System/NodeServiceCatalog.php` | 35 | class/module | 1 | — | — | — | — |
 | `drive/src/Upload/AdminMultipartUploadService.php` | 221 | class/module | 1 | — | — | — | — |
 | `drive/src/Upload/PublicDropzoneUploadService.php` | 133 | class/module | 1 | — | — | — | — |
@@ -476,8 +476,8 @@
 | `drive/tests/index_federation_drop_smoke.php` | 121 | test script | 0 | — | — | — | — |
 | `drive/tests/installer_service_reconcile_contract_smoke.php` | 197 | test script | 0 | — | — | — | — |
 | `drive/tests/media_processing_contract_smoke.php` | 185 | test script | 0 | — | — | — | — |
-| `drive/tests/node_diagnostics_contract_smoke.php` | 49 | test script | 0 | — | — | — | — |
-| `drive/tests/node_diagnostics_control_smoke.php` | 42 | test script | 0 | — | — | — | — |
+| `drive/tests/node_diagnostics_contract_smoke.php` | 50 | test script | 0 | — | — | — | — |
+| `drive/tests/node_diagnostics_control_smoke.php` | 43 | test script | 0 | — | — | — | — |
 | `drive/tests/office_gateway_contract_smoke.php` | 272 | test script | 0 | — | — | — | — |
 | `drive/tests/password_credential_verifier_smoke.php` | 44 | test script | 0 | — | — | — | — |
 | `drive/tests/scoped_sync_repository_regression.php` | 96 | test script | 0 | — | ⚠️ | — | — |
@@ -588,7 +588,7 @@
 | `drive/js/so-clipboard.js` | 806 | class/module | ArcadeCloudOsClipboard | bootArcadeCloudOsClipboard | — | top-level functions: bootArcadeCloudOsClipboard |
 | `drive/js/so-federation.js` | 87 | class/module | ArcadeCloudOsFederationApp | — | — | — |
 | `drive/js/so-folders.js` | 442 | class/module | ArcadeCloudOsFolderActions | — | — | — |
-| `drive/js/so-node.js` | 184 | class/module | ArcadeCloudOsNodeMonitor | — | — | — |
+| `drive/js/so-node.js` | 208 | class/module | ArcadeCloudOsNodeMonitor | — | — | — |
 | `drive/js/so-power.js` | 108 | class/module | ArcadeCloudFastDrivePower | — | — | — |
 | `drive/js/so-screenshot-paste.js` | 341 | class/module | ArcadeCloudOsScreenshotPaste | — | — | — |
 | `drive/js/so-search.js` | 285 | class/module | ArcadeCloudOsSearch | — | — | — |
@@ -652,7 +652,7 @@
 | `drive/js/sincronizar.js` | 1 | 0 | 0 | 0 | 3 |
 | `drive/js/so-appearance.js` | 1 | 0 | 0 | 0 | 0 |
 | `drive/js/so-federation.js` | 2 | 0 | 0 | 0 | 5 |
-| `drive/js/so-node.js` | 3 | 0 | 0 | 3 | 7 |
+| `drive/js/so-node.js` | 3 | 0 | 0 | 3 | 6 |
 | `drive/js/so-power.js` | 1 | 0 | 0 | 1 | 2 |
 | `drive/js/so-screenshot-paste.js` | 3 | 0 | 0 | 1 | 7 |
 | `drive/js/so-search.js` | 2 | 0 | 0 | 1 | 2 |

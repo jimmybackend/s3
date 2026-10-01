@@ -111,7 +111,7 @@ webOsContract(str_contains($paths['js'], "addEventListener('contextmenu'"), 'arc
 webOsContract(str_contains($paths['js'], 'data-window-drag-handle'), 'ventanas son arrastrables en escritorio');
 webOsContract(str_contains($paths['css'], '.os-taskbar'), 'existe barra de tareas');
 webOsContract(str_contains($paths['shell'], 'id="backgroundTaskButton"') && str_contains($paths['shell'], 'os-task-center-button'), 'Centro de Tareas vive como icono con contador en la barra de tareas');
-webOsContract(str_contains($paths['shell'], 'id="pageManagerWindow"') && str_contains($paths['desktop_shell'], "data-shell-action=\"page-manager\""), 'menú contextual del escritorio abre Administrador de la página');
+webOsContract(str_contains($paths['shell'], 'id="pageManagerWindow"') && str_contains($paths['desktop_shell_stage5'], "data-shell-action=\"page-manager\""), 'menú contextual del escritorio abre Administrador de la página');
 webOsContract(str_contains(file_get_contents(__DIR__ . '/../js/page-resource-manager.js'), 'performance?.memory') && str_contains(file_get_contents(__DIR__ . '/../js/page-resource-manager.js'), "getEntriesByType?.('resource')"), 'Administrador mide recursos del navegador sin consultar métricas EC2');
 webOsContract(str_contains($paths['css'], '@media (max-width:800px)'), 'shell conserva experiencia móvil');
 

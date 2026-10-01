@@ -7114,7 +7114,7 @@
     },
     {
       "path": "drive/tests/web_os_clipboard_contract_smoke.php",
-      "lines": 114,
+      "lines": 115,
       "kind": "test script",
       "classes": 0,
       "functions": [],
@@ -7161,7 +7161,7 @@
     },
     {
       "path": "drive/tests/web_os_multiwindow_smoke.php",
-      "lines": 60,
+      "lines": 62,
       "kind": "test script",
       "classes": 0,
       "functions": [],
@@ -8504,7 +8504,7 @@
     },
     {
       "path": "drive/js/os-window-manager.js",
-      "lines": 886,
+      "lines": 946,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudEventBus",
@@ -8519,7 +8519,8 @@
         "ArcadeCloudDesktop",
         "ArcadeCloudDesktopRuntime",
         "ArcadeCloudEventBus",
-        "ArcadeCloudWindowManager"
+        "ArcadeCloudWindowManager",
+        "requestAnimationFrame"
       ],
       "window_func": [],
       "top_vars": [],
@@ -8818,7 +8819,7 @@
     },
     {
       "path": "drive/js/so-folders.js",
-      "lines": 439,
+      "lines": 442,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudOsFolderActions"
@@ -8975,7 +8976,7 @@
     },
     {
       "path": "drive/js/so.js",
-      "lines": 1152,
+      "lines": 1164,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudOsShell"
@@ -9299,7 +9300,7 @@
     },
     {
       "path": "drive/tests/web_os_same_explorer_clipboard_functional.js",
-      "lines": 65,
+      "lines": 71,
       "kind": "procedural script",
       "classes": [],
       "functions": [
@@ -9311,6 +9312,7 @@
       "top_vars": [
         "requests",
         "refreshed",
+        "filesystemEvents",
         "explorer",
         "win",
         "doc",
@@ -9327,7 +9329,7 @@
       },
       "issues": [
         "top-level functions: assert, storage",
-        "top-level state: requests, refreshed, explorer, win, doc, clipboard, entries",
+        "top-level state: requests, refreshed, filesystemEvents, explorer, win, doc, clipboard, entries",
         "no ES class"
       ]
     }
@@ -9372,7 +9374,7 @@
     },
     {
       "path": "drive/docs/runtime_endpoints.json",
-      "bytes": 114994,
+      "bytes": 115054,
       "valid": true,
       "root_type": "object",
       "keys": [

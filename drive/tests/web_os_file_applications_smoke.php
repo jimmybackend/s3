@@ -1,0 +1,20 @@
+<?php
+declare(strict_types=1);
+$root = dirname(__DIR__);
+$read = static fn(string $path): string => (string) file_get_contents($root . '/' . $path);
+$app = $read('js/file-applications.js'); $shell = $read('so.php'); $runtime = $read('js/os-window-manager.js'); $css = $read('css/so.css');
+$assert = static function (bool $ok, string $message): void { if (!$ok) { fwrite(STDERR, "FAIL: {$message}\n"); exit(1); } fwrite(STDOUT, "OK: {$message}\n"); };
+$assert(str_contains($app, 'class ArcadeCloudFileApplicationService'), 'servicio openFile central existe');
+$assert(str_contains($app, "['image', 'Visor de imágenes'") && str_contains($app, "['office', 'Office'"), 'registro contiene viewers locales y Office real');
+$assert(str_contains($app, 'mimeMatch') && str_contains($app, 'supportedExtensions'), 'resolver usa MIME primero y extensión como fallback');
+$assert(str_contains($app, 'file.fileId ? `id:${file.fileId}`'), 'FileId estable identifica documentos');
+$assert(str_contains($app, "this.runtime.bus.on('filesystem:changed'"), 'aplicaciones reutilizan el EventBus existente');
+$assert(str_contains($app, 'unsubscribe()') && str_contains($app, "viewer.removeEventListener('play'"), 'cleanup desuscribe listeners y media');
+$assert(str_contains($app, 'Este archivo ya no está disponible.') && str_contains($app, 'setTitle'), 'delete y rename actualizan la instancia');
+$assert(str_contains($app, "options.forceNew !== true"), 'misma app/archivo enfoca salvo forceNew explícito');
+$assert(str_contains($shell, 'data-file-action="open-with"') && str_contains($shell, 'js/file-applications.js'), 'menú y módulo Abrir con están integrados');
+$assert(str_contains($shell, 'data-file-id=') && str_contains($shell, 'data-mime='), 'DOM entrega FileId y MIME catalogado sin usar URL como identidad');
+$assert(str_contains($runtime, "['audio',true,'dynamic'") && str_contains($runtime, "['video',true,'dynamic'"), 'WindowManager registra audio/video multiinstancia');
+$assert(str_contains($css, '.os-open-with-apps') && str_contains($css, 'var(--os-surface)'), 'diálogo y viewers usan tokens de tema');
+$assert(!str_contains($app, 'localStorage') && !str_contains($app, 'sessionStorage'), 'URLs de acceso no se persisten');
+fwrite(STDOUT, "Web OS file applications smoke passed.\n");

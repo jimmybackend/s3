@@ -652,3 +652,53 @@ o de la finalización confirmada de un job. Su payload conserva rutas origen y
 destino para que `refreshAffected` actualice sólo las Explorer coincidentes. Un
 fallo mantiene la vista actual, conserva el clipboard de movimiento y registra
 el diagnóstico en la operación sin publicar un cambio exitoso.
+
+## Aplicaciones de archivo (Etapa 4)
+
+### Inventario previo conservado
+
+Antes de esta etapa, imagen, PDF y texto ya se abrían como ventanas dinámicas, pero la decisión vivía en `so.js`; audio y video usaban un único overlay que reemplazaba al anterior. Office/Workstation se abría en una pestaña externa mediante `office-launch.php`. Los tipos desconocidos se entregaban al visor inline del navegador y todos los archivos legibles conservaban descarga. El editor existente (`editor.php`) se mantiene para texto; el visor inline existente (`ver_archivo.php`) se mantiene para imagen, PDF y multimedia. Las acciones de fondo de pantalla, información/servicios, seguridad, compartir y descarga del menú no se eliminan.
+
+| Familia | Extensiones catalogadas | Implementación actual de apertura |
+| --- | --- | --- |
+| Imagen | jpg, jpeg, png, gif, webp, bmp, avif, tif, tiff, svg | ventana OS `image`; imagen responsive; descargar y usar como fondo |
+| PDF | pdf | ventana OS `pdf`; render inline del navegador, conservando scroll/zoom del visor |
+| Texto/datos | txt, md, html, css, js, JSON, CSV, SQL, PHP, Python, subtítulos, log, XML, YAML | ventana OS `text` con el editor existente y `text-preview` con el visor inline existente |
+| Audio | mp3, wav, ogg, opus, m4a, aac, flac, amr | ventana OS `audio` con controles nativos |
+| Video | mp4, webm, mov, avi, mkv, m4v, mpeg, mpg | ventana OS `video` responsive con controles nativos |
+| Office | DOC/DOCX/ODT/RTF, XLS/XLSX/ODS, PPT/PPTX/ODP | aplicación Office existente en pestaña externa; no se modificó Workstation/Guacamole |
+| Otros | cualquier archivo legible sin asociación local | conserva descarga y el aviso de no soportado; no se inventa una aplicación |
+
+Las miniaturas, servicios AWS y diálogos operativos preexistentes siguen siendo modales o paneles según su implementación anterior; no forman parte del registro de aplicaciones de documentos.
+
+### File Application Registry
+
+`ArcadeCloudWindowManager.apps` continúa siendo el único registro. `ArcadeCloudFileApplicationService.registerApplications()` lo amplía con `appId`, título, icono, `multiInstance`, ciclo de vida, tipos MIME y extensiones admitidas. No existe un segundo WindowManager ni un segundo EventBus. Imagen, PDF, texto, audio y video son aplicaciones dinámicas multiinstancia. Office representa únicamente la integración real existente.
+
+### File Association Resolution
+
+`applicationsFor(file)` consulta las definiciones del registro. Un MIME catalogado y no genérico tiene prioridad; la extensión visible sólo complementa o actúa como fallback porque el catálogo histórico no siempre conserva MIME. `so.php` expone el MIME guardado en `FileS3.Metadatos` cuando existe, junto con FileId, nombre y fecha. La asociación predeterminada interna sigue el orden imagen, PDF, texto, audio, video y Office. No se creó persistencia SQL ni se guardan asociaciones o URLs firmadas en `Users.os_preferences`.
+
+`openFile(file, options)` es el punto de entrada común. “Abrir con…” aparece solamente cuando el registro devuelve dos o más aplicaciones reales compatibles (actualmente editor y visor para texto) y usa el diálogo temático del OS. Office sigue delegando en `office-launch.php`; los viewers locales siguen usando endpoints autenticados existentes.
+
+### Application Instance Lifecycle
+
+La identidad de deduplicación es `appId + FileId`; sólo cuando FileId no existe se usa la key autorizada. La URL de contenido no es identidad. Por defecto, abrir otra vez el mismo archivo en la misma aplicación enfoca su ventana; `forceNew` permite una duplicación explícita. Archivos diferentes siempre obtienen `windowId` diferentes.
+
+Cada ventana dinámica se registra en WindowManager, por lo que obtiene de forma aislada focus, cascada, geometría pequeña, resize, minimizar, maximizar, taskbar y cierre. Minimizar audio/video no detiene la reproducción; cerrarlo sí pausa y libera el recurso. Al iniciar otro audio o video local, el reproductor anterior se pausa para evitar reproducción simultánea accidental.
+
+El cierre ejecuta el cleanup de WindowManager: elimina la asociación de instancia, desuscribe el EventBus, retira listeners multimedia y el WindowManager pausa y descarga el `src` de media. Los viewers no crean blobs ni object URLs. Los errores se muestran dentro de la ventana y no navegan fuera del OS.
+
+### Filesystem Event Integration
+
+Cada instancia se suscribe al `filesystem:changed` ya existente. Compara primero FileId y usa la key únicamente como compatibilidad con operaciones históricas. Un delete confirmado sustituye el contenido por “Este archivo ya no está disponible”. Un rename con FileId y nuevo nombre actualiza metadata, título y taskbar sin cerrar la ventana. Los eventos de modificación marcan el documento como cambiado; no se inventan ETag, versiones ni colaboración. Cuando una operación todavía sólo publica keys y rutas, la reacción se limita a una coincidencia segura por key.
+
+La autorización continúa en `ver_archivo.php`, `editor.php`, endpoints de descarga y Office: sesión, ownership y key/FileId se vuelven a validar en backend. El frontend no recibe credenciales AWS, secretos de base de datos ni tokens internos, y no persiste URLs temporales.
+
+### Auditoría final de compatibilidad
+
+**Funciones preexistentes conservadas:** WindowManager, cascada, taskbar, drag/resize/minimize/maximize, Explorer multiinstancia, clipboard global, operaciones unificadas, progreso/jobs, EventBus, editor de texto, render PDF del navegador, Office/Workstation, descarga, servicios, compartir, seguridad y “Usar como fondo”.
+
+**Funciones corregidas:** audio y video dejaron de compartir un overlay destructivo; la selección del visor dejó de estar dispersa por extensión en el flujo principal; imágenes/PDF/textos repetidos ahora aplican identidad estable y política de focus.
+
+**Funciones nuevas/completadas:** registro tipado, resolución MIME-first, `openFile`, instancias documentales aisladas, reproductores como ventanas, diálogo “Abrir con…”, coordinación multimedia, notificaciones rename/delete/modify y cleanup por instancia.

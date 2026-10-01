@@ -24,7 +24,7 @@ class ArcadeCloudWindowLayoutConfig {
   });
 
   static key(app) {
-    if (/^(image|pdf|text|viewer)$/.test(app)) return 'viewer';
+    if (/^(image|pdf|text|text-preview|audio|video|viewer)$/.test(app)) return 'viewer';
     if (app === 'tool' || app.startsWith('tool-')) return 'tool';
     return this.DEFINITIONS[app] ? app : 'default';
   }
@@ -700,7 +700,7 @@ class ArcadeCloudDesktopRuntime {
   }
 
   registerApplications() {
-    [['explorer',true,'dynamic','Mis datos','fa-folder-open'],['image',true,'dynamic','Imagen','fa-file-image'],['pdf',true,'dynamic','PDF','fa-file-pdf'],['text',true,'dynamic','Texto','fa-file-lines'],['viewer',true,'dynamic','Archivo','fa-file'],['tool',true,'dynamic','Herramienta','fa-toolbox'],['node',false,'persistent','Mi nodo','fa-server'],['settings',false,'persistent','Configuración','fa-gear'],['links',false,'persistent','Enlaces','fa-link'],['terminal',false,'persistent','Terminal','fa-terminal']]
+    [['explorer',true,'dynamic','Mis datos','fa-folder-open'],['image',true,'dynamic','Imagen','fa-file-image'],['pdf',true,'dynamic','PDF','fa-file-pdf'],['text',true,'dynamic','Texto','fa-file-lines'],['audio',true,'dynamic','Audio','fa-file-audio'],['video',true,'dynamic','Video','fa-file-video'],['viewer',true,'dynamic','Archivo','fa-file'],['tool',true,'dynamic','Herramienta','fa-toolbox'],['node',false,'persistent','Mi nodo','fa-server'],['settings',false,'persistent','Configuración','fa-gear'],['links',false,'persistent','Enlaces','fa-link'],['terminal',false,'persistent','Terminal','fa-terminal']]
       .forEach(([app,multiInstance,lifecycle,title,icon]) => this.manager.registerApp(app, { multiInstance, lifecycle, title, icon }));
   }
 

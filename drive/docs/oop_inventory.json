@@ -4,12 +4,12 @@
     "php_class_modules": 294,
     "php_needs_migration": 0,
     "php_tests": 50,
-    "js_total": 64,
-    "js_class_modules": 64,
-    "js_needs_migration": 0,
+    "js_total": 65,
+    "js_class_modules": 65,
+    "js_needs_migration": 1,
     "js_compatibility_facades": 8,
     "ajax_clients": 48,
-    "ajax_calls": 102,
+    "ajax_calls": 101,
     "json_total": 4,
     "json_invalid": 0
   },
@@ -2043,7 +2043,7 @@
     },
     {
       "path": "drive/so.php",
-      "lines": 1996,
+      "lines": 1995,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -8451,11 +8451,12 @@
     },
     {
       "path": "drive/js/os-window-manager.js",
-      "lines": 144,
+      "lines": 504,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudEventBus",
         "ArcadeCloudWindowManager",
+        "ExplorerWindowFactory",
         "ArcadeCloudExplorerWindow",
         "ArcadeCloudDesktopRuntime"
       ],
@@ -8470,11 +8471,11 @@
       "top_vars": [],
       "iife": false,
       "ajax": {
-        "fetch": 2,
+        "fetch": 1,
         "xhr": 0,
         "jquery": 0,
         "json_consumers": 0,
-        "response_checks": 2
+        "response_checks": 1
       },
       "issues": []
     },
@@ -8715,7 +8716,7 @@
     },
     {
       "path": "drive/js/so-clipboard.js",
-      "lines": 760,
+      "lines": 766,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudOsClipboard"
@@ -8916,7 +8917,7 @@
     },
     {
       "path": "drive/js/so.js",
-      "lines": 1273,
+      "lines": 1301,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudOsShell"
@@ -9189,6 +9190,45 @@
         "response_checks": 0
       },
       "issues": []
+    },
+    {
+      "path": "drive/tests/web_os_multiwindow_functional.js",
+      "lines": 77,
+      "kind": "class/module",
+      "classes": [
+        "Classes",
+        "ElementStub"
+      ],
+      "functions": [
+        "windowStub",
+        "assert"
+      ],
+      "window_assign": [],
+      "window_func": [],
+      "top_vars": [
+        "taskbar",
+        "documentStub",
+        "manager",
+        "aborts",
+        "explorers",
+        "imageA",
+        "imageB",
+        "pdfA",
+        "pdfB",
+        "clipboard",
+        "backendRequest"
+      ],
+      "iife": false,
+      "ajax": {
+        "fetch": 0,
+        "xhr": 0,
+        "jquery": 0,
+        "json_consumers": 0,
+        "response_checks": 0
+      },
+      "issues": [
+        "top-level functions: windowStub, assert"
+      ]
     }
   ],
   "json": [
@@ -9231,7 +9271,7 @@
     },
     {
       "path": "drive/docs/runtime_endpoints.json",
-      "bytes": 113600,
+      "bytes": 113882,
       "valid": true,
       "root_type": "object",
       "keys": [

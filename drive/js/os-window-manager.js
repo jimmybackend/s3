@@ -157,13 +157,19 @@ class ArcadeCloudWindowManager {
   preferred(app, element) {
     const saved = this.preferences[app] || {};
     const rect = element?.getBoundingClientRect?.() || {};
+    if (this.isLegacyOversize(app, saved)) return { width: Math.round(this.window.innerWidth * .44), height: Math.round((this.window.innerHeight - 52) * .46) };
     return { width: Number(saved.width) || Math.round(rect.width) || 900, height: Number(saved.height) || Math.round(rect.height) || 620 };
   }
 
   applyPreferred(app, element) {
-    const saved = this.preferences[app]; if (!saved) return;
+    const saved = this.preferences[app]; if (!saved || this.isLegacyOversize(app, saved)) return;
     element.style.width = `${Math.min(Number(saved.width), Math.max(240, this.window.innerWidth - 16))}px`;
     element.style.height = `${Math.min(Number(saved.height), Math.max(180, this.window.innerHeight - 58))}px`;
+  }
+
+  isLegacyOversize(app, saved) {
+    if (app !== 'explorer' || this.window.innerWidth <= 800 || !saved) return false;
+    return Number(saved.width) > this.window.innerWidth * .85 || Number(saved.height) > (this.window.innerHeight - 52) * .85;
   }
 
   observeResize(record) {
@@ -259,7 +265,8 @@ class ExplorerWindowFactory {
     const index = this.runtime.explorers.size % 8;
     const offset = 20 + (index * 30);
     const tablet = this.runtime.window.innerWidth <= 1180;
-    const width = Math.max(420, Math.round(this.runtime.window.innerWidth * (tablet ? .48 : .46)));
+    const mobile = this.runtime.window.innerWidth <= 800;
+    const width = mobile ? this.runtime.window.innerWidth - 12 : Math.max(420, Math.round(this.runtime.window.innerWidth * (tablet ? .48 : .44)));
     const height = Math.max(320, Math.round((this.runtime.window.innerHeight - 52) * .46));
     element.style.cssText = `left:${Math.min(offset, Math.max(8, this.runtime.window.innerWidth - width - 8))}px;top:${Math.min(offset, Math.max(8, this.runtime.window.innerHeight - height - 58))}px;width:${width}px;height:${height}px`;
     this.runtime.manager.applyPreferred('explorer', element); // A saved Users.os_preferences geometry wins.
@@ -382,9 +389,7 @@ class ArcadeCloudExplorerWindow {
       const folder = target.closest('.os-folder-entry');
       if (folder) {
         event.preventDefault(); event.stopPropagation();
-        this.win.querySelectorAll('.os-folder-entry.is-selected').forEach(item => item.classList.remove('is-selected'));
-        folder.classList.add('is-selected'); this.selection = new Set([folder.dataset.folderRoute]);
-        if (event.detail >= 2) this.navigate(folder.dataset.folderRoute);
+        this.navigate(folder.dataset.folderRoute);
       }
     };
     const keydown = event => {
@@ -414,9 +419,7 @@ class ArcadeCloudExplorerWindow {
       const folder = event.target instanceof Element ? event.target.closest('a.os-folder-entry') : null;
       if (!folder || !this.win.contains(folder) || event.target.closest('.os-folder-entry-menu')) return;
       event.preventDefault(); event.stopPropagation();
-      this.win.querySelectorAll('.os-folder-entry.is-selected').forEach(item => item.classList.remove('is-selected'));
-      folder.classList.add('is-selected'); this.selection = new Set([folder.dataset.folderRoute]);
-      if (event.detail >= 2) this.navigate(folder.dataset.folderRoute);
+      this.navigate(folder.dataset.folderRoute);
     };
     this.win.addEventListener('click', guard, true);
     this.cleanup.push(() => this.win.removeEventListener('click', click), () => this.win.removeEventListener('keydown', keydown), () => this.win.removeEventListener('input', input), () => this.win.removeEventListener('click', guard, true));
@@ -475,10 +478,10 @@ class ArcadeCloudExplorerWindow {
       this.scroll = this.live?.scrollTop || 0;
       this.live.replaceWith(replacement); this.live = replacement; this.route = route; this.page = +replacement.dataset.explorerPage || 1; this.selection.clear();
       this.installChrome(); this.updateTitle();
-      this.runtime.window.ArcadeCloudOsShell?.bindFiles?.();
-      this.runtime.window.ArcadeCloudOsClipboard?.bindEntries?.();
-      this.runtime.window.ArcadeCloudOsClipboard?.injectPasteToolbar?.();
-      this.runtime.window.ArcadeCloudOsFolders?.rebind?.();
+      this.runtime.window.ArcadeCloudOsShell?.bindFiles?.(this.win);
+      this.runtime.window.ArcadeCloudOsClipboard?.bindEntries?.(this.win);
+      this.runtime.window.ArcadeCloudOsClipboard?.injectPasteToolbar?.(this.win);
+      this.runtime.window.ArcadeCloudOsFolders?.rebind?.(this.win);
       this.runtime.document.dispatchEvent(new CustomEvent('arcadeos:explorer-updated', { detail: { windowId: this.id, route, page: this.page } }));
       this.runtime.bus.emit('route-changed', { windowId: this.id, route, page: this.page });
     } catch (error) {

@@ -21,11 +21,11 @@ class ArcadeCloudOsFolderActions {
     return this;
   }
 
-  rebind() {
-    this.current = this.currentFolderFromDom();
-    this.bindFolderEntries();
-    this.bindCurrentFolderToolbar();
-    this.bindBlankAreaContext();
+  rebind(root = this.document) {
+    this.current = this.currentFolderFromDom(root);
+    this.bindFolderEntries(root);
+    this.bindCurrentFolderToolbar(root);
+    this.bindBlankAreaContext(root);
     return this;
   }
 
@@ -46,7 +46,8 @@ class ArcadeCloudOsFolderActions {
     return {
       route,
       name,
-      isRoot: folder.isRoot === true || folder.is_root === true || String(folder.is_root || '') === '1'
+      isRoot: folder.isRoot === true || folder.is_root === true || String(folder.is_root || '') === '1',
+      sourceWindowId: String(folder.sourceWindowId || '')
     };
   }
 
@@ -67,8 +68,8 @@ class ArcadeCloudOsFolderActions {
     return this.normalizeRoute(a) === this.normalizeRoute(b);
   }
 
-  currentFolderFromDom() {
-    const host = this.document.querySelector('.os-explorer-body[data-current-folder-route]');
+  currentFolderFromDom(root = this.document) {
+    const host = root.querySelector('.os-explorer-body[data-current-folder-route]');
     if (!host) return this.current;
 
     return this.normalizeFolder({
@@ -79,15 +80,17 @@ class ArcadeCloudOsFolderActions {
   }
 
   folderFromEntry(entry) {
-    return this.normalizeFolder({
+    const folder = this.normalizeFolder({
       route: entry?.dataset?.folderRoute || '',
       name: entry?.dataset?.folderName || '',
       is_root: entry?.dataset?.folderRoot || '0'
     });
+    folder.sourceWindowId = entry?.closest?.('.os-window')?.dataset?.windowId || '';
+    return folder;
   }
 
-  bindFolderEntries() {
-    this.document.querySelectorAll('.os-folder-entry').forEach((entry) => {
+  bindFolderEntries(root = this.document) {
+    root.querySelectorAll('.os-folder-entry').forEach((entry) => {
       if (entry.dataset.osFolderBound === '1') return;
       entry.dataset.osFolderBound = '1';
 
@@ -121,8 +124,8 @@ class ArcadeCloudOsFolderActions {
     });
   }
 
-  bindBlankAreaContext() {
-    const body = this.document.querySelector('.os-explorer-body');
+  bindBlankAreaContext(root = this.document) {
+    const body = root.querySelector('.os-explorer-body');
     if (!body || body.dataset.osFolderBlankBound === '1') return;
     body.dataset.osFolderBlankBound = '1';
 
@@ -149,8 +152,8 @@ class ArcadeCloudOsFolderActions {
     });
   }
 
-  bindCurrentFolderToolbar() {
-    this.document.querySelectorAll('[data-current-folder-action]').forEach((button) => {
+  bindCurrentFolderToolbar(root = this.document) {
+    root.querySelectorAll('[data-current-folder-action]').forEach((button) => {
       if (button.dataset.osFolderActionBound === '1') return;
       button.dataset.osFolderActionBound = '1';
 
@@ -251,7 +254,12 @@ class ArcadeCloudOsFolderActions {
     }
 
     if (action === 'open') {
-      this.navigate(folder.route, false);
+      this.navigate(folder.route, false, folder.sourceWindowId);
+      return;
+    }
+
+    if (action === 'open-new') {
+      this.window.ArcadeCloudDesktop?.openExplorer?.(folder.route, { forceNew: true });
       return;
     }
 
@@ -385,10 +393,16 @@ class ArcadeCloudOsFolderActions {
     });
   }
 
-  navigate(route, replaceHistory = true) {
+  navigate(route, replaceHistory = true, sourceWindowId = '') {
     route = this.normalizeRoute(route || this.current.route);
     if (!route) return;
 
+    const sourceId = sourceWindowId || this.document.querySelector('.os-explorer-window.is-active')?.dataset.windowId;
+    const explorer = sourceId ? this.window.ArcadeCloudDesktop?.explorers?.get(sourceId) : null;
+    if (explorer?.navigate) {
+      explorer.navigate(route, { replace: replaceHistory });
+      return;
+    }
     if (
       this.window.ArcadeCloudOsShell &&
       typeof this.window.ArcadeCloudOsShell.refreshExplorer === 'function'

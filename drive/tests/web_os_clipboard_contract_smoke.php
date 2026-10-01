@@ -42,6 +42,7 @@ $assert = static function (bool $condition, string $message): void {
 };
 
 $assert(str_contains($files['clipboard'], 'longPressMs = 560'), 'pulsación larga abre acciones');
+$assert(str_contains($files['clipboard'], "entry.addEventListener('dragstart', clear)"), 'arrastrar cancela pulsación larga');
 $assert(str_contains($files['shell'], 'fileSecondClickMs = 320'), 'segundo clic en 320 ms abre el archivo');
 $assert(str_contains($files['shell'], 'toggleFileSelection(entry)'), 'clic simple alterna selección de archivo');
 $assert(str_contains($files['shell'], 'selectedFileEntries()'), 'shell expone selección múltiple');
@@ -51,6 +52,7 @@ $assert(str_contains($files['clipboard'], 'keys.length + \' archivos\''), 'porta
 $assert(str_contains($files['clipboard'], 'JSON.stringify(keys)'), 'pegar envía todos los archivos seleccionados');
 $assert(str_contains($files['clipboard'], "data-os-clipboard-action"), 'menús incorporan acciones de portapapeles');
 $assert(str_contains($files['clipboard'], "operation: item.mode"), 'pegar conserva copy o move');
+$assert(str_contains($files['clipboard'], 'sourceWindowId: context.sourceWindowId') && str_contains($files['clipboard'], 'sourceRoute: context.sourceRoute') && str_contains($files['clipboard'], 'items: keys'), 'portapapeles global conserva origen, elementos y operación');
 $assert(str_contains($files['clipboard'], 'injectPasteToolbar()'), 'SO crea botón temporal para pegar en la carpeta actual');
 $assert(!str_contains($files['clipboard'], 'visibleFiles >= 20'), 'botón superior ya no depende de una página llena');
 $assert(str_contains($files['clipboard'], 'button.hidden = !hasClipboard'), 'botón superior permanece visible mientras exista portapapeles');

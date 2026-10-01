@@ -48,9 +48,12 @@ $assert(str_contains($files['runtime'], 'windowPreferences') && str_contains($fi
 $assert(str_contains($files['runtime'], 'Math.round(preferred.width / 2)') && str_contains($files['runtime'], 'Math.round(preferred.height / 2)'), 'botón de tamaño alterna a aproximadamente 50 por ciento');
 $assert(str_contains($files['runtime'], "event.stopPropagation();") && str_contains($files['runtime'], "this.win.addEventListener('click', guard, true)"), 'guard capture evita que enlaces de carpetas naveguen so.php');
 $assert(str_contains($files['runtime'], 'this.route = route; this.page =') && str_contains($files['runtime'], 'this.history = [];'), 'ruta, página e historial pertenecen a cada Explorer');
-$assert(str_contains($files['runtime'], 'arcadeos:explorer-updated') && str_contains($files['runtime'], 'ArcadeCloudOsFolders?.rebind?.()'), 'fragmento completo vuelve a enlazar carpetas, archivos y acciones');
+$assert(str_contains($files['runtime'], 'arcadeos:explorer-updated') && str_contains($files['runtime'], 'ArcadeCloudOsFolders?.rebind?.(this.win)'), 'fragmento completo vuelve a enlazar carpetas, archivos y acciones en su instancia');
 $assert(str_contains($files['runtime'], 'this.suggestionController = new AbortController()') && str_contains($files['runtime'], '220') && str_contains($files['runtime'], 'suggestionCache'), 'autocomplete por instancia usa debounce, cancelación y caché corta');
 $assert(str_contains($files['suggestions'], '$session->userId()') && str_contains($files['folders'], 'WHERE user_id_ = ? AND Found = 1'), 'sugerencias están limitadas al usuario autenticado');
-$assert(str_contains($files['runtime'], 'tablet ? .48 : .46') && str_contains($files['runtime'], '20 + (index * 30)'), 'desktop/tablet usan tamaño reducido y offset escalonado');
+$assert(str_contains($files['runtime'], 'tablet ? .48 : .44') && str_contains($files['runtime'], '20 + (index * 30)'), 'desktop 44%, tablet 48% y offset escalonado');
+$assert(str_contains($files['runtime'], 'isLegacyOversize') && str_contains($files['runtime'], "* .85"), 'preferencias Explorer casi fullscreen se normalizan sin borrar otras preferencias');
+$assert(str_contains($files['runtime'], 'this.navigate(folder.dataset.folderRoute);') && !str_contains($files['runtime'], 'if (event.detail >= 2) this.navigate(folder.dataset.folderRoute)'), 'carpeta navega con un clic dentro de su instancia');
+$assert(str_contains($files['runtime'], 'bindFiles?.(this.win)') && str_contains($files['runtime'], 'bindEntries?.(this.win)') && str_contains($files['runtime'], 'rebind?.(this.win)'), 'rebind después de fetch queda limitado a la ventana actual');
 
 fwrite(STDOUT, "Web OS multiwindow smoke passed.\n");

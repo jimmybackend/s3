@@ -365,6 +365,10 @@ class ArcadeCloudOsShell {
     const on = Boolean(selected);
     entry.classList.toggle('is-selected', on);
     entry.setAttribute('aria-pressed', on ? 'true' : 'false');
+    const windowId = entry.closest('.os-window')?.dataset.windowId;
+    const controller = windowId ? this.window.ArcadeCloudDesktop?.explorers?.get(windowId) : null;
+    const key = String(entry.dataset.key || '');
+    if (controller?.selection && key) on ? controller.selection.add(key) : controller.selection.delete(key);
     this.updateSelectionActions();
   }
 
@@ -481,8 +485,8 @@ class ArcadeCloudOsShell {
     this.context.style.top = Math.max(4, Math.min(y, this.window.innerHeight - rect.height - 52)) + 'px';
   }
 
-  bindFiles() {
-    this.document.querySelectorAll('.os-file-entry').forEach((entry) => {
+  bindFiles(root = this.document) {
+    root.querySelectorAll('.os-file-entry').forEach((entry) => {
       if (entry.dataset.osFileBound === '1') return;
       entry.dataset.osFileBound = '1';
       entry.setAttribute('aria-pressed', entry.classList.contains('is-selected') ? 'true' : 'false');
@@ -938,7 +942,14 @@ class ArcadeCloudOsShell {
       event.stopPropagation();
 
       const action = String(button.dataset.selectionAction || '');
-      if (action === 'download') {
+      const selected = this.selectedFileEntries();
+      const active = this.document.querySelector('.os-explorer-window.is-active');
+      const context = { sourceWindowId: active?.dataset.windowId || '', sourceRoute: active?.querySelector('.os-explorer-live')?.dataset.explorerRoute || '', entries: selected };
+      if (action === 'copy' || action === 'move') {
+        if (selected[0]) this.window.ArcadeCloudOsClipboard?.captureFiles?.(selected[0], action, context);
+      } else if (action === 'more') {
+        if (selected[0]) this.showContext(selected[0], button.getBoundingClientRect().left, button.getBoundingClientRect().bottom);
+      } else if (action === 'download') {
         this.downloadSelectedFiles();
         this.hideContext();
       } else if (action === 'delete') {

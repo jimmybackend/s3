@@ -1258,7 +1258,7 @@
     },
     {
       "path": "drive/os-preferences.php",
-      "size": 2127,
+      "size": 2801,
       "active": true,
       "references": [
         "drive/so.php",
@@ -1472,7 +1472,7 @@
     },
     {
       "path": "drive/so.php",
-      "size": 108953,
+      "size": 108982,
       "active": true,
       "references": [
         "drive/s3.php",
@@ -3781,7 +3781,7 @@
     },
     {
       "path": "drive/tests/node_diagnostics_contract_smoke.php",
-      "size": 4726,
+      "size": 4744,
       "active": false,
       "references": []
     },
@@ -3889,19 +3889,19 @@
     },
     {
       "path": "drive/tests/web_os_clipboard_contract_smoke.php",
-      "size": 9091,
+      "size": 9129,
       "active": false,
       "references": []
     },
     {
       "path": "drive/tests/web_os_contract_smoke.php",
-      "size": 48541,
+      "size": 48829,
       "active": false,
       "references": []
     },
     {
       "path": "drive/tests/web_os_multiwindow_smoke.php",
-      "size": 3258,
+      "size": 3960,
       "active": false,
       "references": []
     },

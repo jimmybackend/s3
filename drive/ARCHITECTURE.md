@@ -653,6 +653,22 @@ destino para que `refreshAffected` actualice sólo las Explorer coincidentes. Un
 fallo mantiene la vista actual, conserva el clipboard de movimiento y registra
 el diagnóstico en la operación sin publicar un cambio exitoso.
 
+En ArcadeCloud OS multiwindow, toda acción nacida dentro de un Explorer captura
+inmediatamente `route` y `windowId` desde la ventana propietaria del control.
+Subidas, portapapeles y transferencias conservan ese contexto en cada tarea; los
+globals legacy (`window.rutaActual`, `DRIVE_INITIAL_ROUTE` y
+`#archivosContexto`) sólo son compatibilidad del Drive clásico y nunca son la
+fuente autoritativa de una operación multiwindow.
+
+El updater tiene dos piezas deliberadamente distintas: la fuente versionada
+`drive/bin/arcadecloud-drive-updater.php` y su copia privilegiada fija en
+`/usr/local/sbin/arcadecloud-drive-updater`, única que puede invocar la web por
+la regla sudoers restringida. `check` compara sus hashes para diagnosticar
+desfase; después de un fast-forward, el reconciliador reinstala la fuente ya
+actualizada y verifica la copia. `repo_user` se deriva del propietario de
+`.git`, no del document root, para que el fetch use la identidad que posee el
+checkout y sus credenciales.
+
 ## Aplicaciones de archivo (Etapa 4)
 
 ### Inventario previo conservado

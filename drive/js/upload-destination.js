@@ -16,12 +16,31 @@ class UploadDestinationModule {
         return String(contextRoute || window.rutaActual || window.DRIVE_INITIAL_ROUTE || footerRoute || '').trim();
       }
 
-      function capture() {
-        const route = currentRoute();
+      function normalize(route) {
+        route = String(route || '').trim();
+        return route && !route.endsWith('/') ? route + '/' : route;
+      }
+
+      function contextFromElement(element) {
+        const live = element?.closest?.('.os-explorer-live')
+          || element?.closest?.('.os-explorer-window')?.querySelector?.('.os-explorer-live');
+        const owner = element?.closest?.('.os-explorer-window, .os-window');
+        const route = normalize(live?.dataset?.explorerRoute || '');
+        return Object.freeze({
+          route,
+          sourceWindowId: String(owner?.dataset?.windowId || '')
+        });
+      }
+
+      function capture(context = null) {
+        const explicit = context && typeof context === 'object'
+          ? String(context.route || context.destinationRoute || '')
+          : String(context || '');
+        const route = normalize(explicit || currentRoute());
         if (!route) {
           throw new Error('No se pudo determinar la carpeta destino de la subida.');
         }
-        return route.endsWith('/') ? route : route + '/';
+        return route;
       }
 
       function sameRoute(a, b) {
@@ -52,6 +71,7 @@ class UploadDestinationModule {
 
       window.DriveUploadDestination = Object.freeze({
         currentRoute,
+        contextFromElement,
         capture,
         sameRoute,
         afterSuccess

@@ -357,7 +357,10 @@ fi
 
 # Helpers privilegiados: siempre se refrescan después de un git update.
 bash "$DRIVE_ROOT/bin/install_arcadecloud_admin_helper.sh" --php-user="$PHP_USER" --app-root="$APP_ROOT"
-bash "$DRIVE_ROOT/bin/install_arcadecloud_updater.sh" --php-user="$PHP_USER" --repo-root="$APP_ROOT"
+bash "$DRIVE_ROOT/bin/install_arcadecloud_updater.sh" \
+  --php-user="$PHP_USER" \
+  --repo-root="$APP_ROOT" \
+  --repo-user="$(stat -c '%U' "$APP_ROOT/.git")"
 
 # Office tiene piezas fuera de Git (Nginx, systemd, imagen Docker y permisos).
 # Si ya existe evidencia de una instalación Office, el updater la reconcilia

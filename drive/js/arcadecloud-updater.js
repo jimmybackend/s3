@@ -78,7 +78,7 @@ class ArcadeCloudUpdaterModule {
     this.status.className = 'small text-info';
     this.hideApply();
     try {
-      const response = await fetch('update.php', {
+      const response = await fetch('update.php?_=' + encodeURIComponent(String(Date.now())), {
         credentials: 'same-origin', cache: 'no-store',
         headers: {'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest'}
       });
@@ -101,6 +101,7 @@ class ArcadeCloudUpdaterModule {
     const behind = Number(data.behind || 0);
     const dirty = Boolean(data.dirty);
     const canStashAndApply = Boolean(data.can_apply_with_stash);
+    const helperInSync = data.helper_in_sync !== false;
 
     if (!data.update_available) {
       this.status.textContent = `✓ ArcadeCloud está actualizado · ${local || 'commit desconocido'}`;
@@ -136,10 +137,14 @@ class ArcadeCloudUpdaterModule {
       const dirtyList = dirty && dirtyFiles.length
         ? `<div class="mt-1"><strong>Cambios locales:</strong><ul class="mb-1 pl-4">${dirtyFiles.map((line) => `<li><code>${this.escape(line)}</code></li>`).join('')}</ul></div>`
         : '';
+      const helperLine = helperInSync
+        ? ''
+        : '<div class="text-danger"><strong>Helper:</strong> la copia privilegiada instalada no coincide con el checkout. Ejecuta la reconciliación segura del instalador.</div>';
       this.details.innerHTML = `
         <div><strong>Rama:</strong> ${this.escape(branch)}</div>
         <div><strong>Instalado:</strong> ${this.escape(local)}</div>
         <div><strong>Disponible:</strong> ${this.escape(remote)}</div>
+        ${helperLine}
         ${schemaLine}
         ${dirty ? '<div class="text-danger"><strong>Atención:</strong> hay cambios locales sin guardar.</div>' : ''}
         ${dirtyList}

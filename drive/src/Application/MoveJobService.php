@@ -39,8 +39,19 @@ final class MoveJobService
             throw new RuntimeException('No hay archivos seleccionados.');
         }
 
+        if ($destination !== $this->paths->rootForUser($userId)) {
+            $this->folderRecords->requireActive($userId, $destination);
+        }
+
+        $allAlreadyThere = $operation === 'move';
         foreach ($refs as $ref) {
-            $this->fileRecords->requireByRef($userId, $ref, true);
+            $file = $this->fileRecords->requireByRef($userId, $ref, true);
+            if ($this->fileRecords->normalizePrefix((string)($file['Ruta'] ?? '')) !== $destination) {
+                $allAlreadyThere = false;
+            }
+        }
+        if ($allAlreadyThere) {
+            throw new RuntimeException('El elemento ya está en esta carpeta.');
         }
 
         return $this->store->create($userId, 'files', [

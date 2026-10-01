@@ -192,7 +192,9 @@ class ArcadeCloudOsClipboard {
           if (folder && folder.route) destination = String(folder.route);
           this.window.ArcadeCloudOsFolders?.hideContext?.();
         }
-        const destinationWindowId = button.closest('.os-window')?.dataset.windowId || '';
+        const destinationWindowId = button.closest('.os-window')?.dataset.windowId
+          || (button.dataset.osPasteTarget === 'folder' ? this.window.ArcadeCloudOsFolders?.activeFolder?.sourceWindowId : '')
+          || '';
         await this.paste(destination, { destinationWindowId });
         return;
       }
@@ -394,7 +396,7 @@ class ArcadeCloudOsClipboard {
       route,
       items: [route],
       name: String(folder.name || 'Carpeta'),
-      sourceWindowId: context.sourceWindowId || '',
+      sourceWindowId: context.sourceWindowId || folder.sourceWindowId || '',
       sourceRoute: String(context.sourceRoute || folder.parent || this.currentRoute())
     });
   }
@@ -402,7 +404,12 @@ class ArcadeCloudOsClipboard {
   setClipboard(item) {
     item.operation = item.operation || item.mode;
     item.items = Array.isArray(item.items) ? item.items : (item.keys || (item.route ? [item.route] : []));
-    this.clipboard = Object.assign({ version: 1, createdAt: Date.now() }, item);
+    const immutableItems = Object.freeze([...(Array.isArray(item.items) ? item.items : [])]);
+    this.clipboard = Object.freeze(Object.assign(
+      { version: 1, createdAt: Date.now() },
+      item,
+      { items: immutableItems, keys: Object.freeze([...(item.keys || [])]) }
+    ));
     try {
       this.window.sessionStorage.setItem(this.storageKey, JSON.stringify(this.clipboard));
     } catch (_) {}
@@ -473,6 +480,11 @@ class ArcadeCloudOsClipboard {
     destination = String(destination || this.currentRoute()).trim();
     if (!destination) {
       this.notify('No se pudo identificar la carpeta destino.', 'warning');
+      return;
+    }
+
+    if (item.mode === 'move' && this.sameRoute(item.sourceRoute, destination)) {
+      this.notify('El elemento ya está en esta carpeta.', 'warning');
       return;
     }
 

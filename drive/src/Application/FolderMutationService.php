@@ -99,6 +99,7 @@ final class FolderMutationService
 
         $continuation = null;
         $toDelete = [];
+        $copiedKeys = [];
         do {
             $params = ['Bucket' => $this->bucket, 'Prefix' => $origin, 'MaxKeys' => 1000];
             if ($continuation) $params['ContinuationToken'] = $continuation;
@@ -116,20 +117,27 @@ final class FolderMutationService
                 ]);
                 $copyRequests++;
                 $toDelete[] = ['Key' => $oldKey];
-                if (count($toDelete) >= 1000) {
-                    $this->deleteObjects($toDelete);
-                    $deleteRequests++;
-                    $toDelete = [];
-                }
+                $copiedKeys[] = ['Key' => $newKey];
             }
             $continuation = !empty($objects['IsTruncated']) ? ($objects['NextContinuationToken'] ?? null) : null;
         } while ($continuation);
-        if ($toDelete !== []) {
-            $this->deleteObjects($toDelete);
-            $deleteRequests++;
+        try {
+            $updated = $this->folders->moveTree($userId, $origin, $final);
+        } catch (\Throwable $error) {
+            foreach (array_chunk($copiedKeys, 1000) as $chunk) {
+                try {
+                    $this->deleteObjects($chunk);
+                } catch (\Throwable) {
+                }
+            }
+            throw $error;
         }
 
-        $updated = $this->folders->moveTree($userId, $origin, $final);
+        foreach (array_chunk($toDelete, 1000) as $chunk) {
+            if ($chunk === []) continue;
+            $this->deleteObjects($chunk);
+            $deleteRequests++;
+        }
         return [
             'origen' => $origin,
             'destino' => $final,

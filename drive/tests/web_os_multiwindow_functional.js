@@ -27,12 +27,14 @@ class ElementStub {
   }
   querySelectorAll() { return []; }
   addEventListener(type, callback) { this.listeners[type] = callback; }
+  getBoundingClientRect() { return { width: parseFloat(this.style.width) || 0, height: parseFloat(this.style.height) || 0 }; }
 }
 
 const taskbar = new ElementStub('div');
 const documentStub = { getElementById: id => id === 'osTaskButtons' ? taskbar : null, createElement: tag => new ElementStub(tag), dispatchEvent: () => true };
 const { ArcadeCloudEventBus, ArcadeCloudWindowManager } = require('../js/os-window-manager.js');
-const manager = new ArcadeCloudWindowManager({}, documentStub, new ArcadeCloudEventBus());
+const windowStubApi = { innerWidth: 1920, innerHeight: 1080, setTimeout, clearTimeout };
+const manager = new ArcadeCloudWindowManager(windowStubApi, documentStub, new ArcadeCloudEventBus());
 manager.registerApp('explorer', { multiInstance: true, lifecycle: 'dynamic', title: 'Mis datos', icon: 'fa-folder-open' });
 manager.registerApp('image', { multiInstance: true, lifecycle: 'dynamic', title: 'Imagen', icon: 'fa-file-image' });
 manager.registerApp('pdf', { multiInstance: true, lifecycle: 'dynamic', title: 'PDF', icon: 'fa-file-pdf' });
@@ -98,10 +100,19 @@ manager.minimize(explorers[0].id);
 assert(manager.record(explorers[0].id).minimized && explorers[0].state.route === '/Legal', 'minimizar conserva instancia y ruta');
 manager.focus(explorers[0].id);
 assert(!manager.record(explorers[0].id).minimized && explorers[0].state.history.length === 1, 'restaurar conserva historial');
-manager.preferences.explorer = { width: 900, height: 700 };
+const restored = { width: explorers[2].element.style.width, height: explorers[2].element.style.height };
+manager.focus(explorers[2].id);
+assert(explorers[2].element.style.width === restored.width && explorers[2].element.style.height === restored.height, 'focus sólo activa y eleva z-index sin cambiar tamaño');
 manager.toggleMaximize(explorers[2].id);
-assert(explorers[2].element.style.width === '450px' && explorers[2].element.style.height === '350px', 'botón reduce Explorer a 50 por ciento del tamaño preferido');
+assert(explorers[2].element.classList.contains('is-maximized') && manager.record(explorers[2].id).maximized, 'maximizar es un estado voluntario separado');
 manager.toggleMaximize(explorers[2].id);
-assert(explorers[2].element.style.width === '900px' && explorers[2].element.style.height === '700px', 'segundo clic restaura tamaño preferido');
-assert(manager.registry.has(explorers[0].id) && manager.registry.has(explorers[2].id), 'modo móvil alterna ventanas sin eliminarlas del registry');
+assert(!explorers[2].element.classList.contains('is-maximized') && explorers[2].element.style.width === restored.width && explorers[2].element.style.height === restored.height, 'restaurar recupera exactamente la geometría pequeña');
+assert(parseFloat(restored.width) <= 1920 * .5 && parseFloat(restored.height) <= 1080 * .55, 'Explorer nuevo ocupa como máximo 50% x 55% en 1920x1080');
+manager.preferences.explorer = { width: 1824, height: 972 };
+const legacy = manager.preferred('explorer');
+assert(legacy.width === Math.round(1920 * .42) && legacy.height === Math.round((1080 - 52) * .42), 'preferencia legacy 95vw x 90vh vuelve al default pequeño');
+const tool = manager.register(windowStub('Actividad y costos'), 'tool-activity-costs');
+assert(parseFloat(tool.element.style.width) <= 1920 * .5 && parseFloat(tool.element.style.height) <= 1080 * .55, 'herramienta nueva ocupa como máximo 50% x 55%');
+assert([explorers[0], explorers[2], tool, node].every(record => !record.element.classList.contains('is-maximized')), 'Explorer A, Explorer B, herramienta y Mi nodo pueden coexistir sin nacer maximizados');
+assert(manager.registry.has(explorers[0].id) && manager.registry.has(explorers[2].id), 'maximizar no elimina ventanas del registry');
 process.stdout.write('Web OS multiwindow functional test passed.\n');

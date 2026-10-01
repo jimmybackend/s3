@@ -8,6 +8,30 @@ class ArcadeCloudEventBus extends EventTarget {
   }
 }
 
+/* Single source of truth for every normal window. Values are viewport ratios,
+ * not CSS scattered through factories/templates. Maximized geometry is a
+ * transient state and is deliberately absent from this configuration. */
+class ArcadeCloudWindowLayoutConfig {
+  static MOBILE_BREAKPOINT = 700;
+  static DEFINITIONS = Object.freeze({
+    explorer: { width: .42, height: .42, minWidth: 320, minHeight: 260 },
+    tool:     { width: .42, height: .42, minWidth: 320, minHeight: 260 },
+    node:     { width: .46, height: .50, minWidth: 420, minHeight: 320 },
+    settings: { width: .40, height: .45, minWidth: 320, minHeight: 260 },
+    terminal: { width: .45, height: .42, minWidth: 360, minHeight: 260 },
+    viewer:   { width: .42, height: .42, minWidth: 320, minHeight: 260 },
+    default:  { width: .42, height: .42, minWidth: 320, minHeight: 260 }
+  });
+
+  static key(app) {
+    if (/^(image|pdf|text|viewer)$/.test(app)) return 'viewer';
+    if (app === 'tool' || app.startsWith('tool-')) return 'tool';
+    return this.DEFINITIONS[app] ? app : 'default';
+  }
+
+  static definition(app) { return this.DEFINITIONS[this.key(app)]; }
+}
+
 class ArcadeCloudWindowManager {
   constructor(win, doc, bus) {
     this.window = win;
@@ -20,6 +44,7 @@ class ArcadeCloudWindowManager {
     this.taskbar = doc.getElementById('osTaskButtons');
     this.preferences = Object.assign({}, win.ARCADECLOUD_OS_APPEARANCE?.preferences?.windowPreferences || {});
     this.preferenceTimers = new Map();
+    this.layoutSequence = 0;
   }
 
   registerApp(app, definition) {
@@ -67,7 +92,7 @@ class ArcadeCloudWindowManager {
       record.state = state || record.state;
     }
     if (typeof cleanup === 'function') record.cleanup.add(cleanup);
-    this.applyPreferred(app, element);
+    this.applyInitialGeometry(app, element);
     this.observeResize(record);
     this.syncTaskbar();
     return record;
@@ -135,41 +160,68 @@ class ArcadeCloudWindowManager {
   toggleMaximize(elementOrId) {
     const record = this.record(elementOrId);
     if (!record) return;
-    if (this.window.matchMedia?.('(max-width: 800px), (pointer: coarse)').matches) {
-      record.maximized = !record.maximized;
-      record.element.classList.toggle('is-maximized', record.maximized);
-      this.focus(record.id); return;
+    if (!record.maximized) {
+      const rect = record.element.getBoundingClientRect?.() || {};
+      record.geometry = {
+        left: record.element.style.left, top: record.element.style.top,
+        width: record.element.style.width || `${Math.round(rect.width)}px`,
+        height: record.element.style.height || `${Math.round(rect.height)}px`
+      };
     }
-    const preferred = this.preferred(record.app, record.element);
-    record.compact = !record.compact;
-    record.element.classList.toggle('is-compact', record.compact);
-    record.element.style.width = `${record.compact ? Math.max(this.minimum(record.app).width, Math.round(preferred.width / 2)) : preferred.width}px`;
-    record.element.style.height = `${record.compact ? Math.max(this.minimum(record.app).height, Math.round(preferred.height / 2)) : preferred.height}px`;
+    record.maximized = !record.maximized;
+    record.element.classList.toggle('is-maximized', record.maximized);
+    if (!record.maximized && record.geometry) Object.assign(record.element.style, record.geometry);
     this.focus(record.id);
   }
 
   minimum(app) {
-    if (app === 'explorer') return { width: 420, height: 320 };
-    if (app === 'node') return { width: 500, height: 380 };
-    return { width: 340, height: 240 };
+    const definition = ArcadeCloudWindowLayoutConfig.definition(app);
+    return { width: definition.minWidth, height: definition.minHeight };
   }
 
-  preferred(app, element) {
-    const saved = this.preferences[app] || {};
-    const rect = element?.getBoundingClientRect?.() || {};
-    if (this.isLegacyOversize(app, saved)) return { width: Math.round(this.window.innerWidth * .44), height: Math.round((this.window.innerHeight - 52) * .46) };
-    return { width: Number(saved.width) || Math.round(rect.width) || 900, height: Number(saved.height) || Math.round(rect.height) || 620 };
+  preferenceKey(app) { return ArcadeCloudWindowLayoutConfig.key(app); }
+
+  defaultGeometry(app) {
+    const definition = ArcadeCloudWindowLayoutConfig.definition(app);
+    const availableHeight = Math.max(320, this.window.innerHeight - 52);
+    const tablet = this.window.innerWidth > ArcadeCloudWindowLayoutConfig.MOBILE_BREAKPOINT && this.window.innerWidth <= 1180;
+    const ratio = tablet ? Math.min(.52, Math.max(.45, definition.width + .06)) : definition.width;
+    return {
+      width: Math.max(definition.minWidth, Math.round(this.window.innerWidth * ratio)),
+      height: Math.max(definition.minHeight, Math.round(availableHeight * definition.height))
+    };
   }
 
-  applyPreferred(app, element) {
-    const saved = this.preferences[app]; if (!saved || this.isLegacyOversize(app, saved)) return;
-    element.style.width = `${Math.min(Number(saved.width), Math.max(240, this.window.innerWidth - 16))}px`;
-    element.style.height = `${Math.min(Number(saved.height), Math.max(180, this.window.innerHeight - 58))}px`;
+  preferred(app) {
+    const key = this.preferenceKey(app);
+    const saved = this.preferences[key] || this.preferences[app];
+    return saved && !this.isLegacyOversize(app, saved) ? this.clampGeometry(app, saved) : this.defaultGeometry(app);
   }
 
   isLegacyOversize(app, saved) {
-    if (app !== 'explorer' || this.window.innerWidth <= 800 || !saved) return false;
-    return Number(saved.width) > this.window.innerWidth * .85 || Number(saved.height) > (this.window.innerHeight - 52) * .85;
+    if (this.window.innerWidth <= ArcadeCloudWindowLayoutConfig.MOBILE_BREAKPOINT || !saved) return false;
+    return Number(saved.width) > this.window.innerWidth * .72 || Number(saved.height) > (this.window.innerHeight - 52) * .72;
+  }
+
+  clampGeometry(app, geometry) {
+    const min = this.minimum(app);
+    return {
+      width: Math.max(min.width, Math.min(Number(geometry.width) || min.width, Math.round(this.window.innerWidth * .70))),
+      height: Math.max(min.height, Math.min(Number(geometry.height) || min.height, Math.round((this.window.innerHeight - 52) * .70)))
+    };
+  }
+
+  applyInitialGeometry(app, element) {
+    element.classList.remove('is-maximized', 'is-compact');
+    if (this.window.innerWidth <= ArcadeCloudWindowLayoutConfig.MOBILE_BREAKPOINT) return;
+    const geometry = this.preferred(app);
+    const step = (this.layoutSequence++ % 7) * 32;
+    const baseLeft = Math.round(this.window.innerWidth * .04);
+    const baseTop = Math.round(this.window.innerHeight * .06);
+    element.style.width = `${geometry.width}px`;
+    element.style.height = `${geometry.height}px`;
+    element.style.left = `${Math.min(baseLeft + step, this.window.innerWidth - geometry.width - 8)}px`;
+    element.style.top = `${Math.min(baseTop + step, this.window.innerHeight - geometry.height - 58)}px`;
   }
 
   observeResize(record) {
@@ -178,7 +230,7 @@ class ArcadeCloudWindowManager {
     let initial = true;
     const observer = new ResizeObserver(entries => {
       if (initial) { initial = false; return; }
-      if (record.compact || record.maximized || !record.element.classList.contains('is-open')) return;
+      if (record.maximized || !record.element.classList.contains('is-open')) return;
       const box = entries[0]?.contentRect; if (!box?.width || !box?.height) return;
       clearTimeout(this.preferenceTimers.get(record.id));
       this.preferenceTimers.set(record.id, setTimeout(() => this.savePreference(record.app, Math.round(box.width), Math.round(box.height)), 400));
@@ -187,11 +239,12 @@ class ArcadeCloudWindowManager {
   }
 
   async savePreference(app, width, height) {
-    const min = this.minimum(app); width = Math.max(min.width, width); height = Math.max(min.height, height);
-    this.preferences[app] = { width, height };
+    const key = this.preferenceKey(app);
+    ({ width, height } = this.clampGeometry(app, { width, height }));
+    this.preferences[key] = { width, height };
     const config = this.window.ARCADECLOUD_OS_APPEARANCE || {};
     if (!config.endpoint || !config.csrf) return;
-    try { await this.window.fetch(config.endpoint, { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': config.csrf }, body: JSON.stringify({ windowPreference: { app, width, height } }) }); } catch (_) {}
+    try { await this.window.fetch(config.endpoint, { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': config.csrf }, body: JSON.stringify({ windowPreference: { app: key, width, height } }) }); } catch (_) {}
   }
 
   setTitle(elementOrId, title) {
@@ -262,14 +315,6 @@ class ExplorerWindowFactory {
     element.dataset.windowTitle = 'Mis datos — /';
     element.dataset.minimized = '0';
     element.dataset.dynamicWindow = '1';
-    const index = this.runtime.explorers.size % 8;
-    const offset = 20 + (index * 30);
-    const tablet = this.runtime.window.innerWidth <= 1180;
-    const mobile = this.runtime.window.innerWidth <= 800;
-    const width = mobile ? this.runtime.window.innerWidth - 12 : Math.max(420, Math.round(this.runtime.window.innerWidth * (tablet ? .48 : .44)));
-    const height = Math.max(320, Math.round((this.runtime.window.innerHeight - 52) * .46));
-    element.style.cssText = `left:${Math.min(offset, Math.max(8, this.runtime.window.innerWidth - width - 8))}px;top:${Math.min(offset, Math.max(8, this.runtime.window.innerHeight - height - 58))}px;width:${width}px;height:${height}px`;
-    this.runtime.manager.applyPreferred('explorer', element); // A saved Users.os_preferences geometry wins.
     element.innerHTML = '<div class="os-window-titlebar" data-window-drag-handle><div class="os-window-title"><i class="fas fa-folder-open"></i><span>Mis datos — /</span></div><div class="os-window-controls"><button type="button" data-window-minimize aria-label="Minimizar"><i class="fas fa-minus"></i></button><button type="button" data-window-maximize aria-label="Maximizar"><i class="far fa-square"></i></button><button type="button" data-window-close aria-label="Cerrar"><i class="fas fa-xmark"></i></button></div></div><div class="os-explorer-live" data-explorer-route=""><div class="os-explorer-pathrow"></div><div class="os-explorer-loading">Cargando…</div></div>';
     this.runtime.document.getElementById('osDesktop')?.append(element);
     const controller = this.runtime.attachExplorer(element, route);
@@ -627,7 +672,6 @@ class ArcadeCloudDesktopRuntime {
     const element = this.document.createElement('section');
     element.className = 'os-window os-tool-window is-open'; element.dataset.windowTitle = title;
     element.dataset.dynamicWindow = '1';
-    element.style.cssText = 'left:14vw;top:9vh;width:min(980px,82vw);height:min(680px,76vh)';
     element.innerHTML = '<div class="os-window-titlebar" data-window-drag-handle><div class="os-window-title"><i class="fas fa-toolbox"></i><span></span></div><div class="os-window-controls"><button type="button" data-window-minimize aria-label="Minimizar"><i class="fas fa-minus"></i></button><button type="button" data-window-maximize aria-label="Maximizar"><i class="far fa-square"></i></button><button type="button" data-window-close aria-label="Cerrar"><i class="fas fa-xmark"></i></button></div></div><div class="os-window-body os-tool-body"><p class="os-node-placeholder">Cargando…</p></div>';
     element.querySelector('.os-window-title span').textContent = title;
     this.document.getElementById('osDesktop')?.append(element);
@@ -680,5 +724,5 @@ class ArcadeCloudDesktopRuntime {
   }
 }
 
-if (typeof module !== 'undefined') module.exports = { ArcadeCloudEventBus, ArcadeCloudWindowManager, ExplorerWindowFactory, ArcadeCloudExplorerWindow, ArcadeCloudDesktopRuntime };
+if (typeof module !== 'undefined') module.exports = { ArcadeCloudEventBus, ArcadeCloudWindowLayoutConfig, ArcadeCloudWindowManager, ExplorerWindowFactory, ArcadeCloudExplorerWindow, ArcadeCloudDesktopRuntime };
 if (typeof window !== 'undefined') window.addEventListener('DOMContentLoaded', () => { window.ArcadeCloudDesktopRuntime = new ArcadeCloudDesktopRuntime(window, document).init(); });

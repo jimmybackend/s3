@@ -7,6 +7,7 @@ $paths = [
     'shell' => $root . '/so.php',
     'css' => $root . '/css/so.css',
     'js' => $root . '/js/so.js',
+    'window_manager_js' => $root . '/js/os-window-manager.js',
     'appearance_js' => $root . '/js/so-appearance.js',
     'preferences_endpoint' => $root . '/os-preferences.php',
     'preferences_repository' => $root . '/src/Security/UserOsPreferencesRepository.php',
@@ -171,7 +172,7 @@ webOsContract(str_contains($paths['shell'], 'data-task-action="close"'), 'barra 
 webOsContract(str_contains($paths['js'], "minimize.hidden = minimized"), 'tres puntos ocultan minimizar cuando la ventana ya está minimizada');
 webOsContract(str_contains($paths['js'], "maximize.hidden = !minimized"), 'tres puntos ofrecen maximizar sólo cuando la ventana está minimizada');
 webOsContract(str_contains($paths['js'], 'showTaskContext('), 'barra de tareas abre menú de ventana');
-webOsContract(str_contains($paths['js'], "ext === 'pdf' ? 'min(820px, 72vw)'"), 'PDF abre con tamaño inicial más compacto');
+webOsContract(str_contains($paths['window_manager_js'], "viewer:   { width: .42, height: .42"), 'PDF, imagen y texto usan tamaño pequeño centralizado');
 webOsContract(str_contains($paths['css'], 'flex:0 0 auto'), 'controles de ventana no se encogen fuera de vista');
 webOsContract(str_contains($paths['shell'], 'data-os-reload'), 'engranaje ofrece recargar ArcadeCloud OS');
 webOsContract(str_contains($paths['shell'], '> Actualizar</button>'), 'menú inferior usa etiqueta breve Actualizar');

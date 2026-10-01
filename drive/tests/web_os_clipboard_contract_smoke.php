@@ -83,7 +83,8 @@ $assert(str_contains($files['webOsShell'], 'data-drive-upload-center'), 'Web OS 
 $assert(str_contains($files['classicShell'], 'js/upload-center.js'), 'Drive clásico carga el mismo centro de subida');
 $assert(str_contains($files['webOsShell'], 'js/upload-center.js'), 'Web OS carga el mismo centro de subida');
 $assert(str_contains($files['uploadCenter'], "navigator.clipboard.read"), 'portapapeles se consulta desde el centro de subida');
-$assert(str_contains($files['uploadCenter'], 'async open()'), 'revisión de portapapeles nace al abrir Subir');
+$assert(str_contains($files['uploadCenter'], 'async open(context = null)'), 'revisión de portapapeles nace al abrir Subir con contexto de Explorer');
+$assert(str_contains($files['uploadCenter'], 'this.open(this.contextForButton(button))'), 'el botón Subir entrega su Explorer propietario');
 $assert(str_contains($files['uploadCenter'], 'await this.inspectClipboard()'), 'Subir revisa imagen/texto sólo bajo acción del usuario');
 $assert(str_contains($files['uploadCenter'], "data-upload-paste-image"), 'centro ofrece pegar imagen cuando existe');
 $assert(str_contains($files['uploadCenter'], "data-upload-paste-text"), 'centro ofrece pegar texto cuando existe');

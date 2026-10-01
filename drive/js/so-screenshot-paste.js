@@ -13,33 +13,39 @@ class ArcadeCloudOsScreenshotPaste {
   }
 
   ensureButton() {
-    const toolbar = this.document.querySelector('.os-explorer-window.is-active .os-explorer-toolbar, .os-explorer-live .os-explorer-toolbar');
-    if (!toolbar || toolbar.querySelector('[data-os-screenshot-paste]')) return;
+    this.document.querySelectorAll('.os-explorer-live .os-explorer-toolbar').forEach((toolbar) => {
+      if (toolbar.querySelector('[data-os-screenshot-paste]')) return;
 
-    const button = this.document.createElement('button');
-    button.type = 'button';
-    button.className = 'os-screenshot-paste';
-    button.dataset.osScreenshotPaste = '1';
-    button.title = 'Pegar una imagen del portapapeles en esta carpeta';
+      const button = this.document.createElement('button');
+      button.type = 'button';
+      button.className = 'os-screenshot-paste';
+      button.dataset.osScreenshotPaste = '1';
+      button.title = 'Pegar una imagen del portapapeles en esta carpeta';
 
-    const icon = this.document.createElement('i');
-    icon.className = 'fas fa-camera';
-    const label = this.document.createElement('span');
-    label.textContent = 'Pegar screenshot';
+      const icon = this.document.createElement('i');
+      icon.className = 'fas fa-camera';
+      const label = this.document.createElement('span');
+      label.textContent = 'Pegar screenshot';
 
-    button.appendChild(icon);
-    button.appendChild(label);
+      button.appendChild(icon);
+      button.appendChild(label);
 
-    const pager = toolbar.querySelector('.os-folder-pagination');
-    toolbar.insertBefore(button, pager || null);
+      const pager = toolbar.querySelector('.os-folder-pagination');
+      toolbar.insertBefore(button, pager || null);
 
-    button.addEventListener('click', async (event) => {
-      event.preventDefault();
-      event.stopPropagation();
-      await this.pasteFromClipboard();
+      button.addEventListener('click', async (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        const live = button.closest('.os-explorer-live');
+        const owner = button.closest('.os-explorer-window, .os-window');
+        await this.pasteFromClipboard({
+          route: String(live?.dataset?.explorerRoute || ''),
+          sourceWindowId: String(owner?.dataset?.windowId || '')
+        });
+      });
+
+      this.setBusy(this.busy);
     });
-
-    this.setBusy(this.busy);
   }
 
   bindEvents() {
@@ -78,7 +84,7 @@ class ArcadeCloudOsScreenshotPaste {
     return null;
   }
 
-  async pasteFromClipboard() {
+  async pasteFromClipboard(context = null) {
     if (this.busy) return;
 
     if (!this.window.isSecureContext || !this.window.navigator?.clipboard?.read) {
@@ -95,7 +101,7 @@ class ArcadeCloudOsScreenshotPaste {
         if (!imageType) continue;
 
         const blob = await item.getType(imageType);
-        await this.saveScreenshot(blob);
+        await this.saveScreenshot(blob, context);
         return;
       }
 
@@ -110,10 +116,10 @@ class ArcadeCloudOsScreenshotPaste {
     }
   }
 
-  async saveScreenshot(sourceBlob) {
+  async saveScreenshot(sourceBlob, context = null) {
     if (this.busy || !sourceBlob) return;
 
-    const route = this.currentRoute();
+    const route = String(context?.route || this.currentRoute()).trim();
     const csrf = String(this.window.DRIVE_UPLOAD_CSRF || '');
     const api = String(this.window.UPLOAD_API || 'api/upload.php');
 

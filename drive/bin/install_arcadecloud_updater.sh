@@ -30,7 +30,9 @@ fi
 id "$PHP_USER" >/dev/null 2>&1 || { echo "ERROR: usuario PHP inexistente: $PHP_USER" >&2; exit 2; }
 
 if [[ -z "$REPO_USER" ]]; then
-  REPO_USER="$(stat -c '%U' "$REPO_ROOT")"
+  # El document root suele pertenecer a root aunque el checkout (y sus
+  # credenciales Git) pertenezca al usuario de despliegue.
+  REPO_USER="$(stat -c '%U' "$REPO_ROOT/.git")"
 fi
 id "$REPO_USER" >/dev/null 2>&1 || { echo "ERROR: usuario del repo inexistente: $REPO_USER" >&2; exit 2; }
 
@@ -42,6 +44,7 @@ SUDOERS="/etc/sudoers.d/arcadecloud-drive-updater"
 
 install -d -o root -g root -m 0755 "$CONFIG_DIR"
 install -o root -g root -m 0755 "$SOURCE" "$TARGET"
+cmp -s "$SOURCE" "$TARGET" || { echo "ERROR: el helper privilegiado instalado no coincide con la fuente del checkout." >&2; exit 3; }
 
 python3 - "$CONFIG" "$REPO_ROOT" "$REPO_USER" "$PHP_USER" <<'PY'
 import json, os, sys, tempfile

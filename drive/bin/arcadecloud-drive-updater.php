@@ -281,6 +281,11 @@ final class ArcadeCloudDriveUpdater
         $behind = max(0, (int)$this->git($config, ['rev-list', '--count', 'HEAD..origin/main'])['stdout']);
         $ahead = max(0, (int)$this->git($config, ['rev-list', '--count', 'origin/main..HEAD'])['stdout']);
         $summary = [];
+        $repoHelper = rtrim((string)$config['repo_root'], '/') . '/drive/bin/arcadecloud-drive-updater.php';
+        $installedHash = is_file(__FILE__) ? hash_file('sha256', __FILE__) : false;
+        $repoHash = is_file($repoHelper) ? hash_file('sha256', $repoHelper) : false;
+        $helperInSync = is_string($installedHash) && is_string($repoHash)
+            && hash_equals($installedHash, $repoHash);
 
         if ($behind > 0) {
             $log = $this->git($config, [
@@ -304,6 +309,9 @@ final class ArcadeCloudDriveUpdater
             'can_apply' => $branch === 'main' && !$dirty && $ahead === 0 && $behind > 0,
             'can_apply_with_stash' => $branch === 'main' && $dirty && $ahead === 0 && $behind > 0,
             'summary' => array_values(array_filter(array_map('strval', $summary))),
+            'helper_in_sync' => $helperInSync,
+            'helper_installed_sha256' => is_string($installedHash) ? $installedHash : '',
+            'helper_repo_sha256' => is_string($repoHash) ? $repoHash : '',
             'checked_at' => gmdate(DATE_ATOM),
         ];
     }

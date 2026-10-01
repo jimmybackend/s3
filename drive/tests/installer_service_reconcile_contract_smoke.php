@@ -100,6 +100,9 @@ installerContract(
 );
 
 installerContract(str_contains($updater, 'reconcileServices'), 'updater web reconcilia servicios tras fast-forward');
+installerContract(str_contains($updater, "'helper_in_sync' => \$helperInSync"), 'check diagnostica si helper instalado y fuente difieren');
+installerContract(str_contains($updaterInstaller, 'stat -c \'%U\' "$REPO_ROOT/.git"'), 'instalador obtiene repo_user del checkout Git');
+installerContract(str_contains($updaterInstaller, 'cmp -s "$SOURCE" "$TARGET"'), 'instalador verifica la copia privilegiada');
 installerContract(str_contains($updater, "'--defer-php-restart'"), 'updater web solicita reinicio diferido de PHP-FPM');
 installerContract(str_contains($reconciler, 'arcadecloud-drive-updater'), 'reconciliador detecta updater anterior durante la primera actualización del arreglo');
 installerContract(str_contains($reconciler, 'federation_catalog_migrate.php'), 'reconciliador actualiza esquema FederationCloud después de git update');

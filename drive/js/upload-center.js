@@ -8,6 +8,7 @@ class ArcadeCloudUploadCenter {
     this.localQueue = Promise.resolve();
     this.modal = null;
     this.openRoute = '';
+    this.openContext = null;
     this.clipboard = { image: null, text: '' };
     this.eventsBound = false;
     this.terminalKeepMs = 15 * 60 * 1000;
@@ -29,7 +30,7 @@ class ArcadeCloudUploadCenter {
       if (!button) return;
       event.preventDefault();
       event.stopPropagation();
-      this.open();
+      this.open(this.contextForButton(button));
     });
 
     this.document.addEventListener('keydown', (event) => {
@@ -230,10 +231,15 @@ class ArcadeCloudUploadCenter {
     return modal;
   }
 
-  async open() {
+  async open(context = null) {
     this.ensureUi();
     try {
-      this.openRoute = this.captureRoute();
+      const route = this.captureRoute(context);
+      this.openContext = Object.freeze({
+        sourceWindowId: String(context?.sourceWindowId || ''),
+        destinationRoute: route
+      });
+      this.openRoute = route;
     } catch (error) {
       this.notify(error?.message || 'No se pudo determinar la carpeta destino.', 'danger');
       return;
@@ -254,15 +260,30 @@ class ArcadeCloudUploadCenter {
     this.document.body.classList.remove('drive-upload-open');
   }
 
-  captureRoute() {
-    if (this.window.DriveUploadDestination?.capture) {
-      return this.window.DriveUploadDestination.capture();
+  contextForButton(button) {
+    if (this.window.DriveUploadDestination?.contextFromElement) {
+      return this.window.DriveUploadDestination.contextFromElement(button);
     }
-    const explorer = this.document.querySelector('.os-explorer-window.is-active .os-explorer-live, .os-explorer-live');
-    const context = this.document.getElementById('archivosContexto');
+    const live = button?.closest?.('.os-explorer-live')
+      || button?.closest?.('.os-explorer-window')?.querySelector?.('.os-explorer-live');
+    const owner = button?.closest?.('.os-explorer-window, .os-window');
+    return {
+      route: String(live?.dataset?.explorerRoute || ''),
+      sourceWindowId: String(owner?.dataset?.windowId || '')
+    };
+  }
+
+  captureRoute(context = null) {
+    if (this.window.DriveUploadDestination?.capture) {
+      return this.window.DriveUploadDestination.capture(context);
+    }
+    const explicit = String(context?.route || context?.destinationRoute || '').trim();
+    if (explicit) return explicit.endsWith('/') ? explicit : explicit + '/';
+    // Compatibilidad exclusiva con Drive clásico, donde no existe una ventana
+    // Explorer propietaria del botón.
+    const legacyContext = this.document.getElementById('archivosContexto');
     const raw = String(
-      context?.dataset?.rutaActual ||
-      explorer?.dataset?.explorerRoute ||
+      legacyContext?.dataset?.rutaActual ||
       this.window.rutaActual ||
       this.window.DRIVE_INITIAL_ROUTE ||
       ''
@@ -457,7 +478,7 @@ class ArcadeCloudUploadCenter {
     this.updateTask(task.id, { status: 'running', progress: 1, detail: 'Preparando subida multipart.' });
     this.setPanelStatus(file.name + ' enviado a Tareas como subida multipart.', 'success');
 
-    const saved = this.loadMultipartSession(file);
+    const saved = this.loadMultipartSession(file, requestedRoute);
     let route = requestedRoute;
     let uploadId = '';
     let key = '';
@@ -497,7 +518,7 @@ class ArcadeCloudUploadCenter {
         uploadId = String(json.uploadId);
         key = String(json.key);
         stateId = String(json.stateId || '');
-        this.saveMultipartSession(file, { stateId, uploadId, key, chunkSize, rutaObjetivo: route });
+        this.saveMultipartSession(file, route, { stateId, uploadId, key, chunkSize, rutaObjetivo: route });
       }
 
       try {
@@ -561,7 +582,7 @@ class ArcadeCloudUploadCenter {
 
         etags[String(partNumber)] = etag;
         uploadedBytes += end - start;
-        this.saveMultipartSession(file, {
+        this.saveMultipartSession(file, route, {
           stateId, uploadId, key, chunkSize, etags, rutaObjetivo: route
         });
       }
@@ -586,7 +607,7 @@ class ArcadeCloudUploadCenter {
         throw new Error(completeJson?.error || 'No se pudo completar la subida multipart.');
       }
 
-      this.clearMultipartSession(file);
+      this.clearMultipartSession(file, route);
       this.completeTask(task.id, 'Archivo multipart guardado en la carpeta fijada.');
       await this.afterSuccess(route);
     } catch (error) {
@@ -796,22 +817,22 @@ class ArcadeCloudUploadCenter {
     return Math.min(256, mb) * 1024 * 1024;
   }
 
-  multipartKey(file) {
-    return 's3v2_chunked_' + [file.name, String(file.size), String(file.lastModified || 0)].join('|');
+  multipartKey(file, route) {
+    return 's3v2_chunked_' + [route, file.name, String(file.size), String(file.lastModified || 0)].join('|');
   }
 
-  loadMultipartSession(file) {
+  loadMultipartSession(file, route) {
     try {
-      const raw = localStorage.getItem(this.multipartKey(file));
+      const raw = localStorage.getItem(this.multipartKey(file, route));
       return raw ? JSON.parse(raw) : null;
     } catch (_) {
       return null;
     }
   }
 
-  saveMultipartSession(file, session) {
+  saveMultipartSession(file, route, session) {
     try {
-      localStorage.setItem(this.multipartKey(file), JSON.stringify({
+      localStorage.setItem(this.multipartKey(file, route), JSON.stringify({
         ...session,
         filename: file.name,
         filesize: file.size,
@@ -821,8 +842,8 @@ class ArcadeCloudUploadCenter {
     } catch (_) {}
   }
 
-  clearMultipartSession(file) {
-    try { localStorage.removeItem(this.multipartKey(file)); } catch (_) {}
+  clearMultipartSession(file, route) {
+    try { localStorage.removeItem(this.multipartKey(file, route)); } catch (_) {}
   }
 
   async sha256Hex(blob) {
@@ -934,4 +955,5 @@ class ArcadeCloudUploadCenter {
   }
 }
 
-ArcadeCloudUploadCenter.boot();
+if (typeof module !== 'undefined') module.exports = { ArcadeCloudUploadCenter };
+if (typeof window !== 'undefined' && typeof document !== 'undefined') ArcadeCloudUploadCenter.boot();

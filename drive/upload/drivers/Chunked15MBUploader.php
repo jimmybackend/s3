@@ -90,17 +90,11 @@ final class Chunked15MBUploader implements UploaderInterface
             $key = (string)($req['key'] ?? '');
 
             $meta = $stateId !== '' ? $this->store->load($stateId) : null;
-            if ($meta && (int)($meta['user_id'] ?? 0) !== (int)($req['_user_id'] ?? 0)) {
-                throw new RuntimeException('La subida multipart no pertenece al usuario actual.');
+            if (!$meta || (int)($meta['user_id'] ?? 0) !== (int)($req['_user_id'] ?? 0)) {
+                throw new RuntimeException('Estado multipart inválido o ajeno al usuario actual.');
             }
-            if ($meta) {
-                $uploadId = (string)$meta['uploadId'];
-                $key = (string)$meta['key'];
-            }
-
-            if ($uploadId === '' || $key === '') {
-                throw new RuntimeException('Faltan parámetros para resume (stateId o uploadId+key)');
-            }
+            $uploadId = (string)$meta['uploadId'];
+            $key = (string)$meta['key'];
 
             $etags = $this->listPartsEtags($uploadId, $key);
             if ($meta && $stateId !== '') {
@@ -155,13 +149,11 @@ final class Chunked15MBUploader implements UploaderInterface
         $key = (string)($req['key'] ?? '');
 
         $meta = $stateId !== '' ? $this->store->load($stateId) : null;
-        if ($meta && (int)($meta['user_id'] ?? 0) !== (int)($req['_user_id'] ?? 0)) {
-            throw new RuntimeException('La subida multipart no pertenece al usuario actual.');
+        if (!$meta || (int)($meta['user_id'] ?? 0) !== (int)($req['_user_id'] ?? 0)) {
+            throw new RuntimeException('Estado multipart inválido o ajeno al usuario actual.');
         }
-        if ($meta) {
-            $uploadId = (string)$meta['uploadId'];
-            $key = (string)$meta['key'];
-        }
+        $uploadId = (string)$meta['uploadId'];
+        $key = (string)$meta['key'];
 
         $etagsJson = (string)($req['etags'] ?? '');
         $etags = $etagsJson !== '' ? (json_decode($etagsJson, true) ?: []) : [];

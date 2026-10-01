@@ -68,5 +68,8 @@ clipboard.paste('/Documentos', { destinationWindowId: 'explorer-a' }).then(async
   clipboard.captureFiles(entries[0], 'copy', { sourceWindowId: 'explorer-a', sourceRoute: '/Fotos', entries });
   await clipboard.paste('/Temporal', { destinationWindowId: 'explorer-b' });
   assert(requests[2].nueva_ruta === '/Temporal', 'copy A -> B continúa funcionando');
+  clipboard.captureFiles(entries[0], 'move', { sourceWindowId: 'explorer-a', sourceRoute: '/Fotos', entries });
+  await clipboard.paste('/Fotos/', { destinationWindowId: 'explorer-a' });
+  assert(requests.length === 3 && clipboard.clipboard?.mode === 'move', 'move a la misma carpeta no crea job destructivo y conserva el clipboard');
   process.stdout.write('Web OS same Explorer clipboard functional test passed.\n');
 }).catch(error => { console.error(error); process.exitCode = 1; });

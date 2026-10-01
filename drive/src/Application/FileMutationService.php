@@ -65,7 +65,6 @@ final class FileMutationService
         ]);
 
         try {
-            $this->s3->deleteObject(['Bucket' => $this->bucket, 'Key' => $oldKey]);
             $this->files->move($userId, (int)$file['id_'], $newRoute, $newKey);
         } catch (\Throwable $error) {
             try {
@@ -74,6 +73,11 @@ final class FileMutationService
             }
             throw $error;
         }
+
+        // FileS3 ya apunta al objeto nuevo antes de retirar el anterior. Si S3
+        // rechaza el delete puede quedar un objeto huérfano recuperable, nunca
+        // una fila que apunte a bytes que ya fueron eliminados.
+        $this->s3->deleteObject(['Bucket' => $this->bucket, 'Key' => $oldKey]);
 
         return [
             'id' => (int)$file['id_'],

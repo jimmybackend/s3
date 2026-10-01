@@ -1,9 +1,9 @@
 {
   "summary": {
-    "php_total": 503,
+    "php_total": 504,
     "php_class_modules": 294,
     "php_needs_migration": 0,
-    "php_tests": 54,
+    "php_tests": 55,
     "js_total": 72,
     "js_class_modules": 69,
     "js_needs_migration": 6,
@@ -2060,7 +2060,7 @@
     },
     {
       "path": "drive/so.php",
-      "lines": 2013,
+      "lines": 2006,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -7220,6 +7220,21 @@
       "issues": []
     },
     {
+      "path": "drive/tests/web_os_remote_applications_smoke.php",
+      "lines": 49,
+      "kind": "test script",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": true,
+      "namespace": false,
+      "issues": []
+    },
+    {
       "path": "drive/tests/web_os_theme_contract_smoke.php",
       "lines": 29,
       "kind": "test script",
@@ -8062,7 +8077,7 @@
     },
     {
       "path": "drive/js/desktop-shell.js",
-      "lines": 151,
+      "lines": 172,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudDesktopShell"
@@ -9349,7 +9364,7 @@
     },
     {
       "path": "drive/tests/web_os_desktop_shell_functional.js",
-      "lines": 22,
+      "lines": 40,
       "kind": "procedural script",
       "classes": [],
       "functions": [
@@ -9360,7 +9375,11 @@
       "top_vars": [
         "editable",
         "records",
-        "instance"
+        "instance",
+        "registered",
+        "declarative",
+        "launcher",
+        "remoteApps"
       ],
       "iife": false,
       "ajax": {
@@ -9372,7 +9391,7 @@
       },
       "issues": [
         "top-level functions: assert",
-        "top-level state: editable, records, instance",
+        "top-level state: editable, records, instance, registered, declarative, launcher, remoteApps",
         "no ES class"
       ]
     },

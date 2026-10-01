@@ -261,7 +261,15 @@ a{text-decoration:none;color:inherit}
 .os-node-progress{height:6px;background:rgba(255,255,255,.08);border-radius:5px;overflow:hidden;margin:5px 0 8px}.os-node-progress span{display:block;height:100%;background:var(--os-accent)}
 .os-node-list{display:grid;gap:7px}.os-node-list-row{display:flex;gap:10px;justify-content:space-between;font-size:.82rem;border-bottom:1px solid rgba(255,255,255,.05);padding-bottom:5px}.os-node-list-row span:last-child{text-align:right;overflow-wrap:anywhere}
 .os-node-details{margin-top:9px}.os-node-details summary{cursor:pointer;color:var(--os-accent-2);font-size:.8rem}.os-node-placeholder{color:var(--os-soft);grid-column:1/-1}
+.os-node-service-group{margin-top:12px}.os-node-service-group h4{margin:0 0 7px;color:var(--os-soft);font-size:.7rem;letter-spacing:.09em}
+.os-node-service-item{padding:10px;margin-bottom:8px;border:1px solid rgba(116,196,255,.12);border-radius:9px;background:rgba(255,255,255,.018)}
+.os-node-service-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:7px}.os-node-service-head strong{font-size:.85rem}
+.os-node-badge{padding:3px 7px;border-radius:999px;font-size:.68rem;background:rgba(137,147,158,.14);color:var(--os-soft)}
+.os-node-badge-ok{background:rgba(85,217,139,.12);color:#55d98b}.os-node-badge-warning{background:rgba(242,193,78,.13);color:#f2c14e}
+.os-node-service-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}.os-node-service-actions button{border:1px solid var(--os-border);border-radius:7px;background:rgba(38,198,255,.06);color:var(--os-text);font-size:.7rem;padding:5px 8px;cursor:pointer}.os-node-service-actions button:hover{border-color:var(--os-accent)}.os-node-service-actions button:disabled{opacity:.55;cursor:wait}
+.os-node-logline{font:11px/1.45 ui-monospace,SFMono-Regular,Consolas,monospace;color:var(--os-soft);overflow-wrap:anywhere;padding:3px 0;border-bottom:1px solid rgba(255,255,255,.04)}
 @media(max-width:800px){.os-node-dashboard{grid-template-columns:1fr}.os-node-card-wide{grid-column:auto}.os-node-legacy-summary,.os-capability-list{display:none}.os-node-card dl{grid-template-columns:minmax(90px,.9fr) minmax(0,1.1fr)}#nodeWindow .os-window-body{padding-bottom:80px}}
+@media(max-width:520px){.os-node-service-head{align-items:flex-start;flex-direction:column}.os-node-service-actions button{flex:1 1 auto}.os-node-card{padding:11px}}
 #nodeWindow.is-node-loading .os-window-body{opacity:.7}
 .os-share-modal .modal-content{
   background:#0d1b2c;color:var(--os-text);border:1px solid var(--os-border);border-radius:13px;

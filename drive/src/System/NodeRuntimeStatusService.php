@@ -24,25 +24,8 @@ final class NodeRuntimeStatusService
         'mysql_connections_critical_percent' => 95,
     ];
 
-    /** Units are fixed here: no request value can become a systemctl argument. */
-    public const SERVICE_WHITELIST = [
-        'nginx.service' => 'Nginx',
-        'php-fpm-drive.service' => 'PHP-FPM Drive',
-        'arcadecloud-federation-sync.service' => 'Federation Sync',
-        'arcadecloud-federation-sync.timer' => 'Federation Sync timer',
-        'arcadecloud-federation-drop-cleanup.service' => 'Federation Drop cleanup',
-        'arcadecloud-federation-drop-cleanup.timer' => 'Federation Drop cleanup timer',
-        'arcadecloud-federation-https.service' => 'Federation HTTPS',
-        'arcadecloud-federation-https.timer' => 'Federation HTTPS timer',
-        'arcadecloud-polly-reconcile.service' => 'Polly reconcile',
-        'arcadecloud-polly-reconcile.timer' => 'Polly reconcile timer',
-        'arcadecloud-transcribe-reconcile.service' => 'Transcribe reconcile',
-        'arcadecloud-transcribe-reconcile.timer' => 'Transcribe reconcile timer',
-        'arcadecloud-media-worker.service' => 'Media Worker',
-        'arcadecloud-media-node-bootstrap.service' => 'Media node bootstrap',
-        'arcadecloud-workstation.service' => 'Workstation',
-        'docker.service' => 'Docker',
-    ];
+    /** Backwards-compatible read-only map; actions use NodeServiceCatalog IDs. */
+    public const SERVICE_WHITELIST = NodeServiceCatalog::COMPONENTS;
 
     private const PROGRAMS = [
         'php' => ['PHP', ['php', '-v']],
@@ -79,6 +62,7 @@ final class NodeRuntimeStatusService
             'thresholds' => self::THRESHOLDS,
             'resources' => $resources,
             'services' => $services,
+            'processes' => $this->processMemory(),
             'programs' => $this->cachedPrograms(),
             'php' => $this->php($services),
             'nginx' => $this->nginx($services),
@@ -170,19 +154,33 @@ final class NodeRuntimeStatusService
     {
         if (!$this->executable('systemctl')) return [];
         $units = [];
-        foreach (self::SERVICE_WHITELIST as $unit => $label) {
-            $show = $this->command(['systemctl', 'show', $unit, '--no-pager', '--property=LoadState,ActiveState,UnitFileState,MainPID,ActiveEnterTimestamp,Result,LastTriggerUSec,NextElapseUSecRealtime'], 1.2);
+        foreach (NodeServiceCatalog::COMPONENTS as $componentId => $definition) {
+            if (in_array($componentId, ['mysql', 'mariadb'], true) && $this->databaseType() !== 'local') continue;
+            $unit = (string)$definition['service_name'];
+            $show = $this->command(['systemctl', 'show', $unit, '--no-pager', '--property=LoadState,ActiveState,SubState,UnitFileState,MainPID,ActiveEnterTimestamp,InactiveEnterTimestamp,Result,ExecMainCode,ExecMainStatus,LastTriggerUSec,NextElapseUSecRealtime'], 1.2);
             $values = [];
             foreach (explode("\n", $show['output']) as $line) {
                 if (str_contains($line, '=')) [$key, $value] = explode('=', $line, 2); else continue;
                 $values[$key] = trim($value);
             }
             if (($values['LoadState'] ?? 'not-found') === 'not-found') continue;
-            $units[] = ['unit' => $unit, 'name' => $label, 'installed' => true,
+            $active = (string)($values['ActiveState'] ?? 'unknown');
+            $enabled = (string)($values['UnitFileState'] ?? 'unknown');
+            $type = (string)$definition['type'];
+            $intent = in_array($enabled, ['disabled', 'masked'], true) && !($definition['critical'] ?? true) ? 'disabled_by_admin' : null;
+            $timer = isset($definition['timer_name']) ? $this->timerSnapshot((string)$definition['timer_name']) : null;
+            $healthyIdle = in_array($type, ['oneshot', 'static-helper'], true) && $active === 'inactive' && (($values['Result'] ?? 'success') === 'success');
+            $diagnostic = $active === 'failed' ? $this->failureDiagnostic($unit) : [];
+            $units[] = ['id' => $componentId, 'unit' => $unit, 'name' => (string)$definition['friendly_name'], 'installed' => true,
+                'type' => $type, 'category' => (string)$definition['category'], 'critical' => (bool)$definition['critical'],
+                'allowed_actions' => array_values((array)$definition['allowed_actions']), 'intent' => $intent, 'healthy_idle' => $healthyIdle,
                 'active' => (string)($values['ActiveState'] ?? 'unknown'), 'enabled' => (string)($values['UnitFileState'] ?? 'unknown'),
+                'substate' => (string)($values['SubState'] ?? ''),
                 'pid' => (int)($values['MainPID'] ?? 0), 'since' => (string)($values['ActiveEnterTimestamp'] ?? ''),
                 'result' => (string)($values['Result'] ?? ''), 'last_trigger' => (string)($values['LastTriggerUSec'] ?? ''),
-                'next_trigger' => (string)($values['NextElapseUSecRealtime'] ?? '')];
+                'last_run' => (string)($values['InactiveEnterTimestamp'] ?? $values['ActiveEnterTimestamp'] ?? ''),
+                'exit_code' => (int)($values['ExecMainStatus'] ?? 0), 'exit_kind' => (string)($values['ExecMainCode'] ?? ''),
+                'next_trigger' => (string)($values['NextElapseUSecRealtime'] ?? ''), 'timer' => $timer, 'diagnostic' => $diagnostic];
         }
         return $units;
     }
@@ -196,14 +194,15 @@ final class NodeRuntimeStatusService
             'latency_ms' => round((hrtime(true) - $started) / 1_000_000, 1), 'advanced_available' => false];
         if (!$available) return $base;
         try {
-            $status = $this->mysqlPairs($db, "SHOW GLOBAL STATUS WHERE Variable_name IN ('Threads_connected','Threads_running','Uptime','Slow_queries')");
+            $status = $this->mysqlPairs($db, "SHOW GLOBAL STATUS WHERE Variable_name IN ('Threads_connected','Threads_running','Connections','Aborted_connects','Uptime','Slow_queries')");
             $vars = $this->mysqlPairs($db, "SHOW GLOBAL VARIABLES WHERE Variable_name IN ('max_connections')");
             if (!isset($status['Threads_connected'], $vars['max_connections'])) return $base;
             $connected = (int)$status['Threads_connected']; $max = max(1, (int)$vars['max_connections']);
             return array_merge($base, ['advanced_available' => true, 'threads_connected' => $connected,
                 'threads_running' => (int)($status['Threads_running'] ?? 0), 'max_connections' => $max,
                 'connections_used_percent' => round($connected * 100 / $max, 1), 'uptime_seconds' => (int)($status['Uptime'] ?? 0),
-                'slow_queries' => (int)($status['Slow_queries'] ?? 0)]);
+                'connections' => (int)($status['Connections'] ?? 0), 'aborted_connects' => (int)($status['Aborted_connects'] ?? 0),
+                'slow_queries' => (int)($status['Slow_queries'] ?? 0), 'database_size_bytes' => $this->cachedDatabaseSize($db)]);
         } catch (Throwable) { return $base; }
     }
 
@@ -237,6 +236,10 @@ final class NodeRuntimeStatusService
             $result = $this->app->db()->query("SELECT COUNT(*) known, SUM(LastSeen >= DATE_SUB(UTC_TIMESTAMP(), INTERVAL 15 MINUTE)) recent, SUM(Status='active' AND LastSeen >= DATE_SUB(UTC_TIMESTAMP(), INTERVAL 15 MINUTE)) available, MAX(LastSeen) last_sync FROM FederationNodes");
             $row = $result?->fetch_assoc(); $result?->free();
             if (is_array($row)) { $out['known']=(int)$row['known']; $out['recently_seen']=(int)$row['recent']; $out['available']=(int)$row['available']; $out['unavailable']=max(0,$out['known']-$out['available']); $out['last_sync_at']=$row['last_sync']; }
+            $peers = $this->app->db()->query("SELECT NodeId, NodeName, Status, LastSeen, FederationUrl FROM FederationNodes ORDER BY LastSeen DESC LIMIT 50");
+            $out['nodes'] = [];
+            while ($peer = $peers?->fetch_assoc()) $out['nodes'][] = ['node_id_short'=>substr((string)$peer['NodeId'],0,12),'name'=>(string)($peer['NodeName']??''),'status'=>(string)$peer['Status'],'last_seen'=>(string)$peer['LastSeen'],'url'=>$this->safePublicUrl((string)$peer['FederationUrl'])];
+            $peers?->free();
         } catch (Throwable) { $out['message'] = 'Estado de FederationCloud no disponible.'; }
         return $out;
     }
@@ -251,7 +254,8 @@ final class NodeRuntimeStatusService
     private function php(array $services): array
     {
         $service = $this->service($services, 'php-fpm-drive.service');
-        return ['version' => PHP_VERSION, 'service' => $service, 'pool_metrics_available' => false,
+        $workers = $this->processStats('php-fpm');
+        return ['version' => PHP_VERSION, 'service' => $service, 'workers' => $workers['count'], 'memory_bytes' => $workers['memory_bytes'], 'pool_metrics_available' => false,
             'pool_message' => 'Métricas del pool no disponibles sin un status FPM seguro.',
             'settings' => ['memory_limit' => ini_get('memory_limit'), 'upload_max_filesize' => ini_get('upload_max_filesize'),
                 'post_max_size' => ini_get('post_max_size'), 'max_execution_time' => ini_get('max_execution_time')]];
@@ -259,9 +263,14 @@ final class NodeRuntimeStatusService
 
     private function nginx(array $services): array
     {
-        $test = $this->executable('nginx') ? $this->command(['nginx', '-t'], 2.0) : ['ok' => false, 'output' => ''];
-        return ['service' => $this->service($services, 'nginx.service'), 'config_ok' => (bool)$test['ok'],
-            'config_message' => $this->sanitizeLine($test['output']), 'stub_status_available' => false];
+        $test = $this->executable('nginx') ? $this->command(['nginx', '-t'], 2.0) : ['ok' => false, 'output' => '', 'code' => 127];
+        $versionProbe = $this->executable('nginx') ? $this->command(['nginx', '-v'], 1.0) : ['output' => ''];
+        $message = $this->sanitizeLine($test['output']);
+        $permission = !$test['ok'] && (str_contains(strtolower($message), 'permission denied') || str_contains(strtolower($message), 'operation not permitted'));
+        $stats = $this->processStats('nginx');
+        return ['service' => $this->service($services, 'nginx.service'), 'version' => $this->sanitizeLine($versionProbe['output']), 'config_status' => $test['ok'] ? 'ok' : ($permission ? 'permission_denied' : 'error'),
+            'config_ok' => (bool)$test['ok'], 'config_message' => $permission ? 'No disponible por permisos' : $message,
+            'memory_bytes' => $stats['memory_bytes'], 'processes' => $stats['count'], 'stub_status_available' => false];
     }
 
     private function cachedPrograms(): array
@@ -288,7 +297,7 @@ final class NodeRuntimeStatusService
         if ($disk >= self::THRESHOLDS['disk_critical_percent']) $critical[]='Disco críticamente lleno'; elseif ($disk >= self::THRESHOLDS['disk_warning_percent']) $warning[]='Disco cerca del límite';
         if ($availablePct <= self::THRESHOLDS['memory_available_critical_percent']) $critical[]='Memoria disponible crítica'; elseif ($availablePct <= self::THRESHOLDS['memory_available_warning_percent']) $warning[]='Memoria disponible baja';
         foreach (['nginx.service','php-fpm-drive.service'] as $unit) { $s=$this->service($services,$unit); if ($s && ($s['active']??'') !== 'active') $critical[]=$s['name'].' no está activo'; }
-        foreach ($services as $s) if (($s['active'] ?? '') === 'failed') $critical[]=$s['name'].' failed';
+        foreach ($services as $s) if (($s['active'] ?? '') === 'failed') { if ($s['critical'] ?? false) $critical[]=$s['name'].' falló'; else $warning[]=$s['name'].' falló en la última ejecución'; }
         if (!($database['available'] ?? false)) $critical[]='MySQL no disponible';
         $mysql=(float)($database['connections_used_percent']??0); if ($mysql>=95)$critical[]='Conexiones MySQL críticas'; elseif($mysql>=80)$warning[]='Conexiones MySQL cerca del máximo';
         return $critical ? ['state'=>'problem','label'=>'Problema','reasons'=>$critical] : ($warning ? ['state'=>'warning','label'=>'Atención','reasons'=>$warning] : ['state'=>'ok','label'=>'Correcto','reasons'=>[]]);
@@ -303,6 +312,81 @@ final class NodeRuntimeStatusService
             'idle_timeout_seconds'=>$timeout,'idle_seconds'=>$elapsed,'remaining_seconds'=>max(0,$timeout+$warning-$elapsed),
             'last_activity_at'=>isset($idle['idle_since'])&&$idle['idle_since']!==''?gmdate('c',max(0,time()-$elapsed)):null,
             'shutdown_blockers'=>$blockers,'state'=>(string)($idle['state']??'unknown')];
+    }
+
+    private function timerSnapshot(string $unit): ?array
+    {
+        $show = $this->command(['systemctl', 'show', $unit, '--no-pager', '--property=LoadState,ActiveState,UnitFileState,LastTriggerUSec,NextElapseUSecRealtime'], 1.0);
+        $values = $this->propertyLines($show['output']);
+        if (($values['LoadState'] ?? 'not-found') === 'not-found') return null;
+        $next = (string)($values['NextElapseUSecRealtime'] ?? '');
+        $timestamp = $next !== '' ? strtotime($next) : false;
+        return ['unit' => $unit, 'active' => (string)($values['ActiveState'] ?? 'unknown'), 'enabled' => (string)($values['UnitFileState'] ?? 'unknown'),
+            'last_trigger' => (string)($values['LastTriggerUSec'] ?? ''), 'next_trigger' => $next,
+            'remaining_seconds' => $timestamp === false ? null : max(0, $timestamp - time())];
+    }
+
+    private function failureDiagnostic(string $unit): array
+    {
+        $journal = $this->command(['journalctl', '-u', $unit, '-n', '5', '--no-pager', '-o', 'cat'], 1.5);
+        $lines = [];
+        foreach (array_slice(preg_split('/\R/', trim($journal['output'])) ?: [], -5) as $line) {
+            $clean = $this->sanitizeDiagnostic($line);
+            if ($clean !== '') $lines[] = $clean;
+        }
+        return ['journal' => $lines, 'available' => $lines !== []];
+    }
+
+    private function propertyLines(string $output): array
+    {
+        $values = [];
+        foreach (explode("\n", $output) as $line) if (str_contains($line, '=')) { [$key, $value] = explode('=', $line, 2); $values[$key] = trim($value); }
+        return $values;
+    }
+
+    private function processMemory(): array
+    {
+        $definitions = ['php-fpm' => 'PHP-FPM', 'nginx' => 'Nginx', 'mysqld' => 'MySQL', 'mariadbd' => 'MariaDB', 'media_processing' => 'Media Worker', 'docker' => 'Workstation / Docker'];
+        $rows = [];
+        foreach ($definitions as $needle => $name) {
+            $stats = $this->processStats($needle);
+            if ($stats['count'] > 0) $rows[] = ['name' => $name, 'memory_bytes' => $stats['memory_bytes'], 'processes' => $stats['count']];
+        }
+        usort($rows, static fn(array $a, array $b): int => $b['memory_bytes'] <=> $a['memory_bytes']);
+        return $rows;
+    }
+
+    private function processStats(string $needle): array
+    {
+        $bytes = 0; $count = 0;
+        foreach (glob('/proc/[0-9]*/comm', GLOB_NOSORT) ?: [] as $commPath) {
+            $comm = @file_get_contents($commPath);
+            if (!is_string($comm) || !str_contains(strtolower($comm), strtolower($needle))) continue;
+            $status = @file_get_contents(dirname($commPath) . '/status');
+            if (!is_string($status)) continue;
+            if (preg_match('/^VmRSS:\s+(\d+)\s+kB/im', $status, $match)) $bytes += (int)$match[1] * 1024;
+            $count++;
+        }
+        return ['memory_bytes' => $bytes, 'count' => $count];
+    }
+
+    private function cachedDatabaseSize(mysqli $db): ?int
+    {
+        $key = 'arcadecloud.node.database-size.v1';
+        if (function_exists('apcu_fetch')) { $ok = false; $value = apcu_fetch($key, $ok); if ($ok && is_int($value)) return $value; }
+        $name = (string)(getenv('DB_NAME') ?: ''); if ($name === '') return null;
+        $stmt = $db->prepare('SELECT COALESCE(SUM(data_length + index_length),0) FROM information_schema.TABLES WHERE table_schema=?');
+        if (!$stmt) return null; $stmt->bind_param('s', $name); if (!$stmt->execute()) { $stmt->close(); return null; }
+        $stmt->bind_result($size); $stmt->fetch(); $stmt->close(); $bytes = (int)$size;
+        if (function_exists('apcu_store')) @apcu_store($key, $bytes, 300);
+        return $bytes;
+    }
+
+    private function safePublicUrl(string $url): string
+    {
+        $parts = parse_url($url); if (!is_array($parts) || !in_array(strtolower((string)($parts['scheme'] ?? '')), ['http', 'https'], true)) return '';
+        $host = (string)($parts['host'] ?? ''); if ($host === '') return '';
+        return strtolower((string)$parts['scheme']) . '://' . $host . (isset($parts['port']) ? ':' . (int)$parts['port'] : '') . (string)($parts['path'] ?? '');
     }
 
     private function legacy(array $c, array $r): array
@@ -327,7 +411,14 @@ final class NodeRuntimeStatusService
         $pipes=[]; $process=@proc_open($argv,[0=>['pipe','r'],1=>['pipe','w'],2=>['pipe','w']],$pipes,null,['LC_ALL'=>'C','PATH'=>(string)(getenv('PATH')?:'/usr/bin:/bin')]);
         if(!is_resource($process))return ['ok'=>false,'output'=>'']; fclose($pipes[0]); stream_set_blocking($pipes[1],false); stream_set_blocking($pipes[2],false);
         $output='';$start=microtime(true);$timed=false;$exitCode=null; do{$output.=stream_get_contents($pipes[1]).stream_get_contents($pipes[2]);$status=proc_get_status($process);if(!$status['running']){$exitCode=(int)$status['exitcode'];break;}if(microtime(true)-$start>$timeout){$timed=true;proc_terminate($process);break;}usleep(10000);}while(true);
-        $output.=stream_get_contents($pipes[1]).stream_get_contents($pipes[2]);fclose($pipes[1]);fclose($pipes[2]);$closed=proc_close($process);$code=$exitCode??$closed;return ['ok'=>!$timed&&$code===0,'output'=>substr($output,0,2048)];
+        $output.=stream_get_contents($pipes[1]).stream_get_contents($pipes[2]);fclose($pipes[1]);fclose($pipes[2]);$closed=proc_close($process);$code=$exitCode??$closed;return ['ok'=>!$timed&&$code===0,'output'=>substr($output,0,2048),'code'=>$code,'timed_out'=>$timed];
     }
     private function sanitizeLine(string $value): string { $line=trim((string)(preg_split('/\R/',$value)[0]??'')); return substr(preg_replace('/[\x00-\x1F\x7F]/','',$line)??'',0,180); }
+    private function sanitizeDiagnostic(string $value): string
+    {
+        $value = preg_replace('/\b(password|passwd|token|secret|authorization|credential|api[_-]?key)\s*[:=]\s*\S+/i', '$1=[REDACTADO]', $value) ?? '';
+        $value = preg_replace('/\b(AKIA|ASIA)[A-Z0-9]{12,}\b/', '[REDACTADO]', $value) ?? '';
+        $value = preg_replace('/\b[a-z][a-z0-9+.-]*:\/\/[^\s@]+@/i', 'https://[REDACTADO]@', $value) ?? '';
+        return substr(trim(preg_replace('/[\x00-\x1F\x7F]/', '', $value) ?? ''), 0, 240);
+    }
 }

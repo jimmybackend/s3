@@ -6,6 +6,7 @@ namespace ArcadeCloud\Drive\Http\Controller;
 use ArcadeCloud\Drive\Admin\PrivilegedServerHelper;
 use ArcadeCloud\Drive\Admin\ServerMaintenanceJobStore;
 use ArcadeCloud\Drive\Admin\ServerMaintenanceService;
+use ArcadeCloud\Drive\Admin\NodeServiceControlService;
 use ArcadeCloud\Drive\Http\JsonResponse;
 use ArcadeCloud\Drive\System\NodeRuntimeStatusService;
 use RuntimeException;
@@ -42,6 +43,14 @@ final class NodeStatusController extends AbstractJsonController
             }
 
             $action = $this->request->postString('action');
+            if ($action === 'component-action') {
+                $result = (new NodeServiceControlService($this->app))->execute(
+                    $this->request->postString('component'),
+                    $this->request->postString('operation'),
+                    $this->request->postRawString('access_password')
+                );
+                JsonResponse::send(['ok' => true] + $result, 202);
+            }
             if (!in_array($action, ['memory-clear', 'disk-clean'], true)) {
                 throw new RuntimeException('Acción de nodo no permitida.');
             }

@@ -71,6 +71,14 @@ const clipboard = { sourceWindowId: explorers[0].id, sourceRoute: '/Legal', item
 const backendRequest = { ...clipboard, destinationRoute: explorers[2].state.route };
 assert(backendRequest.destinationRoute === '/Documentos', 'clipboard/drop usa la ruta del Explorer B como destino backend');
 
-manager.minimize(explorers[0].id); manager.toggleMaximize(explorers[2].id); manager.focus(explorers[0].id);
+manager.minimize(explorers[0].id);
+assert(manager.record(explorers[0].id).minimized && explorers[0].state.route === '/Legal', 'minimizar conserva instancia y ruta');
+manager.focus(explorers[0].id);
+assert(!manager.record(explorers[0].id).minimized && explorers[0].state.history.length === 1, 'restaurar conserva historial');
+manager.preferences.explorer = { width: 900, height: 700 };
+manager.toggleMaximize(explorers[2].id);
+assert(explorers[2].element.style.width === '450px' && explorers[2].element.style.height === '350px', 'botón reduce Explorer a 50 por ciento del tamaño preferido');
+manager.toggleMaximize(explorers[2].id);
+assert(explorers[2].element.style.width === '900px' && explorers[2].element.style.height === '700px', 'segundo clic restaura tamaño preferido');
 assert(manager.registry.has(explorers[0].id) && manager.registry.has(explorers[2].id), 'modo móvil alterna ventanas sin eliminarlas del registry');
 process.stdout.write('Web OS multiwindow functional test passed.\n');

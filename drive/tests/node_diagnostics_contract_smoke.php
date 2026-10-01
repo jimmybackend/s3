@@ -33,7 +33,7 @@ nodeContract(str_contains($files['js'], "button.disabled = (action === 'start'")
 nodeContract(str_contains($files['js'], 'Estado del servicio Nginx') && str_contains($files['js'], 'Validación de configuración'), 'Nginx separa servicio y validación');
 nodeContract(str_contains($files['js'], 'setInterval(() => { if (this.isOpen()) this.refresh();') && str_contains($files['js'], '30000'), 'polling ocurre cada 30 segundos sólo con Mi nodo abierto');
 nodeContract(str_contains($files['js'], 'this.stopPolling()') && str_contains($files['js'], '#nodeWindow [data-window-close]'), 'cerrar Mi nodo detiene polling');
-nodeContract(substr_count($files['js'], 'this.refresh();') < 10 && str_contains($files['js'], 'remaining = Math.max(0, remaining - 1)'), 'countdown local no consulta cada segundo');
+nodeContract(substr_count($files['js'], 'this.refresh();') < 10 && str_contains($files['js'], 'this.idleRemaining = Math.max(0, this.idleRemaining - 1)'), 'countdown local no consulta cada segundo');
 nodeContract(str_contains($files['service'], "['state' => 'neutral', 'label' => \$state === 'stopped'"), 'FastDrive stopped es neutral, no error');
 nodeContract(str_contains($files['view'], 'data-node-tab="local"') && str_contains($files['view'], 'data-node-tab="fastdrive"'), 'vista permite seleccionar Principal y FastDrive');
 nodeContract(str_contains($files['css'], '@media(max-width:800px)') && str_contains($files['css'], 'grid-template-columns:1fr'), 'panel se adapta a una columna móvil');

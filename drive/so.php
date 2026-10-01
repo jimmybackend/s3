@@ -212,6 +212,7 @@ $currentIsRoot = $currentPrefix === $rootPrefix;
 $currentFolderName = $currentIsRoot
     ? rtrim($rootPrefix, '/')
     : basename(rtrim($currentPrefix, '/'));
+$isExplorerFragment = (string)($_GET['_os_fragment'] ?? '') === 'explorer';
 ?>
 <!doctype html>
 <html lang="es">
@@ -245,7 +246,8 @@ $currentFolderName = $currentIsRoot
       <span>Aplicaciones</span>
     </button>
 
-    <section class="os-window os-explorer-window is-open" data-window-title="Mis datos" data-initial-explorer="1" style="left:7vw;top:8vh;width:min(1050px,86vw);height:min(680px,72vh);">
+    <?php if ($isExplorerFragment): ?>
+    <section class="os-window os-explorer-window" data-window-title="Mis datos">
       <div class="os-window-titlebar" data-window-drag-handle>
         <div class="os-window-title"><i class="fas fa-folder-open"></i><span>Mis datos</span></div>
         <div class="os-window-controls">
@@ -477,6 +479,7 @@ $currentFolderName = $currentIsRoot
       </div>
       </div>
     </section>
+    <?php endif; ?>
 
     <section class="os-window" id="nodeWindow" data-window-title="Mi nodo" data-node-access="<?= $isSuperAdmin ? 'superadmin' : 'standard' ?>" style="left:10vw;top:8vh;width:min(1040px,88vw);height:min(760px,80vh);">
       <div class="os-window-titlebar" data-window-drag-handle>

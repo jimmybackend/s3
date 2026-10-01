@@ -93,6 +93,7 @@ a{text-decoration:none;color:inherit}
 }
 .os-window.is-open{display:flex;flex-direction:column}
 .os-window.is-active{border-color:rgba(38,198,255,.55);box-shadow:0 24px 80px rgba(0,0,0,.5),0 0 0 1px rgba(38,198,255,.12)}
+.os-window.is-compact{resize:both}
 .os-window.is-maximized{left:6px!important;top:6px!important;width:calc(100vw - 12px)!important;height:calc(100vh - 58px)!important;resize:none}
 .os-window-titlebar{
   height:42px;display:flex;align-items:center;justify-content:space-between;padding-left:13px;

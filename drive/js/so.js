@@ -86,6 +86,11 @@ class ArcadeCloudOsShell {
     win.dataset.minimized = '0';
     win.classList.add('is-open');
     win.hidden = false;
+    if (this.window.ArcadeCloudWindowManager && !this.window.ArcadeCloudWindowManager.record(win)) {
+      const app = this.window.ArcadeCloudDesktop?.appFor?.(win) || id.replace(/Window$/, '');
+      this.window.ArcadeCloudWindowManager.register(win, app);
+      this.window.ArcadeCloudDesktop?.bindWindowChrome?.(win);
+    }
     this.activateWindow(win);
     if (id === 'nodeWindow') {
       this.window.ArcadeCloudOsNodeMonitor?.refresh?.();

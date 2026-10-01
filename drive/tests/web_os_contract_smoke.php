@@ -256,7 +256,8 @@ webOsContract(str_contains($paths['shell'], '<?php if ($isSuperAdmin): ?>'), 'co
 webOsContract(str_contains($paths['shell'], 'ARCADECLOUD_OS_APPEARANCE'), 'preferencias guardadas se entregan al Web OS');
 webOsContract(str_contains($paths['appearance_js'], 'saveRemote()'), 'apariencia persiste cambios en el usuario');
 webOsContract(str_contains($paths['preferences_repository'], 'os_preferences'), 'repositorio almacena preferencias JSON');
-webOsContract(str_contains($paths['preferences_endpoint'], 'array_replace($repository->find('), 'guardado conserva claves JSON ajenas a apariencia');
+webOsContract(str_contains($paths['preferences_endpoint'], 'array_replace_recursive($repository->find('), 'guardado conserva claves JSON ajenas y mezcla tamaños por aplicación');
+webOsContract(str_contains($paths['preferences_endpoint'], "'windowPreferences'") && str_contains($paths['preferences_endpoint'], "'width'") && str_contains($paths['preferences_endpoint'], "'height'"), 'endpoint persiste tamaños en Users.os_preferences');
 webOsContract(str_contains($paths['preferences_endpoint'], "'wallpaperEnabled'"), 'endpoint persiste el estado sin imagen');
 webOsContract(str_contains($paths['preferences_endpoint'], "'theme'"), 'endpoint persiste el tema');
 webOsContract(str_contains($paths['preferences_endpoint'], 'HTTP_X_CSRF_TOKEN'), 'endpoint de preferencias conserva CSRF');

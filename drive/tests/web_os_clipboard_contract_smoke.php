@@ -46,7 +46,7 @@ $assert(str_contains($files['shell'], 'fileSecondClickMs = 320'), 'segundo clic 
 $assert(str_contains($files['shell'], 'toggleFileSelection(entry)'), 'clic simple alterna selección de archivo');
 $assert(str_contains($files['shell'], 'selectedFileEntries()'), 'shell expone selección múltiple');
 $assert(str_contains($files['shell'], "classList.toggle('is-selected'"), 'selección mantiene estado visual');
-$assert(str_contains($files['clipboard'], 'captureFiles(entry, mode)'), 'portapapeles captura uno o varios archivos');
+$assert(str_contains($files['clipboard'], 'captureFiles(entry, mode, context = {})'), 'portapapeles captura uno o varios archivos con contexto de ventana');
 $assert(str_contains($files['clipboard'], 'keys.length + \' archivos\''), 'portapapeles etiqueta lotes múltiples');
 $assert(str_contains($files['clipboard'], 'JSON.stringify(keys)'), 'pegar envía todos los archivos seleccionados');
 $assert(str_contains($files['clipboard'], "data-os-clipboard-action"), 'menús incorporan acciones de portapapeles');

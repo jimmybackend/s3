@@ -26,7 +26,21 @@ try {
     if (!is_array($payload)) {
         JsonResponse::error('Configuración inválida.', 400);
     }
-    $appearance = [
+    $patch = [];
+    if (isset($payload['windowPreference']) && is_array($payload['windowPreference'])) {
+        $windowPreference = $payload['windowPreference'];
+        $appKey = preg_replace('/[^a-z0-9-]/', '', strtolower((string)($windowPreference['app'] ?? '')));
+        if ($appKey === '') {
+            JsonResponse::error('Tipo de ventana inválido.', 400);
+        }
+        $patch['windowPreferences'] = [
+            $appKey => [
+                'width' => max(240, min(2400, (int)($windowPreference['width'] ?? 0))),
+                'height' => max(180, min(1600, (int)($windowPreference['height'] ?? 0))),
+            ],
+        ];
+    } else {
+        $patch = [
         'theme' => in_array(($payload['theme'] ?? ''), ['light', 'dark'], true)
             ? (string)$payload['theme']
             : 'dark',
@@ -39,9 +53,10 @@ try {
         ) ?? true,
         'windowOpacity' => max(35, min(100, (int)($payload['windowOpacity'] ?? 94))),
         'menuOpacity' => max(35, min(100, (int)($payload['menuOpacity'] ?? 98))),
-    ];
+        ];
+    }
     $repository = new UserOsPreferencesRepository($app->db());
-    $preferences = array_replace($repository->find($session->userId()), $appearance);
+    $preferences = array_replace_recursive($repository->find($session->userId()), $patch);
     $repository->save($session->userId(), $preferences);
     JsonResponse::send(['ok' => true]);
 } catch (Throwable $error) {

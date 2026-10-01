@@ -184,7 +184,9 @@ class ArcadeCloudOsClipboard {
       const kind = String(button.dataset.osClipboardKind || '');
 
       if (action === 'paste') {
-        let destination = this.currentRoute();
+        // Resolve the destination from the Explorer that owns the pressed
+        // toolbar button, rather than whichever window happened to be active.
+        let destination = String(button.closest('.os-explorer-live')?.dataset.explorerRoute || this.currentRoute());
         if (button.dataset.osPasteTarget === 'folder') {
           const folder = this.window.ArcadeCloudOsFolders?.activeFolder;
           if (folder && folder.route) destination = String(folder.route);

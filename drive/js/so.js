@@ -818,12 +818,6 @@ class ArcadeCloudOsShell {
     win.dataset.windowTitle = name;
     win.dataset.dynamicWindow = '1';
 
-    const offset = (this.viewerCounter % 6) * 24;
-    win.style.left = (7 + offset / 12) + 'vw';
-    win.style.top = (5 + offset / 14) + 'vh';
-    win.style.width = ext === 'pdf' ? 'min(820px, 72vw)' : 'min(920px, 78vw)';
-    win.style.height = ext === 'pdf' ? 'min(610px, 68vh)' : 'min(650px, 72vh)';
-
     const titlebar = this.document.createElement('div');
     titlebar.className = 'os-window-titlebar';
     titlebar.setAttribute('data-window-drag-handle', '');

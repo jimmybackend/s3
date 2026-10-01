@@ -489,7 +489,7 @@ $isExplorerFragment = (string)($_GET['_os_fragment'] ?? '') === 'explorer';
     </section>
     <?php endif; ?>
 
-    <section class="os-window" id="nodeWindow" data-window-title="Mi nodo" data-node-access="<?= $isSuperAdmin ? 'superadmin' : 'standard' ?>" style="left:10vw;top:8vh;width:min(1040px,88vw);height:min(760px,80vh);">
+    <section class="os-window" id="nodeWindow" data-window-title="Mi nodo" data-node-access="<?= $isSuperAdmin ? 'superadmin' : 'standard' ?>">
       <div class="os-window-titlebar" data-window-drag-handle>
         <div class="os-window-title"><i class="fas fa-server"></i><span>Mi nodo</span></div>
         <div class="os-window-controls">
@@ -557,7 +557,7 @@ $isExplorerFragment = (string)($_GET['_os_fragment'] ?? '') === 'explorer';
       </div>
     </section>
 
-    <section class="os-window" id="appsWindow" data-window-title="Aplicaciones" style="left:24vw;top:11vh;width:min(760px,76vw);height:min(570px,68vh);">
+    <section class="os-window" id="appsWindow" data-window-title="Aplicaciones">
       <div class="os-window-titlebar" data-window-drag-handle>
         <div class="os-window-title"><i class="fas fa-shapes"></i><span>Aplicaciones</span></div>
         <div class="os-window-controls">
@@ -597,8 +597,7 @@ $isExplorerFragment = (string)($_GET['_os_fragment'] ?? '') === 'explorer';
 
     <section class="os-window os-search-window"
              id="searchWindow"
-             data-window-title="Buscar"
-             style="left:13vw;top:9vh;width:min(860px,84vw);height:min(650px,76vh);">
+             data-window-title="Buscar">
       <div class="os-window-titlebar" data-window-drag-handle>
         <div class="os-window-title"><i class="fas fa-magnifying-glass"></i><span>Buscar</span></div>
         <div class="os-window-controls">
@@ -644,8 +643,7 @@ $isExplorerFragment = (string)($_GET['_os_fragment'] ?? '') === 'explorer';
 
     <section class="os-window os-federation-window"
              id="federationWindow"
-             data-window-title="FederationCloud"
-             style="left:5vw;top:5vh;width:min(1180px,90vw);height:min(760px,82vh);">
+             data-window-title="FederationCloud">
       <div class="os-window-titlebar" data-window-drag-handle>
         <div class="os-window-title"><i class="fas fa-globe"></i><span>FederationCloud</span></div>
         <div class="os-window-controls">
@@ -699,8 +697,7 @@ $isExplorerFragment = (string)($_GET['_os_fragment'] ?? '') === 'explorer';
     <?php if ($isSuperAdmin): ?>
     <section class="os-window os-terminal-window"
              id="terminalWindow"
-             data-window-title="Terminal"
-             style="left:12vw;top:9vh;width:min(900px,82vw);height:min(660px,74vh);">
+             data-window-title="Terminal">
       <div class="os-window-titlebar" data-window-drag-handle>
         <div class="os-window-title"><i class="fas fa-terminal"></i><span>Terminal · Mi nodo</span></div>
         <div class="os-window-controls">
@@ -755,7 +752,7 @@ Escribe help o usa uno de los botones disponibles.</pre>
     </section>
     <?php endif; ?>
 
-    <section class="os-window os-settings-window" id="settingsWindow" data-window-title="Configuración" style="left:18vw;top:7vh;width:min(760px,82vw);height:min(720px,80vh);">
+    <section class="os-window os-settings-window" id="settingsWindow" data-window-title="Configuración">
       <div class="os-window-titlebar" data-window-drag-handle>
         <div class="os-window-title"><i class="fas fa-gear"></i><span>Configuración</span></div>
         <div class="os-window-controls">
@@ -794,7 +791,7 @@ Escribe help o usa uno de los botones disponibles.</pre>
       </div>
     </section>
 
-    <section class="os-window os-links-window" id="linksWindow" data-window-title="Enlaces" style="left:27vw;top:12vh;width:min(600px,72vw);height:min(520px,70vh);">
+    <section class="os-window os-links-window" id="linksWindow" data-window-title="Enlaces">
       <div class="os-window-titlebar" data-window-drag-handle>
         <div class="os-window-title"><i class="fas fa-link"></i><span>Enlaces</span></div>
         <div class="os-window-controls">

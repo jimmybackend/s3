@@ -4,12 +4,12 @@
     "php_class_modules": 294,
     "php_needs_migration": 0,
     "php_tests": 52,
-    "js_total": 65,
+    "js_total": 66,
     "js_class_modules": 65,
-    "js_needs_migration": 1,
+    "js_needs_migration": 3,
     "js_compatibility_facades": 8,
     "ajax_clients": 49,
-    "ajax_calls": 106,
+    "ajax_calls": 107,
     "json_total": 4,
     "json_invalid": 0
   },
@@ -2060,7 +2060,7 @@
     },
     {
       "path": "drive/so.php",
-      "lines": 2000,
+      "lines": 1998,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -4713,12 +4713,14 @@
     },
     {
       "path": "drive/src/Http/Controller/PersonalAwsController.php",
-      "lines": 74,
+      "lines": 88,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
       "session": false,
-      "superglobals": [],
+      "superglobals": [
+        "SERVER"
+      ],
       "db": false,
       "s3": false,
       "bootstrap": false,
@@ -6198,7 +6200,7 @@
     },
     {
       "path": "drive/src/View/PersonalAwsPageRenderer.php",
-      "lines": 171,
+      "lines": 169,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -7112,7 +7114,7 @@
     },
     {
       "path": "drive/tests/web_os_clipboard_contract_smoke.php",
-      "lines": 110,
+      "lines": 114,
       "kind": "test script",
       "classes": 0,
       "functions": [],
@@ -7174,7 +7176,7 @@
     },
     {
       "path": "drive/tests/web_os_pending_fixes_smoke.php",
-      "lines": 40,
+      "lines": 44,
       "kind": "test script",
       "classes": 0,
       "functions": [],
@@ -8450,7 +8452,7 @@
     },
     {
       "path": "drive/js/move-tasks.js",
-      "lines": 273,
+      "lines": 278,
       "kind": "class/module",
       "classes": [
         "DriveMoveTasks"
@@ -8502,7 +8504,7 @@
     },
     {
       "path": "drive/js/os-window-manager.js",
-      "lines": 825,
+      "lines": 862,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudEventBus",
@@ -8523,11 +8525,11 @@
       "top_vars": [],
       "iife": false,
       "ajax": {
-        "fetch": 4,
+        "fetch": 5,
         "xhr": 0,
         "jquery": 0,
-        "json_consumers": 1,
-        "response_checks": 11
+        "json_consumers": 2,
+        "response_checks": 13
       },
       "issues": []
     },
@@ -8768,12 +8770,14 @@
     },
     {
       "path": "drive/js/so-clipboard.js",
-      "lines": 780,
+      "lines": 789,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudOsClipboard"
       ],
-      "functions": [],
+      "functions": [
+        "bootArcadeCloudOsClipboard"
+      ],
       "window_assign": [],
       "window_func": [],
       "top_vars": [],
@@ -8785,7 +8789,9 @@
         "json_consumers": 0,
         "response_checks": 3
       },
-      "issues": []
+      "issues": [
+        "top-level functions: bootArcadeCloudOsClipboard"
+      ]
     },
     {
       "path": "drive/js/so-federation.js",
@@ -9290,6 +9296,40 @@
       "issues": [
         "top-level functions: windowStub, assert"
       ]
+    },
+    {
+      "path": "drive/tests/web_os_same_explorer_clipboard_functional.js",
+      "lines": 65,
+      "kind": "procedural script",
+      "classes": [],
+      "functions": [
+        "assert",
+        "storage"
+      ],
+      "window_assign": [],
+      "window_func": [],
+      "top_vars": [
+        "requests",
+        "refreshed",
+        "explorer",
+        "win",
+        "doc",
+        "clipboard",
+        "entries"
+      ],
+      "iife": false,
+      "ajax": {
+        "fetch": 0,
+        "xhr": 0,
+        "jquery": 0,
+        "json_consumers": 0,
+        "response_checks": 0
+      },
+      "issues": [
+        "top-level functions: assert, storage",
+        "top-level state: requests, refreshed, explorer, win, doc, clipboard, entries",
+        "no ES class"
+      ]
     }
   ],
   "json": [
@@ -9332,7 +9372,7 @@
     },
     {
       "path": "drive/docs/runtime_endpoints.json",
-      "bytes": 114827,
+      "bytes": 114993,
       "valid": true,
       "root_type": "object",
       "keys": [

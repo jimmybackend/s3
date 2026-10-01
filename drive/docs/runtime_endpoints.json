@@ -1485,7 +1485,7 @@
     },
     {
       "path": "drive/so.php",
-      "size": 108864,
+      "size": 108419,
       "active": true,
       "references": [
         "drive/s3.php",
@@ -2854,7 +2854,7 @@
     },
     {
       "path": "drive/src/Http/Controller/PersonalAwsController.php",
-      "size": 2170,
+      "size": 2622,
       "active": false,
       "references": []
     },
@@ -3561,7 +3561,7 @@
     },
     {
       "path": "drive/src/View/PersonalAwsPageRenderer.php",
-      "size": 9667,
+      "size": 9786,
       "active": false,
       "references": []
     },
@@ -3905,7 +3905,7 @@
     },
     {
       "path": "drive/tests/web_os_clipboard_contract_smoke.php",
-      "size": 9521,
+      "size": 10201,
       "active": false,
       "references": []
     },
@@ -3923,13 +3923,13 @@
     },
     {
       "path": "drive/tests/web_os_multiwindow_smoke.php",
-      "size": 6364,
+      "size": 6426,
       "active": false,
       "references": []
     },
     {
       "path": "drive/tests/web_os_pending_fixes_smoke.php",
-      "size": 3492,
+      "size": 4122,
       "active": false,
       "references": []
     },

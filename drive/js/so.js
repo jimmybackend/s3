@@ -855,28 +855,28 @@ class ArcadeCloudOsShell {
 
     const keys = selected.map((entry) => String(entry.dataset.key || '')).filter(Boolean);
     if (!keys.length) return;
-    if (!this.window.confirm('¿Eliminar ' + keys.length + ' archivo(s) seleccionados?')) return;
+    const operations = this.window.ArcadeCloudFilesystemOperations;
+    if (!operations) {
+      this.notify('El servicio de operaciones no está disponible.', 'danger');
+      return;
+    }
+    const confirmed = await operations.confirm({
+      title: 'Eliminar ' + keys.length + ' elementos',
+      message: 'Los archivos seleccionados se eliminarán de forma permanente.',
+      confirmLabel: 'Eliminar',
+      danger: true
+    });
+    if (!confirmed) return;
 
     try {
-      const response = await this.window.fetch('delete_multiple.php', {
-        method: 'POST',
-        credentials: 'same-origin',
-        cache: 'no-store',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
-          'X-Requested-With': 'XMLHttpRequest'
-        },
-        body: new URLSearchParams({ archivos_json: JSON.stringify(keys) }).toString()
-      });
-      const data = await response.json();
-      if (!response.ok || data?.ok !== true) {
-        throw new Error(data?.error || data?.mensaje || 'No se pudieron eliminar los archivos.');
-      }
-      this.notify('Archivos eliminados correctamente.', 'success');
-      const live = this.document.querySelector('.os-explorer-window.is-active .os-explorer-live');
+      const owner = selected[0]?.closest('.os-explorer-window');
+      const live = owner?.querySelector('.os-explorer-live');
       const route = String(live?.dataset.explorerRoute || this.window.DRIVE_INITIAL_ROUTE || '');
-      const page = Math.max(1, parseInt(String(live?.dataset.explorerPage || '1'), 10) || 1);
-      await this.refreshExplorer(route, { page, replaceHistory: true });
+      await operations.run({
+        type: 'delete', items: keys, sourceRoute: route,
+        sourceWindowId: String(owner?.dataset.windowId || '')
+      }, () => operations.request('delete_multiple.php', { archivos_json: JSON.stringify(keys) }));
+      this.notify('Archivos eliminados correctamente.', 'success');
     } catch (error) {
       this.notify(error?.message || 'No se pudieron eliminar los archivos.', 'danger');
     }

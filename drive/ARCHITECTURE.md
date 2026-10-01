@@ -620,3 +620,35 @@ FederationCloud es una extensión posterior a ese baseline y no cambia el signif
 10. Mantener `FileS3` como fuente de verdad local aunque exista una capa federada.
 11. Validar cambios con `php -l`, `node --check` cuando aplique y `git diff --check`.
 12. Las nuevas funcionalidades deben desarrollarse desde `main` en ramas independientes y volver mediante merge validado.
+
+## Operaciones del filesystem en ArcadeCloud OS
+
+El OS utiliza una sola capa frontend, `ArcadeCloudFilesystemOperations`, para
+describir operaciones, impedir envíos idénticos simultáneos, normalizar estados
+y publicar cambios confirmados. El portapapeles global y el drag & drop siguen
+compartiendo `MoveJobService`/`DriveMoveTasks`; no existe un segundo clipboard,
+EventBus ni WindowManager.
+
+Inventario auditado:
+
+- copiar y mover archivos/carpetas: jobs reales en segundo plano, con progreso
+  por elementos para lotes y progreso indeterminado cuando el backend no puede
+  medirlo;
+- eliminar, renombrar y crear carpetas: mutaciones directas existentes sobre
+  `FileMutationService` y `FolderMutationService`;
+- uploads locales, por URL y multipart: centro de tareas existente, con bytes
+  reales y notificación selectiva de la ruta destino;
+- descarga simple y múltiple: endpoints existentes, sin tarea servidor ni
+  cancelación falsa;
+- cancelación: cooperativa entre archivos en `MoveJobService`; una mutación S3
+  individual en curso no se presenta como cancelable;
+- conflictos de copia: `FileMutationService` y `FolderMutationService` conservan
+  ambos elementos generando de forma segura nombres `- copia`; no sobrescriben
+  silenciosamente y por ello no se ofrece una política de reemplazo inexistente;
+- eliminación: permanece permanente; no hay Papelera ni Undo simulados.
+
+`filesystem:changed` se emite únicamente después de una respuesta satisfactoria
+o de la finalización confirmada de un job. Su payload conserva rutas origen y
+destino para que `refreshAffected` actualice sólo las Explorer coincidentes. Un
+fallo mantiene la vista actual, conserva el clipboard de movimiento y registra
+el diagnóstico en la operación sin publicar un cambio exitoso.

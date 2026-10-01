@@ -69,7 +69,7 @@ final class ArcadeCloudDriveAdminHelper
         if ($action === 'status') {
             fwrite(STDOUT, json_encode([
                 'ok' => true,
-                'version' => 14,
+                'version' => 15,
                 'capabilities' => [
                     'env_set_many' => true,
                     'db_aws_settings' => true,
@@ -85,6 +85,7 @@ final class ArcadeCloudDriveAdminHelper
                     'disk_cleanup' => true,
                     'workstation_control' => true,
                     'workstation_document_open' => true,
+                    'node_service_control' => true,
                 ],
                 'identity_path' => $identityPath,
                 'identity_exists' => is_file($identityPath),
@@ -221,6 +222,41 @@ final class ArcadeCloudDriveAdminHelper
                     'output' => $output,
                 ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . "\n"
             );
+            exit(0);
+        }
+
+        if ($action === 'node-service') {
+            $componentId = trim((string)($argv[2] ?? ''));
+            $operation = trim((string)($argv[3] ?? ''));
+            $catalog = [
+                'federation-sync' => ['arcadecloud-federation-sync.service', ['run-now']],
+                'federation-sync-timer' => ['arcadecloud-federation-sync.timer', ['enable', 'disable', 'start', 'stop']],
+                'federation-https' => ['arcadecloud-federation-https.service', ['run-now']],
+                'federation-https-timer' => ['arcadecloud-federation-https.timer', ['enable', 'disable', 'start', 'stop']],
+                'federation-cleanup' => ['arcadecloud-federation-drop-cleanup.service', ['run-now']],
+                'federation-cleanup-timer' => ['arcadecloud-federation-drop-cleanup.timer', ['enable', 'disable', 'start', 'stop']],
+                'polly-reconcile' => ['arcadecloud-polly-reconcile.service', ['run-now']],
+                'polly-reconcile-timer' => ['arcadecloud-polly-reconcile.timer', ['enable', 'disable', 'start', 'stop']],
+                'transcribe-reconcile' => ['arcadecloud-transcribe-reconcile.service', ['run-now']],
+                'transcribe-reconcile-timer' => ['arcadecloud-transcribe-reconcile.timer', ['enable', 'disable', 'start', 'stop']],
+                'media-worker' => ['arcadecloud-media-worker.service', ['start', 'stop', 'restart', 'enable', 'disable']],
+                'workstation' => ['arcadecloud-workstation.service', ['start', 'stop', 'restart', 'enable', 'disable']],
+            ];
+            if (!isset($catalog[$componentId]) || !in_array($operation, $catalog[$componentId][1], true)) {
+                $this->fail('Componente o acción no permitidos.', 64);
+            }
+            [$unit] = $catalog[$componentId];
+            if ($operation === 'run-now') {
+                $this->runFixedCommand(['/usr/bin/systemctl', 'reset-failed', $unit], [0]);
+                $this->runFixedCommand(['/usr/bin/systemctl', 'start', '--no-block', $unit], [0]);
+            } elseif ($operation === 'enable') {
+                $this->runFixedCommand(['/usr/bin/systemctl', 'enable', '--now', $unit], [0]);
+            } elseif ($operation === 'disable') {
+                $this->runFixedCommand(['/usr/bin/systemctl', 'disable', '--now', $unit], [0]);
+            } else {
+                $this->runFixedCommand(['/usr/bin/systemctl', $operation, $unit], [0]);
+            }
+            fwrite(STDOUT, json_encode(['ok' => true, 'component' => $componentId, 'action' => $operation], JSON_UNESCAPED_SLASHES) . "\n");
             exit(0);
         }
 

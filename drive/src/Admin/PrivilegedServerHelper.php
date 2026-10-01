@@ -89,6 +89,27 @@ final class PrivilegedServerHelper
         }
     }
 
+    public function supportsNodeServiceControl(): bool
+    {
+        try {
+            $status = $this->status();
+            return ($status['ok'] ?? false) === true && (int)($status['version'] ?? 0) >= 15
+                && (bool)($status['capabilities']['node_service_control'] ?? false);
+        } catch (RuntimeException) { return false; }
+    }
+
+    public function controlNodeComponent(string $componentId, string $action): array
+    {
+        if (!$this->supportsNodeServiceControl()) throw new RuntimeException('Actualiza el helper administrativo para controlar componentes.');
+        if (!preg_match('/\A[a-z0-9-]{1,40}\z/', $componentId) || !in_array($action, ['start', 'stop', 'restart', 'enable', 'disable', 'run-now'], true)) {
+            throw new RuntimeException('Acción de componente no permitida.');
+        }
+        $result = $this->run(['node-service', $componentId, $action]);
+        $decoded = json_decode((string)$result['stdout'], true);
+        if (!is_array($decoded) || ($decoded['ok'] ?? false) !== true) throw new RuntimeException('El helper no confirmó la acción.');
+        return $decoded;
+    }
+
     public function setEnvironment(string $name, string $value): void
     {
         if (!ManagedRuntimeEnvironment::isAllowed($name)) throw new RuntimeException('Variable no permitida.');

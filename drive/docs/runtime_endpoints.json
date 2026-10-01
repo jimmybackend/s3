@@ -568,7 +568,7 @@
     },
     {
       "path": "drive/ec2.php",
-      "size": 47696,
+      "size": 47812,
       "active": true,
       "references": [
         "drive/personal_aws_bootstrap.php",
@@ -810,8 +810,7 @@
         "drive/src/View/FederationDropPageRenderer.php",
         "drive/src/View/FederationPageRenderer.php",
         "drive/tests/web_os_contract_smoke.php",
-        "drive/js/arcadelink-share.js",
-        "drive/js/so-federation.js"
+        "drive/js/arcadelink-share.js"
       ]
     },
     {
@@ -1486,7 +1485,7 @@
     },
     {
       "path": "drive/so.php",
-      "size": 108082,
+      "size": 108864,
       "active": true,
       "references": [
         "drive/s3.php",
@@ -1496,6 +1495,7 @@
         "drive/tests/server_console_contract_smoke.php",
         "drive/tests/web_os_clipboard_contract_smoke.php",
         "drive/tests/web_os_contract_smoke.php",
+        "drive/tests/web_os_interactions_theme_smoke.php",
         "drive/tests/web_os_multiwindow_smoke.php",
         "drive/tests/web_os_pending_fixes_smoke.php",
         "drive/tests/web_os_theme_contract_smoke.php",
@@ -3905,13 +3905,19 @@
     },
     {
       "path": "drive/tests/web_os_clipboard_contract_smoke.php",
-      "size": 9531,
+      "size": 9521,
       "active": false,
       "references": []
     },
     {
       "path": "drive/tests/web_os_contract_smoke.php",
-      "size": 49121,
+      "size": 49165,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/tests/web_os_interactions_theme_smoke.php",
+      "size": 2261,
       "active": false,
       "references": []
     },

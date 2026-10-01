@@ -479,7 +479,7 @@ $currentFolderName = $currentIsRoot
       </div>
     </section>
 
-    <section class="os-window" id="nodeWindow" data-window-title="Mi nodo" style="left:18vw;top:14vh;width:min(720px,78vw);height:min(560px,68vh);">
+    <section class="os-window" id="nodeWindow" data-window-title="Mi nodo" style="left:10vw;top:8vh;width:min(1040px,88vw);height:min(760px,80vh);">
       <div class="os-window-titlebar" data-window-drag-handle>
         <div class="os-window-title"><i class="fas fa-server"></i><span>Mi nodo</span></div>
         <div class="os-window-controls">
@@ -493,11 +493,16 @@ $currentFolderName = $currentIsRoot
           <span class="os-node-large-icon"><i class="fas fa-server"></i></span>
           <div>
             <h2><?= $e($nodeName) ?></h2>
-            <p>Este es el nodo que está sirviendo tu sesión. ArcadeCloud comprobará sus recursos antes de habilitar aplicaciones pesadas.</p>
+            <p>Salud y diagnóstico operacional de ArcadeCloud. Las métricas se actualizan sin recargar el escritorio.</p>
           </div>
         </div>
 
-        <div class="os-stat-grid">
+        <div class="os-node-tabs" role="tablist" aria-label="Seleccionar nodo">
+          <button type="button" class="is-active" data-node-tab="local" role="tab" aria-selected="true">Principal</button>
+          <button type="button" data-node-tab="fastdrive" role="tab" aria-selected="false">FastDrive</button>
+        </div>
+
+        <div class="os-stat-grid os-node-legacy-summary">
           <article><span>Instancia</span><strong data-node-field="instance_type"><?= $e((string)($nodeSnapshot['instance_type'] ?: 'no identificada')) ?></strong></article>
           <article><span>vCPU</span><strong data-node-field="vcpu"><?= (int)$nodeSnapshot['vcpu'] ?></strong></article>
           <article><span>RAM total</span><strong data-node-field="memory_total"><?= $e($formatBytes((int)$nodeSnapshot['memory_total_bytes'])) ?></strong></article>
@@ -533,6 +538,9 @@ $currentFolderName = $currentIsRoot
         <div class="os-node-live-head">
           <small data-node-updated>Datos tomados al abrir ArcadeCloud OS</small>
           <button type="button" data-node-refresh title="Actualizar ahora"><i class="fas fa-rotate"></i> Actualizar</button>
+        </div>
+        <div class="os-node-dashboard" data-node-dashboard aria-live="polite">
+          <p class="os-node-placeholder">Abre Mi nodo o pulsa Actualizar para consultar el diagnóstico.</p>
         </div>
         <div class="os-capability-list">
           <div><span>FFmpeg</span><strong data-node-capability="ffmpeg" class="<?= $nodeSnapshot['ffmpeg_available'] ? 'is-ready' : 'is-missing' ?>"><?= $nodeSnapshot['ffmpeg_available'] ? 'Disponible' : 'No disponible' ?></strong></div>

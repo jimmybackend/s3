@@ -409,6 +409,7 @@
 | `drive/src/Sync/SyncSchemaMigrator.php` | `drive/tests/sync_schema_migrator_regression.php` |
 | `drive/src/System/Ec2InstanceIdentityService.php` | `drive/tests/fastdrive_control_contract_smoke.php`, `drive/tests/media_processing_contract_smoke.php` |
 | `drive/src/System/NodeCapabilityService.php` | `drive/tests/web_os_contract_smoke.php` |
+| `drive/src/System/NodeRuntimeStatusService.php` | `drive/tests/node_diagnostics_contract_smoke.php` |
 | `drive/src/Upload/AdminMultipartUploadService.php` | `drive/tests/federation_moderation_contract_smoke.php` |
 | `drive/src/Upload/PublicDropzoneUploadService.php` | `drive/tests/federation_moderation_contract_smoke.php` |
 | `drive/src/Upload/PublicMultipartUploadService.php` | ninguna |

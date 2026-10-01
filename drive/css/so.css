@@ -100,6 +100,22 @@ a{text-decoration:none;color:inherit}
   background:linear-gradient(180deg,rgba(26,54,83,.96),rgba(13,31,51,.96));
   border-bottom:1px solid var(--os-border);cursor:move;user-select:none;touch-action:none
 }
+.os-window.is-dragging{transition:none;user-select:none}
+.os-window.is-dragging .os-window-titlebar{cursor:grabbing}
+.os-federation-app{min-height:100%;color:var(--os-text);background:var(--os-bg);font-family:inherit}
+.os-federation-app .federation-portal-shell{width:100%;max-width:none;margin:0;padding:12px;color:var(--os-text);background:var(--os-bg)}
+.os-federation-app .federation-panel,.os-federation-app .federation-result-card,.os-federation-app .federation-mini-card{background:var(--os-surface)!important;color:var(--os-text)!important;border-color:var(--os-border)!important}
+.os-federation-app .text-muted{color:var(--os-soft)!important}.os-federation-app input,.os-federation-app select,.os-federation-app textarea{background:var(--os-input-bg)!important;color:var(--os-text)!important;border-color:var(--os-border)!important}
+
+/* Shared native application surface used by HTML tools loaded into a window. */
+.os-tool-body{background:var(--os-bg);color:var(--os-text);font-family:inherit}
+.os-tool-body>.os-app{min-height:100%;width:100%;margin:0;padding:14px;color:var(--os-text);background:var(--os-bg);font-family:inherit}
+.os-tool-body .card,.os-tool-body .personal-card,.os-tool-body .activity-panel,.os-tool-body .activity-stat-card{background:var(--os-surface)!important;color:var(--os-text)!important;border-color:var(--os-border)!important}
+.os-tool-body table{color:var(--os-text)!important}.os-tool-body th,.os-tool-body td{border-color:var(--os-divider)!important}
+.os-tool-body input,.os-tool-body select,.os-tool-body textarea{background:var(--os-input-bg)!important;color:var(--os-text)!important;border-color:var(--os-border)!important}
+.os-tool-body button,.os-tool-body .btn{background:var(--os-button-bg)!important;color:var(--os-button-text)!important;border:1px solid var(--os-border)!important}
+.os-tool-body button:hover,.os-tool-body .btn:hover{background:var(--os-surface-hover)!important;border-color:var(--os-accent)!important}
+.os-tool-body a{color:var(--os-accent-2)}.os-tool-body .text-muted,.os-tool-body .muted{color:var(--os-soft)!important}
 .os-window-title{display:flex;align-items:center;gap:8px;font-size:.88rem;font-weight:700;flex:1 1 auto;min-width:0;overflow:hidden}
 .os-window-title span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .os-window-title i{color:var(--os-accent);flex:0 0 auto}

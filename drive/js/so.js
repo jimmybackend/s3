@@ -43,8 +43,8 @@ class ArcadeCloudOsShell {
     if (!win || win.dataset.osBound === '1') return;
     win.dataset.osBound = '1';
     win.addEventListener('pointerdown', () => this.activateWindow(win));
-    const handle = win.querySelector('[data-window-drag-handle]');
-    if (handle) handle.addEventListener('pointerdown', (event) => this.beginDrag(event, win, handle));
+    // Window chrome (including drag) is owned by ArcadeCloudDesktopRuntime so
+    // initial and dynamically-created windows follow exactly the same path.
   }
 
   // Shell launches and coordinates applications; WindowManager exclusively owns
@@ -156,37 +156,6 @@ class ArcadeCloudOsShell {
         this.openWindow(control.dataset.windowOpen || '');
       });
     });
-  }
-
-  beginDrag(event, win, handle) {
-    if (event.target.closest('.os-window-controls')) return;
-    if (this.window.matchMedia('(max-width: 800px), (pointer: coarse)').matches) return;
-    if (win.classList.contains('is-maximized')) return;
-
-    this.activateWindow(win);
-
-    const startX = event.clientX;
-    const startY = event.clientY;
-    const rect = win.getBoundingClientRect();
-
-    try { handle.setPointerCapture(event.pointerId); } catch (_) {}
-
-    const move = (moveEvent) => {
-      const maxLeft = Math.max(4, this.window.innerWidth - 120);
-      const maxTop = Math.max(4, this.window.innerHeight - 110);
-      win.style.left = Math.min(maxLeft, Math.max(4, rect.left + moveEvent.clientX - startX)) + 'px';
-      win.style.top = Math.min(maxTop, Math.max(4, rect.top + moveEvent.clientY - startY)) + 'px';
-    };
-
-    const stop = () => {
-      handle.removeEventListener('pointermove', move);
-      handle.removeEventListener('pointerup', stop);
-      handle.removeEventListener('pointercancel', stop);
-    };
-
-    handle.addEventListener('pointermove', move);
-    handle.addEventListener('pointerup', stop);
-    handle.addEventListener('pointercancel', stop);
   }
 
   bindStartMenu() {
@@ -806,7 +775,7 @@ class ArcadeCloudOsShell {
       const selected = this.selectedFileEntries();
       const active = this.document.querySelector('.os-explorer-window.is-active');
       const context = { sourceWindowId: active?.dataset.windowId || '', sourceRoute: active?.querySelector('.os-explorer-live')?.dataset.explorerRoute || '', entries: selected };
-      if (action === 'copy' || action === 'move') {
+      if (action === 'copy' || action === 'cut') {
         if (selected[0]) this.window.ArcadeCloudOsClipboard?.captureFiles?.(selected[0], action, context);
       } else if (action === 'more') {
         if (selected[0]) this.showContext(selected[0], button.getBoundingClientRect().left, button.getBoundingClientRect().bottom);

@@ -73,7 +73,7 @@ class ArcadeCloudOsClipboard {
     const divider = menu.querySelector('[data-service-divider]');
     const anchor = divider || null;
     const copy = this.makeContextButton('copy', 'file', 'fas fa-copy', 'Copiar');
-    const cut = this.makeContextButton('cut', 'file', 'fas fa-scissors', 'Cortar / mover');
+    const cut = this.makeContextButton('cut', 'file', 'fas fa-scissors', 'Cortar');
     const share = this.makeContextButton('share', 'file', 'fas fa-share-nodes', 'Compartir');
     const remove = this.makeContextButton('delete', 'file', 'fas fa-trash', 'Eliminar', 'is-danger');
 
@@ -85,7 +85,7 @@ class ArcadeCloudOsClipboard {
     if (!menu || menu.querySelector('[data-os-clipboard-action="copy"][data-os-clipboard-kind="folder"]')) return;
 
     const copy = this.makeContextButton('copy', 'folder', 'fas fa-copy', 'Copiar carpeta');
-    const cut = this.makeContextButton('cut', 'folder', 'fas fa-scissors', 'Cortar / mover');
+    const cut = this.makeContextButton('cut', 'folder', 'fas fa-scissors', 'Cortar');
     const paste = this.makeContextButton('paste', 'folder', 'fas fa-paste', 'Pegar dentro');
     paste.classList.add('os-clipboard-paste');
     paste.dataset.osPasteTarget = 'folder';
@@ -332,6 +332,8 @@ class ArcadeCloudOsClipboard {
   }
 
   captureFiles(entry, mode, context = {}) {
+    const operation = mode === 'copy' ? 'copy' : 'cut';
+    mode = operation === 'copy' ? 'copy' : 'move';
     const shell = this.window.ArcadeCloudOsShell;
     const selected = Array.isArray(context.entries) ? context.entries : typeof shell?.selectedFileEntries === 'function'
       ? shell.selectedFileEntries()
@@ -363,7 +365,7 @@ class ArcadeCloudOsClipboard {
     this.setClipboard({
       kind: 'file',
       mode,
-      operation: mode,
+      operation,
       key: keys[0],
       keys,
       items: keys,
@@ -375,6 +377,8 @@ class ArcadeCloudOsClipboard {
   }
 
   captureFolder(folder, mode, context = {}) {
+    const operation = mode === 'copy' ? 'copy' : 'cut';
+    mode = operation === 'copy' ? 'copy' : 'move';
     const root = String(this.window.ARCADECLOUD_OS_ROOT_ROUTE || '').trim();
     const route = String(folder.route || '').trim();
     if (!route || folder.isRoot || (root && this.sameRoute(route, root))) {
@@ -385,7 +389,7 @@ class ArcadeCloudOsClipboard {
     this.setClipboard({
       kind: 'folder',
       mode,
-      operation: mode,
+      operation,
       route,
       items: [route],
       name: String(folder.name || 'Carpeta'),
@@ -444,7 +448,7 @@ class ArcadeCloudOsClipboard {
       }
 
       const moving = String(this.clipboard.mode || '') === 'move';
-      const actionLabel = moving ? 'Mover aquí' : 'Pegar aquí';
+      const actionLabel = 'Pegar aquí';
       const name = String(this.clipboard.name || 'elemento');
 
       button.title = actionLabel + ': ' + name;
@@ -478,7 +482,7 @@ class ArcadeCloudOsClipboard {
 
     const payload = {
       type: item.kind === 'file' ? 'files' : 'folder',
-      operation: item.operation || item.mode,
+      operation: item.mode,
       ruta_actual: this.currentRoute()
     };
 

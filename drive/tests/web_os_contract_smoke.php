@@ -230,11 +230,11 @@ webOsContract(!str_contains($paths['shell'], 'data-current-folder-action="sync"'
 webOsContract(!str_contains($paths['shell'], 'fa-cloud-arrow-down'), 'barra de carpeta elimina el icono ambiguo de descarga');
 webOsContract(str_contains($paths['shell'], 'data-drive-upload-center'), 'Web OS deja Subir como acción principal de carpeta');
 webOsContract(str_contains($paths['shell'], 'data-folder-info'), 'barra compacta deja Información de carpeta');
-webOsContract(str_contains($paths['shell'], 'data-selection-actions') && str_contains($paths['shell'], 'data-selection-action="copy"') && str_contains($paths['shell'], 'data-selection-action="move"'), 'selección múltiple muestra barra contextual con copiar y mover');
+webOsContract(str_contains($paths['shell'], 'data-selection-actions') && str_contains($paths['shell'], 'data-selection-action="copy"') && str_contains($paths['shell'], 'data-selection-action="cut"'), 'selección múltiple muestra barra contextual con copiar y cortar');
 webOsContract(str_contains($paths['shell'], 'data-selection-context="download"'), 'selección múltiple conserva descarga en menú contextual');
 webOsContract(str_contains($paths['shell'], 'data-selection-context="delete"'), 'selección múltiple conserva eliminación en menú contextual');
 webOsContract(str_contains($paths['js'], 'selectionDivider.hidden = !multi'), 'acciones múltiples sólo aparecen con selección múltiple');
-webOsContract(str_contains($paths['clipboard_js'], "actionLabel = moving ? 'Mover aquí' : 'Pegar aquí'"), 'Mover aquí permanece condicionado al portapapeles');
+webOsContract(str_contains($paths['clipboard_js'], "const actionLabel = 'Pegar aquí'"), 'Pegar aquí permanece visible para copy y cut');
 webOsContract(str_contains($paths['shell'], 'Información de carpeta'), 'panel muestra resumen de la carpeta');
 webOsContract(str_contains($paths['shell'], 'Visibles (página)'), 'información incluye archivos visibles');
 webOsContract(str_contains($paths['shell'], 'Bloqueados (página)'), 'información incluye archivos bloqueados');
@@ -434,7 +434,7 @@ webOsContract(!str_contains($paths['terminal_js'], 'exec('), 'Terminal del SO no
 // FederationCloud como aplicación nativa del Web OS.
 webOsContract(str_contains($paths['shell'], 'data-window-open="federationWindow"'), 'Aplicaciones abre FederationCloud como ventana');
 webOsContract(str_contains($paths['shell'], 'id="federationWindow"'), 'Web OS incluye ventana FederationCloud');
-webOsContract(str_contains($paths['shell'], 'id="federationFrame"'), 'FederationCloud se ejecuta dentro de la ventana');
+webOsContract(str_contains($paths['shell'], 'id="federationApp"') && !str_contains($paths['shell'], 'id="federationFrame"'), 'FederationCloud se ejecuta nativamente dentro de la ventana');
 webOsContract(str_contains($paths['shell'], 'data-federation-view="search"'), 'FederationCloud ofrece buscar');
 webOsContract(str_contains($paths['shell'], 'data-federation-view="requests"'), 'FederationCloud ofrece solicitudes');
 webOsContract(str_contains($paths['shell'], 'data-federation-view="shares"'), 'FederationCloud ofrece compartidos');

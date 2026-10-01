@@ -670,6 +670,53 @@ class ArcadeCloudDesktopRuntime {
     element.querySelector('[data-window-close]')?.addEventListener('click', event => { event.stopImmediatePropagation(); const id = element.dataset.windowId; this.explorers.delete(id); this.manager.close(id); });
     element.querySelector('[data-window-minimize]')?.addEventListener('click', event => { event.stopImmediatePropagation(); this.manager.minimize(element); });
     element.querySelector('[data-window-maximize]')?.addEventListener('click', event => { event.stopImmediatePropagation(); this.manager.toggleMaximize(element); });
+    const handle = element.querySelector('[data-window-drag-handle]');
+    if (handle) {
+      const pointerDown = event => this.beginWindowDrag(event, element, handle);
+      handle.addEventListener('pointerdown', pointerDown);
+      this.manager.addCleanup(element.dataset.windowId, () => handle.removeEventListener('pointerdown', pointerDown));
+    }
+  }
+
+  beginWindowDrag(event, element, handle) {
+    if (event.button !== undefined && event.button !== 0) return;
+    if (event.target.closest('button,input,select,textarea,a,[contenteditable="true"]')) return;
+    const record = this.manager.record(element);
+    if (!record || record.maximized || element.classList.contains('is-maximized')) return;
+    if (this.window.matchMedia('(max-width: 700px)').matches) return;
+
+    event.preventDefault();
+    this.manager.focus(record.id);
+    const start = element.getBoundingClientRect();
+    const offsetX = event.clientX - start.left;
+    const offsetY = event.clientY - start.top;
+    const titleVisible = Math.min(120, Math.max(56, start.width));
+    const titleHeight = Math.max(32, handle.getBoundingClientRect?.().height || 42);
+    element.classList.add('is-dragging');
+    try { handle.setPointerCapture(event.pointerId); } catch (_) {}
+
+    const move = moveEvent => {
+      const minLeft = titleVisible - start.width;
+      const maxLeft = this.window.innerWidth - titleVisible;
+      const maxTop = Math.max(0, this.window.innerHeight - 52 - titleHeight);
+      const left = Math.min(maxLeft, Math.max(minLeft, moveEvent.clientX - offsetX));
+      const top = Math.min(maxTop, Math.max(0, moveEvent.clientY - offsetY));
+      element.style.left = `${Math.round(left)}px`;
+      element.style.top = `${Math.round(top)}px`;
+      record.geometry = { ...(record.geometry || {}), left: element.style.left, top: element.style.top };
+      record.preferredGeometry = { ...(record.preferredGeometry || {}), left: element.style.left, top: element.style.top };
+    };
+    const stop = stopEvent => {
+      move(stopEvent);
+      element.classList.remove('is-dragging');
+      handle.removeEventListener('pointermove', move);
+      handle.removeEventListener('pointerup', stop);
+      handle.removeEventListener('pointercancel', stop);
+      try { handle.releasePointerCapture(event.pointerId); } catch (_) {}
+    };
+    handle.addEventListener('pointermove', move);
+    handle.addEventListener('pointerup', stop);
+    handle.addEventListener('pointercancel', stop);
   }
 
   attachExplorer(element, route) {
@@ -716,7 +763,8 @@ class ArcadeCloudDesktopRuntime {
       const target = new URL(form.action || url, this.window.location.href);
       const data = new FormData(form);
       if ((form.method || 'get').toLowerCase() === 'get') data.forEach((value, key) => target.searchParams.set(key, String(value)));
-      this.loadToolContent(body, target.toString(), (form.method || 'get').toLowerCase() === 'post' ? { method: 'POST', body: data } : {});
+      this.loadToolContent(body, target.toString(), (form.method || 'get').toLowerCase() === 'post' ? { method: 'POST', body: data } : {})
+        .catch(error => { body.textContent = error?.message || 'No se pudo ejecutar la herramienta.'; });
     });
     try {
       await this.loadToolContent(body, url);
@@ -730,12 +778,28 @@ class ArcadeCloudDesktopRuntime {
     const requestUrl = new URL(url, this.window.location.href); requestUrl.searchParams.set('arcadecloud_os', '1');
     const response = await this.window.fetch(requestUrl.toString(), { ...options, credentials: 'same-origin', headers: { 'X-ArcadeCloud-Embed': '1', 'X-Requested-With': 'XMLHttpRequest' } });
     if (!response.ok) throw new Error('No se pudo abrir la herramienta.');
+    const finalUrl = new URL(response.url || requestUrl, requestUrl);
+    if (finalUrl.origin !== requestUrl.origin || /(?:^|\/)index\.php$/i.test(finalUrl.pathname)) {
+      throw new Error('La herramienta intentó abandonar ArcadeCloud OS; se bloqueó la navegación.');
+    }
     const page = new DOMParser().parseFromString(await response.text(), 'text/html');
     const content = page.querySelector('main') || page.querySelector('[role="main"]');
     if (!content) throw new Error('Esta herramienta no ofrece contenido embebible.');
-    body.replaceChildren(...Array.from(content.childNodes).map(node => this.document.importNode(node, true)));
+    const embedded = this.document.importNode(content, true);
+    embedded.classList.add('os-app');
+    embedded.dataset.osEmbeddedTool = String(body.closest('.os-window')?.dataset.appId || 'tool');
+    body.replaceChildren(embedded);
     body.querySelectorAll('a[href]').forEach(link => { link.href = new URL(link.getAttribute('href'), requestUrl).toString(); });
     body.querySelectorAll('form').forEach(form => { form.action = new URL(form.getAttribute('action') || requestUrl, requestUrl).toString(); });
+    page.querySelectorAll('script').forEach(oldScript => {
+      if (/theme-state-bridge\.js/.test(oldScript.src || '')) { oldScript.remove(); return; }
+      if (oldScript.src && /(?:jquery|bootstrap|fontawesome)/i.test(oldScript.src)) return;
+      const script = this.document.createElement('script');
+      Array.from(oldScript.attributes || []).forEach(attribute => script.setAttribute(attribute.name, attribute.value));
+      if (oldScript.getAttribute('src')) script.src = new URL(oldScript.getAttribute('src'), requestUrl).toString();
+      else script.textContent = oldScript.textContent;
+      embedded.append(script);
+    });
   }
 
   enhanceFolderMenu() {

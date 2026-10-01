@@ -224,6 +224,10 @@ $isExplorerFragment = (string)($_GET['_os_fragment'] ?? '') === 'explorer';
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
   <link rel="stylesheet" href="css/so.css?v=<?= (int)filemtime(__DIR__ . '/css/so.css') ?>">
+  <link rel="stylesheet" href="css/activity-costs.css?v=<?= (int)filemtime(__DIR__ . '/css/activity-costs.css') ?>">
+  <link rel="stylesheet" href="css/personal-tools.css?v=<?= (int)filemtime(__DIR__ . '/css/personal-tools.css') ?>">
+  <link rel="stylesheet" href="css/federation.css?v=<?= (int)filemtime(__DIR__ . '/css/federation.css') ?>">
+  <link rel="stylesheet" href="css/federation-portal.css?v=<?= (int)filemtime(__DIR__ . '/css/federation-portal.css') ?>">
   <link rel="stylesheet" href="css/upload-center.css?v=<?= (int)filemtime(__DIR__ . '/css/upload-center.css') ?>">
   <link rel="stylesheet" href="css/compute-node-idle.css?v=<?= (int)filemtime(__DIR__ . '/css/compute-node-idle.css') ?>">
   <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
@@ -272,7 +276,7 @@ $isExplorerFragment = (string)($_GET['_os_fragment'] ?? '') === 'explorer';
         <div class="os-selection-actions" data-selection-actions hidden>
           <strong><span data-selection-count>0</span> seleccionados</strong>
           <button type="button" data-selection-action="copy"><i class="fas fa-copy"></i> Copiar</button>
-          <button type="button" data-selection-action="move"><i class="fas fa-scissors"></i> Mover</button>
+          <button type="button" data-selection-action="cut"><i class="fas fa-scissors"></i> Cortar</button>
           <button type="button" data-selection-action="download"><i class="fas fa-download"></i> Descargar</button>
           <button type="button" data-selection-action="delete"><i class="fas fa-trash"></i> Eliminar</button>
           <button type="button" data-selection-action="more"><i class="fas fa-ellipsis"></i> Más…</button>
@@ -681,11 +685,9 @@ $isExplorerFragment = (string)($_GET['_os_fragment'] ?? '') === 'explorer';
         <div class="os-federation-loading" id="federationFrameLoading" hidden>
           <i class="fas fa-circle-notch fa-spin"></i><span>Cargando FederationCloud…</span>
         </div>
-        <iframe id="federationFrame"
-                class="os-federation-frame"
-                src="federationcloud/portal.php?embed=1&amp;view=search"
-                title="Aplicación FederationCloud"
-                referrerpolicy="same-origin"></iframe>
+        <div id="federationApp" class="os-federation-app"
+             data-source="federationcloud/portal.php?embed=1&amp;view=search"
+             aria-live="polite"></div>
       </div>
 
       <div class="os-statusbar">
@@ -727,10 +729,14 @@ Escribe help o usa uno de los botones disponibles.</pre>
           <span class="os-terminal-prompt">$</span>
           <input type="text"
                  id="osTerminalInput"
+                 name="terminal_command"
+                 value=""
                  autocomplete="off"
+                 data-lpignore="true"
+                 data-1p-ignore="true"
                  autocapitalize="none"
                  spellcheck="false"
-                 placeholder="free -h">
+                 placeholder="Escribe un comando permitido…">
           <button type="button" id="osTerminalRun"><i class="fas fa-play"></i><span>Ejecutar</span></button>
         </div>
 
@@ -1969,6 +1975,8 @@ Escribe help o usa uno de los botones disponibles.</pre>
   <script src="js/sincronizar.js?v=<?= (int)filemtime(__DIR__ . '/js/sincronizar.js') ?>"></script>
   <script src="js/so-folders.js?v=<?= (int)filemtime(__DIR__ . '/js/so-folders.js') ?>"></script>
   <script src="js/so-federation.js?v=<?= (int)filemtime(__DIR__ . '/js/so-federation.js') ?>"></script>
+  <script src="js/federation-portal.js?v=<?= (int)filemtime(__DIR__ . '/js/federation-portal.js') ?>"></script>
+  <script src="js/federation-share-drive.js?v=<?= (int)filemtime(__DIR__ . '/js/federation-share-drive.js') ?>"></script>
   <?php if ($isSuperAdmin): ?>
   <script src="js/so-terminal.js?v=<?= (int)filemtime(__DIR__ . '/js/so-terminal.js') ?>"></script>
   <?php endif; ?>

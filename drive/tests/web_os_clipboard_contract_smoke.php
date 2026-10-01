@@ -56,8 +56,7 @@ $assert(str_contains($files['clipboard'], 'sourceWindowId: context.sourceWindowI
 $assert(str_contains($files['clipboard'], 'injectPasteToolbar()'), 'SO crea botón temporal para pegar en la carpeta actual');
 $assert(!str_contains($files['clipboard'], 'visibleFiles >= 20'), 'botón superior ya no depende de una página llena');
 $assert(str_contains($files['clipboard'], 'button.hidden = !hasClipboard'), 'botón superior permanece visible mientras exista portapapeles');
-$assert(str_contains($files['clipboard'], "'Mover aquí'"), 'botón superior distingue movimiento');
-$assert(str_contains($files['clipboard'], "'Pegar aquí'"), 'botón superior distingue copia');
+$assert(!str_contains($files['clipboard'], "'Mover aquí'") && str_contains($files['clipboard'], "const actionLabel = 'Pegar aquí'"), 'botón superior usa Pegar aquí para copy y cut');
 $assert(str_contains($files['clipboard'], "dataset.osPasteCurrent"), 'botón superior se identifica como destino actual');
 $assert(str_contains($files['clipboardCss'], '.os-toolbar-paste'), 'botón superior tiene estilo propio');
 $assert(str_contains($files['moveTasks'], 'so-clipboard.js?v=20260927-4'), 'cambio de compartir invalida caché del navegador');

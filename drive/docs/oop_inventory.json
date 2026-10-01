@@ -4713,7 +4713,7 @@
     },
     {
       "path": "drive/src/Http/Controller/PersonalAwsController.php",
-      "lines": 88,
+      "lines": 101,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -7146,7 +7146,7 @@
     },
     {
       "path": "drive/tests/web_os_interactions_theme_smoke.php",
-      "lines": 28,
+      "lines": 30,
       "kind": "test script",
       "classes": 0,
       "functions": [],
@@ -7176,7 +7176,7 @@
     },
     {
       "path": "drive/tests/web_os_pending_fixes_smoke.php",
-      "lines": 44,
+      "lines": 49,
       "kind": "test script",
       "classes": 0,
       "functions": [],
@@ -8504,7 +8504,7 @@
     },
     {
       "path": "drive/js/os-window-manager.js",
-      "lines": 862,
+      "lines": 886,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudEventBus",
@@ -8529,7 +8529,7 @@
         "xhr": 0,
         "jquery": 0,
         "json_consumers": 2,
-        "response_checks": 13
+        "response_checks": 14
       },
       "issues": []
     },
@@ -8770,7 +8770,7 @@
     },
     {
       "path": "drive/js/so-clipboard.js",
-      "lines": 789,
+      "lines": 791,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudOsClipboard"
@@ -9372,7 +9372,7 @@
     },
     {
       "path": "drive/docs/runtime_endpoints.json",
-      "bytes": 114993,
+      "bytes": 114994,
       "valid": true,
       "root_type": "object",
       "keys": [

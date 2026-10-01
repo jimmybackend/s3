@@ -87,7 +87,7 @@ final class NodeRuntimeStatusService
 
     private function localIdentity(array $capability): array
     {
-        $role = strtolower(trim((string)($capability['role'] ?? getenv('ARCADECLOUD_NODE_ROLE') ?: 'web')));
+        $role = strtolower(trim((string)($capability['role'] ?? (getenv('ARCADECLOUD_NODE_ROLE') ?: 'web'))));
         $publicUrl = $this->safePublicUrl(trim((string)(getenv('ARCADECLOUD_PUBLIC_URL') ?: '')));
         $nodeId = '';
         $nodeName = '';

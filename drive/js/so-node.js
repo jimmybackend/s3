@@ -2,7 +2,7 @@ class ArcadeCloudOsNodeMonitor {
   constructor(win, doc) {
     this.window = win; this.document = doc; this.config = win.ARCADECLOUD_OS_NODE || {};
     this.endpoint = String(this.config.endpoint || 'node-status.php'); this.busy = false;
-    this.nodes = {}; this.selected = 'local'; this.renderedTab = null; this.pollTimer = null; this.countdownTimer = null; this.zeroConfirmed = false; this.mysqlSnapshot = null;
+    this.node = {}; this.pollTimer = null; this.countdownTimer = null; this.zeroConfirmed = false; this.mysqlSnapshot = null;
   }
 
   init() {
@@ -10,7 +10,6 @@ class ArcadeCloudOsNodeMonitor {
       const target = event.target instanceof Element ? event.target : null; if (!target) return;
       if (target.closest('[data-window-open="nodeWindow"]')) this.window.setTimeout(() => this.startPolling(), 30);
       if (target.closest('#nodeWindow [data-window-close]')) this.stopPolling();
-      const tab = target.closest('[data-node-tab]'); if (tab) { this.selected = String(tab.dataset.nodeTab || 'local'); this.renderSelected(true); }
       const broom = target.closest('[data-node-memory-clear]'); if (broom) { event.preventDefault(); this.openMaintenanceModal(false); }
       const disk = target.closest('[data-node-disk-clean]'); if (disk) { event.preventDefault(); this.openMaintenanceModal(true); }
       const memorySubmit = target.closest('[data-node-memory-submit]'); if (memorySubmit) { event.preventDefault(); this.queueMaintenance('memory-clear'); }
@@ -34,10 +33,10 @@ class ArcadeCloudOsNodeMonitor {
       const url = new URL(this.endpoint, this.window.location.href); url.searchParams.set('_', String(Date.now()));
       const response = await this.window.fetch(url.toString(), { credentials: 'same-origin', cache: 'no-store', headers: { 'X-Requested-With': 'XMLHttpRequest' } });
       const data = await response.json(); if (!response.ok || data?.ok !== true) throw new Error(data?.error || 'No se pudo actualizar Mi nodo.');
-      const previous = this.nodes; this.nodes = { local: data.local || data.node || {}, fastdrive: data.fastdrive || {} }; this.zeroConfirmed = false;
-      this.renderLegacy(this.nodes.local);
-      if (this.selected === 'local' || this.renderedTab !== this.selected) this.renderSelected(true);
-      else if (this.selected === 'fastdrive') this.updateFastDriveFields(previous.fastdrive || {}, this.nodes.fastdrive);
+      if (data?.scope !== 'local') throw new Error('Mi nodo rechazó una respuesta fuera del servidor local.');
+      this.node = data.local || data.node || {}; this.zeroConfirmed = false;
+      this.renderLegacy(this.node);
+      this.renderSelected();
     } catch (error) { this.notify(error?.message || 'No se pudo actualizar Mi nodo.', 'warning'); }
     finally { this.busy = false; windowEl?.classList.remove('is-node-loading'); }
   }
@@ -49,37 +48,45 @@ class ArcadeCloudOsNodeMonitor {
     const updated = this.document.querySelector('[data-node-updated]'); if (updated) updated.textContent = 'Actualizado ' + new Date(node.generated_at || Date.now()).toLocaleTimeString('es-MX');
   }
 
-  renderSelected(force = false) {
-    this.document.querySelectorAll('[data-node-tab]').forEach((button) => { const active = button.dataset.nodeTab === this.selected; button.classList.toggle('is-active', active); button.setAttribute('aria-selected', String(active)); });
-    const root = this.document.querySelector('[data-node-dashboard]'); if (!root || (!force && this.renderedTab === this.selected)) return; root.replaceChildren(); this.renderedTab = this.selected;
-    const node = this.nodes[this.selected]; if (!node || !Object.keys(node).length) { root.append(this.el('p', 'os-node-placeholder', 'Datos no disponibles.')); return; }
-    if (this.selected === 'fastdrive') this.renderFastDrive(root, node); else this.renderLocal(root, node);
+  renderSelected() {
+    const root = this.document.querySelector('[data-node-dashboard]'); if (!root) return;
+    root.replaceChildren();
+    const node = this.node;
+    if (!node || !Object.keys(node).length) { root.append(this.el('p', 'os-node-placeholder', 'Datos locales no disponibles.')); return; }
+    this.renderLocal(root, node);
   }
 
   renderLocal(root, node) {
     if (this.config.superadmin !== true) {
       root.append(
         this.healthCard(node),
+        this.identityCard(node),
         this.resourceCard(node.resources || {}),
-        this.card('FederationCloud', [[
+        this.card('FederationCloud local', [[
           'Estado',
           node.federation?.enabled ? 'Activo' : 'No activo'
+        ], [
+          'Nodo',
+          node.federation?.node_name || node.identity?.display_name || '—'
         ]])
       );
       return;
     }
-    root.append(this.healthCard(node), this.resourceCard(node.resources || {}), this.servicesCard(node.services || []), this.processesCard(node.processes || []),
-      this.phpNginxCard(node.php || {}, node.nginx || {}), this.databaseCard(node.database || {}), this.usersCard(node.users || {}),
-      this.federationCard(node.federation || {}), this.activityCard(node.activity || {}), this.programsCard(node.programs || []), this.networkCard(node.network || {}, node));
-  }
-
-  renderFastDrive(root, node) {
-    root.append(this.healthCard(node));
-    const aws = this.card('AWS / EC2', [['Estado', node.state || 'No disponible'], ['Instancia', node.instance_type || '—'], ['Zona', node.availability_zone || '—'], ['IP privada', node.private_ip || '—'], ['IP pública', node.public_ip || '—']]);
-    const state = aws.querySelector('dd'); if (state) state.dataset.fastdriveState = '';
-    root.append(aws);
-    root.append(this.card('Servicios internos', [['Consulta', node.internal_message || 'No disponible']]));
-    if (node.autoshutdown) root.append(this.autoShutdownCard(node.autoshutdown));
+    root.append(
+      this.healthCard(node),
+      this.identityCard(node),
+      this.resourceCard(node.resources || {}),
+      this.servicesCard(node.services || []),
+      this.processesCard(node.processes || []),
+      this.phpNginxCard(node.php || {}, node.nginx || {}),
+      this.databaseCard(node.database || {}),
+      this.usersCard(node.users || {}),
+      this.federationCard(node.federation || {}),
+      this.activityCard(node.activity || {}),
+      this.programsCard(node.programs || []),
+      this.networkCard(node.network || {}, node)
+    );
+    if (node.autoshutdown?.available) root.append(this.autoShutdownCard(node.autoshutdown));
   }
 
   updateText(selector, value) { const el = this.document.querySelector(selector); if (el && el.textContent !== String(value)) el.textContent = String(value); }
@@ -91,11 +98,6 @@ class ArcadeCloudOsNodeMonitor {
     const values = { memory_total: memory.total, memory_used: memory.used, memory_available: memory.available, disk_total: disk.total, disk_used: disk.used, disk_available: disk.available };
     Object.entries(values).forEach(([key, value]) => { if (value) this.updateText('[data-resource-field="' + key + '"]', value); });
     [['memory', memory], ['disk', disk]].forEach(([key, value]) => { const bar = this.document.querySelector('[data-resource-progress="' + key + '"]'); if (bar) bar.style.width = Math.min(100, Number(value.used_percent || 0)) + '%'; });
-  }
-  updateFastDriveFields(previous, node) {
-    this.updateText('[data-fastdrive-state]', node.state || 'No disponible');
-    this.updateIdleStatus(node.autoshutdown || {});
-    if (JSON.stringify(previous.resources || {}) !== JSON.stringify(node.resources || {})) this.updateResourceFields(node.resources || {});
   }
   updateIdleStatus(idle) {
     if (!this.document.querySelector('[data-idle-remaining]')) return;
@@ -113,10 +115,23 @@ class ArcadeCloudOsNodeMonitor {
 
   healthCard(node) {
     const health = node.health || {}; const card = this.el('section', 'os-node-card os-node-card-wide os-node-state-' + (health.state || 'neutral'));
-    card.append(this.el('h3', '', this.selected === 'fastdrive' ? 'NODO FASTDRIVE' : 'NODO PRINCIPAL'));
+    const identity = node.identity || {};
+    card.append(this.el('h3', '', 'NODO LOCAL · ' + String(identity.display_name || identity.node_name || node.hostname || 'ArcadeCloud')));
     const line = this.el('div', 'os-node-health'); line.append(this.el('span', 'os-node-dot'), this.el('span', '', health.label || 'No disponible')); card.append(line);
-    card.append(this.el('div', 'os-node-list-row', '', [this.el('span', '', 'Nodo'), this.el('span', '', node.hostname || (this.selected === 'fastdrive' ? 'fastdrive.esforzados.com' : '—'))]));
+    card.append(this.el('div', 'os-node-list-row', '', [this.el('span', '', 'Servidor'), this.el('span', '', node.hostname || identity.hostname || '—')]));
     if (Array.isArray(health.reasons) && health.reasons.length) { const ul = this.el('ul', 'os-node-reasons'); health.reasons.forEach((reason) => ul.append(this.el('li', '', String(reason)))); card.append(ul); } return card;
+  }
+
+  identityCard(node) {
+    const identity = node.identity || {};
+    return this.card('Identidad local', [
+      ['Nombre', identity.display_name || identity.node_name || node.hostname || '—'],
+      ['Node ID', identity.node_id ? String(identity.node_id).slice(0, 20) : '—'],
+      ['Rol', identity.role || node.role || '—'],
+      ['Instance ID', identity.instance_id || node.instance_id || '—'],
+      ['Tipo EC2', identity.instance_type || node.instance_type || '—'],
+      ['URL pública', identity.public_url || '—']
+    ]);
   }
 
   resourceCard(r) {
@@ -145,11 +160,20 @@ class ArcadeCloudOsNodeMonitor {
     if (s.active === 'failed' || (s.diagnostic?.journal || []).length) { const details = this.el('details', 'os-node-details'); const entries = [['Unit', s.unit], ['Estado', (s.active || '') + ' / ' + (s.substate || '')], ['Exit code', s.exit_code], ['Última ejecución', s.last_run || '—']]; details.append(this.el('summary', '', 'Detalles'), this.metrics(entries)); (s.diagnostic?.journal || []).forEach((line) => details.append(this.el('div', 'os-node-logline', line))); item.append(details); }
     return item;
   }
-  processesCard(processes) { const total = Number(this.nodes.local?.resources?.memory?.total_bytes || 0); const entries = processes.slice(0, 6).map((p) => [p.name, this.bytes(p.memory_bytes) + ' · ' + (total ? (Number(p.memory_bytes) * 100 / total).toFixed(1) + '% RAM · ' : '') + p.processes + ' proc.']); return this.card('Mayor consumo actual', entries.length ? entries : [['Procesos ArcadeCloud', 'No disponibles']]); }
+  processesCard(processes) { const total = Number(this.node?.resources?.memory?.total_bytes || 0); const entries = processes.slice(0, 6).map((p) => [p.name, this.bytes(p.memory_bytes) + ' · ' + (total ? (Number(p.memory_bytes) * 100 / total).toFixed(1) + '% RAM · ' : '') + p.processes + ' proc.']); return this.card('Mayor consumo actual', entries.length ? entries : [['Procesos ArcadeCloud', 'No disponibles']]); }
   phpNginxCard(php, nginx) { const fpm = php.service || {}; const ng = nginx.service || {}; const config = nginx.config_status === 'ok' ? 'Correcta' : nginx.config_status === 'permission_denied' ? 'No verificable (permisos)' : nginx.config_status === 'command_unavailable' ? 'Comando no disponible' : 'Error de configuración'; const average = Number(php.workers) > 0 ? this.bytes(Number(php.memory_bytes) / Number(php.workers)) : '—'; const card = this.card('PHP / Nginx', [['PHP', php.version || '—'], ['Estado PHP-FPM', fpm.active || 'No instalado'], ['Procesos FPM', php.workers ?? '—'], ['Activos / idle', php.pool_metrics_available ? String(php.active_processes) + ' / ' + String(php.idle_processes) : 'No disponible sin status privado'], ['RAM PHP-FPM', this.bytes(php.memory_bytes)], ['Promedio por proceso', average], ['Estado del servicio Nginx', ng.active || 'No instalado'], ['Validación de configuración', config], ['Versión Nginx', nginx.version || '—'], ['RAM Nginx', this.bytes(nginx.memory_bytes)]]); const details = this.el('details', 'os-node-details'); details.append(this.el('summary', '', 'Detalles'), this.metrics([['FPM unit', fpm.unit || '—'], ['FPM PID', fpm.pid || '—'], ['Uptime FPM desde', fpm.since || '—'], ['memory_limit', php.settings?.memory_limit || '—'], ['Pool FPM', php.pool_message || '—'], ['Nginx PID', ng.pid || '—'], ['Nginx desde', ng.since || '—'], ['Causa nginx -t', nginx.config_message || config]])); card.append(details); return card; }
   databaseCard(db) { const previous = this.mysqlSnapshot; const delta = (key) => previous && Number(db[key]) >= Number(previous[key]) ? ' (+' + (Number(db[key]) - Number(previous[key])) + ' desde último refresh)' : ''; const card = this.card('MySQL / Base de datos', [['Tipo', db.type === 'local' ? 'Local' : 'Remota'], ['Host', db.host || '—'], ['Estado', db.available ? 'Disponible' : 'No disponible'], ['Respuesta', db.latency_ms == null ? '—' : db.latency_ms + ' ms'], ['Conexiones actuales · instantánea', db.advanced_available ? db.threads_connected + ' / ' + db.max_connections + ' (' + db.connections_used_percent + '%)' : 'No disponible'], ['Threads running · instantánea', db.advanced_available ? db.threads_running : '—'], ['Connections · acumulado desde arranque', db.connections == null ? '—' : db.connections + delta('connections')], ['Aborted connects · acumulado', db.aborted_connects == null ? '—' : db.aborted_connects + delta('aborted_connects')], ['Slow queries · acumulado', db.slow_queries == null ? '—' : db.slow_queries + delta('slow_queries')], ['Tamaño DB', this.bytes(db.database_size_bytes)], ['Uptime MySQL', db.advanced_available ? this.duration(db.uptime_seconds) : '—']]); if (db.advanced_available) this.mysqlSnapshot = { connections: db.connections, aborted_connects: db.aborted_connects, slow_queries: db.slow_queries }; return card; }
   usersCard(users) { return this.card('Usuarios / Sesiones', [['Usuarios registrados', users.registered ?? 'No disponible'], ['Sesiones abiertas', users.online_available ? users.sessions : 'No disponible'], ['Definición', users.message || '—']]); }
-  federationCard(f) { const card = this.card('FederationCloud', [['Estado', f.enabled ? 'Activo' : 'Desactivado / no disponible'], ['Nodo', f.node_name || '—'], ['Node ID', f.node_id ? String(f.node_id).slice(0, 12) : '—'], ['Rol', f.role || '—'], ['Nodos registrados', f.known ?? '—'], ['Vistos en últimos 15 min', f.recently_seen ?? '—'], ['Alcanzables', f.reachable ?? f.available ?? '—'], ['No alcanzables', f.unreachable ?? f.unavailable ?? '—'], ['Última sincronización', f.last_sync_at || '—']]); if ((f.nodes || []).length) { const details = this.el('details', 'os-node-details'); details.append(this.el('summary', '', 'Detalles de nodos')); f.nodes.forEach((n) => details.append(this.row(n.name || n.node_id_short, 'Registrado: ' + (n.registered ? 'Sí' : 'No') + ' · Último visto: ' + (n.last_seen || '—') + ' · Alcanzable: ' + (n.reachable ? 'Sí' : 'No') + ' · Estado administrativo: ' + (n.status || '—'), n.reachable))); card.append(details); } return card; }
+  federationCard(f) {
+    return this.card('FederationCloud local', [
+      ['Estado', f.enabled ? 'Activo' : 'Desactivado / no disponible'],
+      ['Nodo local', f.node_name || '—'],
+      ['Node ID local', f.node_id ? String(f.node_id).slice(0, 20) : '—'],
+      ['Rol local', f.role || '—'],
+      ['Seed configurado', f.seed_configured ? 'Sí' : 'No']
+    ]);
+  }
+
   activityCard(a) { const entries = [['Trabajos activos', a.active ?? 'No disponible']]; Object.entries(a.sources || {}).forEach(([key, value]) => entries.push([key, value ? 'Activo' : '0'])); return this.card('Actividad', entries); }
   programsCard(programs) { const card = this.el('section', 'os-node-card'); card.append(this.el('h3', '', 'Programas / Capacidades')); programs.forEach((p) => card.append(this.row(p.name, p.installed ? (p.version || 'Disponible') : 'No instalado', p.installed))); return card; }
   networkCard(n, node) { return this.card('Red / EC2', [['Hostname', n.hostname || node.hostname || '—'], ['IP privada', n.private_ip || '—'], ['IP pública', n.public_ip || 'No disponible'], ['S3', n.s3 === 'not_probed' ? 'No probado (evita sondeos costosos)' : n.s3], ['MySQL', n.mysql || 'No disponible'], ['Instance ID', node.instance_id || '—'], ['Tipo', node.instance_type || '—'], ['Zona', node.availability_zone || '—']]); }

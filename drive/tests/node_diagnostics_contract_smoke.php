@@ -17,7 +17,7 @@ function nodeContract(bool $condition, string $message): void
 }
 
 nodeContract(str_contains($files['endpoint'], "'node' => \$local"), 'node-status conserva el payload node compatible');
-nodeContract(str_contains($files['endpoint'], "'local' => \$local") && str_contains($files['endpoint'], "'fastdrive' =>"), 'node-status entrega ambos nodos');
+nodeContract(str_contains($files['endpoint'], "'scope' => 'local'") && str_contains($files['endpoint'], "'local' => \$local") && !str_contains($files['endpoint'], "'fastdrive' =>"), 'node-status entrega únicamente el runtime local');
 nodeContract(str_contains($files['service'], 'SERVICE_WHITELIST') && !str_contains($files['service'], "queryString('service"), 'systemd usa whitelist fija y no acepta unidades del request');
 nodeContract(str_contains($files['service'], "['systemctl', 'show', \$unit"), 'systemctl se ejecuta como argv sin shell');
 nodeContract(!preg_match('/AWS_SECRET_ACCESS_KEY|AWS_ACCESS_KEY_ID|DB_PASSWORD/', substr($files['service'], strpos($files['service'], "return array_merge(\$this->legacy"))), 'respuesta no construye campos secretos');
@@ -25,8 +25,8 @@ nodeContract(str_contains($files['service'], "SHOW GLOBAL STATUS") && str_contai
 nodeContract(str_contains($files['service'], 'MemAvailable') || str_contains((string)file_get_contents($root . '/src/System/NodeCapabilityService.php'), 'MemAvailable'), 'RAM disponible usa MemAvailable');
 nodeContract(str_contains($files['service'], "'online_available' => false"), 'sesiones no inventan presencia en línea');
 nodeContract(!str_contains($files['service'], 'OfficeSessionLeases') && !str_contains($files['service'], 'MediaWorkerNodeSessions'), 'sesiones web no reutilizan sesiones Office o Media Worker');
-nodeContract(str_contains($files['service'], 'FederationNodes') && str_contains($files['service'], 'LastSeen'), 'Federation distingue nodos conocidos y vistos recientemente');
-nodeContract(str_contains($files['service'], "'registered'=>true") && str_contains($files['service'], "'reachable'=>\$administrativelyActive && \$recent"), 'Federation separa registro administrativo y alcanzabilidad reciente');
+nodeContract(!str_contains($files['service'], 'FROM FederationNodes') && str_contains($files['service'], "'scope' => 'local'"), 'Mi nodo no mezcla inventario de peers FederationCloud');
+nodeContract(str_contains($files['service'], 'localIdentity') && str_contains($files['service'], 'NodeIdentityService'), 'identidad visible se resuelve desde la identidad local confiable');
 nodeContract(str_contains($files['service'], 'NextElapseUSecRealtime') && str_contains($files['service'], 'LastTriggerUSec'), 'timers consultan próxima y última ejecución reales de systemd');
 nodeContract(str_contains($files['js'], 'acumulado desde arranque') && str_contains($files['js'], 'desde último refresh'), 'MySQL etiqueta acumulados y calcula deltas en frontend');
 nodeContract(str_contains($files['js'], "button.disabled = (action === 'start'") && str_contains($files['js'], "action === 'disable'"), 'botones de servicio reflejan el estado actual');
@@ -35,12 +35,13 @@ $completeSections = ['Servicios ArcadeCloud', 'Mayor consumo actual', 'PHP / Ngi
 nodeContract(array_reduce($completeSections, static fn(bool $found, string $section): bool => $found && str_contains($files['js'], $section), true), 'superadmin conserva simultáneamente todas las secciones del diagnóstico completo');
 nodeContract(str_contains($files['js'], 'data-node-memory-clear') && str_contains($files['js'], 'data-node-disk-clean') && str_contains($files['js'], 'this.renderLocal(root, node)'), 'diagnóstico moderno integra ambas escobillas');
 nodeContract(str_contains($files['view'], 'if (!$isSuperAdmin)') && !str_contains($files['view'], 'class="os-node-broom"'), 'superadmin no recibe panel legacy duplicado y usuario normal no recibe escobillas');
-nodeContract(str_contains($files['js'], "this.selected === 'local'") && str_contains($files['js'], 'this.renderSelected(true)'), 'refresh local reconstruye las secciones operacionales y no sólo recursos');
+nodeContract(str_contains($files['js'], "data?.scope !== 'local'") && str_contains($files['js'], 'this.renderSelected()'), 'frontend rechaza respuestas que no declaren alcance local');
 nodeContract(str_contains($files['js'], 'setInterval(() => { if (this.isOpen()) this.refresh();') && str_contains($files['js'], '30000'), 'polling ocurre cada 30 segundos sólo con Mi nodo abierto');
 nodeContract(str_contains($files['js'], 'this.stopPolling()') && str_contains($files['js'], '#nodeWindow [data-window-close]'), 'cerrar Mi nodo detiene polling');
 nodeContract(substr_count($files['js'], 'this.refresh();') < 10 && str_contains($files['js'], 'this.idleRemaining = Math.max(0, this.idleRemaining - 1)'), 'countdown local no consulta cada segundo');
-nodeContract(str_contains($files['service'], "['state' => 'neutral', 'label' => \$state === 'stopped'"), 'FastDrive stopped es neutral, no error');
-nodeContract(str_contains($files['view'], 'data-node-tab="local"') && str_contains($files['view'], 'data-node-tab="fastdrive"'), 'vista permite seleccionar Principal y FastDrive');
+nodeContract(!str_contains($files['service'], 'public function fastDrive()') && !str_contains($files['js'], 'renderFastDrive'), 'Mi nodo no contiene una ruta de diagnóstico remoto FastDrive');
+nodeContract(!str_contains($files['view'], 'data-node-tab=') && !str_contains($files['js'], 'data-node-tab'), 'vista no permite seleccionar otro nodo desde Mi nodo');
+nodeContract(str_contains($files['js'], 'Identidad local') && str_contains($files['js'], 'Servicios ArcadeCloud') && str_contains($files['js'], 'Programas / Capacidades'), 'panel muestra identidad, servicios y programas del servidor local');
 nodeContract(str_contains($files['css'], '@media(max-width:800px)') && str_contains($files['css'], 'grid-template-columns:1fr'), 'panel se adapta a una columna móvil');
 nodeContract(str_contains($files['css'], '--os-surface:') && str_contains($files['css'], 'background:var(--os-surface)'), 'tarjetas y ventanas usan superficies temáticas');
 nodeContract(str_contains($files['css'], '.status-ok') && str_contains($files['css'], '.status-neutral'), 'estados visuales compartidos funcionan con tokens');

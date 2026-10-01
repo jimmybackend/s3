@@ -512,13 +512,8 @@ $isExplorerFragment = (string)($_GET['_os_fragment'] ?? '') === 'explorer';
           <span class="os-node-large-icon"><i class="fas fa-server"></i></span>
           <div>
             <h2><?= $e($nodeName) ?></h2>
-            <p><?= $isSuperAdmin ? 'Salud y diagnóstico operacional de ArcadeCloud. Las métricas se actualizan sin recargar el escritorio.' : 'Estado general y uso seguro de recursos del nodo.' ?></p>
+            <p><?= $isSuperAdmin ? 'Servidor local que está ejecutando esta instalación de ArcadeCloud. Recursos, servicios y programas pertenecen únicamente a este nodo.' : 'Estado general y uso seguro de recursos del servidor local.' ?></p>
           </div>
-        </div>
-
-        <div class="os-node-tabs" role="tablist" aria-label="Seleccionar nodo">
-          <button type="button" class="is-active" data-node-tab="local" role="tab" aria-selected="true">Principal</button>
-          <button type="button" data-node-tab="fastdrive" role="tab" aria-selected="false">FastDrive</button>
         </div>
 
         <?php if (!$isSuperAdmin): ?>

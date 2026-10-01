@@ -21,18 +21,17 @@ final class NodeStatusController extends AbstractJsonController
             if ($this->request->method() === 'GET') {
                 $status = new NodeRuntimeStatusService($this->app);
                 $local = $status->local(dirname(__DIR__, 3));
-                $fastDrive = $status->fastDrive();
-                $isSuperAdmin = $this->app->session()->isSuperAdmin();
-                if (!$isSuperAdmin) {
+                if (!$this->app->session()->isSuperAdmin()) {
                     $local = $this->publicSnapshot($local);
-                    $fastDrive = $this->publicSnapshot($fastDrive);
                 }
                 JsonResponse::send([
                     'ok' => true,
-                    // node remains the legacy-compatible local payload.
+                    // Mi nodo is deliberately scoped to the server handling this request.
+                    // FederationCloud owns remote-node discovery; this endpoint never accepts
+                    // or resolves a remote node target.
+                    'scope' => 'local',
                     'node' => $local,
                     'local' => $local,
-                    'fastdrive' => $fastDrive,
                 ]);
             }
 
@@ -109,10 +108,17 @@ final class NodeStatusController extends AbstractJsonController
         $resources = is_array($node['resources'] ?? null) ? $node['resources'] : [];
         $federation = is_array($node['federation'] ?? null) ? $node['federation'] : [];
         $health = is_array($node['health'] ?? null) ? $node['health'] : [];
+        $identity = is_array($node['identity'] ?? null) ? $node['identity'] : [];
 
         return [
+            'scope' => 'local',
             'generated_at' => (string)($node['generated_at'] ?? ''),
             'available' => (bool)($node['available'] ?? true),
+            'identity' => [
+                'display_name' => (string)($identity['display_name'] ?? ''),
+                'node_name' => (string)($identity['node_name'] ?? ''),
+                'role' => (string)($identity['role'] ?? ''),
+            ],
             'health' => [
                 'state' => (string)($health['state'] ?? 'neutral'),
                 'label' => (string)($health['label'] ?? 'No disponible'),

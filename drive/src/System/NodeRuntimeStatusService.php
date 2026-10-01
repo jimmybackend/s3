@@ -54,9 +54,13 @@ final class NodeRuntimeStatusService
         $database = $this->database();
         $activity = $this->activity();
         $health = $this->health($resources, $services, $database);
+        $identity = $this->localIdentity($capability);
+        $autoshutdown = $this->localAutoShutdown($capability, $activity);
 
         return array_merge($this->legacy($capability, $resources), [
             'kind' => 'local',
+            'scope' => 'local',
+            'identity' => $identity,
             'generated_at' => gmdate('c'),
             'health' => $health,
             'thresholds' => self::THRESHOLDS,
@@ -70,52 +74,69 @@ final class NodeRuntimeStatusService
             'users' => $this->users(),
             'federation' => $this->federation(),
             'activity' => $activity,
+            'autoshutdown' => $autoshutdown,
             'network' => [
                 'hostname' => (string)($capability['hostname'] ?? ''),
-                'private_ip' => $this->privateIp(),
-                'public_ip' => '',
+                'private_ip' => (string)($capability['private_ip'] ?? '') ?: $this->privateIp(),
+                'public_ip' => (string)($capability['public_ip'] ?? ''),
                 'mysql' => ($database['available'] ?? false) ? 'available' : 'unavailable',
                 's3' => 'not_probed',
             ],
         ]);
     }
 
-    public function fastDrive(): array
+    private function localIdentity(array $capability): array
     {
-        $result = [
-            'kind' => 'fastdrive', 'hostname' => 'fastdrive.esforzados.com',
-            'configured' => false, 'state' => 'unconfigured', 'health' => ['state' => 'neutral', 'label' => 'No configurado', 'reasons' => []],
-            'internal_status' => 'unavailable', 'internal_message' => 'Estado interno no consultable: no hay un canal remoto de diagnóstico configurado.',
-        ];
-        if (!$this->app->session()->isSuperAdmin()) {
-            $result['internal_message'] = 'El estado AWS de FastDrive sólo está disponible para superadmin.';
-            return $result;
-        }
+        $role = strtolower(trim((string)($capability['role'] ?? (getenv('ARCADECLOUD_NODE_ROLE') ?: 'web'))));
+        $publicUrl = $this->safePublicUrl(trim((string)(getenv('ARCADECLOUD_PUBLIC_URL') ?: '')));
+        $nodeId = '';
+        $nodeName = '';
+
         try {
-            $status = (new \ArcadeCloud\Drive\Admin\FastDriveControlService($this->app))->status();
-            $state = (string)($status['state'] ?? 'unknown');
-            $result = array_merge($result, $status, ['configured' => true]);
-            $result['health'] = in_array($state, ['stopped', 'stopping'], true)
-                ? ['state' => 'neutral', 'label' => $state === 'stopped' ? 'Apagado' : 'Apagándose', 'reasons' => []]
-                : ($state === 'pending'
-                    ? ['state' => 'warning', 'label' => 'Iniciando', 'reasons' => ['EC2 pending']]
-                    : ($state === 'running'
-                        ? ['state' => 'ok', 'label' => 'Running', 'reasons' => []]
-                        : ['state' => 'warning', 'label' => 'No disponible', 'reasons' => ['Estado EC2: ' . $state]]));
-            if ($state !== 'running') {
-                $result['internal_message'] = 'Servicios internos no consultables porque el nodo no está running.';
-            }
-            try {
-                $idle = (new MediaWorkerNodeService($this->app->db()))->idleStatus();
-                $result['autoshutdown'] = $this->normalizeIdle($idle, $activity = $this->activity());
-            } catch (Throwable) {
-                $result['autoshutdown'] = ['available' => false];
-            }
-        } catch (Throwable $e) {
-            $result['state'] = 'unknown';
-            $result['health'] = ['state' => 'warning', 'label' => 'No disponible', 'reasons' => ['AWS no respondió']];
+            $config = FederationConfig::fromEnvironment();
+            $identity = new NodeIdentityService($config->identityPath());
+            $nodeId = $identity->nodeId();
+            $nodeName = $identity->nodeName();
+        } catch (Throwable) {
+            // Federation identity is optional for diagnostics; never substitute a peer.
         }
-        return $result;
+
+        $publicHost = '';
+        if ($publicUrl !== '') {
+            $parsedHost = parse_url($publicUrl, PHP_URL_HOST);
+            $publicHost = is_string($parsedHost) ? strtolower(trim($parsedHost)) : '';
+        }
+
+        return [
+            'node_id' => $nodeId,
+            'node_name' => $nodeName,
+            'display_name' => $nodeName !== '' ? $nodeName : ($publicHost !== '' ? $publicHost : (string)($capability['hostname'] ?? 'ArcadeCloud')),
+            'public_url' => $publicUrl,
+            'hostname' => (string)($capability['hostname'] ?? ''),
+            'role' => $role,
+            'instance_id' => (string)($capability['instance_id'] ?? ''),
+            'instance_type' => (string)($capability['instance_type'] ?? ''),
+        ];
+    }
+
+    private function localAutoShutdown(array $capability, array $activity): array
+    {
+        $role = strtolower(trim((string)($capability['role'] ?? 'web')));
+        if (!in_array($role, ['media-worker', 'combined'], true)) {
+            return ['available' => false, 'enabled' => false, 'scope' => 'local'];
+        }
+
+        try {
+            $idle = (new MediaWorkerNodeService($this->app->db()))->idleStatus();
+            $localInstanceId = trim((string)($capability['instance_id'] ?? ''));
+            $targetInstanceId = trim((string)($idle['instance_id'] ?? ''));
+            if ($localInstanceId !== '' && $targetInstanceId !== '' && !hash_equals($localInstanceId, $targetInstanceId)) {
+                return ['available' => false, 'enabled' => false, 'scope' => 'local'];
+            }
+            return ['scope' => 'local'] + $this->normalizeIdle($idle, $activity);
+        } catch (Throwable) {
+            return ['available' => false, 'enabled' => false, 'scope' => 'local'];
+        }
     }
 
     private function resources(array $c, string $path): array
@@ -225,32 +246,29 @@ final class NodeRuntimeStatusService
 
     private function federation(): array
     {
-        $out = ['enabled' => false, 'known' => null, 'recently_seen' => null, 'reachable' => null, 'unreachable' => null, 'available' => null, 'unavailable' => null,
-            'reachability_definition' => 'Alcanzable = registro administrativo activo visto por FederationCloud en los últimos 15 minutos.'];
+        $out = [
+            'enabled' => false,
+            'available' => false,
+            'scope' => 'local',
+            'node_id' => '',
+            'node_name' => '',
+            'role' => strtolower(trim((string)(getenv('ARCADECLOUD_NODE_ROLE') ?: 'web'))),
+            'seed_configured' => false,
+        ];
         try {
             $config = FederationConfig::fromEnvironment();
             $identity = new NodeIdentityService($config->identityPath());
-            $out = array_merge($out, ['enabled' => $config->enabled(), 'node_id' => $identity->nodeId(),
+            return array_merge($out, [
+                'enabled' => $config->enabled(),
+                'available' => true,
+                'node_id' => $identity->nodeId(),
                 'node_name' => $identity->nodeName(),
-                'role' => strtolower(trim((string)(getenv('ARCADECLOUD_NODE_ROLE') ?: 'web'))),
-                'seed_configured' => trim((string)(getenv('ARCADECLOUD_FEDERATION_SEED_URL') ?: '')) !== '']);
-            $result = $this->app->db()->query("SELECT COUNT(*) known, SUM(LastSeen >= DATE_SUB(UTC_TIMESTAMP(), INTERVAL 15 MINUTE)) recent, SUM(Status='active' AND LastSeen >= DATE_SUB(UTC_TIMESTAMP(), INTERVAL 15 MINUTE)) available, MAX(LastSeen) last_sync FROM FederationNodes");
-            $row = $result?->fetch_assoc(); $result?->free();
-            if (is_array($row)) { $out['known']=(int)$row['known']; $out['recently_seen']=(int)$row['recent']; $out['reachable']=(int)$row['available']; $out['unreachable']=max(0,$out['known']-$out['reachable']); $out['available']=$out['reachable']; $out['unavailable']=$out['unreachable']; $out['last_sync_at']=$row['last_sync']; }
-            $peers = $this->app->db()->query("SELECT NodeId, NodeName, Status, LastSeen, FederationUrl FROM FederationNodes ORDER BY LastSeen DESC LIMIT 50");
-            $out['nodes'] = [];
-            while ($peer = $peers?->fetch_assoc()) {
-                $lastSeen = (string)($peer['LastSeen'] ?? '');
-                $recent = $lastSeen !== '' && ($seenAt = strtotime($lastSeen . ' UTC')) !== false && $seenAt >= time() - 900;
-                $administrativelyActive = (string)$peer['Status'] === 'active';
-                $out['nodes'][] = ['node_id_short'=>substr((string)$peer['NodeId'],0,12),'name'=>(string)($peer['NodeName']??''),
-                    'registered'=>true,'administratively_active'=>$administrativelyActive,'status'=>(string)$peer['Status'],
-                    'recently_seen'=>$recent,'reachable'=>$administrativelyActive && $recent,'last_seen'=>$lastSeen,
-                    'url'=>$this->safePublicUrl((string)$peer['FederationUrl'])];
-            }
-            $peers?->free();
-        } catch (Throwable) { $out['message'] = 'Estado de FederationCloud no disponible.'; }
-        return $out;
+                'seed_configured' => trim((string)(getenv('ARCADECLOUD_FEDERATION_SEED_URL') ?: '')) !== '',
+            ]);
+        } catch (Throwable) {
+            $out['message'] = 'Identidad FederationCloud local no disponible.';
+            return $out;
+        }
     }
 
     private function activity(): array

@@ -172,7 +172,7 @@ jobs:
           grep -q 'claimQueued' drive/src/Storage/MoveJobStore.php
           grep -q 'deleteForUser' drive/src/Storage/MoveJobStore.php
           grep -q 'deleteForUser' drive/src/Sync/SyncJobStore.php
-          grep -q "button.innerHTML = 'Tareas " drive/js/background-tasks.js
+          grep -q "button.innerHTML = '<i class=\\\"fas fa-list-check\\\"></i><span class=\\\"bg-task-count\\\">0</span>'" drive/js/background-tasks.js
           grep -q 'data-bg-task-action' drive/js/background-tasks.js
           grep -q 'var(--panel-solid' drive/js/background-tasks.js
           ! grep -q 'Tareas AWS' drive/js/background-tasks.js drive/js/polly-background.js drive/js/transcribe-background.js

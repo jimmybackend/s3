@@ -408,7 +408,7 @@ class ArcadeCloudDesktopRuntime {
       const newer = target.closest('[data-folder-open-new]');
       if (newer) { event.preventDefault(); event.stopPropagation(); this.openExplorer(this.window.ArcadeCloudOsFolders?.activeFolder?.route || newer.dataset.folderOpenNew, { forceNew: true }); this.window.ArcadeCloudOsFolders?.hideContext?.(); }
       const tool = target.closest('[data-os-tool]');
-      if (tool) { event.preventDefault(); this.openTool(tool.href, tool.dataset.toolTitle || tool.textContent.trim()); }
+      if (tool) { event.preventDefault(); this.openTool(tool.href, tool.dataset.toolTitle || tool.textContent.trim(), tool.dataset.osTool); }
     }, true);
     this.document.addEventListener('pointerdown', event => { const element = event.target.closest('.os-window'); if (element) this.manager.focus(element); }, true);
     ['file-moved','file-copied','file-deleted','folder-created','upload-completed','task-completed'].forEach(type => this.bus.on(type, event => this.refreshAffected(event.detail)));
@@ -471,18 +471,49 @@ class ArcadeCloudDesktopRuntime {
     return /^cop/i.test(answer) ? 'copy' : 'move';
   }
 
-  openTool(url, title) {
-    const existing = this.manager.last('tool');
+  async openTool(url, title, toolId = 'tool') {
+    const app = 'tool-' + String(toolId || 'tool').replace(/[^a-z0-9-]/gi, '-').toLowerCase();
+    const existing = this.manager.last(app);
     if (existing) { this.manager.focus(existing.id); return existing.element; }
     const element = this.document.createElement('section');
     element.className = 'os-window os-tool-window is-open'; element.dataset.windowTitle = title;
     element.style.cssText = 'left:14vw;top:9vh;width:min(980px,82vw);height:min(680px,76vh)';
-    element.innerHTML = '<div class="os-window-titlebar" data-window-drag-handle><div class="os-window-title"><i class="fas fa-toolbox"></i><span></span></div><div class="os-window-controls"><button type="button" data-window-minimize aria-label="Minimizar"><i class="fas fa-minus"></i></button><button type="button" data-window-maximize aria-label="Maximizar"><i class="far fa-square"></i></button><button type="button" data-window-close aria-label="Cerrar"><i class="fas fa-xmark"></i></button></div></div><div class="os-window-body os-tool-body"><iframe class="os-viewer-frame" title="Herramienta"></iframe></div>';
+    element.innerHTML = '<div class="os-window-titlebar" data-window-drag-handle><div class="os-window-title"><i class="fas fa-toolbox"></i><span></span></div><div class="os-window-controls"><button type="button" data-window-minimize aria-label="Minimizar"><i class="fas fa-minus"></i></button><button type="button" data-window-maximize aria-label="Maximizar"><i class="far fa-square"></i></button><button type="button" data-window-close aria-label="Cerrar"><i class="fas fa-xmark"></i></button></div></div><div class="os-window-body os-tool-body"><p class="os-node-placeholder">Cargando…</p></div>';
     element.querySelector('.os-window-title span').textContent = title;
-    const frame = element.querySelector('iframe'); frame.title = title; frame.src = url;
     this.document.getElementById('osDesktop')?.append(element);
-    this.manager.register(element, 'tool', { url }); this.bindWindowChrome(element); this.manager.focus(element);
+    this.manager.register(element, app, { url, toolId }); this.bindWindowChrome(element); this.manager.focus(element);
+    const body = element.querySelector('.os-tool-body');
+    body.addEventListener('click', event => {
+      const link = event.target.closest?.('a[href]');
+      if (!link || link.target === '_blank' || new URL(link.href, this.window.location.href).origin !== this.window.location.origin) return;
+      event.preventDefault(); this.loadToolContent(body, link.href);
+    });
+    body.addEventListener('submit', event => {
+      const form = event.target; if (!(form instanceof HTMLFormElement)) return;
+      event.preventDefault();
+      const target = new URL(form.action || url, this.window.location.href);
+      const data = new FormData(form);
+      if ((form.method || 'get').toLowerCase() === 'get') data.forEach((value, key) => target.searchParams.set(key, String(value)));
+      this.loadToolContent(body, target.toString(), (form.method || 'get').toLowerCase() === 'post' ? { method: 'POST', body: data } : {});
+    });
+    try {
+      await this.loadToolContent(body, url);
+    } catch (error) {
+      body.textContent = error?.message || 'No se pudo abrir la herramienta.';
+    }
     return element;
+  }
+
+  async loadToolContent(body, url, options = {}) {
+    const requestUrl = new URL(url, this.window.location.href); requestUrl.searchParams.set('arcadecloud_os', '1');
+    const response = await this.window.fetch(requestUrl.toString(), { ...options, credentials: 'same-origin', headers: { 'X-ArcadeCloud-Embed': '1', 'X-Requested-With': 'XMLHttpRequest' } });
+    if (!response.ok) throw new Error('No se pudo abrir la herramienta.');
+    const page = new DOMParser().parseFromString(await response.text(), 'text/html');
+    const content = page.querySelector('main') || page.querySelector('[role="main"]');
+    if (!content) throw new Error('Esta herramienta no ofrece contenido embebible.');
+    body.replaceChildren(...Array.from(content.childNodes).map(node => this.document.importNode(node, true)));
+    body.querySelectorAll('a[href]').forEach(link => { link.href = new URL(link.getAttribute('href'), requestUrl).toString(); });
+    body.querySelectorAll('form').forEach(form => { form.action = new URL(form.getAttribute('action') || requestUrl, requestUrl).toString(); });
   }
 
   enhanceFolderMenu() {

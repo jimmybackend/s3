@@ -808,15 +808,16 @@ Escribe help o usa uno de los botones disponibles.</pre>
       <div class="os-window-body">
         <div class="os-links-grid">
           <a href="activity_costs.php" data-os-tool="activity-costs" data-tool-title="Actividad y costos"><i class="fas fa-receipt"></i><span><strong>Actividad y costos</strong><small>Consumo de tu cuenta</small></span></a>
-          <a href="s3.php"><i class="fas fa-rotate"></i><span><strong>Sincronización S3</strong><small>Disponible en Drive clásico</small></span></a>
+          <a href="s3.php" data-os-tool="s3-sync" data-tool-title="Sincronización S3"><i class="fas fa-rotate"></i><span><strong>Sincronización S3</strong><small>Contenido integrado en ArcadeCloud OS</small></span></a>
           <?php if ($canViewPersonalTools): ?>
-          <a href="aws.php" target="_blank" rel="noopener"><i class="fab fa-aws"></i><span><strong>AWS y códigos TOTP</strong><small>Herramienta personal autorizada</small></span></a>
-          <a href="ec2.php" target="_blank" rel="noopener"><i class="fas fa-server"></i><span><strong>Gestión EC2</strong><small>Instancias y herramientas del servidor</small></span></a>
+          <a href="aws.php" data-os-tool="aws" data-tool-title="AWS y códigos TOTP"><i class="fab fa-aws"></i><span><strong>AWS y códigos TOTP</strong><small>Herramienta personal autorizada</small></span></a>
+          <a href="ec2.php" data-os-tool="ec2" data-tool-title="Gestión EC2"><i class="fas fa-server"></i><span><strong>Gestión EC2</strong><small>Instancias y herramientas del servidor</small></span></a>
           <a href="activity_costs.php" data-os-tool="activity-costs" data-tool-title="Costos AWS"><i class="fas fa-chart-line"></i><span><strong>Costos AWS</strong><small>Costos reales para el propietario</small></span></a>
           <?php endif; ?>
           <?php if ($isSuperAdmin): ?>
-          <a href="ec2.php#serverConsolePanel" target="_blank" rel="noopener"><i class="fas fa-terminal"></i><span><strong>Consola del servidor</strong><small>Acceso restringido a superadmin</small></span></a>
+          <a href="#terminalWindow" data-window-open="terminalWindow"><i class="fas fa-terminal"></i><span><strong>Consola del servidor</strong><small>Acceso restringido a superadmin</small></span></a>
           <?php endif; ?>
+          <a href="#federationWindow" data-window-open="federationWindow" data-open-federation><i class="fas fa-globe"></i><span><strong>FederationCloud</strong><small>Red y contenido compartido</small></span></a>
         </div>
       </div>
     </section>

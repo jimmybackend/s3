@@ -2,7 +2,7 @@ class ArcadeCloudOsNodeMonitor {
   constructor(win, doc) {
     this.window = win; this.document = doc; this.config = win.ARCADECLOUD_OS_NODE || {};
     this.endpoint = String(this.config.endpoint || 'node-status.php'); this.busy = false;
-    this.nodes = {}; this.selected = 'local'; this.pollTimer = null; this.countdownTimer = null; this.zeroConfirmed = false; this.mysqlSnapshot = null;
+    this.nodes = {}; this.selected = 'local'; this.renderedTab = null; this.pollTimer = null; this.countdownTimer = null; this.zeroConfirmed = false; this.mysqlSnapshot = null;
   }
 
   init() {
@@ -10,7 +10,7 @@ class ArcadeCloudOsNodeMonitor {
       const target = event.target instanceof Element ? event.target : null; if (!target) return;
       if (target.closest('[data-window-open="nodeWindow"]')) this.window.setTimeout(() => this.startPolling(), 30);
       if (target.closest('#nodeWindow [data-window-close]')) this.stopPolling();
-      const tab = target.closest('[data-node-tab]'); if (tab) { this.selected = String(tab.dataset.nodeTab || 'local'); this.renderSelected(); }
+      const tab = target.closest('[data-node-tab]'); if (tab) { this.selected = String(tab.dataset.nodeTab || 'local'); this.renderSelected(true); }
       const broom = target.closest('[data-node-memory-clear]'); if (broom) { event.preventDefault(); this.openMaintenanceModal(false); }
       const disk = target.closest('[data-node-disk-clean]'); if (disk) { event.preventDefault(); this.openMaintenanceModal(true); }
       const memorySubmit = target.closest('[data-node-memory-submit]'); if (memorySubmit) { event.preventDefault(); this.queueMaintenance('memory-clear'); }
@@ -32,8 +32,11 @@ class ArcadeCloudOsNodeMonitor {
       const url = new URL(this.endpoint, this.window.location.href); url.searchParams.set('_', String(Date.now()));
       const response = await this.window.fetch(url.toString(), { credentials: 'same-origin', cache: 'no-store', headers: { 'X-Requested-With': 'XMLHttpRequest' } });
       const data = await response.json(); if (!response.ok || data?.ok !== true) throw new Error(data?.error || 'No se pudo actualizar Mi nodo.');
-      this.nodes = { local: data.local || data.node || {}, fastdrive: data.fastdrive || {} }; this.zeroConfirmed = false;
-      this.renderLegacy(this.nodes.local); this.renderSelected();
+      const previous = this.nodes; this.nodes = { local: data.local || data.node || {}, fastdrive: data.fastdrive || {} }; this.zeroConfirmed = false;
+      this.renderLegacy(this.nodes.local);
+      if (this.renderedTab !== this.selected) this.renderSelected(true);
+      else if (this.selected === 'fastdrive') this.updateFastDriveFields(previous.fastdrive || {}, this.nodes.fastdrive);
+      else this.updateResourceFields(this.nodes.local.resources || {});
     } catch (error) { this.notify(error?.message || 'No se pudo actualizar Mi nodo.', 'warning'); }
     finally { this.busy = false; windowEl?.classList.remove('is-node-loading'); }
   }
@@ -45,9 +48,9 @@ class ArcadeCloudOsNodeMonitor {
     const updated = this.document.querySelector('[data-node-updated]'); if (updated) updated.textContent = 'Actualizado ' + new Date(node.generated_at || Date.now()).toLocaleTimeString('es-MX');
   }
 
-  renderSelected() {
+  renderSelected(force = false) {
     this.document.querySelectorAll('[data-node-tab]').forEach((button) => { const active = button.dataset.nodeTab === this.selected; button.classList.toggle('is-active', active); button.setAttribute('aria-selected', String(active)); });
-    const root = this.document.querySelector('[data-node-dashboard]'); if (!root) return; root.replaceChildren();
+    const root = this.document.querySelector('[data-node-dashboard]'); if (!root || (!force && this.renderedTab === this.selected)) return; root.replaceChildren(); this.renderedTab = this.selected;
     const node = this.nodes[this.selected]; if (!node || !Object.keys(node).length) { root.append(this.el('p', 'os-node-placeholder', 'Datos no disponibles.')); return; }
     if (this.selected === 'fastdrive') this.renderFastDrive(root, node); else this.renderLocal(root, node);
   }
@@ -71,10 +74,41 @@ class ArcadeCloudOsNodeMonitor {
 
   renderFastDrive(root, node) {
     root.append(this.healthCard(node));
-    root.append(this.card('AWS / EC2', [['Estado', node.state || 'No disponible'], ['Instancia', node.instance_type || '—'], ['Zona', node.availability_zone || '—'], ['IP privada', node.private_ip || '—'], ['IP pública', node.public_ip || '—']]));
+    const aws = this.card('AWS / EC2', [['Estado', node.state || 'No disponible'], ['Instancia', node.instance_type || '—'], ['Zona', node.availability_zone || '—'], ['IP privada', node.private_ip || '—'], ['IP pública', node.public_ip || '—']]);
+    const state = aws.querySelector('dd'); if (state) state.dataset.fastdriveState = '';
+    root.append(aws);
     root.append(this.card('Servicios internos', [['Consulta', node.internal_message || 'No disponible']]));
     if (node.autoshutdown) root.append(this.autoShutdownCard(node.autoshutdown));
   }
+
+  updateText(selector, value) { const el = this.document.querySelector(selector); if (el && el.textContent !== String(value)) el.textContent = String(value); }
+  updateResourceFields(resources) {
+    const memory = resources.memory || {}, disk = resources.disk || {};
+    this.document.querySelectorAll('[data-node-field="memory_available"]').forEach((el) => { if (memory.available) el.textContent = String(memory.available); });
+    this.document.querySelectorAll('[data-node-field="disk_used"]').forEach((el) => { if (disk.used) el.textContent = String(disk.used) + ' · ' + String(disk.used_percent ?? 0) + '%'; });
+    this.document.querySelectorAll('[data-node-field="disk_free"]').forEach((el) => { if (disk.available) el.textContent = String(disk.available); });
+    const values = { memory_total: memory.total, memory_used: memory.used, memory_available: memory.available, disk_total: disk.total, disk_used: disk.used, disk_available: disk.available };
+    Object.entries(values).forEach(([key, value]) => { if (value) this.updateText('[data-resource-field="' + key + '"]', value); });
+    [['memory', memory], ['disk', disk]].forEach(([key, value]) => { const bar = this.document.querySelector('[data-resource-progress="' + key + '"]'); if (bar) bar.style.width = Math.min(100, Number(value.used_percent || 0)) + '%'; });
+  }
+  updateFastDriveFields(previous, node) {
+    this.updateText('[data-fastdrive-state]', node.state || 'No disponible');
+    this.updateIdleStatus(node.autoshutdown || {});
+    if (JSON.stringify(previous.resources || {}) !== JSON.stringify(node.resources || {})) this.updateResourceFields(node.resources || {});
+  }
+  updateIdleStatus(idle) {
+    if (!this.document.querySelector('[data-idle-remaining]')) return;
+    this.updateText('[data-idle-enabled]', idle.enabled ? 'Sí' : 'No');
+    this.updateText('[data-idle-timeout]', this.duration(idle.idle_timeout_seconds));
+    this.updateText('[data-idle-last-activity]', idle.last_activity_at ? new Date(idle.last_activity_at).toLocaleTimeString('es-MX') : 'No disponible');
+    this.updateText('[data-idle-seconds]', this.duration(idle.idle_seconds));
+    this.updateText('[data-idle-state]', idle.shutdown_blockers?.length ? 'Pausado' : (idle.state || 'Cuenta regresiva'));
+    this.updateText('[data-idle-blockers]', idle.shutdown_blockers?.length ? idle.shutdown_blockers.join(', ') : 'Sin tareas que bloqueen apagado');
+    this.idleRemaining = Number(idle.remaining_seconds); this.updateIdleCountdown();
+    if (this.countdownTimer) this.window.clearInterval(this.countdownTimer);
+    if (idle.enabled && Number.isFinite(this.idleRemaining) && this.idleRemaining > 0 && !idle.shutdown_blockers?.length) this.countdownTimer = this.window.setInterval(() => { this.idleRemaining = Math.max(0, this.idleRemaining - 1); this.updateIdleCountdown(); if (this.idleRemaining === 0) { this.window.clearInterval(this.countdownTimer); this.countdownTimer = null; if (!this.zeroConfirmed && this.isOpen()) { this.zeroConfirmed = true; this.refresh(); } } }, 1000);
+  }
+  updateIdleCountdown() { this.updateText('[data-idle-remaining]', this.duration(this.idleRemaining)); }
 
   healthCard(node) {
     const health = node.health || {}; const card = this.el('section', 'os-node-card os-node-card-wide os-node-state-' + (health.state || 'neutral'));
@@ -88,7 +122,7 @@ class ArcadeCloudOsNodeMonitor {
     const card = this.el('section', 'os-node-card'); card.append(this.el('h3', '', 'Recursos'));
     const load = Array.isArray(r.load_average) ? r.load_average.join(' · ') : '—';
     card.append(this.metrics([['vCPU', r.vcpu ?? '—'], ['Carga 1m · 5m · 15m', load], ['Carga relativa / CPU', r.load_per_vcpu ?? '—'], ['Uptime', this.duration(r.uptime_seconds)]]));
-    [['RAM', r.memory], ['Swap', r.swap], ['Disco', r.disk]].forEach(([name, value]) => { if (!value) return; const availablePercent = Number(value.total_bytes) > 0 ? (Number(value.available_bytes) * 100 / Number(value.total_bytes)) : null; const memoryState = name === 'RAM' && availablePercent != null ? (availablePercent <= 8 ? 'Crítico' : availablePercent <= 15 ? 'Atención' : 'Normal') : null; card.append(this.el('strong', '', String(name) + ' · ' + String(value.used_percent ?? 0) + '%')); const progress = this.el('div', 'os-node-progress'); const bar = this.el('span'); bar.style.width = Math.min(100, Number(value.used_percent || 0)) + '%'; progress.append(bar); const facts = [['Total', value.total], ['Usada', value.used], ['Disponible', value.available + (availablePercent == null ? '' : ' · ' + availablePercent.toFixed(1) + '%')]]; if (memoryState) facts.push(['Estado MemAvailable', memoryState]); card.append(progress, this.metrics(facts)); }); return card;
+    [['RAM', 'memory', r.memory], ['Swap', 'swap', r.swap], ['Disco', 'disk', r.disk]].forEach(([name, key, value]) => { if (!value) return; const availablePercent = Number(value.total_bytes) > 0 ? (Number(value.available_bytes) * 100 / Number(value.total_bytes)) : null; const memoryState = name === 'RAM' && availablePercent != null ? (availablePercent <= 8 ? 'Crítico' : availablePercent <= 15 ? 'Atención' : 'Normal') : null; card.append(this.el('strong', '', String(name) + ' · ' + String(value.used_percent ?? 0) + '%')); const progress = this.el('div', 'os-node-progress'); const bar = this.el('span'); bar.dataset.resourceProgress = key; bar.style.width = Math.min(100, Number(value.used_percent || 0)) + '%'; progress.append(bar); const facts = [['Total', value.total], ['Usada', value.used], ['Disponible', value.available + (availablePercent == null ? '' : ' · ' + availablePercent.toFixed(1) + '%')]]; if (memoryState) facts.push(['Estado MemAvailable', memoryState]); const metrics = this.metrics(facts); metrics.querySelectorAll('dd').forEach((dd, index) => { if (index < 3) dd.dataset.resourceField = key + '_' + ['total', 'used', 'available'][index]; }); card.append(progress, metrics); }); return card;
   }
 
   servicesCard(services) {
@@ -121,9 +155,9 @@ class ArcadeCloudOsNodeMonitor {
 
   autoShutdownCard(idle) {
     const card = this.card('Autoapagado', [['Activo', idle.enabled ? 'Sí' : 'No'], ['Timeout', this.duration(idle.idle_timeout_seconds)], ['Última actividad', idle.last_activity_at ? new Date(idle.last_activity_at).toLocaleTimeString('es-MX') : 'No disponible'], ['Inactividad', this.duration(idle.idle_seconds)], ['Apagado en', this.duration(idle.remaining_seconds)], ['Estado', idle.shutdown_blockers?.length ? 'Pausado' : (idle.state || 'Cuenta regresiva')], ['Bloqueos', idle.shutdown_blockers?.length ? idle.shutdown_blockers.join(', ') : 'Sin tareas que bloqueen apagado']]);
-    if (this.countdownTimer) this.window.clearInterval(this.countdownTimer);
-    let remaining = Number(idle.remaining_seconds); const dd = card.querySelectorAll('dd')[4];
-    if (idle.enabled && Number.isFinite(remaining) && remaining > 0 && !idle.shutdown_blockers?.length) this.countdownTimer = this.window.setInterval(() => { remaining = Math.max(0, remaining - 1); if (dd) dd.textContent = this.duration(remaining); if (remaining === 0) { this.window.clearInterval(this.countdownTimer); this.countdownTimer = null; if (!this.zeroConfirmed && this.isOpen()) { this.zeroConfirmed = true; this.refresh(); } } }, 1000);
+    const fields = ['enabled', 'timeout', 'lastActivity', 'seconds', 'remaining', 'state', 'blockers'];
+    card.querySelectorAll('dd').forEach((dd, index) => { const name = fields[index]; dd.dataset['idle' + name[0].toUpperCase() + name.slice(1)] = ''; });
+    this.window.setTimeout(() => this.updateIdleStatus(idle), 0);
     return card;
   }
 
@@ -135,10 +169,13 @@ class ArcadeCloudOsNodeMonitor {
   bytes(value) { const n = Number(value); if (!Number.isFinite(n) || n < 1) return '—'; const units = ['B', 'KB', 'MB', 'GB']; let size = n, unit = 0; while (size >= 1024 && unit < units.length - 1) { size /= 1024; unit++; } return size.toFixed(unit > 1 ? 1 : 0) + ' ' + units[unit]; }
   actionLabel(action) { return ({ 'run-now': 'Ejecutar ahora', start: 'Iniciar', stop: 'Detener', restart: 'Reiniciar', enable: 'Activar', disable: 'Desactivar' })[action] || action; }
   async controlService(button) { const operation = String(button.dataset.nodeServiceAction || ''), component = String(button.dataset.nodeComponent || ''), name = String(button.dataset.nodeServiceName || component); if (['stop', 'disable'].includes(operation) && !this.window.confirm(this.actionLabel(operation) + ' ' + name + '\n\nEsto impedirá su ejecución hasta que vuelva a activarlo.')) return; const password = this.window.prompt('Confirma tu contraseña actual de superusuario (se reutiliza la reautenticación segura).') ?? ''; if (!password) return; button.disabled = true; const before = button.textContent; button.textContent = 'Procesando…'; try { const response = await this.window.fetch(this.endpoint, { method: 'POST', credentials: 'same-origin', cache: 'no-store', headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8', 'X-Server-Admin-CSRF': String(this.config.csrf || ''), 'X-Requested-With': 'XMLHttpRequest' }, body: new URLSearchParams({ action: 'component-action', component, operation, access_password: password }).toString() }); const data = await response.json(); if (!response.ok || data?.ok !== true) throw new Error(data?.error || 'No fue posible completar la acción.'); this.notify(data.message || 'Correcto', 'success'); this.window.setTimeout(() => { if (this.isOpen()) this.refresh(); }, operation === 'run-now' ? 1800 : 350); } catch (error) { this.notify(error?.message || 'No fue posible completar la acción.', 'warning'); } finally { button.disabled = false; button.textContent = before; } }
+  updateMemoryFields(node) { const value = node.memory_available || node.resources?.memory?.available; if (value) this.document.querySelectorAll('[data-node-field="memory_available"]').forEach((el) => { el.textContent = String(value); }); }
+  updateDiskFields(node) { const disk = node.resources?.disk || {}; const used = node.disk_used || disk.used, percent = node.disk_used_percent ?? disk.used_percent, free = node.disk_free || disk.available; if (used) this.document.querySelectorAll('[data-node-field="disk_used"]').forEach((el) => { el.textContent = String(used) + ' · ' + String(percent ?? 0) + '%'; }); if (free) this.document.querySelectorAll('[data-node-field="disk_free"]').forEach((el) => { el.textContent = String(free); }); }
+
   renderCapability(name, ready, yes, no) { const el = this.document.querySelector('[data-node-capability="' + name + '"]'); if (!el) return; el.textContent = ready ? yes : no; el.classList.toggle('is-ready', Boolean(ready)); el.classList.toggle('is-missing', !ready); }
 
   openMaintenanceModal(isDisk) { const modal = this.document.getElementById(isDisk ? 'nodeDiskCleanModal' : 'nodeMemoryClearModal'); if (!modal) return; const input = modal.querySelector(isDisk ? '[data-node-disk-password]' : '[data-node-memory-password]'); const status = modal.querySelector(isDisk ? '[data-node-disk-status]' : '[data-node-memory-status]'); if (input) input.value = ''; if (status) { status.textContent = isDisk ? 'La limpieza se ejecutará sólo cuando no haya tareas activas.' : 'Si hay procesos activos, la limpieza quedará en cola hasta que terminen.'; status.className = 'small text-muted'; } const jq = this.window.jQuery || this.window.$; if (jq && typeof jq(modal).modal === 'function') jq(modal).modal('show'); }
-  async queueMaintenance(action) { if (this.busy) return; const isDisk = action === 'disk-clean'; const modal = this.document.getElementById(isDisk ? 'nodeDiskCleanModal' : 'nodeMemoryClearModal'); const input = modal?.querySelector(isDisk ? '[data-node-disk-password]' : '[data-node-memory-password]'); const status = modal?.querySelector(isDisk ? '[data-node-disk-status]' : '[data-node-memory-status]'); const button = modal?.querySelector(isDisk ? '[data-node-disk-submit]' : '[data-node-memory-submit]'); const password = String(input?.value || ''); if (!password) { if (status) { status.textContent = 'Escribe la contraseña privada.'; status.className = 'small text-danger'; } return; } this.busy = true; if (button) button.disabled = true; try { const response = await this.window.fetch(this.endpoint, { method: 'POST', credentials: 'same-origin', cache: 'no-store', headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8', 'X-Server-Admin-CSRF': String(this.config.csrf || ''), 'X-Requested-With': 'XMLHttpRequest' }, body: new URLSearchParams({ action, access_password: password }).toString() }); const data = await response.json(); if (!response.ok || data?.ok !== true) throw new Error(data?.error || 'No se pudo programar el mantenimiento.'); if (status) { status.textContent = String(data.message || 'Mantenimiento programado.'); status.className = 'small text-success'; } this.renderLegacy(data.node || {}); this.document.dispatchEvent(new Event('background-tasks:refresh')); this.notify(String(data.message || 'Mantenimiento programado.'), 'success'); } catch (error) { if (status) { status.textContent = error?.message || 'No se pudo programar el mantenimiento.'; status.className = 'small text-danger'; } } finally { this.busy = false; if (button) button.disabled = false; } }
+  async queueMaintenance(action) { if (this.busy) return; const isDisk = action === 'disk-clean'; const modal = this.document.getElementById(isDisk ? 'nodeDiskCleanModal' : 'nodeMemoryClearModal'); const input = modal?.querySelector(isDisk ? '[data-node-disk-password]' : '[data-node-memory-password]'); const status = modal?.querySelector(isDisk ? '[data-node-disk-status]' : '[data-node-memory-status]'); const button = modal?.querySelector(isDisk ? '[data-node-disk-submit]' : '[data-node-memory-submit]'); const password = String(input?.value || ''); if (!password) { if (status) { status.textContent = 'Escribe la contraseña privada.'; status.className = 'small text-danger'; } return; } this.busy = true; if (button) button.disabled = true; try { const response = await this.window.fetch(this.endpoint, { method: 'POST', credentials: 'same-origin', cache: 'no-store', headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8', 'X-Server-Admin-CSRF': String(this.config.csrf || ''), 'X-Requested-With': 'XMLHttpRequest' }, body: new URLSearchParams({ action, access_password: password }).toString() }); const data = await response.json(); if (!response.ok || data?.ok !== true) throw new Error(data?.error || 'No se pudo programar el mantenimiento.'); if (status) { status.textContent = String(data.message || 'Mantenimiento programado.'); status.className = 'small text-success'; } if (isDisk) this.updateDiskFields(data.node || {}); else this.updateMemoryFields(data.node || {}); this.document.dispatchEvent(new Event('background-tasks:refresh')); this.notify(String(data.message || 'Mantenimiento programado.'), 'success'); } catch (error) { if (status) { status.textContent = error?.message || 'No se pudo programar el mantenimiento.'; status.className = 'small text-danger'; } } finally { this.busy = false; if (button) button.disabled = false; } }
   notify(message, type) { if (this.window.ArcadeCloudOsShell?.notify) this.window.ArcadeCloudOsShell.notify(message, type || 'info'); else console.log('[Mi nodo]', message); }
   static boot(win = window, doc = document) { if (win.ArcadeCloudOsNodeMonitor instanceof ArcadeCloudOsNodeMonitor) return win.ArcadeCloudOsNodeMonitor; const instance = new ArcadeCloudOsNodeMonitor(win, doc).init(); win.ArcadeCloudOsNodeMonitor = instance; return instance; }
 }

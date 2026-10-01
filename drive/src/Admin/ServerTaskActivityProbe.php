@@ -19,6 +19,7 @@ final class ServerTaskActivityProbe
             'sync' => (new SyncJobStore())->hasActiveJobs(),
             'move' => $this->app->moveJobStore()->hasActiveJobs(),
             'media' => (new MediaProcessingJobRepository($this->app->db()))->hasActiveJobs(),
+            'office' => $this->hasActiveOfficeSessions(),
             'ai' => $this->hasActiveAiTasks(),
         ];
 
@@ -26,6 +27,27 @@ final class ServerTaskActivityProbe
             'active' => count(array_filter($sources)),
             'sources' => $sources,
         ];
+    }
+
+    private function hasActiveOfficeSessions(): bool
+    {
+        $leases = $this->app->db()->query(
+            'SELECT 1 FROM OfficeSessionLeases WHERE ExpiresAt>UTC_TIMESTAMP() LIMIT 1'
+        );
+        if ($leases && is_array($leases->fetch_row())) {
+            $leases->free();
+            return true;
+        }
+        if ($leases) $leases->free();
+
+        $documents = $this->app->db()->query(
+            "SELECT 1 FROM OfficeDocumentSessions "
+            . "WHERE Status IN ('preparing','ready','syncing','conflict') LIMIT 1"
+        );
+        if (!$documents) return false;
+        $active = is_array($documents->fetch_row());
+        $documents->free();
+        return $active;
     }
 
     private function hasActiveAiTasks(): bool

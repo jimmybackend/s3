@@ -760,6 +760,33 @@ Escribe help o usa uno de los botones disponibles.</pre>
     </section>
     <?php endif; ?>
 
+    <section class="os-window os-page-manager-window" id="pageManagerWindow" data-window-title="Administrador de la página">
+      <div class="os-window-titlebar" data-window-drag-handle>
+        <div class="os-window-title"><i class="fas fa-gauge-high"></i><span>Administrador de la página</span></div>
+        <div class="os-window-controls">
+          <button type="button" data-window-minimize aria-label="Minimizar"><i class="fas fa-minus"></i></button>
+          <button type="button" data-window-maximize aria-label="Maximizar"><i class="far fa-square"></i></button>
+          <button type="button" data-window-close aria-label="Cerrar"><i class="fas fa-xmark"></i></button>
+        </div>
+      </div>
+      <div class="os-window-body os-page-manager-body" data-page-resource-manager>
+        <div class="os-page-manager-note"><i class="fas fa-browser"></i><span>Recursos de esta pestaña de ArcadeCloud OS. No son métricas del EC2.</span></div>
+        <div class="os-page-manager-grid">
+          <article><span>Memoria JS usada</span><strong data-page-metric="heap-used">No disponible</strong></article>
+          <article><span>Límite de memoria JS</span><strong data-page-metric="heap-limit">No disponible</strong></article>
+          <article><span>DOM</span><strong data-page-metric="dom-nodes">0 nodos</strong></article>
+          <article><span>Ventanas</span><strong data-page-metric="windows">0</strong></article>
+          <article><span>Tareas activas</span><strong data-page-metric="tasks">0</strong></article>
+          <article><span>Tiempo abierta</span><strong data-page-metric="uptime">0 s</strong></article>
+        </div>
+        <div class="os-page-manager-section">
+          <h3>Recursos cargados</h3>
+          <div class="os-page-manager-list" data-page-resource-list></div>
+        </div>
+        <small class="os-page-manager-footnote">La memoria JavaScript depende del navegador. Cuando el navegador no expone esa métrica, ArcadeCloud la marca como no disponible en vez de inventarla.</small>
+      </div>
+    </section>
+
     <section class="os-window os-settings-window" id="settingsWindow" data-window-title="Configuración">
       <div class="os-window-titlebar" data-window-drag-handle>
         <div class="os-window-title"><i class="fas fa-gear"></i><span>Configuración</span></div>
@@ -1919,6 +1946,9 @@ Escribe help o usa uno de los botones disponibles.</pre>
       <i class="fas fa-gear"></i>
     </button>
     <div class="os-task-buttons" id="osTaskButtons"></div>
+    <button type="button" class="os-task-center-button" id="backgroundTaskButton" aria-controls="backgroundTaskPanel" aria-expanded="false" title="Tareas" aria-label="Abrir tareas">
+      <i class="fas fa-list-check"></i><span class="bg-task-count">0</span>
+    </button>
     <div class="os-clock" id="osClock"></div>
   </footer>
 
@@ -1997,5 +2027,6 @@ Escribe help o usa uno de los botones disponibles.</pre>
   <script src="js/so.js?v=<?= (int)filemtime(__DIR__ . '/js/so.js') ?>"></script>
   <script src="js/so-clipboard.js?v=<?= (int)filemtime(__DIR__ . '/js/so-clipboard.js') ?>"></script>
   <script src="js/desktop-shell.js?v=<?= (int)filemtime(__DIR__ . '/js/desktop-shell.js') ?>"></script>
+  <script src="js/page-resource-manager.js?v=<?= (int)filemtime(__DIR__ . '/js/page-resource-manager.js') ?>"></script>
 </body>
 </html>

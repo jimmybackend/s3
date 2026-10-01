@@ -1174,3 +1174,36 @@ body.arcade-os{
 .os-tool-body{overflow:auto;padding:18px}
 .os-task-buttons{overflow-x:auto;scrollbar-width:thin}
 @media(max-width:700px){.os-explorer-navigation{gap:3px}.os-address-action{width:30px;flex-basis:30px}.os-window.os-explorer-window,.os-tool-window{inset:8px 6px 58px!important;width:auto!important;height:auto!important;max-width:none!important;max-height:none!important}.os-breadcrumb span{display:none}.os-window.is-drop-target .os-explorer-body::after{inset:10%}}
+
+/* Browser/page task manager: these metrics describe the current tab, not the EC2. */
+.os-task-center-button{
+  position:relative;flex:0 0 auto;width:46px;height:46px;border:0;border-left:1px solid var(--os-divider);
+  background:transparent;color:var(--os-text);display:inline-flex;align-items:center;justify-content:center;cursor:pointer
+}
+.os-task-center-button:hover,.os-task-center-button[aria-expanded="true"]{background:var(--os-surface-hover);color:var(--os-accent-2)}
+.os-task-center-button .bg-task-count{
+  position:absolute;right:3px;top:3px;min-width:18px;height:18px;padding:0 4px;border-radius:999px;
+  display:inline-flex;align-items:center;justify-content:center;background:var(--os-accent);color:var(--os-bg);
+  font-size:.62rem;font-weight:900;border:1px solid var(--os-taskbar)
+}
+.os-page-manager-window{min-width:520px;min-height:410px}
+.os-page-manager-body{display:flex;flex-direction:column;gap:12px}
+.os-page-manager-note{display:flex;gap:8px;align-items:flex-start;padding:10px;border:1px solid var(--os-border);border-radius:9px;background:var(--os-surface-subtle);color:var(--os-soft);font-size:.76rem}
+.os-page-manager-note i{color:var(--os-accent);margin-top:2px}
+.os-page-manager-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+.os-page-manager-grid article{padding:11px;border:1px solid var(--os-border);border-radius:10px;background:var(--os-surface-subtle);min-width:0}
+.os-page-manager-grid span{display:block;color:var(--os-soft);font-size:.68rem}
+.os-page-manager-grid strong{display:block;margin-top:4px;color:var(--os-text);font-size:.9rem;overflow-wrap:anywhere}
+.os-page-manager-section{border:1px solid var(--os-border);border-radius:10px;overflow:hidden}
+.os-page-manager-section h3{margin:0;padding:9px 11px;border-bottom:1px solid var(--os-divider);font-size:.82rem}
+.os-page-manager-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1px;background:var(--os-divider)}
+.os-page-manager-list div{display:flex;justify-content:space-between;gap:8px;padding:9px 11px;background:var(--os-surface)}
+.os-page-manager-list span{color:var(--os-soft);font-size:.72rem}.os-page-manager-list strong{font-size:.72rem;text-align:right}
+.os-page-manager-list p{grid-column:1/-1;margin:0;padding:12px;background:var(--os-surface);color:var(--os-soft);font-size:.74rem}
+.os-page-manager-footnote{color:var(--os-soft);line-height:1.4}
+@media (max-width:800px){
+  .os-page-manager-window{min-width:0}
+  .os-page-manager-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .os-page-manager-list{grid-template-columns:1fr}
+  .os-task-center-button{width:42px}
+}

@@ -234,6 +234,7 @@
         "drive/s3.php",
         "drive/so.php",
         "drive/src/Http/Controller/PersonalAwsController.php",
+        "drive/tests/web_os_pending_fixes_smoke.php",
         "drive/js/estilo.js"
       ]
     },
@@ -247,7 +248,7 @@
     },
     {
       "path": "drive/bin/arcadecloud-drive-admin-helper.php",
-      "size": 46948,
+      "size": 47180,
       "active": false,
       "references": [
         "drive/tests/fastdrive_control_contract_smoke.php",
@@ -255,7 +256,8 @@
         "drive/tests/node_diagnostics_control_smoke.php",
         "drive/tests/office_gateway_contract_smoke.php",
         "drive/tests/server_console_contract_smoke.php",
-        "drive/tests/setup_finalize_contract_smoke.php"
+        "drive/tests/setup_finalize_contract_smoke.php",
+        "drive/tests/web_os_pending_fixes_smoke.php"
       ]
     },
     {
@@ -574,6 +576,7 @@
         "drive/src/Admin/ServerConsoleService.php",
         "drive/src/View/PersonalAwsPageRenderer.php",
         "drive/tests/server_console_contract_smoke.php",
+        "drive/tests/web_os_pending_fixes_smoke.php",
         "drive/js/estilo.js"
       ]
     },
@@ -1469,7 +1472,7 @@
     },
     {
       "path": "drive/so.php",
-      "size": 108633,
+      "size": 108953,
       "active": true,
       "references": [
         "drive/s3.php",
@@ -1480,6 +1483,7 @@
         "drive/tests/web_os_clipboard_contract_smoke.php",
         "drive/tests/web_os_contract_smoke.php",
         "drive/tests/web_os_multiwindow_smoke.php",
+        "drive/tests/web_os_pending_fixes_smoke.php",
         "drive/tests/web_os_theme_contract_smoke.php",
         "drive/js/os-window-manager.js",
         "drive/js/so-folders.js",
@@ -1621,10 +1625,11 @@
     },
     {
       "path": "drive/src/Admin/ServerTaskActivityProbe.php",
-      "size": 2278,
+      "size": 3040,
       "active": false,
       "references": [
-        "drive/tests/web_os_contract_smoke.php"
+        "drive/tests/web_os_contract_smoke.php",
+        "drive/tests/web_os_pending_fixes_smoke.php"
       ]
     },
     {
@@ -2821,7 +2826,8 @@
         "drive/tests/node_diagnostics_contract_smoke.php",
         "drive/tests/node_diagnostics_control_smoke.php",
         "drive/tests/web_os_contract_smoke.php",
-        "drive/tests/web_os_multiwindow_smoke.php"
+        "drive/tests/web_os_multiwindow_smoke.php",
+        "drive/tests/web_os_pending_fixes_smoke.php"
       ]
     },
     {
@@ -3896,6 +3902,12 @@
     {
       "path": "drive/tests/web_os_multiwindow_smoke.php",
       "size": 3258,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/tests/web_os_pending_fixes_smoke.php",
+      "size": 3470,
       "active": false,
       "references": []
     },

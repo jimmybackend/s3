@@ -47,7 +47,7 @@
 | `drive/s3.php` | `drive/app_bootstrap.php`, `drive/ec2.php`, `drive/fastdrive-control.php`, `drive/personal_aws_bootstrap.php`, `drive/so.php`, `drive/src/View/ActivityCostPageRenderer.php`, `drive/src/View/FederationModerationPageRenderer.php`, `drive/src/View/FederationPageRenderer.php`, `drive/src/View/FederationPortalRenderer.php`, `drive/src/View/FederationReportPageRenderer.php`, `drive/src/View/PersonalAwsPageRenderer.php`, `drive/tests/index_federation_drop_smoke.php`, `drive/tests/media_processing_contract_smoke.php`, `drive/tests/web_os_clipboard_contract_smoke.php`, `drive/tests/web_os_contract_smoke.php`, `drive/up.php`, `drive/js/archivos.js`, `drive/js/carpetas.js`, `drive/js/federation-share-drive.js`, `drive/js/so.js`, `drive/js/subir.js` |
 | `drive/server-console.php` | `drive/ec2.php`, `drive/so.php`, `drive/tests/server_console_contract_smoke.php`, `drive/tests/web_os_contract_smoke.php` |
 | `drive/setup/index.php` | `drive/bloque_archivos.php`, `drive/bloque_carpetas.php`, `drive/fastdrive-control.php`, `drive/office-launch.php`, `drive/s3.php`, `drive/so.php`, `drive/src/Http/Controller/ActivityCostController.php`, `drive/src/Http/Controller/AuthController.php`, `drive/src/Http/Controller/FederationModerationController.php`, `drive/src/Http/Controller/FederationOsAdminController.php`, `drive/src/Security/SessionManager.php`, `drive/src/View/FederationReportPageRenderer.php`, `drive/tests/index_federation_drop_smoke.php`, `drive/tests/office_gateway_contract_smoke.php`, `drive/tests/web_os_contract_smoke.php`, `drive/up.php` |
-| `drive/so.php` | `drive/s3.php`, `drive/src/Http/Controller/AuthController.php`, `drive/tests/office_gateway_contract_smoke.php`, `drive/tests/server_console_contract_smoke.php`, `drive/tests/web_os_clipboard_contract_smoke.php`, `drive/tests/web_os_contract_smoke.php`, `drive/js/so-folders.js`, `drive/js/so.js` |
+| `drive/so.php` | `drive/s3.php`, `drive/src/Http/Controller/AuthController.php`, `drive/tests/node_diagnostics_contract_smoke.php`, `drive/tests/office_gateway_contract_smoke.php`, `drive/tests/server_console_contract_smoke.php`, `drive/tests/web_os_clipboard_contract_smoke.php`, `drive/tests/web_os_contract_smoke.php`, `drive/js/so-folders.js`, `drive/js/so.js` |
 | `drive/src/Admin/ManagedRuntimeEnvironment.php` | `drive/app_bootstrap.php`, `drive/personal_aws_bootstrap.php`, `drive/setup/api.php`, `drive/tests/fastdrive_control_contract_smoke.php`, `drive/tests/installer_service_reconcile_contract_smoke.php`, `drive/tests/server_admin_config_smoke.php` |
 | `drive/src/Setup/BootstrapSetupAuth.php` | `drive/setup/api.php`, `drive/setup/index.php`, `drive/tests/setup_bootstrap_smoke.php` |
 | `drive/src/Setup/SetupEntryGuard.php` | `drive/index.php`, `drive/tests/setup_entry_guard_smoke.php` |
@@ -109,7 +109,7 @@
 | `drive/federationcloud/moderation-api.php` | `drive/src/View/FederationModerationPageRenderer.php`, `drive/tests/web_os_contract_smoke.php`, `drive/js/federation-footer.js`, `drive/js/federation-os-admin.js` |
 | `drive/federationcloud/name-availability.php` | `drive/src/Federation/FederationHttpClient.php`, `drive/src/Federation/FederationNodeAdminService.php` |
 | `drive/federationcloud/node-admin.php` | `drive/js/federation-footer.js` |
-| `drive/federationcloud/node.php` | `drive/bin/federation_provider_request.php`, `drive/src/Federation/FederationCustomsService.php`, `drive/src/Federation/FederationDirectoryService.php`, `drive/src/Federation/FederationDropIngressService.php`, `drive/src/Federation/FederationHttpClient.php`, `drive/src/Federation/FederationProviderAuthorizationService.php`, `drive/src/Federation/FederationReplicaPresenceService.php`, `drive/src/Federation/FederationResolverService.php`, `drive/tests/federation_customs_contract_smoke.php` |
+| `drive/federationcloud/node.php` | `drive/bin/federation_provider_request.php`, `drive/src/Federation/FederationCustomsService.php`, `drive/src/Federation/FederationDirectoryService.php`, `drive/src/Federation/FederationDropIngressService.php`, `drive/src/Federation/FederationHttpClient.php`, `drive/src/Federation/FederationProviderAuthorizationService.php`, `drive/src/Federation/FederationReplicaPresenceService.php`, `drive/src/Federation/FederationResolverService.php`, `drive/tests/federation_customs_contract_smoke.php`, `drive/js/so-node.js` |
 | `drive/federationcloud/nodes.php` | `drive/src/Federation/FederationHttpClient.php`, `drive/js/federation-footer.js`, `drive/js/federation-os-admin.js` |
 | `drive/federationcloud/os-admin.php` | `drive/tests/web_os_contract_smoke.php`, `drive/js/so-federation.js` |
 | `drive/federationcloud/provider-admin.php` | `drive/tests/web_os_contract_smoke.php`, `drive/js/federation-footer.js`, `drive/js/federation-os-admin.js` |
@@ -332,7 +332,7 @@
 | `drive/src/Http/Controller/MediaProcessingController.php` | `drive/tests/media_processing_contract_smoke.php`, `drive/tests/web_os_contract_smoke.php` |
 | `drive/src/Http/Controller/MoveJobController.php` | `drive/tests/web_os_clipboard_contract_smoke.php` |
 | `drive/src/Http/Controller/NavigationController.php` | ninguna |
-| `drive/src/Http/Controller/NodeStatusController.php` | `drive/tests/web_os_contract_smoke.php` |
+| `drive/src/Http/Controller/NodeStatusController.php` | `drive/tests/node_diagnostics_contract_smoke.php`, `drive/tests/web_os_contract_smoke.php` |
 | `drive/src/Http/Controller/OfficeDocumentController.php` | `drive/tests/office_gateway_contract_smoke.php` |
 | `drive/src/Http/Controller/PersonalAwsController.php` | ninguna |
 | `drive/src/Http/Controller/PollyTaskController.php` | ninguna |
@@ -408,7 +408,7 @@
 | `drive/src/Sync/SyncRepository.php` | `drive/tests/scoped_sync_repository_regression.php`, `drive/tests/sync_repository_regression.php` |
 | `drive/src/Sync/SyncSchemaMigrator.php` | `drive/tests/sync_schema_migrator_regression.php` |
 | `drive/src/System/Ec2InstanceIdentityService.php` | `drive/tests/fastdrive_control_contract_smoke.php`, `drive/tests/media_processing_contract_smoke.php` |
-| `drive/src/System/NodeCapabilityService.php` | `drive/tests/web_os_contract_smoke.php` |
+| `drive/src/System/NodeCapabilityService.php` | `drive/tests/node_diagnostics_contract_smoke.php`, `drive/tests/web_os_contract_smoke.php` |
 | `drive/src/System/NodeRuntimeStatusService.php` | `drive/tests/node_diagnostics_contract_smoke.php` |
 | `drive/src/Upload/AdminMultipartUploadService.php` | `drive/tests/federation_moderation_contract_smoke.php` |
 | `drive/src/Upload/PublicDropzoneUploadService.php` | `drive/tests/federation_moderation_contract_smoke.php` |
@@ -467,6 +467,7 @@
 | `drive/tests/index_federation_drop_smoke.php` | ninguna |
 | `drive/tests/installer_service_reconcile_contract_smoke.php` | ninguna |
 | `drive/tests/media_processing_contract_smoke.php` | ninguna |
+| `drive/tests/node_diagnostics_contract_smoke.php` | ninguna |
 | `drive/tests/office_gateway_contract_smoke.php` | ninguna |
 | `drive/tests/password_credential_verifier_smoke.php` | ninguna |
 | `drive/tests/scoped_sync_repository_regression.php` | ninguna |

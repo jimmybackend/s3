@@ -770,7 +770,8 @@
         "drive/src/Federation/FederationProviderAuthorizationService.php",
         "drive/src/Federation/FederationReplicaPresenceService.php",
         "drive/src/Federation/FederationResolverService.php",
-        "drive/tests/federation_customs_contract_smoke.php"
+        "drive/tests/federation_customs_contract_smoke.php",
+        "drive/js/so-node.js"
       ]
     },
     {
@@ -1467,11 +1468,12 @@
     },
     {
       "path": "drive/so.php",
-      "size": 107481,
+      "size": 108015,
       "active": true,
       "references": [
         "drive/s3.php",
         "drive/src/Http/Controller/AuthController.php",
+        "drive/tests/node_diagnostics_contract_smoke.php",
         "drive/tests/office_gateway_contract_smoke.php",
         "drive/tests/server_console_contract_smoke.php",
         "drive/tests/web_os_clipboard_contract_smoke.php",
@@ -2801,9 +2803,10 @@
     },
     {
       "path": "drive/src/Http/Controller/NodeStatusController.php",
-      "size": 5347,
+      "size": 3670,
       "active": false,
       "references": [
+        "drive/tests/node_diagnostics_contract_smoke.php",
         "drive/tests/web_os_contract_smoke.php"
       ]
     },
@@ -3358,7 +3361,16 @@
       "size": 8545,
       "active": false,
       "references": [
+        "drive/tests/node_diagnostics_contract_smoke.php",
         "drive/tests/web_os_contract_smoke.php"
+      ]
+    },
+    {
+      "path": "drive/src/System/NodeRuntimeStatusService.php",
+      "size": 20951,
+      "active": false,
+      "references": [
+        "drive/tests/node_diagnostics_contract_smoke.php"
       ]
     },
     {
@@ -3734,6 +3746,12 @@
     {
       "path": "drive/tests/media_processing_contract_smoke.php",
       "size": 17692,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/tests/node_diagnostics_contract_smoke.php",
+      "size": 3232,
       "active": false,
       "references": []
     },

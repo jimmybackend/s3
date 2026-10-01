@@ -68,7 +68,8 @@ jobs:
           ]
           js_debt = [
               row['path'] for row in data['js']
-              if not row.get('classes') or row.get('functions')
+              if not row['path'].startswith('drive/tests/')
+              and (not row.get('classes') or row.get('functions'))
           ]
           print('PHP runtime OOP debt:', json.dumps(php_debt, ensure_ascii=False))
           print('JS runtime OOP debt:', json.dumps(js_debt, ensure_ascii=False))

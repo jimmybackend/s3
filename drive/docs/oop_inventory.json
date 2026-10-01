@@ -2060,7 +2060,7 @@
     },
     {
       "path": "drive/so.php",
-      "lines": 1986,
+      "lines": 1995,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -7112,7 +7112,7 @@
     },
     {
       "path": "drive/tests/web_os_clipboard_contract_smoke.php",
-      "lines": 109,
+      "lines": 111,
       "kind": "test script",
       "classes": 0,
       "functions": [],
@@ -7144,7 +7144,7 @@
     },
     {
       "path": "drive/tests/web_os_multiwindow_smoke.php",
-      "lines": 57,
+      "lines": 60,
       "kind": "test script",
       "classes": 0,
       "functions": [],
@@ -8483,7 +8483,7 @@
     },
     {
       "path": "drive/js/os-window-manager.js",
-      "lines": 682,
+      "lines": 685,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudEventBus",
@@ -8748,7 +8748,7 @@
     },
     {
       "path": "drive/js/so-clipboard.js",
-      "lines": 766,
+      "lines": 774,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudOsClipboard"
@@ -8792,7 +8792,7 @@
     },
     {
       "path": "drive/js/so-folders.js",
-      "lines": 425,
+      "lines": 439,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudOsFolderActions"
@@ -8949,7 +8949,7 @@
     },
     {
       "path": "drive/js/so.js",
-      "lines": 1311,
+      "lines": 1322,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudOsShell"
@@ -9307,7 +9307,7 @@
     },
     {
       "path": "drive/docs/runtime_endpoints.json",
-      "bytes": 114345,
+      "bytes": 114827,
       "valid": true,
       "root_type": "object",
       "keys": [

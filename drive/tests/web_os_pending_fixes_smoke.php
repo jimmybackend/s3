@@ -14,8 +14,8 @@ $ok = static function (bool $condition, string $message): void {
     fwrite(STDOUT, "OK: {$message}\n");
 };
 
-$ok(substr_count($shell, 'if ($isSuperAdmin)') > 2 && str_contains($shell, 'data-node-memory-clear'), 'escobilla RAM se genera sólo dentro de guard superadmin');
-$ok(str_contains($shell, 'data-node-disk-clean'), 'escobilla de disco está disponible para superadmin');
+$ok(str_contains($node, 'this.config.superadmin === true') && str_contains($node, 'data-node-memory-clear'), 'escobilla RAM moderna se genera sólo dentro de guard superadmin');
+$ok(str_contains($node, 'data-node-disk-clean'), 'escobilla de disco moderna está disponible para superadmin');
 $ok(str_contains($controller, 'if (!$session->isSuperAdmin())') && str_contains($controller, "], 403)"), 'backend devuelve 403 antes del mantenimiento para no-superadmin');
 $ok(str_contains($controller, "['memory-clear', 'disk-clean']") && str_contains($controller, 'HTTP_X_SERVER_ADMIN_CSRF'), 'acciones usan whitelist y CSRF');
 $ok(str_contains($node, 'updateMemoryFields(data.node || {})') && str_contains($node, 'updateDiskFields(data.node || {})'), 'mantenimiento refresca sólo RAM o disco');

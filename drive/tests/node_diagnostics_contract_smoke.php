@@ -33,7 +33,8 @@ nodeContract(str_contains($files['js'], "button.disabled = (action === 'start'")
 nodeContract(str_contains($files['js'], 'Estado del servicio Nginx') && str_contains($files['js'], 'Validación de configuración'), 'Nginx separa servicio y validación');
 $completeSections = ['Servicios ArcadeCloud', 'Mayor consumo actual', 'PHP / Nginx', 'MySQL / Base de datos', 'Usuarios / Sesiones', 'FederationCloud', 'Actividad', 'Programas / Capacidades', 'Red / EC2', 'Autoapagado'];
 nodeContract(array_reduce($completeSections, static fn(bool $found, string $section): bool => $found && str_contains($files['js'], $section), true), 'superadmin conserva simultáneamente todas las secciones del diagnóstico completo');
-nodeContract(str_contains($files['view'], 'data-node-memory-clear') && str_contains($files['view'], 'data-node-disk-clean') && str_contains($files['js'], 'this.renderLocal(root, node)'), 'diagnóstico completo convive con ambas escobillas');
+nodeContract(str_contains($files['js'], 'data-node-memory-clear') && str_contains($files['js'], 'data-node-disk-clean') && str_contains($files['js'], 'this.renderLocal(root, node)'), 'diagnóstico moderno integra ambas escobillas');
+nodeContract(str_contains($files['view'], 'if (!$isSuperAdmin)') && !str_contains($files['view'], 'class="os-node-broom"'), 'superadmin no recibe panel legacy duplicado y usuario normal no recibe escobillas');
 nodeContract(str_contains($files['js'], "this.selected === 'local'") && str_contains($files['js'], 'this.renderSelected(true)'), 'refresh local reconstruye las secciones operacionales y no sólo recursos');
 nodeContract(str_contains($files['js'], 'setInterval(() => { if (this.isOpen()) this.refresh();') && str_contains($files['js'], '30000'), 'polling ocurre cada 30 segundos sólo con Mi nodo abierto');
 nodeContract(str_contains($files['js'], 'this.stopPolling()') && str_contains($files['js'], '#nodeWindow [data-window-close]'), 'cerrar Mi nodo detiene polling');

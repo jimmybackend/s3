@@ -6,7 +6,8 @@
     "php_tests": 63,
     "js_total": 78,
     "js_class_modules": 73,
-    "js_needs_migration": 7,
+    "js_needs_migration": 0,
+    "js_tests": 10,
     "js_compatibility_facades": 8,
     "ajax_clients": 49,
     "ajax_calls": 106,
@@ -9988,7 +9989,7 @@
     },
     {
       "path": "drive/docs/runtime_endpoints.json",
-      "bytes": 119382,
+      "bytes": 119575,
       "valid": true,
       "root_type": "object",
       "keys": [

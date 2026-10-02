@@ -10,7 +10,8 @@
 - Tests PHP separados del objetivo OOP de runtime: **63**
 - JavaScript analizados: **78**
 - JavaScript que ya contienen clases: **73**
-- JavaScript sin clase/encapsulación OOP: **7**
+- JavaScript runtime marcados para migración/revisión: **0**
+- Tests JavaScript separados del objetivo OOP de runtime: **10**
 - JavaScript OOP con fachada `window` de compatibilidad: **8**
 - Clientes AJAX detectados: **49** módulos / **106** llamadas
 - JSON analizados: **4**; inválidos: **0**
@@ -20,7 +21,7 @@
 - `src/` y `upload/`: lógica de negocio e infraestructura en clases.
 - Entry points públicos: bootstrap + Controller/Service; sin SQL/AWS ni funciones globales.
 - CLI: el archivo ejecutable puede ser procedural si es un wrapper delgado que delega en clases.
-- Tests: se auditan, pero no cuentan como deuda OOP del runtime.
+- Tests PHP/JavaScript: se auditan, pero no cuentan como deuda OOP del runtime.
 - Vistas: pueden contener HTML; funciones JavaScript incrustadas no se confunden con funciones PHP.
 - JavaScript: comportamiento en clases; `window` sólo como fachada de compatibilidad explícita.
 - AJAX: es un mecanismo de transporte, no un paradigma; se revisa dentro de la clase cliente que lo posee.

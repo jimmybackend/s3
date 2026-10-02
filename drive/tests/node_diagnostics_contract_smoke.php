@@ -44,12 +44,15 @@ nodeContract(!str_contains($files['view'], 'data-node-tab=') && !str_contains($f
 nodeContract(str_contains($files['js'], 'Identidad local') && str_contains($files['js'], 'Servicios ArcadeCloud') && str_contains($files['js'], 'Programas / Capacidades'), 'panel muestra identidad, servicios y programas del servidor local');
 nodeContract(
     str_contains($files['service'], "'operating_label' => \$operatingLabel")
-    && str_contains($files['service'], "'fastdrive'")
-    && str_contains($files['service'], "'Drive principal'")
-    && str_contains($files['js'], 'Servidor que estás operando')
-    && str_contains($files['js'], 'renderOperatingNode')
+    && str_contains($files['service'], "'Nodo ' . \$friendlyNodeName")
+    && str_contains($files['js'], 'identity.node_name')
+    && str_contains($files['js'], "'Nodo ' + friendly")
+    && str_contains($files['js'], 'Servidor local FederationCloud:')
+    && str_contains($files['view'], 'FederationConfig::fromEnvironment()')
+    && str_contains($files['view'], 'NodeIdentityService')
+    && str_contains($files['view'], "\$desktopNodeLabel = 'Nodo ' . \$friendlyFederationNodeName")
     && str_contains($files['view'], 'data-node-local-label'),
-    'Mi nodo identifica visualmente si el servidor local operado es Drive principal o FastDrive'
+    'Mi nodo toma el nombre local de FederationCloud y lo muestra como Nodo <nombre>'
 );
 nodeContract(str_contains($files['css'], '@media(max-width:800px)') && str_contains($files['css'], 'grid-template-columns:1fr'), 'panel se adapta a una columna móvil');
 nodeContract(str_contains($files['css'], '--os-surface:') && str_contains($files['css'], 'background:var(--os-surface)'), 'tarjetas y ventanas usan superficies temáticas');

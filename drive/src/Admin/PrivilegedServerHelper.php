@@ -110,6 +110,20 @@ final class PrivilegedServerHelper
         return $decoded;
     }
 
+    public function localContainerPrograms(): array
+    {
+        $status = $this->status();
+        if (($status['capabilities']['local_container_programs'] ?? false) !== true) {
+            throw new RuntimeException('Actualiza el helper para consultar contenedores locales.');
+        }
+        $result = $this->run(['local-container-programs']);
+        $data = json_decode((string)$result['stdout'], true);
+        if (!is_array($data) || ($data['ok'] ?? false) !== true || ($data['scope'] ?? '') !== 'local') {
+            throw new RuntimeException('Inventario local no disponible.');
+        }
+        return (array)($data['programs'] ?? []);
+    }
+
     public function setEnvironment(string $name, string $value): void
     {
         if (!ManagedRuntimeEnvironment::isAllowed($name)) throw new RuntimeException('Variable no permitida.');

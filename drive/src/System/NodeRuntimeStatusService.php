@@ -67,7 +67,7 @@ final class NodeRuntimeStatusService
             'resources' => $resources,
             'services' => $services,
             'processes' => $this->processMemory(),
-            'programs' => $this->cachedPrograms(),
+            'programs' => (new LocalContainerCapabilityService())->programs($this->cachedPrograms(), $services),
             'php' => $this->php($services),
             'nginx' => $this->nginx($services),
             'database' => $database,

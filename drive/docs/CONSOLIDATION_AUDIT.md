@@ -12,7 +12,7 @@ operaciones S3 reales. Cada fase requiere PR, pruebas y revisión de CI.
 | Frente | Implementación existente / evidencia | Estado de revisión |
 | --- | --- | --- |
 | Arquitectura | `DriveApplication`, Controller/Service/Repository, esquema canónico `adbbmis1_Cloud.sql` | Conservar composición OOP, ownership y backend clásico |
-| Mi nodo | `NodeStatusController`, `NodeRuntimeStatusService`, `NodeCapabilityService` | Endpoint local; `cachedPrograms()` sólo busca ejecutables del host. Falta distinguir contenedores locales |
+| Mi nodo | `NodeStatusController`, `NodeRuntimeStatusService`, `NodeCapabilityService` | Endpoint local; fase 3 añade evidencia de workstation local por socket Unix, con estados separados de host/contenedor/detenido/no verificable |
 | Uploads/temporales | `UploadFactory`, `Chunked15MBUploader`, `UploadStateStore`, `UploadCleanupService` | Ruta chunked distinta del estado público histórico; corregido en fase 1 descrita abajo |
 | Actividad | `ActivityCostRepository`, `DriveActivityEvents`, reconciliadores Polly/Transcribe | No se encontró retención en repositorio/bin; contiene estado operativo, no debe purgarse sólo por fecha |
 | Office | `OfficeDocumentStorageService`, repositorios de sesiones/leases, gateway y cliente workstation | Preparación, sync, catálogo, conflicto y cierre existen. `sync()` verificaba HEAD y luego PUT sin `IfMatch`: corregido en fase 2; aceptación real de escritorio pendiente |
@@ -75,3 +75,17 @@ Base: main anterior. Añade GET/PUT condicional, reutiliza la copia de conflicto
 existente y conserva el ETag del propio PUT. Prueba nueva del servicio/repositories
 con MySQL 8 desechable y S3 simulado. No valida todavía toda la edición desde
 Guacamole ni modifica infraestructura. Detalle en `ARCADECLOUD_REMOTE_WORKSTATION.md`.
+
+## Fase 2 — resultado
+
+PR #274 fusionado tras cuatro workflows satisfactorios, incluida regresión Office
+con MySQL 8 y S3 simulado. Se obtuvo main `5988523a5fbedca353cd9c2edac0f60ffc1e9e94`.
+Los commits automáticos intermedios sólo actualizaron inventarios/documentación.
+
+## Fase 3 — capacidades locales
+
+Detección por helper de metadata de un contenedor workstation fijo, sobre socket
+Unix y sólo GET/HEAD. No ejecuta comandos Docker ni consulta peers. Mantiene
+compatibilidad de `installed` (host) y añade estados explícitos para la UI.
+Ver `LOCAL_NODE_CAPABILITIES.md`, incluido el requisito de actualizar el helper
+instalado mediante el procedimiento existente y el alcance de programas cubiertos.

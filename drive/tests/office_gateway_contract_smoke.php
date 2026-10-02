@@ -228,7 +228,7 @@ officeGatewayContract(
 );
 
 officeGatewayContract(
-    str_contains($helper, "'version' => 15")
+    str_contains($helper, "'version' => 16")
     && str_contains($helper, "'workstation_control' => true")
     && str_contains($helper, "'workstation_document_open' => true")
     && str_contains($helper, "if (\$action === 'workstation-open-document')")

@@ -387,7 +387,7 @@ webOsContract(str_contains($paths['search_controller'], 'withVisibleRoutes(') &&
 webOsContract(str_contains($paths['search_js'], "desktop.openExplorer(route, { forceNew: true, page })"), 'resultado abre una ventana nueva de Mis datos en la carpeta encontrada');
 webOsContract(str_contains($paths['search_js'], "data-file-id") && str_contains($paths['search_js'], "shell.setFileSelected(entry, true)"), 'archivo encontrado queda seleccionado en la nueva ventana');
 webOsContract(str_contains($paths['window_manager_js'], 'controller.ready = controller.navigate') && str_contains($paths['window_manager_js'], 'options.page'), 'Explorer permite esperar la página exacta antes de seleccionar resultado');
-webOsContract(str_contains($paths['search_js'], 'shell.refreshExplorer(route'), 'resultado abre Mis datos en la carpeta encontrada');
+webOsContract(!str_contains($paths['search_js'], 'shell.refreshExplorer(route') && str_contains($paths['search_js'], 'await explorer.ready'), 'resultado espera su nueva ventana sin reutilizar el Explorer anterior');
 webOsContract(str_contains($paths['search_js'], 'is-search-target'), 'archivo encontrado queda resaltado');
 webOsContract(str_contains($paths['search_controller'], "postString('localizar_id'"), 'controlador localiza un resultado autenticado');
 webOsContract(str_contains($paths['search_service'], 'public function locate('), 'servicio calcula carpeta y página real del archivo');

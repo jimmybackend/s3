@@ -94,3 +94,9 @@ CI de fase 3 detectó dos fallos de los contratos por texto: interpolación acci
 `$app` en el test de sugerencias y falso positivo de `exec(` sobre `curl_exec()`.
 Se corrigen los tests conservando la comprobación de nombres visibles y la
 prohibición de funciones shell completas, también con espacios antes de `(`.
+
+También se retiró una expectativa obsoleta del test que exigía reutilizar el
+Explorer con `refreshExplorer`, contraria al contrato actual. Se reemplaza por
+una regresión JS que ejecuta búsqueda normal/IA, ruta visible separada, relocaliza
+por id, abre ventana nueva en página 7, espera `ready` y selecciona el archivo.
+El runtime de búsqueda no se modificó.

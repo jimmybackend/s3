@@ -118,7 +118,7 @@ button:disabled {
         <button type="button" onclick="rehacer()">Rehacer</button>
         <button type="button" onclick="buscar()">Buscar</button>
         <button type="button" onclick="reemplazar()">Reemplazar</button>
-        <button type="button" onclick="irALinea()">Ir a l¨ªnea</button>
+        <button type="button" onclick="irALinea()">Ir a lÂ¨Âªnea</button>
         <button type="button" onclick="toggleWordWrap()">Word wrap</button>
         <button type="button" id="btnValidarPhp" onclick="validarPHP()" style="display:none;">Validar PHP</button>
     </div>
@@ -150,6 +150,7 @@ button:disabled {
 <script src="https://unpkg.com/monaco-editor@0.44.0/min/vs/loader.js"></script>
 <script>
 const archivo = <?= json_encode($archivo, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
+const driveCsrf = <?= json_encode($uploadCsrf, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
 let editor = null;
 let tieneCambios = false;
 let wordWrapActivo = false;
@@ -225,7 +226,7 @@ function aplicarLenguaje(lang) {
     document.getElementById('modoArchivo').textContent = lang;
     actualizarBotonValidar();
 
-    // Validaciones nativas b¨¢sicas donde Monaco ayuda m¨¢s.
+    // Validaciones nativas bÂ¨Â¢sicas donde Monaco ayuda mÂ¨Â¢s.
     if (lang === 'javascript' || lang === 'typescript') {
         monaco.languages.typescript.javascriptDefaults.setDiagnosticsOptions({
             noSemanticValidation: false,
@@ -424,7 +425,7 @@ async function validarPHP() {
         monaco.editor.setModelMarkers(editor.getModel(), 'php-lint', markers);
 
         if (json.valido) {
-            setStatus('PHP v¨¢lido', 'ok');
+            setStatus('PHP vÂ¨Â¢lido', 'ok');
             return;
         }
 

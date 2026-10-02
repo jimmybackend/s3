@@ -2651,7 +2651,7 @@
     },
     {
       "path": "drive/src/Http/Controller/AwsFileController.php",
-      "size": 11662,
+      "size": 11712,
       "active": false,
       "references": []
     },
@@ -2826,7 +2826,7 @@
     },
     {
       "path": "drive/src/Http/Controller/FolderDocumentController.php",
-      "size": 2328,
+      "size": 2363,
       "active": false,
       "references": []
     },
@@ -2946,7 +2946,7 @@
     },
     {
       "path": "drive/src/Http/Controller/ShareController.php",
-      "size": 3367,
+      "size": 3406,
       "active": false,
       "references": []
     },
@@ -2976,7 +2976,7 @@
     },
     {
       "path": "drive/src/Http/Controller/TranscriptionController.php",
-      "size": 8301,
+      "size": 8340,
       "active": false,
       "references": [
         "drive/tests/transcribe_s3_recovery_contract_smoke.php"
@@ -3862,7 +3862,7 @@
     },
     {
       "path": "drive/tests/file_mutation_csrf_regression.php",
-      "size": 5507,
+      "size": 5992,
       "active": false,
       "references": []
     },

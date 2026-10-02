@@ -76,7 +76,7 @@
 | `drive/download.php` | 8 | thin endpoint | 0 | — | — | — | — |
 | `drive/download_multiple.php` | 8 | thin endpoint | 0 | — | — | — | — |
 | `drive/ec2-cron.php` | 39 | thin endpoint | 0 | — | — | — | — |
-| `drive/ec2.php` | 1060 | view/entrypoint | 0 | ⚠️ | — | — | — |
+| `drive/ec2.php` | 1084 | view/entrypoint | 0 | ⚠️ | — | — | — |
 | `drive/editor.php` | 485 | view/entrypoint | 0 | — | — | — | — |
 | `drive/eliminar_archivo.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/eliminar_carpeta.php` | 10 | thin endpoint | 0 | — | — | — | — |
@@ -500,7 +500,7 @@
 | `drive/tests/web_os_file_applications_smoke.php` | 21 | test script | 0 | — | — | — | — |
 | `drive/tests/web_os_interactions_theme_smoke.php` | 30 | test script | 0 | — | — | — | — |
 | `drive/tests/web_os_multiwindow_smoke.php` | 62 | test script | 0 | — | — | — | — |
-| `drive/tests/web_os_pending_fixes_smoke.php` | 49 | test script | 0 | — | — | — | — |
+| `drive/tests/web_os_pending_fixes_smoke.php` | 53 | test script | 0 | — | — | — | — |
 | `drive/tests/web_os_remote_applications_smoke.php` | 49 | test script | 0 | — | — | — | — |
 | `drive/tests/web_os_theme_contract_smoke.php` | 29 | test script | 0 | — | — | — | — |
 | `drive/tests/workstation_phase1_contract_smoke.php` | 64 | test script | 0 | — | — | — | — |

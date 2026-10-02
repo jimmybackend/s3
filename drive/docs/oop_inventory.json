@@ -714,7 +714,7 @@
     },
     {
       "path": "drive/ec2.php",
-      "lines": 1060,
+      "lines": 1084,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -7206,7 +7206,7 @@
     },
     {
       "path": "drive/tests/web_os_pending_fixes_smoke.php",
-      "lines": 49,
+      "lines": 53,
       "kind": "test script",
       "classes": 0,
       "functions": [],

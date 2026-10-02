@@ -220,7 +220,7 @@ final class PrivilegedServerHelper
         $workspaceRelative = trim(str_replace('\\', '/', $workspaceRelative));
         if (
             !$this->supportsWorkstationDocumentOpen()
-            || !preg_match('/\Asessions\/[a-f0-9]{32}\/[A-Za-z0-9._ ()\[\]-]{1,220}\z/u', $workspaceRelative)
+            || !preg_match('/\Asessions\/[a-f0-9]{32}\/[^\/\x00-\x1F\x7F]{1,220}\z/u', $workspaceRelative)
         ) {
             throw new RuntimeException('Documento Workstation no permitido.');
         }

@@ -62,6 +62,7 @@ PHP_GID="$(getent group "$PHP_GROUP" | cut -d: -f3)"
 
 mkdir -p "$STATE_ROOT" "$WORKSPACE" "$WORKSPACE/sessions" "$PERSISTENT_HOME" "$PERSISTENT_HOME/Projects" "$PERSISTENT_HOME/Downloads"
 chmod 0750 "$STATE_ROOT"
+chgrp "$PHP_GROUP" "$STATE_ROOT"
 chown "$OFFICE_UID:$PHP_GID" "$WORKSPACE" "$WORKSPACE/sessions"
 chmod 2770 "$WORKSPACE" "$WORKSPACE/sessions"
 chown -R "$OFFICE_UID:$OFFICE_GID" "$PERSISTENT_HOME"

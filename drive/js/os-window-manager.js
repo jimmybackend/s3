@@ -873,6 +873,7 @@ class ArcadeCloudDesktopRuntime {
     const errorBox = body.querySelector('[data-totp-error]');
     try {
       target.searchParams.set('arcadecloud_os', '1');
+      data.set('arcadecloud_os', '1');
       const response = await this.window.fetch(target.toString(), {
         method: 'POST', body: data, credentials: 'same-origin', cache: 'no-store',
         headers: { 'X-ArcadeCloud-Embed': '1', 'X-Requested-With': 'XMLHttpRequest', Accept: 'application/json' }

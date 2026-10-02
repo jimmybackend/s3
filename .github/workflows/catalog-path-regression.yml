@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - 'drive/src/Application/FolderQueryService.php'
+      - 'drive/src/Http/Controller/FileSearchController.php'
       - 'drive/src/Application/FolderMutationService.php'
       - 'drive/src/Storage/Folder*Repository.php'
       - 'drive/tests/catalog_folder_paths_regression.php'
@@ -12,6 +13,7 @@ on:
     branches: [main]
     paths:
       - 'drive/src/Application/FolderQueryService.php'
+      - 'drive/src/Http/Controller/FileSearchController.php'
       - 'drive/src/Application/FolderMutationService.php'
       - 'drive/src/Storage/Folder*Repository.php'
       - 'drive/tests/catalog_folder_paths_regression.php'
@@ -46,6 +48,7 @@ jobs:
       - name: PHP syntax
         run: |
           php -l drive/src/Application/FolderQueryService.php
+          php -l drive/src/Http/Controller/FileSearchController.php
           php -l drive/src/Application/FolderMutationService.php
           php -l drive/tests/catalog_folder_paths_regression.php
       - name: Catalog rename behavior

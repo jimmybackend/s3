@@ -80,15 +80,31 @@ final class FolderQueryService
      */
     public function displayPathForUser(int $userId, string $prefix): string
     {
+        return $this->displayPathsForUser($userId, [$prefix])[$prefix];
+    }
+
+    /**
+     * One catalog read per batch; no cache survives this call or a catalog rename.
+     * Keys remain the caller's physical prefixes, values are display-only labels.
+     * @param list<string> $prefixes
+     * @return array<string,string>
+     */
+    public function displayPathsForUser(int $userId, array $prefixes): array
+    {
         if ($userId <= 0) {
             throw new RuntimeException('Usuario inválido.');
         }
-
+        if ($prefixes === []) return [];
         $root = $this->normalizePrefix($this->paths->rootForUser($userId));
-        $target = $this->normalizePrefix($this->paths->normalizeForUser($prefix, $userId));
         $rows = $this->repository->listHierarchyRows($userId);
-
-        return $this->displayPathFromRows($root, $target, $rows);
+        $resolved = [];
+        $result = [];
+        foreach (array_unique($prefixes) as $prefix) {
+            $target = $this->normalizePrefix($this->paths->normalizeForUser($prefix, $userId));
+            $resolved[$target] ??= $this->displayPathFromRows($root, $target, $rows);
+            $result[$prefix] = $resolved[$target];
+        }
+        return $result;
     }
 
     /**

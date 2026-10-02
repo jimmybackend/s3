@@ -87,11 +87,17 @@ final class FileSearchController extends AbstractJsonController
      */
     private function withVisibleRoutes(int $userId, array $rows): array
     {
+        $routes = [];
+        foreach ($rows as $row) {
+            $route = trim((string)($row['ruta'] ?? ''));
+            if ($route !== '') $routes[] = $route;
+        }
+        $visiblePaths = $this->app->folderQueryService()->displayPathsForUser($userId, $routes);
         foreach ($rows as &$row) {
             $route = trim((string)($row['ruta'] ?? ''));
             $row['ruta_visible'] = $route === ''
                 ? 'Mi Drive/'
-                : $this->app->folderQueryService()->displayPathForUser($userId, $route);
+                : $visiblePaths[$route];
         }
         unset($row);
         return $rows;

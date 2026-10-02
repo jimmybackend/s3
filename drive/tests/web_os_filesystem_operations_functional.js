@@ -47,5 +47,12 @@ const service = new ArcadeCloudFilesystemOperations(win, doc);
   doc.dispatchEvent(new CustomEvent('drive:move-task-completed', { detail: { job_id: 'job-1', progress: 100 } }));
   assert(transfer.operation.status === 'completed', 'la tarea termina con estado normalizado completed');
 
+  win.DRIVE_UPLOAD_CSRF = 'fixture-token';
+  win.fetch = async (endpoint, options) => {
+    assert(endpoint === 'delete_multiple.php' && options.headers['X-Drive-CSRF'] === 'fixture-token', 'operación OS envía CSRF existente');
+    assert(options.headers['Content-Type'].includes('application/x-www-form-urlencoded') && options.credentials === 'same-origin', 'CSRF conserva Content-Type y credenciales');
+    return { ok: true, text: async () => JSON.stringify({ ok: true }) };
+  };
+  await service.request('delete_multiple.php', { archivos_json: '["Data2/f_physical"]' });
   process.stdout.write('Web OS filesystem operation functional test passed.\n');
 })().catch(error => { console.error(error); process.exitCode = 1; });

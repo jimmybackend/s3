@@ -24,7 +24,8 @@ class DriveMoveTasks {
       cache: 'no-store',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
-        'X-Requested-With': 'XMLHttpRequest'
+        'X-Requested-With': 'XMLHttpRequest',
+        'X-Drive-CSRF': String(this.window.DRIVE_UPLOAD_CSRF || '')
       },
       body
     });
@@ -243,7 +244,7 @@ window.ARCADECLOUD_UNIFIED_TASK_CENTER = true;
 
 (function loadBackgroundModules(win, doc) {
   const scripts = [
-    ['background-tasks', 'js/background-tasks.js?v=20260916-3'],
+    ['background-tasks', 'js/background-tasks.js?v=20261002-csrf'],
     ['background-task-feedback', 'js/background-task-feedback.js?v=20260916-2'],
     ['polly-background', 'js/polly-background.js?v=20260916-4'],
     ['transcribe-background', 'js/transcribe-background.js?v=20260916-1']

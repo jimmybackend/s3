@@ -118,6 +118,7 @@ final class BackgroundTaskController extends AbstractJsonController
         try {
             $this->requirePost();
             $userId = $this->guardAuthenticated();
+            $this->requireDriveCsrf();
             $controlId = $this->requireNonEmpty(
                 $this->request->postString('task_id'),
                 'Falta el identificador de la tarea.'

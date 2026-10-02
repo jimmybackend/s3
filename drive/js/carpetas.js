@@ -90,6 +90,10 @@ class CarpetasModule {
         const opt = options || {};
         opt.credentials = opt.credentials || 'same-origin';
         opt.cache = 'no-store';
+        if (String(opt.method || 'GET').toUpperCase() === 'POST') {
+          opt.headers = new Headers(opt.headers || {});
+          opt.headers.set('X-Drive-CSRF', String(window.DRIVE_UPLOAD_CSRF || ''));
+        }
 
         // cache-buster por querystring (evita “requiere F5” cuando el server/proxy cachea)
         const u = new URL(url, window.location.href);

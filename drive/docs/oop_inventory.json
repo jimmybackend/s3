@@ -1458,7 +1458,7 @@
     },
     {
       "path": "drive/folder-suggestions.php",
-      "lines": 36,
+      "lines": 41,
       "kind": "thin endpoint",
       "classes": 0,
       "functions": [],
@@ -2060,7 +2060,7 @@
     },
     {
       "path": "drive/so.php",
-      "lines": 2032,
+      "lines": 2035,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -2521,7 +2521,7 @@
     },
     {
       "path": "drive/src/Application/FolderQueryService.php",
-      "lines": 152,
+      "lines": 208,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -5688,7 +5688,7 @@
     },
     {
       "path": "drive/src/Storage/FolderRepository.php",
-      "lines": 133,
+      "lines": 132,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -7127,7 +7127,7 @@
     },
     {
       "path": "drive/tests/web_os_contract_smoke.php",
-      "lines": 485,
+      "lines": 494,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -8614,7 +8614,7 @@
     },
     {
       "path": "drive/js/os-window-manager.js",
-      "lines": 967,
+      "lines": 984,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudEventBus",
@@ -9636,7 +9636,7 @@
     },
     {
       "path": "drive/docs/runtime_endpoints.json",
-      "bytes": 115797,
+      "bytes": 115838,
       "valid": true,
       "root_type": "object",
       "keys": [

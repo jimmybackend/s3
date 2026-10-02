@@ -66,6 +66,8 @@ $csrf = $_SESSION['csrf'];
 $controlPasswordHash = $runtime->config()->passwordHash();
 $session = $runtime->session();
 $isServerConsoleSuperAdmin = $session->isAuthenticated() && $session->isSuperAdmin();
+$isOsSurface = isset($_GET['surface']) && (string)$_GET['surface'] === 'os';
+$showServerConsole = $isServerConsoleSuperAdmin && !$isOsSurface;
 
 // ===================== DOWNLOAD RDP =====================
 if (isset($_GET['download']) && $_GET['download'] === 'rdp') {
@@ -373,7 +375,8 @@ code{word-break:break-all}
 <link rel="stylesheet" href="css/personal-tools.css?v=<?= $toolVersion ?>">
 <script defer src="js/theme-state-bridge.js?v=<?= $themeBridgeVersion ?>"></script>
 </head>
-<body class="ui-theme theme-neon-green theme-dark vision-normal ascii-on personal-tool-page">
+<body class="ui-theme theme-neon-green theme-dark vision-normal ascii-on personal-tool-page<?= $isOsSurface ? ' ec2-os-surface' : '' ?>">
+<?php if (!$isOsSurface): ?>
 <nav class="navbar navbar-expand-lg navbar-dark px-3 drive-navbar">
   <a class="navbar-brand d-flex align-items-center" href="s3.php" title="Volver al Drive">
     <img src="ellogo.png" width="48" height="38" class="drive-brand-logo mr-2" alt="Logo">
@@ -384,10 +387,21 @@ code{word-break:break-all}
     <a class="btn btn-outline-light btn-sm" href="s3.php"><i class="fas fa-arrow-left mr-1"></i>Drive</a>
   </div>
 </nav>
-<main class="personal-tool-shell">
-    <h1>Panel AWS · EC2 + RDS Manual</h1>
-    <div class="card">
-        <form class="row" method="get">
+<?php endif; ?>
+<main class="personal-tool-shell ec2-panel-shell">
+    <header class="ec2-panel-heading">
+        <div>
+            <span class="ec2-panel-kicker">Infraestructura AWS</span>
+            <h1>Gestión EC2<?= $isOsSurface ? '' : ' + RDS Manual' ?></h1>
+            <p>Consulta y controla las instancias y bases autorizadas sin mezclar esta vista con el diagnóstico del servidor.</p>
+        </div>
+    </header>
+    <section class="card ec2-filter-card">
+        <div class="ec2-card-heading">
+            <div><i class="fas fa-filter"></i><span><strong>Vista</strong><small>Filtra los recursos que quieres consultar.</small></span></div>
+        </div>
+        <form class="row ec2-filter-form" method="get">
+            <?php if ($isOsSurface): ?><input type="hidden" name="surface" value="os"><?php endif; ?>
             <label>Región:
                 <input type="text" name="region" value="<?= H::e($region) ?>" placeholder="us-east-1">
             </label>
@@ -416,8 +430,12 @@ code{word-break:break-all}
         <div class="alert alert-err"><strong>Error:</strong> <?= H::e($err) ?></div>
     <?php endif; ?>
 
-    <div class="card">
-        <h2>Instancias EC2</h2>
+    <section class="card ec2-resource-card">
+        <div class="ec2-card-heading">
+            <div><i class="fas fa-server"></i><span><strong>Instancias EC2</strong><small>Estado, red y controles manuales de las instancias autorizadas.</small></span></div>
+            <span class="ec2-resource-count"><?= count($list) ?> recurso<?= count($list) === 1 ? '' : 's' ?></span>
+        </div>
+        <div class="ec2-table-wrap">
         <table id="tbl">
             <thead>
                 <tr>
@@ -478,10 +496,14 @@ code{word-break:break-all}
             <?php endforeach; endif; ?>
             </tbody>
         </table>
-    </div>
+        </div>
+    </section>
 
-    <div class="card">
-        <h2>Base de datos RDS / Aurora · control manual</h2>
+    <section class="card ec2-resource-card">
+        <div class="ec2-card-heading">
+            <div><i class="fas fa-database"></i><span><strong>Base de datos RDS / Aurora</strong><small>Control manual de las bases configuradas.</small></span></div>
+            <span class="ec2-resource-count"><?= count($dbList) ?> recurso<?= count($dbList) === 1 ? '' : 's' ?></span>
+        </div>
         <p class="note">Esta sección siempre muestra las bases configuradas en <code>MANUAL_DATABASE_IDS</code>. No usa horario, no hace auto-start y no hace auto-stop.</p>
         <table id="rdsTbl">
             <thead>
@@ -534,9 +556,10 @@ code{word-break:break-all}
             <?php endforeach; endif; ?>
             </tbody>
         </table>
-    </div>
+        </div>
+    </section>
 
-    <?php if ($isServerConsoleSuperAdmin): ?>
+    <?php if ($showServerConsole): ?>
     <div class="card" id="serverConsoleCard">
         <h2>Terminal del servidor · superusuario</h2>
         <p class="note">Consola restringida para diagnóstico del EC2. Acepta únicamente comandos exactos de la lista blanca; no abre una shell del sistema.</p>

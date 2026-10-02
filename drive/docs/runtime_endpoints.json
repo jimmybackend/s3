@@ -87,6 +87,7 @@
         "drive/actualizar_ruta.php",
         "drive/api/upload.php",
         "drive/background_tasks.php",
+        "drive/bin/activity_retention.php",
         "drive/bin/federation_catalog_migrate.php",
         "drive/bin/federation_drop_cleanup.php",
         "drive/bin/federation_endpoint_refresh.php",
@@ -247,6 +248,12 @@
       "references": [
         "drive/js/background-tasks.js"
       ]
+    },
+    {
+      "path": "drive/bin/activity_retention.php",
+      "size": 284,
+      "active": false,
+      "references": []
     },
     {
       "path": "drive/bin/arcadecloud-drive-admin-helper.php",
@@ -1534,6 +1541,14 @@
       "references": []
     },
     {
+      "path": "drive/src/Activity/ActivityRetentionService.php",
+      "size": 6209,
+      "active": false,
+      "references": [
+        "drive/tests/activity_retention_regression.php"
+      ]
+    },
+    {
       "path": "drive/src/Activity/AwsUnitPriceCatalog.php",
       "size": 2709,
       "active": false,
@@ -1902,6 +1917,12 @@
     {
       "path": "drive/src/Aws/TranslateFileService.php",
       "size": 2890,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Console/ActivityRetentionCommand.php",
+      "size": 1688,
       "active": false,
       "references": []
     },
@@ -3674,6 +3695,12 @@
     {
       "path": "drive/tests/activity_costs_smoke.php",
       "size": 8691,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/tests/activity_retention_regression.php",
+      "size": 5309,
       "active": false,
       "references": []
     },

@@ -50,6 +50,26 @@ $database = 'idle_regression_' . bin2hex(random_bytes(6));
 $db->query("CREATE DATABASE `$database`"); $db->select_db($database);
 putenv('ARCADECLOUD_MEDIA_WORKER_INSTANCE_ID=i-12345678');
 putenv('ARCADECLOUD_MEDIA_WORKER_REGION=us-east-1');
+$officeWorkspace = sys_get_temp_dir() . '/arcadecloud-office-idle-' . bin2hex(random_bytes(6));
+if (!mkdir($officeWorkspace . '/sessions', 0770, true) && !is_dir($officeWorkspace . '/sessions')) {
+    throw new RuntimeException('Could not create Office fixture workspace.');
+}
+putenv('ARCADECLOUD_OFFICE_WORKSPACE_ROOT=' . $officeWorkspace);
+
+$removeTree = static function (string $path) use (&$removeTree): void {
+    if (!is_dir($path)) {
+        @unlink($path);
+        return;
+    }
+    foreach (scandir($path) ?: [] as $item) {
+        if ($item === '.' || $item === '..') continue;
+        $child = $path . '/' . $item;
+        if (is_dir($child) && !is_link($child)) $removeTree($child);
+        else @unlink($child);
+    }
+    @rmdir($path);
+};
+
 try {
     $jobs = new MediaProcessingJobRepository($db);
     $leases = new OfficeSessionLeaseRepository($db);
@@ -92,6 +112,125 @@ try {
     $node->requestIdleStop($jobs);
     idleCheck(!$noStop(), 'expired lease and closed document permit interactive idle stop');
 
+    // Sesión preparing sin workspace que quedó abandonada: se marca failed
+    // y deja de bloquear el apagado.
+    $reset();
+    $stalePreparing = $documents->create(
+        2, 1, 'i-12345678', 'Data2/physical.docx', 'Preparando.docx'
+    );
+    $stalePreparingId = $stalePreparing['session_id'];
+    $stmt = $db->prepare(
+        "UPDATE OfficeDocumentSessions
+         SET UpdatedAt=DATE_SUB(UTC_TIMESTAMP(), INTERVAL 16 MINUTE)
+         WHERE SessionId=?"
+    );
+    $stmt->bind_param('s', $stalePreparingId);
+    $stmt->execute();
+    $stmt->close();
+    $node->handleIdle($jobs);
+    $row = $db->query(
+        "SELECT Status FROM OfficeDocumentSessions WHERE SessionId='"
+        . $db->real_escape_string($stalePreparingId) . "'"
+    )->fetch_assoc();
+    idleCheck(
+        ($row['Status'] ?? '') === 'failed' && !$noStop(),
+        'stale preparing session is reconciled and no longer blocks shutdown'
+    );
+
+    $makeReadyFixture = static function (
+        string $name,
+        bool $managed,
+        bool $active,
+        bool $changeAfterSync
+    ) use ($documents, $db, $officeWorkspace): string {
+        $created = $documents->create(2, 1, 'i-12345678', 'Data2/physical.docx', $name);
+        $sessionId = $created['session_id'];
+        $directory = $officeWorkspace . '/sessions/' . $sessionId;
+        if (!mkdir($directory, 0770, true) && !is_dir($directory)) {
+            throw new RuntimeException('Could not create document fixture directory.');
+        }
+        $path = $directory . '/' . $name;
+        file_put_contents($path, 'synced-baseline');
+        clearstatcache(true, $path);
+        $mtime = (int)filemtime($path);
+        $size = (int)filesize($path);
+        $documents->markPrepared(
+            $sessionId,
+            'sessions/' . $sessionId . '/' . $name,
+            'fixture-etag',
+            $mtime,
+            $size
+        );
+        if ($managed) file_put_contents($directory . '/.arcadecloud-office-managed', '');
+        if ($active) file_put_contents($directory . '/.arcadecloud-office-active', '');
+        if ($changeAfterSync) {
+            file_put_contents($path, '-local-change', FILE_APPEND);
+            clearstatcache(true, $path);
+        }
+        $stmt = $db->prepare(
+            "UPDATE OfficeDocumentSessions
+             SET UpdatedAt=DATE_SUB(UTC_TIMESTAMP(), INTERVAL 4 MINUTE)
+             WHERE SessionId=?"
+        );
+        $stmt->bind_param('s', $sessionId);
+        $stmt->execute();
+        $stmt->close();
+        return $sessionId;
+    };
+
+    // Nueva sesión monitorizada, proceso terminado y bytes idénticos al último sync:
+    // se puede cerrar de forma demostrable.
+    $reset();
+    $safeReadyId = $makeReadyFixture('Seguro.docx', true, false, false);
+    $node->handleIdle($jobs);
+    $row = $db->query(
+        "SELECT Status FROM OfficeDocumentSessions WHERE SessionId='"
+        . $db->real_escape_string($safeReadyId) . "'"
+    )->fetch_assoc();
+    idleCheck(
+        ($row['Status'] ?? '') === 'closed' && !$noStop(),
+        'managed synced ready session is safely reconciled after process exit'
+    );
+
+    // Si los bytes del workspace cambiaron después del último sync, jamás se cierra.
+    $reset();
+    $changedReadyId = $makeReadyFixture('Cambios.docx', true, false, true);
+    $node->handleIdle($jobs);
+    $row = $db->query(
+        "SELECT Status FROM OfficeDocumentSessions WHERE SessionId='"
+        . $db->real_escape_string($changedReadyId) . "'"
+    )->fetch_assoc();
+    idleCheck(
+        ($row['Status'] ?? '') === 'ready' && $noStop(),
+        'unsynced workspace remains protected from idle shutdown'
+    );
+
+    // Las sesiones anteriores al monitor no aportan prueba de cierre del proceso.
+    $reset();
+    $legacyReadyId = $makeReadyFixture('Legado.docx', false, false, false);
+    $node->handleIdle($jobs);
+    $row = $db->query(
+        "SELECT Status FROM OfficeDocumentSessions WHERE SessionId='"
+        . $db->real_escape_string($legacyReadyId) . "'"
+    )->fetch_assoc();
+    idleCheck(
+        ($row['Status'] ?? '') === 'ready' && $noStop(),
+        'legacy ready session remains fail-closed'
+    );
+
+    // Un heartbeat de proceso reciente también mantiene protegido el documento.
+    $reset();
+    $liveReadyId = $makeReadyFixture('Vivo.docx', true, true, false);
+    $node->handleIdle($jobs);
+    $row = $db->query(
+        "SELECT Status FROM OfficeDocumentSessions WHERE SessionId='"
+        . $db->real_escape_string($liveReadyId) . "'"
+    )->fetch_assoc();
+    idleCheck(
+        ($row['Status'] ?? '') === 'ready' && $noStop(),
+        'live LibreOffice heartbeat blocks idle shutdown'
+    );
+
     foreach (['queued','running','cancel_requested'] as $status) {
         $reset(); $jobs->enqueue(2, ['id_' => 1, '_key' => 'Data2/video.mp4'], 'extract_mp3', 1, 0, 0);
         $stmt = $db->prepare('UPDATE MediaProcessingJobs SET Status=?'); $stmt->execute([$status]); $stmt->close();
@@ -113,4 +252,6 @@ try {
     }
 } finally {
     $db->query("DROP DATABASE `$database`");
+    $removeTree($officeWorkspace);
+    putenv('ARCADECLOUD_OFFICE_WORKSPACE_ROOT');
 }

@@ -174,6 +174,15 @@ officeGatewayContract(
 );
 
 officeGatewayContract(
+    str_contains($helper, "'/usr/bin/setfacl'")
+    && str_contains($helper, "'d:u:' . $phpUser . ':rwx,d:m::rwx'")
+    && str_contains($helper, "'u:' . $phpUser . ':rw-,m::rw-'")
+    && str_contains($workstationInstaller, 'command -v setfacl')
+    && str_contains($workstationInstaller, 'dnf install -y acl'),
+    'workspace Office conserva acceso PHP-FPM cuando LibreOffice reemplaza el archivo al guardar'
+);
+
+officeGatewayContract(
     str_contains($workstationInstaller, 'chgrp "$PHP_GROUP" "$STATE_ROOT"')
     && str_contains($workstationInstaller, 'chmod 0750 "$STATE_ROOT"'),
     'instalador permite al grupo PHP-FPM atravesar el directorio padre de Office'
@@ -260,7 +269,7 @@ officeGatewayContract(
 );
 
 officeGatewayContract(
-    str_contains($helper, "'version' => 17")
+    str_contains($helper, "'version' => 18")
     && str_contains($helper, "'workstation_control' => true")
     && str_contains($helper, "'workstation_document_open' => true")
     && str_contains($helper, "if (\$action === 'workstation-open-document')")

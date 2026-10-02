@@ -107,23 +107,37 @@ final class NodeRuntimeStatusService
             $publicHost = is_string($parsedHost) ? strtolower(trim($parsedHost)) : '';
         }
 
-        $normalizedNodeName = strtolower(trim($nodeName));
+        $configuredNodeName = trim($nodeName);
+        $normalizedNodeName = strtolower($configuredNodeName);
         $operatingKey = 'local';
-        $operatingLabel = 'Nodo local';
-        if (
+
+        if ($configuredNodeName !== '') {
+            $friendlyNodeName = match ($normalizedNodeName) {
+                'drive' => 'Drive',
+                'fastdrive' => 'FastDrive',
+                default => $configuredNodeName,
+            };
+            $operatingLabel = 'Nodo ' . $friendlyNodeName;
+        } elseif (
             in_array($role, ['media-worker', 'combined'], true)
-            || $normalizedNodeName === 'fastdrive'
             || $publicHost === 'fastdrive.esforzados.com'
         ) {
             $operatingKey = 'fastdrive';
-            $operatingLabel = 'FastDrive';
+            $operatingLabel = 'Nodo FastDrive';
         } elseif (
             $role === 'web'
-            || $normalizedNodeName === 'esforzados'
             || $publicHost === 'drive.esforzados.com'
         ) {
             $operatingKey = 'drive';
-            $operatingLabel = 'Drive principal';
+            $operatingLabel = 'Nodo Drive';
+        } else {
+            $operatingLabel = 'Nodo local';
+        }
+
+        if ($normalizedNodeName === 'fastdrive') {
+            $operatingKey = 'fastdrive';
+        } elseif ($normalizedNodeName === 'drive') {
+            $operatingKey = 'drive';
         }
 
         return [

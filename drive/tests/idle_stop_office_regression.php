@@ -14,6 +14,7 @@ use ArcadeCloud\Drive\Media\MediaWorkerNodeSessionRepository;
 use ArcadeCloud\Drive\Office\OfficeActivityProbe;
 use ArcadeCloud\Drive\Office\OfficeDocumentSessionRepository;
 use ArcadeCloud\Drive\Office\OfficeSessionLeaseRepository;
+use ArcadeCloud\Drive\System\ComputeNodeAdmissionLock;
 use Aws\CommandInterface;
 use Aws\Result;
 use GuzzleHttp\Promise\FulfilledPromise;
@@ -48,9 +49,22 @@ mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 $db = new mysqli('127.0.0.1', 'root', 'fixture-only', '', (int)(getenv('TEST_DB_PORT') ?: 3306));
 $database = 'idle_regression_' . bin2hex(random_bytes(6));
 $db->query("CREATE DATABASE `$database`"); $db->select_db($database);
+$dbPeer = new mysqli('127.0.0.1', 'root', 'fixture-only', $database, (int)(getenv('TEST_DB_PORT') ?: 3306));
 putenv('ARCADECLOUD_MEDIA_WORKER_INSTANCE_ID=i-12345678');
 putenv('ARCADECLOUD_MEDIA_WORKER_REGION=us-east-1');
 try {
+    $lock = new ComputeNodeAdmissionLock($db);
+    $peerLock = new ComputeNodeAdmissionLock($dbPeer);
+    $blocked = false;
+    $lock->synchronized('i-12345678', static function () use ($peerLock, &$blocked): void {
+        try {
+            $peerLock->synchronized('i-12345678', static fn(): bool => true, 0);
+        } catch (RuntimeException) {
+            $blocked = true;
+        }
+    });
+    idleCheck($blocked, 'shared DB mutex excludes concurrent admission/stop sections');
+
     $jobs = new MediaProcessingJobRepository($db);
     $leases = new OfficeSessionLeaseRepository($db);
     $documents = new OfficeDocumentSessionRepository($db);
@@ -97,6 +111,17 @@ try {
         $stmt = $db->prepare('UPDATE MediaProcessingJobs SET Status=?'); $stmt->execute([$status]); $stmt->close();
         $node->handleIdle($jobs); idleCheck($noStop(), "$status media remains protected");
     }
+    $reset(); $peerBlockedDuringStop = false;
+    Config::$onDescribe = static function () use ($peerLock, &$peerBlockedDuringStop): void {
+        try {
+            $peerLock->synchronized('i-12345678', static fn(): bool => true, 0);
+        } catch (RuntimeException) {
+            $peerBlockedDuringStop = true;
+        }
+    };
+    $node->handleIdle($jobs);
+    idleCheck($peerBlockedDuringStop && !$noStop(), 'idle stop holds the shared admission mutex through AWS stop decision');
+
     foreach (['office','heartbeat','media'] as $arrival) {
         $reset();
         Config::$onDescribe = static function () use ($arrival, $leases, $sessions, $jobs): void {
@@ -112,5 +137,6 @@ try {
         catch (RuntimeException $e) { idleCheck($noStop() && str_contains($e->getMessage(), 'bloqueado'), "$method fails closed on unavailable Office schema"); }
     }
 } finally {
+    if (isset($dbPeer)) $dbPeer->close();
     $db->query("DROP DATABASE `$database`");
 }

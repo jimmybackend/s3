@@ -7,6 +7,7 @@ use ArcadeCloud\Drive\Activity\ActivityCostRecorder;
 use ArcadeCloud\Drive\Aws\Ec2Gateway;
 use ArcadeCloud\Drive\Office\OfficeActivityProbe;
 use ArcadeCloud\Drive\System\Ec2InstanceIdentityService;
+use ArcadeCloud\Drive\System\ComputeNodeAdmissionLock;
 use mysqli;
 use RuntimeException;
 
@@ -189,6 +190,25 @@ final class MediaWorkerNodeService
         throw new RuntimeException('El nodo multimedia está en un estado no utilizable: ' . $state . '.');
     }
 
+    /**
+     * Atomically admits a multimedia job with the same mutex used by idle stop.
+     * If stop wins first, prepareForWork observes the stopping state. If admission
+     * wins first, the queued job is visible before stop can re-check blockers.
+     *
+     * @return array{node:array<string,mixed>,result:mixed}
+     */
+    public function admitWork(
+        int $userId,
+        bool $authorizedStart,
+        int $sourceBytes,
+        callable $admission
+    ): array {
+        return $this->withAdmissionLock(function () use ($userId, $authorizedStart, $sourceBytes, $admission): array {
+            $node = $this->prepareForWork($userId, $authorizedStart, $sourceBytes);
+            return ['node' => $node, 'result' => $admission()];
+        });
+    }
+
     public function markBusy(): void
     {
         if ($this->instanceId === '') return;
@@ -303,101 +323,114 @@ final class MediaWorkerNodeService
             throw new RuntimeException('No hay una EC2 de alto rendimiento configurada.');
         }
 
-        if ($this->hasShutdownBlockers($jobs)) {
-            throw new RuntimeException('El nodo tiene tareas multimedia u Office activas y no se puede apagar.');
-        }
+        return $this->withAdmissionLock(function () use ($jobs): array {
+            if ($this->hasShutdownBlockers($jobs)) {
+                throw new RuntimeException('El nodo tiene tareas multimedia u Office activas y no se puede apagar.');
+            }
 
-        // El endpoint de apagado interactivo sólo es válido durante la ventana
-        // de aviso por inactividad. Así un usuario autenticado no puede usarlo
-        // como un StopInstances genérico fuera del flujo previsto.
-        $idle = $this->idleStatus();
-        if (($idle['warning'] ?? false) !== true) {
-            throw new RuntimeException('El nodo todavía no alcanzó el período de inactividad para apagarse.');
-        }
+            // El endpoint de apagado interactivo sólo es válido durante la ventana
+            // de aviso por inactividad. Así un usuario autenticado no puede usarlo
+            // como un StopInstances genérico fuera del flujo previsto.
+            $idle = $this->idleStatus();
+            if (($idle['warning'] ?? false) !== true) {
+                throw new RuntimeException('El nodo todavía no alcanzó el período de inactividad para apagarse.');
+            }
 
-        $instance = $this->ec2->getInstance($this->instanceId);
-        $state = is_array($instance) ? Ec2Gateway::stateName($instance) : 'unknown';
-        if ($state === 'stopped' || $state === 'stopping') {
+            $instance = $this->ec2->getInstance($this->instanceId);
+            $state = is_array($instance) ? Ec2Gateway::stateName($instance) : 'unknown';
+            if ($state === 'stopped' || $state === 'stopping') {
+                return $this->idleStatus();
+            }
+            if ($state !== 'running') {
+                throw new RuntimeException('El nodo no está en un estado que permita apagarlo de forma segura.');
+            }
+
+            // The admission mutex makes this last read atomic with media/Office
+            // admission. No new work can become visible between this check and
+            // StopInstances.
+            $active = $this->sessions->activeForInstance($this->instanceId);
+            if ($this->hasShutdownBlockers($jobs) || !$this->idleDeadlineReached($active, false)) {
+                if ($active !== null) $this->sessions->clearIdle((string)$active['session_id']);
+                throw new RuntimeException('Se detectó actividad nueva; el apagado queda cancelado.');
+            }
+            if ($active !== null) {
+                $this->recordSessionCost($active, 'interactive_idle_stop');
+                $this->sessions->markStopRequested((string)$active['session_id']);
+            }
+
+            $this->ec2->stop($this->instanceId, false);
             return $this->idleStatus();
-        }
-        if ($state !== 'running') {
-            throw new RuntimeException('El nodo no está en un estado que permita apagarlo de forma segura.');
-        }
-
-        // Re-read after AWS I/O: a job, Office lease or heartbeat may have arrived.
-        $active = $this->sessions->activeForInstance($this->instanceId);
-        if ($this->hasShutdownBlockers($jobs) || !$this->idleDeadlineReached($active, false)) {
-            if ($active !== null) $this->sessions->clearIdle((string)$active['session_id']);
-            throw new RuntimeException('Se detectó actividad nueva; el apagado queda cancelado.');
-        }
-        if ($active !== null) {
-            $this->recordSessionCost($active, 'interactive_idle_stop');
-            $this->sessions->markStopRequested((string)$active['session_id']);
-        }
-
-        $this->ec2->stop($this->instanceId, false);
-        return $this->idleStatus();
+        });
     }
 
     public function handleIdle(MediaProcessingJobRepository $jobs): void
     {
         if ($this->instanceId === '' || $this->ec2 === null) return;
 
-        $active = $this->sessions->activeForInstance($this->instanceId);
-        if ($active === null) return;
+        $this->withAdmissionLock(function () use ($jobs): void {
+            $active = $this->sessions->activeForInstance($this->instanceId);
+            if ($active === null) return;
 
-        // Una sesión "stopping" representa una orden de apagado ya emitida.
-        // Nunca se reutiliza su IdleSince para enviar otro StopInstances. AWS
-        // decide el estado físico; si ya está stopped cerramos el registro.
-        if ((string)($active['status'] ?? '') === 'stopping') {
+            // Una sesión "stopping" representa una orden de apagado ya emitida.
+            // Nunca se reutiliza su IdleSince para enviar otro StopInstances. AWS
+            // decide el estado físico; si ya está stopped cerramos el registro.
+            if ((string)($active['status'] ?? '') === 'stopping') {
+                $instance = $this->ec2->getInstance($this->instanceId);
+                $state = is_array($instance) ? Ec2Gateway::stateName($instance) : 'unknown';
+                if ($state === 'stopped') {
+                    $this->finalizeStoppedSession($active, 'stopped_detected');
+                }
+                return;
+            }
+
+            if ($this->hasShutdownBlockers($jobs)) {
+                $this->sessions->clearIdle((string)$active['session_id']);
+                return;
+            }
+
+            $idleSince = trim((string)($active['idle_since'] ?? ''));
+            if ($idleSince === '') {
+                $this->sessions->markIdle((string)$active['session_id']);
+                return;
+            }
+
+            $idleTs = strtotime($idleSince . ' UTC');
+            if (
+                $idleTs === false
+                || (time() - $idleTs) < ($this->idleGraceSeconds + self::IDLE_WARNING_SECONDS)
+            ) {
+                return;
+            }
+
             $instance = $this->ec2->getInstance($this->instanceId);
             $state = is_array($instance) ? Ec2Gateway::stateName($instance) : 'unknown';
+
             if ($state === 'stopped') {
-                $this->finalizeStoppedSession($active, 'stopped_detected');
+                $this->finalizeStoppedSession($active, 'already_stopped');
+                return;
             }
-            return;
-        }
 
-        if ($this->hasShutdownBlockers($jobs)) {
-            $this->sessions->clearIdle((string)$active['session_id']);
-            return;
-        }
+            if ($state !== 'running') {
+                return;
+            }
 
-        $idleSince = trim((string)($active['idle_since'] ?? ''));
-        if ($idleSince === '') {
-            $this->sessions->markIdle((string)$active['session_id']);
-            return;
-        }
+            $active = $this->sessions->activeForInstance($this->instanceId);
+            if ($this->hasShutdownBlockers($jobs) || !$this->idleDeadlineReached($active, true)) {
+                if ($active !== null) $this->sessions->clearIdle((string)$active['session_id']);
+                return;
+            }
 
-        $idleTs = strtotime($idleSince . ' UTC');
-        if (
-            $idleTs === false
-            || (time() - $idleTs) < ($this->idleGraceSeconds + self::IDLE_WARNING_SECONDS)
-        ) {
-            return;
-        }
+            $this->recordSessionCost($active, 'auto_stop_idle');
+            $this->sessions->markStopRequested((string)$active['session_id']);
+            $this->ec2->stop($this->instanceId, false);
+        });
+    }
 
-        $instance = $this->ec2->getInstance($this->instanceId);
-        $state = is_array($instance) ? Ec2Gateway::stateName($instance) : 'unknown';
-
-        if ($state === 'stopped') {
-            $this->finalizeStoppedSession($active, 'already_stopped');
-            return;
-        }
-
-        if ($state !== 'running') {
-            return;
-        }
-
-        $active = $this->sessions->activeForInstance($this->instanceId);
-        if ($this->hasShutdownBlockers($jobs) || !$this->idleDeadlineReached($active, true)) {
-            if ($active !== null) $this->sessions->clearIdle((string)$active['session_id']);
-            return;
-        }
-
-        $this->recordSessionCost($active, 'auto_stop_idle');
-        $this->sessions->markStopRequested((string)$active['session_id']);
-        $this->ec2->stop($this->instanceId, false);
+    private function withAdmissionLock(callable $callback): mixed
+    {
+        if ($this->instanceId === '') return $callback();
+        return (new ComputeNodeAdmissionLock($this->db))
+            ->synchronized($this->instanceId, $callback);
     }
 
     private function hasShutdownBlockers(MediaProcessingJobRepository $jobs): bool

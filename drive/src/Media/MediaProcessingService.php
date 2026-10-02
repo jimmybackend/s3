@@ -58,16 +58,21 @@ final class MediaProcessingService
         }
 
         $authorizedStart = $this->boolValue($input['authorize_node_start'] ?? false);
-        $node = $this->node->prepareForWork($userId, $authorizedStart, $sourceBytes);
-
-        $job = $this->jobs->enqueue(
+        $admitted = $this->node->admitWork(
             $userId,
-            $source,
-            $operation,
-            $parts,
-            $before,
-            $after
+            $authorizedStart,
+            $sourceBytes,
+            fn(): array => $this->jobs->enqueue(
+                $userId,
+                $source,
+                $operation,
+                $parts,
+                $before,
+                $after
+            )
         );
+        $node = (array)$admitted['node'];
+        $job = (array)$admitted['result'];
 
         return [
             'ok' => true,

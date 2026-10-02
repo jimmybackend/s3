@@ -8,6 +8,7 @@ use ArcadeCloud\Drive\Core\DriveApplication;
 use ArcadeCloud\Drive\Media\MediaProcessingJobRepository;
 use ArcadeCloud\Drive\Media\MediaWorkerNodeService;
 use ArcadeCloud\Drive\View\FileViewHelper;
+use ArcadeCloud\Drive\System\ComputeNodeAdmissionLock;
 use RuntimeException;
 
 final class OfficeGatewayService
@@ -126,6 +127,36 @@ final class OfficeGatewayService
             'media_busy' => $mediaBusy,
             'control' => $control,
         ];
+    }
+
+    /**
+     * Atomically verifies the EC2 is still running, prepares Workstation and
+     * publishes the Office lease before an idle/manual stop can proceed.
+     *
+     * @return array{active:bool,media_busy:bool,control:array<string,mixed>|null}
+     */
+    public function prepareAndClaimWorkstation(
+        int $userId,
+        string $instanceId,
+        string $sessionKey,
+        string $privateIp
+    ): array {
+        return (new ComputeNodeAdmissionLock($this->app->db()))
+            ->synchronized($instanceId, function () use ($userId, $instanceId, $sessionKey, $privateIp): array {
+                $node = $this->wake->status();
+                if (
+                    (string)($node['state'] ?? '') !== 'running'
+                    || (string)($node['instance_id'] ?? '') !== $instanceId
+                ) {
+                    throw new RuntimeException('El nodo Office cambió de estado; vuelve a intentarlo.');
+                }
+
+                $prepared = $this->prepareWorkstation($privateIp);
+                if (($prepared['active'] ?? false) === true) {
+                    $this->claimOfficeSession($userId, $instanceId, $sessionKey);
+                }
+                return $prepared;
+            });
     }
 
     /** @return array<string,mixed> */

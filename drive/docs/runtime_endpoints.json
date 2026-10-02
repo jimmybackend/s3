@@ -257,7 +257,7 @@
     },
     {
       "path": "drive/bin/arcadecloud-drive-admin-helper.php",
-      "size": 54220,
+      "size": 54229,
       "active": false,
       "references": [
         "drive/tests/fastdrive_control_contract_smoke.php",
@@ -1272,7 +1272,7 @@
     },
     {
       "path": "drive/office-gateway.php",
-      "size": 28715,
+      "size": 30270,
       "active": false,
       "references": [
         "drive/tests/office_gateway_contract_smoke.php"
@@ -3060,7 +3060,7 @@
     },
     {
       "path": "drive/src/Media/MediaWorkerNodeService.php",
-      "size": 26786,
+      "size": 28791,
       "active": false,
       "references": [
         "drive/tests/media_processing_contract_smoke.php",
@@ -3090,7 +3090,7 @@
     },
     {
       "path": "drive/src/Office/OfficeDocumentSessionRepository.php",
-      "size": 10727,
+      "size": 12564,
       "active": false,
       "references": [
         "drive/tests/office_gateway_contract_smoke.php"
@@ -3098,7 +3098,7 @@
     },
     {
       "path": "drive/src/Office/OfficeDocumentStorageService.php",
-      "size": 18723,
+      "size": 19742,
       "active": false,
       "references": [
         "drive/tests/office_gateway_contract_smoke.php"
@@ -3131,7 +3131,15 @@
     },
     {
       "path": "drive/src/Office/OfficeSessionLeaseRepository.php",
-      "size": 7160,
+      "size": 7884,
+      "active": false,
+      "references": [
+        "drive/tests/office_gateway_contract_smoke.php"
+      ]
+    },
+    {
+      "path": "drive/src/Office/OfficeSessionReconciler.php",
+      "size": 9415,
       "active": false,
       "references": [
         "drive/tests/office_gateway_contract_smoke.php"
@@ -3886,7 +3894,7 @@
     },
     {
       "path": "drive/tests/idle_stop_office_regression.php",
-      "size": 6946,
+      "size": 12431,
       "active": false,
       "references": []
     },
@@ -3934,7 +3942,7 @@
     },
     {
       "path": "drive/tests/office_gateway_contract_smoke.php",
-      "size": 15622,
+      "size": 17052,
       "active": false,
       "references": []
     },
@@ -4084,7 +4092,7 @@
     },
     {
       "path": "drive/tests/workstation_phase1_contract_smoke.php",
-      "size": 7074,
+      "size": 8247,
       "active": false,
       "references": []
     },

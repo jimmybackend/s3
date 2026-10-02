@@ -200,10 +200,11 @@ officeGatewayContract(
 );
 
 officeGatewayContract(
-    str_contains($gateway, 'Ya hay un documento abierto en esta sesión Office')
-    && str_contains($gateway, 'existingDocumentFileId')
-    && str_contains($gateway, 'existingDocumentSessionId'),
-    'una sesión Office no mezcla dos documentos distintos entre pestañas'
+    str_contains($gateway, '$switchingDocument')
+    && str_contains($gateway, '$office->closeDocument(')
+    && str_contains($gateway, 'Documento anterior sincronizado. Abriendo el nuevo documento.')
+    && !str_contains($gateway, 'Ya hay un documento abierto en esta sesión Office. Ciérralo antes de abrir otro.'),
+    'cambiar de archivo sincroniza y cierra el documento anterior antes de preparar el nuevo'
 );
 
 officeGatewayContract(

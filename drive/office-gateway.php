@@ -170,17 +170,59 @@ if ($launch !== '') {
 
         if ($consumedUserId <= 0) {
             $session->set('office_gateway_error', 'El enlace de Office caducó o ya fue utilizado.');
-        } elseif (
-            $existingDocumentReady
-            && preg_match('/^[a-f0-9]{32}$/', $existingDocumentSessionId)
-            && $existingDocumentFileId > 0
-            && $consumedFileId !== $existingDocumentFileId
-        ) {
-            $session->set(
-                'office_gateway_error',
-                'Ya hay un documento abierto en esta sesión Office. Ciérralo antes de abrir otro.'
-            );
         } else {
+            $switchingDocument = $existingDocumentReady
+                && preg_match('/^[a-f0-9]{32}$/', $existingDocumentSessionId)
+                && $existingDocumentFileId > 0
+                && $consumedFileId !== $existingDocumentFileId;
+
+            if ($switchingDocument) {
+                if (
+                    $officeUserId !== $consumedUserId
+                    || !preg_match('/^[a-f0-9]{64}$/', $officeSessionKey)
+                    || !preg_match('/^i-[0-9a-f]{8,17}$/i', $officeInstanceId)
+                    || !preg_match('/^[a-f0-9]{64}$/', $officeDocumentToken)
+                ) {
+                    throw new RuntimeException(
+                        'No se pudo cerrar de forma segura el documento Office anterior.'
+                    );
+                }
+
+                $office->assertOfficeSession($officeUserId, $officeInstanceId, $officeSessionKey);
+                $nodeStatus = $office->nodeStatus();
+                $switchPrivateIp = trim((string)($nodeStatus['private_ip'] ?? ''));
+                if ($switchPrivateIp === '') {
+                    throw new RuntimeException('El nodo Office no publicó su IP privada.');
+                }
+
+                $office->closeDocument(
+                    $switchPrivateIp,
+                    $existingDocumentSessionId,
+                    $officeDocumentToken
+                );
+
+                foreach ([
+                    'office_document_session_id',
+                    'office_document_token',
+                    'office_document_file_id',
+                    'office_document_name',
+                    'office_document_ready',
+                ] as $key) {
+                    $session->remove($key);
+                }
+
+                $existingDocumentSessionId = '';
+                $existingDocumentFileId = 0;
+                $existingDocumentReady = false;
+                $officeDocumentSessionId = '';
+                $officeDocumentToken = '';
+                $officeDocumentName = '';
+                $officeDocumentReady = false;
+                $session->set(
+                    'office_gateway_message',
+                    'Documento anterior sincronizado. Abriendo el nuevo documento.'
+                );
+            }
             $officeUserId = $consumedUserId;
             $officeFileId = $consumedFileId;
             $session->set('office_user_id', $officeUserId);

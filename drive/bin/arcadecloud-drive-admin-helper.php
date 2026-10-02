@@ -69,7 +69,7 @@ final class ArcadeCloudDriveAdminHelper
         if ($action === 'status') {
             fwrite(STDOUT, json_encode([
                 'ok' => true,
-                'version' => 16,
+                'version' => 17,
                 'capabilities' => [
                     'env_set_many' => true,
                     'db_aws_settings' => true,
@@ -321,6 +321,26 @@ final class ArcadeCloudDriveAdminHelper
                 || !str_starts_with($realDocument, rtrim($realWorkspace, '/') . '/')
             ) {
                 $this->fail('Documento Workstation no encontrado.', 2);
+            }
+
+            $sessionDirectory = dirname($realDocument);
+            if (
+                !@chgrp($sessionDirectory, 10001)
+                || !@chmod($sessionDirectory, 02770)
+                || !@chgrp($realDocument, 10001)
+                || !@chmod($realDocument, 0660)
+            ) {
+                $this->fail('No se pudieron normalizar permisos del documento Workstation.', 73);
+            }
+
+            clearstatcache(true, $realDocument);
+            $documentStat = @stat($realDocument);
+            if (
+                !is_array($documentStat)
+                || (int)($documentStat['gid'] ?? -1) !== 10001
+                || (((int)($documentStat['mode'] ?? 0)) & 0777) !== 0660
+            ) {
+                $this->fail('Permisos del documento Workstation no son seguros para LibreOffice.', 73);
             }
 
             $this->runFixedCommand([

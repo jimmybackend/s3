@@ -163,7 +163,7 @@ installerContract(str_contains($uninstaller, '/var/lib/arcadecloud-media'), 'des
 installerContract(str_contains($mediaInstaller, 'ARCADECLOUD_RUNTIME_ENV'), 'worker usa runtime administrado canónico');
 installerContract(str_contains($mediaInstaller, 'php ffmpeg ffprobe lame'), 'worker exige herramientas multimedia completas');
 installerContract(str_contains($mediaInstaller, 'systemctl enable --now arcadecloud-media-worker.service') && str_contains($mediaInstaller, 'systemctl restart arcadecloud-media-worker.service'), 'reconciliación deja worker habilitado, activo y recarga código nuevo');
-installerContract(!str_contains($mediaInstaller, 'enable --now arcadecloud-media-worker.service'), 'instalador no deja proceso multimedia viejo tras actualizar código');
+installerContract(strpos($mediaInstaller, 'systemctl restart arcadecloud-media-worker.service') > strpos($mediaInstaller, 'systemctl enable --now arcadecloud-media-worker.service'), 'instalador reinicia el worker después de asegurar que quedó habilitado y activo');
 installerContract(
     !str_contains($mediaInstaller, 'chmod 0755 "${DRIVE_ROOT}/bin/media_worker_node_bootstrap.sh"'),
     'reconciliación multimedia no modifica el modo Git del bootstrap rastreado'

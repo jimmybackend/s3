@@ -839,7 +839,7 @@ Escribe help o usa uno de los botones disponibles.</pre>
           <a href="activity_costs.php" data-os-tool="activity-costs" data-tool-title="Actividad y costos"><i class="fas fa-receipt"></i><span><strong>Actividad y costos</strong><small>Consumo de tu cuenta</small></span></a>
           <?php if ($canViewPersonalTools): ?>
           <a href="aws.php" data-os-tool="aws" data-tool-title="AWS y códigos TOTP"><i class="fab fa-aws"></i><span><strong>AWS y códigos TOTP</strong><small>Herramienta personal autorizada</small></span></a>
-          <a href="ec2.php" data-os-tool="ec2" data-tool-title="Gestión EC2"><i class="fas fa-server"></i><span><strong>Gestión EC2</strong><small>Instancias y herramientas del servidor</small></span></a>
+          <a href="ec2.php?surface=os" data-os-tool="ec2" data-tool-title="Gestión EC2"><i class="fas fa-server"></i><span><strong>Gestión EC2</strong><small>Instancias y bases AWS</small></span></a>
           <?php endif; ?>
           <a href="#federationWindow" data-window-open="federationWindow" data-open-federation><i class="fas fa-globe"></i><span><strong>FederationCloud</strong><small>Red y contenido compartido</small></span></a>
         </div>

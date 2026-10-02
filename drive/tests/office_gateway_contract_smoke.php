@@ -256,8 +256,10 @@ officeGatewayContract(
     str_contains($gateway, '/__office_document_sync')
     && str_contains($gateway, '/__office_document_close')
     && str_contains($gateway, 'setInterval(syncDocument, 60000)')
-    && str_contains($gateway, "navigator.sendBeacon('/__office_document_close'"),
-    'pestaña Office sincroniza periódicamente y al cerrar'
+    && str_contains($gateway, "navigator.sendBeacon('/__office_document_sync'")
+    && str_contains($gateway, "window.addEventListener('beforeunload', syncDocumentOnUnload)")
+    && !str_contains($gateway, "navigator.sendBeacon('/__office_document_close'"),
+    'cerrar la pestaña sólo sincroniza y no cierra prematuramente la sesión documental'
 );
 
 officeGatewayContract(

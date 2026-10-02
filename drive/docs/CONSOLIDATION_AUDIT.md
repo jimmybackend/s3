@@ -233,3 +233,30 @@ Prueba shell ejecuta la función real de selección con comandos simulados, cubr
 8.4.0 rechazado, 8.4.1 aceptado, preservación de familia y ausencia de paquetes
 compatibles. No ejecuta entrypoint, DNF ni systemctl. Instalación de un tercer nodo
 real, DNS/TLS y conectividad MySQL siguen requiriendo aceptación aislada.
+
+## Fase 10 — resultado
+
+PR #282 fusionado tras seis checks satisfactorios, incluida selección PHP con
+comandos simulados. Main recuperado `c668c750640670a3342ef52a503fe5fdc4316356`.
+No se ejecutó el instalador contra ningún nodo.
+
+## Fase 11 — operación, recuperación y pendientes
+
+[Guía consolidada](CONSOLIDATED_OPERATIONS.md) enlaza las fuentes reales y documenta
+backup/recuperación de configuración, MySQL, S3, identidad y ediciones Office
+locales. Es un procedimiento para ensayar de forma aislada, no una recuperación
+ya ejecutada ni una garantía de RPO/RTO.
+
+[Diseño de papelera](TRASH_RECOVERY_DESIGN.md) deja explícita la semántica actual
+de borrado y los requisitos de una implementación futura compatible con S3 y
+FederationCloud. No hay papelera implementada por estas fases.
+
+[Evaluación móvil](MOBILE_APP_PROPOSAL.md) separa regresiones JS de aceptación
+visual/táctil aún pendiente y propone empaquetado sólo después de consolidar Web.
+No se creó una app ni se certificó PWA.
+
+La auditoría integral de los 21 frentes continúa abierta: quedan aceptación
+multinodo/offline/recuperación, cierre completo de rutas visibles, revisión de los
+endpoints restantes, multimedia real, notificaciones, coordinación atómica de
+apagado/admisión y medición de otros cuellos de rendimiento. Los checks de CI
+validan su alcance específico; no acreditan esas pruebas pendientes.

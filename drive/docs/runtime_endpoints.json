@@ -505,7 +505,8 @@
       "size": 263,
       "active": false,
       "references": [
-        "drive/js/carpetas.js"
+        "drive/js/carpetas.js",
+        "drive/tests/classic_mutation_csrf_functional.js"
       ]
     },
     {
@@ -525,7 +526,8 @@
         "drive/tests/web_os_contract_smoke.php",
         "drive/js/elimina-multiple.js",
         "drive/js/file-block.js",
-        "drive/js/so.js"
+        "drive/js/so.js",
+        "drive/tests/web_os_filesystem_operations_functional.js"
       ]
     },
     {
@@ -609,7 +611,8 @@
         "drive/tests/web_os_clipboard_contract_smoke.php",
         "drive/js/archivos.js",
         "drive/js/elimina-uno.js",
-        "drive/js/so-clipboard.js"
+        "drive/js/so-clipboard.js",
+        "drive/tests/classic_mutation_csrf_functional.js"
       ]
     },
     {
@@ -1034,6 +1037,7 @@
         "drive/tests/chunked_upload_cleanup_regression.php",
         "drive/tests/federation_moderation_contract_smoke.php",
         "drive/tests/federationcloud_smoke.php",
+        "drive/tests/file_mutation_csrf_regression.php",
         "drive/tests/fresh_install_contract_smoke.php",
         "drive/tests/idle_stop_office_regression.php",
         "drive/tests/media_processing_contract_smoke.php",
@@ -1404,7 +1408,7 @@
     },
     {
       "path": "drive/s3.php",
-      "size": 96952,
+      "size": 97069,
       "active": true,
       "references": [
         "drive/app_bootstrap.php",
@@ -1412,6 +1416,7 @@
         "drive/fastdrive-control.php",
         "drive/personal_aws_bootstrap.php",
         "drive/so.php",
+        "drive/src/Http/Controller/AbstractJsonController.php",
         "drive/src/View/ActivityCostPageRenderer.php",
         "drive/src/View/FederationModerationPageRenderer.php",
         "drive/src/View/FederationPageRenderer.php",
@@ -1427,7 +1432,8 @@
         "drive/js/carpetas.js",
         "drive/js/federation-share-drive.js",
         "drive/js/so.js",
-        "drive/js/subir.js"
+        "drive/js/subir.js",
+        "drive/tests/classic_mutation_csrf_functional.js"
       ]
     },
     {
@@ -1507,6 +1513,7 @@
       "active": true,
       "references": [
         "drive/s3.php",
+        "drive/src/Http/Controller/AbstractJsonController.php",
         "drive/src/Http/Controller/AuthController.php",
         "drive/tests/node_diagnostics_contract_smoke.php",
         "drive/tests/office_gateway_contract_smoke.php",
@@ -2601,7 +2608,7 @@
     },
     {
       "path": "drive/src/Http/Controller/AbstractJsonController.php",
-      "size": 2217,
+      "size": 2914,
       "active": false,
       "references": []
     },
@@ -2654,7 +2661,7 @@
     },
     {
       "path": "drive/src/Http/Controller/BackgroundTaskController.php",
-      "size": 42213,
+      "size": 42252,
       "active": false,
       "references": [
         "drive/tests/media_processing_contract_smoke.php",
@@ -2797,7 +2804,7 @@
     },
     {
       "path": "drive/src/Http/Controller/FileMutationController.php",
-      "size": 5389,
+      "size": 5545,
       "active": false,
       "references": []
     },
@@ -2823,7 +2830,7 @@
     },
     {
       "path": "drive/src/Http/Controller/FolderMutationController.php",
-      "size": 7936,
+      "size": 8092,
       "active": false,
       "references": []
     },
@@ -2856,7 +2863,7 @@
     },
     {
       "path": "drive/src/Http/Controller/MoveJobController.php",
-      "size": 8387,
+      "size": 8426,
       "active": false,
       "references": [
         "drive/tests/web_os_clipboard_contract_smoke.php"
@@ -3847,6 +3854,12 @@
     {
       "path": "drive/tests/federationcloud_smoke.php",
       "size": 8312,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/tests/file_mutation_csrf_regression.php",
+      "size": 5172,
       "active": false,
       "references": []
     },

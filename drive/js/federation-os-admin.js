@@ -47,7 +47,7 @@ class FederationOsAdminModule {
 
   async loadNodes() {
     try {
-      const data = await this.fetchJson('nodes.php');
+      const data = await this.fetchJson('/federationcloud/nodes.php');
       const local = data.local_node && typeof data.local_node === 'object' ? data.local_node : {};
       const nodes = Array.isArray(data.nodes) ? data.nodes : [];
       const connected = Math.max(1, Number.parseInt(data.connected_nodes || '1', 10) || 1);
@@ -123,7 +123,7 @@ class FederationOsAdminModule {
 
   async loadProviders() {
     try {
-      const data = await this.fetchJson('provider-admin.php');
+      const data = await this.fetchJson('/federationcloud/provider-admin.php');
       const pending = Array.isArray(data.pending) ? data.pending : [];
       const active = Array.isArray(data.active) ? data.active : [];
       this.text('federationProviderPendingBadge', pending.length);
@@ -221,7 +221,7 @@ class FederationOsAdminModule {
       body.set('provider_node_id', providerNodeId);
       body.set('decision', decision);
 
-      const data = await this.fetchJson('provider-admin.php', {
+      const data = await this.fetchJson('/federationcloud/provider-admin.php', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
@@ -247,7 +247,7 @@ class FederationOsAdminModule {
 
   async loadModeration() {
     try {
-      const data = await this.fetchJson('moderation-api.php');
+      const data = await this.fetchJson('/federationcloud/moderation-api.php');
       const reports = Array.isArray(data.reports) ? data.reports : [];
       const blocks = Array.isArray(data.active_blocks) ? data.active_blocks : [];
       this.text('federationModerationPendingBadge', reports.length);

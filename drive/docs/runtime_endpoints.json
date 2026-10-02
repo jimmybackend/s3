@@ -257,7 +257,7 @@
     },
     {
       "path": "drive/bin/arcadecloud-drive-admin-helper.php",
-      "size": 52895,
+      "size": 54007,
       "active": false,
       "references": [
         "drive/tests/fastdrive_control_contract_smoke.php",
@@ -3934,7 +3934,7 @@
     },
     {
       "path": "drive/tests/office_gateway_contract_smoke.php",
-      "size": 14028,
+      "size": 14467,
       "active": false,
       "references": []
     },

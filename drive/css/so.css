@@ -90,6 +90,7 @@ a{text-decoration:none;color:inherit}
 }
 .os-desktop-icon:hover,.os-desktop-icon:focus{background:rgba(80,180,255,.12);outline:1px solid rgba(80,180,255,.25)}
 .os-icon-tile{font-size:2rem;color:var(--os-accent);filter:drop-shadow(0 0 9px rgba(38,198,255,.24))}
+.os-node-local-label{display:block;max-width:86px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--os-accent-2);font-size:.64rem;font-weight:800;line-height:1.05}
 .os-window{
   position:absolute;display:none;min-width:340px;min-height:240px;max-width:calc(100vw - 16px);
   max-height:calc(100vh - 58px);background:color-mix(in srgb,var(--os-surface) calc(var(--os-window-opacity) * 100%),transparent);border:1px solid var(--os-border);

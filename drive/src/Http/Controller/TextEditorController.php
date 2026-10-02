@@ -13,7 +13,6 @@ final class TextEditorController extends AbstractJsonController
     {
         try {
             $userId = $this->guardAuthenticated();
-            $this->requireDriveCsrf();
             $key = $this->request->queryString('archivo');
             $service = new TextFileService(
                 $this->app->fileRecordLocator(),
@@ -49,7 +48,6 @@ final class TextEditorController extends AbstractJsonController
         try {
             $this->requirePost();
             $this->guardAuthenticated();
-            $this->requireDriveCsrf();
             $service = new PhpLintService();
             JsonResponse::send($service->validate(
                 $this->request->postString('archivo'),

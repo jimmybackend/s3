@@ -88,7 +88,15 @@ final class PersonalAwsController
 
     private function isEmbeddedRequest(): bool
     {
-        if (trim((string)($_SERVER['HTTP_X_ARCADECLOUD_EMBED'] ?? '')) === '1') {
+        if ($this->request->serverString('HTTP_X_ARCADECLOUD_EMBED') === '1') {
+            return true;
+        }
+
+        if (
+            $this->request->method() === 'POST'
+            && $this->request->postString('action') === 'generate'
+            && $this->request->postString('arcadecloud_os') === '1'
+        ) {
             return true;
         }
 

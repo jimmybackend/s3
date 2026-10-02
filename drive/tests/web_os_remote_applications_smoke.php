@@ -25,7 +25,7 @@ $remoteApps = [
     'office' => ['Office', 'office-launch.php'],
     'linux-xfce' => ['Linux XFCE', 'office-launch.php'],
     'guacamole' => ['Guacamole', 'office-launch.php?target=guacamole'],
-    'kde-plasma' => ['KDE Plasma', 'https://kde.esforzados.com/'],
+    'kde-plasma' => ['KDE Plasma', 'office-launch.php?target=kde'],
 ];
 foreach ($remoteApps as $id => [$label, $href]) {
     $assert(str_contains($apps, 'data-launcher-app="' . $id . '"'), "{$label} está declarado para el Application Registry");

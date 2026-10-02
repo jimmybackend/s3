@@ -520,10 +520,12 @@ button{width:100%;margin-top:12px;padding:13px;border:1px solid var(--accent);bo
     }
   }
 
-  function closeDocument() {
+  function syncDocumentOnUnload() {
     if (!hasDocument) return;
     try {
-      navigator.sendBeacon('/__office_document_close', new Blob([''], {type:'text/plain'}));
+      // Closing the browser tab is not proof that LibreOffice stopped editing.
+      // Keep the document session alive and only request a best-effort final sync.
+      navigator.sendBeacon('/__office_document_sync', new Blob([''], {type:'text/plain'}));
     } catch (_) {}
   }
 
@@ -584,7 +586,7 @@ button{width:100%;margin-top:12px;padding:13px;border:1px solid var(--accent);bo
 
   setInterval(pollIdle, 5000);
   if (hasDocument) setInterval(syncDocument, 60000);
-  window.addEventListener('beforeunload', closeDocument);
+  window.addEventListener('beforeunload', syncDocumentOnUnload);
   setInterval(() => {
     if (remaining === null) return;
     remaining = Math.max(0, remaining - 1);

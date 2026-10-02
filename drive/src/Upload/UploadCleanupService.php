@@ -9,6 +9,8 @@ use DateTimeInterface;
 use mysqli;
 use RuntimeException;
 
+require_once dirname(__DIR__, 2) . '/upload/storage/UploadStateStore.php';
+
 final class UploadCleanupService
 {
     public function __construct(
@@ -22,15 +24,9 @@ final class UploadCleanupService
     }
 
     /**
-     * Limpieza segura de subidas abandonadas.
-     *
-     * Reglas:
-     * - Sólo trabaja dentro de DataN/uploads/.
-     * - Un objeto completado se borra únicamente si tiene más de $olderThanDays
-     *   y NO existe en FileS3 para ese usuario.
-     * - Los multipart incompletos se abortan únicamente si superan la edad indicada.
-     * - Los archivos locales de estado .json se eliminan únicamente si están vencidos.
-     * - $execute=false nunca modifica S3 ni el filesystem.
+     * Legacy public-upload candidates are report-only: age and catalog absence do
+     * not prove deletion is safe. Chunked cleanup uses its authoritative store
+     * and the same per-state lease as the uploader.
      */
     public function run(int $olderThanDays = 30, bool $execute = false): array
     {
@@ -61,11 +57,16 @@ final class UploadCleanupService
             $prefix = rtrim($this->userStoragePath->rootForUser($userId), '/') . '/uploads/';
             $registered = $this->registeredKeys($userId, $prefix);
 
-            $this->scanMultipart($prefix, $cutoff, $execute, $report);
-            $this->scanObjects($userId, $prefix, $registered, $cutoff, $execute, $report);
+            $this->scanMultipart($prefix, $cutoff, $report);
+            $this->scanObjects($userId, $prefix, $registered, $cutoff, $report);
         }
 
-        $this->scanStateFiles($cutoff, $execute, $report);
+        $this->scanStateFiles($cutoff, $report);
+
+        $report['legacy_report_only'] = true;
+        $report['chunked'] = (new ChunkedUploadCleanupService(
+            $this->s3, $this->bucket, $this->userStoragePath, new \UploadStateStore()
+        ))->run($olderThanDays, $execute);
 
         return $report;
     }
@@ -129,7 +130,6 @@ final class UploadCleanupService
     private function scanMultipart(
         string $prefix,
         int $cutoff,
-        bool $execute,
         array &$report
     ): void {
         $params = [
@@ -155,17 +155,8 @@ final class UploadCleanupService
                     'type' => 'multipart',
                     'key' => $key,
                     'age_days' => $this->ageDays($initiatedTs),
-                    'action' => $execute ? 'abort' : 'would_abort',
+                    'action' => 'review_multipart',
                 ];
-
-                if ($execute) {
-                    $this->s3->abortMultipartUpload([
-                        'Bucket' => $this->bucket,
-                        'Key' => $key,
-                        'UploadId' => $uploadId,
-                    ]);
-                    $report['multipart_aborted']++;
-                }
 
                 $report['items'][] = $item;
             }
@@ -181,7 +172,6 @@ final class UploadCleanupService
         string $prefix,
         array $registered,
         int $cutoff,
-        bool $execute,
         array &$report
     ): void {
         $params = [
@@ -217,16 +207,8 @@ final class UploadCleanupService
                     'user_id' => $userId,
                     'key' => $key,
                     'age_days' => $this->ageDays($lastModifiedTs),
-                    'action' => $execute ? 'delete' : 'would_delete',
+                    'action' => 'review_orphan_object',
                 ];
-
-                if ($execute) {
-                    $this->s3->deleteObject([
-                        'Bucket' => $this->bucket,
-                        'Key' => $key,
-                    ]);
-                    $report['objects_deleted']++;
-                }
 
                 $report['items'][] = $item;
             }
@@ -240,7 +222,7 @@ final class UploadCleanupService
         } while ((bool)$res->get('IsTruncated'));
     }
 
-    private function scanStateFiles(int $cutoff, bool $execute, array &$report): void
+    private function scanStateFiles(int $cutoff, array &$report): void
     {
         if (!is_dir($this->stateDir)) {
             return;
@@ -268,12 +250,8 @@ final class UploadCleanupService
                 'file' => basename($file),
                 'key' => $key,
                 'age_days' => $this->ageDays($timestamp),
-                'action' => $execute ? 'delete_state' : 'would_delete_state',
+                'action' => 'review_legacy_state',
             ];
-
-            if ($execute && @unlink($file)) {
-                $report['states_deleted']++;
-            }
         }
     }
 

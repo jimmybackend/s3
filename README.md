@@ -312,7 +312,7 @@ También existe `up.php` para multipart directo navegador -> S3. PHP inicia, fir
 
 ### Limpieza de subidas abandonadas
 
-`drive/bin/upload_cleanup.php` analiza multipart incompletos, objetos huérfanos y estados locales antiguos dentro de `DataN/uploads/`. La eliminación requiere `--execute` y nunca elimina objetos registrados en `FileS3`.
+`drive/bin/upload_cleanup.php` limpia estados chunked abandonados desde la ubicación autoritativa y verifica el multipart exacto bajo lease antes de abortarlo. Requiere `--execute`; nunca borra objetos S3 terminados. Los candidatos públicos históricos quedan sólo como reporte. Consulta `drive/docs/UPLOAD_CLEANUP.md` y el seguimiento en `drive/docs/CONSOLIDATION_AUDIT.md`.
 
 ### Sincronización
 

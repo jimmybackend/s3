@@ -117,7 +117,7 @@ Firma o procesa una parte según el contrato del frontend.
 
 Ordena las partes, completa el multipart y actualiza el catálogo.
 
-`UploadStateStore` mantiene el estado JSON en `drive/upload/storage/state/`. Esa ruta debe ser escribible por el proceso PHP y no debe exponerse públicamente.
+`UploadStateStore::defaultDirectory()` es la fuente autoritativa del estado JSON en `drive/upload/storage/state/`. Las operaciones chunked mantienen un lease compartido con cleanup y actualizan actividad al firmar partes. Esa ruta debe ser escribible por el proceso PHP y no debe exponerse públicamente.
 
 ## Multipart directo de `up.php`
 

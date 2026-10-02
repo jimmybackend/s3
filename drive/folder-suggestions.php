@@ -21,7 +21,8 @@ try {
     }
     $limit = max(1, min(20, (int)($_GET['limit'] ?? 12)));
     $rootPrefix = rtrim(str_replace('\\', '/', $root), '/') . '/';
-    $rows = $query === '' ? [] : $app->folderRepository()->suggestPrefixes($userId, $rootPrefix, ltrim($query, '/'), $limit);
+    $visibleNeedle = basename(rtrim($query, '/'));
+    $rows = $query === '' ? [] : $app->folderRepository()->suggestPrefixes($userId, $rootPrefix, $visibleNeedle, $limit);
     $suggestions = [];
     foreach (array_values(array_unique($rows)) as $prefix) {
         $physical = $app->userStoragePath()->normalizeForUser((string)$prefix, $userId);

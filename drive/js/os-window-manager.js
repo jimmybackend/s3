@@ -872,15 +872,20 @@ class ArcadeCloudDesktopRuntime {
     if (button) { button.disabled = true; button.textContent = 'Generando…'; }
     const errorBox = body.querySelector('[data-totp-error]');
     try {
-      target.searchParams.set('arcadecloud_os', '1');
+      const endpoint = new URL('aws.php', this.window.location.href);
+      endpoint.searchParams.set('arcadecloud_os', '1');
       data.set('arcadecloud_os', '1');
       data.set('response_format', 'json');
-      const response = await this.window.fetch(target.toString(), {
+      const response = await this.window.fetch(endpoint.toString(), {
         method: 'POST', body: data, credentials: 'same-origin', cache: 'no-store',
         headers: { 'X-ArcadeCloud-Embed': '1', 'X-Requested-With': 'XMLHttpRequest', Accept: 'application/json' }
       });
       const contentType = String(response.headers?.get('Content-Type') || '').toLowerCase();
-      if (!contentType.includes('application/json')) throw new Error(`El endpoint TOTP respondió ${response.status} con ${contentType || 'un contenido no identificado'} en lugar de JSON.`);
+      if (!contentType.includes('application/json')) {
+        let finalPath = 'desconocida';
+        try { finalPath = new URL(response.url || endpoint, this.window.location.href).pathname; } catch (_) {}
+        throw new Error(`TOTP respondió ${response.status} con ${contentType || 'tipo desconocido'}; ruta final: ${finalPath}; redirección: ${response.redirected ? 'sí' : 'no'}.`);
+      }
       const payload = await response.json();
       if (!response.ok || payload?.ok !== true || !payload.result) throw new Error(payload?.error || 'No se pudo generar el código.');
       const result = body.querySelector('[data-totp-result]');

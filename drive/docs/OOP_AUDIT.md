@@ -4,13 +4,13 @@
 
 ## Resumen
 
-- PHP analizados: **515**
+- PHP analizados: **516**
 - PHP que ya contienen clases/interfaces: **299**
 - PHP marcados para migración/revisión: **0**
-- Tests PHP separados del objetivo OOP de runtime: **60**
-- JavaScript analizados: **76**
+- Tests PHP separados del objetivo OOP de runtime: **61**
+- JavaScript analizados: **77**
 - JavaScript que ya contienen clases: **72**
-- JavaScript sin clase/encapsulación OOP: **6**
+- JavaScript sin clase/encapsulación OOP: **7**
 - JavaScript OOP con fachada `window` de compatibilidad: **8**
 - Clientes AJAX detectados: **49** módulos / **106** llamadas
 - JSON analizados: **4**; inválidos: **0**
@@ -459,6 +459,7 @@
 | `drive/tests/activity_retention_regression.php` | 67 | test script | 0 | — | ⚠️ | — | — |
 | `drive/tests/arcadelink_bulk_contract_regression.php` | 71 | test script | 0 | — | — | — | — |
 | `drive/tests/arcadelink_collection_regression.php` | 63 | test script | 0 | — | — | — | — |
+| `drive/tests/catalog_folder_paths_regression.php` | 51 | test script | 0 | — | ⚠️ | — | — |
 | `drive/tests/chunked_upload_cleanup_regression.php` | 117 | test script | 1 | — | — | — | — |
 | `drive/tests/database_schema_contract_smoke.php` | 125 | test script | 0 | — | — | — | — |
 | `drive/tests/fastdrive_control_contract_smoke.php` | 72 | test script | 0 | — | — | — | — |
@@ -599,7 +600,7 @@
 | `drive/js/so-appearance.js` | 155 | class/module | ArcadeCloudOsAppearance | — | — | — |
 | `drive/js/so-clipboard.js` | 797 | class/module | ArcadeCloudOsClipboard | — | — | — |
 | `drive/js/so-federation.js` | 87 | class/module | ArcadeCloudOsFederationApp | — | — | — |
-| `drive/js/so-folders.js` | 442 | class/module | ArcadeCloudOsFolderActions | — | — | — |
+| `drive/js/so-folders.js` | 440 | class/module | ArcadeCloudOsFolderActions | — | — | — |
 | `drive/js/so-node.js` | 219 | class/module | ArcadeCloudOsNodeMonitor | — | — | — |
 | `drive/js/so-power.js` | 108 | class/module | ArcadeCloudFastDrivePower | — | — | — |
 | `drive/js/so-screenshot-paste.js` | 341 | class/module | ArcadeCloudOsScreenshotPaste | — | — | — |
@@ -622,9 +623,10 @@
 | `drive/tests/web_os_desktop_shell_functional.js` | 40 | procedural script | — | assert | — | top-level functions: assert; top-level state: editable, records, instance, registered, declarative, launcher, remoteApps; no ES class |
 | `drive/tests/web_os_file_applications_functional.js` | 54 | class/module | Bus | assert | — | top-level functions: assert |
 | `drive/tests/web_os_filesystem_operations_functional.js` | 52 | procedural script | — | assert | — | top-level functions: assert; top-level state: events, busEvents, doc, win, service; no ES class |
+| `drive/tests/web_os_folder_rename_functional.js` | 34 | procedural script | — | — | — | top-level state: assert, listeners, document, window, desktop, navigations; no ES class |
 | `drive/tests/web_os_multiwindow_functional.js` | 125 | class/module | Classes, ElementStub | windowStub, assert | — | top-level functions: windowStub, assert |
 | `drive/tests/web_os_same_explorer_clipboard_functional.js` | 76 | procedural script | — | assert, storage | — | top-level functions: assert, storage; top-level state: requests, refreshed, filesystemEvents, explorer, win, doc, clipboard, entries; no ES class |
-| `drive/tests/web_os_search_location_functional.js` | 57 | class/module | Element | — | — | — |
+| `drive/tests/web_os_search_location_functional.js` | 62 | class/module | Element | — | — | — |
 | `drive/tests/web_os_upload_context_functional.js` | 44 | procedural script | — | assert, button | — | top-level functions: assert, button; top-level state: routeLabel, doc, center; no ES class |
 
 ## AJAX y contratos JSON

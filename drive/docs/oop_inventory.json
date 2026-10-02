@@ -1,12 +1,12 @@
 {
   "summary": {
-    "php_total": 515,
+    "php_total": 516,
     "php_class_modules": 299,
     "php_needs_migration": 0,
-    "php_tests": 60,
-    "js_total": 76,
+    "php_tests": 61,
+    "js_total": 77,
     "js_class_modules": 72,
-    "js_needs_migration": 6,
+    "js_needs_migration": 7,
     "js_compatibility_facades": 8,
     "ajax_clients": 49,
     "ajax_calls": 106,
@@ -6524,6 +6524,23 @@
       "issues": []
     },
     {
+      "path": "drive/tests/catalog_folder_paths_regression.php",
+      "lines": 51,
+      "kind": "test script",
+      "classes": 0,
+      "functions": [
+        "pathCheck"
+      ],
+      "session": false,
+      "superglobals": [],
+      "db": true,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
       "path": "drive/tests/chunked_upload_cleanup_regression.php",
       "lines": 117,
       "kind": "test script",
@@ -9125,7 +9142,7 @@
     },
     {
       "path": "drive/js/so-folders.js",
-      "lines": 442,
+      "lines": 440,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudOsFolderActions"
@@ -9693,6 +9710,35 @@
       ]
     },
     {
+      "path": "drive/tests/web_os_folder_rename_functional.js",
+      "lines": 34,
+      "kind": "procedural script",
+      "classes": [],
+      "functions": [],
+      "window_assign": [],
+      "window_func": [],
+      "top_vars": [
+        "assert",
+        "listeners",
+        "document",
+        "window",
+        "desktop",
+        "navigations"
+      ],
+      "iife": false,
+      "ajax": {
+        "fetch": 0,
+        "xhr": 0,
+        "jquery": 0,
+        "json_consumers": 0,
+        "response_checks": 0
+      },
+      "issues": [
+        "top-level state: assert, listeners, document, window, desktop, navigations",
+        "no ES class"
+      ]
+    },
+    {
       "path": "drive/tests/web_os_multiwindow_functional.js",
       "lines": 125,
       "kind": "class/module",
@@ -9777,7 +9823,7 @@
     },
     {
       "path": "drive/tests/web_os_search_location_functional.js",
-      "lines": 57,
+      "lines": 62,
       "kind": "class/module",
       "classes": [
         "Element"
@@ -9878,7 +9924,7 @@
     },
     {
       "path": "drive/docs/runtime_endpoints.json",
-      "bytes": 118159,
+      "bytes": 118491,
       "valid": true,
       "root_type": "object",
       "keys": [

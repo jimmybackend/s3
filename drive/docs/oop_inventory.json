@@ -1735,7 +1735,7 @@
     },
     {
       "path": "drive/office-gateway.php",
-      "lines": 680,
+      "lines": 671,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -2078,7 +2078,7 @@
     },
     {
       "path": "drive/so.php",
-      "lines": 2059,
+      "lines": 2058,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -5172,7 +5172,7 @@
     },
     {
       "path": "drive/src/Office/OfficeActivityProbe.php",
-      "lines": 47,
+      "lines": 49,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -6968,7 +6968,7 @@
     },
     {
       "path": "drive/tests/idle_stop_office_regression.php",
-      "lines": 258,
+      "lines": 273,
       "kind": "test script",
       "classes": 1,
       "functions": [
@@ -7104,7 +7104,7 @@
     },
     {
       "path": "drive/tests/office_gateway_contract_smoke.php",
-      "lines": 361,
+      "lines": 376,
       "kind": "test script",
       "classes": 0,
       "functions": [

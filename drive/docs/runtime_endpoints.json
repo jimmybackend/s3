@@ -1030,6 +1030,7 @@
         "drive/s3.php",
         "drive/so.php",
         "drive/src/Federation/FederationDropService.php",
+        "drive/tests/catalog_folder_paths_regression.php",
         "drive/tests/chunked_upload_cleanup_regression.php",
         "drive/tests/federation_moderation_contract_smoke.php",
         "drive/tests/federationcloud_smoke.php",
@@ -1757,7 +1758,7 @@
     },
     {
       "path": "drive/src/Application/FolderQueryService.php",
-      "size": 6646,
+      "size": 6617,
       "active": false,
       "references": [
         "drive/tests/web_os_contract_smoke.php"
@@ -3720,6 +3721,12 @@
     {
       "path": "drive/tests/arcadelink_collection_regression.php",
       "size": 5218,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/tests/catalog_folder_paths_regression.php",
+      "size": 3627,
       "active": false,
       "references": []
     },

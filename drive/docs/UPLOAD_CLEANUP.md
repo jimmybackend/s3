@@ -1,84 +1,79 @@
-# Limpieza manual de subidas abandonadas
+# Limpieza de subidas abandonadas
 
-La limpieza de subidas está separada en dos superficies:
+## Superficies
 
-```text
-up-clean.php
-  -> UploadCleanupController
-     -> UploadCleanupService
-        -> MySQL
-        -> S3
-        -> estado local
-
-bin/upload_cleanup.php
-  -> UploadCleanupCommand
-     -> UploadCleanupService
-```
-
-## Alcance
-
-La limpieza sólo trabaja dentro de:
-
-```text
-user 1 -> Data/uploads/
-user 2 -> Data2/uploads/
-user N -> DataN/uploads/
-```
-
-La edad predeterminada es **30 días**.
-
-## Candidatos
-
-1. Multipart uploads de S3 incompletos con más de 30 días.
-2. Objetos dentro de `DataN/uploads/` con más de 30 días que no tienen registro correspondiente en `FileS3` para ese usuario.
-3. Archivos locales `.json` de estado con más de 30 días.
-
-## Protecciones
-
-Nunca se elimina:
-
-- un objeto registrado en `FileS3`;
-- un objeto fuera de `DataN/uploads/`;
-- una raíz de usuario;
-- un objeto reciente;
-- un archivo normal de otra carpeta del Drive.
-
-## Simulación
-
-El modo predeterminado no modifica S3 ni elimina archivos locales.
+`up-clean.php` → `UploadCleanupController` es una vista GET de diagnóstico,
+con sesión Administración/Soporte y sin operaciones destructivas.
+`bin/upload_cleanup.php` → `UploadCleanupCommand` ejecuta `UploadCleanupService`.
+El CLI conserva simulación por defecto y requiere `--execute` para limpiar.
 
 ```bash
-cd /var/www/arcadecloud-drive
 php drive/bin/upload_cleanup.php --days=30
-```
-
-`up-clean.php` por HTTP también es sólo simulación y requiere una sesión con rol `Administración` o `Soporte`.
-
-## Ejecución
-
-La eliminación real sólo está disponible por CLI y requiere `--execute`:
-
-```bash
-cd /var/www/arcadecloud-drive
+# Revisar el reporte antes de ejecutar:
 php drive/bin/upload_cleanup.php --days=30 --execute
 ```
 
-La salida de simulación debe revisarse antes de ejecutar borrados.
+## Estados chunked: ubicación autoritativa
+
+`UploadStateStore::defaultDirectory()` define `drive/upload/storage/state`.
+`DriveApplication::uploadFactory()` y `ChunkedUploadCleanupService` usan esa
+misma fuente. No confundirla con el estado temporal de `PublicMultipartUploadService`.
+Los uploads chunked pueden apuntar a cualquier carpeta física del usuario, no sólo
+`DataN/uploads/`. La UI continúa usando nombres de catálogo; el cleaner trabaja
+con las keys físicas internas.
+
+## Reglas de ejecución
+
+- Edad predeterminada 30 días; mínimo 1 día, mayor que la vigencia de 1 hora de las
+  URLs firmadas por el uploader chunked.
+- Antigüedad calculada usando el máximo de `created`, `updated` y mtime.
+- Lease compartido con init/part/complete; una subida ocupada se omite sin esperar.
+- Las escrituras de estado son atómicas; firmar una parte refresca `updated`.
+- Se valida el estado, su identificador y que la key pertenezca a su usuario.
+- Se consulta `ListParts` para el bucket/key/UploadId exactos, recorriendo todas
+  las páginas. Partes recientes o de fecha desconocida impiden el aborto.
+- Sólo después se aborta ese multipart y se elimina su estado local.
+- `NoSuchUpload` permite retirar sólo el estado vencido. Un objeto terminado
+  **nunca se elimina como consecuencia del estado local**.
+- Errores de AWS, estado corrupto, symlinks o falta de permisos se omiten de forma
+  conservadora. `skip_error` no expone mensajes SDK ni URLs firmadas.
+- Los locks son sidecars persistentes agrupados en 256 nombres posibles. No
+  eliminarlos mientras haya procesos activos: cambiar su inode rompería el lease.
+- Dry-run no crea locks, no reescribe estados y no modifica S3.
+
+La exclusión cubre procesos del mismo nodo que usan este directorio y esta versión
+del uploader. Antes de ejecutar cleanup tras actualizar, deben haber terminado
+las peticiones PHP de la versión anterior. No ejecutar dos instalaciones con
+estado independiente sobre el mismo multipart. No se garantiza coordinación con
+clientes externos que reutilicen un UploadId fuera del uploader.
+
+## Cambio deliberado en el cleanup histórico
+
+La inspección de `DataN/uploads/`, los candidatos huérfanos y los estados de
+`arcadecloud-public-upload-state` sigue disponible. Ahora es **sólo reporte**, aun
+con `--execute`: se devuelve `legacy_report_only: true` y acciones `review_*`.
+La ausencia de una key en una captura de `FileS3` y su edad no constituyen prueba
+suficiente para borrar: puede existir una carrera de registro, recuperación o
+reanudación. Esta fase no inventa un protocolo de borrado seguro para esos casos.
+
+No ejecutar scripts históricos esperando que borren huérfanos automáticamente.
+La revisión y eventual eliminación de esos candidatos exige una fase independiente.
 
 ## Reporte
 
-El resultado incluye:
+Se conservan los contadores históricos, que ya no ejecutan mutaciones. La sección
+`chunked` incluye `states_seen`, `states_deleted`, `multipart_aborted` y `items`.
+Las acciones distinguen simulación, estado reciente/ocupado/inválido, error,
+metadata de multipart ausente y aborto exacto. No se incluyen UploadIds ni keys
+en esa sección.
 
-- `multipart_seen`
-- `multipart_stale`
-- `multipart_aborted`
-- `objects_seen`
-- `objects_old`
-- `objects_registered`
-- `objects_orphan`
-- `objects_deleted`
-- `states_seen`
-- `states_stale`
-- `states_deleted`
+## Verificación aislada
 
-En simulación los candidatos aparecen como `would_abort`, `would_delete` o `would_delete_state`.
+```bash
+composer install
+php drive/tests/chunked_upload_cleanup_regression.php
+node drive/tests/web_os_upload_context_functional.js
+```
+
+El transporte AWS se simula con el SDK; no se conectan S3 ni MySQL reales.
+La CI `OOP upload cleanup validation` corre en PR y cambios relevantes a main.

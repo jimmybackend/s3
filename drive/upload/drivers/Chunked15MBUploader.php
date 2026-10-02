@@ -27,6 +27,12 @@ final class Chunked15MBUploader implements UploaderInterface
 
     public function init(array $req): array
     {
+        $stateId = $this->signature(trim((string)($req['filename'] ?? '')), (int)($req['filesize'] ?? 0), trim((string)($req['ruta_objetivo'] ?? ''), '/'), (int)($req['_user_id'] ?? 0));
+        return $this->store->withLock($stateId, fn(): array => $this->initLocked($req));
+    }
+
+    private function initLocked(array $req): array
+    {
         $filename = trim((string)($req['filename'] ?? ''));
         $filesize = (int)($req['filesize'] ?? 0);
         $mime = trim((string)($req['mime'] ?? 'application/octet-stream'));
@@ -81,6 +87,12 @@ final class Chunked15MBUploader implements UploaderInterface
     }
 
     public function part(array $req): array
+    {
+        $stateId = (string)($req['stateId'] ?? '');
+        return $this->store->withLock($stateId, fn(): array => $this->partLocked($req));
+    }
+
+    private function partLocked(array $req): array
     {
         $step = (string)($req['step'] ?? 'sign');
 
@@ -137,12 +149,20 @@ final class Chunked15MBUploader implements UploaderInterface
             'ContentLength' => $contentLength,
         ]);
 
+        // Refresh activity while holding the same lease as cleanup, before issuing a URL.
+        $this->store->save($stateId, $meta);
         $presigned = $this->s3->createPresignedRequest($command, '+1 hour');
 
         return ['ok' => true, 'url' => (string)$presigned->getUri()];
     }
 
     public function complete(array $req): array
+    {
+        $stateId = (string)($req['stateId'] ?? '');
+        return $this->store->withLock($stateId, fn(): array => $this->completeLocked($req));
+    }
+
+    private function completeLocked(array $req): array
     {
         $stateId = (string)($req['stateId'] ?? '');
         $uploadId = (string)($req['uploadId'] ?? '');

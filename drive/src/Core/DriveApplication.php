@@ -332,7 +332,7 @@ final class DriveApplication
                 $this->bucket,
                 $this->storageObjectNameCodec(),
                 $this->session(),
-                dirname(__DIR__, 2) . '/upload/storage/state'
+                \UploadStateStore::defaultDirectory()
             );
         }
         return $this->uploadFactory;

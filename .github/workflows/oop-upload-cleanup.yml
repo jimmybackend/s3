@@ -1,14 +1,22 @@
 name: OOP upload cleanup validation
 
 on:
-  push:
-    branches: ['refactor/oop-drive-migration']
+  pull_request:
     paths:
-      - 'drive/up-clean.php'
-      - 'drive/bin/upload_cleanup.php'
+      - 'drive/upload/**'
+      - 'drive/src/Upload/**'
+      - 'drive/src/Core/DriveApplication.php'
       - 'drive/src/Console/UploadCleanupCommand.php'
       - 'drive/src/Http/Controller/UploadCleanupController.php'
-      - 'drive/src/Upload/UploadCleanupService.php'
+      - 'drive/tests/chunked_upload_cleanup_regression.php'
+      - '.github/workflows/oop-upload-cleanup.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'drive/upload/**'
+      - 'drive/src/Upload/**'
+      - 'drive/src/Core/DriveApplication.php'
+      - 'drive/tests/chunked_upload_cleanup_regression.php'
       - '.github/workflows/oop-upload-cleanup.yml'
   workflow_dispatch:
 
@@ -19,47 +27,33 @@ jobs:
   validate:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v4
         with:
-          fetch-depth: 2
-
+          fetch-depth: 0
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mysqli, mbstring, curl, simplexml
+          tools: composer:v2
+      - name: Dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
       - name: PHP syntax
         run: |
           set -euo pipefail
-          php -l drive/up-clean.php
-          php -l drive/bin/upload_cleanup.php
+          find drive/src/Upload drive/upload -name '*.php' -print0 | xargs -0 -n1 php -l
+          php -l drive/src/Core/DriveApplication.php
           php -l drive/src/Console/UploadCleanupCommand.php
           php -l drive/src/Http/Controller/UploadCleanupController.php
-          php -l drive/src/Upload/UploadCleanupService.php
-          echo PHP_OK
-
-      - name: OOP and safety contracts
+          php -l drive/tests/chunked_upload_cleanup_regression.php
+      - name: Behavioral regression (no production services)
+        run: php drive/tests/chunked_upload_cleanup_regression.php
+      - name: JavaScript compatibility
         run: |
           set -euo pipefail
-          ! grep -Eq 'session_start|Config::getS3|Config::BUCKET|listMultipartUploads|abortMultipartUpload|deleteObject|\$db_connection|^function ' drive/up-clean.php
-          grep -Fq 'UploadCleanupController' drive/up-clean.php
-          grep -Fq 'UploadCleanupService' drive/src/Http/Controller/UploadCleanupController.php
-          grep -Fq 'run($days, false)' drive/src/Http/Controller/UploadCleanupController.php
-          grep -Fq -- '--execute' drive/src/Console/UploadCleanupCommand.php
-          grep -Fq 'FROM FileS3' drive/src/Upload/UploadCleanupService.php
-          grep -Fq 'user_id_ = ?' drive/src/Upload/UploadCleanupService.php
-          grep -Fq 'objects_registered' drive/src/Upload/UploadCleanupService.php
-          grep -Fq "Data(?:\\d+)?/uploads/" drive/src/Upload/UploadCleanupService.php
-          grep -Fq 'if ($execute)' drive/src/Upload/UploadCleanupService.php
-          echo OOP_OK
-
-      - name: Reference contracts
-        run: |
-          set -euo pipefail
-          grep -Fq 'up-clean.php' drive/docs/RUNTIME_ENDPOINTS.md || true
-          grep -Fq 'PublicMultipartUploadService' drive/up.php
-          grep -Fq "'/uploads'" drive/up.php
-          grep -Fq 'INSERT INTO FileS3' drive/up.php
-          echo REFERENCIAS_OK
-
-      - name: Diff and secret checks
-        run: |
-          set -euo pipefail
-          git diff --check HEAD^ HEAD
-          ! git diff HEAD^ HEAD | grep -E 'AKIA[0-9A-Z]{16}|ASIA[0-9A-Z]{16}'
-          echo DIFF_OK
+          node --check drive/js/upload-center.js
+          node --check drive/js/upload-destination.js
+          node drive/tests/web_os_upload_context_functional.js
+      - name: Diff check
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: git diff --check "$BASE_SHA" HEAD

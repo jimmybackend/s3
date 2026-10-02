@@ -69,10 +69,11 @@ officeGatewayContract(
 );
 
 officeGatewayContract(
-    str_contains($gateway, "header('Location: /guacamole/#/', true, 302)")
-    && str_contains($gateway, "\$officeDesktopTarget === 'guacamole'")
-    && str_contains($gateway, "\$officeFileId === 0"),
-    'launcher Guacamole redirige al frontend nativo /guacamole/#/ cuando la sesión ya está lista'
+    !str_contains($gateway, "header('Location: /guacamole/#/', true, 302)")
+    && str_contains($gateway, "['guacamole', 'kde']")
+    && str_contains($gateway, "? '/guacamole/'")
+    && str_contains($gateway, "{passive:true,capture:true}"),
+    'Guacamole y KDE permanecen dentro del wrapper que mide interacción real'
 );
 
 officeGatewayContract(
@@ -96,6 +97,20 @@ officeGatewayContract(
     && str_contains($gateway, '/__office_idle')
     && str_contains($gateway, 'Han pasado 20 minutos sin actividad'),
     'pestaña Office detecta interacción real y muestra aviso de inactividad'
+);
+
+officeGatewayContract(
+    str_contains($so, 'href="office-launch.php?target=kde"')
+    && str_contains($launch, "['novnc', 'guacamole', 'kde']")
+    && str_contains($gateway, "['novnc', 'guacamole', 'kde']"),
+    'KDE usa el mismo gateway de actividad real que Office y Guacamole'
+);
+
+officeGatewayContract(
+    !str_contains((string)file_get_contents($repo . '/drive/src/Office/OfficeActivityProbe.php'), 'OfficeSessionLeases')
+    && !str_contains((string)file_get_contents($repo . '/drive/src/Office/OfficeActivityProbe.php'), "'ready'")
+    && str_contains((string)file_get_contents($repo . '/drive/src/Office/OfficeActivityProbe.php'), "'preparing','syncing','conflict'"),
+    'lease y documento ready no congelan el contador; estados transitorios inseguros sí'
 );
 
 officeGatewayContract(

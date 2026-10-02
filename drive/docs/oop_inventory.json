@@ -2078,7 +2078,7 @@
     },
     {
       "path": "drive/so.php",
-      "lines": 2035,
+      "lines": 2036,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -5976,7 +5976,7 @@
     },
     {
       "path": "drive/src/System/NodeRuntimeStatusService.php",
-      "lines": 453,
+      "lines": 474,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -7053,7 +7053,7 @@
     },
     {
       "path": "drive/tests/node_diagnostics_contract_smoke.php",
-      "lines": 50,
+      "lines": 59,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -9217,7 +9217,7 @@
     },
     {
       "path": "drive/js/so-node.js",
-      "lines": 219,
+      "lines": 230,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudOsNodeMonitor"
@@ -10004,7 +10004,7 @@
     },
     {
       "path": "drive/docs/runtime_endpoints.json",
-      "bytes": 119575,
+      "bytes": 119780,
       "valid": true,
       "root_type": "object",
       "keys": [

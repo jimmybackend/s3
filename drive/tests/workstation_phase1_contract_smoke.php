@@ -49,11 +49,17 @@ workstationContract(str_contains($install, '--volume $PERSISTENT_HOME:/home/arca
 workstationContract(str_contains($install, '"$PERSISTENT_HOME/Projects"'), 'home persistente prepara carpeta Projects');
 workstationContract(str_contains($install, '"$WORKSPACE/sessions"'), 'instalador prepara workspace por sesión documental');
 workstationContract(str_contains($install, 'chmod 2770 "$WORKSPACE" "$WORKSPACE/sessions"'), 'workspace usa setgid y no permisos globales');
-workstationContract(str_contains($install, '--group-add $PHP_GID'), 'contenedor comparte únicamente el grupo PHP-FPM para documentos');
 workstationContract(
-    str_contains($install, '--env ARCADECLOUD_PHP_GID=$PHP_GID')
-    && str_contains($entry, 'usermod -aG "$PHP_SHARED_GROUP" arcade'),
-    'usuario gráfico conserva el grupo PHP-FPM dentro del contenedor'
+    str_contains($install, 'chown "$PHP_USER:$OFFICE_GID" "$WORKSPACE/sessions"')
+    && str_contains($install, 'chgrp -R "$OFFICE_GID" "$WORKSPACE/sessions"')
+    && str_contains($install, 'find "$WORKSPACE/sessions" -xdev -type d -exec chmod 2770 {} +')
+    && str_contains($install, 'find "$WORKSPACE/sessions" -xdev -type f -exec chmod 0660 {} +'),
+    'workspace documental usa PHP como propietario y el grupo nativo de arcade'
+);
+workstationContract(
+    !str_contains($install, '--group-add $PHP_GID')
+    && !str_contains($entry, 'usermod -aG "$PHP_SHARED_GROUP" arcade'),
+    'Workstation no mezcla GID del host con grupos internos del contenedor'
 );
 workstationContract(!str_contains($install, 'chown root:root /etc/arcadecloud-drive'), 'instalador no rompe el grupo PHP-FPM del directorio administrado');
 workstationContract(!str_contains($install, 'chmod 0750 /etc/arcadecloud-drive'), 'instalador no reemplaza permisos del directorio runtime administrado');

@@ -28,6 +28,7 @@ SERVICE="/etc/systemd/system/$SERVICE_NAME"
 OFFICE_UID=10001
 OFFICE_GID=10001
 PHP_GROUP="${ARCADECLOUD_PHP_GROUP:-apache}"
+PHP_USER="${ARCADECLOUD_PHP_USER:-}"
 PHP_GID=""
 WAS_ACTIVE=0
 
@@ -60,10 +61,33 @@ PHP_GID="$(getent group "$PHP_GROUP" | cut -d: -f3)"
   exit 3
 }
 
+if [[ -z "$PHP_USER" && -r /etc/arcadecloud-drive/admin-helper.json ]]; then
+  PHP_USER="$(python3 - <<'PY'
+import json
+try:
+    with open('/etc/arcadecloud-drive/admin-helper.json', encoding='utf-8') as f:
+        print(str(json.load(f).get('php_user') or ''))
+except Exception:
+    print('')
+PY
+)"
+fi
+if [[ -z "$PHP_USER" ]] && id "$PHP_GROUP" >/dev/null 2>&1; then
+  PHP_USER="$PHP_GROUP"
+fi
+if [[ -z "$PHP_USER" ]] || ! id "$PHP_USER" >/dev/null 2>&1; then
+  echo "No se pudo resolver el usuario PHP-FPM; define ARCADECLOUD_PHP_USER." >&2
+  exit 3
+fi
+
 mkdir -p "$STATE_ROOT" "$WORKSPACE" "$WORKSPACE/sessions" "$PERSISTENT_HOME" "$PERSISTENT_HOME/Projects" "$PERSISTENT_HOME/Downloads"
 chmod 0750 "$STATE_ROOT"
 chgrp "$PHP_GROUP" "$STATE_ROOT"
-chown "$OFFICE_UID:$PHP_GID" "$WORKSPACE" "$WORKSPACE/sessions"
+chown "$OFFICE_UID:$PHP_GID" "$WORKSPACE"
+chown "$PHP_USER:$OFFICE_GID" "$WORKSPACE/sessions"
+chgrp -R "$OFFICE_GID" "$WORKSPACE/sessions"
+find "$WORKSPACE/sessions" -xdev -type d -exec chmod 2770 {} +
+find "$WORKSPACE/sessions" -xdev -type f -exec chmod 0660 {} +
 chmod 2770 "$WORKSPACE" "$WORKSPACE/sessions"
 chown -R "$OFFICE_UID:$OFFICE_GID" "$PERSISTENT_HOME"
 chmod 0700 "$PERSISTENT_HOME"
@@ -115,12 +139,10 @@ ExecStartPre=-/usr/bin/docker rm -f $CONTAINER
 ExecStart=/usr/bin/docker run --rm --name $CONTAINER \
   --env-file $ENV_FILE \
   --env-file $RDP_ENV_FILE \
-  --env ARCADECLOUD_PHP_GID=$PHP_GID \
   --network $OFFICE_NETWORK \
   --publish 127.0.0.1:6080:6080 \
   --volume $WORKSPACE:/workspace \
   --volume $PERSISTENT_HOME:/home/arcade \
-  --group-add $PHP_GID \
   --memory=5g --cpus=3 --shm-size=512m \
   --security-opt=no-new-privileges:true \
   --cap-drop=ALL \

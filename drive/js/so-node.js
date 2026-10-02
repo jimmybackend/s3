@@ -51,10 +51,18 @@ class ArcadeCloudOsNodeMonitor {
 
   renderOperatingNode(node) {
     const identity = node?.identity || {};
-    const label = String(identity.operating_label || 'Nodo local');
+    const configured = String(identity.node_name || '').trim();
+    const normalized = configured.toLowerCase();
+    const friendly = normalized === 'drive'
+      ? 'Drive'
+      : (normalized === 'fastdrive' ? 'FastDrive' : configured);
+    const label = friendly
+      ? 'Nodo ' + friendly
+      : String(identity.operating_label || 'Nodo local');
+
     this.document.querySelectorAll('[data-node-local-label]').forEach((el) => {
       el.textContent = label;
-      el.title = 'Servidor local: ' + label;
+      el.title = 'Servidor local FederationCloud: ' + label;
     });
   }
 

@@ -5,6 +5,9 @@ on:
     branches:
       - main
       - refactor/oop-drive-migration
+  pull_request:
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:

@@ -19,6 +19,7 @@ final class TranscriptionController extends AbstractJsonController
         try {
             $this->requirePost();
             $userId = $this->guardAuthenticated();
+            $this->requireDriveCsrf();
             $result = $this->service()->start($userId, $this->request->allPost());
             $jobName = (string)($result['jobName'] ?? '');
 

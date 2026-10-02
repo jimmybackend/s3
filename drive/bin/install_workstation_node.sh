@@ -105,7 +105,13 @@ if [[ ! -f "$ENV_FILE" ]]; then
   cat > "$ENV_FILE" <<EOF
 VNC_GEOMETRY=1600x900
 VNC_DEPTH=24
+TZ=America/Mexico_City
 EOF
+fi
+if grep -q '^TZ=' "$ENV_FILE"; then
+  sed -i 's#^TZ=.*#TZ=America/Mexico_City#' "$ENV_FILE"
+else
+  printf '%s\n' 'TZ=America/Mexico_City' >> "$ENV_FILE"
 fi
 chown root:root "$ENV_FILE"
 chmod 0600 "$ENV_FILE"

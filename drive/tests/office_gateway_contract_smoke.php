@@ -154,7 +154,7 @@ officeGatewayContract(
     && str_contains($helper, "'HOME=/home/arcade'")
     && str_contains($helper, "'XDG_RUNTIME_DIR=/run/user/10001'")
     && str_contains($helper, "'libreoffice'")
-    && str_contains($helper, "'/workspace/' . $relative"),
+    && str_contains($helper, "'/workspace/' . \$relative"),
     'helper abre documentos LibreOffice dentro del display gráfico noVNC'
 );
 
@@ -175,8 +175,8 @@ officeGatewayContract(
 
 officeGatewayContract(
     str_contains($helper, "'/usr/bin/setfacl'")
-    && str_contains($helper, "'d:u:' . $phpUser . ':rwx,d:m::rwx'")
-    && str_contains($helper, "'u:' . $phpUser . ':rw-,m::rw-'")
+    && str_contains($helper, "'d:u:' . \$phpUser . ':rwx,d:m::rwx'")
+    && str_contains($helper, "'u:' . \$phpUser . ':rw-,m::rw-'")
     && str_contains($workstationInstaller, 'command -v setfacl')
     && str_contains($workstationInstaller, 'dnf install -y acl'),
     'workspace Office conserva acceso PHP-FPM cuando LibreOffice reemplaza el archivo al guardar'

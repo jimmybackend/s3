@@ -250,11 +250,12 @@
     },
     {
       "path": "drive/bin/arcadecloud-drive-admin-helper.php",
-      "size": 47180,
+      "size": 51872,
       "active": false,
       "references": [
         "drive/tests/fastdrive_control_contract_smoke.php",
         "drive/tests/installer_service_reconcile_contract_smoke.php",
+        "drive/tests/local_container_capabilities_regression.php",
         "drive/tests/node_diagnostics_control_smoke.php",
         "drive/tests/office_gateway_contract_smoke.php",
         "drive/tests/server_console_contract_smoke.php",
@@ -472,7 +473,8 @@
         "drive/tests/web_os_contract_smoke.php",
         "drive/js/ai-search.js",
         "drive/js/archivos.js",
-        "drive/js/so-search.js"
+        "drive/js/so-search.js",
+        "drive/tests/web_os_search_location_functional.js"
       ]
     },
     {
@@ -1606,7 +1608,7 @@
     },
     {
       "path": "drive/src/Admin/PrivilegedServerHelper.php",
-      "size": 11000,
+      "size": 11658,
       "active": false,
       "references": [
         "drive/setup/api.php",
@@ -3412,6 +3414,14 @@
       ]
     },
     {
+      "path": "drive/src/System/LocalContainerCapabilityService.php",
+      "size": 2961,
+      "active": false,
+      "references": [
+        "drive/tests/local_container_capabilities_regression.php"
+      ]
+    },
+    {
       "path": "drive/src/System/NodeCapabilityService.php",
       "size": 8877,
       "active": false,
@@ -3422,7 +3432,7 @@
     },
     {
       "path": "drive/src/System/NodeRuntimeStatusService.php",
-      "size": 27636,
+      "size": 27698,
       "active": false,
       "references": [
         "drive/tests/node_diagnostics_contract_smoke.php",
@@ -3824,6 +3834,12 @@
       "references": []
     },
     {
+      "path": "drive/tests/local_container_capabilities_regression.php",
+      "size": 4525,
+      "active": false,
+      "references": []
+    },
+    {
       "path": "drive/tests/media_processing_contract_smoke.php",
       "size": 17692,
       "active": false,
@@ -3879,7 +3895,7 @@
     },
     {
       "path": "drive/tests/server_console_contract_smoke.php",
-      "size": 6019,
+      "size": 6537,
       "active": false,
       "references": []
     },
@@ -3951,7 +3967,7 @@
     },
     {
       "path": "drive/tests/web_os_contract_smoke.php",
-      "size": 52058,
+      "size": 52141,
       "active": false,
       "references": []
     },

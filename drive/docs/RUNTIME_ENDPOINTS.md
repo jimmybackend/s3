@@ -63,7 +63,7 @@
 |---|---|
 | `drive/actualizar_ruta.php` | `drive/js/carpetas.js`, `drive/js/obtenerFiltros.js` |
 | `drive/background_tasks.php` | `drive/js/background-tasks.js` |
-| `drive/bin/arcadecloud-drive-admin-helper.php` | `drive/tests/fastdrive_control_contract_smoke.php`, `drive/tests/installer_service_reconcile_contract_smoke.php`, `drive/tests/node_diagnostics_control_smoke.php`, `drive/tests/office_gateway_contract_smoke.php`, `drive/tests/server_console_contract_smoke.php`, `drive/tests/setup_finalize_contract_smoke.php`, `drive/tests/web_os_pending_fixes_smoke.php` |
+| `drive/bin/arcadecloud-drive-admin-helper.php` | `drive/tests/fastdrive_control_contract_smoke.php`, `drive/tests/installer_service_reconcile_contract_smoke.php`, `drive/tests/local_container_capabilities_regression.php`, `drive/tests/node_diagnostics_control_smoke.php`, `drive/tests/office_gateway_contract_smoke.php`, `drive/tests/server_console_contract_smoke.php`, `drive/tests/setup_finalize_contract_smoke.php`, `drive/tests/web_os_pending_fixes_smoke.php` |
 | `drive/bin/arcadecloud-drive-updater.php` | `drive/tests/installer_service_reconcile_contract_smoke.php` |
 | `drive/bin/federation_catalog_migrate.php` | `drive/tests/federation_customs_contract_smoke.php`, `drive/tests/federation_moderation_contract_smoke.php`, `drive/tests/installer_service_reconcile_contract_smoke.php`, `drive/tests/setup_finalize_contract_smoke.php` |
 | `drive/bin/federation_drop_cleanup.php` | ninguna |
@@ -86,7 +86,7 @@
 | `drive/bin/transcribe_reconcile.php` | `drive/src/Application/BackgroundWorkerLauncher.php` |
 | `drive/bin/upload_cleanup.php` | `drive/src/Http/Controller/UploadCleanupController.php` |
 | `drive/bin/workstation_health.php` | `drive/tests/workstation_phase1_contract_smoke.php` |
-| `drive/buscar_archivo.php` | `drive/tests/web_os_contract_smoke.php`, `drive/js/ai-search.js`, `drive/js/archivos.js`, `drive/js/so-search.js` |
+| `drive/buscar_archivo.php` | `drive/tests/web_os_contract_smoke.php`, `drive/js/ai-search.js`, `drive/js/archivos.js`, `drive/js/so-search.js`, `drive/tests/web_os_search_location_functional.js` |
 | `drive/comprehend_archivo.php` | `drive/js/aws-comprehend.js` |
 | `drive/crear_carpeta.php` | `drive/js/carpetas.js` |
 | `drive/create_folder_document.php` | `drive/js/folder-document.js` |
@@ -410,6 +410,7 @@
 | `drive/src/Sync/SyncRepository.php` | `drive/tests/scoped_sync_repository_regression.php`, `drive/tests/sync_repository_regression.php` |
 | `drive/src/Sync/SyncSchemaMigrator.php` | `drive/tests/sync_schema_migrator_regression.php` |
 | `drive/src/System/Ec2InstanceIdentityService.php` | `drive/tests/fastdrive_control_contract_smoke.php`, `drive/tests/media_processing_contract_smoke.php` |
+| `drive/src/System/LocalContainerCapabilityService.php` | `drive/tests/local_container_capabilities_regression.php` |
 | `drive/src/System/NodeCapabilityService.php` | `drive/tests/node_diagnostics_contract_smoke.php`, `drive/tests/web_os_contract_smoke.php` |
 | `drive/src/System/NodeRuntimeStatusService.php` | `drive/tests/node_diagnostics_contract_smoke.php`, `drive/tests/node_diagnostics_control_smoke.php` |
 | `drive/src/System/NodeServiceCatalog.php` | `drive/tests/node_diagnostics_control_smoke.php` |
@@ -471,6 +472,7 @@
 | `drive/tests/fresh_install_contract_smoke.php` | ninguna |
 | `drive/tests/index_federation_drop_smoke.php` | ninguna |
 | `drive/tests/installer_service_reconcile_contract_smoke.php` | ninguna |
+| `drive/tests/local_container_capabilities_regression.php` | ninguna |
 | `drive/tests/media_processing_contract_smoke.php` | ninguna |
 | `drive/tests/node_diagnostics_contract_smoke.php` | ninguna |
 | `drive/tests/node_diagnostics_control_smoke.php` | ninguna |

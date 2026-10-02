@@ -2553,7 +2553,7 @@
     },
     {
       "path": "drive/src/Application/FolderQueryService.php",
-      "lines": 208,
+      "lines": 224,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -4580,7 +4580,7 @@
     },
     {
       "path": "drive/src/Http/Controller/FileSearchController.php",
-      "lines": 101,
+      "lines": 107,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -6525,7 +6525,7 @@
     },
     {
       "path": "drive/tests/catalog_folder_paths_regression.php",
-      "lines": 51,
+      "lines": 61,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -9971,7 +9971,7 @@
     },
     {
       "path": "drive/docs/runtime_endpoints.json",
-      "bytes": 119264,
+      "bytes": 119382,
       "valid": true,
       "root_type": "object",
       "keys": [

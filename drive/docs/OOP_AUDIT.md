@@ -196,7 +196,7 @@
 | `drive/src/Application/FileSearchService.php` | 159 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Application/FolderDocumentService.php` | 298 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Application/FolderMutationService.php` | 330 | class/module | 1 | — | — | — | — |
-| `drive/src/Application/FolderQueryService.php` | 208 | class/module | 1 | — | — | — | — |
+| `drive/src/Application/FolderQueryService.php` | 224 | class/module | 1 | — | — | — | — |
 | `drive/src/Application/MoveJobService.php` | 251 | class/module | 1 | — | — | — | — |
 | `drive/src/Application/PhpLintService.php` | 70 | class/module | 1 | — | — | — | — |
 | `drive/src/Application/TemporaryZip.php` | 27 | class/module | 1 | — | — | — | — |
@@ -331,7 +331,7 @@
 | `drive/src/Http/Controller/FileAccessController.php` | 145 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/FileKeyRotationController.php` | 36 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/FileMutationController.php` | 128 | class/module | 1 | — | — | — | — |
-| `drive/src/Http/Controller/FileSearchController.php` | 101 | class/module | 1 | — | — | — | — |
+| `drive/src/Http/Controller/FileSearchController.php` | 107 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/FileSecurityController.php` | 100 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/FolderDocumentController.php` | 71 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/FolderMutationController.php` | 207 | class/module | 1 | — | — | — | — |
@@ -459,7 +459,7 @@
 | `drive/tests/activity_retention_regression.php` | 67 | test script | 0 | — | ⚠️ | — | — |
 | `drive/tests/arcadelink_bulk_contract_regression.php` | 71 | test script | 0 | — | — | — | — |
 | `drive/tests/arcadelink_collection_regression.php` | 63 | test script | 0 | — | — | — | — |
-| `drive/tests/catalog_folder_paths_regression.php` | 51 | test script | 0 | — | ⚠️ | — | — |
+| `drive/tests/catalog_folder_paths_regression.php` | 61 | test script | 0 | — | ⚠️ | — | — |
 | `drive/tests/chunked_upload_cleanup_regression.php` | 117 | test script | 1 | — | — | — | — |
 | `drive/tests/database_schema_contract_smoke.php` | 125 | test script | 0 | — | — | — | — |
 | `drive/tests/fastdrive_control_contract_smoke.php` | 72 | test script | 0 | — | — | — | — |

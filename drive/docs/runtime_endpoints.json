@@ -236,7 +236,8 @@
         "drive/so.php",
         "drive/src/Http/Controller/PersonalAwsController.php",
         "drive/tests/web_os_pending_fixes_smoke.php",
-        "drive/js/estilo.js"
+        "drive/js/estilo.js",
+        "drive/js/os-window-manager.js"
       ]
     },
     {
@@ -3948,7 +3949,7 @@
     },
     {
       "path": "drive/tests/web_os_pending_fixes_smoke.php",
-      "size": 6106,
+      "size": 6538,
       "active": false,
       "references": []
     },

@@ -500,7 +500,7 @@
 | `drive/tests/web_os_file_applications_smoke.php` | 21 | test script | 0 | — | — | — | — |
 | `drive/tests/web_os_interactions_theme_smoke.php` | 30 | test script | 0 | — | — | — | — |
 | `drive/tests/web_os_multiwindow_smoke.php` | 62 | test script | 0 | — | — | — | — |
-| `drive/tests/web_os_pending_fixes_smoke.php` | 57 | test script | 0 | — | — | — | — |
+| `drive/tests/web_os_pending_fixes_smoke.php` | 59 | test script | 0 | — | — | — | — |
 | `drive/tests/web_os_remote_applications_smoke.php` | 49 | test script | 0 | — | — | — | — |
 | `drive/tests/web_os_theme_contract_smoke.php` | 29 | test script | 0 | — | — | — | — |
 | `drive/tests/workstation_phase1_contract_smoke.php` | 64 | test script | 0 | — | — | — | — |
@@ -575,7 +575,7 @@
 | `drive/js/mediaFloating.js` | 38 | class/module | MediaFloatingModule | — | — | — |
 | `drive/js/move-tasks.js` | 261 | class/module | DriveMoveTasks | — | — | — |
 | `drive/js/obtenerFiltros.js` | 125 | class/module | ObtenerFiltrosModule | — | — | — |
-| `drive/js/os-window-manager.js` | 962 | class/module | ArcadeCloudEventBus, ArcadeCloudWindowLayoutConfig, ArcadeCloudWindowManager, ExplorerWindowFactory, ArcadeCloudExplorerWindow, ArcadeCloudDesktopRuntime | — | — | — |
+| `drive/js/os-window-manager.js` | 967 | class/module | ArcadeCloudEventBus, ArcadeCloudWindowLayoutConfig, ArcadeCloudWindowManager, ExplorerWindowFactory, ArcadeCloudExplorerWindow, ArcadeCloudDesktopRuntime | — | — | — |
 | `drive/js/page-task-manager.js` | 54 | class/module | ArcadeCloudPageTaskManager | — | — | — |
 | `drive/js/pdf-pantalla-completa.js` | 45 | class/module | PdfPantallaCompletaModule | — | — | — |
 | `drive/js/polly-background.js` | 305 | class/module | PollyBackgroundModule | — | — | — |

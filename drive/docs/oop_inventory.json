@@ -7204,7 +7204,7 @@
     },
     {
       "path": "drive/tests/web_os_pending_fixes_smoke.php",
-      "lines": 57,
+      "lines": 59,
       "kind": "test script",
       "classes": 0,
       "functions": [],
@@ -8614,7 +8614,7 @@
     },
     {
       "path": "drive/js/os-window-manager.js",
-      "lines": 962,
+      "lines": 967,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudEventBus",

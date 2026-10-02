@@ -8,6 +8,7 @@ on:
       - 'drive/src/Application/FolderMutationService.php'
       - 'drive/src/Storage/Folder*Repository.php'
       - 'drive/tests/catalog_folder_paths_regression.php'
+      - 'drive/tests/folder_deletion_regression.php'
       - '.github/workflows/catalog-path-regression.yml'
   push:
     branches: [main]
@@ -17,6 +18,7 @@ on:
       - 'drive/src/Application/FolderMutationService.php'
       - 'drive/src/Storage/Folder*Repository.php'
       - 'drive/tests/catalog_folder_paths_regression.php'
+      - 'drive/tests/folder_deletion_regression.php'
       - '.github/workflows/catalog-path-regression.yml'
 
 permissions:
@@ -54,7 +56,9 @@ jobs:
       - name: Catalog rename behavior
         env:
           ARCADECLOUD_ISOLATED_TEST: '1'
-        run: php drive/tests/catalog_folder_paths_regression.php
+        run: |
+          php drive/tests/catalog_folder_paths_regression.php
+          php drive/tests/folder_deletion_regression.php
       - name: Diff check
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}

@@ -260,3 +260,20 @@ multinodo/offline/recuperación, cierre completo de rutas visibles, revisión de
 endpoints restantes, multimedia real, notificaciones, coordinación atómica de
 apagado/admisión y medición de otros cuellos de rendimiento. Los checks de CI
 validan su alcance específico; no acreditan esas pruebas pendientes.
+
+## Fase 12 — borrado parcial y alcance literal del subárbol
+
+La revisión previa a papelera encontró dos defectos del flujo actual:
+FolderMutationService ignoraba Errors de DeleteObjects (también presentes con
+HTTP 200 y Quiet); FolderMutationRepository usaba Prefix/Ruta como patrón LIKE
+sin escapar porcentajes ni guiones bajos, seleccionando hermanos por accidente.
+
+Se comprueban errores por objeto antes de retirar el catálogo en delete y se
+escapan %, _ y el carácter de escape en consultas de copiar/mover/eliminar.
+No se imprimen keys ni mensajes del proveedor. Un fallo parcial sigue pudiendo
+haber borrado parte de S3: se informa operación incompleta y se conserva catálogo
+para reintento; no se promete rollback de bytes ni papelera.
+
+Regresión de servicio/repositorio reales con MySQL canónico aislado y AWS SDK
+simulado: hermanos con prefijos parecidos, copia/movimiento/borrado literal,
+HTTP 200 con AccessDenied, conservación del catálogo y reintento exitoso.

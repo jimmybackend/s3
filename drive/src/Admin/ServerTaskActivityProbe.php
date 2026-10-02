@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace ArcadeCloud\Drive\Admin;
 
 use ArcadeCloud\Drive\Core\DriveApplication;
+use ArcadeCloud\Drive\Office\OfficeActivityProbe;
 use ArcadeCloud\Drive\Media\MediaProcessingJobRepository;
 use ArcadeCloud\Drive\Sync\SyncJobStore;
 
@@ -31,23 +32,7 @@ final class ServerTaskActivityProbe
 
     private function hasActiveOfficeSessions(): bool
     {
-        $leases = $this->app->db()->query(
-            'SELECT 1 FROM OfficeSessionLeases WHERE ExpiresAt>UTC_TIMESTAMP() LIMIT 1'
-        );
-        if ($leases && is_array($leases->fetch_row())) {
-            $leases->free();
-            return true;
-        }
-        if ($leases) $leases->free();
-
-        $documents = $this->app->db()->query(
-            "SELECT 1 FROM OfficeDocumentSessions "
-            . "WHERE Status IN ('preparing','ready','syncing','conflict') LIMIT 1"
-        );
-        if (!$documents) return false;
-        $active = is_array($documents->fetch_row());
-        $documents->free();
-        return $active;
+        return (new OfficeActivityProbe($this->app->db()))->hasActiveSessions();
     }
 
     private function hasActiveAiTasks(): bool

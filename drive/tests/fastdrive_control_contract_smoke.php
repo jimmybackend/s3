@@ -32,8 +32,7 @@ fastDriveContract(str_contains($service, '->start($instanceId)'), 'servicio pued
 fastDriveContract(str_contains($service, 'public function stop('), 'control dedicado expone apagado manual seguro');
 fastDriveContract(str_contains($service, '->stop($instanceId, false)'), 'apagado manual nunca usa Force');
 fastDriveContract(str_contains($service, 'ServerTaskActivityProbe'), 'apagado manual comprueba tareas activas');
-fastDriveContract(str_contains($service, 'OfficeSessionLeases'), 'apagado manual comprueba sesión Office activa');
-fastDriveContract(str_contains($service, 'OfficeDocumentSessions'), 'apagado manual comprueba documentos Office activos');
+fastDriveContract(str_contains($service, 'new OfficeActivityProbe($this->app->db())') && str_contains($service, 'hasActiveSessions($instanceId)'), 'apagado manual reutiliza la guarda Office por instancia; comportamiento cubierto con MySQL');
 fastDriveContract(!str_contains($endpoint, "postString('id')"), 'navegador no puede seleccionar un instance-id');
 fastDriveContract(str_contains($endpoint, "['start', 'stop']"), 'endpoint limita acciones manuales a start/stop');
 fastDriveContract(str_contains($endpoint, '$service->stop($password)'), 'endpoint puede solicitar apagado seguro');

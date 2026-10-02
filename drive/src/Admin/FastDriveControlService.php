@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace ArcadeCloud\Drive\Admin;
 
 use ArcadeCloud\Drive\Core\DriveApplication;
+use ArcadeCloud\Drive\Office\OfficeActivityProbe;
 use ArcadeCloud\Drive\Security\SuperAdminReauthenticationService;
 use ArcadeCloud\Drive\System\Ec2InstanceIdentityService;
 use RuntimeException;
@@ -176,34 +177,7 @@ final class FastDriveControlService
 
     private function hasActiveOfficeSession(string $instanceId): bool
     {
-        $stmt = $this->app->db()->prepare(
-            'SELECT 1 FROM OfficeSessionLeases '
-            . 'WHERE InstanceId=? AND ExpiresAt>UTC_TIMESTAMP() LIMIT 1'
-        );
-        if (!$stmt) {
-            throw new RuntimeException('No se pudo verificar si Office está en uso.');
-        }
-        $stmt->bind_param('s', $instanceId);
-        $stmt->execute();
-        $active = $stmt->get_result()?->fetch_row();
-        $stmt->close();
-        if (is_array($active)) {
-            return true;
-        }
-
-        $stmt = $this->app->db()->prepare(
-            "SELECT 1 FROM OfficeDocumentSessions "
-            . "WHERE InstanceId=? AND Status IN ('preparing','ready','syncing','conflict') LIMIT 1"
-        );
-        if (!$stmt) {
-            throw new RuntimeException('No se pudo verificar si hay documentos Office abiertos.');
-        }
-        $stmt->bind_param('s', $instanceId);
-        $stmt->execute();
-        $active = $stmt->get_result()?->fetch_row();
-        $stmt->close();
-
-        return is_array($active);
+        return (new OfficeActivityProbe($this->app->db()))->hasActiveSessions($instanceId);
     }
 
     /** @return array{0:string,1:string} */

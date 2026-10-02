@@ -365,7 +365,7 @@ final class OfficeDocumentStorageService
         if (!is_dir($directory) && !mkdir($directory, 0770, true) && !is_dir($directory)) {
             throw new RuntimeException('No se pudo crear el workspace de la sesión Office.');
         }
-        @chmod($directory, 0770);
+        @chmod($directory, 02770);
 
         $realDirectory = realpath($directory);
         if (

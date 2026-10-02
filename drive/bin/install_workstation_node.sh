@@ -115,6 +115,7 @@ ExecStartPre=-/usr/bin/docker rm -f $CONTAINER
 ExecStart=/usr/bin/docker run --rm --name $CONTAINER \
   --env-file $ENV_FILE \
   --env-file $RDP_ENV_FILE \
+  --env ARCADECLOUD_PHP_GID=$PHP_GID \
   --network $OFFICE_NETWORK \
   --publish 127.0.0.1:6080:6080 \
   --volume $WORKSPACE:/workspace \

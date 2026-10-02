@@ -7373,7 +7373,7 @@
     },
     {
       "path": "drive/tests/web_os_contract_smoke.php",
-      "lines": 498,
+      "lines": 500,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -10004,7 +10004,7 @@
     },
     {
       "path": "drive/docs/runtime_endpoints.json",
-      "bytes": 119780,
+      "bytes": 119843,
       "valid": true,
       "root_type": "object",
       "keys": [

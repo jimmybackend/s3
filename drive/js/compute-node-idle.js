@@ -10,6 +10,7 @@ class ArcadeCloudComputeIdleGuard {
     this.pollTimer = null;
     this.countdownTimer = null;
     this.warningBox = null;
+    this.statusBadge = null;
     this.warningSeconds = 30;
     this.currentRemaining = null;
     this.busy = false;
@@ -18,6 +19,7 @@ class ArcadeCloudComputeIdleGuard {
   init() {
     if (!this.csrf) return this;
     this.ensureWarningUi();
+    this.ensureStatusUi();
     this.bindActivity();
     if (this.document.visibilityState === 'visible') {
       this.touch(true);
@@ -91,6 +93,13 @@ class ArcadeCloudComputeIdleGuard {
 
   applyStatus(status) {
     const state = String(status?.state || '');
+    const blockers = Array.isArray(status?.blockers) ? status.blockers.map(String) : [];
+    const elapsed = Math.max(0, Number(status?.idle_elapsed_seconds || 0));
+    const grace = Math.max(0, Number(status?.idle_grace_seconds || 0));
+    const sessionActive = status?.session_active === true;
+
+    this.renderStatus(state, sessionActive, elapsed, grace, blockers);
+
     const warning = status?.warning === true && state === 'running';
     if (!warning) {
       this.hideWarning();
@@ -99,6 +108,48 @@ class ArcadeCloudComputeIdleGuard {
 
     const remaining = Math.max(0, Number(status.shutdown_in_seconds ?? this.warningSeconds));
     this.showWarning(remaining);
+  }
+
+  ensureStatusUi() {
+    if (this.statusBadge) return this.statusBadge;
+    const badge = this.document.createElement('div');
+    badge.id = 'computeIdleStatus';
+    badge.className = 'compute-idle-status';
+    badge.hidden = true;
+    badge.setAttribute('aria-live', 'polite');
+    this.document.body.appendChild(badge);
+    this.statusBadge = badge;
+    return badge;
+  }
+
+  renderStatus(state, sessionActive, elapsed, grace, blockers) {
+    const badge = this.ensureStatusUi();
+    if (state !== 'running' || !sessionActive) {
+      badge.hidden = true;
+      return;
+    }
+    badge.hidden = false;
+    badge.classList.toggle('is-paused', blockers.length > 0);
+    if (blockers.length > 0) {
+      const labels = blockers.map((item) => item === 'office_activo'
+        ? 'Office activo'
+        : (item === 'multimedia_activa' ? 'multimedia activa' : item));
+      badge.textContent = 'Autoapagado pausado: ' + labels.join(', ');
+      return;
+    }
+    if (elapsed <= 0) {
+      badge.textContent = 'Autoapagado listo · esperando inactividad';
+      return;
+    }
+    badge.textContent = 'Inactivo ' + this.formatDuration(elapsed)
+      + ' / ' + this.formatDuration(grace);
+  }
+
+  formatDuration(seconds) {
+    const value = Math.max(0, Math.floor(Number(seconds || 0)));
+    const minutes = Math.floor(value / 60);
+    const rest = value % 60;
+    return String(minutes).padStart(2, '0') + ':' + String(rest).padStart(2, '0');
   }
 
   ensureWarningUi() {

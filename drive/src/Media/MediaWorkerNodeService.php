@@ -69,12 +69,12 @@ final class MediaWorkerNodeService
         if ($this->region === '') {
             $this->region = 'us-east-1';
         }
-        // El nodo grande permanece disponible 10 minutos desde la última
+        // El nodo grande permanece disponible 20 minutos desde la última
         // actividad real. Después se abre una ventana adicional de 30 s para
         // que la interfaz pueda avisar y cancelar el apagado.
         $this->idleGraceSeconds = max(
-            600,
-            min(3600, (int)(getenv('ARCADECLOUD_MEDIA_WORKER_IDLE_GRACE_SECONDS') ?: 600))
+            1200,
+            min(3600, (int)(getenv('ARCADECLOUD_MEDIA_WORKER_IDLE_GRACE_SECONDS') ?: 1200))
         );
 
         $hourly = trim((string)(getenv('ARCADECLOUD_MEDIA_WORKER_HOURLY_USD') ?: ''));

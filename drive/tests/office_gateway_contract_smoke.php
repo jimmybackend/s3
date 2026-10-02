@@ -175,6 +175,7 @@ officeGatewayContract(
 
 officeGatewayContract(
     str_contains($helper, "'/usr/bin/setfacl'")
+    && substr_count($helper, "'/usr/bin/setfacl'") >= 2
     && str_contains($helper, "'d:u:' . \$phpUser . ':rwx,d:m::rwx'")
     && str_contains($helper, "'u:' . \$phpUser . ':rw-,m::rw-'")
     && str_contains($workstationInstaller, 'command -v setfacl')
@@ -287,7 +288,7 @@ officeGatewayContract(
 );
 
 officeGatewayContract(
-    str_contains($helper, "'version' => 19")
+    str_contains($helper, "'version' => 20")
     && str_contains($helper, "'workstation_control' => true")
     && str_contains($helper, "'workstation_document_open' => true")
     && str_contains($helper, "if (\$action === 'workstation-open-document')")

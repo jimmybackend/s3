@@ -69,7 +69,7 @@ final class ArcadeCloudDriveAdminHelper
         if ($action === 'status') {
             fwrite(STDOUT, json_encode([
                 'ok' => true,
-                'version' => 19,
+                'version' => 20,
                 'capabilities' => [
                     'env_set_many' => true,
                     'db_aws_settings' => true,
@@ -952,6 +952,7 @@ final class ArcadeCloudDriveAdminHelper
             '/usr/bin/journalctl',
             '/usr/bin/tail',
             '/usr/bin/docker',
+            '/usr/bin/setfacl',
         ];
         if (!in_array($executable, $allowedExecutables, true) || !is_executable($executable)) {
             $this->fail('Ejecutable de diagnóstico no disponible o no permitido.', 69);

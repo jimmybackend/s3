@@ -257,7 +257,7 @@
     },
     {
       "path": "drive/bin/arcadecloud-drive-admin-helper.php",
-      "size": 54007,
+      "size": 54188,
       "active": false,
       "references": [
         "drive/tests/fastdrive_control_contract_smoke.php",
@@ -1634,7 +1634,7 @@
     },
     {
       "path": "drive/src/Admin/PrivilegedServerHelper.php",
-      "size": 11655,
+      "size": 12623,
       "active": false,
       "references": [
         "drive/setup/api.php",
@@ -3090,7 +3090,7 @@
     },
     {
       "path": "drive/src/Office/OfficeDocumentSessionRepository.php",
-      "size": 10336,
+      "size": 10727,
       "active": false,
       "references": [
         "drive/tests/office_gateway_contract_smoke.php"
@@ -3098,7 +3098,7 @@
     },
     {
       "path": "drive/src/Office/OfficeDocumentStorageService.php",
-      "size": 17826,
+      "size": 18723,
       "active": false,
       "references": [
         "drive/tests/office_gateway_contract_smoke.php"
@@ -3934,7 +3934,7 @@
     },
     {
       "path": "drive/tests/office_gateway_contract_smoke.php",
-      "size": 14467,
+      "size": 15416,
       "active": false,
       "references": []
     },

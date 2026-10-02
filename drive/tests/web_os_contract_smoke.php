@@ -403,10 +403,10 @@ webOsContract(str_contains($paths['shell'], 'js/compute-node-idle.js'), 'Web OS 
 webOsContract(str_contains($paths['compute_idle_js'], "this.pollMs = 5000"), 'estado de inactividad se consulta periódicamente');
 webOsContract(str_contains($paths['compute_idle_js'], "node_activity: '1'"), 'actividad real reinicia contador del nodo');
 webOsContract(str_contains($paths['compute_idle_js'], "node_shutdown_now: '1'"), 'aviso permite solicitar apagado seguro');
-webOsContract(str_contains($paths['compute_idle_js'], 'Han pasado 10 minutos sin actividad'), 'aviso explica umbral de diez minutos');
+webOsContract(str_contains($paths['compute_idle_js'], 'Han pasado 20 minutos sin actividad'), 'aviso explica umbral de veinte minutos');
 webOsContract(str_contains($paths['compute_idle_js'], 'data-compute-idle-count'), 'aviso muestra cuenta regresiva');
 webOsContract(str_contains($paths['media_node'], 'IDLE_WARNING_SECONDS = 30'), 'backend reserva treinta segundos para advertencia');
-webOsContract(str_contains($paths['media_node'], "?: 600"), 'backend usa diez minutos de inactividad por defecto');
+webOsContract(str_contains($paths['media_node'], "?: 1200"), 'backend usa veinte minutos de inactividad por defecto');
 webOsContract(str_contains($paths['media_node'], 'touchInteractiveActivity'), 'actividad de s3/so se registra en la sesión EC2');
 webOsContract(str_contains($paths['media_node'], 'requestIdleStop'), 'apagado interactivo pasa por servicio del nodo');
 webOsContract(str_contains($paths['media_node'], "(\$idle['warning'] ?? false) !== true"), 'StopInstances interactivo sólo se permite durante aviso de inactividad');

@@ -799,6 +799,7 @@
       "active": false,
       "references": [
         "drive/src/Federation/FederationHttpClient.php",
+        "drive/tests/web_os_contract_smoke.php",
         "drive/js/federation-footer.js",
         "drive/js/federation-os-admin.js"
       ]
@@ -3584,7 +3585,7 @@
     },
     {
       "path": "drive/src/View/FederationModerationPageRenderer.php",
-      "size": 8781,
+      "size": 8832,
       "active": false,
       "references": [
         "drive/tests/federation_moderation_contract_smoke.php",
@@ -4046,7 +4047,7 @@
     },
     {
       "path": "drive/tests/web_os_contract_smoke.php",
-      "size": 52176,
+      "size": 52555,
       "active": false,
       "references": []
     },

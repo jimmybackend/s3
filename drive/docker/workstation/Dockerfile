@@ -2,12 +2,13 @@ FROM ubuntu:24.04
 
 ENV DEBIAN_FRONTEND=noninteractive \
     LANG=C.UTF-8 \
-    LC_ALL=C.UTF-8
+    LC_ALL=C.UTF-8 \
+    TZ=America/Mexico_City
 
 RUN apt-get update \
  && apt-get install -y --no-install-recommends \
       ca-certificates curl dbus-x11 fonts-dejavu-core fonts-liberation fonts-noto-core \
-      git gnupg libreoffice libreoffice-gtk3 novnc python3-websockify \
+      git gnupg libreoffice libreoffice-gtk3 novnc python3-websockify tzdata \
       tigervnc-standalone-server tigervnc-tools unzip wget xfce4 xfce4-terminal xterm xdg-utils \
       pipewire pipewire-pulse wireplumber pipewire-audio-client-libraries \
       pipewire-module-xrdp pavucontrol pulseaudio-utils alsa-utils xrdp xorgxrdp \
@@ -31,9 +32,10 @@ RUN groupadd --gid 10001 arcade \
 
 COPY entrypoint.sh /usr/local/bin/arcadecloud-workstation-entrypoint
 COPY arcadecloud-chrome /usr/local/bin/arcadecloud-chrome
+COPY arcadecloud-office-document /usr/local/bin/arcadecloud-office-document
 COPY arcadecloud-chrome-helper.desktop /usr/share/xfce4/helpers/arcadecloud-chrome.desktop
 COPY arcadecloud-chrome.desktop /usr/share/applications/arcadecloud-chrome.desktop
-RUN chmod 0755 /usr/local/bin/arcadecloud-workstation-entrypoint /usr/local/bin/arcadecloud-chrome \
+RUN chmod 0755 /usr/local/bin/arcadecloud-workstation-entrypoint /usr/local/bin/arcadecloud-chrome /usr/local/bin/arcadecloud-office-document \
  && chmod 0644 /usr/share/xfce4/helpers/arcadecloud-chrome.desktop /usr/share/applications/arcadecloud-chrome.desktop
 
 WORKDIR /home/arcade

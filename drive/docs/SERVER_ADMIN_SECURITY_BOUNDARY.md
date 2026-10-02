@@ -14,3 +14,8 @@ Este documento complementa `SUPERADMIN_SERVER_SETTINGS.md` y deja una regla expl
 - crear/renombrar la identidad FederationCloud requiere sesión superadmin + CSRF y sólo puede actuar sobre la ruta de identidad configurada por el operador del servidor.
 
 La instalación del helper requiere una acción root inicial porque un proceso web no puede instalar su propia herramienta privilegiada. Una vez realizada esa preparación, la operación cotidiana declarada por ArcadeCloud puede hacerse desde el panel Servidor.
+
+El inventario `local-container-programs` (helper v16) sólo permite lecturas GET/HEAD
+compiladas contra el socket Docker Unix local. No recibe argumentos, no ejecuta
+programas dentro del contenedor y devuelve únicamente indicadores normalizados.
+Consultar `LOCAL_NODE_CAPABILITIES.md` para alcance y estados de degradación.

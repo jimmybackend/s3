@@ -67,6 +67,7 @@ on:
       - 'drive/src/Console/MoveJobWorkerCommand.php'
       - 'drive/src/System/**'
       - 'drive/tests/web_os_contract_smoke.php'
+      - 'drive/tests/web_os_search_location_functional.js'
       - 'drive/tests/web_os_clipboard_contract_smoke.php'
       - '.github/workflows/web-os.yml'
   push:
@@ -136,6 +137,7 @@ on:
       - 'drive/src/Console/MoveJobWorkerCommand.php'
       - 'drive/src/System/**'
       - 'drive/tests/web_os_contract_smoke.php'
+      - 'drive/tests/web_os_search_location_functional.js'
       - 'drive/tests/web_os_clipboard_contract_smoke.php'
       - '.github/workflows/web-os.yml'
 
@@ -213,3 +215,5 @@ jobs:
         run: |
           php drive/tests/web_os_contract_smoke.php
           php drive/tests/web_os_clipboard_contract_smoke.php
+      - name: Search location behavior
+        run: node drive/tests/web_os_search_location_functional.js

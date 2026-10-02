@@ -69,7 +69,7 @@ final class ArcadeCloudDriveAdminHelper
         if ($action === 'status') {
             fwrite(STDOUT, json_encode([
                 'ok' => true,
-                'version' => 15,
+                'version' => 16,
                 'capabilities' => [
                     'env_set_many' => true,
                     'db_aws_settings' => true,
@@ -86,6 +86,7 @@ final class ArcadeCloudDriveAdminHelper
                     'workstation_control' => true,
                     'workstation_document_open' => true,
                     'node_service_control' => true,
+                    'local_container_programs' => true,
                 ],
                 'identity_path' => $identityPath,
                 'identity_exists' => is_file($identityPath),
@@ -95,6 +96,12 @@ final class ArcadeCloudDriveAdminHelper
                 'setup_lock_path' => $setupLockPath,
                 'setup_locked' => is_file($setupLockPath),
             ], JSON_UNESCAPED_SLASHES) . "\n");
+            exit(0);
+        }
+
+        if ($action === 'local-container-programs') {
+            if (count($argv) !== 2) $this->fail('El inventario local no acepta parámetros.', 64);
+            fwrite(STDOUT, json_encode($this->localContainerPrograms(), JSON_THROW_ON_ERROR) . "\n");
             exit(0);
         }
 
@@ -782,6 +789,82 @@ final class ArcadeCloudDriveAdminHelper
             . "ANTES\n" . $before . "\n\nDESPUÉS\n" . $after;
     }
 
+    /** Fixed read-only inventory; the CLI action accepts no target or command. */
+    public function localContainerPrograms(?callable $request = null): array
+    {
+        $request ??= fn(string $method, string $path): array => $this->localDockerRead($method, $path);
+        $container = 'arcadecloud-workstation';
+        $definitions = [
+            'libreoffice' => ['/usr/bin/libreoffice', true],
+            'Xtigervnc' => ['/usr/bin/Xtigervnc', true],
+            'git' => ['/usr/bin/git', true],
+            'python3' => ['/usr/bin/python3', true],
+            'aws' => ['/usr/local/bin/aws', true],
+            'ffmpeg' => ['/usr/bin/ffmpeg', true],
+            'ffprobe' => ['/usr/bin/ffprobe', true],
+            'novnc_proxy' => ['/usr/share/novnc/vnc.html', false],
+        ];
+        $inspection = $request('GET', '/containers/' . $container . '/json');
+        $status = (int)($inspection['status'] ?? 0);
+        $data = json_decode((string)($inspection['body'] ?? ''), true);
+        $state = is_array($data) ? (array)($data['State'] ?? []) : [];
+        $known = $status === 200 && isset($state['Running']);
+        $running = $known && $state['Running'] === true && empty($state['Paused']) && empty($state['Restarting']) && empty($state['Dead']);
+        $programs = [];
+        foreach ($definitions as $key => [$path, $executable]) {
+            $program = ['container' => $container, 'installed' => false, 'available' => false,
+                'state' => $status === 404 ? 'unavailable' : 'unknown'];
+            if ($known) {
+                $stat = $request('HEAD', '/containers/' . $container . '/archive?path=' . rawurlencode($path));
+                $attributes = json_decode((string)base64_decode((string)($stat['stat'] ?? ''), true), true);
+                $mode = is_array($attributes) ? (int)($attributes['mode'] ?? 0) : 0;
+                $present = ($stat['status'] ?? 0) === 200 && is_array($attributes)
+                    && ($mode & 0x80000000) === 0 && (!$executable || ($mode & 0111) !== 0);
+                $program['installed'] = $present;
+                $program['available'] = $present && $running;
+                $program['state'] = $present ? ($running ? 'container' : 'container_stopped')
+                    : (($stat['status'] ?? 0) === 404 ? 'unavailable' : 'unknown');
+            }
+            $programs[$key] = $program;
+        }
+        return ['ok' => true, 'scope' => 'local', 'programs' => $programs];
+    }
+
+    /** Unix socket only, bounded GET/HEAD, no redirects, proxy or Docker environment. */
+    private function localDockerRead(string $method, string $path): array
+    {
+        if (!function_exists('curl_init') || !defined('CURLOPT_UNIX_SOCKET_PATH')) return ['status' => 0];
+        $curl = curl_init('http://localhost' . $path);
+        if ($curl === false) return ['status' => 0];
+        $body = ''; $stat = '';
+        curl_setopt_array($curl, [
+            CURLOPT_UNIX_SOCKET_PATH => '/var/run/docker.sock',
+            CURLOPT_PROXY => '',
+            CURLOPT_FOLLOWLOCATION => false,
+            CURLOPT_CONNECTTIMEOUT_MS => 200,
+            CURLOPT_TIMEOUT_MS => 600,
+            CURLOPT_NOBODY => $method === 'HEAD',
+            CURLOPT_CUSTOMREQUEST => $method,
+            CURLOPT_WRITEFUNCTION => static function ($handle, string $chunk) use (&$body): int {
+                if (strlen($body) + strlen($chunk) > 65536) return 0;
+                $body .= $chunk;
+                return strlen($chunk);
+            },
+            CURLOPT_HEADERFUNCTION => static function ($handle, string $line) use (&$stat): int {
+                if (stripos($line, 'X-Docker-Container-Path-Stat:') === 0 && strlen($line) < 4096) {
+                    $stat = trim(substr($line, strlen('X-Docker-Container-Path-Stat:')));
+                }
+                return strlen($line);
+            },
+        ]);
+        $ok = curl_exec($curl);
+        $status = $ok === false ? 0 : (int)curl_getinfo($curl, CURLINFO_RESPONSE_CODE);
+        curl_close($curl);
+        // Body may contain Docker environment. Only the caller extracts State;
+        // it must never return/log the raw response or cURL errors.
+        return ['status' => $status, 'body' => $body, 'stat' => $stat];
+    }
+
     /**
      * Ejecuta exclusivamente argv compilado por este helper. Nunca recibe una
      * línea de shell desde HTTP y bypass_shell impide interpretar metacaracteres.
@@ -1215,4 +1298,6 @@ final class ArcadeCloudDriveAdminHelper
     }
 }
 
-(new ArcadeCloudDriveAdminHelper())->run($argv);
+if (PHP_SAPI === 'cli' && realpath((string)($_SERVER['SCRIPT_FILENAME'] ?? '')) === __FILE__) {
+    (new ArcadeCloudDriveAdminHelper())->run($argv);
+}

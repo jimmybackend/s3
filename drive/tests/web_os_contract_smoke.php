@@ -98,7 +98,7 @@ webOsContract(str_contains($paths['shell'], 'data-explorer-visible-route=') && s
 webOsContract(str_contains($paths['folder_query_service'], 'breadcrumbsForUser(') && str_contains($paths['folder_query_service'], "'label' =>") && str_contains($paths['folder_query_service'], "'route' =>"), 'breadcrumbs conservan label visible y route físico por separado');
 webOsContract(str_contains($paths['window_manager_js'], 'this.visibleRoute') && str_contains($paths['window_manager_js'], 'this.breadcrumbs'), 'WindowManager muestra rutas de catálogo sin sustituir la ruta operativa');
 webOsContract(str_contains($paths['window_manager_js'], 'button.textContent = label') && !str_contains($paths['window_manager_js'], 'button.textContent = route; this.suggestions.append'), 'autocompletado no imprime Prefix físico al usuario');
-webOsContract(str_contains($paths['folder_repository'], 'OR Nombre LIKE') && str_contains($paths['folder_suggestions'], "'label' => $app->folderQueryService()->displayPathForUser"), 'sugerencias buscan Nombre de catálogo y devuelven label visible');
+webOsContract(str_contains($paths['folder_repository'], 'OR Nombre LIKE') && str_contains($paths['folder_suggestions'], "'label' => \$app->folderQueryService()->displayPathForUser"), 'sugerencias buscan Nombre de catálogo y devuelven label visible');
 webOsContract(str_contains($paths['window_manager_js'], 'sourceLabel: this.visibleRoute') && str_contains($paths['window_manager_js'], 'destinationLabel'), 'confirmación drag/drop usa rutas visibles y mantiene rutas físicas para ejecutar');
 webOsContract(str_contains($paths['shell'], '>Mi nodo<'), 'interfaz usa Mi nodo');
 webOsContract(str_contains($paths['shell'], 'NodeCapabilityService'), 'Mi nodo usa detector de capacidad');
@@ -387,7 +387,7 @@ webOsContract(str_contains($paths['search_controller'], 'withVisibleRoutes(') &&
 webOsContract(str_contains($paths['search_js'], "desktop.openExplorer(route, { forceNew: true, page })"), 'resultado abre una ventana nueva de Mis datos en la carpeta encontrada');
 webOsContract(str_contains($paths['search_js'], "data-file-id") && str_contains($paths['search_js'], "shell.setFileSelected(entry, true)"), 'archivo encontrado queda seleccionado en la nueva ventana');
 webOsContract(str_contains($paths['window_manager_js'], 'controller.ready = controller.navigate') && str_contains($paths['window_manager_js'], 'options.page'), 'Explorer permite esperar la página exacta antes de seleccionar resultado');
-webOsContract(str_contains($paths['search_js'], 'shell.refreshExplorer(route'), 'resultado abre Mis datos en la carpeta encontrada');
+webOsContract(!str_contains($paths['search_js'], 'shell.refreshExplorer(route') && str_contains($paths['search_js'], 'await explorer.ready'), 'resultado espera su nueva ventana sin reutilizar el Explorer anterior');
 webOsContract(str_contains($paths['search_js'], 'is-search-target'), 'archivo encontrado queda resaltado');
 webOsContract(str_contains($paths['search_controller'], "postString('localizar_id'"), 'controlador localiza un resultado autenticado');
 webOsContract(str_contains($paths['search_service'], 'public function locate('), 'servicio calcula carpeta y página real del archivo');

@@ -66,7 +66,7 @@ $contracts = [
     [$files['service'], "'client_action' => 'clear'", 'clear local'],
     [$files['helper_client'], "version'] ?? 0) >= 11", 'helper v11'],
     [$files['helper_client'], "run(['server-console', \$commandId])", 'ID interno helper'],
-    [$files['helper'], "'version' => 15", 'helper versión 15'],
+    [$files['helper'], "'version' => 16", 'helper versión 16'],
     [$files['helper'], "'repo-pwd'", 'pwd local'],
     [$files['helper'], "'repo-status'", 'git status local'],
     [$files['helper'], "'arcadecloud-services'", 'servicios locales'],
@@ -123,15 +123,23 @@ if (
     exit(1);
 }
 
-foreach (['shell_exec(', 'exec(', 'system(', 'passthru(', 'popen('] as $forbidden) {
-    if (str_contains($files['helper'], $forbidden)) {
+foreach (['shell_exec', 'exec', 'system', 'passthru', 'popen'] as $forbidden) {
+    // Match complete callable names (and whitespace), not curl_exec/proc_* suffixes.
+    $pattern = '/(?<![A-Za-z0-9_])' . preg_quote($forbidden, '/') . '\s*\(/i';
+    if (preg_match($pattern, $files['helper']) === 1) {
         fwrite(STDERR, "Helper contiene ejecución de shell prohibida: {$forbidden}\n");
         exit(1);
     }
-    if (str_contains($files['web_os_terminal'], $forbidden)) {
+    if (preg_match($pattern, $files['web_os_terminal']) === 1) {
         fwrite(STDERR, "Terminal Web OS contiene ejecución local prohibida: {$forbidden}\n");
         exit(1);
     }
 }
 
+$shellPattern = '/(?<![A-Za-z0-9_])(?:shell_exec|exec|system|passthru|popen)\s*\(/i';
+if (preg_match($shellPattern, 'curl_exec($curl);') !== 0
+    || preg_match($shellPattern, '\exec ("id");') !== 1
+    || preg_match($shellPattern, 'shell_exec("id");') !== 1) {
+    throw new RuntimeException('La detección de llamadas shell no cumple su contrato.');
+}
 echo "SERVER_CONSOLE_CONTRACT_OK\n";

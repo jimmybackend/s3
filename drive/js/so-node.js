@@ -175,7 +175,18 @@ class ArcadeCloudOsNodeMonitor {
   }
 
   activityCard(a) { const entries = [['Trabajos activos', a.active ?? 'No disponible']]; Object.entries(a.sources || {}).forEach(([key, value]) => entries.push([key, value ? 'Activo' : '0'])); return this.card('Actividad', entries); }
-  programsCard(programs) { const card = this.el('section', 'os-node-card'); card.append(this.el('h3', '', 'Programas / Capacidades')); programs.forEach((p) => card.append(this.row(p.name, p.installed ? (p.version || 'Disponible') : 'No instalado', p.installed))); return card; }
+  programsCard(programs) {
+    const card = this.el('section', 'os-node-card');
+    card.append(this.el('h3', '', 'Programas / Capacidades'));
+    programs.forEach((p) => {
+      const states = { host: 'Instalado en el host', container: 'Disponible en contenedor local', container_stopped: 'Contenedor local detenido', service_stopped: 'Servicio local detenido; programa sin verificar', unavailable: 'No disponible en este nodo', unknown: 'Contenedor local no verificable (helper/permisos)' };
+      let label = states[p.state] || (p.installed ? 'Instalado en el host' : 'No disponible en este nodo');
+      if (p.state === 'host' && p.version) label += ' · ' + p.version;
+      if (p.state === 'host' && p.container_installed) label += p.container_available ? ' · También en contenedor local' : ' · Contenedor local detenido';
+      card.append(this.row(p.name, label, p.available ?? p.installed));
+    });
+    return card;
+  }
   networkCard(n, node) { return this.card('Red / EC2', [['Hostname', n.hostname || node.hostname || '—'], ['IP privada', n.private_ip || '—'], ['IP pública', n.public_ip || 'No disponible'], ['S3', n.s3 === 'not_probed' ? 'No probado (evita sondeos costosos)' : n.s3], ['MySQL', n.mysql || 'No disponible'], ['Instance ID', node.instance_id || '—'], ['Tipo', node.instance_type || '—'], ['Zona', node.availability_zone || '—']]); }
 
   autoShutdownCard(idle) {

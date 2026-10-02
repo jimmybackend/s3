@@ -1,0 +1,54 @@
+name: Local container capability regression
+
+on:
+  pull_request:
+    paths:
+      - 'drive/src/System/**'
+      - 'drive/src/Admin/PrivilegedServerHelper.php'
+      - 'drive/bin/arcadecloud-drive-admin-helper.php'
+      - 'drive/js/so-node.js'
+      - 'drive/tests/local_container_capabilities_regression.php'
+      - 'drive/tests/local_container_programs_functional.js'
+      - '.github/workflows/local-container-capabilities.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'drive/src/System/**'
+      - 'drive/src/Admin/PrivilegedServerHelper.php'
+      - 'drive/bin/arcadecloud-drive-admin-helper.php'
+      - 'drive/js/so-node.js'
+      - 'drive/tests/local_container_capabilities_regression.php'
+      - 'drive/tests/local_container_programs_functional.js'
+      - '.github/workflows/local-container-capabilities.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  local-capabilities:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: PHP and JavaScript syntax
+        run: |
+          set -euo pipefail
+          php -l drive/bin/arcadecloud-drive-admin-helper.php
+          php -l drive/src/Admin/PrivilegedServerHelper.php
+          php -l drive/src/System/LocalContainerCapabilityService.php
+          php -l drive/src/System/NodeRuntimeStatusService.php
+          php -l drive/tests/local_container_capabilities_regression.php
+          node --check drive/js/so-node.js
+      - name: Behavior and existing diagnostics contracts
+        run: |
+          set -euo pipefail
+          php drive/tests/local_container_capabilities_regression.php
+          node drive/tests/local_container_programs_functional.js
+          php drive/tests/node_diagnostics_contract_smoke.php
+          php drive/tests/node_diagnostics_control_smoke.php
+          php drive/tests/server_console_contract_smoke.php
+      - name: Diff check
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: git diff --check "$BASE_SHA" HEAD

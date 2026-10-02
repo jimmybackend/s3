@@ -43,6 +43,16 @@ try {
     pathCheck(array_column($crumbs, 'route') === ['Data2/','Data2/d_opaque/','Data2/d_opaque/d_child/'], 'breadcrumbs keep physical navigation routes');
     $destinations = $query->destinationsForUser(2);
     pathCheck(in_array(['value' => 'Data2/d_opaque/', 'label' => 'Mi Drive/Contabilidad/'], $destinations, true), 'move selector separates value and label');
+    $statementCount = static fn(): int => (int)$db->query("SHOW SESSION STATUS LIKE 'Com_stmt_execute'")->fetch_assoc()['Value'];
+    $before = $statementCount();
+    $batch = $query->displayPathsForUser(2, array_merge(array_fill(0, 199, 'Data2/d_opaque/'), ['Data2/d_opaque/d_child/']));
+    pathCheck($statementCount() - $before === 1, '200 search result paths require exactly one catalog query');
+    pathCheck($batch === ['Data2/d_opaque/' => 'Mi Drive/Contabilidad/', 'Data2/d_opaque/d_child/' => 'Mi Drive/Contabilidad/Facturas/'], 'batch keeps physical map keys and visible values');
+    $before = $statementCount();
+    pathCheck($query->displayPathsForUser(2, []) === [] && $statementCount() === $before, 'empty search requires no catalog query');
+    $mutation->rename(2, 'Data2/d_opaque/', 'Cierre');
+    pathCheck($query->displayPathsForUser(2, ['Data2/d_opaque/'])['Data2/d_opaque/'] === 'Mi Drive/Cierre/', 'later request never reuses a stale catalog label');
+    $mutation->rename(2, 'Data2/d_opaque/', 'Contabilidad');
     try { $mutation->rename(3, 'Data2/d_opaque/', 'Unauthorized'); throw new LogicException('Other owner accepted'); }
     catch (RuntimeException) { pathCheck($repository->requireActive(2, 'Data2/d_opaque/')['Nombre'] === 'Contabilidad', 'other owner cannot rename folder'); }
 } finally {

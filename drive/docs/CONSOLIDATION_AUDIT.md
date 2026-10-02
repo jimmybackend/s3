@@ -190,3 +190,28 @@ la guarda existente a esas acciones y se actualizan `file-security.js`, helper
 clásico de formularios en `archivos.js` y `sincronizar.js`. La consulta de estado
 sigue siendo de lectura. Se amplían las regresiones de controladores y handlers
 reales; ver mapa de endpoints en `FILE_MUTATION_CSRF.md`.
+
+## Fase 8 — resultado
+
+PR #280 fusionado tras siete checks satisfactorios, incluidas pruebas MySQL 5.7 y
+MariaDB existentes además de controladores CSRF. Main recuperado:
+`22fdfe74466faaa710b09235853c096c9ac91886`.
+
+## Fase 9 — consultas de rutas visibles en búsqueda
+
+Cuello concreto: `FileSearchController::withVisibleRoutes()` invocaba una consulta
+completa de jerarquía por resultado (hasta 200 en búsqueda normal). Ahora pide un
+lote a FolderQueryService: una lectura del catálogo, resolución deduplicada de
+prefixes, sin caché persistente ni cambios de esquema/índices. Se conserva `ruta`
+para operaciones y `ruta_visible` para UI, en búsqueda normal y AI.
+
+La regresión MySQL mide Com_stmt_execute: 200 rutas de resultados requieren una
+consulta, lote vacío ninguna; un rename posterior produce etiqueta actualizada.
+No se atribuye una mejora porcentual de latencia sin medir datos de producción.
+El resto de consultas, polling y miniaturas requiere medición independiente.
+
+Filtros de búsqueda: el servicio actual admite patrones (`*.pdf`, `fact*`, `?`),
+por lo que ya cubre extensión mediante patrón sin nueva UI. Fecha/tamaño están en
+FileS3; añadir controles explícitos requiere validar paginación/localizar y UX.
+Metadata semántica no se debe tratar como columna universal: AI usa su pipeline.
+Se posponen filtros nuevos hasta medir utilidad, sin alterar resultados actuales.

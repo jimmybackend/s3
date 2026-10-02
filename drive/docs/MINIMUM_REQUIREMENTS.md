@@ -52,7 +52,7 @@ Debe cumplir como mínimo los requisitos del `media-worker`. No se recomienda pa
 
 Todos los roles:
 
-- PHP CLI y PHP-FPM de una única familia compatible;
+- PHP CLI y PHP-FPM >=8.4.1 de una única familia compatible con `composer.lock`;
 - mysqlnd/PDO MySQL;
 - mbstring, XML, GD y process;
 - Nginx;

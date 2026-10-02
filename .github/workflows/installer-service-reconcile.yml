@@ -24,6 +24,7 @@ on:
       - 'drive/js/arcadecloud-updater.js'
       - 'drive/tests/installer_service_reconcile_contract_smoke.php'
       - 'drive/tests/fresh_install_contract_smoke.php'
+      - 'drive/tests/installer_php_selection_regression.sh'
       - '.github/workflows/installer-service-reconcile.yml'
 
 jobs:
@@ -53,6 +54,8 @@ jobs:
           bash -n drive/bin/install_arcadecloud_updater.sh
           bash -n drive/bin/install_media_processing_worker.sh
           bash -n drive/bin/media_worker_node_bootstrap.sh
+      - name: PHP package selection behavior (no package or service operations)
+        run: bash drive/tests/installer_php_selection_regression.sh
       - name: JavaScript syntax
         run: node --check drive/js/arcadecloud-updater.js
       - name: Contract

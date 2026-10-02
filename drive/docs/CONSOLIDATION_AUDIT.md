@@ -215,3 +215,21 @@ por lo que ya cubre extensión mediante patrón sin nueva UI. Fecha/tamaño est�
 FileS3; añadir controles explícitos requiere validar paginación/localizar y UX.
 Metadata semántica no se debe tratar como columna universal: AI usa su pipeline.
 Se posponen filtros nuevos hasta medir utilidad, sin alterar resultados actuales.
+
+## Fase 9 — resultado
+
+PR #281 fusionado tras cuatro checks satisfactorios. MySQL confirmó una consulta
+para 200 rutas, cero para lote vacío y ausencia de etiquetas obsoletas tras rename.
+Main recuperado `72a200be4047a15b1730d2f21c43c7ed4629706e`.
+
+## Fase 10 — requisito PHP de instalación
+
+El instalador aceptaba familias 8.1–8.3 incompatibles con el lock actual. Ahora
+un nodo nuevo selecciona 8.5/8.4 y verifica CLI/FPM >=8.4.1 antes de configurar
+servicios. Un runtime existente incompatible/no identificable bloquea el flujo
+antes de instalar paquetes; no se migra su familia silenciosamente.
+
+Prueba shell ejecuta la función real de selección con comandos simulados, cubre
+8.4.0 rechazado, 8.4.1 aceptado, preservación de familia y ausencia de paquetes
+compatibles. No ejecuta entrypoint, DNF ni systemctl. Instalación de un tercer nodo
+real, DNS/TLS y conectividad MySQL siguen requiriendo aceptación aislada.

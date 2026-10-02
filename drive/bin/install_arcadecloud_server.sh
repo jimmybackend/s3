@@ -82,17 +82,22 @@ detect_php_package_family() {
   local installed_pkg family candidate
 
   if command_exists php; then
+    # composer.lock currently contains symfony/filesystem requiring PHP >=8.4.1.
+    # Never replace an existing incompatible runtime as an implicit migration.
+    php -r 'exit(PHP_VERSION_ID >= 80401 ? 0 : 1);' \
+      || fail "PHP instalado es incompatible con composer.lock (mínimo 8.4.1). Planifica su actualización antes de instalar; no se cambió la familia PHP."
     installed_pkg="$(rpm -qf "$(command -v php)" --qf '%{NAME}\n' 2>/dev/null | head -1 || true)"
-    if [[ "$installed_pkg" =~ ^(php8\.[1-9])(-|$) ]]; then
+    if [[ "$installed_pkg" =~ ^(php[0-9]+\.[0-9]+)(-|$) ]]; then
       family="${BASH_REMATCH[1]}"
       if package_available "$family-fpm"; then
         printf '%s' "$family"
         return 0
       fi
     fi
+    fail "no pude conservar la familia del PHP instalado; revisa su procedencia y PHP-FPM antes de continuar."
   fi
 
-  for candidate in php8.5 php8.4 php8.3 php8.2 php8.1; do
+  for candidate in php8.5 php8.4; do
     if package_available "$candidate" && package_available "$candidate-fpm"; then
       printf '%s' "$candidate"
       return 0
@@ -105,7 +110,7 @@ detect_php_package_family() {
 install_packages() {
   local php_family
   php_family="$(detect_php_package_family || true)"
-  [[ -n "$php_family" ]] || fail "no encontré una familia PHP soportada (php8.1..php8.5) en los repositorios configurados."
+  [[ -n "$php_family" ]] || fail "no encontré una familia PHP compatible (php8.4/php8.5, mínimo 8.4.1) en los repositorios configurados."
 
   say "Familia PHP seleccionada automáticamente: $php_family"
 
@@ -179,6 +184,12 @@ install_packages() {
 
   command_exists php || fail "la familia $php_family se instaló pero no expuso el comando php."
   command_exists php-fpm || fail "la familia $php_family se instaló pero no expuso el comando php-fpm."
+  php -r 'exit(PHP_VERSION_ID >= 80401 ? 0 : 1);' \
+    || fail "PHP CLI no cumple el mínimo 8.4.1 exigido por composer.lock."
+  local fpm_version
+  fpm_version="$(php-fpm -v | sed -n 's/^PHP \([0-9][0-9.]*\).*/\1/p' | head -1)"
+  [[ -n "$fpm_version" ]] && php -r 'exit(version_compare($argv[1], "8.4.1", ">=") ? 0 : 1);' "$fpm_version" \
+    || fail "PHP-FPM no cumple el mínimo 8.4.1; no se configuraron servicios."
 }
 
 install_media_dependencies() {

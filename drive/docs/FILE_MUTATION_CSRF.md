@@ -11,6 +11,9 @@ otro sistema de sesiones o tokens.
 | --- | --- |
 | FileMutationController | `eliminar_archivo.php`, `delete_multiple.php`, `mover_archivo.php`, `move_multiple.php`, `renombrar_archivo.php` |
 | FolderMutationController | `crear_carpeta.php`, `eliminar_carpeta.php`, `mover_carpeta.php`, `renombrar_carpeta.php` |
+| FileSecurityController | `set_file_security.php`, `unlock_file.php`, `relock_file.php` |
+| FileKeyRotationController::rotate | `encriptar_archivo.php` |
+| SyncController::run | `sync_s3_to_db.php` |
 | MoveJobController::start | `move_task.php` (copiar/mover asíncrono) |
 | BackgroundTaskController::action | POST `background_tasks.php` (acciones sobre fuentes existentes) |
 
@@ -28,7 +31,7 @@ existentes: CSRF no sustituye esas comprobaciones.
 
 Clientes revisados: `archivos.js`, `carpetas.js`, `file-block.js`,
 `elimina-uno.js`, `elimina-multiple.js`, `filesystem-operations.js`,
-`move-tasks.js`, `background-tasks.js`. Los helpers combinan las cabeceras
+`move-tasks.js`, `background-tasks.js`, `file-security.js`, `sincronizar.js`. Los helpers combinan las cabeceras
 conservando Content-Type y los límites de multipart de FormData. El formulario
 clásico `multiDeleteForm` lleva el campo oculto. Se actualiza la versión del
 loader clásico de background-tasks; el resto usa filemtime en las páginas.
@@ -54,6 +57,6 @@ protección. No registrar tokens ni enviarlos a URLs externas.
 Workflow `security-hardening.yml`: ejecución aislada opt-in, PHP lint completo,
 JS syntax y auditoría de dependencias. No requiere MySQL ni acceso AWS.
 
-La cobertura transversal de otros endpoints de seguridad, enlaces, sincronización
+La cobertura transversal de otros endpoints de seguridad, enlaces
 y configuración sigue pendiente de revisión individual. Esta fase no certifica
 ausencia de CSRF en todo el repositorio ni cambia la semántica de eliminación.

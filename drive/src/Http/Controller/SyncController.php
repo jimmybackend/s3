@@ -18,6 +18,7 @@ final class SyncController extends AbstractJsonController
             $this->requirePost();
 
             $userId = $this->guardAuthenticated();
+            $this->requireDriveCsrf();
             $requestedPrefix = trim($this->request->postString('prefix'));
             $scopePrefix = '';
 

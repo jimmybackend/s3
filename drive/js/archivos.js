@@ -1660,7 +1660,7 @@ class ArchivosModule {
 
         const res = await fetch(url, {
           method: 'POST',
-          headers: { 'Accept': 'application/json' },
+          headers: { 'Accept': 'application/json', 'X-Drive-CSRF': String(window.DRIVE_UPLOAD_CSRF || '') },
           body: fd
         });
 

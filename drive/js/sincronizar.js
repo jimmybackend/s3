@@ -118,7 +118,8 @@ class SincronizarModule {
             credentials: 'same-origin',
             cache: 'no-store',
             headers: {
-              'X-Requested-With': 'XMLHttpRequest'
+              'X-Requested-With': 'XMLHttpRequest',
+              'X-Drive-CSRF': String(window.DRIVE_UPLOAD_CSRF || '')
             }
           }
         );

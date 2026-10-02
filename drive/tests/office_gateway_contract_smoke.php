@@ -165,6 +165,15 @@ officeGatewayContract(
 );
 
 officeGatewayContract(
+    str_contains($helper, 'chgrp($sessionDirectory, 10001)')
+    && str_contains($helper, 'chmod($sessionDirectory, 02770)')
+    && str_contains($helper, 'chgrp($realDocument, 10001)')
+    && str_contains($helper, 'chmod($realDocument, 0660)')
+    && str_contains($helper, "['gid'] ?? -1) !== 10001"),
+    'helper normaliza grupo y permisos del workspace antes de abrir LibreOffice'
+);
+
+officeGatewayContract(
     str_contains($workstationInstaller, 'chgrp "$PHP_GROUP" "$STATE_ROOT"')
     && str_contains($workstationInstaller, 'chmod 0750 "$STATE_ROOT"'),
     'instalador permite al grupo PHP-FPM atravesar el directorio padre de Office'
@@ -251,7 +260,7 @@ officeGatewayContract(
 );
 
 officeGatewayContract(
-    str_contains($helper, "'version' => 16")
+    str_contains($helper, "'version' => 17")
     && str_contains($helper, "'workstation_control' => true")
     && str_contains($helper, "'workstation_document_open' => true")
     && str_contains($helper, "if (\$action === 'workstation-open-document')")

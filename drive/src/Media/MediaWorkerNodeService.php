@@ -5,6 +5,7 @@ namespace ArcadeCloud\Drive\Media;
 
 use ArcadeCloud\Drive\Activity\ActivityCostRecorder;
 use ArcadeCloud\Drive\Aws\Ec2Gateway;
+use ArcadeCloud\Drive\Office\OfficeActivityProbe;
 use ArcadeCloud\Drive\System\Ec2InstanceIdentityService;
 use mysqli;
 use RuntimeException;
@@ -298,11 +299,12 @@ final class MediaWorkerNodeService
 
     public function requestIdleStop(MediaProcessingJobRepository $jobs): array
     {
-        if ($jobs->hasActiveJobs()) {
-            throw new RuntimeException('El nodo tiene tareas multimedia activas y no se puede apagar.');
-        }
         if ($this->instanceId === '' || $this->ec2 === null) {
             throw new RuntimeException('No hay una EC2 de alto rendimiento configurada.');
+        }
+
+        if ($this->hasShutdownBlockers($jobs)) {
+            throw new RuntimeException('El nodo tiene tareas multimedia u Office activas y no se puede apagar.');
         }
 
         // El endpoint de apagado interactivo sólo es válido durante la ventana
@@ -322,7 +324,12 @@ final class MediaWorkerNodeService
             throw new RuntimeException('El nodo no está en un estado que permita apagarlo de forma segura.');
         }
 
+        // Re-read after AWS I/O: a job, Office lease or heartbeat may have arrived.
         $active = $this->sessions->activeForInstance($this->instanceId);
+        if ($this->hasShutdownBlockers($jobs) || !$this->idleDeadlineReached($active, false)) {
+            if ($active !== null) $this->sessions->clearIdle((string)$active['session_id']);
+            throw new RuntimeException('Se detectó actividad nueva; el apagado queda cancelado.');
+        }
         if ($active !== null) {
             $this->recordSessionCost($active, 'interactive_idle_stop');
             $this->sessions->markStopRequested((string)$active['session_id']);
@@ -351,7 +358,7 @@ final class MediaWorkerNodeService
             return;
         }
 
-        if ($jobs->hasActiveJobs()) {
+        if ($this->hasShutdownBlockers($jobs)) {
             $this->sessions->clearIdle((string)$active['session_id']);
             return;
         }
@@ -382,9 +389,30 @@ final class MediaWorkerNodeService
             return;
         }
 
+        $active = $this->sessions->activeForInstance($this->instanceId);
+        if ($this->hasShutdownBlockers($jobs) || !$this->idleDeadlineReached($active, true)) {
+            if ($active !== null) $this->sessions->clearIdle((string)$active['session_id']);
+            return;
+        }
+
         $this->recordSessionCost($active, 'auto_stop_idle');
         $this->sessions->markStopRequested((string)$active['session_id']);
         $this->ec2->stop($this->instanceId, false);
+    }
+
+    private function hasShutdownBlockers(MediaProcessingJobRepository $jobs): bool
+    {
+        return $jobs->hasActiveJobs()
+            || (new OfficeActivityProbe($this->db))->hasActiveSessions($this->instanceId);
+    }
+
+    private function idleDeadlineReached(?array $session, bool $includeWarning): bool
+    {
+        if ($session === null || ($session['status'] ?? '') !== 'idle') return false;
+        $since = trim((string)($session['idle_since'] ?? ''));
+        $timestamp = $since !== '' ? strtotime($since . ' UTC') : false;
+        return $timestamp !== false
+            && time() - $timestamp >= $this->idleGraceSeconds + ($includeWarning ? self::IDLE_WARNING_SECONDS : 0);
     }
 
     private function remoteStatus(array $local): array

@@ -22,7 +22,7 @@ operaciones S3 reales. Cada fase requiere PR, pruebas y revisión de CI.
 | FederationCloud | `drive/src/Federation/`, documentación de réplicas, permisos, recuperación y moderación | Implementado; no se ha validado extremo a extremo entre nodos en esta auditoría |
 | ArcadeLink | Colecciones y pruebas en `arcadelink_collection_regression.php` / `ARCADELINK_PRODUCTION_VALIDATION.md` | Existen v1/v2/v3; la propia matriz enumera validaciones multinodo pendientes |
 | Seguridad | Controllers y pruebas de hardening existentes | CSRF/ownership de upload confirmados en código; auditoría transversal pendiente |
-| Rutas y búsqueda | `FileSearchService`, `AiFileSearchService`, `so-search.js`, `FileListService` | Mantener contrato catálogo visible/key física; prueba integral de localizar/seleccionar pendiente |
+| Rutas y búsqueda | `FileSearchService`, `AiFileSearchService`, `so-search.js`, `FileListService` | Mantener contrato catálogo visible/key física; regresión normal/IA localizar/nueva ventana/página/selección validada en fase 3; cobertura transversal pendiente |
 | Papelera | `FileMutationService::delete()` llama a `deleteObject` | Borrado actual definitivo; no presentar `Found=0` como papelera. Requiere diseño de recuperación y propagación federada |
 | Notificaciones | Shell/EventBus y fuentes de tareas existentes | Cobertura por tipo de tarea pendiente |
 | Recuperación | Scripts `federation_identity_backup.php` / `federation_identity_restore.php` | Identidad cubierta parcialmente; runbook integral MySQL/config/catálogo pendiente |
@@ -120,3 +120,19 @@ Hallazgo adicional para la próxima fase: `MediaWorkerNodeService::handleIdle()`
 `requestIdleStop()` sólo consultan `MediaProcessingJobRepository::hasActiveJobs()`;
 la ruta manual superadmin sí consulta sesiones Office. Auditar la guarda del
 apagado por inactividad para no depender únicamente de heartbeats del navegador.
+
+## Fase 4 — resultado
+
+PR #276 fusionado tras tres checks satisfactorios, incluyendo MySQL aislado,
+archivo/rollback y PHP lint. Main actualizado a `477d8b5` después de inventarios
+automáticos. No se ejecutó el comando de retención contra producción.
+
+## Fase 5 — Office y autoapagado
+
+`OfficeActivityProbe` reúne las consultas existentes de leases/documentos para
+apagado manual, actividad agregada y apagado por inactividad. El autoapagado ahora
+protege Office aunque falte el heartbeat del navegador, acota la consulta a su
+InstanceId y falla cerrado si no puede comprobar el esquema. Revalida actividad y
+contador después de consultar AWS. Ver `FASTDRIVE_IDLE_GUARDS.md` para límites:
+no se certifica exclusión atómica con todas las admisiones ni cobertura de cada
+worker/transferencia. No se modifican infraestructura ni apagado forzado explícito.

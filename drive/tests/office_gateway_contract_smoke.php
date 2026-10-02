@@ -149,6 +149,18 @@ officeGatewayContract(
 );
 
 officeGatewayContract(
+    str_contains($helperClient, '[^\\/\\x00-\\x1F\\x7F]{1,220}')
+    && !str_contains($helperClient, '[A-Za-z0-9._ ()\\[\\]-]{1,220}'),
+    'cliente del helper permite nombres Unicode seguros en documentos Workstation'
+);
+
+officeGatewayContract(
+    str_contains($officeInstaller, 'chgrp "$PHP_GROUP" "$STATE_ROOT"')
+    && str_contains($officeInstaller, 'chmod 0750 "$STATE_ROOT"'),
+    'instalador permite al grupo PHP-FPM atravesar el directorio padre de Office'
+);
+
+officeGatewayContract(
     str_contains($documentStorage, 'headObject')
     && str_contains($documentStorage, 'getObject')
     && str_contains($documentStorage, 'putObject')

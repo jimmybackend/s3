@@ -1766,7 +1766,7 @@
     },
     {
       "path": "drive/src/Application/FolderQueryService.php",
-      "size": 6617,
+      "size": 7284,
       "active": false,
       "references": [
         "drive/tests/web_os_contract_smoke.php"
@@ -2811,7 +2811,7 @@
     },
     {
       "path": "drive/src/Http/Controller/FileSearchController.php",
-      "size": 3395,
+      "size": 3618,
       "active": false,
       "references": [
         "drive/tests/web_os_contract_smoke.php"
@@ -3735,7 +3735,7 @@
     },
     {
       "path": "drive/tests/catalog_folder_paths_regression.php",
-      "size": 3627,
+      "size": 4662,
       "active": false,
       "references": []
     },

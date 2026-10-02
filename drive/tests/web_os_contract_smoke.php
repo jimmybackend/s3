@@ -486,10 +486,12 @@ webOsContract(str_contains($paths['federation_admin_renderer'], 'federationAbout
 webOsContract(str_contains($paths['federation_admin_renderer'], 'federationProviderPendingList'), 'Acerca de muestra solicitudes de proveedor');
 webOsContract(str_contains($paths['federation_admin_renderer'], 'modalServerAdmin'), 'Acerca de integra configuración del servidor');
 webOsContract(str_contains($paths['federation_admin_renderer'], 'federationAboutModeration'), 'Acerca de integra moderación');
-webOsContract(str_contains($paths['federation_admin_js'], "provider-admin.php"), 'solicitudes reutilizan endpoint de proveedores');
-webOsContract(str_contains($paths['federation_admin_js'], "moderation-api.php"), 'Acerca de consulta moderación existente');
+webOsContract(str_contains($paths['federation_admin_js'], "/federationcloud/nodes.php"), 'Acerca de usa ruta estable del directorio FederationCloud');
+webOsContract(str_contains($paths['federation_admin_js'], "/federationcloud/provider-admin.php"), 'solicitudes usan endpoint absoluto de proveedores');
+webOsContract(str_contains($paths['federation_admin_js'], "/federationcloud/moderation-api.php"), 'Acerca de consulta moderación con ruta absoluta');
 webOsContract(str_contains($paths['server_admin_js'], 'dataset.endpoint'), 'configuración del servidor acepta endpoint reutilizable');
 webOsContract(str_contains($paths['moderation_renderer'], 'federation-moderation-embedded'), 'moderación soporta modo embebido');
+webOsContract(substr_count($paths['moderation_renderer'], "/federationcloud/moderation-api.php") >= 3, 'moderación embebida usa endpoint absoluto para leer, decidir y desbloquear');
 
 webOsContract(str_contains($paths['shell'], 'id="osTaskCenterButton"') && str_contains($paths['shell'], 'os-task-center-count'), 'Centro de Tareas está integrado como icono con contador en la barra del OS');
 webOsContract(str_contains($paths['shell'], 'id="pageMonitorWindow"') && str_contains($paths['shell'], 'data-page-monitor'), 'Administrador de la página existe como ventana nativa');

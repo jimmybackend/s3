@@ -313,7 +313,8 @@ final class MediaWorkerNodeService
         $this->logBlockerState($blockers);
         if ($blockers !== []) {
             throw new RuntimeException(
-                'El nodo tiene actividad protegida y no se puede apagar: ' . implode(', ', $blockers) . '.'
+                'El nodo tiene tareas multimedia u Office activas y no se puede apagar. '
+                . 'Bloqueos: ' . implode(', ', $blockers) . '.'
             );
         }
 

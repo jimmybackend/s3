@@ -89,3 +89,8 @@ Unix y sólo GET/HEAD. No ejecuta comandos Docker ni consulta peers. Mantiene
 compatibilidad de `installed` (host) y añade estados explícitos para la UI.
 Ver `LOCAL_NODE_CAPABILITIES.md`, incluido el requisito de actualizar el helper
 instalado mediante el procedimiento existente y el alcance de programas cubiertos.
+
+CI de fase 3 detectó dos fallos de los contratos por texto: interpolación accidental
+`$app` en el test de sugerencias y falso positivo de `exec(` sobre `curl_exec()`.
+Se corrigen los tests conservando la comprobación de nombres visibles y la
+prohibición de funciones shell completas, también con espacios antes de `(`.

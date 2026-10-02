@@ -4249,7 +4249,7 @@
     },
     {
       "path": "drive/src/Http/Controller/AwsFileController.php",
-      "lines": 338,
+      "lines": 339,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -4611,7 +4611,7 @@
     },
     {
       "path": "drive/src/Http/Controller/FolderDocumentController.php",
-      "lines": 71,
+      "lines": 72,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -4866,7 +4866,7 @@
     },
     {
       "path": "drive/src/Http/Controller/ShareController.php",
-      "lines": 78,
+      "lines": 79,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -4941,7 +4941,7 @@
     },
     {
       "path": "drive/src/Http/Controller/TranscriptionController.php",
-      "lines": 224,
+      "lines": 225,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -6885,7 +6885,7 @@
     },
     {
       "path": "drive/tests/file_mutation_csrf_regression.php",
-      "lines": 90,
+      "lines": 97,
       "kind": "test script",
       "classes": 2,
       "functions": [
@@ -8136,7 +8136,7 @@
     },
     {
       "path": "drive/js/aws-comprehend.js",
-      "lines": 354,
+      "lines": 355,
       "kind": "class/module",
       "classes": [
         "AwsComprehendModule",
@@ -8665,7 +8665,7 @@
     },
     {
       "path": "drive/js/folder-document.js",
-      "lines": 464,
+      "lines": 465,
       "kind": "class/module",
       "classes": [
         "FolderDocumentModule"
@@ -8923,7 +8923,7 @@
     },
     {
       "path": "drive/js/polly-background.js",
-      "lines": 305,
+      "lines": 306,
       "kind": "class/module",
       "classes": [
         "PollyBackgroundModule"
@@ -8944,7 +8944,7 @@
     },
     {
       "path": "drive/js/polly.js",
-      "lines": 1008,
+      "lines": 1009,
       "kind": "class/module",
       "classes": [
         "PollyModule"
@@ -9290,7 +9290,7 @@
     },
     {
       "path": "drive/js/so-share.js",
-      "lines": 179,
+      "lines": 180,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudOsShare"
@@ -9493,7 +9493,7 @@
     },
     {
       "path": "drive/js/transcribe-background.js",
-      "lines": 323,
+      "lines": 324,
       "kind": "class/module",
       "classes": [
         "TranscribeBackgroundModule"

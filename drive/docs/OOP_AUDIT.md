@@ -310,7 +310,7 @@
 | `drive/src/Http/Controller/AudioRecordingUploadController.php` | 108 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/AuthController.php` | 119 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/AwsCostController.php` | 61 | class/module | 1 | — | — | — | — |
-| `drive/src/Http/Controller/AwsFileController.php` | 338 | class/module | 1 | — | — | — | — |
+| `drive/src/Http/Controller/AwsFileController.php` | 339 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/BackgroundTaskCompatibilityController.php` | 245 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Http/Controller/BackgroundTaskController.php` | 946 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Http/Controller/FederationAccessController.php` | 123 | class/module | 1 | ⚠️ | — | — | — |
@@ -334,7 +334,7 @@
 | `drive/src/Http/Controller/FileMutationController.php` | 128 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/FileSearchController.php` | 107 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/FileSecurityController.php` | 100 | class/module | 1 | — | — | — | — |
-| `drive/src/Http/Controller/FolderDocumentController.php` | 71 | class/module | 1 | — | — | — | — |
+| `drive/src/Http/Controller/FolderDocumentController.php` | 72 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/FolderMutationController.php` | 207 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/FolderQueryController.php` | 30 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/LegacyUploadController.php` | 154 | class/module | 1 | — | — | — | — |
@@ -351,12 +351,12 @@
 | `drive/src/Http/Controller/PublicUploadController.php` | 81 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/ServerConsoleController.php` | 72 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/ServerSettingsAdminController.php` | 73 | class/module | 1 | — | — | — | — |
-| `drive/src/Http/Controller/ShareController.php` | 78 | class/module | 1 | — | — | — | — |
+| `drive/src/Http/Controller/ShareController.php` | 79 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/StorageUsageController.php` | 28 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/SyncController.php` | 148 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/TextEditorController.php` | 61 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/ThumbnailController.php` | 110 | class/module | 1 | — | — | — | — |
-| `drive/src/Http/Controller/TranscriptionController.php` | 224 | class/module | 1 | — | — | — | — |
+| `drive/src/Http/Controller/TranscriptionController.php` | 225 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/UploadCleanupController.php` | 76 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/UploadController.php` | 281 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/UserProfileController.php` | 115 | class/module | 1 | — | — | — | — |
@@ -481,7 +481,7 @@
 | `drive/tests/federation_replica_reconnect_contract_smoke.php` | 81 | test script | 0 | — | — | — | — |
 | `drive/tests/federation_replica_smoke.php` | 115 | test script | 0 | — | — | — | — |
 | `drive/tests/federationcloud_smoke.php` | 197 | test script | 0 | — | — | — | — |
-| `drive/tests/file_mutation_csrf_regression.php` | 90 | test script | 2 | ⚠️ | — | — | — |
+| `drive/tests/file_mutation_csrf_regression.php` | 97 | test script | 2 | ⚠️ | — | — | — |
 | `drive/tests/folder_deletion_regression.php` | 91 | test script | 0 | — | ⚠️ | ⚠️ | — |
 | `drive/tests/folder_document_sanitizer.php` | 49 | test script | 0 | — | — | — | — |
 | `drive/tests/fresh_install_contract_smoke.php` | 76 | test script | 0 | — | — | — | — |
@@ -560,7 +560,7 @@
 | `drive/js/arcadelink-share.js` | 396 | class/module | ArcadeLinkShareModule | — | — | — |
 | `drive/js/archivos.js` | 2173 | class/module | ArchivosModule | — | abrirModalRenombrarArchivo, cerrarModalCompartir, setFileSecurity | window functions: abrirModalRenombrarArchivo, cerrarModalCompartir, setFileSecurity |
 | `drive/js/audiovideo.js` | 619 | class/module | AudiovideoModule | — | audioNext, audioPrev, reproducirVideoDesde, videoNext, videoPlayPause, videoPrev | window functions: audioNext, audioPrev, reproducirVideoDesde, videoNext, videoPlayPause, videoPrev, wavePlayPause |
-| `drive/js/aws-comprehend.js` | 354 | class/module | AwsComprehendModule, AwsFileActionRouter | — | — | — |
+| `drive/js/aws-comprehend.js` | 355 | class/module | AwsComprehendModule, AwsFileActionRouter | — | — | — |
 | `drive/js/background-task-feedback.js` | 180 | class/module | BackgroundTaskFeedbackModule | — | — | — |
 | `drive/js/background-tasks.js` | 1032 | class/module | BackgroundTaskCenter | — | — | — |
 | `drive/js/carpetas.js` | 1200 | class/module | CarpetasModule | — | actualizarBloqueCarpetas | window functions: actualizarBloqueCarpetas |
@@ -583,7 +583,7 @@
 | `drive/js/file-security.js` | 325 | class/module | ArcadeCloudFileSecurity | — | — | — |
 | `drive/js/filesystem-operations.js` | 192 | class/module | ArcadeCloudFilesystemOperations | — | — | — |
 | `drive/js/filtros.js` | 97 | class/module | FiltrosModule | — | — | — |
-| `drive/js/folder-document.js` | 464 | class/module | FolderDocumentModule | — | openFolderDocumentCreator | window functions: openFolderDocumentCreator |
+| `drive/js/folder-document.js` | 465 | class/module | FolderDocumentModule | — | openFolderDocumentCreator | window functions: openFolderDocumentCreator |
 | `drive/js/imagenes.js` | 535 | class/module | ImagenesModule | — | getGaleriaGridSize, setGaleriaGridSize | window functions: getGaleriaGridSize, setGaleriaGridSize |
 | `drive/js/media-floating.js` | 696 | class/module | MediaFloatingApp | — | — | — |
 | `drive/js/media-processing.js` | 498 | class/module | MediaProcessingModule | — | — | — |
@@ -593,8 +593,8 @@
 | `drive/js/os-window-manager.js` | 987 | class/module | ArcadeCloudEventBus, ArcadeCloudWindowLayoutConfig, ArcadeCloudWindowManager, ExplorerWindowFactory, ArcadeCloudExplorerWindow, ArcadeCloudDesktopRuntime | — | — | — |
 | `drive/js/page-task-manager.js` | 54 | class/module | ArcadeCloudPageTaskManager | — | — | — |
 | `drive/js/pdf-pantalla-completa.js` | 45 | class/module | PdfPantallaCompletaModule | — | — | — |
-| `drive/js/polly-background.js` | 305 | class/module | PollyBackgroundModule | — | — | — |
-| `drive/js/polly.js` | 1008 | class/module | PollyModule | — | abrirModalGrabarAudio, abrirModalPolly, abrirModalRekognition, abrirModalTraducir, abrirModalTranscribir, copiarTextract | window functions: abrirModalGrabarAudio, abrirModalPolly, abrirModalRekognition, abrirModalTraducir, abrirModalTranscribir, copiarTextract, copiarTraducido, copiarTx |
+| `drive/js/polly-background.js` | 306 | class/module | PollyBackgroundModule | — | — | — |
+| `drive/js/polly.js` | 1009 | class/module | PollyModule | — | abrirModalGrabarAudio, abrirModalPolly, abrirModalRekognition, abrirModalTraducir, abrirModalTranscribir, copiarTextract | window functions: abrirModalGrabarAudio, abrirModalPolly, abrirModalRekognition, abrirModalTraducir, abrirModalTranscribir, copiarTextract, copiarTraducido, copiarTx |
 | `drive/js/profile.js` | 289 | class/module | UserProfileModule | — | — | — |
 | `drive/js/recargarPagina.js` | 27 | class/module | RecargarPaginaModule | — | — | — |
 | `drive/js/server-admin.js` | 407 | class/module | ServerAdminModule | — | — | — |
@@ -608,7 +608,7 @@
 | `drive/js/so-power.js` | 108 | class/module | ArcadeCloudFastDrivePower | — | — | — |
 | `drive/js/so-screenshot-paste.js` | 341 | class/module | ArcadeCloudOsScreenshotPaste | — | — | — |
 | `drive/js/so-search.js` | 292 | class/module | ArcadeCloudOsSearch | — | — | — |
-| `drive/js/so-share.js` | 179 | class/module | ArcadeCloudOsShare | — | — | — |
+| `drive/js/so-share.js` | 180 | class/module | ArcadeCloudOsShare | — | — | — |
 | `drive/js/so-terminal.js` | 314 | class/module | ArcadeCloudOsTerminal | — | — | — |
 | `drive/js/so.js` | 1189 | class/module | ArcadeCloudOsShell | — | — | — |
 | `drive/js/soportesMediaTypes.js` | 397 | class/module | SoportesMediaTypesModule | — | — | — |
@@ -617,7 +617,7 @@
 | `drive/js/subir-dropzone.js` | 910 | class/module | SubirDropzoneModule | — | — | — |
 | `drive/js/subir.js` | 358 | class/module | SubirModule | — | — | — |
 | `drive/js/theme-state-bridge.js` | 73 | class/module | ThemeStateBridge | — | — | — |
-| `drive/js/transcribe-background.js` | 323 | class/module | TranscribeBackgroundModule | — | — | — |
+| `drive/js/transcribe-background.js` | 324 | class/module | TranscribeBackgroundModule | — | — | — |
 | `drive/js/upload-center.js` | 960 | class/module | ArcadeCloudUploadCenter | — | — | — |
 | `drive/js/upload-destination.js` | 95 | class/module | UploadDestinationModule | — | — | — |
 | `drive/js/ver-metadatos.js` | 75 | class/module | VerMetadatosModule | — | verMetadatos | window functions: verMetadatos |

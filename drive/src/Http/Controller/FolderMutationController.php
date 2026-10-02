@@ -16,6 +16,7 @@ final class FolderMutationController extends AbstractJsonController
         try {
             $this->requirePost();
             $userId = $this->guardAuthenticated();
+            $this->requireDriveCsrf();
             $name = $this->requireNonEmpty($this->request->postString('nueva'), 'Debes indicar el nombre de la carpeta.');
             $session = $this->app->session();
             $routeInput = $this->request->postString('ruta');
@@ -49,6 +50,7 @@ final class FolderMutationController extends AbstractJsonController
         try {
             $this->requirePost();
             $userId = $this->guardAuthenticated();
+            $this->requireDriveCsrf();
             $paths = $this->app->userStoragePath();
             $root = $paths->rootForUser($userId);
             $route = $paths->normalizeForUser(
@@ -90,6 +92,7 @@ final class FolderMutationController extends AbstractJsonController
         try {
             $this->requirePost();
             $userId = $this->guardAuthenticated();
+            $this->requireDriveCsrf();
             $paths = $this->app->userStoragePath();
             $root = $paths->rootForUser($userId);
             $origin = $paths->normalizeForUser(
@@ -136,6 +139,7 @@ final class FolderMutationController extends AbstractJsonController
         try {
             $this->requirePost();
             $userId = $this->guardAuthenticated();
+            $this->requireDriveCsrf();
             $paths = $this->app->userStoragePath();
             $root = $paths->rootForUser($userId);
             $route = $paths->normalizeForUser(

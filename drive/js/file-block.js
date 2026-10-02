@@ -266,7 +266,8 @@ class FileBlockApp {
         credentials: 'same-origin',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
-          'X-Requested-With': 'XMLHttpRequest'
+          'X-Requested-With': 'XMLHttpRequest',
+          'X-Drive-CSRF': String(this.window.DRIVE_UPLOAD_CSRF || '')
         },
         body
       });

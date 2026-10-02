@@ -27,6 +27,14 @@ jobs:
       - name: Install locked dependencies
         run: composer install --no-interaction --prefer-dist
 
+      - name: File and folder CSRF controller behavior
+        env:
+          ARCADECLOUD_ISOLATED_TEST: '1'
+        run: |
+          php drive/tests/file_mutation_csrf_regression.php
+          node drive/tests/web_os_filesystem_operations_functional.js
+          node drive/tests/classic_mutation_csrf_functional.js
+
       - name: Dependency audit
         run: |
           composer validate --no-check-publish

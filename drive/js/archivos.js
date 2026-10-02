@@ -286,10 +286,13 @@ class ArchivosModule {
       }
 
       async function fetchJson(url, opts) {
-        const res = await fetch(url, Object.assign({
-          credentials: 'same-origin',
-          headers: { 'X-Requested-With': 'XMLHttpRequest' }
-        }, opts || {}));
+        const options = Object.assign({ credentials: 'same-origin' }, opts || {});
+        options.headers = new Headers(options.headers || {});
+        options.headers.set('X-Requested-With', 'XMLHttpRequest');
+        if (String(options.method || 'GET').toUpperCase() === 'POST') {
+          options.headers.set('X-Drive-CSRF', String(window.DRIVE_UPLOAD_CSRF || ''));
+        }
+        const res = await fetch(url, options);
         const text = await res.text();
         let json = null;
         try { json = JSON.parse(text); } catch (_) {}

@@ -503,6 +503,7 @@ if ($session->isSuperAdmin()) {
     </div>
 
 <form id="multiDeleteForm" action="delete_multiple.php" method="POST" class="w-100">
+          <input type="hidden" name="upload_csrf" value="<?= htmlspecialchars($uploadCsrf, ENT_QUOTES, 'UTF-8') ?>">
           <input type="hidden" name="ruta" value="<?= htmlspecialchars($basePrefix) ?>">
           <div id="bloque-archivos">
             <?php

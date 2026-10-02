@@ -60,7 +60,7 @@ class EliminaMultipleModule {
           const res = await fetch('delete_multiple.php', {
             method: 'POST',
             credentials: 'same-origin',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest' },
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest', 'X-Drive-CSRF': String(window.DRIVE_UPLOAD_CSRF || '') },
             body
           });
 

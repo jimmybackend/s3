@@ -15,6 +15,7 @@ final class FileMutationController extends AbstractJsonController
         try {
             $this->requirePost();
             $userId = $this->guardAuthenticated();
+            $this->requireDriveCsrf();
             $ref = $this->request->postInt('file_id');
             if ($ref <= 0) $ref = $this->request->postString('archivo');
             if ($ref === '' || $ref === 0) throw new RuntimeException('Falta la referencia del archivo');
@@ -37,6 +38,7 @@ final class FileMutationController extends AbstractJsonController
         try {
             $this->requirePost();
             $userId = $this->guardAuthenticated();
+            $this->requireDriveCsrf();
             $keys = $this->keysFromRequest();
             if (!$keys) throw new RuntimeException('No hay archivos seleccionados');
 
@@ -59,6 +61,7 @@ final class FileMutationController extends AbstractJsonController
         try {
             $this->requirePost();
             $userId = $this->guardAuthenticated();
+            $this->requireDriveCsrf();
             $route = $this->request->postString('nueva_ruta');
             if ($route === '') $route = $this->request->postString('ruta_destino');
             $route = $this->app->userStoragePath()->normalizeForUser(
@@ -105,6 +108,7 @@ final class FileMutationController extends AbstractJsonController
         try {
             $this->requirePost();
             $userId = $this->guardAuthenticated();
+            $this->requireDriveCsrf();
             $key = $this->requireNonEmpty($this->request->postString('key'), 'Falta la clave del archivo.');
             $name = $this->requireNonEmpty($this->request->postString('nombre_nuevo'), 'Falta el nuevo nombre del archivo.');
             $result = $this->app->fileMutationService()->rename($userId, $key, $name);

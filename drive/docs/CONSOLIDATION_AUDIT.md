@@ -160,3 +160,18 @@ Regresiones: listener real de ventanas múltiples; búsqueda normal/IA y metadat
 visible ausente; servicios/repositories con S3 prohibido durante rename y MySQL
 canónico aislado para ownership, breadcrumbs y destinos de mover. No representa
 una auditoría completa de todas las pantallas de `so.php`.
+
+## Fase 6 — resultado
+
+PR #278 fusionado tras cinco checks satisfactorios: MySQL canónico aislado,
+regresiones JS normal/IA/múltiples ventanas y lint. Main recuperado:
+`f89b077c86ffe270cd1b47357256a17e1fdb955f`.
+
+## Fase 7 — CSRF de mutaciones y controles de tareas
+
+Hallazgo: `requirePost()` sólo validaba método. FileMutationController,
+FolderMutationController, MoveJobController::start y BackgroundTaskController::action
+no verificaban token. El bootstrap no añadía esa protección. Se incorpora una
+guarda compartida usando `upload_csrf` / `X-Drive-CSRF` existentes y se actualizan
+clientes clásicos/OS y fallback de formulario. Detalle: `FILE_MUTATION_CSRF.md`.
+No se extrapola este resultado a todos los endpoints del repositorio.

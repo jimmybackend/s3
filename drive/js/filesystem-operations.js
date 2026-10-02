@@ -106,7 +106,8 @@ class ArcadeCloudFilesystemOperations {
       method: 'POST', credentials: 'same-origin', cache: 'no-store',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
-        'X-Requested-With': 'XMLHttpRequest'
+        'X-Requested-With': 'XMLHttpRequest',
+        'X-Drive-CSRF': String(this.window.DRIVE_UPLOAD_CSRF || '')
       },
       body: body instanceof URLSearchParams ? body.toString() : new URLSearchParams(body || {}).toString()
     });

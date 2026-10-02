@@ -19,6 +19,7 @@ final class MoveJobController extends AbstractJsonController
         try {
             $this->requirePost();
             $userId = $this->guardAuthenticated();
+            $this->requireDriveCsrf();
             $type = strtolower(trim($this->request->postString('type')));
             $operation = strtolower(trim($this->request->postString('operation')));
             if ($operation === '') $operation = 'move';

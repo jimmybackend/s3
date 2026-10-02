@@ -36,6 +36,20 @@ abstract class AbstractJsonController
         }
     }
 
+    /** Shared token already emitted by both s3.php and so.php. */
+    protected function requireDriveCsrf(): void
+    {
+        $expected = (string)$this->app->session()->get('upload_csrf', '');
+        $sent = $this->request->serverString('HTTP_X_DRIVE_CSRF');
+        // Native classic forms cannot set custom request headers.
+        if ($sent === '') $sent = $this->request->postString('upload_csrf');
+        if ($expected === '' || $sent === '' || !hash_equals($expected, $sent)) {
+            JsonResponse::error('Token CSRF inválido. Recarga el Drive.', 403, [
+                'estado' => 'error', 'mensaje' => 'Token CSRF inválido. Recarga el Drive.',
+            ]);
+        }
+    }
+
     protected function keysFromRequest(): array
     {
         $keys = $this->request->postArray('archivos');

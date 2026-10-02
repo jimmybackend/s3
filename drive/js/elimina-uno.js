@@ -80,7 +80,7 @@ class EliminaUnoModule {
             method: 'POST',
             body: fd,
             credentials: 'same-origin',
-            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            headers: { 'X-Requested-With': 'XMLHttpRequest', 'X-Drive-CSRF': String(window.DRIVE_UPLOAD_CSRF || '') }
           });
 
           if (!res.ok) throw new Error('HTTP ' + res.status);

@@ -1026,6 +1026,7 @@
         "drive/tests/federationcloud_smoke.php",
         "drive/tests/fresh_install_contract_smoke.php",
         "drive/tests/media_processing_contract_smoke.php",
+        "drive/tests/office_conditional_save_regression.php",
         "drive/tests/setup_entry_guard_smoke.php",
         "drive/tests/web_os_contract_smoke.php",
         "drive/upload/drivers/Chunked15MBUploader.php",
@@ -3057,7 +3058,7 @@
     },
     {
       "path": "drive/src/Office/OfficeDocumentStorageService.php",
-      "size": 17436,
+      "size": 17825,
       "active": false,
       "references": [
         "drive/tests/office_gateway_contract_smoke.php"
@@ -3837,6 +3838,12 @@
     {
       "path": "drive/tests/node_diagnostics_control_smoke.php",
       "size": 3419,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/tests/office_conditional_save_regression.php",
+      "size": 8366,
       "active": false,
       "references": []
     },

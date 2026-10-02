@@ -1,9 +1,9 @@
 {
   "summary": {
-    "php_total": 509,
-    "php_class_modules": 296,
+    "php_total": 513,
+    "php_class_modules": 298,
     "php_needs_migration": 0,
-    "php_tests": 58,
+    "php_tests": 59,
     "js_total": 76,
     "js_class_modules": 72,
     "js_needs_migration": 6,
@@ -123,6 +123,21 @@
       "path": "drive/background_tasks.php",
       "lines": 18,
       "kind": "thin endpoint",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/bin/activity_retention.php",
+      "lines": 9,
+      "kind": "thin cli entrypoint",
       "classes": 0,
       "functions": [],
       "session": false,
@@ -2124,6 +2139,21 @@
       "issues": []
     },
     {
+      "path": "drive/src/Activity/ActivityRetentionService.php",
+      "lines": 129,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": true,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
       "path": "drive/src/Activity/AwsUnitPriceCatalog.php",
       "lines": 89,
       "kind": "class/module",
@@ -2899,6 +2929,21 @@
     {
       "path": "drive/src/Aws/TranslateFileService.php",
       "lines": 60,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Console/ActivityRetentionCommand.php",
+      "lines": 38,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -6411,6 +6456,23 @@
       "issues": []
     },
     {
+      "path": "drive/tests/activity_retention_regression.php",
+      "lines": 67,
+      "kind": "test script",
+      "classes": 0,
+      "functions": [
+        "retentionCheck"
+      ],
+      "session": false,
+      "superglobals": [],
+      "db": true,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
       "path": "drive/tests/arcadelink_bulk_contract_regression.php",
       "lines": 71,
       "kind": "test script",
@@ -9784,7 +9846,7 @@
     },
     {
       "path": "drive/docs/runtime_endpoints.json",
-      "bytes": 116994,
+      "bytes": 117495,
       "valid": true,
       "root_type": "object",
       "keys": [

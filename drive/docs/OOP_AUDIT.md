@@ -4,10 +4,10 @@
 
 ## Resumen
 
-- PHP analizados: **509**
-- PHP que ya contienen clases/interfaces: **296**
+- PHP analizados: **513**
+- PHP que ya contienen clases/interfaces: **298**
 - PHP marcados para migración/revisión: **0**
-- Tests PHP separados del objetivo OOP de runtime: **58**
+- Tests PHP separados del objetivo OOP de runtime: **59**
 - JavaScript analizados: **76**
 - JavaScript que ya contienen clases: **72**
 - JavaScript sin clase/encapsulación OOP: **6**
@@ -38,6 +38,7 @@
 | `drive/app_bootstrap.php` | 62 | bootstrap | 0 | — | ⚠️ | — | — |
 | `drive/aws.php` | 12 | thin endpoint | 0 | — | — | — | — |
 | `drive/background_tasks.php` | 18 | thin endpoint | 0 | — | — | — | — |
+| `drive/bin/activity_retention.php` | 9 | thin cli entrypoint | 0 | — | — | — | — |
 | `drive/bin/arcadecloud-drive-admin-helper.php` | 1304 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/bin/arcadecloud-drive-updater.php` | 321 | class/module | 1 | — | — | — | — |
 | `drive/bin/federation_catalog_migrate.php` | 18 | thin cli entrypoint | 0 | — | — | — | — |
@@ -168,6 +169,7 @@
 | `drive/src/Activity/ActivityCostRecorder.php` | 155 | class/module | 1 | — | — | — | — |
 | `drive/src/Activity/ActivityCostRepository.php` | 198 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Activity/ActivityCostService.php` | 153 | class/module | 1 | — | — | — | — |
+| `drive/src/Activity/ActivityRetentionService.php` | 129 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Activity/AwsUnitPriceCatalog.php` | 89 | class/module | 1 | — | — | — | — |
 | `drive/src/Activity/PollyTaskReconciler.php` | 308 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Activity/TranscriptionCostAttribution.php` | 117 | class/module | 1 | — | — | — | — |
@@ -220,6 +222,7 @@
 | `drive/src/Aws/TextractFileService.php` | 107 | class/module | 1 | — | — | — | — |
 | `drive/src/Aws/TranscriptionFileService.php` | 712 | class/module | 1 | — | — | — | — |
 | `drive/src/Aws/TranslateFileService.php` | 60 | class/module | 1 | — | — | — | — |
+| `drive/src/Console/ActivityRetentionCommand.php` | 38 | class/module | 1 | — | — | — | — |
 | `drive/src/Console/MediaProcessingWorkerCommand.php` | 919 | class/module | 1 | — | — | — | — |
 | `drive/src/Console/MoveJobWorkerCommand.php` | 144 | class/module | 1 | — | — | — | — |
 | `drive/src/Console/ServerMaintenanceWorkerCommand.php` | 32 | class/module | 1 | — | — | — | — |
@@ -452,6 +455,7 @@
 | `drive/sync_s3_to_db.php` | 5 | thin endpoint | 0 | — | — | — | — |
 | `drive/sync_status.php` | 5 | thin endpoint | 0 | — | — | — | — |
 | `drive/tests/activity_costs_smoke.php` | 150 | test script | 0 | — | — | — | — |
+| `drive/tests/activity_retention_regression.php` | 67 | test script | 0 | — | ⚠️ | — | — |
 | `drive/tests/arcadelink_bulk_contract_regression.php` | 71 | test script | 0 | — | — | — | — |
 | `drive/tests/arcadelink_collection_regression.php` | 63 | test script | 0 | — | — | — | — |
 | `drive/tests/chunked_upload_cleanup_regression.php` | 117 | test script | 1 | — | — | — | — |

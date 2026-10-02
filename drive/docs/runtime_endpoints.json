@@ -3098,7 +3098,7 @@
     },
     {
       "path": "drive/src/Office/OfficeDocumentStorageService.php",
-      "size": 17825,
+      "size": 17826,
       "active": false,
       "references": [
         "drive/tests/office_gateway_contract_smoke.php"
@@ -4084,7 +4084,7 @@
     },
     {
       "path": "drive/tests/workstation_phase1_contract_smoke.php",
-      "size": 6530,
+      "size": 6761,
       "active": false,
       "references": []
     },

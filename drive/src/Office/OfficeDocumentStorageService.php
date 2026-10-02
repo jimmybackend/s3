@@ -70,6 +70,7 @@ final class OfficeDocumentStorageService
                     'Bucket' => $this->app->bucket(),
                     'Key' => $key,
                     'SaveAs' => $tmp,
+                    'IfMatch' => '"' . $etag . '"',
                 ]);
                 if (!is_file($tmp)) {
                     throw new RuntimeException('S3 no entregó el archivo temporal de Office.');
@@ -191,6 +192,8 @@ final class OfficeDocumentStorageService
                 'Bucket' => $this->app->bucket(),
                 'Key' => $originalKey,
                 'Body' => $stream,
+                // HEAD is advisory; S3 must enforce the expected version atomically.
+                'IfMatch' => '"' . $expectedEtag . '"',
             ];
             foreach (['ContentType','CacheControl','ContentDisposition','ContentEncoding','ContentLanguage'] as $field) {
                 if (isset($head[$field]) && trim((string)$head[$field]) !== '') {
@@ -200,16 +203,19 @@ final class OfficeDocumentStorageService
             if (isset($head['Metadata']) && is_array($head['Metadata'])) {
                 $put['Metadata'] = $head['Metadata'];
             }
-            $this->app->s3()->putObject($put);
+            $saved = $this->app->s3()->putObject($put);
+        } catch (AwsException $error) {
+            if (in_array($error->getStatusCode(), [404, 409, 412], true)
+                || in_array($error->getAwsErrorCode(), ['NoSuchKey', 'PreconditionFailed', 'ConditionalRequestConflict'], true)) {
+                return $this->saveConflict($session, $row, $target, $mtime, $size, $close);
+            }
+            throw $error;
         } finally {
             fclose($stream);
         }
 
-        $after = $this->app->s3()->headObject([
-            'Bucket' => $this->app->bucket(),
-            'Key' => $originalKey,
-        ]);
-        $newEtag = $this->normalizeEtag((string)($after['ETag'] ?? ''));
+        // A later HEAD could observe another writer and adopt its ETag as ours.
+        $newEtag = $this->normalizeEtag((string)($saved['ETag'] ?? ''));
         if ($newEtag === '') {
             throw new RuntimeException('S3 no confirmó el nuevo ETag del documento.');
         }
@@ -252,7 +258,7 @@ final class OfficeDocumentStorageService
         }
 
         try {
-            $this->app->s3()->putObject([
+            $conflictSaved = $this->app->s3()->putObject([
                 'Bucket' => $this->app->bucket(),
                 'Key' => $conflictKey,
                 'Body' => $stream,
@@ -281,11 +287,7 @@ final class OfficeDocumentStorageService
             throw $e;
         }
 
-        $conflictHead = $this->app->s3()->headObject([
-            'Bucket' => $this->app->bucket(),
-            'Key' => $conflictKey,
-        ]);
-        $conflictEtag = $this->normalizeEtag((string)($conflictHead['ETag'] ?? ''));
+        $conflictEtag = $this->normalizeEtag((string)($conflictSaved['ETag'] ?? ''));
         if ($conflictEtag === '') {
             throw new RuntimeException('S3 no confirmó el ETag de la copia de conflicto Office.');
         }

@@ -8,6 +8,16 @@ VNC_DEPTH="${VNC_DEPTH:-24}"
 
 export HOME=/home/arcade
 
+PHP_SHARED_GID="${ARCADECLOUD_PHP_GID:-}"
+if [[ "$PHP_SHARED_GID" =~ ^[0-9]+$ ]]; then
+  PHP_SHARED_GROUP="$(getent group "$PHP_SHARED_GID" | cut -d: -f1 || true)"
+  if [[ -z "$PHP_SHARED_GROUP" ]]; then
+    PHP_SHARED_GROUP="arcadecloud-php"
+    groupadd --gid "$PHP_SHARED_GID" "$PHP_SHARED_GROUP"
+  fi
+  usermod -aG "$PHP_SHARED_GROUP" arcade
+fi
+
 mkdir -p \
   /home/arcade/.vnc \
   /home/arcade/.config/xfce4 \

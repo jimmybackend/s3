@@ -568,7 +568,7 @@
     },
     {
       "path": "drive/ec2.php",
-      "size": 47812,
+      "size": 49453,
       "active": true,
       "references": [
         "drive/personal_aws_bootstrap.php",
@@ -1488,7 +1488,7 @@
     },
     {
       "path": "drive/so.php",
-      "size": 111982,
+      "size": 111977,
       "active": true,
       "references": [
         "drive/s3.php",
@@ -3948,7 +3948,7 @@
     },
     {
       "path": "drive/tests/web_os_pending_fixes_smoke.php",
-      "size": 4760,
+      "size": 5366,
       "active": false,
       "references": []
     },

@@ -468,7 +468,30 @@ final class OfficeDocumentStorageService
             $sessionId = (string)($candidate['session_id'] ?? '');
             if (!preg_match('/^[a-f0-9]{32}$/', $sessionId)) continue;
 
+            $relative = trim((string)($candidate['workspace_relative'] ?? ''));
+            if ($relative !== '') {
+                $target = $this->workspaceRoot . '/' . $relative;
+                if (is_file($target)) {
+                    clearstatcache(true, $target);
+                    $mtime = (int)(@filemtime($target) ?: 0);
+                    $size = (int)(@filesize($target) ?: -1);
+                    if (
+                        $mtime !== (int)($candidate['last_workspace_mtime'] ?? 0)
+                        || $size !== (int)($candidate['last_workspace_size'] ?? -1)
+                    ) {
+                        error_log(
+                            '[ArcadeCloud Office] workspace cerrado conserva cambios no sincronizados: '
+                            . $sessionId
+                        );
+                        continue;
+                    }
+                }
+            }
+
             $directory = $this->workspaceRoot . '/sessions/' . $sessionId;
+            if (is_file($directory . '/.arcadecloud-office-active')) {
+                continue;
+            }
             $this->deleteTree($directory);
             $this->sessions->deleteClosed($sessionId);
         }

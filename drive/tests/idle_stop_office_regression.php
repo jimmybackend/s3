@@ -62,7 +62,7 @@ try {
         $db->query('DELETE FROM OfficeSessionLeases');
         $db->query('DELETE FROM OfficeDocumentSessions');
         $db->query('DELETE FROM MediaProcessingJobs');
-        $db->query("UPDATE MediaWorkerNodeSessions SET Status='idle',IdleSince=DATE_SUB(UTC_TIMESTAMP(), INTERVAL 20 MINUTE),StopRequestedAt=NULL");
+        $db->query("UPDATE MediaWorkerNodeSessions SET Status='idle',IdleSince=DATE_SUB(UTC_TIMESTAMP(), INTERVAL 21 MINUTE),StopRequestedAt=NULL");
         Config::$calls = []; Config::$onDescribe = null;
     };
     $noStop = static fn(): bool => !in_array('StopInstances', Config::$calls, true);

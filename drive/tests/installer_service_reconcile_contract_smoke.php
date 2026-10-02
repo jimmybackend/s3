@@ -35,8 +35,8 @@ $helper = (string)file_get_contents($repo . '/drive/bin/arcadecloud-drive-admin-
 installerContract(str_contains($installer, '--reconcile'), 'instalador ofrece reconciliación idempotente');
 installerContract(str_contains($installer, '--node-role='), 'instalador distingue rol web/media-worker/combined');
 installerContract(str_contains($installer, '--media-worker-instance-id='), 'instalador puede guardar la EC2 multimedia controlada');
-installerContract(str_contains($installer, 'MEDIA_WORKER_IDLE_GRACE_SECONDS >= 600'), 'instalador exige al menos diez minutos de inactividad');
-installerContract(str_contains($managed, "'min_range' => 600"), 'runtime administrado conserva mínimo de diez minutos');
+installerContract(str_contains($installer, 'MEDIA_WORKER_IDLE_GRACE_SECONDS >= 1200'), 'instalador exige al menos veinte minutos de inactividad');
+installerContract(str_contains($managed, "'min_range' => 1200"), 'runtime administrado conserva mínimo de veinte minutos');
 installerContract(str_contains($installer, 'persist_node_settings'), 'instalador persiste rol y configuración de media');
 installerContract(str_contains($installer, 'reconcile_services'), 'finalización invoca reconciliación de servicios');
 installerContract(
@@ -162,8 +162,8 @@ installerContract(str_contains($uninstaller, '/var/lib/arcadecloud-media'), 'des
 
 installerContract(str_contains($mediaInstaller, 'ARCADECLOUD_RUNTIME_ENV'), 'worker usa runtime administrado canónico');
 installerContract(str_contains($mediaInstaller, 'php ffmpeg ffprobe lame'), 'worker exige herramientas multimedia completas');
-installerContract(str_contains($mediaInstaller, 'systemctl restart arcadecloud-media-worker.service'), 'actualización reinicia worker para cargar código nuevo');
-installerContract(!str_contains($mediaInstaller, 'enable --now arcadecloud-media-worker.service'), 'instalador no deja proceso multimedia viejo tras actualizar código');
+installerContract(str_contains($mediaInstaller, 'systemctl enable --now arcadecloud-media-worker.service') && str_contains($mediaInstaller, 'systemctl restart arcadecloud-media-worker.service'), 'reconciliación deja worker habilitado, activo y recarga código nuevo');
+installerContract(strpos($mediaInstaller, 'systemctl restart arcadecloud-media-worker.service') > strpos($mediaInstaller, 'systemctl enable --now arcadecloud-media-worker.service'), 'instalador reinicia el worker después de asegurar que quedó habilitado y activo');
 installerContract(
     !str_contains($mediaInstaller, 'chmod 0755 "${DRIVE_ROOT}/bin/media_worker_node_bootstrap.sh"'),
     'reconciliación multimedia no modifica el modo Git del bootstrap rastreado'

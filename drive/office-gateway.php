@@ -476,7 +476,7 @@ button{width:100%;margin-top:12px;padding:13px;border:1px solid var(--accent);bo
 <div class="idle-warning" id="officeIdleWarning" hidden>
   <div class="idle-card">
     <h2>Office está inactivo</h2>
-    <p>Han pasado 10 minutos sin actividad. Guarda tus cambios. El nodo se apagará en:</p>
+    <p>Han pasado 20 minutos sin actividad. Guarda tus cambios. El nodo se apagará en:</p>
     <div class="idle-count" id="officeIdleCount">30</div>
     <p>segundos</p>
     <button type="button" id="officeContinue">Seguir usando Office</button>
@@ -639,7 +639,7 @@ button{width:100%;margin-top:12px;padding:13px;border:1px solid var(--accent);bo
     <?php if ($message !== ''): ?><div class="ok"><?= $escape($message) ?></div><?php endif; ?>
     <?php if ($error !== ''): ?><div class="err"><?= $escape($error) ?></div><?php endif; ?>
   <?php endif; ?>
-  <p class="small">Office se ejecuta en la EC2 grande. La inactividad real de teclado, mouse o toque alimenta el apagado seguro de 10 minutos; una tarea multimedia activa bloquea el apagado.</p>
+  <p class="small">Office se ejecuta en la EC2 grande. La inactividad real de teclado, mouse o toque alimenta el apagado seguro de 20 minutos; una tarea multimedia activa bloquea el apagado.</p>
 </main></div>
 <?php if ($waiting || $mode === 'media-busy' || $mode === 'office-busy'): ?>
 <script>setTimeout(() => location.replace('/'), 4000);</script>

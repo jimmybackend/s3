@@ -91,6 +91,62 @@ final class FolderQueryService
         return $this->displayPathFromRows($root, $target, $rows);
     }
 
+    /**
+     * Breadcrumbs para interfaz: label es el nombre de catálogo visible y
+     * route conserva el Prefix físico usado exclusivamente por el backend.
+     *
+     * @return array<int,array{label:string,route:string}>
+     */
+    public function breadcrumbsForUser(int $userId, string $prefix): array
+    {
+        if ($userId <= 0) {
+            throw new RuntimeException('Usuario inválido.');
+        }
+
+        $root = $this->normalizePrefix($this->paths->rootForUser($userId));
+        $target = $this->normalizePrefix($this->paths->normalizeForUser($prefix, $userId));
+        $rows = $this->repository->listHierarchyRows($userId);
+        $byPrefix = [];
+        foreach ($rows as $row) {
+            $rowPrefix = $this->normalizePrefix((string)($row['Prefix'] ?? ''));
+            if ($rowPrefix === '') {
+                continue;
+            }
+            $byPrefix[$rowPrefix] = [
+                'label' => trim((string)($row['Nombre'] ?? '')),
+                'parent' => $this->normalizePrefix((string)($row['ParentPrefix'] ?? '')),
+            ];
+        }
+
+        $chain = [];
+        $cursor = $target;
+        $guard = 0;
+        while ($cursor !== '' && $guard++ < 256) {
+            $row = $byPrefix[$cursor] ?? null;
+            $label = trim((string)($row['label'] ?? ''));
+            if ($cursor === $root && $label === '') {
+                $label = 'Mi Drive';
+            }
+            if ($label !== '') {
+                $chain[] = ['label' => $label, 'route' => $cursor];
+            }
+            if ($cursor === $root) {
+                break;
+            }
+            $parent = $this->normalizePrefix((string)($row['parent'] ?? ''));
+            if ($parent === '' || $parent === $cursor || strpos($parent, $root) !== 0) {
+                break;
+            }
+            $cursor = $parent;
+        }
+
+        $chain = array_reverse($chain);
+        if ($chain === [] || (string)($chain[0]['route'] ?? '') !== $root) {
+            array_unshift($chain, ['label' => 'Mi Drive', 'route' => $root]);
+        }
+        return $chain;
+    }
+
     private function displayPathFromRows(string $root, string $target, array $rows): string
     {
         $segments = [];

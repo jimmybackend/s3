@@ -112,14 +112,13 @@ final class FolderRepository
         $stmt = $this->db->prepare(
             "SELECT Prefix FROM S3Folders
              WHERE user_id_ = ? AND Found = 1
-               AND Prefix LIKE CONCAT(?, '%')
-               AND Prefix LIKE ? ESCAPE '\\\\'
+               AND (Prefix LIKE ? ESCAPE '\\\\' OR Nombre LIKE ? ESCAPE '\\\\')
              ORDER BY (Prefix LIKE CONCAT(?, '%')) DESC, LENGTH(Prefix) ASC, Prefix ASC
              LIMIT ?"
         );
         if (!$stmt) throw new RuntimeException('No se pudo preparar el autocompletado: ' . $this->db->error);
         $direct = rtrim($rootPrefix, '/') . '/' . ltrim($query, '/');
-        $stmt->bind_param('isssi', $userId, $rootPrefix, $like, $direct, $limit);
+        $stmt->bind_param('issssi', $userId, $rootPrefix, $like, $like, $direct, $limit);
         if (!$stmt->execute()) {
             $error = $stmt->error; $stmt->close();
             throw new RuntimeException('No se pudo autocompletar carpetas: ' . $error);

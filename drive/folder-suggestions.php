@@ -21,12 +21,17 @@ try {
     }
     $limit = max(1, min(20, (int)($_GET['limit'] ?? 12)));
     $rootPrefix = rtrim(str_replace('\\', '/', $root), '/') . '/';
-    $rows = $query === '' ? [] : $app->folderRepository()->suggestPrefixes($userId, $rootPrefix, ltrim($query, '/'), $limit);
-    $suggestions = array_map(static function (string $prefix) use ($rootPrefix): string {
-        $relative = str_starts_with($prefix, $rootPrefix) ? substr($prefix, strlen($rootPrefix)) : '';
-        return '/' . trim($relative, '/');
-    }, $rows);
-    echo json_encode(array_values(array_filter(array_unique($suggestions))), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+    $visibleNeedle = basename(rtrim($query, '/'));
+    $rows = $query === '' ? [] : $app->folderRepository()->suggestPrefixes($userId, $rootPrefix, $visibleNeedle, $limit);
+    $suggestions = [];
+    foreach (array_values(array_unique($rows)) as $prefix) {
+        $physical = $app->userStoragePath()->normalizeForUser((string)$prefix, $userId);
+        $suggestions[] = [
+            'route' => $physical,
+            'label' => $app->folderQueryService()->displayPathForUser($userId, $physical),
+        ];
+    }
+    echo json_encode($suggestions, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 } catch (InvalidArgumentException $error) {
     http_response_code(422); echo json_encode(['error' => $error->getMessage()]);
 } catch (Throwable $error) {

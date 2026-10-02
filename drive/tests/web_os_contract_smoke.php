@@ -62,6 +62,9 @@ $paths = [
     'search_service' => $root . '/src/Application/FileSearchService.php',
     'ai_search_service' => $root . '/src/Application/AiFileSearchService.php',
     'file_list_service' => $root . '/src/Application/FileListService.php',
+    'folder_query_service' => $root . '/src/Application/FolderQueryService.php',
+    'folder_repository' => $root . '/src/Storage/FolderRepository.php',
+    'folder_suggestions' => $root . '/folder-suggestions.php',
 ];
 
 foreach ($paths as $name => $path) {
@@ -91,6 +94,12 @@ webOsContract(str_contains($paths['shell'], 'listHierarchyRows($userId)'), 'carp
 webOsContract(str_contains($paths['shell'], 'fileListService()->load($userId, $currentRoute'), 'archivos se listan por usuario y ruta normalizada');
 webOsContract(!str_contains($paths['shell'], 'listObjects'), 'Web OS no lista S3 para navegar');
 webOsContract(!str_contains($paths['shell'], 'Data2/'), 'Web OS no presenta raíces físicas ajenas hardcodeadas');
+webOsContract(str_contains($paths['shell'], 'data-explorer-visible-route=') && str_contains($paths['shell'], 'data-explorer-breadcrumbs='), 'Explorer separa ruta visible de catálogo y Prefix físico interno');
+webOsContract(str_contains($paths['folder_query_service'], 'breadcrumbsForUser(') && str_contains($paths['folder_query_service'], "'label' =>") && str_contains($paths['folder_query_service'], "'route' =>"), 'breadcrumbs conservan label visible y route físico por separado');
+webOsContract(str_contains($paths['window_manager_js'], 'this.visibleRoute') && str_contains($paths['window_manager_js'], 'this.breadcrumbs'), 'WindowManager muestra rutas de catálogo sin sustituir la ruta operativa');
+webOsContract(str_contains($paths['window_manager_js'], 'button.textContent = label') && !str_contains($paths['window_manager_js'], 'button.textContent = route; this.suggestions.append'), 'autocompletado no imprime Prefix físico al usuario');
+webOsContract(str_contains($paths['folder_repository'], 'OR Nombre LIKE') && str_contains($paths['folder_suggestions'], "'label' => $app->folderQueryService()->displayPathForUser"), 'sugerencias buscan Nombre de catálogo y devuelven label visible');
+webOsContract(str_contains($paths['window_manager_js'], 'sourceLabel: this.visibleRoute') && str_contains($paths['window_manager_js'], 'destinationLabel'), 'confirmación drag/drop usa rutas visibles y mantiene rutas físicas para ejecutar');
 webOsContract(str_contains($paths['shell'], '>Mi nodo<'), 'interfaz usa Mi nodo');
 webOsContract(str_contains($paths['shell'], 'NodeCapabilityService'), 'Mi nodo usa detector de capacidad');
 webOsContract(str_contains($paths['shell'], 'FileViewHelper::isLocked($row)'), 'archivos protegidos no se abren como normales');

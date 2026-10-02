@@ -58,6 +58,7 @@ $currentRoute = $app->userStoragePath()->normalizeForUser(
 );
 $session->set('ruta_actual', $currentRoute);
 $visibleRoute = $app->folderQueryService()->displayPathForUser($userId, $currentRoute);
+$visibleBreadcrumbs = $app->folderQueryService()->breadcrumbsForUser($userId, $currentRoute);
 
 $page = max(1, (int)($_GET['pagina'] ?? 1));
 $fileState = $app->fileListService()->load($userId, $currentRoute, [
@@ -263,6 +264,8 @@ $isExplorerFragment = (string)($_GET['_os_fragment'] ?? '') === 'explorer';
 
       <div class="os-explorer-live"
            data-explorer-route="<?= $e($currentRoute) ?>"
+           data-explorer-visible-route="<?= $e($visibleRoute) ?>"
+           data-explorer-breadcrumbs="<?= $e(json_encode($visibleBreadcrumbs, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)) ?>"
            data-explorer-page="<?= $page ?>"
            data-explorer-pages="<?= $pages ?>">
       <div class="os-explorer-pathrow">

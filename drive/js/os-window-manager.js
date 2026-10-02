@@ -381,6 +381,8 @@ class ArcadeCloudExplorerWindow {
     this.id = element.dataset.windowId;
     this.live = element.querySelector('.os-explorer-live');
     this.route = this.normalize(route || this.live?.dataset.explorerRoute || runtime.root);
+    this.visibleRoute = String(this.live?.dataset.explorerVisibleRoute || 'Mi Drive/').trim() || 'Mi Drive/';
+    this.breadcrumbs = this.readBreadcrumbs();
     this.page = +(this.live?.dataset.explorerPage || 1);
     this.history = [];
     this.future = [];
@@ -420,6 +422,15 @@ class ArcadeCloudExplorerWindow {
     return `/${path}`;
   }
 
+  readBreadcrumbs() {
+    try {
+      const rows = JSON.parse(String(this.live?.dataset.explorerBreadcrumbs || '[]'));
+      return Array.isArray(rows) ? rows.filter(row => row && row.label && row.route) : [];
+    } catch (_) {
+      return [];
+    }
+  }
+
   installChrome() {
     const row = this.live?.querySelector('.os-explorer-pathrow');
     if (!row) return;
@@ -445,20 +456,17 @@ class ArcadeCloudExplorerWindow {
   renderAddress() {
     if (!this.breadcrumb) return;
     this.breadcrumb.replaceChildren();
-    const rootButton = this.runtime.document.createElement('button');
-    rootButton.type = 'button'; rootButton.textContent = 'Mi Drive'; rootButton.dataset.addressRoute = '/';
-    this.breadcrumb.append(rootButton);
-    let accumulated = '';
-    this.virtual().split('/').filter(Boolean).forEach(part => {
-      accumulated += `/${part}`;
-      const separator = this.runtime.document.createElement('span'); separator.textContent = '›';
-      const button = this.runtime.document.createElement('button'); button.type = 'button'; button.textContent = part; button.dataset.addressRoute = accumulated;
-      this.breadcrumb.append(separator, button);
+    const rows = this.breadcrumbs.length ? this.breadcrumbs : [{ label: 'Mi Drive', route: this.route }];
+    rows.forEach((row, index) => {
+      if (index > 0) { const separator = this.runtime.document.createElement('span'); separator.textContent = '›'; this.breadcrumb.append(separator); }
+      const button = this.runtime.document.createElement('button');
+      button.type = 'button'; button.textContent = String(row.label || 'Carpeta'); button.dataset.addressRoute = String(row.route || this.route);
+      this.breadcrumb.append(button);
     });
-    if (this.address) this.address.value = this.virtual();
+    if (this.address) this.address.value = this.visibleRoute;
   }
 
-  editAddress() { if (this.address) { this.breadcrumb.hidden = true; this.address.hidden = false; this.address.value = this.virtual(); this.address.focus(); this.address.select(); } }
+  editAddress() { if (this.address) { this.breadcrumb.hidden = true; this.address.hidden = false; this.address.value = this.visibleRoute; this.address.focus(); this.address.select(); } }
   stopEditing() { if (this.address) { this.address.hidden = true; this.breadcrumb.hidden = false; this.hideSuggestions(); } }
 
   bind() {
@@ -489,7 +497,7 @@ class ArcadeCloudExplorerWindow {
     const keydown = event => {
       if (event.target === this.address) {
         if (event.key === 'ArrowDown' || event.key === 'ArrowUp') { event.preventDefault(); this.moveSuggestion(event.key === 'ArrowDown' ? 1 : -1); }
-        else if (event.key === 'Enter') { event.preventDefault(); const selected = this.suggestions?.querySelector('.is-active'); this.navigate(selected?.dataset.suggestionRoute || this.address.value); }
+        else if (event.key === 'Enter') { event.preventDefault(); const selected = this.suggestions?.querySelector('.is-active'); if (selected?.dataset.suggestionRoute) this.navigate(selected.dataset.suggestionRoute); else if (String(this.address.value || '').trim() === this.visibleRoute) this.stopEditing(); }
         else if (event.key === 'Escape') this.stopEditing();
         return;
       }
@@ -542,7 +550,12 @@ class ArcadeCloudExplorerWindow {
 
   renderSuggestions(items) {
     if (!this.suggestions) return; this.suggestions.replaceChildren(); this.suggestionIndex = -1;
-    items.slice(0, 20).forEach(route => { const button = this.runtime.document.createElement('button'); button.type = 'button'; button.dataset.suggestionRoute = route; button.setAttribute('role', 'option'); button.textContent = route; this.suggestions.append(button); });
+    items.slice(0, 20).forEach(item => {
+      const route = typeof item === 'string' ? item : String(item?.route || '');
+      const label = typeof item === 'string' ? 'Carpeta' : String(item?.label || 'Carpeta');
+      if (!route) return;
+      const button = this.runtime.document.createElement('button'); button.type = 'button'; button.dataset.suggestionRoute = route; button.setAttribute('role', 'option'); button.textContent = label; this.suggestions.append(button);
+    });
     this.suggestions.hidden = !this.suggestions.children.length;
   }
   moveSuggestion(delta) { const items = [...(this.suggestions?.querySelectorAll('[data-suggestion-route]') || [])]; if (!items.length) return; this.suggestionIndex = (this.suggestionIndex + delta + items.length) % items.length; items.forEach((item, i) => item.classList.toggle('is-active', i === this.suggestionIndex)); }
@@ -573,7 +586,7 @@ class ArcadeCloudExplorerWindow {
       replacement.dataset.explorerInstance = this.id;
       replacement.querySelectorAll('.os-file-entry,.os-folder-entry').forEach(entry => { entry.draggable = true; });
       this.scroll = this.live?.scrollTop || 0;
-      this.live.replaceWith(replacement); this.live = replacement; this.route = route; this.page = +replacement.dataset.explorerPage || 1; this.selection.clear();
+      this.live.replaceWith(replacement); this.live = replacement; this.route = route; this.visibleRoute = String(replacement.dataset.explorerVisibleRoute || 'Mi Drive/').trim() || 'Mi Drive/'; this.breadcrumbs = this.readBreadcrumbs(); this.page = +replacement.dataset.explorerPage || 1; this.selection.clear();
       this.installChrome(); this.updateTitle();
       this.runtime.window.ArcadeCloudOsShell?.bindFiles?.(this.win);
       this.runtime.window.ArcadeCloudOsClipboard?.bindEntries?.(this.win);
@@ -599,8 +612,8 @@ class ArcadeCloudExplorerWindow {
   forward() { const item = this.future.pop(); if (item) { this.history.push({ route: this.route, page: this.page, scroll: this.live?.scrollTop || 0 }); this.navigate(item.route, { page: item.page, scroll: item.scroll, fromHistory: true, replace: true }); } }
   up() { const root = `${this.runtime.root.replace(/\/+$/, '')}/`; if (this.route !== root) { const bits = this.route.replace(/\/+$/, '').split('/'); bits.pop(); this.navigate(`${bits.join('/')}/`); } }
   updateTitle() {
-    const parts = this.virtual().split('/').filter(Boolean);
-    this.runtime.manager.setTitle(this.id, `Mis datos — ${parts.pop() || '/'}`);
+    const last = this.breadcrumbs[this.breadcrumbs.length - 1];
+    this.runtime.manager.setTitle(this.id, `Mis datos — ${String(last?.label || 'Mi Drive')}`);
   }
 
   bindDragDrop() {
@@ -608,7 +621,7 @@ class ArcadeCloudExplorerWindow {
       const entry = event.target.closest('.os-file-entry,.os-folder-entry'); if (!entry) return;
       const selected = [...this.win.querySelectorAll('.os-file-entry.is-selected')];
       const entries = entry.classList.contains('is-selected') && selected.length ? selected : [entry];
-      const payload = { sourceWindowId: this.id, sourceRoute: this.route, kind: entry.classList.contains('os-folder-entry') ? 'folder' : 'file', keys: entries.map(item => item.dataset.key || item.dataset.folderRoute).filter(Boolean) };
+      const payload = { sourceWindowId: this.id, sourceRoute: this.route, sourceLabel: this.visibleRoute, kind: entry.classList.contains('os-folder-entry') ? 'folder' : 'file', keys: entries.map(item => item.dataset.key || item.dataset.folderRoute).filter(Boolean) };
       event.dataTransfer.effectAllowed = 'copyMove'; event.dataTransfer.setData('application/x-arcadecloud-items', JSON.stringify(payload));
     };
     const over = event => { if ([...event.dataTransfer.types].includes('application/x-arcadecloud-items')) { event.preventDefault(); this.win.classList.add('is-drop-target'); } };
@@ -617,8 +630,12 @@ class ArcadeCloudExplorerWindow {
       event.preventDefault(); this.win.classList.remove('is-drop-target');
       let data; try { data = JSON.parse(event.dataTransfer.getData('application/x-arcadecloud-items')); } catch (_) { return; }
       if (!data?.keys?.length || data.sourceWindowId === this.id && data.sourceRoute === this.route) return;
-      const destinationRoute = event.target.closest('.os-folder-entry')?.dataset.folderRoute || this.route;
-      const choice = await this.runtime.chooseDropOperation(data.keys.length, data.sourceRoute, destinationRoute); if (!choice) return;
+      const destinationFolder = event.target.closest('.os-folder-entry');
+      const destinationRoute = destinationFolder?.dataset.folderRoute || this.route;
+      const destinationLabel = destinationFolder
+        ? `${this.visibleRoute.replace(/\/+$/, '')}/${String(destinationFolder.dataset.folderName || 'Carpeta')}/`
+        : this.visibleRoute;
+      const choice = await this.runtime.chooseDropOperation(data.keys.length, data.sourceLabel || 'Carpeta de origen', destinationLabel || 'Carpeta de destino'); if (!choice) return;
       const clipboard = this.runtime.window.ArcadeCloudOsClipboard;
       if (data.kind === 'folder') clipboard?.captureFolder?.({ route: data.keys[0], parent: data.sourceRoute, name: data.keys[0].split('/').filter(Boolean).pop() }, choice, { sourceWindowId: data.sourceWindowId, sourceRoute: data.sourceRoute });
       else {

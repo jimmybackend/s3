@@ -14,7 +14,7 @@ operaciones S3 reales. Cada fase requiere PR, pruebas y revisión de CI.
 | Arquitectura | `DriveApplication`, Controller/Service/Repository, esquema canónico `adbbmis1_Cloud.sql` | Conservar composición OOP, ownership y backend clásico |
 | Mi nodo | `NodeStatusController`, `NodeRuntimeStatusService`, `NodeCapabilityService` | Endpoint local; fase 3 añade evidencia de workstation local por socket Unix, con estados separados de host/contenedor/detenido/no verificable |
 | Uploads/temporales | `UploadFactory`, `Chunked15MBUploader`, `UploadStateStore`, `UploadCleanupService` | Ruta chunked distinta del estado público histórico; corregido en fase 1 descrita abajo |
-| Actividad | `ActivityCostRepository`, `DriveActivityEvents`, reconciliadores Polly/Transcribe | No se encontró retención en repositorio/bin; contiene estado operativo, no debe purgarse sólo por fecha |
+| Actividad | `ActivityCostRepository`, `DriveActivityEvents`, reconciliadores Polly/Transcribe | Fase 4 añade archivo/retención conservadora de telemetría síncrona; registros correlacionados y operativos se conservan |
 | Office | `OfficeDocumentStorageService`, repositorios de sesiones/leases, gateway y cliente workstation | Preparación, sync, catálogo, conflicto y cierre existen. `sync()` verificaba HEAD y luego PUT sin `IfMatch`: corregido en fase 2; aceptación real de escritorio pendiente |
 | Multimedia | `MediaProcessingService`, `MediaProcessingJobRepository`, `MediaWorkerNodeService` | Existe cola, procesamiento y documentación de integración; validación completa pendiente |
 | Tareas | `BackgroundTaskController`, Sync/Move stores, actividad, media y mantenimiento | Agregación existente; no crear tabla universal |
@@ -100,3 +100,23 @@ Explorer con `refreshExplorer`, contraria al contrato actual. Se reemplaza por
 una regresión JS que ejecuta búsqueda normal/IA, ruta visible separada, relocaliza
 por id, abre ventana nueva en página 7, espera `ready` y selecciona el archivo.
 El runtime de búsqueda no se modificó.
+
+## Fase 3 — resultado
+
+PR #275 fusionado tras diez workflows satisfactorios. Regresiones PHP del helper,
+JS de presentación y búsqueda normal/IA aprobadas. Main obtenido:
+`15dca1d8cefb492fac96f3d446d461a25b9ea5aa`.
+
+## Fase 4 — retención de actividad
+
+Comando CLI nuevo con dry-run, archivo durable obligatorio, transacción y lotes
+por índice primario. Sólo telemetría síncrona comprobada, sin correlación ni
+metadata operativa. No modifica esquema ni instala cron/timers. La reducción de
+filas de control terminales queda pendiente; no afirmar tamaño total acotado.
+Consultar `ACTIVITY_RETENTION.md` para pérdida de visibilidad histórica en reportes,
+archivo privado y necesidad de probar recuperación aislada antes de automatizar.
+
+Hallazgo adicional para la próxima fase: `MediaWorkerNodeService::handleIdle()` y
+`requestIdleStop()` sólo consultan `MediaProcessingJobRepository::hasActiveJobs()`;
+la ruta manual superadmin sí consulta sesiones Office. Auditar la guarda del
+apagado por inactividad para no depender únicamente de heartbeats del navegador.

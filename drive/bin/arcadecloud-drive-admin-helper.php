@@ -69,7 +69,7 @@ final class ArcadeCloudDriveAdminHelper
         if ($action === 'status') {
             fwrite(STDOUT, json_encode([
                 'ok' => true,
-                'version' => 17,
+                'version' => 18,
                 'capabilities' => [
                     'env_set_many' => true,
                     'db_aws_settings' => true,
@@ -332,6 +332,33 @@ final class ArcadeCloudDriveAdminHelper
             ) {
                 $this->fail('No se pudieron normalizar permisos del documento Workstation.', 73);
             }
+
+            $phpUser = trim((string)($config['php_user'] ?? ''));
+            if ($phpUser === '' || $phpUser === 'root' || !is_executable('/usr/bin/setfacl')) {
+                $this->fail('No se pudo preparar el acceso compartido PHP/LibreOffice al documento.', 73);
+            }
+
+            // LibreOffice guarda de forma atómica: puede reemplazar el DOCX por
+            // un inode nuevo propiedad de UID/GID 10001. La ACL por defecto de
+            // la carpeta conserva rw para PHP-FPM también en esos reemplazos.
+            $this->runFixedCommand([
+                '/usr/bin/setfacl',
+                '-m',
+                'u:' . $phpUser . ':rwx,m::rwx',
+                $sessionDirectory,
+            ]);
+            $this->runFixedCommand([
+                '/usr/bin/setfacl',
+                '-m',
+                'd:u:' . $phpUser . ':rwx,d:m::rwx',
+                $sessionDirectory,
+            ]);
+            $this->runFixedCommand([
+                '/usr/bin/setfacl',
+                '-m',
+                'u:' . $phpUser . ':rw-,m::rw-',
+                $realDocument,
+            ]);
 
             clearstatcache(true, $realDocument);
             $documentStat = @stat($realDocument);

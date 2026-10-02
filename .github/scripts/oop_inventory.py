@@ -181,7 +181,11 @@ summary = {
     'php_tests': sum(1 for x in php if x['kind'] == 'test script'),
     'js_total': len(js),
     'js_class_modules': sum(1 for x in js if x['classes']),
-    'js_needs_migration': sum(1 for x in js if not x['classes'] or x['functions']),
+    'js_needs_migration': sum(
+        1 for x in js
+        if not x['path'].startswith('drive/tests/') and (not x['classes'] or x['functions'])
+    ),
+    'js_tests': sum(1 for x in js if x['path'].startswith('drive/tests/')),
     'js_compatibility_facades': sum(1 for x in js if x['classes'] and x['window_func']),
     'ajax_clients': sum(1 for x in js if sum(x['ajax'][key] for key in ('fetch', 'xhr', 'jquery'))),
     'ajax_calls': sum(
@@ -205,7 +209,8 @@ lines = [
     f"- Tests PHP separados del objetivo OOP de runtime: **{summary['php_tests']}**",
     f"- JavaScript analizados: **{summary['js_total']}**",
     f"- JavaScript que ya contienen clases: **{summary['js_class_modules']}**",
-    f"- JavaScript sin clase/encapsulación OOP: **{summary['js_needs_migration']}**",
+    f"- JavaScript runtime marcados para migración/revisión: **{summary['js_needs_migration']}**",
+    f"- Tests JavaScript separados del objetivo OOP de runtime: **{summary['js_tests']}**",
     f"- JavaScript OOP con fachada `window` de compatibilidad: **{summary['js_compatibility_facades']}**",
     f"- Clientes AJAX detectados: **{summary['ajax_clients']}** módulos / **{summary['ajax_calls']}** llamadas",
     f"- JSON analizados: **{summary['json_total']}**; inválidos: **{summary['json_invalid']}**",
@@ -215,7 +220,7 @@ lines = [
     '- `src/` y `upload/`: lógica de negocio e infraestructura en clases.',
     '- Entry points públicos: bootstrap + Controller/Service; sin SQL/AWS ni funciones globales.',
     '- CLI: el archivo ejecutable puede ser procedural si es un wrapper delgado que delega en clases.',
-    '- Tests: se auditan, pero no cuentan como deuda OOP del runtime.',
+    '- Tests PHP/JavaScript: se auditan, pero no cuentan como deuda OOP del runtime.',
     '- Vistas: pueden contener HTML; funciones JavaScript incrustadas no se confunden con funciones PHP.',
     '- JavaScript: comportamiento en clases; `window` sólo como fachada de compatibilidad explícita.',
     '- AJAX: es un mecanismo de transporte, no un paradigma; se revisa dentro de la clase cliente que lo posee.',

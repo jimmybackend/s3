@@ -134,9 +134,12 @@ jobs:
           grep -q "final class FederationHttpsReconciler" drive/bin/federation_https_reconcile.php
           ! grep -Eq '\\b(shell_exec|exec|system|passthru|popen)\\s*\\(' drive/bin/federation_https_reconcile.php
 
-          for file in drive/js/subir.js drive/js/subir-dropzone.js drive/js/subir-chunked.js drive/js/soportesMediaTypes.js; do
+          for file in drive/js/subir.js drive/js/subir-dropzone.js drive/js/subir-chunked.js drive/js/soportesMediaTypes.js \
+                      drive/js/folder-document.js drive/js/so-share.js drive/js/polly.js drive/js/polly-background.js \
+                      drive/js/transcribe-background.js drive/js/aws-comprehend.js; do
             grep -q "X-Drive-CSRF" "$file"
           done
+          grep -q "X-Drive-CSRF.*driveCsrf" drive/editor.php
 
       - name: Reject obvious committed secrets
         shell: bash

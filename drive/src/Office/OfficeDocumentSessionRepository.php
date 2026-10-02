@@ -132,6 +132,18 @@ final class OfficeDocumentSessionRepository
         $stmt->close();
     }
 
+    public function recoverSyncFailure(string $sessionId): void
+    {
+        $stmt = $this->db->prepare(
+            "UPDATE OfficeDocumentSessions SET Status='ready',UpdatedAt=UTC_TIMESTAMP() "
+            . "WHERE SessionId=? AND Status='syncing'"
+        );
+        if (!$stmt) return;
+        $stmt->bind_param('s', $sessionId);
+        $stmt->execute();
+        $stmt->close();
+    }
+
     public function markSynced(
         string $sessionId,
         string $etag,

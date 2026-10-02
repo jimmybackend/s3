@@ -4713,7 +4713,7 @@
     },
     {
       "path": "drive/src/Http/Controller/PersonalAwsController.php",
-      "lines": 109,
+      "lines": 110,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -7204,7 +7204,7 @@
     },
     {
       "path": "drive/tests/web_os_pending_fixes_smoke.php",
-      "lines": 55,
+      "lines": 57,
       "kind": "test script",
       "classes": 0,
       "functions": [],
@@ -8614,7 +8614,7 @@
     },
     {
       "path": "drive/js/os-window-manager.js",
-      "lines": 961,
+      "lines": 962,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudEventBus",

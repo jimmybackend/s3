@@ -4550,7 +4550,7 @@
     },
     {
       "path": "drive/src/Http/Controller/FileKeyRotationController.php",
-      "lines": 35,
+      "lines": 36,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -4595,7 +4595,7 @@
     },
     {
       "path": "drive/src/Http/Controller/FileSecurityController.php",
-      "lines": 97,
+      "lines": 100,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -4895,7 +4895,7 @@
     },
     {
       "path": "drive/src/Http/Controller/SyncController.php",
-      "lines": 147,
+      "lines": 148,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -6884,7 +6884,7 @@
     },
     {
       "path": "drive/tests/file_mutation_csrf_regression.php",
-      "lines": 85,
+      "lines": 90,
       "kind": "test script",
       "classes": 2,
       "functions": [
@@ -9063,7 +9063,7 @@
     },
     {
       "path": "drive/js/sincronizar.js",
-      "lines": 264,
+      "lines": 265,
       "kind": "class/module",
       "classes": [
         "SincronizarModule"
@@ -9594,13 +9594,15 @@
     },
     {
       "path": "drive/tests/classic_mutation_csrf_functional.js",
-      "lines": 49,
+      "lines": 56,
       "kind": "class/module",
       "classes": [
         "FixtureFormData"
       ],
       "functions": [],
-      "window_assign": [],
+      "window_assign": [
+        "fetch"
+      ],
       "window_func": [],
       "top_vars": [
         "assert",
@@ -9969,7 +9971,7 @@
     },
     {
       "path": "drive/docs/runtime_endpoints.json",
-      "bytes": 118694,
+      "bytes": 119264,
       "valid": true,
       "root_type": "object",
       "keys": [

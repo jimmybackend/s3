@@ -329,10 +329,10 @@
 | `drive/src/Http/Controller/FederationReplicaController.php` | 135 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/FederationShareDriveController.php` | 68 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/FileAccessController.php` | 145 | class/module | 1 | — | — | — | — |
-| `drive/src/Http/Controller/FileKeyRotationController.php` | 35 | class/module | 1 | — | — | — | — |
+| `drive/src/Http/Controller/FileKeyRotationController.php` | 36 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/FileMutationController.php` | 128 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/FileSearchController.php` | 101 | class/module | 1 | — | — | — | — |
-| `drive/src/Http/Controller/FileSecurityController.php` | 97 | class/module | 1 | — | — | — | — |
+| `drive/src/Http/Controller/FileSecurityController.php` | 100 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/FolderDocumentController.php` | 71 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/FolderMutationController.php` | 207 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/FolderQueryController.php` | 30 | class/module | 1 | — | — | — | — |
@@ -352,7 +352,7 @@
 | `drive/src/Http/Controller/ServerSettingsAdminController.php` | 73 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/ShareController.php` | 78 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/StorageUsageController.php` | 28 | class/module | 1 | — | — | — | — |
-| `drive/src/Http/Controller/SyncController.php` | 147 | class/module | 1 | — | — | — | — |
+| `drive/src/Http/Controller/SyncController.php` | 148 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/TextEditorController.php` | 61 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/ThumbnailController.php` | 110 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/TranscriptionController.php` | 224 | class/module | 1 | — | — | — | — |
@@ -480,7 +480,7 @@
 | `drive/tests/federation_replica_reconnect_contract_smoke.php` | 81 | test script | 0 | — | — | — | — |
 | `drive/tests/federation_replica_smoke.php` | 115 | test script | 0 | — | — | — | — |
 | `drive/tests/federationcloud_smoke.php` | 197 | test script | 0 | — | — | — | — |
-| `drive/tests/file_mutation_csrf_regression.php` | 85 | test script | 2 | ⚠️ | — | — | — |
+| `drive/tests/file_mutation_csrf_regression.php` | 90 | test script | 2 | ⚠️ | — | — | — |
 | `drive/tests/folder_document_sanitizer.php` | 49 | test script | 0 | — | — | — | — |
 | `drive/tests/fresh_install_contract_smoke.php` | 76 | test script | 0 | — | — | — | — |
 | `drive/tests/idle_stop_office_regression.php` | 117 | test script | 1 | — | ⚠️ | — | — |
@@ -597,7 +597,7 @@
 | `drive/js/recargarPagina.js` | 27 | class/module | RecargarPaginaModule | — | — | — |
 | `drive/js/server-admin.js` | 407 | class/module | ServerAdminModule | — | — | — |
 | `drive/js/setup.js` | 192 | class/module | ArcadeCloudSetup | — | — | — |
-| `drive/js/sincronizar.js` | 264 | class/module | SincronizarModule | — | triggerSyncFolderS3, triggerSyncS3 | window functions: triggerSyncFolderS3, triggerSyncS3 |
+| `drive/js/sincronizar.js` | 265 | class/module | SincronizarModule | — | triggerSyncFolderS3, triggerSyncS3 | window functions: triggerSyncFolderS3, triggerSyncS3 |
 | `drive/js/so-appearance.js` | 155 | class/module | ArcadeCloudOsAppearance | — | — | — |
 | `drive/js/so-clipboard.js` | 797 | class/module | ArcadeCloudOsClipboard | — | — | — |
 | `drive/js/so-federation.js` | 87 | class/module | ArcadeCloudOsFederationApp | — | — | — |
@@ -620,7 +620,7 @@
 | `drive/js/upload-destination.js` | 95 | class/module | UploadDestinationModule | — | — | — |
 | `drive/js/ver-metadatos.js` | 75 | class/module | VerMetadatosModule | — | verMetadatos | window functions: verMetadatos |
 | `drive/js/ver-pdf.js` | 112 | class/module | VerPdfModule | — | — | — |
-| `drive/tests/classic_mutation_csrf_functional.js` | 49 | class/module | FixtureFormData | — | — | — |
+| `drive/tests/classic_mutation_csrf_functional.js` | 56 | class/module | FixtureFormData | — | — | — |
 | `drive/tests/local_container_programs_functional.js` | 25 | class/module | Element | — | — | — |
 | `drive/tests/web_os_desktop_shell_functional.js` | 40 | procedural script | — | assert | — | top-level functions: assert; top-level state: editable, records, instance, registered, declarative, launcher, remoteApps; no ES class |
 | `drive/tests/web_os_file_applications_functional.js` | 54 | class/module | Bus | assert | — | top-level functions: assert |

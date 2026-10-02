@@ -1,11 +1,11 @@
 {
   "summary": {
-    "php_total": 507,
-    "php_class_modules": 295,
+    "php_total": 509,
+    "php_class_modules": 296,
     "php_needs_migration": 0,
-    "php_tests": 57,
-    "js_total": 74,
-    "js_class_modules": 70,
+    "php_tests": 58,
+    "js_total": 76,
+    "js_class_modules": 72,
     "js_needs_migration": 6,
     "js_compatibility_facades": 8,
     "ajax_clients": 49,
@@ -136,12 +136,14 @@
     },
     {
       "path": "drive/bin/arcadecloud-drive-admin-helper.php",
-      "lines": 1219,
+      "lines": 1304,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
       "session": false,
-      "superglobals": [],
+      "superglobals": [
+        "SERVER"
+      ],
       "db": true,
       "s3": false,
       "bootstrap": false,
@@ -2264,7 +2266,7 @@
     },
     {
       "path": "drive/src/Admin/PrivilegedServerHelper.php",
-      "lines": 284,
+      "lines": 298,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -5867,6 +5869,21 @@
       "issues": []
     },
     {
+      "path": "drive/src/System/LocalContainerCapabilityService.php",
+      "lines": 58,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
       "path": "drive/src/System/NodeCapabilityService.php",
       "lines": 255,
       "kind": "class/module",
@@ -6838,6 +6855,23 @@
       "issues": []
     },
     {
+      "path": "drive/tests/local_container_capabilities_regression.php",
+      "lines": 56,
+      "kind": "test script",
+      "classes": 0,
+      "functions": [
+        "capabilityCheck"
+      ],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
       "path": "drive/tests/media_processing_contract_smoke.php",
       "lines": 185,
       "kind": "test script",
@@ -6988,7 +7022,7 @@
     },
     {
       "path": "drive/tests/server_console_contract_smoke.php",
-      "lines": 138,
+      "lines": 146,
       "kind": "test script",
       "classes": 0,
       "functions": [],
@@ -9020,7 +9054,7 @@
     },
     {
       "path": "drive/js/so-node.js",
-      "lines": 208,
+      "lines": 219,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudOsNodeMonitor"
@@ -9429,6 +9463,39 @@
       "issues": []
     },
     {
+      "path": "drive/tests/local_container_programs_functional.js",
+      "lines": 25,
+      "kind": "class/module",
+      "classes": [
+        "Element"
+      ],
+      "functions": [],
+      "window_assign": [],
+      "window_func": [],
+      "top_vars": [
+        "fs",
+        "vm",
+        "assert",
+        "document",
+        "window",
+        "monitor",
+        "states",
+        "card",
+        "rows",
+        "labels",
+        "both"
+      ],
+      "iife": false,
+      "ajax": {
+        "fetch": 0,
+        "xhr": 0,
+        "jquery": 0,
+        "json_consumers": 0,
+        "response_checks": 0
+      },
+      "issues": []
+    },
+    {
       "path": "drive/tests/web_os_desktop_shell_functional.js",
       "lines": 40,
       "kind": "procedural script",
@@ -9615,6 +9682,38 @@
       ]
     },
     {
+      "path": "drive/tests/web_os_search_location_functional.js",
+      "lines": 57,
+      "kind": "class/module",
+      "classes": [
+        "Element"
+      ],
+      "functions": [],
+      "window_assign": [
+        "ArcadeCloudDesktop",
+        "ArcadeCloudOsShell",
+        "fetch"
+      ],
+      "window_func": [],
+      "top_vars": [
+        "fs",
+        "vm",
+        "assert",
+        "document",
+        "window",
+        "search"
+      ],
+      "iife": false,
+      "ajax": {
+        "fetch": 0,
+        "xhr": 0,
+        "jquery": 0,
+        "json_consumers": 0,
+        "response_checks": 0
+      },
+      "issues": []
+    },
+    {
       "path": "drive/tests/web_os_upload_context_functional.js",
       "lines": 44,
       "kind": "procedural script",
@@ -9685,7 +9784,7 @@
     },
     {
       "path": "drive/docs/runtime_endpoints.json",
-      "bytes": 116785,
+      "bytes": 116994,
       "valid": true,
       "root_type": "object",
       "keys": [

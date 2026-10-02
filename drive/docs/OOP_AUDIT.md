@@ -4,12 +4,12 @@
 
 ## Resumen
 
-- PHP analizados: **507**
-- PHP que ya contienen clases/interfaces: **295**
+- PHP analizados: **509**
+- PHP que ya contienen clases/interfaces: **296**
 - PHP marcados para migración/revisión: **0**
-- Tests PHP separados del objetivo OOP de runtime: **57**
-- JavaScript analizados: **74**
-- JavaScript que ya contienen clases: **70**
+- Tests PHP separados del objetivo OOP de runtime: **58**
+- JavaScript analizados: **76**
+- JavaScript que ya contienen clases: **72**
 - JavaScript sin clase/encapsulación OOP: **6**
 - JavaScript OOP con fachada `window` de compatibilidad: **8**
 - Clientes AJAX detectados: **49** módulos / **106** llamadas
@@ -38,7 +38,7 @@
 | `drive/app_bootstrap.php` | 62 | bootstrap | 0 | — | ⚠️ | — | — |
 | `drive/aws.php` | 12 | thin endpoint | 0 | — | — | — | — |
 | `drive/background_tasks.php` | 18 | thin endpoint | 0 | — | — | — | — |
-| `drive/bin/arcadecloud-drive-admin-helper.php` | 1219 | class/module | 1 | — | ⚠️ | — | — |
+| `drive/bin/arcadecloud-drive-admin-helper.php` | 1304 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/bin/arcadecloud-drive-updater.php` | 321 | class/module | 1 | — | — | — | — |
 | `drive/bin/federation_catalog_migrate.php` | 18 | thin cli entrypoint | 0 | — | — | — | — |
 | `drive/bin/federation_drop_cleanup.php` | 19 | thin cli entrypoint | 0 | — | — | — | — |
@@ -177,7 +177,7 @@
 | `drive/src/Admin/FastDriveWakeService.php` | 191 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Admin/ManagedRuntimeEnvironment.php` | 374 | class/module | 1 | — | — | — | — |
 | `drive/src/Admin/NodeServiceControlService.php` | 51 | class/module | 1 | — | ⚠️ | — | — |
-| `drive/src/Admin/PrivilegedServerHelper.php` | 284 | class/module | 1 | — | — | — | — |
+| `drive/src/Admin/PrivilegedServerHelper.php` | 298 | class/module | 1 | — | — | — | — |
 | `drive/src/Admin/ServerConsoleService.php` | 262 | class/module | 1 | — | — | — | — |
 | `drive/src/Admin/ServerMaintenanceJobStore.php` | 186 | class/module | 1 | — | — | — | — |
 | `drive/src/Admin/ServerMaintenanceService.php` | 119 | class/module | 1 | — | — | — | — |
@@ -416,6 +416,7 @@
 | `drive/src/Sync/SyncRepository.php` | 499 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Sync/SyncSchemaMigrator.php` | 114 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/System/Ec2InstanceIdentityService.php` | 107 | class/module | 1 | — | — | — | — |
+| `drive/src/System/LocalContainerCapabilityService.php` | 58 | class/module | 1 | — | — | — | — |
 | `drive/src/System/NodeCapabilityService.php` | 255 | class/module | 1 | — | — | — | — |
 | `drive/src/System/NodeRuntimeStatusService.php` | 453 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/System/NodeServiceCatalog.php` | 35 | class/module | 1 | — | — | — | — |
@@ -477,6 +478,7 @@
 | `drive/tests/fresh_install_contract_smoke.php` | 76 | test script | 0 | — | — | — | — |
 | `drive/tests/index_federation_drop_smoke.php` | 121 | test script | 0 | — | — | — | — |
 | `drive/tests/installer_service_reconcile_contract_smoke.php` | 197 | test script | 0 | — | — | — | — |
+| `drive/tests/local_container_capabilities_regression.php` | 56 | test script | 0 | — | — | — | — |
 | `drive/tests/media_processing_contract_smoke.php` | 185 | test script | 0 | — | — | — | — |
 | `drive/tests/node_diagnostics_contract_smoke.php` | 50 | test script | 0 | — | — | — | — |
 | `drive/tests/node_diagnostics_control_smoke.php` | 43 | test script | 0 | — | — | — | — |
@@ -486,7 +488,7 @@
 | `drive/tests/scoped_sync_repository_regression.php` | 96 | test script | 0 | — | ⚠️ | — | — |
 | `drive/tests/security_hardening_smoke.php` | 59 | test script | 0 | — | — | — | — |
 | `drive/tests/server_admin_config_smoke.php` | 218 | test script | 0 | — | — | — | — |
-| `drive/tests/server_console_contract_smoke.php` | 138 | test script | 0 | — | — | — | — |
+| `drive/tests/server_console_contract_smoke.php` | 146 | test script | 0 | — | — | — | — |
 | `drive/tests/setup_bootstrap_smoke.php` | 61 | test script | 0 | — | — | — | — |
 | `drive/tests/setup_entry_guard_smoke.php` | 38 | test script | 0 | — | — | — | — |
 | `drive/tests/setup_finalize_contract_smoke.php` | 75 | test script | 0 | — | — | — | — |
@@ -592,7 +594,7 @@
 | `drive/js/so-clipboard.js` | 797 | class/module | ArcadeCloudOsClipboard | — | — | — |
 | `drive/js/so-federation.js` | 87 | class/module | ArcadeCloudOsFederationApp | — | — | — |
 | `drive/js/so-folders.js` | 442 | class/module | ArcadeCloudOsFolderActions | — | — | — |
-| `drive/js/so-node.js` | 208 | class/module | ArcadeCloudOsNodeMonitor | — | — | — |
+| `drive/js/so-node.js` | 219 | class/module | ArcadeCloudOsNodeMonitor | — | — | — |
 | `drive/js/so-power.js` | 108 | class/module | ArcadeCloudFastDrivePower | — | — | — |
 | `drive/js/so-screenshot-paste.js` | 341 | class/module | ArcadeCloudOsScreenshotPaste | — | — | — |
 | `drive/js/so-search.js` | 292 | class/module | ArcadeCloudOsSearch | — | — | — |
@@ -610,11 +612,13 @@
 | `drive/js/upload-destination.js` | 95 | class/module | UploadDestinationModule | — | — | — |
 | `drive/js/ver-metadatos.js` | 75 | class/module | VerMetadatosModule | — | verMetadatos | window functions: verMetadatos |
 | `drive/js/ver-pdf.js` | 112 | class/module | VerPdfModule | — | — | — |
+| `drive/tests/local_container_programs_functional.js` | 25 | class/module | Element | — | — | — |
 | `drive/tests/web_os_desktop_shell_functional.js` | 40 | procedural script | — | assert | — | top-level functions: assert; top-level state: editable, records, instance, registered, declarative, launcher, remoteApps; no ES class |
 | `drive/tests/web_os_file_applications_functional.js` | 54 | class/module | Bus | assert | — | top-level functions: assert |
 | `drive/tests/web_os_filesystem_operations_functional.js` | 52 | procedural script | — | assert | — | top-level functions: assert; top-level state: events, busEvents, doc, win, service; no ES class |
 | `drive/tests/web_os_multiwindow_functional.js` | 125 | class/module | Classes, ElementStub | windowStub, assert | — | top-level functions: windowStub, assert |
 | `drive/tests/web_os_same_explorer_clipboard_functional.js` | 76 | procedural script | — | assert, storage | — | top-level functions: assert, storage; top-level state: requests, refreshed, filesystemEvents, explorer, win, doc, clipboard, entries; no ES class |
+| `drive/tests/web_os_search_location_functional.js` | 57 | class/module | Element | — | — | — |
 | `drive/tests/web_os_upload_context_functional.js` | 44 | procedural script | — | assert, button | — | top-level functions: assert, button; top-level state: routeLabel, doc, center; no ES class |
 
 ## AJAX y contratos JSON

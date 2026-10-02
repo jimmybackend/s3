@@ -36,6 +36,7 @@ class ArcadeCloudOsNodeMonitor {
       if (data?.scope !== 'local') throw new Error('Mi nodo rechazó una respuesta fuera del servidor local.');
       this.node = data.local || data.node || {}; this.zeroConfirmed = false;
       this.renderLegacy(this.node);
+      this.renderOperatingNode(this.node);
       this.renderSelected();
     } catch (error) { this.notify(error?.message || 'No se pudo actualizar Mi nodo.', 'warning'); }
     finally { this.busy = false; windowEl?.classList.remove('is-node-loading'); }
@@ -46,6 +47,15 @@ class ArcadeCloudOsNodeMonitor {
     Object.entries(values).forEach(([key, value]) => this.document.querySelectorAll('[data-node-field="' + key + '"]').forEach((el) => { el.textContent = String(value); }));
     this.renderCapability('ffmpeg', node.ffmpeg_available, 'Disponible', 'No disponible'); this.renderCapability('ffprobe', node.ffprobe_available, 'Disponible', 'No disponible'); this.renderCapability('docker', node.docker_installed, 'Instalado', 'No instalado'); this.renderCapability('gpu', node.gpu_present, 'Detectada', 'No detectada');
     const updated = this.document.querySelector('[data-node-updated]'); if (updated) updated.textContent = 'Actualizado ' + new Date(node.generated_at || Date.now()).toLocaleTimeString('es-MX');
+  }
+
+  renderOperatingNode(node) {
+    const identity = node?.identity || {};
+    const label = String(identity.operating_label || 'Nodo local');
+    this.document.querySelectorAll('[data-node-local-label]').forEach((el) => {
+      el.textContent = label;
+      el.title = 'Servidor local: ' + label;
+    });
   }
 
   renderSelected() {
@@ -125,6 +135,7 @@ class ArcadeCloudOsNodeMonitor {
   identityCard(node) {
     const identity = node.identity || {};
     return this.card('Identidad local', [
+      ['Servidor que estás operando', identity.operating_label || 'Nodo local'],
       ['Nombre', identity.display_name || identity.node_name || node.hostname || '—'],
       ['Node ID', identity.node_id ? String(identity.node_id).slice(0, 20) : '—'],
       ['Rol', identity.role || node.role || '—'],

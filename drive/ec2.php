@@ -505,6 +505,7 @@ code{word-break:break-all}
             <span class="ec2-resource-count"><?= count($dbList) ?> recurso<?= count($dbList) === 1 ? '' : 's' ?></span>
         </div>
         <p class="note">Esta sección siempre muestra las bases configuradas en <code>MANUAL_DATABASE_IDS</code>. No usa horario, no hace auto-start y no hace auto-stop.</p>
+        <div class="ec2-table-wrap">
         <table id="rdsTbl">
             <thead>
                 <tr>

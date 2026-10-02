@@ -2,6 +2,8 @@
 declare(strict_types=1);
 
 use ArcadeCloud\Drive\Application\FileListService;
+use ArcadeCloud\Drive\Federation\FederationConfig;
+use ArcadeCloud\Drive\Federation\NodeIdentityService;
 use ArcadeCloud\Drive\System\NodeCapabilityService;
 use ArcadeCloud\Drive\Security\UserOsPreferencesRepository;
 use ArcadeCloud\Drive\View\FileIconResolver;
@@ -151,6 +153,27 @@ foreach ($folderRows as $row) {
 usort($folders, static fn(array $a, array $b): int => strnatcasecmp((string)$a['name'], (string)$b['name']));
 
 $nodeSnapshot = (new NodeCapabilityService())->snapshot(__DIR__);
+
+$federationNodeName = '';
+try {
+    $federationConfig = FederationConfig::fromEnvironment();
+    $federationIdentity = new NodeIdentityService($federationConfig->identityPath());
+    $federationNodeName = trim($federationIdentity->nodeName());
+} catch (Throwable) {
+    // El icono puede degradar al host local si FederationCloud no está disponible.
+}
+
+$desktopNodeLabel = 'Nodo local';
+if ($federationNodeName !== '') {
+    $normalizedFederationNodeName = strtolower($federationNodeName);
+    $friendlyFederationNodeName = match ($normalizedFederationNodeName) {
+        'drive' => 'Drive',
+        'fastdrive' => 'FastDrive',
+        default => $federationNodeName,
+    };
+    $desktopNodeLabel = 'Nodo ' . $friendlyFederationNodeName;
+}
+
 $nodeName = trim((string)(getenv('ARCADECLOUD_PUBLIC_URL') ?: ''));
 if ($nodeName !== '') {
     $host = parse_url($nodeName, PHP_URL_HOST);
@@ -239,7 +262,7 @@ $isExplorerFragment = (string)($_GET['_os_fragment'] ?? '') === 'explorer';
     <button class="os-desktop-icon" type="button" data-window-open="nodeWindow">
       <span class="os-icon-tile"><i class="fas fa-server"></i></span>
       <span>Mi nodo</span>
-      <small class="os-node-local-label" data-node-local-label>Nodo local</small>
+      <small class="os-node-local-label" data-node-local-label><?= $e($desktopNodeLabel) ?></small>
     </button>
 
     <button class="os-desktop-icon" type="button" data-app-open="explorer">

@@ -1634,7 +1634,7 @@
     },
     {
       "path": "drive/src/Admin/PrivilegedServerHelper.php",
-      "size": 11658,
+      "size": 11655,
       "active": false,
       "references": [
         "drive/setup/api.php",
@@ -3934,7 +3934,7 @@
     },
     {
       "path": "drive/tests/office_gateway_contract_smoke.php",
-      "size": 12507,
+      "size": 13111,
       "active": false,
       "references": []
     },

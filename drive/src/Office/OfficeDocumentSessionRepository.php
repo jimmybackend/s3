@@ -262,7 +262,7 @@ final class OfficeDocumentSessionRepository
     public function cleanupCandidates(int $olderThanMinutes = 30): array
     {
         $olderThanMinutes = max(10, min(1440, $olderThanMinutes));
-        $sql = "SELECT SessionId,WorkspaceRelative FROM OfficeDocumentSessions "
+        $sql = "SELECT SessionId,WorkspaceRelative,LastWorkspaceMtime,LastWorkspaceSize FROM OfficeDocumentSessions "
             . "WHERE Status='closed' AND ClosedAt IS NOT NULL "
             . "AND ClosedAt < (UTC_TIMESTAMP() - INTERVAL {$olderThanMinutes} MINUTE) LIMIT 50";
         $result = $this->db->query($sql);
@@ -273,6 +273,8 @@ final class OfficeDocumentSessionRepository
             $rows[] = [
                 'session_id' => (string)($row['SessionId'] ?? ''),
                 'workspace_relative' => (string)($row['WorkspaceRelative'] ?? ''),
+                'last_workspace_mtime' => (int)($row['LastWorkspaceMtime'] ?? 0),
+                'last_workspace_size' => (int)($row['LastWorkspaceSize'] ?? 0),
             ];
         }
         return $rows;

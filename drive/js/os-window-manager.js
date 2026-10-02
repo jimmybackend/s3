@@ -357,7 +357,7 @@ class ArcadeCloudWindowManager {
 class ExplorerWindowFactory {
   constructor(runtime) { this.runtime = runtime; }
 
-  create(route) {
+  create(route, options = {}) {
     const doc = this.runtime.document;
     const element = doc.createElement('section');
     element.className = 'os-window os-explorer-window';
@@ -369,7 +369,10 @@ class ExplorerWindowFactory {
     const controller = this.runtime.attachExplorer(element, route);
     this.runtime.bindWindowChrome(element);
     this.runtime.manager.open(element);
-    controller.navigate(route || this.runtime.root, { replace: true });
+    controller.ready = controller.navigate(route || this.runtime.root, {
+      replace: true,
+      page: Math.max(1, parseInt(String(options.page || '1'), 10) || 1)
+    });
     return controller;
   }
 }
@@ -814,7 +817,7 @@ class ArcadeCloudDesktopRuntime {
   openExplorer(route, options = {}) {
     const existing = this.manager.last('explorer');
     if (options.reuse && existing) { this.manager.focus(existing.id); return this.explorers.get(existing.id); }
-    return this.factory.create(route || this.root);
+    return this.factory.create(route || this.root, options);
   }
 
   chooseDropOperation(count, source, destination) {

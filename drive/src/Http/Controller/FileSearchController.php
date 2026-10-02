@@ -45,6 +45,8 @@ final class FileSearchController extends AbstractJsonController
                     \Config::getBedrockRuntime()
                 ))->search($userId, $term);
 
+                $results = $this->withVisibleRoutes($userId, $search['results']);
+
                 JsonResponse::send([
                     'estado' => 'ok',
                     'modo' => 'ai',
@@ -52,13 +54,14 @@ final class FileSearchController extends AbstractJsonController
                     'termino' => $term,
                     'pistas' => $search['terms'],
                     'ia_usada' => $search['ai_used'],
-                    'total' => count($search['results']),
-                    'resultados' => $search['results'],
+                    'total' => count($results),
+                    'resultados' => $results,
                 ]);
             }
 
             $results = (new FileSearchService($this->app->db()))
                 ->search($userId, $term, 200);
+            $results = $this->withVisibleRoutes($userId, $results);
 
             JsonResponse::send([
                 'estado' => 'ok',
@@ -74,4 +77,24 @@ final class FileSearchController extends AbstractJsonController
             ], 500);
         }
     }
+
+    /**
+     * Conserva "ruta" como Prefix físico para navegación/backend y publica
+     * "ruta_visible" sólo para la interfaz.
+     *
+     * @param array<int,array<string,mixed>> $rows
+     * @return array<int,array<string,mixed>>
+     */
+    private function withVisibleRoutes(int $userId, array $rows): array
+    {
+        foreach ($rows as &$row) {
+            $route = trim((string)($row['ruta'] ?? ''));
+            $row['ruta_visible'] = $route === ''
+                ? 'Mi Drive/'
+                : $this->app->folderQueryService()->displayPathForUser($userId, $route);
+        }
+        unset($row);
+        return $rows;
+    }
+
 }

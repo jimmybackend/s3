@@ -195,7 +195,8 @@ class ArcadeCloudOsSearch {
 
   async openResult(button) {
     const shell = this.window.ArcadeCloudOsShell;
-    if (!shell?.refreshExplorer) return;
+    const desktop = this.window.ArcadeCloudDesktop;
+    if (!desktop?.openExplorer) return;
 
     const type = String(button.dataset.type || 'archivo');
     let route = String(button.dataset.route || '').trim();
@@ -228,38 +229,44 @@ class ArcadeCloudOsSearch {
 
       if (!route) throw new Error('El resultado no tiene una carpeta válida.');
 
-      const explorer = this.document.querySelector('.os-explorer-window');
-      if (explorer && typeof shell.openWindow === 'function') {
-        shell.openWindow(explorer);
+      // Un resultado de búsqueda siempre abre su propia ventana de Mis datos.
+      // La ruta sigue siendo el Prefix físico interno; el Explorer renderiza
+      // únicamente el breadcrumb/ruta visible proveniente del catálogo MySQL.
+      const explorer = desktop.openExplorer(route, { forceNew: true, page });
+      if (!explorer) throw new Error('No se pudo abrir una ventana de Mis datos.');
+      if (explorer.ready && typeof explorer.ready.then === 'function') {
+        await explorer.ready;
       }
 
-      const ok = await shell.refreshExplorer(route, {
-        page,
-        replaceHistory: false
-      });
-      if (!ok) return;
-
-      let entry = null;
       if (type === 'archivo') {
-        if (key) {
-          entry = Array.from(this.document.querySelectorAll('.os-file-entry'))
-            .find((item) => String(item.dataset.key || '') === key) || null;
+        let entry = null;
+        if (id > 0) {
+          entry = explorer.win?.querySelector('.os-file-entry[data-file-id="' + this.cssEscape(String(id)) + '"]') || null;
+        }
+        if (!entry && key) {
+          entry = explorer.win?.querySelector('.os-file-entry[data-key="' + this.cssEscape(key) + '"]') || null;
         }
         if (!entry && name) {
-          entry = Array.from(this.document.querySelectorAll('.os-file-entry'))
+          entry = Array.from(explorer.win?.querySelectorAll('.os-file-entry') || [])
             .find((item) => String(item.dataset.name || '') === name) || null;
+        }
+
+        if (entry) {
+          explorer.win.querySelectorAll('.os-file-entry.is-selected').forEach((item) => shell?.setFileSelected?.(item, false));
+          if (shell?.setFileSelected) shell.setFileSelected(entry, true);
+          else {
+            entry.classList.add('is-selected');
+            entry.setAttribute('aria-pressed', 'true');
+          }
+          entry.classList.add('is-search-target');
+          try { entry.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (_) {}
+          this.window.setTimeout(() => entry.classList.remove('is-search-target'), 5000);
         }
       }
 
-      if (entry) {
-        entry.classList.add('is-search-target');
-        try { entry.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (_) {}
-        this.window.setTimeout(() => entry.classList.remove('is-search-target'), 5000);
-      }
-
-      if (explorer) shell.activateWindow?.(explorer);
+      desktop.manager?.focus?.(explorer.id);
     } catch (error) {
-      this.window.ArcadeCloudOsShell?.notify?.(
+      shell?.notify?.(
         error?.message || 'No se pudo abrir la carpeta del resultado.',
         'warning'
       );

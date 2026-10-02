@@ -189,6 +189,24 @@ officeGatewayContract(
 );
 
 officeGatewayContract(
+    str_contains($helper, "'workstation_document_access_repair' => true")
+    && str_contains($helper, "'workstation-repair-document-access'")
+    && str_contains($helperClient, 'supportsWorkstationDocumentAccessRepair')
+    && str_contains($helperClient, 'repairWorkstationDocumentAccess')
+    && str_contains($documentStorage, 'is_readable($target)')
+    && str_contains($documentStorage, 'repairWorkstationDocumentAccess($relative)'),
+    'sync Office puede reparar permisos de una sesión existente sin relanzar LibreOffice'
+);
+
+officeGatewayContract(
+    str_contains($documentRepo, 'recoverSyncFailure')
+    && str_contains($documentRepo, "WHERE SessionId=? AND Status='syncing'")
+    && str_contains($documentStorage, 'recoverSyncFailure($sessionId)')
+    && str_contains($documentStorage, "status' => $close ? 'closed' : 'ready'"),
+    'fallo de sincronización no deja OfficeDocumentSessions atrapada en syncing'
+);
+
+officeGatewayContract(
     str_contains($documentStorage, 'headObject')
     && str_contains($documentStorage, 'getObject')
     && str_contains($documentStorage, 'putObject')
@@ -269,7 +287,7 @@ officeGatewayContract(
 );
 
 officeGatewayContract(
-    str_contains($helper, "'version' => 18")
+    str_contains($helper, "'version' => 19")
     && str_contains($helper, "'workstation_control' => true")
     && str_contains($helper, "'workstation_document_open' => true")
     && str_contains($helper, "if (\$action === 'workstation-open-document')")

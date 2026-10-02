@@ -8,6 +8,20 @@
  * - validar_php.php                   => POST archivo, contenido => JSON { estado, valido, errores[] }
  */
 
+require_once __DIR__ . '/app_bootstrap.php';
+$app = \ArcadeCloud\Drive\Core\ApplicationKernel::app();
+$session = $app->session();
+$session->start();
+if (!$session->isAuthenticated() || $session->userId() <= 0) {
+    http_response_code(401);
+    die('Sesión inválida.');
+}
+$uploadCsrf = (string)$session->get('upload_csrf', '');
+if (!preg_match('/\A[a-f0-9]{64}\z/', $uploadCsrf)) {
+    $uploadCsrf = bin2hex(random_bytes(32));
+    $session->set('upload_csrf', $uploadCsrf);
+}
+
 if (!isset($_GET['archivo']) || trim((string)$_GET['archivo']) === '') {
     die('Falta la clave del archivo.');
 }

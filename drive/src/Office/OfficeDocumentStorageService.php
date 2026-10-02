@@ -150,12 +150,14 @@ final class OfficeDocumentStorageService
         if ($mtime === $previousMtime && $size === $previousSize) {
             if ($close) {
                 $this->sessions->markClosed($sessionId);
+            } elseif ((string)$session['status'] === 'syncing') {
+                $this->sessions->recoverSyncFailure($sessionId);
             }
             return [
                 'ok' => true,
                 'changed' => false,
                 'closed' => $close,
-                'status' => $close ? 'closed' : (string)$session['status'],
+                'status' => $close ? 'closed' : 'ready',
             ];
         }
 
@@ -182,13 +184,26 @@ final class OfficeDocumentStorageService
         }
 
         $this->sessions->markSyncing($sessionId);
-        $stream = fopen($target, 'rb');
-        if (!is_resource($stream)) {
-            throw new RuntimeException('No se pudo leer el archivo temporal de Office.');
-        }
 
         try {
-            $put = [
+            if (!is_readable($target)) {
+                $helper = new PrivilegedServerHelper();
+                if (!$helper->supportsWorkstationDocumentAccessRepair()) {
+                    throw new RuntimeException(
+                        'El helper del nodo necesita actualizarse para reparar acceso al documento Office.'
+                    );
+                }
+                $helper->repairWorkstationDocumentAccess($relative);
+                clearstatcache(true, $target);
+            }
+
+            $stream = fopen($target, 'rb');
+            if (!is_resource($stream)) {
+                throw new RuntimeException('No se pudo leer el archivo temporal de Office.');
+            }
+
+            try {
+                $put = [
                 'Bucket' => $this->app->bucket(),
                 'Key' => $originalKey,
                 'Body' => $stream,
@@ -203,37 +218,41 @@ final class OfficeDocumentStorageService
             if (isset($head['Metadata']) && is_array($head['Metadata'])) {
                 $put['Metadata'] = $head['Metadata'];
             }
-            $saved = $this->app->s3()->putObject($put);
-        } catch (AwsException $error) {
-            if (in_array($error->getStatusCode(), [404, 409, 412], true)
-                || in_array($error->getAwsErrorCode(), ['NoSuchKey', 'PreconditionFailed', 'ConditionalRequestConflict'], true)) {
-                return $this->saveConflict($session, $row, $target, $mtime, $size, $close);
+                $saved = $this->app->s3()->putObject($put);
+            } catch (AwsException $error) {
+                if (in_array($error->getStatusCode(), [404, 409, 412], true)
+                    || in_array($error->getAwsErrorCode(), ['NoSuchKey', 'PreconditionFailed', 'ConditionalRequestConflict'], true)) {
+                    return $this->saveConflict($session, $row, $target, $mtime, $size, $close);
+                }
+                throw $error;
+            } finally {
+                fclose($stream);
             }
+
+            // A later HEAD could observe another writer and adopt its ETag as ours.
+            $newEtag = $this->normalizeEtag((string)($saved['ETag'] ?? ''));
+            if ($newEtag === '') {
+                throw new RuntimeException('S3 no confirmó el nuevo ETag del documento.');
+            }
+
+            $this->updateFileRecordAfterSave($userId, $fileId, $size);
+            $this->sessions->markSynced($sessionId, $newEtag, $mtime, $size);
+            if ($close) {
+                $this->sessions->markClosed($sessionId);
+            }
+
+            return [
+                'ok' => true,
+                'changed' => true,
+                'closed' => $close,
+                'status' => $close ? 'closed' : 'ready',
+                'etag' => $newEtag,
+                'size' => $size,
+            ];
+        } catch (Throwable $error) {
+            $this->sessions->recoverSyncFailure($sessionId);
             throw $error;
-        } finally {
-            fclose($stream);
         }
-
-        // A later HEAD could observe another writer and adopt its ETag as ours.
-        $newEtag = $this->normalizeEtag((string)($saved['ETag'] ?? ''));
-        if ($newEtag === '') {
-            throw new RuntimeException('S3 no confirmó el nuevo ETag del documento.');
-        }
-
-        $this->updateFileRecordAfterSave($userId, $fileId, $size);
-        $this->sessions->markSynced($sessionId, $newEtag, $mtime, $size);
-        if ($close) {
-            $this->sessions->markClosed($sessionId);
-        }
-
-        return [
-            'ok' => true,
-            'changed' => true,
-            'closed' => $close,
-            'status' => $close ? 'closed' : 'ready',
-            'etag' => $newEtag,
-            'size' => $size,
-        ];
     }
 
     private function saveConflict(

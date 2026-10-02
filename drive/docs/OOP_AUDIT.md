@@ -4,10 +4,10 @@
 
 ## Resumen
 
-- PHP analizados: **504**
-- PHP que ya contienen clases/interfaces: **294**
+- PHP analizados: **506**
+- PHP que ya contienen clases/interfaces: **295**
 - PHP marcados para migración/revisión: **0**
-- Tests PHP separados del objetivo OOP de runtime: **55**
+- Tests PHP separados del objetivo OOP de runtime: **56**
 - JavaScript analizados: **74**
 - JavaScript que ya contienen clases: **70**
 - JavaScript sin clase/encapsulación OOP: **6**
@@ -420,13 +420,14 @@
 | `drive/src/System/NodeRuntimeStatusService.php` | 453 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/System/NodeServiceCatalog.php` | 35 | class/module | 1 | — | — | — | — |
 | `drive/src/Upload/AdminMultipartUploadService.php` | 221 | class/module | 1 | — | — | — | — |
+| `drive/src/Upload/ChunkedUploadCleanupService.php` | 101 | class/module | 1 | — | — | — | — |
 | `drive/src/Upload/PublicDropzoneUploadService.php` | 133 | class/module | 1 | — | — | — | — |
 | `drive/src/Upload/PublicMultipartUploadService.php` | 262 | class/module | 1 | — | — | — | — |
 | `drive/src/Upload/PublicSharedBrowserRepository.php` | 61 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Upload/PublicSharedBrowserService.php` | 189 | class/module | 1 | — | — | — | — |
 | `drive/src/Upload/SingleUploadService.php` | 112 | class/module | 1 | — | — | — | — |
 | `drive/src/Upload/UploadCatalogRepository.php` | 173 | class/module | 1 | — | ⚠️ | — | — |
-| `drive/src/Upload/UploadCleanupService.php` | 316 | class/module | 1 | — | ⚠️ | — | — |
+| `drive/src/Upload/UploadCleanupService.php` | 294 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/View/ActivityCostPageRenderer.php` | 396 | class/module | 1 | — | — | — | — |
 | `drive/src/View/Ec2PanelHelper.php` | 69 | class/module | 1 | — | — | — | — |
 | `drive/src/View/FederationDropPageRenderer.php` | 228 | class/module | 1 | — | — | — | — |
@@ -452,6 +453,7 @@
 | `drive/tests/activity_costs_smoke.php` | 150 | test script | 0 | — | — | — | — |
 | `drive/tests/arcadelink_bulk_contract_regression.php` | 71 | test script | 0 | — | — | — | — |
 | `drive/tests/arcadelink_collection_regression.php` | 63 | test script | 0 | — | — | — | — |
+| `drive/tests/chunked_upload_cleanup_regression.php` | 117 | test script | 1 | — | — | — | — |
 | `drive/tests/database_schema_contract_smoke.php` | 125 | test script | 0 | — | — | — | — |
 | `drive/tests/fastdrive_control_contract_smoke.php` | 73 | test script | 0 | — | — | — | — |
 | `drive/tests/federation_access_message_smoke.php` | 72 | test script | 0 | — | — | — | — |
@@ -519,12 +521,12 @@
 | `drive/upload/UploadFactory.php` | 60 | class/module | 1 | — | — | — | — |
 | `drive/upload/core/UploadResponse.php` | 15 | class/module | 1 | — | — | — | — |
 | `drive/upload/core/UploaderInterface.php` | 11 | class/module | 0 | — | — | — | — |
-| `drive/upload/drivers/Chunked15MBUploader.php` | 270 | class/module | 1 | — | — | — | — |
+| `drive/upload/drivers/Chunked15MBUploader.php` | 290 | class/module | 1 | — | — | — | — |
 | `drive/upload/drivers/DropboxUploader.php` | 147 | class/module | 1 | — | — | — | — |
 | `drive/upload/drivers/LocalPresignedPutUploader.php` | 325 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/upload/drivers/RemoteUrlUploader.php` | 493 | class/module | 1 | — | — | — | — |
 | `drive/upload/repositories/FileS3Repository.php` | 86 | class/module | 1 | — | ⚠️ | — | — |
-| `drive/upload/storage/UploadStateStore.php` | 51 | class/module | 1 | — | — | — | — |
+| `drive/upload/storage/UploadStateStore.php` | 101 | class/module | 1 | — | — | — | — |
 | `drive/upload.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/upload_audio_recording.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/upload_publico.php` | 10 | thin endpoint | 0 | — | — | — | — |

@@ -1,9 +1,9 @@
 {
   "summary": {
-    "php_total": 504,
-    "php_class_modules": 294,
+    "php_total": 506,
+    "php_class_modules": 295,
     "php_needs_migration": 0,
-    "php_tests": 55,
+    "php_tests": 56,
     "js_total": 74,
     "js_class_modules": 70,
     "js_needs_migration": 6,
@@ -5927,6 +5927,21 @@
       "issues": []
     },
     {
+      "path": "drive/src/Upload/ChunkedUploadCleanupService.php",
+      "lines": 101,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
       "path": "drive/src/Upload/PublicDropzoneUploadService.php",
       "lines": 133,
       "kind": "class/module",
@@ -6018,7 +6033,7 @@
     },
     {
       "path": "drive/src/Upload/UploadCleanupService.php",
-      "lines": 316,
+      "lines": 294,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -6404,6 +6419,23 @@
       "functions": [
         "collectionSource",
         "expectCollection"
+      ],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/tests/chunked_upload_cleanup_regression.php",
+      "lines": 117,
+      "kind": "test script",
+      "classes": 1,
+      "functions": [
+        "check"
       ],
       "session": false,
       "superglobals": [],
@@ -7498,7 +7530,7 @@
     },
     {
       "path": "drive/upload/drivers/Chunked15MBUploader.php",
-      "lines": 270,
+      "lines": 290,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -7573,7 +7605,7 @@
     },
     {
       "path": "drive/upload/storage/UploadStateStore.php",
-      "lines": 51,
+      "lines": 101,
       "kind": "class/module",
       "classes": 1,
       "functions": [],

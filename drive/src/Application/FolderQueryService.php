@@ -150,7 +150,7 @@ final class FolderQueryService
     private function displayPathFromRows(string $root, string $target, array $rows): string
     {
         $segments = [];
-        $rootName = basename(rtrim($root, '/')) ?: 'Inicio';
+        $rootName = 'Mi Drive';
 
         foreach ($rows as $row) {
             $rowPrefix = $this->normalizePrefix((string)($row['Prefix'] ?? ''));

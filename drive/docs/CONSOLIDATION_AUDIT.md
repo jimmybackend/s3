@@ -136,3 +136,27 @@ InstanceId y falla cerrado si no puede comprobar el esquema. Revalida actividad 
 contador después de consultar AWS. Ver `FASTDRIVE_IDLE_GUARDS.md` para límites:
 no se certifica exclusión atómica con todas las admisiones ni cobertura de cada
 worker/transferencia. No se modifican infraestructura ni apagado forzado explícito.
+
+## Fase 5 — resultado
+
+PR #277 fusionado tras siete checks satisfactorios, con regresión MySQL/EC2
+simulado. Main recuperado `9d99744011394cf4ca0f7192b277e9e9bd1fe397`.
+
+## Fase 6 — renombrado y separación de rutas
+
+Hallazgo comprobado: `FolderMutationService::rename()` sólo actualiza `Nombre`,
+pero el listener `drive:folder-mutated` de `os-window-manager.js` construía un
+Prefix nuevo concatenando el nombre visible. Ahora recarga cada Explorer de la
+carpeta y descendientes en su mismo Prefix y página, para actualizar breadcrumbs.
+También saca del subárbol eliminado las ventanas descendientes. El fallback de
+`so-folders.js` conserva la ruta al renombrar.
+
+Se eliminan fallbacks de presentación que mostraban Prefix/key al faltar metadata:
+raíz sin registro usa `Mi Drive`, búsqueda usa `Ubicación no disponible`, carpeta
+sin etiqueta usa `Carpeta`, y multimedia sin nombre usa `Archivo`. No se modifica
+la ruta física enviada a endpoints ni los datasets necesarios para operar.
+
+Regresiones: listener real de ventanas múltiples; búsqueda normal/IA y metadata
+visible ausente; servicios/repositories con S3 prohibido durante rename y MySQL
+canónico aislado para ownership, breadcrumbs y destinos de mover. No representa
+una auditoría completa de todas las pantallas de `so.php`.

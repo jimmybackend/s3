@@ -703,11 +703,11 @@ class ArcadeCloudDesktopRuntime {
       const kind = String(detail.kind || '');
       if (kind === 'rename' || kind === 'delete') {
         this.explorers.forEach(explorer => {
-          if (!route || explorer.normalize(route) !== explorer.route) return;
-          const destination = kind === 'rename'
-            ? `${this.parentRoute(route)}${String(detail.name || '').replace(/^\/+|\/+$/g, '')}/`
-            : this.parentRoute(route);
-          explorer.navigate(destination, { replace: true });
+          const physical = explorer.normalize(route);
+          if (!route || !explorer.route.startsWith(physical)) return;
+          // Rename changes catalog labels only. Prefixes and descendants stay fixed.
+          const destination = kind === 'rename' ? explorer.route : this.parentRoute(route);
+          explorer.navigate(destination, { replace: true, page: kind === 'rename' ? explorer.page : 1 });
         });
       }
       const sourceRoute = kind === 'create' ? route : this.parentRoute(route);

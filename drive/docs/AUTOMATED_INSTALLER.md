@@ -88,21 +88,24 @@ directamente cuando FFmpeg lo expone y, si esa build no lo incluye, usa `lame` c
 El rol `web` no instala estas dependencias pesadas.
 
 PHP es especial en AL2023 porque los paquetes están versionados. El instalador detecta automáticamente
-la familia más nueva disponible, en este orden:
+una familia compatible con el lock actual. Si PHP ya existe, conserva su familia
+sólo cuando cumple PHP >=8.4.1 y puede identificar sus paquetes/FPM; de lo contrario
+se detiene antes de instalar paquetes y exige planificar una migración. No realiza
+un cambio implícito de familia en un servidor existente. Sin PHP, busca en este orden:
 
 ~~~text
 php8.5
 php8.4
-php8.3
-php8.2
-php8.1
 ~~~
 
 y usa la misma familia para CLI, FPM, mysqlnd, mbstring, XML, GD, process y opcache. No mezcla módulos
 de distintas ramas PHP.
 
-No fija una versión PHP inventada. DNF resuelve la versión publicada por los repositorios configurados
-del sistema.
+El mínimo 8.4.1 procede de `symfony/filesystem` en el `composer.lock` actual. DNF
+resuelve el patch disponible; antes de configurar servicios se verifica también
+la versión de CLI y FPM. Revalidar el mínimo al cambiar dependencias. Esto no cambia
+paquetes en producción: el instalador sólo se ejecuta mediante el procedimiento
+operativo autorizado.
 
 Si Composer no existe como paquete del sistema, se descarga el instalador oficial de Composer y se
 valida su SHA-384 antes de instalarlo en /usr/local/bin/composer. Las comprobaciones de Composer que

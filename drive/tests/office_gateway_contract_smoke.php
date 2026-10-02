@@ -150,6 +150,15 @@ officeGatewayContract(
 );
 
 officeGatewayContract(
+    str_contains($helper, "'DISPLAY=:1'")
+    && str_contains($helper, "'HOME=/home/arcade'")
+    && str_contains($helper, "'XDG_RUNTIME_DIR=/run/user/10001'")
+    && str_contains($helper, "'libreoffice'")
+    && str_contains($helper, "'/workspace/' . $relative"),
+    'helper abre documentos LibreOffice dentro del display gráfico noVNC'
+);
+
+officeGatewayContract(
     str_contains($helperClient, '[^\\/\\x00-\\x1F\\x7F]{1,220}')
     && !str_contains($helperClient, '[A-Za-z0-9._ ()\\[\\]-]{1,220}'),
     'cliente del helper permite nombres Unicode seguros en documentos Workstation'

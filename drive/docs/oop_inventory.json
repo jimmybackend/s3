@@ -7482,7 +7482,7 @@
     },
     {
       "path": "drive/tests/workstation_phase1_contract_smoke.php",
-      "lines": 65,
+      "lines": 70,
       "kind": "test script",
       "classes": 0,
       "functions": [

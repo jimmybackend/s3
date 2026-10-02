@@ -2776,7 +2776,7 @@
     },
     {
       "path": "drive/src/Http/Controller/FileSearchController.php",
-      "size": 2621,
+      "size": 3395,
       "active": false,
       "references": [
         "drive/tests/web_os_contract_smoke.php"
@@ -3923,7 +3923,7 @@
     },
     {
       "path": "drive/tests/web_os_contract_smoke.php",
-      "size": 51234,
+      "size": 52058,
       "active": false,
       "references": []
     },

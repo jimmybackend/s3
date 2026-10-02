@@ -28,6 +28,7 @@ $control = (string)file_get_contents($repo . '/drive/workstation-control.php');
 $helperClient = (string)file_get_contents($repo . '/drive/src/Admin/PrivilegedServerHelper.php');
 $helper = (string)file_get_contents($repo . '/drive/bin/arcadecloud-drive-admin-helper.php');
 $officeInstaller = (string)file_get_contents($repo . '/drive/bin/install_office_gateway.sh');
+$workstationInstaller = (string)file_get_contents($repo . '/drive/bin/install_workstation_node.sh');
 $internalInstaller = (string)file_get_contents($repo . '/drive/bin/install_workstation_internal_gateway.sh');
 $node = (string)file_get_contents($repo . '/drive/src/Media/MediaWorkerNodeService.php');
 
@@ -155,8 +156,8 @@ officeGatewayContract(
 );
 
 officeGatewayContract(
-    str_contains($officeInstaller, 'chgrp "$PHP_GROUP" "$STATE_ROOT"')
-    && str_contains($officeInstaller, 'chmod 0750 "$STATE_ROOT"'),
+    str_contains($workstationInstaller, 'chgrp "$PHP_GROUP" "$STATE_ROOT"')
+    && str_contains($workstationInstaller, 'chmod 0750 "$STATE_ROOT"'),
     'instalador permite al grupo PHP-FPM atravesar el directorio padre de Office'
 );
 

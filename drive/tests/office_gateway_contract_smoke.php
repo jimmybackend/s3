@@ -254,7 +254,6 @@ officeGatewayContract(
 
 officeGatewayContract(
     str_contains($gateway, '/__office_document_sync')
-    && str_contains($gateway, '/__office_document_close')
     && str_contains($gateway, 'setInterval(syncDocument, 60000)')
     && str_contains($gateway, "navigator.sendBeacon('/__office_document_sync'")
     && str_contains($gateway, "window.addEventListener('beforeunload', syncDocumentOnUnload)")

@@ -226,22 +226,23 @@ final class FolderMutationRepository
 
     public function deleteTree(int $userId, string $prefix): array
     {
+        $pattern = strtr($prefix, ['!' => '!!', '%' => '!%', '_' => '!_']) . '%';
         $this->db->begin_transaction();
         try {
             $stmtFiles = $this->db->prepare(
-                "DELETE FROM FileS3 WHERE user_id_ = ? AND (Ruta = ? OR Ruta LIKE CONCAT(?, '%'))"
+                "DELETE FROM FileS3 WHERE user_id_ = ? AND (Ruta = ? OR Ruta LIKE ? ESCAPE '!')"
             );
             if (!$stmtFiles) throw new RuntimeException('No se pudo preparar delete FileS3: ' . $this->db->error);
-            $stmtFiles->bind_param('iss', $userId, $prefix, $prefix);
+            $stmtFiles->bind_param('iss', $userId, $prefix, $pattern);
             $stmtFiles->execute();
             $files = $stmtFiles->affected_rows;
             $stmtFiles->close();
 
             $stmtFolders = $this->db->prepare(
-                "DELETE FROM S3Folders WHERE user_id_ = ? AND (Prefix = ? OR Prefix LIKE CONCAT(?, '%'))"
+                "DELETE FROM S3Folders WHERE user_id_ = ? AND (Prefix = ? OR Prefix LIKE ? ESCAPE '!')"
             );
             if (!$stmtFolders) throw new RuntimeException('No se pudo preparar delete S3Folders: ' . $this->db->error);
-            $stmtFolders->bind_param('iss', $userId, $prefix, $prefix);
+            $stmtFolders->bind_param('iss', $userId, $prefix, $pattern);
             $stmtFolders->execute();
             $folders = $stmtFolders->affected_rows;
             $stmtFolders->close();
@@ -256,11 +257,12 @@ final class FolderMutationRepository
 
     private function foldersUnder(int $userId, string $prefix): array
     {
+        $pattern = strtr($prefix, ['!' => '!!', '%' => '!%', '_' => '!_']) . '%';
         $stmt = $this->db->prepare(
-            "SELECT id_, Prefix, ParentPrefix, Nombre FROM S3Folders WHERE user_id_ = ? AND (Prefix = ? OR Prefix LIKE CONCAT(?, '%')) ORDER BY LENGTH(Prefix) ASC"
+            "SELECT id_, Prefix, ParentPrefix, Nombre FROM S3Folders WHERE user_id_ = ? AND (Prefix = ? OR Prefix LIKE ? ESCAPE '!') ORDER BY LENGTH(Prefix) ASC"
         );
         if (!$stmt) throw new RuntimeException('No se pudo leer S3Folders: ' . $this->db->error);
-        $stmt->bind_param('iss', $userId, $prefix, $prefix);
+        $stmt->bind_param('iss', $userId, $prefix, $pattern);
         $stmt->execute();
         $rows = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
         $stmt->close();
@@ -269,11 +271,12 @@ final class FolderMutationRepository
 
     private function filesUnder(int $userId, string $prefix): array
     {
+        $pattern = strtr($prefix, ['!' => '!!', '%' => '!%', '_' => '!_']) . '%';
         $stmt = $this->db->prepare(
-            "SELECT id_, Ruta, Encriptado FROM FileS3 WHERE user_id_ = ? AND Found = 1 AND (Ruta = ? OR Ruta LIKE CONCAT(?, '%'))"
+            "SELECT id_, Ruta, Encriptado FROM FileS3 WHERE user_id_ = ? AND Found = 1 AND (Ruta = ? OR Ruta LIKE ? ESCAPE '!')"
         );
         if (!$stmt) throw new RuntimeException('No se pudo leer FileS3: ' . $this->db->error);
-        $stmt->bind_param('iss', $userId, $prefix, $prefix);
+        $stmt->bind_param('iss', $userId, $prefix, $pattern);
         $stmt->execute();
         $rows = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
         $stmt->close();

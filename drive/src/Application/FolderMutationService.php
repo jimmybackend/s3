@@ -307,10 +307,14 @@ final class FolderMutationService
 
     private function deleteObjects(array $objects): void
     {
-        $this->s3->deleteObjects([
+        $result = $this->s3->deleteObjects([
             'Bucket' => $this->bucket,
             'Delete' => ['Objects' => $objects, 'Quiet' => true],
         ]);
+        // HTTP 200 also carries per-object failures, including in quiet mode.
+        if (!empty($result['Errors'])) {
+            throw new RuntimeException('S3 no pudo eliminar todos los objetos. La operación quedó incompleta; vuelve a intentarlo.');
+        }
     }
 
     private function normalizePrefix(string $prefix): string

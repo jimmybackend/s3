@@ -26,7 +26,7 @@ operaciones S3 reales. Cada fase requiere PR, pruebas y revisión de CI.
 | Papelera | `FileMutationService::delete()` llama a `deleteObject` | Borrado actual definitivo; no presentar `Found=0` como papelera. Requiere diseño de recuperación y propagación federada |
 | Notificaciones | Shell/EventBus y fuentes de tareas existentes | Cobertura por tipo de tarea pendiente |
 | Recuperación | Scripts `federation_identity_backup.php` / `federation_identity_restore.php` | Identidad cubierta parcialmente; runbook integral MySQL/config/catálogo pendiente |
-| Instalación | Instalador y documentación de nodos/identidad | Auditar tercer nodo sin hardcoding; no ejecutado en servidores |
+| Instalación | Instalador y documentación de nodos/identidad | Auditar tercer nodo sin hardcoding; no ejecutado en servidores. CI confirmó que composer.lock exige PHP >=8.4.1 (symfony/filesystem); revisar compatibilidad declarada por instalador |
 | Pruebas | Tests PHP/JS y workflows por subsistema | Mezcla de contratos por texto, comportamiento JS y MariaDB. Falta una aceptación integral aislada |
 | Móvil | CSS y shell existentes | Sin validación visual teléfono/tablet todavía |
 | Rendimiento | DB-first, paginación, caché de programas | No se han medido cuellos de botella; no añadir índices a ciegas |

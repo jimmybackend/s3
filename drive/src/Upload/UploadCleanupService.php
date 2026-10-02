@@ -9,6 +9,8 @@ use DateTimeInterface;
 use mysqli;
 use RuntimeException;
 
+require_once dirname(__DIR__, 2) . '/upload/storage/UploadStateStore.php';
+
 final class UploadCleanupService
 {
     public function __construct(
@@ -250,7 +252,6 @@ final class UploadCleanupService
                 'age_days' => $this->ageDays($timestamp),
                 'action' => 'review_legacy_state',
             ];
-
         }
     }
 

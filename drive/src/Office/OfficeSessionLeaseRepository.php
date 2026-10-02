@@ -138,6 +138,24 @@ final class OfficeSessionLeaseRepository
         $stmt->close();
     }
 
+    public function hasActiveForInstance(string $instanceId): bool
+    {
+        if (!preg_match('/^i-[0-9a-f]{8,17}$/i', $instanceId)) {
+            throw new RuntimeException('Instancia Office inválida.');
+        }
+        $stmt = $this->db->prepare(
+            'SELECT 1 FROM OfficeSessionLeases WHERE InstanceId=? AND ExpiresAt>UTC_TIMESTAMP() LIMIT 1'
+        );
+        if (!$stmt) throw new RuntimeException('No se pudo comprobar el lease Office.');
+        $stmt->bind_param('s', $instanceId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $active = $result && is_array($result->fetch_row());
+        if ($result) $result->free();
+        $stmt->close();
+        return $active;
+    }
+
     public function release(int $userId, string $instanceId, string $sessionKey): void
     {
         $this->assertInputs($userId, $instanceId, $sessionKey);

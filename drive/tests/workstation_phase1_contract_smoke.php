@@ -16,9 +16,22 @@ $chromeHelper = (string)file_get_contents($repo . '/drive/docker/workstation/arc
 $install = (string)file_get_contents($repo . '/drive/bin/install_workstation_node.sh');
 $uninstall = (string)file_get_contents($repo . '/drive/bin/uninstall_workstation_node.sh');
 $health = (string)file_get_contents($repo . '/drive/bin/workstation_health.php');
+$officeDocumentMonitor = (string)file_get_contents($repo . '/drive/docker/workstation/arcadecloud-office-document');
 
 workstationContract(str_contains($dockerfile, 'FROM ubuntu:24.04'), 'runtime gráfico usa Ubuntu estable aislado del host');
 workstationContract(str_contains($dockerfile, 'libreoffice'), 'imagen instala LibreOffice');
+workstationContract(str_contains($dockerfile, 'TZ=America/Mexico_City'), 'imagen fija zona horaria de Ciudad de México');
+workstationContract(str_contains($dockerfile, 'tzdata'), 'imagen instala datos de zona horaria');
+workstationContract(str_contains($install, 'TZ=America/Mexico_City'), 'reconciliación persiste la zona horaria del Workstation');
+workstationContract(str_contains($entry, '/usr/share/zoneinfo/$TZ') && str_contains($entry, '/etc/localtime'), 'entrypoint aplica zona horaria dentro del contenedor');
+workstationContract(str_contains($dockerfile, 'arcadecloud-office-document'), 'imagen instala wrapper de documento Office monitorizado');
+workstationContract(
+    str_contains($officeDocumentMonitor, '.arcadecloud-office-managed')
+    && str_contains($officeDocumentMonitor, '.arcadecloud-office-active')
+    && str_contains($officeDocumentMonitor, 'UserInstallation=file://')
+    && str_contains($officeDocumentMonitor, 'kill -0 "$office_pid"'),
+    'wrapper mantiene heartbeat por proceso LibreOffice y perfil aislado por sesión'
+);
 workstationContract(!str_contains($entry, "nohup su -s /bin/bash arcade -c 'libreoffice --nologo --norestore'"), 'Workstation no prearranca LibreOffice sin display gráfico');
 workstationContract(str_contains($dockerfile, 'xfce4'), 'imagen instala escritorio XFCE');
 workstationContract(str_contains($dockerfile, 'google-chrome-stable'), 'imagen instala Google Chrome');

@@ -4533,7 +4533,7 @@
     },
     {
       "path": "drive/src/Http/Controller/FileSearchController.php",
-      "lines": 78,
+      "lines": 101,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -7127,7 +7127,7 @@
     },
     {
       "path": "drive/tests/web_os_contract_smoke.php",
-      "lines": 494,
+      "lines": 498,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -8614,7 +8614,7 @@
     },
     {
       "path": "drive/js/os-window-manager.js",
-      "lines": 984,
+      "lines": 987,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudEventBus",
@@ -9038,7 +9038,7 @@
     },
     {
       "path": "drive/js/so-search.js",
-      "lines": 285,
+      "lines": 292,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudOsSearch"
@@ -9636,7 +9636,7 @@
     },
     {
       "path": "drive/docs/runtime_endpoints.json",
-      "bytes": 115838,
+      "bytes": 115991,
       "valid": true,
       "root_type": "object",
       "keys": [

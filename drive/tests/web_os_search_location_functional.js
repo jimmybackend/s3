@@ -53,4 +53,9 @@ const search = window.ArcadeCloudOsSearch;
     assert(!button.classes.has('is-opening'));
     console.log(`OK: ${mode} visible catalog path, physical relocation, page 7, new window, readiness and selection`);
   }
+  search.renderResults({ resultados: [{ id: 42, nombre_real: 'Informe.docx', ruta: 'Data2/d_secret/', key: 'Data2/d_secret/f_key' }] });
+  const fallback = search.results.children.find(x => x.dataset.osSearchOpen === '1');
+  assert.equal(fallback.children[1].children[1].textContent, 'Ubicación no disponible');
+  assert.equal(fallback.dataset.route, 'Data2/d_secret/');
+  console.log('OK: missing visible catalog path never falls back to a physical prefix');
 })().catch(error => { console.error(error); process.exitCode = 1; });

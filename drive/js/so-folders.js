@@ -42,7 +42,7 @@ class ArcadeCloudOsFolderActions {
 
   normalizeFolder(folder) {
     const route = this.normalizeRoute(folder.route || '');
-    const name = String(folder.name || this.baseName(route) || 'Carpeta').trim();
+    const name = String(folder.name || 'Carpeta').trim();
     return {
       route,
       name,
@@ -344,9 +344,7 @@ class ArcadeCloudOsFolderActions {
 
       if (kind === 'rename') {
         if (this.sameRoute(route, this.current.route)) {
-          const parent = this.parentRoute(route);
-          const next = this.normalizeRoute(parent + String(detail.name || this.baseName(route)));
-          this.window.setTimeout(() => this.navigate(next), 200);
+          this.window.setTimeout(() => this.navigate(this.current.route), 200);
         } else {
           this.window.setTimeout(() => this.navigate(this.current.route), 200);
         }

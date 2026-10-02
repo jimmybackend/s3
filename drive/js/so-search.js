@@ -135,7 +135,7 @@ class ArcadeCloudOsSearch {
       const type = String(row.tipo || 'archivo');
       const name = String(row.nombre_real || row.nombre || (type === 'carpeta' ? 'Carpeta' : 'Archivo'));
       const route = String(row.ruta || '');
-      const visibleRoute = String(row.ruta_visible || route || 'Inicio/');
+      const visibleRoute = String(row.ruta_visible || 'Ubicación no disponible');
       const key = String(row.key || '');
       const confidence = Number(row.confianza ?? -1);
       const reason = String(row.motivo || '');

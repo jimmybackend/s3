@@ -35,6 +35,8 @@ on:
       - 'drive/src/Http/Controller/FederationPortalController.php'
       - 'drive/src/View/FederationPortalRenderer.php'
       - 'drive/js/so-folders.js'
+      - 'drive/js/os-window-manager.js'
+      - 'drive/tests/web_os_folder_rename_functional.js'
       - 'drive/js/carpetas.js'
       - 'drive/js/folder-document.js'
       - 'drive/js/sincronizar.js'
@@ -105,6 +107,8 @@ on:
       - 'drive/src/Http/Controller/FederationPortalController.php'
       - 'drive/src/View/FederationPortalRenderer.php'
       - 'drive/js/so-folders.js'
+      - 'drive/js/os-window-manager.js'
+      - 'drive/tests/web_os_folder_rename_functional.js'
       - 'drive/js/carpetas.js'
       - 'drive/js/folder-document.js'
       - 'drive/js/sincronizar.js'
@@ -216,4 +220,6 @@ jobs:
           php drive/tests/web_os_contract_smoke.php
           php drive/tests/web_os_clipboard_contract_smoke.php
       - name: Search location behavior
-        run: node drive/tests/web_os_search_location_functional.js
+        run: |
+          node drive/tests/web_os_search_location_functional.js
+          node drive/tests/web_os_folder_rename_functional.js

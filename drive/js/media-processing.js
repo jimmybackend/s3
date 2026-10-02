@@ -128,7 +128,7 @@ class MediaProcessingModule {
     const submit = this.document.getElementById('btnMediaSplitSubmit');
 
     if (title) title.textContent = this.operationLabel(operation);
-    if (file) file.textContent = name || key;
+    if (file) file.textContent = name || 'Archivo';
     if (size) size.textContent = this.formatBytes(bytes);
     if (duration) duration.textContent = 'Consultando…';
     if (parts) {

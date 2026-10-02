@@ -1,0 +1,58 @@
+name: Catalog folder paths behavioral regression
+
+on:
+  pull_request:
+    paths:
+      - 'drive/src/Application/FolderQueryService.php'
+      - 'drive/src/Application/FolderMutationService.php'
+      - 'drive/src/Storage/Folder*Repository.php'
+      - 'drive/tests/catalog_folder_paths_regression.php'
+      - '.github/workflows/catalog-path-regression.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'drive/src/Application/FolderQueryService.php'
+      - 'drive/src/Application/FolderMutationService.php'
+      - 'drive/src/Storage/Folder*Repository.php'
+      - 'drive/tests/catalog_folder_paths_regression.php'
+      - '.github/workflows/catalog-path-regression.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  catalog-paths:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: fixture-only
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -pfixture-only"
+          --health-interval=10s --health-timeout=5s --health-retries=10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mysqli, mbstring, curl, simplexml
+          tools: composer:v2
+      - run: composer install --no-interaction --prefer-dist --no-progress
+      - name: PHP syntax
+        run: |
+          php -l drive/src/Application/FolderQueryService.php
+          php -l drive/src/Application/FolderMutationService.php
+          php -l drive/tests/catalog_folder_paths_regression.php
+      - name: Catalog rename behavior
+        env:
+          ARCADECLOUD_ISOLATED_TEST: '1'
+        run: php drive/tests/catalog_folder_paths_regression.php
+      - name: Diff check
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: git diff --check "$BASE_SHA" HEAD

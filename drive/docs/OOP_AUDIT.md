@@ -4,10 +4,10 @@
 
 ## Resumen
 
-- PHP analizados: **513**
-- PHP que ya contienen clases/interfaces: **298**
+- PHP analizados: **515**
+- PHP que ya contienen clases/interfaces: **299**
 - PHP marcados para migración/revisión: **0**
-- Tests PHP separados del objetivo OOP de runtime: **59**
+- Tests PHP separados del objetivo OOP de runtime: **60**
 - JavaScript analizados: **76**
 - JavaScript que ya contienen clases: **72**
 - JavaScript sin clase/encapsulación OOP: **6**
@@ -175,7 +175,7 @@
 | `drive/src/Activity/TranscriptionCostAttribution.php` | 117 | class/module | 1 | — | — | — | — |
 | `drive/src/Activity/TranscriptionReconciler.php` | 476 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Admin/ArcadeCloudUpdaterService.php` | 162 | class/module | 1 | — | ⚠️ | — | — |
-| `drive/src/Admin/FastDriveControlService.php` | 349 | class/module | 1 | — | ⚠️ | — | — |
+| `drive/src/Admin/FastDriveControlService.php` | 323 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Admin/FastDriveWakeService.php` | 191 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Admin/ManagedRuntimeEnvironment.php` | 374 | class/module | 1 | — | — | — | — |
 | `drive/src/Admin/NodeServiceControlService.php` | 51 | class/module | 1 | — | ⚠️ | — | — |
@@ -184,7 +184,7 @@
 | `drive/src/Admin/ServerMaintenanceJobStore.php` | 186 | class/module | 1 | — | — | — | — |
 | `drive/src/Admin/ServerMaintenanceService.php` | 119 | class/module | 1 | — | — | — | — |
 | `drive/src/Admin/ServerSettingsAdminService.php` | 211 | class/module | 1 | — | ⚠️ | — | — |
-| `drive/src/Admin/ServerTaskActivityProbe.php` | 87 | class/module | 1 | — | ⚠️ | — | — |
+| `drive/src/Admin/ServerTaskActivityProbe.php` | 72 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Application/AiFileSearchService.php` | 471 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Application/BackgroundWorkerLauncher.php` | 107 | class/module | 1 | — | — | — | — |
 | `drive/src/Application/DrivePageService.php` | 40 | class/module | 1 | — | — | — | — |
@@ -367,9 +367,10 @@
 | `drive/src/Media/MediaPlaylistService.php` | 66 | class/module | 1 | — | — | — | — |
 | `drive/src/Media/MediaProcessingJobRepository.php` | 460 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Media/MediaProcessingService.php` | 99 | class/module | 1 | — | — | — | — |
-| `drive/src/Media/MediaWorkerNodeService.php` | 640 | class/module | 1 | — | — | — | — |
+| `drive/src/Media/MediaWorkerNodeService.php` | 668 | class/module | 1 | — | — | — | — |
 | `drive/src/Media/MediaWorkerNodeSessionRepository.php` | 219 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Media/ThumbnailService.php` | 380 | class/module | 1 | — | ⚠️ | — | — |
+| `drive/src/Office/OfficeActivityProbe.php` | 47 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Office/OfficeDocumentSessionRepository.php` | 295 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Office/OfficeDocumentStorageService.php` | 485 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Office/OfficeGatewayService.php` | 147 | class/module | 1 | — | — | — | — |
@@ -460,7 +461,7 @@
 | `drive/tests/arcadelink_collection_regression.php` | 63 | test script | 0 | — | — | — | — |
 | `drive/tests/chunked_upload_cleanup_regression.php` | 117 | test script | 1 | — | — | — | — |
 | `drive/tests/database_schema_contract_smoke.php` | 125 | test script | 0 | — | — | — | — |
-| `drive/tests/fastdrive_control_contract_smoke.php` | 73 | test script | 0 | — | — | — | — |
+| `drive/tests/fastdrive_control_contract_smoke.php` | 72 | test script | 0 | — | — | — | — |
 | `drive/tests/federation_access_message_smoke.php` | 72 | test script | 0 | — | — | — | — |
 | `drive/tests/federation_catalog_event_smoke.php` | 60 | test script | 0 | — | — | — | — |
 | `drive/tests/federation_customs_contract_smoke.php` | 82 | test script | 0 | — | — | — | — |
@@ -480,6 +481,7 @@
 | `drive/tests/federationcloud_smoke.php` | 197 | test script | 0 | — | — | — | — |
 | `drive/tests/folder_document_sanitizer.php` | 49 | test script | 0 | — | — | — | — |
 | `drive/tests/fresh_install_contract_smoke.php` | 76 | test script | 0 | — | — | — | — |
+| `drive/tests/idle_stop_office_regression.php` | 117 | test script | 1 | — | ⚠️ | — | — |
 | `drive/tests/index_federation_drop_smoke.php` | 121 | test script | 0 | — | — | — | — |
 | `drive/tests/installer_service_reconcile_contract_smoke.php` | 197 | test script | 0 | — | — | — | — |
 | `drive/tests/local_container_capabilities_regression.php` | 56 | test script | 0 | — | — | — | — |

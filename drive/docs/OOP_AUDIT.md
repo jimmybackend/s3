@@ -144,7 +144,7 @@
 | `drive/mover_archivo.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/mover_carpeta.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/node-status.php` | 10 | thin endpoint | 0 | — | — | — | — |
-| `drive/office-gateway.php` | 606 | view/entrypoint | 0 | — | — | — | — |
+| `drive/office-gateway.php` | 648 | view/entrypoint | 0 | — | — | — | — |
 | `drive/office-launch.php` | 81 | thin endpoint | 0 | — | — | — | — |
 | `drive/os-preferences.php` | 66 | thin endpoint | 0 | — | — | — | — |
 | `drive/personal_aws_bootstrap.php` | 86 | class/module | 1 | — | — | — | — |
@@ -493,7 +493,7 @@
 | `drive/tests/node_diagnostics_contract_smoke.php` | 50 | test script | 0 | — | — | — | — |
 | `drive/tests/node_diagnostics_control_smoke.php` | 43 | test script | 0 | — | — | — | — |
 | `drive/tests/office_conditional_save_regression.php` | 125 | test script | 1 | — | ⚠️ | — | — |
-| `drive/tests/office_gateway_contract_smoke.php` | 294 | test script | 0 | — | — | — | — |
+| `drive/tests/office_gateway_contract_smoke.php` | 295 | test script | 0 | — | — | — | — |
 | `drive/tests/password_credential_verifier_smoke.php` | 44 | test script | 0 | — | — | — | — |
 | `drive/tests/scoped_sync_repository_regression.php` | 96 | test script | 0 | — | ⚠️ | — | — |
 | `drive/tests/security_hardening_smoke.php` | 59 | test script | 0 | — | — | — | — |

@@ -1613,7 +1613,7 @@
     },
     {
       "path": "drive/src/Admin/ManagedRuntimeEnvironment.php",
-      "size": 20172,
+      "size": 20174,
       "active": true,
       "references": [
         "drive/app_bootstrap.php",
@@ -3060,7 +3060,7 @@
     },
     {
       "path": "drive/src/Media/MediaWorkerNodeService.php",
-      "size": 26784,
+      "size": 26786,
       "active": false,
       "references": [
         "drive/tests/media_processing_contract_smoke.php",
@@ -3898,7 +3898,7 @@
     },
     {
       "path": "drive/tests/installer_service_reconcile_contract_smoke.php",
-      "size": 18085,
+      "size": 18294,
       "active": false,
       "references": []
     },
@@ -3910,7 +3910,7 @@
     },
     {
       "path": "drive/tests/media_processing_contract_smoke.php",
-      "size": 17692,
+      "size": 17693,
       "active": false,
       "references": []
     },
@@ -3934,7 +3934,7 @@
     },
     {
       "path": "drive/tests/office_gateway_contract_smoke.php",
-      "size": 15621,
+      "size": 15622,
       "active": false,
       "references": []
     },
@@ -4036,7 +4036,7 @@
     },
     {
       "path": "drive/tests/web_os_contract_smoke.php",
-      "size": 52141,
+      "size": 52146,
       "active": false,
       "references": []
     },

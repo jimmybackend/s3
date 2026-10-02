@@ -8,20 +8,6 @@
  * - validar_php.php                   => POST archivo, contenido => JSON { estado, valido, errores[] }
  */
 
-require_once __DIR__ . '/app_bootstrap.php';
-$app = \ArcadeCloud\Drive\Core\ApplicationKernel::app();
-$session = $app->session();
-$session->start();
-if (!$session->isAuthenticated() || $session->userId() <= 0) {
-    http_response_code(401);
-    die('Sesión inválida.');
-}
-$uploadCsrf = (string)$session->get('upload_csrf', '');
-if (!preg_match('/\A[a-f0-9]{64}\z/', $uploadCsrf)) {
-    $uploadCsrf = bin2hex(random_bytes(32));
-    $session->set('upload_csrf', $uploadCsrf);
-}
-
 if (!isset($_GET['archivo']) || trim((string)$_GET['archivo']) === '') {
     die('Falta la clave del archivo.');
 }
@@ -164,7 +150,6 @@ button:disabled {
 <script src="https://unpkg.com/monaco-editor@0.44.0/min/vs/loader.js"></script>
 <script>
 const archivo = <?= json_encode($archivo, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
-const driveCsrf = <?= json_encode($uploadCsrf, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
 let editor = null;
 let tieneCambios = false;
 let wordWrapActivo = false;

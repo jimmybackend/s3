@@ -45,7 +45,7 @@ $officeDocumentToken = strtolower(trim((string)$session->get('office_document_to
 $officeDocumentName = trim((string)$session->get('office_document_name', ''));
 $officeDocumentReady = (bool)$session->get('office_document_ready', false);
 $officeDesktopTarget = strtolower(trim((string)$session->get('office_desktop_target', 'novnc')));
-if (!in_array($officeDesktopTarget, ['novnc', 'guacamole'], true)) {
+if (!in_array($officeDesktopTarget, ['novnc', 'guacamole', 'kde'], true)) {
     $officeDesktopTarget = 'novnc';
 }
 
@@ -151,7 +151,7 @@ $launch = is_scalar($_GET['launch'] ?? null) ? strtolower(trim((string)$_GET['la
 $requestedDesktopTarget = is_scalar($_GET['target'] ?? null)
     ? strtolower(trim((string)$_GET['target']))
     : 'novnc';
-if (!in_array($requestedDesktopTarget, ['novnc', 'guacamole'], true)) {
+if (!in_array($requestedDesktopTarget, ['novnc', 'guacamole', 'kde'], true)) {
     $requestedDesktopTarget = 'novnc';
 }
 if ($launch !== '') {
@@ -426,15 +426,6 @@ if ($officeUserId <= 0) {
     $waiting = true;
 }
 
-if (
-    $mode === 'ready'
-    && $officeDesktopTarget === 'guacamole'
-    && $officeFileId === 0
-) {
-    header('Location: /guacamole/#/', true, 302);
-    exit;
-}
-
 header("Content-Security-Policy: default-src 'self'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src 'self' data: blob:; frame-src 'self'; connect-src 'self' https: wss:; base-uri 'none'; form-action 'self'; frame-ancestors 'self'");
 ?><!doctype html>
 <html lang="es">
@@ -472,8 +463,8 @@ button{width:100%;margin-top:12px;padding:13px;border:1px solid var(--accent);bo
   <?php endif; ?>
   <div class="office-idle-status" id="officeIdleStatus">Autoapagado listo · esperando inactividad</div>
   <iframe id="officeFrame"
-          src="<?= $officeDesktopTarget === 'guacamole' ? '/guacamole/' : '/vnc.html?path=websockify&amp;resize=remote&amp;autoconnect=true' ?>"
-          title="<?= $officeDesktopTarget === 'guacamole' ? 'ArcadeCloud Guacamole RDP' : 'ArcadeCloud Office' ?>"
+          src="<?= in_array($officeDesktopTarget, ['guacamole', 'kde'], true) ? '/guacamole/' : '/vnc.html?path=websockify&amp;resize=remote&amp;autoconnect=true' ?>"
+          title="<?= $officeDesktopTarget === 'kde' ? 'ArcadeCloud KDE Plasma' : ($officeDesktopTarget === 'guacamole' ? 'ArcadeCloud Guacamole RDP' : 'ArcadeCloud Office') ?>"
           allow="microphone; autoplay; clipboard-read; clipboard-write"></iframe>
 </div>
 <div class="idle-warning" id="officeIdleWarning" hidden>
@@ -577,7 +568,7 @@ button{width:100%;margin-top:12px;padding:13px;border:1px solid var(--accent);bo
     if (!target || target.__arcadeOfficeBound) return;
     target.__arcadeOfficeBound = true;
     ['pointerdown','pointermove','keydown','touchstart','wheel'].forEach((eventName) => {
-      target.addEventListener(eventName, () => activity(false), {passive:true});
+      target.addEventListener(eventName, () => activity(false), {passive:true,capture:true});
     });
   }
 

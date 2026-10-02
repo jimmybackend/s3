@@ -5,6 +5,7 @@ namespace ArcadeCloud\Drive\Office;
 
 use mysqli;
 use RuntimeException;
+use Throwable;
 
 final class OfficeSessionReconciler
 {
@@ -36,9 +37,20 @@ final class OfficeSessionReconciler
 
         $reconciled = 0;
         $reasons = [];
-        $leaseActive = $this->leases->hasActiveForInstance($instanceId);
 
-        foreach ($this->documents->activeCandidates($instanceId) as $session) {
+        try {
+            $leaseActive = $this->leases->hasActiveForInstance($instanceId);
+            $candidates = $this->documents->activeCandidates($instanceId);
+        } catch (Throwable $e) {
+            error_log('[ArcadeCloud Office] reconciliación no disponible: ' . $e->getMessage());
+            throw new RuntimeException(
+                'No se pudo reconciliar Office; el apagado queda bloqueado.',
+                0,
+                $e
+            );
+        }
+
+        foreach ($candidates as $session) {
             $sessionId = (string)($session['session_id'] ?? '');
             $status = (string)($session['status'] ?? '');
             $updatedAt = strtotime((string)($session['updated_at'] ?? '') . ' UTC');

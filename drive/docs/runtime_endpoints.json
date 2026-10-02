@@ -1511,7 +1511,7 @@
     },
     {
       "path": "drive/so.php",
-      "size": 112351,
+      "size": 113217,
       "active": true,
       "references": [
         "drive/s3.php",
@@ -3478,7 +3478,7 @@
     },
     {
       "path": "drive/src/System/NodeRuntimeStatusService.php",
-      "size": 28470,
+      "size": 28945,
       "active": false,
       "references": [
         "drive/tests/node_diagnostics_contract_smoke.php",
@@ -3924,7 +3924,7 @@
     },
     {
       "path": "drive/tests/node_diagnostics_contract_smoke.php",
-      "size": 6641,
+      "size": 6878,
       "active": false,
       "references": []
     },

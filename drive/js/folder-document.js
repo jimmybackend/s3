@@ -334,7 +334,8 @@ class FolderDocumentModule {
         cache: 'no-store',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
-          'X-Requested-With': 'XMLHttpRequest'
+          'X-Requested-With': 'XMLHttpRequest',
+          'X-Drive-CSRF': String(window.DRIVE_UPLOAD_CSRF || '')
         },
         body: body.toString()
       });

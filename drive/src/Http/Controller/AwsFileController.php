@@ -217,6 +217,7 @@ final class AwsFileController extends AbstractJsonController
         try {
             if ($post) $this->requirePost();
             $userId = $this->guardAuthenticated();
+            if ($post) $this->requireDriveCsrf();
             $parts = $callback($userId);
             $payload = $parts[0] ?? [];
             $fileId = $parts[1] ?? null;

@@ -13,6 +13,7 @@ final class FolderDocumentController extends AbstractJsonController
     {
         $this->requirePost();
         $userId = $this->guardAuthenticated();
+        $this->requireDriveCsrf();
         $started = microtime(true);
 
         try {

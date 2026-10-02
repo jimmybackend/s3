@@ -162,16 +162,16 @@ webOsContract(str_contains($paths['css'], '.os-document-window'), 'ventanas de d
 
 // Escritorio simplificado y controles de ventanas.
 webOsContract(!str_contains($paths['shell'], 'class="os-topbar"'), 'Web OS ya no usa barra superior');
-webOsContract(str_contains($paths['shell'], '<span>Mi nodo</span>'), 'escritorio incluye Mi nodo');
+webOsContract(str_contains($paths['shell'], 'data-node-local-label'), 'escritorio incluye etiqueta clicable del nodo local');
 webOsContract(str_contains($paths['shell'], '<span>Mis datos</span>'), 'escritorio incluye Mis datos');
 webOsContract(str_contains($paths['shell'], '<span>Aplicaciones</span>'), 'escritorio incluye Aplicaciones');
-$desktopNode = strpos($paths['shell'], '<span>Mi nodo</span>');
+$desktopNode = strpos($paths['shell'], 'data-node-local-label');
 $desktopData = strpos($paths['shell'], '<span>Mis datos</span>');
 $desktopApps = strpos($paths['shell'], '<span>Aplicaciones</span>');
 webOsContract(
     $desktopNode !== false && $desktopData !== false && $desktopApps !== false
     && $desktopNode < $desktopData && $desktopData < $desktopApps,
-    'accesos del escritorio respetan Mi nodo -> Mis datos -> Aplicaciones'
+    'accesos del escritorio respetan Nodo local -> Mis datos -> Aplicaciones'
 );
 webOsContract(str_contains($paths['shell'], 'class="fas fa-gear"'), 'botón inferior izquierdo usa engranaje');
 webOsContract(str_contains($paths['shell'], 'os-launcher-profile'), 'perfil del usuario vive dentro del lanzador');

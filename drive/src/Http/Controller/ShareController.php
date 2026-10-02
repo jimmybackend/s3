@@ -17,6 +17,7 @@ final class ShareController extends AbstractJsonController
         try {
             $this->requirePost();
             $userId = $this->guardAuthenticated();
+            $this->requireDriveCsrf();
             $key = $this->request->postString('archivo');
             if ($key === '') throw new ShareException('Falta parámetro "archivo".', 400);
 

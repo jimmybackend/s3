@@ -42,6 +42,15 @@ nodeContract(substr_count($files['js'], 'this.refresh();') < 10 && str_contains(
 nodeContract(!str_contains($files['service'], 'public function fastDrive()') && !str_contains($files['js'], 'renderFastDrive'), 'Mi nodo no contiene una ruta de diagnóstico remoto FastDrive');
 nodeContract(!str_contains($files['view'], 'data-node-tab=') && !str_contains($files['js'], 'data-node-tab'), 'vista no permite seleccionar otro nodo desde Mi nodo');
 nodeContract(str_contains($files['js'], 'Identidad local') && str_contains($files['js'], 'Servicios ArcadeCloud') && str_contains($files['js'], 'Programas / Capacidades'), 'panel muestra identidad, servicios y programas del servidor local');
+nodeContract(
+    str_contains($files['service'], "'operating_label' => \$operatingLabel")
+    && str_contains($files['service'], "'fastdrive'")
+    && str_contains($files['service'], "'Drive principal'")
+    && str_contains($files['js'], 'Servidor que estás operando')
+    && str_contains($files['js'], 'renderOperatingNode')
+    && str_contains($files['view'], 'data-node-local-label'),
+    'Mi nodo identifica visualmente si el servidor local operado es Drive principal o FastDrive'
+);
 nodeContract(str_contains($files['css'], '@media(max-width:800px)') && str_contains($files['css'], 'grid-template-columns:1fr'), 'panel se adapta a una columna móvil');
 nodeContract(str_contains($files['css'], '--os-surface:') && str_contains($files['css'], 'background:var(--os-surface)'), 'tarjetas y ventanas usan superficies temáticas');
 nodeContract(str_contains($files['css'], '.status-ok') && str_contains($files['css'], '.status-neutral'), 'estados visuales compartidos funcionan con tokens');

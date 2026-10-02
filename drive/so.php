@@ -239,6 +239,7 @@ $isExplorerFragment = (string)($_GET['_os_fragment'] ?? '') === 'explorer';
     <button class="os-desktop-icon" type="button" data-window-open="nodeWindow">
       <span class="os-icon-tile"><i class="fas fa-server"></i></span>
       <span>Mi nodo</span>
+      <small class="os-node-local-label" data-node-local-label>Nodo local</small>
     </button>
 
     <button class="os-desktop-icon" type="button" data-app-open="explorer">

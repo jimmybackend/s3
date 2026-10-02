@@ -18,7 +18,6 @@ use ArcadeCloud\Drive\Http\Controller\BackgroundTaskController;
 use ArcadeCloud\Drive\Http\Controller\FileSecurityController;
 use ArcadeCloud\Drive\Http\Controller\FileKeyRotationController;
 use ArcadeCloud\Drive\Http\Controller\SyncController;
-use ArcadeCloud\Drive\Http\Controller\TextEditorController;
 use ArcadeCloud\Drive\Http\Controller\FolderDocumentController;
 use ArcadeCloud\Drive\Http\Controller\ShareController;
 use ArcadeCloud\Drive\Http\Controller\TranscriptionController;
@@ -78,7 +77,7 @@ foreach ([FileMutationController::class => ['deleteOne','deleteMany','move','mov
     MoveJobController::class => ['start'], BackgroundTaskController::class => ['action'],
     FileSecurityController::class => ['setMode','unlock','relock'],
     FileKeyRotationController::class => ['rotate'], SyncController::class => ['run'],
-    TextEditorController::class => ['save','lintPhp'], FolderDocumentController::class => ['create'],
+    FolderDocumentController::class => ['create'],
     ShareController::class => ['create'], TranscriptionController::class => ['start'],
     AwsFileController::class => ['textract','translate','rekognition','pollyText','pollyTts','comprehend']] as $class => $methods) {
     foreach ($methods as $method) {

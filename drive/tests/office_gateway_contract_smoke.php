@@ -203,7 +203,7 @@ officeGatewayContract(
     str_contains($documentRepo, 'recoverSyncFailure')
     && str_contains($documentRepo, "WHERE SessionId=? AND Status='syncing'")
     && str_contains($documentStorage, 'recoverSyncFailure($sessionId)')
-    && str_contains($documentStorage, "status' => $close ? 'closed' : 'ready'"),
+    && str_contains($documentStorage, "status' => \$close ? 'closed' : 'ready'"),
     'fallo de sincronización no deja OfficeDocumentSessions atrapada en syncing'
 );
 

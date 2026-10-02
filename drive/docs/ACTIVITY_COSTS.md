@@ -185,3 +185,10 @@ Nuevos workers no deben escribir SQL directamente. Deben expresar unidades media
 - MediaWorker.
 
 Antes de agregar una tarifa debe definirse una unidad observable y una fuente de precio. Para costos que sólo pueden conocerse a nivel de cuenta o recurso agregado, se debe conservar la reconciliación con Cost Explorer en lugar de forzar una atribución por archivo.
+
+## Retención y archivo
+
+`bin/activity_retention.php` ofrece simulación por defecto y archivo privado
+obligatorio antes de eliminar telemetría síncrona antigua. Conserva registros
+correlacionados y operativos. Consulte `ACTIVITY_RETENTION.md`: los costos
+archivados dejan de estar en reportes MySQL; no se instala una purga automática.

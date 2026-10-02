@@ -53,6 +53,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Shell syntax
         run: |
           bash -n drive/docker/workstation/entrypoint.sh
@@ -85,5 +87,12 @@ jobs:
         run: php drive/tests/workstation_phase1_contract_smoke.php
       - name: Office gateway contract
         run: php drive/tests/office_gateway_contract_smoke.php
-      - name: Build workstation image
-        run: docker build -t arcadecloud/workstation:ci drive/docker/workstation
+      - name: Build workstation image only when its sources change
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          if git diff --quiet "$BASE_SHA" HEAD -- drive/docker/workstation; then
+            echo 'Workstation image unchanged; no build required.'
+          else
+            docker build -t arcadecloud/workstation:ci drive/docker/workstation
+          fi

@@ -455,3 +455,34 @@ office.esforzados.com/guacamole/
 La imagen Workstation instala `pipewire`, `pipewire-pulse`, `wireplumber`, `pipewire-module-xrdp`, `pulseaudio-utils`, `xrdp` y `xorgxrdp`. El módulo XRDP usa un quantum de 1024 en la imagen validada para reducir latencia.
 
 El instalador `install_workstation_node.sh` crea y conserva `/etc/arcadecloud-drive/rdp.env`, conecta Workstation a la red `arcadecloud-office` y aplica sólo las capabilities requeridas para iniciar XRDP y cambiar al usuario `arcade`. `install_guacamole_node.sh` conserva la base MySQL y no cambia una contraseña administrativa de Guacamole que el usuario ya haya modificado.
+
+## Consolidación: escritura condicional y ETag de la propia operación
+
+`OfficeDocumentStorageService` conserva el flujo y las tablas existentes. La
+preparación usa `GetObject` con `IfMatch` del HEAD: no abre bytes descargados de
+una versión distinta a la registrada. Si cambia durante la descarga, falla la
+preparación sin reemplazar el workspace.
+
+La sincronización sigue comprobando key/ownership y ETag, y además envía
+`IfMatch` en `PutObject`. S3 puede rechazar una carrera entre HEAD y PUT. Los
+conflictos 412, 409 y desaparición 404 durante la escritura pasan por la copia de
+conflicto ya existente: no se reintenta sobrescribir el original incondicionalmente.
+Los errores de permisos/red conservan el workspace y no cierran la sesión.
+
+El ETag que se guarda en la sesión proviene de la respuesta de su propio PUT,
+tanto para original como para copia de conflicto. Un HEAD posterior podría
+observar otra escritura y aceptar su ETag por error; ya no se usa para este fin.
+No cambia el gateway, Guacamole, Docker ni los permisos de infraestructura.
+
+Referencia de semántica S3:
+https://docs.aws.amazon.com/AmazonS3/latest/userguide/conditional-writes.html
+
+`office_conditional_save_regression.php` prueba el servicio y repositorios reales
+con MySQL 8 aislado, FileS3 creado desde su esquema canónico y transporte S3
+simulado. Cubre guardado, catálogo, conflictos antes/durante el PUT, errores,
+autorización y cierre. No abre LibreOffice ni necesita servicios de producción.
+La CI de workstation sólo reconstruye su imagen si cambia el código de la imagen.
+
+Limitaciones aún pendientes: detectar cambios de igual tamaño/mtime, coordinar
+peticiones simultáneas de una misma sesión y verificar manualmente la edición
+real desde Guacamole en un entorno de aceptación aislado.

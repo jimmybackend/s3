@@ -15,7 +15,7 @@ operaciones S3 reales. Cada fase requiere PR, pruebas y revisión de CI.
 | Mi nodo | `NodeStatusController`, `NodeRuntimeStatusService`, `NodeCapabilityService` | Endpoint local; `cachedPrograms()` sólo busca ejecutables del host. Falta distinguir contenedores locales |
 | Uploads/temporales | `UploadFactory`, `Chunked15MBUploader`, `UploadStateStore`, `UploadCleanupService` | Ruta chunked distinta del estado público histórico; corregido en fase 1 descrita abajo |
 | Actividad | `ActivityCostRepository`, `DriveActivityEvents`, reconciliadores Polly/Transcribe | No se encontró retención en repositorio/bin; contiene estado operativo, no debe purgarse sólo por fecha |
-| Office | `OfficeDocumentStorageService`, repositorios de sesiones/leases, gateway y cliente workstation | Preparación, sync, catálogo, conflicto y cierre existen. `sync()` verifica HEAD y luego PUT sin `IfMatch`: carrera comprobada pendiente |
+| Office | `OfficeDocumentStorageService`, repositorios de sesiones/leases, gateway y cliente workstation | Preparación, sync, catálogo, conflicto y cierre existen. `sync()` verificaba HEAD y luego PUT sin `IfMatch`: corregido en fase 2; aceptación real de escritorio pendiente |
 | Multimedia | `MediaProcessingService`, `MediaProcessingJobRepository`, `MediaWorkerNodeService` | Existe cola, procesamiento y documentación de integración; validación completa pendiente |
 | Tareas | `BackgroundTaskController`, Sync/Move stores, actividad, media y mantenimiento | Agregación existente; no crear tabla universal |
 | FastDrive | `FastDriveControlService`, `MediaWorkerNodeService`, `ServerTaskActivityProbe` | Hay autorización y protección de actividad; cobertura y errores requieren revisión adicional |
@@ -61,3 +61,17 @@ operaciones S3 reales. Cada fase requiere PR, pruebas y revisión de CI.
    contrastar con catálogo y federación.
 6. Aceptación multinodo, móvil, rendimiento medido y recuperación aislada; sólo
    después evaluar el contenedor híbrido Android/iOS sobre el mismo backend.
+
+## Fase 1 — resultado
+
+PR #273 fusionado tras siete workflows satisfactorios en el commit final. Incluye
+lint PHP y pruebas de comportamiento del cleanup; las comprobaciones JS de
+contexto de upload también pasaron localmente. Main obtenido de nuevo:
+`157260c2551c236991b8f5d51c91561421b5ba83`.
+
+## Fase 2 — guardado Office
+
+Base: main anterior. Añade GET/PUT condicional, reutiliza la copia de conflicto
+existente y conserva el ETag del propio PUT. Prueba nueva del servicio/repositories
+con MySQL 8 desechable y S3 simulado. No valida todavía toda la edición desde
+Guacamole ni modifica infraestructura. Detalle en `ARCADECLOUD_REMOTE_WORKSTATION.md`.

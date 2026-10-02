@@ -1034,6 +1034,7 @@
         "drive/tests/federation_moderation_contract_smoke.php",
         "drive/tests/federationcloud_smoke.php",
         "drive/tests/fresh_install_contract_smoke.php",
+        "drive/tests/idle_stop_office_regression.php",
         "drive/tests/media_processing_contract_smoke.php",
         "drive/tests/office_conditional_save_regression.php",
         "drive/tests/setup_entry_guard_smoke.php",
@@ -1586,7 +1587,7 @@
     },
     {
       "path": "drive/src/Admin/FastDriveControlService.php",
-      "size": 13162,
+      "size": 12271,
       "active": false,
       "references": [
         "drive/tests/fastdrive_control_contract_smoke.php"
@@ -1665,7 +1666,7 @@
     },
     {
       "path": "drive/src/Admin/ServerTaskActivityProbe.php",
-      "size": 3040,
+      "size": 2533,
       "active": false,
       "references": [
         "drive/tests/web_os_contract_smoke.php",
@@ -3049,7 +3050,7 @@
     },
     {
       "path": "drive/src/Media/MediaWorkerNodeService.php",
-      "size": 25328,
+      "size": 26784,
       "active": false,
       "references": [
         "drive/tests/media_processing_contract_smoke.php",
@@ -3068,6 +3069,12 @@
     {
       "path": "drive/src/Media/ThumbnailService.php",
       "size": 13754,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/src/Office/OfficeActivityProbe.php",
+      "size": 1838,
       "active": false,
       "references": []
     },
@@ -3730,7 +3737,7 @@
     },
     {
       "path": "drive/tests/fastdrive_control_contract_smoke.php",
-      "size": 7046,
+      "size": 7049,
       "active": false,
       "references": []
     },
@@ -3845,6 +3852,12 @@
     {
       "path": "drive/tests/fresh_install_contract_smoke.php",
       "size": 4186,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/tests/idle_stop_office_regression.php",
+      "size": 6946,
       "active": false,
       "references": []
     },

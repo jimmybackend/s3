@@ -86,22 +86,31 @@ try {
         Config::$calls = []; Config::$onDescribe = null;
     };
     $noStop = static fn(): bool => !in_array('StopInstances', Config::$calls, true);
-    foreach (['preparing','ready','syncing','conflict'] as $status) {
+    foreach (['preparing','syncing','conflict'] as $status) {
         $reset();
         $documents->create(2, 1, 'i-12345678', 'Data2/physical.docx', 'Informe.docx');
         $stmt = $db->prepare('UPDATE OfficeDocumentSessions SET Status=?'); $stmt->execute([$status]); $stmt->close();
         $node->handleIdle($jobs);
         idleCheck($noStop() && $sessions->activeForInstance('i-12345678')['idle_since'] === '', "$status Office document cancels idle countdown");
-        try { $node->requestIdleStop($jobs); throw new LogicException('Active Office accepted'); }
-        catch (RuntimeException $e) { idleCheck(str_contains($e->getMessage(), 'Office') && $noStop(), 'interactive stop protects Office'); }
+        try { $node->requestIdleStop($jobs); throw new LogicException('Unsafe Office state accepted'); }
+        catch (RuntimeException $e) { idleCheck(str_contains($e->getMessage(), 'Office') && $noStop(), 'interactive stop protects unsafe Office states'); }
     }
-    $reset(); $leases->claim(2, 'i-12345678', hash('sha256', 'fixture-key')); $node->handleIdle($jobs);
-    idleCheck($noStop(), 'live desktop lease blocks stop without a document');
 
-    $reset(); $leases->claim(2, 'i-87654321', hash('sha256', 'other-key'));
-    idleCheck(!$probe->hasActiveSessions('i-12345678') && $probe->hasActiveSessions(), 'target scope and aggregate scope stay distinct');
+    $reset();
+    $documents->create(2, 1, 'i-12345678', 'Data2/physical.docx', 'Informe.docx');
+    $db->query("UPDATE OfficeDocumentSessions SET Status='ready'");
     $node->handleIdle($jobs);
-    idleCheck(count(array_filter(Config::$calls, static fn(string $c): bool => $c === 'StopInstances')) === 1, 'other node lease does not prevent valid idle stop');
+    idleCheck(!$noStop(), 'ready Office document does not freeze real idle shutdown');
+
+    $reset(); $leases->claim(2, 'i-12345678', hash('sha256', 'fixture-key')); $node->handleIdle($jobs);
+    idleCheck(!$noStop(), 'live desktop reservation does not freeze real idle shutdown');
+
+    $reset();
+    $documents->create(2, 1, 'i-87654321', 'Data2/physical.docx', 'Otro.docx');
+    $db->query("UPDATE OfficeDocumentSessions SET Status='conflict'");
+    idleCheck(!$probe->hasActiveSessions('i-12345678') && $probe->hasActiveSessions(), 'target scope and aggregate scope stay distinct for unsafe Office state');
+    $node->handleIdle($jobs);
+    idleCheck(count(array_filter(Config::$calls, static fn(string $c): bool => $c === 'StopInstances')) === 1, 'unsafe Office state on another node does not prevent valid idle stop');
     $node->handleIdle($jobs);
     idleCheck(count(array_filter(Config::$calls, static fn(string $c): bool => $c === 'StopInstances')) === 1, 'stopping session never emits duplicate stop');
 
@@ -201,8 +210,8 @@ try {
         . $db->real_escape_string($changedReadyId) . "'"
     )->fetch_assoc();
     idleCheck(
-        ($row['Status'] ?? '') === 'ready' && $noStop(),
-        'unsynced workspace remains protected from idle shutdown'
+        ($row['Status'] ?? '') === 'ready' && !$noStop(),
+        'ready workspace does not replace real human-idle shutdown even when reconciliation keeps it open'
     );
 
     // Las sesiones anteriores al monitor no aportan prueba de cierre del proceso.
@@ -214,8 +223,8 @@ try {
         . $db->real_escape_string($legacyReadyId) . "'"
     )->fetch_assoc();
     idleCheck(
-        ($row['Status'] ?? '') === 'ready' && $noStop(),
-        'legacy ready session remains fail-closed'
+        ($row['Status'] ?? '') === 'ready' && !$noStop(),
+        'legacy ready session may remain recorded without freezing real idle shutdown'
     );
 
     // Un heartbeat de proceso reciente también mantiene protegido el documento.
@@ -227,8 +236,8 @@ try {
         . $db->real_escape_string($liveReadyId) . "'"
     )->fetch_assoc();
     idleCheck(
-        ($row['Status'] ?? '') === 'ready' && $noStop(),
-        'live LibreOffice heartbeat blocks idle shutdown'
+        ($row['Status'] ?? '') === 'ready' && !$noStop(),
+        'live LibreOffice process alone does not impersonate keyboard or pointer activity'
     );
 
     foreach (['queued','running','cancel_requested'] as $status) {
@@ -236,15 +245,21 @@ try {
         $stmt = $db->prepare('UPDATE MediaProcessingJobs SET Status=?'); $stmt->execute([$status]); $stmt->close();
         $node->handleIdle($jobs); idleCheck($noStop(), "$status media remains protected");
     }
-    foreach (['office','heartbeat','media'] as $arrival) {
+    foreach (['heartbeat','media'] as $arrival) {
         $reset();
-        Config::$onDescribe = static function () use ($arrival, $leases, $sessions, $jobs): void {
-            if ($arrival === 'office') $leases->claim(2, 'i-12345678', hash('sha256', 'late-key'));
-            elseif ($arrival === 'media') $jobs->enqueue(2, ['id_' => 1, '_key' => 'Data2/video.mp4'], 'extract_mp3', 1, 0, 0);
+        Config::$onDescribe = static function () use ($arrival, $sessions, $jobs): void {
+            if ($arrival === 'media') $jobs->enqueue(2, ['id_' => 1, '_key' => 'Data2/video.mp4'], 'extract_mp3', 1, 0, 0);
             else $sessions->clearIdle($sessions->activeForInstance('i-12345678')['session_id']);
         };
         $node->handleIdle($jobs); idleCheck($noStop(), "$arrival arriving during AWS query cancels shutdown");
     }
+
+    $reset();
+    Config::$onDescribe = static function () use ($leases): void {
+        $leases->claim(2, 'i-12345678', hash('sha256', 'late-key'));
+    };
+    $node->handleIdle($jobs);
+    idleCheck(!$noStop(), 'late desktop reservation does not impersonate real input during shutdown');
     $reset(); $db->query('DROP TABLE OfficeDocumentSessions');
     foreach (['handleIdle','requestIdleStop'] as $method) {
         try { $node->$method($jobs); throw new LogicException('Missing Office schema accepted'); }

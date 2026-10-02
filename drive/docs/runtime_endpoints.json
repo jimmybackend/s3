@@ -1092,9 +1092,10 @@
     },
     {
       "path": "drive/folder-suggestions.php",
-      "size": 1797,
+      "size": 1893,
       "active": false,
       "references": [
+        "drive/tests/web_os_contract_smoke.php",
         "drive/tests/web_os_multiwindow_smoke.php",
         "drive/js/os-window-manager.js"
       ]
@@ -1489,7 +1490,7 @@
     },
     {
       "path": "drive/so.php",
-      "size": 111977,
+      "size": 112269,
       "active": true,
       "references": [
         "drive/s3.php",
@@ -1736,9 +1737,11 @@
     },
     {
       "path": "drive/src/Application/FolderQueryService.php",
-      "size": 4564,
+      "size": 6646,
       "active": false,
-      "references": []
+      "references": [
+        "drive/tests/web_os_contract_smoke.php"
+      ]
     },
     {
       "path": "drive/src/Application/MoveJobService.php",
@@ -3317,9 +3320,10 @@
     },
     {
       "path": "drive/src/Storage/FolderRepository.php",
-      "size": 4034,
+      "size": 4029,
       "active": false,
       "references": [
+        "drive/tests/web_os_contract_smoke.php",
         "drive/tests/web_os_multiwindow_smoke.php"
       ]
     },
@@ -3919,7 +3923,7 @@
     },
     {
       "path": "drive/tests/web_os_contract_smoke.php",
-      "size": 49573,
+      "size": 51234,
       "active": false,
       "references": []
     },

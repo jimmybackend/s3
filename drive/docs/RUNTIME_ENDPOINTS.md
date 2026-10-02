@@ -136,7 +136,7 @@
 | `drive/federationdrop/google-callback.php` | `drive/src/Federation/FederationDropGoogleAuthConfig.php`, `drive/tests/federation_drop_google_oidc_smoke.php` |
 | `drive/federationdrop/google-login.php` | `drive/src/Federation/FederationDropGoogleAuthService.php`, `drive/src/View/FederationDropPageRenderer.php` |
 | `drive/federationdrop/google-logout.php` | `drive/src/Federation/FederationDropGoogleAuthService.php`, `drive/src/View/FederationDropPageRenderer.php` |
-| `drive/folder-suggestions.php` | `drive/tests/web_os_multiwindow_smoke.php`, `drive/js/os-window-manager.js` |
+| `drive/folder-suggestions.php` | `drive/tests/web_os_contract_smoke.php`, `drive/tests/web_os_multiwindow_smoke.php`, `drive/js/os-window-manager.js` |
 | `drive/generar_token.php` | `drive/tests/web_os_clipboard_contract_smoke.php`, `drive/tests/web_os_contract_smoke.php`, `drive/js/archivos.js`, `drive/js/so-share.js` |
 | `drive/listar_carpetas.php` | `drive/js/carpetas.js` |
 | `drive/media_playlist.php` | `drive/js/media-floating.js` |
@@ -190,7 +190,7 @@
 | `drive/src/Application/FileSearchService.php` | `drive/tests/web_os_contract_smoke.php` |
 | `drive/src/Application/FolderDocumentService.php` | `drive/tests/folder_document_sanitizer.php` |
 | `drive/src/Application/FolderMutationService.php` | `drive/tests/web_os_clipboard_contract_smoke.php` |
-| `drive/src/Application/FolderQueryService.php` | ninguna |
+| `drive/src/Application/FolderQueryService.php` | `drive/tests/web_os_contract_smoke.php` |
 | `drive/src/Application/MoveJobService.php` | `drive/tests/web_os_clipboard_contract_smoke.php` |
 | `drive/src/Application/PhpLintService.php` | ninguna |
 | `drive/src/Application/TemporaryZip.php` | ninguna |
@@ -398,7 +398,7 @@
 | `drive/src/Sharing/ShareTokenStore.php` | ninguna |
 | `drive/src/Storage/FileRecordRepository.php` | `drive/tests/web_os_clipboard_contract_smoke.php` |
 | `drive/src/Storage/FolderMutationRepository.php` | `drive/tests/web_os_clipboard_contract_smoke.php` |
-| `drive/src/Storage/FolderRepository.php` | `drive/tests/web_os_multiwindow_smoke.php` |
+| `drive/src/Storage/FolderRepository.php` | `drive/tests/web_os_contract_smoke.php`, `drive/tests/web_os_multiwindow_smoke.php` |
 | `drive/src/Storage/MoveJobStore.php` | `drive/tests/web_os_contract_smoke.php` |
 | `drive/src/Storage/StorageObjectNameCodec.php` | ninguna |
 | `drive/src/Storage/StorageUsageService.php` | ninguna |

@@ -1038,6 +1038,7 @@
         "drive/tests/federation_moderation_contract_smoke.php",
         "drive/tests/federationcloud_smoke.php",
         "drive/tests/file_mutation_csrf_regression.php",
+        "drive/tests/folder_deletion_regression.php",
         "drive/tests/fresh_install_contract_smoke.php",
         "drive/tests/idle_stop_office_regression.php",
         "drive/tests/media_processing_contract_smoke.php",
@@ -1758,7 +1759,7 @@
     },
     {
       "path": "drive/src/Application/FolderMutationService.php",
-      "size": 12794,
+      "size": 13070,
       "active": false,
       "references": [
         "drive/tests/web_os_clipboard_contract_smoke.php"
@@ -3353,7 +3354,7 @@
     },
     {
       "path": "drive/src/Storage/FolderMutationRepository.php",
-      "size": 14353,
+      "size": 14595,
       "active": false,
       "references": [
         "drive/tests/web_os_clipboard_contract_smoke.php"
@@ -3862,6 +3863,12 @@
     {
       "path": "drive/tests/file_mutation_csrf_regression.php",
       "size": 5507,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/tests/folder_deletion_regression.php",
+      "size": 5548,
       "active": false,
       "references": []
     },

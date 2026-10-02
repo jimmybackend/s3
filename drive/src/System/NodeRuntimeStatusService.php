@@ -107,10 +107,31 @@ final class NodeRuntimeStatusService
             $publicHost = is_string($parsedHost) ? strtolower(trim($parsedHost)) : '';
         }
 
+        $normalizedNodeName = strtolower(trim($nodeName));
+        $operatingKey = 'local';
+        $operatingLabel = 'Nodo local';
+        if (
+            in_array($role, ['media-worker', 'combined'], true)
+            || $normalizedNodeName === 'fastdrive'
+            || $publicHost === 'fastdrive.esforzados.com'
+        ) {
+            $operatingKey = 'fastdrive';
+            $operatingLabel = 'FastDrive';
+        } elseif (
+            $role === 'web'
+            || $normalizedNodeName === 'esforzados'
+            || $publicHost === 'drive.esforzados.com'
+        ) {
+            $operatingKey = 'drive';
+            $operatingLabel = 'Drive principal';
+        }
+
         return [
             'node_id' => $nodeId,
             'node_name' => $nodeName,
             'display_name' => $nodeName !== '' ? $nodeName : ($publicHost !== '' ? $publicHost : (string)($capability['hostname'] ?? 'ArcadeCloud')),
+            'operating_key' => $operatingKey,
+            'operating_label' => $operatingLabel,
             'public_url' => $publicUrl,
             'hostname' => (string)($capability['hostname'] ?? ''),
             'role' => $role,

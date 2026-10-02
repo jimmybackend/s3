@@ -14,8 +14,6 @@ final class OfficeSessionReconciler
     private const PROCESS_HEARTBEAT_SECONDS = 45;
 
     private string $workspaceRoot;
-    private OfficeDocumentSessionRepository $documents;
-    private OfficeSessionLeaseRepository $leases;
 
     public function __construct(private mysqli $db)
     {
@@ -24,8 +22,6 @@ final class OfficeSessionReconciler
                 ?: '/var/lib/arcadecloud-office/phase1-workspace')),
             '/'
         );
-        $this->documents = new OfficeDocumentSessionRepository($db);
-        $this->leases = new OfficeSessionLeaseRepository($db);
     }
 
     /** @return array{reconciled:int,reasons:array<int,string>} */
@@ -35,12 +31,9 @@ final class OfficeSessionReconciler
             throw new RuntimeException('Instancia Office inválida para reconciliación.');
         }
 
-        $reconciled = 0;
-        $reasons = [];
-
         try {
-            $leaseActive = $this->leases->hasActiveForInstance($instanceId);
-            $candidates = $this->documents->activeCandidates($instanceId);
+            $leaseActive = $this->hasActiveLease($instanceId);
+            $candidates = $this->activeCandidates($instanceId);
         } catch (Throwable $e) {
             error_log('[ArcadeCloud Office] reconciliación no disponible: ' . $e->getMessage());
             throw new RuntimeException(
@@ -49,6 +42,9 @@ final class OfficeSessionReconciler
                 $e
             );
         }
+
+        $reconciled = 0;
+        $reasons = [];
 
         foreach ($candidates as $session) {
             $sessionId = (string)($session['session_id'] ?? '');
@@ -61,7 +57,7 @@ final class OfficeSessionReconciler
                 && trim((string)($session['workspace_relative'] ?? '')) === ''
                 && $age >= self::PREPARING_STALE_SECONDS
             ) {
-                $this->documents->markFailed($sessionId);
+                $this->markFailed($sessionId);
                 $reconciled++;
                 error_log('[ArcadeCloud Office] sesión preparing abandonada reconciliada: ' . $sessionId);
                 continue;
@@ -124,7 +120,7 @@ final class OfficeSessionReconciler
                 continue;
             }
 
-            if ($this->documents->markClosedIfUnchanged($sessionId, $mtime, $size)) {
+            if ($this->markClosedIfUnchanged($sessionId, $mtime, $size)) {
                 @unlink($active);
                 $reconciled++;
                 error_log('[ArcadeCloud Office] sesión ready abandonada reconciliada sin cambios pendientes: ' . $sessionId);
@@ -135,6 +131,103 @@ final class OfficeSessionReconciler
             'reconciled' => $reconciled,
             'reasons' => array_values(array_unique($reasons)),
         ];
+    }
+
+    private function hasActiveLease(string $instanceId): bool
+    {
+        $stmt = $this->db->prepare(
+            'SELECT 1 FROM OfficeSessionLeases WHERE InstanceId=? AND ExpiresAt>UTC_TIMESTAMP() LIMIT 1'
+        );
+        if (!$stmt) throw new RuntimeException('No se pudo comprobar el lease Office.');
+        $stmt->bind_param('s', $instanceId);
+        if (!$stmt->execute()) {
+            $stmt->close();
+            throw new RuntimeException('No se pudo ejecutar la comprobación del lease Office.');
+        }
+        $result = $stmt->get_result();
+        if (!$result) {
+            $stmt->close();
+            throw new RuntimeException('No se pudo leer el lease Office.');
+        }
+        $active = is_array($result->fetch_row());
+        $result->free();
+        $stmt->close();
+        return $active;
+    }
+
+    /** @return array<int,array<string,mixed>> */
+    private function activeCandidates(string $instanceId): array
+    {
+        $stmt = $this->db->prepare(
+            "SELECT SessionId,Status,WorkspaceRelative,LastWorkspaceMtime,LastWorkspaceSize,
+                    LastSyncedAt,UpdatedAt
+             FROM OfficeDocumentSessions
+             WHERE InstanceId=? AND Status IN ('preparing','ready','syncing','conflict')
+             ORDER BY id_ ASC"
+        );
+        if (!$stmt) throw new RuntimeException('No se pudieron consultar sesiones Office activas.');
+        $stmt->bind_param('s', $instanceId);
+        if (!$stmt->execute()) {
+            $stmt->close();
+            throw new RuntimeException('No se pudieron ejecutar las sesiones Office activas.');
+        }
+        $result = $stmt->get_result();
+        if (!$result) {
+            $stmt->close();
+            throw new RuntimeException('No se pudieron leer sesiones Office activas.');
+        }
+
+        $rows = [];
+        while ($row = $result->fetch_assoc()) {
+            $rows[] = [
+                'session_id' => (string)($row['SessionId'] ?? ''),
+                'status' => (string)($row['Status'] ?? ''),
+                'workspace_relative' => (string)($row['WorkspaceRelative'] ?? ''),
+                'last_workspace_mtime' => (int)($row['LastWorkspaceMtime'] ?? 0),
+                'last_workspace_size' => (int)($row['LastWorkspaceSize'] ?? 0),
+                'last_synced_at' => (string)($row['LastSyncedAt'] ?? ''),
+                'updated_at' => (string)($row['UpdatedAt'] ?? ''),
+            ];
+        }
+        $result->free();
+        $stmt->close();
+        return $rows;
+    }
+
+    private function markFailed(string $sessionId): void
+    {
+        $stmt = $this->db->prepare(
+            "UPDATE OfficeDocumentSessions
+             SET Status='failed',ClosedAt=UTC_TIMESTAMP(),UpdatedAt=UTC_TIMESTAMP()
+             WHERE SessionId=? AND Status='preparing'"
+        );
+        if (!$stmt) throw new RuntimeException('No se pudo reconciliar sesión Office preparing.');
+        $stmt->bind_param('s', $sessionId);
+        if (!$stmt->execute()) {
+            $stmt->close();
+            throw new RuntimeException('No se pudo cerrar sesión Office preparing abandonada.');
+        }
+        $stmt->close();
+    }
+
+    private function markClosedIfUnchanged(string $sessionId, int $mtime, int $size): bool
+    {
+        $stmt = $this->db->prepare(
+            "UPDATE OfficeDocumentSessions
+             SET Status='closed',ClosedAt=UTC_TIMESTAMP(),UpdatedAt=UTC_TIMESTAMP()
+             WHERE SessionId=? AND Status='ready'
+               AND LastSyncedAt IS NOT NULL
+               AND LastWorkspaceMtime=? AND LastWorkspaceSize=?"
+        );
+        if (!$stmt) throw new RuntimeException('No se pudo preparar cierre seguro Office.');
+        $stmt->bind_param('sii', $sessionId, $mtime, $size);
+        if (!$stmt->execute()) {
+            $stmt->close();
+            throw new RuntimeException('No se pudo cerrar sesión Office reconciliada.');
+        }
+        $changed = $stmt->affected_rows === 1;
+        $stmt->close();
+        return $changed;
     }
 
     private function workspacePath(string $relative): ?string

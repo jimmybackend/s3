@@ -124,9 +124,6 @@ kill -0 "$XRDP_PID" 2>/dev/null || {
   exit 1
 }
 
-nohup su -s /bin/bash arcade -c 'libreoffice --nologo --norestore' \
-  >/tmp/libreoffice.log 2>&1 &
-
 echo "ArcadeCloud Workstation lista."
 echo "noVNC :6080"
 echo "XRDP  :3389"

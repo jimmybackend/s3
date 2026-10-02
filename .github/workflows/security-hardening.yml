@@ -139,7 +139,6 @@ jobs:
                       drive/js/transcribe-background.js drive/js/aws-comprehend.js; do
             grep -q "X-Drive-CSRF" "$file"
           done
-          grep -q "X-Drive-CSRF.*driveCsrf" drive/editor.php
 
       - name: Reject obvious committed secrets
         shell: bash

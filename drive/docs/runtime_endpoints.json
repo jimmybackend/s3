@@ -1272,7 +1272,7 @@
     },
     {
       "path": "drive/office-gateway.php",
-      "size": 30270,
+      "size": 30216,
       "active": false,
       "references": [
         "drive/tests/office_gateway_contract_smoke.php"
@@ -1280,7 +1280,7 @@
     },
     {
       "path": "drive/office-launch.php",
-      "size": 2866,
+      "size": 2873,
       "active": true,
       "references": [
         "drive/so.php",
@@ -1511,7 +1511,7 @@
     },
     {
       "path": "drive/so.php",
-      "size": 113217,
+      "size": 113161,
       "active": true,
       "references": [
         "drive/s3.php",
@@ -3084,9 +3084,11 @@
     },
     {
       "path": "drive/src/Office/OfficeActivityProbe.php",
-      "size": 1838,
+      "size": 1980,
       "active": false,
-      "references": []
+      "references": [
+        "drive/tests/office_gateway_contract_smoke.php"
+      ]
     },
     {
       "path": "drive/src/Office/OfficeDocumentSessionRepository.php",
@@ -3894,7 +3896,7 @@
     },
     {
       "path": "drive/tests/idle_stop_office_regression.php",
-      "size": 12431,
+      "size": 13152,
       "active": false,
       "references": []
     },
@@ -3942,7 +3944,7 @@
     },
     {
       "path": "drive/tests/office_gateway_contract_smoke.php",
-      "size": 17052,
+      "size": 17844,
       "active": false,
       "references": []
     },
@@ -4044,7 +4046,7 @@
     },
     {
       "path": "drive/tests/web_os_contract_smoke.php",
-      "size": 52146,
+      "size": 52176,
       "active": false,
       "references": []
     },
@@ -4080,7 +4082,7 @@
     },
     {
       "path": "drive/tests/web_os_remote_applications_smoke.php",
-      "size": 3777,
+      "size": 3778,
       "active": false,
       "references": []
     },

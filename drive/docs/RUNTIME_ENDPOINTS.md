@@ -366,7 +366,7 @@
 | `drive/src/Media/MediaWorkerNodeService.php` | `drive/tests/media_processing_contract_smoke.php`, `drive/tests/office_gateway_contract_smoke.php`, `drive/tests/web_os_contract_smoke.php` |
 | `drive/src/Media/MediaWorkerNodeSessionRepository.php` | `drive/tests/media_processing_contract_smoke.php` |
 | `drive/src/Media/ThumbnailService.php` | ninguna |
-| `drive/src/Office/OfficeActivityProbe.php` | ninguna |
+| `drive/src/Office/OfficeActivityProbe.php` | `drive/tests/office_gateway_contract_smoke.php` |
 | `drive/src/Office/OfficeDocumentSessionRepository.php` | `drive/tests/office_gateway_contract_smoke.php` |
 | `drive/src/Office/OfficeDocumentStorageService.php` | `drive/tests/office_gateway_contract_smoke.php` |
 | `drive/src/Office/OfficeGatewayService.php` | `drive/tests/office_gateway_contract_smoke.php` |

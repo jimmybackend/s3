@@ -15,6 +15,9 @@ use ArcadeCloud\Drive\Http\Controller\FileMutationController;
 use ArcadeCloud\Drive\Http\Controller\FolderMutationController;
 use ArcadeCloud\Drive\Http\Controller\MoveJobController;
 use ArcadeCloud\Drive\Http\Controller\BackgroundTaskController;
+use ArcadeCloud\Drive\Http\Controller\FileSecurityController;
+use ArcadeCloud\Drive\Http\Controller\FileKeyRotationController;
+use ArcadeCloud\Drive\Http\Controller\SyncController;
 use ArcadeCloud\Drive\Http\JsonResponse;
 use ArcadeCloud\Drive\Http\Request;
 use Aws\S3\S3Client;
@@ -67,7 +70,9 @@ function csrfCase(string $class, string $method, array $case, int $status): void
 }
 foreach ([FileMutationController::class => ['deleteOne','deleteMany','move','moveMany','rename'],
     FolderMutationController::class => ['create','delete','move','rename'],
-    MoveJobController::class => ['start'], BackgroundTaskController::class => ['action']] as $class => $methods) {
+    MoveJobController::class => ['start'], BackgroundTaskController::class => ['action'],
+    FileSecurityController::class => ['setMode','unlock','relock'],
+    FileKeyRotationController::class => ['rotate'], SyncController::class => ['run']] as $class => $methods) {
     foreach ($methods as $method) {
         foreach ([[], ['server' => ['HTTP_X_DRIVE_CSRF' => 'wrong']], ['post' => ['upload_csrf' => ['fixture-token']]],
             ['query' => ['upload_csrf' => 'fixture-token']], ['session' => ['usuario' => 'fixture','user_id' => 2]]] as $case) {

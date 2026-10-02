@@ -63,7 +63,7 @@ class ArcadeCloudFileSecurity {
       method: 'POST',
       credentials: 'same-origin',
       cache: 'no-store',
-      headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+      headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest', 'X-Drive-CSRF': String(this.window.DRIVE_UPLOAD_CSRF || '') },
       body
     });
     const text = await response.text();

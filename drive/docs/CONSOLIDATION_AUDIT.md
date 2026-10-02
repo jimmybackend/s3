@@ -175,3 +175,18 @@ no verificaban token. El bootstrap no añadía esa protección. Se incorpora una
 guarda compartida usando `upload_csrf` / `X-Drive-CSRF` existentes y se actualizan
 clientes clásicos/OS y fallback de formulario. Detalle: `FILE_MUTATION_CSRF.md`.
 No se extrapola este resultado a todos los endpoints del repositorio.
+
+## Fase 7 — resultado
+
+PR #279 fusionado tras seis checks satisfactorios. Los controladores reales
+rechazan peticiones sin token antes de almacenamiento/workers; handlers clásicos
+probados en Node. Main actualizado `4ea0bc7d5bd87bd7a4223c7acefaa45f602ef6a1`.
+
+## Fase 8 — extensión de CSRF a sincronización y protección de archivos
+
+La inspección de los demás botones del explorador confirmó el mismo hueco en
+FileSecurityController, FileKeyRotationController y SyncController::run. Se aplica
+la guarda existente a esas acciones y se actualizan `file-security.js`, helper
+clásico de formularios en `archivos.js` y `sincronizar.js`. La consulta de estado
+sigue siendo de lectura. Se amplían las regresiones de controladores y handlers
+reales; ver mapa de endpoints en `FILE_MUTATION_CSRF.md`.

@@ -22,6 +22,7 @@ final class FileSecurityController extends AbstractJsonController
         try {
             $this->requirePost();
             $userId = $this->guardAuthenticated();
+            $this->requireDriveCsrf();
             $keys = $this->keys();
             $result = $this->service()->setMode(
                 $userId,
@@ -41,6 +42,7 @@ final class FileSecurityController extends AbstractJsonController
         try {
             $this->requirePost();
             $userId = $this->guardAuthenticated();
+            $this->requireDriveCsrf();
             $service = $this->service();
             $key = $service->buildKey(
                 $this->request->postString('key'),
@@ -59,6 +61,7 @@ final class FileSecurityController extends AbstractJsonController
         try {
             $this->requirePost();
             $userId = $this->guardAuthenticated();
+            $this->requireDriveCsrf();
             $service = $this->service();
             $keys = $this->keys();
             $compat = $service->buildKey(

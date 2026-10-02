@@ -14,6 +14,7 @@ final class FileKeyRotationController extends AbstractJsonController
         try {
             $this->requirePost();
             $userId = $this->guardAuthenticated();
+            $this->requireDriveCsrf();
 
             $raw = (string)file_get_contents('php://input');
             $data = json_decode($raw, true);

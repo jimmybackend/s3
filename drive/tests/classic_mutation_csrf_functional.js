@@ -19,12 +19,13 @@ async function exercise(script, trigger, expectedEndpoint, expectedType) {
     // Stop after capturing the request; avoid unrelated UI refresh behavior.
     return { ok: false, status: 403, text: async () => JSON.stringify({ ok: false, error: 'fixture rejection' }) };
   };
+  window.fetch = fetch;
   class FixtureFormData extends Map { constructor(form) { super(form?.fields || []); } append(key, value) { this.set(key, value); } }
   const context = { window, document, fetch, Headers, URL, URLSearchParams, FormData: FixtureFormData,
     console: { log() {}, error() {}, warn() {} }, alert() {}, confirm: () => true, setTimeout, clearTimeout,
     Event, CustomEvent: class extends Event {}, Element: class {}, HTMLElement: class {} };
   vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../js/', script), 'utf8'), context);
-  trigger(handlers, elements);
+  await trigger(handlers, elements, window);
   await new Promise(resolve => setImmediate(resolve));
   const request = requests.find(r => new URL(r.url, window.location.href).pathname.endsWith('/' + expectedEndpoint));
   assert(request, `${script} did not issue ${expectedEndpoint}`);
@@ -45,4 +46,10 @@ async function exercise(script, trigger, expectedEndpoint, expectedType) {
     const target = { closest: selector => selector === '.js-delete-one' ? button : null };
     handlers.get('click').forEach(callback => callback({ target, preventDefault() {}, stopPropagation() {}, stopImmediatePropagation() {} }));
   }, 'eliminar_archivo.php', 'application/x-www-form-urlencoded; charset=UTF-8');
+  await exercise('file-security.js', async (_handlers, _elements, window) => {
+    await window.ArcadeCloudFileSecurity.post('set_file_security.php', { key: 'Data2/f_physical', mode: 'secure' }).catch(() => {});
+  }, 'set_file_security.php', null);
+  await exercise('sincronizar.js', async (_handlers, _elements, window) => {
+    await window.triggerSyncFolderS3('Data2/d_physical/', 'Informes');
+  }, 'sync_s3_to_db.php', null);
 })().catch(error => { console.error(error); process.exitCode = 1; });

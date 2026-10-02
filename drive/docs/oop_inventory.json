@@ -1,9 +1,9 @@
 {
   "summary": {
-    "php_total": 517,
+    "php_total": 518,
     "php_class_modules": 299,
     "php_needs_migration": 0,
-    "php_tests": 62,
+    "php_tests": 63,
     "js_total": 78,
     "js_class_modules": 73,
     "js_needs_migration": 7,
@@ -2538,7 +2538,7 @@
     },
     {
       "path": "drive/src/Application/FolderMutationService.php",
-      "lines": 330,
+      "lines": 334,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -5735,7 +5735,7 @@
     },
     {
       "path": "drive/src/Storage/FolderMutationRepository.php",
-      "lines": 323,
+      "lines": 326,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -6896,6 +6896,23 @@
       ],
       "db": false,
       "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/tests/folder_deletion_regression.php",
+      "lines": 91,
+      "kind": "test script",
+      "classes": 0,
+      "functions": [
+        "pathCheck"
+      ],
+      "session": false,
+      "superglobals": [],
+      "db": true,
+      "s3": true,
       "bootstrap": false,
       "html": false,
       "namespace": false,

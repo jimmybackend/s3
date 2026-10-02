@@ -4,10 +4,10 @@
 
 ## Resumen
 
-- PHP analizados: **517**
+- PHP analizados: **518**
 - PHP que ya contienen clases/interfaces: **299**
 - PHP marcados para migración/revisión: **0**
-- Tests PHP separados del objetivo OOP de runtime: **62**
+- Tests PHP separados del objetivo OOP de runtime: **63**
 - JavaScript analizados: **78**
 - JavaScript que ya contienen clases: **73**
 - JavaScript sin clase/encapsulación OOP: **7**
@@ -195,7 +195,7 @@
 | `drive/src/Application/FileMutationService.php` | 209 | class/module | 1 | — | — | — | — |
 | `drive/src/Application/FileSearchService.php` | 159 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Application/FolderDocumentService.php` | 298 | class/module | 1 | — | ⚠️ | — | — |
-| `drive/src/Application/FolderMutationService.php` | 330 | class/module | 1 | — | — | — | — |
+| `drive/src/Application/FolderMutationService.php` | 334 | class/module | 1 | — | — | — | — |
 | `drive/src/Application/FolderQueryService.php` | 224 | class/module | 1 | — | — | — | — |
 | `drive/src/Application/MoveJobService.php` | 251 | class/module | 1 | — | — | — | — |
 | `drive/src/Application/PhpLintService.php` | 70 | class/module | 1 | — | — | — | — |
@@ -407,7 +407,7 @@
 | `drive/src/Sharing/ShareObjectStorage.php` | 37 | class/module | 1 | — | — | — | — |
 | `drive/src/Sharing/ShareTokenStore.php` | 132 | class/module | 1 | — | — | — | — |
 | `drive/src/Storage/FileRecordRepository.php` | 174 | class/module | 1 | — | ⚠️ | — | — |
-| `drive/src/Storage/FolderMutationRepository.php` | 323 | class/module | 1 | — | ⚠️ | — | — |
+| `drive/src/Storage/FolderMutationRepository.php` | 326 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Storage/FolderRepository.php` | 132 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Storage/MoveJobStore.php` | 335 | class/module | 1 | — | — | — | — |
 | `drive/src/Storage/StorageObjectNameCodec.php` | 104 | class/module | 1 | — | — | — | — |
@@ -481,6 +481,7 @@
 | `drive/tests/federation_replica_smoke.php` | 115 | test script | 0 | — | — | — | — |
 | `drive/tests/federationcloud_smoke.php` | 197 | test script | 0 | — | — | — | — |
 | `drive/tests/file_mutation_csrf_regression.php` | 90 | test script | 2 | ⚠️ | — | — | — |
+| `drive/tests/folder_deletion_regression.php` | 91 | test script | 0 | — | ⚠️ | ⚠️ | — |
 | `drive/tests/folder_document_sanitizer.php` | 49 | test script | 0 | — | — | — | — |
 | `drive/tests/fresh_install_contract_smoke.php` | 76 | test script | 0 | — | — | — | — |
 | `drive/tests/idle_stop_office_regression.php` | 117 | test script | 1 | — | ⚠️ | — | — |

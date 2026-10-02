@@ -4,10 +4,10 @@
 
 ## Resumen
 
-- PHP analizados: **506**
+- PHP analizados: **507**
 - PHP que ya contienen clases/interfaces: **295**
 - PHP marcados para migración/revisión: **0**
-- Tests PHP separados del objetivo OOP de runtime: **56**
+- Tests PHP separados del objetivo OOP de runtime: **57**
 - JavaScript analizados: **74**
 - JavaScript que ya contienen clases: **70**
 - JavaScript sin clase/encapsulación OOP: **6**
@@ -368,7 +368,7 @@
 | `drive/src/Media/MediaWorkerNodeSessionRepository.php` | 219 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Media/ThumbnailService.php` | 380 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Office/OfficeDocumentSessionRepository.php` | 295 | class/module | 1 | — | ⚠️ | — | — |
-| `drive/src/Office/OfficeDocumentStorageService.php` | 483 | class/module | 1 | — | ⚠️ | — | — |
+| `drive/src/Office/OfficeDocumentStorageService.php` | 485 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Office/OfficeGatewayService.php` | 147 | class/module | 1 | — | — | — | — |
 | `drive/src/Office/OfficeLaunchTokenRepository.php` | 164 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Office/OfficeSchemaMigrationService.php` | 141 | class/module | 1 | — | ⚠️ | — | — |
@@ -480,6 +480,7 @@
 | `drive/tests/media_processing_contract_smoke.php` | 185 | test script | 0 | — | — | — | — |
 | `drive/tests/node_diagnostics_contract_smoke.php` | 50 | test script | 0 | — | — | — | — |
 | `drive/tests/node_diagnostics_control_smoke.php` | 43 | test script | 0 | — | — | — | — |
+| `drive/tests/office_conditional_save_regression.php` | 125 | test script | 1 | — | ⚠️ | — | — |
 | `drive/tests/office_gateway_contract_smoke.php` | 272 | test script | 0 | — | — | — | — |
 | `drive/tests/password_credential_verifier_smoke.php` | 44 | test script | 0 | — | — | — | — |
 | `drive/tests/scoped_sync_repository_regression.php` | 96 | test script | 0 | — | ⚠️ | — | — |

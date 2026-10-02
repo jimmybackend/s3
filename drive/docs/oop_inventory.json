@@ -1,9 +1,9 @@
 {
   "summary": {
-    "php_total": 506,
+    "php_total": 507,
     "php_class_modules": 295,
     "php_needs_migration": 0,
-    "php_tests": 56,
+    "php_tests": 57,
     "js_total": 74,
     "js_class_modules": 70,
     "js_needs_migration": 6,
@@ -5139,7 +5139,7 @@
     },
     {
       "path": "drive/src/Office/OfficeDocumentStorageService.php",
-      "lines": 483,
+      "lines": 485,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -6882,6 +6882,23 @@
       "session": false,
       "superglobals": [],
       "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/tests/office_conditional_save_regression.php",
+      "lines": 125,
+      "kind": "test script",
+      "classes": 1,
+      "functions": [
+        "officeCheck"
+      ],
+      "session": false,
+      "superglobals": [],
+      "db": true,
       "s3": false,
       "bootstrap": false,
       "html": false,
@@ -9668,7 +9685,7 @@
     },
     {
       "path": "drive/docs/runtime_endpoints.json",
-      "bytes": 115991,
+      "bytes": 116785,
       "valid": true,
       "root_type": "object",
       "keys": [

@@ -228,6 +228,31 @@ final class PrivilegedServerHelper
         $this->run(['workstation-open-document', $workspaceRelative]);
     }
 
+    public function supportsWorkstationDocumentAccessRepair(): bool
+    {
+        try {
+            $status = $this->status();
+            return ($status['ok'] ?? false) === true
+                && (int)($status['version'] ?? 0) >= 19
+                && (bool)($status['capabilities']['workstation_document_access_repair'] ?? false);
+        } catch (RuntimeException) {
+            return false;
+        }
+    }
+
+    public function repairWorkstationDocumentAccess(string $workspaceRelative): void
+    {
+        $workspaceRelative = trim(str_replace('\\', '/', $workspaceRelative));
+        if (
+            !$this->supportsWorkstationDocumentAccessRepair()
+            || !preg_match('/\Asessions\/[a-f0-9]{32}\/[^\/\x00-\x1F\x7F]{1,220}\z/u', $workspaceRelative)
+        ) {
+            throw new RuntimeException('Reparación de acceso Workstation no permitida.');
+        }
+
+        $this->run(['workstation-repair-document-access', $workspaceRelative]);
+    }
+
     private function workstationControl(string $action): array
     {
         if (!$this->supportsWorkstationControl()) {

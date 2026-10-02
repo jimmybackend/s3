@@ -69,7 +69,7 @@ final class ArcadeCloudDriveAdminHelper
         if ($action === 'status') {
             fwrite(STDOUT, json_encode([
                 'ok' => true,
-                'version' => 18,
+                'version' => 19,
                 'capabilities' => [
                     'env_set_many' => true,
                     'db_aws_settings' => true,
@@ -85,6 +85,7 @@ final class ArcadeCloudDriveAdminHelper
                     'disk_cleanup' => true,
                     'workstation_control' => true,
                     'workstation_document_open' => true,
+                    'workstation_document_access_repair' => true,
                     'node_service_control' => true,
                     'local_container_programs' => true,
                 ],
@@ -302,7 +303,7 @@ final class ArcadeCloudDriveAdminHelper
             exit(0);
         }
 
-        if ($action === 'workstation-open-document') {
+        if (in_array($action, ['workstation-open-document', 'workstation-repair-document-access'], true)) {
             $relative = trim(str_replace('\\\\', '/', (string)($argv[2] ?? '')));
             if (
                 !preg_match('/\\Asessions\\/[a-f0-9]{32}\\/[^\\/\\x00-\\x1F\\x7F]{1,220}\\z/u', $relative)
@@ -338,9 +339,8 @@ final class ArcadeCloudDriveAdminHelper
                 $this->fail('No se pudo preparar el acceso compartido PHP/LibreOffice al documento.', 73);
             }
 
-            // LibreOffice guarda de forma atómica: puede reemplazar el DOCX por
-            // un inode nuevo propiedad de UID/GID 10001. La ACL por defecto de
-            // la carpeta conserva rw para PHP-FPM también en esos reemplazos.
+            // LibreOffice puede reemplazar el archivo al guardar. Mantener una ACL
+            // por defecto evita que PHP-FPM pierda acceso al inode nuevo.
             $this->runFixedCommand([
                 '/usr/bin/setfacl',
                 '-m',
@@ -370,24 +370,26 @@ final class ArcadeCloudDriveAdminHelper
                 $this->fail('Permisos del documento Workstation no son seguros para LibreOffice.', 73);
             }
 
-            $this->runFixedCommand([
-                '/usr/bin/docker',
-                'exec',
-                '-d',
-                '--user',
-                '10001',
-                '--env',
-                'DISPLAY=:1',
-                '--env',
-                'HOME=/home/arcade',
-                '--env',
-                'XDG_RUNTIME_DIR=/run/user/10001',
-                'arcadecloud-workstation',
-                'libreoffice',
-                '--nologo',
-                '--norestore',
-                '/workspace/' . $relative,
-            ]);
+            if ($action === 'workstation-open-document') {
+                $this->runFixedCommand([
+                    '/usr/bin/docker',
+                    'exec',
+                    '-d',
+                    '--user',
+                    '10001',
+                    '--env',
+                    'DISPLAY=:1',
+                    '--env',
+                    'HOME=/home/arcade',
+                    '--env',
+                    'XDG_RUNTIME_DIR=/run/user/10001',
+                    'arcadecloud-workstation',
+                    'libreoffice',
+                    '--nologo',
+                    '--norestore',
+                    '/workspace/' . $relative,
+                ]);
+            }
 
             fwrite(
                 STDOUT,

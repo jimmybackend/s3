@@ -40,9 +40,11 @@ $ok(str_contains($windows, "page.querySelector('main')") && !str_contains($windo
 $ok(str_contains($windows, "form.matches('[data-os-totp-form]')") && str_contains($windows, 'submitTotpForm(body, target, data, form)'), 'Generador TOTP usa envío AJAX dentro de su ventana');
 $ok(str_contains($windows, "'X-ArcadeCloud-Embed': '1'") && str_contains($windows, 'payload.result.code'), 'Generador TOTP consume resultado JSON sin navegar');
 $ok(str_contains($windows, "data.set('arcadecloud_os', '1')"), 'Generador TOTP conserva marcador embebido también en POST aunque el proxy descarte headers o query');
+$ok(str_contains($windows, "data.set('response_format', 'json')"), 'Generador TOTP solicita JSON explícitamente y no depende sólo del modo embebido');
 $ok(str_contains($windows, "contentType.includes('application/json')"), 'Generador TOTP valida el contrato JSON antes de decodificar');
 $ok(str_contains($totpController, "queryString('arcadecloud_os')") && str_contains($totpController, "JsonResponse::send(['ok' => false"), 'endpoint TOTP conserva JSON tras proxy y también en errores de acceso');
 $ok(str_contains($totpController, "postString('arcadecloud_os')") && str_contains($totpController, "serverString('HTTP_X_ARCADECLOUD_EMBED')"), 'endpoint TOTP reconoce marcadores embebidos por header, query y POST');
+$ok(str_contains($totpController, "postString('response_format')") && str_contains($totpController, '$jsonGenerate'), 'endpoint TOTP fuerza contrato JSON cuando el cliente lo solicita explícitamente');
 $ok(str_contains($node, "'os-node-card os-node-card-wide'") && str_contains($styles, '.os-node-card-wide{grid-column:1/-1}'), 'Recursos ocupa todas las columnas del layout interior');
 
 $ok(str_contains($node, 'updateIdleCountdown()') && str_contains($node, 'this.idleRemaining - 1'), 'countdown local actualiza cada segundo');

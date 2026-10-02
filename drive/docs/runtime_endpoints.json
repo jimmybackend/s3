@@ -1021,6 +1021,7 @@
         "drive/s3.php",
         "drive/so.php",
         "drive/src/Federation/FederationDropService.php",
+        "drive/tests/chunked_upload_cleanup_regression.php",
         "drive/tests/federation_moderation_contract_smoke.php",
         "drive/tests/federationcloud_smoke.php",
         "drive/tests/fresh_install_contract_smoke.php",
@@ -1950,7 +1951,7 @@
     },
     {
       "path": "drive/src/Core/DriveApplication.php",
-      "size": 16928,
+      "size": 16920,
       "active": false,
       "references": []
     },
@@ -3339,7 +3340,9 @@
       "path": "drive/src/Storage/StorageObjectNameCodec.php",
       "size": 3333,
       "active": false,
-      "references": []
+      "references": [
+        "drive/tests/chunked_upload_cleanup_regression.php"
+      ]
     },
     {
       "path": "drive/src/Storage/StorageUsageService.php",
@@ -3351,7 +3354,9 @@
       "path": "drive/src/Storage/UserStoragePath.php",
       "size": 1377,
       "active": false,
-      "references": []
+      "references": [
+        "drive/tests/chunked_upload_cleanup_regression.php"
+      ]
     },
     {
       "path": "drive/src/Storage/UserStorageProvisioner.php",
@@ -3440,6 +3445,14 @@
       ]
     },
     {
+      "path": "drive/src/Upload/ChunkedUploadCleanupService.php",
+      "size": 4770,
+      "active": false,
+      "references": [
+        "drive/tests/chunked_upload_cleanup_regression.php"
+      ]
+    },
+    {
       "path": "drive/src/Upload/PublicDropzoneUploadService.php",
       "size": 4816,
       "active": false,
@@ -3484,9 +3497,11 @@
     },
     {
       "path": "drive/src/Upload/UploadCleanupService.php",
-      "size": 10027,
+      "size": 9236,
       "active": false,
-      "references": []
+      "references": [
+        "drive/tests/chunked_upload_cleanup_regression.php"
+      ]
     },
     {
       "path": "drive/src/View/ActivityCostPageRenderer.php",
@@ -3660,6 +3675,12 @@
     {
       "path": "drive/tests/arcadelink_collection_regression.php",
       "size": 5218,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/tests/chunked_upload_cleanup_regression.php",
+      "size": 6590,
       "active": false,
       "references": []
     },
@@ -4117,9 +4138,10 @@
     },
     {
       "path": "drive/upload/drivers/Chunked15MBUploader.php",
-      "size": 9462,
+      "size": 10356,
       "active": false,
       "references": [
+        "drive/tests/chunked_upload_cleanup_regression.php",
         "drive/tests/federation_moderation_contract_smoke.php",
         "drive/upload/UploadFactory.php"
       ]
@@ -4166,9 +4188,11 @@
     },
     {
       "path": "drive/upload/storage/UploadStateStore.php",
-      "size": 1374,
+      "size": 3774,
       "active": false,
       "references": [
+        "drive/src/Upload/ChunkedUploadCleanupService.php",
+        "drive/src/Upload/UploadCleanupService.php",
         "drive/upload/UploadFactory.php",
         "drive/upload/drivers/Chunked15MBUploader.php"
       ]

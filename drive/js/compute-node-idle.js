@@ -116,7 +116,7 @@ class ArcadeCloudComputeIdleGuard {
       <div class="compute-idle-card">
         <i class="fas fa-power-off compute-idle-icon"></i>
         <h3 id="computeIdleWarningTitle">Nodo de alto rendimiento inactivo</h3>
-        <p>Han pasado 10 minutos sin actividad. Para ahorrar recursos, la EC2 grande se apagará en:</p>
+        <p>Han pasado 20 minutos sin actividad. Para ahorrar recursos, la EC2 grande se apagará en:</p>
         <strong class="compute-idle-count" data-compute-idle-count>30</strong>
         <span class="compute-idle-seconds">segundos</span>
         <div class="compute-idle-actions">

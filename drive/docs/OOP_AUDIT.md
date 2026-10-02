@@ -4,8 +4,8 @@
 
 ## Resumen
 
-- PHP analizados: **518**
-- PHP que ya contienen clases/interfaces: **299**
+- PHP analizados: **519**
+- PHP que ya contienen clases/interfaces: **300**
 - PHP marcados para migración/revisión: **0**
 - Tests PHP separados del objetivo OOP de runtime: **63**
 - JavaScript analizados: **78**
@@ -40,7 +40,7 @@
 | `drive/aws.php` | 12 | thin endpoint | 0 | — | — | — | — |
 | `drive/background_tasks.php` | 18 | thin endpoint | 0 | — | — | — | — |
 | `drive/bin/activity_retention.php` | 9 | thin cli entrypoint | 0 | — | — | — | — |
-| `drive/bin/arcadecloud-drive-admin-helper.php` | 1360 | class/module | 1 | — | ⚠️ | — | — |
+| `drive/bin/arcadecloud-drive-admin-helper.php` | 1359 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/bin/arcadecloud-drive-updater.php` | 321 | class/module | 1 | — | — | — | — |
 | `drive/bin/federation_catalog_migrate.php` | 18 | thin cli entrypoint | 0 | — | — | — | — |
 | `drive/bin/federation_drop_cleanup.php` | 19 | thin cli entrypoint | 0 | — | — | — | — |
@@ -144,7 +144,7 @@
 | `drive/mover_archivo.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/mover_carpeta.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/node-status.php` | 10 | thin endpoint | 0 | — | — | — | — |
-| `drive/office-gateway.php` | 650 | view/entrypoint | 0 | — | — | — | — |
+| `drive/office-gateway.php` | 680 | view/entrypoint | 0 | — | — | — | — |
 | `drive/office-launch.php` | 81 | thin endpoint | 0 | — | — | — | — |
 | `drive/os-preferences.php` | 66 | thin endpoint | 0 | — | — | — | — |
 | `drive/personal_aws_bootstrap.php` | 86 | class/module | 1 | — | — | — | — |
@@ -368,16 +368,17 @@
 | `drive/src/Media/MediaPlaylistService.php` | 66 | class/module | 1 | — | — | — | — |
 | `drive/src/Media/MediaProcessingJobRepository.php` | 460 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Media/MediaProcessingService.php` | 99 | class/module | 1 | — | — | — | — |
-| `drive/src/Media/MediaWorkerNodeService.php` | 668 | class/module | 1 | — | — | — | — |
+| `drive/src/Media/MediaWorkerNodeService.php` | 723 | class/module | 1 | — | — | — | — |
 | `drive/src/Media/MediaWorkerNodeSessionRepository.php` | 219 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Media/ThumbnailService.php` | 380 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Office/OfficeActivityProbe.php` | 47 | class/module | 1 | — | ⚠️ | — | — |
-| `drive/src/Office/OfficeDocumentSessionRepository.php` | 307 | class/module | 1 | — | ⚠️ | — | — |
-| `drive/src/Office/OfficeDocumentStorageService.php` | 504 | class/module | 1 | — | ⚠️ | — | — |
+| `drive/src/Office/OfficeDocumentSessionRepository.php` | 351 | class/module | 1 | — | ⚠️ | — | — |
+| `drive/src/Office/OfficeDocumentStorageService.php` | 527 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Office/OfficeGatewayService.php` | 147 | class/module | 1 | — | — | — | — |
 | `drive/src/Office/OfficeLaunchTokenRepository.php` | 164 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Office/OfficeSchemaMigrationService.php` | 141 | class/module | 1 | — | ⚠️ | — | — |
-| `drive/src/Office/OfficeSessionLeaseRepository.php` | 189 | class/module | 1 | — | ⚠️ | — | — |
+| `drive/src/Office/OfficeSessionLeaseRepository.php` | 207 | class/module | 1 | — | ⚠️ | — | — |
+| `drive/src/Office/OfficeSessionReconciler.php` | 252 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Office/OfficeWorkstationClient.php` | 178 | class/module | 1 | — | — | — | — |
 | `drive/src/Security/AuthenticationRepository.php` | 101 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Security/AuthenticationService.php` | 55 | class/module | 1 | — | — | — | — |
@@ -485,7 +486,7 @@
 | `drive/tests/folder_deletion_regression.php` | 91 | test script | 0 | — | ⚠️ | ⚠️ | — |
 | `drive/tests/folder_document_sanitizer.php` | 49 | test script | 0 | — | — | — | — |
 | `drive/tests/fresh_install_contract_smoke.php` | 76 | test script | 0 | — | — | — | — |
-| `drive/tests/idle_stop_office_regression.php` | 117 | test script | 1 | — | ⚠️ | — | — |
+| `drive/tests/idle_stop_office_regression.php` | 258 | test script | 1 | — | ⚠️ | — | — |
 | `drive/tests/index_federation_drop_smoke.php` | 121 | test script | 0 | — | — | — | — |
 | `drive/tests/installer_service_reconcile_contract_smoke.php` | 197 | test script | 0 | — | — | — | — |
 | `drive/tests/local_container_capabilities_regression.php` | 56 | test script | 0 | — | — | — | — |
@@ -493,7 +494,7 @@
 | `drive/tests/node_diagnostics_contract_smoke.php` | 50 | test script | 0 | — | — | — | — |
 | `drive/tests/node_diagnostics_control_smoke.php` | 43 | test script | 0 | — | — | — | — |
 | `drive/tests/office_conditional_save_regression.php` | 125 | test script | 1 | — | ⚠️ | — | — |
-| `drive/tests/office_gateway_contract_smoke.php` | 333 | test script | 0 | — | — | — | — |
+| `drive/tests/office_gateway_contract_smoke.php` | 361 | test script | 0 | — | — | — | — |
 | `drive/tests/password_credential_verifier_smoke.php` | 44 | test script | 0 | — | — | — | — |
 | `drive/tests/scoped_sync_repository_regression.php` | 96 | test script | 0 | — | ⚠️ | — | — |
 | `drive/tests/security_hardening_smoke.php` | 59 | test script | 0 | — | — | — | — |
@@ -518,7 +519,7 @@
 | `drive/tests/web_os_pending_fixes_smoke.php` | 59 | test script | 0 | — | — | — | — |
 | `drive/tests/web_os_remote_applications_smoke.php` | 49 | test script | 0 | — | — | — | — |
 | `drive/tests/web_os_theme_contract_smoke.php` | 29 | test script | 0 | — | — | — | — |
-| `drive/tests/workstation_phase1_contract_smoke.php` | 76 | test script | 0 | — | — | — | — |
+| `drive/tests/workstation_phase1_contract_smoke.php` | 89 | test script | 0 | — | — | — | — |
 | `drive/thumb.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/token_audio.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/token_texto.php` | 10 | thin endpoint | 0 | — | — | — | — |
@@ -564,7 +565,7 @@
 | `drive/js/background-task-feedback.js` | 180 | class/module | BackgroundTaskFeedbackModule | — | — | — |
 | `drive/js/background-tasks.js` | 1032 | class/module | BackgroundTaskCenter | — | — | — |
 | `drive/js/carpetas.js` | 1200 | class/module | CarpetasModule | — | actualizarBloqueCarpetas | window functions: actualizarBloqueCarpetas |
-| `drive/js/compute-node-idle.js` | 239 | class/module | ArcadeCloudComputeIdleGuard | — | — | — |
+| `drive/js/compute-node-idle.js` | 290 | class/module | ArcadeCloudComputeIdleGuard | — | — | — |
 | `drive/js/descarga-multiple.js` | 114 | class/module | DescargaMultipleModule | — | — | — |
 | `drive/js/descarga-uno.js` | 110 | class/module | DescargaUnoModule | — | — | — |
 | `drive/js/desktop-shell.js` | 173 | class/module | ArcadeCloudDesktopShell | — | — | — |

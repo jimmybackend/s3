@@ -1,7 +1,7 @@
 {
   "summary": {
-    "php_total": 518,
-    "php_class_modules": 299,
+    "php_total": 519,
+    "php_class_modules": 300,
     "php_needs_migration": 0,
     "php_tests": 63,
     "js_total": 78,
@@ -152,7 +152,7 @@
     },
     {
       "path": "drive/bin/arcadecloud-drive-admin-helper.php",
-      "lines": 1360,
+      "lines": 1359,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -1735,7 +1735,7 @@
     },
     {
       "path": "drive/office-gateway.php",
-      "lines": 650,
+      "lines": 680,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -5127,7 +5127,7 @@
     },
     {
       "path": "drive/src/Media/MediaWorkerNodeService.php",
-      "lines": 668,
+      "lines": 723,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -5187,7 +5187,7 @@
     },
     {
       "path": "drive/src/Office/OfficeDocumentSessionRepository.php",
-      "lines": 307,
+      "lines": 351,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -5202,7 +5202,7 @@
     },
     {
       "path": "drive/src/Office/OfficeDocumentStorageService.php",
-      "lines": 504,
+      "lines": 527,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -5262,7 +5262,22 @@
     },
     {
       "path": "drive/src/Office/OfficeSessionLeaseRepository.php",
-      "lines": 189,
+      "lines": 207,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": true,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Office/OfficeSessionReconciler.php",
+      "lines": 252,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -6953,7 +6968,7 @@
     },
     {
       "path": "drive/tests/idle_stop_office_regression.php",
-      "lines": 117,
+      "lines": 258,
       "kind": "test script",
       "classes": 1,
       "functions": [
@@ -7089,7 +7104,7 @@
     },
     {
       "path": "drive/tests/office_gateway_contract_smoke.php",
-      "lines": 333,
+      "lines": 361,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -7482,7 +7497,7 @@
     },
     {
       "path": "drive/tests/workstation_phase1_contract_smoke.php",
-      "lines": 76,
+      "lines": 89,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -8243,7 +8258,7 @@
     },
     {
       "path": "drive/js/compute-node-idle.js",
-      "lines": 239,
+      "lines": 290,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudComputeIdleGuard"

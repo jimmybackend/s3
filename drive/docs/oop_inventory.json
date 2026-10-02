@@ -152,7 +152,7 @@
     },
     {
       "path": "drive/bin/arcadecloud-drive-admin-helper.php",
-      "lines": 1304,
+      "lines": 1310,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -7089,7 +7089,7 @@
     },
     {
       "path": "drive/tests/office_gateway_contract_smoke.php",
-      "lines": 285,
+      "lines": 294,
       "kind": "test script",
       "classes": 0,
       "functions": [

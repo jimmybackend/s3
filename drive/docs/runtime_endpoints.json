@@ -1272,7 +1272,7 @@
     },
     {
       "path": "drive/office-gateway.php",
-      "size": 28538,
+      "size": 28715,
       "active": false,
       "references": [
         "drive/tests/office_gateway_contract_smoke.php"
@@ -3934,7 +3934,7 @@
     },
     {
       "path": "drive/tests/office_gateway_contract_smoke.php",
-      "size": 15472,
+      "size": 15621,
       "active": false,
       "references": []
     },

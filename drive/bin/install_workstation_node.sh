@@ -53,6 +53,9 @@ MEM_KB="$(awk '/MemTotal:/ {print $2}' /proc/meminfo)"
 if ! command -v docker >/dev/null 2>&1; then
   dnf install -y docker
 fi
+if ! command -v setfacl >/dev/null 2>&1; then
+  dnf install -y acl
+fi
 systemctl enable --now docker
 
 PHP_GID="$(getent group "$PHP_GROUP" | cut -d: -f3)"

@@ -154,7 +154,7 @@ officeGatewayContract(
     && str_contains($helper, "'HOME=/home/arcade'")
     && str_contains($helper, "'XDG_RUNTIME_DIR=/run/user/10001'")
     && str_contains($helper, "'libreoffice'")
-    && str_contains($helper, "'/workspace/' . $relative"),
+    && str_contains($helper, "'/workspace/' . \$relative"),
     'helper abre documentos LibreOffice dentro del display gráfico noVNC'
 );
 
@@ -171,6 +171,15 @@ officeGatewayContract(
     && str_contains($helper, 'chmod($realDocument, 0660)')
     && str_contains($helper, "['gid'] ?? -1) !== 10001"),
     'helper normaliza grupo y permisos del workspace antes de abrir LibreOffice'
+);
+
+officeGatewayContract(
+    str_contains($helper, "'/usr/bin/setfacl'")
+    && str_contains($helper, "'d:u:' . \$phpUser . ':rwx,d:m::rwx'")
+    && str_contains($helper, "'u:' . \$phpUser . ':rw-,m::rw-'")
+    && str_contains($workstationInstaller, 'command -v setfacl')
+    && str_contains($workstationInstaller, 'dnf install -y acl'),
+    'workspace Office conserva acceso PHP-FPM cuando LibreOffice reemplaza el archivo al guardar'
 );
 
 officeGatewayContract(
@@ -260,7 +269,7 @@ officeGatewayContract(
 );
 
 officeGatewayContract(
-    str_contains($helper, "'version' => 17")
+    str_contains($helper, "'version' => 18")
     && str_contains($helper, "'workstation_control' => true")
     && str_contains($helper, "'workstation_document_open' => true")
     && str_contains($helper, "if (\$action === 'workstation-open-document')")

@@ -1,11 +1,11 @@
 {
   "summary": {
-    "php_total": 516,
+    "php_total": 517,
     "php_class_modules": 299,
     "php_needs_migration": 0,
-    "php_tests": 61,
-    "js_total": 77,
-    "js_class_modules": 72,
+    "php_tests": 62,
+    "js_total": 78,
+    "js_class_modules": 73,
     "js_needs_migration": 7,
     "js_compatibility_facades": 8,
     "ajax_clients": 49,
@@ -1982,7 +1982,7 @@
     },
     {
       "path": "drive/s3.php",
-      "lines": 2370,
+      "lines": 2371,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -4158,7 +4158,7 @@
     },
     {
       "path": "drive/src/Http/Controller/AbstractJsonController.php",
-      "lines": 81,
+      "lines": 95,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -4278,7 +4278,7 @@
     },
     {
       "path": "drive/src/Http/Controller/BackgroundTaskController.php",
-      "lines": 945,
+      "lines": 946,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -4565,7 +4565,7 @@
     },
     {
       "path": "drive/src/Http/Controller/FileMutationController.php",
-      "lines": 124,
+      "lines": 128,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -4625,7 +4625,7 @@
     },
     {
       "path": "drive/src/Http/Controller/FolderMutationController.php",
-      "lines": 203,
+      "lines": 207,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -4700,7 +4700,7 @@
     },
     {
       "path": "drive/src/Http/Controller/MoveJobController.php",
-      "lines": 194,
+      "lines": 195,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -6883,6 +6883,25 @@
       "issues": []
     },
     {
+      "path": "drive/tests/file_mutation_csrf_regression.php",
+      "lines": 85,
+      "kind": "test script",
+      "classes": 2,
+      "functions": [
+        "csrfCase"
+      ],
+      "session": true,
+      "superglobals": [
+        "SESSION"
+      ],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
       "path": "drive/tests/folder_document_sanitizer.php",
       "lines": 49,
       "kind": "test script",
@@ -8007,7 +8026,7 @@
     },
     {
       "path": "drive/js/archivos.js",
-      "lines": 2170,
+      "lines": 2173,
       "kind": "class/module",
       "classes": [
         "ArchivosModule"
@@ -8142,7 +8161,7 @@
     },
     {
       "path": "drive/js/background-tasks.js",
-      "lines": 1031,
+      "lines": 1032,
       "kind": "class/module",
       "classes": [
         "BackgroundTaskCenter"
@@ -8168,7 +8187,7 @@
     },
     {
       "path": "drive/js/carpetas.js",
-      "lines": 1196,
+      "lines": 1200,
       "kind": "class/module",
       "classes": [
         "CarpetasModule"
@@ -8537,7 +8556,7 @@
     },
     {
       "path": "drive/js/file-block.js",
-      "lines": 305,
+      "lines": 306,
       "kind": "class/module",
       "classes": [
         "FileBlockApp"
@@ -8584,7 +8603,7 @@
     },
     {
       "path": "drive/js/filesystem-operations.js",
-      "lines": 191,
+      "lines": 192,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudFilesystemOperations"
@@ -8756,7 +8775,7 @@
     },
     {
       "path": "drive/js/move-tasks.js",
-      "lines": 261,
+      "lines": 262,
       "kind": "class/module",
       "classes": [
         "DriveMoveTasks"
@@ -9574,6 +9593,32 @@
       "issues": []
     },
     {
+      "path": "drive/tests/classic_mutation_csrf_functional.js",
+      "lines": 49,
+      "kind": "class/module",
+      "classes": [
+        "FixtureFormData"
+      ],
+      "functions": [],
+      "window_assign": [],
+      "window_func": [],
+      "top_vars": [
+        "assert",
+        "fs",
+        "vm",
+        "path"
+      ],
+      "iife": false,
+      "ajax": {
+        "fetch": 0,
+        "xhr": 0,
+        "jquery": 0,
+        "json_consumers": 0,
+        "response_checks": 0
+      },
+      "issues": []
+    },
+    {
       "path": "drive/tests/local_container_programs_functional.js",
       "lines": 25,
       "kind": "class/module",
@@ -9680,7 +9725,7 @@
     },
     {
       "path": "drive/tests/web_os_filesystem_operations_functional.js",
-      "lines": 52,
+      "lines": 59,
       "kind": "procedural script",
       "classes": [],
       "functions": [
@@ -9924,7 +9969,7 @@
     },
     {
       "path": "drive/docs/runtime_endpoints.json",
-      "bytes": 118491,
+      "bytes": 118694,
       "valid": true,
       "root_type": "object",
       "keys": [

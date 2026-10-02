@@ -152,7 +152,7 @@
     },
     {
       "path": "drive/bin/arcadecloud-drive-admin-helper.php",
-      "lines": 1357,
+      "lines": 1359,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -2297,7 +2297,7 @@
     },
     {
       "path": "drive/src/Admin/PrivilegedServerHelper.php",
-      "lines": 298,
+      "lines": 323,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -5187,7 +5187,7 @@
     },
     {
       "path": "drive/src/Office/OfficeDocumentSessionRepository.php",
-      "lines": 295,
+      "lines": 307,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -5202,7 +5202,7 @@
     },
     {
       "path": "drive/src/Office/OfficeDocumentStorageService.php",
-      "lines": 485,
+      "lines": 504,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -7089,7 +7089,7 @@
     },
     {
       "path": "drive/tests/office_gateway_contract_smoke.php",
-      "lines": 313,
+      "lines": 331,
       "kind": "test script",
       "classes": 0,
       "functions": [

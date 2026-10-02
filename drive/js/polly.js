@@ -97,6 +97,7 @@ class PollyModule {
           url: url,
           type: 'POST',
           dataType: 'json',
+          headers: { 'X-Drive-CSRF': String(window.DRIVE_UPLOAD_CSRF || '') },
           data: data
         });
       }

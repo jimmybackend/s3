@@ -326,3 +326,53 @@ body.ui-theme.theme-light.personal-tool-page .card {
     min-width: 920px;
   }
 }
+
+
+/* Gestión EC2 dentro de ArcadeCloud OS.
+ * Reutiliza el backend seguro de ec2.php, pero presenta la información como
+ * panel de sistema y deja la terminal únicamente en la superficie clásica.
+ */
+.ec2-panel-shell { display:grid; gap:14px; }
+.ec2-panel-heading {
+  display:flex; align-items:flex-end; justify-content:space-between; gap:16px;
+  padding:4px 2px 2px;
+}
+.ec2-panel-heading h1 { margin:2px 0 4px; font-size:clamp(1.25rem, 2vw, 1.7rem); }
+.ec2-panel-heading p { margin:0; color:var(--text) !important; max-width:760px; }
+.ec2-panel-kicker {
+  color:var(--accent); font-size:.72rem; font-weight:850; letter-spacing:.08em; text-transform:uppercase;
+}
+.personal-tool-page .ec2-panel-shell .card { margin:0; padding:0; overflow:hidden; }
+.ec2-card-heading {
+  display:flex; align-items:center; justify-content:space-between; gap:12px;
+  padding:14px 16px; border-bottom:1px solid var(--border); background:var(--panel-bg2);
+}
+.ec2-card-heading > div { display:flex; align-items:center; gap:10px; min-width:0; }
+.ec2-card-heading i { color:var(--accent); width:22px; text-align:center; font-size:1rem; }
+.ec2-card-heading span span { min-width:0; }
+.ec2-card-heading strong { display:block; font-size:.94rem; }
+.ec2-card-heading small { display:block; margin-top:2px; color:var(--text) !important; font-size:.72rem; }
+.ec2-resource-count {
+  flex:0 0 auto; padding:4px 8px; border:1px solid var(--border); border-radius:999px;
+  background:var(--panel-solid); color:var(--text-strong); font-size:.68rem; font-weight:800;
+}
+.ec2-filter-form { margin:0 !important; padding:14px 16px; }
+.ec2-table-wrap { width:100%; overflow:auto; overscroll-behavior:contain; }
+.ec2-resource-card > .note { margin:0; padding:10px 16px; border-bottom:1px solid var(--border); }
+.ec2-resource-card table { margin:0; min-width:900px; }
+.ec2-resource-card th { top:0; z-index:1; white-space:nowrap; }
+.ec2-resource-card td { line-height:1.35; }
+body.ec2-os-surface { padding:0 !important; background:transparent !important; }
+body.ec2-os-surface .personal-tool-shell {
+  width:100%; max-width:none; margin:0; padding:12px; min-height:100%;
+}
+body.ec2-os-surface .ec2-panel-heading { padding:2px 4px 4px; }
+@media (max-width:700px) {
+  .ec2-panel-shell { gap:10px; }
+  .ec2-card-heading { align-items:flex-start; padding:12px; }
+  .ec2-card-heading small { max-width:250px; }
+  .ec2-filter-form { padding:12px; align-items:stretch; }
+  .ec2-filter-form label { width:100%; margin:0; }
+  .ec2-filter-form input,.ec2-filter-form select,.ec2-filter-form button { width:100%; }
+  body.ec2-os-surface .personal-tool-shell { padding:8px; }
+}

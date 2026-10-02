@@ -31,6 +31,10 @@ $ok(!str_contains($shell, 'data-os-tool="s3-sync"') && !str_contains($shell, 'da
 $ok(str_contains($shell, 'data-tool-title="Actividad y costos"'), 'Enlaces conserva Actividad y costos');
 $ok(str_contains($shell, 'data-window-open="terminalWindow"') && str_contains($shell, 'data-window-open="federationWindow"'), 'Consola y Federation reutilizan ventanas internas existentes');
 $ok(!str_contains($shell, 'href="aws.php" target="_blank"') && !str_contains($shell, 'href="ec2.php" target="_blank"'), 'herramientas propias no fuerzan navegación externa');
+$ec2Panel = (string)file_get_contents($root . '/ec2.php');
+$ok(str_contains($shell, 'href="ec2.php?surface=os"') && str_contains($ec2Panel, '$showServerConsole = $isServerConsoleSuperAdmin && !$isOsSurface;'), 'Gestión EC2 del OS reutiliza ec2.php pero excluye la terminal del servidor');
+$ok(str_contains($ec2Panel, 'ec2-card-heading') && str_contains($ec2Panel, 'ec2-table-wrap'), 'Gestión EC2 organiza filtros, EC2 y RDS en contenedores responsivos');
+$ok(str_contains($ec2Panel, '<?php if ($showServerConsole): ?>'), 'terminal permanece disponible únicamente en la superficie clásica autorizada');
 $ok(str_contains($windows, "this.manager.register(element, app") && str_contains($windows, "const app = 'tool-'"), 'WindowManager registra una tarea independiente por herramienta');
 $ok(str_contains($windows, "page.querySelector('main')") && !str_contains($windows, '<iframe class="os-viewer-frame" title="Herramienta"'), 'cargador importa sólo main, sin iframe ni navbar global');
 $ok(str_contains($windows, "form.matches('[data-os-totp-form]')") && str_contains($windows, 'submitTotpForm(body, target, data, form)'), 'Generador TOTP usa envío AJAX dentro de su ventana');

@@ -18,6 +18,11 @@ use ArcadeCloud\Drive\Http\Controller\BackgroundTaskController;
 use ArcadeCloud\Drive\Http\Controller\FileSecurityController;
 use ArcadeCloud\Drive\Http\Controller\FileKeyRotationController;
 use ArcadeCloud\Drive\Http\Controller\SyncController;
+use ArcadeCloud\Drive\Http\Controller\TextEditorController;
+use ArcadeCloud\Drive\Http\Controller\FolderDocumentController;
+use ArcadeCloud\Drive\Http\Controller\ShareController;
+use ArcadeCloud\Drive\Http\Controller\TranscriptionController;
+use ArcadeCloud\Drive\Http\Controller\AwsFileController;
 use ArcadeCloud\Drive\Http\JsonResponse;
 use ArcadeCloud\Drive\Http\Request;
 use Aws\S3\S3Client;
@@ -72,7 +77,10 @@ foreach ([FileMutationController::class => ['deleteOne','deleteMany','move','mov
     FolderMutationController::class => ['create','delete','move','rename'],
     MoveJobController::class => ['start'], BackgroundTaskController::class => ['action'],
     FileSecurityController::class => ['setMode','unlock','relock'],
-    FileKeyRotationController::class => ['rotate'], SyncController::class => ['run']] as $class => $methods) {
+    FileKeyRotationController::class => ['rotate'], SyncController::class => ['run'],
+    TextEditorController::class => ['save','lintPhp'], FolderDocumentController::class => ['create'],
+    ShareController::class => ['create'], TranscriptionController::class => ['start'],
+    AwsFileController::class => ['textract','translate','rekognition','pollyText','pollyTts','comprehend']] as $class => $methods) {
     foreach ($methods as $method) {
         foreach ([[], ['server' => ['HTTP_X_DRIVE_CSRF' => 'wrong']], ['post' => ['upload_csrf' => ['fixture-token']]],
             ['query' => ['upload_csrf' => 'fixture-token']], ['session' => ['usuario' => 'fixture','user_id' => 2]]] as $case) {

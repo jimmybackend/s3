@@ -161,7 +161,7 @@
 | `drive/renombrar_archivo.php` | `drive/js/archivos.js` |
 | `drive/renombrar_carpeta.php` | `drive/js/carpetas.js` |
 | `drive/server-settings.php` | `drive/src/View/FederationOsAdminRenderer.php`, `drive/js/server-admin.js` |
-| `drive/set_file_security.php` | `drive/tests/web_os_contract_smoke.php`, `drive/js/archivos.js`, `drive/js/file-security.js` |
+| `drive/set_file_security.php` | `drive/tests/web_os_contract_smoke.php`, `drive/js/archivos.js`, `drive/js/file-security.js`, `drive/tests/classic_mutation_csrf_functional.js` |
 | `drive/setup/api.php` | `drive/src/View/FederationModerationPageRenderer.php`, `drive/src/View/FederationReportPageRenderer.php`, `drive/tests/federation_drop_contract_smoke.php`, `drive/tests/fresh_install_contract_smoke.php`, `drive/tests/web_os_contract_smoke.php`, `drive/js/federation-drop.js`, `drive/js/federation-footer.js`, `drive/js/federation-os-admin.js`, `drive/js/setup.js` |
 | `drive/src/Activity/ActivityCostRecorder.php` | ninguna |
 | `drive/src/Activity/ActivityCostRepository.php` | ninguna |
@@ -447,7 +447,7 @@
 | `drive/storage_usage.php` | `drive/js/storage-usage.js` |
 | `drive/subir_archivo.php` | ninguna |
 | `drive/subir_publico.php` | ninguna |
-| `drive/sync_s3_to_db.php` | `drive/js/sincronizar.js` |
+| `drive/sync_s3_to_db.php` | `drive/js/sincronizar.js`, `drive/tests/classic_mutation_csrf_functional.js` |
 | `drive/sync_status.php` | `drive/js/sincronizar.js` |
 | `drive/tests/activity_costs_smoke.php` | ninguna |
 | `drive/tests/activity_retention_regression.php` | ninguna |

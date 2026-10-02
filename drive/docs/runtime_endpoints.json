@@ -1464,7 +1464,8 @@
       "references": [
         "drive/tests/web_os_contract_smoke.php",
         "drive/js/archivos.js",
-        "drive/js/file-security.js"
+        "drive/js/file-security.js",
+        "drive/tests/classic_mutation_csrf_functional.js"
       ]
     },
     {
@@ -2798,7 +2799,7 @@
     },
     {
       "path": "drive/src/Http/Controller/FileKeyRotationController.php",
-      "size": 938,
+      "size": 977,
       "active": false,
       "references": []
     },
@@ -2818,7 +2819,7 @@
     },
     {
       "path": "drive/src/Http/Controller/FileSecurityController.php",
-      "size": 2989,
+      "size": 3106,
       "active": false,
       "references": []
     },
@@ -2956,7 +2957,7 @@
     },
     {
       "path": "drive/src/Http/Controller/SyncController.php",
-      "size": 4690,
+      "size": 4729,
       "active": false,
       "references": []
     },
@@ -3696,7 +3697,8 @@
       "size": 237,
       "active": false,
       "references": [
-        "drive/js/sincronizar.js"
+        "drive/js/sincronizar.js",
+        "drive/tests/classic_mutation_csrf_functional.js"
       ]
     },
     {
@@ -3859,7 +3861,7 @@
     },
     {
       "path": "drive/tests/file_mutation_csrf_regression.php",
-      "size": 5172,
+      "size": 5507,
       "active": false,
       "references": []
     },

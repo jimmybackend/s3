@@ -69,7 +69,7 @@ final class ArcadeCloudDriveAdminHelper
         if ($action === 'status') {
             fwrite(STDOUT, json_encode([
                 'ok' => true,
-                'version' => 20,
+                'version' => 21,
                 'capabilities' => [
                     'env_set_many' => true,
                     'db_aws_settings' => true,
@@ -86,6 +86,7 @@ final class ArcadeCloudDriveAdminHelper
                     'workstation_control' => true,
                     'workstation_document_open' => true,
                     'workstation_document_access_repair' => true,
+                    'workstation_document_liveness' => true,
                     'node_service_control' => true,
                     'local_container_programs' => true,
                 ],
@@ -384,10 +385,8 @@ final class ArcadeCloudDriveAdminHelper
                     '--env',
                     'XDG_RUNTIME_DIR=/run/user/10001',
                     'arcadecloud-workstation',
-                    'libreoffice',
-                    '--nologo',
-                    '--norestore',
-                    '/workspace/' . $relative,
+                    '/usr/local/bin/arcadecloud-office-document',
+                    $relative,
                 ]);
             }
 

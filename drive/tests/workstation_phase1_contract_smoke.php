@@ -19,6 +19,7 @@ $health = (string)file_get_contents($repo . '/drive/bin/workstation_health.php')
 
 workstationContract(str_contains($dockerfile, 'FROM ubuntu:24.04'), 'runtime gráfico usa Ubuntu estable aislado del host');
 workstationContract(str_contains($dockerfile, 'libreoffice'), 'imagen instala LibreOffice');
+workstationContract(!str_contains($entry, "nohup su -s /bin/bash arcade -c 'libreoffice --nologo --norestore'"), 'Workstation no prearranca LibreOffice sin display gráfico');
 workstationContract(str_contains($dockerfile, 'xfce4'), 'imagen instala escritorio XFCE');
 workstationContract(str_contains($dockerfile, 'google-chrome-stable'), 'imagen instala Google Chrome');
 workstationContract(str_contains($dockerfile, 'arcadecloud-chrome-helper.desktop'), 'imagen registra Chrome como helper XFCE');

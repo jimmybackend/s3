@@ -41,7 +41,7 @@ try {
 
 $fileId = max(0, (int)($_GET['file_id'] ?? 0));
 $target = strtolower(trim((string)($_GET['target'] ?? 'novnc')));
-if (!in_array($target, ['novnc', 'guacamole'], true)) {
+if (!in_array($target, ['novnc', 'guacamole', 'kde'], true)) {
     $target = 'novnc';
 }
 

@@ -261,8 +261,7 @@ $isExplorerFragment = (string)($_GET['_os_fragment'] ?? '') === 'explorer';
   <main class="os-desktop" id="osDesktop">
     <button class="os-desktop-icon" type="button" data-window-open="nodeWindow">
       <span class="os-icon-tile"><i class="fas fa-server"></i></span>
-      <span>Mi nodo</span>
-      <small class="os-node-local-label" data-node-local-label><?= $e($desktopNodeLabel) ?></small>
+      <span data-node-local-label><?= $e($desktopNodeLabel) ?></span>
     </button>
 
     <button class="os-desktop-icon" type="button" data-app-open="explorer">
@@ -616,7 +615,7 @@ $isExplorerFragment = (string)($_GET['_os_fragment'] ?? '') === 'explorer';
           <a class="os-app-card is-ready" data-launcher-app="linux-xfce" href="office-launch.php" target="_blank" rel="noopener" title="Abrir escritorio Linux remoto por noVNC"><i class="fab fa-linux"></i><strong>Linux XFCE</strong><span>noVNC</span></a>
           <a class="os-app-card is-ready" data-launcher-app="guacamole" href="office-launch.php?target=guacamole" target="_blank" rel="noopener" title="Abrir escritorio Linux remoto por Guacamole RDP"><i class="fas fa-headset"></i><strong>Guacamole</strong><span>Audio + micrófono</span></a>
           <a class="os-app-card is-ready" data-launcher-app="office-web" href="https://office.esforzados.com/" target="_blank" rel="noopener" title="Suite ofimática en la nube (enlace directo)"><i class="fas fa-file-lines"></i><strong>Office Web</strong><span>Enlace directo</span></a>
-          <a class="os-app-card is-ready" data-launcher-app="kde-plasma" href="https://kde.esforzados.com/" target="_blank" rel="noopener" title="Abrir escritorio KDE Plasma remoto por Guacamole"><i class="fas fa-desktop"></i><strong>KDE Plasma</strong><span>Guacamole</span></a>
+          <a class="os-app-card is-ready" data-launcher-app="kde-plasma" href="office-launch.php?target=kde" target="_blank" rel="noopener" title="Abrir escritorio KDE Plasma remoto por Guacamole"><i class="fas fa-desktop"></i><strong>KDE Plasma</strong><span>Guacamole</span></a>
           <button type="button" class="os-app-card" disabled><i class="fas fa-pen-ruler"></i><strong>Diagramas</strong><span>Próximamente</span></button>
           <button type="button" class="os-app-card" disabled><i class="fas fa-image"></i><strong>Imagen</strong><span>Próximamente</span></button>
           <button type="button" class="os-app-card" disabled><i class="fas fa-wave-square"></i><strong>Audio</strong><span>Próximamente</span></button>

@@ -41,6 +41,8 @@ $ok(str_contains($windows, "form.matches('[data-os-totp-form]')") && str_contain
 $ok(str_contains($windows, "'X-ArcadeCloud-Embed': '1'") && str_contains($windows, 'payload.result.code'), 'Generador TOTP consume resultado JSON sin navegar');
 $ok(str_contains($windows, "data.set('arcadecloud_os', '1')"), 'Generador TOTP conserva marcador embebido también en POST aunque el proxy descarte headers o query');
 $ok(str_contains($windows, "data.set('response_format', 'json')"), 'Generador TOTP solicita JSON explícitamente y no depende sólo del modo embebido');
+$ok(str_contains($windows, "const endpoint = new URL('aws.php', this.window.location.href)") && str_contains($windows, 'fetch(endpoint.toString()'), 'Generador TOTP publica siempre al endpoint canónico aws.php y no confía en action importado');
+$ok(str_contains($windows, 'response.redirected') && str_contains($windows, 'ruta final:'), 'Generador TOTP informa ruta final y redirección sin exponer semillas cuando recibe HTML');
 $ok(str_contains($windows, "contentType.includes('application/json')"), 'Generador TOTP valida el contrato JSON antes de decodificar');
 $ok(str_contains($totpController, "queryString('arcadecloud_os')") && str_contains($totpController, "JsonResponse::send(['ok' => false"), 'endpoint TOTP conserva JSON tras proxy y también en errores de acceso');
 $ok(str_contains($totpController, "postString('arcadecloud_os')") && str_contains($totpController, "serverString('HTTP_X_ARCADECLOUD_EMBED')"), 'endpoint TOTP reconoce marcadores embebidos por header, query y POST');

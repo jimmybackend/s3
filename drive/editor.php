@@ -118,7 +118,7 @@ button:disabled {
         <button type="button" onclick="rehacer()">Rehacer</button>
         <button type="button" onclick="buscar()">Buscar</button>
         <button type="button" onclick="reemplazar()">Reemplazar</button>
-        <button type="button" onclick="irALinea()">Ir a lÂ¨Âªnea</button>
+        <button type="button" onclick="irALinea()">Ir a l¨ªnea</button>
         <button type="button" onclick="toggleWordWrap()">Word wrap</button>
         <button type="button" id="btnValidarPhp" onclick="validarPHP()" style="display:none;">Validar PHP</button>
     </div>
@@ -225,7 +225,7 @@ function aplicarLenguaje(lang) {
     document.getElementById('modoArchivo').textContent = lang;
     actualizarBotonValidar();
 
-    // Validaciones nativas bÂ¨Â¢sicas donde Monaco ayuda mÂ¨Â¢s.
+    // Validaciones nativas b¨¢sicas donde Monaco ayuda m¨¢s.
     if (lang === 'javascript' || lang === 'typescript') {
         monaco.languages.typescript.javascriptDefaults.setDiagnosticsOptions({
             noSemanticValidation: false,
@@ -424,7 +424,7 @@ async function validarPHP() {
         monaco.editor.setModelMarkers(editor.getModel(), 'php-lint', markers);
 
         if (json.valido) {
-            setStatus('PHP vÂ¨Â¢lido', 'ok');
+            setStatus('PHP v¨¢lido', 'ok');
             return;
         }
 

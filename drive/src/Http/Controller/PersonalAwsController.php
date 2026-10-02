@@ -20,6 +20,7 @@ final class PersonalAwsController
 
     public function handle(): never
     {
+        $jsonGenerate = $this->request->method() === 'POST' && $this->request->postString('action') === 'generate' && $this->request->postString('response_format') === 'json';
         header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
         header('Pragma: no-cache');
         header('Referrer-Policy: no-referrer');
@@ -30,14 +31,14 @@ final class PersonalAwsController
         $state = $access->state();
 
         if ($state === 'forbidden') {
-            if ($this->isEmbeddedRequest()) {
+            if ($jsonGenerate || $this->isEmbeddedRequest()) {
                 JsonResponse::send(['ok' => false, 'result' => null, 'error' => 'Esta herramienta personal no está disponible para esta cuenta.'], 403);
             }
             $this->renderer->forbidden();
         }
 
         if ($state === 'locked') {
-            if ($this->isEmbeddedRequest() && $this->request->postString('action') === 'generate') {
+            if ($jsonGenerate || ($this->isEmbeddedRequest() && $this->request->postString('action') === 'generate')) {
                 JsonResponse::send(['ok' => false, 'result' => null, 'error' => 'La sesión de la herramienta TOTP está bloqueada.'], 401);
             }
             if ($this->request->method() === 'POST' && $this->request->postString('action') === 'unlock') {
@@ -70,7 +71,7 @@ final class PersonalAwsController
                 $error = $e->getMessage();
             }
 
-            if ($this->isEmbeddedRequest()) {
+            if ($jsonGenerate || $this->isEmbeddedRequest()) {
                 JsonResponse::send([
                     'ok' => $error === '',
                     'result' => $result,

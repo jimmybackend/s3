@@ -6,6 +6,7 @@ namespace ArcadeCloud\Drive\Media;
 use ArcadeCloud\Drive\Activity\ActivityCostRecorder;
 use ArcadeCloud\Drive\Aws\Ec2Gateway;
 use ArcadeCloud\Drive\Office\OfficeActivityProbe;
+use ArcadeCloud\Drive\Office\OfficeSessionReconciler;
 use ArcadeCloud\Drive\System\Ec2InstanceIdentityService;
 use mysqli;
 use RuntimeException;
@@ -25,6 +26,7 @@ final class MediaWorkerNodeService
     private ?Ec2Gateway $ec2 = null;
     private MediaWorkerNodeSessionRepository $sessions;
     private ActivityCostRecorder $activity;
+    private ?string $lastBlockerSignature = null;
 
     public function __construct(private mysqli $db)
     {
@@ -294,6 +296,9 @@ final class MediaWorkerNodeService
             'warning_seconds' => self::IDLE_WARNING_SECONDS,
             'warning' => $warning,
             'shutdown_in_seconds' => $shutdownIn,
+            'blockers' => $state === 'running'
+                ? $this->shutdownBlockers(new MediaProcessingJobRepository($this->db))
+                : [],
         ];
     }
 
@@ -303,8 +308,14 @@ final class MediaWorkerNodeService
             throw new RuntimeException('No hay una EC2 de alto rendimiento configurada.');
         }
 
-        if ($this->hasShutdownBlockers($jobs)) {
-            throw new RuntimeException('El nodo tiene tareas multimedia u Office activas y no se puede apagar.');
+        $this->reconcileOfficeSessions();
+        $blockers = $this->shutdownBlockers($jobs);
+        $this->logBlockerState($blockers);
+        if ($blockers !== []) {
+            throw new RuntimeException(
+                'El nodo tiene tareas multimedia u Office activas y no se puede apagar. '
+                . 'Bloqueos: ' . implode(', ', $blockers) . '.'
+            );
         }
 
         // El endpoint de apagado interactivo sólo es válido durante la ventana
@@ -346,6 +357,8 @@ final class MediaWorkerNodeService
         $active = $this->sessions->activeForInstance($this->instanceId);
         if ($active === null) return;
 
+        $this->reconcileOfficeSessions();
+
         // Una sesión "stopping" representa una orden de apagado ya emitida.
         // Nunca se reutiliza su IdleSince para enviar otro StopInstances. AWS
         // decide el estado físico; si ya está stopped cerramos el registro.
@@ -358,7 +371,9 @@ final class MediaWorkerNodeService
             return;
         }
 
-        if ($this->hasShutdownBlockers($jobs)) {
+        $blockers = $this->shutdownBlockers($jobs);
+        $this->logBlockerState($blockers);
+        if ($blockers !== []) {
             $this->sessions->clearIdle((string)$active['session_id']);
             return;
         }
@@ -390,7 +405,9 @@ final class MediaWorkerNodeService
         }
 
         $active = $this->sessions->activeForInstance($this->instanceId);
-        if ($this->hasShutdownBlockers($jobs) || !$this->idleDeadlineReached($active, true)) {
+        $blockers = $this->shutdownBlockers($jobs);
+        $this->logBlockerState($blockers);
+        if ($blockers !== [] || !$this->idleDeadlineReached($active, true)) {
             if ($active !== null) $this->sessions->clearIdle((string)$active['session_id']);
             return;
         }
@@ -400,10 +417,48 @@ final class MediaWorkerNodeService
         $this->ec2->stop($this->instanceId, false);
     }
 
+    /** @return array<int,string> */
+    private function shutdownBlockers(MediaProcessingJobRepository $jobs): array
+    {
+        $blockers = [];
+        if ($jobs->hasActiveJobs()) {
+            $blockers[] = 'multimedia_activa';
+        }
+        if ((new OfficeActivityProbe($this->db))->hasActiveSessions($this->instanceId)) {
+            $blockers[] = 'office_activo';
+        }
+        return $blockers;
+    }
+
     private function hasShutdownBlockers(MediaProcessingJobRepository $jobs): bool
     {
-        return $jobs->hasActiveJobs()
-            || (new OfficeActivityProbe($this->db))->hasActiveSessions($this->instanceId);
+        return $this->shutdownBlockers($jobs) !== [];
+    }
+
+    private function reconcileOfficeSessions(): void
+    {
+        if ($this->instanceId === '') return;
+        $result = (new OfficeSessionReconciler($this->db))->reconcile($this->instanceId);
+        if ((int)($result['reconciled'] ?? 0) > 0) {
+            error_log(
+                '[ArcadeCloud media-node] sesiones Office reconciliadas: '
+                . (int)$result['reconciled']
+            );
+        }
+    }
+
+    /** @param array<int,string> $blockers */
+    private function logBlockerState(array $blockers): void
+    {
+        sort($blockers, SORT_STRING);
+        $signature = implode(',', $blockers);
+        if ($signature === $this->lastBlockerSignature) return;
+        $this->lastBlockerSignature = $signature;
+        error_log(
+            $signature === ''
+                ? '[ArcadeCloud media-node] autoapagado libre de bloqueos; inicia/continúa contador.'
+                : '[ArcadeCloud media-node] autoapagado pausado por: ' . $signature
+        );
     }
 
     private function idleDeadlineReached(?array $session, bool $includeWarning): bool

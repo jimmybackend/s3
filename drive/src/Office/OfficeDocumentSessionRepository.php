@@ -218,10 +218,51 @@ final class OfficeDocumentSessionRepository
     }
 
     /** @return array<int,array<string,mixed>> */
+    public function activeCandidates(string $instanceId): array
+    {
+        if (!preg_match('/^i-[0-9a-f]{8,17}$/i', $instanceId)) {
+            throw new RuntimeException('Instancia Office inválida.');
+        }
+        $stmt = $this->db->prepare(
+            "SELECT * FROM OfficeDocumentSessions
+             WHERE InstanceId=? AND Status IN ('preparing','ready','syncing','conflict')
+             ORDER BY id_ ASC"
+        );
+        if (!$stmt) throw new RuntimeException('No se pudieron consultar sesiones Office activas.');
+        $stmt->bind_param('s', $instanceId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $rows = [];
+        while ($result && ($row = $result->fetch_assoc())) {
+            $rows[] = $this->normalize($row);
+        }
+        if ($result) $result->free();
+        $stmt->close();
+        return $rows;
+    }
+
+    public function markClosedIfUnchanged(string $sessionId, int $mtime, int $size): bool
+    {
+        $stmt = $this->db->prepare(
+            "UPDATE OfficeDocumentSessions
+             SET Status='closed',ClosedAt=UTC_TIMESTAMP(),UpdatedAt=UTC_TIMESTAMP()
+             WHERE SessionId=? AND Status='ready'
+               AND LastSyncedAt IS NOT NULL
+               AND LastWorkspaceMtime=? AND LastWorkspaceSize=?"
+        );
+        if (!$stmt) return false;
+        $stmt->bind_param('sii', $sessionId, $mtime, $size);
+        $stmt->execute();
+        $changed = $stmt->affected_rows === 1;
+        $stmt->close();
+        return $changed;
+    }
+
+    /** @return array<int,array<string,mixed>> */
     public function cleanupCandidates(int $olderThanMinutes = 30): array
     {
         $olderThanMinutes = max(10, min(1440, $olderThanMinutes));
-        $sql = "SELECT SessionId,WorkspaceRelative FROM OfficeDocumentSessions "
+        $sql = "SELECT SessionId,WorkspaceRelative,LastWorkspaceMtime,LastWorkspaceSize FROM OfficeDocumentSessions "
             . "WHERE Status='closed' AND ClosedAt IS NOT NULL "
             . "AND ClosedAt < (UTC_TIMESTAMP() - INTERVAL {$olderThanMinutes} MINUTE) LIMIT 50";
         $result = $this->db->query($sql);
@@ -232,6 +273,8 @@ final class OfficeDocumentSessionRepository
             $rows[] = [
                 'session_id' => (string)($row['SessionId'] ?? ''),
                 'workspace_relative' => (string)($row['WorkspaceRelative'] ?? ''),
+                'last_workspace_mtime' => (int)($row['LastWorkspaceMtime'] ?? 0),
+                'last_workspace_size' => (int)($row['LastWorkspaceSize'] ?? 0),
             ];
         }
         return $rows;
@@ -267,6 +310,7 @@ final class OfficeDocumentSessionRepository
                 : null,
             'last_synced_at' => (string)($row['LastSyncedAt'] ?? ''),
             'created_at' => (string)($row['CreatedAt'] ?? ''),
+            'updated_at' => (string)($row['UpdatedAt'] ?? ''),
             'closed_at' => (string)($row['ClosedAt'] ?? ''),
         ];
     }

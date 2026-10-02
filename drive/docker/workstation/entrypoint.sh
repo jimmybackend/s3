@@ -7,6 +7,12 @@ VNC_GEOMETRY="${VNC_GEOMETRY:-1600x900}"
 VNC_DEPTH="${VNC_DEPTH:-24}"
 
 export HOME=/home/arcade
+export TZ="${TZ:-America/Mexico_City}"
+
+if [[ -e "/usr/share/zoneinfo/$TZ" ]]; then
+  ln -snf "/usr/share/zoneinfo/$TZ" /etc/localtime
+  printf '%s\n' "$TZ" > /etc/timezone
+fi
 
 mkdir -p \
   /home/arcade/.vnc \

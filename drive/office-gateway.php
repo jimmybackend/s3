@@ -458,6 +458,8 @@ button{width:100%;margin-top:12px;padding:13px;border:1px solid var(--accent);bo
 .small{font-size:12px;color:var(--soft)}
 .office-document-badge{position:fixed;z-index:40;right:12px;top:10px;max-width:min(520px,70vw);padding:7px 11px;border:1px solid #2f8c59;border-radius:9px;background:#061726e8;color:#dfffea;font-size:12px;box-shadow:0 6px 24px #0007}
 .office-document-badge.is-conflict{border-color:#d49935;color:#ffd993}
+.office-idle-status{position:fixed;z-index:40;left:12px;top:10px;padding:7px 11px;border:1px solid #2d6784;border-radius:9px;background:#061726e8;color:#ccecff;font-size:12px;box-shadow:0 6px 24px #0007}
+.office-idle-status.is-paused{border-color:#d49935;color:#ffd993}
 </style>
 </head>
 <body>
@@ -468,6 +470,7 @@ button{width:100%;margin-top:12px;padding:13px;border:1px solid var(--accent);bo
     <?= $escape($officeDocumentName) ?> · sincronizado con ArcadeCloud
   </div>
   <?php endif; ?>
+  <div class="office-idle-status" id="officeIdleStatus">Autoapagado listo · esperando inactividad</div>
   <iframe id="officeFrame"
           src="<?= $officeDesktopTarget === 'guacamole' ? '/guacamole/' : '/vnc.html?path=websockify&amp;resize=remote&amp;autoconnect=true' ?>"
           title="<?= $officeDesktopTarget === 'guacamole' ? 'ArcadeCloud Guacamole RDP' : 'ArcadeCloud Office' ?>"
@@ -493,6 +496,32 @@ button{width:100%;margin-top:12px;padding:13px;border:1px solid var(--accent);bo
   const throttleMs = 20000;
   const hasDocument = <?= ($officeFileId > 0 && preg_match('/^[a-f0-9]{32}$/', $officeDocumentSessionId)) ? 'true' : 'false' ?>;
   const documentBadge = document.getElementById('officeDocumentBadge');
+  const idleStatus = document.getElementById('officeIdleStatus');
+
+  function formatIdle(seconds) {
+    const value = Math.max(0, Math.floor(Number(seconds || 0)));
+    const minutes = Math.floor(value / 60);
+    const rest = value % 60;
+    return String(minutes).padStart(2, '0') + ':' + String(rest).padStart(2, '0');
+  }
+
+  function renderIdleStatus(idle) {
+    if (!idleStatus) return;
+    const blockers = Array.isArray(idle?.blockers) ? idle.blockers.map(String) : [];
+    idleStatus.classList.toggle('is-paused', blockers.length > 0);
+    if (blockers.length > 0) {
+      const labels = blockers.map((item) => item === 'office_activo'
+        ? 'Office activo'
+        : (item === 'multimedia_activa' ? 'multimedia activa' : item));
+      idleStatus.textContent = 'Autoapagado pausado: ' + labels.join(', ');
+      return;
+    }
+    const elapsed = Math.max(0, Number(idle?.idle_elapsed_seconds || 0));
+    const grace = Math.max(0, Number(idle?.idle_grace_seconds || 0));
+    idleStatus.textContent = elapsed > 0
+      ? 'Inactivo ' + formatIdle(elapsed) + ' / ' + formatIdle(grace)
+      : 'Autoapagado listo · esperando inactividad';
+  }
 
   async function syncDocument() {
     if (!hasDocument) return;
@@ -573,6 +602,7 @@ button{width:100%;margin-top:12px;padding:13px;border:1px solid var(--accent);bo
       const data = await r.json();
       if (!r.ok || data?.ok !== true) return;
       const idle = data.idle || {};
+      renderIdleStatus(idle);
       if (idle.warning === true && String(idle.state || '') === 'running') {
         remaining = Math.max(0, Math.ceil(Number(idle.shutdown_in_seconds || 0)));
         count.textContent = String(remaining);

@@ -31,6 +31,9 @@ $officeInstaller = (string)file_get_contents($repo . '/drive/bin/install_office_
 $workstationInstaller = (string)file_get_contents($repo . '/drive/bin/install_workstation_node.sh');
 $internalInstaller = (string)file_get_contents($repo . '/drive/bin/install_workstation_internal_gateway.sh');
 $node = (string)file_get_contents($repo . '/drive/src/Media/MediaWorkerNodeService.php');
+$reconciler = (string)file_get_contents($repo . '/drive/src/Office/OfficeSessionReconciler.php');
+$documentMonitor = (string)file_get_contents($repo . '/drive/docker/workstation/arcadecloud-office-document');
+$computeIdle = (string)file_get_contents($repo . '/drive/js/compute-node-idle.js');
 
 officeGatewayContract(
     str_contains($so, 'href="office-launch.php"')
@@ -153,9 +156,9 @@ officeGatewayContract(
     str_contains($helper, "'DISPLAY=:1'")
     && str_contains($helper, "'HOME=/home/arcade'")
     && str_contains($helper, "'XDG_RUNTIME_DIR=/run/user/10001'")
-    && str_contains($helper, "'libreoffice'")
-    && str_contains($helper, "'/workspace/' . \$relative"),
-    'helper abre documentos LibreOffice dentro del display gráfico noVNC'
+    && str_contains($helper, "'/usr/local/bin/arcadecloud-office-document'")
+    && str_contains($helper, "\$relative"),
+    'helper abre documentos mediante wrapper monitorizado dentro del display gráfico'
 );
 
 officeGatewayContract(
@@ -289,7 +292,7 @@ officeGatewayContract(
 );
 
 officeGatewayContract(
-    str_contains($helper, "'version' => 20")
+    str_contains($helper, "'version' => 21")
     && str_contains($helper, "'workstation_control' => true")
     && str_contains($helper, "'workstation_document_open' => true")
     && str_contains($helper, "if (\$action === 'workstation-open-document')")
@@ -320,6 +323,31 @@ officeGatewayContract(
     && str_contains($node, 'ARCADECLOUD_MEDIA_WORKER_IDLE_GRACE_SECONDS')
     && str_contains($node, 'hasActiveJobs()'),
     'autoapagado existente conserva mínimo de 20 minutos y protege trabajos multimedia'
+);
+
+officeGatewayContract(
+    str_contains($documentMonitor, '.arcadecloud-office-managed')
+    && str_contains($documentMonitor, '.arcadecloud-office-active')
+    && str_contains($documentMonitor, 'UserInstallation=file://')
+    && str_contains($documentMonitor, 'touch "$active"'),
+    'cada documento Office nuevo publica prueba de proceso vivo con perfil LibreOffice aislado'
+);
+
+officeGatewayContract(
+    str_contains($reconciler, 'office_legacy_session')
+    && str_contains($reconciler, 'office_unsynced_workspace')
+    && str_contains($reconciler, 'markClosedIfUnchanged')
+    && str_contains($reconciler, 'PREPARING_STALE_SECONDS = 900'),
+    'reconciliación cierra sólo sesiones demostrablemente abandonadas y conserva legadas o no sincronizadas'
+);
+
+officeGatewayContract(
+    str_contains($node, 'OfficeSessionReconciler')
+    && str_contains($node, 'autoapagado pausado por:')
+    && str_contains($node, "'blockers'")
+    && str_contains($computeIdle, 'Inactivo ')
+    && str_contains($computeIdle, 'Autoapagado pausado:'),
+    'autoapagado informa bloqueos y contador visible de inactividad'
 );
 
 officeGatewayContract(

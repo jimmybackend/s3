@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+relative="${1:-}"
+if [[ ! "$relative" =~ ^sessions/[a-f0-9]{32}/[^/[:cntrl:]]{1,220}$ ]]; then
+  echo "Ruta documental inválida." >&2
+  exit 64
+fi
+
+document="/workspace/$relative"
+session_dir="${document%/*}"
+managed="$session_dir/.arcadecloud-office-managed"
+active="$session_dir/.arcadecloud-office-active"
+profile="$session_dir/.libreoffice-profile"
+
+[[ -f "$document" ]] || { echo "Documento no encontrado." >&2; exit 2; }
+mkdir -p "$profile"
+touch "$managed" "$active"
+
+cleanup() {
+  rm -f "$active"
+}
+trap cleanup EXIT INT TERM
+
+libreoffice \
+  --nologo \
+  --norestore \
+  --nofirststartwizard \
+  "-env:UserInstallation=file://$profile" \
+  "$document" &
+office_pid=$!
+
+while kill -0 "$office_pid" >/dev/null 2>&1; do
+  touch "$active"
+  sleep 10
+done
+
+wait "$office_pid"

@@ -25,3 +25,12 @@
   .compute-idle-card{padding:18px 14px}
   .compute-idle-actions button{flex:1 1 140px}
 }
+
+.compute-idle-status{
+  position:fixed;right:12px;bottom:54px;z-index:9000;max-width:min(420px,88vw);
+  padding:7px 10px;border:1px solid rgba(80,190,255,.28);border-radius:9px;
+  background:rgba(7,24,39,.92);color:#bcd4e6;font-size:12px;
+  box-shadow:0 6px 24px rgba(0,0,0,.3);pointer-events:none
+}
+.compute-idle-status.is-paused{border-color:rgba(240,184,79,.42);color:#ffd58a}
+.compute-idle-status[hidden]{display:none!important}

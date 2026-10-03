@@ -1,6 +1,6 @@
 # Validación de producción de ArcadeLink
 
-Fecha de corte: **24 de septiembre de 2026**.
+Fecha de corte: **3 de octubre de 2026**.
 
 Este documento separa lo que ya fue probado manualmente en producción de lo que sólo está cubierto por CI o sigue pendiente de validación entre nodos.
 
@@ -54,13 +54,17 @@ Las pruebas automáticas verifican, entre otras cosas:
 - [x] single, collection y FederationDrop comparten `application/vnd.arcadecloud.arcadelink`;
 - [x] no se listan buckets/objetos S3 para resolver un ArcadeLink;
 - [x] failover de ubicaciones no requiere quorum.
+- [x] el protocolo registra entregas por recurso mediante `delivery.record`.
+- [x] el catálogo persiste `FederationResourceDeliveries` y `FederationResourceDeliverySources`.
+- [x] la descarga pública puede ensamblar un recurso desde varias ubicaciones y registrar los nodos fuente.
 
 ## Pendiente de validación manual
 
 ### Prioridad alta
 
-- [ ] **Dos nodos reales, origen + mirror/provider**: abrir un ArcadeLink desde el segundo nodo y descargar el recurso servido por el origen.
+- [ ] **Dos nodos reales, origen + mirror/provider**: abrir un ArcadeLink desde el segundo nodo y descargar el recurso servido por el origen; confirmar además el registro de entrega en ambos lados.
 - [ ] **Failover real de descarga**: publicar el mismo recurso en dos ubicaciones, apagar la preferida y comprobar que la siguiente ubicación responda sin intervención manual.
+- [ ] **Multisource real**: descargar un recurso con al menos dos ubicaciones activas, comprobar que el ensamblaje termina correctamente y que el historial identifica cada nodo fuente usado.
 - [ ] **Colección con orígenes distintos**: un mismo `.arcadelink` que contenga recursos cuyo `origin_node_id` pertenezca a nodos diferentes.
 - [ ] **Recurso PUBLIC + copy_allowed con réplica física**: confirmar descarga desde la réplica y luego desde origen al retirar la réplica.
 - [ ] **Nodo que vuelve tarde**: apagar un nodo, volverlo a encender y comprobar presencia, catálogo y disponibilidad sin recrear el ArcadeLink.
@@ -79,6 +83,6 @@ Las pruebas automáticas verifican, entre otras cosas:
 
 ArcadeLink puede considerarse cerrado para operación **local/origen único** con los casos de uno y varios archivos ya probados en producción.
 
-Para considerar cerrado el comportamiento **federado mult nodo**, deben completarse al menos los cinco casos de prioridad alta anteriores.
+Para considerar cerrado el comportamiento **federado mult nodo**, deben completarse todos los casos de prioridad alta anteriores, incluido multisource real y su historial de entrega.
 
 Cuando una prueba manual se complete, actualiza este documento indicando fecha, topología y resultado. No marques como probado en producción un caso que sólo esté cubierto por CI.

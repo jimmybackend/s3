@@ -82,3 +82,34 @@
   .os-system-table.os-system-mobile-cards .actions{display:flex;grid-template-columns:none;flex-wrap:wrap}
   .os-system-table.os-system-mobile-cards .actions::before{width:100%}
 }
+
+/* Exact Mi nodo layout primitives reused by embedded system applications. */
+.os-system-shell .os-node-dashboard{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:12px 0}
+.os-system-shell .os-node-card{min-width:0;padding:14px;border:1px solid var(--osp-border);border-radius:12px;background:var(--osp-surface);box-shadow:none}
+.os-system-shell .os-node-card h3{font-size:.96rem;margin:0 0 10px;color:var(--osp-text)}
+.os-system-shell .os-node-card dl{display:grid;grid-template-columns:minmax(100px,.8fr) minmax(0,1.2fr);gap:6px 10px;margin:0;font-size:.82rem}
+.os-system-shell .os-node-card dt{color:var(--osp-soft);font-weight:400}
+.os-system-shell .os-node-card dd{margin:0;color:var(--osp-text);overflow-wrap:anywhere;text-align:right}
+.os-system-shell .os-node-card-wide{grid-column:1/-1}
+.os-system-shell .os-node-list{display:grid;gap:7px}
+.os-system-shell .os-node-list-row{display:flex;gap:10px;justify-content:space-between;font-size:.82rem;border-bottom:1px solid var(--osp-divider);padding-bottom:5px}
+.os-system-shell .os-node-list-row:last-child{border-bottom:0;padding-bottom:0}
+.os-system-shell .os-node-list-row span:first-child{color:var(--osp-soft)}
+.os-system-shell .os-node-list-row span:last-child{text-align:right;color:var(--osp-text);overflow-wrap:anywhere}
+.os-system-shell .os-node-badge{padding:3px 7px;border-radius:999px;font-size:.68rem;background:rgba(137,147,158,.14);color:var(--osp-soft)}
+.os-system-shell .os-node-badge-ok{background:rgba(87,227,137,.14);color:var(--osp-ok)}
+.os-system-shell .os-node-badge-warning{background:rgba(242,193,78,.14);color:var(--osp-warning)}
+.os-system-shell .os-node-badge-danger{background:rgba(255,107,107,.14);color:var(--osp-danger)}
+.os-system-shell .os-node-card-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.os-system-shell .os-node-card-actions button,.os-system-shell .os-node-card-actions a{border:1px solid var(--osp-border);border-radius:7px;background:rgba(38,198,255,.08);color:var(--osp-text);font-size:.7rem;padding:6px 9px;text-decoration:none}
+.os-system-shell .os-node-card-actions button:hover,.os-system-shell .os-node-card-actions a:hover{border-color:var(--osp-accent);background:rgba(38,198,255,.14);color:var(--osp-accent-2)}
+.os-system-shell .os-node-card-actions .is-danger{border-color:rgba(255,107,107,.35);color:#ffb2b2}
+.os-system-shell .os-node-card-subtitle{margin:-4px 0 10px;color:var(--osp-soft);font-size:.72rem;line-height:1.4}
+@media(max-width:800px){
+  .os-system-shell .os-node-dashboard{grid-template-columns:1fr}
+  .os-system-shell .os-node-card-wide{grid-column:auto}
+  .os-system-shell .os-node-card dl{grid-template-columns:minmax(90px,.9fr) minmax(0,1.1fr)}
+}
+@media(max-width:520px){
+  .os-system-shell .os-node-card{padding:11px}
+}

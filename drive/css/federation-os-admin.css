@@ -74,3 +74,25 @@ body.federation-os-admin{margin:0}
   .federation-os-admin .federation-os-jumpbar a{flex:0 0 auto}
   .federation-os-admin .federation-os-jumpbar a span{display:inline}
 }
+
+/* Exact Mi nodo composition for FederationCloud. */
+.federation-node-dashboard{margin-top:12px}
+.federation-node-title{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 10px}
+.federation-node-title h3{margin:0!important;font-size:.96rem!important;color:var(--osp-text)}
+.federation-node-subtitle{margin-top:14px;padding-top:12px;border-top:1px solid var(--osp-divider)}
+.federation-os-admin .federation-os-peer-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px;padding:0}
+.federation-os-admin .federation-os-peer-card,
+.federation-os-admin .federation-os-provider-card{margin:0;padding:11px!important;background:var(--osp-subtle)!important;border:1px solid var(--osp-divider)!important;border-radius:9px!important;box-shadow:none!important}
+.federation-os-admin #federationProviderPendingList,
+.federation-os-admin #federationProviderActiveList{display:grid;gap:9px;margin:0!important}
+.federation-os-admin .federation-os-provider-card dl,
+.federation-os-admin .federation-os-peer-card dl{font-size:.78rem!important}
+.federation-os-admin .federation-os-help{padding:0;margin:0 0 11px;color:var(--osp-soft)}
+.federation-os-admin .federation-os-empty{margin:0}
+.federation-os-admin #modalServerAdmin>.federation-os-help{padding:0;margin-bottom:10px}
+.federation-os-admin #modalServerAdmin .federation-os-settings-table{border-color:var(--osp-divider);background:var(--osp-subtle)}
+.federation-os-admin #modalServerAdmin .table{font-size:.76rem}
+.federation-os-admin #federationAboutModeration .btn{margin-top:10px}
+@media(max-width:760px){
+  .federation-os-admin .federation-os-peer-grid{grid-template-columns:1fr}
+}

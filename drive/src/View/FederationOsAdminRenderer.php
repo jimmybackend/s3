@@ -63,45 +63,44 @@ final class FederationOsAdminRenderer
     <?php endif; ?>
   </nav>
 
-  <section class="federation-os-card os-system-card" id="federationAboutNode">
-    <div class="federation-os-section-title os-system-section-head">
-      <div><i class="fas fa-server"></i><span>Este nodo</span></div>
-      <span id="federationAboutHealth" class="badge badge-secondary">consultando…</span>
-    </div>
-    <div class="federation-os-stat-grid os-system-stat-grid">
-      <article class="os-system-stat"><span>Nombre</span><strong id="federationAboutNodeName">—</strong></article>
-      <article class="os-system-stat"><span>Node ID</span><strong id="federationAboutNodeId">—</strong></article>
-      <article class="os-system-stat"><span>Nodos activos</span><strong id="federationAboutConnected">—</strong></article>
-      <article class="os-system-stat"><span>Ventana activa</span><strong id="federationAboutWindow">—</strong></article>
-    </div>
-    <div class="federation-os-detail-list os-system-detail-list">
-      <div><span>Public URL</span><strong id="federationAboutPublicUrl">—</strong></div>
-      <div><span>Federation URL</span><strong id="federationAboutFederationUrl">—</strong></div>
-      <div><span>Seed</span><strong id="federationAboutSeed">—</strong></div>
-    </div>
-  </section>
+  <div class="os-node-dashboard federation-node-dashboard">
+    <section class="os-node-card os-node-card-wide" id="federationAboutNode">
+      <div class="federation-node-title">
+        <h3>Este nodo</h3>
+        <span id="federationAboutHealth" class="os-node-badge">consultando…</span>
+      </div>
+      <dl>
+        <dt>Nombre</dt><dd id="federationAboutNodeName">—</dd>
+        <dt>Node ID</dt><dd id="federationAboutNodeId">—</dd>
+        <dt>Nodos activos</dt><dd id="federationAboutConnected">—</dd>
+        <dt>Ventana activa</dt><dd id="federationAboutWindow">—</dd>
+        <dt>Public URL</dt><dd id="federationAboutPublicUrl">—</dd>
+        <dt>Federation URL</dt><dd id="federationAboutFederationUrl">—</dd>
+        <dt>Seed</dt><dd id="federationAboutSeed">—</dd>
+      </dl>
+    </section>
 
-  <section class="federation-os-card os-system-card" id="federationAboutPeers">
-    <div class="federation-os-section-title os-system-section-head">
-      <div><i class="fas fa-network-wired"></i><span>Nodos conectados</span></div>
-      <span id="federationAboutPeerCount" class="badge badge-info">0</span>
+  <section class="os-node-card os-node-card-wide" id="federationAboutPeers">
+    <div class="federation-node-title">
+      <h3>Nodos conectados</h3>
+      <span id="federationAboutPeerCount" class="os-node-badge os-node-badge-ok">0</span>
     </div>
     <div id="federationAboutPeerList" class="federation-os-peer-grid">
-      <div class="federation-os-empty">Cargando directorio…</div>
+      <div class="os-node-placeholder">Cargando directorio…</div>
     </div>
   </section>
 
   <?php if ($isSuperAdmin): ?>
-  <section class="federation-os-card os-system-card" id="federationAboutProviders">
-    <div class="federation-os-section-title os-system-section-head">
-      <div><i class="fas fa-user-check"></i><span>Solicitudes de nodos proveedores</span></div>
-      <span id="federationProviderPendingBadge" class="badge badge-warning">0</span>
+  <section class="os-node-card os-node-card-wide" id="federationAboutProviders">
+    <div class="federation-node-title">
+      <h3>Solicitudes de nodos proveedores</h3>
+      <span id="federationProviderPendingBadge" class="os-node-badge os-node-badge-warning">0</span>
     </div>
     <p class="federation-os-help">Aprueba o rechaza únicamente copias con backend compartido. Los nodos independientes se registran por el protocolo normal de FederationCloud.</p>
     <div id="federationProviderPendingList" class="mb-3"><div class="federation-os-empty">Cargando solicitudes…</div></div>
-    <div class="federation-os-section-title compact">
-      <div><i class="fas fa-link"></i><span>Proveedores autorizados</span></div>
-      <span id="federationProviderActiveBadge" class="badge badge-success">0</span>
+    <div class="federation-node-title federation-node-subtitle">
+      <h3>Proveedores autorizados</h3>
+      <span id="federationProviderActiveBadge" class="os-node-badge os-node-badge-ok">0</span>
     </div>
     <div id="federationProviderActiveList"><div class="federation-os-empty">Cargando proveedores…</div></div>
   </section>
@@ -113,10 +112,10 @@ final class FederationOsAdminRenderer
           data-endpoint="../server-settings.php"
           aria-hidden="true"></button>
 
-  <section class="federation-os-card os-system-card" id="modalServerAdmin">
-    <div class="federation-os-section-title os-system-section-head">
-      <div><i class="fas fa-sliders"></i><span>Configuración del servidor</span></div>
-      <span id="serverAdminVariableCount" class="badge badge-secondary">—</span>
+  <section class="os-node-card os-node-card-wide" id="modalServerAdmin">
+    <div class="federation-node-title">
+      <h3>Configuración del servidor</h3>
+      <span id="serverAdminVariableCount" class="os-node-badge">—</span>
     </div>
     <p class="federation-os-help">Usa el mismo backend administrativo del Drive para MySQL, AWS/S3, FederationCloud y opciones avanzadas.</p>
     <div id="serverAdminAlert" class="alert d-none" role="alert"></div>
@@ -164,26 +163,27 @@ final class FederationOsAdminRenderer
     </div>
   </section>
 
-  <section class="federation-os-card os-system-card" id="federationAboutModeration">
-    <div class="federation-os-section-title os-system-section-head">
-      <div><i class="fas fa-shield-halved"></i><span>Moderación</span></div>
-      <span id="federationModerationPendingBadge" class="badge badge-danger">—</span>
+  <section class="os-node-card os-node-card-wide" id="federationAboutModeration">
+    <div class="federation-node-title">
+      <h3>Moderación</h3>
+      <span id="federationModerationPendingBadge" class="os-node-badge os-node-badge-danger">—</span>
     </div>
-    <div class="federation-os-stat-grid two os-system-stat-grid two">
-      <article class="os-system-stat"><span>Reportes pendientes</span><strong id="federationModerationReports">—</strong></article>
-      <article class="os-system-stat"><span>Bloqueos activos propios</span><strong id="federationModerationBlocks">—</strong></article>
-    </div>
+    <dl>
+      <dt>Reportes pendientes</dt><dd id="federationModerationReports">—</dd>
+      <dt>Bloqueos activos propios</dt><dd id="federationModerationBlocks">—</dd>
+    </dl>
     <p class="federation-os-help">La revisión humana, bloqueo por SHA-256 y revocación siguen usando el servicio de moderación existente.</p>
     <a class="btn btn-outline-danger" href="moderation.php?embed=1">
       <i class="fas fa-shield-halved mr-1"></i>Abrir opciones de moderación
     </a>
   </section>
   <?php else: ?>
-  <section class="federation-os-card os-system-card">
-    <div class="federation-os-section-title os-system-section-head"><div><i class="fas fa-lock"></i><span>Administración</span></div></div>
+  <section class="os-node-card os-node-card-wide">
+    <h3>Administración</h3>
     <p class="mb-0 text-muted">Solicitudes de proveedores, configuración del servidor y moderación sólo están disponibles para el superusuario.</p>
   </section>
   <?php endif; ?>
+  </div>
 </main>
 
 <?php if ($isSuperAdmin): ?>

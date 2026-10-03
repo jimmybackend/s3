@@ -496,24 +496,25 @@ webOsContract(str_contains($paths['server_admin_js'], 'dataset.endpoint'), 'conf
 webOsContract(str_contains($paths['moderation_renderer'], 'federation-moderation-embedded'), 'moderación soporta modo embebido');
 
 webOsContract(
-    str_contains($paths['federation_admin_renderer'], 'os-system-shell')
-    && str_contains($paths['federation_admin_renderer'], 'os-system-heading')
-    && str_contains($paths['federation_admin_renderer'], 'os-system-card')
-    && str_contains($paths['federation_admin_renderer'], 'os-system-stat-grid'),
-    'Acerca de FederationCloud reutiliza la piel visual de panel de sistema'
+    str_contains($paths['federation_admin_renderer'], 'os-node-dashboard')
+    && str_contains($paths['federation_admin_renderer'], 'os-node-card os-node-card-wide')
+    && str_contains($paths['federation_admin_renderer'], '<dt>Nombre</dt><dd id="federationAboutNodeName">')
+    && str_contains($paths['federation_admin_renderer'], '<dt>Federation URL</dt>'),
+    'Acerca de FederationCloud usa la estructura exacta de tarjetas y filas de Mi nodo'
 );
 webOsContract(
-    str_contains($paths['ec2_page'], 'os-system-shell')
-    && str_contains($paths['ec2_page'], 'os-system-card')
-    && str_contains($paths['ec2_page'], 'os-system-mobile-cards')
-    && str_contains($paths['ec2_page'], 'data-label="IPv4 privada"'),
-    'Gestión EC2 reutiliza panel de sistema y tarjetas móviles'
+    str_contains($paths['ec2_page'], 'class="os-node-card ec2-instance-card"')
+    && str_contains($paths['ec2_page'], '<dt>Instance ID</dt>')
+    && str_contains($paths['ec2_page'], '<dt>IPv4 privada</dt>')
+    && str_contains($paths['ec2_page'], 'id="rdsTbl" class="os-node-dashboard'),
+    'Gestión EC2 reemplaza tablas por tarjetas y filas del patrón Mi nodo'
 );
 webOsContract(
-    str_contains($paths['system_panel_css'], '.os-system-heading-icon')
-    && str_contains($paths['system_panel_css'], '.os-system-stat-grid')
-    && str_contains($paths['system_panel_css'], '.os-system-mobile-cards'),
-    'piel compartida define encabezados, métricas y tablas móviles del sistema'
+    str_contains($paths['system_panel_css'], '.os-system-shell .os-node-card dl')
+    && str_contains($paths['system_panel_css'], '.os-system-shell .os-node-card dt')
+    && str_contains($paths['system_panel_css'], '.os-system-shell .os-node-card dd')
+    && str_contains($paths['system_panel_css'], '.os-system-shell .os-node-card-wide'),
+    'piel compartida replica las primitivas exactas de Mi nodo'
 );
 webOsContract(substr_count($paths['moderation_renderer'], "/federationcloud/moderation-api.php") >= 3, 'moderación embebida usa endpoint absoluto para leer, decidir y desbloquear');
 

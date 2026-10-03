@@ -3398,7 +3398,7 @@
     },
     {
       "path": "drive/src/Storage/S3ObjectCopyService.php",
-      "size": 1744,
+      "size": 1934,
       "active": false,
       "references": []
     },
@@ -3892,7 +3892,7 @@
     },
     {
       "path": "drive/tests/file_copy_regression.php",
-      "size": 6376,
+      "size": 7430,
       "active": false,
       "references": []
     },

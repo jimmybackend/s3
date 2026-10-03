@@ -19,6 +19,7 @@ on:
       - 'drive/s3.php'
       - 'drive/tests/database_schema_contract_smoke.php'
       - 'drive/tests/media_processing_contract_smoke.php'
+      - 'drive/tests/media_worker_behavior_regression.php'
       - 'drive/tests/media_processing_small_file_smoke.sh'
       - 'drive/bin/install_arcadecloud_server.sh'
       - 'adbbmis1_Cloud.sql'
@@ -66,3 +67,27 @@ jobs:
             sudo apt-get install -y ffmpeg
           fi
           bash drive/tests/media_processing_small_file_smoke.sh
+
+  worker-behavior:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: fixture-only
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -pfixture-only"
+          --health-interval=10s --health-timeout=5s --health-retries=10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mysqli, mbstring, curl, simplexml
+          tools: composer:v2
+      - run: composer install --no-interaction --prefer-dist --no-progress
+      - run: sudo apt-get update && sudo apt-get install -y ffmpeg
+      - run: php drive/tests/media_worker_behavior_regression.php
+        env:
+          ARCADECLOUD_ISOLATED_TEST: '1'

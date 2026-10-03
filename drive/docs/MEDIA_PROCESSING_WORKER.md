@@ -190,7 +190,7 @@ El Drive puede controlar una única EC2 multimedia configurada. El usuario no en
 ARCADECLOUD_MEDIA_WORKER_INSTANCE_ID=i-xxxxxxxxxxxxxxxxx
 ARCADECLOUD_MEDIA_WORKER_REGION=us-east-1
 ARCADECLOUD_MEDIA_WORKER_HOURLY_USD=0.000000
-ARCADECLOUD_MEDIA_WORKER_IDLE_GRACE_SECONDS=600
+ARCADECLOUD_MEDIA_WORKER_IDLE_GRACE_SECONDS=1200
 ```
 
 `ARCADECLOUD_MEDIA_WORKER_HOURLY_USD` debe contener la tarifa horaria de referencia de la instancia elegida. Si la EC2 está apagada y falta esa tarifa, Drive no permite un encendido pagado bajo demanda.
@@ -290,7 +290,7 @@ y apuntar al worker remoto mediante:
 ARCADECLOUD_MEDIA_WORKER_INSTANCE_ID=i-...
 ARCADECLOUD_MEDIA_WORKER_REGION=...
 ARCADECLOUD_MEDIA_WORKER_HOURLY_USD=...
-ARCADECLOUD_MEDIA_WORKER_IDLE_GRACE_SECONDS=600
+ARCADECLOUD_MEDIA_WORKER_IDLE_GRACE_SECONDS=1200
 ```
 
 En la EC2 potente:
@@ -324,3 +324,16 @@ Las tareas multimedia se administran desde el Centro de Tareas:
 - una tarea terminada puede quitarse del historial visible sin eliminar sus archivos.
 
 Cuando una extracción o división termina, el Drive actualiza por AJAX únicamente el bloque de archivos de la carpeta visible. No se recarga la página completa y se conservan ruta, página, filtros y estado del Centro de Tareas.
+
+## Regresión de ejecución aislada
+
+`media_worker_behavior_regression.php` invoca los métodos reales del worker con
+FFmpeg/FFprobe locales, una DB desechable y transporte S3 simulado. Verifica tres
+segmentos de un video generado de 12 s, los intervalos 0–7 / 1–11 / 5–12 s, tolerancia
+de duración de un frame, extracción MP3, conservación del origen, registro en
+FileS3, diagnóstico real y cancelación antes de publicar. El test shell histórico
+usa ahora también 3 s por lado (antes sus números de fixture representaban 2 s).
+
+Esta prueba no acredita archivos reales multigigabyte, pérdida de red, IAM ni
+apagado físico. Stream-copy sigue pudiendo ajustar los cortes a keyframes según
+el formato: los intervalos solicitados no garantizan exactitud de muestra.

@@ -1,0 +1,135 @@
+name: Verified database backup
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'drive/src/Admin/DatabaseBackupService.php'
+      - 'drive/src/Admin/DatabaseSqlDumpWriter.php'
+      - 'drive/src/Http/Controller/DatabaseBackupController.php'
+      - 'drive/database-backup.php'
+      - 'drive/js/so-node.js'
+      - 'drive/tests/database_backup_contract_smoke.php'
+      - 'drive/tests/database_dump_full_integration.php'
+      - '.github/workflows/database-backup.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'drive/src/Admin/DatabaseBackupService.php'
+      - 'drive/src/Admin/DatabaseSqlDumpWriter.php'
+      - 'drive/src/Http/Controller/DatabaseBackupController.php'
+      - 'drive/database-backup.php'
+      - 'drive/js/so-node.js'
+      - 'drive/tests/database_backup_contract_smoke.php'
+      - 'drive/tests/database_dump_full_integration.php'
+      - '.github/workflows/database-backup.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  mariadb-1011:
+    runs-on: ubuntu-latest
+    services:
+      db:
+        image: mariadb:10.11
+        env:
+          MARIADB_ROOT_PASSWORD: arcade-test-root
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mariadb-admin ping -h 127.0.0.1 -uroot -parcade-test-root"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=15
+    steps:
+      - uses: actions/checkout@v7
+      - name: Install client
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq mariadb-client
+      - name: Syntax and contract
+        run: |
+          set -euo pipefail
+          php -l drive/src/Admin/DatabaseSqlDumpWriter.php
+          php -l drive/src/Admin/DatabaseBackupService.php
+          php -l drive/tests/database_dump_full_integration.php
+          php drive/tests/database_backup_contract_smoke.php
+      - name: Generate complete dump
+        env:
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_USER: root
+          DB_PASSWORD: arcade-test-root
+          DB_NAME: arcade_dump_test
+          DUMP_PATH: /tmp/arcadecloud-full-dump.sql
+        run: php drive/tests/database_dump_full_integration.php
+      - name: Destroy and restore exclusively from dump
+        run: |
+          set -euo pipefail
+          mariadb -h127.0.0.1 -P3306 -uroot -parcade-test-root -e "DROP DATABASE arcade_dump_test"
+          mariadb -h127.0.0.1 -P3306 -uroot -parcade-test-root < /tmp/arcadecloud-full-dump.sql
+          test "$(mariadb -h127.0.0.1 -P3306 -uroot -parcade-test-root arcade_dump_test -Nse "SELECT COUNT(*) FROM parent")" -eq 2
+          test "$(mariadb -h127.0.0.1 -P3306 -uroot -parcade-test-root arcade_dump_test -Nse "SELECT COUNT(*) FROM child")" -eq 2
+          test "$(mariadb -h127.0.0.1 -P3306 -uroot -parcade-test-root arcade_dump_test -Nse "SELECT COUNT(*) FROM v_nested")" -eq 2
+          test "$(mariadb -h127.0.0.1 -P3306 -uroot -parcade-test-root arcade_dump_test -Nse "SELECT f_double(9)")" -eq 18
+          test "$(mariadb -h127.0.0.1 -P3306 -uroot -parcade-test-root arcade_dump_test -Nse "CALL p_echo(7)")" -eq 7
+          mariadb -h127.0.0.1 -P3306 -uroot -parcade-test-root arcade_dump_test -e "INSERT INTO child(parent_id,note) VALUES(1,NULL)"
+          test "$(mariadb -h127.0.0.1 -P3306 -uroot -parcade-test-root arcade_dump_test -Nse "SELECT note FROM child ORDER BY id DESC LIMIT 1")" = "from-trigger"
+          test "$(mariadb -h127.0.0.1 -P3306 -uroot -parcade-test-root -Nse "SELECT COUNT(*) FROM information_schema.TRIGGERS WHERE TRIGGER_SCHEMA='arcade_dump_test'")" -eq 1
+          test "$(mariadb -h127.0.0.1 -P3306 -uroot -parcade-test-root -Nse "SELECT COUNT(*) FROM information_schema.ROUTINES WHERE ROUTINE_SCHEMA='arcade_dump_test'")" -eq 2
+          test "$(mariadb -h127.0.0.1 -P3306 -uroot -parcade-test-root -Nse "SELECT COUNT(*) FROM information_schema.EVENTS WHERE EVENT_SCHEMA='arcade_dump_test'")" -eq 1
+          mariadb -h127.0.0.1 -P3306 -uroot -parcade-test-root arcade_dump_test -Nse "SHOW CREATE TABLE parent" | grep -q "AUTO_INCREMENT"
+          mariadb -h127.0.0.1 -P3306 -uroot -parcade-test-root arcade_dump_test -Nse "SHOW CREATE TABLE parent" | grep -q "uq_parent_code"
+          mariadb -h127.0.0.1 -P3306 -uroot -parcade-test-root arcade_dump_test -Nse "SHOW CREATE TABLE parent" | grep -q "idx_parent_payload"
+          mariadb -h127.0.0.1 -P3306 -uroot -parcade-test-root arcade_dump_test -Nse "SHOW CREATE TABLE child" | grep -q "fk_child_parent"
+          grep -q -- "-- Status: COMPLETE" /tmp/arcadecloud-full-dump.sql
+      - name: Diff check
+        run: git diff --check
+
+  mysql-80:
+    runs-on: ubuntu-latest
+    services:
+      db:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: arcade-test-root
+        ports:
+          - 3307:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -parcade-test-root"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=15
+    steps:
+      - uses: actions/checkout@v7
+      - name: Install client
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq mariadb-client
+      - name: Generate complete dump
+        env:
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3307
+          DB_USER: root
+          DB_PASSWORD: arcade-test-root
+          DB_NAME: arcade_dump_test
+          DUMP_PATH: /tmp/arcadecloud-full-dump.sql
+        run: php drive/tests/database_dump_full_integration.php
+      - name: Destroy and restore exclusively from dump
+        run: |
+          set -euo pipefail
+          mariadb -h127.0.0.1 -P3307 -uroot -parcade-test-root -e "DROP DATABASE arcade_dump_test"
+          mariadb -h127.0.0.1 -P3307 -uroot -parcade-test-root < /tmp/arcadecloud-full-dump.sql
+          test "$(mariadb -h127.0.0.1 -P3307 -uroot -parcade-test-root arcade_dump_test -Nse "SELECT COUNT(*) FROM parent")" -eq 2
+          test "$(mariadb -h127.0.0.1 -P3307 -uroot -parcade-test-root arcade_dump_test -Nse "SELECT COUNT(*) FROM child")" -eq 2
+          test "$(mariadb -h127.0.0.1 -P3307 -uroot -parcade-test-root arcade_dump_test -Nse "SELECT COUNT(*) FROM v_nested")" -eq 2
+          test "$(mariadb -h127.0.0.1 -P3307 -uroot -parcade-test-root arcade_dump_test -Nse "SELECT f_double(9)")" -eq 18
+          test "$(mariadb -h127.0.0.1 -P3307 -uroot -parcade-test-root arcade_dump_test -Nse "CALL p_echo(7)")" -eq 7
+          mariadb -h127.0.0.1 -P3307 -uroot -parcade-test-root arcade_dump_test -e "INSERT INTO child(parent_id,note) VALUES(1,NULL)"
+          test "$(mariadb -h127.0.0.1 -P3307 -uroot -parcade-test-root arcade_dump_test -Nse "SELECT note FROM child ORDER BY id DESC LIMIT 1")" = "from-trigger"
+          test "$(mariadb -h127.0.0.1 -P3307 -uroot -parcade-test-root -Nse "SELECT COUNT(*) FROM information_schema.TRIGGERS WHERE TRIGGER_SCHEMA='arcade_dump_test'")" -eq 1
+          test "$(mariadb -h127.0.0.1 -P3307 -uroot -parcade-test-root -Nse "SELECT COUNT(*) FROM information_schema.ROUTINES WHERE ROUTINE_SCHEMA='arcade_dump_test'")" -eq 2
+          test "$(mariadb -h127.0.0.1 -P3307 -uroot -parcade-test-root -Nse "SELECT COUNT(*) FROM information_schema.EVENTS WHERE EVENT_SCHEMA='arcade_dump_test'")" -eq 1
+          mariadb -h127.0.0.1 -P3307 -uroot -parcade-test-root arcade_dump_test -Nse "SHOW CREATE TABLE parent" | grep -q "AUTO_INCREMENT"
+          mariadb -h127.0.0.1 -P3307 -uroot -parcade-test-root arcade_dump_test -Nse "SHOW CREATE TABLE parent" | grep -q "uq_parent_code"
+          mariadb -h127.0.0.1 -P3307 -uroot -parcade-test-root arcade_dump_test -Nse "SHOW CREATE TABLE child" | grep -q "fk_child_parent"
+          grep -q -- "-- Status: COMPLETE" /tmp/arcadecloud-full-dump.sql
+      - name: Diff check
+        run: git diff --check

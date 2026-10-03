@@ -26,7 +26,7 @@
 | `drive/costos_aws.php` | `drive/s3.php` |
 | `drive/delete_multiple.php` | `drive/s3.php`, `drive/tests/web_os_contract_smoke.php`, `drive/js/elimina-multiple.js`, `drive/js/file-block.js`, `drive/js/so.js`, `drive/tests/web_os_filesystem_operations_functional.js` |
 | `drive/descargar_archivo.php` | `drive/bloque_archivos.php`, `drive/so.php`, `drive/tests/arcadelink_bulk_contract_regression.php` |
-| `drive/ec2.php` | `drive/personal_aws_bootstrap.php`, `drive/s3.php`, `drive/so.php`, `drive/src/Admin/ServerConsoleService.php`, `drive/src/View/PersonalAwsPageRenderer.php`, `drive/tests/server_console_contract_smoke.php`, `drive/tests/web_os_contract_smoke.php`, `drive/tests/web_os_pending_fixes_smoke.php`, `drive/js/estilo.js` |
+| `drive/ec2.php` | `drive/personal_aws_bootstrap.php`, `drive/s3.php`, `drive/so.php`, `drive/src/Admin/ServerConsoleService.php`, `drive/src/View/PersonalAwsPageRenderer.php`, `drive/tests/server_console_contract_smoke.php`, `drive/tests/system_panel_fixture.php`, `drive/tests/web_os_contract_smoke.php`, `drive/tests/web_os_pending_fixes_smoke.php`, `drive/js/estilo.js` |
 | `drive/editor.php` | `drive/bloque_archivos.php`, `drive/so.php`, `drive/js/editar-txt.js` |
 | `drive/fastdrive-power.php` | `drive/so.php`, `drive/tests/fastdrive_control_contract_smoke.php`, `drive/tests/web_os_contract_smoke.php`, `drive/js/so-power.js` |
 | `drive/federationcloud/index.php` | `drive/bloque_archivos.php`, `drive/bloque_carpetas.php`, `drive/fastdrive-control.php`, `drive/folder-suggestions.php`, `drive/office-launch.php`, `drive/s3.php`, `drive/so.php`, `drive/src/Http/Controller/ActivityCostController.php`, `drive/src/Http/Controller/AuthController.php`, `drive/src/Http/Controller/FederationModerationController.php`, `drive/src/Http/Controller/FederationOsAdminController.php`, `drive/src/Security/SessionManager.php`, `drive/src/View/FederationReportPageRenderer.php`, `drive/tests/index_federation_drop_smoke.php`, `drive/tests/office_gateway_contract_smoke.php`, `drive/tests/web_os_contract_smoke.php`, `drive/up.php` |
@@ -429,10 +429,10 @@
 | `drive/src/Upload/UploadCatalogRepository.php` | `drive/tests/federation_moderation_contract_smoke.php`, `drive/tests/upload_catalog_registration_regression.php` |
 | `drive/src/Upload/UploadCleanupService.php` | `drive/tests/chunked_upload_cleanup_regression.php` |
 | `drive/src/View/ActivityCostPageRenderer.php` | ninguna |
-| `drive/src/View/Ec2PanelHelper.php` | ninguna |
+| `drive/src/View/Ec2PanelHelper.php` | `drive/tests/system_panel_fixture.php` |
 | `drive/src/View/FederationDropPageRenderer.php` | `drive/tests/federation_drop_contract_smoke.php` |
-| `drive/src/View/FederationModerationPageRenderer.php` | `drive/tests/federation_moderation_contract_smoke.php`, `drive/tests/web_os_contract_smoke.php` |
-| `drive/src/View/FederationOsAdminRenderer.php` | `drive/tests/web_os_contract_smoke.php` |
+| `drive/src/View/FederationModerationPageRenderer.php` | `drive/tests/federation_moderation_contract_smoke.php`, `drive/tests/system_panel_fixture.php`, `drive/tests/web_os_contract_smoke.php` |
+| `drive/src/View/FederationOsAdminRenderer.php` | `drive/tests/system_panel_fixture.php`, `drive/tests/web_os_contract_smoke.php` |
 | `drive/src/View/FederationPageRenderer.php` | `drive/tests/arcadelink_collection_regression.php`, `drive/tests/federation_drop_contract_smoke.php` |
 | `drive/src/View/FederationPortalRenderer.php` | `drive/tests/federation_drop_contract_smoke.php`, `drive/tests/web_os_contract_smoke.php` |
 | `drive/src/View/FederationReportPageRenderer.php` | `drive/tests/federation_moderation_contract_smoke.php` |
@@ -499,6 +499,7 @@
 | `drive/tests/smtp_config_smoke.php` | ninguna |
 | `drive/tests/sync_repository_regression.php` | ninguna |
 | `drive/tests/sync_schema_migrator_regression.php` | ninguna |
+| `drive/tests/system_panel_fixture.php` | ninguna |
 | `drive/tests/transcribe_s3_recovery_contract_smoke.php` | ninguna |
 | `drive/tests/upload_catalog_registration_regression.php` | ninguna |
 | `drive/tests/user_identity_presenter_smoke.php` | ninguna |

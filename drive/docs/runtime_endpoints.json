@@ -580,7 +580,7 @@
     },
     {
       "path": "drive/ec2.php",
-      "size": 49897,
+      "size": 50177,
       "active": true,
       "references": [
         "drive/personal_aws_bootstrap.php",
@@ -589,6 +589,7 @@
         "drive/src/Admin/ServerConsoleService.php",
         "drive/src/View/PersonalAwsPageRenderer.php",
         "drive/tests/server_console_contract_smoke.php",
+        "drive/tests/system_panel_fixture.php",
         "drive/tests/web_os_contract_smoke.php",
         "drive/tests/web_os_pending_fixes_smoke.php",
         "drive/js/estilo.js"
@@ -1274,7 +1275,7 @@
     },
     {
       "path": "drive/office-gateway.php",
-      "size": 30216,
+      "size": 30196,
       "active": false,
       "references": [
         "drive/tests/office_gateway_contract_smoke.php"
@@ -1513,7 +1514,7 @@
     },
     {
       "path": "drive/so.php",
-      "size": 113161,
+      "size": 113538,
       "active": true,
       "references": [
         "drive/s3.php",
@@ -3062,7 +3063,7 @@
     },
     {
       "path": "drive/src/Media/MediaWorkerNodeService.php",
-      "size": 28791,
+      "size": 30803,
       "active": false,
       "references": [
         "drive/tests/media_processing_contract_smoke.php",
@@ -3072,7 +3073,7 @@
     },
     {
       "path": "drive/src/Media/MediaWorkerNodeSessionRepository.php",
-      "size": 8009,
+      "size": 9280,
       "active": false,
       "references": [
         "drive/tests/media_processing_contract_smoke.php"
@@ -3086,7 +3087,7 @@
     },
     {
       "path": "drive/src/Office/OfficeActivityProbe.php",
-      "size": 1980,
+      "size": 2307,
       "active": false,
       "references": [
         "drive/tests/office_gateway_contract_smoke.php"
@@ -3102,7 +3103,7 @@
     },
     {
       "path": "drive/src/Office/OfficeDocumentStorageService.php",
-      "size": 19742,
+      "size": 23635,
       "active": false,
       "references": [
         "drive/tests/office_gateway_contract_smoke.php"
@@ -3143,7 +3144,7 @@
     },
     {
       "path": "drive/src/Office/OfficeSessionReconciler.php",
-      "size": 9415,
+      "size": 11462,
       "active": false,
       "references": [
         "drive/tests/office_gateway_contract_smoke.php"
@@ -3574,7 +3575,9 @@
       "path": "drive/src/View/Ec2PanelHelper.php",
       "size": 2076,
       "active": false,
-      "references": []
+      "references": [
+        "drive/tests/system_panel_fixture.php"
+      ]
     },
     {
       "path": "drive/src/View/FederationDropPageRenderer.php",
@@ -3586,18 +3589,20 @@
     },
     {
       "path": "drive/src/View/FederationModerationPageRenderer.php",
-      "size": 8832,
+      "size": 9122,
       "active": false,
       "references": [
         "drive/tests/federation_moderation_contract_smoke.php",
+        "drive/tests/system_panel_fixture.php",
         "drive/tests/web_os_contract_smoke.php"
       ]
     },
     {
       "path": "drive/src/View/FederationOsAdminRenderer.php",
-      "size": 10042,
+      "size": 10186,
       "active": false,
       "references": [
+        "drive/tests/system_panel_fixture.php",
         "drive/tests/web_os_contract_smoke.php"
       ]
     },
@@ -3898,7 +3903,7 @@
     },
     {
       "path": "drive/tests/idle_stop_office_regression.php",
-      "size": 13152,
+      "size": 16267,
       "active": false,
       "references": []
     },
@@ -3940,13 +3945,13 @@
     },
     {
       "path": "drive/tests/office_conditional_save_regression.php",
-      "size": 8366,
+      "size": 9554,
       "active": false,
       "references": []
     },
     {
       "path": "drive/tests/office_gateway_contract_smoke.php",
-      "size": 17844,
+      "size": 17873,
       "active": false,
       "references": []
     },
@@ -4017,6 +4022,12 @@
       "references": []
     },
     {
+      "path": "drive/tests/system_panel_fixture.php",
+      "size": 1690,
+      "active": false,
+      "references": []
+    },
+    {
       "path": "drive/tests/transcribe_s3_recovery_contract_smoke.php",
       "size": 2469,
       "active": false,
@@ -4072,13 +4083,13 @@
     },
     {
       "path": "drive/tests/web_os_multiwindow_smoke.php",
-      "size": 6817,
+      "size": 6995,
       "active": false,
       "references": []
     },
     {
       "path": "drive/tests/web_os_pending_fixes_smoke.php",
-      "size": 6538,
+      "size": 6614,
       "active": false,
       "references": []
     },

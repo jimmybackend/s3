@@ -1536,7 +1536,8 @@
         "drive/tests/web_os_remote_applications_smoke.php",
         "drive/tests/web_os_theme_contract_smoke.php",
         "drive/js/os-window-manager.js",
-        "drive/js/so.js"
+        "drive/js/so.js",
+        "drive/tests/background_tasks_refresh_functional.js"
       ]
     },
     {

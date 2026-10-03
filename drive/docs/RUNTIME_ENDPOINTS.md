@@ -229,12 +229,12 @@
 | `drive/src/Core/DriveApplication.php` | ninguna |
 | `drive/src/Federation/ArcadeLinkFileFormat.php` | `drive/tests/arcadelink_collection_regression.php` |
 | `drive/src/Federation/ArcadeLinkService.php` | `drive/bin/federation_provider_request.php`, `drive/tests/arcadelink_collection_regression.php`, `drive/tests/federationcloud_smoke.php` |
-| `drive/src/Federation/FederatedCatalogRepository.php` | `drive/tests/federation_moderation_contract_smoke.php` |
+| `drive/src/Federation/FederatedCatalogRepository.php` | `drive/tests/federation_delivery_history_contract_smoke.php`, `drive/tests/federation_moderation_contract_smoke.php` |
 | `drive/src/Federation/FederatedResourceRepository.php` | `drive/tests/arcadelink_bulk_contract_regression.php` |
 | `drive/src/Federation/FederationAccessMessageCodec.php` | `drive/tests/federation_access_message_smoke.php` |
 | `drive/src/Federation/FederationAccessRepository.php` | ninguna |
 | `drive/src/Federation/FederationAccessService.php` | ninguna |
-| `drive/src/Federation/FederationCatalogService.php` | `drive/tests/federation_customs_contract_smoke.php` |
+| `drive/src/Federation/FederationCatalogService.php` | `drive/tests/federation_customs_contract_smoke.php`, `drive/tests/federation_delivery_history_contract_smoke.php` |
 | `drive/src/Federation/FederationCodec.php` | `drive/bin/federation_identity_backup.php`, `drive/bin/federation_identity_init.php`, `drive/bin/federation_identity_name.php`, `drive/bin/federation_identity_restore.php`, `drive/bin/federation_provider_request.php`, `drive/tests/federation_access_message_smoke.php`, `drive/tests/federation_catalog_event_smoke.php`, `drive/tests/federation_directory_smoke.php`, `drive/tests/federation_drop_ingress_smoke.php`, `drive/tests/federation_node_name_admin_smoke.php`, `drive/tests/federation_provider_smoke.php`, `drive/tests/federation_replica_smoke.php`, `drive/tests/federationcloud_smoke.php` |
 | `drive/src/Federation/FederationConfig.php` | `drive/bin/federation_provider_request.php`, `drive/tests/federation_directory_smoke.php`, `drive/tests/federation_node_name_admin_smoke.php`, `drive/tests/federation_replica_reconnect_contract_smoke.php`, `drive/tests/federationcloud_smoke.php` |
 | `drive/src/Federation/FederationContentFingerprintService.php` | `drive/tests/federation_moderation_contract_smoke.php` |
@@ -258,7 +258,7 @@
 | `drive/src/Federation/FederationDropStripeWebhookVerifier.php` | `drive/tests/federation_drop_contract_smoke.php`, `drive/tests/federation_drop_stripe_smoke.php` |
 | `drive/src/Federation/FederationDropWorkerService.php` | ninguna |
 | `drive/src/Federation/FederationEndpointResolver.php` | `drive/bin/federation_https_reconcile.php`, `drive/tests/federation_endpoint_resolver_smoke.php` |
-| `drive/src/Federation/FederationEventCodec.php` | `drive/tests/federation_catalog_event_smoke.php`, `drive/tests/federation_moderation_contract_smoke.php` |
+| `drive/src/Federation/FederationEventCodec.php` | `drive/tests/federation_catalog_event_smoke.php`, `drive/tests/federation_delivery_history_contract_smoke.php`, `drive/tests/federation_moderation_contract_smoke.php` |
 | `drive/src/Federation/FederationEventStore.php` | ninguna |
 | `drive/src/Federation/FederationException.php` | `drive/bin/federation_https_reconcile.php`, `drive/bin/federation_identity_backup.php`, `drive/bin/federation_identity_init.php`, `drive/bin/federation_identity_name.php`, `drive/bin/federation_identity_restore.php`, `drive/bin/federation_provider_request.php`, `drive/tests/federation_access_message_smoke.php`, `drive/tests/federation_catalog_event_smoke.php`, `drive/tests/federation_directory_smoke.php`, `drive/tests/federation_drop_google_oidc_smoke.php`, `drive/tests/federation_drop_ingress_smoke.php`, `drive/tests/federation_drop_stripe_smoke.php`, `drive/tests/federation_endpoint_resolver_smoke.php`, `drive/tests/federation_node_name_admin_smoke.php`, `drive/tests/federation_provider_smoke.php`, `drive/tests/federation_public_download_failover_smoke.php`, `drive/tests/federation_replica_smoke.php`, `drive/tests/federationcloud_smoke.php` |
 | `drive/src/Federation/FederationGossipService.php` | ninguna |
@@ -268,7 +268,7 @@
 | `drive/src/Federation/FederationModerationRepository.php` | `drive/tests/federation_moderation_contract_smoke.php` |
 | `drive/src/Federation/FederationModerationSchemaService.php` | `drive/tests/federation_moderation_contract_smoke.php` |
 | `drive/src/Federation/FederationModerationService.php` | `drive/tests/federation_moderation_contract_smoke.php` |
-| `drive/src/Federation/FederationMultiSourceDownloader.php` | `drive/tests/federation_drop_contract_smoke.php`, `drive/tests/federation_replica_smoke.php` |
+| `drive/src/Federation/FederationMultiSourceDownloader.php` | `drive/tests/federation_delivery_history_contract_smoke.php`, `drive/tests/federation_drop_contract_smoke.php`, `drive/tests/federation_replica_smoke.php` |
 | `drive/src/Federation/FederationNodeAdminService.php` | `drive/tests/setup_finalize_contract_smoke.php` |
 | `drive/src/Federation/FederationNodeDescriptorValidator.php` | `drive/bin/federation_provider_request.php`, `drive/tests/federation_directory_smoke.php` |
 | `drive/src/Federation/FederationNodeRepository.php` | `drive/tests/federation_customs_contract_smoke.php` |
@@ -283,9 +283,11 @@
 | `drive/src/Federation/FederationReplicaMessageCodec.php` | `drive/tests/federation_replica_smoke.php` |
 | `drive/src/Federation/FederationReplicaPresenceService.php` | `drive/tests/federation_replica_reconnect_contract_smoke.php` |
 | `drive/src/Federation/FederationReplicaRepository.php` | `drive/tests/federation_replica_smoke.php` |
-| `drive/src/Federation/FederationReplicaResolverService.php` | `drive/tests/federation_drop_contract_smoke.php`, `drive/tests/federation_public_download_failover_smoke.php`, `drive/tests/federation_replica_smoke.php` |
+| `drive/src/Federation/FederationReplicaResolverService.php` | `drive/tests/federation_delivery_history_contract_smoke.php`, `drive/tests/federation_drop_contract_smoke.php`, `drive/tests/federation_public_download_failover_smoke.php`, `drive/tests/federation_replica_smoke.php` |
 | `drive/src/Federation/FederationReplicaService.php` | `drive/tests/federation_public_download_failover_smoke.php`, `drive/tests/federation_replica_reconnect_contract_smoke.php`, `drive/tests/federation_replica_smoke.php` |
 | `drive/src/Federation/FederationResolverService.php` | ninguna |
+| `drive/src/Federation/FederationResourceDeliveryRepository.php` | `drive/tests/federation_delivery_history_contract_smoke.php` |
+| `drive/src/Federation/FederationResourceDeliveryService.php` | `drive/tests/federation_delivery_history_contract_smoke.php` |
 | `drive/src/Federation/FederationSchemaMigrationService.php` | `drive/tests/federation_customs_contract_smoke.php`, `drive/tests/installer_service_reconcile_contract_smoke.php` |
 | `drive/src/Federation/FederationSeedConfig.php` | `drive/tests/federation_directory_smoke.php` |
 | `drive/src/Federation/FederationService.php` | `drive/tests/arcadelink_bulk_contract_regression.php`, `drive/tests/arcadelink_collection_regression.php`, `drive/tests/federation_moderation_contract_smoke.php` |
@@ -322,7 +324,7 @@
 | `drive/src/Http/Controller/FederationPortalController.php` | `drive/tests/web_os_contract_smoke.php` |
 | `drive/src/Http/Controller/FederationProviderController.php` | `drive/tests/federation_customs_contract_smoke.php`, `drive/tests/federation_replica_reconnect_contract_smoke.php` |
 | `drive/src/Http/Controller/FederationPublicImportController.php` | ninguna |
-| `drive/src/Http/Controller/FederationReplicaController.php` | `drive/tests/federation_public_download_failover_smoke.php` |
+| `drive/src/Http/Controller/FederationReplicaController.php` | `drive/tests/federation_delivery_history_contract_smoke.php`, `drive/tests/federation_public_download_failover_smoke.php` |
 | `drive/src/Http/Controller/FederationShareDriveController.php` | ninguna |
 | `drive/src/Http/Controller/FileAccessController.php` | `drive/tests/arcadelink_bulk_contract_regression.php` |
 | `drive/src/Http/Controller/FileKeyRotationController.php` | ninguna |
@@ -462,6 +464,7 @@
 | `drive/tests/federation_access_message_smoke.php` | ninguna |
 | `drive/tests/federation_catalog_event_smoke.php` | ninguna |
 | `drive/tests/federation_customs_contract_smoke.php` | ninguna |
+| `drive/tests/federation_delivery_history_contract_smoke.php` | ninguna |
 | `drive/tests/federation_directory_smoke.php` | ninguna |
 | `drive/tests/federation_drop_contract_smoke.php` | ninguna |
 | `drive/tests/federation_drop_google_oidc_smoke.php` | ninguna |

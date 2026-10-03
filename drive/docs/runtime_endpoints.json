@@ -2019,9 +2019,10 @@
     },
     {
       "path": "drive/src/Federation/FederatedCatalogRepository.php",
-      "size": 22318,
+      "size": 27515,
       "active": false,
       "references": [
+        "drive/tests/federation_delivery_history_contract_smoke.php",
         "drive/tests/federation_moderation_contract_smoke.php"
       ]
     },
@@ -2055,10 +2056,11 @@
     },
     {
       "path": "drive/src/Federation/FederationCatalogService.php",
-      "size": 9509,
+      "size": 9734,
       "active": false,
       "references": [
-        "drive/tests/federation_customs_contract_smoke.php"
+        "drive/tests/federation_customs_contract_smoke.php",
+        "drive/tests/federation_delivery_history_contract_smoke.php"
       ]
     },
     {
@@ -2264,10 +2266,11 @@
     },
     {
       "path": "drive/src/Federation/FederationEventCodec.php",
-      "size": 4920,
+      "size": 4947,
       "active": false,
       "references": [
         "drive/tests/federation_catalog_event_smoke.php",
+        "drive/tests/federation_delivery_history_contract_smoke.php",
         "drive/tests/federation_moderation_contract_smoke.php"
       ]
     },
@@ -2361,9 +2364,10 @@
     },
     {
       "path": "drive/src/Federation/FederationMultiSourceDownloader.php",
-      "size": 13933,
+      "size": 14035,
       "active": false,
       "references": [
+        "drive/tests/federation_delivery_history_contract_smoke.php",
         "drive/tests/federation_drop_contract_smoke.php",
         "drive/tests/federation_replica_smoke.php"
       ]
@@ -2482,9 +2486,10 @@
     },
     {
       "path": "drive/src/Federation/FederationReplicaResolverService.php",
-      "size": 12409,
+      "size": 14859,
       "active": false,
       "references": [
+        "drive/tests/federation_delivery_history_contract_smoke.php",
         "drive/tests/federation_drop_contract_smoke.php",
         "drive/tests/federation_public_download_failover_smoke.php",
         "drive/tests/federation_replica_smoke.php"
@@ -2507,8 +2512,24 @@
       "references": []
     },
     {
+      "path": "drive/src/Federation/FederationResourceDeliveryRepository.php",
+      "size": 4164,
+      "active": false,
+      "references": [
+        "drive/tests/federation_delivery_history_contract_smoke.php"
+      ]
+    },
+    {
+      "path": "drive/src/Federation/FederationResourceDeliveryService.php",
+      "size": 3598,
+      "active": false,
+      "references": [
+        "drive/tests/federation_delivery_history_contract_smoke.php"
+      ]
+    },
+    {
       "path": "drive/src/Federation/FederationSchemaMigrationService.php",
-      "size": 4793,
+      "size": 4878,
       "active": false,
       "references": [
         "drive/tests/federation_customs_contract_smoke.php",
@@ -2787,9 +2808,10 @@
     },
     {
       "path": "drive/src/Http/Controller/FederationReplicaController.php",
-      "size": 6686,
+      "size": 10051,
       "active": false,
       "references": [
+        "drive/tests/federation_delivery_history_contract_smoke.php",
         "drive/tests/federation_public_download_failover_smoke.php"
       ]
     },
@@ -3778,7 +3800,7 @@
     },
     {
       "path": "drive/tests/database_schema_contract_smoke.php",
-      "size": 6428,
+      "size": 6505,
       "active": false,
       "references": []
     },
@@ -3803,6 +3825,12 @@
     {
       "path": "drive/tests/federation_customs_contract_smoke.php",
       "size": 6798,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/tests/federation_delivery_history_contract_smoke.php",
+      "size": 4453,
       "active": false,
       "references": []
     },

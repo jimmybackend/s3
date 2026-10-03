@@ -19,6 +19,8 @@ final class FederationSchemaMigrationService
         'FederationClocks',
         'FederatedResources',
         'FederationResourceLocations',
+        'FederationResourceDeliveries',
+        'FederationResourceDeliverySources',
         'FederationPeerSyncState',
         'FederationAccessRequests',
         'FederationShares',

@@ -2093,7 +2093,7 @@
     },
     {
       "path": "drive/so.php",
-      "lines": 2061,
+      "lines": 2065,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -7608,7 +7608,7 @@
     },
     {
       "path": "drive/tests/web_os_contract_smoke.php",
-      "lines": 525,
+      "lines": 536,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -8801,7 +8801,7 @@
     },
     {
       "path": "drive/js/file-applications.js",
-      "lines": 204,
+      "lines": 213,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudFileApplicationService"
@@ -9586,7 +9586,7 @@
     },
     {
       "path": "drive/js/so.js",
-      "lines": 1189,
+      "lines": 1320,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudOsShell"
@@ -10267,7 +10267,7 @@
     },
     {
       "path": "drive/docs/runtime_endpoints.json",
-      "bytes": 123298,
+      "bytes": 123702,
       "valid": true,
       "root_type": "object",
       "keys": [

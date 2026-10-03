@@ -1,9 +1,9 @@
 {
   "summary": {
-    "php_total": 523,
+    "php_total": 524,
     "php_class_modules": 301,
     "php_needs_migration": 0,
-    "php_tests": 66,
+    "php_tests": 67,
     "js_total": 78,
     "js_class_modules": 73,
     "js_needs_migration": 0,
@@ -7084,6 +7084,23 @@
       "issues": []
     },
     {
+      "path": "drive/tests/media_worker_behavior_regression.php",
+      "lines": 65,
+      "kind": "test script",
+      "classes": 0,
+      "functions": [
+        "mediaCheck"
+      ],
+      "session": false,
+      "superglobals": [],
+      "db": true,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
       "path": "drive/tests/node_diagnostics_contract_smoke.php",
       "lines": 62,
       "kind": "test script",
@@ -10068,7 +10085,7 @@
     },
     {
       "path": "drive/docs/runtime_endpoints.json",
-      "bytes": 120480,
+      "bytes": 120799,
       "valid": true,
       "root_type": "object",
       "keys": [

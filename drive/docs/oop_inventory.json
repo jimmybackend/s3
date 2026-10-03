@@ -1,16 +1,16 @@
 {
   "summary": {
-    "php_total": 528,
-    "php_class_modules": 303,
+    "php_total": 532,
+    "php_class_modules": 305,
     "php_needs_migration": 0,
-    "php_tests": 69,
+    "php_tests": 70,
     "js_total": 79,
     "js_class_modules": 73,
     "js_needs_migration": 0,
     "js_tests": 11,
     "js_compatibility_facades": 8,
     "ajax_clients": 49,
-    "ajax_calls": 106,
+    "ajax_calls": 107,
     "json_total": 4,
     "json_invalid": 0
   },
@@ -612,6 +612,21 @@
     },
     {
       "path": "drive/create_folder_document.php",
+      "lines": 10,
+      "kind": "thin endpoint",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/database-backup.php",
       "lines": 10,
       "kind": "thin endpoint",
       "classes": 0,
@@ -2224,6 +2239,21 @@
       "superglobals": [
         "SERVER"
       ],
+      "db": true,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Admin/DatabaseBackupService.php",
+      "lines": 226,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
       "db": true,
       "s3": false,
       "bootstrap": false,
@@ -4316,6 +4346,21 @@
       "session": false,
       "superglobals": [],
       "db": true,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Http/Controller/DatabaseBackupController.php",
+      "lines": 50,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
       "s3": false,
       "bootstrap": false,
       "html": false,
@@ -6609,6 +6654,21 @@
       "functions": [
         "check"
       ],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/tests/database_backup_contract_smoke.php",
+      "lines": 45,
+      "kind": "test script",
+      "classes": 0,
+      "functions": [],
       "session": false,
       "superglobals": [],
       "db": false,
@@ -9362,7 +9422,7 @@
     },
     {
       "path": "drive/js/so-node.js",
-      "lines": 238,
+      "lines": 290,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudOsNodeMonitor"
@@ -9373,11 +9433,11 @@
       "top_vars": [],
       "iife": false,
       "ajax": {
-        "fetch": 3,
+        "fetch": 4,
         "xhr": 0,
         "jquery": 0,
-        "json_consumers": 3,
-        "response_checks": 6
+        "json_consumers": 4,
+        "response_checks": 8
       },
       "issues": []
     },
@@ -10177,7 +10237,7 @@
     },
     {
       "path": "drive/docs/runtime_endpoints.json",
-      "bytes": 121355,
+      "bytes": 122396,
       "valid": true,
       "root_type": "object",
       "keys": [

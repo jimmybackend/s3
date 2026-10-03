@@ -376,3 +376,29 @@ body.ec2-os-surface .ec2-panel-heading { padding:2px 4px 4px; }
   .ec2-filter-form input,.ec2-filter-form select,.ec2-filter-form button { width:100%; }
   body.ec2-os-surface .personal-tool-shell { padding:8px; }
 }
+
+/* Gestión EC2 con la misma composición exacta de Mi nodo. */
+.ec2-panel-shell{display:block!important}
+.ec2-panel-shell>.os-node-card{margin-bottom:12px}
+.ec2-node-section-title,.ec2-node-card-title{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 10px
+}
+.ec2-node-section-title h3,.ec2-node-card-title h3{
+  margin:0!important;font-size:.96rem!important;color:var(--osp-text)!important
+}
+.ec2-instance-grid{margin:0!important}
+.ec2-instance-card{background:var(--osp-subtle)!important;border-color:var(--osp-divider)!important}
+.ec2-instance-card code{padding:0!important;border:0!important;background:transparent!important;color:var(--osp-accent-2)!important}
+.ec2-filter-form{
+  display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:0!important;padding:0!important
+}
+.ec2-filter-form label{display:flex!important;flex-direction:column;gap:5px;margin:0!important;color:var(--osp-soft)!important;font-size:.72rem}
+.ec2-filter-form button{align-self:end}
+.ec2-force-option{display:inline-flex!important;align-items:center;gap:5px;margin:0!important;font-size:.7rem!important}
+.ec2-force-option input{width:auto!important;min-height:auto!important;margin:0}
+body.ec2-os-surface .ec2-panel-heading{margin-bottom:12px;padding:0}
+body.ec2-os-surface .personal-tool-shell{padding:8px}
+@media(max-width:760px){
+  .ec2-filter-form{grid-template-columns:1fr!important}
+  .ec2-filter-form label,.ec2-filter-form input,.ec2-filter-form select,.ec2-filter-form button{width:100%!important}
+}

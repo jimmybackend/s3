@@ -21,6 +21,7 @@ on:
       - 'drive/js/upload-center.js'
       - 'drive/js/upload-destination.js'
       - 'drive/js/background-tasks.js'
+      - 'drive/tests/background_tasks_refresh_functional.js'
       - 'drive/js/compute-node-idle.js'
       - 'drive/js/arcadecloud-updater.js'
       - 'drive/js/so-screenshot-paste.js'
@@ -100,6 +101,7 @@ on:
       - 'drive/js/upload-center.js'
       - 'drive/js/upload-destination.js'
       - 'drive/js/background-tasks.js'
+      - 'drive/tests/background_tasks_refresh_functional.js'
       - 'drive/js/compute-node-idle.js'
       - 'drive/js/arcadecloud-updater.js'
       - 'drive/js/so-screenshot-paste.js'
@@ -237,6 +239,7 @@ jobs:
           php drive/tests/web_os_clipboard_contract_smoke.php
       - name: Search location behavior
         run: |
+          node drive/tests/background_tasks_refresh_functional.js
           node drive/tests/web_os_search_location_functional.js
           node drive/tests/web_os_folder_rename_functional.js
 

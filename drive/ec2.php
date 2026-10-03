@@ -315,6 +315,7 @@ try {
 $stylesVersion = is_file(__DIR__ . '/css/styles.css') ? (int)filemtime(__DIR__ . '/css/styles.css') : 1;
 $responsiveVersion = is_file(__DIR__ . '/css/responsive.css') ? (int)filemtime(__DIR__ . '/css/responsive.css') : 1;
 $toolVersion = is_file(__DIR__ . '/css/personal-tools.css') ? (int)filemtime(__DIR__ . '/css/personal-tools.css') : 1;
+$systemPanelVersion = is_file(__DIR__ . '/css/os-system-panel.css') ? (int)filemtime(__DIR__ . '/css/os-system-panel.css') : 1;
 $themeBridgeVersion = is_file(__DIR__ . '/js/theme-state-bridge.js') ? (int)filemtime(__DIR__ . '/js/theme-state-bridge.js') : 1;
 ?><!doctype html>
 <html lang="es">
@@ -373,6 +374,7 @@ code{word-break:break-all}
 <link rel="stylesheet" href="css/styles.css?v=<?= $stylesVersion ?>">
 <link rel="stylesheet" href="css/responsive.css?v=<?= $responsiveVersion ?>">
 <link rel="stylesheet" href="css/personal-tools.css?v=<?= $toolVersion ?>">
+<link rel="stylesheet" href="css/os-system-panel.css?v=<?= $systemPanelVersion ?>">
 <script defer src="js/theme-state-bridge.js?v=<?= $themeBridgeVersion ?>"></script>
 </head>
 <body class="ui-theme theme-neon-green theme-dark vision-normal ascii-on personal-tool-page<?= $isOsSurface ? ' ec2-os-surface' : '' ?>">
@@ -388,19 +390,22 @@ code{word-break:break-all}
   </div>
 </nav>
 <?php endif; ?>
-<main class="personal-tool-shell ec2-panel-shell">
-    <header class="ec2-panel-heading">
-        <div>
-            <span class="ec2-panel-kicker">Infraestructura AWS</span>
-            <h1>Gestión EC2<?= $isOsSurface ? '' : ' + RDS Manual' ?></h1>
-            <p>Consulta y controla las instancias y bases autorizadas sin mezclar esta vista con el diagnóstico del servidor.</p>
+<main class="personal-tool-shell ec2-panel-shell os-system-shell">
+    <header class="ec2-panel-heading os-system-heading">
+        <div class="os-system-heading-main">
+            <div class="os-system-heading-icon"><i class="fas fa-toolbox"></i></div>
+            <div>
+                <span class="ec2-panel-kicker os-system-eyebrow">Infraestructura AWS</span>
+                <h1>Gestión EC2<?= $isOsSurface ? '' : ' + RDS Manual' ?></h1>
+                <p>Consulta y controla las instancias y bases autorizadas sin mezclar esta vista con el diagnóstico del servidor.</p>
+            </div>
         </div>
     </header>
-    <section class="card ec2-filter-card">
-        <div class="ec2-card-heading">
+    <section class="card ec2-filter-card os-system-card">
+        <div class="ec2-card-heading os-system-section-head">
             <div><i class="fas fa-filter"></i><span><strong>Vista</strong><small>Filtra los recursos que quieres consultar.</small></span></div>
         </div>
-        <form class="row ec2-filter-form" method="get">
+        <form class="row ec2-filter-form os-system-form" method="get">
             <?php if ($isOsSurface): ?><input type="hidden" name="surface" value="os"><?php endif; ?>
             <label>Región:
                 <input type="text" name="region" value="<?= H::e($region) ?>" placeholder="us-east-1">
@@ -430,13 +435,13 @@ code{word-break:break-all}
         <div class="alert alert-err"><strong>Error:</strong> <?= H::e($err) ?></div>
     <?php endif; ?>
 
-    <section class="card ec2-resource-card">
-        <div class="ec2-card-heading">
+    <section class="card ec2-resource-card os-system-card">
+        <div class="ec2-card-heading os-system-section-head">
             <div><i class="fas fa-server"></i><span><strong>Instancias EC2</strong><small>Estado, red y controles manuales de las instancias autorizadas.</small></span></div>
-            <span class="ec2-resource-count"><?= count($list) ?> recurso<?= count($list) === 1 ? '' : 's' ?></span>
+            <span class="ec2-resource-count os-system-count"><?= count($list) ?> recurso<?= count($list) === 1 ? '' : 's' ?></span>
         </div>
         <div class="ec2-table-wrap">
-        <table id="tbl">
+        <table id="tbl" class="os-system-table os-system-mobile-cards">
             <thead>
                 <tr>
                     <th>Acciones</th><th>ID</th><th>Nombre</th><th>Estado</th><th>Tipo</th><th>AZ</th><th>IPv4 pública</th><th>IPv4 privada</th><th>Launch Time</th>
@@ -471,7 +476,7 @@ code{word-break:break-all}
                     $isRdp = ($id === RDP_INSTANCE_ID);
             ?>
                 <tr id="row-<?= H::e($id) ?>" data-id="<?= H::e($id) ?>" data-protected="<?= $prot ? '1':'0' ?>">
-                    <td class="actions">
+                    <td class="actions" data-label="Acciones">
                         <?php if ($st === 'running'): ?>
                             <button data-action="stop" data-id="<?= H::e($id) ?>">Detener</button>
                             <label class="note"><input type="checkbox" data-force="<?= H::e($id) ?>"> force</label>
@@ -484,14 +489,14 @@ code{word-break:break-all}
                             <span class="note">Sin acción</span>
                         <?php endif; ?>
                     </td>
-                    <td><code><?= H::e($id) ?></code><?= $prot ? ' <span class="badge state-other" title="Instancia marcada como protegida">🔒 Protegida</span>' : '' ?></td>
-                    <td><?= H::e($name) ?></td>
-                    <td><span class="badge <?= H::e($cls) ?>" data-state="<?= H::e($id) ?>"><?= H::e($st) ?></span></td>
-                    <td data-type="<?= H::e($id) ?>"><?= H::e($type) ?></td>
-                    <td data-az="<?= H::e($id) ?>"><?= H::e($az) ?></td>
-                    <td data-pip="<?= H::e($id) ?>"><?= H::e($pip) ?></td>
-                    <td data-prip="<?= H::e($id) ?>"><?= H::e($prip) ?></td>
-                    <td><?= H::e($lt) ?></td>
+                    <td data-label="ID"><code><?= H::e($id) ?></code><?= $prot ? ' <span class="badge state-other" title="Instancia marcada como protegida">🔒 Protegida</span>' : '' ?></td>
+                    <td data-label="Nombre"><?= H::e($name) ?></td>
+                    <td data-label="Estado"><span class="badge <?= H::e($cls) ?>" data-state="<?= H::e($id) ?>"><?= H::e($st) ?></span></td>
+                    <td data-label="Tipo" data-type="<?= H::e($id) ?>"><?= H::e($type) ?></td>
+                    <td data-label="AZ" data-az="<?= H::e($id) ?>"><?= H::e($az) ?></td>
+                    <td data-label="IPv4 pública" data-pip="<?= H::e($id) ?>"><?= H::e($pip) ?></td>
+                    <td data-label="IPv4 privada" data-prip="<?= H::e($id) ?>"><?= H::e($prip) ?></td>
+                    <td data-label="Launch Time"><?= H::e($lt) ?></td>
                 </tr>
             <?php endforeach; endif; ?>
             </tbody>
@@ -499,14 +504,14 @@ code{word-break:break-all}
         </div>
     </section>
 
-    <section class="card ec2-resource-card">
-        <div class="ec2-card-heading">
+    <section class="card ec2-resource-card os-system-card">
+        <div class="ec2-card-heading os-system-section-head">
             <div><i class="fas fa-database"></i><span><strong>Base de datos RDS / Aurora</strong><small>Control manual de las bases configuradas.</small></span></div>
-            <span class="ec2-resource-count"><?= count($dbList) ?> recurso<?= count($dbList) === 1 ? '' : 's' ?></span>
+            <span class="ec2-resource-count os-system-count"><?= count($dbList) ?> recurso<?= count($dbList) === 1 ? '' : 's' ?></span>
         </div>
         <p class="note">Esta sección siempre muestra las bases configuradas en <code>MANUAL_DATABASE_IDS</code>. No usa horario, no hace auto-start y no hace auto-stop.</p>
         <div class="ec2-table-wrap">
-        <table id="rdsTbl">
+        <table id="rdsTbl" class="os-system-table os-system-mobile-cards">
             <thead>
                 <tr>
                     <th>Acciones</th><th>ID</th><th>Tipo AWS</th><th>Estado</th><th>Engine</th><th>Clase</th><th>Endpoint</th><th>Puerto</th><th>AZ / Multi-AZ</th>
@@ -528,7 +533,7 @@ code{word-break:break-all}
                     $multiAz = trim((string)($db['multi_az'] ?? ''));
             ?>
                 <tr id="rds-row-<?= H::e($dbId) ?>" data-rds-id="<?= H::e($dbId) ?>" data-rds-type="<?= H::e($targetType) ?>">
-                    <td class="actions rds-actions">
+                    <td class="actions rds-actions" data-label="Acciones">
                         <?php if (!$found): ?>
                             <span class="note">No encontrada</span>
                         <?php elseif ($dbStatus === 'available'): ?>
@@ -539,20 +544,20 @@ code{word-break:break-all}
                             <span class="note">Sin acción</span>
                         <?php endif; ?>
                     </td>
-                    <td><code><?= H::e($dbId) ?></code> <span class="badge state-other" title="Base de datos protegida: solo se controla manualmente con clave">🔒 Protegida</span></td>
-                    <td data-rds-aws_type="<?= H::e($dbId) ?>"><?= H::e($db['aws_type'] ?? '') ?></td>
-                    <td>
+                    <td data-label="ID"><code><?= H::e($dbId) ?></code> <span class="badge state-other" title="Base de datos protegida: solo se controla manualmente con clave">🔒 Protegida</span></td>
+                    <td data-label="Tipo AWS" data-rds-aws_type="<?= H::e($dbId) ?>"><?= H::e($db['aws_type'] ?? '') ?></td>
+                    <td data-label="Estado">
                         <span class="badge <?= H::e($dbCls) ?>" data-rds-state="<?= H::e($dbId) ?>"><?= H::e($dbStatus) ?></span>
                         <?php if (!empty($db['error'])): ?><div class="note state-error"><?= H::e($db['error']) ?></div><?php endif; ?>
                     </td>
-                    <td data-rds-engine="<?= H::e($dbId) ?>"><?= H::e($db['engine'] ?? '') ?></td>
-                    <td data-rds-class="<?= H::e($dbId) ?>"><?= H::e($db['class'] ?? '') ?></td>
-                    <td data-rds-endpoint="<?= H::e($dbId) ?>">
+                    <td data-label="Engine" data-rds-engine="<?= H::e($dbId) ?>"><?= H::e($db['engine'] ?? '') ?></td>
+                    <td data-label="Clase" data-rds-class="<?= H::e($dbId) ?>"><?= H::e($db['class'] ?? '') ?></td>
+                    <td data-label="Endpoint" data-rds-endpoint="<?= H::e($dbId) ?>">
                         <?php if ($endpoint !== ''): ?><code><?= H::e($endpoint) ?></code><?php endif; ?>
                         <?php if ($readerEndpoint !== ''): ?><div class="note">Reader: <code><?= H::e($readerEndpoint) ?></code></div><?php endif; ?>
                     </td>
-                    <td data-rds-port="<?= H::e($dbId) ?>"><?= H::e($db['port'] ?? '') ?></td>
-                    <td data-rds-az="<?= H::e($dbId) ?>"><?= H::e($azText) ?><?= $multiAz !== '' ? '<div class="note">Multi-AZ: '.H::e($multiAz).'</div>' : '' ?></td>
+                    <td data-label="Puerto" data-rds-port="<?= H::e($dbId) ?>"><?= H::e($db['port'] ?? '') ?></td>
+                    <td data-label="AZ / Multi-AZ" data-rds-az="<?= H::e($dbId) ?>"><?= H::e($azText) ?><?= $multiAz !== '' ? '<div class="note">Multi-AZ: '.H::e($multiAz).'</div>' : '' ?></td>
                 </tr>
             <?php endforeach; endif; ?>
             </tbody>

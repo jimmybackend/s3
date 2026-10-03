@@ -152,6 +152,7 @@ class FederationPortalModule {
       const rights = String(row.rights || row.Rights || '');
       const originNodeId = String(row.origin_node_id || row.OriginNodeId || '');
       const federationUrl = String(row.federation_url || row.FederationUrl || '');
+      const deliveryCount = Number.parseInt(String(row.delivery_count ?? row.DeliveryCount ?? 0), 10) || 0;
       const locations = Array.isArray(row.locations) ? row.locations : [];
       const preferred = row.preferred_location && typeof row.preferred_location === 'object' ? row.preferred_location : null;
 
@@ -229,6 +230,7 @@ class FederationPortalModule {
         </div>
         <div class="small text-muted text-break">${this.escape(resourceId)}</div>
         <div class="small text-muted mt-1">Origen: ${this.escape(originNodeId || 'desconocido')} · ubicaciones conocidas: ${locations.length}</div>
+        <div class="small text-muted mt-1">Descargas federadas completadas: ${deliveryCount}</div>
         <div class="small text-muted mt-1">Preferida: ${this.escape(preferredText)}</div>`;
 
       card.appendChild(body);

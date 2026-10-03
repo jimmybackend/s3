@@ -4,10 +4,10 @@
 
 ## Resumen
 
-- PHP analizados: **520**
+- PHP analizados: **521**
 - PHP que ya contienen clases/interfaces: **300**
 - PHP marcados para migración/revisión: **0**
-- Tests PHP separados del objetivo OOP de runtime: **64**
+- Tests PHP separados del objetivo OOP de runtime: **65**
 - JavaScript analizados: **78**
 - JavaScript que ya contienen clases: **73**
 - JavaScript runtime marcados para migración/revisión: **0**
@@ -428,7 +428,7 @@
 | `drive/src/System/NodeServiceCatalog.php` | 35 | class/module | 1 | — | — | — | — |
 | `drive/src/Upload/AdminMultipartUploadService.php` | 221 | class/module | 1 | — | — | — | — |
 | `drive/src/Upload/ChunkedUploadCleanupService.php` | 101 | class/module | 1 | — | — | — | — |
-| `drive/src/Upload/PublicDropzoneUploadService.php` | 133 | class/module | 1 | — | — | — | — |
+| `drive/src/Upload/PublicDropzoneUploadService.php` | 143 | class/module | 1 | — | — | — | — |
 | `drive/src/Upload/PublicMultipartUploadService.php` | 262 | class/module | 1 | — | — | — | — |
 | `drive/src/Upload/PublicSharedBrowserRepository.php` | 61 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Upload/PublicSharedBrowserService.php` | 189 | class/module | 1 | — | — | — | — |
@@ -496,6 +496,7 @@
 | `drive/tests/office_conditional_save_regression.php` | 148 | test script | 1 | — | ⚠️ | — | — |
 | `drive/tests/office_gateway_contract_smoke.php` | 376 | test script | 0 | — | — | — | — |
 | `drive/tests/password_credential_verifier_smoke.php` | 44 | test script | 0 | — | — | — | — |
+| `drive/tests/public_upload_rollback_regression.php` | 68 | test script | 0 | — | ⚠️ | ⚠️ | — |
 | `drive/tests/scoped_sync_repository_regression.php` | 96 | test script | 0 | — | ⚠️ | — | — |
 | `drive/tests/security_hardening_smoke.php` | 59 | test script | 0 | — | — | — | — |
 | `drive/tests/server_admin_config_smoke.php` | 218 | test script | 0 | — | — | — | — |

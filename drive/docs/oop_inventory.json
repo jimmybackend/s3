@@ -1,9 +1,9 @@
 {
   "summary": {
-    "php_total": 520,
+    "php_total": 521,
     "php_class_modules": 300,
     "php_needs_migration": 0,
-    "php_tests": 64,
+    "php_tests": 65,
     "js_total": 78,
     "js_class_modules": 73,
     "js_needs_migration": 0,
@@ -6036,7 +6036,7 @@
     },
     {
       "path": "drive/src/Upload/PublicDropzoneUploadService.php",
-      "lines": 133,
+      "lines": 143,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -7129,6 +7129,23 @@
       "superglobals": [],
       "db": false,
       "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/tests/public_upload_rollback_regression.php",
+      "lines": 68,
+      "kind": "test script",
+      "classes": 0,
+      "functions": [
+        "uploadCheck"
+      ],
+      "session": false,
+      "superglobals": [],
+      "db": true,
+      "s3": true,
       "bootstrap": false,
       "html": false,
       "namespace": false,
@@ -10019,7 +10036,7 @@
     },
     {
       "path": "drive/docs/runtime_endpoints.json",
-      "bytes": 119941,
+      "bytes": 120273,
       "valid": true,
       "root_type": "object",
       "keys": [

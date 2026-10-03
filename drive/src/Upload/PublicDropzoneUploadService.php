@@ -70,17 +70,27 @@ final class PublicDropzoneUploadService
             'ContentType' => $contentType,
         ]);
 
-        $fileId = $this->repository->insert([
-            'Nombre' => $nameOrig,
-            'Encriptado' => $physicalName,
-            'Tamano' => $size,
-            'Metadatos' => json_encode($metadata, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
-            'Ruta' => $prefix,
-            'Found' => 1,
-            'AccessType' => 'normal',
-            'Fecha' => date('Y-m-d H:i:s'),
-            'user_id_' => max(0, $userId),
-        ]);
+        try {
+            $fileId = $this->repository->insert([
+                'Nombre' => $nameOrig,
+                'Encriptado' => $physicalName,
+                'Tamano' => $size,
+                'Metadatos' => json_encode($metadata, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+                'Ruta' => $prefix,
+                'Found' => 1,
+                'AccessType' => 'normal',
+                'Fecha' => date('Y-m-d H:i:s'),
+                'user_id_' => max(0, $userId),
+            ]);
+        } catch (\Throwable $error) {
+            // The key belongs exclusively to this upload; keep the catalog error
+            // if best-effort cleanup also fails, as in SingleUploadService.
+            try {
+                $this->s3->deleteObject(['Bucket' => $this->bucket, 'Key' => $key]);
+            } catch (\Throwable) {
+            }
+            throw $error;
+        }
 
         return [
             'estado' => 'ok',

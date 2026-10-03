@@ -258,7 +258,11 @@ class ArcadeCloudOsNodeMonitor {
       if (!response.ok || data?.ok !== true) throw new Error(data?.error || 'No se pudo crear el respaldo.');
       const backup = data.backup || {};
       const location = String(backup.route || 'Backup/') + String(backup.filename || '');
-      this.notify('Respaldo creado: ' + location, 'success');
+      const inventory = backup.inventory || {};
+      const detail = backup.verified_complete === true
+        ? ' · verificado: ' + String(inventory.tables ?? 0) + ' tablas, ' + String(inventory.rows ?? 0) + ' filas, ' + String(inventory.views ?? 0) + ' vistas, ' + String((inventory.procedures ?? 0) + (inventory.functions ?? 0)) + ' rutinas, ' + String(inventory.triggers ?? 0) + ' triggers, ' + String(inventory.events ?? 0) + ' eventos'
+        : '';
+      this.notify('Respaldo creado: ' + location + detail, 'success');
     } catch (error) {
       this.notify(error?.message || 'No se pudo crear el respaldo de la base de datos.', 'warning');
     } finally {

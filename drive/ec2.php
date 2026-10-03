@@ -435,133 +435,131 @@ code{word-break:break-all}
         <div class="alert alert-err"><strong>Error:</strong> <?= H::e($err) ?></div>
     <?php endif; ?>
 
-    <section class="card ec2-resource-card os-system-card">
-        <div class="ec2-card-heading os-system-section-head">
-            <div><i class="fas fa-server"></i><span><strong>Instancias EC2</strong><small>Estado, red y controles manuales de las instancias autorizadas.</small></span></div>
-            <span class="ec2-resource-count os-system-count"><?= count($list) ?> recurso<?= count($list) === 1 ? '' : 's' ?></span>
+    <section class="os-node-card os-node-card-wide ec2-resource-card">
+        <div class="ec2-node-section-title">
+            <h3>Instancias EC2</h3>
+            <span class="os-node-badge"><?= count($list) ?> recurso<?= count($list) === 1 ? '' : 's' ?></span>
         </div>
-        <div class="ec2-table-wrap">
-        <table id="tbl" class="os-system-table os-system-mobile-cards">
-            <thead>
-                <tr>
-                    <th>Acciones</th><th>ID</th><th>Nombre</th><th>Estado</th><th>Tipo</th><th>AZ</th><th>IPv4 pública</th><th>IPv4 privada</th><th>Launch Time</th>
-                </tr>
-            </thead>
-            <tbody>
-            <?php if (!$list): ?>
-                <tr><td colspan="9">Sin resultados EC2 en esta región/filtro.</td></tr>
-            <?php else:
-                foreach ($list as $i):
-                    $id   = (string)($i['InstanceId'] ?? '');
-                    $name = H::tag($i, 'Name');
-                    $st   = (string)($i['State']['Name'] ?? 'unknown');
-                    $cls  = $st === 'running' ? 'state-running' : ($st === 'stopped' ? 'state-stopped' : 'state-other');
-                    $type = (string)($i['InstanceType'] ?? '');
-                    $az   = (string)($i['Placement']['AvailabilityZone'] ?? '');
-                    $pip  = (string)($i['PublicIpAddress'] ?? '');
-                    $prip = (string)($i['PrivateIpAddress'] ?? '');
-                    $launchTime = $i['LaunchTime'] ?? null;
-                    if ($launchTime instanceof \DateTimeInterface) {
-                        $lt = $launchTime->format('Y-m-d H:i:s T');
-                    } elseif (is_string($launchTime) && trim($launchTime) !== '') {
-                        try {
-                            $lt = (new \DateTime($launchTime))->format('Y-m-d H:i:s T');
-                        } catch (\Throwable $dateError) {
-                            $lt = $launchTime;
-                        }
-                    } else {
-                        $lt = '';
+        <p class="os-node-card-subtitle">Estado, red y controles manuales de las instancias autorizadas.</p>
+        <div id="tbl" class="os-node-dashboard ec2-instance-grid">
+        <?php if (!$list): ?>
+            <div class="os-node-placeholder">Sin resultados EC2 en esta región/filtro.</div>
+        <?php else:
+            foreach ($list as $i):
+                $id   = (string)($i['InstanceId'] ?? '');
+                $name = H::tag($i, 'Name');
+                $st   = (string)($i['State']['Name'] ?? 'unknown');
+                $cls  = $st === 'running' ? 'state-running os-node-badge-ok' : ($st === 'stopped' ? 'state-stopped os-node-badge-warning' : 'state-other');
+                $type = (string)($i['InstanceType'] ?? '');
+                $az   = (string)($i['Placement']['AvailabilityZone'] ?? '');
+                $pip  = (string)($i['PublicIpAddress'] ?? '');
+                $prip = (string)($i['PrivateIpAddress'] ?? '');
+                $launchTime = $i['LaunchTime'] ?? null;
+                if ($launchTime instanceof \DateTimeInterface) {
+                    $lt = $launchTime->format('Y-m-d H:i:s T');
+                } elseif (is_string($launchTime) && trim($launchTime) !== '') {
+                    try {
+                        $lt = (new \DateTime($launchTime))->format('Y-m-d H:i:s T');
+                    } catch (\Throwable $dateError) {
+                        $lt = $launchTime;
                     }
-                    $prot = H::isProtected($id);
-                    $isRdp = ($id === RDP_INSTANCE_ID);
-            ?>
-                <tr id="row-<?= H::e($id) ?>" data-id="<?= H::e($id) ?>" data-protected="<?= $prot ? '1':'0' ?>">
-                    <td class="actions" data-label="Acciones">
-                        <?php if ($st === 'running'): ?>
-                            <button data-action="stop" data-id="<?= H::e($id) ?>">Detener</button>
-                            <label class="note"><input type="checkbox" data-force="<?= H::e($id) ?>"> force</label>
-                            <?php if ($isRdp && $pip !== ''): ?>
-                                <a class="rdp" href="?download=rdp&id=<?= H::e($id) ?>&region=<?= H::e($region) ?>">Descargar RDP</a>
-                            <?php endif; ?>
-                        <?php elseif ($st === 'stopped'): ?>
-                            <button data-action="start" data-id="<?= H::e($id) ?>">Encender</button>
-                        <?php else: ?>
-                            <span class="note">Sin acción</span>
+                } else {
+                    $lt = '';
+                }
+                $prot = H::isProtected($id);
+                $isRdp = ($id === RDP_INSTANCE_ID);
+        ?>
+            <article class="os-node-card ec2-instance-card"
+                     id="row-<?= H::e($id) ?>"
+                     data-id="<?= H::e($id) ?>"
+                     data-protected="<?= $prot ? '1':'0' ?>">
+                <div class="ec2-node-card-title">
+                    <h3><?= H::e($name !== '' ? $name : $id) ?></h3>
+                    <span class="os-node-badge <?= H::e($cls) ?>" data-state="<?= H::e($id) ?>"><?= H::e($st) ?></span>
+                </div>
+                <dl>
+                    <dt>Instance ID</dt><dd><code><?= H::e($id) ?></code></dd>
+                    <dt>Protección</dt><dd><?= $prot ? 'Protegida' : 'Normal' ?></dd>
+                    <dt>Tipo</dt><dd data-type="<?= H::e($id) ?>"><?= H::e($type ?: '—') ?></dd>
+                    <dt>Zona</dt><dd data-az="<?= H::e($id) ?>"><?= H::e($az ?: '—') ?></dd>
+                    <dt>IPv4 pública</dt><dd data-pip="<?= H::e($id) ?>"><?= H::e($pip ?: '—') ?></dd>
+                    <dt>IPv4 privada</dt><dd data-prip="<?= H::e($id) ?>"><?= H::e($prip ?: '—') ?></dd>
+                    <dt>Inicio</dt><dd><?= H::e($lt ?: '—') ?></dd>
+                </dl>
+                <div class="actions os-node-card-actions">
+                    <?php if ($st === 'running'): ?>
+                        <button class="is-danger" data-action="stop" data-id="<?= H::e($id) ?>">Detener</button>
+                        <label class="note ec2-force-option"><input type="checkbox" data-force="<?= H::e($id) ?>"> force</label>
+                        <?php if ($isRdp && $pip !== ''): ?>
+                            <a class="rdp" href="?download=rdp&id=<?= H::e($id) ?>&region=<?= H::e($region) ?>">Descargar RDP</a>
                         <?php endif; ?>
-                    </td>
-                    <td data-label="ID"><code><?= H::e($id) ?></code><?= $prot ? ' <span class="badge state-other" title="Instancia marcada como protegida">🔒 Protegida</span>' : '' ?></td>
-                    <td data-label="Nombre"><?= H::e($name) ?></td>
-                    <td data-label="Estado"><span class="badge <?= H::e($cls) ?>" data-state="<?= H::e($id) ?>"><?= H::e($st) ?></span></td>
-                    <td data-label="Tipo" data-type="<?= H::e($id) ?>"><?= H::e($type) ?></td>
-                    <td data-label="AZ" data-az="<?= H::e($id) ?>"><?= H::e($az) ?></td>
-                    <td data-label="IPv4 pública" data-pip="<?= H::e($id) ?>"><?= H::e($pip) ?></td>
-                    <td data-label="IPv4 privada" data-prip="<?= H::e($id) ?>"><?= H::e($prip) ?></td>
-                    <td data-label="Launch Time"><?= H::e($lt) ?></td>
-                </tr>
-            <?php endforeach; endif; ?>
-            </tbody>
-        </table>
+                    <?php elseif ($st === 'stopped'): ?>
+                        <button data-action="start" data-id="<?= H::e($id) ?>">Encender</button>
+                    <?php else: ?>
+                        <span class="note">Sin acción disponible</span>
+                    <?php endif; ?>
+                </div>
+            </article>
+        <?php endforeach; endif; ?>
         </div>
     </section>
 
-    <section class="card ec2-resource-card os-system-card">
-        <div class="ec2-card-heading os-system-section-head">
-            <div><i class="fas fa-database"></i><span><strong>Base de datos RDS / Aurora</strong><small>Control manual de las bases configuradas.</small></span></div>
-            <span class="ec2-resource-count os-system-count"><?= count($dbList) ?> recurso<?= count($dbList) === 1 ? '' : 's' ?></span>
+    <section class="os-node-card os-node-card-wide ec2-resource-card">
+        <div class="ec2-node-section-title">
+            <h3>Base de datos RDS / Aurora</h3>
+            <span class="os-node-badge"><?= count($dbList) ?> recurso<?= count($dbList) === 1 ? '' : 's' ?></span>
         </div>
-        <p class="note">Esta sección siempre muestra las bases configuradas en <code>MANUAL_DATABASE_IDS</code>. No usa horario, no hace auto-start y no hace auto-stop.</p>
-        <div class="ec2-table-wrap">
-        <table id="rdsTbl" class="os-system-table os-system-mobile-cards">
-            <thead>
-                <tr>
-                    <th>Acciones</th><th>ID</th><th>Tipo AWS</th><th>Estado</th><th>Engine</th><th>Clase</th><th>Endpoint</th><th>Puerto</th><th>AZ / Multi-AZ</th>
-                </tr>
-            </thead>
-            <tbody>
-            <?php if (!$dbList): ?>
-                <tr><td colspan="9">No hay bases configuradas para control manual.</td></tr>
-            <?php else:
-                foreach ($dbList as $db):
-                    $dbId = (string)$db['id'];
-                    $dbStatus = (string)$db['status'];
-                    $dbCls = H::databaseStateClass($dbStatus);
-                    $found = !empty($db['found']);
-                    $targetType = (string)($db['target_type'] ?? '');
-                    $endpoint = (string)($db['endpoint'] ?? '');
-                    $readerEndpoint = (string)($db['reader_endpoint'] ?? '');
-                    $azText = trim((string)($db['az'] ?? ''));
-                    $multiAz = trim((string)($db['multi_az'] ?? ''));
-            ?>
-                <tr id="rds-row-<?= H::e($dbId) ?>" data-rds-id="<?= H::e($dbId) ?>" data-rds-type="<?= H::e($targetType) ?>">
-                    <td class="actions rds-actions" data-label="Acciones">
-                        <?php if (!$found): ?>
-                            <span class="note">No encontrada</span>
-                        <?php elseif ($dbStatus === 'available'): ?>
-                            <button data-rds-action="stop" data-rds-id="<?= H::e($dbId) ?>">Apagar DB</button>
-                        <?php elseif ($dbStatus === 'stopped'): ?>
-                            <button data-rds-action="start" data-rds-id="<?= H::e($dbId) ?>">Encender DB</button>
-                        <?php else: ?>
-                            <span class="note">Sin acción</span>
-                        <?php endif; ?>
-                    </td>
-                    <td data-label="ID"><code><?= H::e($dbId) ?></code> <span class="badge state-other" title="Base de datos protegida: solo se controla manualmente con clave">🔒 Protegida</span></td>
-                    <td data-label="Tipo AWS" data-rds-aws_type="<?= H::e($dbId) ?>"><?= H::e($db['aws_type'] ?? '') ?></td>
-                    <td data-label="Estado">
-                        <span class="badge <?= H::e($dbCls) ?>" data-rds-state="<?= H::e($dbId) ?>"><?= H::e($dbStatus) ?></span>
-                        <?php if (!empty($db['error'])): ?><div class="note state-error"><?= H::e($db['error']) ?></div><?php endif; ?>
-                    </td>
-                    <td data-label="Engine" data-rds-engine="<?= H::e($dbId) ?>"><?= H::e($db['engine'] ?? '') ?></td>
-                    <td data-label="Clase" data-rds-class="<?= H::e($dbId) ?>"><?= H::e($db['class'] ?? '') ?></td>
-                    <td data-label="Endpoint" data-rds-endpoint="<?= H::e($dbId) ?>">
-                        <?php if ($endpoint !== ''): ?><code><?= H::e($endpoint) ?></code><?php endif; ?>
-                        <?php if ($readerEndpoint !== ''): ?><div class="note">Reader: <code><?= H::e($readerEndpoint) ?></code></div><?php endif; ?>
-                    </td>
-                    <td data-label="Puerto" data-rds-port="<?= H::e($dbId) ?>"><?= H::e($db['port'] ?? '') ?></td>
-                    <td data-label="AZ / Multi-AZ" data-rds-az="<?= H::e($dbId) ?>"><?= H::e($azText) ?><?= $multiAz !== '' ? '<div class="note">Multi-AZ: '.H::e($multiAz).'</div>' : '' ?></td>
-                </tr>
-            <?php endforeach; endif; ?>
-            </tbody>
-        </table>
+        <p class="os-node-card-subtitle">Control manual de las bases configuradas. No usa horarios ni auto-start/auto-stop.</p>
+        <div id="rdsTbl" class="os-node-dashboard ec2-instance-grid">
+        <?php if (!$dbList): ?>
+            <div class="os-node-placeholder">No hay bases configuradas para control manual.</div>
+        <?php else:
+            foreach ($dbList as $db):
+                $dbId = (string)$db['id'];
+                $dbStatus = (string)$db['status'];
+                $dbCls = H::databaseStateClass($dbStatus);
+                $dbBadge = $dbStatus === 'available' ? 'os-node-badge-ok' : ($dbStatus === 'stopped' ? 'os-node-badge-warning' : ($dbStatus === 'error' ? 'os-node-badge-danger' : ''));
+                $found = !empty($db['found']);
+                $targetType = (string)($db['target_type'] ?? '');
+                $endpoint = (string)($db['endpoint'] ?? '');
+                $readerEndpoint = (string)($db['reader_endpoint'] ?? '');
+                $azText = trim((string)($db['az'] ?? ''));
+                $multiAz = trim((string)($db['multi_az'] ?? ''));
+        ?>
+            <article class="os-node-card ec2-instance-card"
+                     id="rds-row-<?= H::e($dbId) ?>"
+                     data-rds-id="<?= H::e($dbId) ?>"
+                     data-rds-type="<?= H::e($targetType) ?>">
+                <div class="ec2-node-card-title">
+                    <h3><?= H::e($dbId) ?></h3>
+                    <span class="os-node-badge <?= H::e($dbCls . ' ' . $dbBadge) ?>" data-rds-state="<?= H::e($dbId) ?>"><?= H::e($dbStatus) ?></span>
+                </div>
+                <dl>
+                    <dt>Protección</dt><dd>Protegida</dd>
+                    <dt>Tipo AWS</dt><dd data-rds-aws_type="<?= H::e($dbId) ?>"><?= H::e($db['aws_type'] ?? '—') ?></dd>
+                    <dt>Engine</dt><dd data-rds-engine="<?= H::e($dbId) ?>"><?= H::e($db['engine'] ?? '—') ?></dd>
+                    <dt>Clase</dt><dd data-rds-class="<?= H::e($dbId) ?>"><?= H::e($db['class'] ?? '—') ?></dd>
+                    <dt>Endpoint</dt><dd data-rds-endpoint="<?= H::e($dbId) ?>">
+                        <?= $endpoint !== '' ? '<code>'.H::e($endpoint).'</code>' : '—' ?>
+                        <?= $readerEndpoint !== '' ? '<div class="note">Reader: <code>'.H::e($readerEndpoint).'</code></div>' : '' ?>
+                    </dd>
+                    <dt>Puerto</dt><dd data-rds-port="<?= H::e($dbId) ?>"><?= H::e($db['port'] ?? '—') ?></dd>
+                    <dt>AZ / Multi-AZ</dt><dd data-rds-az="<?= H::e($dbId) ?>"><?= H::e($azText ?: '—') ?><?= $multiAz !== '' ? '<div class="note">Multi-AZ: '.H::e($multiAz).'</div>' : '' ?></dd>
+                </dl>
+                <?php if (!empty($db['error'])): ?><div class="note state-error"><?= H::e($db['error']) ?></div><?php endif; ?>
+                <div class="actions rds-actions os-node-card-actions">
+                    <?php if (!$found): ?>
+                        <span class="note">No encontrada</span>
+                    <?php elseif ($dbStatus === 'available'): ?>
+                        <button class="is-danger" data-rds-action="stop" data-rds-id="<?= H::e($dbId) ?>">Apagar DB</button>
+                    <?php elseif ($dbStatus === 'stopped'): ?>
+                        <button data-rds-action="start" data-rds-id="<?= H::e($dbId) ?>">Encender DB</button>
+                    <?php else: ?>
+                        <span class="note">Sin acción disponible</span>
+                    <?php endif; ?>
+                </div>
+            </article>
+        <?php endforeach; endif; ?>
         </div>
     </section>
 

@@ -180,7 +180,7 @@ Dentro del mismo nivel se prefiere la ubicación más reciente.
 
 La búsqueda global devuelve `preferred_location`.
 
-Para `PUBLIC + copy_allowed`, `/federationcloud/replica-open.php` no exige sesión: la política pública se valida en el backend antes de emitir una URL. El botón **Descargar público** no divide la descarga del navegador entre nodos: prueba candidatos en orden y redirige al primer S3 temporal que responde correctamente. Si una credencial S3 está vencida/incorrecta o un mirror no responde, prueba el siguiente provider y finalmente el origin.
+Para `PUBLIC + copy_allowed`, `/federationcloud/replica-open.php` no exige sesión: la política pública se valida antes de transferir bytes. El nodo que atiende al navegador reúne hasta cuatro ubicaciones válidas, descarga rangos HTTP en paralelo mediante `FederationMultiSourceDownloader`, aplica fallback por rango cuando una fuente falla, ensambla en archivo temporal y exige que el SHA-256 final coincida con el Content ID antes de transmitirlo al usuario. Si sólo existe una fuente sana, usa la misma ruta de streaming con una sola fuente; no inventa multisource ni exige quorum.
 
 El origen firmado en `FederatedResources` es siempre candidato. Si su `location.upsert` todavía no está materializado pero el recurso global conserva `OriginNodeId` y `FederationUrl` válidos, el resolver reconstruye únicamente ese candidato de origen desde el recurso firmado. La existencia de otro provider/mirror no puede ocultarlo. Para esta descarga no existe quorum ni mínimo de dos nodos: una sola fuente saludable es suficiente.
 
@@ -204,7 +204,7 @@ Cola operacional `incoming/outgoing`, intentos, backoff, estado y errores. No se
 
 Mapa local de objetos físicos FederationCloud almacenados en el S3 del nodo. Tampoco se gossip-ea.
 
-Lo único global es el evento firmado `location.upsert` emitido después de verificar almacenamiento.
+Las ubicaciones se publican con el evento firmado `location.upsert`. Además, una entrega pública completada emite `delivery.record`: el evento no contiene IP del cliente ni URLs S3, sólo Resource ID, nodo que atendió la descarga, nodos fuente/roles, bytes, modo de transporte y fecha. Cada nodo materializa esos eventos en `FederationResourceDeliveries` y `FederationResourceDeliverySources`, permitiendo consultar contador e historial por recurso y por nodo sin un contador central obligatorio.
 
 ## Reintentos
 

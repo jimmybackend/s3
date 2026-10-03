@@ -2093,7 +2093,7 @@
     },
     {
       "path": "drive/so.php",
-      "lines": 2065,
+      "lines": 2122,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -6680,7 +6680,7 @@
     },
     {
       "path": "drive/tests/database_backup_contract_smoke.php",
-      "lines": 58,
+      "lines": 67,
       "kind": "test script",
       "classes": 0,
       "functions": [],
@@ -9452,7 +9452,7 @@
     },
     {
       "path": "drive/js/so-node.js",
-      "lines": 294,
+      "lines": 347,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudOsNodeMonitor"

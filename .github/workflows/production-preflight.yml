@@ -1,0 +1,36 @@
+name: Production preflight contract
+
+on:
+  pull_request:
+    paths:
+      - 'drive/src/Admin/ProductionPreflightService.php'
+      - 'drive/bin/production_preflight.php'
+      - 'drive/tests/production_preflight_contract_smoke.php'
+      - 'drive/docs/MONDAY_PRODUCTION_VALIDATION.md'
+      - '.github/workflows/production-preflight.yml'
+  push:
+    branches: [ main ]
+    paths:
+      - 'drive/src/Admin/ProductionPreflightService.php'
+      - 'drive/bin/production_preflight.php'
+      - 'drive/tests/production_preflight_contract_smoke.php'
+      - 'drive/docs/MONDAY_PRODUCTION_VALIDATION.md'
+      - '.github/workflows/production-preflight.yml'
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+      - name: Syntax
+        run: |
+          php -l drive/src/Admin/ProductionPreflightService.php
+          php -l drive/bin/production_preflight.php
+          php -l drive/tests/production_preflight_contract_smoke.php
+      - name: Read-only preflight contract
+        run: php drive/tests/production_preflight_contract_smoke.php
+      - name: Diff check
+        run: git diff --check

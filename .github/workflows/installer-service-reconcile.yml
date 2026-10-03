@@ -26,6 +26,8 @@ on:
       - 'drive/tests/fresh_install_contract_smoke.php'
       - 'drive/tests/installer_php_selection_regression.sh'
       - '.github/workflows/installer-service-reconcile.yml'
+      - '.gitignore'
+      - 'drive/tests/updater_runtime_ignore.sh'
 
 jobs:
   contract:
@@ -62,3 +64,5 @@ jobs:
         run: |
           php drive/tests/installer_service_reconcile_contract_smoke.php
           php drive/tests/fresh_install_contract_smoke.php
+      - name: Runtime state stays outside Git and updater stashes
+        run: bash drive/tests/updater_runtime_ignore.sh

@@ -1,1 +1,5 @@
-(empty)
+# Installed Composer dependencies are rebuilt from composer.lock.
+/vendor/
+
+# Active multipart state and leases belong to the running node, not Git.
+/drive/upload/storage/state/

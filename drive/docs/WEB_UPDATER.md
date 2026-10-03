@@ -150,3 +150,15 @@ git restore --source=HEAD --worktree drive/bin/media_worker_node_bootstrap.sh
 ```
 
 Después, `git status --short` debe quedar vacío salvo que existan otros cambios locales reales. A partir de esta corrección, futuras reconciliaciones del worker no deben volver a ensuciar el repositorio por ese archivo.
+
+## Estado multipart y dependencias dentro del checkout
+
+Git ignora específicamente `/vendor/` y `/drive/upload/storage/state/`. Este
+último es el directorio real de `UploadStateStore`, incluidos sus leases. No deben
+provocar un checkout dirty ni entrar en el `stash --include-untracked` del updater,
+porque retirar un estado activo interrumpiría su subida. No se ignora `storage/`
+completo: `UploadStateStore.php` y los demás archivos de código siguen rastreados.
+
+La configuración privada permanece fuera del checkout. Cambios a archivos de
+código ya rastreados siguen apareciendo y bloqueando la actualización normal.
+No se borra ni mueve ningún estado existente al actualizar `.gitignore`.

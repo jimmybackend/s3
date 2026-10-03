@@ -109,6 +109,7 @@
         "drive/costos_aws.php",
         "drive/crear_carpeta.php",
         "drive/create_folder_document.php",
+        "drive/database-backup.php",
         "drive/delete_multiple.php",
         "drive/descargar.php",
         "drive/descargar_archivo.php",
@@ -515,6 +516,15 @@
       "active": false,
       "references": [
         "drive/js/folder-document.js"
+      ]
+    },
+    {
+      "path": "drive/database-backup.php",
+      "size": 265,
+      "active": false,
+      "references": [
+        "drive/tests/database_backup_contract_smoke.php",
+        "drive/js/so-node.js"
       ]
     },
     {
@@ -1600,6 +1610,14 @@
         "drive/tests/federation_moderation_contract_smoke.php",
         "drive/tests/installer_service_reconcile_contract_smoke.php",
         "drive/tests/web_os_contract_smoke.php"
+      ]
+    },
+    {
+      "path": "drive/src/Admin/DatabaseBackupService.php",
+      "size": 7934,
+      "active": false,
+      "references": [
+        "drive/tests/database_backup_contract_smoke.php"
       ]
     },
     {
@@ -2702,6 +2720,14 @@
       ]
     },
     {
+      "path": "drive/src/Http/Controller/DatabaseBackupController.php",
+      "size": 1924,
+      "active": false,
+      "references": [
+        "drive/tests/database_backup_contract_smoke.php"
+      ]
+    },
+    {
       "path": "drive/src/Http/Controller/FederationAccessController.php",
       "size": 5699,
       "active": false,
@@ -3799,6 +3825,12 @@
       "references": []
     },
     {
+      "path": "drive/tests/database_backup_contract_smoke.php",
+      "size": 3016,
+      "active": false,
+      "references": []
+    },
+    {
       "path": "drive/tests/database_schema_contract_smoke.php",
       "size": 6505,
       "active": false,
@@ -4264,9 +4296,11 @@
       "references": [
         "drive/src/Http/Controller/UploadCleanupController.php",
         "drive/src/Upload/AdminMultipartUploadService.php",
+        "drive/tests/database_backup_contract_smoke.php",
         "drive/tests/federation_moderation_contract_smoke.php",
         "drive/tests/upload_catalog_registration_regression.php",
-        "drive/js/estilo.js"
+        "drive/js/estilo.js",
+        "drive/js/so-node.js"
       ]
     },
     {

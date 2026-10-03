@@ -37,8 +37,8 @@ $assert(str_contains($writer, "SHOW CREATE TABLE"), 'writer exports final table 
 $assert(str_contains($writer, "SHOW CREATE VIEW"), 'writer exports views');
 $assert(str_contains($writer, "SHOW CREATE ' . \$type"), 'writer exports routines, triggers and events');
 $assert(str_contains($writer, 'information_schema.ROUTINES'), 'writer inventories procedures and functions');
-$assert(str_contains($writer, 'information_schema.TRIGGERS'), 'writer inventories triggers');
-$assert(str_contains($writer, 'information_schema.EVENTS'), 'writer inventories events');
+$assert(str_contains($writer, "'TRIGGERS' => ['TRIGGER_NAME', 'TRIGGER_SCHEMA']"), 'writer inventories triggers');
+$assert(str_contains($writer, "'EVENTS' => ['EVENT_NAME', 'EVENT_SCHEMA']"), 'writer inventories events');
 $assert(str_contains($writer, "SELECT COUNT(*) FROM"), 'writer verifies per-table row counts');
 $assert(str_contains($writer, "Rows verified"), 'dump records row verification');
 $assert(str_contains($writer, "-- Status: COMPLETE"), 'dump has an explicit complete marker');

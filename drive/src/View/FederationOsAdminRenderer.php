@@ -36,7 +36,9 @@ final class FederationOsAdminRenderer
 <body class="ui-theme theme-neon-green theme-dark vision-normal ascii-on federation-os-admin<?= $embed ? ' is-embedded' : '' ?>"
       data-superadmin="<?= $isSuperAdmin ? '1' : '0' ?>"
       data-provider-csrf="<?= $h($providerCsrf) ?>">
-<main class="federation-os-admin-shell os-system-shell">
+<main class="federation-os-admin-shell os-system-shell federation-os-admin"
+      data-superadmin="<?= $isSuperAdmin ? '1' : '0' ?>"
+      data-provider-csrf="<?= $h($providerCsrf) ?>">
   <header class="federation-os-about-header os-system-heading">
     <div class="os-system-heading-main">
       <div class="os-system-heading-icon"><i class="fas fa-circle-info"></i></div>
@@ -109,7 +111,7 @@ final class FederationOsAdminRenderer
           id="btnServerAdmin"
           class="d-none"
           data-csrf="<?= $h($serverAdminCsrf) ?>"
-          data-endpoint="../server-settings.php"
+          data-endpoint="/server-settings.php"
           aria-hidden="true"></button>
 
   <section class="os-node-card os-node-card-wide" id="modalServerAdmin">
@@ -173,7 +175,7 @@ final class FederationOsAdminRenderer
       <dt>Bloqueos activos propios</dt><dd id="federationModerationBlocks">—</dd>
     </dl>
     <p class="federation-os-help">La revisión humana, bloqueo por SHA-256 y revocación siguen usando el servicio de moderación existente.</p>
-    <a class="btn btn-outline-danger" href="moderation.php?embed=1">
+    <a class="btn btn-outline-danger" href="/federationcloud/moderation.php?embed=1">
       <i class="fas fa-shield-halved mr-1"></i>Abrir opciones de moderación
     </a>
   </section>

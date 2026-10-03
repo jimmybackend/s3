@@ -941,15 +941,20 @@ class ArcadeCloudDesktopRuntime {
     body.replaceChildren(embedded);
     body.querySelectorAll('a[href]').forEach(link => { link.href = new URL(link.getAttribute('href'), requestUrl).toString(); });
     body.querySelectorAll('form').forEach(form => { form.action = new URL(form.getAttribute('action') || requestUrl, requestUrl).toString(); });
-    page.querySelectorAll('script').forEach(oldScript => {
-      if (/theme-state-bridge\.js/.test(oldScript.src || '')) { oldScript.remove(); return; }
-      if (oldScript.src && /(?:jquery|bootstrap|fontawesome)/i.test(oldScript.src)) return;
+    for (const oldScript of page.querySelectorAll('script')) {
+      if (/theme-state-bridge\.js/.test(oldScript.src || '')) { oldScript.remove(); continue; }
+      if (oldScript.src && /(?:jquery|bootstrap|fontawesome)/i.test(oldScript.src)) continue;
       const script = this.document.createElement('script');
       Array.from(oldScript.attributes || []).forEach(attribute => script.setAttribute(attribute.name, attribute.value));
       if (oldScript.getAttribute('src')) script.src = new URL(oldScript.getAttribute('src'), requestUrl).toString();
       else script.textContent = oldScript.textContent;
-      embedded.append(script);
-    });
+      if (script.src) {
+        await new Promise((resolve, reject) => {
+          script.onload = resolve; script.onerror = () => reject(new Error('No se pudo cargar la herramienta.'));
+          embedded.append(script);
+        });
+      } else embedded.append(script);
+    }
   }
 
   enhanceFolderMenu() {

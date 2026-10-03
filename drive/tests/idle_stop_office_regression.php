@@ -100,7 +100,7 @@ try {
     $documents->create(2, 1, 'i-12345678', 'Data2/physical.docx', 'Informe.docx');
     $db->query("UPDATE OfficeDocumentSessions SET Status='ready'");
     $node->handleIdle($jobs);
-    idleCheck(!$noStop(), 'ready Office document does not freeze real idle shutdown');
+    idleCheck($noStop(), 'ready without verifiable workspace fails closed');
 
     $reset(); $leases->claim(2, 'i-12345678', hash('sha256', 'fixture-key')); $node->handleIdle($jobs);
     idleCheck(!$noStop(), 'live desktop reservation does not freeze real idle shutdown');
@@ -170,6 +170,7 @@ try {
             $mtime,
             $size
         );
+        file_put_contents($directory . '/.arcadecloud-office-synced-sha256', hash_file('sha256', $path));
         if ($managed) file_put_contents($directory . '/.arcadecloud-office-managed', '');
         if ($active) file_put_contents($directory . '/.arcadecloud-office-active', '');
         if ($changeAfterSync) {
@@ -210,9 +211,18 @@ try {
         . $db->real_escape_string($changedReadyId) . "'"
     )->fetch_assoc();
     idleCheck(
-        ($row['Status'] ?? '') === 'ready' && !$noStop(),
-        'ready workspace does not replace real human-idle shutdown even when reconciliation keeps it open'
+        ($row['Status'] ?? '') === 'ready' && $noStop(),
+        'unsynced ready workspace blocks shutdown without closing the session'
     );
+
+    $reset();
+    $sameMetadataId = $makeReadyFixture('Same.docx', true, false, false);
+    $samePath = $officeWorkspace . '/sessions/' . $sameMetadataId . '/Same.docx';
+    $mtime = filemtime($samePath);
+    file_put_contents($samePath, 'SYNCED-baseline');
+    touch($samePath, $mtime);
+    $node->handleIdle($jobs);
+    idleCheck($noStop(), 'same size and timestamp changes block shutdown by digest');
 
     // Las sesiones anteriores al monitor no aportan prueba de cierre del proceso.
     $reset();
@@ -223,8 +233,8 @@ try {
         . $db->real_escape_string($legacyReadyId) . "'"
     )->fetch_assoc();
     idleCheck(
-        ($row['Status'] ?? '') === 'ready' && !$noStop(),
-        'legacy ready session may remain recorded without freezing real idle shutdown'
+        ($row['Status'] ?? '') === 'ready' && $noStop(),
+        'legacy ready session fails closed without proof of safe workspace'
     );
 
     // Un heartbeat de proceso reciente también mantiene protegido el documento.
@@ -240,15 +250,38 @@ try {
         'live LibreOffice process alone does not impersonate keyboard or pointer activity'
     );
 
+    $reset();
+    $ffmpegFixture = $officeWorkspace . '/ffmpeg';
+    symlink('/bin/sleep', $ffmpegFixture);
+    $process = proc_open([$ffmpegFixture, '30'], [0 => ['pipe','r'], 1 => ['pipe','w'], 2 => ['pipe','w']], $pipes);
+    if (!is_resource($process)) throw new RuntimeException('Could not start process fixture.');
+    try {
+        $pid = proc_get_status($process)['pid'];
+        for ($attempt = 0; $attempt < 20; $attempt++) {
+            if (trim((string)@file_get_contents('/proc/' . $pid . '/comm')) === 'ffmpeg') break;
+            usleep(10000);
+        }
+        putenv('ARCADECLOUD_NODE_ROLE=combined');
+        $node->handleIdle($jobs);
+        idleCheck($noStop(), 'local FFmpeg process blocks automatic shutdown even outside the job queue');
+    } finally {
+        putenv('ARCADECLOUD_NODE_ROLE');
+        proc_terminate($process);
+        foreach ($pipes as $pipe) fclose($pipe);
+        proc_close($process);
+        unlink($ffmpegFixture);
+    }
+
     foreach (['queued','running','cancel_requested'] as $status) {
         $reset(); $jobs->enqueue(2, ['id_' => 1, '_key' => 'Data2/video.mp4'], 'extract_mp3', 1, 0, 0);
         $stmt = $db->prepare('UPDATE MediaProcessingJobs SET Status=?'); $stmt->execute([$status]); $stmt->close();
         $node->handleIdle($jobs); idleCheck($noStop(), "$status media remains protected");
     }
-    foreach (['heartbeat','media'] as $arrival) {
+    foreach (['heartbeat','media','office'] as $arrival) {
         $reset();
-        Config::$onDescribe = static function () use ($arrival, $sessions, $jobs): void {
+        Config::$onDescribe = static function () use ($arrival, $sessions, $jobs, $makeReadyFixture): void {
             if ($arrival === 'media') $jobs->enqueue(2, ['id_' => 1, '_key' => 'Data2/video.mp4'], 'extract_mp3', 1, 0, 0);
+            elseif ($arrival === 'office') $makeReadyFixture('Late.docx', true, false, true);
             else $sessions->clearIdle($sessions->activeForInstance('i-12345678')['session_id']);
         };
         $node->handleIdle($jobs); idleCheck($noStop(), "$arrival arriving during AWS query cancels shutdown");
@@ -260,6 +293,26 @@ try {
     };
     $node->handleIdle($jobs);
     idleCheck(!$noStop(), 'late desktop reservation does not impersonate real input during shutdown');
+    // The final database claim must reject a heartbeat after the last read,
+    // concurrent stoppers, and work queued immediately before the claim.
+    $reset();
+    $before = $sessions->activeForInstance('i-12345678');
+    $sessions->clearIdle($before['session_id']);
+    idleCheck(!$sessions->claimIdleStop($before['session_id'], $before['idle_since'], 1230), 'atomic stop claim rejects late heartbeat');
+    $reset();
+    $before = $sessions->activeForInstance('i-12345678');
+    $jobs->enqueue(2, ['id_' => 1, '_key' => 'Data2/video.mp4'], 'extract_mp3', 1, 0, 0);
+    idleCheck(!$sessions->claimIdleStop($before['session_id'], $before['idle_since'], 1230), 'atomic stop claim rejects queued work');
+    $reset();
+    $before = $sessions->activeForInstance('i-12345678');
+    idleCheck($sessions->claimIdleStop($before['session_id'], $before['idle_since'], 1230), 'first idle stop claim succeeds');
+    idleCheck(!$sessions->claimIdleStop($before['session_id'], $before['idle_since'], 1230), 'second concurrent idle stop claim fails');
+    $node->touchInteractiveActivity(2);
+    idleCheck($sessions->activeForInstance('i-12345678')['status'] === 'stopping', 'late activity cannot resurrect an in-flight stopping session');
+    $reset();
+    $db->query("UPDATE MediaWorkerNodeSessions SET IdleSince=DATE_SUB(UTC_TIMESTAMP(), INTERVAL 1210 SECOND)");
+    $before = $sessions->activeForInstance('i-12345678');
+    idleCheck(!$sessions->claimIdleStop($before['session_id'], $before['idle_since'], 1230), 'automatic stop waits for complete warning interval');
     $reset(); $db->query('DROP TABLE OfficeDocumentSessions');
     foreach (['handleIdle','requestIdleStop'] as $method) {
         try { $node->$method($jobs); throw new LogicException('Missing Office schema accepted'); }

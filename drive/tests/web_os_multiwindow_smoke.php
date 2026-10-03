@@ -38,7 +38,7 @@ $assert(str_contains($files['runtime'], 'this.zCounter > 900'), 'z-index se comp
 $assert(str_contains($files['shell'], 'data-node-access="<?= $isSuperAdmin'), 'Mi nodo distingue acceso visual');
 $assert(str_contains($files['nodeUi'], 'data-node-memory-clear') && str_contains($files['nodeUi'], 'data-node-disk-clean'), 'escobillas se crean en Recursos moderno');
 $assert(substr_count($files['shell'], 'os-node-legacy-summary') === 1 && str_contains($files['shell'], 'if (!$isSuperAdmin)'), 'superadmin no recibe resumen legacy duplicado');
-$assert(str_contains($files['node'], 'if (!$isSuperAdmin)') && substr_count($files['node'], 'publicSnapshot(') >= 3, 'backend filtra diagnóstico normal y FastDrive');
+$assert(str_contains($files['node'], 'if (!$this->app->session()->isSuperAdmin())') && str_contains($files['node'], '$local = $this->publicSnapshot($local)') && str_contains($files['node'], "'scope' => 'local'"), 'backend filtra diagnóstico local para usuarios normales');
 $assert(str_contains($files['node'], "['memory-clear', 'disk-clean']"), 'backend conserva whitelist de mantenimiento');
 $assert(str_contains($files['node'], 'private function publicSnapshot'), 'endpoint aplica allow-list segura');
 $assert(str_contains($files['nodeUi'], 'this.config.superadmin !== true'), 'usuario normal recibe panel simplificado');
@@ -49,7 +49,7 @@ $assert(str_contains($files['runtime'], 'forceNew: true') && !str_contains($file
 $assert(str_contains($files['runtime'], 'windowPreferences') && str_contains($files['runtime'], 'ResizeObserver'), 'WindowManager aplica y observa tamaño preferido por aplicación');
 $assert(str_contains($files['runtime'], "classList.toggle('is-maximized', record.maximized)") && str_contains($files['runtime'], 'Object.assign(record.element.style, record.geometry)'), 'maximizar y restaurar conservan exactamente la geometría preferida');
 $assert(str_contains($files['runtime'], "event.stopPropagation();") && str_contains($files['runtime'], "this.win.addEventListener('click', guard, true)"), 'guard capture evita que enlaces de carpetas naveguen so.php');
-$assert(str_contains($files['runtime'], 'this.route = route; this.page =') && str_contains($files['runtime'], 'this.history = [];'), 'ruta, página e historial pertenecen a cada Explorer');
+$assert(str_contains($files['runtime'], 'this.route = route;') && str_contains($files['runtime'], 'this.page = +replacement.dataset.explorerPage') && str_contains($files['runtime'], 'this.history = [];'), 'ruta, página e historial pertenecen a cada Explorer');
 $assert(str_contains($files['runtime'], 'arcadeos:explorer-updated') && str_contains($files['runtime'], 'ArcadeCloudOsFolders?.rebind?.(this.win)'), 'fragmento completo vuelve a enlazar carpetas, archivos y acciones en su instancia');
 $assert(str_contains($files['runtime'], 'this.suggestionController = new AbortController()') && str_contains($files['runtime'], '220') && str_contains($files['runtime'], 'suggestionCache'), 'autocomplete por instancia usa debounce, cancelación y caché corta');
 $assert(str_contains($files['suggestions'], '$session->userId()') && str_contains($files['folders'], 'WHERE user_id_ = ? AND Found = 1'), 'sugerencias están limitadas al usuario autenticado');

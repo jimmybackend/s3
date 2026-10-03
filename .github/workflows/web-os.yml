@@ -29,6 +29,13 @@ on:
       - 'drive/js/federation-os-admin.js'
       - 'drive/js/federation-portal.js'
       - 'drive/css/federation-os-admin.css'
+      - 'drive/css/os-system-panel.css'
+      - 'drive/css/personal-tools.css'
+      - 'drive/ec2.php'
+      - 'drive/js/server-admin.js'
+      - 'drive/src/View/FederationModerationPageRenderer.php'
+      - 'drive/tests/system_panel_fixture.php'
+      - 'drive/tests/system_panels_browser.cjs'
       - 'drive/federationcloud/os-admin.php'
       - 'drive/src/Http/Controller/FederationOsAdminController.php'
       - 'drive/src/View/FederationOsAdminRenderer.php'
@@ -101,6 +108,13 @@ on:
       - 'drive/js/federation-os-admin.js'
       - 'drive/js/federation-portal.js'
       - 'drive/css/federation-os-admin.css'
+      - 'drive/css/os-system-panel.css'
+      - 'drive/css/personal-tools.css'
+      - 'drive/ec2.php'
+      - 'drive/js/server-admin.js'
+      - 'drive/src/View/FederationModerationPageRenderer.php'
+      - 'drive/tests/system_panel_fixture.php'
+      - 'drive/tests/system_panels_browser.cjs'
       - 'drive/federationcloud/os-admin.php'
       - 'drive/src/Http/Controller/FederationOsAdminController.php'
       - 'drive/src/View/FederationOsAdminRenderer.php'
@@ -218,8 +232,29 @@ jobs:
       - name: Web OS contract
         run: |
           php drive/tests/web_os_contract_smoke.php
+          php drive/tests/web_os_pending_fixes_smoke.php
+          php drive/tests/web_os_multiwindow_smoke.php
           php drive/tests/web_os_clipboard_contract_smoke.php
       - name: Search location behavior
         run: |
           node drive/tests/web_os_search_location_functional.js
           node drive/tests/web_os_folder_rename_functional.js
+
+  embedded-panels-browser:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install isolated browser test dependencies
+        run: |
+          npm install --prefix /tmp/arcade-browser-tests --no-audit --no-fund playwright@1.51.1
+          node /tmp/arcade-browser-tests/node_modules/playwright/cli.js install --with-deps chromium
+      - name: Embedded Federation, moderation, EC2 and RDS behavior
+        env:
+          PLAYWRIGHT_MODULE: /tmp/arcade-browser-tests/node_modules/playwright
+        run: node drive/tests/system_panels_browser.cjs

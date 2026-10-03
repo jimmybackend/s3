@@ -69,7 +69,11 @@ Config::$client = new S3Client([
 try {
     $schema = (string)file_get_contents(dirname(__DIR__, 2) . '/adbbmis1_Cloud.sql');
     if (!preg_match('/CREATE TABLE IF NOT EXISTS `FileS3` \(.*?;\s/s', $schema, $match)) throw new RuntimeException('Canonical FileS3 schema not found');
-    $db->query($match[0]); // Only canonical CREATE; never execute the production dump.
+    $fixtureSchema = $match[0];
+    if (str_contains($db->server_info, 'MariaDB')) {
+        $fixtureSchema = str_replace('utf8mb4_0900_ai_ci', 'utf8mb4_unicode_ci', $fixtureSchema);
+    }
+    $db->query($fixtureSchema); // Only canonical CREATE; never execute the production dump.
     $app = DriveApplication::boot($db);
     $sessions = new OfficeDocumentSessionRepository($db);
     $service = new OfficeDocumentStorageService($app);
@@ -112,12 +116,31 @@ try {
     $result = $service->sync($f['session_id'], $f['control_token'], true);
     officeCheck($result['closed'] === true && $result['etag'] === 'our-write', 'successful close saves before closing');
 
+    $f = $fixture();
+    $service->sync($f['session_id'], $f['control_token']);
+    $mtime = filemtime($f['path']);
+    file_put_contents($f['path'], 'edited-CONTENT');
+    touch($f['path'], $mtime);
+    $result = $service->sync($f['session_id'], $f['control_token']);
+    officeCheck($result['changed'] === true, 'same size and mtime edits are detected by SHA-256');
+    $service->sync($f['session_id'], $f['control_token'], true);
+    file_put_contents($f['path'], 'EDITED-content');
+    touch($f['path'], $mtime);
+    $db->query("UPDATE OfficeDocumentSessions SET ClosedAt=DATE_SUB(UTC_TIMESTAMP(), INTERVAL 31 DAY) WHERE Status='closed'");
+    $cleanup = new ReflectionMethod($service, 'cleanupClosedWorkspaces');
+    $cleanup->invoke($service);
+    officeCheck(is_file($f['path']), 'cleanup retains closed workspaces with changed bytes despite equal metadata');
+
     $f = $fixture(); $calls = [];
     try { $service->prepare($f['session_id'], $f['control_token']); throw new RuntimeException('Changed download accepted'); }
     catch (AwsException $e) { officeCheck($e->getAwsErrorCode() === 'PreconditionFailed', 'prepare aborts when object changes during download'); }
     officeCheck(file_get_contents($f['path']) === 'edited-content', 'failed prepare does not replace workspace');
 } finally {
-    foreach (glob($workspace . '/sessions/*/*') ?: [] as $file) unlink($file);
+    foreach (glob($workspace . '/sessions/*') ?: [] as $dir) {
+        foreach (scandir($dir) ?: [] as $name) {
+            if ($name !== '.' && $name !== '..') unlink($dir . '/' . $name);
+        }
+    }
     foreach (glob($workspace . '/sessions/*') ?: [] as $dir) rmdir($dir);
     rmdir($workspace . '/sessions'); rmdir($workspace);
     $db->query("DROP DATABASE `$testDatabase`");

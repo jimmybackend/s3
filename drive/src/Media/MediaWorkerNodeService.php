@@ -226,6 +226,15 @@ final class MediaWorkerNodeService
         // "stopping" de la ejecución anterior, esa sesión ya no describe el
         // ciclo actual. Se finaliza y la actividad abre una sesión limpia.
         if ($active !== null && (string)($active['status'] ?? '') === 'stopping') {
+            $launch = $instance['LaunchTime'] ?? null;
+            $launchTs = $launch instanceof \DateTimeInterface ? $launch->getTimestamp()
+                : (is_string($launch) ? strtotime($launch) : false);
+            $stopTs = strtotime((string)($active['stop_requested_at'] ?? '') . ' UTC');
+            // DescribeInstances can remain running briefly after StopInstances.
+            // Only a demonstrably newer boot may replace the stopping session.
+            if ($launchTs === false || $stopTs === false || $launchTs <= $stopTs) {
+                return $this->idleStatus();
+            }
             $this->sessions->markStopped((string)$active['session_id']);
             $active = null;
         }
@@ -343,7 +352,9 @@ final class MediaWorkerNodeService
         }
         if ($active !== null) {
             $this->recordSessionCost($active, 'interactive_idle_stop');
-            $this->sessions->markStopRequested((string)$active['session_id']);
+            if ($this->hasShutdownBlockers($jobs) || !$this->sessions->claimIdleStop(
+                (string)$active['session_id'], (string)$active['idle_since'], $this->idleGraceSeconds
+            )) throw new RuntimeException('Se detectó actividad nueva; el apagado queda cancelado.');
         }
 
         $this->ec2->stop($this->instanceId, false);
@@ -413,7 +424,10 @@ final class MediaWorkerNodeService
         }
 
         $this->recordSessionCost($active, 'auto_stop_idle');
-        $this->sessions->markStopRequested((string)$active['session_id']);
+        if ($this->hasShutdownBlockers($jobs) || !$this->sessions->claimIdleStop(
+            (string)$active['session_id'], (string)$active['idle_since'],
+            $this->idleGraceSeconds + self::IDLE_WARNING_SECONDS
+        )) return;
         $this->ec2->stop($this->instanceId, false);
     }
 
@@ -421,13 +435,33 @@ final class MediaWorkerNodeService
     private function shutdownBlockers(MediaProcessingJobRepository $jobs): array
     {
         $blockers = [];
-        if ($jobs->hasActiveJobs()) {
+        if ($jobs->hasActiveJobs() || $this->hasLocalMediaProcess()) {
             $blockers[] = 'multimedia_activa';
         }
         if ((new OfficeActivityProbe($this->db))->hasActiveSessions($this->instanceId)) {
             $blockers[] = 'office_activo';
         }
         return $blockers;
+    }
+
+    private function hasLocalMediaProcess(): bool
+    {
+        // The automatic stopper runs on the compute node; a gateway's local
+        // process list cannot make claims about the remote workstation.
+        $role = strtolower(trim((string)(getenv('ARCADECLOUD_NODE_ROLE') ?: 'web')));
+        if (!in_array($role, ['media-worker', 'combined'], true)) return false;
+        $processes = glob('/proc/[0-9]*/comm', GLOB_NOSORT);
+        if ($processes === false || $processes === []) {
+            throw new RuntimeException('No se pudieron comprobar los procesos multimedia; apagado bloqueado.');
+        }
+        foreach ($processes as $path) {
+            $name = @file_get_contents($path);
+            if ($name === false && is_file($path)) {
+                throw new RuntimeException('No se pudo verificar un proceso local; apagado bloqueado.');
+            }
+            if (in_array(trim((string)$name), ['ffmpeg', 'ffprobe'], true)) return true;
+        }
+        return false;
     }
 
     private function hasShutdownBlockers(MediaProcessingJobRepository $jobs): bool

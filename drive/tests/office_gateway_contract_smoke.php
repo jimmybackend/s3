@@ -108,9 +108,9 @@ officeGatewayContract(
 
 officeGatewayContract(
     !str_contains((string)file_get_contents($repo . '/drive/src/Office/OfficeActivityProbe.php'), 'OfficeSessionLeases')
-    && !str_contains((string)file_get_contents($repo . '/drive/src/Office/OfficeActivityProbe.php'), "'ready'")
-    && str_contains((string)file_get_contents($repo . '/drive/src/Office/OfficeActivityProbe.php'), "'preparing','syncing','conflict'"),
-    'lease y documento ready no congelan el contador; estados transitorios inseguros sí'
+    && str_contains((string)file_get_contents($repo . '/drive/src/Office/OfficeActivityProbe.php'), 'readyWorkspaceIsSynced')
+    && str_contains((string)file_get_contents($repo . '/drive/src/Office/OfficeActivityProbe.php'), "'preparing','ready','syncing','conflict'"),
+    'lease no simula actividad; ready requiere workspace seguro y estados transitorios bloquean'
 );
 
 officeGatewayContract(

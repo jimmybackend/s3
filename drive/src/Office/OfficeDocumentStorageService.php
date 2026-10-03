@@ -88,6 +88,7 @@ final class OfficeDocumentStorageService
             $mtime = (int)(@filemtime($target) ?: time());
             $size = (int)(@filesize($target) ?: 0);
 
+            $this->writeSyncedDigest($target, $this->workspaceDigest($target));
             $this->sessions->markPrepared($sessionId, $relative, $etag, $mtime, $size);
 
             $helper = new PrivilegedServerHelper();
@@ -141,13 +142,44 @@ final class OfficeDocumentStorageService
             throw new RuntimeException('El archivo temporal de Office ya no existe.');
         }
 
+        $lock = fopen(dirname($target) . '/.arcadecloud-office-sync.lock', 'c');
+        if (!is_resource($lock)) throw new RuntimeException('No se pudo bloquear el documento Office.');
+        try {
+            if (!flock($lock, LOCK_EX)) throw new RuntimeException('Documento Office ocupado.');
+            // Another sync may have committed while this request waited.
+            $session = $this->sessions->requireAuthorized($sessionId, $controlToken);
+            return $this->syncLocked($session, $target, $close);
+        } finally {
+            flock($lock, LOCK_UN);
+            fclose($lock);
+        }
+    }
+
+    private function syncLocked(array $session, string $target, bool $close): array
+    {
+        $sessionId = (string)$session['session_id'];
+        $relative = (string)$session['workspace_relative'];
+        if (!is_readable($target)) {
+            $helper = new PrivilegedServerHelper();
+            if (!$helper->supportsWorkstationDocumentAccessRepair()) {
+                throw new RuntimeException(
+                    'El helper del nodo necesita actualizarse para reparar acceso al documento Office.'
+                );
+            }
+            $helper->repairWorkstationDocumentAccess($relative);
+            clearstatcache(true, $target);
+        }
+
+        $digest = $this->workspaceDigest($target);
+        $lastDigest = trim((string)@file_get_contents(dirname($target) . '/.arcadecloud-office-synced-sha256'));
         clearstatcache(true, $target);
         $mtime = (int)(@filemtime($target) ?: 0);
         $size = (int)(@filesize($target) ?: 0);
         $previousMtime = (int)$session['last_workspace_mtime'];
         $previousSize = (int)$session['last_workspace_size'];
 
-        if ($mtime === $previousMtime && $size === $previousSize) {
+        if ($mtime === $previousMtime && $size === $previousSize
+            && $lastDigest !== '' && hash_equals($lastDigest, $digest)) {
             if ($close) {
                 $this->sessions->markClosed($sessionId);
             } elseif ((string)$session['status'] === 'syncing') {
@@ -169,7 +201,7 @@ final class OfficeDocumentStorageService
         $currentKey = (string)($row['_key'] ?? '');
         $originalKey = (string)$session['original_key'];
         if ($currentKey === '' || !hash_equals($originalKey, $currentKey)) {
-            return $this->saveConflict($session, $row, $target, $mtime, $size, $close);
+            return $this->saveConflict($session, $row, $target, $mtime, $size, $close, $digest);
         }
 
         $head = $this->app->s3()->headObject([
@@ -180,24 +212,13 @@ final class OfficeDocumentStorageService
         $expectedEtag = $this->normalizeEtag((string)$session['expected_etag']);
 
         if ($expectedEtag === '' || $remoteEtag === '' || !hash_equals($expectedEtag, $remoteEtag)) {
-            return $this->saveConflict($session, $row, $target, $mtime, $size, $close);
+            return $this->saveConflict($session, $row, $target, $mtime, $size, $close, $digest);
         }
 
         $this->sessions->markSyncing($sessionId);
 
         try {
-            if (!is_readable($target)) {
-                $helper = new PrivilegedServerHelper();
-                if (!$helper->supportsWorkstationDocumentAccessRepair()) {
-                    throw new RuntimeException(
-                        'El helper del nodo necesita actualizarse para reparar acceso al documento Office.'
-                    );
-                }
-                $helper->repairWorkstationDocumentAccess($relative);
-                clearstatcache(true, $target);
-            }
-
-            $stream = fopen($target, 'rb');
+            $stream = $this->stableWorkspaceStream($target, $digest);
             if (!is_resource($stream)) {
                 throw new RuntimeException('No se pudo leer el archivo temporal de Office.');
             }
@@ -222,7 +243,7 @@ final class OfficeDocumentStorageService
             } catch (AwsException $error) {
                 if (in_array($error->getStatusCode(), [404, 409, 412], true)
                     || in_array($error->getAwsErrorCode(), ['NoSuchKey', 'PreconditionFailed', 'ConditionalRequestConflict'], true)) {
-                    return $this->saveConflict($session, $row, $target, $mtime, $size, $close);
+                    return $this->saveConflict($session, $row, $target, $mtime, $size, $close, $digest);
                 }
                 throw $error;
             } finally {
@@ -235,6 +256,7 @@ final class OfficeDocumentStorageService
                 throw new RuntimeException('S3 no confirmó el nuevo ETag del documento.');
             }
 
+            $this->writeSyncedDigest($target, $digest);
             $this->updateFileRecordAfterSave($userId, $fileId, $size);
             $this->sessions->markSynced($sessionId, $newEtag, $mtime, $size);
             if ($close) {
@@ -261,7 +283,8 @@ final class OfficeDocumentStorageService
         string $target,
         int $mtime,
         int $size,
-        bool $close
+        bool $close,
+        string $digest
     ): array {
         $userId = (int)$session['user_id'];
         $fileId = (int)$session['file_id'];
@@ -271,7 +294,7 @@ final class OfficeDocumentStorageService
         $encrypted = $this->app->storageObjectNameCodec()->createFileObjectName($conflictName);
         $conflictKey = $route . $encrypted;
 
-        $stream = fopen($target, 'rb');
+        $stream = $this->stableWorkspaceStream($target, $digest);
         if (!is_resource($stream)) {
             throw new RuntimeException('No se pudo leer la copia de conflicto Office.');
         }
@@ -311,6 +334,7 @@ final class OfficeDocumentStorageService
             throw new RuntimeException('S3 no confirmó el ETag de la copia de conflicto Office.');
         }
 
+        $this->writeSyncedDigest($target, $digest);
         $this->sessions->adoptConflict(
             (string)$session['session_id'],
             $conflictFileId,
@@ -462,6 +486,56 @@ final class OfficeDocumentStorageService
             || str_contains($message, 'not found');
     }
 
+    /** @return resource Stable bytes for the S3 request even if LibreOffice saves again. */
+    private function stableWorkspaceStream(string $target, string $digest)
+    {
+        $source = fopen($target, 'rb');
+        $snapshot = tmpfile();
+        if (!is_resource($source) || !is_resource($snapshot)) {
+            if (is_resource($source)) fclose($source);
+            if (is_resource($snapshot)) fclose($snapshot);
+            throw new RuntimeException('No se pudo preparar la copia segura Office.');
+        }
+        try {
+            if (stream_copy_to_stream($source, $snapshot) === false) {
+                throw new RuntimeException('No se pudo copiar el documento Office.');
+            }
+            $uri = stream_get_meta_data($snapshot)['uri'];
+            if (!hash_equals($digest, $this->workspaceDigest($uri))) {
+                throw new RuntimeException('El documento cambió durante la preparación del guardado.');
+            }
+            rewind($snapshot);
+            return $snapshot;
+        } catch (Throwable $error) {
+            fclose($snapshot);
+            throw $error;
+        } finally {
+            fclose($source);
+        }
+    }
+
+    private function workspaceDigest(string $target): string
+    {
+        $digest = @hash_file('sha256', $target);
+        if (!is_string($digest)) throw new RuntimeException('No se pudo verificar el contenido del workspace Office.');
+        return $digest;
+    }
+
+    private function writeSyncedDigest(string $target, string $digest): void
+    {
+        // Never certify bytes that changed while S3 was receiving the document.
+        if (!hash_equals($digest, $this->workspaceDigest($target))) {
+            throw new RuntimeException('El documento cambió durante el guardado; conserva cambios pendientes.');
+        }
+        $marker = dirname($target) . '/.arcadecloud-office-synced-sha256';
+        $tmp = $marker . '.' . bin2hex(random_bytes(6));
+        if (file_put_contents($tmp, $digest, LOCK_EX) === false || !rename($tmp, $marker)) {
+            @unlink($tmp);
+            throw new RuntimeException('No se pudo registrar la verificación del documento Office.');
+        }
+        @chmod($marker, 0660);
+    }
+
     private function cleanupClosedWorkspaces(): void
     {
         foreach ($this->sessions->cleanupCandidates(30) as $candidate) {
@@ -469,14 +543,18 @@ final class OfficeDocumentStorageService
             if (!preg_match('/^[a-f0-9]{32}$/', $sessionId)) continue;
 
             $relative = trim((string)($candidate['workspace_relative'] ?? ''));
+            if ($relative === '' || !is_file($this->workspaceRoot . '/' . $relative)) continue;
             if ($relative !== '') {
                 $target = $this->workspaceRoot . '/' . $relative;
                 if (is_file($target)) {
                     clearstatcache(true, $target);
                     $mtime = (int)(@filemtime($target) ?: 0);
-                    $size = (int)(@filesize($target) ?: -1);
+                    $fileSize = @filesize($target);
+                    $size = $fileSize === false ? -1 : (int)$fileSize;
+                    $digest = trim((string)@file_get_contents(dirname($target) . '/.arcadecloud-office-synced-sha256'));
                     if (
-                        $mtime !== (int)($candidate['last_workspace_mtime'] ?? 0)
+                        $digest === '' || !hash_equals($digest, $this->workspaceDigest($target))
+                        || $mtime !== (int)($candidate['last_workspace_mtime'] ?? 0)
                         || $size !== (int)($candidate['last_workspace_size'] ?? -1)
                     ) {
                         error_log(

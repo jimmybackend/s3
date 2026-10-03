@@ -1,4 +1,4 @@
-html,body{min-height:100%;background:#06111d;color:#e9f5ff}
+body.federation-os-admin{min-height:100%;background:#06111d;color:#e9f5ff}
 body.federation-os-admin{margin:0}
 .federation-os-admin-shell{max-width:1180px;margin:0 auto;padding:18px}
 .federation-os-admin.is-embedded .federation-os-admin-shell{max-width:none;padding:12px}

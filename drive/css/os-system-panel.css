@@ -113,3 +113,28 @@
 @media(max-width:520px){
   .os-system-shell .os-node-card{padding:11px}
 }
+
+/* Embedded panels inherit the existing OS theme without changing Mi nodo. */
+.arcade-os .os-system-shell{
+  --osp-bg:var(--os-bg);--osp-surface:var(--os-surface);--osp-surface-2:var(--os-surface);
+  --osp-text:var(--os-text);--osp-soft:var(--os-soft);--osp-border:var(--os-border);
+  --osp-divider:var(--os-divider);--osp-accent:var(--os-accent);--osp-accent-2:var(--os-accent-2);
+}
+.os-system-shell,.os-system-shell *{box-sizing:border-box}
+.os-system-shell{min-width:0}
+.os-system-heading-main>div:last-child,.federation-node-title h3,.ec2-node-card-title h3{min-width:0;overflow-wrap:anywhere}
+.os-system-shell .os-node-card dt{overflow-wrap:anywhere}
+.os-system-shell .os-node-card-actions>*{max-width:100%;white-space:normal;overflow-wrap:anywhere}
+.os-system-shell .os-node-placeholder{font-size:.82rem;color:var(--osp-soft)}
+.ec2-panel-shell .action-modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.55);display:none;align-items:center;justify-content:center;z-index:2000;padding:16px}
+.ec2-panel-shell .action-modal-backdrop.show{display:flex}
+.ec2-panel-shell .action-modal{background:var(--osp-surface);color:var(--osp-text);border:1px solid var(--osp-border);border-radius:12px;padding:16px;max-width:380px;width:100%}
+.ec2-panel-shell .action-modal .row{display:flex;justify-content:flex-end;gap:8px;margin:0}
+.ec2-panel-shell .action-modal h3{font-size:.96rem}
+.arcade-os .moderation-header h1{font-size:1.1rem}
+.arcade-os .moderation-shell{padding:12px;max-width:none}
+@media(max-width:760px){
+  .federation-os-admin .federation-os-jumpbar{flex-wrap:wrap;overflow:visible}
+  .federation-os-admin .btn-group{display:flex;flex-wrap:wrap}
+  .federation-os-admin .btn-group>.btn{white-space:normal;flex:1 1 120px}
+}

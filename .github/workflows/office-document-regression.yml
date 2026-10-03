@@ -5,6 +5,7 @@ on:
     paths:
       - 'drive/src/Office/**'
       - 'drive/src/Media/MediaWorkerNodeService.php'
+      - 'drive/src/Media/MediaWorkerNodeSessionRepository.php'
       - 'drive/src/Admin/FastDriveControlService.php'
       - 'drive/src/Admin/ServerTaskActivityProbe.php'
       - 'drive/tests/idle_stop_office_regression.php'
@@ -16,6 +17,7 @@ on:
     paths:
       - 'drive/src/Office/**'
       - 'drive/src/Media/MediaWorkerNodeService.php'
+      - 'drive/src/Media/MediaWorkerNodeSessionRepository.php'
       - 'drive/src/Admin/FastDriveControlService.php'
       - 'drive/src/Admin/ServerTaskActivityProbe.php'
       - 'drive/tests/idle_stop_office_regression.php'

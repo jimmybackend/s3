@@ -1737,6 +1737,7 @@
       "size": 5109,
       "active": false,
       "references": [
+        "drive/tests/large_folder_regression.php",
         "drive/tests/web_os_contract_smoke.php"
       ]
     },
@@ -1753,6 +1754,7 @@
       "size": 5105,
       "active": false,
       "references": [
+        "drive/tests/large_folder_regression.php",
         "drive/tests/web_os_contract_smoke.php"
       ]
     },
@@ -3653,7 +3655,8 @@
       "size": 3181,
       "active": false,
       "references": [
-        "drive/tests/federation_public_download_failover_smoke.php"
+        "drive/tests/federation_public_download_failover_smoke.php",
+        "drive/tests/large_folder_regression.php"
       ]
     },
     {
@@ -3763,7 +3766,7 @@
     },
     {
       "path": "drive/tests/catalog_folder_paths_regression.php",
-      "size": 4662,
+      "size": 4799,
       "active": false,
       "references": []
     },
@@ -3901,7 +3904,7 @@
     },
     {
       "path": "drive/tests/folder_deletion_regression.php",
-      "size": 5548,
+      "size": 5685,
       "active": false,
       "references": []
     },
@@ -3932,6 +3935,12 @@
     {
       "path": "drive/tests/installer_service_reconcile_contract_smoke.php",
       "size": 18294,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/tests/large_folder_regression.php",
+      "size": 2614,
       "active": false,
       "references": []
     },

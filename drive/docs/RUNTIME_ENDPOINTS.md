@@ -187,9 +187,9 @@
 | `drive/src/Application/DrivePageViewModel.php` | ninguna |
 | `drive/src/Application/FileAccessService.php` | `drive/tests/arcadelink_bulk_contract_regression.php` |
 | `drive/src/Application/FileKeyRotationService.php` | ninguna |
-| `drive/src/Application/FileListService.php` | `drive/tests/web_os_contract_smoke.php` |
+| `drive/src/Application/FileListService.php` | `drive/tests/large_folder_regression.php`, `drive/tests/web_os_contract_smoke.php` |
 | `drive/src/Application/FileMutationService.php` | `drive/tests/web_os_clipboard_contract_smoke.php` |
-| `drive/src/Application/FileSearchService.php` | `drive/tests/web_os_contract_smoke.php` |
+| `drive/src/Application/FileSearchService.php` | `drive/tests/large_folder_regression.php`, `drive/tests/web_os_contract_smoke.php` |
 | `drive/src/Application/FolderDocumentService.php` | `drive/tests/folder_document_sanitizer.php` |
 | `drive/src/Application/FolderMutationService.php` | `drive/tests/web_os_clipboard_contract_smoke.php` |
 | `drive/src/Application/FolderQueryService.php` | `drive/tests/web_os_contract_smoke.php` |
@@ -438,7 +438,7 @@
 | `drive/src/View/FederationPortalRenderer.php` | `drive/tests/federation_drop_contract_smoke.php`, `drive/tests/web_os_contract_smoke.php` |
 | `drive/src/View/FederationReportPageRenderer.php` | `drive/tests/federation_moderation_contract_smoke.php` |
 | `drive/src/View/FileIconResolver.php` | ninguna |
-| `drive/src/View/FileViewHelper.php` | `drive/tests/federation_public_download_failover_smoke.php` |
+| `drive/src/View/FileViewHelper.php` | `drive/tests/federation_public_download_failover_smoke.php`, `drive/tests/large_folder_regression.php` |
 | `drive/src/View/FolderTreeRenderer.php` | ninguna |
 | `drive/src/View/PersonalAwsPageRenderer.php` | ninguna |
 | `drive/src/View/PublicSharedPageRenderer.php` | ninguna |
@@ -484,6 +484,7 @@
 | `drive/tests/idle_stop_office_regression.php` | ninguna |
 | `drive/tests/index_federation_drop_smoke.php` | ninguna |
 | `drive/tests/installer_service_reconcile_contract_smoke.php` | ninguna |
+| `drive/tests/large_folder_regression.php` | ninguna |
 | `drive/tests/local_container_capabilities_regression.php` | ninguna |
 | `drive/tests/media_processing_contract_smoke.php` | ninguna |
 | `drive/tests/media_worker_behavior_regression.php` | ninguna |

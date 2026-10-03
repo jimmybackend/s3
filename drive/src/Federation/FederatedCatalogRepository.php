@@ -87,7 +87,8 @@ final class FederatedCatalogRepository
         if ($query === '') return [];
         $like = '%' . $query . '%';
         $sql = "SELECT ResourceId, OriginNodeId, ResourceType, Title, MediaType, SizeBytes, ContentId,
-                       Visibility, DiscoveryPolicy, Rights, OriginUrl, FederationUrl, ArcadeLinkJson, UpdatedAt
+                       Visibility, DiscoveryPolicy, Rights, OriginUrl, FederationUrl, ArcadeLinkJson, UpdatedAt,
+                       (SELECT COUNT(*) FROM FederationResourceDeliveries d WHERE d.ResourceId=FederatedResources.ResourceId) AS DeliveryCount
                 FROM FederatedResources
                 WHERE Tombstoned = 0
                   AND DiscoveryPolicy IN ('public_metadata','requestable_metadata')
@@ -120,6 +121,7 @@ final class FederatedCatalogRepository
                 'origin_url' => (string)$row['OriginUrl'],
                 'federation_url' => (string)$row['FederationUrl'],
                 'updated_at' => (string)$row['UpdatedAt'],
+                'delivery_count' => (int)($row['DeliveryCount'] ?? 0),
                 'locations' => $this->locations($resourceId),
                 'arcadelink' => $this->decodeArcadeLink($row['ArcadeLinkJson'] ?? null),
             ];

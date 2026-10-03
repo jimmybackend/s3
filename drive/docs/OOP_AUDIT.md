@@ -4,10 +4,10 @@
 
 ## Resumen
 
-- PHP analizados: **532**
-- PHP que ya contienen clases/interfaces: **305**
+- PHP analizados: **534**
+- PHP que ya contienen clases/interfaces: **306**
 - PHP marcados para migración/revisión: **0**
-- Tests PHP separados del objetivo OOP de runtime: **70**
+- Tests PHP separados del objetivo OOP de runtime: **71**
 - JavaScript analizados: **79**
 - JavaScript que ya contienen clases: **73**
 - JavaScript runtime marcados para migración/revisión: **0**
@@ -177,7 +177,8 @@
 | `drive/src/Activity/TranscriptionCostAttribution.php` | 117 | class/module | 1 | — | — | — | — |
 | `drive/src/Activity/TranscriptionReconciler.php` | 476 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Admin/ArcadeCloudUpdaterService.php` | 162 | class/module | 1 | — | ⚠️ | — | — |
-| `drive/src/Admin/DatabaseBackupService.php` | 226 | class/module | 1 | — | ⚠️ | — | — |
+| `drive/src/Admin/DatabaseBackupService.php` | 74 | class/module | 1 | — | — | — | — |
+| `drive/src/Admin/DatabaseSqlDumpWriter.php` | 492 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Admin/FastDriveControlService.php` | 323 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Admin/FastDriveWakeService.php` | 191 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Admin/ManagedRuntimeEnvironment.php` | 374 | class/module | 1 | — | — | — | — |
@@ -469,7 +470,8 @@
 | `drive/tests/arcadelink_collection_regression.php` | 63 | test script | 0 | — | — | — | — |
 | `drive/tests/catalog_folder_paths_regression.php` | 63 | test script | 0 | — | ⚠️ | — | — |
 | `drive/tests/chunked_upload_cleanup_regression.php` | 117 | test script | 1 | — | — | — | — |
-| `drive/tests/database_backup_contract_smoke.php` | 45 | test script | 0 | — | — | — | — |
+| `drive/tests/database_backup_contract_smoke.php` | 58 | test script | 0 | — | — | — | — |
+| `drive/tests/database_dump_full_integration.php` | 126 | test script | 0 | — | ⚠️ | — | — |
 | `drive/tests/database_schema_contract_smoke.php` | 127 | test script | 0 | — | — | — | — |
 | `drive/tests/fastdrive_control_contract_smoke.php` | 72 | test script | 0 | — | — | — | — |
 | `drive/tests/federation_access_message_smoke.php` | 72 | test script | 0 | — | — | — | — |
@@ -618,7 +620,7 @@
 | `drive/js/so-clipboard.js` | 797 | class/module | ArcadeCloudOsClipboard | — | — | — |
 | `drive/js/so-federation.js` | 102 | class/module | ArcadeCloudOsFederationApp | — | — | — |
 | `drive/js/so-folders.js` | 440 | class/module | ArcadeCloudOsFolderActions | — | — | — |
-| `drive/js/so-node.js` | 290 | class/module | ArcadeCloudOsNodeMonitor | — | — | — |
+| `drive/js/so-node.js` | 294 | class/module | ArcadeCloudOsNodeMonitor | — | — | — |
 | `drive/js/so-power.js` | 108 | class/module | ArcadeCloudFastDrivePower | — | — | — |
 | `drive/js/so-screenshot-paste.js` | 341 | class/module | ArcadeCloudOsScreenshotPaste | — | — | — |
 | `drive/js/so-search.js` | 292 | class/module | ArcadeCloudOsSearch | — | — | — |

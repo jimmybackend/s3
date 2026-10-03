@@ -1,9 +1,9 @@
 {
   "summary": {
-    "php_total": 532,
-    "php_class_modules": 305,
+    "php_total": 534,
+    "php_class_modules": 306,
     "php_needs_migration": 0,
-    "php_tests": 70,
+    "php_tests": 71,
     "js_total": 79,
     "js_class_modules": 73,
     "js_needs_migration": 0,
@@ -2248,7 +2248,22 @@
     },
     {
       "path": "drive/src/Admin/DatabaseBackupService.php",
-      "lines": 226,
+      "lines": 74,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Admin/DatabaseSqlDumpWriter.php",
+      "lines": 492,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -6665,13 +6680,28 @@
     },
     {
       "path": "drive/tests/database_backup_contract_smoke.php",
-      "lines": 45,
+      "lines": 58,
       "kind": "test script",
       "classes": 0,
       "functions": [],
       "session": false,
       "superglobals": [],
       "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/tests/database_dump_full_integration.php",
+      "lines": 126,
+      "kind": "test script",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": true,
       "s3": false,
       "bootstrap": false,
       "html": false,
@@ -9422,7 +9452,7 @@
     },
     {
       "path": "drive/js/so-node.js",
-      "lines": 290,
+      "lines": 294,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudOsNodeMonitor"
@@ -10237,7 +10267,7 @@
     },
     {
       "path": "drive/docs/runtime_endpoints.json",
-      "bytes": 122396,
+      "bytes": 123298,
       "valid": true,
       "root_type": "object",
       "keys": [

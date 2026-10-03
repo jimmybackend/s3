@@ -174,6 +174,7 @@
 | `drive/src/Activity/TranscriptionReconciler.php` | `drive/tests/transcribe_s3_recovery_contract_smoke.php` |
 | `drive/src/Admin/ArcadeCloudUpdaterService.php` | `drive/tests/federation_moderation_contract_smoke.php`, `drive/tests/installer_service_reconcile_contract_smoke.php`, `drive/tests/web_os_contract_smoke.php` |
 | `drive/src/Admin/DatabaseBackupService.php` | `drive/tests/database_backup_contract_smoke.php` |
+| `drive/src/Admin/DatabaseSqlDumpWriter.php` | `drive/tests/database_backup_contract_smoke.php`, `drive/tests/database_dump_full_integration.php` |
 | `drive/src/Admin/FastDriveControlService.php` | `drive/tests/fastdrive_control_contract_smoke.php` |
 | `drive/src/Admin/FastDriveWakeService.php` | `drive/tests/fastdrive_control_contract_smoke.php` |
 | `drive/src/Admin/NodeServiceControlService.php` | `drive/tests/node_diagnostics_control_smoke.php` |
@@ -463,6 +464,7 @@
 | `drive/tests/catalog_folder_paths_regression.php` | ninguna |
 | `drive/tests/chunked_upload_cleanup_regression.php` | ninguna |
 | `drive/tests/database_backup_contract_smoke.php` | ninguna |
+| `drive/tests/database_dump_full_integration.php` | ninguna |
 | `drive/tests/database_schema_contract_smoke.php` | ninguna |
 | `drive/tests/fastdrive_control_contract_smoke.php` | ninguna |
 | `drive/tests/federation_access_message_smoke.php` | ninguna |

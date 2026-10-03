@@ -1614,10 +1614,19 @@
     },
     {
       "path": "drive/src/Admin/DatabaseBackupService.php",
-      "size": 7934,
+      "size": 2390,
       "active": false,
       "references": [
         "drive/tests/database_backup_contract_smoke.php"
+      ]
+    },
+    {
+      "path": "drive/src/Admin/DatabaseSqlDumpWriter.php",
+      "size": 20652,
+      "active": false,
+      "references": [
+        "drive/tests/database_backup_contract_smoke.php",
+        "drive/tests/database_dump_full_integration.php"
       ]
     },
     {
@@ -3826,7 +3835,13 @@
     },
     {
       "path": "drive/tests/database_backup_contract_smoke.php",
-      "size": 3016,
+      "size": 4282,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/tests/database_dump_full_integration.php",
+      "size": 4018,
       "active": false,
       "references": []
     },

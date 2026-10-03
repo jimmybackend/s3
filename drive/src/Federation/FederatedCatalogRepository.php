@@ -411,7 +411,7 @@ final class FederatedCatalogRepository
             || !preg_match('/\Aarl_[A-Za-z0-9_-]{16,80}\z/', $resourceId)
             || !hash_equals($originNodeId, $requestNodeId)
             || !is_array($sources)
-            || array_is_list($sources)
+            || !array_is_list($sources)
             || $sourceCount < 1
             || $sourceCount > FederationMultiSourceDownloader::MAX_SOURCES
             || count($sources) !== $sourceCount
@@ -451,7 +451,7 @@ final class FederatedCatalogRepository
         if (!$stmt) throw new FederationException('No se pudo preparar historial federado.', 500);
         $sequence = (int)$event['origin_sequence'];
         $stmt->bind_param(
-            'sssisssis',
+            'sssiissis',
             $deliveryId,
             $resourceId,
             $requestNodeId,

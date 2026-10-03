@@ -732,7 +732,7 @@
     },
     {
       "path": "drive/ec2.php",
-      "lines": 1089,
+      "lines": 1086,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -7373,7 +7373,7 @@
     },
     {
       "path": "drive/tests/web_os_contract_smoke.php",
-      "lines": 524,
+      "lines": 525,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -8476,7 +8476,7 @@
     },
     {
       "path": "drive/js/federation-os-admin.js",
-      "lines": 323,
+      "lines": 319,
       "kind": "class/module",
       "classes": [
         "FederationOsAdminModule"
@@ -10004,7 +10004,7 @@
     },
     {
       "path": "drive/docs/runtime_endpoints.json",
-      "bytes": 119892,
+      "bytes": 119941,
       "valid": true,
       "root_type": "object",
       "keys": [

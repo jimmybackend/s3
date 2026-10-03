@@ -78,7 +78,7 @@
 | `drive/download.php` | 8 | thin endpoint | 0 | — | — | — | — |
 | `drive/download_multiple.php` | 8 | thin endpoint | 0 | — | — | — | — |
 | `drive/ec2-cron.php` | 39 | thin endpoint | 0 | — | — | — | — |
-| `drive/ec2.php` | 1089 | view/entrypoint | 0 | ⚠️ | — | — | — |
+| `drive/ec2.php` | 1086 | view/entrypoint | 0 | ⚠️ | — | — | — |
 | `drive/editor.php` | 485 | view/entrypoint | 0 | — | — | — | — |
 | `drive/eliminar_archivo.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/eliminar_carpeta.php` | 10 | thin endpoint | 0 | — | — | — | — |
@@ -511,7 +511,7 @@
 | `drive/tests/user_identity_presenter_smoke.php` | 30 | test script | 0 | — | — | — | — |
 | `drive/tests/user_profile_validator_smoke.php` | 72 | test script | 0 | — | — | — | — |
 | `drive/tests/web_os_clipboard_contract_smoke.php` | 120 | test script | 0 | — | — | — | — |
-| `drive/tests/web_os_contract_smoke.php` | 524 | test script | 0 | — | — | — | — |
+| `drive/tests/web_os_contract_smoke.php` | 525 | test script | 0 | — | — | — | — |
 | `drive/tests/web_os_desktop_shell_smoke.php` | 20 | test script | 0 | — | — | — | — |
 | `drive/tests/web_os_file_applications_smoke.php` | 21 | test script | 0 | — | — | — | — |
 | `drive/tests/web_os_interactions_theme_smoke.php` | 30 | test script | 0 | — | — | — | — |
@@ -575,7 +575,7 @@
 | `drive/js/estilo.js` | 267 | class/module | EstiloModule | — | — | — |
 | `drive/js/federation-drop.js` | 488 | class/module | FederationDropApp | — | — | — |
 | `drive/js/federation-footer.js` | 374 | class/module | FederationFooterModule | — | — | — |
-| `drive/js/federation-os-admin.js` | 323 | class/module | FederationOsAdminModule | — | — | — |
+| `drive/js/federation-os-admin.js` | 319 | class/module | FederationOsAdminModule | — | — | — |
 | `drive/js/federation-page.js` | 99 | class/module | FederationPageModule | — | — | — |
 | `drive/js/federation-portal.js` | 509 | class/module | FederationPortalModule | — | — | — |
 | `drive/js/federation-share-drive.js` | 214 | class/module | FederationShareDriveModule | — | — | — |

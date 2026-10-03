@@ -21,12 +21,12 @@ $assert(str_contains($controller, "requirePost()"), 'endpoint is POST-only');
 
 $assert(str_contains($service, "tempnam(sys_get_temp_dir()"), 'backup uses non-public temporary file');
 $assert(str_contains($service, "finally"), 'backup always has cleanup path');
-$assert(str_contains($service, "@unlink($tmp)"), 'temporary SQL is removed');
+$assert(str_contains($service, '@unlink($tmp)'), 'temporary SQL is removed');
 $assert(str_contains($service, "SELECT DATABASE()"), 'backup targets the active database');
 $assert(str_contains($service, "SHOW FULL TABLES"), 'backup enumerates the active schema');
 $assert(str_contains($service, "SHOW CREATE TABLE"), 'backup exports table definitions');
 $assert(str_contains($service, "START TRANSACTION WITH CONSISTENT SNAPSHOT"), 'backup uses a consistent transactional snapshot');
-$assert(str_contains($service, "rootForUser($userId)"), 'backup resolves the executing superadmin storage root');
+$assert(str_contains($service, 'rootForUser($userId)'), 'backup resolves the executing superadmin storage root');
 $assert(str_contains($service, "/Backup/"), 'backup is stored in the Backup folder');
 $assert(str_contains($service, "ensureFolder("), 'Backup folder is registered in the Drive catalog');
 $assert(str_contains($service, "singleUploadService()->upload("), 'backup uses the normal private Drive upload service');

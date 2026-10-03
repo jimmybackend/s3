@@ -19,6 +19,7 @@ class BackgroundTaskCenter {
     this.sourceErrors = {};
     this.open = false;
     this.timer = null;
+    this.refreshPromise = null;
     this.filter = 'all';
     this.busy = new Set();
     this.selected = new Set();
@@ -382,7 +383,17 @@ class BackgroundTaskCenter {
     }
   }
 
-  async refresh() {
+  refresh() {
+    // Polling and storage/task events can arrive while the previous response is
+    // still pending. Share it so an older response cannot overwrite newer state.
+    if (this.refreshPromise) return this.refreshPromise;
+    this.refreshPromise = this.refreshSnapshot().finally(() => {
+      this.refreshPromise = null;
+    });
+    return this.refreshPromise;
+  }
+
+  async refreshSnapshot() {
     try {
       const url = new URL(this.endpoint, this.window.location.href);
       url.searchParams.set('_', String(Date.now()));

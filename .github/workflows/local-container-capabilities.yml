@@ -5,20 +5,28 @@ on:
     paths:
       - 'drive/src/System/**'
       - 'drive/src/Admin/PrivilegedServerHelper.php'
+      - 'drive/src/Admin/DatabaseBackupService.php'
+      - 'drive/src/Http/Controller/DatabaseBackupController.php'
+      - 'drive/database-backup.php'
       - 'drive/bin/arcadecloud-drive-admin-helper.php'
       - 'drive/js/so-node.js'
       - 'drive/tests/local_container_capabilities_regression.php'
       - 'drive/tests/local_container_programs_functional.js'
+      - 'drive/tests/database_backup_contract_smoke.php'
       - '.github/workflows/local-container-capabilities.yml'
   push:
     branches: [main]
     paths:
       - 'drive/src/System/**'
       - 'drive/src/Admin/PrivilegedServerHelper.php'
+      - 'drive/src/Admin/DatabaseBackupService.php'
+      - 'drive/src/Http/Controller/DatabaseBackupController.php'
+      - 'drive/database-backup.php'
       - 'drive/bin/arcadecloud-drive-admin-helper.php'
       - 'drive/js/so-node.js'
       - 'drive/tests/local_container_capabilities_regression.php'
       - 'drive/tests/local_container_programs_functional.js'
+      - 'drive/tests/database_backup_contract_smoke.php'
       - '.github/workflows/local-container-capabilities.yml'
 
 permissions:
@@ -36,6 +44,10 @@ jobs:
           set -euo pipefail
           php -l drive/bin/arcadecloud-drive-admin-helper.php
           php -l drive/src/Admin/PrivilegedServerHelper.php
+          php -l drive/src/Admin/DatabaseBackupService.php
+          php -l drive/src/Http/Controller/DatabaseBackupController.php
+          php -l drive/database-backup.php
+          php -l drive/tests/database_backup_contract_smoke.php
           php -l drive/src/System/LocalContainerCapabilityService.php
           php -l drive/src/System/NodeRuntimeStatusService.php
           php -l drive/tests/local_container_capabilities_regression.php
@@ -47,6 +59,7 @@ jobs:
           node drive/tests/local_container_programs_functional.js
           php drive/tests/node_diagnostics_contract_smoke.php
           php drive/tests/node_diagnostics_control_smoke.php
+          php drive/tests/database_backup_contract_smoke.php
           php drive/tests/server_console_contract_smoke.php
       - name: Diff check
         env:

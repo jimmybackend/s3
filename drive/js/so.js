@@ -15,6 +15,8 @@ class ArcadeCloudOsShell {
     this.viewerCounter = 0;
     this.activeFile = null;
     this.mediaOverlay = null;
+    this.contextPage = 0;
+    this.contextPageSize = 10;
     this.explorerLoading = false;
     this.fileTapState = new WeakMap();
     this.fileSecondClickMs = 320;
@@ -257,6 +259,7 @@ class ArcadeCloudOsShell {
     this.setContextAction('office', !multi && !locked && Boolean(entry.dataset.officeUrl));
     this.setContextAction('edit', !multi && !locked && Boolean(entry.dataset.editUrl));
     this.setContextAction('download', !multi && !locked && Boolean(entry.dataset.downloadUrl));
+    this.setContextAction('details', !multi);
     this.setContextAction('wallpaper', !multi && !locked && entry.dataset.image === '1' && Boolean(entry.dataset.wallpaperUrl));
     this.setContextAction('classic', !multi);
 
@@ -318,9 +321,130 @@ class ArcadeCloudOsShell {
     }
 
     this.context.hidden = false;
+    this.contextPage = 0;
+    this.applyContextPaging();
     const rect = this.context.getBoundingClientRect();
     this.context.style.left = Math.max(4, Math.min(x, this.window.innerWidth - rect.width - 4)) + 'px';
     this.context.style.top = Math.max(4, Math.min(y, this.window.innerHeight - rect.height - 52)) + 'px';
+  }
+
+  contextActionButtons() {
+    if (!this.context) return [];
+    return Array.from(this.context.querySelectorAll('button')).filter((button) => {
+      if (button.matches('[data-context-page-up],[data-context-page-down]')) return false;
+      return !button.hidden && !button.disabled;
+    });
+  }
+
+  applyContextPaging() {
+    if (!this.context) return;
+    const mobile = this.window.matchMedia('(max-width: 700px)').matches;
+    const up = this.context.querySelector('[data-context-page-up]');
+    const down = this.context.querySelector('[data-context-page-down]');
+    const buttons = Array.from(this.context.querySelectorAll('button')).filter((button) => !button.matches('[data-context-page-up],[data-context-page-down]'));
+    const visible = buttons.filter((button) => !button.hidden);
+
+    if (!mobile || visible.length <= this.contextPageSize) {
+      buttons.forEach((button) => button.classList.remove('is-context-page-hidden'));
+      this.context.querySelectorAll('.os-context-divider').forEach((divider) => divider.classList.remove('is-context-page-hidden'));
+      if (up) up.hidden = true;
+      if (down) down.hidden = true;
+      this.context.classList.remove('is-paged-mobile');
+      this.contextPage = 0;
+      return;
+    }
+
+    this.context.classList.add('is-paged-mobile');
+    this.context.querySelectorAll('.os-context-divider').forEach((divider) => divider.classList.add('is-context-page-hidden'));
+    const pages = Math.max(1, Math.ceil(visible.length / this.contextPageSize));
+    this.contextPage = Math.max(0, Math.min(this.contextPage, pages - 1));
+    const start = this.contextPage * this.contextPageSize;
+    const end = start + this.contextPageSize;
+    let visibleIndex = 0;
+    buttons.forEach((button) => {
+      if (button.hidden) {
+        button.classList.remove('is-context-page-hidden');
+        return;
+      }
+      button.classList.toggle('is-context-page-hidden', visibleIndex < start || visibleIndex >= end);
+      visibleIndex++;
+    });
+    if (up) up.hidden = this.contextPage <= 0;
+    if (down) down.hidden = this.contextPage >= pages - 1;
+  }
+
+  changeContextPage(delta) {
+    this.contextPage += delta;
+    this.applyContextPaging();
+    if (!this.context) return;
+    const rect = this.context.getBoundingClientRect();
+    const left = parseFloat(this.context.style.left || '4') || 4;
+    const top = parseFloat(this.context.style.top || '4') || 4;
+    this.context.style.left = Math.max(4, Math.min(left, this.window.innerWidth - rect.width - 4)) + 'px';
+    this.context.style.top = Math.max(4, Math.min(top, this.window.innerHeight - rect.height - 52)) + 'px';
+  }
+
+  openFileDetails(entry) {
+    if (!entry) return;
+    const name = String(entry.dataset.name || 'Archivo');
+    const ext = String(entry.dataset.ext || '').trim().toLowerCase();
+    const mime = String(entry.dataset.mime || '').trim();
+    const bytes = Number(entry.dataset.bytes || 0);
+    const rawDate = String(entry.dataset.createdAt || entry.dataset.updatedAt || '').trim();
+    let date = '—';
+    if (rawDate) {
+      const parsed = new Date(rawDate.includes('T') ? rawDate : rawDate.replace(' ', 'T'));
+      date = Number.isNaN(parsed.getTime()) ? rawDate : parsed.toLocaleString('es-MX');
+    }
+    const type = mime && mime !== 'application/octet-stream'
+      ? mime
+      : (ext ? '.' + ext : 'Archivo');
+
+    const overlay = this.document.createElement('div');
+    overlay.className = 'os-decision-overlay';
+    const dialog = this.document.createElement('section');
+    dialog.className = 'os-decision-dialog os-file-details-dialog';
+    dialog.setAttribute('role', 'dialog');
+    dialog.setAttribute('aria-modal', 'true');
+    const header = this.document.createElement('header');
+    const title = this.document.createElement('h2');
+    title.textContent = 'Detalles del archivo';
+    header.append(title);
+    const body = this.document.createElement('div');
+    body.className = 'os-decision-body';
+    const dl = this.document.createElement('dl');
+    [['Nombre', name], ['Tipo', type], ['Peso', this.formatBytes(bytes)], ['Fecha de creación', date]].forEach(([label, value]) => {
+      const dt = this.document.createElement('dt');
+      const dd = this.document.createElement('dd');
+      dt.textContent = label;
+      dd.textContent = value;
+      dl.append(dt, dd);
+    });
+    body.append(dl);
+    const footer = this.document.createElement('footer');
+    const close = this.document.createElement('button');
+    close.type = 'button';
+    close.textContent = 'Cerrar';
+    footer.append(close);
+    dialog.append(header, body, footer);
+    overlay.append(dialog);
+    const finish = () => overlay.remove();
+    close.addEventListener('click', finish);
+    overlay.addEventListener('click', (event) => { if (event.target === overlay) finish(); });
+    this.document.body.append(overlay);
+    close.focus();
+    this.hideContext();
+  }
+
+  formatBytes(value) {
+    const n = Number(value);
+    if (!Number.isFinite(n) || n < 0) return '—';
+    if (n === 0) return '0 B';
+    const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+    let size = n;
+    let unit = 0;
+    while (size >= 1024 && unit < units.length - 1) { size /= 1024; unit++; }
+    return size.toLocaleString('es-MX', { maximumFractionDigits: unit === 0 ? 0 : 2 }) + ' ' + units[unit];
   }
 
   bindFiles(root = this.document) {
@@ -974,6 +1098,8 @@ class ArcadeCloudOsShell {
   }
 
   bindContextActions() {
+    this.context?.querySelector('[data-context-page-up]')?.addEventListener('click', (event) => { event.preventDefault(); event.stopPropagation(); this.changeContextPage(-1); });
+    this.context?.querySelector('[data-context-page-down]')?.addEventListener('click', (event) => { event.preventDefault(); event.stopPropagation(); this.changeContextPage(1); });
     this.context?.querySelectorAll('[data-file-action]').forEach((button) => {
       button.addEventListener('click', () => this.runFileAction(button.dataset.fileAction || ''));
     });
@@ -1016,6 +1142,11 @@ class ArcadeCloudOsShell {
     if (action === 'download' && entry.dataset.downloadUrl) {
       this.window.location.href = entry.dataset.downloadUrl;
       this.hideContext();
+      return;
+    }
+
+    if (action === 'details') {
+      this.openFileDetails(entry);
       return;
     }
 

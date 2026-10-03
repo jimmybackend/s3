@@ -14,6 +14,7 @@ final class FederationOsAdminRenderer
         $root = dirname(__DIR__, 2);
         $stylesVersion = is_file($root . '/css/styles.css') ? (int)filemtime($root . '/css/styles.css') : 1;
         $responsiveVersion = is_file($root . '/css/responsive.css') ? (int)filemtime($root . '/css/responsive.css') : 1;
+        $systemCssVersion = is_file($root . '/css/os-system-panel.css') ? (int)filemtime($root . '/css/os-system-panel.css') : 1;
         $cssVersion = is_file($root . '/css/federation-os-admin.css') ? (int)filemtime($root . '/css/federation-os-admin.css') : 1;
         $serverAdminJsVersion = is_file($root . '/js/server-admin.js') ? (int)filemtime($root . '/js/server-admin.js') : 1;
         $adminJsVersion = is_file($root . '/js/federation-os-admin.js') ? (int)filemtime($root . '/js/federation-os-admin.js') : 1;
@@ -29,17 +30,21 @@ final class FederationOsAdminRenderer
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 <link rel="stylesheet" href="../css/styles.css?v=<?= $stylesVersion ?>">
 <link rel="stylesheet" href="../css/responsive.css?v=<?= $responsiveVersion ?>">
+<link rel="stylesheet" href="../css/os-system-panel.css?v=<?= $systemCssVersion ?>">
 <link rel="stylesheet" href="../css/federation-os-admin.css?v=<?= $cssVersion ?>">
 </head>
 <body class="ui-theme theme-neon-green theme-dark vision-normal ascii-on federation-os-admin<?= $embed ? ' is-embedded' : '' ?>"
       data-superadmin="<?= $isSuperAdmin ? '1' : '0' ?>"
       data-provider-csrf="<?= $h($providerCsrf) ?>">
-<main class="federation-os-admin-shell">
-  <header class="federation-os-about-header">
-    <div>
-      <div class="federation-os-eyebrow">ArcadeCloud OS · FederationCloud</div>
-      <h1><i class="fas fa-circle-info mr-2"></i>Acerca de FederationCloud</h1>
-      <p>Estado del nodo, red federada y administración disponible en esta instalación.</p>
+<main class="federation-os-admin-shell os-system-shell">
+  <header class="federation-os-about-header os-system-heading">
+    <div class="os-system-heading-main">
+      <div class="os-system-heading-icon"><i class="fas fa-circle-info"></i></div>
+      <div>
+        <div class="federation-os-eyebrow os-system-eyebrow">ArcadeCloud OS · FederationCloud</div>
+        <h1>Acerca de FederationCloud</h1>
+        <p>Estado del nodo, red federada y administración disponible en esta instalación.</p>
+      </div>
     </div>
     <button type="button" id="btnFederationOsRefresh" class="btn btn-outline-info btn-sm">
       <i class="fas fa-rotate mr-1"></i>Actualizar
@@ -58,26 +63,26 @@ final class FederationOsAdminRenderer
     <?php endif; ?>
   </nav>
 
-  <section class="federation-os-card" id="federationAboutNode">
-    <div class="federation-os-section-title">
+  <section class="federation-os-card os-system-card" id="federationAboutNode">
+    <div class="federation-os-section-title os-system-section-head">
       <div><i class="fas fa-server"></i><span>Este nodo</span></div>
       <span id="federationAboutHealth" class="badge badge-secondary">consultando…</span>
     </div>
-    <div class="federation-os-stat-grid">
-      <article><span>Nombre</span><strong id="federationAboutNodeName">—</strong></article>
-      <article><span>Node ID</span><strong id="federationAboutNodeId">—</strong></article>
-      <article><span>Nodos activos</span><strong id="federationAboutConnected">—</strong></article>
-      <article><span>Ventana activa</span><strong id="federationAboutWindow">—</strong></article>
+    <div class="federation-os-stat-grid os-system-stat-grid">
+      <article class="os-system-stat"><span>Nombre</span><strong id="federationAboutNodeName">—</strong></article>
+      <article class="os-system-stat"><span>Node ID</span><strong id="federationAboutNodeId">—</strong></article>
+      <article class="os-system-stat"><span>Nodos activos</span><strong id="federationAboutConnected">—</strong></article>
+      <article class="os-system-stat"><span>Ventana activa</span><strong id="federationAboutWindow">—</strong></article>
     </div>
-    <div class="federation-os-detail-list">
+    <div class="federation-os-detail-list os-system-detail-list">
       <div><span>Public URL</span><strong id="federationAboutPublicUrl">—</strong></div>
       <div><span>Federation URL</span><strong id="federationAboutFederationUrl">—</strong></div>
       <div><span>Seed</span><strong id="federationAboutSeed">—</strong></div>
     </div>
   </section>
 
-  <section class="federation-os-card" id="federationAboutPeers">
-    <div class="federation-os-section-title">
+  <section class="federation-os-card os-system-card" id="federationAboutPeers">
+    <div class="federation-os-section-title os-system-section-head">
       <div><i class="fas fa-network-wired"></i><span>Nodos conectados</span></div>
       <span id="federationAboutPeerCount" class="badge badge-info">0</span>
     </div>
@@ -87,8 +92,8 @@ final class FederationOsAdminRenderer
   </section>
 
   <?php if ($isSuperAdmin): ?>
-  <section class="federation-os-card" id="federationAboutProviders">
-    <div class="federation-os-section-title">
+  <section class="federation-os-card os-system-card" id="federationAboutProviders">
+    <div class="federation-os-section-title os-system-section-head">
       <div><i class="fas fa-user-check"></i><span>Solicitudes de nodos proveedores</span></div>
       <span id="federationProviderPendingBadge" class="badge badge-warning">0</span>
     </div>
@@ -108,8 +113,8 @@ final class FederationOsAdminRenderer
           data-endpoint="../server-settings.php"
           aria-hidden="true"></button>
 
-  <section class="federation-os-card" id="modalServerAdmin">
-    <div class="federation-os-section-title">
+  <section class="federation-os-card os-system-card" id="modalServerAdmin">
+    <div class="federation-os-section-title os-system-section-head">
       <div><i class="fas fa-sliders"></i><span>Configuración del servidor</span></div>
       <span id="serverAdminVariableCount" class="badge badge-secondary">—</span>
     </div>
@@ -159,14 +164,14 @@ final class FederationOsAdminRenderer
     </div>
   </section>
 
-  <section class="federation-os-card" id="federationAboutModeration">
-    <div class="federation-os-section-title">
+  <section class="federation-os-card os-system-card" id="federationAboutModeration">
+    <div class="federation-os-section-title os-system-section-head">
       <div><i class="fas fa-shield-halved"></i><span>Moderación</span></div>
       <span id="federationModerationPendingBadge" class="badge badge-danger">—</span>
     </div>
-    <div class="federation-os-stat-grid two">
-      <article><span>Reportes pendientes</span><strong id="federationModerationReports">—</strong></article>
-      <article><span>Bloqueos activos propios</span><strong id="federationModerationBlocks">—</strong></article>
+    <div class="federation-os-stat-grid two os-system-stat-grid two">
+      <article class="os-system-stat"><span>Reportes pendientes</span><strong id="federationModerationReports">—</strong></article>
+      <article class="os-system-stat"><span>Bloqueos activos propios</span><strong id="federationModerationBlocks">—</strong></article>
     </div>
     <p class="federation-os-help">La revisión humana, bloqueo por SHA-256 y revocación siguen usando el servicio de moderación existente.</p>
     <a class="btn btn-outline-danger" href="moderation.php?embed=1">
@@ -174,8 +179,8 @@ final class FederationOsAdminRenderer
     </a>
   </section>
   <?php else: ?>
-  <section class="federation-os-card">
-    <div class="federation-os-section-title"><div><i class="fas fa-lock"></i><span>Administración</span></div></div>
+  <section class="federation-os-card os-system-card">
+    <div class="federation-os-section-title os-system-section-head"><div><i class="fas fa-lock"></i><span>Administración</span></div></div>
     <p class="mb-0 text-muted">Solicitudes de proveedores, configuración del servidor y moderación sólo están disponibles para el superusuario.</p>
   </section>
   <?php endif; ?>

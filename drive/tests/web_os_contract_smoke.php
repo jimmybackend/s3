@@ -28,6 +28,9 @@ $paths = [
     'federation_portal_js' => $root . '/js/federation-portal.js',
     'federation_admin_js' => $root . '/js/federation-os-admin.js',
     'federation_admin_renderer' => $root . '/src/View/FederationOsAdminRenderer.php',
+    'federation_admin_css' => $root . '/css/federation-os-admin.css',
+    'system_panel_css' => $root . '/css/os-system-panel.css',
+    'ec2_page' => $root . '/ec2.php',
     'federation_admin_controller' => $root . '/src/Http/Controller/FederationOsAdminController.php',
     'federation_portal_renderer' => $root . '/src/View/FederationPortalRenderer.php',
     'federation_portal_controller' => $root . '/src/Http/Controller/FederationPortalController.php',
@@ -491,6 +494,27 @@ webOsContract(str_contains($paths['federation_admin_js'], "/federationcloud/prov
 webOsContract(str_contains($paths['federation_admin_js'], "/federationcloud/moderation-api.php"), 'Acerca de consulta moderación con ruta absoluta');
 webOsContract(str_contains($paths['server_admin_js'], 'dataset.endpoint'), 'configuración del servidor acepta endpoint reutilizable');
 webOsContract(str_contains($paths['moderation_renderer'], 'federation-moderation-embedded'), 'moderación soporta modo embebido');
+
+webOsContract(
+    str_contains($paths['federation_admin_renderer'], 'os-system-shell')
+    && str_contains($paths['federation_admin_renderer'], 'os-system-heading')
+    && str_contains($paths['federation_admin_renderer'], 'os-system-card')
+    && str_contains($paths['federation_admin_renderer'], 'os-system-stat-grid'),
+    'Acerca de FederationCloud reutiliza la piel visual de panel de sistema'
+);
+webOsContract(
+    str_contains($paths['ec2_page'], 'os-system-shell')
+    && str_contains($paths['ec2_page'], 'os-system-card')
+    && str_contains($paths['ec2_page'], 'os-system-mobile-cards')
+    && str_contains($paths['ec2_page'], 'data-label="IPv4 privada"'),
+    'Gestión EC2 reutiliza panel de sistema y tarjetas móviles'
+);
+webOsContract(
+    str_contains($paths['system_panel_css'], '.os-system-heading-icon')
+    && str_contains($paths['system_panel_css'], '.os-system-stat-grid')
+    && str_contains($paths['system_panel_css'], '.os-system-mobile-cards'),
+    'piel compartida define encabezados, métricas y tablas móviles del sistema'
+);
 webOsContract(substr_count($paths['moderation_renderer'], "/federationcloud/moderation-api.php") >= 3, 'moderación embebida usa endpoint absoluto para leer, decidir y desbloquear');
 
 webOsContract(str_contains($paths['shell'], 'id="osTaskCenterButton"') && str_contains($paths['shell'], 'os-task-center-count'), 'Centro de Tareas está integrado como icono con contador en la barra del OS');

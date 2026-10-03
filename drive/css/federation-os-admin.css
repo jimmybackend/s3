@@ -47,3 +47,30 @@ body.federation-os-admin{margin:0}
   .federation-os-peer-grid{grid-template-columns:1fr}
   .federation-os-jumpbar a span{display:none}
 }
+
+/* ArcadeCloud OS unified system-panel skin */
+.federation-os-admin.is-embedded{background:transparent}
+.federation-os-admin.is-embedded .federation-os-admin-shell{padding:8px}
+.federation-os-admin .federation-os-about-header{margin-bottom:12px}
+.federation-os-admin .federation-os-about-header h1{font-size:1.25rem}
+.federation-os-admin .federation-os-card{padding:0;background:var(--osp-surface);border-color:var(--osp-border);box-shadow:var(--osp-shadow)}
+.federation-os-admin .federation-os-section-title{margin:0}
+.federation-os-admin .federation-os-section-title.compact{margin:0;border-top:1px solid var(--osp-divider)}
+.federation-os-admin .federation-os-section-title>div{font-weight:800}
+.federation-os-admin .federation-os-stat-grid{margin:0}
+.federation-os-admin .federation-os-stat-grid article{background:var(--osp-subtle);border-color:var(--osp-divider)}
+.federation-os-admin .federation-os-detail-list{border-color:var(--osp-divider)}
+.federation-os-admin .federation-os-peer-grid{padding:12px}
+.federation-os-admin .federation-os-peer-card,.federation-os-admin .federation-os-provider-card{background:var(--osp-subtle);border-color:var(--osp-divider)}
+.federation-os-admin .federation-os-provider-card{margin:0 12px 10px}
+.federation-os-admin .federation-os-help{margin:0;padding:10px 14px;color:var(--osp-soft)}
+.federation-os-admin .federation-os-empty{margin:12px;background:var(--osp-subtle);border-color:var(--osp-border)}
+.federation-os-admin .federation-os-jumpbar{gap:6px}
+.federation-os-admin .federation-os-jumpbar a{background:var(--osp-subtle);border-color:var(--osp-border);color:var(--osp-text)}
+.federation-os-admin .federation-os-jumpbar a:hover{background:rgba(38,198,255,.12);color:var(--osp-accent-2)}
+.federation-os-admin .btn{border-radius:8px}
+@media(max-width:760px){
+  .federation-os-admin .federation-os-jumpbar{overflow-x:auto;flex-wrap:nowrap;padding-bottom:3px}
+  .federation-os-admin .federation-os-jumpbar a{flex:0 0 auto}
+  .federation-os-admin .federation-os-jumpbar a span{display:inline}
+}

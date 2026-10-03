@@ -16,6 +16,7 @@ class ArcadeCloudOsNodeMonitor {
       const diskSubmit = target.closest('[data-node-disk-submit]'); if (diskSubmit) { event.preventDefault(); this.queueMaintenance('disk-clean'); }
       const refresh = target.closest('[data-node-refresh]'); if (refresh) { event.preventDefault(); this.refresh(); }
       const serviceAction = target.closest('[data-node-service-action]'); if (serviceAction) { event.preventDefault(); this.controlService(serviceAction); }
+      const backup = target.closest('[data-node-db-backup]'); if (backup) { event.preventDefault(); this.createDatabaseBackup(backup); }
     });
     this.document.addEventListener('background-tasks:refresh', (event) => { if (this.isOpen() && event.detail?.skipNode !== true) this.refresh(); });
     this.document.addEventListener('arcadeos:window-opened', (event) => { if (event.detail?.app === 'node') this.startPolling(); });
@@ -105,6 +106,7 @@ class ArcadeCloudOsNodeMonitor {
       this.networkCard(node.network || {}, node)
     );
     if (node.autoshutdown?.available) root.append(this.autoShutdownCard(node.autoshutdown));
+    root.append(this.databaseBackupCard());
   }
 
   updateText(selector, value) { const el = this.document.querySelector(selector); if (el && el.textContent !== String(value)) el.textContent = String(value); }
@@ -214,6 +216,56 @@ class ArcadeCloudOsNodeMonitor {
     card.querySelectorAll('dd').forEach((dd, index) => { const name = fields[index]; dd.dataset['idle' + name[0].toUpperCase() + name.slice(1)] = ''; });
     this.window.setTimeout(() => this.updateIdleStatus(idle), 0);
     return card;
+  }
+
+  databaseBackupCard() {
+    const card = this.el('section', 'os-node-card os-node-card-wide');
+    card.append(this.el('h3', '', 'Respaldo de base de datos'));
+    card.append(this.el('p', 'os-node-placeholder', 'Exporta la base de datos activa y guarda una copia privada en la carpeta Backup de tu Drive.'));
+    const actions = this.el('div', 'os-node-service-actions');
+    const button = this.el('button', '', 'Crear respaldo ahora');
+    button.type = 'button';
+    button.dataset.nodeDbBackup = '';
+    button.title = 'Crear un respaldo SQL privado en S3';
+    actions.append(button);
+    card.append(actions);
+    return card;
+  }
+
+  async createDatabaseBackup(button) {
+    if (this.config.superadmin !== true || this.busy) return;
+    if (!this.window.confirm('Se exportará la base de datos activa y se guardará una copia privada en tu carpeta Backup.\n\n¿Deseas continuar?')) return;
+    const password = this.window.prompt('Confirma tu contraseña actual de superusuario.') ?? '';
+    if (!password) return;
+
+    this.busy = true;
+    button.disabled = true;
+    const before = button.textContent;
+    button.textContent = 'Creando respaldo…';
+    try {
+      const response = await this.window.fetch(String(this.config.backupEndpoint || 'database-backup.php'), {
+        method: 'POST',
+        credentials: 'same-origin',
+        cache: 'no-store',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+          'X-Server-Admin-CSRF': String(this.config.csrf || ''),
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: new URLSearchParams({ access_password: password }).toString()
+      });
+      const data = await response.json();
+      if (!response.ok || data?.ok !== true) throw new Error(data?.error || 'No se pudo crear el respaldo.');
+      const backup = data.backup || {};
+      const location = String(backup.route || 'Backup/') + String(backup.filename || '');
+      this.notify('Respaldo creado: ' + location, 'success');
+    } catch (error) {
+      this.notify(error?.message || 'No se pudo crear el respaldo de la base de datos.', 'warning');
+    } finally {
+      this.busy = false;
+      button.disabled = false;
+      button.textContent = before;
+    }
   }
 
   card(title, entries) { const card = this.el('section', 'os-node-card'); card.append(this.el('h3', '', title), this.metrics(entries)); return card; }

@@ -4,10 +4,10 @@
     "php_class_modules": 301,
     "php_needs_migration": 0,
     "php_tests": 67,
-    "js_total": 78,
+    "js_total": 79,
     "js_class_modules": 73,
     "js_needs_migration": 0,
-    "js_tests": 10,
+    "js_tests": 11,
     "js_compatibility_facades": 8,
     "ajax_clients": 49,
     "ajax_calls": 106,
@@ -8275,7 +8275,7 @@
     },
     {
       "path": "drive/js/background-tasks.js",
-      "lines": 1032,
+      "lines": 1043,
       "kind": "class/module",
       "classes": [
         "BackgroundTaskCenter"
@@ -9707,6 +9707,34 @@
       "issues": []
     },
     {
+      "path": "drive/tests/background_tasks_refresh_functional.js",
+      "lines": 22,
+      "kind": "procedural script",
+      "classes": [],
+      "functions": [],
+      "window_assign": [],
+      "window_func": [],
+      "top_vars": [
+        "assert",
+        "vm",
+        "fs",
+        "source",
+        "context"
+      ],
+      "iife": false,
+      "ajax": {
+        "fetch": 0,
+        "xhr": 0,
+        "jquery": 0,
+        "json_consumers": 0,
+        "response_checks": 1
+      },
+      "issues": [
+        "top-level state: assert, vm, fs, source, context",
+        "no ES class"
+      ]
+    },
+    {
       "path": "drive/tests/classic_mutation_csrf_functional.js",
       "lines": 56,
       "kind": "class/module",
@@ -10085,7 +10113,7 @@
     },
     {
       "path": "drive/docs/runtime_endpoints.json",
-      "bytes": 120799,
+      "bytes": 121004,
       "valid": true,
       "root_type": "object",
       "keys": [

@@ -1,0 +1,33 @@
+name: Public upload rollback regression
+on:
+  pull_request:
+    paths:
+      - 'drive/src/Upload/**'
+      - 'drive/tests/public_upload_rollback_regression.php'
+      - '.github/workflows/upload-rollback-regression.yml'
+permissions:
+  contents: read
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: fixture-only
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -pfixture-only"
+          --health-interval=10s --health-timeout=5s --health-retries=10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mysqli, mbstring, curl, simplexml
+          tools: composer:v2
+      - run: composer install --no-interaction --prefer-dist --no-progress
+      - run: php -l drive/src/Upload/PublicDropzoneUploadService.php
+      - run: php drive/tests/public_upload_rollback_regression.php
+        env:
+          ARCADECLOUD_ISOLATED_TEST: '1'

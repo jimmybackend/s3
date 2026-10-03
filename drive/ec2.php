@@ -401,16 +401,15 @@ code{word-break:break-all}
             </div>
         </div>
     </header>
-    <section class="card ec2-filter-card os-system-card">
-        <div class="ec2-card-heading os-system-section-head">
-            <div><i class="fas fa-filter"></i><span><strong>Vista</strong><small>Filtra los recursos que quieres consultar.</small></span></div>
-        </div>
-        <form class="row ec2-filter-form os-system-form" method="get">
+    <section class="os-node-card os-node-card-wide ec2-filter-card">
+        <h3>Vista</h3>
+        <p class="os-node-card-subtitle">Filtra los recursos que quieres consultar.</p>
+        <form class="ec2-filter-form" method="get">
             <?php if ($isOsSurface): ?><input type="hidden" name="surface" value="os"><?php endif; ?>
-            <label>Región:
+            <label>Región
                 <input type="text" name="region" value="<?= H::e($region) ?>" placeholder="us-east-1">
             </label>
-            <label>Estado EC2:
+            <label>Estado EC2
                 <select name="state">
                     <?php
                     $opts = ['all'=>'Todos','running'=>'running','stopped'=>'stopped','pending'=>'pending','stopping'=>'stopping','shutting-down'=>'shutting-down','terminated'=>'terminated'];
@@ -423,7 +422,7 @@ code{word-break:break-all}
             </label>
             <button type="submit">Actualizar</button>
         </form>
-    </div>
+    </section>
 
     <?php if ($awsErr): ?>
         <div class="alert alert-err"><strong>Error AWS EC2:</strong> <?= H::e($awsErr) ?></div>
@@ -721,7 +720,7 @@ Escribe help para ver los comandos permitidos.</pre>
   function setProcessing(id, text){
     const b = badgeEl(id);
     if (!b) return;
-    b.className = 'badge state-other';
+    b.className = 'os-node-badge state-other';
     b.innerHTML = '<span class="spinner"></span>'+htmlEscape(text);
   }
 
@@ -729,9 +728,9 @@ Escribe help para ver los comandos permitidos.</pre>
     const b = badgeEl(id);
     if (!b) return;
     let cls = 'state-other';
-    if (st==='running') cls='state-running';
-    else if (st==='stopped') cls='state-stopped';
-    b.className = 'badge ' + cls;
+    if (st==='running') cls='state-running os-node-badge-ok';
+    else if (st==='stopped') cls='state-stopped os-node-badge-warning';
+    b.className = 'os-node-badge ' + cls;
     b.textContent = st;
 
     if (extra){
@@ -753,8 +752,8 @@ Escribe help para ver los comandos permitidos.</pre>
         : '';
 
       actionsCell.innerHTML = `
-        <button data-action="stop" data-id="${htmlEscape(id)}">Detener</button>
-        <label class="note"><input type="checkbox" data-force="${htmlEscape(id)}"> force</label>
+        <button class="is-danger" data-action="stop" data-id="${htmlEscape(id)}">Detener</button>
+        <label class="note ec2-force-option"><input type="checkbox" data-force="${htmlEscape(id)}"> force</label>
         ${rdpLink}
       `;
     } else if (st==='stopped'){
@@ -953,9 +952,9 @@ Escribe help para ver los comandos permitidos.</pre>
   function rdsCell(id, kind){ return document.querySelector('[data-rds-'+kind+'="'+attrEscape(id)+'"]'); }
 
   function rdsClassForStatus(status){
-    if (status === 'available') return 'state-running';
-    if (status === 'stopped') return 'state-stopped';
-    if (status === 'not_found' || status === 'error') return 'state-error';
+    if (status === 'available') return 'state-running os-node-badge-ok';
+    if (status === 'stopped') return 'state-stopped os-node-badge-warning';
+    if (status === 'not_found' || status === 'error') return 'state-error os-node-badge-danger';
     return 'state-other';
   }
 
@@ -982,7 +981,7 @@ Escribe help para ver los comandos permitidos.</pre>
   function updateRdsRowFromStatus(id, status, data){
     const b = rdsBadgeEl(id);
     if (!b) return;
-    b.className = 'badge ' + rdsClassForStatus(status);
+    b.className = 'os-node-badge ' + rdsClassForStatus(status);
     b.textContent = status;
 
     if (data){
@@ -1000,7 +999,7 @@ Escribe help para ver los comandos permitidos.</pre>
     if (!actionsCell) return;
 
     if (status === 'available') {
-      actionsCell.innerHTML = `<button data-rds-action="stop" data-rds-id="${htmlEscape(id)}">Apagar DB</button>`;
+      actionsCell.innerHTML = `<button class="is-danger" data-rds-action="stop" data-rds-id="${htmlEscape(id)}">Apagar DB</button>`;
     } else if (status === 'stopped') {
       actionsCell.innerHTML = `<button data-rds-action="start" data-rds-id="${htmlEscape(id)}">Encender DB</button>`;
     } else if (status === 'not_found') {

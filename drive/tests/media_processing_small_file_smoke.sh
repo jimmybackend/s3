@@ -29,9 +29,9 @@ test -s "$mp3"
 # Misma estrategia del worker: 3 partes y stream copy.
 for i in 1 2 3; do
   case "$i" in
-    1) start="0.000"; length="4.000" ;;
+    1) start="0.000"; length="5.000" ;;
     2) start="0.000"; length="6.000" ;;
-    3) start="2.000"; length="4.000" ;;
+    3) start="1.000"; length="5.000" ;;
   esac
   out="$tmp/video-parte${i}.mp4"
   ffmpeg -hide_banner -loglevel error -y \

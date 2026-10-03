@@ -7,6 +7,7 @@ $paths = [
     'shell' => $root . '/so.php',
     'css' => $root . '/css/so.css',
     'js' => $root . '/js/so.js',
+    'file_apps_js' => $root . '/js/file-applications.js',
     'window_manager_js' => $root . '/js/os-window-manager.js',
     'appearance_js' => $root . '/js/so-appearance.js',
     'preferences_endpoint' => $root . '/os-preferences.php',
@@ -146,6 +147,16 @@ webOsContract(str_contains($paths['js'], "mediaFile ? 'Reproducir' : 'Abrir en v
 webOsContract(str_contains($paths['js'], "overlay.className = 'os-media-overlay is-' + kind"), 'reproductor multimedia queda superpuesto al SO');
 webOsContract(str_contains($paths['js'], 'os-viewer-image'), 'imagen usa visor interno');
 webOsContract(str_contains($paths['js'], 'os-viewer-frame'), 'texto/PDF pueden vivir en ventana interna');
+webOsContract(str_contains($paths['shell'], 'data-file-action="details"'), 'menú de archivo incluye Detalles');
+webOsContract(str_contains($paths['shell'], 'data-created-at='), 'cada archivo expone fecha para Detalles sin consulta adicional');
+webOsContract(str_contains($paths['shell'], 'data-context-page-up') && str_contains($paths['shell'], 'data-context-page-down'), 'menú contextual incluye navegación móvil por bloques');
+webOsContract(str_contains($paths['js'], 'contextPageSize = 10'), 'móvil pagina exactamente diez acciones por vista');
+webOsContract(str_contains($paths['js'], "matchMedia('(max-width: 700px)')"), 'paginación de acciones sólo se activa en pantalla móvil');
+webOsContract(str_contains($paths['js'], 'openFileDetails(entry)'), 'Detalles se construye como diálogo interno del Web OS');
+webOsContract(str_contains($paths['js'], "['Nombre', name]") && str_contains($paths['js'], "['Tipo', type]") && str_contains($paths['js'], "['Peso', this.formatBytes(bytes)]") && str_contains($paths['js'], "['Fecha de creación', date]"), 'Detalles muestra nombre, tipo, peso y fecha de creación');
+webOsContract(str_contains($paths['file_apps_js'], "toolbar.classList.add('os-viewer-toolbar-bottom')"), 'visor de imágenes mueve sus acciones al pie');
+webOsContract(str_contains($paths['file_apps_js'], "if (application === 'image')"), 'reposicionamiento de acciones se limita al visor de imágenes');
+webOsContract(str_contains($paths['css'], '.os-statusbar .os-viewer-toolbar-bottom'), 'acciones de imagen tienen estilo separado del cierre de ventana');
 webOsContract(
     substr_count($paths['js'], 'this.window.open(') === 2
     && str_contains($paths['js'], "this.window.open(officeUrl, '_blank')")

@@ -469,6 +469,7 @@ $isExplorerFragment = (string)($_GET['_os_fragment'] ?? '') === 'explorer';
                     data-key="<?= $e($key) ?>"
                     data-bytes="<?= (int)($row['Tamano'] ?? 0) ?>"
                     data-updated-at="<?= $e((string)($row['Fecha'] ?? '')) ?>"
+                    data-created-at="<?= $e((string)($row['Fecha'] ?? '')) ?>"
                     data-open-url="<?= $e($openUrl) ?>"
                     data-wallpaper-url="<?= $isImage && !$locked ? $e('ver_archivo.php?archivo=' . $keyQ) : '' ?>"
                     data-download-url="<?= $e($downloadUrl) ?>"
@@ -891,11 +892,13 @@ Escribe help o usa uno de los botones disponibles.</pre>
 
   <div class="os-file-context" id="fileContextMenu" hidden>
     <div class="os-context-name" id="fileContextName">Archivo</div>
+    <button type="button" class="os-context-page-control is-up" data-context-page-up hidden aria-label="Ver acciones anteriores"><i class="fas fa-chevron-up"></i><span>10 anteriores</span></button>
     <button type="button" data-file-action="open"><i class="fas fa-eye"></i><span>Abrir en ventana</span></button>
     <button type="button" data-file-action="open-with"><i class="fas fa-table-list"></i><span>Abrir con…</span></button>
     <button type="button" data-file-action="office"><i class="fas fa-file-word"></i><span>Abrir con Office</span></button>
     <button type="button" data-file-action="edit"><i class="fas fa-pen"></i>Editar texto</button>
     <button type="button" data-file-action="download"><i class="fas fa-download"></i>Descargar</button>
+    <button type="button" data-file-action="details"><i class="fas fa-circle-info"></i><span>Detalles</span></button>
     <button type="button" data-file-action="wallpaper"><i class="fas fa-panorama"></i><span>Usar como fondo de pantalla</span></button>
     <div class="os-context-divider" data-selection-context-divider hidden></div>
     <button type="button" data-selection-context="download" data-selection-action="download" hidden>
@@ -921,6 +924,7 @@ Escribe help o usa uno de los botones disponibles.</pre>
     <button type="button" class="is-danger" data-file-action="security-unsecure"><i class="fas fa-shield-virus"></i><span>Quitar protección</span></button>
     <div class="os-context-divider"></div>
     <button type="button" data-file-action="classic"><i class="fas fa-hard-drive"></i>Abrir en Drive clásico</button>
+    <button type="button" class="os-context-page-control is-down" data-context-page-down hidden aria-label="Ver acciones siguientes"><i class="fas fa-chevron-down"></i><span>10 siguientes</span></button>
   </div>
 
   <!-- Modal compartido: Seguridad del archivo -->

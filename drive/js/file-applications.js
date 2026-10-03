@@ -142,7 +142,16 @@ class ArcadeCloudFileApplicationService {
       const wallpaper = this.document.createElement('button'); wallpaper.type = 'button'; wallpaper.innerHTML = '<i class="fas fa-panorama"></i><span>Usar como fondo</span>';
       wallpaper.addEventListener('click', () => this.window.ArcadeCloudOsAppearance?.setWallpaper(file.wallpaperUrl, file.name)); toolbar.append(wallpaper);
     }
-    if (toolbar.children.length) body.prepend(toolbar);
+    if (toolbar.children.length) {
+      if (application === 'image') {
+        toolbar.classList.add('os-viewer-toolbar-bottom');
+        const status = record.element.querySelector('.os-statusbar');
+        if (status) status.append(toolbar);
+        else body.append(toolbar);
+      } else {
+        body.prepend(toolbar);
+      }
+    }
   }
 
   actionLink(url, icon, label, download) {

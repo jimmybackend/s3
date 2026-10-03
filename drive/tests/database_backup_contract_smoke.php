@@ -7,6 +7,7 @@ $writer = (string)file_get_contents($root . '/src/Admin/DatabaseSqlDumpWriter.ph
 $controller = (string)file_get_contents($root . '/src/Http/Controller/DatabaseBackupController.php');
 $endpoint = (string)file_get_contents($root . '/database-backup.php');
 $js = (string)file_get_contents($root . '/js/so-node.js');
+$shell = (string)file_get_contents($root . '/so.php');
 
 $assert = static function (bool $condition, string $message): void {
     if (!$condition) {
@@ -53,5 +54,13 @@ $assert(str_contains($js, "root.append(this.databaseBackupCard())"), 'database b
 $assert(str_contains($js, "this.config.superadmin !== true"), 'client also guards the action to superadmin mode');
 $assert(str_contains($js, "database-backup.php"), 'Mi nodo calls the dedicated backup endpoint');
 $assert(str_contains($js, "X-Server-Admin-CSRF"), 'browser sends server-admin CSRF');
+$assert(str_contains($shell, 'id="nodeDatabaseBackupConfirmModal"'), 'backup uses ArcadeCloud confirmation modal');
+$assert(str_contains($shell, 'id="nodeDatabaseBackupPasswordModal"'), 'backup uses ArcadeCloud password modal');
+$assert(str_contains($shell, 'autocomplete="current-password"'), 'backup password field supports browser password managers');
+$assert(str_contains($shell, 'autocomplete="username"'), 'backup form gives password managers username context');
+$assert(str_contains($js, "openDatabaseBackupConfirm()"), 'backup action opens internal confirmation UI');
+$assert(str_contains($js, "openDatabaseBackupPassword()"), 'confirmation advances to internal password UI');
+$assert(!str_contains($js, "this.window.confirm('Se exportará la base de datos activa"), 'database backup no longer uses native confirm');
+$assert(!str_contains($js, "this.window.prompt('Confirma tu contraseña actual de superusuario.')"), 'database backup no longer uses native password prompt');
 
 fwrite(STDOUT, "Database backup contract smoke passed.\n");

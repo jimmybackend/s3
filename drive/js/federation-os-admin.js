@@ -65,7 +65,7 @@ class FederationOsAdminModule {
       const health = this.document.getElementById('federationAboutHealth');
       if (health) {
         health.textContent = data.degraded ? 'degradado' : 'activo';
-        health.className = 'badge ' + (data.degraded ? 'badge-warning' : 'badge-success');
+        health.className = 'os-node-badge ' + (data.degraded ? 'os-node-badge-warning' : 'os-node-badge-ok');
       }
 
       this.renderPeers(nodes, String(local.node_id || ''));
@@ -74,7 +74,7 @@ class FederationOsAdminModule {
       const health = this.document.getElementById('federationAboutHealth');
       if (health) {
         health.textContent = 'no disponible';
-        health.className = 'badge badge-danger';
+        health.className = 'os-node-badge os-node-badge-danger';
       }
     }
   }
@@ -91,32 +91,34 @@ class FederationOsAdminModule {
 
     nodes.forEach((row) => {
       const card = this.document.createElement('article');
-      card.className = 'federation-os-peer-card';
+      card.className = 'federation-os-peer-card os-node-card';
 
       const top = this.document.createElement('div');
-      top.className = 'federation-os-peer-head';
+      top.className = 'federation-node-title';
 
-      const name = this.document.createElement('strong');
+      const name = this.document.createElement('h3');
       name.textContent = String(row.node_name || this.shortNodeId(String(row.node_id || 'Nodo')));
       top.appendChild(name);
 
       const badge = this.document.createElement('span');
       const isLocal = String(row.node_id || '') === localNodeId;
-      badge.className = 'badge ' + (isLocal ? 'badge-info' : 'badge-success');
+      badge.className = 'os-node-badge ' + (isLocal ? '' : 'os-node-badge-ok');
       badge.textContent = isLocal ? 'este nodo' : 'conectado';
       top.appendChild(badge);
 
-      const id = this.document.createElement('div');
-      id.className = 'small text-muted text-break';
-      id.textContent = String(row.node_id || '');
+      const facts = this.document.createElement('dl');
+      [
+        ['Node ID', String(row.node_id || '—')],
+        ['URL', String(row.public_url || row.federation_url || 'sin URL publicada')]
+      ].forEach(([key, value]) => {
+        const dt = this.document.createElement('dt');
+        dt.textContent = key;
+        const dd = this.document.createElement('dd');
+        dd.textContent = value;
+        facts.append(dt, dd);
+      });
 
-      const url = this.document.createElement('div');
-      url.className = 'small text-muted text-break mt-1';
-      url.textContent = String(row.public_url || row.federation_url || 'sin URL publicada');
-
-      card.appendChild(top);
-      card.appendChild(id);
-      card.appendChild(url);
+      card.append(top, facts);
       target.appendChild(card);
     });
   }
@@ -149,41 +151,37 @@ class FederationOsAdminModule {
 
     rows.forEach((row) => {
       const card = this.document.createElement('article');
-      card.className = 'federation-os-provider-card';
+      card.className = 'federation-os-provider-card os-node-card';
 
       const head = this.document.createElement('div');
-      head.className = 'federation-os-provider-head';
+      head.className = 'federation-node-title';
 
-      const identity = this.document.createElement('div');
-      const title = this.document.createElement('strong');
+      const title = this.document.createElement('h3');
       title.textContent = String(row.provider_node_name || this.shortNodeId(String(row.provider_node_id || '')));
-      identity.appendChild(title);
-
-      const nodeId = this.document.createElement('div');
-      nodeId.className = 'small text-muted text-break';
-      nodeId.textContent = String(row.provider_node_id || '');
-      identity.appendChild(nodeId);
-
-      const endpoint = this.document.createElement('div');
-      endpoint.className = 'small text-muted text-break';
-      endpoint.textContent = String(row.public_url || row.federation_url || '');
-      identity.appendChild(endpoint);
-
-      head.appendChild(identity);
+      head.appendChild(title);
 
       const badge = this.document.createElement('span');
-      badge.className = 'badge ' + (state === 'pending' ? 'badge-warning' : 'badge-success');
+      badge.className = 'os-node-badge ' + (state === 'pending' ? 'os-node-badge-warning' : 'os-node-badge-ok');
       badge.textContent = state === 'pending' ? 'pendiente' : 'autorizado';
       head.appendChild(badge);
 
-      const meta = this.document.createElement('div');
-      meta.className = 'small mt-2 text-muted';
-      meta.textContent = 'Rol: ' + String(row.role || 'provider')
-        + ' · Alcance: ' + String(row.scope || 'all_allowed_resources')
-        + ' · Último contacto: ' + String(row.last_seen || '—');
+      const facts = this.document.createElement('dl');
+      [
+        ['Node ID', String(row.provider_node_id || '—')],
+        ['URL', String(row.public_url || row.federation_url || '—')],
+        ['Rol', String(row.role || 'provider')],
+        ['Alcance', String(row.scope || 'all_allowed_resources')],
+        ['Último contacto', String(row.last_seen || '—')]
+      ].forEach(([key, value]) => {
+        const dt = this.document.createElement('dt');
+        dt.textContent = key;
+        const dd = this.document.createElement('dd');
+        dd.textContent = value;
+        facts.append(dt, dd);
+      });
 
       const actions = this.document.createElement('div');
-      actions.className = 'federation-os-provider-actions';
+      actions.className = 'federation-os-provider-actions os-node-card-actions';
 
       if (state === 'pending') {
         actions.appendChild(this.providerButton('Aprobar', 'approve', row.provider_node_id, 'is-success'));
@@ -192,9 +190,7 @@ class FederationOsAdminModule {
         actions.appendChild(this.providerButton('Revocar autorización', 'revoke', row.provider_node_id, 'is-danger'));
       }
 
-      card.appendChild(head);
-      card.appendChild(meta);
-      card.appendChild(actions);
+      card.append(head, facts, actions);
       target.appendChild(card);
     });
   }
@@ -295,7 +291,7 @@ class FederationOsAdminModule {
 
   empty(message) {
     const node = this.document.createElement('div');
-    node.className = 'federation-os-empty';
+    node.className = 'os-node-placeholder';
     node.textContent = message;
     return node;
   }

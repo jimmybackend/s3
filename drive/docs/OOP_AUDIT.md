@@ -412,7 +412,7 @@
 | `drive/src/Storage/FolderMutationRepository.php` | 326 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Storage/FolderRepository.php` | 132 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Storage/MoveJobStore.php` | 335 | class/module | 1 | — | — | — | — |
-| `drive/src/Storage/S3ObjectCopyService.php` | 49 | class/module | 1 | — | — | — | — |
+| `drive/src/Storage/S3ObjectCopyService.php` | 53 | class/module | 1 | — | — | — | — |
 | `drive/src/Storage/StorageObjectNameCodec.php` | 104 | class/module | 1 | — | — | — | — |
 | `drive/src/Storage/StorageUsageService.php` | 103 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Storage/UserStoragePath.php` | 50 | class/module | 1 | — | — | — | — |
@@ -483,7 +483,7 @@
 | `drive/tests/federation_replica_reconnect_contract_smoke.php` | 81 | test script | 0 | — | — | — | — |
 | `drive/tests/federation_replica_smoke.php` | 115 | test script | 0 | — | — | — | — |
 | `drive/tests/federationcloud_smoke.php` | 197 | test script | 0 | — | — | — | — |
-| `drive/tests/file_copy_regression.php` | 75 | test script | 0 | — | ⚠️ | — | — |
+| `drive/tests/file_copy_regression.php` | 84 | test script | 0 | — | ⚠️ | — | — |
 | `drive/tests/file_mutation_csrf_regression.php` | 97 | test script | 2 | ⚠️ | — | — | — |
 | `drive/tests/folder_deletion_regression.php` | 93 | test script | 0 | — | ⚠️ | ⚠️ | — |
 | `drive/tests/folder_document_sanitizer.php` | 49 | test script | 0 | — | — | — | — |

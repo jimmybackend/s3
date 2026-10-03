@@ -5796,7 +5796,7 @@
     },
     {
       "path": "drive/src/Storage/S3ObjectCopyService.php",
-      "lines": 49,
+      "lines": 53,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -6915,7 +6915,7 @@
     },
     {
       "path": "drive/tests/file_copy_regression.php",
-      "lines": 75,
+      "lines": 84,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -10130,7 +10130,7 @@
     },
     {
       "path": "drive/docs/runtime_endpoints.json",
-      "bytes": 121066,
+      "bytes": 121355,
       "valid": true,
       "root_type": "object",
       "keys": [

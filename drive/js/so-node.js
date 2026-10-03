@@ -16,8 +16,10 @@ class ArcadeCloudOsNodeMonitor {
       const diskSubmit = target.closest('[data-node-disk-submit]'); if (diskSubmit) { event.preventDefault(); this.queueMaintenance('disk-clean'); }
       const refresh = target.closest('[data-node-refresh]'); if (refresh) { event.preventDefault(); this.refresh(); }
       const serviceAction = target.closest('[data-node-service-action]'); if (serviceAction) { event.preventDefault(); this.controlService(serviceAction); }
-      const backup = target.closest('[data-node-db-backup]'); if (backup) { event.preventDefault(); this.createDatabaseBackup(backup); }
+      const backup = target.closest('[data-node-db-backup]'); if (backup) { event.preventDefault(); this.openDatabaseBackupConfirm(); }
+      const backupContinue = target.closest('[data-node-db-backup-continue]'); if (backupContinue) { event.preventDefault(); this.openDatabaseBackupPassword(); }
     });
+    this.document.addEventListener('submit', (event) => { const form = event.target instanceof Element ? event.target.closest('[data-node-db-backup-form]') : null; if (form) { event.preventDefault(); this.createDatabaseBackup(form); } });
     this.document.addEventListener('background-tasks:refresh', (event) => { if (this.isOpen() && event.detail?.skipNode !== true) this.refresh(); });
     this.document.addEventListener('arcadeos:window-opened', (event) => { if (event.detail?.app === 'node') this.startPolling(); });
     this.document.addEventListener('arcadeos:window-closed', (event) => { if (event.detail?.app === 'node') this.stopPolling(); });
@@ -232,16 +234,59 @@ class ArcadeCloudOsNodeMonitor {
     return card;
   }
 
-  async createDatabaseBackup(button) {
+  showBootstrapModal(id, action) {
+    const modal = this.document.getElementById(id);
+    if (!modal) return;
+    const jq = this.window.jQuery || this.window.$;
+    if (jq && typeof jq(modal).modal === 'function') jq(modal).modal(action);
+  }
+
+  openDatabaseBackupConfirm() {
     if (this.config.superadmin !== true || this.busy) return;
-    if (!this.window.confirm('Se exportará la base de datos activa y se guardará una copia privada en tu carpeta Backup.\n\n¿Deseas continuar?')) return;
-    const password = this.window.prompt('Confirma tu contraseña actual de superusuario.') ?? '';
-    if (!password) return;
+    this.showBootstrapModal('nodeDatabaseBackupConfirmModal', 'show');
+  }
+
+  openDatabaseBackupPassword() {
+    this.showBootstrapModal('nodeDatabaseBackupConfirmModal', 'hide');
+    const modal = this.document.getElementById('nodeDatabaseBackupPasswordModal');
+    const input = modal?.querySelector('[data-node-db-backup-password]');
+    const status = modal?.querySelector('[data-node-db-backup-status]');
+    if (input) input.value = '';
+    if (status) {
+      status.textContent = 'El navegador puede ofrecer aquí la contraseña guardada.';
+      status.className = 'small text-muted';
+    }
+    this.window.setTimeout(() => {
+      this.showBootstrapModal('nodeDatabaseBackupPasswordModal', 'show');
+      this.window.setTimeout(() => input?.focus(), 180);
+    }, 180);
+  }
+
+  async createDatabaseBackup(form) {
+    if (this.config.superadmin !== true || this.busy) return;
+    const input = form?.querySelector('[data-node-db-backup-password]');
+    const status = form?.querySelector('[data-node-db-backup-status]');
+    const button = form?.querySelector('[data-node-db-backup-submit]');
+    const password = String(input?.value || '');
+    if (!password) {
+      if (status) {
+        status.textContent = 'Escribe tu contraseña actual de superadministrador.';
+        status.className = 'small text-danger';
+      }
+      input?.focus();
+      return;
+    }
 
     this.busy = true;
-    button.disabled = true;
-    const before = button.textContent;
-    button.textContent = 'Creando respaldo…';
+    if (button) {
+      button.disabled = true;
+      button.dataset.originalText = button.textContent || '';
+      button.textContent = 'Creando respaldo…';
+    }
+    if (status) {
+      status.textContent = 'Exportando y verificando la base de datos…';
+      status.className = 'small text-info';
+    }
     try {
       const response = await this.window.fetch(String(this.config.backupEndpoint || 'database-backup.php'), {
         method: 'POST',
@@ -262,13 +307,21 @@ class ArcadeCloudOsNodeMonitor {
       const detail = backup.verified_complete === true
         ? ' · verificado: ' + String(inventory.tables ?? 0) + ' tablas, ' + String(inventory.rows ?? 0) + ' filas, ' + String(inventory.views ?? 0) + ' vistas, ' + String((inventory.procedures ?? 0) + (inventory.functions ?? 0)) + ' rutinas, ' + String(inventory.triggers ?? 0) + ' triggers, ' + String(inventory.events ?? 0) + ' eventos'
         : '';
+      if (input) input.value = '';
+      this.showBootstrapModal('nodeDatabaseBackupPasswordModal', 'hide');
       this.notify('Respaldo creado: ' + location + detail, 'success');
     } catch (error) {
-      this.notify(error?.message || 'No se pudo crear el respaldo de la base de datos.', 'warning');
+      if (status) {
+        status.textContent = error?.message || 'No se pudo crear el respaldo de la base de datos.';
+        status.className = 'small text-danger';
+      }
     } finally {
       this.busy = false;
-      button.disabled = false;
-      button.textContent = before;
+      if (button) {
+        button.disabled = false;
+        button.textContent = button.dataset.originalText || 'Crear respaldo';
+        delete button.dataset.originalText;
+      }
     }
   }
 

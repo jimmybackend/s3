@@ -92,15 +92,15 @@ final class FederationOsAdminRenderer
 
   <?php if ($isSuperAdmin): ?>
   <section class="os-node-card os-node-card-wide" id="federationAboutProviders">
-    <div class="federation-os-section-title os-system-section-head">
-      <div><i class="fas fa-user-check"></i><span>Solicitudes de nodos proveedores</span></div>
-      <span id="federationProviderPendingBadge" class="badge badge-warning">0</span>
+    <div class="federation-node-title">
+      <h3>Solicitudes de nodos proveedores</h3>
+      <span id="federationProviderPendingBadge" class="os-node-badge os-node-badge-warning">0</span>
     </div>
     <p class="federation-os-help">Aprueba o rechaza únicamente copias con backend compartido. Los nodos independientes se registran por el protocolo normal de FederationCloud.</p>
     <div id="federationProviderPendingList" class="mb-3"><div class="federation-os-empty">Cargando solicitudes…</div></div>
-    <div class="federation-os-section-title compact">
-      <div><i class="fas fa-link"></i><span>Proveedores autorizados</span></div>
-      <span id="federationProviderActiveBadge" class="badge badge-success">0</span>
+    <div class="federation-node-title federation-node-subtitle">
+      <h3>Proveedores autorizados</h3>
+      <span id="federationProviderActiveBadge" class="os-node-badge os-node-badge-ok">0</span>
     </div>
     <div id="federationProviderActiveList"><div class="federation-os-empty">Cargando proveedores…</div></div>
   </section>
@@ -113,9 +113,9 @@ final class FederationOsAdminRenderer
           aria-hidden="true"></button>
 
   <section class="os-node-card os-node-card-wide" id="modalServerAdmin">
-    <div class="federation-os-section-title os-system-section-head">
-      <div><i class="fas fa-sliders"></i><span>Configuración del servidor</span></div>
-      <span id="serverAdminVariableCount" class="badge badge-secondary">—</span>
+    <div class="federation-node-title">
+      <h3>Configuración del servidor</h3>
+      <span id="serverAdminVariableCount" class="os-node-badge">—</span>
     </div>
     <p class="federation-os-help">Usa el mismo backend administrativo del Drive para MySQL, AWS/S3, FederationCloud y opciones avanzadas.</p>
     <div id="serverAdminAlert" class="alert d-none" role="alert"></div>
@@ -164,14 +164,14 @@ final class FederationOsAdminRenderer
   </section>
 
   <section class="os-node-card os-node-card-wide" id="federationAboutModeration">
-    <div class="federation-os-section-title os-system-section-head">
-      <div><i class="fas fa-shield-halved"></i><span>Moderación</span></div>
-      <span id="federationModerationPendingBadge" class="badge badge-danger">—</span>
+    <div class="federation-node-title">
+      <h3>Moderación</h3>
+      <span id="federationModerationPendingBadge" class="os-node-badge os-node-badge-danger">—</span>
     </div>
-    <div class="federation-os-stat-grid two os-system-stat-grid two">
-      <article class="os-system-stat"><span>Reportes pendientes</span><strong id="federationModerationReports">—</strong></article>
-      <article class="os-system-stat"><span>Bloqueos activos propios</span><strong id="federationModerationBlocks">—</strong></article>
-    </div>
+    <dl>
+      <dt>Reportes pendientes</dt><dd id="federationModerationReports">—</dd>
+      <dt>Bloqueos activos propios</dt><dd id="federationModerationBlocks">—</dd>
+    </dl>
     <p class="federation-os-help">La revisión humana, bloqueo por SHA-256 y revocación siguen usando el servicio de moderación existente.</p>
     <a class="btn btn-outline-danger" href="moderation.php?embed=1">
       <i class="fas fa-shield-halved mr-1"></i>Abrir opciones de moderación
@@ -179,7 +179,7 @@ final class FederationOsAdminRenderer
   </section>
   <?php else: ?>
   <section class="os-node-card os-node-card-wide">
-    <div class="federation-os-section-title os-system-section-head"><div><i class="fas fa-lock"></i><span>Administración</span></div></div>
+    <h3>Administración</h3>
     <p class="mb-0 text-muted">Solicitudes de proveedores, configuración del servidor y moderación sólo están disponibles para el superusuario.</p>
   </section>
   <?php endif; ?>

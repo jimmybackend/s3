@@ -42,6 +42,10 @@ final class FederatedCatalogRepository
             $this->applyModerationUnblock($event);
             return;
         }
+        if ($type === 'delivery.record') {
+            $this->applyDeliveryRecord($event);
+            return;
+        }
         throw new FederationException('Evento federado no materializable.', 400);
     }
 
@@ -387,6 +391,108 @@ final class FederatedCatalogRepository
         $stmt->bind_param('sss', $eventId, $contentId, $originNodeId);
         $stmt->execute();
         $stmt->close();
+    }
+
+
+    private function applyDeliveryRecord(array $event): void
+    {
+        $payload = $event['payload'];
+        $deliveryId = (string)$event['entity_id'];
+        $originNodeId = (string)$event['origin_node_id'];
+        $resourceId = trim((string)($payload['resource_id'] ?? ''));
+        $requestNodeId = trim((string)($payload['request_node_id'] ?? ''));
+        $sources = $payload['sources'] ?? null;
+        $sourceCount = (int)($payload['source_count'] ?? 0);
+        $bytesDelivered = (int)($payload['bytes_delivered'] ?? -1);
+        $transport = strtolower(trim((string)($payload['transport'] ?? '')));
+        $completedAt = trim((string)($payload['completed_at'] ?? ''));
+
+        if (!preg_match('/\Afdl_[A-Za-z0-9_-]{16,80}\z/', $deliveryId)
+            || !preg_match('/\Aarl_[A-Za-z0-9_-]{16,80}\z/', $resourceId)
+            || !hash_equals($originNodeId, $requestNodeId)
+            || !is_array($sources)
+            || array_is_list($sources)
+            || $sourceCount < 1
+            || $sourceCount > FederationMultiSourceDownloader::MAX_SOURCES
+            || count($sources) !== $sourceCount
+            || $bytesDelivered < 0
+            || $bytesDelivered > FederationReplicaDownloader::MAX_BYTES
+            || !in_array($transport, ['single_source_proxy','multisource'], true)) {
+            throw new FederationException('Evento de entrega FederationCloud inválido.', 400);
+        }
+
+        $timestamp = strtotime($completedAt);
+        if ($timestamp === false || $timestamp > time() + 300) {
+            throw new FederationException('Fecha de entrega FederationCloud inválida.', 400);
+        }
+
+        $cleanSources = [];
+        foreach ($sources as $source) {
+            if (!is_array($source) || array_is_list($source)) {
+                throw new FederationException('Fuente de entrega FederationCloud inválida.', 400);
+            }
+            $nodeId = trim((string)($source['node_id'] ?? ''));
+            $role = strtolower(trim((string)($source['role'] ?? '')));
+            if (!preg_match('/\Aacn_[A-Za-z0-9_-]{16,80}\z/', $nodeId)
+                || !in_array($role, ['origin','provider','mirror'], true)
+                || isset($cleanSources[$nodeId])) {
+                throw new FederationException('Nodo de fuente FederationCloud inválido.', 400);
+            }
+            $cleanSources[$nodeId] = $role;
+        }
+
+        $eventId = (string)$event['event_id'];
+        $completedSql = gmdate('Y-m-d H:i:s', $timestamp);
+        $stmt = $this->db->prepare(
+            'INSERT INTO FederationResourceDeliveries '
+            . '(DeliveryId, ResourceId, RequestNodeId, SourceCount, BytesDelivered, Transport, CompletedAt, OriginSequence, EventId) '
+            . 'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
+        );
+        if (!$stmt) throw new FederationException('No se pudo preparar historial federado.', 500);
+        $sequence = (int)$event['origin_sequence'];
+        $stmt->bind_param(
+            'sssisssis',
+            $deliveryId,
+            $resourceId,
+            $requestNodeId,
+            $sourceCount,
+            $bytesDelivered,
+            $transport,
+            $completedSql,
+            $sequence,
+            $eventId
+        );
+        if (!$stmt->execute()) {
+            $errno = $stmt->errno;
+            $message = $stmt->error;
+            $stmt->close();
+            if ($errno === 1062) {
+                $check = $this->db->prepare('SELECT EventId FROM FederationResourceDeliveries WHERE DeliveryId=? LIMIT 1');
+                if (!$check) throw new FederationException('No se pudo comprobar entrega federada duplicada.', 500);
+                $check->bind_param('s', $deliveryId);
+                $check->execute();
+                $row = $check->get_result()->fetch_assoc();
+                $check->close();
+                if (is_array($row) && hash_equals((string)$row['EventId'], $eventId)) return;
+                throw new FederationException('Delivery ID federado ya pertenece a otro evento.', 409);
+            }
+            throw new FederationException('No se pudo registrar entrega federada: ' . $message, 500);
+        }
+        $stmt->close();
+
+        $sourceStmt = $this->db->prepare(
+            'INSERT INTO FederationResourceDeliverySources (DeliveryId, NodeId, Role) VALUES (?, ?, ?)'
+        );
+        if (!$sourceStmt) throw new FederationException('No se pudo preparar fuentes de entrega federada.', 500);
+        foreach ($cleanSources as $nodeId => $role) {
+            $sourceStmt->bind_param('sss', $deliveryId, $nodeId, $role);
+            if (!$sourceStmt->execute()) {
+                $message = $sourceStmt->error;
+                $sourceStmt->close();
+                throw new FederationException('No se pudo registrar fuente de entrega federada: ' . $message, 500);
+            }
+        }
+        $sourceStmt->close();
     }
 
     private function resourceBinding(string $resourceId): ?array

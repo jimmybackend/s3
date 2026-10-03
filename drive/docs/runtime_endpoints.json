@@ -1040,6 +1040,7 @@
         "drive/tests/chunked_upload_cleanup_regression.php",
         "drive/tests/federation_moderation_contract_smoke.php",
         "drive/tests/federationcloud_smoke.php",
+        "drive/tests/file_copy_regression.php",
         "drive/tests/file_mutation_csrf_regression.php",
         "drive/tests/folder_deletion_regression.php",
         "drive/tests/fresh_install_contract_smoke.php",
@@ -1739,7 +1740,7 @@
     },
     {
       "path": "drive/src/Application/FileMutationService.php",
-      "size": 7558,
+      "size": 7285,
       "active": false,
       "references": [
         "drive/tests/web_os_clipboard_contract_smoke.php"
@@ -1763,7 +1764,7 @@
     },
     {
       "path": "drive/src/Application/FolderMutationService.php",
-      "size": 13070,
+      "size": 12649,
       "active": false,
       "references": [
         "drive/tests/web_os_clipboard_contract_smoke.php"
@@ -3392,6 +3393,12 @@
       ]
     },
     {
+      "path": "drive/src/Storage/S3ObjectCopyService.php",
+      "size": 1744,
+      "active": false,
+      "references": []
+    },
+    {
       "path": "drive/src/Storage/StorageObjectNameCodec.php",
       "size": 3333,
       "active": false,
@@ -3875,6 +3882,12 @@
     {
       "path": "drive/tests/federationcloud_smoke.php",
       "size": 8312,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/tests/file_copy_regression.php",
+      "size": 6376,
       "active": false,
       "references": []
     },

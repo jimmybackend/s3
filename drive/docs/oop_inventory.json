@@ -1,9 +1,9 @@
 {
   "summary": {
-    "php_total": 519,
+    "php_total": 520,
     "php_class_modules": 300,
     "php_needs_migration": 0,
-    "php_tests": 63,
+    "php_tests": 64,
     "js_total": 78,
     "js_class_modules": 73,
     "js_needs_migration": 0,
@@ -732,7 +732,7 @@
     },
     {
       "path": "drive/ec2.php",
-      "lines": 1086,
+      "lines": 1090,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -1735,7 +1735,7 @@
     },
     {
       "path": "drive/office-gateway.php",
-      "lines": 671,
+      "lines": 670,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -2078,7 +2078,7 @@
     },
     {
       "path": "drive/so.php",
-      "lines": 2058,
+      "lines": 2061,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -5127,7 +5127,7 @@
     },
     {
       "path": "drive/src/Media/MediaWorkerNodeService.php",
-      "lines": 723,
+      "lines": 757,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -5142,7 +5142,7 @@
     },
     {
       "path": "drive/src/Media/MediaWorkerNodeSessionRepository.php",
-      "lines": 219,
+      "lines": 243,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -5172,7 +5172,7 @@
     },
     {
       "path": "drive/src/Office/OfficeActivityProbe.php",
-      "lines": 49,
+      "lines": 57,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -5202,7 +5202,7 @@
     },
     {
       "path": "drive/src/Office/OfficeDocumentStorageService.php",
-      "lines": 527,
+      "lines": 605,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -5277,7 +5277,7 @@
     },
     {
       "path": "drive/src/Office/OfficeSessionReconciler.php",
-      "lines": 252,
+      "lines": 287,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -6186,7 +6186,7 @@
     },
     {
       "path": "drive/src/View/FederationModerationPageRenderer.php",
-      "lines": 63,
+      "lines": 73,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -6201,7 +6201,7 @@
     },
     {
       "path": "drive/src/View/FederationOsAdminRenderer.php",
-      "lines": 198,
+      "lines": 200,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -6968,7 +6968,7 @@
     },
     {
       "path": "drive/tests/idle_stop_office_regression.php",
-      "lines": 273,
+      "lines": 326,
       "kind": "test script",
       "classes": 1,
       "functions": [
@@ -7087,7 +7087,7 @@
     },
     {
       "path": "drive/tests/office_conditional_save_regression.php",
-      "lines": 125,
+      "lines": 148,
       "kind": "test script",
       "classes": 1,
       "functions": [
@@ -7288,6 +7288,21 @@
       "session": false,
       "superglobals": [],
       "db": true,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/tests/system_panel_fixture.php",
+      "lines": 28,
+      "kind": "test script",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
       "s3": false,
       "bootstrap": false,
       "html": false,
@@ -8476,7 +8491,7 @@
     },
     {
       "path": "drive/js/federation-os-admin.js",
-      "lines": 319,
+      "lines": 325,
       "kind": "class/module",
       "classes": [
         "FederationOsAdminModule"
@@ -8860,7 +8875,7 @@
     },
     {
       "path": "drive/js/os-window-manager.js",
-      "lines": 987,
+      "lines": 992,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudEventBus",
@@ -9054,7 +9069,7 @@
     },
     {
       "path": "drive/js/server-admin.js",
-      "lines": 407,
+      "lines": 415,
       "kind": "class/module",
       "classes": [
         "ServerAdminModule"
@@ -9171,7 +9186,7 @@
     },
     {
       "path": "drive/js/so-federation.js",
-      "lines": 87,
+      "lines": 102,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudOsFederationApp"

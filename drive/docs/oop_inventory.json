@@ -1,9 +1,9 @@
 {
   "summary": {
-    "php_total": 521,
-    "php_class_modules": 300,
+    "php_total": 523,
+    "php_class_modules": 301,
     "php_needs_migration": 0,
-    "php_tests": 65,
+    "php_tests": 66,
     "js_total": 78,
     "js_class_modules": 73,
     "js_needs_migration": 0,
@@ -2494,7 +2494,7 @@
     },
     {
       "path": "drive/src/Application/FileMutationService.php",
-      "lines": 209,
+      "lines": 198,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -2539,7 +2539,7 @@
     },
     {
       "path": "drive/src/Application/FolderMutationService.php",
-      "lines": 334,
+      "lines": 323,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -5795,6 +5795,21 @@
       "issues": []
     },
     {
+      "path": "drive/src/Storage/S3ObjectCopyService.php",
+      "lines": 49,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
       "path": "drive/src/Storage/StorageObjectNameCodec.php",
       "lines": 104,
       "kind": "class/module",
@@ -6892,6 +6907,23 @@
       "session": false,
       "superglobals": [],
       "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/tests/file_copy_regression.php",
+      "lines": 75,
+      "kind": "test script",
+      "classes": 0,
+      "functions": [
+        "copyCheck"
+      ],
+      "session": false,
+      "superglobals": [],
+      "db": true,
       "s3": false,
       "bootstrap": false,
       "html": false,
@@ -10036,7 +10068,7 @@
     },
     {
       "path": "drive/docs/runtime_endpoints.json",
-      "bytes": 120273,
+      "bytes": 120480,
       "valid": true,
       "root_type": "object",
       "keys": [

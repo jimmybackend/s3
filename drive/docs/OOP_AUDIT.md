@@ -4,10 +4,10 @@
 
 ## Resumen
 
-- PHP analizados: **521**
-- PHP que ya contienen clases/interfaces: **300**
+- PHP analizados: **523**
+- PHP que ya contienen clases/interfaces: **301**
 - PHP marcados para migración/revisión: **0**
-- Tests PHP separados del objetivo OOP de runtime: **65**
+- Tests PHP separados del objetivo OOP de runtime: **66**
 - JavaScript analizados: **78**
 - JavaScript que ya contienen clases: **73**
 - JavaScript runtime marcados para migración/revisión: **0**
@@ -193,10 +193,10 @@
 | `drive/src/Application/FileAccessService.php` | 114 | class/module | 1 | — | — | — | — |
 | `drive/src/Application/FileKeyRotationService.php` | 67 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Application/FileListService.php` | 157 | class/module | 1 | — | ⚠️ | — | — |
-| `drive/src/Application/FileMutationService.php` | 209 | class/module | 1 | — | — | — | — |
+| `drive/src/Application/FileMutationService.php` | 198 | class/module | 1 | — | — | — | — |
 | `drive/src/Application/FileSearchService.php` | 159 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Application/FolderDocumentService.php` | 298 | class/module | 1 | — | ⚠️ | — | — |
-| `drive/src/Application/FolderMutationService.php` | 334 | class/module | 1 | — | — | — | — |
+| `drive/src/Application/FolderMutationService.php` | 323 | class/module | 1 | — | — | — | — |
 | `drive/src/Application/FolderQueryService.php` | 224 | class/module | 1 | — | — | — | — |
 | `drive/src/Application/MoveJobService.php` | 251 | class/module | 1 | — | — | — | — |
 | `drive/src/Application/PhpLintService.php` | 70 | class/module | 1 | — | — | — | — |
@@ -412,6 +412,7 @@
 | `drive/src/Storage/FolderMutationRepository.php` | 326 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Storage/FolderRepository.php` | 132 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Storage/MoveJobStore.php` | 335 | class/module | 1 | — | — | — | — |
+| `drive/src/Storage/S3ObjectCopyService.php` | 49 | class/module | 1 | — | — | — | — |
 | `drive/src/Storage/StorageObjectNameCodec.php` | 104 | class/module | 1 | — | — | — | — |
 | `drive/src/Storage/StorageUsageService.php` | 103 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Storage/UserStoragePath.php` | 50 | class/module | 1 | — | — | — | — |
@@ -482,6 +483,7 @@
 | `drive/tests/federation_replica_reconnect_contract_smoke.php` | 81 | test script | 0 | — | — | — | — |
 | `drive/tests/federation_replica_smoke.php` | 115 | test script | 0 | — | — | — | — |
 | `drive/tests/federationcloud_smoke.php` | 197 | test script | 0 | — | — | — | — |
+| `drive/tests/file_copy_regression.php` | 75 | test script | 0 | — | ⚠️ | — | — |
 | `drive/tests/file_mutation_csrf_regression.php` | 97 | test script | 2 | ⚠️ | — | — | — |
 | `drive/tests/folder_deletion_regression.php` | 91 | test script | 0 | — | ⚠️ | ⚠️ | — |
 | `drive/tests/folder_document_sanitizer.php` | 49 | test script | 0 | — | — | — | — |

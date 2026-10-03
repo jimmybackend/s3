@@ -39,6 +39,7 @@ final class FederationMultiSourceDownloader
         if (count($urls) === 1 || $expectedSize <= 1 || !function_exists('curl_multi_init')) {
             $result = $this->single->download($urls[0], $expectedSize, $contentId);
             $result['sources_used'] = 1;
+            $result['source_urls'] = [$urls[0]];
             $result['parallel'] = false;
             return $result;
         }
@@ -104,6 +105,7 @@ final class FederationMultiSourceDownloader
             'bytes' => $bytes,
             'content_id' => $actual,
             'sources_used' => count($nodesUsed),
+            'source_urls' => array_keys($nodesUsed),
             'parallel' => count($nodesUsed) > 1,
         ];
     }

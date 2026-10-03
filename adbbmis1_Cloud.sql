@@ -2306,6 +2306,31 @@ CREATE TABLE IF NOT EXISTS FederationResourceLocations (
   KEY idx_fed_location_resource_status (ResourceId, Status)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS FederationResourceDeliveries (
+  DeliveryId varchar(96) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  ResourceId varchar(96) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  RequestNodeId varchar(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  SourceCount tinyint unsigned NOT NULL DEFAULT 1,
+  BytesDelivered bigint unsigned NOT NULL DEFAULT 0,
+  Transport enum('single_source_proxy','multisource') NOT NULL DEFAULT 'single_source_proxy',
+  CompletedAt datetime(6) NOT NULL,
+  OriginSequence bigint unsigned NOT NULL,
+  EventId varchar(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  CreatedAt datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+  PRIMARY KEY (DeliveryId),
+  UNIQUE KEY uq_federation_delivery_event (EventId),
+  KEY idx_federation_delivery_resource_time (ResourceId, CompletedAt),
+  KEY idx_federation_delivery_request_node (RequestNodeId, CompletedAt)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS FederationResourceDeliverySources (
+  DeliveryId varchar(96) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  NodeId varchar(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  Role enum('origin','provider','mirror') NOT NULL,
+  PRIMARY KEY (DeliveryId, NodeId),
+  KEY idx_federation_delivery_source_node (NodeId, Role, DeliveryId)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE IF NOT EXISTS FederationPeerSyncState (
   PeerNodeId varchar(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
   LastAttemptAt datetime(6) DEFAULT NULL,

@@ -148,6 +148,7 @@ final class FederationCatalogService
         $resource = $this->catalog->find($resourceId);
         if ($resource === null) return null;
         $locations = $this->catalog->locations($resourceId);
+        $deliveries = new FederationResourceDeliveryRepository($this->app->db());
         return [
             'resource_id' => (string)$resource['ResourceId'],
             'origin_node_id' => (string)$resource['OriginNodeId'],
@@ -160,6 +161,8 @@ final class FederationCatalogService
             'rights' => (string)$resource['Rights'],
             'locations' => $locations,
             'preferred_location' => $this->locations->preferred($locations),
+            'delivery_summary' => $deliveries->summary($resourceId),
+            'delivery_history' => $deliveries->history($resourceId, 100),
             'arcadelink' => $this->decodeArcadeLink($resource['ArcadeLinkJson'] ?? null),
         ];
     }

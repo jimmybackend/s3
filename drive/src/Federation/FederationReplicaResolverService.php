@@ -192,6 +192,70 @@ final class FederationReplicaResolverService
         ];
     }
 
+
+    /**
+     * Materializa una descarga pública usando todas las fuentes sanas disponibles.
+     * El archivo final queda en disco temporal, verificado por SHA-256, para que
+     * el controlador pueda transmitirlo sin cargarlo completo en memoria.
+     */
+    public function downloadPublic(string $resourceId): array
+    {
+        $resolved = $this->publicSources($resourceId, FederationMultiSourceDownloader::MAX_SOURCES);
+        $sourceByUrl = [];
+        $urls = [];
+        foreach ($resolved['sources'] as $source) {
+            if (!is_array($source)) continue;
+            $url = trim((string)($source['url'] ?? ''));
+            if ($url === '') continue;
+            $urls[] = $url;
+            $sourceByUrl[$url] = [
+                'node_id' => (string)($source['node_id'] ?? ''),
+                'role' => (string)($source['role'] ?? 'origin'),
+            ];
+        }
+        if ($urls === []) {
+            throw new FederationException('No hay fuentes FederationCloud disponibles para descargar.', 503);
+        }
+
+        $download = (new FederationMultiSourceDownloader())->download(
+            $urls,
+            (int)$resolved['size_bytes'],
+            (string)$resolved['content_id']
+        );
+
+        $used = [];
+        foreach ((array)($download['source_urls'] ?? []) as $url) {
+            $url = (string)$url;
+            if (isset($sourceByUrl[$url])) {
+                $used[$sourceByUrl[$url]['node_id']] = $sourceByUrl[$url];
+            }
+        }
+        if ($used === []) {
+            $first = $resolved['sources'][0] ?? null;
+            if (is_array($first)) {
+                $used[(string)$first['node_id']] = [
+                    'node_id' => (string)$first['node_id'],
+                    'role' => (string)$first['role'],
+                ];
+            }
+        }
+
+        return [
+            'ok' => true,
+            'resource_id' => $resourceId,
+            'content_id' => (string)$resolved['content_id'],
+            'size_bytes' => (int)$resolved['size_bytes'],
+            'title' => (string)$resolved['title'],
+            'media_type' => (string)$resolved['media_type'],
+            'path' => (string)$download['path'],
+            'bytes' => (int)$download['bytes'],
+            'parallel' => !empty($download['parallel']),
+            'sources_used' => array_values($used),
+            'source_count' => count($used),
+            'failures' => $resolved['failures'],
+        ];
+    }
+
     private function hasActiveLocalReplicaLocation(string $resourceId, string $role): bool
     {
         $localNodeId = $this->identity->nodeId();

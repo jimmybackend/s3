@@ -5,6 +5,7 @@ namespace ArcadeCloud\Drive\Application;
 
 use ArcadeCloud\Drive\Storage\FileRecordRepository;
 use ArcadeCloud\Drive\Storage\StorageObjectNameCodec;
+use ArcadeCloud\Drive\Storage\S3ObjectCopyService;
 use Aws\S3\S3Client;
 use RuntimeException;
 
@@ -56,13 +57,7 @@ final class FileMutationService
         $newKey = $this->files->normalizeKey($newRoute . $physicalName);
         if ($oldKey === $newKey) throw new RuntimeException('El archivo ya está en esa misma ruta.');
 
-        $this->s3->copyObject([
-            'Bucket' => $this->bucket,
-            'CopySource' => $this->bucket . '/' . $oldKey,
-            'Key' => $newKey,
-            'ACL' => 'private',
-            'MetadataDirective' => 'COPY',
-        ]);
+        (new S3ObjectCopyService($this->s3, $this->bucket))->copy($oldKey, $newKey);
 
         try {
             $this->files->move($userId, (int)$file['id_'], $newRoute, $newKey);
@@ -114,13 +109,7 @@ final class FileMutationService
         $physicalName = $this->codec->createFileObjectName($visibleName);
         $newKey = $this->files->normalizeKey($newRoute . $physicalName);
 
-        $this->s3->copyObject([
-            'Bucket' => $this->bucket,
-            'CopySource' => $this->bucket . '/' . $oldKey,
-            'Key' => $newKey,
-            'ACL' => 'private',
-            'MetadataDirective' => 'COPY',
-        ]);
+        (new S3ObjectCopyService($this->s3, $this->bucket))->copy($oldKey, $newKey);
 
         try {
             $newId = $this->files->duplicateFrom(

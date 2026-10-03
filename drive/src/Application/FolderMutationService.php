@@ -5,6 +5,7 @@ namespace ArcadeCloud\Drive\Application;
 
 use ArcadeCloud\Drive\Storage\FolderMutationRepository;
 use ArcadeCloud\Drive\Storage\StorageObjectNameCodec;
+use ArcadeCloud\Drive\Storage\S3ObjectCopyService;
 use ArcadeCloud\Drive\Storage\UserStoragePath;
 use Aws\S3\S3Client;
 use RuntimeException;
@@ -108,13 +109,7 @@ final class FolderMutationService
             foreach (($objects['Contents'] ?? []) as $object) {
                 $oldKey = (string)$object['Key'];
                 $newKey = $final . substr($oldKey, strlen($origin));
-                $this->s3->copyObject([
-                    'Bucket' => $this->bucket,
-                    'CopySource' => rawurlencode($this->bucket . '/' . $oldKey),
-                    'Key' => $newKey,
-                    'ACL' => 'private',
-                    'MetadataDirective' => 'COPY',
-                ]);
+                (new S3ObjectCopyService($this->s3, $this->bucket))->copy($oldKey, $newKey);
                 $copyRequests++;
                 $toDelete[] = ['Key' => $oldKey];
                 $copiedKeys[] = ['Key' => $newKey];
@@ -193,13 +188,7 @@ final class FolderMutationService
                     if ($oldKey === '' || $oldKey === $origin) continue;
 
                     $newKey = $final . substr($oldKey, strlen($origin));
-                    $this->s3->copyObject([
-                        'Bucket' => $this->bucket,
-                        'CopySource' => rawurlencode($this->bucket . '/' . $oldKey),
-                        'Key' => $newKey,
-                        'ACL' => 'private',
-                        'MetadataDirective' => 'COPY',
-                    ]);
+                    (new S3ObjectCopyService($this->s3, $this->bucket))->copy($oldKey, $newKey);
                     $copyRequests++;
                     $copiedKeys[] = ['Key' => $newKey];
                 }

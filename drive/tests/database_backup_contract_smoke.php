@@ -35,10 +35,10 @@ $assert(str_contains($writer, "SELECT DATABASE()"), 'writer targets the active d
 $assert(str_contains($writer, "START TRANSACTION WITH CONSISTENT SNAPSHOT"), 'writer uses a consistent transactional snapshot');
 $assert(str_contains($writer, "SHOW CREATE TABLE"), 'writer exports final table DDL including keys and constraints');
 $assert(str_contains($writer, "SHOW CREATE VIEW"), 'writer exports views');
-$assert(str_contains($writer, "SHOW CREATE ' . $type"), 'writer exports routines, triggers and events');
-$assert(str_contains($writer, "information_schema.ROUTINES"), 'writer inventories procedures and functions');
-$assert(str_contains($writer, "information_schema.TRIGGERS"), 'writer inventories triggers');
-$assert(str_contains($writer, "information_schema.EVENTS"), 'writer inventories events');
+$assert(str_contains($writer, "SHOW CREATE ' . \$type"), 'writer exports routines, triggers and events');
+$assert(str_contains($writer, 'information_schema.ROUTINES'), 'writer inventories procedures and functions');
+$assert(str_contains($writer, 'information_schema.TRIGGERS'), 'writer inventories triggers');
+$assert(str_contains($writer, 'information_schema.EVENTS'), 'writer inventories events');
 $assert(str_contains($writer, "SELECT COUNT(*) FROM"), 'writer verifies per-table row counts');
 $assert(str_contains($writer, "Rows verified"), 'dump records row verification');
 $assert(str_contains($writer, "-- Status: COMPLETE"), 'dump has an explicit complete marker');

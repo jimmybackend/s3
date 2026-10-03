@@ -1900,6 +1900,53 @@ Escribe help o usa uno de los botones disponibles.</pre>
       </div>
     </div>
   </div>
+
+  <div class="modal fade os-share-modal" id="nodeDatabaseBackupConfirmModal" tabindex="-1" role="dialog" aria-labelledby="nodeDatabaseBackupConfirmTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="nodeDatabaseBackupConfirmTitle"><i class="fas fa-database mr-2"></i>Crear respaldo de base de datos</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar"><span aria-hidden="true">&times;</span></button>
+        </div>
+        <div class="modal-body">
+          <p class="small text-muted mb-2">Se exportará la base de datos activa completa y se guardará como archivo privado en la carpeta <strong>Backup</strong> de tu Drive.</p>
+          <p class="small text-info mb-0">ArcadeCloud verificará tablas, filas, vistas, procedimientos, funciones, triggers y eventos antes de guardar el respaldo.</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-info" data-node-db-backup-continue><i class="fas fa-arrow-right mr-1"></i>Continuar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade os-share-modal" id="nodeDatabaseBackupPasswordModal" tabindex="-1" role="dialog" aria-labelledby="nodeDatabaseBackupPasswordTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <form class="modal-content" data-node-db-backup-form autocomplete="on">
+        <div class="modal-header">
+          <h5 class="modal-title" id="nodeDatabaseBackupPasswordTitle"><i class="fas fa-shield-halved mr-2"></i>Confirmar superadministrador</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar"><span aria-hidden="true">&times;</span></button>
+        </div>
+        <div class="modal-body">
+          <p class="small text-muted">Confirma tu contraseña actual para autorizar el respaldo.</p>
+          <div class="form-group mb-2">
+            <label for="nodeDatabaseBackupPassword">Contraseña actual</label>
+            <input type="password"
+                   class="form-control"
+                   id="nodeDatabaseBackupPassword"
+                   data-node-db-backup-password
+                   autocomplete="current-password"
+                   required>
+          </div>
+          <div class="small text-muted" data-node-db-backup-status>El navegador puede ofrecer aquí la contraseña guardada.</div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-info" data-node-db-backup-submit><i class="fas fa-database mr-1"></i>Crear respaldo</button>
+        </div>
+      </form>
+    </div>
+  </div>
   <?php endif; ?>
 
   <div class="os-launcher" id="osLauncher" hidden>

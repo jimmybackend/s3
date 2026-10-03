@@ -83,7 +83,7 @@ const views = {about:render('about'), moderation:render('moderation'), ec2:rende
  assert(posts.filter(p=>p.path==='/federationcloud/moderation-api.php').length>=6,'moderation actions across repeated opens');
  assert(posts.some(p=>p.headers['x-federation-moderation-csrf']==='moderation-fixture'),'moderation CSRF preserved');
  assert.deepEqual(errors,[],'no JavaScript errors while reopening panels');
- for(const width of [320,768,1440]){await page.setViewportSize({width,height:900});assert.equal(await page.locator('#tool').evaluate(e=>e.scrollWidth<=e.clientWidth+1),true,`EC2 overflow at ${width}`);}
+ for(const width of [320,768,1440,1920]){await page.setViewportSize({width,height:900});assert.equal(await page.locator('#tool').evaluate(e=>e.scrollWidth<=e.clientWidth+1),true,`EC2 overflow at ${width}`);}
  await page.clock.install();
  await page.goto('http://arcade.test/office-fixture');
  await page.waitForFunction(()=>document.getElementById('officeFrame').contentDocument.getElementById('remote'));

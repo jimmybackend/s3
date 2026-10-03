@@ -24,7 +24,9 @@ $db->query("CREATE DATABASE `$database`"); $db->select_db($database); $db->set_c
 try {
     $schema = (string)file_get_contents(dirname(__DIR__, 2) . '/adbbmis1_Cloud.sql');
     if (!preg_match('/CREATE TABLE IF NOT EXISTS `S3Folders` \(.*?;\s/s', $schema, $match)) throw new RuntimeException('Canonical schema unavailable');
-    $db->query($match[0]);
+    $db->query(str_contains($db->server_info, 'MariaDB')
+            ? str_replace('utf8mb4_0900_ai_ci', 'utf8mb4_unicode_ci', $match[0])
+            : $match[0]);
     $paths = new UserStoragePath();
     $repository = new FolderMutationRepository($db);
     $query = new FolderQueryService(new FolderRepository($db), $paths);

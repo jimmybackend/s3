@@ -580,7 +580,7 @@
     },
     {
       "path": "drive/ec2.php",
-      "size": 49453,
+      "size": 50515,
       "active": true,
       "references": [
         "drive/personal_aws_bootstrap.php",
@@ -589,6 +589,7 @@
         "drive/src/Admin/ServerConsoleService.php",
         "drive/src/View/PersonalAwsPageRenderer.php",
         "drive/tests/server_console_contract_smoke.php",
+        "drive/tests/web_os_contract_smoke.php",
         "drive/tests/web_os_pending_fixes_smoke.php",
         "drive/js/estilo.js"
       ]
@@ -3594,7 +3595,7 @@
     },
     {
       "path": "drive/src/View/FederationOsAdminRenderer.php",
-      "size": 10228,
+      "size": 11033,
       "active": false,
       "references": [
         "drive/tests/web_os_contract_smoke.php"
@@ -4047,7 +4048,7 @@
     },
     {
       "path": "drive/tests/web_os_contract_smoke.php",
-      "size": 52555,
+      "size": 53782,
       "active": false,
       "references": []
     },

@@ -23,9 +23,9 @@ final class OfficeActivityProbe
         // remain open while the user is away. Real keyboard/pointer/touch input
         // updates MediaWorkerNodeSessions through /__office_activity.
         //
-        // Only transitional/unsafe document states block shutdown absolutely.
-        $sql = "SELECT 1 FROM OfficeDocumentSessions WHERE " . $scope
-            . "Status IN ('preparing','syncing','conflict') LIMIT 1";
+        // Ready alone is not activity; its workspace must still be demonstrably safe.
+        $sql = "SELECT * FROM OfficeDocumentSessions WHERE " . $scope
+            . "Status IN ('preparing','ready','syncing','conflict')";
 
         $stmt = null;
         try {
@@ -35,9 +35,17 @@ final class OfficeActivityProbe
             if (!$stmt->execute()) throw new RuntimeException('Office query failed.');
             $result = $stmt->get_result();
             if (!$result) throw new RuntimeException('Office result unavailable.');
-            $active = is_array($result->fetch_row());
-            $result->free();
-            return $active;
+            try {
+                $reconciler = new OfficeSessionReconciler($this->db);
+                while ($row = $result->fetch_assoc()) {
+                    if ((string)$row['Status'] !== 'ready' || !$reconciler->readyWorkspaceIsSynced($row)) {
+                        return true;
+                    }
+                }
+                return false;
+            } finally {
+                $result->free();
+            }
         } catch (Throwable) {
             // Avoid propagating SQL/connection details to AJAX responses.
             throw new RuntimeException('No se pudo comprobar Office; el apagado queda bloqueado.');

@@ -56,6 +56,10 @@ final class OfficeSessionReconciler
                 $status === 'preparing'
                 && trim((string)($session['workspace_relative'] ?? '')) === ''
                 && $age >= self::PREPARING_STALE_SECONDS
+                && !$leaseActive
+                && is_dir($this->workspaceRoot . '/sessions')
+                && preg_match('/^[a-f0-9]{32}$/', $sessionId)
+                && !file_exists($this->workspaceRoot . '/sessions/' . $sessionId)
             ) {
                 $this->markFailed($sessionId);
                 $reconciled++;
@@ -104,13 +108,19 @@ final class OfficeSessionReconciler
 
             clearstatcache(true, $path);
             $mtime = (int)(@filemtime($path) ?: 0);
-            $size = (int)(@filesize($path) ?: -1);
+            $fileSize = @filesize($path);
+            $size = $fileSize === false ? -1 : (int)$fileSize;
             $lastMtime = (int)($session['last_workspace_mtime'] ?? 0);
             $lastSize = (int)($session['last_workspace_size'] ?? -1);
             $lastSyncedAt = trim((string)($session['last_synced_at'] ?? ''));
 
             if (
-                $lastSyncedAt === ''
+                !$this->readyWorkspaceIsSynced([
+                    'SessionId' => $sessionId, 'WorkspaceRelative' => $relative,
+                    'LastSyncedAt' => $lastSyncedAt, 'LastWorkspaceMtime' => $lastMtime,
+                    'LastWorkspaceSize' => $lastSize,
+                ])
+                || $lastSyncedAt === ''
                 || $mtime <= 0
                 || $size < 0
                 || $mtime !== $lastMtime
@@ -131,6 +141,29 @@ final class OfficeSessionReconciler
             'reconciled' => $reconciled,
             'reasons' => array_values(array_unique($reasons)),
         ];
+    }
+
+    /** Read-only safety check, including when called from a gateway without the workspace. */
+    public function readyWorkspaceIsSynced(array $row): bool
+    {
+        $sessionId = (string)($row['SessionId'] ?? '');
+        $relative = (string)($row['WorkspaceRelative'] ?? '');
+        if (!preg_match('/^[a-f0-9]{32}$/', $sessionId)
+            || !str_starts_with($relative, 'sessions/' . $sessionId . '/')) return false;
+        $path = $this->workspacePath($relative);
+        if ($path === null || !is_file($path) || !is_readable($path)) return false;
+        if (!is_file(dirname($path) . '/.arcadecloud-office-managed')) return false;
+        clearstatcache(true, $path);
+        $mtime = @filemtime($path);
+        $size = @filesize($path);
+        $digest = trim((string)@file_get_contents(dirname($path) . '/.arcadecloud-office-synced-sha256'));
+        $currentDigest = @hash_file('sha256', $path);
+        return preg_match('/^[a-f0-9]{64}$/', $digest) === 1
+            && is_string($currentDigest) && hash_equals($digest, $currentDigest)
+            && trim((string)($row['LastSyncedAt'] ?? '')) !== ''
+            && $mtime !== false && $size !== false
+            && $mtime === (int)($row['LastWorkspaceMtime'] ?? -1)
+            && $size === (int)($row['LastWorkspaceSize'] ?? -1);
     }
 
     private function hasActiveLease(string $instanceId): bool
@@ -199,7 +232,9 @@ final class OfficeSessionReconciler
         $stmt = $this->db->prepare(
             "UPDATE OfficeDocumentSessions
              SET Status='failed',ClosedAt=UTC_TIMESTAMP(),UpdatedAt=UTC_TIMESTAMP()
-             WHERE SessionId=? AND Status='preparing'"
+             WHERE SessionId=? AND Status='preparing'
+               AND (WorkspaceRelative IS NULL OR WorkspaceRelative='')
+               AND UpdatedAt <= DATE_SUB(UTC_TIMESTAMP(), INTERVAL 900 SECOND)"
         );
         if (!$stmt) throw new RuntimeException('No se pudo reconciliar sesión Office preparing.');
         $stmt->bind_param('s', $sessionId);

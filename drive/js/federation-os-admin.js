@@ -1,15 +1,19 @@
+(() => {
 class FederationOsAdminModule {
   constructor(win, doc) {
     this.window = win;
-    this.document = doc;
-    this.body = doc.body;
+    this.body = doc.querySelector('.federation-os-admin-shell') || doc.body;
+    this.document = {
+      getElementById: id => this.body.querySelector('[id="' + id + '"]'),
+      createElement: tag => doc.createElement(tag)
+    };
     this.isSuperAdmin = this.body?.dataset?.superadmin === '1';
     this.providerCsrf = String(this.body?.dataset?.providerCsrf || '');
   }
 
   init() {
     this.document.getElementById('btnFederationOsRefresh')?.addEventListener('click', () => this.refresh());
-    this.document.addEventListener('click', (event) => {
+    this.body.addEventListener('click', (event) => {
       const button = event.target.closest('[data-provider-decision]');
       if (!button) return;
       event.preventDefault();
@@ -316,3 +320,5 @@ class FederationOsAdminModule {
 }
 
 window.FederationOsAdmin = new FederationOsAdminModule(window, document).init();
+
+})();

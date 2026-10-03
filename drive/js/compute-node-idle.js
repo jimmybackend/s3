@@ -35,8 +35,8 @@ class ArcadeCloudComputeIdleGuard {
       this.touch(false);
     };
 
-    ['pointerdown', 'keydown', 'touchstart', 'wheel'].forEach((name) => {
-      this.document.addEventListener(name, touch, { passive: true });
+    ['pointerdown', 'pointermove', 'keydown', 'touchstart', 'wheel'].forEach((name) => {
+      this.document.addEventListener(name, touch, { passive: true, capture: true });
     });
 
     this.document.addEventListener('visibilitychange', () => {

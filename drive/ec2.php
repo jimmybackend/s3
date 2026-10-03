@@ -634,7 +634,6 @@ Escribe help para ver los comandos permitidos.</pre>
         <p class="note mb-0" id="serverConsoleStatus">Sólo visible para una sesión superadmin autenticada.</p>
     </div>
     <?php endif; ?>
-</main>
 
 <div class="action-modal-backdrop" id="modal" aria-hidden="true">
   <div class="action-modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
@@ -649,8 +648,11 @@ Escribe help para ver los comandos permitidos.</pre>
   </div>
 </div>
 
+</main>
 <script>
 (function(){
+  const root = window.document.querySelector('.ec2-panel-shell');
+  const document = { getElementById: id => root.querySelector('[id="' + id + '"]'), querySelector: selector => root.querySelector(selector) };
   const ec2Endpoint = new URL('ec2.php', window.location.href);
   const csrf = "<?= H::e($csrf) ?>";
   const region = "<?= H::e($region) ?>";
@@ -704,7 +706,7 @@ Escribe help para ver los comandos permitidos.</pre>
       hideModal();
   });
 
-  document.addEventListener('keydown', (ev)=>{
+  modal.addEventListener('keydown', (ev)=>{
     if (!modal.classList.contains('show')) return;
     if (ev.key === 'Escape') { ev.preventDefault(); hideModal(); pendingAction=null; }
     if (ev.key === 'Enter')  { ev.preventDefault(); btnConfirm.click(); }
@@ -774,6 +776,7 @@ Escribe help para ver los comandos permitidos.</pre>
         if (st.state === targetFinal) return true;
       }
       await new Promise(r=>setTimeout(r, intervalMs));
+      if (!root.isConnected) return;
       elapsed += intervalMs/1000;
     }
     return false;
@@ -1028,6 +1031,7 @@ Escribe help para ver los comandos permitidos.</pre>
         if (st.status === targetFinal) return true;
       }
       await new Promise(r=>setTimeout(r, intervalMs));
+      if (!root.isConnected) return;
       elapsed += intervalMs/1000;
     }
     return false;

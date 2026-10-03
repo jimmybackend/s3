@@ -234,12 +234,12 @@ Los heartbeats se limitan a uno cada 20 segundos. Un heartbeat llama `touchInter
 Si no hay actividad:
 
 1. el worker marca la sesión como idle;
-2. se esperan al menos 600 segundos;
+2. se esperan al menos 1200 segundos (20 minutos);
 3. la pestaña muestra una advertencia de 30 segundos;
 4. si no se reanuda la actividad y no existen trabajos multimedia, el mecanismo existente solicita apagar la EC2;
 5. si hay FFmpeg/multimedia activo, el apagado queda bloqueado.
 
-El umbral sigue controlado por `ARCADECLOUD_MEDIA_WORKER_IDLE_GRACE_SECONDS`, cuyo mínimo en código es 600 segundos.
+El umbral sigue controlado por `ARCADECLOUD_MEDIA_WORKER_IDLE_GRACE_SECONDS`, cuyo mínimo en código es 1200 segundos.
 
 ## Guardado de documentos
 
@@ -352,7 +352,7 @@ Si el workspace cambió:
 7. actualiza `FileS3.Tamano` y `Fecha`;
 8. registra el checkpoint en `OfficeDocumentSessions`.
 
-Al cerrar la pestaña se usa `sendBeacon` hacia `/__office_document_close`; el servidor ejecuta un sync final y sólo después libera el lease del escritorio.
+Al cerrar la pestaña se usa `sendBeacon` hacia `/__office_document_sync`; se solicita un sync final de mejor esfuerzo. Cerrar el navegador no demuestra que LibreOffice terminó: la sesión documental no se cierra ni se elimina por esa señal.
 
 ### Conflictos
 
@@ -483,6 +483,44 @@ simulado. Cubre guardado, catálogo, conflictos antes/durante el PUT, errores,
 autorización y cierre. No abre LibreOffice ni necesita servicios de producción.
 La CI de workstation sólo reconstruye su imagen si cambia el código de la imagen.
 
-Limitaciones aún pendientes: detectar cambios de igual tamaño/mtime, coordinar
-peticiones simultáneas de una misma sesión y verificar manualmente la edición
-real desde Guacamole en un entorno de aceptación aislado.
+El guardado serializa peticiones de una misma sesión mediante `flock`, toma una
+copia temporal estable para S3 y conserva una huella SHA-256 privada del contenido
+sincronizado. Detecta también cambios con el mismo tamaño y mtime. Si los bytes
+cambian durante el PUT, conserva el workspace y no certifica un guardado completo.
+La limpieza exige la misma huella y metadatos, además de ausencia de proceso activo.
+No se añaden tablas, columnas ni variables de configuración.
+
+### Cierre de consolidación (octubre de 2026)
+
+- KDE/Guacamole siguen dentro del wrapper del gateway; captura teclado, puntero,
+  touch y wheel dentro del iframe same-origin. Recargar el iframe no cuenta como
+  actividad. La consulta periódica de estado tampoco renueva el contador.
+- Workstation conserva `TZ=America/Mexico_City`, perfiles LibreOffice separados
+  por documento y heartbeat de proceso. Docker, un lease o un `ready` verificado
+  no mantienen encendido el nodo por sí solos.
+- `preparing`, `syncing`, `conflict`, cambios pendientes, sesiones legacy sin
+  prueba suficiente y errores de DB bloquean el apagado. El worker comprueba
+  también procesos locales FFmpeg/FFprobe. Una preparación caducada sólo se
+  reconcilia sin lease y sin directorio local de trabajo.
+- La autorización final de apagado compara atómicamente estado/IdleSince y
+  ausencia de trabajos inseguros; cancela ante actividad nueva o un segundo
+  stopper. Una respuesta AWS todavía `running` no resucita una sesión `stopping`:
+  hace falta evidencia de un arranque posterior.
+- En el gateway pequeño, un workspace remoto no verificable se trata como
+  bloqueo; el worker de FastDrive verifica los archivos locales. Esto evita
+  asumir que los discos de ambos servidores son compartidos.
+- Sesiones abiertas antes de la actualización adquieren la huella en el siguiente
+  sync exitoso. Sesiones sin monitor de proceso conservan protección legacy;
+  guardar, cerrar y volver a abrir desde ArcadeCloud permite usar el monitor.
+
+Pruebas automatizadas: regresiones de guardado con S3 simulado y MySQL/MariaDB
+aislados, autoapagado con EC2 simulado, huellas con igual tamaño/mtime, conservación
+de cambios, carreras y fail-closed. Chromium prueba actividad del wrapper sin
+acceder a AWS ni a los servidores reales.
+
+Aceptación manual pendiente tras actualizar ambos nodos: abrir/editar/guardar
+Writer, Calc e Impress desde el OS; validar zona horaria en KDE/Guacamole y observar
+20 minutos + 30 segundos sin actividad y sin tareas. Guardar en LibreOffice sigue
+siendo obligatorio: cambios que sólo existan en la memoria de la aplicación no
+pueden verificarse desde el workspace. Las llamadas reales a AWS, el estado IAM,
+los proxies instalados y el apagado físico sólo se validan en producción.

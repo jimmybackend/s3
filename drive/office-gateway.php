@@ -575,7 +575,6 @@ button{width:100%;margin-top:12px;padding:13px;border:1px solid var(--accent);bo
   bind(document);
   frame.addEventListener('load', () => {
     try { bind(frame.contentDocument); } catch (_) {}
-    activity(true);
   });
 
   keep.addEventListener('click', () => activity(true));

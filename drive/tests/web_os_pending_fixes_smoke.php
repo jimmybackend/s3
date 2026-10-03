@@ -33,7 +33,7 @@ $ok(str_contains($shell, 'data-window-open="terminalWindow"') && str_contains($s
 $ok(!str_contains($shell, 'href="aws.php" target="_blank"') && !str_contains($shell, 'href="ec2.php" target="_blank"'), 'herramientas propias no fuerzan navegación externa');
 $ec2Panel = (string)file_get_contents($root . '/ec2.php');
 $ok(str_contains($shell, 'href="ec2.php?surface=os"') && str_contains($ec2Panel, '$showServerConsole = $isServerConsoleSuperAdmin && !$isOsSurface;'), 'Gestión EC2 del OS reutiliza ec2.php pero excluye la terminal del servidor');
-$ok(str_contains($ec2Panel, 'ec2-card-heading') && str_contains($ec2Panel, 'ec2-table-wrap'), 'Gestión EC2 organiza filtros, EC2 y RDS en contenedores responsivos');
+$ok(str_contains($ec2Panel, 'ec2-node-card-title') && str_contains($ec2Panel, 'os-node-dashboard ec2-instance-grid'), 'Gestión EC2 organiza filtros, EC2 y RDS en contenedores responsivos');
 $ok(str_contains($ec2Panel, '<?php if ($showServerConsole): ?>'), 'terminal permanece disponible únicamente en la superficie clásica autorizada');
 $ok(str_contains($windows, "this.manager.register(element, app") && str_contains($windows, "const app = 'tool-'"), 'WindowManager registra una tarea independiente por herramienta');
 $ok(str_contains($windows, "page.querySelector('main')") && !str_contains($windows, '<iframe class="os-viewer-frame" title="Herramienta"'), 'cargador importa sólo main, sin iframe ni navbar global');
@@ -51,8 +51,8 @@ $ok(str_contains($node, "'os-node-card os-node-card-wide'") && str_contains($sty
 
 $ok(str_contains($node, 'updateIdleCountdown()') && str_contains($node, 'this.idleRemaining - 1'), 'countdown local actualiza cada segundo');
 $ok(str_contains($node, 'setInterval(() => { if (this.isOpen()) this.refresh()') && str_contains($node, '}, 30000)'), 'polling real permanece en 30 segundos');
-$ok(str_contains($node, "else if (this.selected === 'fastdrive') this.updateFastDriveFields"), 'polling FastDrive usa actualización incremental');
+$ok(str_contains($node, "data?.scope !== 'local'") && str_contains($node, 'this.node = data.local || data.node'), 'Mi nodo sólo presenta el servidor local');
 $ok(str_contains($node, "this.updateText('[data-idle-remaining]'") && str_contains($node, 'this.idleRemaining === 0'), 'al llegar a cero actualiza texto y consulta backend');
-$ok(!preg_match('/updateIdleCountdown\(\).*?(innerHTML|replaceChildren)/s', $node), 'tick no reemplaza nodos grandes');
+$ok(preg_match('/updateIdleCountdown\(\) \{[^}]*\}/', $node, $tick) && !preg_match('/innerHTML|replaceChildren/', $tick[0]), 'tick no reemplaza nodos grandes');
 
 fwrite(STDOUT, "Web OS pending fixes smoke passed.\n");

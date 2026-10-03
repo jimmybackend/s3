@@ -252,6 +252,9 @@ $isExplorerFragment = (string)($_GET['_os_fragment'] ?? '') === 'explorer';
   <link rel="stylesheet" href="css/personal-tools.css?v=<?= (int)filemtime(__DIR__ . '/css/personal-tools.css') ?>">
   <link rel="stylesheet" href="css/federation.css?v=<?= (int)filemtime(__DIR__ . '/css/federation.css') ?>">
   <link rel="stylesheet" href="css/federation-portal.css?v=<?= (int)filemtime(__DIR__ . '/css/federation-portal.css') ?>">
+  <link rel="stylesheet" href="css/os-system-panel.css?v=<?= (int)filemtime(__DIR__ . '/css/os-system-panel.css') ?>">
+  <link rel="stylesheet" href="css/federation-os-admin.css?v=<?= (int)filemtime(__DIR__ . '/css/federation-os-admin.css') ?>">
+  <link rel="stylesheet" href="css/federation-moderation.css?v=<?= (int)filemtime(__DIR__ . '/css/federation-moderation.css') ?>">
   <link rel="stylesheet" href="css/upload-center.css?v=<?= (int)filemtime(__DIR__ . '/css/upload-center.css') ?>">
   <link rel="stylesheet" href="css/compute-node-idle.css?v=<?= (int)filemtime(__DIR__ . '/css/compute-node-idle.css') ?>">
   <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>

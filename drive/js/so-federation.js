@@ -19,6 +19,16 @@ class ArcadeCloudOsFederationApp {
       event.preventDefault(); this.openView(String(button.dataset.federationView || 'search'));
     });
     this.document.querySelectorAll('[data-open-federation]').forEach(button => button.addEventListener('click', () => this.ensureLoaded()));
+    this.host.addEventListener('click', event => {
+      const link = event.target.closest?.('a[href]');
+      if (!link) return;
+      const href = link.getAttribute('href');
+      if (href.startsWith('#')) {
+        event.preventDefault(); this.host.querySelector(href)?.scrollIntoView({ block: 'start' });
+      } else if (href === '/federationcloud/moderation.php?embed=1') {
+        event.preventDefault(); this.openView('moderation');
+      }
+    });
     this.syncButtons(); return this;
   }
 
@@ -60,13 +70,18 @@ class ArcadeCloudOsFederationApp {
       if (!main) throw new Error('FederationCloud devolvió una vista no integrable.');
       this.host.replaceChildren(this.document.importNode(main, true));
       this.loaded = false;
-      page.querySelectorAll('script').forEach(source => {
-        if (/theme-state-bridge\.js/.test(source.src || '')) return;
+      for (const source of page.querySelectorAll('script')) {
+        if (/theme-state-bridge\.js/.test(source.src || '')) continue;
         const script = this.document.createElement('script');
         if (source.getAttribute('src')) script.src = new URL(source.getAttribute('src'), new URL(url, this.window.location.href)).toString();
         else script.textContent = source.textContent;
-        this.host.append(script);
-      });
+        if (script.src) {
+          await new Promise((resolve, reject) => {
+            script.onload = resolve; script.onerror = () => reject(new Error('No se pudo cargar el módulo FederationCloud.'));
+            this.host.append(script);
+          });
+        } else this.host.append(script);
+      }
     } catch (error) { this.host.textContent = error?.message || 'No se pudo cargar FederationCloud.'; }
     finally { this.setLoading(false); }
   }

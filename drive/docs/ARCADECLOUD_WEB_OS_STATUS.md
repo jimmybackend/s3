@@ -683,3 +683,36 @@ login
 El siguiente paso de evolución ya no es “construir el shell”. El shell existe.
 
 El trabajo futuro consiste principalmente en **sumar aplicaciones** al entorno —Office, navegador remoto, editores y herramientas especializadas— sin romper la arquitectura DB-first, la seguridad multiusuario, el Centro de Tareas ni la separación entre nodo web y nodo de cómputo.
+
+
+## Consolidación de las vistas embebidas (octubre de 2026)
+
+Revisados los PR #301–#307. El shell carga las hojas de estilo de paneles de sistema,
+FederationCloud y Moderación; las tarjetas usan `os-node-dashboard`, `os-node-card`,
+`h3` compactos y filas `dl/dt/dd`. Los colores embebidos heredan el tema del OS sin
+alterar la ventana Mi nodo. La etiqueta clicable conserva el nombre FederationCloud
+local (`Nodo Drive` / `Nodo FastDrive` según la identidad configurada).
+
+Acerca de FederationCloud conserva el rol y CSRF dentro de su `main`, ejecuta sus
+scripts en orden y mantiene Configuración del servidor dentro de la ventana.
+Reabrir las vistas no redeclara clases ni variables globales. Moderación usa los
+endpoints absolutos existentes para cargar, confirmar, rechazar y revocar; su
+acceso desde Acerca de permanece dentro de la aplicación.
+
+Gestión EC2 conserva tarjetas separadas para EC2 y RDS/Aurora y los controles
+existentes de contraseña y CSRF. El modal de confirmación viaja dentro de `main`,
+por lo que también existe al cargar la herramienta en el OS. El controlador y sus
+actualizaciones se limitan a esa instancia de la vista. Se conservan la autorización
+privada existente y el alcance de las credenciales IAM: no se inventó una lista de
+instancias ni se modificó infraestructura.
+
+`system_panels_browser.cjs` renderiza las vistas PHP reales con fixtures, inserta
+sus contenidos con los cargadores reales y verifica reaperturas, acciones de
+Moderación, EC2/RDS, CSRF y anchos de 320/360/768/1440 px. Las respuestas AWS,
+FederationCloud y DB de esas pruebas son simuladas. Los contratos de Mi nodo,
+seguridad, OOP, instaladores y workstation siguen formando parte de la validación.
+
+Para autoapagado y guardado seguro véase la sección de consolidación de
+`ARCADECLOUD_REMOTE_WORKSTATION.md`. La aceptación pendiente en producción es
+comprobar rutas/proxies instalados, nombres locales, autorización IAM, documentos
+reales y el ciclo físico de apagado; las pruebas no acceden a los servidores.

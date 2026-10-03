@@ -1,7 +1,13 @@
+(() => {
 class ServerAdminModule {
   constructor(win, doc) {
     this.window = win;
-    this.document = doc;
+    const root = doc.querySelector('.federation-os-admin-shell');
+    this.document = root ? {
+      body: doc.body,
+      getElementById: id => root.querySelector('[id="' + id + '"]'),
+      createElement: tag => doc.createElement(tag)
+    } : doc;
     this.button = null;
     this.modal = null;
     this.saveButton = null;
@@ -49,7 +55,7 @@ class ServerAdminModule {
 
     this.csrf = String(this.button.dataset.csrf || '');
     this.endpoint = String(this.button.dataset.endpoint || 'server-settings.php');
-    if (this.modal.parentElement !== this.document.body) this.document.body.appendChild(this.modal);
+    if (this.modal.classList.contains('modal') && this.modal.parentElement !== this.document.body) this.document.body.appendChild(this.modal);
     if (this.window.jQuery) this.window.jQuery(this.modal).on('shown.bs.modal', () => this.load());
     else this.button.addEventListener('click', () => this.load());
     this.select.addEventListener('change', () => this.syncSelectedSetting());
@@ -404,3 +410,5 @@ class ServerAdminModule {
 }
 
 ServerAdminModule.boot();
+
+})();

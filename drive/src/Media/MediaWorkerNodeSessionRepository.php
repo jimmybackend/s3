@@ -116,6 +116,30 @@ final class MediaWorkerNodeSessionRepository
         );
     }
 
+    /** Atomic final claim: late input, unsafe work or another stopper cancels it. */
+    public function claimIdleStop(string $sessionId, string $idleSince, int $minimumSeconds): bool
+    {
+        $stmt = $this->db->prepare(
+            "UPDATE MediaWorkerNodeSessions
+             SET Status='stopping',StopRequestedAt=UTC_TIMESTAMP(),UpdatedAt=UTC_TIMESTAMP()
+             WHERE SessionId=? AND Status='idle' AND IdleSince=?
+               AND IdleSince <= DATE_SUB(UTC_TIMESTAMP(), INTERVAL ? SECOND)
+               AND NOT EXISTS (SELECT 1 FROM MediaProcessingJobs
+                   WHERE Status IN ('queued','running','cancel_requested'))
+               AND NOT EXISTS (SELECT 1 FROM OfficeDocumentSessions
+                   WHERE InstanceId=MediaWorkerNodeSessions.InstanceId
+                     AND Status IN ('preparing','syncing','conflict'))"
+        );
+        if (!$stmt) throw new RuntimeException('No se pudo autorizar el apagado seguro.');
+        try {
+            $stmt->bind_param('ssi', $sessionId, $idleSince, $minimumSeconds);
+            if (!$stmt->execute()) throw new RuntimeException('No se pudo confirmar el apagado seguro.');
+            return $stmt->affected_rows === 1;
+        } finally {
+            $stmt->close();
+        }
+    }
+
     public function markStopped(string $sessionId): void
     {
         $this->simpleUpdate(

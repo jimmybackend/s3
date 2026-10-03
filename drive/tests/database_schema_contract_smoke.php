@@ -72,6 +72,8 @@ $requiredTables = [
     'FederationClocks',
     'FederatedResources',
     'FederationResourceLocations',
+    'FederationResourceDeliveries',
+    'FederationResourceDeliverySources',
     'FederationPeerSyncState',
     'FederationAccessRequests',
     'FederationShares',

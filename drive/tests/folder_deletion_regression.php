@@ -25,7 +25,9 @@ try {
     $schema = (string)file_get_contents(dirname(__DIR__, 2) . '/adbbmis1_Cloud.sql');
     foreach (['S3Folders', 'FileS3'] as $table) {
         if (!preg_match('/CREATE TABLE IF NOT EXISTS `' . $table . '` \(.*?;\s/s', $schema, $match)) throw new RuntimeException('Canonical schema missing');
-        $db->query($match[0]);
+        $db->query(str_contains($db->server_info, 'MariaDB')
+            ? str_replace('utf8mb4_0900_ai_ci', 'utf8mb4_unicode_ci', $match[0])
+            : $match[0]);
     }
     $repository = new FolderMutationRepository($db);
     $paths = new UserStoragePath();

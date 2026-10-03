@@ -1,9 +1,9 @@
 {
   "summary": {
-    "php_total": 524,
+    "php_total": 525,
     "php_class_modules": 301,
     "php_needs_migration": 0,
-    "php_tests": 67,
+    "php_tests": 68,
     "js_total": 79,
     "js_class_modules": 73,
     "js_needs_migration": 0,
@@ -6556,7 +6556,7 @@
     },
     {
       "path": "drive/tests/catalog_folder_paths_regression.php",
-      "lines": 61,
+      "lines": 63,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -6951,7 +6951,7 @@
     },
     {
       "path": "drive/tests/folder_deletion_regression.php",
-      "lines": 91,
+      "lines": 93,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -7045,6 +7045,23 @@
       "db": false,
       "s3": false,
       "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/tests/large_folder_regression.php",
+      "lines": 34,
+      "kind": "test script",
+      "classes": 0,
+      "functions": [
+        "folderCheck"
+      ],
+      "session": false,
+      "superglobals": [],
+      "db": true,
+      "s3": false,
+      "bootstrap": false,
       "html": false,
       "namespace": false,
       "issues": []
@@ -10113,7 +10130,7 @@
     },
     {
       "path": "drive/docs/runtime_endpoints.json",
-      "bytes": 121004,
+      "bytes": 121066,
       "valid": true,
       "root_type": "object",
       "keys": [

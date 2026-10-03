@@ -4,10 +4,10 @@
 
 ## Resumen
 
-- PHP analizados: **524**
+- PHP analizados: **525**
 - PHP que ya contienen clases/interfaces: **301**
 - PHP marcados para migración/revisión: **0**
-- Tests PHP separados del objetivo OOP de runtime: **67**
+- Tests PHP separados del objetivo OOP de runtime: **68**
 - JavaScript analizados: **79**
 - JavaScript que ya contienen clases: **73**
 - JavaScript runtime marcados para migración/revisión: **0**
@@ -462,7 +462,7 @@
 | `drive/tests/activity_retention_regression.php` | 67 | test script | 0 | — | ⚠️ | — | — |
 | `drive/tests/arcadelink_bulk_contract_regression.php` | 71 | test script | 0 | — | — | — | — |
 | `drive/tests/arcadelink_collection_regression.php` | 63 | test script | 0 | — | — | — | — |
-| `drive/tests/catalog_folder_paths_regression.php` | 61 | test script | 0 | — | ⚠️ | — | — |
+| `drive/tests/catalog_folder_paths_regression.php` | 63 | test script | 0 | — | ⚠️ | — | — |
 | `drive/tests/chunked_upload_cleanup_regression.php` | 117 | test script | 1 | — | — | — | — |
 | `drive/tests/database_schema_contract_smoke.php` | 125 | test script | 0 | — | — | — | — |
 | `drive/tests/fastdrive_control_contract_smoke.php` | 72 | test script | 0 | — | — | — | — |
@@ -485,12 +485,13 @@
 | `drive/tests/federationcloud_smoke.php` | 197 | test script | 0 | — | — | — | — |
 | `drive/tests/file_copy_regression.php` | 75 | test script | 0 | — | ⚠️ | — | — |
 | `drive/tests/file_mutation_csrf_regression.php` | 97 | test script | 2 | ⚠️ | — | — | — |
-| `drive/tests/folder_deletion_regression.php` | 91 | test script | 0 | — | ⚠️ | ⚠️ | — |
+| `drive/tests/folder_deletion_regression.php` | 93 | test script | 0 | — | ⚠️ | ⚠️ | — |
 | `drive/tests/folder_document_sanitizer.php` | 49 | test script | 0 | — | — | — | — |
 | `drive/tests/fresh_install_contract_smoke.php` | 76 | test script | 0 | — | — | — | — |
 | `drive/tests/idle_stop_office_regression.php` | 326 | test script | 1 | — | ⚠️ | — | — |
 | `drive/tests/index_federation_drop_smoke.php` | 121 | test script | 0 | — | — | — | — |
 | `drive/tests/installer_service_reconcile_contract_smoke.php` | 197 | test script | 0 | — | — | — | — |
+| `drive/tests/large_folder_regression.php` | 34 | test script | 0 | — | ⚠️ | — | — |
 | `drive/tests/local_container_capabilities_regression.php` | 56 | test script | 0 | — | — | — | — |
 | `drive/tests/media_processing_contract_smoke.php` | 185 | test script | 0 | — | — | — | — |
 | `drive/tests/media_worker_behavior_regression.php` | 65 | test script | 0 | — | ⚠️ | — | — |

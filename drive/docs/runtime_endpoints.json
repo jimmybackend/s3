@@ -580,7 +580,7 @@
     },
     {
       "path": "drive/ec2.php",
-      "size": 50515,
+      "size": 49897,
       "active": true,
       "references": [
         "drive/personal_aws_bootstrap.php",
@@ -3595,7 +3595,7 @@
     },
     {
       "path": "drive/src/View/FederationOsAdminRenderer.php",
-      "size": 11033,
+      "size": 10042,
       "active": false,
       "references": [
         "drive/tests/web_os_contract_smoke.php"
@@ -4048,7 +4048,7 @@
     },
     {
       "path": "drive/tests/web_os_contract_smoke.php",
-      "size": 53782,
+      "size": 53998,
       "active": false,
       "references": []
     },

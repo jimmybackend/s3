@@ -1,9 +1,9 @@
 {
   "summary": {
-    "php_total": 525,
-    "php_class_modules": 301,
+    "php_total": 528,
+    "php_class_modules": 303,
     "php_needs_migration": 0,
-    "php_tests": 68,
+    "php_tests": 69,
     "js_total": 79,
     "js_class_modules": 73,
     "js_needs_migration": 0,
@@ -3109,7 +3109,7 @@
     },
     {
       "path": "drive/src/Federation/FederatedCatalogRepository.php",
-      "lines": 428,
+      "lines": 536,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -3184,7 +3184,7 @@
     },
     {
       "path": "drive/src/Federation/FederationCatalogService.php",
-      "lines": 214,
+      "lines": 217,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -3544,7 +3544,7 @@
     },
     {
       "path": "drive/src/Federation/FederationEventCodec.php",
-      "lines": 117,
+      "lines": 118,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -3694,7 +3694,7 @@
     },
     {
       "path": "drive/src/Federation/FederationMultiSourceDownloader.php",
-      "lines": 358,
+      "lines": 360,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -3919,7 +3919,7 @@
     },
     {
       "path": "drive/src/Federation/FederationReplicaResolverService.php",
-      "lines": 282,
+      "lines": 346,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -3963,8 +3963,38 @@
       "issues": []
     },
     {
+      "path": "drive/src/Federation/FederationResourceDeliveryRepository.php",
+      "lines": 104,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": true,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Federation/FederationResourceDeliveryService.php",
+      "lines": 87,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
       "path": "drive/src/Federation/FederationSchemaMigrationService.php",
-      "lines": 147,
+      "lines": 149,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -4506,7 +4536,7 @@
     },
     {
       "path": "drive/src/Http/Controller/FederationReplicaController.php",
-      "lines": 135,
+      "lines": 211,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -6590,7 +6620,7 @@
     },
     {
       "path": "drive/tests/database_schema_contract_smoke.php",
-      "lines": 125,
+      "lines": 127,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -6663,6 +6693,23 @@
       "classes": 0,
       "functions": [
         "customsOk"
+      ],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/tests/federation_delivery_history_contract_smoke.php",
+      "lines": 55,
+      "kind": "test script",
+      "classes": 0,
+      "functions": [
+        "deliveryContract"
       ],
       "session": false,
       "superglobals": [],
@@ -8618,7 +8665,7 @@
     },
     {
       "path": "drive/js/federation-portal.js",
-      "lines": 509,
+      "lines": 511,
       "kind": "class/module",
       "classes": [
         "FederationPortalModule"

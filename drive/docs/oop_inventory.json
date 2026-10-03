@@ -1,9 +1,9 @@
 {
   "summary": {
-    "php_total": 534,
-    "php_class_modules": 306,
+    "php_total": 537,
+    "php_class_modules": 307,
     "php_needs_migration": 0,
-    "php_tests": 71,
+    "php_tests": 72,
     "js_total": 79,
     "js_class_modules": 73,
     "js_needs_migration": 0,
@@ -380,6 +380,21 @@
     {
       "path": "drive/bin/polly_reconcile.php",
       "lines": 50,
+      "kind": "thin cli entrypoint",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/bin/production_preflight.php",
+      "lines": 25,
       "kind": "thin cli entrypoint",
       "classes": 0,
       "functions": [],
@@ -2349,6 +2364,21 @@
       "session": false,
       "superglobals": [],
       "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Admin/ProductionPreflightService.php",
+      "lines": 228,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": true,
       "s3": false,
       "bootstrap": false,
       "html": false,
@@ -7338,6 +7368,21 @@
       "issues": []
     },
     {
+      "path": "drive/tests/production_preflight_contract_smoke.php",
+      "lines": 35,
+      "kind": "test script",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
       "path": "drive/tests/public_upload_rollback_regression.php",
       "lines": 68,
       "kind": "test script",
@@ -10267,7 +10312,7 @@
     },
     {
       "path": "drive/docs/runtime_endpoints.json",
-      "bytes": 123702,
+      "bytes": 123760,
       "valid": true,
       "root_type": "object",
       "keys": [

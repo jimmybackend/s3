@@ -4,10 +4,10 @@
 
 ## Resumen
 
-- PHP analizados: **534**
-- PHP que ya contienen clases/interfaces: **306**
+- PHP analizados: **537**
+- PHP que ya contienen clases/interfaces: **307**
 - PHP marcados para migración/revisión: **0**
-- Tests PHP separados del objetivo OOP de runtime: **71**
+- Tests PHP separados del objetivo OOP de runtime: **72**
 - JavaScript analizados: **79**
 - JavaScript que ya contienen clases: **73**
 - JavaScript runtime marcados para migración/revisión: **0**
@@ -56,6 +56,7 @@
 | `drive/bin/media_processing_worker.php` | 31 | thin cli entrypoint | 0 | — | — | — | — |
 | `drive/bin/move_job_worker.php` | 11 | thin cli entrypoint | 0 | — | — | — | — |
 | `drive/bin/polly_reconcile.php` | 50 | thin cli entrypoint | 0 | — | — | — | — |
+| `drive/bin/production_preflight.php` | 25 | thin cli entrypoint | 0 | — | — | — | — |
 | `drive/bin/server_maintenance_worker.php` | 7 | thin cli entrypoint | 0 | — | — | — | — |
 | `drive/bin/sync_node_worker.php` | 75 | thin cli entrypoint | 0 | — | — | — | — |
 | `drive/bin/sync_schema_migrate.php` | 17 | thin cli entrypoint | 0 | — | — | — | — |
@@ -184,6 +185,7 @@
 | `drive/src/Admin/ManagedRuntimeEnvironment.php` | 374 | class/module | 1 | — | — | — | — |
 | `drive/src/Admin/NodeServiceControlService.php` | 51 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Admin/PrivilegedServerHelper.php` | 323 | class/module | 1 | — | — | — | — |
+| `drive/src/Admin/ProductionPreflightService.php` | 228 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Admin/ServerConsoleService.php` | 262 | class/module | 1 | — | — | — | — |
 | `drive/src/Admin/ServerMaintenanceJobStore.php` | 186 | class/module | 1 | — | — | — | — |
 | `drive/src/Admin/ServerMaintenanceService.php` | 119 | class/module | 1 | — | — | — | — |
@@ -509,6 +511,7 @@
 | `drive/tests/office_conditional_save_regression.php` | 148 | test script | 1 | — | ⚠️ | — | — |
 | `drive/tests/office_gateway_contract_smoke.php` | 376 | test script | 0 | — | — | — | — |
 | `drive/tests/password_credential_verifier_smoke.php` | 44 | test script | 0 | — | — | — | — |
+| `drive/tests/production_preflight_contract_smoke.php` | 35 | test script | 0 | — | — | — | — |
 | `drive/tests/public_upload_rollback_regression.php` | 68 | test script | 0 | — | ⚠️ | ⚠️ | — |
 | `drive/tests/scoped_sync_repository_regression.php` | 96 | test script | 0 | — | ⚠️ | — | — |
 | `drive/tests/security_hardening_smoke.php` | 59 | test script | 0 | — | — | — | — |

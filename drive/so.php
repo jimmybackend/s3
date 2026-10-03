@@ -1930,6 +1930,16 @@ Escribe help o usa uno de los botones disponibles.</pre>
         <div class="modal-body">
           <p class="small text-muted">Confirma tu contraseña actual para autorizar el respaldo.</p>
           <div class="form-group mb-2">
+            <label for="nodeDatabaseBackupUsername">Cuenta</label>
+            <input type="text"
+                   class="form-control"
+                   id="nodeDatabaseBackupUsername"
+                   name="username"
+                   value="<?= $e($userIdentifier) ?>"
+                   autocomplete="username"
+                   readonly>
+          </div>
+          <div class="form-group mb-2">
             <label for="nodeDatabaseBackupPassword">Contraseña actual</label>
             <input type="password"
                    class="form-control"

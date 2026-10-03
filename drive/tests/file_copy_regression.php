@@ -31,6 +31,7 @@ try {
     if(!isset($objects[$k])) return Create::rejectionFor(new AwsException('absent',$c,['code'=>'NotFound','status_code'=>404]));
     return Create::promiseFor(new Result(['ContentLength'=>$objects[$k],'ETag'=>'"source-etag"','ContentType'=>'video/mp4','Metadata'=>['fixture'=>'kept']]));
    case 'CopyObject':
+    if(isset($objects[$k]) && $c['IfNoneMatch']==='*') return Create::rejectionFor(new AwsException('destination exists',$c,['code'=>'PreconditionFailed','status_code'=>412]));
     copyCheck(str_contains((string)$c['CopySource'],'%C3%A1%20%2B%20%23%25.bin'),'source header URL encoded');
     if($objects[$key]>5*1024*1024*1024) return Create::rejectionFor(new AwsException('too large',$c,['code'=>'EntityTooLarge']));
     $objects[$k]=$objects[$key];return Create::promiseFor(new Result(['CopyObjectResult'=>['ETag'=>'"copied"']]));
@@ -42,7 +43,9 @@ try {
     copyCheck($c['CopySourceIfMatch']==='"source-etag"','part protects source version');
     if($failPart) return Create::rejectionFor(new AwsException('fixture part failure',$c,['code'=>'AccessDenied']));
     return Create::promiseFor(new Result(['CopyPartResult'=>['ETag'=>'"part"']]));
-   case 'CompleteMultipartUpload':$objects[$k]=$size;return Create::promiseFor(new Result(['ETag'=>'"copied"']));
+   case 'CompleteMultipartUpload':
+    if(isset($objects[$k]) && $c['IfNoneMatch']==='*') return Create::rejectionFor(new AwsException('destination exists',$c,['code'=>'PreconditionFailed','status_code'=>412]));
+    $objects[$k]=$size;return Create::promiseFor(new Result(['ETag'=>'"copied"']));
    case 'AbortMultipartUpload':return Create::promiseFor(new Result([]));
    case 'DeleteObject':
     if($failDelete) return Create::rejectionFor(new AwsException('fixture delete failure',$c,['code'=>'AccessDenied']));
@@ -56,11 +59,17 @@ try {
  $ranges=array_values(array_map(fn($c)=>$c[1]['CopySourceRange'],array_filter($calls,fn($c)=>$c[0]==='UploadPartCopy')));
  $next=0;foreach($ranges as $r){preg_match('/bytes=(\d+)-(\d+)/',$r,$m);copyCheck((int)$m[1]===$next,'multipart ranges contiguous');$next=(int)$m[2]+1;}
  copyCheck($next===$size,'multipart covers exact large object without downloading bytes');
+ $collision='Data2/collision/'.basename($key);$objects[$collision]=77;
+ try{$service->move(2,$id,'Data2/collision/');throw new LogicException('Multipart destination overwritten');}catch(RuntimeException){}
+ copyCheck($objects[$collision]===77&&isset($objects[$key])&&$repo->requireByRef(2,$id)['_key']===$key,'multipart collision preserves existing destination, source and catalog');
  $calls=[];$failPart=true;
  try{$service->move(2,$id,'Data2/failed/');throw new LogicException('Failure hidden');}catch(RuntimeException){}
  copyCheck(isset($objects[$key])&&$repo->requireByRef(2,$id)['_key']===$key,'failed multipart move retains origin and catalog');
  copyCheck(in_array('AbortMultipartUpload',array_column($calls,0),true)&&!in_array('DeleteObject',array_column($calls,0),true),'failed multipart aborted without deleting source');
  $failPart=false;$objects[$key]=123;$calls=[];
+ try{$service->move(2,$id,'Data2/collision/');throw new LogicException('Single-copy destination overwritten');}catch(RuntimeException){}
+ copyCheck($objects[$collision]===77&&isset($objects[$key])&&$repo->requireByRef(2,$id)['_key']===$key,'single-copy collision preserves both files and catalog');
+ $calls=[];
  $small=$service->copy(2,$id,'Data2/small/');
  copyCheck(in_array('CopyObject',array_column($calls,0),true)&&!in_array('CreateMultipartUpload',array_column($calls,0),true),'small object keeps single-copy path');
  $db->query("CREATE TRIGGER reject_copy BEFORE INSERT ON FileS3 FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='catalog fixture failure'");$calls=[];

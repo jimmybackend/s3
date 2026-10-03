@@ -21,6 +21,7 @@ final class S3ObjectCopyService
                 'CopySource' => rawurlencode($this->bucket . '/' . $sourceKey),
                 'ACL' => 'private',
                 'MetadataDirective' => 'COPY',
+                'IfNoneMatch' => '*',
             ];
             if (!empty($source['ETag'])) $params['CopySourceIfMatch'] = (string)$source['ETag'];
             $this->s3->copyObject($params);
@@ -34,6 +35,9 @@ final class S3ObjectCopyService
             'source_metadata' => $source,
             'concurrency' => 2,
             'part_size' => 512 * 1024 * 1024,
+            'before_complete' => static function (\Aws\CommandInterface $command): void {
+                $command['IfNoneMatch'] = '*';
+            },
         ]);
         try {
             $copy->copy();

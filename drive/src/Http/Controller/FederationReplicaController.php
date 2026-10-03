@@ -84,7 +84,7 @@ final class FederationReplicaController
         }
     }
 
-    /** Usuario local: elige automáticamente mirror/provider/origin y redirige a URL temporal. */
+    /** Usuario local o anónimo: ensambla desde hasta cuatro fuentes y transmite el archivo verificado. */
     public function openPreferred(): void
     {
         if ($this->request->method() !== 'GET') {
@@ -92,29 +92,105 @@ final class FederationReplicaController
             echo 'Método no permitido.';
             return;
         }
-        // Este endpoint sólo resuelve PUBLIC + copy_allowed en el Service.
-        // Por eso no requiere sesión: la política pública se valida antes de emitir
-        // cualquier URL temporal S3.
+
+        $path = null;
         try {
             $resourceId = $this->request->queryString('resource_id');
-            $result = (new FederationReplicaResolverService($this->app))->openPreferred($resourceId);
-            $url = (string)($result['access_url'] ?? '');
-            header('Location: ' . $url, true, 302);
-            exit;
+            $result = (new FederationReplicaResolverService($this->app))->downloadPublic($resourceId);
+            $path = (string)($result['path'] ?? '');
+            $expected = (int)($result['size_bytes'] ?? -1);
+            if ($path === '' || !is_file($path) || $expected < 0 || (int)filesize($path) !== $expected) {
+                throw new FederationException('La descarga federada verificada no quedó disponible.', 500);
+            }
+
+            $filename = $this->safeDownloadFilename((string)($result['title'] ?? 'archivo'));
+            $mediaType = trim((string)($result['media_type'] ?? 'application/octet-stream'));
+            if ($mediaType === '' || preg_match('/[\r\n]/', $mediaType)) $mediaType = 'application/octet-stream';
+
+            header('Content-Type: ' . $mediaType);
+            header('Content-Length: ' . $expected);
+            header('Content-Disposition: attachment; filename="' . $this->asciiFilename($filename)
+                . '"; filename*=UTF-8\'\'' . rawurlencode($filename));
+            header('X-Content-Type-Options: nosniff');
+            header('Cache-Control: private, no-store');
+            header('X-ArcadeCloud-Transport: ' . (!empty($result['parallel']) ? 'multisource' : 'single-source-proxy'));
+
+            $fh = fopen($path, 'rb');
+            if (!is_resource($fh)) throw new FederationException('No se pudo abrir la descarga federada.', 500);
+
+            $sent = 0;
+            $complete = true;
+            try {
+                while (!feof($fh)) {
+                    $chunk = fread($fh, 1024 * 1024);
+                    if ($chunk === false) {
+                        $complete = false;
+                        break;
+                    }
+                    if ($chunk === '') continue;
+                    echo $chunk;
+                    $sent += strlen($chunk);
+                    if (function_exists('ob_flush')) @ob_flush();
+                    flush();
+                    if (connection_aborted()) {
+                        $complete = false;
+                        break;
+                    }
+                }
+            } finally {
+                fclose($fh);
+            }
+
+            if ($complete && $sent === $expected && connection_status() === CONNECTION_NORMAL) {
+                try {
+                    (new \ArcadeCloud\Drive\Federation\FederationResourceDeliveryService($this->app))->recordCompleted(
+                        $resourceId,
+                        (array)($result['sources_used'] ?? []),
+                        $sent,
+                        !empty($result['parallel'])
+                    );
+                } catch (Throwable $historyError) {
+                    error_log('[FederationCloud delivery history] ' . $historyError->getMessage());
+                }
+            }
+            return;
         } catch (FederationException $e) {
-            http_response_code($e->httpStatus());
-            $internal = $e->getMessage();
-            $safeDiagnosticPrefix = 'No fue posible obtener el archivo desde los nodos disponibles. Diagnóstico FederationCloud:';
-            $message = $e->httpStatus() >= 500
-                ? (str_starts_with($internal, $safeDiagnosticPrefix)
-                    ? $internal
-                    : 'No fue posible obtener el archivo desde los nodos disponibles.')
-                : $internal;
-            echo htmlspecialchars($message, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+            if (!headers_sent()) {
+                http_response_code($e->httpStatus());
+                $internal = $e->getMessage();
+                $safeDiagnosticPrefix = 'No fue posible obtener el archivo desde los nodos disponibles. Diagnóstico FederationCloud:';
+                $message = $e->httpStatus() >= 500
+                    ? (str_starts_with($internal, $safeDiagnosticPrefix)
+                        ? $internal
+                        : 'No fue posible obtener el archivo desde los nodos disponibles.')
+                    : $internal;
+                echo htmlspecialchars($message, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+            }
         } catch (Throwable) {
-            http_response_code(500);
-            echo 'No fue posible obtener el archivo desde los nodos disponibles.';
+            if (!headers_sent()) {
+                http_response_code(500);
+                echo 'No fue posible obtener el archivo desde los nodos disponibles.';
+            }
+        } finally {
+            if (is_string($path) && $path !== '') @unlink($path);
         }
+    }
+
+    private function safeDownloadFilename(string $name): string
+    {
+        $name = trim(str_replace(['\\', '/'], '-', $name));
+        $name = preg_replace('/[\x00-\x1F\x7F]+/u', ' ', $name) ?? $name;
+        $name = trim($name, " .\t\n\r\0\x0B");
+        if ($name === '') $name = 'archivo-federado';
+        if (function_exists('mb_substr')) return mb_substr($name, 0, 220);
+        return substr($name, 0, 220);
+    }
+
+    private function asciiFilename(string $name): string
+    {
+        $ascii = preg_replace('/[^A-Za-z0-9._ -]+/', '_', $name) ?? 'archivo-federado';
+        $ascii = trim(str_replace(['"', '\\'], '_', $ascii), " .");
+        return $ascii !== '' ? substr($ascii, 0, 180) : 'archivo-federado';
     }
 
     private function jsonBody(int $maxBytes): array

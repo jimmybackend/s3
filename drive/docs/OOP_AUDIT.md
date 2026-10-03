@@ -78,7 +78,7 @@
 | `drive/download.php` | 8 | thin endpoint | 0 | — | — | — | — |
 | `drive/download_multiple.php` | 8 | thin endpoint | 0 | — | — | — | — |
 | `drive/ec2-cron.php` | 39 | thin endpoint | 0 | — | — | — | — |
-| `drive/ec2.php` | 1084 | view/entrypoint | 0 | ⚠️ | — | — | — |
+| `drive/ec2.php` | 1089 | view/entrypoint | 0 | ⚠️ | — | — | — |
 | `drive/editor.php` | 485 | view/entrypoint | 0 | — | — | — | — |
 | `drive/eliminar_archivo.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/eliminar_carpeta.php` | 10 | thin endpoint | 0 | — | — | — | — |
@@ -439,7 +439,7 @@
 | `drive/src/View/Ec2PanelHelper.php` | 69 | class/module | 1 | — | — | — | — |
 | `drive/src/View/FederationDropPageRenderer.php` | 228 | class/module | 1 | — | — | — | — |
 | `drive/src/View/FederationModerationPageRenderer.php` | 63 | class/module | 1 | — | — | — | — |
-| `drive/src/View/FederationOsAdminRenderer.php` | 193 | class/module | 1 | — | — | — | — |
+| `drive/src/View/FederationOsAdminRenderer.php` | 198 | class/module | 1 | — | — | — | — |
 | `drive/src/View/FederationPageRenderer.php` | 264 | class/module | 1 | — | — | — | — |
 | `drive/src/View/FederationPortalRenderer.php` | 171 | class/module | 1 | — | — | — | — |
 | `drive/src/View/FederationReportPageRenderer.php` | 70 | class/module | 1 | — | — | — | — |
@@ -511,7 +511,7 @@
 | `drive/tests/user_identity_presenter_smoke.php` | 30 | test script | 0 | — | — | — | — |
 | `drive/tests/user_profile_validator_smoke.php` | 72 | test script | 0 | — | — | — | — |
 | `drive/tests/web_os_clipboard_contract_smoke.php` | 120 | test script | 0 | — | — | — | — |
-| `drive/tests/web_os_contract_smoke.php` | 500 | test script | 0 | — | — | — | — |
+| `drive/tests/web_os_contract_smoke.php` | 524 | test script | 0 | — | — | — | — |
 | `drive/tests/web_os_desktop_shell_smoke.php` | 20 | test script | 0 | — | — | — | — |
 | `drive/tests/web_os_file_applications_smoke.php` | 21 | test script | 0 | — | — | — | — |
 | `drive/tests/web_os_interactions_theme_smoke.php` | 30 | test script | 0 | — | — | — | — |

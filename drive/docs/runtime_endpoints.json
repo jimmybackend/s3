@@ -1046,6 +1046,7 @@
         "drive/tests/idle_stop_office_regression.php",
         "drive/tests/media_processing_contract_smoke.php",
         "drive/tests/office_conditional_save_regression.php",
+        "drive/tests/public_upload_rollback_regression.php",
         "drive/tests/setup_entry_guard_smoke.php",
         "drive/tests/web_os_contract_smoke.php",
         "drive/upload/drivers/Chunked15MBUploader.php",
@@ -3516,7 +3517,7 @@
     },
     {
       "path": "drive/src/Upload/PublicDropzoneUploadService.php",
-      "size": 4816,
+      "size": 5259,
       "active": false,
       "references": [
         "drive/tests/federation_moderation_contract_smoke.php"
@@ -3958,6 +3959,12 @@
     {
       "path": "drive/tests/password_credential_verifier_smoke.php",
       "size": 1558,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/tests/public_upload_rollback_regression.php",
+      "size": 4963,
       "active": false,
       "references": []
     },

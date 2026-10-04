@@ -107,6 +107,67 @@ final class NotebookService
         ];
     }
 
+    public function recognizeLine(int $userId, array $input): array
+    {
+        $png = (string)($input['png'] ?? '');
+        if (!str_starts_with($png, 'data:image/png;base64,')) {
+            throw new RuntimeException('Imagen de línea inválida.');
+        }
+        $bytes = base64_decode(substr($png, 22), true);
+        if (!is_string($bytes) || $bytes === '') {
+            throw new RuntimeException('No se pudo decodificar la línea.');
+        }
+        if (strlen($bytes) > 2 * 1024 * 1024) {
+            throw new RuntimeException('La línea excede 2 MB.');
+        }
+
+        $root = $this->app->userStorageProvisioner()->ensureRoot($userId);
+        $key = rtrim($root, '/') . '/notebook-tmp/f_' . bin2hex(random_bytes(16)) . '.png';
+        $client = \Config::getTextract();
+
+        try {
+            $this->app->s3()->putObject([
+                'Bucket' => $this->app->bucket(),
+                'Key' => $key,
+                'Body' => $bytes,
+                'ACL' => 'private',
+                'ContentType' => 'image/png',
+            ]);
+
+            $result = $client->detectDocumentText([
+                'Document' => [
+                    'S3Object' => [
+                        'Bucket' => $this->app->bucket(),
+                        'Name' => $key,
+                    ],
+                ],
+            ]);
+
+            $lines = [];
+            foreach ((array)($result['Blocks'] ?? []) as $block) {
+                if ((string)($block['BlockType'] ?? '') !== 'LINE') continue;
+                $text = trim((string)($block['Text'] ?? ''));
+                if ($text !== '') $lines[] = $text;
+            }
+            $text = trim(implode(' ', $lines));
+
+            return [
+                'ok' => true,
+                'text' => $text,
+                'recognized' => $text !== '',
+                'line_count' => count($lines),
+            ];
+        } finally {
+            try {
+                $this->app->s3()->deleteObject([
+                    'Bucket' => $this->app->bucket(),
+                    'Key' => $key,
+                ]);
+            } catch (\Throwable) {
+            }
+        }
+    }
+
     public function loadPage(int $userId, string $notebookName, int $page): array
     {
         $notebook = $this->requireNotebook($userId, $notebookName);

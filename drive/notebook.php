@@ -26,6 +26,9 @@ if (!preg_match('/\A[a-f0-9]{64}\z/', $csrf)) {
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Notebook · ArcadeCloud</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&family=Dancing+Script:wght@400;500;600;700&family=Shadows+Into+Light&family=Roboto+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/notebook.css">
 </head>
 <body>
@@ -56,10 +59,12 @@ if (!preg_match('/\A[a-f0-9]{64}\z/', $csrf)) {
         </label>
         <label>Tipo de letra
           <select id="nbFont" aria-label="Tipo de letra">
-            <option value="handwriting">Cursiva manuscrita</option>
+            <option value="caveat" selected>Caveat</option>
+            <option value="dancing">Dancing Script</option>
+            <option value="shadows">Shadows Into Light</option>
             <option value="sans">Sans</option>
             <option value="serif">Serif</option>
-            <option value="mono">Monoespaciada</option>
+            <option value="mono">Mono compacta</option>
             <option value="rounded">Redondeada</option>
           </select>
         </label>

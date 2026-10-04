@@ -4,8 +4,9 @@ const $ = s => document.querySelector(s);
 const canvas = $('#nbCanvas'), ctx = canvas.getContext('2d', {alpha:true});
 const state = {
   notebook:'', notebooks:[], page:1, pages:100, tool:'pencil', color:'#111111', size:3,
-  background:'blank', paper:'letter', orientation:'portrait', onLine:false, alignment:'left', font:'handwriting',
-  drawing:false, points:[], objects:[], undo:[], redo:[], dirty:false, lineAnchor:null
+  background:'blank', paper:'letter', orientation:'portrait', onLine:false, alignment:'left', font:'caveat',
+  drawing:false, points:[], objects:[], undo:[], redo:[], dirty:false, lineAnchor:null,
+  recognitionTimers:new Map(), recognitionBusy:new Set()
 };
 const paper = {
   'letter':[816,1056], 'legal':[816,1344], 'tabloid':[1056,1632], 'half-letter':[528,816]
@@ -76,13 +77,15 @@ function alignStrokeToRule(points){
   });
 }
 const fontStacks={
-  handwriting:"'Segoe Print','Bradley Hand','Comic Sans MS',cursive",
+  caveat:"'Caveat','Segoe Print','Comic Sans MS',cursive",
+  dancing:"'Dancing Script','Segoe Script','Comic Sans MS',cursive",
+  shadows:"'Shadows Into Light','Segoe Print','Comic Sans MS',cursive",
   sans:"Arial,'Helvetica Neue',Helvetica,sans-serif",
   serif:"Georgia,'Times New Roman',serif",
-  mono:"Consolas,'Courier New',monospace",
+  mono:"'Roboto Mono',Consolas,'Courier New',monospace",
   rounded:"'Trebuchet MS','Arial Rounded MT Bold',Arial,sans-serif"
 };
-function textFont(size,font='handwriting'){return size+"px "+(fontStacks[font]||fontStacks.handwriting);}
+function textFont(size,font='caveat'){return size+"px "+(fontStacks[font]||fontStacks.caveat);}
 function splitWordToWidth(word,maxWidth){
   if(ctx.measureText(word).width<=maxWidth)return [word];
   const pieces=[];let current='';
@@ -111,10 +114,10 @@ function layoutText(text,size,maxWidth,font=state.font){
 function drawText(o){
   const size=o.size||30, alignment=o.alignment||'left', lineMode=o.onLine===true;
   const left=o.x??WRITE_LEFT, right=canvas.width-WRITE_RIGHT, maxWidth=Math.max(80,right-left);
-  const lines=layoutText(o.text,size,maxWidth,o.font||'handwriting');
+  const lines=layoutText(o.text,size,maxWidth,o.font||'caveat');
   const lineHeight=lineMode?RULE_STEP:Math.max(size*1.5,RULE_STEP);
   let y=lineMode?nearestBaseline(o.y??WRITE_TOP):(o.y??WRITE_TOP);
-  ctx.save();ctx.fillStyle=o.color||'#111';ctx.font=textFont(size,o.font||'handwriting');ctx.textBaseline=lineMode?'alphabetic':'top';
+  ctx.save();ctx.fillStyle=o.color||'#111';ctx.font=textFont(size,o.font||'caveat');ctx.textBaseline=lineMode?'alphabetic':'top';
   const spaceWidth=ctx.measureText(' ').width;
   lines.forEach((line,index)=>{
     if(y>canvas.height-WRITE_BOTTOM)return;
@@ -139,7 +142,7 @@ function objectTouchesLine(object,baseline){
   const tolerance=RULE_STEP/2;
   if(object.kind==='text'){
     const size=object.size||30, left=object.x??WRITE_LEFT, maxWidth=Math.max(80,canvas.width-WRITE_RIGHT-left);
-    const count=Math.max(1,layoutText(object.text,size,maxWidth,object.font||'handwriting').length);
+    const count=Math.max(1,layoutText(object.text,size,maxWidth,object.font||'caveat').length);
     const start=object.onLine===true?nearestBaseline(object.y??WRITE_TOP):(object.y??WRITE_TOP);
     const step=object.onLine===true?RULE_STEP:Math.max(size*1.5,RULE_STEP);
     for(let i=0;i<count;i++) if(Math.abs((start+i*step)-baseline)<=tolerance) return true;
@@ -153,6 +156,41 @@ function eraseWholeLine(y){
   if(state.objects.length!==before){state.dirty=true;render();status('Línea borrada');}
   else status('No hay escritura en esa línea');
 }
+function lineStrokeObjects(baseline){
+  return state.objects.filter(o=>o.kind==='stroke' && o.onLine===true && o.tool!=='eraser' && o.baseline===baseline && o.ocrPending===true);
+}
+function linePng(baseline, objects){
+  const scale=2, pad=44, top=Math.max(0,baseline-pad), height=Math.min(canvas.height-top,pad*2);
+  const out=document.createElement('canvas');out.width=canvas.width*scale;out.height=height*scale;
+  const c2=out.getContext('2d');c2.fillStyle='#fff';c2.fillRect(0,0,out.width,out.height);c2.scale(scale,scale);c2.translate(0,-top);
+  for(const o of objects){
+    const s=styleFor(o);c2.save();c2.globalAlpha=Math.max(.75,s.alpha);c2.lineCap='round';c2.lineJoin='round';c2.strokeStyle='#111';c2.lineWidth=Math.max(2,o.size*s.mul);
+    c2.beginPath();c2.moveTo(o.points[0].x,o.points[0].y);for(const p of o.points.slice(1))c2.lineTo(p.x,p.y);c2.stroke();c2.restore();
+  }
+  return out.toDataURL('image/png');
+}
+function scheduleLineRecognition(baseline){
+  if(!state.onLine || ['eraser','line-eraser'].includes(state.tool)) return;
+  const previous=state.recognitionTimers.get(baseline);if(previous)clearTimeout(previous);
+  status('Esperando fin de escritura…');
+  state.recognitionTimers.set(baseline,setTimeout(()=>recognizeLine(baseline),1100));
+}
+async function recognizeLine(baseline){
+  state.recognitionTimers.delete(baseline);
+  if(state.recognitionBusy.has(baseline)) return;
+  const objects=lineStrokeObjects(baseline);if(!objects.length)return;
+  state.recognitionBusy.add(baseline);status('Leyendo escritura…');
+  try{
+    const j=await api('recognize_line',{method:'POST',body:JSON.stringify({png:linePng(baseline,objects)})});
+    const text=String(j.text||'').trim();
+    if(!j.recognized||!text){objects.forEach(o=>o.ocrPending=false);status('No pude leer la frase; conservé los trazos.',true);return;}
+    const ids=new Set(objects.map(o=>o.id));const minX=Math.max(WRITE_LEFT,Math.min(...objects.flatMap(o=>o.points.map(p=>p.x))));
+    snap();state.objects=state.objects.filter(o=>!ids.has(o.id));
+    state.objects.push({kind:'text',text,x:minX,y:baseline,color:state.color,size:Math.max(20,state.size*8),onLine:true,alignment:state.alignment,font:state.font,recognizedFromInk:true});
+    state.dirty=true;render();status('Escritura reconocida');
+  }catch(e){objects.forEach(o=>o.ocrPending=false);status('No se pudo reconocer; conservé los trazos.',true);}
+  finally{state.recognitionBusy.delete(baseline);}
+}
 canvas.addEventListener('pointerdown',e=>{
   e.preventDefault();
   const point=pos(e);
@@ -162,7 +200,7 @@ canvas.addEventListener('pointerdown',e=>{
   canvas.setPointerCapture?.(e.pointerId);
 });
 canvas.addEventListener('pointermove',e=>{if(!state.drawing)return;state.points.push(pos(e));render();drawStroke({kind:'stroke',tool:state.tool,color:state.color,size:state.size,points:previewPoints()});});
-canvas.addEventListener('pointerup',()=>{if(!state.drawing)return;state.drawing=false;const points=previewPoints();state.objects.push({kind:'stroke',tool:state.tool,color:state.color,size:state.size,points,onLine:state.onLine,baseline:state.lineAnchor?.baseline??null});state.points=[];state.lineAnchor=null;state.dirty=true;render();});
+canvas.addEventListener('pointerup',()=>{if(!state.drawing)return;state.drawing=false;const points=previewPoints(),baseline=state.lineAnchor?.baseline??null;const stroke={kind:'stroke',id:'s_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,8),tool:state.tool,color:state.color,size:state.size,points,onLine:state.onLine,baseline,ocrPending:state.onLine&& !['eraser','line-eraser'].includes(state.tool)};state.objects.push(stroke);state.points=[];state.lineAnchor=null;state.dirty=true;render();if(stroke.ocrPending&&baseline!==null)scheduleLineRecognition(baseline);});
 $('#nbTool').addEventListener('change',e=>{state.tool=e.target.value;});
 $('#nbFont').addEventListener('change',e=>{state.font=e.target.value;state.dirty=true;});
 $('#nbColor').addEventListener('input',e=>state.color=e.target.value);
@@ -179,7 +217,7 @@ function nextTextY(size){
   const textObjects=state.objects.filter(o=>o.kind==='text');
   if(!textObjects.length)return state.onLine?WRITE_TOP:80;
   const last=textObjects[textObjects.length-1], maxWidth=Math.max(80,canvas.width-WRITE_RIGHT-(last.x??WRITE_LEFT));
-  const count=Math.max(1,layoutText(last.text,last.size||size,maxWidth,last.font||'handwriting').length);
+  const count=Math.max(1,layoutText(last.text,last.size||size,maxWidth,last.font||'caveat').length);
   const step=last.onLine===true?RULE_STEP:Math.max((last.size||size)*1.5,RULE_STEP);
   return (last.y??WRITE_TOP)+(count*step);
 }
@@ -190,7 +228,7 @@ $('#nbWritePrompt').onclick=()=>{
   snap();state.objects.push({kind:'text',text,x:WRITE_LEFT,y:state.onLine?nearestBaseline(y):y,color:state.color,size,onLine:state.onLine,alignment:state.alignment,font:state.font});
   input.value='';state.dirty=true;render();
 };
-function serialize(){return JSON.stringify({version:3,page:state.page,pages:state.pages,paper:state.paper,orientation:state.orientation,background:state.background,onLine:state.onLine,alignment:state.alignment,font:state.font,objects:state.objects});}
+function serialize(){return JSON.stringify({version:4,page:state.page,pages:state.pages,paper:state.paper,orientation:state.orientation,background:state.background,onLine:state.onLine,alignment:state.alignment,font:state.font,objects:state.objects});}
 async function save(){
   if(!state.notebook)return;
   status('Guardando PNG…');
@@ -208,7 +246,7 @@ async function loadPage(){
     if(!j.empty){
       const d=JSON.parse(j.json);state.objects=Array.isArray(d.objects)?d.objects:[];
       state.paper=d.paper||state.paper;state.orientation=d.orientation||state.orientation;state.background=d.background||state.background;
-      state.onLine=d.onLine===true;state.alignment=['left','right','justify'].includes(d.alignment)?d.alignment:'left';state.font=['handwriting','sans','serif','mono','rounded'].includes(d.font)?d.font:'handwriting';
+      state.onLine=d.onLine===true;state.alignment=['left','right','justify'].includes(d.alignment)?d.alignment:'left';state.font=['caveat','dancing','shadows','sans','serif','mono','rounded'].includes(d.font)?d.font:'caveat';
       syncControls();canvasSize();
     }
     state.dirty=false;status(j.empty?'Hoja nueva':'Hoja cargada');

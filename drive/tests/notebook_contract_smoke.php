@@ -61,6 +61,13 @@ $assert(str_contains($js, "action==='text-resize'") && str_contains($js, 'o.size
 $assert(str_contains($page, 'id="nbPasteMode"') && str_contains($page, 'value="outline"') && str_contains($page, 'value="gray"') && str_contains($page, 'value="pencil"'), 'Notebook ofrece pegado normal contorno grises y lápiz');
 $assert(str_contains($js, "mode==='outline'") && str_contains($js, "mode==='gray'") && str_contains($js, "mode==='pencil'"), 'procesamiento de imagen implementa los modos solicitados');
 $assert(str_contains($js, 'setTimeout(()=>readClipboardImage(point),700)'), 'toque prolongado sobre la hoja intenta pegar la imagen del portapapeles');
+foreach (['Archivo','Editar','Insertar','Formato','Vista'] as $menu) {
+    $assert(str_contains($page, '<summary>' . $menu . '</summary>'), "menú profesional {$menu} disponible");
+}
+$assert(str_contains($js, "e.key==='Enter'") && str_contains($js, "$('#nbWritePrompt').click()"), 'Enter envía el texto desde el input');
+$assert(str_contains($js, "action==='delete-image'") && str_contains($js, "status('Imagen eliminada')"), 'imagen seleccionada tiene control X para eliminar');
+$assert(str_contains($css, 'grid-template-columns:minmax(0,1fr) auto') && str_contains($css, 'min-width:50px'), 'footer mantiene visible el botón Enviar aun con zoom pequeño');
+$assert(str_contains($js, "document.querySelectorAll('.nb-menu')") && str_contains($css, '.nb-menu-panel'), 'menús desplegables se comportan como aplicación de escritorio');
 $assert(str_contains($css, '@media(max-width:720px)'), 'Notebook incluye diseño móvil/tableta');
 
 echo "Notebook contract OK\n";

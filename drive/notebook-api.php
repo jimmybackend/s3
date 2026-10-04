@@ -39,6 +39,7 @@ try {
         'list' => $service->listNotebooks($userId),
         'create' => $service->createNotebook($userId, $payload),
         'save_page' => $service->savePage($userId, $payload, $session->userName()),
+        'recognize_line' => $service->recognizeLine($userId, $payload),
         'load_page' => $service->loadPage(
             $userId,
             (string)($_GET['notebook'] ?? ''),

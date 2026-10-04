@@ -4,6 +4,12 @@ on:
   pull_request:
     paths:
       - 'drive/so.php'
+      - 'drive/notebook.php'
+      - 'drive/notebook-api.php'
+      - 'drive/js/notebook.js'
+      - 'drive/css/notebook.css'
+      - 'drive/src/Notebook/**'
+      - 'drive/tests/notebook_contract_smoke.php'
       - 'drive/s3.php'
       - 'drive/bloque_archivos.php'
       - 'drive/css/so.css'
@@ -84,6 +90,12 @@ on:
     branches: [ main ]
     paths:
       - 'drive/so.php'
+      - 'drive/notebook.php'
+      - 'drive/notebook-api.php'
+      - 'drive/js/notebook.js'
+      - 'drive/css/notebook.css'
+      - 'drive/src/Notebook/**'
+      - 'drive/tests/notebook_contract_smoke.php'
       - 'drive/s3.php'
       - 'drive/bloque_archivos.php'
       - 'drive/css/so.css'
@@ -172,6 +184,10 @@ jobs:
       - name: PHP syntax
         run: |
           php -l drive/so.php
+          php -l drive/notebook.php
+          php -l drive/notebook-api.php
+          php -l drive/src/Notebook/NotebookService.php
+          php -l drive/tests/notebook_contract_smoke.php
           php -l drive/src/System/NodeCapabilityService.php
           php -l drive/federationcloud/os-admin.php
           php -l drive/src/Http/Controller/FederationOsAdminController.php
@@ -209,6 +225,7 @@ jobs:
       - name: JavaScript syntax
         run: |
           node --check drive/js/so.js
+          node --check drive/js/notebook.js
           node --check drive/js/file-security.js
           node --check drive/js/so-search.js
           node --check drive/js/archivos.js
@@ -234,6 +251,7 @@ jobs:
       - name: Web OS contract
         run: |
           php drive/tests/web_os_contract_smoke.php
+          php drive/tests/notebook_contract_smoke.php
           php drive/tests/web_os_pending_fixes_smoke.php
           php drive/tests/web_os_multiwindow_smoke.php
           php drive/tests/web_os_clipboard_contract_smoke.php

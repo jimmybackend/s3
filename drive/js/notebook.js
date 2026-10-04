@@ -94,8 +94,8 @@ function splitWordToWidth(word,maxWidth){
   if(current)pieces.push(current);
   return pieces;
 }
-function layoutText(text,size,maxWidth){
-  ctx.save();ctx.font=textFont(size,state.font);
+function layoutText(text,size,maxWidth,font=state.font){
+  ctx.save();ctx.font=textFont(size,font);
   const source=String(text||'').trim().split(/\s+/).filter(Boolean), tokens=[];
   for(const word of source) tokens.push(...splitWordToWidth(word,maxWidth));
   const lines=[];let words=[];let width=0;
@@ -111,7 +111,7 @@ function layoutText(text,size,maxWidth){
 function drawText(o){
   const size=o.size||30, alignment=o.alignment||'left', lineMode=o.onLine===true;
   const left=o.x??WRITE_LEFT, right=canvas.width-WRITE_RIGHT, maxWidth=Math.max(80,right-left);
-  const lines=layoutText(o.text,size,maxWidth);
+  const lines=layoutText(o.text,size,maxWidth,o.font||'handwriting');
   const lineHeight=lineMode?RULE_STEP:Math.max(size*1.5,RULE_STEP);
   let y=lineMode?nearestBaseline(o.y??WRITE_TOP):(o.y??WRITE_TOP);
   ctx.save();ctx.fillStyle=o.color||'#111';ctx.font=textFont(size,o.font||'handwriting');ctx.textBaseline=lineMode?'alphabetic':'top';
@@ -139,7 +139,7 @@ function objectTouchesLine(object,baseline){
   const tolerance=RULE_STEP/2;
   if(object.kind==='text'){
     const size=object.size||30, left=object.x??WRITE_LEFT, maxWidth=Math.max(80,canvas.width-WRITE_RIGHT-left);
-    const count=Math.max(1,layoutText(object.text,size,maxWidth).length);
+    const count=Math.max(1,layoutText(object.text,size,maxWidth,object.font||'handwriting').length);
     const start=object.onLine===true?nearestBaseline(object.y??WRITE_TOP):(object.y??WRITE_TOP);
     const step=object.onLine===true?RULE_STEP:Math.max(size*1.5,RULE_STEP);
     for(let i=0;i<count;i++) if(Math.abs((start+i*step)-baseline)<=tolerance) return true;
@@ -179,7 +179,7 @@ function nextTextY(size){
   const textObjects=state.objects.filter(o=>o.kind==='text');
   if(!textObjects.length)return state.onLine?WRITE_TOP:80;
   const last=textObjects[textObjects.length-1], maxWidth=Math.max(80,canvas.width-WRITE_RIGHT-(last.x??WRITE_LEFT));
-  const count=Math.max(1,layoutText(last.text,last.size||size,maxWidth).length);
+  const count=Math.max(1,layoutText(last.text,last.size||size,maxWidth,last.font||'handwriting').length);
   const step=last.onLine===true?RULE_STEP:Math.max((last.size||size)*1.5,RULE_STEP);
   return (last.y??WRITE_TOP)+(count*step);
 }

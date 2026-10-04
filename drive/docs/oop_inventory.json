@@ -1799,7 +1799,7 @@
     },
     {
       "path": "drive/notebook.php",
-      "lines": 177,
+      "lines": 174,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -7504,7 +7504,7 @@
     },
     {
       "path": "drive/tests/notebook_contract_smoke.php",
-      "lines": 67,
+      "lines": 74,
       "kind": "test script",
       "classes": 0,
       "functions": [],
@@ -9314,7 +9314,7 @@
     },
     {
       "path": "drive/js/notebook.js",
-      "lines": 185,
+      "lines": 204,
       "kind": "procedural script",
       "classes": [],
       "functions": [

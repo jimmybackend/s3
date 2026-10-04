@@ -6,11 +6,13 @@ namespace ArcadeCloud\Drive\Http\Controller;
 use ArcadeCloud\Drive\Activity\ActivityCostRecorder;
 use ArcadeCloud\Drive\Aws\FileMetadataRepository;
 use ArcadeCloud\Drive\Aws\FileRecordLocator;
+use ArcadeCloud\Drive\Aws\FolderTextractService;
 use ArcadeCloud\Drive\Aws\GeneratedFileRepository;
 use ArcadeCloud\Drive\Aws\PollyFileService;
 use ArcadeCloud\Drive\Aws\RekognitionFileService;
 use ArcadeCloud\Drive\Aws\TextractFileService;
 use ArcadeCloud\Drive\Aws\TranslateFileService;
+use ArcadeCloud\Drive\Storage\UserStoragePath;
 use ArcadeCloud\Drive\Http\JsonResponse;
 
 final class AwsFileController extends AbstractJsonController
@@ -26,6 +28,35 @@ final class AwsFileController extends AbstractJsonController
                 (int)($result['file_id'] ?? 0),
                 [['service' => 'Textract', 'units' => ['textract.detect_document_text_page' => $pages]]],
                 ['pages' => $pages],
+            ];
+        });
+    }
+
+    public function textractFolder(): never
+    {
+        $this->run('textract_folder', 'Textract', function (int $userId): array {
+            $route = $this->request->postString('ruta');
+            $result = $this->folderTextractService()->extract($userId, $route, $this->request->postString('nombre'));
+            $pages = max(1, (int)($result['billable_pages'] ?? $result['paginas'] ?? 1));
+
+            return [
+                $result,
+                null,
+                [
+                    [
+                        'service' => 'Textract',
+                        'units' => ['textract.detect_document_text_page' => $pages],
+                    ],
+                    [
+                        'service' => 'S3',
+                        'units' => ['s3.put_request' => 1],
+                    ],
+                ],
+                [
+                    'pages' => $pages,
+                    'source_images' => max(0, (int)($result['paginas'] ?? 0)),
+                    'output_bytes' => max(0, (int)($result['bytes'] ?? 0)),
+                ],
             ];
         });
     }
@@ -292,6 +323,18 @@ final class AwsFileController extends AbstractJsonController
             new FileMetadataRepository($this->app->db()),
             \Config::getTextract(),
             $this->app->bucket()
+        );
+    }
+
+    private function folderTextractService(): FolderTextractService
+    {
+        return new FolderTextractService(
+            $this->app->db(),
+            $this->textractService(),
+            new GeneratedFileRepository($this->app->db()),
+            $this->app->s3(),
+            $this->app->bucket(),
+            new UserStoragePath()
         );
     }
 

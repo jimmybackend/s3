@@ -4,8 +4,8 @@
 
 ## Resumen
 
-- PHP analizados: **550**
-- PHP que ya contienen clases/interfaces: **312**
+- PHP analizados: **551**
+- PHP que ya contienen clases/interfaces: **313**
 - PHP marcados para migración/revisión: **0**
 - Tests PHP separados del objetivo OOP de runtime: **76**
 - JavaScript analizados: **80**
@@ -147,8 +147,8 @@
 | `drive/mover_archivo.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/mover_carpeta.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/node-status.php` | 10 | thin endpoint | 0 | — | — | — | — |
-| `drive/notebook-api.php` | 61 | thin endpoint | 0 | — | — | — | — |
-| `drive/notebook.php` | 174 | view/entrypoint | 0 | — | — | — | — |
+| `drive/notebook-api.php` | 69 | thin endpoint | 0 | — | — | — | — |
+| `drive/notebook.php` | 181 | view/entrypoint | 0 | — | — | — | — |
 | `drive/office-gateway.php` | 674 | view/entrypoint | 0 | — | — | — | — |
 | `drive/office-launch.php` | 81 | thin endpoint | 0 | — | — | — | — |
 | `drive/os-preferences.php` | 66 | thin endpoint | 0 | — | — | — | — |
@@ -386,7 +386,8 @@
 | `drive/src/Media/MediaWorkerNodeService.php` | 799 | class/module | 1 | — | — | — | — |
 | `drive/src/Media/MediaWorkerNodeSessionRepository.php` | 243 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Media/ThumbnailService.php` | 380 | class/module | 1 | — | ⚠️ | — | — |
-| `drive/src/Notebook/NotebookService.php` | 348 | class/module | 1 | — | ⚠️ | — | — |
+| `drive/src/Notebook/NotebookAiImproveService.php` | 327 | class/module | 1 | — | — | — | — |
+| `drive/src/Notebook/NotebookService.php` | 394 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Office/OfficeActivityProbe.php` | 57 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Office/OfficeDocumentSessionRepository.php` | 351 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Office/OfficeDocumentStorageService.php` | 605 | class/module | 1 | — | ⚠️ | — | — |
@@ -453,7 +454,7 @@
 | `drive/src/Upload/SingleUploadService.php` | 112 | class/module | 1 | — | — | — | — |
 | `drive/src/Upload/UploadCatalogRepository.php` | 173 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Upload/UploadCleanupService.php` | 294 | class/module | 1 | — | ⚠️ | — | — |
-| `drive/src/View/ActivityCostPageRenderer.php` | 396 | class/module | 1 | — | — | — | — |
+| `drive/src/View/ActivityCostPageRenderer.php` | 401 | class/module | 1 | — | — | — | — |
 | `drive/src/View/Ec2PanelHelper.php` | 69 | class/module | 1 | — | — | — | — |
 | `drive/src/View/FederationDropPageRenderer.php` | 228 | class/module | 1 | — | — | — | — |
 | `drive/src/View/FederationModerationPageRenderer.php` | 73 | class/module | 1 | — | — | — | — |
@@ -520,7 +521,7 @@
 | `drive/tests/media_worker_behavior_regression.php` | 65 | test script | 0 | — | ⚠️ | — | — |
 | `drive/tests/node_diagnostics_contract_smoke.php` | 62 | test script | 0 | — | — | — | — |
 | `drive/tests/node_diagnostics_control_smoke.php` | 43 | test script | 0 | — | — | — | — |
-| `drive/tests/notebook_contract_smoke.php` | 74 | test script | 0 | — | — | — | — |
+| `drive/tests/notebook_contract_smoke.php` | 83 | test script | 0 | — | — | — | — |
 | `drive/tests/office_conditional_save_regression.php` | 148 | test script | 1 | — | ⚠️ | — | — |
 | `drive/tests/office_gateway_contract_smoke.php` | 376 | test script | 0 | — | — | — | — |
 | `drive/tests/password_credential_verifier_smoke.php` | 44 | test script | 0 | — | — | — | — |
@@ -621,7 +622,7 @@
 | `drive/js/media-processing.js` | 498 | class/module | MediaProcessingModule | — | — | — |
 | `drive/js/mediaFloating.js` | 38 | class/module | MediaFloatingModule | — | — | — |
 | `drive/js/move-tasks.js` | 262 | class/module | DriveMoveTasks | — | — | — |
-| `drive/js/notebook.js` | 204 | procedural script | — | uid, status, api, canvasSize, applyZoom, background | — | top-level functions: uid, status, api, canvasSize, applyZoom, background, styleFor, drawStroke; top-level state: $, canvas, imageCache, state, paper, WRITE_LEFT, fontStacks; no ES class |
+| `drive/js/notebook.js` | 223 | procedural script | — | uid, status, api, canvasSize, applyZoom, background | — | top-level functions: uid, status, api, canvasSize, applyZoom, background, styleFor, drawStroke; top-level state: $, canvas, imageCache, state, paper, WRITE_LEFT, fontStacks; no ES class |
 | `drive/js/obtenerFiltros.js` | 125 | class/module | ObtenerFiltrosModule | — | — | — |
 | `drive/js/os-window-manager.js` | 992 | class/module | ArcadeCloudEventBus, ArcadeCloudWindowLayoutConfig, ArcadeCloudWindowManager, ExplorerWindowFactory, ArcadeCloudExplorerWindow, ArcadeCloudDesktopRuntime | — | — | — |
 | `drive/js/page-task-manager.js` | 54 | class/module | ArcadeCloudPageTaskManager | — | — | — |

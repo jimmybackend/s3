@@ -1,16 +1,16 @@
 {
   "summary": {
-    "php_total": 537,
-    "php_class_modules": 307,
+    "php_total": 541,
+    "php_class_modules": 308,
     "php_needs_migration": 0,
-    "php_tests": 72,
-    "js_total": 79,
+    "php_tests": 73,
+    "js_total": 80,
     "js_class_modules": 73,
-    "js_needs_migration": 0,
+    "js_needs_migration": 1,
     "js_tests": 11,
     "js_compatibility_facades": 8,
-    "ajax_clients": 49,
-    "ajax_calls": 107,
+    "ajax_clients": 50,
+    "ajax_calls": 109,
     "json_total": 4,
     "json_invalid": 0
   },
@@ -1764,6 +1764,40 @@
       "issues": []
     },
     {
+      "path": "drive/notebook-api.php",
+      "lines": 60,
+      "kind": "thin endpoint",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [
+        "GET",
+        "POST",
+        "SERVER"
+      ],
+      "db": false,
+      "s3": false,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/notebook.php",
+      "lines": 116,
+      "kind": "view/entrypoint",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": true,
+      "html": true,
+      "namespace": false,
+      "issues": []
+    },
+    {
       "path": "drive/office-gateway.php",
       "lines": 670,
       "kind": "view/entrypoint",
@@ -2108,7 +2142,7 @@
     },
     {
       "path": "drive/so.php",
-      "lines": 2122,
+      "lines": 2136,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -5291,6 +5325,21 @@
       "issues": []
     },
     {
+      "path": "drive/src/Notebook/NotebookService.php",
+      "lines": 287,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": true,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
       "path": "drive/src/Office/OfficeActivityProbe.php",
       "lines": 57,
       "kind": "class/module",
@@ -7319,6 +7368,21 @@
       "issues": []
     },
     {
+      "path": "drive/tests/notebook_contract_smoke.php",
+      "lines": 38,
+      "kind": "test script",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
       "path": "drive/tests/office_conditional_save_regression.php",
       "lines": 148,
       "kind": "test script",
@@ -9114,6 +9178,48 @@
       "issues": []
     },
     {
+      "path": "drive/js/notebook.js",
+      "lines": 120,
+      "kind": "procedural script",
+      "classes": [],
+      "functions": [
+        "status",
+        "api",
+        "canvasSize",
+        "background",
+        "styleFor",
+        "drawStroke",
+        "drawText",
+        "render",
+        "snap",
+        "pos",
+        "serialize",
+        "syncControls"
+      ],
+      "window_assign": [],
+      "window_func": [],
+      "top_vars": [
+        "$",
+        "canvas",
+        "state",
+        "paper",
+        "touchX"
+      ],
+      "iife": false,
+      "ajax": {
+        "fetch": 2,
+        "xhr": 0,
+        "jquery": 0,
+        "json_consumers": 2,
+        "response_checks": 5
+      },
+      "issues": [
+        "top-level functions: status, api, canvasSize, background, styleFor, drawStroke, drawText, render",
+        "top-level state: $, canvas, state, paper, touchX",
+        "no ES class"
+      ]
+    },
+    {
       "path": "drive/js/obtenerFiltros.js",
       "lines": 125,
       "kind": "class/module",
@@ -10312,7 +10418,7 @@
     },
     {
       "path": "drive/docs/runtime_endpoints.json",
-      "bytes": 123760,
+      "bytes": 125067,
       "valid": true,
       "root_type": "object",
       "keys": [

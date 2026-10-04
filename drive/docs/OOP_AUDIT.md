@@ -4,16 +4,16 @@
 
 ## Resumen
 
-- PHP analizados: **537**
-- PHP que ya contienen clases/interfaces: **307**
+- PHP analizados: **541**
+- PHP que ya contienen clases/interfaces: **308**
 - PHP marcados para migración/revisión: **0**
-- Tests PHP separados del objetivo OOP de runtime: **72**
-- JavaScript analizados: **79**
+- Tests PHP separados del objetivo OOP de runtime: **73**
+- JavaScript analizados: **80**
 - JavaScript que ya contienen clases: **73**
-- JavaScript runtime marcados para migración/revisión: **0**
+- JavaScript runtime marcados para migración/revisión: **1**
 - Tests JavaScript separados del objetivo OOP de runtime: **11**
 - JavaScript OOP con fachada `window` de compatibilidad: **8**
-- Clientes AJAX detectados: **49** módulos / **107** llamadas
+- Clientes AJAX detectados: **50** módulos / **109** llamadas
 - JSON analizados: **4**; inválidos: **0**
 
 ## Criterio
@@ -146,6 +146,8 @@
 | `drive/mover_archivo.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/mover_carpeta.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/node-status.php` | 10 | thin endpoint | 0 | — | — | — | — |
+| `drive/notebook-api.php` | 60 | thin endpoint | 0 | — | — | — | — |
+| `drive/notebook.php` | 116 | view/entrypoint | 0 | — | — | — | — |
 | `drive/office-gateway.php` | 670 | view/entrypoint | 0 | — | — | — | — |
 | `drive/office-launch.php` | 81 | thin endpoint | 0 | — | — | — | — |
 | `drive/os-preferences.php` | 66 | thin endpoint | 0 | — | — | — | — |
@@ -168,7 +170,7 @@
 | `drive/set_file_security.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/setup/api.php` | 15 | thin endpoint | 0 | — | — | — | — |
 | `drive/setup/index.php` | 90 | view/entrypoint | 0 | — | — | — | — |
-| `drive/so.php` | 2122 | view/entrypoint | 0 | — | — | — | — |
+| `drive/so.php` | 2136 | view/entrypoint | 0 | — | — | — | — |
 | `drive/src/Activity/ActivityCostRecorder.php` | 155 | class/module | 1 | — | — | — | — |
 | `drive/src/Activity/ActivityCostRepository.php` | 198 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Activity/ActivityCostService.php` | 153 | class/module | 1 | — | — | — | — |
@@ -379,6 +381,7 @@
 | `drive/src/Media/MediaWorkerNodeService.php` | 757 | class/module | 1 | — | — | — | — |
 | `drive/src/Media/MediaWorkerNodeSessionRepository.php` | 243 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Media/ThumbnailService.php` | 380 | class/module | 1 | — | ⚠️ | — | — |
+| `drive/src/Notebook/NotebookService.php` | 287 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Office/OfficeActivityProbe.php` | 57 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Office/OfficeDocumentSessionRepository.php` | 351 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Office/OfficeDocumentStorageService.php` | 605 | class/module | 1 | — | ⚠️ | — | — |
@@ -508,6 +511,7 @@
 | `drive/tests/media_worker_behavior_regression.php` | 65 | test script | 0 | — | ⚠️ | — | — |
 | `drive/tests/node_diagnostics_contract_smoke.php` | 62 | test script | 0 | — | — | — | — |
 | `drive/tests/node_diagnostics_control_smoke.php` | 43 | test script | 0 | — | — | — | — |
+| `drive/tests/notebook_contract_smoke.php` | 38 | test script | 0 | — | — | — | — |
 | `drive/tests/office_conditional_save_regression.php` | 148 | test script | 1 | — | ⚠️ | — | — |
 | `drive/tests/office_gateway_contract_smoke.php` | 376 | test script | 0 | — | — | — | — |
 | `drive/tests/password_credential_verifier_smoke.php` | 44 | test script | 0 | — | — | — | — |
@@ -608,6 +612,7 @@
 | `drive/js/media-processing.js` | 498 | class/module | MediaProcessingModule | — | — | — |
 | `drive/js/mediaFloating.js` | 38 | class/module | MediaFloatingModule | — | — | — |
 | `drive/js/move-tasks.js` | 262 | class/module | DriveMoveTasks | — | — | — |
+| `drive/js/notebook.js` | 120 | procedural script | — | status, api, canvasSize, background, styleFor, drawStroke | — | top-level functions: status, api, canvasSize, background, styleFor, drawStroke, drawText, render; top-level state: $, canvas, state, paper, touchX; no ES class |
 | `drive/js/obtenerFiltros.js` | 125 | class/module | ObtenerFiltrosModule | — | — | — |
 | `drive/js/os-window-manager.js` | 992 | class/module | ArcadeCloudEventBus, ArcadeCloudWindowLayoutConfig, ArcadeCloudWindowManager, ExplorerWindowFactory, ArcadeCloudExplorerWindow, ArcadeCloudDesktopRuntime | — | — | — |
 | `drive/js/page-task-manager.js` | 54 | class/module | ArcadeCloudPageTaskManager | — | — | — |
@@ -682,6 +687,7 @@
 | `drive/js/media-floating.js` | 1 | 0 | 0 | 1 | 3 |
 | `drive/js/media-processing.js` | 3 | 0 | 0 | 3 | 5 |
 | `drive/js/move-tasks.js` | 2 | 0 | 0 | 0 | 6 |
+| `drive/js/notebook.js` | 2 | 0 | 0 | 2 | 5 |
 | `drive/js/obtenerFiltros.js` | 3 | 0 | 0 | 0 | 0 |
 | `drive/js/os-window-manager.js` | 5 | 0 | 0 | 2 | 16 |
 | `drive/js/polly-background.js` | 1 | 0 | 0 | 0 | 3 |

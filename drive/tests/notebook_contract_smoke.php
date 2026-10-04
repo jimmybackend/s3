@@ -41,10 +41,14 @@ $assert(str_contains($js, 'onLine:state.onLine') && str_contains($js, 'alignment
 $assert(str_contains($page, 'class="nb-page-footer"') && str_contains($page, 'class="nb-page-counter"'), 'prompt y paginación viven sobre la hoja');
 $assert(str_contains($page, 'id="nbMenuPage"') && str_contains($page, 'id="nbMenuTotal"'), 'paginación también es visible en el menú');
 $assert(str_contains($js, 'previewPoints()') && str_contains($js, 'alignStrokeToRule'), 'Sobre línea ajusta también la previsualización del trazo en pantalla');
-$assert(str_contains($page, 'id="nbFont"') && str_contains($page, 'value="sans"') && str_contains($page, 'value="serif"') && str_contains($page, 'value="mono"'), 'Notebook ofrece varias familias tipográficas');
-$assert(str_contains($js, 'fontStacks') && str_contains($js, 'font:state.font'), 'tipo de letra se renderiza y persiste por objeto');
+$assert(str_contains($page, 'id="nbFont"') && str_contains($page, 'value="caveat" selected') && str_contains($page, 'value="dancing"') && str_contains($page, 'value="shadows"') && str_contains($page, 'value="sans"') && str_contains($page, 'value="serif"') && str_contains($page, 'value="mono"'), 'Notebook ofrece Caveat por defecto y varias familias tipográficas');
+$assert(str_contains($js, 'fontStacks') && str_contains($js, "caveat:\"'Caveat'") && str_contains($js, 'font:state.font'), 'tipo de letra se renderiza y persiste por objeto');
 $assert(str_contains($js, 'eraseWholeLine') && str_contains($js, 'objectTouchesLine'), 'borrador de línea elimina trazos y texto del renglón completo');
 $assert(str_contains($js, 'Math.max(-26,Math.min(2,p.y-rawStart))'), 'modo Sobre línea restringe el trazo al renglón durante la escritura');
+$assert(str_contains($api, "'recognize_line'") && str_contains($service, 'recognizeLine'), 'Notebook expone reconocimiento temporal de línea');
+$assert(str_contains($js, 'scheduleLineRecognition') && str_contains($js, 'recognizeLine(baseline)'), 'cliente espera el fin de escritura antes de reconocer');
+$assert(str_contains($js, 'recognizedFromInk:true') && str_contains($js, 'state.objects=state.objects.filter(o=>!ids.has(o.id))'), 'texto reconocido sustituye los trazos originales');
+$assert(str_contains($service, "'notebook-tmp/f_'") && str_contains($service, 'deleteObject'), 'imagen temporal de reconocimiento se elimina de S3');
 $assert(str_contains($css, '@media(max-width:720px)'), 'Notebook incluye diseño móvil/tableta');
 
 echo "Notebook contract OK\n";

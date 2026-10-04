@@ -24,7 +24,7 @@ final class FolderTextractService
     ) {
     }
 
-    public function extract(int $userId, string $requestedRoute, string $visibleFolderName = ''): array
+    public function extract(int $userId, string $requestedRoute, string $visibleFolderName = '', ?callable $progress = null): array
     {
         if ($userId <= 0) {
             throw new RuntimeException('Usuario inválido.');
@@ -44,6 +44,11 @@ final class FolderTextractService
         $documents = [];
         $billablePages = 0;
         $sheet = 0;
+        $total = count($rows);
+
+        if ($progress !== null) {
+            $progress(0, $total, '');
+        }
 
         foreach ($rows as $row) {
             $sheet++;
@@ -63,6 +68,10 @@ final class FolderTextractService
                 'fecha_creacion' => (string)($row['Fecha'] ?? ''),
                 'texto' => (string)($result['textoJ'] ?? ''),
             ];
+
+            if ($progress !== null) {
+                $progress($sheet, $total, (string)($row['Nombre'] ?? ''));
+            }
         }
 
         $folderName = trim($visibleFolderName) !== '' ? trim($visibleFolderName) : basename(rtrim($route, '/'));

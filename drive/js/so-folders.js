@@ -304,7 +304,7 @@ class ArcadeCloudOsFolderActions {
     if (action === 'extract-text') {
       this.notify('Extrayendo texto de las imágenes de "' + folder.name + '"…', 'info');
       try {
-        const body = new URLSearchParams({ ruta: folder.route });
+        const body = new URLSearchParams({ ruta: folder.route, nombre: folder.name });
         const response = await fetch('procesar_textract_carpeta.php', {
           method: 'POST',
           credentials: 'same-origin',

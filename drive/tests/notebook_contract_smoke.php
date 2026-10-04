@@ -25,7 +25,7 @@ $assert(strpos($service, "base . '.txt'") > strpos($service, "extractText"), 'TX
 $assert(str_contains($service, 'TextractFileService'), 'la transcripción automática reutiliza Textract');
 $assert(str_contains($js, "pointerdown") && str_contains($js, "pointermove") && str_contains($js, "pointerup"), 'cliente usa Pointer Events');
 $assert(str_contains($page, 'id="nbTool"'), 'herramientas de escritura usan un selector desplegable');
-foreach (['pencil','pen','fountain','marker','brush','eraser'] as $tool) {
+foreach (['pencil','pen','fountain','marker','brush','eraser','line-eraser'] as $tool) {
     $assert(str_contains($page, 'value="' . $tool . '"'), "herramienta {$tool} disponible");
 }
 foreach (['blank','ruled','grid','millimeter','dots','notes'] as $background) {
@@ -41,6 +41,10 @@ $assert(str_contains($js, 'onLine:state.onLine') && str_contains($js, 'alignment
 $assert(str_contains($page, 'class="nb-page-footer"') && str_contains($page, 'class="nb-page-counter"'), 'prompt y paginación viven sobre la hoja');
 $assert(str_contains($page, 'id="nbMenuPage"') && str_contains($page, 'id="nbMenuTotal"'), 'paginación también es visible en el menú');
 $assert(str_contains($js, 'previewPoints()') && str_contains($js, 'alignStrokeToRule'), 'Sobre línea ajusta también la previsualización del trazo en pantalla');
+$assert(str_contains($page, 'id="nbFont"') && str_contains($page, 'value="sans"') && str_contains($page, 'value="serif"') && str_contains($page, 'value="mono"'), 'Notebook ofrece varias familias tipográficas');
+$assert(str_contains($js, 'fontStacks') && str_contains($js, 'font:state.font'), 'tipo de letra se renderiza y persiste por objeto');
+$assert(str_contains($js, 'eraseWholeLine') && str_contains($js, 'objectTouchesLine'), 'borrador de línea elimina trazos y texto del renglón completo');
+$assert(str_contains($js, 'Math.max(-26,Math.min(2,p.y-rawStart))'), 'modo Sobre línea restringe el trazo al renglón durante la escritura');
 $assert(str_contains($css, '@media(max-width:720px)'), 'Notebook incluye diseño móvil/tableta');
 
 echo "Notebook contract OK\n";

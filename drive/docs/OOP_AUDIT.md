@@ -4,16 +4,16 @@
 
 ## Resumen
 
-- PHP analizados: **541**
-- PHP que ya contienen clases/interfaces: **308**
+- PHP analizados: **544**
+- PHP que ya contienen clases/interfaces: **309**
 - PHP marcados para migración/revisión: **0**
-- Tests PHP separados del objetivo OOP de runtime: **73**
+- Tests PHP separados del objetivo OOP de runtime: **74**
 - JavaScript analizados: **80**
 - JavaScript que ya contienen clases: **73**
 - JavaScript runtime marcados para migración/revisión: **1**
 - Tests JavaScript separados del objetivo OOP de runtime: **11**
 - JavaScript OOP con fachada `window` de compatibilidad: **8**
-- Clientes AJAX detectados: **50** módulos / **109** llamadas
+- Clientes AJAX detectados: **51** módulos / **110** llamadas
 - JSON analizados: **4**; inválidos: **0**
 
 ## Criterio
@@ -158,6 +158,7 @@
 | `drive/polly_tasks.php` | 8 | thin endpoint | 0 | — | — | — | — |
 | `drive/polly_tts.php` | 8 | thin endpoint | 0 | — | — | — | — |
 | `drive/procesar_textract.php` | 8 | thin endpoint | 0 | — | — | — | — |
+| `drive/procesar_textract_carpeta.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/profile.php` | 11 | thin endpoint | 0 | — | — | — | — |
 | `drive/psesion.php` | 14 | thin endpoint | 0 | — | — | — | — |
 | `drive/rekognition_labels.php` | 8 | thin endpoint | 0 | — | — | — | — |
@@ -219,6 +220,7 @@
 | `drive/src/Aws/Ec2Gateway.php` | 103 | class/module | 1 | — | — | — | — |
 | `drive/src/Aws/FileMetadataRepository.php` | 118 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Aws/FileRecordLocator.php` | 75 | class/module | 1 | — | ⚠️ | — | — |
+| `drive/src/Aws/FolderTextractService.php` | 222 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Aws/GeneratedFileRepository.php` | 36 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Aws/PersonalAwsConfig.php` | 122 | class/module | 1 | — | — | — | — |
 | `drive/src/Aws/PersonalAwsRuntime.php` | 61 | class/module | 1 | — | — | — | — |
@@ -319,7 +321,7 @@
 | `drive/src/Http/Controller/AudioRecordingUploadController.php` | 108 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/AuthController.php` | 119 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/AwsCostController.php` | 61 | class/module | 1 | — | — | — | — |
-| `drive/src/Http/Controller/AwsFileController.php` | 339 | class/module | 1 | — | — | — | — |
+| `drive/src/Http/Controller/AwsFileController.php` | 382 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/BackgroundTaskCompatibilityController.php` | 245 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Http/Controller/BackgroundTaskController.php` | 946 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Http/Controller/DatabaseBackupController.php` | 50 | class/module | 1 | — | — | — | — |
@@ -501,6 +503,7 @@
 | `drive/tests/file_mutation_csrf_regression.php` | 97 | test script | 2 | ⚠️ | — | — | — |
 | `drive/tests/folder_deletion_regression.php` | 93 | test script | 0 | — | ⚠️ | ⚠️ | — |
 | `drive/tests/folder_document_sanitizer.php` | 49 | test script | 0 | — | — | — | — |
+| `drive/tests/folder_textract_contract_smoke.php` | 34 | test script | 0 | — | — | — | — |
 | `drive/tests/fresh_install_contract_smoke.php` | 76 | test script | 0 | — | — | — | — |
 | `drive/tests/idle_stop_office_regression.php` | 326 | test script | 1 | — | ⚠️ | — | — |
 | `drive/tests/index_federation_drop_smoke.php` | 121 | test script | 0 | — | — | — | — |
@@ -627,7 +630,7 @@
 | `drive/js/so-appearance.js` | 155 | class/module | ArcadeCloudOsAppearance | — | — | — |
 | `drive/js/so-clipboard.js` | 797 | class/module | ArcadeCloudOsClipboard | — | — | — |
 | `drive/js/so-federation.js` | 102 | class/module | ArcadeCloudOsFederationApp | — | — | — |
-| `drive/js/so-folders.js` | 440 | class/module | ArcadeCloudOsFolderActions | — | — | — |
+| `drive/js/so-folders.js` | 501 | class/module | ArcadeCloudOsFolderActions | — | — | — |
 | `drive/js/so-node.js` | 347 | class/module | ArcadeCloudOsNodeMonitor | — | — | — |
 | `drive/js/so-power.js` | 108 | class/module | ArcadeCloudFastDrivePower | — | — | — |
 | `drive/js/so-screenshot-paste.js` | 341 | class/module | ArcadeCloudOsScreenshotPaste | — | — | — |
@@ -698,6 +701,7 @@
 | `drive/js/sincronizar.js` | 1 | 0 | 0 | 0 | 3 |
 | `drive/js/so-appearance.js` | 1 | 0 | 0 | 0 | 0 |
 | `drive/js/so-federation.js` | 2 | 0 | 0 | 0 | 5 |
+| `drive/js/so-folders.js` | 1 | 0 | 0 | 1 | 3 |
 | `drive/js/so-node.js` | 4 | 0 | 0 | 4 | 8 |
 | `drive/js/so-power.js` | 1 | 0 | 0 | 1 | 2 |
 | `drive/js/so-screenshot-paste.js` | 3 | 0 | 0 | 1 | 7 |

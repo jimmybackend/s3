@@ -61,3 +61,36 @@ dialog{border:1px solid #c7d2de;border-radius:14px;box-shadow:0 24px 70px #0005;
   .nb-menu-panel{position:fixed;top:96px;left:8px;right:8px;max-width:none;min-width:0}
   .nb-statusbar{display:none}
 }
+
+/* Mobile/tablet: keep the writing action permanently inside the visible page footer. */
+@media(max-width:1024px){
+  .nb-page-footer{
+    display:flex!important;
+    align-items:center!important;
+    width:auto!important;
+    max-width:none!important;
+    min-width:0!important;
+    overflow:hidden!important;
+  }
+  .nb-page-footer input{
+    flex:1 1 auto!important;
+    width:0!important;
+    min-width:0!important;
+    max-width:100%!important;
+  }
+  .nb-page-footer #nbWritePrompt{
+    display:inline-flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    flex:0 0 64px!important;
+    width:64px!important;
+    min-width:64px!important;
+    max-width:64px!important;
+    position:relative!important;
+    right:auto!important;
+    opacity:1!important;
+    visibility:visible!important;
+    overflow:visible!important;
+    white-space:nowrap!important;
+  }
+}

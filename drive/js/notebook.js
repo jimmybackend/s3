@@ -104,10 +104,12 @@ async function refreshBooks(select=''){
   for(const b of state.notebooks){const o=document.createElement('option');o.value=b.name;o.textContent=b.name;sel.append(o);}
   if(select&&state.notebooks.some(b=>b.name===select))sel.value=select;
   state.notebook=sel.value||'';
+  const current=state.notebooks.find(b=>b.name===state.notebook);
+  if(current){state.pages=+current.pages||100;state.paper=current.paper||'letter';state.orientation=current.orientation||'portrait';state.background=current.background||'blank';syncControls();canvasSize();}
   $('#nbMoveTarget').replaceChildren(...state.notebooks.filter(b=>b.name!==state.notebook).map(b=>{const o=document.createElement('option');o.value=b.name;o.textContent=b.name;return o;}));
   if(state.notebook)await loadPage(); else status('Crea tu primera libreta');
 }
-$('#nbNotebook').onchange=async e=>{if(state.dirty&&confirm('¿Guardar cambios antes de cambiar de libreta?'))await save();state.notebook=e.target.value;state.page=1;syncControls();await loadPage();};
+$('#nbNotebook').onchange=async e=>{if(state.dirty&&confirm('¿Guardar cambios antes de cambiar de libreta?'))await save();state.notebook=e.target.value;state.page=1;const current=state.notebooks.find(b=>b.name===state.notebook);if(current){state.pages=+current.pages||100;state.paper=current.paper||'letter';state.orientation=current.orientation||'portrait';state.background=current.background||'blank';canvasSize();}syncControls();await loadPage();};
 $('#nbNewBook').onclick=()=>$('#nbNewDialog').showModal();
 $('#nbCreateBook').onclick=async e=>{e.preventDefault();try{const name=$('#nbNewName').value.trim();const pages=+$('#nbNewPages').value||100;await api('create',{method:'POST',body:JSON.stringify({name,pages,paper:state.paper,orientation:state.orientation,background:state.background})});state.pages=pages;$('#nbNewDialog').close();await refreshBooks(name);}catch(err){status(err.message,true);}};
 $('#nbMovePage').onclick=()=>{if(!state.notebook)return;if($('#nbMoveTarget').options.length===0){status('No hay otra libreta destino',true);return;}$('#nbMoveDialog').showModal();};

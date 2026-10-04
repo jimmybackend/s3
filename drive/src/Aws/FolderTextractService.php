@@ -24,7 +24,7 @@ final class FolderTextractService
     ) {
     }
 
-    public function extract(int $userId, string $requestedRoute): array
+    public function extract(int $userId, string $requestedRoute, string $visibleFolderName = ''): array
     {
         if ($userId <= 0) {
             throw new RuntimeException('Usuario inválido.');
@@ -65,7 +65,7 @@ final class FolderTextractService
             ];
         }
 
-        $folderName = basename(rtrim($route, '/'));
+        $folderName = trim($visibleFolderName) !== '' ? trim($visibleFolderName) : basename(rtrim($route, '/'));
         $parentRoute = $this->parentRoute($route, $root);
         $generatedAt = new \DateTimeImmutable('now');
 

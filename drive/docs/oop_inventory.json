@@ -1799,7 +1799,7 @@
     },
     {
       "path": "drive/notebook.php",
-      "lines": 150,
+      "lines": 168,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -7504,7 +7504,7 @@
     },
     {
       "path": "drive/tests/notebook_contract_smoke.php",
-      "lines": 55,
+      "lines": 61,
       "kind": "test script",
       "classes": 0,
       "functions": [],
@@ -9314,13 +9314,15 @@
     },
     {
       "path": "drive/js/notebook.js",
-      "lines": 279,
+      "lines": 97,
       "kind": "procedural script",
       "classes": [],
       "functions": [
+        "uid",
         "status",
         "api",
         "canvasSize",
+        "applyZoom",
         "background",
         "styleFor",
         "drawStroke",
@@ -9329,17 +9331,27 @@
         "textFont",
         "splitWordToWidth",
         "layoutText",
+        "textBounds",
         "drawText",
+        "getImage",
+        "drawImageObject",
+        "objectBounds",
+        "selected",
+        "drawSelection",
         "render",
         "snap",
         "pos",
         "previewPoints",
+        "hitObject",
+        "selectionAction",
         "objectTouchesLine",
         "eraseWholeLine",
         "lineStrokeObjects",
         "linePng",
         "scheduleLineRecognition",
         "nextTextY",
+        "pasteImage",
+        "normalizeObjects",
         "serialize",
         "syncControls"
       ],
@@ -9348,11 +9360,11 @@
       "top_vars": [
         "$",
         "canvas",
+        "imageCache",
         "state",
         "paper",
         "WRITE_LEFT",
-        "fontStacks",
-        "touchX"
+        "fontStacks"
       ],
       "iife": false,
       "ajax": {
@@ -9363,8 +9375,8 @@
         "response_checks": 5
       },
       "issues": [
-        "top-level functions: status, api, canvasSize, background, styleFor, drawStroke, nearestBaseline, alignStrokeToRule",
-        "top-level state: $, canvas, state, paper, WRITE_LEFT, fontStacks, touchX",
+        "top-level functions: uid, status, api, canvasSize, applyZoom, background, styleFor, drawStroke",
+        "top-level state: $, canvas, imageCache, state, paper, WRITE_LEFT, fontStacks",
         "no ES class"
       ]
     },
@@ -10567,7 +10579,7 @@
     },
     {
       "path": "drive/docs/runtime_endpoints.json",
-      "bytes": 128315,
+      "bytes": 129003,
       "valid": true,
       "root_type": "object",
       "keys": [

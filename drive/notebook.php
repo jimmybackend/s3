@@ -48,6 +48,7 @@ if (!preg_match('/\A[a-f0-9]{64}\z/', $csrf)) {
       <div class="nb-options">
         <label>Instrumento
           <select id="nbTool" aria-label="Instrumento de escritura">
+            <option value="select">Seleccionar / editar</option>
             <option value="pencil">Lápiz</option>
             <option value="pen">Bolígrafo</option>
             <option value="fountain">Pluma fuente</option>
@@ -66,6 +67,13 @@ if (!preg_match('/\A[a-f0-9]{64}\z/', $csrf)) {
             <option value="serif">Serif</option>
             <option value="mono">Mono compacta</option>
             <option value="rounded">Redondeada</option>
+          </select>
+        </label>
+        <label>Tamaño letra <input id="nbFontSize" type="number" min="12" max="96" step="1" value="28"></label>
+        <label>Zoom
+          <select id="nbZoom" aria-label="Zoom de hoja">
+            <option value="50">50%</option><option value="75">75%</option><option value="100" selected>100%</option>
+            <option value="125">125%</option><option value="150">150%</option><option value="175">175%</option><option value="200">200%</option>
           </select>
         </label>
         <label>Color <input id="nbColor" type="color" value="#111111"></label>
@@ -99,6 +107,8 @@ if (!preg_match('/\A[a-f0-9]{64}\z/', $csrf)) {
         </label>
         <span class="nb-menu-page">Página <strong id="nbMenuPage">1</strong>/<strong id="nbMenuTotal">100</strong></span>
         <div class="nb-edit-actions" role="group" aria-label="Edición">
+          <button id="nbEditSelected" type="button" title="Editar texto seleccionado">✎</button>
+          <button id="nbDeleteSelected" type="button" title="Eliminar selección">⌦</button>
           <button id="nbUndo" type="button" title="Deshacer">↶</button>
           <button id="nbRedo" type="button" title="Rehacer">↷</button>
           <button id="nbClear" type="button" title="Borrar hoja">🗑</button>
@@ -126,6 +136,14 @@ if (!preg_match('/\A[a-f0-9]{64}\z/', $csrf)) {
     </section>
   </main>
 </div>
+
+<dialog id="nbEditDialog">
+  <form method="dialog" id="nbEditForm">
+    <h2>Editar texto</h2>
+    <label>Texto <textarea id="nbEditText" rows="5"></textarea></label>
+    <menu><button value="cancel">Cancelar</button><button id="nbApplyEdit" value="default">Aplicar</button></menu>
+  </form>
+</dialog>
 
 <dialog id="nbNewDialog">
   <form method="dialog" id="nbNewForm">

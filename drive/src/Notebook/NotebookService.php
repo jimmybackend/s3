@@ -156,17 +156,49 @@ final class NotebookService
         }
 
         $generated = new GeneratedFileRepository($this->app->db());
+        $prepared = [];
+        try {
+            foreach ($selected as $row) {
+                $body = (string)$this->app->s3()->getObject([
+                    'Bucket'=>$this->app->bucket(),
+                    'Key'=>(string)$row['Encriptado']
+                ])['Body'];
+                $ext = strtolower(pathinfo((string)$row['Nombre'], PATHINFO_EXTENSION));
+                $type = match($ext){'png'=>'image/png','json'=>'application/json',default=>'text/plain; charset=UTF-8'};
+                $newKey = rtrim($target['route'],'/') . '/f_' . bin2hex(random_bytes(16)) . '.' . $ext;
+                $this->app->s3()->putObject([
+                    'Bucket'=>$this->app->bucket(),'Key'=>$newKey,'Body'=>$body,'ACL'=>'private','ContentType'=>$type
+                ]);
+                $generated->upsert(
+                    $userId,
+                    (string)$row['Nombre'],
+                    $newKey,
+                    strlen($body),
+                    ['notebook'=>$target['name'],'moved_from'=>$source['name'],'page'=>$page],
+                    $target['route']
+                );
+                $prepared[] = ['source'=>$row, 'new_key'=>$newKey];
+            }
+        } catch (\Throwable $error) {
+            foreach ($prepared as $copy) {
+                try {
+                    $this->app->s3()->deleteObject(['Bucket'=>$this->app->bucket(),'Key'=>(string)$copy['new_key']]);
+                    $cleanup = $this->app->db()->prepare('UPDATE FileS3 SET Found=0 WHERE user_id_=? AND Encriptado=?');
+                    $cleanupKey = (string)$copy['new_key'];
+                    $cleanup->bind_param('is',$userId,$cleanupKey); $cleanup->execute(); $cleanup->close();
+                } catch (\Throwable) {
+                }
+            }
+            throw $error;
+        }
+
         $moved = [];
-        foreach ($selected as $row) {
-            $body = (string)$this->app->s3()->getObject(['Bucket'=>$this->app->bucket(),'Key'=>(string)$row['Encriptado']])['Body'];
-            $ext = strtolower(pathinfo((string)$row['Nombre'], PATHINFO_EXTENSION));
-            $type = match($ext){'png'=>'image/png','json'=>'application/json',default=>'text/plain; charset=UTF-8'};
-            $newKey = rtrim($target['route'],'/') . '/f_' . bin2hex(random_bytes(16)) . '.' . $ext;
-            $this->app->s3()->putObject(['Bucket'=>$this->app->bucket(),'Key'=>$newKey,'Body'=>$body,'ACL'=>'private','ContentType'=>$type]);
-            $generated->upsert($userId, (string)$row['Nombre'], $newKey, strlen($body), ['notebook'=>$target['name'],'moved_from'=>$source['name'],'page'=>$page], $target['route']);
+        foreach ($prepared as $copy) {
+            $row = $copy['source'];
             $this->app->s3()->deleteObject(['Bucket'=>$this->app->bucket(),'Key'=>(string)$row['Encriptado']]);
             $id = (int)$row['id_'];
             $up = $this->app->db()->prepare('UPDATE FileS3 SET Found=0 WHERE id_=? AND user_id_=?');
+            if (!$up) throw new RuntimeException('No se pudo finalizar el movimiento de la hoja.');
             $up->bind_param('ii',$id,$userId); $up->execute(); $up->close();
             $moved[] = (string)$row['Nombre'];
         }

@@ -73,6 +73,17 @@ if (!preg_match('/\A[a-f0-9]{64}\z/', $csrf)) {
         <label>Orientación
           <select id="nbOrientation"><option value="portrait">Vertical</option><option value="landscape">Horizontal</option></select>
         </label>
+        <label class="nb-switch-label" title="Mantiene la escritura apoyada sobre las líneas de la hoja">
+          <input id="nbOnLine" type="checkbox">
+          <span>Sobre línea</span>
+        </label>
+        <label>Alineación
+          <select id="nbAlignment">
+            <option value="left">Izquierda</option>
+            <option value="right">Derecha</option>
+            <option value="justify">Justificada</option>
+          </select>
+        </label>
       </div>
 
       <div class="nb-prompt">

@@ -773,8 +773,7 @@
         "drive/src/View/FederationReportPageRenderer.php",
         "drive/tests/index_federation_drop_smoke.php",
         "drive/tests/office_gateway_contract_smoke.php",
-        "drive/tests/web_os_contract_smoke.php",
-        "drive/up.php"
+        "drive/tests/web_os_contract_smoke.php"
       ]
     },
     {
@@ -1159,8 +1158,7 @@
         "drive/src/View/FederationReportPageRenderer.php",
         "drive/tests/index_federation_drop_smoke.php",
         "drive/tests/office_gateway_contract_smoke.php",
-        "drive/tests/web_os_contract_smoke.php",
-        "drive/up.php"
+        "drive/tests/web_os_contract_smoke.php"
       ]
     },
     {
@@ -1214,8 +1212,7 @@
         "drive/src/View/FederationReportPageRenderer.php",
         "drive/tests/index_federation_drop_smoke.php",
         "drive/tests/office_gateway_contract_smoke.php",
-        "drive/tests/web_os_contract_smoke.php",
-        "drive/up.php"
+        "drive/tests/web_os_contract_smoke.php"
       ]
     },
     {
@@ -1597,8 +1594,7 @@
         "drive/src/View/FederationReportPageRenderer.php",
         "drive/tests/index_federation_drop_smoke.php",
         "drive/tests/office_gateway_contract_smoke.php",
-        "drive/tests/web_os_contract_smoke.php",
-        "drive/up.php"
+        "drive/tests/web_os_contract_smoke.php"
       ]
     },
     {
@@ -4491,7 +4487,7 @@
     },
     {
       "path": "drive/up.php",
-      "size": 27239,
+      "size": 27292,
       "active": true,
       "references": [
         "drive/src/Admin/ProductionPreflightService.php",

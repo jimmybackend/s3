@@ -49,6 +49,12 @@ $assert(str_contains($api, "'recognize_line'") && str_contains($service, 'recogn
 $assert(str_contains($js, 'scheduleLineRecognition') && str_contains($js, 'recognizeLine(baseline)'), 'cliente espera el fin de escritura antes de reconocer');
 $assert(str_contains($js, 'recognizedFromInk:true') && str_contains($js, 'state.objects=state.objects.filter(o=>!ids.has(o.id))'), 'texto reconocido sustituye los trazos originales');
 $assert(str_contains($service, "'notebook-tmp/f_'") && str_contains($service, 'deleteObject'), 'imagen temporal de reconocimiento se elimina de S3');
+$assert(str_contains($page, 'id="nbFontSize"') && str_contains($js, 'fontSize'), 'Notebook permite cambiar tamaño de letra y persistirlo');
+$assert(str_contains($page, 'id="nbZoom"') && str_contains($js, 'applyZoom'), 'Notebook permite zoom de hoja');
+$assert(str_contains($page, 'value="select"') && str_contains($js, 'hitObject') && str_contains($page, 'id="nbEditDialog"'), 'textos guardados pueden seleccionarse y editarse');
+$assert(str_contains($js, "document.addEventListener('paste'") && str_contains($js, "kind:'image'"), 'Notebook pega imágenes desde el portapapeles');
+$assert(str_contains($js, "action==='resize'") && str_contains($js, "action==='rotate'") && str_contains($js, "action==='move'"), 'imágenes pueden moverse redimensionarse y rotarse');
+$assert(str_contains($js, 'normalizeObjects') && str_contains($js, 'version:5'), 'páginas antiguas se normalizan y nuevos objetos persisten en JSON');
 $assert(str_contains($css, '@media(max-width:720px)'), 'Notebook incluye diseño móvil/tableta');
 
 echo "Notebook contract OK\n";

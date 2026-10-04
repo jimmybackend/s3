@@ -5,6 +5,7 @@ use ArcadeCloud\Drive\Application\FileListService;
 use ArcadeCloud\Drive\Federation\FederationConfig;
 use ArcadeCloud\Drive\Federation\NodeIdentityService;
 use ArcadeCloud\Drive\System\NodeCapabilityService;
+use ArcadeCloud\Drive\Security\OsPreferenceNodeResolver;
 use ArcadeCloud\Drive\Security\UserOsPreferencesRepository;
 use ArcadeCloud\Drive\View\FileIconResolver;
 use ArcadeCloud\Drive\View\FileViewHelper;
@@ -31,6 +32,7 @@ $userAlias = \ArcadeCloud\Drive\View\UserIdentityPresenter::alias($userIdentifie
 $userInitials = \ArcadeCloud\Drive\View\UserIdentityPresenter::initials($userIdentifier);
 $userAvatarUrl = '';
 $osPreferences = [];
+$osPreferenceNodeKey = OsPreferenceNodeResolver::resolve();
 
 try {
     $profile = $app->userProfileService()->profile($userId);
@@ -42,7 +44,7 @@ try {
 }
 
 try {
-    $osPreferences = (new UserOsPreferencesRepository($app->db()))->find($userId);
+    $osPreferences = (new UserOsPreferencesRepository($app->db()))->find($userId, $osPreferenceNodeKey);
 } catch (Throwable $error) {
     error_log('[ArcadeCloud OS preferences] ' . $error->getMessage());
 }
@@ -276,6 +278,11 @@ $isExplorerFragment = (string)($_GET['_os_fragment'] ?? '') === 'explorer';
       <span class="os-icon-tile"><i class="fas fa-shapes"></i></span>
       <span>Aplicaciones</span>
     </button>
+
+    <a class="os-desktop-icon" href="notebook.php">
+      <span class="os-icon-tile"><i class="fas fa-book-open"></i></span>
+      <span>Notebook</span>
+    </a>
 
     <?php if ($isExplorerFragment): ?>
     <section class="os-window os-explorer-window" data-window-title="Mis datos">
@@ -1999,6 +2006,7 @@ Escribe help o usa uno de los botones disponibles.</pre>
     <button type="button" data-window-open="nodeWindow"><i class="fas fa-server"></i> Mi nodo</button>
     <button type="button" data-app-open="explorer"><i class="fas fa-folder-open"></i> Mis datos</button>
     <button type="button" data-window-open="appsWindow"><i class="fas fa-shapes"></i> Aplicaciones</button>
+    <a href="notebook.php"><i class="fas fa-book-open"></i> Notebook</a>
     <a href="s3.php"><i class="fas fa-hard-drive"></i> Drive clásico</a>
     <button type="button" data-window-open="settingsWindow"><i class="fas fa-gear"></i> Configuración</button>
     <button type="button" data-window-open="linksWindow"><i class="fas fa-link"></i> Enlaces</button>
@@ -2061,6 +2069,7 @@ Escribe help o usa uno de los botones disponibles.</pre>
     window.ARCADECLOUD_OS_APPEARANCE = {
       endpoint: 'os-preferences.php',
       csrf: window.DRIVE_UPLOAD_CSRF,
+      nodeKey: <?= json_encode($osPreferenceNodeKey, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>,
       preferences: <?= json_encode($osPreferences, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>
     };
     window.DRIVE_INITIAL_ROUTE = <?= json_encode($currentRoute, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;

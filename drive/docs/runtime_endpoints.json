@@ -1340,7 +1340,7 @@
     },
     {
       "path": "drive/notebook.php",
-      "size": 6578,
+      "size": 7628,
       "active": true,
       "references": [
         "drive/so.php",
@@ -4206,7 +4206,7 @@
     },
     {
       "path": "drive/tests/notebook_contract_smoke.php",
-      "size": 5052,
+      "size": 5971,
       "active": false,
       "references": []
     },

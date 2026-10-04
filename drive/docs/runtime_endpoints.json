@@ -94,6 +94,7 @@
         "drive/bin/federation_endpoint_refresh.php",
         "drive/bin/federation_replica_presence.php",
         "drive/bin/federation_sync.php",
+        "drive/bin/folder_textract_worker.php",
         "drive/bin/media_processing_worker.php",
         "drive/bin/move_job_worker.php",
         "drive/bin/polly_reconcile.php",
@@ -369,6 +370,15 @@
         "drive/src/Admin/ProductionPreflightService.php",
         "drive/tests/federation_customs_contract_smoke.php",
         "drive/tests/federation_replica_reconnect_contract_smoke.php"
+      ]
+    },
+    {
+      "path": "drive/bin/folder_textract_worker.php",
+      "size": 196,
+      "active": false,
+      "references": [
+        "drive/src/Application/BackgroundWorkerLauncher.php",
+        "drive/tests/folder_textract_background_task_contract.php"
       ]
     },
     {
@@ -1079,6 +1089,7 @@
         "drive/tests/file_copy_regression.php",
         "drive/tests/file_mutation_csrf_regression.php",
         "drive/tests/folder_deletion_regression.php",
+        "drive/tests/folder_textract_background_task_contract.php",
         "drive/tests/fresh_install_contract_smoke.php",
         "drive/tests/idle_stop_office_regression.php",
         "drive/tests/media_processing_contract_smoke.php",
@@ -1802,9 +1813,10 @@
     },
     {
       "path": "drive/src/Application/BackgroundWorkerLauncher.php",
-      "size": 3278,
+      "size": 3561,
       "active": false,
       "references": [
+        "drive/tests/folder_textract_background_task_contract.php",
         "drive/tests/web_os_contract_smoke.php"
       ]
     },
@@ -1973,10 +1985,19 @@
       ]
     },
     {
-      "path": "drive/src/Aws/FolderTextractService.php",
-      "size": 7554,
+      "path": "drive/src/Aws/FolderTextractJobStore.php",
+      "size": 5506,
       "active": false,
       "references": [
+        "drive/tests/folder_textract_background_task_contract.php"
+      ]
+    },
+    {
+      "path": "drive/src/Aws/FolderTextractService.php",
+      "size": 7824,
+      "active": false,
+      "references": [
+        "drive/tests/folder_textract_background_task_contract.php",
         "drive/tests/folder_textract_contract_smoke.php"
       ]
     },
@@ -2055,6 +2076,14 @@
       "size": 1688,
       "active": false,
       "references": []
+    },
+    {
+      "path": "drive/src/Console/FolderTextractWorkerCommand.php",
+      "size": 5059,
+      "active": false,
+      "references": [
+        "drive/tests/folder_textract_background_task_contract.php"
+      ]
     },
     {
       "path": "drive/src/Console/MediaProcessingWorkerCommand.php",
@@ -2791,9 +2820,10 @@
     },
     {
       "path": "drive/src/Http/Controller/AwsFileController.php",
-      "size": 13262,
+      "size": 13351,
       "active": false,
       "references": [
+        "drive/tests/folder_textract_background_task_contract.php",
         "drive/tests/folder_textract_contract_smoke.php"
       ]
     },
@@ -2805,9 +2835,10 @@
     },
     {
       "path": "drive/src/Http/Controller/BackgroundTaskController.php",
-      "size": 42252,
+      "size": 46096,
       "active": false,
       "references": [
+        "drive/tests/folder_textract_background_task_contract.php",
         "drive/tests/media_processing_contract_smoke.php",
         "drive/tests/transcribe_s3_recovery_contract_smoke.php",
         "drive/tests/web_os_contract_smoke.php"
@@ -4079,6 +4110,12 @@
     {
       "path": "drive/tests/folder_document_sanitizer.php",
       "size": 1990,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/tests/folder_textract_background_task_contract.php",
+      "size": 2427,
       "active": false,
       "references": []
     },

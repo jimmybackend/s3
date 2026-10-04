@@ -557,7 +557,7 @@
 | `drive/upload/UploadFactory.php` | `drive/src/Core/DriveApplication.php` |
 | `drive/upload/core/UploadResponse.php` | ninguna |
 | `drive/upload/core/UploaderInterface.php` | `drive/tests/security_hardening_smoke.php`, `drive/upload/UploadFactory.php`, `drive/upload/drivers/Chunked15MBUploader.php`, `drive/upload/drivers/DropboxUploader.php`, `drive/upload/drivers/LocalPresignedPutUploader.php`, `drive/upload/drivers/RemoteUrlUploader.php` |
-| `drive/upload/drivers/Chunked15MBUploader.php` | `drive/tests/chunked_upload_cleanup_regression.php`, `drive/tests/federation_moderation_contract_smoke.php`, `drive/upload/UploadFactory.php` |
+| `drive/upload/drivers/Chunked15MBUploader.php` | `drive/tests/chunked_upload_cleanup_regression.php`, `drive/tests/federation_moderation_contract_smoke.php`, `drive/tests/web_os_clipboard_contract_smoke.php`, `drive/upload/UploadFactory.php` |
 | `drive/upload/drivers/DropboxUploader.php` | `drive/tests/federation_moderation_contract_smoke.php`, `drive/upload/UploadFactory.php` |
 | `drive/upload/drivers/LocalPresignedPutUploader.php` | `drive/tests/federation_moderation_contract_smoke.php`, `drive/upload/UploadFactory.php` |
 | `drive/upload/drivers/RemoteUrlUploader.php` | `drive/tests/federation_moderation_contract_smoke.php`, `drive/tests/security_hardening_smoke.php`, `drive/upload/UploadFactory.php` |

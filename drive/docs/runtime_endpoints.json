@@ -4332,7 +4332,7 @@
     },
     {
       "path": "drive/tests/web_os_clipboard_contract_smoke.php",
-      "size": 11737,
+      "size": 12603,
       "active": false,
       "references": []
     },
@@ -4535,11 +4535,12 @@
     },
     {
       "path": "drive/upload/drivers/Chunked15MBUploader.php",
-      "size": 10356,
+      "size": 10532,
       "active": false,
       "references": [
         "drive/tests/chunked_upload_cleanup_regression.php",
         "drive/tests/federation_moderation_contract_smoke.php",
+        "drive/tests/web_os_clipboard_contract_smoke.php",
         "drive/upload/UploadFactory.php"
       ]
     },

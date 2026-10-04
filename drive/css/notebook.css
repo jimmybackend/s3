@@ -29,3 +29,12 @@ dialog{border:1px solid #c7d2de;border-radius:14px;box-shadow:0 24px 70px #0005;
 #nbFontSize{width:62px;border:0;background:#f2f6f9;padding:4px 6px;border-radius:5px}
 #nbEditDialog textarea{width:100%;min-height:120px;resize:vertical;padding:9px;border:1px solid #bdc8d4;border-radius:8px;font:inherit}
 .nb-page-shell::-webkit-scrollbar{height:10px;width:10px}
+
+.nb-menu-button{border:1px solid #cbd5df;border-radius:8px;background:#fff;padding:6px 9px;font:inherit;font-size:.75rem;cursor:pointer}
+.nb-page-footer{box-sizing:border-box;min-width:0}
+.nb-page-footer input{width:100%;min-width:0}
+@media(max-width:720px){
+  .nb-page-footer{gap:4px}
+  .nb-page-footer input{padding:6px 7px;font-size:.72rem}
+  .nb-page-footer button{flex:0 0 auto;padding:6px 7px;font-size:.65rem}
+}

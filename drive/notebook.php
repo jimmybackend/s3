@@ -72,10 +72,19 @@ if (!preg_match('/\A[a-f0-9]{64}\z/', $csrf)) {
         <label>Tamaño letra <input id="nbFontSize" type="number" min="12" max="96" step="1" value="28"></label>
         <label>Zoom
           <select id="nbZoom" aria-label="Zoom de hoja">
-            <option value="50">50%</option><option value="75">75%</option><option value="100" selected>100%</option>
+            <option value="25">25%</option><option value="50" selected>50%</option><option value="75">75%</option><option value="100">100%</option>
             <option value="125">125%</option><option value="150">150%</option><option value="175">175%</option><option value="200">200%</option>
           </select>
         </label>
+        <label>Pegar imagen
+          <select id="nbPasteMode" aria-label="Modo de pegado de imagen">
+            <option value="normal">Normal</option>
+            <option value="outline">Solo contorno B/N</option>
+            <option value="gray">Escala de grises</option>
+            <option value="pencil">Efecto lápiz</option>
+          </select>
+        </label>
+        <button id="nbPasteImage" type="button" class="nb-menu-button">Pegar imagen</button>
         <label>Color <input id="nbColor" type="color" value="#111111"></label>
         <label>Grosor <input id="nbSize" type="range" min="1" max="36" value="3"></label>
         <label>Hoja
@@ -124,8 +133,8 @@ if (!preg_match('/\A[a-f0-9]{64}\z/', $csrf)) {
           </div>
           <canvas id="nbCanvas" aria-label="Hoja de Notebook"></canvas>
           <div class="nb-page-footer" role="group" aria-label="Escritura asistida">
-            <input id="nbPrompt" type="text" placeholder="Escribe un mensaje y Notebook lo colocará como escritura manual">
-            <button id="nbWritePrompt" type="button">Escribir a mano</button>
+            <input id="nbPrompt" type="text" placeholder="Escribe aquí; toca un renglón para elegir dónde colocarlo">
+            <button id="nbWritePrompt" type="button">Enviar</button>
           </div>
         </div>
       </div>

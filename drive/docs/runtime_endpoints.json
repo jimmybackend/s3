@@ -24,6 +24,7 @@
     "drive/login.php",
     "drive/logout.php",
     "drive/node-status.php",
+    "drive/notebook.php",
     "drive/office-launch.php",
     "drive/os-preferences.php",
     "drive/personal_aws_bootstrap.php",
@@ -180,6 +181,8 @@
         "drive/mover_archivo.php",
         "drive/mover_carpeta.php",
         "drive/node-status.php",
+        "drive/notebook-api.php",
+        "drive/notebook.php",
         "drive/office-gateway.php",
         "drive/office-launch.php",
         "drive/os-preferences.php",
@@ -746,6 +749,8 @@
         "drive/bloque_carpetas.php",
         "drive/fastdrive-control.php",
         "drive/folder-suggestions.php",
+        "drive/notebook-api.php",
+        "drive/notebook.php",
         "drive/office-launch.php",
         "drive/s3.php",
         "drive/so.php",
@@ -1038,10 +1043,12 @@
         "drive/src/View/FederationReportPageRenderer.php",
         "drive/tests/federation_drop_contract_smoke.php",
         "drive/tests/fresh_install_contract_smoke.php",
+        "drive/tests/notebook_contract_smoke.php",
         "drive/tests/web_os_contract_smoke.php",
         "drive/js/federation-drop.js",
         "drive/js/federation-footer.js",
         "drive/js/federation-os-admin.js",
+        "drive/js/notebook.js",
         "drive/js/setup.js"
       ]
     },
@@ -1127,6 +1134,8 @@
         "drive/bloque_carpetas.php",
         "drive/fastdrive-control.php",
         "drive/folder-suggestions.php",
+        "drive/notebook-api.php",
+        "drive/notebook.php",
         "drive/office-launch.php",
         "drive/s3.php",
         "drive/so.php",
@@ -1180,6 +1189,8 @@
         "drive/bloque_carpetas.php",
         "drive/fastdrive-control.php",
         "drive/folder-suggestions.php",
+        "drive/notebook-api.php",
+        "drive/notebook.php",
         "drive/office-launch.php",
         "drive/s3.php",
         "drive/so.php",
@@ -1225,6 +1236,7 @@
       "size": 307,
       "active": true,
       "references": [
+        "drive/notebook.php",
         "drive/s3.php",
         "drive/so.php",
         "drive/src/Federation/FederationDropGoogleAuthService.php",
@@ -1303,6 +1315,24 @@
         "drive/src/Admin/ProductionPreflightService.php",
         "drive/tests/web_os_contract_smoke.php",
         "drive/js/so-node.js"
+      ]
+    },
+    {
+      "path": "drive/notebook-api.php",
+      "size": 2070,
+      "active": false,
+      "references": [
+        "drive/tests/notebook_contract_smoke.php",
+        "drive/js/notebook.js"
+      ]
+    },
+    {
+      "path": "drive/notebook.php",
+      "size": 4634,
+      "active": true,
+      "references": [
+        "drive/so.php",
+        "drive/tests/notebook_contract_smoke.php"
       ]
     },
     {
@@ -1513,10 +1543,12 @@
         "drive/src/View/FederationReportPageRenderer.php",
         "drive/tests/federation_drop_contract_smoke.php",
         "drive/tests/fresh_install_contract_smoke.php",
+        "drive/tests/notebook_contract_smoke.php",
         "drive/tests/web_os_contract_smoke.php",
         "drive/js/federation-drop.js",
         "drive/js/federation-footer.js",
         "drive/js/federation-os-admin.js",
+        "drive/js/notebook.js",
         "drive/js/setup.js"
       ]
     },
@@ -1529,6 +1561,8 @@
         "drive/bloque_carpetas.php",
         "drive/fastdrive-control.php",
         "drive/folder-suggestions.php",
+        "drive/notebook-api.php",
+        "drive/notebook.php",
         "drive/office-launch.php",
         "drive/s3.php",
         "drive/so.php",
@@ -1546,7 +1580,7 @@
     },
     {
       "path": "drive/so.php",
-      "size": 117516,
+      "size": 118380,
       "active": true,
       "references": [
         "drive/s3.php",
@@ -1555,6 +1589,7 @@
         "drive/src/Http/Controller/AuthController.php",
         "drive/tests/database_backup_contract_smoke.php",
         "drive/tests/node_diagnostics_contract_smoke.php",
+        "drive/tests/notebook_contract_smoke.php",
         "drive/tests/office_gateway_contract_smoke.php",
         "drive/tests/server_console_contract_smoke.php",
         "drive/tests/web_os_clipboard_contract_smoke.php",
@@ -3179,6 +3214,14 @@
       "references": []
     },
     {
+      "path": "drive/src/Notebook/NotebookService.php",
+      "size": 14065,
+      "active": false,
+      "references": [
+        "drive/tests/notebook_contract_smoke.php"
+      ]
+    },
+    {
       "path": "drive/src/Office/OfficeActivityProbe.php",
       "size": 2307,
       "active": false,
@@ -4076,6 +4119,12 @@
     {
       "path": "drive/tests/node_diagnostics_control_smoke.php",
       "size": 3419,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/tests/notebook_contract_smoke.php",
+      "size": 2312,
       "active": false,
       "references": []
     },

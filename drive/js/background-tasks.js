@@ -963,6 +963,15 @@ class BackgroundTaskCenter {
       }
     }
 
+    if (task.kind === 'folder-textract') {
+      const total = Number(meta.items || 0);
+      const processed = Number(meta.processed_items || 0);
+      if (total > 0) {
+        const pct = Math.max(1, Math.min(99, Math.round((processed / total) * 100)));
+        return { cssClass: 'determinate', widthStyle: `width:${pct}%` };
+      }
+    }
+
     if (task.kind === 'upload' && Number.isFinite(Number(task.progress))) {
       const pct = Math.max(1, Math.min(99, Math.round(Number(task.progress))));
       return { cssClass: 'determinate', widthStyle: `width:${pct}%` };

@@ -12,6 +12,7 @@ $paths = [
     'appearance_js' => $root . '/js/so-appearance.js',
     'preferences_endpoint' => $root . '/os-preferences.php',
     'preferences_repository' => $root . '/src/Security/UserOsPreferencesRepository.php',
+    'preferences_node_resolver' => $root . '/src/Security/OsPreferenceNodeResolver.php',
     'preferences_schema' => $root . '/src/Security/UserOsPreferencesSchemaService.php',
     'updater_service' => $root . '/src/Admin/ArcadeCloudUpdaterService.php',
     'capability' => $root . '/src/System/NodeCapabilityService.php',
@@ -179,6 +180,10 @@ webOsContract(!str_contains($paths['shell'], 'class="os-topbar"'), 'Web OS ya no
 webOsContract(str_contains($paths['shell'], 'data-node-local-label'), 'escritorio incluye etiqueta clicable del nodo local');
 webOsContract(str_contains($paths['shell'], '<span>Mis datos</span>'), 'escritorio incluye Mis datos');
 webOsContract(str_contains($paths['shell'], '<span>Aplicaciones</span>'), 'escritorio incluye Aplicaciones');
+webOsContract(str_contains($paths['shell'], '<span>Notebook</span>') && str_contains($paths['shell'], 'href="notebook.php"'), 'escritorio incluye acceso directo a Notebook');
+webOsContract(str_contains($paths['shell'], 'nodeKey: <?= json_encode($osPreferenceNodeKey'), 'shell entrega la identidad del nodo al gestor de apariencia');
+webOsContract(str_contains($paths['preferences_repository'], "'nodes' => []") && str_contains($paths['preferences_repository'], 'FOR UPDATE'), 'preferencias compartidas en DB se aíslan por nodo sin perder actualizaciones concurrentes');
+webOsContract(str_contains($paths['preferences_node_resolver'], 'NodeIdentityService') && str_contains($paths['preferences_node_resolver'], "return 'host:'"), 'nodo de preferencias se resuelve por FederationCloud con fallback local');
 $desktopNode = strpos($paths['shell'], 'data-node-local-label');
 $desktopData = strpos($paths['shell'], '<span>Mis datos</span>');
 $desktopApps = strpos($paths['shell'], '<span>Aplicaciones</span>');

@@ -94,3 +94,53 @@ dialog{border:1px solid #c7d2de;border-radius:14px;box-shadow:0 24px 70px #0005;
     white-space:nowrap!important;
   }
 }
+
+/* Persistent writing composer: outside the paper, always visible under the app menu. */
+.nb-composer{
+  position:sticky;
+  top:96px;
+  z-index:13;
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 76px;
+  gap:6px;
+  width:100%;
+  padding:6px 8px;
+  background:#eef3f8;
+  border-bottom:1px solid #cbd5df;
+  box-shadow:0 2px 8px #20304012;
+}
+.nb-composer input{
+  width:100%;
+  min-width:0;
+  border:1px solid #bfcbd6;
+  border-radius:8px;
+  padding:8px 10px;
+  background:#fff;
+}
+.nb-composer button{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:76px;
+  min-width:76px;
+  max-width:76px;
+  border:0;
+  border-radius:8px;
+  padding:8px 10px;
+  background:#203a56;
+  color:#fff;
+  font-weight:700;
+  white-space:nowrap;
+  cursor:pointer;
+}
+.nb-page-footer{display:none!important}
+@media(max-width:720px){
+  .nb-composer{
+    top:92px;
+    grid-template-columns:minmax(0,1fr) 70px;
+    padding:5px 6px;
+    gap:5px;
+  }
+  .nb-composer input{padding:7px 8px;font-size:.78rem}
+  .nb-composer button{width:70px;min-width:70px;max-width:70px;padding:7px 8px;font-size:.72rem}
+}

@@ -51,6 +51,16 @@ if (!preg_match('/\A[a-f0-9]{64}\z/', $csrf)) {
             <option value="marker">Marcador</option>
             <option value="brush">Pincel</option>
             <option value="eraser">Borrador</option>
+            <option value="line-eraser">Borrador de línea</option>
+          </select>
+        </label>
+        <label>Tipo de letra
+          <select id="nbFont" aria-label="Tipo de letra">
+            <option value="handwriting">Cursiva manuscrita</option>
+            <option value="sans">Sans</option>
+            <option value="serif">Serif</option>
+            <option value="mono">Monoespaciada</option>
+            <option value="rounded">Redondeada</option>
           </select>
         </label>
         <label>Color <input id="nbColor" type="color" value="#111111"></label>

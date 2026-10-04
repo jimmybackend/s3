@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - 'drive/src/Media/**'
+      - 'drive/src/System/ComputeNodeAdmissionLock.php'
       - 'drive/src/Activity/AwsUnitPriceCatalog.php'
       - 'drive/src/Console/MediaProcessingWorkerCommand.php'
       - 'drive/src/Http/Controller/MediaProcessingController.php'
@@ -35,6 +36,7 @@ jobs:
           php -l drive/src/Media/MediaProcessingJobRepository.php
           php -l drive/src/Media/MediaProcessingService.php
           php -l drive/src/Media/MediaWorkerNodeService.php
+          php -l drive/src/System/ComputeNodeAdmissionLock.php
           php -l drive/src/Media/MediaWorkerNodeSessionRepository.php
           php -l drive/src/Activity/AwsUnitPriceCatalog.php
           php -l drive/src/Console/MediaProcessingWorkerCommand.php

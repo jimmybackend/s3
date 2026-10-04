@@ -7519,7 +7519,7 @@
     },
     {
       "path": "drive/tests/notebook_contract_smoke.php",
-      "lines": 83,
+      "lines": 84,
       "kind": "test script",
       "classes": 0,
       "functions": [],
@@ -10598,7 +10598,7 @@
     },
     {
       "path": "drive/docs/runtime_endpoints.json",
-      "bytes": 129062,
+      "bytes": 129264,
       "valid": true,
       "root_type": "object",
       "keys": [

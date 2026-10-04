@@ -1784,7 +1784,7 @@
     },
     {
       "path": "drive/notebook.php",
-      "lines": 116,
+      "lines": 127,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -7369,7 +7369,7 @@
     },
     {
       "path": "drive/tests/notebook_contract_smoke.php",
-      "lines": 38,
+      "lines": 43,
       "kind": "test script",
       "classes": 0,
       "functions": [],
@@ -9179,7 +9179,7 @@
     },
     {
       "path": "drive/js/notebook.js",
-      "lines": 120,
+      "lines": 205,
       "kind": "procedural script",
       "classes": [],
       "functions": [
@@ -9189,10 +9189,16 @@
         "background",
         "styleFor",
         "drawStroke",
+        "nearestBaseline",
+        "alignStrokeToRule",
+        "textFont",
+        "splitWordToWidth",
+        "layoutText",
         "drawText",
         "render",
         "snap",
         "pos",
+        "nextTextY",
         "serialize",
         "syncControls"
       ],
@@ -9203,6 +9209,7 @@
         "canvas",
         "state",
         "paper",
+        "WRITE_LEFT",
         "touchX"
       ],
       "iife": false,
@@ -9214,8 +9221,8 @@
         "response_checks": 5
       },
       "issues": [
-        "top-level functions: status, api, canvasSize, background, styleFor, drawStroke, drawText, render",
-        "top-level state: $, canvas, state, paper, touchX",
+        "top-level functions: status, api, canvasSize, background, styleFor, drawStroke, nearestBaseline, alignStrokeToRule",
+        "top-level state: $, canvas, state, paper, WRITE_LEFT, touchX",
         "no ES class"
       ]
     },
@@ -10418,7 +10425,7 @@
     },
     {
       "path": "drive/docs/runtime_endpoints.json",
-      "bytes": 125067,
+      "bytes": 126392,
       "valid": true,
       "root_type": "object",
       "keys": [

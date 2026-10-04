@@ -147,7 +147,7 @@
 | `drive/mover_carpeta.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/node-status.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/notebook-api.php` | 60 | thin endpoint | 0 | — | — | — | — |
-| `drive/notebook.php` | 116 | view/entrypoint | 0 | — | — | — | — |
+| `drive/notebook.php` | 127 | view/entrypoint | 0 | — | — | — | — |
 | `drive/office-gateway.php` | 670 | view/entrypoint | 0 | — | — | — | — |
 | `drive/office-launch.php` | 81 | thin endpoint | 0 | — | — | — | — |
 | `drive/os-preferences.php` | 66 | thin endpoint | 0 | — | — | — | — |
@@ -511,7 +511,7 @@
 | `drive/tests/media_worker_behavior_regression.php` | 65 | test script | 0 | — | ⚠️ | — | — |
 | `drive/tests/node_diagnostics_contract_smoke.php` | 62 | test script | 0 | — | — | — | — |
 | `drive/tests/node_diagnostics_control_smoke.php` | 43 | test script | 0 | — | — | — | — |
-| `drive/tests/notebook_contract_smoke.php` | 38 | test script | 0 | — | — | — | — |
+| `drive/tests/notebook_contract_smoke.php` | 43 | test script | 0 | — | — | — | — |
 | `drive/tests/office_conditional_save_regression.php` | 148 | test script | 1 | — | ⚠️ | — | — |
 | `drive/tests/office_gateway_contract_smoke.php` | 376 | test script | 0 | — | — | — | — |
 | `drive/tests/password_credential_verifier_smoke.php` | 44 | test script | 0 | — | — | — | — |
@@ -612,7 +612,7 @@
 | `drive/js/media-processing.js` | 498 | class/module | MediaProcessingModule | — | — | — |
 | `drive/js/mediaFloating.js` | 38 | class/module | MediaFloatingModule | — | — | — |
 | `drive/js/move-tasks.js` | 262 | class/module | DriveMoveTasks | — | — | — |
-| `drive/js/notebook.js` | 120 | procedural script | — | status, api, canvasSize, background, styleFor, drawStroke | — | top-level functions: status, api, canvasSize, background, styleFor, drawStroke, drawText, render; top-level state: $, canvas, state, paper, touchX; no ES class |
+| `drive/js/notebook.js` | 205 | procedural script | — | status, api, canvasSize, background, styleFor, drawStroke | — | top-level functions: status, api, canvasSize, background, styleFor, drawStroke, nearestBaseline, alignStrokeToRule; top-level state: $, canvas, state, paper, WRITE_LEFT, touchX; no ES class |
 | `drive/js/obtenerFiltros.js` | 125 | class/module | ObtenerFiltrosModule | — | — | — |
 | `drive/js/os-window-manager.js` | 992 | class/module | ArcadeCloudEventBus, ArcadeCloudWindowLayoutConfig, ArcadeCloudWindowManager, ExplorerWindowFactory, ArcadeCloudExplorerWindow, ArcadeCloudDesktopRuntime | — | — | — |
 | `drive/js/page-task-manager.js` | 54 | class/module | ArcadeCloudPageTaskManager | — | — | — |

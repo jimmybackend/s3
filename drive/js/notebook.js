@@ -4,8 +4,8 @@ const $ = s => document.querySelector(s);
 const canvas = $('#nbCanvas'), ctx = canvas.getContext('2d', {alpha:true});
 const state = {
   notebook:'', notebooks:[], page:1, pages:100, tool:'pencil', color:'#111111', size:3,
-  background:'blank', paper:'letter', orientation:'portrait', onLine:false, alignment:'left',
-  drawing:false, points:[], objects:[], undo:[], redo:[], dirty:false
+  background:'blank', paper:'letter', orientation:'portrait', onLine:false, alignment:'left', font:'handwriting',
+  drawing:false, points:[], objects:[], undo:[], redo:[], dirty:false, lineAnchor:null
 };
 const paper = {
   'letter':[816,1056], 'legal':[816,1344], 'tabloid':[1056,1632], 'half-letter':[528,816]
@@ -67,13 +67,22 @@ function nearestBaseline(y){
   return Math.max(WRITE_TOP, Math.min(max, line));
 }
 function alignStrokeToRule(points){
-  if(!state.onLine || state.tool==='eraser' || !points.length) return points;
-  const maxY=Math.max(...points.map(p=>p.y));
-  const baseline=nearestBaseline(maxY);
-  const delta=baseline-maxY;
-  return points.map(p=>({x:p.x,y:Math.max(0,Math.min(canvas.height,p.y+delta))}));
+  if(!state.onLine || ['eraser','line-eraser'].includes(state.tool) || !points.length) return points;
+  const rawStart=state.lineAnchor?.rawY ?? points[0].y;
+  const baseline=state.lineAnchor?.baseline ?? nearestBaseline(rawStart);
+  return points.map(p=>{
+    const relative=Math.max(-26,Math.min(2,p.y-rawStart));
+    return {x:p.x,y:Math.max(0,Math.min(canvas.height,baseline+relative))};
+  });
 }
-function textFont(size){return size+"px 'Segoe Print','Bradley Hand','Comic Sans MS',cursive";}
+const fontStacks={
+  handwriting:"'Segoe Print','Bradley Hand','Comic Sans MS',cursive",
+  sans:"Arial,'Helvetica Neue',Helvetica,sans-serif",
+  serif:"Georgia,'Times New Roman',serif",
+  mono:"Consolas,'Courier New',monospace",
+  rounded:"'Trebuchet MS','Arial Rounded MT Bold',Arial,sans-serif"
+};
+function textFont(size,font='handwriting'){return size+"px "+(fontStacks[font]||fontStacks.handwriting);}
 function splitWordToWidth(word,maxWidth){
   if(ctx.measureText(word).width<=maxWidth)return [word];
   const pieces=[];let current='';
@@ -86,7 +95,7 @@ function splitWordToWidth(word,maxWidth){
   return pieces;
 }
 function layoutText(text,size,maxWidth){
-  ctx.save();ctx.font=textFont(size);
+  ctx.save();ctx.font=textFont(size,state.font);
   const source=String(text||'').trim().split(/\s+/).filter(Boolean), tokens=[];
   for(const word of source) tokens.push(...splitWordToWidth(word,maxWidth));
   const lines=[];let words=[];let width=0;
@@ -105,7 +114,7 @@ function drawText(o){
   const lines=layoutText(o.text,size,maxWidth);
   const lineHeight=lineMode?RULE_STEP:Math.max(size*1.5,RULE_STEP);
   let y=lineMode?nearestBaseline(o.y??WRITE_TOP):(o.y??WRITE_TOP);
-  ctx.save();ctx.fillStyle=o.color||'#111';ctx.font=textFont(size);ctx.textBaseline=lineMode?'alphabetic':'top';
+  ctx.save();ctx.fillStyle=o.color||'#111';ctx.font=textFont(size,o.font||'handwriting');ctx.textBaseline=lineMode?'alphabetic':'top';
   const spaceWidth=ctx.measureText(' ').width;
   lines.forEach((line,index)=>{
     if(y>canvas.height-WRITE_BOTTOM)return;
@@ -126,10 +135,36 @@ function render(){background(); for(const o of state.objects){ if(o.kind==='text
 function snap(){state.undo.push(JSON.stringify(state.objects)); if(state.undo.length>60)state.undo.shift(); state.redo=[];}
 function pos(e){const r=canvas.getBoundingClientRect();return{x:(e.clientX-r.left)*canvas.width/r.width,y:(e.clientY-r.top)*canvas.height/r.height};}
 function previewPoints(){return alignStrokeToRule([...state.points]);}
-canvas.addEventListener('pointerdown',e=>{e.preventDefault();snap();state.drawing=true;state.points=[pos(e)];canvas.setPointerCapture?.(e.pointerId);});
+function objectTouchesLine(object,baseline){
+  const tolerance=RULE_STEP/2;
+  if(object.kind==='text'){
+    const size=object.size||30, left=object.x??WRITE_LEFT, maxWidth=Math.max(80,canvas.width-WRITE_RIGHT-left);
+    const count=Math.max(1,layoutText(object.text,size,maxWidth).length);
+    const start=object.onLine===true?nearestBaseline(object.y??WRITE_TOP):(object.y??WRITE_TOP);
+    const step=object.onLine===true?RULE_STEP:Math.max(size*1.5,RULE_STEP);
+    for(let i=0;i<count;i++) if(Math.abs((start+i*step)-baseline)<=tolerance) return true;
+    return false;
+  }
+  return Array.isArray(object.points) && object.points.some(p=>Math.abs(p.y-baseline)<=tolerance);
+}
+function eraseWholeLine(y){
+  const baseline=nearestBaseline(y), before=state.objects.length;
+  snap(); state.objects=state.objects.filter(o=>!objectTouchesLine(o,baseline));
+  if(state.objects.length!==before){state.dirty=true;render();status('Línea borrada');}
+  else status('No hay escritura en esa línea');
+}
+canvas.addEventListener('pointerdown',e=>{
+  e.preventDefault();
+  const point=pos(e);
+  if(state.tool==='line-eraser'){eraseWholeLine(point.y);return;}
+  snap();state.drawing=true;state.points=[point];
+  state.lineAnchor=state.onLine?{rawY:point.y,baseline:nearestBaseline(point.y)}:null;
+  canvas.setPointerCapture?.(e.pointerId);
+});
 canvas.addEventListener('pointermove',e=>{if(!state.drawing)return;state.points.push(pos(e));render();drawStroke({kind:'stroke',tool:state.tool,color:state.color,size:state.size,points:previewPoints()});});
-canvas.addEventListener('pointerup',()=>{if(!state.drawing)return;state.drawing=false;const points=previewPoints();state.objects.push({kind:'stroke',tool:state.tool,color:state.color,size:state.size,points,onLine:state.onLine});state.points=[];state.dirty=true;render();});
+canvas.addEventListener('pointerup',()=>{if(!state.drawing)return;state.drawing=false;const points=previewPoints();state.objects.push({kind:'stroke',tool:state.tool,color:state.color,size:state.size,points,onLine:state.onLine,baseline:state.lineAnchor?.baseline??null});state.points=[];state.lineAnchor=null;state.dirty=true;render();});
 $('#nbTool').addEventListener('change',e=>{state.tool=e.target.value;});
+$('#nbFont').addEventListener('change',e=>{state.font=e.target.value;state.dirty=true;});
 $('#nbColor').addEventListener('input',e=>state.color=e.target.value);
 $('#nbSize').addEventListener('input',e=>state.size=+e.target.value);
 $('#nbBackground').addEventListener('change',e=>{state.background=e.target.value;state.dirty=true;render();});
@@ -152,10 +187,10 @@ $('#nbWritePrompt').onclick=()=>{
   const input=$('#nbPrompt'),text=input.value.trim();if(!text)return;
   const size=Math.max(20,state.size*8), y=nextTextY(size);
   if(y>canvas.height-WRITE_BOTTOM){status('No queda espacio en esta hoja para más texto.',true);return;}
-  snap();state.objects.push({kind:'text',text,x:WRITE_LEFT,y:state.onLine?nearestBaseline(y):y,color:state.color,size,onLine:state.onLine,alignment:state.alignment});
+  snap();state.objects.push({kind:'text',text,x:WRITE_LEFT,y:state.onLine?nearestBaseline(y):y,color:state.color,size,onLine:state.onLine,alignment:state.alignment,font:state.font});
   input.value='';state.dirty=true;render();
 };
-function serialize(){return JSON.stringify({version:2,page:state.page,pages:state.pages,paper:state.paper,orientation:state.orientation,background:state.background,onLine:state.onLine,alignment:state.alignment,objects:state.objects});}
+function serialize(){return JSON.stringify({version:3,page:state.page,pages:state.pages,paper:state.paper,orientation:state.orientation,background:state.background,onLine:state.onLine,alignment:state.alignment,font:state.font,objects:state.objects});}
 async function save(){
   if(!state.notebook)return;
   status('Guardando PNG…');
@@ -173,14 +208,14 @@ async function loadPage(){
     if(!j.empty){
       const d=JSON.parse(j.json);state.objects=Array.isArray(d.objects)?d.objects:[];
       state.paper=d.paper||state.paper;state.orientation=d.orientation||state.orientation;state.background=d.background||state.background;
-      state.onLine=d.onLine===true;state.alignment=['left','right','justify'].includes(d.alignment)?d.alignment:'left';
+      state.onLine=d.onLine===true;state.alignment=['left','right','justify'].includes(d.alignment)?d.alignment:'left';state.font=['handwriting','sans','serif','mono','rounded'].includes(d.font)?d.font:'handwriting';
       syncControls();canvasSize();
     }
     state.dirty=false;status(j.empty?'Hoja nueva':'Hoja cargada');
   }catch(e){status(e.message,true);}
 }
 function syncControls(){
-  $('#nbTool').value=state.tool;$('#nbBackground').value=state.background;$('#nbPaper').value=state.paper;$('#nbOrientation').value=state.orientation;
+  $('#nbTool').value=state.tool;$('#nbFont').value=state.font;$('#nbBackground').value=state.background;$('#nbPaper').value=state.paper;$('#nbOrientation').value=state.orientation;
   $('#nbOnLine').checked=state.onLine;$('#nbAlignment').value=state.alignment;$('#nbPage').value=state.page;$('#nbPageLabel').textContent=state.page;$('#nbMenuPage').textContent=state.page;$('#nbTotal').textContent=state.pages;$('#nbMenuTotal').textContent=state.pages;
 }
 async function gotoPage(n){n=Math.max(1,Math.min(state.pages,n));if(n===state.page)return;if(state.dirty&&confirm('La hoja tiene cambios. ¿Guardarla antes de cambiar?'))await save();state.page=n;syncControls();await loadPage();canvas.parentElement.classList.remove('is-turning');void canvas.parentElement.offsetWidth;canvas.parentElement.classList.add('is-turning');}

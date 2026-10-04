@@ -148,7 +148,7 @@
 | `drive/mover_carpeta.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/node-status.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/notebook-api.php` | 69 | thin endpoint | 0 | — | — | — | — |
-| `drive/notebook.php` | 181 | view/entrypoint | 0 | — | — | — | — |
+| `drive/notebook.php` | 182 | view/entrypoint | 0 | — | — | — | — |
 | `drive/office-gateway.php` | 674 | view/entrypoint | 0 | — | — | — | — |
 | `drive/office-launch.php` | 81 | thin endpoint | 0 | — | — | — | — |
 | `drive/os-preferences.php` | 66 | thin endpoint | 0 | — | — | — | — |
@@ -521,7 +521,7 @@
 | `drive/tests/media_worker_behavior_regression.php` | 65 | test script | 0 | — | ⚠️ | — | — |
 | `drive/tests/node_diagnostics_contract_smoke.php` | 62 | test script | 0 | — | — | — | — |
 | `drive/tests/node_diagnostics_control_smoke.php` | 43 | test script | 0 | — | — | — | — |
-| `drive/tests/notebook_contract_smoke.php` | 84 | test script | 0 | — | — | — | — |
+| `drive/tests/notebook_contract_smoke.php` | 85 | test script | 0 | — | — | — | — |
 | `drive/tests/office_conditional_save_regression.php` | 148 | test script | 1 | — | ⚠️ | — | — |
 | `drive/tests/office_gateway_contract_smoke.php` | 376 | test script | 0 | — | — | — | — |
 | `drive/tests/password_credential_verifier_smoke.php` | 44 | test script | 0 | — | — | — | — |

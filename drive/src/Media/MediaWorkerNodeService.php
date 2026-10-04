@@ -8,6 +8,7 @@ use ArcadeCloud\Drive\Aws\Ec2Gateway;
 use ArcadeCloud\Drive\Office\OfficeActivityProbe;
 use ArcadeCloud\Drive\Office\OfficeSessionReconciler;
 use ArcadeCloud\Drive\System\Ec2InstanceIdentityService;
+use ArcadeCloud\Drive\System\ComputeNodeAdmissionLock;
 use mysqli;
 use RuntimeException;
 
@@ -191,6 +192,25 @@ final class MediaWorkerNodeService
         throw new RuntimeException('El nodo multimedia está en un estado no utilizable: ' . $state . '.');
     }
 
+    /**
+     * Admite el trabajo y lo hace visible en la cola bajo el mismo mutex que
+     * protege la decisión de apagado. Así no existe una ventana entre
+     * "nodo disponible" y "job persistido".
+     *
+     * @return array{node:array<string,mixed>,result:mixed}
+     */
+    public function admitWork(
+        int $userId,
+        bool $authorizedStart,
+        int $sourceBytes,
+        callable $admission
+    ): array {
+        return $this->withAdmissionLock(function () use ($userId, $authorizedStart, $sourceBytes, $admission): array {
+            $node = $this->prepareForWork($userId, $authorizedStart, $sourceBytes);
+            return ['node' => $node, 'result' => $admission()];
+        });
+    }
+
     public function markBusy(): void
     {
         if ($this->instanceId === '') return;
@@ -313,6 +333,13 @@ final class MediaWorkerNodeService
 
     public function requestIdleStop(MediaProcessingJobRepository $jobs): array
     {
+        return $this->withAdmissionLock(
+            fn(): array => $this->requestIdleStopUnlocked($jobs)
+        );
+    }
+
+    private function requestIdleStopUnlocked(MediaProcessingJobRepository $jobs): array
+    {
         if ($this->instanceId === '' || $this->ec2 === null) {
             throw new RuntimeException('No hay una EC2 de alto rendimiento configurada.');
         }
@@ -362,6 +389,13 @@ final class MediaWorkerNodeService
     }
 
     public function handleIdle(MediaProcessingJobRepository $jobs): void
+    {
+        $this->withAdmissionLock(function () use ($jobs): void {
+            $this->handleIdleUnlocked($jobs);
+        });
+    }
+
+    private function handleIdleUnlocked(MediaProcessingJobRepository $jobs): void
     {
         if ($this->instanceId === '' || $this->ec2 === null) return;
 
@@ -429,6 +463,14 @@ final class MediaWorkerNodeService
             $this->idleGraceSeconds + self::IDLE_WARNING_SECONDS
         )) return;
         $this->ec2->stop($this->instanceId, false);
+    }
+
+    private function withAdmissionLock(callable $callback): mixed
+    {
+        if ($this->instanceId === '') return $callback();
+
+        return (new ComputeNodeAdmissionLock($this->db))
+            ->synchronized($this->instanceId, $callback);
     }
 
     /** @return array<int,string> */

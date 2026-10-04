@@ -5,6 +5,7 @@ require_once __DIR__ . '/app_bootstrap.php';
 
 use ArcadeCloud\Drive\Core\ApplicationKernel;
 use ArcadeCloud\Drive\Http\JsonResponse;
+use ArcadeCloud\Drive\Security\OsPreferenceNodeResolver;
 use ArcadeCloud\Drive\Security\UserOsPreferencesRepository;
 
 try {
@@ -56,8 +57,9 @@ try {
         ];
     }
     $repository = new UserOsPreferencesRepository($app->db());
-    $preferences = array_replace_recursive($repository->find($session->userId()), $patch);
-    $repository->save($session->userId(), $preferences);
+    $nodeKey = OsPreferenceNodeResolver::resolve();
+    $preferences = array_replace_recursive($repository->find($session->userId(), $nodeKey), $patch);
+    $repository->save($session->userId(), $preferences, $nodeKey);
     JsonResponse::send(['ok' => true]);
 } catch (Throwable $error) {
     error_log('[ArcadeCloud os-preferences] ' . $error->getMessage());

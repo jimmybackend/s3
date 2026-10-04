@@ -7,6 +7,7 @@ $files = [
     'shell' => $root . '/js/so.js',
     'clipboard' => $root . '/js/so-clipboard.js',
     'uploadCenter' => $root . '/js/upload-center.js',
+    'chunkedUploader' => $root . '/upload/drivers/Chunked15MBUploader.php',
     'uploadDestination' => $root . '/js/upload-destination.js',
     'backgroundTasks' => $root . '/js/background-tasks.js',
     'uploadCenterCss' => $root . '/css/upload-center.css',
@@ -97,6 +98,11 @@ $assert(str_contains($files['uploadCenter'], "this.timestampName('clipboard', 't
 $assert(str_contains($files['uploadCenter'], 'data-upload-dropzone'), 'centro ofrece Dropzone/múltiples archivos');
 $assert(str_contains($files['uploadCenter'], "mode=remote_url&action=init"), 'centro conserva subida desde enlace');
 $assert(str_contains($files['uploadCenter'], "mode=chunked&action=init"), 'centro conserva multipart para archivos grandes');
+$assert(str_contains($files['uploadCenter'], "filesize: String(file.size)"), 'complete multipart conserva tamaño real para registro/costos');
+$assert(str_contains($files['uploadCenter'], "Math.min(128, mb)") && str_contains($files['uploadCenter'], "let mb = 16"), 'multipart limita partes del navegador para reintentos confiables');
+$assert(str_contains($files['uploadCenter'], "center.mergeClientTasks()"), 'subidas sincronizan explícitamente el Centro de Tareas en cualquier orden de carga');
+$assert(str_contains($files['uploadCenter'], "Revisa conectividad y CORS"), 'errores de PUT distinguen conectividad/CORS');
+$assert(!str_contains($files['chunkedUploader'], "'ContentLength' => \$contentLength"), 'URL prefirmada multipart no firma Content-Length controlado por el navegador');
 $assert(str_contains($files['uploadCenter'], "mode=local_put&action=init"), 'centro conserva subida directa local_put');
 $assert(str_contains($files['uploadCenter'], "mode=local_put&action=complete"), 'subida directa confirma FileS3');
 $assert(str_contains($files['uploadCenter'], "'X-Drive-CSRF': this.csrf"), 'centro de subida conserva CSRF');

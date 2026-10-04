@@ -1599,7 +1599,7 @@
     },
     {
       "path": "drive/so.php",
-      "size": 118873,
+      "size": 119069,
       "active": true,
       "references": [
         "drive/s3.php",
@@ -4490,6 +4490,7 @@
       "size": 27292,
       "active": true,
       "references": [
+        "drive/so.php",
         "drive/src/Admin/ProductionPreflightService.php",
         "drive/src/Http/Controller/UploadCleanupController.php",
         "drive/src/Upload/AdminMultipartUploadService.php",

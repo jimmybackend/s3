@@ -591,7 +591,8 @@ class ArcadeCloudUploadCenter {
       const complete = new URLSearchParams({
         uploadId,
         key,
-        etags: JSON.stringify(etags)
+        etags: JSON.stringify(etags),
+        filesize: String(file.size)
       });
       if (stateId) complete.set('stateId', stateId);
 
@@ -712,6 +713,16 @@ class ArcadeCloudUploadCenter {
     this.document.dispatchEvent(new CustomEvent('drive:client-upload-task', {
       detail: { task: { ...task } }
     }));
+
+    // Keep the unified Task Center synchronized even if its listener was
+    // initialized before/after the upload module on a proxied node.
+    const center = this.window.BackgroundTaskCenter;
+    if (center && typeof center.mergeClientTasks === 'function') {
+      try {
+        center.mergeClientTasks();
+        if (typeof center.render === 'function') center.render();
+      } catch (_) {}
+    }
   }
 
   async afterSuccess(route) {
@@ -759,7 +770,10 @@ class ArcadeCloudUploadCenter {
         if (xhr.status >= 200 && xhr.status < 300) resolve();
         else reject(new Error('S3 rechazó la subida. HTTP ' + xhr.status));
       };
-      xhr.onerror = () => reject(new Error('Error de red durante la subida a S3.'));
+      xhr.onerror = () => reject(new Error(
+        'No se pudo enviar el archivo directamente a S3. Revisa conectividad y CORS para ' +
+        String(this.window.location.origin || 'este origen') + '.'
+      ));
       xhr.send(blob);
     });
   }
@@ -783,7 +797,10 @@ class ArcadeCloudUploadCenter {
         }
         resolve(etag);
       };
-      xhr.onerror = () => reject(new Error('Error de red durante una parte multipart.'));
+      xhr.onerror = () => reject(new Error(
+        'No se pudo enviar una parte multipart a S3. Revisa conectividad y CORS para ' +
+        String(this.window.location.origin || 'este origen') + '.'
+      ));
       xhr.send(blob);
     });
   }
@@ -806,15 +823,17 @@ class ArcadeCloudUploadCenter {
     const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection || null;
     const type = String(connection?.effectiveType || '').toLowerCase();
     const downlink = Number(connection?.downlink || 0);
-    let mb = 32;
+    // Keep browser parts moderate. Very large parts (64-256 MiB) make a
+    // transient mobile/network failure expensive because the whole part must
+    // be retried. S3 only requires 5 MiB minimum except for the final part.
+    let mb = 16;
     if (type === 'slow-2g' || type === '2g') mb = 8;
-    else if (type === '3g' || (downlink > 0 && downlink < 5)) mb = 16;
-    else if (downlink >= 50) mb = 128;
-    else if (downlink >= 10 || type === '4g') mb = 64;
-    if (file.size < 100 * 1024 * 1024) mb = Math.min(mb, 16);
-    const minimumByParts = Math.ceil(file.size / 9900 / (1024 * 1024));
+    else if (type === '3g' || (downlink > 0 && downlink < 5)) mb = 12;
+    else if (downlink >= 25) mb = 32;
+    else if (downlink >= 10 || type === '4g') mb = 24;
+    const minimumByParts = Math.ceil(file.size / 9000 / (1024 * 1024));
     mb = Math.max(mb, minimumByParts, 8);
-    return Math.min(256, mb) * 1024 * 1024;
+    return Math.min(128, mb) * 1024 * 1024;
   }
 
   multipartKey(file, route) {

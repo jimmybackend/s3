@@ -1349,9 +1349,10 @@
     },
     {
       "path": "drive/office-gateway.php",
-      "size": 30196,
+      "size": 30253,
       "active": false,
       "references": [
+        "drive/tests/compute_admission_lock_contract_smoke.php",
         "drive/tests/office_gateway_contract_smoke.php"
       ]
     },
@@ -1709,9 +1710,10 @@
     },
     {
       "path": "drive/src/Admin/FastDriveControlService.php",
-      "size": 12271,
+      "size": 12674,
       "active": false,
       "references": [
+        "drive/tests/compute_admission_lock_contract_smoke.php",
         "drive/tests/fastdrive_control_contract_smoke.php"
       ]
     },
@@ -3234,17 +3236,19 @@
     },
     {
       "path": "drive/src/Media/MediaProcessingService.php",
-      "size": 3577,
+      "size": 3746,
       "active": false,
       "references": [
+        "drive/tests/compute_admission_lock_contract_smoke.php",
         "drive/tests/media_processing_contract_smoke.php"
       ]
     },
     {
       "path": "drive/src/Media/MediaWorkerNodeService.php",
-      "size": 30803,
+      "size": 32264,
       "active": false,
       "references": [
+        "drive/tests/compute_admission_lock_contract_smoke.php",
         "drive/tests/media_processing_contract_smoke.php",
         "drive/tests/office_gateway_contract_smoke.php",
         "drive/tests/web_os_contract_smoke.php"
@@ -3298,9 +3302,10 @@
     },
     {
       "path": "drive/src/Office/OfficeGatewayService.php",
-      "size": 5020,
+      "size": 6083,
       "active": false,
       "references": [
+        "drive/tests/compute_admission_lock_contract_smoke.php",
         "drive/tests/office_gateway_contract_smoke.php"
       ]
     },
@@ -3649,6 +3654,14 @@
       ]
     },
     {
+      "path": "drive/src/System/ComputeNodeAdmissionLock.php",
+      "size": 2087,
+      "active": false,
+      "references": [
+        "drive/tests/compute_admission_lock_contract_smoke.php"
+      ]
+    },
+    {
       "path": "drive/src/System/Ec2InstanceIdentityService.php",
       "size": 3033,
       "active": false,
@@ -3958,6 +3971,12 @@
       "references": []
     },
     {
+      "path": "drive/tests/compute_admission_lock_contract_smoke.php",
+      "size": 2286,
+      "active": false,
+      "references": []
+    },
+    {
       "path": "drive/tests/database_backup_contract_smoke.php",
       "size": 5321,
       "active": false,
@@ -4133,7 +4152,7 @@
     },
     {
       "path": "drive/tests/idle_stop_office_regression.php",
-      "size": 16267,
+      "size": 16957,
       "active": false,
       "references": []
     },
@@ -4163,7 +4182,7 @@
     },
     {
       "path": "drive/tests/media_processing_contract_smoke.php",
-      "size": 17693,
+      "size": 17737,
       "active": false,
       "references": []
     },

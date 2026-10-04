@@ -153,7 +153,7 @@
 | `drive/mover_archivo.php` | `drive/js/archivos.js` |
 | `drive/mover_carpeta.php` | `drive/js/carpetas.js` |
 | `drive/notebook-api.php` | `drive/tests/notebook_contract_smoke.php`, `drive/js/notebook.js` |
-| `drive/office-gateway.php` | `drive/tests/office_gateway_contract_smoke.php` |
+| `drive/office-gateway.php` | `drive/tests/compute_admission_lock_contract_smoke.php`, `drive/tests/office_gateway_contract_smoke.php` |
 | `drive/polly_cargar_texto.php` | `drive/js/polly.js` |
 | `drive/polly_list_voices.php` | `drive/js/polly.js` |
 | `drive/polly_task_status.php` | ninguna |
@@ -180,7 +180,7 @@
 | `drive/src/Admin/ArcadeCloudUpdaterService.php` | `drive/tests/federation_moderation_contract_smoke.php`, `drive/tests/installer_service_reconcile_contract_smoke.php`, `drive/tests/web_os_contract_smoke.php` |
 | `drive/src/Admin/DatabaseBackupService.php` | `drive/tests/database_backup_contract_smoke.php` |
 | `drive/src/Admin/DatabaseSqlDumpWriter.php` | `drive/src/Admin/ProductionPreflightService.php`, `drive/tests/database_backup_contract_smoke.php`, `drive/tests/database_dump_full_integration.php` |
-| `drive/src/Admin/FastDriveControlService.php` | `drive/tests/fastdrive_control_contract_smoke.php` |
+| `drive/src/Admin/FastDriveControlService.php` | `drive/tests/compute_admission_lock_contract_smoke.php`, `drive/tests/fastdrive_control_contract_smoke.php` |
 | `drive/src/Admin/FastDriveWakeService.php` | `drive/tests/fastdrive_control_contract_smoke.php` |
 | `drive/src/Admin/NodeServiceControlService.php` | `drive/tests/node_diagnostics_control_smoke.php` |
 | `drive/src/Admin/PrivilegedServerHelper.php` | `drive/setup/api.php`, `drive/tests/office_gateway_contract_smoke.php`, `drive/tests/server_console_contract_smoke.php`, `drive/tests/setup_finalize_contract_smoke.php` |
@@ -377,15 +377,15 @@
 | `drive/src/Media/MediaPlaylistRepository.php` | ninguna |
 | `drive/src/Media/MediaPlaylistService.php` | ninguna |
 | `drive/src/Media/MediaProcessingJobRepository.php` | `drive/tests/media_processing_contract_smoke.php` |
-| `drive/src/Media/MediaProcessingService.php` | `drive/tests/media_processing_contract_smoke.php` |
-| `drive/src/Media/MediaWorkerNodeService.php` | `drive/tests/media_processing_contract_smoke.php`, `drive/tests/office_gateway_contract_smoke.php`, `drive/tests/web_os_contract_smoke.php` |
+| `drive/src/Media/MediaProcessingService.php` | `drive/tests/compute_admission_lock_contract_smoke.php`, `drive/tests/media_processing_contract_smoke.php` |
+| `drive/src/Media/MediaWorkerNodeService.php` | `drive/tests/compute_admission_lock_contract_smoke.php`, `drive/tests/media_processing_contract_smoke.php`, `drive/tests/office_gateway_contract_smoke.php`, `drive/tests/web_os_contract_smoke.php` |
 | `drive/src/Media/MediaWorkerNodeSessionRepository.php` | `drive/tests/media_processing_contract_smoke.php` |
 | `drive/src/Media/ThumbnailService.php` | ninguna |
 | `drive/src/Notebook/NotebookService.php` | `drive/tests/notebook_contract_smoke.php` |
 | `drive/src/Office/OfficeActivityProbe.php` | `drive/tests/office_gateway_contract_smoke.php` |
 | `drive/src/Office/OfficeDocumentSessionRepository.php` | `drive/tests/office_gateway_contract_smoke.php` |
 | `drive/src/Office/OfficeDocumentStorageService.php` | `drive/tests/office_gateway_contract_smoke.php` |
-| `drive/src/Office/OfficeGatewayService.php` | `drive/tests/office_gateway_contract_smoke.php` |
+| `drive/src/Office/OfficeGatewayService.php` | `drive/tests/compute_admission_lock_contract_smoke.php`, `drive/tests/office_gateway_contract_smoke.php` |
 | `drive/src/Office/OfficeLaunchTokenRepository.php` | `drive/tests/office_gateway_contract_smoke.php` |
 | `drive/src/Office/OfficeSchemaMigrationService.php` | `drive/tests/installer_service_reconcile_contract_smoke.php`, `drive/tests/office_gateway_contract_smoke.php` |
 | `drive/src/Office/OfficeSessionLeaseRepository.php` | `drive/tests/office_gateway_contract_smoke.php` |
@@ -431,6 +431,7 @@
 | `drive/src/Sync/SyncJobStore.php` | `drive/tests/web_os_contract_smoke.php` |
 | `drive/src/Sync/SyncRepository.php` | `drive/tests/scoped_sync_repository_regression.php`, `drive/tests/sync_repository_regression.php` |
 | `drive/src/Sync/SyncSchemaMigrator.php` | `drive/tests/sync_schema_migrator_regression.php` |
+| `drive/src/System/ComputeNodeAdmissionLock.php` | `drive/tests/compute_admission_lock_contract_smoke.php` |
 | `drive/src/System/Ec2InstanceIdentityService.php` | `drive/tests/fastdrive_control_contract_smoke.php`, `drive/tests/media_processing_contract_smoke.php` |
 | `drive/src/System/LocalContainerCapabilityService.php` | `drive/tests/local_container_capabilities_regression.php` |
 | `drive/src/System/NodeCapabilityService.php` | `drive/tests/node_diagnostics_contract_smoke.php`, `drive/tests/web_os_contract_smoke.php` |
@@ -473,6 +474,7 @@
 | `drive/tests/arcadelink_collection_regression.php` | ninguna |
 | `drive/tests/catalog_folder_paths_regression.php` | ninguna |
 | `drive/tests/chunked_upload_cleanup_regression.php` | ninguna |
+| `drive/tests/compute_admission_lock_contract_smoke.php` | ninguna |
 | `drive/tests/database_backup_contract_smoke.php` | ninguna |
 | `drive/tests/database_dump_full_integration.php` | ninguna |
 | `drive/tests/database_schema_contract_smoke.php` | ninguna |

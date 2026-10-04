@@ -10,7 +10,7 @@ const state = {
 const paper = {
   'letter':[816,1056], 'legal':[816,1344], 'tabloid':[1056,1632], 'half-letter':[528,816]
 };
-const WRITE_LEFT = 76, WRITE_RIGHT = 42, WRITE_TOP = 64, WRITE_BOTTOM = 42, RULE_STEP = 36;
+const WRITE_LEFT = 76, WRITE_RIGHT = 42, WRITE_TOP = 64, WRITE_BOTTOM = 92, RULE_STEP = 36;
 function status(t, bad=false){ const el=$('#nbStatus'); el.textContent=t; el.dataset.bad=bad?'1':'0'; }
 function api(action, options={}) {
   const init = {credentials:'same-origin', ...options};
@@ -125,10 +125,11 @@ function drawText(o){
 function render(){background(); for(const o of state.objects){ if(o.kind==='text')drawText(o); else drawStroke(o); }}
 function snap(){state.undo.push(JSON.stringify(state.objects)); if(state.undo.length>60)state.undo.shift(); state.redo=[];}
 function pos(e){const r=canvas.getBoundingClientRect();return{x:(e.clientX-r.left)*canvas.width/r.width,y:(e.clientY-r.top)*canvas.height/r.height};}
+function previewPoints(){return alignStrokeToRule([...state.points]);}
 canvas.addEventListener('pointerdown',e=>{e.preventDefault();snap();state.drawing=true;state.points=[pos(e)];canvas.setPointerCapture?.(e.pointerId);});
-canvas.addEventListener('pointermove',e=>{if(!state.drawing)return;state.points.push(pos(e));render();drawStroke({kind:'stroke',tool:state.tool,color:state.color,size:state.size,points:state.points});});
-canvas.addEventListener('pointerup',()=>{if(!state.drawing)return;state.drawing=false;const points=alignStrokeToRule([...state.points]);state.objects.push({kind:'stroke',tool:state.tool,color:state.color,size:state.size,points,onLine:state.onLine});state.points=[];state.dirty=true;render();});
-document.querySelectorAll('[data-tool]').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('[data-tool]').forEach(x=>x.classList.remove('is-active'));b.classList.add('is-active');state.tool=b.dataset.tool;}));
+canvas.addEventListener('pointermove',e=>{if(!state.drawing)return;state.points.push(pos(e));render();drawStroke({kind:'stroke',tool:state.tool,color:state.color,size:state.size,points:previewPoints()});});
+canvas.addEventListener('pointerup',()=>{if(!state.drawing)return;state.drawing=false;const points=previewPoints();state.objects.push({kind:'stroke',tool:state.tool,color:state.color,size:state.size,points,onLine:state.onLine});state.points=[];state.dirty=true;render();});
+$('#nbTool').addEventListener('change',e=>{state.tool=e.target.value;});
 $('#nbColor').addEventListener('input',e=>state.color=e.target.value);
 $('#nbSize').addEventListener('input',e=>state.size=+e.target.value);
 $('#nbBackground').addEventListener('change',e=>{state.background=e.target.value;state.dirty=true;render();});
@@ -179,8 +180,8 @@ async function loadPage(){
   }catch(e){status(e.message,true);}
 }
 function syncControls(){
-  $('#nbBackground').value=state.background;$('#nbPaper').value=state.paper;$('#nbOrientation').value=state.orientation;
-  $('#nbOnLine').checked=state.onLine;$('#nbAlignment').value=state.alignment;$('#nbPage').value=state.page;$('#nbTotal').textContent=state.pages;
+  $('#nbTool').value=state.tool;$('#nbBackground').value=state.background;$('#nbPaper').value=state.paper;$('#nbOrientation').value=state.orientation;
+  $('#nbOnLine').checked=state.onLine;$('#nbAlignment').value=state.alignment;$('#nbPage').value=state.page;$('#nbPageLabel').textContent=state.page;$('#nbMenuPage').textContent=state.page;$('#nbTotal').textContent=state.pages;$('#nbMenuTotal').textContent=state.pages;
 }
 async function gotoPage(n){n=Math.max(1,Math.min(state.pages,n));if(n===state.page)return;if(state.dirty&&confirm('La hoja tiene cambios. ¿Guardarla antes de cambiar?'))await save();state.page=n;syncControls();await loadPage();canvas.parentElement.classList.remove('is-turning');void canvas.parentElement.offsetWidth;canvas.parentElement.classList.add('is-turning');}
 $('#nbPrev').onclick=()=>gotoPage(state.page-1); $('#nbNext').onclick=()=>gotoPage(state.page+1); $('#nbPage').onchange=e=>gotoPage(+e.target.value||1);

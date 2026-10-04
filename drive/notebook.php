@@ -41,20 +41,18 @@ if (!preg_match('/\A[a-f0-9]{64}\z/', $csrf)) {
   </header>
 
   <main class="nb-main">
-    <aside class="nb-tools" aria-label="Herramientas">
-      <button data-tool="pencil" class="is-active" title="Lápiz">✏️</button>
-      <button data-tool="pen" title="Bolígrafo">🖊️</button>
-      <button data-tool="fountain" title="Pluma">✒️</button>
-      <button data-tool="marker" title="Marcador">🖍️</button>
-      <button data-tool="brush" title="Pincel">🖌️</button>
-      <button data-tool="eraser" title="Borrador">⌫</button>
-      <button id="nbUndo" type="button" title="Deshacer">↶</button>
-      <button id="nbRedo" type="button" title="Rehacer">↷</button>
-      <button id="nbClear" type="button" title="Borrar hoja">🗑</button>
-    </aside>
-
     <section class="nb-workspace">
       <div class="nb-options">
+        <label>Instrumento
+          <select id="nbTool" aria-label="Instrumento de escritura">
+            <option value="pencil">Lápiz</option>
+            <option value="pen">Bolígrafo</option>
+            <option value="fountain">Pluma fuente</option>
+            <option value="marker">Marcador</option>
+            <option value="brush">Pincel</option>
+            <option value="eraser">Borrador</option>
+          </select>
+        </label>
         <label>Color <input id="nbColor" type="color" value="#111111"></label>
         <label>Grosor <input id="nbSize" type="range" min="1" max="36" value="3"></label>
         <label>Hoja
@@ -84,21 +82,31 @@ if (!preg_match('/\A[a-f0-9]{64}\z/', $csrf)) {
             <option value="justify">Justificada</option>
           </select>
         </label>
-      </div>
-
-      <div class="nb-prompt">
-        <input id="nbPrompt" type="text" placeholder="Escribe un mensaje y Notebook lo colocará como escritura manual">
-        <button id="nbWritePrompt" type="button">Escribir a mano</button>
+        <span class="nb-menu-page">Página <strong id="nbMenuPage">1</strong>/<strong id="nbMenuTotal">100</strong></span>
+        <div class="nb-edit-actions" role="group" aria-label="Edición">
+          <button id="nbUndo" type="button" title="Deshacer">↶</button>
+          <button id="nbRedo" type="button" title="Rehacer">↷</button>
+          <button id="nbClear" type="button" title="Borrar hoja">🗑</button>
+        </div>
       </div>
 
       <div class="nb-page-shell">
-        <canvas id="nbCanvas" aria-label="Hoja de Notebook"></canvas>
+        <div class="nb-page-stage">
+          <div class="nb-page-counter" aria-label="Paginación de la hoja">
+            <button id="nbPrev" type="button" aria-label="Página anterior">‹</button>
+            <span><strong id="nbPageLabel">1</strong>/<strong id="nbTotal">100</strong></span>
+            <button id="nbNext" type="button" aria-label="Página siguiente">›</button>
+          </div>
+          <canvas id="nbCanvas" aria-label="Hoja de Notebook"></canvas>
+          <div class="nb-page-footer" role="group" aria-label="Escritura asistida">
+            <input id="nbPrompt" type="text" placeholder="Escribe un mensaje y Notebook lo colocará como escritura manual">
+            <button id="nbWritePrompt" type="button">Escribir a mano</button>
+          </div>
+        </div>
       </div>
 
-      <nav class="nb-nav" aria-label="Páginas">
-        <button id="nbPrev" type="button">‹</button>
-        <span>Página <input id="nbPage" type="number" min="1" value="1"> de <strong id="nbTotal">100</strong></span>
-        <button id="nbNext" type="button">›</button>
+      <nav class="nb-nav" aria-label="Ir a página">
+        <span>Ir a página <input id="nbPage" type="number" min="1" value="1"></span>
       </nav>
     </section>
   </main>

@@ -36,7 +36,7 @@ class ArcadeCloudDesktopShell {
     const targets = {
       explorer: { title: 'Mis datos', icon: 'fa-folder-open', launch: () => this.runtime.openExplorer(this.runtime.root, { forceNew: true }) },
       node: { target: 'nodeWindow' }, pageMonitor: { target: 'pageMonitorWindow', title: 'Administrador de la página', icon: 'fa-chart-line' }, settings: { target: 'settingsWindow' }, links: { target: 'linksWindow' },
-      terminal: { target: 'terminalWindow' }, search: { target: 'searchWindow', title: 'Buscar', icon: 'fa-magnifying-glass' },
+      terminal: { target: 'terminalWindow' }, notebook: { target: 'notebookWindow', title: 'Notebook', icon: 'fa-book-open' }, search: { target: 'searchWindow', title: 'Buscar', icon: 'fa-magnifying-glass' },
       federation: { target: 'federationWindow', title: 'FederationCloud', icon: 'fa-globe' }, apps: { target: 'appsWindow' }
     };
     const applications = Object.entries(targets).filter(([id, spec]) => id !== 'apps' && (id === 'explorer' || this.document.getElementById(spec.target))).map(([id, spec]) => {

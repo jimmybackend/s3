@@ -4,10 +4,10 @@
 
 ## Resumen
 
-- PHP analizados: **548**
-- PHP que ya contienen clases/interfaces: **311**
+- PHP analizados: **550**
+- PHP que ya contienen clases/interfaces: **312**
 - PHP marcados para migración/revisión: **0**
-- Tests PHP separados del objetivo OOP de runtime: **75**
+- Tests PHP separados del objetivo OOP de runtime: **76**
 - JavaScript analizados: **80**
 - JavaScript que ya contienen clases: **73**
 - JavaScript runtime marcados para migración/revisión: **1**
@@ -149,7 +149,7 @@
 | `drive/node-status.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/notebook-api.php` | 61 | thin endpoint | 0 | — | — | — | — |
 | `drive/notebook.php` | 150 | view/entrypoint | 0 | — | — | — | — |
-| `drive/office-gateway.php` | 670 | view/entrypoint | 0 | — | — | — | — |
+| `drive/office-gateway.php` | 674 | view/entrypoint | 0 | — | — | — | — |
 | `drive/office-launch.php` | 81 | thin endpoint | 0 | — | — | — | — |
 | `drive/os-preferences.php` | 66 | thin endpoint | 0 | — | — | — | — |
 | `drive/personal_aws_bootstrap.php` | 86 | class/module | 1 | — | — | — | — |
@@ -184,7 +184,7 @@
 | `drive/src/Admin/ArcadeCloudUpdaterService.php` | 162 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Admin/DatabaseBackupService.php` | 74 | class/module | 1 | — | — | — | — |
 | `drive/src/Admin/DatabaseSqlDumpWriter.php` | 492 | class/module | 1 | — | ⚠️ | — | — |
-| `drive/src/Admin/FastDriveControlService.php` | 323 | class/module | 1 | — | ⚠️ | — | — |
+| `drive/src/Admin/FastDriveControlService.php` | 327 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Admin/FastDriveWakeService.php` | 191 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Admin/ManagedRuntimeEnvironment.php` | 374 | class/module | 1 | — | — | — | — |
 | `drive/src/Admin/NodeServiceControlService.php` | 51 | class/module | 1 | — | ⚠️ | — | — |
@@ -382,15 +382,15 @@
 | `drive/src/Media/MediaPlaylistRepository.php` | 49 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Media/MediaPlaylistService.php` | 66 | class/module | 1 | — | — | — | — |
 | `drive/src/Media/MediaProcessingJobRepository.php` | 460 | class/module | 1 | — | ⚠️ | — | — |
-| `drive/src/Media/MediaProcessingService.php` | 99 | class/module | 1 | — | — | — | — |
-| `drive/src/Media/MediaWorkerNodeService.php` | 757 | class/module | 1 | — | — | — | — |
+| `drive/src/Media/MediaProcessingService.php` | 104 | class/module | 1 | — | — | — | — |
+| `drive/src/Media/MediaWorkerNodeService.php` | 799 | class/module | 1 | — | — | — | — |
 | `drive/src/Media/MediaWorkerNodeSessionRepository.php` | 243 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Media/ThumbnailService.php` | 380 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Notebook/NotebookService.php` | 348 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Office/OfficeActivityProbe.php` | 57 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Office/OfficeDocumentSessionRepository.php` | 351 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Office/OfficeDocumentStorageService.php` | 605 | class/module | 1 | — | ⚠️ | — | — |
-| `drive/src/Office/OfficeGatewayService.php` | 147 | class/module | 1 | — | — | — | — |
+| `drive/src/Office/OfficeGatewayService.php` | 175 | class/module | 1 | — | — | — | — |
 | `drive/src/Office/OfficeLaunchTokenRepository.php` | 164 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Office/OfficeSchemaMigrationService.php` | 141 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Office/OfficeSessionLeaseRepository.php` | 207 | class/module | 1 | — | ⚠️ | — | — |
@@ -438,6 +438,7 @@
 | `drive/src/Sync/SyncJobStore.php` | 282 | class/module | 1 | — | — | — | — |
 | `drive/src/Sync/SyncRepository.php` | 499 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Sync/SyncSchemaMigrator.php` | 114 | class/module | 1 | — | ⚠️ | — | — |
+| `drive/src/System/ComputeNodeAdmissionLock.php` | 64 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/System/Ec2InstanceIdentityService.php` | 107 | class/module | 1 | — | — | — | — |
 | `drive/src/System/LocalContainerCapabilityService.php` | 58 | class/module | 1 | — | — | — | — |
 | `drive/src/System/NodeCapabilityService.php` | 255 | class/module | 1 | — | — | — | — |
@@ -480,6 +481,7 @@
 | `drive/tests/arcadelink_collection_regression.php` | 63 | test script | 0 | — | — | — | — |
 | `drive/tests/catalog_folder_paths_regression.php` | 63 | test script | 0 | — | ⚠️ | — | — |
 | `drive/tests/chunked_upload_cleanup_regression.php` | 117 | test script | 1 | — | — | — | — |
+| `drive/tests/compute_admission_lock_contract_smoke.php` | 33 | test script | 0 | — | — | — | — |
 | `drive/tests/database_backup_contract_smoke.php` | 67 | test script | 0 | — | — | — | — |
 | `drive/tests/database_dump_full_integration.php` | 126 | test script | 0 | — | ⚠️ | — | — |
 | `drive/tests/database_schema_contract_smoke.php` | 127 | test script | 0 | — | — | — | — |
@@ -509,12 +511,12 @@
 | `drive/tests/folder_textract_background_task_contract.php` | 39 | test script | 0 | — | — | — | — |
 | `drive/tests/folder_textract_contract_smoke.php` | 34 | test script | 0 | — | — | — | — |
 | `drive/tests/fresh_install_contract_smoke.php` | 76 | test script | 0 | — | — | — | — |
-| `drive/tests/idle_stop_office_regression.php` | 326 | test script | 1 | — | ⚠️ | — | — |
+| `drive/tests/idle_stop_office_regression.php` | 341 | test script | 1 | — | ⚠️ | — | — |
 | `drive/tests/index_federation_drop_smoke.php` | 121 | test script | 0 | — | — | — | — |
 | `drive/tests/installer_service_reconcile_contract_smoke.php` | 197 | test script | 0 | — | — | — | — |
 | `drive/tests/large_folder_regression.php` | 34 | test script | 0 | — | ⚠️ | — | — |
 | `drive/tests/local_container_capabilities_regression.php` | 56 | test script | 0 | — | — | — | — |
-| `drive/tests/media_processing_contract_smoke.php` | 185 | test script | 0 | — | — | — | — |
+| `drive/tests/media_processing_contract_smoke.php` | 189 | test script | 0 | — | — | — | — |
 | `drive/tests/media_worker_behavior_regression.php` | 65 | test script | 0 | — | ⚠️ | — | — |
 | `drive/tests/node_diagnostics_contract_smoke.php` | 62 | test script | 0 | — | — | — | — |
 | `drive/tests/node_diagnostics_control_smoke.php` | 43 | test script | 0 | — | — | — | — |

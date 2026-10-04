@@ -1,9 +1,9 @@
 {
   "summary": {
-    "php_total": 548,
-    "php_class_modules": 311,
+    "php_total": 550,
+    "php_class_modules": 312,
     "php_needs_migration": 0,
-    "php_tests": 75,
+    "php_tests": 76,
     "js_total": 80,
     "js_class_modules": 73,
     "js_needs_migration": 1,
@@ -1814,7 +1814,7 @@
     },
     {
       "path": "drive/office-gateway.php",
-      "lines": 670,
+      "lines": 674,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -2357,7 +2357,7 @@
     },
     {
       "path": "drive/src/Admin/FastDriveControlService.php",
-      "lines": 323,
+      "lines": 327,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -5341,7 +5341,7 @@
     },
     {
       "path": "drive/src/Media/MediaProcessingService.php",
-      "lines": 99,
+      "lines": 104,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -5356,7 +5356,7 @@
     },
     {
       "path": "drive/src/Media/MediaWorkerNodeService.php",
-      "lines": 757,
+      "lines": 799,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -5461,7 +5461,7 @@
     },
     {
       "path": "drive/src/Office/OfficeGatewayService.php",
-      "lines": 147,
+      "lines": 175,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -6189,6 +6189,21 @@
       "issues": []
     },
     {
+      "path": "drive/src/System/ComputeNodeAdmissionLock.php",
+      "lines": 64,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": true,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
       "path": "drive/src/System/Ec2InstanceIdentityService.php",
       "lines": 107,
       "kind": "class/module",
@@ -6833,6 +6848,21 @@
       "issues": []
     },
     {
+      "path": "drive/tests/compute_admission_lock_contract_smoke.php",
+      "lines": 33,
+      "kind": "test script",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
       "path": "drive/tests/database_backup_contract_smoke.php",
       "lines": 67,
       "kind": "test script",
@@ -7321,7 +7351,7 @@
     },
     {
       "path": "drive/tests/idle_stop_office_regression.php",
-      "lines": 326,
+      "lines": 341,
       "kind": "test script",
       "classes": 1,
       "functions": [
@@ -7406,7 +7436,7 @@
     },
     {
       "path": "drive/tests/media_processing_contract_smoke.php",
-      "lines": 185,
+      "lines": 189,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -10537,7 +10567,7 @@
     },
     {
       "path": "drive/docs/runtime_endpoints.json",
-      "bytes": 127075,
+      "bytes": 128315,
       "valid": true,
       "root_type": "object",
       "keys": [

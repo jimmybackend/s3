@@ -21,7 +21,8 @@ final class NotebookService
         $out = [];
         foreach ($this->app->folderRepository()->listHierarchyRows($userId) as $row) {
             if ((string)($row['ParentPrefix'] ?? '') !== $libretas) continue;
-            $out[] = ['name' => (string)$row['Nombre'], 'route' => (string)$row['Prefix']];
+            $route = (string)$row['Prefix'];
+            $out[] = ['name' => (string)$row['Nombre'], 'route' => $route] + $this->manifestForRoute($userId, $route);
         }
         usort($out, static fn(array $a, array $b): int => strnatcasecmp($a['name'], $b['name']));
         return ['root' => $libretas, 'notebooks' => $out];
@@ -203,6 +204,35 @@ final class NotebookService
             $moved[] = (string)$row['Nombre'];
         }
         return ['ok'=>true,'moved'=>$moved,'target'=>$target['name']];
+    }
+
+    private function manifestForRoute(int $userId, string $route): array
+    {
+        $defaults = ['pages'=>100,'paper'=>'letter','orientation'=>'portrait','background'=>'blank'];
+        $stmt = $this->app->db()->prepare(
+            "SELECT Encriptado FROM FileS3
+             WHERE user_id_=? AND Ruta=? AND Found=1 AND Nombre='notebook.json'
+             ORDER BY id_ DESC LIMIT 1"
+        );
+        if (!$stmt) return $defaults;
+        $stmt->bind_param('is',$userId,$route);
+        $stmt->execute();
+        $row = $stmt->get_result()->fetch_assoc();
+        $stmt->close();
+        if (!$row) return $defaults;
+        try {
+            $object = $this->app->s3()->getObject(['Bucket'=>$this->app->bucket(),'Key'=>(string)$row['Encriptado']]);
+            $decoded = json_decode((string)($object['Body'] ?? ''), true);
+            if (!is_array($decoded)) return $defaults;
+            return [
+                'pages'=>max(1,min(2000,(int)($decoded['pages'] ?? 100))),
+                'paper'=>$this->enum((string)($decoded['paper'] ?? 'letter'),['letter','legal','tabloid','half-letter'],'letter'),
+                'orientation'=>$this->enum((string)($decoded['orientation'] ?? 'portrait'),['portrait','landscape'],'portrait'),
+                'background'=>$this->enum((string)($decoded['background'] ?? 'blank'),['blank','ruled','grid','millimeter','dots','notes'],'blank'),
+            ];
+        } catch (\Throwable) {
+            return $defaults;
+        }
     }
 
     private function requireNotebook(int $userId, string $name): array

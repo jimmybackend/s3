@@ -14,6 +14,8 @@ $api = (string)file_get_contents($root . '/notebook-api.php');
 $service = (string)file_get_contents($root . '/src/Notebook/NotebookService.php');
 $js = (string)file_get_contents($root . '/js/notebook.js');
 $css = (string)file_get_contents($root . '/css/notebook.css');
+$aiService = (string)file_get_contents($root . '/src/Notebook/NotebookAiImproveService.php');
+$pricing = (string)file_get_contents($root . '/config/activity-cost-pricing.json');
 $so = (string)file_get_contents($root . '/so.php');
 $shell = (string)file_get_contents($root . '/js/desktop-shell.js');
 
@@ -61,13 +63,20 @@ $assert(str_contains($js, "action==='text-resize'") && str_contains($js, 'o.size
 $assert(str_contains($page, 'id="nbPasteMode"') && str_contains($page, 'value="outline"') && str_contains($page, 'value="gray"') && str_contains($page, 'value="pencil"'), 'Notebook ofrece pegado normal contorno grises y lápiz');
 $assert(str_contains($js, "mode==='outline'") && str_contains($js, "mode==='gray'") && str_contains($js, "mode==='pencil'"), 'procesamiento de imagen implementa los modos solicitados');
 $assert(str_contains($js, 'setTimeout(()=>readClipboardImage(point),700)'), 'toque prolongado sobre la hoja intenta pegar la imagen del portapapeles');
-foreach (['Archivo','Editar','Insertar','Formato','Vista'] as $menu) {
+foreach (['Archivo','Editar','Insertar','Formato','IA','Vista'] as $menu) {
     $assert(str_contains($page, '<summary>' . $menu . '</summary>'), "menú profesional {$menu} disponible");
 }
 $assert(str_contains($js, "e.key==='Enter'") && str_contains($js, "$('#nbWritePrompt').click()"), 'Enter envía el texto desde el input');
 $assert(str_contains($js, "action==='delete-image'") && str_contains($js, "status('Imagen eliminada')"), 'imagen seleccionada tiene control X para eliminar');
 $assert(str_contains($css, 'grid-template-columns:minmax(0,1fr) auto') && str_contains($css, 'min-width:50px'), 'footer mantiene visible el botón Enviar aun con zoom pequeño');
 $assert(str_contains($js, "document.querySelectorAll('.nb-menu')") && str_contains($css, '.nb-menu-panel'), 'menús desplegables se comportan como aplicación de escritorio');
+$assert(strpos($page, 'class="nb-menubar"') < strpos($page, '<main class="nb-main">'), 'barra de menús queda fuera y arriba del área de la hoja');
+$assert(str_contains($page, 'id="nbImproveAi"') && str_contains($api, "'improve_ai'"), 'Notebook expone Mejorar hoja con IA');
+$assert(str_contains($aiService, 'amazon.nova-pro-v1:0') && str_contains($aiService, "'image' => ['format' => 'png'"), 'mejora IA usa Nova Pro multimodal con la hoja PNG');
+$assert(str_contains($aiService, 'ActivityCostRecorder') && str_contains($aiService, "'bedrock.nova_pro_input_token'") && str_contains($aiService, "'bedrock.nova_pro_output_token'"), 'Bedrock registra actividad y tokens consumidos');
+$assert(str_contains($service, "'notebook_page_ocr'") && str_contains($service, "'notebook_line_ocr'"), 'OCR de Notebook registra actividad y costo Textract');
+$assert(str_contains($pricing, '"bedrock.nova_pro_input_token"') && str_contains($pricing, '"bedrock.nova_pro_output_token"'), 'catálogo incluye precios de Nova Pro');
+$assert(str_contains($js, 'version:7') && str_contains($js, "api('improve_ai'"), 'hojas mejoradas permanecen editables en esquema v7');
 $assert(str_contains($css, '@media(max-width:720px)'), 'Notebook incluye diseño móvil/tableta');
 
 echo "Notebook contract OK\n";

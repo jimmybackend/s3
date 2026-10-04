@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace ArcadeCloud\Drive\Notebook;
 
+use ArcadeCloud\Drive\Activity\ActivityCostRecorder;
 use ArcadeCloud\Drive\Aws\FileMetadataRepository;
 use ArcadeCloud\Drive\Aws\FileRecordLocator;
 use ArcadeCloud\Drive\Aws\GeneratedFileRepository;
@@ -83,6 +84,9 @@ final class NotebookService
 
         $text = '';
         $ocrError = null;
+        $ocrStarted = microtime(true);
+        $ocrCorrelation = ActivityCostRecorder::correlation('notebook-ocr', $base);
+        $activity = ActivityCostRecorder::fromDatabase($this->app->db());
         try {
             $textract = new TextractFileService(
                 new FileRecordLocator($this->app->db()),
@@ -91,8 +95,26 @@ final class NotebookService
                 $this->app->bucket()
             );
             $text = $textract->extractText($userId, (string)$pngSaved['key']);
+            $activity->success(
+                $userId,
+                'notebook_page_ocr',
+                'Textract',
+                null,
+                ['textract.detect_document_text_page' => 1],
+                $ocrStarted,
+                ['page' => $page],
+                $ocrCorrelation
+            );
         } catch (\Throwable $e) {
             $ocrError = $e->getMessage();
+            $activity->failure(
+                $userId,
+                'notebook_page_ocr',
+                'Textract',
+                $ocrStarted,
+                ['page' => $page],
+                $ocrCorrelation
+            );
         }
 
         $txtSaved = $this->saveGenerated($userId, $notebook['route'], $base . '.txt', $text, 'text/plain; charset=UTF-8', [
@@ -124,6 +146,9 @@ final class NotebookService
         $root = $this->app->userStorageProvisioner()->ensureRoot($userId);
         $key = rtrim($root, '/') . '/notebook-tmp/f_' . bin2hex(random_bytes(16)) . '.png';
         $client = \Config::getTextract();
+        $started = microtime(true);
+        $correlation = ActivityCostRecorder::correlation('notebook-line-ocr', hash('sha256', $bytes));
+        $activity = ActivityCostRecorder::fromDatabase($this->app->db());
 
         try {
             $this->app->s3()->putObject([
@@ -151,12 +176,33 @@ final class NotebookService
             }
             $text = trim(implode(' ', $lines));
 
+            $activity->success(
+                $userId,
+                'notebook_line_ocr',
+                'Textract',
+                null,
+                ['textract.detect_document_text_page' => 1],
+                $started,
+                ['line_count' => count($lines)],
+                $correlation
+            );
+
             return [
                 'ok' => true,
                 'text' => $text,
                 'recognized' => $text !== '',
                 'line_count' => count($lines),
             ];
+        } catch (\Throwable $error) {
+            $activity->failure(
+                $userId,
+                'notebook_line_ocr',
+                'Textract',
+                $started,
+                [],
+                $correlation
+            );
+            throw $error;
         } finally {
             try {
                 $this->app->s3()->deleteObject([

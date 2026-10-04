@@ -10,6 +10,7 @@ on:
       - 'drive/src/Admin/FastDriveControlService.php'
       - 'drive/src/Admin/ServerTaskActivityProbe.php'
       - 'drive/tests/idle_stop_office_regression.php'
+      - 'drive/tests/compute_admission_lock_contract_smoke.php'
       - 'drive/src/Storage/FileRecordRepository.php'
       - 'drive/tests/office_conditional_save_regression.php'
       - '.github/workflows/office-document-regression.yml'
@@ -23,6 +24,7 @@ on:
       - 'drive/src/Admin/FastDriveControlService.php'
       - 'drive/src/Admin/ServerTaskActivityProbe.php'
       - 'drive/tests/idle_stop_office_regression.php'
+      - 'drive/tests/compute_admission_lock_contract_smoke.php'
       - 'drive/src/Storage/FileRecordRepository.php'
       - 'drive/tests/office_conditional_save_regression.php'
       - '.github/workflows/office-document-regression.yml'
@@ -63,6 +65,7 @@ jobs:
           php -l drive/src/Admin/FastDriveControlService.php
           php -l drive/src/Admin/ServerTaskActivityProbe.php
           php -l drive/tests/idle_stop_office_regression.php
+          php -l drive/tests/compute_admission_lock_contract_smoke.php
           php -l drive/tests/office_conditional_save_regression.php
           node --check drive/js/so.js
       - name: Office service and repository regression
@@ -71,6 +74,7 @@ jobs:
         run: |
           php drive/tests/office_conditional_save_regression.php
           php drive/tests/idle_stop_office_regression.php
+          php drive/tests/compute_admission_lock_contract_smoke.php
       - name: Diff check
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}

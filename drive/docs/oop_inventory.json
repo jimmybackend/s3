@@ -1,7 +1,7 @@
 {
   "summary": {
-    "php_total": 551,
-    "php_class_modules": 313,
+    "php_total": 552,
+    "php_class_modules": 314,
     "php_needs_migration": 0,
     "php_tests": 76,
     "js_total": 80,
@@ -1850,7 +1850,7 @@
     },
     {
       "path": "drive/os-preferences.php",
-      "lines": 66,
+      "lines": 68,
       "kind": "thin endpoint",
       "classes": 0,
       "functions": [],
@@ -2172,7 +2172,7 @@
     },
     {
       "path": "drive/so.php",
-      "lines": 2136,
+      "lines": 2145,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -5640,6 +5640,23 @@
       "issues": []
     },
     {
+      "path": "drive/src/Security/OsPreferenceNodeResolver.php",
+      "lines": 43,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [
+        "SERVER"
+      ],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
       "path": "drive/src/Security/PasswordChangeService.php",
       "lines": 80,
       "kind": "class/module",
@@ -5734,7 +5751,7 @@
     },
     {
       "path": "drive/src/Security/UserOsPreferencesRepository.php",
-      "lines": 47,
+      "lines": 111,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -7867,7 +7884,7 @@
     },
     {
       "path": "drive/tests/web_os_contract_smoke.php",
-      "lines": 536,
+      "lines": 541,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -7974,7 +7991,7 @@
     },
     {
       "path": "drive/tests/web_os_theme_contract_smoke.php",
-      "lines": 29,
+      "lines": 33,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -9693,7 +9710,7 @@
     },
     {
       "path": "drive/js/so-appearance.js",
-      "lines": 155,
+      "lines": 156,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudOsAppearance"

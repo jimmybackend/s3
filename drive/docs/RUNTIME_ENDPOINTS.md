@@ -40,7 +40,7 @@
 | `drive/login.php` | `drive/src/Federation/FederationDropGoogleAuthService.php`, `drive/src/View/FederationDropPageRenderer.php` |
 | `drive/logout.php` | `drive/notebook.php`, `drive/s3.php`, `drive/so.php`, `drive/src/Federation/FederationDropGoogleAuthService.php`, `drive/src/View/FederationDropPageRenderer.php`, `drive/tests/web_os_contract_smoke.php` |
 | `drive/node-status.php` | `drive/so.php`, `drive/src/Admin/ProductionPreflightService.php`, `drive/tests/web_os_contract_smoke.php`, `drive/js/so-node.js` |
-| `drive/notebook.php` | `drive/so.php`, `drive/tests/notebook_contract_smoke.php` |
+| `drive/notebook.php` | `drive/so.php`, `drive/tests/notebook_contract_smoke.php`, `drive/tests/web_os_contract_smoke.php` |
 | `drive/office-launch.php` | `drive/so.php`, `drive/tests/office_gateway_contract_smoke.php`, `drive/tests/web_os_contract_smoke.php`, `drive/tests/web_os_remote_applications_smoke.php`, `drive/tests/web_os_desktop_shell_functional.js` |
 | `drive/os-preferences.php` | `drive/so.php`, `drive/tests/web_os_contract_smoke.php` |
 | `drive/personal_aws_bootstrap.php` | `drive/aws.php`, `drive/ec2.php`, `drive/server-console.php`, `drive/tests/server_console_contract_smoke.php` |
@@ -397,6 +397,7 @@
 | `drive/src/Security/FileSecurityRepository.php` | ninguna |
 | `drive/src/Security/FileSecurityService.php` | ninguna |
 | `drive/src/Security/LoginRateLimiter.php` | `drive/tests/security_hardening_smoke.php` |
+| `drive/src/Security/OsPreferenceNodeResolver.php` | `drive/tests/web_os_contract_smoke.php`, `drive/tests/web_os_theme_contract_smoke.php` |
 | `drive/src/Security/PasswordChangeService.php` | ninguna |
 | `drive/src/Security/PasswordCredentialVerifier.php` | `drive/tests/password_credential_verifier_smoke.php` |
 | `drive/src/Security/PersonalToolAccessService.php` | ninguna |
@@ -566,7 +567,7 @@
 | `drive/upload/storage/UploadStateStore.php` | `drive/src/Upload/ChunkedUploadCleanupService.php`, `drive/src/Upload/UploadCleanupService.php`, `drive/upload/UploadFactory.php`, `drive/upload/drivers/Chunked15MBUploader.php` |
 | `drive/upload_audio_recording.php` | ninguna |
 | `drive/upload_publico.php` | `drive/src/View/PublicSharedPageRenderer.php` |
-| `drive/ver.php` | `drive/bin/federation_https_reconcile.php`, `drive/tests/federation_endpoint_resolver_smoke.php`, `drive/tests/federation_public_download_failover_smoke.php` |
+| `drive/ver.php` | `drive/bin/federation_https_reconcile.php`, `drive/tests/federation_endpoint_resolver_smoke.php`, `drive/tests/federation_public_download_failover_smoke.php`, `drive/tests/web_os_contract_smoke.php`, `drive/tests/web_os_theme_contract_smoke.php` |
 | `drive/ver_pdf.php` | `drive/js/ver-pdf.js` |
 | `drive/workstation-control.php` | `drive/tests/office_gateway_contract_smoke.php` |
 | `drive/workstation-document.php` | `drive/tests/office_gateway_contract_smoke.php` |

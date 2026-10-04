@@ -1344,7 +1344,8 @@
       "active": true,
       "references": [
         "drive/so.php",
-        "drive/tests/notebook_contract_smoke.php"
+        "drive/tests/notebook_contract_smoke.php",
+        "drive/tests/web_os_contract_smoke.php"
       ]
     },
     {
@@ -1370,7 +1371,7 @@
     },
     {
       "path": "drive/os-preferences.php",
-      "size": 2801,
+      "size": 2930,
       "active": true,
       "references": [
         "drive/so.php",
@@ -1602,7 +1603,7 @@
     },
     {
       "path": "drive/so.php",
-      "size": 118380,
+      "size": 118873,
       "active": true,
       "references": [
         "drive/s3.php",
@@ -3393,6 +3394,15 @@
       ]
     },
     {
+      "path": "drive/src/Security/OsPreferenceNodeResolver.php",
+      "size": 1310,
+      "active": false,
+      "references": [
+        "drive/tests/web_os_contract_smoke.php",
+        "drive/tests/web_os_theme_contract_smoke.php"
+      ]
+    },
+    {
       "path": "drive/src/Security/PasswordChangeService.php",
       "size": 2426,
       "active": false,
@@ -3432,7 +3442,7 @@
     },
     {
       "path": "drive/src/Security/UserOsPreferencesRepository.php",
-      "size": 1522,
+      "size": 3563,
       "active": false,
       "references": [
         "drive/tests/web_os_contract_smoke.php",
@@ -4346,7 +4356,7 @@
     },
     {
       "path": "drive/tests/web_os_contract_smoke.php",
-      "size": 55635,
+      "size": 56530,
       "active": false,
       "references": []
     },
@@ -4388,7 +4398,7 @@
     },
     {
       "path": "drive/tests/web_os_theme_contract_smoke.php",
-      "size": 2138,
+      "size": 2775,
       "active": false,
       "references": []
     },
@@ -4648,7 +4658,9 @@
       "references": [
         "drive/bin/federation_https_reconcile.php",
         "drive/tests/federation_endpoint_resolver_smoke.php",
-        "drive/tests/federation_public_download_failover_smoke.php"
+        "drive/tests/federation_public_download_failover_smoke.php",
+        "drive/tests/web_os_contract_smoke.php",
+        "drive/tests/web_os_theme_contract_smoke.php"
       ]
     },
     {

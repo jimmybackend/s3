@@ -631,6 +631,20 @@ $isExplorerFragment = (string)($_GET['_os_fragment'] ?? '') === 'explorer';
       </div>
     </section>
 
+    <section class="os-window os-notebook-window" id="notebookWindow" data-window-title="Notebook">
+      <div class="os-window-titlebar" data-window-drag-handle>
+        <div class="os-window-title"><i class="fas fa-book-open"></i><span>Notebook</span></div>
+        <div class="os-window-controls">
+          <button type="button" data-window-minimize aria-label="Minimizar"><i class="fas fa-minus"></i></button>
+          <button type="button" data-window-maximize aria-label="Maximizar"><i class="far fa-square"></i></button>
+          <button type="button" data-window-close aria-label="Cerrar"><i class="fas fa-xmark"></i></button>
+        </div>
+      </div>
+      <div class="os-window-body os-notebook-body">
+        <iframe src="notebook.php" title="Notebook" loading="lazy" allow="clipboard-read; clipboard-write"></iframe>
+      </div>
+    </section>
+
     <section class="os-window os-search-window"
              id="searchWindow"
              data-window-title="Buscar">

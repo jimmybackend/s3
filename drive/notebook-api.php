@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 use ArcadeCloud\Drive\Core\ApplicationKernel;
 use ArcadeCloud\Drive\Http\JsonResponse;
+use ArcadeCloud\Drive\Activity\ActivityCostRecorder;
+use ArcadeCloud\Drive\Notebook\NotebookAiImproveService;
 use ArcadeCloud\Drive\Notebook\NotebookService;
 
 require_once __DIR__ . '/app_bootstrap.php';
@@ -35,11 +37,17 @@ try {
     }
 
     $service = new NotebookService($app);
+    $aiImprove = new NotebookAiImproveService(
+        $app,
+        \Config::getBedrockRuntime(),
+        ActivityCostRecorder::fromDatabase($app->db())
+    );
     $result = match ($action) {
         'list' => $service->listNotebooks($userId),
         'create' => $service->createNotebook($userId, $payload),
         'save_page' => $service->savePage($userId, $payload, $session->userName()),
         'recognize_line' => $service->recognizeLine($userId, $payload),
+        'improve_ai' => $aiImprove->improve($userId, $payload),
         'load_page' => $service->loadPage(
             $userId,
             (string)($_GET['notebook'] ?? ''),

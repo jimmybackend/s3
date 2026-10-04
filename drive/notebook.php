@@ -38,8 +38,6 @@ if (!preg_match('/\A[a-f0-9]{64}\z/', $csrf)) {
     <div class="nb-top-context">ArcadeCloud Notebook</div>
   </header>
 
-  <main class="nb-main">
-    <section class="nb-workspace">
       <nav class="nb-menubar" aria-label="Menú de Notebook">
         <details class="nb-menu">
           <summary>Archivo</summary>
@@ -104,6 +102,13 @@ if (!preg_match('/\A[a-f0-9]{64}\z/', $csrf)) {
           </div>
         </details>
         <details class="nb-menu">
+          <summary>IA</summary>
+          <div class="nb-menu-panel">
+            <button id="nbImproveAi" type="button">Mejorar hoja con IA</button>
+            <small class="nb-menu-help">Corrige texto y presentación con Amazon Bedrock, conservando objetos editables.</small>
+          </div>
+        </details>
+        <details class="nb-menu">
           <summary>Vista</summary>
           <div class="nb-menu-panel">
             <label>Zoom
@@ -121,6 +126,8 @@ if (!preg_match('/\A[a-f0-9]{64}\z/', $csrf)) {
         <span class="nb-statusbar" id="nbStatus">Lista</span>
       </nav>
 
+  <main class="nb-main">
+    <section class="nb-workspace">
       <div class="nb-page-shell">
         <div class="nb-page-stage">
           <div class="nb-page-counter" aria-label="Paginación de la hoja">

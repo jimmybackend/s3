@@ -25,6 +25,9 @@ final class ActivityCostPageRenderer
         'comprehend' => 'Comprehend',
         'transcribe' => 'Transcribe',
         'cost_explorer' => 'Consultar Cost Explorer',
+        'notebook_page_ocr' => 'OCR de hoja Notebook',
+        'notebook_line_ocr' => 'OCR de renglón Notebook',
+        'notebook_ai_improve' => 'Mejorar hoja Notebook con IA',
     ];
 
     private const UNIT_LABELS = [
@@ -49,6 +52,8 @@ final class ActivityCostPageRenderer
         'transcribe.job_started' => 'job iniciado',
         'transcribe.job_completed' => 'job completado',
         'cost_explorer.api_request' => 'consulta API Cost Explorer',
+        'bedrock.nova_pro_input_token' => 'token de entrada Nova Pro',
+        'bedrock.nova_pro_output_token' => 'token de salida Nova Pro',
         'drive.no_direct_aws_charge' => 'sin cargo AWS directo medido',
     ];
 

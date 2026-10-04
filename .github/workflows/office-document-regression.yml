@@ -5,6 +5,7 @@ on:
     paths:
       - 'drive/src/Office/**'
       - 'drive/src/Media/MediaWorkerNodeService.php'
+      - 'drive/src/System/ComputeNodeAdmissionLock.php'
       - 'drive/src/Media/MediaWorkerNodeSessionRepository.php'
       - 'drive/src/Admin/FastDriveControlService.php'
       - 'drive/src/Admin/ServerTaskActivityProbe.php'
@@ -17,6 +18,7 @@ on:
     paths:
       - 'drive/src/Office/**'
       - 'drive/src/Media/MediaWorkerNodeService.php'
+      - 'drive/src/System/ComputeNodeAdmissionLock.php'
       - 'drive/src/Media/MediaWorkerNodeSessionRepository.php'
       - 'drive/src/Admin/FastDriveControlService.php'
       - 'drive/src/Admin/ServerTaskActivityProbe.php'
@@ -57,6 +59,7 @@ jobs:
           php -l drive/src/Office/OfficeDocumentStorageService.php
           php -l drive/src/Office/OfficeActivityProbe.php
           php -l drive/src/Media/MediaWorkerNodeService.php
+          php -l drive/src/System/ComputeNodeAdmissionLock.php
           php -l drive/src/Admin/FastDriveControlService.php
           php -l drive/src/Admin/ServerTaskActivityProbe.php
           php -l drive/tests/idle_stop_office_regression.php

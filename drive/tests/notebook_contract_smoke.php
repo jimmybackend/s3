@@ -69,6 +69,7 @@ foreach (['Archivo','Editar','Insertar','Formato','IA','Vista'] as $menu) {
 $assert(str_contains($js, "e.key==='Enter'") && str_contains($js, "$('#nbWritePrompt').click()"), 'Enter envía el texto desde el input');
 $assert(str_contains($js, "action==='delete-image'") && str_contains($js, "status('Imagen eliminada')"), 'imagen seleccionada tiene control X para eliminar');
 $assert(str_contains($css, 'grid-template-columns:minmax(0,1fr) auto') && str_contains($css, 'min-width:50px'), 'footer mantiene visible el botón Enviar aun con zoom pequeño');
+$assert(str_contains($css, '@media(max-width:1024px)') && str_contains($css, 'flex:0 0 64px!important') && str_contains($css, 'width:0!important'), 'móvil y tableta reservan ancho fijo para Enviar y obligan al input a ceder espacio');
 $assert(str_contains($js, "document.querySelectorAll('.nb-menu')") && str_contains($css, '.nb-menu-panel'), 'menús desplegables se comportan como aplicación de escritorio');
 $assert(strpos($page, 'class="nb-menubar"') < strpos($page, '<main class="nb-main">'), 'barra de menús queda fuera y arriba del área de la hoja');
 $assert(str_contains($page, 'id="nbImproveAi"') && str_contains($api, "'improve_ai'"), 'Notebook expone Mejorar hoja con IA');

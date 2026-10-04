@@ -1799,7 +1799,7 @@
     },
     {
       "path": "drive/notebook.php",
-      "lines": 168,
+      "lines": 177,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -7504,7 +7504,7 @@
     },
     {
       "path": "drive/tests/notebook_contract_smoke.php",
-      "lines": 61,
+      "lines": 67,
       "kind": "test script",
       "classes": 0,
       "functions": [],
@@ -9314,7 +9314,7 @@
     },
     {
       "path": "drive/js/notebook.js",
-      "lines": 97,
+      "lines": 185,
       "kind": "procedural script",
       "classes": [],
       "functions": [
@@ -9349,7 +9349,11 @@
         "lineStrokeObjects",
         "linePng",
         "scheduleLineRecognition",
+        "loadSelectedIntoPrompt",
+        "clearLongPress",
         "nextTextY",
+        "processImageSource",
+        "insertProcessedImage",
         "pasteImage",
         "normalizeObjects",
         "serialize",
@@ -10579,7 +10583,7 @@
     },
     {
       "path": "drive/docs/runtime_endpoints.json",
-      "bytes": 129003,
+      "bytes": 129062,
       "valid": true,
       "root_type": "object",
       "keys": [

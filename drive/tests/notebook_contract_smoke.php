@@ -40,7 +40,7 @@ $assert(str_contains($page, 'id="nbAlignment"') && str_contains($page, 'value="j
 $assert(str_contains($js, "pieces.push(current+'-')"), 'texto largo usa guion al dividir palabra al final de línea');
 $assert(str_contains($js, "alignment==='right'") && str_contains($js, "alignment==='justify'"), 'renderer aplica alineaciones de texto');
 $assert(str_contains($js, 'onLine:state.onLine') && str_contains($js, 'alignment:state.alignment'), 'modo de línea y alineación persisten en JSON editable');
-$assert(str_contains($page, 'class="nb-page-footer"') && str_contains($page, 'class="nb-page-counter"'), 'prompt y paginación viven sobre la hoja');
+$assert(str_contains($page, 'class="nb-composer"') && str_contains($page, 'class="nb-page-counter"'), 'compositor vive fuera de la hoja y paginación sobre la hoja');
 $assert(str_contains($page, 'id="nbMenuPage"') && str_contains($page, 'id="nbMenuTotal"'), 'paginación también es visible en el menú');
 $assert(str_contains($js, 'previewPoints()') && str_contains($js, 'alignStrokeToRule'), 'Sobre línea ajusta también la previsualización del trazo en pantalla');
 $assert(str_contains($page, 'id="nbFont"') && str_contains($page, 'value="caveat" selected') && str_contains($page, 'value="dancing"') && str_contains($page, 'value="shadows"') && str_contains($page, 'value="sans"') && str_contains($page, 'value="serif"') && str_contains($page, 'value="mono"'), 'Notebook ofrece Caveat por defecto y varias familias tipográficas');
@@ -68,8 +68,9 @@ foreach (['Archivo','Editar','Insertar','Formato','IA','Vista'] as $menu) {
 }
 $assert(str_contains($js, "e.key==='Enter'") && str_contains($js, "$('#nbWritePrompt').click()"), 'Enter envía el texto desde el input');
 $assert(str_contains($js, "action==='delete-image'") && str_contains($js, "status('Imagen eliminada')"), 'imagen seleccionada tiene control X para eliminar');
-$assert(str_contains($css, 'grid-template-columns:minmax(0,1fr) auto') && str_contains($css, 'min-width:50px'), 'footer mantiene visible el botón Enviar aun con zoom pequeño');
-$assert(str_contains($css, '@media(max-width:1024px)') && str_contains($css, 'flex:0 0 64px!important') && str_contains($css, 'width:0!important'), 'móvil y tableta reservan ancho fijo para Enviar y obligan al input a ceder espacio');
+$assert(str_contains($css, '.nb-composer') && str_contains($css, 'grid-template-columns:minmax(0,1fr) 76px'), 'compositor superior reserva ancho fijo para Enviar');
+$assert(str_contains($css, 'position:sticky') && str_contains($css, 'top:96px'), 'compositor permanece visible debajo del menú');
+$assert(strpos($page, 'class="nb-composer"') < strpos($page, '<main class="nb-main">'), 'input de texto queda fuera de la hoja y arriba del área de trabajo');
 $assert(str_contains($js, "document.querySelectorAll('.nb-menu')") && str_contains($css, '.nb-menu-panel'), 'menús desplegables se comportan como aplicación de escritorio');
 $assert(strpos($page, 'class="nb-menubar"') < strpos($page, '<main class="nb-main">'), 'barra de menús queda fuera y arriba del área de la hoja');
 $assert(str_contains($page, 'id="nbImproveAi"') && str_contains($api, "'improve_ai'"), 'Notebook expone Mejorar hoja con IA');

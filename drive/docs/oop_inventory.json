@@ -8160,16 +8160,15 @@
     },
     {
       "path": "drive/up.php",
-      "lines": 881,
+      "lines": 879,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
-      "session": true,
+      "session": false,
       "superglobals": [
         "FILES",
         "GET",
-        "POST",
-        "SESSION"
+        "POST"
       ],
       "db": false,
       "s3": false,
@@ -10615,7 +10614,7 @@
     },
     {
       "path": "drive/docs/runtime_endpoints.json",
-      "bytes": 129264,
+      "bytes": 129671,
       "valid": true,
       "root_type": "object",
       "keys": [

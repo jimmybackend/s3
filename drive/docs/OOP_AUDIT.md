@@ -562,7 +562,7 @@
 | `drive/transcribir_iniciar.php` | 8 | thin endpoint | 0 | — | — | — | — |
 | `drive/unlock_file.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/up-clean.php` | 10 | thin endpoint | 0 | — | — | — | — |
-| `drive/up.php` | 881 | view/entrypoint | 0 | ⚠️ | — | — | — |
+| `drive/up.php` | 879 | view/entrypoint | 0 | — | — | — | — |
 | `drive/update.php` | 11 | thin endpoint | 0 | — | — | — | — |
 | `drive/upload/ModerationUploadGuard.php` | 187 | class/module | 2 | — | ⚠️ | — | — |
 | `drive/upload/UploadFactory.php` | 60 | class/module | 1 | — | — | — | — |

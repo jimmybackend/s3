@@ -888,6 +888,7 @@ Escribe help o usa uno de los botones disponibles.</pre>
       <div class="os-window-body">
         <div class="os-links-grid">
           <a href="activity_costs.php" data-os-tool="activity-costs" data-tool-title="Actividad y costos"><i class="fas fa-receipt"></i><span><strong>Actividad y costos</strong><small>Consumo de tu cuenta</small></span></a>
+          <a href="up.php" target="_blank" rel="noopener noreferrer"><i class="fas fa-cloud-arrow-up"></i><span><strong>Subir archivos</strong><small>Subida pública a usuarios</small></span></a>
           <?php if ($canViewPersonalTools): ?>
           <a href="aws.php" data-os-tool="aws" data-tool-title="AWS y códigos TOTP"><i class="fab fa-aws"></i><span><strong>AWS y códigos TOTP</strong><small>Herramienta personal autorizada</small></span></a>
           <a href="ec2.php?surface=os" data-os-tool="ec2" data-tool-title="Gestión EC2"><i class="fas fa-server"></i><span><strong>Gestión EC2</strong><small>Instancias y bases AWS</small></span></a>

@@ -178,6 +178,25 @@ async function readClipboardImage(atPoint=null){
 }
 document.addEventListener('paste',e=>{const items=[...(e.clipboardData?.items||[])],imageItem=items.find(i=>i.kind==='file'&&i.type.startsWith('image/'));if(!imageItem)return;const file=imageItem.getAsFile();if(!file)return;e.preventDefault();pasteImage(file,state.textCursor);});
 $('#nbPasteImage').onclick=()=>readClipboardImage(state.textCursor);
+$('#nbImproveAi').onclick=async()=>{
+ if(!state.notebook){status('Crea o selecciona una libreta primero.',true);return;}
+ const button=$('#nbImproveAi');button.disabled=true;
+ const previousSelected=state.selectedId;state.selectedId=null;render();status('Bedrock está revisando la hoja…');
+ try{
+   const j=await api('improve_ai',{method:'POST',body:JSON.stringify({
+     notebook:state.notebook,
+     page:state.page,
+     png:canvas.toDataURL('image/png'),
+     json:serialize()
+   })});
+   const improved=JSON.parse(j.json);
+   if(!Array.isArray(improved.objects))throw new Error('Bedrock devolvió una hoja inválida.');
+   snap();state.objects=improved.objects;normalizeObjects();state.selectedId=null;state.textCursor=null;state.dirty=true;
+   render();status(j.summary||'Hoja mejorada con IA');
+ }catch(e){
+   state.selectedId=previousSelected;render();status(e.message||'No se pudo mejorar la hoja.',true);
+ }finally{button.disabled=false;}
+};
 function normalizeObjects(){for(const o of state.objects){if(!o.id)o.id=uid(o.kind==='text'?'t':o.kind==='image'?'i':'s');if(o.kind==='text'){o.font=o.font||'caveat';o.size=o.size||28;}if(o.kind==='image'){o.rotation=Number(o.rotation)||0;}}}
 function serialize(){return JSON.stringify({version:6,page:state.page,pages:state.pages,paper:state.paper,orientation:state.orientation,background:state.background,onLine:state.onLine,alignment:state.alignment,font:state.font,fontSize:state.fontSize,objects:state.objects});}
 async function save(){if(!state.notebook)return;status('Guardando PNG…');try{state.selectedId=null;render();const j=await api('save_page',{method:'POST',body:JSON.stringify({notebook:state.notebook,page:state.page,png:canvas.toDataURL('image/png'),json:serialize()})});state.dirty=false;status(j.transcription_error?'Guardada · transcripción pendiente':'Guardada · transcrita');}catch(e){status(e.message,true);}}

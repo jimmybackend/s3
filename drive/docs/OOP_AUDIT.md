@@ -541,7 +541,7 @@
 | `drive/tests/upload_catalog_registration_regression.php` | 125 | test script | 0 | — | ⚠️ | — | — |
 | `drive/tests/user_identity_presenter_smoke.php` | 30 | test script | 0 | — | — | — | — |
 | `drive/tests/user_profile_validator_smoke.php` | 72 | test script | 0 | — | — | — | — |
-| `drive/tests/web_os_clipboard_contract_smoke.php` | 120 | test script | 0 | — | — | — | — |
+| `drive/tests/web_os_clipboard_contract_smoke.php` | 126 | test script | 0 | — | — | — | — |
 | `drive/tests/web_os_contract_smoke.php` | 536 | test script | 0 | — | — | — | — |
 | `drive/tests/web_os_desktop_shell_smoke.php` | 20 | test script | 0 | — | — | — | — |
 | `drive/tests/web_os_file_applications_smoke.php` | 21 | test script | 0 | — | — | — | — |
@@ -566,7 +566,7 @@
 | `drive/upload/UploadFactory.php` | 60 | class/module | 1 | — | — | — | — |
 | `drive/upload/core/UploadResponse.php` | 15 | class/module | 1 | — | — | — | — |
 | `drive/upload/core/UploaderInterface.php` | 11 | class/module | 0 | — | — | — | — |
-| `drive/upload/drivers/Chunked15MBUploader.php` | 290 | class/module | 1 | — | — | — | — |
+| `drive/upload/drivers/Chunked15MBUploader.php` | 292 | class/module | 1 | — | — | — | — |
 | `drive/upload/drivers/DropboxUploader.php` | 147 | class/module | 1 | — | — | — | — |
 | `drive/upload/drivers/LocalPresignedPutUploader.php` | 325 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/upload/drivers/RemoteUrlUploader.php` | 493 | class/module | 1 | — | — | — | — |
@@ -651,7 +651,7 @@
 | `drive/js/subir.js` | 358 | class/module | SubirModule | — | — | — |
 | `drive/js/theme-state-bridge.js` | 73 | class/module | ThemeStateBridge | — | — | — |
 | `drive/js/transcribe-background.js` | 324 | class/module | TranscribeBackgroundModule | — | — | — |
-| `drive/js/upload-center.js` | 960 | class/module | ArcadeCloudUploadCenter | — | — | — |
+| `drive/js/upload-center.js` | 979 | class/module | ArcadeCloudUploadCenter | — | — | — |
 | `drive/js/upload-destination.js` | 95 | class/module | UploadDestinationModule | — | — | — |
 | `drive/js/ver-metadatos.js` | 75 | class/module | VerMetadatosModule | — | verMetadatos | window functions: verMetadatos |
 | `drive/js/ver-pdf.js` | 112 | class/module | VerPdfModule | — | — | — |

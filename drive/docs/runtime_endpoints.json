@@ -192,6 +192,7 @@
         "drive/polly_tasks.php",
         "drive/polly_tts.php",
         "drive/procesar_textract.php",
+        "drive/procesar_textract_carpeta.php",
         "drive/profile.php",
         "drive/psesion.php",
         "drive/rekognition_labels.php",
@@ -1421,6 +1422,15 @@
       ]
     },
     {
+      "path": "drive/procesar_textract_carpeta.php",
+      "size": 264,
+      "active": false,
+      "references": [
+        "drive/tests/folder_textract_contract_smoke.php",
+        "drive/js/so-folders.js"
+      ]
+    },
+    {
       "path": "drive/profile.php",
       "size": 308,
       "active": false,
@@ -1960,6 +1970,14 @@
       "active": false,
       "references": [
         "drive/tests/media_processing_contract_smoke.php"
+      ]
+    },
+    {
+      "path": "drive/src/Aws/FolderTextractService.php",
+      "size": 7554,
+      "active": false,
+      "references": [
+        "drive/tests/folder_textract_contract_smoke.php"
       ]
     },
     {
@@ -2773,9 +2791,11 @@
     },
     {
       "path": "drive/src/Http/Controller/AwsFileController.php",
-      "size": 11712,
+      "size": 13262,
       "active": false,
-      "references": []
+      "references": [
+        "drive/tests/folder_textract_contract_smoke.php"
+      ]
     },
     {
       "path": "drive/src/Http/Controller/BackgroundTaskCompatibilityController.php",
@@ -4059,6 +4079,12 @@
     {
       "path": "drive/tests/folder_document_sanitizer.php",
       "size": 1990,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/tests/folder_textract_contract_smoke.php",
+      "size": 2180,
       "active": false,
       "references": []
     },

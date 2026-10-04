@@ -1784,7 +1784,7 @@
     },
     {
       "path": "drive/notebook.php",
-      "lines": 127,
+      "lines": 135,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -7369,7 +7369,7 @@
     },
     {
       "path": "drive/tests/notebook_contract_smoke.php",
-      "lines": 43,
+      "lines": 47,
       "kind": "test script",
       "classes": 0,
       "functions": [],
@@ -9179,7 +9179,7 @@
     },
     {
       "path": "drive/js/notebook.js",
-      "lines": 205,
+      "lines": 206,
       "kind": "procedural script",
       "classes": [],
       "functions": [
@@ -9198,6 +9198,7 @@
         "render",
         "snap",
         "pos",
+        "previewPoints",
         "nextTextY",
         "serialize",
         "syncControls"

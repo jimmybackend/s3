@@ -381,6 +381,7 @@
 | `drive/src/Media/MediaWorkerNodeService.php` | `drive/tests/compute_admission_lock_contract_smoke.php`, `drive/tests/media_processing_contract_smoke.php`, `drive/tests/office_gateway_contract_smoke.php`, `drive/tests/web_os_contract_smoke.php` |
 | `drive/src/Media/MediaWorkerNodeSessionRepository.php` | `drive/tests/media_processing_contract_smoke.php` |
 | `drive/src/Media/ThumbnailService.php` | ninguna |
+| `drive/src/Notebook/NotebookAiImproveService.php` | `drive/tests/notebook_contract_smoke.php` |
 | `drive/src/Notebook/NotebookService.php` | `drive/tests/notebook_contract_smoke.php` |
 | `drive/src/Office/OfficeActivityProbe.php` | `drive/tests/office_gateway_contract_smoke.php` |
 | `drive/src/Office/OfficeDocumentSessionRepository.php` | `drive/tests/office_gateway_contract_smoke.php` |

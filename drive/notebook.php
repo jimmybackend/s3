@@ -91,15 +91,17 @@ if (!preg_match('/\A[a-f0-9]{64}\z/', $csrf)) {
       </div>
 
       <div class="nb-page-shell">
-        <div class="nb-page-counter" aria-label="Paginación de la hoja">
-          <button id="nbPrev" type="button" aria-label="Página anterior">‹</button>
-          <span><strong id="nbPageLabel">1</strong>/<strong id="nbTotal">100</strong></span>
-          <button id="nbNext" type="button" aria-label="Página siguiente">›</button>
-        </div>
-        <canvas id="nbCanvas" aria-label="Hoja de Notebook"></canvas>
-        <div class="nb-page-footer" role="group" aria-label="Escritura asistida">
-          <input id="nbPrompt" type="text" placeholder="Escribe un mensaje y Notebook lo colocará como escritura manual">
-          <button id="nbWritePrompt" type="button">Escribir a mano</button>
+        <div class="nb-page-stage">
+          <div class="nb-page-counter" aria-label="Paginación de la hoja">
+            <button id="nbPrev" type="button" aria-label="Página anterior">‹</button>
+            <span><strong id="nbPageLabel">1</strong>/<strong id="nbTotal">100</strong></span>
+            <button id="nbNext" type="button" aria-label="Página siguiente">›</button>
+          </div>
+          <canvas id="nbCanvas" aria-label="Hoja de Notebook"></canvas>
+          <div class="nb-page-footer" role="group" aria-label="Escritura asistida">
+            <input id="nbPrompt" type="text" placeholder="Escribe un mensaje y Notebook lo colocará como escritura manual">
+            <button id="nbWritePrompt" type="button">Escribir a mano</button>
+          </div>
         </div>
       </div>
 

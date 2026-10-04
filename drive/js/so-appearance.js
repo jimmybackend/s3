@@ -2,9 +2,10 @@ class ArcadeCloudOsAppearance {
   constructor(win, doc) {
     this.window = win;
     this.document = doc;
-    this.storageKey = 'arcadecloud-os-appearance-v1';
-    this.defaults = { theme: 'dark', wallpaper: '', wallpaperName: '', wallpaperEnabled: true, windowOpacity: 94, menuOpacity: 98 };
     this.remote = win.ARCADECLOUD_OS_APPEARANCE || {};
+    this.nodeKey = String(this.remote.nodeKey || 'default');
+    this.storageKey = 'arcadecloud-os-appearance-v2:' + this.nodeKey;
+    this.defaults = { theme: 'dark', wallpaper: '', wallpaperName: '', wallpaperEnabled: true, windowOpacity: 94, menuOpacity: 98 };
     this.state = this.load();
   }
 

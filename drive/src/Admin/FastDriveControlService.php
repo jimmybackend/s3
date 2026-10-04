@@ -7,6 +7,7 @@ use ArcadeCloud\Drive\Core\DriveApplication;
 use ArcadeCloud\Drive\Office\OfficeActivityProbe;
 use ArcadeCloud\Drive\Security\SuperAdminReauthenticationService;
 use ArcadeCloud\Drive\System\Ec2InstanceIdentityService;
+use ArcadeCloud\Drive\System\ComputeNodeAdmissionLock;
 use RuntimeException;
 use Throwable;
 
@@ -78,56 +79,59 @@ final class FastDriveControlService
         (new SuperAdminReauthenticationService($this->app))->verify($currentPassword);
 
         [$instanceId, $region] = $this->target();
-        $gateway = $this->app->ec2Gateway($region);
-        $instance = $gateway->getInstance($instanceId);
-        if (!is_array($instance)) {
-            throw new RuntimeException('La instancia FastDrive configurada no fue encontrada en AWS.');
-        }
+        return (new ComputeNodeAdmissionLock($this->app->db()))
+            ->synchronized($instanceId, function () use ($instanceId, $region): array {
+            $gateway = $this->app->ec2Gateway($region);
+            $instance = $gateway->getInstance($instanceId);
+            if (!is_array($instance)) {
+                throw new RuntimeException('La instancia FastDrive configurada no fue encontrada en AWS.');
+            }
 
-        $state = (string)($instance['State']['Name'] ?? 'unknown');
-        if (in_array($state, ['stopped', 'stopping'], true)) {
+            $state = (string)($instance['State']['Name'] ?? 'unknown');
+            if (in_array($state, ['stopped', 'stopping'], true)) {
+                return [
+                    'ok' => true,
+                    'changed' => false,
+                    'message' => 'FastDrive ya está apagado o apagándose.',
+                    'state' => $state,
+                ];
+            }
+            if ($state !== 'running') {
+                throw new RuntimeException(
+                    "FastDrive está en estado '{$state}'. El apagado manual sólo se permite desde 'running'."
+                );
+            }
+
+            $tasks = (new ServerTaskActivityProbe($this->app))->summary();
+            if ((int)($tasks['active'] ?? 0) > 0) {
+                $active = [];
+                foreach (($tasks['sources'] ?? []) as $name => $busy) {
+                    if ($busy) $active[] = (string)$name;
+                }
+                throw new RuntimeException(
+                    'No se puede apagar FastDrive: hay tareas activas'
+                    . ($active ? ' (' . implode(', ', $active) . ')' : '')
+                    . '. Espera a que terminen.'
+                );
+            }
+
+            if ($this->hasActiveOfficeSession($instanceId)) {
+                throw new RuntimeException(
+                    'No se puede apagar FastDrive: existe una sesión Office activa. '
+                    . 'Cierra Office y espera a que termine el guardado antes de apagar.'
+                );
+            }
+
+            $gateway->stop($instanceId, false);
+            $this->auditStop($instanceId);
+
             return [
                 'ok' => true,
-                'changed' => false,
-                'message' => 'FastDrive ya está apagado o apagándose.',
-                'state' => $state,
+                'changed' => true,
+                'message' => 'AWS aceptó la orden de apagar FastDrive.',
+                'state' => 'stopping',
             ];
-        }
-        if ($state !== 'running') {
-            throw new RuntimeException(
-                "FastDrive está en estado '{$state}'. El apagado manual sólo se permite desde 'running'."
-            );
-        }
-
-        $tasks = (new ServerTaskActivityProbe($this->app))->summary();
-        if ((int)($tasks['active'] ?? 0) > 0) {
-            $active = [];
-            foreach (($tasks['sources'] ?? []) as $name => $busy) {
-                if ($busy) $active[] = (string)$name;
-            }
-            throw new RuntimeException(
-                'No se puede apagar FastDrive: hay tareas activas'
-                . ($active ? ' (' . implode(', ', $active) . ')' : '')
-                . '. Espera a que terminen.'
-            );
-        }
-
-        if ($this->hasActiveOfficeSession($instanceId)) {
-            throw new RuntimeException(
-                'No se puede apagar FastDrive: existe una sesión Office activa. '
-                . 'Cierra Office y espera a que termine el guardado antes de apagar.'
-            );
-        }
-
-        $gateway->stop($instanceId, false);
-        $this->auditStop($instanceId);
-
-        return [
-            'ok' => true,
-            'changed' => true,
-            'message' => 'AWS aceptó la orden de apagar FastDrive.',
-            'state' => 'stopping',
-        ];
+            });
     }
 
     public function forceStop(string $currentPassword): array

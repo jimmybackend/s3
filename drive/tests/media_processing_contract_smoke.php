@@ -169,7 +169,11 @@ mediaContract(str_contains($node, 'localWorkerActive()'), 'preflight comprueba q
 mediaContract(str_contains($node, 'temporary_space_required_bytes'), 'preflight calcula espacio temporal para el archivo seleccionado');
 mediaContract(str_contains($node, 'TEMP_SPACE_MULTIPLIER = 2.25'), 'preflight conserva reserva temporal de 2.25x');
 mediaContract(str_contains($node, "selection' => 'remote_fallback'"), 'EC2 remota se usa sólo como fallback del preflight local');
-mediaContract(str_contains($service, 'prepareForWork($userId, $authorizedStart, $sourceBytes)'), 'backend pasa el tamaño real registrado al preflight');
+mediaContract(
+    str_contains($service, 'admitWork(')
+    && str_contains($service, '$sourceBytes,'),
+    'backend pasa el tamaño real registrado al preflight dentro de la admisión atómica'
+);
 mediaContract(str_contains($controller, "queryString('source_bytes')"), 'consulta de estado acepta tamaño del archivo para preflight');
 mediaContract(str_contains($js, "url.searchParams.set('source_bytes'"), 'modal envía tamaño del archivo al preflight');
 mediaContract(str_contains($js, "'worker_inactive'"), 'UI bloquea un nodo local cuyo worker no está activo');

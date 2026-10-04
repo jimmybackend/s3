@@ -341,12 +341,16 @@ if ($officeUserId > 0) {
 
         if ($state === 'running') {
             try {
-                $prepared = $office->prepareWorkstation($privateIp);
+                $prepared = $office->prepareAndClaimWorkstation(
+                    $officeUserId,
+                    $instanceId,
+                    $officeSessionKey,
+                    $privateIp
+                );
                 $workstationActive = (bool)($prepared['active'] ?? false);
                 $mediaBusy = (bool)($prepared['media_busy'] ?? false);
 
                 if ($workstationActive) {
-                    $office->claimOfficeSession($officeUserId, $instanceId, $officeSessionKey);
                     $officeInstanceId = $instanceId;
                     $session->set('office_instance_id', $officeInstanceId);
 

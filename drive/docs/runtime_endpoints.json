@@ -1320,7 +1320,7 @@
     },
     {
       "path": "drive/notebook-api.php",
-      "size": 2070,
+      "size": 2142,
       "active": false,
       "references": [
         "drive/tests/notebook_contract_smoke.php",
@@ -1329,7 +1329,7 @@
     },
     {
       "path": "drive/notebook.php",
-      "size": 6115,
+      "size": 6578,
       "active": true,
       "references": [
         "drive/so.php",
@@ -3235,7 +3235,7 @@
     },
     {
       "path": "drive/src/Notebook/NotebookService.php",
-      "size": 14065,
+      "size": 16207,
       "active": false,
       "references": [
         "drive/tests/notebook_contract_smoke.php"
@@ -4150,7 +4150,7 @@
     },
     {
       "path": "drive/tests/notebook_contract_smoke.php",
-      "size": 4216,
+      "size": 5052,
       "active": false,
       "references": []
     },

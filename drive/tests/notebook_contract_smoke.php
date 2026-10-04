@@ -32,6 +32,11 @@ foreach (['blank','ruled','grid','millimeter','dots','notes'] as $background) {
 }
 $assert(str_contains($js, "Segoe Print") && str_contains($page, 'nbWritePrompt'), 'prompt puede colocarse como escritura manual');
 $assert(str_contains($service, 'movePage') && str_contains($page, 'nbMovePage'), 'hojas pueden moverse entre libretas');
+$assert(str_contains($page, 'id="nbOnLine"') && str_contains($js, 'alignStrokeToRule'), 'modo Sobre línea alinea escritura manual');
+$assert(str_contains($page, 'id="nbAlignment"') && str_contains($page, 'value="justify"'), 'Notebook ofrece izquierda derecha y justificada');
+$assert(str_contains($js, "pieces.push(current+'-')"), 'texto largo usa guion al dividir palabra al final de línea');
+$assert(str_contains($js, "alignment==='right'") && str_contains($js, "alignment==='justify'"), 'renderer aplica alineaciones de texto');
+$assert(str_contains($js, 'onLine:state.onLine') && str_contains($js, 'alignment:state.alignment'), 'modo de línea y alineación persisten en JSON editable');
 $assert(str_contains($css, '@media(max-width:720px)'), 'Notebook incluye diseño móvil/tableta');
 
 echo "Notebook contract OK\n";

@@ -856,6 +856,14 @@ class BackgroundTaskCenter {
     if (created) details.push(`Inicio: ${created}`);
     if (updated && updated !== created) details.push(`Actualizado: ${updated}`);
 
+    const startedMs = Date.parse(task.created_at || '');
+    const endedMs = ['completed', 'failed', 'cancelled'].includes(status)
+      ? Date.parse(task.completed_at || task.updated_at || '')
+      : Date.now();
+    if (Number.isFinite(startedMs) && Number.isFinite(endedMs) && endedMs >= startedMs) {
+      details.push(`Tiempo: ${this.duration(endedMs - startedMs)}`);
+    }
+
     if (task.kind === 'sync') {
       if (Number(meta.batch || 0) > 0) details.push(`Lote: ${Number(meta.batch)}`);
       if (Number(meta.files || 0) > 0) details.push(`Archivos: ${Number(meta.files)}`);
@@ -865,6 +873,13 @@ class BackgroundTaskCenter {
       if (Number(meta.items || 0) > 0) details.push(`Elementos: ${Number(meta.items)}`);
       if (Number(meta.processed_items || 0) > 0) details.push(`Procesados: ${Number(meta.processed_items)}`);
       if (meta.destination) details.push(`Destino: ${String(meta.destination)}`);
+    }
+    if (task.kind === 'folder-textract') {
+      const total = Number(meta.items || 0);
+      const processed = Number(meta.processed_items || 0);
+      if (total > 0) details.push(`Hojas: ${processed} / ${total}`);
+      if (meta.current_file && status === 'running') details.push(`Archivo: ${String(meta.current_file)}`);
+      if (meta.output_name && status === 'completed') details.push(`Resultado: ${String(meta.output_name)}`);
     }
     if (task.kind === 'upload') {
       if (meta.destination) details.push(`Destino: ${String(meta.destination)}`);
@@ -943,6 +958,15 @@ class BackgroundTaskCenter {
       const total = Number(meta.items || 0);
       const processed = Number(meta.processed_items || 0);
       if (total > 0 && processed >= 0) {
+        const pct = Math.max(1, Math.min(99, Math.round((processed / total) * 100)));
+        return { cssClass: 'determinate', widthStyle: `width:${pct}%` };
+      }
+    }
+
+    if (task.kind === 'folder-textract') {
+      const total = Number(meta.items || 0);
+      const processed = Number(meta.processed_items || 0);
+      if (total > 0) {
         const pct = Math.max(1, Math.min(99, Math.round((processed / total) * 100)));
         return { cssClass: 'determinate', widthStyle: `width:${pct}%` };
       }

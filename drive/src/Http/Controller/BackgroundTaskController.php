@@ -5,6 +5,7 @@ namespace ArcadeCloud\Drive\Http\Controller;
 
 use ArcadeCloud\Drive\Activity\ActivityCostRecorder;
 use ArcadeCloud\Drive\Application\BackgroundWorkerLauncher;
+use ArcadeCloud\Drive\Aws\FolderTextractJobStore;
 use ArcadeCloud\Drive\Admin\ServerMaintenanceJobStore;
 use ArcadeCloud\Drive\Http\JsonResponse;
 use ArcadeCloud\Drive\Media\MediaProcessingJobRepository;
@@ -62,6 +63,12 @@ final class BackgroundTaskController extends AbstractJsonController
                 $tasks = array_merge($tasks, $this->mediaTasks($userId));
             } catch (\Throwable $e) {
                 $sourceErrors['media'] = $e->getMessage();
+            }
+
+            try {
+                $tasks = array_merge($tasks, $this->folderTextractTasks($userId));
+            } catch (\Throwable $e) {
+                $sourceErrors['folder_textract'] = $e->getMessage();
             }
 
             try {
@@ -136,6 +143,8 @@ final class BackgroundTaskController extends AbstractJsonController
                 $message = $this->handleMediaAction($userId, substr($controlId, 6), $action);
             } elseif (str_starts_with($controlId, 'activity:')) {
                 $message = $this->handleActivityAction($userId, (int)substr($controlId, 9), $action);
+            } elseif (str_starts_with($controlId, 'folder-textract:')) {
+                $message = $this->handleFolderTextractAction($userId, substr($controlId, 16), $action);
             } elseif (str_starts_with($controlId, 'maintenance:')) {
                 $message = $this->handleMaintenanceAction($userId, substr($controlId, 12), $action);
             } else {
@@ -149,6 +158,77 @@ final class BackgroundTaskController extends AbstractJsonController
         } catch (\Throwable $e) {
             JsonResponse::send(['ok' => false, 'error' => $e->getMessage()], 400);
         }
+    }
+
+    private function folderTextractTasks(int $userId): array
+    {
+        $tasks = [];
+        foreach ((new FolderTextractJobStore())->recentForUser($userId, 40) as $job) {
+            $raw = strtolower((string)($job['status'] ?? 'queued'));
+            $status = match ($raw) {
+                'running' => 'running',
+                'completed' => 'completed',
+                'failed' => 'failed',
+                'cancelled' => 'cancelled',
+                default => 'queued',
+            };
+            $id = (string)($job['id'] ?? '');
+            $total = max(0, (int)($job['total'] ?? 0));
+            $processed = max(0, (int)($job['processed'] ?? 0));
+            $progress = $status === 'completed'
+                ? 100
+                : ($total > 0 ? max(0, min(99, (int)floor(($processed / $total) * 100))) : null);
+            $actions = [];
+            if ($status === 'queued') $actions[] = $this->uiAction('cancel', 'Cancelar', 'danger', true);
+            if (in_array($status, ['completed','failed','cancelled'], true)) {
+                $actions[] = $this->uiAction('delete', 'Eliminar de Tareas', 'muted', true);
+            }
+            $name = trim((string)($job['name'] ?? ''));
+            if ($name === '') $name = 'Carpeta de documentos';
+
+            $tasks[] = [
+                'id' => 'folder-textract:' . $id,
+                'control_id' => 'folder-textract:' . $id,
+                'kind' => 'folder-textract',
+                'category' => 'Extracción de texto',
+                'service' => 'Amazon Textract',
+                'provider' => 'Amazon',
+                'title' => 'Extraer texto · ' . $name,
+                'status' => $status,
+                'progress' => $progress,
+                'progress_mode' => $progress === null && in_array($status, ['queued','running'], true) ? 'indeterminate' : 'determinate',
+                'detail' => (string)($job['message'] ?? ''),
+                'created_at' => (string)($job['started_at'] ?: $job['created_at'] ?? ''),
+                'updated_at' => (string)($job['updated_at'] ?? ''),
+                'completed_at' => (string)($job['completed_at'] ?? ''),
+                'estimated_cost' => $job['estimated_cost'] ?? null,
+                'currency' => (string)($job['currency'] ?? 'USD'),
+                'pricing_state' => $status === 'completed' ? 'complete' : 'pending',
+                'actions' => $actions,
+                'metadata' => [
+                    'items' => $total,
+                    'processed_items' => $processed,
+                    'current_file' => (string)($job['current_file'] ?? ''),
+                    'output_name' => (string)($job['output_name'] ?? ''),
+                    'output_route' => (string)($job['output_route'] ?? ''),
+                ],
+            ];
+        }
+        return $tasks;
+    }
+
+    private function handleFolderTextractAction(int $userId, string $jobId, string $action): string
+    {
+        $store = new FolderTextractJobStore();
+        if ($action === 'cancel') {
+            $store->cancelForUser($userId, $jobId);
+            return 'Extracción cancelada.';
+        }
+        if ($action === 'delete' || $action === 'dismiss') {
+            $store->deleteForUser($userId, $jobId);
+            return 'Tarea de extracción eliminada.';
+        }
+        throw new RuntimeException('Acción de extracción no permitida.');
     }
 
     private function maintenanceTasks(int $userId): array

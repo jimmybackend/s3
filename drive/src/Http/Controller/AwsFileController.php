@@ -7,6 +7,8 @@ use ArcadeCloud\Drive\Activity\ActivityCostRecorder;
 use ArcadeCloud\Drive\Aws\FileMetadataRepository;
 use ArcadeCloud\Drive\Aws\FileRecordLocator;
 use ArcadeCloud\Drive\Aws\FolderTextractService;
+use ArcadeCloud\Drive\Aws\FolderTextractJobStore;
+use ArcadeCloud\Drive\Application\BackgroundWorkerLauncher;
 use ArcadeCloud\Drive\Aws\GeneratedFileRepository;
 use ArcadeCloud\Drive\Aws\PollyFileService;
 use ArcadeCloud\Drive\Aws\RekognitionFileService;
@@ -34,31 +36,31 @@ final class AwsFileController extends AbstractJsonController
 
     public function textractFolder(): never
     {
-        $this->run('textract_folder', 'Textract', function (int $userId): array {
-            $route = $this->request->postString('ruta');
-            $result = $this->folderTextractService()->extract($userId, $route, $this->request->postString('nombre'));
-            $pages = max(1, (int)($result['billable_pages'] ?? $result['paginas'] ?? 1));
+        try {
+            $this->requirePost();
+            $userId = $this->guardAuthenticated();
+            $this->requireDriveCsrf();
 
-            return [
-                $result,
-                null,
-                [
-                    [
-                        'service' => 'Textract',
-                        'units' => ['textract.detect_document_text_page' => $pages],
-                    ],
-                    [
-                        'service' => 'S3',
-                        'units' => ['s3.put_request' => 1],
-                    ],
-                ],
-                [
-                    'pages' => $pages,
-                    'source_images' => max(0, (int)($result['paginas'] ?? 0)),
-                    'output_bytes' => max(0, (int)($result['bytes'] ?? 0)),
-                ],
-            ];
-        });
+            $route = $this->request->postString('ruta');
+            $name = $this->request->postString('nombre');
+            if ($route === '') {
+                throw new \RuntimeException('Falta la carpeta a procesar.');
+            }
+
+            $store = new FolderTextractJobStore();
+            $job = $store->create($userId, $route, $name);
+            (new BackgroundWorkerLauncher(dirname(__DIR__, 3)))->launchFolderTextract((string)$job['id']);
+
+            JsonResponse::send([
+                'ok' => true,
+                'queued' => true,
+                'task_id' => 'folder-textract:' . (string)$job['id'],
+                'job_id' => (string)$job['id'],
+                'message' => 'Extracción enviada a Tareas.',
+            ]);
+        } catch (\Throwable $e) {
+            JsonResponse::send(['ok' => false, 'error' => $e->getMessage()], 400);
+        }
     }
 
     public function translate(): never

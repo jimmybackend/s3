@@ -43,6 +43,14 @@ final class BackgroundWorkerLauncher
         $this->launch('move_job_worker.php', [$jobId]);
     }
 
+    public function launchFolderTextract(string $jobId): void
+    {
+        if (!preg_match('/^[a-f0-9]{32}$/', $jobId)) {
+            throw new RuntimeException('Tarea Textract de carpeta inválida.');
+        }
+        $this->launch('folder_textract_worker.php', [$jobId]);
+    }
+
     public function launchMaintenance(string $jobId): void
     {
         if (!preg_match('/^[a-f0-9]{32}$/', $jobId)) {

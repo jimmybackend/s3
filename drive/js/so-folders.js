@@ -288,6 +288,54 @@ class ArcadeCloudOsFolderActions {
       return;
     }
 
+    if (action === 'extract-text') {
+      this.notify('Extrayendo texto de las imágenes de "' + folder.name + '"…', 'info');
+      try {
+        const body = new URLSearchParams({ ruta: folder.route });
+        const response = await fetch('procesar_textract_carpeta.php', {
+          method: 'POST',
+          credentials: 'same-origin',
+          cache: 'no-store',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-Drive-CSRF': String(this.window.DRIVE_UPLOAD_CSRF || '')
+          },
+          body: body.toString()
+        });
+        const json = await response.json().catch(() => null);
+        if (!response.ok || json?.ok !== true) {
+          throw new Error(json?.error || json?.mensaje || ('Solicitud fallida (HTTP ' + response.status + ').'));
+        }
+
+        const pages = Number(json.paginas || 0);
+        const cost = Number(json.estimated_cost);
+        const currency = String(json.currency || 'USD');
+        const costText = Number.isFinite(cost)
+          ? ' · costo estimado ' + cost.toFixed(4) + ' ' + currency
+          : '';
+
+        this.notify(
+          'Extracción terminada: ' + String(json.archivo || 'JSON generado') +
+          ' · ' + pages + ' página(s)' + costText,
+          'success'
+        );
+
+        const parent = this.parentRoute(folder.route);
+        this.document.dispatchEvent(new CustomEvent('drive:storage-changed', {
+          detail: { route: parent }
+        }));
+
+        const current = this.currentFolderFromDom();
+        if (this.sameRoute(current.route, parent)) {
+          this.navigate(parent);
+        }
+      } catch (error) {
+        this.notify(error?.message || 'No se pudo extraer el texto de la carpeta.', 'danger');
+      }
+      return;
+    }
+
     const api = this.window.ArcadeFolderActions;
     if (!api) {
       this.notify('Las acciones de carpeta todavía no están disponibles.', 'warning');

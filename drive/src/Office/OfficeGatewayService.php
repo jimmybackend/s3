@@ -7,6 +7,7 @@ use ArcadeCloud\Drive\Admin\FastDriveWakeService;
 use ArcadeCloud\Drive\Core\DriveApplication;
 use ArcadeCloud\Drive\Media\MediaProcessingJobRepository;
 use ArcadeCloud\Drive\Media\MediaWorkerNodeService;
+use ArcadeCloud\Drive\System\ComputeNodeAdmissionLock;
 use ArcadeCloud\Drive\View\FileViewHelper;
 use RuntimeException;
 
@@ -88,6 +89,33 @@ final class OfficeGatewayService
     public function claimOfficeSession(int $userId, string $instanceId, string $sessionKey): void
     {
         $this->leases->claim($userId, $instanceId, $sessionKey);
+    }
+
+    /**
+     * Prepara Workstation y publica el lease Office dentro del mismo mutex
+     * usado por el apagado de FastDrive.
+     *
+     * @return array{active:bool,media_busy:bool,control:array<string,mixed>|null}
+     */
+    public function prepareAndClaimWorkstation(
+        int $userId,
+        string $instanceId,
+        string $sessionKey,
+        string $privateIp
+    ): array {
+        $instanceId = trim($instanceId);
+        if ($instanceId === '') {
+            throw new RuntimeException('Falta la instancia de Office.');
+        }
+
+        return (new ComputeNodeAdmissionLock($this->app->db()))
+            ->synchronized($instanceId, function () use ($userId, $instanceId, $sessionKey, $privateIp): array {
+                $prepared = $this->prepareWorkstation($privateIp);
+                if (($prepared['active'] ?? false) === true) {
+                    $this->leases->claim($userId, $instanceId, $sessionKey);
+                }
+                return $prepared;
+            });
     }
 
     public function assertOfficeSession(int $userId, string $instanceId, string $sessionKey): void

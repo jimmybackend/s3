@@ -35,94 +35,91 @@ if (!preg_match('/\A[a-f0-9]{64}\z/', $csrf)) {
 <div class="nb-app">
   <header class="nb-topbar">
     <div class="nb-brand"><span class="nb-logo">✎</span><div><strong>Notebook</strong><small>ArcadeCloud</small></div></div>
-    <div class="nb-book-picker">
-      <select id="nbNotebook" aria-label="Libreta"></select>
-      <button id="nbNewBook" type="button">Nueva</button>
-      <button id="nbMovePage" type="button">Mover hoja</button>
-    </div>
-    <div class="nb-savebox"><span id="nbStatus">Lista</span><button id="nbSave" type="button">Guardar</button></div>
+    <div class="nb-top-context">ArcadeCloud Notebook</div>
   </header>
 
   <main class="nb-main">
     <section class="nb-workspace">
-      <div class="nb-options">
-        <label>Instrumento
-          <select id="nbTool" aria-label="Instrumento de escritura">
-            <option value="select">Seleccionar / editar</option>
-            <option value="pencil">Lápiz</option>
-            <option value="pen">Bolígrafo</option>
-            <option value="fountain">Pluma fuente</option>
-            <option value="marker">Marcador</option>
-            <option value="brush">Pincel</option>
-            <option value="eraser">Borrador</option>
-            <option value="line-eraser">Borrador de línea</option>
-          </select>
-        </label>
-        <label>Tipo de letra
-          <select id="nbFont" aria-label="Tipo de letra">
-            <option value="caveat" selected>Caveat</option>
-            <option value="dancing">Dancing Script</option>
-            <option value="shadows">Shadows Into Light</option>
-            <option value="sans">Sans</option>
-            <option value="serif">Serif</option>
-            <option value="mono">Mono compacta</option>
-            <option value="rounded">Redondeada</option>
-          </select>
-        </label>
-        <label>Tamaño letra <input id="nbFontSize" type="number" min="12" max="96" step="1" value="28"></label>
-        <label>Zoom
-          <select id="nbZoom" aria-label="Zoom de hoja">
-            <option value="25">25%</option><option value="50" selected>50%</option><option value="75">75%</option><option value="100">100%</option>
-            <option value="125">125%</option><option value="150">150%</option><option value="175">175%</option><option value="200">200%</option>
-          </select>
-        </label>
-        <label>Pegar imagen
-          <select id="nbPasteMode" aria-label="Modo de pegado de imagen">
-            <option value="normal">Normal</option>
-            <option value="outline">Solo contorno B/N</option>
-            <option value="gray">Escala de grises</option>
-            <option value="pencil">Efecto lápiz</option>
-          </select>
-        </label>
-        <button id="nbPasteImage" type="button" class="nb-menu-button">Pegar imagen</button>
-        <label>Color <input id="nbColor" type="color" value="#111111"></label>
-        <label>Grosor <input id="nbSize" type="range" min="1" max="36" value="3"></label>
-        <label>Hoja
-          <select id="nbBackground">
-            <option value="blank">Blanca</option><option value="ruled">Rayada</option>
-            <option value="grid">Cuadros</option><option value="millimeter">Milimétrica</option>
-            <option value="dots">Puntos</option><option value="notes">Notas</option>
-          </select>
-        </label>
-        <label>Tamaño
-          <select id="nbPaper">
-            <option value="letter">Carta</option><option value="legal">Oficio</option>
-            <option value="tabloid">Tabloide</option><option value="half-letter">Media carta</option>
-          </select>
-        </label>
-        <label>Orientación
-          <select id="nbOrientation"><option value="portrait">Vertical</option><option value="landscape">Horizontal</option></select>
-        </label>
-        <label class="nb-switch-label" title="Mantiene la escritura apoyada sobre las líneas de la hoja">
-          <input id="nbOnLine" type="checkbox">
-          <span>Sobre línea</span>
-        </label>
-        <label>Alineación
-          <select id="nbAlignment">
-            <option value="left">Izquierda</option>
-            <option value="right">Derecha</option>
-            <option value="justify">Justificada</option>
-          </select>
-        </label>
-        <span class="nb-menu-page">Página <strong id="nbMenuPage">1</strong>/<strong id="nbMenuTotal">100</strong></span>
-        <div class="nb-edit-actions" role="group" aria-label="Edición">
-          <button id="nbEditSelected" type="button" title="Editar texto seleccionado">✎</button>
-          <button id="nbDeleteSelected" type="button" title="Eliminar selección">⌦</button>
-          <button id="nbUndo" type="button" title="Deshacer">↶</button>
-          <button id="nbRedo" type="button" title="Rehacer">↷</button>
-          <button id="nbClear" type="button" title="Borrar hoja">🗑</button>
-        </div>
-      </div>
+      <nav class="nb-menubar" aria-label="Menú de Notebook">
+        <details class="nb-menu">
+          <summary>Archivo</summary>
+          <div class="nb-menu-panel">
+            <label>Libreta <select id="nbNotebook" aria-label="Libreta"></select></label>
+            <button id="nbNewBook" type="button">Nueva libreta</button>
+            <button id="nbSave" type="button">Guardar</button>
+            <button id="nbMovePage" type="button">Mover hoja</button>
+            <span class="nb-menu-page">Página <strong id="nbMenuPage">1</strong>/<strong id="nbMenuTotal">100</strong></span>
+          </div>
+        </details>
+        <details class="nb-menu">
+          <summary>Editar</summary>
+          <div class="nb-menu-panel">
+            <label>Herramienta
+              <select id="nbTool">
+                <option value="select">Seleccionar / editar</option>
+                <option value="pencil">Lápiz</option><option value="pen">Bolígrafo</option>
+                <option value="fountain">Pluma fuente</option><option value="marker">Marcador</option>
+                <option value="brush">Pincel</option><option value="eraser">Borrador</option>
+                <option value="line-eraser">Borrador de línea</option>
+              </select>
+            </label>
+            <button id="nbEditSelected" type="button">Editar texto</button>
+            <button id="nbDeleteSelected" type="button">Eliminar selección</button>
+            <button id="nbUndo" type="button">Deshacer</button>
+            <button id="nbRedo" type="button">Rehacer</button>
+            <button id="nbClear" type="button">Borrar hoja</button>
+          </div>
+        </details>
+        <details class="nb-menu">
+          <summary>Insertar</summary>
+          <div class="nb-menu-panel">
+            <label>Pegar imagen
+              <select id="nbPasteMode">
+                <option value="normal">Normal</option>
+                <option value="outline">Solo contorno B/N</option>
+                <option value="gray">Escala de grises</option>
+                <option value="pencil">Efecto lápiz</option>
+              </select>
+            </label>
+            <button id="nbPasteImage" type="button">Pegar imagen</button>
+          </div>
+        </details>
+        <details class="nb-menu">
+          <summary>Formato</summary>
+          <div class="nb-menu-panel">
+            <label>Tipo de letra
+              <select id="nbFont">
+                <option value="caveat" selected>Caveat</option><option value="dancing">Dancing Script</option>
+                <option value="shadows">Shadows Into Light</option><option value="sans">Sans</option>
+                <option value="serif">Serif</option><option value="mono">Mono compacta</option><option value="rounded">Redondeada</option>
+              </select>
+            </label>
+            <label>Tamaño letra <input id="nbFontSize" type="number" min="12" max="96" step="1" value="28"></label>
+            <label>Color <input id="nbColor" type="color" value="#111111"></label>
+            <label>Grosor <input id="nbSize" type="range" min="1" max="36" value="3"></label>
+            <label class="nb-switch-label"><input id="nbOnLine" type="checkbox"><span>Sobre línea</span></label>
+            <label>Alineación
+              <select id="nbAlignment"><option value="left">Izquierda</option><option value="right">Derecha</option><option value="justify">Justificada</option></select>
+            </label>
+          </div>
+        </details>
+        <details class="nb-menu">
+          <summary>Vista</summary>
+          <div class="nb-menu-panel">
+            <label>Zoom
+              <select id="nbZoom"><option value="25">25%</option><option value="50" selected>50%</option><option value="75">75%</option><option value="100">100%</option><option value="125">125%</option><option value="150">150%</option><option value="175">175%</option><option value="200">200%</option></select>
+            </label>
+            <label>Hoja
+              <select id="nbBackground"><option value="blank">Blanca</option><option value="ruled">Rayada</option><option value="grid">Cuadros</option><option value="millimeter">Milimétrica</option><option value="dots">Puntos</option><option value="notes">Notas</option></select>
+            </label>
+            <label>Tamaño
+              <select id="nbPaper"><option value="letter">Carta</option><option value="legal">Oficio</option><option value="tabloid">Tabloide</option><option value="half-letter">Media carta</option></select>
+            </label>
+            <label>Orientación <select id="nbOrientation"><option value="portrait">Vertical</option><option value="landscape">Horizontal</option></select></label>
+          </div>
+        </details>
+        <span class="nb-statusbar" id="nbStatus">Lista</span>
+      </nav>
 
       <div class="nb-page-shell">
         <div class="nb-page-stage">

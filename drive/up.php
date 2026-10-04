@@ -8,21 +8,19 @@ use ArcadeCloud\Drive\Upload\PublicMultipartUploadService;
 $app = \ArcadeCloud\Drive\Core\ApplicationKernel::app();
 
 $session = $app->session();
+// up.php es intencionalmente público: la sesión anónima se usa solamente
+// para mantener un token CSRF por navegador y permitir reanudación segura.
+// No exige una cuenta autenticada para seleccionar un usuario y subirle archivos.
 $session->start();
-$session->requireAuthenticated('index.php');
 
-$actorUserId = $session->userId();
-$actorRole = trim((string)($_SESSION['role'] ?? ''));
+$actorUserId = $session->isAuthenticated()
+    ? $session->userId()
+    : 0;
 
 $adminUploadCsrf = (string)$session->get('admin_upload_csrf', '');
 if (!preg_match('/\A[a-f0-9]{64}\z/', $adminUploadCsrf)) {
     $adminUploadCsrf = bin2hex(random_bytes(32));
     $session->set('admin_upload_csrf', $adminUploadCsrf);
-}
-
-if (!in_array($actorRole, ['Administración', 'Soporte'], true)) {
-    http_response_code(403);
-    exit('No autorizado.');
 }
 
 $targetUserId = (int)(

@@ -1,9 +1,9 @@
 {
   "summary": {
-    "php_total": 544,
-    "php_class_modules": 309,
+    "php_total": 548,
+    "php_class_modules": 311,
     "php_needs_migration": 0,
-    "php_tests": 74,
+    "php_tests": 75,
     "js_total": 80,
     "js_class_modules": 73,
     "js_needs_migration": 1,
@@ -335,6 +335,21 @@
     {
       "path": "drive/bin/federation_sync.php",
       "lines": 37,
+      "kind": "thin cli entrypoint",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/bin/folder_textract_worker.php",
+      "lines": 7,
       "kind": "thin cli entrypoint",
       "classes": 0,
       "functions": [],
@@ -2528,7 +2543,7 @@
     },
     {
       "path": "drive/src/Application/BackgroundWorkerLauncher.php",
-      "lines": 107,
+      "lines": 115,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -2902,8 +2917,23 @@
       "issues": []
     },
     {
+      "path": "drive/src/Aws/FolderTextractJobStore.php",
+      "lines": 143,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
       "path": "drive/src/Aws/FolderTextractService.php",
-      "lines": 222,
+      "lines": 231,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -3084,6 +3114,21 @@
     {
       "path": "drive/src/Console/ActivityRetentionCommand.php",
       "lines": 38,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Console/FolderTextractWorkerCommand.php",
+      "lines": 130,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -4418,7 +4463,7 @@
     },
     {
       "path": "drive/src/Http/Controller/AwsFileController.php",
-      "lines": 382,
+      "lines": 384,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -4448,7 +4493,7 @@
     },
     {
       "path": "drive/src/Http/Controller/BackgroundTaskController.php",
-      "lines": 946,
+      "lines": 1026,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -7228,6 +7273,21 @@
       "issues": []
     },
     {
+      "path": "drive/tests/folder_textract_background_task_contract.php",
+      "lines": 39,
+      "kind": "test script",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
       "path": "drive/tests/folder_textract_contract_smoke.php",
       "lines": 34,
       "kind": "test script",
@@ -8583,7 +8643,7 @@
     },
     {
       "path": "drive/js/background-tasks.js",
-      "lines": 1043,
+      "lines": 1067,
       "kind": "class/module",
       "classes": [
         "BackgroundTaskCenter"
@@ -9639,7 +9699,7 @@
     },
     {
       "path": "drive/js/so-folders.js",
-      "lines": 501,
+      "lines": 485,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudOsFolderActions"

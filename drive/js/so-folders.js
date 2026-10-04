@@ -321,27 +321,11 @@ class ArcadeCloudOsFolderActions {
           throw new Error(json?.error || json?.mensaje || ('Solicitud fallida (HTTP ' + response.status + ').'));
         }
 
-        const pages = Number(json.paginas || 0);
-        const cost = Number(json.estimated_cost);
-        const currency = String(json.currency || 'USD');
-        const costText = Number.isFinite(cost)
-          ? ' · costo estimado ' + cost.toFixed(4) + ' ' + currency
-          : '';
-
-        this.notify(
-          'Extracción terminada: ' + String(json.archivo || 'JSON generado') +
-          ' · ' + pages + ' página(s)' + costText,
-          'success'
-        );
-
-        const parent = this.parentRoute(folder.route);
-        this.document.dispatchEvent(new CustomEvent('drive:storage-changed', {
-          detail: { route: parent }
-        }));
-
-        const current = this.currentFolderFromDom();
-        if (this.sameRoute(current.route, parent)) {
-          this.navigate(parent);
+        this.notify(json.message || 'Extracción enviada a Tareas.', 'success');
+        if (this.window.BackgroundTaskCenter) {
+          this.window.BackgroundTaskCenter.open = true;
+          await this.window.BackgroundTaskCenter.refresh();
+          this.window.BackgroundTaskCenter.render();
         }
       } catch (error) {
         this.notify(error?.message || 'No se pudo extraer el texto de la carpeta.', 'danger');

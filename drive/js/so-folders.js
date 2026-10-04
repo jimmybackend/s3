@@ -12,6 +12,7 @@ class ArcadeCloudOsFolderActions {
   }
 
   init() {
+    this.ensureTextractAction();
     this.bindFolderEntries();
     this.bindCurrentFolderToolbar();
     this.bindBlankAreaContext();
@@ -19,6 +20,18 @@ class ArcadeCloudOsFolderActions {
     this.bindMutationEvents();
     this.bindDismiss();
     return this;
+  }
+
+  ensureTextractAction() {
+    if (!this.context || this.context.querySelector('[data-folder-action="extract-text"]')) return;
+    const button = this.document.createElement('button');
+    button.type = 'button';
+    button.dataset.folderAction = 'extract-text';
+    button.innerHTML = '<i class="fas fa-file-lines"></i>Extraer texto de documentos';
+
+    const sync = this.context.querySelector('[data-folder-action="sync"]');
+    if (sync) sync.after(button);
+    else this.context.appendChild(button);
   }
 
   rebind(root = this.document) {

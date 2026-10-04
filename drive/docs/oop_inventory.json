@@ -1784,7 +1784,7 @@
     },
     {
       "path": "drive/notebook.php",
-      "lines": 135,
+      "lines": 145,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -7369,7 +7369,7 @@
     },
     {
       "path": "drive/tests/notebook_contract_smoke.php",
-      "lines": 47,
+      "lines": 51,
       "kind": "test script",
       "classes": 0,
       "functions": [],
@@ -9179,7 +9179,7 @@
     },
     {
       "path": "drive/js/notebook.js",
-      "lines": 206,
+      "lines": 241,
       "kind": "procedural script",
       "classes": [],
       "functions": [
@@ -9199,6 +9199,8 @@
         "snap",
         "pos",
         "previewPoints",
+        "objectTouchesLine",
+        "eraseWholeLine",
         "nextTextY",
         "serialize",
         "syncControls"
@@ -9211,6 +9213,7 @@
         "state",
         "paper",
         "WRITE_LEFT",
+        "fontStacks",
         "touchX"
       ],
       "iife": false,
@@ -9223,7 +9226,7 @@
       },
       "issues": [
         "top-level functions: status, api, canvasSize, background, styleFor, drawStroke, nearestBaseline, alignStrokeToRule",
-        "top-level state: $, canvas, state, paper, WRITE_LEFT, touchX",
+        "top-level state: $, canvas, state, paper, WRITE_LEFT, fontStacks, touchX",
         "no ES class"
       ]
     },

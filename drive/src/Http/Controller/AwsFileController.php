@@ -36,7 +36,7 @@ final class AwsFileController extends AbstractJsonController
     {
         $this->run('textract_folder', 'Textract', function (int $userId): array {
             $route = $this->request->postString('ruta');
-            $result = $this->folderTextractService()->extract($userId, $route);
+            $result = $this->folderTextractService()->extract($userId, $route, $this->request->postString('nombre'));
             $pages = max(1, (int)($result['billable_pages'] ?? $result['paginas'] ?? 1));
 
             return [

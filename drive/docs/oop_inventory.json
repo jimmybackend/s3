@@ -1765,7 +1765,7 @@
     },
     {
       "path": "drive/notebook-api.php",
-      "lines": 60,
+      "lines": 61,
       "kind": "thin endpoint",
       "classes": 0,
       "functions": [],
@@ -1784,7 +1784,7 @@
     },
     {
       "path": "drive/notebook.php",
-      "lines": 145,
+      "lines": 150,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -5356,7 +5356,7 @@
     },
     {
       "path": "drive/src/Notebook/NotebookService.php",
-      "lines": 287,
+      "lines": 348,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -7414,7 +7414,7 @@
     },
     {
       "path": "drive/tests/notebook_contract_smoke.php",
-      "lines": 51,
+      "lines": 55,
       "kind": "test script",
       "classes": 0,
       "functions": [],
@@ -9224,7 +9224,7 @@
     },
     {
       "path": "drive/js/notebook.js",
-      "lines": 241,
+      "lines": 279,
       "kind": "procedural script",
       "classes": [],
       "functions": [
@@ -9246,6 +9246,9 @@
         "previewPoints",
         "objectTouchesLine",
         "eraseWholeLine",
+        "lineStrokeObjects",
+        "linePng",
+        "scheduleLineRecognition",
         "nextTextY",
         "serialize",
         "syncControls"
@@ -10474,7 +10477,7 @@
     },
     {
       "path": "drive/docs/runtime_endpoints.json",
-      "bytes": 126392,
+      "bytes": 127075,
       "valid": true,
       "root_type": "object",
       "keys": [

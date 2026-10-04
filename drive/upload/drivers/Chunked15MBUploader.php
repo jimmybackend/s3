@@ -141,12 +141,14 @@ final class Chunked15MBUploader implements UploaderInterface
             throw new RuntimeException('Parámetros inválidos para firmar (uploadId,key,partNumber,contentLength)');
         }
 
+        // Do not sign Content-Length for browser uploads. Browsers own that
+        // header and may normalize it independently, which can invalidate a
+        // presigned UploadPart request before S3 receives the body.
         $command = $this->s3->getCommand('UploadPart', [
             'Bucket' => $this->bucket,
             'Key' => $key,
             'UploadId' => $uploadId,
             'PartNumber' => $partNumber,
-            'ContentLength' => $contentLength,
         ]);
 
         // Refresh activity while holding the same lease as cleanup, before issuing a URL.

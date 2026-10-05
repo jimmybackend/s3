@@ -55,9 +55,15 @@ final class MoveJobWorkerCommand
             if ($type === 'files') {
                 $total = max(0, (int)($result['total'] ?? 0));
                 if ($total > 0) {
-                    $units = ['s3.copy_request' => $total];
+                    $derivedLists = max(0, (int)($result['derived_list_requests'] ?? 0));
+                    $derivedCopies = max(0, (int)($result['derived_copy_requests'] ?? 0));
+                    $derivedDeletes = max(0, (int)($result['derived_delete_requests'] ?? 0));
+                    $units = [
+                        's3.list_request' => $derivedLists,
+                        's3.copy_request' => $total + $derivedCopies,
+                    ];
                     if (!$copying) {
-                        $units['s3.delete_request'] = $total;
+                        $units['s3.delete_request'] = $total + $derivedDeletes;
                     }
                     if (($payload['created_destination'] ?? false) === true) {
                         $units['s3.put_request'] = 1;
@@ -77,6 +83,9 @@ final class MoveJobWorkerCommand
                             'async' => true,
                             'job_status' => $status,
                             'created_destination' => (bool)($payload['created_destination'] ?? false),
+                            'derived_list_requests' => $derivedLists,
+                            'derived_copy_requests' => $derivedCopies,
+                            'derived_delete_requests' => $derivedDeletes,
                             'worker' => 'move_job_worker',
                         ],
                         $correlation

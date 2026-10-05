@@ -36,6 +36,8 @@ try {
         }
         $patch['windowPreferences'] = [
             $appKey => [
+                'left' => max(-4000, min(4000, (int)($windowPreference['left'] ?? 0))),
+                'top' => max(0, min(4000, (int)($windowPreference['top'] ?? 0))),
                 'width' => max(240, min(2400, (int)($windowPreference['width'] ?? 0))),
                 'height' => max(180, min(1600, (int)($windowPreference['height'] ?? 0))),
             ],

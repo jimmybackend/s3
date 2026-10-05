@@ -106,6 +106,9 @@ webOsContract(str_contains($paths['window_manager_js'], 'this.visibleRoute') && 
 webOsContract(str_contains($paths['window_manager_js'], 'button.textContent = label') && !str_contains($paths['window_manager_js'], 'button.textContent = route; this.suggestions.append'), 'autocompletado no imprime Prefix físico al usuario');
 webOsContract(str_contains($paths['folder_repository'], 'OR Nombre LIKE') && str_contains($paths['folder_suggestions'], "'label' => \$app->folderQueryService()->displayPathForUser"), 'sugerencias buscan Nombre de catálogo y devuelven label visible');
 webOsContract(str_contains($paths['window_manager_js'], 'sourceLabel: this.visibleRoute') && str_contains($paths['window_manager_js'], 'destinationLabel'), 'confirmación drag/drop usa rutas visibles y mantiene rutas físicas para ejecutar');
+webOsContract(str_contains($paths['window_manager_js'], 'DESKTOP_PERSISTENCE_BREAKPOINT = 1180') && str_contains($paths['window_manager_js'], 'usesDesktopPersistence()'), 'posición y tamaño persistentes se limitan a vista de computadora');
+webOsContract(str_contains($paths['window_manager_js'], 'left: rect.left') && str_contains($paths['window_manager_js'], 'top: rect.top') && str_contains($paths['window_manager_js'], 'persistCurrentGeometry(record)'), 'gestor guarda posición y tamaño reales al mover, redimensionar o cerrar');
+webOsContract(str_contains($paths['window_manager_js'], 'const saved = this.usesDesktopPersistence()') && str_contains($paths['window_manager_js'], 'const left = saved ? geometry.left'), 'ventanas de escritorio recuperan la posición preferida del usuario');
 webOsContract(str_contains($paths['shell'], '>Mi nodo<'), 'interfaz usa Mi nodo');
 webOsContract(str_contains($paths['shell'], 'NodeCapabilityService'), 'Mi nodo usa detector de capacidad');
 webOsContract(str_contains($paths['shell'], 'FileViewHelper::isLocked($row)'), 'archivos protegidos no se abren como normales');
@@ -293,6 +296,7 @@ webOsContract(str_contains($paths['appearance_js'], 'saveRemote()'), 'apariencia
 webOsContract(str_contains($paths['preferences_repository'], 'os_preferences'), 'repositorio almacena preferencias JSON');
 webOsContract(str_contains($paths['preferences_endpoint'], 'array_replace_recursive($repository->find('), 'guardado conserva claves JSON ajenas y mezcla tamaños por aplicación');
 webOsContract(str_contains($paths['preferences_endpoint'], "'windowPreferences'") && str_contains($paths['preferences_endpoint'], "'width'") && str_contains($paths['preferences_endpoint'], "'height'"), 'endpoint persiste tamaños en Users.os_preferences');
+webOsContract(str_contains($paths['preferences_endpoint'], "'left'") && str_contains($paths['preferences_endpoint'], "'top'"), 'endpoint persiste posición de ventanas junto con tamaño');
 webOsContract(str_contains($paths['preferences_endpoint'], "'wallpaperEnabled'"), 'endpoint persiste el estado sin imagen');
 webOsContract(str_contains($paths['preferences_endpoint'], "'theme'"), 'endpoint persiste el tema');
 webOsContract(str_contains($paths['preferences_endpoint'], 'HTTP_X_CSRF_TOKEN'), 'endpoint de preferencias conserva CSRF');
@@ -314,6 +318,7 @@ webOsContract(!str_contains($paths['js'], "#explorerWindow [data-explorer-route]
 webOsContract(str_contains($paths['folders_js'], "ArcadeCloudOsShell.refreshExplorer"), 'acciones de carpeta delegan navegación al shell');
 webOsContract(str_contains($paths['folders_js'], 'rebind(root = this.document)'), 'acciones se vuelven a enlazar de forma acotada tras refrescar Mis datos');
 webOsContract(str_contains($paths['css'], '.os-entry-thumbnail'), 'miniaturas tienen estilo dentro de Mis datos');
+webOsContract(str_contains($paths['css'], '.os-entry.is-selected .os-entry-name') && str_contains($paths['css'], 'color:var(--os-text)!important'), 'nombre de archivo o carpeta sigue legible al seleccionarlo');
 webOsContract(str_contains($paths['css'], '.os-media-overlay'), 'audio/video tienen componente flotante');
 webOsContract(str_contains($paths['css'], 'z-index:20000'), 'reproductor queda por encima de ventanas y modales');
 

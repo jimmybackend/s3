@@ -13,6 +13,7 @@ class ArcadeCloudEventBus extends EventTarget {
  * transient state and is deliberately absent from this configuration. */
 class ArcadeCloudWindowLayoutConfig {
   static MOBILE_BREAKPOINT = 700;
+  static DESKTOP_PERSISTENCE_BREAKPOINT = 1180;
   static DEFINITIONS = Object.freeze({
     explorer: { width: .42, height: .42, minWidth: 320, minHeight: 260 },
     tool:     { width: .42, height: .42, minWidth: 320, minHeight: 260 },
@@ -229,6 +230,10 @@ class ArcadeCloudWindowManager {
 
   preferenceKey(app) { return ArcadeCloudWindowLayoutConfig.key(app); }
 
+  usesDesktopPersistence() {
+    return this.window.innerWidth > ArcadeCloudWindowLayoutConfig.DESKTOP_PERSISTENCE_BREAKPOINT;
+  }
+
   defaultGeometry(app) {
     const definition = ArcadeCloudWindowLayoutConfig.definition(app);
     const availableHeight = Math.max(320, this.window.innerHeight - 52);
@@ -241,6 +246,7 @@ class ArcadeCloudWindowManager {
   }
 
   preferred(app) {
+    if (!this.usesDesktopPersistence()) return this.defaultGeometry(app);
     const key = this.preferenceKey(app);
     const saved = this.preferences[key] || this.preferences[app];
     return saved && !this.isLegacyOversize(app, saved) ? this.clampGeometry(app, saved) : this.defaultGeometry(app);
@@ -253,9 +259,17 @@ class ArcadeCloudWindowManager {
 
   clampGeometry(app, geometry) {
     const min = this.minimum(app);
+    const width = Math.max(min.width, Math.min(Number(geometry.width) || min.width, Math.round(this.window.innerWidth * .70)));
+    const height = Math.max(min.height, Math.min(Number(geometry.height) || min.height, Math.round((this.window.innerHeight - 52) * .70)));
+    const titleVisible = Math.min(120, Math.max(56, width));
+    const maxLeft = this.window.innerWidth - titleVisible;
+    const minLeft = titleVisible - width;
+    const maxTop = Math.max(0, this.window.innerHeight - 52 - 32);
     return {
-      width: Math.max(min.width, Math.min(Number(geometry.width) || min.width, Math.round(this.window.innerWidth * .70))),
-      height: Math.max(min.height, Math.min(Number(geometry.height) || min.height, Math.round((this.window.innerHeight - 52) * .70)))
+      left: Math.round(Math.min(maxLeft, Math.max(minLeft, Number(geometry.left) || 0))),
+      top: Math.round(Math.min(maxTop, Math.max(0, Number(geometry.top) || 0))),
+      width,
+      height
     };
   }
 
@@ -263,13 +277,18 @@ class ArcadeCloudWindowManager {
     element.classList.remove('is-maximized', 'is-compact');
     if (this.window.innerWidth <= ArcadeCloudWindowLayoutConfig.MOBILE_BREAKPOINT) return null;
     const geometry = this.preferred(app);
+    const saved = this.usesDesktopPersistence()
+      ? (this.preferences[this.preferenceKey(app)] || this.preferences[app])
+      : null;
     const step = (this.layoutSequence++ % 7) * 32;
     const baseLeft = Math.round(this.window.innerWidth * .04);
     const baseTop = Math.round(this.window.innerHeight * .06);
+    const left = saved ? geometry.left : Math.min(baseLeft + step, this.window.innerWidth - geometry.width - 8);
+    const top = saved ? geometry.top : Math.min(baseTop + step, this.window.innerHeight - geometry.height - 58);
     element.style.width = `${geometry.width}px`;
     element.style.height = `${geometry.height}px`;
-    element.style.left = `${Math.min(baseLeft + step, this.window.innerWidth - geometry.width - 8)}px`;
-    element.style.top = `${Math.min(baseTop + step, this.window.innerHeight - geometry.height - 58)}px`;
+    element.style.left = `${Math.round(left)}px`;
+    element.style.top = `${Math.round(top)}px`;
     return { left: element.style.left, top: element.style.top, width: element.style.width, height: element.style.height };
   }
 
@@ -282,20 +301,51 @@ class ArcadeCloudWindowManager {
       if (record.maximized || !record.element.classList.contains('is-open')) return;
       const box = entries[0]?.contentRect; if (!box?.width || !box?.height) return;
       clearTimeout(this.preferenceTimers.get(record.id));
-      const preferred = this.clampGeometry(record.app, { width: Math.round(box.width), height: Math.round(box.height) });
-      record.preferredGeometry = { ...record.preferredGeometry, width: `${preferred.width}px`, height: `${preferred.height}px` };
-      this.preferenceTimers.set(record.id, setTimeout(() => this.savePreference(record.app, preferred.width, preferred.height), 400));
+      if (!this.usesDesktopPersistence()) return;
+      const rect = record.element.getBoundingClientRect();
+      const preferred = this.clampGeometry(record.app, {
+        left: rect.left, top: rect.top,
+        width: Math.round(box.width), height: Math.round(box.height)
+      });
+      record.preferredGeometry = {
+        left: `${preferred.left}px`, top: `${preferred.top}px`,
+        width: `${preferred.width}px`, height: `${preferred.height}px`
+      };
+      this.preferenceTimers.set(record.id, setTimeout(() => this.savePreference(record.app, preferred), 400));
     });
     observer.observe(record.element); this.addCleanup(record.id, () => { observer.disconnect(); delete record.element.dataset.resizeObserved; });
   }
 
-  async savePreference(app, width, height) {
+  async savePreference(app, geometry) {
+    if (!this.usesDesktopPersistence()) return;
     const key = this.preferenceKey(app);
-    ({ width, height } = this.clampGeometry(app, { width, height }));
-    this.preferences[key] = { width, height };
+    const normalized = this.clampGeometry(app, geometry || {});
+    this.preferences[key] = normalized;
     const config = this.window.ARCADECLOUD_OS_APPEARANCE || {};
     if (!config.endpoint || !config.csrf) return;
-    try { await this.window.fetch(config.endpoint, { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': config.csrf }, body: JSON.stringify({ windowPreference: { app: key, width, height } }) }); } catch (_) {}
+    try {
+      await this.window.fetch(config.endpoint, {
+        method: 'POST', credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': config.csrf },
+        body: JSON.stringify({ windowPreference: { app: key, ...normalized } })
+      });
+    } catch (_) {}
+  }
+
+  persistCurrentGeometry(record) {
+    if (!record || record.maximized || !this.usesDesktopPersistence()) return;
+    const rect = record.element.getBoundingClientRect?.();
+    if (!rect?.width || !rect?.height) return;
+    const geometry = this.clampGeometry(record.app, {
+      left: rect.left, top: rect.top, width: rect.width, height: rect.height
+    });
+    record.preferredGeometry = {
+      left: `${geometry.left}px`, top: `${geometry.top}px`,
+      width: `${geometry.width}px`, height: `${geometry.height}px`
+    };
+    clearTimeout(this.preferenceTimers.get(record.id));
+    this.preferenceTimers.delete(record.id);
+    this.savePreference(record.app, geometry);
   }
 
   setTitle(elementOrId, title) {
@@ -310,6 +360,7 @@ class ArcadeCloudWindowManager {
   close(elementOrId) {
     const record = this.record(elementOrId);
     if (!record) return;
+    this.persistCurrentGeometry(record);
     const dynamic = record.lifecycle === 'dynamic';
     if (dynamic) {
       record.cleanup.forEach(callback => { try { callback(); } catch (_) {} });
@@ -833,6 +884,7 @@ class ArcadeCloudDesktopRuntime {
     };
     const stop = stopEvent => {
       move(stopEvent);
+      this.manager.persistCurrentGeometry(record);
       element.classList.remove('is-dragging');
       handle.removeEventListener('pointermove', move);
       handle.removeEventListener('pointerup', stop);

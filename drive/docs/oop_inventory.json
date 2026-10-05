@@ -1799,7 +1799,7 @@
     },
     {
       "path": "drive/notebook.php",
-      "lines": 182,
+      "lines": 206,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -7536,7 +7536,7 @@
     },
     {
       "path": "drive/tests/notebook_contract_smoke.php",
-      "lines": 85,
+      "lines": 90,
       "kind": "test script",
       "classes": 0,
       "functions": [],
@@ -7884,7 +7884,7 @@
     },
     {
       "path": "drive/tests/web_os_contract_smoke.php",
-      "lines": 541,
+      "lines": 547,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -8527,7 +8527,7 @@
     },
     {
       "path": "drive/js/arcadecloud-updater.js",
-      "lines": 260,
+      "lines": 326,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudUpdaterModule"
@@ -8831,7 +8831,7 @@
     },
     {
       "path": "drive/js/desktop-shell.js",
-      "lines": 173,
+      "lines": 182,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudDesktopShell"
@@ -9345,7 +9345,7 @@
     },
     {
       "path": "drive/js/notebook.js",
-      "lines": 223,
+      "lines": 261,
       "kind": "procedural script",
       "classes": [],
       "functions": [
@@ -9388,9 +9388,12 @@
         "pasteImage",
         "normalizeObjects",
         "serialize",
+        "resolveClose",
         "syncControls"
       ],
-      "window_assign": [],
+      "window_assign": [
+        "ArcadeCloudNotebookClose"
+      ],
       "window_func": [],
       "top_vars": [
         "$",
@@ -9399,7 +9402,8 @@
         "state",
         "paper",
         "WRITE_LEFT",
-        "fontStacks"
+        "fontStacks",
+        "closeResolver"
       ],
       "iife": false,
       "ajax": {
@@ -9411,7 +9415,7 @@
       },
       "issues": [
         "top-level functions: uid, status, api, canvasSize, applyZoom, background, styleFor, drawStroke",
-        "top-level state: $, canvas, imageCache, state, paper, WRITE_LEFT, fontStacks",
+        "top-level state: $, canvas, imageCache, state, paper, WRITE_LEFT, fontStacks, closeResolver",
         "no ES class"
       ]
     },
@@ -9442,7 +9446,7 @@
     },
     {
       "path": "drive/js/os-window-manager.js",
-      "lines": 992,
+      "lines": 1031,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudEventBus",
@@ -9933,7 +9937,7 @@
     },
     {
       "path": "drive/js/so.js",
-      "lines": 1320,
+      "lines": 1322,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudOsShell"

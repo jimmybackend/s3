@@ -146,7 +146,7 @@ class ArcadeCloudOsNodeMonitor {
 
   identityCard(node) {
     const identity = node.identity || {};
-    return this.card('Identidad local', [
+    const card = this.card('Identidad local', [
       ['Servidor que estás operando', identity.operating_label || 'Nodo local'],
       ['Nombre', identity.display_name || identity.node_name || node.hostname || '—'],
       ['Node ID', identity.node_id ? String(identity.node_id).slice(0, 20) : '—'],
@@ -155,6 +155,8 @@ class ArcadeCloudOsNodeMonitor {
       ['Tipo EC2', identity.instance_type || node.instance_type || '—'],
       ['URL pública', identity.public_url || '—']
     ]);
+    card.classList.add('os-node-card-wide');
+    return card;
   }
 
   resourceCard(r) {

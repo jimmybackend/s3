@@ -38,6 +38,7 @@ class ArcadeCloudFileApplicationService {
       extension: String(data.ext || '').toLowerCase(), openUrl: String(data.openUrl || ''),
       editUrl: String(data.editUrl || ''), officeUrl: String(data.officeUrl || ''),
       downloadUrl: String(data.downloadUrl || ''), wallpaperUrl: String(data.wallpaperUrl || ''),
+      route: String(entry?.closest?.('.os-explorer-live')?.dataset?.explorerRoute || ''),
       updatedAt: String(data.updatedAt || ''), locked: data.locked === '1'
     };
   }
@@ -84,6 +85,13 @@ class ArcadeCloudFileApplicationService {
       const opened = this.window.open(file.officeUrl, '_blank');
       if (opened) opened.opener = null;
       else throw new Error('El navegador bloqueó la nueva pestaña de Office.');
+      return null;
+    }
+    if (['audio', 'video'].includes(application.appId) && this.window.ArcadeCloudMediaCloud?.open) {
+      this.window.ArcadeCloudMediaCloud.open(file, {
+        type: application.appId,
+        route: String(file.route || options.route || '')
+      });
       return null;
     }
     return this.createInstance(application, file, identity);

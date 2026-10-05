@@ -235,7 +235,9 @@ a{text-decoration:none;color:inherit}
 .os-entry.is-selected .os-entry-name,
 .os-entry.is-selected:visited .os-entry-name,
 .os-entry.is-selected:hover .os-entry-name,
-.os-entry.is-selected:focus .os-entry-name{
+.os-entry.is-selected:focus .os-entry-name,
+.os-entry:focus .os-entry-name,
+.os-entry:active .os-entry-name{
   color:var(--os-text)!important
 }
 .os-entry.is-selected::before{

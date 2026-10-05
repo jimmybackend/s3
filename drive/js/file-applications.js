@@ -119,7 +119,9 @@ class ArcadeCloudFileApplicationService {
     content.className = 'os-viewer-content';
     let viewer;
     const source = application === 'text' && file.editUrl ? file.editUrl : file.openUrl;
+    let imagePreviewUrl = '';
     if (application === 'image') {
+      imagePreviewUrl = 'thumb.php?key=' + encodeURIComponent(String(file.key || '')) + '&scale=50&fit=contain';
       viewer = this.document.createElement('img'); viewer.className = 'os-viewer-image'; viewer.alt = file.name;
     } else if (application === 'audio' || application === 'video') {
       viewer = this.document.createElement(application); viewer.className = `os-viewer-${application}`; viewer.controls = true; viewer.preload = 'metadata';
@@ -135,9 +137,24 @@ class ArcadeCloudFileApplicationService {
     viewer.addEventListener('load', loaded, { once: true });
     if (application === 'audio' || application === 'video') viewer.addEventListener('loadedmetadata', loaded, { once: true });
     viewer.addEventListener('error', failed, { once: true });
-    viewer.src = source; content.append(viewer); body.replaceChildren(content); body.classList.add('is-loading');
+    viewer.src = application === 'image' ? imagePreviewUrl : source; content.append(viewer); body.replaceChildren(content); body.classList.add('is-loading');
     const toolbar = this.document.createElement('div'); toolbar.className = 'os-viewer-toolbar';
     if (file.downloadUrl) toolbar.append(this.actionLink(file.downloadUrl, 'fa-download', 'Descargar', true));
+    if (application === 'image' && file.openUrl) {
+      const full = this.document.createElement('button');
+      full.type = 'button';
+      full.innerHTML = '<i class="fas fa-expand"></i><span>Ver completa</span>';
+      full.dataset.fullImage = '0';
+      full.addEventListener('click', () => {
+        const showingFull = full.dataset.fullImage === '1';
+        viewer.src = showingFull ? imagePreviewUrl : file.openUrl;
+        full.dataset.fullImage = showingFull ? '0' : '1';
+        full.querySelector('span').textContent = showingFull ? 'Ver completa' : 'Vista 50%';
+        full.querySelector('i').className = showingFull ? 'fas fa-expand' : 'fas fa-compress';
+        body.classList.add('is-loading');
+      });
+      toolbar.append(full);
+    }
     if (application === 'image' && file.wallpaperUrl) {
       const wallpaper = this.document.createElement('button'); wallpaper.type = 'button'; wallpaper.innerHTML = '<i class="fas fa-panorama"></i><span>Usar como fondo</span>';
       wallpaper.addEventListener('click', () => this.window.ArcadeCloudOsAppearance?.setWallpaper(file.wallpaperUrl, file.name)); toolbar.append(wallpaper);

@@ -110,7 +110,7 @@ final class BackgroundTaskController extends AbstractJsonController
             JsonResponse::send([
                 'ok' => true,
                 'summary' => $summary,
-                'tasks' => array_slice($tasks, 0, 100),
+                'tasks' => array_slice($tasks, 0, 250),
                 'source_errors' => $sourceErrors,
                 'generated_at' => gmdate('c'),
             ]);

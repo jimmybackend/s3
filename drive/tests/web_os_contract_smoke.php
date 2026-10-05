@@ -8,6 +8,8 @@ $paths = [
     'css' => $root . '/css/so.css',
     'js' => $root . '/js/so.js',
     'file_apps_js' => $root . '/js/file-applications.js',
+    'media_cloud_js' => $root . '/js/os-media-cloud.js',
+    'media_cloud_css' => $root . '/css/os-media-cloud.css',
     'window_manager_js' => $root . '/js/os-window-manager.js',
     'thumbnail_service' => $root . '/src/Media/ThumbnailService.php',
     'thumbnail_controller' => $root . '/src/Http/Controller/ThumbnailController.php',
@@ -76,6 +78,8 @@ $paths = [
     'search_service' => $root . '/src/Application/FileSearchService.php',
     'ai_search_service' => $root . '/src/Application/AiFileSearchService.php',
     'file_list_service' => $root . '/src/Application/FileListService.php',
+    'file_access_controller' => $root . '/src/Http/Controller/FileAccessController.php',
+    'media_playlist_service' => $root . '/src/Media/MediaPlaylistService.php',
     'folder_query_service' => $root . '/src/Application/FolderQueryService.php',
     'folder_repository' => $root . '/src/Storage/FolderRepository.php',
     'folder_suggestions' => $root . '/folder-suggestions.php',
@@ -361,6 +365,17 @@ webOsContract(str_contains($paths['css'], '.os-entry-thumbnail'), 'miniaturas ti
 webOsContract(str_contains($paths['thumbnail_service'], "'avif'") && str_contains($paths['thumbnail_service'], "'status' => 'SOURCE_PREVIEW'") && str_contains($paths['thumbnail_service'], "'content_type' => 'image/avif'"), 'AVIF conserva miniatura mediante fallback autenticado cuando el servidor no puede convertirlo');
 webOsContract(str_contains($paths['thumbnail_controller'], "'source-avif'"), 'fallback AVIF conserva registro de actividad/costo');
 webOsContract(str_contains($paths['file_apps_js'], '&scale=50&fit=contain') && str_contains($paths['file_apps_js'], 'Ver completa') && str_contains($paths['file_apps_js'], 'Vista 50%'), 'visor de imágenes abre vista mediana cacheada y carga original sólo a petición');
+webOsContract(str_contains($paths['shell'], 'css/os-media-cloud.css') && str_contains($paths['shell'], 'js/os-media-cloud.js'), 'Web OS carga reproductor multimedia flotante con piel de nube');
+webOsContract(str_contains($paths['file_apps_js'], 'ArcadeCloudMediaCloud?.open') && str_contains($paths['file_apps_js'], "['audio', 'video'].includes(application.appId)"), 'audio y video abren el gadget multimedia en lugar de una ventana tradicional');
+webOsContract(str_contains($paths['media_playlist_service'], "'src' => 'ver_archivo.php?archivo='"), 'playlist multimedia reutiliza el endpoint autenticado de vista');
+webOsContract(str_contains($paths['file_access_controller'], "serverString('HTTP_RANGE')") && str_contains($paths['file_access_controller'], 'inlineRange('), 'streaming multimedia conserva solicitudes HTTP Range por segmentos');
+webOsContract(str_contains($paths['media_cloud_js'], "preload = 'metadata'") && str_contains($paths['media_cloud_js'], 'currentTime'), 'gadget solicita metadatos y permite seek sin descargar deliberadamente todo el archivo');
+webOsContract(str_contains($paths['media_cloud_js'], 'createBiquadFilter') && str_contains($paths['media_cloud_js'], "data-eq-mode=\"auto\"") && str_contains($paths['media_cloud_js'], "data-eq-mode=\"manual\""), 'gadget incorpora ecualizador Web Audio automático y manual');
+webOsContract(str_contains($paths['media_cloud_js'], 'createAnalyser') && str_contains($paths['media_cloud_js'], 'getByteTimeDomainData'), 'gadget dibuja onda real de la señal reproducida');
+webOsContract(str_contains($paths['media_cloud_js'], 'bindHoldSeek') && str_contains($paths['media_cloud_js'], 'direction * 10') && str_contains($paths['media_cloud_js'], 'Math.min(60, 10 + held * 5)'), 'adelantar y retroceder saltan 10 segundos y aceleran al mantener pulsado');
+webOsContract(str_contains($paths['media_cloud_js'], 'data-media-playlist') && str_contains($paths['media_cloud_js'], 'renderPlaylist()'), 'gadget integra lista de reproducción de la carpeta');
+webOsContract(str_contains($paths['media_cloud_js'], 'setPinned(value)') && str_contains($paths['media_cloud_css'], '.ac-media-cloud.is-pinned'), 'usuario puede decidir si el gadget permanece siempre visible');
+webOsContract(str_contains($paths['media_cloud_css'], '.ac-media-cloud-bubble') && str_contains($paths['media_cloud_css'], '.ac-media-cloud-shell'), 'reproductor usa silueta visual de nube y no ventana rectangular del OS');
 webOsContract(str_contains($paths['thumbnail_controller'], "queryString('scale'") && str_contains($paths['thumbnail_controller'], 'getScaled('), 'thumb.php acepta vista proporcional autenticada');
 webOsContract(str_contains($paths['thumbnail_service'], 'public function getScaled(') && str_contains($paths['thumbnail_service'], "'status' => 'GENERATED_PREVIEW'") && str_contains($paths['thumbnail_service'], '__preview'), 'vista 50% se genera una vez y persiste dentro de thumbs en S3');
 webOsContract(str_contains($paths['derived_image_service'], "return 'thumbs/'") && str_contains($paths['derived_image_service'], 'transfer(string $sourceKey, string $destinationKey'), 'servicio OOP traslada miniaturas y vistas derivadas por key físico');

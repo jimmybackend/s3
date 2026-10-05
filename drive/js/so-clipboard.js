@@ -408,7 +408,7 @@ class ArcadeCloudOsClipboard {
     item.items = Array.isArray(item.items) ? item.items : (item.keys || (item.route ? [item.route] : []));
     const immutableItems = Object.freeze([...(Array.isArray(item.items) ? item.items : [])]);
     this.clipboard = Object.freeze(Object.assign(
-      { version: 1, createdAt: Date.now() },
+      { version: 2, createdAt: Date.now(), transferJobId: '', transferPending: false },
       item,
       { items: immutableItems, keys: Object.freeze([...(item.keys || [])]) }
     ));
@@ -434,7 +434,7 @@ class ArcadeCloudOsClipboard {
     try {
       const raw = this.window.sessionStorage.getItem(this.storageKey);
       const parsed = raw ? JSON.parse(raw) : null;
-      if (!parsed || !['file', 'folder'].includes(parsed.kind) || !['copy', 'move'].includes(parsed.mode)) {
+      if (!parsed || Number(parsed.version || 0) !== 2 || !['file', 'folder'].includes(parsed.kind) || !['copy', 'move'].includes(parsed.mode)) {
         return null;
       }
       return parsed;

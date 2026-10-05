@@ -10,6 +10,7 @@ $paths = [
     'file_apps_js' => $root . '/js/file-applications.js',
     'window_manager_js' => $root . '/js/os-window-manager.js',
     'desktop_shell_js' => $root . '/js/desktop-shell.js',
+    'page_task_manager_js' => $root . '/js/page-task-manager.js',
     'appearance_js' => $root . '/js/so-appearance.js',
     'preferences_endpoint' => $root . '/os-preferences.php',
     'preferences_repository' => $root . '/src/Security/UserOsPreferencesRepository.php',
@@ -109,6 +110,8 @@ webOsContract(str_contains($paths['window_manager_js'], 'sourceLabel: this.visib
 webOsContract(str_contains($paths['window_manager_js'], 'DESKTOP_PERSISTENCE_BREAKPOINT = 1180') && str_contains($paths['window_manager_js'], 'usesDesktopPersistence()'), 'posición y tamaño persistentes se limitan a vista de computadora');
 webOsContract(str_contains($paths['window_manager_js'], 'left: rect.left') && str_contains($paths['window_manager_js'], 'top: rect.top') && str_contains($paths['window_manager_js'], 'persistCurrentGeometry(record)'), 'gestor guarda posición y tamaño reales al mover, redimensionar o cerrar');
 webOsContract(str_contains($paths['window_manager_js'], 'const saved = this.usesDesktopPersistence()') && str_contains($paths['window_manager_js'], 'const left = saved ? geometry.left'), 'ventanas de escritorio recuperan la posición preferida del usuario');
+webOsContract(str_contains($paths['window_manager_js'], 'this.window.innerWidth - 16') && str_contains($paths['window_manager_js'], 'width: Math.round(rect.width)'), 'persistencia conserva el tamaño real de la ventana hasta el máximo visible');
+webOsContract(str_contains($paths['window_manager_js'], 'activateTotpResult(result') && str_contains($paths['window_manager_js'], 'navigator.clipboard.writeText(value)') && str_contains($paths['window_manager_js'], 'result._arcadeTotpTimer'), 'TOTP embebido centra interacción de copia y cuenta regresiva');
 webOsContract(str_contains($paths['shell'], '>Mi nodo<'), 'interfaz usa Mi nodo');
 webOsContract(str_contains($paths['shell'], 'NodeCapabilityService'), 'Mi nodo usa detector de capacidad');
 webOsContract(str_contains($paths['shell'], 'FileViewHelper::isLocked($row)'), 'archivos protegidos no se abren como normales');
@@ -548,7 +551,13 @@ webOsContract(
 );
 webOsContract(substr_count($paths['moderation_renderer'], "/federationcloud/moderation-api.php") >= 3, 'moderación embebida usa endpoint absoluto para leer, decidir y desbloquear');
 
+webOsContract(str_contains($paths['shell'], 'id="osNodeHealthButton"') && str_contains($paths['shell'], 'id="osNodeHealthPopover"'), 'barra de tareas muestra foco de estado del nodo local');
+webOsContract(str_contains($paths['node_js'], 'renderTaskbarStatus(this.node)') && str_contains($paths['node_js'], 'NODO LOCAL · '), 'estado del nodo alimenta el foco y su tarjeta resumida');
+webOsContract(str_contains($paths['shell'], 'id="osReplicaHealthButton"') && str_contains($paths['node_js'], 'federationcloud/nodes.php'), 'superadmin recibe foco de nodo federado activo');
 webOsContract(str_contains($paths['shell'], 'id="osTaskCenterButton"') && str_contains($paths['shell'], 'os-task-center-count'), 'Centro de Tareas está integrado como icono con contador en la barra del OS');
 webOsContract(str_contains($paths['shell'], 'id="pageMonitorWindow"') && str_contains($paths['shell'], 'data-page-monitor'), 'Administrador de la página existe como ventana nativa');
+webOsContract(str_contains($paths['shell'], 'data-page-memory-chart') && str_contains($paths['shell'], 'data-page-window-list'), 'Administrador incluye gráfica y lista de ventanas');
+webOsContract(str_contains($paths['page_task_manager_js'], 'estimateWindowBytes(record)') && str_contains($paths['page_task_manager_js'], 'data-page-window-close'), 'Administrador estima huella por ventana y permite cerrarla');
+webOsContract(str_contains($paths['page_task_manager_js'], 'performance?.memory'), 'Administrador conserva memoria JS real global cuando Chromium la expone');
 
 echo "WEB_OS_CONTRACT_OK\n";

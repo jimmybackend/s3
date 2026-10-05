@@ -834,6 +834,14 @@ Escribe help o usa uno de los botones disponibles.</pre>
           <article><span>Recursos cargados</span><strong data-page-resources>—</strong><small>JS, CSS, imágenes y solicitudes</small></article>
           <article><span>Tiempo abierta</span><strong data-page-uptime>—</strong><small>Desde la navegación actual</small></article>
         </div>
+        <section class="os-page-window-monitor">
+          <div class="os-page-window-monitor-head">
+            <div><strong>Ventanas abiertas</strong><small>La barra representa una huella estimada de interfaz; la memoria JS real se muestra arriba.</small></div>
+            <button type="button" data-page-window-refresh><i class="fas fa-rotate"></i> Actualizar</button>
+          </div>
+          <div class="os-page-memory-chart" data-page-memory-chart aria-label="Gráfica de huella estimada por ventana"></div>
+          <div class="os-page-window-list" data-page-window-list></div>
+        </section>
         <div class="os-page-monitor-note" data-page-memory-note>La memoria exacta depende de las APIs que permita el navegador.</div>
       </div>
     </section>
@@ -2059,11 +2067,32 @@ Escribe help o usa uno de los botones disponibles.</pre>
       <i class="fas fa-gear"></i>
     </button>
     <div class="os-task-buttons" id="osTaskButtons"></div>
+    <button type="button" class="os-node-health-button" id="osNodeHealthButton" aria-expanded="false" aria-controls="osNodeHealthPopover" title="Estado de Mi nodo">
+      <span class="os-status-light is-neutral" data-node-health-light></span>
+      <span class="sr-only">Estado de Mi nodo</span>
+    </button>
+    <?php if ($isSuperAdmin): ?>
+    <button type="button" class="os-node-health-button os-replica-health-button" id="osReplicaHealthButton" data-window-open="federationWindow" title="Nodo federado autorizado en línea" hidden>
+      <span class="os-status-light is-ok"></span>
+      <i class="fas fa-copy" aria-hidden="true"></i>
+      <span class="os-replica-count" data-replica-online-count>0</span>
+    </button>
+    <?php endif; ?>
     <button type="button" class="os-task-center-button" id="osTaskCenterButton" aria-label="Tareas en segundo plano" title="Tareas en segundo plano">
       <i class="fas fa-list-check"></i><span class="os-task-center-count">0</span>
     </button>
     <div class="os-clock" id="osClock"></div>
   </footer>
+
+  <section class="os-node-health-popover" id="osNodeHealthPopover" hidden aria-live="polite">
+    <div class="os-node-health-popover-head">
+      <strong data-node-health-name>NODO LOCAL</strong>
+      <button type="button" data-node-health-close aria-label="Cerrar"><i class="fas fa-xmark"></i></button>
+    </div>
+    <div class="os-node-health-state"><span class="os-status-light is-neutral" data-node-health-popover-light></span><strong data-node-health-label>Consultando…</strong></div>
+    <div class="os-node-health-server"><span>Servidor</span><strong data-node-health-server>—</strong></div>
+    <button type="button" class="os-node-health-open" data-window-open="nodeWindow"><i class="fas fa-server"></i> Abrir Mi nodo</button>
+  </section>
 
   <script>
     window.UPLOAD_API = 'api/upload.php';

@@ -10,7 +10,7 @@
     "js_tests": 11,
     "js_compatibility_facades": 8,
     "ajax_clients": 51,
-    "ajax_calls": 110,
+    "ajax_calls": 111,
     "json_total": 4,
     "json_invalid": 0
   },
@@ -2172,7 +2172,7 @@
     },
     {
       "path": "drive/so.php",
-      "lines": 2147,
+      "lines": 2176,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -7884,7 +7884,7 @@
     },
     {
       "path": "drive/tests/web_os_contract_smoke.php",
-      "lines": 555,
+      "lines": 564,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -9447,7 +9447,7 @@
     },
     {
       "path": "drive/js/os-window-manager.js",
-      "lines": 1083,
+      "lines": 1145,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudEventBus",
@@ -9479,7 +9479,7 @@
     },
     {
       "path": "drive/js/page-task-manager.js",
-      "lines": 54,
+      "lines": 119,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudPageTaskManager"
@@ -9496,7 +9496,7 @@
         "xhr": 0,
         "jquery": 0,
         "json_consumers": 0,
-        "response_checks": 2
+        "response_checks": 3
       },
       "issues": []
     },
@@ -9804,22 +9804,25 @@
     },
     {
       "path": "drive/js/so-node.js",
-      "lines": 349,
+      "lines": 438,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudOsNodeMonitor"
       ],
       "functions": [],
-      "window_assign": [],
+      "window_assign": [
+        "setInterval",
+        "setTimeout"
+      ],
       "window_func": [],
       "top_vars": [],
       "iife": false,
       "ajax": {
-        "fetch": 4,
+        "fetch": 5,
         "xhr": 0,
         "jquery": 0,
-        "json_consumers": 4,
-        "response_checks": 8
+        "json_consumers": 5,
+        "response_checks": 10
       },
       "issues": []
     },

@@ -393,7 +393,7 @@ webOsContract(str_contains($paths['media_cloud_js'], 'fill="url(#acCloudFill)"')
 webOsContract(str_contains($paths['media_cloud_css'], '.ac-cloud-frame') && str_contains($paths['media_cloud_css'], 'aspect-ratio:1000/650'), 'chasis SVG escala como un único dispositivo');
 webOsContract(str_contains($paths['media_cloud_css'], '.ac-media-art-core') && str_contains($paths['media_cloud_css'], '.ac-media-art-halo'), 'gadget integra mosaico holográfico con órbitas');
 webOsContract(str_contains($paths['media_cloud_css'], '.ac-media-controls button.is-primary') && str_contains($paths['media_cloud_css'], '.ac-play-cloud'), 'Play/Pause funciona como núcleo luminoso central de la nube');
-webOsContract(str_contains($paths['media_cloud_js'], 'getByteFrequencyData') && str_contains($paths['media_cloud_js'], 'bars = 74'), 'visualizador usa espectro real de frecuencia con barras luminosas');
+webOsContract(str_contains($paths['media_cloud_js'], 'getByteFrequencyData') && str_contains($paths['media_cloud_js'], 'const bars = 68'), 'visualizador usa espectro real de frecuencia con barras luminosas');
 webOsContract(str_contains($paths['media_cloud_css'], '.ac-wave-scanline') && str_contains($paths['media_cloud_css'], '@keyframes acWaveScan'), 'visualizador incorpora barrido HUD futurista');
 webOsContract(!str_contains($paths['media_cloud_css'], '.ac-cloud-lobe') && !str_contains($paths['media_cloud_css'], '.ac-media-tech-rail'), 'diseño elimina círculos pegados y rieles ajenos a la referencia');
 webOsContract(str_contains($paths['media_cloud_css'], '.ac-media-cloud-shell') && str_contains($paths['media_cloud_css'], 'background:transparent'), 'contenido vive dentro de la nube y no dentro de otra ventana');

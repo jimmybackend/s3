@@ -2,13 +2,16 @@ class ArcadeCloudOsNodeMonitor {
   constructor(win, doc) {
     this.window = win; this.document = doc; this.config = win.ARCADECLOUD_OS_NODE || {};
     this.endpoint = String(this.config.endpoint || 'node-status.php'); this.busy = false;
-    this.node = {}; this.pollTimer = null; this.countdownTimer = null; this.zeroConfirmed = false; this.mysqlSnapshot = null;
+    this.node = {}; this.pollTimer = null; this.countdownTimer = null; this.zeroConfirmed = false; this.mysqlSnapshot = null; this.lastPeerRefresh = 0;
   }
 
   init() {
     this.document.addEventListener('click', (event) => {
       const target = event.target instanceof Element ? event.target : null; if (!target) return;
       if (target.closest('[data-window-open="nodeWindow"]')) this.window.setTimeout(() => this.startPolling(), 30);
+      const healthButton = target.closest('#osNodeHealthButton');
+      if (healthButton) { event.preventDefault(); this.toggleTaskbarPopover(); }
+      if (target.closest('[data-node-health-close]')) { event.preventDefault(); this.hideTaskbarPopover(); }
       if (target.closest('#nodeWindow [data-window-close]')) this.stopPolling();
       const broom = target.closest('[data-node-memory-clear]'); if (broom) { event.preventDefault(); this.openMaintenanceModal(false); }
       const disk = target.closest('[data-node-disk-clean]'); if (disk) { event.preventDefault(); this.openMaintenanceModal(true); }
@@ -41,7 +44,12 @@ class ArcadeCloudOsNodeMonitor {
       this.renderLegacy(this.node);
       this.renderOperatingNode(this.node);
       this.renderSelected();
-    } catch (error) { this.notify(error?.message || 'No se pudo actualizar Mi nodo.', 'warning'); }
+      this.renderTaskbarStatus(this.node);
+      if (this.config.superadmin === true) this.refreshFederationIndicator();
+    } catch (error) {
+      this.renderTaskbarUnavailable(error?.message || 'No se pudo actualizar Mi nodo.');
+      this.notify(error?.message || 'No se pudo actualizar Mi nodo.', 'warning');
+    }
     finally { this.busy = false; windowEl?.classList.remove('is-node-loading'); }
   }
 
@@ -50,6 +58,85 @@ class ArcadeCloudOsNodeMonitor {
     Object.entries(values).forEach(([key, value]) => this.document.querySelectorAll('[data-node-field="' + key + '"]').forEach((el) => { el.textContent = String(value); }));
     this.renderCapability('ffmpeg', node.ffmpeg_available, 'Disponible', 'No disponible'); this.renderCapability('ffprobe', node.ffprobe_available, 'Disponible', 'No disponible'); this.renderCapability('docker', node.docker_installed, 'Instalado', 'No instalado'); this.renderCapability('gpu', node.gpu_present, 'Detectada', 'No detectada');
     const updated = this.document.querySelector('[data-node-updated]'); if (updated) updated.textContent = 'Actualizado ' + new Date(node.generated_at || Date.now()).toLocaleTimeString('es-MX');
+  }
+
+  toggleTaskbarPopover() {
+    const popover = this.document.getElementById('osNodeHealthPopover');
+    const button = this.document.getElementById('osNodeHealthButton');
+    if (!popover || !button) return;
+    const opening = popover.hidden;
+    popover.hidden = !opening;
+    button.setAttribute('aria-expanded', opening ? 'true' : 'false');
+  }
+
+  hideTaskbarPopover() {
+    const popover = this.document.getElementById('osNodeHealthPopover');
+    const button = this.document.getElementById('osNodeHealthButton');
+    if (popover) popover.hidden = true;
+    if (button) button.setAttribute('aria-expanded', 'false');
+  }
+
+  healthClass(node) {
+    const state = String(node?.health?.state || '').toLowerCase();
+    const label = String(node?.health?.label || '').toLowerCase();
+    if (/critical|danger|error|failed|crítico/.test(state + ' ' + label)) return 'is-danger';
+    if (/warning|attention|atención|degraded|degradado/.test(state + ' ' + label)) return 'is-warning';
+    if (node?.available === false) return 'is-danger';
+    return 'is-ok';
+  }
+
+  renderTaskbarStatus(node) {
+    const identity = node?.identity || {};
+    const name = String(identity.node_name || identity.display_name || 'local');
+    const health = String(node?.health?.label || 'Disponible');
+    const server = String(node?.hostname || identity.hostname || identity.public_url || identity.operating_label || 'Nodo local');
+    const className = this.healthClass(node);
+    this.document.querySelectorAll('[data-node-health-light],[data-node-health-popover-light]').forEach(light => {
+      light.classList.remove('is-ok','is-warning','is-danger','is-neutral');
+      light.classList.add(className);
+    });
+    const title = this.document.querySelector('[data-node-health-name]');
+    const label = this.document.querySelector('[data-node-health-label]');
+    const serverNode = this.document.querySelector('[data-node-health-server]');
+    const button = this.document.getElementById('osNodeHealthButton');
+    if (title) title.textContent = 'NODO LOCAL · ' + name;
+    if (label) label.textContent = health;
+    if (serverNode) serverNode.textContent = server;
+    if (button) button.title = 'Mi nodo · ' + health;
+  }
+
+  renderTaskbarUnavailable(message) {
+    this.document.querySelectorAll('[data-node-health-light],[data-node-health-popover-light]').forEach(light => {
+      light.classList.remove('is-ok','is-warning','is-danger','is-neutral');
+      light.classList.add('is-danger');
+    });
+    const label = this.document.querySelector('[data-node-health-label]');
+    if (label) label.textContent = message || 'No disponible';
+  }
+
+  async refreshFederationIndicator() {
+    const button = this.document.getElementById('osReplicaHealthButton');
+    if (!button || this.config.superadmin !== true) return;
+    const now = Date.now();
+    if (now - this.lastPeerRefresh < 20000) return;
+    this.lastPeerRefresh = now;
+    try {
+      const response = await this.window.fetch('federationcloud/nodes.php', {
+        credentials: 'same-origin', cache: 'no-store', headers: { 'X-Requested-With': 'XMLHttpRequest' }
+      });
+      const data = await response.json();
+      if (!response.ok || data?.ok !== true || !Array.isArray(data.nodes)) throw new Error('Directorio no disponible');
+      const localId = String(this.node?.identity?.node_id || data.local_node?.node_id || '');
+      const peers = data.nodes.filter(node => String(node?.node_id || '') !== '' && String(node.node_id) !== localId);
+      button.hidden = peers.length === 0;
+      const count = button.querySelector('[data-replica-online-count]');
+      if (count) count.textContent = String(peers.length);
+      button.title = peers.length === 1
+        ? '1 réplica / nodo federado autorizado en línea'
+        : peers.length + ' réplicas / nodos federados autorizados en línea';
+    } catch (_) {
+      button.hidden = true;
+    }
   }
 
   renderOperatingNode(node) {

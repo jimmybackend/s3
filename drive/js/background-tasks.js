@@ -315,7 +315,8 @@ class BackgroundTaskCenter {
             <option value="queued">En cola / pendientes</option>
             <option value="running">Procesando</option>
             <option value="completed">Terminadas</option>
-            <option value="failed">Fallidas / canceladas</option>
+            <option value="failed">Fallidas</option>
+            <option value="cancelled">Canceladas</option>
           </select>
           <button class="bg-task-refresh" type="button" data-bg-task-refresh title="Actualizar">↻</button>
         </div>
@@ -841,7 +842,8 @@ class BackgroundTaskCenter {
     if (this.filter === 'queued') return ['queued', 'pending'].includes(status);
     if (this.filter === 'running') return ['running', 'stopping'].includes(status);
     if (this.filter === 'completed') return status === 'completed';
-    if (this.filter === 'failed') return ['failed', 'cancelled'].includes(status);
+    if (this.filter === 'failed') return status === 'failed';
+    if (this.filter === 'cancelled') return status === 'cancelled';
     return true;
   }
 

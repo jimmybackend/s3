@@ -171,6 +171,11 @@ webOsContract(str_contains($paths['js'], "overlay.className = 'os-media-overlay 
 webOsContract(str_contains($paths['js'], 'os-viewer-image'), 'imagen usa visor interno');
 webOsContract(str_contains($paths['js'], 'os-viewer-frame'), 'texto/PDF pueden vivir en ventana interna');
 webOsContract(str_contains($paths['shell'], 'data-file-action="details"'), 'menú de archivo incluye Detalles');
+webOsContract(str_contains($paths['shell'], 'data-selection-action="copy"') && str_contains($paths['shell'], 'data-selection-action="cut"') && str_contains($paths['shell'], 'data-selection-action="download"') && str_contains($paths['shell'], 'data-selection-action="delete"') && str_contains($paths['shell'], 'data-selection-action="more"'), 'barra de selección de Mis datos expone acciones reales');
+webOsContract(str_contains($paths['js'], 'transferBusy') && str_contains($paths['js'], "action === 'more'"), 'acciones de selección se habilitan según selección, bloqueo y transferencia real');
+webOsContract(str_contains($paths['clipboard_js'], 'version: 2') && str_contains($paths['clipboard_js'], 'transferJobId') && str_contains($paths['clipboard_js'], 'transferPending'), 'portapapeles del SO vincula Pegar/Mover con la tarea real y descarta estado legado');
+webOsContract(str_contains($paths['clipboard_js'], 'reconcileClipboardJob()') && str_contains($paths['clipboard_js'], "status === 'completed'") && str_contains($paths['clipboard_js'], 'this.clearClipboard();'), 'portapapeles se limpia si el traslado ya terminó aunque se recupere la sesión');
+webOsContract(str_contains($paths['clipboard_js'], 'clearClipboardOnSuccess: true') && str_contains($paths['clipboard_js'], "button.disabled = !hasClipboard || transferPending"), 'Copiar aquí y Mover aquí son operaciones de un uso y quedan bloqueadas durante transferencia');
 webOsContract(str_contains($paths['shell'], 'data-created-at='), 'cada archivo expone fecha para Detalles sin consulta adicional');
 webOsContract(str_contains($paths['shell'], 'data-context-page-up') && str_contains($paths['shell'], 'data-context-page-down'), 'menú contextual incluye navegación móvil por bloques');
 webOsContract(str_contains($paths['js'], 'contextPageSize = 10'), 'móvil pagina exactamente diez acciones por vista');
@@ -194,6 +199,9 @@ webOsContract(str_contains($paths['background_tasks'], 'data-bg-task-remove-sele
 webOsContract(str_contains($paths['background_tasks'], 'data-bg-task-clean-terminal'), 'Centro de Tareas permite limpiar terminadas/fallidas');
 webOsContract(str_contains($paths['background_tasks'], 'bulkRemoveTasks(tasks)'), 'limpieza masiva usa un flujo único');
 webOsContract(str_contains($paths['background_tasks'], "['completed', 'failed', 'cancelled']"), 'sólo tareas terminales entran en limpieza');
+webOsContract(str_contains($paths['background_tasks'], '<option value="completed">Terminadas</option>') && str_contains($paths['background_tasks'], '<option value="failed">Fallidas</option>') && str_contains($paths['background_tasks'], '<option value="cancelled">Canceladas</option>'), 'Centro de Tareas permite filtrar terminadas, fallidas y canceladas por separado');
+webOsContract(str_contains($paths['background_controller'], "array_slice(\$tasks, 0, 250)") && str_contains($paths['background_controller'], "return trim((string)(\$task['id'] ?? '')) !== '';"), 'backend conserva visibles todos los estados entregados por las fuentes persistentes');
+webOsContract(str_contains($paths['move_store'], 'purgeOlderThan(604800)'), 'historial de traslados se conserva siete días');
 webOsContract(str_contains($paths['upload_center'], 'dismissTask(id)'), 'subidas terminadas también pueden limpiarse del Centro de Tareas');
 webOsContract(str_contains($paths['css'], '.os-document-window'), 'ventanas de documentos tienen estilo propio');
 

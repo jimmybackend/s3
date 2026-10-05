@@ -35,6 +35,9 @@ class ArcadeCloudOsShell {
     this.bindTaskContext();
     this.bindDocumentDismiss();
     this.bindTaskRefresh();
+    ['drive:move-task-progress','drive:move-task-completed','drive:move-task-failed','drive:move-task-cancelled','arcadeos:clipboard-changed'].forEach((name) => {
+      this.document.addEventListener(name, () => this.updateSelectionActions());
+    });
     this.updateClock();
     this.window.setInterval(() => this.updateClock(), 1000);
     this.syncTaskbar();
@@ -945,14 +948,38 @@ class ArcadeCloudOsShell {
       const host = owner.querySelector('.os-explorer-live [data-selection-actions]');
       if (!host) return;
       const selected = Array.from(owner.querySelectorAll('.os-file-entry.is-selected'));
-      host.hidden = selected.length === 0;
+      const hasSelection = selected.length > 0;
+      host.hidden = !hasSelection;
 
       const count = host.querySelector('[data-selection-count]');
       if (count) count.textContent = String(selected.length);
 
       const hasLocked = selected.some((entry) => entry.dataset.locked === '1');
-      host.querySelectorAll('button').forEach((button) => {
-        button.disabled = selected.length === 0 || hasLocked;
+      const clipboard = this.window.ArcadeCloudOsClipboard;
+      const transferBusy = Boolean(clipboard?.activeTransfer || clipboard?.clipboard?.transferPending);
+
+      host.querySelectorAll('[data-selection-action]').forEach((button) => {
+        const action = String(button.dataset.selectionAction || '');
+        let disabled = !hasSelection;
+        let title = '';
+
+        if (['copy', 'cut', 'download', 'delete'].includes(action) && hasLocked) {
+          disabled = true;
+          title = 'Desbloquea los archivos protegidos para usar esta acción';
+        }
+        if (['copy', 'cut'].includes(action) && transferBusy) {
+          disabled = true;
+          title = 'Espera a que termine la transferencia actual';
+        }
+        if (action === 'more') {
+          disabled = !hasSelection;
+          title = hasSelection ? 'Mostrar más acciones para la selección' : '';
+        }
+
+        button.disabled = disabled;
+        button.setAttribute('aria-disabled', disabled ? 'true' : 'false');
+        if (title) button.title = title;
+        else button.removeAttribute('title');
       });
     });
   }

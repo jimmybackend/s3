@@ -21,6 +21,7 @@ class ArcadeCloudOsClipboard {
     this.bindGlobalEvents();
     this.bindEntries();
     this.updatePasteControls();
+    this.reconcileClipboardJob();
 
     if (this.activeTransfer && this.activeTransfer.jobId) {
       this.showTransfer({
@@ -108,7 +109,8 @@ class ArcadeCloudOsClipboard {
     button.className = 'os-toolbar-paste os-clipboard-paste';
     button.dataset.osClipboardAction = 'paste';
     button.dataset.osPasteCurrent = '1';
-    button.hidden = true;
+    button.hidden = false;
+    button.disabled = true;
 
     const icon = this.document.createElement('i');
     icon.className = 'fas fa-paste';
@@ -406,7 +408,7 @@ class ArcadeCloudOsClipboard {
     item.items = Array.isArray(item.items) ? item.items : (item.keys || (item.route ? [item.route] : []));
     const immutableItems = Object.freeze([...(Array.isArray(item.items) ? item.items : [])]);
     this.clipboard = Object.freeze(Object.assign(
-      { version: 1, createdAt: Date.now() },
+      { version: 2, createdAt: Date.now(), transferJobId: '', transferPending: false },
       item,
       { items: immutableItems, keys: Object.freeze([...(item.keys || [])]) }
     ));
@@ -415,6 +417,7 @@ class ArcadeCloudOsClipboard {
     } catch (_) {}
 
     this.updatePasteControls();
+    this.dispatchClipboardChanged();
     const verb = item.mode === 'copy' ? 'copiar' : 'mover';
     this.notify(
       String(item.name || 'Elemento') + ' listo para ' + verb + '. Navega a la carpeta destino y pulsa Pegar.',
@@ -426,13 +429,14 @@ class ArcadeCloudOsClipboard {
     this.clipboard = null;
     try { this.window.sessionStorage.removeItem(this.storageKey); } catch (_) {}
     this.updatePasteControls();
+    this.dispatchClipboardChanged();
   }
 
   restoreClipboard() {
     try {
       const raw = this.window.sessionStorage.getItem(this.storageKey);
       const parsed = raw ? JSON.parse(raw) : null;
-      if (!parsed || !['file', 'folder'].includes(parsed.kind) || !['copy', 'move'].includes(parsed.mode)) {
+      if (!parsed || Number(parsed.version || 0) !== 2 || !['file', 'folder'].includes(parsed.kind) || !['copy', 'move'].includes(parsed.mode)) {
         return null;
       }
       return parsed;
@@ -443,15 +447,22 @@ class ArcadeCloudOsClipboard {
 
   updatePasteControls() {
     const hasClipboard = Boolean(this.clipboard);
+    const transferPending = Boolean(this.clipboard?.transferPending);
 
     this.document.querySelectorAll('.os-clipboard-paste').forEach((button) => {
       const isToolbarPaste = button.dataset.osPasteCurrent === '1';
+      button.hidden = false;
+      button.disabled = !hasClipboard || transferPending;
 
-      button.hidden = !hasClipboard;
-      button.disabled = !hasClipboard;
+      const icon = button.querySelector('i');
+      const label = button.querySelector('span');
 
       if (!hasClipboard) {
-        button.title = 'No hay nada para pegar';
+        button.title = 'No hay nada pendiente para pegar o mover';
+        if (isToolbarPaste) {
+          if (icon) icon.className = 'fas fa-paste';
+          if (label) label.textContent = 'Pegar aquí';
+        }
         return;
       }
 
@@ -459,21 +470,88 @@ class ArcadeCloudOsClipboard {
       const actionLabel = moving ? 'Mover aquí' : 'Copiar aquí';
       const name = String(this.clipboard.name || 'elemento');
 
-      button.title = actionLabel + ': ' + name;
+      button.title = transferPending
+        ? 'Transferencia en curso: ' + name
+        : actionLabel + ': ' + name;
 
       if (isToolbarPaste) {
-        const icon = button.querySelector('i');
-        const label = button.querySelector('span');
         if (icon) icon.className = moving ? 'fas fa-arrow-right-to-bracket' : 'fas fa-paste';
-        if (label) label.textContent = actionLabel;
+        if (label) label.textContent = transferPending ? 'En proceso…' : actionLabel;
       }
     });
+  }
+
+  markClipboardTransfer(jobId = '') {
+    if (!this.clipboard) return;
+    const next = {
+      ...this.clipboard,
+      transferJobId: String(jobId || ''),
+      transferPending: Boolean(jobId)
+    };
+    next.items = Array.isArray(next.items) ? [...next.items] : [];
+    next.keys = Array.isArray(next.keys) ? [...next.keys] : [];
+    this.clipboard = Object.freeze({
+      ...next,
+      items: Object.freeze(next.items),
+      keys: Object.freeze(next.keys)
+    });
+    try {
+      this.window.sessionStorage.setItem(this.storageKey, JSON.stringify(this.clipboard));
+    } catch (_) {}
+    this.updatePasteControls();
+    this.dispatchClipboardChanged();
+  }
+
+  dispatchClipboardChanged() {
+    try {
+      this.document.dispatchEvent(new CustomEvent('arcadeos:clipboard-changed', {
+        detail: {
+          hasClipboard: Boolean(this.clipboard),
+          mode: String(this.clipboard?.mode || ''),
+          transferPending: Boolean(this.clipboard?.transferPending)
+        }
+      }));
+    } catch (_) {}
+  }
+
+  async reconcileClipboardJob() {
+    const jobId = String(this.clipboard?.transferJobId || '').trim();
+    if (!jobId) return;
+    try {
+      const url = new URL('move_task_status.php', this.window.location.href);
+      url.searchParams.set('job_id', jobId);
+      url.searchParams.set('_', String(Date.now()));
+      const response = await this.window.fetch(url.toString(), {
+        method: 'GET',
+        credentials: 'same-origin',
+        cache: 'no-store',
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+      });
+      const json = await response.json();
+      if (!response.ok || json?.ok !== true) return;
+      const status = String(json.estado || '').toLowerCase();
+      if (status === 'completed') {
+        this.clearClipboard();
+      } else if (['failed', 'cancelled'].includes(status)) {
+        this.markClipboardTransfer('');
+      } else {
+        this.markClipboardTransfer(jobId);
+      }
+    } catch (_) {
+      // Si el estado no puede consultarse, no se habilita una segunda transferencia
+      // cuando el portapapeles ya estaba marcado como pendiente.
+      this.updatePasteControls();
+    }
   }
 
   async paste(destination, context = {}) {
     const item = this.clipboard;
     if (!item) {
       this.notify('Primero copia o corta un archivo o carpeta.', 'warning');
+      return;
+    }
+    if (item.transferPending) {
+      this.notify('La transferencia anterior todavía está en proceso.', 'info');
       return;
     }
 
@@ -544,8 +622,9 @@ class ArcadeCloudOsClipboard {
         destinationRoute: destination,
         destinationWindowId: String(context.destinationWindowId || ''),
         items: Array.isArray(item.items) ? [...item.items] : [],
-        clearClipboardOnSuccess: item.mode === 'move'
+        clearClipboardOnSuccess: true
       };
+      this.markClipboardTransfer(String(started.job_id));
       this.persistTransfer();
     } catch (error) {
       this.hideTransferSoon(2500);
@@ -574,7 +653,11 @@ class ArcadeCloudOsClipboard {
   }
 
   async onTransferCompleted(detail) {
-    if (!this.activeTransfer || String(detail.job_id || '') !== String(this.activeTransfer.jobId || '')) {
+    const jobId = String(detail.job_id || '');
+    if (this.clipboard && jobId && jobId === String(this.clipboard.transferJobId || '')) {
+      this.clearClipboard();
+    }
+    if (!this.activeTransfer || jobId !== String(this.activeTransfer.jobId || '')) {
       return;
     }
 
@@ -589,7 +672,7 @@ class ArcadeCloudOsClipboard {
       message: String(detail.mensaje || 'Transferencia completada.')
     });
 
-    if (finished.clearClipboardOnSuccess) this.clearClipboard();
+    if (finished.clearClipboardOnSuccess && this.clipboard) this.clearClipboard();
 
     this.window.ArcadeCloudDesktop?.emitFilesystemChanged?.({
       operation: finished.operation,
@@ -604,7 +687,11 @@ class ArcadeCloudOsClipboard {
   }
 
   onTransferFailed(detail, cancelled) {
-    if (!this.activeTransfer || String(detail.job_id || '') !== String(this.activeTransfer.jobId || '')) {
+    const jobId = String(detail.job_id || '');
+    if (this.clipboard && jobId && jobId === String(this.clipboard.transferJobId || '')) {
+      this.markClipboardTransfer('');
+    }
+    if (!this.activeTransfer || jobId !== String(this.activeTransfer.jobId || '')) {
       return;
     }
 

@@ -403,6 +403,34 @@ class ArcadeCloudOsClipboard {
     });
   }
 
+  captureFolders(folders, mode, context = {}) {
+    const operation = mode === 'copy' ? 'copy' : 'cut';
+    mode = operation === 'copy' ? 'copy' : 'move';
+    const root = String(this.window.ARCADECLOUD_OS_ROOT_ROUTE || '').trim();
+    const items = Array.isArray(folders) ? folders : [];
+    const routes = Array.from(new Set(items
+      .map((folder) => String(folder?.route || '').trim())
+      .filter((route) => route && (!root || !this.sameRoute(route, root)))));
+
+    if (routes.length === 0) {
+      this.notify('No hay carpetas válidas para copiar o mover.', 'warning');
+      return;
+    }
+
+    this.setClipboard({
+      kind: routes.length === 1 ? 'folder' : 'folders',
+      mode,
+      operation,
+      route: routes[0],
+      routes,
+      items: routes,
+      name: routes.length === 1 ? String(items[0]?.name || 'Carpeta') : routes.length + ' carpetas',
+      count: routes.length,
+      sourceWindowId: String(context.sourceWindowId || ''),
+      sourceRoute: String(context.sourceRoute || this.currentRoute())
+    });
+  }
+
   setClipboard(item) {
     item.operation = item.operation || item.mode;
     item.items = Array.isArray(item.items) ? item.items : (item.keys || (item.route ? [item.route] : []));
@@ -436,7 +464,7 @@ class ArcadeCloudOsClipboard {
     try {
       const raw = this.window.sessionStorage.getItem(this.storageKey);
       const parsed = raw ? JSON.parse(raw) : null;
-      if (!parsed || Number(parsed.version || 0) !== 2 || !['file', 'folder'].includes(parsed.kind) || !['copy', 'move'].includes(parsed.mode)) {
+      if (!parsed || Number(parsed.version || 0) !== 2 || !['file', 'folder', 'folders'].includes(parsed.kind) || !['copy', 'move'].includes(parsed.mode)) {
         return null;
       }
       return parsed;
@@ -573,7 +601,7 @@ class ArcadeCloudOsClipboard {
     }
 
     const payload = {
-      type: item.kind === 'file' ? 'files' : 'folder',
+      type: item.kind === 'file' ? 'files' : (item.kind === 'folders' ? 'folders' : 'folder'),
       operation: item.mode,
       ruta_actual: String(item.sourceRoute || this.currentRoute())
     };
@@ -590,6 +618,16 @@ class ArcadeCloudOsClipboard {
 
       payload.archivos_json = JSON.stringify(keys);
       payload.nueva_ruta = destination;
+    } else if (item.kind === 'folders') {
+      const routes = Array.isArray(item.routes) && item.routes.length > 0
+        ? item.routes.map((route) => String(route || '').trim()).filter(Boolean)
+        : Array.isArray(item.items) ? item.items.map((route) => String(route || '').trim()).filter(Boolean) : [];
+      if (routes.length === 0) {
+        this.notify('No hay carpetas válidas para transferir.', 'warning');
+        return;
+      }
+      payload.origenes_json = JSON.stringify(routes);
+      payload.destino = destination;
     } else {
       payload.origen = item.route;
       payload.destino = destination;

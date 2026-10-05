@@ -52,7 +52,7 @@ final class MoveJobStore
         ];
 
         $this->writeNew($id, $job);
-        $this->purgeOlderThan(172800);
+        $this->purgeOlderThan(604800);
 
         return $job;
     }

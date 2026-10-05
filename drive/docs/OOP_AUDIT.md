@@ -151,7 +151,7 @@
 | `drive/notebook.php` | 206 | view/entrypoint | 0 | — | — | — | — |
 | `drive/office-gateway.php` | 674 | view/entrypoint | 0 | — | — | — | — |
 | `drive/office-launch.php` | 81 | thin endpoint | 0 | — | — | — | — |
-| `drive/os-preferences.php` | 70 | thin endpoint | 0 | — | — | — | — |
+| `drive/os-preferences.php` | 71 | thin endpoint | 0 | — | — | — | — |
 | `drive/personal_aws_bootstrap.php` | 86 | class/module | 1 | — | — | — | — |
 | `drive/polly_cargar_texto.php` | 8 | thin endpoint | 0 | — | — | — | — |
 | `drive/polly_list_voices.php` | 8 | thin endpoint | 0 | — | — | — | — |
@@ -172,7 +172,7 @@
 | `drive/set_file_security.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/setup/api.php` | 15 | thin endpoint | 0 | — | — | — | — |
 | `drive/setup/index.php` | 90 | view/entrypoint | 0 | — | — | — | — |
-| `drive/so.php` | 2176 | view/entrypoint | 0 | — | — | — | — |
+| `drive/so.php` | 2185 | view/entrypoint | 0 | — | — | — | — |
 | `drive/src/Activity/ActivityCostRecorder.php` | 155 | class/module | 1 | — | — | — | — |
 | `drive/src/Activity/ActivityCostRepository.php` | 198 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Activity/ActivityCostService.php` | 153 | class/module | 1 | — | — | — | — |
@@ -357,7 +357,7 @@
 | `drive/src/Http/Controller/MediaProcessingController.php` | 79 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/MoveJobController.php` | 195 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/NavigationController.php` | 42 | class/module | 1 | — | — | — | — |
-| `drive/src/Http/Controller/NodeStatusController.php` | 139 | class/module | 1 | — | — | — | — |
+| `drive/src/Http/Controller/NodeStatusController.php` | 140 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/OfficeDocumentController.php` | 53 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Http/Controller/PersonalAwsController.php` | 110 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/PollyTaskController.php` | 347 | class/module | 1 | — | ⚠️ | — | — |
@@ -444,7 +444,7 @@
 | `drive/src/System/Ec2InstanceIdentityService.php` | 107 | class/module | 1 | — | — | — | — |
 | `drive/src/System/LocalContainerCapabilityService.php` | 58 | class/module | 1 | — | — | — | — |
 | `drive/src/System/NodeCapabilityService.php` | 255 | class/module | 1 | — | — | — | — |
-| `drive/src/System/NodeRuntimeStatusService.php` | 488 | class/module | 1 | — | ⚠️ | — | — |
+| `drive/src/System/NodeRuntimeStatusService.php` | 509 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/System/NodeServiceCatalog.php` | 35 | class/module | 1 | — | — | — | — |
 | `drive/src/Upload/AdminMultipartUploadService.php` | 221 | class/module | 1 | — | — | — | — |
 | `drive/src/Upload/ChunkedUploadCleanupService.php` | 101 | class/module | 1 | — | — | — | — |
@@ -544,7 +544,7 @@
 | `drive/tests/user_identity_presenter_smoke.php` | 30 | test script | 0 | — | — | — | — |
 | `drive/tests/user_profile_validator_smoke.php` | 72 | test script | 0 | — | — | — | — |
 | `drive/tests/web_os_clipboard_contract_smoke.php` | 126 | test script | 0 | — | — | — | — |
-| `drive/tests/web_os_contract_smoke.php` | 564 | test script | 0 | — | — | — | — |
+| `drive/tests/web_os_contract_smoke.php` | 572 | test script | 0 | — | — | — | — |
 | `drive/tests/web_os_desktop_shell_smoke.php` | 20 | test script | 0 | — | — | — | — |
 | `drive/tests/web_os_file_applications_smoke.php` | 21 | test script | 0 | — | — | — | — |
 | `drive/tests/web_os_interactions_theme_smoke.php` | 30 | test script | 0 | — | — | — | — |
@@ -625,7 +625,7 @@
 | `drive/js/move-tasks.js` | 262 | class/module | DriveMoveTasks | — | — | — |
 | `drive/js/notebook.js` | 262 | procedural script | — | uid, status, api, canvasSize, applyZoom, background | — | top-level functions: uid, status, api, canvasSize, applyZoom, background, styleFor, drawStroke; top-level state: $, canvas, imageCache, defaultZoom, state, paper, WRITE_LEFT, fontStacks; no ES class |
 | `drive/js/obtenerFiltros.js` | 125 | class/module | ObtenerFiltrosModule | — | — | — |
-| `drive/js/os-window-manager.js` | 1145 | class/module | ArcadeCloudEventBus, ArcadeCloudWindowLayoutConfig, ArcadeCloudWindowManager, ExplorerWindowFactory, ArcadeCloudExplorerWindow, ArcadeCloudDesktopRuntime | — | — | — |
+| `drive/js/os-window-manager.js` | 1167 | class/module | ArcadeCloudEventBus, ArcadeCloudWindowLayoutConfig, ArcadeCloudWindowManager, ExplorerWindowFactory, ArcadeCloudExplorerWindow, ArcadeCloudDesktopRuntime | — | — | — |
 | `drive/js/page-task-manager.js` | 119 | class/module | ArcadeCloudPageTaskManager | — | — | — |
 | `drive/js/pdf-pantalla-completa.js` | 45 | class/module | PdfPantallaCompletaModule | — | — | — |
 | `drive/js/polly-background.js` | 306 | class/module | PollyBackgroundModule | — | — | — |
@@ -635,11 +635,11 @@
 | `drive/js/server-admin.js` | 415 | class/module | ServerAdminModule | — | — | — |
 | `drive/js/setup.js` | 192 | class/module | ArcadeCloudSetup | — | — | — |
 | `drive/js/sincronizar.js` | 265 | class/module | SincronizarModule | — | triggerSyncFolderS3, triggerSyncS3 | window functions: triggerSyncFolderS3, triggerSyncS3 |
-| `drive/js/so-appearance.js` | 156 | class/module | ArcadeCloudOsAppearance | — | — | — |
+| `drive/js/so-appearance.js` | 165 | class/module | ArcadeCloudOsAppearance | — | — | — |
 | `drive/js/so-clipboard.js` | 797 | class/module | ArcadeCloudOsClipboard | — | — | — |
 | `drive/js/so-federation.js` | 102 | class/module | ArcadeCloudOsFederationApp | — | — | — |
 | `drive/js/so-folders.js` | 485 | class/module | ArcadeCloudOsFolderActions | — | — | — |
-| `drive/js/so-node.js` | 438 | class/module | ArcadeCloudOsNodeMonitor | — | — | — |
+| `drive/js/so-node.js` | 513 | class/module | ArcadeCloudOsNodeMonitor | — | — | — |
 | `drive/js/so-power.js` | 108 | class/module | ArcadeCloudFastDrivePower | — | — | — |
 | `drive/js/so-screenshot-paste.js` | 341 | class/module | ArcadeCloudOsScreenshotPaste | — | — | — |
 | `drive/js/so-search.js` | 292 | class/module | ArcadeCloudOsSearch | — | — | — |

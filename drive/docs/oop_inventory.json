@@ -1850,7 +1850,7 @@
     },
     {
       "path": "drive/os-preferences.php",
-      "lines": 70,
+      "lines": 71,
       "kind": "thin endpoint",
       "classes": 0,
       "functions": [],
@@ -2172,7 +2172,7 @@
     },
     {
       "path": "drive/so.php",
-      "lines": 2176,
+      "lines": 2185,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -4960,7 +4960,7 @@
     },
     {
       "path": "drive/src/Http/Controller/NodeStatusController.php",
-      "lines": 139,
+      "lines": 140,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -6282,7 +6282,7 @@
     },
     {
       "path": "drive/src/System/NodeRuntimeStatusService.php",
-      "lines": 488,
+      "lines": 509,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -7884,7 +7884,7 @@
     },
     {
       "path": "drive/tests/web_os_contract_smoke.php",
-      "lines": 564,
+      "lines": 572,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -9447,7 +9447,7 @@
     },
     {
       "path": "drive/js/os-window-manager.js",
-      "lines": 1145,
+      "lines": 1167,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudEventBus",
@@ -9714,7 +9714,7 @@
     },
     {
       "path": "drive/js/so-appearance.js",
-      "lines": 156,
+      "lines": 165,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudOsAppearance"
@@ -9804,7 +9804,7 @@
     },
     {
       "path": "drive/js/so-node.js",
-      "lines": 438,
+      "lines": 513,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudOsNodeMonitor"
@@ -10622,7 +10622,7 @@
     },
     {
       "path": "drive/docs/runtime_endpoints.json",
-      "bytes": 129673,
+      "bytes": 129704,
       "valid": true,
       "root_type": "object",
       "keys": [

@@ -559,7 +559,7 @@ webOsContract(substr_count($paths['moderation_renderer'], "/federationcloud/mode
 webOsContract(str_contains($paths['shell'], 'id="osNodeHealthButton"') && str_contains($paths['shell'], 'id="osNodeHealthPopover"'), 'barra de tareas muestra foco de estado del nodo local');
 webOsContract(str_contains($paths['shell'], 'id="osResourceHistoryButton"') && str_contains($paths['shell'], 'data-node-spark="network"'), 'barra de tareas integra mini gráficas Linux de CPU, RAM, red y disco');
 webOsContract(str_contains($paths['node_js'], 'this.resourceHistory = { cpu: [], memory: [], network: [], disk: [] }') && str_contains($paths['node_js'], 'drawResourceHistory()'), 'monitor mantiene historial visual de recursos');
-webOsContract(str_contains($paths['node_controller'], "'network' => (array)($resources['network'] ?? [])"), 'estado público conserva contadores agregados seguros de red');
+webOsContract(str_contains($paths['node_controller'], "'network' => (array)(\$resources['network'] ?? [])"), 'estado público conserva contadores agregados seguros de red');
 webOsContract(str_contains($paths['node_js'], 'renderTaskbarStatus(this.node)') && str_contains($paths['node_js'], 'NODO LOCAL · '), 'estado del nodo alimenta el foco y su tarjeta resumida');
 webOsContract(str_contains($paths['shell'], 'id="osReplicaHealthButton"') && str_contains($paths['node_js'], 'federationcloud/nodes.php'), 'superadmin recibe foco de nodo federado activo');
 webOsContract(str_contains($paths['shell'], 'id="osTaskCenterButton"') && str_contains($paths['shell'], 'os-task-center-count'), 'Centro de Tareas está integrado como icono con contador en la barra del OS');

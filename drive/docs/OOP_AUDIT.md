@@ -172,7 +172,7 @@
 | `drive/set_file_security.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/setup/api.php` | 15 | thin endpoint | 0 | — | — | — | — |
 | `drive/setup/index.php` | 90 | view/entrypoint | 0 | — | — | — | — |
-| `drive/so.php` | 2146 | view/entrypoint | 0 | — | — | — | — |
+| `drive/so.php` | 2147 | view/entrypoint | 0 | — | — | — | — |
 | `drive/src/Activity/ActivityCostRecorder.php` | 155 | class/module | 1 | — | — | — | — |
 | `drive/src/Activity/ActivityCostRepository.php` | 198 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Activity/ActivityCostService.php` | 153 | class/module | 1 | — | — | — | — |
@@ -522,7 +522,7 @@
 | `drive/tests/media_worker_behavior_regression.php` | 65 | test script | 0 | — | ⚠️ | — | — |
 | `drive/tests/node_diagnostics_contract_smoke.php` | 62 | test script | 0 | — | — | — | — |
 | `drive/tests/node_diagnostics_control_smoke.php` | 43 | test script | 0 | — | — | — | — |
-| `drive/tests/notebook_contract_smoke.php` | 90 | test script | 0 | — | — | — | — |
+| `drive/tests/notebook_contract_smoke.php` | 91 | test script | 0 | — | — | — | — |
 | `drive/tests/office_conditional_save_regression.php` | 148 | test script | 1 | — | ⚠️ | — | — |
 | `drive/tests/office_gateway_contract_smoke.php` | 376 | test script | 0 | — | — | — | — |
 | `drive/tests/password_credential_verifier_smoke.php` | 44 | test script | 0 | — | — | — | — |
@@ -544,7 +544,7 @@
 | `drive/tests/user_identity_presenter_smoke.php` | 30 | test script | 0 | — | — | — | — |
 | `drive/tests/user_profile_validator_smoke.php` | 72 | test script | 0 | — | — | — | — |
 | `drive/tests/web_os_clipboard_contract_smoke.php` | 126 | test script | 0 | — | — | — | — |
-| `drive/tests/web_os_contract_smoke.php` | 552 | test script | 0 | — | — | — | — |
+| `drive/tests/web_os_contract_smoke.php` | 555 | test script | 0 | — | — | — | — |
 | `drive/tests/web_os_desktop_shell_smoke.php` | 20 | test script | 0 | — | — | — | — |
 | `drive/tests/web_os_file_applications_smoke.php` | 21 | test script | 0 | — | — | — | — |
 | `drive/tests/web_os_interactions_theme_smoke.php` | 30 | test script | 0 | — | — | — | — |
@@ -623,7 +623,7 @@
 | `drive/js/media-processing.js` | 498 | class/module | MediaProcessingModule | — | — | — |
 | `drive/js/mediaFloating.js` | 38 | class/module | MediaFloatingModule | — | — | — |
 | `drive/js/move-tasks.js` | 262 | class/module | DriveMoveTasks | — | — | — |
-| `drive/js/notebook.js` | 261 | procedural script | — | uid, status, api, canvasSize, applyZoom, background | — | top-level functions: uid, status, api, canvasSize, applyZoom, background, styleFor, drawStroke; top-level state: $, canvas, imageCache, state, paper, WRITE_LEFT, fontStacks, closeResolver; no ES class |
+| `drive/js/notebook.js` | 262 | procedural script | — | uid, status, api, canvasSize, applyZoom, background | — | top-level functions: uid, status, api, canvasSize, applyZoom, background, styleFor, drawStroke; top-level state: $, canvas, imageCache, defaultZoom, state, paper, WRITE_LEFT, fontStacks; no ES class |
 | `drive/js/obtenerFiltros.js` | 125 | class/module | ObtenerFiltrosModule | — | — | — |
 | `drive/js/os-window-manager.js` | 1083 | class/module | ArcadeCloudEventBus, ArcadeCloudWindowLayoutConfig, ArcadeCloudWindowManager, ExplorerWindowFactory, ArcadeCloudExplorerWindow, ArcadeCloudDesktopRuntime | — | — | — |
 | `drive/js/page-task-manager.js` | 54 | class/module | ArcadeCloudPageTaskManager | — | — | — |
@@ -639,7 +639,7 @@
 | `drive/js/so-clipboard.js` | 797 | class/module | ArcadeCloudOsClipboard | — | — | — |
 | `drive/js/so-federation.js` | 102 | class/module | ArcadeCloudOsFederationApp | — | — | — |
 | `drive/js/so-folders.js` | 485 | class/module | ArcadeCloudOsFolderActions | — | — | — |
-| `drive/js/so-node.js` | 347 | class/module | ArcadeCloudOsNodeMonitor | — | — | — |
+| `drive/js/so-node.js` | 349 | class/module | ArcadeCloudOsNodeMonitor | — | — | — |
 | `drive/js/so-power.js` | 108 | class/module | ArcadeCloudFastDrivePower | — | — | — |
 | `drive/js/so-screenshot-paste.js` | 341 | class/module | ArcadeCloudOsScreenshotPaste | — | — | — |
 | `drive/js/so-search.js` | 292 | class/module | ArcadeCloudOsSearch | — | — | — |

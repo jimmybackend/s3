@@ -2172,7 +2172,7 @@
     },
     {
       "path": "drive/so.php",
-      "lines": 2146,
+      "lines": 2147,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -7536,7 +7536,7 @@
     },
     {
       "path": "drive/tests/notebook_contract_smoke.php",
-      "lines": 90,
+      "lines": 91,
       "kind": "test script",
       "classes": 0,
       "functions": [],
@@ -7884,7 +7884,7 @@
     },
     {
       "path": "drive/tests/web_os_contract_smoke.php",
-      "lines": 552,
+      "lines": 555,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -9345,7 +9345,7 @@
     },
     {
       "path": "drive/js/notebook.js",
-      "lines": 261,
+      "lines": 262,
       "kind": "procedural script",
       "classes": [],
       "functions": [
@@ -9399,6 +9399,7 @@
         "$",
         "canvas",
         "imageCache",
+        "defaultZoom",
         "state",
         "paper",
         "WRITE_LEFT",
@@ -9415,7 +9416,7 @@
       },
       "issues": [
         "top-level functions: uid, status, api, canvasSize, applyZoom, background, styleFor, drawStroke",
-        "top-level state: $, canvas, imageCache, state, paper, WRITE_LEFT, fontStacks, closeResolver",
+        "top-level state: $, canvas, imageCache, defaultZoom, state, paper, WRITE_LEFT, fontStacks",
         "no ES class"
       ]
     },
@@ -9803,7 +9804,7 @@
     },
     {
       "path": "drive/js/so-node.js",
-      "lines": 347,
+      "lines": 349,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudOsNodeMonitor"

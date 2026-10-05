@@ -9,6 +9,7 @@ $paths = [
     'js' => $root . '/js/so.js',
     'file_apps_js' => $root . '/js/file-applications.js',
     'window_manager_js' => $root . '/js/os-window-manager.js',
+    'desktop_shell_js' => $root . '/js/desktop-shell.js',
     'appearance_js' => $root . '/js/so-appearance.js',
     'preferences_endpoint' => $root . '/os-preferences.php',
     'preferences_repository' => $root . '/src/Security/UserOsPreferencesRepository.php',
@@ -123,6 +124,10 @@ webOsContract(!str_contains($paths['capability'], 'shell_exec('), 'detector no e
 webOsContract(str_contains($paths['js'], 'data-window-open'), 'shell abre aplicaciones como ventanas');
 webOsContract(str_contains($paths['js'], "addEventListener('contextmenu'"), 'archivos tienen menú contextual');
 webOsContract(str_contains($paths['js'], 'data-window-drag-handle'), 'ventanas son arrastrables en escritorio');
+webOsContract(str_contains($paths['desktop_shell_js'], "event.key === 'F4'") && str_contains($paths['desktop_shell_js'], 'requestClose(activeId)'), 'F4 cierra la ventana activa del Web OS mediante cierre protegido');
+webOsContract(str_contains($paths['window_manager_js'], 'registerCloseGuard') && str_contains($paths['window_manager_js'], 'async requestClose('), 'WindowManager soporta cierre protegido para aplicaciones con cambios');
+webOsContract(str_contains($paths['window_manager_js'], "registerCloseGuard('notebook'") && str_contains($paths['window_manager_js'], 'confirmNotebookClose(record)'), 'Notebook consulta sus cambios antes de cerrarse desde el SO');
+webOsContract(str_contains($paths['js'], 'await manager?.requestClose(win)'), 'menú de tareas respeta el cierre protegido');
 webOsContract(str_contains($paths['css'], '.os-taskbar'), 'existe barra de tareas');
 webOsContract(str_contains($paths['css'], '@media (max-width:800px)'), 'shell conserva experiencia móvil');
 
@@ -213,6 +218,7 @@ webOsContract(str_contains($paths['shell'], 'js/arcadecloud-updater.js'), 'Acerc
 webOsContract(str_contains($paths['shell'], 'ARCADECLOUD_UPDATER'), 'Web OS entrega configuración del actualizador al superadmin');
 webOsContract(str_contains($paths['shell'], 'server_admin_csrf'), 'Web OS prepara CSRF de actualización');
 webOsContract(str_contains($paths['updater_js'], 'ARCADECLOUD_UPDATER?.csrf'), 'actualizador acepta configuración segura del Web OS');
+webOsContract(str_contains($paths['updater_js'], 'confirmAction(message)') && !str_contains($paths['updater_js'], 'this.window.confirm('), 'actualizador usa diálogo interno y no confirmación nativa del navegador');
 webOsContract(str_contains($paths['update_controller'], 'isSuperAdmin()'), 'backend de actualización exige superadmin');
 webOsContract(str_contains($paths['update_controller'], 'HTTP_X_SERVER_ADMIN_CSRF'), 'backend de actualización conserva CSRF');
 webOsContract(str_contains($paths['shell'], 'href="logout.php"'), 'lanzador conserva cierre de sesión');

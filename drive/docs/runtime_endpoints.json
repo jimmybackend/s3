@@ -1259,7 +1259,8 @@
       "size": 260,
       "active": false,
       "references": [
-        "drive/js/media-floating.js"
+        "drive/js/media-floating.js",
+        "drive/js/os-media-cloud.js"
       ]
     },
     {
@@ -1602,7 +1603,7 @@
     },
     {
       "path": "drive/so.php",
-      "size": 124157,
+      "size": 124380,
       "active": true,
       "references": [
         "drive/s3.php",
@@ -2984,7 +2985,8 @@
       "size": 6142,
       "active": false,
       "references": [
-        "drive/tests/arcadelink_bulk_contract_regression.php"
+        "drive/tests/arcadelink_bulk_contract_regression.php",
+        "drive/tests/web_os_contract_smoke.php"
       ]
     },
     {
@@ -3240,7 +3242,9 @@
       "path": "drive/src/Media/MediaPlaylistService.php",
       "size": 1762,
       "active": false,
-      "references": []
+      "references": [
+        "drive/tests/web_os_contract_smoke.php"
+      ]
     },
     {
       "path": "drive/src/Media/MediaProcessingJobRepository.php",
@@ -4373,7 +4377,7 @@
     },
     {
       "path": "drive/tests/web_os_contract_smoke.php",
-      "size": 71302,
+      "size": 74036,
       "active": false,
       "references": []
     },
@@ -4690,6 +4694,7 @@
         "drive/bloque_archivos.php",
         "drive/so.php",
         "drive/src/Media/MediaPlaylistService.php",
+        "drive/tests/web_os_contract_smoke.php",
         "drive/js/archivos.js",
         "drive/js/imagenes.js"
       ]

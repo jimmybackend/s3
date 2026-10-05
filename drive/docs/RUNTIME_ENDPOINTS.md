@@ -56,7 +56,7 @@
 | `drive/up.php` | `drive/so.php`, `drive/src/Admin/ProductionPreflightService.php`, `drive/src/Http/Controller/UploadCleanupController.php`, `drive/src/Upload/AdminMultipartUploadService.php`, `drive/tests/database_backup_contract_smoke.php`, `drive/tests/federation_moderation_contract_smoke.php`, `drive/tests/upload_catalog_registration_regression.php`, `drive/js/estilo.js`, `drive/js/so-node.js` |
 | `drive/upload.php` | `drive/s3.php`, `drive/so.php`, `drive/tests/web_os_contract_smoke.php`, `drive/js/so-screenshot-paste.js`, `drive/js/soportesMediaTypes.js`, `drive/js/subir-chunked.js`, `drive/js/subir-dropzone.js`, `drive/js/subir.js`, `drive/js/upload-center.js` |
 | `drive/validar_php.php` | `drive/editor.php` |
-| `drive/ver_archivo.php` | `drive/bloque_archivos.php`, `drive/so.php`, `drive/src/Media/MediaPlaylistService.php`, `drive/js/archivos.js`, `drive/js/imagenes.js` |
+| `drive/ver_archivo.php` | `drive/bloque_archivos.php`, `drive/so.php`, `drive/src/Media/MediaPlaylistService.php`, `drive/tests/web_os_contract_smoke.php`, `drive/js/archivos.js`, `drive/js/imagenes.js` |
 
 ## PHP no alcanzables por referencias internas
 
@@ -144,7 +144,7 @@
 | `drive/folder-suggestions.php` | `drive/tests/web_os_contract_smoke.php`, `drive/tests/web_os_multiwindow_smoke.php`, `drive/js/os-window-manager.js` |
 | `drive/generar_token.php` | `drive/tests/web_os_clipboard_contract_smoke.php`, `drive/tests/web_os_contract_smoke.php`, `drive/js/archivos.js`, `drive/js/so-share.js` |
 | `drive/listar_carpetas.php` | `drive/js/carpetas.js` |
-| `drive/media_playlist.php` | `drive/js/media-floating.js` |
+| `drive/media_playlist.php` | `drive/js/media-floating.js`, `drive/js/os-media-cloud.js` |
 | `drive/media_processing.php` | `drive/tests/media_processing_contract_smoke.php`, `drive/js/compute-node-idle.js`, `drive/js/media-processing.js` |
 | `drive/migrations/20260930_add_users_os_preferences.php` | ninguna |
 | `drive/move_multiple.php` | ninguna |
@@ -339,7 +339,7 @@
 | `drive/src/Http/Controller/FederationPublicImportController.php` | ninguna |
 | `drive/src/Http/Controller/FederationReplicaController.php` | `drive/tests/federation_delivery_history_contract_smoke.php`, `drive/tests/federation_public_download_failover_smoke.php` |
 | `drive/src/Http/Controller/FederationShareDriveController.php` | ninguna |
-| `drive/src/Http/Controller/FileAccessController.php` | `drive/tests/arcadelink_bulk_contract_regression.php` |
+| `drive/src/Http/Controller/FileAccessController.php` | `drive/tests/arcadelink_bulk_contract_regression.php`, `drive/tests/web_os_contract_smoke.php` |
 | `drive/src/Http/Controller/FileKeyRotationController.php` | ninguna |
 | `drive/src/Http/Controller/FileMutationController.php` | ninguna |
 | `drive/src/Http/Controller/FileSearchController.php` | `drive/tests/web_os_contract_smoke.php` |
@@ -376,7 +376,7 @@
 | `drive/src/Mail/SmtpEmailService.php` | `drive/tests/federation_drop_contract_smoke.php` |
 | `drive/src/Media/DerivedImageAssetService.php` | `drive/tests/web_os_contract_smoke.php` |
 | `drive/src/Media/MediaPlaylistRepository.php` | ninguna |
-| `drive/src/Media/MediaPlaylistService.php` | ninguna |
+| `drive/src/Media/MediaPlaylistService.php` | `drive/tests/web_os_contract_smoke.php` |
 | `drive/src/Media/MediaProcessingJobRepository.php` | `drive/tests/media_processing_contract_smoke.php` |
 | `drive/src/Media/MediaProcessingService.php` | `drive/tests/compute_admission_lock_contract_smoke.php`, `drive/tests/media_processing_contract_smoke.php` |
 | `drive/src/Media/MediaWorkerNodeService.php` | `drive/tests/compute_admission_lock_contract_smoke.php`, `drive/tests/media_processing_contract_smoke.php`, `drive/tests/office_gateway_contract_smoke.php`, `drive/tests/web_os_contract_smoke.php` |

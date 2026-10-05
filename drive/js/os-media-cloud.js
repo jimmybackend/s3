@@ -57,6 +57,20 @@ class ArcadeCloudMediaCloud {
           <filter id="acCloudSoftGlow" x="-20%" y="-20%" width="140%" height="140%">
             <feGaussianBlur stdDeviation="16"/>
           </filter>
+          <filter id="acMistBlur" x="-30%" y="-30%" width="160%" height="160%">
+            <feGaussianBlur stdDeviation="14"/>
+          </filter>
+          <filter id="acSparkGlow" x="-100%" y="-100%" width="300%" height="300%">
+            <feGaussianBlur stdDeviation="3" result="sparkBlur"/>
+            <feMerge><feMergeNode in="sparkBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+          <radialGradient id="acMistWhite" cx=".48" cy=".35" r=".7">
+            <stop offset="0" stop-color="#ffffff" stop-opacity=".92"/>
+            <stop offset=".38" stop-color="#d9fbff" stop-opacity=".76"/>
+            <stop offset=".72" stop-color="#8ddfff" stop-opacity=".34"/>
+            <stop offset="1" stop-color="#4198ff" stop-opacity="0"/>
+          </radialGradient>
+          <clipPath id="acCloudClip"><use href="#acCloudShape"/></clipPath>
           <path id="acCloudShape" d="M116 175
             C122 116 168 74 230 80
             C260 28 322 5 385 26
@@ -86,6 +100,41 @@ class ArcadeCloudMediaCloud {
         <use href="#acCloudShape" fill="url(#acCloudFill)" stroke="url(#acCloudStroke)" stroke-width="7" filter="url(#acCloudNeon)"/>
         <use href="#acCloudShape" fill="url(#acCloudGlow)" stroke="rgba(255,255,255,.82)" stroke-width="2"/>
         <use href="#acCloudShape" fill="none" stroke="#47dcff" stroke-opacity=".34" stroke-width="13"/>
+
+        <g class="ac-cloud-mist" clip-path="url(#acCloudClip)" filter="url(#acMistBlur)">
+          <g class="mist-cluster mist-top-right">
+            <ellipse cx="704" cy="112" rx="128" ry="74" fill="url(#acMistWhite)"/>
+            <ellipse cx="635" cy="136" rx="82" ry="48" fill="url(#acMistWhite)"/>
+            <ellipse cx="778" cy="145" rx="92" ry="50" fill="url(#acMistWhite)"/>
+            <ellipse cx="721" cy="160" rx="138" ry="42" fill="url(#acMistWhite)"/>
+          </g>
+          <g class="mist-cluster mist-bottom-left">
+            <ellipse cx="145" cy="482" rx="112" ry="62" fill="url(#acMistWhite)"/>
+            <ellipse cx="220" cy="507" rx="98" ry="50" fill="url(#acMistWhite)"/>
+            <ellipse cx="95" cy="525" rx="86" ry="44" fill="url(#acMistWhite)"/>
+          </g>
+          <g class="mist-cluster mist-bottom-right">
+            <ellipse cx="845" cy="500" rx="120" ry="60" fill="url(#acMistWhite)"/>
+            <ellipse cx="914" cy="470" rx="82" ry="45" fill="url(#acMistWhite)"/>
+            <ellipse cx="770" cy="536" rx="100" ry="44" fill="url(#acMistWhite)"/>
+          </g>
+        </g>
+
+        <g class="ac-cloud-arcs" fill="none" stroke-linecap="round">
+          <path class="arc-one" d="M120 438 C210 590 420 634 590 600 C760 567 861 485 920 370"/>
+          <path class="arc-two" d="M178 225 C275 142 402 116 516 139 C650 165 741 236 819 305"/>
+        </g>
+
+        <g class="ac-cloud-sparkles" filter="url(#acSparkGlow)">
+          <circle cx="84" cy="300" r="3"/><circle cx="122" cy="425" r="2.2"/><circle cx="176" cy="204" r="2.4"/>
+          <circle cx="258" cy="108" r="2.6"/><circle cx="344" cy="72" r="2.1"/><circle cx="462" cy="130" r="2.2"/>
+          <circle cx="579" cy="78" r="2.8"/><circle cx="690" cy="52" r="2.2"/><circle cx="816" cy="122" r="2.5"/>
+          <circle cx="917" cy="198" r="2.6"/><circle cx="948" cy="342" r="2.2"/><circle cx="891" cy="510" r="2.8"/>
+          <circle cx="728" cy="578" r="2.1"/><circle cx="542" cy="610" r="2.5"/><circle cx="350" cy="586" r="2.1"/>
+          <circle cx="210" cy="548" r="2.5"/>
+          <path d="M316 86 h18 M325 77 v18"/><path d="M858 166 h18 M867 157 v18"/>
+          <path d="M126 396 h15 M133 389 v15"/><path d="M802 548 h15 M809 541 v15"/>
+        </g>
 
         <path d="M195 147 C235 95 299 82 354 105" fill="none" stroke="#d9ffff" stroke-opacity=".58" stroke-width="4" stroke-linecap="round"/>
         <path d="M615 91 C660 45 730 44 779 93" fill="none" stroke="#d9ffff" stroke-opacity=".5" stroke-width="4" stroke-linecap="round"/>

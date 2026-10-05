@@ -622,34 +622,43 @@ class ArcadeCloudMediaCloud {
       const width = this.canvas.width;
       const height = this.canvas.height;
       const center = height / 2;
-      const bars = 74;
+      const bars = 68;
       const gap = 3;
       const barWidth = Math.max(2, (width - (bars - 1) * gap) / bars);
 
+      let peak = 1;
+      for (let i = 0; i < Math.floor(bins.length * .72); i++) peak = Math.max(peak, bins[i]);
+      const normalize = Math.max(72, peak);
+
       ctx.clearRect(0, 0, width, height);
       const glow = ctx.createLinearGradient(0, 0, width, 0);
-      glow.addColorStop(0, 'rgba(61,210,255,.42)');
-      glow.addColorStop(.28, 'rgba(77,243,255,.95)');
-      glow.addColorStop(.62, 'rgba(80,177,255,.98)');
-      glow.addColorStop(1, 'rgba(151,118,255,.72)');
+      glow.addColorStop(0, 'rgba(45,190,255,.70)');
+      glow.addColorStop(.22, 'rgba(78,247,255,1)');
+      glow.addColorStop(.54, 'rgba(45,214,255,1)');
+      glow.addColorStop(.82, 'rgba(70,150,255,.98)');
+      glow.addColorStop(1, 'rgba(151,118,255,.78)');
       ctx.fillStyle = glow;
-      ctx.shadowBlur = 16;
-      ctx.shadowColor = 'rgba(38,214,255,.78)';
+      ctx.shadowBlur = 18;
+      ctx.shadowColor = 'rgba(48,225,255,.92)';
 
       for (let i = 0; i < bars; i++) {
-        const sampleIndex = Math.min(bins.length - 1, Math.floor((i / bars) * bins.length * .72));
-        const energy = bins[sampleIndex] / 255;
-        const eased = Math.pow(energy, .72);
-        const amplitude = Math.max(2, eased * (center - 7));
+        const ratio = i / Math.max(1, bars - 1);
+        const sampleIndex = Math.min(bins.length - 1, Math.floor(ratio * bins.length * .72));
+        const raw = bins[sampleIndex] / normalize;
+        const spectralShape = .82 + Math.sin(ratio * Math.PI * 3.2) * .10 + Math.sin(ratio * Math.PI * 7.4) * .05;
+        const energy = Math.max(.08, Math.min(1, raw * 1.18 * spectralShape));
+        const eased = Math.pow(energy, .63);
+        const amplitude = Math.max(3, eased * (center - 6));
         const x = i * (barWidth + gap);
-        ctx.globalAlpha = .48 + eased * .52;
-        ctx.fillRect(x, center - amplitude, barWidth, amplitude);
-        ctx.fillRect(x, center + 2, barWidth, amplitude);
+
+        ctx.globalAlpha = .56 + eased * .44;
+        ctx.fillRect(x, center - amplitude, barWidth, amplitude - 1);
+        ctx.fillRect(x, center + 2, barWidth, amplitude - 1);
       }
 
       ctx.globalAlpha = 1;
       ctx.shadowBlur = 0;
-      ctx.strokeStyle = 'rgba(135,245,255,.72)';
+      ctx.strokeStyle = 'rgba(183,252,255,.88)';
       ctx.lineWidth = 1;
       ctx.beginPath();
       ctx.moveTo(0, center + .5);

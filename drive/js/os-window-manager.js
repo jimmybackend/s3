@@ -117,12 +117,16 @@ class ArcadeCloudWindowManager {
     let record = this.registry.get(id);
     const isNew = !record;
     if (!record) {
+      const preferenceSlot = this.allocatePreferenceSlot(app);
       record = {
         id, app, element, state, cleanup: new Set(), taskButton: null,
         lifecycle, multiInstance: Boolean(definition?.multiInstance), status: 'registered', open: false,
         focused: false, minimized: false, maximized: false, compact: false,
-        lastFocused: 0, geometry: null, preferredGeometry: null
+        lastFocused: 0, geometry: null, preferredGeometry: null,
+        preferenceSlot,
+        preferenceKey: this.preferenceKey(app, preferenceSlot)
       };
+      element.dataset.windowPreferenceKey = record.preferenceKey;
       this.registry.set(id, record);
     } else {
       record.element = element;
@@ -134,7 +138,7 @@ class ArcadeCloudWindowManager {
     // never become visible, focused, or represented in the taskbar until open().
     element.classList.remove('is-open', 'is-active', 'is-maximized');
     element.dataset.minimized = '0';
-    record.preferredGeometry = this.applyInitialGeometry(app, element);
+    record.preferredGeometry = this.applyInitialGeometry(app, element, record.preferenceKey);
     this.observeResize(record);
     this.syncTaskbar();
     return record;
@@ -228,7 +232,22 @@ class ArcadeCloudWindowManager {
     return { width: definition.minWidth, height: definition.minHeight };
   }
 
-  preferenceKey(app) { return ArcadeCloudWindowLayoutConfig.key(app); }
+  preferenceKey(app, slot = 0) {
+    const base = ArcadeCloudWindowLayoutConfig.key(app);
+    return app === 'explorer' && slot > 0 ? `${base}-${slot}` : base;
+  }
+
+  allocatePreferenceSlot(app) {
+    if (app !== 'explorer') return 0;
+    const used = new Set(
+      [...this.registry.values()]
+        .filter(record => record.app === 'explorer' && Number(record.preferenceSlot) > 0)
+        .map(record => Number(record.preferenceSlot))
+    );
+    let slot = 1;
+    while (used.has(slot)) slot += 1;
+    return slot;
+  }
 
   usesDesktopPersistence() {
     return this.window.innerWidth > ArcadeCloudWindowLayoutConfig.DESKTOP_PERSISTENCE_BREAKPOINT;
@@ -245,10 +264,11 @@ class ArcadeCloudWindowManager {
     };
   }
 
-  preferred(app) {
+  preferred(app, key = '') {
     if (!this.usesDesktopPersistence()) return this.defaultGeometry(app);
-    const key = this.preferenceKey(app);
-    const saved = this.preferences[key] || this.preferences[app];
+    const preferenceKey = key || this.preferenceKey(app);
+    const legacy = app === 'explorer' && preferenceKey === 'explorer-1' ? this.preferences.explorer : this.preferences[app];
+    const saved = this.preferences[preferenceKey] || (preferenceKey === this.preferenceKey(app) || preferenceKey === 'explorer-1' ? legacy : null);
     return saved ? this.clampGeometry(app, saved) : this.defaultGeometry(app);
   }
 
@@ -274,12 +294,14 @@ class ArcadeCloudWindowManager {
     };
   }
 
-  applyInitialGeometry(app, element) {
+  applyInitialGeometry(app, element, key = '') {
     element.classList.remove('is-maximized', 'is-compact');
     if (this.window.innerWidth <= ArcadeCloudWindowLayoutConfig.MOBILE_BREAKPOINT) return null;
-    const geometry = this.preferred(app);
+    const preferenceKey = key || this.preferenceKey(app);
+    const geometry = this.preferred(app, preferenceKey);
+    const legacy = app === 'explorer' && preferenceKey === 'explorer-1' ? this.preferences.explorer : this.preferences[app];
     const saved = this.usesDesktopPersistence()
-      ? (this.preferences[this.preferenceKey(app)] || this.preferences[app])
+      ? (this.preferences[preferenceKey] || (preferenceKey === this.preferenceKey(app) || preferenceKey === 'explorer-1' ? legacy : null))
       : null;
     const step = (this.layoutSequence++ % 7) * 32;
     const baseLeft = Math.round(this.window.innerWidth * .04);
@@ -312,23 +334,23 @@ class ArcadeCloudWindowManager {
         left: `${preferred.left}px`, top: `${preferred.top}px`,
         width: `${preferred.width}px`, height: `${preferred.height}px`
       };
-      this.preferenceTimers.set(record.id, setTimeout(() => this.savePreference(record.app, preferred), 400));
+      this.preferenceTimers.set(record.id, setTimeout(() => this.savePreference(record.app, preferred, record.preferenceKey), 400));
     });
     observer.observe(record.element); this.addCleanup(record.id, () => { observer.disconnect(); delete record.element.dataset.resizeObserved; });
   }
 
-  async savePreference(app, geometry) {
+  async savePreference(app, geometry, key = '') {
     if (!this.usesDesktopPersistence()) return;
-    const key = this.preferenceKey(app);
+    const preferenceKey = key || this.preferenceKey(app);
     const normalized = this.clampGeometry(app, geometry || {});
-    this.preferences[key] = normalized;
+    this.preferences[preferenceKey] = normalized;
     const config = this.window.ARCADECLOUD_OS_APPEARANCE || {};
     if (!config.endpoint || !config.csrf) return;
     try {
       await this.window.fetch(config.endpoint, {
         method: 'POST', credentials: 'same-origin',
         headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': config.csrf },
-        body: JSON.stringify({ windowPreference: { app: key, ...normalized } })
+        body: JSON.stringify({ windowPreference: { app: preferenceKey, ...normalized } })
       });
     } catch (_) {}
   }
@@ -346,7 +368,7 @@ class ArcadeCloudWindowManager {
     };
     clearTimeout(this.preferenceTimers.get(record.id));
     this.preferenceTimers.delete(record.id);
-    this.savePreference(record.app, geometry);
+    this.savePreference(record.app, geometry, record.preferenceKey);
   }
 
   setTitle(elementOrId, title) {

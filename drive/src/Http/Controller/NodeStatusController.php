@@ -128,6 +128,7 @@ final class NodeStatusController extends AbstractJsonController
                 'load_average' => array_slice((array)($resources['load_average'] ?? $node['load_average'] ?? []), 0, 3),
                 'memory' => (array)($resources['memory'] ?? []),
                 'disk' => (array)($resources['disk'] ?? []),
+                'network' => (array)($resources['network'] ?? []),
             ],
             'federation' => [
                 'enabled' => (bool)($federation['enabled'] ?? false),

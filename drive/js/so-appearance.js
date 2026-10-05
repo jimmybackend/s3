@@ -5,7 +5,7 @@ class ArcadeCloudOsAppearance {
     this.remote = win.ARCADECLOUD_OS_APPEARANCE || {};
     this.nodeKey = String(this.remote.nodeKey || 'default');
     this.storageKey = 'arcadecloud-os-appearance-v2:' + this.nodeKey;
-    this.defaults = { theme: 'dark', wallpaper: '', wallpaperName: '', wallpaperEnabled: true, windowOpacity: 94, menuOpacity: 98 };
+    this.defaults = { theme: 'dark', wallpaper: '', wallpaperName: '', wallpaperEnabled: true, windowOpacity: 94, menuOpacity: 98, chromeOpacity: 96 };
     this.state = this.load();
   }
 
@@ -13,6 +13,7 @@ class ArcadeCloudOsAppearance {
     this.apply();
     this.bindRange('osWindowOpacity', 'osWindowOpacityValue', 'windowOpacity');
     this.bindRange('osMenuOpacity', 'osMenuOpacityValue', 'menuOpacity');
+    this.bindRange('osChromeOpacity', 'osChromeOpacityValue', 'chromeOpacity');
     this.document.querySelectorAll('[data-os-theme]').forEach((button) => {
       button.addEventListener('click', () => {
         this.state.theme = button.dataset.osTheme === 'light' ? 'light' : 'dark';
@@ -38,6 +39,7 @@ class ArcadeCloudOsAppearance {
       this.state = Object.assign({}, this.state, this.defaults);
       this.syncRange('osWindowOpacity', 'osWindowOpacityValue', 'windowOpacity');
       this.syncRange('osMenuOpacity', 'osMenuOpacityValue', 'menuOpacity');
+      this.syncRange('osChromeOpacity', 'osChromeOpacityValue', 'chromeOpacity');
       this.commit('Se restauró la configuración de apariencia.');
     });
     return this;
@@ -75,14 +77,21 @@ class ArcadeCloudOsAppearance {
     }, 250);
   }
 
-  clamp(value) { return Math.max(35, Math.min(100, Number(value) || 100)); }
+  clamp(value) {
+    const number = Number(value);
+    return Math.max(0, Math.min(100, Number.isFinite(number) ? number : 100));
+  }
 
   apply() {
     this.state.theme = this.state.theme === 'light' ? 'light' : 'dark';
     this.state.windowOpacity = this.clamp(this.state.windowOpacity);
     this.state.menuOpacity = this.clamp(this.state.menuOpacity);
+    this.state.chromeOpacity = this.clamp(this.state.chromeOpacity);
     this.document.documentElement.style.setProperty('--os-window-opacity', String(this.state.windowOpacity / 100));
     this.document.documentElement.style.setProperty('--os-menu-opacity', String(this.state.menuOpacity / 100));
+    this.document.documentElement.style.setProperty('--os-chrome-opacity', String(this.state.chromeOpacity / 100));
+    this.document.documentElement.style.setProperty('--os-window-blur', Math.round(this.state.windowOpacity * .18) + 'px');
+    this.document.documentElement.style.setProperty('--os-chrome-blur', Math.round(this.state.chromeOpacity * .12) + 'px');
     this.document.body.classList.toggle('os-theme-light', this.state.theme === 'light');
     this.document.body.classList.toggle('os-theme-dark', this.state.theme === 'dark');
     this.applyWallpaper();

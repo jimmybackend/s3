@@ -3,6 +3,8 @@ class ArcadeCloudOsNodeMonitor {
     this.window = win; this.document = doc; this.config = win.ARCADECLOUD_OS_NODE || {};
     this.endpoint = String(this.config.endpoint || 'node-status.php'); this.busy = false;
     this.node = {}; this.pollTimer = null; this.countdownTimer = null; this.taskbarTimer = null; this.zeroConfirmed = false; this.mysqlSnapshot = null; this.lastPeerRefresh = 0;
+    this.resourceHistory = { cpu: [], memory: [], network: [], disk: [] };
+    this.previousNetworkSample = null;
   }
 
   init() {
@@ -47,6 +49,7 @@ class ArcadeCloudOsNodeMonitor {
       this.renderOperatingNode(this.node);
       this.renderSelected();
       this.renderTaskbarStatus(this.node);
+      this.updateResourceHistory(this.node);
       if (this.config.superadmin === true) this.refreshFederationIndicator();
     } catch (error) {
       this.renderTaskbarUnavailable(error?.message || 'No se pudo actualizar Mi nodo.');
@@ -105,6 +108,78 @@ class ArcadeCloudOsNodeMonitor {
     if (label) label.textContent = health;
     if (serverNode) serverNode.textContent = server;
     if (button) button.title = 'Mi nodo · ' + health;
+  }
+
+  updateResourceHistory(node) {
+    const resources = node?.resources || {};
+    const cpu = Math.max(0, Math.min(100, Number(resources.load_per_vcpu || 0) * 100));
+    const memory = Math.max(0, Math.min(100, Number(resources.memory?.used_percent || 0)));
+    const disk = Math.max(0, Math.min(100, Number(resources.disk?.used_percent || 0)));
+    const network = resources.network || {};
+    const now = Date.now();
+    let networkRate = 0;
+    if (network.available && this.previousNetworkSample) {
+      const seconds = Math.max(.1, (now - this.previousNetworkSample.time) / 1000);
+      const rxDelta = Math.max(0, Number(network.rx_bytes || 0) - this.previousNetworkSample.rx);
+      const txDelta = Math.max(0, Number(network.tx_bytes || 0) - this.previousNetworkSample.tx);
+      networkRate = (rxDelta + txDelta) / seconds;
+    }
+    if (network.available) {
+      this.previousNetworkSample = {
+        time: now,
+        rx: Number(network.rx_bytes || 0),
+        tx: Number(network.tx_bytes || 0)
+      };
+    }
+    this.pushHistory('cpu', cpu);
+    this.pushHistory('memory', memory);
+    this.pushHistory('disk', disk);
+    this.pushHistory('network', networkRate);
+    this.drawResourceHistory();
+    const widget = this.document.getElementById('osResourceHistoryButton');
+    if (widget) {
+      const net = this.formatRate(networkRate);
+      widget.title = `Recursos · CPU ${cpu.toFixed(0)}% · RAM ${memory.toFixed(1)}% · Red ${net} · Disco ${disk.toFixed(1)}%`;
+    }
+  }
+
+  pushHistory(key, value) {
+    const history = this.resourceHistory[key] || (this.resourceHistory[key] = []);
+    history.push(Math.max(0, Number(value) || 0));
+    if (history.length > 42) history.splice(0, history.length - 42);
+  }
+
+  drawResourceHistory() {
+    this.document.querySelectorAll('canvas[data-node-spark]').forEach(canvas => {
+      const key = String(canvas.dataset.nodeSpark || '');
+      const history = this.resourceHistory[key] || [];
+      const context = canvas.getContext?.('2d');
+      if (!context) return;
+      const width = Number(canvas.width) || 42;
+      const height = Number(canvas.height) || 8;
+      context.clearRect(0, 0, width, height);
+      if (!history.length) return;
+      const css = this.window.getComputedStyle?.(this.document.documentElement);
+      context.strokeStyle = css?.getPropertyValue('--os-accent')?.trim() || '#26c6ff';
+      context.lineWidth = 1.25;
+      context.beginPath();
+      const max = key === 'network' ? Math.max(1, ...history) : 100;
+      history.forEach((value, index) => {
+        const x = history.length === 1 ? width - 1 : index * (width - 1) / (history.length - 1);
+        const ratio = Math.max(0, Math.min(1, value / max));
+        const y = height - 1 - ratio * (height - 2);
+        if (index === 0) context.moveTo(x, y); else context.lineTo(x, y);
+      });
+      context.stroke();
+    });
+  }
+
+  formatRate(bytesPerSecond) {
+    let value = Math.max(0, Number(bytesPerSecond) || 0);
+    const units = ['B/s', 'KB/s', 'MB/s', 'GB/s'];
+    let index = 0;
+    while (value >= 1024 && index < units.length - 1) { value /= 1024; index += 1; }
+    return value.toFixed(index === 0 ? 0 : 1) + ' ' + units[index];
   }
 
   renderTaskbarUnavailable(message) {

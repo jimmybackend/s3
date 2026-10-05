@@ -118,7 +118,19 @@ final class ThumbnailService
                 throw new RuntimeException('La imagen original está vacía.');
             }
 
-            $thumbnailBytes = $this->resizeToJpeg($sourceBytes, $width, $height, $fit);
+            try {
+                $thumbnailBytes = $this->resizeToJpeg($sourceBytes, $width, $height, $fit);
+            } catch (RuntimeException $error) {
+                if ($extension === 'avif') {
+                    return [
+                        'bytes' => $sourceBytes,
+                        'content_type' => 'image/avif',
+                        'status' => 'SOURCE_PREVIEW',
+                        'thumb_key' => $key,
+                    ];
+                }
+                throw $error;
+            }
 
             $this->s3->putObject([
                 'Bucket' => $this->bucket,

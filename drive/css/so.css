@@ -27,6 +27,8 @@
   --os-window-opacity:.94;
   --os-menu-opacity:.98;
   --os-chrome-opacity:.96;
+  --os-window-blur:17px;
+  --os-chrome-blur:12px;
 }
 *{box-sizing:border-box}
 html,body{width:100%;height:100%;margin:0}
@@ -95,7 +97,7 @@ a{text-decoration:none;color:inherit}
 .os-window{
   position:absolute;display:none;min-width:340px;min-height:240px;max-width:calc(100vw - 16px);
   max-height:calc(100vh - 58px);background:color-mix(in srgb,var(--os-surface) calc(var(--os-window-opacity) * 100%),transparent);border:1px solid var(--os-border);
-  border-radius:13px;box-shadow:var(--os-shadow);backdrop-filter:blur(18px);
+  border-radius:13px;box-shadow:var(--os-shadow);backdrop-filter:blur(var(--os-window-blur));
   overflow:hidden;resize:both;z-index:100
 }
 .os-window.is-open{display:flex;flex-direction:column}
@@ -105,7 +107,7 @@ a{text-decoration:none;color:inherit}
 .os-window-titlebar{
   height:42px;display:flex;align-items:center;justify-content:space-between;padding-left:13px;
   background:color-mix(in srgb,rgb(18,42,66) calc(var(--os-chrome-opacity) * 100%),transparent);
-  border-bottom:1px solid var(--os-border);cursor:move;user-select:none;touch-action:none
+  border-bottom:1px solid var(--os-border);backdrop-filter:blur(var(--os-chrome-blur));cursor:move;user-select:none;touch-action:none
 }
 .os-window.is-dragging{transition:none;user-select:none}
 .os-window.is-dragging .os-window-titlebar{cursor:grabbing}

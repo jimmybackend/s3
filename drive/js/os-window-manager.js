@@ -249,18 +249,19 @@ class ArcadeCloudWindowManager {
     if (!this.usesDesktopPersistence()) return this.defaultGeometry(app);
     const key = this.preferenceKey(app);
     const saved = this.preferences[key] || this.preferences[app];
-    return saved && !this.isLegacyOversize(app, saved) ? this.clampGeometry(app, saved) : this.defaultGeometry(app);
+    return saved ? this.clampGeometry(app, saved) : this.defaultGeometry(app);
   }
 
   isLegacyOversize(app, saved) {
-    if (this.window.innerWidth <= ArcadeCloudWindowLayoutConfig.MOBILE_BREAKPOINT || !saved) return false;
-    return Number(saved.width) > this.window.innerWidth * .72 || Number(saved.height) > (this.window.innerHeight - 52) * .72;
+    return false;
   }
 
   clampGeometry(app, geometry) {
     const min = this.minimum(app);
-    const width = Math.max(min.width, Math.min(Number(geometry.width) || min.width, Math.round(this.window.innerWidth * .70)));
-    const height = Math.max(min.height, Math.min(Number(geometry.height) || min.height, Math.round((this.window.innerHeight - 52) * .70)));
+    const maxWidth = Math.max(min.width, this.window.innerWidth - 16);
+    const maxHeight = Math.max(min.height, this.window.innerHeight - 58);
+    const width = Math.max(min.width, Math.min(Number(geometry.width) || min.width, maxWidth));
+    const height = Math.max(min.height, Math.min(Number(geometry.height) || min.height, maxHeight));
     const titleVisible = Math.min(120, Math.max(56, width));
     const maxLeft = this.window.innerWidth - titleVisible;
     const minLeft = titleVisible - width;
@@ -305,7 +306,7 @@ class ArcadeCloudWindowManager {
       const rect = record.element.getBoundingClientRect();
       const preferred = this.clampGeometry(record.app, {
         left: rect.left, top: rect.top,
-        width: Math.round(box.width), height: Math.round(box.height)
+        width: Math.round(rect.width), height: Math.round(rect.height)
       });
       record.preferredGeometry = {
         left: `${preferred.left}px`, top: `${preferred.top}px`,
@@ -1007,11 +1008,72 @@ class ArcadeCloudDesktopRuntime {
       result.querySelector('#otp-code').textContent = String(payload.result.code || '');
       result.querySelector('#timer').textContent = String(payload.result.remaining || 0);
       if (payload.result.note) { const note = this.document.createElement('div'); note.className = 'note'; note.textContent = String(payload.result.note); result.append(note); }
+      this.activateTotpResult(result, Number(payload.result.remaining || 0));
       if (errorBox) { errorBox.hidden = true; errorBox.textContent = ''; }
     } catch (error) {
       if (errorBox) { errorBox.hidden = false; errorBox.textContent = error?.message || 'No se pudo generar el código.'; }
     } finally {
       if (button) { button.disabled = false; button.textContent = previous; }
+    }
+  }
+
+  activateTotpResult(result, remaining) {
+    if (!result) return;
+    const code = result.querySelector('#otp-code');
+    const timer = result.querySelector('#timer');
+    const status = result.querySelector('#copy-status');
+    let seconds = Math.max(0, Number(remaining) || 0);
+    if (result._arcadeTotpTimer) this.window.clearInterval(result._arcadeTotpTimer);
+    const paint = () => {
+      if (timer) timer.textContent = String(Math.max(0, seconds));
+      result.classList.toggle('is-expiring', seconds > 0 && seconds <= 5);
+    };
+    paint();
+    if (seconds > 0) {
+      result._arcadeTotpTimer = this.window.setInterval(() => {
+        seconds = Math.max(0, seconds - 1);
+        paint();
+        if (seconds <= 0) {
+          this.window.clearInterval(result._arcadeTotpTimer);
+          result._arcadeTotpTimer = null;
+        }
+      }, 1000);
+    }
+    const copyCode = async () => {
+      const value = String(code?.textContent || '').trim();
+      if (!value) return;
+      let copied = false;
+      try {
+        if (navigator.clipboard && this.window.isSecureContext) {
+          await navigator.clipboard.writeText(value);
+          copied = true;
+        }
+      } catch (_) {}
+      if (!copied) {
+        const area = this.document.createElement('textarea');
+        area.value = value; area.setAttribute('readonly', '');
+        area.style.position = 'fixed'; area.style.opacity = '0';
+        this.document.body.append(area); area.select();
+        try { copied = this.document.execCommand('copy'); } catch (_) {}
+        area.remove();
+      }
+      if (status) {
+        status.textContent = copied ? '✓ Copiado' : 'No se pudo copiar';
+        status.classList.toggle('copied', copied);
+        this.window.setTimeout(() => {
+          status.textContent = 'Toca el código para copiar';
+          status.classList.remove('copied');
+        }, 1400);
+      }
+    };
+    if (code && code.dataset.copyBound !== '1') {
+      code.dataset.copyBound = '1';
+      code.addEventListener('click', copyCode);
+      code.addEventListener('keydown', event => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault(); copyCode();
+        }
+      });
     }
   }
 

@@ -11,6 +11,11 @@ class ArcadeCloudMediaCloud {
     this.audio = null;
     this.video = null;
     this.current = null;
+    this.videoMode = 'cloud';
+    this.videoAspect = 16 / 9;
+    this.videoScreen = null;
+    this.videoInlineHost = null;
+    this.videoScreenBody = null;
     this.eqMode = 'auto';
     this.eqValues = { low: 0, mid: 0, high: 0 };
   }
@@ -233,8 +238,13 @@ class ArcadeCloudMediaCloud {
                   <strong data-media-title>Sin reproducción</strong>
                   <small><span data-media-counter>0 / 0</span><span class="ac-media-stream-badge"><i class="fas fa-bolt"></i> streaming</span></small>
                 </div>
+                <button type="button" class="ac-video-mode-toggle" data-video-mode-toggle hidden title="Sacar video a pantalla flotante">
+                  <i class="fas fa-display"></i><span>Pantalla</span>
+                </button>
               </div>
-              <video data-media-video playsinline preload="metadata" hidden></video>
+              <div class="ac-video-inline-host" data-video-inline-host>
+                <video data-media-video playsinline preload="metadata" hidden></video>
+              </div>
               <audio data-media-audio preload="metadata" hidden></audio>
               <div class="ac-media-wave-frame">
                 <canvas data-media-wave width="760" height="112" aria-label="Visualizador real de audio"></canvas>
@@ -281,11 +291,33 @@ class ArcadeCloudMediaCloud {
             <div data-media-playlist-items></div>
           </div>
         </div>
-      </div>`;
+      </div>
+
+      <section class="ac-video-screen" data-video-screen hidden aria-label="Pantalla de video separada">
+        <header class="ac-video-screen-head" data-video-screen-drag>
+          <div class="ac-video-screen-title">
+            <i class="fas fa-display"></i>
+            <span data-video-screen-title>Video</span>
+          </div>
+          <div class="ac-video-screen-actions">
+            <button type="button" data-video-return title="Volver a reproducir dentro de la nube"><i class="fas fa-cloud"></i></button>
+            <button type="button" data-video-screen-fullscreen title="Pantalla completa"><i class="fas fa-expand"></i></button>
+            <button type="button" data-video-screen-close title="Cerrar pantalla externa"><i class="fas fa-xmark"></i></button>
+          </div>
+        </header>
+        <div class="ac-video-screen-body" data-video-screen-body></div>
+        <footer class="ac-video-screen-foot">
+          <span data-video-orientation>Horizontal</span>
+          <span>ArcadeCloud Video</span>
+        </footer>
+      </section>`;
     this.document.body.append(root);
     this.el = root;
     this.audio = root.querySelector('[data-media-audio]');
     this.video = root.querySelector('[data-media-video]');
+    this.videoInlineHost = root.querySelector('[data-video-inline-host]');
+    this.videoScreen = root.querySelector('[data-video-screen]');
+    this.videoScreenBody = root.querySelector('[data-video-screen-body]');
     this.canvas = root.querySelector('[data-media-wave]');
     this.ctx2d = this.canvas.getContext('2d');
   }
@@ -303,6 +335,10 @@ class ArcadeCloudMediaCloud {
       }
     });
     q('[data-media-pin]').addEventListener('click', () => this.setPinned(!this.state.pinned));
+    q('[data-video-mode-toggle]').addEventListener('click', () => this.toggleVideoMode());
+    q('[data-video-return]').addEventListener('click', () => this.setVideoMode('cloud'));
+    q('[data-video-screen-close]').addEventListener('click', () => this.setVideoMode('cloud'));
+    q('[data-video-screen-fullscreen]').addEventListener('click', () => this.requestVideoFullscreen());
     q('[data-media-play]').addEventListener('click', () => this.toggle());
     q('[data-media-stop]').addEventListener('click', () => this.stop());
     q('[data-media-prev]').addEventListener('click', () => this.loadIndex(this.state.index - 1, true));
@@ -350,7 +386,10 @@ class ArcadeCloudMediaCloud {
       player.addEventListener('pause', () => this.updatePlayButton());
       player.addEventListener('timeupdate', () => this.updateTime());
       player.addEventListener('durationchange', () => this.updateTime());
-      player.addEventListener('loadedmetadata', () => this.updateTime());
+      player.addEventListener('loadedmetadata', () => {
+        this.updateTime();
+        if (player === this.video) this.updateVideoPresentation();
+      });
       player.addEventListener('ended', () => {
         if (this.state.index + 1 < this.state.items.length) this.loadIndex(this.state.index + 1, true);
         else this.updatePlayButton();
@@ -359,6 +398,7 @@ class ArcadeCloudMediaCloud {
     });
 
     this.bindDrag();
+    this.bindVideoScreenDrag();
   }
 
   async open(file, options = {}) {
@@ -391,6 +431,7 @@ class ArcadeCloudMediaCloud {
     this.state.index = index;
     this.el.hidden = false;
     this.el.classList.remove('is-collapsed');
+    if (type !== 'video') this.setVideoMode('cloud', false);
     this.renderPlaylist();
     await this.loadIndex(index, true);
     return this;
@@ -563,7 +604,16 @@ class ArcadeCloudMediaCloud {
     if (title) { title.textContent = String(item.nombre || 'Multimedia'); title.title = String(item.nombre || ''); }
     if (counter) counter.textContent = (this.state.index + 1) + ' / ' + this.state.items.length;
     if (icon) icon.className = this.state.type === 'video' ? 'fas fa-video' : 'fas fa-music';
-    this.el.classList.toggle('is-video', this.state.type === 'video');
+    const isVideo = this.state.type === 'video';
+    this.el.classList.toggle('is-video', isVideo);
+    const modeButton = this.el.querySelector('[data-video-mode-toggle]');
+    if (modeButton) modeButton.hidden = !isVideo;
+    if (isVideo) {
+      this.setVideoMode(this.videoMode, false);
+      this.updateVideoPresentation();
+    } else {
+      this.setVideoMode('cloud', false);
+    }
     this.updatePlayButton();
   }
 
@@ -688,9 +738,111 @@ class ArcadeCloudMediaCloud {
     ctx.shadowBlur = 0;
   }
 
+  toggleVideoMode() {
+    if (this.state.type !== 'video') return;
+    this.setVideoMode(this.videoMode === 'screen' ? 'cloud' : 'screen');
+  }
+
+  setVideoMode(mode, persist = true) {
+    const next = mode === 'screen' && this.state.type === 'video' ? 'screen' : 'cloud';
+    this.videoMode = next;
+    this.el.classList.toggle('is-video-detached', next === 'screen');
+
+    const button = this.el.querySelector('[data-video-mode-toggle]');
+    if (button) {
+      const icon = button.querySelector('i');
+      const label = button.querySelector('span');
+      button.hidden = this.state.type !== 'video';
+      button.title = next === 'screen' ? 'Volver a reproducir dentro de la nube' : 'Sacar video a pantalla flotante';
+      if (icon) icon.className = next === 'screen' ? 'fas fa-cloud' : 'fas fa-display';
+      if (label) label.textContent = next === 'screen' ? 'En nube' : 'Pantalla';
+    }
+
+    if (!this.video || !this.videoInlineHost || !this.videoScreenBody || !this.videoScreen) return;
+
+    if (next === 'screen') {
+      if (this.video.parentElement !== this.videoScreenBody) this.videoScreenBody.append(this.video);
+      this.videoScreen.hidden = false;
+      this.video.hidden = false;
+      this.updateVideoPresentation();
+    } else {
+      if (this.video.parentElement !== this.videoInlineHost) this.videoInlineHost.append(this.video);
+      this.videoScreen.hidden = true;
+      this.videoScreen.classList.remove('is-portrait', 'is-landscape');
+      this.video.hidden = this.state.type !== 'video';
+    }
+
+    if (persist) this.persistPreferences();
+  }
+
+  updateVideoPresentation() {
+    if (!this.video) return;
+    const width = Number(this.video.videoWidth || 0);
+    const height = Number(this.video.videoHeight || 0);
+    if (width > 0 && height > 0) this.videoAspect = width / height;
+    const portrait = this.videoAspect < 1;
+    const screen = this.videoScreen;
+    if (screen) {
+      screen.style.setProperty('--video-aspect', String(Math.max(.35, Math.min(3.2, this.videoAspect || (16 / 9)))));
+      screen.classList.toggle('is-portrait', portrait);
+      screen.classList.toggle('is-landscape', !portrait);
+      const orientation = screen.querySelector('[data-video-orientation]');
+      if (orientation) orientation.textContent = portrait ? 'Vertical' : 'Horizontal';
+      const title = screen.querySelector('[data-video-screen-title]');
+      const item = this.state.items[this.state.index] || {};
+      if (title) title.textContent = String(item.nombre || 'Video');
+    }
+  }
+
+  async requestVideoFullscreen() {
+    const target = this.videoScreen && !this.videoScreen.hidden ? this.videoScreen : this.video;
+    if (!target) return;
+    try {
+      if (this.document.fullscreenElement) await this.document.exitFullscreen?.();
+      else await target.requestFullscreen?.();
+    } catch (_) {}
+  }
+
+  bindVideoScreenDrag() {
+    const screen = this.videoScreen;
+    const handle = screen?.querySelector('[data-video-screen-drag]');
+    if (!screen || !handle) return;
+
+    handle.addEventListener('pointerdown', event => {
+      if (event.target.closest('button')) return;
+      if (this.window.matchMedia('(max-width: 700px)').matches) return;
+      const rect = screen.getBoundingClientRect();
+      const offsetX = event.clientX - rect.left;
+      const offsetY = event.clientY - rect.top;
+
+      const move = moveEvent => {
+        const nextLeft = Math.max(8, Math.min(this.window.innerWidth - rect.width - 8, moveEvent.clientX - offsetX));
+        const nextTop = Math.max(8, Math.min(this.window.innerHeight - rect.height - 54, moveEvent.clientY - offsetY));
+        screen.style.left = Math.round(nextLeft) + 'px';
+        screen.style.top = Math.round(nextTop) + 'px';
+        screen.style.right = 'auto';
+        screen.style.bottom = 'auto';
+        screen.style.transform = 'none';
+      };
+
+      const end = endEvent => {
+        handle.removeEventListener('pointermove', move);
+        handle.removeEventListener('pointerup', end);
+        handle.removeEventListener('pointercancel', end);
+        try { handle.releasePointerCapture(endEvent.pointerId); } catch (_) {}
+      };
+
+      handle.addEventListener('pointermove', move);
+      handle.addEventListener('pointerup', end);
+      handle.addEventListener('pointercancel', end);
+      try { handle.setPointerCapture(event.pointerId); } catch (_) {}
+    });
+  }
+
   setPinned(value) {
     this.state.pinned = Boolean(value);
     this.el.classList.toggle('is-pinned', this.state.pinned);
+    if (this.videoScreen) this.videoScreen.classList.toggle('is-pinned', this.state.pinned);
     const button = this.el.querySelector('[data-media-pin]');
     if (button) {
       button.setAttribute('aria-pressed', this.state.pinned ? 'true' : 'false');
@@ -706,6 +858,7 @@ class ArcadeCloudMediaCloud {
 
   close() {
     try { this.audio.pause(); this.video.pause(); } catch (_) {}
+    this.setVideoMode('cloud', false);
     this.el.hidden = true;
     this.window.cancelAnimationFrame(this.raf);
   }
@@ -743,6 +896,7 @@ class ArcadeCloudMediaCloud {
     try {
       this.window.localStorage.setItem('arcadecloud.mediaCloud.preferences', JSON.stringify({
         pinned: this.state.pinned,
+        videoMode: this.videoMode,
         eqMode: this.eqMode,
         eqValues: this.eqValues
       }));
@@ -753,6 +907,7 @@ class ArcadeCloudMediaCloud {
     try {
       const data = JSON.parse(this.window.localStorage.getItem('arcadecloud.mediaCloud.preferences') || '{}');
       this.state.pinned = data.pinned !== false;
+      this.videoMode = data.videoMode === 'screen' ? 'screen' : 'cloud';
       this.eqMode = data.eqMode === 'manual' ? 'manual' : 'auto';
       if (data.eqValues && typeof data.eqValues === 'object') {
         ['low','mid','high'].forEach(name => {

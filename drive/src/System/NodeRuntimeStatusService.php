@@ -196,7 +196,28 @@ final class NodeRuntimeStatusService
                 'inode_total' => is_array($stat) ? (int)($stat['files'] ?? 0) : null,
                 'inode_free' => is_array($stat) ? (int)($stat['ffree'] ?? 0) : null,
             ]),
+            'network' => $this->networkTotals(),
         ];
+    }
+
+    private function networkTotals(): array
+    {
+        $raw = @file_get_contents('/proc/net/dev');
+        if (!is_string($raw)) {
+            return ['rx_bytes' => 0, 'tx_bytes' => 0, 'available' => false];
+        }
+        $rx = 0;
+        $tx = 0;
+        foreach (explode("\n", $raw) as $line) {
+            if (!str_contains($line, ':')) continue;
+            [$iface, $stats] = array_map('trim', explode(':', $line, 2));
+            if ($iface === '' || $iface === 'lo') continue;
+            $parts = preg_split('/\s+/', trim($stats));
+            if (!is_array($parts) || count($parts) < 9) continue;
+            $rx += max(0, (int)$parts[0]);
+            $tx += max(0, (int)$parts[8]);
+        }
+        return ['rx_bytes' => $rx, 'tx_bytes' => $tx, 'available' => true];
     }
 
     private function usage(int $total, int $used, int $available): array

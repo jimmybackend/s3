@@ -876,10 +876,13 @@ Escribe help o usa uno de los botones disponibles.</pre>
         </fieldset>
         <fieldset class="os-settings-group os-opacity-controls">
           <legend>Transparencia</legend>
-          <label for="osWindowOpacity"><span>Transparencia de ventanas</span><output id="osWindowOpacityValue">94%</output></label>
-          <input type="range" id="osWindowOpacity" min="35" max="100" step="1" value="94">
-          <label for="osMenuOpacity"><span>Transparencia de menús</span><output id="osMenuOpacityValue">98%</output></label>
-          <input type="range" id="osMenuOpacity" min="35" max="100" step="1" value="98">
+          <label for="osWindowOpacity"><span>Opacidad del contenido de ventanas</span><output id="osWindowOpacityValue">94%</output></label>
+          <input type="range" id="osWindowOpacity" min="0" max="100" step="1" value="94">
+          <label for="osMenuOpacity"><span>Opacidad de menús</span><output id="osMenuOpacityValue">98%</output></label>
+          <input type="range" id="osMenuOpacity" min="0" max="100" step="1" value="98">
+          <label for="osChromeOpacity"><span>Opacidad de título y footer</span><output id="osChromeOpacityValue">96%</output></label>
+          <input type="range" id="osChromeOpacity" min="0" max="100" step="1" value="96">
+          <small>0% deja ver el fondo; contornos, nombres, iconos y controles permanecen visibles.</small>
         </fieldset>
         <button type="button" class="os-settings-reset" data-os-reset-appearance><i class="fas fa-arrow-rotate-left"></i> Restaurar configuración de apariencia</button>
       </div>
@@ -2070,6 +2073,12 @@ Escribe help o usa uno de los botones disponibles.</pre>
     <button type="button" class="os-node-health-button" id="osNodeHealthButton" aria-expanded="false" aria-controls="osNodeHealthPopover" title="Estado de Mi nodo">
       <span class="os-status-light is-neutral" data-node-health-light></span>
       <span class="sr-only">Estado de Mi nodo</span>
+    </button>
+    <button type="button" class="os-resource-history-button" id="osResourceHistoryButton" data-window-open="nodeWindow" title="Recursos del nodo: CPU, RAM, red y disco" aria-label="Abrir recursos de Mi nodo">
+      <span class="os-resource-spark-row"><small>C</small><canvas width="42" height="8" data-node-spark="cpu"></canvas></span>
+      <span class="os-resource-spark-row"><small>R</small><canvas width="42" height="8" data-node-spark="memory"></canvas></span>
+      <span class="os-resource-spark-row"><small>N</small><canvas width="42" height="8" data-node-spark="network"></canvas></span>
+      <span class="os-resource-spark-row"><small>D</small><canvas width="42" height="8" data-node-spark="disk"></canvas></span>
     </button>
     <?php if ($isSuperAdmin): ?>
     <button type="button" class="os-node-health-button os-replica-health-button" id="osReplicaHealthButton" data-window-open="federationWindow" title="Nodo federado autorizado en línea" hidden>

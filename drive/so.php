@@ -279,7 +279,7 @@ $isExplorerFragment = (string)($_GET['_os_fragment'] ?? '') === 'explorer';
       <span>Aplicaciones</span>
     </button>
 
-    <a class="os-desktop-icon" href="notebook.php">
+    <a class="os-desktop-icon" href="notebook.php" target="_blank" rel="noopener">
       <span class="os-icon-tile"><i class="fas fa-book-open"></i></span>
       <span>Notebook</span>
     </a>
@@ -621,6 +621,7 @@ $isExplorerFragment = (string)($_GET['_os_fragment'] ?? '') === 'explorer';
             <i class="fas fa-terminal"></i><strong>Consola servidor</strong><span>Mi nodo</span>
           </button>
           <?php endif; ?>
+          <a class="os-app-card is-ready" href="notebook.php" target="_blank" rel="noopener"><i class="fas fa-book-open"></i><strong>Notebook</strong><span>Nueva pestaña</span></a>
           <a class="os-app-card is-ready" href="s3.php"><i class="fas fa-hard-drive"></i><strong>Drive clásico</strong><span>Disponible</span></a>
           <a class="os-app-card is-ready" data-launcher-app="office" href="office-launch.php" target="_blank" rel="noopener"><i class="fas fa-file-word"></i><strong>Office</strong><span>Disponible</span></a>
           <a class="os-app-card is-ready" data-launcher-app="linux-xfce" href="office-launch.php" target="_blank" rel="noopener" title="Abrir escritorio Linux remoto por noVNC"><i class="fab fa-linux"></i><strong>Linux XFCE</strong><span>noVNC</span></a>

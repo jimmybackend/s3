@@ -318,6 +318,7 @@ class ArcadeCloudMediaCloud {
     this.videoInlineHost = root.querySelector('[data-video-inline-host]');
     this.videoScreen = root.querySelector('[data-video-screen]');
     this.videoScreenBody = root.querySelector('[data-video-screen-body]');
+    if (this.videoScreen) this.document.body.append(this.videoScreen);
     this.canvas = root.querySelector('[data-media-wave]');
     this.ctx2d = this.canvas.getContext('2d');
   }
@@ -336,9 +337,9 @@ class ArcadeCloudMediaCloud {
     });
     q('[data-media-pin]').addEventListener('click', () => this.setPinned(!this.state.pinned));
     q('[data-video-mode-toggle]').addEventListener('click', () => this.toggleVideoMode());
-    q('[data-video-return]').addEventListener('click', () => this.setVideoMode('cloud'));
-    q('[data-video-screen-close]').addEventListener('click', () => this.setVideoMode('cloud'));
-    q('[data-video-screen-fullscreen]').addEventListener('click', () => this.requestVideoFullscreen());
+    this.videoScreen?.querySelector('[data-video-return]')?.addEventListener('click', () => this.setVideoMode('cloud'));
+    this.videoScreen?.querySelector('[data-video-screen-close]')?.addEventListener('click', () => this.setVideoMode('cloud'));
+    this.videoScreen?.querySelector('[data-video-screen-fullscreen]')?.addEventListener('click', () => this.requestVideoFullscreen());
     q('[data-media-play]').addEventListener('click', () => this.toggle());
     q('[data-media-stop]').addEventListener('click', () => this.stop());
     q('[data-media-prev]').addEventListener('click', () => this.loadIndex(this.state.index - 1, true));

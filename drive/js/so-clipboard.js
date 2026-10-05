@@ -550,6 +550,10 @@ class ArcadeCloudOsClipboard {
       this.notify('Primero copia o corta un archivo o carpeta.', 'warning');
       return;
     }
+    if (item.transferPending) {
+      this.notify('La transferencia anterior todavía está en proceso.', 'info');
+      return;
+    }
 
     destination = String(destination || this.currentRoute()).trim();
     if (!destination) {

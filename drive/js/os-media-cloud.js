@@ -41,7 +41,24 @@ class ArcadeCloudMediaCloud {
         <span class="ac-cloud-lobe lobe-5"></span>
         <span class="ac-cloud-lobe lobe-6"></span>
       </div>
+      <div class="ac-cloud-energy" aria-hidden="true">
+        <span class="energy-node node-a"></span>
+        <span class="energy-node node-b"></span>
+        <span class="energy-node node-c"></span>
+      </div>
       <div class="ac-media-cloud-shell">
+        <div class="ac-media-chassis-grid" aria-hidden="true"></div>
+        <aside class="ac-media-tech-rail rail-left" aria-hidden="true">
+          <span class="rail-led is-live"></span>
+          <span class="rail-led"></span>
+          <span class="rail-led"></span>
+          <b>AC</b>
+        </aside>
+        <aside class="ac-media-tech-rail rail-right" aria-hidden="true">
+          <b>RANGE</b>
+          <span class="rail-meter"><i></i><i></i><i></i><i></i></span>
+          <span class="rail-led is-live"></span>
+        </aside>
         <header class="ac-media-cloud-head" data-media-drag-handle>
           <div class="ac-media-brand">
             <span class="ac-media-brand-orb"><i class="fas fa-cloud"></i></span>
@@ -128,7 +145,15 @@ class ArcadeCloudMediaCloud {
   bind() {
     const q = selector => this.el.querySelector(selector);
     q('[data-media-close]').addEventListener('click', () => this.close());
-    q('[data-media-collapse]').addEventListener('click', () => this.el.classList.toggle('is-collapsed'));
+    q('[data-media-collapse]').addEventListener('click', () => {
+      const collapsed = this.el.classList.toggle('is-collapsed');
+      const button = q('[data-media-collapse]');
+      if (button) {
+        button.title = collapsed ? 'Expandir reproductor' : 'Compactar';
+        const icon = button.querySelector('i');
+        if (icon) icon.className = collapsed ? 'fas fa-chevron-up' : 'fas fa-chevron-down';
+      }
+    });
     q('[data-media-pin]').addEventListener('click', () => this.setPinned(!this.state.pinned));
     q('[data-media-play]').addEventListener('click', () => this.toggle());
     q('[data-media-stop]').addEventListener('click', () => this.stop());

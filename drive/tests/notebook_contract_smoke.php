@@ -54,7 +54,8 @@ $assert(str_contains($js, 'scheduleLineRecognition') && str_contains($js, 'recog
 $assert(str_contains($js, 'recognizedFromInk:true') && str_contains($js, 'state.objects=state.objects.filter(o=>!ids.has(o.id))'), 'texto reconocido sustituye los trazos originales');
 $assert(str_contains($service, "'notebook-tmp/f_'") && str_contains($service, 'deleteObject'), 'imagen temporal de reconocimiento se elimina de S3');
 $assert(str_contains($page, 'id="nbFontSize"') && str_contains($js, 'fontSize'), 'Notebook permite cambiar tamaño de letra y persistirlo');
-$assert(str_contains($page, 'id="nbZoom"') && str_contains($page, 'value="25"') && str_contains($page, 'value="50" selected') && str_contains($js, 'applyZoom'), 'Notebook permite zoom desde 25 por ciento y usa 50 por ciento por defecto');
+$assert(str_contains($page, 'id="nbZoom"') && str_contains($page, 'value="25"') && str_contains($page, 'value="75"') && str_contains($js, 'applyZoom'), 'Notebook permite zoom desde 25 por ciento y ofrece 75 por ciento');
+$assert(str_contains($js, 'defaultZoom=()=>window.innerWidth>=1200?75:50'), 'Notebook usa 75 por ciento en escritorio y conserva 50 por ciento en pantallas menores');
 $assert(str_contains($page, 'value="select"') && str_contains($js, 'hitObject') && str_contains($page, 'id="nbEditDialog"'), 'textos guardados pueden seleccionarse y editarse');
 $assert(str_contains($js, "document.addEventListener('paste'") && str_contains($js, 'navigator.clipboard?.read') && str_contains($page, 'id="nbPasteImage"'), 'Notebook pega imágenes por evento o lectura del portapapeles');
 $assert(str_contains($js, "action==='resize'") && str_contains($js, "action==='rotate'") && str_contains($js, "action==='move'"), 'imágenes pueden moverse redimensionarse y rotarse');

@@ -91,6 +91,43 @@ final class MoveJobService
         ]);
     }
 
+    public function queueFolders(
+        int $userId,
+        array $origins,
+        string $destination,
+        string $operation = 'move'
+    ): array {
+        $operation = $this->normalizeOperation($operation);
+        $root = $this->paths->rootForUser($userId);
+        $destination = $this->paths->normalizeForUser($destination, $userId);
+        $this->folderRecords->requireActive($userId, $destination);
+
+        $normalized = [];
+        foreach ($origins as $origin) {
+            $route = $this->paths->normalizeForUser((string)$origin, $userId);
+            if ($route === $root) {
+                throw new RuntimeException(
+                    $operation === 'copy'
+                        ? 'No se puede copiar la carpeta raíz del usuario.'
+                        : 'No se puede mover la carpeta raíz del usuario.'
+                );
+            }
+            $this->folderRecords->requireActive($userId, $route);
+            $normalized[$route] = true;
+        }
+
+        $routes = array_keys($normalized);
+        if ($routes === []) {
+            throw new RuntimeException('No hay carpetas seleccionadas.');
+        }
+
+        return $this->store->create($userId, 'folders', [
+            'origins' => $routes,
+            'destination' => $destination,
+            'operation' => $operation,
+        ]);
+    }
+
     /**
      * Ejecuta un job reclamándolo atómicamente.
      *
@@ -193,14 +230,61 @@ final class MoveJobService
                     ? $this->folders->copy($userId, $origin, $destination)
                     : $this->folders->move($userId, $origin, $destination);
                 $result['operation'] = $operation;
+            } elseif ($type === 'folders') {
+                $origins = is_array($payload['origins'] ?? null) ? array_values($payload['origins']) : [];
+                $destination = (string)($payload['destination'] ?? '');
+                $total = count($origins);
+                $processed = 0;
+                $aggregate = [
+                    'total' => 0,
+                    'requested_total' => $total,
+                    's3_list_requests' => 0,
+                    's3_copy_requests' => 0,
+                    's3_delete_requests' => 0,
+                    's3_put_requests' => 0,
+                    'operation' => $operation,
+                    'destination' => $destination,
+                ];
+
+                foreach ($origins as $origin) {
+                    $current = $this->store->get($jobId);
+                    if ((string)($current['status'] ?? '') === 'cancel_requested') {
+                        $cancelled = $this->store->update($jobId, [
+                            'status' => 'cancelled',
+                            'message' => ($copying ? 'Copia' : 'Movimiento') . ' de carpetas detenido de forma segura.',
+                            'result' => $aggregate,
+                            'error' => null,
+                        ]);
+                        $cancelled['_worker_claimed'] = true;
+                        return $cancelled;
+                    }
+
+                    $folderResult = $copying
+                        ? $this->folders->copy($userId, (string)$origin, $destination)
+                        : $this->folders->move($userId, (string)$origin, $destination);
+
+                    foreach (['s3_list_requests','s3_copy_requests','s3_delete_requests','s3_put_requests'] as $counter) {
+                        $aggregate[$counter] += max(0, (int)($folderResult[$counter] ?? 0));
+                    }
+                    $processed++;
+                    $aggregate['total'] = $processed;
+
+                    $this->store->update($jobId, [
+                        'status' => 'running',
+                        'message' => ($copying ? 'Copiando' : 'Moviendo') . ' carpetas · ' . $processed . ' de ' . $total,
+                        'result' => $aggregate,
+                    ]);
+                }
+
+                $result = $aggregate;
             } else {
                 throw new RuntimeException('Tipo de tarea de transferencia inválido.');
             }
 
             $completed = $this->store->update($jobId, [
                 'status' => 'completed',
-                'message' => $type === 'folder'
-                    ? ($copying ? 'Carpeta copiada correctamente.' : 'Carpeta movida correctamente.')
+                'message' => in_array($type, ['folder', 'folders'], true)
+                    ? ($copying ? 'Carpeta(s) copiada(s) correctamente.' : 'Carpeta(s) movida(s) correctamente.')
                     : ($copying ? 'Archivo(s) copiado(s) correctamente.' : 'Archivo(s) movido(s) correctamente.'),
                 'result' => $result,
                 'error' => null,

@@ -134,9 +134,9 @@ class ArcadeCloudFileApplicationService {
     }
     const loaded = () => body.classList.remove('is-loading');
     const failed = () => this.showError(record, 'No se pudo cargar el archivo.');
-    viewer.addEventListener('load', loaded, { once: true });
+    viewer.addEventListener('load', loaded);
     if (application === 'audio' || application === 'video') viewer.addEventListener('loadedmetadata', loaded, { once: true });
-    viewer.addEventListener('error', failed, { once: true });
+    viewer.addEventListener('error', failed);
     viewer.src = application === 'image' ? imagePreviewUrl : source; content.append(viewer); body.replaceChildren(content); body.classList.add('is-loading');
     const toolbar = this.document.createElement('div'); toolbar.className = 'os-viewer-toolbar';
     if (file.downloadUrl) toolbar.append(this.actionLink(file.downloadUrl, 'fa-download', 'Descargar', true));

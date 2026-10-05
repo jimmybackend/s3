@@ -199,8 +199,46 @@ $('#nbImproveAi').onclick=async()=>{
 };
 function normalizeObjects(){for(const o of state.objects){if(!o.id)o.id=uid(o.kind==='text'?'t':o.kind==='image'?'i':'s');if(o.kind==='text'){o.font=o.font||'caveat';o.size=o.size||28;}if(o.kind==='image'){o.rotation=Number(o.rotation)||0;}}}
 function serialize(){return JSON.stringify({version:7,page:state.page,pages:state.pages,paper:state.paper,orientation:state.orientation,background:state.background,onLine:state.onLine,alignment:state.alignment,font:state.font,fontSize:state.fontSize,objects:state.objects});}
-async function save(){if(!state.notebook)return;status('Guardando PNG…');try{state.selectedId=null;render();const j=await api('save_page',{method:'POST',body:JSON.stringify({notebook:state.notebook,page:state.page,png:canvas.toDataURL('image/png'),json:serialize()})});state.dirty=false;status(j.transcription_error?'Guardada · transcripción pendiente':'Guardada · transcrita');}catch(e){status(e.message,true);}}
+async function save(){
+ if(!state.notebook)return true;
+ status('Guardando PNG…');
+ try{
+   state.selectedId=null;render();
+   const j=await api('save_page',{method:'POST',body:JSON.stringify({notebook:state.notebook,page:state.page,png:canvas.toDataURL('image/png'),json:serialize()})});
+   state.dirty=false;status(j.transcription_error?'Guardada · transcripción pendiente':'Guardada · transcrita');
+   return true;
+ }catch(e){status(e.message,true);return false;}
+}
 $('#nbSave').onclick=save;
+
+let closeResolver=null;
+function resolveClose(value){const resolver=closeResolver;closeResolver=null;$('#nbCloseDialog')?.close();if(resolver)resolver(Boolean(value));}
+async function requestClose(){
+ if(!state.dirty)return true;
+ const dialog=$('#nbCloseDialog');
+ if(!dialog)return false;
+ if(dialog.open)return false;
+ return await new Promise(resolve=>{closeResolver=resolve;dialog.showModal();});
+}
+async function closeFromNotebook(){
+ if(window.parent!==window){
+   window.parent.postMessage({type:'arcadecloud:notebook-request-close'},window.location.origin);
+   return;
+ }
+ if(await requestClose())window.location.href='so.php';
+}
+$('#nbCloseCancel').onclick=()=>resolveClose(false);
+$('#nbCloseDiscard').onclick=()=>resolveClose(true);
+$('#nbCloseSave').onclick=async()=>{if(await save())resolveClose(true);};
+$('#nbCloseDialog').addEventListener('cancel',event=>{event.preventDefault();resolveClose(false);});
+$('#nbClose').onclick=closeFromNotebook;
+$('#nbSaveClose').onclick=async()=>{if(await save())closeFromNotebook();};
+$('#nbAbout').onclick=()=>$('#nbAboutDialog').showModal();
+window.ArcadeCloudNotebookClose={requestClose};
+document.addEventListener('keydown',event=>{
+ if(event.key!=='F4')return;
+ event.preventDefault();event.stopPropagation();closeFromNotebook();
+},true);
 async function loadPage(){status('Cargando…');state.objects=[];state.selectedId=null;render();try{const u='notebook-api.php?action=load_page&notebook='+encodeURIComponent(state.notebook)+'&page='+state.page,r=await fetch(u,{credentials:'same-origin'}),j=await r.json();if(!r.ok||!j.ok)throw new Error(j.error||'No se pudo cargar');if(!j.empty){const d=JSON.parse(j.json);state.objects=Array.isArray(d.objects)?d.objects:[];normalizeObjects();state.paper=d.paper||state.paper;state.orientation=d.orientation||state.orientation;state.background=d.background||state.background;state.onLine=d.onLine===true;state.alignment=['left','right','justify'].includes(d.alignment)?d.alignment:'left';state.font=['caveat','dancing','shadows','sans','serif','mono','rounded'].includes(d.font)?d.font:'caveat';state.fontSize=Math.max(12,Math.min(96,+d.fontSize||28));state.zoom=50;syncControls();canvasSize();}state.dirty=false;status(j.empty?'Hoja nueva':'Hoja cargada');}catch(e){status(e.message,true);}}
 function syncControls(){$('#nbTool').value=state.tool;$('#nbFont').value=state.font;$('#nbFontSize').value=state.fontSize;$('#nbZoom').value=String(state.zoom);$('#nbBackground').value=state.background;$('#nbPaper').value=state.paper;$('#nbOrientation').value=state.orientation;$('#nbOnLine').checked=state.onLine;$('#nbAlignment').value=state.alignment;$('#nbPage').value=state.page;$('#nbPageLabel').textContent=state.page;$('#nbMenuPage').textContent=state.page;$('#nbTotal').textContent=state.pages;$('#nbMenuTotal').textContent=state.pages;}
 async function gotoPage(n){n=Math.max(1,Math.min(state.pages,n));if(n===state.page)return;if(state.dirty&&confirm('La hoja tiene cambios. ¿Guardarla antes de cambiar?'))await save();state.page=n;syncControls();await loadPage();canvas.parentElement.classList.remove('is-turning');void canvas.parentElement.offsetWidth;canvas.parentElement.classList.add('is-turning');}

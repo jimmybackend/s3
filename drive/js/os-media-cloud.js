@@ -32,33 +32,73 @@ class ArcadeCloudMediaCloud {
     root.setAttribute('role', 'dialog');
     root.setAttribute('aria-label', 'Reproductor multimedia ArcadeCloud');
     root.innerHTML = `
-      <div class="ac-cloud-orbit" aria-hidden="true"><span></span></div>
-      <div class="ac-cloud-lobes" aria-hidden="true">
-        <span class="ac-cloud-lobe lobe-1"></span>
-        <span class="ac-cloud-lobe lobe-2"></span>
-        <span class="ac-cloud-lobe lobe-3"></span>
-        <span class="ac-cloud-lobe lobe-4"></span>
-        <span class="ac-cloud-lobe lobe-5"></span>
-        <span class="ac-cloud-lobe lobe-6"></span>
-      </div>
-      <div class="ac-cloud-energy" aria-hidden="true">
-        <span class="energy-node node-a"></span>
-        <span class="energy-node node-b"></span>
-        <span class="energy-node node-c"></span>
-      </div>
+      <svg class="ac-cloud-frame" viewBox="0 0 1000 650" aria-hidden="true" focusable="false">
+        <defs>
+          <linearGradient id="acCloudFill" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#0a3e93"/>
+            <stop offset=".48" stop-color="#03143e"/>
+            <stop offset="1" stop-color="#0a63bd"/>
+          </linearGradient>
+          <linearGradient id="acCloudStroke" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" stop-color="#83fbff"/>
+            <stop offset=".34" stop-color="#2bdfff"/>
+            <stop offset=".62" stop-color="#8aa1ff"/>
+            <stop offset="1" stop-color="#64f2ff"/>
+          </linearGradient>
+          <radialGradient id="acCloudGlow" cx=".5" cy=".25" r=".8">
+            <stop offset="0" stop-color="#69dfff" stop-opacity=".34"/>
+            <stop offset=".55" stop-color="#1578ff" stop-opacity=".08"/>
+            <stop offset="1" stop-color="#020b20" stop-opacity=".05"/>
+          </radialGradient>
+          <filter id="acCloudNeon" x="-30%" y="-30%" width="160%" height="160%">
+            <feGaussianBlur stdDeviation="8" result="blur"/>
+            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+          <filter id="acCloudSoftGlow" x="-20%" y="-20%" width="140%" height="140%">
+            <feGaussianBlur stdDeviation="16"/>
+          </filter>
+          <path id="acCloudShape" d="M116 175
+            C122 116 168 74 230 80
+            C260 28 322 5 385 26
+            C423 39 451 66 470 101
+            C497 72 530 57 569 58
+            C598 6 655 -14 716 7
+            C761 22 794 57 808 101
+            C858 91 910 118 930 162
+            C972 173 998 210 992 252
+            C990 274 981 295 966 313
+            C997 347 1001 396 976 433
+            C1000 474 992 525 955 553
+            C922 578 882 582 847 568
+            C820 615 765 636 713 619
+            C674 640 621 637 585 615
+            C536 640 473 641 426 615
+            C380 640 320 640 277 615
+            C224 632 169 611 143 568
+            C102 580 58 562 35 526
+            C12 490 17 445 45 414
+            C15 378 16 326 49 291
+            C28 255 40 210 74 188
+            C86 180 100 176 116 175 Z"/>
+        </defs>
+
+        <use href="#acCloudShape" fill="#2ccfff" opacity=".18" filter="url(#acCloudSoftGlow)"/>
+        <use href="#acCloudShape" fill="url(#acCloudFill)" stroke="url(#acCloudStroke)" stroke-width="7" filter="url(#acCloudNeon)"/>
+        <use href="#acCloudShape" fill="url(#acCloudGlow)" stroke="rgba(255,255,255,.82)" stroke-width="2"/>
+        <use href="#acCloudShape" fill="none" stroke="#47dcff" stroke-opacity=".34" stroke-width="13"/>
+
+        <path d="M195 147 C235 95 299 82 354 105" fill="none" stroke="#d9ffff" stroke-opacity=".58" stroke-width="4" stroke-linecap="round"/>
+        <path d="M615 91 C660 45 730 44 779 93" fill="none" stroke="#d9ffff" stroke-opacity=".5" stroke-width="4" stroke-linecap="round"/>
+        <path d="M71 424 C94 469 124 500 166 518" fill="none" stroke="#5ceeff" stroke-opacity=".38" stroke-width="3"/>
+        <path d="M835 529 C878 520 914 492 937 452" fill="none" stroke="#5ceeff" stroke-opacity=".38" stroke-width="3"/>
+
+        <g class="ac-cloud-stars">
+          <circle cx="127" cy="159" r="3"/><circle cx="190" cy="110" r="2"/>
+          <circle cx="802" cy="94" r="3"/><circle cx="930" cy="242" r="2"/>
+          <circle cx="81" cy="456" r="2"/><circle cx="865" cy="566" r="3"/>
+        </g>
+      </svg>
       <div class="ac-media-cloud-shell">
-        <div class="ac-media-chassis-grid" aria-hidden="true"></div>
-        <aside class="ac-media-tech-rail rail-left" aria-hidden="true">
-          <span class="rail-led is-live"></span>
-          <span class="rail-led"></span>
-          <span class="rail-led"></span>
-          <b>AC</b>
-        </aside>
-        <aside class="ac-media-tech-rail rail-right" aria-hidden="true">
-          <b>RANGE</b>
-          <span class="rail-meter"><i></i><i></i><i></i><i></i></span>
-          <span class="rail-led is-live"></span>
-        </aside>
         <header class="ac-media-cloud-head" data-media-drag-handle>
           <div class="ac-media-brand">
             <span class="ac-media-brand-orb"><i class="fas fa-cloud"></i></span>

@@ -482,6 +482,8 @@ class ArcadeCloudExplorerWindow {
     this.visibleRoute = String(this.live?.dataset.explorerVisibleRoute || 'Mi Drive/').trim() || 'Mi Drive/';
     this.breadcrumbs = this.readBreadcrumbs();
     this.page = +(this.live?.dataset.explorerPage || 1);
+    this.viewMode = 'grid';
+    this.viewStorageKey = 'arcadecloud-explorer-view-v1:' + String(this.runtime.window.ARCADECLOUD_OS_APPEARANCE?.nodeKey || 'default') + ':' + String(this.win.dataset.windowPreferenceKey || this.id);
     this.history = [];
     this.future = [];
     this.selection = new Set();
@@ -497,6 +499,7 @@ class ArcadeCloudExplorerWindow {
     this.suggestionIndex = -1;
     this.cleanup = [];
     this.installChrome();
+    this.restoreViewMode();
     this.bind();
     this.updateTitle();
   }
@@ -571,6 +574,12 @@ class ArcadeCloudExplorerWindow {
     const click = event => {
       const target = event.target instanceof Element ? event.target : null;
       if (!target) return;
+      const view = target.closest('[data-explorer-view]')?.dataset.explorerView;
+      if (view) {
+        event.preventDefault(); event.stopPropagation();
+        this.setViewMode(view);
+        return;
+      }
       const action = target.closest('[data-explorer-action]')?.dataset.explorerAction;
       if (action) {
         event.preventDefault();
@@ -624,6 +633,26 @@ class ArcadeCloudExplorerWindow {
     this.win.addEventListener('click', guard, true);
     this.cleanup.push(() => this.win.removeEventListener('click', click), () => this.win.removeEventListener('keydown', keydown), () => this.win.removeEventListener('input', input), () => this.win.removeEventListener('click', guard, true));
     this.bindDragDrop();
+  }
+
+  restoreViewMode() {
+    let saved = '';
+    try { saved = String(this.runtime.window.localStorage.getItem(this.viewStorageKey) || ''); } catch (_) {}
+    this.setViewMode(saved === 'list' ? 'list' : 'grid', false);
+  }
+
+  setViewMode(mode, persist = true) {
+    this.viewMode = mode === 'list' ? 'list' : 'grid';
+    const grid = this.live?.querySelector('.os-entry-grid');
+    if (grid) grid.classList.toggle('is-list-view', this.viewMode === 'list');
+    this.live?.querySelectorAll('[data-explorer-view]').forEach(button => {
+      const active = button.dataset.explorerView === this.viewMode;
+      button.classList.toggle('is-active', active);
+      button.setAttribute('aria-pressed', active ? 'true' : 'false');
+    });
+    if (persist) {
+      try { this.runtime.window.localStorage.setItem(this.viewStorageKey, this.viewMode); } catch (_) {}
+    }
   }
 
   scheduleSuggestions() {
@@ -685,7 +714,7 @@ class ArcadeCloudExplorerWindow {
       replacement.querySelectorAll('.os-file-entry,.os-folder-entry').forEach(entry => { entry.draggable = true; });
       this.scroll = this.live?.scrollTop || 0;
       this.live.replaceWith(replacement); this.live = replacement; this.route = route; this.visibleRoute = String(replacement.dataset.explorerVisibleRoute || 'Mi Drive/').trim() || 'Mi Drive/'; this.breadcrumbs = this.readBreadcrumbs(); this.page = +replacement.dataset.explorerPage || 1; this.selection.clear();
-      this.installChrome(); this.updateTitle();
+      this.installChrome(); this.setViewMode(this.viewMode, false); this.updateTitle();
       this.runtime.window.ArcadeCloudOsShell?.bindFiles?.(this.win);
       this.runtime.window.ArcadeCloudOsClipboard?.bindEntries?.(this.win);
       this.runtime.window.ArcadeCloudOsClipboard?.injectPasteToolbar?.(this.win);

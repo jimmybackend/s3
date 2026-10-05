@@ -9,6 +9,8 @@ $paths = [
     'js' => $root . '/js/so.js',
     'file_apps_js' => $root . '/js/file-applications.js',
     'window_manager_js' => $root . '/js/os-window-manager.js',
+    'thumbnail_service' => $root . '/src/Media/ThumbnailService.php',
+    'thumbnail_controller' => $root . '/src/Http/Controller/ThumbnailController.php',
     'desktop_shell_js' => $root . '/js/desktop-shell.js',
     'page_task_manager_js' => $root . '/js/page-task-manager.js',
     'appearance_js' => $root . '/js/so-appearance.js',
@@ -137,6 +139,8 @@ webOsContract(str_contains($paths['window_manager_js'], 'registerCloseGuard') &&
 webOsContract(str_contains($paths['window_manager_js'], "registerCloseGuard('notebook'") && str_contains($paths['window_manager_js'], 'confirmNotebookClose(record)'), 'Notebook consulta sus cambios antes de cerrarse desde el SO');
 webOsContract(str_contains($paths['js'], 'await manager?.requestClose(win)'), 'menú de tareas respeta el cierre protegido');
 webOsContract(str_contains($paths['css'], '.os-taskbar'), 'existe barra de tareas');
+webOsContract(str_contains($paths['shell'], 'id="osStart"') && str_contains($paths['shell'], '<i class="fas fa-cloud"></i>'), 'Inicio usa icono de nube');
+webOsContract(str_contains($paths['shell'], 'class="os-taskbar-right"') && str_contains($paths['css'], '.os-taskbar-right{margin-left:auto'), 'sólo Inicio queda a la izquierda y tareas/estado/reloj se alinean a la derecha');
 webOsContract(str_contains($paths['css'], '@media (max-width:800px)'), 'shell conserva experiencia móvil');
 
 // Workbench dentro de so.php.
@@ -329,6 +333,12 @@ webOsContract(!str_contains($paths['js'], "#explorerWindow [data-explorer-route]
 webOsContract(str_contains($paths['folders_js'], "ArcadeCloudOsShell.refreshExplorer"), 'acciones de carpeta delegan navegación al shell');
 webOsContract(str_contains($paths['folders_js'], 'rebind(root = this.document)'), 'acciones se vuelven a enlazar de forma acotada tras refrescar Mis datos');
 webOsContract(str_contains($paths['css'], '.os-entry-thumbnail'), 'miniaturas tienen estilo dentro de Mis datos');
+webOsContract(str_contains($paths['thumbnail_service'], "'avif'") && str_contains($paths['thumbnail_service'], "'status' => 'SOURCE_PREVIEW'") && str_contains($paths['thumbnail_service'], "'content_type' => 'image/avif'"), 'AVIF conserva miniatura mediante fallback autenticado cuando el servidor no puede convertirlo');
+webOsContract(str_contains($paths['thumbnail_controller'], "'source-avif'"), 'fallback AVIF conserva registro de actividad/costo');
+webOsContract(str_contains($paths['shell'], 'data-explorer-view="grid"') && str_contains($paths['shell'], 'data-explorer-view="list"'), 'Mis datos permite alternar cuadrícula y lista');
+webOsContract(str_contains($paths['window_manager_js'], 'setViewMode(mode') && str_contains($paths['window_manager_js'], 'arcadecloud-explorer-view-v1:'), 'cada ventana Mis datos conserva su modo de vista');
+webOsContract(str_contains($paths['shell'], 'os-entry-list-type') && str_contains($paths['shell'], 'os-entry-list-size') && str_contains($paths['shell'], 'os-entry-list-date'), 'vista Lista muestra columnas de tipo, tamaño y fecha con datos reales disponibles');
+webOsContract(str_contains($paths['css'], '.os-entry-grid.is-list-view'), 'vista Lista tiene composición propia');
 webOsContract(str_contains($paths['css'], '.os-entry.is-selected .os-entry-name') && str_contains($paths['css'], 'color:var(--os-text)!important'), 'nombre de archivo o carpeta sigue legible al seleccionarlo');
 webOsContract(str_contains($paths['css'], '.os-media-overlay'), 'audio/video tienen componente flotante');
 webOsContract(str_contains($paths['css'], 'z-index:20000'), 'reproductor queda por encima de ventanas y modales');

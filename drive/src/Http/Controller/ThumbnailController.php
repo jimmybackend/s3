@@ -58,6 +58,11 @@ final class ThumbnailController
                     's3.transfer_bytes' => strlen($bytes),
                     's3.storage_bytes_delta' => strlen($bytes),
                 ], $started, ['cache' => 'generated']);
+            } elseif ($status === 'SOURCE_PREVIEW') {
+                $this->activity()->success($userId, 'thumbnail', 'S3', $this->fileId($userId, $key), [
+                    's3.get_request' => 2,
+                    's3.transfer_bytes' => strlen($bytes),
+                ], $started, ['cache' => 'source-avif']);
             }
 
             $etag = '"' . sha1($bytes) . '"';

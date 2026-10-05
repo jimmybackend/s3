@@ -267,7 +267,8 @@ class ArcadeCloudWindowManager {
   preferred(app, key = '') {
     if (!this.usesDesktopPersistence()) return this.defaultGeometry(app);
     const preferenceKey = key || this.preferenceKey(app);
-    const saved = this.preferences[preferenceKey] || this.preferences[app];
+    const legacy = app === 'explorer' && preferenceKey === 'explorer-1' ? this.preferences.explorer : this.preferences[app];
+    const saved = this.preferences[preferenceKey] || (preferenceKey === this.preferenceKey(app) || preferenceKey === 'explorer-1' ? legacy : null);
     return saved ? this.clampGeometry(app, saved) : this.defaultGeometry(app);
   }
 
@@ -298,8 +299,9 @@ class ArcadeCloudWindowManager {
     if (this.window.innerWidth <= ArcadeCloudWindowLayoutConfig.MOBILE_BREAKPOINT) return null;
     const preferenceKey = key || this.preferenceKey(app);
     const geometry = this.preferred(app, preferenceKey);
+    const legacy = app === 'explorer' && preferenceKey === 'explorer-1' ? this.preferences.explorer : this.preferences[app];
     const saved = this.usesDesktopPersistence()
-      ? (this.preferences[preferenceKey] || this.preferences[app])
+      ? (this.preferences[preferenceKey] || (preferenceKey === this.preferenceKey(app) || preferenceKey === 'explorer-1' ? legacy : null))
       : null;
     const step = (this.layoutSequence++ % 7) * 32;
     const baseLeft = Math.round(this.window.innerWidth * .04);

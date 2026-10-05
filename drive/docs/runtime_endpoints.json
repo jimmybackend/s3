@@ -1337,12 +1337,13 @@
     },
     {
       "path": "drive/notebook.php",
-      "size": 8771,
+      "size": 9702,
       "active": true,
       "references": [
         "drive/so.php",
         "drive/tests/notebook_contract_smoke.php",
-        "drive/tests/web_os_contract_smoke.php"
+        "drive/tests/web_os_contract_smoke.php",
+        "drive/js/os-window-manager.js"
       ]
     },
     {
@@ -1620,6 +1621,7 @@
         "drive/tests/web_os_pending_fixes_smoke.php",
         "drive/tests/web_os_remote_applications_smoke.php",
         "drive/tests/web_os_theme_contract_smoke.php",
+        "drive/js/notebook.js",
         "drive/js/os-window-manager.js",
         "drive/js/so.js",
         "drive/tests/background_tasks_refresh_functional.js"
@@ -4220,7 +4222,7 @@
     },
     {
       "path": "drive/tests/notebook_contract_smoke.php",
-      "size": 9710,
+      "size": 10573,
       "active": false,
       "references": []
     },
@@ -4352,7 +4354,7 @@
     },
     {
       "path": "drive/tests/web_os_contract_smoke.php",
-      "size": 56530,
+      "size": 57599,
       "active": false,
       "references": []
     },

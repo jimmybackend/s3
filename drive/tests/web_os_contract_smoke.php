@@ -11,6 +11,10 @@ $paths = [
     'window_manager_js' => $root . '/js/os-window-manager.js',
     'thumbnail_service' => $root . '/src/Media/ThumbnailService.php',
     'thumbnail_controller' => $root . '/src/Http/Controller/ThumbnailController.php',
+    'derived_image_service' => $root . '/src/Media/DerivedImageAssetService.php',
+    'file_mutation_service' => $root . '/src/Application/FileMutationService.php',
+    'move_job_service' => $root . '/src/Application/MoveJobService.php',
+    'move_job_worker' => $root . '/src/Console/MoveJobWorkerCommand.php',
     'desktop_shell_js' => $root . '/js/desktop-shell.js',
     'page_task_manager_js' => $root . '/js/page-task-manager.js',
     'appearance_js' => $root . '/js/so-appearance.js',
@@ -335,6 +339,12 @@ webOsContract(str_contains($paths['folders_js'], 'rebind(root = this.document)')
 webOsContract(str_contains($paths['css'], '.os-entry-thumbnail'), 'miniaturas tienen estilo dentro de Mis datos');
 webOsContract(str_contains($paths['thumbnail_service'], "'avif'") && str_contains($paths['thumbnail_service'], "'status' => 'SOURCE_PREVIEW'") && str_contains($paths['thumbnail_service'], "'content_type' => 'image/avif'"), 'AVIF conserva miniatura mediante fallback autenticado cuando el servidor no puede convertirlo');
 webOsContract(str_contains($paths['thumbnail_controller'], "'source-avif'"), 'fallback AVIF conserva registro de actividad/costo');
+webOsContract(str_contains($paths['file_apps_js'], '&scale=50&fit=contain') && str_contains($paths['file_apps_js'], 'Ver completa') && str_contains($paths['file_apps_js'], 'Vista 50%'), 'visor de imágenes abre vista mediana cacheada y carga original sólo a petición');
+webOsContract(str_contains($paths['thumbnail_controller'], "queryString('scale'") && str_contains($paths['thumbnail_controller'], 'getScaled('), 'thumb.php acepta vista proporcional autenticada');
+webOsContract(str_contains($paths['thumbnail_service'], 'public function getScaled(') && str_contains($paths['thumbnail_service'], "'status' => 'GENERATED_PREVIEW'") && str_contains($paths['thumbnail_service'], '__preview'), 'vista 50% se genera una vez y persiste dentro de thumbs en S3');
+webOsContract(str_contains($paths['derived_image_service'], "return 'thumbs/'") && str_contains($paths['derived_image_service'], 'transfer(string $sourceKey, string $destinationKey'), 'servicio OOP traslada miniaturas y vistas derivadas por key físico');
+webOsContract(str_contains($paths['file_mutation_service'], 'DerivedImageAssetService') && str_contains($paths['file_mutation_service'], "'derived_assets' => \$derived"), 'mover archivo intenta trasladar sus derivadas antes de retirar el original');
+webOsContract(str_contains($paths['move_job_service'], "'derived_copy_requests'") && str_contains($paths['move_job_worker'], "'s3.copy_request' => \$total + \$derivedCopies"), 'Actividad y Costos incluye operaciones S3 usadas al mover vistas derivadas');
 webOsContract(str_contains($paths['shell'], 'data-explorer-view="grid"') && str_contains($paths['shell'], 'data-explorer-view="list"'), 'Mis datos permite alternar cuadrícula y lista');
 webOsContract(str_contains($paths['window_manager_js'], 'setViewMode(mode') && str_contains($paths['window_manager_js'], 'arcadecloud-explorer-view-v1:'), 'cada ventana Mis datos conserva su modo de vista');
 webOsContract(str_contains($paths['shell'], 'os-entry-list-type') && str_contains($paths['shell'], 'os-entry-list-size') && str_contains($paths['shell'], 'os-entry-list-date'), 'vista Lista muestra columnas de tipo, tamaño y fecha con datos reales disponibles');

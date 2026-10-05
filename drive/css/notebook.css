@@ -95,18 +95,19 @@ dialog{border:1px solid #c7d2de;border-radius:14px;box-shadow:0 24px 70px #0005;
   }
 }
 
-/* Persistent writing composer: outside the paper, always visible under the app menu. */
+/* Writing composer: below page navigation so it never covers the application menu. */
 .nb-composer{
-  position:sticky;
-  top:96px;
-  z-index:13;
+  position:relative;
+  z-index:2;
   display:grid;
   grid-template-columns:minmax(0,1fr) 76px;
   gap:6px;
-  width:100%;
+  width:min(100%,1100px);
+  margin:0 auto 6px;
   padding:6px 8px;
   background:#eef3f8;
-  border-bottom:1px solid #cbd5df;
+  border:1px solid #cbd5df;
+  border-radius:10px;
   box-shadow:0 2px 8px #20304012;
 }
 .nb-composer input{
@@ -136,7 +137,6 @@ dialog{border:1px solid #c7d2de;border-radius:14px;box-shadow:0 24px 70px #0005;
 .nb-page-footer{display:none!important}
 @media(max-width:720px){
   .nb-composer{
-    top:92px;
     grid-template-columns:minmax(0,1fr) 70px;
     padding:5px 6px;
     gap:5px;

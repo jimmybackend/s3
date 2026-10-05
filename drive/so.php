@@ -427,6 +427,9 @@ $isExplorerFragment = (string)($_GET['_os_fragment'] ?? '') === 'explorer';
            data-current-folder-name="<?= $e($currentFolderName) ?>"
            data-current-folder-root="<?= $currentIsRoot ? '1' : '0' ?>">
         <div class="os-entry-grid">
+          <div class="os-entry-list-head" aria-hidden="true">
+            <span></span><strong>Nombre</strong><strong>Tipo</strong><strong>Tamaño</strong><strong>Fecha</strong><span></span>
+          </div>
           <?php foreach ($folders as $folder): ?>
             <a class="os-entry os-folder-entry"
                href="so.php?ruta=<?= rawurlencode((string)$folder['prefix']) ?>"

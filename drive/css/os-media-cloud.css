@@ -854,3 +854,243 @@
     linear-gradient(180deg,rgba(0,19,57,.97),rgba(0,8,30,.98));
   backdrop-filter:blur(16px) saturate(1.2);
 }
+
+
+/* ==========================================================================
+   ArcadeCloud Video · doble presentación
+   El mismo <video> se mueve entre la nube y una pantalla flotante externa.
+   ========================================================================== */
+.ac-video-inline-host{display:block}
+.ac-video-inline-host:empty{display:none}
+.ac-video-mode-toggle[hidden],.ac-video-screen[hidden]{display:none!important}
+
+.ac-video-mode-toggle{
+  flex:0 0 auto;
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+  min-height:20px;
+  padding:2px 6px;
+  border:1px solid rgba(111,234,255,.46);
+  border-radius:999px;
+  background:
+    radial-gradient(circle at 28% 0%,rgba(255,255,255,.13),transparent 32%),
+    linear-gradient(180deg,rgba(16,91,168,.86),rgba(1,27,73,.94));
+  color:#dfffff;
+  font-size:.42rem;
+  font-weight:850;
+  cursor:pointer;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 0 10px rgba(48,207,255,.18);
+}
+.ac-video-mode-toggle:hover{
+  border-color:#b8ffff;
+  color:#fff;
+  box-shadow:0 0 15px rgba(55,222,255,.4);
+}
+.ac-video-mode-toggle i{font-size:.48rem}
+.ac-media-cloud.is-video-detached .ac-video-inline-host{display:none}
+.ac-media-cloud.is-video-detached .ac-media-stage{
+  min-height:94px;
+}
+.ac-media-cloud.is-video-detached .ac-media-wave-frame{
+  height:50px;
+}
+.ac-media-cloud.is-video-detached .ac-media-screen canvas{
+  height:50px;
+}
+
+/* Pantalla externa: dispositivo independiente, pero controla el mismo stream. */
+.ac-video-screen{
+  --video-aspect:1.7777778;
+  position:fixed;
+  left:50%;
+  top:54px;
+  width:min(700px,58vw);
+  z-index:12490;
+  transform:translateX(-50%);
+  overflow:hidden;
+  border:1px solid rgba(151,244,255,.72);
+  border-radius:18px;
+  background:
+    radial-gradient(circle at 50% -20%,rgba(73,211,255,.16),transparent 42%),
+    linear-gradient(180deg,rgba(3,35,83,.97),rgba(1,11,34,.985));
+  box-shadow:
+    inset 0 0 0 2px rgba(34,169,255,.10),
+    inset 0 1px 0 rgba(255,255,255,.15),
+    0 0 0 2px rgba(50,211,255,.08),
+    0 0 22px rgba(55,219,255,.34),
+    0 24px 55px rgba(0,7,34,.48);
+  backdrop-filter:blur(20px) saturate(1.2);
+}
+.ac-video-screen.is-pinned{z-index:12510}
+.ac-video-screen.is-portrait{
+  width:min(330px,32vw);
+}
+.ac-video-screen.is-landscape{
+  width:min(700px,58vw);
+}
+.ac-video-screen::before{
+  content:"";
+  position:absolute;
+  inset:5px;
+  pointer-events:none;
+  border:1px solid rgba(119,235,255,.14);
+  border-radius:14px;
+  box-shadow:inset 0 0 22px rgba(39,188,255,.07);
+}
+.ac-video-screen::after{
+  content:"";
+  position:absolute;
+  left:9%;right:9%;bottom:3px;height:2px;
+  border-radius:999px;
+  background:linear-gradient(90deg,transparent,#5bf4ff,#8d8cff,#5bf4ff,transparent);
+  box-shadow:0 0 10px rgba(74,231,255,.72);
+  pointer-events:none;
+}
+
+.ac-video-screen-head{
+  position:relative;
+  z-index:3;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  min-height:40px;
+  padding:7px 9px 6px 12px;
+  cursor:grab;
+  border-bottom:1px solid rgba(104,225,255,.16);
+  background:linear-gradient(180deg,rgba(8,58,122,.68),rgba(2,27,70,.42));
+}
+.ac-video-screen-head:active{cursor:grabbing}
+.ac-video-screen-title{
+  min-width:0;
+  display:flex;
+  align-items:center;
+  gap:7px;
+  color:#ebfdff;
+  font-size:.7rem;
+  font-weight:800;
+}
+.ac-video-screen-title i{
+  color:#77f3ff;
+  text-shadow:0 0 10px rgba(83,235,255,.72);
+}
+.ac-video-screen-title span{
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.ac-video-screen-actions{display:flex;gap:5px;flex:0 0 auto}
+.ac-video-screen-actions button{
+  width:29px;height:29px;
+  display:grid;place-items:center;
+  border:1px solid rgba(121,233,255,.44);
+  border-radius:50%;
+  background:linear-gradient(180deg,rgba(19,103,181,.86),rgba(2,28,77,.96));
+  color:#efffff;
+  font-size:.63rem;
+  cursor:pointer;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.13),0 0 9px rgba(45,195,255,.16);
+}
+.ac-video-screen-actions button:hover{
+  border-color:#afffff;
+  box-shadow:0 0 14px rgba(55,223,255,.46);
+}
+
+.ac-video-screen-body{
+  position:relative;
+  z-index:2;
+  width:100%;
+  aspect-ratio:var(--video-aspect);
+  max-height:calc(100dvh - 170px);
+  display:grid;
+  place-items:center;
+  overflow:hidden;
+  background:
+    radial-gradient(circle at 50% 50%,rgba(16,93,158,.13),transparent 58%),
+    #000;
+}
+.ac-video-screen-body::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  z-index:2;
+  border:1px solid rgba(88,218,255,.10);
+  box-shadow:inset 0 0 34px rgba(0,0,0,.58);
+}
+.ac-video-screen-body video{
+  position:relative;
+  z-index:1;
+  display:block!important;
+  width:100%;
+  height:100%;
+  max-width:none;
+  max-height:none;
+  margin:0;
+  object-fit:contain;
+  border:0;
+  border-radius:0;
+  background:#000;
+  box-shadow:none;
+}
+
+.ac-video-screen-foot{
+  position:relative;
+  z-index:3;
+  min-height:26px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  padding:4px 11px 5px;
+  color:#8fdceb;
+  font-size:.48rem;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+  background:linear-gradient(180deg,rgba(2,29,69,.52),rgba(1,14,42,.72));
+  border-top:1px solid rgba(92,216,255,.12);
+}
+.ac-video-screen-foot span:first-child{
+  color:#b8fbff;
+  font-weight:800;
+}
+
+/* La pantalla vertical mantiene altura útil sin deformar el video. */
+.ac-video-screen.is-portrait .ac-video-screen-body{
+  max-height:calc(100dvh - 145px);
+}
+.ac-video-screen.is-portrait .ac-video-screen-title{
+  max-width:190px;
+}
+
+/* En móvil la pantalla externa ocupa el espacio disponible,
+   manteniendo la proporción real del archivo. */
+@media(max-width:700px){
+  .ac-video-mode-toggle{
+    min-height:26px;
+    padding:3px 7px;
+    font-size:.56rem;
+  }
+  .ac-video-screen,
+  .ac-video-screen.is-landscape{
+    left:7px!important;
+    right:7px!important;
+    top:54px!important;
+    width:auto!important;
+    transform:none!important;
+    border-radius:15px;
+  }
+  .ac-video-screen.is-portrait{
+    left:50%!important;
+    right:auto!important;
+    width:min(76vw,340px)!important;
+    transform:translateX(-50%)!important;
+  }
+  .ac-video-screen-body{
+    max-height:calc(100dvh - 170px);
+  }
+  .ac-video-screen-head{min-height:38px;padding:6px 7px 5px 10px}
+  .ac-video-screen-actions button{width:28px;height:28px}
+  .ac-video-screen-foot{font-size:.46rem}
+}

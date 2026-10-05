@@ -149,7 +149,7 @@
 | `drive/migrations/20260930_add_users_os_preferences.php` | ninguna |
 | `drive/move_multiple.php` | ninguna |
 | `drive/move_task.php` | `drive/js/move-tasks.js` |
-| `drive/move_task_status.php` | `drive/js/move-tasks.js` |
+| `drive/move_task_status.php` | `drive/js/move-tasks.js`, `drive/js/so-clipboard.js` |
 | `drive/mover_archivo.php` | `drive/js/archivos.js` |
 | `drive/mover_carpeta.php` | `drive/js/carpetas.js` |
 | `drive/notebook-api.php` | `drive/tests/notebook_contract_smoke.php`, `drive/js/notebook.js` |

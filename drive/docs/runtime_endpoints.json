@@ -1297,7 +1297,8 @@
       "size": 256,
       "active": false,
       "references": [
-        "drive/js/move-tasks.js"
+        "drive/js/move-tasks.js",
+        "drive/js/so-clipboard.js"
       ]
     },
     {
@@ -2841,7 +2842,7 @@
     },
     {
       "path": "drive/src/Http/Controller/BackgroundTaskController.php",
-      "size": 46096,
+      "size": 45995,
       "active": false,
       "references": [
         "drive/tests/folder_textract_background_task_contract.php",
@@ -4371,7 +4372,7 @@
     },
     {
       "path": "drive/tests/web_os_contract_smoke.php",
-      "size": 66480,
+      "size": 68701,
       "active": false,
       "references": []
     },

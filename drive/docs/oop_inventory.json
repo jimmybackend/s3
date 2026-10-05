@@ -7899,7 +7899,7 @@
     },
     {
       "path": "drive/tests/web_os_contract_smoke.php",
-      "lines": 639,
+      "lines": 652,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -9462,7 +9462,7 @@
     },
     {
       "path": "drive/js/os-media-cloud.js",
-      "lines": 620,
+      "lines": 777,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudMediaCloud"

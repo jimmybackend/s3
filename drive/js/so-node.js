@@ -2,7 +2,7 @@ class ArcadeCloudOsNodeMonitor {
   constructor(win, doc) {
     this.window = win; this.document = doc; this.config = win.ARCADECLOUD_OS_NODE || {};
     this.endpoint = String(this.config.endpoint || 'node-status.php'); this.busy = false;
-    this.node = {}; this.pollTimer = null; this.countdownTimer = null; this.zeroConfirmed = false; this.mysqlSnapshot = null; this.lastPeerRefresh = 0;
+    this.node = {}; this.pollTimer = null; this.countdownTimer = null; this.taskbarTimer = null; this.zeroConfirmed = false; this.mysqlSnapshot = null; this.lastPeerRefresh = 0;
   }
 
   init() {
@@ -26,6 +26,8 @@ class ArcadeCloudOsNodeMonitor {
     this.document.addEventListener('background-tasks:refresh', (event) => { if (this.isOpen() && event.detail?.skipNode !== true) this.refresh(); });
     this.document.addEventListener('arcadeos:window-opened', (event) => { if (event.detail?.app === 'node') this.startPolling(); });
     this.document.addEventListener('arcadeos:window-closed', (event) => { if (event.detail?.app === 'node') this.stopPolling(); });
+    this.window.setTimeout(() => this.refresh(), 200);
+    this.taskbarTimer = this.window.setInterval(() => { if (!this.isOpen()) this.refresh(); }, 60000);
     return this;
   }
 

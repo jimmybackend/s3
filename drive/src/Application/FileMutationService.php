@@ -70,7 +70,7 @@ final class FileMutationService
             throw $error;
         }
 
-        $derived = ['listed' => 0, 'copied' => 0, 'deleted' => 0];
+        $derived = ['list_requests' => 0, 'copy_requests' => 0, 'delete_requests' => 0, 'objects' => 0];
         try {
             $derived = (new DerivedImageAssetService($this->s3, $this->bucket))
                 ->transfer($oldKey, $newKey, true);

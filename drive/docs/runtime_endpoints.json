@@ -1859,10 +1859,11 @@
     },
     {
       "path": "drive/src/Application/FileMutationService.php",
-      "size": 7285,
+      "size": 7766,
       "active": false,
       "references": [
-        "drive/tests/web_os_clipboard_contract_smoke.php"
+        "drive/tests/web_os_clipboard_contract_smoke.php",
+        "drive/tests/web_os_contract_smoke.php"
       ]
     },
     {
@@ -1900,10 +1901,11 @@
     },
     {
       "path": "drive/src/Application/MoveJobService.php",
-      "size": 9905,
+      "size": 10893,
       "active": false,
       "references": [
-        "drive/tests/web_os_clipboard_contract_smoke.php"
+        "drive/tests/web_os_clipboard_contract_smoke.php",
+        "drive/tests/web_os_contract_smoke.php"
       ]
     },
     {
@@ -2098,9 +2100,11 @@
     },
     {
       "path": "drive/src/Console/MoveJobWorkerCommand.php",
-      "size": 5621,
+      "size": 6253,
       "active": false,
-      "references": []
+      "references": [
+        "drive/tests/web_os_contract_smoke.php"
+      ]
     },
     {
       "path": "drive/src/Console/ServerMaintenanceWorkerCommand.php",
@@ -3154,7 +3158,7 @@
     },
     {
       "path": "drive/src/Http/Controller/ThumbnailController.php",
-      "size": 4092,
+      "size": 4456,
       "active": false,
       "references": [
         "drive/tests/web_os_contract_smoke.php"
@@ -3217,6 +3221,14 @@
       ]
     },
     {
+      "path": "drive/src/Media/DerivedImageAssetService.php",
+      "size": 3164,
+      "active": false,
+      "references": [
+        "drive/tests/web_os_contract_smoke.php"
+      ]
+    },
+    {
       "path": "drive/src/Media/MediaPlaylistRepository.php",
       "size": 1198,
       "active": false,
@@ -3266,7 +3278,7 @@
     },
     {
       "path": "drive/src/Media/ThumbnailService.php",
-      "size": 14187,
+      "size": 20442,
       "active": false,
       "references": [
         "drive/tests/web_os_contract_smoke.php"
@@ -4359,7 +4371,7 @@
     },
     {
       "path": "drive/tests/web_os_contract_smoke.php",
-      "size": 64647,
+      "size": 66480,
       "active": false,
       "references": []
     },
@@ -4419,6 +4431,7 @@
         "drive/bloque_archivos.php",
         "drive/so.php",
         "drive/tests/web_os_contract_smoke.php",
+        "drive/js/file-applications.js",
         "drive/js/imagenes.js"
       ]
     },

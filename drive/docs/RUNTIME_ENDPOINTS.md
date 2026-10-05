@@ -52,7 +52,7 @@
 | `drive/src/Admin/ManagedRuntimeEnvironment.php` | `drive/app_bootstrap.php`, `drive/personal_aws_bootstrap.php`, `drive/setup/api.php`, `drive/tests/fastdrive_control_contract_smoke.php`, `drive/tests/installer_service_reconcile_contract_smoke.php`, `drive/tests/server_admin_config_smoke.php` |
 | `drive/src/Setup/BootstrapSetupAuth.php` | `drive/setup/api.php`, `drive/setup/index.php`, `drive/tests/setup_bootstrap_smoke.php` |
 | `drive/src/Setup/SetupEntryGuard.php` | `drive/index.php`, `drive/tests/setup_entry_guard_smoke.php` |
-| `drive/thumb.php` | `drive/bloque_archivos.php`, `drive/so.php`, `drive/tests/web_os_contract_smoke.php`, `drive/js/imagenes.js` |
+| `drive/thumb.php` | `drive/bloque_archivos.php`, `drive/so.php`, `drive/tests/web_os_contract_smoke.php`, `drive/js/file-applications.js`, `drive/js/imagenes.js` |
 | `drive/up.php` | `drive/so.php`, `drive/src/Admin/ProductionPreflightService.php`, `drive/src/Http/Controller/UploadCleanupController.php`, `drive/src/Upload/AdminMultipartUploadService.php`, `drive/tests/database_backup_contract_smoke.php`, `drive/tests/federation_moderation_contract_smoke.php`, `drive/tests/upload_catalog_registration_regression.php`, `drive/js/estilo.js`, `drive/js/so-node.js` |
 | `drive/upload.php` | `drive/s3.php`, `drive/so.php`, `drive/tests/web_os_contract_smoke.php`, `drive/js/so-screenshot-paste.js`, `drive/js/soportesMediaTypes.js`, `drive/js/subir-chunked.js`, `drive/js/subir-dropzone.js`, `drive/js/subir.js`, `drive/js/upload-center.js` |
 | `drive/validar_php.php` | `drive/editor.php` |
@@ -197,12 +197,12 @@
 | `drive/src/Application/FileAccessService.php` | `drive/tests/arcadelink_bulk_contract_regression.php` |
 | `drive/src/Application/FileKeyRotationService.php` | ninguna |
 | `drive/src/Application/FileListService.php` | `drive/tests/large_folder_regression.php`, `drive/tests/web_os_contract_smoke.php` |
-| `drive/src/Application/FileMutationService.php` | `drive/tests/web_os_clipboard_contract_smoke.php` |
+| `drive/src/Application/FileMutationService.php` | `drive/tests/web_os_clipboard_contract_smoke.php`, `drive/tests/web_os_contract_smoke.php` |
 | `drive/src/Application/FileSearchService.php` | `drive/tests/large_folder_regression.php`, `drive/tests/web_os_contract_smoke.php` |
 | `drive/src/Application/FolderDocumentService.php` | `drive/tests/folder_document_sanitizer.php` |
 | `drive/src/Application/FolderMutationService.php` | `drive/tests/web_os_clipboard_contract_smoke.php` |
 | `drive/src/Application/FolderQueryService.php` | `drive/tests/web_os_contract_smoke.php` |
-| `drive/src/Application/MoveJobService.php` | `drive/tests/web_os_clipboard_contract_smoke.php` |
+| `drive/src/Application/MoveJobService.php` | `drive/tests/web_os_clipboard_contract_smoke.php`, `drive/tests/web_os_contract_smoke.php` |
 | `drive/src/Application/PhpLintService.php` | ninguna |
 | `drive/src/Application/TemporaryZip.php` | ninguna |
 | `drive/src/Application/TextFileService.php` | ninguna |
@@ -232,7 +232,7 @@
 | `drive/src/Console/ActivityRetentionCommand.php` | ninguna |
 | `drive/src/Console/FolderTextractWorkerCommand.php` | `drive/tests/folder_textract_background_task_contract.php` |
 | `drive/src/Console/MediaProcessingWorkerCommand.php` | `drive/tests/fresh_install_contract_smoke.php`, `drive/tests/media_processing_contract_smoke.php` |
-| `drive/src/Console/MoveJobWorkerCommand.php` | ninguna |
+| `drive/src/Console/MoveJobWorkerCommand.php` | `drive/tests/web_os_contract_smoke.php` |
 | `drive/src/Console/ServerMaintenanceWorkerCommand.php` | `drive/tests/web_os_contract_smoke.php` |
 | `drive/src/Console/SyncWorkerCommand.php` | ninguna |
 | `drive/src/Console/UploadCleanupCommand.php` | ninguna |
@@ -374,6 +374,7 @@
 | `drive/src/Http/Request.php` | ninguna |
 | `drive/src/Mail/SmtpConfig.php` | `drive/tests/smtp_config_smoke.php` |
 | `drive/src/Mail/SmtpEmailService.php` | `drive/tests/federation_drop_contract_smoke.php` |
+| `drive/src/Media/DerivedImageAssetService.php` | `drive/tests/web_os_contract_smoke.php` |
 | `drive/src/Media/MediaPlaylistRepository.php` | ninguna |
 | `drive/src/Media/MediaPlaylistService.php` | ninguna |
 | `drive/src/Media/MediaProcessingJobRepository.php` | `drive/tests/media_processing_contract_smoke.php` |

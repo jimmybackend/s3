@@ -60,6 +60,16 @@ class ArcadeCloudMediaCloud {
           <filter id="acMistBlur" x="-30%" y="-30%" width="160%" height="160%">
             <feGaussianBlur stdDeviation="14"/>
           </filter>
+          <filter id="acCloudPuff" x="-35%" y="-35%" width="170%" height="170%">
+            <feTurbulence type="fractalNoise" baseFrequency=".013 .028" numOctaves="4" seed="27" result="cloudNoise"/>
+            <feDisplacementMap in="SourceGraphic" in2="cloudNoise" scale="24" xChannelSelector="R" yChannelSelector="G" result="cloudDisplaced"/>
+            <feGaussianBlur in="cloudDisplaced" stdDeviation="3.8" result="cloudSoft"/>
+            <feSpecularLighting in="cloudNoise" surfaceScale="4" specularConstant=".42" specularExponent="18" lighting-color="#e9ffff" result="cloudLight">
+              <feDistantLight azimuth="225" elevation="48"/>
+            </feSpecularLighting>
+            <feComposite in="cloudLight" in2="cloudSoft" operator="in" result="cloudLit"/>
+            <feMerge><feMergeNode in="cloudSoft"/><feMergeNode in="cloudLit"/></feMerge>
+          </filter>
           <filter id="acSparkGlow" x="-100%" y="-100%" width="300%" height="300%">
             <feGaussianBlur stdDeviation="3" result="sparkBlur"/>
             <feMerge><feMergeNode in="sparkBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
@@ -101,7 +111,13 @@ class ArcadeCloudMediaCloud {
         <use href="#acCloudShape" fill="url(#acCloudGlow)" stroke="rgba(255,255,255,.82)" stroke-width="2"/>
         <use href="#acCloudShape" fill="none" stroke="#47dcff" stroke-opacity=".34" stroke-width="13"/>
 
-        <g class="ac-cloud-mist" clip-path="url(#acCloudClip)" filter="url(#acMistBlur)">
+        <g class="ac-cloud-aura" filter="url(#acMistBlur)" opacity=".34">
+          <ellipse cx="164" cy="455" rx="118" ry="62" fill="url(#acMistWhite)"/>
+          <ellipse cx="838" cy="446" rx="126" ry="65" fill="url(#acMistWhite)"/>
+          <ellipse cx="706" cy="98" rx="142" ry="66" fill="url(#acMistWhite)"/>
+        </g>
+
+        <g class="ac-cloud-mist" clip-path="url(#acCloudClip)" filter="url(#acCloudPuff)">
           <g class="mist-cluster mist-top-right">
             <ellipse cx="704" cy="112" rx="128" ry="74" fill="url(#acMistWhite)"/>
             <ellipse cx="635" cy="136" rx="82" ry="48" fill="url(#acMistWhite)"/>

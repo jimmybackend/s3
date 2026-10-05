@@ -4,8 +4,8 @@
 
 ## Resumen
 
-- PHP analizados: **552**
-- PHP que ya contienen clases/interfaces: **314**
+- PHP analizados: **553**
+- PHP que ya contienen clases/interfaces: **315**
 - PHP marcados para migración/revisión: **0**
 - Tests PHP separados del objetivo OOP de runtime: **76**
 - JavaScript analizados: **80**
@@ -202,12 +202,12 @@
 | `drive/src/Application/FileAccessService.php` | 114 | class/module | 1 | — | — | — | — |
 | `drive/src/Application/FileKeyRotationService.php` | 67 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Application/FileListService.php` | 157 | class/module | 1 | — | ⚠️ | — | — |
-| `drive/src/Application/FileMutationService.php` | 198 | class/module | 1 | — | — | — | — |
+| `drive/src/Application/FileMutationService.php` | 208 | class/module | 1 | — | — | — | — |
 | `drive/src/Application/FileSearchService.php` | 159 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Application/FolderDocumentService.php` | 298 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Application/FolderMutationService.php` | 323 | class/module | 1 | — | — | — | — |
 | `drive/src/Application/FolderQueryService.php` | 224 | class/module | 1 | — | — | — | — |
-| `drive/src/Application/MoveJobService.php` | 251 | class/module | 1 | — | — | — | — |
+| `drive/src/Application/MoveJobService.php` | 264 | class/module | 1 | — | — | — | — |
 | `drive/src/Application/PhpLintService.php` | 70 | class/module | 1 | — | — | — | — |
 | `drive/src/Application/TemporaryZip.php` | 27 | class/module | 1 | — | — | — | — |
 | `drive/src/Application/TextFileService.php` | 157 | class/module | 1 | — | — | — | — |
@@ -237,7 +237,7 @@
 | `drive/src/Console/ActivityRetentionCommand.php` | 38 | class/module | 1 | — | — | — | — |
 | `drive/src/Console/FolderTextractWorkerCommand.php` | 130 | class/module | 1 | — | — | — | — |
 | `drive/src/Console/MediaProcessingWorkerCommand.php` | 919 | class/module | 1 | — | — | — | — |
-| `drive/src/Console/MoveJobWorkerCommand.php` | 144 | class/module | 1 | — | — | — | — |
+| `drive/src/Console/MoveJobWorkerCommand.php` | 153 | class/module | 1 | — | — | — | — |
 | `drive/src/Console/ServerMaintenanceWorkerCommand.php` | 32 | class/module | 1 | — | — | — | — |
 | `drive/src/Console/SyncWorkerCommand.php` | 182 | class/module | 1 | — | — | — | — |
 | `drive/src/Console/UploadCleanupCommand.php` | 61 | class/module | 1 | — | — | — | — |
@@ -370,7 +370,7 @@
 | `drive/src/Http/Controller/StorageUsageController.php` | 28 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/SyncController.php` | 148 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/TextEditorController.php` | 61 | class/module | 1 | — | — | — | — |
-| `drive/src/Http/Controller/ThumbnailController.php` | 115 | class/module | 1 | — | — | — | — |
+| `drive/src/Http/Controller/ThumbnailController.php` | 119 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/TranscriptionController.php` | 225 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/UploadCleanupController.php` | 76 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/UploadController.php` | 281 | class/module | 1 | — | — | — | — |
@@ -379,13 +379,14 @@
 | `drive/src/Http/Request.php` | 122 | class/module | 1 | — | — | — | — |
 | `drive/src/Mail/SmtpConfig.php` | 120 | class/module | 1 | — | — | — | — |
 | `drive/src/Mail/SmtpEmailService.php` | 346 | class/module | 1 | — | — | — | — |
+| `drive/src/Media/DerivedImageAssetService.php` | 87 | class/module | 1 | — | — | — | — |
 | `drive/src/Media/MediaPlaylistRepository.php` | 49 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Media/MediaPlaylistService.php` | 66 | class/module | 1 | — | — | — | — |
 | `drive/src/Media/MediaProcessingJobRepository.php` | 460 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Media/MediaProcessingService.php` | 104 | class/module | 1 | — | — | — | — |
 | `drive/src/Media/MediaWorkerNodeService.php` | 799 | class/module | 1 | — | — | — | — |
 | `drive/src/Media/MediaWorkerNodeSessionRepository.php` | 243 | class/module | 1 | — | ⚠️ | — | — |
-| `drive/src/Media/ThumbnailService.php` | 392 | class/module | 1 | — | ⚠️ | — | — |
+| `drive/src/Media/ThumbnailService.php` | 559 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Notebook/NotebookAiImproveService.php` | 327 | class/module | 1 | — | — | — | — |
 | `drive/src/Notebook/NotebookService.php` | 394 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Office/OfficeActivityProbe.php` | 57 | class/module | 1 | — | ⚠️ | — | — |
@@ -544,7 +545,7 @@
 | `drive/tests/user_identity_presenter_smoke.php` | 30 | test script | 0 | — | — | — | — |
 | `drive/tests/user_profile_validator_smoke.php` | 72 | test script | 0 | — | — | — | — |
 | `drive/tests/web_os_clipboard_contract_smoke.php` | 126 | test script | 0 | — | — | — | — |
-| `drive/tests/web_os_contract_smoke.php` | 582 | test script | 0 | — | — | — | — |
+| `drive/tests/web_os_contract_smoke.php` | 592 | test script | 0 | — | — | — | — |
 | `drive/tests/web_os_desktop_shell_smoke.php` | 20 | test script | 0 | — | — | — | — |
 | `drive/tests/web_os_file_applications_smoke.php` | 21 | test script | 0 | — | — | — | — |
 | `drive/tests/web_os_interactions_theme_smoke.php` | 30 | test script | 0 | — | — | — | — |
@@ -612,7 +613,7 @@
 | `drive/js/federation-page.js` | 99 | class/module | FederationPageModule | — | — | — |
 | `drive/js/federation-portal.js` | 511 | class/module | FederationPortalModule | — | — | — |
 | `drive/js/federation-share-drive.js` | 214 | class/module | FederationShareDriveModule | — | — | — |
-| `drive/js/file-applications.js` | 213 | class/module | ArcadeCloudFileApplicationService | — | — | — |
+| `drive/js/file-applications.js` | 230 | class/module | ArcadeCloudFileApplicationService | — | — | — |
 | `drive/js/file-block.js` | 306 | class/module | FileBlockApp | — | — | — |
 | `drive/js/file-security.js` | 325 | class/module | ArcadeCloudFileSecurity | — | — | — |
 | `drive/js/filesystem-operations.js` | 192 | class/module | ArcadeCloudFilesystemOperations | — | — | — |

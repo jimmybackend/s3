@@ -1,7 +1,7 @@
 {
   "summary": {
-    "php_total": 552,
-    "php_class_modules": 314,
+    "php_total": 553,
+    "php_class_modules": 315,
     "php_needs_migration": 0,
     "php_tests": 76,
     "js_total": 80,
@@ -2633,7 +2633,7 @@
     },
     {
       "path": "drive/src/Application/FileMutationService.php",
-      "lines": 198,
+      "lines": 208,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -2708,7 +2708,7 @@
     },
     {
       "path": "drive/src/Application/MoveJobService.php",
-      "lines": 251,
+      "lines": 264,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -3158,7 +3158,7 @@
     },
     {
       "path": "drive/src/Console/MoveJobWorkerCommand.php",
-      "lines": 144,
+      "lines": 153,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -5155,7 +5155,7 @@
     },
     {
       "path": "drive/src/Http/Controller/ThumbnailController.php",
-      "lines": 115,
+      "lines": 119,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -5295,6 +5295,21 @@
       "issues": []
     },
     {
+      "path": "drive/src/Media/DerivedImageAssetService.php",
+      "lines": 87,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
       "path": "drive/src/Media/MediaPlaylistRepository.php",
       "lines": 49,
       "kind": "class/module",
@@ -5386,7 +5401,7 @@
     },
     {
       "path": "drive/src/Media/ThumbnailService.php",
-      "lines": 392,
+      "lines": 559,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -7884,7 +7899,7 @@
     },
     {
       "path": "drive/tests/web_os_contract_smoke.php",
-      "lines": 582,
+      "lines": 592,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -9076,7 +9091,7 @@
     },
     {
       "path": "drive/js/file-applications.js",
-      "lines": 213,
+      "lines": 230,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudFileApplicationService"
@@ -10622,7 +10637,7 @@
     },
     {
       "path": "drive/docs/runtime_endpoints.json",
-      "bytes": 129704,
+      "bytes": 129814,
       "valid": true,
       "root_type": "object",
       "keys": [

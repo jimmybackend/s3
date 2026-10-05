@@ -417,6 +417,7 @@ class ArcadeCloudOsClipboard {
     } catch (_) {}
 
     this.updatePasteControls();
+    this.dispatchClipboardChanged();
     const verb = item.mode === 'copy' ? 'copiar' : 'mover';
     this.notify(
       String(item.name || 'Elemento') + ' listo para ' + verb + '. Navega a la carpeta destino y pulsa Pegar.',
@@ -428,6 +429,7 @@ class ArcadeCloudOsClipboard {
     this.clipboard = null;
     try { this.window.sessionStorage.removeItem(this.storageKey); } catch (_) {}
     this.updatePasteControls();
+    this.dispatchClipboardChanged();
   }
 
   restoreClipboard() {
@@ -497,6 +499,19 @@ class ArcadeCloudOsClipboard {
       this.window.sessionStorage.setItem(this.storageKey, JSON.stringify(this.clipboard));
     } catch (_) {}
     this.updatePasteControls();
+    this.dispatchClipboardChanged();
+  }
+
+  dispatchClipboardChanged() {
+    try {
+      this.document.dispatchEvent(new CustomEvent('arcadeos:clipboard-changed', {
+        detail: {
+          hasClipboard: Boolean(this.clipboard),
+          mode: String(this.clipboard?.mode || ''),
+          transferPending: Boolean(this.clipboard?.transferPending)
+        }
+      }));
+    } catch (_) {}
   }
 
   async reconcileClipboardJob() {

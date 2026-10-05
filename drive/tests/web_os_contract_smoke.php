@@ -149,6 +149,7 @@ webOsContract(str_contains($paths['shell'], 'js/media-processing.js'), 'OS reuti
 webOsContract(str_contains($paths['shell'], 'js/aws-comprehend.js'), 'OS reutiliza módulo Comprehend');
 webOsContract(str_contains($paths['shell'], 'Disco usado'), 'Mi nodo muestra espacio de disco usado');
 webOsContract(str_contains($paths['shell'], 'Disco total'), 'Mi nodo muestra tamaño total de disco');
+webOsContract(str_contains($paths['node_js'], "card.classList.add('os-node-card-wide')"), 'Identidad local ocupa el mismo ancho y separación visual que los paneles principales');
 
 webOsContract(str_contains($paths['js'], 'createViewerWindow('), 'archivos se abren en ventanas del Web OS');
 webOsContract(str_contains($paths['js'], 'openMediaOverlay('), 'audio/video usan reproductor flotante');
@@ -163,9 +164,9 @@ webOsContract(str_contains($paths['js'], 'contextPageSize = 10'), 'móvil pagina
 webOsContract(str_contains($paths['js'], "matchMedia('(max-width: 700px)')"), 'paginación de acciones sólo se activa en pantalla móvil');
 webOsContract(str_contains($paths['js'], 'openFileDetails(entry)'), 'Detalles se construye como diálogo interno del Web OS');
 webOsContract(str_contains($paths['js'], "['Nombre', name]") && str_contains($paths['js'], "['Tipo', type]") && str_contains($paths['js'], "['Peso', this.formatBytes(bytes)]") && str_contains($paths['js'], "['Fecha de creación', date]"), 'Detalles muestra nombre, tipo, peso y fecha de creación');
-webOsContract(str_contains($paths['file_apps_js'], "toolbar.classList.add('os-viewer-toolbar-bottom')"), 'visor de imágenes mueve sus acciones al pie');
-webOsContract(str_contains($paths['file_apps_js'], "if (application === 'image')"), 'reposicionamiento de acciones se limita al visor de imágenes');
-webOsContract(str_contains($paths['css'], '.os-statusbar .os-viewer-toolbar-bottom'), 'acciones de imagen tienen estilo separado del cierre de ventana');
+webOsContract(str_contains($paths['file_apps_js'], "toolbar.classList.add('os-viewer-toolbar-bottom')"), 'visores pueden mover acciones al pie');
+webOsContract(str_contains($paths['file_apps_js'], "application === 'image' || application === 'text'"), 'imagen y editor de texto colocan Descargar en la barra inferior');
+webOsContract(str_contains($paths['css'], '.os-statusbar .os-viewer-toolbar-bottom'), 'acciones de documento en footer quedan separadas de los controles de ventana');
 webOsContract(
     substr_count($paths['js'], 'this.window.open(') === 2
     && str_contains($paths['js'], "this.window.open(officeUrl, '_blank')")
@@ -189,6 +190,8 @@ webOsContract(str_contains($paths['shell'], 'data-node-local-label'), 'escritori
 webOsContract(str_contains($paths['shell'], '<span>Mis datos</span>'), 'escritorio incluye Mis datos');
 webOsContract(str_contains($paths['shell'], '<span>Aplicaciones</span>'), 'escritorio incluye Aplicaciones');
 webOsContract(str_contains($paths['shell'], '<span>Notebook</span>') && str_contains($paths['shell'], 'href="notebook.php"'), 'escritorio incluye acceso directo a Notebook');
+webOsContract(str_contains($paths['shell'], 'href="notebook.php" target="_blank" rel="noopener"'), 'Notebook abre en pestaña separada y conserva ArcadeCloud OS');
+webOsContract(str_contains($paths['shell'], '<strong>Notebook</strong><span>Nueva pestaña</span>'), 'Aplicaciones incluye Notebook en nueva pestaña');
 webOsContract(str_contains($paths['shell'], 'nodeKey: <?= json_encode($osPreferenceNodeKey'), 'shell entrega la identidad del nodo al gestor de apariencia');
 webOsContract(str_contains($paths['preferences_repository'], "'nodes' => []") && str_contains($paths['preferences_repository'], 'FOR UPDATE'), 'preferencias compartidas en DB se aíslan por nodo sin perder actualizaciones concurrentes');
 webOsContract(str_contains($paths['preferences_node_resolver'], 'NodeIdentityService') && str_contains($paths['preferences_node_resolver'], "return 'host:'"), 'nodo de preferencias se resuelve por FederationCloud con fallback local');

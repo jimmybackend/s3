@@ -80,29 +80,45 @@ class ArcadeCloudMediaCloud {
             <stop offset=".72" stop-color="#8ddfff" stop-opacity=".34"/>
             <stop offset="1" stop-color="#4198ff" stop-opacity="0"/>
           </radialGradient>
-          <path id="acCloudShape" d="M116 175
-            C122 116 168 74 230 80
-            C260 28 322 5 385 26
-            C423 39 451 66 470 101
-            C497 72 530 57 569 58
-            C598 6 655 -14 716 7
-            C761 22 794 57 808 101
-            C858 91 910 118 930 162
-            C972 173 998 210 992 252
-            C990 274 981 295 966 313
-            C997 347 1001 396 976 433
-            C1000 474 992 525 955 553
-            C922 578 882 582 847 568
-            C820 615 765 636 713 619
-            C674 640 621 637 585 615
-            C536 640 473 641 426 615
-            C380 640 320 640 277 615
-            C224 632 169 611 143 568
-            C102 580 58 562 35 526
-            C12 490 17 445 45 414
-            C15 378 16 326 49 291
-            C28 255 40 210 74 188
-            C86 180 100 176 116 175 Z"/>
+          <radialGradient id="acPuffFace" cx=".38" cy=".26" r=".78">
+            <stop offset="0" stop-color="#ffffff" stop-opacity=".98"/>
+            <stop offset=".24" stop-color="#eaffff" stop-opacity=".96"/>
+            <stop offset=".55" stop-color="#bcefff" stop-opacity=".84"/>
+            <stop offset=".82" stop-color="#65bfff" stop-opacity=".48"/>
+            <stop offset="1" stop-color="#245ec8" stop-opacity=".10"/>
+          </radialGradient>
+          <radialGradient id="acPuffShade" cx=".45" cy=".2" r=".9">
+            <stop offset="0" stop-color="#c9f7ff" stop-opacity=".80"/>
+            <stop offset=".55" stop-color="#559de8" stop-opacity=".42"/>
+            <stop offset="1" stop-color="#072a79" stop-opacity=".08"/>
+          </radialGradient>
+          <linearGradient id="acCloudPearl" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#f4ffff" stop-opacity=".98"/>
+            <stop offset=".18" stop-color="#8cf5ff" stop-opacity=".98"/>
+            <stop offset=".52" stop-color="#25cfff" stop-opacity=".98"/>
+            <stop offset="1" stop-color="#2373ff" stop-opacity=".86"/>
+          </linearGradient>
+          <path id="acCloudShape" d="M122 206
+            C126 150 169 118 224 124
+            C244 68 296 31 352 34
+            C402 37 437 72 463 116
+            C493 91 529 82 564 93
+            C596 31 651 4 711 10
+            C770 16 812 58 827 113
+            C872 109 914 131 934 168
+            C969 179 991 211 988 248
+            C1005 277 1000 315 974 342
+            C998 382 986 430 949 454
+            C934 500 890 529 846 520
+            C817 574 757 603 700 587
+            C651 618 592 617 550 594
+            C503 615 451 616 408 593
+            C363 616 309 614 270 587
+            C218 606 166 584 136 543
+            C89 552 47 526 34 483
+            C2 455 2 411 27 378
+            C3 342 13 296 48 270
+            C54 235 81 211 122 206 Z"/>
           <clipPath id="acCloudClip"><use href="#acCloudShape"/></clipPath>
         </defs>
 
@@ -110,6 +126,31 @@ class ArcadeCloudMediaCloud {
         <use href="#acCloudShape" fill="url(#acCloudFill)" stroke="url(#acCloudStroke)" stroke-width="7" filter="url(#acCloudNeon)"/>
         <use href="#acCloudShape" fill="url(#acCloudGlow)" stroke="rgba(255,255,255,.82)" stroke-width="2"/>
         <use href="#acCloudShape" fill="none" stroke="#47dcff" stroke-opacity=".34" stroke-width="13"/>
+
+        <g class="ac-cloud-scenery" clip-path="url(#acCloudClip)">
+          <g class="scenery-top">
+            <ellipse cx="688" cy="121" rx="122" ry="58" fill="url(#acPuffShade)"/>
+            <circle cx="636" cy="128" r="45" fill="url(#acPuffFace)"/>
+            <circle cx="674" cy="101" r="58" fill="url(#acPuffFace)"/>
+            <circle cx="725" cy="94" r="66" fill="url(#acPuffFace)"/>
+            <circle cx="774" cy="124" r="50" fill="url(#acPuffFace)"/>
+            <ellipse cx="714" cy="151" rx="122" ry="42" fill="url(#acPuffFace)"/>
+          </g>
+          <g class="scenery-left">
+            <ellipse cx="145" cy="486" rx="110" ry="49" fill="url(#acPuffShade)"/>
+            <circle cx="96" cy="485" r="45" fill="url(#acPuffFace)"/>
+            <circle cx="132" cy="455" r="58" fill="url(#acPuffFace)"/>
+            <circle cx="183" cy="475" r="48" fill="url(#acPuffFace)"/>
+            <ellipse cx="150" cy="515" rx="115" ry="40" fill="url(#acPuffFace)"/>
+          </g>
+          <g class="scenery-right">
+            <ellipse cx="856" cy="485" rx="115" ry="50" fill="url(#acPuffShade)"/>
+            <circle cx="811" cy="469" r="52" fill="url(#acPuffFace)"/>
+            <circle cx="861" cy="445" r="61" fill="url(#acPuffFace)"/>
+            <circle cx="913" cy="480" r="48" fill="url(#acPuffFace)"/>
+            <ellipse cx="860" cy="519" rx="122" ry="42" fill="url(#acPuffFace)"/>
+          </g>
+        </g>
 
         <g class="ac-cloud-aura" filter="url(#acMistBlur)" opacity=".34">
           <ellipse cx="164" cy="455" rx="118" ry="62" fill="url(#acMistWhite)"/>
@@ -162,6 +203,8 @@ class ArcadeCloudMediaCloud {
           <circle cx="802" cy="94" r="3"/><circle cx="930" cy="242" r="2"/>
           <circle cx="81" cy="456" r="2"/><circle cx="865" cy="566" r="3"/>
         </g>
+        <use href="#acCloudShape" fill="none" stroke="#eaffff" stroke-opacity=".76" stroke-width="2.6"/>
+        <use href="#acCloudShape" fill="none" stroke="url(#acCloudStroke)" stroke-opacity=".92" stroke-width="6.5" filter="url(#acCloudNeon)"/>
       </svg>
       <div class="ac-media-cloud-shell">
         <header class="ac-media-cloud-head" data-media-drag-handle>
@@ -579,34 +622,43 @@ class ArcadeCloudMediaCloud {
       const width = this.canvas.width;
       const height = this.canvas.height;
       const center = height / 2;
-      const bars = 74;
+      const bars = 68;
       const gap = 3;
       const barWidth = Math.max(2, (width - (bars - 1) * gap) / bars);
 
+      let peak = 1;
+      for (let i = 0; i < Math.floor(bins.length * .72); i++) peak = Math.max(peak, bins[i]);
+      const normalize = Math.max(72, peak);
+
       ctx.clearRect(0, 0, width, height);
       const glow = ctx.createLinearGradient(0, 0, width, 0);
-      glow.addColorStop(0, 'rgba(61,210,255,.42)');
-      glow.addColorStop(.28, 'rgba(77,243,255,.95)');
-      glow.addColorStop(.62, 'rgba(80,177,255,.98)');
-      glow.addColorStop(1, 'rgba(151,118,255,.72)');
+      glow.addColorStop(0, 'rgba(45,190,255,.70)');
+      glow.addColorStop(.22, 'rgba(78,247,255,1)');
+      glow.addColorStop(.54, 'rgba(45,214,255,1)');
+      glow.addColorStop(.82, 'rgba(70,150,255,.98)');
+      glow.addColorStop(1, 'rgba(151,118,255,.78)');
       ctx.fillStyle = glow;
-      ctx.shadowBlur = 16;
-      ctx.shadowColor = 'rgba(38,214,255,.78)';
+      ctx.shadowBlur = 18;
+      ctx.shadowColor = 'rgba(48,225,255,.92)';
 
       for (let i = 0; i < bars; i++) {
-        const sampleIndex = Math.min(bins.length - 1, Math.floor((i / bars) * bins.length * .72));
-        const energy = bins[sampleIndex] / 255;
-        const eased = Math.pow(energy, .72);
-        const amplitude = Math.max(2, eased * (center - 7));
+        const ratio = i / Math.max(1, bars - 1);
+        const sampleIndex = Math.min(bins.length - 1, Math.floor(ratio * bins.length * .72));
+        const raw = bins[sampleIndex] / normalize;
+        const spectralShape = .82 + Math.sin(ratio * Math.PI * 3.2) * .10 + Math.sin(ratio * Math.PI * 7.4) * .05;
+        const energy = Math.max(.08, Math.min(1, raw * 1.18 * spectralShape));
+        const eased = Math.pow(energy, .63);
+        const amplitude = Math.max(3, eased * (center - 6));
         const x = i * (barWidth + gap);
-        ctx.globalAlpha = .48 + eased * .52;
-        ctx.fillRect(x, center - amplitude, barWidth, amplitude);
-        ctx.fillRect(x, center + 2, barWidth, amplitude);
+
+        ctx.globalAlpha = .56 + eased * .44;
+        ctx.fillRect(x, center - amplitude, barWidth, amplitude - 1);
+        ctx.fillRect(x, center + 2, barWidth, amplitude - 1);
       }
 
       ctx.globalAlpha = 1;
       ctx.shadowBlur = 0;
-      ctx.strokeStyle = 'rgba(135,245,255,.72)';
+      ctx.strokeStyle = 'rgba(183,252,255,.88)';
       ctx.lineWidth = 1;
       ctx.beginPath();
       ctx.moveTo(0, center + .5);

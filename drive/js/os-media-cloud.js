@@ -80,7 +80,6 @@ class ArcadeCloudMediaCloud {
             <stop offset=".72" stop-color="#8ddfff" stop-opacity=".34"/>
             <stop offset="1" stop-color="#4198ff" stop-opacity="0"/>
           </radialGradient>
-          <clipPath id="acCloudClip"><use href="#acCloudShape"/></clipPath>
           <path id="acCloudShape" d="M116 175
             C122 116 168 74 230 80
             C260 28 322 5 385 26
@@ -104,6 +103,7 @@ class ArcadeCloudMediaCloud {
             C15 378 16 326 49 291
             C28 255 40 210 74 188
             C86 180 100 176 116 175 Z"/>
+          <clipPath id="acCloudClip"><use href="#acCloudShape"/></clipPath>
         </defs>
 
         <use href="#acCloudShape" fill="#2ccfff" opacity=".18" filter="url(#acCloudSoftGlow)"/>

@@ -77,10 +77,12 @@ class ArcadeCloudOsShell {
     this.closeLauncher();
   }
 
-  closeWindow(win) {
-    const record = this.window.ArcadeCloudWindowManager?.record(win);
-    this.window.ArcadeCloudWindowManager?.close(win);
-    if (record?.lifecycle === 'dynamic') this.windows = this.windows.filter((item) => item !== win);
+  async closeWindow(win) {
+    const manager = this.window.ArcadeCloudWindowManager;
+    const record = manager?.record(win);
+    const closed = await manager?.requestClose(win);
+    if (closed && record?.lifecycle === 'dynamic') this.windows = this.windows.filter((item) => item !== win);
+    return Boolean(closed);
   }
 
   minimizeWindow(win) { this.window.ArcadeCloudWindowManager?.minimize(win); }

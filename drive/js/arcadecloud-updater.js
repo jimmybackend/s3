@@ -183,7 +183,7 @@ class ArcadeCloudUpdaterModule {
     const confirmation = this.applyAction === 'apply_stash'
       ? 'ArcadeCloud guardará los cambios locales en git stash, avanzará main por fast-forward y NO restaurará esos cambios automáticamente. ¿Continuar?'
       : 'ArcadeCloud avanzará main por fast-forward a la versión disponible. ¿Continuar?';
-    if (!this.window.confirm(confirmation)) return;
+    if (!await this.confirmAction(confirmation)) return;
 
     this.applyButton.disabled = true;
     this.applyButton.textContent = 'Actualizando…';
@@ -223,6 +223,72 @@ class ArcadeCloudUpdaterModule {
       this.applyButton.disabled = false;
       this.applyButton.innerHTML = '<i class="fas fa-download mr-1"></i>Actualizar ahora';
     }
+  }
+
+  confirmAction(message) {
+    return new Promise((resolve) => {
+      const existing = this.document.getElementById('arcadeCloudUpdateConfirmOverlay');
+      if (existing) existing.remove();
+
+      const overlay = this.document.createElement('div');
+      overlay.id = 'arcadeCloudUpdateConfirmOverlay';
+      overlay.setAttribute('role', 'presentation');
+      Object.assign(overlay.style, {
+        position: 'fixed', inset: '0', zIndex: '30000', display: 'grid',
+        placeItems: 'center', padding: '18px', background: 'rgba(10,22,34,.58)',
+        backdropFilter: 'blur(2px)'
+      });
+
+      const dialog = this.document.createElement('section');
+      dialog.setAttribute('role', 'dialog');
+      dialog.setAttribute('aria-modal', 'true');
+      dialog.setAttribute('aria-labelledby', 'arcadeCloudUpdateConfirmTitle');
+      Object.assign(dialog.style, {
+        width: 'min(92vw,520px)', background: '#fff', color: '#172033',
+        border: '1px solid #cbd5df', borderRadius: '14px',
+        boxShadow: '0 24px 70px rgba(0,0,0,.35)', overflow: 'hidden'
+      });
+
+      const header = this.document.createElement('div');
+      Object.assign(header.style, {padding:'14px 16px',borderBottom:'1px solid #d7e0e8',background:'#f7f9fb'});
+      const title = this.document.createElement('strong');
+      title.id = 'arcadeCloudUpdateConfirmTitle';
+      title.textContent = 'Confirmar actualización';
+      header.append(title);
+
+      const body = this.document.createElement('div');
+      Object.assign(body.style, {padding:'18px 16px',lineHeight:'1.5'});
+      body.textContent = String(message || '¿Continuar?');
+
+      const footer = this.document.createElement('div');
+      Object.assign(footer.style, {display:'flex',justifyContent:'flex-end',gap:'8px',padding:'12px 16px',borderTop:'1px solid #d7e0e8'});
+      const cancel = this.document.createElement('button');
+      cancel.type = 'button';
+      cancel.className = 'btn btn-secondary';
+      cancel.textContent = 'Cancelar';
+      const accept = this.document.createElement('button');
+      accept.type = 'button';
+      accept.className = 'btn btn-warning';
+      accept.textContent = 'Continuar';
+      footer.append(cancel, accept);
+      dialog.append(header, body, footer);
+      overlay.append(dialog);
+      this.document.body.append(overlay);
+
+      const finish = (value) => {
+        this.document.removeEventListener('keydown', onKey, true);
+        overlay.remove();
+        resolve(Boolean(value));
+      };
+      const onKey = (event) => {
+        if (event.key === 'Escape') { event.preventDefault(); finish(false); }
+      };
+      cancel.addEventListener('click', () => finish(false), {once:true});
+      accept.addEventListener('click', () => finish(true), {once:true});
+      overlay.addEventListener('pointerdown', event => { if (event.target === overlay) finish(false); });
+      this.document.addEventListener('keydown', onKey, true);
+      accept.focus();
+    });
   }
 
   async readJsonResponse(response) {

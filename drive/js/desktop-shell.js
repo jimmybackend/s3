@@ -125,6 +125,15 @@ class ArcadeCloudDesktopShell {
   }
 
   routeShortcut(event) {
+    if (event.key === 'F4') {
+      const activeId = this.manager.activeId;
+      if (activeId) {
+        event.preventDefault();
+        event.stopPropagation();
+        this.manager.requestClose(activeId);
+      }
+      return;
+    }
     if (event.altKey && event.key === 'Tab') { event.preventDefault(); this.cycleSwitcher(event.shiftKey ? -1 : 1); return; }
     if (event.key === 'Escape') { if (!this.switcher.hidden) { event.preventDefault(); this.hideSwitcher(); return; } if (!this.desktopMenu.hidden) { event.preventDefault(); this.desktopMenu.hidden = true; return; } }
     if (ArcadeCloudDesktopShell.isEditable(event.target)) return;

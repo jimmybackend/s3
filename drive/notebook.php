@@ -45,7 +45,10 @@ if (!preg_match('/\A[a-f0-9]{64}\z/', $csrf)) {
             <label>Libreta <select id="nbNotebook" aria-label="Libreta"></select></label>
             <button id="nbNewBook" type="button">Nueva libreta</button>
             <button id="nbSave" type="button">Guardar</button>
+            <button id="nbSaveClose" type="button">Guardar y cerrar</button>
+            <button id="nbClose" type="button">Cerrar</button>
             <button id="nbMovePage" type="button">Mover hoja</button>
+            <button id="nbAbout" type="button">Acerca de</button>
             <span class="nb-menu-page">Página <strong id="nbMenuPage">1</strong>/<strong id="nbMenuTotal">100</strong></span>
           </div>
         </details>
@@ -150,6 +153,27 @@ if (!preg_match('/\A[a-f0-9]{64}\z/', $csrf)) {
     </section>
   </main>
 </div>
+
+<dialog id="nbCloseDialog">
+  <form method="dialog" id="nbCloseForm">
+    <h2>¿Cerrar Notebook?</h2>
+    <p>La hoja tiene cambios sin guardar.</p>
+    <menu>
+      <button type="button" id="nbCloseCancel">Cancelar</button>
+      <button type="button" id="nbCloseDiscard">Cerrar sin guardar</button>
+      <button type="button" id="nbCloseSave">Guardar y cerrar</button>
+    </menu>
+  </form>
+</dialog>
+
+<dialog id="nbAboutDialog">
+  <form method="dialog">
+    <h2>Acerca de Notebook</h2>
+    <p><strong>ArcadeCloud Notebook</strong></p>
+    <p>Libretas editables integradas con ArcadeCloud Drive, escritura manual, imágenes y mejora con IA.</p>
+    <menu><button value="default">Cerrar</button></menu>
+  </form>
+</dialog>
 
 <dialog id="nbEditDialog">
   <form method="dialog" id="nbEditForm">

@@ -372,7 +372,7 @@ a{text-decoration:none;color:inherit}
   font-size:1.05rem
 }
 .os-start:hover,.os-start.is-open{background:rgba(38,198,255,.1)}
-.os-task-buttons{flex:1 1 auto;display:flex;min-width:0;height:100%;overflow-x:auto;overflow-y:hidden;scrollbar-width:thin}
+.os-task-buttons{flex:0 1 auto;display:flex;min-width:0;max-width:70vw;height:100%;overflow-x:auto;overflow-y:hidden;scrollbar-width:thin}
 .os-task-item{
   display:flex;align-items:stretch;min-width:126px;max-width:220px;height:100%;
   border-right:1px solid rgba(255,255,255,.04)

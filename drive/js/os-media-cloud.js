@@ -112,7 +112,7 @@ class ArcadeCloudMediaCloud {
           </div>
 
           <div class="ac-media-playlist" data-media-playlist hidden>
-            <div class="ac-media-playlist-head"><strong><i class="fas fa-list-music"></i> Lista de reproducción</strong><span data-media-playlist-count>0 elementos</span></div>
+            <div class="ac-media-playlist-head"><strong><i class="fas fa-list-ul"></i> Lista de reproducción</strong><span data-media-playlist-count>0 elementos</span></div>
             <div data-media-playlist-items></div>
           </div>
         </div>

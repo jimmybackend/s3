@@ -1902,7 +1902,7 @@
     },
     {
       "path": "drive/src/Application/MoveJobService.php",
-      "size": 10893,
+      "size": 14565,
       "active": false,
       "references": [
         "drive/tests/web_os_clipboard_contract_smoke.php",
@@ -2101,7 +2101,7 @@
     },
     {
       "path": "drive/src/Console/MoveJobWorkerCommand.php",
-      "size": 6253,
+      "size": 6404,
       "active": false,
       "references": [
         "drive/tests/web_os_contract_smoke.php"
@@ -2842,7 +2842,7 @@
     },
     {
       "path": "drive/src/Http/Controller/BackgroundTaskController.php",
-      "size": 45995,
+      "size": 46435,
       "active": false,
       "references": [
         "drive/tests/folder_textract_background_task_contract.php",
@@ -3054,10 +3054,11 @@
     },
     {
       "path": "drive/src/Http/Controller/MoveJobController.php",
-      "size": 8426,
+      "size": 9165,
       "active": false,
       "references": [
-        "drive/tests/web_os_clipboard_contract_smoke.php"
+        "drive/tests/web_os_clipboard_contract_smoke.php",
+        "drive/tests/web_os_contract_smoke.php"
       ]
     },
     {
@@ -4372,7 +4373,7 @@
     },
     {
       "path": "drive/tests/web_os_contract_smoke.php",
-      "size": 69587,
+      "size": 71302,
       "active": false,
       "references": []
     },

@@ -350,7 +350,7 @@
 | `drive/src/Http/Controller/LegacyUploadController.php` | ninguna |
 | `drive/src/Http/Controller/MediaPlaylistController.php` | ninguna |
 | `drive/src/Http/Controller/MediaProcessingController.php` | `drive/tests/media_processing_contract_smoke.php`, `drive/tests/web_os_contract_smoke.php` |
-| `drive/src/Http/Controller/MoveJobController.php` | `drive/tests/web_os_clipboard_contract_smoke.php` |
+| `drive/src/Http/Controller/MoveJobController.php` | `drive/tests/web_os_clipboard_contract_smoke.php`, `drive/tests/web_os_contract_smoke.php` |
 | `drive/src/Http/Controller/NavigationController.php` | ninguna |
 | `drive/src/Http/Controller/NodeStatusController.php` | `drive/tests/node_diagnostics_contract_smoke.php`, `drive/tests/node_diagnostics_control_smoke.php`, `drive/tests/web_os_contract_smoke.php`, `drive/tests/web_os_multiwindow_smoke.php`, `drive/tests/web_os_pending_fixes_smoke.php` |
 | `drive/src/Http/Controller/OfficeDocumentController.php` | `drive/tests/office_gateway_contract_smoke.php` |

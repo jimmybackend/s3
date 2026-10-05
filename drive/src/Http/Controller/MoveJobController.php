@@ -71,6 +71,14 @@ final class MoveJobController extends AbstractJsonController
                 $origin = $this->requireNonEmpty($this->request->postString('origen'), 'Falta la carpeta origen.');
                 $destination = $this->requireNonEmpty($this->request->postString('destino'), 'Falta la carpeta destino.');
                 $job = $this->app->moveJobService()->queueFolder($userId, $origin, $destination, $operation);
+            } elseif ($type === 'folders') {
+                $raw = $this->request->postString('origenes_json');
+                $origins = json_decode($raw, true);
+                if (!is_array($origins)) {
+                    throw new RuntimeException('La selección de carpetas no es válida.');
+                }
+                $destination = $this->requireNonEmpty($this->request->postString('destino'), 'Falta la carpeta destino.');
+                $job = $this->app->moveJobService()->queueFolders($userId, $origins, $destination, $operation);
             } else {
                 throw new RuntimeException('Tipo de transferencia inválido.');
             }
@@ -146,17 +154,19 @@ final class MoveJobController extends AbstractJsonController
                 }
             }
 
-            $requestedItems = $type === 'files'
-                ? count(is_array($payload['refs'] ?? null) ? $payload['refs'] : [])
-                : 1;
-            $processedItems = $type === 'files'
+            $requestedItems = match ($type) {
+                'files' => count(is_array($payload['refs'] ?? null) ? $payload['refs'] : []),
+                'folders' => count(is_array($payload['origins'] ?? null) ? $payload['origins'] : []),
+                default => 1,
+            };
+            $processedItems = in_array($type, ['files', 'folders'], true)
                 ? max(0, (int)($result['total'] ?? 0))
                 : ($status === 'completed' ? 1 : 0);
 
             $progress = null;
             if ($status === 'completed') {
                 $progress = 100;
-            } elseif ($type === 'files' && $requestedItems > 0) {
+            } elseif (in_array($type, ['files', 'folders'], true) && $requestedItems > 0) {
                 $progress = max(0, min(99, (int)floor(($processedItems / $requestedItems) * 100)));
             }
 

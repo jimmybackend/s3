@@ -14,6 +14,7 @@ $paths = [
     'derived_image_service' => $root . '/src/Media/DerivedImageAssetService.php',
     'file_mutation_service' => $root . '/src/Application/FileMutationService.php',
     'move_job_service' => $root . '/src/Application/MoveJobService.php',
+    'move_job_controller' => $root . '/src/Http/Controller/MoveJobController.php',
     'move_job_worker' => $root . '/src/Console/MoveJobWorkerCommand.php',
     'desktop_shell_js' => $root . '/js/desktop-shell.js',
     'page_task_manager_js' => $root . '/js/page-task-manager.js',
@@ -113,6 +114,14 @@ webOsContract(str_contains($paths['window_manager_js'], 'this.visibleRoute') && 
 webOsContract(str_contains($paths['window_manager_js'], 'button.textContent = label') && !str_contains($paths['window_manager_js'], 'button.textContent = route; this.suggestions.append'), 'autocompletado no imprime Prefix físico al usuario');
 webOsContract(str_contains($paths['folder_repository'], 'OR Nombre LIKE') && str_contains($paths['folder_suggestions'], "'label' => \$app->folderQueryService()->displayPathForUser"), 'sugerencias buscan Nombre de catálogo y devuelven label visible');
 webOsContract(str_contains($paths['window_manager_js'], 'sourceLabel: this.visibleRoute') && str_contains($paths['window_manager_js'], 'destinationLabel'), 'confirmación drag/drop usa rutas visibles y mantiene rutas físicas para ejecutar');
+webOsContract(str_contains($paths['window_manager_js'], "data.sourceWindowId === this.id && data.sourceRoute === this.route && !destinationFolder"), 'drag/drop permite soltar dentro de una subcarpeta visible de la misma ventana');
+webOsContract(str_contains($paths['window_manager_js'], "data.kind === 'folders'") && str_contains($paths['window_manager_js'], 'captureFolders?.'), 'drag/drop soporta multiselección de carpetas');
+webOsContract(str_contains($paths['window_manager_js'], 'event.ctrlKey || event.metaKey') && str_contains($paths['window_manager_js'], "folder.classList.toggle('is-selected'"), 'Ctrl/Cmd clic permite seleccionar varias carpetas sin abrirlas');
+webOsContract(str_contains($paths['window_manager_js'], "destinationNormalized.startsWith(sourceNormalized)"), 'drag/drop impide colocar una carpeta dentro de sí misma o de sus descendientes');
+webOsContract(str_contains($paths['clipboard_js'], 'captureFolders(folders') && str_contains($paths['clipboard_js'], 'payload.origenes_json'), 'portapapeles envía lotes de carpetas al backend');
+webOsContract(str_contains($paths['move_job_controller'], "$type === 'folders'") && str_contains($paths['move_job_controller'], 'queueFolders('), 'controlador acepta transferencia de múltiples carpetas');
+webOsContract(str_contains($paths['move_job_service'], 'public function queueFolders(') && str_contains($paths['move_job_service'], "$type === 'folders'"), 'worker de movimientos procesa carpetas múltiples en una sola tarea');
+webOsContract(str_contains($paths['css'], '.os-folder-entry.is-drop-folder-target'), 'carpeta destino se resalta durante arrastre');
 webOsContract(str_contains($paths['window_manager_js'], 'DESKTOP_PERSISTENCE_BREAKPOINT = 1180') && str_contains($paths['window_manager_js'], 'usesDesktopPersistence()'), 'posición y tamaño persistentes se limitan a vista de computadora');
 webOsContract(str_contains($paths['window_manager_js'], 'left: rect.left') && str_contains($paths['window_manager_js'], 'top: rect.top') && str_contains($paths['window_manager_js'], 'persistCurrentGeometry(record)'), 'gestor guarda posición y tamaño reales al mover, redimensionar o cerrar');
 webOsContract(str_contains($paths['window_manager_js'], 'const saved = this.usesDesktopPersistence()') && str_contains($paths['window_manager_js'], 'const left = saved ? geometry.left'), 'ventanas de escritorio recuperan la posición preferida del usuario');

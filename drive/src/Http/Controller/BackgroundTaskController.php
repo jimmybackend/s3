@@ -471,8 +471,12 @@ final class BackgroundTaskController extends AbstractJsonController
             $correlation = ActivityCostRecorder::correlation('move-job', $jobId) ?? '';
             $cost = is_array($costs[$correlation] ?? null) ? $costs[$correlation] : [];
             $destination = trim((string)($payload['destination'] ?? ''));
-            $count = is_array($payload['refs'] ?? null) ? count($payload['refs']) : 0;
-            $processed = max(0, (int)($result['total'] ?? 0));
+            $count = match ($type) {
+                'files' => is_array($payload['refs'] ?? null) ? count($payload['refs']) : 0,
+                'folders' => is_array($payload['origins'] ?? null) ? count($payload['origins']) : 0,
+                default => 1,
+            };
+            $processed = max(0, (int)($result['total'] ?? ($type === 'folder' && $status === 'completed' ? 1 : 0)));
 
             $actions = [];
             if ($status === 'queued' || ($status === 'cancelled' && $processed === 0)) {
@@ -481,7 +485,7 @@ final class BackgroundTaskController extends AbstractJsonController
             if (in_array($status, ['queued', 'pending'], true)) {
                 $actions[] = $this->uiAction('cancel', 'Cancelar', 'danger', true);
                 $actions[] = $this->uiAction('delete', 'Eliminar de Tareas', 'muted', true);
-            } elseif ($status === 'running' && $type === 'files') {
+            } elseif ($status === 'running' && in_array($type, ['files', 'folders'], true)) {
                 $actions[] = $this->uiAction('cancel', 'Detener', 'danger', true);
             }
             if (in_array($status, ['completed', 'failed', 'cancelled'], true)) {
@@ -492,12 +496,14 @@ final class BackgroundTaskController extends AbstractJsonController
                 'id' => 'move:' . $jobId,
                 'control_id' => 'move:' . $jobId,
                 'kind' => 'move',
-                'category' => $type === 'folder' ? 'Traslado de carpeta' : 'Traslado de archivos',
+                'category' => in_array($type, ['folder', 'folders'], true) ? 'Traslado de carpeta(s)' : 'Traslado de archivos',
                 'service' => 'Drive Move',
                 'provider' => 'Drive',
                 'title' => $type === 'folder'
                     ? 'Mover ' . $this->shortPath((string)($payload['origin'] ?? 'carpeta'))
-                    : ($count > 0 ? 'Mover ' . $count . ' archivo(s)' : 'Mover archivos'),
+                    : ($type === 'folders'
+                        ? ($count > 0 ? 'Mover ' . $count . ' carpeta(s)' : 'Mover carpetas')
+                        : ($count > 0 ? 'Mover ' . $count . ' archivo(s)' : 'Mover archivos')),
                 'status' => $status,
                 'progress' => $status === 'completed' ? 100 : null,
                 'progress_mode' => in_array($status, ['running', 'queued', 'pending', 'stopping'], true) ? 'indeterminate' : 'determinate',

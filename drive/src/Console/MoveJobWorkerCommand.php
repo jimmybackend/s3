@@ -100,7 +100,7 @@ final class MoveJobWorkerCommand
                         $correlation
                     );
                 }
-            } elseif ($type === 'folder') {
+            } elseif (in_array($type, ['folder', 'folders'], true)) {
                 $units = [
                     's3.list_request' => max(0, (int)($result['s3_list_requests'] ?? 0)),
                     's3.copy_request' => max(0, (int)($result['s3_copy_requests'] ?? 0)),
@@ -118,7 +118,9 @@ final class MoveJobWorkerCommand
                         $units,
                         $started,
                         [
-                            'items' => max(0, (int)($result['s3_copy_requests'] ?? 0)),
+                            'items' => $type === 'folders'
+                                ? max(0, (int)($result['total'] ?? 0))
+                                : max(0, (int)($result['s3_copy_requests'] ?? 0)),
                             'operation' => $operation,
                             'async' => true,
                             'job_status' => $status,

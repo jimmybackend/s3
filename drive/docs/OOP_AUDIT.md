@@ -13,7 +13,7 @@
 - JavaScript runtime marcados para migración/revisión: **1**
 - Tests JavaScript separados del objetivo OOP de runtime: **11**
 - JavaScript OOP con fachada `window` de compatibilidad: **8**
-- Clientes AJAX detectados: **51** módulos / **111** llamadas
+- Clientes AJAX detectados: **52** módulos / **112** llamadas
 - JSON analizados: **4**; inválidos: **0**
 
 ## Criterio
@@ -326,7 +326,7 @@
 | `drive/src/Http/Controller/AwsCostController.php` | 61 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/AwsFileController.php` | 384 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/BackgroundTaskCompatibilityController.php` | 245 | class/module | 1 | — | ⚠️ | — | — |
-| `drive/src/Http/Controller/BackgroundTaskController.php` | 1026 | class/module | 1 | — | ⚠️ | — | — |
+| `drive/src/Http/Controller/BackgroundTaskController.php` | 1020 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Http/Controller/DatabaseBackupController.php` | 50 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/FederationAccessController.php` | 123 | class/module | 1 | ⚠️ | — | — | — |
 | `drive/src/Http/Controller/FederationCatalogController.php` | 144 | class/module | 1 | — | — | — | — |
@@ -545,7 +545,7 @@
 | `drive/tests/user_identity_presenter_smoke.php` | 30 | test script | 0 | — | — | — | — |
 | `drive/tests/user_profile_validator_smoke.php` | 72 | test script | 0 | — | — | — | — |
 | `drive/tests/web_os_clipboard_contract_smoke.php` | 126 | test script | 0 | — | — | — | — |
-| `drive/tests/web_os_contract_smoke.php` | 592 | test script | 0 | — | — | — | — |
+| `drive/tests/web_os_contract_smoke.php` | 600 | test script | 0 | — | — | — | — |
 | `drive/tests/web_os_desktop_shell_smoke.php` | 20 | test script | 0 | — | — | — | — |
 | `drive/tests/web_os_file_applications_smoke.php` | 21 | test script | 0 | — | — | — | — |
 | `drive/tests/web_os_interactions_theme_smoke.php` | 30 | test script | 0 | — | — | — | — |
@@ -597,7 +597,7 @@
 | `drive/js/audiovideo.js` | 619 | class/module | AudiovideoModule | — | audioNext, audioPrev, reproducirVideoDesde, videoNext, videoPlayPause, videoPrev | window functions: audioNext, audioPrev, reproducirVideoDesde, videoNext, videoPlayPause, videoPrev, wavePlayPause |
 | `drive/js/aws-comprehend.js` | 355 | class/module | AwsComprehendModule, AwsFileActionRouter | — | — | — |
 | `drive/js/background-task-feedback.js` | 180 | class/module | BackgroundTaskFeedbackModule | — | — | — |
-| `drive/js/background-tasks.js` | 1067 | class/module | BackgroundTaskCenter | — | — | — |
+| `drive/js/background-tasks.js` | 1069 | class/module | BackgroundTaskCenter | — | — | — |
 | `drive/js/carpetas.js` | 1200 | class/module | CarpetasModule | — | actualizarBloqueCarpetas | window functions: actualizarBloqueCarpetas |
 | `drive/js/compute-node-idle.js` | 290 | class/module | ArcadeCloudComputeIdleGuard | — | — | — |
 | `drive/js/descarga-multiple.js` | 114 | class/module | DescargaMultipleModule | — | — | — |
@@ -637,7 +637,7 @@
 | `drive/js/setup.js` | 192 | class/module | ArcadeCloudSetup | — | — | — |
 | `drive/js/sincronizar.js` | 265 | class/module | SincronizarModule | — | triggerSyncFolderS3, triggerSyncS3 | window functions: triggerSyncFolderS3, triggerSyncS3 |
 | `drive/js/so-appearance.js` | 165 | class/module | ArcadeCloudOsAppearance | — | — | — |
-| `drive/js/so-clipboard.js` | 797 | class/module | ArcadeCloudOsClipboard | — | — | — |
+| `drive/js/so-clipboard.js` | 884 | class/module | ArcadeCloudOsClipboard | — | — | — |
 | `drive/js/so-federation.js` | 102 | class/module | ArcadeCloudOsFederationApp | — | — | — |
 | `drive/js/so-folders.js` | 485 | class/module | ArcadeCloudOsFolderActions | — | — | — |
 | `drive/js/so-node.js` | 513 | class/module | ArcadeCloudOsNodeMonitor | — | — | — |
@@ -646,7 +646,7 @@
 | `drive/js/so-search.js` | 292 | class/module | ArcadeCloudOsSearch | — | — | — |
 | `drive/js/so-share.js` | 180 | class/module | ArcadeCloudOsShare | — | — | — |
 | `drive/js/so-terminal.js` | 314 | class/module | ArcadeCloudOsTerminal | — | — | — |
-| `drive/js/so.js` | 1322 | class/module | ArcadeCloudOsShell | — | — | — |
+| `drive/js/so.js` | 1349 | class/module | ArcadeCloudOsShell | — | — | — |
 | `drive/js/soportesMediaTypes.js` | 397 | class/module | SoportesMediaTypesModule | — | — | — |
 | `drive/js/storage-usage.js` | 51 | class/module | StorageUsageModule | — | — | — |
 | `drive/js/subir-chunked.js` | 594 | class/module | SubirChunkedModule | — | — | — |
@@ -709,6 +709,7 @@
 | `drive/js/setup.js` | 2 | 0 | 0 | 2 | 6 |
 | `drive/js/sincronizar.js` | 1 | 0 | 0 | 0 | 3 |
 | `drive/js/so-appearance.js` | 1 | 0 | 0 | 0 | 0 |
+| `drive/js/so-clipboard.js` | 1 | 0 | 0 | 1 | 2 |
 | `drive/js/so-federation.js` | 2 | 0 | 0 | 0 | 5 |
 | `drive/js/so-folders.js` | 1 | 0 | 0 | 1 | 3 |
 | `drive/js/so-node.js` | 5 | 0 | 0 | 5 | 10 |

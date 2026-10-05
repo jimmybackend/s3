@@ -9,8 +9,8 @@
     "js_needs_migration": 1,
     "js_tests": 11,
     "js_compatibility_facades": 8,
-    "ajax_clients": 51,
-    "ajax_calls": 111,
+    "ajax_clients": 52,
+    "ajax_calls": 112,
     "json_total": 4,
     "json_invalid": 0
   },
@@ -4493,7 +4493,7 @@
     },
     {
       "path": "drive/src/Http/Controller/BackgroundTaskController.php",
-      "lines": 1026,
+      "lines": 1020,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -7899,7 +7899,7 @@
     },
     {
       "path": "drive/tests/web_os_contract_smoke.php",
-      "lines": 592,
+      "lines": 600,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -8719,7 +8719,7 @@
     },
     {
       "path": "drive/js/background-tasks.js",
-      "lines": 1067,
+      "lines": 1069,
       "kind": "class/module",
       "classes": [
         "BackgroundTaskCenter"
@@ -9752,7 +9752,7 @@
     },
     {
       "path": "drive/js/so-clipboard.js",
-      "lines": 797,
+      "lines": 884,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudOsClipboard"
@@ -9763,11 +9763,11 @@
       "top_vars": [],
       "iife": false,
       "ajax": {
-        "fetch": 0,
+        "fetch": 1,
         "xhr": 0,
         "jquery": 0,
-        "json_consumers": 0,
-        "response_checks": 0
+        "json_consumers": 1,
+        "response_checks": 2
       },
       "issues": []
     },
@@ -9956,7 +9956,7 @@
     },
     {
       "path": "drive/js/so.js",
-      "lines": 1322,
+      "lines": 1349,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudOsShell"
@@ -10637,7 +10637,7 @@
     },
     {
       "path": "drive/docs/runtime_endpoints.json",
-      "bytes": 129814,
+      "bytes": 130205,
       "valid": true,
       "root_type": "object",
       "keys": [

@@ -598,6 +598,12 @@ class ArcadeCloudExplorerWindow {
       const folder = target.closest('.os-folder-entry');
       if (folder) {
         event.preventDefault(); event.stopPropagation();
+        if (event.ctrlKey || event.metaKey) {
+          const selected = !folder.classList.contains('is-selected');
+          folder.classList.toggle('is-selected', selected);
+          folder.setAttribute('aria-selected', selected ? 'true' : 'false');
+          return;
+        }
         this.navigate(folder.dataset.folderRoute);
       }
     };
@@ -627,6 +633,13 @@ class ArcadeCloudExplorerWindow {
     const guard = event => {
       const folder = event.target instanceof Element ? event.target.closest('a.os-folder-entry') : null;
       if (!folder || !this.win.contains(folder) || event.target.closest('.os-folder-entry-menu')) return;
+      if (event.ctrlKey || event.metaKey) {
+        event.preventDefault(); event.stopPropagation();
+        const selected = !folder.classList.contains('is-selected');
+        folder.classList.toggle('is-selected', selected);
+        folder.setAttribute('aria-selected', selected ? 'true' : 'false');
+        return;
+      }
       event.preventDefault(); event.stopPropagation();
       this.navigate(folder.dataset.folderRoute);
     };
@@ -744,36 +757,134 @@ class ArcadeCloudExplorerWindow {
   }
 
   bindDragDrop() {
-    const start = event => {
-      const entry = event.target.closest('.os-file-entry,.os-folder-entry'); if (!entry) return;
-      const selected = [...this.win.querySelectorAll('.os-file-entry.is-selected')];
-      const entries = entry.classList.contains('is-selected') && selected.length ? selected : [entry];
-      const payload = { sourceWindowId: this.id, sourceRoute: this.route, sourceLabel: this.visibleRoute, kind: entry.classList.contains('os-folder-entry') ? 'folder' : 'file', keys: entries.map(item => item.dataset.key || item.dataset.folderRoute).filter(Boolean) };
-      event.dataTransfer.effectAllowed = 'copyMove'; event.dataTransfer.setData('application/x-arcadecloud-items', JSON.stringify(payload));
+    this.win.querySelectorAll('.os-file-entry,.os-folder-entry').forEach(entry => { entry.draggable = true; });
+
+    const clearDropTarget = () => {
+      this.win.classList.remove('is-drop-target');
+      this.win.querySelectorAll('.os-folder-entry.is-drop-folder-target').forEach(folder => folder.classList.remove('is-drop-folder-target'));
     };
-    const over = event => { if ([...event.dataTransfer.types].includes('application/x-arcadecloud-items')) { event.preventDefault(); this.win.classList.add('is-drop-target'); } };
-    const leave = event => { if (!this.win.contains(event.relatedTarget)) this.win.classList.remove('is-drop-target'); };
+
+    const start = event => {
+      const entry = event.target.closest('.os-file-entry,.os-folder-entry');
+      if (!entry || !event.dataTransfer) return;
+
+      const folderDrag = entry.classList.contains('os-folder-entry');
+      const selector = folderDrag ? '.os-folder-entry.is-selected' : '.os-file-entry.is-selected';
+      const selected = [...this.win.querySelectorAll(selector)];
+      const entries = entry.classList.contains('is-selected') && selected.length ? selected : [entry];
+      if (!entry.classList.contains('is-selected')) {
+        this.win.querySelectorAll(folderDrag ? '.os-folder-entry.is-selected' : '.os-file-entry.is-selected')
+          .forEach(item => item.classList.remove('is-selected'));
+        entry.classList.add('is-selected');
+      }
+
+      const keys = entries.map(item => folderDrag ? item.dataset.folderRoute : item.dataset.key).filter(Boolean);
+      const payload = {
+        sourceWindowId: this.id,
+        sourceRoute: this.route,
+        sourceLabel: this.visibleRoute,
+        kind: folderDrag ? (keys.length > 1 ? 'folders' : 'folder') : 'file',
+        keys,
+        names: entries.map(item => item.dataset.folderName || item.dataset.name || '').filter(Boolean)
+      };
+
+      event.dataTransfer.effectAllowed = 'copyMove';
+      event.dataTransfer.setData('application/x-arcadecloud-items', JSON.stringify(payload));
+      event.dataTransfer.setData('text/plain', keys.join('\n'));
+    };
+
+    const over = event => {
+      if (![...event.dataTransfer.types].includes('application/x-arcadecloud-items')) return;
+      event.preventDefault();
+      event.dataTransfer.dropEffect = event.ctrlKey ? 'copy' : 'move';
+      this.win.classList.add('is-drop-target');
+      this.win.querySelectorAll('.os-folder-entry.is-drop-folder-target').forEach(folder => folder.classList.remove('is-drop-folder-target'));
+      const folder = event.target.closest('.os-folder-entry');
+      if (folder) folder.classList.add('is-drop-folder-target');
+    };
+
+    const leave = event => {
+      if (!this.win.contains(event.relatedTarget)) clearDropTarget();
+      const folder = event.target.closest?.('.os-folder-entry');
+      if (folder && !folder.contains(event.relatedTarget)) folder.classList.remove('is-drop-folder-target');
+    };
+
     const drop = async event => {
-      event.preventDefault(); this.win.classList.remove('is-drop-target');
-      let data; try { data = JSON.parse(event.dataTransfer.getData('application/x-arcadecloud-items')); } catch (_) { return; }
-      if (!data?.keys?.length || data.sourceWindowId === this.id && data.sourceRoute === this.route) return;
+      event.preventDefault();
+      let data;
+      try { data = JSON.parse(event.dataTransfer.getData('application/x-arcadecloud-items')); }
+      catch (_) { clearDropTarget(); return; }
+
       const destinationFolder = event.target.closest('.os-folder-entry');
       const destinationRoute = destinationFolder?.dataset.folderRoute || this.route;
       const destinationLabel = destinationFolder
         ? `${this.visibleRoute.replace(/\/+$/, '')}/${String(destinationFolder.dataset.folderName || 'Carpeta')}/`
         : this.visibleRoute;
-      const choice = await this.runtime.chooseDropOperation(data.keys.length, data.sourceLabel || 'Carpeta de origen', destinationLabel || 'Carpeta de destino'); if (!choice) return;
+      clearDropTarget();
+
+      if (!data?.keys?.length) return;
+      if (data.sourceWindowId === this.id && data.sourceRoute === this.route && !destinationFolder) return;
+
+      if (data.kind === 'folder' || data.kind === 'folders') {
+        const normalize = value => String(value || '').replace(/\\/g, '/').replace(/\/+/g, '/').replace(/^\/+|\/+$/g, '') + '/';
+        const destinationNormalized = normalize(destinationRoute);
+        const invalid = data.keys.some(route => {
+          const sourceNormalized = normalize(route);
+          return destinationNormalized === sourceNormalized || destinationNormalized.startsWith(sourceNormalized);
+        });
+        if (invalid) {
+          this.runtime.window.ArcadeCloudOsShell?.notify?.('No puedes mover o copiar una carpeta dentro de sí misma.', 'warning');
+          return;
+        }
+      }
+
+      const choice = await this.runtime.chooseDropOperation(
+        data.keys.length,
+        data.sourceLabel || 'Carpeta de origen',
+        destinationLabel || 'Carpeta de destino'
+      );
+      if (!choice) return;
+
       const clipboard = this.runtime.window.ArcadeCloudOsClipboard;
-      if (data.kind === 'folder') clipboard?.captureFolder?.({ route: data.keys[0], parent: data.sourceRoute, name: data.keys[0].split('/').filter(Boolean).pop() }, choice, { sourceWindowId: data.sourceWindowId, sourceRoute: data.sourceRoute });
-      else {
+      if (!clipboard) return;
+
+      if (data.kind === 'folder' || data.kind === 'folders') {
+        const folders = data.keys.map((route, index) => ({
+          route,
+          parent: data.sourceRoute,
+          name: data.names?.[index] || String(route).split('/').filter(Boolean).pop() || 'Carpeta'
+        }));
+        if (folders.length > 1) {
+          clipboard.captureFolders?.(folders, choice, { sourceWindowId: data.sourceWindowId, sourceRoute: data.sourceRoute });
+        } else {
+          clipboard.captureFolder?.(folders[0], choice, { sourceWindowId: data.sourceWindowId, sourceRoute: data.sourceRoute });
+        }
+      } else {
         const source = this.runtime.explorers.get(data.sourceWindowId);
         const entries = data.keys.map(key => source?.win.querySelector(`.os-file-entry[data-key="${CSS.escape(key)}"]`)).filter(Boolean);
-        if (entries.length) clipboard?.captureFiles?.(entries[0], choice, { sourceWindowId: data.sourceWindowId, sourceRoute: data.sourceRoute, entries });
+        if (!entries.length) return;
+        clipboard.captureFiles?.(entries[0], choice, {
+          sourceWindowId: data.sourceWindowId,
+          sourceRoute: data.sourceRoute,
+          entries
+        });
       }
-      await clipboard?.paste?.(destinationRoute, { destinationWindowId: this.id });
+
+      await clipboard.paste?.(destinationRoute, { destinationWindowId: this.id });
     };
-    this.win.addEventListener('dragstart', start); this.win.addEventListener('dragover', over); this.win.addEventListener('dragleave', leave); this.win.addEventListener('drop', drop);
-    this.cleanup.push(() => this.win.removeEventListener('dragstart', start), () => this.win.removeEventListener('dragover', over), () => this.win.removeEventListener('dragleave', leave), () => this.win.removeEventListener('drop', drop));
+
+    this.win.addEventListener('dragstart', start);
+    this.win.addEventListener('dragover', over);
+    this.win.addEventListener('dragleave', leave);
+    this.win.addEventListener('drop', drop);
+    this.win.addEventListener('dragend', clearDropTarget);
+    this.cleanup.push(
+      () => this.win.removeEventListener('dragstart', start),
+      () => this.win.removeEventListener('dragover', over),
+      () => this.win.removeEventListener('dragleave', leave),
+      () => this.win.removeEventListener('drop', drop),
+      () => this.win.removeEventListener('dragend', clearDropTarget)
+    );
   }
 
   destroy() { this.controller?.abort(); this.suggestionController?.abort(); clearTimeout(this.suggestionTimer); this.cleanup.splice(0).forEach(callback => callback()); }

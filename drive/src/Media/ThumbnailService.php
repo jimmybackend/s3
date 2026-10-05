@@ -30,6 +30,134 @@ final class ThumbnailService
     /**
      * @return array{bytes:string,content_type:string,status:string,thumb_key:string}
      */
+
+    /**
+     * Persistent medium preview. The derivative is keyed by scale rather than
+     * viewport so every future view can reuse the same S3 object.
+     *
+     * @return array{bytes:string,content_type:string,status:string,thumb_key:string}
+     */
+    public function getScaled(int $userId, string $requestedKey, int $scalePercent, array $session): array
+    {
+        if ($userId <= 0) {
+            throw new RuntimeException('Sesión inválida para vista previa.');
+        }
+
+        $key = $this->normalizeKey($requestedKey);
+        $extension = strtolower((string)pathinfo($key, PATHINFO_EXTENSION));
+        if (!in_array($extension, self::IMAGE_EXTENSIONS, true)) {
+            throw new RuntimeException('El archivo no admite vista previa de imagen.');
+        }
+
+        $scalePercent = max(10, min(90, $scalePercent));
+        $file = $this->lookupFile($userId, $key);
+        if ($file === null) {
+            throw new RuntimeException('Archivo no encontrado en FileS3.');
+        }
+        if (!$this->canPreview($file, $key, $session)) {
+            throw new RuntimeException('Archivo protegido.');
+        }
+
+        $thumbKey = $this->scaledPreviewKey($key, $scalePercent);
+        $localPath = $this->localPath($userId, $thumbKey);
+
+        $cached = $this->readLocal($localPath);
+        if ($cached !== null) {
+            return [
+                'bytes' => $cached,
+                'content_type' => 'image/jpeg',
+                'status' => 'LOCAL_PREVIEW_HIT',
+                'thumb_key' => $thumbKey,
+            ];
+        }
+
+        $this->ensureDirectory(dirname($localPath));
+        $lockHandle = @fopen($localPath . '.lock', 'c');
+        if ($lockHandle !== false) @flock($lockHandle, LOCK_EX);
+
+        try {
+            $cached = $this->readLocal($localPath);
+            if ($cached !== null) {
+                return [
+                    'bytes' => $cached,
+                    'content_type' => 'image/jpeg',
+                    'status' => 'LOCAL_PREVIEW_HIT_AFTER_LOCK',
+                    'thumb_key' => $thumbKey,
+                ];
+            }
+
+            try {
+                $object = $this->s3->getObject([
+                    'Bucket' => $this->bucket,
+                    'Key' => $thumbKey,
+                ]);
+                $bytes = (string)$object['Body'];
+                if ($bytes !== '') {
+                    $this->writeLocal($localPath, $bytes);
+                    return [
+                        'bytes' => $bytes,
+                        'content_type' => 'image/jpeg',
+                        'status' => 'S3_PREVIEW_HIT',
+                        'thumb_key' => $thumbKey,
+                    ];
+                }
+            } catch (AwsException $e) {
+                if (!$this->isNotFound($e)) throw $e;
+            }
+
+            $original = $this->s3->getObject([
+                'Bucket' => $this->bucket,
+                'Key' => $key,
+            ]);
+            $sourceBytes = (string)$original['Body'];
+            if ($sourceBytes === '') {
+                throw new RuntimeException('La imagen original está vacía.');
+            }
+
+            try {
+                [$sourceWidth, $sourceHeight] = $this->sourceDimensions($sourceBytes);
+                $targetWidth = max(1, (int)floor($sourceWidth * ($scalePercent / 100)));
+                $targetHeight = max(1, (int)floor($sourceHeight * ($scalePercent / 100)));
+                $previewBytes = $this->resizeToJpeg($sourceBytes, $targetWidth, $targetHeight, 'contain');
+            } catch (RuntimeException $error) {
+                if ($extension === 'avif') {
+                    return [
+                        'bytes' => $sourceBytes,
+                        'content_type' => 'image/avif',
+                        'status' => 'SOURCE_PREVIEW',
+                        'thumb_key' => $key,
+                    ];
+                }
+                throw $error;
+            }
+
+            $this->s3->putObject([
+                'Bucket' => $this->bucket,
+                'Key' => $thumbKey,
+                'Body' => $previewBytes,
+                'ContentType' => 'image/jpeg',
+                'ACL' => 'private',
+                'Metadata' => [
+                    'arcadecloud-source' => $key,
+                    'arcadecloud-scale' => (string)$scalePercent,
+                ],
+            ]);
+            $this->writeLocal($localPath, $previewBytes);
+
+            return [
+                'bytes' => $previewBytes,
+                'content_type' => 'image/jpeg',
+                'status' => 'GENERATED_PREVIEW',
+                'thumb_key' => $thumbKey,
+            ];
+        } finally {
+            if ($lockHandle !== false) {
+                @flock($lockHandle, LOCK_UN);
+                @fclose($lockHandle);
+            }
+        }
+    }
+
     public function get(int $userId, string $requestedKey, int $width, int $height, string $fit, array $session): array
     {
         if ($userId <= 0) {
@@ -244,6 +372,45 @@ final class ThumbnailService
         $withoutExtension = preg_replace('/\\.[A-Za-z0-9]+$/', '', $rest) ?? $rest;
         return 'thumbs/' . $root . $withoutExtension . '__'
             . $width . 'x' . $height . '_' . $fit . '.jpg';
+    }
+
+    private function scaledPreviewKey(string $key, int $scalePercent): string
+    {
+        $root = 'Data/';
+        $rest = $key;
+        if (preg_match('~^(Data\\d*/)(.*)$~i', $key, $match)) {
+            $root = $match[1];
+            $rest = $match[2];
+        }
+
+        $withoutExtension = preg_replace('/\\.[A-Za-z0-9]+$/', '', $rest) ?? $rest;
+        return 'thumbs/' . $root . $withoutExtension . '__preview'
+            . $scalePercent . '.jpg';
+    }
+
+    /** @return array{0:int,1:int} */
+    private function sourceDimensions(string $bytes): array
+    {
+        if (class_exists('Imagick')) {
+            $image = new \Imagick();
+            if (!$image->readImageBlob($bytes)) {
+                throw new RuntimeException('Imagick no pudo leer las dimensiones.');
+            }
+            if ($image->getNumberImages() > 1) $image->setIteratorIndex(0);
+            $width = $image->getImageWidth();
+            $height = $image->getImageHeight();
+            $image->clear();
+            if ($width > 0 && $height > 0) return [$width, $height];
+        }
+
+        if (function_exists('getimagesizefromstring')) {
+            $size = @getimagesizefromstring($bytes);
+            if (is_array($size) && (int)($size[0] ?? 0) > 0 && (int)($size[1] ?? 0) > 0) {
+                return [(int)$size[0], (int)$size[1]];
+            }
+        }
+
+        throw new RuntimeException('No se pudieron leer las dimensiones de la imagen.');
     }
 
     private function localPath(int $userId, string $thumbKey): string

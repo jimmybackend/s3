@@ -90,6 +90,8 @@ class ArcadeCloudOsAppearance {
     this.document.documentElement.style.setProperty('--os-window-opacity', String(this.state.windowOpacity / 100));
     this.document.documentElement.style.setProperty('--os-menu-opacity', String(this.state.menuOpacity / 100));
     this.document.documentElement.style.setProperty('--os-chrome-opacity', String(this.state.chromeOpacity / 100));
+    this.document.documentElement.style.setProperty('--os-window-blur', Math.round(this.state.windowOpacity * .18) + 'px');
+    this.document.documentElement.style.setProperty('--os-chrome-blur', Math.round(this.state.chromeOpacity * .12) + 'px');
     this.document.body.classList.toggle('os-theme-light', this.state.theme === 'light');
     this.document.body.classList.toggle('os-theme-dark', this.state.theme === 'dark');
     this.applyWallpaper();

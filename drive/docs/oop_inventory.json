@@ -1850,7 +1850,7 @@
     },
     {
       "path": "drive/os-preferences.php",
-      "lines": 68,
+      "lines": 70,
       "kind": "thin endpoint",
       "classes": 0,
       "functions": [],
@@ -7884,7 +7884,7 @@
     },
     {
       "path": "drive/tests/web_os_contract_smoke.php",
-      "lines": 547,
+      "lines": 552,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -9446,7 +9446,7 @@
     },
     {
       "path": "drive/js/os-window-manager.js",
-      "lines": 1031,
+      "lines": 1083,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudEventBus",
@@ -10618,7 +10618,7 @@
     },
     {
       "path": "drive/docs/runtime_endpoints.json",
-      "bytes": 129599,
+      "bytes": 129673,
       "valid": true,
       "root_type": "object",
       "keys": [

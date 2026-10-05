@@ -151,7 +151,7 @@
 | `drive/notebook.php` | 206 | view/entrypoint | 0 | — | — | — | — |
 | `drive/office-gateway.php` | 674 | view/entrypoint | 0 | — | — | — | — |
 | `drive/office-launch.php` | 81 | thin endpoint | 0 | — | — | — | — |
-| `drive/os-preferences.php` | 68 | thin endpoint | 0 | — | — | — | — |
+| `drive/os-preferences.php` | 70 | thin endpoint | 0 | — | — | — | — |
 | `drive/personal_aws_bootstrap.php` | 86 | class/module | 1 | — | — | — | — |
 | `drive/polly_cargar_texto.php` | 8 | thin endpoint | 0 | — | — | — | — |
 | `drive/polly_list_voices.php` | 8 | thin endpoint | 0 | — | — | — | — |
@@ -544,7 +544,7 @@
 | `drive/tests/user_identity_presenter_smoke.php` | 30 | test script | 0 | — | — | — | — |
 | `drive/tests/user_profile_validator_smoke.php` | 72 | test script | 0 | — | — | — | — |
 | `drive/tests/web_os_clipboard_contract_smoke.php` | 126 | test script | 0 | — | — | — | — |
-| `drive/tests/web_os_contract_smoke.php` | 547 | test script | 0 | — | — | — | — |
+| `drive/tests/web_os_contract_smoke.php` | 552 | test script | 0 | — | — | — | — |
 | `drive/tests/web_os_desktop_shell_smoke.php` | 20 | test script | 0 | — | — | — | — |
 | `drive/tests/web_os_file_applications_smoke.php` | 21 | test script | 0 | — | — | — | — |
 | `drive/tests/web_os_interactions_theme_smoke.php` | 30 | test script | 0 | — | — | — | — |
@@ -625,7 +625,7 @@
 | `drive/js/move-tasks.js` | 262 | class/module | DriveMoveTasks | — | — | — |
 | `drive/js/notebook.js` | 261 | procedural script | — | uid, status, api, canvasSize, applyZoom, background | — | top-level functions: uid, status, api, canvasSize, applyZoom, background, styleFor, drawStroke; top-level state: $, canvas, imageCache, state, paper, WRITE_LEFT, fontStacks, closeResolver; no ES class |
 | `drive/js/obtenerFiltros.js` | 125 | class/module | ObtenerFiltrosModule | — | — | — |
-| `drive/js/os-window-manager.js` | 1031 | class/module | ArcadeCloudEventBus, ArcadeCloudWindowLayoutConfig, ArcadeCloudWindowManager, ExplorerWindowFactory, ArcadeCloudExplorerWindow, ArcadeCloudDesktopRuntime | — | — | — |
+| `drive/js/os-window-manager.js` | 1083 | class/module | ArcadeCloudEventBus, ArcadeCloudWindowLayoutConfig, ArcadeCloudWindowManager, ExplorerWindowFactory, ArcadeCloudExplorerWindow, ArcadeCloudDesktopRuntime | — | — | — |
 | `drive/js/page-task-manager.js` | 54 | class/module | ArcadeCloudPageTaskManager | — | — | — |
 | `drive/js/pdf-pantalla-completa.js` | 45 | class/module | PdfPantallaCompletaModule | — | — | — |
 | `drive/js/polly-background.js` | 306 | class/module | PollyBackgroundModule | — | — | — |

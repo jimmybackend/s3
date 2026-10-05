@@ -115,7 +115,7 @@
 | `drive/federationcloud/name-availability.php` | `drive/src/Federation/FederationHttpClient.php`, `drive/src/Federation/FederationNodeAdminService.php` |
 | `drive/federationcloud/node-admin.php` | `drive/js/federation-footer.js` |
 | `drive/federationcloud/node.php` | `drive/bin/federation_provider_request.php`, `drive/src/Admin/ProductionPreflightService.php`, `drive/src/Federation/FederationCustomsService.php`, `drive/src/Federation/FederationDirectoryService.php`, `drive/src/Federation/FederationDropIngressService.php`, `drive/src/Federation/FederationHttpClient.php`, `drive/src/Federation/FederationProviderAuthorizationService.php`, `drive/src/Federation/FederationReplicaPresenceService.php`, `drive/src/Federation/FederationResolverService.php`, `drive/tests/federation_customs_contract_smoke.php`, `drive/js/so-node.js` |
-| `drive/federationcloud/nodes.php` | `drive/src/Federation/FederationHttpClient.php`, `drive/tests/web_os_contract_smoke.php`, `drive/js/federation-footer.js`, `drive/js/federation-os-admin.js` |
+| `drive/federationcloud/nodes.php` | `drive/src/Federation/FederationHttpClient.php`, `drive/tests/web_os_contract_smoke.php`, `drive/js/federation-footer.js`, `drive/js/federation-os-admin.js`, `drive/js/so-node.js` |
 | `drive/federationcloud/os-admin.php` | `drive/tests/web_os_contract_smoke.php`, `drive/js/so-federation.js` |
 | `drive/federationcloud/provider-admin.php` | `drive/tests/web_os_contract_smoke.php`, `drive/js/federation-footer.js`, `drive/js/federation-os-admin.js` |
 | `drive/federationcloud/provider-presence.php` | `drive/src/Federation/FederationHttpClient.php`, `drive/src/Federation/FederationReplicaPresenceService.php`, `drive/tests/federation_replica_reconnect_contract_smoke.php` |

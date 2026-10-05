@@ -842,7 +842,8 @@
         "drive/src/Federation/FederationHttpClient.php",
         "drive/tests/web_os_contract_smoke.php",
         "drive/js/federation-footer.js",
-        "drive/js/federation-os-admin.js"
+        "drive/js/federation-os-admin.js",
+        "drive/js/so-node.js"
       ]
     },
     {
@@ -1600,7 +1601,7 @@
     },
     {
       "path": "drive/so.php",
-      "size": 119282,
+      "size": 121393,
       "active": true,
       "references": [
         "drive/s3.php",
@@ -4354,7 +4355,7 @@
     },
     {
       "path": "drive/tests/web_os_contract_smoke.php",
-      "size": 59320,
+      "size": 61087,
       "active": false,
       "references": []
     },

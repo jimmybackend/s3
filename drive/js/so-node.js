@@ -26,8 +26,8 @@ class ArcadeCloudOsNodeMonitor {
     this.document.addEventListener('background-tasks:refresh', (event) => { if (this.isOpen() && event.detail?.skipNode !== true) this.refresh(); });
     this.document.addEventListener('arcadeos:window-opened', (event) => { if (event.detail?.app === 'node') this.startPolling(); });
     this.document.addEventListener('arcadeos:window-closed', (event) => { if (event.detail?.app === 'node') this.stopPolling(); });
-    this.window.setTimeout(() => this.refresh(), 200);
-    this.taskbarTimer = this.window.setInterval(() => { if (!this.isOpen()) this.refresh(); }, 60000);
+    if (typeof this.window.setTimeout === 'function') this.window.setTimeout(() => this.refresh(), 200);
+    if (typeof this.window.setInterval === 'function') this.taskbarTimer = this.window.setInterval(() => { if (!this.isOpen()) this.refresh(); }, 60000);
     return this;
   }
 

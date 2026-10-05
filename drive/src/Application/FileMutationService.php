@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace ArcadeCloud\Drive\Application;
 
+use ArcadeCloud\Drive\Media\DerivedImageAssetService;
 use ArcadeCloud\Drive\Storage\FileRecordRepository;
 use ArcadeCloud\Drive\Storage\StorageObjectNameCodec;
 use ArcadeCloud\Drive\Storage\S3ObjectCopyService;
@@ -69,6 +70,14 @@ final class FileMutationService
             throw $error;
         }
 
+        $derived = ['list_requests' => 0, 'copy_requests' => 0, 'delete_requests' => 0, 'objects' => 0];
+        try {
+            $derived = (new DerivedImageAssetService($this->s3, $this->bucket))
+                ->transfer($oldKey, $newKey, true);
+        } catch (\Throwable) {
+            // Las derivadas son caché: si fallan, se regeneran al volver a ver la imagen.
+        }
+
         // FileS3 ya apunta al objeto nuevo antes de retirar el anterior. Si S3
         // rechaza el delete puede quedar un objeto huérfano recuperable, nunca
         // una fila que apunte a bytes que ya fueron eliminados.
@@ -81,6 +90,7 @@ final class FileMutationService
             'encriptado_nuevo' => $newKey,
             'old_key' => $oldKey,
             'key_s3' => $newKey,
+            'derived_assets' => $derived,
         ];
     }
 

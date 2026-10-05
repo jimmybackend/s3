@@ -35,6 +35,8 @@ final class ThumbnailController
         $width = max(24, min(512, (int)$this->request->queryString('w', '96')));
         $height = max(24, min(512, (int)$this->request->queryString('h', '96')));
         $fit = strtolower($this->request->queryString('fit', 'cover')) === 'contain' ? 'contain' : 'cover';
+        $scalePercent = (int)$this->request->queryString('scale', '0');
+        $scalePercent = $scalePercent > 0 ? max(10, min(90, $scalePercent)) : 0;
 
         $userId = $session->userId();
         $sessionSnapshot = $session->snapshot();
@@ -42,16 +44,18 @@ final class ThumbnailController
         $started = microtime(true);
 
         try {
-            $thumbnail = $this->app->thumbnailService()->get($userId, $key, $width, $height, $fit, $sessionSnapshot);
+            $thumbnail = $scalePercent > 0
+                ? $this->app->thumbnailService()->getScaled($userId, $key, $scalePercent, $sessionSnapshot)
+                : $this->app->thumbnailService()->get($userId, $key, $width, $height, $fit, $sessionSnapshot);
             $bytes = (string)$thumbnail['bytes'];
             $status = (string)$thumbnail['status'];
 
-            if ($status === 'S3_THUMB_HIT') {
+            if ($status === 'S3_THUMB_HIT' || $status === 'S3_PREVIEW_HIT') {
                 $this->activity()->success($userId, 'thumbnail', 'S3', $this->fileId($userId, $key), [
                     's3.get_request' => 1,
                     's3.transfer_bytes' => strlen($bytes),
                 ], $started, ['cache' => 's3']);
-            } elseif ($status === 'GENERATED_ONCE') {
+            } elseif ($status === 'GENERATED_ONCE' || $status === 'GENERATED_PREVIEW') {
                 $this->activity()->success($userId, 'thumbnail', 'S3', $this->fileId($userId, $key), [
                     's3.get_request' => 2,
                     's3.put_request' => 1,

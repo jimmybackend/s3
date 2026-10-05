@@ -2172,7 +2172,7 @@
     },
     {
       "path": "drive/so.php",
-      "lines": 2185,
+      "lines": 2210,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -5155,7 +5155,7 @@
     },
     {
       "path": "drive/src/Http/Controller/ThumbnailController.php",
-      "lines": 110,
+      "lines": 115,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -5386,7 +5386,7 @@
     },
     {
       "path": "drive/src/Media/ThumbnailService.php",
-      "lines": 380,
+      "lines": 392,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -7884,7 +7884,7 @@
     },
     {
       "path": "drive/tests/web_os_contract_smoke.php",
-      "lines": 572,
+      "lines": 582,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -9447,7 +9447,7 @@
     },
     {
       "path": "drive/js/os-window-manager.js",
-      "lines": 1167,
+      "lines": 1196,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudEventBus",

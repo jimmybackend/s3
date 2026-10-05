@@ -16,13 +16,13 @@ final class DerivedImageAssetService
     {
     }
 
-    /** @return array{listed:int,copied:int,deleted:int} */
+    /** @return array{list_requests:int,copy_requests:int,delete_requests:int,objects:int} */
     public function transfer(string $sourceKey, string $destinationKey, bool $deleteSource): array
     {
         $sourcePrefix = $this->derivativePrefix($sourceKey);
         $destinationPrefix = $this->derivativePrefix($destinationKey);
         if ($sourcePrefix === $destinationPrefix) {
-            return ['listed' => 0, 'copied' => 0, 'deleted' => 0];
+            return ['list_requests' => 0, 'copy_requests' => 0, 'delete_requests' => 0, 'objects' => 0];
         }
 
         $listed = 0;
@@ -51,7 +51,7 @@ final class DerivedImageAssetService
                 : null;
         } while ($continuation);
 
-        $deleted = 0;
+        $deleteRequests = 0;
         if ($deleteSource) {
             foreach (array_chunk($delete, 1000) as $chunk) {
                 if ($chunk === []) continue;
@@ -59,11 +59,16 @@ final class DerivedImageAssetService
                     'Bucket' => $this->bucket,
                     'Delete' => ['Objects' => $chunk, 'Quiet' => true],
                 ]);
-                if (empty($result['Errors'])) $deleted += count($chunk);
+                if (empty($result['Errors'])) $deleteRequests++;
             }
         }
 
-        return ['listed' => $listed, 'copied' => $copied, 'deleted' => $deleted];
+        return [
+            'list_requests' => $listed,
+            'copy_requests' => $copied,
+            'delete_requests' => $deleteRequests,
+            'objects' => $copied,
+        ];
     }
 
     public function derivativePrefix(string $key): string

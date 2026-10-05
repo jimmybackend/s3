@@ -200,6 +200,10 @@ webOsContract(str_contains($paths['background_tasks'], 'data-bg-task-clean-termi
 webOsContract(str_contains($paths['background_tasks'], 'bulkRemoveTasks(tasks)'), 'limpieza masiva usa un flujo único');
 webOsContract(str_contains($paths['background_tasks'], "['completed', 'failed', 'cancelled']"), 'sólo tareas terminales entran en limpieza');
 webOsContract(str_contains($paths['background_tasks'], '<option value="completed">Terminadas</option>') && str_contains($paths['background_tasks'], '<option value="failed">Fallidas</option>') && str_contains($paths['background_tasks'], '<option value="cancelled">Canceladas</option>'), 'Centro de Tareas permite filtrar terminadas, fallidas y canceladas por separado');
+webOsContract(str_contains($paths['background_tasks'], 'data-bg-task-active') && str_contains($paths['background_tasks'], 'En ejecución ahora'), 'Centro de Tareas fija arriba las tareas activas al mostrar Todas');
+webOsContract(str_contains($paths['background_tasks'], 'flex:1 1 260px') && str_contains($paths['background_tasks'], 'min-height:180px'), 'lista de Tareas conserva un área visible con scroll');
+webOsContract(str_contains($paths['background_tasks'], 'activeTaskHtml(task)') && str_contains($paths['background_tasks'], 'processed_items') && str_contains($paths['background_tasks'], 'Tiempo:'), 'tarea activa muestra progreso, elementos procesados y tiempo transcurrido');
+webOsContract(str_contains($paths['background_tasks'], 'this.window.setTimeout(() => this.refresh(), 250)'), 'abrir Tareas fuerza una segunda lectura inmediata para mostrar el estado más reciente');
 webOsContract(str_contains($paths['background_controller'], "array_slice(\$tasks, 0, 250)") && str_contains($paths['background_controller'], "return trim((string)(\$task['id'] ?? '')) !== '';"), 'backend conserva visibles todos los estados entregados por las fuentes persistentes');
 webOsContract(str_contains($paths['move_store'], 'purgeOlderThan(604800)'), 'historial de traslados se conserva siete días');
 webOsContract(str_contains($paths['upload_center'], 'dismissTask(id)'), 'subidas terminadas también pueden limpiarse del Centro de Tareas');

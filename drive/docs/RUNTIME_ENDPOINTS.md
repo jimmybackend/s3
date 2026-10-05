@@ -365,7 +365,7 @@
 | `drive/src/Http/Controller/StorageUsageController.php` | ninguna |
 | `drive/src/Http/Controller/SyncController.php` | ninguna |
 | `drive/src/Http/Controller/TextEditorController.php` | ninguna |
-| `drive/src/Http/Controller/ThumbnailController.php` | ninguna |
+| `drive/src/Http/Controller/ThumbnailController.php` | `drive/tests/web_os_contract_smoke.php` |
 | `drive/src/Http/Controller/TranscriptionController.php` | `drive/tests/transcribe_s3_recovery_contract_smoke.php` |
 | `drive/src/Http/Controller/UploadCleanupController.php` | ninguna |
 | `drive/src/Http/Controller/UploadController.php` | `drive/tests/federation_moderation_contract_smoke.php` |
@@ -380,7 +380,7 @@
 | `drive/src/Media/MediaProcessingService.php` | `drive/tests/compute_admission_lock_contract_smoke.php`, `drive/tests/media_processing_contract_smoke.php` |
 | `drive/src/Media/MediaWorkerNodeService.php` | `drive/tests/compute_admission_lock_contract_smoke.php`, `drive/tests/media_processing_contract_smoke.php`, `drive/tests/office_gateway_contract_smoke.php`, `drive/tests/web_os_contract_smoke.php` |
 | `drive/src/Media/MediaWorkerNodeSessionRepository.php` | `drive/tests/media_processing_contract_smoke.php` |
-| `drive/src/Media/ThumbnailService.php` | ninguna |
+| `drive/src/Media/ThumbnailService.php` | `drive/tests/web_os_contract_smoke.php` |
 | `drive/src/Notebook/NotebookAiImproveService.php` | `drive/tests/notebook_contract_smoke.php` |
 | `drive/src/Notebook/NotebookService.php` | `drive/tests/notebook_contract_smoke.php` |
 | `drive/src/Office/OfficeActivityProbe.php` | `drive/tests/office_gateway_contract_smoke.php` |

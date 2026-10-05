@@ -1601,7 +1601,7 @@
     },
     {
       "path": "drive/so.php",
-      "size": 122466,
+      "size": 124157,
       "active": true,
       "references": [
         "drive/s3.php",
@@ -3154,9 +3154,11 @@
     },
     {
       "path": "drive/src/Http/Controller/ThumbnailController.php",
-      "size": 3775,
+      "size": 4092,
       "active": false,
-      "references": []
+      "references": [
+        "drive/tests/web_os_contract_smoke.php"
+      ]
     },
     {
       "path": "drive/src/Http/Controller/TranscriptionController.php",
@@ -3264,9 +3266,11 @@
     },
     {
       "path": "drive/src/Media/ThumbnailService.php",
-      "size": 13754,
+      "size": 14187,
       "active": false,
-      "references": []
+      "references": [
+        "drive/tests/web_os_contract_smoke.php"
+      ]
     },
     {
       "path": "drive/src/Notebook/NotebookAiImproveService.php",
@@ -4355,7 +4359,7 @@
     },
     {
       "path": "drive/tests/web_os_contract_smoke.php",
-      "size": 62882,
+      "size": 64647,
       "active": false,
       "references": []
     },

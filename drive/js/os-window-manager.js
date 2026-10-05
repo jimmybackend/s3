@@ -44,11 +44,32 @@ class ArcadeCloudWindowManager {
     this.taskbar = doc.getElementById('osTaskButtons');
     this.preferences = Object.assign({}, win.ARCADECLOUD_OS_APPEARANCE?.preferences?.windowPreferences || {});
     this.preferenceTimers = new Map();
+    this.closeGuards = new Map();
     this.layoutSequence = 0;
   }
 
   registerApp(app, definition) {
     this.apps.set(app, Object.assign({ multiInstance: false, lifecycle: 'persistent', title: app, icon: 'fa-window-maximize' }, definition));
+  }
+
+  registerCloseGuard(app, callback) {
+    if (typeof callback === 'function') this.closeGuards.set(app, callback);
+  }
+
+  async requestClose(elementOrId) {
+    const record = this.record(elementOrId);
+    if (!record) return false;
+    const guard = this.closeGuards.get(record.app);
+    if (guard) {
+      try {
+        const allowed = await guard(record);
+        if (allowed === false) return false;
+      } catch (_) {
+        return false;
+      }
+    }
+    this.close(record.id);
+    return true;
   }
 
   nextId(app) {
@@ -683,6 +704,13 @@ class ArcadeCloudDesktopRuntime {
       if (tool) { event.preventDefault(); this.openTool(tool.href, tool.dataset.toolTitle || tool.textContent.trim(), tool.dataset.osTool); }
     }, true);
     this.document.addEventListener('pointerdown', event => { const element = event.target.closest('.os-window'); if (element) this.manager.focus(element); }, true);
+    this.window.addEventListener('message', event => {
+      if (event.origin !== this.window.location.origin || event.data?.type !== 'arcadecloud:notebook-request-close') return;
+      const notebook = this.document.getElementById('notebookWindow');
+      const frame = notebook?.querySelector('iframe');
+      if (!notebook || frame?.contentWindow !== event.source) return;
+      this.manager.requestClose(notebook);
+    });
     ['file-moved','file-copied','file-deleted','folder-created','upload-completed','task-completed'].forEach(type => this.bus.on(type, event => this.refreshAffected(event.detail)));
     this.bus.on('filesystem:changed', event => this.refreshAffected(event.detail));
     this.document.addEventListener('drive:move-task-completed', event => {
@@ -734,8 +762,19 @@ class ArcadeCloudDesktopRuntime {
   }
 
   registerApplications() {
-    [['explorer',true,'dynamic','Mis datos','fa-folder-open'],['image',true,'dynamic','Imagen','fa-file-image'],['pdf',true,'dynamic','PDF','fa-file-pdf'],['text',true,'dynamic','Texto','fa-file-lines'],['audio',true,'dynamic','Audio','fa-file-audio'],['video',true,'dynamic','Video','fa-file-video'],['viewer',true,'dynamic','Archivo','fa-file'],['tool',true,'dynamic','Herramienta','fa-toolbox'],['node',false,'persistent','Mi nodo','fa-server'],['settings',false,'persistent','Configuración','fa-gear'],['links',false,'persistent','Enlaces','fa-link'],['terminal',false,'persistent','Consola servidor','fa-terminal']]
+    [['explorer',true,'dynamic','Mis datos','fa-folder-open'],['image',true,'dynamic','Imagen','fa-file-image'],['pdf',true,'dynamic','PDF','fa-file-pdf'],['text',true,'dynamic','Texto','fa-file-lines'],['audio',true,'dynamic','Audio','fa-file-audio'],['video',true,'dynamic','Video','fa-file-video'],['viewer',true,'dynamic','Archivo','fa-file'],['tool',true,'dynamic','Herramienta','fa-toolbox'],['node',false,'persistent','Mi nodo','fa-server'],['settings',false,'persistent','Configuración','fa-gear'],['links',false,'persistent','Enlaces','fa-link'],['terminal',false,'persistent','Consola servidor','fa-terminal'],['notebook',false,'persistent','Notebook','fa-book-open']]
       .forEach(([app,multiInstance,lifecycle,title,icon]) => this.manager.registerApp(app, { multiInstance, lifecycle, title, icon }));
+    this.manager.registerCloseGuard('notebook', record => this.confirmNotebookClose(record));
+  }
+
+  async confirmNotebookClose(record) {
+    const frame = record?.element?.querySelector('iframe[src*="notebook.php"]');
+    if (!frame?.contentWindow) return true;
+    try {
+      const api = frame.contentWindow.ArcadeCloudNotebookClose;
+      if (api && typeof api.requestClose === 'function') return await api.requestClose();
+    } catch (_) {}
+    return true;
   }
 
   appFor(element) {
@@ -753,7 +792,7 @@ class ArcadeCloudDesktopRuntime {
 
   bindWindowChrome(element) {
     if (element.dataset.managerBound === '1') return; element.dataset.managerBound = '1';
-    element.querySelector('[data-window-close]')?.addEventListener('click', event => { event.stopImmediatePropagation(); const id = element.dataset.windowId; this.explorers.delete(id); this.manager.close(id); });
+    element.querySelector('[data-window-close]')?.addEventListener('click', async event => { event.stopImmediatePropagation(); const id = element.dataset.windowId; const closed = await this.manager.requestClose(id); if (closed) this.explorers.delete(id); });
     element.querySelector('[data-window-minimize]')?.addEventListener('click', event => { event.stopImmediatePropagation(); this.manager.minimize(element); });
     element.querySelector('[data-window-maximize]')?.addEventListener('click', event => { event.stopImmediatePropagation(); this.manager.toggleMaximize(element); });
     const handle = element.querySelector('[data-window-drag-handle]');

@@ -22,7 +22,6 @@ use RuntimeException;
  */
 final class BackgroundTaskController extends AbstractJsonController
 {
-    private const TERMINAL_HISTORY_SECONDS = 86400;
     private const TRANSCRIBE_SCAN_LIMIT = 2000;
 
     public function dispatch(): never
@@ -969,16 +968,11 @@ final class BackgroundTaskController extends AbstractJsonController
 
     private function shouldExpose(array $task): bool
     {
-        $status = (string)($task['status'] ?? 'pending');
-        if (in_array($status, ['queued', 'running', 'pending', 'stopping'], true)) {
-            return true;
-        }
-
-        $updated = strtotime((string)($task['updated_at'] ?? ''));
-        if ($updated === false) {
-            return false;
-        }
-        return $updated >= time() - self::TERMINAL_HISTORY_SECONDS;
+        // Cada fuente persistente ya aplica su propio límite de retención.
+        // No ocultamos aquí estados terminales: Tareas debe mostrar también
+        // completadas, fallidas y canceladas hasta que el usuario las quite
+        // o la fuente expire su historial.
+        return trim((string)($task['id'] ?? '')) !== '';
     }
 
     private function statusRank(string $status): int

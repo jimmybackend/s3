@@ -68,9 +68,9 @@ foreach (['Archivo','Editar','Insertar','Formato','IA','Vista'] as $menu) {
 }
 $assert(str_contains($js, "e.key==='Enter'") && str_contains($js, "$('#nbWritePrompt').click()"), 'Enter envía el texto desde el input');
 $assert(str_contains($js, "action==='delete-image'") && str_contains($js, "status('Imagen eliminada')"), 'imagen seleccionada tiene control X para eliminar');
-$assert(str_contains($css, '.nb-composer') && str_contains($css, 'grid-template-columns:minmax(0,1fr) 76px'), 'compositor superior reserva ancho fijo para Enviar');
-$assert(str_contains($css, 'position:sticky') && str_contains($css, 'top:96px'), 'compositor permanece visible debajo del menú');
-$assert(strpos($page, 'class="nb-composer"') < strpos($page, '<main class="nb-main">'), 'input de texto queda fuera de la hoja y arriba del área de trabajo');
+$assert(str_contains($css, '.nb-composer') && str_contains($css, 'grid-template-columns:minmax(0,1fr) 76px'), 'compositor inferior reserva ancho fijo para Enviar');
+$assert(str_contains($css, 'position:relative') && !str_contains($css, '.nb-composer{\n  position:sticky'), 'compositor no se superpone al menú');
+$assert(strpos($page, 'class="nb-composer"') > strpos($page, 'aria-label="Ir a página"'), 'input de texto queda debajo de Ir a página');
 $assert(str_contains($js, "document.querySelectorAll('.nb-menu')") && str_contains($css, '.nb-menu-panel'), 'menús desplegables se comportan como aplicación de escritorio');
 $assert(strpos($page, 'class="nb-menubar"') < strpos($page, '<main class="nb-main">'), 'barra de menús queda fuera y arriba del área de la hoja');
 $assert(str_contains($page, 'id="nbImproveAi"') && str_contains($api, "'improve_ai'"), 'Notebook expone Mejorar hoja con IA');

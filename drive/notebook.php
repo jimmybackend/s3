@@ -126,11 +126,6 @@ if (!preg_match('/\A[a-f0-9]{64}\z/', $csrf)) {
         <span class="nb-statusbar" id="nbStatus">Lista</span>
       </nav>
 
-      <div class="nb-composer" role="group" aria-label="Escritura asistida">
-        <input id="nbPrompt" type="text" placeholder="Escribe aquí; toca un renglón para elegir dónde colocarlo" autocomplete="off">
-        <button id="nbWritePrompt" type="button">Enviar</button>
-      </div>
-
   <main class="nb-main">
     <section class="nb-workspace">
       <div class="nb-page-shell">
@@ -147,6 +142,11 @@ if (!preg_match('/\A[a-f0-9]{64}\z/', $csrf)) {
       <nav class="nb-nav" aria-label="Ir a página">
         <span>Ir a página <input id="nbPage" type="number" min="1" value="1"></span>
       </nav>
+
+      <div class="nb-composer" role="group" aria-label="Escritura asistida">
+        <input id="nbPrompt" type="text" placeholder="Escribe aquí; toca un renglón para elegir dónde colocarlo" autocomplete="off">
+        <button id="nbWritePrompt" type="button">Enviar</button>
+      </div>
     </section>
   </main>
 </div>

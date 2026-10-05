@@ -7899,7 +7899,7 @@
     },
     {
       "path": "drive/tests/web_os_contract_smoke.php",
-      "lines": 628,
+      "lines": 639,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -9462,7 +9462,7 @@
     },
     {
       "path": "drive/js/os-media-cloud.js",
-      "lines": 543,
+      "lines": 620,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudMediaCloud"
@@ -10658,7 +10658,7 @@
     },
     {
       "path": "drive/docs/runtime_endpoints.json",
-      "bytes": 130290,
+      "bytes": 130481,
       "valid": true,
       "root_type": "object",
       "keys": [

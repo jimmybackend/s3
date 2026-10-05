@@ -4,13 +4,13 @@
     "php_class_modules": 315,
     "php_needs_migration": 0,
     "php_tests": 76,
-    "js_total": 80,
-    "js_class_modules": 73,
+    "js_total": 81,
+    "js_class_modules": 74,
     "js_needs_migration": 1,
     "js_tests": 11,
     "js_compatibility_facades": 8,
-    "ajax_clients": 52,
-    "ajax_calls": 112,
+    "ajax_clients": 53,
+    "ajax_calls": 113,
     "json_total": 4,
     "json_invalid": 0
   },
@@ -2172,7 +2172,7 @@
     },
     {
       "path": "drive/so.php",
-      "lines": 2210,
+      "lines": 2212,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -7899,7 +7899,7 @@
     },
     {
       "path": "drive/tests/web_os_contract_smoke.php",
-      "lines": 613,
+      "lines": 628,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -9091,7 +9091,7 @@
     },
     {
       "path": "drive/js/file-applications.js",
-      "lines": 230,
+      "lines": 238,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudFileApplicationService"
@@ -9457,6 +9457,27 @@
         "jquery": 0,
         "json_consumers": 0,
         "response_checks": 0
+      },
+      "issues": []
+    },
+    {
+      "path": "drive/js/os-media-cloud.js",
+      "lines": 543,
+      "kind": "class/module",
+      "classes": [
+        "ArcadeCloudMediaCloud"
+      ],
+      "functions": [],
+      "window_assign": [],
+      "window_func": [],
+      "top_vars": [],
+      "iife": false,
+      "ajax": {
+        "fetch": 1,
+        "xhr": 0,
+        "jquery": 0,
+        "json_consumers": 1,
+        "response_checks": 2
       },
       "issues": []
     },
@@ -10637,7 +10658,7 @@
     },
     {
       "path": "drive/docs/runtime_endpoints.json",
-      "bytes": 130241,
+      "bytes": 130290,
       "valid": true,
       "root_type": "object",
       "keys": [

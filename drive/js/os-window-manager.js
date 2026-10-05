@@ -344,7 +344,8 @@ class ArcadeCloudWindowManager {
       width: `${geometry.width}px`, height: `${geometry.height}px`
     };
     clearTimeout(this.preferenceTimers.get(record.id));
-    this.preferenceTimers.set(record.id, setTimeout(() => this.savePreference(record.app, geometry), 120));
+    this.preferenceTimers.delete(record.id);
+    this.savePreference(record.app, geometry);
   }
 
   setTitle(elementOrId, title) {

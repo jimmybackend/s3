@@ -175,6 +175,47 @@ class BackgroundTaskCenter {
         .bg-task-summary {
           display:flex; flex-wrap:wrap; gap:.4rem; padding:.62rem .75rem;
           border-bottom:1px solid var(--border-soft, rgba(0,0,0,.08));
+          flex:0 0 auto;
+        }
+        .bg-task-active {
+          flex:0 0 auto; padding:.62rem .75rem;
+          border-bottom:1px solid var(--border-soft, rgba(0,0,0,.08));
+          background:rgba(var(--accent-rgb, 14,165,233), .045) !important;
+        }
+        .bg-task-active[hidden] { display:none !important; }
+        .bg-task-active-title {
+          display:flex; align-items:center; justify-content:space-between; gap:.6rem;
+          margin-bottom:.48rem; color:var(--text-strong, #111) !important;
+          font-size:.78rem; font-weight:800;
+        }
+        .bg-task-active-title span:last-child {
+          color:var(--text-soft, #666) !important; font-weight:600; font-size:.72rem;
+        }
+        .bg-task-active-card {
+          border:1px solid rgba(var(--accent-rgb, 14,165,233), .32);
+          border-radius:10px; padding:.7rem; margin-bottom:.48rem;
+          background:var(--panel-bg2, transparent) !important;
+        }
+        .bg-task-active-card:last-child { margin-bottom:0; }
+        .bg-task-active-head {
+          display:flex; align-items:flex-start; justify-content:space-between; gap:.65rem;
+        }
+        .bg-task-active-name { min-width:0; }
+        .bg-task-active-name strong {
+          display:block; color:var(--text-strong, #111) !important;
+          overflow-wrap:anywhere; line-height:1.25; font-size:.84rem;
+        }
+        .bg-task-active-name small {
+          display:block; color:var(--text-soft, #666) !important;
+          margin-top:.15rem; font-size:.72rem;
+        }
+        .bg-task-active-detail {
+          margin-top:.44rem; color:var(--text, #222) !important;
+          font-size:.76rem; line-height:1.35; overflow-wrap:anywhere;
+        }
+        .bg-task-active-meta {
+          display:flex; flex-wrap:wrap; gap:.3rem .7rem;
+          margin-top:.42rem; color:var(--text-soft, #666) !important; font-size:.71rem;
         }
         .bg-task-summary span {
           display:inline-flex; align-items:center;
@@ -184,7 +225,10 @@ class BackgroundTaskCenter {
           border:1px solid var(--border-soft, rgba(0,0,0,.08));
           font-size:.75rem;
         }
-        .bg-task-list { overflow:auto; padding:.7rem; overscroll-behavior:contain; }
+        .bg-task-list {
+          flex:1 1 260px; min-height:180px; overflow:auto; padding:.7rem;
+          overscroll-behavior:contain; scrollbar-gutter:stable;
+        }
         .bg-task-empty { padding:1.2rem; text-align:center; color:var(--text-soft, #666) !important; }
         .bg-task-item {
           background:linear-gradient(180deg, var(--panel-bg, transparent), var(--panel-bg2, transparent)) !important;
@@ -292,7 +336,10 @@ class BackgroundTaskCenter {
       button.addEventListener('click', () => {
         this.open = !this.open;
         this.render();
-        if (this.open) this.refresh();
+        if (this.open) {
+          this.refresh();
+          this.window.setTimeout(() => this.refresh(), 250);
+        }
       });
     }
 
@@ -333,6 +380,7 @@ class BackgroundTaskCenter {
           </button>
         </div>
         <div class="bg-task-summary"></div>
+        <div class="bg-task-active" data-bg-task-active hidden></div>
         <div class="bg-task-list"></div>
         <div class="bg-task-warning" style="display:none"></div>
       `;
@@ -810,7 +858,21 @@ class BackgroundTaskCenter {
       ].map((text) => `<span>${this.escapeHtml(text)}</span>`).join('');
     }
 
-    const visibleTasks = this.tasks.filter((task) => this.matchesFilter(task));
+    const activeTasks = this.tasks.filter((task) =>
+      ['queued', 'pending', 'running', 'stopping'].includes(this.normalizeStatus(task.status))
+    );
+    const activeHost = panel.querySelector('[data-bg-task-active]');
+    if (activeHost) {
+      const showPinnedActive = this.filter === 'all' && activeTasks.length > 0;
+      activeHost.hidden = !showPinnedActive;
+      activeHost.innerHTML = showPinnedActive ? this.activeTasksHtml(activeTasks.slice(0, 3)) : '';
+    }
+
+    const visibleTasks = this.tasks.filter((task) => {
+      if (!this.matchesFilter(task)) return false;
+      if (this.filter === 'all' && activeTasks.includes(task)) return false;
+      return true;
+    });
     const list = panel.querySelector('.bg-task-list');
     if (list) {
       list.innerHTML = visibleTasks.length
@@ -845,6 +907,62 @@ class BackgroundTaskCenter {
     if (this.filter === 'failed') return status === 'failed';
     if (this.filter === 'cancelled') return status === 'cancelled';
     return true;
+  }
+
+  activeTasksHtml(tasks) {
+    const count = tasks.length;
+    return `
+      <div class="bg-task-active-title">
+        <span>En ejecución ahora</span>
+        <span>${count} tarea${count === 1 ? '' : 's'} activa${count === 1 ? '' : 's'}</span>
+      </div>
+      ${tasks.map((task) => this.activeTaskHtml(task)).join('')}
+    `;
+  }
+
+  activeTaskHtml(task) {
+    const status = this.normalizeStatus(task.status);
+    const meta = task.metadata && typeof task.metadata === 'object' ? task.metadata : {};
+    const pieces = [];
+    const total = Number(meta.items || 0);
+    const processed = Number(meta.processed_items || 0);
+
+    if (task.kind === 'move' && total > 0) {
+      pieces.push(`${processed} de ${total} elementos`);
+    } else if (task.kind === 'folder-textract' && total > 0) {
+      pieces.push(`${processed} de ${total} hojas`);
+    } else if (task.kind === 'upload' && Number(meta.bytes_total || 0) > 0) {
+      pieces.push(this.formatBytes(Number(meta.bytes_total || 0)));
+    }
+
+    if (meta.current_file) pieces.push(String(meta.current_file));
+    if (meta.destination) pieces.push('Destino: ' + String(meta.destination));
+
+    const startedMs = Date.parse(task.created_at || '');
+    if (Number.isFinite(startedMs) && startedMs <= Date.now()) {
+      pieces.push('Tiempo: ' + this.duration(Date.now() - startedMs));
+    }
+
+    const progress = this.progressInfo(task, status, meta);
+    const numericProgress = Number(task.progress);
+    const progressLabel = Number.isFinite(numericProgress)
+      ? Math.max(0, Math.min(100, Math.round(numericProgress))) + '%'
+      : this.statusLabel(status);
+
+    return `
+      <article class="bg-task-active-card">
+        <div class="bg-task-active-head">
+          <div class="bg-task-active-name">
+            <strong>${this.escapeHtml(task.title || task.category || 'Tarea')}</strong>
+            <small>${this.escapeHtml(task.service || '')}${task.provider ? ' · ' + this.escapeHtml(task.provider) : ''}</small>
+          </div>
+          <span class="bg-task-badge bg-task-${status}">${this.escapeHtml(progressLabel)}</span>
+        </div>
+        <div class="bg-task-active-detail">${this.escapeHtml(task.detail || 'Procesando…')}</div>
+        <div class="bg-task-active-meta">${pieces.map((item) => `<span>${this.escapeHtml(item)}</span>`).join('')}</div>
+        <div class="bg-task-progress ${progress.cssClass}"><span style="${progress.widthStyle}"></span></div>
+      </article>
+    `;
   }
 
   taskHtml(task) {

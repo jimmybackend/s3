@@ -35,6 +35,8 @@ foreach (['blank','ruled','grid','millimeter','dots','notes'] as $background) {
 }
 $assert(str_contains($js, "Segoe Print") && str_contains($page, 'nbWritePrompt'), 'prompt puede colocarse como escritura manual');
 $assert(str_contains($service, 'movePage') && str_contains($page, 'nbMovePage'), 'hojas pueden moverse entre libretas');
+$assert(str_contains($page, 'id="nbSaveClose"') && str_contains($page, 'id="nbClose"') && str_contains($page, 'id="nbAbout"'), 'Archivo incluye Guardar y cerrar, Cerrar y Acerca de');
+$assert(str_contains($page, 'id="nbCloseDialog"') && str_contains($page, 'id="nbAboutDialog"'), 'Notebook usa diálogos propios para cierre y Acerca de');
 $assert(str_contains($page, 'id="nbOnLine"') && str_contains($js, 'alignStrokeToRule'), 'modo Sobre línea alinea escritura manual');
 $assert(str_contains($page, 'id="nbAlignment"') && str_contains($page, 'value="justify"'), 'Notebook ofrece izquierda derecha y justificada');
 $assert(str_contains($js, "pieces.push(current+'-')"), 'texto largo usa guion al dividir palabra al final de línea');
@@ -79,6 +81,9 @@ $assert(str_contains($aiService, 'ActivityCostRecorder') && str_contains($aiServ
 $assert(str_contains($service, "'notebook_page_ocr'") && str_contains($service, "'notebook_line_ocr'"), 'OCR de Notebook registra actividad y costo Textract');
 $assert(str_contains($pricing, '"bedrock.nova_pro_input_token"') && str_contains($pricing, '"bedrock.nova_pro_output_token"'), 'catálogo incluye precios de Nova Pro');
 $assert(str_contains($js, 'version:7') && str_contains($js, "api('improve_ai'"), 'hojas mejoradas permanecen editables en esquema v7');
+$assert(str_contains($js, 'window.ArcadeCloudNotebookClose={requestClose}') && str_contains($js, "event.key!=='F4'"), 'Notebook expone cierre protegido y captura F4 dentro del iframe');
+$assert(str_contains($js, "type:'arcadecloud:notebook-request-close'"), 'F4 y Archivo pueden pedir al SO cerrar la ventana Notebook activa');
+$assert(str_contains($js, "$('#nbCloseSave').onclick") && str_contains($js, "$('#nbCloseDiscard').onclick"), 'cierre con cambios permite guardar, descartar o cancelar sin confirm del navegador');
 $assert(str_contains($css, '@media(max-width:720px)'), 'Notebook incluye diseño móvil/tableta');
 
 echo "Notebook contract OK\n";

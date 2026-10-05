@@ -259,6 +259,7 @@ $isExplorerFragment = (string)($_GET['_os_fragment'] ?? '') === 'explorer';
   <link rel="stylesheet" href="css/federation-moderation.css?v=<?= (int)filemtime(__DIR__ . '/css/federation-moderation.css') ?>">
   <link rel="stylesheet" href="css/upload-center.css?v=<?= (int)filemtime(__DIR__ . '/css/upload-center.css') ?>">
   <link rel="stylesheet" href="css/compute-node-idle.css?v=<?= (int)filemtime(__DIR__ . '/css/compute-node-idle.css') ?>">
+  <link rel="stylesheet" href="css/os-media-cloud.css?v=<?= (int)filemtime(__DIR__ . '/css/os-media-cloud.css') ?>">
   <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
 </head>
@@ -2200,6 +2201,7 @@ Escribe help o usa uno de los botones disponibles.</pre>
   <script src="js/so-node.js?v=<?= (int)filemtime(__DIR__ . '/js/so-node.js') ?>"></script>
   <script src="js/so-appearance.js?v=<?= (int)filemtime(__DIR__ . '/js/so-appearance.js') ?>"></script>
   <script src="js/os-window-manager.js?v=<?= (int)filemtime(__DIR__ . '/js/os-window-manager.js') ?>"></script>
+  <script src="js/os-media-cloud.js?v=<?= (int)filemtime(__DIR__ . '/js/os-media-cloud.js') ?>"></script>
   <script src="js/file-applications.js?v=<?= (int)filemtime(__DIR__ . '/js/file-applications.js') ?>"></script>
   <script src="js/so.js?v=<?= (int)filemtime(__DIR__ . '/js/so.js') ?>"></script>
   <script src="js/so-clipboard.js?v=<?= (int)filemtime(__DIR__ . '/js/so-clipboard.js') ?>"></script>

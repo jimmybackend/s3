@@ -347,6 +347,11 @@ $isExplorerFragment = (string)($_GET['_os_fragment'] ?? '') === 'explorer';
           <i class="fas fa-circle-info"></i>
         </button>
 
+        <div class="os-explorer-view-switch" role="group" aria-label="Vista de archivos">
+          <button type="button" class="os-tool-button is-active" data-explorer-view="grid" title="Vista en cuadrícula" aria-label="Vista en cuadrícula" aria-pressed="true"><i class="fas fa-grip"></i></button>
+          <button type="button" class="os-tool-button" data-explorer-view="list" title="Vista en lista" aria-label="Vista en lista" aria-pressed="false"><i class="fas fa-list"></i></button>
+        </div>
+
         <nav class="os-folder-pagination" aria-label="Páginas de archivos">
           <?php if ($page > 1): ?>
             <a href="so.php?ruta=<?= rawurlencode($currentRoute) ?>&pagina=1"
@@ -428,11 +433,17 @@ $isExplorerFragment = (string)($_GET['_os_fragment'] ?? '') === 'explorer';
                data-folder-route="<?= $e((string)$folder['prefix']) ?>"
                data-folder-name="<?= $e((string)$folder['name']) ?>"
                data-folder-root="0"
+               data-list-type="Carpeta"
+               data-list-size=""
+               data-list-date=""
                title="<?= $e($folder['name']) ?>">
               <span class="os-entry-menu os-folder-entry-menu" aria-hidden="true"><i class="fas fa-ellipsis-vertical"></i></span>
               <span class="os-entry-icon"><i class="fas fa-folder"></i></span>
               <span class="os-entry-name"><?= $e($folder['name']) ?></span>
               <span class="os-entry-meta">Carpeta</span>
+              <span class="os-entry-list-type">Carpeta</span>
+              <span class="os-entry-list-size">—</span>
+              <span class="os-entry-list-date">—</span>
             </a>
           <?php endforeach; ?>
 
@@ -466,6 +477,9 @@ $isExplorerFragment = (string)($_GET['_os_fragment'] ?? '') === 'explorer';
               $officeUrl = (!$locked && $fileId > 0 && in_array($ext, $officeExtensions, true))
                   ? 'office-launch.php?file_id=' . $fileId
                   : '';
+              $listType = (string)($icon['label'] ?? ($ext !== '' ? strtoupper($ext) : 'Archivo'));
+              $listSize = $formatBytes((int)($row['Tamano'] ?? 0));
+              $listDate = trim((string)($row['Fecha'] ?? ''));
             ?>
             <button type="button"
                     class="os-entry os-file-entry<?= $locked ? ' is-locked' : '' ?>"
@@ -477,6 +491,9 @@ $isExplorerFragment = (string)($_GET['_os_fragment'] ?? '') === 'explorer';
                     data-bytes="<?= (int)($row['Tamano'] ?? 0) ?>"
                     data-updated-at="<?= $e((string)($row['Fecha'] ?? '')) ?>"
                     data-created-at="<?= $e((string)($row['Fecha'] ?? '')) ?>"
+                    data-list-type="<?= $e($listType) ?>"
+                    data-list-size="<?= $e($listSize) ?>"
+                    data-list-date="<?= $e($listDate) ?>"
                     data-open-url="<?= $e($openUrl) ?>"
                     data-wallpaper-url="<?= $isImage && !$locked ? $e('ver_archivo.php?archivo=' . $keyQ) : '' ?>"
                     data-download-url="<?= $e($downloadUrl) ?>"
@@ -514,6 +531,9 @@ $isExplorerFragment = (string)($_GET['_os_fragment'] ?? '') === 'explorer';
               <?php endif; ?>
               <span class="os-entry-name"><?= $e($name) ?></span>
               <span class="os-entry-meta"><?= $e($locked ? 'Protegido' : $formatBytes((int)($row['Tamano'] ?? 0))) ?></span>
+              <span class="os-entry-list-type"><?= $e($listType) ?></span>
+              <span class="os-entry-list-size"><?= $e($listSize) ?></span>
+              <span class="os-entry-list-date"><?= $e($listDate !== '' ? $listDate : '—') ?></span>
             </button>
           <?php endforeach; ?>
 
@@ -2066,9 +2086,10 @@ Escribe help o usa uno de los botones disponibles.</pre>
   </div>
 
   <footer class="os-taskbar">
-    <button type="button" class="os-start" id="osStart" aria-expanded="false" title="Herramientas" aria-label="Herramientas">
-      <i class="fas fa-gear"></i>
+    <button type="button" class="os-start" id="osStart" aria-expanded="false" title="Inicio" aria-label="Inicio">
+      <i class="fas fa-cloud"></i>
     </button>
+    <div class="os-taskbar-right">
     <div class="os-task-buttons" id="osTaskButtons"></div>
     <button type="button" class="os-node-health-button" id="osNodeHealthButton" aria-expanded="false" aria-controls="osNodeHealthPopover" title="Estado de Mi nodo">
       <span class="os-status-light is-neutral" data-node-health-light></span>
@@ -2091,6 +2112,7 @@ Escribe help o usa uno de los botones disponibles.</pre>
       <i class="fas fa-list-check"></i><span class="os-task-center-count">0</span>
     </button>
     <div class="os-clock" id="osClock"></div>
+    </div>
   </footer>
 
   <section class="os-node-health-popover" id="osNodeHealthPopover" hidden aria-live="polite">

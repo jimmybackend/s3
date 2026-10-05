@@ -120,6 +120,9 @@ final class MoveJobService
                 $destination = (string)($payload['destination'] ?? '');
                 $total = count($refs);
                 $processed = 0;
+                $derivedListRequests = 0;
+                $derivedCopyRequests = 0;
+                $derivedDeleteRequests = 0;
 
                 foreach ($refs as $ref) {
                     $current = $this->store->get($jobId);
@@ -128,10 +131,14 @@ final class MoveJobService
                     }
 
                     if ($copying) {
-                        $this->files->copy($userId, is_int($ref) ? $ref : (string)$ref, $destination);
+                        $mutation = $this->files->copy($userId, is_int($ref) ? $ref : (string)$ref, $destination);
                     } else {
-                        $this->files->move($userId, is_int($ref) ? $ref : (string)$ref, $destination);
+                        $mutation = $this->files->move($userId, is_int($ref) ? $ref : (string)$ref, $destination);
                     }
+                    $derived = is_array($mutation['derived_assets'] ?? null) ? $mutation['derived_assets'] : [];
+                    $derivedListRequests += max(0, (int)($derived['list_requests'] ?? 0));
+                    $derivedCopyRequests += max(0, (int)($derived['copy_requests'] ?? 0));
+                    $derivedDeleteRequests += max(0, (int)($derived['delete_requests'] ?? 0));
                     $processed++;
 
                     // La solicitud de detención puede llegar mientras S3 procesa
@@ -149,6 +156,9 @@ final class MoveJobService
                             'requested_total' => $total,
                             'ruta_nueva' => $destination,
                             'operation' => $operation,
+                            'derived_list_requests' => $derivedListRequests,
+                            'derived_copy_requests' => $derivedCopyRequests,
+                            'derived_delete_requests' => $derivedDeleteRequests,
                             'estado' => 'parcial',
                         ],
                     ]);
@@ -159,6 +169,9 @@ final class MoveJobService
                     'requested_total' => $total,
                     'ruta_nueva' => $destination,
                     'operation' => $operation,
+                    'derived_list_requests' => $derivedListRequests,
+                    'derived_copy_requests' => $derivedCopyRequests,
+                    'derived_delete_requests' => $derivedDeleteRequests,
                     'estado' => $copying ? 'copiados' : 'movidos',
                 ];
             } elseif ($type === 'folder') {

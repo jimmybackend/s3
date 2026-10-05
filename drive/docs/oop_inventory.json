@@ -2708,7 +2708,7 @@
     },
     {
       "path": "drive/src/Application/MoveJobService.php",
-      "lines": 264,
+      "lines": 348,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -3158,7 +3158,7 @@
     },
     {
       "path": "drive/src/Console/MoveJobWorkerCommand.php",
-      "lines": 153,
+      "lines": 155,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -4493,7 +4493,7 @@
     },
     {
       "path": "drive/src/Http/Controller/BackgroundTaskController.php",
-      "lines": 1020,
+      "lines": 1026,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -4930,7 +4930,7 @@
     },
     {
       "path": "drive/src/Http/Controller/MoveJobController.php",
-      "lines": 195,
+      "lines": 205,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -7899,7 +7899,7 @@
     },
     {
       "path": "drive/tests/web_os_contract_smoke.php",
-      "lines": 604,
+      "lines": 613,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -9462,7 +9462,7 @@
     },
     {
       "path": "drive/js/os-window-manager.js",
-      "lines": 1196,
+      "lines": 1307,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudEventBus",
@@ -9752,7 +9752,7 @@
     },
     {
       "path": "drive/js/so-clipboard.js",
-      "lines": 884,
+      "lines": 922,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudOsClipboard"

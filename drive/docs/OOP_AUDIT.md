@@ -207,7 +207,7 @@
 | `drive/src/Application/FolderDocumentService.php` | 298 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Application/FolderMutationService.php` | 323 | class/module | 1 | — | — | — | — |
 | `drive/src/Application/FolderQueryService.php` | 224 | class/module | 1 | — | — | — | — |
-| `drive/src/Application/MoveJobService.php` | 264 | class/module | 1 | — | — | — | — |
+| `drive/src/Application/MoveJobService.php` | 348 | class/module | 1 | — | — | — | — |
 | `drive/src/Application/PhpLintService.php` | 70 | class/module | 1 | — | — | — | — |
 | `drive/src/Application/TemporaryZip.php` | 27 | class/module | 1 | — | — | — | — |
 | `drive/src/Application/TextFileService.php` | 157 | class/module | 1 | — | — | — | — |
@@ -237,7 +237,7 @@
 | `drive/src/Console/ActivityRetentionCommand.php` | 38 | class/module | 1 | — | — | — | — |
 | `drive/src/Console/FolderTextractWorkerCommand.php` | 130 | class/module | 1 | — | — | — | — |
 | `drive/src/Console/MediaProcessingWorkerCommand.php` | 919 | class/module | 1 | — | — | — | — |
-| `drive/src/Console/MoveJobWorkerCommand.php` | 153 | class/module | 1 | — | — | — | — |
+| `drive/src/Console/MoveJobWorkerCommand.php` | 155 | class/module | 1 | — | — | — | — |
 | `drive/src/Console/ServerMaintenanceWorkerCommand.php` | 32 | class/module | 1 | — | — | — | — |
 | `drive/src/Console/SyncWorkerCommand.php` | 182 | class/module | 1 | — | — | — | — |
 | `drive/src/Console/UploadCleanupCommand.php` | 61 | class/module | 1 | — | — | — | — |
@@ -326,7 +326,7 @@
 | `drive/src/Http/Controller/AwsCostController.php` | 61 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/AwsFileController.php` | 384 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/BackgroundTaskCompatibilityController.php` | 245 | class/module | 1 | — | ⚠️ | — | — |
-| `drive/src/Http/Controller/BackgroundTaskController.php` | 1020 | class/module | 1 | — | ⚠️ | — | — |
+| `drive/src/Http/Controller/BackgroundTaskController.php` | 1026 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Http/Controller/DatabaseBackupController.php` | 50 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/FederationAccessController.php` | 123 | class/module | 1 | ⚠️ | — | — | — |
 | `drive/src/Http/Controller/FederationCatalogController.php` | 144 | class/module | 1 | — | — | — | — |
@@ -355,7 +355,7 @@
 | `drive/src/Http/Controller/LegacyUploadController.php` | 154 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/MediaPlaylistController.php` | 35 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/MediaProcessingController.php` | 79 | class/module | 1 | — | — | — | — |
-| `drive/src/Http/Controller/MoveJobController.php` | 195 | class/module | 1 | — | — | — | — |
+| `drive/src/Http/Controller/MoveJobController.php` | 205 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/NavigationController.php` | 42 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/NodeStatusController.php` | 140 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/OfficeDocumentController.php` | 53 | class/module | 1 | — | ⚠️ | — | — |
@@ -545,7 +545,7 @@
 | `drive/tests/user_identity_presenter_smoke.php` | 30 | test script | 0 | — | — | — | — |
 | `drive/tests/user_profile_validator_smoke.php` | 72 | test script | 0 | — | — | — | — |
 | `drive/tests/web_os_clipboard_contract_smoke.php` | 126 | test script | 0 | — | — | — | — |
-| `drive/tests/web_os_contract_smoke.php` | 604 | test script | 0 | — | — | — | — |
+| `drive/tests/web_os_contract_smoke.php` | 613 | test script | 0 | — | — | — | — |
 | `drive/tests/web_os_desktop_shell_smoke.php` | 20 | test script | 0 | — | — | — | — |
 | `drive/tests/web_os_file_applications_smoke.php` | 21 | test script | 0 | — | — | — | — |
 | `drive/tests/web_os_interactions_theme_smoke.php` | 30 | test script | 0 | — | — | — | — |
@@ -626,7 +626,7 @@
 | `drive/js/move-tasks.js` | 262 | class/module | DriveMoveTasks | — | — | — |
 | `drive/js/notebook.js` | 262 | procedural script | — | uid, status, api, canvasSize, applyZoom, background | — | top-level functions: uid, status, api, canvasSize, applyZoom, background, styleFor, drawStroke; top-level state: $, canvas, imageCache, defaultZoom, state, paper, WRITE_LEFT, fontStacks; no ES class |
 | `drive/js/obtenerFiltros.js` | 125 | class/module | ObtenerFiltrosModule | — | — | — |
-| `drive/js/os-window-manager.js` | 1196 | class/module | ArcadeCloudEventBus, ArcadeCloudWindowLayoutConfig, ArcadeCloudWindowManager, ExplorerWindowFactory, ArcadeCloudExplorerWindow, ArcadeCloudDesktopRuntime | — | — | — |
+| `drive/js/os-window-manager.js` | 1307 | class/module | ArcadeCloudEventBus, ArcadeCloudWindowLayoutConfig, ArcadeCloudWindowManager, ExplorerWindowFactory, ArcadeCloudExplorerWindow, ArcadeCloudDesktopRuntime | — | — | — |
 | `drive/js/page-task-manager.js` | 119 | class/module | ArcadeCloudPageTaskManager | — | — | — |
 | `drive/js/pdf-pantalla-completa.js` | 45 | class/module | PdfPantallaCompletaModule | — | — | — |
 | `drive/js/polly-background.js` | 306 | class/module | PollyBackgroundModule | — | — | — |
@@ -637,7 +637,7 @@
 | `drive/js/setup.js` | 192 | class/module | ArcadeCloudSetup | — | — | — |
 | `drive/js/sincronizar.js` | 265 | class/module | SincronizarModule | — | triggerSyncFolderS3, triggerSyncS3 | window functions: triggerSyncFolderS3, triggerSyncS3 |
 | `drive/js/so-appearance.js` | 165 | class/module | ArcadeCloudOsAppearance | — | — | — |
-| `drive/js/so-clipboard.js` | 884 | class/module | ArcadeCloudOsClipboard | — | — | — |
+| `drive/js/so-clipboard.js` | 922 | class/module | ArcadeCloudOsClipboard | — | — | — |
 | `drive/js/so-federation.js` | 102 | class/module | ArcadeCloudOsFederationApp | — | — | — |
 | `drive/js/so-folders.js` | 485 | class/module | ArcadeCloudOsFolderActions | — | — | — |
 | `drive/js/so-node.js` | 513 | class/module | ArcadeCloudOsNodeMonitor | — | — | — |

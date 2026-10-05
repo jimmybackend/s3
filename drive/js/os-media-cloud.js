@@ -32,11 +32,21 @@ class ArcadeCloudMediaCloud {
     root.setAttribute('role', 'dialog');
     root.setAttribute('aria-label', 'Reproductor multimedia ArcadeCloud');
     root.innerHTML = `
-      <div class="ac-media-cloud-bubble ac-bubble-one"></div>
-      <div class="ac-media-cloud-bubble ac-bubble-two"></div>
+      <div class="ac-cloud-orbit" aria-hidden="true"><span></span></div>
+      <div class="ac-cloud-lobes" aria-hidden="true">
+        <span class="ac-cloud-lobe lobe-1"></span>
+        <span class="ac-cloud-lobe lobe-2"></span>
+        <span class="ac-cloud-lobe lobe-3"></span>
+        <span class="ac-cloud-lobe lobe-4"></span>
+        <span class="ac-cloud-lobe lobe-5"></span>
+        <span class="ac-cloud-lobe lobe-6"></span>
+      </div>
       <div class="ac-media-cloud-shell">
         <header class="ac-media-cloud-head" data-media-drag-handle>
-          <div class="ac-media-brand"><i class="fas fa-cloud"></i><span>ArcadeCloud Player</span></div>
+          <div class="ac-media-brand">
+            <span class="ac-media-brand-orb"><i class="fas fa-cloud"></i></span>
+            <span><strong>ArcadeCloud</strong> Player</span>
+          </div>
           <div class="ac-media-head-actions">
             <button type="button" data-media-pin title="Siempre visible" aria-pressed="true"><i class="fas fa-thumbtack"></i></button>
             <button type="button" data-media-collapse title="Compactar"><i class="fas fa-chevron-down"></i></button>
@@ -45,35 +55,52 @@ class ArcadeCloudMediaCloud {
         </header>
 
         <div class="ac-media-main">
-          <div class="ac-media-screen">
-            <div class="ac-media-title-row">
-              <i data-media-type-icon class="fas fa-music"></i>
-              <div><strong data-media-title>Sin reproducción</strong><small data-media-counter>0 / 0</small></div>
+          <div class="ac-media-stage">
+            <div class="ac-media-art" aria-hidden="true">
+              <span class="ac-media-art-halo halo-a"></span>
+              <span class="ac-media-art-halo halo-b"></span>
+              <div class="ac-media-art-core"><i data-media-type-icon class="fas fa-music"></i></div>
             </div>
-            <video data-media-video playsinline preload="metadata" hidden></video>
-            <audio data-media-audio preload="metadata" hidden></audio>
-            <canvas data-media-wave width="620" height="76" aria-label="Onda de audio en tiempo real"></canvas>
-            <div class="ac-media-time-row"><span data-media-current>0:00</span><input data-media-seek type="range" min="0" max="1000" value="0" aria-label="Posición de reproducción"><span data-media-duration>0:00</span></div>
+
+            <div class="ac-media-screen">
+              <div class="ac-media-title-row">
+                <div>
+                  <strong data-media-title>Sin reproducción</strong>
+                  <small><span data-media-counter>0 / 0</span><span class="ac-media-stream-badge"><i class="fas fa-bolt"></i> streaming</span></small>
+                </div>
+              </div>
+              <video data-media-video playsinline preload="metadata" hidden></video>
+              <audio data-media-audio preload="metadata" hidden></audio>
+              <div class="ac-media-wave-frame">
+                <canvas data-media-wave width="760" height="112" aria-label="Visualizador real de audio"></canvas>
+                <span class="ac-wave-scanline" aria-hidden="true"></span>
+              </div>
+              <div class="ac-media-time-row">
+                <span data-media-current>0:00</span>
+                <input data-media-seek type="range" min="0" max="1000" value="0" aria-label="Posición de reproducción">
+                <span data-media-duration>0:00</span>
+              </div>
+            </div>
           </div>
 
           <div class="ac-media-controls">
             <button type="button" data-media-prev title="Anterior"><i class="fas fa-backward-step"></i></button>
             <button type="button" data-media-rewind title="Retroceder 10 segundos; mantener para acelerar"><i class="fas fa-backward"></i><small>10</small></button>
-            <button type="button" data-media-stop title="Detener"><i class="fas fa-stop"></i></button>
-            <button type="button" class="is-primary" data-media-play title="Reproducir / Pausar"><i class="fas fa-play"></i></button>
+            <button type="button" class="is-primary" data-media-play title="Reproducir / Pausar"><span class="ac-play-cloud"><i class="fas fa-play"></i></span></button>
             <button type="button" data-media-forward title="Adelantar 10 segundos; mantener para acelerar"><i class="fas fa-forward"></i><small>10</small></button>
             <button type="button" data-media-next title="Siguiente"><i class="fas fa-forward-step"></i></button>
           </div>
 
-          <div class="ac-media-secondary">
-            <label><i class="fas fa-volume-high"></i><input data-media-volume type="range" min="0" max="1" step="0.01" value="1" aria-label="Volumen"></label>
-            <button type="button" data-media-playlist-toggle><i class="fas fa-list"></i> Lista</button>
-            <button type="button" data-media-eq-toggle><i class="fas fa-sliders"></i> EQ</button>
+          <div class="ac-media-dock">
+            <button type="button" class="ac-media-stop" data-media-stop title="Detener"><i class="fas fa-stop"></i><span>Stop</span></button>
+            <label class="ac-media-volume"><i class="fas fa-volume-high"></i><input data-media-volume type="range" min="0" max="1" step="0.01" value="1" aria-label="Volumen"></label>
+            <button type="button" data-media-playlist-toggle><i class="fas fa-list-ul"></i><span>Lista</span></button>
+            <button type="button" data-media-eq-toggle><i class="fas fa-sliders"></i><span>EQ</span></button>
           </div>
 
           <div class="ac-media-eq" data-media-eq hidden>
             <div class="ac-media-eq-head">
-              <strong>Ecualizador</strong>
+              <strong><i class="fas fa-wave-square"></i> Ecualizador</strong>
               <div>
                 <button type="button" data-eq-mode="auto" class="is-active">Automático</button>
                 <button type="button" data-eq-mode="manual">Manual</button>
@@ -85,7 +112,7 @@ class ArcadeCloudMediaCloud {
           </div>
 
           <div class="ac-media-playlist" data-media-playlist hidden>
-            <div class="ac-media-playlist-head"><strong>Lista de reproducción</strong><span data-media-playlist-count>0 elementos</span></div>
+            <div class="ac-media-playlist-head"><strong><i class="fas fa-list-music"></i> Lista de reproducción</strong><span data-media-playlist-count>0 elementos</span></div>
             <div data-media-playlist-items></div>
           </div>
         </div>
@@ -415,25 +442,47 @@ class ArcadeCloudMediaCloud {
       if (this.el.hidden) return;
       const graph = this.graphs.get(this.currentPlayer()) || await this.ensureAudioGraph(this.currentPlayer());
       if (!graph) { this.drawIdleWave(); return; }
-      const data = new Uint8Array(graph.analyser.fftSize);
-      graph.analyser.getByteTimeDomainData(data);
+
+      const bins = new Uint8Array(graph.analyser.frequencyBinCount);
+      graph.analyser.getByteFrequencyData(bins);
       const ctx = this.ctx2d;
-      const width = this.canvas.width, height = this.canvas.height;
+      const width = this.canvas.width;
+      const height = this.canvas.height;
+      const center = height / 2;
+      const bars = 74;
+      const gap = 3;
+      const barWidth = Math.max(2, (width - (bars - 1) * gap) / bars);
+
       ctx.clearRect(0, 0, width, height);
-      ctx.lineWidth = 3;
-      ctx.strokeStyle = 'rgba(110,235,255,.92)';
-      ctx.shadowBlur = 10;
-      ctx.shadowColor = 'rgba(38,198,255,.72)';
-      ctx.beginPath();
-      const slice = width / data.length;
-      let x = 0;
-      for (let i = 0; i < data.length; i++) {
-        const y = (data[i] / 128) * (height / 2);
-        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
-        x += slice;
+      const glow = ctx.createLinearGradient(0, 0, width, 0);
+      glow.addColorStop(0, 'rgba(61,210,255,.42)');
+      glow.addColorStop(.28, 'rgba(77,243,255,.95)');
+      glow.addColorStop(.62, 'rgba(80,177,255,.98)');
+      glow.addColorStop(1, 'rgba(151,118,255,.72)');
+      ctx.fillStyle = glow;
+      ctx.shadowBlur = 16;
+      ctx.shadowColor = 'rgba(38,214,255,.78)';
+
+      for (let i = 0; i < bars; i++) {
+        const sampleIndex = Math.min(bins.length - 1, Math.floor((i / bars) * bins.length * .72));
+        const energy = bins[sampleIndex] / 255;
+        const eased = Math.pow(energy, .72);
+        const amplitude = Math.max(2, eased * (center - 7));
+        const x = i * (barWidth + gap);
+        ctx.globalAlpha = .48 + eased * .52;
+        ctx.fillRect(x, center - amplitude, barWidth, amplitude);
+        ctx.fillRect(x, center + 2, barWidth, amplitude);
       }
-      ctx.stroke();
+
+      ctx.globalAlpha = 1;
       ctx.shadowBlur = 0;
+      ctx.strokeStyle = 'rgba(135,245,255,.72)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(0, center + .5);
+      ctx.lineTo(width, center + .5);
+      ctx.stroke();
+
       this.raf = this.window.requestAnimationFrame(frame);
     };
     this.raf = this.window.requestAnimationFrame(frame);
@@ -442,16 +491,19 @@ class ArcadeCloudMediaCloud {
   drawIdleWave() {
     const ctx = this.ctx2d;
     if (!ctx) return;
-    const width = this.canvas.width, height = this.canvas.height;
+    const width = this.canvas.width;
+    const height = this.canvas.height;
+    const center = height / 2;
     ctx.clearRect(0, 0, width, height);
-    ctx.strokeStyle = 'rgba(110,235,255,.35)';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    for (let x = 0; x <= width; x += 8) {
-      const y = height / 2 + Math.sin(x / 20) * 5;
-      if (x === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    ctx.fillStyle = 'rgba(70,221,255,.32)';
+    ctx.shadowBlur = 9;
+    ctx.shadowColor = 'rgba(50,205,255,.32)';
+    for (let x = 0, i = 0; x < width; x += 10, i++) {
+      const amp = 4 + (Math.sin(i * .43) + 1) * 6;
+      ctx.fillRect(x, center - amp, 4, amp);
+      ctx.fillRect(x, center + 2, 4, amp);
     }
-    ctx.stroke();
+    ctx.shadowBlur = 0;
   }
 
   setPinned(value) {

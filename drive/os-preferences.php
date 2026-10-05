@@ -54,8 +54,9 @@ try {
             FILTER_VALIDATE_BOOLEAN,
             FILTER_NULL_ON_FAILURE
         ) ?? true,
-        'windowOpacity' => max(35, min(100, (int)($payload['windowOpacity'] ?? 94))),
-        'menuOpacity' => max(35, min(100, (int)($payload['menuOpacity'] ?? 98))),
+        'windowOpacity' => max(0, min(100, (int)($payload['windowOpacity'] ?? 94))),
+        'menuOpacity' => max(0, min(100, (int)($payload['menuOpacity'] ?? 98))),
+        'chromeOpacity' => max(0, min(100, (int)($payload['chromeOpacity'] ?? 96))),
         ];
     }
     $repository = new UserOsPreferencesRepository($app->db());

@@ -144,3 +144,9 @@ dialog{border:1px solid #c7d2de;border-radius:14px;box-shadow:0 24px 70px #0005;
   .nb-composer input{padding:7px 8px;font-size:.78rem}
   .nb-composer button{width:70px;min-width:70px;max-width:70px;padding:7px 8px;font-size:.72rem}
 }
+
+
+#nbCloseDialog p,#nbAboutDialog p{margin:0;color:#4b5b6c;line-height:1.45}
+#nbCloseDialog menu{flex-wrap:wrap}
+#nbCloseDialog #nbCloseSave{background:#203a56;color:#fff;border-color:#203a56}
+#nbCloseDialog #nbCloseDiscard{color:#a12626}

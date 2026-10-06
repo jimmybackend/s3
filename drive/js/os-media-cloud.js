@@ -18,6 +18,7 @@ class ArcadeCloudMediaCloud {
     this.videoScreenBody = null;
     this.layoutMode = 'desktop';
     this.geometry = {};
+    this.remoteSaveTimer = 0;
     this.layoutResizeHandler = () => this.updateResponsiveLayout();
     this.eqMode = 'auto';
     this.eqValues = { low: 0, mid: 0, high: 0 };
@@ -1014,30 +1015,71 @@ class ArcadeCloudMediaCloud {
   }
 
   persistPreferences() {
+    const state = {
+      pinned: this.state.pinned,
+      videoMode: this.videoMode,
+      geometry: this.geometry,
+      eqMode: this.eqMode,
+      eqValues: this.eqValues
+    };
     try {
-      this.window.localStorage.setItem('arcadecloud.mediaCloud.preferences', JSON.stringify({
-        pinned: this.state.pinned,
-        videoMode: this.videoMode,
-        geometry: this.geometry,
-        eqMode: this.eqMode,
-        eqValues: this.eqValues
-      }));
+      this.window.localStorage.setItem('arcadecloud.mediaCloud.preferences', JSON.stringify(state));
     } catch (_) {}
+    this.persistRemotePreferences(state);
+  }
+
+  persistRemotePreferences(state) {
+    const remote = this.window.ARCADECLOUD_OS_APPEARANCE || {};
+    if (!remote.endpoint || !remote.csrf) return;
+    this.window.clearTimeout(this.remoteSaveTimer);
+    this.remoteSaveTimer = this.window.setTimeout(() => {
+      this.window.fetch(String(remote.endpoint), {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': String(remote.csrf)
+        },
+        body: JSON.stringify({
+          mediaPlayerPreference: {
+            pinned: state.pinned !== false,
+            videoMode: state.videoMode === 'screen' ? 'screen' : 'cloud',
+            geometry: state.geometry && typeof state.geometry === 'object' ? state.geometry : {}
+          }
+        })
+      }).catch(() => {});
+    }, 250);
   }
 
   restorePreferences() {
+    let local = {};
     try {
-      const data = JSON.parse(this.window.localStorage.getItem('arcadecloud.mediaCloud.preferences') || '{}');
-      this.state.pinned = data.pinned !== false;
-      this.videoMode = data.videoMode === 'screen' ? 'screen' : 'cloud';
-      this.geometry = data.geometry && typeof data.geometry === 'object' ? data.geometry : {};
-      this.eqMode = data.eqMode === 'manual' ? 'manual' : 'auto';
-      if (data.eqValues && typeof data.eqValues === 'object') {
-        ['low','mid','high'].forEach(name => {
-          if (Number.isFinite(Number(data.eqValues[name]))) this.eqValues[name] = Number(data.eqValues[name]);
-        });
-      }
+      const parsed = JSON.parse(this.window.localStorage.getItem('arcadecloud.mediaCloud.preferences') || '{}');
+      if (parsed && typeof parsed === 'object') local = parsed;
     } catch (_) {}
+
+    const remoteRoot = this.window.ARCADECLOUD_OS_APPEARANCE?.preferences;
+    const remote = remoteRoot?.mediaPlayerPreferences && typeof remoteRoot.mediaPlayerPreferences === 'object'
+      ? remoteRoot.mediaPlayerPreferences
+      : {};
+    const data = { ...local, ...remote };
+    if (local.geometry || remote.geometry) {
+      data.geometry = {
+        ...(local.geometry && typeof local.geometry === 'object' ? local.geometry : {}),
+        ...(remote.geometry && typeof remote.geometry === 'object' ? remote.geometry : {})
+      };
+    }
+
+    this.state.pinned = data.pinned !== false;
+    this.videoMode = data.videoMode === 'screen' ? 'screen' : 'cloud';
+    this.geometry = data.geometry && typeof data.geometry === 'object' ? data.geometry : {};
+    this.eqMode = data.eqMode === 'manual' ? 'manual' : 'auto';
+    if (data.eqValues && typeof data.eqValues === 'object') {
+      ['low','mid','high'].forEach(name => {
+        if (Number.isFinite(Number(data.eqValues[name]))) this.eqValues[name] = Number(data.eqValues[name]);
+      });
+    }
+
     this.setPinned(this.state.pinned);
     this.syncEqModeButtons();
     this.syncEqInputs();

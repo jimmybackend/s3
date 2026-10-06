@@ -1094,3 +1094,320 @@
   .ac-video-screen-actions button{width:28px;height:28px}
   .ac-video-screen-foot{font-size:.46rem}
 }
+
+
+/* ==========================================================================
+   ArcadeCloud Player · Responsive V5 + contorno vivo
+   ========================================================================== */
+
+/* Luz blanca que recorre exactamente el path de la nube cuando hay reproducción. */
+.ac-cloud-running-light{
+  opacity:0;
+  pointer-events:none;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+  vector-effect:non-scaling-stroke;
+}
+.ac-media-cloud.is-playing .ac-cloud-running-light-glow{
+  opacity:.78;
+  stroke:#ffffff;
+  stroke-width:12;
+  stroke-dasharray:7 93;
+  filter:url(#acSparkGlow);
+  animation:acCloudContourRun 2.7s linear infinite;
+}
+.ac-media-cloud.is-playing .ac-cloud-running-light-core{
+  opacity:1;
+  stroke:#ffffff;
+  stroke-width:2.2;
+  stroke-dasharray:3.2 96.8;
+  filter:url(#acSparkGlow);
+  animation:acCloudContourRun 2.7s linear infinite;
+}
+@keyframes acCloudContourRun{
+  from{stroke-dashoffset:0}
+  to{stroke-dashoffset:-100}
+}
+.ac-media-cloud:not(.is-playing) .ac-cloud-running-light{
+  animation:none!important;
+  opacity:0;
+}
+
+/* Bancos de nube orgánicos: sin círculos perfectos ni efecto "bola de helado". */
+.ac-cloud-scenery path,
+.ac-cloud-mist path,
+.ac-cloud-aura path{
+  transform-box:fill-box;
+  transform-origin:center;
+}
+.ac-cloud-scenery .scenery-top path:first-child,
+.ac-cloud-scenery .scenery-left path:first-child,
+.ac-cloud-scenery .scenery-right path:first-child{
+  opacity:.72;
+  filter:drop-shadow(0 9px 12px rgba(8,52,128,.28));
+}
+.ac-cloud-scenery .scenery-top path:last-child,
+.ac-cloud-scenery .scenery-left path:last-child,
+.ac-cloud-scenery .scenery-right path:last-child{
+  opacity:.94;
+  filter:drop-shadow(0 0 10px rgba(192,250,255,.26));
+}
+.ac-cloud-mist path{
+  opacity:.42;
+  animation:acOrganicMist 10s ease-in-out infinite alternate;
+}
+.ac-cloud-mist .mist-bottom-left{animation-delay:-3s}
+.ac-cloud-mist .mist-bottom-right{animation-delay:-5.2s}
+@keyframes acOrganicMist{
+  from{transform:translate3d(-3px,2px,0) scale(.99);opacity:.34}
+  to{transform:translate3d(5px,-3px,0) scale(1.025);opacity:.52}
+}
+
+/* Estado de reproducción más vivo sin alterar controles ni streaming. */
+.ac-media-cloud.is-playing .ac-media-brand-orb{
+  box-shadow:
+    0 0 0 1px rgba(220,255,255,.72),
+    0 0 12px rgba(113,248,255,.96),
+    0 0 24px rgba(39,189,255,.56);
+}
+.ac-media-cloud.is-playing .ac-play-cloud{
+  animation:acPlayPulse 1.5s ease-in-out infinite alternate;
+}
+@keyframes acPlayPulse{
+  from{filter:drop-shadow(0 0 3px rgba(255,255,255,.58))}
+  to{filter:drop-shadow(0 0 10px rgba(113,245,255,.98))}
+}
+
+/* Escritorio conserva el diseño actual. */
+.ac-media-cloud.is-desktop-ui{
+  --ac-responsive-mode:desktop;
+}
+
+/* TABLETA: gadget más pequeño, pero con blancos táctiles cómodos. */
+.ac-media-cloud.is-tablet-ui{
+  --ac-responsive-mode:tablet;
+  width:min(400px,calc(100vw - 20px))!important;
+  right:12px!important;
+  bottom:58px!important;
+  left:auto!important;
+  height:auto!important;
+  aspect-ratio:1000/650!important;
+}
+.ac-media-cloud.is-tablet-ui.is-video{
+  width:min(455px,calc(100vw - 20px))!important;
+}
+.ac-media-cloud.is-tablet-ui .ac-media-cloud-head{
+  left:14.5%;
+  right:10.5%;
+  top:15.2%;
+  height:9.6%;
+}
+.ac-media-cloud.is-tablet-ui .ac-media-brand{font-size:.66rem;gap:6px}
+.ac-media-cloud.is-tablet-ui .ac-media-brand-orb{width:27px;height:18px}
+.ac-media-cloud.is-tablet-ui .ac-media-head-actions button{width:30px;height:30px;font-size:.65rem}
+.ac-media-cloud.is-tablet-ui .ac-media-main{left:12%;right:12%;top:27.5%;bottom:9%}
+.ac-media-cloud.is-tablet-ui .ac-media-stage{
+  grid-template-columns:55px minmax(0,1fr);
+  gap:8px;
+  min-height:94px;
+  padding:7px 9px 6px;
+  border-radius:19px;
+}
+.ac-media-cloud.is-tablet-ui .ac-media-art{width:49px;height:49px}
+.ac-media-cloud.is-tablet-ui .ac-media-art-core{width:41px;height:41px;border-radius:12px}
+.ac-media-cloud.is-tablet-ui .ac-media-art-core i{font-size:1.35rem}
+.ac-media-cloud.is-tablet-ui .ac-media-title-row strong{font-size:.64rem}
+.ac-media-cloud.is-tablet-ui .ac-media-title-row small{font-size:.44rem}
+.ac-media-cloud.is-tablet-ui .ac-media-wave-frame,
+.ac-media-cloud.is-tablet-ui .ac-media-screen canvas{height:38px}
+.ac-media-cloud.is-tablet-ui .ac-media-time-row{
+  grid-template-columns:29px 1fr 29px;
+  padding:3px 6px;
+  font-size:.45rem;
+}
+.ac-media-cloud.is-tablet-ui .ac-media-controls{gap:6px;transform:translateY(5px)}
+.ac-media-cloud.is-tablet-ui .ac-media-controls button{
+  width:40px;
+  height:40px;
+  font-size:.62rem;
+}
+.ac-media-cloud.is-tablet-ui .ac-media-controls button.is-primary{
+  width:54px;
+  height:54px;
+}
+.ac-media-cloud.is-tablet-ui .ac-media-dock{
+  grid-template-columns:minmax(120px,1fr) auto auto;
+  max-width:310px;
+  gap:6px;
+  margin-top:7px;
+}
+.ac-media-cloud.is-tablet-ui .ac-media-dock>button,
+.ac-media-cloud.is-tablet-ui .ac-media-dock>label{min-height:32px}
+.ac-media-cloud.is-tablet-ui .ac-media-volume input{min-width:72px}
+
+/* MÓVIL: no ocupa toda la pantalla. Sigue siendo una nube pequeña y táctil. */
+.ac-media-cloud.is-mobile-ui{
+  --ac-responsive-mode:mobile;
+  left:auto!important;
+  right:6px!important;
+  top:auto!important;
+  bottom:56px!important;
+  width:min(340px,calc(100vw - 12px))!important;
+  height:auto!important;
+  aspect-ratio:1000/650!important;
+  filter:drop-shadow(0 14px 22px rgba(0,12,42,.46))!important;
+}
+.ac-media-cloud.is-mobile-ui.is-video{
+  width:min(350px,calc(100vw - 10px))!important;
+}
+.ac-media-cloud.is-mobile-ui .ac-cloud-frame{
+  inset:0!important;
+  width:100%!important;
+  height:100%!important;
+  transform:none!important;
+}
+.ac-media-cloud.is-mobile-ui .ac-media-cloud-head{
+  left:12%!important;
+  right:8.5%!important;
+  top:14.2%!important;
+  height:9%!important;
+  padding:0!important;
+}
+.ac-media-cloud.is-mobile-ui .ac-media-brand{font-size:.58rem;gap:5px}
+.ac-media-cloud.is-mobile-ui .ac-media-brand-orb{
+  width:24px;
+  height:16px;
+  border-radius:10px;
+}
+.ac-media-cloud.is-mobile-ui .ac-media-brand-orb::before{width:13px;height:13px;top:-5px}
+.ac-media-cloud.is-mobile-ui .ac-media-brand-orb::after{width:14px;height:14px;top:-4px}
+.ac-media-cloud.is-mobile-ui .ac-media-brand-orb i{font-size:.58rem}
+.ac-media-cloud.is-mobile-ui .ac-media-head-actions{gap:4px}
+.ac-media-cloud.is-mobile-ui .ac-media-head-actions button{
+  width:29px;
+  height:29px;
+  font-size:.62rem;
+}
+.ac-media-cloud.is-mobile-ui .ac-media-main{
+  left:9%!important;
+  right:9%!important;
+  top:27%!important;
+  bottom:8%!important;
+  padding:0!important;
+}
+.ac-media-cloud.is-mobile-ui .ac-media-stage{
+  display:block;
+  min-height:75px;
+  padding:6px 8px 5px;
+  border-radius:17px;
+}
+.ac-media-cloud.is-mobile-ui .ac-media-art{display:none!important}
+.ac-media-cloud.is-mobile-ui .ac-media-title-row{margin-bottom:2px}
+.ac-media-cloud.is-mobile-ui .ac-media-title-row strong{
+  font-size:.58rem;
+  max-width:190px;
+}
+.ac-media-cloud.is-mobile-ui .ac-media-title-row small{font-size:.40rem}
+.ac-media-cloud.is-mobile-ui .ac-media-stream-badge{font-size:.32rem;padding:1px 3px}
+.ac-media-cloud.is-mobile-ui .ac-video-mode-toggle{
+  min-height:22px;
+  padding:2px 6px;
+  font-size:.48rem;
+}
+.ac-media-cloud.is-mobile-ui .ac-media-wave-frame,
+.ac-media-cloud.is-mobile-ui .ac-media-screen canvas{
+  height:30px!important;
+}
+.ac-media-cloud.is-mobile-ui .ac-media-time-row{
+  grid-template-columns:27px 1fr 27px;
+  gap:4px;
+  margin-top:2px;
+  padding:2px 5px;
+  font-size:.42rem;
+}
+.ac-media-cloud.is-mobile-ui .ac-media-time-row input[type="range"]::-webkit-slider-thumb,
+.ac-media-cloud.is-mobile-ui .ac-media-dock input[type="range"]::-webkit-slider-thumb{
+  width:11px;
+  height:11px;
+}
+.ac-media-cloud.is-mobile-ui .ac-media-controls{
+  gap:4px;
+  margin:0;
+  transform:translateY(4px);
+}
+.ac-media-cloud.is-mobile-ui .ac-media-controls button{
+  width:38px;
+  height:38px;
+  border-width:1px;
+  font-size:.62rem;
+}
+.ac-media-cloud.is-mobile-ui .ac-media-controls button.is-primary{
+  width:50px;
+  height:50px;
+}
+.ac-media-cloud.is-mobile-ui .ac-play-cloud{width:29px;height:22px}
+.ac-media-cloud.is-mobile-ui .ac-media-dock{
+  grid-template-columns:minmax(105px,1fr) auto auto;
+  gap:4px;
+  max-width:285px;
+  margin:5px auto 0;
+  padding-top:2px;
+}
+.ac-media-cloud.is-mobile-ui .ac-media-dock>button,
+.ac-media-cloud.is-mobile-ui .ac-media-dock>label{
+  min-height:29px;
+  border-radius:13px;
+}
+.ac-media-cloud.is-mobile-ui .ac-media-dock>button{
+  padding:0 7px;
+  font-size:.46rem;
+}
+.ac-media-cloud.is-mobile-ui .ac-media-volume{
+  gap:5px;
+  padding:0 8px;
+}
+.ac-media-cloud.is-mobile-ui .ac-media-volume i{font-size:.66rem}
+.ac-media-cloud.is-mobile-ui .ac-media-volume input{min-width:58px}
+.ac-media-cloud.is-mobile-ui .ac-media-eq,
+.ac-media-cloud.is-mobile-ui .ac-media-playlist{
+  left:3%!important;
+  right:3%!important;
+  bottom:4%!important;
+  max-height:118px!important;
+  padding:7px!important;
+  border-radius:11px!important;
+}
+
+/* Pantalla de video externa también responde al modo detectado. */
+.ac-video-screen.is-tablet-ui{
+  width:min(560px,72vw);
+}
+.ac-video-screen.is-tablet-ui.is-portrait{
+  width:min(300px,42vw);
+}
+.ac-video-screen.is-mobile-ui,
+.ac-video-screen.is-mobile-ui.is-landscape{
+  left:6px!important;
+  right:6px!important;
+  top:50px!important;
+  width:auto!important;
+  transform:none!important;
+}
+.ac-video-screen.is-mobile-ui.is-portrait{
+  left:50%!important;
+  right:auto!important;
+  width:min(78vw,310px)!important;
+  transform:translateX(-50%)!important;
+}
+
+/* Pantallas extremadamente estrechas conservan todos los controles. */
+@media(max-width:360px){
+  .ac-media-cloud.is-mobile-ui{
+    width:calc(100vw - 8px)!important;
+    right:4px!important;
+  }
+  .ac-media-cloud.is-mobile-ui .ac-media-controls{gap:2px}
+  .ac-media-cloud.is-mobile-ui .ac-media-controls button{width:35px;height:35px}
+  .ac-media-cloud.is-mobile-ui .ac-media-controls button.is-primary{width:46px;height:46px}
+  .ac-media-cloud.is-mobile-ui .ac-media-dock{max-width:270px}
+}

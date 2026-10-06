@@ -48,6 +48,7 @@ use ArcadeCloud\Drive\Upload\PublicSharedBrowserRepository;
 use ArcadeCloud\Drive\Upload\PublicSharedBrowserService;
 use ArcadeCloud\Drive\Upload\SingleUploadService;
 use ArcadeCloud\Drive\Upload\UploadCatalogRepository;
+use ArcadeCloud\Drive\Upload\UploadTaskStore;
 use ArcadeCloud\Drive\View\FolderTreeRenderer;
 use Aws\S3\S3Client;
 use mysqli;
@@ -83,6 +84,7 @@ final class DriveApplication
     private ?MediaPlaylistService $mediaPlaylistService = null;
     private ?ThumbnailService $thumbnailService = null;
     private ?UploadCatalogRepository $uploadCatalogRepository = null;
+    private ?UploadTaskStore $uploadTaskStore = null;
     private ?SingleUploadService $singleUploadService = null;
     private ?UserDirectoryRepository $userDirectoryRepository = null;
     private ?AdminMultipartUploadService $adminMultipartUploadService = null;
@@ -343,6 +345,18 @@ final class DriveApplication
         return $this->uploadCatalogRepository ??= new UploadCatalogRepository($this->db);
     }
 
+    public function uploadTaskStore(): UploadTaskStore
+    {
+        if ($this->uploadTaskStore === null) {
+            $directory = trim((string)(getenv('ARCADECLOUD_UPLOAD_TASK_DIR') ?: ''));
+            if ($directory === '') {
+                $directory = sys_get_temp_dir() . '/arcadecloud-drive-upload-tasks';
+            }
+            $this->uploadTaskStore = new UploadTaskStore($directory);
+        }
+        return $this->uploadTaskStore;
+    }
+
     public function singleUploadService(): SingleUploadService
     {
         return $this->singleUploadService ??= new SingleUploadService(
@@ -366,7 +380,8 @@ final class DriveApplication
             $this->uploadCatalogRepository(),
             $this->s3,
             $this->bucket,
-            sys_get_temp_dir() . '/arcadecloud-public-upload-state'
+            sys_get_temp_dir() . '/arcadecloud-public-upload-state',
+            $this->uploadTaskStore()
         );
     }
 

@@ -42,6 +42,29 @@ try {
                 'height' => max(180, min(1600, (int)($windowPreference['height'] ?? 0))),
             ],
         ];
+    } elseif (isset($payload['mediaPlayerPreference']) && is_array($payload['mediaPlayerPreference'])) {
+        $mediaPlayer = $payload['mediaPlayerPreference'];
+        $geometry = [];
+        foreach (['desktop', 'tablet', 'mobile'] as $mode) {
+            if (!isset($mediaPlayer['geometry'][$mode]) || !is_array($mediaPlayer['geometry'][$mode])) {
+                continue;
+            }
+            $value = $mediaPlayer['geometry'][$mode];
+            $geometry[$mode] = [
+                'left' => max(-4000, min(4000, (int)($value['left'] ?? 0))),
+                'top' => max(0, min(4000, (int)($value['top'] ?? 0))),
+                'width' => max(240, min(2400, (int)($value['width'] ?? 0))),
+            ];
+        }
+        $patch['mediaPlayerPreferences'] = [
+            'pinned' => filter_var(
+                $mediaPlayer['pinned'] ?? true,
+                FILTER_VALIDATE_BOOLEAN,
+                FILTER_NULL_ON_FAILURE
+            ) ?? true,
+            'videoMode' => ($mediaPlayer['videoMode'] ?? '') === 'screen' ? 'screen' : 'cloud',
+            'geometry' => $geometry,
+        ];
     } else {
         $patch = [
         'theme' => in_array(($payload['theme'] ?? ''), ['light', 'dark'], true)

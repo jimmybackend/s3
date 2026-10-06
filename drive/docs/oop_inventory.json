@@ -1,16 +1,16 @@
 {
   "summary": {
-    "php_total": 555,
+    "php_total": 557,
     "php_class_modules": 316,
     "php_needs_migration": 0,
-    "php_tests": 77,
-    "js_total": 81,
-    "js_class_modules": 74,
+    "php_tests": 78,
+    "js_total": 82,
+    "js_class_modules": 75,
     "js_needs_migration": 1,
     "js_tests": 11,
     "js_compatibility_facades": 8,
-    "ajax_clients": 53,
-    "ajax_calls": 115,
+    "ajax_clients": 54,
+    "ajax_calls": 116,
     "json_total": 4,
     "json_invalid": 0
   },
@@ -667,6 +667,23 @@
       "s3": false,
       "bootstrap": true,
       "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/dataword3d.php",
+      "lines": 400,
+      "kind": "view/entrypoint",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [
+        "GET"
+      ],
+      "db": false,
+      "s3": false,
+      "bootstrap": true,
+      "html": true,
       "namespace": false,
       "issues": []
     },
@@ -2172,7 +2189,7 @@
     },
     {
       "path": "drive/so.php",
-      "lines": 2212,
+      "lines": 2213,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -6972,6 +6989,23 @@
       "issues": []
     },
     {
+      "path": "drive/tests/dataword3d_contract_smoke.php",
+      "lines": 28,
+      "kind": "test script",
+      "classes": 0,
+      "functions": [
+        "drive3dContract"
+      ],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
       "path": "drive/tests/fastdrive_control_contract_smoke.php",
       "lines": 72,
       "kind": "test script",
@@ -8831,6 +8865,29 @@
         "jquery": 0,
         "json_consumers": 3,
         "response_checks": 6
+      },
+      "issues": []
+    },
+    {
+      "path": "drive/js/dataword3d.js",
+      "lines": 425,
+      "kind": "class/module",
+      "classes": [
+        "ArcadeCloudDrive3D"
+      ],
+      "functions": [],
+      "window_assign": [
+        "ArcadeCloudDrive3D"
+      ],
+      "window_func": [],
+      "top_vars": [],
+      "iife": false,
+      "ajax": {
+        "fetch": 1,
+        "xhr": 0,
+        "jquery": 0,
+        "json_consumers": 1,
+        "response_checks": 3
       },
       "issues": []
     },

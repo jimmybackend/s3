@@ -4,16 +4,16 @@
 
 ## Resumen
 
-- PHP analizados: **555**
+- PHP analizados: **557**
 - PHP que ya contienen clases/interfaces: **316**
 - PHP marcados para migración/revisión: **0**
-- Tests PHP separados del objetivo OOP de runtime: **77**
-- JavaScript analizados: **81**
-- JavaScript que ya contienen clases: **74**
+- Tests PHP separados del objetivo OOP de runtime: **78**
+- JavaScript analizados: **82**
+- JavaScript que ya contienen clases: **75**
 - JavaScript runtime marcados para migración/revisión: **1**
 - Tests JavaScript separados del objetivo OOP de runtime: **11**
 - JavaScript OOP con fachada `window` de compatibilidad: **8**
-- Clientes AJAX detectados: **53** módulos / **115** llamadas
+- Clientes AJAX detectados: **54** módulos / **116** llamadas
 - JSON analizados: **4**; inválidos: **0**
 
 ## Criterio
@@ -74,6 +74,7 @@
 | `drive/crear_carpeta.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/create_folder_document.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/database-backup.php` | 10 | thin endpoint | 0 | — | — | — | — |
+| `drive/dataword3d.php` | 400 | view/entrypoint | 0 | — | — | — | — |
 | `drive/delete_multiple.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/descargar.php` | 8 | thin endpoint | 0 | — | — | — | — |
 | `drive/descargar_archivo.php` | 8 | thin endpoint | 0 | — | — | — | — |
@@ -172,7 +173,7 @@
 | `drive/set_file_security.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/setup/api.php` | 15 | thin endpoint | 0 | — | — | — | — |
 | `drive/setup/index.php` | 90 | view/entrypoint | 0 | — | — | — | — |
-| `drive/so.php` | 2212 | view/entrypoint | 0 | — | — | — | — |
+| `drive/so.php` | 2213 | view/entrypoint | 0 | — | — | — | — |
 | `drive/src/Activity/ActivityCostRecorder.php` | 155 | class/module | 1 | — | — | — | — |
 | `drive/src/Activity/ActivityCostRepository.php` | 198 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Activity/ActivityCostService.php` | 153 | class/module | 1 | — | — | — | — |
@@ -489,6 +490,7 @@
 | `drive/tests/database_backup_contract_smoke.php` | 67 | test script | 0 | — | — | — | — |
 | `drive/tests/database_dump_full_integration.php` | 126 | test script | 0 | — | ⚠️ | — | — |
 | `drive/tests/database_schema_contract_smoke.php` | 127 | test script | 0 | — | — | — | — |
+| `drive/tests/dataword3d_contract_smoke.php` | 28 | test script | 0 | — | — | — | — |
 | `drive/tests/fastdrive_control_contract_smoke.php` | 72 | test script | 0 | — | — | — | — |
 | `drive/tests/federation_access_message_smoke.php` | 72 | test script | 0 | — | — | — | — |
 | `drive/tests/federation_catalog_event_smoke.php` | 60 | test script | 0 | — | — | — | — |
@@ -602,6 +604,7 @@
 | `drive/js/background-tasks.js` | 1352 | class/module | BackgroundTaskCenter | — | — | — |
 | `drive/js/carpetas.js` | 1200 | class/module | CarpetasModule | — | actualizarBloqueCarpetas | window functions: actualizarBloqueCarpetas |
 | `drive/js/compute-node-idle.js` | 290 | class/module | ArcadeCloudComputeIdleGuard | — | — | — |
+| `drive/js/dataword3d.js` | 425 | class/module | ArcadeCloudDrive3D | — | — | — |
 | `drive/js/descarga-multiple.js` | 114 | class/module | DescargaMultipleModule | — | — | — |
 | `drive/js/descarga-uno.js` | 110 | class/module | DescargaUnoModule | — | — | — |
 | `drive/js/desktop-shell.js` | 182 | class/module | ArcadeCloudDesktopShell | — | — | — |
@@ -686,6 +689,7 @@
 | `drive/js/background-tasks.js` | 2 | 0 | 0 | 0 | 19 |
 | `drive/js/carpetas.js` | 2 | 0 | 0 | 2 | 11 |
 | `drive/js/compute-node-idle.js` | 3 | 0 | 0 | 3 | 6 |
+| `drive/js/dataword3d.js` | 1 | 0 | 0 | 1 | 3 |
 | `drive/js/descarga-multiple.js` | 1 | 0 | 0 | 0 | 2 |
 | `drive/js/descarga-uno.js` | 1 | 0 | 0 | 0 | 2 |
 | `drive/js/elimina-multiple.js` | 2 | 0 | 0 | 1 | 3 |

@@ -25,6 +25,8 @@
         desk: doc.querySelector('[data-hud-desk]'),
         play: doc.querySelector('[data-hud-play]'),
         download: doc.querySelector('[data-hud-download]'),
+        previewIcon: doc.querySelector('[data-hud-preview-icon]'),
+        previewLabel: doc.querySelector('[data-hud-preview-label]'),
       };
       this.deskFocus = doc.querySelector('[data-dw-desk-focus]');
       this.mediaStage = doc.querySelector('[data-dw-media-stage]');
@@ -152,27 +154,33 @@
     }
 
     arrangeShelves(animate = true) {
-      const width = this.window.innerWidth;
+      const width = this.world?.clientWidth || this.window.innerWidth;
       const compact = width < 620;
       const tablet = width < 1000;
-      const radiusX = compact ? 215 : tablet ? 330 : 475;
-      const step = compact ? 0.78 : tablet ? 0.66 : 0.57;
-      const maxVisible = compact ? 2 : tablet ? 3 : 4;
+      const desktop = !compact && !tablet;
+      const spacing = compact ? 170 : tablet ? 205 : Math.min(268, Math.max(218, width / 5.45));
+      const maxVisible = compact ? 2 : tablet ? 2 : 3;
 
       this.shelves.forEach((shelf, index) => {
         const diff = this.circularDifference(index);
         const abs = Math.abs(diff);
-        const angle = diff * step;
-        const x = Math.sin(angle) * radiusX;
-        const z = -abs * (compact ? 145 : 185) - abs * abs * 18;
-        const y = abs * (compact ? 18 : 28);
-        const scale = Math.max(compact ? .72 : .68, 1 - abs * (compact ? .13 : .11));
-        const yaw = -diff * (compact ? 11 : 14);
+        const x = diff * spacing;
+        const y = abs * (compact ? 12 : tablet ? 14 : 16) + abs * abs * (compact ? 2 : 3);
+        const z = -abs * (compact ? 42 : tablet ? 52 : 62);
+        const yaw = -diff * (compact ? 8 : tablet ? 7 : 6.5);
+        const baseScale = compact ? .88 : tablet ? .9 : .93;
+        const scale = index === this.activeIndex
+          ? (desktop ? 1.035 : 1.02)
+          : Math.max(compact ? .74 : .76, baseScale - abs * (compact ? .08 : .065));
+
         shelf.style.transitionDuration = animate ? '' : '0ms';
         shelf.style.transform = `translate3d(${x}px, ${y}px, ${z}px) rotateY(${yaw}deg) scale(${scale})`;
-        shelf.style.zIndex = String(30 - Math.round(abs * 3));
-        shelf.style.opacity = abs > maxVisible ? '0' : String(Math.max(.2, 1 - abs * .18));
+        shelf.style.zIndex = String(40 - Math.round(abs * 4));
+        shelf.style.opacity = abs > maxVisible
+          ? '0'
+          : String(Math.max(.42, 1 - abs * (compact ? .2 : .11)));
         shelf.style.pointerEvents = abs > maxVisible ? 'none' : '';
+        shelf.setAttribute('aria-hidden', abs > maxVisible ? 'true' : 'false');
         shelf.classList.toggle('is-active', index === this.activeIndex);
       });
     }
@@ -220,6 +228,12 @@
       this.hud.date.textContent = state?.latest_date || item.date || '—';
       this.hud.path.textContent = item.path || 'Mi Drive/';
       this.hud.counts.textContent = state ? `${state.folder_count || 0} carpetas · ${state.file_count || 0} archivos` : (isFolder ? 'Selecciona para leer contenido' : 'Archivo');
+      if (this.hud.previewIcon) {
+        this.hud.previewIcon.className = `fas ${this.iconFor(item.kind)}`;
+      }
+      if (this.hud.previewLabel) {
+        this.hud.previewLabel.textContent = isFolder ? 'Carpeta' : this.kindLabel(item.kind);
+      }
       this.hud.open.disabled = !item.openHref || item.locked;
       this.hud.open.innerHTML = item.locked ? '<i class="fas fa-lock"></i> Protegido' : `<i class="fas ${isFolder ? 'fa-folder-open' : 'fa-arrow-up-right-from-square'}"></i> Abrir`;
 

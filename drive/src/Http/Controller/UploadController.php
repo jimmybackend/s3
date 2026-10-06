@@ -126,11 +126,17 @@ final class UploadController
 
         if ($action === 'progress') {
             $status = strtolower(trim((string)($req['status'] ?? 'running')));
-            if (!in_array($status, ['queued','pending','running'], true)) $status = 'running';
+            if (!in_array($status, ['queued','pending','running','completed','cancelled'], true)) $status = 'running';
             $this->app->uploadTaskStore()->put($userId, $taskId, [
                 'status' => $status,
                 'progress' => isset($req['progress']) ? (int)$req['progress'] : null,
+                'title' => (string)($req['task_title'] ?? 'Subida'),
                 'detail' => (string)($req['detail'] ?? 'Subida en progreso.'),
+                'source' => (string)($req['task_source'] ?? 'Drive'),
+                'upload_mode' => (string)($req['upload_mode'] ?? ''),
+                'destination' => (string)($req['destination'] ?? ''),
+                'service' => (string)($req['service'] ?? 'Amazon S3'),
+                'provider' => 'ArcadeCloud',
                 'bytes_total' => (int)($req['bytes_total'] ?? 0),
                 'bytes_uploaded' => (int)($req['bytes_uploaded'] ?? 0),
                 'speed_bps' => (int)($req['speed_bps'] ?? 0),

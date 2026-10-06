@@ -422,6 +422,8 @@ class ArcadeCloudMediaCloud {
     this.state.index = index;
     this.el.hidden = false;
     this.el.classList.remove('is-collapsed');
+    this.updateResponsiveLayout();
+    this.applySavedGeometry();
     if (type !== 'video') this.setVideoMode('cloud', false);
     this.renderPlaylist();
     await this.loadIndex(index, true);

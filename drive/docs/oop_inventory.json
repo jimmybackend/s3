@@ -1,16 +1,16 @@
 {
   "summary": {
-    "php_total": 553,
-    "php_class_modules": 315,
+    "php_total": 555,
+    "php_class_modules": 316,
     "php_needs_migration": 0,
-    "php_tests": 76,
+    "php_tests": 77,
     "js_total": 81,
     "js_class_modules": 74,
     "js_needs_migration": 1,
     "js_tests": 11,
     "js_compatibility_facades": 8,
     "ajax_clients": 53,
-    "ajax_calls": 114,
+    "ajax_calls": 115,
     "json_total": 4,
     "json_invalid": 0
   },
@@ -3248,7 +3248,7 @@
     },
     {
       "path": "drive/src/Core/DriveApplication.php",
-      "lines": 485,
+      "lines": 500,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -4493,7 +4493,7 @@
     },
     {
       "path": "drive/src/Http/Controller/BackgroundTaskController.php",
-      "lines": 1026,
+      "lines": 1100,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -5200,7 +5200,7 @@
     },
     {
       "path": "drive/src/Http/Controller/UploadController.php",
-      "lines": 281,
+      "lines": 392,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -6327,7 +6327,7 @@
     },
     {
       "path": "drive/src/Upload/AdminMultipartUploadService.php",
-      "lines": 221,
+      "lines": 326,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -6454,6 +6454,21 @@
       "session": false,
       "superglobals": [],
       "db": true,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Upload/UploadTaskStore.php",
+      "lines": 174,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
       "s3": false,
       "bootstrap": false,
       "html": false,
@@ -7853,6 +7868,23 @@
       "issues": []
     },
     {
+      "path": "drive/tests/upload_task_center_contract.php",
+      "lines": 70,
+      "kind": "test script",
+      "classes": 0,
+      "functions": [
+        "taskCenterUploadCheck"
+      ],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
       "path": "drive/tests/user_identity_presenter_smoke.php",
       "lines": 30,
       "kind": "test script",
@@ -8175,7 +8207,7 @@
     },
     {
       "path": "drive/up.php",
-      "lines": 879,
+      "lines": 926,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -8719,7 +8751,7 @@
     },
     {
       "path": "drive/js/background-tasks.js",
-      "lines": 1249,
+      "lines": 1286,
       "kind": "class/module",
       "classes": [
         "BackgroundTaskCenter"
@@ -10157,7 +10189,7 @@
     },
     {
       "path": "drive/js/upload-center.js",
-      "lines": 1038,
+      "lines": 1092,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudUploadCenter"
@@ -10168,11 +10200,11 @@
       "top_vars": [],
       "iife": false,
       "ajax": {
-        "fetch": 8,
+        "fetch": 9,
         "xhr": 2,
         "jquery": 0,
         "json_consumers": 1,
-        "response_checks": 21
+        "response_checks": 22
       },
       "issues": []
     },

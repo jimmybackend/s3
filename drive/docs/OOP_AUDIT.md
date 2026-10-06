@@ -4,16 +4,16 @@
 
 ## Resumen
 
-- PHP analizados: **553**
-- PHP que ya contienen clases/interfaces: **315**
+- PHP analizados: **555**
+- PHP que ya contienen clases/interfaces: **316**
 - PHP marcados para migración/revisión: **0**
-- Tests PHP separados del objetivo OOP de runtime: **76**
+- Tests PHP separados del objetivo OOP de runtime: **77**
 - JavaScript analizados: **81**
 - JavaScript que ya contienen clases: **74**
 - JavaScript runtime marcados para migración/revisión: **1**
 - Tests JavaScript separados del objetivo OOP de runtime: **11**
 - JavaScript OOP con fachada `window` de compatibilidad: **8**
-- Clientes AJAX detectados: **53** módulos / **114** llamadas
+- Clientes AJAX detectados: **53** módulos / **115** llamadas
 - JSON analizados: **4**; inválidos: **0**
 
 ## Criterio
@@ -243,7 +243,7 @@
 | `drive/src/Console/UploadCleanupCommand.php` | 61 | class/module | 1 | — | — | — | — |
 | `drive/src/Core/ApplicationKernel.php` | 38 | class/module | 1 | — | — | — | — |
 | `drive/src/Core/BackgroundWorkerLease.php` | 97 | class/module | 1 | — | — | — | — |
-| `drive/src/Core/DriveApplication.php` | 485 | class/module | 1 | — | — | ⚠️ | — |
+| `drive/src/Core/DriveApplication.php` | 500 | class/module | 1 | — | — | ⚠️ | — |
 | `drive/src/Federation/ArcadeLinkFileFormat.php` | 41 | class/module | 1 | — | — | — | — |
 | `drive/src/Federation/ArcadeLinkService.php` | 516 | class/module | 1 | — | — | — | — |
 | `drive/src/Federation/FederatedCatalogRepository.php` | 536 | class/module | 1 | — | ⚠️ | — | — |
@@ -326,7 +326,7 @@
 | `drive/src/Http/Controller/AwsCostController.php` | 61 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/AwsFileController.php` | 384 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/BackgroundTaskCompatibilityController.php` | 245 | class/module | 1 | — | ⚠️ | — | — |
-| `drive/src/Http/Controller/BackgroundTaskController.php` | 1026 | class/module | 1 | — | ⚠️ | — | — |
+| `drive/src/Http/Controller/BackgroundTaskController.php` | 1100 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Http/Controller/DatabaseBackupController.php` | 50 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/FederationAccessController.php` | 123 | class/module | 1 | ⚠️ | — | — | — |
 | `drive/src/Http/Controller/FederationCatalogController.php` | 144 | class/module | 1 | — | — | — | — |
@@ -373,7 +373,7 @@
 | `drive/src/Http/Controller/ThumbnailController.php` | 119 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/TranscriptionController.php` | 225 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/UploadCleanupController.php` | 76 | class/module | 1 | — | — | — | — |
-| `drive/src/Http/Controller/UploadController.php` | 281 | class/module | 1 | — | — | — | — |
+| `drive/src/Http/Controller/UploadController.php` | 392 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/UserProfileController.php` | 115 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/JsonResponse.php` | 27 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Request.php` | 122 | class/module | 1 | — | — | — | — |
@@ -447,7 +447,7 @@
 | `drive/src/System/NodeCapabilityService.php` | 255 | class/module | 1 | — | — | — | — |
 | `drive/src/System/NodeRuntimeStatusService.php` | 509 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/System/NodeServiceCatalog.php` | 35 | class/module | 1 | — | — | — | — |
-| `drive/src/Upload/AdminMultipartUploadService.php` | 221 | class/module | 1 | — | — | — | — |
+| `drive/src/Upload/AdminMultipartUploadService.php` | 326 | class/module | 1 | — | — | — | — |
 | `drive/src/Upload/ChunkedUploadCleanupService.php` | 101 | class/module | 1 | — | — | — | — |
 | `drive/src/Upload/PublicDropzoneUploadService.php` | 143 | class/module | 1 | — | — | — | — |
 | `drive/src/Upload/PublicMultipartUploadService.php` | 262 | class/module | 1 | — | — | — | — |
@@ -456,6 +456,7 @@
 | `drive/src/Upload/SingleUploadService.php` | 112 | class/module | 1 | — | — | — | — |
 | `drive/src/Upload/UploadCatalogRepository.php` | 173 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Upload/UploadCleanupService.php` | 294 | class/module | 1 | — | ⚠️ | — | — |
+| `drive/src/Upload/UploadTaskStore.php` | 174 | class/module | 1 | — | — | — | — |
 | `drive/src/View/ActivityCostPageRenderer.php` | 401 | class/module | 1 | — | — | — | — |
 | `drive/src/View/Ec2PanelHelper.php` | 69 | class/module | 1 | — | — | — | — |
 | `drive/src/View/FederationDropPageRenderer.php` | 228 | class/module | 1 | — | — | — | — |
@@ -542,6 +543,7 @@
 | `drive/tests/system_panel_fixture.php` | 28 | test script | 0 | — | — | — | — |
 | `drive/tests/transcribe_s3_recovery_contract_smoke.php` | 36 | test script | 0 | — | — | — | — |
 | `drive/tests/upload_catalog_registration_regression.php` | 125 | test script | 0 | — | ⚠️ | — | — |
+| `drive/tests/upload_task_center_contract.php` | 70 | test script | 0 | — | — | — | — |
 | `drive/tests/user_identity_presenter_smoke.php` | 30 | test script | 0 | — | — | — | — |
 | `drive/tests/user_profile_validator_smoke.php` | 72 | test script | 0 | — | — | — | — |
 | `drive/tests/web_os_clipboard_contract_smoke.php` | 126 | test script | 0 | — | — | — | — |
@@ -563,7 +565,7 @@
 | `drive/transcribir_iniciar.php` | 8 | thin endpoint | 0 | — | — | — | — |
 | `drive/unlock_file.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/up-clean.php` | 10 | thin endpoint | 0 | — | — | — | — |
-| `drive/up.php` | 879 | view/entrypoint | 0 | — | — | — | — |
+| `drive/up.php` | 926 | view/entrypoint | 0 | — | — | — | — |
 | `drive/update.php` | 11 | thin endpoint | 0 | — | — | — | — |
 | `drive/upload/ModerationUploadGuard.php` | 187 | class/module | 2 | — | ⚠️ | — | — |
 | `drive/upload/UploadFactory.php` | 60 | class/module | 1 | — | — | — | — |
@@ -597,7 +599,7 @@
 | `drive/js/audiovideo.js` | 619 | class/module | AudiovideoModule | — | audioNext, audioPrev, reproducirVideoDesde, videoNext, videoPlayPause, videoPrev | window functions: audioNext, audioPrev, reproducirVideoDesde, videoNext, videoPlayPause, videoPrev, wavePlayPause |
 | `drive/js/aws-comprehend.js` | 355 | class/module | AwsComprehendModule, AwsFileActionRouter | — | — | — |
 | `drive/js/background-task-feedback.js` | 180 | class/module | BackgroundTaskFeedbackModule | — | — | — |
-| `drive/js/background-tasks.js` | 1249 | class/module | BackgroundTaskCenter | — | — | — |
+| `drive/js/background-tasks.js` | 1286 | class/module | BackgroundTaskCenter | — | — | — |
 | `drive/js/carpetas.js` | 1200 | class/module | CarpetasModule | — | actualizarBloqueCarpetas | window functions: actualizarBloqueCarpetas |
 | `drive/js/compute-node-idle.js` | 290 | class/module | ArcadeCloudComputeIdleGuard | — | — | — |
 | `drive/js/descarga-multiple.js` | 114 | class/module | DescargaMultipleModule | — | — | — |
@@ -655,7 +657,7 @@
 | `drive/js/subir.js` | 358 | class/module | SubirModule | — | — | — |
 | `drive/js/theme-state-bridge.js` | 73 | class/module | ThemeStateBridge | — | — | — |
 | `drive/js/transcribe-background.js` | 324 | class/module | TranscribeBackgroundModule | — | — | — |
-| `drive/js/upload-center.js` | 1038 | class/module | ArcadeCloudUploadCenter | — | — | — |
+| `drive/js/upload-center.js` | 1092 | class/module | ArcadeCloudUploadCenter | — | — | — |
 | `drive/js/upload-destination.js` | 95 | class/module | UploadDestinationModule | — | — | — |
 | `drive/js/ver-metadatos.js` | 75 | class/module | VerMetadatosModule | — | verMetadatos | window functions: verMetadatos |
 | `drive/js/ver-pdf.js` | 112 | class/module | VerPdfModule | — | — | — |
@@ -727,7 +729,7 @@
 | `drive/js/subir-dropzone.js` | 1 | 1 | 0 | 0 | 12 |
 | `drive/js/subir.js` | 4 | 0 | 0 | 1 | 11 |
 | `drive/js/transcribe-background.js` | 1 | 0 | 0 | 0 | 7 |
-| `drive/js/upload-center.js` | 8 | 2 | 0 | 1 | 21 |
+| `drive/js/upload-center.js` | 9 | 2 | 0 | 1 | 22 |
 
 ### Archivos JSON
 

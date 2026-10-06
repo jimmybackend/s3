@@ -266,6 +266,10 @@ jobs:
           node --check drive/js/folder-document.js
           node --check drive/js/sincronizar.js
           node --check drive/js/move-tasks.js
+      - name: Upload task center regression
+        run: |
+          php drive/tests/upload_task_center_contract.php
+          node drive/tests/background_tasks_refresh_functional.js
       - name: Web OS contract
         run: |
           php drive/tests/web_os_contract_smoke.php

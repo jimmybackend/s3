@@ -19,7 +19,8 @@ final class AdminMultipartUploadService
         private UploadCatalogRepository $catalog,
         private S3Client $s3,
         private string $bucket,
-        private string $stateDir
+        private string $stateDir,
+        private UploadTaskStore $taskStore
     ) {
     }
 
@@ -43,26 +44,130 @@ final class AdminMultipartUploadService
         $targetUser = $this->targetUser($targetUserId);
         $service = $this->multipartFor($targetUserId);
 
-        $result = match ($action) {
-            'init' => $service->init($post),
-            'sign' => $service->sign($post),
-            'part' => $service->part($post, $files),
-            'resume' => $service->resume($post),
-            'complete' => $service->complete($post),
-            default => throw new RuntimeException('Acción no válida.'),
-        };
-
-        if ($action === 'complete') {
-            $this->registerCompleted(
-                $result,
-                $post,
-                $actorUserId,
-                $targetUserId,
-                (string)$targetUser['email']
-            );
+        if ($action === 'progress') {
+            return $this->updateTaskProgress($targetUserId, $post);
+        }
+        if ($action === 'fail') {
+            return $this->markTaskFailed($targetUserId, $post);
         }
 
-        return $result;
+        try {
+            $result = match ($action) {
+                'init' => $service->init($post),
+                'sign' => $service->sign($post),
+                'part' => $service->part($post, $files),
+                'resume' => $service->resume($post),
+                'complete' => $service->complete($post),
+                default => throw new RuntimeException('Acción no válida.'),
+            };
+
+            $taskId = $this->taskId($post, $result);
+            if ($taskId !== '' && in_array($action, ['init', 'resume'], true)) {
+                $fileName = trim((string)($post['filename'] ?? $result['filename'] ?? 'Archivo'));
+                $fileSize = max(0, (int)($post['filesize'] ?? $result['filesize'] ?? 0));
+                $parts = is_array($result['etags'] ?? null) ? count($result['etags']) : 0;
+                $chunkSize = max(0, (int)($result['chunk_size'] ?? $post['chunk_size'] ?? 0));
+                $uploaded = $chunkSize > 0 ? min($fileSize, $parts * $chunkSize) : 0;
+                $progress = $fileSize > 0 ? min(99, (int)floor(($uploaded / $fileSize) * 100)) : 0;
+                $this->taskStore->put($targetUserId, $taskId, [
+                    'status' => 'running',
+                    'progress' => $progress,
+                    'title' => $fileName !== '' ? $fileName : 'Archivo',
+                    'detail' => $action === 'resume'
+                        ? 'Subida pública reanudada desde otro navegador.'
+                        : 'Subida pública directa a Amazon S3.',
+                    'source' => 'UP.php',
+                    'upload_mode' => 'public_multipart',
+                    'destination' => 'uploads/',
+                    'bytes_total' => $fileSize,
+                    'bytes_uploaded' => $uploaded,
+                    'parts_total' => $fileSize > 0 && $chunkSize > 0 ? (int)ceil($fileSize / $chunkSize) : 0,
+                    'part_number' => $parts,
+                    'service' => 'Amazon S3',
+                    'provider' => 'ArcadeCloud',
+                ]);
+                $result['task_id'] = $taskId;
+            }
+
+            if ($action === 'complete') {
+                $this->registerCompleted(
+                    $result,
+                    $post,
+                    $actorUserId,
+                    $targetUserId,
+                    (string)$targetUser['email']
+                );
+                if ($taskId !== '') {
+                    $bytes = max(0, (int)($post['filesize'] ?? 0));
+                    $this->taskStore->put($targetUserId, $taskId, [
+                        'status' => 'completed',
+                        'progress' => 100,
+                        'detail' => 'Subida pública terminada y registrada en Mi Drive.',
+                        'bytes_total' => $bytes,
+                        'bytes_uploaded' => $bytes,
+                        'eta_seconds' => 0,
+                    ]);
+                    $result['task_id'] = $taskId;
+                }
+            }
+
+            return $result;
+        } catch (\Throwable $e) {
+            $taskId = $this->taskId($post);
+            if ($taskId !== '' && in_array($action, ['complete'], true)) {
+                try {
+                    $this->taskStore->put($targetUserId, $taskId, [
+                        'status' => 'failed',
+                        'progress' => 100,
+                        'detail' => $e->getMessage(),
+                    ]);
+                } catch (\Throwable) {
+                }
+            }
+            throw $e;
+        }
+    }
+
+    private function updateTaskProgress(int $targetUserId, array $post): array
+    {
+        $taskId = $this->taskId($post);
+        if ($taskId === '') throw new RuntimeException('Falta el identificador de la tarea pública.');
+        $status = strtolower(trim((string)($post['status'] ?? 'running')));
+        if (!in_array($status, ['queued','pending','running'], true)) $status = 'running';
+        $this->taskStore->put($targetUserId, $taskId, [
+            'status' => $status,
+            'progress' => isset($post['progress']) ? (int)$post['progress'] : null,
+            'detail' => (string)($post['detail'] ?? 'Subida pública en progreso.'),
+            'bytes_total' => (int)($post['bytes_total'] ?? 0),
+            'bytes_uploaded' => (int)($post['bytes_uploaded'] ?? 0),
+            'parts_total' => (int)($post['parts_total'] ?? 0),
+            'part_number' => (int)($post['part_number'] ?? 0),
+        ]);
+        return ['ok' => true, 'task_id' => $taskId];
+    }
+
+    private function markTaskFailed(int $targetUserId, array $post): array
+    {
+        $taskId = $this->taskId($post);
+        if ($taskId === '') throw new RuntimeException('Falta el identificador de la tarea pública.');
+        $this->taskStore->put($targetUserId, $taskId, [
+            'status' => 'failed',
+            'progress' => 100,
+            'detail' => (string)($post['detail'] ?? 'La subida pública falló.'),
+        ]);
+        return ['ok' => true, 'task_id' => $taskId];
+    }
+
+    private function taskId(array $input, array $result = []): string
+    {
+        $explicit = trim((string)($input['task_id'] ?? $result['task_id'] ?? ''));
+        if ($explicit !== '') return $explicit;
+
+        $uploadId = trim((string)($input['uploadId'] ?? $result['uploadId'] ?? ''));
+        $key = trim((string)($input['key'] ?? $result['key'] ?? ''));
+        if ($uploadId === '' || $key === '') return '';
+
+        return 'upload-public:' . substr(hash('sha256', $uploadId . '|' . $key), 0, 32);
     }
 
     private function multipartFor(int $targetUserId): PublicMultipartUploadService

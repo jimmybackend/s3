@@ -329,6 +329,13 @@ class BackgroundTaskCenter {
       this.document.body.appendChild(button);
     }
     button = button || this.document.getElementById('backgroundTaskButton');
+    if (button && !button.querySelector('.os-task-center-progress')) {
+      const liveProgress = this.document.createElement('span');
+      liveProgress.className = 'os-task-center-progress';
+      liveProgress.setAttribute('aria-hidden', 'true');
+      liveProgress.innerHTML = '<i></i>';
+      button.appendChild(liveProgress);
+    }
     if (button && button.dataset.taskCenterBound !== '1') {
       button.dataset.taskCenterBound = '1';
       button.setAttribute('aria-controls', 'backgroundTaskPanel');
@@ -861,16 +868,20 @@ class BackgroundTaskCenter {
     const activeTasks = this.tasks.filter((task) =>
       ['queued', 'pending', 'running', 'stopping'].includes(this.normalizeStatus(task.status))
     );
+    this.renderTaskbarProgress(button, activeTasks);
+
     const activeHost = panel.querySelector('[data-bg-task-active]');
+    const pinActiveForFilter = ['all', 'active', 'running', 'queued'].includes(this.filter);
+    const pinnedActive = activeTasks.filter((task) => this.filter === 'all' || this.matchesFilter(task));
     if (activeHost) {
-      const showPinnedActive = this.filter === 'all' && activeTasks.length > 0;
+      const showPinnedActive = pinActiveForFilter && pinnedActive.length > 0;
       activeHost.hidden = !showPinnedActive;
-      activeHost.innerHTML = showPinnedActive ? this.activeTasksHtml(activeTasks.slice(0, 3)) : '';
+      activeHost.innerHTML = showPinnedActive ? this.activeTasksHtml(pinnedActive.slice(0, 8)) : '';
     }
 
     const visibleTasks = this.tasks.filter((task) => {
       if (!this.matchesFilter(task)) return false;
-      if (this.filter === 'all' && activeTasks.includes(task)) return false;
+      if (pinActiveForFilter && pinnedActive.includes(task)) return false;
       return true;
     });
     const list = panel.querySelector('.bg-task-list');
@@ -895,6 +906,31 @@ class BackgroundTaskCenter {
     }
 
     this.renderBulkControls();
+  }
+
+  renderTaskbarProgress(button, activeTasks) {
+    if (!button) return;
+    const host = button.querySelector('.os-task-center-progress');
+    const bar = host?.querySelector('i');
+    const running = activeTasks.find((task) => this.normalizeStatus(task.status) === 'running') || activeTasks[0] || null;
+
+    button.classList.toggle('is-live-running', Boolean(running));
+    if (!running) {
+      button.classList.remove('has-live-progress');
+      if (bar) bar.style.width = '0%';
+      button.title = 'Tareas en segundo plano';
+      return;
+    }
+
+    const numeric = Number(running.progress);
+    const hasNumeric = Number.isFinite(numeric);
+    const pct = hasNumeric ? Math.max(0, Math.min(100, Math.round(numeric))) : 0;
+    button.classList.toggle('has-live-progress', hasNumeric);
+    if (bar) bar.style.width = hasNumeric ? pct + '%' : '0%';
+
+    const title = String(running.title || running.category || 'Tarea');
+    const status = hasNumeric ? pct + '%' : this.statusLabel(this.normalizeStatus(running.status));
+    button.title = 'Tareas · ' + title + ' · ' + status;
   }
 
   matchesFilter(task) {
@@ -932,7 +968,16 @@ class BackgroundTaskCenter {
     } else if (task.kind === 'folder-textract' && total > 0) {
       pieces.push(`${processed} de ${total} hojas`);
     } else if (task.kind === 'upload' && Number(meta.bytes_total || 0) > 0) {
-      pieces.push(this.formatBytes(Number(meta.bytes_total || 0)));
+      const bytesTotal = Number(meta.bytes_total || 0);
+      const bytesUploaded = Math.max(0, Number(meta.bytes_uploaded || 0));
+      pieces.push(bytesUploaded > 0
+        ? 'Subido: ' + this.formatBytes(bytesUploaded) + ' de ' + this.formatBytes(bytesTotal)
+        : 'Tamaño: ' + this.formatBytes(bytesTotal));
+      if (Number(meta.speed_bps || 0) > 0) pieces.push('Velocidad: ' + this.formatBytes(Number(meta.speed_bps)) + '/s');
+      if (Number(meta.eta_seconds || 0) > 0) pieces.push('Restante: ' + this.duration(Number(meta.eta_seconds) * 1000));
+      if (Number(meta.part_number || 0) > 0 && Number(meta.parts_total || 0) > 0) {
+        pieces.push('Parte: ' + Number(meta.part_number) + ' / ' + Number(meta.parts_total));
+      }
     }
 
     if (meta.current_file) pieces.push(String(meta.current_file));
@@ -1003,7 +1048,18 @@ class BackgroundTaskCenter {
     }
     if (task.kind === 'upload') {
       if (meta.destination) details.push(`Destino: ${String(meta.destination)}`);
-      if (Number(meta.bytes_total || 0) > 0) details.push(`Tamaño: ${this.formatBytes(Number(meta.bytes_total))}`);
+      if (Number(meta.bytes_total || 0) > 0) {
+        const bytesTotal = Number(meta.bytes_total || 0);
+        const bytesUploaded = Math.max(0, Number(meta.bytes_uploaded || 0));
+        details.push(bytesUploaded > 0
+          ? `Transferido: ${this.formatBytes(bytesUploaded)} / ${this.formatBytes(bytesTotal)}`
+          : `Tamaño: ${this.formatBytes(bytesTotal)}`);
+      }
+      if (Number(meta.speed_bps || 0) > 0) details.push(`Velocidad: ${this.formatBytes(Number(meta.speed_bps))}/s`);
+      if (Number(meta.eta_seconds || 0) > 0) details.push(`Restante: ${this.duration(Number(meta.eta_seconds) * 1000)}`);
+      if (Number(meta.part_number || 0) > 0 && Number(meta.parts_total || 0) > 0) {
+        details.push(`Parte: ${Number(meta.part_number)} / ${Number(meta.parts_total)}`);
+      }
       if (meta.source) details.push(`Origen: ${String(meta.source)}`);
     }
     if (task.kind === 'polly') {

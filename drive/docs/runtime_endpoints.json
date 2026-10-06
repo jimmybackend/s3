@@ -2142,7 +2142,7 @@
     },
     {
       "path": "drive/src/Core/DriveApplication.php",
-      "size": 16920,
+      "size": 17514,
       "active": false,
       "references": []
     },
@@ -2843,12 +2843,13 @@
     },
     {
       "path": "drive/src/Http/Controller/BackgroundTaskController.php",
-      "size": 46435,
+      "size": 49958,
       "active": false,
       "references": [
         "drive/tests/folder_textract_background_task_contract.php",
         "drive/tests/media_processing_contract_smoke.php",
         "drive/tests/transcribe_s3_recovery_contract_smoke.php",
+        "drive/tests/upload_task_center_contract.php",
         "drive/tests/web_os_contract_smoke.php"
       ]
     },
@@ -3184,10 +3185,11 @@
     },
     {
       "path": "drive/src/Http/Controller/UploadController.php",
-      "size": 10369,
+      "size": 15405,
       "active": false,
       "references": [
-        "drive/tests/federation_moderation_contract_smoke.php"
+        "drive/tests/federation_moderation_contract_smoke.php",
+        "drive/tests/upload_task_center_contract.php"
       ]
     },
     {
@@ -3745,10 +3747,11 @@
     },
     {
       "path": "drive/src/Upload/AdminMultipartUploadService.php",
-      "size": 6915,
+      "size": 12071,
       "active": false,
       "references": [
-        "drive/tests/federation_moderation_contract_smoke.php"
+        "drive/tests/federation_moderation_contract_smoke.php",
+        "drive/tests/upload_task_center_contract.php"
       ]
     },
     {
@@ -3808,6 +3811,14 @@
       "active": false,
       "references": [
         "drive/tests/chunked_upload_cleanup_regression.php"
+      ]
+    },
+    {
+      "path": "drive/src/Upload/UploadTaskStore.php",
+      "size": 6579,
+      "active": false,
+      "references": [
+        "drive/tests/upload_task_center_contract.php"
       ]
     },
     {
@@ -4358,6 +4369,12 @@
       "references": []
     },
     {
+      "path": "drive/tests/upload_task_center_contract.php",
+      "size": 3405,
+      "active": false,
+      "references": []
+    },
+    {
       "path": "drive/tests/user_identity_presenter_smoke.php",
       "size": 966,
       "active": false,
@@ -4513,7 +4530,7 @@
     },
     {
       "path": "drive/up.php",
-      "size": 27292,
+      "size": 29257,
       "active": true,
       "references": [
         "drive/so.php",
@@ -4523,6 +4540,7 @@
         "drive/tests/database_backup_contract_smoke.php",
         "drive/tests/federation_moderation_contract_smoke.php",
         "drive/tests/upload_catalog_registration_regression.php",
+        "drive/tests/upload_task_center_contract.php",
         "drive/js/estilo.js",
         "drive/js/so-node.js"
       ]

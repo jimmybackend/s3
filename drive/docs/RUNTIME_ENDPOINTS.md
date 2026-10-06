@@ -53,7 +53,7 @@
 | `drive/src/Setup/BootstrapSetupAuth.php` | `drive/setup/api.php`, `drive/setup/index.php`, `drive/tests/setup_bootstrap_smoke.php` |
 | `drive/src/Setup/SetupEntryGuard.php` | `drive/index.php`, `drive/tests/setup_entry_guard_smoke.php` |
 | `drive/thumb.php` | `drive/bloque_archivos.php`, `drive/so.php`, `drive/tests/web_os_contract_smoke.php`, `drive/js/file-applications.js`, `drive/js/imagenes.js` |
-| `drive/up.php` | `drive/so.php`, `drive/src/Admin/ProductionPreflightService.php`, `drive/src/Http/Controller/UploadCleanupController.php`, `drive/src/Upload/AdminMultipartUploadService.php`, `drive/tests/database_backup_contract_smoke.php`, `drive/tests/federation_moderation_contract_smoke.php`, `drive/tests/upload_catalog_registration_regression.php`, `drive/js/estilo.js`, `drive/js/so-node.js` |
+| `drive/up.php` | `drive/so.php`, `drive/src/Admin/ProductionPreflightService.php`, `drive/src/Http/Controller/UploadCleanupController.php`, `drive/src/Upload/AdminMultipartUploadService.php`, `drive/tests/database_backup_contract_smoke.php`, `drive/tests/federation_moderation_contract_smoke.php`, `drive/tests/upload_catalog_registration_regression.php`, `drive/tests/upload_task_center_contract.php`, `drive/js/estilo.js`, `drive/js/so-node.js` |
 | `drive/upload.php` | `drive/s3.php`, `drive/so.php`, `drive/tests/web_os_contract_smoke.php`, `drive/js/so-screenshot-paste.js`, `drive/js/soportesMediaTypes.js`, `drive/js/subir-chunked.js`, `drive/js/subir-dropzone.js`, `drive/js/subir.js`, `drive/js/upload-center.js` |
 | `drive/validar_php.php` | `drive/editor.php` |
 | `drive/ver_archivo.php` | `drive/bloque_archivos.php`, `drive/so.php`, `drive/src/Media/MediaPlaylistService.php`, `drive/tests/web_os_contract_smoke.php`, `drive/js/archivos.js`, `drive/js/imagenes.js` |
@@ -321,7 +321,7 @@
 | `drive/src/Http/Controller/AwsCostController.php` | ninguna |
 | `drive/src/Http/Controller/AwsFileController.php` | `drive/tests/folder_textract_background_task_contract.php`, `drive/tests/folder_textract_contract_smoke.php` |
 | `drive/src/Http/Controller/BackgroundTaskCompatibilityController.php` | ninguna |
-| `drive/src/Http/Controller/BackgroundTaskController.php` | `drive/tests/folder_textract_background_task_contract.php`, `drive/tests/media_processing_contract_smoke.php`, `drive/tests/transcribe_s3_recovery_contract_smoke.php`, `drive/tests/web_os_contract_smoke.php` |
+| `drive/src/Http/Controller/BackgroundTaskController.php` | `drive/tests/folder_textract_background_task_contract.php`, `drive/tests/media_processing_contract_smoke.php`, `drive/tests/transcribe_s3_recovery_contract_smoke.php`, `drive/tests/upload_task_center_contract.php`, `drive/tests/web_os_contract_smoke.php` |
 | `drive/src/Http/Controller/DatabaseBackupController.php` | `drive/tests/database_backup_contract_smoke.php` |
 | `drive/src/Http/Controller/FederationAccessController.php` | ninguna |
 | `drive/src/Http/Controller/FederationCatalogController.php` | ninguna |
@@ -368,7 +368,7 @@
 | `drive/src/Http/Controller/ThumbnailController.php` | `drive/tests/web_os_contract_smoke.php` |
 | `drive/src/Http/Controller/TranscriptionController.php` | `drive/tests/transcribe_s3_recovery_contract_smoke.php` |
 | `drive/src/Http/Controller/UploadCleanupController.php` | ninguna |
-| `drive/src/Http/Controller/UploadController.php` | `drive/tests/federation_moderation_contract_smoke.php` |
+| `drive/src/Http/Controller/UploadController.php` | `drive/tests/federation_moderation_contract_smoke.php`, `drive/tests/upload_task_center_contract.php` |
 | `drive/src/Http/Controller/UserProfileController.php` | ninguna |
 | `drive/src/Http/JsonResponse.php` | ninguna |
 | `drive/src/Http/Request.php` | ninguna |
@@ -440,7 +440,7 @@
 | `drive/src/System/NodeCapabilityService.php` | `drive/tests/node_diagnostics_contract_smoke.php`, `drive/tests/web_os_contract_smoke.php` |
 | `drive/src/System/NodeRuntimeStatusService.php` | `drive/tests/node_diagnostics_contract_smoke.php`, `drive/tests/node_diagnostics_control_smoke.php` |
 | `drive/src/System/NodeServiceCatalog.php` | `drive/tests/node_diagnostics_control_smoke.php` |
-| `drive/src/Upload/AdminMultipartUploadService.php` | `drive/tests/federation_moderation_contract_smoke.php` |
+| `drive/src/Upload/AdminMultipartUploadService.php` | `drive/tests/federation_moderation_contract_smoke.php`, `drive/tests/upload_task_center_contract.php` |
 | `drive/src/Upload/ChunkedUploadCleanupService.php` | `drive/tests/chunked_upload_cleanup_regression.php` |
 | `drive/src/Upload/PublicDropzoneUploadService.php` | `drive/tests/federation_moderation_contract_smoke.php` |
 | `drive/src/Upload/PublicMultipartUploadService.php` | ninguna |
@@ -449,6 +449,7 @@
 | `drive/src/Upload/SingleUploadService.php` | `drive/tests/federation_moderation_contract_smoke.php` |
 | `drive/src/Upload/UploadCatalogRepository.php` | `drive/tests/federation_moderation_contract_smoke.php`, `drive/tests/upload_catalog_registration_regression.php` |
 | `drive/src/Upload/UploadCleanupService.php` | `drive/tests/chunked_upload_cleanup_regression.php` |
+| `drive/src/Upload/UploadTaskStore.php` | `drive/tests/upload_task_center_contract.php` |
 | `drive/src/View/ActivityCostPageRenderer.php` | ninguna |
 | `drive/src/View/Ec2PanelHelper.php` | `drive/tests/system_panel_fixture.php` |
 | `drive/src/View/FederationDropPageRenderer.php` | `drive/tests/federation_drop_contract_smoke.php` |
@@ -535,6 +536,7 @@
 | `drive/tests/system_panel_fixture.php` | ninguna |
 | `drive/tests/transcribe_s3_recovery_contract_smoke.php` | ninguna |
 | `drive/tests/upload_catalog_registration_regression.php` | ninguna |
+| `drive/tests/upload_task_center_contract.php` | ninguna |
 | `drive/tests/user_identity_presenter_smoke.php` | ninguna |
 | `drive/tests/user_profile_validator_smoke.php` | ninguna |
 | `drive/tests/web_os_clipboard_contract_smoke.php` | ninguna |

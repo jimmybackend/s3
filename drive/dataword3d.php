@@ -267,7 +267,12 @@ header('Content-Type: text/html; charset=UTF-8');
 
   <main class="dw-world" id="dwWorld">
     <div class="dw-sky" aria-hidden="true"></div>
+    <div class="dw-room-panorama" aria-hidden="true">
+      <div class="dw-room-scenery"></div>
+      <div class="dw-room-mullions"></div>
+    </div>
     <div class="dw-roof" aria-hidden="true"></div>
+    <div class="dw-room-light-ring" aria-hidden="true"></div>
     <div class="dw-floor" aria-hidden="true"></div>
     <div class="dw-aquarium" aria-hidden="true">
       <span class="dw-fish fish-a">◁</span><span class="dw-fish fish-b">◁</span><span class="dw-fish fish-c">◁</span>
@@ -342,6 +347,11 @@ header('Content-Type: text/html; charset=UTF-8');
         <?php if ($state['files'] === []): ?><span class="dw-desk-empty">Sin archivos directos en esta sala.</span><?php endif; ?>
       </div>
     </section>
+    <div class="dw-chair" aria-hidden="true">
+      <span class="dw-chair-back"></span>
+      <span class="dw-chair-seat"></span>
+      <span class="dw-chair-base"></span>
+    </div>
 
     <section class="dw-media-stage" data-dw-media-stage hidden>
       <button type="button" class="dw-media-close" data-dw-media-close aria-label="Cerrar visor"><i class="fas fa-xmark"></i></button>
@@ -349,6 +359,10 @@ header('Content-Type: text/html; charset=UTF-8');
     </section>
 
     <section class="dw-hud" aria-live="polite">
+      <div class="dw-hud-preview" aria-hidden="true">
+        <span class="dw-hud-preview-object"><i class="fas fa-folder-open" data-hud-preview-icon></i></span>
+        <span class="dw-hud-preview-label" data-hud-preview-label>Carpeta</span>
+      </div>
       <div class="dw-hud-eyebrow"><span class="dw-hud-dot"></span> ARCADE HUD · OBJETO DETECTADO</div>
       <div class="dw-hud-title"><i class="fas fa-crosshairs"></i><strong data-hud-name><?= $e(rtrim((string)$state['visible_path'], '/')) ?></strong></div>
       <dl>

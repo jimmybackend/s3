@@ -53,7 +53,7 @@
 | `drive/src/Admin/ManagedRuntimeEnvironment.php` | `drive/app_bootstrap.php`, `drive/personal_aws_bootstrap.php`, `drive/setup/api.php`, `drive/tests/fastdrive_control_contract_smoke.php`, `drive/tests/installer_service_reconcile_contract_smoke.php`, `drive/tests/server_admin_config_smoke.php` |
 | `drive/src/Setup/BootstrapSetupAuth.php` | `drive/setup/api.php`, `drive/setup/index.php`, `drive/tests/setup_bootstrap_smoke.php` |
 | `drive/src/Setup/SetupEntryGuard.php` | `drive/index.php`, `drive/tests/setup_entry_guard_smoke.php` |
-| `drive/thumb.php` | `drive/bloque_archivos.php`, `drive/so.php`, `drive/tests/web_os_contract_smoke.php`, `drive/js/file-applications.js`, `drive/js/imagenes.js` |
+| `drive/thumb.php` | `drive/bloque_archivos.php`, `drive/dataword3d.php`, `drive/so.php`, `drive/tests/dataword3d_contract_smoke.php`, `drive/tests/web_os_contract_smoke.php`, `drive/js/file-applications.js`, `drive/js/imagenes.js` |
 | `drive/up.php` | `drive/so.php`, `drive/src/Admin/ProductionPreflightService.php`, `drive/src/Http/Controller/UploadCleanupController.php`, `drive/src/Upload/AdminMultipartUploadService.php`, `drive/tests/database_backup_contract_smoke.php`, `drive/tests/federation_moderation_contract_smoke.php`, `drive/tests/upload_catalog_registration_regression.php`, `drive/tests/upload_task_center_contract.php`, `drive/js/estilo.js`, `drive/js/so-node.js` |
 | `drive/upload.php` | `drive/s3.php`, `drive/so.php`, `drive/tests/web_os_contract_smoke.php`, `drive/js/so-screenshot-paste.js`, `drive/js/soportesMediaTypes.js`, `drive/js/subir-chunked.js`, `drive/js/subir-dropzone.js`, `drive/js/subir.js`, `drive/js/upload-center.js` |
 | `drive/validar_php.php` | `drive/editor.php` |

@@ -557,7 +557,7 @@
     },
     {
       "path": "drive/dataword3d.php",
-      "size": 19247,
+      "size": 19911,
       "active": true,
       "references": [
         "drive/so.php",
@@ -4072,7 +4072,7 @@
     },
     {
       "path": "drive/tests/dataword3d_contract_smoke.php",
-      "size": 2760,
+      "size": 3188,
       "active": false,
       "references": []
     },
@@ -4484,7 +4484,9 @@
       "active": true,
       "references": [
         "drive/bloque_archivos.php",
+        "drive/dataword3d.php",
         "drive/so.php",
+        "drive/tests/dataword3d_contract_smoke.php",
         "drive/tests/web_os_contract_smoke.php",
         "drive/js/file-applications.js",
         "drive/js/imagenes.js"

@@ -10,7 +10,7 @@
     "js_tests": 11,
     "js_compatibility_facades": 8,
     "ajax_clients": 53,
-    "ajax_calls": 113,
+    "ajax_calls": 114,
     "json_total": 4,
     "json_invalid": 0
   },
@@ -1850,7 +1850,7 @@
     },
     {
       "path": "drive/os-preferences.php",
-      "lines": 71,
+      "lines": 94,
       "kind": "thin endpoint",
       "classes": 0,
       "functions": [],
@@ -7899,7 +7899,7 @@
     },
     {
       "path": "drive/tests/web_os_contract_smoke.php",
-      "lines": 668,
+      "lines": 686,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -8719,7 +8719,7 @@
     },
     {
       "path": "drive/js/background-tasks.js",
-      "lines": 1187,
+      "lines": 1249,
       "kind": "class/module",
       "classes": [
         "BackgroundTaskCenter"
@@ -8739,7 +8739,7 @@
         "xhr": 0,
         "jquery": 0,
         "json_consumers": 0,
-        "response_checks": 16
+        "response_checks": 18
       },
       "issues": []
     },
@@ -9462,7 +9462,7 @@
     },
     {
       "path": "drive/js/os-media-cloud.js",
-      "lines": 930,
+      "lines": 1100,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudMediaCloud"
@@ -9473,7 +9473,7 @@
       "top_vars": [],
       "iife": false,
       "ajax": {
-        "fetch": 1,
+        "fetch": 2,
         "xhr": 0,
         "jquery": 0,
         "json_consumers": 1,
@@ -10157,7 +10157,7 @@
     },
     {
       "path": "drive/js/upload-center.js",
-      "lines": 979,
+      "lines": 1038,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudUploadCenter"

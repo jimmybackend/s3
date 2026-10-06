@@ -13,7 +13,7 @@
 - JavaScript runtime marcados para migración/revisión: **1**
 - Tests JavaScript separados del objetivo OOP de runtime: **11**
 - JavaScript OOP con fachada `window` de compatibilidad: **8**
-- Clientes AJAX detectados: **53** módulos / **113** llamadas
+- Clientes AJAX detectados: **53** módulos / **114** llamadas
 - JSON analizados: **4**; inválidos: **0**
 
 ## Criterio
@@ -151,7 +151,7 @@
 | `drive/notebook.php` | 206 | view/entrypoint | 0 | — | — | — | — |
 | `drive/office-gateway.php` | 674 | view/entrypoint | 0 | — | — | — | — |
 | `drive/office-launch.php` | 81 | thin endpoint | 0 | — | — | — | — |
-| `drive/os-preferences.php` | 71 | thin endpoint | 0 | — | — | — | — |
+| `drive/os-preferences.php` | 94 | thin endpoint | 0 | — | — | — | — |
 | `drive/personal_aws_bootstrap.php` | 86 | class/module | 1 | — | — | — | — |
 | `drive/polly_cargar_texto.php` | 8 | thin endpoint | 0 | — | — | — | — |
 | `drive/polly_list_voices.php` | 8 | thin endpoint | 0 | — | — | — | — |
@@ -545,7 +545,7 @@
 | `drive/tests/user_identity_presenter_smoke.php` | 30 | test script | 0 | — | — | — | — |
 | `drive/tests/user_profile_validator_smoke.php` | 72 | test script | 0 | — | — | — | — |
 | `drive/tests/web_os_clipboard_contract_smoke.php` | 126 | test script | 0 | — | — | — | — |
-| `drive/tests/web_os_contract_smoke.php` | 668 | test script | 0 | — | — | — | — |
+| `drive/tests/web_os_contract_smoke.php` | 686 | test script | 0 | — | — | — | — |
 | `drive/tests/web_os_desktop_shell_smoke.php` | 20 | test script | 0 | — | — | — | — |
 | `drive/tests/web_os_file_applications_smoke.php` | 21 | test script | 0 | — | — | — | — |
 | `drive/tests/web_os_interactions_theme_smoke.php` | 30 | test script | 0 | — | — | — | — |
@@ -597,7 +597,7 @@
 | `drive/js/audiovideo.js` | 619 | class/module | AudiovideoModule | — | audioNext, audioPrev, reproducirVideoDesde, videoNext, videoPlayPause, videoPrev | window functions: audioNext, audioPrev, reproducirVideoDesde, videoNext, videoPlayPause, videoPrev, wavePlayPause |
 | `drive/js/aws-comprehend.js` | 355 | class/module | AwsComprehendModule, AwsFileActionRouter | — | — | — |
 | `drive/js/background-task-feedback.js` | 180 | class/module | BackgroundTaskFeedbackModule | — | — | — |
-| `drive/js/background-tasks.js` | 1187 | class/module | BackgroundTaskCenter | — | — | — |
+| `drive/js/background-tasks.js` | 1249 | class/module | BackgroundTaskCenter | — | — | — |
 | `drive/js/carpetas.js` | 1200 | class/module | CarpetasModule | — | actualizarBloqueCarpetas | window functions: actualizarBloqueCarpetas |
 | `drive/js/compute-node-idle.js` | 290 | class/module | ArcadeCloudComputeIdleGuard | — | — | — |
 | `drive/js/descarga-multiple.js` | 114 | class/module | DescargaMultipleModule | — | — | — |
@@ -626,7 +626,7 @@
 | `drive/js/move-tasks.js` | 262 | class/module | DriveMoveTasks | — | — | — |
 | `drive/js/notebook.js` | 262 | procedural script | — | uid, status, api, canvasSize, applyZoom, background | — | top-level functions: uid, status, api, canvasSize, applyZoom, background, styleFor, drawStroke; top-level state: $, canvas, imageCache, defaultZoom, state, paper, WRITE_LEFT, fontStacks; no ES class |
 | `drive/js/obtenerFiltros.js` | 125 | class/module | ObtenerFiltrosModule | — | — | — |
-| `drive/js/os-media-cloud.js` | 930 | class/module | ArcadeCloudMediaCloud | — | — | — |
+| `drive/js/os-media-cloud.js` | 1100 | class/module | ArcadeCloudMediaCloud | — | — | — |
 | `drive/js/os-window-manager.js` | 1307 | class/module | ArcadeCloudEventBus, ArcadeCloudWindowLayoutConfig, ArcadeCloudWindowManager, ExplorerWindowFactory, ArcadeCloudExplorerWindow, ArcadeCloudDesktopRuntime | — | — | — |
 | `drive/js/page-task-manager.js` | 119 | class/module | ArcadeCloudPageTaskManager | — | — | — |
 | `drive/js/pdf-pantalla-completa.js` | 45 | class/module | PdfPantallaCompletaModule | — | — | — |
@@ -655,7 +655,7 @@
 | `drive/js/subir.js` | 358 | class/module | SubirModule | — | — | — |
 | `drive/js/theme-state-bridge.js` | 73 | class/module | ThemeStateBridge | — | — | — |
 | `drive/js/transcribe-background.js` | 324 | class/module | TranscribeBackgroundModule | — | — | — |
-| `drive/js/upload-center.js` | 979 | class/module | ArcadeCloudUploadCenter | — | — | — |
+| `drive/js/upload-center.js` | 1038 | class/module | ArcadeCloudUploadCenter | — | — | — |
 | `drive/js/upload-destination.js` | 95 | class/module | UploadDestinationModule | — | — | — |
 | `drive/js/ver-metadatos.js` | 75 | class/module | VerMetadatosModule | — | verMetadatos | window functions: verMetadatos |
 | `drive/js/ver-pdf.js` | 112 | class/module | VerPdfModule | — | — | — |
@@ -681,7 +681,7 @@
 | `drive/js/archivos.js` | 3 | 0 | 0 | 1 | 22 |
 | `drive/js/audiovideo.js` | 1 | 0 | 0 | 1 | 0 |
 | `drive/js/aws-comprehend.js` | 1 | 0 | 0 | 0 | 3 |
-| `drive/js/background-tasks.js` | 2 | 0 | 0 | 0 | 16 |
+| `drive/js/background-tasks.js` | 2 | 0 | 0 | 0 | 18 |
 | `drive/js/carpetas.js` | 2 | 0 | 0 | 2 | 11 |
 | `drive/js/compute-node-idle.js` | 3 | 0 | 0 | 3 | 6 |
 | `drive/js/descarga-multiple.js` | 1 | 0 | 0 | 0 | 2 |
@@ -702,7 +702,7 @@
 | `drive/js/move-tasks.js` | 2 | 0 | 0 | 0 | 6 |
 | `drive/js/notebook.js` | 2 | 0 | 0 | 2 | 5 |
 | `drive/js/obtenerFiltros.js` | 3 | 0 | 0 | 0 | 0 |
-| `drive/js/os-media-cloud.js` | 1 | 0 | 0 | 1 | 2 |
+| `drive/js/os-media-cloud.js` | 2 | 0 | 0 | 1 | 2 |
 | `drive/js/os-window-manager.js` | 5 | 0 | 0 | 2 | 16 |
 | `drive/js/polly-background.js` | 1 | 0 | 0 | 0 | 3 |
 | `drive/js/polly.js` | 0 | 0 | 2 | 0 | 8 |

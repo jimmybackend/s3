@@ -481,15 +481,46 @@ class BackgroundTaskCenter {
   }
 
   mergeClientTasks() {
-    const client = this.window.ArcadeCloudUploadManager &&
-      typeof this.window.ArcadeCloudUploadManager.taskSnapshots === 'function'
-      ? this.window.ArcadeCloudUploadManager.taskSnapshots()
-      : [];
+    let client = [];
+    try {
+      client = this.window.ArcadeCloudUploadManager &&
+        typeof this.window.ArcadeCloudUploadManager.taskSnapshots === 'function'
+        ? this.window.ArcadeCloudUploadManager.taskSnapshots()
+        : [];
+      if (this.sourceErrors && this.sourceErrors.client_upload) {
+        delete this.sourceErrors.client_upload;
+      }
+    } catch (error) {
+      this.sourceErrors = {
+        ...(this.sourceErrors || {}),
+        client_upload: error && error.message ? String(error.message) : 'No se pudo leer el estado local de subidas.'
+      };
+      client = [];
+    }
 
-    this.tasks = [
-      ...client,
-      ...this.serverTasks
-    ];
+    // El servidor es la fuente persistente. Cuando la misma subida también
+    // existe en esta pestaña, el snapshot local aporta métricas más frescas
+    // pero conserva control_id para que limpiar la tarea borre ambos estados.
+    const merged = new Map();
+    this.serverTasks.forEach((task) => {
+      const id = String(task && task.id || '');
+      if (id) merged.set(id, task);
+    });
+    client.forEach((task) => {
+      const id = String(task && task.id || '');
+      if (!id) return;
+      const server = merged.get(id) || {};
+      merged.set(id, {
+        ...server,
+        ...task,
+        control_id: server.control_id || task.control_id || '',
+        actions: Array.isArray(task.actions) && task.actions.length
+          ? task.actions
+          : (Array.isArray(server.actions) ? server.actions : [])
+      });
+    });
+
+    this.tasks = Array.from(merged.values());
     this.pruneSelection();
 
     const base = this.serverSummary || {
@@ -549,8 +580,14 @@ class BackgroundTaskCenter {
       const task = this.tasks.find((item) => String(item.control_id || item.id || '') === taskId || String(item.id || '') === taskId);
       if (task && String(task.kind || '') === 'upload' && action === 'dismiss') {
         this.dismissClientUpload(task);
-        this.mergeClientTasks();
-        this.render();
+        const controlId = String(task.control_id || '');
+        if (controlId.startsWith('upload-task:')) {
+          await this.requestTaskAction(controlId, 'delete');
+          await this.refresh();
+        } else {
+          this.mergeClientTasks();
+          this.render();
+        }
       } else {
         const json = await this.requestTaskAction(taskId, action);
         this.notify(json.message || `${label} solicitada.`, 'success', 6000);

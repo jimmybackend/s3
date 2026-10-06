@@ -8751,7 +8751,7 @@
     },
     {
       "path": "drive/js/background-tasks.js",
-      "lines": 1286,
+      "lines": 1352,
       "kind": "class/module",
       "classes": [
         "BackgroundTaskCenter"
@@ -8771,7 +8771,7 @@
         "xhr": 0,
         "jquery": 0,
         "json_consumers": 0,
-        "response_checks": 18
+        "response_checks": 19
       },
       "issues": []
     },
@@ -10285,7 +10285,7 @@
     },
     {
       "path": "drive/tests/background_tasks_refresh_functional.js",
-      "lines": 22,
+      "lines": 38,
       "kind": "procedural script",
       "classes": [],
       "functions": [],
@@ -10690,7 +10690,7 @@
     },
     {
       "path": "drive/docs/runtime_endpoints.json",
-      "bytes": 130481,
+      "bytes": 131036,
       "valid": true,
       "root_type": "object",
       "keys": [

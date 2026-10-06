@@ -599,7 +599,7 @@
 | `drive/js/audiovideo.js` | 619 | class/module | AudiovideoModule | — | audioNext, audioPrev, reproducirVideoDesde, videoNext, videoPlayPause, videoPrev | window functions: audioNext, audioPrev, reproducirVideoDesde, videoNext, videoPlayPause, videoPrev, wavePlayPause |
 | `drive/js/aws-comprehend.js` | 355 | class/module | AwsComprehendModule, AwsFileActionRouter | — | — | — |
 | `drive/js/background-task-feedback.js` | 180 | class/module | BackgroundTaskFeedbackModule | — | — | — |
-| `drive/js/background-tasks.js` | 1286 | class/module | BackgroundTaskCenter | — | — | — |
+| `drive/js/background-tasks.js` | 1352 | class/module | BackgroundTaskCenter | — | — | — |
 | `drive/js/carpetas.js` | 1200 | class/module | CarpetasModule | — | actualizarBloqueCarpetas | window functions: actualizarBloqueCarpetas |
 | `drive/js/compute-node-idle.js` | 290 | class/module | ArcadeCloudComputeIdleGuard | — | — | — |
 | `drive/js/descarga-multiple.js` | 114 | class/module | DescargaMultipleModule | — | — | — |
@@ -661,7 +661,7 @@
 | `drive/js/upload-destination.js` | 95 | class/module | UploadDestinationModule | — | — | — |
 | `drive/js/ver-metadatos.js` | 75 | class/module | VerMetadatosModule | — | verMetadatos | window functions: verMetadatos |
 | `drive/js/ver-pdf.js` | 112 | class/module | VerPdfModule | — | — | — |
-| `drive/tests/background_tasks_refresh_functional.js` | 22 | procedural script | — | — | — | top-level state: assert, vm, fs, source, context; no ES class |
+| `drive/tests/background_tasks_refresh_functional.js` | 38 | procedural script | — | — | — | top-level state: assert, vm, fs, source, context; no ES class |
 | `drive/tests/classic_mutation_csrf_functional.js` | 56 | class/module | FixtureFormData | — | — | — |
 | `drive/tests/local_container_programs_functional.js` | 25 | class/module | Element | — | — | — |
 | `drive/tests/web_os_desktop_shell_functional.js` | 40 | procedural script | — | assert | — | top-level functions: assert; top-level state: editable, records, instance, registered, declarative, launcher, remoteApps; no ES class |
@@ -683,7 +683,7 @@
 | `drive/js/archivos.js` | 3 | 0 | 0 | 1 | 22 |
 | `drive/js/audiovideo.js` | 1 | 0 | 0 | 1 | 0 |
 | `drive/js/aws-comprehend.js` | 1 | 0 | 0 | 0 | 3 |
-| `drive/js/background-tasks.js` | 2 | 0 | 0 | 0 | 18 |
+| `drive/js/background-tasks.js` | 2 | 0 | 0 | 0 | 19 |
 | `drive/js/carpetas.js` | 2 | 0 | 0 | 2 | 11 |
 | `drive/js/compute-node-idle.js` | 3 | 0 | 0 | 3 | 6 |
 | `drive/js/descarga-multiple.js` | 1 | 0 | 0 | 0 | 2 |

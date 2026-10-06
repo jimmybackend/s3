@@ -647,6 +647,7 @@ $isExplorerFragment = (string)($_GET['_os_fragment'] ?? '') === 'explorer';
           <?php endif; ?>
           <a class="os-app-card is-ready" href="notebook.php" target="_blank" rel="noopener"><i class="fas fa-book-open"></i><strong>Notebook</strong><span>Nueva pestaña</span></a>
           <a class="os-app-card is-ready" href="s3.php"><i class="fas fa-hard-drive"></i><strong>Drive clásico</strong><span>Disponible</span></a>
+          <a class="os-app-card is-ready" href="dataword3d.php"><i class="fas fa-cubes"></i><strong>Drive 3D</strong><span>Biblioteca espacial</span></a>
           <a class="os-app-card is-ready" data-launcher-app="office" href="office-launch.php" target="_blank" rel="noopener"><i class="fas fa-file-word"></i><strong>Office</strong><span>Disponible</span></a>
           <a class="os-app-card is-ready" data-launcher-app="linux-xfce" href="office-launch.php" target="_blank" rel="noopener" title="Abrir escritorio Linux remoto por noVNC"><i class="fab fa-linux"></i><strong>Linux XFCE</strong><span>noVNC</span></a>
           <a class="os-app-card is-ready" data-launcher-app="guacamole" href="office-launch.php?target=guacamole" target="_blank" rel="noopener" title="Abrir escritorio Linux remoto por Guacamole RDP"><i class="fas fa-headset"></i><strong>Guacamole</strong><span>Audio + micrófono</span></a>
@@ -657,7 +658,6 @@ $isExplorerFragment = (string)($_GET['_os_fragment'] ?? '') === 'explorer';
           <button type="button" class="os-app-card" disabled><i class="fas fa-wave-square"></i><strong>Audio</strong><span>Próximamente</span></button>
           <button type="button" class="os-app-card" disabled><i class="fas fa-film"></i><strong>Video</strong><span>Próximamente</span></button>
           <button type="button" class="os-app-card" disabled><i class="fas fa-file-pdf"></i><strong>PDF</strong><span>Próximamente</span></button>
-          <button type="button" class="os-app-card" disabled><i class="fas fa-cubes"></i><strong>3D</strong><span>Próximamente</span></button>
           <button type="button" class="os-app-card" disabled><i class="fas fa-earth-americas"></i><strong>Mapas</strong><span>Próximamente</span></button>
         </div>
       </div>
@@ -2045,6 +2045,7 @@ Escribe help o usa uno de los botones disponibles.</pre>
     <button type="button" data-window-open="appsWindow"><i class="fas fa-shapes"></i> Aplicaciones</button>
     <a href="notebook.php"><i class="fas fa-book-open"></i> Notebook</a>
     <a href="s3.php"><i class="fas fa-hard-drive"></i> Drive clásico</a>
+    <a href="dataword3d.php"><i class="fas fa-cubes"></i> Drive 3D</a>
     <button type="button" data-window-open="settingsWindow"><i class="fas fa-gear"></i> Configuración</button>
     <button type="button" data-window-open="linksWindow"><i class="fas fa-link"></i> Enlaces</button>
     <button type="button" data-os-reload><i class="fas fa-rotate-right"></i> Actualizar</button>

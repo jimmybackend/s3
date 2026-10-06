@@ -35,14 +35,20 @@
       this.deskImage = doc.querySelector('[data-dw-desk-image]');
       this.deskName = doc.querySelector('[data-dw-desk-name]');
       this.deskMeta = doc.querySelector('[data-dw-desk-meta]');
+      this.deskFiles = doc.querySelector('[data-dw-current-files]');
       this.mediaStage = doc.querySelector('[data-dw-media-stage]');
       this.mediaContent = doc.querySelector('[data-dw-media-content]');
       this.environmentPanel = doc.querySelector('[data-dw-environment-panel]');
+      this.glassImage = doc.querySelector('[data-dw-glass-image]');
+      this.floorImage = doc.querySelector('[data-dw-floor-image]');
+      this.environmentSelected = doc.querySelector('[data-environment-selected]');
+      this.environmentUseButtons = Array.from(doc.querySelectorAll('[data-environment-use]'));
     }
 
     init() {
       this.bindControls();
       this.restoreEnvironment();
+      this.restoreSurfaceImages();
       this.arrangeShelves(false);
       const first = this.shelves[0];
       if (first) {
@@ -68,6 +74,12 @@
       });
       this.document.querySelectorAll('[data-environment-choice]').forEach((button) => {
         button.addEventListener('click', () => this.setEnvironment(button.dataset.environmentChoice || 'future'));
+      });
+      this.environmentUseButtons.forEach((button) => {
+        button.addEventListener('click', () => this.useSelectedImageOn(button.dataset.environmentUse || ''));
+      });
+      this.document.querySelectorAll('[data-environment-clear]').forEach((button) => {
+        button.addEventListener('click', () => this.clearSurfaceImage(button.dataset.environmentClear || ''));
       });
 
       this.ring?.addEventListener('click', (event) => {
@@ -163,35 +175,39 @@
       const width = this.world?.clientWidth || this.window.innerWidth;
       const compact = width < 620;
       const tablet = width < 1000;
-      const arcStepDegrees = compact ? 18 : tablet ? 16 : 13;
+      const arcStepDegrees = compact ? 19 : tablet ? 17 : 14.5;
       const radius = compact
-        ? 520
+        ? 500
         : tablet
-          ? 700
-          : Math.max(880, Math.min(1120, width * .83));
+          ? 690
+          : Math.max(860, Math.min(1080, width * .79));
       const maxVisible = compact ? 2 : tablet ? 2 : 3;
+      const scaleSteps = compact
+        ? [1.035, .83, .67]
+        : tablet
+          ? [1.05, .86, .70]
+          : [1.07, .88, .72, .60];
 
       this.shelves.forEach((shelf, index) => {
         const diff = this.circularDifference(index);
         const abs = Math.abs(diff);
         const angle = diff * arcStepDegrees * Math.PI / 180;
         const x = Math.sin(angle) * radius;
-        const z = (Math.cos(angle) - 1) * radius * .82;
-        const y = abs * (compact ? 7 : 5) + abs * abs * (compact ? 2.5 : 2);
+        const z = (Math.cos(angle) - 1) * radius * .96;
+        const y = abs * (compact ? 10 : 8) + abs * abs * (compact ? 2.5 : 2.4);
         const yaw = -diff * arcStepDegrees;
-        const scale = index === this.activeIndex
-          ? (compact ? 1.01 : 1.025)
-          : Math.max(compact ? .72 : .78, 1 - abs * (compact ? .11 : .055));
+        const scale = scaleSteps[Math.min(abs, scaleSteps.length - 1)];
 
         shelf.style.transitionDuration = animate ? '' : '0ms';
         shelf.style.transform = `translate3d(${x}px, ${y}px, ${z}px) rotateY(${yaw}deg) scale(${scale})`;
-        shelf.style.zIndex = String(44 - Math.round(abs * 5));
+        shelf.style.zIndex = String(48 - Math.round(abs * 6));
         shelf.style.opacity = abs > maxVisible
           ? '0'
-          : String(Math.max(.46, 1 - abs * (compact ? .21 : .085)));
+          : String(Math.max(.72, 1 - abs * (compact ? .12 : .055)));
         shelf.style.pointerEvents = abs > maxVisible ? 'none' : '';
         shelf.setAttribute('aria-hidden', abs > maxVisible ? 'true' : 'false');
         shelf.dataset.arcSide = diff < 0 ? 'left' : diff > 0 ? 'right' : 'center';
+        shelf.dataset.arcDepth = String(abs);
         shelf.classList.toggle('is-active', index === this.activeIndex);
       });
     }
@@ -211,6 +227,7 @@
         downloadHref: d.downloadHref || '',
         previewHref: d.previewHref || '',
         thumbHref: d.itemThumb || '',
+        environmentHref: d.itemEnvironment || '',
         locked: d.itemLocked === '1',
       };
     }
@@ -225,6 +242,7 @@
       this.selected = this.itemFromElement(element);
       this.updateHud(this.selected);
       this.renderDeskPreview(this.selected, false);
+      this.updateEnvironmentSelection(this.selected);
 
       if (options.loadPreview && this.selected.previewHref) {
         this.loadShelfPreview(element, this.selected.previewHref);
@@ -293,7 +311,10 @@
           this.previewCache.set(href, state);
         }
         this.renderShelfPreview(shelf, state);
-        if (this.selected?.element === shelf) this.updateHud(this.selected, state);
+        if (this.selected?.element === shelf) {
+          this.updateHud(this.selected, state);
+          this.renderDeskFileStrip(Array.isArray(state.files) ? state.files : []);
+        }
       } catch (error) {
         const info = shelf.querySelector('[data-preview-info]');
         if (info) info.textContent = 'No se pudo cargar la vista previa.';
@@ -348,12 +369,79 @@
       button.dataset.downloadHref = item.download_href || '';
       button.dataset.previewHref = item.preview_href || '';
       button.dataset.itemThumb = item.thumbnail_href || '';
+      button.dataset.itemEnvironment = item.environment_href || '';
       button.dataset.itemLocked = item.locked ? '1' : '0';
       button.title = item.name || 'Elemento';
       const label = this.document.createElement('span');
       label.textContent = item.name || 'Elemento';
       button.append(label);
       return button;
+    }
+
+    renderDeskFileStrip(files) {
+      if (!this.deskFiles) return;
+      this.deskFiles.replaceChildren();
+
+      const visible = Array.isArray(files) ? files.slice(0, 24) : [];
+      if (!visible.length) {
+        const empty = this.document.createElement('span');
+        empty.className = 'dw-desk-empty';
+        empty.textContent = 'Sin archivos directos en este estante.';
+        this.deskFiles.append(empty);
+        return;
+      }
+
+      visible.forEach((item) => this.deskFiles.append(this.deskFileNode(item)));
+    }
+
+    deskFileNode(item) {
+      const button = this.document.createElement('button');
+      button.type = 'button';
+      button.className = 'dw-desk-book';
+      button.dataset.dwItem = '';
+      button.dataset.itemType = 'file';
+      button.dataset.itemKind = item.kind || 'file';
+      button.dataset.itemName = item.name || 'Archivo';
+      button.dataset.itemPath = item.visible_path || '';
+      button.dataset.itemSize = item.size || '—';
+      button.dataset.itemDate = item.date || '—';
+      button.dataset.itemFormat = item.extension || 'ARCHIVO';
+      button.dataset.openHref = item.open_href || '';
+      button.dataset.downloadHref = item.download_href || '';
+      button.dataset.itemThumb = item.thumbnail_href || '';
+      button.dataset.itemEnvironment = item.environment_href || '';
+      button.dataset.itemLocked = item.locked ? '1' : '0';
+      button.title = item.name || 'Archivo';
+
+      const media = this.document.createElement('span');
+      media.className = 'dw-desk-book-media';
+      const canShowThumb = item.kind === 'image' && Boolean(item.thumbnail_href) && !item.locked;
+
+      if (canShowThumb) {
+        const img = this.document.createElement('img');
+        img.src = item.thumbnail_href;
+        img.loading = 'lazy';
+        img.decoding = 'async';
+        img.alt = `Miniatura de ${item.name || 'imagen'}`;
+        img.addEventListener('error', () => {
+          media.replaceChildren(this.fileIconNode(item.kind || 'file'));
+        }, { once:true });
+        media.append(img);
+      } else {
+        media.append(this.fileIconNode(item.kind || 'file'));
+      }
+
+      const label = this.document.createElement('span');
+      label.className = 'dw-desk-book-label';
+      label.textContent = item.name || 'Archivo';
+      button.append(media, label);
+      return button;
+    }
+
+    fileIconNode(kind) {
+      const icon = this.document.createElement('i');
+      icon.className = `fas ${this.iconFor(kind)}`;
+      return icon;
     }
 
     emptyNode(text) {
@@ -469,14 +557,82 @@
       const allowed = new Set(['future','mountain','prehistoric','ocean']);
       const next = allowed.has(environment) ? environment : 'future';
       this.document.body.dataset.environment = next;
-      try { localStorage.setItem('arcadecloud-drive3d-environment', next); } catch (_) {}
+      try { localStorage.setItem(this.preferenceKey('environment'), next); } catch (_) {}
       if (this.environmentPanel) this.environmentPanel.hidden = true;
     }
 
     restoreEnvironment() {
       let environment = 'future';
-      try { environment = localStorage.getItem('arcadecloud-drive3d-environment') || environment; } catch (_) {}
-      this.setEnvironment(environment);
+      try {
+        environment = localStorage.getItem(this.preferenceKey('environment'))
+          || localStorage.getItem('arcadecloud-drive3d-environment')
+          || environment;
+      } catch (_) {}
+      this.document.body.dataset.environment = environment;
+    }
+
+    preferenceKey(name) {
+      const scope = this.window.ARCADECLOUD_DRIVE3D?.preferenceScope || 'default';
+      return `arcadecloud-drive3d-${scope}-${name}`;
+    }
+
+    updateEnvironmentSelection(item) {
+      const usable = Boolean(item && item.kind === 'image' && item.environmentHref && !item.locked);
+      if (this.environmentSelected) {
+        this.environmentSelected.textContent = usable
+          ? item.name
+          : 'Selecciona una imagen de tus archivos';
+      }
+      this.environmentUseButtons.forEach((button) => {
+        button.disabled = !usable;
+      });
+    }
+
+    useSelectedImageOn(surface) {
+      const item = this.selected;
+      if (!item || item.kind !== 'image' || !item.environmentHref || item.locked) return;
+      if (!['glass','floor'].includes(surface)) return;
+
+      this.applySurfaceImage(surface, item.environmentHref);
+      try {
+        localStorage.setItem(this.preferenceKey(`${surface}-image`), item.environmentHref);
+        localStorage.setItem(this.preferenceKey(`${surface}-image-name`), item.name);
+      } catch (_) {}
+
+      if (this.environmentSelected) {
+        this.environmentSelected.textContent = `${item.name} · aplicado a ${surface === 'glass' ? 'cristales' : 'piso'}`;
+      }
+    }
+
+    clearSurfaceImage(surface) {
+      if (!['glass','floor'].includes(surface)) return;
+      this.applySurfaceImage(surface, '');
+      try {
+        localStorage.removeItem(this.preferenceKey(`${surface}-image`));
+        localStorage.removeItem(this.preferenceKey(`${surface}-image-name`));
+      } catch (_) {}
+    }
+
+    restoreSurfaceImages() {
+      ['glass','floor'].forEach((surface) => {
+        let url = '';
+        try { url = localStorage.getItem(this.preferenceKey(`${surface}-image`)) || ''; } catch (_) {}
+        if (url) this.applySurfaceImage(surface, url);
+      });
+    }
+
+    applySurfaceImage(surface, url) {
+      const target = surface === 'glass' ? this.glassImage : this.floorImage;
+      if (!target) return;
+
+      if (!url) {
+        target.style.backgroundImage = '';
+        target.classList.remove('is-customized');
+        return;
+      }
+
+      target.style.backgroundImage = `url(${JSON.stringify(String(url))})`;
+      target.classList.add('is-customized');
     }
 
     async toggleFullscreen() {

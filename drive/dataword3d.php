@@ -141,6 +141,9 @@ $buildState = static function (string $route) use (
         $thumbnailHref = (!$locked && $key !== '' && $kind === 'image')
             ? 'thumb.php?key=' . rawurlencode($key) . '&w=420&h=280&fit=cover'
             : '';
+        $environmentHref = (!$locked && $key !== '' && $kind === 'image')
+            ? 'thumb.php?key=' . rawurlencode($key) . '&w=1920&h=1080&fit=cover'
+            : '';
 
         $files[] = [
             'type' => 'file',
@@ -156,6 +159,7 @@ $buildState = static function (string $route) use (
             'open_href' => $openHref,
             'download_href' => $downloadHref,
             'thumbnail_href' => $thumbnailHref,
+            'environment_href' => $environmentHref,
         ];
     }
 
@@ -272,12 +276,15 @@ header('Content-Type: text/html; charset=UTF-8');
   <main class="dw-world" id="dwWorld">
     <div class="dw-sky" aria-hidden="true"></div>
     <div class="dw-room-panorama" aria-hidden="true">
+      <div class="dw-room-custom-image" data-dw-glass-image></div>
       <div class="dw-room-scenery"></div>
       <div class="dw-room-mullions"></div>
     </div>
     <div class="dw-roof" aria-hidden="true"></div>
     <div class="dw-room-light-ring" aria-hidden="true"></div>
-    <div class="dw-floor" aria-hidden="true"></div>
+    <div class="dw-floor" aria-hidden="true">
+      <div class="dw-floor-custom-image" data-dw-floor-image></div>
+    </div>
     <div class="dw-aquarium" aria-hidden="true">
       <span class="dw-fish fish-a">◁</span><span class="dw-fish fish-b">◁</span><span class="dw-fish fish-c">◁</span>
     </div>
@@ -350,9 +357,17 @@ header('Content-Type: text/html; charset=UTF-8');
                   data-open-href="<?= $e($file['open_href']) ?>"
                   data-download-href="<?= $e($file['download_href']) ?>"
                   data-item-thumb="<?= $e($file['thumbnail_href'] ?? '') ?>"
+                  data-item-environment="<?= $e($file['environment_href'] ?? '') ?>"
                   data-item-locked="<?= !empty($file['locked']) ? '1' : '0' ?>"
                   title="<?= $e($file['name']) ?>">
-            <i class="fas <?= $e($file['icon']) ?>"></i><span><?= $e($file['name']) ?></span>
+            <span class="dw-desk-book-media">
+              <?php if (($file['kind'] ?? '') === 'image' && !empty($file['thumbnail_href'])): ?>
+                <img src="<?= $e($file['thumbnail_href']) ?>" loading="lazy" decoding="async" alt="Miniatura de <?= $e($file['name']) ?>">
+              <?php else: ?>
+                <i class="fas <?= $e($file['icon']) ?>"></i>
+              <?php endif; ?>
+            </span>
+            <span class="dw-desk-book-label"><?= $e($file['name']) ?></span>
           </button>
         <?php endforeach; ?>
         <?php if ($state['files'] === []): ?><span class="dw-desk-empty">Sin archivos directos en esta sala.</span><?php endif; ?>
@@ -403,11 +418,24 @@ header('Content-Type: text/html; charset=UTF-8');
     </div>
 
     <section class="dw-environment-panel" data-dw-environment-panel hidden>
-      <div><strong>Entorno de la sala</strong><button type="button" data-dw-environment-close><i class="fas fa-xmark"></i></button></div>
-      <button type="button" data-environment-choice="future">Ciudad futura</button>
-      <button type="button" data-environment-choice="mountain">Montaña</button>
-      <button type="button" data-environment-choice="prehistoric">Prehistórico</button>
-      <button type="button" data-environment-choice="ocean">Océano</button>
+      <div><strong>Personalizar entorno</strong><button type="button" data-dw-environment-close><i class="fas fa-xmark"></i></button></div>
+      <p class="dw-environment-help">Elige un ambiente o selecciona una imagen de tus archivos y úsala en los cristales o en el piso.</p>
+      <div class="dw-environment-presets">
+        <button type="button" data-environment-choice="future">Ciudad futura</button>
+        <button type="button" data-environment-choice="mountain">Montaña</button>
+        <button type="button" data-environment-choice="prehistoric">Prehistórico</button>
+        <button type="button" data-environment-choice="ocean">Océano</button>
+      </div>
+      <div class="dw-environment-selection">
+        <span>Imagen seleccionada</span>
+        <strong data-environment-selected>Ninguna imagen seleccionada</strong>
+      </div>
+      <button type="button" data-environment-use="glass" disabled><i class="fas fa-window-maximize"></i> Usar en cristales</button>
+      <button type="button" data-environment-use="floor" disabled><i class="fas fa-layer-group"></i> Usar en piso</button>
+      <div class="dw-environment-reset">
+        <button type="button" data-environment-clear="glass">Quitar cristales</button>
+        <button type="button" data-environment-clear="floor">Quitar piso</button>
+      </div>
     </section>
   </main>
 
@@ -420,6 +448,7 @@ header('Content-Type: text/html; charset=UTF-8');
       'fileCount' => $state['file_count'],
       'folderBytes' => $state['folder_bytes'],
       'latestDate' => $state['latest_date'],
+      'preferenceScope' => 'u' . $userId,
     ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
   </script>
   <script src="js/dataword3d.js?v=<?= (int)filemtime(__DIR__ . '/js/dataword3d.js') ?>"></script>

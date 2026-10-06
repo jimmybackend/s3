@@ -1153,6 +1153,12 @@ class BackgroundTaskCenter {
       return { cssClass: 'determinate', widthStyle: `width:${pct}%` };
     }
 
+    const numericProgress = Number(task.progress);
+    if (Number.isFinite(numericProgress)) {
+      const pct = Math.max(1, Math.min(99, Math.round(numericProgress)));
+      return { cssClass: 'determinate', widthStyle: `width:${pct}%` };
+    }
+
     return { cssClass: 'indeterminate', widthStyle: '' };
   }
 

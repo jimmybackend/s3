@@ -16,6 +16,7 @@ class ArcadeCloudMediaCloud {
     this.videoScreen = null;
     this.videoInlineHost = null;
     this.videoScreenBody = null;
+    this.layoutResizeHandler = () => this.updateResponsiveLayout();
     this.eqMode = 'auto';
     this.eqValues = { low: 0, mid: 0, high: 0 };
   }
@@ -24,6 +25,7 @@ class ArcadeCloudMediaCloud {
     if (this.el) return this;
     this.build();
     this.bind();
+    this.updateResponsiveLayout();
     this.restorePreferences();
     this.drawIdleWave();
     return this;
@@ -123,7 +125,7 @@ class ArcadeCloudMediaCloud {
             C89 552 47 526 34 483
             C2 455 2 411 27 378
             C3 342 13 296 48 270
-            C54 235 81 211 122 206 Z"/>
+            C54 235 81 211 122 206 Z" pathLength="100"/>
           <clipPath id="acCloudClip"><use href="#acCloudShape"/></clipPath>
         </defs>
 
@@ -134,52 +136,29 @@ class ArcadeCloudMediaCloud {
 
         <g class="ac-cloud-scenery" clip-path="url(#acCloudClip)">
           <g class="scenery-top">
-            <ellipse cx="688" cy="121" rx="122" ry="58" fill="url(#acPuffShade)"/>
-            <circle cx="636" cy="128" r="45" fill="url(#acPuffFace)"/>
-            <circle cx="674" cy="101" r="58" fill="url(#acPuffFace)"/>
-            <circle cx="725" cy="94" r="66" fill="url(#acPuffFace)"/>
-            <circle cx="774" cy="124" r="50" fill="url(#acPuffFace)"/>
-            <ellipse cx="714" cy="151" rx="122" ry="42" fill="url(#acPuffFace)"/>
+            <path d="M568 153 C579 132 596 120 617 121 C626 97 649 82 674 88 C690 59 724 51 749 67 C770 61 794 73 800 95 C824 100 838 119 834 140 C823 160 802 168 780 164 C759 180 729 178 710 165 C687 178 654 174 642 158 C615 168 586 164 568 153 Z" fill="url(#acPuffShade)"/>
+            <path d="M590 151 C600 134 615 128 632 130 C638 111 656 100 674 105 C686 81 712 76 731 88 C750 83 769 95 773 113 C795 115 808 130 804 145 C791 159 773 162 756 156 C739 169 717 168 703 156 C683 168 659 165 649 152 C629 160 607 158 590 151 Z" fill="url(#acPuffFace)"/>
           </g>
           <g class="scenery-left">
-            <ellipse cx="145" cy="486" rx="110" ry="49" fill="url(#acPuffShade)"/>
-            <circle cx="96" cy="485" r="45" fill="url(#acPuffFace)"/>
-            <circle cx="132" cy="455" r="58" fill="url(#acPuffFace)"/>
-            <circle cx="183" cy="475" r="48" fill="url(#acPuffFace)"/>
-            <ellipse cx="150" cy="515" rx="115" ry="40" fill="url(#acPuffFace)"/>
+            <path d="M48 510 C57 486 77 476 98 481 C103 454 126 438 151 446 C164 421 194 418 210 438 C234 437 251 455 246 477 C263 493 255 519 234 527 C216 547 187 549 168 536 C144 552 110 548 98 530 C79 536 57 527 48 510 Z" fill="url(#acPuffShade)"/>
+            <path d="M68 507 C76 491 90 486 105 490 C109 470 126 458 144 465 C155 446 177 444 190 459 C208 457 222 471 219 487 C233 498 226 516 211 521 C197 534 177 535 163 525 C145 537 122 533 113 521 C98 525 80 519 68 507 Z" fill="url(#acPuffFace)"/>
           </g>
           <g class="scenery-right">
-            <ellipse cx="856" cy="485" rx="115" ry="50" fill="url(#acPuffShade)"/>
-            <circle cx="811" cy="469" r="52" fill="url(#acPuffFace)"/>
-            <circle cx="861" cy="445" r="61" fill="url(#acPuffFace)"/>
-            <circle cx="913" cy="480" r="48" fill="url(#acPuffFace)"/>
-            <ellipse cx="860" cy="519" rx="122" ry="42" fill="url(#acPuffFace)"/>
+            <path d="M754 510 C764 484 785 473 808 479 C817 449 842 433 867 442 C882 419 910 421 925 441 C949 441 966 459 960 482 C978 500 968 526 945 533 C927 551 899 552 881 539 C858 554 827 550 814 532 C791 538 768 529 754 510 Z" fill="url(#acPuffShade)"/>
+            <path d="M778 506 C786 489 801 483 816 488 C822 468 839 456 857 463 C869 444 891 446 903 461 C921 461 934 474 931 491 C944 502 937 519 922 524 C908 536 888 537 874 527 C856 538 834 535 824 522 C807 527 790 519 778 506 Z" fill="url(#acPuffFace)"/>
           </g>
         </g>
 
-        <g class="ac-cloud-aura" filter="url(#acMistBlur)" opacity=".34">
-          <ellipse cx="164" cy="455" rx="118" ry="62" fill="url(#acMistWhite)"/>
-          <ellipse cx="838" cy="446" rx="126" ry="65" fill="url(#acMistWhite)"/>
-          <ellipse cx="706" cy="98" rx="142" ry="66" fill="url(#acMistWhite)"/>
+        <g class="ac-cloud-aura" filter="url(#acMistBlur)" opacity=".30">
+          <path d="M38 500 C71 447 137 431 202 456 C239 471 253 509 226 538 C177 567 88 561 38 500 Z" fill="url(#acMistWhite)"/>
+          <path d="M760 491 C797 441 870 428 930 459 C967 478 972 516 942 540 C888 565 806 554 760 491 Z" fill="url(#acMistWhite)"/>
+          <path d="M574 147 C608 82 696 48 775 75 C816 90 837 128 816 158 C753 190 633 184 574 147 Z" fill="url(#acMistWhite)"/>
         </g>
 
         <g class="ac-cloud-mist" clip-path="url(#acCloudClip)" filter="url(#acCloudPuff)">
-          <g class="mist-cluster mist-top-right">
-            <ellipse cx="704" cy="112" rx="128" ry="74" fill="url(#acMistWhite)"/>
-            <ellipse cx="635" cy="136" rx="82" ry="48" fill="url(#acMistWhite)"/>
-            <ellipse cx="778" cy="145" rx="92" ry="50" fill="url(#acMistWhite)"/>
-            <ellipse cx="721" cy="160" rx="138" ry="42" fill="url(#acMistWhite)"/>
-          </g>
-          <g class="mist-cluster mist-bottom-left">
-            <ellipse cx="145" cy="482" rx="112" ry="62" fill="url(#acMistWhite)"/>
-            <ellipse cx="220" cy="507" rx="98" ry="50" fill="url(#acMistWhite)"/>
-            <ellipse cx="95" cy="525" rx="86" ry="44" fill="url(#acMistWhite)"/>
-          </g>
-          <g class="mist-cluster mist-bottom-right">
-            <ellipse cx="845" cy="500" rx="120" ry="60" fill="url(#acMistWhite)"/>
-            <ellipse cx="914" cy="470" rx="82" ry="45" fill="url(#acMistWhite)"/>
-            <ellipse cx="770" cy="536" rx="100" ry="44" fill="url(#acMistWhite)"/>
-          </g>
+          <path class="mist-cluster mist-top-right" d="M548 162 C563 131 588 121 614 127 C626 96 656 82 684 93 C707 60 754 58 776 88 C809 82 837 106 832 137 C854 159 840 184 808 188 C777 204 731 196 711 180 C678 198 635 190 620 174 C592 182 563 176 548 162 Z" fill="url(#acMistWhite)"/>
+          <path class="mist-cluster mist-bottom-left" d="M25 522 C39 489 66 477 91 485 C99 457 124 443 149 451 C171 426 207 433 218 459 C245 463 256 489 243 509 C257 532 235 553 207 552 C182 569 143 562 126 545 C93 557 54 548 25 522 Z" fill="url(#acMistWhite)"/>
+          <path class="mist-cluster mist-bottom-right" d="M748 521 C763 488 790 475 816 483 C826 454 852 440 878 449 C899 426 936 433 947 461 C972 469 981 495 966 514 C979 537 956 557 928 554 C901 570 865 562 847 545 C816 558 777 548 748 521 Z" fill="url(#acMistWhite)"/>
         </g>
 
         <g class="ac-cloud-arcs" fill="none" stroke-linecap="round">
@@ -210,6 +189,8 @@ class ArcadeCloudMediaCloud {
         </g>
         <use href="#acCloudShape" fill="none" stroke="#eaffff" stroke-opacity=".76" stroke-width="2.6"/>
         <use href="#acCloudShape" fill="none" stroke="url(#acCloudStroke)" stroke-opacity=".92" stroke-width="6.5" filter="url(#acCloudNeon)"/>
+        <use href="#acCloudShape" class="ac-cloud-running-light ac-cloud-running-light-glow" fill="none"/>
+        <use href="#acCloudShape" class="ac-cloud-running-light ac-cloud-running-light-core" fill="none"/>
       </svg>
       <div class="ac-media-cloud-shell">
         <header class="ac-media-cloud-head" data-media-drag-handle>
@@ -400,6 +381,7 @@ class ArcadeCloudMediaCloud {
 
     this.bindDrag();
     this.bindVideoScreenDrag();
+    this.window.addEventListener('resize', this.layoutResizeHandler, { passive: true });
   }
 
   async open(file, options = {}) {
@@ -621,7 +603,10 @@ class ArcadeCloudMediaCloud {
   updatePlayButton() {
     const button = this.el.querySelector('[data-media-play] i');
     const player = this.currentPlayer();
-    if (button) button.className = player && !player.paused && !player.ended ? 'fas fa-pause' : 'fas fa-play';
+    const playing = Boolean(player && !player.paused && !player.ended);
+    if (button) button.className = playing ? 'fas fa-pause' : 'fas fa-play';
+    this.el?.classList.toggle('is-playing', playing);
+    this.videoScreen?.classList.toggle('is-playing', playing);
   }
 
   updateTime() {
@@ -838,6 +823,18 @@ class ArcadeCloudMediaCloud {
       handle.addEventListener('pointercancel', end);
       try { handle.setPointerCapture(event.pointerId); } catch (_) {}
     });
+  }
+
+  updateResponsiveLayout() {
+    const width = Math.max(0, Number(this.window.innerWidth || this.document.documentElement?.clientWidth || 0));
+    const mode = width <= 600 ? 'mobile' : (width <= 1024 ? 'tablet' : 'desktop');
+    ['mobile', 'tablet', 'desktop'].forEach(name => {
+      this.el?.classList.toggle('is-' + name + '-ui', name === mode);
+      this.videoScreen?.classList.toggle('is-' + name + '-ui', name === mode);
+    });
+    if (this.el) this.el.dataset.mediaLayout = mode;
+    if (this.videoScreen) this.videoScreen.dataset.mediaLayout = mode;
+    this.updateVideoPresentation();
   }
 
   setPinned(value) {

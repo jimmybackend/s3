@@ -23,7 +23,9 @@ drive3dContract(str_contains($css, '.dw-shelf.is-active') && str_contains($css, 
 drive3dContract(str_contains($view, 'ARCADE HUD · OBJETO DETECTADO') && str_contains($css, '.dw-hud'), 'metadatos se presentan como HUD de realidad aumentada');
 drive3dContract(str_contains($view, 'dw-room-panorama') && str_contains($view, 'dw-chair'), 'la sala 3D incluye arquitectura panorámica y escritorio con silla');
 drive3dContract(str_contains($view, 'data-hud-preview-icon') && str_contains($js, 'previewIcon'), 'HUD incluye representación visual del objeto seleccionado');
-drive3dContract(str_contains($js, 'const spacing =') && str_contains($js, 'translate3d'), 'carrusel distribuye libreros como pared circular y no como pila de tarjetas');
+drive3dContract(str_contains($js, 'arcStepDegrees') && str_contains($js, 'Math.sin(angle)') && str_contains($js, 'Math.cos(angle)'), 'carrusel distribuye libreros sobre un arco circular con giro progresivo');
+drive3dContract(str_contains($view, "'thumbnail_href'") && str_contains($view, 'thumb.php?key=') && str_contains($js, 'renderDeskPreview'), 'escritorio usa miniatura autenticada para imágenes y fallback de icono');
+drive3dContract(str_contains($view, 'data-dw-desk-image') && str_contains($css, '.dw-desk-preview img'), 'vista previa visual del escritorio está integrada en la escena');
 drive3dContract(str_contains($css, 'background:none;') && str_contains($css, 'border-color:#38cfff'), 'selección conserva la madera y limita el neón al contorno');
 drive3dContract(str_contains($js, "['audio','video']") && str_contains($js, 'showMedia'), 'audio y video pueden reproducirse desde Drive 3D');
 drive3dContract(substr_count($so, 'href="dataword3d.php"') >= 2 && str_contains($so, '<strong>Drive 3D</strong>'), 'ArcadeCloud OS enlaza Drive 3D en aplicaciones y launcher');

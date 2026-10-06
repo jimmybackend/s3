@@ -26,9 +26,15 @@
         play: doc.querySelector('[data-hud-play]'),
         download: doc.querySelector('[data-hud-download]'),
         previewIcon: doc.querySelector('[data-hud-preview-icon]'),
+        previewImage: doc.querySelector('[data-hud-preview-image]'),
         previewLabel: doc.querySelector('[data-hud-preview-label]'),
       };
       this.deskFocus = doc.querySelector('[data-dw-desk-focus]');
+      this.deskPreview = doc.querySelector('[data-dw-desk-preview]');
+      this.deskIcon = doc.querySelector('[data-dw-desk-icon]');
+      this.deskImage = doc.querySelector('[data-dw-desk-image]');
+      this.deskName = doc.querySelector('[data-dw-desk-name]');
+      this.deskMeta = doc.querySelector('[data-dw-desk-meta]');
       this.mediaStage = doc.querySelector('[data-dw-media-stage]');
       this.mediaContent = doc.querySelector('[data-dw-media-content]');
       this.environmentPanel = doc.querySelector('[data-dw-environment-panel]');
@@ -157,30 +163,35 @@
       const width = this.world?.clientWidth || this.window.innerWidth;
       const compact = width < 620;
       const tablet = width < 1000;
-      const desktop = !compact && !tablet;
-      const spacing = compact ? 170 : tablet ? 205 : Math.min(268, Math.max(218, width / 5.45));
+      const arcStepDegrees = compact ? 18 : tablet ? 16 : 13;
+      const radius = compact
+        ? 520
+        : tablet
+          ? 700
+          : Math.max(880, Math.min(1120, width * .83));
       const maxVisible = compact ? 2 : tablet ? 2 : 3;
 
       this.shelves.forEach((shelf, index) => {
         const diff = this.circularDifference(index);
         const abs = Math.abs(diff);
-        const x = diff * spacing;
-        const y = abs * (compact ? 12 : tablet ? 14 : 16) + abs * abs * (compact ? 2 : 3);
-        const z = -abs * (compact ? 42 : tablet ? 52 : 62);
-        const yaw = -diff * (compact ? 8 : tablet ? 7 : 6.5);
-        const baseScale = compact ? .88 : tablet ? .9 : .93;
+        const angle = diff * arcStepDegrees * Math.PI / 180;
+        const x = Math.sin(angle) * radius;
+        const z = (Math.cos(angle) - 1) * radius * .82;
+        const y = abs * (compact ? 7 : 5) + abs * abs * (compact ? 2.5 : 2);
+        const yaw = -diff * arcStepDegrees;
         const scale = index === this.activeIndex
-          ? (desktop ? 1.035 : 1.02)
-          : Math.max(compact ? .74 : .76, baseScale - abs * (compact ? .08 : .065));
+          ? (compact ? 1.01 : 1.025)
+          : Math.max(compact ? .72 : .78, 1 - abs * (compact ? .11 : .055));
 
         shelf.style.transitionDuration = animate ? '' : '0ms';
         shelf.style.transform = `translate3d(${x}px, ${y}px, ${z}px) rotateY(${yaw}deg) scale(${scale})`;
-        shelf.style.zIndex = String(40 - Math.round(abs * 4));
+        shelf.style.zIndex = String(44 - Math.round(abs * 5));
         shelf.style.opacity = abs > maxVisible
           ? '0'
-          : String(Math.max(.42, 1 - abs * (compact ? .2 : .11)));
+          : String(Math.max(.46, 1 - abs * (compact ? .21 : .085)));
         shelf.style.pointerEvents = abs > maxVisible ? 'none' : '';
         shelf.setAttribute('aria-hidden', abs > maxVisible ? 'true' : 'false');
+        shelf.dataset.arcSide = diff < 0 ? 'left' : diff > 0 ? 'right' : 'center';
         shelf.classList.toggle('is-active', index === this.activeIndex);
       });
     }
@@ -199,6 +210,7 @@
         openHref: d.openHref || '',
         downloadHref: d.downloadHref || '',
         previewHref: d.previewHref || '',
+        thumbHref: d.itemThumb || '',
         locked: d.itemLocked === '1',
       };
     }
@@ -212,6 +224,7 @@
 
       this.selected = this.itemFromElement(element);
       this.updateHud(this.selected);
+      this.renderDeskPreview(this.selected, false);
 
       if (options.loadPreview && this.selected.previewHref) {
         this.loadShelfPreview(element, this.selected.previewHref);
@@ -228,8 +241,22 @@
       this.hud.date.textContent = state?.latest_date || item.date || '—';
       this.hud.path.textContent = item.path || 'Mi Drive/';
       this.hud.counts.textContent = state ? `${state.folder_count || 0} carpetas · ${state.file_count || 0} archivos` : (isFolder ? 'Selecciona para leer contenido' : 'Archivo');
-      if (this.hud.previewIcon) {
+      if (this.hud.previewIcon && this.hud.previewImage) {
+        const canShowThumb = item.kind === 'image' && Boolean(item.thumbHref) && !item.locked;
         this.hud.previewIcon.className = `fas ${this.iconFor(item.kind)}`;
+        this.hud.previewIcon.hidden = canShowThumb;
+        this.hud.previewImage.hidden = !canShowThumb;
+        if (canShowThumb) {
+          this.hud.previewImage.alt = item.name;
+          this.hud.previewImage.src = item.thumbHref;
+          this.hud.previewImage.onerror = () => {
+            this.hud.previewImage.hidden = true;
+            this.hud.previewIcon.hidden = false;
+          };
+        } else {
+          this.hud.previewImage.removeAttribute('src');
+          this.hud.previewImage.alt = '';
+        }
       }
       if (this.hud.previewLabel) {
         this.hud.previewLabel.textContent = isFolder ? 'Carpeta' : this.kindLabel(item.kind);
@@ -320,6 +347,7 @@
       button.dataset.openHref = item.open_href || '';
       button.dataset.downloadHref = item.download_href || '';
       button.dataset.previewHref = item.preview_href || '';
+      button.dataset.itemThumb = item.thumbnail_href || '';
       button.dataset.itemLocked = item.locked ? '1' : '0';
       button.title = item.name || 'Elemento';
       const label = this.document.createElement('span');
@@ -336,19 +364,46 @@
     }
 
     bringToDesk() {
-      if (!this.selected || !this.deskFocus) return;
-      const icon = this.iconFor(this.selected.kind);
-      this.deskFocus.replaceChildren();
-      const i = this.document.createElement('i');
-      i.className = `fas ${icon}`;
-      const span = this.document.createElement('span');
-      span.textContent = this.selected.name;
-      this.deskFocus.append(i, span);
+      if (!this.selected) return;
+      this.renderDeskPreview(this.selected, true);
+    }
+
+    renderDeskPreview(item, animate = false) {
+      if (!item || !this.deskFocus || !this.deskIcon || !this.deskImage || !this.deskName || !this.deskMeta) return;
+
+      const canShowThumb = item.kind === 'image' && Boolean(item.thumbHref) && !item.locked;
+      this.deskIcon.className = `fas ${this.iconFor(item.kind)}`;
+      this.deskIcon.hidden = canShowThumb;
+      this.deskImage.hidden = !canShowThumb;
+
+      if (canShowThumb) {
+        const expectedSrc = item.thumbHref;
+        this.deskImage.alt = `Miniatura de ${item.name}`;
+        this.deskImage.src = expectedSrc;
+        this.deskImage.onerror = () => {
+          if (this.deskImage.src.includes(expectedSrc.split('?')[0])) {
+            this.deskImage.hidden = true;
+            this.deskIcon.hidden = false;
+          }
+        };
+      } else {
+        this.deskImage.removeAttribute('src');
+        this.deskImage.alt = '';
+      }
+
+      this.deskName.textContent = item.name;
+      this.deskMeta.textContent = item.type === 'folder'
+        ? (item.path || 'Carpeta')
+        : `${this.kindLabel(item.kind)} · ${item.size || '—'}`;
       this.deskFocus.classList.add('is-live');
-      this.deskFocus.animate([
-        { transform:'translateY(8px) scale(.96)', opacity:.4 },
-        { transform:'translateY(0) scale(1)', opacity:1 }
-      ], { duration:320, easing:'cubic-bezier(.2,.8,.2,1)' });
+      this.deskFocus.classList.toggle('is-image-preview', canShowThumb);
+
+      if (animate) {
+        this.deskFocus.animate([
+          { transform:'translateY(10px) scale(.95)', opacity:.35 },
+          { transform:'translateY(0) scale(1)', opacity:1 }
+        ], { duration:360, easing:'cubic-bezier(.2,.8,.2,1)' });
+      }
     }
 
     iconFor(kind) {

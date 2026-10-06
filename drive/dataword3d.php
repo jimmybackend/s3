@@ -138,6 +138,9 @@ $buildState = static function (string $route) use (
         $key = FileViewHelper::buildS3Key((string)($row['Ruta'] ?? ''), (string)($row['Encriptado'] ?? ''));
         $openHref = $locked || $key === '' ? '' : 'ver_archivo.php?archivo=' . rawurlencode($key);
         $downloadHref = $locked || $key === '' ? '' : 'descargar_archivo.php?archivo=' . rawurlencode($key) . '&nombre=' . rawurlencode($name);
+        $thumbnailHref = (!$locked && $key !== '' && $kind === 'image')
+            ? 'thumb.php?key=' . rawurlencode($key) . '&w=420&h=280&fit=cover'
+            : '';
 
         $files[] = [
             'type' => 'file',
@@ -152,6 +155,7 @@ $buildState = static function (string $route) use (
             'locked' => $locked,
             'open_href' => $openHref,
             'download_href' => $downloadHref,
+            'thumbnail_href' => $thumbnailHref,
         ];
     }
 
@@ -322,8 +326,14 @@ header('Content-Type: text/html; charset=UTF-8');
     <section class="dw-desk" aria-label="Escritorio central">
       <div class="dw-desk-globe" aria-hidden="true"><i class="fas fa-earth-americas"></i></div>
       <div class="dw-desk-focus" data-dw-desk-focus>
-        <i class="fas fa-cube"></i>
-        <span>Toca un estante o un libro</span>
+        <span class="dw-desk-preview" data-dw-desk-preview>
+          <i class="fas fa-cube" data-dw-desk-icon></i>
+          <img data-dw-desk-image alt="" hidden>
+        </span>
+        <span class="dw-desk-copy">
+          <strong data-dw-desk-name>Toca un estante o un libro</strong>
+          <small data-dw-desk-meta>La vista previa aparecerá aquí</small>
+        </span>
       </div>
       <div class="dw-desk-files" data-dw-current-files aria-label="Archivos de esta carpeta">
         <?php foreach (array_slice($state['files'], 0, 16) as $file): ?>
@@ -339,6 +349,7 @@ header('Content-Type: text/html; charset=UTF-8');
                   data-item-format="<?= $e($file['extension']) ?>"
                   data-open-href="<?= $e($file['open_href']) ?>"
                   data-download-href="<?= $e($file['download_href']) ?>"
+                  data-item-thumb="<?= $e($file['thumbnail_href'] ?? '') ?>"
                   data-item-locked="<?= !empty($file['locked']) ? '1' : '0' ?>"
                   title="<?= $e($file['name']) ?>">
             <i class="fas <?= $e($file['icon']) ?>"></i><span><?= $e($file['name']) ?></span>
@@ -360,7 +371,10 @@ header('Content-Type: text/html; charset=UTF-8');
 
     <section class="dw-hud" aria-live="polite">
       <div class="dw-hud-preview" aria-hidden="true">
-        <span class="dw-hud-preview-object"><i class="fas fa-folder-open" data-hud-preview-icon></i></span>
+        <span class="dw-hud-preview-object">
+          <i class="fas fa-folder-open" data-hud-preview-icon></i>
+          <img data-hud-preview-image alt="" hidden>
+        </span>
         <span class="dw-hud-preview-label" data-hud-preview-label>Carpeta</span>
       </div>
       <div class="dw-hud-eyebrow"><span class="dw-hud-dot"></span> ARCADE HUD · OBJETO DETECTADO</div>

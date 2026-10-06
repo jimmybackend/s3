@@ -1411,3 +1411,51 @@
   .ac-media-cloud.is-mobile-ui .ac-media-controls button.is-primary{width:46px;height:46px}
   .ac-media-cloud.is-mobile-ui .ac-media-dock{max-width:270px}
 }
+
+
+/* ==========================================================================
+   ArcadeCloud Player · geometría persistente
+   ========================================================================== */
+.ac-media-cloud-head{
+  touch-action:none;
+}
+.ac-media-resize-handle{
+  position:absolute;
+  right:7.5%;
+  bottom:7.5%;
+  z-index:30;
+  width:28px;
+  height:28px;
+  padding:0;
+  border:1px solid rgba(181,250,255,.52);
+  border-radius:50%;
+  display:grid;
+  place-items:center;
+  background:
+    radial-gradient(circle at 35% 28%,rgba(255,255,255,.22),transparent 24%),
+    linear-gradient(180deg,rgba(20,103,181,.92),rgba(2,28,77,.97));
+  color:#dfffff;
+  font-size:.58rem;
+  cursor:nwse-resize;
+  touch-action:none;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.14),
+    0 0 10px rgba(68,222,255,.34);
+}
+.ac-media-resize-handle:hover{
+  border-color:#fff;
+  color:#fff;
+  box-shadow:0 0 15px rgba(84,239,255,.68);
+}
+.ac-media-cloud.is-collapsed .ac-media-resize-handle{display:none}
+.ac-media-cloud.is-mobile-ui .ac-media-resize-handle{
+  width:30px;
+  height:30px;
+  right:7%;
+  bottom:6.5%;
+  font-size:.62rem;
+}
+.ac-media-cloud.is-tablet-ui .ac-media-resize-handle{
+  width:30px;
+  height:30px;
+}

@@ -16,6 +16,9 @@ class ArcadeCloudMediaCloud {
     this.videoScreen = null;
     this.videoInlineHost = null;
     this.videoScreenBody = null;
+    this.layoutMode = 'desktop';
+    this.geometry = {};
+    this.remoteSaveTimer = 0;
     this.layoutResizeHandler = () => this.updateResponsiveLayout();
     this.eqMode = 'auto';
     this.eqValues = { low: 0, mid: 0, high: 0 };
@@ -25,8 +28,8 @@ class ArcadeCloudMediaCloud {
     if (this.el) return this;
     this.build();
     this.bind();
-    this.updateResponsiveLayout();
     this.restorePreferences();
+    this.updateResponsiveLayout();
     this.drawIdleWave();
     return this;
   }
@@ -273,6 +276,10 @@ class ArcadeCloudMediaCloud {
           </div>
         </div>
       </div>
+      <button type="button" class="ac-media-resize-handle" data-media-resize-handle
+              title="Cambiar tamaño del reproductor" aria-label="Cambiar tamaño del reproductor">
+        <i class="fas fa-up-right-and-down-left-from-center" aria-hidden="true"></i>
+      </button>
 
       <section class="ac-video-screen" data-video-screen hidden aria-label="Pantalla de video separada">
         <header class="ac-video-screen-head" data-video-screen-drag>
@@ -380,12 +387,14 @@ class ArcadeCloudMediaCloud {
     });
 
     this.bindDrag();
+    this.bindResize();
     this.bindVideoScreenDrag();
     this.window.addEventListener('resize', this.layoutResizeHandler, { passive: true });
   }
 
   async open(file, options = {}) {
     this.init();
+    try { this.audio.pause(); this.video.pause(); } catch (_) {}
     const type = options.type || (String(file?.mime || '').startsWith('video/') ? 'video' : 'audio');
     const route = String(options.route || file?.route || this.activeRoute() || '');
     let items = [];
@@ -414,6 +423,8 @@ class ArcadeCloudMediaCloud {
     this.state.index = index;
     this.el.hidden = false;
     this.el.classList.remove('is-collapsed');
+    this.updateResponsiveLayout();
+    this.applySavedGeometry();
     if (type !== 'video') this.setVideoMode('cloud', false);
     this.renderPlaylist();
     await this.loadIndex(index, true);
@@ -828,13 +839,67 @@ class ArcadeCloudMediaCloud {
   updateResponsiveLayout() {
     const width = Math.max(0, Number(this.window.innerWidth || this.document.documentElement?.clientWidth || 0));
     const mode = width <= 600 ? 'mobile' : (width <= 1024 ? 'tablet' : 'desktop');
+    const changed = this.layoutMode !== mode;
+    this.layoutMode = mode;
     ['mobile', 'tablet', 'desktop'].forEach(name => {
       this.el?.classList.toggle('is-' + name + '-ui', name === mode);
       this.videoScreen?.classList.toggle('is-' + name + '-ui', name === mode);
     });
     if (this.el) this.el.dataset.mediaLayout = mode;
     if (this.videoScreen) this.videoScreen.dataset.mediaLayout = mode;
+    if (changed || !this.el?.hidden) this.applySavedGeometry();
     this.updateVideoPresentation();
+  }
+
+  geometryBounds() {
+    const mode = this.layoutMode || 'desktop';
+    const minWidth = mode === 'mobile' ? 260 : (mode === 'tablet' ? 300 : 320);
+    const preferredMax = mode === 'mobile' ? 420 : (mode === 'tablet' ? 650 : 920);
+    return {
+      minWidth,
+      maxWidth: Math.max(minWidth, Math.min(preferredMax, Math.max(minWidth, this.window.innerWidth - 16))),
+      aspect: 1000 / 650
+    };
+  }
+
+  clearGeometryStyles() {
+    if (!this.el) return;
+    ['left','top','right','bottom','width','height'].forEach(name => this.el.style.removeProperty(name));
+  }
+
+  applySavedGeometry() {
+    if (!this.el) return;
+    const saved = this.geometry && this.geometry[this.layoutMode];
+    if (!saved || !Number.isFinite(Number(saved.width))) {
+      this.clearGeometryStyles();
+      return;
+    }
+
+    const bounds = this.geometryBounds();
+    const width = Math.max(bounds.minWidth, Math.min(bounds.maxWidth, Number(saved.width)));
+    const height = width / bounds.aspect;
+    const maxLeft = Math.max(4, this.window.innerWidth - width - 4);
+    const maxTop = Math.max(4, this.window.innerHeight - height - 50);
+    const left = Math.max(4, Math.min(maxLeft, Number(saved.left || 4)));
+    const top = Math.max(4, Math.min(maxTop, Number(saved.top || 4)));
+
+    this.el.style.setProperty('width', Math.round(width) + 'px', 'important');
+    this.el.style.setProperty('height', 'auto', 'important');
+    this.el.style.setProperty('left', Math.round(left) + 'px', 'important');
+    this.el.style.setProperty('top', Math.round(top) + 'px', 'important');
+    this.el.style.setProperty('right', 'auto', 'important');
+    this.el.style.setProperty('bottom', 'auto', 'important');
+  }
+
+  captureGeometry() {
+    if (!this.el || this.el.hidden || this.el.classList.contains('is-collapsed')) return;
+    const rect = this.el.getBoundingClientRect();
+    if (!(rect.width > 0 && rect.height > 0)) return;
+    this.geometry[this.layoutMode || 'desktop'] = {
+      left: Math.round(rect.left),
+      top: Math.round(rect.top),
+      width: Math.round(rect.width)
+    };
   }
 
   setPinned(value) {
@@ -863,26 +928,85 @@ class ArcadeCloudMediaCloud {
 
   bindDrag() {
     const handle = this.el.querySelector('[data-media-drag-handle]');
+    if (!handle) return;
+
     handle.addEventListener('pointerdown', event => {
       if (event.target.closest('button')) return;
-      if (this.window.matchMedia('(max-width: 700px)').matches) return;
+      if (event.button !== undefined && event.button !== 0) return;
       const rect = this.el.getBoundingClientRect();
+      if (!(rect.width > 0 && rect.height > 0)) return;
       const offsetX = event.clientX - rect.left;
       const offsetY = event.clientY - rect.top;
+
       const move = moveEvent => {
-        const left = Math.max(8, Math.min(this.window.innerWidth - rect.width - 8, moveEvent.clientX - offsetX));
-        const top = Math.max(8, Math.min(this.window.innerHeight - rect.height - 54, moveEvent.clientY - offsetY));
-        this.el.style.left = Math.round(left) + 'px';
-        this.el.style.top = Math.round(top) + 'px';
-        this.el.style.right = 'auto';
-        this.el.style.bottom = 'auto';
+        const current = this.el.getBoundingClientRect();
+        const left = Math.max(4, Math.min(this.window.innerWidth - current.width - 4, moveEvent.clientX - offsetX));
+        const top = Math.max(4, Math.min(this.window.innerHeight - current.height - 50, moveEvent.clientY - offsetY));
+        this.el.style.setProperty('left', Math.round(left) + 'px', 'important');
+        this.el.style.setProperty('top', Math.round(top) + 'px', 'important');
+        this.el.style.setProperty('right', 'auto', 'important');
+        this.el.style.setProperty('bottom', 'auto', 'important');
       };
+
       const end = endEvent => {
         handle.removeEventListener('pointermove', move);
         handle.removeEventListener('pointerup', end);
         handle.removeEventListener('pointercancel', end);
+        this.captureGeometry();
+        this.persistPreferences();
         try { handle.releasePointerCapture(endEvent.pointerId); } catch (_) {}
       };
+
+      handle.addEventListener('pointermove', move);
+      handle.addEventListener('pointerup', end);
+      handle.addEventListener('pointercancel', end);
+      try { handle.setPointerCapture(event.pointerId); } catch (_) {}
+    });
+  }
+
+  bindResize() {
+    const handle = this.el.querySelector('[data-media-resize-handle]');
+    if (!handle) return;
+
+    handle.addEventListener('pointerdown', event => {
+      if (event.button !== undefined && event.button !== 0) return;
+      event.preventDefault();
+      event.stopPropagation();
+      if (this.el.classList.contains('is-collapsed')) return;
+
+      const rect = this.el.getBoundingClientRect();
+      const bounds = this.geometryBounds();
+      const startX = event.clientX;
+      const startY = event.clientY;
+      const startWidth = rect.width;
+      const left = rect.left;
+      const top = rect.top;
+
+      const move = moveEvent => {
+        const deltaX = moveEvent.clientX - startX;
+        const deltaY = (moveEvent.clientY - startY) * bounds.aspect;
+        const requested = startWidth + (Math.abs(deltaX) > Math.abs(deltaY) ? deltaX : deltaY);
+        const byViewportWidth = Math.max(bounds.minWidth, this.window.innerWidth - left - 4);
+        const byViewportHeight = Math.max(bounds.minWidth, (this.window.innerHeight - top - 50) * bounds.aspect);
+        const maxWidth = Math.max(bounds.minWidth, Math.min(bounds.maxWidth, byViewportWidth, byViewportHeight));
+        const width = Math.max(bounds.minWidth, Math.min(maxWidth, requested));
+        this.el.style.setProperty('width', Math.round(width) + 'px', 'important');
+        this.el.style.setProperty('height', 'auto', 'important');
+        this.el.style.setProperty('left', Math.round(left) + 'px', 'important');
+        this.el.style.setProperty('top', Math.round(top) + 'px', 'important');
+        this.el.style.setProperty('right', 'auto', 'important');
+        this.el.style.setProperty('bottom', 'auto', 'important');
+      };
+
+      const end = endEvent => {
+        handle.removeEventListener('pointermove', move);
+        handle.removeEventListener('pointerup', end);
+        handle.removeEventListener('pointercancel', end);
+        this.captureGeometry();
+        this.persistPreferences();
+        try { handle.releasePointerCapture(endEvent.pointerId); } catch (_) {}
+      };
+
       handle.addEventListener('pointermove', move);
       handle.addEventListener('pointerup', end);
       handle.addEventListener('pointercancel', end);
@@ -891,35 +1015,81 @@ class ArcadeCloudMediaCloud {
   }
 
   persistPreferences() {
+    const state = {
+      pinned: this.state.pinned,
+      videoMode: this.videoMode,
+      geometry: this.geometry,
+      eqMode: this.eqMode,
+      eqValues: this.eqValues
+    };
     try {
-      this.window.localStorage.setItem('arcadecloud.mediaCloud.preferences', JSON.stringify({
-        pinned: this.state.pinned,
-        videoMode: this.videoMode,
-        eqMode: this.eqMode,
-        eqValues: this.eqValues
-      }));
+      this.window.localStorage.setItem('arcadecloud.mediaCloud.preferences', JSON.stringify(state));
     } catch (_) {}
+    this.persistRemotePreferences(state);
+  }
+
+  persistRemotePreferences(state) {
+    const remote = this.window.ARCADECLOUD_OS_APPEARANCE || {};
+    if (!remote.endpoint || !remote.csrf) return;
+    this.window.clearTimeout(this.remoteSaveTimer);
+    this.remoteSaveTimer = this.window.setTimeout(() => {
+      this.window.fetch(String(remote.endpoint), {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': String(remote.csrf)
+        },
+        body: JSON.stringify({
+          mediaPlayerPreference: {
+            pinned: state.pinned !== false,
+            videoMode: state.videoMode === 'screen' ? 'screen' : 'cloud',
+            geometry: state.geometry && typeof state.geometry === 'object' ? state.geometry : {}
+          }
+        })
+      }).catch(() => {});
+    }, 250);
   }
 
   restorePreferences() {
+    let local = {};
     try {
-      const data = JSON.parse(this.window.localStorage.getItem('arcadecloud.mediaCloud.preferences') || '{}');
-      this.state.pinned = data.pinned !== false;
-      this.videoMode = data.videoMode === 'screen' ? 'screen' : 'cloud';
-      this.eqMode = data.eqMode === 'manual' ? 'manual' : 'auto';
-      if (data.eqValues && typeof data.eqValues === 'object') {
-        ['low','mid','high'].forEach(name => {
-          if (Number.isFinite(Number(data.eqValues[name]))) this.eqValues[name] = Number(data.eqValues[name]);
-        });
-      }
+      const parsed = JSON.parse(this.window.localStorage.getItem('arcadecloud.mediaCloud.preferences') || '{}');
+      if (parsed && typeof parsed === 'object') local = parsed;
     } catch (_) {}
+
+    const remoteRoot = this.window.ARCADECLOUD_OS_APPEARANCE?.preferences;
+    const remote = remoteRoot?.mediaPlayerPreferences && typeof remoteRoot.mediaPlayerPreferences === 'object'
+      ? remoteRoot.mediaPlayerPreferences
+      : {};
+    const data = { ...local, ...remote };
+    if (local.geometry || remote.geometry) {
+      data.geometry = {
+        ...(local.geometry && typeof local.geometry === 'object' ? local.geometry : {}),
+        ...(remote.geometry && typeof remote.geometry === 'object' ? remote.geometry : {})
+      };
+    }
+
+    this.state.pinned = data.pinned !== false;
+    this.videoMode = data.videoMode === 'screen' ? 'screen' : 'cloud';
+    this.geometry = data.geometry && typeof data.geometry === 'object' ? data.geometry : {};
+    this.eqMode = data.eqMode === 'manual' ? 'manual' : 'auto';
+    if (data.eqValues && typeof data.eqValues === 'object') {
+      ['low','mid','high'].forEach(name => {
+        if (Number.isFinite(Number(data.eqValues[name]))) this.eqValues[name] = Number(data.eqValues[name]);
+      });
+    }
+
     this.setPinned(this.state.pinned);
     this.syncEqModeButtons();
     this.syncEqInputs();
   }
 
   static boot(win = window, doc = document) {
-    if (win.ArcadeCloudMediaCloud instanceof ArcadeCloudMediaCloud) return win.ArcadeCloudMediaCloud;
+    const existing = win.ArcadeCloudMediaCloud;
+    if (existing && typeof existing.open === 'function' && doc.getElementById('arcadeCloudMediaCloud')) {
+      return existing;
+    }
     win.ArcadeCloudMediaCloud = new ArcadeCloudMediaCloud(win, doc).init();
     return win.ArcadeCloudMediaCloud;
   }

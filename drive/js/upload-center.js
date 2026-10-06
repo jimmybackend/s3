@@ -392,17 +392,37 @@ class ArcadeCloudUploadCenter {
 
       uploadToken = String(initJson.upload_token);
       this.updateTask(task.id, { progress: 4, detail: 'Subiendo directamente a Amazon S3.' });
+      const transferStartedAt = Date.now();
 
       await this.putBlob(String(initJson.url), blob, (loaded, total) => {
         const ratio = total > 0 ? loaded / total : 0;
+        const elapsedSeconds = Math.max(.25, (Date.now() - transferStartedAt) / 1000);
+        const speedBps = Math.max(0, Math.round(loaded / elapsedSeconds));
+        const etaSeconds = speedBps > 0 && total > loaded ? Math.ceil((total - loaded) / speedBps) : 0;
         this.updateTask(task.id, {
           progress: Math.max(4, Math.min(94, Math.round(4 + ratio * 90))),
-          detail: 'Subiendo a S3 · ' + this.formatBytes(loaded) + ' de ' + this.formatBytes(total)
+          detail: 'Subiendo a S3 · ' + this.formatBytes(loaded) + ' de ' + this.formatBytes(total),
+          metadata: {
+            ...task.metadata,
+            bytes_uploaded: Math.max(0, Number(loaded || 0)),
+            bytes_total: Math.max(0, Number(total || blob.size || 0)),
+            speed_bps: speedBps,
+            eta_seconds: etaSeconds
+          }
         }, true);
       });
 
       completeStarted = true;
-      this.updateTask(task.id, { progress: 96, detail: 'Registrando archivo en FileS3.' });
+      this.updateTask(task.id, {
+        progress: 96,
+        detail: 'Registrando archivo en FileS3.',
+        metadata: {
+          ...task.metadata,
+          bytes_uploaded: Number(blob.size || 0),
+          bytes_total: Number(blob.size || 0),
+          eta_seconds: 0
+        }
+      });
 
       const complete = new URLSearchParams({
         upload_token: uploadToken,
@@ -543,6 +563,18 @@ class ArcadeCloudUploadCenter {
         const start = (part - 1) * chunkSize;
         uploadedBytes += Math.min(file.size, start + chunkSize) - start;
       });
+      const sessionStartBytes = uploadedBytes;
+      const transferStartedAt = Date.now();
+      this.updateTask(task.id, {
+        metadata: {
+          ...task.metadata,
+          bytes_uploaded: uploadedBytes,
+          bytes_total: Number(file.size || 0),
+          parts_total: totalParts,
+          speed_bps: 0,
+          eta_seconds: 0
+        }
+      });
 
       for (let partNumber = 1; partNumber <= totalParts; partNumber++) {
         if (etags[String(partNumber)]) continue;
@@ -574,9 +606,22 @@ class ArcadeCloudUploadCenter {
         const etag = await this.putPartWithRetry(String(signJson.url), chunk, (loaded) => {
           const totalLoaded = uploadedBytes + loaded;
           const pct = Math.max(1, Math.min(98, Math.floor((totalLoaded / file.size) * 98)));
+          const elapsedSeconds = Math.max(.25, (Date.now() - transferStartedAt) / 1000);
+          const sessionBytes = Math.max(0, totalLoaded - sessionStartBytes);
+          const speedBps = Math.max(0, Math.round(sessionBytes / elapsedSeconds));
+          const etaSeconds = speedBps > 0 && file.size > totalLoaded ? Math.ceil((file.size - totalLoaded) / speedBps) : 0;
           this.updateTask(task.id, {
             progress: pct,
-            detail: 'Parte ' + partNumber + ' de ' + totalParts + ' · ' + this.formatBytes(totalLoaded) + ' de ' + this.formatBytes(file.size)
+            detail: 'Parte ' + partNumber + ' de ' + totalParts + ' · ' + this.formatBytes(totalLoaded) + ' de ' + this.formatBytes(file.size),
+            metadata: {
+              ...task.metadata,
+              bytes_uploaded: Math.max(0, Number(totalLoaded || 0)),
+              bytes_total: Number(file.size || 0),
+              speed_bps: speedBps,
+              eta_seconds: etaSeconds,
+              part_number: partNumber,
+              parts_total: totalParts
+            }
           }, true);
         });
 
@@ -587,7 +632,18 @@ class ArcadeCloudUploadCenter {
         });
       }
 
-      this.updateTask(task.id, { progress: 99, detail: 'Completando multipart y registrando FileS3.' });
+      this.updateTask(task.id, {
+        progress: 99,
+        detail: 'Completando multipart y registrando FileS3.',
+        metadata: {
+          ...task.metadata,
+          bytes_uploaded: Number(file.size || 0),
+          bytes_total: Number(file.size || 0),
+          eta_seconds: 0,
+          part_number: totalParts,
+          parts_total: totalParts
+        }
+      });
       const complete = new URLSearchParams({
         uploadId,
         key,
@@ -637,6 +693,9 @@ class ArcadeCloudUploadCenter {
       metadata: {
         destination: String(route || ''),
         bytes_total: Math.max(0, Number(bytes || 0)),
+        bytes_uploaded: 0,
+        speed_bps: 0,
+        eta_seconds: 0,
         source: String(source || ''),
         upload_mode: String(mode || '')
       }

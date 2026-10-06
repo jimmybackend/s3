@@ -433,7 +433,7 @@ a{text-decoration:none;color:inherit}
 }
 .os-task-more:hover{background:rgba(255,255,255,.08);color:var(--os-text)}
 .os-task-center-button{
-  position:relative;flex:0 0 42px;width:42px;height:100%;border:0;border-left:1px solid var(--os-border);
+  position:relative;flex:0 0 36px;width:36px;height:100%;border:0;border-left:1px solid var(--os-border);
   background:transparent;color:var(--os-soft);display:inline-flex;align-items:center;justify-content:center;cursor:pointer
 }
 .os-task-center-button:hover,.os-task-center-button[aria-expanded="true"]{background:rgba(38,198,255,.1);color:var(--os-text)}
@@ -442,7 +442,7 @@ a{text-decoration:none;color:inherit}
   display:inline-flex;align-items:center;justify-content:center;background:var(--os-accent);color:#03131d;
   font-size:.62rem;font-weight:900;line-height:1
 }
-.os-clock{flex:0 0 auto;padding:0 8px;font-size:.72rem;color:var(--os-soft);white-space:nowrap}
+.os-clock{flex:0 0 auto;padding:0 5px;font-size:.72rem;color:var(--os-soft);white-space:nowrap}
 .os-page-monitor-body{display:grid;align-content:start;gap:14px}
 .os-page-monitor-heading p{margin:4px 0 0;color:var(--os-soft);font-size:.78rem}
 .os-page-monitor-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
@@ -1066,7 +1066,7 @@ body.arcade-os{
 .os-notice.is-success{border-color:#57e389;color:#baf7cf}
 
 .os-clock{
-  min-width:150px;
+  min-width:94px;
   text-align:right;
   line-height:1.08;
 }
@@ -1160,7 +1160,7 @@ body.arcade-os{
     min-height:0;
   }
   .os-clock{
-    min-width:112px;
+    min-width:86px;
   }
   .os-clock strong{font-size:.72rem}
   .os-clock small{font-size:.56rem}
@@ -1332,4 +1332,33 @@ body.arcade-os{
   .os-entry-grid.is-list-view .os-entry-list-type{grid-column:3}
   .os-entry-grid.is-list-view .os-entry-list-size,.os-entry-grid.is-list-view .os-entry-list-date{display:none}
   .os-entry-grid.is-list-view .os-entry-menu{grid-column:4}
+}
+
+
+/* Centro de Tareas compacto: progreso vivo sin reservar un bloque vacío junto al reloj. */
+.os-task-center-button .os-task-center-progress{
+  position:absolute;
+  left:4px;
+  right:4px;
+  bottom:3px;
+  height:3px;
+  overflow:hidden;
+  border-radius:999px;
+  background:rgba(255,255,255,.10);
+  opacity:0;
+  pointer-events:none;
+}
+.os-task-center-button.has-live-progress .os-task-center-progress{opacity:1}
+.os-task-center-button .os-task-center-progress>i{
+  display:block;
+  height:100%;
+  width:0;
+  border-radius:999px;
+  background:var(--os-accent);
+  box-shadow:0 0 7px rgba(38,198,255,.72);
+  transition:width .22s ease;
+}
+.os-task-center-button.is-live-running>i.fa-list-check{
+  color:var(--os-accent-2);
+  filter:drop-shadow(0 0 4px rgba(38,198,255,.5));
 }

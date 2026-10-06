@@ -5,6 +5,7 @@ class ArcadeCloudUploadCenter {
     this.api = String(win.UPLOAD_API || 'api/upload.php');
     this.csrf = String(win.DRIVE_UPLOAD_CSRF || '');
     this.tasks = new Map();
+    this.serverTaskSyncAt = new Map();
     this.localQueue = Promise.resolve();
     this.modal = null;
     this.openRoute = '';
@@ -374,7 +375,11 @@ class ArcadeCloudUploadCenter {
         mode: 'local_put',
         action: 'init',
         nombre: name,
-        ruta_objetivo: route
+        ruta_objetivo: route,
+        task_id: task.id,
+        task_title: name,
+        task_bytes: String(Number(blob.size || 0)),
+        task_source: String(task.metadata?.source || 'Archivo')
       });
       if (sha256) init.set('sha256', sha256);
 
@@ -426,7 +431,8 @@ class ArcadeCloudUploadCenter {
 
       const complete = new URLSearchParams({
         upload_token: uploadToken,
-        tamano: String(Number(blob.size || 0))
+        tamano: String(Number(blob.size || 0)),
+        task_id: task.id
       });
       const completeResponse = await fetch(this.api + '?mode=local_put&action=complete', {
         method: 'POST',
@@ -465,7 +471,11 @@ class ArcadeCloudUploadCenter {
       const body = new URLSearchParams({
         url,
         u64: this.base64Utf8(url),
-        ruta_objetivo: route
+        ruta_objetivo: route,
+        task_id: task.id,
+        task_title: title,
+        task_bytes: '0',
+        task_source: 'Enlace'
       });
       const response = await fetch(this.api + '?mode=remote_url&action=init', {
         method: 'POST',
@@ -522,7 +532,11 @@ class ArcadeCloudUploadCenter {
           ruta_objetivo: route,
           filename: file.name,
           filesize: String(file.size),
-          mime: file.type || 'application/octet-stream'
+          mime: file.type || 'application/octet-stream',
+          task_id: task.id,
+          task_title: file.name,
+          task_bytes: String(file.size),
+          task_source: 'Multipart'
         });
         const response = await fetch(this.api + '?mode=chunked&action=init', {
           method: 'POST',
@@ -648,7 +662,8 @@ class ArcadeCloudUploadCenter {
         uploadId,
         key,
         etags: JSON.stringify(etags),
-        filesize: String(file.size)
+        filesize: String(file.size),
+        task_id: task.id
       });
       if (stateId) complete.set('stateId', stateId);
 
@@ -772,6 +787,7 @@ class ArcadeCloudUploadCenter {
     this.document.dispatchEvent(new CustomEvent('drive:client-upload-task', {
       detail: { task: { ...task } }
     }));
+    this.syncServerTask(task);
 
     // Keep the unified Task Center synchronized even if its listener was
     // initialized before/after the upload module on a proxied node.
@@ -782,6 +798,44 @@ class ArcadeCloudUploadCenter {
         if (typeof center.render === 'function') center.render();
       } catch (_) {}
     }
+  }
+
+  syncServerTask(task) {
+    if (!task || !task.id) return;
+    const status = String(task.status || 'pending').toLowerCase();
+    const terminal = ['completed', 'failed', 'cancelled'].includes(status);
+    const now = Date.now();
+    const last = Number(this.serverTaskSyncAt.get(task.id) || 0);
+    if (!terminal && now - last < 1500) return;
+    this.serverTaskSyncAt.set(task.id, now);
+
+    const meta = task.metadata || {};
+    const action = status === 'failed' ? 'fail' : 'progress';
+    const body = new URLSearchParams({
+      task_id: String(task.id),
+      status,
+      progress: String(Number.isFinite(Number(task.progress)) ? Math.max(0, Math.min(100, Math.round(Number(task.progress)))) : 0),
+      task_title: String(task.title || 'Subida'),
+      task_source: String(meta.source || 'Drive'),
+      upload_mode: String(meta.upload_mode || ''),
+      destination: String(meta.destination || ''),
+      service: String(task.service || 'Amazon S3'),
+      detail: String(task.detail || ''),
+      bytes_total: String(Math.max(0, Number(meta.bytes_total || 0))),
+      bytes_uploaded: String(Math.max(0, Number(meta.bytes_uploaded || 0))),
+      speed_bps: String(Math.max(0, Number(meta.speed_bps || 0))),
+      eta_seconds: String(Math.max(0, Number(meta.eta_seconds || 0))),
+      parts_total: String(Math.max(0, Number(meta.parts_total || 0))),
+      part_number: String(Math.max(0, Number(meta.part_number || 0)))
+    });
+
+    fetch(this.api + '?mode=task&action=' + encodeURIComponent(action), {
+      method: 'POST',
+      credentials: 'same-origin',
+      cache: 'no-store',
+      headers: this.apiHeaders(),
+      body: body.toString()
+    }).catch(() => {});
   }
 
   async afterSuccess(route) {

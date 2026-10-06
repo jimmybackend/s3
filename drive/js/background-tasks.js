@@ -227,10 +227,22 @@ class BackgroundTaskCenter {
         }
         .bg-task-list {
           flex:1 1 260px; min-height:180px; overflow:auto; padding:.7rem;
+          display:block !important; visibility:visible !important; opacity:1 !important;
+          position:relative; z-index:1;
           overscroll-behavior:contain; scrollbar-gutter:stable;
+        }
+        .bg-task-list-count {
+          position:sticky; top:-.7rem; z-index:2;
+          margin:-.7rem -.7rem .65rem; padding:.5rem .72rem;
+          border-bottom:1px solid var(--border-soft, rgba(0,0,0,.08));
+          background:var(--panel-solid, #fff) !important;
+          color:var(--text-soft, #666) !important;
+          font-size:.72rem; font-weight:800;
         }
         .bg-task-empty { padding:1.2rem; text-align:center; color:var(--text-soft, #666) !important; }
         .bg-task-item {
+          display:block !important; visibility:visible !important; opacity:1 !important;
+          position:relative; z-index:1;
           background:linear-gradient(180deg, var(--panel-bg, transparent), var(--panel-bg2, transparent)) !important;
           color:var(--text, #222) !important;
           border:1px solid var(--border, rgba(0,0,0,.12));
@@ -916,16 +928,15 @@ class BackgroundTaskCenter {
       activeHost.innerHTML = showPinnedActive ? this.activeTasksHtml(pinnedActive.slice(0, 8)) : '';
     }
 
-    const visibleTasks = this.tasks.filter((task) => {
+    const visibleTasks = (Array.isArray(this.tasks) ? this.tasks : []).filter((task) => {
+      if (!task || typeof task !== 'object') return false;
       if (!this.matchesFilter(task)) return false;
       if (pinActiveForFilter && pinnedActive.includes(task)) return false;
       return true;
     });
     const list = panel.querySelector('.bg-task-list');
     if (list) {
-      list.innerHTML = visibleTasks.length
-        ? visibleTasks.map((task) => this.taskHtml(task)).join('')
-        : '<div class="bg-task-empty">No hay tareas para este filtro.</div>';
+      list.innerHTML = this.taskListHtml(visibleTasks);
     }
 
     const warning = panel.querySelector('.bg-task-warning');
@@ -1045,6 +1056,48 @@ class BackgroundTaskCenter {
         <div class="bg-task-progress ${progress.cssClass}"><span style="${progress.widthStyle}"></span></div>
       </article>
     `;
+  }
+
+  taskListHtml(tasks) {
+    const rows = Array.isArray(tasks) ? tasks.filter((task) => task && typeof task === 'object') : [];
+    if (!rows.length) {
+      return '<div class="bg-task-empty">No hay tareas para este filtro.</div>';
+    }
+
+    const cards = rows.map((task, index) => this.safeTaskHtml(task, index));
+    return `
+      <div class="bg-task-list-count">Mostrando ${cards.length} tarea${cards.length === 1 ? '' : 's'}</div>
+      ${cards.join('')}
+    `;
+  }
+
+  safeTaskHtml(task, index = 0) {
+    try {
+      return this.taskHtml(task);
+    } catch (error) {
+      if (this.window.console) {
+        this.window.console.warn('[background-tasks] no se pudo renderizar una tarea:', error, task);
+      }
+
+      const status = this.normalizeStatus(task && task.status);
+      const id = String(task && task.id || `tarea-${index + 1}`);
+      const title = String(task && (task.title || task.category || task.kind) || 'Tarea');
+      const detail = String(task && task.detail || 'El estado existe, pero alguno de sus datos no pudo mostrarse.');
+
+      return `
+        <article class="bg-task-item bg-task-item-fallback">
+          <div class="bg-task-row">
+            <div>
+              <div class="bg-task-kind">TAREA</div>
+              <div class="bg-task-title">${this.escapeHtml(title)}</div>
+              <div class="bg-task-service">${this.escapeHtml(id)}</div>
+            </div>
+            <span class="bg-task-badge bg-task-${status}">${this.escapeHtml(this.statusLabel(status))}</span>
+          </div>
+          <div class="bg-task-detail">${this.escapeHtml(detail)}</div>
+        </article>
+      `;
+    }
   }
 
   taskHtml(task) {
@@ -1216,6 +1269,19 @@ class BackgroundTaskCenter {
       stopping: 'DETENIENDO',
       cancelled: 'CANCELADA'
     }[status] || 'PENDIENTE';
+  }
+
+  duration(ms) {
+    const totalSeconds = Math.max(0, Math.floor(Number(ms || 0) / 1000));
+    const days = Math.floor(totalSeconds / 86400);
+    const hours = Math.floor((totalSeconds % 86400) / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+
+    if (days > 0) return `${days}d ${hours}h`;
+    if (hours > 0) return `${hours}h ${minutes}m`;
+    if (minutes > 0) return `${minutes}m ${seconds}s`;
+    return `${seconds}s`;
   }
 
   formatDate(value) {

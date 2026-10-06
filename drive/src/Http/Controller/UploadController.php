@@ -49,6 +49,11 @@ final class UploadController
             $req['_user_agent'] = $this->request->serverString('HTTP_USER_AGENT', 'desconocido');
             $req['_referer'] = $this->request->serverString('HTTP_REFERER', 'ninguno');
 
+            if ($mode === 'task') {
+                $session->closeWrite();
+                $this->handleTaskSignal($userId, $action, $req);
+            }
+
             if ($action === 'init') {
                 $requestedRoute = trim((string)($req['ruta_objetivo'] ?? ''));
                 if ($requestedRoute === '') {
@@ -58,6 +63,10 @@ final class UploadController
                     ], 422);
                 }
                 $req['ruta_objetivo'] = $this->app->uploadDestinationService()->resolve($userId, $requestedRoute);
+            }
+
+            if ($action === 'init') {
+                $this->beginUploadTask($userId, $mode, $req);
             }
 
             $uploader = $this->app->uploadFactory()->make($mode);
@@ -75,10 +84,12 @@ final class UploadController
 
             if ($keepSessionOpen) $session->closeWrite();
 
+            $this->finishUploadTaskPhase($userId, $mode, $action, $req, $result);
             $this->recordObservedOperation($userId, $mode, $action, $req, $result, $started);
             JsonResponse::send(['ok' => true] + $result);
         } catch (Throwable $e) {
             $session->closeWrite();
+            $this->failUploadTask($userId, $req ?? [], $e->getMessage());
 
             if ($this->isCostBearingPhase($mode, $action)) {
                 $this->activity()->failure(
@@ -103,6 +114,106 @@ final class UploadController
                 'ok' => false,
                 'error' => 'No se pudo completar la subida. Revisa los datos e inténtalo nuevamente.',
             ], 500);
+        }
+    }
+
+    private function handleTaskSignal(int $userId, string $action, array $req): never
+    {
+        $taskId = trim((string)($req['task_id'] ?? ''));
+        if ($taskId === '') {
+            JsonResponse::send(['ok' => false, 'error' => 'Falta task_id de la subida.'], 422);
+        }
+
+        if ($action === 'progress') {
+            $status = strtolower(trim((string)($req['status'] ?? 'running')));
+            if (!in_array($status, ['queued','pending','running','completed','cancelled'], true)) $status = 'running';
+            $this->app->uploadTaskStore()->put($userId, $taskId, [
+                'status' => $status,
+                'progress' => isset($req['progress']) ? (int)$req['progress'] : null,
+                'title' => (string)($req['task_title'] ?? 'Subida'),
+                'detail' => (string)($req['detail'] ?? 'Subida en progreso.'),
+                'source' => (string)($req['task_source'] ?? 'Drive'),
+                'upload_mode' => (string)($req['upload_mode'] ?? ''),
+                'destination' => (string)($req['destination'] ?? ''),
+                'service' => (string)($req['service'] ?? 'Amazon S3'),
+                'provider' => 'ArcadeCloud',
+                'bytes_total' => (int)($req['bytes_total'] ?? 0),
+                'bytes_uploaded' => (int)($req['bytes_uploaded'] ?? 0),
+                'speed_bps' => (int)($req['speed_bps'] ?? 0),
+                'eta_seconds' => (int)($req['eta_seconds'] ?? 0),
+                'parts_total' => (int)($req['parts_total'] ?? 0),
+                'part_number' => (int)($req['part_number'] ?? 0),
+            ]);
+            JsonResponse::send(['ok' => true]);
+        }
+
+        if ($action === 'fail') {
+            $this->app->uploadTaskStore()->put($userId, $taskId, [
+                'status' => 'failed',
+                'progress' => 100,
+                'detail' => (string)($req['detail'] ?? 'La subida falló.'),
+            ]);
+            JsonResponse::send(['ok' => true]);
+        }
+
+        JsonResponse::send(['ok' => false, 'error' => 'Señal de tarea de subida no permitida.'], 400);
+    }
+
+    private function beginUploadTask(int $userId, string $mode, array $req): void
+    {
+        $taskId = trim((string)($req['task_id'] ?? ''));
+        if ($taskId === '') return;
+
+        $title = trim((string)($req['task_title'] ?? $req['nombre'] ?? $req['filename'] ?? 'Subida'));
+        $bytes = max(0, (int)($req['task_bytes'] ?? $req['filesize'] ?? $req['tamano'] ?? 0));
+        $this->app->uploadTaskStore()->put($userId, $taskId, [
+            'status' => 'running',
+            'progress' => 1,
+            'title' => $title !== '' ? $title : 'Subida',
+            'detail' => $mode === 'remote_url'
+                ? 'El servidor está obteniendo el archivo remoto.'
+                : 'Preparando subida a Amazon S3.',
+            'source' => (string)($req['task_source'] ?? 'Drive'),
+            'upload_mode' => $mode,
+            'destination' => (string)($req['ruta_objetivo'] ?? ''),
+            'bytes_total' => $bytes,
+            'bytes_uploaded' => 0,
+            'service' => $mode === 'remote_url' ? 'ArcadeCloud + S3' : 'Amazon S3',
+            'provider' => 'ArcadeCloud',
+        ]);
+    }
+
+    private function finishUploadTaskPhase(int $userId, string $mode, string $action, array $req, array $result): void
+    {
+        $taskId = trim((string)($req['task_id'] ?? ''));
+        if ($taskId === '') return;
+
+        $terminalInit = $action === 'init' && in_array($mode, ['remote_url', 'dropbox'], true);
+        if ($action !== 'complete' && !$terminalInit) return;
+
+        $bytes = max(0, (int)($result['tamano'] ?? $result['bytes'] ?? $req['task_bytes'] ?? $req['filesize'] ?? $req['tamano'] ?? 0));
+        $this->app->uploadTaskStore()->put($userId, $taskId, [
+            'status' => 'completed',
+            'progress' => 100,
+            'detail' => 'Archivo guardado correctamente.',
+            'bytes_total' => $bytes,
+            'bytes_uploaded' => $bytes,
+            'eta_seconds' => 0,
+        ]);
+    }
+
+    private function failUploadTask(int $userId, array $req, string $message): void
+    {
+        $taskId = trim((string)($req['task_id'] ?? ''));
+        if ($taskId === '') return;
+        try {
+            $this->app->uploadTaskStore()->put($userId, $taskId, [
+                'status' => 'failed',
+                'progress' => 100,
+                'detail' => $message !== '' ? $message : 'La subida falló.',
+            ]);
+        } catch (\Throwable) {
+            // La telemetría de Tareas nunca debe ocultar el error real de subida.
         }
     }
 

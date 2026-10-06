@@ -77,6 +77,12 @@ on:
       - 'drive/src/Sync/SyncJobStore.php'
       - 'drive/src/Storage/MoveJobStore.php'
       - 'drive/src/Http/Controller/BackgroundTaskController.php'
+      - 'drive/src/Http/Controller/UploadController.php'
+      - 'drive/src/Upload/AdminMultipartUploadService.php'
+      - 'drive/src/Upload/UploadTaskStore.php'
+      - 'drive/src/Core/DriveApplication.php'
+      - 'drive/up.php'
+      - 'drive/tests/upload_task_center_contract.php'
       - 'drive/src/Http/Controller/MediaProcessingController.php'
       - 'drive/src/Http/Controller/AuthController.php'
       - 'drive/src/Media/MediaWorkerNodeService.php'
@@ -163,6 +169,12 @@ on:
       - 'drive/src/Sync/SyncJobStore.php'
       - 'drive/src/Storage/MoveJobStore.php'
       - 'drive/src/Http/Controller/BackgroundTaskController.php'
+      - 'drive/src/Http/Controller/UploadController.php'
+      - 'drive/src/Upload/AdminMultipartUploadService.php'
+      - 'drive/src/Upload/UploadTaskStore.php'
+      - 'drive/src/Core/DriveApplication.php'
+      - 'drive/up.php'
+      - 'drive/tests/upload_task_center_contract.php'
       - 'drive/src/Http/Controller/MediaProcessingController.php'
       - 'drive/src/Http/Controller/AuthController.php'
       - 'drive/src/Media/MediaWorkerNodeService.php'
@@ -216,6 +228,12 @@ jobs:
           php -l drive/src/Sync/SyncJobStore.php
           php -l drive/src/Storage/MoveJobStore.php
           php -l drive/src/Http/Controller/BackgroundTaskController.php
+          php -l drive/src/Http/Controller/UploadController.php
+          php -l drive/src/Upload/AdminMultipartUploadService.php
+          php -l drive/src/Upload/UploadTaskStore.php
+          php -l drive/src/Core/DriveApplication.php
+          php -l drive/up.php
+          php -l drive/tests/upload_task_center_contract.php
           php -l drive/src/Http/Controller/MediaProcessingController.php
           php -l drive/src/Http/Controller/AuthController.php
           php -l drive/src/Media/MediaWorkerNodeService.php
@@ -248,6 +266,10 @@ jobs:
           node --check drive/js/folder-document.js
           node --check drive/js/sincronizar.js
           node --check drive/js/move-tasks.js
+      - name: Upload task center regression
+        run: |
+          php drive/tests/upload_task_center_contract.php
+          node drive/tests/background_tasks_refresh_functional.js
       - name: Web OS contract
         run: |
           php drive/tests/web_os_contract_smoke.php
@@ -255,6 +277,7 @@ jobs:
           php drive/tests/web_os_pending_fixes_smoke.php
           php drive/tests/web_os_multiwindow_smoke.php
           php drive/tests/web_os_clipboard_contract_smoke.php
+          php drive/tests/upload_task_center_contract.php
       - name: Search location behavior
         run: |
           node drive/tests/background_tasks_refresh_functional.js

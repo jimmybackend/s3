@@ -373,6 +373,7 @@ $themeBridgeVersion = is_file(__DIR__ . '/js/theme-state-bridge.js') ? (int)file
       file:null,
       uploadId:null,
       s3key:null,
+      taskId:null,
       etags:{},
       totalParts:0,
       nextPart:1,
@@ -510,6 +511,7 @@ $themeBridgeVersion = is_file(__DIR__ . '/js/theme-state-bridge.js') ? (int)file
       }
 
       state.uploadId=data.uploadId; state.s3key=data.key; state.etags=data.etags||{};
+      state.taskId=String(data.task_id||'');
       msg('Sesión previa encontrada. Sincronizando…','ok');
     } else {
       try{
@@ -525,7 +527,8 @@ $themeBridgeVersion = is_file(__DIR__ . '/js/theme-state-bridge.js') ? (int)file
             Number(init.chunk_size);
         }
         state.uploadId=init.uploadId; state.s3key=init.key; state.etags={};
-        msg('Sesión creada en S3.','ok');
+        state.taskId=String(init.task_id||'');
+        msg('Sesión creada en S3 y registrada en Tareas.','ok');
       }catch(e){ msg(`No se pudo iniciar la subida: ${e.message}`,'err'); return; }
     }
 
@@ -563,6 +566,9 @@ $themeBridgeVersion = is_file(__DIR__ . '/js/theme-state-bridge.js') ? (int)file
         msg(`Error definitivo en paquete ${partNumber}: ${e.message}`,'err');
         state.failed=true;
         state.paused=true;
+        if (state.taskId) {
+          postForm('fail', {task_id:state.taskId, detail:`Error en paquete ${partNumber}: ${e.message}`}).catch(() => {});
+        }
         pauseBtn.disabled=true;
         resumeBtn.disabled=false;
       });
@@ -790,6 +796,21 @@ $themeBridgeVersion = is_file(__DIR__ . '/js/theme-state-bridge.js') ? (int)file
       state.etags[partNumber] = etag;
       state.uploadedBytes += (end - start);
       actualizarProgresoDirecto();
+      if (state.taskId) {
+        const pct = state.file && state.file.size
+          ? Math.min(99, Math.floor((state.uploadedBytes / state.file.size) * 100))
+          : 0;
+        postForm('progress', {
+          task_id: state.taskId,
+          status: 'running',
+          progress: pct,
+          detail: `Paquete ${partNumber} de ${state.totalParts} confirmado.`,
+          bytes_total: state.file?.size || 0,
+          bytes_uploaded: state.uploadedBytes,
+          parts_total: state.totalParts,
+          part_number: Object.keys(state.etags).length
+        }).catch(() => {});
+      }
       msg(`Paquete ${partNumber} confirmado (${( (end-start)/1024/1024 ).toFixed(1)} MB).`,'ok');
 
     } finally {
@@ -809,7 +830,8 @@ $themeBridgeVersion = is_file(__DIR__ . '/js/theme-state-bridge.js') ? (int)file
         key:state.s3key,
         etags:JSON.stringify(state.etags),
         filename:state.file.name,
-        filesize:state.file.size
+        filesize:state.file.size,
+        task_id:state.taskId||''
       });
       setProgress(100);
       msg(`Subida finalizada. Objeto: ${r.objectUrl || state.s3key}`,'ok');
@@ -848,14 +870,27 @@ $themeBridgeVersion = is_file(__DIR__ . '/js/theme-state-bridge.js') ? (int)file
     state.paused=true;
     for (const c of state.aborters.values()) { try{ c.abort(); }catch(_e){} }
     state.aborters.clear();
+    if (state.taskId) {
+      postForm('progress', {
+        task_id:state.taskId,
+        status:'pending',
+        progress:state.file?.size ? Math.floor((state.uploadedBytes/state.file.size)*100) : 0,
+        detail:'Subida pausada; puede reanudarse.',
+        bytes_total:state.file?.size||0,
+        bytes_uploaded:state.uploadedBytes,
+        parts_total:state.totalParts,
+        part_number:Object.keys(state.etags||{}).length
+      }).catch(() => {});
+    }
     pauseBtn.disabled=true; resumeBtn.disabled=false; msg('Subida pausada.','warn');
   });
   resumeBtn.addEventListener('click', async ()=>{
     if(!state.file || !state.uploadId){ msg('No hay sesión para reanudar.','warn'); return; }
     state.paused=false; resumeBtn.disabled=true; pauseBtn.disabled=false;
     try{
-      const r=await postForm('resume',{filename:state.file.name,filesize:state.file.size,uploadId:state.uploadId,key:state.s3key});
+      const r=await postForm('resume',{filename:state.file.name,filesize:state.file.size,uploadId:state.uploadId,key:state.s3key,task_id:state.taskId||''});
       if(r.found){
+        state.taskId=String(r.task_id||state.taskId||'');
         state.etags=r.etags||state.etags;
         // recalcular bytes subidos
         let uploadedBytes=0;
@@ -866,6 +901,18 @@ $themeBridgeVersion = is_file(__DIR__ . '/js/theme-state-bridge.js') ? (int)file
         const nums=Object.keys(state.etags).map(n=>+n).sort((a,b)=>a-b);
         let e=1; for(const n of nums){ if(n!==e) break; e++; }
         state.nextPart = e;
+        if (state.taskId) {
+          postForm('progress', {
+            task_id:state.taskId,
+            status:'running',
+            progress:state.file.size ? Math.floor((state.uploadedBytes/state.file.size)*100) : 0,
+            detail:'Subida reanudada.',
+            bytes_total:state.file.size,
+            bytes_uploaded:state.uploadedBytes,
+            parts_total:state.totalParts,
+            part_number:Object.keys(state.etags).length
+          }).catch(() => {});
+        }
         scheduleWorkers();
         msg(`Sesión sincronizada. Continuando en el paquete ${state.nextPart}.`,'ok');
       } else {

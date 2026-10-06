@@ -47,6 +47,12 @@ final class BackgroundTaskController extends AbstractJsonController
             }
 
             try {
+                $tasks = array_merge($tasks, $this->uploadTasks($userId));
+            } catch (\Throwable $e) {
+                $sourceErrors['upload'] = $e->getMessage();
+            }
+
+            try {
                 $tasks = array_merge($tasks, $this->syncTasks($userId));
             } catch (\Throwable $e) {
                 $sourceErrors['sync'] = $e->getMessage();
@@ -138,6 +144,8 @@ final class BackgroundTaskController extends AbstractJsonController
                 $message = $this->handleSyncAction($userId, substr($controlId, 5), $action);
             } elseif (str_starts_with($controlId, 'move:')) {
                 $message = $this->handleMoveAction($userId, substr($controlId, 5), $action);
+            } elseif (str_starts_with($controlId, 'upload-task:')) {
+                $message = $this->handleUploadAction($userId, substr($controlId, 12), $action);
             } elseif (str_starts_with($controlId, 'media:')) {
                 $message = $this->handleMediaAction($userId, substr($controlId, 6), $action);
             } elseif (str_starts_with($controlId, 'activity:')) {
@@ -157,6 +165,72 @@ final class BackgroundTaskController extends AbstractJsonController
         } catch (\Throwable $e) {
             JsonResponse::send(['ok' => false, 'error' => $e->getMessage()], 400);
         }
+    }
+
+    private function uploadTasks(int $userId): array
+    {
+        $tasks = [];
+        foreach ($this->app->uploadTaskStore()->recentForUser($userId, 80) as $job) {
+            $id = trim((string)($job['id'] ?? ''));
+            if ($id === '') continue;
+
+            $status = strtolower((string)($job['status'] ?? 'pending'));
+            if (!in_array($status, ['queued','pending','running','completed','failed','cancelled'], true)) {
+                $status = 'pending';
+            }
+
+            $progress = array_key_exists('progress', $job) && $job['progress'] !== null
+                ? max(0, min(100, (int)$job['progress']))
+                : null;
+            $actions = [];
+            if (in_array($status, ['completed','failed','cancelled'], true)) {
+                $actions[] = $this->uiAction('delete', 'Eliminar de Tareas', 'muted', true);
+            }
+
+            $tasks[] = [
+                'id' => $id,
+                'control_id' => 'upload-task:' . $id,
+                'kind' => 'upload',
+                'category' => 'Subida',
+                'service' => (string)($job['service'] ?? 'Amazon S3'),
+                'provider' => (string)($job['provider'] ?? 'ArcadeCloud'),
+                'title' => (string)($job['title'] ?? 'Archivo'),
+                'status' => $status,
+                'progress' => $progress,
+                'progress_mode' => $progress === null && in_array($status, ['queued','pending','running'], true)
+                    ? 'indeterminate'
+                    : 'determinate',
+                'detail' => (string)($job['detail'] ?? ''),
+                'created_at' => (string)($job['created_at'] ?? ''),
+                'updated_at' => (string)($job['updated_at'] ?? $job['created_at'] ?? ''),
+                'completed_at' => (string)($job['completed_at'] ?? ''),
+                'estimated_cost' => null,
+                'currency' => 'USD',
+                'pricing_state' => 'unpriced',
+                'actions' => $actions,
+                'metadata' => [
+                    'source' => (string)($job['source'] ?? ''),
+                    'upload_mode' => (string)($job['upload_mode'] ?? ''),
+                    'destination' => (string)($job['destination'] ?? ''),
+                    'bytes_total' => max(0, (int)($job['bytes_total'] ?? 0)),
+                    'bytes_uploaded' => max(0, (int)($job['bytes_uploaded'] ?? 0)),
+                    'speed_bps' => max(0, (int)($job['speed_bps'] ?? 0)),
+                    'eta_seconds' => max(0, (int)($job['eta_seconds'] ?? 0)),
+                    'parts_total' => max(0, (int)($job['parts_total'] ?? 0)),
+                    'part_number' => max(0, (int)($job['part_number'] ?? 0)),
+                ],
+            ];
+        }
+        return $tasks;
+    }
+
+    private function handleUploadAction(int $userId, string $id, string $action): string
+    {
+        if (!in_array($action, ['delete', 'dismiss'], true)) {
+            throw new RuntimeException('Acción de subida no permitida.');
+        }
+        $this->app->uploadTaskStore()->deleteForUser($userId, $id);
+        return 'Tarea de subida eliminada de Tareas.';
     }
 
     private function folderTextractTasks(int $userId): array

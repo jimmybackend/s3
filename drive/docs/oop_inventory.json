@@ -9018,7 +9018,7 @@
     },
     {
       "path": "drive/js/drive3d-three-lab.js",
-      "lines": 213,
+      "lines": 290,
       "kind": "class/module",
       "classes": [
         "Drive3DThreeLab"
@@ -10832,7 +10832,7 @@
     },
     {
       "path": "drive/docs/runtime_endpoints.json",
-      "bytes": 133289,
+      "bytes": 133718,
       "valid": true,
       "root_type": "object",
       "keys": [

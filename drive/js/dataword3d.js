@@ -66,6 +66,9 @@
       this.mediaStage = doc.querySelector('[data-dw-media-stage]');
       this.mediaContent = doc.querySelector('[data-dw-media-content]');
       this.mediaTitle = doc.querySelector('[data-dw-media-title]');
+      this.spatialActions = doc.querySelector('[data-spatial-actions]');
+      this.spatialDragHandle = doc.querySelector('[data-spatial-drag-handle]');
+      this.spatialDrag = null;
       this.preDomeCamera = null;
       this.environmentPanel = doc.querySelector('[data-dw-environment-panel]');
       this.glassImage = doc.querySelector('[data-dw-glass-image]');
@@ -333,6 +336,28 @@
       this.hud.desk?.addEventListener('click', () => this.bringToDesk());
       this.hud.play?.addEventListener('click', () => this.playSelected());
       this.document.querySelector('[data-dw-media-close]')?.addEventListener('click', () => this.closeMedia());
+      this.document.querySelector('[data-spatial-front]')?.addEventListener('click', (event) => {
+        event.stopPropagation();
+        this.three?.placeSpatialMedia?.();
+      });
+      this.spatialDragHandle?.addEventListener('pointerdown', (event) => {
+        if (!this.useThree || this.mediaStage?.hidden || event.target.closest('button,a,input')) return;
+        this.spatialDrag = {id:event.pointerId,x:event.clientX,y:event.clientY};
+        this.spatialDragHandle.setPointerCapture?.(event.pointerId);
+        event.preventDefault();
+      });
+      this.spatialDragHandle?.addEventListener('pointermove', (event) => {
+        if (!this.spatialDrag || this.spatialDrag.id !== event.pointerId) return;
+        const dx = event.clientX - this.spatialDrag.x;
+        const dy = event.clientY - this.spatialDrag.y;
+        this.spatialDrag.x = event.clientX; this.spatialDrag.y = event.clientY;
+        this.three?.moveSpatialMedia?.(dx,dy);
+      });
+      for (const eventName of ['pointerup','pointercancel','lostpointercapture']) {
+        this.spatialDragHandle?.addEventListener(eventName, (event) => {
+          if (this.spatialDrag?.id === event.pointerId) this.spatialDrag = null;
+        });
+      }
       this.document.querySelector('[data-dw-fullscreen]')?.addEventListener('click', () => this.toggleFullscreen());
 
       this.document.querySelector('[data-dw-environment]')?.addEventListener('click', () => {
@@ -1076,36 +1101,63 @@
 
     showFileInDome(item) {
       if (!this.mediaStage || !this.mediaContent) return;
-      this.closeMedia(false);
+      if (this.useThree && this.three) {
+        this.showSpatialFile(item);
+        return;
+      }
 
+      this.closeMedia(false);
       this.preDomeCamera = {
         yaw:this.camera.yaw,
         pitch:this.camera.pitch,
         distance:this.camera.distance,
         target:this.camera.target,
       };
-
       this.camera.pitch = -18;
       this.camera.distance = Math.max(.08, Math.min(.32, this.camera.distance));
       this.renderCamera();
       this.document.body.classList.add('is-dome-viewing');
       this.mediaStage.hidden = false;
       if (this.mediaTitle) this.mediaTitle.textContent = item.name || 'Archivo';
+      this.mediaContent.replaceChildren(this.createMediaViewer(item, false));
+      this.schedulePreferenceSave();
+    }
 
+    showSpatialFile(item) {
+      this.closeMedia(false);
+      this.document.body.classList.add('is-dome-viewing','is-spatial-viewing');
+      this.mediaStage.classList.add('is-spatial');
+      this.mediaStage.hidden = false;
+      this.mediaStage.style.visibility = 'hidden';
+      if (this.spatialActions) this.spatialActions.hidden = false;
+      if (this.mediaTitle) this.mediaTitle.textContent = item.name || 'Archivo';
+
+      const viewer = this.createMediaViewer(item, true);
+      this.mediaContent.replaceChildren(viewer);
+      this.fitSpatialViewer(viewer, item);
+      this.three.placeSpatialMedia?.();
+    }
+
+    createMediaViewer(item, spatial = false) {
       let viewer;
       if (item.kind === 'image') {
         viewer = this.document.createElement('img');
+        viewer.className = spatial ? 'dw-spatial-image' : '';
         viewer.alt = item.name;
         viewer.src = item.openHref;
+        if (spatial) viewer.addEventListener('load', () => this.fitSpatialViewer(viewer, item), {once:true});
       } else if (item.kind === 'video') {
         viewer = this.document.createElement('video');
+        viewer.className = spatial ? 'dw-spatial-video' : '';
         viewer.controls = true;
         viewer.autoplay = true;
         viewer.playsInline = true;
+        viewer.preload = 'metadata';
         viewer.src = item.openHref;
+        if (spatial) viewer.addEventListener('loadedmetadata', () => this.fitSpatialViewer(viewer, item), {once:true});
       } else if (item.kind === 'audio') {
         const shell = this.document.createElement('div');
-        shell.className = 'dw-dome-audio-shell';
+        shell.className = spatial ? 'dw-spatial-audio-shell' : 'dw-dome-audio-shell';
         const icon = this.document.createElement('i');
         icon.className = 'fas fa-music';
         const label = this.document.createElement('strong');
@@ -1113,20 +1165,106 @@
         const audio = this.document.createElement('audio');
         audio.controls = true;
         audio.autoplay = true;
+        audio.preload = 'metadata';
         audio.src = item.openHref;
         shell.append(icon,label,audio);
         viewer = shell;
+      } else if (spatial && this.isTextDocument(item)) {
+        viewer = this.document.createElement('div');
+        viewer.className = 'dw-spatial-text-shell';
+        const pre = this.document.createElement('pre');
+        pre.textContent = 'Cargando…';
+        const nav = this.document.createElement('div');
+        nav.className = 'dw-spatial-text-nav';
+        const previous = this.document.createElement('button');
+        const counter = this.document.createElement('span');
+        const next = this.document.createElement('button');
+        previous.type = next.type = 'button';
+        previous.textContent = '‹';
+        next.textContent = '›';
+        nav.append(previous,counter,next);
+        viewer.append(pre,nav);
+        fetch(item.openHref,{credentials:'same-origin'})
+          .then(response => {
+            if (!response.ok) throw new Error('HTTP '+response.status);
+            return response.text();
+          })
+          .then(text => {
+            const lines = String(text).replace(/\r\n/g,'\n').split('\n');
+            const pageSize = 42;
+            const pages = [];
+            for (let i=0;i<lines.length;i+=pageSize) pages.push(lines.slice(i,i+pageSize).join('\n'));
+            if (!pages.length) pages.push('');
+            let page = 0;
+            const render = () => {
+              pre.textContent = pages[page];
+              counter.textContent = `${page+1} / ${pages.length}`;
+              previous.disabled = page === 0;
+              next.disabled = page === pages.length-1;
+            };
+            previous.addEventListener('click', () => { if (page>0) { page--; render(); } });
+            next.addEventListener('click', () => { if (page<pages.length-1) { page++; render(); } });
+            render();
+          })
+          .catch(() => { pre.textContent = 'No se pudo cargar el texto.'; counter.textContent=''; });
       } else {
         viewer = this.document.createElement('iframe');
-        viewer.className = 'dw-dome-document-frame';
-        viewer.src = item.openHref;
+        viewer.className = spatial ? 'dw-spatial-document-frame' : 'dw-dome-document-frame';
+        const fitSuffix = item.kind === 'pdf' ? '#view=Fit&toolbar=0&navpanes=0' : '';
+        viewer.src = item.openHref + fitSuffix;
         viewer.title = item.name || 'Documento';
         viewer.setAttribute('loading','eager');
         viewer.setAttribute('referrerpolicy','same-origin');
+        if (spatial) viewer.setAttribute('scrolling','no');
+      }
+      return viewer;
+    }
+
+    isTextDocument(item) {
+      const format = String(item?.format || '').toUpperCase();
+      return ['TXT','MD','MARKDOWN','JSON','XML','HTML','HTM','PHP','JS','CSS','PY','SQL','CSV'].includes(format);
+    }
+
+    fitSpatialViewer(viewer, item) {
+      if (!this.mediaStage?.classList.contains('is-spatial')) return;
+      const maxW = Math.min(this.window.innerWidth * .66, 1080);
+      const maxH = Math.min(this.window.innerHeight * .68, 720);
+      let ratio = 16/9;
+      let bodyW = maxW, bodyH = maxH;
+
+      if (item.kind === 'image' && viewer.naturalWidth && viewer.naturalHeight) {
+        ratio = viewer.naturalWidth / viewer.naturalHeight;
+      } else if (item.kind === 'video' && viewer.videoWidth && viewer.videoHeight) {
+        ratio = viewer.videoWidth / viewer.videoHeight;
       }
 
-      this.mediaContent.replaceChildren(viewer);
-      this.schedulePreferenceSave();
+      if (['image','video'].includes(item.kind)) {
+        bodyW = Math.min(maxW, maxH * ratio);
+        bodyH = bodyW / ratio;
+        if (bodyH > maxH) { bodyH = maxH; bodyW = bodyH * ratio; }
+      } else if (item.kind === 'audio') {
+        bodyW = Math.min(560, this.window.innerWidth * .62);
+        bodyH = 150;
+      } else if (this.isTextDocument(item)) {
+        bodyW = Math.min(900, this.window.innerWidth * .66);
+        bodyH = Math.min(620, this.window.innerHeight * .66);
+      }
+
+      this.mediaStage.style.setProperty('--dw-spatial-width', Math.max(280,bodyW)+'px');
+      this.mediaStage.style.setProperty('--dw-spatial-body-height', Math.max(150,bodyH)+'px');
+    }
+
+    updateSpatialProjection(projection) {
+      if (!this.mediaStage?.classList.contains('is-spatial') || this.mediaStage.hidden) return;
+      if (!projection || !projection.visible) {
+        this.mediaStage.style.visibility = 'hidden';
+        return;
+      }
+      this.mediaStage.style.visibility = 'visible';
+      this.mediaStage.style.left = projection.x+'px';
+      this.mediaStage.style.top = projection.y+'px';
+      this.mediaStage.style.setProperty('--dw-spatial-scale', String(projection.scale || 1));
+      this.mediaStage.dataset.worldPosition = Array.isArray(projection.world) ? projection.world.map(n=>Number(n).toFixed(2)).join(',') : '';
     }
 
     closeMedia(restoreCamera = true) {
@@ -1138,7 +1276,14 @@
       });
       this.mediaContent.replaceChildren();
       this.mediaStage.hidden = true;
-      this.document.body.classList.remove('is-dome-viewing');
+      this.mediaStage.style.visibility = '';
+      this.mediaStage.style.left = '';
+      this.mediaStage.style.top = '';
+      this.mediaStage.classList.remove('is-spatial');
+      this.mediaStage.removeAttribute('data-world-position');
+      if (this.spatialActions) this.spatialActions.hidden = true;
+      this.three?.clearSpatialMedia?.();
+      this.document.body.classList.remove('is-dome-viewing','is-spatial-viewing');
 
       if (restoreCamera && this.preDomeCamera) {
         this.camera.yaw = this.preDomeCamera.yaw;

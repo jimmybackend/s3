@@ -52,6 +52,8 @@
       this.deskFiles = doc.querySelector('[data-dw-current-files]');
       this.mediaStage = doc.querySelector('[data-dw-media-stage]');
       this.mediaContent = doc.querySelector('[data-dw-media-content]');
+      this.mediaTitle = doc.querySelector('[data-dw-media-title]');
+      this.preDomeCamera = null;
       this.environmentPanel = doc.querySelector('[data-dw-environment-panel]');
       this.glassImage = doc.querySelector('[data-dw-glass-image]');
       this.floorImage = doc.querySelector('[data-dw-floor-image]');
@@ -747,29 +749,75 @@
     openSelected() {
       const item = this.selected;
       if (!item || item.locked || !item.openHref) return;
-      if (item.type === 'folder') { this.window.location.href = item.openHref; return; }
-      if (['image','audio','video'].includes(item.kind)) { this.showMedia(item); return; }
-      this.window.open(item.openHref,'_blank','noopener');
+      if (item.type === 'folder') {
+        this.window.location.href = item.openHref;
+        return;
+      }
+      this.showFileInDome(item);
     }
 
     playSelected() {
       const item = this.selected;
-      if (item && !item.locked && item.openHref && ['audio','video'].includes(item.kind)) this.showMedia(item);
+      if (!item || item.locked || !item.openHref) return;
+      this.showFileInDome(item);
     }
 
-    showMedia(item) {
+    showFileInDome(item) {
       if (!this.mediaStage || !this.mediaContent) return;
-      this.closeMedia();
-      const media = this.document.createElement(item.kind === 'image' ? 'img' : item.kind === 'video' ? 'video' : 'audio');
-      if (item.kind === 'image') media.alt = item.name;
-      if (item.kind !== 'image') { media.controls = true; media.autoplay = true; }
-      if (item.kind === 'video') media.playsInline = true;
-      media.src = item.openHref;
-      this.mediaContent.append(media);
+      this.closeMedia(false);
+
+      this.preDomeCamera = {
+        yaw:this.camera.yaw,
+        pitch:this.camera.pitch,
+        distance:this.camera.distance,
+        target:this.camera.target,
+      };
+
+      this.camera.pitch = -24;
+      this.camera.distance = Math.max(.08, Math.min(.32, this.camera.distance));
+      this.renderCamera();
+      this.document.body.classList.add('is-dome-viewing');
       this.mediaStage.hidden = false;
+      if (this.mediaTitle) this.mediaTitle.textContent = item.name || 'Archivo';
+
+      let viewer;
+      if (item.kind === 'image') {
+        viewer = this.document.createElement('img');
+        viewer.alt = item.name;
+        viewer.src = item.openHref;
+      } else if (item.kind === 'video') {
+        viewer = this.document.createElement('video');
+        viewer.controls = true;
+        viewer.autoplay = true;
+        viewer.playsInline = true;
+        viewer.src = item.openHref;
+      } else if (item.kind === 'audio') {
+        const shell = this.document.createElement('div');
+        shell.className = 'dw-dome-audio-shell';
+        const icon = this.document.createElement('i');
+        icon.className = 'fas fa-music';
+        const label = this.document.createElement('strong');
+        label.textContent = item.name;
+        const audio = this.document.createElement('audio');
+        audio.controls = true;
+        audio.autoplay = true;
+        audio.src = item.openHref;
+        shell.append(icon,label,audio);
+        viewer = shell;
+      } else {
+        viewer = this.document.createElement('iframe');
+        viewer.className = 'dw-dome-document-frame';
+        viewer.src = item.openHref;
+        viewer.title = item.name || 'Documento';
+        viewer.setAttribute('loading','eager');
+        viewer.setAttribute('referrerpolicy','same-origin');
+      }
+
+      this.mediaContent.replaceChildren(viewer);
+      this.schedulePreferenceSave();
     }
 
-    closeMedia() {
+    closeMedia(restoreCamera = true) {
       if (!this.mediaStage || !this.mediaContent) return;
       this.mediaContent.querySelectorAll('audio,video').forEach((media) => {
         try { media.pause(); } catch (_) {}
@@ -778,6 +826,17 @@
       });
       this.mediaContent.replaceChildren();
       this.mediaStage.hidden = true;
+      this.document.body.classList.remove('is-dome-viewing');
+
+      if (restoreCamera && this.preDomeCamera) {
+        this.camera.yaw = this.preDomeCamera.yaw;
+        this.camera.pitch = this.preDomeCamera.pitch;
+        this.camera.distance = this.preDomeCamera.distance;
+        this.camera.target = this.preDomeCamera.target;
+        this.preDomeCamera = null;
+        this.renderCamera();
+        this.schedulePreferenceSave();
+      }
     }
 
     async toggleFullscreen() {

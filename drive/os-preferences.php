@@ -5,6 +5,7 @@ require_once __DIR__ . '/app_bootstrap.php';
 
 use ArcadeCloud\Drive\Core\ApplicationKernel;
 use ArcadeCloud\Drive\Http\JsonResponse;
+use ArcadeCloud\Drive\Security\Drive3dPreferenceSanitizer;
 use ArcadeCloud\Drive\Security\OsPreferenceNodeResolver;
 use ArcadeCloud\Drive\Security\UserOsPreferencesRepository;
 
@@ -43,38 +44,7 @@ try {
             ],
         ];
     } elseif (isset($payload['drive3dPreference']) && is_array($payload['drive3dPreference'])) {
-        $drive3d = $payload['drive3dPreference'];
-        $surfacePath = static function (mixed $value): string {
-            $path = str_replace('\\\\', '/', trim((string)$value));
-            $path = preg_replace('~/+~', '/', $path) ?? $path;
-            if ($path === '' || str_contains($path, '..')) return '';
-            return mb_substr(ltrim($path, '/'), 0, 1024);
-        };
-        $allowedEnvironment = ['future', 'mountain', 'prehistoric', 'ocean'];
-        $allowedFurniture = ['default'];
-        $allowedWindows = ['panoramic'];
-        $allowedPlants = ['orchids'];
-        $patch['drive3d'] = [
-            'environment' => in_array(($drive3d['environment'] ?? ''), $allowedEnvironment, true)
-                ? (string)$drive3d['environment']
-                : 'future',
-            'glassBackground' => $surfacePath($drive3d['glassBackground'] ?? ''),
-            'floorBackground' => $surfacePath($drive3d['floorBackground'] ?? ''),
-            'ceilingBackground' => $surfacePath($drive3d['ceilingBackground'] ?? ''),
-            'cameraYaw' => max(-180.0, min(180.0, (float)($drive3d['cameraYaw'] ?? 0))),
-            'cameraPitch' => max(-28.0, min(28.0, (float)($drive3d['cameraPitch'] ?? 0))),
-            'cameraDistance' => max(0.0, min(1.0, (float)($drive3d['cameraDistance'] ?? 0))),
-            'cameraTarget' => mb_substr((string)($drive3d['cameraTarget'] ?? ''), 0, 255),
-            'furniturePreset' => in_array(($drive3d['furniturePreset'] ?? ''), $allowedFurniture, true)
-                ? (string)$drive3d['furniturePreset']
-                : 'default',
-            'windowPreset' => in_array(($drive3d['windowPreset'] ?? ''), $allowedWindows, true)
-                ? (string)$drive3d['windowPreset']
-                : 'panoramic',
-            'plantsPreset' => in_array(($drive3d['plantsPreset'] ?? ''), $allowedPlants, true)
-                ? (string)$drive3d['plantsPreset']
-                : 'orchids',
-        ];
+        $patch['drive3d'] = (new Drive3dPreferenceSanitizer())->sanitize($payload['drive3dPreference']);
     } elseif (isset($payload['mediaPlayerPreference']) && is_array($payload['mediaPlayerPreference'])) {
         $mediaPlayer = $payload['mediaPlayerPreference'];
         $geometry = [];

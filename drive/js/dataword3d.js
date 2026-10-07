@@ -392,7 +392,11 @@
 
       this.deskFiles?.addEventListener('click', (event) => {
         const item = event.target.closest('[data-dw-item]');
-        if (item) this.selectElement(item);
+        if (!item) return;
+        this.selectElement(item);
+        if (item.dataset.itemKind === 'image' && item.dataset.itemLocked !== '1') {
+          this.openSelected();
+        }
       });
       this.deskFiles?.addEventListener('dblclick', (event) => {
         const item = event.target.closest('[data-dw-item]');

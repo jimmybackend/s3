@@ -374,7 +374,6 @@ header('Content-Type: text/html; charset=UTF-8');
     </section>
 
     <section class="dw-desk" aria-label="Escritorio central">
-      <div class="dw-desk-globe" aria-hidden="true"><i class="fas fa-earth-americas"></i></div>
       <div class="dw-desk-focus" data-dw-desk-focus>
         <span class="dw-desk-preview" data-dw-desk-preview>
           <i class="fas fa-cube" data-dw-desk-icon></i>

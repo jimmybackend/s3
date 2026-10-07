@@ -36,7 +36,83 @@ final class Drive3dPreferenceSanitizer
             'plantsPreset' => in_array(($drive3d['plantsPreset'] ?? ''), $allowedPlants, true)
                 ? (string)$drive3d['plantsPreset']
                 : 'orchids',
+            'spatialImages' => $this->spatialImages($drive3d['spatialImages'] ?? []),
         ];
+    }
+
+    /** @return list<array{id:string,name:string,path:string,openHref:string,world:list<float>}|null> */
+    private function spatialImages(mixed $value): array
+    {
+        $slots = array_fill(0, 12, null);
+        if (!is_array($value)) {
+            return $slots;
+        }
+
+        foreach (array_slice(array_values($value), 0, 12) as $index => $entry) {
+            if (!is_array($entry)) {
+                continue;
+            }
+
+            $id = preg_replace('/[^a-zA-Z0-9_-]/', '', (string)($entry['id'] ?? '')) ?? '';
+            $id = substr($id, 0, 80);
+            $openHref = $this->localViewerHref($entry['openHref'] ?? '');
+            $world = $this->worldPosition($entry['world'] ?? null);
+            if ($id === '' || $openHref === '' || $world === null) {
+                continue;
+            }
+
+            $slots[$index] = [
+                'id' => $id,
+                'name' => mb_substr(trim((string)($entry['name'] ?? 'Imagen')), 0, 255),
+                'path' => mb_substr(str_replace(["\r", "\n", "\0"], '', (string)($entry['path'] ?? '')), 0, 1024),
+                'openHref' => $openHref,
+                'world' => $world,
+            ];
+        }
+
+        return $slots;
+    }
+
+    /** @return list<float>|null */
+    private function worldPosition(mixed $value): ?array
+    {
+        if (!is_array($value) || count($value) !== 3) {
+            return null;
+        }
+
+        $position = [];
+        foreach (array_values($value) as $coordinate) {
+            if (!is_numeric($coordinate)) {
+                return null;
+            }
+            $number = (float)$coordinate;
+            if (!is_finite($number)) {
+                return null;
+            }
+            $position[] = max(-100.0, min(100.0, $number));
+        }
+
+        return $position;
+    }
+
+    private function localViewerHref(mixed $value): string
+    {
+        $href = trim((string)$value);
+        if ($href === '' || strlen($href) > 4096 || str_contains($href, "\r") || str_contains($href, "\n")) {
+            return '';
+        }
+
+        $parts = parse_url($href);
+        if (!is_array($parts) || ($parts['path'] ?? '') !== 'ver_archivo.php' || isset($parts['scheme']) || isset($parts['host'])) {
+            return '';
+        }
+
+        parse_str((string)($parts['query'] ?? ''), $query);
+        if (!isset($query['archivo']) || trim((string)$query['archivo']) === '') {
+            return '';
+        }
+
+        return $href;
     }
 
     private function surfacePath(mixed $value): string

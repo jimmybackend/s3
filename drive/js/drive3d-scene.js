@@ -420,54 +420,94 @@ class Drive3DScene {
         };
 
         // Spatial media is anchored in world coordinates near the glass, not to the screen.
-        let spatialAnchor = null, spatialBaseDistance = 1;
+        // Multiple anchors allow image windows to behave like persistent pictures in the room.
+        const spatialAnchors = new Map();
         const spatialCenter = new T.Vector3(0, 2.7, 0);
         const spatialSphere = new T.Sphere(spatialCenter, Math.max(4, R - 1.05));
-        function placeSpatialInView() {
-            camera.updateMatrixWorld(true);
-            const direction = new T.Vector3();
-            camera.getWorldDirection(direction);
-            const ray = new T.Ray(camera.position.clone(), direction.normalize());
-            let hit = ray.intersectSphere(spatialSphere, new T.Vector3());
-            if (!hit) hit = camera.position.clone().add(direction.multiplyScalar(Math.max(4.5, R * .62)));
-            hit.y = T.MathUtils.clamp(hit.y, 1.25, Math.min(R - .8, 6.6));
-            spatialAnchor = hit;
-            spatialBaseDistance = Math.max(1, spatialAnchor.distanceTo(camera.position));
-            needsRender = true;
-            return spatialAnchor.toArray();
+        const spatialId = (value) => String(value || 'singleton');
+
+        function normalizeSpatialPoint(world) {
+            if (!Array.isArray(world) || world.length !== 3 || world.some(value => !Number.isFinite(Number(value)))) return null;
+            const point = new T.Vector3(Number(world[0]), Number(world[1]), Number(world[2]));
+            point.y = T.MathUtils.clamp(point.y, -1.1, Math.min(R - 1.4, 6.6));
+            const local = point.clone().sub(spatialCenter);
+            if (local.length() > spatialSphere.radius) {
+                local.setLength(spatialSphere.radius);
+                point.copy(spatialCenter).add(local);
+            }
+            return point;
         }
+
+        function placeSpatialInView(id = 'singleton', world = null) {
+            const key = spatialId(id);
+            camera.updateMatrixWorld(true);
+            let point = normalizeSpatialPoint(world);
+            if (!point) {
+                const direction = new T.Vector3();
+                camera.getWorldDirection(direction);
+                const ray = new T.Ray(camera.position.clone(), direction.normalize());
+                point = ray.intersectSphere(spatialSphere, new T.Vector3());
+                if (!point) point = camera.position.clone().add(direction.multiplyScalar(Math.max(4.5, R * .62)));
+                point.y = T.MathUtils.clamp(point.y, 1.25, Math.min(R - .8, 6.6));
+            }
+            const baseDistance = Math.max(1, point.distanceTo(camera.position));
+            spatialAnchors.set(key, {point, baseDistance});
+            needsRender = true;
+            return point.toArray();
+        }
+
         function projectSpatial() {
-            if (!spatialAnchor) {
+            if (!spatialAnchors.size) {
                 options.onSpatialProjection?.(null);
                 return;
             }
-            const projected = spatialAnchor.clone().project(camera);
-            const distance = spatialAnchor.distanceTo(camera.position);
-            const visible = projected.z > -1 && projected.z < 1 && Math.abs(projected.x) < 1.22 && Math.abs(projected.y) < 1.22;
-            options.onSpatialProjection?.({
-                visible,
-                x:(projected.x * .5 + .5) * viewport.clientWidth,
-                y:(-.5 * projected.y + .5) * viewport.clientHeight,
-                scale:T.MathUtils.clamp(spatialBaseDistance / Math.max(.1, distance), .42, 1.35),
-                distance,
-                world:spatialAnchor.toArray()
+            spatialAnchors.forEach((entry, id) => {
+                const projected = entry.point.clone().project(camera);
+                const distance = entry.point.distanceTo(camera.position);
+                const visible = projected.z > -1 && projected.z < 1 && Math.abs(projected.x) < 1.22 && Math.abs(projected.y) < 1.22;
+                options.onSpatialProjection?.({
+                    id,
+                    visible,
+                    x:(projected.x * .5 + .5) * viewport.clientWidth,
+                    y:(-.5 * projected.y + .5) * viewport.clientHeight,
+                    scale:T.MathUtils.clamp(entry.baseDistance / Math.max(.1, distance), .42, 1.35),
+                    distance,
+                    world:entry.point.toArray()
+                });
             });
         }
-        this.placeSpatialMedia = () => placeSpatialInView();
-        this.clearSpatialMedia = () => { spatialAnchor = null; options.onSpatialProjection?.(null); needsRender = true; };
-        this.moveSpatialMedia = (dx, dy) => {
-            if (!spatialAnchor) placeSpatialInView();
-            const local = spatialAnchor.clone().sub(spatialCenter);
-            const radius = Math.max(1, Math.hypot(local.x, local.z));
-            let angle = Math.atan2(local.x, local.z);
-            angle -= dx * .0035;
-            local.x = Math.sin(angle) * radius;
-            local.z = Math.cos(angle) * radius;
-            local.y = T.MathUtils.clamp(local.y - dy * .012, -1.1, Math.min(R - 1.4, 4.4));
-            spatialAnchor.copy(spatialCenter).add(local);
+
+        this.placeSpatialMedia = (id = 'singleton', world = null) => placeSpatialInView(id, world);
+        this.clearSpatialMedia = (id = 'singleton') => {
+            const key = spatialId(id);
+            spatialAnchors.delete(key);
+            options.onSpatialProjection?.({id:key, visible:false, removed:true});
             needsRender = true;
         };
-        this.spatialMediaState = () => spatialAnchor ? {world:spatialAnchor.toArray(),baseDistance:spatialBaseDistance} : null;
+        this.moveSpatialMedia = (id, dx, dy) => {
+            let key = id, moveX = dx, moveY = dy;
+            if (typeof id !== 'string') {
+                key = 'singleton';
+                moveX = id;
+                moveY = dx;
+            }
+            key = spatialId(key);
+            if (!spatialAnchors.has(key)) placeSpatialInView(key);
+            const entry = spatialAnchors.get(key);
+            const local = entry.point.clone().sub(spatialCenter);
+            const radius = Math.max(1, Math.hypot(local.x, local.z));
+            let angle = Math.atan2(local.x, local.z);
+            angle -= Number(moveX || 0) * .0035;
+            local.x = Math.sin(angle) * radius;
+            local.z = Math.cos(angle) * radius;
+            local.y = T.MathUtils.clamp(local.y - Number(moveY || 0) * .012, -1.1, Math.min(R - 1.4, 4.4));
+            entry.point.copy(spatialCenter).add(local);
+            needsRender = true;
+        };
+        this.spatialMediaState = (id = 'singleton') => {
+            const entry = spatialAnchors.get(spatialId(id));
+            return entry ? {world:entry.point.toArray(),baseDistance:entry.baseDistance} : null;
+        };
 
         let surfaceRevision = {glass:0, floor:0};
         this.surface = (surface, url) => {
@@ -500,7 +540,8 @@ class Drive3DScene {
                 }))
             })),
             lamp:lamp.position.toArray(),table:table.position.toArray(),domeRadius:R,panorama:panorama.position.toArray(),environmentReady,
-            spatial:spatialAnchor ? {world:spatialAnchor.toArray(),baseDistance:spatialBaseDistance} : null,
+            spatial:this.spatialMediaState('singleton'),
+            spatialImages:Array.from(spatialAnchors.entries()).filter(([id]) => id !== 'singleton').map(([id,entry]) => ({id,world:entry.point.toArray(),baseDistance:entry.baseDistance})),
             calls:renderer.info.render.calls, geometries:renderer.info.memory.geometries, textures:renderer.info.memory.textures});
         function resize() { const w = viewport.clientWidth, h = viewport.clientHeight; renderer.setSize(w, h); camera.fov = w < 700 ? 75 : 50; camera.aspect = w / h; camera.updateProjectionMatrix(); needsRender = true; }
         window.addEventListener('resize', resize); resize();

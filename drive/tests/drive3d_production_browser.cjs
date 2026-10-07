@@ -41,24 +41,42 @@ const server=createServer((req,res)=>{
   assert.equal(await page.locator('.dw-camera-scene').isVisible(),false);
   assert(await page.locator('#dwThreeViewport canvas').isVisible());
 
-  // Spatial media belongs to a world position in the dome, not to the viewport.
-  await page.evaluate(()=>window.ArcadeCloudDrive3D.showFileInDome({
-    type:'file',kind:'image',name:'Vista espacial.jpg',format:'JPG',
-    openHref:'/three-lab/assets/alpine-panorama.jpg',locked:false
-  }));
-  await page.waitForFunction(()=>window.ArcadeCloudDrive3D.three.snapshot().spatial!==null);
-  assert(await page.locator('[data-dw-media-stage].is-spatial').isVisible());
-  const spatialBefore=(await snap()).spatial.world;
-  assert.equal(await page.locator('[data-dw-media-content]').evaluate(el=>getComputedStyle(el).overflow),'hidden');
+  // Image media opens as independent world-anchored picture windows.
+  await page.evaluate(()=>{
+    const app=window.ArcadeCloudDrive3D;
+    app.showFileInDome({
+      type:'file',kind:'image',name:'Vista espacial A.jpg',format:'JPG',path:'Data/Vista espacial A.jpg',
+      openHref:'/three-lab/assets/alpine-panorama.jpg',locked:false
+    });
+    app.showFileInDome({
+      type:'file',kind:'image',name:'Vista espacial B.jpg',format:'JPG',path:'Data/Vista espacial B.jpg',
+      openHref:'/three-lab/assets/alpine-panorama.jpg',locked:false
+    });
+  });
+  await page.waitForFunction(()=>window.ArcadeCloudDrive3D.three.snapshot().spatialImages.length===2);
+  assert.equal(await page.locator('.dw-spatial-picture-window').count(),2);
+  const picturesBefore=(await snap()).spatialImages;
+  const firstPicture=picturesBefore[0];
+  const secondPicture=picturesBefore[1];
+  assert.notEqual(firstPicture.id,secondPicture.id,'Each image has its own persistent spatial id');
+
   await page.evaluate(()=>window.ArcadeCloudDrive3D.three.look(105,0));
   await page.waitForFunction(()=>Math.abs(window.ArcadeCloudDrive3D.three.snapshot().yaw)>1.7);
-  assert.deepEqual((await snap()).spatial.world,spatialBefore,'Spatial viewer remains at the same world coordinate while looking away');
-  await page.locator('[data-spatial-front]').click({force:true});
+  const lookedPictures=(await snap()).spatialImages;
+  assert.deepEqual(lookedPictures.find(p=>p.id===firstPicture.id).world,firstPicture.world,'First picture remains at the same world coordinate while looking away');
+  assert.deepEqual(lookedPictures.find(p=>p.id===secondPicture.id).world,secondPicture.world,'Second picture remains at the same world coordinate while looking away');
+
+  await page.evaluate(id=>window.ArcadeCloudDrive3D.three.placeSpatialMedia(id),firstPicture.id);
   await page.waitForTimeout(120);
-  const spatialFront=(await snap()).spatial.world;
-  assert.notDeepEqual(spatialFront,spatialBefore,'Front action repositions the spatial viewer in the current view');
-  await page.locator('[data-dw-media-close]').click({force:true});
-  await page.waitForFunction(()=>window.ArcadeCloudDrive3D.three.snapshot().spatial===null);
+  const movedFirst=(await snap()).spatialImages.find(p=>p.id===firstPicture.id).world;
+  assert.notDeepEqual(movedFirst,firstPicture.world,'One picture can be repositioned without moving the other');
+  assert.deepEqual((await snap()).spatialImages.find(p=>p.id===secondPicture.id).world,secondPicture.world);
+
+  await page.evaluate(id=>{
+    document.querySelector(`[data-spatial-picture-id="${id}"] .dw-spatial-picture-actions button[aria-label="Quitar cuadro de la sala"]`)?.click();
+  },firstPicture.id);
+  await page.waitForFunction(()=>window.ArcadeCloudDrive3D.three.snapshot().spatialImages.length===1);
+  assert.equal(await page.locator('.dw-spatial-picture-window').count(),1);
 
   for(const shelf of initial.shelves){const [x,,z]=shelf.position;assert(Math.sqrt(initial.domeRadius**2-(Math.hypot(x,z)+shelf.depth)**2)>shelf.height,'Roof clears cabinet corners');}
   // Real raycasting, not calling selection directly. Center cabinet is part of the dome wall.

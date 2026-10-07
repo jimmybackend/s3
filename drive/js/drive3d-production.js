@@ -66,6 +66,7 @@ class Drive3DProduction {
     app.radar.append(coordinates);
     if (app.deskFiles) app.world.append(app.deskFiles);
     if (app.deskFocus) { app.world.append(app.deskFocus); app.deskFocus.hidden = true; }
+    app.restoreSpatialImages?.();
 
     // The map selects the actual cabinet nearest the touched world coordinate.
     map.addEventListener('click', event => {

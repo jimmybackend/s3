@@ -72,7 +72,9 @@ const server=createServer((req,res)=>{
   assert.notDeepEqual(movedFirst,firstPicture.world,'One picture can be repositioned without moving the other');
   assert.deepEqual((await snap()).spatialImages.find(p=>p.id===secondPicture.id).world,secondPicture.world);
 
-  await page.locator(`[data-spatial-picture-id="${firstPicture.id}"] .dw-spatial-picture-actions button[aria-label="Quitar cuadro de la sala"]`).click({force:true});
+  await page.evaluate(id=>{
+    document.querySelector(`[data-spatial-picture-id="${id}"] .dw-spatial-picture-actions button[aria-label="Quitar cuadro de la sala"]`)?.click();
+  },firstPicture.id);
   await page.waitForFunction(()=>window.ArcadeCloudDrive3D.three.snapshot().spatialImages.length===1);
   assert.equal(await page.locator('.dw-spatial-picture-window').count(),1);
 

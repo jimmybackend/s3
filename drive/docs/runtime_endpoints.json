@@ -562,7 +562,7 @@
     },
     {
       "path": "drive/dataword3d.php",
-      "size": 27314,
+      "size": 27423,
       "active": true,
       "references": [
         "drive/so.php",
@@ -2913,7 +2913,7 @@
     },
     {
       "path": "drive/src/Http/Controller/Drive3dBackgroundUploadController.php",
-      "size": 3620,
+      "size": 3901,
       "active": false,
       "references": [
         "drive/tests/dataword3d_contract_smoke.php"

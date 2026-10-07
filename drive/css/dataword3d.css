@@ -3534,3 +3534,30 @@ body.is-dome-viewing .dw-aquarium{
 @media(max-width:700px){
   .dw-renderer-notice{top:66px;font-size:11px;padding:8px 12px}
 }
+
+/* Three.js HUD: crisp/readable over detailed scenery. */
+.dw-real .dw-hud{
+  background:#071522!important;
+  border:1px solid rgba(117,225,255,.62)!important;
+  box-shadow:0 12px 34px rgba(0,0,0,.58),0 0 18px rgba(35,190,235,.18)!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+}
+.dw-real .dw-hud::before{opacity:.55}
+.dw-real .dw-hud dt{
+  color:#7fdcf2!important;
+  font-weight:700;
+  text-shadow:none!important;
+}
+.dw-real .dw-hud dd{
+  color:#f4fcff!important;
+  font-weight:600;
+  text-shadow:none!important;
+}
+.dw-real .dw-hud-title strong{color:#fff!important;text-shadow:none!important}
+.dw-real .dw-hud-route dd{color:#9ceeff!important;text-shadow:none!important}
+.dw-real .dw-hud-actions button,
+.dw-real .dw-hud-actions a{
+  background:#0d2b3e!important;
+  border-color:rgba(120,221,255,.38)!important;
+}

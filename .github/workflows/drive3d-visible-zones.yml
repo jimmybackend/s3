@@ -5,6 +5,8 @@ on:
       - 'drive/dataword3d.php'
       - 'drive/tests/dataword3d_zones_browser.cjs'
       - 'drive/js/dataword3d.js'
+      - 'drive/js/drive3d-*.js'
+      - 'drive/tests/drive3d_production_browser.cjs'
       - 'drive/css/dataword3d.css'
       - '.github/workflows/drive3d-visible-zones.yml'
 permissions:
@@ -21,6 +23,8 @@ jobs:
         run: |
           php -l drive/dataword3d.php
           node --input-type=module --check < drive/js/dataword3d.js
+          node --input-type=module --check < drive/js/drive3d-scene.js
+          node --input-type=module --check < drive/js/drive3d-production.js
       - name: Install browser test dependency outside repository
         run: |
           npm install --prefix "$RUNNER_TEMP/drive3d-tests" playwright@1.51.1
@@ -28,6 +32,9 @@ jobs:
       - name: Render and verify geometry, camera and mobile controls
         run: |
           PLAYWRIGHT_MODULE="$RUNNER_TEMP/drive3d-tests/node_modules/playwright" SCREENSHOT_DIR="$RUNNER_TEMP/drive3d-shots" node drive/tests/dataword3d_zones_browser.cjs
+      - name: Production Three.js integration and screenshots
+        run: |
+          PLAYWRIGHT_MODULE="$RUNNER_TEMP/drive3d-tests/node_modules/playwright" SCREENSHOT_DIR="$RUNNER_TEMP/drive3d-shots" node drive/tests/drive3d_production_browser.cjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:

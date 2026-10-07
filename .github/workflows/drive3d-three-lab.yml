@@ -4,6 +4,7 @@ on:
     paths:
       - 'drive/three-lab/**'
       - 'drive/js/drive3d-three-lab.js'
+      - 'drive/js/drive3d-scene.js'
       - 'drive/css/drive3d-three-lab.css'
       - '.github/workflows/drive3d-three-lab.yml'
 permissions:

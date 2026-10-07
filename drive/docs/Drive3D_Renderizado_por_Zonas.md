@@ -29,3 +29,37 @@ Para trasladar esta política a Three.js: usar Frustum para seleccionar celdas v
 ## Verificación
 
 Prueba Chromium con 24 carpetas: cero peticiones de detalle en vista general; máximo siete libreros montados; máximo tres previews; eliminación de hijos fuera de vista; cancelación y rechazo de respuestas antiguas durante giros rápidos; marcadores distribuidos por el círculo; cúpula oculta; panel flotante en móvil. Capturas de escritorio y móvil se conservan en el workflow «Drive 3D visible zones». La fixture prueba frontend con respuestas controladas; no sustituye la comprobación autenticada contra S3 y DB en la instalación.
+
+## Integración WebGL en dataword3d.php — 7 octubre 2026
+
+La vista de producción usa ahora `Drive3DScene` (Three.js local) mediante
+`drive3d-production.js`. El laboratorio comparte ese motor. La antigua escenografía
+CSS queda oculta: no se superpone cristal ni se deforma una imagen de mobiliario.
+Cámara PerspectiveCamera, muebles BoxGeometry, mesa con cilindros, piso circular
+reflectante, costillas estructurales y panorama esférico fijo comparten coordenadas.
+La cámara inicia a distancia de los muebles para mostrar piso, ventanas y techo.
+
+Los títulos proceden de los descriptores de carpetas autenticados existentes. El
+raycasting selecciona el librero real y usa el controlador existente para cargar
+subcarpetas/archivos y ejecutar Abrir, Descargar y visores. Los libros decorativos
+no se presentan como archivos concretos: los elementos reales aparecen al seleccionar
+en una bandeja de contenido con nombres y acciones. No se modifican permisos ni DB.
+
+El presupuesto del motor sustituye el límite anterior de siete nodos CSS por
+**nueve libreros de geometría**, escogidos por frustum y proximidad. Fuera de esa
+selección se liberan instancias, geometrías, materiales y texturas de títulos;
+los materiales compartidos permanecen. Los metadatos de ubicación son ligeros.
+Hasta tres zonas tienen previews de datos, con los límites de API anteriores,
+AbortController y rechazo de respuestas obsoletas. La mesa y arquitectura son
+recursos compartidos permanentes; no se descarga todo el catálogo de archivos.
+El minimapa dibuja posiciones/orientaciones reales, mesa, lámpara y cámara.
+
+Arrastrar mira; WASD camina con colisiones; flechas giran; controles táctiles del
+radar desplazan la cámara. Seleccionar orienta sin teletransportarse a través de
+muebles. Centro devuelve la vista inicial. Sin WebGL se muestra un error con acceso
+a Vista clásica; no se muestra la composición CSS como supuesto 3D real.
+
+Validación automatizada: `drive/tests/drive3d_production_browser.cjs`, con markup
+real y catálogo/API simulados, comprueba WebGL, selección por rayo, acciones de datos,
+liberación de texturas, giro/panorama fijo, movimiento y capturas móvil/escritorio.
+No sustituye una prueba autenticada con S3/DB en el servidor de producción.

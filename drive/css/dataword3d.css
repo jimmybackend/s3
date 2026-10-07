@@ -3471,3 +3471,40 @@ body.is-dome-viewing .dw-aquarium{
 .dw-sidebar .dw-user-chip { display:flex !important; }
 .dw-sidebar span { display:inline !important; }
 @media(max-width:900px) { .dw-world { top:58px !important; } }
+
+/* Production WebGL room. Retire the CSS scenery, preserve Drive actions. */
+.dw-real .dw-camera-scene,.dw-real .dw-sky{display:none!important}
+#dwThreeViewport{position:absolute;inset:0;touch-action:none;outline:none}
+#dwThreeViewport canvas{display:block;width:100%;height:100%}
+.dw-real .dw-world{top:58px;left:0;background:#10212e}
+.dw-real .dw-hud{width:245px!important;top:22px!important;right:14px!important;background:rgba(6,16,26,.96)!important}
+.dw-real .dw-radar{width:162px!important;left:12px!important;bottom:62px!important}
+.dw-real .dw-radar-room{width:140px!important;height:140px!important;background:none;border:0;box-shadow:none}
+.dw-real .dw-radar-room:before,.dw-real .dw-radar-room:after{display:none}
+.dw-real .dw-radar canvas{width:140px;height:140px;cursor:pointer}
+.dw-real .dw-radar output{display:block;font-size:10px;padding:5px;color:#b8daed}
+[data-three-status]{position:absolute;top:20%;left:20%;right:20%;z-index:100;background:#101e2e;padding:20px;border-radius:12px}
+[data-three-status][hidden]{display:none}
+.dw-three-content{position:absolute;z-index:45;bottom:90px;left:195px;right:280px;max-height:190px;overflow:auto;padding:16px;background:rgba(7,19,30,.96);border:1px solid #448293;border-radius:12px}
+.dw-three-content[hidden]{display:none}
+.dw-three-content>button{float:right;background:#18384c;color:#fff;border:0;padding:5px 12px;border-radius:5px}
+[data-three-items]{display:flex;gap:8px;flex-wrap:wrap;padding-top:10px}
+.dw-three-content .dw-book{position:relative;display:flex;align-items:center;width:120px;height:48px;min-width:0;transform:none;background:#18364b;border:1px solid #376b80;padding:6px;box-shadow:none;color:white}
+.dw-three-content .dw-book span{position:static;writing-mode:horizontal-tb;transform:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dw-three-content .dw-book img{width:30px;height:30px;object-fit:cover}
+.dw-real .dw-world>.dw-desk-files{position:absolute;bottom:46px;left:195px;right:280px;z-index:35;max-height:54px}
+@media(max-width:700px){
+ .dw-real .dw-hud{top:10px!important;right:8px!important;width:158px!important;font-size:10px;max-height:35vh;overflow:auto}
+ .dw-real .dw-hud-preview{display:none}
+ .dw-real .dw-radar{left:8px!important;bottom:58px!important;width:125px!important}
+ .dw-real .dw-radar-room,.dw-real .dw-radar canvas{width:104px!important;height:104px!important}
+ .dw-real .dw-radar output{font-size:8px}
+ .dw-three-content{left:140px;right:8px;bottom:78px;max-height:175px;padding:9px}
+ .dw-real .dw-world>.dw-desk-files{left:140px;right:8px;bottom:46px}
+}
+.dw-real .dw-world>.dw-desk-focus{position:absolute;left:50%;bottom:145px;top:auto;transform:translateX(-50%);width:260px;min-height:68px;z-index:50;background:#0c2130;border:1px solid #5fa7bd;border-radius:12px;padding:12px}
+.dw-real .dw-world>.dw-desk-focus[hidden]{display:none}
+.dw-real [hidden]{display:none!important}
+.dw-real .dw-world>.dw-desk-files{left:195px!important;right:280px!important;top:auto!important;bottom:46px!important;width:auto!important;height:54px!important;transform:none!important;overflow:auto!important;justify-content:flex-start}
+.dw-real .dw-world>.dw-desk-files .dw-desk-empty{display:none}
+@media(max-width:700px){.dw-real .dw-world>.dw-desk-files{left:140px!important;right:8px!important}.dw-real .dw-hud{max-height:35vh!important}}

@@ -86,7 +86,7 @@
     init() {
       if (this.useThree) {
         this.bindControls();
-        import('./drive3d-production.js').then(module => module.startDriveScene(this)).catch(error => {
+        import('./drive3d-production.js').then(module => module.Drive3DProduction.start(this)).catch(error => {
           const status = this.document.querySelector('[data-three-status]');
           status.hidden = false;
           status.textContent = 'No se pudo iniciar la vista 3D. Usa Vista clásica en la barra superior.';
@@ -818,6 +818,7 @@
     }
 
     bringToDesk() {
+      if (this.useThree && this.selected && this.deskFocus) this.deskFocus.hidden = false;
       if (this.selected) this.renderDeskPreview(this.selected, true);
     }
 

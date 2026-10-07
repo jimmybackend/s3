@@ -1,4 +1,4 @@
-export class Drive3DScene {
+class Drive3DScene {
     constructor(T, Reflector, options = {}) {
         const status = options.status || document.querySelector("#status");
         const production = Boolean(options.items);
@@ -288,9 +288,9 @@ export class Drive3DScene {
         function zones() {
             camera.updateMatrixWorld();
             frustum.setFromProjectionMatrix(projection.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse));
-            const candidates = shelves.map((s, i) => ({i, s, distance: s.position.distanceTo(camera.position)}))
+            const candidates = shelves.map((s, i) => ({i, s, distance: s.position.distanceTo(camera.position), score: Math.abs(s.position.clone().add(new T.Vector3(0,height / 2,0)).project(camera).x)}))
                 .filter(({s}) => frustum.intersectsSphere(new T.Sphere(s.position.clone().add(new T.Vector3(0, height / 2, 0)), 2.4)))
-                .sort((a,b) => a.distance - b.distance).slice(0, 9);
+                .sort((a,b) => a.score - b.score).slice(0, 9);
             visibleIndices = candidates.map(v => v.i);
             const key = visibleIndices.slice().sort((a,b)=>a-b).join(',');
             if (key !== visibleKey) {
@@ -328,6 +328,7 @@ export class Drive3DScene {
             }, undefined, () => { status.hidden = false; status.textContent = 'No se pudo cargar el fondo seleccionado.'; });
         };
         this.snapshot = () => ({camera: camera.position.toArray(), yaw, pitch, visible: visibleIndices, selected: selectedIndex,
+            pickPoints: shelves.map(s=> { const p = s.localToWorld(new T.Vector3(0,3.86,.32)).project(camera); return [p.x,p.y]; }),
             shelves: shelves.map(s=>({position:s.position.toArray(),rotation:s.rotation.y,width,depth,height,loaded:!!s.children.length})),
             lamp:lamp.position.toArray(),table:table.position.toArray(),domeRadius:R,panorama:panorama.position.toArray(),environmentReady,
             calls:renderer.info.render.calls, geometries:renderer.info.memory.geometries, textures:renderer.info.memory.textures});
@@ -359,3 +360,5 @@ export class Drive3DScene {
         if (!production) window.drive3dLab = Object.freeze({ snapshot: this.snapshot });
     }
 }
+
+export { Drive3DScene };

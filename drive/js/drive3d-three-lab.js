@@ -1,4 +1,6 @@
 import { Drive3DScene } from './drive3d-scene.js';
+class Drive3DLab {
+ static async start() {
 const status = document.querySelector('#status');
 try {
     const THREE = await import('../three-lab/vendor/three.module.min.js');
@@ -9,3 +11,7 @@ try {
     status.textContent = 'No fue posible iniciar WebGL 2. Activa la aceleración gráfica o vuelve a la vista clásica.';
     console.error('Drive 3D:', error);
 }
+
+ }
+}
+Drive3DLab.start();

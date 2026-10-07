@@ -3,7 +3,8 @@ import * as THREE from '../three-lab/vendor/three.module.min.js';
 import { Reflector } from '../three-lab/vendor/Reflector.js';
 
 // Data/actions stay in the authenticated Drive controller; this adapter owns no routes.
-export function startDriveScene(app) {
+class Drive3DProduction {
+  static start(app) {
     const doc = app.document, status = doc.querySelector('[data-three-status]');
     const viewport = doc.getElementById('dwThreeViewport');
     const map = doc.createElement('canvas'); map.width = map.height = 240;
@@ -12,6 +13,8 @@ export function startDriveScene(app) {
     const coordinates = doc.createElement('output'); app.radar.append(coordinates);
     // Keep the existing file strip accessible above the canvas, outside the retired CSS scene.
     if (app.deskFiles) app.world.append(app.deskFiles);
+    const rootFiles = Array.from(app.deskFiles?.children || []);
+    if (app.deskFocus) { app.world.append(app.deskFocus); app.deskFocus.hidden = true; }
     const panel = doc.querySelector('[data-three-content]'), items = doc.querySelector('[data-three-items]');
     doc.querySelector('[data-three-close]').onclick = () => { panel.hidden = true; };
     items.addEventListener('click', event => { const node = event.target.closest('[data-dw-item]'); if(node) app.selectElement(node); });
@@ -22,7 +25,7 @@ export function startDriveScene(app) {
         const detail = [...new Set([...(visible.includes(focus) ? [focus] : []), ...near])].slice(0,3);
         const key = visible.join(',') + '/' + detail.join(',');
         if (key === zoneKey) return;
-        if (focus < 0) { panel.hidden = true; items.replaceChildren(); app.deskFiles?.replaceChildren(); }
+        if (focus < 0) { panel.hidden = true; items.replaceChildren(); app.deskFiles?.replaceChildren(...rootFiles); if(app.deskFocus) app.deskFocus.hidden = true; }
         zoneKey = key; clearTimeout(app.zoneTimer);
         app.visibleShelves = new Set(visible.map(i => app.shelves[i]));
         app.shelves.forEach((shelf,index) => {
@@ -71,3 +74,6 @@ export function startDriveScene(app) {
     });
     app.applyRoomPreferences();
 }
+
+}
+export { Drive3DProduction };

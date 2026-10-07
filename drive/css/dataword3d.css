@@ -3502,3 +3502,5 @@ body.is-dome-viewing .dw-aquarium{
  .dw-three-content{left:140px;right:8px;bottom:78px;max-height:175px;padding:9px}
  .dw-real .dw-world>.dw-desk-files{left:140px;right:8px;bottom:46px}
 }
+.dw-real .dw-world>.dw-desk-focus{position:absolute;left:50%;bottom:145px;top:auto;transform:translateX(-50%);width:260px;min-height:68px;z-index:50;background:#0c2130;border:1px solid #5fa7bd;border-radius:12px;padding:12px}
+.dw-real .dw-world>.dw-desk-focus[hidden]{display:none}

@@ -35,12 +35,15 @@ const server=createServer((req,res)=>{
   await page.waitForFunction(()=>window.ArcadeCloudDrive3D?.three?.snapshot().environmentReady,{},{timeout:30000});
   await page.waitForTimeout(500);
   const snap=()=>page.evaluate(()=>window.ArcadeCloudDrive3D.three.snapshot());
+  if(process.env.SCREENSHOT_DIR){mkdirSync(process.env.SCREENSHOT_DIR,{recursive:true});await page.screenshot({path:resolve(process.env.SCREENSHOT_DIR,'production-initial.png')});}
   const initial=await snap(); assert(initial.visible.length>0 && initial.visible.length<=9);assert.equal(requests,0);
   assert.equal(await page.locator('.dw-camera-scene').isVisible(),false);
   assert(await page.locator('#dwThreeViewport canvas').isVisible());
   for(const shelf of initial.shelves){const [x,,z]=shelf.position;assert(Math.sqrt(initial.domeRadius**2-(Math.hypot(x,z)+shelf.depth)**2)>shelf.height,'Roof clears cabinet corners');}
   // Real raycasting, not calling selection directly. Center cabinet is above the globe.
-  await page.locator('#dwThreeViewport').click({position:{x:720,y:325}});
+  const viewBox=await page.locator('#dwThreeViewport').boundingBox();
+  const [px,py]=initial.pickPoints[12];
+  await page.locator('#dwThreeViewport').click({position:{x:(px+1)*viewBox.width/2,y:(1-py)*viewBox.height/2}});
   await page.waitForFunction(()=>window.ArcadeCloudDrive3D.previewCache.size>0);
   assert(await page.locator('[data-three-content]').isVisible());
   await page.getByRole('button',{name:'Subcarpeta real',exact:true}).click();

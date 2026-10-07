@@ -10,7 +10,7 @@
     "js_tests": 11,
     "js_compatibility_facades": 8,
     "ajax_clients": 54,
-    "ajax_calls": 118,
+    "ajax_calls": 119,
     "json_total": 4,
     "json_invalid": 0
   },
@@ -672,7 +672,7 @@
     },
     {
       "path": "drive/dataword3d.php",
-      "lines": 553,
+      "lines": 556,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -8930,7 +8930,7 @@
     },
     {
       "path": "drive/js/dataword3d.js",
-      "lines": 1166,
+      "lines": 1311,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudDrive3D"
@@ -8943,11 +8943,11 @@
       "top_vars": [],
       "iife": false,
       "ajax": {
-        "fetch": 3,
+        "fetch": 4,
         "xhr": 0,
         "jquery": 0,
         "json_consumers": 2,
-        "response_checks": 5
+        "response_checks": 7
       },
       "issues": []
     },
@@ -9018,7 +9018,7 @@
     },
     {
       "path": "drive/js/drive3d-production.js",
-      "lines": 82,
+      "lines": 83,
       "kind": "class/module",
       "classes": [
         "Drive3DProduction"
@@ -9039,7 +9039,7 @@
     },
     {
       "path": "drive/js/drive3d-scene.js",
-      "lines": 482,
+      "lines": 541,
       "kind": "class/module",
       "classes": [
         "Drive3DScene"
@@ -10874,7 +10874,7 @@
     },
     {
       "path": "drive/docs/runtime_endpoints.json",
-      "bytes": 133718,
+      "bytes": 133793,
       "valid": true,
       "root_type": "object",
       "keys": [

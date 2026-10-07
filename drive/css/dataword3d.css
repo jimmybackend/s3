@@ -2215,3 +2215,566 @@ body.is-dome-viewing .dw-aquarium{
   .dw-radar-move-controls button{min-height:27px;font-size:8px}
   .dw-dome-glass{opacity:.16 !important}
 }
+
+
+/* ===== Drive 3D reference render: llevar la imagen objetivo al producto real ===== */
+.dw-world{
+  overflow:hidden;
+  perspective:1900px !important;
+  perspective-origin:50% 48% !important;
+  background:
+    radial-gradient(ellipse at 50% 72%,rgba(47,201,255,.10),transparent 34%),
+    linear-gradient(180deg,#07111c 0%,#0b1b29 42%,#091017 100%) !important;
+}
+.dw-camera-scene{
+  transform-style:preserve-3d;
+  transform-origin:50% 56%;
+  will-change:transform;
+}
+
+/* Ventanales panorámicos: amplios, limpios, sin neblina. */
+.dw-room-panorama{
+  left:-55% !important;
+  right:-55% !important;
+  top:-1% !important;
+  height:51% !important;
+  border-radius:0 !important;
+  border:0 !important;
+  background:
+    linear-gradient(180deg,rgba(4,13,22,.03),rgba(5,14,22,.09) 72%,rgba(6,10,14,.38)),
+    radial-gradient(circle at 74% 16%,rgba(255,207,136,.18),transparent 17%),
+    linear-gradient(180deg,#294f72 0%,#6f96ad 43%,#3d6573 66%,#172731 100%) !important;
+  box-shadow:
+    inset 0 -48px 70px rgba(0,0,0,.27),
+    inset 0 0 0 2px rgba(255,215,161,.07) !important;
+}
+.dw-room-custom-image{
+  opacity:1 !important;
+  filter:saturate(1.04) contrast(1.045) brightness(1.02) !important;
+  background-size:cover !important;
+  background-position:center 42% !important;
+}
+.dw-room-scenery{opacity:.10 !important}
+.dw-room-mullions{
+  opacity:.82 !important;
+  background:
+    linear-gradient(90deg,
+      transparent 0 8%,rgba(49,31,22,.88) 8.2% 9%,
+      transparent 9.2% 20%,rgba(49,31,22,.88) 20.2% 21%,
+      transparent 21.2% 33%,rgba(49,31,22,.88) 33.2% 34%,
+      transparent 34.2% 46%,rgba(49,31,22,.88) 46.2% 47%,
+      transparent 47.2% 59%,rgba(49,31,22,.88) 59.2% 60%,
+      transparent 60.2% 72%,rgba(49,31,22,.88) 72.2% 73%,
+      transparent 73.2% 85%,rgba(49,31,22,.88) 85.2% 86%,
+      transparent 86.2% 100%) !important;
+}
+.dw-room-panorama::before,
+.dw-room-panorama::after{
+  width:7% !important;
+  background:linear-gradient(90deg,rgba(20,11,7,.90),rgba(83,42,18,.42),transparent) !important;
+}
+
+/* Domo ligero: estructura sí, cristal casi invisible. */
+.dw-dome{
+  left:-16% !important;
+  right:-16% !important;
+  top:-11% !important;
+  height:34% !important;
+  border-color:rgba(198,244,255,.07) !important;
+  background:
+    radial-gradient(ellipse at 50% 18%,rgba(215,252,255,.035),transparent 36%),
+    linear-gradient(180deg,rgba(80,161,211,.018),transparent 72%) !important;
+  box-shadow:none !important;
+  backdrop-filter:none !important;
+}
+.dw-dome-glass{opacity:.10 !important}
+.dw-dome-ribs{opacity:.44 !important}
+.dw-dome-sky{opacity:.40 !important}
+
+/* Piso tipo mármol/cristal de la referencia: sólido, reflectante y luminoso. */
+.dw-floor{
+  left:-48% !important;
+  right:-48% !important;
+  bottom:-35% !important;
+  height:72% !important;
+  border-radius:50% !important;
+  border:1px solid rgba(255,202,128,.20) !important;
+  background:
+    radial-gradient(ellipse at 50% 18%,rgba(255,255,255,.14) 0 2%,transparent 23%),
+    repeating-linear-gradient(112deg,rgba(255,255,255,.045) 0 1px,transparent 1px 92px),
+    repeating-linear-gradient(18deg,rgba(155,210,229,.035) 0 1px,transparent 1px 128px),
+    radial-gradient(ellipse at center,rgba(41,122,151,.16) 0 17%,rgba(41,87,104,.08) 18% 34%,rgba(56,44,35,.17) 35% 36%,rgba(31,35,39,.84) 37% 62%,rgba(16,20,24,.98) 74%) !important;
+  box-shadow:
+    inset 0 28px 90px rgba(255,255,255,.035),
+    inset 0 0 80px rgba(53,210,255,.045),
+    0 -20px 80px rgba(255,153,63,.08) !important;
+}
+.dw-floor::before{
+  inset:8% 12% !important;
+  background:
+    repeating-radial-gradient(ellipse at center,rgba(255,169,74,.13) 0 1px,transparent 2px 42px) !important;
+  opacity:.65;
+}
+.dw-floor::after{
+  border-color:rgba(255,168,74,.18) !important;
+  box-shadow:
+    0 0 0 44px rgba(255,168,74,.018),
+    0 0 0 88px rgba(59,211,255,.018) !important;
+}
+.dw-floor-custom-image{
+  opacity:.72 !important;
+  filter:saturate(.98) contrast(1.06) brightness(.90) !important;
+}
+
+/* Pared de libreros fija, más abierta y arquitectónica. */
+.dw-stage{
+  inset:0 0 176px 0 !important;
+  transform-style:preserve-3d;
+}
+.dw-ring{
+  transform-style:preserve-3d !important;
+}
+.dw-shelf{
+  top:50% !important;
+  width:252px !important;
+  height:468px !important;
+  margin-left:-126px !important;
+  margin-top:-234px !important;
+  border:8px solid #48200f !important;
+  border-radius:7px !important;
+  background:
+    linear-gradient(90deg,#32150b 0 4%,#6d3318 5% 11%,#9d5128 12% 18%,#5a2813 19% 25%,#ad5d2d 27% 34%,#542410 36% 43%,#9b4e24 47% 55%,#4a1f0d 60% 67%,#87401d 72% 79%,#361409 96%) !important;
+  box-shadow:
+    0 24px 42px rgba(0,0,0,.56),
+    0 0 0 1px rgba(255,204,146,.09),
+    inset 0 0 0 2px rgba(255,200,137,.07) !important;
+  overflow:visible !important;
+  backface-visibility:hidden;
+}
+.dw-shelf-volume{
+  position:absolute;
+  display:block;
+  pointer-events:none;
+  transform-style:preserve-3d;
+}
+.dw-shelf-volume-left{
+  left:-23px;
+  top:8px;
+  width:23px;
+  height:calc(100% - 16px);
+  transform-origin:right center;
+  transform:rotateY(-78deg);
+  background:linear-gradient(90deg,#1c0a04,#6d3015 72%,#9d4d21);
+  border:1px solid rgba(255,181,104,.12);
+  box-shadow:inset -6px 0 10px rgba(0,0,0,.38);
+}
+.dw-shelf-volume-right{
+  right:-23px;
+  top:8px;
+  width:23px;
+  height:calc(100% - 16px);
+  transform-origin:left center;
+  transform:rotateY(78deg);
+  background:linear-gradient(90deg,#9d4d21,#6d3015 28%,#1c0a04);
+  border:1px solid rgba(255,181,104,.12);
+  box-shadow:inset 6px 0 10px rgba(0,0,0,.38);
+}
+.dw-shelf-volume-top{
+  left:4px;
+  right:4px;
+  top:-19px;
+  height:19px;
+  transform-origin:center bottom;
+  transform:rotateX(74deg);
+  background:linear-gradient(180deg,#a75928,#4a1e0d);
+  border:1px solid rgba(255,204,143,.14);
+  box-shadow:0 -4px 12px rgba(0,0,0,.24);
+}
+.dw-shelf-crown{
+  height:57px !important;
+  margin:-8px -8px 0 !important;
+  border-radius:7px 7px 0 0 !important;
+  background:
+    linear-gradient(180deg,#8c431d 0%,#5b250f 56%,#351307 100%) !important;
+  border-bottom:2px solid rgba(255,178,84,.46) !important;
+  box-shadow:
+    inset 0 -8px 13px rgba(0,0,0,.35),
+    inset 0 1px rgba(255,218,164,.11),
+    0 4px 10px rgba(0,0,0,.28) !important;
+}
+.dw-shelf-crown strong{
+  font-size:18px !important;
+  font-weight:780 !important;
+  letter-spacing:.01em !important;
+  color:#fff4df !important;
+  text-shadow:0 1px 2px rgba(0,0,0,.92),0 0 6px rgba(255,188,103,.22) !important;
+}
+.dw-shelf-crown i{
+  color:#ffe0ad !important;
+  text-shadow:0 0 10px rgba(255,173,72,.38) !important;
+}
+.dw-compartment{
+  height:111px !important;
+  margin:8px 8px 0 !important;
+  padding:10px 8px 8px !important;
+  border:3px solid #391509 !important;
+  border-bottom-width:8px !important;
+  background:
+    radial-gradient(ellipse at 50% 0%,rgba(255,180,86,.24),transparent 42%),
+    linear-gradient(180deg,rgba(36,10,3,.92),rgba(68,23,7,.97)) !important;
+  box-shadow:
+    inset 0 12px 24px rgba(0,0,0,.47),
+    inset 0 -8px 20px rgba(255,143,47,.055),
+    0 4px 7px rgba(0,0,0,.28) !important;
+}
+.dw-compartment::before{
+  content:"";
+  position:absolute;
+  left:6%;
+  right:6%;
+  top:5px;
+  height:2px;
+  background:linear-gradient(90deg,transparent,rgba(255,193,117,.70),transparent);
+  box-shadow:0 0 8px rgba(255,151,57,.42);
+}
+.dw-compartment-info{
+  height:73px !important;
+  color:#e8c39b !important;
+  font-size:10px !important;
+}
+.dw-shelf-base{
+  height:38px !important;
+  margin:7px 2px -6px !important;
+  background:linear-gradient(180deg,#7c3918,#43190a) !important;
+  color:#ffe0ba !important;
+  font-size:10px !important;
+  font-weight:700;
+}
+.dw-book{
+  border-radius:2px 2px 1px 1px !important;
+  box-shadow:2px 3px 5px rgba(0,0,0,.40),inset 1px 0 rgba(255,255,255,.22) !important;
+}
+.dw-book-large{width:29px !important;height:80px !important}
+.dw-book-small{width:17px !important;height:62px !important}
+.dw-book-real span{
+  font-size:7.5px !important;
+  color:#f5fcff !important;
+}
+.dw-shelf.is-active{
+  border-color:#38ccff !important;
+  filter:brightness(1.05) saturate(1.04) !important;
+  box-shadow:
+    0 0 0 2px rgba(194,249,255,.92),
+    0 0 15px rgba(34,214,255,.82),
+    0 0 31px rgba(22,112,255,.34),
+    0 28px 46px rgba(0,0,0,.58),
+    inset 0 0 0 1px rgba(79,220,255,.08) !important;
+}
+.dw-shelf.is-active::after{
+  inset:-8px !important;
+  border:2px solid rgba(78,219,255,.72) !important;
+  background:none !important;
+  filter:none !important;
+  animation:none !important;
+  box-shadow:0 0 17px rgba(51,211,255,.34) !important;
+}
+.dw-shelf.is-active::before{
+  height:2px !important;
+  background:linear-gradient(90deg,transparent,#fff,#45d8ff,transparent) !important;
+  box-shadow:0 0 13px rgba(62,218,255,.82) !important;
+}
+
+/* Mesa circular protagonista, como en la referencia. */
+.dw-aquarium{
+  z-index:12 !important;
+  left:50% !important;
+  bottom:1.8% !important;
+  width:min(790px,64vw) !important;
+  height:165px !important;
+  transform:translateX(-50%) !important;
+  border:12px solid rgba(61,179,214,.32) !important;
+  background:
+    radial-gradient(ellipse at 50% 40%,rgba(101,232,255,.33),rgba(21,132,165,.35) 42%,rgba(5,55,76,.55) 70%) !important;
+  box-shadow:
+    0 0 0 4px rgba(255,161,65,.22),
+    0 0 34px rgba(49,210,255,.30),
+    inset 0 0 36px rgba(79,234,255,.30) !important;
+}
+.dw-aquarium::after{
+  content:"";
+  position:absolute;
+  inset:-23px;
+  border-radius:50%;
+  border:4px solid rgba(255,171,72,.55);
+  box-shadow:0 0 18px rgba(255,153,56,.20),inset 0 0 0 3px rgba(255,255,255,.025);
+}
+.dw-desk{
+  z-index:25 !important;
+  left:50% !important;
+  bottom:66px !important;
+  width:min(650px,54vw) !important;
+  height:142px !important;
+  transform:translateX(-50%) !important;
+  border-radius:50% !important;
+  border:4px solid rgba(255,170,68,.72) !important;
+  background:
+    radial-gradient(ellipse at 50% 14%,rgba(255,255,255,.12),transparent 26%),
+    linear-gradient(180deg,#24282c 0%,#111418 48%,#07090c 100%) !important;
+  box-shadow:
+    0 0 0 3px rgba(255,255,255,.025),
+    0 0 0 9px rgba(255,137,43,.055),
+    0 18px 42px rgba(0,0,0,.60),
+    inset 0 -12px 18px rgba(0,0,0,.48) !important;
+}
+.dw-desk::before{
+  content:"";
+  position:absolute;
+  z-index:-1;
+  left:24%;
+  right:24%;
+  top:48%;
+  bottom:-86px;
+  border-radius:24px 24px 48% 48%;
+  background:
+    linear-gradient(90deg,#080a0d,#22262b 18%,#111418 50%,#24282d 82%,#080a0d);
+  border:2px solid rgba(255,165,70,.34);
+  box-shadow:inset 0 0 0 2px rgba(255,255,255,.02),0 20px 30px rgba(0,0,0,.46);
+}
+.dw-desk::after{
+  content:"☁  ARCADECLOUD OS" !important;
+  bottom:-40px !important;
+  color:#8de8ff !important;
+  font-size:11px !important;
+  letter-spacing:.12em !important;
+  text-shadow:0 0 10px rgba(37,195,255,.55) !important;
+}
+.dw-desk-globe{
+  top:-100px !important;
+  width:142px !important;
+  height:142px !important;
+  font-size:62px !important;
+  border-color:rgba(153,243,255,.92) !important;
+  background:
+    radial-gradient(circle at 34% 28%,rgba(225,253,255,.50),rgba(37,181,233,.24) 36%,rgba(4,57,91,.60) 72%) !important;
+  box-shadow:
+    0 0 18px rgba(255,255,255,.45),
+    0 0 42px rgba(42,206,255,.70),
+    inset 0 0 31px rgba(64,222,255,.36) !important;
+}
+.dw-desk-focus{
+  left:16px !important;
+  top:26px !important;
+  width:172px !important;
+  height:64px !important;
+  border-radius:10px !important;
+  background:rgba(5,19,30,.78) !important;
+}
+.dw-desk-files{
+  left:50% !important;
+  right:auto !important;
+  top:-22px !important;
+  width:390px !important;
+  height:102px !important;
+  transform:translateX(-50%) !important;
+  justify-content:center;
+  overflow:visible !important;
+  gap:10px !important;
+}
+.dw-desk-book{
+  flex:0 0 52px !important;
+  width:52px !important;
+  height:72px !important;
+  border-radius:7px !important;
+  background:linear-gradient(180deg,rgba(34,133,190,.90),rgba(9,61,96,.96)) !important;
+  border-color:rgba(123,226,255,.56) !important;
+  box-shadow:0 7px 13px rgba(0,0,0,.38),0 0 13px rgba(57,206,255,.10) !important;
+}
+.dw-desk-book:nth-child(1){transform:translateY(25px) rotate(-5deg)}
+.dw-desk-book:nth-child(2){transform:translateY(11px) rotate(-3deg)}
+.dw-desk-book:nth-child(3){transform:translateY(2px)}
+.dw-desk-book:nth-child(4){transform:translateY(2px)}
+.dw-desk-book:nth-child(5){transform:translateY(11px) rotate(3deg)}
+.dw-desk-book:nth-child(6){transform:translateY(25px) rotate(5deg)}
+.dw-desk-book:nth-child(n+7){display:none}
+
+/* UI lateral/AR de la referencia. */
+.dw-sidebar{
+  width:132px !important;
+  background:linear-gradient(180deg,rgba(5,15,27,.98),rgba(3,10,18,.97)) !important;
+  border-right-color:rgba(105,203,239,.12) !important;
+}
+.dw-world{left:132px !important}
+.dw-sidebar>a,.dw-sidebar>button{
+  min-height:43px !important;
+  border-radius:8px !important;
+}
+.dw-sidebar .is-active{
+  background:linear-gradient(90deg,rgba(25,104,179,.66),rgba(13,54,91,.34)) !important;
+  border-left:3px solid #2b9dff !important;
+}
+.dw-hud{
+  right:14px !important;
+  top:16px !important;
+  width:276px !important;
+  padding:15px !important;
+  border-radius:14px !important;
+  border-color:rgba(130,215,244,.27) !important;
+  background:linear-gradient(180deg,rgba(4,13,25,.94),rgba(3,10,19,.96)) !important;
+  box-shadow:0 18px 52px rgba(0,0,0,.44),0 0 25px rgba(31,171,224,.08) !important;
+  backdrop-filter:blur(8px) !important;
+}
+.dw-hud-title{font-size:18px !important;margin:10px 0 12px !important}
+.dw-hud dl{gap:6px !important}
+.dw-hud dl>div{
+  grid-template-columns:75px 1fr !important;
+  padding-bottom:6px !important;
+}
+.dw-hud dt{font-size:8px !important}
+.dw-hud dd{font-size:11px !important}
+.dw-hud-actions{gap:7px !important;margin-top:12px !important}
+.dw-hud-actions button,.dw-hud-actions a{
+  min-height:35px !important;
+  border-radius:8px !important;
+}
+
+/* Radar redondo/isométrico parecido al render objetivo. */
+.dw-radar{
+  left:17px !important;
+  bottom:18px !important;
+  width:184px !important;
+  padding:8px !important;
+  border-radius:18px !important;
+  background:rgba(3,12,23,.92) !important;
+  border-color:rgba(116,215,248,.26) !important;
+}
+.dw-radar-room{
+  aspect-ratio:1 / 1 !important;
+  border-radius:50% !important;
+  transform:none !important;
+  background:
+    radial-gradient(circle at center,rgba(38,187,233,.18) 0 5%,transparent 6%),
+    repeating-radial-gradient(circle at center,rgba(76,208,249,.12) 0 1px,transparent 2px 19px),
+    conic-gradient(from 0deg,rgba(42,191,235,.04),rgba(6,23,37,.50),rgba(42,191,235,.04)) !important;
+}
+.dw-radar-caption{margin-top:6px !important}
+.dw-radar-look-controls,
+.dw-radar-move-controls,
+.dw-radar-actions{gap:4px !important}
+.dw-radar-pitch-control span{display:none !important}
+
+/* Vegetación menos caricaturesca. */
+.dw-orchid i::after{
+  width:16px !important;
+  height:31px !important;
+  left:-3px !important;
+  top:10px !important;
+  border-radius:70% 20% 70% 20% !important;
+  background:linear-gradient(145deg,#2f7e43,#7dbd73 56%,#315e37) !important;
+  box-shadow:none !important;
+}
+.dw-orchid i{
+  background:linear-gradient(90deg,#163e22,#3c7746 62%,#1b4b28) !important;
+}
+.dw-orchid b{
+  background:linear-gradient(90deg,#4a2b18,#8f572f 48%,#4b2917) !important;
+}
+
+/* Móvil: conserva una sala ancha; se ve un sector y la cámara recorre el resto. */
+@media (max-width:1180px){
+  .dw-sidebar{width:104px !important}
+  .dw-world{left:104px !important}
+  .dw-hud{width:245px !important}
+  .dw-shelf{width:232px !important;height:430px !important;margin-left:-116px !important;margin-top:-215px !important}
+  .dw-compartment{height:100px !important}
+  .dw-desk{width:min(610px,65vw) !important}
+}
+@media (max-width:900px){
+  .dw-world{left:0 !important}
+  .dw-camera-scene{
+    width:1660px;
+    left:50%;
+    margin-left:-830px;
+  }
+  .dw-room-panorama{left:-20% !important;right:-20% !important}
+  .dw-floor{left:-25% !important;right:-25% !important}
+  .dw-sidebar{
+    width:auto !important;
+    background:rgba(3,12,22,.96) !important;
+  }
+  .dw-hud{
+    top:10px !important;
+    right:8px !important;
+    left:auto !important;
+    bottom:auto !important;
+    width:186px !important;
+    max-height:360px !important;
+    overflow:auto !important;
+    padding:10px !important;
+  }
+  .dw-hud dl{display:none !important}
+  .dw-hud-title{font-size:14px !important}
+  .dw-hud-actions{grid-template-columns:1fr !important}
+  .dw-hud-actions button,.dw-hud-actions a{min-height:31px !important;font-size:10px !important}
+  .dw-stage{inset:0 0 225px 0 !important}
+  .dw-shelf{
+    top:51% !important;
+    width:214px !important;
+    height:392px !important;
+    margin-left:-107px !important;
+    margin-top:-196px !important;
+  }
+  .dw-compartment{height:90px !important}
+  .dw-compartment-info{height:62px !important}
+  .dw-shelf-crown{height:50px !important}
+  .dw-shelf-crown strong{font-size:15px !important}
+  .dw-desk{
+    bottom:52px !important;
+    width:510px !important;
+    height:120px !important;
+  }
+  .dw-aquarium{
+    bottom:0 !important;
+    width:670px !important;
+    height:138px !important;
+  }
+  .dw-desk-globe{
+    width:98px !important;height:98px !important;top:-72px !important;font-size:42px !important;
+  }
+  .dw-desk-focus{display:none !important}
+  .dw-desk-files{width:330px !important;top:-8px !important}
+  .dw-radar{
+    left:8px !important;
+    bottom:10px !important;
+    width:142px !important;
+  }
+}
+@media (max-width:620px){
+  .dw-camera-scene{
+    width:1540px;
+    margin-left:-770px;
+  }
+  .dw-room-panorama{height:49% !important}
+  .dw-stage{inset:0 0 206px 0 !important}
+  .dw-shelf{
+    width:202px !important;
+    height:370px !important;
+    margin-left:-101px !important;
+    margin-top:-185px !important;
+  }
+  .dw-compartment{height:85px !important}
+  .dw-book-large{width:25px !important;height:61px !important}
+  .dw-book-small{width:14px !important;height:49px !important}
+  .dw-desk{
+    width:450px !important;
+    height:108px !important;
+    bottom:42px !important;
+  }
+  .dw-aquarium{
+    width:590px !important;
+    height:126px !important;
+  }
+  .dw-desk-files{width:285px !important;height:82px !important}
+  .dw-desk-book{flex-basis:44px !important;width:44px !important;height:61px !important}
+  .dw-hud{width:176px !important}
+  .dw-radar{width:132px !important}
+}

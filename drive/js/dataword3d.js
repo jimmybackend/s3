@@ -88,9 +88,11 @@
         this.bindControls();
         import('./drive3d-production.js').then(module => module.Drive3DProduction.start(this)).catch(error => {
           const status = this.document.querySelector('[data-three-status]');
+          const detail = error?.message || String(error || 'Error desconocido');
           status.hidden = false;
-          status.textContent = 'No se pudo iniciar la vista 3D. Usa Vista clásica en la barra superior.';
-          console.error('Drive 3D', error);
+          status.textContent = 'No se pudo iniciar la vista 3D. Detalle: ' + detail;
+          status.title = error?.stack || detail;
+          console.error('Drive 3D startup', error);
         });
         return this;
       }

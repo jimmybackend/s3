@@ -402,7 +402,14 @@ header('Content-Type: text/html; charset=UTF-8');
                   data-item-environment="<?= $e($file['environment_href'] ?? '') ?>"
                   data-item-locked="<?= !empty($file['locked']) ? '1' : '0' ?>"
                   title="<?= $e($file['name']) ?>">
-            <i class="fas <?= $e($file['icon']) ?>"></i><span><?= $e($file['name']) ?></span>
+            <span class="dw-desk-book-media">
+              <?php if (($file['kind'] ?? '') === 'image' && !empty($file['thumbnail_href'])): ?>
+                <img src="<?= $e($file['thumbnail_href']) ?>" loading="lazy" decoding="async" alt="Miniatura de <?= $e($file['name']) ?>">
+              <?php else: ?>
+                <i class="fas <?= $e($file['icon']) ?>"></i>
+              <?php endif; ?>
+            </span>
+            <span class="dw-desk-book-label"><?= $e($file['name']) ?></span>
           </button>
         <?php endforeach; ?>
         <?php if ($state['files'] === []): ?><span class="dw-desk-empty">Sin archivos directos en esta sala.</span><?php endif; ?>

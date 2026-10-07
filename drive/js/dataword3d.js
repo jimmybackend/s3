@@ -116,9 +116,10 @@
       const stepDegrees = 360 / Math.max(8, this.shelves.length);
       const stepRad = stepDegrees * Math.PI / 180;
       const radius = Math.max(360, tangentWidth / (2 * Math.tan(stepRad / 2)) + 40);
-      const center = (this.shelves.length - 1) / 2;
+      const center = Math.floor(this.shelves.length / 2);
 
       this.shelfLayout = { shelfWidth, gap, tangentWidth, radius, stepRad, stepDegrees };
+      if (this.ring) this.ring.style.perspective = `${radius}px`;
 
       this.shelves.forEach((shelf, index) => {
         const slot = index - center;
@@ -148,7 +149,7 @@
         // La cámara recorre la pared; los muebles no se ladean. Así el frente
         // sigue siendo un rectángulo completo y el volumen sólo aparece al final.
         const x = Math.sin(theta) * radius;
-        const z = -(1 - Math.cos(theta)) * radius;
+        const z = (1 - Math.cos(theta)) * radius;
         const shelfYaw = -relative;
 
         shelf.style.transitionDuration = animate ? '' : '0ms';
@@ -193,13 +194,22 @@
 
     updateVisibleZones() {
       clearTimeout(this.zoneTimer);
-      const candidates = this.shelves.filter(s => Math.abs(Number(s.dataset.viewAngle)) < 85)
+      const viewportWidth = this.world?.clientWidth || this.window.innerWidth;
+      const radius = this.shelfLayout?.radius || 360;
+      const lateral = this.camera.lateral * (viewportWidth < 620 ? 120 : viewportWidth < 1000 ? 180 : 240);
+      const candidates = this.shelves.filter(s => {
+        const angle = Number(s.dataset.viewAngle) * Math.PI / 180;
+        if (Math.abs(angle) >= 85 * Math.PI / 180) return false;
+        const projectedX = Math.tan(angle) * radius - lateral;
+        return Math.abs(projectedX) < viewportWidth / 2 + (this.shelfLayout?.shelfWidth || 252);
+      })
         .sort((a,b) => Math.abs(Number(a.dataset.viewAngle)) - Math.abs(Number(b.dataset.viewAngle)));
       // Hard resource budget independent of the number of folders in the room.
       this.visibleShelves = new Set(candidates.slice(0, 7));
       const detail = this.camera.forward >= .45 ? candidates.slice(0, 3) : [];
       if (this.focusedShelf && this.visibleShelves.has(this.focusedShelf)) detail.unshift(this.focusedShelf);
       const detailed = new Set(detail.slice(0, 3));
+      if (!detailed.size) this.deskFiles?.replaceChildren();
       this.shelves.forEach(shelf => {
         if (!this.visibleShelves.has(shelf)) { this.releaseShelf(shelf); return; }
         this.mountShelf(shelf);
@@ -235,7 +245,7 @@
         const relative = this.normalizeAngle(worldAngle - yaw);
         const theta = relative * Math.PI / 180;
         const x = Math.sin(theta) * radius;
-        const z = -(1 - Math.cos(theta)) * radius;
+        const z = (1 - Math.cos(theta)) * radius;
         const visible = side === 'left' ? showLeftEdge : showRightEdge;
 
         lamp.style.transform = `translate3d(${x}px,0,${z}px)`;
@@ -826,6 +836,9 @@
         const dot = this.document.createElement('button');
         dot.type = 'button';
         dot.className = 'dw-radar-point';
+        const radarWidth = this.radarPoints.parentElement?.clientWidth || 130;
+        const dotSize = Math.max(4, Math.min(12, Math.floor(radarWidth * .78 * Math.PI / Math.max(1, this.shelves.length) * .7)));
+        dot.style.setProperty('--dw-dot-size', `${dotSize}px`);
         dot.title = shelf.dataset.itemName || 'Estante';
         dot.style.left = `${50 + Math.sin(angle) * 39}%`;
         dot.style.top = `${50 - Math.cos(angle) * 39}%`;

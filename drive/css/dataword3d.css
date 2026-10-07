@@ -3460,9 +3460,14 @@ body.is-dome-viewing .dw-aquarium{
 .dw-sidebar { position:fixed !important; left:12px !important; top:74px !important; bottom:auto !important; width:112px !important; height:auto !important; min-height:0 !important; padding:6px !important; border:1px solid var(--dw-line); border-radius:14px; background:rgba(3,13,25,.9); z-index:85; }
 .dw-sidebar .dw-user-chip { margin:4px 0 0 !important; padding:8px 4px !important; }
 .dw-sidebar button { min-height:40px; }
-.dw-radar-point { width:12px !important; height:12px !important; }
+.dw-radar-point { width:var(--dw-dot-size,12px) !important; height:var(--dw-dot-size,12px) !important; }
 .dw-radar { left:12px !important; }
 @media(max-width:700px) {
   .dw-sidebar { left:8px !important; top:70px !important; width:98px !important; }
   .dw-stage { top:18% !important; bottom:165px !important; }
 }
+
+.dw-sidebar { right:auto !important; flex-direction:column !important; }
+.dw-sidebar .dw-user-chip { display:flex !important; }
+.dw-sidebar span { display:inline !important; }
+@media(max-width:900px) { .dw-world { top:58px !important; } }

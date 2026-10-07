@@ -11,6 +11,7 @@
     "drive/dataword3d.php",
     "drive/delete_multiple.php",
     "drive/descargar_archivo.php",
+    "drive/drive3d-background-upload.php",
     "drive/ec2.php",
     "drive/editor.php",
     "drive/fastdrive-power.php",
@@ -69,9 +70,11 @@
       "size": 264,
       "active": true,
       "references": [
+        "drive/dataword3d.php",
         "drive/s3.php",
         "drive/so.php",
         "drive/tests/web_os_contract_smoke.php",
+        "drive/js/dataword3d.js",
         "drive/js/so-screenshot-paste.js",
         "drive/js/soportesMediaTypes.js",
         "drive/js/subir-chunked.js",
@@ -121,6 +124,7 @@
         "drive/descargar_zip.php",
         "drive/download.php",
         "drive/download_multiple.php",
+        "drive/drive3d-background-upload.php",
         "drive/ec2-cron.php",
         "drive/eliminar_archivo.php",
         "drive/eliminar_carpeta.php",
@@ -557,7 +561,7 @@
     },
     {
       "path": "drive/dataword3d.php",
-      "size": 21670,
+      "size": 25037,
       "active": true,
       "references": [
         "drive/so.php",
@@ -618,6 +622,15 @@
       "references": [
         "drive/tests/web_os_contract_smoke.php",
         "drive/js/so.js"
+      ]
+    },
+    {
+      "path": "drive/drive3d-background-upload.php",
+      "size": 272,
+      "active": true,
+      "references": [
+        "drive/dataword3d.php",
+        "drive/js/dataword3d.js"
       ]
     },
     {
@@ -1118,6 +1131,7 @@
         "drive/upload/drivers/DropboxUploader.php",
         "drive/upload/drivers/LocalPresignedPutUploader.php",
         "drive/upload/drivers/RemoteUrlUploader.php",
+        "drive/js/dataword3d.js",
         "drive/js/so-screenshot-paste.js",
         "drive/js/soportesMediaTypes.js",
         "drive/js/subir-chunked.js",
@@ -1393,11 +1407,14 @@
     },
     {
       "path": "drive/os-preferences.php",
-      "size": 4289,
+      "size": 4550,
       "active": true,
       "references": [
+        "drive/dataword3d.php",
         "drive/so.php",
-        "drive/tests/web_os_contract_smoke.php"
+        "drive/tests/dataword3d_contract_smoke.php",
+        "drive/tests/web_os_contract_smoke.php",
+        "drive/js/dataword3d.js"
       ]
     },
     {
@@ -2888,6 +2905,14 @@
       ]
     },
     {
+      "path": "drive/src/Http/Controller/Drive3dBackgroundUploadController.php",
+      "size": 3620,
+      "active": false,
+      "references": [
+        "drive/tests/dataword3d_contract_smoke.php"
+      ]
+    },
+    {
       "path": "drive/src/Http/Controller/FederationAccessController.php",
       "size": 5699,
       "active": false,
@@ -3214,6 +3239,7 @@
       "size": 15405,
       "active": false,
       "references": [
+        "drive/tests/dataword3d_contract_smoke.php",
         "drive/tests/federation_moderation_contract_smoke.php",
         "drive/tests/upload_task_center_contract.php"
       ]
@@ -3421,6 +3447,14 @@
       "size": 1757,
       "active": false,
       "references": []
+    },
+    {
+      "path": "drive/src/Security/Drive3dPreferenceSanitizer.php",
+      "size": 2127,
+      "active": false,
+      "references": [
+        "drive/tests/dataword3d_contract_smoke.php"
+      ]
     },
     {
       "path": "drive/src/Security/FileSecurityRepository.php",
@@ -4072,7 +4106,7 @@
     },
     {
       "path": "drive/tests/dataword3d_contract_smoke.php",
-      "size": 4041,
+      "size": 5158,
       "active": false,
       "references": []
     },
@@ -4486,6 +4520,7 @@
         "drive/bloque_archivos.php",
         "drive/dataword3d.php",
         "drive/so.php",
+        "drive/src/Http/Controller/Drive3dBackgroundUploadController.php",
         "drive/tests/dataword3d_contract_smoke.php",
         "drive/tests/web_os_contract_smoke.php",
         "drive/js/file-applications.js",
@@ -4693,9 +4728,11 @@
       "size": 260,
       "active": true,
       "references": [
+        "drive/dataword3d.php",
         "drive/s3.php",
         "drive/so.php",
         "drive/tests/web_os_contract_smoke.php",
+        "drive/js/dataword3d.js",
         "drive/js/so-screenshot-paste.js",
         "drive/js/soportesMediaTypes.js",
         "drive/js/subir-chunked.js",

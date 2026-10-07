@@ -12,6 +12,12 @@
       this.shelves = Array.from(doc.querySelectorAll('.dw-shelf'));
       this.selected = null;
       this.previewCache = new Map();
+      this.previewRequests = new Map();
+      this.visibleShelves = new Set();
+      this.focusedShelf = null;
+      this.shelfTemplate = doc.getElementById('dwShelfTemplate') || doc.createElement('template');
+      if (!this.shelfTemplate.content.firstElementChild) this.shelfTemplate.innerHTML = this.shelves[0]?.innerHTML || '';
+      this.zoneTimer = null;
       this.dragStart = null;
       this.dragMoved = false;
       this.saveTimer = null;
@@ -104,19 +110,16 @@
       const tablet = width < 1000;
       const shelfWidth = this.shelves[0]?.offsetWidth || (compact ? 206 : tablet ? 232 : 252);
 
-      // El mobiliario ocupa una pared de radio muy amplio. La curvatura existe
-      // en la posición física, pero el frente de cada mueble permanece cuadrado.
+      // Same world angles for scene and minimap: distributed around the room.
       const gap = 1;
       const tangentWidth = shelfWidth + gap;
-      const radius = Math.max(
-        compact ? 5200 : tablet ? 6400 : 7600,
-        tangentWidth * 24
-      );
-      const stepRad = 2 * Math.atan(tangentWidth / (2 * radius));
-      const stepDegrees = stepRad * 180 / Math.PI;
-      const center = (this.shelves.length - 1) / 2;
+      const stepDegrees = 360 / Math.max(8, this.shelves.length);
+      const stepRad = stepDegrees * Math.PI / 180;
+      const radius = Math.max(360, tangentWidth / (2 * Math.tan(stepRad / 2)) + 40);
+      const center = Math.floor(this.shelves.length / 2);
 
       this.shelfLayout = { shelfWidth, gap, tangentWidth, radius, stepRad, stepDegrees };
+      if (this.ring) this.ring.style.perspective = `${radius}px`;
 
       this.shelves.forEach((shelf, index) => {
         const slot = index - center;
@@ -146,8 +149,8 @@
         // La cámara recorre la pared; los muebles no se ladean. Así el frente
         // sigue siendo un rectángulo completo y el volumen sólo aparece al final.
         const x = Math.sin(theta) * radius;
-        const z = -(1 - Math.cos(theta)) * radius;
-        const shelfYaw = 0;
+        const z = (1 - Math.cos(theta)) * radius;
+        const shelfYaw = -relative;
 
         shelf.style.transitionDuration = animate ? '' : '0ms';
         shelf.style.transform = `translate3d(${x}px,0,${z}px) rotateY(${shelfYaw}deg)`;
@@ -164,6 +167,67 @@
       });
 
       this.positionEndMarkersForCamera(yaw, showLeftEdge, showRightEdge);
+      this.updateVisibleZones();
+    }
+
+    mountShelf(shelf) {
+      if (!shelf.firstElementChild) {
+        shelf.append(this.shelfTemplate.content.cloneNode(true));
+        const title = shelf.querySelector('.dw-shelf-crown strong');
+        if (title) title.textContent = shelf.dataset.itemName || 'Carpeta';
+        const counts = shelf.querySelector('[data-preview-counts]');
+        if (counts) counts.textContent = 'Acércate para explorar';
+      }
+      if (!shelf.isConnected) this.ring.append(shelf);
+    }
+
+    releaseShelf(shelf) {
+      const href = shelf.dataset.previewHref;
+      const pending = this.previewRequests.get(href);
+      if (pending) { pending.abort(); this.previewRequests.delete(href); }
+      this.previewCache.delete(href);
+      shelf.remove();
+      shelf.replaceChildren();
+      shelf.classList.remove('is-loading-preview');
+      shelf.dataset.lod = 'unloaded';
+    }
+
+    updateVisibleZones() {
+      clearTimeout(this.zoneTimer);
+      const viewportWidth = this.world?.clientWidth || this.window.innerWidth;
+      const radius = this.shelfLayout?.radius || 360;
+      const lateral = this.camera.lateral * (viewportWidth < 620 ? 120 : viewportWidth < 1000 ? 180 : 240);
+      const candidates = this.shelves.filter(s => {
+        const angle = Number(s.dataset.viewAngle) * Math.PI / 180;
+        if (Math.abs(angle) >= 85 * Math.PI / 180) return false;
+        const projectedX = Math.tan(angle) * radius - lateral;
+        return Math.abs(projectedX) < viewportWidth / 2 + (this.shelfLayout?.shelfWidth || 252);
+      })
+        .sort((a,b) => Math.abs(Number(a.dataset.viewAngle)) - Math.abs(Number(b.dataset.viewAngle)));
+      // Hard resource budget independent of the number of folders in the room.
+      this.visibleShelves = new Set(candidates.slice(0, 7));
+      const detail = this.camera.forward >= .45 ? candidates.slice(0, 3) : [];
+      if (this.focusedShelf && this.visibleShelves.has(this.focusedShelf)) detail.unshift(this.focusedShelf);
+      const detailed = new Set(detail.slice(0, 3));
+      if (!detailed.size) this.deskFiles?.replaceChildren();
+      this.shelves.forEach(shelf => {
+        if (!this.visibleShelves.has(shelf)) { this.releaseShelf(shelf); return; }
+        this.mountShelf(shelf);
+        if (!detailed.has(shelf) && shelf.dataset.lod === 'detail') {
+          this.releaseShelf(shelf); this.mountShelf(shelf);
+        }
+        shelf.dataset.lod = detailed.has(shelf) ? 'detail' : 'overview';
+      });
+      if (this.selected?.element && !this.selected.element.isConnected) {
+        this.selected = null;
+        this.deskFiles?.replaceChildren();
+        this.hud.previewImage?.removeAttribute('src');
+        this.deskImage?.removeAttribute('src');
+        this.hud.open.disabled = true; this.hud.play.hidden = true; this.hud.download.hidden = true;
+      }
+      this.zoneTimer = setTimeout(() => detailed.forEach(shelf => {
+        if (this.visibleShelves.has(shelf)) this.loadShelfPreview(shelf, shelf.dataset.previewHref);
+      }), 160);
     }
 
     positionEndMarkersForCamera(yaw, showLeftEdge, showRightEdge) {
@@ -181,7 +245,7 @@
         const relative = this.normalizeAngle(worldAngle - yaw);
         const theta = relative * Math.PI / 180;
         const x = Math.sin(theta) * radius;
-        const z = -(1 - Math.cos(theta)) * radius;
+        const z = (1 - Math.cos(theta)) * radius;
         const visible = side === 'left' ? showLeftEdge : showRightEdge;
 
         lamp.style.transform = `translate3d(${x}px,0,${z}px)`;
@@ -378,6 +442,7 @@
       this.camera.forward = 0;
       this.camera.distance = 0;
       this.camera.target = '';
+      this.focusedShelf = null;
       this.renderCamera();
       this.schedulePreferenceSave();
     }
@@ -459,6 +524,8 @@
     }
 
     focusShelf(shelf) {
+      this.focusedShelf = shelf;
+      this.camera.forward = Math.max(.5, this.camera.forward);
       const worldAngle = Number(shelf.dataset.worldAngle || 0);
       this.camera.yaw = this.normalizeAngle(worldAngle);
       this.camera.target = shelf.dataset.itemName || '';
@@ -556,27 +623,35 @@
     }
 
     async loadShelfPreview(shelf, href) {
-      if (!shelf || !href) return;
+      if (!shelf || !href || !this.visibleShelves.has(shelf) || shelf.dataset.lod !== 'detail') return;
+      if (this.previewRequests.has(href)) return;
+      const controller = new AbortController();
+      this.previewRequests.set(href, controller);
       shelf.classList.add('is-loading-preview');
       try {
         let state = this.previewCache.get(href);
         if (!state) {
-          const response = await fetch(href, {credentials:'same-origin',headers:{Accept:'application/json'}});
+          const response = await fetch(href, {signal:controller.signal, credentials:'same-origin',headers:{Accept:'application/json'}});
           if (!response.ok) throw new Error(`HTTP ${response.status}`);
           const payload = await response.json();
           if (!payload?.ok || !payload?.state) throw new Error('Respuesta inválida');
           state = payload.state;
+          if (controller.signal.aborted || !this.visibleShelves.has(shelf) || shelf.dataset.lod !== 'detail') return;
           this.previewCache.set(href, state);
+          while (this.previewCache.size > 3) this.previewCache.delete(this.previewCache.keys().next().value);
         }
+        if (controller.signal.aborted || !this.visibleShelves.has(shelf) || shelf.dataset.lod !== 'detail') return;
         this.renderShelfPreview(shelf, state);
         if (this.selected?.element === shelf) {
           this.updateHud(this.selected, state);
           this.renderDeskFileStrip(Array.isArray(state.files) ? state.files : []);
         }
       } catch (_) {
+        if (controller.signal.aborted) return;
         const counts = shelf.querySelector('[data-preview-counts]');
         if (counts) counts.textContent = 'No se pudo cargar';
       } finally {
+        if (this.previewRequests.get(href) === controller) this.previewRequests.delete(href);
         shelf.classList.remove('is-loading-preview');
       }
     }
@@ -761,6 +836,9 @@
         const dot = this.document.createElement('button');
         dot.type = 'button';
         dot.className = 'dw-radar-point';
+        const radarWidth = this.radarPoints.parentElement?.clientWidth || 130;
+        const dotSize = Math.max(4, Math.min(12, Math.floor(radarWidth * .78 * Math.PI / Math.max(1, this.shelves.length) * .7)));
+        dot.style.setProperty('--dw-dot-size', `${dotSize}px`);
         dot.title = shelf.dataset.itemName || 'Estante';
         dot.style.left = `${50 + Math.sin(angle) * 39}%`;
         dot.style.top = `${50 - Math.cos(angle) * 39}%`;

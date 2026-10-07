@@ -234,14 +234,9 @@ $buildState = static function (string $route) use (
 
 $state = $buildState($currentRoute);
 
-$backgroundRoute = rtrim($userRoot, '/') . '/Imagenes/fondos3D/';
-$backgroundState = $buildState($backgroundRoute);
-$backgrounds = array_values(array_filter(
-    (array)($backgroundState['files'] ?? []),
-    static fn(array $file): bool => ($file['kind'] ?? '') === 'image'
-));
-
 if ((string)($_GET['api'] ?? '') === 'preview') {
+    $state['folders'] = array_slice($state['folders'], 0, 6);
+    $state['files'] = array_slice($state['files'], 0, 20);
     header('Content-Type: application/json; charset=UTF-8');
     echo json_encode([
         'ok' => true,
@@ -249,6 +244,13 @@ if ((string)($_GET['api'] ?? '') === 'preview') {
     ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
     exit;
 }
+
+$backgroundRoute = rtrim($userRoot, '/') . '/Imagenes/fondos3D/';
+$backgroundState = $buildState($backgroundRoute);
+$backgrounds = array_values(array_filter(
+    (array)($backgroundState['files'] ?? []),
+    static fn(array $file): bool => ($file['kind'] ?? '') === 'image'
+));
 
 $breadcrumbs = $app->folderQueryService()->breadcrumbsForUser($userId, $currentRoute);
 $e = static fn(mixed $value): string => FileViewHelper::escape($value);
@@ -288,13 +290,7 @@ header('Content-Type: text/html; charset=UTF-8');
   </header>
 
   <aside class="dw-sidebar" aria-label="Navegación Drive 3D">
-    <a class="is-active" href="dataword3d.php"><i class="fas fa-cubes"></i><span>Drive 3D</span></a>
-    <a href="<?= $e((string)$state['classic_href']) ?>"><i class="fas fa-table-cells-large"></i><span>Vista clásica</span></a>
-    <?php if ((string)$state['parent_href'] !== ''): ?>
-      <a href="<?= $e((string)$state['parent_href']) ?>"><i class="fas fa-arrow-turn-up"></i><span>Subir nivel</span></a>
-    <?php endif; ?>
     <button type="button" data-dw-environment><i class="fas fa-panorama"></i><span>Entorno</span></button>
-    <div class="dw-sidebar-spacer"></div>
     <div class="dw-user-chip"><i class="fas fa-user-astronaut"></i><span><?= $e($userAlias) ?></span></div>
   </aside>
 
@@ -336,6 +332,22 @@ header('Content-Type: text/html; charset=UTF-8');
             <div class="dw-compartment"><div class="dw-empty-message">Usa el escritorio central</div></div>
           </article>
         <?php else: ?>
+          <template id="dwShelfTemplate">
+              <span class="dw-shelf-volume dw-shelf-volume-left" aria-hidden="true"></span>
+              <span class="dw-shelf-volume dw-shelf-volume-right" aria-hidden="true"></span>
+              <span class="dw-shelf-volume dw-shelf-volume-top" aria-hidden="true"></span>
+              <div class="dw-shelf-crown"><i class="fas fa-folder-open"></i><strong>Carpeta</strong></div>
+              <div class="dw-compartment dw-compartment-folders" data-preview-folders aria-label="Subcarpetas">
+                <span class="dw-book dw-book-large"><b></b></span><span class="dw-book dw-book-large"><b></b></span><span class="dw-book dw-book-large"><b></b></span>
+              </div>
+              <div class="dw-compartment dw-compartment-files" data-preview-files aria-label="Archivos">
+                <?php for ($i = 0; $i < 8; $i++): ?><span class="dw-book dw-book-small"><b></b></span><?php endfor; ?>
+              </div>
+              <div class="dw-compartment dw-compartment-files-secondary" data-preview-files-secondary aria-label="Más archivos">
+                <?php for ($i = 0; $i < 8; $i++): ?><span class="dw-book dw-book-small"><b></b></span><?php endfor; ?>
+              </div>
+              <div class="dw-shelf-base"><span data-preview-counts>Carpeta</span></div>
+          </template>
           <?php foreach ($state['folders'] as $folder): ?>
             <article class="dw-shelf"
                      tabindex="0"
@@ -347,20 +359,6 @@ header('Content-Type: text/html; charset=UTF-8');
                      data-item-path="<?= $e($folder['visible_path']) ?>"
                      data-open-href="<?= $e($folder['open_href']) ?>"
                      data-preview-href="<?= $e($folder['preview_href']) ?>">
-              <span class="dw-shelf-volume dw-shelf-volume-left" aria-hidden="true"></span>
-              <span class="dw-shelf-volume dw-shelf-volume-right" aria-hidden="true"></span>
-              <span class="dw-shelf-volume dw-shelf-volume-top" aria-hidden="true"></span>
-              <div class="dw-shelf-crown"><i class="fas fa-folder-open"></i><strong><?= $e($folder['name']) ?></strong></div>
-              <div class="dw-compartment dw-compartment-folders" data-preview-folders aria-label="Subcarpetas">
-                <span class="dw-book dw-book-large"><b></b></span><span class="dw-book dw-book-large"><b></b></span><span class="dw-book dw-book-large"><b></b></span>
-              </div>
-              <div class="dw-compartment dw-compartment-files" data-preview-files aria-label="Archivos">
-                <?php for ($i = 0; $i < 8; $i++): ?><span class="dw-book dw-book-small"><b></b></span><?php endfor; ?>
-              </div>
-              <div class="dw-compartment dw-compartment-files-secondary" data-preview-files-secondary aria-label="Más archivos">
-                <?php for ($i = 0; $i < 8; $i++): ?><span class="dw-book dw-book-small"><b></b></span><?php endfor; ?>
-              </div>
-              <div class="dw-shelf-base"><span data-preview-counts><?= $e($folder['name']) ?></span></div>
             </article>
           <?php endforeach; ?>
         <?php endif; ?>

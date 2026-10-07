@@ -1,0 +1,35 @@
+name: Drive 3D visible zones
+on:
+  pull_request:
+    paths:
+      - 'drive/dataword3d.php'
+      - 'drive/tests/dataword3d_zones_browser.cjs'
+      - 'drive/js/dataword3d.js'
+      - 'drive/css/dataword3d.css'
+      - '.github/workflows/drive3d-visible-zones.yml'
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check PHP and module syntax
+        run: |
+          php -l drive/dataword3d.php
+          node --input-type=module --check < drive/js/dataword3d.js
+      - name: Install browser test dependency outside repository
+        run: |
+          npm install --prefix "$RUNNER_TEMP/drive3d-tests" playwright@1.51.1
+          "$RUNNER_TEMP/drive3d-tests/node_modules/.bin/playwright" install --with-deps chromium
+      - name: Render and verify geometry, camera and mobile controls
+        run: |
+          PLAYWRIGHT_MODULE="$RUNNER_TEMP/drive3d-tests/node_modules/playwright" SCREENSHOT_DIR="$RUNNER_TEMP/drive3d-shots" node drive/tests/dataword3d_zones_browser.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: drive3d-visible-zones
+          path: ${{ runner.temp }}/drive3d-shots

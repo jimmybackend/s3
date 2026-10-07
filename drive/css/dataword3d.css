@@ -3447,3 +3447,27 @@ body.is-dome-viewing .dw-aquarium{
     height:10px;
   }
 }
+
+/* Visible-zone layout: one clear background, opaque cabinets, floating controls. */
+.dw-dome { display:none !important; }
+.dw-world { left:0 !important; }
+.dw-camera-scene { transform-style:flat !important; }
+.dw-room-panorama { z-index:0 !important; border-radius:0 !important; pointer-events:none; }
+.dw-room-custom-image.is-customized { opacity:1 !important; filter:none !important; }
+.dw-stage { z-index:10 !important; isolation:isolate; top:12% !important; bottom:150px !important; }
+.dw-ring { perspective:1200px; }
+.dw-shelf { opacity:1 !important; background-color:#542612 !important; }
+.dw-sidebar { position:fixed !important; left:12px !important; top:74px !important; bottom:auto !important; width:112px !important; height:auto !important; min-height:0 !important; padding:6px !important; border:1px solid var(--dw-line); border-radius:14px; background:rgba(3,13,25,.9); z-index:85; }
+.dw-sidebar .dw-user-chip { margin:4px 0 0 !important; padding:8px 4px !important; }
+.dw-sidebar button { min-height:40px; }
+.dw-radar-point { width:var(--dw-dot-size,12px) !important; height:var(--dw-dot-size,12px) !important; }
+.dw-radar { left:12px !important; }
+@media(max-width:700px) {
+  .dw-sidebar { left:8px !important; top:70px !important; width:98px !important; }
+  .dw-stage { top:18% !important; bottom:165px !important; }
+}
+
+.dw-sidebar { right:auto !important; flex-direction:column !important; }
+.dw-sidebar .dw-user-chip { display:flex !important; }
+.dw-sidebar span { display:inline !important; }
+@media(max-width:900px) { .dw-world { top:58px !important; } }

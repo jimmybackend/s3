@@ -2057,3 +2057,161 @@ body.is-dome-viewing .dw-aquarium{
   }
   .dw-radar-actions button{font-size:7px}
 }
+
+
+/* ===== Drive 3D player-camera: fixed world, movable user ===== */
+.dw-camera-scene{
+  position:absolute;
+  z-index:2;
+  inset:0;
+  transform-style:preserve-3d;
+  transform-origin:50% 56%;
+  transition:transform .34s cubic-bezier(.2,.72,.16,1);
+  will-change:transform;
+}
+.dw-ring{
+  transform:none !important;
+}
+.dw-floor{
+  pointer-events:auto !important;
+  cursor:crosshair;
+}
+.dw-floor:hover{
+  box-shadow:
+    inset 0 0 90px rgba(55,208,255,.11),
+    0 -24px 80px rgba(255,145,53,.08);
+}
+.dw-shelf{
+  transition:filter .22s,box-shadow .22s,border-color .22s !important;
+  will-change:auto !important;
+}
+.dw-shelf.is-looked-at:not(.is-active){
+  filter:brightness(1.07) saturate(1.04);
+}
+
+/* Sidebar más estrecho para recuperar campo visual. */
+.dw-sidebar{
+  width:116px !important;
+  padding-left:7px !important;
+  padding-right:7px !important;
+}
+.dw-sidebar>a,.dw-sidebar>button{
+  padding:0 8px !important;
+  gap:7px !important;
+}
+.dw-sidebar span{
+  font-size:10px !important;
+}
+.dw-world{
+  left:116px !important;
+}
+
+/* Mesa central limpia: sin silla y con acabado más cercano a la referencia. */
+.dw-chair{display:none !important}
+.dw-desk{
+  width:min(820px,68vw) !important;
+  background:
+    linear-gradient(180deg,rgba(31,32,35,.97),rgba(8,10,13,.99)) !important;
+  border-color:rgba(255,168,71,.64) !important;
+  box-shadow:
+    0 -10px 26px rgba(255,145,48,.18),
+    0 20px 60px rgba(0,0,0,.62),
+    inset 0 0 0 3px rgba(255,255,255,.025) !important;
+}
+
+/* Libreros: luz interior cálida y etiquetas más nítidas. */
+.dw-compartment{
+  background:
+    radial-gradient(ellipse at 50% 8%,rgba(255,173,84,.17),transparent 52%),
+    linear-gradient(180deg,rgba(28,8,2,.88),rgba(59,19,5,.96)) !important;
+  box-shadow:
+    inset 0 16px 28px rgba(0,0,0,.48),
+    inset 0 -8px 15px rgba(255,145,53,.07),
+    0 5px 9px rgba(0,0,0,.3) !important;
+}
+.dw-shelf-crown strong{
+  font-size:19px !important;
+  font-weight:800 !important;
+  letter-spacing:.01em;
+  color:#fff9ef !important;
+  text-shadow:0 1px 1px rgba(0,0,0,.98),0 0 5px rgba(255,207,147,.18) !important;
+}
+.dw-shelf-base{
+  font-weight:750 !important;
+  color:#ffdfb7 !important;
+}
+
+/* Cristal 25% más claro que la versión anterior (.25 -> ~.18). */
+.dw-dome{
+  border-color:rgba(151,235,255,.05) !important;
+  background:
+    radial-gradient(ellipse at 50% 12%,rgba(203,249,255,.032),transparent 32%),
+    linear-gradient(180deg,rgba(56,142,194,.021),rgba(25,72,107,.008) 54%,rgba(4,18,31,.003)) !important;
+  box-shadow:
+    inset 0 -22px 48px rgba(56,211,255,.012),
+    0 15px 40px rgba(42,201,255,.012) !important;
+}
+.dw-dome-glass{opacity:.18 !important}
+.dw-dome-ribs{opacity:.28 !important}
+.dw-room-mullions{opacity:.45 !important}
+.dw-room-scenery{opacity:.15 !important}
+.dw-room-custom-image{
+  filter:saturate(1.02) contrast(1.03) brightness(1) !important;
+}
+.dw-room-custom-image.is-customized{opacity:1 !important}
+.dw-room-custom-image.is-customized + .dw-room-scenery{opacity:.06 !important}
+
+/* Radar = orientación + posición del usuario sobre el piso. */
+.dw-radar-center{
+  transition:left .25s ease,top .25s ease;
+}
+.dw-radar-move-controls{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:5px;
+  margin:6px 0;
+}
+.dw-radar-move-controls button{
+  min-height:30px;
+  border:1px solid rgba(101,210,246,.18);
+  border-radius:8px;
+  background:rgba(10,45,65,.72);
+  color:#ccefff;
+  cursor:pointer;
+}
+.dw-radar-move-controls button:hover{
+  border-color:#79eaff;
+  background:rgba(17,86,117,.8);
+}
+
+/* Ángulo inicial parecido a la referencia: frontal y amplio. */
+.dw-stage{
+  inset:0 0 190px 0 !important;
+}
+.dw-shelf{
+  top:49% !important;
+}
+.dw-aquarium{
+  bottom:3.6% !important;
+}
+.dw-desk{
+  bottom:30px !important;
+}
+
+@media (max-width:1180px){
+  .dw-sidebar{width:96px !important}
+  .dw-world{left:96px !important}
+  .dw-sidebar span{font-size:9px !important}
+}
+@media (max-width:900px){
+  .dw-sidebar{
+    width:auto !important;
+    left:0 !important;
+    right:0 !important;
+  }
+  .dw-world{left:0 !important}
+}
+@media (max-width:620px){
+  .dw-radar-move-controls button{min-height:27px;font-size:8px}
+  .dw-dome-glass{opacity:.16 !important}
+}

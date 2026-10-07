@@ -88,11 +88,14 @@
 
     assignWorldAngles() {
       const count = Math.max(1, this.shelves.length);
-      const span = Math.min(96, Math.max(54, (count - 1) * 18));
-      const start = -span / 2;
-      const step = count <= 1 ? 0 : span / (count - 1);
+      const center = (count - 1) / 2;
+      const compact = (this.world?.clientWidth || this.window.innerWidth) < 620;
+      const stepDegrees = compact ? 10.5 : 11.5;
+
       this.shelves.forEach((shelf, index) => {
-        shelf.dataset.worldAngle = String(start + step * index);
+        const slot = index - center;
+        shelf.dataset.worldSlot = String(slot);
+        shelf.dataset.worldAngle = String(slot * stepDegrees);
       });
     }
 
@@ -100,23 +103,31 @@
       const width = this.world?.clientWidth || this.window.innerWidth;
       const compact = width < 620;
       const tablet = width < 1000;
-      const radius = compact ? 1040 : tablet ? 1180 : Math.max(1240, Math.min(1480, width * .94));
+      const shelfWidth = this.shelves[0]?.offsetWidth || (compact ? 202 : tablet ? 232 : 252);
+      const gap = compact ? 32 : tablet ? 38 : 44;
+      const spacing = shelfWidth + gap;
+      const yawStep = compact ? 7.2 : tablet ? 6.8 : 6.4;
+      const depthStep = compact ? 16 : tablet ? 20 : 24;
+      const depthCurve = compact ? 4 : tablet ? 5 : 6;
+      const center = (this.shelves.length - 1) / 2;
 
-      this.shelves.forEach((shelf) => {
-        const worldAngle = Number(shelf.dataset.worldAngle || 0);
-        const rad = worldAngle * Math.PI / 180;
-        const abs = Math.abs(worldAngle);
-        const x = Math.sin(rad) * radius;
-        const z = (Math.cos(rad) - 1) * radius * .72;
-        const y = abs * (compact ? .11 : .08);
-        const yaw = -worldAngle * .74;
-        const scale = Math.max(compact ? .84 : .88, 1 - abs / 180 * .30);
+      this.shelfLayout = { spacing, yawStep, stepDegrees: compact ? 10.5 : 11.5 };
+
+      this.shelves.forEach((shelf, index) => {
+        const slot = index - center;
+        const abs = Math.abs(slot);
+        const x = slot * spacing;
+        const z = -(abs * depthStep + slot * slot * depthCurve);
+        const yaw = -slot * yawStep;
 
         shelf.style.transitionDuration = animate ? '' : '0ms';
-        shelf.style.transform = `translate3d(${x}px,${y}px,${z}px) rotateY(${yaw}deg) scale(${scale})`;
+        shelf.style.transform = `translate3d(${x}px,0,${z}px) rotateY(${yaw}deg)`;
         shelf.style.opacity = '1';
         shelf.style.pointerEvents = '';
-        shelf.style.zIndex = String(Math.round(80 - abs / 2));
+        shelf.style.zIndex = String(Math.max(20, 90 - Math.round(abs * 4)));
+        shelf.dataset.worldX = String(x);
+        shelf.dataset.worldZ = String(z);
+        shelf.dataset.worldYaw = String(yaw);
       });
     }
 
@@ -337,11 +348,12 @@
       const width = this.world?.clientWidth || this.window.innerWidth;
       const compact = width < 620;
       const tablet = width < 1000;
+      const spacing = this.shelfLayout?.spacing || (compact ? 234 : tablet ? 270 : 296);
+      const stepDegrees = this.shelfLayout?.stepDegrees || (compact ? 10.5 : 11.5);
       const lateralPx = this.camera.lateral * (compact ? 120 : tablet ? 180 : 240);
-      const forwardScale = 1 + this.camera.forward * (compact ? .11 : .14);
-      const radius = compact ? 1040 : tablet ? 1180 : Math.max(1240, Math.min(1480, width * .94));
-      const yawPan = Math.sin(yaw * Math.PI / 180) * radius;
-      const pitchPan = pitch * (compact ? 4.2 : tablet ? 5.2 : 6.0);
+      const forwardScale = 1 + this.camera.forward * (compact ? .10 : .13);
+      const yawPan = (yaw / stepDegrees) * spacing;
+      const pitchPan = pitch * (compact ? 4.0 : tablet ? 4.8 : 5.4);
 
       if (this.cameraScene) {
         this.cameraScene.style.transitionDuration = animate ? '' : '0ms';
@@ -353,7 +365,7 @@
         const relative = this.normalizeAngle(worldAngle - yaw);
         const abs = Math.abs(relative);
         shelf.dataset.viewAngle = String(relative.toFixed(2));
-        shelf.classList.toggle('is-looked-at', abs < 7);
+        shelf.classList.toggle('is-looked-at', abs < stepDegrees * .48);
       });
 
       if (this.pitchRange) this.pitchRange.value = String(Math.round(pitch));
@@ -499,8 +511,8 @@
           this.renderDeskFileStrip(Array.isArray(state.files) ? state.files : []);
         }
       } catch (_) {
-        const info = shelf.querySelector('[data-preview-info]');
-        if (info) info.textContent = 'No se pudo cargar la vista previa.';
+        const counts = shelf.querySelector('[data-preview-counts]');
+        if (counts) counts.textContent = 'No se pudo cargar';
       } finally {
         shelf.classList.remove('is-loading-preview');
       }
@@ -509,7 +521,7 @@
     renderShelfPreview(shelf, state) {
       const folderHost = shelf.querySelector('[data-preview-folders]');
       const fileHost = shelf.querySelector('[data-preview-files]');
-      const infoHost = shelf.querySelector('[data-preview-info]');
+      const fileHostSecondary = shelf.querySelector('[data-preview-files-secondary]');
       const counts = shelf.querySelector('[data-preview-counts]');
 
       if (folderHost) {
@@ -518,20 +530,30 @@
         if (!folders.length) folderHost.append(this.emptyNode('Sin subcarpetas'));
         folders.forEach((item) => folderHost.append(this.bookNode(item, true)));
       }
+
+      const files = Array.isArray(state.files) ? state.files : [];
       if (fileHost) {
         fileHost.replaceChildren();
-        const files = Array.isArray(state.files) ? state.files.slice(0, 12) : [];
-        if (!files.length) fileHost.append(this.emptyNode('Sin archivos'));
-        files.forEach((item) => fileHost.append(this.bookNode(item, false)));
+        const primary = files.slice(0, 10);
+        if (!primary.length) fileHost.append(this.emptyNode('Sin archivos'));
+        primary.forEach((item) => fileHost.append(this.bookNode(item, false)));
       }
-      if (infoHost) {
-        infoHost.replaceChildren();
-        const span = this.document.createElement('span');
-        span.innerHTML = '<i class="fas fa-wave-square"></i> ';
-        span.append(this.document.createTextNode(`${state.folder_bytes || '0 B'} · ${state.visible_path || ''}`));
-        infoHost.append(span);
+      if (fileHostSecondary) {
+        fileHostSecondary.replaceChildren();
+        const secondary = files.slice(10, 20);
+        if (!secondary.length) {
+          const ornament = this.document.createElement('span');
+          ornament.className = 'dw-shelf-ornament';
+          ornament.setAttribute('aria-hidden', 'true');
+          ornament.innerHTML = '<i class="fas fa-globe"></i>';
+          fileHostSecondary.append(ornament);
+        } else {
+          secondary.forEach((item) => fileHostSecondary.append(this.bookNode(item, false)));
+        }
       }
-      if (counts) counts.textContent = `${state.folder_count || 0} carpetas · ${state.file_count || 0} archivos`;
+      if (counts) {
+        counts.textContent = `${state.folder_count || 0} carpetas · ${state.file_count || 0} archivos`;
+      }
     }
 
     bookNode(item, folder) {

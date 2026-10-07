@@ -329,10 +329,10 @@ header('Content-Type: text/html; charset=UTF-8');
             <span class="dw-shelf-volume dw-shelf-volume-left" aria-hidden="true"></span>
             <span class="dw-shelf-volume dw-shelf-volume-right" aria-hidden="true"></span>
             <span class="dw-shelf-volume dw-shelf-volume-top" aria-hidden="true"></span>
-            <div class="dw-shelf-crown"><i class="fas fa-folder-open"></i><strong>Esta sala</strong></div>
-            <div class="dw-compartment"><div class="dw-empty-message">No hay subcarpetas en este nivel.</div></div>
-            <div class="dw-compartment"><div class="dw-empty-message">Tus archivos están sobre el escritorio central.</div></div>
-            <div class="dw-compartment"><div class="dw-empty-message">Puedes volver o cambiar a vista clásica.</div></div>
+            <div class="dw-shelf-crown"><i class="fas fa-folder-open"></i><strong><?= $e(rtrim((string)$state['visible_path'], '/')) ?></strong></div>
+            <div class="dw-compartment"><div class="dw-empty-message">Sin subcarpetas</div></div>
+            <div class="dw-compartment"><div class="dw-empty-message">Sin archivos para mostrar aquí</div></div>
+            <div class="dw-compartment"><div class="dw-empty-message">Usa el escritorio central</div></div>
           </article>
         <?php else: ?>
           <?php foreach ($state['folders'] as $folder): ?>
@@ -350,16 +350,16 @@ header('Content-Type: text/html; charset=UTF-8');
               <span class="dw-shelf-volume dw-shelf-volume-right" aria-hidden="true"></span>
               <span class="dw-shelf-volume dw-shelf-volume-top" aria-hidden="true"></span>
               <div class="dw-shelf-crown"><i class="fas fa-folder-open"></i><strong><?= $e($folder['name']) ?></strong></div>
-              <div class="dw-compartment dw-compartment-folders" data-preview-folders>
+              <div class="dw-compartment dw-compartment-folders" data-preview-folders aria-label="Subcarpetas">
                 <span class="dw-book dw-book-large"><b></b></span><span class="dw-book dw-book-large"><b></b></span><span class="dw-book dw-book-large"><b></b></span>
               </div>
-              <div class="dw-compartment dw-compartment-files" data-preview-files>
+              <div class="dw-compartment dw-compartment-files" data-preview-files aria-label="Archivos">
                 <?php for ($i = 0; $i < 8; $i++): ?><span class="dw-book dw-book-small"><b></b></span><?php endfor; ?>
               </div>
-              <div class="dw-compartment dw-compartment-info" data-preview-info>
-                <span><i class="fas fa-sparkles"></i> Selecciona para explorar</span>
+              <div class="dw-compartment dw-compartment-files-secondary" data-preview-files-secondary aria-label="Más archivos">
+                <?php for ($i = 0; $i < 8; $i++): ?><span class="dw-book dw-book-small"><b></b></span><?php endfor; ?>
               </div>
-              <div class="dw-shelf-base"><span data-preview-counts>Carpeta</span></div>
+              <div class="dw-shelf-base"><span data-preview-counts><?= $e($folder['name']) ?></span></div>
             </article>
           <?php endforeach; ?>
         <?php endif; ?>

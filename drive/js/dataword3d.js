@@ -87,24 +87,58 @@
       if (this.useThree) {
         this.bindControls();
         import('./drive3d-production.js').then(module => module.Drive3DProduction.start(this)).catch(error => {
-          const status = this.document.querySelector('[data-three-status]');
-          const detail = error?.message || String(error || 'Error desconocido');
-          status.hidden = false;
-          status.textContent = 'No se pudo iniciar la vista 3D. Detalle: ' + detail;
-          status.title = error?.stack || detail;
-          console.error('Drive 3D startup', error);
+          this.activateCompatible3DFallback(error);
         });
         return this;
       }
+      this.startCompatible3D(false);
+      return this;
+    }
+
+    startCompatible3D(bindControls = true) {
       this.assignWorldAngles();
       this.layoutFixedShelves(false);
-      this.bindControls();
+      if (bindControls) this.bindControls();
       this.applyRoomPreferences();
       this.renderRadar();
       this.renderCamera(false);
       const target = this.findShelfByName(this.camera.target) || this.frontShelf();
       if (target) this.selectShelf(target, false);
-      return this;
+    }
+
+    activateCompatible3DFallback(error) {
+      const detail = error?.message || String(error || 'Error desconocido');
+      console.error('Drive 3D startup; activating compatible renderer', error);
+
+      this.useThree = false;
+      this.three = null;
+      this.document.body.classList.remove('dw-real');
+      this.document.body.classList.add('dw-compatible');
+
+      const viewport = this.document.getElementById('dwThreeViewport');
+      if (viewport) {
+        viewport.replaceChildren();
+        viewport.hidden = true;
+      }
+
+      const content = this.document.querySelector('[data-three-content]');
+      if (content) content.hidden = true;
+
+      const status = this.document.querySelector('[data-three-status]');
+      if (status) {
+        status.hidden = true;
+        status.textContent = '';
+        status.title = detail;
+      }
+
+      this.startCompatible3D(false);
+
+      const notice = this.document.createElement('div');
+      notice.className = 'dw-renderer-notice';
+      notice.setAttribute('role', 'status');
+      notice.textContent = 'Vista 3D compatible activada automáticamente.';
+      this.world?.append(notice);
+      this.window.setTimeout(() => notice.remove(), 4200);
     }
 
     assignWorldAngles() {

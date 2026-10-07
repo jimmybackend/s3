@@ -3212,3 +3212,25 @@ body.is-dome-viewing .dw-aquarium{
     margin-left:-103px !important;
   }
 }
+
+
+/* ===== Drive 3D rigid shelf wall: no fake side faces or shelf motion ===== */
+.dw-shelf{
+  transform-style:flat !important;
+  transition:filter .18s,box-shadow .18s,border-color .18s !important;
+  will-change:auto !important;
+}
+
+/* El mueble se lee como un rectángulo sólido; no se dibujan alas laterales
+   que hagan parecer que cada librero está ladeado o montado sobre el vecino. */
+.dw-shelf-volume-left,
+.dw-shelf-volume-right,
+.dw-shelf-volume-top{
+  display:none !important;
+}
+
+/* Seleccionar no desplaza, pulsa ni barre el librero. */
+.dw-shelf.is-active::before,
+.dw-shelf.is-active::after{
+  animation:none !important;
+}

@@ -58,7 +58,7 @@
 | `drive/up.php` | `drive/so.php`, `drive/src/Admin/ProductionPreflightService.php`, `drive/src/Http/Controller/UploadCleanupController.php`, `drive/src/Upload/AdminMultipartUploadService.php`, `drive/tests/database_backup_contract_smoke.php`, `drive/tests/federation_moderation_contract_smoke.php`, `drive/tests/upload_catalog_registration_regression.php`, `drive/tests/upload_task_center_contract.php`, `drive/js/estilo.js`, `drive/js/so-node.js` |
 | `drive/upload.php` | `drive/dataword3d.php`, `drive/s3.php`, `drive/so.php`, `drive/tests/web_os_contract_smoke.php`, `drive/js/dataword3d.js`, `drive/js/so-screenshot-paste.js`, `drive/js/soportesMediaTypes.js`, `drive/js/subir-chunked.js`, `drive/js/subir-dropzone.js`, `drive/js/subir.js`, `drive/js/upload-center.js` |
 | `drive/validar_php.php` | `drive/editor.php` |
-| `drive/ver_archivo.php` | `drive/bloque_archivos.php`, `drive/dataword3d.php`, `drive/so.php`, `drive/src/Media/MediaPlaylistService.php`, `drive/tests/web_os_contract_smoke.php`, `drive/js/archivos.js`, `drive/js/imagenes.js` |
+| `drive/ver_archivo.php` | `drive/bloque_archivos.php`, `drive/dataword3d.php`, `drive/so.php`, `drive/src/Http/Controller/Drive3dBackgroundUploadController.php`, `drive/src/Media/MediaPlaylistService.php`, `drive/tests/web_os_contract_smoke.php`, `drive/js/archivos.js`, `drive/js/imagenes.js` |
 
 ## PHP no alcanzables por referencias internas
 

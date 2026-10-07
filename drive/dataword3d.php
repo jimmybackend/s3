@@ -375,6 +375,11 @@ header('Content-Type: text/html; charset=UTF-8');
         <strong>Orientación</strong>
         <span>toca el mapa para mirar</span>
       </div>
+      <div class="dw-radar-look-controls">
+        <button type="button" data-camera-look-toggle aria-pressed="false"><i class="fas fa-hand-pointer"></i> Mover visión</button>
+        <button type="button" data-camera-pitch="-6" aria-label="Mirar arriba"><i class="fas fa-chevron-up"></i></button>
+        <button type="button" data-camera-pitch="6" aria-label="Mirar abajo"><i class="fas fa-chevron-down"></i></button>
+      </div>
       <button type="button" data-camera-home><i class="fas fa-crosshairs"></i> Centrar</button>
     </section>
 
@@ -427,14 +432,13 @@ header('Content-Type: text/html; charset=UTF-8');
       <span class="dw-chair-base"></span>
     </div>
 
-    <section class="dw-media-stage dw-dome-viewer" data-dw-media-stage hidden aria-live="polite">
-      <div class="dw-dome-viewer-head">
-        <span><i class="fas fa-vr-cardboard"></i> VISOR DEL DOMO</span>
+    <section class="dw-media-stage dw-file-window" data-dw-media-stage hidden aria-live="polite">
+      <header class="dw-file-window-titlebar">
+        <span class="dw-file-window-icon"><i class="fas fa-file"></i></span>
         <strong data-dw-media-title>Archivo</strong>
-      </div>
-      <button type="button" class="dw-media-close" data-dw-media-close aria-label="Cerrar visor"><i class="fas fa-xmark"></i></button>
-      <div class="dw-dome-viewer-body" data-dw-media-content></div>
-      <div class="dw-dome-viewer-hint">La mirada se orientó hacia arriba para observar el archivo en el domo.</div>
+        <button type="button" class="dw-media-close" data-dw-media-close aria-label="Cerrar archivo"><i class="fas fa-xmark"></i></button>
+      </header>
+      <div class="dw-file-window-body" data-dw-media-content></div>
     </section>
 
     <section class="dw-hud" aria-live="polite">
@@ -466,9 +470,10 @@ header('Content-Type: text/html; charset=UTF-8');
     <div class="dw-controls-hint" aria-hidden="true">
       <span><kbd>←</kbd><kbd>→</kbd> mirar</span>
       <span><kbd>↑</kbd><kbd>↓</kbd> arriba/abajo</span>
-      <span><i class="fas fa-computer-mouse"></i> seleccionar/acercar</span>
+      <span><i class="fas fa-hand-pointer"></i> arrastrar para mirar</span>
+      <span><i class="fas fa-computer-mouse"></i> tocar librero para acercar</span>
       <span><kbd>Home</kbd> centrar</span>
-      <span><kbd>Enter</kbd> abrir arriba</span>
+      <span><kbd>Enter</kbd> abrir archivo</span>
       <span><kbd>Esc</kbd> volver/cerrar visor</span>
     </div>
 

@@ -7,6 +7,7 @@
       this.document = doc;
       this.config = win.ARCADECLOUD_DRIVE3D || {};
       this.world = doc.getElementById('dwWorld');
+      this.cameraScene = doc.querySelector('[data-dw-camera-scene]');
       this.ring = doc.getElementById('dwShelfRing');
       this.shelves = Array.from(doc.querySelectorAll('.dw-shelf'));
       this.selected = null;
@@ -14,11 +15,15 @@
       this.dragStart = null;
       this.dragMoved = false;
       this.saveTimer = null;
+      const savedModel = String(this.config.preferences?.cameraModel || '');
       this.camera = {
-        yaw: Number(this.config.preferences?.cameraYaw || 0),
-        pitch: Number(this.config.preferences?.cameraPitch || 0),
-        distance: Number(this.config.preferences?.cameraDistance || 0),
-        target: String(this.config.preferences?.cameraTarget || ''),
+        yaw: savedModel === 'player-v3' ? Number(this.config.preferences?.cameraYaw || 0) : 0,
+        pitch: savedModel === 'player-v3' ? Number(this.config.preferences?.cameraPitch || 0) : 0,
+        lateral: savedModel === 'player-v3' ? Number(this.config.preferences?.cameraLateral || 0) : 0,
+        forward: savedModel === 'player-v3' ? Number(this.config.preferences?.cameraForward || 0) : 0,
+        distance: 0,
+        target: savedModel === 'player-v3' ? String(this.config.preferences?.cameraTarget || '') : '',
+        model: 'player-v3',
       };
       this.room = {
         environment: String(this.config.preferences?.environment || 'future'),
@@ -63,7 +68,9 @@
       this.radar = doc.querySelector('[data-dw-radar]');
       this.radarView = doc.querySelector('[data-radar-view]');
       this.radarPoints = doc.querySelector('[data-radar-points]');
+      this.radarPlayer = doc.querySelector('.dw-radar-center');
       this.pitchRange = doc.querySelector('[data-camera-pitch-range]');
+      this.floorNav = doc.querySelector('[data-dw-floor-nav]');
       this.backgroundChoice = null;
     }
 
@@ -117,8 +124,10 @@
       this.document.querySelector('[data-camera-home]')?.addEventListener('click', () => this.centerCamera());
       this.document.querySelector('[data-camera-exit-focus]')?.addEventListener('click', () => {
         this.camera.target = '';
+        this.camera.yaw = 0;
         this.camera.pitch = 0;
-        this.camera.distance = 0;
+        this.camera.lateral = 0;
+        this.camera.forward = 0;
         this.renderCamera();
         this.schedulePreferenceSave();
       });
@@ -130,6 +139,13 @@
         this.renderCamera(false);
       });
       this.pitchRange?.addEventListener('change', () => this.schedulePreferenceSave());
+      this.document.querySelectorAll('[data-camera-strafe]').forEach((button) => {
+        button.addEventListener('click', () => this.movePlayer(Number(button.dataset.cameraStrafe || 0) * .16, 0));
+      });
+      this.document.querySelectorAll('[data-camera-forward]').forEach((button) => {
+        button.addEventListener('click', () => this.movePlayer(0, Number(button.dataset.cameraForward || 0) * .14));
+      });
+      this.floorNav?.addEventListener('click', (event) => this.navigateByFloorTap(event));
 
       this.hud.open?.addEventListener('click', () => this.openSelected());
       this.hud.desk?.addEventListener('click', () => this.bringToDesk());
@@ -289,19 +305,43 @@
     centerCamera() {
       this.camera.yaw = 0;
       this.camera.pitch = 0;
+      this.camera.lateral = 0;
+      this.camera.forward = 0;
       this.camera.distance = 0;
       this.camera.target = '';
       this.renderCamera();
       this.schedulePreferenceSave();
     }
 
+    movePlayer(lateralDelta, forwardDelta) {
+      this.camera.lateral = this.clamp(this.camera.lateral + lateralDelta, -1, 1);
+      this.camera.forward = this.clamp(this.camera.forward + forwardDelta, 0, 1);
+      this.renderCamera();
+      this.schedulePreferenceSave();
+    }
+
+    navigateByFloorTap(event) {
+      if (this.dragMoved) return;
+      const rect = this.floorNav?.getBoundingClientRect();
+      if (!rect || rect.width <= 0 || rect.height <= 0) return;
+      const nx = this.clamp((event.clientX - rect.left) / rect.width, 0, 1);
+      const ny = this.clamp((event.clientY - rect.top) / rect.height, 0, 1);
+      const lateralDelta = (nx - .5) * .34;
+      const forwardDelta = (.62 - ny) * .22;
+      this.movePlayer(lateralDelta, forwardDelta);
+    }
+
     renderCamera(animate = true) {
       const yaw = this.normalizeAngle(this.camera.yaw);
       const pitch = this.clamp(this.camera.pitch, -42, 42);
+      const width = this.world?.clientWidth || this.window.innerWidth;
+      const compact = width < 620;
+      const lateralPx = this.camera.lateral * (compact ? 125 : width < 1000 ? 190 : 270);
+      const forwardPx = this.camera.forward * (compact ? 135 : width < 1000 ? 190 : 245);
 
-      if (this.ring) {
-        this.ring.style.transitionDuration = animate ? '' : '0ms';
-        this.ring.style.transform = `rotateX(${-pitch}deg) rotateY(${-yaw}deg)`;
+      if (this.cameraScene) {
+        this.cameraScene.style.transitionDuration = animate ? '' : '0ms';
+        this.cameraScene.style.transform = `rotateX(${-pitch}deg) rotateY(${-yaw}deg) translate3d(${-lateralPx}px,0,${forwardPx}px)`;
       }
 
       this.shelves.forEach((shelf) => {
@@ -314,8 +354,14 @@
 
       if (this.pitchRange) this.pitchRange.value = String(Math.round(pitch));
       if (this.world) this.world.style.setProperty('--dw-camera-pitch', `${pitch}deg`);
-      this.document.body.classList.remove('is-camera-near');
       this.updateRadarView();
+      this.updateRadarPlayer();
+    }
+
+    updateRadarPlayer() {
+      if (!this.radarPlayer) return;
+      this.radarPlayer.style.left = `${50 + this.camera.lateral * 24}%`;
+      this.radarPlayer.style.top = `${52 - this.camera.forward * 24}%`;
     }
 
     frontShelf() {
@@ -334,7 +380,6 @@
       const worldAngle = Number(shelf.dataset.worldAngle || 0);
       this.camera.yaw = this.normalizeAngle(worldAngle);
       this.camera.target = shelf.dataset.itemName || '';
-      this.camera.distance = 0;
       this.renderCamera();
       this.selectShelf(shelf, true);
       this.schedulePreferenceSave();
@@ -377,14 +422,6 @@
       };
     }
 
-    updateProximityHud() {
-      const shelf = this.frontShelf();
-      if (!shelf) return;
-      const relative = Math.abs(Number(shelf.dataset.viewAngle || 180));
-      if (relative <= 7 && this.camera.distance >= .18 && this.selected?.element !== shelf) {
-        this.selectShelf(shelf, true);
-      }
-    }
 
     updateHud(item, state = null) {
       if (!item) return;
@@ -755,7 +792,10 @@
           ceilingBackground:this.room.ceilingBackground,
           cameraYaw:this.camera.yaw,
           cameraPitch:this.camera.pitch,
-          cameraDistance:this.camera.distance,
+          cameraDistance:0,
+          cameraLateral:this.camera.lateral,
+          cameraForward:this.camera.forward,
+          cameraModel:this.camera.model,
           cameraTarget:this.camera.target,
           furniturePreset:this.room.furniturePreset,
           windowPreset:this.room.windowPreset,

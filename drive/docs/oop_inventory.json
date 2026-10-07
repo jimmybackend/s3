@@ -1,7 +1,7 @@
 {
   "summary": {
-    "php_total": 557,
-    "php_class_modules": 316,
+    "php_total": 560,
+    "php_class_modules": 318,
     "php_needs_migration": 0,
     "php_tests": 78,
     "js_total": 82,
@@ -10,7 +10,7 @@
     "js_tests": 11,
     "js_compatibility_facades": 8,
     "ajax_clients": 54,
-    "ajax_calls": 116,
+    "ajax_calls": 118,
     "json_total": 4,
     "json_invalid": 0
   },
@@ -672,7 +672,7 @@
     },
     {
       "path": "drive/dataword3d.php",
-      "lines": 457,
+      "lines": 523,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -765,6 +765,21 @@
     {
       "path": "drive/download_multiple.php",
       "lines": 8,
+      "kind": "thin endpoint",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": true,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/drive3d-background-upload.php",
+      "lines": 10,
       "kind": "thin endpoint",
       "classes": 0,
       "functions": [],
@@ -1867,7 +1882,7 @@
     },
     {
       "path": "drive/os-preferences.php",
-      "lines": 94,
+      "lines": 97,
       "kind": "thin endpoint",
       "classes": 0,
       "functions": [],
@@ -4539,6 +4554,21 @@
       "issues": []
     },
     {
+      "path": "drive/src/Http/Controller/Drive3dBackgroundUploadController.php",
+      "lines": 90,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
       "path": "drive/src/Http/Controller/FederationAccessController.php",
       "lines": 123,
       "kind": "class/module",
@@ -5614,6 +5644,21 @@
     {
       "path": "drive/src/Security/AuthenticationService.php",
       "lines": 55,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Security/Drive3dPreferenceSanitizer.php",
+      "lines": 50,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -6990,7 +7035,7 @@
     },
     {
       "path": "drive/tests/dataword3d_contract_smoke.php",
-      "lines": 38,
+      "lines": 45,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -8870,7 +8915,7 @@
     },
     {
       "path": "drive/js/dataword3d.js",
-      "lines": 650,
+      "lines": 795,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudDrive3D"
@@ -8883,11 +8928,11 @@
       "top_vars": [],
       "iife": false,
       "ajax": {
-        "fetch": 1,
+        "fetch": 3,
         "xhr": 0,
         "jquery": 0,
-        "json_consumers": 1,
-        "response_checks": 3
+        "json_consumers": 2,
+        "response_checks": 5
       },
       "issues": []
     },

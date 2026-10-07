@@ -4,8 +4,8 @@
 
 ## Resumen
 
-- PHP analizados: **557**
-- PHP que ya contienen clases/interfaces: **316**
+- PHP analizados: **560**
+- PHP que ya contienen clases/interfaces: **318**
 - PHP marcados para migración/revisión: **0**
 - Tests PHP separados del objetivo OOP de runtime: **78**
 - JavaScript analizados: **82**
@@ -13,7 +13,7 @@
 - JavaScript runtime marcados para migración/revisión: **1**
 - Tests JavaScript separados del objetivo OOP de runtime: **11**
 - JavaScript OOP con fachada `window` de compatibilidad: **8**
-- Clientes AJAX detectados: **54** módulos / **116** llamadas
+- Clientes AJAX detectados: **54** módulos / **118** llamadas
 - JSON analizados: **4**; inválidos: **0**
 
 ## Criterio
@@ -74,13 +74,14 @@
 | `drive/crear_carpeta.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/create_folder_document.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/database-backup.php` | 10 | thin endpoint | 0 | — | — | — | — |
-| `drive/dataword3d.php` | 457 | view/entrypoint | 0 | — | — | — | — |
+| `drive/dataword3d.php` | 523 | view/entrypoint | 0 | — | — | — | — |
 | `drive/delete_multiple.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/descargar.php` | 8 | thin endpoint | 0 | — | — | — | — |
 | `drive/descargar_archivo.php` | 8 | thin endpoint | 0 | — | — | — | — |
 | `drive/descargar_zip.php` | 8 | thin endpoint | 0 | — | — | — | — |
 | `drive/download.php` | 8 | thin endpoint | 0 | — | — | — | — |
 | `drive/download_multiple.php` | 8 | thin endpoint | 0 | — | — | — | — |
+| `drive/drive3d-background-upload.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/ec2-cron.php` | 39 | thin endpoint | 0 | — | — | — | — |
 | `drive/ec2.php` | 1090 | view/entrypoint | 0 | ⚠️ | — | — | — |
 | `drive/editor.php` | 485 | view/entrypoint | 0 | — | — | — | — |
@@ -152,7 +153,7 @@
 | `drive/notebook.php` | 206 | view/entrypoint | 0 | — | — | — | — |
 | `drive/office-gateway.php` | 674 | view/entrypoint | 0 | — | — | — | — |
 | `drive/office-launch.php` | 81 | thin endpoint | 0 | — | — | — | — |
-| `drive/os-preferences.php` | 94 | thin endpoint | 0 | — | — | — | — |
+| `drive/os-preferences.php` | 97 | thin endpoint | 0 | — | — | — | — |
 | `drive/personal_aws_bootstrap.php` | 86 | class/module | 1 | — | — | — | — |
 | `drive/polly_cargar_texto.php` | 8 | thin endpoint | 0 | — | — | — | — |
 | `drive/polly_list_voices.php` | 8 | thin endpoint | 0 | — | — | — | — |
@@ -329,6 +330,7 @@
 | `drive/src/Http/Controller/BackgroundTaskCompatibilityController.php` | 245 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Http/Controller/BackgroundTaskController.php` | 1100 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Http/Controller/DatabaseBackupController.php` | 50 | class/module | 1 | — | — | — | — |
+| `drive/src/Http/Controller/Drive3dBackgroundUploadController.php` | 90 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/FederationAccessController.php` | 123 | class/module | 1 | ⚠️ | — | — | — |
 | `drive/src/Http/Controller/FederationCatalogController.php` | 144 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/FederationCollectionController.php` | 128 | class/module | 1 | — | — | — | — |
@@ -401,6 +403,7 @@
 | `drive/src/Office/OfficeWorkstationClient.php` | 178 | class/module | 1 | — | — | — | — |
 | `drive/src/Security/AuthenticationRepository.php` | 101 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Security/AuthenticationService.php` | 55 | class/module | 1 | — | — | — | — |
+| `drive/src/Security/Drive3dPreferenceSanitizer.php` | 50 | class/module | 1 | — | — | — | — |
 | `drive/src/Security/FileSecurityRepository.php` | 92 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Security/FileSecurityService.php` | 183 | class/module | 1 | — | — | — | — |
 | `drive/src/Security/LoginRateLimiter.php` | 143 | class/module | 1 | — | — | — | — |
@@ -490,7 +493,7 @@
 | `drive/tests/database_backup_contract_smoke.php` | 67 | test script | 0 | — | — | — | — |
 | `drive/tests/database_dump_full_integration.php` | 126 | test script | 0 | — | ⚠️ | — | — |
 | `drive/tests/database_schema_contract_smoke.php` | 127 | test script | 0 | — | — | — | — |
-| `drive/tests/dataword3d_contract_smoke.php` | 38 | test script | 0 | — | — | — | — |
+| `drive/tests/dataword3d_contract_smoke.php` | 45 | test script | 0 | — | — | — | — |
 | `drive/tests/fastdrive_control_contract_smoke.php` | 72 | test script | 0 | — | — | — | — |
 | `drive/tests/federation_access_message_smoke.php` | 72 | test script | 0 | — | — | — | — |
 | `drive/tests/federation_catalog_event_smoke.php` | 60 | test script | 0 | — | — | — | — |
@@ -604,7 +607,7 @@
 | `drive/js/background-tasks.js` | 1352 | class/module | BackgroundTaskCenter | — | — | — |
 | `drive/js/carpetas.js` | 1200 | class/module | CarpetasModule | — | actualizarBloqueCarpetas | window functions: actualizarBloqueCarpetas |
 | `drive/js/compute-node-idle.js` | 290 | class/module | ArcadeCloudComputeIdleGuard | — | — | — |
-| `drive/js/dataword3d.js` | 650 | class/module | ArcadeCloudDrive3D | — | — | — |
+| `drive/js/dataword3d.js` | 795 | class/module | ArcadeCloudDrive3D | — | — | — |
 | `drive/js/descarga-multiple.js` | 114 | class/module | DescargaMultipleModule | — | — | — |
 | `drive/js/descarga-uno.js` | 110 | class/module | DescargaUnoModule | — | — | — |
 | `drive/js/desktop-shell.js` | 182 | class/module | ArcadeCloudDesktopShell | — | — | — |
@@ -689,7 +692,7 @@
 | `drive/js/background-tasks.js` | 2 | 0 | 0 | 0 | 19 |
 | `drive/js/carpetas.js` | 2 | 0 | 0 | 2 | 11 |
 | `drive/js/compute-node-idle.js` | 3 | 0 | 0 | 3 | 6 |
-| `drive/js/dataword3d.js` | 1 | 0 | 0 | 1 | 3 |
+| `drive/js/dataword3d.js` | 3 | 0 | 0 | 2 | 5 |
 | `drive/js/descarga-multiple.js` | 1 | 0 | 0 | 0 | 2 |
 | `drive/js/descarga-uno.js` | 1 | 0 | 0 | 0 | 2 |
 | `drive/js/elimina-multiple.js` | 2 | 0 | 0 | 1 | 3 |

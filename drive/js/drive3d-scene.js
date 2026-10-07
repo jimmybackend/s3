@@ -266,18 +266,7 @@ class Drive3DScene {
         cylinder(table, 1.45, 1.45, .13, .89, trim);
         cylinder(table, 1.43, 1.43, .06, .985, blackStone);
         for (const [r, y, mat] of [[1.62,.10,cyan],[1.27,.17,trim],[1.10,.78,glow],[1.45,.96,glow],[.63,1.035,cyan]]) ring(table, r, .019, y, mat);
-        const globe = new T.Group(); globe.position.y = 1.65; globe.scale.setScalar(.72); table.add(globe);
-        const globeMat = material(0x1b78cf, { transparent: true, opacity: .32, metalness: .25, roughness: .2, emissive: 0x146ac1, emissiveIntensity: .7, depthWrite: false });
-        globe.add(new T.Mesh(new T.SphereGeometry(.70, 40, 24), globeMat));
-        const grid = new T.LineBasicMaterial({ color: 0x8bdcff, transparent: true, opacity: .8 });
-        for (let lat = -60; lat <= 60; lat += 30) {
-            const p = lat * Math.PI / 180, pts = Array.from({length:65},(_,k)=>new T.Vector3(.705*Math.cos(p)*Math.sin(k/64*Math.PI*2),.705*Math.sin(p),.705*Math.cos(p)*Math.cos(k/64*Math.PI*2)));
-            globe.add(new T.Line(new T.BufferGeometry().setFromPoints(pts),grid));
-        }
-        for(let i=0;i<8;i++) { const pts=Array.from({length:65},(_,k)=>new T.Vector3(.705*Math.sin(k/64*Math.PI*2)*Math.cos(i*Math.PI/8),.705*Math.cos(k/64*Math.PI*2),.705*Math.sin(k/64*Math.PI*2)*Math.sin(i*Math.PI/8))); globe.add(new T.Line(new T.BufferGeometry().setFromPoints(pts),grid)); }
-        const stars=[];
-        for(let i=0;i<460;i++) { const a=i*2.399963, y=1-2*(i+.5)/460, r=Math.sqrt(1-y*y); if(Math.sin(a*3+y*9)+Math.cos(a*2-y*13)>.15) stars.push(.712*r*Math.cos(a),.712*y,.712*r*Math.sin(a)); }
-        const dots=new T.BufferGeometry(); dots.setAttribute('position',new T.Float32BufferAttribute(stars,3)); globe.add(new T.Points(dots,new T.PointsMaterial({color:0xc5edff,size:.025})));
+        // Central globe removed by design; keep the table surface clear.
         const blueLight = new T.PointLight(0x459eff, 5, 5, 2); blueLight.position.set(0, 1.5, -1.3); scene.add(blueLight);
         const lampAngle = (titles.length - 1 - Math.floor(titles.length / 2)) * step + .25, lamp = new T.Group(); lamp.name = 'end-of-row-lamp';
         lamp.position.set(shelfRadius * Math.sin(lampAngle), 0, -shelfRadius * Math.cos(lampAngle)); scene.add(lamp);

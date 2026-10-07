@@ -245,7 +245,7 @@
       this.world?.addEventListener('pointercancel', finishLookGesture);
 
       this.radar?.addEventListener('click', (event) => {
-        if (event.target.closest('button')) return;
+        if (event.target.closest('button,input,label,.dw-radar-look-controls,.dw-radar-actions,.dw-radar-move-controls')) return;
         const rect = this.radar.querySelector('.dw-radar-room')?.getBoundingClientRect();
         if (!rect) return;
         const x = event.clientX - rect.left - rect.width / 2;

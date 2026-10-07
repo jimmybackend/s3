@@ -42,6 +42,11 @@ drive3dContract(str_contains($view, 'dw-dome') && str_contains($css, '.dw-dome{'
 drive3dContract(str_contains($view, 'dw-dome-viewer') && str_contains($js, 'showFileInDome') && str_contains($js, "this.camera.pitch = -24"), 'abrir un archivo inclina la mirada hacia arriba y lo muestra dentro del domo');
 drive3dContract(str_contains($js, 'dw-dome-document-frame') && str_contains($js, "item.kind === 'video'") && str_contains($js, "item.kind === 'audio'"), 'visor superior soporta documentos, imágenes, video y audio');
 drive3dContract(str_contains($js, 'preDomeCamera') && str_contains($js, 'closeMedia(restoreCamera = true)'), 'cerrar el visor restaura la perspectiva anterior del usuario');
+drive3dContract(str_contains($view, 'data-camera-look-toggle') && str_contains($js, 'setLookMode') && str_contains($css, 'touch-action:none'), 'modo mirada táctil permite mover cámara con dedo sin desplazar muebles');
+drive3dContract(str_contains($view, 'data-camera-pitch="-6"') && str_contains($view, 'data-camera-pitch="6"') && str_contains($js, 'vertical * 34'), 'radar permite subir y bajar la mirada además de orientar izquierda/derecha');
+drive3dContract(str_contains($js, 'alreadyFocused') && str_contains($js, 'focusShelf(item, true, .72)'), 'tocar nuevamente un librero realiza un acercamiento mayor manteniendo el mueble fijo');
+drive3dContract(str_contains($view, 'dw-file-window') && str_contains($css, '.dw-media-stage.dw-file-window') && str_contains($css, 'border-radius:14px'), 'archivos se muestran en ventana rectangular normal dentro del entorno 3D');
+drive3dContract(str_contains($css, '.dw-dome-glass') && str_contains($css, 'opacity:.5'), 'cristal del domo reduce a la mitad su intensidad para conservar nitidez del fondo');
 drive3dContract(substr_count($so, 'href="dataword3d.php"') >= 2 && str_contains($so, '<strong>Drive 3D</strong>'), 'ArcadeCloud OS enlaza Drive 3D en aplicaciones y launcher');
 
 fwrite(STDOUT, "Drive 3D contract smoke passed.\n");

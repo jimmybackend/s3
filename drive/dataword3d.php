@@ -448,9 +448,12 @@ header('Content-Type: text/html; charset=UTF-8');
     </section>
 
     <section class="dw-media-stage dw-file-window" data-dw-media-stage hidden aria-live="polite">
-      <header class="dw-file-window-titlebar">
+      <header class="dw-file-window-titlebar" data-spatial-drag-handle>
         <span class="dw-file-window-icon"><i class="fas fa-file"></i></span>
         <strong data-dw-media-title>Archivo</strong>
+        <div class="dw-spatial-actions" hidden data-spatial-actions>
+          <button type="button" data-spatial-front title="Colocar frente a mí"><i class="fas fa-crosshairs"></i> Frente</button>
+        </div>
         <button type="button" class="dw-media-close" data-dw-media-close aria-label="Cerrar archivo"><i class="fas fa-xmark"></i></button>
       </header>
       <div class="dw-file-window-body" data-dw-media-content></div>

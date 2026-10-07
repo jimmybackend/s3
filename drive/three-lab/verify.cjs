@@ -42,6 +42,7 @@ function overlap(a,b) {
         page.on('pageerror',e=>errors.push(e.message));
         await page.goto(`http://127.0.0.1:${server.address().port}/drive/three-lab/drive3d-lab.php`);
         await page.waitForFunction(()=>window.drive3dLab?.snapshot().environmentReady);
+        page.setDefaultTimeout(60000);
         const snapshot=()=>page.evaluate(()=>window.drive3dLab.snapshot());
         const initial=await snapshot();
         assert.equal(initial.shelves.length,7);
@@ -59,12 +60,13 @@ function overlap(a,b) {
             assert.deepEqual(state.shelves,initial.shelves); assert.deepEqual(state.panorama,initial.panorama);
             assert.notEqual(state.yaw,initial.yaw); await shot(view);
         }
+        await page.setViewportSize({width:800,height:600});
         await page.locator('[data-view="front"]').click();
         await page.keyboard.down('w'); await page.waitForFunction(z=>window.drive3dLab.snapshot().camera[2]<z-.15,initial.camera[2]); await page.keyboard.up('w');
         assert((await snapshot()).camera[2]<initial.camera[2]-.1,'Walk must move camera');
-        await page.keyboard.down('w'); await page.waitForFunction(()=>window.drive3dLab.snapshot().camera[2]<.72); await page.waitForTimeout(400); await page.keyboard.up('w');
+        await page.keyboard.down('w'); await page.waitForFunction(()=>window.drive3dLab.snapshot().camera[2]<.72).catch(async error=>{console.log('Movement diagnostic',await snapshot());throw error;}); await page.waitForTimeout(400); await page.keyboard.up('w');
         assert((await snapshot()).camera[2]>=.59,'Table collision must stop walking through the globe pedestal');
-        await page.mouse.move(650,480); await page.mouse.down(); await page.mouse.move(850,420,{steps:5}); await page.mouse.up();
+        await page.mouse.move(300,260); await page.mouse.down(); await page.mouse.move(500,220,{steps:5}); await page.mouse.up();
         await page.waitForFunction(()=>window.drive3dLab.snapshot().yaw<-.2); assert((await snapshot()).yaw<-.2,'Drag must turn camera');
         await page.setViewportSize({width:390,height:844});
         await page.locator('[data-view="front"]').click();

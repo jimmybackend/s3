@@ -61,7 +61,7 @@ class Drive3DThreeLab {
         }
         // Panorama is fixed to world coordinates and also supplies natural material reflections.
         const panorama = new T.Mesh(new T.SphereGeometry(65, 64, 32), new T.MeshBasicMaterial({ color: 0x93b4c9, side: T.BackSide }));
-        panorama.name = 'fixed-360-panorama'; panorama.rotation.y = Math.PI; panorama.position.y = 3; scene.add(panorama);
+        panorama.name = 'fixed-360-panorama'; panorama.rotation.y = Math.PI; panorama.position.y = 3; panorama.scale.y = .55; scene.add(panorama);
         scene.environmentRotation.y = Math.PI;
         let environmentReady = false, needsRender = true;
         new T.TextureLoader().load(new URL('../three-lab/assets/alpine-panorama.jpg', import.meta.url).href, map => {
@@ -72,7 +72,7 @@ class Drive3DThreeLab {
         }, undefined, () => {
             status.hidden = false; status.textContent = 'El paisaje no pudo cargarse. La escena sigue disponible; recarga para intentarlo de nuevo.';
         });
-        const floorMirror = new Reflector(new T.CircleGeometry(R, 96), { color: 0x8894a0, textureWidth: innerWidth < 700 ? 256 : 768, textureHeight: innerWidth < 700 ? 256 : 768 });
+        const floorMirror = new Reflector(new T.CircleGeometry(R, 96), { color: 0x8894a0, textureWidth: innerWidth < 700 ? 256 : 512, textureHeight: innerWidth < 700 ? 256 : 512 });
         floorMirror.rotation.x = -Math.PI / 2; floorMirror.position.y = -.015; scene.add(floorMirror);
         const floor = new T.Mesh(new T.CircleGeometry(R, 96), material(0x9aa1ad, { map: marble, transparent: true, opacity: .66, metalness: .2, roughness: .32 }));
         floor.rotation.x = -Math.PI / 2; floor.renderOrder = 1; scene.add(floor);

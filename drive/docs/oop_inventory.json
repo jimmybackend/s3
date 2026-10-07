@@ -672,7 +672,7 @@
     },
     {
       "path": "drive/dataword3d.php",
-      "lines": 523,
+      "lines": 535,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -7035,7 +7035,7 @@
     },
     {
       "path": "drive/tests/dataword3d_contract_smoke.php",
-      "lines": 45,
+      "lines": 48,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -8915,7 +8915,7 @@
     },
     {
       "path": "drive/js/dataword3d.js",
-      "lines": 795,
+      "lines": 854,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudDrive3D"
@@ -10792,7 +10792,7 @@
     },
     {
       "path": "drive/docs/runtime_endpoints.json",
-      "bytes": 132159,
+      "bytes": 133288,
       "valid": true,
       "root_type": "object",
       "keys": [

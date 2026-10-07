@@ -1948,3 +1948,112 @@ body.is-dome-viewing .dw-aquarium{
   }
   .dw-radar-look-controls button{min-height:29px;font-size:8px}
 }
+
+
+/* ===== Drive 3D fixed-world camera correction ===== */
+.dw-ring{
+  transform-style:preserve-3d;
+  transform-origin:50% 50%;
+  transition:transform .34s cubic-bezier(.2,.75,.18,1);
+  will-change:transform;
+}
+.dw-shelf{
+  transition:filter .22s,box-shadow .22s,border-color .22s !important;
+  will-change:auto;
+}
+.dw-roof,
+.dw-room-light-ring,
+.dw-dome-ring,
+.dw-rotate{
+  display:none !important;
+}
+
+/* Cristal mucho más transparente: 50% menos que la iteración anterior. */
+.dw-dome{
+  border-color:rgba(151,235,255,.07);
+  background:
+    radial-gradient(ellipse at 50% 12%,rgba(203,249,255,.045),transparent 32%),
+    linear-gradient(180deg,rgba(56,142,194,.03),rgba(25,72,107,.011) 54%,rgba(4,18,31,.005));
+  box-shadow:
+    inset 0 -22px 48px rgba(56,211,255,.018),
+    0 15px 40px rgba(42,201,255,.02);
+}
+.dw-dome-glass{opacity:.25 !important}
+.dw-dome-ribs{opacity:.38 !important}
+.dw-room-panorama{
+  background:rgba(4,16,28,.08) !important;
+  box-shadow:inset 0 -50px 70px rgba(0,0,0,.26),0 18px 44px rgba(0,0,0,.14) !important;
+}
+.dw-room-scenery{opacity:.22 !important}
+.dw-room-custom-image{
+  filter:saturate(1) contrast(1.02) brightness(.96) !important;
+}
+.dw-room-custom-image.is-customized{opacity:1 !important}
+.dw-room-custom-image.is-customized + .dw-room-scenery{opacity:.10 !important}
+.dw-room-mullions{opacity:.58 !important}
+
+/* Radar/isometría: dirección horizontal + ángulo vertical controlable. */
+.dw-radar-room{
+  aspect-ratio:1.65 / 1;
+  border-radius:18px;
+  transform:perspective(420px) rotateX(18deg);
+  transform-origin:50% 100%;
+}
+.dw-radar-look-controls{
+  grid-template-columns:34px minmax(0,1fr) 34px !important;
+  align-items:center;
+}
+.dw-radar-pitch-control{
+  min-width:0;
+  display:grid;
+  grid-template-columns:auto 1fr;
+  align-items:center;
+  gap:6px;
+  padding:0 7px;
+  min-height:32px;
+  border:1px solid rgba(101,210,246,.14);
+  border-radius:8px;
+  background:rgba(6,31,48,.68);
+}
+.dw-radar-pitch-control span{
+  font-size:7px;
+  color:#8cc6d8;
+  white-space:nowrap;
+}
+.dw-radar-pitch-control input{
+  width:100%;
+  min-width:0;
+  accent-color:#55ddff;
+}
+.dw-radar-actions{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:5px;
+}
+.dw-radar-actions button{
+  min-height:31px;
+  border:1px solid rgba(101,210,246,.18);
+  border-radius:8px;
+  background:rgba(10,45,65,.72);
+  color:#ccefff;
+  cursor:pointer;
+  font-size:8px;
+}
+
+/* Arrastrar siempre mueve la mirada; los muebles conservan su geometría fija. */
+.dw-world{cursor:grab}
+.dw-world:active{cursor:grabbing}
+
+@media (max-width:620px){
+  .dw-radar{width:172px}
+  .dw-radar-pitch-control{
+    grid-template-columns:1fr;
+    gap:2px;
+    padding:3px 5px;
+  }
+  .dw-radar-pitch-control span{
+    text-align:center;
+    font-size:6.5px;
+  }
+  .dw-radar-actions button{font-size:7px}
+}

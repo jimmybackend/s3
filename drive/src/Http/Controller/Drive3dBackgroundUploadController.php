@@ -71,9 +71,12 @@ final class Drive3dBackgroundUploadController extends AbstractJsonController
             );
 
             $key = (string)($result['key_s3'] ?? '');
+            $displayRoute = $this->app->folderQueryService()->displayPathForUser($userId, $route);
+            $visiblePath = rtrim($displayRoute, '/') . '/' . $name;
             JsonResponse::ok([
                 'name' => $name,
-                'route' => 'Imagenes/fondos3D/',
+                'route' => $displayRoute,
+                'visiblePath' => $visiblePath,
                 'storageRoute' => $route,
                 'key' => $key,
                 'thumbnail' => $key !== '' ? 'thumb.php?key=' . rawurlencode($key) . '&w=420&h=280&fit=cover' : '',

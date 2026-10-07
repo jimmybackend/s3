@@ -9,12 +9,8 @@ class Drive3DProduction {
     const viewport = doc.getElementById('dwThreeViewport');
     const map = doc.createElement('canvas'); map.width = map.height = 240;
     map.setAttribute('aria-label', 'Plano real: libreros, mesa, lámpara, posición y dirección de cámara');
-    doc.querySelector('.dw-radar-room').replaceChildren(map);
-    const coordinates = doc.createElement('output'); app.radar.append(coordinates);
-    // Keep the existing file strip accessible above the canvas, outside the retired CSS scene.
-    if (app.deskFiles) app.world.append(app.deskFiles);
+    const coordinates = doc.createElement('output');
     const rootFiles = Array.from(app.deskFiles?.children || []);
-    if (app.deskFocus) { app.world.append(app.deskFocus); app.deskFocus.hidden = true; }
     const panel = doc.querySelector('[data-three-content]'), items = doc.querySelector('[data-three-items]');
     doc.querySelector('[data-three-close]').onclick = () => { panel.hidden = true; };
     items.addEventListener('click', event => { const node = event.target.closest('[data-dw-item]'); if(node) app.selectElement(node); });
@@ -66,6 +62,13 @@ class Drive3DProduction {
         onCamera:(yaw,pitch) => { app.camera.yaw = yaw; app.camera.pitch = pitch; if(app.pitchRange) app.pitchRange.value = String(pitch); },
         onView:view => { visible = view.visible; near = view.near; if(view.selected < 0) app.focusedShelf = null; syncZones(); }
     });
+
+    // Only replace production UI after the WebGL scene constructed successfully.
+    doc.querySelector('.dw-radar-room').replaceChildren(map);
+    app.radar.append(coordinates);
+    if (app.deskFiles) app.world.append(app.deskFiles);
+    if (app.deskFocus) { app.world.append(app.deskFocus); app.deskFocus.hidden = true; }
+
     // The map selects the actual cabinet nearest the touched world coordinate.
     map.addEventListener('click', event => {
         event.stopPropagation(); const rect = map.getBoundingClientRect(), state = app.three.snapshot();

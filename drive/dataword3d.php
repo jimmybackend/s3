@@ -2,6 +2,8 @@
 declare(strict_types=1);
 
 use ArcadeCloud\Drive\Application\FileListService;
+use ArcadeCloud\Drive\Security\OsPreferenceNodeResolver;
+use ArcadeCloud\Drive\Security\UserOsPreferencesRepository;
 use ArcadeCloud\Drive\View\FileViewHelper;
 
 ini_set('display_errors', '0');
@@ -20,6 +22,21 @@ if ($userId <= 0) {
     exit;
 }
 
+$osPreferenceNodeKey = OsPreferenceNodeResolver::resolve();
+$osPreferences = [];
+try {
+    $osPreferences = (new UserOsPreferencesRepository($app->db()))->find($userId, $osPreferenceNodeKey);
+} catch (Throwable $error) {
+    error_log('[ArcadeCloud Drive3D preferences] ' . $error->getMessage());
+}
+$drive3dPreferences = is_array($osPreferences['drive3d'] ?? null) ? $osPreferences['drive3d'] : [];
+
+$uploadCsrf = (string)$session->get('upload_csrf', '');
+if (!preg_match('/\A[a-f0-9]{64}\z/', $uploadCsrf)) {
+    $uploadCsrf = bin2hex(random_bytes(32));
+    $session->set('upload_csrf', $uploadCsrf);
+}
+
 header('Cache-Control: no-store, private');
 header('X-Content-Type-Options: nosniff');
 
@@ -28,6 +45,7 @@ $currentRoute = $app->userStoragePath()->normalizeForUser(
     (string)($_GET['ruta'] ?? $userRoot),
     $userId
 );
+$session->set('ruta_actual', $currentRoute);
 
 $normalizePrefix = static function (string $prefix): string {
     $prefix = str_replace('\\', '/', trim($prefix));
@@ -216,6 +234,13 @@ $buildState = static function (string $route) use (
 
 $state = $buildState($currentRoute);
 
+$backgroundRoute = rtrim($userRoot, '/') . '/Imagenes/fondos3D/';
+$backgroundState = $buildState($backgroundRoute);
+$backgrounds = array_values(array_filter(
+    (array)($backgroundState['files'] ?? []),
+    static fn(array $file): bool => ($file['kind'] ?? '') === 'image'
+));
+
 if ((string)($_GET['api'] ?? '') === 'preview') {
     header('Content-Type: application/json; charset=UTF-8');
     echo json_encode([
@@ -285,6 +310,10 @@ header('Content-Type: text/html; charset=UTF-8');
     <div class="dw-floor" aria-hidden="true">
       <div class="dw-floor-custom-image" data-dw-floor-image></div>
     </div>
+    <div class="dw-plants" aria-hidden="true">
+      <span class="dw-plant dw-orchid orchid-left"><i></i><i></i><i></i><b></b></span>
+      <span class="dw-plant dw-orchid orchid-right"><i></i><i></i><i></i><b></b></span>
+    </div>
     <div class="dw-aquarium" aria-hidden="true">
       <span class="dw-fish fish-a">◁</span><span class="dw-fish fish-b">◁</span><span class="dw-fish fish-c">◁</span>
     </div>
@@ -327,8 +356,21 @@ header('Content-Type: text/html; charset=UTF-8');
       </div>
     </section>
 
-    <button class="dw-rotate dw-rotate-left" type="button" data-dw-prev aria-label="Girar a la izquierda"><i class="fas fa-chevron-left"></i></button>
-    <button class="dw-rotate dw-rotate-right" type="button" data-dw-next aria-label="Girar a la derecha"><i class="fas fa-chevron-right"></i></button>
+    <button class="dw-rotate dw-rotate-left" type="button" data-camera-turn="-1" aria-label="Mirar a la izquierda"><i class="fas fa-chevron-left"></i></button>
+    <button class="dw-rotate dw-rotate-right" type="button" data-camera-turn="1" aria-label="Mirar a la derecha"><i class="fas fa-chevron-right"></i></button>
+
+    <section class="dw-radar" data-dw-radar aria-label="Mapa de orientación de la sala">
+      <div class="dw-radar-room">
+        <span class="dw-radar-view" data-radar-view></span>
+        <span class="dw-radar-center"></span>
+        <div class="dw-radar-points" data-radar-points></div>
+      </div>
+      <div class="dw-radar-caption">
+        <strong>Orientación</strong>
+        <span>toca el mapa para mirar</span>
+      </div>
+      <button type="button" data-camera-home><i class="fas fa-crosshairs"></i> Centrar</button>
+    </section>
 
     <section class="dw-desk" aria-label="Escritorio central">
       <div class="dw-desk-globe" aria-hidden="true"><i class="fas fa-earth-americas"></i></div>
@@ -411,30 +453,50 @@ header('Content-Type: text/html; charset=UTF-8');
     </section>
 
     <div class="dw-controls-hint" aria-hidden="true">
-      <span><kbd>←</kbd><kbd>→</kbd> girar</span>
-      <span><i class="fas fa-computer-mouse"></i> seleccionar</span>
-      <span><kbd>Enter</kbd> abrir</span>
+      <span><kbd>←</kbd><kbd>→</kbd> mirar</span>
+      <span><kbd>↑</kbd><kbd>↓</kbd> arriba/abajo</span>
+      <span><i class="fas fa-computer-mouse"></i> seleccionar/acercar</span>
+      <span><kbd>Home</kbd> centrar</span>
       <span><kbd>Esc</kbd> volver</span>
     </div>
 
     <section class="dw-environment-panel" data-dw-environment-panel hidden>
-      <div><strong>Personalizar entorno</strong><button type="button" data-dw-environment-close><i class="fas fa-xmark"></i></button></div>
-      <p class="dw-environment-help">Elige un ambiente o selecciona una imagen de tus archivos y úsala en los cristales o en el piso.</p>
+      <div><strong>Personalizar sala 3D</strong><button type="button" data-dw-environment-close><i class="fas fa-xmark"></i></button></div>
+      <p class="dw-environment-help">Los fondos se guardan en <b>Imagenes/fondos3D</b> y la configuración queda en tu perfil de ArcadeCloud.</p>
       <div class="dw-environment-presets">
         <button type="button" data-environment-choice="future">Ciudad futura</button>
         <button type="button" data-environment-choice="mountain">Montaña</button>
         <button type="button" data-environment-choice="prehistoric">Prehistórico</button>
         <button type="button" data-environment-choice="ocean">Océano</button>
       </div>
-      <div class="dw-environment-selection">
-        <span>Imagen seleccionada</span>
-        <strong data-environment-selected>Ninguna imagen seleccionada</strong>
+      <label class="dw-upload-background">
+        <i class="fas fa-cloud-arrow-up"></i>
+        <span>Subir nuevo fondo</span>
+        <input type="file" accept="image/jpeg,image/png,image/webp,image/gif,image/avif" data-background-upload hidden>
+      </label>
+      <div class="dw-background-gallery" data-background-gallery>
+        <?php foreach (array_slice($backgrounds, 0, 24) as $background): ?>
+          <button type="button"
+                  class="dw-background-option"
+                  data-background-option
+                  data-background-path="<?= $e((string)$background['visible_path']) ?>"
+                  data-background-environment="<?= $e((string)($background['environment_href'] ?? '')) ?>"
+                  title="<?= $e((string)$background['name']) ?>">
+            <img src="<?= $e((string)($background['thumbnail_href'] ?? '')) ?>" loading="lazy" alt="<?= $e((string)$background['name']) ?>">
+            <span><?= $e((string)$background['name']) ?></span>
+          </button>
+        <?php endforeach; ?>
       </div>
-      <button type="button" data-environment-use="glass" disabled><i class="fas fa-window-maximize"></i> Usar en cristales</button>
-      <button type="button" data-environment-use="floor" disabled><i class="fas fa-layer-group"></i> Usar en piso</button>
-      <div class="dw-environment-reset">
-        <button type="button" data-environment-clear="glass">Quitar cristales</button>
-        <button type="button" data-environment-clear="floor">Quitar piso</button>
+      <div class="dw-environment-selection">
+        <span>Fondo seleccionado</span>
+        <strong data-environment-selected>Selecciona una miniatura</strong>
+      </div>
+      <button type="button" data-environment-use="glass" disabled><i class="fas fa-window-maximize"></i> Aplicar a cristales</button>
+      <button type="button" data-environment-use="floor" disabled><i class="fas fa-layer-group"></i> Aplicar al piso</button>
+      <div class="dw-environment-preset-row">
+        <label>Muebles <select data-furniture-preset><option value="default">ArcadeCloud Default</option></select></label>
+        <label>Ventanas <select data-window-preset><option value="panoramic">Panorámicas</option></select></label>
+        <label>Plantas <select data-plants-preset><option value="orchids">Orquídeas naturales</option></select></label>
       </div>
     </section>
   </main>
@@ -448,7 +510,11 @@ header('Content-Type: text/html; charset=UTF-8');
       'fileCount' => $state['file_count'],
       'folderBytes' => $state['folder_bytes'],
       'latestDate' => $state['latest_date'],
-      'preferenceScope' => 'u' . $userId,
+      'csrf' => $uploadCsrf,
+      'preferencesEndpoint' => 'os-preferences.php',
+      'uploadEndpoint' => 'drive3d-background-upload.php',
+      'preferences' => $drive3dPreferences,
+      'preferenceNodeKey' => $osPreferenceNodeKey,
     ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
   </script>
   <script src="js/dataword3d.js?v=<?= (int)filemtime(__DIR__ . '/js/dataword3d.js') ?>"></script>

@@ -5,6 +5,7 @@ require_once __DIR__ . '/app_bootstrap.php';
 
 use ArcadeCloud\Drive\Core\ApplicationKernel;
 use ArcadeCloud\Drive\Http\JsonResponse;
+use ArcadeCloud\Drive\Security\Drive3dPreferenceSanitizer;
 use ArcadeCloud\Drive\Security\OsPreferenceNodeResolver;
 use ArcadeCloud\Drive\Security\UserOsPreferencesRepository;
 
@@ -42,6 +43,8 @@ try {
                 'height' => max(180, min(1600, (int)($windowPreference['height'] ?? 0))),
             ],
         ];
+    } elseif (isset($payload['drive3dPreference']) && is_array($payload['drive3dPreference'])) {
+        $patch['drive3d'] = (new Drive3dPreferenceSanitizer())->sanitize($payload['drive3dPreference']);
     } elseif (isset($payload['mediaPlayerPreference']) && is_array($payload['mediaPlayerPreference'])) {
         $mediaPlayer = $payload['mediaPlayerPreference'];
         $geometry = [];

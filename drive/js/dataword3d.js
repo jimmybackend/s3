@@ -69,6 +69,10 @@
       this.spatialActions = doc.querySelector('[data-spatial-actions]');
       this.spatialDragHandle = doc.querySelector('[data-spatial-drag-handle]');
       this.spatialDrag = null;
+      this.spatialPictureLayer = doc.querySelector('[data-dw-spatial-picture-layer]');
+      this.spatialPictures = new Map();
+      this.spatialPictureState = this.normalizeSpatialImagePreferences(this.config.preferences?.spatialImages);
+      this.spatialPictureZ = 80;
       this.preDomeCamera = null;
       this.environmentPanel = doc.querySelector('[data-dw-environment-panel]');
       this.glassImage = doc.querySelector('[data-dw-glass-image]');
@@ -84,6 +88,33 @@
       this.pitchRange = doc.querySelector('[data-camera-pitch-range]');
       this.floorNav = doc.querySelector('[data-dw-floor-nav]');
       this.backgroundChoice = null;
+    }
+
+    normalizeSpatialImagePreferences(value) {
+      if (!Array.isArray(value)) return [];
+      return value.slice(0,12).map((entry) => {
+        const world = Array.isArray(entry?.world) && entry.world.length === 3
+          ? entry.world.map(Number)
+          : null;
+        if (!entry || !entry.id || !entry.openHref || !world || world.some((number) => !Number.isFinite(number))) return null;
+        return {
+          id:String(entry.id),
+          name:String(entry.name || 'Imagen'),
+          path:String(entry.path || ''),
+          openHref:String(entry.openHref),
+          world,
+        };
+      }).filter(Boolean);
+    }
+
+    spatialImageId(item) {
+      const source = String(item?.path || item?.openHref || item?.name || 'image');
+      let hash = 2166136261;
+      for (let i=0;i<source.length;i++) {
+        hash ^= source.charCodeAt(i);
+        hash = Math.imul(hash, 16777619);
+      }
+      return 'img_' + (hash >>> 0).toString(36);
     }
 
     init() {
@@ -1071,6 +1102,13 @@
           furniturePreset:this.room.furniturePreset,
           windowPreset:this.room.windowPreset,
           plantsPreset:this.room.plantsPreset,
+          spatialImages:this.spatialPictureState.map((entry) => ({
+            id:entry.id,
+            name:entry.name,
+            path:entry.path,
+            openHref:entry.openHref,
+            world:Array.isArray(entry.world) ? entry.world.map(Number) : [],
+          })),
         }
       };
       try {
@@ -1124,6 +1162,11 @@
     }
 
     showSpatialFile(item) {
+      if (item?.kind === 'image') {
+        this.openSpatialImage(item);
+        return;
+      }
+
       this.closeMedia(false);
       this.document.body.classList.add('is-dome-viewing','is-spatial-viewing');
       this.mediaStage.classList.add('is-spatial');
@@ -1255,6 +1298,24 @@
     }
 
     updateSpatialProjection(projection) {
+      const projectionId = String(projection?.id || 'singleton');
+      if (projectionId !== 'singleton') {
+        const picture = this.spatialPictures.get(projectionId);
+        if (!picture?.window) return;
+        if (!projection || projection.removed || !projection.visible) {
+          picture.window.style.visibility = 'hidden';
+          return;
+        }
+        picture.window.style.visibility = 'visible';
+        picture.window.style.left = projection.x+'px';
+        picture.window.style.top = projection.y+'px';
+        picture.window.style.setProperty('--dw-picture-scale', String(projection.scale || 1));
+        if (Array.isArray(projection.world)) {
+          this.updateSpatialImageState(projectionId, projection.world, false);
+        }
+        return;
+      }
+
       if (!this.mediaStage?.classList.contains('is-spatial') || this.mediaStage.hidden) return;
       if (!projection || !projection.visible) {
         this.mediaStage.style.visibility = 'hidden';
@@ -1266,6 +1327,162 @@
       this.mediaStage.style.setProperty('--dw-spatial-scale', String(projection.scale || 1));
       this.mediaStage.dataset.worldPosition = Array.isArray(projection.world) ? projection.world.map(n=>Number(n).toFixed(2)).join(',') : '';
     }
+
+    openSpatialImage(item) {
+      if (!this.useThree || !this.three || !this.spatialPictureLayer || !item?.openHref) return;
+      const id = this.spatialImageId(item);
+      const existing = this.spatialPictures.get(id);
+      if (existing?.window) {
+        this.bringSpatialPictureToFront(id);
+        return;
+      }
+
+      if (this.spatialPictureState.length >= 12) {
+        this.window.alert('Puedes dejar hasta 12 imágenes colocadas en la sala 3D.');
+        return;
+      }
+
+      const entry = {
+        id,
+        name:String(item.name || 'Imagen'),
+        path:String(item.path || ''),
+        openHref:String(item.openHref),
+        world:null,
+      };
+      this.spatialPictureState.push(entry);
+      this.mountSpatialImage(entry, false);
+    }
+
+    restoreSpatialImages() {
+      if (!this.useThree || !this.three || !this.spatialPictureLayer) return;
+      this.spatialPictureState.forEach((entry) => this.mountSpatialImage(entry, true));
+    }
+
+    mountSpatialImage(entry, restoring = false) {
+      if (!entry?.id || !entry.openHref || this.spatialPictures.has(entry.id)) return;
+      const win = this.document.createElement('section');
+      win.className = 'dw-spatial-picture-window';
+      win.dataset.spatialPictureId = entry.id;
+      win.style.visibility = 'hidden';
+      win.style.zIndex = String(++this.spatialPictureZ);
+
+      const header = this.document.createElement('header');
+      header.className = 'dw-spatial-picture-titlebar';
+      const icon = this.document.createElement('i');
+      icon.className = 'fas fa-image';
+      const title = this.document.createElement('strong');
+      title.textContent = entry.name || 'Imagen';
+      const actions = this.document.createElement('span');
+      actions.className = 'dw-spatial-picture-actions';
+      const front = this.document.createElement('button');
+      front.type = 'button';
+      front.title = 'Colocar frente a mí';
+      front.setAttribute('aria-label','Colocar frente a mí');
+      front.innerHTML = '<i class="fas fa-crosshairs"></i>';
+      const close = this.document.createElement('button');
+      close.type = 'button';
+      close.title = 'Quitar cuadro de la sala';
+      close.setAttribute('aria-label','Quitar cuadro de la sala');
+      close.innerHTML = '<i class="fas fa-xmark"></i>';
+      actions.append(front,close);
+      header.append(icon,title,actions);
+
+      const body = this.document.createElement('div');
+      body.className = 'dw-spatial-picture-body';
+      const image = this.document.createElement('img');
+      image.alt = entry.name || 'Imagen';
+      image.src = entry.openHref;
+      image.draggable = false;
+      body.append(image);
+      win.append(header,body);
+      this.spatialPictureLayer.append(win);
+      this.spatialPictures.set(entry.id,{window:win,header,image,entry});
+
+      image.addEventListener('load', () => this.fitSpatialPicture(win,image), {once:true});
+      if (image.complete) this.fitSpatialPicture(win,image);
+
+      win.addEventListener('pointerdown', () => this.bringSpatialPictureToFront(entry.id));
+      front.addEventListener('click', (event) => {
+        event.stopPropagation();
+        const world = this.three?.placeSpatialMedia?.(entry.id);
+        if (Array.isArray(world)) this.updateSpatialImageState(entry.id, world, true);
+      });
+      close.addEventListener('click', (event) => {
+        event.stopPropagation();
+        this.removeSpatialImage(entry.id);
+      });
+      this.bindSpatialPictureDrag(entry.id, header);
+
+      const world = restoring && Array.isArray(entry.world) ? entry.world : null;
+      const placed = this.three?.placeSpatialMedia?.(entry.id, world);
+      if (Array.isArray(placed)) this.updateSpatialImageState(entry.id, placed, !restoring);
+    }
+
+    fitSpatialPicture(win, image) {
+      const ratio = image.naturalWidth && image.naturalHeight ? image.naturalWidth / image.naturalHeight : 4/3;
+      const maxW = Math.min(this.window.innerWidth < 700 ? 320 : 520, this.window.innerWidth * .48);
+      const maxH = Math.min(this.window.innerHeight * .48, 520);
+      let width = maxW;
+      let height = width / Math.max(.2, ratio);
+      if (height > maxH) {
+        height = maxH;
+        width = height * ratio;
+      }
+      win.style.setProperty('--dw-picture-width', Math.max(180,width)+'px');
+      win.style.setProperty('--dw-picture-height', Math.max(120,height)+'px');
+    }
+
+    bindSpatialPictureDrag(id, handle) {
+      let drag = null;
+      handle.addEventListener('pointerdown', (event) => {
+        if (event.target.closest('button,a,input')) return;
+        drag = {pointerId:event.pointerId,x:event.clientX,y:event.clientY};
+        handle.setPointerCapture?.(event.pointerId);
+        this.bringSpatialPictureToFront(id);
+        event.preventDefault();
+        event.stopPropagation();
+      });
+      handle.addEventListener('pointermove', (event) => {
+        if (!drag || drag.pointerId !== event.pointerId) return;
+        const dx = event.clientX - drag.x;
+        const dy = event.clientY - drag.y;
+        drag.x = event.clientX;
+        drag.y = event.clientY;
+        this.three?.moveSpatialMedia?.(id,dx,dy);
+      });
+      for (const eventName of ['pointerup','pointercancel','lostpointercapture']) {
+        handle.addEventListener(eventName, (event) => {
+          if (!drag || drag.pointerId !== event.pointerId) return;
+          drag = null;
+          const state = this.three?.spatialMediaState?.(id);
+          if (Array.isArray(state?.world)) this.updateSpatialImageState(id,state.world,true);
+        });
+      }
+    }
+
+    bringSpatialPictureToFront(id) {
+      const picture = this.spatialPictures.get(id);
+      if (!picture?.window) return;
+      picture.window.style.zIndex = String(++this.spatialPictureZ);
+    }
+
+    updateSpatialImageState(id, world, persist = false) {
+      if (!Array.isArray(world) || world.length !== 3) return;
+      const entry = this.spatialPictureState.find((candidate) => candidate.id === id);
+      if (!entry) return;
+      entry.world = world.map(Number);
+      if (persist) this.schedulePreferenceSave();
+    }
+
+    removeSpatialImage(id) {
+      const picture = this.spatialPictures.get(id);
+      picture?.window?.remove();
+      this.spatialPictures.delete(id);
+      this.spatialPictureState = this.spatialPictureState.filter((entry) => entry.id !== id);
+      this.three?.clearSpatialMedia?.(id);
+      this.schedulePreferenceSave();
+    }
+
 
     closeMedia(restoreCamera = true) {
       if (!this.mediaStage || !this.mediaContent) return;

@@ -24,17 +24,17 @@ drive3dContract(str_contains($view, "'open_href'") && !str_contains($view, '<dt>
 drive3dContract(str_contains($view, 'data-preview-href') && str_contains($js, 'loadShelfPreview'), 'los estantes cargan su contenido bajo demanda');
 drive3dContract(str_contains($css, '.dw-shelf.is-active') && str_contains($css, '@keyframes dwScan'), 'el contenedor seleccionado tiene iluminación y escaneo visibles');
 drive3dContract(str_contains($view, 'ARCADE HUD · OBJETO DETECTADO') && str_contains($css, '.dw-hud'), 'metadatos se presentan como HUD de realidad aumentada');
-drive3dContract(str_contains($view, 'dw-room-panorama') && str_contains($view, 'dw-chair'), 'la sala 3D incluye arquitectura panorámica y escritorio con silla');
+drive3dContract(str_contains($view, 'dw-room-panorama') && str_contains($view, 'dw-desk') && !str_contains($view, 'dw-chair'), 'la sala 3D incluye arquitectura panorámica y mesa central sin silla');
 drive3dContract(str_contains($view, 'data-hud-preview-icon') && str_contains($js, 'previewIcon'), 'HUD incluye representación visual del objeto seleccionado');
 drive3dContract(str_contains($js, 'assignWorldAngles') && str_contains($js, 'renderCamera') && str_contains($js, 'worldAngle - this.camera.yaw'), 'los libreros permanecen anclados al mundo y la vista cambia mediante cámara');
 drive3dContract(str_contains($view, 'data-dw-radar') && str_contains($js, 'renderRadar') && str_contains($js, 'focusShelf'), 'minimapa/isometría permite orientar la cámara hacia estantes fijos');
-drive3dContract(str_contains($js, 'camera.pitch') && str_contains($js, 'this.ring.style.transform') && str_contains($js, 'rotateY'), 'cámara cambia yaw/pitch transformando la vista del mundo, no recolocando libreros');
+drive3dContract(str_contains($view, 'data-dw-camera-scene') && str_contains($js, 'this.cameraScene.style.transform') && str_contains($js, 'cameraLateral') && str_contains($js, 'cameraForward'), 'cámara mueve la vista completa del mundo fijo y conserva posición del jugador sobre el piso');
 drive3dContract(str_contains($view, "'thumbnail_href'") && str_contains($view, 'thumb.php?key=') && str_contains($js, 'renderDeskPreview'), 'escritorio usa miniatura autenticada para imágenes y fallback de icono');
 drive3dContract(str_contains($view, 'data-dw-desk-image') && str_contains($css, '.dw-desk-preview img'), 'vista previa visual del escritorio está integrada en la escena');
 drive3dContract(str_contains($view, 'Imagenes/fondos3D') && str_contains($backgroundUpload, "/Imagenes/") && str_contains($backgroundUpload, "fondos3D/"), 'fondos 3D se almacenan en Imagenes/fondos3D del usuario');
 drive3dContract(str_contains($backgroundUpload, 'requireDriveCsrf') && str_contains($backgroundUpload, 'singleUploadService()->upload'), 'subida de fondos usa CSRF y servicio privado normal del Drive');
 drive3dContract(str_contains($preferences, "drive3dPreference") && str_contains($preferences, 'Drive3dPreferenceSanitizer') && str_contains($view, "'preferences' => $drive3dPreferences"), 'configuración 3D persiste en Users.os_preferences por nodo');
-drive3dContract(str_contains($preferenceSanitizer, "'cameraYaw'") && str_contains($preferenceSanitizer, "'glassBackground'") && str_contains($preferenceSanitizer, "'plantsPreset'"), 'preferencias 3D se validan fuera del endpoint');
+drive3dContract(str_contains($preferenceSanitizer, "'cameraYaw'") && str_contains($preferenceSanitizer, "'cameraLateral'") && str_contains($preferenceSanitizer, "'cameraForward'") && str_contains($preferenceSanitizer, "'cameraModel'"), 'preferencias de cámara 3D se validan fuera del endpoint');
 drive3dContract(str_contains($view, 'data-background-upload') && str_contains($js, 'uploadBackground') && str_contains($js, 'useChosenBackground'), 'panel permite subir y aplicar fondos por clic');
 drive3dContract(str_contains($view, 'dw-orchid') && str_contains($css, '@keyframes dwPlantSway'), 'sala incluye orquídeas con movimiento ambiental leve');
 drive3dContract(str_contains($css, 'background:none;') && str_contains($css, 'border-color:#38cfff'), 'selección conserva la madera y limita el neón al contorno');
@@ -45,10 +45,12 @@ drive3dContract(str_contains($js, 'preDomeCamera') && str_contains($js, 'closeMe
 drive3dContract(str_contains($js, 'pointermove') && str_contains($js, 'this.camera.yaw') && str_contains($js, 'this.camera.pitch') && str_contains($css, 'touch-action:none'), 'arrastrar directamente con el dedo mueve yaw/pitch de cámara sin un modo intermedio');
 drive3dContract(str_contains($view, 'data-camera-pitch="-6"') && str_contains($view, 'data-camera-pitch="6"') && str_contains($js, 'vertical * 34'), 'radar permite subir y bajar la mirada además de orientar izquierda/derecha');
 drive3dContract(str_contains($view, 'data-camera-pitch-range') && str_contains($js, 'this.pitchRange') && str_contains($css, '.dw-radar-pitch-control'), 'mapa isométrico incluye control continuo del ángulo vertical');
+drive3dContract(str_contains($view, 'data-camera-strafe') && str_contains($view, 'data-camera-forward') && str_contains($view, 'data-dw-floor-nav'), 'radar y piso permiten caminar izquierda/derecha y acercarse/alejarse sin cambiar altura');
+drive3dContract(str_contains($css, '.dw-sidebar') && str_contains($css, 'width:116px !important') && str_contains($css, '.dw-world') && str_contains($css, 'left:116px !important'), 'panel izquierdo se reduce para ampliar el campo visual');
 drive3dContract(!str_contains($view, 'data-camera-turn=') && !str_contains($view, 'dw-room-light-ring') && !str_contains($view, 'dw-dome-ring'), 'se eliminan controles de mover libreros y aros de madera que obstruían las ventanas');
-drive3dContract(str_contains($js, 'layoutFixedShelves') && str_contains($js, 'focusShelf(shelf)') && !str_contains($js, 'alreadyFocused'), 'libreros se posicionan una vez en la sala y tocar uno sólo orienta/selecciona la vista');
+drive3dContract(str_contains($js, 'layoutFixedShelves') && str_contains($js, 'focusShelf(shelf)') && str_contains($js, 'navigateByFloorTap') && !str_contains($js, 'alreadyFocused'), 'libreros se posicionan una vez; tocar uno orienta/selecciona y tocar piso mueve al usuario');
 drive3dContract(str_contains($view, 'dw-file-window') && str_contains($css, '.dw-media-stage.dw-file-window') && str_contains($css, 'border-radius:14px'), 'archivos se muestran en ventana rectangular normal dentro del entorno 3D');
-drive3dContract(str_contains($css, '.dw-dome-glass') && str_contains($css, 'opacity:.25') && str_contains($css, '.dw-room-scenery{opacity:.22'), 'cristal y capas ambientales reducen otra mitad su intensidad para conservar nitidez');
+drive3dContract(str_contains($css, '.dw-dome-glass') && str_contains($css, 'opacity:.18') && str_contains($css, '.dw-room-scenery{opacity:.15'), 'cristal y capas ambientales se aclaran otro 25% para conservar nitidez');
 drive3dContract(substr_count($so, 'href="dataword3d.php"') >= 2 && str_contains($so, '<strong>Drive 3D</strong>'), 'ArcadeCloud OS enlaza Drive 3D en aplicaciones y launcher');
 
 fwrite(STDOUT, "Drive 3D contract smoke passed.\n");

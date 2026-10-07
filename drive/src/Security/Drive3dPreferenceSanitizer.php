@@ -22,7 +22,10 @@ final class Drive3dPreferenceSanitizer
             'ceilingBackground' => $this->surfacePath($drive3d['ceilingBackground'] ?? ''),
             'cameraYaw' => max(-180.0, min(180.0, (float)($drive3d['cameraYaw'] ?? 0))),
             'cameraPitch' => max(-28.0, min(28.0, (float)($drive3d['cameraPitch'] ?? 0))),
-            'cameraDistance' => max(0.0, min(1.0, (float)($drive3d['cameraDistance'] ?? 0))),
+            'cameraDistance' => 0.0,
+            'cameraLateral' => max(-1.0, min(1.0, (float)($drive3d['cameraLateral'] ?? 0))),
+            'cameraForward' => max(0.0, min(1.0, (float)($drive3d['cameraForward'] ?? 0))),
+            'cameraModel' => 'player-v3',
             'cameraTarget' => mb_substr((string)($drive3d['cameraTarget'] ?? ''), 0, 255),
             'furniturePreset' => in_array(($drive3d['furniturePreset'] ?? ''), $allowedFurniture, true)
                 ? (string)$drive3d['furniturePreset']

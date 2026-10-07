@@ -3508,3 +3508,29 @@ body.is-dome-viewing .dw-aquarium{
 .dw-real .dw-world>.dw-desk-files{left:195px!important;right:280px!important;top:auto!important;bottom:46px!important;width:auto!important;height:54px!important;transform:none!important;overflow:auto!important;justify-content:flex-start}
 .dw-real .dw-world>.dw-desk-files .dw-desk-empty{display:none}
 @media(max-width:700px){.dw-real .dw-world>.dw-desk-files{left:140px!important;right:8px!important}.dw-real .dw-hud{max-height:35vh!important}}
+
+/* Graceful fallback when WebGL cannot start. */
+.dw-compatible #dwThreeViewport,
+.dw-compatible .dw-three-content,
+.dw-compatible [data-three-status] { display:none !important; }
+
+.dw-renderer-notice {
+  position:absolute;
+  left:50%;
+  top:76px;
+  transform:translateX(-50%);
+  z-index:120;
+  max-width:min(520px,calc(100vw - 32px));
+  padding:9px 14px;
+  border:1px solid rgba(94,199,235,.35);
+  border-radius:999px;
+  background:rgba(4,20,31,.92);
+  box-shadow:0 8px 24px rgba(0,0,0,.22);
+  color:#d8f5ff;
+  font-size:12px;
+  text-align:center;
+  pointer-events:none;
+}
+@media(max-width:700px){
+  .dw-renderer-notice{top:66px;font-size:11px;padding:8px 12px}
+}

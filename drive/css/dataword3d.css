@@ -3111,3 +3111,104 @@ body.is-dome-viewing .dw-aquarium{
   .dw-book-large{width:25px !important;height:61px !important}
   .dw-book-small{width:14px !important;height:48px !important}
 }
+
+
+/* ===== Drive 3D shelf correction: adjacent furniture on one circular wall ===== */
+.dw-stage,
+.dw-ring{
+  overflow:visible !important;
+  transform-style:preserve-3d !important;
+}
+.dw-shelf{
+  overflow:visible !important;
+  transform-style:preserve-3d !important;
+  backface-visibility:hidden !important;
+  transform-origin:50% 50% !important;
+  transition:filter .22s,box-shadow .22s,border-color .22s !important;
+  will-change:auto !important;
+}
+
+/* El frente permanece rectangular. La profundidad sale hacia atrás, nunca corta la fachada. */
+.dw-shelf-volume-left,
+.dw-shelf-volume-right,
+.dw-shelf-volume-top{
+  position:absolute !important;
+  display:block !important;
+  pointer-events:none !important;
+  backface-visibility:hidden !important;
+  transform-style:preserve-3d !important;
+}
+.dw-shelf-volume-left{
+  left:-30px !important;
+  top:0 !important;
+  width:30px !important;
+  height:100% !important;
+  transform-origin:right center !important;
+  transform:rotateY(-90deg) !important;
+  background:linear-gradient(90deg,#1a0804,#4b1d0d 58%,#7a3619) !important;
+  border:1px solid rgba(255,191,120,.12) !important;
+  box-shadow:inset -7px 0 12px rgba(0,0,0,.38) !important;
+}
+.dw-shelf-volume-right{
+  left:100% !important;
+  right:auto !important;
+  top:0 !important;
+  width:30px !important;
+  height:100% !important;
+  transform-origin:left center !important;
+  transform:rotateY(90deg) !important;
+  background:linear-gradient(90deg,#7a3619,#4b1d0d 42%,#1a0804) !important;
+  border:1px solid rgba(255,191,120,.12) !important;
+  box-shadow:inset 7px 0 12px rgba(0,0,0,.38) !important;
+}
+.dw-shelf-volume-top{
+  left:0 !important;
+  right:0 !important;
+  top:-30px !important;
+  height:30px !important;
+  transform-origin:center bottom !important;
+  transform:rotateX(90deg) !important;
+  background:linear-gradient(180deg,#8e431f,#491c0c 82%) !important;
+  border:1px solid rgba(255,206,145,.13) !important;
+  box-shadow:0 -4px 10px rgba(0,0,0,.24) !important;
+}
+
+/* Los muebles se sienten como una sola pared de biblioteca: casi sin hueco visual. */
+.dw-shelf-crown{
+  border-radius:7px 7px 0 0 !important;
+}
+.dw-shelf-base{
+  border-radius:0 0 5px 5px !important;
+}
+.dw-shelf.is-active{
+  transform-origin:50% 50% !important;
+}
+.dw-shelf.is-active::after{
+  transform:none !important;
+}
+
+/* Mantener el ancho físico consistente en cada breakpoint; la curvatura la calcula JS. */
+@media (min-width:1181px){
+  .dw-shelf{
+    width:252px !important;
+    margin-left:-126px !important;
+  }
+}
+@media (min-width:901px) and (max-width:1180px){
+  .dw-shelf{
+    width:232px !important;
+    margin-left:-116px !important;
+  }
+}
+@media (max-width:900px){
+  .dw-shelf{
+    width:220px !important;
+    margin-left:-110px !important;
+  }
+}
+@media (max-width:620px){
+  .dw-shelf{
+    width:206px !important;
+    margin-left:-103px !important;
+  }
+}

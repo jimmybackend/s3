@@ -1758,3 +1758,193 @@ body.is-dome-viewing .dw-hud{
     border-radius:12px;
   }
 }
+
+
+/* ===== Drive 3D touch navigation + normal file windows ===== */
+.dw-world{
+  touch-action:none;
+  overscroll-behavior:none;
+}
+body.is-look-mode .dw-world{cursor:grabbing}
+body.is-look-mode .dw-shelf{cursor:crosshair}
+
+.dw-dome{
+  background:
+    radial-gradient(ellipse at 50% 12%,rgba(203,249,255,.09),transparent 32%),
+    linear-gradient(180deg,rgba(56,142,194,.06),rgba(25,72,107,.022) 54%,rgba(4,18,31,.01));
+  border-color:rgba(151,235,255,.14);
+  box-shadow:
+    inset 0 -22px 48px rgba(56,211,255,.035),
+    inset 0 0 0 7px rgba(255,184,103,.025),
+    0 15px 40px rgba(42,201,255,.04);
+  backdrop-filter:none;
+}
+.dw-dome-glass{
+  opacity:.5;
+}
+.dw-dome-ribs{opacity:.54}
+body.is-dome-viewing .dw-dome{
+  border-color:rgba(172,245,255,.26);
+  box-shadow:inset 0 -22px 58px rgba(56,211,255,.06),0 0 34px rgba(56,211,255,.08);
+}
+
+.dw-radar-look-controls{
+  display:grid;
+  grid-template-columns:1fr 34px 34px;
+  gap:5px;
+  margin:6px 0;
+}
+.dw-radar-look-controls button{
+  min-height:32px;
+  border:1px solid rgba(101,210,246,.18);
+  border-radius:8px;
+  background:rgba(10,45,65,.72);
+  color:#ccefff;
+  cursor:pointer;
+}
+.dw-radar-look-controls button[aria-pressed="true"]{
+  border-color:#7deaff;
+  background:linear-gradient(180deg,rgba(24,138,180,.9),rgba(9,76,112,.92));
+  box-shadow:0 0 12px rgba(45,211,255,.22);
+}
+.dw-radar-look-controls button:not(:first-child){
+  padding:0;
+  display:grid;
+  place-items:center;
+}
+
+.dw-media-stage.dw-file-window{
+  position:absolute;
+  z-index:90;
+  left:50%;
+  top:7%;
+  width:min(920px,78vw);
+  height:min(520px,58vh);
+  max-height:none;
+  transform:translateX(-50%);
+  padding:0;
+  border:1px solid rgba(123,218,249,.38);
+  border-radius:14px;
+  background:rgba(3,15,28,.96);
+  box-shadow:0 22px 70px rgba(0,0,0,.58),0 0 30px rgba(41,191,241,.14);
+  backdrop-filter:none;
+  overflow:hidden;
+}
+.dw-file-window-titlebar{
+  height:44px;
+  display:grid;
+  grid-template-columns:28px minmax(0,1fr) 38px;
+  align-items:center;
+  gap:8px;
+  padding:0 8px 0 12px;
+  border-bottom:1px solid rgba(115,215,247,.16);
+  background:linear-gradient(180deg,#102d43,#0a1d2c);
+}
+.dw-file-window-icon{
+  width:26px;
+  height:26px;
+  display:grid;
+  place-items:center;
+  border-radius:7px;
+  color:#72e9ff;
+  background:rgba(28,128,174,.28);
+}
+.dw-file-window-titlebar strong{
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  color:#effbff;
+  font-size:12px;
+}
+.dw-media-stage .dw-media-close{
+  position:static;
+  width:34px;
+  height:34px;
+  display:grid;
+  place-items:center;
+  border:1px solid rgba(129,229,255,.24);
+  border-radius:8px;
+  background:rgba(6,25,40,.88);
+  color:#effcff;
+  cursor:pointer;
+}
+.dw-media-stage .dw-media-close:hover{
+  border-color:#9cf3ff;
+  background:rgba(21,81,107,.9);
+}
+.dw-file-window-body{
+  width:100%;
+  height:calc(100% - 44px);
+  display:grid;
+  place-items:center;
+  overflow:auto;
+  padding:12px;
+  background:rgba(1,8,15,.7);
+}
+.dw-file-window-body>img,
+.dw-file-window-body>video{
+  display:block;
+  max-width:100%;
+  max-height:100%;
+  width:auto;
+  height:auto;
+  object-fit:contain;
+  margin:auto;
+  border-radius:8px;
+  box-shadow:0 12px 34px rgba(0,0,0,.36);
+}
+.dw-file-window-body .dw-dome-document-frame{
+  width:100%;
+  height:100%;
+  border:0;
+  border-radius:7px;
+  background:#fff;
+}
+.dw-file-window-body .dw-dome-audio-shell{
+  width:min(640px,92%);
+}
+body.is-dome-viewing .dw-stage{
+  transform:translateY(5vh) scale(.965);
+  opacity:.78;
+  filter:brightness(.82);
+}
+body.is-dome-viewing .dw-hud{
+  opacity:.42;
+}
+body.is-dome-viewing .dw-desk,
+body.is-dome-viewing .dw-chair,
+body.is-dome-viewing .dw-aquarium{
+  opacity:.55;
+}
+
+@media (max-width:900px){
+  .dw-media-stage.dw-file-window{
+    top:3%;
+    width:calc(100% - 18px);
+    height:min(430px,52vh);
+    border-radius:12px;
+  }
+  .dw-file-window-titlebar{height:42px}
+  .dw-file-window-body{height:calc(100% - 42px);padding:8px}
+}
+@media (max-width:620px){
+  .dw-media-stage.dw-file-window{
+    top:8px;
+    left:8px;
+    right:8px;
+    width:auto;
+    height:min(390px,47vh);
+    transform:none;
+    border-radius:10px;
+  }
+  .dw-file-window-titlebar{
+    grid-template-columns:26px minmax(0,1fr) 38px;
+    height:42px;
+  }
+  .dw-file-window-body{height:calc(100% - 42px);padding:6px}
+  .dw-radar-look-controls{
+    grid-template-columns:1fr 30px 30px;
+  }
+  .dw-radar-look-controls button{min-height:29px;font-size:8px}
+}

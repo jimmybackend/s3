@@ -3561,3 +3561,17 @@ body.is-dome-viewing .dw-aquarium{
   background:#0d2b3e!important;
   border-color:rgba(120,221,255,.38)!important;
 }
+
+.dw-environment-route{
+  display:flex;
+  align-items:center;
+  gap:7px;
+  margin:6px 0 10px;
+  padding:7px 9px;
+  border:1px solid rgba(104,214,246,.2);
+  border-radius:8px;
+  background:#071b29;
+  color:#bfefff;
+  font-size:10px;
+  font-family:ui-monospace,SFMono-Regular,Consolas,monospace;
+}

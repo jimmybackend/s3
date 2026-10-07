@@ -38,7 +38,10 @@ drive3dContract(str_contains($preferenceSanitizer, "'cameraYaw'") && str_contain
 drive3dContract(str_contains($view, 'data-background-upload') && str_contains($js, 'uploadBackground') && str_contains($js, 'useChosenBackground'), 'panel permite subir y aplicar fondos por clic');
 drive3dContract(str_contains($view, 'dw-orchid') && str_contains($css, '@keyframes dwPlantSway'), 'sala incluye orquídeas con movimiento ambiental leve');
 drive3dContract(str_contains($css, 'background:none;') && str_contains($css, 'border-color:#38cfff'), 'selección conserva la madera y limita el neón al contorno');
-drive3dContract(str_contains($js, "['audio','video']") && str_contains($js, 'showMedia'), 'audio y video pueden reproducirse desde Drive 3D');
+drive3dContract(str_contains($view, 'dw-dome') && str_contains($css, '.dw-dome{') && str_contains($css, '.dw-dome-ribs'), 'la sala incluye un domo superior de cristal transparente');
+drive3dContract(str_contains($view, 'dw-dome-viewer') && str_contains($js, 'showFileInDome') && str_contains($js, "this.camera.pitch = -24"), 'abrir un archivo inclina la mirada hacia arriba y lo muestra dentro del domo');
+drive3dContract(str_contains($js, 'dw-dome-document-frame') && str_contains($js, "item.kind === 'video'") && str_contains($js, "item.kind === 'audio'"), 'visor superior soporta documentos, imágenes, video y audio');
+drive3dContract(str_contains($js, 'preDomeCamera') && str_contains($js, 'closeMedia(restoreCamera = true)'), 'cerrar el visor restaura la perspectiva anterior del usuario');
 drive3dContract(substr_count($so, 'href="dataword3d.php"') >= 2 && str_contains($so, '<strong>Drive 3D</strong>'), 'ArcadeCloud OS enlaza Drive 3D en aplicaciones y launcher');
 
 fwrite(STDOUT, "Drive 3D contract smoke passed.\n");

@@ -447,6 +447,8 @@ header('Content-Type: text/html; charset=UTF-8');
       </div>
     </section>
 
+    <div class="dw-spatial-picture-layer" data-dw-spatial-picture-layer aria-live="polite"></div>
+
     <section class="dw-media-stage dw-file-window" data-dw-media-stage hidden aria-live="polite">
       <header class="dw-file-window-titlebar" data-spatial-drag-handle>
         <span class="dw-file-window-icon"><i class="fas fa-file"></i></span>

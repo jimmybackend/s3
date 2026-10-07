@@ -642,7 +642,7 @@
         if (!response.ok || !payload?.ok) throw new Error(payload?.error || 'No se pudo subir.');
         const option = this.backgroundOptionNode(payload);
         this.backgroundGallery?.prepend(option);
-        this.chooseBackground(`${payload.route || ''}${payload.name || ''}`, payload.environment || '', option);
+        this.chooseBackground(payload.visiblePath || `${payload.route || ''}${payload.name || ''}`, payload.environment || '', option);
       } catch (error) {
         this.window.alert(error?.message || 'No se pudo subir el fondo 3D.');
       } finally {
@@ -655,7 +655,7 @@
       button.type = 'button';
       button.className = 'dw-background-option';
       button.dataset.backgroundOption = '';
-      button.dataset.backgroundPath = `${payload.route || ''}${payload.name || ''}`;
+      button.dataset.backgroundPath = payload.visiblePath || `${payload.route || ''}${payload.name || ''}`;
       button.dataset.backgroundEnvironment = payload.environment || '';
       const img = this.document.createElement('img');
       img.src = payload.thumbnail || '';

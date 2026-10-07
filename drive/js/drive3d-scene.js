@@ -4,8 +4,8 @@ class Drive3DScene {
         const production = Boolean(options.items);
         const titles = options.items?.map(item => item.dataset.itemName || "Carpeta") || ["Proyectos", "Documentos", "Imágenes", "Biblioteca", "Música", "Videos", "Archivo"];
         const width = 2.05, depth = .6, height = 4.2;
-        const shelfRadius = Math.max(7.25, (width + .08) / (2 * Math.tan(Math.PI / (titles.length + 3))) + .3);
-        const R = shelfRadius + 3.2;
+        const shelfRadius = Math.max(8.6, (width + .08) / (2 * Math.tan(Math.PI / (titles.length + 3))) + .85);
+        const R = shelfRadius + 4.0;
         const step = 2 * Math.atan((width / 2 + .025) / (shelfRadius - depth / 2));
         const viewport = options.viewport || document.querySelector('#viewport');
         let renderer;
@@ -29,7 +29,7 @@ class Drive3DScene {
         const scene = new T.Scene();
         const camera = new T.PerspectiveCamera(50, 1, .08, Math.max(150, R * 8));
         camera.rotation.order = 'YXZ';
-        camera.position.set(0, 2.7, 4.2);
+        camera.position.set(0, 2.7, 5.25);
         scene.add(new T.HemisphereLight(0xb5d5f3, 0x33251b, 1.4));
         const sun = new T.DirectionalLight(0xffdfaf, 2.8);
         sun.position.set(-6, 10, 3); scene.add(sun);
@@ -106,10 +106,10 @@ class Drive3DScene {
         }
         const floor = new T.Mesh(new T.CircleGeometry(R, 96), material(0x9aa1ad, { map: marble, transparent: true, opacity: .66, metalness: .2, roughness: .32 }));
         floor.rotation.x = -Math.PI / 2; floor.renderOrder = 1; scene.add(floor);
-        for (const radius of [2.55, 2.62, 6.1, 6.17, 9.75]) ring(scene, radius, .016, .015, radius === 2.55 || radius === 6.1 ? glow : trim);
+        for (const radius of [2.55, 2.62, 6.1, 6.17, R - .45]) ring(scene, radius, .016, .015, radius === 2.55 || radius === 6.1 ? glow : trim);
         for (let i = 0; i < 24; i++) {
             const a = i / 24 * Math.PI * 2;
-            tube([new T.Vector3(2.65 * Math.sin(a), .006, 2.65 * Math.cos(a)), new T.Vector3(9.8 * Math.sin(a), .006, 9.8 * Math.cos(a))], .007, trim);
+            tube([new T.Vector3(2.65 * Math.sin(a), .006, 2.65 * Math.cos(a)), new T.Vector3((R - .4) * Math.sin(a), .006, (R - .4) * Math.cos(a))], .007, trim);
         }
         for (let i = 0; i < 16; i++) {
             const a = i / 16 * Math.PI * 2;
@@ -188,7 +188,68 @@ class Drive3DScene {
                 batch.computeBoundingSphere(); group.add(batch);
             }
             boxMeshes.length = 0;
+            addRealDriveBooks(group);
         }
+        const shelfContents = new Map();
+
+        function disposeDataBooks(group) {
+            const old = group.getObjectByName('real-drive-books');
+            if (!old) return;
+            old.traverse(obj => {
+                if (obj.geometry) obj.geometry.dispose();
+                if (obj.material && !sharedMaterials.has(obj.material)) {
+                    obj.material.map?.dispose();
+                    obj.material.dispose();
+                }
+            });
+            old.removeFromParent();
+        }
+
+        function addRealDriveBooks(group) {
+            const state = shelfContents.get(group.userData.index);
+            if (!state) return;
+            disposeDataBooks(group);
+            const host = new T.Group();
+            host.name = 'real-drive-books';
+            group.add(host);
+            const entries = [
+                ...(Array.isArray(state.folders) ? state.folders.slice(0, 6).map(item => ({item, folder:true})) : []),
+                ...(Array.isArray(state.files) ? state.files.slice(0, 18).map(item => ({item, folder:false})) : [])
+            ].slice(0, 24);
+            entries.forEach(({item, folder}, n) => {
+                const row = Math.floor(n / 6);
+                const col = n % 6;
+                const h = folder ? .60 : .52;
+                const x = -.78 + col * .31;
+                const y = .22 + row * .86 + h / 2;
+                const spineCanvas = document.createElement('canvas');
+                spineCanvas.width = 192; spineCanvas.height = 512;
+                const sc = spineCanvas.getContext('2d');
+                sc.fillStyle = folder ? '#467a88' : ['#173653','#5b3025','#294a34','#363352'][n % 4];
+                sc.fillRect(0,0,192,512);
+                sc.fillStyle = '#f7e8be';
+                sc.font = 'bold 27px sans-serif';
+                sc.textAlign = 'center';
+                sc.textBaseline = 'middle';
+                const label = String(item.name || (folder ? 'Carpeta' : 'Archivo')).slice(0,34);
+                sc.save(); sc.translate(96,256); sc.rotate(-Math.PI/2); sc.fillText(label,0,0,450); sc.restore();
+                const tex = new T.CanvasTexture(spineCanvas); tex.colorSpace = T.SRGBColorSpace;
+                const mat = new T.MeshStandardMaterial({map:tex, roughness:.58, emissive: folder ? 0x102830 : 0x090909, emissiveIntensity:.25});
+                const mesh = new T.Mesh(new T.BoxGeometry(.245,h,.34), mat);
+                mesh.position.set(x,y,.36);
+                mesh.userData.driveItem = item;
+                mesh.userData.driveFolder = folder;
+                host.add(mesh);
+            });
+        }
+
+        this.setShelfContents = (index, state) => {
+            shelfContents.set(index, state || {});
+            const group = shelves[index];
+            if (group?.children.length) addRealDriveBooks(group);
+            needsRender = true;
+        };
+
         const sharedMaterials = new Set([wood, trim, darkWood, glow, bounce, pages, ...books]);
         function unloadShelf(group) {
             group.traverse(mesh => {
@@ -223,19 +284,7 @@ class Drive3DScene {
         cylinder(lamp,.32,.38,.10,.05,trim); cylinder(lamp,.035,.035,2.4,1.25,trim);
         cylinder(lamp,.26,.48,.55,2.55,material(0xffe2a4,{emissive:0xffbe58,emissiveIntensity:.7,side:T.DoubleSide}));
         const light = new T.PointLight(0xffc573, 18, 7, 2); light.position.y = 2.3; lamp.add(light);
-        // Foliage uses instanced leaves, keeping the mobile draw budget bounded.
-        const leaves = [], leafMat = material(0x3e642a, { side: T.DoubleSide, roughness: .8 });
-        for (const side of [-1,1]) {
-            const plant = new T.Group(); plant.position.set(side*5.7,0,-3.1); scene.add(plant);
-            cylinder(plant,.30,.21,.55,.275,trim);
-            for(let i=0;i<28;i++) {
-                const a=i*2.399, y=.55+(i%7)*.13, r=.20+(i%4)*.11;
-                const leaf=new T.Mesh(new T.SphereGeometry(1,8,6),leafMat); leaf.scale.set(.09,.30,.035); leaf.position.set(Math.cos(a)*r,y,Math.sin(a)*r); leaf.rotation.set(.5,a,Math.sin(a)*.8); plant.add(leaf); leaves.push(leaf);
-            }
-        }
-        scene.updateMatrixWorld(true);
-        const leafBatch = new T.InstancedMesh(new T.SphereGeometry(1,8,6),leafMat,leaves.length);
-        leaves.forEach((leaf,i)=>{leafBatch.setMatrixAt(i,leaf.matrixWorld);leaf.geometry.dispose();leaf.removeFromParent();}); leafBatch.computeBoundingSphere();scene.add(leafBatch);
+        // Plants intentionally removed from Drive 3D.
         let yaw = 0, pitch = -.12, targetYaw = 0, targetPitch = -.12;
         let selectedIndex = -1;
         const highlight = new T.Group(); highlight.visible = false; scene.add(highlight);
@@ -243,7 +292,7 @@ class Drive3DScene {
         for (const y of [0,height]) box(highlight,width,.025,.025,0,y,.33,cyan);
         const keys = new Set(), held = new Map(); let drag = null;
         const presets = {
-            front: [0, 4.2, 0], center: [0, 4.2, 0],
+            front: [0, 5.25, 0], center: [0, 5.25, 0],
             left: [-2, 0, .90], right: [2, 0, -.90]
         };
         document.querySelectorAll('[data-view]').forEach(button => button.addEventListener('click', () => {
@@ -271,11 +320,29 @@ class Drive3DScene {
             drag.x = event.clientX; drag.y = event.clientY;
         });
         const raycaster = new T.Raycaster();
-        viewport.addEventListener('pointerup', event => {
-            if (!drag || Math.hypot(event.clientX - drag.startX, event.clientY - drag.startY) > 7) return;
+        function pointerHit(event) {
             const rect = viewport.getBoundingClientRect();
             raycaster.setFromCamera(new T.Vector2((event.clientX - rect.left) / rect.width * 2 - 1, 1 - (event.clientY - rect.top) / rect.height * 2), camera);
-            const hit = raycaster.intersectObjects(shelves, true)[0];
+            return raycaster.intersectObjects(shelves, true)[0] || null;
+        }
+        function driveItemFromHit(hit) {
+            let node = hit?.object || null;
+            while (node) {
+                if (node.userData?.driveItem) return {item:node.userData.driveItem, folder:Boolean(node.userData.driveFolder)};
+                if (shelves.includes(node)) break;
+                node = node.parent;
+            }
+            return null;
+        }
+        viewport.addEventListener('pointerup', event => {
+            if (!drag || Math.hypot(event.clientX - drag.startX, event.clientY - drag.startY) > 7) return;
+            const hit = pointerHit(event);
+            const dataBook = driveItemFromHit(hit);
+            if (dataBook) {
+                options.onItemSelect?.(dataBook.item, dataBook.folder, false);
+                needsRender = true;
+                return;
+            }
             if (!hit) {
                 if (raycaster.intersectObject(table, true).length) return;
                 const ground = raycaster.intersectObject(floor)[0];
@@ -293,6 +360,13 @@ class Drive3DScene {
             selectedIndex = group.userData.index;
             options.onSelect?.(selectedIndex);
             needsRender = true;
+        });
+        viewport.addEventListener('dblclick', event => {
+            const dataBook = driveItemFromHit(pointerHit(event));
+            if (dataBook) {
+                event.preventDefault();
+                options.onItemSelect?.(dataBook.item, dataBook.folder, true);
+            }
         });
         for (const name of ['pointerup', 'pointercancel', 'lostpointercapture']) viewport.addEventListener(name, event => { if (drag?.id === event.pointerId) drag = null; });
         document.querySelectorAll('[data-move]').forEach(button => {
@@ -376,7 +450,7 @@ class Drive3DScene {
         };
         this.snapshot = () => ({camera: camera.position.toArray(), yaw, pitch, visible: visibleIndices, selected: selectedIndex,
             pickPoints: shelves.map(s=> { const p = s.localToWorld(new T.Vector3(0,3.86,.32)).project(camera); return [p.x,p.y]; }),
-            shelves: shelves.map(s=>({position:s.position.toArray(),rotation:s.rotation.y,width,depth,height,loaded:!!s.children.length})),
+            shelves: shelves.map(s=>({position:s.position.toArray(),rotation:s.rotation.y,width,depth,height,loaded:!!s.children.length,realBooks:s.getObjectByName('real-drive-books')?.children.length || 0})),
             lamp:lamp.position.toArray(),table:table.position.toArray(),domeRadius:R,panorama:panorama.position.toArray(),environmentReady,
             calls:renderer.info.render.calls, geometries:renderer.info.memory.geometries, textures:renderer.info.memory.textures});
         function resize() { const w = viewport.clientWidth, h = viewport.clientHeight; renderer.setSize(w, h); camera.fov = w < 700 ? 75 : 50; camera.aspect = w / h; camera.updateProjectionMatrix(); needsRender = true; }

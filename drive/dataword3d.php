@@ -317,10 +317,6 @@ header('Content-Type: text/html; charset=UTF-8');
     <div class="dw-floor" data-dw-floor-nav aria-label="Piso navegable">
       <div class="dw-floor-custom-image" data-dw-floor-image></div>
     </div>
-    <div class="dw-plants" aria-hidden="true">
-      <span class="dw-plant dw-orchid orchid-left"><i></i><i></i><i></i><b></b></span>
-      <span class="dw-plant dw-orchid orchid-right"><i></i><i></i><i></i><b></b></span>
-    </div>
     <div class="dw-aquarium" aria-hidden="true">
       <span class="dw-fish fish-a">◁</span><span class="dw-fish fish-b">◁</span><span class="dw-fish fish-c">◁</span>
     </div>
@@ -505,7 +501,7 @@ header('Content-Type: text/html; charset=UTF-8');
       <div><strong>Personalizar sala 3D</strong><button type="button" data-dw-environment-close><i class="fas fa-xmark"></i></button></div>
       <p class="dw-environment-help">Los fondos se guardan en <b>Imagenes/fondos3D</b> y la configuración queda en tu perfil de ArcadeCloud.</p>
       <div class="dw-environment-presets">
-        <button type="button" data-environment-choice="mountain">Restaurar paisaje alpino 360°</button>
+        <button type="button" data-environment-choice="mountain">Restaurar día hermoso 360°</button>
       </div>
       <label class="dw-upload-background">
         <i class="fas fa-cloud-arrow-up"></i>
@@ -534,7 +530,6 @@ header('Content-Type: text/html; charset=UTF-8');
       <div class="dw-environment-preset-row">
         <label>Muebles <select data-furniture-preset><option value="default">ArcadeCloud Default</option></select></label>
         <label>Ventanas <select data-window-preset><option value="panoramic">Panorámicas</option></select></label>
-        <label>Plantas <select data-plants-preset><option value="orchids">Orquídeas naturales</option></select></label>
       </div>
     </section>
   </main>

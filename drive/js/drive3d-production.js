@@ -40,6 +40,8 @@ class Drive3DProduction {
         app.zoneTimer = setTimeout(() => detail.forEach(i => app.loadShelfPreview(app.shelves[i], app.shelves[i].dataset.previewHref)),160);
     }
     app.showThreeContents = (shelf,state) => {
+        const shelfIndex = app.shelves.indexOf(shelf);
+        if (shelfIndex >= 0) app.three?.setShelfContents?.(shelfIndex, state);
         if (shelf !== app.focusedShelf) return;
         doc.querySelector('[data-three-title]').textContent = shelf.dataset.itemName;
         items.replaceChildren();
@@ -59,6 +61,11 @@ class Drive3DProduction {
     app.three = new Drive3DScene(THREE, Reflector, {
         viewport, map, coordinates, status, items:app.shelves,
         onSelect:index => app.chooseThreeShelf(index),
+        onItemSelect:(item, folder, open) => {
+            const node = app.bookNode(item, folder);
+            app.selectElement(node);
+            if (open) app.openSelected();
+        },
         onCamera:(yaw,pitch) => { app.camera.yaw = yaw; app.camera.pitch = pitch; if(app.pitchRange) app.pitchRange.value = String(pitch); },
         onView:view => { visible = view.visible; near = view.near; if(view.selected < 0) app.focusedShelf = null; syncZones(); }
     });

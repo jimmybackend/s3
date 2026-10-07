@@ -46,6 +46,8 @@ const server=createServer((req,res)=>{
   const [px,py]=initial.pickPoints[12];
   await page.locator('#dwThreeViewport').click({position:{x:(px+1)*viewBox.width/2,y:(1-py)*viewBox.height/2}});
   await page.waitForFunction(()=>window.ArcadeCloudDrive3D.previewCache.size>0);
+  await page.waitForFunction(()=>window.ArcadeCloudDrive3D.three.snapshot().shelves.some(s=>s.realBooks>0));
+  assert((await snap()).shelves.some(s=>s.realBooks>=2),'Real folder/file data is rendered as 3D books');
   assert(await page.locator('[data-three-content]').isVisible());
   await page.getByRole('button',{name:'Subcarpeta real',exact:true}).click();
   assert.equal(await page.evaluate(()=>window.ArcadeCloudDrive3D.selected.openHref),'/subfolder');

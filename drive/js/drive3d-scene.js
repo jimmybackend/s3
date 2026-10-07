@@ -8,8 +8,20 @@ class Drive3DScene {
         const R = shelfRadius + 3.2;
         const step = 2 * Math.atan((width / 2 + .025) / (shelfRadius - depth / 2));
         const viewport = options.viewport || document.querySelector('#viewport');
-        const renderer = new T.WebGLRenderer({ antialias: true, powerPreference: 'low-power' });
-        renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
+        let renderer;
+        try {
+            renderer = new T.WebGLRenderer({ antialias: true, powerPreference: 'low-power' });
+        } catch (primaryError) {
+            console.warn('Drive 3D: WebGL normal mode failed; retrying basic mode.', primaryError);
+            try {
+                renderer = new T.WebGLRenderer({ antialias: false, powerPreference: 'default' });
+            } catch (fallbackError) {
+                const error = new Error('WebGL no pudo inicializarse en este navegador o GPU. Revisa la aceleración por hardware.');
+                error.cause = fallbackError;
+                throw error;
+            }
+        }
+        renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 1.5));
         renderer.outputColorSpace = T.SRGBColorSpace;
         renderer.toneMapping = T.ACESFilmicToneMapping;
         renderer.toneMappingExposure = 1.05;
@@ -67,7 +79,7 @@ class Drive3DScene {
         // Panorama is fixed to world coordinates and also supplies natural material reflections.
         const panorama = new T.Mesh(new T.SphereGeometry(Math.max(65, R * 4), 64, 32), new T.MeshBasicMaterial({ color: 0x93b4c9, side: T.BackSide }));
         panorama.name = 'fixed-360-panorama'; panorama.rotation.y = Math.PI; panorama.position.y = 3; panorama.scale.y = .55; scene.add(panorama);
-        scene.environmentRotation.y = Math.PI;
+        if (scene.environmentRotation) scene.environmentRotation.y = Math.PI;
         let environmentReady = false, needsRender = true, defaultPanoramaMap = null, customPanorama = false;
         new T.TextureLoader().load(new URL('../three-lab/assets/alpine-panorama.jpg', import.meta.url).href, map => {
             map.colorSpace = T.SRGBColorSpace;
@@ -78,8 +90,20 @@ class Drive3DScene {
         }, undefined, () => {
             status.hidden = false; status.textContent = 'El paisaje no pudo cargarse. La escena sigue disponible; recarga para intentarlo de nuevo.';
         });
-        const floorMirror = new Reflector(new T.CircleGeometry(R, 96), { color: 0x8894a0, textureWidth: innerWidth < 700 ? 256 : 512, textureHeight: innerWidth < 700 ? 256 : 512 });
-        floorMirror.rotation.x = -Math.PI / 2; floorMirror.position.y = -.015; scene.add(floorMirror);
+        let floorMirror = null;
+        try {
+            floorMirror = new Reflector(new T.CircleGeometry(R, 96), {
+                color: 0x8894a0,
+                textureWidth: innerWidth < 700 ? 256 : 512,
+                textureHeight: innerWidth < 700 ? 256 : 512,
+                multisample: 0
+            });
+            floorMirror.rotation.x = -Math.PI / 2;
+            floorMirror.position.y = -.015;
+            scene.add(floorMirror);
+        } catch (error) {
+            console.warn('Drive 3D: reflective floor disabled; continuing with standard floor.', error);
+        }
         const floor = new T.Mesh(new T.CircleGeometry(R, 96), material(0x9aa1ad, { map: marble, transparent: true, opacity: .66, metalness: .2, roughness: .32 }));
         floor.rotation.x = -Math.PI / 2; floor.renderOrder = 1; scene.add(floor);
         for (const radius of [2.55, 2.62, 6.1, 6.17, 9.75]) ring(scene, radius, .016, .015, radius === 2.55 || radius === 6.1 ? glow : trim);

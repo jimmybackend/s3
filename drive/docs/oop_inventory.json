@@ -672,7 +672,7 @@
     },
     {
       "path": "drive/dataword3d.php",
-      "lines": 535,
+      "lines": 540,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -7035,7 +7035,7 @@
     },
     {
       "path": "drive/tests/dataword3d_contract_smoke.php",
-      "lines": 48,
+      "lines": 53,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -8915,7 +8915,7 @@
     },
     {
       "path": "drive/js/dataword3d.js",
-      "lines": 854,
+      "lines": 891,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudDrive3D"

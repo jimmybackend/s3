@@ -6,6 +6,7 @@
       this.window = win;
       this.document = doc;
       this.config = win.ARCADECLOUD_DRIVE3D || {};
+      this.useThree = this.config.renderer === 'three';
       this.world = doc.getElementById('dwWorld');
       this.cameraScene = doc.querySelector('[data-dw-camera-scene]');
       this.ring = doc.getElementById('dwShelfRing');
@@ -83,6 +84,16 @@
     }
 
     init() {
+      if (this.useThree) {
+        this.bindControls();
+        import('./drive3d-production.js').then(module => module.startDriveScene(this)).catch(error => {
+          const status = this.document.querySelector('[data-three-status]');
+          status.hidden = false;
+          status.textContent = 'No se pudo iniciar la vista 3D. Usa Vista clásica en la barra superior.';
+          console.error('Drive 3D', error);
+        });
+        return this;
+      }
       this.assignWorldAngles();
       this.layoutFixedShelves(false);
       this.bindControls();
@@ -105,6 +116,7 @@
     }
 
     layoutFixedShelves(animate = false) {
+      if (this.useThree) return;
       const width = this.world?.clientWidth || this.window.innerWidth;
       const compact = width < 620;
       const tablet = width < 1000;
@@ -256,6 +268,7 @@
     bindControls() {
       this.document.querySelector('[data-camera-home]')?.addEventListener('click', () => this.centerCamera());
       this.document.querySelector('[data-camera-exit-focus]')?.addEventListener('click', () => {
+        if (this.useThree) { this.centerCamera(); return; }
         this.camera.target = '';
         this.camera.yaw = 0;
         this.camera.pitch = 0;
@@ -353,6 +366,7 @@
       });
 
       this.world?.addEventListener('pointerdown', (event) => {
+        if (this.useThree) return;
         if (event.target.closest('button,a,input,select,.dw-hud,.dw-desk,.dw-environment-panel,.dw-media-stage,.dw-radar')) return;
         this.dragMoved = false;
         this.dragStart = { x:event.clientX, y:event.clientY, yaw:this.camera.yaw, pitch:this.camera.pitch };
@@ -379,6 +393,7 @@
 
       this.radar?.addEventListener('click', (event) => {
         if (event.target.closest('button,input,label,.dw-radar-look-controls,.dw-radar-actions,.dw-radar-move-controls')) return;
+        if (this.useThree) return;
         const rect = this.radar.querySelector('.dw-radar-room')?.getBoundingClientRect();
         if (!rect) return;
         const x = event.clientX - rect.left - rect.width / 2;
@@ -392,6 +407,7 @@
 
       this.document.addEventListener('keydown', (event) => {
         if (event.target.matches('input,textarea,select')) return;
+        if (this.useThree && event.key.startsWith('Arrow')) return;
         if (event.key === 'ArrowLeft') { event.preventDefault(); this.turnCamera(-10); }
         if (event.key === 'ArrowRight') { event.preventDefault(); this.turnCamera(10); }
         if (event.key === 'ArrowUp') { event.preventDefault(); this.lookVertical(-5); }
@@ -436,6 +452,7 @@
     }
 
     centerCamera() {
+      if (this.useThree) { this.focusedShelf = null; this.three?.home(); return; }
       this.camera.yaw = 0;
       this.camera.pitch = 0;
       this.camera.lateral = 0;
@@ -448,6 +465,7 @@
     }
 
     movePlayer(lateralDelta, forwardDelta) {
+      if (this.useThree) { this.three?.move(lateralDelta * 5, forwardDelta * 5); return; }
       this.camera.lateral = this.clamp(this.camera.lateral + lateralDelta, -1, 1);
       this.camera.forward = this.clamp(this.camera.forward + forwardDelta, 0, 1);
       this.renderCamera();
@@ -466,6 +484,7 @@
     }
 
     renderCamera(animate = true) {
+      if (this.useThree) { this.three?.look(this.camera.yaw, this.camera.pitch); return; }
       const yaw = this.normalizeAngle(this.camera.yaw);
       const pitch = this.clamp(this.camera.pitch, -42, 42);
       const width = this.world?.clientWidth || this.window.innerWidth;
@@ -506,6 +525,7 @@
     }
 
     updateRadarPlayer() {
+      if (this.useThree) return;
       if (!this.radarPlayer) return;
       this.radarPlayer.style.left = `${50 + this.camera.lateral * 24}%`;
       this.radarPlayer.style.top = `${52 - this.camera.forward * 24}%`;
@@ -524,6 +544,7 @@
     }
 
     focusShelf(shelf) {
+      if (this.useThree) { this.chooseThreeShelf?.(this.shelves.indexOf(shelf)); return; }
       this.focusedShelf = shelf;
       this.camera.forward = Math.max(.5, this.camera.forward);
       const worldAngle = Number(shelf.dataset.worldAngle || 0);
@@ -641,7 +662,8 @@
           while (this.previewCache.size > 3) this.previewCache.delete(this.previewCache.keys().next().value);
         }
         if (controller.signal.aborted || !this.visibleShelves.has(shelf) || shelf.dataset.lod !== 'detail') return;
-        this.renderShelfPreview(shelf, state);
+        if (this.useThree) this.showThreeContents?.(shelf, state);
+        else this.renderShelfPreview(shelf, state);
         if (this.selected?.element === shelf) {
           this.updateHud(this.selected, state);
           this.renderDeskFileStrip(Array.isArray(state.files) ? state.files : []);
@@ -829,6 +851,7 @@
     }
 
     renderRadar() {
+      if (this.useThree) return;
       if (!this.radarPoints) return;
       this.radarPoints.replaceChildren();
       this.shelves.forEach((shelf) => {
@@ -852,6 +875,7 @@
     }
 
     updateRadarView() {
+      if (this.useThree) return;
       if (!this.radarView) return;
       this.radarView.style.transform = `translate(-50%,-92%) rotate(${this.camera.yaw}deg)`;
     }
@@ -910,6 +934,7 @@
     }
 
     applySurfaceImage(surface, url) {
+      if (this.useThree) { this.three?.surface(surface, url); return; }
       const targets = surface === 'glass'
         ? [this.glassImage, this.domeImage].filter(Boolean)
         : [this.floorImage].filter(Boolean);

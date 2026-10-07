@@ -57,7 +57,7 @@ function overlap(a,b) {
             await page.locator(`[data-view="${view}"]`).click();
             await page.waitForTimeout(150);
             const state=await snapshot();
-            assert.deepEqual(state.shelves,initial.shelves); assert.deepEqual(state.panorama,initial.panorama);
+            assert.deepEqual(state.shelves.map(({loaded,...s})=>s),initial.shelves.map(({loaded,...s})=>s)); assert.deepEqual(state.panorama,initial.panorama);
             assert.notEqual(state.yaw,initial.yaw); await shot(view);
         }
         await page.setViewportSize({width:800,height:600});

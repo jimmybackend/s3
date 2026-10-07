@@ -88,7 +88,7 @@
 
     assignWorldAngles() {
       const count = Math.max(1, this.shelves.length);
-      const span = Math.min(150, Math.max(70, (count - 1) * 22));
+      const span = Math.min(96, Math.max(54, (count - 1) * 18));
       const start = -span / 2;
       const step = count <= 1 ? 0 : span / (count - 1);
       this.shelves.forEach((shelf, index) => {
@@ -100,23 +100,23 @@
       const width = this.world?.clientWidth || this.window.innerWidth;
       const compact = width < 620;
       const tablet = width < 1000;
-      const radius = compact ? 470 : tablet ? 660 : Math.max(790, Math.min(1030, width * .72));
+      const radius = compact ? 1040 : tablet ? 1180 : Math.max(1240, Math.min(1480, width * .94));
 
       this.shelves.forEach((shelf) => {
         const worldAngle = Number(shelf.dataset.worldAngle || 0);
         const rad = worldAngle * Math.PI / 180;
         const abs = Math.abs(worldAngle);
         const x = Math.sin(rad) * radius;
-        const z = (Math.cos(rad) - 1) * radius * .98;
-        const y = abs * .34;
-        const yaw = -worldAngle;
-        const scale = Math.max(.56, 1 - abs / 180 * .58);
+        const z = (Math.cos(rad) - 1) * radius * .72;
+        const y = abs * (compact ? .11 : .08);
+        const yaw = -worldAngle * .74;
+        const scale = Math.max(compact ? .84 : .88, 1 - abs / 180 * .30);
 
         shelf.style.transitionDuration = animate ? '' : '0ms';
         shelf.style.transform = `translate3d(${x}px,${y}px,${z}px) rotateY(${yaw}deg) scale(${scale})`;
         shelf.style.opacity = '1';
         shelf.style.pointerEvents = '';
-        shelf.style.zIndex = String(Math.round(60 - abs / 3));
+        shelf.style.zIndex = String(Math.round(80 - abs / 2));
       });
     }
 
@@ -336,12 +336,16 @@
       const pitch = this.clamp(this.camera.pitch, -42, 42);
       const width = this.world?.clientWidth || this.window.innerWidth;
       const compact = width < 620;
-      const lateralPx = this.camera.lateral * (compact ? 125 : width < 1000 ? 190 : 270);
-      const forwardPx = this.camera.forward * (compact ? 135 : width < 1000 ? 190 : 245);
+      const tablet = width < 1000;
+      const lateralPx = this.camera.lateral * (compact ? 120 : tablet ? 180 : 240);
+      const forwardScale = 1 + this.camera.forward * (compact ? .11 : .14);
+      const radius = compact ? 1040 : tablet ? 1180 : Math.max(1240, Math.min(1480, width * .94));
+      const yawPan = Math.sin(yaw * Math.PI / 180) * radius;
+      const pitchPan = pitch * (compact ? 4.2 : tablet ? 5.2 : 6.0);
 
       if (this.cameraScene) {
         this.cameraScene.style.transitionDuration = animate ? '' : '0ms';
-        this.cameraScene.style.transform = `rotateX(${-pitch}deg) rotateY(${-yaw}deg) translate3d(${-lateralPx}px,0,${forwardPx}px)`;
+        this.cameraScene.style.transform = `translate3d(${-(yawPan + lateralPx)}px,${pitchPan}px,0) scale(${forwardScale})`;
       }
 
       this.shelves.forEach((shelf) => {
@@ -349,11 +353,14 @@
         const relative = this.normalizeAngle(worldAngle - yaw);
         const abs = Math.abs(relative);
         shelf.dataset.viewAngle = String(relative.toFixed(2));
-        shelf.classList.toggle('is-looked-at', abs < 8);
+        shelf.classList.toggle('is-looked-at', abs < 7);
       });
 
       if (this.pitchRange) this.pitchRange.value = String(Math.round(pitch));
-      if (this.world) this.world.style.setProperty('--dw-camera-pitch', `${pitch}deg`);
+      if (this.world) {
+        this.world.style.setProperty('--dw-camera-pitch', `${pitch}deg`);
+        this.world.style.setProperty('--dw-camera-yaw', String(yaw));
+      }
       this.updateRadarView();
       this.updateRadarPlayer();
     }

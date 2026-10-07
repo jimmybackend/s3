@@ -326,6 +326,9 @@ header('Content-Type: text/html; charset=UTF-8');
       <div class="dw-ring" id="dwShelfRing">
         <?php if ($state['folders'] === []): ?>
           <article class="dw-shelf dw-shelf-empty is-active" data-dw-item data-item-type="folder" data-item-name="<?= $e(rtrim((string)$state['visible_path'], '/')) ?>" data-item-path="<?= $e((string)$state['visible_path']) ?>">
+            <span class="dw-shelf-volume dw-shelf-volume-left" aria-hidden="true"></span>
+            <span class="dw-shelf-volume dw-shelf-volume-right" aria-hidden="true"></span>
+            <span class="dw-shelf-volume dw-shelf-volume-top" aria-hidden="true"></span>
             <div class="dw-shelf-crown"><i class="fas fa-folder-open"></i><strong>Esta sala</strong></div>
             <div class="dw-compartment"><div class="dw-empty-message">No hay subcarpetas en este nivel.</div></div>
             <div class="dw-compartment"><div class="dw-empty-message">Tus archivos están sobre el escritorio central.</div></div>
@@ -343,6 +346,9 @@ header('Content-Type: text/html; charset=UTF-8');
                      data-item-path="<?= $e($folder['visible_path']) ?>"
                      data-open-href="<?= $e($folder['open_href']) ?>"
                      data-preview-href="<?= $e($folder['preview_href']) ?>">
+              <span class="dw-shelf-volume dw-shelf-volume-left" aria-hidden="true"></span>
+              <span class="dw-shelf-volume dw-shelf-volume-right" aria-hidden="true"></span>
+              <span class="dw-shelf-volume dw-shelf-volume-top" aria-hidden="true"></span>
               <div class="dw-shelf-crown"><i class="fas fa-folder-open"></i><strong><?= $e($folder['name']) ?></strong></div>
               <div class="dw-compartment dw-compartment-folders" data-preview-folders>
                 <span class="dw-book dw-book-large"><b></b></span><span class="dw-book dw-book-large"><b></b></span><span class="dw-book dw-book-large"><b></b></span>

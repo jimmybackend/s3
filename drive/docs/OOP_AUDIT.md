@@ -607,7 +607,7 @@
 | `drive/js/background-tasks.js` | 1352 | class/module | BackgroundTaskCenter | — | — | — |
 | `drive/js/carpetas.js` | 1200 | class/module | CarpetasModule | — | actualizarBloqueCarpetas | window functions: actualizarBloqueCarpetas |
 | `drive/js/compute-node-idle.js` | 290 | class/module | ArcadeCloudComputeIdleGuard | — | — | — |
-| `drive/js/dataword3d.js` | 962 | class/module | ArcadeCloudDrive3D | — | — | — |
+| `drive/js/dataword3d.js` | 970 | class/module | ArcadeCloudDrive3D | — | — | — |
 | `drive/js/descarga-multiple.js` | 114 | class/module | DescargaMultipleModule | — | — | — |
 | `drive/js/descarga-uno.js` | 110 | class/module | DescargaUnoModule | — | — | — |
 | `drive/js/desktop-shell.js` | 182 | class/module | ArcadeCloudDesktopShell | — | — | — |

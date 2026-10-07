@@ -7,6 +7,7 @@ $css = (string)file_get_contents($root . '/css/dataword3d.css');
 $js = (string)file_get_contents($root . '/js/dataword3d.js');
 $so = (string)file_get_contents($root . '/so.php');
 $preferences = (string)file_get_contents($root . '/os-preferences.php');
+$preferenceSanitizer = (string)file_get_contents($root . '/src/Security/Drive3dPreferenceSanitizer.php');
 $backgroundUpload = (string)file_get_contents($root . '/src/Http/Controller/Drive3dBackgroundUploadController.php');
 
 function drive3dContract(bool $condition, string $message): void
@@ -32,7 +33,8 @@ drive3dContract(str_contains($view, "'thumbnail_href'") && str_contains($view, '
 drive3dContract(str_contains($view, 'data-dw-desk-image') && str_contains($css, '.dw-desk-preview img'), 'vista previa visual del escritorio está integrada en la escena');
 drive3dContract(str_contains($view, 'Imagenes/fondos3D') && str_contains($backgroundUpload, "/Imagenes/") && str_contains($backgroundUpload, "fondos3D/"), 'fondos 3D se almacenan en Imagenes/fondos3D del usuario');
 drive3dContract(str_contains($backgroundUpload, 'requireDriveCsrf') && str_contains($backgroundUpload, 'singleUploadService()->upload'), 'subida de fondos usa CSRF y servicio privado normal del Drive');
-drive3dContract(str_contains($preferences, "drive3dPreference") && str_contains($preferences, "'drive3d'") && str_contains($view, "'preferences' => $drive3dPreferences"), 'configuración 3D persiste en Users.os_preferences por nodo');
+drive3dContract(str_contains($preferences, "drive3dPreference") && str_contains($preferences, 'Drive3dPreferenceSanitizer') && str_contains($view, "'preferences' => $drive3dPreferences"), 'configuración 3D persiste en Users.os_preferences por nodo');
+drive3dContract(str_contains($preferenceSanitizer, "'cameraYaw'") && str_contains($preferenceSanitizer, "'glassBackground'") && str_contains($preferenceSanitizer, "'plantsPreset'"), 'preferencias 3D se validan fuera del endpoint');
 drive3dContract(str_contains($view, 'data-background-upload') && str_contains($js, 'uploadBackground') && str_contains($js, 'useChosenBackground'), 'panel permite subir y aplicar fondos por clic');
 drive3dContract(str_contains($view, 'dw-orchid') && str_contains($css, '@keyframes dwPlantSway'), 'sala incluye orquídeas con movimiento ambiental leve');
 drive3dContract(str_contains($css, 'background:none;') && str_contains($css, 'border-color:#38cfff'), 'selección conserva la madera y limita el neón al contorno');

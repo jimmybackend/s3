@@ -1,0 +1,34 @@
+name: Drive 3D Three.js laboratory
+on:
+  pull_request:
+    paths:
+      - 'drive/three-lab/**'
+      - 'drive/js/drive3d-three-lab.js'
+      - 'drive/css/drive3d-three-lab.css'
+      - '.github/workflows/drive3d-three-lab.yml'
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check PHP and module syntax
+        run: |
+          php -l drive/three-lab/drive3d-lab.php
+          node --input-type=module --check < drive/js/drive3d-three-lab.js
+      - name: Install browser test dependency outside repository
+        run: |
+          npm install --prefix "$RUNNER_TEMP/drive3d-tests" playwright@1.51.1
+          "$RUNNER_TEMP/drive3d-tests/node_modules/.bin/playwright" install --with-deps chromium
+      - name: Render and verify geometry, camera and mobile controls
+        run: |
+          PLAYWRIGHT_MODULE="$RUNNER_TEMP/drive3d-tests/node_modules/playwright" SCREENSHOT_DIR="$RUNNER_TEMP/drive3d-shots" node drive/three-lab/verify.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: drive3d-lab-views
+          path: ${{ runner.temp }}/drive3d-shots

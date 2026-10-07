@@ -9,6 +9,8 @@ $so = (string)file_get_contents($root . '/so.php');
 $preferences = (string)file_get_contents($root . '/os-preferences.php');
 $preferenceSanitizer = (string)file_get_contents($root . '/src/Security/Drive3dPreferenceSanitizer.php');
 $backgroundUpload = (string)file_get_contents($root . '/src/Http/Controller/Drive3dBackgroundUploadController.php');
+$scene = (string)file_get_contents($root . '/js/drive3d-scene.js');
+$production = (string)file_get_contents($root . '/js/drive3d-production.js');
 
 function drive3dContract(bool $condition, string $message): void
 {
@@ -34,6 +36,9 @@ drive3dContract(str_contains($view, 'data-dw-desk-image') && str_contains($css, 
 drive3dContract(str_contains($view, 'Imagenes/fondos3D') && str_contains($backgroundUpload, "/Imagenes/") && str_contains($backgroundUpload, "fondos3D/"), 'fondos 3D se almacenan en Imagenes/fondos3D del usuario');
 drive3dContract(str_contains($backgroundUpload, 'requireDriveCsrf') && str_contains($backgroundUpload, 'singleUploadService()->upload'), 'subida de fondos usa CSRF y servicio privado normal del Drive');
 drive3dContract(str_contains($preferences, "drive3dPreference") && str_contains($preferences, 'Drive3dPreferenceSanitizer') && str_contains($view, "'preferences' => $drive3dPreferences"), 'configuración 3D persiste en Users.os_preferences por nodo');
+drive3dContract(str_contains($view, 'data-dw-spatial-picture-layer') && str_contains($js, 'openSpatialImage') && str_contains($js, 'restoreSpatialImages'), 'Drive 3D permite múltiples imágenes persistentes como cuadros independientes');
+drive3dContract(str_contains($js, 'spatialPictureState') && str_contains($js, 'keepalive:true') && str_contains($preferences, "['drive3d']['spatialImages']"), 'posiciones de cuadros se guardan al salir y la lista se reemplaza sin dejar entradas obsoletas');
+drive3dContract(str_contains($preferenceSanitizer, "'spatialImages'") && str_contains($preferenceSanitizer, 'localViewerHref') && str_contains($preferenceSanitizer, 'worldPosition'), 'preferencias de cuadros 3D validan ruta local y coordenadas antes de persistir');
 drive3dContract(str_contains($preferenceSanitizer, "'cameraYaw'") && str_contains($preferenceSanitizer, "'cameraLateral'") && str_contains($preferenceSanitizer, "'cameraForward'") && str_contains($preferenceSanitizer, "'cameraModel'"), 'preferencias de cámara 3D se validan fuera del endpoint');
 drive3dContract(str_contains($view, 'data-background-upload') && str_contains($js, 'uploadBackground') && str_contains($js, 'useChosenBackground'), 'panel permite subir y aplicar fondos por clic');
 drive3dContract(str_contains($view, 'dw-orchid') && str_contains($css, '@keyframes dwPlantSway'), 'sala incluye orquídeas con movimiento ambiental leve');
@@ -41,6 +46,7 @@ drive3dContract(str_contains($css, 'background:none;') && str_contains($css, 'bo
 drive3dContract(str_contains($view, 'dw-dome') && str_contains($css, '.dw-dome{') && str_contains($css, '.dw-dome-ribs'), 'la sala incluye un domo superior de cristal transparente');
 drive3dContract(str_contains($view, 'dw-file-window') && str_contains($js, 'showFileInDome') && str_contains($js, "this.camera.pitch = -18"), 'abrir un archivo mantiene visor rectangular y orienta ligeramente la mirada hacia arriba');
 drive3dContract(str_contains($js, 'dw-dome-document-frame') && str_contains($js, "item.kind === 'video'") && str_contains($js, "item.kind === 'audio'"), 'visor superior soporta documentos, imágenes, video y audio');
+drive3dContract(str_contains($js, "if (item?.kind === 'image')") && str_contains($js, 'this.openSpatialImage(item)') && str_contains($css, '.dw-spatial-picture-window'), 'imágenes usan ventanas 3D independientes sin cerrar las demás');
 drive3dContract(str_contains($js, 'preDomeCamera') && str_contains($js, 'closeMedia(restoreCamera = true)'), 'cerrar el visor restaura la perspectiva anterior del usuario');
 drive3dContract(str_contains($js, 'pointermove') && str_contains($js, 'this.camera.yaw') && str_contains($js, 'this.camera.pitch') && str_contains($css, 'touch-action:none'), 'arrastrar directamente con el dedo mueve yaw/pitch de cámara sin un modo intermedio');
 drive3dContract(str_contains($view, 'data-camera-pitch="-6"') && str_contains($view, 'data-camera-pitch="6"') && str_contains($js, 'vertical * 34'), 'radar permite subir y bajar la mirada además de orientar izquierda/derecha');
@@ -64,5 +70,7 @@ drive3dContract(str_contains($css, 'height:46% !important') && str_contains($css
 drive3dContract(str_contains($css, 'width:min(650px,54vw)') && str_contains($css, 'width:min(790px,64vw)') && str_contains($css, '☁  ARCADECLOUD OS'), 'mesa central y acuario forman el núcleo visual del render objetivo');
 drive3dContract(str_contains($css, 'width:132px !important') && str_contains($css, 'width:276px !important') && str_contains($css, 'aspect-ratio:1 / 1 !important'), 'paneles laterales y radar se ajustan a la composición de referencia');
 drive3dContract(substr_count($so, 'href="dataword3d.php"') >= 2 && str_contains($so, '<strong>Drive 3D</strong>'), 'ArcadeCloud OS enlaza Drive 3D en aplicaciones y launcher');
+drive3dContract(str_contains($scene, 'const spatialAnchors = new Map()') && str_contains($scene, 'this.moveSpatialMedia = (id, dx, dy)') && str_contains($scene, 'this.spatialMediaState = (id'), 'motor Three.js mantiene múltiples anclas espaciales independientes');
+drive3dContract(str_contains($production, 'app.restoreSpatialImages?.()'), 'renderer de producción restaura cuadros persistidos al volver a Drive 3D');
 
 fwrite(STDOUT, "Drive 3D contract smoke passed.\n");

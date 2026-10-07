@@ -26,7 +26,7 @@ El verificador sirve una **fixture HTML local sin ejecutar PHP**: verifica rende
 ## Migración posterior a dataword3d.php
 
 1. Mantener intacta la autenticación, resolución de rutas, filtros por usuario, CSRF y servicios actuales del PHP. Nunca obtener archivos ajenos desde el cliente.
-2. Extraer `startLab` en una clase de escena con métodos `mount`, `setFolders`, `resize` y `dispose`. Desregistrar listeners, cancelar render loop y liberar geometrías, materiales, texturas y renderer al cerrar. Este laboratorio tiene ciclo de vida de página completa.
+2. Ampliar `Drive3DThreeLab` como clase de escena con métodos `mount`, `setFolders`, `resize` y `dispose`. Desregistrar listeners, cancelar render loop y liberar geometrías, materiales, texturas y renderer al cerrar. Este laboratorio tiene ciclo de vida de página completa.
 3. Sustituir `titles` por el modelo de carpetas **ya autorizado** que entrega `dataword3d.php`. Mapear cada `Group.userData` a su identificador/ruta validada; la etiqueta debe seguir dibujándose como texto. Añadir raycasting para delegar la selección/apertura a los manejadores existentes.
 4. Mantener esta geometría y cámara como un único mundo: no rotar estantes para simular el giro. Para más carpetas, paginar grupos de siete; no comprimirlos hasta solapar ni agregar una segunda fila accidental.
 5. Separar HUD HTML de la escena WebGL, conservar foco/teclado y comportamiento móvil. No conectar todavía subir, borrar, compartir ni APIs de modificación desde el laboratorio.

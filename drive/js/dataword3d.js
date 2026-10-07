@@ -13,7 +13,6 @@
       this.previewCache = new Map();
       this.dragStart = null;
       this.dragMoved = false;
-      this.lookMode = false;
       this.saveTimer = null;
       this.camera = {
         yaw: Number(this.config.preferences?.cameraYaw || 0),
@@ -64,11 +63,13 @@
       this.radar = doc.querySelector('[data-dw-radar]');
       this.radarView = doc.querySelector('[data-radar-view]');
       this.radarPoints = doc.querySelector('[data-radar-points]');
+      this.pitchRange = doc.querySelector('[data-camera-pitch-range]');
       this.backgroundChoice = null;
     }
 
     init() {
       this.assignWorldAngles();
+      this.layoutFixedShelves(false);
       this.bindControls();
       this.applyRoomPreferences();
       this.renderRadar();
@@ -88,20 +89,47 @@
       });
     }
 
+    layoutFixedShelves(animate = false) {
+      const width = this.world?.clientWidth || this.window.innerWidth;
+      const compact = width < 620;
+      const tablet = width < 1000;
+      const radius = compact ? 470 : tablet ? 660 : Math.max(790, Math.min(1030, width * .72));
+
+      this.shelves.forEach((shelf) => {
+        const worldAngle = Number(shelf.dataset.worldAngle || 0);
+        const rad = worldAngle * Math.PI / 180;
+        const abs = Math.abs(worldAngle);
+        const x = Math.sin(rad) * radius;
+        const z = (Math.cos(rad) - 1) * radius * .98;
+        const y = abs * .34;
+        const yaw = -worldAngle;
+        const scale = Math.max(.56, 1 - abs / 180 * .58);
+
+        shelf.style.transitionDuration = animate ? '' : '0ms';
+        shelf.style.transform = `translate3d(${x}px,${y}px,${z}px) rotateY(${yaw}deg) scale(${scale})`;
+        shelf.style.opacity = '1';
+        shelf.style.pointerEvents = '';
+        shelf.style.zIndex = String(Math.round(60 - abs / 3));
+      });
+    }
+
     bindControls() {
-      this.document.querySelectorAll('[data-camera-turn]').forEach((button) => {
-        button.addEventListener('click', () => this.turnCamera(Number(button.dataset.cameraTurn || 0) * 18));
-      });
-      this.document.querySelector('[data-camera-home]')?.addEventListener('click', () => {
-        this.setLookMode(false);
-        this.centerCamera();
-      });
-      this.document.querySelector('[data-camera-look-toggle]')?.addEventListener('click', (event) => {
-        this.setLookMode(!this.lookMode, event.currentTarget);
+      this.document.querySelector('[data-camera-home]')?.addEventListener('click', () => this.centerCamera());
+      this.document.querySelector('[data-camera-exit-focus]')?.addEventListener('click', () => {
+        this.camera.target = '';
+        this.camera.pitch = 0;
+        this.camera.distance = 0;
+        this.renderCamera();
+        this.schedulePreferenceSave();
       });
       this.document.querySelectorAll('[data-camera-pitch]').forEach((button) => {
         button.addEventListener('click', () => this.lookVertical(Number(button.dataset.cameraPitch || 0)));
       });
+      this.pitchRange?.addEventListener('input', () => {
+        this.camera.pitch = this.clamp(Number(this.pitchRange.value || 0), -42, 42);
+        this.renderCamera(false);
+      });
+      this.pitchRange?.addEventListener('change', () => this.schedulePreferenceSave());
 
       this.hud.open?.addEventListener('click', () => this.openSelected());
       this.hud.desk?.addEventListener('click', () => this.bringToDesk());
@@ -147,16 +175,11 @@
       });
 
       this.ring?.addEventListener('click', (event) => {
-        if (this.dragMoved || this.lookMode) return;
+        if (this.dragMoved) return;
         const item = event.target.closest('[data-dw-item]');
         if (!item) return;
         if (item.classList.contains('dw-shelf')) {
-          const alreadyFocused = this.camera.target === (item.dataset.itemName || '') && this.camera.distance >= .38;
-          if (alreadyFocused || event.target.closest('.dw-shelf-crown')) {
-            this.focusShelf(item, true, .72);
-          } else {
-            this.focusShelf(item, true, .42);
-          }
+          this.focusShelf(item);
           return;
         }
         this.selectElement(item);
@@ -191,10 +214,10 @@
         const dx = event.clientX - this.dragStart.x;
         const dy = event.clientY - this.dragStart.y;
         if (Math.abs(dx) + Math.abs(dy) > 7) this.dragMoved = true;
-        if (!this.dragMoved && !this.lookMode) return;
+        if (!this.dragMoved) return;
         this.camera.yaw = this.normalizeAngle(this.dragStart.yaw - dx * .18);
         this.camera.pitch = this.clamp(this.dragStart.pitch + dy * .13, -42, 42);
-        this.renderCamera();
+        this.renderCamera(false);
       });
       const finishLookGesture = () => {
         if (!this.dragStart) return;
@@ -204,14 +227,6 @@
       };
       this.world?.addEventListener('pointerup', finishLookGesture);
       this.world?.addEventListener('pointercancel', finishLookGesture);
-
-      this.world?.addEventListener('wheel', (event) => {
-        if (event.target.closest('.dw-hud,.dw-desk,.dw-environment-panel,.dw-media-stage')) return;
-        event.preventDefault();
-        this.camera.distance = this.clamp(this.camera.distance + Math.sign(event.deltaY) * .08, 0, 1);
-        this.renderCamera();
-        this.schedulePreferenceSave();
-      }, { passive:false });
 
       this.radar?.addEventListener('click', (event) => {
         if (event.target.closest('button')) return;
@@ -242,6 +257,7 @@
       });
 
       this.window.addEventListener('resize', () => {
+        this.layoutFixedShelves(false);
         this.renderCamera(false);
         this.renderRadar();
       });
@@ -270,18 +286,6 @@
       this.schedulePreferenceSave();
     }
 
-    setLookMode(enabled, sourceButton = null) {
-      this.lookMode = Boolean(enabled);
-      this.document.body.classList.toggle('is-look-mode', this.lookMode);
-      const button = sourceButton || this.document.querySelector('[data-camera-look-toggle]');
-      if (button) {
-        button.setAttribute('aria-pressed', this.lookMode ? 'true' : 'false');
-        button.innerHTML = this.lookMode
-          ? '<i class="fas fa-circle-xmark"></i> Salir de mirada'
-          : '<i class="fas fa-hand-pointer"></i> Mover visión';
-      }
-    }
-
     centerCamera() {
       this.camera.yaw = 0;
       this.camera.pitch = 0;
@@ -292,39 +296,26 @@
     }
 
     renderCamera(animate = true) {
-      const width = this.world?.clientWidth || this.window.innerWidth;
-      const compact = width < 620;
-      const tablet = width < 1000;
-      const radius = compact ? 470 : tablet ? 660 : Math.max(790, Math.min(1030, width * .72));
-      const maxVisibleAngle = compact ? 68 : tablet ? 78 : 88;
-      const approach = 1 + this.camera.distance * .34;
+      const yaw = this.normalizeAngle(this.camera.yaw);
+      const pitch = this.clamp(this.camera.pitch, -42, 42);
+
+      if (this.ring) {
+        this.ring.style.transitionDuration = animate ? '' : '0ms';
+        this.ring.style.transform = `rotateX(${-pitch}deg) rotateY(${-yaw}deg)`;
+      }
 
       this.shelves.forEach((shelf) => {
         const worldAngle = Number(shelf.dataset.worldAngle || 0);
-        const relative = this.normalizeAngle(worldAngle - this.camera.yaw);
-        const rad = relative * Math.PI / 180;
+        const relative = this.normalizeAngle(worldAngle - yaw);
         const abs = Math.abs(relative);
-        const x = Math.sin(rad) * radius;
-        const z = (Math.cos(rad) - 1) * radius * .98 + this.camera.distance * 210;
-        const y = Math.abs(relative) * .34 + this.camera.pitch * .85;
-        const yaw = -relative;
-        const perspectiveScale = Math.max(.54, (1 - abs / 180 * .58) * approach);
-        shelf.style.transitionDuration = animate ? '' : '0ms';
-        shelf.style.transform = `translate3d(${x}px,${y}px,${z}px) rotateY(${yaw}deg) scale(${perspectiveScale})`;
-        shelf.style.opacity = abs > maxVisibleAngle ? '0' : String(Math.max(.34, 1 - abs / 120));
-        shelf.style.pointerEvents = abs > maxVisibleAngle ? 'none' : '';
-        shelf.style.zIndex = String(Math.round(60 - abs / 3));
         shelf.dataset.viewAngle = String(relative.toFixed(2));
         shelf.classList.toggle('is-looked-at', abs < 8);
       });
 
-      if (this.world) {
-        this.world.style.setProperty('--dw-camera-pitch', `${this.camera.pitch}deg`);
-        this.world.style.setProperty('--dw-camera-distance', String(this.camera.distance));
-      }
-      this.document.body.classList.toggle('is-camera-near', this.camera.distance >= .18);
+      if (this.pitchRange) this.pitchRange.value = String(Math.round(pitch));
+      if (this.world) this.world.style.setProperty('--dw-camera-pitch', `${pitch}deg`);
+      this.document.body.classList.remove('is-camera-near');
       this.updateRadarView();
-      this.updateProximityHud();
     }
 
     frontShelf() {
@@ -339,13 +330,11 @@
       return this.shelves.find((shelf) => shelf.dataset.itemName === wanted) || null;
     }
 
-    focusShelf(shelf, approach = true, distance = .42) {
+    focusShelf(shelf) {
       const worldAngle = Number(shelf.dataset.worldAngle || 0);
-      this.setLookMode(false);
       this.camera.yaw = this.normalizeAngle(worldAngle);
-      this.camera.pitch = 0;
-      this.camera.distance = approach ? this.clamp(distance, .18, .82) : this.camera.distance;
       this.camera.target = shelf.dataset.itemName || '';
+      this.camera.distance = 0;
       this.renderCamera();
       this.selectShelf(shelf, true);
       this.schedulePreferenceSave();

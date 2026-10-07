@@ -15,9 +15,9 @@ class Drive3DScene {
         renderer.toneMappingExposure = 1.05;
         viewport.append(renderer.domElement);
         const scene = new T.Scene();
-        const camera = new T.PerspectiveCamera(64, 1, .08, 150);
+        const camera = new T.PerspectiveCamera(50, 1, .08, Math.max(150, R * 8));
         camera.rotation.order = 'YXZ';
-        camera.position.set(0, 2.8, 5.8);
+        camera.position.set(0, 2.7, 4.2);
         scene.add(new T.HemisphereLight(0xb5d5f3, 0x33251b, 1.4));
         const sun = new T.DirectionalLight(0xffdfaf, 2.8);
         sun.position.set(-6, 10, 3); scene.add(sun);
@@ -65,13 +65,14 @@ class Drive3DScene {
             const mesh = new T.Mesh(new T.CylinderGeometry(rt, rb, h, 48), mat); mesh.position.y = y; parent.add(mesh); return mesh;
         }
         // Panorama is fixed to world coordinates and also supplies natural material reflections.
-        const panorama = new T.Mesh(new T.SphereGeometry(65, 64, 32), new T.MeshBasicMaterial({ color: 0x93b4c9, side: T.BackSide }));
+        const panorama = new T.Mesh(new T.SphereGeometry(Math.max(65, R * 4), 64, 32), new T.MeshBasicMaterial({ color: 0x93b4c9, side: T.BackSide }));
         panorama.name = 'fixed-360-panorama'; panorama.rotation.y = Math.PI; panorama.position.y = 3; panorama.scale.y = .55; scene.add(panorama);
         scene.environmentRotation.y = Math.PI;
-        let environmentReady = false, needsRender = true;
+        let environmentReady = false, needsRender = true, defaultPanoramaMap = null, customPanorama = false;
         new T.TextureLoader().load(new URL('../three-lab/assets/alpine-panorama.jpg', import.meta.url).href, map => {
             map.colorSpace = T.SRGBColorSpace;
-            panorama.material.map = map; panorama.material.color.set(0xffffff); panorama.material.needsUpdate = true;
+            defaultPanoramaMap = map;
+            if (!customPanorama) { panorama.material.map = map; panorama.material.color.set(0xffffff); panorama.material.needsUpdate = true; }
             const env = map.clone(); env.mapping = T.EquirectangularReflectionMapping; env.needsUpdate = true;
             scene.environment = env; scene.environmentIntensity = .55; environmentReady = true; needsRender = true;
         }, undefined, () => {
@@ -137,7 +138,7 @@ class Drive3DScene {
                     box(group, .175, h, .30, x, y + h / 2, .09, books[(i + row) % 4]);
                     box(group, .125, .018, .26, x, y + h + .008, .07, pages);
                     for (const offset of [-.16, .16]) box(group, .145, .018, .008, x, y + h / 2 + offset, .244, trim);
-                    const emblem = new T.Mesh(new T.TorusGeometry(.033, .005, 4, 12), trim); emblem.position.set(x, y + h / 2, .249); group.add(emblem);
+                    box(group, .045, .06, .008, x, y + h / 2, .249, trim);
                 }
                 if ((row + i) % 3 === 0) {
                     const ornament = new T.Group(); ornament.position.set(.58, y, .08); group.add(ornament);
@@ -211,16 +212,19 @@ class Drive3DScene {
         scene.updateMatrixWorld(true);
         const leafBatch = new T.InstancedMesh(new T.SphereGeometry(1,8,6),leafMat,leaves.length);
         leaves.forEach((leaf,i)=>{leafBatch.setMatrixAt(i,leaf.matrixWorld);leaf.geometry.dispose();leaf.removeFromParent();}); leafBatch.computeBoundingSphere();scene.add(leafBatch);
-        let yaw = 0, pitch = -.08, targetYaw = 0, targetPitch = -.08;
+        let yaw = 0, pitch = -.12, targetYaw = 0, targetPitch = -.12;
         let selectedIndex = -1;
+        const highlight = new T.Group(); highlight.visible = false; scene.add(highlight);
+        for (const x of [-width/2,width/2]) box(highlight,.025,height,.025,x,height/2,.33,cyan);
+        for (const y of [0,height]) box(highlight,width,.025,.025,0,y,.33,cyan);
         const keys = new Set(), held = new Map(); let drag = null;
         const presets = {
-            front: [0, 5.8, 0], center: [0, 5.8, 0],
+            front: [0, 4.2, 0], center: [0, 4.2, 0],
             left: [-2, 0, .90], right: [2, 0, -.90]
         };
         document.querySelectorAll('[data-view]').forEach(button => button.addEventListener('click', () => {
-            const [x, z, a] = presets[button.dataset.view]; camera.position.set(x, 2.8, z);
-            targetYaw = yaw = a; targetPitch = pitch = -.08;
+            const [x, z, a] = presets[button.dataset.view]; camera.position.set(x, 2.7, z);
+            targetYaw = yaw = a; targetPitch = pitch = -.12;
             keys.clear(); held.clear(); viewport.focus({ preventScroll: true });
         }));
         const handled = ['KeyW', 'KeyA', 'KeyS', 'KeyD', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'];
@@ -297,16 +301,18 @@ class Drive3DScene {
                 shelves.forEach((s,i) => { if (visibleIndices.includes(i)) { if (!s.children.length) buildShelf(s); } else if(s.children.length) unloadShelf(s); });
                 visibleKey = key; needsRender = true;
             }
+            highlight.visible = visibleIndices.includes(selectedIndex);
+            if (highlight.visible) { highlight.position.copy(shelves[selectedIndex].position); highlight.rotation.copy(shelves[selectedIndex].rotation); }
             options.onView?.({visible: visibleIndices, near: candidates.filter(v => v.distance < 5.6).slice(0,3).map(v=>v.i), selected: selectedIndex});
         }
         this.look = (degrees, vertical) => { targetYaw = -degrees * Math.PI / 180; targetPitch = -vertical * Math.PI / 180; needsRender = true; };
         this.move = (side, forward) => {
             const x = camera.position.x + Math.cos(yaw) * side - Math.sin(yaw) * forward;
             const z = camera.position.z - Math.sin(yaw) * side - Math.cos(yaw) * forward;
-            if (canStand(x,z)) camera.position.set(x,2.8,z);
+            if (canStand(x,z)) camera.position.set(x,2.7,z);
             needsRender = true;
         };
-        this.home = () => { camera.position.set(0,2.8,5.8); targetYaw = 0; targetPitch = -.08; selectedIndex = -1; needsRender = true; };
+        this.home = () => { camera.position.set(0,2.7,4.2); targetYaw = 0; targetPitch = -.12; selectedIndex = -1; needsRender = true; };
         this.focus = index => {
             const shelf = shelves[index]; if (!shelf) return;
             selectedIndex = index;
@@ -317,12 +323,18 @@ class Drive3DScene {
         let surfaceRevision = {glass:0, floor:0};
         this.surface = (surface, url) => {
             const revision = ++surfaceRevision[surface];
-            if (!url) return;
+            if (surface === 'glass') customPanorama = Boolean(url);
+            const material = surface === 'glass' ? panorama.material : floor.material;
+            if (!url) {
+                if (material.map && material.map !== marble && material.map !== defaultPanoramaMap) material.map.dispose();
+                material.map = surface === 'glass' ? defaultPanoramaMap : marble;
+                material.needsUpdate = true; needsRender = true; return;
+            }
             new T.TextureLoader().load(url, map => {
                 if (surfaceRevision[surface] !== revision) { map.dispose(); return; }
                 map.colorSpace = T.SRGBColorSpace;
                 const mat = surface === 'glass' ? panorama.material : floor.material;
-                if (mat.map && mat.map !== marble) mat.map.dispose();
+                if (mat.map && mat.map !== marble && mat.map !== defaultPanoramaMap) mat.map.dispose();
                 mat.map = map; mat.color.set(0xffffff); mat.needsUpdate = true;
                 needsRender = true;
             }, undefined, () => { status.hidden = false; status.textContent = 'No se pudo cargar el fondo seleccionado.'; });

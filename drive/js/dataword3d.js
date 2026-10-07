@@ -973,6 +973,7 @@
     }
 
     setEnvironment(environment) {
+      if (this.useThree) { this.room.glassBackground = ''; this.three?.surface('glass',''); this.persistPreferences(); return; }
       const allowed = new Set(['future','mountain','prehistoric','ocean']);
       this.room.environment = allowed.has(environment) ? environment : 'future';
       this.document.body.dataset.environment = this.room.environment;

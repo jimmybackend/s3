@@ -3477,9 +3477,9 @@ body.is-dome-viewing .dw-aquarium{
 #dwThreeViewport{position:absolute;inset:0;touch-action:none;outline:none}
 #dwThreeViewport canvas{display:block;width:100%;height:100%}
 .dw-real .dw-world{top:58px;left:0;background:#10212e}
-.dw-real .dw-hud{width:245px;top:22px;right:14px;background:rgba(6,16,26,.92)}
-.dw-real .dw-radar{width:162px;left:12px;bottom:62px}
-.dw-real .dw-radar-room{width:140px;height:140px;background:none;border:0;box-shadow:none}
+.dw-real .dw-hud{width:245px!important;top:22px!important;right:14px!important;background:rgba(6,16,26,.96)!important}
+.dw-real .dw-radar{width:162px!important;left:12px!important;bottom:62px!important}
+.dw-real .dw-radar-room{width:140px!important;height:140px!important;background:none;border:0;box-shadow:none}
 .dw-real .dw-radar-room:before,.dw-real .dw-radar-room:after{display:none}
 .dw-real .dw-radar canvas{width:140px;height:140px;cursor:pointer}
 .dw-real .dw-radar output{display:block;font-size:10px;padding:5px;color:#b8daed}
@@ -3494,10 +3494,10 @@ body.is-dome-viewing .dw-aquarium{
 .dw-three-content .dw-book img{width:30px;height:30px;object-fit:cover}
 .dw-real .dw-world>.dw-desk-files{position:absolute;bottom:46px;left:195px;right:280px;z-index:35;max-height:54px}
 @media(max-width:700px){
- .dw-real .dw-hud{top:10px;right:8px;width:158px;font-size:10px;max-height:35vh;overflow:auto}
+ .dw-real .dw-hud{top:10px!important;right:8px!important;width:158px!important;font-size:10px;max-height:35vh;overflow:auto}
  .dw-real .dw-hud-preview{display:none}
- .dw-real .dw-radar{left:8px;bottom:58px;width:125px}
- .dw-real .dw-radar-room,.dw-real .dw-radar canvas{width:104px;height:104px}
+ .dw-real .dw-radar{left:8px!important;bottom:58px!important;width:125px!important}
+ .dw-real .dw-radar-room,.dw-real .dw-radar canvas{width:104px!important;height:104px!important}
  .dw-real .dw-radar output{font-size:8px}
  .dw-three-content{left:140px;right:8px;bottom:78px;max-height:175px;padding:9px}
  .dw-real .dw-world>.dw-desk-files{left:140px;right:8px;bottom:46px}

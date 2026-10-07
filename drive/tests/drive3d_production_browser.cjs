@@ -34,6 +34,7 @@ const server=createServer((req,res)=>{
   await page.goto(`http://127.0.0.1:${server.address().port}`);
   await page.waitForFunction(()=>window.ArcadeCloudDrive3D?.three?.snapshot().environmentReady,{},{timeout:30000});
   await page.waitForTimeout(500);
+  page.setDefaultTimeout(60000);
   const snap=()=>page.evaluate(()=>window.ArcadeCloudDrive3D.three.snapshot());
   if(process.env.SCREENSHOT_DIR){mkdirSync(process.env.SCREENSHOT_DIR,{recursive:true});await page.screenshot({path:resolve(process.env.SCREENSHOT_DIR,'production-initial.png')});}
   const initial=await snap(); assert(initial.visible.length>0 && initial.visible.length<=9);assert.equal(requests,0);
@@ -50,19 +51,19 @@ const server=createServer((req,res)=>{
   assert.equal(await page.evaluate(()=>window.ArcadeCloudDrive3D.selected.openHref),'/subfolder');
   await page.getByRole('button',{name:'Informe.pdf',exact:true}).first().click();
   assert.equal(await page.evaluate(()=>window.ArcadeCloudDrive3D.selected.downloadHref),'/download');
-  await page.evaluate(()=>{const a=window.ArcadeCloudDrive3D;a.three.look(180,0);});await page.waitForTimeout(1300);
+  await page.evaluate(()=>{const a=window.ArcadeCloudDrive3D;a.three.look(180,0);});await page.waitForFunction(()=>Math.abs(window.ArcadeCloudDrive3D.three.snapshot().yaw)>3);
   const turned=await snap();assert.deepEqual(turned.panorama,initial.panorama);assert(Math.abs(turned.yaw)>3);
   assert.equal(await page.evaluate(()=>window.ArcadeCloudDrive3D.previewCache.size),0);
   assert(turned.shelves.filter(s=>s.loaded).length<=9);assert(turned.shelves.some((s,i)=>initial.shelves[i].loaded && !s.loaded));
   const out=process.env.SCREENSHOT_DIR; if(out){mkdirSync(out,{recursive:true});await page.screenshot({path:resolve(out,'production-turned.png')});}
-  await page.evaluate(()=>window.ArcadeCloudDrive3D.centerCamera());await page.waitForTimeout(1300);
-  await page.keyboard.down('KeyD');await page.waitForTimeout(350);await page.keyboard.up('KeyD');
+  await page.evaluate(()=>window.ArcadeCloudDrive3D.centerCamera());await page.waitForFunction(()=>Math.abs(window.ArcadeCloudDrive3D.three.snapshot().yaw)<.01);
+  await page.keyboard.down('KeyD');await page.waitForFunction(()=>window.ArcadeCloudDrive3D.three.snapshot().camera[0]>.2);await page.keyboard.up('KeyD');
   assert((await snap()).camera[0]>.1,'Movement changes world position');
   await page.evaluate(()=>window.ArcadeCloudDrive3D.centerCamera());await page.waitForTimeout(600);
   if(out)await page.screenshot({path:resolve(out,'production-front.png')});
   // Repeated load/unload must release cabinet geometry/textures.
   const memory=(await snap()).textures;
-  for(const yaw of [100,-100,175,0]){await page.evaluate(y=>window.ArcadeCloudDrive3D.three.look(y,4),yaw);await page.waitForTimeout(750);}
+  for(const yaw of [100,-100,175,0]){await page.evaluate(y=>window.ArcadeCloudDrive3D.three.look(y,4),yaw);await page.waitForFunction(y=>Math.abs(window.ArcadeCloudDrive3D.three.snapshot().yaw+y*Math.PI/180)<.01,yaw);}
   assert((await snap()).textures<=memory+4);
   await page.setViewportSize({width:390,height:844});await page.waitForTimeout(500);
   assert((await page.locator('.dw-sidebar').boundingBox()).height<150);

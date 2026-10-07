@@ -505,10 +505,7 @@ header('Content-Type: text/html; charset=UTF-8');
       <div><strong>Personalizar sala 3D</strong><button type="button" data-dw-environment-close><i class="fas fa-xmark"></i></button></div>
       <p class="dw-environment-help">Los fondos se guardan en <b>Imagenes/fondos3D</b> y la configuración queda en tu perfil de ArcadeCloud.</p>
       <div class="dw-environment-presets">
-        <button type="button" data-environment-choice="future">Ciudad futura</button>
-        <button type="button" data-environment-choice="mountain">Montaña</button>
-        <button type="button" data-environment-choice="prehistoric">Prehistórico</button>
-        <button type="button" data-environment-choice="ocean">Océano</button>
+        <button type="button" data-environment-choice="mountain">Restaurar paisaje alpino 360°</button>
       </div>
       <label class="dw-upload-background">
         <i class="fas fa-cloud-arrow-up"></i>

@@ -390,6 +390,7 @@
         });
       }
       this.document.querySelector('[data-dw-fullscreen]')?.addEventListener('click', () => this.toggleFullscreen());
+      this.window.addEventListener('pagehide', () => this.persistPreferences());
 
       this.document.querySelector('[data-dw-environment]')?.addEventListener('click', () => {
         if (this.environmentPanel) this.environmentPanel.hidden = !this.environmentPanel.hidden;
@@ -1115,6 +1116,7 @@
         await fetch(endpoint,{
           method:'POST',
           credentials:'same-origin',
+          keepalive:true,
           headers:{'Content-Type':'application/json','X-CSRF-Token':this.config.csrf || ''},
           body:JSON.stringify(payload),
         });
@@ -1333,6 +1335,15 @@
       const id = this.spatialImageId(item);
       const existing = this.spatialPictures.get(id);
       if (existing?.window) {
+        this.bringSpatialPictureToFront(id);
+        return;
+      }
+      const saved = this.spatialPictureState.find((entry) => entry.id === id);
+      if (saved) {
+        saved.name = String(item.name || saved.name || 'Imagen');
+        saved.path = String(item.path || saved.path || '');
+        saved.openHref = String(item.openHref || saved.openHref || '');
+        this.mountSpatialImage(saved, true);
         this.bringSpatialPictureToFront(id);
         return;
       }

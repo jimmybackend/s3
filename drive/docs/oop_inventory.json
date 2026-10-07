@@ -672,7 +672,7 @@
     },
     {
       "path": "drive/dataword3d.php",
-      "lines": 562,
+      "lines": 557,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -9018,7 +9018,7 @@
     },
     {
       "path": "drive/js/drive3d-production.js",
-      "lines": 85,
+      "lines": 92,
       "kind": "class/module",
       "classes": [
         "Drive3DProduction"
@@ -9039,7 +9039,7 @@
     },
     {
       "path": "drive/js/drive3d-scene.js",
-      "lines": 411,
+      "lines": 485,
       "kind": "class/module",
       "classes": [
         "Drive3DScene"

@@ -74,7 +74,7 @@
 | `drive/crear_carpeta.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/create_folder_document.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/database-backup.php` | 10 | thin endpoint | 0 | — | — | — | — |
-| `drive/dataword3d.php` | 562 | view/entrypoint | 0 | — | — | — | — |
+| `drive/dataword3d.php` | 557 | view/entrypoint | 0 | — | — | — | — |
 | `drive/delete_multiple.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/descargar.php` | 8 | thin endpoint | 0 | — | — | — | — |
 | `drive/descargar_archivo.php` | 8 | thin endpoint | 0 | — | — | — | — |
@@ -612,8 +612,8 @@
 | `drive/js/descarga-multiple.js` | 114 | class/module | DescargaMultipleModule | — | — | — |
 | `drive/js/descarga-uno.js` | 110 | class/module | DescargaUnoModule | — | — | — |
 | `drive/js/desktop-shell.js` | 182 | class/module | ArcadeCloudDesktopShell | — | — | — |
-| `drive/js/drive3d-production.js` | 85 | class/module | Drive3DProduction | — | — | — |
-| `drive/js/drive3d-scene.js` | 411 | class/module | Drive3DScene | — | — | — |
+| `drive/js/drive3d-production.js` | 92 | class/module | Drive3DProduction | — | — | — |
+| `drive/js/drive3d-scene.js` | 485 | class/module | Drive3DScene | — | — | — |
 | `drive/js/drive3d-three-lab.js` | 18 | class/module | Drive3DLab | — | — | — |
 | `drive/js/editar-txt.js` | 68 | class/module | EditarTxtModule | — | — | — |
 | `drive/js/elimina-multiple.js` | 104 | class/module | EliminaMultipleModule | — | — | — |

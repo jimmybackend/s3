@@ -107,8 +107,8 @@
       const gap = compact ? 2 : 4;
       const chord = shelfWidth + gap;
       const radius = Math.max(
-        compact ? 860 : tablet ? 980 : 1120,
-        chord * 4.2
+        compact ? 1080 : tablet ? 1260 : 1480,
+        chord * 5.4
       );
       const stepRad = 2 * Math.asin(Math.min(.98, chord / (2 * radius)));
       const stepDegrees = stepRad * 180 / Math.PI;
@@ -357,7 +357,7 @@
       const width = this.world?.clientWidth || this.window.innerWidth;
       const compact = width < 620;
       const tablet = width < 1000;
-      const radius = this.shelfLayout?.radius || (compact ? 860 : tablet ? 980 : 1120);
+      const radius = this.shelfLayout?.radius || (compact ? 1080 : tablet ? 1260 : 1480);
       const lateralPx = this.camera.lateral * (compact ? 120 : tablet ? 180 : 240);
       const forwardScale = 1 + this.camera.forward * (compact ? .10 : .13);
 

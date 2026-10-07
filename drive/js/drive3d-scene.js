@@ -450,7 +450,7 @@ class Drive3DScene {
         };
         this.snapshot = () => ({camera: camera.position.toArray(), yaw, pitch, visible: visibleIndices, selected: selectedIndex,
             pickPoints: shelves.map(s=> { const p = s.localToWorld(new T.Vector3(0,3.86,.32)).project(camera); return [p.x,p.y]; }),
-            shelves: shelves.map(s=>({position:s.position.toArray(),rotation:s.rotation.y,width,depth,height,loaded:!!s.children.length})),
+            shelves: shelves.map(s=>({position:s.position.toArray(),rotation:s.rotation.y,width,depth,height,loaded:!!s.children.length,realBooks:s.getObjectByName('real-drive-books')?.children.length || 0})),
             lamp:lamp.position.toArray(),table:table.position.toArray(),domeRadius:R,panorama:panorama.position.toArray(),environmentReady,
             calls:renderer.info.render.calls, geometries:renderer.info.memory.geometries, textures:renderer.info.memory.textures});
         function resize() { const w = viewport.clientWidth, h = viewport.clientHeight; renderer.setSize(w, h); camera.fov = w < 700 ? 75 : 50; camera.aspect = w / h; camera.updateProjectionMatrix(); needsRender = true; }

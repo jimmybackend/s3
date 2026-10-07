@@ -88,11 +88,6 @@ try {
     $repository = new UserOsPreferencesRepository($app->db());
     $nodeKey = OsPreferenceNodeResolver::resolve();
     $preferences = array_replace_recursive($repository->find($session->userId(), $nodeKey), $patch);
-    // Lists are replace-only. Recursive array replacement would otherwise keep
-    // stale picture slots when a user removes a persisted Drive 3D image.
-    if (isset($patch['drive3d']['spatialImages']) && is_array($patch['drive3d']['spatialImages'])) {
-        $preferences['drive3d']['spatialImages'] = $patch['drive3d']['spatialImages'];
-    }
     $repository->save($session->userId(), $preferences, $nodeKey);
     JsonResponse::send(['ok' => true]);
 } catch (Throwable $error) {

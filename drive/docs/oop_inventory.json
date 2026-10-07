@@ -1,11 +1,11 @@
 {
   "summary": {
-    "php_total": 560,
+    "php_total": 561,
     "php_class_modules": 318,
     "php_needs_migration": 0,
     "php_tests": 78,
-    "js_total": 82,
-    "js_class_modules": 75,
+    "js_total": 83,
+    "js_class_modules": 76,
     "js_needs_migration": 1,
     "js_tests": 11,
     "js_compatibility_facades": 8,
@@ -8150,6 +8150,21 @@
       "issues": []
     },
     {
+      "path": "drive/three-lab/drive3d-lab.php",
+      "lines": 33,
+      "kind": "view/entrypoint",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": true,
+      "html": true,
+      "namespace": false,
+      "issues": []
+    },
+    {
       "path": "drive/thumb.php",
       "lines": 10,
       "kind": "thin endpoint",
@@ -8998,6 +9013,31 @@
         "jquery": 0,
         "json_consumers": 0,
         "response_checks": 3
+      },
+      "issues": []
+    },
+    {
+      "path": "drive/js/drive3d-three-lab.js",
+      "lines": 213,
+      "kind": "class/module",
+      "classes": [
+        "Drive3DThreeLab"
+      ],
+      "functions": [],
+      "window_assign": [
+        "drive3dLab"
+      ],
+      "window_func": [],
+      "top_vars": [
+        "status"
+      ],
+      "iife": false,
+      "ajax": {
+        "fetch": 0,
+        "xhr": 0,
+        "jquery": 0,
+        "json_consumers": 0,
+        "response_checks": 0
       },
       "issues": []
     },

@@ -302,6 +302,7 @@ header('Content-Type: text/html; charset=UTF-8');
     <div class="dw-sky" aria-hidden="true"></div>
     <div class="dw-camera-scene" data-dw-camera-scene>
     <div class="dw-dome" aria-label="Domo de cristal superior">
+      <div class="dw-dome-custom-image" data-dw-dome-image aria-hidden="true"></div>
       <div class="dw-dome-sky"></div>
       <div class="dw-dome-glass"></div>
       <div class="dw-dome-ribs"></div>
@@ -363,6 +364,16 @@ header('Content-Type: text/html; charset=UTF-8');
             </article>
           <?php endforeach; ?>
         <?php endif; ?>
+        <div class="dw-edge-lamp dw-edge-lamp-left" data-dw-edge-lamp="left" aria-hidden="true">
+          <span class="dw-edge-lamp-shade"></span>
+          <span class="dw-edge-lamp-pole"></span>
+          <span class="dw-edge-lamp-base"></span>
+        </div>
+        <div class="dw-edge-lamp dw-edge-lamp-right" data-dw-edge-lamp="right" aria-hidden="true">
+          <span class="dw-edge-lamp-shade"></span>
+          <span class="dw-edge-lamp-pole"></span>
+          <span class="dw-edge-lamp-base"></span>
+        </div>
       </div>
     </section>
 

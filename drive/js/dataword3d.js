@@ -939,6 +939,9 @@
         const option = this.backgroundOptionNode(payload);
         this.backgroundGallery?.prepend(option);
         this.chooseBackground(payload.visiblePath || `${payload.route || ''}${payload.name || ''}`, payload.environment || '', option);
+        if (this.environmentSelected) {
+          this.environmentSelected.textContent = `${payload.folder || 'Imagenes/fondos3D/'}${payload.name || ''}`;
+        }
       } catch (error) {
         this.window.alert(error?.message || 'No se pudo subir el fondo 3D.');
       } finally {

@@ -160,7 +160,7 @@ $buildState = static function (string $route) use (
             ? 'thumb.php?key=' . rawurlencode($key) . '&w=420&h=280&fit=cover'
             : '';
         $environmentHref = (!$locked && $key !== '' && $kind === 'image')
-            ? 'thumb.php?key=' . rawurlencode($key) . '&w=1920&h=1080&fit=cover'
+            ? 'thumb.php?key=' . rawurlencode($key) . '&scale=90'
             : '';
 
         $files[] = [
@@ -500,6 +500,7 @@ header('Content-Type: text/html; charset=UTF-8');
     <section class="dw-environment-panel" data-dw-environment-panel hidden>
       <div><strong>Personalizar sala 3D</strong><button type="button" data-dw-environment-close><i class="fas fa-xmark"></i></button></div>
       <p class="dw-environment-help">Los fondos se guardan en <b>Imagenes/fondos3D</b> y la configuración queda en tu perfil de ArcadeCloud.</p>
+      <p class="dw-environment-route" aria-label="Ruta de fondos"><i class="fas fa-folder-open"></i> Imagenes/fondos3D/</p>
       <div class="dw-environment-presets">
         <button type="button" data-environment-choice="mountain">Restaurar día hermoso 360°</button>
       </div>

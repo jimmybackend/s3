@@ -13,7 +13,7 @@ const server = createServer((req, res) => {
         let data = readFileSync(path);
         const ext = extname(path);
         if (ext === '.php') data = Buffer.from(data.toString().split('?>')[1]);
-        res.setHeader('Content-Type', ({ '.php': 'text/html', '.js': 'text/javascript', '.css': 'text/css' })[ext] || 'application/octet-stream');
+        res.setHeader('Content-Type', ({ '.php': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.jpg': 'image/jpeg' })[ext] || 'application/octet-stream');
         res.end(data);
     } catch { res.writeHead(404).end(); }
 });
@@ -41,7 +41,8 @@ function overlap(a,b) {
         const page=await browser.newPage({viewport:{width:1440,height:1000}});
         page.on('pageerror',e=>errors.push(e.message));
         await page.goto(`http://127.0.0.1:${server.address().port}/drive/three-lab/drive3d-lab.php`);
-        await page.waitForFunction(()=>window.drive3dLab);
+        await page.waitForFunction(()=>window.drive3dLab?.snapshot().environmentReady);
+        page.setDefaultTimeout(60000);
         const snapshot=()=>page.evaluate(()=>window.drive3dLab.snapshot());
         const initial=await snapshot();
         assert.equal(initial.shelves.length,7);
@@ -50,6 +51,7 @@ function overlap(a,b) {
         const out=process.env.SCREENSHOT_DIR;
         if(out) mkdirSync(out,{recursive:true});
         const shot=async name=>{if(out) await page.screenshot({path:resolve(out,name+'.png')});};
+        assert.deepEqual(initial.table,[0,0,-1.3]);
         await shot('front');
         for(const view of ['left','right']) {
             await page.locator(`[data-view="${view}"]`).click();
@@ -58,11 +60,14 @@ function overlap(a,b) {
             assert.deepEqual(state.shelves,initial.shelves); assert.deepEqual(state.panorama,initial.panorama);
             assert.notEqual(state.yaw,initial.yaw); await shot(view);
         }
+        await page.setViewportSize({width:800,height:600});
         await page.locator('[data-view="front"]').click();
-        await page.keyboard.down('w'); await page.waitForTimeout(500); await page.keyboard.up('w');
+        await page.keyboard.down('w'); await page.waitForFunction(z=>window.drive3dLab.snapshot().camera[2]<z-.15,initial.camera[2]); await page.keyboard.up('w');
         assert((await snapshot()).camera[2]<initial.camera[2]-.1,'Walk must move camera');
-        await page.mouse.move(650,480); await page.mouse.down(); await page.mouse.move(850,420,{steps:5}); await page.mouse.up();
-        await page.waitForTimeout(300); assert((await snapshot()).yaw<-.2,'Drag must turn camera');
+        await page.keyboard.down('w'); await page.waitForFunction(()=>window.drive3dLab.snapshot().camera[2]<.72).catch(async error=>{console.log('Movement diagnostic',await snapshot());throw error;}); await page.waitForTimeout(400); await page.keyboard.up('w');
+        assert((await snapshot()).camera[2]>=.59,'Table collision must stop walking through the globe pedestal');
+        await page.mouse.move(300,260); await page.mouse.down(); await page.mouse.move(500,220,{steps:5}); await page.mouse.up();
+        await page.waitForFunction(()=>window.drive3dLab.snapshot().yaw<-.2); assert((await snapshot()).yaw<-.2,'Drag must turn camera');
         await page.setViewportSize({width:390,height:844});
         await page.locator('[data-view="front"]').click();
         await shot('mobile');
@@ -70,9 +75,9 @@ function overlap(a,b) {
         const button=page.locator('[data-move="forward"]');
         // Use real pointer capture for the held movement check below.
         const bounds=await button.boundingBox();
-        await page.mouse.move(bounds.x+20,bounds.y+20); await page.mouse.down(); await page.waitForTimeout(400); await page.mouse.up();
+        await page.mouse.move(bounds.x+20,bounds.y+20); await page.mouse.down(); await page.waitForFunction(z=>window.drive3dLab.snapshot().camera[2]<z-.15,initial.camera[2]); await page.mouse.up();
         await page.evaluate(()=>window.dispatchEvent(new Event('blur')));
-        assert((await snapshot()).camera[2]<1.3);
+        assert((await snapshot()).camera[2]<initial.camera[2]-.1);
         assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
         assert.deepEqual(errors,[]);
         console.log('PASS: actual WebGL render, dome clearance, nonoverlap, fixed panorama/furniture, presets, drag, walk, mobile controls/minimap.');

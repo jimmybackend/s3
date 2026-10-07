@@ -181,7 +181,7 @@ class Drive3DScene {
         cylinder(table, 1.45, 1.45, .13, .89, trim);
         cylinder(table, 1.43, 1.43, .06, .985, blackStone);
         for (const [r, y, mat] of [[1.62,.10,cyan],[1.27,.17,trim],[1.10,.78,glow],[1.45,.96,glow],[.63,1.035,cyan]]) ring(table, r, .019, y, mat);
-        const globe = new T.Group(); globe.position.y = 1.83; table.add(globe);
+        const globe = new T.Group(); globe.position.y = 1.65; globe.scale.setScalar(.72); table.add(globe);
         const globeMat = material(0x1b78cf, { transparent: true, opacity: .32, metalness: .25, roughness: .2, emissive: 0x146ac1, emissiveIntensity: .7, depthWrite: false });
         globe.add(new T.Mesh(new T.SphereGeometry(.70, 40, 24), globeMat));
         const grid = new T.LineBasicMaterial({ color: 0x8bdcff, transparent: true, opacity: .8 });
@@ -355,7 +355,7 @@ class Drive3DScene {
             shelves: shelves.map(s=>({position:s.position.toArray(),rotation:s.rotation.y,width,depth,height,loaded:!!s.children.length})),
             lamp:lamp.position.toArray(),table:table.position.toArray(),domeRadius:R,panorama:panorama.position.toArray(),environmentReady,
             calls:renderer.info.render.calls, geometries:renderer.info.memory.geometries, textures:renderer.info.memory.textures});
-        function resize() { const w = viewport.clientWidth, h = viewport.clientHeight; renderer.setSize(w, h); camera.aspect = w / h; camera.updateProjectionMatrix(); needsRender = true; }
+        function resize() { const w = viewport.clientWidth, h = viewport.clientHeight; renderer.setSize(w, h); camera.fov = w < 700 ? 75 : 50; camera.aspect = w / h; camera.updateProjectionMatrix(); needsRender = true; }
         window.addEventListener('resize', resize); resize();
         renderer.domElement.addEventListener('webglcontextlost', event => { event.preventDefault(); renderer.setAnimationLoop(null); clearInput(); status.hidden = false; status.textContent = 'Se interrumpió el contexto gráfico. Recarga para continuar.'; });
         let previous = performance.now(), lastView = '';

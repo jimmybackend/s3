@@ -74,7 +74,7 @@
 | `drive/crear_carpeta.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/create_folder_document.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/database-backup.php` | 10 | thin endpoint | 0 | — | — | — | — |
-| `drive/dataword3d.php` | 557 | view/entrypoint | 0 | — | — | — | — |
+| `drive/dataword3d.php` | 558 | view/entrypoint | 0 | — | — | — | — |
 | `drive/delete_multiple.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/descargar.php` | 8 | thin endpoint | 0 | — | — | — | — |
 | `drive/descargar_archivo.php` | 8 | thin endpoint | 0 | — | — | — | — |
@@ -330,7 +330,7 @@
 | `drive/src/Http/Controller/BackgroundTaskCompatibilityController.php` | 245 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Http/Controller/BackgroundTaskController.php` | 1100 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Http/Controller/DatabaseBackupController.php` | 50 | class/module | 1 | — | — | — | — |
-| `drive/src/Http/Controller/Drive3dBackgroundUploadController.php` | 90 | class/module | 1 | — | — | — | — |
+| `drive/src/Http/Controller/Drive3dBackgroundUploadController.php` | 94 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/FederationAccessController.php` | 123 | class/module | 1 | ⚠️ | — | — | — |
 | `drive/src/Http/Controller/FederationCatalogController.php` | 144 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/FederationCollectionController.php` | 128 | class/module | 1 | — | — | — | — |
@@ -608,7 +608,7 @@
 | `drive/js/background-tasks.js` | 1352 | class/module | BackgroundTaskCenter | — | — | — |
 | `drive/js/carpetas.js` | 1200 | class/module | CarpetasModule | — | actualizarBloqueCarpetas | window functions: actualizarBloqueCarpetas |
 | `drive/js/compute-node-idle.js` | 290 | class/module | ArcadeCloudComputeIdleGuard | — | — | — |
-| `drive/js/dataword3d.js` | 1159 | class/module | ArcadeCloudDrive3D | — | — | — |
+| `drive/js/dataword3d.js` | 1162 | class/module | ArcadeCloudDrive3D | — | — | — |
 | `drive/js/descarga-multiple.js` | 114 | class/module | DescargaMultipleModule | — | — | — |
 | `drive/js/descarga-uno.js` | 110 | class/module | DescargaUnoModule | — | — | — |
 | `drive/js/desktop-shell.js` | 182 | class/module | ArcadeCloudDesktopShell | — | — | — |

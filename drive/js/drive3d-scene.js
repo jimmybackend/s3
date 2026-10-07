@@ -410,7 +410,7 @@ class Drive3DScene {
             if (canStand(x,z)) camera.position.set(x,2.7,z);
             needsRender = true;
         };
-        this.home = () => { camera.position.set(0,2.7,4.2); targetYaw = 0; targetPitch = -.12; selectedIndex = -1; needsRender = true; };
+        this.home = () => { camera.position.set(0,2.7,5.25); targetYaw = 0; targetPitch = -.12; selectedIndex = -1; needsRender = true; };
         this.focus = index => {
             const shelf = shelves[index]; if (!shelf) return;
             selectedIndex = index;
@@ -418,6 +418,57 @@ class Drive3DScene {
             targetYaw = Math.atan2(camera.position.x - shelf.position.x, camera.position.z - shelf.position.z);
             targetPitch = -.04; needsRender = true;
         };
+
+        // Spatial media is anchored in world coordinates near the glass, not to the screen.
+        let spatialAnchor = null, spatialBaseDistance = 1;
+        const spatialCenter = new T.Vector3(0, 2.7, 0);
+        const spatialSphere = new T.Sphere(spatialCenter, Math.max(4, R - 1.05));
+        function placeSpatialInView() {
+            camera.updateMatrixWorld(true);
+            const direction = new T.Vector3();
+            camera.getWorldDirection(direction);
+            const ray = new T.Ray(camera.position.clone(), direction.normalize());
+            let hit = ray.intersectSphere(spatialSphere, new T.Vector3());
+            if (!hit) hit = camera.position.clone().add(direction.multiplyScalar(Math.max(4.5, R * .62)));
+            hit.y = T.MathUtils.clamp(hit.y, 1.25, Math.min(R - .8, 6.6));
+            spatialAnchor = hit;
+            spatialBaseDistance = Math.max(1, spatialAnchor.distanceTo(camera.position));
+            needsRender = true;
+            return spatialAnchor.toArray();
+        }
+        function projectSpatial() {
+            if (!spatialAnchor) {
+                options.onSpatialProjection?.(null);
+                return;
+            }
+            const projected = spatialAnchor.clone().project(camera);
+            const distance = spatialAnchor.distanceTo(camera.position);
+            const visible = projected.z > -1 && projected.z < 1 && Math.abs(projected.x) < 1.22 && Math.abs(projected.y) < 1.22;
+            options.onSpatialProjection?.({
+                visible,
+                x:(projected.x * .5 + .5) * viewport.clientWidth,
+                y:(-.5 * projected.y + .5) * viewport.clientHeight,
+                scale:T.MathUtils.clamp(spatialBaseDistance / Math.max(.1, distance), .42, 1.35),
+                distance,
+                world:spatialAnchor.toArray()
+            });
+        }
+        this.placeSpatialMedia = () => placeSpatialInView();
+        this.clearSpatialMedia = () => { spatialAnchor = null; options.onSpatialProjection?.(null); needsRender = true; };
+        this.moveSpatialMedia = (dx, dy) => {
+            if (!spatialAnchor) placeSpatialInView();
+            const local = spatialAnchor.clone().sub(spatialCenter);
+            const radius = Math.max(1, Math.hypot(local.x, local.z));
+            let angle = Math.atan2(local.x, local.z);
+            angle -= dx * .0035;
+            local.x = Math.sin(angle) * radius;
+            local.z = Math.cos(angle) * radius;
+            local.y = T.MathUtils.clamp(local.y - dy * .012, -1.1, Math.min(R - 1.4, 4.4));
+            spatialAnchor.copy(spatialCenter).add(local);
+            needsRender = true;
+        };
+        this.spatialMediaState = () => spatialAnchor ? {world:spatialAnchor.toArray(),baseDistance:spatialBaseDistance} : null;
+
         let surfaceRevision = {glass:0, floor:0};
         this.surface = (surface, url) => {
             const revision = ++surfaceRevision[surface];
@@ -449,6 +500,7 @@ class Drive3DScene {
                 }))
             })),
             lamp:lamp.position.toArray(),table:table.position.toArray(),domeRadius:R,panorama:panorama.position.toArray(),environmentReady,
+            spatial:spatialAnchor ? {world:spatialAnchor.toArray(),baseDistance:spatialBaseDistance} : null,
             calls:renderer.info.render.calls, geometries:renderer.info.memory.geometries, textures:renderer.info.memory.textures});
         function resize() { const w = viewport.clientWidth, h = viewport.clientHeight; renderer.setSize(w, h); camera.fov = w < 700 ? 75 : 50; camera.aspect = w / h; camera.updateProjectionMatrix(); needsRender = true; }
         window.addEventListener('resize', resize); resize();
@@ -470,7 +522,14 @@ class Drive3DScene {
             if (canStand(camera.position.x + dx, camera.position.z)) camera.position.x += dx;
             if (canStand(camera.position.x, camera.position.z + dz)) camera.position.z += dz;
             const view = [camera.position.x, camera.position.z, yaw, pitch].map(n => n.toFixed(5)).join(',');
-            if (needsRender || view !== lastView) { zones(); renderer.render(scene, camera); minimap(); options.onCamera?.(-yaw * 180 / Math.PI, -pitch * 180 / Math.PI); lastView = view; needsRender = false; }
+            if (needsRender || view !== lastView) {
+                zones();
+                renderer.render(scene, camera);
+                minimap();
+                projectSpatial();
+                options.onCamera?.(-yaw * 180 / Math.PI, -pitch * 180 / Math.PI);
+                lastView = view; needsRender = false;
+            }
         });
         status.hidden = true;
         // Read-only diagnostics for reproducible spatial verification (no user data).

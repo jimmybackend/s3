@@ -3575,3 +3575,63 @@ body.is-dome-viewing .dw-aquarium{
   font-size:10px;
   font-family:ui-monospace,SFMono-Regular,Consolas,monospace;
 }
+
+/* Three.js desk tray: files live on the central desk, not in a middle modal. */
+.dw-real .dw-three-content{display:none!important}
+.dw-real .dw-world>.dw-desk-files{
+  left:50%!important;
+  right:auto!important;
+  bottom:92px!important;
+  width:min(620px,56vw)!important;
+  height:92px!important;
+  max-height:92px!important;
+  transform:translateX(-50%)!important;
+  padding:8px 10px 10px!important;
+  gap:10px!important;
+  overflow-x:auto!important;
+  overflow-y:hidden!important;
+  background:rgba(3,15,24,.18)!important;
+  border:0!important;
+  border-radius:18px!important;
+  box-shadow:none!important;
+  backdrop-filter:none!important;
+}
+.dw-real .dw-world>.dw-desk-files .dw-desk-book{
+  flex:0 0 58px!important;
+  width:58px!important;
+  height:78px!important;
+  border-radius:8px!important;
+}
+.dw-real .dw-world>.dw-desk-files .dw-desk-book-media,
+.dw-real .dw-world>.dw-desk-files .dw-desk-book-media img{
+  width:100%!important;
+  height:52px!important;
+  object-fit:cover!important;
+  border-radius:6px!important;
+}
+.dw-real .dw-world>.dw-desk-files .dw-desk-book-label{
+  position:static!important;
+  display:block!important;
+  width:100%!important;
+  transform:none!important;
+  padding-top:4px!important;
+  font-size:8px!important;
+  line-height:1.1!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+}
+@media(max-width:700px){
+  .dw-real .dw-world>.dw-desk-files{
+    width:min(360px,62vw)!important;
+    bottom:76px!important;
+    height:82px!important;
+  }
+  .dw-real .dw-world>.dw-desk-files .dw-desk-book{
+    flex-basis:50px!important;
+    width:50px!important;
+    height:68px!important;
+  }
+  .dw-real .dw-world>.dw-desk-files .dw-desk-book-media,
+  .dw-real .dw-world>.dw-desk-files .dw-desk-book-media img{height:44px!important}
+}

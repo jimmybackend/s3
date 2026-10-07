@@ -11,17 +11,13 @@ class Drive3DProduction {
     map.setAttribute('aria-label', 'Plano real: libreros, mesa, lámpara, posición y dirección de cámara');
     const coordinates = doc.createElement('output');
     const rootFiles = Array.from(app.deskFiles?.children || []);
-    const panel = doc.querySelector('[data-three-content]'), items = doc.querySelector('[data-three-items]');
-    doc.querySelector('[data-three-close]').onclick = () => { panel.hidden = true; };
-    items.addEventListener('click', event => { const node = event.target.closest('[data-dw-item]'); if(node) app.selectElement(node); });
-    items.addEventListener('dblclick', event => { const node = event.target.closest('[data-dw-item]'); if(node) { app.selectElement(node); app.openSelected(); } });
     let zoneKey = '', visible = [], near = [];
     function syncZones() {
         const focus = app.shelves.indexOf(app.focusedShelf);
         const detail = [...new Set([...(visible.includes(focus) ? [focus] : []), ...near])].slice(0,3);
         const key = visible.join(',') + '/' + detail.join(',');
         if (key === zoneKey) return;
-        if (focus < 0) { panel.hidden = true; items.replaceChildren(); app.deskFiles?.replaceChildren(...rootFiles); if(app.deskFocus) app.deskFocus.hidden = true; }
+        if (focus < 0) { app.deskFiles?.replaceChildren(...rootFiles); if(app.deskFocus) app.deskFocus.hidden = true; }
         zoneKey = key; clearTimeout(app.zoneTimer);
         app.visibleShelves = new Set(visible.map(i => app.shelves[i]));
         app.shelves.forEach((shelf,index) => {
@@ -32,7 +28,7 @@ class Drive3DProduction {
             shelf.dataset.lod = detail.includes(index) ? 'detail' : visible.includes(index) ? 'overview' : 'unloaded';
         });
         if (app.focusedShelf && !visible.includes(focus)) {
-            app.focusedShelf = null; panel.hidden = true; items.replaceChildren();
+            app.focusedShelf = null;
             app.deskFiles?.replaceChildren(); app.selected = null;
             app.hud.open.disabled = true; app.hud.play.hidden = true; app.hud.download.hidden = true;
             app.hud.previewImage?.removeAttribute('src');
@@ -42,13 +38,7 @@ class Drive3DProduction {
     app.showThreeContents = (shelf,state) => {
         const shelfIndex = app.shelves.indexOf(shelf);
         if (shelfIndex >= 0) app.three?.setShelfContents?.(shelfIndex, state);
-        if (shelf !== app.focusedShelf) return;
-        doc.querySelector('[data-three-title]').textContent = shelf.dataset.itemName;
-        items.replaceChildren();
-        (state.folders || []).slice(0,6).forEach(item => items.append(app.bookNode(item,true)));
-        (state.files || []).slice(0,20).forEach(item => items.append(app.bookNode(item,false)));
-        if (!items.children.length) items.textContent = 'Carpeta vacía';
-        panel.hidden = false;
+        // Data belongs to the cabinet itself; no extra middle content window.
     };
     app.chooseThreeShelf = index => {
         const shelf = app.shelves[index]; if (!shelf) return;

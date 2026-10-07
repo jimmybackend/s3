@@ -284,6 +284,7 @@
         this.world.style.setProperty('--dw-camera-pitch', `${this.camera.pitch}deg`);
         this.world.style.setProperty('--dw-camera-distance', String(this.camera.distance));
       }
+      this.document.body.classList.toggle('is-camera-near', this.camera.distance >= .18);
       this.updateRadarView();
       this.updateProximityHud();
     }

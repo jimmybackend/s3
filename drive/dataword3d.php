@@ -300,6 +300,12 @@ header('Content-Type: text/html; charset=UTF-8');
 
   <main class="dw-world" id="dwWorld">
     <div class="dw-sky" aria-hidden="true"></div>
+    <div class="dw-dome" aria-label="Domo de cristal superior">
+      <div class="dw-dome-sky"></div>
+      <div class="dw-dome-glass"></div>
+      <div class="dw-dome-ribs"></div>
+      <div class="dw-dome-ring"></div>
+    </div>
     <div class="dw-room-panorama" aria-hidden="true">
       <div class="dw-room-custom-image" data-dw-glass-image></div>
       <div class="dw-room-scenery"></div>
@@ -421,9 +427,14 @@ header('Content-Type: text/html; charset=UTF-8');
       <span class="dw-chair-base"></span>
     </div>
 
-    <section class="dw-media-stage" data-dw-media-stage hidden>
+    <section class="dw-media-stage dw-dome-viewer" data-dw-media-stage hidden aria-live="polite">
+      <div class="dw-dome-viewer-head">
+        <span><i class="fas fa-vr-cardboard"></i> VISOR DEL DOMO</span>
+        <strong data-dw-media-title>Archivo</strong>
+      </div>
       <button type="button" class="dw-media-close" data-dw-media-close aria-label="Cerrar visor"><i class="fas fa-xmark"></i></button>
-      <div data-dw-media-content></div>
+      <div class="dw-dome-viewer-body" data-dw-media-content></div>
+      <div class="dw-dome-viewer-hint">La mirada se orientó hacia arriba para observar el archivo en el domo.</div>
     </section>
 
     <section class="dw-hud" aria-live="polite">
@@ -457,7 +468,8 @@ header('Content-Type: text/html; charset=UTF-8');
       <span><kbd>↑</kbd><kbd>↓</kbd> arriba/abajo</span>
       <span><i class="fas fa-computer-mouse"></i> seleccionar/acercar</span>
       <span><kbd>Home</kbd> centrar</span>
-      <span><kbd>Esc</kbd> volver</span>
+      <span><kbd>Enter</kbd> abrir arriba</span>
+      <span><kbd>Esc</kbd> volver/cerrar visor</span>
     </div>
 
     <section class="dw-environment-panel" data-dw-environment-panel hidden>

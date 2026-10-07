@@ -8915,7 +8915,7 @@
     },
     {
       "path": "drive/js/dataword3d.js",
-      "lines": 949,
+      "lines": 962,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudDrive3D"
@@ -10792,7 +10792,7 @@
     },
     {
       "path": "drive/docs/runtime_endpoints.json",
-      "bytes": 133288,
+      "bytes": 133289,
       "valid": true,
       "root_type": "object",
       "keys": [

@@ -80,10 +80,8 @@ final class Drive3dBackgroundUploadController extends AbstractJsonController
                 'storageRoute' => $route,
                 'key' => $key,
                 'thumbnail' => $key !== '' ? 'thumb.php?key=' . rawurlencode($key) . '&w=420&h=280&fit=cover' : '',
-                // Preserve the uploaded image aspect ratio for the 360° dome.
-                // ThumbnailController's width/height path is capped at 512px, so use
-                // the proportional scaled-image path for environment textures.
-                'environment' => $key !== '' ? 'thumb.php?key=' . rawurlencode($key) . '&scale=90' : '',
+                // Three.js must receive the authenticated original, not a derived thumbnail.
+                'environment' => $key !== '' ? 'ver_archivo.php?archivo=' . rawurlencode($key) : '',
                 'folder' => 'Imagenes/fondos3D/',
             ], 201);
         } catch (Throwable $error) {

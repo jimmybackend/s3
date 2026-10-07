@@ -12,7 +12,7 @@ class Drive3DThreeLab {
         const scene = new T.Scene();
         const camera = new T.PerspectiveCamera(64, 1, .08, 150);
         camera.rotation.order = 'YXZ';
-        camera.position.set(0, 2.05, 2);
+        camera.position.set(0, 2.05, 3);
         scene.add(new T.HemisphereLight(0xb5d5f3, 0x33251b, 1.4));
         const sun = new T.DirectionalLight(0xffdfaf, 2.8);
         sun.position.set(-6, 10, 3); scene.add(sun);
@@ -24,7 +24,7 @@ class Drive3DThreeLab {
             for (let y = 0; y < 512; y++) for (let x = 0; x < 512; x++) {
                 const n = Math.sin(x * 12.9898 + y * 78.233) * 43758.5453;
                 let v;
-                if (kind === 'wood') v = 95 + 23 * Math.sin(x * .26 + Math.sin(y * .021) * 2 + Math.sin(x * .037) * 4) + (n - Math.floor(n)) * 16;
+                if (kind === 'wood') v = 95 + 7 * Math.sin(x * .9 + Math.sin(y * .021) * .7 + Math.sin(x * .037)) + (n - Math.floor(n)) * 5;
                 else v = 42 + 28 * Math.pow(Math.abs(Math.sin(x * .02 + y * .035 + Math.sin(y * .019) * 3 + Math.cos(x * .014) * 2)), 18) + (n - Math.floor(n)) * 9;
                 const i = (y * 512 + x) * 4;
                 data.data[i] = v * (kind === 'wood' ? 1.3 : 1.05);
@@ -61,13 +61,14 @@ class Drive3DThreeLab {
         }
         // Panorama is fixed to world coordinates and also supplies natural material reflections.
         const panorama = new T.Mesh(new T.SphereGeometry(65, 64, 32), new T.MeshBasicMaterial({ color: 0x93b4c9, side: T.BackSide }));
-        panorama.name = 'fixed-360-panorama'; scene.add(panorama);
-        let environmentReady = false;
+        panorama.name = 'fixed-360-panorama'; panorama.rotation.y = Math.PI; panorama.position.y = 3; scene.add(panorama);
+        scene.environmentRotation.y = Math.PI;
+        let environmentReady = false, needsRender = true;
         new T.TextureLoader().load(new URL('../three-lab/assets/alpine-panorama.jpg', import.meta.url).href, map => {
             map.colorSpace = T.SRGBColorSpace;
             panorama.material.map = map; panorama.material.color.set(0xffffff); panorama.material.needsUpdate = true;
             const env = map.clone(); env.mapping = T.EquirectangularReflectionMapping; env.needsUpdate = true;
-            scene.environment = env; scene.environmentIntensity = .55; environmentReady = true;
+            scene.environment = env; scene.environmentIntensity = .55; environmentReady = true; needsRender = true;
         }, undefined, () => {
             status.hidden = false; status.textContent = 'El paisaje no pudo cargarse. La escena sigue disponible; recarga para intentarlo de nuevo.';
         });
@@ -188,7 +189,7 @@ class Drive3DThreeLab {
         let yaw = 0, pitch = -.025, targetYaw = 0, targetPitch = -.025;
         const keys = new Set(), held = new Map(); let drag = null;
         const presets = {
-            front: [0, 2, 0], center: [0, 2, 0],
+            front: [0, 3, 0], center: [0, 3, 0],
             left: [-2, 0, .90], right: [2, 0, -.90]
         };
         document.querySelectorAll('[data-view]').forEach(button => button.addEventListener('click', () => {
@@ -243,10 +244,10 @@ class Drive3DThreeLab {
             m.fillStyle = '#67bdff'; m.beginPath(); m.moveTo(0, -.5); m.lineTo(.3, .3); m.lineTo(-.3, .3); m.closePath(); m.fill(); m.restore();
             document.querySelector('#coordinates').value = `x ${camera.position.x.toFixed(1)} · z ${camera.position.z.toFixed(1)} · giro ${T.MathUtils.radToDeg(yaw).toFixed(0)}°`;
         }
-        function resize() { const w = viewport.clientWidth, h = viewport.clientHeight; renderer.setSize(w, h); camera.aspect = w / h; camera.updateProjectionMatrix(); }
+        function resize() { const w = viewport.clientWidth, h = viewport.clientHeight; renderer.setSize(w, h); camera.aspect = w / h; camera.updateProjectionMatrix(); needsRender = true; }
         window.addEventListener('resize', resize); resize();
         renderer.domElement.addEventListener('webglcontextlost', event => { event.preventDefault(); renderer.setAnimationLoop(null); clearInput(); status.hidden = false; status.textContent = 'Se interrumpió el contexto gráfico. Recarga para continuar.'; });
-        let previous = performance.now();
+        let previous = performance.now(), lastView = '';
         renderer.setAnimationLoop(now => {
             const dt = Math.min((now - previous) / 1000, .05); previous = now;
             if (document.hidden) return;
@@ -262,7 +263,8 @@ class Drive3DThreeLab {
             const dz = (-Math.cos(yaw) * f - Math.sin(yaw) * s) * dt * 2.2;
             if (canStand(camera.position.x + dx, camera.position.z)) camera.position.x += dx;
             if (canStand(camera.position.x, camera.position.z + dz)) camera.position.z += dz;
-            renderer.render(scene, camera); minimap();
+            const view = [camera.position.x, camera.position.z, yaw, pitch].map(n => n.toFixed(5)).join(',');
+            if (needsRender || view !== lastView) { renderer.render(scene, camera); minimap(); lastView = view; needsRender = false; }
         });
         status.hidden = true;
         // Read-only diagnostics for reproducible spatial verification (no user data).

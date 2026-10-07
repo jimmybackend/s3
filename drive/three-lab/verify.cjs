@@ -60,12 +60,12 @@ function overlap(a,b) {
             assert.notEqual(state.yaw,initial.yaw); await shot(view);
         }
         await page.locator('[data-view="front"]').click();
-        await page.keyboard.down('w'); await page.waitForTimeout(500); await page.keyboard.up('w');
+        await page.keyboard.down('w'); await page.waitForFunction(z=>window.drive3dLab.snapshot().camera[2]<z-.15,initial.camera[2]); await page.keyboard.up('w');
         assert((await snapshot()).camera[2]<initial.camera[2]-.1,'Walk must move camera');
-        await page.keyboard.down('w'); await page.waitForTimeout(1500); await page.keyboard.up('w');
+        await page.keyboard.down('w'); await page.waitForFunction(()=>window.drive3dLab.snapshot().camera[2]<.72); await page.waitForTimeout(400); await page.keyboard.up('w');
         assert((await snapshot()).camera[2]>=.59,'Table collision must stop walking through the globe pedestal');
         await page.mouse.move(650,480); await page.mouse.down(); await page.mouse.move(850,420,{steps:5}); await page.mouse.up();
-        await page.waitForTimeout(300); assert((await snapshot()).yaw<-.2,'Drag must turn camera');
+        await page.waitForFunction(()=>window.drive3dLab.snapshot().yaw<-.2); assert((await snapshot()).yaw<-.2,'Drag must turn camera');
         await page.setViewportSize({width:390,height:844});
         await page.locator('[data-view="front"]').click();
         await shot('mobile');
@@ -73,7 +73,7 @@ function overlap(a,b) {
         const button=page.locator('[data-move="forward"]');
         // Use real pointer capture for the held movement check below.
         const bounds=await button.boundingBox();
-        await page.mouse.move(bounds.x+20,bounds.y+20); await page.mouse.down(); await page.waitForTimeout(400); await page.mouse.up();
+        await page.mouse.move(bounds.x+20,bounds.y+20); await page.mouse.down(); await page.waitForFunction(z=>window.drive3dLab.snapshot().camera[2]<z-.15,initial.camera[2]); await page.mouse.up();
         await page.evaluate(()=>window.dispatchEvent(new Event('blur')));
         assert((await snapshot()).camera[2]<initial.camera[2]-.1);
         assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);

@@ -160,7 +160,7 @@ $buildState = static function (string $route) use (
             ? 'thumb.php?key=' . rawurlencode($key) . '&w=420&h=280&fit=cover'
             : '';
         $environmentHref = (!$locked && $key !== '' && $kind === 'image')
-            ? 'thumb.php?key=' . rawurlencode($key) . '&scale=90'
+            ? 'ver_archivo.php?archivo=' . rawurlencode($key)
             : '';
 
         $files[] = [
@@ -297,10 +297,6 @@ header('Content-Type: text/html; charset=UTF-8');
   <main class="dw-world" id="dwWorld">
     <div id="dwThreeViewport" tabindex="0" aria-label="Biblioteca 3D. Arrastra para mirar y usa WASD para caminar."></div>
     <p data-three-status role="status">Preparando biblioteca 3D…</p>
-    <section class="dw-three-content" data-three-content hidden aria-label="Contenido del librero">
-      <button type="button" data-three-close aria-label="Cerrar contenido">Cerrar ×</button>
-      <strong data-three-title></strong><div data-three-items></div>
-    </section>
     <div class="dw-sky" aria-hidden="true"></div>
     <div class="dw-camera-scene" data-dw-camera-scene>
     <div class="dw-dome" aria-label="Domo de cristal superior">

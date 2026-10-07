@@ -102,41 +102,54 @@
       const tablet = width < 1000;
       const shelfWidth = this.shelves[0]?.offsetWidth || (compact ? 206 : tablet ? 232 : 252);
 
-      // Los muebles viven sobre una misma circunferencia. El hueco es
-      // deliberadamente mínimo: ~1–4 px, visualmente equivalente a ir pegados.
-      const gap = compact ? 2 : 4;
-      const chord = shelfWidth + gap;
+      // Pared circular de radio amplio: los libreros son muebles rígidos,
+      // pegados canto con canto. El radio grande evita el efecto de abanico
+      // y de "uno detrás de otro" que produce una curvatura demasiado cerrada.
+      const gap = 1;
+      const tangentWidth = shelfWidth + gap;
       const radius = Math.max(
-        compact ? 1080 : tablet ? 1260 : 1480,
-        chord * 5.4
+        compact ? 3600 : tablet ? 4300 : 5200,
+        tangentWidth * 18
       );
-      const stepRad = 2 * Math.asin(Math.min(.98, chord / (2 * radius)));
+      const stepRad = 2 * Math.atan(tangentWidth / (2 * radius));
       const stepDegrees = stepRad * 180 / Math.PI;
       const center = (this.shelves.length - 1) / 2;
 
-      this.shelfLayout = { shelfWidth, gap, chord, radius, stepRad, stepDegrees };
+      this.shelfLayout = { shelfWidth, gap, tangentWidth, radius, stepRad, stepDegrees };
 
       this.shelves.forEach((shelf, index) => {
         const slot = index - center;
-        const theta = slot * stepRad;
+        shelf.dataset.worldSlot = String(slot);
+        shelf.dataset.worldAngle = String(slot * stepDegrees);
+      });
 
-        // Arco circular real: todos los muebles comparten el mismo radio.
-        // El frente central queda en z=0 y los laterales retroceden sólo
-        // lo que exige la curvatura, nunca mediante apilamiento artificial.
+      this.positionShelvesForCamera(this.camera?.yaw || 0, animate);
+    }
+
+    positionShelvesForCamera(yaw, animate = false) {
+      const radius = this.shelfLayout?.radius || 5200;
+
+      this.shelves.forEach((shelf) => {
+        const worldAngle = Number(shelf.dataset.worldAngle || 0);
+        const relative = this.normalizeAngle(worldAngle - yaw);
+        const theta = relative * Math.PI / 180;
+
+        // Segmentos tangentes de una misma circunferencia. El giro usa el
+        // mismo signo que la tangente física: los cantos vecinos se encuentran
+        // sin cruzarse y el librero que se mira queda totalmente de frente.
         const x = Math.sin(theta) * radius;
         const z = -(1 - Math.cos(theta)) * radius;
-        const yaw = -theta * 180 / Math.PI;
+        const shelfYaw = relative;
 
-        shelf.style.transitionDuration = animate ? '' : '0ms';
-        shelf.style.transform = `translate3d(${x}px,0,${z}px) rotateY(${yaw}deg)`;
+        shelf.style.transform = `translate3d(${x}px,0,${z}px) rotateY(${shelfYaw}deg)`;
         shelf.style.opacity = '1';
         shelf.style.pointerEvents = '';
-        shelf.style.zIndex = String(Math.max(20, 100 - Math.round(Math.abs(slot) * 2)));
+        shelf.style.zIndex = String(Math.max(20, 200 - Math.round(Math.abs(relative) * 2)));
 
-        shelf.dataset.worldAngle = String(yaw * -1);
+        shelf.dataset.viewAngle = String(relative.toFixed(2));
         shelf.dataset.worldX = String(x);
         shelf.dataset.worldZ = String(z);
-        shelf.dataset.worldYaw = String(yaw);
+        shelf.dataset.worldYaw = String(shelfYaw);
       });
     }
 
@@ -357,28 +370,23 @@
       const width = this.world?.clientWidth || this.window.innerWidth;
       const compact = width < 620;
       const tablet = width < 1000;
-      const radius = this.shelfLayout?.radius || (compact ? 1080 : tablet ? 1260 : 1480);
       const lateralPx = this.camera.lateral * (compact ? 120 : tablet ? 180 : 240);
       const forwardScale = 1 + this.camera.forward * (compact ? .10 : .13);
-
-      // El paneo usa la misma circunferencia que la pared de libreros.
-      // Así seleccionar un mueble centra la mirada sin cambiar su posición.
-      const yawRad = yaw * Math.PI / 180;
-      const yawPan = Math.sin(yawRad) * radius;
       const pitchPan = pitch * (compact ? 4.0 : tablet ? 4.8 : 5.4);
 
       if (this.cameraScene) {
         this.cameraScene.style.transitionDuration = animate ? '' : '0ms';
-        this.cameraScene.style.transform = `translate3d(${-(yawPan + lateralPx)}px,${pitchPan}px,0) scale(${forwardScale})`;
+        this.cameraScene.style.transform = `translate3d(${-lateralPx}px,${pitchPan}px,0) scale(${forwardScale})`;
       }
 
-      const stepDegrees = this.shelfLayout?.stepDegrees || 12;
+      // Girar la mirada no arrastra los muebles por la pantalla. Se recalcula
+      // su posición relativa a la cámara dentro de la misma pared circular.
+      this.positionShelvesForCamera(yaw, false);
+
+      const stepDegrees = this.shelfLayout?.stepDegrees || 3;
       this.shelves.forEach((shelf) => {
-        const worldAngle = Number(shelf.dataset.worldAngle || 0);
-        const relative = this.normalizeAngle(worldAngle - yaw);
-        const abs = Math.abs(relative);
-        shelf.dataset.viewAngle = String(relative.toFixed(2));
-        shelf.classList.toggle('is-looked-at', abs < stepDegrees * .48);
+        const relative = Number(shelf.dataset.viewAngle || 0);
+        shelf.classList.toggle('is-looked-at', Math.abs(relative) < stepDegrees * .48);
       });
 
       if (this.pitchRange) this.pitchRange.value = String(Math.round(pitch));

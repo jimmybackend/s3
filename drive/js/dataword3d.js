@@ -464,7 +464,7 @@
 
       this.world?.addEventListener('pointerdown', (event) => {
         if (this.useThree) return;
-        if (event.target.closest('button,a,input,select,.dw-hud,.dw-desk,.dw-environment-panel,.dw-media-stage,.dw-radar')) return;
+        if (event.target.closest('button,a,input,select,.dw-hud,.dw-desk,.dw-environment-panel,.dw-media-stage,.dw-spatial-picture-window,.dw-radar')) return;
         this.dragMoved = false;
         this.dragStart = { x:event.clientX, y:event.clientY, yaw:this.camera.yaw, pitch:this.camera.pitch };
         this.world.setPointerCapture?.(event.pointerId);

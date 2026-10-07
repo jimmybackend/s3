@@ -3234,3 +3234,216 @@ body.is-dome-viewing .dw-aquarium{
 .dw-shelf.is-active::after{
   animation:none !important;
 }
+
+
+/* ===== Drive 3D architectural panorama: square shelves, end depth, wrapped scenery ===== */
+.dw-world{
+  --dw-panorama-shift:0px;
+}
+
+/* El domo queda por encima de los muebles: no recorta ni deforma sus esquinas. */
+.dw-dome{
+  left:1.5% !important;
+  right:1.5% !important;
+  top:-2.5% !important;
+  height:46% !important;
+  border-radius:50% 50% 38% 38% / 62% 62% 28% 28% !important;
+  overflow:hidden !important;
+}
+.dw-stage{
+  inset:5.5% 0 185px 0 !important;
+}
+
+/* La imagen de cristales se trata como envoltura panorámica de 360 grados.
+   Las costillas y montantes permanecen delante y el paisaje se desplaza detrás. */
+.dw-room-panorama{
+  left:0 !important;
+  right:0 !important;
+  top:0 !important;
+  height:63% !important;
+  overflow:hidden !important;
+  border-radius:0 0 28% 28% / 0 0 11% 11% !important;
+}
+.dw-room-custom-image,
+.dw-room-scenery{
+  top:0 !important;
+  bottom:0 !important;
+  left:-100% !important;
+  right:auto !important;
+  width:300% !important;
+  transform:translate3d(var(--dw-panorama-shift),0,0) !important;
+  transform-origin:center center !important;
+  will-change:transform;
+}
+.dw-room-custom-image{
+  background-size:100% 100% !important;
+  background-position:center !important;
+  background-repeat:no-repeat !important;
+}
+.dw-room-scenery{
+  background-size:100% 100% !important;
+  background-position:center !important;
+}
+
+.dw-dome-custom-image{
+  position:absolute;
+  z-index:0;
+  top:0;
+  bottom:0;
+  left:-100%;
+  width:300%;
+  opacity:0;
+  pointer-events:none;
+  background-size:100% 100%;
+  background-position:center;
+  background-repeat:no-repeat;
+  transform:translate3d(var(--dw-panorama-shift),0,0);
+  transform-origin:center center;
+  filter:saturate(.94) contrast(1.03) brightness(.78);
+  transition:opacity .3s ease;
+  will-change:transform;
+}
+.dw-dome-custom-image.is-customized{opacity:.62}
+.dw-dome-sky{z-index:1}
+.dw-dome-glass{z-index:2;opacity:.13 !important}
+.dw-dome-ribs{z-index:3}
+
+/* Frente completamente rectangular: nada de esquinas cortadas por giro del mueble. */
+.dw-shelf{
+  transform-style:preserve-3d !important;
+  border-radius:1px !important;
+  overflow:visible !important;
+}
+.dw-shelf-crown,
+.dw-shelf-base{
+  border-radius:0 !important;
+}
+.dw-shelf-volume-left,
+.dw-shelf-volume-right,
+.dw-shelf-volume-top{
+  display:none !important;
+}
+
+/* El volumen aparece exclusivamente en el borde exterior de la fila. */
+.dw-shelf.is-edge-visible-left .dw-shelf-volume-left{
+  display:block !important;
+  left:-31px !important;
+  top:-1px !important;
+  width:31px !important;
+  height:calc(100% + 2px) !important;
+  transform-origin:right center !important;
+  transform:perspective(260px) rotateY(-58deg) !important;
+  background:linear-gradient(90deg,#2b1007,#6d3118 58%,#935027) !important;
+  border:1px solid rgba(255,194,126,.15) !important;
+  box-shadow:inset -7px 0 13px rgba(0,0,0,.38) !important;
+}
+.dw-shelf.is-edge-visible-right .dw-shelf-volume-right{
+  display:block !important;
+  right:-31px !important;
+  left:auto !important;
+  top:-1px !important;
+  width:31px !important;
+  height:calc(100% + 2px) !important;
+  transform-origin:left center !important;
+  transform:perspective(260px) rotateY(58deg) !important;
+  background:linear-gradient(90deg,#935027,#6d3118 42%,#2b1007) !important;
+  border:1px solid rgba(255,194,126,.15) !important;
+  box-shadow:inset 7px 0 13px rgba(0,0,0,.38) !important;
+}
+
+/* Lámpara de pie: remate fotográfico del extremo real de la biblioteca. */
+.dw-edge-lamp{
+  position:absolute;
+  z-index:26;
+  left:50%;
+  top:50%;
+  width:84px;
+  height:350px;
+  margin-left:-42px;
+  margin-top:-112px;
+  opacity:0;
+  pointer-events:none;
+  transform-style:preserve-3d;
+  transition:opacity .2s ease;
+  filter:drop-shadow(0 16px 13px rgba(0,0,0,.46));
+}
+.dw-edge-lamp.is-visible{opacity:1}
+.dw-edge-lamp-shade{
+  position:absolute;
+  left:7px;
+  top:0;
+  width:70px;
+  height:57px;
+  clip-path:polygon(25% 0,75% 0,100% 100%,0 100%);
+  background:
+    repeating-linear-gradient(90deg,rgba(125,92,49,.13) 0 2px,transparent 2px 7px),
+    linear-gradient(180deg,#fff7df,#eadab9 72%,#c6aa7d);
+  border-bottom:3px solid rgba(135,101,56,.46);
+  box-shadow:0 5px 18px rgba(255,218,155,.22);
+}
+.dw-edge-lamp-pole{
+  position:absolute;
+  left:40px;
+  top:54px;
+  width:5px;
+  height:255px;
+  border-radius:3px;
+  background:linear-gradient(90deg,#7a4d1d,#d2a35f 45%,#81521d);
+  box-shadow:0 0 5px rgba(255,197,105,.18);
+}
+.dw-edge-lamp-base{
+  position:absolute;
+  left:17px;
+  bottom:0;
+  width:52px;
+  height:13px;
+  border-radius:50%;
+  background:radial-gradient(ellipse at 50% 30%,#d4aa68,#7f5424 58%,#3e2814 100%);
+  box-shadow:0 5px 10px rgba(0,0,0,.4);
+}
+
+@media (max-width:900px){
+  .dw-dome{
+    top:-1.5% !important;
+    height:43% !important;
+  }
+  .dw-room-panorama{
+    height:62% !important;
+  }
+  .dw-stage{
+    inset:4.5% 0 178px 0 !important;
+  }
+}
+@media (max-width:620px){
+  .dw-dome{
+    left:.5% !important;
+    right:.5% !important;
+    top:-1% !important;
+    height:41% !important;
+  }
+  .dw-stage{
+    inset:3.5% 0 170px 0 !important;
+  }
+  .dw-edge-lamp{
+    width:66px;
+    height:282px;
+    margin-left:-33px;
+    margin-top:-89px;
+  }
+  .dw-edge-lamp-shade{
+    left:6px;
+    width:54px;
+    height:44px;
+  }
+  .dw-edge-lamp-pole{
+    left:31px;
+    top:42px;
+    width:4px;
+    height:207px;
+  }
+  .dw-edge-lamp-base{
+    left:13px;
+    width:40px;
+    height:10px;
+  }
+}

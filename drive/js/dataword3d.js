@@ -62,7 +62,9 @@
       this.preDomeCamera = null;
       this.environmentPanel = doc.querySelector('[data-dw-environment-panel]');
       this.glassImage = doc.querySelector('[data-dw-glass-image]');
+      this.domeImage = doc.querySelector('[data-dw-dome-image]');
       this.floorImage = doc.querySelector('[data-dw-floor-image]');
+      this.edgeLamps = Array.from(doc.querySelectorAll('[data-dw-edge-lamp]'));
       this.environmentSelected = doc.querySelector('[data-environment-selected]');
       this.backgroundGallery = doc.querySelector('[data-background-gallery]');
       this.radar = doc.querySelector('[data-dw-radar]');
@@ -102,14 +104,13 @@
       const tablet = width < 1000;
       const shelfWidth = this.shelves[0]?.offsetWidth || (compact ? 206 : tablet ? 232 : 252);
 
-      // Pared circular de radio amplio: los libreros son muebles rígidos,
-      // pegados canto con canto. El radio grande evita el efecto de abanico
-      // y de "uno detrás de otro" que produce una curvatura demasiado cerrada.
+      // El mobiliario ocupa una pared de radio muy amplio. La curvatura existe
+      // en la posición física, pero el frente de cada mueble permanece cuadrado.
       const gap = 1;
       const tangentWidth = shelfWidth + gap;
       const radius = Math.max(
-        compact ? 3600 : tablet ? 4300 : 5200,
-        tangentWidth * 18
+        compact ? 5200 : tablet ? 6400 : 7600,
+        tangentWidth * 24
       );
       const stepRad = 2 * Math.atan(tangentWidth / (2 * radius));
       const stepDegrees = stepRad * 180 / Math.PI;
@@ -121,35 +122,70 @@
         const slot = index - center;
         shelf.dataset.worldSlot = String(slot);
         shelf.dataset.worldAngle = String(slot * stepDegrees);
+        shelf.classList.toggle('is-row-first', index === 0);
+        shelf.classList.toggle('is-row-last', index === this.shelves.length - 1);
       });
 
       this.positionShelvesForCamera(this.camera?.yaw || 0, animate);
     }
 
     positionShelvesForCamera(yaw, animate = false) {
-      const radius = this.shelfLayout?.radius || 5200;
+      const radius = this.shelfLayout?.radius || 7600;
+      const stepDegrees = this.shelfLayout?.stepDegrees || 2;
+      const firstAngle = Number(this.shelves[0]?.dataset.worldAngle || 0);
+      const lastAngle = Number(this.shelves[this.shelves.length - 1]?.dataset.worldAngle || 0);
+      const edgeWindow = Math.max(stepDegrees * .72, .85);
+      const showLeftEdge = this.shelves.length > 0 && yaw <= firstAngle + edgeWindow;
+      const showRightEdge = this.shelves.length > 0 && yaw >= lastAngle - edgeWindow;
 
-      this.shelves.forEach((shelf) => {
+      this.shelves.forEach((shelf, index) => {
         const worldAngle = Number(shelf.dataset.worldAngle || 0);
         const relative = this.normalizeAngle(worldAngle - yaw);
         const theta = relative * Math.PI / 180;
 
-        // Segmentos tangentes de una misma circunferencia. El giro usa el
-        // mismo signo que la tangente física: los cantos vecinos se encuentran
-        // sin cruzarse y el librero que se mira queda totalmente de frente.
+        // La cámara recorre la pared; los muebles no se ladean. Así el frente
+        // sigue siendo un rectángulo completo y el volumen sólo aparece al final.
         const x = Math.sin(theta) * radius;
         const z = -(1 - Math.cos(theta)) * radius;
-        const shelfYaw = relative;
+        const shelfYaw = 0;
 
+        shelf.style.transitionDuration = animate ? '' : '0ms';
         shelf.style.transform = `translate3d(${x}px,0,${z}px) rotateY(${shelfYaw}deg)`;
         shelf.style.opacity = '1';
         shelf.style.pointerEvents = '';
-        shelf.style.zIndex = String(Math.max(20, 200 - Math.round(Math.abs(relative) * 2)));
+        shelf.style.zIndex = String(Math.max(20, 220 - Math.round(Math.abs(relative) * 2)));
 
+        shelf.classList.toggle('is-edge-visible-left', index === 0 && showLeftEdge);
+        shelf.classList.toggle('is-edge-visible-right', index === this.shelves.length - 1 && showRightEdge);
         shelf.dataset.viewAngle = String(relative.toFixed(2));
         shelf.dataset.worldX = String(x);
         shelf.dataset.worldZ = String(z);
         shelf.dataset.worldYaw = String(shelfYaw);
+      });
+
+      this.positionEndMarkersForCamera(yaw, showLeftEdge, showRightEdge);
+    }
+
+    positionEndMarkersForCamera(yaw, showLeftEdge, showRightEdge) {
+      if (!this.edgeLamps?.length || !this.shelves.length) return;
+      const radius = this.shelfLayout?.radius || 7600;
+      const stepDegrees = this.shelfLayout?.stepDegrees || 2;
+      const firstAngle = Number(this.shelves[0]?.dataset.worldAngle || 0);
+      const lastAngle = Number(this.shelves[this.shelves.length - 1]?.dataset.worldAngle || 0);
+
+      this.edgeLamps.forEach((lamp) => {
+        const side = lamp.dataset.dwEdgeLamp || 'right';
+        const worldAngle = side === 'left'
+          ? firstAngle - stepDegrees * .92
+          : lastAngle + stepDegrees * .92;
+        const relative = this.normalizeAngle(worldAngle - yaw);
+        const theta = relative * Math.PI / 180;
+        const x = Math.sin(theta) * radius;
+        const z = -(1 - Math.cos(theta)) * radius;
+        const visible = side === 'left' ? showLeftEdge : showRightEdge;
+
+        lamp.style.transform = `translate3d(${x}px,0,${z}px)`;
+        lamp.classList.toggle('is-visible', visible);
       });
     }
 
@@ -393,6 +429,12 @@
       if (this.world) {
         this.world.style.setProperty('--dw-camera-pitch', `${pitch}deg`);
         this.world.style.setProperty('--dw-camera-yaw', String(yaw));
+
+        // El paisaje vive detrás del cristal como una envoltura de 360 grados.
+        // Al girar la mirada se revela otra porción del panorama, mientras las
+        // divisiones estructurales del domo permanecen delante del paisaje.
+        const panoramaShift = -(yaw / 180) * Math.max(1, width);
+        this.world.style.setProperty('--dw-panorama-shift', `${panoramaShift}px`);
       }
       this.updateRadarView();
       this.updateRadarPlayer();
@@ -790,10 +832,16 @@
     }
 
     applySurfaceImage(surface, url) {
-      const target = surface === 'glass' ? this.glassImage : this.floorImage;
-      if (!target) return;
-      target.style.backgroundImage = url ? `url("${String(url).replace(/"/g,'%22')}")` : '';
-      target.classList.toggle('is-customized', Boolean(url));
+      const targets = surface === 'glass'
+        ? [this.glassImage, this.domeImage].filter(Boolean)
+        : [this.floorImage].filter(Boolean);
+      if (!targets.length) return;
+
+      const imageValue = url ? `url("${String(url).replace(/"/g,'%22')}")` : '';
+      targets.forEach((target) => {
+        target.style.backgroundImage = imageValue;
+        target.classList.toggle('is-customized', Boolean(url));
+      });
     }
 
     applyRoomPreferences() {

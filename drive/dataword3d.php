@@ -304,15 +304,12 @@ header('Content-Type: text/html; charset=UTF-8');
       <div class="dw-dome-sky"></div>
       <div class="dw-dome-glass"></div>
       <div class="dw-dome-ribs"></div>
-      <div class="dw-dome-ring"></div>
     </div>
     <div class="dw-room-panorama" aria-hidden="true">
       <div class="dw-room-custom-image" data-dw-glass-image></div>
       <div class="dw-room-scenery"></div>
       <div class="dw-room-mullions"></div>
     </div>
-    <div class="dw-roof" aria-hidden="true"></div>
-    <div class="dw-room-light-ring" aria-hidden="true"></div>
     <div class="dw-floor" aria-hidden="true">
       <div class="dw-floor-custom-image" data-dw-floor-image></div>
     </div>
@@ -362,9 +359,6 @@ header('Content-Type: text/html; charset=UTF-8');
       </div>
     </section>
 
-    <button class="dw-rotate dw-rotate-left" type="button" data-camera-turn="-1" aria-label="Mirar a la izquierda"><i class="fas fa-chevron-left"></i></button>
-    <button class="dw-rotate dw-rotate-right" type="button" data-camera-turn="1" aria-label="Mirar a la derecha"><i class="fas fa-chevron-right"></i></button>
-
     <section class="dw-radar" data-dw-radar aria-label="Mapa de orientación de la sala">
       <div class="dw-radar-room">
         <span class="dw-radar-view" data-radar-view></span>
@@ -376,11 +370,17 @@ header('Content-Type: text/html; charset=UTF-8');
         <span>toca el mapa para mirar</span>
       </div>
       <div class="dw-radar-look-controls">
-        <button type="button" data-camera-look-toggle aria-pressed="false"><i class="fas fa-hand-pointer"></i> Mover visión</button>
         <button type="button" data-camera-pitch="-6" aria-label="Mirar arriba"><i class="fas fa-chevron-up"></i></button>
+        <label class="dw-radar-pitch-control">
+          <span>Ángulo vertical</span>
+          <input type="range" min="-42" max="42" step="1" value="0" data-camera-pitch-range aria-label="Ángulo vertical de la mirada">
+        </label>
         <button type="button" data-camera-pitch="6" aria-label="Mirar abajo"><i class="fas fa-chevron-down"></i></button>
       </div>
-      <button type="button" data-camera-home><i class="fas fa-crosshairs"></i> Centrar</button>
+      <div class="dw-radar-actions">
+        <button type="button" data-camera-home><i class="fas fa-crosshairs"></i> Centrar</button>
+        <button type="button" data-camera-exit-focus><i class="fas fa-person-walking-arrow-loop-left"></i> Vista general</button>
+      </div>
     </section>
 
     <section class="dw-desk" aria-label="Escritorio central">
@@ -471,7 +471,7 @@ header('Content-Type: text/html; charset=UTF-8');
       <span><kbd>←</kbd><kbd>→</kbd> mirar</span>
       <span><kbd>↑</kbd><kbd>↓</kbd> arriba/abajo</span>
       <span><i class="fas fa-hand-pointer"></i> arrastrar para mirar</span>
-      <span><i class="fas fa-computer-mouse"></i> tocar librero para acercar</span>
+      <span><i class="fas fa-computer-mouse"></i> tocar librero para seleccionar</span>
       <span><kbd>Home</kbd> centrar</span>
       <span><kbd>Enter</kbd> abrir archivo</span>
       <span><kbd>Esc</kbd> volver/cerrar visor</span>

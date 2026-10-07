@@ -12,6 +12,8 @@
       this.selected = null;
       this.previewCache = new Map();
       this.dragStart = null;
+      this.dragMoved = false;
+      this.lookMode = false;
       this.saveTimer = null;
       this.camera = {
         yaw: Number(this.config.preferences?.cameraYaw || 0),
@@ -90,7 +92,16 @@
       this.document.querySelectorAll('[data-camera-turn]').forEach((button) => {
         button.addEventListener('click', () => this.turnCamera(Number(button.dataset.cameraTurn || 0) * 18));
       });
-      this.document.querySelector('[data-camera-home]')?.addEventListener('click', () => this.centerCamera());
+      this.document.querySelector('[data-camera-home]')?.addEventListener('click', () => {
+        this.setLookMode(false);
+        this.centerCamera();
+      });
+      this.document.querySelector('[data-camera-look-toggle]')?.addEventListener('click', (event) => {
+        this.setLookMode(!this.lookMode, event.currentTarget);
+      });
+      this.document.querySelectorAll('[data-camera-pitch]').forEach((button) => {
+        button.addEventListener('click', () => this.lookVertical(Number(button.dataset.cameraPitch || 0)));
+      });
 
       this.hud.open?.addEventListener('click', () => this.openSelected());
       this.hud.desk?.addEventListener('click', () => this.bringToDesk());
@@ -136,10 +147,16 @@
       });
 
       this.ring?.addEventListener('click', (event) => {
+        if (this.dragMoved || this.lookMode) return;
         const item = event.target.closest('[data-dw-item]');
         if (!item) return;
         if (item.classList.contains('dw-shelf')) {
-          this.focusShelf(item, true);
+          const alreadyFocused = this.camera.target === (item.dataset.itemName || '') && this.camera.distance >= .38;
+          if (alreadyFocused || event.target.closest('.dw-shelf-crown')) {
+            this.focusShelf(item, true, .72);
+          } else {
+            this.focusShelf(item, true, .42);
+          }
           return;
         }
         this.selectElement(item);
@@ -165,6 +182,7 @@
 
       this.world?.addEventListener('pointerdown', (event) => {
         if (event.target.closest('button,a,input,select,.dw-hud,.dw-desk,.dw-environment-panel,.dw-media-stage,.dw-radar')) return;
+        this.dragMoved = false;
         this.dragStart = { x:event.clientX, y:event.clientY, yaw:this.camera.yaw, pitch:this.camera.pitch };
         this.world.setPointerCapture?.(event.pointerId);
       });
@@ -172,15 +190,20 @@
         if (!this.dragStart) return;
         const dx = event.clientX - this.dragStart.x;
         const dy = event.clientY - this.dragStart.y;
-        this.camera.yaw = this.normalizeAngle(this.dragStart.yaw - dx * .16);
-        this.camera.pitch = this.clamp(this.dragStart.pitch + dy * .10, -28, 28);
+        if (Math.abs(dx) + Math.abs(dy) > 7) this.dragMoved = true;
+        if (!this.dragMoved && !this.lookMode) return;
+        this.camera.yaw = this.normalizeAngle(this.dragStart.yaw - dx * .18);
+        this.camera.pitch = this.clamp(this.dragStart.pitch + dy * .13, -42, 42);
         this.renderCamera();
       });
-      this.world?.addEventListener('pointerup', () => {
+      const finishLookGesture = () => {
         if (!this.dragStart) return;
         this.dragStart = null;
-        this.schedulePreferenceSave();
-      });
+        if (this.dragMoved) this.schedulePreferenceSave();
+        this.window.setTimeout(() => { this.dragMoved = false; }, 0);
+      };
+      this.world?.addEventListener('pointerup', finishLookGesture);
+      this.world?.addEventListener('pointercancel', finishLookGesture);
 
       this.world?.addEventListener('wheel', (event) => {
         if (event.target.closest('.dw-hud,.dw-desk,.dw-environment-panel,.dw-media-stage')) return;
@@ -197,7 +220,8 @@
         const x = event.clientX - rect.left - rect.width / 2;
         const y = event.clientY - rect.top - rect.height / 2;
         this.camera.yaw = this.normalizeAngle(Math.atan2(x, -y) * 180 / Math.PI);
-        this.camera.pitch = 0;
+        const vertical = (y / Math.max(1, rect.height / 2));
+        this.camera.pitch = this.clamp(vertical * 34, -34, 34);
         this.renderCamera();
         this.schedulePreferenceSave();
       });
@@ -241,9 +265,21 @@
     }
 
     lookVertical(delta) {
-      this.camera.pitch = this.clamp(this.camera.pitch + delta, -28, 28);
+      this.camera.pitch = this.clamp(this.camera.pitch + delta, -42, 42);
       this.renderCamera();
       this.schedulePreferenceSave();
+    }
+
+    setLookMode(enabled, sourceButton = null) {
+      this.lookMode = Boolean(enabled);
+      this.document.body.classList.toggle('is-look-mode', this.lookMode);
+      const button = sourceButton || this.document.querySelector('[data-camera-look-toggle]');
+      if (button) {
+        button.setAttribute('aria-pressed', this.lookMode ? 'true' : 'false');
+        button.innerHTML = this.lookMode
+          ? '<i class="fas fa-circle-xmark"></i> Salir de mirada'
+          : '<i class="fas fa-hand-pointer"></i> Mover visión';
+      }
     }
 
     centerCamera() {
@@ -303,11 +339,12 @@
       return this.shelves.find((shelf) => shelf.dataset.itemName === wanted) || null;
     }
 
-    focusShelf(shelf, approach = true) {
+    focusShelf(shelf, approach = true, distance = .42) {
       const worldAngle = Number(shelf.dataset.worldAngle || 0);
+      this.setLookMode(false);
       this.camera.yaw = this.normalizeAngle(worldAngle);
       this.camera.pitch = 0;
-      this.camera.distance = approach ? .42 : this.camera.distance;
+      this.camera.distance = approach ? this.clamp(distance, .18, .82) : this.camera.distance;
       this.camera.target = shelf.dataset.itemName || '';
       this.renderCamera();
       this.selectShelf(shelf, true);
@@ -773,7 +810,7 @@
         target:this.camera.target,
       };
 
-      this.camera.pitch = -24;
+      this.camera.pitch = -18;
       this.camera.distance = Math.max(.08, Math.min(.32, this.camera.distance));
       this.renderCamera();
       this.document.body.classList.add('is-dome-viewing');

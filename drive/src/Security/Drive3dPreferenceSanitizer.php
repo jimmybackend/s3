@@ -40,15 +40,15 @@ final class Drive3dPreferenceSanitizer
         ];
     }
 
-    /** @return list<array{id:string,name:string,path:string,openHref:string,world:list<float>}> */
+    /** @return list<array{id:string,name:string,path:string,openHref:string,world:list<float>}|null> */
     private function spatialImages(mixed $value): array
     {
+        $slots = array_fill(0, 12, null);
         if (!is_array($value)) {
-            return [];
+            return $slots;
         }
 
-        $images = [];
-        foreach (array_slice(array_values($value), 0, 12) as $entry) {
+        foreach (array_slice(array_values($value), 0, 12) as $index => $entry) {
             if (!is_array($entry)) {
                 continue;
             }
@@ -61,7 +61,7 @@ final class Drive3dPreferenceSanitizer
                 continue;
             }
 
-            $images[] = [
+            $slots[$index] = [
                 'id' => $id,
                 'name' => mb_substr(trim((string)($entry['name'] ?? 'Imagen')), 0, 255),
                 'path' => mb_substr(str_replace(["\r", "\n", "\0"], '', (string)($entry['path'] ?? '')), 0, 1024),
@@ -70,7 +70,7 @@ final class Drive3dPreferenceSanitizer
             ];
         }
 
-        return $images;
+        return $slots;
     }
 
     /** @return list<float>|null */

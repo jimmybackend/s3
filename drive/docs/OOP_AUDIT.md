@@ -8,8 +8,8 @@
 - PHP que ya contienen clases/interfaces: **318**
 - PHP marcados para migración/revisión: **0**
 - Tests PHP separados del objetivo OOP de runtime: **78**
-- JavaScript analizados: **83**
-- JavaScript que ya contienen clases: **76**
+- JavaScript analizados: **85**
+- JavaScript que ya contienen clases: **78**
 - JavaScript runtime marcados para migración/revisión: **1**
 - Tests JavaScript separados del objetivo OOP de runtime: **11**
 - JavaScript OOP con fachada `window` de compatibilidad: **8**
@@ -74,7 +74,7 @@
 | `drive/crear_carpeta.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/create_folder_document.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/database-backup.php` | 10 | thin endpoint | 0 | — | — | — | — |
-| `drive/dataword3d.php` | 558 | view/entrypoint | 0 | — | — | — | — |
+| `drive/dataword3d.php` | 562 | view/entrypoint | 0 | — | — | — | — |
 | `drive/delete_multiple.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/descargar.php` | 8 | thin endpoint | 0 | — | — | — | — |
 | `drive/descargar_archivo.php` | 8 | thin endpoint | 0 | — | — | — | — |
@@ -608,11 +608,13 @@
 | `drive/js/background-tasks.js` | 1352 | class/module | BackgroundTaskCenter | — | — | — |
 | `drive/js/carpetas.js` | 1200 | class/module | CarpetasModule | — | actualizarBloqueCarpetas | window functions: actualizarBloqueCarpetas |
 | `drive/js/compute-node-idle.js` | 290 | class/module | ArcadeCloudComputeIdleGuard | — | — | — |
-| `drive/js/dataword3d.js` | 1096 | class/module | ArcadeCloudDrive3D | — | — | — |
+| `drive/js/dataword3d.js` | 1123 | class/module | ArcadeCloudDrive3D | — | — | — |
 | `drive/js/descarga-multiple.js` | 114 | class/module | DescargaMultipleModule | — | — | — |
 | `drive/js/descarga-uno.js` | 110 | class/module | DescargaUnoModule | — | — | — |
 | `drive/js/desktop-shell.js` | 182 | class/module | ArcadeCloudDesktopShell | — | — | — |
-| `drive/js/drive3d-three-lab.js` | 290 | class/module | Drive3DThreeLab | — | — | — |
+| `drive/js/drive3d-production.js` | 82 | class/module | Drive3DProduction | — | — | — |
+| `drive/js/drive3d-scene.js` | 387 | class/module | Drive3DScene | — | — | — |
+| `drive/js/drive3d-three-lab.js` | 18 | class/module | Drive3DLab | — | — | — |
 | `drive/js/editar-txt.js` | 68 | class/module | EditarTxtModule | — | — | — |
 | `drive/js/elimina-multiple.js` | 104 | class/module | EliminaMultipleModule | — | — | — |
 | `drive/js/elimina-uno.js` | 122 | class/module | EliminaUnoModule | — | — | — |

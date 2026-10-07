@@ -4,8 +4,8 @@
     "php_class_modules": 318,
     "php_needs_migration": 0,
     "php_tests": 78,
-    "js_total": 83,
-    "js_class_modules": 76,
+    "js_total": 85,
+    "js_class_modules": 78,
     "js_needs_migration": 1,
     "js_tests": 11,
     "js_compatibility_facades": 8,
@@ -672,7 +672,7 @@
     },
     {
       "path": "drive/dataword3d.php",
-      "lines": 558,
+      "lines": 562,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -8930,7 +8930,7 @@
     },
     {
       "path": "drive/js/dataword3d.js",
-      "lines": 1096,
+      "lines": 1123,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudDrive3D"
@@ -9017,16 +9017,58 @@
       "issues": []
     },
     {
-      "path": "drive/js/drive3d-three-lab.js",
-      "lines": 290,
+      "path": "drive/js/drive3d-production.js",
+      "lines": 82,
       "kind": "class/module",
       "classes": [
-        "Drive3DThreeLab"
+        "Drive3DProduction"
+      ],
+      "functions": [],
+      "window_assign": [],
+      "window_func": [],
+      "top_vars": [],
+      "iife": false,
+      "ajax": {
+        "fetch": 0,
+        "xhr": 0,
+        "jquery": 0,
+        "json_consumers": 0,
+        "response_checks": 0
+      },
+      "issues": []
+    },
+    {
+      "path": "drive/js/drive3d-scene.js",
+      "lines": 387,
+      "kind": "class/module",
+      "classes": [
+        "Drive3DScene"
       ],
       "functions": [],
       "window_assign": [
         "drive3dLab"
       ],
+      "window_func": [],
+      "top_vars": [],
+      "iife": false,
+      "ajax": {
+        "fetch": 0,
+        "xhr": 0,
+        "jquery": 0,
+        "json_consumers": 0,
+        "response_checks": 1
+      },
+      "issues": []
+    },
+    {
+      "path": "drive/js/drive3d-three-lab.js",
+      "lines": 18,
+      "kind": "class/module",
+      "classes": [
+        "Drive3DLab"
+      ],
+      "functions": [],
+      "window_assign": [],
       "window_func": [],
       "top_vars": [
         "status"

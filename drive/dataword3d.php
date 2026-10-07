@@ -495,7 +495,7 @@ header('Content-Type: text/html; charset=UTF-8');
       <span><kbd>←</kbd><kbd>→</kbd> mirar</span>
       <span><kbd>↑</kbd><kbd>↓</kbd> arriba/abajo</span>
       <span><i class="fas fa-hand-pointer"></i> arrastrar para mirar</span>
-      <span><i class="fas fa-computer-mouse"></i> librero = seleccionar · piso = caminar</span>
+      <span><i class="fas fa-computer-mouse"></i> librero = seleccionar · WASD / piso = caminar</span>
       <span><kbd>Home</kbd> centrar</span>
       <span><kbd>Enter</kbd> abrir archivo</span>
       <span><kbd>Esc</kbd> volver/cerrar visor</span>

@@ -148,7 +148,7 @@ class Drive3DScene {
                 }
             }
             const label = document.createElement('canvas'); label.width = 512; label.height = 96;
-            const c = label.getContext('2d'); c.clearRect(0, 0, 512, 96); c.fillStyle = '#ffe6b2'; c.textAlign = 'center'; c.font = '36px Georgia'; c.fillText(title, 256, 61);
+            const c = label.getContext('2d'); c.clearRect(0, 0, 512, 96); c.fillStyle = '#ffe6b2'; c.textAlign = 'center'; c.font = 'bold 56px Georgia'; c.fillText(title.length > 26 ? title.slice(0,25) + '…' : title, 256, 65, 480);
             const tex = new T.CanvasTexture(label); tex.colorSpace = T.SRGBColorSpace;
             const sign = new T.Mesh(new T.PlaneGeometry(1.65, .30), new T.MeshBasicMaterial({ map: tex, transparent: true })); sign.position.set(0, 3.86, .307); group.add(sign);
             // Each cabinet owns its instances so invisible cabinets can be unloaded.
@@ -252,7 +252,18 @@ class Drive3DScene {
             const rect = viewport.getBoundingClientRect();
             raycaster.setFromCamera(new T.Vector2((event.clientX - rect.left) / rect.width * 2 - 1, 1 - (event.clientY - rect.top) / rect.height * 2), camera);
             const hit = raycaster.intersectObjects(shelves, true)[0];
-            if (!hit) return;
+            if (!hit) {
+                if (raycaster.intersectObject(table, true).length) return;
+                const ground = raycaster.intersectObject(floor)[0];
+                if (ground) {
+                    const direction = ground.point.clone().sub(camera.position); direction.y = 0;
+                    direction.normalize().multiplyScalar(.75);
+                    const x = camera.position.x + direction.x, z = camera.position.z + direction.z;
+                    if (canStand(x,z)) camera.position.set(x,2.7,z);
+                    needsRender = true;
+                }
+                return;
+            }
             let group = hit.object;
             while (group.parent && !shelves.includes(group)) group = group.parent;
             selectedIndex = group.userData.index;
@@ -344,7 +355,6 @@ class Drive3DScene {
             shelves: shelves.map(s=>({position:s.position.toArray(),rotation:s.rotation.y,width,depth,height,loaded:!!s.children.length})),
             lamp:lamp.position.toArray(),table:table.position.toArray(),domeRadius:R,panorama:panorama.position.toArray(),environmentReady,
             calls:renderer.info.render.calls, geometries:renderer.info.memory.geometries, textures:renderer.info.memory.textures});
-        renderer.domElement.addEventListener('webglcontextlost', event => { event.preventDefault(); status.hidden = false; status.textContent = 'Se perdió el contexto gráfico. Recarga o abre la vista clásica.'; });
         function resize() { const w = viewport.clientWidth, h = viewport.clientHeight; renderer.setSize(w, h); camera.aspect = w / h; camera.updateProjectionMatrix(); needsRender = true; }
         window.addEventListener('resize', resize); resize();
         renderer.domElement.addEventListener('webglcontextlost', event => { event.preventDefault(); renderer.setAnimationLoop(null); clearInput(); status.hidden = false; status.textContent = 'Se interrumpió el contexto gráfico. Recarga para continuar.'; });

@@ -58,6 +58,8 @@ class Drive3DProduction {
         if (!visible.includes(index)) visible.push(index);
         syncZones(); app.selectShelf(shelf,true);
     };
+    doc.querySelectorAll('[data-camera-strafe]').forEach(button => { button.dataset.move = Number(button.dataset.cameraStrafe) < 0 ? 'left' : 'right'; });
+    doc.querySelectorAll('[data-camera-forward]').forEach(button => { button.dataset.move = Number(button.dataset.cameraForward) < 0 ? 'back' : 'forward'; });
     app.three = new Drive3DScene(THREE, Reflector, {
         viewport, map, coordinates, status, items:app.shelves,
         onSelect:index => app.chooseThreeShelf(index),

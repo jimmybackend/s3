@@ -286,10 +286,10 @@
       });
       this.pitchRange?.addEventListener('change', () => this.schedulePreferenceSave());
       this.document.querySelectorAll('[data-camera-strafe]').forEach((button) => {
-        button.addEventListener('click', () => this.movePlayer(Number(button.dataset.cameraStrafe || 0) * .16, 0));
+        button.addEventListener('click', event => { if (!this.useThree || event.detail === 0) this.movePlayer(Number(button.dataset.cameraStrafe || 0) * .16, 0); });
       });
       this.document.querySelectorAll('[data-camera-forward]').forEach((button) => {
-        button.addEventListener('click', () => this.movePlayer(0, Number(button.dataset.cameraForward || 0) * .14));
+        button.addEventListener('click', event => { if (!this.useThree || event.detail === 0) this.movePlayer(0, Number(button.dataset.cameraForward || 0) * .14); });
       });
       this.floorNav?.addEventListener('click', (event) => this.navigateByFloorTap(event));
 

@@ -68,6 +68,10 @@ const server=createServer((req,res)=>{
   await page.setViewportSize({width:390,height:844});await page.waitForTimeout(500);
   assert((await page.locator('.dw-sidebar').boundingBox()).height<150);
   if(out)await page.screenshot({path:resolve(out,'production-mobile.png')});
+  const beforeMove=(await snap()).camera[0];
+  const button=await page.locator('[data-camera-strafe="1"]').boundingBox();
+  await page.mouse.move(button.x+button.width/2,button.y+button.height/2);await page.mouse.down();
+  await page.waitForFunction(x=>window.ArcadeCloudDrive3D.three.snapshot().camera[0]>x+.15,beforeMove);await page.mouse.up();
   assert.deepEqual(errors,[]);
   console.log('PASS production WebGL, raycast selection, real file/folder metadata, frustum unloading, bounded textures, fixed panorama, movement and mobile');
  } finally {await browser.close();}

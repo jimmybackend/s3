@@ -217,6 +217,7 @@
         "drive/sync_status.php",
         "drive/tests/index_federation_drop_smoke.php",
         "drive/tests/installer_service_reconcile_contract_smoke.php",
+        "drive/three-lab/drive3d-lab.php",
         "drive/thumb.php",
         "drive/token_audio.php",
         "drive/token_texto.php",
@@ -565,7 +566,8 @@
       "active": true,
       "references": [
         "drive/so.php",
-        "drive/tests/dataword3d_contract_smoke.php"
+        "drive/tests/dataword3d_contract_smoke.php",
+        "drive/three-lab/drive3d-lab.php"
       ]
     },
     {
@@ -800,7 +802,8 @@
         "drive/tests/dataword3d_contract_smoke.php",
         "drive/tests/index_federation_drop_smoke.php",
         "drive/tests/office_gateway_contract_smoke.php",
-        "drive/tests/web_os_contract_smoke.php"
+        "drive/tests/web_os_contract_smoke.php",
+        "drive/three-lab/drive3d-lab.php"
       ]
     },
     {
@@ -1127,6 +1130,7 @@
         "drive/tests/public_upload_rollback_regression.php",
         "drive/tests/setup_entry_guard_smoke.php",
         "drive/tests/web_os_contract_smoke.php",
+        "drive/three-lab/drive3d-lab.php",
         "drive/upload/drivers/Chunked15MBUploader.php",
         "drive/upload/drivers/DropboxUploader.php",
         "drive/upload/drivers/LocalPresignedPutUploader.php",
@@ -1191,7 +1195,8 @@
         "drive/tests/dataword3d_contract_smoke.php",
         "drive/tests/index_federation_drop_smoke.php",
         "drive/tests/office_gateway_contract_smoke.php",
-        "drive/tests/web_os_contract_smoke.php"
+        "drive/tests/web_os_contract_smoke.php",
+        "drive/three-lab/drive3d-lab.php"
       ]
     },
     {
@@ -1247,7 +1252,8 @@
         "drive/tests/dataword3d_contract_smoke.php",
         "drive/tests/index_federation_drop_smoke.php",
         "drive/tests/office_gateway_contract_smoke.php",
-        "drive/tests/web_os_contract_smoke.php"
+        "drive/tests/web_os_contract_smoke.php",
+        "drive/three-lab/drive3d-lab.php"
       ]
     },
     {
@@ -1638,7 +1644,8 @@
         "drive/tests/dataword3d_contract_smoke.php",
         "drive/tests/index_federation_drop_smoke.php",
         "drive/tests/office_gateway_contract_smoke.php",
-        "drive/tests/web_os_contract_smoke.php"
+        "drive/tests/web_os_contract_smoke.php",
+        "drive/three-lab/drive3d-lab.php"
       ]
     },
     {
@@ -4509,6 +4516,12 @@
     {
       "path": "drive/tests/workstation_phase1_contract_smoke.php",
       "size": 8247,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/three-lab/drive3d-lab.php",
+      "size": 2271,
       "active": false,
       "references": []
     },

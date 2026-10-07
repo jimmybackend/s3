@@ -40,6 +40,26 @@ const server=createServer((req,res)=>{
   const initial=await snap(); assert(initial.visible.length>0 && initial.visible.length<=9);assert.equal(requests,0);
   assert.equal(await page.locator('.dw-camera-scene').isVisible(),false);
   assert(await page.locator('#dwThreeViewport canvas').isVisible());
+
+  // Spatial media belongs to a world position in the dome, not to the viewport.
+  await page.evaluate(()=>window.ArcadeCloudDrive3D.showFileInDome({
+    type:'file',kind:'image',name:'Vista espacial.jpg',format:'JPG',
+    openHref:'/three-lab/assets/alpine-panorama.jpg',locked:false
+  }));
+  await page.waitForFunction(()=>window.ArcadeCloudDrive3D.three.snapshot().spatial!==null);
+  assert(await page.locator('[data-dw-media-stage].is-spatial').isVisible());
+  const spatialBefore=(await snap()).spatial.world;
+  assert.equal(await page.locator('[data-dw-media-content]').evaluate(el=>getComputedStyle(el).overflow),'hidden');
+  await page.evaluate(()=>window.ArcadeCloudDrive3D.three.look(105,0));
+  await page.waitForFunction(()=>Math.abs(window.ArcadeCloudDrive3D.three.snapshot().yaw)>1.7);
+  assert.deepEqual((await snap()).spatial.world,spatialBefore,'Spatial viewer remains at the same world coordinate while looking away');
+  await page.locator('[data-spatial-front]').click({force:true});
+  await page.waitForTimeout(120);
+  const spatialFront=(await snap()).spatial.world;
+  assert.notDeepEqual(spatialFront,spatialBefore,'Front action repositions the spatial viewer in the current view');
+  await page.locator('[data-dw-media-close]').click({force:true});
+  await page.waitForFunction(()=>window.ArcadeCloudDrive3D.three.snapshot().spatial===null);
+
   for(const shelf of initial.shelves){const [x,,z]=shelf.position;assert(Math.sqrt(initial.domeRadius**2-(Math.hypot(x,z)+shelf.depth)**2)>shelf.height,'Roof clears cabinet corners');}
   // Real raycasting, not calling selection directly. Center cabinet is part of the dome wall.
   const viewBox=await page.locator('#dwThreeViewport').boundingBox();

@@ -89,13 +89,10 @@
     assignWorldAngles() {
       const count = Math.max(1, this.shelves.length);
       const center = (count - 1) / 2;
-      const compact = (this.world?.clientWidth || this.window.innerWidth) < 620;
-      const stepDegrees = compact ? 10.5 : 11.5;
 
       this.shelves.forEach((shelf, index) => {
         const slot = index - center;
         shelf.dataset.worldSlot = String(slot);
-        shelf.dataset.worldAngle = String(slot * stepDegrees);
       });
     }
 
@@ -103,28 +100,40 @@
       const width = this.world?.clientWidth || this.window.innerWidth;
       const compact = width < 620;
       const tablet = width < 1000;
-      const shelfWidth = this.shelves[0]?.offsetWidth || (compact ? 202 : tablet ? 232 : 252);
-      const gap = compact ? 32 : tablet ? 38 : 44;
-      const spacing = shelfWidth + gap;
-      const yawStep = compact ? 7.2 : tablet ? 6.8 : 6.4;
-      const depthStep = compact ? 16 : tablet ? 20 : 24;
-      const depthCurve = compact ? 4 : tablet ? 5 : 6;
+      const shelfWidth = this.shelves[0]?.offsetWidth || (compact ? 206 : tablet ? 232 : 252);
+
+      // Los muebles viven sobre una misma circunferencia. El hueco es
+      // deliberadamente mínimo: ~1–4 px, visualmente equivalente a ir pegados.
+      const gap = compact ? 2 : 4;
+      const chord = shelfWidth + gap;
+      const radius = Math.max(
+        compact ? 1080 : tablet ? 1260 : 1480,
+        chord * 5.4
+      );
+      const stepRad = 2 * Math.asin(Math.min(.98, chord / (2 * radius)));
+      const stepDegrees = stepRad * 180 / Math.PI;
       const center = (this.shelves.length - 1) / 2;
 
-      this.shelfLayout = { spacing, yawStep, stepDegrees: compact ? 10.5 : 11.5 };
+      this.shelfLayout = { shelfWidth, gap, chord, radius, stepRad, stepDegrees };
 
       this.shelves.forEach((shelf, index) => {
         const slot = index - center;
-        const abs = Math.abs(slot);
-        const x = slot * spacing;
-        const z = -(abs * depthStep + slot * slot * depthCurve);
-        const yaw = -slot * yawStep;
+        const theta = slot * stepRad;
+
+        // Arco circular real: todos los muebles comparten el mismo radio.
+        // El frente central queda en z=0 y los laterales retroceden sólo
+        // lo que exige la curvatura, nunca mediante apilamiento artificial.
+        const x = Math.sin(theta) * radius;
+        const z = -(1 - Math.cos(theta)) * radius;
+        const yaw = -theta * 180 / Math.PI;
 
         shelf.style.transitionDuration = animate ? '' : '0ms';
         shelf.style.transform = `translate3d(${x}px,0,${z}px) rotateY(${yaw}deg)`;
         shelf.style.opacity = '1';
         shelf.style.pointerEvents = '';
-        shelf.style.zIndex = String(Math.max(20, 90 - Math.round(abs * 4)));
+        shelf.style.zIndex = String(Math.max(20, 100 - Math.round(Math.abs(slot) * 2)));
+
+        shelf.dataset.worldAngle = String(yaw * -1);
         shelf.dataset.worldX = String(x);
         shelf.dataset.worldZ = String(z);
         shelf.dataset.worldYaw = String(yaw);
@@ -348,11 +357,14 @@
       const width = this.world?.clientWidth || this.window.innerWidth;
       const compact = width < 620;
       const tablet = width < 1000;
-      const spacing = this.shelfLayout?.spacing || (compact ? 234 : tablet ? 270 : 296);
-      const stepDegrees = this.shelfLayout?.stepDegrees || (compact ? 10.5 : 11.5);
+      const radius = this.shelfLayout?.radius || (compact ? 1080 : tablet ? 1260 : 1480);
       const lateralPx = this.camera.lateral * (compact ? 120 : tablet ? 180 : 240);
       const forwardScale = 1 + this.camera.forward * (compact ? .10 : .13);
-      const yawPan = (yaw / stepDegrees) * spacing;
+
+      // El paneo usa la misma circunferencia que la pared de libreros.
+      // Así seleccionar un mueble centra la mirada sin cambiar su posición.
+      const yawRad = yaw * Math.PI / 180;
+      const yawPan = Math.sin(yawRad) * radius;
       const pitchPan = pitch * (compact ? 4.0 : tablet ? 4.8 : 5.4);
 
       if (this.cameraScene) {
@@ -360,6 +372,7 @@
         this.cameraScene.style.transform = `translate3d(${-(yawPan + lateralPx)}px,${pitchPan}px,0) scale(${forwardScale})`;
       }
 
+      const stepDegrees = this.shelfLayout?.stepDegrees || 12;
       this.shelves.forEach((shelf) => {
         const worldAngle = Number(shelf.dataset.worldAngle || 0);
         const relative = this.normalizeAngle(worldAngle - yaw);

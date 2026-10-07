@@ -41,18 +41,17 @@ const server=createServer((req,res)=>{
   assert.equal(await page.locator('.dw-camera-scene').isVisible(),false);
   assert(await page.locator('#dwThreeViewport canvas').isVisible());
   for(const shelf of initial.shelves){const [x,,z]=shelf.position;assert(Math.sqrt(initial.domeRadius**2-(Math.hypot(x,z)+shelf.depth)**2)>shelf.height,'Roof clears cabinet corners');}
-  // Real raycasting, not calling selection directly. Center cabinet is above the globe.
+  // Real raycasting, not calling selection directly. Center cabinet is part of the dome wall.
   const viewBox=await page.locator('#dwThreeViewport').boundingBox();
   const [px,py]=initial.pickPoints[12];
   await page.locator('#dwThreeViewport').click({position:{x:(px+1)*viewBox.width/2,y:(1-py)*viewBox.height/2}});
   await page.waitForFunction(()=>window.ArcadeCloudDrive3D.previewCache.size>0);
   await page.waitForFunction(()=>window.ArcadeCloudDrive3D.three.snapshot().shelves.some(s=>s.realBooks>0));
-  assert((await snap()).shelves.some(s=>s.realBooks>=2),'Real folder/file data is rendered as 3D books');
-  assert(await page.locator('[data-three-content]').isVisible());
-  await page.getByRole('button',{name:'Subcarpeta real',exact:true}).click();
-  assert.equal(await page.evaluate(()=>window.ArcadeCloudDrive3D.selected.openHref),'/subfolder');
-  await page.getByRole('button',{name:'Informe.pdf',exact:true}).first().click();
-  assert.equal(await page.evaluate(()=>window.ArcadeCloudDrive3D.selected.downloadHref),'/download');
+  const populated = (await snap()).shelves.find(s=>s.realBooks>0);
+  assert(populated.realBooks>=2,'Real folder/file data is rendered as 3D books');
+  assert(populated.realItems.some(item=>item.name==='Subcarpeta real' && item.open==='/subfolder'),'Folder metadata lives in the 3D shelf');
+  assert(populated.realItems.some(item=>item.name==='Informe.pdf' && item.open==='/report.pdf'),'File metadata lives in the 3D shelf');
+  assert.equal(await page.locator('[data-three-content]').count(),0,'No redundant middle content window');
   await page.evaluate(()=>{const a=window.ArcadeCloudDrive3D;a.three.look(180,0);});await page.waitForFunction(()=>Math.abs(window.ArcadeCloudDrive3D.three.snapshot().yaw)>3);
   const turned=await snap();assert.deepEqual(turned.panorama,initial.panorama);assert(Math.abs(turned.yaw)>3);
   assert.equal(await page.evaluate(()=>window.ArcadeCloudDrive3D.previewCache.size),0);

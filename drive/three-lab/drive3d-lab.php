@@ -20,7 +20,7 @@ header('X-Content-Type-Options: nosniff');
 <body>
 <main id="lab" aria-label="Laboratorio tridimensional del domo">
 <div id="viewport" tabindex="0" aria-label="Vista 3D. Arrastra para mirar; W A S D para caminar."></div>
-<header class="panel heading"><div><small>ARCADECLOUD / THREE.JS</small><h1>Laboratorio del domo</h1><span>Geometría real · datos de prueba</span></div><a href="../dataword3d.php">Volver a Drive 3D</a></header>
+<header class="panel heading"><div><small>ARCADECLOUD OS / LABORATORIO</small><h1>Biblioteca 3D</h1><span>Domo de cristal · estudio visual</span></div><a href="../dataword3d.php">Volver a Drive 3D</a></header>
 <nav class="panel views" aria-label="Vistas de comprobación"><button data-view="front">Frente</button><button data-view="left">Extremo izquierdo</button><button data-view="right">Extremo + lámpara</button><button data-view="center">Centrar</button></nav>
 <aside class="panel map"><strong>Planta del domo</strong><canvas id="minimap" width="240" height="240" aria-label="Vista superior: cámara azul, libreros marrones y lámpara dorada"></canvas><small>▲ Tú · ▰ Libreros · ● Lámpara</small><output id="coordinates"></output></aside>
 <footer class="panel help">Arrastra para mirar · WASD: caminar · Flechas: girar<br>En móvil: arrastra la escena y mantén los botones.</footer>

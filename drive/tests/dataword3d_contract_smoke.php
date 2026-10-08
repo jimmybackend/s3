@@ -11,6 +11,8 @@ $preferenceSanitizer = (string)file_get_contents($root . '/src/Security/Drive3dP
 $backgroundUpload = (string)file_get_contents($root . '/src/Http/Controller/Drive3dBackgroundUploadController.php');
 $scene = (string)file_get_contents($root . '/js/drive3d-scene.js');
 $production = (string)file_get_contents($root . '/js/drive3d-production.js');
+$mediaCloud = (string)file_get_contents($root . '/js/os-media-cloud.js');
+$mediaCloudCss = (string)file_get_contents($root . '/css/os-media-cloud.css');
 
 function drive3dContract(bool $condition, string $message): void
 {
@@ -33,6 +35,10 @@ drive3dContract(str_contains($view, 'data-dw-radar') && str_contains($js, 'rende
 drive3dContract(str_contains($view, 'data-dw-camera-scene') && str_contains($js, 'this.cameraScene.style.transform') && str_contains($js, 'cameraLateral') && str_contains($js, 'cameraForward'), 'cámara mueve la vista completa del mundo fijo y conserva posición del jugador sobre el piso');
 drive3dContract(str_contains($view, "'thumbnail_href'") && str_contains($view, 'thumb.php?key=') && str_contains($js, 'renderDeskPreview'), 'escritorio usa miniatura autenticada para imágenes y fallback de icono');
 drive3dContract(str_contains($view, 'data-dw-desk-image') && str_contains($css, '.dw-desk-preview img'), 'vista previa visual del escritorio está integrada en la escena');
+drive3dContract(str_contains($view, 'data-dw-desk-carousel') && str_contains($view, 'data-desk-prev') && str_contains($view, 'data-desk-next') && str_contains($js, 'folderStateForDesk') && str_contains($js, 'scrollDeskCarousel'), 'Traer al escritorio abre un carrusel navegable de archivos sobre la mesa 3D');
+drive3dContract(str_contains($view, "'media_key' => \$key") && str_contains($view, "'media_route' => \$route") && str_contains($js, 'itemKey') && str_contains($js, 'itemMime') && str_contains($js, 'itemRoute'), 'archivos del carrusel conservan clave, MIME y ruta necesarias para reproductor multimedia');
+drive3dContract(str_contains($view, 'css/os-media-cloud.css') && str_contains($view, 'js/os-media-cloud.js') && str_contains($view, 'ARCADECLOUD_OS_APPEARANCE'), 'Drive 3D reutiliza el mismo reproductor nube y preferencias de so.php');
+drive3dContract(str_contains($js, 'playCloudMedia') && str_contains($js, 'ArcadeCloudMediaCloud') && str_contains($mediaCloud, 'class ArcadeCloudMediaCloud') && str_contains($mediaCloudCss, '.ac-media-cloud'), 'audio y video del escritorio usan el reproductor nube ArcadeCloud existente');
 drive3dContract(str_contains($view, 'Imagenes/fondos3D') && str_contains($backgroundUpload, "/Imagenes/") && str_contains($backgroundUpload, "fondos3D/"), 'fondos 3D se almacenan en Imagenes/fondos3D del usuario');
 drive3dContract(str_contains($backgroundUpload, 'requireDriveCsrf') && str_contains($backgroundUpload, 'singleUploadService()->upload'), 'subida de fondos usa CSRF y servicio privado normal del Drive');
 drive3dContract(str_contains($preferences, "drive3dPreference") && str_contains($preferences, 'Drive3dPreferenceSanitizer') && str_contains($view, "'preferences' => $drive3dPreferences"), 'configuración 3D persiste en Users.os_preferences por nodo');
@@ -72,5 +78,7 @@ drive3dContract(str_contains($css, 'width:132px !important') && str_contains($cs
 drive3dContract(substr_count($so, 'href="dataword3d.php"') >= 2 && str_contains($so, '<strong>Drive 3D</strong>'), 'ArcadeCloud OS enlaza Drive 3D en aplicaciones y launcher');
 drive3dContract(str_contains($scene, 'const spatialAnchors = new Map()') && str_contains($scene, 'this.moveSpatialMedia = (id, dx, dy)') && str_contains($scene, 'this.spatialMediaState = (id'), 'motor Three.js mantiene múltiples anclas espaciales independientes');
 drive3dContract(str_contains($production, 'app.restoreSpatialImages?.()'), 'renderer de producción restaura cuadros persistidos al volver a Drive 3D');
+drive3dContract(str_contains($production, 'app.world.append(app.deskCarousel)') && str_contains($production, 'app.hideDeskCarousel?.()'), 'renderer Three.js coloca el carrusel sobre el escritorio y oculta contenido obsoleto al cambiar de librero');
+drive3dContract(str_contains($css, 'Drive 3D literal desk carousel + crisp HUD') && str_contains($css, 'body:not(.is-camera-near).dw-real .dw-hud') && str_contains($css, 'opacity:1!important'), 'panel derecho permanece nítido y opaco como la navegación izquierda');
 
 fwrite(STDOUT, "Drive 3D contract smoke passed.\n");

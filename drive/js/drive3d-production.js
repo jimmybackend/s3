@@ -8,7 +8,7 @@ class Drive3DProduction {
     const doc = app.document, status = doc.querySelector('[data-three-status]');
     const viewport = doc.getElementById('dwThreeViewport');
     const map = doc.createElement('canvas'); map.width = map.height = 240;
-    map.setAttribute('aria-label', 'Plano real: libreros, mesa, lámpara, posición y dirección de cámara');
+    map.setAttribute('aria-label', 'Plano real: libreros, archivos, lámpara, posición y dirección de cámara');
     const coordinates = doc.createElement('output');
     let zoneKey = '', visible = [], near = [];
     function syncZones() {
@@ -17,7 +17,6 @@ class Drive3DProduction {
         const key = visible.join(',') + '/' + detail.join(',');
         if (key === zoneKey) return;
         if (focus < 0) {
-            if (!app.deskCurrentFolderOpen) app.hideDeskCarousel?.();
             if(app.deskFocus) app.deskFocus.hidden = true;
         }
         zoneKey = key; clearTimeout(app.zoneTimer);
@@ -31,7 +30,6 @@ class Drive3DProduction {
         });
         if (app.focusedShelf && !visible.includes(focus)) {
             app.focusedShelf = null;
-            if (!app.deskCurrentFolderOpen) app.hideDeskCarousel?.();
             app.selected = null;
             app.hud.open.disabled = true; app.hud.play.hidden = true; app.hud.download.hidden = true;
             app.hud.previewImage?.removeAttribute('src');
@@ -45,7 +43,6 @@ class Drive3DProduction {
     };
     app.chooseThreeShelf = index => {
         const shelf = app.shelves[index]; if (!shelf) return;
-        if (app.focusedShelf !== shelf && !app.deskCurrentFolderOpen) app.hideDeskCarousel?.();
         app.focusedShelf = shelf; app.three.focus(index);
         if (!visible.includes(index)) visible.push(index);
         syncZones(); app.selectShelf(shelf,true);
@@ -61,7 +58,6 @@ class Drive3DProduction {
             if (open) app.openSelected();
         },
         onSpatialProjection:projection => app.updateSpatialProjection?.(projection),
-        onDeskProjection:projection => app.updateDeskProjection?.(projection),
         onCamera:(yaw,pitch) => { app.camera.yaw = yaw; app.camera.pitch = pitch; if(app.pitchRange) app.pitchRange.value = String(pitch); },
         onView:view => { visible = view.visible; near = view.near; if(view.selected < 0) app.focusedShelf = null; syncZones(); }
     });
@@ -69,12 +65,10 @@ class Drive3DProduction {
     // Only replace production UI after the WebGL scene constructed successfully.
     doc.querySelector('.dw-radar-room').replaceChildren(map);
     app.radar.append(coordinates);
-    if (app.deskCarousel) {
-        app.world.append(app.deskCarousel);
-        app.deskCarousel.hidden = true;
-    }
-    if (app.deskFocus) { app.world.append(app.deskFocus); app.deskFocus.hidden = true; }
     app.restoreSpatialImages?.();
+    app.loadCurrentFolderFiles?.().then(state => {
+        if (!state?.error) app.three?.setCurrentFiles?.(Array.isArray(state.files) ? state.files : []);
+    });
 
     // The map selects the actual cabinet nearest the touched world coordinate.
     map.addEventListener('click', event => {

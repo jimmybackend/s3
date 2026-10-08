@@ -3956,7 +3956,9 @@ body.is-dome-viewing .dw-aquarium{
   min-width:0;
   padding:4px 5px 8px!important;
   display:flex!important;
+  flex-flow:row nowrap!important;
   align-items:flex-end!important;
+  justify-content:flex-start!important;
   gap:9px!important;
   overflow-x:auto!important;
   overflow-y:hidden!important;

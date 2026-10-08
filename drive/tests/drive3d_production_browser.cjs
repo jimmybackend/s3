@@ -118,6 +118,7 @@ const server=createServer((req,res)=>{
   assert.equal(await page.locator('[data-dw-desk-carousel]').count(),0,'There is no desk carousel');
   assert.equal(initial.currentFiles,20,'Every current-folder file is represented independently in the room');
   assert.equal(initial.fileItems.length,20);
+  assert(initial.visibleFileCards>0,'At least one current-folder file thumbnail is visible in the initial camera view even when cabinets exist');
   assert.equal(initial.fileItems.filter(item=>item.kind==='image').length,18);
   assert(initial.filePanels.length>=1,'File thumbnails occupy their own gallery panel beside the cabinets');
 

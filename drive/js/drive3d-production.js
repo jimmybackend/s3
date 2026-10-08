@@ -10,14 +10,16 @@ class Drive3DProduction {
     const map = doc.createElement('canvas'); map.width = map.height = 240;
     map.setAttribute('aria-label', 'Plano real: libreros, mesa, lámpara, posición y dirección de cámara');
     const coordinates = doc.createElement('output');
-    const rootFiles = Array.from(app.deskFiles?.children || []);
     let zoneKey = '', visible = [], near = [];
     function syncZones() {
         const focus = app.shelves.indexOf(app.focusedShelf);
         const detail = [...new Set([...(visible.includes(focus) ? [focus] : []), ...near])].slice(0,3);
         const key = visible.join(',') + '/' + detail.join(',');
         if (key === zoneKey) return;
-        if (focus < 0) { app.deskFiles?.replaceChildren(...rootFiles); if(app.deskFocus) app.deskFocus.hidden = true; }
+        if (focus < 0) {
+            app.hideDeskCarousel?.();
+            if(app.deskFocus) app.deskFocus.hidden = true;
+        }
         zoneKey = key; clearTimeout(app.zoneTimer);
         app.visibleShelves = new Set(visible.map(i => app.shelves[i]));
         app.shelves.forEach((shelf,index) => {
@@ -29,7 +31,8 @@ class Drive3DProduction {
         });
         if (app.focusedShelf && !visible.includes(focus)) {
             app.focusedShelf = null;
-            app.deskFiles?.replaceChildren(); app.selected = null;
+            app.hideDeskCarousel?.();
+            app.selected = null;
             app.hud.open.disabled = true; app.hud.play.hidden = true; app.hud.download.hidden = true;
             app.hud.previewImage?.removeAttribute('src');
         }
@@ -42,6 +45,7 @@ class Drive3DProduction {
     };
     app.chooseThreeShelf = index => {
         const shelf = app.shelves[index]; if (!shelf) return;
+        if (app.focusedShelf !== shelf) app.hideDeskCarousel?.();
         app.focusedShelf = shelf; app.three.focus(index);
         if (!visible.includes(index)) visible.push(index);
         syncZones(); app.selectShelf(shelf,true);
@@ -64,7 +68,10 @@ class Drive3DProduction {
     // Only replace production UI after the WebGL scene constructed successfully.
     doc.querySelector('.dw-radar-room').replaceChildren(map);
     app.radar.append(coordinates);
-    if (app.deskFiles) app.world.append(app.deskFiles);
+    if (app.deskCarousel) {
+        app.world.append(app.deskCarousel);
+        app.deskCarousel.hidden = true;
+    }
     if (app.deskFocus) { app.world.append(app.deskFocus); app.deskFocus.hidden = true; }
     app.restoreSpatialImages?.();
 

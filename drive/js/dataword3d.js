@@ -69,6 +69,7 @@
       this.deskPrev = doc.querySelector('[data-desk-prev]');
       this.deskNext = doc.querySelector('[data-desk-next]');
       this.deskProjection = null;
+      this.deskCurrentFolderOpen = false;
       this.mediaStage = doc.querySelector('[data-dw-media-stage]');
       this.mediaContent = doc.querySelector('[data-dw-media-content]');
       this.mediaTitle = doc.querySelector('[data-dw-media-title]');
@@ -306,7 +307,7 @@
       const detail = this.camera.forward >= .45 ? candidates.slice(0, 3) : [];
       if (this.focusedShelf && this.visibleShelves.has(this.focusedShelf)) detail.unshift(this.focusedShelf);
       const detailed = new Set(detail.slice(0, 3));
-      if (!detailed.size) this.deskFiles?.replaceChildren();
+      if (!detailed.size && !this.deskCurrentFolderOpen) this.deskFiles?.replaceChildren();
       this.shelves.forEach(shelf => {
         if (!this.visibleShelves.has(shelf)) { this.releaseShelf(shelf); return; }
         this.mountShelf(shelf);
@@ -317,7 +318,7 @@
       });
       if (this.selected?.element && !this.selected.element.isConnected) {
         this.selected = null;
-        this.deskFiles?.replaceChildren();
+        if (!this.deskCurrentFolderOpen) this.deskFiles?.replaceChildren();
         this.hud.previewImage?.removeAttribute('src');
         this.deskImage?.removeAttribute('src');
         this.hud.open.disabled = true; this.hud.play.hidden = true; this.hud.download.hidden = true;
@@ -984,6 +985,7 @@
       if (!this.config.deskOnLoad) return;
       const state = await this.currentFolderStateForDesk();
       if (!state) return;
+      this.deskCurrentFolderOpen = true;
       const visiblePath = String(state.visible_path || this.config.visiblePath || 'Carpeta').replace(/\/$/,'');
       const name = visiblePath.split('/').filter(Boolean).pop() || 'Carpeta actual';
       this.renderDeskFileStrip(Array.isArray(state.files) ? state.files : [], {name});

@@ -31,7 +31,7 @@ class Drive3DProduction {
         if (app.focusedShelf && !visible.includes(focus)) {
             app.focusedShelf = null;
             app.selected = null;
-            app.hud.open.disabled = true; app.hud.play.hidden = true; app.hud.download.hidden = true;
+            app.hud.open.disabled = true; app.hud.desk.hidden = true; app.hud.play.hidden = true; app.hud.download.hidden = true;
             app.hud.previewImage?.removeAttribute('src');
         }
         app.zoneTimer = setTimeout(() => detail.forEach(i => app.loadShelfPreview(app.shelves[i], app.shelves[i].dataset.previewHref)),160);

@@ -476,10 +476,12 @@
       "active": true,
       "references": [
         "drive/s3.php",
+        "drive/tests/dataword3d_contract_smoke.php",
         "drive/tests/media_processing_contract_smoke.php",
         "drive/tests/web_os_clipboard_contract_smoke.php",
         "drive/js/archivos.js",
         "drive/js/carpetas.js",
+        "drive/js/drive3d-scene.js",
         "drive/js/elimina-multiple.js",
         "drive/js/elimina-uno.js",
         "drive/js/imagenes.js",
@@ -562,7 +564,7 @@
     },
     {
       "path": "drive/dataword3d.php",
-      "size": 30056,
+      "size": 25507,
       "active": true,
       "references": [
         "drive/so.php",
@@ -4113,7 +4115,7 @@
     },
     {
       "path": "drive/tests/dataword3d_contract_smoke.php",
-      "size": 16252,
+      "size": 17270,
       "active": false,
       "references": []
     },

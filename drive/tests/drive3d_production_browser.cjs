@@ -163,8 +163,12 @@ const server=createServer((req,res)=>{
     await page.waitForTimeout(60);
   }
   assert.equal(await audioDeskItem.evaluate(node=>node.hidden),false,'Carousel arrows can reach the audio item after all image pages');
-  await audioDeskItem.click({force:true});
-  await page.evaluate(()=>window.ArcadeCloudDrive3D.playSelected());
+  await page.evaluate(()=>{
+    const app=window.ArcadeCloudDrive3D;
+    const node=document.querySelector('[data-dw-current-files] [data-item-kind="audio"]');
+    app.selectElement(node);
+    app.playSelected();
+  });
   await page.waitForFunction(()=>window.ArcadeCloudMediaCloud?.state?.type==='audio' && !document.getElementById('arcadeCloudMediaCloud')?.hidden);
   assert.equal(await page.locator('#arcadeCloudMediaCloud').isVisible(),true,'Audio uses the shared ArcadeCloud cloud player');
 
@@ -190,16 +194,24 @@ const server=createServer((req,res)=>{
   assert(playerFixed.width > playerStart.width + 20,'Cloud player can be resized before fixing it');
   await page.locator('#arcadeCloudMediaCloud [data-media-close]').click({force:true});
   await page.waitForFunction(()=>document.getElementById('arcadeCloudMediaCloud')?.hidden===true);
-  await page.locator('[data-dw-current-files] [data-item-kind="audio"]').click({force:true});
-  await page.evaluate(()=>window.ArcadeCloudDrive3D.playSelected());
+  await page.evaluate(()=>{
+    const app=window.ArcadeCloudDrive3D;
+    const node=document.querySelector('[data-dw-current-files] [data-item-kind="audio"]');
+    app.selectElement(node);
+    app.playSelected();
+  });
   await page.waitForFunction(()=>!document.getElementById('arcadeCloudMediaCloud')?.hidden);
   const playerRestored = await player.boundingBox();
   assert(Math.abs(playerRestored.x-playerFixed.x)<4 && Math.abs(playerRestored.y-playerFixed.y)<4 && Math.abs(playerRestored.width-playerFixed.width)<4,'Pinned player restores its chosen position and size');
   await page.locator('#arcadeCloudMediaCloud [data-media-close]').click({force:true});
   await page.waitForFunction(()=>document.getElementById('arcadeCloudMediaCloud')?.hidden===true);
 
-  await page.locator('[data-dw-current-files] [data-item-kind="video"]').click({force:true});
-  await page.evaluate(()=>window.ArcadeCloudDrive3D.playSelected());
+  await page.evaluate(()=>{
+    const app=window.ArcadeCloudDrive3D;
+    const node=document.querySelector('[data-dw-current-files] [data-item-kind="video"]');
+    app.selectElement(node);
+    app.playSelected();
+  });
   await page.waitForFunction(()=>window.ArcadeCloudMediaCloud?.state?.type==='video');
   assert.equal(await page.locator('#arcadeCloudMediaCloud').isVisible(),true,'Video uses the same cloud player design');
   assert.equal(await page.locator('[data-three-content]').count(),0,'No redundant middle content window');

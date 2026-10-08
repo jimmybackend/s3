@@ -5,6 +5,7 @@ use ArcadeCloud\Drive\Application\FileListService;
 use ArcadeCloud\Drive\Security\OsPreferenceNodeResolver;
 use ArcadeCloud\Drive\Security\UserOsPreferencesRepository;
 use ArcadeCloud\Drive\View\FileViewHelper;
+use ArcadeCloud\Drive\View\FileIconResolver;
 
 ini_set('display_errors', '0');
 error_reporting(E_ALL);
@@ -111,17 +112,6 @@ $classifyFile = static function (string $extension) use ($imageExtensions, $audi
     return 'file';
 };
 
-$iconForKind = static function (string $kind): string {
-    return match ($kind) {
-        'image' => 'fa-image',
-        'audio' => 'fa-music',
-        'video' => 'fa-film',
-        'pdf' => 'fa-file-pdf',
-        'document' => 'fa-file-lines',
-        default => 'fa-file',
-    };
-};
-
 $buildState = static function (string $route, int $page = 1, int $limit = FileListService::WEB_OS_PAGE_SIZE) use (
     $app,
     $userId,
@@ -130,8 +120,7 @@ $buildState = static function (string $route, int $page = 1, int $limit = FileLi
     $normalizePrefix,
     $folderRows,
     $folderChildren,
-    $classifyFile,
-    $iconForKind
+    $classifyFile
 ): array {
     $route = $app->userStoragePath()->normalizeForUser($route, $userId);
     $currentPrefix = $normalizePrefix($route);
@@ -153,6 +142,9 @@ $buildState = static function (string $route, int $page = 1, int $limit = FileLi
         $mime = strtolower(trim((string)($metadata['mime_type'] ?? $metadata['content_type'] ?? $metadata['mime'] ?? '')));
         $kind = $classifyFile($extension);
         $locked = FileViewHelper::isLocked($row);
+        $iconInfo = $locked
+            ? ['icon' => 'fa-lock', 'category' => 'locked', 'label' => 'Archivo protegido']
+            : FileIconResolver::resolve($extension);
         $key = FileViewHelper::buildS3Key((string)($row['Ruta'] ?? ''), (string)($row['Encriptado'] ?? ''));
         $openHref = $locked || $key === '' ? '' : 'ver_archivo.php?archivo=' . rawurlencode($key);
         $downloadHref = $locked || $key === '' ? '' : 'descargar_archivo.php?archivo=' . rawurlencode($key) . '&nombre=' . rawurlencode($name);
@@ -167,7 +159,9 @@ $buildState = static function (string $route, int $page = 1, int $limit = FileLi
             'type' => 'file',
             'name' => $name,
             'kind' => $kind,
-            'icon' => $iconForKind($kind),
+            'icon' => (string)$iconInfo['icon'],
+            'icon_category' => (string)$iconInfo['category'],
+            'icon_label' => (string)$iconInfo['label'],
             'extension' => $extension !== '' ? strtoupper($extension) : 'ARCHIVO',
             'mime' => $mime,
             'media_key' => $key,

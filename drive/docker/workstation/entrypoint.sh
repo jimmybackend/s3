@@ -19,6 +19,7 @@ mkdir -p \
   /home/arcade/.config/xfce4 \
   /home/arcade/.config/pipewire \
   /home/arcade/.local/state \
+  /home/arcade/.local/bin \
   /home/arcade/Projects \
   /home/arcade/Downloads \
   /workspace \

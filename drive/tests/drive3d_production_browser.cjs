@@ -151,7 +151,7 @@ const server=createServer((req,res)=>{
   await page.evaluate(deg=>window.ArcadeCloudDrive3D.three.look(deg,0),galleryDegrees);
   await page.waitForTimeout(650);
   const focusedGallery=await snap();
-  const visibleFiles=focusedGallery.fileItems.filter(item=>Math.abs(item.point[0])<.82 && Math.abs(item.point[1])<.82);
+  const visibleFiles=focusedGallery.fileItems.filter(item=>item.point[2]>-1 && item.point[2]<1 && Math.abs(item.point[0])<.82 && Math.abs(item.point[1])<.82);
   assert(visibleFiles.length>0,'At least one current-folder thumbnail is visible after looking at its gallery panel');
   let selectedGalleryFile=null;
   for(const candidate of visibleFiles){

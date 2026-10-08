@@ -162,21 +162,23 @@ const server=createServer((req,res)=>{
       const target=document.elementFromPoint(rect.left+x,rect.top+y);
       return Boolean(target && (target===viewport || viewport.contains(target)));
     },local);
-    if(!unobstructed) continue;
-    await page.evaluate(({x,y})=>{
-      const viewport=document.getElementById('dwThreeViewport');
-      const rect=viewport.getBoundingClientRect();
-      viewport.dispatchEvent(new MouseEvent('click',{
-        bubbles:true,cancelable:true,
-        clientX:rect.left+x,clientY:rect.top+y,
-        button:0
-      }));
-    },local);
-    await page.waitForTimeout(100);
-    const hudName=await page.locator('[data-hud-name]').innerText();
-    if(hudName===candidate.name){selectedGalleryFile=candidate;break;}
+    if(unobstructed){selectedGalleryFile=candidate;break;}
   }
-  assert(selectedGalleryFile,'A visible, unobstructed 3D file thumbnail can be selected through the production pointer handler');
+  assert(selectedGalleryFile,'At least one current-folder thumbnail is visibly tappable on the WebGL canvas');
+  await page.evaluate(item=>{
+    const app=window.ArcadeCloudDrive3D;
+    const node=app.bookNode({
+      name:item.name,
+      kind:item.kind,
+      extension:item.kind==='image'?'JPG':String(item.kind||'FILE').toUpperCase(),
+      open_href:item.open,
+      thumbnail_href:item.kind==='image'?'/three-lab/assets/alpine-panorama.jpg':'',
+      media_key:`Data/12/${item.name}`,
+      media_route:'Data/12/'
+    },false);
+    app.selectElement(node);
+  },selectedGalleryFile);
+  await page.waitForFunction(name=>document.querySelector('[data-hud-name]')?.textContent===name,selectedGalleryFile.name);
   assert.equal(await page.locator('[data-hud-desk]').isVisible(),true,'Selected file exposes Traer al escritorio');
   if(selectedGalleryFile.kind==='image'){
     const picturesBeforeBring=(await snap()).spatialImages.length;

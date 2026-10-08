@@ -1091,8 +1091,10 @@
       if (direction > 0 && atEnd) target = 0;
       else if (direction < 0 && atStart) target = max;
       else target = this.clamp(this.deskFiles.scrollLeft + direction * amount, 0, max);
-      this.deskFiles.scrollTo({left:target,behavior:'smooth'});
-      this.window.setTimeout(() => this.updateDeskCarouselCounter(), 320);
+      // Assign scrollLeft directly: this remains reliable on mobile WebView/Chrome
+      // even when the carousel is transformed over the Three.js desk.
+      this.deskFiles.scrollLeft = target;
+      this.updateDeskCarouselCounter();
     }
 
     renderDeskPreview(item, animate = false) {

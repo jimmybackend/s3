@@ -152,7 +152,7 @@ ExecStart=/usr/bin/docker run --rm --name $CONTAINER \
   --publish 127.0.0.1:6080:6080 \
   --volume $WORKSPACE:/workspace \
   --volume $PERSISTENT_HOME:/home/arcade \
-  --memory=5g --cpus=3 --shm-size=512m \
+  --memory=5g --cpus=3 --shm-size=512m --tmpfs /tmp:rw,nosuid,nodev,mode=1777 \
   --security-opt=no-new-privileges:true \
   --cap-drop=ALL \
   --cap-add=SETUID \

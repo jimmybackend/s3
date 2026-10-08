@@ -33,8 +33,9 @@ if [[ -n "${ARCADECLOUD_RDP_PASSWORD:-}" ]]; then
   echo "arcade:${ARCADECLOUD_RDP_PASSWORD}" | chpasswd
 fi
 
-cat > /home/arcade/.xsession <<'XSESSION'
+cat > /home/arcade/.local/bin/arcadecloud-start-xfce <<'XFCESTART'
 #!/bin/sh
+set -eu
 
 export XDG_SESSION_TYPE=x11
 export XDG_CURRENT_DESKTOP=XFCE
@@ -42,30 +43,44 @@ export XDG_SESSION_DESKTOP=xfce
 export XDG_RUNTIME_DIR=/run/user/10001
 export PIPEWIRE_RUNTIME_DIR=/run/user/10001
 
-mkdir -p "$XDG_RUNTIME_DIR"
+mkdir -p "$XDG_RUNTIME_DIR" "$HOME/.cache/sessions"
 chmod 700 "$XDG_RUNTIME_DIR"
 
-exec dbus-launch --exit-with-session /bin/sh -c '
-    export XDG_SESSION_TYPE=x11
-    export XDG_CURRENT_DESKTOP=XFCE
-    export XDG_SESSION_DESKTOP=xfce
-    export XDG_RUNTIME_DIR=/run/user/10001
-    export PIPEWIRE_RUNTIME_DIR=/run/user/10001
+# No restaurar una sesión XFCE donde el panel haya quedado cerrado.
+# La configuración visual vive en ~/.config/xfce4 y no se elimina.
+find "$HOME/.cache/sessions" -maxdepth 1 -type f -name 'xfce4-session-*' -delete 2>/dev/null || true
 
-    pipewire >/tmp/arcade-pipewire.log 2>&1 &
-    sleep 1
+pipewire >/tmp/arcade-pipewire.log 2>&1 &
+sleep 1
 
-    pipewire-pulse >/tmp/arcade-pipewire-pulse.log 2>&1 &
-    sleep 1
+pipewire-pulse >/tmp/arcade-pipewire-pulse.log 2>&1 &
+sleep 1
 
-    wireplumber >/tmp/arcade-wireplumber.log 2>&1 &
-    sleep 2
+wireplumber >/tmp/arcade-wireplumber.log 2>&1 &
+sleep 2
 
-    /usr/libexec/pipewire-module-xrdp/load_pw_modules.sh -l 3 \
-      >/tmp/arcade-xrdp-audio.log 2>&1 &
+/usr/libexec/pipewire-module-xrdp/load_pw_modules.sh -l 3 \
+  >/tmp/arcade-xrdp-audio.log 2>&1 &
 
-    exec startxfce4
-'
+startxfce4 >/tmp/arcade-xfce.log 2>&1 &
+XFCE_PID=$!
+
+# startxfce4 puede restaurar una sesión persistente sin xfce4-panel.
+# Este intento usa el mismo DBUS_SESSION_BUS_ADDRESS creado por dbus-launch.
+sleep 3
+xfce4-panel >/tmp/arcade-xfce4-panel.log 2>&1 &
+
+wait "$XFCE_PID"
+XFCESTART
+chmod 700 /home/arcade/.local/bin/arcadecloud-start-xfce
+chown arcade:arcade /home/arcade/.local/bin/arcadecloud-start-xfce
+
+cat > /home/arcade/.xsession <<'XSESSION'
+#!/bin/sh
+export HOME=/home/arcade
+export XDG_RUNTIME_DIR=/run/user/10001
+unset SESSION_MANAGER
+exec dbus-launch --exit-with-session /home/arcade/.local/bin/arcadecloud-start-xfce
 XSESSION
 
 chmod 700 /home/arcade/.xsession
@@ -78,9 +93,11 @@ chown -R arcade:arcade /home/arcade/.config
 
 cat > /home/arcade/.vnc/xstartup <<'VNC'
 #!/bin/sh
+export HOME=/home/arcade
+export XDG_RUNTIME_DIR=/run/user/10001
 unset SESSION_MANAGER
 unset DBUS_SESSION_BUS_ADDRESS
-exec dbus-launch --exit-with-session startxfce4
+exec dbus-launch --exit-with-session /home/arcade/.local/bin/arcadecloud-start-xfce
 VNC
 chmod 700 /home/arcade/.vnc/xstartup
 chown -R arcade:arcade /home/arcade/.vnc

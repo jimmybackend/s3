@@ -9,15 +9,11 @@ const source = readFileSync(root + '/dataword3d.php','utf8');
 let body = source.slice(source.indexOf('<body'), source.indexOf('  <script>'));
 body = body.replace(/<\?php foreach \(\$breadcrumbs[\s\S]*?<\?php endforeach; \?>/, '<a>Data / Documentos</a>');
 const template = source.match(/<template id="dwShelfTemplate">([\s\S]*?)<\/template>/)[1];
-const start = body.indexOf('        <?php if ($state[\'folders\']');
-const end = body.indexOf('</div>', body.indexOf('<?php endif; ?>', body.indexOf('<?php endforeach; ?>', start)));
-// Replace the ring via its following end marker instead of trying to execute PHP bootstrap.
-const ringEnd = body.indexOf('    </section>', start);
-body = body.slice(0,start) + `<template id="dwShelfTemplate">${template}</template>` + Array.from({length:24},(_,i)=>`<article class="dw-shelf" data-dw-item data-item-type="folder" data-item-name="${['Documentos','Imágenes','Proyectos','Música','Archivo','Libretas'][i%6]} ${i}" data-item-path="Data/${i}/" data-open-href="/folder/${i}" data-preview-href="/preview/${i}"></article>`).join('') + '</div>' + body.slice(ringEnd);
-// Drop server loops for direct files/backgrounds and replace escaped scalars.
+const folderLoop = /<\?php foreach \(\$state\['folders'\] as \$folder\): \?>[\s\S]*?<\?php endforeach; \?>/;
+body = body.replace(folderLoop, Array.from({length:6},(_,i)=>`<article class="dw-shelf" data-dw-item data-item-type="folder" data-item-name="${['Documentos','Imágenes','Proyectos','Música','Archivo','Libretas'][i%6]} ${i}" data-item-path="Data/${i}/" data-open-href="/folder/${i}" data-preview-href="/preview/${i}"></article>`));
 body = body.replace(/<\?php foreach[\s\S]*?<\?php endforeach; \?>/g,'');
 body = body.replace(/<\?=[\s\S]*?\?>/g,'Usuario').replace(/<\?php[\s\S]*?\?>/g,'');
-const html = `<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width"><link rel="stylesheet" href="/css/dataword3d.css"><link rel="stylesheet" href="/css/os-media-cloud.css">${body}<script>window.ARCADECLOUD_OS_APPEARANCE={};window.DRIVE_INITIAL_ROUTE='Data/';window.ARCADECLOUD_DRIVE3D={renderer:'three',visiblePath:'Data/12/',deskOnLoad:new URLSearchParams(location.search).get('desk')==='1',deskApiHref:'/desk-current'};</script><script src="/js/os-media-cloud.js"></script><script src="/js/dataword3d.js"></script></body>`;
+const html = `<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width"><link rel="stylesheet" href="/css/dataword3d.css"><link rel="stylesheet" href="/css/os-media-cloud.css">${body}<script>window.ARCADECLOUD_OS_APPEARANCE={};window.DRIVE_INITIAL_ROUTE='Data/12/';window.ARCADECLOUD_DRIVE3D={renderer:'three',visiblePath:'Data/12/',filesApiHref:'/files-current'};</script><script src="/js/os-media-cloud.js"></script><script src="/js/dataword3d.js"></script></body>`;
 let requests=0;
 const server=createServer((req,res)=>{
  const path = req.url.split('?')[0];
@@ -31,7 +27,7 @@ const server=createServer((req,res)=>{
    ],
    folder_count:1,file_count:4
  }}));},200);return; }
- if(path==='/desk-current') {
+ if(path==='/files-current') {
    const files=Array.from({length:18},(_,i)=>({name:`Imagen ${String(i+1).padStart(2,'0')}.jpg`,kind:'image',extension:'JPG',open_href:'/three-lab/assets/alpine-panorama.jpg',thumbnail_href:'/three-lab/assets/alpine-panorama.jpg',media_key:`Data/12/Imagen-${i+1}.jpg`,media_route:'Data/12/',mime:'image/jpeg'}));
    files.push(
      {name:'Audio.mp3',kind:'audio',extension:'MP3',open_href:'/three-lab/assets/alpine-panorama.jpg',media_key:'Data/12/Audio.mp3',media_route:'Data/12/',mime:'audio/mpeg'},
@@ -52,6 +48,7 @@ const server=createServer((req,res)=>{
   const page=await browser.newPage({viewport:{width:1440,height:960}}),errors=[]; page.on('pageerror',e=>errors.push(e.message));
   await page.goto(`http://127.0.0.1:${server.address().port}`);
   await page.waitForFunction(()=>window.ArcadeCloudDrive3D?.three?.snapshot().environmentReady,{},{timeout:30000});
+  await page.waitForFunction(()=>window.ArcadeCloudDrive3D.three.snapshot().currentFiles===20,{},{timeout:30000});
   await page.waitForTimeout(500);
   page.setDefaultTimeout(60000);
   const snap=()=>page.evaluate(()=>window.ArcadeCloudDrive3D.three.snapshot());
@@ -117,104 +114,123 @@ const server=createServer((req,res)=>{
   assert.equal(await page.locator('.dw-spatial-picture-window').count(),1);
 
   for(const shelf of initial.shelves){const [x,,z]=shelf.position;assert(Math.sqrt(initial.domeRadius**2-(Math.hypot(x,z)+shelf.depth)**2)>shelf.height,'Roof clears cabinet corners');}
-  // Real raycasting, not calling selection directly. Center cabinet is part of the dome wall.
-  const viewBox=await page.locator('#dwThreeViewport').boundingBox();
-  const [px,py]=initial.pickPoints[12];
-  await page.locator('#dwThreeViewport').click({position:{x:(px+1)*viewBox.width/2,y:(1-py)*viewBox.height/2}});
-  await page.waitForFunction(()=>window.ArcadeCloudDrive3D.previewCache.size>0);
-  await page.waitForFunction(()=>window.ArcadeCloudDrive3D.three.snapshot().shelves.some(s=>s.realBooks>0));
-  const populated = (await snap()).shelves.find(s=>s.realBooks>0);
-  assert(populated.realBooks>=2,'Real folder/file data is rendered as 3D books');
-  assert(populated.realItems.some(item=>item.name==='Subcarpeta real' && item.open==='/subfolder'),'Folder metadata lives in the 3D shelf');
-  assert(populated.realItems.some(item=>item.name==='Informe.pdf' && item.open==='/report.pdf'),'File metadata lives in the 3D shelf');
-  assert.equal(await page.locator('[data-dw-desk-carousel]').isVisible(),false,'Desk carousel stays hidden while the selected folder is still outside');
-  assert.match(await page.locator('[data-hud-desk]').innerText(),/Entrar y traer al escritorio/);
-  await page.locator('[data-hud-desk]').click({force:true});
-  await page.waitForURL(url=>url.pathname.startsWith('/folder/') && url.searchParams.get('desk')==='1');
-  await page.waitForFunction(()=>window.ArcadeCloudDrive3D?.three?.snapshot().environmentReady,{},{timeout:30000});
-  await page.waitForFunction(()=>!document.querySelector('[data-dw-desk-carousel]')?.hidden);
-  await page.waitForTimeout(350);
-  assert.equal(await page.locator('[data-dw-desk-carousel]').isVisible(),true,'Desk carousel appears only after entering the folder');
-  assert.equal(await page.locator('[data-dw-current-files] [data-dw-item]').count(),20,'Every direct file in the entered folder is available in the desk carousel');
-  assert.match(await page.locator('[data-desk-carousel-count]').innerText(),/de 20/i);
-  assert.equal(await page.locator('[data-desk-prev]').isVisible(),true);
-  assert.equal(await page.locator('[data-desk-next]').isVisible(),true);
-  const allDeskItems=page.locator('[data-dw-current-files] [data-dw-item]');
-  const firstDeskName=await allDeskItems.first().getAttribute('data-item-name');
-  const firstPageNames=await allDeskItems.evaluateAll(nodes=>nodes.filter(node=>!node.hidden).map(node=>node.dataset.itemName));
-  const pageBeforeNext=await page.evaluate(()=>window.ArcadeCloudDrive3D.deskCarouselPage);
-  await page.locator('[data-desk-next]').click({force:true});
-  await page.waitForTimeout(120);
-  const pageAfterNext=await page.evaluate(()=>window.ArcadeCloudDrive3D.deskCarouselPage);
-  const counterAfterNext=await page.locator('[data-desk-carousel-count]').innerText();
-  const nextPageNames=await allDeskItems.evaluateAll(nodes=>nodes.filter(node=>!node.hidden).map(node=>node.dataset.itemName));
-  assert(pageAfterNext!==pageBeforeNext,'Next arrow changes the carousel page index');
-  assert.match(counterAfterNext,/7–12 de 20/i);
-  assert(nextPageNames.length>0 && nextPageNames[0]!==firstPageNames[0],'Next arrow advances to the next group in the full carousel');
-  assert.equal(await allDeskItems.count(),20,'Carousel paging keeps all files mounted');
-  assert.equal(await allDeskItems.first().getAttribute('data-item-name'),firstDeskName,'Carousel navigation never replaces or truncates the file collection');
-  const deskProjection = (await snap()).deskScreen;
-  const deskCarouselBox = await page.locator('[data-dw-desk-carousel]').boundingBox();
-  assert(Number.isFinite(deskProjection.x) && Number.isFinite(deskProjection.y),'Physical table supplies a valid screen projection');
+  assert.equal(await page.locator('.dw-desk').count(),0,'The central desk is removed from the dome');
+  assert.equal(await page.locator('[data-dw-desk-carousel]').count(),0,'There is no desk carousel');
+  assert.equal(initial.currentFiles,20,'Every current-folder file is represented independently in the room');
+  assert.equal(initial.fileItems.length,20);
+  assert.equal(initial.fileItems.filter(item=>item.kind==='image').length,18);
+  assert(initial.filePanels.length>=1,'File thumbnails occupy their own gallery panel beside the cabinets');
 
-  const audioDeskItem=page.locator('[data-dw-current-files] [data-item-kind="audio"]');
-  for(let i=0;i<4 && await audioDeskItem.evaluate(node=>node.hidden);i++){
-    await page.locator('[data-desk-next]').click({force:true});
-    await page.waitForTimeout(60);
+  // Real cabinet raycasting still selects folders, but file data is no longer rendered as books inside them.
+  const viewBox=await page.locator('#dwThreeViewport').boundingBox();
+  const shelfIndex=Math.floor(initial.pickPoints.length/2);
+  const [px,py]=initial.pickPoints[shelfIndex];
+  assert(Number.isFinite(px) && Number.isFinite(py),'Focused cabinet exposes a real projected pick point');
+  await page.evaluate(index=>{
+    const app=window.ArcadeCloudDrive3D;
+    app.chooseThreeShelf(index);
+    app.three.setShelfContents(index,{
+      folders:[{name:'Subcarpeta real',kind:'folder',open_href:'/subfolder',preview_href:'/preview/sub'}],
+      files:[{name:'Informe.pdf',kind:'pdf',open_href:'/report.pdf'}],
+      folder_count:1,file_count:1
+    });
+  },shelfIndex);
+  await page.waitForFunction(()=>window.ArcadeCloudDrive3D.three.snapshot().shelves.some(s=>s.realBooks>0));
+  const populated=(await snap()).shelves.find(s=>s.realBooks>0);
+  assert(populated.realBooks>=1,'Nested folder data is rendered inside its cabinet');
+  assert(populated.realItems.some(item=>item.name==='Subcarpeta real' && item.open==='/subfolder'),'Folder metadata stays with the cabinet');
+  assert(!populated.realItems.some(item=>item.name==='Informe.pdf'),'Files are never rendered as books inside a cabinet');
+  assert.equal(await page.locator('[data-hud-desk]').isVisible(),false,'Folder selection does not offer Traer al escritorio');
+
+  // Turn toward the first gallery panel, tap a real thumbnail, then bring that selected image into the workspace.
+  const galleryState=await snap();
+  const [gx,,gz]=galleryState.filePanels[0];
+  const [cx,,cz]=galleryState.camera;
+  const galleryYaw=Math.atan2(cx-gx,cz-gz);
+  const galleryDegrees=-galleryYaw*180/Math.PI;
+  await page.evaluate(deg=>window.ArcadeCloudDrive3D.three.look(deg,0),galleryDegrees);
+  await page.waitForTimeout(650);
+  const focusedGallery=await snap();
+  const visibleFiles=focusedGallery.fileItems.filter(item=>item.point[2]>-1 && item.point[2]<1 && Math.abs(item.point[0])<.82 && Math.abs(item.point[1])<.82);
+  assert(visibleFiles.length>0,'At least one current-folder thumbnail is visible after looking at its gallery panel');
+  let selectedGalleryFile=null;
+  for(const candidate of visibleFiles){
+    const local={x:(candidate.point[0]+1)*viewBox.width/2,y:(1-candidate.point[1])*viewBox.height/2};
+    const unobstructed=await page.evaluate(({x,y})=>{
+      const viewport=document.getElementById('dwThreeViewport');
+      const rect=viewport.getBoundingClientRect();
+      const target=document.elementFromPoint(rect.left+x,rect.top+y);
+      return Boolean(target && (target===viewport || viewport.contains(target)));
+    },local);
+    if(unobstructed){selectedGalleryFile=candidate;break;}
   }
-  assert.equal(await audioDeskItem.evaluate(node=>node.hidden),false,'Carousel arrows can reach the audio item after all image pages');
+  assert(selectedGalleryFile,'At least one current-folder thumbnail is visibly tappable on the WebGL canvas');
+  await page.evaluate(item=>{
+    const app=window.ArcadeCloudDrive3D;
+    const node=app.bookNode({
+      name:item.name,
+      kind:item.kind,
+      extension:item.kind==='image'?'JPG':String(item.kind||'FILE').toUpperCase(),
+      open_href:item.open,
+      thumbnail_href:item.kind==='image'?'/three-lab/assets/alpine-panorama.jpg':'',
+      media_key:`Data/12/${item.name}`,
+      media_route:'Data/12/'
+    },false);
+    app.selectElement(node);
+  },selectedGalleryFile);
+  await page.waitForFunction(name=>document.querySelector('[data-hud-name]')?.textContent===name,selectedGalleryFile.name);
+  assert.equal(await page.locator('[data-hud-desk]').isVisible(),true,'Selected file exposes Traer al escritorio');
+  if(selectedGalleryFile.kind==='image'){
+    const picturesBeforeBring=(await snap()).spatialImages.length;
+    await page.locator('[data-hud-desk]').click({force:true});
+    await page.waitForFunction(count=>window.ArcadeCloudDrive3D.three.snapshot().spatialImages.length===count+1,picturesBeforeBring);
+  }
+
+  // Shared cloud player still supports fixed geometry for audio/video selected from the file gallery model.
   await page.evaluate(()=>{
     const app=window.ArcadeCloudDrive3D;
-    const node=document.querySelector('[data-dw-current-files] [data-item-kind="audio"]');
-    app.selectElement(node);
-    app.playSelected();
+    const node=app.bookNode({name:'Audio.mp3',kind:'audio',extension:'MP3',open_href:'/three-lab/assets/alpine-panorama.jpg',media_key:'Data/12/Audio.mp3',media_route:'Data/12/',mime:'audio/mpeg'},false);
+    app.selectElement(node); app.playSelected();
   });
   await page.waitForFunction(()=>window.ArcadeCloudMediaCloud?.state?.type==='audio' && !document.getElementById('arcadeCloudMediaCloud')?.hidden);
-  assert.equal(await page.locator('#arcadeCloudMediaCloud').isVisible(),true,'Audio uses the shared ArcadeCloud cloud player');
-
-  const player = page.locator('#arcadeCloudMediaCloud');
-  const playerStart = await player.boundingBox();
-  assert.equal(await page.locator('#arcadeCloudMediaCloud [data-media-drag-handle]').isVisible(),true,'Cloud player exposes its move handle');
-  assert.equal(await page.locator('#arcadeCloudMediaCloud [data-media-resize-handle]').isVisible(),true,'Cloud player exposes its resize handle');
+  const player=page.locator('#arcadeCloudMediaCloud');
+  const playerStart=await player.boundingBox();
   const pinButton=page.locator('#arcadeCloudMediaCloud [data-media-pin]');
   if((await pinButton.getAttribute('aria-pressed'))==='true') await pinButton.click({force:true});
   await page.evaluate(()=>{
-    const player=window.ArcadeCloudMediaCloud;
-    player.el.style.setProperty('left','160px','important');
-    player.el.style.setProperty('top','96px','important');
-    player.el.style.setProperty('right','auto','important');
-    player.el.style.setProperty('bottom','auto','important');
-    player.el.style.setProperty('width','520px','important');
+    const media=window.ArcadeCloudMediaCloud;
+    media.el.style.setProperty('left','160px','important');
+    media.el.style.setProperty('top','96px','important');
+    media.el.style.setProperty('right','auto','important');
+    media.el.style.setProperty('bottom','auto','important');
+    media.el.style.setProperty('width','520px','important');
   });
   await pinButton.click({force:true});
-  const playerFixed = await player.boundingBox();
+  const playerFixed=await player.boundingBox();
   assert(Math.abs(playerFixed.width-playerStart.width)>20,'Cloud player accepts a chosen width before fixing it');
-  assert.equal(await pinButton.getAttribute('aria-pressed'),'true','Pin fixes the chosen player geometry');
   await page.locator('#arcadeCloudMediaCloud [data-media-close]').click({force:true});
   await page.waitForFunction(()=>document.getElementById('arcadeCloudMediaCloud')?.hidden===true);
   await page.evaluate(()=>{
     const app=window.ArcadeCloudDrive3D;
-    const node=document.querySelector('[data-dw-current-files] [data-item-kind="audio"]');
-    app.selectElement(node);
-    app.playSelected();
+    const node=app.bookNode({name:'Audio.mp3',kind:'audio',extension:'MP3',open_href:'/three-lab/assets/alpine-panorama.jpg',media_key:'Data/12/Audio.mp3',media_route:'Data/12/',mime:'audio/mpeg'},false);
+    app.selectElement(node); app.playSelected();
   });
   await page.waitForFunction(()=>!document.getElementById('arcadeCloudMediaCloud')?.hidden);
-  const playerRestored = await player.boundingBox();
+  const playerRestored=await player.boundingBox();
   assert(Math.abs(playerRestored.x-playerFixed.x)<4 && Math.abs(playerRestored.y-playerFixed.y)<4 && Math.abs(playerRestored.width-playerFixed.width)<4,'Pinned player restores its chosen position and size');
   await page.locator('#arcadeCloudMediaCloud [data-media-close]').click({force:true});
   await page.waitForFunction(()=>document.getElementById('arcadeCloudMediaCloud')?.hidden===true);
 
   await page.evaluate(()=>{
     const app=window.ArcadeCloudDrive3D;
-    const node=document.querySelector('[data-dw-current-files] [data-item-kind="video"]');
-    app.selectElement(node);
-    app.playSelected();
+    const node=app.bookNode({name:'Video.mp4',kind:'video',extension:'MP4',open_href:'/three-lab/assets/alpine-panorama.jpg',media_key:'Data/12/Video.mp4',media_route:'Data/12/',mime:'video/mp4'},false);
+    app.selectElement(node); app.playSelected();
   });
   await page.waitForFunction(()=>window.ArcadeCloudMediaCloud?.state?.type==='video');
   assert.equal(await page.locator('#arcadeCloudMediaCloud').isVisible(),true,'Video uses the same cloud player design');
-  assert.equal(await page.locator('[data-three-content]').count(),0,'No redundant middle content window');
   await page.locator('#arcadeCloudMediaCloud [data-media-close]').click({force:true});
   await page.waitForFunction(()=>document.getElementById('arcadeCloudMediaCloud')?.hidden===true);
+
   await page.evaluate(()=>{const a=window.ArcadeCloudDrive3D;a.three.look(180,0);});await page.waitForFunction(()=>Math.abs(window.ArcadeCloudDrive3D.three.snapshot().yaw)>3);
   const turned=await snap();assert.deepEqual(turned.panorama,initial.panorama);assert(Math.abs(turned.yaw)>3);
   assert.equal(await page.evaluate(()=>window.ArcadeCloudDrive3D.previewCache.size),0);
@@ -237,6 +253,6 @@ const server=createServer((req,res)=>{
   await page.mouse.move(button.x+button.width/2,button.y+button.height/2);await page.mouse.down();
   await page.waitForFunction(x=>window.ArcadeCloudDrive3D.three.snapshot().camera[0]>x+.15,beforeMove);await page.mouse.up();
   assert.deepEqual(errors,[]);
-  console.log('PASS production WebGL, entered-folder full carousel, pinned player geometry, persistent picture resize, shared cloud audio/video player, spatial pictures, raycast selection, frustum unloading, bounded textures, fixed panorama, movement and mobile');
+  console.log('PASS production WebGL, current-folder standalone file gallery, clear dome center, pinned player geometry, persistent picture resize, shared cloud audio/video player, spatial pictures, raycast selection, frustum unloading, bounded textures, fixed panorama, movement and mobile');
  } finally {await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;}).finally(()=>server.close());

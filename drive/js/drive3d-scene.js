@@ -212,10 +212,9 @@ class Drive3DScene {
             const host = new T.Group();
             host.name = 'real-drive-books';
             group.add(host);
-            const entries = [
-                ...(Array.isArray(state.folders) ? state.folders.slice(0, 6).map(item => ({item, folder:true})) : []),
-                ...(Array.isArray(state.files) ? state.files.slice(0, 18).map(item => ({item, folder:false})) : [])
-            ].slice(0, 24);
+            const entries = Array.isArray(state.folders)
+                ? state.folders.slice(0, 18).map(item => ({item, folder:true}))
+                : [];
             entries.forEach(({item, folder}, n) => {
                 const row = Math.floor(n / 6);
                 const col = n % 6;
@@ -251,6 +250,198 @@ class Drive3DScene {
         };
 
         const sharedMaterials = new Set([wood, trim, darkWood, glow, bounce, pages, ...books]);
+
+        // Current-folder files live beside the cabinets as independent thumbnail-sized cards.
+        // They are not books and they are never inserted into a folder cabinet.
+        const fileGallery = new T.Group();
+        fileGallery.name = 'current-folder-files';
+        scene.add(fileGallery);
+        let filePanels = [];
+        let selectedFileCard = null;
+
+        // Same icon taxonomy used by bloque_archivos.php through FileIconResolver.
+        const fileIconGlyphs = {
+            'fa-file-pdf':'\\uf1c1',
+            'fa-file-word':'\\uf1c2',
+            'fa-file-excel':'\\uf1c3',
+            'fa-file-powerpoint':'\\uf1c4',
+            'fa-file-image':'\\uf1c5',
+            'fa-file-archive':'\\uf1c6',
+            'fa-file-audio':'\\uf1c7',
+            'fa-file-video':'\\uf1c8',
+            'fa-file-code':'\\uf1c9',
+            'fa-file-lines':'\\uf15c',
+            'fa-database':'\\uf1c0',
+            'fa-book':'\\uf02d',
+            'fa-envelope':'\\uf0e0',
+            'fa-font':'\\uf031',
+            'fa-key':'\\uf084',
+            'fa-cube':'\\uf1b2',
+            'fa-cubes':'\\uf1b3',
+            'fa-pen-ruler':'\\uf5ae',
+            'fa-lock':'\\uf023',
+            'fa-file':'\\uf15b'
+        };
+        const fileCategoryColors = {
+            pdf:'#a83f3f', word:'#356aaf', excel:'#2d7c55', powerpoint:'#b85c32',
+            archive:'#786245', text:'#53667a', code:'#5f4b8b', image:'#237a71',
+            audio:'#1d7aa7', video:'#7a3ba0', database:'#496c7e', ebook:'#80613a',
+            mail:'#356a8f', font:'#6a5f8f', certificate:'#8b6b32', package:'#596474',
+            design:'#8a4f72', model:'#3d7181', locked:'#805049', generic:'#53667a'
+        };
+        const fileKindStyle = (item) => {
+            const extension = String(item?.extension || '').toUpperCase().slice(0,8);
+            const icon = String(item?.icon || 'fa-file');
+            const category = String(item?.icon_category || 'generic');
+            const label = String(item?.icon_label || extension || 'Archivo');
+            return {
+                icon,
+                glyph:fileIconGlyphs[icon] || fileIconGlyphs['fa-file'],
+                label:label.toUpperCase().slice(0,22),
+                extension:extension || 'ARCHIVO',
+                color:fileCategoryColors[category] || fileCategoryColors.generic
+            };
+        };
+
+        function cardLabelTexture(item) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 512; canvas.height = 128;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#071722'; ctx.fillRect(0,0,512,128);
+            ctx.fillStyle = '#eafaff'; ctx.font = '700 34px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            const name = String(item?.name || 'Archivo');
+            ctx.fillText(name.length > 28 ? name.slice(0,27) + '…' : name,256,64,476);
+            const tex = new T.CanvasTexture(canvas); tex.colorSpace = T.SRGBColorSpace;
+            return tex;
+        }
+
+        function placeholderTexture(item) {
+            const style = fileKindStyle(item);
+            const canvas = document.createElement('canvas');
+            canvas.width = 512; canvas.height = 384;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#06121b'; ctx.fillRect(0,0,512,384);
+            ctx.fillStyle = style.color; ctx.fillRect(22,22,468,340);
+            ctx.fillStyle = 'rgba(2,13,22,.58)'; ctx.fillRect(38,38,436,308);
+            ctx.fillStyle = '#e9fbff'; ctx.textAlign='center'; ctx.textBaseline='middle';
+            ctx.font = '900 132px "Font Awesome 6 Free", "Font Awesome 5 Free", sans-serif';
+            ctx.fillText(style.glyph,256,170);
+            ctx.font = '800 30px sans-serif'; ctx.fillStyle='#aeeeff'; ctx.fillText(style.label,256,278,430);
+            ctx.font = '700 24px sans-serif'; ctx.fillStyle='#dff8ff'; ctx.fillText(style.extension,256,324,260);
+            const tex = new T.CanvasTexture(canvas); tex.colorSpace = T.SRGBColorSpace;
+            return tex;
+        }
+
+        function disposeFileGallery() {
+            fileGallery.traverse(obj => {
+                if (obj.geometry) obj.geometry.dispose();
+                if (obj.material) {
+                    obj.material.map?.dispose?.();
+                    obj.material.dispose?.();
+                }
+            });
+            fileGallery.clear();
+            filePanels = [];
+            selectedFileCard = null;
+        }
+
+        function setFileSelection(card) {
+            if (selectedFileCard?.userData?.selection) selectedFileCard.userData.selection.visible = false;
+            selectedFileCard = card || null;
+            if (selectedFileCard?.userData?.selection) selectedFileCard.userData.selection.visible = true;
+            needsRender = true;
+        }
+
+        function makeFileCard(item) {
+            const card = new T.Group();
+            card.userData.driveItem = item;
+            card.userData.driveFolder = false;
+            card.userData.fileCard = true;
+
+            const backing = new T.Mesh(new T.BoxGeometry(.86,.72,.05), material(0x06131d,{metalness:.12,roughness:.5}));
+            backing.position.z = 0; card.add(backing);
+            // Slightly larger invisible hit surface makes finger selection reliable
+            // without visually enlarging the thumbnail.
+            const hitSurface = new T.Mesh(
+                new T.PlaneGeometry(.98,.84),
+                new T.MeshBasicMaterial({transparent:true,opacity:0,depthWrite:false})
+            );
+            hitSurface.position.z = .055; card.add(hitSurface);
+
+            const mediaMaterial = new T.MeshBasicMaterial({map:placeholderTexture(item)});
+            const media = new T.Mesh(new T.PlaneGeometry(.78,.52), mediaMaterial);
+            media.position.set(0,.08,.031); card.add(media);
+
+            if (item?.kind === 'image' && item?.thumbnail_href && !item?.locked) {
+                new T.TextureLoader().load(item.thumbnail_href, map => {
+                    map.colorSpace = T.SRGBColorSpace;
+                    const old = mediaMaterial.map;
+                    mediaMaterial.map = map;
+                    mediaMaterial.color.set(0xffffff);
+                    mediaMaterial.needsUpdate = true;
+                    old?.dispose?.();
+                    needsRender = true;
+                }, undefined, () => {});
+            }
+
+            const labelMat = new T.MeshBasicMaterial({map:cardLabelTexture(item)});
+            const label = new T.Mesh(new T.PlaneGeometry(.78,.15), labelMat);
+            label.position.set(0,-.255,.032); card.add(label);
+
+            const outline = new T.LineSegments(
+                new T.EdgesGeometry(new T.PlaneGeometry(.90,.76)),
+                new T.LineBasicMaterial({color:0x78e9ff,transparent:true,opacity:.95})
+            );
+            outline.position.z = .04; outline.visible = false; card.add(outline);
+            card.userData.selection = outline;
+            return card;
+        }
+
+        function rebuildFileGallery(files) {
+            disposeFileGallery();
+            const items = Array.isArray(files) ? files.filter(Boolean) : [];
+            if (!items.length) { needsRender = true; return; }
+
+            const columns = innerWidth < 700 ? 4 : 5;
+            const rows = 4;
+            const panelCapacity = columns * rows;
+            const panelCount = Math.ceil(items.length / panelCapacity);
+            const panelStep = .58;
+            const halfShelfSpan = titles.length > 0 ? Math.max(0,(titles.length - 1) * step / 2) : 0;
+            const fileRadius = Math.max(5.8, shelfRadius - .85);
+
+            for (let p = 0; p < panelCount; p++) {
+                let angle;
+                if (!titles.length) {
+                    angle = (p - (panelCount - 1) / 2) * panelStep;
+                } else {
+                    const side = p % 2 === 0 ? 1 : -1;
+                    const rank = Math.floor(p / 2);
+                    angle = side * (halfShelfSpan + .54 + rank * panelStep);
+                }
+
+                const panel = new T.Group();
+                panel.name = `file-panel-${p}`;
+                panel.position.set(fileRadius * Math.sin(angle), 0, -fileRadius * Math.cos(angle));
+                panel.rotation.y = -angle;
+                fileGallery.add(panel);
+                filePanels.push(panel);
+
+                const start = p * panelCapacity;
+                const end = Math.min(items.length, start + panelCapacity);
+                for (let index = start; index < end; index++) {
+                    const local = index - start;
+                    const row = Math.floor(local / columns);
+                    const col = local % columns;
+                    const card = makeFileCard(items[index]);
+                    card.position.set((col - (columns - 1) / 2) * .96, 3.45 - row * .83, .12);
+                    panel.add(card);
+                }
+            }
+            needsRender = true;
+        }
+
+        this.setCurrentFiles = files => rebuildFileGallery(files);
         function unloadShelf(group) {
             group.traverse(mesh => {
                 if (mesh.isInstancedMesh) mesh.dispose();
@@ -259,15 +450,7 @@ class Drive3DScene {
             });
             group.clear();
         }
-        // Central brass / marble table, fully modeled. Position stays fixed while walking.
-        const table = new T.Group(); table.name = 'central-table'; table.position.z = -1.3; scene.add(table);
-        cylinder(table, 1.58, 1.65, .10, .055, blackStone);
-        cylinder(table, 1.08, 1.28, .70, .48, blackStone);
-        cylinder(table, 1.45, 1.45, .13, .89, trim);
-        cylinder(table, 1.43, 1.43, .06, .985, blackStone);
-        for (const [r, y, mat] of [[1.62,.10,cyan],[1.27,.17,trim],[1.10,.78,glow],[1.45,.96,glow],[.63,1.035,cyan]]) ring(table, r, .019, y, mat);
-        // Central globe removed by design; keep the table surface clear.
-        const blueLight = new T.PointLight(0x459eff, 5, 5, 2); blueLight.position.set(0, 1.5, -1.3); scene.add(blueLight);
+        // The center of the dome is intentionally open. Files are selected from the wall gallery.
         const lampAngle = (titles.length - 1 - Math.floor(titles.length / 2)) * step + .25, lamp = new T.Group(); lamp.name = 'end-of-row-lamp';
         lamp.position.set(shelfRadius * Math.sin(lampAngle), 0, -shelfRadius * Math.cos(lampAngle)); scene.add(lamp);
         cylinder(lamp,.32,.38,.10,.05,trim); cylinder(lamp,.035,.035,2.4,1.25,trim);
@@ -312,20 +495,53 @@ class Drive3DScene {
         function pointerHit(event) {
             const rect = viewport.getBoundingClientRect();
             raycaster.setFromCamera(new T.Vector2((event.clientX - rect.left) / rect.width * 2 - 1, 1 - (event.clientY - rect.top) / rect.height * 2), camera);
-            return raycaster.intersectObjects(shelves, true)[0] || null;
+            return raycaster.intersectObjects([...shelves, fileGallery], true)[0] || null;
         }
         function driveItemFromHit(hit) {
             let node = hit?.object || null;
             while (node) {
-                if (node.userData?.driveItem) return {item:node.userData.driveItem, folder:Boolean(node.userData.driveFolder)};
+                if (node.userData?.driveItem) return {item:node.userData.driveItem, folder:Boolean(node.userData.driveFolder), node};
                 if (shelves.includes(node)) break;
                 node = node.parent;
             }
             return null;
         }
+        function nearestFileCard(event) {
+            if (!filePanels.length) return null;
+            const rect = viewport.getBoundingClientRect();
+            const nx = (event.clientX - rect.left) / Math.max(1,rect.width) * 2 - 1;
+            const ny = 1 - (event.clientY - rect.top) / Math.max(1,rect.height) * 2;
+            let best = null, bestDistance = Infinity;
+            fileGallery.children.forEach(panel => panel.children.forEach(card => {
+                if (!card.userData?.fileCard) return;
+                const p = card.localToWorld(new T.Vector3(0,0,.06)).project(camera);
+                if (p.z <= -1 || p.z >= 1 || Math.abs(p.x) > 1.08 || Math.abs(p.y) > 1.08) return;
+                const distance = Math.hypot(p.x - nx, p.y - ny);
+                if (distance < bestDistance) { bestDistance = distance; best = card; }
+            }));
+            // About 45–70 CSS px depending on viewport, deliberately finger-friendly.
+            return bestDistance <= (rect.width < 700 ? .22 : .13) ? best : null;
+        }
+        function fileSelectionFromPointer(event, directHit = null) {
+            const direct = driveItemFromHit(directHit);
+            if (direct && !direct.folder) {
+                let card = direct.node;
+                while (card && !card.userData?.fileCard && card.parent) card = card.parent;
+                return card?.userData?.fileCard ? {card,item:direct.item} : null;
+            }
+            const card = nearestFileCard(event);
+            return card ? {card,item:card.userData.driveItem} : null;
+        }
         viewport.addEventListener('pointerup', event => {
             if (!drag || Math.hypot(event.clientX - drag.startX, event.clientY - drag.startY) > 7) return;
             const hit = pointerHit(event);
+            const fileSelection = fileSelectionFromPointer(event, hit);
+            if (fileSelection) {
+                setFileSelection(fileSelection.card);
+                options.onItemSelect?.(fileSelection.item, false, false);
+                needsRender = true;
+                return;
+            }
             const dataBook = driveItemFromHit(hit);
             if (dataBook) {
                 options.onItemSelect?.(dataBook.item, dataBook.folder, false);
@@ -333,7 +549,6 @@ class Drive3DScene {
                 return;
             }
             if (!hit) {
-                if (raycaster.intersectObject(table, true).length) return;
                 const ground = raycaster.intersectObject(floor)[0];
                 if (ground) {
                     const direction = ground.point.clone().sub(camera.position); direction.y = 0;
@@ -350,8 +565,19 @@ class Drive3DScene {
             options.onSelect?.(selectedIndex);
             needsRender = true;
         });
+        // Click/tap fallback for file cards. Pointer-up drives navigation, while
+        // this dedicated click path gives small thumbnail cards a forgiving mobile target.
+        viewport.addEventListener('click', event => {
+            const selection = fileSelectionFromPointer(event, pointerHit(event));
+            if (!selection) return;
+            setFileSelection(selection.card);
+            options.onItemSelect?.(selection.item, false, false);
+            needsRender = true;
+        });
         viewport.addEventListener('dblclick', event => {
-            const dataBook = driveItemFromHit(pointerHit(event));
+            const hit = pointerHit(event);
+            const fileSelection = fileSelectionFromPointer(event, hit);
+            const dataBook = fileSelection ? {item:fileSelection.item, folder:false} : driveItemFromHit(hit);
             if (dataBook) {
                 event.preventDefault();
                 options.onItemSelect?.(dataBook.item, dataBook.folder, true);
@@ -363,7 +589,6 @@ class Drive3DScene {
             for (const name of ['pointerup', 'pointercancel', 'lostpointercapture']) button.addEventListener(name, event => held.delete(event.pointerId));
         });
         function canStand(x, z) {
-            if (Math.hypot(x, z + 1.3) < 1.9) return false;
             if (Math.hypot(x, z) > R - .45) return false;
             if (Math.hypot(x - lamp.position.x, z - lamp.position.z) < .65) return false;
             return shelves.every(shelf => {
@@ -378,7 +603,8 @@ class Drive3DScene {
             m.fillStyle = '#1d3540'; m.strokeStyle = '#8ca7b5'; m.lineWidth = .07;
             m.beginPath(); m.arc(0, 0, R, 0, Math.PI * 2); m.fill(); m.stroke();
             shelves.forEach(shelf => { m.save(); m.translate(shelf.position.x, shelf.position.z); m.rotate(-shelf.rotation.y); m.fillStyle = '#b7844d'; m.fillRect(-width / 2, -depth / 2, width, depth); m.restore(); });
-            m.fillStyle = '#327c99'; m.beginPath(); m.arc(0, -1.3, 1.65, 0, Math.PI * 2); m.fill();
+            m.fillStyle = '#56d8f2';
+            filePanels.forEach(panel => { m.save(); m.translate(panel.position.x,panel.position.z); m.rotate(-panel.rotation.y); m.fillRect(-.6,-.08,1.2,.16); m.restore(); });
             m.fillStyle = '#ffdc84'; m.beginPath(); m.arc(lamp.position.x, lamp.position.z, .3, 0, Math.PI * 2); m.fill();
             m.translate(camera.position.x, camera.position.z); m.rotate(-yaw);
             m.fillStyle = '#69bfff30'; m.beginPath(); m.moveTo(0, 0); m.arc(0, 0, 3, -Math.PI / 2 - .59, -Math.PI / 2 + .59); m.closePath(); m.fill();
@@ -421,9 +647,6 @@ class Drive3DScene {
 
         // Spatial media is anchored in world coordinates near the glass, not to the screen.
         // Multiple anchors allow image windows to behave like persistent pictures in the room.
-        // The desk carousel is projected from the real Three.js table so its DOM controls
-        // stay visually on the physical desk instead of floating at a fixed screen edge.
-        const deskAnchor = new T.Vector3(table.position.x, 1.08, table.position.z);
         const spatialAnchors = new Map();
         const spatialCenter = new T.Vector3(0, 2.7, 0);
         const spatialSphere = new T.Sphere(spatialCenter, Math.max(4, R - 1.05));
@@ -478,21 +701,6 @@ class Drive3DScene {
                     world:entry.point.toArray()
                 });
             });
-        }
-
-        function deskProjectionState() {
-            camera.updateMatrixWorld(true);
-            const projected = deskAnchor.clone().project(camera);
-            return {
-                visible:projected.z > -1 && projected.z < 1 && Math.abs(projected.x) < 1.18 && Math.abs(projected.y) < 1.22,
-                x:(projected.x * .5 + .5) * viewport.clientWidth,
-                y:(-.5 * projected.y + .5) * viewport.clientHeight,
-                world:deskAnchor.toArray()
-            };
-        }
-
-        function projectDesk() {
-            options.onDeskProjection?.(deskProjectionState());
         }
 
         this.placeSpatialMedia = (id = 'singleton', world = null) => placeSpatialInView(id, world);
@@ -557,7 +765,18 @@ class Drive3DScene {
                     open:book.userData?.driveItem?.open_href || ''
                 }))
             })),
-            lamp:lamp.position.toArray(),table:table.position.toArray(),deskScreen:deskProjectionState(),domeRadius:R,panorama:panorama.position.toArray(),environmentReady,
+            lamp:lamp.position.toArray(),
+            filePanels:filePanels.map(panel=>panel.position.toArray()),
+            currentFiles:fileGallery.children.reduce((sum,panel)=>sum+panel.children.length,0),
+            fileItems:fileGallery.children.flatMap(panel=>panel.children.map(card=>({
+                name:card.userData?.driveItem?.name || '',
+                kind:card.userData?.driveItem?.kind || 'file',
+                open:card.userData?.driveItem?.open_href || '',
+                icon:card.userData?.driveItem?.icon || 'fa-file',
+                iconCategory:card.userData?.driveItem?.icon_category || 'generic',
+                point:(()=>{const p=card.localToWorld(new T.Vector3(0,0,.05)).project(camera);return [p.x,p.y,p.z];})()
+            }))),
+            domeRadius:R,panorama:panorama.position.toArray(),environmentReady,
             spatial:this.spatialMediaState('singleton'),
             spatialImages:Array.from(spatialAnchors.entries()).filter(([id]) => id !== 'singleton').map(([id,entry]) => ({id,world:entry.point.toArray(),baseDistance:entry.baseDistance})),
             calls:renderer.info.render.calls, geometries:renderer.info.memory.geometries, textures:renderer.info.memory.textures});
@@ -586,7 +805,6 @@ class Drive3DScene {
                 renderer.render(scene, camera);
                 minimap();
                 projectSpatial();
-                projectDesk();
                 options.onCamera?.(-yaw * 180 / Math.PI, -pitch * 180 / Math.PI);
                 lastView = view; needsRender = false;
             }

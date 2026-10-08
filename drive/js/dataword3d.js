@@ -134,15 +134,12 @@
         this.bindControls();
         import('./drive3d-production.js').then(module => {
           module.Drive3DProduction.start(this);
-          this.openCurrentFolderDeskIfRequested();
         }).catch(error => {
           this.activateCompatible3DFallback(error);
-          this.openCurrentFolderDeskIfRequested();
         });
         return this;
       }
       this.startCompatible3D(false);
-      this.openCurrentFolderDeskIfRequested();
       return this;
     }
 
@@ -308,7 +305,7 @@
       const detail = this.camera.forward >= .45 ? candidates.slice(0, 3) : [];
       if (this.focusedShelf && this.visibleShelves.has(this.focusedShelf)) detail.unshift(this.focusedShelf);
       const detailed = new Set(detail.slice(0, 3));
-      if (!detailed.size && !this.deskCurrentFolderOpen) this.deskFiles?.replaceChildren();
+      if (!detailed.size) this.deskFiles?.replaceChildren();
       this.shelves.forEach(shelf => {
         if (!this.visibleShelves.has(shelf)) { this.releaseShelf(shelf); return; }
         this.mountShelf(shelf);
@@ -319,7 +316,7 @@
       });
       if (this.selected?.element && !this.selected.element.isConnected) {
         this.selected = null;
-        if (!this.deskCurrentFolderOpen) this.deskFiles?.replaceChildren();
+        this.deskFiles?.replaceChildren();
         this.hud.previewImage?.removeAttribute('src');
         this.deskImage?.removeAttribute('src');
         this.hud.open.disabled = true; this.hud.play.hidden = true; this.hud.download.hidden = true;
@@ -759,10 +756,9 @@
         : `<i class="fas ${isFolder ? 'fa-folder-open' : 'fa-arrow-up-right-from-square'}"></i> Abrir`;
 
       if (this.hud.desk) {
-        this.hud.desk.disabled = Boolean(item.locked || (isFolder && !item.openHref));
-        this.hud.desk.innerHTML = isFolder
-          ? '<i class="fas fa-right-to-bracket"></i> Entrar y traer al escritorio'
-          : '<i class="fas fa-hand"></i> Traer al escritorio';
+        this.hud.desk.hidden = isFolder;
+        this.hud.desk.disabled = Boolean(item.locked || !item.openHref);
+        this.hud.desk.innerHTML = '<i class="fas fa-hand"></i> Traer al escritorio';
       }
 
       const playable = !item.locked && ['audio','video'].includes(item.kind) && item.openHref;
@@ -826,29 +822,24 @@
         if (!folders.length) folderHost.append(this.emptyNode('Sin subcarpetas'));
         folders.forEach((item) => folderHost.append(this.bookNode(item, true)));
       }
-
-      const files = Array.isArray(state.files) ? state.files : [];
       if (fileHost) {
         fileHost.replaceChildren();
-        const primary = files.slice(0, 10);
-        if (!primary.length) fileHost.append(this.emptyNode('Sin archivos'));
-        primary.forEach((item) => fileHost.append(this.bookNode(item, false)));
+        const ornament = this.document.createElement('span');
+        ornament.className = 'dw-shelf-ornament';
+        ornament.setAttribute('aria-hidden', 'true');
+        ornament.innerHTML = '<i class="fas fa-folder-tree"></i>';
+        fileHost.append(ornament);
       }
       if (fileHostSecondary) {
         fileHostSecondary.replaceChildren();
-        const secondary = files.slice(10, 20);
-        if (!secondary.length) {
-          const ornament = this.document.createElement('span');
-          ornament.className = 'dw-shelf-ornament';
-          ornament.setAttribute('aria-hidden', 'true');
-          ornament.innerHTML = '<i class="fas fa-globe"></i>';
-          fileHostSecondary.append(ornament);
-        } else {
-          secondary.forEach((item) => fileHostSecondary.append(this.bookNode(item, false)));
-        }
+        const ornament = this.document.createElement('span');
+        ornament.className = 'dw-shelf-ornament';
+        ornament.setAttribute('aria-hidden', 'true');
+        ornament.innerHTML = '<i class="fas fa-box-archive"></i>';
+        fileHostSecondary.append(ornament);
       }
       if (counts) {
-        counts.textContent = `${state.folder_count || 0} carpetas · ${state.file_count || 0} archivos`;
+        counts.textContent = `${state.folder_count || 0} carpetas · entra para ver ${state.file_count || 0} archivos`;
       }
     }
 
@@ -971,19 +962,8 @@
 
     async bringToDesk() {
       const item = this.selected;
-      if (!item) return;
+      if (!item || item.type === 'folder' || item.locked || !item.openHref) return;
 
-      if (item.type === 'folder') {
-        if (item.locked || !item.openHref) return;
-        const url = new URL(item.openHref, this.window.location.href);
-        url.searchParams.set('desk','1');
-        this.window.location.href = url.href;
-        return;
-      }
-
-      if (this.useThree && this.deskFocus) this.deskFocus.hidden = false;
-      this.renderDeskPreview(item, true);
-      if (item.locked || !item.openHref) return;
       if (['audio','video'].includes(item.kind)) {
         this.playCloudMedia(item);
         return;
@@ -991,20 +971,9 @@
       this.showFileInDome(item);
     }
 
-    async openCurrentFolderDeskIfRequested() {
-      if (!this.config.deskOnLoad) return;
-      const state = await this.currentFolderStateForDesk();
-      if (!state) return;
-      this.deskCurrentFolderOpen = true;
-      const visiblePath = String(state.visible_path || this.config.visiblePath || 'Carpeta').replace(/\/$/,'');
-      const name = visiblePath.split('/').filter(Boolean).pop() || 'Carpeta actual';
-      this.renderDeskFileStrip(Array.isArray(state.files) ? state.files : [], {name});
-      if (this.deskFocus) this.deskFocus.hidden = true;
-    }
-
-    async currentFolderStateForDesk() {
-      const baseHref = String(this.config.deskApiHref || '');
-      if (!baseHref) return null;
+    async loadCurrentFolderFiles() {
+      const baseHref = String(this.config.filesApiHref || '');
+      if (!baseHref) return {files:[],file_count:0};
       const files = [];
       let firstState = null;
       let page = 1;
@@ -1026,8 +995,7 @@
 
         return {...(firstState || {}), files, file_count:files.length};
       } catch (_) {
-        if (this.deskCarouselTitle) this.deskCarouselTitle.textContent = 'No se pudo cargar el escritorio';
-        return null;
+        return {files:[],file_count:0,error:true};
       }
     }
 

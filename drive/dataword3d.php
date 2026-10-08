@@ -5,6 +5,7 @@ use ArcadeCloud\Drive\Application\FileListService;
 use ArcadeCloud\Drive\Security\OsPreferenceNodeResolver;
 use ArcadeCloud\Drive\Security\UserOsPreferencesRepository;
 use ArcadeCloud\Drive\View\FileViewHelper;
+use ArcadeCloud\Drive\View\FileIconResolver;
 
 ini_set('display_errors', '0');
 error_reporting(E_ALL);
@@ -111,17 +112,6 @@ $classifyFile = static function (string $extension) use ($imageExtensions, $audi
     return 'file';
 };
 
-$iconForKind = static function (string $kind): string {
-    return match ($kind) {
-        'image' => 'fa-image',
-        'audio' => 'fa-music',
-        'video' => 'fa-film',
-        'pdf' => 'fa-file-pdf',
-        'document' => 'fa-file-lines',
-        default => 'fa-file',
-    };
-};
-
 $buildState = static function (string $route, int $page = 1, int $limit = FileListService::WEB_OS_PAGE_SIZE) use (
     $app,
     $userId,
@@ -130,8 +120,7 @@ $buildState = static function (string $route, int $page = 1, int $limit = FileLi
     $normalizePrefix,
     $folderRows,
     $folderChildren,
-    $classifyFile,
-    $iconForKind
+    $classifyFile
 ): array {
     $route = $app->userStoragePath()->normalizeForUser($route, $userId);
     $currentPrefix = $normalizePrefix($route);
@@ -153,6 +142,9 @@ $buildState = static function (string $route, int $page = 1, int $limit = FileLi
         $mime = strtolower(trim((string)($metadata['mime_type'] ?? $metadata['content_type'] ?? $metadata['mime'] ?? '')));
         $kind = $classifyFile($extension);
         $locked = FileViewHelper::isLocked($row);
+        $iconInfo = $locked
+            ? ['icon' => 'fa-lock', 'category' => 'locked', 'label' => 'Archivo protegido']
+            : FileIconResolver::resolve($extension);
         $key = FileViewHelper::buildS3Key((string)($row['Ruta'] ?? ''), (string)($row['Encriptado'] ?? ''));
         $openHref = $locked || $key === '' ? '' : 'ver_archivo.php?archivo=' . rawurlencode($key);
         $downloadHref = $locked || $key === '' ? '' : 'descargar_archivo.php?archivo=' . rawurlencode($key) . '&nombre=' . rawurlencode($name);
@@ -167,7 +159,9 @@ $buildState = static function (string $route, int $page = 1, int $limit = FileLi
             'type' => 'file',
             'name' => $name,
             'kind' => $kind,
-            'icon' => $iconForKind($kind),
+            'icon' => (string)$iconInfo['icon'],
+            'icon_category' => (string)$iconInfo['category'],
+            'icon_label' => (string)$iconInfo['label'],
             'extension' => $extension !== '' ? strtoupper($extension) : 'ARCHIVO',
             'mime' => $mime,
             'media_key' => $key,
@@ -249,7 +243,7 @@ if ($apiMode === 'preview') {
     exit;
 }
 
-if ($apiMode === 'desk') {
+if ($apiMode === 'files' || $apiMode === 'desk') {
     $page = max(1, (int)($_GET['pagina'] ?? 1));
     $state = $buildState($currentRoute, $page, 100);
     $state['folders'] = [];
@@ -338,47 +332,31 @@ header('Content-Type: text/html; charset=UTF-8');
 
     <section class="dw-stage" aria-label="Biblioteca tridimensional">
       <div class="dw-ring" id="dwShelfRing">
-        <?php if ($state['folders'] === []): ?>
-          <article class="dw-shelf dw-shelf-empty is-active" data-dw-item data-item-type="folder" data-item-name="<?= $e(rtrim((string)$state['visible_path'], '/')) ?>" data-item-path="<?= $e((string)$state['visible_path']) ?>">
-            <span class="dw-shelf-volume dw-shelf-volume-left" aria-hidden="true"></span>
-            <span class="dw-shelf-volume dw-shelf-volume-right" aria-hidden="true"></span>
-            <span class="dw-shelf-volume dw-shelf-volume-top" aria-hidden="true"></span>
-            <div class="dw-shelf-crown"><i class="fas fa-folder-open"></i><strong><?= $e(rtrim((string)$state['visible_path'], '/')) ?></strong></div>
-            <div class="dw-compartment"><div class="dw-empty-message">Sin subcarpetas</div></div>
-            <div class="dw-compartment"><div class="dw-empty-message">Sin archivos para mostrar aquí</div></div>
-            <div class="dw-compartment"><div class="dw-empty-message">Usa el escritorio central</div></div>
+        <template id="dwShelfTemplate">
+          <span class="dw-shelf-volume dw-shelf-volume-left" aria-hidden="true"></span>
+          <span class="dw-shelf-volume dw-shelf-volume-right" aria-hidden="true"></span>
+          <span class="dw-shelf-volume dw-shelf-volume-top" aria-hidden="true"></span>
+          <div class="dw-shelf-crown"><i class="fas fa-folder-open"></i><strong>Carpeta</strong></div>
+          <div class="dw-compartment dw-compartment-folders" data-preview-folders aria-label="Subcarpetas">
+            <span class="dw-book dw-book-large"><b></b></span><span class="dw-book dw-book-large"><b></b></span><span class="dw-book dw-book-large"><b></b></span>
+          </div>
+          <div class="dw-compartment dw-compartment-files" data-preview-files aria-label="Archivos"><span class="dw-shelf-ornament"><i class="fas fa-folder-tree"></i></span></div>
+          <div class="dw-compartment dw-compartment-files-secondary" data-preview-files-secondary aria-label="Carpeta"><span class="dw-shelf-ornament"><i class="fas fa-box-archive"></i></span></div>
+          <div class="dw-shelf-base"><span data-preview-counts>Carpeta</span></div>
+        </template>
+        <?php foreach ($state['folders'] as $folder): ?>
+          <article class="dw-shelf"
+                   tabindex="0"
+                   role="button"
+                   data-dw-shelf
+                   data-dw-item
+                   data-item-type="folder"
+                   data-item-name="<?= $e($folder['name']) ?>"
+                   data-item-path="<?= $e($folder['visible_path']) ?>"
+                   data-open-href="<?= $e($folder['open_href']) ?>"
+                   data-preview-href="<?= $e($folder['preview_href']) ?>">
           </article>
-        <?php else: ?>
-          <template id="dwShelfTemplate">
-              <span class="dw-shelf-volume dw-shelf-volume-left" aria-hidden="true"></span>
-              <span class="dw-shelf-volume dw-shelf-volume-right" aria-hidden="true"></span>
-              <span class="dw-shelf-volume dw-shelf-volume-top" aria-hidden="true"></span>
-              <div class="dw-shelf-crown"><i class="fas fa-folder-open"></i><strong>Carpeta</strong></div>
-              <div class="dw-compartment dw-compartment-folders" data-preview-folders aria-label="Subcarpetas">
-                <span class="dw-book dw-book-large"><b></b></span><span class="dw-book dw-book-large"><b></b></span><span class="dw-book dw-book-large"><b></b></span>
-              </div>
-              <div class="dw-compartment dw-compartment-files" data-preview-files aria-label="Archivos">
-                <?php for ($i = 0; $i < 8; $i++): ?><span class="dw-book dw-book-small"><b></b></span><?php endfor; ?>
-              </div>
-              <div class="dw-compartment dw-compartment-files-secondary" data-preview-files-secondary aria-label="Más archivos">
-                <?php for ($i = 0; $i < 8; $i++): ?><span class="dw-book dw-book-small"><b></b></span><?php endfor; ?>
-              </div>
-              <div class="dw-shelf-base"><span data-preview-counts>Carpeta</span></div>
-          </template>
-          <?php foreach ($state['folders'] as $folder): ?>
-            <article class="dw-shelf"
-                     tabindex="0"
-                     role="button"
-                     data-dw-shelf
-                     data-dw-item
-                     data-item-type="folder"
-                     data-item-name="<?= $e($folder['name']) ?>"
-                     data-item-path="<?= $e($folder['visible_path']) ?>"
-                     data-open-href="<?= $e($folder['open_href']) ?>"
-                     data-preview-href="<?= $e($folder['preview_href']) ?>">
-            </article>
-          <?php endforeach; ?>
-        <?php endif; ?>
+        <?php endforeach; ?>
         <div class="dw-edge-lamp dw-edge-lamp-left" data-dw-edge-lamp="left" aria-hidden="true">
           <span class="dw-edge-lamp-shade"></span>
           <span class="dw-edge-lamp-pole"></span>
@@ -389,61 +367,6 @@ header('Content-Type: text/html; charset=UTF-8');
           <span class="dw-edge-lamp-pole"></span>
           <span class="dw-edge-lamp-base"></span>
         </div>
-      </div>
-    </section>
-
-    <section class="dw-desk" aria-label="Escritorio central">
-      <div class="dw-desk-focus" data-dw-desk-focus>
-        <span class="dw-desk-preview" data-dw-desk-preview>
-          <i class="fas fa-cube" data-dw-desk-icon></i>
-          <img data-dw-desk-image alt="" hidden>
-        </span>
-        <span class="dw-desk-copy">
-          <strong data-dw-desk-name>Toca un estante o un libro</strong>
-          <small data-dw-desk-meta>La vista previa aparecerá aquí</small>
-        </span>
-      </div>
-      <div class="dw-desk-carousel" data-dw-desk-carousel hidden aria-label="Carrusel del escritorio">
-        <div class="dw-desk-carousel-caption">
-          <i class="fas fa-layer-group" aria-hidden="true"></i>
-          <strong data-desk-carousel-title>Escritorio</strong>
-          <span data-desk-carousel-count></span>
-        </div>
-        <button type="button" class="dw-desk-carousel-nav is-prev" data-desk-prev aria-label="Archivos anteriores"><i class="fas fa-chevron-left"></i></button>
-        <div class="dw-desk-files" data-dw-current-files aria-label="Archivos de esta carpeta">
-          <?php foreach ($state['files'] as $file): ?>
-            <button type="button"
-                    class="dw-desk-book"
-                    data-dw-item
-                    data-item-type="file"
-                    data-item-kind="<?= $e($file['kind']) ?>"
-                    data-item-name="<?= $e($file['name']) ?>"
-                    data-item-path="<?= $e($file['visible_path']) ?>"
-                    data-item-size="<?= $e($file['size']) ?>"
-                    data-item-date="<?= $e($file['date']) ?>"
-                    data-item-format="<?= $e($file['extension']) ?>"
-                    data-item-key="<?= $e($file['media_key'] ?? '') ?>"
-                    data-item-mime="<?= $e($file['mime'] ?? '') ?>"
-                    data-item-route="<?= $e($file['media_route'] ?? '') ?>"
-                    data-open-href="<?= $e($file['open_href']) ?>"
-                    data-download-href="<?= $e($file['download_href']) ?>"
-                    data-item-thumb="<?= $e($file['thumbnail_href'] ?? '') ?>"
-                    data-item-environment="<?= $e($file['environment_href'] ?? '') ?>"
-                    data-item-locked="<?= !empty($file['locked']) ? '1' : '0' ?>"
-                    title="<?= $e($file['name']) ?>">
-              <span class="dw-desk-book-media">
-                <?php if (($file['kind'] ?? '') === 'image' && !empty($file['thumbnail_href'])): ?>
-                  <img src="<?= $e($file['thumbnail_href']) ?>" loading="lazy" decoding="async" alt="Miniatura de <?= $e($file['name']) ?>">
-                <?php else: ?>
-                  <i class="fas <?= $e($file['icon']) ?>"></i>
-                <?php endif; ?>
-              </span>
-              <span class="dw-desk-book-label"><?= $e($file['name']) ?></span>
-            </button>
-          <?php endforeach; ?>
-          <?php if ($state['files'] === []): ?><span class="dw-desk-empty">Sin archivos directos en esta sala.</span><?php endif; ?>
-        </div>
-        <button type="button" class="dw-desk-carousel-nav is-next" data-desk-next aria-label="Archivos siguientes"><i class="fas fa-chevron-right"></i></button>
       </div>
     </section>
     </div><!-- /dw-camera-scene -->
@@ -583,8 +506,7 @@ header('Content-Type: text/html; charset=UTF-8');
       'fileCount' => $state['file_count'],
       'folderBytes' => $state['folder_bytes'],
       'latestDate' => $state['latest_date'],
-      'deskOnLoad' => ((string)($_GET['desk'] ?? '') === '1'),
-      'deskApiHref' => 'dataword3d.php?api=desk&ruta=' . rawurlencode($currentRoute),
+      'filesApiHref' => 'dataword3d.php?api=files&ruta=' . rawurlencode($currentRoute),
       'csrf' => $uploadCsrf,
       'preferencesEndpoint' => 'os-preferences.php',
       'uploadEndpoint' => 'drive3d-background-upload.php',

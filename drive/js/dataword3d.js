@@ -1009,10 +1009,10 @@
         this.deskCarousel.style.visibility = 'visible';
         return;
       }
-      if (projection.visible === false) {
-        this.deskCarousel.style.visibility = 'hidden';
-        return;
-      }
+      // Keep the carousel available once the user explicitly brought the
+      // shelf to the desk. The projected table point can sit just outside the
+      // camera frustum while its near edge is still visible, so clamp that
+      // projection to the desk area instead of making the carousel disappear.
       const worldWidth = this.world?.clientWidth || this.window.innerWidth;
       const worldHeight = this.world?.clientHeight || this.window.innerHeight;
       const x = this.clamp(Number(projection.x), 130, Math.max(130, worldWidth - 130));

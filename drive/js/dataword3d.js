@@ -68,6 +68,7 @@
       this.deskCarouselCount = doc.querySelector('[data-desk-carousel-count]');
       this.deskPrev = doc.querySelector('[data-desk-prev]');
       this.deskNext = doc.querySelector('[data-desk-next]');
+      this.deskProjection = null;
       this.mediaStage = doc.querySelector('[data-dw-media-stage]');
       this.mediaContent = doc.querySelector('[data-dw-media-content]');
       this.mediaTitle = doc.querySelector('[data-dw-media-title]');
@@ -102,12 +103,16 @@
           ? entry.world.map(Number)
           : null;
         if (!entry || !entry.id || !entry.openHref || !world || world.some((number) => !Number.isFinite(number))) return null;
+        const size = Array.isArray(entry?.size) && entry.size.length === 2
+          ? entry.size.map(Number)
+          : null;
         return {
           id:String(entry.id),
           name:String(entry.name || 'Imagen'),
           path:String(entry.path || ''),
           openHref:String(entry.openHref),
           world,
+          size:size && size.every((number) => Number.isFinite(number)) ? size : null,
         };
       }).filter(Boolean);
     }
@@ -876,8 +881,12 @@
         visible.forEach((item) => this.deskFiles.append(this.deskFileNode(item)));
       }
       this.deskFiles.scrollLeft = 0;
-      if (this.deskCarousel) this.deskCarousel.hidden = false;
+      if (this.deskCarousel) {
+        this.deskCarousel.hidden = false;
+        this.deskCarousel.classList.add('is-on-desk');
+      }
       this.document.body.classList.add('has-desk-carousel');
+      this.applyDeskProjection();
     }
 
     deskFileNode(item) {
@@ -978,8 +987,39 @@
     }
 
     hideDeskCarousel() {
-      if (this.deskCarousel) this.deskCarousel.hidden = true;
+      if (this.deskCarousel) {
+        this.deskCarousel.hidden = true;
+        this.deskCarousel.classList.remove('is-on-desk');
+        this.deskCarousel.style.visibility = '';
+      }
       this.document.body.classList.remove('has-desk-carousel');
+    }
+
+    updateDeskProjection(projection) {
+      this.deskProjection = projection && typeof projection === 'object' ? projection : null;
+      this.applyDeskProjection();
+    }
+
+    applyDeskProjection() {
+      if (!this.deskCarousel || this.deskCarousel.hidden) return;
+      const projection = this.deskProjection;
+      if (!projection || !Number.isFinite(Number(projection.x)) || !Number.isFinite(Number(projection.y))) {
+        this.deskCarousel.style.left = '50%';
+        this.deskCarousel.style.top = '74%';
+        this.deskCarousel.style.visibility = 'visible';
+        return;
+      }
+      if (projection.visible === false) {
+        this.deskCarousel.style.visibility = 'hidden';
+        return;
+      }
+      const worldWidth = this.world?.clientWidth || this.window.innerWidth;
+      const worldHeight = this.world?.clientHeight || this.window.innerHeight;
+      const x = this.clamp(Number(projection.x), 130, Math.max(130, worldWidth - 130));
+      const y = this.clamp(Number(projection.y) - 18, Math.max(125, worldHeight * .48), Math.max(150, worldHeight - 78));
+      this.deskCarousel.style.left = x+'px';
+      this.deskCarousel.style.top = y+'px';
+      this.deskCarousel.style.visibility = 'visible';
     }
 
     scrollDeskCarousel(direction) {
@@ -1178,6 +1218,7 @@
             path:entry.path,
             openHref:entry.openHref,
             world:Array.isArray(entry.world) ? entry.world.map(Number) : [],
+            size:Array.isArray(entry.size) ? entry.size.map(Number) : [],
           })),
         }
       };
@@ -1455,6 +1496,7 @@
         path:String(item.path || ''),
         openHref:String(item.openHref),
         world:null,
+        size:null,
       };
       this.spatialPictureState.push(entry);
       this.mountSpatialImage(entry, false);
@@ -1486,12 +1528,18 @@
       front.title = 'Colocar frente a mí';
       front.setAttribute('aria-label','Colocar frente a mí');
       front.innerHTML = '<i class="fas fa-crosshairs"></i>';
+      const resize = this.document.createElement('button');
+      resize.type = 'button';
+      resize.title = 'Redimensionar cuadro';
+      resize.setAttribute('aria-label','Redimensionar cuadro');
+      resize.setAttribute('aria-pressed','false');
+      resize.innerHTML = '<i class="fas fa-expand"></i>';
       const close = this.document.createElement('button');
       close.type = 'button';
       close.title = 'Quitar cuadro de la sala';
       close.setAttribute('aria-label','Quitar cuadro de la sala');
       close.innerHTML = '<i class="fas fa-xmark"></i>';
-      actions.append(front,close);
+      actions.append(front,resize,close);
       header.append(icon,title,actions);
 
       const body = this.document.createElement('div');
@@ -1501,12 +1549,19 @@
       image.src = entry.openHref;
       image.draggable = false;
       body.append(image);
-      win.append(header,body);
+      const resizeHandle = this.document.createElement('button');
+      resizeHandle.type = 'button';
+      resizeHandle.className = 'dw-spatial-picture-resize-handle';
+      resizeHandle.title = 'Jala esta esquina para cambiar el tamaño';
+      resizeHandle.setAttribute('aria-label','Jala esta esquina para redimensionar');
+      resizeHandle.hidden = true;
+      resizeHandle.innerHTML = '<i class="fas fa-up-right-and-down-left-from-center"></i>';
+      win.append(header,body,resizeHandle);
       this.spatialPictureLayer.append(win);
-      this.spatialPictures.set(entry.id,{window:win,header,image,entry});
+      this.spatialPictures.set(entry.id,{window:win,header,image,entry,resize,resizeHandle});
 
-      image.addEventListener('load', () => this.fitSpatialPicture(win,image), {once:true});
-      if (image.complete) this.fitSpatialPicture(win,image);
+      image.addEventListener('load', () => this.fitSpatialPicture(win,image,entry), {once:true});
+      if (image.complete) this.fitSpatialPicture(win,image,entry);
 
       win.addEventListener('pointerdown', () => this.bringSpatialPictureToFront(entry.id));
       front.addEventListener('click', (event) => {
@@ -1514,18 +1569,37 @@
         const world = this.three?.placeSpatialMedia?.(entry.id);
         if (Array.isArray(world)) this.updateSpatialImageState(entry.id, world, true);
       });
+      resize.addEventListener('click', (event) => {
+        event.stopPropagation();
+        const active = !win.classList.contains('is-resizing-enabled');
+        win.classList.toggle('is-resizing-enabled', active);
+        resize.setAttribute('aria-pressed', active ? 'true' : 'false');
+        resizeHandle.hidden = !active;
+        if (active) this.bringSpatialPictureToFront(entry.id);
+      });
       close.addEventListener('click', (event) => {
         event.stopPropagation();
         this.removeSpatialImage(entry.id);
       });
       this.bindSpatialPictureDrag(entry.id, header);
+      this.bindSpatialPictureResize(entry.id, win, image, resizeHandle);
 
       const world = restoring && Array.isArray(entry.world) ? entry.world : null;
       const placed = this.three?.placeSpatialMedia?.(entry.id, world);
       if (Array.isArray(placed)) this.updateSpatialImageState(entry.id, placed, !restoring);
     }
 
-    fitSpatialPicture(win, image) {
+    fitSpatialPicture(win, image, entry = null) {
+      const saved = Array.isArray(entry?.size) && entry.size.length === 2 ? entry.size.map(Number) : null;
+      if (saved && saved.every((value) => Number.isFinite(value))) {
+        const width = this.clamp(saved[0], 160, 1200);
+        const height = this.clamp(saved[1], 100, 900);
+        win.style.setProperty('--dw-picture-width', width+'px');
+        win.style.setProperty('--dw-picture-height', height+'px');
+        entry.size = [width,height];
+        return;
+      }
+
       const ratio = image.naturalWidth && image.naturalHeight ? image.naturalWidth / image.naturalHeight : 4/3;
       const maxW = Math.min(this.window.innerWidth < 700 ? 320 : 520, this.window.innerWidth * .48);
       const maxH = Math.min(this.window.innerHeight * .48, 520);
@@ -1535,8 +1609,62 @@
         height = maxH;
         width = height * ratio;
       }
-      win.style.setProperty('--dw-picture-width', Math.max(180,width)+'px');
-      win.style.setProperty('--dw-picture-height', Math.max(120,height)+'px');
+      width = Math.max(180,width);
+      height = Math.max(120,height);
+      win.style.setProperty('--dw-picture-width', width+'px');
+      win.style.setProperty('--dw-picture-height', height+'px');
+      if (entry) entry.size = [width,height];
+    }
+
+    bindSpatialPictureResize(id, win, image, handle) {
+      let resize = null;
+      handle.addEventListener('pointerdown', (event) => {
+        if (handle.hidden) return;
+        const picture = this.spatialPictures.get(id);
+        const entry = picture?.entry;
+        if (!entry) return;
+        const style = this.window.getComputedStyle(win);
+        const width = parseFloat(style.getPropertyValue('--dw-picture-width')) || win.getBoundingClientRect().width;
+        const height = parseFloat(style.getPropertyValue('--dw-picture-height')) || Math.max(100, win.getBoundingClientRect().height - 36);
+        const aspect = image.naturalWidth && image.naturalHeight
+          ? image.naturalWidth / image.naturalHeight
+          : Math.max(.2, width / Math.max(1,height));
+        const projectionScale = Math.max(.25, parseFloat(style.getPropertyValue('--dw-picture-scale')) || 1);
+        resize = {pointerId:event.pointerId,x:event.clientX,y:event.clientY,width,height,aspect,projectionScale};
+        handle.setPointerCapture?.(event.pointerId);
+        this.bringSpatialPictureToFront(id);
+        event.preventDefault();
+        event.stopPropagation();
+      });
+      handle.addEventListener('pointermove', (event) => {
+        if (!resize || resize.pointerId !== event.pointerId) return;
+        const dx = (event.clientX - resize.x) / resize.projectionScale;
+        const dy = (event.clientY - resize.y) / resize.projectionScale;
+        const fromX = resize.width + dx;
+        const fromY = (resize.height + dy) * resize.aspect;
+        let width = Math.abs(fromX - resize.width) >= Math.abs(fromY - resize.width) ? fromX : fromY;
+        width = this.clamp(width, 160, 1200);
+        let height = width / Math.max(.2, resize.aspect);
+        if (height < 100) {
+          height = 100;
+          width = height * resize.aspect;
+        }
+        if (height > 900) {
+          height = 900;
+          width = height * resize.aspect;
+        }
+        win.style.setProperty('--dw-picture-width', width+'px');
+        win.style.setProperty('--dw-picture-height', height+'px');
+        const entry = this.spatialPictures.get(id)?.entry;
+        if (entry) entry.size = [width,height];
+      });
+      for (const eventName of ['pointerup','pointercancel','lostpointercapture']) {
+        handle.addEventListener(eventName, (event) => {
+          if (!resize || resize.pointerId !== event.pointerId) return;
+          resize = null;
+          this.schedulePreferenceSave();
+        });
+      }
     }
 
     bindSpatialPictureDrag(id, handle) {

@@ -115,6 +115,8 @@ const server=createServer((req,res)=>{
   await page.waitForFunction(()=>window.ArcadeCloudMediaCloud?.state?.type==='video');
   assert.equal(await page.locator('#arcadeCloudMediaCloud').isVisible(),true,'Video uses the same cloud player design');
   assert.equal(await page.locator('[data-three-content]').count(),0,'No redundant middle content window');
+  await page.locator('#arcadeCloudMediaCloud [data-media-close]').click({force:true});
+  await page.waitForFunction(()=>document.getElementById('arcadeCloudMediaCloud')?.hidden===true);
   await page.evaluate(()=>{const a=window.ArcadeCloudDrive3D;a.three.look(180,0);});await page.waitForFunction(()=>Math.abs(window.ArcadeCloudDrive3D.three.snapshot().yaw)>3);
   const turned=await snap();assert.deepEqual(turned.panorama,initial.panorama);assert(Math.abs(turned.yaw)>3);
   assert.equal(await page.evaluate(()=>window.ArcadeCloudDrive3D.previewCache.size),0);

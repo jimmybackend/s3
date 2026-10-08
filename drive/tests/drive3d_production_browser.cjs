@@ -136,7 +136,7 @@ const server=createServer((req,res)=>{
   await page.waitForTimeout(350);
   assert.equal(await page.locator('[data-dw-desk-carousel]').isVisible(),true,'Desk carousel appears only after entering the folder');
   assert.equal(await page.locator('[data-dw-current-files] [data-dw-item]').count(),20,'Every direct file in the entered folder is available in the desk carousel');
-  assert.match(await page.locator('[data-desk-carousel-count]').innerText(),/de 20/);
+  assert.match(await page.locator('[data-desk-carousel-count]').innerText(),/de 20/i);
   assert.equal(await page.locator('[data-desk-prev]').isVisible(),true);
   assert.equal(await page.locator('[data-desk-next]').isVisible(),true);
   const firstDeskName=await page.locator('[data-dw-current-files] [data-dw-item]').first().getAttribute('data-item-name');

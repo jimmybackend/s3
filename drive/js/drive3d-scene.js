@@ -326,6 +326,13 @@ class Drive3DScene {
 
             const backing = new T.Mesh(new T.BoxGeometry(.86,.72,.05), material(0x06131d,{metalness:.12,roughness:.5}));
             backing.position.z = 0; card.add(backing);
+            // Slightly larger invisible hit surface makes finger selection reliable
+            // without visually enlarging the thumbnail.
+            const hitSurface = new T.Mesh(
+                new T.PlaneGeometry(.98,.84),
+                new T.MeshBasicMaterial({transparent:true,opacity:0,depthWrite:false})
+            );
+            hitSurface.position.z = .055; card.add(hitSurface);
 
             const mediaMaterial = new T.MeshBasicMaterial({map:placeholderTexture(item)});
             const media = new T.Mesh(new T.PlaneGeometry(.78,.52), mediaMaterial);
@@ -492,6 +499,18 @@ class Drive3DScene {
             while (group.parent && !shelves.includes(group)) group = group.parent;
             selectedIndex = group.userData.index;
             options.onSelect?.(selectedIndex);
+            needsRender = true;
+        });
+        // Click/tap fallback for file cards. Pointer-up drives navigation, while
+        // this dedicated click path gives small thumbnail cards a forgiving mobile target.
+        viewport.addEventListener('click', event => {
+            const hit = pointerHit(event);
+            const dataBook = driveItemFromHit(hit);
+            if (!dataBook || dataBook.folder) return;
+            let card = hit?.object || null;
+            while (card && !card.userData?.fileCard && card.parent) card = card.parent;
+            setFileSelection(card?.userData?.fileCard ? card : null);
+            options.onItemSelect?.(dataBook.item, false, false);
             needsRender = true;
         });
         viewport.addEventListener('dblclick', event => {

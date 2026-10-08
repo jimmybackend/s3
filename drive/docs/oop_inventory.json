@@ -672,7 +672,7 @@
     },
     {
       "path": "drive/dataword3d.php",
-      "lines": 521,
+      "lines": 524,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -7035,7 +7035,7 @@
     },
     {
       "path": "drive/tests/dataword3d_contract_smoke.php",
-      "lines": 95,
+      "lines": 97,
       "kind": "test script",
       "classes": 0,
       "functions": [
@@ -9018,7 +9018,7 @@
     },
     {
       "path": "drive/js/drive3d-production.js",
-      "lines": 86,
+      "lines": 93,
       "kind": "class/module",
       "classes": [
         "Drive3DProduction"
@@ -9039,7 +9039,7 @@
     },
     {
       "path": "drive/js/drive3d-scene.js",
-      "lines": 819,
+      "lines": 837,
       "kind": "class/module",
       "classes": [
         "Drive3DScene"
@@ -10874,7 +10874,7 @@
     },
     {
       "path": "drive/docs/runtime_endpoints.json",
-      "bytes": 133854,
+      "bytes": 133944,
       "valid": true,
       "root_type": "object",
       "keys": [

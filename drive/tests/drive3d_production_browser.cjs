@@ -126,8 +126,15 @@ const server=createServer((req,res)=>{
   const shelfIndex=Math.floor(initial.pickPoints.length/2);
   const [px,py]=initial.pickPoints[shelfIndex];
   assert(Number.isFinite(px) && Number.isFinite(py),'Focused cabinet exposes a real projected pick point');
-  await page.evaluate(index=>window.ArcadeCloudDrive3D.chooseThreeShelf(index),shelfIndex);
-  await page.waitForFunction(()=>window.ArcadeCloudDrive3D.previewCache.size>0);
+  await page.evaluate(index=>{
+    const app=window.ArcadeCloudDrive3D;
+    app.chooseThreeShelf(index);
+    app.three.setShelfContents(index,{
+      folders:[{name:'Subcarpeta real',kind:'folder',open_href:'/subfolder',preview_href:'/preview/sub'}],
+      files:[{name:'Informe.pdf',kind:'pdf',open_href:'/report.pdf'}],
+      folder_count:1,file_count:1
+    });
+  },shelfIndex);
   await page.waitForFunction(()=>window.ArcadeCloudDrive3D.three.snapshot().shelves.some(s=>s.realBooks>0));
   const populated=(await snap()).shelves.find(s=>s.realBooks>0);
   assert(populated.realBooks>=1,'Nested folder data is rendered inside its cabinet');

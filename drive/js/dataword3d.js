@@ -69,6 +69,8 @@
       this.deskPrev = doc.querySelector('[data-desk-prev]');
       this.deskNext = doc.querySelector('[data-desk-next]');
       this.deskProjection = null;
+      this.deskCurrentFolderOpen = false;
+      this.deskCarouselPage = 0;
       this.mediaStage = doc.querySelector('[data-dw-media-stage]');
       this.mediaContent = doc.querySelector('[data-dw-media-content]');
       this.mediaTitle = doc.querySelector('[data-dw-media-title]');
@@ -130,12 +132,17 @@
     init() {
       if (this.useThree) {
         this.bindControls();
-        import('./drive3d-production.js').then(module => module.Drive3DProduction.start(this)).catch(error => {
+        import('./drive3d-production.js').then(module => {
+          module.Drive3DProduction.start(this);
+          this.openCurrentFolderDeskIfRequested();
+        }).catch(error => {
           this.activateCompatible3DFallback(error);
+          this.openCurrentFolderDeskIfRequested();
         });
         return this;
       }
       this.startCompatible3D(false);
+      this.openCurrentFolderDeskIfRequested();
       return this;
     }
 
@@ -301,7 +308,7 @@
       const detail = this.camera.forward >= .45 ? candidates.slice(0, 3) : [];
       if (this.focusedShelf && this.visibleShelves.has(this.focusedShelf)) detail.unshift(this.focusedShelf);
       const detailed = new Set(detail.slice(0, 3));
-      if (!detailed.size) this.deskFiles?.replaceChildren();
+      if (!detailed.size && !this.deskCurrentFolderOpen) this.deskFiles?.replaceChildren();
       this.shelves.forEach(shelf => {
         if (!this.visibleShelves.has(shelf)) { this.releaseShelf(shelf); return; }
         this.mountShelf(shelf);
@@ -312,7 +319,7 @@
       });
       if (this.selected?.element && !this.selected.element.isConnected) {
         this.selected = null;
-        this.deskFiles?.replaceChildren();
+        if (!this.deskCurrentFolderOpen) this.deskFiles?.replaceChildren();
         this.hud.previewImage?.removeAttribute('src');
         this.deskImage?.removeAttribute('src');
         this.hud.open.disabled = true; this.hud.play.hidden = true; this.hud.download.hidden = true;
@@ -376,13 +383,22 @@
       this.hud.open?.addEventListener('click', () => this.openSelected());
       this.hud.desk?.addEventListener('click', () => this.bringToDesk());
       this.hud.play?.addEventListener('click', () => this.playSelected());
-      this.deskPrev?.addEventListener('click', () => this.scrollDeskCarousel(-1));
-      this.deskNext?.addEventListener('click', () => this.scrollDeskCarousel(1));
+      this.deskCarousel?.addEventListener('click', (event) => {
+        const previous = event.target.closest('[data-desk-prev]');
+        const next = event.target.closest('[data-desk-next]');
+        if (!previous && !next) return;
+        event.preventDefault();
+        event.stopPropagation();
+        this.scrollDeskCarousel(next ? 1 : -1);
+      });
       this.deskFiles?.addEventListener('wheel', (event) => {
         if (Math.abs(event.deltaY) <= Math.abs(event.deltaX)) return;
         event.preventDefault();
-        this.deskFiles.scrollLeft += event.deltaY;
+        this.scrollDeskCarousel(event.deltaY > 0 ? 1 : -1);
       }, {passive:false});
+      this.window.addEventListener('resize', () => {
+        if (!this.deskCarousel?.hidden) this.renderDeskCarouselPage();
+      });
       this.document.querySelector('[data-dw-media-close]')?.addEventListener('click', () => this.closeMedia());
       this.document.querySelector('[data-spatial-front]')?.addEventListener('click', (event) => {
         event.stopPropagation();
@@ -742,6 +758,13 @@
         ? '<i class="fas fa-lock"></i> Protegido'
         : `<i class="fas ${isFolder ? 'fa-folder-open' : 'fa-arrow-up-right-from-square'}"></i> Abrir`;
 
+      if (this.hud.desk) {
+        this.hud.desk.disabled = Boolean(item.locked || (isFolder && !item.openHref));
+        this.hud.desk.innerHTML = isFolder
+          ? '<i class="fas fa-right-to-bracket"></i> Entrar y traer al escritorio'
+          : '<i class="fas fa-hand"></i> Traer al escritorio';
+      }
+
       const playable = !item.locked && ['audio','video'].includes(item.kind) && item.openHref;
       this.hud.play.hidden = !playable;
       if (item.downloadHref && !item.locked) {
@@ -869,17 +892,17 @@
     renderDeskFileStrip(files, folder = null) {
       if (!this.deskFiles) return;
       this.deskFiles.replaceChildren();
-      const visible = Array.isArray(files) ? files.slice(0, 32) : [];
+      const visible = Array.isArray(files) ? files : [];
       if (this.deskCarouselTitle) this.deskCarouselTitle.textContent = folder?.name || 'Archivos en el escritorio';
-      if (this.deskCarouselCount) this.deskCarouselCount.textContent = `${visible.length} archivo${visible.length === 1 ? '' : 's'}`;
       if (!visible.length) {
         const empty = this.document.createElement('span');
         empty.className = 'dw-desk-empty';
-        empty.textContent = 'Sin archivos directos en este estante.';
+        empty.textContent = 'Sin archivos directos en esta carpeta.';
         this.deskFiles.append(empty);
       } else {
         visible.forEach((item) => this.deskFiles.append(this.deskFileNode(item)));
       }
+      this.deskCarouselPage = 0;
       this.deskFiles.scrollLeft = 0;
       if (this.deskCarousel) {
         this.deskCarousel.hidden = false;
@@ -887,6 +910,7 @@
       }
       this.document.body.classList.add('has-desk-carousel');
       this.applyDeskProjection();
+      this.window.requestAnimationFrame(() => this.renderDeskCarouselPage());
     }
 
     deskFileNode(item) {
@@ -949,16 +973,16 @@
       const item = this.selected;
       if (!item) return;
 
-      if (this.useThree && this.deskFocus) this.deskFocus.hidden = false;
-      this.renderDeskPreview(item, true);
-
       if (item.type === 'folder') {
-        const state = await this.folderStateForDesk(item);
-        if (!state) return;
-        this.renderDeskFileStrip(Array.isArray(state.files) ? state.files : [], item);
+        if (item.locked || !item.openHref) return;
+        const url = new URL(item.openHref, this.window.location.href);
+        url.searchParams.set('desk','1');
+        this.window.location.href = url.href;
         return;
       }
 
+      if (this.useThree && this.deskFocus) this.deskFocus.hidden = false;
+      this.renderDeskPreview(item, true);
       if (item.locked || !item.openHref) return;
       if (['audio','video'].includes(item.kind)) {
         this.playCloudMedia(item);
@@ -967,19 +991,40 @@
       this.showFileInDome(item);
     }
 
-    async folderStateForDesk(item) {
-      const href = String(item?.previewHref || '');
-      if (!href) return null;
-      const cached = this.previewCache.get(href);
-      if (cached) return cached;
+    async openCurrentFolderDeskIfRequested() {
+      if (!this.config.deskOnLoad) return;
+      const state = await this.currentFolderStateForDesk();
+      if (!state) return;
+      this.deskCurrentFolderOpen = true;
+      const visiblePath = String(state.visible_path || this.config.visiblePath || 'Carpeta').replace(/\/$/,'');
+      const name = visiblePath.split('/').filter(Boolean).pop() || 'Carpeta actual';
+      this.renderDeskFileStrip(Array.isArray(state.files) ? state.files : [], {name});
+      if (this.deskFocus) this.deskFocus.hidden = true;
+    }
+
+    async currentFolderStateForDesk() {
+      const baseHref = String(this.config.deskApiHref || '');
+      if (!baseHref) return null;
+      const files = [];
+      let firstState = null;
+      let page = 1;
+      let pages = 1;
       try {
-        const response = await fetch(href,{credentials:'same-origin',cache:'no-store',headers:{Accept:'application/json'}});
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        const payload = await response.json();
-        if (!payload?.ok || !payload?.state) throw new Error('Respuesta inválida');
-        this.previewCache.set(href,payload.state);
-        while (this.previewCache.size > 3) this.previewCache.delete(this.previewCache.keys().next().value);
-        return payload.state;
+        do {
+          const url = new URL(baseHref, this.window.location.href);
+          url.searchParams.set('pagina', String(page));
+          const response = await fetch(url.href,{credentials:'same-origin',cache:'no-store',headers:{Accept:'application/json'}});
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          const payload = await response.json();
+          if (!payload?.ok || !payload?.state) throw new Error('Respuesta inválida');
+          const state = payload.state;
+          if (!firstState) firstState = state;
+          if (Array.isArray(state.files)) files.push(...state.files);
+          pages = Math.max(1, Number(state.file_pages || 1));
+          page += 1;
+        } while (page <= pages);
+
+        return {...(firstState || {}), files, file_count:files.length};
       } catch (_) {
         if (this.deskCarouselTitle) this.deskCarouselTitle.textContent = 'No se pudo cargar el escritorio';
         return null;
@@ -1022,10 +1067,47 @@
       this.deskCarousel.style.visibility = 'visible';
     }
 
+    deskCarouselPageSize() {
+      const width = this.world?.clientWidth || this.window.innerWidth;
+      if (width <= 480) return 4;
+      if (width <= 700) return 5;
+      return 6;
+    }
+
+    renderDeskCarouselPage() {
+      if (!this.deskFiles) return;
+      const items = Array.from(this.deskFiles.querySelectorAll('[data-dw-item]'));
+      const total = items.length;
+      if (!total) {
+        if (this.deskCarouselCount) this.deskCarouselCount.textContent = '0 archivos';
+        return;
+      }
+
+      const pageSize = this.deskCarouselPageSize();
+      const pages = Math.max(1, Math.ceil(total / pageSize));
+      this.deskCarouselPage = ((Number(this.deskCarouselPage || 0) % pages) + pages) % pages;
+      const first = this.deskCarouselPage * pageSize;
+      const lastExclusive = Math.min(total, first + pageSize);
+
+      items.forEach((item,index) => {
+        item.hidden = index < first || index >= lastExclusive;
+      });
+      if (this.deskCarouselCount) this.deskCarouselCount.textContent = `${first + 1}–${lastExclusive} de ${total}`;
+      if (this.deskPrev) this.deskPrev.title = this.deskCarouselPage === 0 ? 'Ir al final del carrusel' : 'Archivos anteriores';
+      if (this.deskNext) this.deskNext.title = this.deskCarouselPage === pages - 1 ? 'Volver al inicio del carrusel' : 'Archivos siguientes';
+    }
+
+    updateDeskCarouselCounter() {
+      this.renderDeskCarouselPage();
+    }
+
     scrollDeskCarousel(direction) {
       if (!this.deskFiles) return;
-      const amount = Math.max(180, Math.floor(this.deskFiles.clientWidth * .72));
-      this.deskFiles.scrollBy({left:direction * amount,behavior:'smooth'});
+      const total = this.deskFiles.querySelectorAll('[data-dw-item]').length;
+      if (!total) return;
+      const pages = Math.max(1, Math.ceil(total / this.deskCarouselPageSize()));
+      this.deskCarouselPage = (this.deskCarouselPage + (direction >= 0 ? 1 : -1) + pages) % pages;
+      this.renderDeskCarouselPage();
     }
 
     renderDeskPreview(item, animate = false) {

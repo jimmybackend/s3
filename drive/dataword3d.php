@@ -122,7 +122,7 @@ $iconForKind = static function (string $kind): string {
     };
 };
 
-$buildState = static function (string $route) use (
+$buildState = static function (string $route, int $page = 1, int $limit = FileListService::WEB_OS_PAGE_SIZE) use (
     $app,
     $userId,
     $userRoot,
@@ -139,8 +139,8 @@ $buildState = static function (string $route) use (
     $folders = $folderChildren($route);
 
     $fileState = $app->fileListService()->load($userId, $route, [
-        'pagina' => 1,
-        'limite' => FileListService::WEB_OS_PAGE_SIZE,
+        'pagina' => max(1, $page),
+        'limite' => max(5, min(100, $limit)),
     ]);
 
     $files = [];
@@ -227,6 +227,9 @@ $buildState = static function (string $route) use (
         'files' => $files,
         'folder_count' => count($folderItems),
         'file_count' => max(0, (int)($fileState['folder_total'] ?? count($files))),
+        'file_page' => max(1, (int)($fileState['page'] ?? 1)),
+        'file_pages' => max(1, (int)($fileState['pages'] ?? 1)),
+        'file_limit' => max(1, (int)($fileState['limit'] ?? $limit)),
         'folder_bytes' => FileViewHelper::formatBytes((int)($fileState['folder_bytes'] ?? 0)),
         'latest_date' => $latestDate,
         'classic_href' => 'so.php?ruta=' . rawurlencode($route),
@@ -234,11 +237,10 @@ $buildState = static function (string $route) use (
     ];
 };
 
-$state = $buildState($currentRoute);
-
-if ((string)($_GET['api'] ?? '') === 'preview') {
+$apiMode = (string)($_GET['api'] ?? '');
+if ($apiMode === 'preview') {
+    $state = $buildState($currentRoute, 1, 20);
     $state['folders'] = array_slice($state['folders'], 0, 6);
-    $state['files'] = array_slice($state['files'], 0, 20);
     header('Content-Type: application/json; charset=UTF-8');
     echo json_encode([
         'ok' => true,
@@ -246,6 +248,20 @@ if ((string)($_GET['api'] ?? '') === 'preview') {
     ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
     exit;
 }
+
+if ($apiMode === 'desk') {
+    $page = max(1, (int)($_GET['pagina'] ?? 1));
+    $state = $buildState($currentRoute, $page, 100);
+    $state['folders'] = [];
+    header('Content-Type: application/json; charset=UTF-8');
+    echo json_encode([
+        'ok' => true,
+        'state' => $state,
+    ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
+    exit;
+}
+
+$state = $buildState($currentRoute);
 
 $backgroundRoute = rtrim($userRoot, '/') . '/Imagenes/fondos3D/';
 $backgroundState = $buildState($backgroundRoute);
@@ -395,7 +411,7 @@ header('Content-Type: text/html; charset=UTF-8');
         </div>
         <button type="button" class="dw-desk-carousel-nav is-prev" data-desk-prev aria-label="Archivos anteriores"><i class="fas fa-chevron-left"></i></button>
         <div class="dw-desk-files" data-dw-current-files aria-label="Archivos de esta carpeta">
-          <?php foreach (array_slice($state['files'], 0, 16) as $file): ?>
+          <?php foreach ($state['files'] as $file): ?>
             <button type="button"
                     class="dw-desk-book"
                     data-dw-item
@@ -567,6 +583,8 @@ header('Content-Type: text/html; charset=UTF-8');
       'fileCount' => $state['file_count'],
       'folderBytes' => $state['folder_bytes'],
       'latestDate' => $state['latest_date'],
+      'deskOnLoad' => ((string)($_GET['desk'] ?? '') === '1'),
+      'deskApiHref' => 'dataword3d.php?api=desk&ruta=' . rawurlencode($currentRoute),
       'csrf' => $uploadCsrf,
       'preferencesEndpoint' => 'os-preferences.php',
       'uploadEndpoint' => 'drive3d-background-upload.php',

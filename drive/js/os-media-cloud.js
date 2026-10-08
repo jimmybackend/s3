@@ -202,7 +202,7 @@ class ArcadeCloudMediaCloud {
             <span><strong>ArcadeCloud</strong> Player</span>
           </div>
           <div class="ac-media-head-actions">
-            <button type="button" data-media-pin title="Siempre visible" aria-pressed="true"><i class="fas fa-thumbtack"></i></button>
+            <button type="button" data-media-pin title="Fijar posición y tamaño" aria-pressed="true"><i class="fas fa-thumbtack"></i></button>
             <button type="button" data-media-collapse title="Compactar"><i class="fas fa-chevron-down"></i></button>
             <button type="button" data-media-close title="Cerrar"><i class="fas fa-xmark"></i></button>
           </div>
@@ -904,12 +904,15 @@ class ArcadeCloudMediaCloud {
 
   setPinned(value) {
     this.state.pinned = Boolean(value);
+    if (this.state.pinned) this.captureGeometry();
     this.el.classList.toggle('is-pinned', this.state.pinned);
     if (this.videoScreen) this.videoScreen.classList.toggle('is-pinned', this.state.pinned);
     const button = this.el.querySelector('[data-media-pin]');
     if (button) {
       button.setAttribute('aria-pressed', this.state.pinned ? 'true' : 'false');
-      button.title = this.state.pinned ? 'Siempre visible: activado' : 'Siempre visible: desactivado';
+      button.title = this.state.pinned
+        ? 'Posición y tamaño fijados'
+        : 'Fijar posición y tamaño';
     }
     this.persistPreferences();
   }
@@ -921,6 +924,10 @@ class ArcadeCloudMediaCloud {
 
   close() {
     try { this.audio.pause(); this.video.pause(); } catch (_) {}
+    if (this.state.pinned) {
+      this.captureGeometry();
+      this.persistPreferences();
+    }
     this.setVideoMode('cloud', false);
     this.el.hidden = true;
     this.window.cancelAnimationFrame(this.raf);

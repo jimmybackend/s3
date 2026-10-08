@@ -17,7 +17,7 @@ class Drive3DProduction {
         const key = visible.join(',') + '/' + detail.join(',');
         if (key === zoneKey) return;
         if (focus < 0) {
-            app.hideDeskCarousel?.();
+            if (!app.deskCurrentFolderOpen) app.hideDeskCarousel?.();
             if(app.deskFocus) app.deskFocus.hidden = true;
         }
         zoneKey = key; clearTimeout(app.zoneTimer);
@@ -31,7 +31,7 @@ class Drive3DProduction {
         });
         if (app.focusedShelf && !visible.includes(focus)) {
             app.focusedShelf = null;
-            app.hideDeskCarousel?.();
+            if (!app.deskCurrentFolderOpen) app.hideDeskCarousel?.();
             app.selected = null;
             app.hud.open.disabled = true; app.hud.play.hidden = true; app.hud.download.hidden = true;
             app.hud.previewImage?.removeAttribute('src');
@@ -45,7 +45,7 @@ class Drive3DProduction {
     };
     app.chooseThreeShelf = index => {
         const shelf = app.shelves[index]; if (!shelf) return;
-        if (app.focusedShelf !== shelf) app.hideDeskCarousel?.();
+        if (app.focusedShelf !== shelf && !app.deskCurrentFolderOpen) app.hideDeskCarousel?.();
         app.focusedShelf = shelf; app.three.focus(index);
         if (!visible.includes(index)) visible.push(index);
         syncZones(); app.selectShelf(shelf,true);

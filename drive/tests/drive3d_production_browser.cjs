@@ -142,9 +142,14 @@ const server=createServer((req,res)=>{
   const allDeskItems=page.locator('[data-dw-current-files] [data-dw-item]');
   const firstDeskName=await allDeskItems.first().getAttribute('data-item-name');
   const firstVisibleNames=await page.locator('[data-dw-current-files] [data-dw-item]:visible').evaluateAll(nodes=>nodes.map(node=>node.dataset.itemName));
+  const pageBeforeNext=await page.evaluate(()=>window.ArcadeCloudDrive3D.deskCarouselPage);
   await page.locator('[data-desk-next]').click({force:true});
   await page.waitForTimeout(120);
+  const pageAfterNext=await page.evaluate(()=>window.ArcadeCloudDrive3D.deskCarouselPage);
+  const counterAfterNext=await page.locator('[data-desk-carousel-count]').innerText();
   const nextVisibleNames=await page.locator('[data-dw-current-files] [data-dw-item]:visible').evaluateAll(nodes=>nodes.map(node=>node.dataset.itemName));
+  console.log('DESK_CAROUSEL_DEBUG',JSON.stringify({pageBeforeNext,pageAfterNext,counterAfterNext,firstVisibleNames,nextVisibleNames}));
+  assert(pageAfterNext!==pageBeforeNext,'Next arrow changes the carousel page index');
   assert(nextVisibleNames.length>0 && nextVisibleNames[0]!==firstVisibleNames[0],'Next arrow advances to the next group in the full carousel');
   assert.equal(await allDeskItems.count(),20,'Carousel paging keeps all files mounted');
   assert.equal(await allDeskItems.first().getAttribute('data-item-name'),firstDeskName,'Carousel navigation never replaces or truncates the file collection');

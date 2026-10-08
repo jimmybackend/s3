@@ -1004,8 +1004,8 @@
       if (!this.deskCarousel || this.deskCarousel.hidden) return;
       const projection = this.deskProjection;
       if (!projection || !Number.isFinite(Number(projection.x)) || !Number.isFinite(Number(projection.y))) {
-        this.deskCarousel.style.left = '50%';
-        this.deskCarousel.style.top = '74%';
+        this.deskCarousel.style.setProperty('--dw-desk-screen-x','50%');
+        this.deskCarousel.style.setProperty('--dw-desk-screen-y','74%');
         this.deskCarousel.style.visibility = 'visible';
         return;
       }
@@ -1017,8 +1017,8 @@
       const worldHeight = this.world?.clientHeight || this.window.innerHeight;
       const x = this.clamp(Number(projection.x), 130, Math.max(130, worldWidth - 130));
       const y = this.clamp(Number(projection.y) - 18, Math.max(125, worldHeight * .48), Math.max(150, worldHeight - 78));
-      this.deskCarousel.style.left = x+'px';
-      this.deskCarousel.style.top = y+'px';
+      this.deskCarousel.style.setProperty('--dw-desk-screen-x',x+'px');
+      this.deskCarousel.style.setProperty('--dw-desk-screen-y',y+'px');
       this.deskCarousel.style.visibility = 'visible';
     }
 

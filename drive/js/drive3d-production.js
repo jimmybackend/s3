@@ -66,8 +66,15 @@ class Drive3DProduction {
     doc.querySelector('.dw-radar-room').replaceChildren(map);
     app.radar.append(coordinates);
     app.restoreSpatialImages?.();
+    const initialFiles = Array.isArray(app.config?.initialFiles) ? app.config.initialFiles : [];
+    if (initialFiles.length) app.three?.setCurrentFiles?.(initialFiles);
     app.loadCurrentFolderFiles?.().then(state => {
-        if (!state?.error) app.three?.setCurrentFiles?.(Array.isArray(state.files) ? state.files : []);
+        if (!state?.error) {
+            app.three?.setCurrentFiles?.(Array.isArray(state.files) ? state.files : []);
+        } else if (!initialFiles.length && status) {
+            status.hidden = false;
+            status.textContent = 'No se pudieron cargar los archivos de esta carpeta. Recarga para intentarlo de nuevo.';
+        }
     });
 
     // The map selects the actual cabinet nearest the touched world coordinate.

@@ -683,7 +683,16 @@ class Drive3DScene {
                     open:book.userData?.driveItem?.open_href || ''
                 }))
             })),
-            lamp:lamp.position.toArray(),filePanels:filePanels.map(panel=>panel.position.toArray()),currentFiles:fileGallery.children.reduce((sum,panel)=>sum+panel.children.length,0),domeRadius:R,panorama:panorama.position.toArray(),environmentReady,
+            lamp:lamp.position.toArray(),
+            filePanels:filePanels.map(panel=>panel.position.toArray()),
+            currentFiles:fileGallery.children.reduce((sum,panel)=>sum+panel.children.length,0),
+            fileItems:fileGallery.children.flatMap(panel=>panel.children.map(card=>({
+                name:card.userData?.driveItem?.name || '',
+                kind:card.userData?.driveItem?.kind || 'file',
+                open:card.userData?.driveItem?.open_href || '',
+                point:(()=>{const p=card.localToWorld(new T.Vector3(0,0,.05)).project(camera);return [p.x,p.y];})()
+            }))),
+            domeRadius:R,panorama:panorama.position.toArray(),environmentReady,
             spatial:this.spatialMediaState('singleton'),
             spatialImages:Array.from(spatialAnchors.entries()).filter(([id]) => id !== 'singleton').map(([id,entry]) => ({id,world:entry.point.toArray(),baseDistance:entry.baseDistance})),
             calls:renderer.info.render.calls, geometries:renderer.info.memory.geometries, textures:renderer.info.memory.textures});

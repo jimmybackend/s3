@@ -155,12 +155,20 @@ const server=createServer((req,res)=>{
   assert(visibleFiles.length>0,'At least one current-folder thumbnail is visible after looking at its gallery panel');
   let selectedGalleryFile=null;
   for(const candidate of visibleFiles){
-    await page.locator('#dwThreeViewport').click({position:{x:(candidate.point[0]+1)*viewBox.width/2,y:(1-candidate.point[1])*viewBox.height/2},force:true});
-    await page.waitForTimeout(80);
+    const local={x:(candidate.point[0]+1)*viewBox.width/2,y:(1-candidate.point[1])*viewBox.height/2};
+    const unobstructed=await page.evaluate(({x,y})=>{
+      const viewport=document.getElementById('dwThreeViewport');
+      const rect=viewport.getBoundingClientRect();
+      const target=document.elementFromPoint(rect.left+x,rect.top+y);
+      return Boolean(target && (target===viewport || viewport.contains(target)));
+    },local);
+    if(!unobstructed) continue;
+    await page.locator('#dwThreeViewport').click({position:local});
+    await page.waitForTimeout(100);
     const hudName=await page.locator('[data-hud-name]').innerText();
     if(hudName===candidate.name){selectedGalleryFile=candidate;break;}
   }
-  assert(selectedGalleryFile,'A visible 3D file thumbnail can be selected by pointer raycast');
+  assert(selectedGalleryFile,'A visible, unobstructed 3D file thumbnail can be selected by real pointer raycast');
   assert.equal(await page.locator('[data-hud-desk]').isVisible(),true,'Selected file exposes Traer al escritorio');
   if(selectedGalleryFile.kind==='image'){
     const picturesBeforeBring=(await snap()).spatialImages.length;

@@ -774,7 +774,7 @@ class Drive3DScene {
                 open:card.userData?.driveItem?.open_href || '',
                 icon:card.userData?.driveItem?.icon || 'fa-file',
                 iconCategory:card.userData?.driveItem?.icon_category || 'generic',
-                point:(()=>{const p=card.localToWorld(new T.Vector3(0,0,.05)).project(camera);return [p.x,p.y];})()
+                point:(()=>{const p=card.localToWorld(new T.Vector3(0,0,.05)).project(camera);return [p.x,p.y,p.z];})()
             }))),
             domeRadius:R,panorama:panorama.position.toArray(),environmentReady,
             spatial:this.spatialMediaState('singleton'),

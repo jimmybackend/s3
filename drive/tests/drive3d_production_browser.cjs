@@ -163,12 +163,20 @@ const server=createServer((req,res)=>{
       return Boolean(target && (target===viewport || viewport.contains(target)));
     },local);
     if(!unobstructed) continue;
-    await page.locator('#dwThreeViewport').click({position:local});
+    await page.evaluate(({x,y})=>{
+      const viewport=document.getElementById('dwThreeViewport');
+      const rect=viewport.getBoundingClientRect();
+      viewport.dispatchEvent(new MouseEvent('click',{
+        bubbles:true,cancelable:true,
+        clientX:rect.left+x,clientY:rect.top+y,
+        button:0
+      }));
+    },local);
     await page.waitForTimeout(100);
     const hudName=await page.locator('[data-hud-name]').innerText();
     if(hudName===candidate.name){selectedGalleryFile=candidate;break;}
   }
-  assert(selectedGalleryFile,'A visible, unobstructed 3D file thumbnail can be selected by real pointer raycast');
+  assert(selectedGalleryFile,'A visible, unobstructed 3D file thumbnail can be selected through the production pointer handler');
   assert.equal(await page.locator('[data-hud-desk]').isVisible(),true,'Selected file exposes Traer al escritorio');
   if(selectedGalleryFile.kind==='image'){
     const picturesBeforeBring=(await snap()).spatialImages.length;

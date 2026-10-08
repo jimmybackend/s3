@@ -259,15 +259,48 @@ class Drive3DScene {
         let filePanels = [];
         let selectedFileCard = null;
 
+        // Same icon taxonomy used by bloque_archivos.php through FileIconResolver.
+        const fileIconGlyphs = {
+            'fa-file-pdf':'\\uf1c1',
+            'fa-file-word':'\\uf1c2',
+            'fa-file-excel':'\\uf1c3',
+            'fa-file-powerpoint':'\\uf1c4',
+            'fa-file-image':'\\uf1c5',
+            'fa-file-archive':'\\uf1c6',
+            'fa-file-audio':'\\uf1c7',
+            'fa-file-video':'\\uf1c8',
+            'fa-file-code':'\\uf1c9',
+            'fa-file-lines':'\\uf15c',
+            'fa-database':'\\uf1c0',
+            'fa-book':'\\uf02d',
+            'fa-envelope':'\\uf0e0',
+            'fa-font':'\\uf031',
+            'fa-key':'\\uf084',
+            'fa-cube':'\\uf1b2',
+            'fa-cubes':'\\uf1b3',
+            'fa-pen-ruler':'\\uf5ae',
+            'fa-lock':'\\uf023',
+            'fa-file':'\\uf15b'
+        };
+        const fileCategoryColors = {
+            pdf:'#a83f3f', word:'#356aaf', excel:'#2d7c55', powerpoint:'#b85c32',
+            archive:'#786245', text:'#53667a', code:'#5f4b8b', image:'#237a71',
+            audio:'#1d7aa7', video:'#7a3ba0', database:'#496c7e', ebook:'#80613a',
+            mail:'#356a8f', font:'#6a5f8f', certificate:'#8b6b32', package:'#596474',
+            design:'#8a4f72', model:'#3d7181', locked:'#805049', generic:'#53667a'
+        };
         const fileKindStyle = (item) => {
-            const kind = String(item?.kind || 'file');
-            const extension = String(item?.extension || '').toUpperCase().slice(0,5);
-            if (kind === 'audio') return {mark:'♪', label:extension || 'AUDIO', color:'#1d7aa7'};
-            if (kind === 'video') return {mark:'▶', label:extension || 'VIDEO', color:'#7a3ba0'};
-            if (kind === 'pdf') return {mark:'PDF', label:'PDF', color:'#a83f3f'};
-            if (kind === 'document') return {mark:'DOC', label:extension || 'DOC', color:'#356aaf'};
-            if (kind === 'image') return {mark:'▧', label:extension || 'IMG', color:'#237a71'};
-            return {mark:'FILE', label:extension || 'ARCHIVO', color:'#53667a'};
+            const extension = String(item?.extension || '').toUpperCase().slice(0,8);
+            const icon = String(item?.icon || 'fa-file');
+            const category = String(item?.icon_category || 'generic');
+            const label = String(item?.icon_label || extension || 'Archivo');
+            return {
+                icon,
+                glyph:fileIconGlyphs[icon] || fileIconGlyphs['fa-file'],
+                label:label.toUpperCase().slice(0,22),
+                extension:extension || 'ARCHIVO',
+                color:fileCategoryColors[category] || fileCategoryColors.generic
+            };
         };
 
         function cardLabelTexture(item) {
@@ -291,9 +324,10 @@ class Drive3DScene {
             ctx.fillStyle = style.color; ctx.fillRect(22,22,468,340);
             ctx.fillStyle = 'rgba(2,13,22,.58)'; ctx.fillRect(38,38,436,308);
             ctx.fillStyle = '#e9fbff'; ctx.textAlign='center'; ctx.textBaseline='middle';
-            ctx.font = style.mark.length > 2 ? '800 86px sans-serif' : '800 132px sans-serif';
-            ctx.fillText(style.mark,256,184);
-            ctx.font = '700 34px sans-serif'; ctx.fillStyle='#aeeeff'; ctx.fillText(style.label,256,300);
+            ctx.font = '900 132px "Font Awesome 6 Free", "Font Awesome 5 Free", sans-serif';
+            ctx.fillText(style.glyph,256,170);
+            ctx.font = '800 30px sans-serif'; ctx.fillStyle='#aeeeff'; ctx.fillText(style.label,256,278,430);
+            ctx.font = '700 24px sans-serif'; ctx.fillStyle='#dff8ff'; ctx.fillText(style.extension,256,324,260);
             const tex = new T.CanvasTexture(canvas); tex.colorSpace = T.SRGBColorSpace;
             return tex;
         }
@@ -709,6 +743,8 @@ class Drive3DScene {
                 name:card.userData?.driveItem?.name || '',
                 kind:card.userData?.driveItem?.kind || 'file',
                 open:card.userData?.driveItem?.open_href || '',
+                icon:card.userData?.driveItem?.icon || 'fa-file',
+                iconCategory:card.userData?.driveItem?.icon_category || 'generic',
                 point:(()=>{const p=card.localToWorld(new T.Vector3(0,0,.05)).project(camera);return [p.x,p.y];})()
             }))),
             domeRadius:R,panorama:panorama.position.toArray(),environmentReady,

@@ -3457,7 +3457,7 @@
     },
     {
       "path": "drive/src/Security/Drive3dPreferenceSanitizer.php",
-      "size": 4841,
+      "size": 5570,
       "active": false,
       "references": [
         "drive/tests/dataword3d_contract_smoke.php"
@@ -4113,7 +4113,7 @@
     },
     {
       "path": "drive/tests/dataword3d_contract_smoke.php",
-      "size": 14577,
+      "size": 15358,
       "active": false,
       "references": []
     },

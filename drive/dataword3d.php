@@ -170,6 +170,8 @@ $buildState = static function (string $route) use (
             'icon' => $iconForKind($kind),
             'extension' => $extension !== '' ? strtoupper($extension) : 'ARCHIVO',
             'mime' => $mime,
+            'media_key' => $key,
+            'media_route' => $route,
             'size' => FileViewHelper::formatBytes((int)($row['Tamano'] ?? 0)),
             'date' => trim((string)($row['Fecha'] ?? '')),
             'visible_path' => rtrim($visiblePath, '/') . '/' . $name,
@@ -267,6 +269,7 @@ header('Content-Type: text/html; charset=UTF-8');
   <link rel="icon" href="ellogo.png" type="image/png">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <link rel="stylesheet" href="css/dataword3d.css?v=<?= (int)filemtime(__DIR__ . '/css/dataword3d.css') ?>">
+  <link rel="stylesheet" href="css/os-media-cloud.css?v=<?= (int)filemtime(__DIR__ . '/css/os-media-cloud.css') ?>">
 </head>
 <body class="dw3d dw-real" data-environment="future">
   <header class="dw-topbar">
@@ -384,35 +387,47 @@ header('Content-Type: text/html; charset=UTF-8');
           <small data-dw-desk-meta>La vista previa aparecerá aquí</small>
         </span>
       </div>
-      <div class="dw-desk-files" data-dw-current-files aria-label="Archivos de esta carpeta">
-        <?php foreach (array_slice($state['files'], 0, 16) as $file): ?>
-          <button type="button"
-                  class="dw-desk-book"
-                  data-dw-item
-                  data-item-type="file"
-                  data-item-kind="<?= $e($file['kind']) ?>"
-                  data-item-name="<?= $e($file['name']) ?>"
-                  data-item-path="<?= $e($file['visible_path']) ?>"
-                  data-item-size="<?= $e($file['size']) ?>"
-                  data-item-date="<?= $e($file['date']) ?>"
-                  data-item-format="<?= $e($file['extension']) ?>"
-                  data-open-href="<?= $e($file['open_href']) ?>"
-                  data-download-href="<?= $e($file['download_href']) ?>"
-                  data-item-thumb="<?= $e($file['thumbnail_href'] ?? '') ?>"
-                  data-item-environment="<?= $e($file['environment_href'] ?? '') ?>"
-                  data-item-locked="<?= !empty($file['locked']) ? '1' : '0' ?>"
-                  title="<?= $e($file['name']) ?>">
-            <span class="dw-desk-book-media">
-              <?php if (($file['kind'] ?? '') === 'image' && !empty($file['thumbnail_href'])): ?>
-                <img src="<?= $e($file['thumbnail_href']) ?>" loading="lazy" decoding="async" alt="Miniatura de <?= $e($file['name']) ?>">
-              <?php else: ?>
-                <i class="fas <?= $e($file['icon']) ?>"></i>
-              <?php endif; ?>
-            </span>
-            <span class="dw-desk-book-label"><?= $e($file['name']) ?></span>
-          </button>
-        <?php endforeach; ?>
-        <?php if ($state['files'] === []): ?><span class="dw-desk-empty">Sin archivos directos en esta sala.</span><?php endif; ?>
+      <div class="dw-desk-carousel" data-dw-desk-carousel hidden aria-label="Carrusel del escritorio">
+        <div class="dw-desk-carousel-caption">
+          <i class="fas fa-layer-group" aria-hidden="true"></i>
+          <strong data-desk-carousel-title>Escritorio</strong>
+          <span data-desk-carousel-count></span>
+        </div>
+        <button type="button" class="dw-desk-carousel-nav is-prev" data-desk-prev aria-label="Archivos anteriores"><i class="fas fa-chevron-left"></i></button>
+        <div class="dw-desk-files" data-dw-current-files aria-label="Archivos de esta carpeta">
+          <?php foreach (array_slice($state['files'], 0, 16) as $file): ?>
+            <button type="button"
+                    class="dw-desk-book"
+                    data-dw-item
+                    data-item-type="file"
+                    data-item-kind="<?= $e($file['kind']) ?>"
+                    data-item-name="<?= $e($file['name']) ?>"
+                    data-item-path="<?= $e($file['visible_path']) ?>"
+                    data-item-size="<?= $e($file['size']) ?>"
+                    data-item-date="<?= $e($file['date']) ?>"
+                    data-item-format="<?= $e($file['extension']) ?>"
+                    data-item-key="<?= $e($file['media_key'] ?? '') ?>"
+                    data-item-mime="<?= $e($file['mime'] ?? '') ?>"
+                    data-item-route="<?= $e($file['media_route'] ?? '') ?>"
+                    data-open-href="<?= $e($file['open_href']) ?>"
+                    data-download-href="<?= $e($file['download_href']) ?>"
+                    data-item-thumb="<?= $e($file['thumbnail_href'] ?? '') ?>"
+                    data-item-environment="<?= $e($file['environment_href'] ?? '') ?>"
+                    data-item-locked="<?= !empty($file['locked']) ? '1' : '0' ?>"
+                    title="<?= $e($file['name']) ?>">
+              <span class="dw-desk-book-media">
+                <?php if (($file['kind'] ?? '') === 'image' && !empty($file['thumbnail_href'])): ?>
+                  <img src="<?= $e($file['thumbnail_href']) ?>" loading="lazy" decoding="async" alt="Miniatura de <?= $e($file['name']) ?>">
+                <?php else: ?>
+                  <i class="fas <?= $e($file['icon']) ?>"></i>
+                <?php endif; ?>
+              </span>
+              <span class="dw-desk-book-label"><?= $e($file['name']) ?></span>
+            </button>
+          <?php endforeach; ?>
+          <?php if ($state['files'] === []): ?><span class="dw-desk-empty">Sin archivos directos en esta sala.</span><?php endif; ?>
+        </div>
+        <button type="button" class="dw-desk-carousel-nav is-next" data-desk-next aria-label="Archivos siguientes"><i class="fas fa-chevron-right"></i></button>
       </div>
     </section>
     </div><!-- /dw-camera-scene -->
@@ -536,6 +551,13 @@ header('Content-Type: text/html; charset=UTF-8');
   </main>
 
   <script>
+    window.ARCADECLOUD_OS_APPEARANCE = {
+      endpoint: 'os-preferences.php',
+      csrf: <?= json_encode($uploadCsrf, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>,
+      nodeKey: <?= json_encode($osPreferenceNodeKey, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>,
+      preferences: <?= json_encode($osPreferences, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>
+    };
+    window.DRIVE_INITIAL_ROUTE = <?= json_encode($currentRoute, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
     window.ARCADECLOUD_DRIVE3D = <?= json_encode([
       'renderer' => 'three',
       'visiblePath' => $state['visible_path'],
@@ -552,6 +574,7 @@ header('Content-Type: text/html; charset=UTF-8');
       'preferenceNodeKey' => $osPreferenceNodeKey,
     ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
   </script>
+  <script src="js/os-media-cloud.js?v=<?= (int)filemtime(__DIR__ . '/js/os-media-cloud.js') ?>"></script>
   <script src="js/dataword3d.js?v=<?= (int)filemtime(__DIR__ . '/js/dataword3d.js') ?>"></script>
 </body>
 </html>

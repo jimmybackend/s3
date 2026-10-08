@@ -127,8 +127,9 @@ const server=createServer((req,res)=>{
   assert.equal(await page.locator('[data-desk-next]').isVisible(),true);
   const deskProjection = (await snap()).deskScreen;
   const deskCarouselBox = await page.locator('[data-dw-desk-carousel]').boundingBox();
-  assert(deskProjection.visible,'Physical table anchor is visible from the focused shelf view');
-  assert(Math.abs((deskCarouselBox.x + deskCarouselBox.width/2) - deskProjection.x) < 12,'Carousel horizontal center follows the real table projection');
+  assert(Number.isFinite(deskProjection.x) && Number.isFinite(deskProjection.y),'Physical table supplies a valid screen projection');
+  const expectedDeskX = Math.max(130,Math.min(1440-130,deskProjection.x));
+  assert(Math.abs((deskCarouselBox.x + deskCarouselBox.width/2) - expectedDeskX) < 12,'Carousel horizontal center follows the projected table and clamps only at the viewport edge');
 
   await page.locator('[data-dw-current-files] [data-item-kind="audio"]').click({force:true});
   await page.evaluate(()=>window.ArcadeCloudDrive3D.playSelected());

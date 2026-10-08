@@ -40,7 +40,7 @@ final class Drive3dPreferenceSanitizer
         ];
     }
 
-    /** @return list<array{id:string,name:string,path:string,openHref:string,world:list<float>}|null> */
+    /** @return list<array{id:string,name:string,path:string,openHref:string,world:list<float>,size:?list<float>}|null> */
     private function spatialImages(mixed $value): array
     {
         $slots = array_fill(0, 12, null);
@@ -67,6 +67,7 @@ final class Drive3dPreferenceSanitizer
                 'path' => mb_substr(str_replace(["\r", "\n", "\0"], '', (string)($entry['path'] ?? '')), 0, 1024),
                 'openHref' => $openHref,
                 'world' => $world,
+                'size' => $this->pictureSize($entry['size'] ?? null),
             ];
         }
 
@@ -93,6 +94,31 @@ final class Drive3dPreferenceSanitizer
         }
 
         return $position;
+    }
+
+    /** @return list<float>|null */
+    private function pictureSize(mixed $value): ?array
+    {
+        if (!is_array($value) || count($value) !== 2) {
+            return null;
+        }
+
+        $width = $value[0] ?? null;
+        $height = $value[1] ?? null;
+        if (!is_numeric($width) || !is_numeric($height)) {
+            return null;
+        }
+
+        $width = (float)$width;
+        $height = (float)$height;
+        if (!is_finite($width) || !is_finite($height)) {
+            return null;
+        }
+
+        return [
+            max(160.0, min(1200.0, $width)),
+            max(100.0, min(900.0, $height)),
+        ];
     }
 
     private function localViewerHref(mixed $value): string

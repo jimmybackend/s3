@@ -69,6 +69,25 @@ const server=createServer((req,res)=>{
   const secondPicture=picturesBefore[1];
   assert.notEqual(firstPicture.id,secondPicture.id,'Each image has its own persistent spatial id');
 
+  // A picture can be switched to resize mode, dragged from its lower-right corner,
+  // and the chosen size is kept in the profile state without moving its world anchor.
+  const secondSelector = `[data-spatial-picture-id="${secondPicture.id}"]`;
+  const secondWindow = page.locator(secondSelector);
+  const secondBefore = await secondWindow.boundingBox();
+  await page.locator(secondSelector + ' button[aria-label="Redimensionar cuadro"]').click({force:true});
+  assert.equal(await page.locator(secondSelector + ' .dw-spatial-picture-resize-handle').isVisible(),true);
+  const resizeHandle = await page.locator(secondSelector + ' .dw-spatial-picture-resize-handle').boundingBox();
+  await page.mouse.move(resizeHandle.x + resizeHandle.width/2, resizeHandle.y + resizeHandle.height/2);
+  await page.mouse.down();
+  await page.mouse.move(resizeHandle.x + resizeHandle.width/2 + 120, resizeHandle.y + resizeHandle.height/2 + 75,{steps:5});
+  await page.mouse.up();
+  await page.waitForTimeout(120);
+  const secondAfter = await secondWindow.boundingBox();
+  assert(secondAfter.width > secondBefore.width + 25,'Dragging the corner enlarges the picture');
+  const resizedState = await page.evaluate(id => window.ArcadeCloudDrive3D.spatialPictureState.find(entry => entry.id === id),secondPicture.id);
+  assert(Array.isArray(resizedState.size) && resizedState.size[0] > 0 && resizedState.size[1] > 0,'Picture size is stored with the persistent picture state');
+  assert.deepEqual((await snap()).spatialImages.find(p=>p.id===secondPicture.id).world,secondPicture.world,'Resizing does not move the picture world anchor');
+
   await page.evaluate(()=>window.ArcadeCloudDrive3D.three.look(105,0));
   await page.waitForFunction(()=>Math.abs(window.ArcadeCloudDrive3D.three.snapshot().yaw)>1.7);
   const lookedPictures=(await snap()).spatialImages;
@@ -101,14 +120,23 @@ const server=createServer((req,res)=>{
   assert.equal(await page.locator('[data-dw-desk-carousel]').isVisible(),false,'Desk carousel stays hidden until Traer al escritorio');
   await page.locator('[data-hud-desk]').click({force:true});
   await page.waitForFunction(()=>!document.querySelector('[data-dw-desk-carousel]')?.hidden);
+  await page.waitForTimeout(350);
+  assert.equal(await page.locator('[data-dw-desk-carousel]').isVisible(),true,'Desk carousel remains visible after the Three.js view refreshes');
   assert.equal(await page.locator('[data-dw-current-files] [data-dw-item]').count(),4,'Shelf files are placed on the literal desk carousel');
   assert.equal(await page.locator('[data-desk-prev]').isVisible(),true);
   assert.equal(await page.locator('[data-desk-next]').isVisible(),true);
+  const deskProjection = (await snap()).deskScreen;
+  const deskCarouselBox = await page.locator('[data-dw-desk-carousel]').boundingBox();
+  assert(Number.isFinite(deskProjection.x) && Number.isFinite(deskProjection.y),'Physical table supplies a valid screen projection');
+  const expectedDeskX = Math.max(130,Math.min(1440-130,deskProjection.x));
+  assert(Math.abs((deskCarouselBox.x + deskCarouselBox.width/2) - expectedDeskX) < 12,'Carousel horizontal center follows the projected table and clamps only at the viewport edge');
 
   await page.locator('[data-dw-current-files] [data-item-kind="audio"]').click({force:true});
   await page.evaluate(()=>window.ArcadeCloudDrive3D.playSelected());
   await page.waitForFunction(()=>window.ArcadeCloudMediaCloud?.state?.type==='audio' && !document.getElementById('arcadeCloudMediaCloud')?.hidden);
   assert.equal(await page.locator('#arcadeCloudMediaCloud').isVisible(),true,'Audio uses the shared ArcadeCloud cloud player');
+  await page.locator('#arcadeCloudMediaCloud [data-media-close]').click({force:true});
+  await page.waitForFunction(()=>document.getElementById('arcadeCloudMediaCloud')?.hidden===true);
 
   await page.locator('[data-dw-current-files] [data-item-kind="video"]').click({force:true});
   await page.evaluate(()=>window.ArcadeCloudDrive3D.playSelected());
@@ -139,6 +167,6 @@ const server=createServer((req,res)=>{
   await page.mouse.move(button.x+button.width/2,button.y+button.height/2);await page.mouse.down();
   await page.waitForFunction(x=>window.ArcadeCloudDrive3D.three.snapshot().camera[0]>x+.15,beforeMove);await page.mouse.up();
   assert.deepEqual(errors,[]);
-  console.log('PASS production WebGL, on-demand desk carousel, shared cloud audio/video player, spatial pictures, raycast selection, frustum unloading, bounded textures, fixed panorama, movement and mobile');
+  console.log('PASS production WebGL, table-projected desk carousel, persistent picture resize, shared cloud audio/video player, spatial pictures, raycast selection, frustum unloading, bounded textures, fixed panorama, movement and mobile');
  } finally {await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;}).finally(()=>server.close());

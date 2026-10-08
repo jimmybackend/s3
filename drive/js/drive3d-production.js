@@ -61,6 +61,7 @@ class Drive3DProduction {
             if (open) app.openSelected();
         },
         onSpatialProjection:projection => app.updateSpatialProjection?.(projection),
+        onDeskProjection:projection => app.updateDeskProjection?.(projection),
         onCamera:(yaw,pitch) => { app.camera.yaw = yaw; app.camera.pitch = pitch; if(app.pitchRange) app.pitchRange.value = String(pitch); },
         onView:view => { visible = view.visible; near = view.near; if(view.selected < 0) app.focusedShelf = null; syncZones(); }
     });

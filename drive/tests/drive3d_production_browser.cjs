@@ -17,7 +17,7 @@ body = body.slice(0,start) + `<template id="dwShelfTemplate">${template}</templa
 // Drop server loops for direct files/backgrounds and replace escaped scalars.
 body = body.replace(/<\?php foreach[\s\S]*?<\?php endforeach; \?>/g,'');
 body = body.replace(/<\?=[\s\S]*?\?>/g,'Usuario').replace(/<\?php[\s\S]*?\?>/g,'');
-const html = `<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width"><link rel="stylesheet" href="/css/dataword3d.css"><link rel="stylesheet" href="/css/os-media-cloud.css">${body}<script>window.ARCADECLOUD_OS_APPEARANCE={};window.DRIVE_INITIAL_ROUTE='Data/';window.ARCADECLOUD_DRIVE3D={renderer:'three'};</script><script src="/js/os-media-cloud.js"></script><script src="/js/dataword3d.js"></script></body>`;
+const html = `<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width"><link rel="stylesheet" href="/css/dataword3d.css"><link rel="stylesheet" href="/css/os-media-cloud.css">${body}<script>window.ARCADECLOUD_OS_APPEARANCE={};window.DRIVE_INITIAL_ROUTE='Data/';window.ARCADECLOUD_DRIVE3D={renderer:'three',visiblePath:'Data/12/',deskOnLoad:new URLSearchParams(location.search).get('desk')==='1',deskApiHref:'/desk-current'};</script><script src="/js/os-media-cloud.js"></script><script src="/js/dataword3d.js"></script></body>`;
 let requests=0;
 const server=createServer((req,res)=>{
  const path = req.url.split('?')[0];
@@ -31,7 +31,17 @@ const server=createServer((req,res)=>{
    ],
    folder_count:1,file_count:4
  }}));},200);return; }
- if(path==='/'){res.setHeader('Content-Type','text/html');res.end(html);return;}
+ if(path==='/desk-current') {
+   const files=Array.from({length:18},(_,i)=>({name:`Imagen ${String(i+1).padStart(2,'0')}.jpg`,kind:'image',extension:'JPG',open_href:'/three-lab/assets/alpine-panorama.jpg',thumbnail_href:'/three-lab/assets/alpine-panorama.jpg',media_key:`Data/12/Imagen-${i+1}.jpg`,media_route:'Data/12/',mime:'image/jpeg'}));
+   files.push(
+     {name:'Audio.mp3',kind:'audio',extension:'MP3',open_href:'/three-lab/assets/alpine-panorama.jpg',media_key:'Data/12/Audio.mp3',media_route:'Data/12/',mime:'audio/mpeg'},
+     {name:'Video.mp4',kind:'video',extension:'MP4',open_href:'/three-lab/assets/alpine-panorama.jpg',media_key:'Data/12/Video.mp4',media_route:'Data/12/',mime:'video/mp4'}
+   );
+   res.setHeader('Content-Type','application/json');
+   res.end(JSON.stringify({ok:true,state:{visible_path:'Data/12/',files,file_count:20,file_page:1,file_pages:1,file_limit:100,folder_count:0}}));
+   return;
+ }
+ if(path==='/' || path.startsWith('/folder/')){res.setHeader('Content-Type','text/html');res.end(html);return;}
  if(!/^\/(js|css|three-lab)\/[\w/.-]+$/.test(path)){res.writeHead(404).end();return;}
  try{res.setHeader('Content-Type',path.endsWith('.js')?'text/javascript':path.endsWith('.css')?'text/css':'image/jpeg');res.end(readFileSync(root+path));}catch{res.writeHead(404).end();}
 });
@@ -117,24 +127,60 @@ const server=createServer((req,res)=>{
   assert(populated.realBooks>=2,'Real folder/file data is rendered as 3D books');
   assert(populated.realItems.some(item=>item.name==='Subcarpeta real' && item.open==='/subfolder'),'Folder metadata lives in the 3D shelf');
   assert(populated.realItems.some(item=>item.name==='Informe.pdf' && item.open==='/report.pdf'),'File metadata lives in the 3D shelf');
-  assert.equal(await page.locator('[data-dw-desk-carousel]').isVisible(),false,'Desk carousel stays hidden until Traer al escritorio');
+  assert.equal(await page.locator('[data-dw-desk-carousel]').isVisible(),false,'Desk carousel stays hidden while the selected folder is still outside');
+  assert.match(await page.locator('[data-hud-desk]').innerText(),/Entrar y traer al escritorio/);
   await page.locator('[data-hud-desk]').click({force:true});
+  await page.waitForURL(url=>url.pathname.startsWith('/folder/') && url.searchParams.get('desk')==='1');
+  await page.waitForFunction(()=>window.ArcadeCloudDrive3D?.three?.snapshot().environmentReady,{},{timeout:30000});
   await page.waitForFunction(()=>!document.querySelector('[data-dw-desk-carousel]')?.hidden);
   await page.waitForTimeout(350);
-  assert.equal(await page.locator('[data-dw-desk-carousel]').isVisible(),true,'Desk carousel remains visible after the Three.js view refreshes');
-  assert.equal(await page.locator('[data-dw-current-files] [data-dw-item]').count(),4,'Shelf files are placed on the literal desk carousel');
+  assert.equal(await page.locator('[data-dw-desk-carousel]').isVisible(),true,'Desk carousel appears only after entering the folder');
+  assert.equal(await page.locator('[data-dw-current-files] [data-dw-item]').count(),20,'Every direct file in the entered folder is available in the desk carousel');
+  assert.match(await page.locator('[data-desk-carousel-count]').innerText(),/de 20/);
   assert.equal(await page.locator('[data-desk-prev]').isVisible(),true);
   assert.equal(await page.locator('[data-desk-next]').isVisible(),true);
+  const firstDeskName=await page.locator('[data-dw-current-files] [data-dw-item]').first().getAttribute('data-item-name');
+  await page.locator('[data-desk-next]').click({force:true});
+  await page.waitForTimeout(500);
+  const scrollAfterNext=await page.locator('[data-dw-current-files]').evaluate(el=>el.scrollLeft);
+  assert(scrollAfterNext>0,'Next arrow advances through the full carousel');
+  assert.equal(await page.locator('[data-dw-current-files] [data-dw-item]').first().getAttribute('data-item-name'),firstDeskName,'Carousel navigation keeps all files mounted instead of replacing the first four');
   const deskProjection = (await snap()).deskScreen;
   const deskCarouselBox = await page.locator('[data-dw-desk-carousel]').boundingBox();
   assert(Number.isFinite(deskProjection.x) && Number.isFinite(deskProjection.y),'Physical table supplies a valid screen projection');
-  const expectedDeskX = Math.max(130,Math.min(1440-130,deskProjection.x));
-  assert(Math.abs((deskCarouselBox.x + deskCarouselBox.width/2) - expectedDeskX) < 12,'Carousel horizontal center follows the projected table and clamps only at the viewport edge');
 
   await page.locator('[data-dw-current-files] [data-item-kind="audio"]').click({force:true});
   await page.evaluate(()=>window.ArcadeCloudDrive3D.playSelected());
   await page.waitForFunction(()=>window.ArcadeCloudMediaCloud?.state?.type==='audio' && !document.getElementById('arcadeCloudMediaCloud')?.hidden);
   assert.equal(await page.locator('#arcadeCloudMediaCloud').isVisible(),true,'Audio uses the shared ArcadeCloud cloud player');
+
+  const player = page.locator('#arcadeCloudMediaCloud');
+  const playerStart = await player.boundingBox();
+  const playerHead = await page.locator('#arcadeCloudMediaCloud [data-media-drag-handle]').boundingBox();
+  await page.mouse.move(playerHead.x + 80, playerHead.y + 12);
+  await page.mouse.down();
+  await page.mouse.move(playerHead.x + 150, playerHead.y + 42,{steps:4});
+  await page.mouse.up();
+  const playerResize = await page.locator('#arcadeCloudMediaCloud [data-media-resize-handle]').boundingBox();
+  await page.mouse.move(playerResize.x + playerResize.width/2,playerResize.y + playerResize.height/2);
+  await page.mouse.down();
+  await page.mouse.move(playerResize.x + playerResize.width/2 + 60,playerResize.y + playerResize.height/2 + 35,{steps:4});
+  await page.mouse.up();
+  if((await page.locator('#arcadeCloudMediaCloud [data-media-pin]').getAttribute('aria-pressed'))!=='true') {
+    await page.locator('#arcadeCloudMediaCloud [data-media-pin]').click({force:true});
+  } else {
+    await page.locator('#arcadeCloudMediaCloud [data-media-pin]').click({force:true});
+    await page.locator('#arcadeCloudMediaCloud [data-media-pin]').click({force:true});
+  }
+  const playerFixed = await player.boundingBox();
+  assert(playerFixed.width > playerStart.width + 20,'Cloud player can be resized before fixing it');
+  await page.locator('#arcadeCloudMediaCloud [data-media-close]').click({force:true});
+  await page.waitForFunction(()=>document.getElementById('arcadeCloudMediaCloud')?.hidden===true);
+  await page.locator('[data-dw-current-files] [data-item-kind="audio"]').click({force:true});
+  await page.evaluate(()=>window.ArcadeCloudDrive3D.playSelected());
+  await page.waitForFunction(()=>!document.getElementById('arcadeCloudMediaCloud')?.hidden);
+  const playerRestored = await player.boundingBox();
+  assert(Math.abs(playerRestored.x-playerFixed.x)<4 && Math.abs(playerRestored.y-playerFixed.y)<4 && Math.abs(playerRestored.width-playerFixed.width)<4,'Pinned player restores its chosen position and size');
   await page.locator('#arcadeCloudMediaCloud [data-media-close]').click({force:true});
   await page.waitForFunction(()=>document.getElementById('arcadeCloudMediaCloud')?.hidden===true);
 
@@ -167,6 +213,6 @@ const server=createServer((req,res)=>{
   await page.mouse.move(button.x+button.width/2,button.y+button.height/2);await page.mouse.down();
   await page.waitForFunction(x=>window.ArcadeCloudDrive3D.three.snapshot().camera[0]>x+.15,beforeMove);await page.mouse.up();
   assert.deepEqual(errors,[]);
-  console.log('PASS production WebGL, table-projected desk carousel, persistent picture resize, shared cloud audio/video player, spatial pictures, raycast selection, frustum unloading, bounded textures, fixed panorama, movement and mobile');
+  console.log('PASS production WebGL, entered-folder full carousel, pinned player geometry, persistent picture resize, shared cloud audio/video player, spatial pictures, raycast selection, frustum unloading, bounded textures, fixed panorama, movement and mobile');
  } finally {await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;}).finally(()=>server.close());

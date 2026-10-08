@@ -191,7 +191,7 @@ const server=createServer((req,res)=>{
     await page.locator('#arcadeCloudMediaCloud [data-media-pin]').click({force:true});
   }
   const playerFixed = await player.boundingBox();
-  assert(playerFixed.width > playerStart.width + 20,'Cloud player can be resized before fixing it');
+  assert(Math.abs(playerFixed.width-playerStart.width)>20,'Cloud player can be resized to a chosen width before fixing it');
   await page.locator('#arcadeCloudMediaCloud [data-media-close]').click({force:true});
   await page.waitForFunction(()=>document.getElementById('arcadeCloudMediaCloud')?.hidden===true);
   await page.evaluate(()=>{

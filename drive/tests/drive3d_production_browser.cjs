@@ -17,11 +17,20 @@ body = body.slice(0,start) + `<template id="dwShelfTemplate">${template}</templa
 // Drop server loops for direct files/backgrounds and replace escaped scalars.
 body = body.replace(/<\?php foreach[\s\S]*?<\?php endforeach; \?>/g,'');
 body = body.replace(/<\?=[\s\S]*?\?>/g,'Usuario').replace(/<\?php[\s\S]*?\?>/g,'');
-const html = `<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width"><link rel="stylesheet" href="/css/dataword3d.css">${body}<script>window.ARCADECLOUD_DRIVE3D={renderer:'three'};</script><script src="/js/dataword3d.js"></script></body>`;
+const html = `<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width"><link rel="stylesheet" href="/css/dataword3d.css"><link rel="stylesheet" href="/css/os-media-cloud.css">${body}<script>window.ARCADECLOUD_OS_APPEARANCE={};window.DRIVE_INITIAL_ROUTE='Data/';window.ARCADECLOUD_DRIVE3D={renderer:'three'};</script><script src="/js/os-media-cloud.js"></script><script src="/js/dataword3d.js"></script></body>`;
 let requests=0;
 const server=createServer((req,res)=>{
  const path = req.url.split('?')[0];
- if(path.startsWith('/preview/')) { requests++; setTimeout(()=>{res.setHeader('Content-Type','application/json');res.end(JSON.stringify({ok:true,state:{folders:[{name:'Subcarpeta real',kind:'folder',open_href:'/subfolder'}],files:[{name:'Informe.pdf',kind:'pdf',open_href:'/report.pdf',download_href:'/download'}],folder_count:1,file_count:1}}));},200);return; }
+ if(path.startsWith('/preview/')) { requests++; setTimeout(()=>{res.setHeader('Content-Type','application/json');res.end(JSON.stringify({ok:true,state:{
+   folders:[{name:'Subcarpeta real',kind:'folder',open_href:'/subfolder',preview_href:'/preview/sub'}],
+   files:[
+    {name:'Informe.pdf',kind:'pdf',extension:'PDF',open_href:'/report.pdf',download_href:'/download',media_key:'Data/Informe.pdf',media_route:'Data/12/',mime:'application/pdf'},
+    {name:'Foto.jpg',kind:'image',extension:'JPG',open_href:'/three-lab/assets/alpine-panorama.jpg',thumbnail_href:'/three-lab/assets/alpine-panorama.jpg',media_key:'Data/Foto.jpg',media_route:'Data/12/',mime:'image/jpeg'},
+    {name:'Audio.mp3',kind:'audio',extension:'MP3',open_href:'/three-lab/assets/alpine-panorama.jpg',media_key:'Data/Audio.mp3',media_route:'Data/12/',mime:'audio/mpeg'},
+    {name:'Video.mp4',kind:'video',extension:'MP4',open_href:'/three-lab/assets/alpine-panorama.jpg',media_key:'Data/Video.mp4',media_route:'Data/12/',mime:'video/mp4'}
+   ],
+   folder_count:1,file_count:4
+ }}));},200);return; }
  if(path==='/'){res.setHeader('Content-Type','text/html');res.end(html);return;}
  if(!/^\/(js|css|three-lab)\/[\w/.-]+$/.test(path)){res.writeHead(404).end();return;}
  try{res.setHeader('Content-Type',path.endsWith('.js')?'text/javascript':path.endsWith('.css')?'text/css':'image/jpeg');res.end(readFileSync(root+path));}catch{res.writeHead(404).end();}
@@ -89,6 +98,22 @@ const server=createServer((req,res)=>{
   assert(populated.realBooks>=2,'Real folder/file data is rendered as 3D books');
   assert(populated.realItems.some(item=>item.name==='Subcarpeta real' && item.open==='/subfolder'),'Folder metadata lives in the 3D shelf');
   assert(populated.realItems.some(item=>item.name==='Informe.pdf' && item.open==='/report.pdf'),'File metadata lives in the 3D shelf');
+  assert.equal(await page.locator('[data-dw-desk-carousel]').isVisible(),false,'Desk carousel stays hidden until Traer al escritorio');
+  await page.locator('[data-hud-desk]').click({force:true});
+  await page.waitForFunction(()=>!document.querySelector('[data-dw-desk-carousel]')?.hidden);
+  assert.equal(await page.locator('[data-dw-current-files] [data-dw-item]').count(),4,'Shelf files are placed on the literal desk carousel');
+  assert.equal(await page.locator('[data-desk-prev]').isVisible(),true);
+  assert.equal(await page.locator('[data-desk-next]').isVisible(),true);
+
+  await page.locator('[data-dw-current-files] [data-item-kind="audio"]').click({force:true});
+  await page.evaluate(()=>window.ArcadeCloudDrive3D.playSelected());
+  await page.waitForFunction(()=>window.ArcadeCloudMediaCloud?.state?.type==='audio' && !document.getElementById('arcadeCloudMediaCloud')?.hidden);
+  assert.equal(await page.locator('#arcadeCloudMediaCloud').isVisible(),true,'Audio uses the shared ArcadeCloud cloud player');
+
+  await page.locator('[data-dw-current-files] [data-item-kind="video"]').click({force:true});
+  await page.evaluate(()=>window.ArcadeCloudDrive3D.playSelected());
+  await page.waitForFunction(()=>window.ArcadeCloudMediaCloud?.state?.type==='video');
+  assert.equal(await page.locator('#arcadeCloudMediaCloud').isVisible(),true,'Video uses the same cloud player design');
   assert.equal(await page.locator('[data-three-content]').count(),0,'No redundant middle content window');
   await page.evaluate(()=>{const a=window.ArcadeCloudDrive3D;a.three.look(180,0);});await page.waitForFunction(()=>Math.abs(window.ArcadeCloudDrive3D.three.snapshot().yaw)>3);
   const turned=await snap();assert.deepEqual(turned.panorama,initial.panorama);assert(Math.abs(turned.yaw)>3);
@@ -112,6 +137,6 @@ const server=createServer((req,res)=>{
   await page.mouse.move(button.x+button.width/2,button.y+button.height/2);await page.mouse.down();
   await page.waitForFunction(x=>window.ArcadeCloudDrive3D.three.snapshot().camera[0]>x+.15,beforeMove);await page.mouse.up();
   assert.deepEqual(errors,[]);
-  console.log('PASS production WebGL, raycast selection, real file/folder metadata, frustum unloading, bounded textures, fixed panorama, movement and mobile');
+  console.log('PASS production WebGL, on-demand desk carousel, shared cloud audio/video player, spatial pictures, raycast selection, frustum unloading, bounded textures, fixed panorama, movement and mobile');
  } finally {await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;}).finally(()=>server.close());

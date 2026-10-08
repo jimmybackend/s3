@@ -140,7 +140,7 @@ DELETE FROM guacamole_connection_parameter
 WHERE connection_id=@CID
 AND parameter_name IN (
     'hostname','port','username','password','security','ignore-cert',
-    'enable-audio','enable-audio-input','resize-method','color-depth',
+    'enable-audio','enable-audio-input','resize-method','color-depth','disable-gfx',
     'enable-wallpaper','enable-theming','enable-font-smoothing',
     'enable-full-window-drag','enable-desktop-composition','enable-menu-animations'
 );
@@ -158,6 +158,7 @@ VALUES
 (@CID,'enable-audio-input','true'),
 (@CID,'resize-method','display-update'),
 (@CID,'color-depth','16'),
+(@CID,'disable-gfx','true'),
 (@CID,'enable-wallpaper','false'),
 (@CID,'enable-theming','false'),
 (@CID,'enable-font-smoothing','false'),

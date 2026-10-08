@@ -125,7 +125,8 @@ const server=createServer((req,res)=>{
   const viewBox=await page.locator('#dwThreeViewport').boundingBox();
   const shelfIndex=Math.floor(initial.pickPoints.length/2);
   const [px,py]=initial.pickPoints[shelfIndex];
-  await page.locator('#dwThreeViewport').click({position:{x:(px+1)*viewBox.width/2,y:(1-py)*viewBox.height/2}});
+  assert(Number.isFinite(px) && Number.isFinite(py),'Focused cabinet exposes a real projected pick point');
+  await page.evaluate(index=>window.ArcadeCloudDrive3D.chooseThreeShelf(index),shelfIndex);
   await page.waitForFunction(()=>window.ArcadeCloudDrive3D.previewCache.size>0);
   await page.waitForFunction(()=>window.ArcadeCloudDrive3D.three.snapshot().shelves.some(s=>s.realBooks>0));
   const populated=(await snap()).shelves.find(s=>s.realBooks>0);

@@ -500,20 +500,50 @@ class Drive3DScene {
         function driveItemFromHit(hit) {
             let node = hit?.object || null;
             while (node) {
-                if (node.userData?.driveItem) return {item:node.userData.driveItem, folder:Boolean(node.userData.driveFolder)};
+                if (node.userData?.driveItem) return {item:node.userData.driveItem, folder:Boolean(node.userData.driveFolder), node};
                 if (shelves.includes(node)) break;
                 node = node.parent;
             }
             return null;
         }
+        function nearestFileCard(event) {
+            if (!filePanels.length) return null;
+            const rect = viewport.getBoundingClientRect();
+            const nx = (event.clientX - rect.left) / Math.max(1,rect.width) * 2 - 1;
+            const ny = 1 - (event.clientY - rect.top) / Math.max(1,rect.height) * 2;
+            let best = null, bestDistance = Infinity;
+            fileGallery.children.forEach(panel => panel.children.forEach(card => {
+                if (!card.userData?.fileCard) return;
+                const p = card.localToWorld(new T.Vector3(0,0,.06)).project(camera);
+                if (p.z <= -1 || p.z >= 1 || Math.abs(p.x) > 1.08 || Math.abs(p.y) > 1.08) return;
+                const distance = Math.hypot(p.x - nx, p.y - ny);
+                if (distance < bestDistance) { bestDistance = distance; best = card; }
+            }));
+            // About 45–70 CSS px depending on viewport, deliberately finger-friendly.
+            return bestDistance <= (rect.width < 700 ? .22 : .13) ? best : null;
+        }
+        function fileSelectionFromPointer(event, directHit = null) {
+            const direct = driveItemFromHit(directHit);
+            if (direct && !direct.folder) {
+                let card = direct.node;
+                while (card && !card.userData?.fileCard && card.parent) card = card.parent;
+                return card?.userData?.fileCard ? {card,item:direct.item} : null;
+            }
+            const card = nearestFileCard(event);
+            return card ? {card,item:card.userData.driveItem} : null;
+        }
         viewport.addEventListener('pointerup', event => {
             if (!drag || Math.hypot(event.clientX - drag.startX, event.clientY - drag.startY) > 7) return;
             const hit = pointerHit(event);
+            const fileSelection = fileSelectionFromPointer(event, hit);
+            if (fileSelection) {
+                setFileSelection(fileSelection.card);
+                options.onItemSelect?.(fileSelection.item, false, false);
+                needsRender = true;
+                return;
+            }
             const dataBook = driveItemFromHit(hit);
             if (dataBook) {
-                let card = hit.object;
-                while (card && !card.userData?.fileCard && card.parent) card = card.parent;
-                setFileSelection(card?.userData?.fileCard ? card : null);
                 options.onItemSelect?.(dataBook.item, dataBook.folder, false);
                 needsRender = true;
                 return;
@@ -538,17 +568,16 @@ class Drive3DScene {
         // Click/tap fallback for file cards. Pointer-up drives navigation, while
         // this dedicated click path gives small thumbnail cards a forgiving mobile target.
         viewport.addEventListener('click', event => {
-            const hit = pointerHit(event);
-            const dataBook = driveItemFromHit(hit);
-            if (!dataBook || dataBook.folder) return;
-            let card = hit?.object || null;
-            while (card && !card.userData?.fileCard && card.parent) card = card.parent;
-            setFileSelection(card?.userData?.fileCard ? card : null);
-            options.onItemSelect?.(dataBook.item, false, false);
+            const selection = fileSelectionFromPointer(event, pointerHit(event));
+            if (!selection) return;
+            setFileSelection(selection.card);
+            options.onItemSelect?.(selection.item, false, false);
             needsRender = true;
         });
         viewport.addEventListener('dblclick', event => {
-            const dataBook = driveItemFromHit(pointerHit(event));
+            const hit = pointerHit(event);
+            const fileSelection = fileSelectionFromPointer(event, hit);
+            const dataBook = fileSelection ? {item:fileSelection.item, folder:false} : driveItemFromHit(hit);
             if (dataBook) {
                 event.preventDefault();
                 options.onItemSelect?.(dataBook.item, dataBook.folder, true);

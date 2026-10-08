@@ -51,7 +51,7 @@ function overlap(a,b) {
         const out=process.env.SCREENSHOT_DIR;
         if(out) mkdirSync(out,{recursive:true});
         const shot=async name=>{if(out) await page.screenshot({path:resolve(out,name+'.png')});};
-        assert.deepEqual(initial.table,[0,0,-1.3]);
+        assert.equal(Object.hasOwn(initial,'table'),false,'Central desk/table is removed from the dome');
         await shot('front');
         for(const view of ['left','right']) {
             await page.locator(`[data-view="${view}"]`).click();
@@ -64,8 +64,8 @@ function overlap(a,b) {
         await page.locator('[data-view="front"]').click();
         await page.keyboard.down('w'); await page.waitForFunction(z=>window.drive3dLab.snapshot().camera[2]<z-.15,initial.camera[2]); await page.keyboard.up('w');
         assert((await snapshot()).camera[2]<initial.camera[2]-.1,'Walk must move camera');
-        await page.keyboard.down('w'); await page.waitForFunction(()=>window.drive3dLab.snapshot().camera[2]<.72).catch(async error=>{console.log('Movement diagnostic',await snapshot());throw error;}); await page.waitForTimeout(400); await page.keyboard.up('w');
-        assert((await snapshot()).camera[2]>=.59,'Table collision must stop walking through the globe pedestal');
+        await page.keyboard.down('w'); await page.waitForFunction(()=>window.drive3dLab.snapshot().camera[2]<.20).catch(async error=>{console.log('Movement diagnostic',await snapshot());throw error;}); await page.keyboard.up('w');
+        assert((await snapshot()).camera[2]<.30,'Open dome center must be walkable after removing the desk');
         await page.mouse.move(300,260); await page.mouse.down(); await page.mouse.move(500,220,{steps:5}); await page.mouse.up();
         await page.waitForFunction(()=>window.drive3dLab.snapshot().yaw<-.2); assert((await snapshot()).yaw<-.2,'Drag must turn camera');
         await page.setViewportSize({width:390,height:844});
@@ -80,6 +80,6 @@ function overlap(a,b) {
         assert((await snapshot()).camera[2]<initial.camera[2]-.1);
         assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
         assert.deepEqual(errors,[]);
-        console.log('PASS: actual WebGL render, dome clearance, nonoverlap, fixed panorama/furniture, presets, drag, walk, mobile controls/minimap.');
+        console.log('PASS: actual WebGL render, dome clearance, nonoverlap, clear walkable center, fixed panorama/furniture, presets, drag, walk, mobile controls/minimap.');
     } finally { await browser.close(); }
 })().catch(e=>{console.error(e);process.exitCode=1;}).finally(()=>server.close());

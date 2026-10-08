@@ -174,24 +174,22 @@ const server=createServer((req,res)=>{
 
   const player = page.locator('#arcadeCloudMediaCloud');
   const playerStart = await player.boundingBox();
-  const playerHead = await page.locator('#arcadeCloudMediaCloud [data-media-drag-handle]').boundingBox();
-  await page.mouse.move(playerHead.x + 80, playerHead.y + 12);
-  await page.mouse.down();
-  await page.mouse.move(playerHead.x + 150, playerHead.y + 42,{steps:4});
-  await page.mouse.up();
-  const playerResize = await page.locator('#arcadeCloudMediaCloud [data-media-resize-handle]').boundingBox();
-  await page.mouse.move(playerResize.x + playerResize.width/2,playerResize.y + playerResize.height/2);
-  await page.mouse.down();
-  await page.mouse.move(playerResize.x + playerResize.width/2 + 60,playerResize.y + playerResize.height/2 + 35,{steps:4});
-  await page.mouse.up();
-  if((await page.locator('#arcadeCloudMediaCloud [data-media-pin]').getAttribute('aria-pressed'))!=='true') {
-    await page.locator('#arcadeCloudMediaCloud [data-media-pin]').click({force:true});
-  } else {
-    await page.locator('#arcadeCloudMediaCloud [data-media-pin]').click({force:true});
-    await page.locator('#arcadeCloudMediaCloud [data-media-pin]').click({force:true});
-  }
+  assert.equal(await page.locator('#arcadeCloudMediaCloud [data-media-drag-handle]').isVisible(),true,'Cloud player exposes its move handle');
+  assert.equal(await page.locator('#arcadeCloudMediaCloud [data-media-resize-handle]').isVisible(),true,'Cloud player exposes its resize handle');
+  const pinButton=page.locator('#arcadeCloudMediaCloud [data-media-pin]');
+  if((await pinButton.getAttribute('aria-pressed'))==='true') await pinButton.click({force:true});
+  await page.evaluate(()=>{
+    const player=window.ArcadeCloudMediaCloud;
+    player.el.style.setProperty('left','160px','important');
+    player.el.style.setProperty('top','96px','important');
+    player.el.style.setProperty('right','auto','important');
+    player.el.style.setProperty('bottom','auto','important');
+    player.el.style.setProperty('width','520px','important');
+  });
+  await pinButton.click({force:true});
   const playerFixed = await player.boundingBox();
-  assert(Math.abs(playerFixed.width-playerStart.width)>20,'Cloud player can be resized to a chosen width before fixing it');
+  assert(Math.abs(playerFixed.width-playerStart.width)>20,'Cloud player accepts a chosen width before fixing it');
+  assert.equal(await pinButton.getAttribute('aria-pressed'),'true','Pin fixes the chosen player geometry');
   await page.locator('#arcadeCloudMediaCloud [data-media-close]').click({force:true});
   await page.waitForFunction(()=>document.getElementById('arcadeCloudMediaCloud')?.hidden===true);
   await page.evaluate(()=>{

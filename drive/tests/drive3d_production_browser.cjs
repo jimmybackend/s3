@@ -135,6 +135,8 @@ const server=createServer((req,res)=>{
   await page.evaluate(()=>window.ArcadeCloudDrive3D.playSelected());
   await page.waitForFunction(()=>window.ArcadeCloudMediaCloud?.state?.type==='audio' && !document.getElementById('arcadeCloudMediaCloud')?.hidden);
   assert.equal(await page.locator('#arcadeCloudMediaCloud').isVisible(),true,'Audio uses the shared ArcadeCloud cloud player');
+  await page.locator('#arcadeCloudMediaCloud [data-media-close]').click({force:true});
+  await page.waitForFunction(()=>document.getElementById('arcadeCloudMediaCloud')?.hidden===true);
 
   await page.locator('[data-dw-current-files] [data-item-kind="video"]').click({force:true});
   await page.evaluate(()=>window.ArcadeCloudDrive3D.playSelected());

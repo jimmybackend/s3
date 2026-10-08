@@ -157,7 +157,13 @@ const server=createServer((req,res)=>{
   const deskCarouselBox = await page.locator('[data-dw-desk-carousel]').boundingBox();
   assert(Number.isFinite(deskProjection.x) && Number.isFinite(deskProjection.y),'Physical table supplies a valid screen projection');
 
-  await page.locator('[data-dw-current-files] [data-item-kind="audio"]').click({force:true});
+  const audioDeskItem=page.locator('[data-dw-current-files] [data-item-kind="audio"]');
+  for(let i=0;i<4 && await audioDeskItem.evaluate(node=>node.hidden);i++){
+    await page.locator('[data-desk-next]').click({force:true});
+    await page.waitForTimeout(60);
+  }
+  assert.equal(await audioDeskItem.evaluate(node=>node.hidden),false,'Carousel arrows can reach the audio item after all image pages');
+  await audioDeskItem.click({force:true});
   await page.evaluate(()=>window.ArcadeCloudDrive3D.playSelected());
   await page.waitForFunction(()=>window.ArcadeCloudMediaCloud?.state?.type==='audio' && !document.getElementById('arcadeCloudMediaCloud')?.hidden);
   assert.equal(await page.locator('#arcadeCloudMediaCloud').isVisible(),true,'Audio uses the shared ArcadeCloud cloud player');

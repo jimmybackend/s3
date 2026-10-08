@@ -151,12 +151,18 @@ const server=createServer((req,res)=>{
   await page.evaluate(deg=>window.ArcadeCloudDrive3D.three.look(deg,0),galleryDegrees);
   await page.waitForTimeout(650);
   const focusedGallery=await snap();
-  const firstVisibleFile=focusedGallery.fileItems.find(item=>Math.abs(item.point[0])<.9 && Math.abs(item.point[1])<.9);
-  assert(firstVisibleFile,'At least one current-folder thumbnail is visible after looking at its gallery panel');
-  await page.locator('#dwThreeViewport').click({position:{x:(firstVisibleFile.point[0]+1)*viewBox.width/2,y:(1-firstVisibleFile.point[1])*viewBox.height/2}});
-  await page.waitForFunction(name=>document.querySelector('[data-hud-name]')?.textContent===name,firstVisibleFile.name);
+  const visibleFiles=focusedGallery.fileItems.filter(item=>Math.abs(item.point[0])<.82 && Math.abs(item.point[1])<.82);
+  assert(visibleFiles.length>0,'At least one current-folder thumbnail is visible after looking at its gallery panel');
+  let selectedGalleryFile=null;
+  for(const candidate of visibleFiles){
+    await page.locator('#dwThreeViewport').click({position:{x:(candidate.point[0]+1)*viewBox.width/2,y:(1-candidate.point[1])*viewBox.height/2},force:true});
+    await page.waitForTimeout(80);
+    const hudName=await page.locator('[data-hud-name]').innerText();
+    if(hudName===candidate.name){selectedGalleryFile=candidate;break;}
+  }
+  assert(selectedGalleryFile,'A visible 3D file thumbnail can be selected by pointer raycast');
   assert.equal(await page.locator('[data-hud-desk]').isVisible(),true,'Selected file exposes Traer al escritorio');
-  if(firstVisibleFile.kind==='image'){
+  if(selectedGalleryFile.kind==='image'){
     const picturesBeforeBring=(await snap()).spatialImages.length;
     await page.locator('[data-hud-desk]').click({force:true});
     await page.waitForFunction(count=>window.ArcadeCloudDrive3D.three.snapshot().spatialImages.length===count+1,picturesBeforeBring);

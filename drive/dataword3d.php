@@ -506,6 +506,9 @@ header('Content-Type: text/html; charset=UTF-8');
       'fileCount' => $state['file_count'],
       'folderBytes' => $state['folder_bytes'],
       'latestDate' => $state['latest_date'],
+      // First page is embedded so the room can paint files immediately; the API
+      // then fills the complete collection without leaving the user with only shelves.
+      'initialFiles' => $state['files'],
       'filesApiHref' => 'dataword3d.php?api=files&ruta=' . rawurlencode($currentRoute),
       'csrf' => $uploadCsrf,
       'preferencesEndpoint' => 'os-preferences.php',

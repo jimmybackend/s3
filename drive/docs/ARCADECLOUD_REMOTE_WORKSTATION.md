@@ -1,5 +1,7 @@
 # ArcadeCloud Remote Workstation — Fase 1
 
+> Runbook operativo de recuperación, rutas persistentes, puertos, sockets y diagnóstico: `drive/docs/ARCADECLOUD_WORKSTATION_RECOVERY.md`.
+
 ## Objetivo
 
 Validar una estación gráfica aislada en el nodo de cómputo sin modificar el worker multimedia existente.

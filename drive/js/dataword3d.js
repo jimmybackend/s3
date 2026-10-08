@@ -63,6 +63,11 @@
       this.deskName = doc.querySelector('[data-dw-desk-name]');
       this.deskMeta = doc.querySelector('[data-dw-desk-meta]');
       this.deskFiles = doc.querySelector('[data-dw-current-files]');
+      this.deskCarousel = doc.querySelector('[data-dw-desk-carousel]');
+      this.deskCarouselTitle = doc.querySelector('[data-desk-carousel-title]');
+      this.deskCarouselCount = doc.querySelector('[data-desk-carousel-count]');
+      this.deskPrev = doc.querySelector('[data-desk-prev]');
+      this.deskNext = doc.querySelector('[data-desk-next]');
       this.mediaStage = doc.querySelector('[data-dw-media-stage]');
       this.mediaContent = doc.querySelector('[data-dw-media-content]');
       this.mediaTitle = doc.querySelector('[data-dw-media-title]');
@@ -366,6 +371,13 @@
       this.hud.open?.addEventListener('click', () => this.openSelected());
       this.hud.desk?.addEventListener('click', () => this.bringToDesk());
       this.hud.play?.addEventListener('click', () => this.playSelected());
+      this.deskPrev?.addEventListener('click', () => this.scrollDeskCarousel(-1));
+      this.deskNext?.addEventListener('click', () => this.scrollDeskCarousel(1));
+      this.deskFiles?.addEventListener('wheel', (event) => {
+        if (Math.abs(event.deltaY) <= Math.abs(event.deltaX)) return;
+        event.preventDefault();
+        this.deskFiles.scrollLeft += event.deltaY;
+      }, {passive:false});
       this.document.querySelector('[data-dw-media-close]')?.addEventListener('click', () => this.closeMedia());
       this.document.querySelector('[data-spatial-front]')?.addEventListener('click', (event) => {
         event.stopPropagation();
@@ -451,9 +463,6 @@
         const item = event.target.closest('[data-dw-item]');
         if (!item) return;
         this.selectElement(item);
-        if (item.dataset.itemKind === 'image' && item.dataset.itemLocked !== '1') {
-          this.openSelected();
-        }
       });
       this.deskFiles?.addEventListener('dblclick', (event) => {
         const item = event.target.closest('[data-dw-item]');
@@ -680,6 +689,9 @@
         size:d.itemSize || '—',
         date:d.itemDate || '—',
         format:d.itemFormat || (d.itemType === 'folder' ? 'CARPETA' : '—'),
+        key:d.itemKey || '',
+        mime:d.itemMime || '',
+        route:d.itemRoute || '',
         openHref:d.openHref || '',
         downloadHref:d.downloadHref || '',
         previewHref:d.previewHref || '',
@@ -763,7 +775,6 @@
         else this.renderShelfPreview(shelf, state);
         if (this.selected?.element === shelf) {
           this.updateHud(this.selected, state);
-          this.renderDeskFileStrip(Array.isArray(state.files) ? state.files : []);
         }
       } catch (_) {
         if (controller.signal.aborted) return;
@@ -825,6 +836,9 @@
       button.dataset.itemSize = item.size || '—';
       button.dataset.itemDate = item.date || '—';
       button.dataset.itemFormat = item.extension || (folder ? 'CARPETA' : '—');
+      button.dataset.itemKey = item.media_key || '';
+      button.dataset.itemMime = item.mime || '';
+      button.dataset.itemRoute = item.media_route || '';
       button.dataset.openHref = item.open_href || '';
       button.dataset.downloadHref = item.download_href || '';
       button.dataset.previewHref = item.preview_href || '';
@@ -847,18 +861,23 @@
       return button;
     }
 
-    renderDeskFileStrip(files) {
+    renderDeskFileStrip(files, folder = null) {
       if (!this.deskFiles) return;
       this.deskFiles.replaceChildren();
-      const visible = Array.isArray(files) ? files.slice(0, 24) : [];
+      const visible = Array.isArray(files) ? files.slice(0, 32) : [];
+      if (this.deskCarouselTitle) this.deskCarouselTitle.textContent = folder?.name || 'Archivos en el escritorio';
+      if (this.deskCarouselCount) this.deskCarouselCount.textContent = `${visible.length} archivo${visible.length === 1 ? '' : 's'}`;
       if (!visible.length) {
         const empty = this.document.createElement('span');
         empty.className = 'dw-desk-empty';
         empty.textContent = 'Sin archivos directos en este estante.';
         this.deskFiles.append(empty);
-        return;
+      } else {
+        visible.forEach((item) => this.deskFiles.append(this.deskFileNode(item)));
       }
-      visible.forEach((item) => this.deskFiles.append(this.deskFileNode(item)));
+      this.deskFiles.scrollLeft = 0;
+      if (this.deskCarousel) this.deskCarousel.hidden = false;
+      this.document.body.classList.add('has-desk-carousel');
     }
 
     deskFileNode(item) {
@@ -873,6 +892,9 @@
       button.dataset.itemSize = item.size || '—';
       button.dataset.itemDate = item.date || '—';
       button.dataset.itemFormat = item.extension || 'ARCHIVO';
+      button.dataset.itemKey = item.media_key || '';
+      button.dataset.itemMime = item.mime || '';
+      button.dataset.itemRoute = item.media_route || '';
       button.dataset.openHref = item.open_href || '';
       button.dataset.downloadHref = item.download_href || '';
       button.dataset.itemThumb = item.thumbnail_href || '';
@@ -914,9 +936,56 @@
       return node;
     }
 
-    bringToDesk() {
-      if (this.useThree && this.selected && this.deskFocus) this.deskFocus.hidden = false;
-      if (this.selected) this.renderDeskPreview(this.selected, true);
+    async bringToDesk() {
+      const item = this.selected;
+      if (!item) return;
+
+      if (this.useThree && this.deskFocus) this.deskFocus.hidden = false;
+      this.renderDeskPreview(item, true);
+
+      if (item.type === 'folder') {
+        const state = await this.folderStateForDesk(item);
+        if (!state) return;
+        this.renderDeskFileStrip(Array.isArray(state.files) ? state.files : [], item);
+        return;
+      }
+
+      if (item.locked || !item.openHref) return;
+      if (['audio','video'].includes(item.kind)) {
+        this.playCloudMedia(item);
+        return;
+      }
+      this.showFileInDome(item);
+    }
+
+    async folderStateForDesk(item) {
+      const href = String(item?.previewHref || '');
+      if (!href) return null;
+      const cached = this.previewCache.get(href);
+      if (cached) return cached;
+      try {
+        const response = await fetch(href,{credentials:'same-origin',cache:'no-store',headers:{Accept:'application/json'}});
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const payload = await response.json();
+        if (!payload?.ok || !payload?.state) throw new Error('Respuesta inválida');
+        this.previewCache.set(href,payload.state);
+        while (this.previewCache.size > 3) this.previewCache.delete(this.previewCache.keys().next().value);
+        return payload.state;
+      } catch (_) {
+        if (this.deskCarouselTitle) this.deskCarouselTitle.textContent = 'No se pudo cargar el escritorio';
+        return null;
+      }
+    }
+
+    hideDeskCarousel() {
+      if (this.deskCarousel) this.deskCarousel.hidden = true;
+      this.document.body.classList.remove('has-desk-carousel');
+    }
+
+    scrollDeskCarousel(direction) {
+      if (!this.deskFiles) return;
+      const amount = Math.max(180, Math.floor(this.deskFiles.clientWidth * .72));
+      this.deskFiles.scrollBy({left:direction * amount,behavior:'smooth'});
     }
 
     renderDeskPreview(item, animate = false) {
@@ -1130,13 +1199,40 @@
         this.window.location.href = item.openHref;
         return;
       }
+      if (['audio','video'].includes(item.kind)) {
+        this.playCloudMedia(item);
+        return;
+      }
       this.showFileInDome(item);
     }
 
     playSelected() {
       const item = this.selected;
       if (!item || item.locked || !item.openHref) return;
+      if (['audio','video'].includes(item.kind)) {
+        this.playCloudMedia(item);
+        return;
+      }
       this.showFileInDome(item);
+    }
+
+    playCloudMedia(item) {
+      const player = this.window.ArcadeCloudMediaCloud;
+      if (!player?.open) {
+        this.showFileInDome(item);
+        return;
+      }
+      const mime = item.mime || (item.kind === 'video' ? 'video/mp4' : 'audio/mpeg');
+      player.open({
+        key:item.key || '',
+        name:item.name || 'Multimedia',
+        mime,
+        openUrl:item.openHref || '',
+        route:item.route || '',
+      },{
+        type:item.kind === 'video' ? 'video' : 'audio',
+        route:item.route || '',
+      });
     }
 
     showFileInDome(item) {

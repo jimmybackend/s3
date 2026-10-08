@@ -383,8 +383,14 @@
       this.hud.open?.addEventListener('click', () => this.openSelected());
       this.hud.desk?.addEventListener('click', () => this.bringToDesk());
       this.hud.play?.addEventListener('click', () => this.playSelected());
-      this.deskPrev?.addEventListener('click', () => this.scrollDeskCarousel(-1));
-      this.deskNext?.addEventListener('click', () => this.scrollDeskCarousel(1));
+      this.deskCarousel?.addEventListener('click', (event) => {
+        const previous = event.target.closest('[data-desk-prev]');
+        const next = event.target.closest('[data-desk-next]');
+        if (!previous && !next) return;
+        event.preventDefault();
+        event.stopPropagation();
+        this.scrollDeskCarousel(next ? 1 : -1);
+      });
       this.deskFiles?.addEventListener('wheel', (event) => {
         if (Math.abs(event.deltaY) <= Math.abs(event.deltaX)) return;
         event.preventDefault();

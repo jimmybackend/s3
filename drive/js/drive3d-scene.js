@@ -421,6 +421,9 @@ class Drive3DScene {
 
         // Spatial media is anchored in world coordinates near the glass, not to the screen.
         // Multiple anchors allow image windows to behave like persistent pictures in the room.
+        // The desk carousel is projected from the real Three.js table so its DOM controls
+        // stay visually on the physical desk instead of floating at a fixed screen edge.
+        const deskAnchor = new T.Vector3(table.position.x, 1.08, table.position.z);
         const spatialAnchors = new Map();
         const spatialCenter = new T.Vector3(0, 2.7, 0);
         const spatialSphere = new T.Sphere(spatialCenter, Math.max(4, R - 1.05));
@@ -475,6 +478,21 @@ class Drive3DScene {
                     world:entry.point.toArray()
                 });
             });
+        }
+
+        function deskProjectionState() {
+            camera.updateMatrixWorld(true);
+            const projected = deskAnchor.clone().project(camera);
+            return {
+                visible:projected.z > -1 && projected.z < 1 && Math.abs(projected.x) < 1.18 && Math.abs(projected.y) < 1.22,
+                x:(projected.x * .5 + .5) * viewport.clientWidth,
+                y:(-.5 * projected.y + .5) * viewport.clientHeight,
+                world:deskAnchor.toArray()
+            };
+        }
+
+        function projectDesk() {
+            options.onDeskProjection?.(deskProjectionState());
         }
 
         this.placeSpatialMedia = (id = 'singleton', world = null) => placeSpatialInView(id, world);
@@ -539,7 +557,7 @@ class Drive3DScene {
                     open:book.userData?.driveItem?.open_href || ''
                 }))
             })),
-            lamp:lamp.position.toArray(),table:table.position.toArray(),domeRadius:R,panorama:panorama.position.toArray(),environmentReady,
+            lamp:lamp.position.toArray(),table:table.position.toArray(),deskScreen:deskProjectionState(),domeRadius:R,panorama:panorama.position.toArray(),environmentReady,
             spatial:this.spatialMediaState('singleton'),
             spatialImages:Array.from(spatialAnchors.entries()).filter(([id]) => id !== 'singleton').map(([id,entry]) => ({id,world:entry.point.toArray(),baseDistance:entry.baseDistance})),
             calls:renderer.info.render.calls, geometries:renderer.info.memory.geometries, textures:renderer.info.memory.textures});
@@ -568,6 +586,7 @@ class Drive3DScene {
                 renderer.render(scene, camera);
                 minimap();
                 projectSpatial();
+                projectDesk();
                 options.onCamera?.(-yaw * 180 / Math.PI, -pitch * 180 / Math.PI);
                 lastView = view; needsRender = false;
             }

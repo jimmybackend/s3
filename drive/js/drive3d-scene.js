@@ -360,6 +360,13 @@ class Drive3DScene {
 
             const backing = new T.Mesh(new T.BoxGeometry(.86,.72,.05), material(0x06131d,{metalness:.12,roughness:.5}));
             backing.position.z = 0; card.add(backing);
+            // Two thin hangers make the file read as a suspended thumbnail, not as a tiny cabinet.
+            for (const x of [-.27,.27]) {
+                const cord = new T.Mesh(cube, trim);
+                cord.scale.set(.010,.22,.010);
+                cord.position.set(x,.47,0);
+                card.add(cord);
+            }
             // Slightly larger invisible hit surface makes finger selection reliable
             // without visually enlarging the thumbnail.
             const hitSurface = new T.Mesh(
@@ -368,7 +375,7 @@ class Drive3DScene {
             );
             hitSurface.position.z = .055; card.add(hitSurface);
 
-            const mediaMaterial = new T.MeshBasicMaterial({map:placeholderTexture(item)});
+            const mediaMaterial = new T.MeshBasicMaterial({map:placeholderTexture(item),side:T.DoubleSide});
             const media = new T.Mesh(new T.PlaneGeometry(.78,.52), mediaMaterial);
             media.position.set(0,.08,.031); card.add(media);
 
@@ -384,7 +391,7 @@ class Drive3DScene {
                 }, undefined, () => {});
             }
 
-            const labelMat = new T.MeshBasicMaterial({map:cardLabelTexture(item)});
+            const labelMat = new T.MeshBasicMaterial({map:cardLabelTexture(item),side:T.DoubleSide});
             const label = new T.Mesh(new T.PlaneGeometry(.78,.15), labelMat);
             label.position.set(0,-.255,.032); card.add(label);
 
@@ -406,23 +413,30 @@ class Drive3DScene {
             const rows = 4;
             const panelCapacity = columns * rows;
             const panelCount = Math.ceil(items.length / panelCapacity);
-            const panelStep = .58;
+            const panelStep = innerWidth < 700 ? .42 : .36;
             const halfShelfSpan = titles.length > 0 ? Math.max(0,(titles.length - 1) * step / 2) : 0;
-            const fileRadius = Math.max(5.8, shelfRadius - .85);
+
+            // Files float well inside the cabinet radius so shelves can never hide them.
+            // With no subfolders they are centered in front of the user. With subfolders,
+            // the first panels sit visibly beside the middle cabinets and later panels fan outward.
+            const fileRadius = titles.length ? Math.min(5.25, shelfRadius - 2.75) : 4.65;
+            const visibleSideAngle = titles.length
+                ? Math.min(.48, Math.max(.30, halfShelfSpan * .48))
+                : 0;
 
             for (let p = 0; p < panelCount; p++) {
                 let angle;
                 if (!titles.length) {
                     angle = (p - (panelCount - 1) / 2) * panelStep;
                 } else {
-                    const side = p % 2 === 0 ? 1 : -1;
+                    const side = p % 2 === 0 ? -1 : 1;
                     const rank = Math.floor(p / 2);
-                    angle = side * (halfShelfSpan + .54 + rank * panelStep);
+                    angle = side * (visibleSideAngle + rank * panelStep);
                 }
 
                 const panel = new T.Group();
                 panel.name = `file-panel-${p}`;
-                panel.position.set(fileRadius * Math.sin(angle), 0, -fileRadius * Math.cos(angle));
+                panel.position.set(fileRadius * Math.sin(angle), .18, -fileRadius * Math.cos(angle));
                 panel.rotation.y = -angle;
                 fileGallery.add(panel);
                 filePanels.push(panel);
@@ -434,7 +448,7 @@ class Drive3DScene {
                     const row = Math.floor(local / columns);
                     const col = local % columns;
                     const card = makeFileCard(items[index]);
-                    card.position.set((col - (columns - 1) / 2) * .96, 3.45 - row * .83, .12);
+                    card.position.set((col - (columns - 1) / 2) * .96, 3.28 - row * .83, .12);
                     panel.add(card);
                 }
             }
@@ -776,6 +790,10 @@ class Drive3DScene {
                 iconCategory:card.userData?.driveItem?.icon_category || 'generic',
                 point:(()=>{const p=card.localToWorld(new T.Vector3(0,0,.05)).project(camera);return [p.x,p.y,p.z];})()
             }))),
+            visibleFileCards:fileGallery.children.flatMap(panel=>panel.children).filter(card=>{
+                const p=card.localToWorld(new T.Vector3(0,0,.05)).project(camera);
+                return p.z>-1 && p.z<1 && Math.abs(p.x)<.92 && Math.abs(p.y)<.92;
+            }).length,
             domeRadius:R,panorama:panorama.position.toArray(),environmentReady,
             spatial:this.spatialMediaState('singleton'),
             spatialImages:Array.from(spatialAnchors.entries()).filter(([id]) => id !== 'singleton').map(([id,entry]) => ({id,world:entry.point.toArray(),baseDistance:entry.baseDistance})),

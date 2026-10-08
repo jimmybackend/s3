@@ -4155,3 +4155,29 @@ body.is-camera-near.dw-real .dw-hud{
     bottom:3px;
   }
 }
+
+
+/* Full current-folder desk carousel: every file remains mounted and scrollable. */
+.dw-desk-carousel .dw-desk-book{
+  flex:0 0 70px!important;
+  width:70px!important;
+  min-width:70px!important;
+  max-width:70px!important;
+  scroll-snap-align:center;
+}
+@media(max-width:900px){
+  .dw-desk-carousel .dw-desk-book{
+    flex-basis:62px!important;
+    width:62px!important;
+    min-width:62px!important;
+    max-width:62px!important;
+  }
+}
+@media(max-width:620px){
+  .dw-desk-carousel .dw-desk-book{
+    flex-basis:54px!important;
+    width:54px!important;
+    min-width:54px!important;
+    max-width:54px!important;
+  }
+}

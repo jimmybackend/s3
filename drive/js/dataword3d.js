@@ -70,6 +70,7 @@
       this.deskNext = doc.querySelector('[data-desk-next]');
       this.deskProjection = null;
       this.deskCurrentFolderOpen = false;
+      this.deskCarouselPage = 0;
       this.mediaStage = doc.querySelector('[data-dw-media-stage]');
       this.mediaContent = doc.querySelector('[data-dw-media-content]');
       this.mediaTitle = doc.querySelector('[data-dw-media-title]');
@@ -387,9 +388,11 @@
       this.deskFiles?.addEventListener('wheel', (event) => {
         if (Math.abs(event.deltaY) <= Math.abs(event.deltaX)) return;
         event.preventDefault();
-        this.deskFiles.scrollLeft += event.deltaY;
+        this.scrollDeskCarousel(event.deltaY > 0 ? 1 : -1);
       }, {passive:false});
-      this.deskFiles?.addEventListener('scroll', () => this.updateDeskCarouselCounter(), {passive:true});
+      this.window.addEventListener('resize', () => {
+        if (!this.deskCarousel?.hidden) this.renderDeskCarouselPage();
+      });
       this.document.querySelector('[data-dw-media-close]')?.addEventListener('click', () => this.closeMedia());
       this.document.querySelector('[data-spatial-front]')?.addEventListener('click', (event) => {
         event.stopPropagation();
@@ -893,6 +896,7 @@
       } else {
         visible.forEach((item) => this.deskFiles.append(this.deskFileNode(item)));
       }
+      this.deskCarouselPage = 0;
       this.deskFiles.scrollLeft = 0;
       if (this.deskCarousel) {
         this.deskCarousel.hidden = false;
@@ -900,7 +904,7 @@
       }
       this.document.body.classList.add('has-desk-carousel');
       this.applyDeskProjection();
-      this.window.requestAnimationFrame(() => this.updateDeskCarouselCounter());
+      this.window.requestAnimationFrame(() => this.renderDeskCarouselPage());
     }
 
     deskFileNode(item) {
@@ -1057,44 +1061,47 @@
       this.deskCarousel.style.visibility = 'visible';
     }
 
-    updateDeskCarouselCounter() {
-      if (!this.deskFiles || !this.deskCarouselCount) return;
+    deskCarouselPageSize() {
+      const width = this.world?.clientWidth || this.window.innerWidth;
+      if (width <= 480) return 4;
+      if (width <= 700) return 5;
+      return 6;
+    }
+
+    renderDeskCarouselPage() {
+      if (!this.deskFiles) return;
       const items = Array.from(this.deskFiles.querySelectorAll('[data-dw-item]'));
       const total = items.length;
       if (!total) {
-        this.deskCarouselCount.textContent = '0 archivos';
+        if (this.deskCarouselCount) this.deskCarouselCount.textContent = '0 archivos';
         return;
       }
-      const viewport = this.deskFiles.getBoundingClientRect();
-      const visible = items
-        .map((item,index) => ({index,rect:item.getBoundingClientRect()}))
-        .filter(({rect}) => rect.right > viewport.left + 2 && rect.left < viewport.right - 2)
-        .map(({index}) => index);
-      const first = visible.length ? visible[0] : 0;
-      const last = visible.length ? visible[visible.length - 1] : Math.min(total - 1, first);
-      this.deskCarouselCount.textContent = `${first + 1}–${last + 1} de ${total}`;
-      if (this.deskPrev) this.deskPrev.title = first <= 0 ? 'Ir al final del carrusel' : 'Archivos anteriores';
-      if (this.deskNext) this.deskNext.title = last >= total - 1 ? 'Volver al inicio del carrusel' : 'Archivos siguientes';
+
+      const pageSize = this.deskCarouselPageSize();
+      const pages = Math.max(1, Math.ceil(total / pageSize));
+      this.deskCarouselPage = ((Number(this.deskCarouselPage || 0) % pages) + pages) % pages;
+      const first = this.deskCarouselPage * pageSize;
+      const lastExclusive = Math.min(total, first + pageSize);
+
+      items.forEach((item,index) => {
+        item.hidden = index < first || index >= lastExclusive;
+      });
+      if (this.deskCarouselCount) this.deskCarouselCount.textContent = `${first + 1}–${lastExclusive} de ${total}`;
+      if (this.deskPrev) this.deskPrev.title = this.deskCarouselPage === 0 ? 'Ir al final del carrusel' : 'Archivos anteriores';
+      if (this.deskNext) this.deskNext.title = this.deskCarouselPage === pages - 1 ? 'Volver al inicio del carrusel' : 'Archivos siguientes';
+    }
+
+    updateDeskCarouselCounter() {
+      this.renderDeskCarouselPage();
     }
 
     scrollDeskCarousel(direction) {
       if (!this.deskFiles) return;
-      const max = Math.max(0, this.deskFiles.scrollWidth - this.deskFiles.clientWidth);
-      if (max <= 1) {
-        this.updateDeskCarouselCounter();
-        return;
-      }
-      const atStart = this.deskFiles.scrollLeft <= 2;
-      const atEnd = this.deskFiles.scrollLeft >= max - 2;
-      const amount = Math.max(150, Math.floor(this.deskFiles.clientWidth * .88));
-      let target;
-      if (direction > 0 && atEnd) target = 0;
-      else if (direction < 0 && atStart) target = max;
-      else target = this.clamp(this.deskFiles.scrollLeft + direction * amount, 0, max);
-      // Assign scrollLeft directly: this remains reliable on mobile WebView/Chrome
-      // even when the carousel is transformed over the Three.js desk.
-      this.deskFiles.scrollLeft = target;
-      this.updateDeskCarouselCounter();
+      const total = this.deskFiles.querySelectorAll('[data-dw-item]').length;
+      if (!total) return;
+      const pages = Math.max(1, Math.ceil(total / this.deskCarouselPageSize()));
+      this.deskCarouselPage = (this.deskCarouselPage + (direction >= 0 ? 1 : -1) + pages) % pages;
+      this.renderDeskCarouselPage();
     }
 
     renderDeskPreview(item, animate = false) {

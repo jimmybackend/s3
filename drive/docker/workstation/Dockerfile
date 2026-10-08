@@ -10,6 +10,8 @@ RUN apt-get update \
       ca-certificates curl dbus-x11 fonts-dejavu-core fonts-liberation fonts-noto-core \
       git gnupg libreoffice libreoffice-gtk3 novnc python3-websockify tzdata \
       tigervnc-standalone-server tigervnc-tools unzip wget xfce4 xfce4-terminal xterm xdg-utils \
+      audacity dia dia-shapes ffmpeg file-roller flameshot handbrake handbrake-cli \
+      kdenlive kolourpaint mediainfo p7zip-full socat soundconverter unrar x11-utils xclip zip \
       pipewire pipewire-pulse wireplumber pipewire-audio-client-libraries \
       pipewire-module-xrdp pavucontrol pulseaudio-utils alsa-utils xrdp xorgxrdp \
  && install -d -m 0755 /etc/apt/keyrings \

@@ -130,6 +130,12 @@ SET @CID := (
     LIMIT 1
 );
 
+UPDATE guacamole_connection
+SET protocol='rdp',
+    max_connections=1,
+    max_connections_per_user=1
+WHERE connection_id=@CID;
+
 DELETE FROM guacamole_connection_parameter
 WHERE connection_id=@CID
 AND parameter_name IN (

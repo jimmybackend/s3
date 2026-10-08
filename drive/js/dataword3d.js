@@ -130,12 +130,17 @@
     init() {
       if (this.useThree) {
         this.bindControls();
-        import('./drive3d-production.js').then(module => module.Drive3DProduction.start(this)).catch(error => {
+        import('./drive3d-production.js').then(module => {
+          module.Drive3DProduction.start(this);
+          this.openCurrentFolderDeskIfRequested();
+        }).catch(error => {
           this.activateCompatible3DFallback(error);
+          this.openCurrentFolderDeskIfRequested();
         });
         return this;
       }
       this.startCompatible3D(false);
+      this.openCurrentFolderDeskIfRequested();
       return this;
     }
 
@@ -383,6 +388,7 @@
         event.preventDefault();
         this.deskFiles.scrollLeft += event.deltaY;
       }, {passive:false});
+      this.deskFiles?.addEventListener('scroll', () => this.updateDeskCarouselCounter(), {passive:true});
       this.document.querySelector('[data-dw-media-close]')?.addEventListener('click', () => this.closeMedia());
       this.document.querySelector('[data-spatial-front]')?.addEventListener('click', (event) => {
         event.stopPropagation();
@@ -742,6 +748,13 @@
         ? '<i class="fas fa-lock"></i> Protegido'
         : `<i class="fas ${isFolder ? 'fa-folder-open' : 'fa-arrow-up-right-from-square'}"></i> Abrir`;
 
+      if (this.hud.desk) {
+        this.hud.desk.disabled = Boolean(item.locked || (isFolder && !item.openHref));
+        this.hud.desk.innerHTML = isFolder
+          ? '<i class="fas fa-right-to-bracket"></i> Entrar y traer al escritorio'
+          : '<i class="fas fa-hand"></i> Traer al escritorio';
+      }
+
       const playable = !item.locked && ['audio','video'].includes(item.kind) && item.openHref;
       this.hud.play.hidden = !playable;
       if (item.downloadHref && !item.locked) {
@@ -869,13 +882,12 @@
     renderDeskFileStrip(files, folder = null) {
       if (!this.deskFiles) return;
       this.deskFiles.replaceChildren();
-      const visible = Array.isArray(files) ? files.slice(0, 32) : [];
+      const visible = Array.isArray(files) ? files : [];
       if (this.deskCarouselTitle) this.deskCarouselTitle.textContent = folder?.name || 'Archivos en el escritorio';
-      if (this.deskCarouselCount) this.deskCarouselCount.textContent = `${visible.length} archivo${visible.length === 1 ? '' : 's'}`;
       if (!visible.length) {
         const empty = this.document.createElement('span');
         empty.className = 'dw-desk-empty';
-        empty.textContent = 'Sin archivos directos en este estante.';
+        empty.textContent = 'Sin archivos directos en esta carpeta.';
         this.deskFiles.append(empty);
       } else {
         visible.forEach((item) => this.deskFiles.append(this.deskFileNode(item)));
@@ -887,6 +899,7 @@
       }
       this.document.body.classList.add('has-desk-carousel');
       this.applyDeskProjection();
+      this.window.requestAnimationFrame(() => this.updateDeskCarouselCounter());
     }
 
     deskFileNode(item) {
@@ -949,16 +962,16 @@
       const item = this.selected;
       if (!item) return;
 
-      if (this.useThree && this.deskFocus) this.deskFocus.hidden = false;
-      this.renderDeskPreview(item, true);
-
       if (item.type === 'folder') {
-        const state = await this.folderStateForDesk(item);
-        if (!state) return;
-        this.renderDeskFileStrip(Array.isArray(state.files) ? state.files : [], item);
+        if (item.locked || !item.openHref) return;
+        const url = new URL(item.openHref, this.window.location.href);
+        url.searchParams.set('desk','1');
+        this.window.location.href = url.href;
         return;
       }
 
+      if (this.useThree && this.deskFocus) this.deskFocus.hidden = false;
+      this.renderDeskPreview(item, true);
       if (item.locked || !item.openHref) return;
       if (['audio','video'].includes(item.kind)) {
         this.playCloudMedia(item);
@@ -967,19 +980,39 @@
       this.showFileInDome(item);
     }
 
-    async folderStateForDesk(item) {
-      const href = String(item?.previewHref || '');
-      if (!href) return null;
-      const cached = this.previewCache.get(href);
-      if (cached) return cached;
+    async openCurrentFolderDeskIfRequested() {
+      if (!this.config.deskOnLoad) return;
+      const state = await this.currentFolderStateForDesk();
+      if (!state) return;
+      const visiblePath = String(state.visible_path || this.config.visiblePath || 'Carpeta').replace(/\/$/,'');
+      const name = visiblePath.split('/').filter(Boolean).pop() || 'Carpeta actual';
+      this.renderDeskFileStrip(Array.isArray(state.files) ? state.files : [], {name});
+      if (this.deskFocus) this.deskFocus.hidden = true;
+    }
+
+    async currentFolderStateForDesk() {
+      const baseHref = String(this.config.deskApiHref || '');
+      if (!baseHref) return null;
+      const files = [];
+      let firstState = null;
+      let page = 1;
+      let pages = 1;
       try {
-        const response = await fetch(href,{credentials:'same-origin',cache:'no-store',headers:{Accept:'application/json'}});
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        const payload = await response.json();
-        if (!payload?.ok || !payload?.state) throw new Error('Respuesta inválida');
-        this.previewCache.set(href,payload.state);
-        while (this.previewCache.size > 3) this.previewCache.delete(this.previewCache.keys().next().value);
-        return payload.state;
+        do {
+          const url = new URL(baseHref, this.window.location.href);
+          url.searchParams.set('pagina', String(page));
+          const response = await fetch(url.href,{credentials:'same-origin',cache:'no-store',headers:{Accept:'application/json'}});
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          const payload = await response.json();
+          if (!payload?.ok || !payload?.state) throw new Error('Respuesta inválida');
+          const state = payload.state;
+          if (!firstState) firstState = state;
+          if (Array.isArray(state.files)) files.push(...state.files);
+          pages = Math.max(1, Number(state.file_pages || 1));
+          page += 1;
+        } while (page <= pages);
+
+        return {...(firstState || {}), files, file_count:files.length};
       } catch (_) {
         if (this.deskCarouselTitle) this.deskCarouselTitle.textContent = 'No se pudo cargar el escritorio';
         return null;
@@ -1022,10 +1055,42 @@
       this.deskCarousel.style.visibility = 'visible';
     }
 
+    updateDeskCarouselCounter() {
+      if (!this.deskFiles || !this.deskCarouselCount) return;
+      const items = Array.from(this.deskFiles.querySelectorAll('[data-dw-item]'));
+      const total = items.length;
+      if (!total) {
+        this.deskCarouselCount.textContent = '0 archivos';
+        return;
+      }
+      const viewport = this.deskFiles.getBoundingClientRect();
+      const visible = items
+        .map((item,index) => ({index,rect:item.getBoundingClientRect()}))
+        .filter(({rect}) => rect.right > viewport.left + 2 && rect.left < viewport.right - 2)
+        .map(({index}) => index);
+      const first = visible.length ? visible[0] : 0;
+      const last = visible.length ? visible[visible.length - 1] : Math.min(total - 1, first);
+      this.deskCarouselCount.textContent = `${first + 1}–${last + 1} de ${total}`;
+      if (this.deskPrev) this.deskPrev.title = first <= 0 ? 'Ir al final del carrusel' : 'Archivos anteriores';
+      if (this.deskNext) this.deskNext.title = last >= total - 1 ? 'Volver al inicio del carrusel' : 'Archivos siguientes';
+    }
+
     scrollDeskCarousel(direction) {
       if (!this.deskFiles) return;
-      const amount = Math.max(180, Math.floor(this.deskFiles.clientWidth * .72));
-      this.deskFiles.scrollBy({left:direction * amount,behavior:'smooth'});
+      const max = Math.max(0, this.deskFiles.scrollWidth - this.deskFiles.clientWidth);
+      if (max <= 1) {
+        this.updateDeskCarouselCounter();
+        return;
+      }
+      const atStart = this.deskFiles.scrollLeft <= 2;
+      const atEnd = this.deskFiles.scrollLeft >= max - 2;
+      const amount = Math.max(150, Math.floor(this.deskFiles.clientWidth * .88));
+      let target;
+      if (direction > 0 && atEnd) target = 0;
+      else if (direction < 0 && atStart) target = max;
+      else target = this.clamp(this.deskFiles.scrollLeft + direction * amount, 0, max);
+      this.deskFiles.scrollTo({left:target,behavior:'smooth'});
+      this.window.setTimeout(() => this.updateDeskCarouselCounter(), 320);
     }
 
     renderDeskPreview(item, animate = false) {

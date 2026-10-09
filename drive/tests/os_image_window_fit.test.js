@@ -14,7 +14,7 @@ for (const [imageWidth, imageHeight, viewportWidth, viewportHeight, chrome, orie
   const fit = ArcadeCloudImageWindowFit.calculate(imageWidth, imageHeight, viewportWidth, viewportHeight, chrome);
   assert.ok(fit, 'Geometry should exist');
   assert.ok(fit.width <= viewportWidth - 16, 'Window must fit the desktop width');
-  assert.ok(fit.height <= viewportHeight - 58, 'Window must fit above taskbar');
+  assert.ok(fit.height <= viewportHeight - 116, 'Window must fit between topbar and taskbar');
   const imageAspect = (fit.width - 2) / (fit.height - chrome - 2);
   const expectedAspect = imageWidth / imageHeight;
   assert.ok(Math.abs(imageAspect - expectedAspect) < .02,
@@ -64,7 +64,9 @@ win.innerWidth = 390;
 win.innerHeight = 844;
 win.dispatchEvent(new Event('resize'));
 assert.ok(Number.parseFloat(style.width) <= 374);
-assert.ok(Number.parseFloat(style.height) <= 786);
+assert.ok(Number.parseFloat(style.height) <= 728);
+assert.ok(Number.parseFloat(style.top) + Number.parseFloat(style.height) + 54 <= 844 - 46 - 8,
+  'The fitted image must end above the real taskbar');
 assert.ok(Number.parseFloat(style.left) >= 8);
 
 record.maximized = true;

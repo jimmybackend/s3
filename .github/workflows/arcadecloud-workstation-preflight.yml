@@ -1,0 +1,98 @@
+name: ArcadeCloud Workstation preflight (read-only)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/arcadecloud-workstation-preflight.yml
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  audit:
+    if: github.repository == 'jimmybackend/s3' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.ARCADECLOUD_AWS_BRIDGE_ROLE_ARN }}
+          aws-region: ${{ vars.ARCADECLOUD_AWS_REGION }}
+          role-session-name: ArcadeCloudWorkstationAudit
+      - run: python3 -m pip install 'boto3>=1.35,<2'
+      - name: Inspect large EC2 without exposing credentials or raw logs
+        env:
+          LARGE_INSTANCE: ${{ vars.ARCADECLOUD_AWS_LARGE_ID }}
+          AWS_REGION: ${{ vars.ARCADECLOUD_AWS_REGION }}
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import os, re, time
+          import boto3
+          iid = os.environ["LARGE_INSTANCE"]
+          assert re.fullmatch(r"i-[0-9a-f]{8,17}", iid)
+          script = r'''#!/bin/bash
+          set -u
+          root=/var/www/arcadecloud-drive
+          flag() { printf '%s=%s\n' "$1" "$2"; }
+          if command -v docker >/dev/null 2>&1 && docker info >/dev/null 2>&1; then
+             flag DOCKER_READY yes
+          else
+             flag DOCKER_READY no
+          fi
+          if [ -d "$root/.git" ]; then
+             flag REPO_PRESENT yes
+             if git -c safe.directory="$root" -C "$root" branch --show-current 2>/dev/null | grep -qx main; then flag REPO_MAIN yes; else flag REPO_MAIN no; fi
+             if [ -z "$(git -c safe.directory="$root" -C "$root" status --porcelain -uno 2>/dev/null)" ]; then flag REPO_CLEAN yes; else flag REPO_CLEAN no; fi
+             if git -c safe.directory="$root" -C "$root" diff --quiet -- drive/docker/workstation drive/bin/install_guacamole_node.sh drive/bin/install_workstation_node.sh 2>/dev/null && git -c safe.directory="$root" -C "$root" diff --cached --quiet -- drive/docker/workstation drive/bin/install_guacamole_node.sh drive/bin/install_workstation_node.sh 2>/dev/null; then flag WORKSTATION_SOURCES_UNMODIFIED yes; else flag WORKSTATION_SOURCES_UNMODIFIED no; fi
+          else
+             flag REPO_PRESENT no
+          fi
+          for name in arcadecloud-guacamole arcadecloud-guacd arcadecloud-guac-db arcadecloud-workstation; do
+             metric=$(printf '%s' "$name" | tr '[:lower:]-' '[:upper:]_')
+             if docker inspect "$name" >/dev/null 2>&1; then flag "CONTAINER_${metric}_EXISTS" yes; else flag "CONTAINER_${metric}_EXISTS" no; fi
+             if [ "$(docker inspect -f '{{.State.Running}}' "$name" 2>/dev/null)" = "true" ]; then flag "CONTAINER_${metric}_RUNNING" yes; else flag "CONTAINER_${metric}_RUNNING" no; fi
+          done
+          if docker image inspect arcadecloud/workstation:phase1 >/dev/null 2>&1; then flag WORKSTATION_IMAGE_PRESENT yes; else flag WORKSTATION_IMAGE_PRESENT no; fi
+          if [ "$(systemctl is-active arcadecloud-workstation.service 2>/dev/null)" = active ]; then flag WORKSTATION_ACTIVE yes; else flag WORKSTATION_ACTIVE no; fi
+          if [ "$(systemctl is-enabled arcadecloud-workstation.service 2>/dev/null)" = disabled ]; then flag WORKSTATION_BOOT_DISABLED yes; else flag WORKSTATION_BOOT_DISABLED no; fi
+          if docker port arcadecloud-guacamole 8080/tcp 2>/dev/null | grep -qx '127.0.0.1:8085'; then flag GUAC_PORT_PRIVATE yes; else flag GUAC_PORT_PRIVATE no; fi
+          if [ "$(docker inspect -f '{{.State.Running}}' arcadecloud-workstation 2>/dev/null)" = true ]; then
+            for tool in atril rar zip unzip unrar file-roller; do
+              metric=$(printf '%s' "$tool" | tr '[:lower:]-' '[:upper:]_')
+              if docker exec arcadecloud-workstation sh -c "command -v $tool" >/dev/null 2>&1; then flag "LIVE_TOOL_${metric}" yes; else flag "LIVE_TOOL_${metric}" no; fi
+            done
+          fi
+          flag AUDIT_FINISHED yes
+          '''
+          ssm=boto3.client("ssm", region_name=os.environ["AWS_REGION"])
+          r=ssm.send_command(InstanceIds=[iid],DocumentName="AWS-RunShellScript",
+              Parameters={"commands":[script]},Comment="ArcadeCloud workstation safe read-only audit",
+              TimeoutSeconds=120)
+          cmd=r["Command"]["CommandId"]
+          for _ in range(40):
+              try:
+                  x=ssm.get_command_invocation(CommandId=cmd,InstanceId=iid)
+              except ssm.exceptions.InvocationDoesNotExist:
+                  time.sleep(2)
+                  continue
+              status=x["Status"]
+              if status in ("Success","Failed","Cancelled","TimedOut"):
+                  # Public GitHub logs: ONLY fixed boolean health keys.
+                  values = {}
+                  for line in x.get("StandardOutputContent","").splitlines():
+                      match=re.fullmatch(r"([A-Z][A-Z0-9_]+)=(yes|no)",line)
+                      if match: values[match.group(1)] = match.group(2)
+                  for key,value in sorted(values.items()):
+                      print(f"ARCADECLOUD_PREFLIGHT_{key}={value}")
+                  print("ARCADECLOUD_PREFLIGHT_COMMAND_STATUS="+status)
+                  if status!="Success" or values.get("AUDIT_FINISHED")!="yes":
+                      raise SystemExit(1)
+                  break
+              time.sleep(2)
+          else:
+              raise SystemExit("Timed out waiting for preflight")
+          PY

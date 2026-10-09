@@ -1362,3 +1362,40 @@ body.arcade-os{
   color:var(--os-accent-2);
   filter:drop-shadow(0 0 4px rgba(38,198,255,.5));
 }
+
+
+/* Image viewers follow the actual image aspect ratio, not the default
+   document-window dimensions. Maximize remains an explicit user action. */
+.os-window.os-image-window:not(.is-maximized){
+  min-width:0;
+  min-height:0;
+  resize:none;
+}
+.os-image-window .os-window-titlebar,
+.os-image-window .os-statusbar{
+  flex-shrink:0;
+}
+.os-image-window .os-statusbar{
+  padding:0 4px;
+}
+.os-image-window .os-statusbar > span,
+.os-image-window .os-viewer-toolbar-bottom span{
+  display:none;
+}
+.os-image-window .os-viewer-image{
+  width:100%;
+  height:100%;
+  max-width:none;
+  max-height:none;
+  object-fit:contain;
+}
+@media(max-width:700px){
+  .os-window.os-image-window:not(.is-maximized){
+    width:var(--os-image-fit-width) !important;
+    height:var(--os-image-fit-height) !important;
+    left:var(--os-image-fit-left) !important;
+    top:var(--os-image-fit-top) !important;
+    max-width:calc(100vw - 16px);
+    max-height:calc(100dvh - 58px);
+  }
+}

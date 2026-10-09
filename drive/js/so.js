@@ -680,6 +680,11 @@ class ArcadeCloudOsShell {
 
     const win = this.createViewerWindow(name, ext, sourceUrl, useEditor);
     this.registerWindow(win);
+    const image = win.querySelector('.os-viewer-image');
+    if (image) {
+      const manager = this.window.ArcadeCloudWindowManager;
+      this.window.ArcadeCloudImageWindowFit?.bind(this.window, win, image, manager, manager?.record(win));
+    }
     this.hideContext();
   }
 

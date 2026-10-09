@@ -60,7 +60,7 @@ $publicUp = (string)file_get_contents($root . '/up.php');
 
 taskCenterUploadCheck(str_contains($controller, '$this->uploadTasks($userId)'), 'Centro de Tareas agrega la fuente persistente de subidas');
 taskCenterUploadCheck(str_contains($controller, "'upload-task:'"), 'Centro de Tareas controla limpieza de subidas persistentes');
-taskCenterUploadCheck(str_contains($uploadController, "$mode === 'task'") && str_contains($uploadController, 'handleTaskSignal'), 'API autenticada acepta heartbeats de progreso');
+taskCenterUploadCheck(str_contains($uploadController, "\$mode === 'task'") && str_contains($uploadController, 'handleTaskSignal'), 'API autenticada acepta heartbeats de progreso');
 taskCenterUploadCheck(str_contains($uploadJs, 'syncServerTask(task)') && str_contains($uploadJs, 'task_id: task.id'), 'subidas del navegador sincronizan su tarea al servidor');
 taskCenterUploadCheck(str_contains($tasksJs, 'const merged = new Map()') && str_contains($tasksJs, 'control_id: server.control_id'), 'cliente deduplica snapshot local y persistente sin perder controles');
 taskCenterUploadCheck(str_contains($adminUpload, "'progress'") && str_contains($adminUpload, 'taskStore->put'), 'UP.php persiste progreso para el usuario destino');

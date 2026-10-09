@@ -100,7 +100,7 @@
 
     normalizeSpatialImagePreferences(value) {
       if (!Array.isArray(value)) return [];
-      return value.slice(0,12).map((entry) => {
+      return value.map((entry) => {
         const world = Array.isArray(entry?.world) && entry.world.length === 3
           ? entry.world.map(Number)
           : null;
@@ -1538,11 +1538,6 @@
         saved.openHref = String(item.openHref || saved.openHref || '');
         this.mountSpatialImage(saved, true);
         this.bringSpatialPictureToFront(id);
-        return;
-      }
-
-      if (this.spatialPictureState.length >= 12) {
-        this.window.alert('Puedes dejar hasta 12 imágenes colocadas en la sala 3D.');
         return;
       }
 

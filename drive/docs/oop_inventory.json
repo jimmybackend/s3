@@ -1,9 +1,9 @@
 {
   "summary": {
-    "php_total": 561,
+    "php_total": 562,
     "php_class_modules": 318,
     "php_needs_migration": 0,
-    "php_tests": 78,
+    "php_tests": 79,
     "js_total": 85,
     "js_class_modules": 78,
     "js_needs_migration": 1,
@@ -11,7 +11,7 @@
     "js_compatibility_facades": 8,
     "ajax_clients": 54,
     "ajax_calls": 120,
-    "json_total": 4,
+    "json_total": 8,
     "json_invalid": 0
   },
   "php": [
@@ -8133,6 +8133,21 @@
       "issues": []
     },
     {
+      "path": "drive/tests/workstation_pdf_archive_contract_smoke.php",
+      "lines": 24,
+      "kind": "test script",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
       "path": "drive/tests/workstation_phase1_contract_smoke.php",
       "lines": 89,
       "kind": "test script",
@@ -10880,6 +10895,54 @@
       "keys": [
         "active",
         "rows"
+      ],
+      "error": null
+    },
+    {
+      "path": "tools/arcadecloud-aws-bridge/iam/operator-permissions.json",
+      "bytes": 1041,
+      "valid": true,
+      "root_type": "object",
+      "keys": [
+        "Statement",
+        "Version"
+      ],
+      "error": null
+    },
+    {
+      "path": "tools/arcadecloud-aws-bridge/iam/operator-trust.json",
+      "bytes": 510,
+      "valid": true,
+      "root_type": "object",
+      "keys": [
+        "Statement",
+        "Version"
+      ],
+      "error": null
+    },
+    {
+      "path": "tools/arcadecloud-aws-bridge/requests/auto.json",
+      "bytes": 163,
+      "valid": true,
+      "root_type": "object",
+      "keys": [
+        "alias",
+        "argument",
+        "confirm",
+        "operation",
+        "request_id"
+      ],
+      "error": null
+    },
+    {
+      "path": "tools/arcadecloud-aws-bridge/requests/current.json",
+      "bytes": 100,
+      "valid": true,
+      "root_type": "object",
+      "keys": [
+        "alias",
+        "report",
+        "request_id"
       ],
       "error": null
     }

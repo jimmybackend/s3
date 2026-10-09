@@ -4,17 +4,17 @@
 
 ## Resumen
 
-- PHP analizados: **561**
+- PHP analizados: **562**
 - PHP que ya contienen clases/interfaces: **318**
 - PHP marcados para migración/revisión: **0**
-- Tests PHP separados del objetivo OOP de runtime: **78**
+- Tests PHP separados del objetivo OOP de runtime: **79**
 - JavaScript analizados: **85**
 - JavaScript que ya contienen clases: **78**
 - JavaScript runtime marcados para migración/revisión: **1**
 - Tests JavaScript separados del objetivo OOP de runtime: **11**
 - JavaScript OOP con fachada `window` de compatibilidad: **8**
 - Clientes AJAX detectados: **54** módulos / **120** llamadas
-- JSON analizados: **4**; inválidos: **0**
+- JSON analizados: **8**; inválidos: **0**
 
 ## Criterio
 
@@ -560,6 +560,7 @@
 | `drive/tests/web_os_pending_fixes_smoke.php` | 59 | test script | 0 | — | — | — | — |
 | `drive/tests/web_os_remote_applications_smoke.php` | 49 | test script | 0 | — | — | — | — |
 | `drive/tests/web_os_theme_contract_smoke.php` | 33 | test script | 0 | — | — | — | — |
+| `drive/tests/workstation_pdf_archive_contract_smoke.php` | 24 | test script | 0 | — | — | — | — |
 | `drive/tests/workstation_phase1_contract_smoke.php` | 89 | test script | 0 | — | — | — | — |
 | `drive/three-lab/drive3d-lab.php` | 33 | view/entrypoint | 0 | — | — | — | — |
 | `drive/thumb.php` | 10 | thin endpoint | 0 | — | — | — | — |
@@ -750,6 +751,10 @@
 | `drive/config/activity-cost-pricing.json` | sí | object | `currency`, `notes`, `rates`, `region_reference`, `source_id`, `version` |
 | `drive/config/federation-seeds.json` | sí | object | `bootstrap_nodes`, `seeds`, `version` |
 | `drive/docs/runtime_endpoints.json` | sí | object | `active`, `rows` |
+| `tools/arcadecloud-aws-bridge/iam/operator-permissions.json` | sí | object | `Statement`, `Version` |
+| `tools/arcadecloud-aws-bridge/iam/operator-trust.json` | sí | object | `Statement`, `Version` |
+| `tools/arcadecloud-aws-bridge/requests/auto.json` | sí | object | `alias`, `argument`, `confirm`, `operation`, `request_id` |
+| `tools/arcadecloud-aws-bridge/requests/current.json` | sí | object | `alias`, `report`, `request_id` |
 
 ## Dictamen
 

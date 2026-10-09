@@ -553,6 +553,7 @@
 | `drive/tests/web_os_pending_fixes_smoke.php` | ninguna |
 | `drive/tests/web_os_remote_applications_smoke.php` | ninguna |
 | `drive/tests/web_os_theme_contract_smoke.php` | ninguna |
+| `drive/tests/workstation_pdf_archive_contract_smoke.php` | ninguna |
 | `drive/tests/workstation_phase1_contract_smoke.php` | ninguna |
 | `drive/three-lab/drive3d-lab.php` | ninguna |
 | `drive/token_audio.php` | `drive/src/Sharing/ShareLinkService.php`, `drive/js/media-processing.js` |

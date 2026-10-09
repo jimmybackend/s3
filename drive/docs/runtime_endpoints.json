@@ -4516,8 +4516,14 @@
       "references": []
     },
     {
+      "path": "drive/tests/workstation_pdf_archive_contract_smoke.php",
+      "size": 1329,
+      "active": false,
+      "references": []
+    },
+    {
       "path": "drive/tests/workstation_phase1_contract_smoke.php",
-      "size": 8247,
+      "size": 8245,
       "active": false,
       "references": []
     },

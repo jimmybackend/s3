@@ -40,7 +40,7 @@ Se confirmó:
 - Apache Guacamole 1.6.0 + guacd + MySQL 8.4 se ejecutan en contenedores separados sobre la red Docker `arcadecloud-office`.
 - XRDP usa `pipewire-module-xrdp` para salida de audio y micrófono. El perfil validado usa 16 bits de color y desactiva efectos visuales para reducir tráfico.
 - El host continúa siendo Amazon Linux 2023; Ubuntu 24.04 existe únicamente dentro de la imagen Docker Workstation.
-- El contenedor se validó con límite de 5 GiB RAM, 3 CPU y `--shm-size=512m`.
+- En la validación original el contenedor usaba 5 GiB RAM, 3 CPU y `--shm-size=512m`. En la optimización posterior de FastDrive (4 vCPU, ~7.6 GiB físicos) se elevó a 5.5 GiB RAM, 3.25 CPU y `--shm-size=1g`, reservando margen para Nginx, PHP, Guacamole y Media Worker.
 - El escritorio XFCE quedó accesible desde navegador y el worker multimedia permaneció activo.
 - La imagen Workstation incluye Google Chrome, Git y AWS CLI v2 para uso de desarrollo.
 - `/home/arcade` se monta desde `/var/lib/arcadecloud-office/home/arcade`, por lo que perfil de Chrome, configuración Git y `Projects/` sobreviven reconstrucciones del contenedor y reinicios de la EC2.

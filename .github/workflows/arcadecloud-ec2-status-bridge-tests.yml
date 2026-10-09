@@ -1,0 +1,29 @@
+name: ArcadeCloud AWS bridge contract tests
+
+on:
+  pull_request:
+    paths:
+      - tools/arcadecloud-aws-bridge/**
+      - .github/workflows/arcadecloud-ec2-status-bridge.yml
+      - .github/workflows/arcadecloud-ec2-status-bridge-tests.yml
+  push:
+    branches:
+      - feat/github-actions-ec2-diagnostics-bridge-20261008
+    paths:
+      - tools/arcadecloud-aws-bridge/**
+      - .github/workflows/arcadecloud-ec2-status-bridge.yml
+      - .github/workflows/arcadecloud-ec2-status-bridge-tests.yml
+
+permissions:
+  contents: read
+
+jobs:
+  offline-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - name: Python syntax
+        run: python3 -m compileall -q tools/arcadecloud-aws-bridge
+      - name: Test request validation and fake AWS data
+        run: python3 -m unittest discover -s tools/arcadecloud-aws-bridge/tests -v

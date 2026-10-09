@@ -48,12 +48,13 @@ const windowMock = {
   navigator: { clipboard: { async writeText(text) { writes = text; }, async readText() { return 'PEGADO'; } } }
 };
 const mobile = new ArcadeCloudMobileEditorSelection(windowMock, documentMock, editor);
+(async () => {
 mobile.init();
 mobile.mark('start');
 caret = { lineNumber: 1, column: 5 };
 mobile.mark('end');
 assert.equal(mobile.selectedText(), 'bcd');
-await (async () => { await mobile.copy(false); })();
+await mobile.copy(false);
 assert.equal(writes, 'bcd');
 await mobile.copy(true);
 assert.equal(content, 'aef');
@@ -93,8 +94,9 @@ assert.ok(service.includes('assertFolderExists($userId, $route)'));
 assert.ok(service.includes('assertNameAvailable($userId, $route, $filename)'));
 assert.ok(service.includes("SELECT id_ FROM FileS3 WHERE user_id_ = ? AND Ruta = ? AND Nombre = ? AND Found = 1"));
 assert.ok(service.includes("private const FORMATS"));
-assert.ok(creator.includes("'create_empty'") && creator.includes("'X-Drive-CSRF'"));
+assert.ok(creator.includes("create_empty: '1'") && creator.includes("'X-Drive-CSRF'"));
 assert.ok(desktopEditor.includes('data-mobile-edit="start"'));
 assert.ok(desktopEditor.includes('data-mobile-edit="end"'));
 assert.ok(desktopEditor.includes('editor-mobile-selection.js'));
 console.log('SO empty document and mobile Monaco editing regression OK');
+})().catch(error => { console.error(error); process.exitCode = 1; });

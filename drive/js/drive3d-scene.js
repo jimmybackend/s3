@@ -349,8 +349,10 @@ class Drive3DScene {
             ctx.fillStyle = style.color;
             ctx.beginPath(); ctx.moveTo(288,85); ctx.lineTo(288,119); ctx.lineTo(320,119); ctx.closePath(); ctx.fill();
             ctx.fillStyle = '#071722';
-            ctx.font = '900 46px sans-serif';
-            ctx.fillText(style.extension.slice(0,4),256,175,116);
+            ctx.font = '900 58px "Font Awesome 6 Free", "Font Awesome 5 Free", sans-serif';
+            ctx.fillText(style.glyph,256,155,106);
+            ctx.font = '900 32px sans-serif';
+            ctx.fillText(style.extension.slice(0,5),256,210,116);
             ctx.font = '800 30px sans-serif'; ctx.fillStyle='#aeeeff'; ctx.fillText(style.label,256,278,430);
             ctx.font = '700 24px sans-serif'; ctx.fillStyle='#dff8ff'; ctx.fillText(style.extension,256,324,260);
             const tex = new T.CanvasTexture(canvas); tex.colorSpace = T.SRGBColorSpace;
@@ -359,8 +361,10 @@ class Drive3DScene {
 
         function disposeFileGallery() {
             fileGallery.traverse(obj => {
-                if (obj.geometry) obj.geometry.dispose();
-                if (obj.material) {
+                // Cabinet decorations reuse the same cube/trim resources. A
+                // gallery refresh must never dispose those shared assets.
+                if (obj.geometry && obj.geometry !== cube) obj.geometry.dispose();
+                if (obj.material && !sharedMaterials.has(obj.material)) {
                     obj.material.map?.dispose?.();
                     obj.material.dispose?.();
                 }

@@ -2,6 +2,7 @@
 declare(strict_types=1);
 
 use ArcadeCloud\Drive\Application\FileListService;
+use ArcadeCloud\Drive\Application\Drive3dBackgroundFolderService;
 use ArcadeCloud\Drive\Security\OsPreferenceNodeResolver;
 use ArcadeCloud\Drive\Security\UserOsPreferencesRepository;
 use ArcadeCloud\Drive\View\FileViewHelper;
@@ -257,8 +258,13 @@ if ($apiMode === 'files' || $apiMode === 'desk') {
 
 $state = $buildState($currentRoute);
 
-$backgroundRoute = rtrim($userRoot, '/') . '/Imagenes/fondos3D/';
-$backgroundState = $buildState($backgroundRoute);
+$backgroundFolders = new Drive3dBackgroundFolderService(
+    $app->folderRepository(),
+    $app->folderMutationService(),
+    $app->userStoragePath()
+);
+$backgroundRoute = $backgroundFolders->existing($userId);
+$backgroundState = $backgroundRoute !== null ? $buildState($backgroundRoute) : ['files' => []];
 $backgrounds = array_values(array_filter(
     (array)($backgroundState['files'] ?? []),
     static fn(array $file): bool => ($file['kind'] ?? '') === 'image'

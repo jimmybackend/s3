@@ -76,9 +76,21 @@ class Drive3DScene {
         function cylinder(parent, rt, rb, h, y, mat) {
             const mesh = new T.Mesh(new T.CylinderGeometry(rt, rb, h, 48), mat); mesh.position.y = y; parent.add(mesh); return mesh;
         }
-        // Panorama is fixed to world coordinates and also supplies natural material reflections.
-        const panorama = new T.Mesh(new T.SphereGeometry(Math.max(65, R * 4), 64, 32), new T.MeshBasicMaterial({ color: 0x93b4c9, side: T.BackSide }));
-        panorama.name = 'fixed-360-panorama'; panorama.rotation.y = Math.PI; panorama.position.y = 3; panorama.scale.y = .55; scene.add(panorama);
+        // Project the 360º wallpaper directly BEHIND the physical dome ribs.
+        // A remote sphere (R*4) created a parallax gap: its texture seam
+        // drifted away from the wood as the player moved. Both surfaces now
+        // share the same center/radius, with the glass a hair behind the ribs.
+        const panoramaRadius = R + .085;
+        const panorama = new T.Mesh(
+            new T.SphereGeometry(panoramaRadius, 96, 48),
+            new T.MeshBasicMaterial({ color: 0x93b4c9, side: T.BackSide, depthWrite: false })
+        );
+        panorama.name = 'fixed-360-panorama';
+        // Three's sphere UV seam at phi=0 lies on -X; rotate it to +X,
+        // precisely where rib index 4/16 already frames the glass.
+        panorama.rotation.y = Math.PI;
+        panorama.renderOrder = -2;
+        scene.add(panorama);
         if (scene.environmentRotation) scene.environmentRotation.y = Math.PI;
         let environmentReady = false, needsRender = true, defaultPanoramaMap = null, customPanorama = false;
         new T.TextureLoader().load(new URL('../three-lab/assets/alpine-panorama.jpg', import.meta.url).href, map => {
@@ -116,8 +128,10 @@ class Drive3DScene {
             tube(Array.from({ length: 33 }, (_, k) => {
                 const p = k / 32 * Math.PI / 2;
                 return new T.Vector3(R * Math.sin(p) * Math.sin(a), R * Math.cos(p), R * Math.sin(p) * Math.cos(a));
-            }), .065);
+            }), i === 4 ? .115 : .065, i === 4 ? wood : trim);
         }
+        // The fourth wooden meridian masks the exact longitudinal joining
+        // line of the wrapped image for every viewing angle from the room.
         for (const elevation of [.47, .72, 1.05]) {
             tube(Array.from({ length: 97 }, (_, k) => {
                 const a = k / 96 * Math.PI * 2;
@@ -215,6 +229,40 @@ class Drive3DScene {
             const entries = Array.isArray(state.folders)
                 ? state.folders.slice(0, 18).map(item => ({item, folder:true}))
                 : [];
+            // The folder's own image previews hang just ABOVE its wooden
+            // crown, not across the books. Load only a few (LOD bounded by
+            // the existing visible-zones algorithm).
+            const previews = Array.isArray(state.files)
+                ? state.files.filter(item => item?.kind === 'image' && item?.thumbnail_href && !item?.locked).slice(0, 3)
+                : [];
+            previews.forEach((item, n) => {
+                const x = (n - (previews.length - 1) / 2) * .62;
+                const preview = new T.Group();
+                preview.name = 'shelf-overhead-picture';
+                preview.userData.driveItem = item;
+                preview.userData.driveFolder = false;
+                preview.position.set(x, 4.55, .38);
+                const frame = new T.Mesh(
+                    new T.BoxGeometry(.54,.43,.035),
+                    new T.MeshBasicMaterial({color:0x4e3422})
+                );
+                preview.add(frame);
+                const mat = new T.MeshBasicMaterial({color:0x285167, side:T.DoubleSide});
+                const picture = new T.Mesh(new T.PlaneGeometry(.48,.35), mat);
+                picture.position.z = .025;
+                preview.add(picture);
+                host.add(preview);
+                new T.TextureLoader().load(item.thumbnail_href, texture => {
+                    // Late responses from unloaded shelves must not resurrect
+                    // images or leak GPU textures after a zone switch.
+                    if (!host.parent || !preview.parent) { texture.dispose(); return; }
+                    texture.colorSpace = T.SRGBColorSpace;
+                    mat.map = texture;
+                    mat.color.set(0xffffff);
+                    mat.needsUpdate = true;
+                    needsRender = true;
+                }, undefined, () => {});
+            });
             entries.forEach(({item, folder}, n) => {
                 const row = Math.floor(n / 6);
                 const col = n % 6;
@@ -258,29 +306,30 @@ class Drive3DScene {
         scene.add(fileGallery);
         let filePanels = [];
         let selectedFileCard = null;
+        let galleryRevision = 0;
 
         // Same icon taxonomy used by bloque_archivos.php through FileIconResolver.
         const fileIconGlyphs = {
-            'fa-file-pdf':'\\uf1c1',
-            'fa-file-word':'\\uf1c2',
-            'fa-file-excel':'\\uf1c3',
-            'fa-file-powerpoint':'\\uf1c4',
-            'fa-file-image':'\\uf1c5',
-            'fa-file-archive':'\\uf1c6',
-            'fa-file-audio':'\\uf1c7',
-            'fa-file-video':'\\uf1c8',
-            'fa-file-code':'\\uf1c9',
-            'fa-file-lines':'\\uf15c',
-            'fa-database':'\\uf1c0',
-            'fa-book':'\\uf02d',
-            'fa-envelope':'\\uf0e0',
-            'fa-font':'\\uf031',
-            'fa-key':'\\uf084',
-            'fa-cube':'\\uf1b2',
-            'fa-cubes':'\\uf1b3',
-            'fa-pen-ruler':'\\uf5ae',
-            'fa-lock':'\\uf023',
-            'fa-file':'\\uf15b'
+            'fa-file-pdf':String.fromCodePoint(0xf1c1),
+            'fa-file-word':String.fromCodePoint(0xf1c2),
+            'fa-file-excel':String.fromCodePoint(0xf1c3),
+            'fa-file-powerpoint':String.fromCodePoint(0xf1c4),
+            'fa-file-image':String.fromCodePoint(0xf1c5),
+            'fa-file-archive':String.fromCodePoint(0xf1c6),
+            'fa-file-audio':String.fromCodePoint(0xf1c7),
+            'fa-file-video':String.fromCodePoint(0xf1c8),
+            'fa-file-code':String.fromCodePoint(0xf1c9),
+            'fa-file-lines':String.fromCodePoint(0xf15c),
+            'fa-database':String.fromCodePoint(0xf1c0),
+            'fa-book':String.fromCodePoint(0xf02d),
+            'fa-envelope':String.fromCodePoint(0xf0e0),
+            'fa-font':String.fromCodePoint(0xf031),
+            'fa-key':String.fromCodePoint(0xf084),
+            'fa-cube':String.fromCodePoint(0xf1b2),
+            'fa-cubes':String.fromCodePoint(0xf1b3),
+            'fa-pen-ruler':String.fromCodePoint(0xf5ae),
+            'fa-lock':String.fromCodePoint(0xf023),
+            'fa-file':String.fromCodePoint(0xf15b)
         };
         const fileCategoryColors = {
             pdf:'#a83f3f', word:'#356aaf', excel:'#2d7c55', powerpoint:'#b85c32',
@@ -290,9 +339,23 @@ class Drive3DScene {
             design:'#8a4f72', model:'#3d7181', locked:'#805049', generic:'#53667a'
         };
         const fileKindStyle = (item) => {
-            const extension = String(item?.extension || '').toUpperCase().slice(0,8);
-            const icon = String(item?.icon || 'fa-file');
-            const category = String(item?.icon_category || 'generic');
+            const extension = String(item?.extension || String(item?.name || '').split('.').pop()).toUpperCase().slice(0,8);
+            // The API's FileIconResolver is authoritative. Older payloads
+            // lacking its metadata still receive a type-specific icon.
+            const kinds = {
+                image:'fa-file-image', pdf:'fa-file-pdf', audio:'fa-file-audio',
+                video:'fa-file-video', text:'fa-file-lines', code:'fa-file-code'
+            };
+            const extensions = {
+                PDF:'fa-file-pdf', DOC:'fa-file-word', DOCX:'fa-file-word', XLS:'fa-file-excel', XLSX:'fa-file-excel',
+                PPT:'fa-file-powerpoint', PPTX:'fa-file-powerpoint', ZIP:'fa-file-archive', RAR:'fa-file-archive',
+                TXT:'fa-file-lines', MD:'fa-file-lines', JSON:'fa-file-code', HTML:'fa-file-code',
+                PHP:'fa-file-code', JS:'fa-file-code', SQL:'fa-database', MP3:'fa-file-audio',
+                MP4:'fa-file-video', JPG:'fa-file-image', JPEG:'fa-file-image', PNG:'fa-file-image',
+                WEBP:'fa-file-image', SVG:'fa-file-image'
+            };
+            const icon = String(item?.icon || extensions[extension] || kinds[item?.kind] || 'fa-file');
+            const category = String(item?.icon_category || item?.kind || 'generic');
             const label = String(item?.icon_label || extension || 'Archivo');
             return {
                 icon,
@@ -324,8 +387,20 @@ class Drive3DScene {
             ctx.fillStyle = style.color; ctx.fillRect(22,22,468,340);
             ctx.fillStyle = 'rgba(2,13,22,.58)'; ctx.fillRect(38,38,436,308);
             ctx.fillStyle = '#e9fbff'; ctx.textAlign='center'; ctx.textBaseline='middle';
-            ctx.font = '900 132px "Font Awesome 6 Free", "Font Awesome 5 Free", sans-serif';
-            ctx.fillText(style.glyph,256,170);
+            // A vector document symbol with a type badge works even before
+            // the external icon font has loaded (or if it is unavailable).
+            ctx.fillStyle = '#e9fbff';
+            ctx.beginPath();
+            ctx.moveTo(193,84); ctx.lineTo(287,84); ctx.lineTo(321,118);
+            ctx.lineTo(321,238); ctx.lineTo(193,238); ctx.closePath();
+            ctx.fill();
+            ctx.fillStyle = style.color;
+            ctx.beginPath(); ctx.moveTo(288,85); ctx.lineTo(288,119); ctx.lineTo(320,119); ctx.closePath(); ctx.fill();
+            ctx.fillStyle = '#071722';
+            ctx.font = '900 58px "Font Awesome 6 Free", "Font Awesome 5 Free", sans-serif';
+            ctx.fillText(style.glyph,256,155,106);
+            ctx.font = '900 32px sans-serif';
+            ctx.fillText(style.extension.slice(0,5),256,210,116);
             ctx.font = '800 30px sans-serif'; ctx.fillStyle='#aeeeff'; ctx.fillText(style.label,256,278,430);
             ctx.font = '700 24px sans-serif'; ctx.fillStyle='#dff8ff'; ctx.fillText(style.extension,256,324,260);
             const tex = new T.CanvasTexture(canvas); tex.colorSpace = T.SRGBColorSpace;
@@ -334,8 +409,10 @@ class Drive3DScene {
 
         function disposeFileGallery() {
             fileGallery.traverse(obj => {
-                if (obj.geometry) obj.geometry.dispose();
-                if (obj.material) {
+                // Cabinet decorations reuse the same cube/trim resources. A
+                // gallery refresh must never dispose those shared assets.
+                if (obj.geometry && obj.geometry !== cube) obj.geometry.dispose();
+                if (obj.material && !sharedMaterials.has(obj.material)) {
                     obj.material.map?.dispose?.();
                     obj.material.dispose?.();
                 }
@@ -352,7 +429,7 @@ class Drive3DScene {
             needsRender = true;
         }
 
-        function makeFileCard(item) {
+        function makeFileCard(item, revision) {
             const card = new T.Group();
             card.userData.driveItem = item;
             card.userData.driveFolder = false;
@@ -381,6 +458,7 @@ class Drive3DScene {
 
             if (item?.kind === 'image' && item?.thumbnail_href && !item?.locked) {
                 new T.TextureLoader().load(item.thumbnail_href, map => {
+                    if (revision !== galleryRevision) { map.dispose(); return; }
                     map.colorSpace = T.SRGBColorSpace;
                     const old = mediaMaterial.map;
                     mediaMaterial.map = map;
@@ -405,6 +483,7 @@ class Drive3DScene {
         }
 
         function rebuildFileGallery(files) {
+            const revision = ++galleryRevision;
             disposeFileGallery();
             const items = Array.isArray(files) ? files.filter(Boolean) : [];
             if (!items.length) { needsRender = true; return; }
@@ -419,8 +498,12 @@ class Drive3DScene {
             // Files float well inside the cabinet radius so shelves can never hide them.
             // With no subfolders they are centered in front of the user. With subfolders,
             // the first panels sit visibly beside the middle cabinets and later panels fan outward.
-            const fileRadius = titles.length ? Math.min(5.25, shelfRadius - 2.75) : 4.65;
-            const visibleSideAngle = titles.length
+            const hasCabinets = titles.length > 0;
+            // With cabinets, every card occupies free air ABOVE the 4.2m
+            // shelf crowns on the same ring. With no cabinets, retain the
+            // original gallery directly in front of the viewer.
+            const fileRadius = hasCabinets ? shelfRadius - .10 : 4.65;
+            const visibleSideAngle = hasCabinets
                 ? Math.min(.48, Math.max(.30, halfShelfSpan * .48))
                 : 0;
 
@@ -447,8 +530,11 @@ class Drive3DScene {
                     const local = index - start;
                     const row = Math.floor(local / columns);
                     const col = local % columns;
-                    const card = makeFileCard(items[index]);
-                    card.position.set((col - (columns - 1) / 2) * .96, 3.28 - row * .83, .12);
+                    const card = makeFileCard(items[index], revision);
+                    // Non-overlapping targets: the old .96/.83 grid intersected
+                    // adjacent .98/.84 hit surfaces and confused touch selection.
+                    card.position.set((col - (columns - 1) / 2) * 1.06,
+                        hasCabinets ? 7.56 - row * .84 : 3.28 - row * .92, .12);
                     panel.add(card);
                 }
             }
@@ -507,8 +593,14 @@ class Drive3DScene {
         });
         const raycaster = new T.Raycaster();
         function pointerHit(event) {
-            const rect = viewport.getBoundingClientRect();
-            raycaster.setFromCamera(new T.Vector2((event.clientX - rect.left) / rect.width * 2 - 1, 1 - (event.clientY - rect.top) / rect.height * 2), camera);
+            // Match the actual WebGL canvas instead of its outer container.
+            const rect = renderer.domElement.getBoundingClientRect();
+            if (!rect.width || !rect.height) return null;
+            const x = (event.clientX - rect.left) / rect.width;
+            const y = (event.clientY - rect.top) / rect.height;
+            if (x < 0 || x > 1 || y < 0 || y > 1) return null;
+            camera.updateMatrixWorld();
+            raycaster.setFromCamera(new T.Vector2(x * 2 - 1, 1 - y * 2), camera);
             return raycaster.intersectObjects([...shelves, fileGallery], true)[0] || null;
         }
         function driveItemFromHit(hit) {
@@ -520,34 +612,62 @@ class Drive3DScene {
             }
             return null;
         }
-        function nearestFileCard(event) {
-            if (!filePanels.length) return null;
-            const rect = viewport.getBoundingClientRect();
-            const nx = (event.clientX - rect.left) / Math.max(1,rect.width) * 2 - 1;
-            const ny = 1 - (event.clientY - rect.top) / Math.max(1,rect.height) * 2;
-            let best = null, bestDistance = Infinity;
-            fileGallery.children.forEach(panel => panel.children.forEach(card => {
-                if (!card.userData?.fileCard) return;
-                const p = card.localToWorld(new T.Vector3(0,0,.06)).project(camera);
-                if (p.z <= -1 || p.z >= 1 || Math.abs(p.x) > 1.08 || Math.abs(p.y) > 1.08) return;
-                const distance = Math.hypot(p.x - nx, p.y - ny);
-                if (distance < bestDistance) { bestDistance = distance; best = card; }
-            }));
-            // About 45–70 CSS px depending on viewport, deliberately finger-friendly.
-            return bestDistance <= (rect.width < 700 ? .22 : .13) ? best : null;
-        }
+        // Each file is selectable only inside its actual projected 3D card.
+        // Selecting the nearest center within a broad circular radius used to
+        // jump to a diagonal / higher item. The raw raycaster can also hit the
+        // back of a neighboring card when projected cards nearly touch.
+        // Bound the pointer to the projected quadrilateral of its own card.
         function fileSelectionFromPointer(event, directHit = null) {
-            const direct = driveItemFromHit(directHit);
-            if (direct && !direct.folder) {
-                let card = direct.node;
-                while (card && !card.userData?.fileCard && card.parent) card = card.parent;
-                return card?.userData?.fileCard ? {card,item:direct.item} : null;
+            if (!filePanels.length) return null;
+            const rect = renderer.domElement.getBoundingClientRect();
+            const x = event.clientX, y = event.clientY;
+            if (!rect.width || !rect.height || x < rect.left || x > rect.right ||
+                y < rect.top || y > rect.bottom) return null;
+            camera.updateMatrixWorld();
+            const project = (card, vx, vy) => {
+                const p = card.localToWorld(new T.Vector3(vx, vy, .06)).project(camera);
+                return {
+                    x:rect.left + (p.x + 1) * rect.width / 2,
+                    y:rect.top + (1 - p.y) * rect.height / 2,
+                    z:p.z
+                };
+            };
+            const insideQuad = (corners, px, py) => {
+                let sign = 0;
+                for (let i = 0; i < 4; i++) {
+                    const a = corners[i], b = corners[(i+1)%4];
+                    const cross = (b.x-a.x)*(py-a.y)-(b.y-a.y)*(px-a.x);
+                    if (Math.abs(cross) < .01) continue;
+                    const next = Math.sign(cross);
+                    if (sign && sign !== next) return false;
+                    sign = next;
+                }
+                return Boolean(sign);
+            };
+            let best = null, distance = Infinity;
+            for (const panel of filePanels) {
+                for (const card of panel.children) {
+                    if (!card.userData?.fileCard) continue;
+                    const center = project(card, 0, 0);
+                    if (center.z <= -1 || center.z >= 1) continue;
+                    const corners = [
+                        project(card, -.49, -.42),
+                        project(card, .49, -.42),
+                        project(card, .49, .42),
+                        project(card, -.49, .42)
+                    ];
+                    if (!insideQuad(corners, x, y)) continue;
+                    const d = Math.hypot(center.x-x, center.y-y);
+                    if (d < distance) { best = card; distance = d; }
+                }
             }
-            const card = nearestFileCard(event);
-            return card ? {card,item:card.userData.driveItem} : null;
+            return best ? {card:best, item:best.userData.driveItem} : null;
         }
         viewport.addEventListener('pointerup', event => {
-            if (!drag || Math.hypot(event.clientX - drag.startX, event.clientY - drag.startY) > 7) return;
+            if (!drag || drag.id !== event.pointerId) return;
+            if (Math.hypot(event.clientX - drag.startX, event.clientY - drag.startY) > 7) {
+                return;
+            }
             const hit = pointerHit(event);
             const fileSelection = fileSelectionFromPointer(event, hit);
             if (fileSelection) {
@@ -579,15 +699,9 @@ class Drive3DScene {
             options.onSelect?.(selectedIndex);
             needsRender = true;
         });
-        // Click/tap fallback for file cards. Pointer-up drives navigation, while
-        // this dedicated click path gives small thumbnail cards a forgiving mobile target.
-        viewport.addEventListener('click', event => {
-            const selection = fileSelectionFromPointer(event, pointerHit(event));
-            if (!selection) return;
-            setFileSelection(selection.card);
-            options.onItemSelect?.(selection.item, false, false);
-            needsRender = true;
-        });
+        // A real pointerup is the one and only selection trigger. A later
+        // synthetic click must not select a different tile if the animated
+        // camera moved between those events.
         viewport.addEventListener('dblclick', event => {
             const hit = pointerHit(event);
             const fileSelection = fileSelectionFromPointer(event, hit);
@@ -773,6 +887,10 @@ class Drive3DScene {
             shelves: shelves.map(s=>({
                 position:s.position.toArray(),rotation:s.rotation.y,width,depth,height,loaded:!!s.children.length,
                 realBooks:s.getObjectByName('real-drive-books')?.children.length || 0,
+                overheadImages:s.getObjectByName('real-drive-books')?.children.filter(child => child.name === 'shelf-overhead-picture').map(child => ({
+                    name:child.userData.driveItem?.name || '',
+                    world:child.getWorldPosition(new T.Vector3()).toArray()
+                })) || [],
                 realItems:Array.from(s.getObjectByName('real-drive-books')?.children || []).map(book => ({
                     name:book.userData?.driveItem?.name || '',
                     kind:book.userData?.driveItem?.kind || (book.userData?.driveFolder ? 'folder' : 'file'),
@@ -781,6 +899,7 @@ class Drive3DScene {
             })),
             lamp:lamp.position.toArray(),
             filePanels:filePanels.map(panel=>panel.position.toArray()),
+            galleryLayout:titles.length ? 'overhead' : 'front',
             currentFiles:fileGallery.children.reduce((sum,panel)=>sum+panel.children.length,0),
             fileItems:fileGallery.children.flatMap(panel=>panel.children.map(card=>({
                 name:card.userData?.driveItem?.name || '',
@@ -788,13 +907,16 @@ class Drive3DScene {
                 open:card.userData?.driveItem?.open_href || '',
                 icon:card.userData?.driveItem?.icon || 'fa-file',
                 iconCategory:card.userData?.driveItem?.icon_category || 'generic',
+                position:card.getWorldPosition(new T.Vector3()).toArray(),
+                hitSize:[.98,.84],
                 point:(()=>{const p=card.localToWorld(new T.Vector3(0,0,.05)).project(camera);return [p.x,p.y,p.z];})()
             }))),
             visibleFileCards:fileGallery.children.flatMap(panel=>panel.children).filter(card=>{
                 const p=card.localToWorld(new T.Vector3(0,0,.05)).project(camera);
                 return p.z>-1 && p.z<1 && Math.abs(p.x)<.92 && Math.abs(p.y)<.92;
             }).length,
-            domeRadius:R,panorama:panorama.position.toArray(),environmentReady,
+            domeRadius:R,panorama:panorama.position.toArray(),
+            panoramaSeam:{radius:panoramaRadius,woodenRib:4,angle:Math.PI/2},environmentReady,
             spatial:this.spatialMediaState('singleton'),
             spatialImages:Array.from(spatialAnchors.entries()).filter(([id]) => id !== 'singleton').map(([id,entry]) => ({id,world:entry.point.toArray(),baseDistance:entry.baseDistance})),
             calls:renderer.info.render.calls, geometries:renderer.info.memory.geometries, textures:renderer.info.memory.textures});

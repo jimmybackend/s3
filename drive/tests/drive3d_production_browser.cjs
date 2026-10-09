@@ -120,27 +120,45 @@ const server=createServer((req,res)=>{
   assert.equal(initial.fileItems.length,20);
   assert(initial.visibleFileCards>0,'At least one current-folder file thumbnail is visible in the initial camera view even when cabinets exist');
   assert.equal(initial.fileItems.filter(item=>item.kind==='image').length,18);
-  assert(initial.filePanels.length>=1,'File thumbnails occupy their own gallery panel beside the cabinets');
+  assert(initial.filePanels.length>=1,'File thumbnails have independent gallery panels');
+  assert.equal(initial.panoramaSeam.woodenRib,4,'Panorama UV seam lies beneath its wooden meridian');
+  assert(initial.panoramaSeam.radius>initial.domeRadius &&
+    initial.panoramaSeam.radius-initial.domeRadius < .12,'The wrapped panorama stays just behind the structural dome');
+  assert.equal(initial.galleryLayout,'overhead','Folders place their file gallery in the air above their cabinets');
+  assert(initial.fileItems.every(item=>item.position[1] > initial.shelves[0].height + .35),
+    'Images and file icons clear the top of every bookshelf');
+  assert(initial.filePanels.every(([x,y,z])=>Math.hypot(x,z)>initial.shelves[0].width*2),
+    'Overhead gallery stays near the cabinet ring instead of blocking the foreground');
 
   // Real cabinet raycasting still selects folders, but file data is no longer rendered as books inside them.
   const viewBox=await page.locator('#dwThreeViewport').boundingBox();
   const shelfIndex=Math.floor(initial.pickPoints.length/2);
   const [px,py]=initial.pickPoints[shelfIndex];
   assert(Number.isFinite(px) && Number.isFinite(py),'Focused cabinet exposes a real projected pick point');
+  await page.evaluate(index=>window.ArcadeCloudDrive3D.chooseThreeShelf(index),shelfIndex);
+  // Let the viewport's real asynchronous preview finish before injecting a
+  // controlled child-folder state for deterministic bookshelf assertions.
+  await page.waitForTimeout(650);
   await page.evaluate(index=>{
     const app=window.ArcadeCloudDrive3D;
-    app.chooseThreeShelf(index);
     app.three.setShelfContents(index,{
       folders:[{name:'Subcarpeta real',kind:'folder',open_href:'/subfolder',preview_href:'/preview/sub'}],
-      files:[{name:'Informe.pdf',kind:'pdf',open_href:'/report.pdf'}],
+      files:[
+        {name:'Informe.pdf',kind:'pdf',open_href:'/report.pdf'},
+        {name:'Foto en carpeta.jpg',kind:'image',thumbnail_href:'/three-lab/assets/alpine-panorama.jpg',open_href:'/subphoto'}
+      ],
       folder_count:1,file_count:1
     });
   },shelfIndex);
-  await page.waitForFunction(()=>window.ArcadeCloudDrive3D.three.snapshot().shelves.some(s=>s.realBooks>0));
-  const populated=(await snap()).shelves.find(s=>s.realBooks>0);
+  await page.waitForFunction(index=>window.ArcadeCloudDrive3D.three.snapshot().shelves[index]?.overheadImages.some(img=>img.name==='Foto en carpeta.jpg'),shelfIndex);
+  const populated=(await snap()).shelves[shelfIndex];
   assert(populated.realBooks>=1,'Nested folder data is rendered inside its cabinet');
   assert(populated.realItems.some(item=>item.name==='Subcarpeta real' && item.open==='/subfolder'),'Folder metadata stays with the cabinet');
   assert(!populated.realItems.some(item=>item.name==='Informe.pdf'),'Files are never rendered as books inside a cabinet');
+  assert(populated.overheadImages.some(item=>item.name==='Foto en carpeta.jpg'),
+    'A child-folder image is previewed in the air over its own shelf');
+  assert(populated.overheadImages.every(item=>item.world[1] > initial.shelves[0].height),
+    'Image previews must clear the shelf crown');
   assert.equal(await page.locator('[data-hud-desk]').isVisible(),false,'Folder selection does not offer Traer al escritorio');
 
   // Turn toward the first gallery panel, tap a real thumbnail, then bring that selected image into the workspace.
@@ -166,6 +184,25 @@ const server=createServer((req,res)=>{
     if(unobstructed){selectedGalleryFile=candidate;break;}
   }
   assert(selectedGalleryFile,'At least one current-folder thumbnail is visibly tappable on the WebGL canvas');
+  const visibleClickCandidates=[];
+  for(const item of visibleFiles) {
+    const client={x:viewBox.x+(item.point[0]+1)*viewBox.width/2,y:viewBox.y+(1-item.point[1])*viewBox.height/2};
+    const free=await page.evaluate(point=>{
+      const target=document.elementFromPoint(point.x,point.y);
+      const viewport=document.querySelector('#dwThreeViewport');
+      return Boolean(target && (target===viewport || viewport.contains(target)));
+    },client);
+    if(free) visibleClickCandidates.push({item,client});
+  }
+  assert(visibleClickCandidates.length>=1,'There is a directly clickable file tile');
+  // Real Playwright mouse input validates raycasting rather than invoking selectElement.
+  // Before the fix a nearest-card guess could select a diagonal/upper neighbor.
+  for(const {item,client} of visibleClickCandidates.slice(0,Math.min(3,visibleClickCandidates.length))) {
+    await page.mouse.click(client.x,client.y);
+    await page.waitForTimeout(160);
+    const actual=await page.locator('[data-hud-name]').textContent();
+    assert.equal(actual,item.name, '3D click must select the exact projected card: '+JSON.stringify({clicked:item.name, actual, screen:client, projected:item.point, kind:item.kind}));
+  }
   await page.evaluate(item=>{
     const app=window.ArcadeCloudDrive3D;
     const node=app.bookNode({

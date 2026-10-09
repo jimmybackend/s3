@@ -46,7 +46,17 @@ php -d display_errors=0 -r '
   echo "ARCADECLOUD_IDLE_PROBE_STATUS=".$status."\n";
   $timer=($status==="idle" && trim((string)($r["IdleSince"]??""))!=="")?"armed":"not_armed";
   echo "ARCADECLOUD_IDLE_PROBE_TIMER=".$timer."\n";
+  // Report only presence of relevant blockers, never jobs or file data.
+  $media=(new \ArcadeCloud\Drive\Media\MediaProcessingJobRepository($db))->hasActiveJobs();
+  $office=(new \ArcadeCloud\Drive\Office\OfficeActivityProbe($db))->hasActiveSessions($iid);
+  echo "ARCADECLOUD_IDLE_PROBE_MEDIA_JOBS=".($media?"yes":"no")."\n";
+  echo "ARCADECLOUD_IDLE_PROBE_OFFICE_UNSAVED=".($office?"yes":"no")."\n";
 '
+busy=no
+for name in ffmpeg ffprobe zip unzip rar unrar git docker buildctl 7z make tar; do
+  if pgrep -x "$name" >/dev/null 2>&1; then busy=yes; break; fi
+done
+printf 'ARCADECLOUD_IDLE_PROBE_LOCAL_CLI_TASK=%s\n' "$busy"
 '''
 def main():
     region=os.environ.get("ARCADECLOUD_AWS_REGION","")
@@ -68,7 +78,7 @@ def main():
             lines=out.get("StandardOutputContent","").splitlines()
             flags=[]
             for line in lines:
-                if re.fullmatch(r"ARCADECLOUD_IDLE_PROBE_(?:APP_MISSING|WORKER_ACTIVE|IDENTITY)=(?:yes|no)",line) or re.fullmatch(
+                if re.fullmatch(r"ARCADECLOUD_IDLE_PROBE_(?:APP_MISSING|WORKER_ACTIVE|IDENTITY|MEDIA_JOBS|OFFICE_UNSAVED|LOCAL_CLI_TASK)=(?:yes|no)",line) or re.fullmatch(
                     r"ARCADECLOUD_IDLE_PROBE_(?:SESSION)=(?:present|absent)|ARCADECLOUD_IDLE_PROBE_(?:TIMER)=(?:armed|not_armed)|ARCADECLOUD_IDLE_PROBE_STATUS=(?:starting|running|idle|stopping)",line):
                     print(line)
                     flags.append(line)

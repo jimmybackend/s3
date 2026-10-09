@@ -52,6 +52,15 @@ Docker CLI y utilidades CLI de compresión/compilación) frenan el apagado;
 se mantienen además las protecciones de documentos Office y trabajos
 multimedia, y el candado compartido `ComputeNodeAdmissionLock`.
 
+**Detalle crítico de Docker/Workstation:** la unidad systemd inicia el
+escritorio con un cliente persistente `docker run --name
+arcadecloud-workstation`. Ese cliente **no cuenta como trabajo de fondo**:
+el contador de inactividad debe seguir avanzando cuando XFCE está abierto
+pero el usuario lleva 20 minutos sin interacción. El worker identifica
+estrictamente el cliente de esa unidad por sus argumentos locales, sin
+registrar argumentos ni contraseñas. `docker build` y contenedores ajenos
+siguen protegidos mientras su proceso cliente esté activo.
+
 **Límite:** ninguna inspección de procesos puede garantizar protección
 para todo proceso de terceros ni para una descarga silenciosa de Chrome.
 Descargas y tareas nuevas deben integrarse al registro de trabajos o a una

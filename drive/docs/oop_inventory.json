@@ -1,6 +1,6 @@
 {
   "summary": {
-    "php_total": 562,
+    "php_total": 563,
     "php_class_modules": 318,
     "php_needs_migration": 0,
     "php_tests": 79,
@@ -11,7 +11,7 @@
     "js_compatibility_facades": 8,
     "ajax_clients": 54,
     "ajax_calls": 120,
-    "json_total": 8,
+    "json_total": 9,
     "json_invalid": 0
   },
   "php": [
@@ -178,6 +178,21 @@
       "db": false,
       "s3": false,
       "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
+      "path": "drive/bin/fastdrive_safe_worker_reload.php",
+      "lines": 56,
+      "kind": "thin cli entrypoint",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": true,
       "html": false,
       "namespace": false,
       "issues": []
@@ -5418,7 +5433,7 @@
     },
     {
       "path": "drive/src/Media/MediaWorkerNodeService.php",
-      "lines": 799,
+      "lines": 869,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -7492,7 +7507,7 @@
     },
     {
       "path": "drive/tests/idle_stop_office_regression.php",
-      "lines": 341,
+      "lines": 392,
       "kind": "test script",
       "classes": 1,
       "functions": [
@@ -10889,7 +10904,7 @@
     },
     {
       "path": "drive/docs/runtime_endpoints.json",
-      "bytes": 133944,
+      "bytes": 134095,
       "valid": true,
       "root_type": "object",
       "keys": [
@@ -10942,6 +10957,17 @@
       "keys": [
         "alias",
         "report",
+        "request_id"
+      ],
+      "error": null
+    },
+    {
+      "path": "tools/arcadecloud-aws-bridge/requests/workstation-deploy.json",
+      "bytes": 97,
+      "valid": true,
+      "root_type": "object",
+      "keys": [
+        "action",
         "request_id"
       ],
       "error": null

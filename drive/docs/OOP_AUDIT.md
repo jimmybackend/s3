@@ -4,7 +4,7 @@
 
 ## Resumen
 
-- PHP analizados: **562**
+- PHP analizados: **563**
 - PHP que ya contienen clases/interfaces: **318**
 - PHP marcados para migración/revisión: **0**
 - Tests PHP separados del objetivo OOP de runtime: **79**
@@ -14,7 +14,7 @@
 - Tests JavaScript separados del objetivo OOP de runtime: **11**
 - JavaScript OOP con fachada `window` de compatibilidad: **8**
 - Clientes AJAX detectados: **54** módulos / **120** llamadas
-- JSON analizados: **8**; inválidos: **0**
+- JSON analizados: **9**; inválidos: **0**
 
 ## Criterio
 
@@ -42,6 +42,7 @@
 | `drive/bin/activity_retention.php` | 9 | thin cli entrypoint | 0 | — | — | — | — |
 | `drive/bin/arcadecloud-drive-admin-helper.php` | 1359 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/bin/arcadecloud-drive-updater.php` | 321 | class/module | 1 | — | — | — | — |
+| `drive/bin/fastdrive_safe_worker_reload.php` | 56 | thin cli entrypoint | 0 | — | — | — | — |
 | `drive/bin/federation_catalog_migrate.php` | 18 | thin cli entrypoint | 0 | — | — | — | — |
 | `drive/bin/federation_drop_cleanup.php` | 19 | thin cli entrypoint | 0 | — | — | — | — |
 | `drive/bin/federation_endpoint_refresh.php` | 87 | thin cli entrypoint | 0 | — | — | — | — |
@@ -387,7 +388,7 @@
 | `drive/src/Media/MediaPlaylistService.php` | 66 | class/module | 1 | — | — | — | — |
 | `drive/src/Media/MediaProcessingJobRepository.php` | 460 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Media/MediaProcessingService.php` | 104 | class/module | 1 | — | — | — | — |
-| `drive/src/Media/MediaWorkerNodeService.php` | 799 | class/module | 1 | — | — | — | — |
+| `drive/src/Media/MediaWorkerNodeService.php` | 869 | class/module | 1 | — | — | — | — |
 | `drive/src/Media/MediaWorkerNodeSessionRepository.php` | 243 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Media/ThumbnailService.php` | 559 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Notebook/NotebookAiImproveService.php` | 327 | class/module | 1 | — | — | — | — |
@@ -520,7 +521,7 @@
 | `drive/tests/folder_textract_background_task_contract.php` | 39 | test script | 0 | — | — | — | — |
 | `drive/tests/folder_textract_contract_smoke.php` | 34 | test script | 0 | — | — | — | — |
 | `drive/tests/fresh_install_contract_smoke.php` | 76 | test script | 0 | — | — | — | — |
-| `drive/tests/idle_stop_office_regression.php` | 341 | test script | 1 | — | ⚠️ | — | — |
+| `drive/tests/idle_stop_office_regression.php` | 392 | test script | 1 | — | ⚠️ | — | — |
 | `drive/tests/index_federation_drop_smoke.php` | 121 | test script | 0 | — | — | — | — |
 | `drive/tests/installer_service_reconcile_contract_smoke.php` | 197 | test script | 0 | — | — | — | — |
 | `drive/tests/large_folder_regression.php` | 34 | test script | 0 | — | ⚠️ | — | — |
@@ -755,6 +756,7 @@
 | `tools/arcadecloud-aws-bridge/iam/operator-trust.json` | sí | object | `Statement`, `Version` |
 | `tools/arcadecloud-aws-bridge/requests/auto.json` | sí | object | `alias`, `argument`, `confirm`, `operation`, `request_id` |
 | `tools/arcadecloud-aws-bridge/requests/current.json` | sí | object | `alias`, `report`, `request_id` |
+| `tools/arcadecloud-aws-bridge/requests/workstation-deploy.json` | sí | object | `action`, `request_id` |
 
 ## Dictamen
 

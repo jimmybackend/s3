@@ -1243,8 +1243,10 @@
       // An empty glass URL restores the bundled 360° panorama in Three.js.
       // Preserve floor artwork, positioned pictures, furniture and camera.
       this.room.glassBackground = '';
-      this.room.environment = 'future';
-      this.document.body.dataset.environment = 'future';
+      if (!this.useThree) {
+        this.room.environment = 'future';
+        this.document.body.dataset.environment = 'future';
+      }
       this.applySurfaceImage('glass', '');
       this.persistPreferences();
     }

@@ -4,10 +4,10 @@
 
 ## Resumen
 
-- PHP analizados: **563**
-- PHP que ya contienen clases/interfaces: **318**
+- PHP analizados: **565**
+- PHP que ya contienen clases/interfaces: **319**
 - PHP marcados para migración/revisión: **0**
-- Tests PHP separados del objetivo OOP de runtime: **79**
+- Tests PHP separados del objetivo OOP de runtime: **80**
 - JavaScript analizados: **88**
 - JavaScript que ya contienen clases: **81**
 - JavaScript runtime marcados para migración/revisión: **0**
@@ -75,7 +75,7 @@
 | `drive/crear_carpeta.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/create_folder_document.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/database-backup.php` | 10 | thin endpoint | 0 | — | — | — | — |
-| `drive/dataword3d.php` | 524 | view/entrypoint | 0 | — | — | — | — |
+| `drive/dataword3d.php` | 530 | view/entrypoint | 0 | — | — | — | — |
 | `drive/delete_multiple.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/descargar.php` | 8 | thin endpoint | 0 | — | — | — | — |
 | `drive/descargar_archivo.php` | 8 | thin endpoint | 0 | — | — | — | — |
@@ -200,6 +200,7 @@
 | `drive/src/Admin/ServerTaskActivityProbe.php` | 72 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Application/AiFileSearchService.php` | 471 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Application/BackgroundWorkerLauncher.php` | 115 | class/module | 1 | — | — | — | — |
+| `drive/src/Application/Drive3dBackgroundFolderService.php` | 72 | class/module | 1 | — | — | — | — |
 | `drive/src/Application/DrivePageService.php` | 40 | class/module | 1 | — | — | — | — |
 | `drive/src/Application/DrivePageViewModel.php` | 18 | class/module | 1 | — | — | — | — |
 | `drive/src/Application/FileAccessService.php` | 114 | class/module | 1 | — | — | — | — |
@@ -331,7 +332,7 @@
 | `drive/src/Http/Controller/BackgroundTaskCompatibilityController.php` | 245 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Http/Controller/BackgroundTaskController.php` | 1100 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Http/Controller/DatabaseBackupController.php` | 50 | class/module | 1 | — | — | — | — |
-| `drive/src/Http/Controller/Drive3dBackgroundUploadController.php` | 92 | class/module | 1 | — | — | — | — |
+| `drive/src/Http/Controller/Drive3dBackgroundUploadController.php` | 94 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/FederationAccessController.php` | 123 | class/module | 1 | ⚠️ | — | — | — |
 | `drive/src/Http/Controller/FederationCatalogController.php` | 144 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/FederationCollectionController.php` | 128 | class/module | 1 | — | — | — | — |
@@ -495,6 +496,7 @@
 | `drive/tests/database_dump_full_integration.php` | 126 | test script | 0 | — | ⚠️ | — | — |
 | `drive/tests/database_schema_contract_smoke.php` | 127 | test script | 0 | — | — | — | — |
 | `drive/tests/dataword3d_contract_smoke.php` | 97 | test script | 0 | — | — | — | — |
+| `drive/tests/drive3d_background_folder_test.php` | 37 | test script | 0 | — | — | — | — |
 | `drive/tests/fastdrive_control_contract_smoke.php` | 72 | test script | 0 | — | — | — | — |
 | `drive/tests/federation_access_message_smoke.php` | 72 | test script | 0 | — | — | — | — |
 | `drive/tests/federation_catalog_event_smoke.php` | 60 | test script | 0 | — | — | — | — |
@@ -615,7 +617,7 @@
 | `drive/js/descarga-uno.js` | 110 | class/module | DescargaUnoModule | — | — | — |
 | `drive/js/desktop-shell.js` | 182 | class/module | ArcadeCloudDesktopShell | — | — | — |
 | `drive/js/drive3d-production.js` | 93 | class/module | Drive3DProduction | — | — | — |
-| `drive/js/drive3d-scene.js` | 837 | class/module | Drive3DScene | — | — | — |
+| `drive/js/drive3d-scene.js` | 959 | class/module | Drive3DScene | — | — | — |
 | `drive/js/drive3d-three-lab.js` | 18 | class/module | Drive3DLab | — | — | — |
 | `drive/js/editar-txt.js` | 68 | class/module | EditarTxtModule | — | — | — |
 | `drive/js/editor-mobile-selection.js` | 210 | class/module | ArcadeCloudMobileEditorSelection | — | — | — |

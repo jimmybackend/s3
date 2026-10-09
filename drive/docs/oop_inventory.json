@@ -1,9 +1,9 @@
 {
   "summary": {
-    "php_total": 563,
-    "php_class_modules": 318,
+    "php_total": 565,
+    "php_class_modules": 319,
     "php_needs_migration": 0,
-    "php_tests": 79,
+    "php_tests": 80,
     "js_total": 88,
     "js_class_modules": 81,
     "js_needs_migration": 0,
@@ -687,7 +687,7 @@
     },
     {
       "path": "drive/dataword3d.php",
-      "lines": 524,
+      "lines": 530,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -2591,6 +2591,21 @@
     {
       "path": "drive/src/Application/BackgroundWorkerLauncher.php",
       "lines": 115,
+      "kind": "class/module",
+      "classes": 1,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": true,
+      "issues": []
+    },
+    {
+      "path": "drive/src/Application/Drive3dBackgroundFolderService.php",
+      "lines": 72,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -4570,7 +4585,7 @@
     },
     {
       "path": "drive/src/Http/Controller/Drive3dBackgroundUploadController.php",
-      "lines": 92,
+      "lines": 94,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -7066,6 +7081,21 @@
       "issues": []
     },
     {
+      "path": "drive/tests/drive3d_background_folder_test.php",
+      "lines": 37,
+      "kind": "test script",
+      "classes": 0,
+      "functions": [],
+      "session": false,
+      "superglobals": [],
+      "db": false,
+      "s3": false,
+      "bootstrap": false,
+      "html": false,
+      "namespace": false,
+      "issues": []
+    },
+    {
       "path": "drive/tests/fastdrive_control_contract_smoke.php",
       "lines": 72,
       "kind": "test script",
@@ -9069,7 +9099,7 @@
     },
     {
       "path": "drive/js/drive3d-scene.js",
-      "lines": 837,
+      "lines": 959,
       "kind": "class/module",
       "classes": [
         "Drive3DScene"
@@ -10932,7 +10962,7 @@
     },
     {
       "path": "drive/docs/runtime_endpoints.json",
-      "bytes": 134288,
+      "bytes": 134328,
       "valid": true,
       "root_type": "object",
       "keys": [

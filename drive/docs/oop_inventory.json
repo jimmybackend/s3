@@ -4,13 +4,13 @@
     "php_class_modules": 318,
     "php_needs_migration": 0,
     "php_tests": 79,
-    "js_total": 86,
-    "js_class_modules": 79,
+    "js_total": 88,
+    "js_class_modules": 81,
     "js_needs_migration": 0,
     "js_tests": 12,
     "js_compatibility_facades": 8,
-    "ajax_clients": 54,
-    "ajax_calls": 120,
+    "ajax_clients": 55,
+    "ajax_calls": 121,
     "json_total": 10,
     "json_invalid": 0
   },
@@ -843,7 +843,7 @@
     },
     {
       "path": "drive/editor.php",
-      "lines": 485,
+      "lines": 562,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -2219,7 +2219,7 @@
     },
     {
       "path": "drive/so.php",
-      "lines": 2213,
+      "lines": 2253,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -2710,7 +2710,7 @@
     },
     {
       "path": "drive/src/Application/FolderDocumentService.php",
-      "lines": 298,
+      "lines": 324,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -4902,7 +4902,7 @@
     },
     {
       "path": "drive/src/Http/Controller/FolderDocumentController.php",
-      "lines": 72,
+      "lines": 73,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -9137,6 +9137,29 @@
       "issues": []
     },
     {
+      "path": "drive/js/editor-mobile-selection.js",
+      "lines": 210,
+      "kind": "class/module",
+      "classes": [
+        "ArcadeCloudMobileEditorSelection"
+      ],
+      "functions": [],
+      "window_assign": [
+        "ArcadeCloudMobileEditorSelection"
+      ],
+      "window_func": [],
+      "top_vars": [],
+      "iife": false,
+      "ajax": {
+        "fetch": 0,
+        "xhr": 0,
+        "jquery": 0,
+        "json_consumers": 0,
+        "response_checks": 4
+      },
+      "issues": []
+    },
+    {
       "path": "drive/js/elimina-multiple.js",
       "lines": 104,
       "kind": "class/module",
@@ -10011,7 +10034,7 @@
     },
     {
       "path": "drive/js/so-folders.js",
-      "lines": 485,
+      "lines": 494,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudOsFolderActions"
@@ -10029,6 +10052,27 @@
         "jquery": 0,
         "json_consumers": 1,
         "response_checks": 3
+      },
+      "issues": []
+    },
+    {
+      "path": "drive/js/so-new-text-file.js",
+      "lines": 129,
+      "kind": "class/module",
+      "classes": [
+        "ArcadeCloudEmptyTextFileCreator"
+      ],
+      "functions": [],
+      "window_assign": [],
+      "window_func": [],
+      "top_vars": [],
+      "iife": false,
+      "ajax": {
+        "fetch": 1,
+        "xhr": 0,
+        "jquery": 0,
+        "json_consumers": 1,
+        "response_checks": 2
       },
       "issues": []
     },

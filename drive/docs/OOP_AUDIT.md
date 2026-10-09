@@ -8,12 +8,12 @@
 - PHP que ya contienen clases/interfaces: **318**
 - PHP marcados para migración/revisión: **0**
 - Tests PHP separados del objetivo OOP de runtime: **79**
-- JavaScript analizados: **86**
-- JavaScript que ya contienen clases: **79**
+- JavaScript analizados: **88**
+- JavaScript que ya contienen clases: **81**
 - JavaScript runtime marcados para migración/revisión: **0**
 - Tests JavaScript separados del objetivo OOP de runtime: **12**
 - JavaScript OOP con fachada `window` de compatibilidad: **8**
-- Clientes AJAX detectados: **54** módulos / **120** llamadas
+- Clientes AJAX detectados: **55** módulos / **121** llamadas
 - JSON analizados: **10**; inválidos: **0**
 
 ## Criterio
@@ -85,7 +85,7 @@
 | `drive/drive3d-background-upload.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/ec2-cron.php` | 39 | thin endpoint | 0 | — | — | — | — |
 | `drive/ec2.php` | 1090 | view/entrypoint | 0 | ⚠️ | — | — | — |
-| `drive/editor.php` | 485 | view/entrypoint | 0 | — | — | — | — |
+| `drive/editor.php` | 562 | view/entrypoint | 0 | — | — | — | — |
 | `drive/eliminar_archivo.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/eliminar_carpeta.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/encriptar_archivo.php` | 10 | thin endpoint | 0 | — | — | — | — |
@@ -175,7 +175,7 @@
 | `drive/set_file_security.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/setup/api.php` | 15 | thin endpoint | 0 | — | — | — | — |
 | `drive/setup/index.php` | 90 | view/entrypoint | 0 | — | — | — | — |
-| `drive/so.php` | 2213 | view/entrypoint | 0 | — | — | — | — |
+| `drive/so.php` | 2253 | view/entrypoint | 0 | — | — | — | — |
 | `drive/src/Activity/ActivityCostRecorder.php` | 155 | class/module | 1 | — | — | — | — |
 | `drive/src/Activity/ActivityCostRepository.php` | 198 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Activity/ActivityCostService.php` | 153 | class/module | 1 | — | — | — | — |
@@ -207,7 +207,7 @@
 | `drive/src/Application/FileListService.php` | 157 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Application/FileMutationService.php` | 208 | class/module | 1 | — | — | — | — |
 | `drive/src/Application/FileSearchService.php` | 159 | class/module | 1 | — | ⚠️ | — | — |
-| `drive/src/Application/FolderDocumentService.php` | 298 | class/module | 1 | — | ⚠️ | — | — |
+| `drive/src/Application/FolderDocumentService.php` | 324 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Application/FolderMutationService.php` | 323 | class/module | 1 | — | — | — | — |
 | `drive/src/Application/FolderQueryService.php` | 224 | class/module | 1 | — | — | — | — |
 | `drive/src/Application/MoveJobService.php` | 348 | class/module | 1 | — | — | — | — |
@@ -353,7 +353,7 @@
 | `drive/src/Http/Controller/FileMutationController.php` | 128 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/FileSearchController.php` | 107 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/FileSecurityController.php` | 100 | class/module | 1 | — | — | — | — |
-| `drive/src/Http/Controller/FolderDocumentController.php` | 72 | class/module | 1 | — | — | — | — |
+| `drive/src/Http/Controller/FolderDocumentController.php` | 73 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/FolderMutationController.php` | 207 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/FolderQueryController.php` | 30 | class/module | 1 | — | — | — | — |
 | `drive/src/Http/Controller/LegacyUploadController.php` | 154 | class/module | 1 | — | — | — | — |
@@ -618,6 +618,7 @@
 | `drive/js/drive3d-scene.js` | 837 | class/module | Drive3DScene | — | — | — |
 | `drive/js/drive3d-three-lab.js` | 18 | class/module | Drive3DLab | — | — | — |
 | `drive/js/editar-txt.js` | 68 | class/module | EditarTxtModule | — | — | — |
+| `drive/js/editor-mobile-selection.js` | 210 | class/module | ArcadeCloudMobileEditorSelection | — | — | — |
 | `drive/js/elimina-multiple.js` | 104 | class/module | EliminaMultipleModule | — | — | — |
 | `drive/js/elimina-uno.js` | 122 | class/module | EliminaUnoModule | — | — | — |
 | `drive/js/estilo.js` | 267 | class/module | EstiloModule | — | — | — |
@@ -654,7 +655,8 @@
 | `drive/js/so-appearance.js` | 165 | class/module | ArcadeCloudOsAppearance | — | — | — |
 | `drive/js/so-clipboard.js` | 922 | class/module | ArcadeCloudOsClipboard | — | — | — |
 | `drive/js/so-federation.js` | 102 | class/module | ArcadeCloudOsFederationApp | — | — | — |
-| `drive/js/so-folders.js` | 485 | class/module | ArcadeCloudOsFolderActions | — | — | — |
+| `drive/js/so-folders.js` | 494 | class/module | ArcadeCloudOsFolderActions | — | — | — |
+| `drive/js/so-new-text-file.js` | 129 | class/module | ArcadeCloudEmptyTextFileCreator | — | — | — |
 | `drive/js/so-node.js` | 513 | class/module | ArcadeCloudOsNodeMonitor | — | — | — |
 | `drive/js/so-power.js` | 108 | class/module | ArcadeCloudFastDrivePower | — | — | — |
 | `drive/js/so-screenshot-paste.js` | 341 | class/module | ArcadeCloudOsScreenshotPaste | — | — | — |
@@ -730,6 +732,7 @@
 | `drive/js/so-clipboard.js` | 1 | 0 | 0 | 1 | 2 |
 | `drive/js/so-federation.js` | 2 | 0 | 0 | 0 | 5 |
 | `drive/js/so-folders.js` | 1 | 0 | 0 | 1 | 3 |
+| `drive/js/so-new-text-file.js` | 1 | 0 | 0 | 1 | 2 |
 | `drive/js/so-node.js` | 5 | 0 | 0 | 5 | 10 |
 | `drive/js/so-power.js` | 1 | 0 | 0 | 1 | 2 |
 | `drive/js/so-screenshot-paste.js` | 3 | 0 | 0 | 1 | 7 |

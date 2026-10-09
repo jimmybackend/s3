@@ -368,7 +368,7 @@
         button.addEventListener('click', () => this.lookVertical(Number(button.dataset.cameraPitch || 0)));
       });
       this.pitchRange?.addEventListener('input', () => {
-        this.camera.pitch = this.clamp(Number(this.pitchRange.value || 0), -42, 42);
+        this.camera.pitch = this.clamp(Number(this.pitchRange.value || 0), this.useThree ? -85 : -42, this.useThree ? 85 : 42);
         this.renderCamera(false);
       });
       this.pitchRange?.addEventListener('change', () => this.schedulePreferenceSave());
@@ -573,7 +573,7 @@
     }
 
     lookVertical(delta) {
-      this.camera.pitch = this.clamp(this.camera.pitch + delta, -42, 42);
+      this.camera.pitch = this.clamp(this.camera.pitch + delta, this.useThree ? -85 : -42, this.useThree ? 85 : 42);
       this.renderCamera();
       this.schedulePreferenceSave();
     }

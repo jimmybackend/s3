@@ -1,0 +1,16 @@
+name: ArcadeCloud FastDrive idle probe offline tests
+on:
+  pull_request:
+    paths:
+      - tools/arcadecloud-aws-bridge/fastdrive_idle_probe.py
+      - tools/arcadecloud-aws-bridge/tests/test_fastdrive_idle_probe.py
+      - .github/workflows/arcadecloud-fastdrive-idle-health*.yml
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 -m unittest discover -s tools/arcadecloud-aws-bridge/tests -p test_fastdrive_idle_probe.py -v
+      - run: python3 -m py_compile tools/arcadecloud-aws-bridge/fastdrive_idle_probe.py

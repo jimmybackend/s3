@@ -1,0 +1,32 @@
+name: ArcadeCloud FastDrive - live idle guard health
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - tools/arcadecloud-aws-bridge/fastdrive_idle_probe.py
+      - .github/workflows/arcadecloud-fastdrive-idle-health.yml
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  inspect:
+    if: github.repository == 'jimmybackend/s3' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.ARCADECLOUD_AWS_BRIDGE_ROLE_ARN }}
+          aws-region: ${{ vars.ARCADECLOUD_AWS_REGION }}
+          role-session-name: ArcadeCloudIdleHealth
+      - run: python3 -m pip install 'boto3>=1.35,<2'
+      - name: Probe real remote idle session without exposing user data
+        env:
+          ARCADECLOUD_AWS_REGION: ${{ vars.ARCADECLOUD_AWS_REGION }}
+          ARCADECLOUD_AWS_LARGE_ID: ${{ vars.ARCADECLOUD_AWS_LARGE_ID }}
+        run: python3 tools/arcadecloud-aws-bridge/fastdrive_idle_probe.py

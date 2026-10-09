@@ -33,6 +33,84 @@ class ArcadeCloudWindowLayoutConfig {
   static definition(app) { return this.DEFINITIONS[this.key(app)]; }
 }
 
+/* Match image window geometry to the actual pixels while retaining desktop chrome. */
+class ArcadeCloudImageWindowFit {
+  static calculate(imageWidth, imageHeight, viewportWidth, viewportHeight, chromeHeight = 74) {
+    const values = [imageWidth, imageHeight, viewportWidth, viewportHeight, chromeHeight].map(Number);
+    if (values.some(value => !Number.isFinite(value) || value < 0) ||
+        imageWidth <= 0 || imageHeight <= 0 || viewportWidth <= 0 || viewportHeight <= 0) return null;
+    const frame = 2;
+    const maxWidth = Math.max(1, Math.floor(viewportWidth) - 16);
+    const maxHeight = Math.max(1, Math.floor(viewportHeight) - 58);
+    const contentWidth = Math.max(1, maxWidth - frame);
+    const contentHeight = Math.max(1, maxHeight - chromeHeight - frame);
+    // Keep ordinary photos at 1:1 or smaller, but enlarge tiny ones enough
+    // for titlebar controls when the available desktop area permits it.
+    const desiredScale = Math.max(1, Math.min(220, contentWidth) / imageWidth);
+    const scale = Math.min(contentWidth / imageWidth, contentHeight / imageHeight, desiredScale);
+    return {
+      width: Math.min(maxWidth, Math.max(1, Math.round(imageWidth * scale)) + frame),
+      height: Math.min(maxHeight, Math.max(1, Math.round(imageHeight * scale)) + chromeHeight + frame)
+    };
+  }
+
+  static bind(win, element, image, manager, record) {
+    if (!win || !element || !image) return;
+    element.classList.add('os-image-window');
+    if (record) record.autoImageFit = true;
+    const fit = () => {
+      if (!element.isConnected || !image.naturalWidth || !image.naturalHeight ||
+          record?.maximized || element.classList.contains('is-maximized')) return;
+      const title = element.querySelector('.os-window-titlebar');
+      const status = element.querySelector('.os-statusbar');
+      const chromeHeight = (title?.getBoundingClientRect().height || 42) +
+        (status?.getBoundingClientRect().height || 32);
+      const geometry = this.calculate(
+        image.naturalWidth, image.naturalHeight, win.innerWidth, win.innerHeight, chromeHeight
+      );
+      if (!geometry) return;
+
+      const fittedBefore = element.dataset.imageFitApplied === '1';
+      const oldLeft = Number.parseFloat(element.style.left);
+      const oldTop = Number.parseFloat(element.style.top);
+      const maxLeft = Math.max(8, win.innerWidth - geometry.width - 8);
+      const maxTop = Math.max(4, win.innerHeight - geometry.height - 54);
+      const left = fittedBefore && Number.isFinite(oldLeft)
+        ? Math.max(8, Math.min(oldLeft, maxLeft))
+        : Math.max(8, Math.round((win.innerWidth - geometry.width) / 2));
+      const top = fittedBefore && Number.isFinite(oldTop)
+        ? Math.max(4, Math.min(oldTop, maxTop))
+        : Math.max(4, Math.round((win.innerHeight - 58 - geometry.height) / 2));
+
+      element.style.width = geometry.width + 'px';
+      element.style.height = geometry.height + 'px';
+      element.style.left = left + 'px';
+      element.style.top = top + 'px';
+      // Mobile's normal full-screen rule uses !important, so supply the
+      // explicit fitted geometry through narrowly scoped CSS variables.
+      element.style.setProperty('--os-image-fit-width', geometry.width + 'px');
+      element.style.setProperty('--os-image-fit-height', geometry.height + 'px');
+      element.style.setProperty('--os-image-fit-left', left + 'px');
+      element.style.setProperty('--os-image-fit-top', top + 'px');
+      element.dataset.imageFitApplied = '1';
+      if (record) {
+        record.geometry = { left: element.style.left, top: element.style.top,
+          width: element.style.width, height: element.style.height };
+        record.preferredGeometry = { ...record.geometry };
+      }
+    };
+    image.addEventListener('load', fit);
+    win.addEventListener('resize', fit);
+    if (record?.id && manager?.addCleanup) {
+      manager.addCleanup(record.id, () => {
+        image.removeEventListener('load', fit);
+        win.removeEventListener('resize', fit);
+      });
+    }
+    if (image.complete && image.naturalWidth) fit();
+  }
+}
+
 class ArcadeCloudWindowManager {
   constructor(win, doc, bus) {
     this.window = win;
@@ -321,7 +399,7 @@ class ArcadeCloudWindowManager {
     let initial = true;
     const observer = new ResizeObserver(entries => {
       if (initial) { initial = false; return; }
-      if (record.maximized || !record.element.classList.contains('is-open')) return;
+      if (record.autoImageFit || record.maximized || !record.element.classList.contains('is-open')) return;
       const box = entries[0]?.contentRect; if (!box?.width || !box?.height) return;
       clearTimeout(this.preferenceTimers.get(record.id));
       if (!this.usesDesktopPersistence()) return;
@@ -356,7 +434,7 @@ class ArcadeCloudWindowManager {
   }
 
   persistCurrentGeometry(record) {
-    if (!record || record.maximized || !this.usesDesktopPersistence()) return;
+    if (!record || record.autoImageFit || record.maximized || !this.usesDesktopPersistence()) return;
     const rect = record.element.getBoundingClientRect?.();
     if (!rect?.width || !rect?.height) return;
     const geometry = this.clampGeometry(record.app, {
@@ -1298,9 +1376,10 @@ class ArcadeCloudDesktopRuntime {
   }
 }
 
-if (typeof module !== 'undefined') module.exports = { ArcadeCloudEventBus, ArcadeCloudWindowLayoutConfig, ArcadeCloudWindowManager, ExplorerWindowFactory, ArcadeCloudExplorerWindow, ArcadeCloudDesktopRuntime };
+if (typeof module !== 'undefined') module.exports = { ArcadeCloudEventBus, ArcadeCloudWindowLayoutConfig, ArcadeCloudImageWindowFit, ArcadeCloudWindowManager, ExplorerWindowFactory, ArcadeCloudExplorerWindow, ArcadeCloudDesktopRuntime };
 if (typeof window !== 'undefined') {
   // Loaded at the end of <body>: boot before the legacy shell so it can only
   // coordinate actions and cannot become a competing lifecycle owner.
+  window.ArcadeCloudImageWindowFit = ArcadeCloudImageWindowFit;
   window.ArcadeCloudDesktopRuntime = new ArcadeCloudDesktopRuntime(window, document).init();
 }

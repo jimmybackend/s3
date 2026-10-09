@@ -1,0 +1,99 @@
+name: ArcadeCloud AWS operator - approval required
+
+on:
+  workflow_dispatch:
+    inputs:
+      alias:
+        description: 'Only small or large'
+        required: true
+        type: choice
+        options: [small, large]
+      operation:
+        description: 'diagnose, service or power-start'
+        required: true
+        type: choice
+        options: [diagnose, service, power-start]
+      argument:
+        description: 'Allowlisted diagnostic or service:action, blank for power-start'
+        required: false
+        type: string
+        default: memory
+      confirm:
+        description: 'READ_DIAGNOSTIC / SERVICE_CHANGE / POWER_LARGE'
+        required: true
+        type: string
+  push:
+    branches: [main]
+    paths:
+      - tools/arcadecloud-aws-bridge/requests/operator.json
+
+permissions:
+  contents: read
+  actions: read
+  deployments: read
+  id-token: write
+
+concurrency:
+  group: arcadecloud-aws-operator
+  cancel-in-progress: false
+
+jobs:
+  protected-operation:
+    if: github.repository == 'jimmybackend/s3' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    # MUST configure required reviewers before the first operator role is enabled.
+    environment:
+      name: arcadecloud-ops
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fail closed unless owner approval rule is enabled
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          # A missing GitHub environment can be auto-created with no reviewers:
+          # it must NEVER be sufficient for production administrative access.
+          approvals=$(gh api "repos/$GITHUB_REPOSITORY/environments/arcadecloud-ops" \
+            --jq '[.protection_rules[]? | select(.type == "required_reviewers") | .reviewers[]? | select(.reviewer.login == "jimmybackend")] | length')
+          if [ "$approvals" != "1" ]; then
+            echo "::error::Configure required reviewer jimmybackend on arcadecloud-ops environment."
+            exit 1
+          fi
+      - name: Require separate operator role and explicit enable flag
+        env:
+          OPERATOR_ROLE: ${{ vars.ARCADECLOUD_AWS_OPERATOR_ROLE_ARN }}
+          OPERATOR_ENABLED: ${{ vars.ARCADECLOUD_AWS_OPERATOR_ENABLED }}
+        shell: bash
+        run: |
+          if [ -z "$OPERATOR_ROLE" ] || [ "$OPERATOR_ENABLED" != "YES_PROTECTED" ]; then
+            echo "::error::Operator role not configured or not explicitly enabled."
+            exit 1
+          fi
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.ARCADECLOUD_AWS_OPERATOR_ROLE_ARN }}
+          aws-region: ${{ vars.ARCADECLOUD_AWS_REGION }}
+          role-session-name: ArcadeCloudGitHubOperator
+      - name: Install AWS SDK
+        run: python3 -m pip install 'boto3>=1.35,<2'
+      - name: Execute protected allowlisted operation
+        env:
+          ARCADECLOUD_AWS_REGION: ${{ vars.ARCADECLOUD_AWS_REGION }}
+          ARCADECLOUD_AWS_SMALL_ID: ${{ vars.ARCADECLOUD_AWS_SMALL_ID }}
+          ARCADECLOUD_AWS_LARGE_ID: ${{ vars.ARCADECLOUD_AWS_LARGE_ID }}
+          ARCADECLOUD_AWS_OPERATOR_ENABLED: ${{ vars.ARCADECLOUD_AWS_OPERATOR_ENABLED }}
+          REQUEST_ALIAS: ${{ inputs.alias }}
+          REQUEST_OPERATION: ${{ inputs.operation }}
+          REQUEST_ARGUMENT: ${{ inputs.argument }}
+          REQUEST_CONFIRM: ${{ inputs.confirm }}
+          EVENT_NAME: ${{ github.event_name }}
+          RUN_ID: ${{ github.run_id }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 tools/arcadecloud-aws-bridge/operator.py \
+            --event "$EVENT_NAME" --alias "$REQUEST_ALIAS" \
+            --operation "$REQUEST_OPERATION" --argument "$REQUEST_ARGUMENT" \
+            --confirm "$REQUEST_CONFIRM" --run-id "$RUN_ID"

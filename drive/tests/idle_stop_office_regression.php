@@ -329,6 +329,18 @@ try {
     $db->query("UPDATE MediaWorkerNodeSessions SET IdleSince=DATE_SUB(UTC_TIMESTAMP(), INTERVAL 1210 SECOND)");
     $before = $sessions->activeForInstance('i-12345678');
     idleCheck(!$sessions->claimIdleStop($before['session_id'], $before['idle_since'], 1230), 'automatic stop waits for complete warning interval');
+    // The workstation systemd unit keeps a foreground docker run process.
+    // It must NOT freeze 20-minute idle shutdown even when XFCE is open.
+    $dockerClassifier = new \ReflectionMethod(MediaWorkerNodeService::class, 'isPersistentWorkstationDockerClient');
+    idleCheck($dockerClassifier->invoke(null, "/usr/bin/docker\0run\0--rm\0--name\0arcadecloud-workstation\0") === true,
+        'long-lived Docker CLI of XFCE does not block inactivity');
+    idleCheck($dockerClassifier->invoke(null, "/usr/bin/docker\0run\0--name=arcadecloud-workstation\0") === true,
+        'workstation name assignment style is recognized');
+    idleCheck($dockerClassifier->invoke(null, "/usr/bin/docker\0build\0-t\0unrelated\0") === false,
+        'real Docker build remains an auto-shutdown blocker');
+    idleCheck($dockerClassifier->invoke(null, "/usr/bin/docker\0run\0--name\0other-container\0") === false,
+        'non-workstation Docker jobs remain protected');
+
     // AWS Console/GitHub may start the compute EC2 without creating a DB
     // session. Only the physical node (IMDS verified + media-worker) may
     // initialize an idle timer. A remote web gateway must not invent a session.

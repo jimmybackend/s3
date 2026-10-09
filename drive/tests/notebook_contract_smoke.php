@@ -64,7 +64,9 @@ $assert(str_contains($js, 'loadSelectedIntoPrompt') && str_contains($js, "curren
 $assert(str_contains($js, 'textCursor') && str_contains($js, "status('Punto de texto seleccionado')"), 'tocar un lugar libre fija el punto de inserción para varios textos en la misma línea');
 $assert(str_contains($js, "action==='text-resize'") && str_contains($js, 'o.size=Math.max(12'), 'texto seleccionado puede redimensionarse directamente');
 $assert(str_contains($page, 'id="nbPasteMode"') && str_contains($page, 'value="outline"') && str_contains($page, 'value="gray"') && str_contains($page, 'value="pencil"'), 'Notebook ofrece pegado normal contorno grises y lápiz');
-$assert(str_contains($js, "mode==='outline'") && str_contains($js, "mode==='gray'") && str_contains($js, "mode==='pencil'"), 'procesamiento de imagen implementa los modos solicitados');
+$assert(str_contains($js, "mode==='outline'") && str_contains($js, "mode==='gray'")
+    && str_contains($js, "mode!=='normal'") && str_contains($js, 'edge*1.8')
+    && str_contains($page, '<option value="pencil">'), 'procesamiento de imagen implementa los modos solicitados');
 $assert(str_contains($js, 'setTimeout(()=>readClipboardImage(point),700)'), 'toque prolongado sobre la hoja intenta pegar la imagen del portapapeles');
 foreach (['Archivo','Editar','Insertar','Formato','IA','Vista'] as $menu) {
     $assert(str_contains($page, '<summary>' . $menu . '</summary>'), "menú profesional {$menu} disponible");

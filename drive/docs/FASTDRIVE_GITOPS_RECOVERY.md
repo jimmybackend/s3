@@ -31,7 +31,11 @@ Si detecta código escrito en el servidor y no guardado en Git, **aborta sin
 sobrescribirlo**. Su reconciliación no toca los volúmenes
 `/var/lib/arcadecloud-office` ni las credenciales de
 `/etc/arcadecloud-drive` y `/var/lib/arcadecloud-guacamole`.
-No reinicia el escritorio ni Guacamole.
+No reinicia el escritorio ni Guacamole. La reconciliación puede reiniciar
+solo el worker multimedia incluso cuando XFCE está abierto, siempre que no
+haya trabajo multimedia ni documentos Office pendientes: no necesita detener
+el escritorio para aplicar el código. El cliente persistente `docker run` de
+Workstation tampoco bloquea esa recarga del worker.
 
 ## Autoapagado después de encendido externo
 
@@ -51,6 +55,15 @@ Operaciones transitorias de host detectadas (FFmpeg, ZIP/RAR, Git,
 Docker CLI y utilidades CLI de compresión/compilación) frenan el apagado;
 se mantienen además las protecciones de documentos Office y trabajos
 multimedia, y el candado compartido `ComputeNodeAdmissionLock`.
+
+**Detalle crítico de Docker/Workstation:** la unidad systemd inicia el
+escritorio con un cliente persistente `docker run --name
+arcadecloud-workstation`. Ese cliente **no cuenta como trabajo de fondo**:
+el contador de inactividad debe seguir avanzando cuando XFCE está abierto
+pero el usuario lleva 20 minutos sin interacción. El worker identifica
+estrictamente el cliente de esa unidad por sus argumentos locales, sin
+registrar argumentos ni contraseñas. `docker build` y contenedores ajenos
+siguen protegidos mientras su proceso cliente esté activo.
 
 **Límite:** ninguna inspección de procesos puede garantizar protección
 para todo proceso de terceros ni para una descarga silenciosa de Chrome.

@@ -567,11 +567,42 @@ final class MediaWorkerNodeService
             }
             // Transient interactive CLI work may continue after input stops. Persistent
             // daemons (dockerd, chrome, mysqld) are deliberately excluded.
+            if (trim((string)$name) === 'docker') {
+                $cmdlinePath = substr($path, 0, -4) . 'cmdline';
+                $cmdline = @file_get_contents($cmdlinePath);
+                if ($cmdline === false) {
+                    if (is_file($cmdlinePath)) {
+                        throw new RuntimeException('No se pudo comprobar un proceso Docker; apagado bloqueado.');
+                    }
+                    continue; // process exited between /proc scans
+                }
+                // systemd keeps `docker run --name arcadecloud-workstation`
+                // alive for the entire GUI session. It is not a background
+                // compute task. Actual Office input still resets the idle timer.
+                if (self::isPersistentWorkstationDockerClient($cmdline)) {
+                    continue;
+                }
+            }
             if (in_array(trim((string)$name), [
                 'ffmpeg', 'ffprobe', 'rar', 'unrar', 'zip', 'unzip', '7z',
                 '7za', '7zr', 'git', 'docker', 'buildctl', 'make',
                 'gcc', 'cc1plus', 'tar', 'gzip', 'bzip2', 'xz', 'zstd', 'pigz'
             ], true)) return true;
+        }
+        return false;
+    }
+
+    /** Identify ONLY the long-lived Docker CLI owned by our XFCE systemd unit. */
+    private static function isPersistentWorkstationDockerClient(string $commandLine): bool
+    {
+        $arguments = array_values(array_filter(explode("\0", $commandLine), static fn(string $value): bool => $value !== ''));
+        if (count($arguments) < 3 || basename($arguments[0]) !== 'docker'
+            || !in_array('run', $arguments, true)) return false;
+        foreach ($arguments as $i => $argument) {
+            if ($argument === '--name' && ($arguments[$i + 1] ?? '') === 'arcadecloud-workstation') {
+                return true;
+            }
+            if ($argument === '--name=arcadecloud-workstation') return true;
         }
         return false;
     }

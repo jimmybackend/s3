@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace ArcadeCloud\Drive\Http\Controller;
 
+use ArcadeCloud\Drive\Application\Drive3dBackgroundFolderService;
+
 use ArcadeCloud\Drive\Http\JsonResponse;
 use RuntimeException;
 use Throwable;
@@ -51,13 +53,13 @@ final class Drive3dBackgroundUploadController extends AbstractJsonController
             if ($name === '') $name = 'fondo_' . date('Ymd_His') . '.' . $allowed[$mime];
             $name = mb_substr($name, 0, 220);
 
-            $root = $this->app->userStoragePath()->rootForUser($userId);
-            $images = rtrim($root, '/') . '/Imagenes/';
-            $route = $images . 'fondos3D/';
-
-            $catalog = $this->app->uploadCatalogRepository();
-            $catalog->ensureFolder($userId, $images, 'Imagenes', $root);
-            $catalog->ensureFolder($userId, $route, 'fondos3D', $images);
+            // The visible names Imagenes/fondos3D are catalog labels; folder
+            // Prefix values are opaque physical keys and must not be guessed.
+            $route = (new Drive3dBackgroundFolderService(
+                $this->app->folderRepository(),
+                $this->app->folderMutationService(),
+                $this->app->userStoragePath()
+            ))->ensure($userId);
 
             $result = $this->app->singleUploadService()->upload(
                 $tmpPath,

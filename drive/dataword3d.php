@@ -464,9 +464,6 @@ header('Content-Type: text/html; charset=UTF-8');
       <div><strong>Personalizar sala 3D</strong><button type="button" data-dw-environment-close><i class="fas fa-xmark"></i></button></div>
       <p class="dw-environment-help">Los fondos se guardan en <b>Imagenes/fondos3D</b> y la configuración queda en tu perfil de ArcadeCloud.</p>
       <p class="dw-environment-route" aria-label="Ruta de fondos"><i class="fas fa-folder-open"></i> Imagenes/fondos3D/</p>
-      <div class="dw-environment-presets">
-        <button type="button" data-environment-choice="mountain">Restaurar día hermoso 360°</button>
-      </div>
       <label class="dw-upload-background">
         <i class="fas fa-cloud-arrow-up"></i>
         <span>Subir nuevo fondo</span>
@@ -490,6 +487,7 @@ header('Content-Type: text/html; charset=UTF-8');
         <strong data-environment-selected>Selecciona una miniatura</strong>
       </div>
       <button type="button" data-environment-use="glass" disabled><i class="fas fa-window-maximize"></i> Aplicar a cristales</button>
+      <button type="button" data-environment-reset-glass title="Recuperar el paisaje original 360° sin borrar tus imágenes ni cambiar el piso"><i class="fas fa-rotate-left" aria-hidden="true"></i> Volver al fondo original de los cristales</button>
       <button type="button" data-environment-use="floor" disabled><i class="fas fa-layer-group"></i> Aplicar al piso</button>
       <div class="dw-environment-preset-row">
         <label>Muebles <select data-furniture-preset><option value="default">ArcadeCloud Default</option></select></label>

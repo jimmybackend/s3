@@ -4338,7 +4338,7 @@
     },
     {
       "path": "drive/tests/notebook_contract_smoke.php",
-      "size": 10722,
+      "size": 10814,
       "active": false,
       "references": []
     },
@@ -4452,7 +4452,7 @@
     },
     {
       "path": "drive/tests/upload_task_center_contract.php",
-      "size": 3405,
+      "size": 3406,
       "active": false,
       "references": []
     },
@@ -4470,13 +4470,13 @@
     },
     {
       "path": "drive/tests/web_os_clipboard_contract_smoke.php",
-      "size": 12603,
+      "size": 12738,
       "active": false,
       "references": []
     },
     {
       "path": "drive/tests/web_os_contract_smoke.php",
-      "size": 87220,
+      "size": 87222,
       "active": false,
       "references": []
     },
@@ -4500,7 +4500,7 @@
     },
     {
       "path": "drive/tests/web_os_multiwindow_smoke.php",
-      "size": 6995,
+      "size": 7189,
       "active": false,
       "references": []
     },

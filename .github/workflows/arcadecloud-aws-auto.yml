@@ -1,0 +1,73 @@
+name: ArcadeCloud AWS operator - automatic
+
+# Uses the already-connected OIDC role on main. No passwords or AWS keys.
+# Intentionally supports only exact operations checked again by operator.py.
+on:
+  workflow_dispatch:
+    inputs:
+      alias:
+        description: 'Host'
+        required: true
+        type: choice
+        options: [small, large]
+      operation:
+        description: 'Allowed operator action'
+        required: true
+        type: choice
+        options: [diagnose, service, power-start]
+      argument:
+        description: 'Exact diagnostic/service action; blank for power-start'
+        type: string
+        required: false
+        default: uptime
+      confirm:
+        description: 'READ_DIAGNOSTIC / SERVICE_CHANGE / POWER_LARGE'
+        required: true
+        type: string
+  push:
+    branches: [main]
+    paths:
+      - tools/arcadecloud-aws-bridge/requests/auto.json
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: arcadecloud-aws-operator-auto
+  cancel-in-progress: false
+
+jobs:
+  operate:
+    if: github.repository == 'jimmybackend/s3' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure OIDC AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.ARCADECLOUD_AWS_BRIDGE_ROLE_ARN }}
+          aws-region: ${{ vars.ARCADECLOUD_AWS_REGION }}
+          role-session-name: ArcadeCloudAutoOperator
+      - name: Install AWS SDK
+        run: python3 -m pip install 'boto3>=1.35,<2'
+      - name: Execute fixed operation on selected EC2
+        shell: bash
+        env:
+          ARCADECLOUD_AWS_REGION: ${{ vars.ARCADECLOUD_AWS_REGION }}
+          ARCADECLOUD_AWS_SMALL_ID: ${{ vars.ARCADECLOUD_AWS_SMALL_ID }}
+          ARCADECLOUD_AWS_LARGE_ID: ${{ vars.ARCADECLOUD_AWS_LARGE_ID }}
+          ARCADECLOUD_AWS_OPERATOR_ENABLED: YES_PROTECTED
+          EVENT_NAME: ${{ github.event_name }}
+          RUN_ID: ${{ github.run_id }}
+          REQUEST_ALIAS: ${{ inputs.alias }}
+          REQUEST_OPERATION: ${{ inputs.operation }}
+          REQUEST_ARGUMENT: ${{ inputs.argument }}
+          REQUEST_CONFIRM: ${{ inputs.confirm }}
+        run: |
+          set -euo pipefail
+          python3 tools/arcadecloud-aws-bridge/operator.py \
+            --event "$EVENT_NAME" --alias "$REQUEST_ALIAS" \
+            --operation "$REQUEST_OPERATION" --argument "$REQUEST_ARGUMENT" \
+            --confirm "$REQUEST_CONFIRM" --run-id "$RUN_ID"

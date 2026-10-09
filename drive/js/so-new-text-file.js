@@ -1,7 +1,11 @@
 /* Nuevo archivo de texto en la carpeta seleccionada de ArcadeCloud OS.
  * El backend es la autoridad sobre ruta, extensión, existencia y permisos. */
-(function (win, doc) {
-  'use strict';
+class ArcadeCloudEmptyTextFileCreator {
+  constructor(win, doc) { this.win = win; this.doc = doc; }
+
+  init() {
+  const win = this.win;
+  const doc = this.doc;
   const form = doc.getElementById('formCrearArchivoVacio');
   if (!form) return;
   const field = id => doc.getElementById(id);
@@ -116,4 +120,9 @@
       submit.disabled = false;
     }
   });
-})(window, document);
+  return this;
+  }
+}
+
+if (typeof module !== 'undefined' && module.exports) module.exports = { ArcadeCloudEmptyTextFileCreator };
+if (typeof window !== 'undefined') new ArcadeCloudEmptyTextFileCreator(window, document).init();

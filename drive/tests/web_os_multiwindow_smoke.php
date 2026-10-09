@@ -29,7 +29,7 @@ $assert(str_contains($files['runtime'], "(^|\\/)\\.\\.?(\\/|$)"), 'normalizador 
 $assert(str_contains($files['runtime'], 'new AbortController()'), 'navegación cancela fetch obsoleto');
 $assert(str_contains($files['runtime'], "data-folder-open-new"), 'carpetas ofrecen abrir en ventana nueva');
 $assert(str_contains($files['runtime'], 'application/x-arcadecloud-items'), 'drag and drop usa payload privado');
-$assert(str_contains($files['runtime'], "clipboard?.paste?.(destinationRoute, { destinationWindowId: this.id })"), 'drop reutiliza backend de portapapeles y conserva Explorer destino');
+$assert(str_contains($files['runtime'], "clipboard.paste?.(destinationRoute, { destinationWindowId: this.id })"), 'drop reutiliza backend de portapapeles y conserva Explorer destino');
 $assert(str_contains($files['runtime'], "'file-moved','file-copied','file-deleted','folder-created','upload-completed','task-completed'"), 'EventBus sincroniza cambios');
 $assert(str_contains($files['runtime'], "this.bus.on('filesystem:changed'") && str_contains($files['runtime'], 'emitFilesystemChanged(detail = {})'), 'EventBus expone filesystem:changed sin crear un segundo bus');
 $assert(str_contains($files['runtime'], 'preserveScroll: true') && str_contains($files['runtime'], 'scroll: item.scroll'), 'refresh e historial conservan scroll por Explorer');

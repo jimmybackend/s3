@@ -35,13 +35,13 @@ class ArcadeCloudWindowLayoutConfig {
 
 /* Match image window geometry to the actual pixels while retaining desktop chrome. */
 class ArcadeCloudImageWindowFit {
-  static calculate(imageWidth, imageHeight, viewportWidth, viewportHeight, chromeHeight = 74) {
-    const values = [imageWidth, imageHeight, viewportWidth, viewportHeight, chromeHeight].map(Number);
+  static calculate(imageWidth, imageHeight, viewportWidth, viewportHeight, chromeHeight = 74, topInset = 54, bottomInset = 46) {
+    const values = [imageWidth, imageHeight, viewportWidth, viewportHeight, chromeHeight, topInset, bottomInset].map(Number);
     if (values.some(value => !Number.isFinite(value) || value < 0) ||
         imageWidth <= 0 || imageHeight <= 0 || viewportWidth <= 0 || viewportHeight <= 0) return null;
     const frame = 2;
     const maxWidth = Math.max(1, Math.floor(viewportWidth) - 16);
-    const maxHeight = Math.max(1, Math.floor(viewportHeight) - 58);
+    const maxHeight = Math.max(1, Math.floor(viewportHeight - topInset - bottomInset) - 16);
     const contentWidth = Math.max(1, maxWidth - frame);
     const contentHeight = Math.max(1, maxHeight - chromeHeight - frame);
     // Keep ordinary photos at 1:1 or smaller, but enlarge tiny ones enough
@@ -65,8 +65,13 @@ class ArcadeCloudImageWindowFit {
       const status = element.querySelector('.os-statusbar');
       const chromeHeight = (title?.getBoundingClientRect().height || 42) +
         (status?.getBoundingClientRect().height || 32);
+      const desktopTop = element.parentElement?.getBoundingClientRect?.().top;
+      const taskbarTop = win.document?.querySelector('.os-taskbar')?.getBoundingClientRect?.().top;
+      const topInset = Number.isFinite(desktopTop) ? Math.max(0, desktopTop) : 54;
+      const bottomInset = Number.isFinite(taskbarTop) ? Math.max(0, win.innerHeight - taskbarTop) : 46;
       const geometry = this.calculate(
-        image.naturalWidth, image.naturalHeight, win.innerWidth, win.innerHeight, chromeHeight
+        image.naturalWidth, image.naturalHeight, win.innerWidth, win.innerHeight,
+        chromeHeight, topInset, bottomInset
       );
       if (!geometry) return;
 
@@ -74,13 +79,14 @@ class ArcadeCloudImageWindowFit {
       const oldLeft = Number.parseFloat(element.style.left);
       const oldTop = Number.parseFloat(element.style.top);
       const maxLeft = Math.max(8, win.innerWidth - geometry.width - 8);
-      const maxTop = Math.max(4, win.innerHeight - geometry.height - 54);
+      const usableHeight = win.innerHeight - topInset - bottomInset;
+      const maxTop = Math.max(8, usableHeight - geometry.height - 8);
       const left = fittedBefore && Number.isFinite(oldLeft)
         ? Math.max(8, Math.min(oldLeft, maxLeft))
         : Math.max(8, Math.round((win.innerWidth - geometry.width) / 2));
       const top = fittedBefore && Number.isFinite(oldTop)
-        ? Math.max(4, Math.min(oldTop, maxTop))
-        : Math.max(4, Math.round((win.innerHeight - 58 - geometry.height) / 2));
+        ? Math.max(8, Math.min(oldTop, maxTop))
+        : Math.max(8, Math.round((usableHeight - geometry.height) / 2));
 
       element.style.width = geometry.width + 'px';
       element.style.height = geometry.height + 'px';

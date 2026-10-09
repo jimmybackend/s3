@@ -11,6 +11,78 @@ class Drive3DProduction {
     map.setAttribute('aria-label', 'Plano real: libreros, archivos, lámpara, posición y dirección de cámara');
     const coordinates = doc.createElement('output');
     let zoneKey = '', visible = [], near = [];
+    // The selected folder's files are paged independently from its small
+    // near-shelf preview. Each page occupies at most four complete dome rows.
+    let selectedGalleryIndex=-1, selectedGalleryPage=1, selectedGalleryPages=1;
+    let galleryAbort=null, galleryTicket=0;
+    const pager=doc.createElement('nav');
+    pager.className='dw-dome-gallery-pager';
+    pager.hidden=true;
+    pager.setAttribute('aria-label','Páginas de archivos del librero');
+    const before=doc.createElement('button'), after=doc.createElement('button'), label=doc.createElement('span');
+    before.type=after.type='button';
+    before.textContent='‹ Anterior';
+    after.textContent='Siguiente ›';
+    label.setAttribute('aria-live','polite');
+    pager.append(before,label,after);
+    app.world.append(pager);
+
+    function clearGallery() {
+        galleryTicket++;
+        galleryAbort?.abort(); galleryAbort=null;
+        selectedGalleryIndex=-1;selectedGalleryPage=selectedGalleryPages=1;
+        pager.hidden=true;
+        app.three?.selectShelfGallery?.(-1);
+    }
+
+    async function loadFocusedPage(index,page=1) {
+        const shelf=app.shelves[index];
+        if(!shelf)return;
+        galleryAbort?.abort();
+        const controller=new AbortController();
+        galleryAbort=controller;
+        const ticket=++galleryTicket;
+        const href=String(shelf.dataset.previewHref||'');
+        if(!href)return;
+        const url=new URL(href,app.window.location.href);
+        url.searchParams.set('api','files');
+        url.searchParams.set('galeria','1');
+        url.searchParams.set('pagina',String(page));
+        pager.hidden=false;
+        label.textContent='Cargando archivos…';
+        before.disabled=after.disabled=true;
+        try {
+            const response=await fetch(url.href,{
+                credentials:'same-origin',cache:'no-store',signal:controller.signal,
+                headers:{Accept:'application/json'}
+            });
+            if(!response.ok)throw new Error('HTTP '+response.status);
+            const json=await response.json();
+            if(!json?.ok || !json?.state)throw new Error('Respuesta de archivos inválida.');
+            if(controller.signal.aborted || ticket!==galleryTicket || selectedGalleryIndex!==index)return;
+            selectedGalleryPage=Math.max(1,Number(json.state.file_page||page));
+            selectedGalleryPages=Math.max(1,Number(json.state.file_pages||1));
+            const files=Array.isArray(json.state.files)?json.state.files:[];
+            app.three?.setFocusedShelfFiles?.(index,files);
+            label.textContent='Archivos '+selectedGalleryPage+' / '+selectedGalleryPages+
+                ' · cuatro filas · gira para ver todo el domo';
+            before.disabled=selectedGalleryPage<=1;
+            after.disabled=selectedGalleryPage>=selectedGalleryPages;
+            pager.hidden=files.length===0 && selectedGalleryPages===1;
+        } catch(error) {
+            if(controller.signal.aborted || ticket!==galleryTicket)return;
+            label.textContent='No se pudieron cargar los archivos. Toca Siguiente para reintentar.';
+            before.disabled=selectedGalleryPage<=1;
+            after.disabled=false;
+        } finally {
+            if(galleryAbort===controller)galleryAbort=null;
+        }
+    }
+
+    before.addEventListener('click',()=>loadFocusedPage(selectedGalleryIndex,Math.max(1,selectedGalleryPage-1)));
+    after.addEventListener('click',()=>loadFocusedPage(selectedGalleryIndex,Math.min(selectedGalleryPages,selectedGalleryPage+1)));
+    app.clearThreeFocusedGallery=clearGallery;
+
     function syncZones() {
         const focus = app.shelves.indexOf(app.focusedShelf);
         const detail = [...new Set([...(visible.includes(focus) ? [focus] : []), ...near])].slice(0,3);
@@ -18,6 +90,7 @@ class Drive3DProduction {
         if (key === zoneKey) return;
         if (focus < 0) {
             if(app.deskFocus) app.deskFocus.hidden = true;
+            if(selectedGalleryIndex>=0)clearGallery();
         }
         zoneKey = key; clearTimeout(app.zoneTimer);
         app.visibleShelves = new Set(visible.map(i => app.shelves[i]));
@@ -43,7 +116,13 @@ class Drive3DProduction {
     };
     app.chooseThreeShelf = index => {
         const shelf = app.shelves[index]; if (!shelf) return;
+        const changed=selectedGalleryIndex!==index;
         app.focusedShelf = shelf; app.three.focus(index);
+        if (changed) {
+            selectedGalleryIndex=index;
+            selectedGalleryPage=selectedGalleryPages=1;
+            loadFocusedPage(index,1);
+        }
         if (!visible.includes(index)) visible.push(index);
         syncZones(); app.selectShelf(shelf,true);
     };

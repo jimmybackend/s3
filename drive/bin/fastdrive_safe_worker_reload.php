@@ -26,12 +26,10 @@ try {
             echo "ARCADECLOUD_WORKER_RELOAD=deferred_busy_tasks\n";
             return;
         }
-        // An active desktop may still be using the same server.
-        if (trim((string)shell_exec('/usr/bin/systemctl is-active arcadecloud-workstation.service 2>/dev/null')) === 'active') {
-            echo "ARCADECLOUD_WORKER_RELOAD=deferred_office_active\n";
-            return;
-        }
-        foreach (['ffmpeg','ffprobe','docker','rar','unrar','zip','unzip','git','7z'] as $name) {
+        // Reloading only the media worker does NOT restart the separate
+        // Workstation/Guacamole desktop. The shared task/Office probe above
+        // has already rejected unsafe jobs and unsynced documents.
+        foreach (['ffmpeg','ffprobe','rar','unrar','zip','unzip','git','7z'] as $name) {
             $output = [];
             $exit = 1;
             exec('/usr/bin/pgrep -x ' . escapeshellarg($name) . ' >/dev/null 2>&1', $output, $exit);

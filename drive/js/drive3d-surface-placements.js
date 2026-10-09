@@ -14,7 +14,7 @@ class Drive3DSurfacePlacements {
     this.ribs = 16;
     // Four glass bands above the shelves, plus the upper roof. Every
     // azimuth section is valid all around the 360-degree dome.
-    this.bands = [0, .47, .72, 1.05, 1.30];
+    this.bands = [0, .28, .52, .79, 1.05];
   }
 
   static mode(mode) {
@@ -50,8 +50,10 @@ class Drive3DSurfacePlacements {
     const point = ray.intersectSphere(new T.Sphere(new T.Vector3(0,0,0),this.radius-.16),new T.Vector3());
     if (!point) return null;
     const elevation = Math.atan2(point.y,Math.hypot(point.x,point.z));
-    if (mode === 'window' && (elevation < .01 || elevation > 1.30)) return null;
-    if (mode === 'ceiling' && elevation < 1.30) return null;
+    if (mode === 'window' && (elevation < .01 || elevation > 1.05)) return null;
+    // Starting the roof near elevation 1.05 keeps it reachable when the
+    // visitor looks up from the near side of the dome (not just its centre).
+    if (mode === 'ceiling' && elevation < 1.05) return null;
     const step = Math.PI*2/this.ribs;
     const angle = (Math.atan2(point.x,point.z) + Math.PI*2) % (Math.PI*2);
     const sector = Math.floor(angle/step) % this.ribs;
@@ -101,7 +103,7 @@ class Drive3DSurfacePlacements {
     const scale = Drive3DSurfacePlacements.scale(entry.surfaceScale,mode);
     const midAngle = (info.sector+.5)*slice;
     const longitudeHalf = (slice*.42)*scale;
-    const bounds = mode === 'ceiling' ? [1.325,1.545] : [this.bands[info.band]+.045,this.bands[info.band+1]-.045];
+    const bounds = mode === 'ceiling' ? [1.075,1.545] : [this.bands[info.band]+.025,this.bands[info.band+1]-.025];
     const elevationCenter = (bounds[0]+bounds[1])/2;
     const elevationHalf = Math.max(.015,(bounds[1]-bounds[0])*.5*scale);
     const segmentsX = 12,segmentsY = 8;

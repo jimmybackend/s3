@@ -1,7 +1,7 @@
 {
-  "request_id": "auto-small-uptime-20261008-second",
-  "alias": "small",
-  "operation": "diagnose",
-  "argument": "uptime",
-  "confirm": "READ_DIAGNOSTIC"
+  "request_id": "start-large-20261008-arcadecloud-maintenance",
+  "alias": "large",
+  "operation": "power-start",
+  "argument": "",
+  "confirm": "POWER_LARGE"
 }

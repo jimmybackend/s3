@@ -62,7 +62,7 @@ final class Drive3dPreferenceSanitizer
             }
 
             $mode = in_array(($entry['mode'] ?? 'free'), ['free', 'floor', 'ceiling', 'window'], true)
-                ? (string)$entry['mode']
+                ? (string)($entry['mode'] ?? 'free')
                 : 'free';
             $panelId = trim((string)($entry['panelId'] ?? ''));
             if (($mode === 'window' && !preg_match('/^w-(?:[0-9]|1[0-5])-[0-2]$/', $panelId))

@@ -52,7 +52,7 @@ $assert(str_contains($js, 'Math.max(-26,Math.min(2,p.y-rawStart))'), 'modo Sobre
 $assert(str_contains($api, "'recognize_line'") && str_contains($service, 'recognizeLine'), 'Notebook expone reconocimiento temporal de línea');
 $assert(str_contains($js, 'scheduleLineRecognition') && str_contains($js, 'recognizeLine(baseline)'), 'cliente espera el fin de escritura antes de reconocer');
 $assert(str_contains($js, 'recognizedFromInk:true') && str_contains($js, 'state.objects=state.objects.filter(o=>!ids.has(o.id))'), 'texto reconocido sustituye los trazos originales');
-$assert(str_contains($service, "'notebook-tmp/f_'") && str_contains($service, 'deleteObject'), 'imagen temporal de reconocimiento se elimina de S3');
+$assert(str_contains($service, "'/notebook-tmp/f_'") && str_contains($service, 'deleteObject'), 'imagen temporal de reconocimiento se elimina de S3');
 $assert(str_contains($page, 'id="nbFontSize"') && str_contains($js, 'fontSize'), 'Notebook permite cambiar tamaño de letra y persistirlo');
 $assert(str_contains($page, 'id="nbZoom"') && str_contains($page, 'value="25"') && str_contains($page, 'value="75"') && str_contains($js, 'applyZoom'), 'Notebook permite zoom desde 25 por ciento y ofrece 75 por ciento');
 $assert(str_contains($js, 'defaultZoom=()=>window.innerWidth>=1200?75:50'), 'Notebook usa 75 por ciento en escritorio y conserva 50 por ciento en pantallas menores');

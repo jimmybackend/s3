@@ -31,7 +31,11 @@ Si detecta código escrito en el servidor y no guardado en Git, **aborta sin
 sobrescribirlo**. Su reconciliación no toca los volúmenes
 `/var/lib/arcadecloud-office` ni las credenciales de
 `/etc/arcadecloud-drive` y `/var/lib/arcadecloud-guacamole`.
-No reinicia el escritorio ni Guacamole.
+No reinicia el escritorio ni Guacamole. La reconciliación puede reiniciar
+solo el worker multimedia incluso cuando XFCE está abierto, siempre que no
+haya trabajo multimedia ni documentos Office pendientes: no necesita detener
+el escritorio para aplicar el código. El cliente persistente `docker run` de
+Workstation tampoco bloquea esa recarga del worker.
 
 ## Autoapagado después de encendido externo
 

@@ -1,0 +1,72 @@
+name: ArcadeCloud AWS bridge - EC2 status
+
+on:
+  workflow_dispatch:
+    inputs:
+      alias:
+        description: 'EC2 target: small or large'
+        type: choice
+        required: true
+        options:
+          - small
+          - large
+      report:
+        description: 'Only read-only status is enabled'
+        type: choice
+        required: true
+        options:
+          - status
+  push:
+    branches:
+      - main
+    paths:
+      - tools/arcadecloud-aws-bridge/requests/current.json
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: arcadecloud-aws-bridge-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  ec2-status:
+    if: github.repository == 'jimmybackend/s3' && (github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check role configuration
+        env:
+          AWS_ROLE: ${{ vars.ARCADECLOUD_AWS_BRIDGE_ROLE_ARN }}
+        shell: bash
+        run: |
+          if [ -z "$AWS_ROLE" ]; then
+            echo "::error::Configure ARCADECLOUD_AWS_BRIDGE_ROLE_ARN in repository Variables."
+            exit 1
+          fi
+      - name: Configure temporary AWS OIDC identity
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.ARCADECLOUD_AWS_BRIDGE_ROLE_ARN }}
+          aws-region: ${{ vars.ARCADECLOUD_AWS_REGION }}
+          role-session-name: ArcadeCloudGHReadOnly
+      - name: Install boto3
+        run: python3 -m pip install 'boto3>=1.35,<2'
+      - name: Read EC2 state and SSM connectivity
+        env:
+          ARCADECLOUD_AWS_REGION: ${{ vars.ARCADECLOUD_AWS_REGION }}
+          ARCADECLOUD_AWS_SMALL_ID: ${{ vars.ARCADECLOUD_AWS_SMALL_ID }}
+          ARCADECLOUD_AWS_LARGE_ID: ${{ vars.ARCADECLOUD_AWS_LARGE_ID }}
+          REQUEST_ALIAS: ${{ inputs.alias }}
+          REQUEST_REPORT: ${{ inputs.report }}
+          EVENT_NAME: ${{ github.event_name }}
+          RUN_ID: ${{ github.run_id }}
+        shell: bash
+        run: |
+          python3 tools/arcadecloud-aws-bridge/status.py \
+            --event "$EVENT_NAME" \
+            --alias "$REQUEST_ALIAS" \
+            --report "$REQUEST_REPORT" \
+            --run-id "$RUN_ID"

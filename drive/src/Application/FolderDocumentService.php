@@ -41,7 +41,8 @@ final class FolderDocumentService
         string $plainText,
         string $richHtml,
         string $remoteAddr = 'unknown',
-        string $userAgent = 'unknown'
+        string $userAgent = 'unknown',
+        bool $createEmpty = false
     ): array {
         if ($userId <= 0) {
             throw new RuntimeException('Usuario inválido.');
@@ -56,13 +57,21 @@ final class FolderDocumentService
         }
 
         $filename = $this->normalizeFilename($name, self::FORMATS[$format]['extension']);
+        if ($createEmpty) {
+            // El flujo de nuevo archivo nunca modifica un archivo ya existente.
+            $this->assertNameAvailable($userId, $route, $filename);
+        }
         $payload = match ($format) {
-            'html' => $this->htmlDocument($filename, $richHtml !== '' ? $richHtml : nl2br($this->escape($plainText))),
-            'md', 'txt' => $this->normalizePlainText($plainText),
+            'html' => $this->htmlDocument(
+                $filename,
+                $createEmpty ? '' : ($richHtml !== '' ? $richHtml : nl2br($this->escape($plainText))),
+                $createEmpty
+            ),
+            'md', 'txt' => $createEmpty ? '' : $this->normalizePlainText($plainText),
             default => throw new RuntimeException('Formato de documento no permitido.'),
         };
 
-        if (trim($payload) === '') {
+        if (!$createEmpty && trim($payload) === '') {
             throw new RuntimeException('Pega o escribe contenido antes de guardar.');
         }
 
@@ -123,6 +132,23 @@ final class FolderDocumentService
         }
     }
 
+    private function assertNameAvailable(int $userId, string $route, string $filename): void
+    {
+        $stmt = $this->db->prepare(
+            'SELECT id_ FROM FileS3 WHERE user_id_ = ? AND Ruta = ? AND Nombre = ? AND Found = 1 LIMIT 1'
+        );
+        if (!$stmt) {
+            throw new RuntimeException('No se pudo comprobar el nombre del archivo.');
+        }
+        $stmt->bind_param('iss', $userId, $route, $filename);
+        $stmt->execute();
+        $exists = (bool)$stmt->get_result()?->fetch_assoc();
+        $stmt->close();
+        if ($exists) {
+            throw new RuntimeException('Ya existe un archivo con ese nombre en esta carpeta. Elige otro nombre.');
+        }
+    }
+
     private function normalizeFilename(string $name, string $extension): string
     {
         $name = trim($name);
@@ -155,10 +181,10 @@ final class FolderDocumentService
         return rtrim($text) . "\n";
     }
 
-    private function htmlDocument(string $filename, string $fragment): string
+    private function htmlDocument(string $filename, string $fragment, bool $allowEmpty = false): string
     {
         $safe = $this->sanitizeHtmlFragment($fragment);
-        if (trim(strip_tags($safe)) === '') {
+        if (!$allowEmpty && trim(strip_tags($safe)) === '') {
             throw new RuntimeException('Pega o escribe contenido antes de guardar.');
         }
 

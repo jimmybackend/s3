@@ -16,7 +16,7 @@ foreach (['atril', 'rar', 'unrar', 'zip', 'unzip', 'file-roller', 'p7zip-full'] 
 }
 $assert(str_contains($docker, 'ubuntu:24.04'), 'Ubuntu 24.04 conservado');
 $assert(str_contains($installer, '--publish 127.0.0.1:6080:6080'), 'noVNC privado conservado');
-$assert(str_contains($installer, '--memory=5g --cpus=3'), 'Límites de recursos conservados');
+$assert(str_contains($installer, '--memory=5632m --cpus=3.25 --shm-size=1g'), 'Límites de recursos conservados');
 $assert(str_contains($guac, '-p 127.0.0.1:8085:8080'), 'Guacamole privado conservado');
 $assert(str_contains($guac, "(@CID,'port','3389')"), 'XRDP interno 3389 conservado');
 $assert(str_contains($guac, "(@CID,'disable-gfx','true')"), 'Reparación de pantalla negra conservada');

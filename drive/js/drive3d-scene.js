@@ -582,7 +582,6 @@ class Drive3DScene {
         document.addEventListener('visibilitychange', clearInput);
         viewport.addEventListener('pointerdown', event => {
             if (drag || event.button !== 0) return;
-            suppressNextClick = false;
             drag = { id: event.pointerId, x: event.clientX, y: event.clientY, startX: event.clientX, startY: event.clientY };
             viewport.setPointerCapture(event.pointerId); viewport.focus({ preventScroll: true });
         });
@@ -664,17 +663,14 @@ class Drive3DScene {
             }
             return best ? {card:best, item:best.userData.driveItem} : null;
         }
-        let suppressNextClick = false, handledPointerAt = -Infinity;
         viewport.addEventListener('pointerup', event => {
             if (!drag || drag.id !== event.pointerId) return;
             if (Math.hypot(event.clientX - drag.startX, event.clientY - drag.startY) > 7) {
-                suppressNextClick = true;
                 return;
             }
             const hit = pointerHit(event);
             const fileSelection = fileSelectionFromPointer(event, hit);
             if (fileSelection) {
-                handledPointerAt = performance.now();
                 setFileSelection(fileSelection.card);
                 options.onItemSelect?.(fileSelection.item, false, false);
                 needsRender = true;
@@ -703,19 +699,9 @@ class Drive3DScene {
             options.onSelect?.(selectedIndex);
             needsRender = true;
         });
-        // Do not send a second selection from the synthetic click after
-        // pointerup, and do not select anything after a drag-to-rotate.
-        viewport.addEventListener('click', event => {
-            if (suppressNextClick || performance.now() - handledPointerAt < 350) {
-                suppressNextClick = false;
-                return;
-            }
-            const selection = fileSelectionFromPointer(event, pointerHit(event));
-            if (!selection) return;
-            setFileSelection(selection.card);
-            options.onItemSelect?.(selection.item, false, false);
-            needsRender = true;
-        });
+        // A real pointerup is the one and only selection trigger. A later
+        // synthetic click must not select a different tile if the animated
+        // camera moved between those events.
         viewport.addEventListener('dblclick', event => {
             const hit = pointerHit(event);
             const fileSelection = fileSelectionFromPointer(event, hit);

@@ -75,6 +75,36 @@ const server=createServer((req,res)=>{
   assert.equal(await page.locator('.dw-camera-scene').isVisible(),false);
   assert(await page.locator('#dwThreeViewport canvas').isVisible());
 
+  // The user can restore the bundled 360-degree glass panorama without changing the floor.
+  await page.evaluate(()=>{
+    const app=window.ArcadeCloudDrive3D;
+    window.__glassSurfaceCalls=[];
+    const surface=app.three.surface;
+    window.__glassSurfaceOriginal=surface;
+    app.three.surface=(kind,url)=>{window.__glassSurfaceCalls.push([kind,url]);surface(kind,url);};
+    app.room.floorBackground='Imagenes/fondos3D/floor-sentinel.jpg';
+    app.chooseBackground('Imagenes/fondos3D/custom.jpg','/three-lab/assets/alpine-panorama.jpg');
+    app.useChosenBackground('glass');
+  });
+  assert.equal(await page.evaluate(()=>window.ArcadeCloudDrive3D.room.glassBackground),'Imagenes/fondos3D/custom.jpg');
+  await page.locator('[data-dw-environment]').click();
+  await page.locator('[data-environment-reset-glass]').click({force:true});
+  const glassRestored=await page.evaluate(()=>({
+    glass:window.ArcadeCloudDrive3D.room.glassBackground,
+    floor:window.ArcadeCloudDrive3D.room.floorBackground,
+    surfaceCalls:window.__glassSurfaceCalls,
+  }));
+  assert.equal(glassRestored.glass,'','Restore button clears only the customized glass path');
+  assert.equal(glassRestored.floor,'Imagenes/fondos3D/floor-sentinel.jpg','Restore button preserves floor art');
+  assert.deepEqual(glassRestored.surfaceCalls.at(-1),['glass',''],'The Three.js scene restores its bundled panorama');
+  await page.evaluate(()=>{
+    window.ArcadeCloudDrive3D.room.floorBackground='';
+    window.ArcadeCloudDrive3D.three.surface=window.__glassSurfaceOriginal;
+    delete window.__glassSurfaceOriginal;
+    delete window.__glassSurfaceCalls;
+  });
+  await page.locator('[data-dw-environment-close]').click({force:true});
+
   // Image media opens as independent world-anchored picture windows.
   await page.evaluate(()=>{
     const app=window.ArcadeCloudDrive3D;

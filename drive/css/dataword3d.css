@@ -1460,6 +1460,20 @@ body.is-camera-near .dw-hud{
 }
 .dw-environment-selection span{font-size:8px;color:#63cce9;text-transform:uppercase;letter-spacing:.08em}
 .dw-environment-selection strong{font-size:10px;color:#e8faff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dw-environment-panel>[data-environment-reset-glass]{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  min-height:42px;
+  background:linear-gradient(90deg,rgba(13,75,101,.86),rgba(8,38,56,.74));
+  border-color:rgba(108,228,255,.48);
+  color:#ecfcff;
+  font-weight:600;
+}
+.dw-environment-panel>[data-environment-reset-glass]:focus-visible{
+  outline:2px solid #8befff;
+  outline-offset:2px;
+}
 .dw-environment-preset-row{
   display:grid;
   gap:6px;

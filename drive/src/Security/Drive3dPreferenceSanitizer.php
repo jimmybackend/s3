@@ -61,6 +61,22 @@ final class Drive3dPreferenceSanitizer
                 continue;
             }
 
+            $mode = in_array(($entry['mode'] ?? 'free'), ['free', 'floor', 'ceiling', 'window'], true)
+                ? (string)$entry['mode']
+                : 'free';
+            $panelId = trim((string)($entry['panelId'] ?? ''));
+            if (($mode === 'window' && !preg_match('/^w-(?:[0-9]|1[0-5])-[0-2]$/', $panelId))
+                || ($mode === 'ceiling' && !preg_match('/^c-(?:[0-9]|1[0-5])-0$/', $panelId))) {
+                $mode = 'free';
+                $panelId = '';
+            }
+            if ($mode === 'floor' || $mode === 'free') {
+                $panelId = '';
+            }
+            $rawScale = $entry['surfaceScale'] ?? .70;
+            $scale = is_numeric($rawScale) && is_finite((float)$rawScale) ? (float)$rawScale : .70;
+            $scale = max(.30, min($mode === 'floor' ? 2.6 : .94, $scale));
+
             $slots[$index] = [
                 'id' => $id,
                 'name' => mb_substr(trim((string)($entry['name'] ?? 'Imagen')), 0, 255),
@@ -68,6 +84,9 @@ final class Drive3dPreferenceSanitizer
                 'openHref' => $openHref,
                 'world' => $world,
                 'size' => $this->pictureSize($entry['size'] ?? null),
+                'mode' => $mode,
+                'panelId' => $panelId,
+                'surfaceScale' => $scale,
             ];
         }
 

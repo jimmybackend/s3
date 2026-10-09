@@ -203,7 +203,9 @@ const server=createServer((req,res)=>{
   const [cx,,cz]=galleryState.camera;
   const galleryYaw=Math.atan2(cx-gx,cz-gz);
   const galleryDegrees=-galleryYaw*180/Math.PI;
-  await page.evaluate(deg=>window.ArcadeCloudDrive3D.three.look(deg,0),galleryDegrees);
+  // Elevated galleries are intentionally above the cabinets. Aim slightly
+  // upward rather than assuming the file cards are at eye level.
+  await page.evaluate(deg=>window.ArcadeCloudDrive3D.three.look(deg,-14),galleryDegrees);
   await page.waitForTimeout(650);
   const focusedGallery=await snap();
   const visibleFiles=focusedGallery.fileItems.filter(item=>item.point[2]>-1 && item.point[2]<1 && Math.abs(item.point[0])<.82 && Math.abs(item.point[1])<.82);

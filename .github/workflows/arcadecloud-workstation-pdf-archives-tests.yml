@@ -1,0 +1,23 @@
+name: Workstation PDF and archives contracts
+
+on:
+  pull_request:
+    paths:
+      - drive/docker/workstation/Dockerfile
+      - drive/tests/workstation_pdf_archive_contract_smoke.php
+      - drive/docs/ARCADECLOUD_WORKSTATION_PDF_ARCHIVES.md
+      - .github/workflows/arcadecloud-workstation-pdf-archives-tests.yml
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check PHP syntax
+        run: php -l drive/tests/workstation_pdf_archive_contract_smoke.php
+      - name: Verify package list and Guacamole compatibility
+        run: php drive/tests/workstation_pdf_archive_contract_smoke.php

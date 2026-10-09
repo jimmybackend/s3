@@ -565,14 +565,56 @@ class Drive3DScene {
             }
             return null;
         }
-        // Never pick the projected 'nearest' thumbnail: the broad NDC
-        // threshold used to select upper/diagonal neighbors on mobile.
+        // Each file is selectable only inside its actual projected 3D card.
+        // Selecting the nearest center within a broad circular radius used to
+        // jump to a diagonal / higher item. The raw raycaster can also hit the
+        // back of a neighboring card when projected cards nearly touch.
+        // Bound the pointer to the projected quadrilateral of its own card.
         function fileSelectionFromPointer(event, directHit = null) {
-            const direct = driveItemFromHit(directHit);
-            if (!direct || direct.folder) return null;
-            let card = direct.node;
-            while (card && !card.userData?.fileCard) card = card.parent;
-            return card?.userData?.fileCard ? {card, item:direct.item} : null;
+            if (!filePanels.length) return null;
+            const rect = renderer.domElement.getBoundingClientRect();
+            const x = event.clientX, y = event.clientY;
+            if (!rect.width || !rect.height || x < rect.left || x > rect.right ||
+                y < rect.top || y > rect.bottom) return null;
+            camera.updateMatrixWorld();
+            const project = (card, vx, vy) => {
+                const p = card.localToWorld(new T.Vector3(vx, vy, .06)).project(camera);
+                return {
+                    x:rect.left + (p.x + 1) * rect.width / 2,
+                    y:rect.top + (1 - p.y) * rect.height / 2,
+                    z:p.z
+                };
+            };
+            const insideQuad = (corners, px, py) => {
+                let sign = 0;
+                for (let i = 0; i < 4; i++) {
+                    const a = corners[i], b = corners[(i+1)%4];
+                    const cross = (b.x-a.x)*(py-a.y)-(b.y-a.y)*(px-a.x);
+                    if (Math.abs(cross) < .01) continue;
+                    const next = Math.sign(cross);
+                    if (sign && sign !== next) return false;
+                    sign = next;
+                }
+                return Boolean(sign);
+            };
+            let best = null, distance = Infinity;
+            for (const panel of filePanels) {
+                for (const card of panel.children) {
+                    if (!card.userData?.fileCard) continue;
+                    const center = project(card, 0, 0);
+                    if (center.z <= -1 || center.z >= 1) continue;
+                    const corners = [
+                        project(card, -.49, -.42),
+                        project(card, .49, -.42),
+                        project(card, .49, .42),
+                        project(card, -.49, .42)
+                    ];
+                    if (!insideQuad(corners, x, y)) continue;
+                    const d = Math.hypot(center.x-x, center.y-y);
+                    if (d < distance) { best = card; distance = d; }
+                }
+            }
+            return best ? {card:best, item:best.userData.driveItem} : null;
         }
         let suppressNextClick = false, handledPointerAt = -Infinity;
         viewport.addEventListener('pointerup', event => {

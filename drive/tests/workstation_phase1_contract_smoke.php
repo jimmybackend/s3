@@ -50,7 +50,7 @@ workstationContract(str_contains($entry, 'umask 0007'), 'LibreOffice conserva ar
 workstationContract(!str_contains($entry, 'VNC_PASSWORD') && !str_contains($entry, 'vncpasswd'), 'entrypoint no administra credenciales VNC');
 workstationContract(!str_contains($install, 'VNC_PASSWORD='), 'instalador no genera contraseña VNC');
 workstationContract(str_contains($install, '--publish 127.0.0.1:6080:6080'), 'noVNC sólo se publica en loopback del host');
-workstationContract(str_contains($install, '--shm-size=512m'), 'escritorio dispone de shared memory explícita');
+workstationContract(str_contains($install, '--shm-size=1g'), 'escritorio dispone de shared memory explícita');
 workstationContract(str_contains($install, '--security-opt=no-new-privileges:true'), 'contenedor impide escalamiento de privilegios');
 workstationContract(str_contains($install, '--cap-drop=ALL'), 'contenedor elimina capabilities Linux');
 workstationContract(!str_contains($install, '/var/run/docker.sock'), 'Docker socket nunca entra al contenedor');

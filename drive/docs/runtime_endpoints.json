@@ -93,6 +93,7 @@
         "drive/api/upload.php",
         "drive/background_tasks.php",
         "drive/bin/activity_retention.php",
+        "drive/bin/fastdrive_safe_worker_reload.php",
         "drive/bin/federation_catalog_migrate.php",
         "drive/bin/federation_drop_cleanup.php",
         "drive/bin/federation_endpoint_refresh.php",
@@ -291,6 +292,12 @@
       "references": [
         "drive/tests/installer_service_reconcile_contract_smoke.php"
       ]
+    },
+    {
+      "path": "drive/bin/fastdrive_safe_worker_reload.php",
+      "size": 2514,
+      "active": false,
+      "references": []
     },
     {
       "path": "drive/bin/federation_catalog_migrate.php",
@@ -3328,7 +3335,7 @@
     },
     {
       "path": "drive/src/Media/MediaWorkerNodeService.php",
-      "size": 32264,
+      "size": 35743,
       "active": false,
       "references": [
         "drive/tests/compute_admission_lock_contract_smoke.php",
@@ -4277,7 +4284,7 @@
     },
     {
       "path": "drive/tests/idle_stop_office_regression.php",
-      "size": 16957,
+      "size": 19928,
       "active": false,
       "references": []
     },

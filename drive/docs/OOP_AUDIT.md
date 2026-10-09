@@ -9,8 +9,8 @@
 - PHP marcados para migración/revisión: **0**
 - Tests PHP separados del objetivo OOP de runtime: **79**
 - JavaScript analizados: **85**
-- JavaScript que ya contienen clases: **78**
-- JavaScript runtime marcados para migración/revisión: **1**
+- JavaScript que ya contienen clases: **79**
+- JavaScript runtime marcados para migración/revisión: **0**
 - Tests JavaScript separados del objetivo OOP de runtime: **11**
 - JavaScript OOP con fachada `window` de compatibilidad: **8**
 - Clientes AJAX detectados: **54** módulos / **120** llamadas
@@ -638,7 +638,7 @@
 | `drive/js/media-processing.js` | 498 | class/module | MediaProcessingModule | — | — | — |
 | `drive/js/mediaFloating.js` | 38 | class/module | MediaFloatingModule | — | — | — |
 | `drive/js/move-tasks.js` | 262 | class/module | DriveMoveTasks | — | — | — |
-| `drive/js/notebook.js` | 262 | procedural script | — | uid, status, api, canvasSize, applyZoom, background | — | top-level functions: uid, status, api, canvasSize, applyZoom, background, styleFor, drawStroke; top-level state: $, canvas, imageCache, defaultZoom, state, paper, WRITE_LEFT, fontStacks; no ES class |
+| `drive/js/notebook.js` | 268 | class/module | NotebookEditor | — | — | — |
 | `drive/js/obtenerFiltros.js` | 125 | class/module | ObtenerFiltrosModule | — | — | — |
 | `drive/js/os-media-cloud.js` | 1107 | class/module | ArcadeCloudMediaCloud | — | — | — |
 | `drive/js/os-window-manager.js` | 1307 | class/module | ArcadeCloudEventBus, ArcadeCloudWindowLayoutConfig, ArcadeCloudWindowManager, ExplorerWindowFactory, ArcadeCloudExplorerWindow, ArcadeCloudDesktopRuntime | — | — | — |

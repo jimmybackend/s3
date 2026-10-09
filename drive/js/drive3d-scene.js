@@ -593,7 +593,7 @@ class Drive3DScene {
         viewport.addEventListener('pointermove', event => {
             if (drag?.id !== event.pointerId) return;
             targetYaw -= (event.clientX - drag.x) * .004;
-            targetPitch = T.MathUtils.clamp(targetPitch - (event.clientY - drag.y) * .003, -.65, 1.1);
+            targetPitch = T.MathUtils.clamp(targetPitch - (event.clientY - drag.y) * .003, -1.48, 1.48);
             drag.x = event.clientX; drag.y = event.clientY;
         });
         let surfacePlacements = null;
@@ -772,7 +772,7 @@ class Drive3DScene {
             if (highlight.visible) { highlight.position.copy(shelves[selectedIndex].position); highlight.rotation.copy(shelves[selectedIndex].rotation); }
             options.onView?.({visible: visibleIndices, near: candidates.filter(v => v.distance < 5.6).slice(0,3).map(v=>v.i), selected: selectedIndex});
         }
-        this.look = (degrees, vertical) => { targetYaw = -degrees * Math.PI / 180; targetPitch = -vertical * Math.PI / 180; needsRender = true; };
+        this.look = (degrees, vertical) => { targetYaw = -degrees * Math.PI / 180; targetPitch = T.MathUtils.clamp(-vertical * Math.PI / 180, -1.48, 1.48); needsRender = true; };
         this.move = (side, forward) => {
             const x = camera.position.x + Math.cos(yaw) * side - Math.sin(yaw) * forward;
             const z = camera.position.z - Math.sin(yaw) * side - Math.cos(yaw) * forward;
@@ -964,7 +964,7 @@ class Drive3DScene {
             const dt = Math.min((now - previous) / 1000, .05); previous = now;
             if (document.hidden) return;
             targetYaw += ((keys.has('ArrowLeft') ? 1 : 0) - (keys.has('ArrowRight') ? 1 : 0)) * dt;
-            targetPitch = T.MathUtils.clamp(targetPitch + ((keys.has('ArrowUp') ? 1 : 0) - (keys.has('ArrowDown') ? 1 : 0)) * dt, -.65, 1.1);
+            targetPitch = T.MathUtils.clamp(targetPitch + ((keys.has('ArrowUp') ? 1 : 0) - (keys.has('ArrowDown') ? 1 : 0)) * dt, -1.48, 1.48);
             yaw = T.MathUtils.damp(yaw, targetYaw, 12, dt); pitch = T.MathUtils.damp(pitch, targetPitch, 12, dt);
             camera.rotation.set(pitch, yaw, 0);
             const active = new Set(held.values());

@@ -1672,8 +1672,6 @@
       front.addEventListener('click', (event) => {
         event.stopPropagation();
         this.changeSpatialImageMode(entry.id,'free');
-        const world = this.three?.placeSpatialMedia?.(entry.id);
-        if (Array.isArray(world)) this.updateSpatialImageState(entry.id, world, true);
       });
       resize.addEventListener('click', (event) => {
         event.stopPropagation();
@@ -1884,6 +1882,10 @@
     bindSpatialPictureDrag(id, handle) {
       let drag = null;
       handle.addEventListener('pointerdown', (event) => {
+        // A window/ceiling image belongs to a fixed cell; only 'Mover'
+        // can reassign it to another panel. Never drag its HUD away.
+        const picture = this.spatialPictures.get(id);
+        if (picture?.entry?.mode && picture.entry.mode !== 'free') return;
         if (event.target.closest('button,a,input,select,label')) return;
         drag = {pointerId:event.pointerId,x:event.clientX,y:event.clientY};
         handle.setPointerCapture?.(event.pointerId);

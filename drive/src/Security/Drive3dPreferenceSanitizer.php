@@ -43,12 +43,15 @@ final class Drive3dPreferenceSanitizer
     /** @return list<array{id:string,name:string,path:string,openHref:string,world:list<float>,size:?list<float>}|null> */
     private function spatialImages(mixed $value): array
     {
-        $slots = array_fill(0, 12, null);
+        $slots = [];
         if (!is_array($value)) {
             return $slots;
         }
 
-        foreach (array_slice(array_values($value), 0, 12) as $index => $entry) {
+        // Pictures are user-owned files; do not cap the room at twelve.
+        // 1,024 persisted entries is an upper-bound against enormous forged
+        // payloads, not a visible UI limit. Meshes/textures load separately.
+        foreach (array_slice(array_values($value), 0, 1024) as $entry) {
             if (!is_array($entry)) {
                 continue;
             }
@@ -77,7 +80,7 @@ final class Drive3dPreferenceSanitizer
             $scale = is_numeric($rawScale) && is_finite((float)$rawScale) ? (float)$rawScale : .70;
             $scale = max(.30, min($mode === 'floor' ? 2.6 : .94, $scale));
 
-            $slots[$index] = [
+            $slots[] = [
                 'id' => $id,
                 'name' => mb_substr(trim((string)($entry['name'] ?? 'Imagen')), 0, 255),
                 'path' => mb_substr(str_replace(["\r", "\n", "\0"], '', (string)($entry['path'] ?? '')), 0, 1024),

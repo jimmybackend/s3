@@ -391,7 +391,7 @@ header('Content-Type: text/html; charset=UTF-8');
         <button type="button" data-camera-pitch="-6" aria-label="Mirar arriba"><i class="fas fa-chevron-up"></i></button>
         <label class="dw-radar-pitch-control">
           <span>Ángulo vertical</span>
-          <input type="range" min="-42" max="42" step="1" value="0" data-camera-pitch-range aria-label="Ángulo vertical de la mirada">
+          <input type="range" min="-85" max="85" step="1" value="0" data-camera-pitch-range aria-label="Ángulo vertical de la mirada">
         </label>
         <button type="button" data-camera-pitch="6" aria-label="Mirar abajo"><i class="fas fa-chevron-down"></i></button>
       </div>

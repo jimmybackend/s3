@@ -80,6 +80,7 @@ const server=createServer((req,res)=>{
     const app=window.ArcadeCloudDrive3D;
     window.__glassSurfaceCalls=[];
     const surface=app.three.surface;
+    window.__glassSurfaceOriginal=surface;
     app.three.surface=(kind,url)=>{window.__glassSurfaceCalls.push([kind,url]);surface(kind,url);};
     app.room.floorBackground='Imagenes/fondos3D/floor-sentinel.jpg';
     app.chooseBackground('Imagenes/fondos3D/custom.jpg','/three-lab/assets/alpine-panorama.jpg');
@@ -96,7 +97,12 @@ const server=createServer((req,res)=>{
   assert.equal(glassRestored.glass,'','Restore button clears only the customized glass path');
   assert.equal(glassRestored.floor,'Imagenes/fondos3D/floor-sentinel.jpg','Restore button preserves floor art');
   assert.deepEqual(glassRestored.surfaceCalls.at(-1),['glass',''],'The Three.js scene restores its bundled panorama');
-  await page.evaluate(()=>{window.ArcadeCloudDrive3D.room.floorBackground='';delete window.__glassSurfaceCalls;});
+  await page.evaluate(()=>{
+    window.ArcadeCloudDrive3D.room.floorBackground='';
+    window.ArcadeCloudDrive3D.three.surface=window.__glassSurfaceOriginal;
+    delete window.__glassSurfaceOriginal;
+    delete window.__glassSurfaceCalls;
+  });
   await page.locator('[data-dw-environment-close]').click({force:true});
 
   // Image media opens as independent world-anchored picture windows.

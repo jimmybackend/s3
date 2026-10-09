@@ -115,6 +115,9 @@
           openHref:String(entry.openHref),
           world,
           size:size && size.every((number) => Number.isFinite(number)) ? size : null,
+          mode:['floor','ceiling','window'].includes(entry.mode) ? entry.mode : 'free',
+          panelId:/^[wc]-\\d{1,2}-\\d$/.test(String(entry.panelId || '')) ? String(entry.panelId) : '',
+          surfaceScale:this.clamp(Number(entry.surfaceScale) || .70,.30,2.6),
         };
       }).filter(Boolean);
     }
@@ -1269,6 +1272,9 @@
             openHref:entry.openHref,
             world:Array.isArray(entry.world) ? entry.world.map(Number) : [],
             size:Array.isArray(entry.size) ? entry.size.map(Number) : [],
+            mode:entry.mode || 'free',
+            panelId:entry.panelId || '',
+            surfaceScale:Number(entry.surfaceScale) || .70,
           })),
         }
       };
@@ -1547,6 +1553,9 @@
         openHref:String(item.openHref),
         world:null,
         size:null,
+        mode:'free',
+        panelId:'',
+        surfaceScale:.70,
       };
       this.spatialPictureState.push(entry);
       this.mountSpatialImage(entry, false);
@@ -1589,7 +1598,33 @@
       close.title = 'Quitar cuadro de la sala';
       close.setAttribute('aria-label','Quitar cuadro de la sala');
       close.innerHTML = '<i class="fas fa-xmark"></i>';
-      actions.append(front,resize,close);
+      const mode = this.document.createElement('select');
+      mode.className = 'dw-spatial-placement-mode';
+      mode.setAttribute('aria-label','Colocar imagen en el domo');
+      mode.title = 'Elegir dónde colocar esta imagen';
+      [
+        ['free','Cuadro libre'],
+        ['floor','Tapete en piso'],
+        ['ceiling','Techo del domo'],
+        ['window','Ventana del domo']
+      ].forEach(([value,label]) => {
+        const option = this.document.createElement('option');
+        option.value=value; option.textContent=label; mode.append(option);
+      });
+      mode.value=entry.mode || 'free';
+      const move = this.document.createElement('button');
+      move.type='button'; move.title='Cambiar la posición sobre la superficie';
+      move.setAttribute('aria-label','Mover imagen a otra posición del domo');
+      move.innerHTML='<i class="fas fa-arrows-up-down-left-right"></i>';
+      const smaller = this.document.createElement('button');
+      smaller.type='button'; smaller.title='Reducir imagen';
+      smaller.setAttribute('aria-label','Reducir imagen colocada');
+      smaller.textContent='−';
+      const bigger = this.document.createElement('button');
+      bigger.type='button'; bigger.title='Ampliar imagen';
+      bigger.setAttribute('aria-label','Ampliar imagen colocada');
+      bigger.textContent='+';
+      actions.append(mode,front,move,smaller,bigger,resize,close);
       header.append(icon,title,actions);
 
       const body = this.document.createElement('div');
@@ -1608,14 +1643,35 @@
       resizeHandle.innerHTML = '<i class="fas fa-up-right-and-down-left-from-center"></i>';
       win.append(header,body,resizeHandle);
       this.spatialPictureLayer.append(win);
-      this.spatialPictures.set(entry.id,{window:win,header,image,entry,resize,resizeHandle});
+      this.spatialPictures.set(entry.id,{window:win,header,image,entry,resize,resizeHandle,mode,move,smaller,bigger,front});
+      this.syncSpatialPictureMode(entry.id);
 
-      image.addEventListener('load', () => this.fitSpatialPicture(win,image,entry), {once:true});
+      image.addEventListener('load', () => {
+        this.fitSpatialPicture(win,image,entry);
+        if (entry.mode && entry.mode !== 'free') this.three?.setSpatialSurface?.({...entry,aspect:image.naturalWidth/Math.max(1,image.naturalHeight)});
+      }, {once:true});
       if (image.complete) this.fitSpatialPicture(win,image,entry);
 
       win.addEventListener('pointerdown', () => this.bringSpatialPictureToFront(entry.id));
+      mode.addEventListener('change', event => {
+        event.stopPropagation();
+        this.changeSpatialImageMode(entry.id,mode.value);
+      });
+      move.addEventListener('click', event => {
+        event.stopPropagation();
+        this.changeSpatialImageMode(entry.id,entry.mode || 'free');
+      });
+      smaller.addEventListener('click', event => {
+        event.stopPropagation();
+        this.resizePlacedImage(entry.id,-.12);
+      });
+      bigger.addEventListener('click', event => {
+        event.stopPropagation();
+        this.resizePlacedImage(entry.id,+.12);
+      });
       front.addEventListener('click', (event) => {
         event.stopPropagation();
+        this.changeSpatialImageMode(entry.id,'free');
         const world = this.three?.placeSpatialMedia?.(entry.id);
         if (Array.isArray(world)) this.updateSpatialImageState(entry.id, world, true);
       });
@@ -1635,8 +1691,13 @@
       this.bindSpatialPictureResize(entry.id, win, image, resizeHandle);
 
       const world = restoring && Array.isArray(entry.world) ? entry.world : null;
-      const placed = this.three?.placeSpatialMedia?.(entry.id, world);
-      if (Array.isArray(placed)) this.updateSpatialImageState(entry.id, placed, !restoring);
+      if (entry.mode && entry.mode !== 'free') {
+        const placed = this.three?.setSpatialSurface?.(entry);
+        if (Array.isArray(placed)) this.updateSpatialImageState(entry.id, placed, !restoring);
+      } else {
+        const placed = this.three?.placeSpatialMedia?.(entry.id, world);
+        if (Array.isArray(placed)) this.updateSpatialImageState(entry.id, placed, !restoring);
+      }
     }
 
     fitSpatialPicture(win, image, entry = null) {

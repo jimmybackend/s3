@@ -1,0 +1,62 @@
+name: ArcadeCloud AWS - one-time SSM remote execution check
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/arcadecloud-ssm-connectivity-check.yml
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  verify-ssm:
+    if: github.repository == 'jimmybackend/s3' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Use GitHub temporary AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.ARCADECLOUD_AWS_BRIDGE_ROLE_ARN }}
+          aws-region: ${{ vars.ARCADECLOUD_AWS_REGION }}
+          role-session-name: ArcadeCloudSSMPing
+      - name: Verify remote command execution on small EC2
+        env:
+          SMALL_INSTANCE: ${{ vars.ARCADECLOUD_AWS_SMALL_ID }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ ! "$SMALL_INSTANCE" =~ ^i-[0-9a-f]{8,17}$ ]]; then
+            echo "::error::Small EC2 ID is missing or invalid"
+            exit 1
+          fi
+          # Fixed no-op shell instruction. Never accept user commands as input here.
+          command_id=$(aws ssm send-command \
+            --instance-ids "$SMALL_INSTANCE" \
+            --document-name AWS-RunShellScript \
+            --parameters 'commands=["printf ARCADECLOUD_SSM_PING_OK"]' \
+            --comment "ArcadeCloud safe connectivity check" \
+            --query Command.CommandId \
+            --output text)
+          for attempt in $(seq 1 20); do
+            result=$(aws ssm get-command-invocation \
+              --command-id "$command_id" \
+              --instance-id "$SMALL_INSTANCE" \
+              --query Status --output text 2>/dev/null || true)
+            case "$result" in
+              Success)
+                echo "ARCADECLOUD_SMALL_SSM_REMOTE_EXECUTION=success"
+                exit 0
+                ;;
+              Failed|Cancelled|TimedOut|Cancelling)
+                echo "::error::SSM execution ended with status $result"
+                exit 1
+                ;;
+            esac
+            sleep 2
+          done
+          echo "::error::SSM execution did not complete within the polling window"
+          exit 1

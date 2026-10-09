@@ -101,12 +101,9 @@ class Drive3DProduction {
             }
             shelf.dataset.lod = detail.includes(index) ? 'detail' : visible.includes(index) ? 'overview' : 'unloaded';
         });
-        if (app.focusedShelf && !visible.includes(focus)) {
-            app.focusedShelf = null;
-            app.selected = null;
-            app.hud.open.disabled = true; app.hud.desk.hidden = true; app.hud.play.hidden = true; app.hud.download.hidden = true;
-            app.hud.previewImage?.removeAttribute('src');
-        }
+        // Keep the selected shelf's gallery while the visitor turns through
+        // all 360 degrees. Only choosing another shelf or Centre dismisses
+        // it; visibility/frustum must NOT clear the focused selection.
         app.zoneTimer = setTimeout(() => detail.forEach(i => app.loadShelfPreview(app.shelves[i], app.shelves[i].dataset.previewHref)),160);
     }
     app.showThreeContents = (shelf,state) => {

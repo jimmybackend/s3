@@ -21,7 +21,7 @@ final class Drive3dPreferenceSanitizer
             'floorBackground' => $this->surfacePath($drive3d['floorBackground'] ?? ''),
             'ceilingBackground' => $this->surfacePath($drive3d['ceilingBackground'] ?? ''),
             'cameraYaw' => max(-180.0, min(180.0, (float)($drive3d['cameraYaw'] ?? 0))),
-            'cameraPitch' => max(-28.0, min(28.0, (float)($drive3d['cameraPitch'] ?? 0))),
+            'cameraPitch' => max(-85.0, min(85.0, (float)($drive3d['cameraPitch'] ?? 0))),
             'cameraDistance' => 0.0,
             'cameraLateral' => max(-1.0, min(1.0, (float)($drive3d['cameraLateral'] ?? 0))),
             'cameraForward' => max(0.0, min(1.0, (float)($drive3d['cameraForward'] ?? 0))),
@@ -43,12 +43,15 @@ final class Drive3dPreferenceSanitizer
     /** @return list<array{id:string,name:string,path:string,openHref:string,world:list<float>,size:?list<float>}|null> */
     private function spatialImages(mixed $value): array
     {
-        $slots = array_fill(0, 12, null);
+        $slots = [];
         if (!is_array($value)) {
             return $slots;
         }
 
-        foreach (array_slice(array_values($value), 0, 12) as $index => $entry) {
+        // Pictures are user-owned files; do not cap the room at twelve.
+        // 1,024 persisted entries is an upper-bound against enormous forged
+        // payloads, not a visible UI limit. Meshes/textures load separately.
+        foreach (array_slice(array_values($value), 0, 1024) as $entry) {
             if (!is_array($entry)) {
                 continue;
             }
@@ -65,7 +68,7 @@ final class Drive3dPreferenceSanitizer
                 ? (string)($entry['mode'] ?? 'free')
                 : 'free';
             $panelId = trim((string)($entry['panelId'] ?? ''));
-            if (($mode === 'window' && !preg_match('/^w-(?:[0-9]|1[0-5])-[0-2]$/', $panelId))
+            if (($mode === 'window' && !preg_match('/^w-(?:[0-9]|1[0-5])-[0-3]$/', $panelId))
                 || ($mode === 'ceiling' && !preg_match('/^c-(?:[0-9]|1[0-5])-0$/', $panelId))) {
                 $mode = 'free';
                 $panelId = '';
@@ -77,7 +80,7 @@ final class Drive3dPreferenceSanitizer
             $scale = is_numeric($rawScale) && is_finite((float)$rawScale) ? (float)$rawScale : .70;
             $scale = max(.30, min($mode === 'floor' ? 2.6 : .94, $scale));
 
-            $slots[$index] = [
+            $slots[] = [
                 'id' => $id,
                 'name' => mb_substr(trim((string)($entry['name'] ?? 'Imagen')), 0, 255),
                 'path' => mb_substr(str_replace(["\r", "\n", "\0"], '', (string)($entry['path'] ?? '')), 0, 1024),

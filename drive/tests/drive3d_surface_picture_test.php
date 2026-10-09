@@ -37,4 +37,17 @@ $legacy=$save($base);
 $require($legacy['mode']==='free' && $legacy['world']===$base['world'],
     'Previously saved free pictures must stay valid.');
 
+// A normal room may contain dozens of independently placed images.
+$many = [];
+for ($i = 0; $i < 80; $i++) {
+    $many[] = array_merge($base, ['id' => 'photo_' . $i, 'mode' => 'window',
+        'panelId' => 'w-' . ($i % 16) . '-3', 'surfaceScale' => .66]);
+}
+$savedMany = $sanitize->sanitize(['spatialImages' => $many]);
+$require(count($savedMany['spatialImages']) === 80, 'More than 12 images must persist without being discarded.');
+$require($savedMany['spatialImages'][79]['panelId'] === 'w-15-3',
+    'Fourth glass band and the last sector must remain valid.');
+$angle = $sanitize->sanitize(['cameraPitch' => -85]);
+$require($angle['cameraPitch'] === -85.0, 'The camera must reach the entire dome vertically.');
+
 echo "Drive 3D surface picture preferences passed.\n";

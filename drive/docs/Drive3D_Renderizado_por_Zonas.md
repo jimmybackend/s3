@@ -94,3 +94,25 @@ Una selección no se guarda hasta que se toca efectivamente una superficie váli
 El límite de cuadros simultáneos se mantiene en doce; las mallas se destruyen al quitar su imagen y las texturas asíncronas fuera de uso se liberan. El visor de imágenes clásico de `so.php` conserva por separado el ajuste proporcional implementado en `ArcadeCloudImageWindowFit`.
 
 **Comprobación**: `drive/tests/drive3d_surface_picture_test.php` prueba persistencia y validación de sectores, además de la integración WebGL/Chromium de `drive/tests/drive3d_production_browser.cjs`. Sigue siendo necesaria la revisión visual del funcionamiento en un móvil Android con fotos privadas reales tras desplegar a producción.
+
+## Galería circular de cuatro filas y controles temporales (9 octubre 2026)
+
+### Librero seleccionado
+
+Seleccionar un librero activa una galería **distinta de la del directorio actual**. Ya no dibuja marcos de imágenes pequeños sobre la corona del mueble. El motor Three.js distribuye los archivos de esa carpeta en un máximo de cuatro filas, ordenadas como las filas de un teclado y distribuidas a lo largo del anillo circular de **360 grados**. Las tarjetas son aproximadamente tres veces mayores que las antiguas imágenes del librero, tienen espacio entre hitboxes y muestran tanto fotografías como iconos de documentos/otros formatos.
+
+Las filas se sitúan por encima de los 4,2 m de altura de los muebles y su radio disminuye gradualmente hacia arriba para no atravesar la cúpula. La cámara gira alrededor del interior para inspeccionar toda la colección. La selección de un nuevo librero desmonta inmediatamente las tarjetas del anterior y aborta sus peticiones pendientes; girar la cámara no cancela el librero elegido.
+
+Para carpetas numerosas, `api=files&galeria=1&pagina=N` devuelve **hasta 72 archivos** por página (la API habitual conserva su paginación de 100). La pequeña barra inferior permite *Anterior* y *Siguiente*: una página sustituye a la anterior sin acumular cientos de texturas en la GPU, sin perder ninguna página de la carpeta. No se consultan los archivos de todos los libreros simultáneamente.
+
+### Colocación libre en el domo y ocultación del menú
+
+Las imágenes ancladas a cristales, techo o piso ocultan su barra de controles tras **5 segundos**; tocar la imagen real dentro de la escena WebGL hace que se vea otros cinco segundos. Los cuadros libres conservan su barra para poder arrastrarlos. Al quitar una imagen se limpia su temporizador.
+
+Se retira el antiguo límite visible de **12 imágenes** (el saneador PHP mantiene una salvaguarda antidesbordamiento de 1.024 entradas de preferencias); no se borra ni rechaza la imagen número 13. La navegación de cámara alcanza ±85° de elevación: se puede mirar hacia la cúspide del techo o hacia el piso. Las posiciones de cuadros libres ya no se recortan a 6,6 m de altura. Para las imágenes ajustadas al cristal se admiten cuatro bandas angulares sobre todo el perímetro y el casquete superior permanece utilizable como techo. Las posiciones y tamaño siguen persistiendo en preferencias autenticadas.
+
+### Cobertura de pruebas
+
+`drive3d_production_browser.cjs`: galería 3×, cuatro filas con varios tipos, paginación, desaparición de tarjetas al cambiar de librero, rotación, auto-ocultación tras cinco segundos y recuperación al volver a tocar la imagen; `drive3d_surface_picture_test.php`: 80 imágenes guardadas, cuarta banda válida y cámara vertical completa.
+
+La comprobación con material privado de producción debe hacerse después del despliegue. Los resultados del CI corresponden a fixtures autenticados simulados y renderizado Three.js en Chromium.

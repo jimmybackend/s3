@@ -231,43 +231,9 @@ class Drive3DScene {
             const entries = Array.isArray(state.folders)
                 ? state.folders.slice(0, 18).map(item => ({item, folder:true}))
                 : [];
-            // The folder's own image previews hang just ABOVE its wooden
-            // crown, not across the books. Load only a few (LOD bounded by
-            // the existing visible-zones algorithm).
-            const previews = Array.isArray(state.files)
-                ? state.files.filter(item => item?.kind === 'image' && item?.thumbnail_href && !item?.locked).slice(0, 3)
-                : [];
-            previews.forEach((item, n) => {
-                const x = (n - (previews.length - 1) / 2) * .62;
-                const preview = new T.Group();
-                preview.name = 'shelf-overhead-picture';
-                preview.userData.driveItem = item;
-                preview.userData.driveFolder = false;
-                // Leave a visible gap above the 4.2m wooden crown.
-                const airGap = .90;
-                const frameHalfHeight = .43/2;
-                preview.position.set(x, height + airGap + frameHalfHeight, .25);
-                const frame = new T.Mesh(
-                    new T.BoxGeometry(.54,.43,.035),
-                    new T.MeshBasicMaterial({color:0x4e3422})
-                );
-                preview.add(frame);
-                const mat = new T.MeshBasicMaterial({color:0x285167, side:T.DoubleSide});
-                const picture = new T.Mesh(new T.PlaneGeometry(.48,.35), mat);
-                picture.position.z = .025;
-                preview.add(picture);
-                host.add(preview);
-                new T.TextureLoader().load(item.thumbnail_href, texture => {
-                    // Late responses from unloaded shelves must not resurrect
-                    // images or leak GPU textures after a zone switch.
-                    if (!host.parent || !preview.parent) { texture.dispose(); return; }
-                    texture.colorSpace = T.SRGBColorSpace;
-                    mat.map = texture;
-                    mat.color.set(0xffffff);
-                    mat.needsUpdate = true;
-                    needsRender = true;
-                }, undefined, () => {});
-            });
+            // A selected shelf's files are now shown at 3× preview size
+            // in the dedicated four-row dome gallery, never as tiny frames
+            // attached to the shelf crown. Only one shelf gallery exists.
             entries.forEach(({item, folder}, n) => {
                 const row = Math.floor(n / 6);
                 const col = n % 6;
@@ -299,6 +265,7 @@ class Drive3DScene {
             shelfContents.set(index, state || {});
             const group = shelves[index];
             if (group?.children.length) addRealDriveBooks(group);
+            if (focusedShelfIndex === index && !focusedFullData) rebuildFocusedGallery(state?.files || []);
             needsRender = true;
         };
 
@@ -309,6 +276,12 @@ class Drive3DScene {
         const fileGallery = new T.Group();
         fileGallery.name = 'current-folder-files';
         scene.add(fileGallery);
+        // Only ONE selected shelf contributes a four-row image gallery.
+        // It uses the whole 360° ring, not the 2-metre shelf face.
+        const focusedGallery = new T.Group();
+        focusedGallery.name = 'focused-shelf-files';
+        scene.add(focusedGallery);
+        let focusedPanels = [], focusedShelfIndex = -1, focusRevision = 0, focusedFullData = false;
         let filePanels = [];
         let selectedFileCard = null;
         let galleryRevision = 0;
@@ -434,7 +407,7 @@ class Drive3DScene {
             needsRender = true;
         }
 
-        function makeFileCard(item, revision) {
+        function makeFileCard(item, revision, isCurrent = () => revision === galleryRevision) {
             const card = new T.Group();
             card.userData.driveItem = item;
             card.userData.driveFolder = false;
@@ -463,7 +436,7 @@ class Drive3DScene {
 
             if (item?.kind === 'image' && item?.thumbnail_href && !item?.locked) {
                 new T.TextureLoader().load(item.thumbnail_href, map => {
-                    if (revision !== galleryRevision) { map.dispose(); return; }
+                    if (!isCurrent()) { map.dispose(); return; }
                     map.colorSpace = T.SRGBColorSpace;
                     const old = mediaMaterial.map;
                     mediaMaterial.map = map;
@@ -546,6 +519,99 @@ class Drive3DScene {
             needsRender = true;
         }
 
+        // Dispose only instance-owned resources; cube/wood/trim are shared
+        // with cabinets. A stale async thumbnail never resurrects an old shelf.
+        function disposeFocusedGallery() {
+            focusRevision++;
+            focusedGallery.traverse(obj => {
+                if (obj.geometry && obj.geometry !== cube) obj.geometry.dispose();
+                if (obj.material && !sharedMaterials.has(obj.material)) {
+                    obj.material.map?.dispose?.();
+                    obj.material.dispose?.();
+                }
+            });
+            focusedGallery.clear();
+            focusedPanels = [];
+        }
+
+        function rebuildFocusedGallery(files) {
+            disposeFocusedGallery();
+            if (focusedShelfIndex < 0) return;
+            const entries = Array.isArray(files) ? files.filter(Boolean) : [];
+            if (!entries.length) {needsRender = true; return;}
+            const revision = focusRevision;
+            const rows = 4, gap = .24, cardWidth = .86 * 1.88;
+            const shelvesAngle = (focusedShelfIndex - Math.floor(titles.length / 2)) * step;
+            const bands = Array.from({length:rows}, (_, row) => {
+                const y = height + 1.27 + row * 1.44;
+                // Every corner remains inside the real dome roof,
+                // including the highest of the four rows.
+                const roof = Math.sqrt(Math.max(1,(R-.9)**2 - (y+.72)**2)) - .22;
+                const radius = Math.max(2.3,Math.min(shelfRadius - .55,roof));
+                const capacity = Math.max(4,Math.floor((Math.PI*2*radius)/(cardWidth+gap)));
+                return {y,radius,capacity,items:[]};
+            });
+            // Fill like a four-row keyboard: row 1, row 2, row 3, row 4,
+            // then the next column. All rows expand across the circular wall.
+            entries.forEach(item => {
+                const available = bands.filter(band=>band.items.length<band.capacity);
+                if (!available.length) return;
+                available.sort((a,b)=>a.items.length-b.items.length);
+                available[0].items.push(item);
+            });
+            bands.forEach((band,row) => {
+                const count=band.items.length;
+                if(!count)return;
+                const interval=(cardWidth+gap)/band.radius;
+                const panel = new T.Group();
+                panel.name = 'shelf-gallery-row-' + row;
+                focusedGallery.add(panel);
+                focusedPanels.push(panel);
+                band.items.forEach((item,col) => {
+                    const angle=shelvesAngle+(col-(count-1)/2)*interval;
+                    const card=makeFileCard(item,revision,()=>focusRevision===revision);
+                    card.scale.set(1.88,1.88,1);
+                    card.position.set(band.radius*Math.sin(angle),band.y,-band.radius*Math.cos(angle));
+                    card.rotation.y=-angle;
+                    panel.add(card);
+                });
+            });
+            needsRender = true;
+        }
+
+        this.focusedGalleryCapacity = () => {
+            const width = .86*1.88+.24;
+            return Array.from({length:4}, (_,row)=>{
+                const y=height+1.27+row*1.44;
+                const r=Math.max(2.3,Math.min(shelfRadius-.55,
+                    Math.sqrt(Math.max(1,(R-.9)**2-(y+.72)**2))-.22));
+                return Math.max(4,Math.floor(Math.PI*2*r/width));
+            }).reduce((sum,value)=>sum+value,0);
+        };
+        this.selectShelfGallery = index => {
+            if (!Number.isInteger(index) || index < 0 || index >= shelves.length) {
+                focusedShelfIndex=-1;
+                focusedFullData=false;
+                disposeFocusedGallery();
+                fileGallery.visible=true;
+                needsRender=true;
+                return;
+            }
+            if (focusedShelfIndex!==index) {
+                focusedShelfIndex=index;
+                focusedFullData=false;
+                disposeFocusedGallery();
+            }
+            fileGallery.visible=false;
+            rebuildFocusedGallery(shelfContents.get(index)?.files || []);
+            needsRender=true;
+        };
+        this.setFocusedShelfFiles = (index, files) => {
+            if(index!==focusedShelfIndex)return false;
+            focusedFullData=true;
+            rebuildFocusedGallery(files);
+            return true;
+        };
         this.setCurrentFiles = files => rebuildFileGallery(files);
         function unloadShelf(group) {
             group.traverse(mesh => {
@@ -593,7 +659,7 @@ class Drive3DScene {
         viewport.addEventListener('pointermove', event => {
             if (drag?.id !== event.pointerId) return;
             targetYaw -= (event.clientX - drag.x) * .004;
-            targetPitch = T.MathUtils.clamp(targetPitch - (event.clientY - drag.y) * .003, -.65, 1.1);
+            targetPitch = T.MathUtils.clamp(targetPitch - (event.clientY - drag.y) * .003, -1.48, 1.48);
             drag.x = event.clientX; drag.y = event.clientY;
         });
         let surfacePlacements = null;
@@ -607,7 +673,7 @@ class Drive3DScene {
             if (x < 0 || x > 1 || y < 0 || y > 1) return null;
             camera.updateMatrixWorld();
             raycaster.setFromCamera(new T.Vector2(x * 2 - 1, 1 - y * 2), camera);
-            return raycaster.intersectObjects([...shelves, fileGallery], true)[0] || null;
+            return raycaster.intersectObjects([...shelves, ...(fileGallery.visible ? [fileGallery] : []), focusedGallery], true)[0] || null;
         }
         function driveItemFromHit(hit) {
             let node = hit?.object || null;
@@ -624,7 +690,7 @@ class Drive3DScene {
         // back of a neighboring card when projected cards nearly touch.
         // Bound the pointer to the projected quadrilateral of its own card.
         function fileSelectionFromPointer(event, directHit = null) {
-            if (!filePanels.length) return null;
+            if (!filePanels.length && !focusedPanels.length) return null;
             const rect = renderer.domElement.getBoundingClientRect();
             const x = event.clientX, y = event.clientY;
             if (!rect.width || !rect.height || x < rect.left || x > rect.right ||
@@ -651,7 +717,7 @@ class Drive3DScene {
                 return Boolean(sign);
             };
             let best = null, distance = Infinity;
-            for (const panel of filePanels) {
+            for (const panel of (focusedShelfIndex >= 0 ? focusedPanels : filePanels)) {
                 for (const card of panel.children) {
                     if (!card.userData?.fileCard) continue;
                     const center = project(card, 0, 0);
@@ -772,17 +838,18 @@ class Drive3DScene {
             if (highlight.visible) { highlight.position.copy(shelves[selectedIndex].position); highlight.rotation.copy(shelves[selectedIndex].rotation); }
             options.onView?.({visible: visibleIndices, near: candidates.filter(v => v.distance < 5.6).slice(0,3).map(v=>v.i), selected: selectedIndex});
         }
-        this.look = (degrees, vertical) => { targetYaw = -degrees * Math.PI / 180; targetPitch = -vertical * Math.PI / 180; needsRender = true; };
+        this.look = (degrees, vertical) => { targetYaw = -degrees * Math.PI / 180; targetPitch = T.MathUtils.clamp(-vertical * Math.PI / 180, -1.48, 1.48); needsRender = true; };
         this.move = (side, forward) => {
             const x = camera.position.x + Math.cos(yaw) * side - Math.sin(yaw) * forward;
             const z = camera.position.z - Math.sin(yaw) * side - Math.cos(yaw) * forward;
             if (canStand(x,z)) camera.position.set(x,2.7,z);
             needsRender = true;
         };
-        this.home = () => { camera.position.set(0,2.7,5.25); targetYaw = 0; targetPitch = -.12; selectedIndex = -1; needsRender = true; };
+        this.home = () => { camera.position.set(0,2.7,5.25); targetYaw = 0; targetPitch = -.12; selectedIndex = -1; this.selectShelfGallery(-1); needsRender = true; };
         this.focus = index => {
             const shelf = shelves[index]; if (!shelf) return;
             selectedIndex = index;
+            this.selectShelfGallery(index);
             // Aim from the current position. Selection does not teleport through furniture.
             targetYaw = Math.atan2(camera.position.x - shelf.position.x, camera.position.z - shelf.position.z);
             targetPitch = -.04; needsRender = true;
@@ -810,14 +877,16 @@ class Drive3DScene {
         };
         this.clearSpatialSurface = id => { surfacePlacements.remove(id); needsRender=true; };
         this.surfacePlacementState = id => surfacePlacements.snapshot().find(entry=>entry.id===id) || null;
-        const spatialCenter = new T.Vector3(0, 2.7, 0);
-        const spatialSphere = new T.Sphere(spatialCenter, Math.max(4, R - 1.05));
+        const spatialCenter = new T.Vector3(0, 0, 0);
+        // Free images may be positioned throughout the interior, up to
+        // the roof and down to floor level, not at the obsolete 6.6m cap.
+        const spatialSphere = new T.Sphere(spatialCenter, Math.max(4, R - .45));
         const spatialId = (value) => String(value || 'singleton');
 
         function normalizeSpatialPoint(world) {
             if (!Array.isArray(world) || world.length !== 3 || world.some(value => !Number.isFinite(Number(value)))) return null;
             const point = new T.Vector3(Number(world[0]), Number(world[1]), Number(world[2]));
-            point.y = T.MathUtils.clamp(point.y, -1.1, Math.min(R - 1.4, 6.6));
+            point.y = T.MathUtils.clamp(point.y, .12, R - .48);
             const local = point.clone().sub(spatialCenter);
             if (local.length() > spatialSphere.radius) {
                 local.setLength(spatialSphere.radius);
@@ -836,7 +905,7 @@ class Drive3DScene {
                 const ray = new T.Ray(camera.position.clone(), direction.normalize());
                 point = ray.intersectSphere(spatialSphere, new T.Vector3());
                 if (!point) point = camera.position.clone().add(direction.multiplyScalar(Math.max(4.5, R * .62)));
-                point.y = T.MathUtils.clamp(point.y, 1.25, Math.min(R - .8, 6.6));
+                point.y = T.MathUtils.clamp(point.y, .18, R - .48);
             }
             const baseDistance = Math.max(1, point.distanceTo(camera.position));
             spatialAnchors.set(key, {point, baseDistance});
@@ -888,7 +957,8 @@ class Drive3DScene {
             angle -= Number(moveX || 0) * .0035;
             local.x = Math.sin(angle) * radius;
             local.z = Math.cos(angle) * radius;
-            local.y = T.MathUtils.clamp(local.y - Number(moveY || 0) * .012, -1.1, Math.min(R - 1.4, 4.4));
+            local.y = T.MathUtils.clamp(local.y - Number(moveY || 0) * .012, .12, R - .48);
+            if (local.length() > spatialSphere.radius) local.setLength(spatialSphere.radius);
             entry.point.copy(spatialCenter).add(local);
             needsRender = true;
         };
@@ -935,6 +1005,14 @@ class Drive3DScene {
             filePanels:filePanels.map(panel=>panel.position.toArray()),
             galleryLayout:titles.length ? 'overhead' : 'front',
             currentFiles:fileGallery.children.reduce((sum,panel)=>sum+panel.children.length,0),
+            focusedShelfIndex,focusedGalleryRows:focusedPanels.length,
+            focusedFiles:focusedPanels.flatMap(panel=>panel.children.map(card=>({
+                name:card.userData.driveItem?.name || '',
+                kind:card.userData.driveItem?.kind || 'file',
+                position:card.getWorldPosition(new T.Vector3()).toArray(),
+                scale:card.scale.x,
+                point:card.localToWorld(new T.Vector3(0,0,.06)).project(camera).toArray()
+            }))),
             fileItems:fileGallery.children.flatMap(panel=>panel.children.map(card=>({
                 name:card.userData?.driveItem?.name || '',
                 kind:card.userData?.driveItem?.kind || 'file',
@@ -964,7 +1042,7 @@ class Drive3DScene {
             const dt = Math.min((now - previous) / 1000, .05); previous = now;
             if (document.hidden) return;
             targetYaw += ((keys.has('ArrowLeft') ? 1 : 0) - (keys.has('ArrowRight') ? 1 : 0)) * dt;
-            targetPitch = T.MathUtils.clamp(targetPitch + ((keys.has('ArrowUp') ? 1 : 0) - (keys.has('ArrowDown') ? 1 : 0)) * dt, -.65, 1.1);
+            targetPitch = T.MathUtils.clamp(targetPitch + ((keys.has('ArrowUp') ? 1 : 0) - (keys.has('ArrowDown') ? 1 : 0)) * dt, -1.48, 1.48);
             yaw = T.MathUtils.damp(yaw, targetYaw, 12, dt); pitch = T.MathUtils.damp(pitch, targetPitch, 12, dt);
             camera.rotation.set(pitch, yaw, 0);
             const active = new Set(held.values());

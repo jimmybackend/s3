@@ -135,9 +135,12 @@ const server=createServer((req,res)=>{
   const shelfIndex=Math.floor(initial.pickPoints.length/2);
   const [px,py]=initial.pickPoints[shelfIndex];
   assert(Number.isFinite(px) && Number.isFinite(py),'Focused cabinet exposes a real projected pick point');
+  await page.evaluate(index=>window.ArcadeCloudDrive3D.chooseThreeShelf(index),shelfIndex);
+  // Let the viewport's real asynchronous preview finish before injecting a
+  // controlled child-folder state for deterministic bookshelf assertions.
+  await page.waitForTimeout(650);
   await page.evaluate(index=>{
     const app=window.ArcadeCloudDrive3D;
-    app.chooseThreeShelf(index);
     app.three.setShelfContents(index,{
       folders:[{name:'Subcarpeta real',kind:'folder',open_href:'/subfolder',preview_href:'/preview/sub'}],
       files:[
@@ -147,8 +150,8 @@ const server=createServer((req,res)=>{
       folder_count:1,file_count:1
     });
   },shelfIndex);
-  await page.waitForFunction(()=>window.ArcadeCloudDrive3D.three.snapshot().shelves.some(s=>s.realBooks>0));
-  const populated=(await snap()).shelves.find(s=>s.realBooks>0);
+  await page.waitForFunction(index=>window.ArcadeCloudDrive3D.three.snapshot().shelves[index]?.overheadImages.some(img=>img.name==='Foto en carpeta.jpg'),shelfIndex);
+  const populated=(await snap()).shelves[shelfIndex];
   assert(populated.realBooks>=1,'Nested folder data is rendered inside its cabinet');
   assert(populated.realItems.some(item=>item.name==='Subcarpeta real' && item.open==='/subfolder'),'Folder metadata stays with the cabinet');
   assert(!populated.realItems.some(item=>item.name==='Informe.pdf'),'Files are never rendered as books inside a cabinet');

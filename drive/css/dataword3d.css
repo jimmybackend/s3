@@ -4183,3 +4183,72 @@ body.is-camera-near.dw-real .dw-hud{
     max-width:54px!important;
   }
 }
+
+/* User-placed artwork: native touch menu and a minimal label above its 3D
+   floor/window/ceiling mesh. Free pictures keep their full image window. */
+.dw-spatial-placement-mode{
+  min-height:30px;
+  width:124px;
+  max-width:32vw;
+  border:1px solid rgba(127,213,240,.5);
+  border-radius:6px;
+  background:#12384b;
+  color:#f0fbff;
+  padding:2px 4px;
+  font-size:11px;
+  touch-action:manipulation;
+}
+.dw-spatial-picture-actions{flex-wrap:wrap;justify-content:flex-end;min-width:0;}
+.dw-spatial-picture-actions button[hidden]{display:none!important}
+.dw-spatial-picture-window.is-surface-placed{
+  width:min(310px,calc(100vw - 24px))!important;
+  max-width:min(310px,calc(100vw - 24px))!important;
+  transform:translate(-50%,-125%) scale(var(--dw-picture-scale,1))!important;
+  border-color:rgba(173,242,255,.9);
+  box-shadow:0 4px 16px rgba(0,0,0,.58);
+}
+.dw-spatial-picture-window.is-surface-placed .dw-spatial-picture-body,
+.dw-spatial-picture-window.is-surface-placed .dw-spatial-picture-resize-handle{
+  display:none!important;
+}
+.dw-spatial-picture-window.is-surface-placed .dw-spatial-picture-titlebar{
+  flex-wrap:wrap;
+  gap:4px;
+  cursor:default;
+}
+.dw-spatial-picture-window.is-surface-placed .dw-spatial-picture-titlebar>strong{
+  flex-basis:calc(100% - 26px);
+}
+.dw-spatial-picture-window.is-surface-placed .dw-spatial-picture-actions{
+  flex:1 0 100%;
+  justify-content:center;
+}
+.dw-spatial-picture-window.is-surface-selected{
+  outline:2px solid rgba(90,237,255,.95);
+  outline-offset:2px;
+}
+.dw-placement-hint{
+  position:fixed;
+  z-index:120;
+  left:50%;
+  top:calc(68px + env(safe-area-inset-top,0px));
+  transform:translateX(-50%);
+  max-width:min(440px,calc(100vw - 24px));
+  padding:10px 15px;
+  border:1px solid #6ee7ff;
+  border-radius:11px;
+  background:rgba(5,29,46,.98);
+  color:#fff;
+  font-size:13px;
+  font-weight:650;
+  text-align:center;
+  pointer-events:none;
+  box-shadow:0 6px 22px rgba(0,0,0,.52);
+}
+.dw-placement-hint[hidden]{display:none!important}
+@media(max-width:700px){
+  .dw-spatial-picture-actions{gap:3px}
+  .dw-spatial-placement-mode{max-width:120px;font-size:11px}
+  .dw-spatial-picture-window.is-surface-placed{width:min(270px,calc(100vw - 22px))!important}
+  .dw-placement-hint{top:62px;font-size:12px}
+}

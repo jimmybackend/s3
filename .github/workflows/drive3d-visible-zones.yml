@@ -7,6 +7,8 @@ on:
       - 'drive/src/Http/Controller/Drive3dBackgroundUploadController.php'
       - 'drive/tests/drive3d_background_folder_test.php'
       - 'drive/tests/dataword3d_zones_browser.cjs'
+      - 'drive/tests/drive3d_surface_picture_test.php'
+      - 'drive/src/Security/Drive3dPreferenceSanitizer.php'
       - 'drive/js/dataword3d.js'
       - 'drive/js/drive3d-*.js'
       - 'drive/tests/drive3d_production_browser.cjs'
@@ -25,11 +27,14 @@ jobs:
       - name: Check PHP and module syntax
         run: |
           php -l drive/dataword3d.php
+          php -l drive/src/Security/Drive3dPreferenceSanitizer.php
+          php drive/tests/drive3d_surface_picture_test.php
           php -l drive/src/Application/Drive3dBackgroundFolderService.php
           php -l drive/src/Http/Controller/Drive3dBackgroundUploadController.php
           php drive/tests/drive3d_background_folder_test.php
           node --input-type=module --check < drive/js/dataword3d.js
           node --input-type=module --check < drive/js/drive3d-scene.js
+          node --input-type=module --check < drive/js/drive3d-surface-placements.js
           node --input-type=module --check < drive/js/drive3d-production.js
       - name: Install browser test dependency outside repository
         run: |

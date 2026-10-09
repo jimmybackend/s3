@@ -115,6 +115,9 @@
           openHref:String(entry.openHref),
           world,
           size:size && size.every((number) => Number.isFinite(number)) ? size : null,
+          mode:['floor','ceiling','window'].includes(entry.mode) ? entry.mode : 'free',
+          panelId:/^[wc]-\d{1,2}-\d$/.test(String(entry.panelId || '')) ? String(entry.panelId) : '',
+          surfaceScale:this.clamp(Number(entry.surfaceScale) || .70,.30,2.6),
         };
       }).filter(Boolean);
     }
@@ -1269,6 +1272,9 @@
             openHref:entry.openHref,
             world:Array.isArray(entry.world) ? entry.world.map(Number) : [],
             size:Array.isArray(entry.size) ? entry.size.map(Number) : [],
+            mode:entry.mode || 'free',
+            panelId:entry.panelId || '',
+            surfaceScale:Number(entry.surfaceScale) || .70,
           })),
         }
       };
@@ -1547,6 +1553,9 @@
         openHref:String(item.openHref),
         world:null,
         size:null,
+        mode:'free',
+        panelId:'',
+        surfaceScale:.70,
       };
       this.spatialPictureState.push(entry);
       this.mountSpatialImage(entry, false);
@@ -1589,7 +1598,33 @@
       close.title = 'Quitar cuadro de la sala';
       close.setAttribute('aria-label','Quitar cuadro de la sala');
       close.innerHTML = '<i class="fas fa-xmark"></i>';
-      actions.append(front,resize,close);
+      const mode = this.document.createElement('select');
+      mode.className = 'dw-spatial-placement-mode';
+      mode.setAttribute('aria-label','Colocar imagen en el domo');
+      mode.title = 'Elegir dónde colocar esta imagen';
+      [
+        ['free','Cuadro libre'],
+        ['floor','Tapete en piso'],
+        ['ceiling','Techo del domo'],
+        ['window','Ventana del domo']
+      ].forEach(([value,label]) => {
+        const option = this.document.createElement('option');
+        option.value=value; option.textContent=label; mode.append(option);
+      });
+      mode.value=entry.mode || 'free';
+      const move = this.document.createElement('button');
+      move.type='button'; move.title='Cambiar la posición sobre la superficie';
+      move.setAttribute('aria-label','Mover imagen a otra posición del domo');
+      move.innerHTML='<i class="fas fa-arrows-up-down-left-right"></i>';
+      const smaller = this.document.createElement('button');
+      smaller.type='button'; smaller.title='Reducir imagen';
+      smaller.setAttribute('aria-label','Reducir imagen colocada');
+      smaller.textContent='−';
+      const bigger = this.document.createElement('button');
+      bigger.type='button'; bigger.title='Ampliar imagen';
+      bigger.setAttribute('aria-label','Ampliar imagen colocada');
+      bigger.textContent='+';
+      actions.append(mode,front,move,smaller,bigger,resize,close);
       header.append(icon,title,actions);
 
       const body = this.document.createElement('div');
@@ -1608,16 +1643,35 @@
       resizeHandle.innerHTML = '<i class="fas fa-up-right-and-down-left-from-center"></i>';
       win.append(header,body,resizeHandle);
       this.spatialPictureLayer.append(win);
-      this.spatialPictures.set(entry.id,{window:win,header,image,entry,resize,resizeHandle});
+      this.spatialPictures.set(entry.id,{window:win,header,image,entry,resize,resizeHandle,mode,move,smaller,bigger,front});
+      this.syncSpatialPictureMode(entry.id);
 
-      image.addEventListener('load', () => this.fitSpatialPicture(win,image,entry), {once:true});
+      image.addEventListener('load', () => {
+        this.fitSpatialPicture(win,image,entry);
+        if (entry.mode && entry.mode !== 'free') this.three?.setSpatialSurface?.({...entry,aspect:image.naturalWidth/Math.max(1,image.naturalHeight)});
+      }, {once:true});
       if (image.complete) this.fitSpatialPicture(win,image,entry);
 
       win.addEventListener('pointerdown', () => this.bringSpatialPictureToFront(entry.id));
+      mode.addEventListener('change', event => {
+        event.stopPropagation();
+        this.changeSpatialImageMode(entry.id,mode.value);
+      });
+      move.addEventListener('click', event => {
+        event.stopPropagation();
+        this.changeSpatialImageMode(entry.id,entry.mode || 'free');
+      });
+      smaller.addEventListener('click', event => {
+        event.stopPropagation();
+        this.resizePlacedImage(entry.id,-.12);
+      });
+      bigger.addEventListener('click', event => {
+        event.stopPropagation();
+        this.resizePlacedImage(entry.id,+.12);
+      });
       front.addEventListener('click', (event) => {
         event.stopPropagation();
-        const world = this.three?.placeSpatialMedia?.(entry.id);
-        if (Array.isArray(world)) this.updateSpatialImageState(entry.id, world, true);
+        this.changeSpatialImageMode(entry.id,'free');
       });
       resize.addEventListener('click', (event) => {
         event.stopPropagation();
@@ -1635,8 +1689,116 @@
       this.bindSpatialPictureResize(entry.id, win, image, resizeHandle);
 
       const world = restoring && Array.isArray(entry.world) ? entry.world : null;
-      const placed = this.three?.placeSpatialMedia?.(entry.id, world);
-      if (Array.isArray(placed)) this.updateSpatialImageState(entry.id, placed, !restoring);
+      if (entry.mode && entry.mode !== 'free') {
+        const placed = this.three?.setSpatialSurface?.(entry);
+        if (Array.isArray(placed)) this.updateSpatialImageState(entry.id, placed, !restoring);
+      } else {
+        const placed = this.three?.placeSpatialMedia?.(entry.id, world);
+        if (Array.isArray(placed)) this.updateSpatialImageState(entry.id, placed, !restoring);
+      }
+    }
+
+    // Placement is a two-step mobile interaction: choose a surface in the
+    // picture header, then touch the exact part of the 3D room to use it.
+    showSurfacePlacementHint(message = '') {
+      let hint = this.document.querySelector('[data-dw-placement-hint]');
+      if (!hint) {
+        hint = this.document.createElement('output');
+        hint.className = 'dw-placement-hint';
+        hint.dataset.dwPlacementHint = '';
+        hint.setAttribute('role','status');
+        hint.setAttribute('aria-live','polite');
+        this.document.body.append(hint);
+      }
+      hint.textContent = String(message);
+      hint.hidden = !message;
+    }
+
+    syncSpatialPictureMode(id) {
+      const picture = this.spatialPictures.get(id);
+      if (!picture) return;
+      const mode = ['floor','ceiling','window'].includes(picture.entry.mode) ? picture.entry.mode : 'free';
+      const anchored = mode !== 'free';
+      picture.window.classList.toggle('is-surface-placed', anchored);
+      picture.window.dataset.pictureMode = mode;
+      picture.mode.value = mode;
+      picture.resize.hidden = anchored;
+      picture.front.hidden = !anchored;
+      picture.move.hidden = !anchored;
+      picture.smaller.hidden = !anchored;
+      picture.bigger.hidden = !anchored;
+      if (anchored) {
+        picture.window.classList.remove('is-resizing-enabled');
+        picture.resizeHandle.hidden = true;
+        picture.resize.setAttribute('aria-pressed','false');
+      }
+    }
+
+    changeSpatialImageMode(id, mode) {
+      const picture = this.spatialPictures.get(id);
+      if (!picture) return;
+      const next = ['floor','window','ceiling'].includes(mode) ? mode : 'free';
+      if (next === 'free') {
+        this.three?.cancelSpatialSurface?.();
+        this.three?.clearSpatialSurface?.(id);
+        picture.entry.mode = 'free';
+        picture.entry.panelId = '';
+        const world = this.three?.placeSpatialMedia?.(id);
+        if (Array.isArray(world)) this.updateSpatialImageState(id,world,true);
+        this.syncSpatialPictureMode(id);
+        this.showSurfacePlacementHint('');
+        this.schedulePreferenceSave();
+        return;
+      }
+      // Do not overwrite a saved placement until a genuine floor/dome hit
+      // succeeds. The previous image remains in its existing position.
+      this.three?.armSpatialSurface?.(id,next);
+      this.showSurfacePlacementHint(next === 'floor'
+        ? 'Tapete: toca el lugar del piso donde irá la imagen.'
+        : next === 'ceiling'
+          ? 'Techo: mira hacia arriba y toca un panel superior del domo.'
+          : 'Ventana: toca el cristal exacto entre dos costillas de madera.');
+      this.bringSpatialPictureToFront(id);
+    }
+
+    onSpatialSurfacePlaced(placement) {
+      if (!placement?.id) return;
+      const picture = this.spatialPictures.get(placement.id);
+      if (!picture) return;
+      Object.assign(picture.entry,{
+        mode:placement.mode,
+        panelId:placement.panelId || '',
+        surfaceScale:placement.surfaceScale,
+        world:placement.world,
+      });
+      const image = picture.image;
+      const aspect = image?.naturalWidth && image?.naturalHeight ? image.naturalWidth/image.naturalHeight : 4/3;
+      const world = this.three?.setSpatialSurface?.({...picture.entry,aspect});
+      if (Array.isArray(world)) this.updateSpatialImageState(placement.id,world,false);
+      this.syncSpatialPictureMode(placement.id);
+      this.showSurfacePlacementHint('');
+      this.schedulePreferenceSave();
+    }
+
+    resizePlacedImage(id,step) {
+      const picture = this.spatialPictures.get(id);
+      if (!picture || !['floor','ceiling','window'].includes(picture.entry.mode)) return;
+      const maximum = picture.entry.mode === 'floor' ? 2.6 : .94;
+      picture.entry.surfaceScale = this.clamp((Number(picture.entry.surfaceScale) || .70)+step,.30,maximum);
+      const {image,entry} = picture;
+      this.three?.setSpatialSurface?.({
+        ...entry,aspect:image.naturalWidth && image.naturalHeight ? image.naturalWidth/image.naturalHeight : 4/3
+      });
+      this.schedulePreferenceSave();
+    }
+
+    onSpatialSurfaceSelected(id) {
+      const picture = this.spatialPictures.get(id);
+      if (!picture) return;
+      this.bringSpatialPictureToFront(id);
+      picture.window.classList.add('is-surface-selected');
+      this.window.clearTimeout(picture.selectedTimer);
+      picture.selectedTimer = this.window.setTimeout(() => picture.window.classList.remove('is-surface-selected'),1200);
     }
 
     fitSpatialPicture(win, image, entry = null) {
@@ -1720,7 +1882,11 @@
     bindSpatialPictureDrag(id, handle) {
       let drag = null;
       handle.addEventListener('pointerdown', (event) => {
-        if (event.target.closest('button,a,input')) return;
+        // A window/ceiling image belongs to a fixed cell; only 'Mover'
+        // can reassign it to another panel. Never drag its HUD away.
+        const picture = this.spatialPictures.get(id);
+        if (picture?.entry?.mode && picture.entry.mode !== 'free') return;
+        if (event.target.closest('button,a,input,select,label')) return;
         drag = {pointerId:event.pointerId,x:event.clientX,y:event.clientY};
         handle.setPointerCapture?.(event.pointerId);
         this.bringSpatialPictureToFront(id);
@@ -1764,6 +1930,9 @@
       picture?.window?.remove();
       this.spatialPictures.delete(id);
       this.spatialPictureState = this.spatialPictureState.filter((entry) => entry.id !== id);
+      this.showSurfacePlacementHint('');
+      this.three?.clearSpatialSurface?.(id);
+      this.three?.cancelSpatialSurface?.();
       this.three?.clearSpatialMedia?.(id);
       this.schedulePreferenceSave();
     }

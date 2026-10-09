@@ -75,3 +75,22 @@ No sustituye una prueba autenticada con S3/DB en el servidor de producción.
 - Pruebas: `drive/tests/drive3d_background_folder_test.php` verifica resolución del catálogo sin conexión AWS; `drive/tests/drive3d_production_browser.cjs` valida capturas, colocación, vista previa y selección con pulsaciones reales.
 
 La prueba automatizada de navegador utiliza datos de muestra. Después de fusionar debe validarse visualmente con la carpeta y fotografías privadas reales de un usuario en la instalación de producción.
+
+## 9 de octubre de 2026 — galería aérea y superficies seleccionables
+
+La miniatura de una imagen de una **subcarpeta** forma parte de la vista previa de ese librero (carga diferida, como máximo tres miniaturas). Su borde inferior queda **90 cm por encima** de la parte superior del mueble, con separación física y sin invadir los libros. La galería de archivos del **nivel actual** conserva las tarjetas elevadas alrededor del anillo cuando hay libreros. Si no hay libreros, los archivos siguen apareciendo enfrente del usuario.
+
+En una imagen abierta con `Traer al escritorio`, el selector de la barra permite:
+
+- **Cuadro libre**: la ventana flotante clásica, se desplaza/redimensiona y conserva su posición.
+- **Tapete en piso**: seleccionar el modo y tocar el piso. El motor dibuja una malla plana a 6,5 cm de altura con la textura autenticada; el botón *Mover* permite tocar otro lugar y `+`/`−` cambia su tamaño.
+- **Techo del domo**: mirar arriba y tocar un sector superior; la imagen se curva sobre la cara interna del techo, contenida por los meridianos de madera.
+- **Ventana del domo**: mirar un cristal entre dos costillas y tocarlo; se identifica el sector y la banda, se crea una malla curvada que no atraviesa los marcos estructurales. *Mover* pide tocar otra ventana; `+`/`−` redimensiona dentro de los límites del panel.
+
+El toque se convierte en rayo desde la cámara real. Para piso se calcula la intersección con el plano horizontal; para techo/cristales se calcula la intersección con la esfera interior y se identifica una celda de 16 segmentos angulares, con tres bandas de ventana y un tramo superior de techo. Al situar una imagen, su ventana deja de cubrirla y pasa a ser una pequeña barra de control, que sigue la proyección de la imagen en la sala. Tocar una malla anclada selecciona su barra.
+
+Una selección no se guarda hasta que se toca efectivamente una superficie válida. Los datos que se guardan en `spatialImages` son `mode`, `panelId`, `surfaceScale`, `world`, más identificador, nombre, ruta y tamaño ya existentes. `Drive3dPreferenceSanitizer` rechaza URLs externas, modos o sectores inválidos. Las entradas de preferencias anteriores siguen siendo cuadros libres. La imagen se lee desde `ver_archivo.php` autenticado, sin nuevas rutas públicas, tablas ni operaciones extra sobre S3.
+
+El límite de cuadros simultáneos se mantiene en doce; las mallas se destruyen al quitar su imagen y las texturas asíncronas fuera de uso se liberan. El visor de imágenes clásico de `so.php` conserva por separado el ajuste proporcional implementado en `ArcadeCloudImageWindowFit`.
+
+**Comprobación**: `drive/tests/drive3d_surface_picture_test.php` prueba persistencia y validación de sectores, además de la integración WebGL/Chromium de `drive/tests/drive3d_production_browser.cjs`. Sigue siendo necesaria la revisión visual del funcionamiento en un móvil Android con fotos privadas reales tras desplegar a producción.

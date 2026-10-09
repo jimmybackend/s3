@@ -1,0 +1,30 @@
+name: FastDrive GitOps and idle recovery contracts
+
+on:
+  pull_request:
+    paths:
+      - 'drive/src/Media/MediaWorkerNodeService.php'
+      - 'drive/bin/fastdrive_safe_worker_reload.php'
+      - 'drive/tests/idle_stop_office_regression.php'
+      - 'tools/arcadecloud-aws-bridge/fastdrive_gitops.py'
+      - 'tools/arcadecloud-aws-bridge/tests/test_fastdrive_gitops.py'
+      - '.github/workflows/arcadecloud-fastdrive-gitops*.yml'
+      - 'drive/docs/FASTDRIVE_GITOPS_RECOVERY.md'
+  push:
+    branches: [main]
+    paths:
+      - 'drive/src/Media/MediaWorkerNodeService.php'
+      - 'tools/arcadecloud-aws-bridge/fastdrive_gitops.py'
+      - 'drive/bin/fastdrive_safe_worker_reload.php'
+
+permissions:
+  contents: read
+
+jobs:
+  offline-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test GitOps script and PHP syntax
+        run: python3 -m unittest discover -s tools/arcadecloud-aws-bridge/tests -p test_fastdrive_gitops.py -v

@@ -22,6 +22,7 @@ use GuzzleHttp\Promise\FulfilledPromise;
 final class Config {
     public static array $calls = [];
     public static ?Closure $onDescribe = null;
+    public static ?\DateTimeImmutable $launchOverride = null;
     public static function getAwsControlClientConfig(array $options): array {
         return $options + [
             'version' => 'latest', 'credentials' => ['key' => 'fixture', 'secret' => 'fixture'],
@@ -32,6 +33,7 @@ final class Config {
                     if ($callback) $callback();
                     return new FulfilledPromise(new Result(['Reservations' => [['Instances' => [[
                         'InstanceId' => 'i-12345678', 'State' => ['Name' => 'running'], 'InstanceType' => 'fixture',
+                        'LaunchTime' => self::$launchOverride,
                     ]]]]]));
                 }
                 if ($command->getName() !== 'StopInstances' || $command['Force'] !== false
@@ -97,7 +99,7 @@ try {
         $db->query('DELETE FROM OfficeDocumentSessions');
         $db->query('DELETE FROM MediaProcessingJobs');
         $db->query("UPDATE MediaWorkerNodeSessions SET Status='idle',IdleSince=DATE_SUB(UTC_TIMESTAMP(), INTERVAL 21 MINUTE),StopRequestedAt=NULL");
-        Config::$calls = []; Config::$onDescribe = null;
+        Config::$calls = []; Config::$onDescribe = null; Config::$launchOverride = null;
     };
     $noStop = static fn(): bool => !in_array('StopInstances', Config::$calls, true);
     foreach (['preparing','syncing','conflict'] as $status) {
@@ -327,6 +329,55 @@ try {
     $db->query("UPDATE MediaWorkerNodeSessions SET IdleSince=DATE_SUB(UTC_TIMESTAMP(), INTERVAL 1210 SECOND)");
     $before = $sessions->activeForInstance('i-12345678');
     idleCheck(!$sessions->claimIdleStop($before['session_id'], $before['idle_since'], 1230), 'automatic stop waits for complete warning interval');
+    // AWS Console/GitHub may start the compute EC2 without creating a DB
+    // session. Only the physical node (IMDS verified + media-worker) may
+    // initialize an idle timer. A remote web gateway must not invent a session.
+    $reset();
+    $db->query("UPDATE MediaWorkerNodeSessions SET Status='stopped',IdleSince=NULL WHERE InstanceId='i-12345678'");
+    $gateway = new MediaWorkerNodeService($db, static fn(): array => [
+        'instance_id' => 'i-12345678', 'region' => 'us-east-1'
+    ]);
+    $gateway->handleIdle($jobs);
+    idleCheck($sessions->activeForInstance('i-12345678') === null, 'web gateway never creates missing idle sessions');
+
+    putenv('ARCADECLOUD_MEDIA_WORKER=1');
+    try {
+        $wrongMachine = new MediaWorkerNodeService($db, static fn(): array => [
+            'instance_id' => 'i-87654321', 'region' => 'us-east-1'
+        ]);
+        $wrongMachine->handleIdle($jobs);
+        idleCheck($sessions->activeForInstance('i-12345678') === null, 'wrong physical EC2 identity cannot bootstrap idle');
+
+        $physical = new MediaWorkerNodeService($db, static fn(): array => [
+            'instance_id' => 'i-12345678', 'region' => 'us-east-1'
+        ]);
+        $physical->handleIdle($jobs);
+        $recovered = $sessions->activeForInstance('i-12345678');
+        idleCheck($recovered !== null && $recovered['status'] === 'idle'
+            && $recovered['idle_since'] !== '', 'external boot recovers real 20-minute idle session');
+        $physical->handleIdle($jobs);
+        idleCheck($sessions->activeForInstance('i-12345678')['session_id'] === $recovered['session_id'],
+            'repeated idle polling does not create duplicate sessions');
+
+        // An earlier "stopping" session may belong to the prior boot.
+        // Only a demonstrably newer EC2 launch permits closing/recreating it.
+        $db->query("UPDATE MediaWorkerNodeSessions SET Status='stopping',"
+            . " StopRequestedAt=DATE_SUB(UTC_TIMESTAMP(), INTERVAL 120 SECOND)"
+            . " WHERE SessionId='" . $db->real_escape_string($recovered['session_id']) . "'");
+        $physical->handleIdle($jobs);
+        idleCheck($sessions->activeForInstance('i-12345678')['session_id'] === $recovered['session_id'],
+            'unknown launch time does not resurrect stopping session');
+        Config::$launchOverride = new \DateTimeImmutable('+60 seconds');
+        $physical->handleIdle($jobs);
+        $afterBoot = $sessions->activeForInstance('i-12345678');
+        idleCheck($afterBoot !== null && $afterBoot['session_id'] !== $recovered['session_id']
+            && $afterBoot['status'] === 'idle',
+            'verified new EC2 boot reconciles prior stopping session and re-arms idle');
+    } finally {
+        putenv('ARCADECLOUD_MEDIA_WORKER');
+        Config::$launchOverride = null;
+    }
+
     $reset(); $db->query('DROP TABLE OfficeDocumentSessions');
     foreach (['handleIdle','requestIdleStop'] as $method) {
         try { $node->$method($jobs); throw new LogicException('Missing Office schema accepted'); }

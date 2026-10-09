@@ -1,0 +1,36 @@
+name: ArcadeCloud FastDrive - Git-first source sync
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - tools/arcadecloud-aws-bridge/requests/fastdrive-gitops.json
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: arcadecloud-fastdrive-code-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    if: github.repository == 'jimmybackend/s3' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 9
+    steps:
+      - uses: actions/checkout@v4
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.ARCADECLOUD_AWS_BRIDGE_ROLE_ARN }}
+          aws-region: ${{ vars.ARCADECLOUD_AWS_REGION }}
+          role-session-name: ArcadeCloudFastDriveGitOps
+      - run: python3 -m pip install 'boto3>=1.35,<2'
+      - name: Fast-forward only, validate, reload if safe
+        env:
+          ARCADECLOUD_AWS_REGION: ${{ vars.ARCADECLOUD_AWS_REGION }}
+          ARCADECLOUD_AWS_LARGE_ID: ${{ vars.ARCADECLOUD_AWS_LARGE_ID }}
+          EXPECTED_GIT_SHA: ${{ github.sha }}
+        run: python3 tools/arcadecloud-aws-bridge/fastdrive_gitops.py

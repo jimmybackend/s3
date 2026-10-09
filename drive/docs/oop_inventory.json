@@ -5,8 +5,8 @@
     "php_needs_migration": 0,
     "php_tests": 79,
     "js_total": 85,
-    "js_class_modules": 78,
-    "js_needs_migration": 1,
+    "js_class_modules": 79,
+    "js_needs_migration": 0,
     "js_tests": 11,
     "js_compatibility_facades": 8,
     "ajax_clients": 54,
@@ -9606,67 +9606,17 @@
     },
     {
       "path": "drive/js/notebook.js",
-      "lines": 262,
-      "kind": "procedural script",
-      "classes": [],
-      "functions": [
-        "uid",
-        "status",
-        "api",
-        "canvasSize",
-        "applyZoom",
-        "background",
-        "styleFor",
-        "drawStroke",
-        "nearestBaseline",
-        "alignStrokeToRule",
-        "textFont",
-        "splitWordToWidth",
-        "layoutText",
-        "textBounds",
-        "drawText",
-        "getImage",
-        "drawImageObject",
-        "objectBounds",
-        "selected",
-        "drawSelection",
-        "render",
-        "snap",
-        "pos",
-        "previewPoints",
-        "hitObject",
-        "selectionAction",
-        "objectTouchesLine",
-        "eraseWholeLine",
-        "lineStrokeObjects",
-        "linePng",
-        "scheduleLineRecognition",
-        "loadSelectedIntoPrompt",
-        "clearLongPress",
-        "nextTextY",
-        "processImageSource",
-        "insertProcessedImage",
-        "pasteImage",
-        "normalizeObjects",
-        "serialize",
-        "resolveClose",
-        "syncControls"
+      "lines": 268,
+      "kind": "class/module",
+      "classes": [
+        "NotebookEditor"
       ],
+      "functions": [],
       "window_assign": [
         "ArcadeCloudNotebookClose"
       ],
       "window_func": [],
-      "top_vars": [
-        "$",
-        "canvas",
-        "imageCache",
-        "defaultZoom",
-        "state",
-        "paper",
-        "WRITE_LEFT",
-        "fontStacks",
-        "closeResolver"
-      ],
+      "top_vars": [],
       "iife": false,
       "ajax": {
         "fetch": 2,
@@ -9675,11 +9625,7 @@
         "json_consumers": 2,
         "response_checks": 5
       },
-      "issues": [
-        "top-level functions: uid, status, api, canvasSize, applyZoom, background, styleFor, drawStroke",
-        "top-level state: $, canvas, imageCache, defaultZoom, state, paper, WRITE_LEFT, fontStacks",
-        "no ES class"
-      ]
+      "issues": []
     },
     {
       "path": "drive/js/obtenerFiltros.js",

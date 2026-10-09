@@ -572,7 +572,7 @@
     },
     {
       "path": "drive/dataword3d.php",
-      "size": 26197,
+      "size": 26288,
       "active": true,
       "references": [
         "drive/so.php",
@@ -4134,7 +4134,7 @@
     },
     {
       "path": "drive/tests/dataword3d_contract_smoke.php",
-      "size": 17877,
+      "size": 18238,
       "active": false,
       "references": []
     },

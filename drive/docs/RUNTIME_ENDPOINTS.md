@@ -195,6 +195,7 @@
 | `drive/src/Admin/ServerTaskActivityProbe.php` | `drive/tests/web_os_contract_smoke.php`, `drive/tests/web_os_pending_fixes_smoke.php` |
 | `drive/src/Application/AiFileSearchService.php` | `drive/tests/web_os_contract_smoke.php` |
 | `drive/src/Application/BackgroundWorkerLauncher.php` | `drive/tests/folder_textract_background_task_contract.php`, `drive/tests/web_os_contract_smoke.php` |
+| `drive/src/Application/Drive3dBackgroundFolderService.php` | `drive/tests/drive3d_background_folder_test.php` |
 | `drive/src/Application/DrivePageService.php` | ninguna |
 | `drive/src/Application/DrivePageViewModel.php` | ninguna |
 | `drive/src/Application/FileAccessService.php` | `drive/tests/arcadelink_bulk_contract_regression.php` |
@@ -488,6 +489,7 @@
 | `drive/tests/database_dump_full_integration.php` | ninguna |
 | `drive/tests/database_schema_contract_smoke.php` | ninguna |
 | `drive/tests/dataword3d_contract_smoke.php` | ninguna |
+| `drive/tests/drive3d_background_folder_test.php` | ninguna |
 | `drive/tests/fastdrive_control_contract_smoke.php` | ninguna |
 | `drive/tests/federation_access_message_smoke.php` | ninguna |
 | `drive/tests/federation_catalog_event_smoke.php` | ninguna |

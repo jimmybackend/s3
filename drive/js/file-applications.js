@@ -151,6 +151,8 @@ class ArcadeCloudFileApplicationService {
     if (application === 'image' && file.openUrl) {
       const full = this.document.createElement('button');
       full.type = 'button';
+      full.title = 'Cambiar calidad de imagen';
+      full.setAttribute('aria-label', 'Cambiar calidad de imagen');
       full.innerHTML = '<i class="fas fa-expand"></i><span>Ver completa</span>';
       full.dataset.fullImage = '0';
       full.addEventListener('click', () => {
@@ -164,7 +166,7 @@ class ArcadeCloudFileApplicationService {
       toolbar.append(full);
     }
     if (application === 'image' && file.wallpaperUrl) {
-      const wallpaper = this.document.createElement('button'); wallpaper.type = 'button'; wallpaper.innerHTML = '<i class="fas fa-panorama"></i><span>Usar como fondo</span>';
+      const wallpaper = this.document.createElement('button'); wallpaper.type = 'button'; wallpaper.title = 'Usar como fondo'; wallpaper.setAttribute('aria-label', 'Usar como fondo'); wallpaper.innerHTML = '<i class="fas fa-panorama"></i><span>Usar como fondo</span>';
       wallpaper.addEventListener('click', () => this.window.ArcadeCloudOsAppearance?.setWallpaper(file.wallpaperUrl, file.name)); toolbar.append(wallpaper);
     }
     if (toolbar.children.length) {
@@ -177,10 +179,13 @@ class ArcadeCloudFileApplicationService {
         body.prepend(toolbar);
       }
     }
+    if (application === 'image') {
+      this.window.ArcadeCloudImageWindowFit?.bind(this.window, record.element, viewer, this.manager, record);
+    }
   }
 
   actionLink(url, icon, label, download) {
-    const link = this.document.createElement('a'); link.href = url; if (download) link.setAttribute('download', '');
+    const link = this.document.createElement('a'); link.href = url; link.title = label; link.setAttribute('aria-label', label); if (download) link.setAttribute('download', '');
     link.innerHTML = `<i class="fas ${icon}"></i><span></span>`; link.querySelector('span').textContent = label; return link;
   }
 

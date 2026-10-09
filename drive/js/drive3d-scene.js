@@ -877,14 +877,16 @@ class Drive3DScene {
         };
         this.clearSpatialSurface = id => { surfacePlacements.remove(id); needsRender=true; };
         this.surfacePlacementState = id => surfacePlacements.snapshot().find(entry=>entry.id===id) || null;
-        const spatialCenter = new T.Vector3(0, 2.7, 0);
-        const spatialSphere = new T.Sphere(spatialCenter, Math.max(4, R - 1.05));
+        const spatialCenter = new T.Vector3(0, 0, 0);
+        // Free images may be positioned throughout the interior, up to
+        // the roof and down to floor level, not at the obsolete 6.6m cap.
+        const spatialSphere = new T.Sphere(spatialCenter, Math.max(4, R - .45));
         const spatialId = (value) => String(value || 'singleton');
 
         function normalizeSpatialPoint(world) {
             if (!Array.isArray(world) || world.length !== 3 || world.some(value => !Number.isFinite(Number(value)))) return null;
             const point = new T.Vector3(Number(world[0]), Number(world[1]), Number(world[2]));
-            point.y = T.MathUtils.clamp(point.y, -1.1, Math.min(R - 1.4, 6.6));
+            point.y = T.MathUtils.clamp(point.y, .12, R - .48);
             const local = point.clone().sub(spatialCenter);
             if (local.length() > spatialSphere.radius) {
                 local.setLength(spatialSphere.radius);
@@ -903,7 +905,7 @@ class Drive3DScene {
                 const ray = new T.Ray(camera.position.clone(), direction.normalize());
                 point = ray.intersectSphere(spatialSphere, new T.Vector3());
                 if (!point) point = camera.position.clone().add(direction.multiplyScalar(Math.max(4.5, R * .62)));
-                point.y = T.MathUtils.clamp(point.y, 1.25, Math.min(R - .8, 6.6));
+                point.y = T.MathUtils.clamp(point.y, .18, R - .48);
             }
             const baseDistance = Math.max(1, point.distanceTo(camera.position));
             spatialAnchors.set(key, {point, baseDistance});
@@ -955,7 +957,8 @@ class Drive3DScene {
             angle -= Number(moveX || 0) * .0035;
             local.x = Math.sin(angle) * radius;
             local.z = Math.cos(angle) * radius;
-            local.y = T.MathUtils.clamp(local.y - Number(moveY || 0) * .012, -1.1, Math.min(R - 1.4, 4.4));
+            local.y = T.MathUtils.clamp(local.y - Number(moveY || 0) * .012, .12, R - .48);
+            if (local.length() > spatialSphere.radius) local.setLength(spatialSphere.radius);
             entry.point.copy(spatialCenter).add(local);
             needsRender = true;
         };

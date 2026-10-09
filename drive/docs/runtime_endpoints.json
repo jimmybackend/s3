@@ -295,7 +295,7 @@
     },
     {
       "path": "drive/bin/fastdrive_safe_worker_reload.php",
-      "size": 2514,
+      "size": 2428,
       "active": false,
       "references": []
     },
@@ -3335,7 +3335,7 @@
     },
     {
       "path": "drive/src/Media/MediaWorkerNodeService.php",
-      "size": 35743,
+      "size": 37363,
       "active": false,
       "references": [
         "drive/tests/compute_admission_lock_contract_smoke.php",
@@ -4284,7 +4284,7 @@
     },
     {
       "path": "drive/tests/idle_stop_office_regression.php",
-      "size": 19928,
+      "size": 20886,
       "active": false,
       "references": []
     },

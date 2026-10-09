@@ -1,0 +1,7 @@
+{
+  "request_id": "auto-small-uptime-20261008-first",
+  "alias": "small",
+  "operation": "diagnose",
+  "argument": "uptime",
+  "confirm": "READ_DIAGNOSTIC"
+}

@@ -17,6 +17,24 @@ const html = `<!doctype html><meta charset="utf-8"><meta name="viewport" content
 let requests=0;
 const server=createServer((req,res)=>{
  const path = req.url.split('?')[0];
+ if(path.startsWith('/preview/') && new URL(req.url,'http://local').searchParams.get('api')==='files'){
+    const params=new URL(req.url,'http://local').searchParams;
+    const page=Number(params.get('pagina')||1);
+    const number=path.split('/').pop();
+    const count=page===1?72:20;
+    const files=Array.from({length:count},(_,i)=>({
+      name:`Librero-${number}-foto-${(page-1)*72+i+1}.jpg`,
+      kind:'image',extension:'JPG',
+      thumbnail_href:'/three-lab/assets/alpine-panorama.jpg',
+      open_href:'/three-lab/assets/alpine-panorama.jpg',
+      media_key:`Data/${number}/foto-${i+1}.jpg`,
+      media_route:`Data/${number}/`
+    }));
+    files[1]={...files[1],name:`Librero-${number}-documento.pdf`,kind:'pdf',extension:'PDF',thumbnail_href:''};
+    res.setHeader('Content-Type','application/json');
+    res.end(JSON.stringify({ok:true,state:{files,folder_count:1,file_count:92,file_page:page,file_pages:2,file_limit:72}}));
+    return;
+ }
  if(path.startsWith('/preview/')) { requests++; setTimeout(()=>{res.setHeader('Content-Type','application/json');res.end(JSON.stringify({ok:true,state:{
    folders:[{name:'Subcarpeta real',kind:'folder',open_href:'/subfolder',preview_href:'/preview/sub'}],
    files:[
@@ -144,6 +162,14 @@ const server=createServer((req,res)=>{
   positioned = (await snap()).surfaceImages.find(item=>item.id===secondPicture.id);
   assert.equal(positioned.mode,'ceiling','Picture can become a curved dome ceiling texture');
   assert.equal(positioned.panelId,'c-7-0');
+  await page.waitForFunction(id=>document.querySelector(`[data-spatial-picture-id="${id}"]`)?.classList.contains('is-controls-hidden'),secondPicture.id,{timeout:7500});
+  assert.equal(await page.locator(surfaceSelector).isVisible(),false,'Anchored image toolbar auto-hides in five seconds');
+  await page.evaluate(id=>window.ArcadeCloudDrive3D.onSpatialSurfaceSelected(id),secondPicture.id);
+  assert.equal(await page.locator(surfaceSelector).isVisible(),true,'Tapping a placed 3D image restores its toolbar');
+  await page.evaluate(()=>window.ArcadeCloudDrive3D.three.look(0,-84));
+  await page.waitForFunction(()=>window.ArcadeCloudDrive3D.three.snapshot().pitch>1.40);
+  await page.evaluate(()=>window.ArcadeCloudDrive3D.three.look(0,84));
+  await page.waitForFunction(()=>window.ArcadeCloudDrive3D.three.snapshot().pitch< -1.40);
 
   await page.evaluate(id=>window.ArcadeCloudDrive3D.changeSpatialImageMode(id,'free'),secondPicture.id);
   await page.waitForFunction(()=>window.ArcadeCloudDrive3D.three.snapshot().surfaceImages.length===0);
@@ -172,29 +198,33 @@ const server=createServer((req,res)=>{
   const [px,py]=initial.pickPoints[shelfIndex];
   assert(Number.isFinite(px) && Number.isFinite(py),'Focused cabinet exposes a real projected pick point');
   await page.evaluate(index=>window.ArcadeCloudDrive3D.chooseThreeShelf(index),shelfIndex);
-  // Let the viewport's real asynchronous preview finish before injecting a
-  // controlled child-folder state for deterministic bookshelf assertions.
-  await page.waitForTimeout(650);
-  await page.evaluate(index=>{
-    const app=window.ArcadeCloudDrive3D;
-    app.three.setShelfContents(index,{
-      folders:[{name:'Subcarpeta real',kind:'folder',open_href:'/subfolder',preview_href:'/preview/sub'}],
-      files:[
-        {name:'Informe.pdf',kind:'pdf',open_href:'/report.pdf'},
-        {name:'Foto en carpeta.jpg',kind:'image',thumbnail_href:'/three-lab/assets/alpine-panorama.jpg',open_href:'/subphoto'}
-      ],
-      folder_count:1,file_count:1
-    });
-  },shelfIndex);
-  await page.waitForFunction(index=>window.ArcadeCloudDrive3D.three.snapshot().shelves[index]?.overheadImages.some(img=>img.name==='Foto en carpeta.jpg'),shelfIndex);
-  const populated=(await snap()).shelves[shelfIndex];
-  assert(populated.realBooks>=1,'Nested folder data is rendered inside its cabinet');
-  assert(populated.realItems.some(item=>item.name==='Subcarpeta real' && item.open==='/subfolder'),'Folder metadata stays with the cabinet');
-  assert(!populated.realItems.some(item=>item.name==='Informe.pdf'),'Files are never rendered as books inside a cabinet');
-  assert(populated.overheadImages.some(item=>item.name==='Foto en carpeta.jpg'),
-    'A child-folder image is previewed in the air over its own shelf');
-  assert(populated.overheadImages.every(item=>item.world[1] > initial.shelves[0].height+.90),
-    'Image previews stay in a separate band of air instead of overlapping the wood');
+  await page.waitForFunction(index=>window.ArcadeCloudDrive3D.three.snapshot().focusedShelfIndex===index && window.ArcadeCloudDrive3D.three.snapshot().focusedFiles.length===72,shelfIndex);
+  const selectedGallery=await snap();
+  assert.equal(selectedGallery.focusedGalleryRows,4,'One selected folder distributes its files across four circular rows');
+  assert.equal(selectedGallery.focusedFiles.length,72,'The first large gallery page exposes 72 different files');
+  assert(selectedGallery.focusedFiles.every(item=>item.scale>=1.85),'Focused items render at three times the old shelf previews');
+  assert(selectedGallery.focusedFiles.every(item=>item.position[1]>initial.shelves[0].height+.4),'Every gallery row stays clear of the wooden crowns');
+  assert(new Set(selectedGallery.focusedFiles.map(item=>item.name)).size===72,'Repeated rows cannot show the same file twice');
+  assert(selectedGallery.focusedFiles.some(item=>item.kind==='pdf'),'Non-image files keep their proper type icon in the dome gallery');
+  assert(await page.locator('.dw-dome-gallery-pager').isVisible(),'The gallery shows paginated navigation for large folders');
+
+  await page.locator('.dw-dome-gallery-pager button').last().click();
+  await page.waitForFunction(()=>window.ArcadeCloudDrive3D.three.snapshot().focusedFiles.length===20);
+  assert((await snap()).focusedFiles.every(item=>item.name.includes('foto-') || item.kind==='pdf'),'Next page replaces the previous files');
+  await page.locator('.dw-dome-gallery-pager button').first().click();
+  await page.waitForFunction(()=>window.ArcadeCloudDrive3D.three.snapshot().focusedFiles.length===72);
+
+  const nextShelf=(shelfIndex+1)%initial.shelves.length;
+  await page.evaluate(index=>window.ArcadeCloudDrive3D.chooseThreeShelf(index),nextShelf);
+  await page.waitForFunction(index=>window.ArcadeCloudDrive3D.three.snapshot().focusedShelfIndex===index,nextShelf);
+  assert.equal((await snap()).focusedFiles.filter(item=>item.name.includes(`Librero-${shelfIndex}-`)).length,0,
+    'Selecting another shelf removes all images from the previously selected shelf immediately');
+  await page.waitForFunction(index=>window.ArcadeCloudDrive3D.three.snapshot().focusedFiles.some(item=>item.name.startsWith('Librero-'+index+'-')),nextShelf);
+  assert.equal((await snap()).focusedGalleryRows,4);
+  await page.evaluate(()=>window.ArcadeCloudDrive3D.centerCamera());
+  await page.waitForFunction(()=>window.ArcadeCloudDrive3D.three.snapshot().focusedShelfIndex===-1);
+  assert.equal((await snap()).focusedFiles.length,0,'Deselecting the shelf removes its four rows');
+  assert.equal(await page.locator('.dw-dome-gallery-pager').isVisible(),false);
   assert.equal(await page.locator('[data-hud-desk]').isVisible(),false,'Folder selection does not offer Traer al escritorio');
 
   // Turn toward the first gallery panel, tap a real thumbnail, then bring that selected image into the workspace.

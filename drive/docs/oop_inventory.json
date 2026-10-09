@@ -7660,7 +7660,7 @@
     },
     {
       "path": "drive/tests/notebook_contract_smoke.php",
-      "lines": 91,
+      "lines": 93,
       "kind": "test script",
       "classes": 0,
       "functions": [],
@@ -8087,7 +8087,7 @@
     },
     {
       "path": "drive/tests/web_os_multiwindow_smoke.php",
-      "lines": 62,
+      "lines": 64,
       "kind": "test script",
       "classes": 0,
       "functions": [],
@@ -10637,7 +10637,7 @@
     },
     {
       "path": "drive/tests/web_os_folder_rename_functional.js",
-      "lines": 34,
+      "lines": 37,
       "kind": "procedural script",
       "classes": [],
       "functions": [],

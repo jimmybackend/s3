@@ -530,7 +530,7 @@
 | `drive/tests/media_worker_behavior_regression.php` | 65 | test script | 0 | — | ⚠️ | — | — |
 | `drive/tests/node_diagnostics_contract_smoke.php` | 62 | test script | 0 | — | — | — | — |
 | `drive/tests/node_diagnostics_control_smoke.php` | 43 | test script | 0 | — | — | — | — |
-| `drive/tests/notebook_contract_smoke.php` | 91 | test script | 0 | — | — | — | — |
+| `drive/tests/notebook_contract_smoke.php` | 93 | test script | 0 | — | — | — | — |
 | `drive/tests/office_conditional_save_regression.php` | 148 | test script | 1 | — | ⚠️ | — | — |
 | `drive/tests/office_gateway_contract_smoke.php` | 376 | test script | 0 | — | — | — | — |
 | `drive/tests/password_credential_verifier_smoke.php` | 44 | test script | 0 | — | — | — | — |
@@ -557,7 +557,7 @@
 | `drive/tests/web_os_desktop_shell_smoke.php` | 20 | test script | 0 | — | — | — | — |
 | `drive/tests/web_os_file_applications_smoke.php` | 21 | test script | 0 | — | — | — | — |
 | `drive/tests/web_os_interactions_theme_smoke.php` | 30 | test script | 0 | — | — | — | — |
-| `drive/tests/web_os_multiwindow_smoke.php` | 62 | test script | 0 | — | — | — | — |
+| `drive/tests/web_os_multiwindow_smoke.php` | 64 | test script | 0 | — | — | — | — |
 | `drive/tests/web_os_pending_fixes_smoke.php` | 59 | test script | 0 | — | — | — | — |
 | `drive/tests/web_os_remote_applications_smoke.php` | 49 | test script | 0 | — | — | — | — |
 | `drive/tests/web_os_theme_contract_smoke.php` | 33 | test script | 0 | — | — | — | — |
@@ -679,7 +679,7 @@
 | `drive/tests/web_os_desktop_shell_functional.js` | 40 | procedural script | — | assert | — | top-level functions: assert; top-level state: editable, records, instance, registered, declarative, launcher, remoteApps; no ES class |
 | `drive/tests/web_os_file_applications_functional.js` | 54 | class/module | Bus | assert | — | top-level functions: assert |
 | `drive/tests/web_os_filesystem_operations_functional.js` | 59 | procedural script | — | assert | — | top-level functions: assert; top-level state: events, busEvents, doc, win, service; no ES class |
-| `drive/tests/web_os_folder_rename_functional.js` | 34 | procedural script | — | — | — | top-level state: assert, listeners, document, window, desktop, navigations; no ES class |
+| `drive/tests/web_os_folder_rename_functional.js` | 37 | procedural script | — | — | — | top-level state: assert, listeners, document, window, desktop, navigations; no ES class |
 | `drive/tests/web_os_multiwindow_functional.js` | 125 | class/module | Classes, ElementStub | windowStub, assert | — | top-level functions: windowStub, assert |
 | `drive/tests/web_os_same_explorer_clipboard_functional.js` | 76 | procedural script | — | assert, storage | — | top-level functions: assert, storage; top-level state: requests, refreshed, filesystemEvents, explorer, win, doc, clipboard, entries; no ES class |
 | `drive/tests/web_os_search_location_functional.js` | 62 | class/module | Element | — | — | — |

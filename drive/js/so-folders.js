@@ -291,6 +291,15 @@ class ArcadeCloudOsFolderActions {
       return;
     }
 
+    if (action === 'create-empty-file') {
+      if (typeof this.window.openEmptyTextFileCreator !== 'function') {
+        this.notify('El creador de archivos todavía no está disponible.', 'warning');
+        return;
+      }
+      this.window.openEmptyTextFileCreator(folder.route, folder.name);
+      return;
+    }
+
     if (action === 'create-document') {
       if (typeof this.window.openFolderDocumentCreator !== 'function') {
         this.notify('El creador de archivos todavía no está disponible.', 'warning');

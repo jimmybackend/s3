@@ -34,14 +34,19 @@ flag CLEAN_PRECHECK yes
 if ! git -c safe.directory="$APP" -C "$APP" fetch --quiet origin main; then
   flag FETCH_FAILED yes; exit 15
 fi
+# The workflow may have started before a newer main commit landed.
+# Accept only a descendant of the reviewed request commit on origin/main.
+if ! git -c safe.directory="$APP" -C "$APP" merge-base --is-ancestor "EXPECTED_COMMIT_SHA" origin/main; then
+  flag REQUEST_NOT_IN_MAIN yes; exit 16
+fi
 if ! git -c safe.directory="$APP" -C "$APP" merge --ff-only --quiet origin/main; then
-  flag FAST_FORWARD_FAILED yes; exit 16
+  flag FAST_FORWARD_FAILED yes; exit 17
 fi
 flag FAST_FORWARD_OK yes
-if [ "$(git -c safe.directory="$APP" -C "$APP" rev-parse HEAD)" != "EXPECTED_COMMIT_SHA" ]; then
-  flag COMMIT_MISMATCH yes; exit 17
+if ! git -c safe.directory="$APP" -C "$APP" merge-base --is-ancestor "EXPECTED_COMMIT_SHA" HEAD; then
+  flag COMMIT_MISMATCH yes; exit 18
 fi
-flag EXACT_COMMIT yes
+flag REVIEWED_COMMIT_INCLUDED yes
 for file in drive/src/Media/MediaWorkerNodeService.php \
             drive/tests/idle_stop_office_regression.php \
             drive/bin/fastdrive_safe_worker_reload.php; do

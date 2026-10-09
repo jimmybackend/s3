@@ -19,13 +19,13 @@ fi
 printf 'ARCADECLOUD_IDLE_PROBE_WORKER_ACTIVE=yes\n'
 php -d display_errors=0 -r '
   require "/var/www/arcadecloud-drive/drive/app_bootstrap.php";
-  $id = (new \ArcadeCloud\Drive\System\\Ec2InstanceIdentityService())->current();
+  $id = (new \ArcadeCloud\Drive\System\Ec2InstanceIdentityService())->current();
   $iid = (string)($id["instance_id"] ?? "");
   if (!preg_match("/^i-[0-9a-f]{8,17}$/", $iid)) {
      echo "ARCADECLOUD_IDLE_PROBE_IDENTITY=no\n"; exit(13);
   }
   echo "ARCADECLOUD_IDLE_PROBE_IDENTITY=yes\n";
-  $db = \ArcadeCloud\Drive\Core\\ApplicationKernel::app()->db();
+  $db = \ArcadeCloud\Drive\Core\ApplicationKernel::app()->db();
   $stmt = $db->prepare("SELECT Status, IdleSince FROM MediaWorkerNodeSessions
     WHERE InstanceId=? AND Status IN (\x27starting\x27,\x27running\x27,\x27idle\x27,\x27stopping\x27)
     ORDER BY id_ DESC LIMIT 1");

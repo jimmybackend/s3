@@ -76,9 +76,21 @@ class Drive3DScene {
         function cylinder(parent, rt, rb, h, y, mat) {
             const mesh = new T.Mesh(new T.CylinderGeometry(rt, rb, h, 48), mat); mesh.position.y = y; parent.add(mesh); return mesh;
         }
-        // Panorama is fixed to world coordinates and also supplies natural material reflections.
-        const panorama = new T.Mesh(new T.SphereGeometry(Math.max(65, R * 4), 64, 32), new T.MeshBasicMaterial({ color: 0x93b4c9, side: T.BackSide }));
-        panorama.name = 'fixed-360-panorama'; panorama.rotation.y = Math.PI; panorama.position.y = 3; panorama.scale.y = .55; scene.add(panorama);
+        // Project the 360º wallpaper directly BEHIND the physical dome ribs.
+        // A remote sphere (R*4) created a parallax gap: its texture seam
+        // drifted away from the wood as the player moved. Both surfaces now
+        // share the same center/radius, with the glass a hair behind the ribs.
+        const panoramaRadius = R + .085;
+        const panorama = new T.Mesh(
+            new T.SphereGeometry(panoramaRadius, 96, 48),
+            new T.MeshBasicMaterial({ color: 0x93b4c9, side: T.BackSide, depthWrite: false })
+        );
+        panorama.name = 'fixed-360-panorama';
+        // Three's sphere UV seam at phi=0 lies on -X; rotate it to +X,
+        // precisely where rib index 4/16 already frames the glass.
+        panorama.rotation.y = Math.PI;
+        panorama.renderOrder = -2;
+        scene.add(panorama);
         if (scene.environmentRotation) scene.environmentRotation.y = Math.PI;
         let environmentReady = false, needsRender = true, defaultPanoramaMap = null, customPanorama = false;
         new T.TextureLoader().load(new URL('../three-lab/assets/alpine-panorama.jpg', import.meta.url).href, map => {
@@ -116,8 +128,10 @@ class Drive3DScene {
             tube(Array.from({ length: 33 }, (_, k) => {
                 const p = k / 32 * Math.PI / 2;
                 return new T.Vector3(R * Math.sin(p) * Math.sin(a), R * Math.cos(p), R * Math.sin(p) * Math.cos(a));
-            }), .065);
+            }), i === 4 ? .115 : .065, i === 4 ? wood : trim);
         }
+        // The fourth wooden meridian masks the exact longitudinal joining
+        // line of the wrapped image for every viewing angle from the room.
         for (const elevation of [.47, .72, 1.05]) {
             tube(Array.from({ length: 97 }, (_, k) => {
                 const a = k / 96 * Math.PI * 2;
@@ -877,7 +891,8 @@ class Drive3DScene {
                 const p=card.localToWorld(new T.Vector3(0,0,.05)).project(camera);
                 return p.z>-1 && p.z<1 && Math.abs(p.x)<.92 && Math.abs(p.y)<.92;
             }).length,
-            domeRadius:R,panorama:panorama.position.toArray(),environmentReady,
+            domeRadius:R,panorama:panorama.position.toArray(),
+            panoramaSeam:{radius:panoramaRadius,woodenRib:4,angle:Math.PI/2},environmentReady,
             spatial:this.spatialMediaState('singleton'),
             spatialImages:Array.from(spatialAnchors.entries()).filter(([id]) => id !== 'singleton').map(([id,entry]) => ({id,world:entry.point.toArray(),baseDistance:entry.baseDistance})),
             calls:renderer.info.render.calls, geometries:renderer.info.memory.geometries, textures:renderer.info.memory.textures});

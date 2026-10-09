@@ -17,6 +17,17 @@ Las carpetas muestran un único botón de acciones. El menú reúne:
 
 La raíz también usa el mismo menú, pero no ofrece operaciones que no son válidas sobre la raíz.
 
+## Nuevo archivo vacío en ArcadeCloud OS
+
+En `so.php`, el menú `⋮` de una carpeta (incluida la carpeta actual) ofrece ahora dos opciones independientes:
+
+- **Nuevo archivo de texto:** abre un formulario que solicita nombre y tipo `.txt`, `.md` o `.html`. La extensión se añade automáticamente y el archivo se guarda en esa carpeta, sin requerir contenido previo. TXT y MD se crean con cero bytes; HTML incluye únicamente su estructura básica.
+- **Crear desde texto pegado:** conserva el editor con formato y el flujo de portapapeles existentes; continúa rechazando contenido vacío.
+
+Ambos flujos usan `create_folder_document.php` con sesión y CSRF. El modo vacío envía `create_empty=1`, valida `UserStoragePath`, comprueba en `FileS3` que no exista el mismo nombre visible en esa carpeta y reutiliza `SingleUploadService` para S3 y catálogo. El evento `drive:folder-document-created` actualiza únicamente los exploradores de la ruta afectada.
+
+El editor Monaco `editor.php` incorpora en pantallas táctiles `Marcar inicio`, `Marcar fin`, `Todo`, `Copiar`, `Cortar` y `Pegar`. Si el navegador no permite leer el portapapeles, ofrece un campo para pegar mediante el menú nativo del móvil e insertar el contenido en la selección. No se modifica la API de guardado de texto.
+
 ## Formatos
 
 La opción recomendada para copiar una respuesta o prompt de ChatGPT conservando su estructura es:

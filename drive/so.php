@@ -940,7 +940,8 @@ Escribe help o usa uno de los botones disponibles.</pre>
     <button type="button" data-folder-action="open"><i class="fas fa-folder-open"></i>Abrir</button>
     <button type="button" data-folder-action="open-new"><i class="fas fa-window-restore"></i>Abrir en nueva ventana</button>
     <button type="button" data-folder-action="sync"><i class="fas fa-rotate"></i>Sincronizar desde S3</button>
-    <button type="button" data-folder-action="create-document"><i class="fas fa-file-circle-plus"></i>Crear archivo</button>
+    <button type="button" data-folder-action="create-empty-file"><i class="fas fa-file-circle-plus"></i>Nuevo archivo de texto</button>
+    <button type="button" data-folder-action="create-document"><i class="fas fa-paste"></i>Crear desde texto pegado</button>
     <button type="button" data-folder-action="create-folder"><i class="fas fa-folder-plus"></i>Nueva subcarpeta</button>
     <div class="os-context-divider" data-folder-mutating-divider></div>
     <button type="button" data-folder-action="move" data-folder-mutating><i class="fas fa-arrows-alt"></i>Mover</button>
@@ -1040,6 +1041,44 @@ Escribe help o usa uno de los botones disponibles.</pre>
   </div>
 
   <div class="os-folder-dialogs">
+    <!-- Nuevo archivo de texto sin contenido: reutiliza el endpoint autenticado de documentos. -->
+    <div class="modal fade" id="modalCrearArchivoVacio" tabindex="-1" role="dialog" aria-labelledby="emptyTextFileTitle" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered" role="document">
+        <form id="formCrearArchivoVacio" class="modal-content" autocomplete="off">
+          <div class="modal-header">
+            <div>
+              <h5 class="modal-title" id="emptyTextFileTitle"><i class="fas fa-file-circle-plus mr-2"></i>Nuevo archivo de texto</h5>
+              <small class="text-muted">En la carpeta: <span id="emptyTextFileFolderName"></span></small>
+            </div>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar"><span aria-hidden="true">&times;</span></button>
+          </div>
+          <div class="modal-body">
+            <input type="hidden" id="emptyTextFileRoute" name="route">
+            <div id="emptyTextFileMessage" class="alert d-none" role="alert" aria-live="polite"></div>
+            <div class="form-group">
+              <label for="emptyTextFileName">Nombre del archivo</label>
+              <input type="text" class="form-control" id="emptyTextFileName" name="name" maxlength="180"
+                     placeholder="Mi documento" autocomplete="off" required>
+            </div>
+            <div class="form-group">
+              <label for="emptyTextFileFormat">Tipo de archivo</label>
+              <select class="form-control" id="emptyTextFileFormat" name="format" required>
+                <option value="txt" selected>Texto plano (.txt)</option>
+                <option value="md">Markdown (.md)</option>
+                <option value="html">HTML (.html)</option>
+              </select>
+            </div>
+            <p class="text-muted mb-0">Nombre final: <strong id="emptyTextFilePreview">Mi documento.txt</strong></p>
+            <small class="text-muted">Se creará vacío, listo para editarlo después. Si ya existe el nombre, se solicitará otro.</small>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+            <button type="submit" id="emptyTextFileSave" class="btn btn-primary"><i class="fas fa-check mr-1"></i>Crear archivo</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
     <div class="modal fade" id="modalCrearDocumentoCarpeta" tabindex="-1" role="dialog" aria-labelledby="folderDocumentTitle" aria-hidden="true">
       <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
         <form id="formCrearDocumentoCarpeta" class="modal-content" autocomplete="off">
@@ -2180,6 +2219,7 @@ Escribe help o usa uno de los botones disponibles.</pre>
   <script src="js/move-tasks.js?v=<?= (int)filemtime(__DIR__ . '/js/move-tasks.js') ?>"></script>
   <script src="js/carpetas.js?v=<?= (int)filemtime(__DIR__ . '/js/carpetas.js') ?>"></script>
   <script src="js/folder-document.js?v=<?= (int)filemtime(__DIR__ . '/js/folder-document.js') ?>"></script>
+  <script src="js/so-new-text-file.js?v=<?= (int)filemtime(__DIR__ . '/js/so-new-text-file.js') ?>"></script>
   <script src="js/sincronizar.js?v=<?= (int)filemtime(__DIR__ . '/js/sincronizar.js') ?>"></script>
   <script src="js/so-folders.js?v=<?= (int)filemtime(__DIR__ . '/js/so-folders.js') ?>"></script>
   <script src="js/so-federation.js?v=<?= (int)filemtime(__DIR__ . '/js/so-federation.js') ?>"></script>

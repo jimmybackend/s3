@@ -31,7 +31,8 @@ final class FolderDocumentController extends AbstractJsonController
                 $this->request->postString('plain_text'),
                 $this->request->postString('html_content'),
                 $this->request->serverString('REMOTE_ADDR', 'unknown'),
-                $this->request->serverString('HTTP_USER_AGENT', 'unknown')
+                $this->request->serverString('HTTP_USER_AGENT', 'unknown'),
+                $this->request->postString('create_empty') === '1'
             );
 
             $bytes = max(0, (int)($result['tamano'] ?? 0));

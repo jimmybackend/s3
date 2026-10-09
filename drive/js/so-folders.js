@@ -153,7 +153,7 @@ class ArcadeCloudOsFolderActions {
       this.window.ArcadeCloudOsShell?.clearFileSelection?.();
 
       this.showContext(
-        this.currentFolderFromDom(),
+        this.currentFolderFromDom(body.closest('.os-explorer-window') || root),
         event.clientX,
         event.clientY,
         true
@@ -176,7 +176,7 @@ class ArcadeCloudOsFolderActions {
         event.preventDefault();
         if (button.disabled) return;
 
-        const folder = this.currentFolderFromDom();
+        const folder = this.currentFolderFromDom(button.closest('.os-explorer-window') || root);
         await this.runAction(
           String(button.dataset.currentFolderAction || ''),
           folder,
@@ -288,6 +288,15 @@ class ArcadeCloudOsFolderActions {
       if (completed === true && this.sameRoute(folder.route, this.current.route)) {
         this.navigate(this.current.route);
       }
+      return;
+    }
+
+    if (action === 'create-empty-file') {
+      if (typeof this.window.openEmptyTextFileCreator !== 'function') {
+        this.notify('El creador de archivos todavía no está disponible.', 'warning');
+        return;
+      }
+      this.window.openEmptyTextFileCreator(folder.route, folder.name);
       return;
     }
 

@@ -596,7 +596,7 @@ final class MediaWorkerNodeService
     private static function isPersistentWorkstationDockerClient(string $commandLine): bool
     {
         $arguments = array_values(array_filter(explode("\0", $commandLine), static fn(string $value): bool => $value !== ''));
-        if (count($arguments) < 4 || basename($arguments[0]) !== 'docker'
+        if (count($arguments) < 3 || basename($arguments[0]) !== 'docker'
             || !in_array('run', $arguments, true)) return false;
         foreach ($arguments as $i => $argument) {
             if ($argument === '--name' && ($arguments[$i + 1] ?? '') === 'arcadecloud-workstation') {

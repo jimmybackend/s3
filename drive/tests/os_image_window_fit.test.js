@@ -75,6 +75,7 @@ win.innerWidth = 800;
 win.dispatchEvent(new Event('resize'));
 assert.equal(style.width, beforeMaxResize, 'Maximized windows should not be force-resized');
 record.maximized = false;
+win.innerHeight = 1100; // Change the limiting dimension: a taller screen permits a wider portrait image.
 image.dispatchEvent(new Event('load'));
 assert.notEqual(style.width, beforeMaxResize);
 

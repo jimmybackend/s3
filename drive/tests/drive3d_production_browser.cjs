@@ -200,6 +200,7 @@ const server=createServer((req,res)=>{
   assert(Number.isFinite(px) && Number.isFinite(py),'Focused cabinet exposes a real projected pick point');
   await page.evaluate(index=>window.ArcadeCloudDrive3D.chooseThreeShelf(index),shelfIndex);
   await page.waitForFunction(index=>window.ArcadeCloudDrive3D.three.snapshot().focusedShelfIndex===index && window.ArcadeCloudDrive3D.three.snapshot().focusedFiles.length===72,shelfIndex);
+  await page.waitForTimeout(500); // let the eased camera settle before projecting click points
   const selectedGallery=await snap();
   assert.equal(selectedGallery.focusedGalleryRows,4,'One selected folder distributes its files across four circular rows');
   assert.equal(selectedGallery.focusedFiles.length,72,'The first large gallery page exposes 72 different files');

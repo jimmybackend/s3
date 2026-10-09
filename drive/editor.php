@@ -100,6 +100,7 @@ button:disabled {
     width: 100%;
 }
 #mobileSelectionBar {
+    display: none;
     flex: 0 0 auto;
     padding: 7px 10px;
     background: #162338;
@@ -140,6 +141,7 @@ button:disabled {
     font-size: 16px;
 }
 @media (max-width: 760px), (pointer: coarse) {
+    #mobileSelectionBar { display: block; }
     #toolbar { padding: 6px 8px; gap: 6px; flex: 0 0 auto; }
     #toolbar > .group:first-child {
         flex: 1 0 100%;

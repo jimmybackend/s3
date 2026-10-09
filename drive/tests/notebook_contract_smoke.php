@@ -59,7 +59,7 @@ $assert(str_contains($js, 'defaultZoom=()=>window.innerWidth>=1200?75:50'), 'Not
 $assert(str_contains($page, 'value="select"') && str_contains($js, 'hitObject') && str_contains($page, 'id="nbEditDialog"'), 'textos guardados pueden seleccionarse y editarse');
 $assert(str_contains($js, "document.addEventListener('paste'") && str_contains($js, 'navigator.clipboard?.read') && str_contains($page, 'id="nbPasteImage"'), 'Notebook pega imágenes por evento o lectura del portapapeles');
 $assert(str_contains($js, "action==='resize'") && str_contains($js, "action==='rotate'") && str_contains($js, "action==='move'"), 'imágenes pueden moverse redimensionarse y rotarse');
-$assert(str_contains($js, 'normalizeObjects') && str_contains($js, 'version:6'), 'páginas antiguas se normalizan y nuevos objetos persisten en JSON');
+$assert(str_contains($js, 'normalizeObjects') && str_contains($js, 'version:7'), 'páginas antiguas se normalizan y nuevos objetos persisten en JSON');
 $assert(str_contains($js, 'loadSelectedIntoPrompt') && str_contains($js, "current?.kind==='text'"), 'tocar texto carga el input y Enviar actualiza el mismo objeto');
 $assert(str_contains($js, 'textCursor') && str_contains($js, "status('Punto de texto seleccionado')"), 'tocar un lugar libre fija el punto de inserción para varios textos en la misma línea');
 $assert(str_contains($js, "action==='text-resize'") && str_contains($js, 'o.size=Math.max(12'), 'texto seleccionado puede redimensionarse directamente');

@@ -1700,6 +1700,109 @@
       }
     }
 
+    // Placement is a two-step mobile interaction: choose a surface in the
+    // picture header, then touch the exact part of the 3D room to use it.
+    showSurfacePlacementHint(message = '') {
+      let hint = this.document.querySelector('[data-dw-placement-hint]');
+      if (!hint) {
+        hint = this.document.createElement('output');
+        hint.className = 'dw-placement-hint';
+        hint.dataset.dwPlacementHint = '';
+        hint.setAttribute('role','status');
+        hint.setAttribute('aria-live','polite');
+        this.document.body.append(hint);
+      }
+      hint.textContent = String(message);
+      hint.hidden = !message;
+    }
+
+    syncSpatialPictureMode(id) {
+      const picture = this.spatialPictures.get(id);
+      if (!picture) return;
+      const mode = ['floor','ceiling','window'].includes(picture.entry.mode) ? picture.entry.mode : 'free';
+      const anchored = mode !== 'free';
+      picture.window.classList.toggle('is-surface-placed', anchored);
+      picture.window.dataset.pictureMode = mode;
+      picture.mode.value = mode;
+      picture.resize.hidden = anchored;
+      picture.front.hidden = !anchored;
+      picture.move.hidden = !anchored;
+      picture.smaller.hidden = !anchored;
+      picture.bigger.hidden = !anchored;
+      if (anchored) {
+        picture.window.classList.remove('is-resizing-enabled');
+        picture.resizeHandle.hidden = true;
+        picture.resize.setAttribute('aria-pressed','false');
+      }
+    }
+
+    changeSpatialImageMode(id, mode) {
+      const picture = this.spatialPictures.get(id);
+      if (!picture) return;
+      const next = ['floor','window','ceiling'].includes(mode) ? mode : 'free';
+      if (next === 'free') {
+        this.three?.cancelSpatialSurface?.();
+        this.three?.clearSpatialSurface?.(id);
+        picture.entry.mode = 'free';
+        picture.entry.panelId = '';
+        const world = this.three?.placeSpatialMedia?.(id);
+        if (Array.isArray(world)) this.updateSpatialImageState(id,world,true);
+        this.syncSpatialPictureMode(id);
+        this.showSurfacePlacementHint('');
+        this.schedulePreferenceSave();
+        return;
+      }
+      // Do not overwrite a saved placement until a genuine floor/dome hit
+      // succeeds. The previous image remains in its existing position.
+      this.three?.armSpatialSurface?.(id,next);
+      this.showSurfacePlacementHint(next === 'floor'
+        ? 'Tapete: toca el lugar del piso donde irá la imagen.'
+        : next === 'ceiling'
+          ? 'Techo: mira hacia arriba y toca un panel superior del domo.'
+          : 'Ventana: toca el cristal exacto entre dos costillas de madera.');
+      this.bringSpatialPictureToFront(id);
+    }
+
+    onSpatialSurfacePlaced(placement) {
+      if (!placement?.id) return;
+      const picture = this.spatialPictures.get(placement.id);
+      if (!picture) return;
+      Object.assign(picture.entry,{
+        mode:placement.mode,
+        panelId:placement.panelId || '',
+        surfaceScale:placement.surfaceScale,
+        world:placement.world,
+      });
+      const image = picture.image;
+      const aspect = image?.naturalWidth && image?.naturalHeight ? image.naturalWidth/image.naturalHeight : 4/3;
+      const world = this.three?.setSpatialSurface?.({...picture.entry,aspect});
+      if (Array.isArray(world)) this.updateSpatialImageState(placement.id,world,false);
+      this.syncSpatialPictureMode(placement.id);
+      this.showSurfacePlacementHint('');
+      this.schedulePreferenceSave();
+    }
+
+    resizePlacedImage(id,step) {
+      const picture = this.spatialPictures.get(id);
+      if (!picture || !['floor','ceiling','window'].includes(picture.entry.mode)) return;
+      const maximum = picture.entry.mode === 'floor' ? 2.6 : .94;
+      picture.entry.surfaceScale = this.clamp((Number(picture.entry.surfaceScale) || .70)+step,.30,maximum);
+      const {image,entry} = picture;
+      this.three?.setSpatialSurface?.({
+        ...entry,aspect:image.naturalWidth && image.naturalHeight ? image.naturalWidth/image.naturalHeight : 4/3
+      });
+      this.schedulePreferenceSave();
+    }
+
+    onSpatialSurfaceSelected(id) {
+      const picture = this.spatialPictures.get(id);
+      if (!picture) return;
+      this.bringSpatialPictureToFront(id);
+      picture.window.classList.add('is-surface-selected');
+      this.window.clearTimeout(picture.selectedTimer);
+      picture.selectedTimer = this.window.setTimeout(() => picture.window.classList.remove('is-surface-selected'),1200);
+    }
+
     fitSpatialPicture(win, image, entry = null) {
       const saved = Array.isArray(entry?.size) && entry.size.length === 2 ? entry.size.map(Number) : null;
       if (saved && saved.every((value) => Number.isFinite(value))) {
@@ -1781,7 +1884,7 @@
     bindSpatialPictureDrag(id, handle) {
       let drag = null;
       handle.addEventListener('pointerdown', (event) => {
-        if (event.target.closest('button,a,input')) return;
+        if (event.target.closest('button,a,input,select,label')) return;
         drag = {pointerId:event.pointerId,x:event.clientX,y:event.clientY};
         handle.setPointerCapture?.(event.pointerId);
         this.bringSpatialPictureToFront(id);
@@ -1825,6 +1928,9 @@
       picture?.window?.remove();
       this.spatialPictures.delete(id);
       this.spatialPictureState = this.spatialPictureState.filter((entry) => entry.id !== id);
+      this.showSurfacePlacementHint('');
+      this.three?.clearSpatialSurface?.(id);
+      this.three?.cancelSpatialSurface?.();
       this.three?.clearSpatialMedia?.(id);
       this.schedulePreferenceSave();
     }

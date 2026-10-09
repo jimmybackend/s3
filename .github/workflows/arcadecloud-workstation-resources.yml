@@ -1,0 +1,33 @@
+name: ArcadeCloud workstation host resources audit
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - tools/arcadecloud-aws-bridge/workstation_resources.py
+      - .github/workflows/arcadecloud-workstation-resources.yml
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  sizing:
+    if: github.repository == 'jimmybackend/s3' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.ARCADECLOUD_AWS_BRIDGE_ROLE_ARN }}
+          aws-region: ${{ vars.ARCADECLOUD_AWS_REGION }}
+          role-session-name: ArcadeCloudResourceAudit
+      - name: Install AWS SDK
+        run: python3 -m pip install 'boto3>=1.35,<2'
+      - name: Read fixed safe resource metrics
+        env:
+          ARCADECLOUD_AWS_LARGE_ID: ${{ vars.ARCADECLOUD_AWS_LARGE_ID }}
+          ARCADECLOUD_AWS_REGION: ${{ vars.ARCADECLOUD_AWS_REGION }}
+        run: python3 tools/arcadecloud-aws-bridge/workstation_resources.py

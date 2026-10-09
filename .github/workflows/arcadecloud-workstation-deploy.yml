@@ -1,0 +1,37 @@
+name: ArcadeCloud Workstation - PDF/ZIP/RAR image deployment
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - tools/arcadecloud-aws-bridge/requests/workstation-deploy.json
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: arcadecloud-workstation-image-deploy
+  cancel-in-progress: false
+
+jobs:
+  rebuild-image:
+    if: github.repository == 'jimmybackend/s3' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure temporary AWS IAM role
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.ARCADECLOUD_AWS_BRIDGE_ROLE_ARN }}
+          aws-region: ${{ vars.ARCADECLOUD_AWS_REGION }}
+          role-session-name: ArcadeCloudWorkstationBuild
+      - name: Install AWS SDK
+        run: python3 -m pip install 'boto3>=1.35,<2'
+      - name: Rebuild on FastDrive with no Guacamole changes
+        env:
+          ARCADECLOUD_AWS_REGION: ${{ vars.ARCADECLOUD_AWS_REGION }}
+          ARCADECLOUD_AWS_LARGE_ID: ${{ vars.ARCADECLOUD_AWS_LARGE_ID }}
+        run: python3 tools/arcadecloud-aws-bridge/workstation_deploy.py

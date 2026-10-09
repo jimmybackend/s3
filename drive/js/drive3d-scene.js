@@ -1,3 +1,5 @@
+import { Drive3DSurfacePlacements } from './drive3d-surface-placements.js';
+
 class Drive3DScene {
     constructor(T, Reflector, options = {}) {
         const status = options.status || document.querySelector("#status");
@@ -241,7 +243,10 @@ class Drive3DScene {
                 preview.name = 'shelf-overhead-picture';
                 preview.userData.driveItem = item;
                 preview.userData.driveFolder = false;
-                preview.position.set(x, 4.55, .38);
+                // Leave a visible gap above the 4.2m wooden crown.
+                const airGap = .90;
+                const frameHalfHeight = .43/2;
+                preview.position.set(x, height + airGap + frameHalfHeight, .25);
                 const frame = new T.Mesh(
                     new T.BoxGeometry(.54,.43,.035),
                     new T.MeshBasicMaterial({color:0x4e3422})
@@ -591,6 +596,7 @@ class Drive3DScene {
             targetPitch = T.MathUtils.clamp(targetPitch - (event.clientY - drag.y) * .003, -.65, 1.1);
             drag.x = event.clientX; drag.y = event.clientY;
         });
+        let surfacePlacements = null;
         const raycaster = new T.Raycaster();
         function pointerHit(event) {
             // Match the actual WebGL canvas instead of its outer container.
@@ -669,6 +675,15 @@ class Drive3DScene {
                 return;
             }
             const hit = pointerHit(event);
+            // Anchored artwork and placement taps take priority over shelves.
+            if (surfacePlacements?.pending && surfacePlacements.choose(raycaster.ray)) {
+                needsRender = true;
+                return;
+            }
+            if (surfacePlacements?.select(raycaster)) {
+                needsRender = true;
+                return;
+            }
             const fileSelection = fileSelectionFromPointer(event, hit);
             if (fileSelection) {
                 setFileSelection(fileSelection.card);
@@ -776,6 +791,25 @@ class Drive3DScene {
         // Spatial media is anchored in world coordinates near the glass, not to the screen.
         // Multiple anchors allow image windows to behave like persistent pictures in the room.
         const spatialAnchors = new Map();
+        surfacePlacements = new Drive3DSurfacePlacements(T,scene,camera,R,{
+            onPlaced:placement => options.onSurfacePlaced?.(placement),
+            onSelected:id => options.onSurfaceSelected?.(id),
+            onHint:message => options.onSurfaceHint?.(message),
+            onRender:()=>{needsRender=true;}
+        });
+        this.armSpatialSurface = (id,mode) => surfacePlacements.prepare(id,mode);
+        this.cancelSpatialSurface = () => surfacePlacements.cancel();
+        this.setSpatialSurface = entry => {
+            const world=surfacePlacements.set(entry);
+            if(Array.isArray(world)){
+                const point=new T.Vector3(...world);
+                spatialAnchors.set(String(entry.id),{point,baseDistance:Math.max(1,point.distanceTo(camera.position))});
+                needsRender=true;
+            }
+            return world;
+        };
+        this.clearSpatialSurface = id => { surfacePlacements.remove(id); needsRender=true; };
+        this.surfacePlacementState = id => surfacePlacements.snapshot().find(entry=>entry.id===id) || null;
         const spatialCenter = new T.Vector3(0, 2.7, 0);
         const spatialSphere = new T.Sphere(spatialCenter, Math.max(4, R - 1.05));
         const spatialId = (value) => String(value || 'singleton');
@@ -919,6 +953,8 @@ class Drive3DScene {
             panoramaSeam:{radius:panoramaRadius,woodenRib:4,angle:Math.PI/2},environmentReady,
             spatial:this.spatialMediaState('singleton'),
             spatialImages:Array.from(spatialAnchors.entries()).filter(([id]) => id !== 'singleton').map(([id,entry]) => ({id,world:entry.point.toArray(),baseDistance:entry.baseDistance})),
+            surfaceImages:surfacePlacements?.snapshot() || [],
+            pendingSurface:surfacePlacements?.pending?.mode || null,
             calls:renderer.info.render.calls, geometries:renderer.info.memory.geometries, textures:renderer.info.memory.textures});
         function resize() { const w = viewport.clientWidth, h = viewport.clientHeight; renderer.setSize(w, h); camera.fov = w < 700 ? 75 : 50; camera.aspect = w / h; camera.updateProjectionMatrix(); needsRender = true; }
         window.addEventListener('resize', resize); resize();

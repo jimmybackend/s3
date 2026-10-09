@@ -11,6 +11,7 @@ use ArcadeCloud\Drive\System\Ec2InstanceIdentityService;
 use ArcadeCloud\Drive\System\ComputeNodeAdmissionLock;
 use mysqli;
 use RuntimeException;
+use Closure;
 
 final class MediaWorkerNodeService
 {
@@ -28,9 +29,13 @@ final class MediaWorkerNodeService
     private MediaWorkerNodeSessionRepository $sessions;
     private ActivityCostRecorder $activity;
     private ?string $lastBlockerSignature = null;
+    /** @var Closure():array<string,string> */
+    private Closure $localIdentity;
 
-    public function __construct(private mysqli $db)
+    /** @param null|Closure():array<string,string> $localIdentity */
+    public function __construct(private mysqli $db, ?Closure $localIdentity = null)
     {
+        $this->localIdentity = $localIdentity ?? static fn(): array => (new Ec2InstanceIdentityService())->current();
         $this->instanceId = trim((string)(getenv('ARCADECLOUD_MEDIA_WORKER_INSTANCE_ID') ?: ''));
         $this->region = trim((string)(getenv('ARCADECLOUD_MEDIA_WORKER_REGION') ?: getenv('AWS_REGION') ?: ''));
 
@@ -62,7 +67,7 @@ final class MediaWorkerNodeService
             $this->instanceId === ''
             && in_array($role, ['media-worker', 'combined'], true)
         ) {
-            $identity = (new Ec2InstanceIdentityService())->current();
+            $identity = ($this->localIdentity)();
             $this->instanceId = trim((string)($identity['instance_id'] ?? ''));
             if ($this->region === '') {
                 $this->region = trim((string)($identity['region'] ?? ''));
@@ -400,6 +405,12 @@ final class MediaWorkerNodeService
         if ($this->instanceId === '' || $this->ec2 === null) return;
 
         $active = $this->sessions->activeForInstance($this->instanceId);
+        if ($active === null || (string)($active['status'] ?? '') === 'stopping') {
+            // An EC2 started outside ArcadeCloud (SSM, GitHub Actions, AWS console)
+            // can have no tracked session. Recover it ONLY from this physical EC2,
+            // not from remote PHP gateways. Stale "stopping" needs proof of reboot.
+            $active = $this->recoverLocalBootSession($active);
+        }
         if ($active === null) return;
 
         $this->reconcileOfficeSessions();
@@ -463,6 +474,57 @@ final class MediaWorkerNodeService
             $this->idleGraceSeconds + self::IDLE_WARNING_SECONDS
         )) return;
         $this->ec2->stop($this->instanceId, false);
+    }
+
+    /**
+     * Recover a missing session after an external EC2 start. This runs inside
+     * the existing database admission mutex and never creates sessions for
+     * remote gateways or machines whose IMDS identity cannot be verified.
+     *
+     * @param null|array<string,mixed> $active
+     * @return null|array<string,mixed>
+     */
+    private function recoverLocalBootSession(?array $active): ?array
+    {
+        $role = strtolower(trim((string)(getenv('ARCADECLOUD_NODE_ROLE') ?: 'web')));
+        $workerFlag = strtolower(trim((string)(getenv('ARCADECLOUD_MEDIA_WORKER') ?: '')));
+        if (!in_array($role, ['media-worker', 'combined'], true)
+            && !in_array($workerFlag, ['1', 'true', 'yes'], true)) {
+            return $active;
+        }
+
+        $identity = ($this->localIdentity)();
+        if (!is_array($identity) || (string)($identity['instance_id'] ?? '') !== $this->instanceId) {
+            return $active;
+        }
+
+        $instance = $this->ec2?->getInstance($this->instanceId);
+        if (!is_array($instance) || Ec2Gateway::stateName($instance) !== 'running') {
+            return $active;
+        }
+
+        if ($active !== null) {
+            if ((string)($active['status'] ?? '') !== 'stopping') return $active;
+            $launch = $instance['LaunchTime'] ?? null;
+            $launchTs = $launch instanceof \DateTimeInterface ? $launch->getTimestamp()
+                : (is_string($launch) ? strtotime($launch) : false);
+            $stopTs = strtotime((string)($active['stop_requested_at'] ?? '') . ' UTC');
+            if ($launchTs === false || $stopTs === false || $launchTs <= $stopTs) {
+                return $active;
+            }
+            $this->sessions->markStopped((string)$active['session_id']);
+        }
+
+        $recovered = $this->sessions->create(
+            0,
+            $this->instanceId,
+            $this->region,
+            (string)($instance['InstanceType'] ?? ''),
+            $this->hourlyUsd
+        );
+        $this->sessions->markIdle((string)$recovered['session_id']);
+        error_log('[ArcadeCloud media-node] sesión de inactividad recuperada tras encendido externo.');
+        return $this->sessions->activeForInstance($this->instanceId);
     }
 
     private function withAdmissionLock(callable $callback): mixed

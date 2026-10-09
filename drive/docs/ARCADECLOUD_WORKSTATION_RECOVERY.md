@@ -200,9 +200,9 @@ El broker/Resource Mode Manager es quien solicita el arranque cuando existe una 
 Límites y endurecimiento actuales:
 
 ```
---memory=5g
---cpus=3
---shm-size=512m
+--memory=5632m
+--cpus=3.25
+--shm-size=1g
 --tmpfs /tmp:rw,nosuid,nodev,mode=1777
 --security-opt=no-new-privileges:true
 --cap-drop=ALL

@@ -4252,3 +4252,53 @@ body.is-camera-near.dw-real .dw-hud{
   .dw-spatial-picture-window.is-surface-placed{width:min(270px,calc(100vw - 22px))!important}
   .dw-placement-hint{top:62px;font-size:12px}
 }
+
+/* Immersive gallery — arrows appear only for paginated selected shelves.
+ * Does not cover the image rows or intercept viewport taps. */
+.dw-dome-gallery-pager{
+  position:absolute;
+  z-index:75;
+  left:50%;
+  bottom:calc(18px + env(safe-area-inset-bottom,0px));
+  transform:translateX(-50%);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex-wrap:wrap;
+  gap:9px;
+  padding:7px 12px;
+  max-width:min(520px,calc(100vw - 30px));
+  border-radius:13px;
+  border:1px solid rgba(117,224,255,.40);
+  background:rgba(5,22,37,.92);
+  color:#e8fbff;
+  box-shadow:0 6px 24px rgba(0,0,0,.45);
+  font-size:11px;
+}
+.dw-dome-gallery-pager[hidden]{display:none!important}
+.dw-dome-gallery-pager button{
+  min-height:35px;
+  padding:5px 9px;
+  border-radius:8px;
+  border:1px solid rgba(122,234,255,.45);
+  background:#103c53;
+  color:#fff;
+  touch-action:manipulation;
+}
+.dw-dome-gallery-pager button:disabled{opacity:.4}
+.dw-dome-gallery-pager span{text-align:center;line-height:1.4}
+@media(max-width:700px){
+  .dw-dome-gallery-pager{bottom:calc(12px + env(safe-area-inset-bottom,0px));padding:5px 7px;gap:5px}
+  .dw-dome-gallery-pager button{font-size:11px}
+}
+
+/* Toolbar of a picture adhered to a window/roof/floor must disappear five
+ * seconds after placement; a ray hit on the 3D image reveals it again. */
+.dw-spatial-picture-window.is-surface-placed.is-controls-hidden{
+  opacity:0!important;
+  visibility:hidden!important;
+  pointer-events:none!important;
+}
+.dw-spatial-picture-window.is-surface-placed{
+  transition:opacity .22s ease-out,visibility .22s ease-out;
+}

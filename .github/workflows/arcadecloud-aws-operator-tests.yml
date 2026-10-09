@@ -1,0 +1,31 @@
+name: ArcadeCloud AWS operator contract tests
+
+on:
+  pull_request:
+    paths:
+      - tools/arcadecloud-aws-bridge/operator.py
+      - tools/arcadecloud-aws-bridge/tests/test_operator.py
+      - .github/workflows/arcadecloud-aws-operator.yml
+      - .github/workflows/arcadecloud-aws-operator-tests.yml
+  push:
+    branches:
+      - feat/arcadecloud-aws-operator-20261008
+    paths:
+      - tools/arcadecloud-aws-bridge/operator.py
+      - tools/arcadecloud-aws-bridge/tests/test_operator.py
+      - .github/workflows/arcadecloud-aws-operator.yml
+      - .github/workflows/arcadecloud-aws-operator-tests.yml
+
+permissions:
+  contents: read
+
+jobs:
+  offline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compile code
+        run: python3 -m compileall -q tools/arcadecloud-aws-bridge
+      - name: Test operator without AWS
+        run: python3 -m unittest discover -s tools/arcadecloud-aws-bridge/tests -v

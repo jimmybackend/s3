@@ -87,6 +87,42 @@ if [ "$(systemctl is-enabled arcadecloud-workstation.service 2>/dev/null || true
   flag WORKSTATION_ON_DEMAND no
   exit 21
 fi
+# Apply resource settings only to the stopped Workstation unit. Do not
+# touch Guacamole services, environment secrets, launch broker or active sessions.
+UNIT=/etc/systemd/system/arcadecloud-workstation.service
+OLD_LIMITS='--memory=5g --cpus=3 --shm-size=512m'
+NEW_LIMITS='--memory=5632m --cpus=3.25 --shm-size=1g'
+if [ ! -f "$UNIT" ]; then
+  flag WORKSTATION_UNIT_MISSING yes
+  exit 22
+fi
+if grep -Fq -- "$OLD_LIMITS" "$UNIT"; then
+  if [ "$(systemctl is-active arcadecloud-workstation.service 2>/dev/null || true)" = active ]; then
+    flag ACTIVE_SESSION_POSSIBLE yes
+    exit 23
+  fi
+  cp -a -- "$UNIT" "${UNIT}.before-pdf-rar-20261008"
+  # Only this fixed resource segment is changed. Atomic replacement
+  # preserves ownership, mode and all existing env paths/ports.
+  TMP_UNIT="$(mktemp /etc/systemd/system/.arcadecloud-workstation.XXXXXXXX)"
+  sed "s@--memory=5g --cpus=3 --shm-size=512m@--memory=5632m --cpus=3.25 --shm-size=1g@" "$UNIT" > "$TMP_UNIT"
+  chown --reference="$UNIT" "$TMP_UNIT"
+  chmod --reference="$UNIT" "$TMP_UNIT"
+  mv -f -- "$TMP_UNIT" "$UNIT"
+  systemctl daemon-reload
+elif ! grep -Fq -- "$NEW_LIMITS" "$UNIT"; then
+  flag UNKNOWN_WORKSTATION_LIMITS yes
+  exit 24
+fi
+if ! grep -Fq -- "$NEW_LIMITS" "$UNIT"; then
+  flag LIMITS_FAILED yes
+  exit 25
+fi
+if [ "$(systemctl is-active arcadecloud-workstation.service 2>/dev/null || true)" = active ]; then
+  flag UNEXPECTED_WORKSTATION_START yes
+  exit 26
+fi
+flag RESOURCE_LIMITS_APPLIED yes
 flag GUACAMOLE_UNCHANGED yes
 flag WORKSTATION_ON_DEMAND yes
 flag SUCCESS yes

@@ -63,3 +63,15 @@ Validación automatizada: `drive/tests/drive3d_production_browser.cjs`, con mark
 real y catálogo/API simulados, comprueba WebGL, selección por rayo, acciones de datos,
 liberación de texturas, giro/panorama fijo, movimiento y capturas móvil/escritorio.
 No sustituye una prueba autenticada con S3/DB en el servidor de producción.
+
+## Correcciones de 9 octubre 2026: libreros, archivos y fondos
+
+- Cuando el nivel tiene subcarpetas, los archivos de la carpeta **actual** se muestran como tarjetas en el espacio libre por encima de los libreros; en niveles sin subcarpetas mantienen la presentación frontal. La distribución deja separación real entre tarjetas.
+- El preview de un librero puede mostrar hasta tres fotografías de su propia carpeta, suspendidas justo encima de su corona de madera. Las miniaturas se cargan de forma diferida desde `thumb.php`; al salir de la zona se descartan recursos gráficos y respuestas tardías.
+- Los archivos no fotográficos muestran su representación tipológica a partir de `FileIconResolver`/extensión (PDF, Office, texto, código, comprimidos, audio, video y archivos protegidos), con una marca vectorial legible incluso sin la fuente Font Awesome.
+- El clic deja de seleccionar el elemento cercano por proximidad 2D; ahora compara el toque con el polígono proyectado de la tarjeta en WebGL. Los gestos de rotación no producen una segunda selección sintética.
+- La carpeta de fondos no puede deducirse como `Data.../Imagenes/fondos3D/` porque los prefijos físicos de `S3Folders` son opacos. `Drive3dBackgroundFolderService` busca hijas directas por `Nombre`: `Imagenes` bajo raíz del usuario y `fondos3D` bajo la primera. Para subir, sólo crea una carpeta si falta mediante `FolderMutationService`; nunca actualiza otra carpeta homónima ni inventa su prefijo. Si existen duplicados en el mismo nivel, se informa un conflicto.
+- La textura panorámica de los cristales ahora se proyecta justo por detrás de las costillas de la cúpula; su costura longitudinal se sitúa bajo el meridiano de madera a +90°, evitando que se vea como una raya al recorrer la habitación. El fondo del piso conserva su propio material y ajustes.
+- Pruebas: `drive/tests/drive3d_background_folder_test.php` verifica resolución del catálogo sin conexión AWS; `drive/tests/drive3d_production_browser.cjs` valida capturas, colocación, vista previa y selección con pulsaciones reales.
+
+La prueba automatizada de navegador utiliza datos de muestra. Después de fusionar debe validarse visualmente con la carpeta y fotografías privadas reales de un usuario en la instalación de producción.

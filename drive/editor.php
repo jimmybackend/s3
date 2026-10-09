@@ -24,6 +24,7 @@ $archivo = trim((string)$_GET['archivo']);
 <style>
 html, body {
     height: 100%;
+    height: 100dvh;
     margin: 0;
     background: #111827;
     color: #e5e7eb;
@@ -31,6 +32,7 @@ html, body {
 }
 
 * { box-sizing: border-box; }
+body { display: flex; flex-direction: column; min-height: 0; }
 
 #toolbar {
     min-height: 52px;
@@ -93,8 +95,60 @@ button:disabled {
 }
 
 #editor {
-    height: calc(100% - 52px);
+    flex: 1 1 0;
+    min-height: 0;
     width: 100%;
+}
+#mobileSelectionBar {
+    flex: 0 0 auto;
+    padding: 7px 10px;
+    background: #162338;
+    border-bottom: 1px solid #475569;
+}
+#mobileSelectionButtons {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    padding-bottom: 4px;
+}
+#mobileSelectionButtons button { flex: 0 0 auto; min-height: 38px; }
+#mobileSelectionStatus {
+    display: block;
+    font-size: 12px;
+    color: #bfdbfe;
+    padding: 3px 0;
+    white-space: normal;
+}
+#mobileSelectionStatus[data-severity="warn"] { color: #fde68a; }
+#mobileSelectionStatus[data-severity="ok"] { color: #86efac; }
+#mobilePastePanel { padding: 7px 0; }
+#mobilePastePanel[hidden] { display: none; }
+#mobilePasteText {
+    display: block;
+    width: 100%;
+    min-height: 76px;
+    max-height: 28dvh;
+    padding: 8px;
+    border: 1px solid #64748b;
+    border-radius: 6px;
+    background: #0f172a;
+    color: #fff;
+    font-size: 16px;
+}
+@media (max-width: 760px), (pointer: coarse) {
+    #toolbar { padding: 6px 8px; gap: 6px; flex: 0 0 auto; }
+    #toolbar > .group:first-child {
+        flex: 1 0 100%;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    #toolbar button, #mobileSelectionButtons button { min-height: 40px; }
+    #toolbar .file-name { max-width: 55vw; }
 }
 
 .badge {
@@ -118,7 +172,7 @@ button:disabled {
         <button type="button" onclick="rehacer()">Rehacer</button>
         <button type="button" onclick="buscar()">Buscar</button>
         <button type="button" onclick="reemplazar()">Reemplazar</button>
-        <button type="button" onclick="irALinea()">Ir a l��nea</button>
+        <button type="button" onclick="irALinea()">Ir a l¨ªnea</button>
         <button type="button" onclick="toggleWordWrap()">Word wrap</button>
         <button type="button" id="btnValidarPhp" onclick="validarPHP()" style="display:none;">Validar PHP</button>
     </div>
@@ -145,9 +199,27 @@ button:disabled {
     </div>
 </div>
 
+<section id="mobileSelectionBar" aria-label="Edición y selección táctil">
+    <div id="mobileSelectionButtons">
+        <button type="button" data-mobile-edit="start" title="Marcar dónde comienza la selección">Marcar inicio</button>
+        <button type="button" data-mobile-edit="end" title="Marcar dónde termina la selección">Marcar fin</button>
+        <button type="button" data-mobile-edit="all">Todo</button>
+        <button type="button" data-mobile-edit="copy">Copiar</button>
+        <button type="button" data-mobile-edit="cut">Cortar</button>
+        <button type="button" data-mobile-edit="paste">Pegar</button>
+    </div>
+    <output id="mobileSelectionStatus" aria-live="polite">Toca el texto para ubicar el cursor.</output>
+    <div id="mobilePastePanel" hidden>
+        <label for="mobilePasteText">Pega aquí usando el menú del teléfono (mantén pulsado), luego insértalo:</label>
+        <textarea id="mobilePasteText" rows="3" aria-label="Texto para insertar cuando el navegador no permite leer el portapapeles"></textarea>
+        <button type="button" data-mobile-edit="insert">Insertar texto</button>
+        <button type="button" data-mobile-edit="cancel">Cancelar</button>
+    </div>
+</section>
 <div id="editor"></div>
 
 <script src="https://unpkg.com/monaco-editor@0.44.0/min/vs/loader.js"></script>
+<script src="js/editor-mobile-selection.js?v=<?= (int)filemtime(__DIR__ . '/js/editor-mobile-selection.js') ?>"></script>
 <script>
 const archivo = <?= json_encode($archivo, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>;
 let editor = null;
@@ -225,7 +297,7 @@ function aplicarLenguaje(lang) {
     document.getElementById('modoArchivo').textContent = lang;
     actualizarBotonValidar();
 
-    // Validaciones nativas b��sicas donde Monaco ayuda m��s.
+    // Validaciones nativas b¨¢sicas donde Monaco ayuda m¨¢s.
     if (lang === 'javascript' || lang === 'typescript') {
         monaco.languages.typescript.javascriptDefaults.setDiagnosticsOptions({
             noSemanticValidation: false,
@@ -318,6 +390,9 @@ require(['vs/editor/editor.main'], function () {
     });
 
     poblarLenguajes('plaintext');
+    if (window.ArcadeCloudMobileEditorSelection) {
+        window.arcadeMobileEditor = new window.ArcadeCloudMobileEditorSelection(window, document, editor).init();
+    }
     cargarArchivo();
 });
 
@@ -424,7 +499,7 @@ async function validarPHP() {
         monaco.editor.setModelMarkers(editor.getModel(), 'php-lint', markers);
 
         if (json.valido) {
-            setStatus('PHP v��lido', 'ok');
+            setStatus('PHP v¨¢lido', 'ok');
             return;
         }
 

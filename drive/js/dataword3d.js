@@ -1638,7 +1638,7 @@
       resizeHandle.innerHTML = '<i class="fas fa-up-right-and-down-left-from-center"></i>';
       win.append(header,body,resizeHandle);
       this.spatialPictureLayer.append(win);
-      this.spatialPictures.set(entry.id,{window:win,header,image,entry,resize,resizeHandle,mode,move,smaller,bigger,front});
+      this.spatialPictures.set(entry.id,{window:win,header,image,entry,resize,resizeHandle,mode,move,smaller,bigger,front,autoHideTimer:null});
       this.syncSpatialPictureMode(entry.id);
 
       image.addEventListener('load', () => {
@@ -1647,7 +1647,10 @@
       }, {once:true});
       if (image.complete) this.fitSpatialPicture(win,image,entry);
 
-      win.addEventListener('pointerdown', () => this.bringSpatialPictureToFront(entry.id));
+      win.addEventListener('pointerdown', () => {
+        this.bringSpatialPictureToFront(entry.id);
+        if (entry.mode && entry.mode !== 'free') this.revealSpatialPictureControls(entry.id);
+      });
       mode.addEventListener('change', event => {
         event.stopPropagation();
         this.changeSpatialImageMode(entry.id,mode.value);
@@ -1687,6 +1690,7 @@
       if (entry.mode && entry.mode !== 'free') {
         const placed = this.three?.setSpatialSurface?.(entry);
         if (Array.isArray(placed)) this.updateSpatialImageState(entry.id, placed, !restoring);
+        this.revealSpatialPictureControls(entry.id);
       } else {
         const placed = this.three?.placeSpatialMedia?.(entry.id, world);
         if (Array.isArray(placed)) this.updateSpatialImageState(entry.id, placed, !restoring);
@@ -1722,10 +1726,31 @@
       picture.move.hidden = !anchored;
       picture.smaller.hidden = !anchored;
       picture.bigger.hidden = !anchored;
+      if (!anchored) {
+        this.window.clearTimeout(picture.autoHideTimer);
+        picture.window.classList.remove('is-controls-hidden');
+      }
       if (anchored) {
         picture.window.classList.remove('is-resizing-enabled');
         picture.resizeHandle.hidden = true;
         picture.resize.setAttribute('aria-pressed','false');
+      }
+    }
+
+    // Anchored pictures are REAL WebGL textures, so their DOM toolbars
+    // should leave the view after five seconds and reappear only when the
+    // user taps the actual image mesh again.
+    revealSpatialPictureControls(id, autoHide=true) {
+      const picture=this.spatialPictures.get(id);
+      if(!picture) return;
+      this.window.clearTimeout(picture.autoHideTimer);
+      picture.window.classList.remove('is-controls-hidden');
+      if(autoHide && picture.entry.mode && picture.entry.mode!=='free'){
+        picture.autoHideTimer=this.window.setTimeout(()=>{
+          if(this.three?.surfacePlacementState?.(id)){
+            picture.window.classList.add('is-controls-hidden');
+          }
+        },5000);
       }
     }
 
@@ -1745,8 +1770,8 @@
         this.schedulePreferenceSave();
         return;
       }
-      // Do not overwrite a saved placement until a genuine floor/dome hit
-      // succeeds. The previous image remains in its existing position.
+      // Keep controls visible while the user is choosing the surface.
+      this.revealSpatialPictureControls(id,false);
       this.three?.armSpatialSurface?.(id,next);
       this.showSurfacePlacementHint(next === 'floor'
         ? 'Tapete: toca el lugar del piso donde irá la imagen.'
@@ -1771,6 +1796,7 @@
       const world = this.three?.setSpatialSurface?.({...picture.entry,aspect});
       if (Array.isArray(world)) this.updateSpatialImageState(placement.id,world,false);
       this.syncSpatialPictureMode(placement.id);
+      this.revealSpatialPictureControls(placement.id);
       this.showSurfacePlacementHint('');
       this.schedulePreferenceSave();
     }
@@ -1791,6 +1817,7 @@
       const picture = this.spatialPictures.get(id);
       if (!picture) return;
       this.bringSpatialPictureToFront(id);
+      this.revealSpatialPictureControls(id);
       picture.window.classList.add('is-surface-selected');
       this.window.clearTimeout(picture.selectedTimer);
       picture.selectedTimer = this.window.setTimeout(() => picture.window.classList.remove('is-surface-selected'),1200);
@@ -1922,6 +1949,7 @@
 
     removeSpatialImage(id) {
       const picture = this.spatialPictures.get(id);
+      if (picture?.autoHideTimer) this.window.clearTimeout(picture.autoHideTimer);
       picture?.window?.remove();
       this.spatialPictures.delete(id);
       this.spatialPictureState = this.spatialPictureState.filter((entry) => entry.id !== id);

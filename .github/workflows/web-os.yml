@@ -51,6 +51,12 @@ on:
       - 'drive/src/View/FederationPortalRenderer.php'
       - 'drive/js/so-folders.js'
       - 'drive/js/os-window-manager.js'
+      - 'drive/editor.php'
+      - 'drive/js/editor-mobile-selection.js'
+      - 'drive/js/so-new-text-file.js'
+      - 'drive/tests/web_os_empty_text_mobile.test.cjs'
+      - 'drive/src/Application/FolderDocumentService.php'
+      - 'drive/src/Http/Controller/FolderDocumentController.php'
       - 'drive/js/file-applications.js'
       - 'drive/tests/os_image_window_fit.test.js'
       - 'drive/tests/web_os_folder_rename_functional.js'
@@ -145,6 +151,12 @@ on:
       - 'drive/src/View/FederationPortalRenderer.php'
       - 'drive/js/so-folders.js'
       - 'drive/js/os-window-manager.js'
+      - 'drive/editor.php'
+      - 'drive/js/editor-mobile-selection.js'
+      - 'drive/js/so-new-text-file.js'
+      - 'drive/tests/web_os_empty_text_mobile.test.cjs'
+      - 'drive/src/Application/FolderDocumentService.php'
+      - 'drive/src/Http/Controller/FolderDocumentController.php'
       - 'drive/js/file-applications.js'
       - 'drive/tests/os_image_window_fit.test.js'
       - 'drive/tests/web_os_folder_rename_functional.js'
@@ -201,6 +213,9 @@ jobs:
       - name: PHP syntax
         run: |
           php -l drive/so.php
+          php -l drive/editor.php
+          php -l drive/src/Application/FolderDocumentService.php
+          php -l drive/src/Http/Controller/FolderDocumentController.php
           php -l drive/notebook.php
           php -l drive/notebook-api.php
           php -l drive/src/Notebook/NotebookService.php
@@ -248,6 +263,9 @@ jobs:
       - name: JavaScript syntax
         run: |
           node --check drive/js/so.js
+          node --check drive/js/editor-mobile-selection.js
+          node --check drive/js/so-new-text-file.js
+          node --check drive/tests/web_os_empty_text_mobile.test.cjs
           node --check drive/js/os-window-manager.js
           node --check drive/js/file-applications.js
           node --check drive/js/notebook.js
@@ -290,6 +308,7 @@ jobs:
           node drive/tests/background_tasks_refresh_functional.js
           node drive/tests/web_os_search_location_functional.js
           node drive/tests/os_image_window_fit.test.js
+          node drive/tests/web_os_empty_text_mobile.test.cjs
           node drive/tests/web_os_folder_rename_functional.js
 
   embedded-panels-browser:

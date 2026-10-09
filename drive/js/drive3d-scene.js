@@ -265,7 +265,7 @@ class Drive3DScene {
             shelfContents.set(index, state || {});
             const group = shelves[index];
             if (group?.children.length) addRealDriveBooks(group);
-            if (focusedShelfIndex === index) rebuildFocusedGallery(state?.files || []);
+            if (focusedShelfIndex === index && !focusedFullData) rebuildFocusedGallery(state?.files || []);
             needsRender = true;
         };
 
@@ -281,7 +281,7 @@ class Drive3DScene {
         const focusedGallery = new T.Group();
         focusedGallery.name = 'focused-shelf-files';
         scene.add(focusedGallery);
-        let focusedPanels = [], focusedShelfIndex = -1, focusRevision = 0;
+        let focusedPanels = [], focusedShelfIndex = -1, focusRevision = 0, focusedFullData = false;
         let filePanels = [];
         let selectedFileCard = null;
         let galleryRevision = 0;
@@ -591,6 +591,7 @@ class Drive3DScene {
         this.selectShelfGallery = index => {
             if (!Number.isInteger(index) || index < 0 || index >= shelves.length) {
                 focusedShelfIndex=-1;
+                focusedFullData=false;
                 disposeFocusedGallery();
                 fileGallery.visible=true;
                 needsRender=true;
@@ -598,6 +599,7 @@ class Drive3DScene {
             }
             if (focusedShelfIndex!==index) {
                 focusedShelfIndex=index;
+                focusedFullData=false;
                 disposeFocusedGallery();
             }
             fileGallery.visible=false;
@@ -606,6 +608,7 @@ class Drive3DScene {
         };
         this.setFocusedShelfFiles = (index, files) => {
             if(index!==focusedShelfIndex)return false;
+            focusedFullData=true;
             rebuildFocusedGallery(files);
             return true;
         };

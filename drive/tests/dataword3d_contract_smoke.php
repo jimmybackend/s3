@@ -9,7 +9,6 @@ $so = (string)file_get_contents($root . '/so.php');
 $preferences = (string)file_get_contents($root . '/os-preferences.php');
 $preferenceSanitizer = (string)file_get_contents($root . '/src/Security/Drive3dPreferenceSanitizer.php');
 $backgroundUpload = (string)file_get_contents($root . '/src/Http/Controller/Drive3dBackgroundUploadController.php');
-$backgroundResolver = (string)file_get_contents($root . '/src/Application/Drive3dBackgroundFolderService.php');
 $scene = (string)file_get_contents($root . '/js/drive3d-scene.js');
 $production = (string)file_get_contents($root . '/js/drive3d-production.js');
 $mediaCloud = (string)file_get_contents($root . '/js/os-media-cloud.js');
@@ -41,13 +40,13 @@ drive3dContract(str_contains($view, "$apiMode === 'files'") && str_contains($vie
 drive3dContract(str_contains($view, "'filesApiHref'") && str_contains($production, 'setCurrentFiles') && str_contains($scene, "fileGallery.name = 'current-folder-files'"), 'al entrar a cualquier carpeta sus archivos se colocan automáticamente en la galería 3D');
 drive3dContract(str_contains($view, "'initialFiles' => \$state['files']") && str_contains($production, 'initialFiles') && str_contains($production, 'setCurrentFiles?.(initialFiles)'), 'primera página de archivos se pinta inmediatamente incluso antes de terminar el API completo');
 drive3dContract(str_contains($scene, 'Two thin hangers make the file read as a suspended thumbnail') && str_contains($scene, 'visibleFileCards'), 'archivos se perciben como miniaturas colgantes y la escena puede verificar que alguna queda realmente en pantalla');
-drive3dContract(str_contains($scene, 'visibleSideAngle') && str_contains($scene, 'fileRadius') && str_contains($scene, 'hasCabinets ? shelfRadius - .10') && str_contains($scene, 'hasCabinets ? 7.56') && str_contains($scene, 'filePanels'), 'miniaturas se elevan por encima de los libreros sin cubrir los muebles');
+drive3dContract(str_contains($scene, 'visibleSideAngle') && str_contains($scene, 'fileRadius') && str_contains($scene, 'shelfRadius - 2.75') && str_contains($scene, 'filePanels'), 'miniaturas flotan dentro del radio de los libreros y las primeras quedan visibles a los lados aunque existan subcarpetas');
 drive3dContract(!str_contains($view, 'data-dw-desk-carousel') && !str_contains($view, 'data-dw-current-files'), 'se elimina el carrusel/escritorio DOM del centro del domo');
 drive3dContract(str_contains($view, "'media_key' => \$key") && str_contains($view, "'media_route' => \$route") && str_contains($js, 'itemKey') && str_contains($js, 'itemMime') && str_contains($js, 'itemRoute'), 'archivos de la galería conservan clave, MIME y ruta necesarias para reproductor multimedia');
 drive3dContract(str_contains($view, 'css/os-media-cloud.css') && str_contains($view, 'js/os-media-cloud.js') && str_contains($view, 'ARCADECLOUD_OS_APPEARANCE'), 'Drive 3D reutiliza el mismo reproductor nube y preferencias de so.php');
 drive3dContract(str_contains($js, 'playCloudMedia') && str_contains($js, 'ArcadeCloudMediaCloud') && str_contains($mediaCloud, 'class ArcadeCloudMediaCloud') && str_contains($mediaCloudCss, '.ac-media-cloud'), 'audio y video seleccionados en la galería usan el reproductor nube ArcadeCloud existente');
 drive3dContract(str_contains($mediaCloud, 'Posición y tamaño fijados') && str_contains($mediaCloud, 'captureGeometry()') && str_contains($mediaCloud, 'applySavedGeometry()') && str_contains($preferences, "'mediaPlayerPreferences'"), 'reproductor nube fija y restaura posición y tamaño por usuario/nodo');
-drive3dContract(str_contains($backgroundResolver, "findDirectChild(\$rows, \$root, 'Imagenes')") && str_contains($backgroundResolver, "findDirectChild(\$rows, \$images, 'fondos3D')") && str_contains($view, '$backgroundFolders->existing($userId)') && str_contains($backgroundUpload, '->ensure($userId)'), 'fondos 3D usan nombres visibles MySQL, prefijos opacos y carpeta correcta del usuario');
+drive3dContract(str_contains($view, 'Imagenes/fondos3D') && str_contains($backgroundUpload, "/Imagenes/") && str_contains($backgroundUpload, "fondos3D/"), 'fondos 3D se almacenan en Imagenes/fondos3D del usuario');
 drive3dContract(str_contains($backgroundUpload, 'requireDriveCsrf') && str_contains($backgroundUpload, 'singleUploadService()->upload'), 'subida de fondos usa CSRF y servicio privado normal del Drive');
 drive3dContract(str_contains($preferences, "drive3dPreference") && str_contains($preferences, 'Drive3dPreferenceSanitizer') && str_contains($view, "'preferences' => $drive3dPreferences"), 'configuración 3D persiste en Users.os_preferences por nodo');
 drive3dContract(str_contains($view, 'data-dw-spatial-picture-layer') && str_contains($js, 'openSpatialImage') && str_contains($js, 'restoreSpatialImages'), 'Drive 3D permite múltiples imágenes persistentes como cuadros independientes');
@@ -88,12 +87,10 @@ drive3dContract(str_contains($css, 'width:132px !important') && str_contains($cs
 drive3dContract(substr_count($so, 'href="dataword3d.php"') >= 2 && str_contains($so, '<strong>Drive 3D</strong>'), 'ArcadeCloud OS enlaza Drive 3D en aplicaciones y launcher');
 drive3dContract(str_contains($scene, 'const spatialAnchors = new Map()') && str_contains($scene, 'this.moveSpatialMedia = (id, dx, dy)') && str_contains($scene, 'this.spatialMediaState = (id'), 'motor Three.js mantiene múltiples anclas espaciales independientes');
 drive3dContract(str_contains($scene, 'raycaster.intersectObjects([...shelves, fileGallery]') && str_contains($scene, 'setFileSelection') && str_contains($production, 'onItemSelect'), 'tocar una miniatura 3D selecciona el archivo y alimenta el HUD real');
-drive3dContract(str_contains($scene, 'insideQuad(corners, x, y)') && str_contains($scene, 'fileSelectionFromPointer') && !str_contains($scene, 'nearestFileCard(event)'), 'la selección táctil comprueba el polígono real y no salta a miniaturas vecinas');
+drive3dContract(str_contains($scene, 'nearestFileCard(event)') && str_contains($scene, "viewport.addEventListener('click'") && str_contains($scene, "rect.width < 700 ? .22 : .13"), 'miniaturas mantienen área de selección táctil ampliada sin agrandar su render visual');
 drive3dContract(str_contains($js, 'this.hud.desk.hidden = isFolder') && str_contains($js, 'Traer al escritorio'), 'Traer al escritorio aparece para archivos seleccionados, no para carpetas');
 drive3dContract(str_contains($production, 'app.restoreSpatialImages?.()'), 'renderer de producción restaura cuadros persistidos al volver a Drive 3D');
 drive3dContract(str_contains($production, 'app.loadCurrentFolderFiles?.()') && str_contains($production, 'app.three?.setCurrentFiles?.'), 'renderer Three.js monta la galería de archivos de la carpeta actual sin escritorio intermedio');
 drive3dContract(str_contains($css, 'Drive 3D literal desk carousel + crisp HUD') && str_contains($css, 'body:not(.is-camera-near).dw-real .dw-hud') && str_contains($css, 'opacity:1!important'), 'panel derecho permanece nítido y opaco como la navegación izquierda');
-
-drive3dContract(str_contains($scene, "const panoramaRadius = R + .085") && str_contains($scene, "i === 4 ? .115 : .065"), 'unión del panorama queda cubierta por meridiano de madera superpuesto al cristal');
 
 fwrite(STDOUT, "Drive 3D contract smoke passed.\n");

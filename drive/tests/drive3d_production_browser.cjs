@@ -121,6 +121,9 @@ const server=createServer((req,res)=>{
   assert(initial.visibleFileCards>0,'At least one current-folder file thumbnail is visible in the initial camera view even when cabinets exist');
   assert.equal(initial.fileItems.filter(item=>item.kind==='image').length,18);
   assert(initial.filePanels.length>=1,'File thumbnails have independent gallery panels');
+  assert.equal(initial.panoramaSeam.woodenRib,4,'Panorama UV seam lies beneath its wooden meridian');
+  assert(initial.panoramaSeam.radius>initial.domeRadius &&
+    initial.panoramaSeam.radius-initial.domeRadius < .12,'The wrapped panorama stays just behind the structural dome');
   assert.equal(initial.galleryLayout,'overhead','Folders place their file gallery in the air above their cabinets');
   assert(initial.fileItems.every(item=>item.position[1] > initial.shelves[0].height + .35),
     'Images and file icons clear the top of every bookshelf');
@@ -137,7 +140,10 @@ const server=createServer((req,res)=>{
     app.chooseThreeShelf(index);
     app.three.setShelfContents(index,{
       folders:[{name:'Subcarpeta real',kind:'folder',open_href:'/subfolder',preview_href:'/preview/sub'}],
-      files:[{name:'Informe.pdf',kind:'pdf',open_href:'/report.pdf'}],
+      files:[
+        {name:'Informe.pdf',kind:'pdf',open_href:'/report.pdf'},
+        {name:'Foto en carpeta.jpg',kind:'image',thumbnail_href:'/three-lab/assets/alpine-panorama.jpg',open_href:'/subphoto'}
+      ],
       folder_count:1,file_count:1
     });
   },shelfIndex);
@@ -146,6 +152,10 @@ const server=createServer((req,res)=>{
   assert(populated.realBooks>=1,'Nested folder data is rendered inside its cabinet');
   assert(populated.realItems.some(item=>item.name==='Subcarpeta real' && item.open==='/subfolder'),'Folder metadata stays with the cabinet');
   assert(!populated.realItems.some(item=>item.name==='Informe.pdf'),'Files are never rendered as books inside a cabinet');
+  assert(populated.overheadImages.some(item=>item.name==='Foto en carpeta.jpg'),
+    'A child-folder image is previewed in the air over its own shelf');
+  assert(populated.overheadImages.every(item=>item.world[1] > initial.shelves[0].height),
+    'Image previews must clear the shelf crown');
   assert.equal(await page.locator('[data-hud-desk]').isVisible(),false,'Folder selection does not offer Traer al escritorio');
 
   // Turn toward the first gallery panel, tap a real thumbnail, then bring that selected image into the workspace.

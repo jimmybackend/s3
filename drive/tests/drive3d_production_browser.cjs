@@ -186,7 +186,9 @@ const server=createServer((req,res)=>{
   // Before the fix a nearest-card guess could select a diagonal/upper neighbor.
   for(const {item,client} of visibleClickCandidates.slice(0,Math.min(3,visibleClickCandidates.length))) {
     await page.mouse.click(client.x,client.y);
-    await page.waitForFunction(expected=>document.querySelector('[data-hud-name]')?.textContent===expected,item.name,{timeout:5000});
+    await page.waitForTimeout(160);
+    const actual=await page.locator('[data-hud-name]').textContent();
+    assert.equal(actual,item.name, '3D click must select the exact projected card: '+JSON.stringify({clicked:item.name, actual, screen:client, projected:item.point, kind:item.kind}));
   }
   await page.evaluate(item=>{
     const app=window.ArcadeCloudDrive3D;

@@ -553,7 +553,9 @@ final class MediaWorkerNodeService
         // The automatic stopper runs on the compute node; a gateway's local
         // process list cannot make claims about the remote workstation.
         $role = strtolower(trim((string)(getenv('ARCADECLOUD_NODE_ROLE') ?: 'web')));
-        if (!in_array($role, ['media-worker', 'combined'], true)) return false;
+        $workerFlag = strtolower(trim((string)(getenv('ARCADECLOUD_MEDIA_WORKER') ?: '')));
+        if (!in_array($role, ['media-worker', 'combined'], true)
+            && !in_array($workerFlag, ['1', 'true', 'yes'], true)) return false;
         $processes = glob('/proc/[0-9]*/comm', GLOB_NOSORT);
         if ($processes === false || $processes === []) {
             throw new RuntimeException('No se pudieron comprobar los procesos multimedia; apagado bloqueado.');
@@ -563,7 +565,13 @@ final class MediaWorkerNodeService
             if ($name === false && is_file($path)) {
                 throw new RuntimeException('No se pudo verificar un proceso local; apagado bloqueado.');
             }
-            if (in_array(trim((string)$name), ['ffmpeg', 'ffprobe'], true)) return true;
+            // Transient interactive CLI work may continue after input stops. Persistent
+            // daemons (dockerd, chrome, mysqld) are deliberately excluded.
+            if (in_array(trim((string)$name), [
+                'ffmpeg', 'ffprobe', 'rar', 'unrar', 'zip', 'unzip', '7z',
+                '7za', '7zr', 'git', 'docker', 'buildctl', 'make',
+                'gcc', 'cc1plus', 'tar', 'gzip', 'bzip2', 'xz', 'zstd', 'pigz'
+            ], true)) return true;
         }
         return false;
     }

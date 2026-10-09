@@ -431,8 +431,8 @@
       this.document.querySelector('[data-dw-environment-close]')?.addEventListener('click', () => {
         if (this.environmentPanel) this.environmentPanel.hidden = true;
       });
-      this.document.querySelectorAll('[data-environment-choice]').forEach((button) => {
-        button.addEventListener('click', () => this.setEnvironment(button.dataset.environmentChoice || 'future'));
+      this.document.querySelector('[data-environment-reset-glass]')?.addEventListener('click', () => {
+        this.restoreDefaultGlassBackground();
       });
 
       this.backgroundGallery?.addEventListener('click', (event) => {
@@ -1239,11 +1239,13 @@
       if (match?.dataset.backgroundEnvironment) this.applySurfaceImage(surface, match.dataset.backgroundEnvironment);
     }
 
-    setEnvironment(environment) {
-      if (this.useThree) { this.room.glassBackground = ''; this.three?.surface('glass',''); this.persistPreferences(); return; }
-      const allowed = new Set(['future','mountain','prehistoric','ocean']);
-      this.room.environment = allowed.has(environment) ? environment : 'future';
-      this.document.body.dataset.environment = this.room.environment;
+    restoreDefaultGlassBackground() {
+      // An empty glass URL restores the bundled 360° panorama in Three.js.
+      // Preserve floor artwork, positioned pictures, furniture and camera.
+      this.room.glassBackground = '';
+      this.room.environment = 'future';
+      this.document.body.dataset.environment = 'future';
+      this.applySurfaceImage('glass', '');
       this.persistPreferences();
     }
 

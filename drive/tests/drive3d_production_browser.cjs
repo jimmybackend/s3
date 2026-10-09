@@ -113,6 +113,42 @@ const server=createServer((req,res)=>{
   await page.waitForFunction(()=>window.ArcadeCloudDrive3D.three.snapshot().spatialImages.length===1);
   assert.equal(await page.locator('.dw-spatial-picture-window').count(),1);
 
+  // A picture can be placed on a chosen floor position with a real touch,
+  // then moved between window panes and ceiling without an extra modal.
+  const surfaceSelector = `[data-spatial-picture-id="${secondPicture.id}"]`;
+  await page.evaluate(()=>window.ArcadeCloudDrive3D.three.look(0,30));
+  await page.waitForFunction(()=>window.ArcadeCloudDrive3D.three.snapshot().pitch < -.48);
+  await page.locator(surfaceSelector + ' select[aria-label="Colocar imagen en el domo"]').selectOption('floor');
+  await page.waitForFunction(()=>window.ArcadeCloudDrive3D.three.snapshot().pendingSurface==='floor');
+  const floorCanvas = await page.locator('#dwThreeViewport').boundingBox();
+  await page.mouse.click(floorCanvas.x+floorCanvas.width*.54,floorCanvas.y+floorCanvas.height*.77);
+  await page.waitForFunction(id => window.ArcadeCloudDrive3D.three.snapshot().surfaceImages.some(item=>item.id===id && item.mode==='floor'),secondPicture.id,{timeout:6000});
+  let positioned = (await snap()).surfaceImages.find(item=>item.id===secondPicture.id);
+  assert(Math.abs(positioned.world[1]-.065)<.01,'A tap positions the image flat on the floor');
+  assert(await page.locator(surfaceSelector).evaluate(el=>el.classList.contains('is-surface-placed')),'The free viewer collapses into an anchored-image toolbar');
+
+  await page.evaluate(id => window.ArcadeCloudDrive3D.onSpatialSurfacePlaced({
+    id,mode:'window',panelId:'w-3-1',surfaceScale:.70,world:[3,5,6]
+  }),secondPicture.id);
+  positioned = (await snap()).surfaceImages.find(item=>item.id===secondPicture.id);
+  assert.equal(positioned.panelId,'w-3-1','Artwork fills one specified window of the glass dome');
+  const panelWorld=positioned.world;
+  await page.locator(surfaceSelector + ' button[aria-label="Reducir imagen colocada"]').click({force:true});
+  const smaller=(await snap()).surfaceImages.find(item=>item.id===secondPicture.id);
+  assert(smaller.scale < positioned.scale && smaller.panelId===positioned.panelId,'Resize stays within the chosen wooden pane');
+  assert.deepEqual(smaller.world,panelWorld,'Resizing does not move the chosen panel');
+
+  await page.evaluate(id => window.ArcadeCloudDrive3D.onSpatialSurfacePlaced({
+    id,mode:'ceiling',panelId:'c-7-0',surfaceScale:.75,world:[2,10,1]
+  }),secondPicture.id);
+  positioned = (await snap()).surfaceImages.find(item=>item.id===secondPicture.id);
+  assert.equal(positioned.mode,'ceiling','Picture can become a curved dome ceiling texture');
+  assert.equal(positioned.panelId,'c-7-0');
+
+  await page.evaluate(id=>window.ArcadeCloudDrive3D.changeSpatialImageMode(id,'free'),secondPicture.id);
+  await page.waitForFunction(()=>window.ArcadeCloudDrive3D.three.snapshot().surfaceImages.length===0);
+  assert(!await page.locator(surfaceSelector).evaluate(el=>el.classList.contains('is-surface-placed')),'Return to a free picture restores its full viewer');
+
   for(const shelf of initial.shelves){const [x,,z]=shelf.position;assert(Math.sqrt(initial.domeRadius**2-(Math.hypot(x,z)+shelf.depth)**2)>shelf.height,'Roof clears cabinet corners');}
   assert.equal(await page.locator('.dw-desk').count(),0,'The central desk is removed from the dome');
   assert.equal(await page.locator('[data-dw-desk-carousel]').count(),0,'There is no desk carousel');
@@ -157,8 +193,8 @@ const server=createServer((req,res)=>{
   assert(!populated.realItems.some(item=>item.name==='Informe.pdf'),'Files are never rendered as books inside a cabinet');
   assert(populated.overheadImages.some(item=>item.name==='Foto en carpeta.jpg'),
     'A child-folder image is previewed in the air over its own shelf');
-  assert(populated.overheadImages.every(item=>item.world[1] > initial.shelves[0].height),
-    'Image previews must clear the shelf crown');
+  assert(populated.overheadImages.every(item=>item.world[1] > initial.shelves[0].height+.90),
+    'Image previews stay in a separate band of air instead of overlapping the wood');
   assert.equal(await page.locator('[data-hud-desk]').isVisible(),false,'Folder selection does not offer Traer al escritorio');
 
   // Turn toward the first gallery panel, tap a real thumbnail, then bring that selected image into the workspace.

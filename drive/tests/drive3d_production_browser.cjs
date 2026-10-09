@@ -209,7 +209,11 @@ const server=createServer((req,res)=>{
   await page.waitForTimeout(650);
   const focusedGallery=await snap();
   const visibleFiles=focusedGallery.fileItems.filter(item=>item.point[2]>-1 && item.point[2]<1 && Math.abs(item.point[0])<.82 && Math.abs(item.point[1])<.82);
-  assert(visibleFiles.length>0,'At least one current-folder thumbnail is visible after looking at its gallery panel');
+  assert(visibleFiles.length>0,'At least one current-folder thumbnail is visible after looking at its gallery panel: '+JSON.stringify({
+    camera:focusedGallery.camera,yaw:focusedGallery.yaw,pitch:focusedGallery.pitch,
+    galleryDegrees, filePanels:focusedGallery.filePanels,
+    filePoints:focusedGallery.fileItems.slice(0,8).map(item=>({name:item.name,point:item.point,position:item.position}))
+  }));
   let selectedGalleryFile=null;
   for(const candidate of visibleFiles){
     const local={x:(candidate.point[0]+1)*viewBox.width/2,y:(1-candidate.point[1])*viewBox.height/2};

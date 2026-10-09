@@ -229,6 +229,40 @@ class Drive3DScene {
             const entries = Array.isArray(state.folders)
                 ? state.folders.slice(0, 18).map(item => ({item, folder:true}))
                 : [];
+            // The folder's own image previews hang just ABOVE its wooden
+            // crown, not across the books. Load only a few (LOD bounded by
+            // the existing visible-zones algorithm).
+            const previews = Array.isArray(state.files)
+                ? state.files.filter(item => item?.kind === 'image' && item?.thumbnail_href && !item?.locked).slice(0, 3)
+                : [];
+            previews.forEach((item, n) => {
+                const x = (n - (previews.length - 1) / 2) * .62;
+                const preview = new T.Group();
+                preview.name = 'shelf-overhead-picture';
+                preview.userData.driveItem = item;
+                preview.userData.driveFolder = false;
+                preview.position.set(x, 4.55, .38);
+                const frame = new T.Mesh(
+                    new T.BoxGeometry(.54,.43,.035),
+                    new T.MeshBasicMaterial({color:0x4e3422})
+                );
+                preview.add(frame);
+                const mat = new T.MeshBasicMaterial({color:0x285167, side:T.DoubleSide});
+                const picture = new T.Mesh(new T.PlaneGeometry(.48,.35), mat);
+                picture.position.z = .025;
+                preview.add(picture);
+                host.add(preview);
+                new T.TextureLoader().load(item.thumbnail_href, texture => {
+                    // Late responses from unloaded shelves must not resurrect
+                    // images or leak GPU textures after a zone switch.
+                    if (!host.parent || !preview.parent) { texture.dispose(); return; }
+                    texture.colorSpace = T.SRGBColorSpace;
+                    mat.map = texture;
+                    mat.color.set(0xffffff);
+                    mat.needsUpdate = true;
+                    needsRender = true;
+                }, undefined, () => {});
+            });
             entries.forEach(({item, folder}, n) => {
                 const row = Math.floor(n / 6);
                 const col = n % 6;
@@ -867,6 +901,10 @@ class Drive3DScene {
             shelves: shelves.map(s=>({
                 position:s.position.toArray(),rotation:s.rotation.y,width,depth,height,loaded:!!s.children.length,
                 realBooks:s.getObjectByName('real-drive-books')?.children.length || 0,
+                overheadImages:s.getObjectByName('real-drive-books')?.children.filter(child => child.name === 'shelf-overhead-picture').map(child => ({
+                    name:child.userData.driveItem?.name || '',
+                    world:child.getWorldPosition(new T.Vector3()).toArray()
+                })) || [],
                 realItems:Array.from(s.getObjectByName('real-drive-books')?.children || []).map(book => ({
                     name:book.userData?.driveItem?.name || '',
                     kind:book.userData?.driveItem?.kind || (book.userData?.driveFolder ? 'folder' : 'file'),

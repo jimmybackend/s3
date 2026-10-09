@@ -87,11 +87,11 @@ class Drive3DProduction {
         const focus = app.shelves.indexOf(app.focusedShelf);
         const detail = [...new Set([...(visible.includes(focus) ? [focus] : []), ...near])].slice(0,3);
         const key = visible.join(',') + '/' + detail.join(',');
+        // Centre must clear the selected gallery even when the visible-zone
+        // frustum happens to remain identical.
+        if (focus < 0 && selectedGalleryIndex >= 0) clearGallery();
         if (key === zoneKey) return;
-        if (focus < 0) {
-            if(app.deskFocus) app.deskFocus.hidden = true;
-            if(selectedGalleryIndex>=0)clearGallery();
-        }
+        if (focus < 0 && app.deskFocus) app.deskFocus.hidden = true;
         zoneKey = key; clearTimeout(app.zoneTimer);
         app.visibleShelves = new Set(visible.map(i => app.shelves[i]));
         app.shelves.forEach((shelf,index) => {

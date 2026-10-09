@@ -165,7 +165,8 @@ const server=createServer((req,res)=>{
   await page.waitForFunction(id=>document.querySelector(`[data-spatial-picture-id="${id}"]`)?.classList.contains('is-controls-hidden'),secondPicture.id,{timeout:7500});
   assert.equal(await page.locator(surfaceSelector).isVisible(),false,'Anchored image toolbar auto-hides in five seconds');
   await page.evaluate(id=>window.ArcadeCloudDrive3D.onSpatialSurfaceSelected(id),secondPicture.id);
-  assert.equal(await page.locator(surfaceSelector).isVisible(),true,'Tapping a placed 3D image restores its toolbar');
+  assert.equal(await page.locator(surfaceSelector).evaluate(el=>el.classList.contains('is-controls-hidden')),false,
+    'Tapping a placed 3D image clears its hidden-controls state even if the panel is currently outside the viewport');
   await page.evaluate(()=>window.ArcadeCloudDrive3D.three.look(0,-84));
   await page.waitForFunction(()=>window.ArcadeCloudDrive3D.three.snapshot().pitch>1.40);
   await page.evaluate(()=>window.ArcadeCloudDrive3D.three.look(0,84));

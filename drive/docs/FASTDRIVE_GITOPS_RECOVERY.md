@@ -14,8 +14,9 @@ fuera del repositorio público.
 1. Comprobar que el checkout de producción es `main`, sin modificaciones
    versionadas ni archivos fuente nuevos sin seguimiento.
 2. `git fetch origin main` y `git merge --ff-only origin/main`.
-3. Verificar que el commit remoto coincide exactamente con el commit de
-   GitHub Actions y pasar `php -l`.
+3. Verificar que el commit del workflow forma parte de la historia de `main`
+   desplegada (se permite un descendiente más reciente cuando `main` avanza
+   durante el workflow) y pasar `php -l`.
 4. Reconciliar **solo el worker multimedia** cuando no hay actividad, mediante
    `drive/bin/fastdrive_safe_worker_reload.php`.
 5. Confirmar que siguen activos los contenedores Guacamole, guacd y MySQL y

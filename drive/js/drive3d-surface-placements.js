@@ -12,7 +12,9 @@ class Drive3DSurfacePlacements {
     this.placements = new Map();
     this.pending = null;
     this.ribs = 16;
-    this.bands = [0, .47, .72, 1.05];
+    // Four glass bands above the shelves, plus the upper roof. Every
+    // azimuth section is valid all around the 360-degree dome.
+    this.bands = [0, .47, .72, 1.05, 1.30];
   }
 
   static mode(mode) {
@@ -31,7 +33,7 @@ class Drive3DSurfacePlacements {
   static panelFromId(mode, value) {
     const match = /^(w|c)-(\d{1,2})-(\d)$/.exec(String(value || ''));
     if (!match || (mode === 'ceiling' ? match[1] !== 'c' || match[3] !== '0' :
-      match[1] !== 'w' || Number(match[3]) > 2)) return null;
+      match[1] !== 'w' || Number(match[3]) > 3)) return null;
     const sector = Number(match[2]);
     if (sector >= 16) return null;
     return { sector, band:Number(match[3]) };
@@ -42,19 +44,19 @@ class Drive3DSurfacePlacements {
     const T = this.T;
     if (mode === 'floor') {
       const point = ray.intersectPlane(new T.Plane(new T.Vector3(0,1,0), -.06),new T.Vector3());
-      if (!point || Math.hypot(point.x,point.z) > this.radius - 1.4) return null;
+      if (!point || Math.hypot(point.x,point.z) > this.radius - .35) return null;
       return {mode:'floor',world:[point.x,.065,point.z],panelId:''};
     }
     const point = ray.intersectSphere(new T.Sphere(new T.Vector3(0,0,0),this.radius-.16),new T.Vector3());
     if (!point) return null;
     const elevation = Math.atan2(point.y,Math.hypot(point.x,point.z));
-    if (mode === 'window' && (elevation < .11 || elevation > 1.04)) return null;
-    if (mode === 'ceiling' && elevation < 1.065) return null;
+    if (mode === 'window' && (elevation < .01 || elevation > 1.30)) return null;
+    if (mode === 'ceiling' && elevation < 1.30) return null;
     const step = Math.PI*2/this.ribs;
     const angle = (Math.atan2(point.x,point.z) + Math.PI*2) % (Math.PI*2);
     const sector = Math.floor(angle/step) % this.ribs;
     const band = mode === 'window'
-      ? Math.max(0,Math.min(2,this.bands.findIndex((limit,index)=>index < this.bands.length-1 && elevation < this.bands[index+1])))
+      ? Math.max(0,Math.min(3,this.bands.findIndex((limit,index)=>index < this.bands.length-1 && elevation < this.bands[index+1])))
       : 0;
     const panelId = Drive3DSurfacePlacements.panelId(mode,sector,band);
     return { mode,world:point.toArray(),panelId };
@@ -99,7 +101,7 @@ class Drive3DSurfacePlacements {
     const scale = Drive3DSurfacePlacements.scale(entry.surfaceScale,mode);
     const midAngle = (info.sector+.5)*slice;
     const longitudeHalf = (slice*.42)*scale;
-    const bounds = mode === 'ceiling' ? [1.09,1.49] : [this.bands[info.band]+.045,this.bands[info.band+1]-.045];
+    const bounds = mode === 'ceiling' ? [1.325,1.545] : [this.bands[info.band]+.045,this.bands[info.band+1]-.045];
     const elevationCenter = (bounds[0]+bounds[1])/2;
     const elevationHalf = Math.max(.015,(bounds[1]-bounds[0])*.5*scale);
     const segmentsX = 12,segmentsY = 8;
@@ -139,7 +141,7 @@ class Drive3DSurfacePlacements {
     if(mode === 'floor'){
       const coordinates=Array.isArray(entry.world) ? entry.world : [0,.065,0];
       const x=Number(coordinates[0]) || 0,z=Number(coordinates[2]) || 0;
-      if(Math.hypot(x,z)>this.radius-1.4) return null;
+      if(Math.hypot(x,z)>this.radius-.35) return null;
       const aspect=Math.max(.3,Math.min(4,Number(entry.aspect)||4/3));
       const w=3.0*scale,h=w/aspect;
       geometry=new T.PlaneGeometry(w,h);

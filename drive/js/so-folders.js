@@ -153,7 +153,7 @@ class ArcadeCloudOsFolderActions {
       this.window.ArcadeCloudOsShell?.clearFileSelection?.();
 
       this.showContext(
-        this.currentFolderFromDom(),
+        this.currentFolderFromDom(body.closest('.os-explorer-window') || root),
         event.clientX,
         event.clientY,
         true
@@ -176,7 +176,7 @@ class ArcadeCloudOsFolderActions {
         event.preventDefault();
         if (button.disabled) return;
 
-        const folder = this.currentFolderFromDom();
+        const folder = this.currentFolderFromDom(button.closest('.os-explorer-window') || root);
         await this.runAction(
           String(button.dataset.currentFolderAction || ''),
           folder,

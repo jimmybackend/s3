@@ -8,7 +8,10 @@ const document = {
   getElementById() { return null; }, querySelectorAll() { return []; },
   addEventListener(type, callback) { listeners.set(type, callback); }, body: {},
 };
-const window = { ARCADECLOUD_OS_ROOT_ROUTE: 'Data2/', innerWidth: 1200, innerHeight: 800 };
+const window = { ARCADECLOUD_OS_ROOT_ROUTE: 'Data2/', innerWidth: 1200, innerHeight: 800,
+  location: { origin: 'https://arcadecloud.test' },
+  addEventListener() {},
+};
 const desktop = new ArcadeCloudDesktopRuntime(window, document).init();
 const navigations = [];
 for (const [id, route, page] of [

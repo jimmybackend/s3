@@ -29,7 +29,7 @@ $assert(str_contains($files['runtime'], "(^|\\/)\\.\\.?(\\/|$)"), 'normalizador 
 $assert(str_contains($files['runtime'], 'new AbortController()'), 'navegación cancela fetch obsoleto');
 $assert(str_contains($files['runtime'], "data-folder-open-new"), 'carpetas ofrecen abrir en ventana nueva');
 $assert(str_contains($files['runtime'], 'application/x-arcadecloud-items'), 'drag and drop usa payload privado');
-$assert(str_contains($files['runtime'], "clipboard?.paste?.(destinationRoute, { destinationWindowId: this.id })"), 'drop reutiliza backend de portapapeles y conserva Explorer destino');
+$assert(str_contains($files['runtime'], "clipboard.paste?.(destinationRoute, { destinationWindowId: this.id })"), 'drop reutiliza backend de portapapeles y conserva Explorer destino');
 $assert(str_contains($files['runtime'], "'file-moved','file-copied','file-deleted','folder-created','upload-completed','task-completed'"), 'EventBus sincroniza cambios');
 $assert(str_contains($files['runtime'], "this.bus.on('filesystem:changed'") && str_contains($files['runtime'], 'emitFilesystemChanged(detail = {})'), 'EventBus expone filesystem:changed sin crear un segundo bus');
 $assert(str_contains($files['runtime'], 'preserveScroll: true') && str_contains($files['runtime'], 'scroll: item.scroll'), 'refresh e historial conservan scroll por Explorer');
@@ -54,7 +54,9 @@ $assert(str_contains($files['runtime'], 'arcadeos:explorer-updated') && str_cont
 $assert(str_contains($files['runtime'], 'this.suggestionController = new AbortController()') && str_contains($files['runtime'], '220') && str_contains($files['runtime'], 'suggestionCache'), 'autocomplete por instancia usa debounce, cancelación y caché corta');
 $assert(str_contains($files['suggestions'], '$session->userId()') && str_contains($files['folders'], 'WHERE user_id_ = ? AND Found = 1'), 'sugerencias están limitadas al usuario autenticado');
 $assert(str_contains($files['runtime'], 'ArcadeCloudWindowLayoutConfig') && str_contains($files['runtime'], "explorer: { width: .42, height: .42") && str_contains($files['runtime'], '* 32'), 'geometría central usa desktop 42% y offset escalonado');
-$assert(str_contains($files['runtime'], 'isLegacyOversize') && str_contains($files['runtime'], "* .72"), 'preferencias casi fullscreen de cualquier aplicación se normalizan sin borrar otras preferencias');
+$assert(str_contains($files['runtime'], 'return saved ? this.clampGeometry(app, saved) : this.defaultGeometry(app)')
+    && str_contains($files['runtime'], 'Math.min(Number(geometry.width) || min.width, maxWidth)')
+    && str_contains($files['runtime'], 'Math.min(Number(geometry.height) || min.height, maxHeight)'), 'preferencias guardadas conservan el tamaño real dentro de los límites visibles');
 $assert(str_contains($files['runtime'], 'this.navigate(folder.dataset.folderRoute);') && !str_contains($files['runtime'], 'if (event.detail >= 2) this.navigate(folder.dataset.folderRoute)'), 'carpeta navega con un clic dentro de su instancia');
 $assert(str_contains($files['runtime'], 'bindFiles?.(this.win)') && str_contains($files['runtime'], 'bindEntries?.(this.win)') && str_contains($files['runtime'], 'rebind?.(this.win)'), 'rebind después de fetch queda limitado a la ventana actual');
 

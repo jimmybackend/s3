@@ -1,6 +1,7 @@
 name: ArcadeCloud Web OS
 
 on:
+  workflow_dispatch:
   pull_request:
     paths:
       - 'drive/so.php'

@@ -556,7 +556,8 @@
       "size": 263,
       "active": false,
       "references": [
-        "drive/js/folder-document.js"
+        "drive/js/folder-document.js",
+        "drive/js/so-new-text-file.js"
       ]
     },
     {
@@ -669,7 +670,7 @@
     },
     {
       "path": "drive/editor.php",
-      "size": 13973,
+      "size": 16563,
       "active": true,
       "references": [
         "drive/bloque_archivos.php",
@@ -1659,7 +1660,7 @@
     },
     {
       "path": "drive/so.php",
-      "size": 124461,
+      "size": 127129,
       "active": true,
       "references": [
         "drive/dataword3d.php",
@@ -1938,7 +1939,7 @@
     },
     {
       "path": "drive/src/Application/FolderDocumentService.php",
-      "size": 11117,
+      "size": 12215,
       "active": false,
       "references": [
         "drive/tests/folder_document_sanitizer.php"
@@ -3085,7 +3086,7 @@
     },
     {
       "path": "drive/src/Http/Controller/FolderDocumentController.php",
-      "size": 2363,
+      "size": 2431,
       "active": false,
       "references": []
     },

@@ -96,7 +96,7 @@
 | `drive/buscar_archivo.php` | `drive/tests/web_os_contract_smoke.php`, `drive/js/ai-search.js`, `drive/js/archivos.js`, `drive/js/so-search.js`, `drive/tests/web_os_search_location_functional.js` |
 | `drive/comprehend_archivo.php` | `drive/js/aws-comprehend.js` |
 | `drive/crear_carpeta.php` | `drive/js/carpetas.js`, `drive/tests/classic_mutation_csrf_functional.js` |
-| `drive/create_folder_document.php` | `drive/js/folder-document.js` |
+| `drive/create_folder_document.php` | `drive/js/folder-document.js`, `drive/js/so-new-text-file.js` |
 | `drive/database-backup.php` | `drive/src/Admin/ProductionPreflightService.php`, `drive/tests/database_backup_contract_smoke.php`, `drive/js/so-node.js` |
 | `drive/descargar.php` | `drive/js/descarga-uno.js` |
 | `drive/descargar_zip.php` | `drive/js/descarga-multiple.js`, `drive/js/file-block.js` |

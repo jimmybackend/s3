@@ -89,6 +89,10 @@ for (const marker of ['data-folder-action="create-empty-file"', 'modalCrearArchi
   assert.ok(so.includes(marker), 'SO missing new-file surface ' + marker);
 }
 assert.ok(folderAction.includes("action === 'create-empty-file'"));
+assert.ok(folderAction.includes("this.currentFolderFromDom(body.closest('.os-explorer-window') || root)"),
+  'Blank-area menu must use its own Explorer folder, not another window');
+assert.ok(folderAction.includes("this.currentFolderFromDom(button.closest('.os-explorer-window') || root)"),
+  'Toolbar action must use the Explorer that contains its button');
 assert.ok(controller.includes("postString('create_empty') === '1'"));
 assert.ok(service.includes('assertFolderExists($userId, $route)'));
 assert.ok(service.includes('assertNameAvailable($userId, $route, $filename)'));

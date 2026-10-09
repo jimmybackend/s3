@@ -208,6 +208,24 @@ const server=createServer((req,res)=>{
   assert(new Set(selectedGallery.focusedFiles.map(item=>item.name)).size===72,'Repeated rows cannot show the same file twice');
   assert(selectedGallery.focusedFiles.some(item=>item.kind==='pdf'),'Non-image files keep their proper type icon in the dome gallery');
   assert(await page.locator('.dw-dome-gallery-pager').isVisible(),'The gallery shows paginated navigation for large folders');
+  const galleryBox=await page.locator('#dwThreeViewport').boundingBox();
+  for(const photo of selectedGallery.focusedFiles.filter(item=>
+    item.point[2]>-1 && item.point[2]<1 &&
+    Math.abs(item.point[0])<.64 && Math.abs(item.point[1])<.62).slice(0,4)) {
+    const x=galleryBox.x+(photo.point[0]+1)*galleryBox.width/2;
+    const y=galleryBox.y+(1-photo.point[1])*galleryBox.height/2;
+    const free=await page.evaluate(({x,y})=>{
+      const canvas=document.querySelector('#dwThreeViewport canvas');
+      const el=document.elementFromPoint(x,y);
+      return el===canvas || canvas?.contains(el);
+    },{x,y});
+    if(!free)continue;
+    await page.mouse.click(x,y);
+    await page.waitForTimeout(95);
+    const actual=await page.locator('[data-hud-name]').textContent();
+    assert.equal(actual,photo.name,'Large shelf-gallery click must select the exact file, not a diagonal neighbor');
+    break;
+  }
 
   await page.locator('.dw-dome-gallery-pager button').last().click();
   await page.waitForFunction(()=>window.ArcadeCloudDrive3D.three.snapshot().focusedFiles.length===20);

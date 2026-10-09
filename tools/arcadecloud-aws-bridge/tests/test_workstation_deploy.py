@@ -5,7 +5,7 @@ import subprocess
 import unittest
 from pathlib import Path
 
-ROOT=Path(__file__).resolve().parents[2]
+ROOT=Path(__file__).resolve().parents[3]
 SOURCE=ROOT / "tools/arcadecloud-aws-bridge/workstation_deploy.py"
 
 class Contract(unittest.TestCase):
@@ -21,7 +21,6 @@ class Contract(unittest.TestCase):
         self.assertEqual(result.returncode,0,result.stderr)
         self.assertIn("git -c safe.directory=",script)
         self.assertIn("pull --ff-only origin main",script)
-        self.assertIn("WORKSTATION_ACTIVE",script) if False else None
         self.assertIn("ACTIVE_SESSION_POSSIBLE",script)
         self.assertIn("docker build -t arcadecloud/workstation:phase1",script)
         self.assertIn("arcadecloud/workstation:before-pdf-rar-",script)

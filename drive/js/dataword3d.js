@@ -579,7 +579,12 @@
     }
 
     centerCamera() {
-      if (this.useThree) { this.focusedShelf = null; this.three?.home(); return; }
+      if (this.useThree) {
+        this.focusedShelf = null;
+        this.clearThreeFocusedGallery?.();
+        this.three?.home();
+        return;
+      }
       this.camera.yaw = 0;
       this.camera.pitch = 0;
       this.camera.lateral = 0;

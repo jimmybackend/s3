@@ -4,10 +4,10 @@
     "php_class_modules": 318,
     "php_needs_migration": 0,
     "php_tests": 79,
-    "js_total": 85,
+    "js_total": 86,
     "js_class_modules": 79,
     "js_needs_migration": 0,
-    "js_tests": 11,
+    "js_tests": 12,
     "js_compatibility_facades": 8,
     "ajax_clients": 54,
     "ajax_calls": 120,
@@ -9337,7 +9337,7 @@
     },
     {
       "path": "drive/js/file-applications.js",
-      "lines": 238,
+      "lines": 243,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudFileApplicationService"
@@ -9675,11 +9675,12 @@
     },
     {
       "path": "drive/js/os-window-manager.js",
-      "lines": 1307,
+      "lines": 1392,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudEventBus",
         "ArcadeCloudWindowLayoutConfig",
+        "ArcadeCloudImageWindowFit",
         "ArcadeCloudWindowManager",
         "ExplorerWindowFactory",
         "ArcadeCloudExplorerWindow",
@@ -9690,6 +9691,7 @@
         "ArcadeCloudDesktop",
         "ArcadeCloudDesktopRuntime",
         "ArcadeCloudEventBus",
+        "ArcadeCloudImageWindowFit",
         "ArcadeCloudWindowManager",
         "requestAnimationFrame"
       ],
@@ -10169,7 +10171,7 @@
     },
     {
       "path": "drive/js/so.js",
-      "lines": 1349,
+      "lines": 1354,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudOsShell"
@@ -10531,6 +10533,42 @@
         "response_checks": 0
       },
       "issues": []
+    },
+    {
+      "path": "drive/tests/os_image_window_fit.test.js",
+      "lines": 89,
+      "kind": "procedural script",
+      "classes": [],
+      "functions": [],
+      "window_assign": [],
+      "window_func": [],
+      "top_vars": [
+        "assert",
+        "scenarios",
+        "win",
+        "image",
+        "cleanup",
+        "manager",
+        "style",
+        "classes",
+        "element",
+        "record",
+        "initialWidth",
+        "beforeMaxResize",
+        "detachedWidth"
+      ],
+      "iife": false,
+      "ajax": {
+        "fetch": 0,
+        "xhr": 0,
+        "jquery": 0,
+        "json_consumers": 0,
+        "response_checks": 13
+      },
+      "issues": [
+        "top-level state: assert, scenarios, win, image, cleanup, manager, style, classes",
+        "no ES class"
+      ]
     },
     {
       "path": "drive/tests/web_os_desktop_shell_functional.js",

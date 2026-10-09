@@ -8,10 +8,10 @@
 - PHP que ya contienen clases/interfaces: **318**
 - PHP marcados para migración/revisión: **0**
 - Tests PHP separados del objetivo OOP de runtime: **79**
-- JavaScript analizados: **85**
+- JavaScript analizados: **86**
 - JavaScript que ya contienen clases: **79**
 - JavaScript runtime marcados para migración/revisión: **0**
-- Tests JavaScript separados del objetivo OOP de runtime: **11**
+- Tests JavaScript separados del objetivo OOP de runtime: **12**
 - JavaScript OOP con fachada `window` de compatibilidad: **8**
 - Clientes AJAX detectados: **54** módulos / **120** llamadas
 - JSON analizados: **10**; inválidos: **0**
@@ -627,7 +627,7 @@
 | `drive/js/federation-page.js` | 99 | class/module | FederationPageModule | — | — | — |
 | `drive/js/federation-portal.js` | 511 | class/module | FederationPortalModule | — | — | — |
 | `drive/js/federation-share-drive.js` | 214 | class/module | FederationShareDriveModule | — | — | — |
-| `drive/js/file-applications.js` | 238 | class/module | ArcadeCloudFileApplicationService | — | — | — |
+| `drive/js/file-applications.js` | 243 | class/module | ArcadeCloudFileApplicationService | — | — | — |
 | `drive/js/file-block.js` | 306 | class/module | FileBlockApp | — | — | — |
 | `drive/js/file-security.js` | 325 | class/module | ArcadeCloudFileSecurity | — | — | — |
 | `drive/js/filesystem-operations.js` | 192 | class/module | ArcadeCloudFilesystemOperations | — | — | — |
@@ -641,7 +641,7 @@
 | `drive/js/notebook.js` | 268 | class/module | NotebookEditor | — | — | — |
 | `drive/js/obtenerFiltros.js` | 125 | class/module | ObtenerFiltrosModule | — | — | — |
 | `drive/js/os-media-cloud.js` | 1107 | class/module | ArcadeCloudMediaCloud | — | — | — |
-| `drive/js/os-window-manager.js` | 1307 | class/module | ArcadeCloudEventBus, ArcadeCloudWindowLayoutConfig, ArcadeCloudWindowManager, ExplorerWindowFactory, ArcadeCloudExplorerWindow, ArcadeCloudDesktopRuntime | — | — | — |
+| `drive/js/os-window-manager.js` | 1392 | class/module | ArcadeCloudEventBus, ArcadeCloudWindowLayoutConfig, ArcadeCloudImageWindowFit, ArcadeCloudWindowManager, ExplorerWindowFactory, ArcadeCloudExplorerWindow, ArcadeCloudDesktopRuntime | — | — | — |
 | `drive/js/page-task-manager.js` | 119 | class/module | ArcadeCloudPageTaskManager | — | — | — |
 | `drive/js/pdf-pantalla-completa.js` | 45 | class/module | PdfPantallaCompletaModule | — | — | — |
 | `drive/js/polly-background.js` | 306 | class/module | PollyBackgroundModule | — | — | — |
@@ -661,7 +661,7 @@
 | `drive/js/so-search.js` | 292 | class/module | ArcadeCloudOsSearch | — | — | — |
 | `drive/js/so-share.js` | 180 | class/module | ArcadeCloudOsShare | — | — | — |
 | `drive/js/so-terminal.js` | 314 | class/module | ArcadeCloudOsTerminal | — | — | — |
-| `drive/js/so.js` | 1349 | class/module | ArcadeCloudOsShell | — | — | — |
+| `drive/js/so.js` | 1354 | class/module | ArcadeCloudOsShell | — | — | — |
 | `drive/js/soportesMediaTypes.js` | 397 | class/module | SoportesMediaTypesModule | — | — | — |
 | `drive/js/storage-usage.js` | 51 | class/module | StorageUsageModule | — | — | — |
 | `drive/js/subir-chunked.js` | 594 | class/module | SubirChunkedModule | — | — | — |
@@ -676,6 +676,7 @@
 | `drive/tests/background_tasks_refresh_functional.js` | 38 | procedural script | — | — | — | top-level state: assert, vm, fs, source, context; no ES class |
 | `drive/tests/classic_mutation_csrf_functional.js` | 56 | class/module | FixtureFormData | — | — | — |
 | `drive/tests/local_container_programs_functional.js` | 25 | class/module | Element | — | — | — |
+| `drive/tests/os_image_window_fit.test.js` | 89 | procedural script | — | — | — | top-level state: assert, scenarios, win, image, cleanup, manager, style, classes; no ES class |
 | `drive/tests/web_os_desktop_shell_functional.js` | 40 | procedural script | — | assert | — | top-level functions: assert; top-level state: editable, records, instance, registered, declarative, launcher, remoteApps; no ES class |
 | `drive/tests/web_os_file_applications_functional.js` | 54 | class/module | Bus | assert | — | top-level functions: assert |
 | `drive/tests/web_os_filesystem_operations_functional.js` | 59 | procedural script | — | assert | — | top-level functions: assert; top-level state: events, busEvents, doc, win, service; no ES class |

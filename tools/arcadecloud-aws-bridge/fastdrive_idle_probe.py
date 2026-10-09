@@ -54,7 +54,17 @@ php -d display_errors=0 -r '
 '
 busy=no
 for name in ffmpeg ffprobe zip unzip rar unrar git docker buildctl 7z make tar; do
-  if pgrep -x "$name" >/dev/null 2>&1; then busy=yes; break; fi
+  pid="$(pgrep -x "$name" 2>/dev/null | head -n 1 || true)"
+  if [ -n "$pid" ]; then
+    busy=yes
+    metric="$(printf '%s' "$name" | tr '[:lower:]' '[:upper:]')"
+    # Process name is from our fixed whitelist; no command lines or PIDs.
+    printf 'ARCADECLOUD_IDLE_PROBE_PROCESS_%s=yes\n' "$metric"
+    seconds="$(ps -o etimes= -p "$pid" 2>/dev/null | tr -d '[:space:]' || true)"
+    if [[ "$seconds" =~ ^[0-9]+$ ]]; then
+      printf 'ARCADECLOUD_IDLE_PROBE_PROCESS_%s_AGE_MIN=%d\n' "$metric" "$((seconds / 60))"
+    fi
+  fi
 done
 printf 'ARCADECLOUD_IDLE_PROBE_LOCAL_CLI_TASK=%s\n' "$busy"
 '''
@@ -78,7 +88,7 @@ def main():
             lines=out.get("StandardOutputContent","").splitlines()
             flags=[]
             for line in lines:
-                if re.fullmatch(r"ARCADECLOUD_IDLE_PROBE_(?:APP_MISSING|WORKER_ACTIVE|IDENTITY|MEDIA_JOBS|OFFICE_UNSAVED|LOCAL_CLI_TASK)=(?:yes|no)",line) or re.fullmatch(
+                if re.fullmatch(r"ARCADECLOUD_IDLE_PROBE_(?:APP_MISSING|WORKER_ACTIVE|IDENTITY|MEDIA_JOBS|OFFICE_UNSAVED|LOCAL_CLI_TASK)=(?:yes|no)",line) or re.fullmatch(r"ARCADECLOUD_IDLE_PROBE_PROCESS_(?:FFMPEG|FFPROBE|ZIP|UNZIP|RAR|UNRAR|GIT|DOCKER|BUILDCTL|7Z|MAKE|TAR)=yes",line) or re.fullmatch(r"ARCADECLOUD_IDLE_PROBE_PROCESS_(?:FFMPEG|FFPROBE|ZIP|UNZIP|RAR|UNRAR|GIT|DOCKER|BUILDCTL|7Z|MAKE|TAR)_AGE_MIN=[0-9]{1,6}",line) or re.fullmatch(
                     r"ARCADECLOUD_IDLE_PROBE_(?:SESSION)=(?:present|absent)|ARCADECLOUD_IDLE_PROBE_(?:TIMER)=(?:armed|not_armed)|ARCADECLOUD_IDLE_PROBE_STATUS=(?:starting|running|idle|stopping)",line):
                     print(line)
                     flags.append(line)

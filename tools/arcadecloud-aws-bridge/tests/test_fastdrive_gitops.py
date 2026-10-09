@@ -34,6 +34,8 @@ class FixedGitOps(unittest.TestCase):
         self.assertIn("ServerTaskActivityProbe",guard)
         self.assertIn("Ec2InstanceIdentityService",guard)
         self.assertIn("arcadecloud-media-worker.service",guard)
+        self.assertNotIn("deferred_office_active",guard)
+        self.assertNotIn("'docker'",guard)
         self.assertNotIn("exec($_",guard)
     def test_php_lints(self):
         for f in ["drive/src/Media/MediaWorkerNodeService.php",

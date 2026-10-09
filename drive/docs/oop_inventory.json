@@ -11,7 +11,7 @@
     "js_compatibility_facades": 8,
     "ajax_clients": 54,
     "ajax_calls": 120,
-    "json_total": 9,
+    "json_total": 10,
     "json_invalid": 0
   },
   "php": [
@@ -184,7 +184,7 @@
     },
     {
       "path": "drive/bin/fastdrive_safe_worker_reload.php",
-      "lines": 56,
+      "lines": 54,
       "kind": "thin cli entrypoint",
       "classes": 0,
       "functions": [],
@@ -5433,7 +5433,7 @@
     },
     {
       "path": "drive/src/Media/MediaWorkerNodeService.php",
-      "lines": 869,
+      "lines": 900,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -7507,7 +7507,7 @@
     },
     {
       "path": "drive/tests/idle_stop_office_regression.php",
-      "lines": 392,
+      "lines": 404,
       "kind": "test script",
       "classes": 1,
       "functions": [
@@ -10904,7 +10904,7 @@
     },
     {
       "path": "drive/docs/runtime_endpoints.json",
-      "bytes": 134095,
+      "bytes": 134288,
       "valid": true,
       "root_type": "object",
       "keys": [
@@ -10957,6 +10957,17 @@
       "keys": [
         "alias",
         "report",
+        "request_id"
+      ],
+      "error": null
+    },
+    {
+      "path": "tools/arcadecloud-aws-bridge/requests/fastdrive-gitops.json",
+      "bytes": 100,
+      "valid": true,
+      "root_type": "object",
+      "keys": [
+        "action",
         "request_id"
       ],
       "error": null

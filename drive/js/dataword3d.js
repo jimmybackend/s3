@@ -116,7 +116,7 @@
           world,
           size:size && size.every((number) => Number.isFinite(number)) ? size : null,
           mode:['floor','ceiling','window'].includes(entry.mode) ? entry.mode : 'free',
-          panelId:/^[wc]-\\d{1,2}-\\d$/.test(String(entry.panelId || '')) ? String(entry.panelId) : '',
+          panelId:/^[wc]-\d{1,2}-\d$/.test(String(entry.panelId || '')) ? String(entry.panelId) : '',
           surfaceScale:this.clamp(Number(entry.surfaceScale) || .70,.30,2.6),
         };
       }).filter(Boolean);

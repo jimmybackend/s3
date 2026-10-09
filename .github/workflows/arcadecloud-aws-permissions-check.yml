@@ -1,0 +1,40 @@
+name: ArcadeCloud AWS - verify IAM permissions
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/arcadecloud-aws-permissions-check.yml
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  verify:
+    if: github.repository == 'jimmybackend/s3' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Assume existing AWS OIDC role
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.ARCADECLOUD_AWS_BRIDGE_ROLE_ARN }}
+          aws-region: ${{ vars.ARCADECLOUD_AWS_REGION }}
+          role-session-name: ArcadeCloudPermissionCheck
+      - name: Confirm attached AdministratorAccess without revealing IAM details
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Only a yes/no result is printed in this public repository.
+          actual=$(aws iam list-attached-role-policies \
+            --role-name ArcadeCloudGitHubBridgeReadOnly \
+            --query 'contains(AttachedPolicies[].PolicyArn, `arn:aws:iam::aws:policy/AdministratorAccess`)' \
+            --output text)
+          if [ "$actual" = "True" ]; then
+            echo "ARCADECLOUD_ADMIN_POLICY_ATTACHED=true"
+          else
+            echo "ARCADECLOUD_ADMIN_POLICY_ATTACHED=false"
+            exit 1
+          fi

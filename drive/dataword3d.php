@@ -246,7 +246,10 @@ if ($apiMode === 'preview') {
 
 if ($apiMode === 'files' || $apiMode === 'desk') {
     $page = max(1, (int)($_GET['pagina'] ?? 1));
-    $state = $buildState($currentRoute, $page, 100);
+    // A page fits four 360° rows in the 3D dome. Regular Drive pagination
+    // still returns 100 entries when not requested by the immersive gallery.
+    $limit = (string)($_GET['galeria'] ?? '') === '1' ? 72 : 100;
+    $state = $buildState($currentRoute, $page, $limit);
     $state['folders'] = [];
     header('Content-Type: application/json; charset=UTF-8');
     echo json_encode([

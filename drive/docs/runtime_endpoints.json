@@ -577,7 +577,8 @@
       "references": [
         "drive/so.php",
         "drive/tests/dataword3d_contract_smoke.php",
-        "drive/three-lab/drive3d-lab.php"
+        "drive/three-lab/drive3d-lab.php",
+        "drive/js/drive3d-surface-placements.js"
       ]
     },
     {
@@ -1146,6 +1147,7 @@
         "drive/upload/drivers/LocalPresignedPutUploader.php",
         "drive/upload/drivers/RemoteUrlUploader.php",
         "drive/js/dataword3d.js",
+        "drive/js/drive3d-surface-placements.js",
         "drive/js/so-screenshot-paste.js",
         "drive/js/soportesMediaTypes.js",
         "drive/js/subir-chunked.js",
@@ -3475,10 +3477,11 @@
     },
     {
       "path": "drive/src/Security/Drive3dPreferenceSanitizer.php",
-      "size": 5570,
+      "size": 6531,
       "active": false,
       "references": [
-        "drive/tests/dataword3d_contract_smoke.php"
+        "drive/tests/dataword3d_contract_smoke.php",
+        "drive/tests/drive3d_surface_picture_test.php"
       ]
     },
     {
@@ -4138,6 +4141,12 @@
     {
       "path": "drive/tests/drive3d_background_folder_test.php",
       "size": 2004,
+      "active": false,
+      "references": []
+    },
+    {
+      "path": "drive/tests/drive3d_surface_picture_test.php",
+      "size": 1916,
       "active": false,
       "references": []
     },
@@ -4829,6 +4838,7 @@
         "drive/src/Http/Controller/Drive3dBackgroundUploadController.php",
         "drive/src/Media/MediaPlaylistService.php",
         "drive/src/Security/Drive3dPreferenceSanitizer.php",
+        "drive/tests/drive3d_surface_picture_test.php",
         "drive/tests/web_os_contract_smoke.php",
         "drive/js/archivos.js",
         "drive/js/imagenes.js"

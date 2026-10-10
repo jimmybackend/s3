@@ -9005,7 +9005,7 @@
     },
     {
       "path": "drive/js/dataword3d.js",
-      "lines": 2083,
+      "lines": 2084,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudDrive3D"
@@ -9114,7 +9114,7 @@
     },
     {
       "path": "drive/js/drive3d-scene.js",
-      "lines": 1189,
+      "lines": 1204,
       "kind": "class/module",
       "classes": [
         "Drive3DScene"

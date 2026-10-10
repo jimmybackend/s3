@@ -8,7 +8,7 @@ const source=fs.readFileSync(path.join(root,'so.php'),'utf8');
 const menus=source.slice(source.indexOf('  <div class="os-file-context os-folder-context"'),source.indexOf('  <!-- Modal compartido: Seguridad'));
 assert.match(source,/if \(\$isExplorerFragment \|\| \$isDrive3dActions\)/,'action mode renders the same authorized explorer');
 const errors=[];let contextLoads=0;let sharedTasks=[];
-const script=name=>`<script src="/js/${name}"></script>`;
+const script=name=>`<script ${name==='background-tasks.js'?'data-background-tasks':''} src="/js/${name}"></script>`;
 (async()=>{
  const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
  try {
@@ -25,8 +25,6 @@ const script=name=>`<script src="/js/${name}"></script>`;
     return route.fulfill({contentType:url.pathname.endsWith('.css')?'text/css':'text/javascript',body});
    }
    if(url.pathname==='/fixture')return route.fulfill({contentType:'text/html',body:`<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="/css/dataword3d.css"><link rel="stylesheet" href="/css/so.css"></head><body class="dw-real"><div class="dw-world" style="position:fixed;inset:60px 0 0"><section class="dw-hud"><button data-hud-more-actions>Acciones</button><div class="dw-hud-extra-actions" data-hud-extra-actions hidden></div></section></div><script>window.DRIVE_INITIAL_ROUTE='user/docs/';</script>${script('drive3d-actions.js')}${script('background-tasks.js')}</body></html>`});
-   if(url.hostname==='stackpath.bootstrapcdn.com')return route.fulfill({contentType:url.pathname.endsWith('.css')?'text/css':'text/javascript',body:''});
-   if(url.hostname==='code.jquery.com')return route.fulfill({contentType:'text/javascript',body:'window.jQuery=function(){};window.jQuery.fn={modal(){}};'});
    if(url.pathname==='/background_tasks.php')return route.fulfill({contentType:'application/json',body:JSON.stringify({ok:true,tasks:sharedTasks,summary:{active:sharedTasks.length,running:sharedTasks.length}})});
    if(url.pathname==='/move_task.php'){
     assert.equal(route.request().method(),'POST');

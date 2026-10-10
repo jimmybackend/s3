@@ -487,7 +487,7 @@ header('Content-Type: text/html; charset=UTF-8');
             <option value="snow">Nieve</option>
           </select>
         </label>
-        <small>Las escenas alternativas utilizan texturas ligeras generadas en el navegador. Tus fondos personalizados siguen disponibles debajo.</small>
+        <small>Elige un panorama 360° o una textura de piso. Tus fondos personalizados siguen disponibles debajo.</small>
       </div>
       <p class="dw-environment-help">Los fondos se guardan en <b>Imagenes/fondos3D</b> y la configuración queda en tu perfil de ArcadeCloud.</p>
       <p class="dw-environment-route" aria-label="Ruta de fondos"><i class="fas fa-folder-open"></i> Imagenes/fondos3D/</p>

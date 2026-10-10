@@ -14,9 +14,16 @@ body = body.replace(folderLoop, Array.from({length:6},(_,i)=>`<article class="dw
 body = body.replace(/<\?php foreach[\s\S]*?<\?php endforeach; \?>/g,'');
 body = body.replace(/<\?=[\s\S]*?\?>/g,'Usuario').replace(/<\?php[\s\S]*?\?>/g,'');
 const html = `<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width"><link rel="stylesheet" href="/css/dataword3d.css"><link rel="stylesheet" href="/css/os-media-cloud.css">${body}<script>window.ARCADECLOUD_OS_APPEARANCE={};window.DRIVE_INITIAL_ROUTE='Data/12/';window.ARCADECLOUD_DRIVE3D={renderer:'three',visiblePath:'Data/12/',filesApiHref:'/files-current'};</script><script src="/js/os-media-cloud.js"></script><script src="/js/dataword3d.js"></script></body>`;
-let requests=0;
+let requests=0, savedPreferences=null;
 const server=createServer((req,res)=>{
  const path = req.url.split('?')[0];
+ if(path==='/os-preferences.php') {
+   let data='';req.on('data',chunk=>data+=chunk);req.on('end',()=>{
+     savedPreferences=JSON.parse(data).drive3dPreference;
+     res.setHeader('Content-Type','application/json');res.end('{"ok":true}');
+   });return;
+ }
+
  if(path.startsWith('/preview/') && new URL(req.url,'http://local').searchParams.get('api')==='files'){
     const params=new URL(req.url,'http://local').searchParams;
     const page=Number(params.get('pagina')||1);
@@ -55,7 +62,7 @@ const server=createServer((req,res)=>{
    res.end(JSON.stringify({ok:true,state:{visible_path:'Data/12/',files,file_count:20,file_page:1,file_pages:1,file_limit:100,folder_count:0}}));
    return;
  }
- if(path==='/' || path.startsWith('/folder/')){res.setHeader('Content-Type','text/html');res.end(html);return;}
+ if(path==='/' || path.startsWith('/folder/')){res.setHeader('Content-Type','text/html');res.end(html.replace("renderer:'three',","renderer:'three',preferences:"+JSON.stringify(savedPreferences || {})+","));return;}
  if(!/^\/(js|css|three-lab)\/[\w/.-]+$/.test(path)){res.writeHead(404).end();return;}
  try{res.setHeader('Content-Type',path.endsWith('.js')?'text/javascript':path.endsWith('.css')?'text/css':'image/jpeg');res.end(readFileSync(root+path));}catch{res.writeHead(404).end();}
 });
@@ -74,6 +81,44 @@ const server=createServer((req,res)=>{
   const initial=await snap(); assert(initial.visible.length>0 && initial.visible.length<=9);assert.equal(requests,0);
   assert.equal(await page.locator('.dw-camera-scene').isVisible(),false);
   assert(await page.locator('#dwThreeViewport canvas').isVisible());
+
+  // Every preset must reach the actual Three.js material, never its canvas fallback.
+  const panoramas=['alpine-spring','alpine-summer','alpine-autumn','alpine-winter','sunset','night','prehistoric','future'];
+  const floors=['water','grass','clouds','sand','snow'];
+  const failedAssets=[];
+  page.on('response',response=>{if(response.url().includes('/assets/environments/') && !response.ok())failedAssets.push(response.url());});
+  page.on('requestfailed',request=>{if(request.url().includes('/assets/environments/'))failedAssets.push(request.url());});
+  await page.locator('[data-dw-environment]').click();
+  for(const key of panoramas){
+    await page.locator('[data-environment-scene]').selectOption(key);
+    await page.waitForFunction(key=>window.ArcadeCloudDrive3D.three.snapshot().environmentTextures.glass.endsWith('/'+key+'.jpg'),key);
+    assert.deepEqual((await snap()).environmentTextures.glassSize,[1774,887]);
+  }
+  for(const key of floors){
+    await page.locator('[data-environment-ground]').selectOption(key);
+    await page.waitForFunction(key=>window.ArcadeCloudDrive3D.three.snapshot().environmentTextures.floor.endsWith('/'+key+'.jpg'),key);
+    assert.deepEqual((await snap()).environmentTextures.floorSize,[1254,1254]);
+  }
+  // POST -> restored server preferences -> reload catches an empty custom path
+  // accidentally resetting or cancelling the selected real texture.
+  await page.evaluate(()=>window.ArcadeCloudDrive3D.persistPreferences());
+  assert.equal(savedPreferences.scenePreset,'future');assert.equal(savedPreferences.groundPreset,'snow');
+  await page.reload();
+  await page.waitForFunction(()=>window.ArcadeCloudDrive3D?.three?.snapshot().environmentTextures.glass.endsWith('/future.jpg') && window.ArcadeCloudDrive3D.three.snapshot().environmentTextures.floor.endsWith('/snow.jpg'));
+  assert.equal((await snap()).environmentTextures.panoramaU,1,'Inside sphere must preserve left/right');
+  const baseline=(await snap()).textures;
+  for(let i=0;i<3;i++){
+    await page.evaluate(i=>{const a=window.ArcadeCloudDrive3D;a.three.setEnvironmentPreset(i%2?'night':'sunset');a.three.setGroundPreset(i%2?'grass':'sand');},i);
+    await page.waitForFunction(i=>{const t=window.ArcadeCloudDrive3D.three.snapshot().environmentTextures;return t.glass.endsWith('/'+(i%2?'night':'sunset')+'.jpg')&&t.floor.endsWith('/'+(i%2?'grass':'sand')+'.jpg');},i);
+  }
+  assert((await snap()).textures<=baseline+2,'Repeated switches must release old GPU textures');
+  await page.locator('[data-dw-environment]').click();
+  await page.locator('[data-environment-scene]').selectOption('original');
+  await page.locator('[data-environment-ground]').selectOption('original');
+  await page.waitForFunction(()=>{const t=window.ArcadeCloudDrive3D.three.snapshot().environmentTextures;return t.glass.endsWith('/alpine-panorama.jpg') && t.ground==='original' && t.floor==='';});
+  assert.deepEqual(failedAssets,[]);
+  await page.locator('[data-dw-environment-close]').click();
+  console.log('PASS 13 real JPEG textures, sizes, preference POST/reload, original panorama/floor, orientation and texture memory');
 
   // The user can restore the bundled 360-degree glass panorama without changing the floor.
   await page.evaluate(()=>{
@@ -489,7 +534,10 @@ const server=createServer((req,res)=>{
   for(const yaw of [100,-100,175,0]){await page.evaluate(y=>window.ArcadeCloudDrive3D.three.look(y,4),yaw);await page.waitForFunction(y=>Math.abs(window.ArcadeCloudDrive3D.three.snapshot().yaw+y*Math.PI/180)<.01,yaw);}
   assert((await snap()).textures<=memory+4);
   await page.setViewportSize({width:390,height:844});await page.waitForTimeout(500);
-  assert((await page.locator('.dw-sidebar').boundingBox()).height<150);
+  assert.equal(await page.locator('.dw-sidebar').isVisible(),false);
+  assert.equal(await page.locator('.dw-radar').isVisible(),false);
+  assert(await page.locator('.dw-top-environment').isVisible());
+  assert(await page.locator('.dw-top-user').isVisible());
   if(out)await page.screenshot({path:resolve(out,'production-mobile.png')});
   const beforeMove=(await snap()).camera[0];
   const button=await page.locator('[data-camera-strafe="1"]').boundingBox();

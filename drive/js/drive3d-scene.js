@@ -83,8 +83,13 @@ class Drive3DScene {
         // drifted away from the wood as the player moved. Both surfaces now
         // share the same center/radius, with the glass a hair behind the ribs.
         const panoramaRadius = R + .085;
+        // Viewing sphere UVs from inside reverses their horizontal direction.
+        // Reverse U once so photographs keep their original left/right orientation.
+        const panoramaGeometry = new T.SphereGeometry(panoramaRadius, 96, 48);
+        const panoramaUV = panoramaGeometry.attributes.uv;
+        for (let i = 0; i < panoramaUV.count; i++) panoramaUV.setX(i, 1 - panoramaUV.getX(i));
         const panorama = new T.Mesh(
-            new T.SphereGeometry(panoramaRadius, 96, 48),
+            panoramaGeometry,
             // No milky acrylic tint or cinematic desaturation. The panorama
             // *is* the outdoor view, not an opaque sheet in front of it.
             new T.MeshBasicMaterial({
@@ -1038,15 +1043,16 @@ class Drive3DScene {
         this.setEnvironmentPreset = (key) => {
             const next = panoramas.has(String(key)) ? String(key) : 'original';
             const revision = ++surfaceRevision.glass;
+            customPanorama = next !== 'original';
             const assign = (map, owned) => {
                 if (revision !== surfaceRevision.glass) { if (owned) map?.dispose(); return; }
-                const previous = presetPanorama;
+                const previous = panorama.material.map;
                 presetPanorama = owned ? map : null;
                 customPanorama = next !== 'original';
                 panorama.material.map = map;
                 panorama.material.color.set(0xffffff);
                 panorama.material.needsUpdate = true; needsRender = true;
-                if (previous && previous !== map) previous.dispose();
+                if (previous && previous !== map && previous !== defaultPanoramaMap && previous !== marble) previous.dispose();
             };
             if (next === 'original') { assign(defaultPanoramaMap, false); return; }
             const fallback = () => assign(landscapeTexture(next), true);
@@ -1060,17 +1066,17 @@ class Drive3DScene {
             const revision = ++surfaceRevision.floor;
             const assign = (map, owned) => {
                 if (revision !== surfaceRevision.floor) { if (owned) map?.dispose(); return; }
-                const previous = presetFloor;
+                const previous = floor.material.map;
                 presetFloor = owned ? map : null;
                 currentGround = next;
                 floor.material.map = map;
                 floor.material.color.set(0xffffff);
                 floor.material.opacity = next === 'original' ? .66 : next === 'water' ? .48 : 1;
-                floor.material.roughness = next === 'water' ? .18 : .9;
+                floor.material.roughness = next === 'water' ? .18 : next === 'original' ? .32 : .9;
                 floor.material.needsUpdate = true;
                 if (floorMirror) floorMirror.visible = next === 'original' || next === 'water';
                 needsRender = true;
-                if (previous && previous !== map) previous.dispose();
+                if (previous && previous !== map && previous !== defaultPanoramaMap && previous !== marble) previous.dispose();
             };
             if (next === 'original') { assign(marble, false); return; }
             const fallback = () => assign(groundTexture(next), true);
@@ -1086,15 +1092,16 @@ class Drive3DScene {
             if (surface === 'glass') customPanorama = Boolean(url);
             const material = surface === 'glass' ? panorama.material : floor.material;
             if (!url) {
-                if (material.map && material.map !== marble && material.map !== defaultPanoramaMap && material.map !== presetPanorama && material.map !== presetFloor) material.map.dispose();
-                material.map = surface === 'glass' ? defaultPanoramaMap : marble;
-                material.needsUpdate = true; needsRender = true; return;
+                if (surface === 'glass') this.setEnvironmentPreset('original');
+                else this.setGroundPreset('original');
+                return;
             }
             new T.TextureLoader().load(url, map => {
                 if (surfaceRevision[surface] !== revision) { map.dispose(); return; }
                 map.colorSpace = T.SRGBColorSpace;
                 const mat = surface === 'glass' ? panorama.material : floor.material;
-                if (mat.map && mat.map !== marble && mat.map !== defaultPanoramaMap && mat.map !== presetPanorama && mat.map !== presetFloor) mat.map.dispose();
+                if (mat.map && mat.map !== marble && mat.map !== defaultPanoramaMap) mat.map.dispose();
+                if (surface === 'glass') presetPanorama = null; else presetFloor = null;
                 mat.map = map; mat.color.set(0xffffff); mat.needsUpdate = true;
                 needsRender = true;
             }, undefined, () => { status.hidden = false; status.textContent = 'No se pudo cargar el fondo seleccionado.'; });
@@ -1141,6 +1148,14 @@ class Drive3DScene {
                 return p.z>-1 && p.z<1 && Math.abs(p.x)<.92 && Math.abs(p.y)<.92;
             }).length,
             domeRadius:R,panorama:panorama.position.toArray(),
+            environmentTextures:{
+                glass:panorama.material.map?.image?.src || '',
+                floor:floor.material.map?.image?.src || '',
+                glassSize:[panorama.material.map?.image?.width || 0,panorama.material.map?.image?.height || 0],
+                floorSize:[floor.material.map?.image?.width || 0,floor.material.map?.image?.height || 0],
+                panoramaU:panoramaUV.getX(0),
+                ground:currentGround
+            },
             panoramaSeam:{radius:panoramaRadius,woodenRib:4,angle:Math.PI/2},environmentReady,
             glassView:{toneMapped:panorama.material.toneMapped,
                 tint:panorama.material.color.getHex(),opacity:panorama.material.opacity,

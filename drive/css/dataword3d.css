@@ -4374,3 +4374,16 @@ body.is-camera-near.dw-real .dw-hud{
 .dw-environment-library label{display:grid;gap:4px;font-size:12px;color:#a9eaff;font-weight:700}
 .dw-environment-library select{width:100%;min-height:38px;border-radius:9px;border:1px solid #39708d;background:#08263b;color:#fff;padding:7px}
 .dw-environment-library small{font-size:11px;color:#a7c8d4;line-height:1.4}
+
+/* All object actions stay in the upper-right HUD; touch devices scroll them. */
+.dw-hud{max-height:calc(100% - 36px);overflow-y:auto;overscroll-behavior:contain}
+.dw-hud-extra-actions{display:grid;gap:6px;margin-top:8px;max-height:240px;overflow:auto;overscroll-behavior:contain;touch-action:pan-y}
+.dw-hud-extra-actions[hidden]{display:none}
+.dw-hud-extra-actions button{min-height:40px;padding:8px;border:1px solid rgba(113,213,255,.25);border-radius:8px;background:#0c293e;color:#dffaff;text-align:left;cursor:pointer}
+.dw-action-dialog{width:96vw;height:92vh;height:92dvh;max-width:1440px;max-height:96dvh;padding:0;border:1px solid #65c8e5;border-radius:12px;background:#071321;color:#e5faff}
+.dw-action-dialog::backdrop{background:rgba(0,0,0,.7)}
+.dw-action-dialog[open]{display:flex;flex-direction:column}
+.dw-action-dialog header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px;flex-shrink:0}
+.dw-action-dialog header strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dw-action-dialog header button{min-height:40px;border:1px solid #65c8e5;border-radius:8px;background:#0c293e;color:#e5faff;cursor:pointer}
+.dw-action-dialog iframe{width:100%;flex:1;min-height:0;border:0;background:#fff}

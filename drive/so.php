@@ -239,6 +239,8 @@ $currentFolderName = $currentIsRoot
     ? rtrim($rootPrefix, '/')
     : basename(rtrim($currentPrefix, '/'));
 $isExplorerFragment = (string)($_GET['_os_fragment'] ?? '') === 'explorer';
+// The authenticated 3D action window needs its target explorer immediately.
+$isDrive3dActions = (string)($_GET['_drive3d_actions'] ?? '') === '1';
 ?>
 <!doctype html>
 <html lang="es">
@@ -285,7 +287,7 @@ $isExplorerFragment = (string)($_GET['_os_fragment'] ?? '') === 'explorer';
       <span>Notebook</span>
     </a>
 
-    <?php if ($isExplorerFragment): ?>
+    <?php if ($isExplorerFragment || $isDrive3dActions): ?>
     <section class="os-window os-explorer-window" data-window-title="Mis datos">
       <div class="os-window-titlebar" data-window-drag-handle>
         <div class="os-window-title"><i class="fas fa-folder-open"></i><span>Mis datos</span></div>

@@ -444,7 +444,9 @@ header('Content-Type: text/html; charset=UTF-8');
         <button type="button" data-hud-desk><i class="fas fa-hand-sparkles"></i> Traer al escritorio</button>
         <button type="button" data-hud-play hidden><i class="fas fa-play"></i> Reproducir</button>
         <a data-hud-download hidden><i class="fas fa-download"></i> Descargar</a>
+        <button type="button" data-hud-more-actions aria-expanded="false">Acciones del archivo / carpeta</button>
       </div>
+      <div class="dw-hud-extra-actions" data-hud-extra-actions hidden aria-live="polite"></div>
     </section>
 
     <div class="dw-controls-hint" aria-hidden="true">
@@ -552,6 +554,7 @@ header('Content-Type: text/html; charset=UTF-8');
     ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
   </script>
   <script src="js/os-media-cloud.js?v=<?= (int)filemtime(__DIR__ . '/js/os-media-cloud.js') ?>"></script>
+  <script src="js/drive3d-actions.js?v=<?= (int)filemtime(__DIR__ . '/js/drive3d-actions.js') ?>"></script>
   <script src="js/dataword3d.js?v=<?= (int)filemtime(__DIR__ . '/js/dataword3d.js') ?>"></script>
 </body>
 </html>

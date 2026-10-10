@@ -420,7 +420,12 @@ const server=createServer((req,res)=>{
   // Elevated galleries are intentionally above the cabinets. Aim slightly
   // upward rather than assuming the file cards are at eye level.
   await page.evaluate(deg=>window.ArcadeCloudDrive3D.three.look(deg,-14),galleryDegrees);
-  await page.waitForTimeout(650);
+  // Software WebGL may render too few frames during a fixed sleep for the
+  // damped camera to settle. Project only after the requested view is reached.
+  await page.waitForFunction(yaw=>{
+    const state=window.ArcadeCloudDrive3D.three.snapshot();
+    return Math.abs(state.yaw-yaw)<1e-5 && Math.abs(state.pitch-14*Math.PI/180)<1e-5;
+  },galleryYaw);
   const focusedGallery=await snap();
   const visibleFiles=focusedGallery.fileItems.filter(item=>item.point[2]>-1 && item.point[2]<1 && Math.abs(item.point[0])<.82 && Math.abs(item.point[1])<.82);
   assert(visibleFiles.length>0,'At least one current-folder thumbnail is visible after looking at its gallery panel: '+JSON.stringify({
@@ -454,6 +459,10 @@ const server=createServer((req,res)=>{
   // Real Playwright mouse input validates raycasting rather than invoking selectElement.
   // Before the fix a nearest-card guess could select a diagonal/upper neighbor.
   for(const {item,client} of visibleClickCandidates.slice(0,Math.min(3,visibleClickCandidates.length))) {
+    const liveItem=(await snap()).fileItems.find(candidate=>candidate.name===item.name);
+    const canvasBox=await page.locator('#dwThreeViewport canvas').boundingBox();
+    client.x=canvasBox.x+(liveItem.point[0]+1)*canvasBox.width/2;
+    client.y=canvasBox.y+(1-liveItem.point[1])*canvasBox.height/2;
     await page.mouse.click(client.x,client.y);
     await page.waitForTimeout(160);
     const actual=await page.locator('[data-hud-name]').textContent();

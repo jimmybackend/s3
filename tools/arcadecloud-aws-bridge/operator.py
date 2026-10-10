@@ -110,7 +110,7 @@ APP=/var/www/michat
 INSTALLER="$APP/michat/bin/install_michat_updater.sh"
 test -d "$APP/.git" || { printf 'MICHAT_UPDATER_BLOCKED=missing-repo\\n'; exit 77; }
 test -f "$INSTALLER" || { printf 'MICHAT_UPDATER_BLOCKED=missing-installer\\n'; exit 77; }
-PHP_USER="$(python3 - <<'PY'
+PHP_USER="$(/usr/bin/python3 - <<'PY'
 import glob
 import pwd
 import re
@@ -215,9 +215,15 @@ PY
 )" || { printf 'MICHAT_UPDATER_BLOCKED=php-user-detection\\n'; exit 77; }
 printf '%s' "$PHP_USER" | grep -Eq '^[A-Za-z_][A-Za-z0-9_.-]{0,31}$' || { printf 'MICHAT_UPDATER_BLOCKED=php-user-format\\n'; exit 77; }
 id "$PHP_USER" >/dev/null 2>&1 || { printf 'MICHAT_UPDATER_BLOCKED=php-user-missing\\n'; exit 77; }
-/usr/bin/bash "$INSTALLER" "$PHP_USER" >/dev/null
+if ! /usr/bin/bash "$INSTALLER" "$PHP_USER" >/dev/null 2>&1; then
+  printf 'MICHAT_UPDATER_BLOCKED=installer-failed\\n'
+  exit 77
+fi
 test -x /usr/local/sbin/michat-updater || { printf 'MICHAT_UPDATER_BLOCKED=helper-missing\\n'; exit 70; }
-/usr/sbin/runuser -u "$PHP_USER" -- /usr/bin/sudo -n /usr/local/sbin/michat-updater probe >/dev/null
+if ! /usr/sbin/runuser -u "$PHP_USER" -- /usr/bin/sudo -n /usr/local/sbin/michat-updater probe >/dev/null 2>&1; then
+  printf 'MICHAT_UPDATER_BLOCKED=probe-failed\\n'
+  exit 77
+fi
 printf 'MICHAT_UPDATER_OK php_user=%s helper=installed\\n' "$PHP_USER"
 """
     if op == "service" and arg == "michat:sync-main":

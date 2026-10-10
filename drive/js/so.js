@@ -503,6 +503,7 @@ class ArcadeCloudOsShell {
   }
 
   bindHistoryNavigation() {
+    if (this.window.ARCADECLOUD_DRIVE3D_NATIVE_ACTIONS) return;
     this.window.addEventListener('popstate', () => {
       const url = new URL(this.window.location.href);
       const route = String(url.searchParams.get('ruta') || this.window.rutaActual || '').trim();

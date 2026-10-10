@@ -307,6 +307,7 @@ header('Content-Type: text/html; charset=UTF-8');
     <div class="dw-top-actions">
       <button type="button" class="dw-top-environment" data-dw-environment title="Entorno" aria-label="Configurar entorno"><i class="fas fa-panorama"></i><span>Entorno</span></button>
       <div class="dw-top-user dw-user-chip" title="<?= $e($userAlias) ?>" aria-label="Usuario: <?= $e($userAlias) ?>"><i class="fas fa-user-astronaut"></i><span><?= $e($userAlias) ?></span></div>
+      <button type="button" id="osTaskCenterButton" title="Tareas" aria-label="Ver tareas">Tareas <span class="os-task-center-count">0</span></button>
       <button type="button" data-dw-fullscreen title="Pantalla completa"><i class="fas fa-expand"></i></button>
       <a href="<?= $e((string)$state['classic_href']) ?>" title="Vista clásica"><i class="fas fa-desktop"></i></a>
       <a href="so.php" title="Salir de Drive 3D"><i class="fas fa-right-from-bracket"></i></a>
@@ -554,6 +555,7 @@ header('Content-Type: text/html; charset=UTF-8');
     ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
   </script>
   <script src="js/os-media-cloud.js?v=<?= (int)filemtime(__DIR__ . '/js/os-media-cloud.js') ?>"></script>
+  <script data-background-tasks src="js/background-tasks.js?v=<?= (int)filemtime(__DIR__ . '/js/background-tasks.js') ?>"></script>
   <script src="js/drive3d-actions.js?v=<?= (int)filemtime(__DIR__ . '/js/drive3d-actions.js') ?>"></script>
   <script src="js/dataword3d.js?v=<?= (int)filemtime(__DIR__ . '/js/dataword3d.js') ?>"></script>
 </body>

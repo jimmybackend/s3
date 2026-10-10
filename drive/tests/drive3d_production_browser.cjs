@@ -130,7 +130,18 @@ const server=createServer((req,res)=>{
   const secondWindow = page.locator(secondSelector);
   const secondBefore = await secondWindow.boundingBox();
   await page.locator(secondSelector + ' button[aria-label="Redimensionar cuadro"]').click({force:true});
-  assert.equal(await page.locator(secondSelector + ' .dw-spatial-picture-resize-handle').isVisible(),true);
+  await page.waitForTimeout(80);
+  const resizeState = await secondWindow.evaluate(el=>{
+    const handle=el.querySelector('.dw-spatial-picture-resize-handle');
+    const control=el.querySelector('button[aria-label="Redimensionar cuadro"]');
+    return {windowClass:el.className,handleHidden:handle?.hidden,
+      handleDisplay:handle?getComputedStyle(handle).display:null,
+      buttonPressed:control?.getAttribute('aria-pressed')};
+  });
+  assert.equal(resizeState.handleHidden,false,
+    'Resizing handle must be enabled when clicking the image toolbar: '+JSON.stringify(resizeState));
+  assert.equal(await page.locator(secondSelector + ' .dw-spatial-picture-resize-handle').isVisible(),true,
+    'The enabled resize handle must be visible: '+JSON.stringify(resizeState));
   const resizeHandle = await page.locator(secondSelector + ' .dw-spatial-picture-resize-handle').boundingBox();
   await page.mouse.move(resizeHandle.x + resizeHandle.width/2, resizeHandle.y + resizeHandle.height/2);
   await page.mouse.down();

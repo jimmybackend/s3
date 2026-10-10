@@ -687,7 +687,7 @@
     },
     {
       "path": "drive/dataword3d.php",
-      "lines": 528,
+      "lines": 558,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -5688,7 +5688,7 @@
     },
     {
       "path": "drive/src/Security/Drive3dPreferenceSanitizer.php",
-      "lines": 180,
+      "lines": 184,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -9005,7 +9005,7 @@
     },
     {
       "path": "drive/js/dataword3d.js",
-      "lines": 2057,
+      "lines": 2083,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudDrive3D"
@@ -9114,7 +9114,7 @@
     },
     {
       "path": "drive/js/drive3d-scene.js",
-      "lines": 1083,
+      "lines": 1163,
       "kind": "class/module",
       "classes": [
         "Drive3DScene"

@@ -326,12 +326,16 @@ class BackgroundTaskCenter {
           #backgroundTaskButton { right:.65rem; bottom:.65rem; }
           #backgroundTaskPanel {
             right:.55rem; left:.55rem; bottom:4.55rem; width:auto;
-            max-height:78vh; border-radius:14px;
+            max-height:calc(100vh - 100px); max-height:calc(100dvh - 100px); border-radius:14px;
           }
           .bg-task-head { padding:.8rem .82rem; }
           .bg-task-list { padding:.58rem; }
           .bg-task-item { padding:.72rem; }
           .bg-task-action { flex:1 1 auto; }
+        }
+        @media (max-height:500px) {
+          #backgroundTaskPanel.bg-task-open { overflow-y:auto; overscroll-behavior:contain; }
+          .bg-task-scroll { flex-shrink:0; overflow:visible; }
         }
       `;
       this.document.head.appendChild(style);

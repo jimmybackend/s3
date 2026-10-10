@@ -1029,32 +1029,58 @@ class Drive3DScene {
             const t=new T.CanvasTexture(c);t.colorSpace=T.SRGBColorSpace;
             t.wrapS=t.wrapT=T.RepeatWrapping;t.repeat.set(4,4);return t;
         }
-        this.setEnvironmentPreset=(key)=>{
-            const next=String(key||'original');
-            ++surfaceRevision.glass;
-            const map=next==='original'?defaultPanoramaMap:landscapeTexture(next);
-            if(!map && next!=='original')return;
-            customPanorama=next!=='original';
-            if(presetPanorama) presetPanorama.dispose();
-            presetPanorama=next==='original'?null:map;
-            panorama.material.map=map;panorama.material.needsUpdate=true;needsRender=true;
+        // Prefer the real photographic assets when deployed; retain the existing
+        // procedural renderer as a safe fallback when an asset is unavailable.
+        const environmentAssetBase = new URL('../three-lab/assets/environments/', import.meta.url);
+        const panoramas = new Set(['alpine-spring','alpine-summer','alpine-autumn','alpine-winter','sunset','night','prehistoric','future']);
+        const grounds = new Set(['water','grass','clouds','sand','snow']);
+        const presetLoader = new T.TextureLoader();
+        this.setEnvironmentPreset = (key) => {
+            const next = panoramas.has(String(key)) ? String(key) : 'original';
+            const revision = ++surfaceRevision.glass;
+            const assign = (map, owned) => {
+                if (revision !== surfaceRevision.glass) { if (owned) map?.dispose(); return; }
+                const previous = presetPanorama;
+                presetPanorama = owned ? map : null;
+                customPanorama = next !== 'original';
+                panorama.material.map = map;
+                panorama.material.color.set(0xffffff);
+                panorama.material.needsUpdate = true; needsRender = true;
+                if (previous && previous !== map) previous.dispose();
+            };
+            if (next === 'original') { assign(defaultPanoramaMap, false); return; }
+            const fallback = () => assign(landscapeTexture(next), true);
+            presetLoader.load(new URL('panoramas/' + next + '.jpg', environmentAssetBase).href, (map) => {
+                map.colorSpace = T.SRGBColorSpace;
+                assign(map, true);
+            }, undefined, fallback);
         };
-        this.setGroundPreset=(kind)=>{
-            const next=String(kind||'original');
-            ++surfaceRevision.floor;
-            const map=next==='original'?marble:groundTexture(next);
-            if(!map)return;
-            if(presetFloor)presetFloor.dispose();
-            presetFloor=next==='original'?null:map;
-            currentGround=next;
-            floor.material.map=map;
-            floor.material.opacity=next==='original'?.66:next==='water'?.48:1;
-            floor.material.roughness=next==='water'?.18:.9;
-            floor.material.needsUpdate=true;
-            if(floorMirror)floorMirror.visible=next==='original'||next==='water';
-            needsRender=true;
+        this.setGroundPreset = (key) => {
+            const next = grounds.has(String(key)) ? String(key) : 'original';
+            const revision = ++surfaceRevision.floor;
+            const assign = (map, owned) => {
+                if (revision !== surfaceRevision.floor) { if (owned) map?.dispose(); return; }
+                const previous = presetFloor;
+                presetFloor = owned ? map : null;
+                currentGround = next;
+                floor.material.map = map;
+                floor.material.color.set(0xffffff);
+                floor.material.opacity = next === 'original' ? .66 : next === 'water' ? .48 : 1;
+                floor.material.roughness = next === 'water' ? .18 : .9;
+                floor.material.needsUpdate = true;
+                if (floorMirror) floorMirror.visible = next === 'original' || next === 'water';
+                needsRender = true;
+                if (previous && previous !== map) previous.dispose();
+            };
+            if (next === 'original') { assign(marble, false); return; }
+            const fallback = () => assign(groundTexture(next), true);
+            presetLoader.load(new URL('floors/' + next + '.jpg', environmentAssetBase).href, (map) => {
+                map.colorSpace = T.SRGBColorSpace;
+                map.wrapS = map.wrapT = T.RepeatWrapping;
+                map.repeat.set(4, 4);
+                assign(map, true);
+            }, undefined, fallback);
         };
-
         this.surface = (surface, url) => {
             const revision = ++surfaceRevision[surface];
             if (surface === 'glass') customPanorama = Boolean(url);

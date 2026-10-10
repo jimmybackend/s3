@@ -1,7 +1,7 @@
 {
-  "request_id": "operator-updater-code-20261010",
+  "request_id": "michat-install-updater-20261010-1925",
   "alias": "small",
-  "operation": "diagnose",
-  "argument": "uptime",
-  "confirm": "READ_DIAGNOSTIC"
+  "operation": "service",
+  "argument": "michat:install-updater",
+  "confirm": "SERVICE_CHANGE"
 }

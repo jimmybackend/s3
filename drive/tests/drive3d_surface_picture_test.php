@@ -19,9 +19,15 @@ $require = static function (bool $condition,string $message): void {
 $floor=$save($base+['mode'=>'floor','surfaceScale'=>2.1]);
 $require($floor['mode']==='floor' && $floor['panelId']==='' && $floor['surfaceScale']===2.1,
     'Floor wallpaper must keep the image placement/size.');
+$require($floor['surfaceFit'] === 'poster', 'Existing saved photos default to a full, proportional print.');
 
 $window=$save(array_merge($base,['mode'=>'window','panelId'=>'w-13-2','surfaceScale'=>.81]));
 $require($window['mode']==='window' && $window['panelId']==='w-13-2', 'Exact dome pane must persist.');
+$covered=$save(array_merge($base,['mode'=>'window','panelId'=>'w-13-2',
+    'surfaceScale'=>.81,'surfaceFit'=>'cover']));
+$require($covered['surfaceFit'] === 'cover', 'Crop-to-cover must persist on its own picture.');
+$invalidFit=$save(array_merge($base,['surfaceFit'=>'stretch']));
+$require($invalidFit['surfaceFit'] === 'poster', 'Stretch/distortion is not a permitted texture mode.');
 
 $ceiling=$save(array_merge($base,['mode'=>'ceiling','panelId'=>'c-3-0','surfaceScale'=>.6]));
 $require($ceiling['mode']==='ceiling' && $ceiling['panelId']==='c-3-0', 'Ceiling section must persist.');
@@ -34,8 +40,9 @@ $badHref=$save(array_merge($base,['openHref'=>'https://malicious.example/file'])
 $require($badHref===[], 'Remote image source must be rejected.');
 
 $legacy=$save($base);
-$require($legacy['mode']==='free' && $legacy['world']===$base['world'],
-    'Previously saved free pictures must stay valid.');
+$require($legacy['mode']==='free' && $legacy['world']===$base['world']
+    && $legacy['surfaceFit']==='poster',
+    'Previously saved free pictures must stay valid and use proportional artwork.');
 
 // A normal room may contain dozens of independently placed images.
 $many = [];

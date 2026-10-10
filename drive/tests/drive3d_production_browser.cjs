@@ -269,6 +269,11 @@ const server=createServer((req,res)=>{
   assert.equal(initial.fileItems.filter(item=>item.kind==='image').length,18);
   assert(initial.filePanels.length>=1,'File thumbnails have independent gallery panels');
   assert.equal(initial.panoramaSeam.woodenRib,4,'Panorama UV seam lies beneath its wooden meridian');
+  assert.equal(initial.glassView.tint,0xffffff,'Crystal window must not tint the exterior');
+  assert.equal(initial.glassView.toneMapped,false,'Crystal window must not wash out the outside with tone mapping');
+  assert.equal(initial.glassView.opacity,1,'Outdoor panorama must remain sharp, not covered in white haze');
+  assert.deepEqual(initial.glassView.paintedWoodBands,[.24,.47,.72,1.05],
+    'Actual four rows of wooden framing must exactly match the inner poster panels');
   assert(initial.panoramaSeam.radius>initial.domeRadius &&
     initial.panoramaSeam.radius-initial.domeRadius < .12,'The wrapped panorama stays just behind the structural dome');
   assert.equal(initial.galleryLayout,'overhead','Folders place their file gallery in the air above their cabinets');

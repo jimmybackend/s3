@@ -687,7 +687,7 @@
     },
     {
       "path": "drive/dataword3d.php",
-      "lines": 531,
+      "lines": 528,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -11045,7 +11045,7 @@
     },
     {
       "path": "tools/arcadecloud-aws-bridge/requests/current.json",
-      "bytes": 100,
+      "bytes": 91,
       "valid": true,
       "root_type": "object",
       "keys": [

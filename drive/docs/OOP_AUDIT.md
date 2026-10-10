@@ -75,7 +75,7 @@
 | `drive/crear_carpeta.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/create_folder_document.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/database-backup.php` | 10 | thin endpoint | 0 | — | — | — | — |
-| `drive/dataword3d.php` | 531 | view/entrypoint | 0 | — | — | — | — |
+| `drive/dataword3d.php` | 528 | view/entrypoint | 0 | — | — | — | — |
 | `drive/delete_multiple.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/descargar.php` | 8 | thin endpoint | 0 | — | — | — | — |
 | `drive/descargar_archivo.php` | 8 | thin endpoint | 0 | — | — | — | — |

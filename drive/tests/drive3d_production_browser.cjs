@@ -108,6 +108,7 @@ const server=createServer((req,res)=>{
   assert.equal((await snap()).environmentTextures.panoramaU,1,'Inside sphere must preserve left/right');
   await page.waitForFunction(()=>window.ArcadeCloudDrive3D.three.snapshot().currentFiles===20);
   await page.waitForTimeout(750); // Finish gallery thumbnail uploads before measuring only preset switches.
+  if(process.env.SCREENSHOT_DIR)await page.screenshot({path:resolve(process.env.SCREENSHOT_DIR,'production-real-future-snow.png')});
   const baseline=(await snap()).textures;
   for(let i=0;i<3;i++){
     await page.evaluate(i=>{const a=window.ArcadeCloudDrive3D;a.three.setEnvironmentPreset(i%2?'night':'sunset');a.three.setGroundPreset(i%2?'grass':'sand');},i);
@@ -545,9 +546,18 @@ const server=createServer((req,res)=>{
   assert(await page.locator('.dw-top-user').isVisible());
   if(out)await page.screenshot({path:resolve(out,'production-mobile.png')});
   const beforeLook=(await snap()).yaw;
-  const canvas=await page.locator('#dwThreeViewport canvas').boundingBox();
-  await page.mouse.move(canvas.x+canvas.width*.5,canvas.y+canvas.height*.5);
-  await page.mouse.down();await page.mouse.move(canvas.x+canvas.width*.7,canvas.y+canvas.height*.5,{steps:8});await page.mouse.up();
+  // Personal picture windows remain open. Drag exposed canvas, not a photo overlay.
+  const gesture=await page.locator('#dwThreeViewport canvas').evaluate(canvas=>{
+    const r=canvas.getBoundingClientRect();
+    for(const y of [.65,.55,.75,.35])for(const x of [.1,.35,.6]){
+      const a={x:r.x+r.width*x,y:r.y+r.height*y},b={x:a.x+r.width*.2,y:a.y};
+      if(document.elementFromPoint(a.x,a.y)===canvas && document.elementFromPoint(b.x,b.y)===canvas)return {a,b};
+    }
+    return null;
+  });
+  assert(gesture,'Mobile must offer exposed canvas for camera gestures');
+  await page.mouse.move(gesture.a.x,gesture.a.y);
+  await page.mouse.down();await page.mouse.move(gesture.b.x,gesture.b.y,{steps:8});await page.mouse.up();
   await page.waitForFunction(y=>Math.abs(window.ArcadeCloudDrive3D.three.snapshot().yaw-y)>.03,beforeLook);
   await page.setViewportSize({width:820,height:1180});await page.waitForTimeout(300);
   assert(await page.locator('.dw-top-environment').isVisible());assert(await page.locator('.dw-top-user').isVisible());

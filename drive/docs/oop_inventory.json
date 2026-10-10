@@ -5688,7 +5688,7 @@
     },
     {
       "path": "drive/src/Security/Drive3dPreferenceSanitizer.php",
-      "lines": 177,
+      "lines": 180,
       "kind": "class/module",
       "classes": 1,
       "functions": [],
@@ -7097,7 +7097,7 @@
     },
     {
       "path": "drive/tests/drive3d_surface_picture_test.php",
-      "lines": 54,
+      "lines": 61,
       "kind": "test script",
       "classes": 0,
       "functions": [],
@@ -9005,7 +9005,7 @@
     },
     {
       "path": "drive/js/dataword3d.js",
-      "lines": 2014,
+      "lines": 2057,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudDrive3D"
@@ -9137,7 +9137,7 @@
     },
     {
       "path": "drive/js/drive3d-surface-placements.js",
-      "lines": 222,
+      "lines": 294,
       "kind": "class/module",
       "classes": [
         "Drive3DSurfacePlacements"

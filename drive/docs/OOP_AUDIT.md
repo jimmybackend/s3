@@ -405,7 +405,7 @@
 | `drive/src/Office/OfficeWorkstationClient.php` | 178 | class/module | 1 | — | — | — | — |
 | `drive/src/Security/AuthenticationRepository.php` | 101 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Security/AuthenticationService.php` | 55 | class/module | 1 | — | — | — | — |
-| `drive/src/Security/Drive3dPreferenceSanitizer.php` | 177 | class/module | 1 | — | — | — | — |
+| `drive/src/Security/Drive3dPreferenceSanitizer.php` | 180 | class/module | 1 | — | — | — | — |
 | `drive/src/Security/FileSecurityRepository.php` | 92 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Security/FileSecurityService.php` | 183 | class/module | 1 | — | — | — | — |
 | `drive/src/Security/LoginRateLimiter.php` | 143 | class/module | 1 | — | — | — | — |
@@ -497,7 +497,7 @@
 | `drive/tests/database_schema_contract_smoke.php` | 127 | test script | 0 | — | — | — | — |
 | `drive/tests/dataword3d_contract_smoke.php` | 98 | test script | 0 | — | — | — | — |
 | `drive/tests/drive3d_background_folder_test.php` | 37 | test script | 0 | — | — | — | — |
-| `drive/tests/drive3d_surface_picture_test.php` | 54 | test script | 0 | — | — | — | — |
+| `drive/tests/drive3d_surface_picture_test.php` | 61 | test script | 0 | — | — | — | — |
 | `drive/tests/fastdrive_control_contract_smoke.php` | 72 | test script | 0 | — | — | — | — |
 | `drive/tests/federation_access_message_smoke.php` | 72 | test script | 0 | — | — | — | — |
 | `drive/tests/federation_catalog_event_smoke.php` | 60 | test script | 0 | — | — | — | — |
@@ -613,13 +613,13 @@
 | `drive/js/background-tasks.js` | 1352 | class/module | BackgroundTaskCenter | — | — | — |
 | `drive/js/carpetas.js` | 1200 | class/module | CarpetasModule | — | actualizarBloqueCarpetas | window functions: actualizarBloqueCarpetas |
 | `drive/js/compute-node-idle.js` | 290 | class/module | ArcadeCloudComputeIdleGuard | — | — | — |
-| `drive/js/dataword3d.js` | 2014 | class/module | ArcadeCloudDrive3D | — | — | — |
+| `drive/js/dataword3d.js` | 2057 | class/module | ArcadeCloudDrive3D | — | — | — |
 | `drive/js/descarga-multiple.js` | 114 | class/module | DescargaMultipleModule | — | — | — |
 | `drive/js/descarga-uno.js` | 110 | class/module | DescargaUnoModule | — | — | — |
 | `drive/js/desktop-shell.js` | 182 | class/module | ArcadeCloudDesktopShell | — | — | — |
 | `drive/js/drive3d-production.js` | 172 | class/module | Drive3DProduction | — | — | — |
 | `drive/js/drive3d-scene.js` | 1073 | class/module | Drive3DScene | — | — | — |
-| `drive/js/drive3d-surface-placements.js` | 222 | class/module | Drive3DSurfacePlacements | — | — | — |
+| `drive/js/drive3d-surface-placements.js` | 294 | class/module | Drive3DSurfacePlacements | — | — | — |
 | `drive/js/drive3d-three-lab.js` | 18 | class/module | Drive3DLab | — | — | — |
 | `drive/js/editar-txt.js` | 68 | class/module | EditarTxtModule | — | — | — |
 | `drive/js/editor-mobile-selection.js` | 210 | class/module | ArcadeCloudMobileEditorSelection | — | — | — |

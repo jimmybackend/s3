@@ -4413,10 +4413,16 @@ body.is-camera-near.dw-real .dw-hud{
 .dw-hud-extra-actions{display:grid;gap:6px;margin-top:8px;max-height:none;overflow:visible}
 .dw-hud-extra-actions[hidden]{display:none}
 .dw-hud-extra-actions button{min-height:40px;padding:8px;border:1px solid rgba(113,213,255,.25);border-radius:8px;background:#0c293e;color:#dffaff;text-align:left;cursor:pointer}
-.dw-action-dialog{width:96vw;height:92vh;height:92dvh;max-width:1440px;max-height:96dvh;padding:0;border:1px solid #65c8e5;border-radius:12px;background:#071321;color:#e5faff}
-.dw-action-dialog::backdrop{background:rgba(0,0,0,.7)}
-.dw-action-dialog[open]{display:flex;flex-direction:column}
-.dw-action-dialog header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px;flex-shrink:0}
-.dw-action-dialog header strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.dw-action-dialog header button{min-height:40px;border:1px solid #65c8e5;border-radius:8px;background:#0c293e;color:#e5faff;cursor:pointer}
-.dw-action-dialog iframe{width:100%;flex:1;min-height:0;border:0;background:#fff}
+/* Native action components overlay the scene; the authorization context stays hidden. */
+.dw-real .dw-hud-actions{grid-template-columns:minmax(0,1fr)!important}
+.dw-real .dw-hud-actions button,.dw-real .dw-hud-actions a,.dw-real .dw-hud-extra-actions button{width:100%!important;max-width:100%;min-width:0;box-sizing:border-box;white-space:normal;overflow-wrap:anywhere}
+.dw-native-actions{position:fixed;inset:0;z-index:14000;pointer-events:none}
+.dw-native-actions .modal,.dw-native-actions .os-window{pointer-events:auto}
+.dw-native-actions [data-drive3d-action-context]{display:none!important}
+.dw-native-actions .os-file-context{display:none!important}
+.dw-real .os-decision-overlay,.dw-real .os-open-with-overlay{z-index:15000}
+.dw-real #osNotice{z-index:16000}
+.dw-real #backgroundTaskPanel{z-index:17000!important;bottom:10px!important;max-height:calc(100dvh - 80px)!important}
+.dw-real #osTaskCenterButton{width:auto;min-width:48px;padding:0 8px;gap:4px;position:relative}
+.dw-real #osTaskCenterButton .os-task-center-progress{position:absolute;bottom:2px;left:8px;right:8px;height:3px;overflow:hidden}
+.dw-real #osTaskCenterButton .os-task-center-progress i{display:block;height:100%;background:#26c6ff}

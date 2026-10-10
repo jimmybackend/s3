@@ -60,7 +60,8 @@ $currentRoute = $app->userStoragePath()->normalizeForUser(
     (string)($_GET['ruta'] ?? $userRoot),
     $userId
 );
-$session->set('ruta_actual', $currentRoute);
+$isDrive3dNativeActions = (string)($_GET['_drive3d_actions'] ?? '') === 'native';
+if (!$isDrive3dNativeActions) $session->set('ruta_actual', $currentRoute);
 $visibleRoute = $app->folderQueryService()->displayPathForUser($userId, $currentRoute);
 $visibleBreadcrumbs = $app->folderQueryService()->breadcrumbsForUser($userId, $currentRoute);
 
@@ -240,7 +241,8 @@ $currentFolderName = $currentIsRoot
     : basename(rtrim($currentPrefix, '/'));
 $isExplorerFragment = (string)($_GET['_os_fragment'] ?? '') === 'explorer';
 // The authenticated 3D action window needs its target explorer immediately.
-$isDrive3dActions = (string)($_GET['_drive3d_actions'] ?? '') === '1';
+$isDrive3dActions = in_array((string)($_GET['_drive3d_actions'] ?? ''), ['1', 'native'], true);
+if ($isDrive3dNativeActions) ob_start();
 ?>
 <!doctype html>
 <html lang="es">
@@ -2252,3 +2254,17 @@ Escribe help o usa uno de los botones disponibles.</pre>
   <script src="js/desktop-shell.js?v=<?= (int)filemtime(__DIR__ . '/js/desktop-shell.js') ?>"></script>
 </body>
 </html>
+
+<?php
+if ($isDrive3dNativeActions) {
+    $pageHtml = (string)ob_get_clean();
+    header('Content-Type: application/json; charset=UTF-8');
+    header('Cache-Control: private, no-store');
+    echo json_encode(\ArcadeCloud\Drive\View\Drive3dActionContextView::payload($pageHtml, [
+        'csrf' => $uploadCsrf, 'bucket' => $app->bucket(), 'rootRoute' => $userRoot,
+        'route' => $currentRoute, 'folder' => [
+            'route' => $currentRoute, 'name' => $currentFolderName, 'is_root' => $currentIsRoot,
+        ],
+    ]), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
+}
+?>

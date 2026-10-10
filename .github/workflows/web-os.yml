@@ -298,6 +298,7 @@ jobs:
       - name: Upload task center regression
         run: |
           php drive/tests/upload_task_center_contract.php
+          php drive/tests/drive3d_native_action_context_test.php
           node drive/tests/background_tasks_refresh_functional.js
       - name: Web OS contract
         run: |

@@ -116,3 +116,15 @@ Se retira el antiguo límite visible de **12 imágenes** (el saneador PHP mantie
 `drive3d_production_browser.cjs`: galería 3×, cuatro filas con varios tipos, paginación, desaparición de tarjetas al cambiar de librero, rotación, auto-ocultación tras cinco segundos y recuperación al volver a tocar la imagen; `drive3d_surface_picture_test.php`: 80 imágenes guardadas, cuarta banda válida y cámara vertical completa.
 
 La comprobación con material privado de producción debe hacerse después del despliegue. Los resultados del CI corresponden a fixtures autenticados simulados y renderizado Three.js en Chromium.
+
+## 9 octubre 2026 — impresión fotográfica proporcional (póster/cubrir)
+
+Las imágenes fijadas en **cristales individuales, techo o piso** utilizan por defecto `surfaceFit: 'poster'`: la foto original se presenta entera con la proporción real `naturalWidth/naturalHeight` y deja márgenes dentro de la superficie cuando sus dimensiones son distintas. No se estira, aplasta ni se transforma el archivo almacenado.
+
+El selector de la ventana de imagen ofrece **Póster · foto completa** (predeterminado) y **Cubrir · recortar bordes** (opcional). El segundo ajuste llena el área disponible sin deformar los píxeles: recorta únicamente coordenadas UV de la malla, centradas, de forma similar a `object-fit: cover`. Es reversible y no reescribe la imagen del usuario.
+
+Para las celdas esféricas se calculan primero los metros realmente disponibles entre los listones, utilizando el factor `radio × cos(elevación)` de la longitud horizontal del domo, y después se ajustan ancho/alto con el aspecto fotográfico. La textura se observa **desde el interior**, por lo que las UV horizontales se invierten *en la geometría del panel* para que manos, letras, paisajes y objetos se vean en su lado correcto. En el piso, que se observa desde arriba, las UV mantienen su orientación ordinaria. Las texturas mantienen sus bordes y los datos originales.
+
+El tamaño con `+` y `−`, el lugar elegido y el modo póster/cubrir son independientes para cada imagen y se persisten mediante `Drive3dPreferenceSanitizer`; fotografías guardadas por versiones previas se abren en modo póster por defecto. Tras cargarse una foto de caché o red, la malla se vuelve a calcular con sus dimensiones naturales, evitando una proporción temporal de 4:3.
+
+Pruebas automatizadas: proporciones y orientación UV en el piso, cristal y techo, confirmación de recorte en modo cubrir y de márgenes en modo póster, y conservación/validación de la preferencia por archivo.

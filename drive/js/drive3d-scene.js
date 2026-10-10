@@ -1153,7 +1153,7 @@ class Drive3DScene {
                 floor:floor.material.map?.image?.src || '',
                 glassSize:[panorama.material.map?.image?.width || 0,panorama.material.map?.image?.height || 0],
                 floorSize:[floor.material.map?.image?.width || 0,floor.material.map?.image?.height || 0],
-                panoramaU:panoramaUV.getX(0),
+                panoramaU:panoramaUV.getX(97),
                 ground:currentGround
             },
             panoramaSeam:{radius:panoramaRadius,woodenRib:4,angle:Math.PI/2},environmentReady,

@@ -539,10 +539,14 @@ const server=createServer((req,res)=>{
   assert(await page.locator('.dw-top-environment').isVisible());
   assert(await page.locator('.dw-top-user').isVisible());
   if(out)await page.screenshot({path:resolve(out,'production-mobile.png')});
-  const beforeMove=(await snap()).camera[0];
-  const button=await page.locator('[data-camera-strafe="1"]').boundingBox();
-  await page.mouse.move(button.x+button.width/2,button.y+button.height/2);await page.mouse.down();
-  await page.waitForFunction(x=>window.ArcadeCloudDrive3D.three.snapshot().camera[0]>x+.15,beforeMove);await page.mouse.up();
+  const beforeLook=(await snap()).yaw;
+  const canvas=await page.locator('#dwThreeViewport canvas').boundingBox();
+  await page.mouse.move(canvas.x+canvas.width*.5,canvas.y+canvas.height*.5);
+  await page.mouse.down();await page.mouse.move(canvas.x+canvas.width*.7,canvas.y+canvas.height*.5,{steps:8});await page.mouse.up();
+  await page.waitForFunction(y=>Math.abs(window.ArcadeCloudDrive3D.three.snapshot().yaw-y)>.03,beforeLook);
+  await page.setViewportSize({width:820,height:1180});await page.waitForTimeout(300);
+  assert(await page.locator('.dw-top-environment').isVisible());assert(await page.locator('.dw-top-user').isVisible());
+  if(out)await page.screenshot({path:resolve(out,'production-tablet.png')});
   assert.deepEqual(errors,[]);
   console.log('PASS production WebGL, current-folder standalone file gallery, clear dome center, pinned player geometry, persistent picture resize, shared cloud audio/video player, spatial pictures, raycast selection, frustum unloading, bounded textures, fixed panorama, movement and mobile');
  } finally {await browser.close();}

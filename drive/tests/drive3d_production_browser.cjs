@@ -184,6 +184,9 @@ const server=createServer((req,res)=>{
   assert.equal(positioned.surfaceFit,'poster','Printed photo is the default for the floor');
   assert(Math.abs(positioned.printSize[0]/positioned.printSize[1]-originalAspect)<.001,
     'Floor keeps exact source-photo aspect ratio rather than stretching to a square');
+  assert.equal(positioned.photoToneMapped,false,
+    'Floor photo bypasses ACES desaturation just like the free HTML viewer');
+  assert.equal(positioned.photoOpacity,1,'Floor photo is printed solid rather than milky transparent');
   assert.deepEqual(positioned.horizontalUv,[0,1],
     'Floor photo reads left to right normally, not as a mirror');
   assert(await page.locator(surfaceSelector).evaluate(el=>el.classList.contains('is-surface-placed')),'The free viewer collapses into an anchored-image toolbar');
@@ -196,6 +199,14 @@ const server=createServer((req,res)=>{
   assert.equal(positioned.surfaceFit,'poster');
   assert(Math.abs(positioned.printSize[0]/positioned.printSize[1]-originalAspect)<.001,
     'Vertical and horizontal posters preserve source aspect ratio on glass');
+  assert(positioned.panelAvailable && Math.max(
+    positioned.printSize[0]/positioned.panelAvailable[0],
+    positioned.printSize[1]/positioned.panelAvailable[1]
+  )>.9, 'Default stored poster must fill almost all the actual wooden pane, not a tiny fraction');
+  assert(Math.abs(positioned.photoRadius-(initial.domeRadius-.08))<.0001,
+    'Print must lie directly on the INNER face of the glazing, protected by the wooden frame');
+  assert.equal(positioned.photoToneMapped,false,'Placed dome picture keeps full natural colour and brightness');
+  assert.equal(positioned.photoOpacity,1,'Placed dome picture remains completely opaque, unaffected by glass haze');
   assert(positioned.horizontalUv[0] > positioned.horizontalUv[1],
     'Dome interior viewing direction must not mirror the subject left-to-right');
   assert(positioned.imageCrop.every(value=>value===0),
@@ -203,8 +214,15 @@ const server=createServer((req,res)=>{
   await page.locator(surfaceSelector+' select[aria-label="Ajuste de imagen a la superficie"]').selectOption('cover');
   const covered=(await snap()).surfaceImages.find(item=>item.id===secondPicture.id);
   assert.equal(covered.surfaceFit,'cover','User can explicitly request a cropped panel without stretching');
-  assert(covered.imageCrop.some(value=>value>0),
-    'Cover mode crops the original image UVs to fit panel proportions');
+  assert(covered.imageCrop.every(value=>value===0),
+    'Cover must NEVER remove any part of the family photograph');
+  assert(Math.abs(covered.printSize[0]/covered.printSize[1]-originalAspect)<.001,
+    'Cover must preserve the entire photo proportions, not stretch or distort them');
+  assert(Math.max(covered.printSize[0]/covered.panelAvailable[0],
+    covered.printSize[1]/covered.panelAvailable[1])>.96,
+    'Cover must use practically the whole true panel opening');
+  assert(covered.printSize[0]>=positioned.printSize[0] && covered.printSize[1]>=positioned.printSize[1],
+    'Cover should be slightly larger than poster without losing the edges');
   assert(covered.horizontalUv[0] > covered.horizontalUv[1],
     'Crop mode must also avoid mirrored images');
   await page.locator(surfaceSelector+' select[aria-label="Ajuste de imagen a la superficie"]').selectOption('poster');
@@ -225,6 +243,7 @@ const server=createServer((req,res)=>{
   assert.equal(positioned.panelId,'c-7-0');
   assert(Math.abs(positioned.printSize[0]/positioned.printSize[1]-originalAspect)<.001,
     'Ceiling poster keeps the unmodified original proportions');
+  assert.equal(positioned.photoToneMapped,false,'Ceiling photo remains as sharp and bright as the free viewer');
   assert(positioned.horizontalUv[0] > positioned.horizontalUv[1],
     'Ceiling picture must not be reversed');
   await page.waitForFunction(id=>document.querySelector(`[data-spatial-picture-id="${id}"]`)?.classList.contains('is-controls-hidden'),secondPicture.id,{timeout:7500});

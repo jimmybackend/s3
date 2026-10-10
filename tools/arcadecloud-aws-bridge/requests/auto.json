@@ -1,7 +1,7 @@
 {
-  "request_id": "michat-sync-main-20261010-1909",
+  "request_id": "operator-updater-code-20261010",
   "alias": "small",
-  "operation": "service",
-  "argument": "michat:sync-main",
-  "confirm": "SERVICE_CHANGE"
+  "operation": "diagnose",
+  "argument": "uptime",
+  "confirm": "READ_DIAGNOSTIC"
 }

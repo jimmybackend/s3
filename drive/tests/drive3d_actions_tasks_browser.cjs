@@ -7,7 +7,7 @@ const root=path.resolve(__dirname,'..');
 const source=fs.readFileSync(path.join(root,'so.php'),'utf8');
 const menus=source.slice(source.indexOf('  <div class="os-file-context os-folder-context"'),source.indexOf('  <!-- Modal compartido: Seguridad'));
 assert.match(source,/if \(\$isExplorerFragment \|\| \$isDrive3dActions\)/,'action mode renders the same authorized explorer');
-const errors=[];let contextLoads=0;
+const errors=[];let contextLoads=0;let sharedTasks=[];
 const script=name=>`<script src="/js/${name}"></script>`;
 (async()=>{
  const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
@@ -19,18 +19,26 @@ const script=name=>`<script src="/js/${name}"></script>`;
    const url=new URL(route.request().url());
    if(/^\/(js|css)\/[\w.-]+$/.test(url.pathname)){
     let body=fs.readFileSync(path.join(root,url.pathname),'utf8');
+    if(url.pathname.endsWith('move-tasks.js'))body=body.slice(0,body.indexOf('(function loadBackgroundModules'));
     if(url.pathname.endsWith('background-tasks.js'))body=body.replace('BackgroundTaskCenter.boot();','window.TaskCenterClass=BackgroundTaskCenter;');
     return route.fulfill({contentType:url.pathname.endsWith('.css')?'text/css':'text/javascript',body});
    }
-   if(url.pathname==='/fixture')return route.fulfill({contentType:'text/html',body:`<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="/css/dataword3d.css"><link rel="stylesheet" href="/css/so.css"></head><body class="dw-real"><div class="dw-world" style="position:fixed;inset:60px 0 0"><section class="dw-hud"><button data-hud-more-actions>Acciones</button><div data-hud-extra-actions hidden></div></section></div><script>window.DRIVE_INITIAL_ROUTE='user/docs/';</script>${script('drive3d-actions.js')}${script('background-tasks.js')}</body></html>`});
+   if(url.pathname==='/fixture')return route.fulfill({contentType:'text/html',body:`<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="/css/dataword3d.css"><link rel="stylesheet" href="/css/so.css"></head><body class="dw-real"><div class="dw-world" style="position:fixed;inset:60px 0 0"><section class="dw-hud"><button data-hud-more-actions>Acciones</button><div class="dw-hud-extra-actions" data-hud-extra-actions hidden></div></section></div><script>window.DRIVE_INITIAL_ROUTE='user/docs/';</script>${script('drive3d-actions.js')}${script('background-tasks.js')}</body></html>`});
    if(url.hostname==='stackpath.bootstrapcdn.com')return route.fulfill({contentType:url.pathname.endsWith('.css')?'text/css':'text/javascript',body:''});
    if(url.hostname==='code.jquery.com')return route.fulfill({contentType:'text/javascript',body:'window.jQuery=function(){};window.jQuery.fn={modal(){}};'});
+   if(url.pathname==='/background_tasks.php')return route.fulfill({contentType:'application/json',body:JSON.stringify({ok:true,tasks:sharedTasks,summary:{active:sharedTasks.length,running:sharedTasks.length}})});
+   if(url.pathname==='/move_task.php'){
+    assert.equal(route.request().method(),'POST');
+    sharedTasks=[{id:'move:fixture',kind:'move',status:'running',title:'Copia persistente',detail:'Procesando',actions:[]}];
+    return route.fulfill({contentType:'application/json',body:JSON.stringify({ok:true,job_id:'fixture',operation:'copy'})});
+   }
+   if(url.pathname==='/move_task_status.php')return route.fulfill({contentType:'application/json',body:JSON.stringify({ok:true,job_id:'fixture',estado:'running',progress:35})});
    if(url.pathname==='/so.php'){
     assert.equal(url.searchParams.get('_drive3d_actions'),'native','only authenticated components fetched');
     contextLoads++;
     const routeName=url.searchParams.get('ruta') || 'user/docs/';
     const html=`<section class="os-window os-explorer-window"><div class="os-explorer-live" data-explorer-route="${routeName}"><div class="os-explorer-pathrow"></div><div class="os-explorer-body" data-current-folder-route="${routeName}" data-current-folder-name="Docs" data-current-folder-root="${routeName==='user/'?'1':'0'}"><button class="os-file-entry" data-key="user/docs/uno.txt" data-name="uno.txt" data-ext="txt" data-open-url="/open" data-download-url="/download" data-polly="1" data-locked="0"></button><button class="os-file-entry" data-key="user/docs/locked.txt" data-name="locked.txt" data-ext="txt" data-open-url="/open" data-locked="1"></button></div></div></section>${menus}`;
-    return route.fulfill({contentType:'application/json',body:JSON.stringify({ok:true,html,context:{csrf:'fixture',bucket:'fixture',rootRoute:'user/',route:routeName,folder:{route:routeName,name:'Docs',is_root:routeName==='user/'}},scripts:['js/os-window-manager.js','js/so-folders.js','js/so.js','js/so-clipboard.js']})});
+    return route.fulfill({contentType:'application/json',body:JSON.stringify({ok:true,html,context:{csrf:'fixture',bucket:'fixture',rootRoute:'user/',route:routeName,folder:{route:routeName,name:'Docs',is_root:routeName==='user/'}},scripts:['js/filesystem-operations.js','js/move-tasks.js','js/os-window-manager.js','js/so-folders.js','js/so.js','js/so-clipboard.js']})});
    }
    errors.push('Unexpected request '+url.pathname);return route.fulfill({status:404,body:'Unexpected test URL'});
   });
@@ -102,6 +110,17 @@ const script=name=>`<script src="/js/${name}"></script>`;
    assert(await scroll.evaluate(e=>e.scrollTop>0));
   }
   assert.match(await page.locator('.bg-task-list').textContent(),/Reason 31/,'failure reason remains visible at end');
+  sharedTasks=[];
+  await page.evaluate(()=>window.DriveMoveTasks.start({type:'files',operation:'copy',ruta_actual:'user/docs/',nueva_ruta:'user/',archivos_json:'["user/docs/uno.txt"]'}));
+  await page.evaluate(()=>{window.center.filter='all';return window.center.refresh();});
+  assert.equal(await page.evaluate(()=>window.center.tasks[0].id),'move:fixture','3D reads task created by real transfer starter');
+  // The same persisted record survives independent page reloads/views.
+  for(const view of ['3d','so','s3']){
+    await page.goto('http://arcade.test/fixture?view='+view);
+    await page.evaluate(async()=>{window.center=new window.TaskCenterClass(window,document);window.center.open=true;await window.center.refresh();});
+    assert.equal(await page.evaluate(()=>window.center.tasks[0].id),'move:fixture','same persistent task ID in '+view);
+    assert.equal(await page.evaluate(()=>window.center.summary.active),1,'task is not duplicated in '+view);
+  }
   await page.close();
  }
  assert.equal(errors.length,0,JSON.stringify(errors));

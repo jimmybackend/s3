@@ -12,7 +12,7 @@ const script=name=>`<script src="/js/${name}"></script>`;
  const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
  try {
  for(const viewport of [{width:1280,height:900},{width:768,height:1024},{width:360,height:800}]){
-  const page=await browser.newPage({viewport});
+  const page=await browser.newPage({viewport,hasTouch:viewport.width<=768});
   page.on('pageerror',e=>errors.push(e.message));
   await page.route('**/*',route=>{
    const url=new URL(route.request().url());
@@ -34,6 +34,8 @@ const script=name=>`<script src="/js/${name}"></script>`;
   await page.evaluate(()=>document.dispatchEvent(new CustomEvent('drive3d:selection',{detail:{type:'file',name:'uno.txt',key:'user/docs/uno.txt',route:'user/docs/'}})));
   await page.locator('[data-hud-more-actions]').click();
   const list=page.locator('[data-hud-extra-actions]');
+  await page.waitForFunction(()=>document.querySelector('[data-hud-extra-actions]').textContent!=='Cargando acciones…');
+  assert.match(await list.textContent(),/Bloquear con contraseña/,JSON.stringify({errors,viewport})+' '+await list.textContent());
   await list.getByRole('button',{name:'Bloquear con contraseña',exact:true}).waitFor();
   assert.equal(await list.getByRole('button',{name:'Eliminar',exact:true}).count(),1);
   assert.equal(await list.getByRole('button',{name:'Compartir',exact:true}).count(),1);
@@ -55,7 +57,7 @@ const script=name=>`<script src="/js/${name}"></script>`;
   assert.deepEqual(await page.locator('iframe').evaluate(frame=>frame.contentWindow.calls),[['new-text','user/docs/','Docs']],'folder handler receives authenticated current folder');
   await page.getByRole('button',{name:'Volver al 3D'}).click();
   await page.evaluate(()=>document.dispatchEvent(new CustomEvent('drive3d:selection',{detail:{type:'folder',name:'Raíz',openHref:'/dataword3d.php?ruta=user%2F'}})));
-  await page.waitForFunction(()=>document.querySelector('[data-hud-extra-actions]').textContent.includes('Nuevo archivo de texto'));
+  await page.waitForFunction(()=>window.ArcadeCloudDrive3DActions.loadedTarget==='http://arcade.test/so.php?ruta=user%2F' && !document.querySelector('[data-hud-extra-actions]').textContent.includes('Eliminar') && document.querySelector('[data-hud-extra-actions]').textContent.includes('Nuevo archivo de texto')); 
   assert.equal(await list.getByRole('button',{name:'Eliminar',exact:true}).count(),0,'root remains protected');
   assert.equal(await page.locator('iframe').count(),1,'one reused frame for all selections');
   // Task center uses the production renderer/CSS, with deterministic data.

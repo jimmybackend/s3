@@ -33,5 +33,24 @@ const context={URL,console:{warn(){}},setTimeout,clearTimeout};vm.createContext(
  assert.equal((resilient.match(/class="bg-task-item/g)||[]).length,2,'one malformed task cannot blank the whole list');
  assert.match(resilient,/bg-task-item-fallback/,'malformed task gets a visible fallback card');
 
+ const local={id:'upload:single',kind:'upload',status:'running',title:'uno.txt',actions:[]};
+ win.ArcadeCloudUploadManager={taskSnapshots:()=>[local]};
+ center.serverTasks=[{...local,control_id:'upload-task:upload:single',actions:[{id:'delete'}]}];
+ center.serverSummary={active:1,running:1,queued:0,completed_recent:0,failed:0};
+ center.mergeClientTasks();
+ assert.equal(center.tasks.length,1,'local and persisted upload share one row');
+ assert.equal(center.summary.active,1,'one upload is counted once, not twice');
+ assert.equal(center.summary.running,1);
+ assert.equal(center.tasks[0].control_id,'upload-task:upload:single','merged upload retains persistent delete identity');
+ local.status='completed';center.mergeClientTasks();
+ assert.equal(center.summary.active,0,'fresh completion replaces stale server running count');
+ assert.equal(center.summary.running,0);assert.equal(center.summary.completed_recent,1);
+ win.ArcadeCloudUploadManager.taskSnapshots=()=>[local,{...local,id:'upload:other',status:'failed'}];
+ center.mergeClientTasks();assert.equal(center.tasks.length,2,'distinct same-name uploads remain distinct');
+ assert.equal(center.summary.failed,1);
+ center.serverTasks=[];center.serverSummary={active:5,running:5};
+ win.ArcadeCloudUploadManager.taskSnapshots=()=>[{...local,status:'running'}];
+ center.mergeClientTasks();assert.equal(center.summary.active,6,'other aggregated server tasks are preserved');
+
  console.log('Background tasks refresh/render: bounded requests, recovery and visible terminal rows OK');
 })().catch(e=>{console.error(e);process.exitCode=1;});

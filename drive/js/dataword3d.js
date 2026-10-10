@@ -745,6 +745,7 @@
 
     updateHud(item, state = null) {
       if (!item) return;
+      this.document.dispatchEvent(new CustomEvent('drive3d:selection', {detail:item}));
       const isFolder = item.type === 'folder';
       this.hud.name.textContent = item.name;
       this.hud.type.textContent = isFolder ? 'Carpeta' : this.kindLabel(item.kind);

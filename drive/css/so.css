@@ -1148,6 +1148,8 @@ body.arcade-os{
 #backgroundTaskPanel{
   z-index:13019!important;
   bottom:112px!important;
+  max-height:min(760px,calc(100vh - 128px));
+  max-height:min(760px,calc(100dvh - 128px));
 }
 #driveMoveTaskNotice{
   z-index:13030!important;

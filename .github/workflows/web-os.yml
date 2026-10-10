@@ -28,6 +28,8 @@ on:
       - 'drive/js/upload-center.js'
       - 'drive/js/upload-destination.js'
       - 'drive/js/background-tasks.js'
+      - 'drive/js/drive3d-actions.js'
+      - 'drive/tests/drive3d_actions_tasks_browser.cjs'
       - 'drive/tests/background_tasks_refresh_functional.js'
       - 'drive/js/compute-node-idle.js'
       - 'drive/js/arcadecloud-updater.js'
@@ -128,6 +130,8 @@ on:
       - 'drive/js/upload-center.js'
       - 'drive/js/upload-destination.js'
       - 'drive/js/background-tasks.js'
+      - 'drive/js/drive3d-actions.js'
+      - 'drive/tests/drive3d_actions_tasks_browser.cjs'
       - 'drive/tests/background_tasks_refresh_functional.js'
       - 'drive/js/compute-node-idle.js'
       - 'drive/js/arcadecloud-updater.js'
@@ -328,4 +332,6 @@ jobs:
       - name: Embedded Federation, moderation, EC2 and RDS behavior
         env:
           PLAYWRIGHT_MODULE: /tmp/arcade-browser-tests/node_modules/playwright
-        run: node drive/tests/system_panels_browser.cjs
+        run: |
+          node drive/tests/system_panels_browser.cjs
+          node drive/tests/drive3d_actions_tasks_browser.cjs

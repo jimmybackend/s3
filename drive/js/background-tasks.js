@@ -104,7 +104,8 @@ class BackgroundTaskCenter {
         #backgroundTaskPanel {
           position:fixed; right:1rem; bottom:4.9rem; z-index:2074;
           width:min(500px, calc(100vw - 2rem));
-          max-height:min(80vh, 760px);
+          max-height:min(760px, calc(100vh - 100px));
+          max-height:min(760px, calc(100dvh - 100px));
           overflow:hidden; display:none;
           border-radius:16px;
           background:var(--panel-solid, #fff) !important;
@@ -225,8 +226,13 @@ class BackgroundTaskCenter {
           border:1px solid var(--border-soft, rgba(0,0,0,.08));
           font-size:.75rem;
         }
+        .bg-task-scroll {
+          flex:1 1 auto; min-height:0; overflow:auto;
+          overscroll-behavior:contain; touch-action:pan-y; scrollbar-gutter:stable;
+        }
+        .bg-task-head, .bg-task-toolbar, .bg-task-bulk, .bg-task-warning { flex-shrink:0; }
         .bg-task-list {
-          flex:1 1 260px; min-height:180px; overflow:auto; padding:.7rem;
+          min-height:0; padding:.7rem;
           display:block !important; visibility:visible !important; opacity:1 !important;
           position:relative; z-index:1;
           overscroll-behavior:contain; scrollbar-gutter:stable;
@@ -399,8 +405,10 @@ class BackgroundTaskCenter {
           </button>
         </div>
         <div class="bg-task-summary"></div>
-        <div class="bg-task-active" data-bg-task-active hidden></div>
-        <div class="bg-task-list"></div>
+        <div class="bg-task-scroll" tabindex="0" role="region" aria-label="Lista de tareas">
+          <div class="bg-task-active" data-bg-task-active hidden></div>
+          <div class="bg-task-list"></div>
+        </div>
         <div class="bg-task-warning" style="display:none"></div>
       `;
 
@@ -547,24 +555,24 @@ class BackgroundTaskCenter {
 
     this.summary = { ...base };
 
-    client.forEach((task) => {
+    // Replace the persisted contribution with the freshest local snapshot.
+    // Keep aggregate counts for server records outside the returned page.
+    const contribute = (task, delta) => {
       const status = this.normalizeStatus(task.status);
-      if (['queued', 'pending', 'running', 'stopping'].includes(status)) {
-        this.summary.active = Number(this.summary.active || 0) + 1;
-      }
-      if (status === 'queued' || status === 'pending') {
-        this.summary.queued = Number(this.summary.queued || 0) + 1;
-      } else if (status === 'running') {
-        this.summary.running = Number(this.summary.running || 0) + 1;
-      } else if (status === 'stopping') {
-        this.summary.stopping = Number(this.summary.stopping || 0) + 1;
-      } else if (status === 'failed') {
-        this.summary.failed = Number(this.summary.failed || 0) + 1;
-      } else if (status === 'completed') {
-        this.summary.completed_recent = Number(this.summary.completed_recent || 0) + 1;
-      } else if (status === 'cancelled') {
-        this.summary.cancelled_recent = Number(this.summary.cancelled_recent || 0) + 1;
-      }
+      const counters = [];
+      if (['queued', 'pending', 'running', 'stopping'].includes(status)) counters.push('active');
+      const counter = {queued:'queued', pending:'queued', running:'running', stopping:'stopping',
+        failed:'failed', completed:'completed_recent', cancelled:'cancelled_recent'}[status];
+      if (counter) counters.push(counter);
+      counters.forEach((name) => {
+        this.summary[name] = Math.max(0, Number(this.summary[name] || 0) + delta);
+      });
+    };
+    const persisted = new Map(this.serverTasks.map((task) => [String(task.id || ''), task]));
+    const snapshots = new Map(client.filter((task) => task && task.id).map((task) => [String(task.id), task]));
+    snapshots.forEach((task, id) => {
+      if (persisted.has(id)) contribute(persisted.get(id), -1);
+      contribute(task, 1);
     });
   }
 
@@ -921,11 +929,11 @@ class BackgroundTaskCenter {
 
     const activeHost = panel.querySelector('[data-bg-task-active]');
     const pinActiveForFilter = ['all', 'active', 'running', 'queued'].includes(this.filter);
-    const pinnedActive = activeTasks.filter((task) => this.filter === 'all' || this.matchesFilter(task));
+    const pinnedActive = activeTasks.filter((task) => this.filter === 'all' || this.matchesFilter(task)).slice(0, 8);
     if (activeHost) {
       const showPinnedActive = pinActiveForFilter && pinnedActive.length > 0;
       activeHost.hidden = !showPinnedActive;
-      activeHost.innerHTML = showPinnedActive ? this.activeTasksHtml(pinnedActive.slice(0, 8)) : '';
+      activeHost.innerHTML = showPinnedActive ? this.activeTasksHtml(pinnedActive) : '';
     }
 
     const visibleTasks = (Array.isArray(this.tasks) ? this.tasks : []).filter((task) => {

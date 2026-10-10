@@ -4376,8 +4376,41 @@ body.is-camera-near.dw-real .dw-hud{
 .dw-environment-library small{font-size:11px;color:#a7c8d4;line-height:1.4}
 
 /* All object actions stay in the upper-right HUD; touch devices scroll them. */
-.dw-hud{max-height:calc(100% - 36px);overflow-y:auto;overscroll-behavior:contain}
-.dw-hud-extra-actions{display:grid;gap:6px;margin-top:8px;max-height:240px;overflow:auto;overscroll-behavior:contain;touch-action:pan-y}
+.dw-real .dw-hud{
+  top:22px!important;
+  bottom:max(10px,env(safe-area-inset-bottom))!important;
+  height:auto!important;
+  max-height:none!important;
+  overflow-y:auto!important;
+  overflow-x:hidden!important;
+  overscroll-behavior:contain;
+  touch-action:pan-y;
+  scrollbar-width:thin;
+  scrollbar-color:#65c8e5 #071827;
+}
+.dw-real .dw-hud-title{
+  position:sticky;
+  top:-15px;
+  z-index:1;
+  padding:10px 0;
+  background:#071827;
+}
+.dw-real .dw-hud-title strong{
+  white-space:normal;
+  overflow-wrap:anywhere;
+}
+@media(max-width:900px){
+  .dw-real .dw-hud{top:10px!important}
+  .dw-real .dw-hud-title{top:-10px}
+  .dw-real .dw-hud-actions button,
+  .dw-real .dw-hud-actions a,
+  .dw-real .dw-hud-extra-actions button{
+    min-height:44px!important;
+    font-size:12px!important;
+    padding:8px;
+  }
+}
+.dw-hud-extra-actions{display:grid;gap:6px;margin-top:8px;max-height:none;overflow:visible}
 .dw-hud-extra-actions[hidden]{display:none}
 .dw-hud-extra-actions button{min-height:40px;padding:8px;border:1px solid rgba(113,213,255,.25);border-radius:8px;background:#0c293e;color:#dffaff;text-align:left;cursor:pointer}
 .dw-action-dialog{width:96vw;height:92vh;height:92dvh;max-width:1440px;max-height:96dvh;padding:0;border:1px solid #65c8e5;border-radius:12px;background:#071321;color:#e5faff}

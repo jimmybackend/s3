@@ -129,7 +129,11 @@ const server=createServer((req,res)=>{
   const secondSelector = `[data-spatial-picture-id="${secondPicture.id}"]`;
   const secondWindow = page.locator(secondSelector);
   const secondBefore = await secondWindow.boundingBox();
-  await page.locator(secondSelector + ' button[aria-label="Redimensionar cuadro"]').click({force:true});
+  // The two independent floating windows can visually overlap. A forced
+  // Playwright coordinate click may land on the OTHER window, even though
+  // the locator resolved the correct button. Invoke the actual button click,
+  // then use real mouse dragging for the resize gesture under test.
+  await page.locator(secondSelector + ' button[aria-label="Redimensionar cuadro"]').evaluate(button=>button.click());
   await page.waitForTimeout(80);
   const resizeState = await secondWindow.evaluate(el=>{
     const handle=el.querySelector('.dw-spatial-picture-resize-handle');

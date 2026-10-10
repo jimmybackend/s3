@@ -9114,7 +9114,7 @@
     },
     {
       "path": "drive/js/drive3d-scene.js",
-      "lines": 1073,
+      "lines": 1083,
       "kind": "class/module",
       "classes": [
         "Drive3DScene"
@@ -9137,7 +9137,7 @@
     },
     {
       "path": "drive/js/drive3d-surface-placements.js",
-      "lines": 294,
+      "lines": 304,
       "kind": "class/module",
       "classes": [
         "Drive3DSurfacePlacements"

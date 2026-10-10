@@ -32,6 +32,7 @@
     }
     target(item) {
       const url = new URL('so.php', this.window.location.href);
+      url.searchParams.set('_drive3d_actions', '1');
       const route = item.type === 'folder'
         ? new URL(item.openHref || this.window.location.href, this.window.location.href).searchParams.get('ruta')
         : (item.route || this.window.DRIVE_INITIAL_ROUTE);
@@ -126,6 +127,8 @@
       } else {
         const entry = Array.from(win.document.querySelectorAll('.os-file-entry')).find(node => node.dataset.key === item.key);
         if (!entry || !item.key) throw new Error('El archivo ya no está disponible. Actualiza la carpeta.');
+        const explorer = entry.closest('.os-window');
+        if (explorer) win.ArcadeCloudOsShell.activateWindow(explorer);
         win.ArcadeCloudOsShell.showContext(entry, 8, 8);
         menu = win.document.getElementById('fileContextMenu');
       }

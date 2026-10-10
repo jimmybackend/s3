@@ -6,6 +6,7 @@ const {chromium}=require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 const root=path.resolve(__dirname,'..');
 const source=fs.readFileSync(path.join(root,'so.php'),'utf8');
 const menus=source.slice(source.indexOf('  <div class="os-file-context os-folder-context"'),source.indexOf('  <!-- Modal compartido: Seguridad'));
+assert.match(source,/if \(\$isExplorerFragment \|\| \$isDrive3dActions\)/,'action mode renders the same authorized explorer');
 const errors=[];let frameLoads=0;
 const script=name=>`<script src="/js/${name}"></script>`;
 (async()=>{
@@ -23,6 +24,7 @@ const script=name=>`<script src="/js/${name}"></script>`;
    }
    if(url.pathname==='/fixture')return route.fulfill({contentType:'text/html',body:`<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="/css/dataword3d.css"><link rel="stylesheet" href="/css/so.css"></head><body class="arcade-os"><section class="dw-hud"><button data-hud-more-actions>Acciones</button><div data-hud-extra-actions hidden></div></section><script>window.DRIVE_INITIAL_ROUTE='user/docs/';</script>${script('drive3d-actions.js')}${script('background-tasks.js')}</body></html>`});
    if(url.pathname==='/so.php'){
+    assert.equal(url.searchParams.get('_drive3d_actions'),'1','full SO renders authenticated target explorer');
     frameLoads++;
     const routeName=url.searchParams.get('ruta') || 'user/docs/';
     return route.fulfill({contentType:'text/html',body:`<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="/css/so.css"></head><body class="arcade-os"><main id="osDesktop"><div class="os-explorer-body" data-current-folder-route="${routeName}" data-current-folder-name="Docs" data-current-folder-root="${routeName==='user/'?'1':'0'}"><button class="os-file-entry" data-key="user/docs/uno.txt" data-name="uno.txt" data-ext="txt" data-open-url="/open" data-download-url="/download" data-polly="1" data-locked="0"></button><button class="os-file-entry" data-key="user/docs/locked.txt" data-name="locked.txt" data-ext="txt" data-open-url="/open" data-locked="1"></button></div></main>${menus}<script>window.calls=[];window.DriveMoveTasks={};window.ArcadeCloudFileSecurity={protect:async key=>{calls.push(['protect',key]);return false;},unlock:async key=>{calls.push(['unlock',key]);return false;}};window.openEmptyTextFileCreator=(route,name)=>calls.push(['new-text',route,name]);</script>${script('so-folders.js')}${script('so.js')}${script('so-clipboard.js')}</body></html>`});
@@ -57,7 +59,7 @@ const script=name=>`<script src="/js/${name}"></script>`;
   assert.deepEqual(await page.locator('iframe').evaluate(frame=>frame.contentWindow.calls),[['new-text','user/docs/','Docs']],'folder handler receives authenticated current folder');
   await page.getByRole('button',{name:'Volver al 3D'}).click();
   await page.evaluate(()=>document.dispatchEvent(new CustomEvent('drive3d:selection',{detail:{type:'folder',name:'Raíz',openHref:'/dataword3d.php?ruta=user%2F'}})));
-  await page.waitForFunction(()=>window.ArcadeCloudDrive3DActions.loadedTarget==='http://arcade.test/so.php?ruta=user%2F' && !document.querySelector('[data-hud-extra-actions]').textContent.includes('Eliminar') && document.querySelector('[data-hud-extra-actions]').textContent.includes('Nuevo archivo de texto'));
+  await page.waitForFunction(()=>window.ArcadeCloudDrive3DActions.loadedTarget==='http://arcade.test/so.php?_drive3d_actions=1&ruta=user%2F' && !document.querySelector('[data-hud-extra-actions]').textContent.includes('Eliminar') && document.querySelector('[data-hud-extra-actions]').textContent.includes('Nuevo archivo de texto'));
   assert.equal(await list.getByRole('button',{name:'Eliminar',exact:true}).count(),0,'root remains protected');
   assert.equal(await page.locator('iframe').count(),1,'one reused frame for all selections');
   // Task center uses the production renderer/CSS, with deterministic data.

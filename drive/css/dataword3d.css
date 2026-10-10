@@ -4316,3 +4316,22 @@ body.is-camera-near.dw-real .dw-hud{
 .dw-spatial-picture-window.is-surface-placed{
   transition:opacity .22s ease-out,visibility .22s ease-out;
 }
+
+/* Printed-photo placement: choose full-proportion poster or centered crop,
+ * independently of whether the photo is on glass, the roof or the floor. */
+.dw-spatial-image-fit{
+  min-height:30px;
+  width:156px;
+  max-width:41vw;
+  border:1px solid rgba(127,213,240,.5);
+  border-radius:6px;
+  background:#12384b;
+  color:#f0fbff;
+  padding:2px 4px;
+  font-size:11px;
+  touch-action:manipulation;
+}
+.dw-spatial-image-fit[hidden]{display:none!important}
+@media(max-width:700px){
+  .dw-spatial-image-fit{width:142px;max-width:43vw;font-size:11px}
+}

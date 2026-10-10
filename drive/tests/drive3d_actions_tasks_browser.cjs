@@ -14,9 +14,11 @@ const script=name=>`<script src="/js/${name}"></script>`;
  try {
  for(const viewport of [{width:1280,height:900},{width:768,height:1024},{width:360,height:800}]){
   const page=await browser.newPage({viewport,hasTouch:viewport.width<=768});
+  let failDependency=true;
   page.on('pageerror',e=>errors.push(e.message));
   await page.route('**/*',route=>{
    const url=new URL(route.request().url());
+   if(url.pathname==='/js/vendor/jquery-3.5.1.min.js'&&failDependency){failDependency=false;return route.abort('failed');}
    if(/^\/(js|css)\/(?:vendor\/)?[\w.-]+$/.test(url.pathname)){
     let body=fs.readFileSync(path.join(root,url.pathname),'utf8');
     if(url.pathname.endsWith('background-tasks.js'))body=body.replace('BackgroundTaskCenter.boot();','window.TaskCenterClass=BackgroundTaskCenter;');
@@ -47,7 +49,10 @@ const script=name=>`<script src="/js/${name}"></script>`;
   await page.evaluate(()=>document.dispatchEvent(new CustomEvent('drive3d:selection',{detail:{type:'file',name:'uno.txt',key:'user/docs/uno.txt',route:'user/docs/'}})));
   await page.locator('[data-hud-more-actions]').click();
   const list=page.locator('[data-hud-extra-actions]');
-  await page.waitForFunction(()=>document.querySelector('[data-hud-extra-actions]').textContent!=='Cargando acciones…');
+  await list.getByRole('button',{name:'Reintentar acciones',exact:true}).waitFor();
+  assert.match(await list.textContent(),/No se pudo cargar.*jquery/,'failed dependency reports error instead of hanging');
+  await list.getByRole('button',{name:'Reintentar acciones',exact:true}).click();
+  await list.getByRole('button',{name:'Bloquear con contraseña',exact:true}).waitFor();
   assert.match(await list.textContent(),/Bloquear con contraseña/,JSON.stringify({errors,viewport})+' '+await list.textContent());
   await list.getByRole('button',{name:'Bloquear con contraseña',exact:true}).waitFor();
   await page.evaluate(()=>{window.ArcadeCloudFileSecurity.protect=async key=>{calls.push(['protect',key]);return false;};window.ArcadeCloudFileSecurity.unlock=async key=>{calls.push(['unlock',key]);return false;};window.openEmptyTextFileCreator=(route,name)=>calls.push(['new-text',route,name]);});

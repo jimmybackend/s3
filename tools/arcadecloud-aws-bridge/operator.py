@@ -28,6 +28,7 @@ SERVICE_ACTIONS = frozenset({
     "workstation:start", "workstation:stop", "workstation:restart",
     "federation-sync:run-now", "federation-https:run-now",
     "polly-reconcile:run-now", "transcribe-reconcile:run-now",
+    "michat:sync-main",
 })
 TERMINAL = frozenset({"Success", "Cancelled", "TimedOut", "Failed", "Cancelling"})
 
@@ -55,6 +56,8 @@ def validate_request(request):
         raise ValueError("Diagnóstico no permitido")
     if op == "service" and arg not in SERVICE_ACTIONS:
         raise ValueError("Acción de servicio no permitida")
+    if op == "service" and arg == "michat:sync-main" and alias != "small":
+        raise ValueError("MiChat sólo se sincroniza en la EC2 pequeña")
     if op == "power-start" and (alias != "large" or arg != ""):
         raise ValueError("Únicamente se permite encender FastDrive")
     return request
@@ -101,6 +104,36 @@ def script_for(request):
         )
     if op == "diagnose":
         return f"set -eu\ntest -x {helper}\n{helper} server-console {arg}\n"
+    if op == "service" and arg == "michat:sync-main":
+        return """set -euo pipefail
+APP=/var/www/michat
+test -d "$APP/.git" || { printf 'MICHAT_SYNC_BLOCKED=missing-repo\\n'; exit 77; }
+cd "$APP"
+origin="$(git remote get-url origin)"
+case "$origin" in
+  https://github.com/jimmybackend/michat.git|https://github.com/jimmybackend/michat|git@github.com:jimmybackend/michat.git|ssh://git@github.com/jimmybackend/michat.git) ;;
+  *) printf 'MICHAT_SYNC_BLOCKED=origin\\n'; exit 77 ;;
+esac
+branch="$(git rev-parse --abbrev-ref HEAD)"
+test "$branch" = "main" || { printf 'MICHAT_SYNC_BLOCKED=branch\\n'; exit 77; }
+before="$(git rev-parse HEAD)"
+dirty_count="$(git status --porcelain=v1 --untracked-files=all | wc -l | tr -d ' ')"
+printf 'MICHAT_SYNC_PRE before=%s dirty=%s\\n' "$before" "$dirty_count"
+git fetch --quiet origin main
+ahead="$(git rev-list --count origin/main..HEAD)"
+test "$ahead" = "0" || { printf 'MICHAT_SYNC_BLOCKED=local-commits\\n'; exit 77; }
+git merge-base --is-ancestor HEAD origin/main || { printf 'MICHAT_SYNC_BLOCKED=diverged\\n'; exit 77; }
+if ! git merge --ff-only origin/main >/dev/null 2>&1; then
+  printf 'MICHAT_SYNC_BLOCKED=merge\\n'
+  exit 77
+fi
+after="$(git rev-parse HEAD)"
+target="$(git rev-parse origin/main)"
+test "$after" = "$target" || { printf 'MICHAT_SYNC_BLOCKED=head-mismatch\\n'; exit 70; }
+worker_enabled="$(systemctl is-enabled michat-task-worker.service 2>/dev/null || true)"
+worker_active="$(systemctl is-active michat-task-worker.service 2>/dev/null || true)"
+printf 'MICHAT_SYNC_OK before=%s after=%s dirty=%s worker_enabled=%s worker_active=%s\\n' "$before" "$after" "$dirty_count" "$worker_enabled" "$worker_active"
+"""
     service, action = arg.split(":", 1)
     return f"set -eu\ntest -x {helper}\n{helper} node-service {service} {action}\n"
 
@@ -166,13 +199,29 @@ def execute(request, env, session_factory, sleeper=time.sleep):
         if status in TERMINAL:
             result.update({"status": status, "exit_code": invocation.get("ResponseCode")})
             # Prevent public workflow logs from ever carrying raw command output.
+            output = invocation.get("StandardOutputContent", "")
             if request["operation"] == "diagnose" and request["argument"] == "docker-summary" and status == "Success":
-                match = re.fullmatch(
-                    r"ARCADECLOUD_DOCKER_COUNT=(\d+)\s*",
-                    invocation.get("StandardOutputContent", ""),
-                )
+                match = re.fullmatch(r"ARCADECLOUD_DOCKER_COUNT=(\d+)\s*", output)
                 if match:
                     result["docker_running_containers"] = int(match.group(1))
+            if request["operation"] == "service" and request["argument"] == "michat:sync-main":
+                pre = re.search(r"^MICHAT_SYNC_PRE before=([0-9a-f]{40}) dirty=(\d+)$", output, re.MULTILINE)
+                ok = re.search(
+                    r"^MICHAT_SYNC_OK before=([0-9a-f]{40}) after=([0-9a-f]{40}) dirty=(\d+) worker_enabled=([a-z-]+) worker_active=([a-z-]+)$",
+                    output, re.MULTILINE,
+                )
+                blocked = re.search(r"^MICHAT_SYNC_BLOCKED=([a-z-]+)$", output, re.MULTILINE)
+                if pre:
+                    result["michat_before"] = pre.group(1)
+                    result["michat_dirty_count"] = int(pre.group(2))
+                if ok:
+                    result["michat_before"] = ok.group(1)
+                    result["michat_after"] = ok.group(2)
+                    result["michat_dirty_count"] = int(ok.group(3))
+                    result["worker_enabled"] = ok.group(4)
+                    result["worker_active"] = ok.group(5)
+                if blocked:
+                    result["blocked_reason"] = blocked.group(1)
             return result
         sleeper(2)
     return result | {"status": "Pending"}

@@ -9,6 +9,8 @@ final class Drive3dPreferenceSanitizer
     public function sanitize(array $drive3d): array
     {
         $allowedEnvironment = ['future', 'mountain', 'prehistoric', 'ocean'];
+        $allowedScenes = ['original','alpine-spring','alpine-summer','alpine-autumn','alpine-winter','sunset','night','prehistoric','future'];
+        $allowedGrounds = ['original','water','grass','clouds','sand','snow'];
         $allowedFurniture = ['default'];
         $allowedWindows = ['panoramic'];
         $allowedPlants = ['orchids'];
@@ -17,6 +19,8 @@ final class Drive3dPreferenceSanitizer
             'environment' => in_array(($drive3d['environment'] ?? ''), $allowedEnvironment, true)
                 ? (string)$drive3d['environment']
                 : 'future',
+            'scenePreset' => in_array(($drive3d['scenePreset'] ?? ''), $allowedScenes, true) ? (string)$drive3d['scenePreset'] : 'original',
+            'groundPreset' => in_array(($drive3d['groundPreset'] ?? ''), $allowedGrounds, true) ? (string)$drive3d['groundPreset'] : 'original',
             'glassBackground' => $this->surfacePath($drive3d['glassBackground'] ?? ''),
             'floorBackground' => $this->surfacePath($drive3d['floorBackground'] ?? ''),
             'ceilingBackground' => $this->surfacePath($drive3d['ceilingBackground'] ?? ''),

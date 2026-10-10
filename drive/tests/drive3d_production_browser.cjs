@@ -128,6 +128,15 @@ const server=createServer((req,res)=>{
   // and the chosen size is kept in the profile state without moving its world anchor.
   const secondSelector = `[data-spatial-picture-id="${secondPicture.id}"]`;
   const secondWindow = page.locator(secondSelector);
+  // The viewer can be legitimately hidden if the first object moved the
+  // camera-facing point offscreen. Re-anchor THIS free image in the field
+  // of view before testing its visible resize handle/drag gesture.
+  await page.evaluate(id=>window.ArcadeCloudDrive3D.three.placeSpatialMedia(id),secondPicture.id);
+  await page.waitForFunction(id=>{
+    const el=document.querySelector(`[data-spatial-picture-id="${id}"]`);
+    return el && el.style.visibility==='visible';
+  },secondPicture.id);
+  secondPicture.world=(await snap()).spatialImages.find(p=>p.id===secondPicture.id).world;
   const secondBefore = await secondWindow.boundingBox();
   // The two independent floating windows can visually overlap. A forced
   // Playwright coordinate click may land on the OTHER window, even though

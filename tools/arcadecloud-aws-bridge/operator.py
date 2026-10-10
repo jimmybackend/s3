@@ -108,27 +108,29 @@ def script_for(request):
         return """set -euo pipefail
 APP=/var/www/michat
 test -d "$APP/.git" || { printf 'MICHAT_SYNC_BLOCKED=missing-repo\\n'; exit 77; }
-cd "$APP"
-origin="$(git remote get-url origin)"
+repo_user="$(stat -c %U "$APP/.git")"
+id "$repo_user" >/dev/null || { printf 'MICHAT_SYNC_BLOCKED=repo-user\\n'; exit 77; }
+g() { /usr/sbin/runuser -u "$repo_user" -- /usr/bin/git -C "$APP" "$@"; }
+origin="$(g remote get-url origin)"
 case "$origin" in
   https://github.com/jimmybackend/michat.git|https://github.com/jimmybackend/michat|git@github.com:jimmybackend/michat.git|ssh://git@github.com/jimmybackend/michat.git) ;;
   *) printf 'MICHAT_SYNC_BLOCKED=origin\\n'; exit 77 ;;
 esac
-branch="$(git rev-parse --abbrev-ref HEAD)"
+branch="$(g rev-parse --abbrev-ref HEAD)"
 test "$branch" = "main" || { printf 'MICHAT_SYNC_BLOCKED=branch\\n'; exit 77; }
-before="$(git rev-parse HEAD)"
-dirty_count="$(git status --porcelain=v1 --untracked-files=all | wc -l | tr -d ' ')"
+before="$(g rev-parse HEAD)"
+dirty_count="$(g status --porcelain=v1 --untracked-files=all | wc -l | tr -d ' ')"
 printf 'MICHAT_SYNC_PRE before=%s dirty=%s\\n' "$before" "$dirty_count"
-git fetch --quiet origin main
-ahead="$(git rev-list --count origin/main..HEAD)"
+g fetch --quiet origin main
+ahead="$(g rev-list --count origin/main..HEAD)"
 test "$ahead" = "0" || { printf 'MICHAT_SYNC_BLOCKED=local-commits\\n'; exit 77; }
-git merge-base --is-ancestor HEAD origin/main || { printf 'MICHAT_SYNC_BLOCKED=diverged\\n'; exit 77; }
-if ! git merge --ff-only origin/main >/dev/null 2>&1; then
+g merge-base --is-ancestor HEAD origin/main || { printf 'MICHAT_SYNC_BLOCKED=diverged\\n'; exit 77; }
+if ! g merge --ff-only origin/main >/dev/null 2>&1; then
   printf 'MICHAT_SYNC_BLOCKED=merge\\n'
   exit 77
 fi
-after="$(git rev-parse HEAD)"
-target="$(git rev-parse origin/main)"
+after="$(g rev-parse HEAD)"
+target="$(g rev-parse origin/main)"
 test "$after" = "$target" || { printf 'MICHAT_SYNC_BLOCKED=head-mismatch\\n'; exit 70; }
 worker_enabled="$(systemctl is-enabled michat-task-worker.service 2>/dev/null || true)"
 worker_active="$(systemctl is-active michat-task-worker.service 2>/dev/null || true)"

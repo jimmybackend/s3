@@ -106,12 +106,17 @@ const server=createServer((req,res)=>{
   await page.reload();
   await page.waitForFunction(()=>window.ArcadeCloudDrive3D?.three?.snapshot().environmentTextures.glass.endsWith('/future.jpg') && window.ArcadeCloudDrive3D.three.snapshot().environmentTextures.floor.endsWith('/snow.jpg'));
   assert.equal((await snap()).environmentTextures.panoramaU,1,'Inside sphere must preserve left/right');
+  await page.waitForFunction(()=>window.ArcadeCloudDrive3D.three.snapshot().currentFiles===20);
+  await page.waitForTimeout(750); // Finish gallery thumbnail uploads before measuring only preset switches.
   const baseline=(await snap()).textures;
   for(let i=0;i<3;i++){
     await page.evaluate(i=>{const a=window.ArcadeCloudDrive3D;a.three.setEnvironmentPreset(i%2?'night':'sunset');a.three.setGroundPreset(i%2?'grass':'sand');},i);
     await page.waitForFunction(i=>{const t=window.ArcadeCloudDrive3D.three.snapshot().environmentTextures;return t.glass.endsWith('/'+(i%2?'night':'sunset')+'.jpg')&&t.floor.endsWith('/'+(i%2?'grass':'sand')+'.jpg');},i);
   }
-  assert((await snap()).textures<=baseline+2,'Repeated switches must release old GPU textures');
+  await page.waitForTimeout(250);
+  const afterSwitch=(await snap()).textures;
+  console.log('Preset GPU textures before/after:',baseline,afterSwitch);
+  assert(afterSwitch<=baseline+2,'Repeated switches must release old GPU textures');
   await page.locator('[data-dw-environment]').click();
   await page.locator('[data-environment-scene]').selectOption('original');
   await page.locator('[data-environment-ground]').selectOption('original');

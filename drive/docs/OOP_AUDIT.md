@@ -4,16 +4,16 @@
 
 ## Resumen
 
-- PHP analizados: **566**
-- PHP que ya contienen clases/interfaces: **319**
+- PHP analizados: **568**
+- PHP que ya contienen clases/interfaces: **320**
 - PHP marcados para migración/revisión: **0**
-- Tests PHP separados del objetivo OOP de runtime: **81**
+- Tests PHP separados del objetivo OOP de runtime: **82**
 - JavaScript analizados: **90**
 - JavaScript que ya contienen clases: **83**
 - JavaScript runtime marcados para migración/revisión: **0**
 - Tests JavaScript separados del objetivo OOP de runtime: **12**
 - JavaScript OOP con fachada `window` de compatibilidad: **8**
-- Clientes AJAX detectados: **56** módulos / **122** llamadas
+- Clientes AJAX detectados: **57** módulos / **123** llamadas
 - JSON analizados: **10**; inválidos: **0**
 
 ## Criterio
@@ -75,7 +75,7 @@
 | `drive/crear_carpeta.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/create_folder_document.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/database-backup.php` | 10 | thin endpoint | 0 | — | — | — | — |
-| `drive/dataword3d.php` | 561 | view/entrypoint | 0 | — | — | — | — |
+| `drive/dataword3d.php` | 563 | view/entrypoint | 0 | — | — | — | — |
 | `drive/delete_multiple.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/descargar.php` | 8 | thin endpoint | 0 | — | — | — | — |
 | `drive/descargar_archivo.php` | 8 | thin endpoint | 0 | — | — | — | — |
@@ -175,7 +175,7 @@
 | `drive/set_file_security.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/setup/api.php` | 15 | thin endpoint | 0 | — | — | — | — |
 | `drive/setup/index.php` | 90 | view/entrypoint | 0 | — | — | — | — |
-| `drive/so.php` | 2255 | view/entrypoint | 0 | — | — | — | — |
+| `drive/so.php` | 2271 | view/entrypoint | 0 | — | — | — | — |
 | `drive/src/Activity/ActivityCostRecorder.php` | 155 | class/module | 1 | — | — | — | — |
 | `drive/src/Activity/ActivityCostRepository.php` | 198 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Activity/ActivityCostService.php` | 153 | class/module | 1 | — | — | — | — |
@@ -464,6 +464,7 @@
 | `drive/src/Upload/UploadCleanupService.php` | 294 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Upload/UploadTaskStore.php` | 174 | class/module | 1 | — | — | — | — |
 | `drive/src/View/ActivityCostPageRenderer.php` | 401 | class/module | 1 | — | — | — | — |
+| `drive/src/View/Drive3dActionContextView.php` | 45 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/View/Ec2PanelHelper.php` | 69 | class/module | 1 | — | — | — | — |
 | `drive/src/View/FederationDropPageRenderer.php` | 228 | class/module | 1 | — | — | — | — |
 | `drive/src/View/FederationModerationPageRenderer.php` | 73 | class/module | 1 | — | — | — | — |
@@ -497,6 +498,7 @@
 | `drive/tests/database_schema_contract_smoke.php` | 127 | test script | 0 | — | — | — | — |
 | `drive/tests/dataword3d_contract_smoke.php` | 98 | test script | 0 | — | — | — | — |
 | `drive/tests/drive3d_background_folder_test.php` | 37 | test script | 0 | — | — | — | — |
+| `drive/tests/drive3d_native_action_context_test.php` | 23 | test script | 0 | — | — | — | — |
 | `drive/tests/drive3d_surface_picture_test.php` | 61 | test script | 0 | — | — | — | — |
 | `drive/tests/fastdrive_control_contract_smoke.php` | 72 | test script | 0 | — | — | — | — |
 | `drive/tests/federation_access_message_smoke.php` | 72 | test script | 0 | — | — | — | — |
@@ -617,7 +619,7 @@
 | `drive/js/descarga-multiple.js` | 114 | class/module | DescargaMultipleModule | — | — | — |
 | `drive/js/descarga-uno.js` | 110 | class/module | DescargaUnoModule | — | — | — |
 | `drive/js/desktop-shell.js` | 182 | class/module | ArcadeCloudDesktopShell | — | — | — |
-| `drive/js/drive3d-actions.js` | 182 | class/module | Drive3DActions | — | — | — |
+| `drive/js/drive3d-actions.js` | 176 | class/module | Drive3DActions | — | — | — |
 | `drive/js/drive3d-production.js` | 172 | class/module | Drive3DProduction | — | — | — |
 | `drive/js/drive3d-scene.js` | 1204 | class/module | Drive3DScene | — | — | — |
 | `drive/js/drive3d-surface-placements.js` | 304 | class/module | Drive3DSurfacePlacements | — | — | — |
@@ -668,7 +670,7 @@
 | `drive/js/so-search.js` | 292 | class/module | ArcadeCloudOsSearch | — | — | — |
 | `drive/js/so-share.js` | 180 | class/module | ArcadeCloudOsShare | — | — | — |
 | `drive/js/so-terminal.js` | 314 | class/module | ArcadeCloudOsTerminal | — | — | — |
-| `drive/js/so.js` | 1354 | class/module | ArcadeCloudOsShell | — | — | — |
+| `drive/js/so.js` | 1355 | class/module | ArcadeCloudOsShell | — | — | — |
 | `drive/js/soportesMediaTypes.js` | 397 | class/module | SoportesMediaTypesModule | — | — | — |
 | `drive/js/storage-usage.js` | 51 | class/module | StorageUsageModule | — | — | — |
 | `drive/js/subir-chunked.js` | 594 | class/module | SubirChunkedModule | — | — | — |
@@ -709,6 +711,7 @@
 | `drive/js/dataword3d.js` | 5 | 0 | 0 | 3 | 10 |
 | `drive/js/descarga-multiple.js` | 1 | 0 | 0 | 0 | 2 |
 | `drive/js/descarga-uno.js` | 1 | 0 | 0 | 0 | 2 |
+| `drive/js/drive3d-actions.js` | 1 | 0 | 0 | 1 | 2 |
 | `drive/js/drive3d-production.js` | 1 | 0 | 0 | 1 | 3 |
 | `drive/js/elimina-multiple.js` | 2 | 0 | 0 | 1 | 3 |
 | `drive/js/elimina-uno.js` | 2 | 0 | 0 | 1 | 3 |

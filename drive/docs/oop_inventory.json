@@ -9123,7 +9123,7 @@
     },
     {
       "path": "drive/js/drive3d-actions.js",
-      "lines": 176,
+      "lines": 191,
       "kind": "class/module",
       "classes": [
         "Drive3DActions"
@@ -11057,7 +11057,7 @@
     },
     {
       "path": "drive/docs/runtime_endpoints.json",
-      "bytes": 135080,
+      "bytes": 135683,
       "valid": true,
       "root_type": "object",
       "keys": [

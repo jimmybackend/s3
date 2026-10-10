@@ -619,7 +619,7 @@
 | `drive/js/descarga-multiple.js` | 114 | class/module | DescargaMultipleModule | — | — | — |
 | `drive/js/descarga-uno.js` | 110 | class/module | DescargaUnoModule | — | — | — |
 | `drive/js/desktop-shell.js` | 182 | class/module | ArcadeCloudDesktopShell | — | — | — |
-| `drive/js/drive3d-actions.js` | 176 | class/module | Drive3DActions | — | — | — |
+| `drive/js/drive3d-actions.js` | 191 | class/module | Drive3DActions | — | — | — |
 | `drive/js/drive3d-production.js` | 172 | class/module | Drive3DProduction | — | — | — |
 | `drive/js/drive3d-scene.js` | 1204 | class/module | Drive3DScene | — | — | — |
 | `drive/js/drive3d-surface-placements.js` | 304 | class/module | Drive3DSurfacePlacements | — | — | — |

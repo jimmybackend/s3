@@ -90,6 +90,9 @@ final class Drive3dPreferenceSanitizer
                 'mode' => $mode,
                 'panelId' => $panelId,
                 'surfaceScale' => $scale,
+                // New and legacy artwork defaults to non-distorting full
+                // picture presentation. Crop-to-cover is explicit per image.
+                'surfaceFit' => ($entry['surfaceFit'] ?? 'poster') === 'cover' ? 'cover' : 'poster',
             ];
         }
 

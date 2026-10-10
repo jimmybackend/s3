@@ -26,6 +26,41 @@ class Drive3DSurfacePlacements {
     return Math.min(mode === 'floor' ? 2.6 : .94, Math.max(.30, Number.isFinite(n) ? n : .70));
   }
 
+  static fitMode(value) {
+    return value === 'cover' ? 'cover' : 'poster';
+  }
+
+  static aspect(value) {
+    const aspect = Number(value);
+    // Preserve genuine portraits and panoramic photographs, not only 4:3.
+    return Number.isFinite(aspect) && aspect > 0
+      ? Math.max(.05, Math.min(20, aspect)) : 4 / 3;
+  }
+
+  /** Fit a photograph inside the given physical dimensions WITHOUT stretching.
+   * Poster: show the full print with spare margins. Cover: crop the original
+   * symmetrically like object-fit:cover, not like scaling a sheet to the pane. */
+  static fitImage(aspectInput, maxWidth, maxHeight, fitInput = 'poster') {
+    const aspect = Drive3DSurfacePlacements.aspect(aspectInput);
+    const mode = Drive3DSurfacePlacements.fitMode(fitInput);
+    const boxWidth = Math.max(.001, Number(maxWidth) || 0);
+    const boxHeight = Math.max(.001, Number(maxHeight) || 0);
+    if (mode === 'poster') {
+      let width = boxWidth;
+      let height = width / aspect;
+      if (height > boxHeight) {
+        height = boxHeight;
+        width = height * aspect;
+      }
+      return {width, height, cropU:0, cropV:0, mode};
+    }
+    const paneAspect = boxWidth / boxHeight;
+    // UV cropping is applied to the mesh; it never changes the source file.
+    const cropU = aspect > paneAspect ? (1 - paneAspect / aspect) / 2 : 0;
+    const cropV = aspect < paneAspect ? (1 - aspect / paneAspect) / 2 : 0;
+    return {width:boxWidth, height:boxHeight, cropU, cropV, mode};
+  }
+
   static panelId(mode, sector, band = 0) {
     return (mode === 'ceiling' ? 'c' : 'w') + '-' + sector + '-' + band;
   }
@@ -85,7 +120,8 @@ class Drive3DSurfacePlacements {
       id, openHref:previous.openHref || '',
       mode:placement.mode, panelId:placement.panelId,
       world:placement.world,
-      surfaceScale:Drive3DSurfacePlacements.scale(previous.surfaceScale,mode)
+      surfaceScale:Drive3DSurfacePlacements.scale(previous.surfaceScale,mode),
+      surfaceFit:Drive3DSurfacePlacements.fitMode(previous.surfaceFit)
     };
     this.pending = null;
     // Rendering is performed by the owner after app metadata is synchronized.
@@ -93,29 +129,39 @@ class Drive3DSurfacePlacements {
     return true;
   }
 
-  /** Create a curved patch entirely INSIDE one wooden window section. */
+  /** Place a correctly proportioned print INSIDE one wooden cell.
+   * The pane is curved, but its artwork uses the photo's true width/height
+   * ratio in physical tangent-plane dimensions at the panel midpoint. */
   domePatch(entry) {
     const T = this.T;
     const {mode} = entry;
     const info = Drive3DSurfacePlacements.panelFromId(mode,entry.panelId);
     if (!info) return null;
-    const slice = Math.PI*2/this.ribs;
+    const slice = Math.PI * 2 / this.ribs;
     const scale = Drive3DSurfacePlacements.scale(entry.surfaceScale,mode);
-    const midAngle = (info.sector+.5)*slice;
-    const longitudeHalf = (slice*.42)*scale;
-    const bounds = mode === 'ceiling' ? [1.075,1.545] : [this.bands[info.band]+.025,this.bands[info.band+1]-.025];
-    const elevationCenter = (bounds[0]+bounds[1])/2;
-    const elevationHalf = Math.max(.015,(bounds[1]-bounds[0])*.5*scale);
+    const rad = this.radius - .25;
+    const midAngle = (info.sector+.5) * slice;
+    const bounds = mode === 'ceiling'
+      ? [1.075,1.545]
+      : [this.bands[info.band]+.025,this.bands[info.band+1]-.025];
+    const elevationCenter = (bounds[0]+bounds[1]) / 2;
+    const maxWidth = rad * Math.max(.001,Math.cos(elevationCenter)) * slice * .84 * scale;
+    const maxHeight = rad * (bounds[1]-bounds[0]) * .84 * scale;
+    const fit = Drive3DSurfacePlacements.fitImage(entry.aspect,maxWidth,maxHeight,entry.surfaceFit);
+    const longitudeHalf = fit.width / (2 * rad * Math.max(.001,Math.cos(elevationCenter)));
+    const elevationHalf = fit.height / (2 * rad);
     const segmentsX = 12,segmentsY = 8;
     const vertices=[],uv=[],indices=[];
-    const rad = this.radius-.25;
     for(let row=0;row<=segmentsY;row++){
       const v=row/segmentsY;
       const elev=elevationCenter+(v*2-1)*elevationHalf;
       for(let col=0;col<=segmentsX;col++){
         const u=col/segmentsX,angle=midAngle+(u*2-1)*longitudeHalf;
         vertices.push(rad*Math.cos(elev)*Math.sin(angle),rad*Math.sin(elev),rad*Math.cos(elev)*Math.cos(angle));
-        uv.push(u,v);
+        // Inside-viewed dome: increasing longitude points to the viewer's
+        // LEFT, so mirror U only in the geometry. This corrects the photo's
+        // visual handedness without reversing the original image or pixels.
+        uv.push(1 - (fit.cropU+u*(1-2*fit.cropU)),fit.cropV+v*(1-2*fit.cropV));
       }
     }
     for(let row=0;row<segmentsY;row++)for(let col=0;col<segmentsX;col++){
@@ -129,7 +175,7 @@ class Drive3DSurfacePlacements {
     geometry.computeVertexNormals();
     const p=new T.Vector3(rad*Math.cos(elevationCenter)*Math.sin(midAngle),
       rad*Math.sin(elevationCenter),rad*Math.cos(elevationCenter)*Math.cos(midAngle));
-    return {geometry,point:p};
+    return {geometry,point:p,fit};
   }
 
   set(entry) {
@@ -139,14 +185,25 @@ class Drive3DSurfacePlacements {
     const id=String(entry.id);
     const previous=this.placements.get(id);
     const scale=Drive3DSurfacePlacements.scale(entry.surfaceScale,mode);
-    let geometry,point;
+    const surfaceFit=Drive3DSurfacePlacements.fitMode(entry.surfaceFit);
+    let geometry,point,fit;
     if(mode === 'floor'){
       const coordinates=Array.isArray(entry.world) ? entry.world : [0,.065,0];
       const x=Number(coordinates[0]) || 0,z=Number(coordinates[2]) || 0;
       if(Math.hypot(x,z)>this.radius-.35) return null;
-      const aspect=Math.max(.3,Math.min(4,Number(entry.aspect)||4/3));
-      const w=3.0*scale,h=w/aspect;
-      geometry=new T.PlaneGeometry(w,h);
+      // A carpet/photo is a printed rectangle. It stays proportional,
+      // including for very tall portraits. Cover mode crops symmetrically.
+      fit=Drive3DSurfacePlacements.fitImage(entry.aspect,3.0*scale,3.0*scale,surfaceFit);
+      geometry=new T.PlaneGeometry(fit.width,fit.height);
+      if (surfaceFit === 'cover') {
+        const uv=geometry.getAttribute('uv');
+        for(let i=0;i<uv.count;i++)uv.setXY(i,
+          fit.cropU+uv.getX(i)*(1-2*fit.cropU),
+          fit.cropV+uv.getY(i)*(1-2*fit.cropV));
+        uv.needsUpdate=true;
+      }
+      // Normal faces up. Do NOT mirror UV on the floor: left/right here
+      // already matches a print viewed from above.
       geometry.rotateX(-Math.PI/2);
       geometry.translate(x,.065,z);
       point=new T.Vector3(x,.065,z);
@@ -155,6 +212,7 @@ class Drive3DSurfacePlacements {
       if(!patch)return null;
       geometry=patch.geometry;
       point=patch.point;
+      fit=patch.fit;
     }
     let texture=null;
     if(previous && previous.entry.openHref === entry.openHref)texture=previous.texture;
@@ -173,14 +231,19 @@ class Drive3DSurfacePlacements {
       previous.mesh.material.dispose();
       if(previous.texture !== texture)previous.texture?.dispose();
     }
-    const state={mesh,point,entry:{...entry,mode,surfaceScale:scale},texture};
+    const state={mesh,point,entry:{...entry,mode,surfaceScale:scale,surfaceFit},texture,fit};
     this.placements.set(id,state);
     if(!texture && typeof entry.openHref === 'string' && entry.openHref){
       const url=entry.openHref;
       new T.TextureLoader().load(url,loaded=>{
         if(this.placements.get(id)!==state){loaded.dispose();return;}
         loaded.colorSpace=T.SRGBColorSpace;
-        loaded.anisotropy= Math.min(4,loaded.anisotropy || 4);
+        loaded.anisotropy=Math.min(4,loaded.anisotropy || 4);
+        loaded.wrapS=T.ClampToEdgeWrapping;
+        loaded.wrapT=T.ClampToEdgeWrapping;
+        // Pixel data/UVs are controlled by our mesh, never modified here.
+        loaded.rotation=0;
+        loaded.needsUpdate=true;
         state.texture=loaded;
         material.map=loaded;
         material.color.set(0xffffff);
@@ -214,8 +277,17 @@ class Drive3DSurfacePlacements {
   }
 
   point(id) {return this.placements.get(String(id))?.point.toArray() || null;}
-  snapshot() {return [...this.placements.values()].map(({entry,point})=>({
-    id:entry.id,mode:entry.mode,panelId:entry.panelId||'',world:point.toArray(),scale:entry.surfaceScale
-  }));}
+  snapshot() {return [...this.placements.values()].map(({entry,point,fit,mesh})=>{
+    const uv=mesh.geometry.getAttribute('uv');
+    return {
+      id:entry.id,mode:entry.mode,panelId:entry.panelId||'',world:point.toArray(),
+      scale:entry.surfaceScale,surfaceFit:entry.surfaceFit || 'poster',
+      printSize:fit ? [fit.width,fit.height] : null,
+      imageCrop:fit ? [fit.cropU,fit.cropV] : null,
+      // Debuggable UV handedness: from inside a window/roof, left is U=1.
+      // Floor printing is normal-facing, so left remains U=0.
+      horizontalUv:uv ? [uv.getX(0),uv.getX(entry.mode==='floor' ? 1 : 12)] : null
+    };
+  });}
 }
 export {Drive3DSurfacePlacements};

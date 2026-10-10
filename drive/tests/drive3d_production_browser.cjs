@@ -173,13 +173,44 @@ const server=createServer((req,res)=>{
   await page.waitForFunction(id => window.ArcadeCloudDrive3D.three.snapshot().surfaceImages.some(item=>item.id===id && item.mode==='floor'),secondPicture.id,{timeout:6000});
   let positioned = (await snap()).surfaceImages.find(item=>item.id===secondPicture.id);
   assert(Math.abs(positioned.world[1]-.065)<.01,'A tap positions the image flat on the floor');
+  await page.waitForFunction(id=>{
+    const img=document.querySelector(`[data-spatial-picture-id="${id}"] img`);
+    return img?.naturalWidth > 0 && img?.naturalHeight > 0;
+  },secondPicture.id);
+  const originalAspect=await page.locator(surfaceSelector+' img').evaluate(
+    img=>img.naturalWidth/img.naturalHeight
+  );
+  positioned=(await snap()).surfaceImages.find(item=>item.id===secondPicture.id);
+  assert.equal(positioned.surfaceFit,'poster','Printed photo is the default for the floor');
+  assert(Math.abs(positioned.printSize[0]/positioned.printSize[1]-originalAspect)<.001,
+    'Floor keeps exact source-photo aspect ratio rather than stretching to a square');
+  assert.deepEqual(positioned.horizontalUv,[0,1],
+    'Floor photo reads left to right normally, not as a mirror');
   assert(await page.locator(surfaceSelector).evaluate(el=>el.classList.contains('is-surface-placed')),'The free viewer collapses into an anchored-image toolbar');
 
   await page.evaluate(id => window.ArcadeCloudDrive3D.onSpatialSurfacePlaced({
     id,mode:'window',panelId:'w-3-1',surfaceScale:.70,world:[3,5,6]
   }),secondPicture.id);
   positioned = (await snap()).surfaceImages.find(item=>item.id===secondPicture.id);
-  assert.equal(positioned.panelId,'w-3-1','Artwork fills one specified window of the glass dome');
+  assert.equal(positioned.panelId,'w-3-1','Artwork stays inside the chosen dome window');
+  assert.equal(positioned.surfaceFit,'poster');
+  assert(Math.abs(positioned.printSize[0]/positioned.printSize[1]-originalAspect)<.001,
+    'Vertical and horizontal posters preserve source aspect ratio on glass');
+  assert(positioned.horizontalUv[0] > positioned.horizontalUv[1],
+    'Dome interior viewing direction must not mirror the subject left-to-right');
+  assert(positioned.imageCrop.every(value=>value===0),
+    'Poster leaves space around portrait images instead of cropping them');
+  await page.locator(surfaceSelector+' select[aria-label="Ajuste de imagen a la superficie"]').selectOption('cover');
+  const covered=(await snap()).surfaceImages.find(item=>item.id===secondPicture.id);
+  assert.equal(covered.surfaceFit,'cover','User can explicitly request a cropped panel without stretching');
+  assert(covered.imageCrop.some(value=>value>0),
+    'Cover mode crops the original image UVs to fit panel proportions');
+  assert(covered.horizontalUv[0] > covered.horizontalUv[1],
+    'Crop mode must also avoid mirrored images');
+  await page.locator(surfaceSelector+' select[aria-label="Ajuste de imagen a la superficie"]').selectOption('poster');
+  positioned = (await snap()).surfaceImages.find(item=>item.id===secondPicture.id);
+  assert.equal(positioned.surfaceFit,'poster');
+  assert(positioned.imageCrop.every(value=>value===0));
   const panelWorld=positioned.world;
   await page.locator(surfaceSelector + ' button[aria-label="Reducir imagen colocada"]').click({force:true});
   const smaller=(await snap()).surfaceImages.find(item=>item.id===secondPicture.id);
@@ -192,6 +223,10 @@ const server=createServer((req,res)=>{
   positioned = (await snap()).surfaceImages.find(item=>item.id===secondPicture.id);
   assert.equal(positioned.mode,'ceiling','Picture can become a curved dome ceiling texture');
   assert.equal(positioned.panelId,'c-7-0');
+  assert(Math.abs(positioned.printSize[0]/positioned.printSize[1]-originalAspect)<.001,
+    'Ceiling poster keeps the unmodified original proportions');
+  assert(positioned.horizontalUv[0] > positioned.horizontalUv[1],
+    'Ceiling picture must not be reversed');
   await page.waitForFunction(id=>document.querySelector(`[data-spatial-picture-id="${id}"]`)?.classList.contains('is-controls-hidden'),secondPicture.id,{timeout:7500});
   assert.equal(await page.locator(surfaceSelector).isVisible(),false,'Anchored image toolbar auto-hides in five seconds');
   await page.evaluate(id=>window.ArcadeCloudDrive3D.onSpatialSurfaceSelected(id),secondPicture.id);

@@ -277,11 +277,17 @@ class Drive3DSurfacePlacements {
   }
 
   point(id) {return this.placements.get(String(id))?.point.toArray() || null;}
-  snapshot() {return [...this.placements.values()].map(({entry,point,fit})=>({
-    id:entry.id,mode:entry.mode,panelId:entry.panelId||'',world:point.toArray(),
-    scale:entry.surfaceScale,surfaceFit:entry.surfaceFit || 'poster',
-    printSize:fit ? [fit.width,fit.height] : null,
-    imageCrop:fit ? [fit.cropU,fit.cropV] : null
-  }));}
+  snapshot() {return [...this.placements.values()].map(({entry,point,fit,mesh})=>{
+    const uv=mesh.geometry.getAttribute('uv');
+    return {
+      id:entry.id,mode:entry.mode,panelId:entry.panelId||'',world:point.toArray(),
+      scale:entry.surfaceScale,surfaceFit:entry.surfaceFit || 'poster',
+      printSize:fit ? [fit.width,fit.height] : null,
+      imageCrop:fit ? [fit.cropU,fit.cropV] : null,
+      // Debuggable UV handedness: from inside a window/roof, left is U=1.
+      // Floor printing is normal-facing, so left remains U=0.
+      horizontalUv:uv ? [uv.getX(0),uv.getX(entry.mode==='floor' ? 1 : 12)] : null
+    };
+  });}
 }
 export {Drive3DSurfacePlacements};

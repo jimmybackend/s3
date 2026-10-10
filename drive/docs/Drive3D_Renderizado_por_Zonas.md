@@ -128,3 +128,17 @@ Para las celdas esféricas se calculan primero los metros realmente disponibles 
 El tamaño con `+` y `−`, el lugar elegido y el modo póster/cubrir son independientes para cada imagen y se persisten mediante `Drive3dPreferenceSanitizer`; fotografías guardadas por versiones previas se abren en modo póster por defecto. Tras cargarse una foto de caché o red, la malla se vuelve a calcular con sus dimensiones naturales, evitando una proporción temporal de 4:3.
 
 Pruebas automatizadas: proporciones y orientación UV en el piso, cristal y techo, confirmación de recorte en modo cubrir y de márgenes en modo póster, y conservación/validación de la preferencia por archivo.
+
+## Ajuste de cristal y póster maximizado (10 octubre 2026)
+
+La revisión de capturas reales Android detectó tres problemas en la versión anterior:
+1. La foto fijada a un cristal quedaba demasiado pequeña por multiplicar el tamaño del panel por `0.84 × surfaceScale` (por ejemplo, 0.84 × 0.70 ≈ 59 % del ancho disponible antes de conservar su proporción).
+2. `Cubrir` recortaba partes de la foto, incluso cuando el resto del panel no estaba completamente utilizado.
+3. Las divisiones virtuales de las ventanas (`0, 0.28, 0.52, 0.79, 1.05` rad) **no coincidían con las costillas horizontales reales** (`0.47, 0.72, 1.05`). Esto hacía imposible medir el hueco correctamente.
+4. El panorama exterior y las fotografías 3D pasaban por el tone-mapping cinematográfico ACES del renderizador, a diferencia de la foto HTML abierta como cuadro libre, reduciendo contraste y claridad.
+
+**Corrección**: crear/dividir las cuatro hileras reales en los mismos ángulos `0.24, 0.47, 0.72, 1.05` en geometría y selector; calcular el rectángulo interior verdadero desde las coordenadas y el radio local de cada panel; normalizar el antiguo `surfaceScale=0.70` a casi toda la apertura disponible sin eliminar la posibilidad de disminuir el tamaño. `Póster` dibuja la fotografía completa, casi a tamaño máximo, con un margen mínimo de seguridad; `Cubrir` ahora equivale a *maximizar sin recortar ni deformar*. Si su aspecto no coincide con el del cristal se deja a la vista el área libre en torno a la foto y la madera muestra el marco verdadero. El archivo privado nunca se modifica.
+
+La malla queda sobre la **cara interior** del cristal (radio `R - 0.08`), por delante de la panorámica y justo detrás de la madera (para que la estructura proteja visualmente los bordes). `MeshBasicMaterial({ toneMapped:false, color:white, opacity:1 })` presenta los píxeles con brillo y color sRGB, sin la película gris de ACES ni transparencia. La panorámica exterior también deja de recibir el tinte azulado y el tone mapping: no se agrega ningún vidrio lechoso u opaco por delante de ella. La foto del piso recibe el mismo ajuste de color. Los modos se siguen guardando por fotografía sin perder los originales.
+
+Pruebas: `drive3d_production_browser.cjs` valida proporción exacta, ausencia de recorte en los dos modos, cobertura del marco >90 % con los datos heredados, UV izquierda/derecha, materiales sin desaturación, radio interior y correspondencia con las cuatro costillas de madera. Validar después del despliegue Android con material privado real.

@@ -975,12 +975,92 @@ class Drive3DScene {
         };
 
         let surfaceRevision = {glass:0, floor:0};
+        // Locally generated, lightweight 2:1 panoramas and floor materials.
+        // The bundled photographic castle remains the untouched default.
+        let presetPanorama = null, presetFloor = null, currentGround = 'original';
+        const landscapeColors = {
+            'alpine-spring':['#80cefa','#e5f6ff','#639b65','#f8e5a4'],
+            'alpine-summer':['#279de6','#ffe2a5','#286b43','#74c9a4'],
+            'alpine-autumn':['#597daa','#f4c69a','#a65b2c','#e5ab4d'],
+            'alpine-winter':['#8099bd','#e7f2ff','#f0f6fb','#acbfd4'],
+            sunset:['#312d5f','#ffac70','#714b73','#ffca7e'],
+            night:['#090e30','#293763','#273e59','#7b9abb'],
+            prehistoric:['#936d54','#e7b98e','#496747','#b7a678'],
+            future:['#122145','#7a4caa','#305e90','#7bd7df']
+        };
+        function landscapeTexture(key) {
+            const palette = landscapeColors[key]; if(!palette) return null;
+            const c=document.createElement('canvas'); c.width=1024;c.height=512;
+            const ctx=c.getContext('2d'), sky=ctx.createLinearGradient(0,0,0,512);
+            sky.addColorStop(0,palette[0]);sky.addColorStop(.58,palette[1]);sky.addColorStop(1,palette[2]);
+            ctx.fillStyle=sky;ctx.fillRect(0,0,1024,512);
+            if(key==='night') {
+                ctx.fillStyle='#f4f7ff';
+                for(let i=0;i<130;i++){const x=(i*163.7)%1024,y=(i*71.9)%260;ctx.globalAlpha=.35+(i%5)/9;ctx.fillRect(x,y,1.5,1.5);}
+                ctx.globalAlpha=1;
+            }
+            for(let layer=0;layer<3;layer++){
+                ctx.beginPath();ctx.moveTo(0,380+layer*38);
+                for(let x=0;x<=1024;x+=8){
+                    const phase=x/1024*Math.PI*2;
+                    const ridge=Math.abs(Math.sin(phase*(layer+2)+1.4))* (96-layer*22)
+                      +Math.abs(Math.sin(phase*7+layer))* (25-layer*5);
+                    ctx.lineTo(x,340+layer*49-ridge);
+                }
+                ctx.lineTo(1024,512);ctx.lineTo(0,512);ctx.closePath();
+                ctx.fillStyle=[palette[3],palette[2],key==='alpine-winter'?'#b7cada':palette[2]][layer];ctx.fill();
+            }
+            const t=new T.CanvasTexture(c);t.colorSpace=T.SRGBColorSpace;return t;
+        }
+        function groundTexture(kind) {
+            const c=document.createElement('canvas');c.width=c.height=512;
+            const ctx=c.getContext('2d');
+            const colors={water:['#155473','#4ca6c8'],grass:['#397d35','#91b563'],clouds:['#9ccee7','#f4fcff'],sand:['#bb945e','#f3d8a1'],snow:['#d5ebf6','#ffffff']};
+            const colorsFor=colors[kind];if(!colorsFor)return null;
+            ctx.fillStyle=colorsFor[0];ctx.fillRect(0,0,512,512);
+            for(let i=0;i<900;i++){
+                const x=(i*159.73)%512,y=(i*79.19)%512;
+                ctx.strokeStyle=colorsFor[1];ctx.globalAlpha=.08+(i%7)*.04;
+                ctx.lineWidth=kind==='clouds'?12:kind==='water'?2:1;
+                ctx.beginPath();ctx.moveTo(x,y);
+                ctx.lineTo(x+(kind==='water'?30:kind==='clouds'?45:4),y+(kind==='grass'?12:kind==='clouds'?9:1));ctx.stroke();
+            }
+            ctx.globalAlpha=1;
+            const t=new T.CanvasTexture(c);t.colorSpace=T.SRGBColorSpace;
+            t.wrapS=t.wrapT=T.RepeatWrapping;t.repeat.set(4,4);return t;
+        }
+        this.setEnvironmentPreset=(key)=>{
+            const next=String(key||'original');
+            ++surfaceRevision.glass;
+            const map=next==='original'?defaultPanoramaMap:landscapeTexture(next);
+            if(!map && next!=='original')return;
+            customPanorama=next!=='original';
+            if(presetPanorama) presetPanorama.dispose();
+            presetPanorama=next==='original'?null:map;
+            panorama.material.map=map;panorama.material.needsUpdate=true;needsRender=true;
+        };
+        this.setGroundPreset=(kind)=>{
+            const next=String(kind||'original');
+            ++surfaceRevision.floor;
+            const map=next==='original'?marble:groundTexture(next);
+            if(!map)return;
+            if(presetFloor)presetFloor.dispose();
+            presetFloor=next==='original'?null:map;
+            currentGround=next;
+            floor.material.map=map;
+            floor.material.opacity=next==='original'?.66:next==='water'?.48:1;
+            floor.material.roughness=next==='water'?.18:.9;
+            floor.material.needsUpdate=true;
+            if(floorMirror)floorMirror.visible=next==='original'||next==='water';
+            needsRender=true;
+        };
+
         this.surface = (surface, url) => {
             const revision = ++surfaceRevision[surface];
             if (surface === 'glass') customPanorama = Boolean(url);
             const material = surface === 'glass' ? panorama.material : floor.material;
             if (!url) {
-                if (material.map && material.map !== marble && material.map !== defaultPanoramaMap) material.map.dispose();
+                if (material.map && material.map !== marble && material.map !== defaultPanoramaMap && material.map !== presetPanorama && material.map !== presetFloor) material.map.dispose();
                 material.map = surface === 'glass' ? defaultPanoramaMap : marble;
                 material.needsUpdate = true; needsRender = true; return;
             }
@@ -988,7 +1068,7 @@ class Drive3DScene {
                 if (surfaceRevision[surface] !== revision) { map.dispose(); return; }
                 map.colorSpace = T.SRGBColorSpace;
                 const mat = surface === 'glass' ? panorama.material : floor.material;
-                if (mat.map && mat.map !== marble && mat.map !== defaultPanoramaMap) mat.map.dispose();
+                if (mat.map && mat.map !== marble && mat.map !== defaultPanoramaMap && mat.map !== presetPanorama && mat.map !== presetFloor) mat.map.dispose();
                 mat.map = map; mat.color.set(0xffffff); mat.needsUpdate = true;
                 needsRender = true;
             }, undefined, () => { status.hidden = false; status.textContent = 'No se pudo cargar el fondo seleccionado.'; });

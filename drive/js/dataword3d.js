@@ -36,6 +36,8 @@
         environment: String(this.config.preferences?.environment || 'future'),
         glassBackground: String(this.config.preferences?.glassBackground || ''),
         floorBackground: String(this.config.preferences?.floorBackground || ''),
+        scenePreset: String(this.config.preferences?.scenePreset || 'original'),
+        groundPreset: String(this.config.preferences?.groundPreset || 'original'),
         ceilingBackground: String(this.config.preferences?.ceilingBackground || ''),
         furniturePreset: String(this.config.preferences?.furniturePreset || 'default'),
         windowPreset: String(this.config.preferences?.windowPreset || 'panoramic'),
@@ -431,6 +433,18 @@
       });
       this.document.querySelector('[data-dw-environment-close]')?.addEventListener('click', () => {
         if (this.environmentPanel) this.environmentPanel.hidden = true;
+      });
+      this.document.querySelector('[data-environment-scene]')?.addEventListener('change', (event) => {
+        this.room.scenePreset = event.target.value || 'original';
+        this.room.glassBackground = '';
+        this.three?.setEnvironmentPreset?.(this.room.scenePreset);
+        this.persistPreferences();
+      });
+      this.document.querySelector('[data-environment-ground]')?.addEventListener('change', (event) => {
+        this.room.groundPreset = event.target.value || 'original';
+        this.room.floorBackground = '';
+        this.three?.setGroundPreset?.(this.room.groundPreset);
+        this.persistPreferences();
       });
       this.document.querySelector('[data-environment-reset-glass]')?.addEventListener('click', () => {
         this.restoreDefaultGlassBackground();
@@ -1196,8 +1210,8 @@
 
     useChosenBackground(surface) {
       if (!this.backgroundChoice?.url || !['glass','floor'].includes(surface)) return;
-      if (surface === 'glass') this.room.glassBackground = this.backgroundChoice.path;
-      if (surface === 'floor') this.room.floorBackground = this.backgroundChoice.path;
+      if (surface === 'glass') { this.room.glassBackground = this.backgroundChoice.path; this.room.scenePreset = 'original'; }
+      if (surface === 'floor') { this.room.floorBackground = this.backgroundChoice.path; this.room.groundPreset = 'original'; }
       this.applySurfaceImage(surface, this.backgroundChoice.url);
       this.persistPreferences();
     }
@@ -1221,6 +1235,12 @@
       this.document.body.dataset.furniture = this.room.furniturePreset || 'default';
       this.document.body.dataset.windows = this.room.windowPreset || 'panoramic';
       this.document.body.dataset.plants = this.room.plantsPreset || 'orchids';
+      this.three?.setEnvironmentPreset?.(this.room.scenePreset);
+      this.three?.setGroundPreset?.(this.room.groundPreset);
+      const sceneSelect = this.document.querySelector('[data-environment-scene]');
+      const groundSelect = this.document.querySelector('[data-environment-ground]');
+      if (sceneSelect) sceneSelect.value = this.room.scenePreset;
+      if (groundSelect) groundSelect.value = this.room.groundPreset;
       this.applyStoredBackground('glass', this.room.glassBackground);
       this.applyStoredBackground('floor', this.room.floorBackground);
 
@@ -1244,6 +1264,10 @@
       // An empty glass URL restores the bundled 360° panorama in Three.js.
       // Preserve floor artwork, positioned pictures, furniture and camera.
       this.room.glassBackground = '';
+      this.room.scenePreset = 'original';
+      this.three?.setEnvironmentPreset?.('original');
+      const sceneSelect = this.document.querySelector('[data-environment-scene]');
+      if (sceneSelect) sceneSelect.value = 'original';
       if (!this.useThree) {
         this.room.environment = 'future';
         this.document.body.dataset.environment = 'future';
@@ -1262,6 +1286,8 @@
       const payload = {
         drive3dPreference:{
           environment:this.room.environment,
+          scenePreset:this.room.scenePreset,
+          groundPreset:this.room.groundPreset,
           glassBackground:this.room.glassBackground,
           floorBackground:this.room.floorBackground,
           ceilingBackground:this.room.ceilingBackground,

@@ -459,6 +459,36 @@ header('Content-Type: text/html; charset=UTF-8');
 
     <section class="dw-environment-panel" data-dw-environment-panel hidden>
       <div><strong>Personalizar sala 3D</strong><button type="button" data-dw-environment-close><i class="fas fa-xmark"></i></button></div>
+      <div class="dw-environment-library" aria-label="Biblioteca de entornos">
+        <label>Destino, época y estación
+          <select data-environment-scene>
+            <optgroup label="Paisajes y estaciones">
+              <option value="original">Castillo alpino · Original</option>
+              <option value="alpine-spring">Castillo alpino · Primavera</option>
+              <option value="alpine-summer">Castillo alpino · Verano</option>
+              <option value="alpine-autumn">Castillo alpino · Otoño</option>
+              <option value="alpine-winter">Castillo alpino · Invierno</option>
+            </optgroup>
+            <optgroup label="Lugares y épocas">
+              <option value="sunset">Montañas · Atardecer</option>
+              <option value="night">Montañas · Noche estrellada</option>
+              <option value="prehistoric">Valle prehistórico</option>
+              <option value="future">Horizonte futurista</option>
+            </optgroup>
+          </select>
+        </label>
+        <label>Superficie bajo el domo
+          <select data-environment-ground>
+            <option value="original">Mármol espejo · Original</option>
+            <option value="water">Agua</option>
+            <option value="grass">Pasto</option>
+            <option value="clouds">Nubes</option>
+            <option value="sand">Arena</option>
+            <option value="snow">Nieve</option>
+          </select>
+        </label>
+        <small>Las escenas alternativas utilizan texturas ligeras generadas en el navegador. Tus fondos personalizados siguen disponibles debajo.</small>
+      </div>
       <p class="dw-environment-help">Los fondos se guardan en <b>Imagenes/fondos3D</b> y la configuración queda en tu perfil de ArcadeCloud.</p>
       <p class="dw-environment-route" aria-label="Ruta de fondos"><i class="fas fa-folder-open"></i> Imagenes/fondos3D/</p>
       <label class="dw-upload-background">

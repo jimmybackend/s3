@@ -77,6 +77,11 @@
           if (win.location.origin !== this.window.location.origin || !win.ArcadeCloudOsShell) {
             throw new Error('Abre tu sesión de Drive para acceder a las acciones.');
           }
+          const explorer = win.document.querySelector('.os-explorer-window');
+          if (explorer && win.ArcadeCloudDesktop) {
+            win.ArcadeCloudDesktop.attachExplorer(explorer);
+            win.ArcadeCloudDesktop.manager.open(explorer);
+          }
           this.loadedTarget = pending.url;
           ['drive:storage-changed', 'drive:folder-mutated', 'bloque-archivos:updated', 'bloque-carpetas:updated', 'filesystem:changed', 'arcadeos:explorer-updated'].forEach(name => {
             win.document.addEventListener(name, () => { this.dirty = true; });

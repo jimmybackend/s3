@@ -288,7 +288,7 @@ $isDrive3dActions = (string)($_GET['_drive3d_actions'] ?? '') === '1';
     </a>
 
     <?php if ($isExplorerFragment || $isDrive3dActions): ?>
-    <section class="os-window os-explorer-window<?= $isDrive3dActions ? ' is-open is-active' : '' ?>" data-window-title="Mis datos">
+    <section class="os-window os-explorer-window" data-window-title="Mis datos">
       <div class="os-window-titlebar" data-window-drag-handle>
         <div class="os-window-title"><i class="fas fa-folder-open"></i><span>Mis datos</span></div>
         <div class="os-window-controls">

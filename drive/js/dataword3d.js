@@ -118,6 +118,7 @@
           mode:['floor','ceiling','window'].includes(entry.mode) ? entry.mode : 'free',
           panelId:/^[wc]-\d{1,2}-\d$/.test(String(entry.panelId || '')) ? String(entry.panelId) : '',
           surfaceScale:this.clamp(Number(entry.surfaceScale) || .70,.30,2.6),
+          surfaceFit:entry.surfaceFit === 'cover' ? 'cover' : 'poster',
         };
       }).filter(Boolean);
     }
@@ -1284,6 +1285,7 @@
             mode:entry.mode || 'free',
             panelId:entry.panelId || '',
             surfaceScale:Number(entry.surfaceScale) || .70,
+            surfaceFit:entry.surfaceFit === 'cover' ? 'cover' : 'poster',
           })),
         }
       };
@@ -1560,6 +1562,7 @@
         mode:'free',
         panelId:'',
         surfaceScale:.70,
+        surfaceFit:'poster',
       };
       this.spatialPictureState.push(entry);
       this.mountSpatialImage(entry, false);
@@ -1616,6 +1619,20 @@
         option.value=value; option.textContent=label; mode.append(option);
       });
       mode.value=entry.mode || 'free';
+      const fit = this.document.createElement('select');
+      fit.className = 'dw-spatial-image-fit';
+      fit.setAttribute('aria-label','Ajuste de imagen a la superficie');
+      fit.title = 'Cómo mostrar la fotografía sin deformarla';
+      [
+        ['poster','Póster · foto completa'],
+        ['cover','Cubrir · recortar bordes']
+      ].forEach(([value,label]) => {
+        const option = this.document.createElement('option');
+        option.value=value;
+        option.textContent=label;
+        fit.append(option);
+      });
+      fit.value=entry.surfaceFit === 'cover' ? 'cover' : 'poster';
       const move = this.document.createElement('button');
       move.type='button'; move.title='Cambiar la posición sobre la superficie';
       move.setAttribute('aria-label','Mover imagen a otra posición del domo');
@@ -1628,7 +1645,7 @@
       bigger.type='button'; bigger.title='Ampliar imagen';
       bigger.setAttribute('aria-label','Ampliar imagen colocada');
       bigger.textContent='+';
-      actions.append(mode,front,move,smaller,bigger,resize,close);
+      actions.append(mode,fit,front,move,smaller,bigger,resize,close);
       header.append(icon,title,actions);
 
       const body = this.document.createElement('div');
@@ -1647,14 +1664,18 @@
       resizeHandle.innerHTML = '<i class="fas fa-up-right-and-down-left-from-center"></i>';
       win.append(header,body,resizeHandle);
       this.spatialPictureLayer.append(win);
-      this.spatialPictures.set(entry.id,{window:win,header,image,entry,resize,resizeHandle,mode,move,smaller,bigger,front,autoHideTimer:null});
+      this.spatialPictures.set(entry.id,{window:win,header,image,entry,resize,resizeHandle,mode,fit,move,smaller,bigger,front,autoHideTimer:null});
       this.syncSpatialPictureMode(entry.id);
 
-      image.addEventListener('load', () => {
+      const refreshAspect = () => {
         this.fitSpatialPicture(win,image,entry);
-        if (entry.mode && entry.mode !== 'free') this.three?.setSpatialSurface?.({...entry,aspect:image.naturalWidth/Math.max(1,image.naturalHeight)});
-      }, {once:true});
-      if (image.complete) this.fitSpatialPicture(win,image,entry);
+        if (entry.mode && entry.mode !== 'free' && image.naturalWidth && image.naturalHeight) {
+          this.three?.setSpatialSurface?.({...entry,aspect:image.naturalWidth/image.naturalHeight});
+        }
+      };
+      image.addEventListener('load', refreshAspect, {once:true});
+      // Cached images may already be loaded before the listener is attached.
+      if (image.complete && image.naturalWidth && image.naturalHeight) refreshAspect();
 
       win.addEventListener('pointerdown', () => {
         this.bringSpatialPictureToFront(entry.id);
@@ -1663,6 +1684,10 @@
       mode.addEventListener('change', event => {
         event.stopPropagation();
         this.changeSpatialImageMode(entry.id,mode.value);
+      });
+      fit.addEventListener('change', event => {
+        event.stopPropagation();
+        this.changeSpatialImageFit(entry.id,fit.value);
       });
       move.addEventListener('click', event => {
         event.stopPropagation();
@@ -1730,6 +1755,8 @@
       picture.window.classList.toggle('is-surface-placed', anchored);
       picture.window.dataset.pictureMode = mode;
       picture.mode.value = mode;
+      picture.fit.value = picture.entry.surfaceFit === 'cover' ? 'cover' : 'poster';
+      picture.fit.hidden = !anchored;
       picture.resize.hidden = anchored;
       picture.front.hidden = !anchored;
       picture.move.hidden = !anchored;
@@ -1761,6 +1788,21 @@
           }
         },5000);
       }
+    }
+
+    changeSpatialImageFit(id, fit) {
+      const picture = this.spatialPictures.get(id);
+      if (!picture) return;
+      picture.entry.surfaceFit = fit === 'cover' ? 'cover' : 'poster';
+      picture.fit.value = picture.entry.surfaceFit;
+      if (picture.entry.mode && picture.entry.mode !== 'free') {
+        const {entry,image}=picture;
+        const aspect = image.naturalWidth && image.naturalHeight
+          ? image.naturalWidth / image.naturalHeight : 4 / 3;
+        this.three?.setSpatialSurface?.({...entry,aspect});
+        this.revealSpatialPictureControls(id);
+      }
+      this.schedulePreferenceSave();
     }
 
     changeSpatialImageMode(id, mode) {
@@ -1798,6 +1840,7 @@
         mode:placement.mode,
         panelId:placement.panelId || '',
         surfaceScale:placement.surfaceScale,
+        surfaceFit:picture.entry.surfaceFit === 'cover' ? 'cover' : 'poster',
         world:placement.world,
       });
       const image = picture.image;

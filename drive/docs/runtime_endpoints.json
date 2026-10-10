@@ -572,7 +572,7 @@
     },
     {
       "path": "drive/dataword3d.php",
-      "size": 27978,
+      "size": 28296,
       "active": true,
       "references": [
         "drive/so.php",
@@ -1662,7 +1662,7 @@
     },
     {
       "path": "drive/so.php",
-      "size": 127129,
+      "size": 127298,
       "active": true,
       "references": [
         "drive/dataword3d.php",
@@ -1686,6 +1686,7 @@
         "drive/tests/web_os_remote_applications_smoke.php",
         "drive/tests/web_os_theme_contract_smoke.php",
         "drive/js/dataword3d.js",
+        "drive/js/drive3d-actions.js",
         "drive/js/notebook.js",
         "drive/js/os-window-manager.js",
         "drive/js/so.js",
@@ -4500,7 +4501,7 @@
     },
     {
       "path": "drive/tests/web_os_contract_smoke.php",
-      "size": 87222,
+      "size": 87247,
       "active": false,
       "references": []
     },

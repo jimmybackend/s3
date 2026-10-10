@@ -97,12 +97,17 @@
       })();
       try{await this.boot;}catch(error){this.boot=null;throw error;}
     }
-    installExplorer(html) {
+    async installExplorer(html) {
       const parsed=new DOMParser().parseFromString(html,'text/html');
       const explorer=parsed.querySelector('.os-explorer-window');
       if(!explorer) throw new Error('La carpeta ya no está disponible.');
       explorer.querySelectorAll('script').forEach(node=>node.remove());
-      if(this.explorer)this.window.ArcadeCloudDesktop.manager.requestClose(this.explorer);
+      if(this.explorer){
+        const desktop=this.window.ArcadeCloudDesktop;
+        const id=this.explorer.dataset.windowId;
+        if(!await desktop.manager.requestClose(this.explorer))throw new Error('No se pudo liberar el contexto anterior.');
+        desktop.explorers.delete(id);
+      }
       explorer.setAttribute('data-drive3d-action-context','');
       this.root.append(explorer); this.explorer=explorer;
       this.window.ArcadeCloudDesktop.attachExplorer(explorer);
@@ -142,7 +147,8 @@
         if(generation!==this.generation)return;
         await this.runtime(payload);
         if(generation!==this.generation||!this.expanded)return;
-        this.installExplorer(payload.html);
+        await this.installExplorer(payload.html);
+        if(generation!==this.generation||!this.expanded)return;
         this.list.replaceChildren();
         for(const control of this.context(item)){
           const button=this.document.createElement('button');button.type='button';button.textContent=control.textContent.trim();

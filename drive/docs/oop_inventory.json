@@ -4,8 +4,8 @@
     "php_class_modules": 319,
     "php_needs_migration": 0,
     "php_tests": 81,
-    "js_total": 89,
-    "js_class_modules": 82,
+    "js_total": 90,
+    "js_class_modules": 83,
     "js_needs_migration": 0,
     "js_tests": 12,
     "js_compatibility_facades": 8,
@@ -687,7 +687,7 @@
     },
     {
       "path": "drive/dataword3d.php",
-      "lines": 558,
+      "lines": 561,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -2219,7 +2219,7 @@
     },
     {
       "path": "drive/so.php",
-      "lines": 2253,
+      "lines": 2255,
       "kind": "view/entrypoint",
       "classes": 0,
       "functions": [],
@@ -8920,7 +8920,7 @@
     },
     {
       "path": "drive/js/background-tasks.js",
-      "lines": 1352,
+      "lines": 1364,
       "kind": "class/module",
       "classes": [
         "BackgroundTaskCenter"
@@ -9005,7 +9005,7 @@
     },
     {
       "path": "drive/js/dataword3d.js",
-      "lines": 2084,
+      "lines": 2085,
       "kind": "class/module",
       "classes": [
         "ArcadeCloudDrive3D"
@@ -9088,6 +9088,29 @@
         "jquery": 0,
         "json_consumers": 0,
         "response_checks": 3
+      },
+      "issues": []
+    },
+    {
+      "path": "drive/js/drive3d-actions.js",
+      "lines": 182,
+      "kind": "class/module",
+      "classes": [
+        "Drive3DActions"
+      ],
+      "functions": [],
+      "window_assign": [
+        "ArcadeCloudDrive3DActions"
+      ],
+      "window_func": [],
+      "top_vars": [],
+      "iife": false,
+      "ajax": {
+        "fetch": 0,
+        "xhr": 0,
+        "jquery": 0,
+        "json_consumers": 0,
+        "response_checks": 0
       },
       "issues": []
     },
@@ -10557,7 +10580,7 @@
     },
     {
       "path": "drive/tests/background_tasks_refresh_functional.js",
-      "lines": 38,
+      "lines": 57,
       "kind": "procedural script",
       "classes": [],
       "functions": [],
@@ -10576,7 +10599,7 @@
         "xhr": 0,
         "jquery": 0,
         "json_consumers": 0,
-        "response_checks": 1
+        "response_checks": 2
       },
       "issues": [
         "top-level state: assert, vm, fs, source, context",

@@ -8,8 +8,8 @@
 - PHP que ya contienen clases/interfaces: **319**
 - PHP marcados para migración/revisión: **0**
 - Tests PHP separados del objetivo OOP de runtime: **81**
-- JavaScript analizados: **89**
-- JavaScript que ya contienen clases: **82**
+- JavaScript analizados: **90**
+- JavaScript que ya contienen clases: **83**
 - JavaScript runtime marcados para migración/revisión: **0**
 - Tests JavaScript separados del objetivo OOP de runtime: **12**
 - JavaScript OOP con fachada `window` de compatibilidad: **8**
@@ -75,7 +75,7 @@
 | `drive/crear_carpeta.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/create_folder_document.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/database-backup.php` | 10 | thin endpoint | 0 | — | — | — | — |
-| `drive/dataword3d.php` | 558 | view/entrypoint | 0 | — | — | — | — |
+| `drive/dataword3d.php` | 561 | view/entrypoint | 0 | — | — | — | — |
 | `drive/delete_multiple.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/descargar.php` | 8 | thin endpoint | 0 | — | — | — | — |
 | `drive/descargar_archivo.php` | 8 | thin endpoint | 0 | — | — | — | — |
@@ -175,7 +175,7 @@
 | `drive/set_file_security.php` | 10 | thin endpoint | 0 | — | — | — | — |
 | `drive/setup/api.php` | 15 | thin endpoint | 0 | — | — | — | — |
 | `drive/setup/index.php` | 90 | view/entrypoint | 0 | — | — | — | — |
-| `drive/so.php` | 2253 | view/entrypoint | 0 | — | — | — | — |
+| `drive/so.php` | 2255 | view/entrypoint | 0 | — | — | — | — |
 | `drive/src/Activity/ActivityCostRecorder.php` | 155 | class/module | 1 | — | — | — | — |
 | `drive/src/Activity/ActivityCostRepository.php` | 198 | class/module | 1 | — | ⚠️ | — | — |
 | `drive/src/Activity/ActivityCostService.php` | 153 | class/module | 1 | — | — | — | — |
@@ -610,13 +610,14 @@
 | `drive/js/audiovideo.js` | 619 | class/module | AudiovideoModule | — | audioNext, audioPrev, reproducirVideoDesde, videoNext, videoPlayPause, videoPrev | window functions: audioNext, audioPrev, reproducirVideoDesde, videoNext, videoPlayPause, videoPrev, wavePlayPause |
 | `drive/js/aws-comprehend.js` | 355 | class/module | AwsComprehendModule, AwsFileActionRouter | — | — | — |
 | `drive/js/background-task-feedback.js` | 180 | class/module | BackgroundTaskFeedbackModule | — | — | — |
-| `drive/js/background-tasks.js` | 1352 | class/module | BackgroundTaskCenter | — | — | — |
+| `drive/js/background-tasks.js` | 1364 | class/module | BackgroundTaskCenter | — | — | — |
 | `drive/js/carpetas.js` | 1200 | class/module | CarpetasModule | — | actualizarBloqueCarpetas | window functions: actualizarBloqueCarpetas |
 | `drive/js/compute-node-idle.js` | 290 | class/module | ArcadeCloudComputeIdleGuard | — | — | — |
-| `drive/js/dataword3d.js` | 2084 | class/module | ArcadeCloudDrive3D | — | — | — |
+| `drive/js/dataword3d.js` | 2085 | class/module | ArcadeCloudDrive3D | — | — | — |
 | `drive/js/descarga-multiple.js` | 114 | class/module | DescargaMultipleModule | — | — | — |
 | `drive/js/descarga-uno.js` | 110 | class/module | DescargaUnoModule | — | — | — |
 | `drive/js/desktop-shell.js` | 182 | class/module | ArcadeCloudDesktopShell | — | — | — |
+| `drive/js/drive3d-actions.js` | 182 | class/module | Drive3DActions | — | — | — |
 | `drive/js/drive3d-production.js` | 172 | class/module | Drive3DProduction | — | — | — |
 | `drive/js/drive3d-scene.js` | 1204 | class/module | Drive3DScene | — | — | — |
 | `drive/js/drive3d-surface-placements.js` | 304 | class/module | Drive3DSurfacePlacements | — | — | — |
@@ -679,7 +680,7 @@
 | `drive/js/upload-destination.js` | 95 | class/module | UploadDestinationModule | — | — | — |
 | `drive/js/ver-metadatos.js` | 75 | class/module | VerMetadatosModule | — | verMetadatos | window functions: verMetadatos |
 | `drive/js/ver-pdf.js` | 112 | class/module | VerPdfModule | — | — | — |
-| `drive/tests/background_tasks_refresh_functional.js` | 38 | procedural script | — | — | — | top-level state: assert, vm, fs, source, context; no ES class |
+| `drive/tests/background_tasks_refresh_functional.js` | 57 | procedural script | — | — | — | top-level state: assert, vm, fs, source, context; no ES class |
 | `drive/tests/classic_mutation_csrf_functional.js` | 56 | class/module | FixtureFormData | — | — | — |
 | `drive/tests/local_container_programs_functional.js` | 25 | class/module | Element | — | — | — |
 | `drive/tests/os_image_window_fit.test.js` | 89 | procedural script | — | — | — | top-level state: assert, scenarios, win, image, cleanup, manager, style, classes; no ES class |

@@ -9114,7 +9114,7 @@
     },
     {
       "path": "drive/js/drive3d-scene.js",
-      "lines": 1163,
+      "lines": 1189,
       "kind": "class/module",
       "classes": [
         "Drive3DScene"

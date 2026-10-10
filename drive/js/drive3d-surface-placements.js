@@ -14,7 +14,10 @@ class Drive3DSurfacePlacements {
     this.ribs = 16;
     // Four glass bands above the shelves, plus the upper roof. Every
     // azimuth section is valid all around the 360-degree dome.
-    this.bands = [0, .28, .52, .79, 1.05];
+    // Exactly the physical timber horizontal beams in drive3d-scene.js:
+    // 0.24, 0.47, 0.72 and 1.05 radians. Never fabricate invisible
+    // frame edges: artwork and the pane must share the SAME boundaries.
+    this.bands = [0, .24, .47, .72, 1.05];
   }
 
   static mode(mode) {
@@ -37,28 +40,25 @@ class Drive3DSurfacePlacements {
       ? Math.max(.05, Math.min(20, aspect)) : 4 / 3;
   }
 
-  /** Fit a photograph inside the given physical dimensions WITHOUT stretching.
-   * Poster: show the full print with spare margins. Cover: crop the original
-   * symmetrically like object-fit:cover, not like scaling a sheet to the pane. */
+  /** Largest proportional rectangle that can fit inside the pane.
+   * Neither mode can crop or stretch the original photo. On a differently
+   * shaped pane, leftover glass remains visible, framed by the REAL wood.
+   * 'poster' leaves a narrow protective border; 'cover' uses the whole
+   * clear aperture (the maximum physically possible without losing pixels).
+   */
   static fitImage(aspectInput, maxWidth, maxHeight, fitInput = 'poster') {
     const aspect = Drive3DSurfacePlacements.aspect(aspectInput);
     const mode = Drive3DSurfacePlacements.fitMode(fitInput);
     const boxWidth = Math.max(.001, Number(maxWidth) || 0);
     const boxHeight = Math.max(.001, Number(maxHeight) || 0);
-    if (mode === 'poster') {
-      let width = boxWidth;
-      let height = width / aspect;
-      if (height > boxHeight) {
-        height = boxHeight;
-        width = height * aspect;
-      }
-      return {width, height, cropU:0, cropV:0, mode};
+    const padding = mode === 'cover' ? .997 : .978;
+    let width = boxWidth * padding;
+    let height = width / aspect;
+    if (height > boxHeight * padding) {
+      height = boxHeight * padding;
+      width = height * aspect;
     }
-    const paneAspect = boxWidth / boxHeight;
-    // UV cropping is applied to the mesh; it never changes the source file.
-    const cropU = aspect > paneAspect ? (1 - paneAspect / aspect) / 2 : 0;
-    const cropV = aspect < paneAspect ? (1 - aspect / paneAspect) / 2 : 0;
-    return {width:boxWidth, height:boxHeight, cropU, cropV, mode};
+    return {width,height,cropU:0,cropV:0,mode};
   }
 
   static panelId(mode, sector, band = 0) {
@@ -138,15 +138,23 @@ class Drive3DSurfacePlacements {
     const info = Drive3DSurfacePlacements.panelFromId(mode,entry.panelId);
     if (!info) return null;
     const slice = Math.PI * 2 / this.ribs;
+    // Old installations stored .70 as the default. Map that old slider
+    // position to an almost full-size print, without discarding intentional
+    // smaller values; the ± buttons can still shrink the poster.
     const scale = Drive3DSurfacePlacements.scale(entry.surfaceScale,mode);
-    const rad = this.radius - .25;
+    const paneScale = Math.min(1, scale / .72);
+    // Artwork sits just on the INNER face of the dome, ahead of the glass
+    // panorama and below the wooden frame (so there is no milky overlay).
+    const rad = this.radius - .08;
     const midAngle = (info.sector+.5) * slice;
     const bounds = mode === 'ceiling'
       ? [1.075,1.545]
-      : [this.bands[info.band]+.025,this.bands[info.band+1]-.025];
+      : [this.bands[info.band]+.012,this.bands[info.band+1]-.012];
     const elevationCenter = (bounds[0]+bounds[1]) / 2;
-    const maxWidth = rad * Math.max(.001,Math.cos(elevationCenter)) * slice * .84 * scale;
-    const maxHeight = rad * (bounds[1]-bounds[0]) * .84 * scale;
+    // Measure the ACTUAL wooden cell. Prior .84 * .70 scaling used less
+    // than 60% of the available width, even in 'cover' mode.
+    const maxWidth = rad * Math.max(.001,Math.cos(elevationCenter)) * slice * .985 * paneScale;
+    const maxHeight = rad * (bounds[1]-bounds[0]) * .985 * paneScale;
     const fit = Drive3DSurfacePlacements.fitImage(entry.aspect,maxWidth,maxHeight,entry.surfaceFit);
     const longitudeHalf = fit.width / (2 * rad * Math.max(.001,Math.cos(elevationCenter)));
     const elevationHalf = fit.height / (2 * rad);
@@ -191,17 +199,9 @@ class Drive3DSurfacePlacements {
       const coordinates=Array.isArray(entry.world) ? entry.world : [0,.065,0];
       const x=Number(coordinates[0]) || 0,z=Number(coordinates[2]) || 0;
       if(Math.hypot(x,z)>this.radius-.35) return null;
-      // A carpet/photo is a printed rectangle. It stays proportional,
-      // including for very tall portraits. Cover mode crops symmetrically.
+      // Floor wallpaper follows the same uncut, proportional logic.
       fit=Drive3DSurfacePlacements.fitImage(entry.aspect,3.0*scale,3.0*scale,surfaceFit);
       geometry=new T.PlaneGeometry(fit.width,fit.height);
-      if (surfaceFit === 'cover') {
-        const uv=geometry.getAttribute('uv');
-        for(let i=0;i<uv.count;i++)uv.setXY(i,
-          fit.cropU+uv.getX(i)*(1-2*fit.cropU),
-          fit.cropV+uv.getY(i)*(1-2*fit.cropV));
-        uv.needsUpdate=true;
-      }
       // Normal faces up. Do NOT mirror UV on the floor: left/right here
       // already matches a print viewed from above.
       geometry.rotateX(-Math.PI/2);
@@ -217,13 +217,17 @@ class Drive3DSurfacePlacements {
     let texture=null;
     if(previous && previous.entry.openHref === entry.openHref)texture=previous.texture;
     const material=new T.MeshBasicMaterial({
-      color:0xa1cedc, side:T.DoubleSide, map:texture, depthWrite:false,
+      // MeshBasicMaterial is unlit. Disabling ACES tone mapping ensures a
+      // placed photo has the same sRGB colour/contrast as the free HTML
+      // image viewer, rather than getting a grey filmed-over appearance.
+      color:texture ? 0xffffff : 0xffffff,
+      toneMapped:false, side:T.DoubleSide, map:texture, depthWrite:true,
       transparent:false, polygonOffset:true, polygonOffsetFactor:-1
     });
     const mesh=new T.Mesh(geometry,material);
     mesh.name='drive3d-placed-image';
     mesh.userData.placementId=id;
-    mesh.renderOrder=3;
+    mesh.renderOrder=4;
     this.scene.add(mesh);
     if(previous){
       previous.mesh.removeFromParent();

@@ -156,6 +156,8 @@ class Drive3DSurfacePlacements {
     const maxWidth = rad * Math.max(.001,Math.cos(elevationCenter)) * slice * .985 * paneScale;
     const maxHeight = rad * (bounds[1]-bounds[0]) * .985 * paneScale;
     const fit = Drive3DSurfacePlacements.fitImage(entry.aspect,maxWidth,maxHeight,entry.surfaceFit);
+    fit.availableWidth = maxWidth;
+    fit.availableHeight = maxHeight;
     const longitudeHalf = fit.width / (2 * rad * Math.max(.001,Math.cos(elevationCenter)));
     const elevationHalf = fit.height / (2 * rad);
     const segmentsX = 12,segmentsY = 8;
@@ -220,7 +222,7 @@ class Drive3DSurfacePlacements {
       // MeshBasicMaterial is unlit. Disabling ACES tone mapping ensures a
       // placed photo has the same sRGB colour/contrast as the free HTML
       // image viewer, rather than getting a grey filmed-over appearance.
-      color:texture ? 0xffffff : 0xffffff,
+      color:0xffffff,
       toneMapped:false, side:T.DoubleSide, map:texture, depthWrite:true,
       transparent:false, polygonOffset:true, polygonOffsetFactor:-1
     });
@@ -287,6 +289,10 @@ class Drive3DSurfacePlacements {
       id:entry.id,mode:entry.mode,panelId:entry.panelId||'',world:point.toArray(),
       scale:entry.surfaceScale,surfaceFit:entry.surfaceFit || 'poster',
       printSize:fit ? [fit.width,fit.height] : null,
+      panelAvailable:fit?.availableWidth ? [fit.availableWidth,fit.availableHeight] : null,
+      photoToneMapped:mesh.material.toneMapped,
+      photoOpacity:mesh.material.opacity,
+      photoRadius:point.length(),
       imageCrop:fit ? [fit.cropU,fit.cropV] : null,
       // Debuggable UV handedness: from inside a window/roof, left is U=1.
       // Floor printing is normal-facing, so left remains U=0.

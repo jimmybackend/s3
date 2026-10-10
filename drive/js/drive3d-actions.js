@@ -47,9 +47,8 @@
     }
     asset(src, style=false) {
       const url=new URL(src,this.window.location.href);
-      const allowedLocal=url.origin===this.window.location.origin && /^\/(?:.*\/)?(?:js|css)\/[\w.-]+$/.test(url.pathname);
-      const allowedCdn=['https://code.jquery.com/jquery-3.5.1.min.js','https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js','https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css'].includes(url.href);
-      if(!allowedLocal&&!allowedCdn) return Promise.reject(new Error('Recurso de acciones no permitido.'));
+      const allowedLocal=url.origin===this.window.location.origin && /^\/(?:.*\/)?(?:js|css)\/(?:vendor\/)?[\w.-]+$/.test(url.pathname);
+      if(!allowedLocal) return Promise.reject(new Error('Recurso de acciones no permitido.'));
       if(this.assets.has(url.href)) return this.assets.get(url.href);
       const promise=new Promise((resolve,reject)=>{
         const node=this.document.createElement(style?'link':'script');
@@ -60,8 +59,15 @@
             if(url.pathname.endsWith(marker+'.js'))node.setAttribute('data-'+marker,'');
           }
         }
-        node.onload=resolve;
-        node.onerror=()=>{node.remove();this.assets.delete(url.href);reject(new Error('No se pudo cargar '+url.pathname));};
+        const finish=(error)=>{
+          this.window.clearTimeout(timer);
+          node.onload=null; node.onerror=null;
+          if(error){node.remove();this.assets.delete(url.href);reject(error);}
+          else resolve();
+        };
+        const timer=this.window.setTimeout(()=>finish(new Error('Se agotó el tiempo de carga de '+url.pathname)),15000);
+        node.onload=()=>finish();
+        node.onerror=()=>finish(new Error('No se pudo cargar '+url.pathname));
         this.document.head.append(node);
       });
       this.assets.set(url.href,promise);
@@ -83,10 +89,10 @@
           const parsed=new DOMParser().parseFromString(payload.html,'text/html');
           parsed.querySelectorAll('.modal,#fileContextMenu,#folderContextMenu').forEach(node=>this.root.append(node));
         }
-        await this.asset('https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css',true);
+        await this.asset('css/vendor/bootstrap-4.5.2.min.css',true);
         await this.asset('css/so.css',true);
-        if(!this.window.jQuery) await this.asset('https://code.jquery.com/jquery-3.5.1.min.js');
-        if(!this.window.jQuery?.fn?.modal) await this.asset('https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js');
+        if(!this.window.jQuery) await this.asset('js/vendor/jquery-3.5.1.min.js');
+        if(!this.window.jQuery?.fn?.modal) await this.asset('js/vendor/bootstrap-4.5.2.bundle.min.js');
         for(const src of payload.scripts) await this.asset(src);
         if(!this.window.ArcadeCloudDesktop || !this.window.ArcadeCloudOsShell) throw new Error('No se pudieron preparar las acciones.');
         // The 3D panorama uses its existing image/preference pipeline.
@@ -139,10 +145,13 @@
       const item=this.item,generation=this.generation;
       this.request?.abort(); this.request=new AbortController();
       this.list.textContent='Cargando acciones…';
+      const request=this.request;
+      const deadline=this.window.setTimeout(()=>request.abort(),25000);
       try{
         const response=await this.window.fetch(this.target(item),{credentials:'same-origin',cache:'no-store',signal:this.request.signal,headers:{Accept:'application/json'}});
         if(!response.ok)throw new Error('No se pudieron cargar las acciones.');
         const payload=await response.json();
+        this.window.clearTimeout(deadline);
         if(!payload.ok||!payload.context||!Array.isArray(payload.scripts))throw new Error('Abre tu sesión de Drive para acceder a las acciones.');
         if(generation!==this.generation)return;
         await this.runtime(payload);
@@ -161,7 +170,13 @@
           });
           this.list.append(button);
         }
-      }catch(error){if(error.name!=='AbortError'&&generation===this.generation)this.list.textContent=error.message;}
+      }catch(error){
+        if(generation===this.generation&&this.expanded&&this.request===request){
+          this.list.textContent=error.name==='AbortError'?'La carga tardó demasiado. Vuelve a intentarlo.':error.message;
+          const retry=this.document.createElement('button');retry.type='button';retry.textContent='Reintentar acciones';
+          retry.addEventListener('click',()=>this.render());this.list.append(retry);
+        }
+      }finally{this.window.clearTimeout(deadline);}
     }
     async refreshInventory() {
       const app=this.window.ArcadeCloudDrive3D;

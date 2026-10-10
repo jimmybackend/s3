@@ -17,9 +17,8 @@ const script=name=>`<script src="/js/${name}"></script>`;
   page.on('pageerror',e=>errors.push(e.message));
   await page.route('**/*',route=>{
    const url=new URL(route.request().url());
-   if(/^\/(js|css)\/[\w.-]+$/.test(url.pathname)){
+   if(/^\/(js|css)\/(?:vendor\/)?[\w.-]+$/.test(url.pathname)){
     let body=fs.readFileSync(path.join(root,url.pathname),'utf8');
-    if(url.pathname.endsWith('move-tasks.js'))body=body.slice(0,body.indexOf('(function loadBackgroundModules'));
     if(url.pathname.endsWith('background-tasks.js'))body=body.replace('BackgroundTaskCenter.boot();','window.TaskCenterClass=BackgroundTaskCenter;');
     return route.fulfill({contentType:url.pathname.endsWith('.css')?'text/css':'text/javascript',body});
    }
@@ -38,7 +37,7 @@ const script=name=>`<script src="/js/${name}"></script>`;
     contextLoads++;
     const routeName=url.searchParams.get('ruta') || 'user/docs/';
     const html=`<section class="os-window os-explorer-window"><div class="os-explorer-live" data-explorer-route="${routeName}"><div class="os-explorer-pathrow"></div><div class="os-explorer-body" data-current-folder-route="${routeName}" data-current-folder-name="Docs" data-current-folder-root="${routeName==='user/'?'1':'0'}"><button class="os-file-entry" data-key="user/docs/uno.txt" data-name="uno.txt" data-ext="txt" data-open-url="/open" data-download-url="/download" data-polly="1" data-locked="0"></button><button class="os-file-entry" data-key="user/docs/locked.txt" data-name="locked.txt" data-ext="txt" data-open-url="/open" data-locked="1"></button></div></div></section>${menus}`;
-    return route.fulfill({contentType:'application/json',body:JSON.stringify({ok:true,html,context:{csrf:'fixture',bucket:'fixture',rootRoute:'user/',route:routeName,folder:{route:routeName,name:'Docs',is_root:routeName==='user/'}},scripts:['js/filesystem-operations.js','js/move-tasks.js','js/os-window-manager.js','js/so-folders.js','js/so.js','js/so-clipboard.js']})});
+    return route.fulfill({contentType:'application/json',body:JSON.stringify({ok:true,html,context:{csrf:'fixture',bucket:'fixture',rootRoute:'user/',route:routeName,folder:{route:routeName,name:'Docs',is_root:routeName==='user/'}},scripts:Array.from(source.matchAll(/<script[^>]*src="js\/([\w.-]+)\?v=/g),match=>match[1]).filter(name=>['polly.js','aws-comprehend.js','media-processing.js','background-task-feedback.js','polly-background.js','transcribe-background.js','filesystem-operations.js','move-tasks.js','carpetas.js','folder-document.js','so-new-text-file.js','sincronizar.js','so-folders.js','file-security.js','arcadelink-share.js','so-share.js','os-window-manager.js','file-applications.js','so.js','so-clipboard.js'].includes(name)).map(name=>'js/'+name+'?v=fixture')})});
    }
    errors.push('Unexpected request '+url.pathname);return route.fulfill({status:404,body:'Unexpected test URL'});
   });
@@ -51,6 +50,7 @@ const script=name=>`<script src="/js/${name}"></script>`;
   await page.waitForFunction(()=>document.querySelector('[data-hud-extra-actions]').textContent!=='Cargando acciones…');
   assert.match(await list.textContent(),/Bloquear con contraseña/,JSON.stringify({errors,viewport})+' '+await list.textContent());
   await list.getByRole('button',{name:'Bloquear con contraseña',exact:true}).waitFor();
+  await page.evaluate(()=>{window.ArcadeCloudFileSecurity.protect=async key=>{calls.push(['protect',key]);return false;};window.ArcadeCloudFileSecurity.unlock=async key=>{calls.push(['unlock',key]);return false;};window.openEmptyTextFileCreator=(route,name)=>calls.push(['new-text',route,name]);});
   assert.equal(await list.getByRole('button',{name:'Eliminar',exact:true}).count(),1);
   assert.equal(await list.getByRole('button',{name:'Compartir',exact:true}).count(),1);
   assert.equal(await list.getByRole('button',{name:/Polly/}).count(),1,'capability from real SO controller');

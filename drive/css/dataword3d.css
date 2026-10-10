@@ -4378,15 +4378,19 @@ body.is-camera-near.dw-real .dw-hud{
 /* All object actions stay in the upper-right HUD; touch devices scroll them. */
 .dw-real .dw-hud{
   top:22px!important;
-  bottom:max(10px,env(safe-area-inset-bottom))!important;
+  bottom:auto!important;
   height:auto!important;
-  max-height:none!important;
+  max-height:calc(100% - 32px)!important;
   overflow-y:auto!important;
   overflow-x:hidden!important;
   overscroll-behavior:contain;
   touch-action:pan-y;
   scrollbar-width:thin;
   scrollbar-color:#65c8e5 #071827;
+}
+.dw-real .dw-hud:has([data-hud-more-actions][aria-expanded="true"]){
+  bottom:max(10px,env(safe-area-inset-bottom))!important;
+  max-height:none!important;
 }
 .dw-real .dw-hud-title{
   position:sticky;

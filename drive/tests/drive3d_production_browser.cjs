@@ -128,9 +128,33 @@ const server=createServer((req,res)=>{
   // and the chosen size is kept in the profile state without moving its world anchor.
   const secondSelector = `[data-spatial-picture-id="${secondPicture.id}"]`;
   const secondWindow = page.locator(secondSelector);
+  // The viewer can be legitimately hidden if the first object moved the
+  // camera-facing point offscreen. Re-anchor THIS free image in the field
+  // of view before testing its visible resize handle/drag gesture.
+  await page.evaluate(id=>window.ArcadeCloudDrive3D.three.placeSpatialMedia(id),secondPicture.id);
+  await page.waitForFunction(id=>{
+    const el=document.querySelector(`[data-spatial-picture-id="${id}"]`);
+    return el && el.style.visibility==='visible';
+  },secondPicture.id);
+  secondPicture.world=(await snap()).spatialImages.find(p=>p.id===secondPicture.id).world;
   const secondBefore = await secondWindow.boundingBox();
-  await page.locator(secondSelector + ' button[aria-label="Redimensionar cuadro"]').click({force:true});
-  assert.equal(await page.locator(secondSelector + ' .dw-spatial-picture-resize-handle').isVisible(),true);
+  // The two independent floating windows can visually overlap. A forced
+  // Playwright coordinate click may land on the OTHER window, even though
+  // the locator resolved the correct button. Invoke the actual button click,
+  // then use real mouse dragging for the resize gesture under test.
+  await page.locator(secondSelector + ' button[aria-label="Redimensionar cuadro"]').evaluate(button=>button.click());
+  await page.waitForTimeout(80);
+  const resizeState = await secondWindow.evaluate(el=>{
+    const handle=el.querySelector('.dw-spatial-picture-resize-handle');
+    const control=el.querySelector('button[aria-label="Redimensionar cuadro"]');
+    return {windowClass:el.className,handleHidden:handle?.hidden,
+      handleDisplay:handle?getComputedStyle(handle).display:null,
+      buttonPressed:control?.getAttribute('aria-pressed')};
+  });
+  assert.equal(resizeState.handleHidden,false,
+    'Resizing handle must be enabled when clicking the image toolbar: '+JSON.stringify(resizeState));
+  assert.equal(await page.locator(secondSelector + ' .dw-spatial-picture-resize-handle').isVisible(),true,
+    'The enabled resize handle must be visible: '+JSON.stringify(resizeState));
   const resizeHandle = await page.locator(secondSelector + ' .dw-spatial-picture-resize-handle').boundingBox();
   await page.mouse.move(resizeHandle.x + resizeHandle.width/2, resizeHandle.y + resizeHandle.height/2);
   await page.mouse.down();
@@ -184,6 +208,9 @@ const server=createServer((req,res)=>{
   assert.equal(positioned.surfaceFit,'poster','Printed photo is the default for the floor');
   assert(Math.abs(positioned.printSize[0]/positioned.printSize[1]-originalAspect)<.001,
     'Floor keeps exact source-photo aspect ratio rather than stretching to a square');
+  assert.equal(positioned.photoToneMapped,false,
+    'Floor photo bypasses ACES desaturation just like the free HTML viewer');
+  assert.equal(positioned.photoOpacity,1,'Floor photo is printed solid rather than milky transparent');
   assert.deepEqual(positioned.horizontalUv,[0,1],
     'Floor photo reads left to right normally, not as a mirror');
   assert(await page.locator(surfaceSelector).evaluate(el=>el.classList.contains('is-surface-placed')),'The free viewer collapses into an anchored-image toolbar');
@@ -196,6 +223,14 @@ const server=createServer((req,res)=>{
   assert.equal(positioned.surfaceFit,'poster');
   assert(Math.abs(positioned.printSize[0]/positioned.printSize[1]-originalAspect)<.001,
     'Vertical and horizontal posters preserve source aspect ratio on glass');
+  assert(positioned.panelAvailable && Math.max(
+    positioned.printSize[0]/positioned.panelAvailable[0],
+    positioned.printSize[1]/positioned.panelAvailable[1]
+  )>.9, 'Default stored poster must fill almost all the actual wooden pane, not a tiny fraction');
+  assert(Math.abs(positioned.photoRadius-(initial.domeRadius-.08))<.0001,
+    'Print must lie directly on the INNER face of the glazing, protected by the wooden frame');
+  assert.equal(positioned.photoToneMapped,false,'Placed dome picture keeps full natural colour and brightness');
+  assert.equal(positioned.photoOpacity,1,'Placed dome picture remains completely opaque, unaffected by glass haze');
   assert(positioned.horizontalUv[0] > positioned.horizontalUv[1],
     'Dome interior viewing direction must not mirror the subject left-to-right');
   assert(positioned.imageCrop.every(value=>value===0),
@@ -203,8 +238,15 @@ const server=createServer((req,res)=>{
   await page.locator(surfaceSelector+' select[aria-label="Ajuste de imagen a la superficie"]').selectOption('cover');
   const covered=(await snap()).surfaceImages.find(item=>item.id===secondPicture.id);
   assert.equal(covered.surfaceFit,'cover','User can explicitly request a cropped panel without stretching');
-  assert(covered.imageCrop.some(value=>value>0),
-    'Cover mode crops the original image UVs to fit panel proportions');
+  assert(covered.imageCrop.every(value=>value===0),
+    'Cover must NEVER remove any part of the family photograph');
+  assert(Math.abs(covered.printSize[0]/covered.printSize[1]-originalAspect)<.001,
+    'Cover must preserve the entire photo proportions, not stretch or distort them');
+  assert(Math.max(covered.printSize[0]/covered.panelAvailable[0],
+    covered.printSize[1]/covered.panelAvailable[1])>.96,
+    'Cover must use practically the whole true panel opening');
+  assert(covered.printSize[0]>=positioned.printSize[0] && covered.printSize[1]>=positioned.printSize[1],
+    'Cover should be slightly larger than poster without losing the edges');
   assert(covered.horizontalUv[0] > covered.horizontalUv[1],
     'Crop mode must also avoid mirrored images');
   await page.locator(surfaceSelector+' select[aria-label="Ajuste de imagen a la superficie"]').selectOption('poster');
@@ -225,6 +267,7 @@ const server=createServer((req,res)=>{
   assert.equal(positioned.panelId,'c-7-0');
   assert(Math.abs(positioned.printSize[0]/positioned.printSize[1]-originalAspect)<.001,
     'Ceiling poster keeps the unmodified original proportions');
+  assert.equal(positioned.photoToneMapped,false,'Ceiling photo remains as sharp and bright as the free viewer');
   assert(positioned.horizontalUv[0] > positioned.horizontalUv[1],
     'Ceiling picture must not be reversed');
   await page.waitForFunction(id=>document.querySelector(`[data-spatial-picture-id="${id}"]`)?.classList.contains('is-controls-hidden'),secondPicture.id,{timeout:7500});
@@ -250,6 +293,11 @@ const server=createServer((req,res)=>{
   assert.equal(initial.fileItems.filter(item=>item.kind==='image').length,18);
   assert(initial.filePanels.length>=1,'File thumbnails have independent gallery panels');
   assert.equal(initial.panoramaSeam.woodenRib,4,'Panorama UV seam lies beneath its wooden meridian');
+  assert.equal(initial.glassView.tint,0xffffff,'Crystal window must not tint the exterior');
+  assert.equal(initial.glassView.toneMapped,false,'Crystal window must not wash out the outside with tone mapping');
+  assert.equal(initial.glassView.opacity,1,'Outdoor panorama must remain sharp, not covered in white haze');
+  assert.deepEqual(initial.glassView.paintedWoodBands,[.24,.47,.72,1.05],
+    'Actual four rows of wooden framing must exactly match the inner poster panels');
   assert(initial.panoramaSeam.radius>initial.domeRadius &&
     initial.panoramaSeam.radius-initial.domeRadius < .12,'The wrapped panorama stays just behind the structural dome');
   assert.equal(initial.galleryLayout,'overhead','Folders place their file gallery in the air above their cabinets');

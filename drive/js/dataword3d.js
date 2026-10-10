@@ -1625,7 +1625,7 @@
       fit.title = 'Cómo mostrar la fotografía sin deformarla';
       [
         ['poster','Póster · foto completa'],
-        ['cover','Cubrir · recortar bordes']
+        ['cover','Cubrir cristal · sin recortar']
       ].forEach(([value,label]) => {
         const option = this.document.createElement('option');
         option.value=value;

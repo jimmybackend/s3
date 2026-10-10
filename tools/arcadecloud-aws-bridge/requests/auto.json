@@ -1,7 +1,7 @@
 {
-  "request_id": "michat-install-updater-20261010-1925",
+  "request_id": "michat-sync-theme-fix-20261010-1926",
   "alias": "small",
   "operation": "service",
-  "argument": "michat:install-updater",
+  "argument": "michat:sync-main",
   "confirm": "SERVICE_CHANGE"
 }

@@ -1254,7 +1254,8 @@
 
     applyStoredBackground(surface, path) {
       const normalized = String(path || '');
-      if (!normalized) { this.applySurfaceImage(surface,''); return; }
+      // Presets were already applied above; an empty custom path must not cancel them.
+      if (!normalized) return;
       const match = Array.from(this.document.querySelectorAll('[data-background-option]'))
         .find((button) => button.dataset.backgroundPath === normalized);
       if (match?.dataset.backgroundEnvironment) this.applySurfaceImage(surface, match.dataset.backgroundEnvironment);

@@ -23,4 +23,6 @@ El motor `drive/js/drive3d-scene.js` busca los assets bajo `drive/three-lab/asse
 
 Los panoramas generados miden 1774 × 887 píxeles y las texturas miden 1254 × 1254 píxeles. Los formatos son JPEG progresivos, con compresión para navegador móvil.
 
-**Importante:** este manifiesto no indica por sí solo que las 13 imágenes binarias se hayan subido; las rutas deben existir en el repositorio desplegado. Hasta entonces se muestra el fondo procedural anterior.
+Los 13 JPEG están incluidos físicamente en el repositorio. El panorama alpino
+original y el mármol siguen disponibles como opciones predeterminadas. Los
+archivos se conservan sin recortar, invertir ni recomprimir respecto al ZIP.

@@ -85,7 +85,12 @@ class Drive3DScene {
         const panoramaRadius = R + .085;
         const panorama = new T.Mesh(
             new T.SphereGeometry(panoramaRadius, 96, 48),
-            new T.MeshBasicMaterial({ color: 0x93b4c9, side: T.BackSide, depthWrite: false })
+            // No milky acrylic tint or cinematic desaturation. The panorama
+            // *is* the outdoor view, not an opaque sheet in front of it.
+            new T.MeshBasicMaterial({
+                color:0xffffff,side:T.BackSide,depthWrite:false,
+                transparent:false,toneMapped:false,fog:false
+            })
         );
         panorama.name = 'fixed-360-panorama';
         // Three's sphere UV seam at phi=0 lies on -X; rotate it to +X,
@@ -134,7 +139,9 @@ class Drive3DScene {
         }
         // The fourth wooden meridian masks the exact longitudinal joining
         // line of the wrapped image for every viewing angle from the room.
-        for (const elevation of [.47, .72, 1.05]) {
+        // Four authentic glass rows: pane UV limits must match the wood
+        // seen by the visitor, including the previously missing .24 beam.
+        for (const elevation of [.24, .47, .72, 1.05]) {
             tube(Array.from({ length: 97 }, (_, k) => {
                 const a = k / 96 * Math.PI * 2;
                 return new T.Vector3(R * Math.cos(elevation) * Math.sin(a), R * Math.sin(elevation), R * Math.cos(elevation) * Math.cos(a));

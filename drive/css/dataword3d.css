@@ -4335,3 +4335,31 @@ body.is-camera-near.dw-real .dw-hud{
 @media(max-width:700px){
   .dw-spatial-image-fit{width:142px;max-width:43vw;font-size:11px}
 }
+
+/* Top-bar navigation replaces the obstructive left menu. */
+.dw-real .dw-sidebar{display:none!important}
+.dw-real .dw-world{left:0!important}
+.dw-real .dw-top-actions{min-width:0}
+.dw-real .dw-top-actions .dw-top-environment{
+  width:auto;min-width:40px;padding:0 10px;display:flex;
+  align-items:center;justify-content:center;gap:7px;white-space:nowrap;
+}
+.dw-real .dw-top-user{
+  display:flex;align-items:center;justify-content:center;gap:7px;
+  min-width:40px;max-width:164px;height:40px;padding:0 10px;
+  border:1px solid rgba(111,190,229,.2);border-radius:13px;
+  background:rgba(8,26,43,.78);color:#eafaff;
+}
+.dw-real .dw-top-user span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media(max-width:900px){
+  .dw-real .dw-top-actions .dw-top-environment{width:40px;padding:0}
+  .dw-real .dw-top-actions .dw-top-environment span{display:none}
+  .dw-real .dw-top-user{width:40px;max-width:40px;padding:0}
+  .dw-real .dw-top-user span{display:none}
+}
+@media(max-width:620px){
+  .dw-real .dw-top-actions .dw-top-environment,
+  .dw-real .dw-top-user{width:36px;min-width:36px;height:36px}
+}
+/* File viewers take priority over the bottom-left navigation radar. */
+.dw-real:has(.dw-media-stage:not([hidden])) .dw-radar{display:none!important}

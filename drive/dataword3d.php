@@ -305,16 +305,13 @@ header('Content-Type: text/html; charset=UTF-8');
     </nav>
 
     <div class="dw-top-actions">
+      <button type="button" class="dw-top-environment" data-dw-environment title="Entorno" aria-label="Configurar entorno"><i class="fas fa-panorama"></i><span>Entorno</span></button>
+      <div class="dw-top-user dw-user-chip" title="<?= $e($userAlias) ?>" aria-label="Usuario: <?= $e($userAlias) ?>"><i class="fas fa-user-astronaut"></i><span><?= $e($userAlias) ?></span></div>
       <button type="button" data-dw-fullscreen title="Pantalla completa"><i class="fas fa-expand"></i></button>
       <a href="<?= $e((string)$state['classic_href']) ?>" title="Vista clásica"><i class="fas fa-desktop"></i></a>
       <a href="so.php" title="Salir de Drive 3D"><i class="fas fa-right-from-bracket"></i></a>
     </div>
   </header>
-
-  <aside class="dw-sidebar" aria-label="Navegación Drive 3D">
-    <button type="button" data-dw-environment><i class="fas fa-panorama"></i><span>Entorno</span></button>
-    <div class="dw-user-chip"><i class="fas fa-user-astronaut"></i><span><?= $e($userAlias) ?></span></div>
-  </aside>
 
   <main class="dw-world" id="dwWorld">
     <div id="dwThreeViewport" tabindex="0" aria-label="Biblioteca 3D. Arrastra para mirar y usa WASD para caminar."></div>

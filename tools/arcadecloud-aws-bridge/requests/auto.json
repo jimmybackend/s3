@@ -1,7 +1,7 @@
 {
-  "request_id": "s3-readonly-uptime-after-split-20261010",
+  "request_id": "s3-updater-helper-sync-20261011-0110",
   "alias": "small",
-  "operation": "diagnose",
-  "argument": "uptime",
-  "confirm": "READ_DIAGNOSTIC"
+  "operation": "updater-sync",
+  "argument": "arcadecloud",
+  "confirm": "SYNC_HELPER"
 }

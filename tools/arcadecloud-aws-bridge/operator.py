@@ -19,7 +19,7 @@ OPERATIONS = frozenset({"diagnose", "service", "power-start"})
 DIAGNOSTICS = frozenset({
     "memory", "disk", "uptime", "arcadecloud-services", "arcadecloud-timers",
     "nginx-status", "php-fpm-status", "repo-status", "media-worker-status",
-    "docker-summary", "terminal-kernel", "terminal-load", "terminal-root-usage", "nginx-log-summary", "php-fpm-log-summary",
+    "docker-summary", "terminal-kernel", "terminal-load", "terminal-root-usage", "nginx-log-summary", "php-fpm-log-summary", "system-log-summary", "db-log-summary", "auth-log-summary",
 })
 # Second line of defense remains ArcadeCloud's privileged PHP helper, which
 # independently checks the command and service-action allowlist.
@@ -94,10 +94,10 @@ def script_for(request):
         raise ValueError("Power no se ejecuta por SSM")
     helper = "/usr/local/sbin/arcadecloud-drive-admin"
 
-    if op == "diagnose" and arg in ("nginx-log-summary", "php-fpm-log-summary"):
+    if op == "diagnose" and arg in ("nginx-log-summary", "php-fpm-log-summary", "system-log-summary", "db-log-summary", "auth-log-summary"):
         # All code is fixed and local; output is exclusively bounded integer counts.
         # No raw journal lines, paths, domains, user data or secrets go to public CI.
-        unit = "nginx" if arg == "nginx-log-summary" else "php"
+        unit = {"nginx-log-summary": "nginx", "php-fpm-log-summary": "php", "system-log-summary": "system", "db-log-summary": "database", "auth-log-summary": "authentication"}[arg]
         return """set -eu
 python3 - <<'PY'
 import glob
@@ -159,6 +159,25 @@ def file_tail(path):
 if family == 'nginx':
     journal('nginx.service')
     file_tail('/var/log/nginx/error.log')
+elif family == 'system':
+    journal('systemd-journald.service')
+    journal('systemd-oomd.service')
+    journal('ssm-agent.service')
+    journal('amazon-ssm-agent.service')
+elif family == 'database':
+    journal('mariadb.service')
+    journal('mysql.service')
+    journal('mysqld.service')
+    for path in ('/var/log/mysql/error.log', '/var/log/mariadb/mariadb.log',
+                 '/var/log/mysqld.log'):
+        if Path(path).is_file():
+            file_tail(path)
+elif family == 'authentication':
+    journal('ssh.service')
+    journal('sshd.service')
+    for path in ('/var/log/auth.log', '/var/log/secure'):
+        if Path(path).is_file():
+            file_tail(path)
 else:
     try:
         proc = subprocess.run(
@@ -430,7 +449,7 @@ def execute(request, env, session_factory, sleeper=time.sleep):
             # Prevent public workflow logs from ever carrying raw command output.
             output = invocation.get("StandardOutputContent", "")
             if (request["operation"] == "diagnose" and
-                    request["argument"] in ("nginx-log-summary", "php-fpm-log-summary") and
+                    request["argument"] in ("nginx-log-summary", "php-fpm-log-summary", "system-log-summary", "db-log-summary", "auth-log-summary") and
                     status == "Success"):
                 marker = "ARCADECLOUD_LOG_SUMMARY="
                 if output.startswith(marker):

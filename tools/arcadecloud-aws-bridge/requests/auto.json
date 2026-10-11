@@ -1,7 +1,7 @@
 {
-  "request_id": "php-fpm-status-small-20261011-0150",
+  "request_id": "memory-small-20261011-0210",
   "alias": "small",
   "operation": "diagnose",
-  "argument": "php-fpm-status",
+  "argument": "memory",
   "confirm": "READ_DIAGNOSTIC"
 }

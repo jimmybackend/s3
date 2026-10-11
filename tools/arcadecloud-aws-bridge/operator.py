@@ -109,9 +109,9 @@ from pathlib import Path
 
 family = 'TARGET_FAMILY'
 categories = {
-    'critical': re.compile(r'(?i)\b(emerg|alert|crit|critical|panic|fatal)\b'),
-    'error': re.compile(r'(?i)\b(error|failed|failure|exception|upstream timed out|permission denied|segfault)\b'),
-    'warning': re.compile(r'(?i)\b(warn|warning|deprecated|notice)\b'),
+    'critical': re.compile(r'(?i)\\b(emerg|alert|crit|critical|panic|fatal)\\b'),
+    'error': re.compile(r'(?i)\\b(error|failed|failure|exception|upstream timed out|permission denied|segfault)\\b'),
+    'warning': re.compile(r'(?i)\\b(warn|warning|deprecated|notice)\\b'),
     'timeout': re.compile(r'(?i)(timed out|timeout)'),
     'upstream': re.compile(r'(?i)(upstream|connect\(\) failed|bad gateway)'),
     'php_fatal': re.compile(r'(?i)(PHP Fatal error|Uncaught .*Exception|PHP Parse error)'),

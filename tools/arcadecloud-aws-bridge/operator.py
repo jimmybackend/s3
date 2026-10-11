@@ -109,11 +109,11 @@ from pathlib import Path
 
 family = 'TARGET_FAMILY'
 categories = {
-    'critical': re.compile(r'(?i)\\b(emerg|alert|crit|critical|panic|fatal)\\b'),
-    'error': re.compile(r'(?i)\\b(error|failed|failure|exception|upstream timed out|permission denied|segfault)\\b'),
-    'warning': re.compile(r'(?i)\\b(warn|warning|deprecated|notice)\\b'),
+    'critical': re.compile(r'(?i)\b(emerg|alert|crit|critical|panic|fatal)\b'),
+    'error': re.compile(r'(?i)\b(error|failed|failure|exception|upstream timed out|permission denied|segfault)\b'),
+    'warning': re.compile(r'(?i)\b(warn|warning|deprecated|notice)\b'),
     'timeout': re.compile(r'(?i)(timed out|timeout)'),
-    'upstream': re.compile(r'(?i)(upstream|connect\\(\\) failed|bad gateway)'),
+    'upstream': re.compile(r'(?i)(upstream|connect\(\) failed|bad gateway)'),
     'php_fatal': re.compile(r'(?i)(PHP Fatal error|Uncaught .*Exception|PHP Parse error)'),
     'memory': re.compile(r'(?i)(out of memory|memory exhausted|oom-kill)'),
 }
@@ -165,7 +165,7 @@ else:
             ['systemctl', 'list-units', '--all', '--type=service',
              '--no-legend', '--plain', '--no-pager'],
             capture_output=True, timeout=12, check=False, text=True)
-        names = sorted(set(re.findall(r'(?m)^(php[0-9.]*-fpm|php-fpm)\\.service\\s', proc.stdout)))
+        names = sorted(set(re.findall(r'(?m)^(php[0-9.]*-fpm|php-fpm)\.service\s', proc.stdout)))
         for name in names[:5]:
             journal(name + '.service')
         if not names:

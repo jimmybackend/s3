@@ -19,7 +19,7 @@ OPERATIONS = frozenset({"diagnose", "service", "power-start"})
 DIAGNOSTICS = frozenset({
     "memory", "disk", "uptime", "arcadecloud-services", "arcadecloud-timers",
     "nginx-status", "php-fpm-status", "repo-status", "media-worker-status",
-    "docker-summary", "terminal-kernel", "terminal-load", "terminal-root-usage", "nginx-log-summary", "php-fpm-log-summary", "system-log-summary", "db-log-summary", "auth-log-summary",
+    "docker-summary", "docker-health-large", "terminal-kernel", "terminal-load", "terminal-root-usage", "nginx-log-summary", "php-fpm-log-summary", "system-log-summary", "db-log-summary", "auth-log-summary",
 })
 # Second line of defense remains ArcadeCloud's privileged PHP helper, which
 # independently checks the command and service-action allowlist.
@@ -54,6 +54,8 @@ def validate_request(request):
         raise ValueError("Confirmación incompatible con la operación")
     if op == "diagnose" and arg not in DIAGNOSTICS:
         raise ValueError("Diagnóstico no permitido")
+    if op == "diagnose" and arg == "docker-health-large" and alias != "large":
+        raise ValueError("Docker health limitado a FastDrive")
     if op == "service" and arg not in SERVICE_ACTIONS:
         raise ValueError("Acción de servicio no permitida")
     if op == "service" and arg in {"michat:sync-main", "michat:install-updater"} and alias != "small":
@@ -208,6 +210,46 @@ print('ARCADECLOUD_LOG_SUMMARY=' + json.dumps({
 }, sort_keys=True))
 PY
 """.replace("TARGET_FAMILY", unit)
+    if op == "diagnose" and arg == "docker-health-large":
+        # Aggregate only; no container names, env, labels, volumes or raw logs.
+        return """set -eu
+python3 - <<'PY'
+import json
+import subprocess
+
+try:
+    proc = subprocess.run(
+        ['docker', 'ps', '-a', '--format', '{{json .}}'],
+        stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, timeout=15, check=False,
+        text=True,
+    )
+    if proc.returncode:
+        raise RuntimeError('docker unavailable')
+    lines = proc.stdout.splitlines()
+    if len(lines) > 1000:
+        raise RuntimeError('container count exceeds bound')
+    counts = {'total': 0, 'running': 0, 'exited': 0, 'restarting': 0, 'unhealthy': 0}
+    for line in lines:
+        info = json.loads(line)
+        if not isinstance(info, dict):
+            raise ValueError('invalid docker response')
+        status = str(info.get('State', '')).lower()
+        health = str(info.get('Status', '')).lower()
+        counts['total'] += 1
+        if status == 'running':
+            counts['running'] += 1
+        elif status == 'exited':
+            counts['exited'] += 1
+        elif status == 'restarting':
+            counts['restarting'] += 1
+        if '(unhealthy)' in health:
+            counts['unhealthy'] += 1
+    print('ARCADECLOUD_DOCKER_HEALTH=' + json.dumps(counts, sort_keys=True))
+except (OSError, ValueError, RuntimeError, subprocess.TimeoutExpired):
+    print('ARCADECLOUD_DOCKER_HEALTH=' + json.dumps({'error': 'unavailable'}))
+    raise SystemExit(1)
+PY
+"""
     if op == "diagnose" and arg == "docker-summary":
         # Prints only a numeric count. No container names, env, mounts or logs.
         return (
@@ -464,6 +506,18 @@ def execute(request, env, session_factory, sleeper=time.sleep):
                                         for k in fields)):
                             result["log_summary"] = summary
                     except (ValueError, TypeError):
+                        pass
+            if request["operation"] == "diagnose" and request["argument"] == "docker-health-large" and status == "Success":
+                marker = "ARCADECLOUD_DOCKER_HEALTH="
+                if output.startswith(marker):
+                    try:
+                        parsed = json.loads(output[len(marker):])
+                        fields = {"total", "running", "exited", "restarting", "unhealthy"}
+                        if (isinstance(parsed, dict) and set(parsed) == fields and
+                                all(type(parsed[k]) is int and 0 <= parsed[k] <= 1000 for k in fields) and
+                                parsed["running"] + parsed["exited"] + parsed["restarting"] <= parsed["total"]):
+                            result["docker_health"] = parsed
+                    except (TypeError, ValueError):
                         pass
             if request["operation"] == "diagnose" and request["argument"] == "docker-summary" and status == "Success":
                 match = re.fullmatch(r"ARCADECLOUD_DOCKER_COUNT=(\d+)\s*", output)

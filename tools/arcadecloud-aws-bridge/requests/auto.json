@@ -1,7 +1,7 @@
 {
-  "request_id": "nginx-status-small-20261011-0130",
+  "request_id": "php-fpm-status-small-20261011-0150",
   "alias": "small",
   "operation": "diagnose",
-  "argument": "nginx-status",
+  "argument": "php-fpm-status",
   "confirm": "READ_DIAGNOSTIC"
 }

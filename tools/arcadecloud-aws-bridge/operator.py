@@ -19,7 +19,7 @@ OPERATIONS = frozenset({"diagnose", "service", "power-start"})
 DIAGNOSTICS = frozenset({
     "memory", "disk", "uptime", "arcadecloud-services", "arcadecloud-timers",
     "nginx-status", "php-fpm-status", "repo-status", "media-worker-status",
-    "docker-summary",
+    "docker-summary", "terminal-kernel", "terminal-load", "terminal-root-usage",
 })
 # Second line of defense remains ArcadeCloud's privileged PHP helper, which
 # independently checks the command and service-action allowlist.
@@ -102,6 +102,15 @@ def script_for(request):
             "count=$(docker ps -q | wc -l)\n"
             "printf 'ARCADECLOUD_DOCKER_COUNT=%s\\n' \"$count\"\n"
         )
+    # Fixed, parameter-free shell probes. No input is interpolated in these commands.
+    # Raw stdout/stderr is deliberately never emitted into public GitHub logs.
+    terminal_scripts = {
+        "terminal-kernel": "set -eu\\nuname -srm\\n",
+        "terminal-load": "set -eu\\ncat /proc/loadavg\\n",
+        "terminal-root-usage": "set -eu\\ndf -P /\\n",
+    }
+    if op == "diagnose" and arg in terminal_scripts:
+        return terminal_scripts[arg].replace("\\n", "\n")
     if op == "diagnose":
         return f"set -eu\ntest -x {helper}\n{helper} server-console {arg}\n"
     if op == "service" and arg == "michat:install-updater":

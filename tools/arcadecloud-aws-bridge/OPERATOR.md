@@ -200,3 +200,26 @@ el workflow de operador; su configuración debe verificarse en GitHub. No existe
 una identidad criptográfica que identifique exclusivamente a ChatGPT ante AWS:
 el límite de confianza es la autenticación de GitHub, sus autorizaciones y las
 políticas IAM. No confiar en rutas secretas como autenticación.
+
+## Ampliación de observabilidad (lectura, sin reparación automática)
+
+Se añaden diagnósticos permitidos `operation=diagnose`:
+- `system-log-summary`: resúmenes numéricos del journal de systemd, OOM y agente SSM.
+- `db-log-summary`: resúmenes de journals MariaDB/MySQL y rutas comunes de error.
+- `auth-log-summary`: resúmenes de journals SSH y logs de autenticación.
+
+Junto con `nginx-log-summary` y `php-fpm-log-summary`, devuelven únicamente
+contadores agregados de categorías, líneas, fuentes y fallos de lectura.
+Una ruta o servicio inexistente no se presenta como sistema saludable: revisar
+`sources` y `read_errors` al interpretar resultados. No hay acceso a logs
+completos, SQL, contenido de solicitudes ni identidades de usuarios. Los
+conteos describen una muestra limitada, no métricas históricas completas.
+No se gestionan por este cambio S3, Bedrock, FederationCloud, certificados,
+Docker ni workers; esas fuentes requieren integración validada y, para
+investigación detallada, canal privado con IAM mínimo y retención limitada.
+
+**Límite de seguridad:** el workflow automático existente utiliza un rol
+OIDC de amplios permisos según la documentación de este proyecto. Estos
+comandos fijos no sustituyen la necesidad de dividir los roles IAM y proteger
+`main` y `.github/workflows`. Este cambio no ejecuta servicios ni
+reparaciones y no altera la configuración de AWS.

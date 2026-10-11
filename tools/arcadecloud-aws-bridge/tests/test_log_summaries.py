@@ -12,7 +12,7 @@ spec.loader.exec_module(ops)
 
 class LogSummaryTests(unittest.TestCase):
     def test_fixed_log_commands_only(self):
-        for name, family in (("nginx-log-summary", "nginx"), ("php-fpm-log-summary", "php")):
+        for name, family in (("nginx-log-summary", "nginx"), ("php-fpm-log-summary", "php"), ("system-log-summary", "system"), ("db-log-summary", "database"), ("auth-log-summary", "authentication")):
             request = {
                 "request_id": "test-log-summary-001",
                 "alias": "small",

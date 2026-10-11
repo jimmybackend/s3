@@ -15,7 +15,7 @@ from pathlib import Path
 INSTANCE_ID = re.compile(r"^i-[0-9a-f]{8,17}$")
 REQUEST_ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]{2,63}$")
 REGION = re.compile(r"^[a-z]{2}(?:-gov)?-[a-z]+-\d+$")
-OPERATIONS = frozenset({"diagnose", "service", "power-start"})
+OPERATIONS = frozenset({"diagnose", "service", "power-start", "updater-sync"})
 DIAGNOSTICS = frozenset({
     "memory", "disk", "uptime", "arcadecloud-services", "arcadecloud-timers",
     "nginx-status", "php-fpm-status", "repo-status", "media-worker-status",
@@ -48,6 +48,7 @@ def validate_request(request):
         "diagnose": "READ_DIAGNOSTIC",
         "service": "SERVICE_CHANGE",
         "power-start": "POWER_LARGE",
+        "updater-sync": "SYNC_HELPER",
     }[op]
     if confirm != expected:
         raise ValueError("Confirmación incompatible con la operación")
@@ -55,6 +56,8 @@ def validate_request(request):
         raise ValueError("Diagnóstico no permitido")
     if op == "service" and arg not in SERVICE_ACTIONS:
         raise ValueError("Acción de servicio no permitida")
+    if op == "updater-sync" and (alias != "small" or arg != "arcadecloud"):
+        raise ValueError("Sólo sincronización de helper ArcadeCloud en EC2 pequeña")
     if op == "power-start" and (alias != "large" or arg != ""):
         raise ValueError("Únicamente se permite encender FastDrive")
     return request
@@ -87,6 +90,46 @@ def target(alias, env):
 
 def script_for(request):
     op, arg = request["operation"], request["argument"]
+    if op == "updater-sync":
+        return """set -euo pipefail
+/usr/bin/python3 - <<'PY'
+import json, os, pathlib, subprocess, tempfile
+cfg=pathlib.Path('/etc/arcadecloud-drive/updater.json')
+data=json.loads(cfg.read_text())
+root=pathlib.Path(data['repo_root']).resolve(strict=True)
+user=data['repo_user']
+phpuser=data['php_user']
+if not (root/'.git').is_dir() or not (root/'drive/bin/arcadecloud-drive-updater.php').is_file():
+    raise SystemExit('UPDATER_SYNC_BLOCKED=invalid-checkout')
+if not all(isinstance(x,str) and x and x.replace('_','').replace('-','').isalnum() for x in (user,phpuser)):
+    raise SystemExit('UPDATER_SYNC_BLOCKED=invalid-user')
+origin=subprocess.check_output(['runuser','-u',user,'--','git','-C',str(root),'remote','get-url','origin'],text=True).strip()
+if origin not in ('https://github.com/jimmybackend/s3.git','https://github.com/jimmybackend/s3','git@github.com:jimmybackend/s3.git','ssh://git@github.com/jimmybackend/s3.git'):
+    raise SystemExit('UPDATER_SYNC_BLOCKED=wrong-origin')
+branch=subprocess.check_output(['runuser','-u',user,'--','git','-C',str(root),'symbolic-ref','--short','HEAD'],text=True).strip()
+if branch!='main':
+    raise SystemExit('UPDATER_SYNC_BLOCKED=wrong-branch')
+import hashlib
+source=root/'drive/bin/arcadecloud-drive-updater.php'
+target=pathlib.Path('/usr/local/sbin/arcadecloud-drive-updater')
+content=source.read_bytes()
+sha=hashlib.sha256(content).hexdigest()
+if target.is_file() and hashlib.sha256(target.read_bytes()).hexdigest()==sha:
+    print('UPDATER_SYNC_RESULT=already-matching')
+else:
+    fd,tmp=tempfile.mkstemp(prefix='.arcadecloud-updater-',dir='/usr/local/sbin')
+    try:
+        with os.fdopen(fd,'wb') as out: out.write(content);out.flush();os.fsync(out.fileno())
+        os.chmod(tmp,0o755)
+        os.chown(tmp,0,0)
+        os.replace(tmp,str(target))
+    finally:
+        if os.path.exists(tmp): os.unlink(tmp)
+    if hashlib.sha256(target.read_bytes()).hexdigest()!=sha:
+        raise SystemExit('UPDATER_SYNC_BLOCKED=hash-mismatch')
+    print('UPDATER_SYNC_RESULT=updated')
+PY
+"""
     if op == "power-start":
         raise ValueError("Power no se ejecuta por SSM")
     helper = "/usr/local/sbin/arcadecloud-drive-admin"
@@ -312,6 +355,10 @@ def execute(request, env, session_factory, sleeper=time.sleep):
                 match = re.fullmatch(r"ARCADECLOUD_DOCKER_COUNT=(\d+)\s*", output)
                 if match:
                     result["docker_running_containers"] = int(match.group(1))
+            if request["operation"] == "updater-sync" and status == "Success":
+                match = re.fullmatch(r"UPDATER_SYNC_RESULT=(updated|already-matching)\\s*", output)
+                if match:
+                    result["updater_sync"] = match.group(1)
             return result
         sleeper(2)
     return result | {"status": "Pending"}

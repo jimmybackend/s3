@@ -14,14 +14,14 @@ on:
         description: 'Allowed operator action'
         required: true
         type: choice
-        options: [diagnose, service, power-start]
+        options: [diagnose, service, power-start, updater-sync]
       argument:
         description: 'Exact diagnostic/service action; blank for power-start'
         type: string
         required: false
         default: uptime
       confirm:
-        description: 'READ_DIAGNOSTIC / SERVICE_CHANGE / POWER_LARGE'
+        description: 'READ_DIAGNOSTIC / SERVICE_CHANGE / POWER_LARGE / SYNC_HELPER'
         required: true
         type: string
   push:

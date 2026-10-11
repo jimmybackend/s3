@@ -1,7 +1,7 @@
 {
-  "request_id": "michat-sync-theme-fix-20261010-1926",
+  "request_id": "s3-readonly-uptime-after-split-20261010",
   "alias": "small",
-  "operation": "service",
-  "argument": "michat:sync-main",
-  "confirm": "SERVICE_CHANGE"
+  "operation": "diagnose",
+  "argument": "uptime",
+  "confirm": "READ_DIAGNOSTIC"
 }

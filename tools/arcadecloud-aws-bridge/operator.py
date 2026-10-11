@@ -28,7 +28,6 @@ SERVICE_ACTIONS = frozenset({
     "workstation:start", "workstation:stop", "workstation:restart",
     "federation-sync:run-now", "federation-https:run-now",
     "polly-reconcile:run-now", "transcribe-reconcile:run-now",
-    "michat:sync-main", "michat:install-updater",
 })
 TERMINAL = frozenset({"Success", "Cancelled", "TimedOut", "Failed", "Cancelling"})
 
@@ -56,8 +55,6 @@ def validate_request(request):
         raise ValueError("Diagnóstico no permitido")
     if op == "service" and arg not in SERVICE_ACTIONS:
         raise ValueError("Acción de servicio no permitida")
-    if op == "service" and arg in {"michat:sync-main", "michat:install-updater"} and alias != "small":
-        raise ValueError("MiChat sólo se administra en la EC2 pequeña")
     if op == "power-start" and (alias != "large" or arg != ""):
         raise ValueError("Únicamente se permite encender FastDrive")
     return request
@@ -228,160 +225,6 @@ PY
         return terminal_scripts[arg].replace("\\n", "\n")
     if op == "diagnose":
         return f"set -eu\ntest -x {helper}\n{helper} server-console {arg}\n"
-    if op == "service" and arg == "michat:install-updater":
-        return """set -euo pipefail
-APP=/var/www/michat
-INSTALLER="$APP/michat/bin/install_michat_updater.sh"
-test -d "$APP/.git" || { printf 'MICHAT_UPDATER_BLOCKED=missing-repo\\n'; exit 77; }
-test -f "$INSTALLER" || { printf 'MICHAT_UPDATER_BLOCKED=missing-installer\\n'; exit 77; }
-PHP_USER="$(/usr/bin/python3 - <<'PY'
-import glob
-import pwd
-import re
-import subprocess
-import sys
-
-proc = subprocess.run(
-    ['/usr/sbin/nginx', '-T'],
-    stdout=subprocess.PIPE,
-    stderr=subprocess.STDOUT,
-    text=True,
-    check=False,
-)
-if proc.returncode != 0:
-    sys.exit(21)
-
-source = re.sub(r'(?m)#.*$', '', proc.stdout)
-
-def iter_blocks(pattern):
-    for match in re.finditer(pattern, source):
-        depth = 1
-        pos = match.end()
-        start = pos
-        while pos < len(source) and depth:
-            char = source[pos]
-            if char == '{':
-                depth += 1
-            elif char == '}':
-                depth -= 1
-            pos += 1
-        if depth == 0:
-            yield match, source[start:pos - 1]
-
-passes = []
-for _, block in iter_blocks(r'\\bserver\\s*\\{'):
-    names = []
-    for raw in re.findall(r'\\bserver_name\\s+([^;]+);', block):
-        names.extend(raw.split())
-    if 'chat.esforzados.com' not in names and 'www.chat.esforzados.com' not in names:
-        continue
-    passes.extend(re.findall(r'\\bfastcgi_pass\\s+([^;\\s]+)\\s*;', block))
-
-passes = sorted(set(passes))
-if len(passes) != 1:
-    sys.exit(22)
-endpoint = passes[0]
-
-if not endpoint.startswith('unix:') and ':' not in endpoint:
-    resolved = []
-    pattern = r'\\bupstream\\s+' + re.escape(endpoint) + r'\\s*\\{'
-    for _, block in iter_blocks(pattern):
-        resolved.extend(re.findall(r'\\bserver\\s+([^;\\s]+)\\s*;', block))
-    resolved = sorted(set(resolved))
-    if len(resolved) != 1:
-        sys.exit(23)
-    endpoint = resolved[0]
-
-def normalize(value):
-    value = value.strip()
-    if value.startswith('unix:'):
-        value = value[5:]
-    return value.replace('localhost:', '127.0.0.1:')
-
-target = normalize(endpoint)
-paths = set()
-for pattern in (
-    '/etc/php-fpm.conf',
-    '/etc/php-fpm.d/*.conf',
-    '/etc/php-fpm-drive.conf',
-    '/etc/php-fpm-drive.d/*.conf',
-    '/etc/php/*/fpm/pool.d/*.conf',
-):
-    paths.update(glob.glob(pattern))
-
-users = set()
-for path in sorted(paths):
-    try:
-        data = open(path, encoding='utf-8', errors='replace').read()
-    except OSError:
-        continue
-    data = re.sub(r'(?m)^\\s*[;#].*$', '', data)
-    sections = re.split(r'(?m)^\\s*\\[[^]]+\\]\\s*$', data)
-    for section in sections:
-        listen_match = re.search(r'(?m)^\\s*listen\\s*=\\s*([^;#\\r\\n]+)', section)
-        user_match = re.search(r'(?m)^\\s*user\\s*=\\s*([^;#\\r\\n]+)', section)
-        if not listen_match or not user_match:
-            continue
-        if normalize(listen_match.group(1)) != target:
-            continue
-        user = user_match.group(1).strip()
-        try:
-            pwd.getpwnam(user)
-        except KeyError:
-            continue
-        if user != 'root':
-            users.add(user)
-
-if len(users) != 1:
-    sys.exit(24)
-print(next(iter(users)))
-PY
-)" || { printf 'MICHAT_UPDATER_BLOCKED=php-user-detection\\n'; exit 77; }
-printf '%s' "$PHP_USER" | grep -Eq '^[A-Za-z_][A-Za-z0-9_.-]{0,31}$' || { printf 'MICHAT_UPDATER_BLOCKED=php-user-format\\n'; exit 77; }
-id "$PHP_USER" >/dev/null 2>&1 || { printf 'MICHAT_UPDATER_BLOCKED=php-user-missing\\n'; exit 77; }
-if ! /usr/bin/bash "$INSTALLER" "$PHP_USER" >/dev/null 2>&1; then
-  printf 'MICHAT_UPDATER_BLOCKED=installer-failed\\n'
-  exit 77
-fi
-test -x /usr/local/sbin/michat-updater || { printf 'MICHAT_UPDATER_BLOCKED=helper-missing\\n'; exit 70; }
-if ! /usr/sbin/runuser -u "$PHP_USER" -- /usr/bin/sudo -n /usr/local/sbin/michat-updater probe >/dev/null 2>&1; then
-  printf 'MICHAT_UPDATER_BLOCKED=probe-failed\\n'
-  exit 77
-fi
-printf 'MICHAT_UPDATER_OK php_user=%s helper=installed\\n' "$PHP_USER"
-"""
-    if op == "service" and arg == "michat:sync-main":
-        return """set -euo pipefail
-APP=/var/www/michat
-test -d "$APP/.git" || { printf 'MICHAT_SYNC_BLOCKED=missing-repo\\n'; exit 77; }
-repo_user="$(stat -c %U "$APP/.git")"
-id "$repo_user" >/dev/null || { printf 'MICHAT_SYNC_BLOCKED=repo-user\\n'; exit 77; }
-g() { /usr/sbin/runuser -u "$repo_user" -- /usr/bin/git -C "$APP" "$@"; }
-origin="$(g remote get-url origin)"
-case "$origin" in
-  https://github.com/jimmybackend/michat.git|https://github.com/jimmybackend/michat|git@github.com:jimmybackend/michat.git|ssh://git@github.com/jimmybackend/michat.git) ;;
-  *) printf 'MICHAT_SYNC_BLOCKED=origin\\n'; exit 77 ;;
-esac
-branch="$(g rev-parse --abbrev-ref HEAD)"
-test "$branch" = "main" || { printf 'MICHAT_SYNC_BLOCKED=branch\\n'; exit 77; }
-before="$(g rev-parse HEAD)"
-dirty_count="$(g status --porcelain=v1 --untracked-files=all | wc -l | tr -d ' ')"
-printf 'MICHAT_SYNC_PRE before=%s dirty=%s\\n' "$before" "$dirty_count"
-g fetch --quiet origin main
-ahead="$(g rev-list --count origin/main..HEAD)"
-test "$ahead" = "0" || { printf 'MICHAT_SYNC_BLOCKED=local-commits\\n'; exit 77; }
-g merge-base --is-ancestor HEAD origin/main || { printf 'MICHAT_SYNC_BLOCKED=diverged\\n'; exit 77; }
-if ! g merge --ff-only origin/main >/dev/null 2>&1; then
-  printf 'MICHAT_SYNC_BLOCKED=merge\\n'
-  exit 77
-fi
-after="$(g rev-parse HEAD)"
-target="$(g rev-parse origin/main)"
-test "$after" = "$target" || { printf 'MICHAT_SYNC_BLOCKED=head-mismatch\\n'; exit 70; }
-worker_enabled="$(systemctl is-enabled michat-task-worker.service 2>/dev/null || true)"
-worker_active="$(systemctl is-active michat-task-worker.service 2>/dev/null || true)"
-printf 'MICHAT_SYNC_OK before=%s after=%s dirty=%s worker_enabled=%s worker_active=%s\\n' "$before" "$after" "$dirty_count" "$worker_enabled" "$worker_active"
-"""
     service, action = arg.split(":", 1)
     return f"set -eu\ntest -x {helper}\n{helper} node-service {service} {action}\n"
 
@@ -469,35 +312,6 @@ def execute(request, env, session_factory, sleeper=time.sleep):
                 match = re.fullmatch(r"ARCADECLOUD_DOCKER_COUNT=(\d+)\s*", output)
                 if match:
                     result["docker_running_containers"] = int(match.group(1))
-            if request["operation"] == "service" and request["argument"] == "michat:install-updater":
-                ok = re.search(
-                    r"^MICHAT_UPDATER_OK php_user=([A-Za-z_][A-Za-z0-9_.-]{0,31}) helper=installed$",
-                    output, re.MULTILINE,
-                )
-                blocked = re.search(r"^MICHAT_UPDATER_BLOCKED=([a-z-]+)$", output, re.MULTILINE)
-                if ok:
-                    result["php_user"] = ok.group(1)
-                    result["updater_helper"] = "installed"
-                if blocked:
-                    result["blocked_reason"] = blocked.group(1)
-            if request["operation"] == "service" and request["argument"] == "michat:sync-main":
-                pre = re.search(r"^MICHAT_SYNC_PRE before=([0-9a-f]{40}) dirty=(\d+)$", output, re.MULTILINE)
-                ok = re.search(
-                    r"^MICHAT_SYNC_OK before=([0-9a-f]{40}) after=([0-9a-f]{40}) dirty=(\d+) worker_enabled=([a-z-]+) worker_active=([a-z-]+)$",
-                    output, re.MULTILINE,
-                )
-                blocked = re.search(r"^MICHAT_SYNC_BLOCKED=([a-z-]+)$", output, re.MULTILINE)
-                if pre:
-                    result["michat_before"] = pre.group(1)
-                    result["michat_dirty_count"] = int(pre.group(2))
-                if ok:
-                    result["michat_before"] = ok.group(1)
-                    result["michat_after"] = ok.group(2)
-                    result["michat_dirty_count"] = int(ok.group(3))
-                    result["worker_enabled"] = ok.group(4)
-                    result["worker_active"] = ok.group(5)
-                if blocked:
-                    result["blocked_reason"] = blocked.group(1)
             return result
         sleeper(2)
     return result | {"status": "Pending"}

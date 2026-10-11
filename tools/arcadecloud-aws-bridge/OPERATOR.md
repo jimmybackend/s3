@@ -184,3 +184,19 @@ Encender FastDrive reanuda su facturación EC2/EBS habitual.
 Los comandos básicos de SSM no requieren por sí solos una suscripción
 adicional, pero CloudWatch Logs, S3, redes privadas y otras funciones
 opcionales pueden facturarse. La automatización no garantiza gasto cero.
+
+## Diagnósticos directos de terminal (propuesta)
+
+Dentro de `operation=diagnose` están disponibles también:
+- `terminal-kernel`: ejecuta `uname -srm`.
+- `terminal-load`: ejecuta `cat /proc/loadavg`.
+- `terminal-root-usage`: ejecuta `df -P /`.
+
+Los comandos son literales, sin parámetros ni shell arbitraria. Se ejecutan por
+SSM únicamente sobre el alias de instancia configurado. Por privacidad, la
+salida del comando no se publica en logs del repositorio público, sólo el estado.
+El acceso está sujeto a la protección del environment `arcadecloud-ops` en
+el workflow de operador; su configuración debe verificarse en GitHub. No existe
+una identidad criptográfica que identifique exclusivamente a ChatGPT ante AWS:
+el límite de confianza es la autenticación de GitHub, sus autorizaciones y las
+políticas IAM. No confiar en rutas secretas como autenticación.

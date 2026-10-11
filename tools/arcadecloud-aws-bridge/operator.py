@@ -355,6 +355,10 @@ def execute(request, env, session_factory, sleeper=time.sleep):
                 match = re.fullmatch(r"ARCADECLOUD_DOCKER_COUNT=(\d+)\s*", output)
                 if match:
                     result["docker_running_containers"] = int(match.group(1))
+            if request["operation"] == "updater-sync" and status == "Success":
+                match = re.fullmatch(r"UPDATER_SYNC_RESULT=(updated|already-matching)\\s*", output)
+                if match:
+                    result["updater_sync"] = match.group(1)
             return result
         sleeper(2)
     return result | {"status": "Pending"}

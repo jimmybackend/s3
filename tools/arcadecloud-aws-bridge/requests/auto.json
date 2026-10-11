@@ -1,7 +1,7 @@
 {
-  "request_id": "s3-updater-helper-sync-20261011-0110",
+  "request_id": "nginx-status-small-20261011-0130",
   "alias": "small",
-  "operation": "updater-sync",
-  "argument": "arcadecloud",
-  "confirm": "SYNC_HELPER"
+  "operation": "diagnose",
+  "argument": "nginx-status",
+  "confirm": "READ_DIAGNOSTIC"
 }

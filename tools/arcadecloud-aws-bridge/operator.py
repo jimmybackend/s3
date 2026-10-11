@@ -19,7 +19,7 @@ OPERATIONS = frozenset({"diagnose", "service", "power-start"})
 DIAGNOSTICS = frozenset({
     "memory", "disk", "uptime", "arcadecloud-services", "arcadecloud-timers",
     "nginx-status", "php-fpm-status", "repo-status", "media-worker-status",
-    "docker-summary", "terminal-kernel", "terminal-load", "terminal-root-usage",
+    "docker-summary", "terminal-kernel", "terminal-load", "terminal-root-usage", "nginx-log-summary", "php-fpm-log-summary",
 })
 # Second line of defense remains ArcadeCloud's privileged PHP helper, which
 # independently checks the command and service-action allowlist.
@@ -93,6 +93,102 @@ def script_for(request):
     if op == "power-start":
         raise ValueError("Power no se ejecuta por SSM")
     helper = "/usr/local/sbin/arcadecloud-drive-admin"
+
+    if op == "diagnose" and arg in ("nginx-log-summary", "php-fpm-log-summary"):
+        # All code is fixed and local; output is exclusively bounded integer counts.
+        # No raw journal lines, paths, domains, user data or secrets go to public CI.
+        unit = "nginx" if arg == "nginx-log-summary" else "php"
+        return """set -eu
+python3 - <<'PY'
+import glob
+import json
+import re
+import subprocess
+from collections import Counter
+from pathlib import Path
+
+family = 'TARGET_FAMILY'
+categories = {
+    'critical': re.compile(r'(?i)\\b(emerg|alert|crit|critical|panic|fatal)\\b'),
+    'error': re.compile(r'(?i)\\b(error|failed|failure|exception|upstream timed out|permission denied|segfault)\\b'),
+    'warning': re.compile(r'(?i)\\b(warn|warning|deprecated|notice)\\b'),
+    'timeout': re.compile(r'(?i)(timed out|timeout)'),
+    'upstream': re.compile(r'(?i)(upstream|connect\(\) failed|bad gateway)'),
+    'php_fatal': re.compile(r'(?i)(PHP Fatal error|Uncaught .*Exception|PHP Parse error)'),
+    'memory': re.compile(r'(?i)(out of memory|memory exhausted|oom-kill)'),
+}
+counts = Counter()
+read_errors = 0
+total = 0
+sources = 0
+
+def collect(data):
+    global total
+    for line in data.splitlines()[-250:]:
+        total += 1
+        for key, pattern in categories.items():
+            if pattern.search(line):
+                counts[key] += 1
+
+def journal(name):
+    global read_errors, sources
+    try:
+        result = subprocess.run(
+            ['journalctl', '--no-pager', '--output=cat', '-n', '250', '-u', name],
+            capture_output=True, timeout=12, check=False)
+        if result.returncode:
+            read_errors += 1
+        else:
+            sources += 1
+            collect(result.stdout[-131072:].decode('utf-8', 'replace'))
+    except (OSError, subprocess.TimeoutExpired):
+        read_errors += 1
+
+def file_tail(path):
+    global read_errors, sources
+    try:
+        with open(path, 'rb') as handle:
+            handle.seek(0, 2)
+            handle.seek(max(0, handle.tell() - 131072))
+            data = handle.read(131072)
+        sources += 1
+        collect(data.decode('utf-8', 'replace'))
+    except OSError:
+        read_errors += 1
+
+if family == 'nginx':
+    journal('nginx.service')
+    file_tail('/var/log/nginx/error.log')
+else:
+    try:
+        proc = subprocess.run(
+            ['systemctl', 'list-units', '--all', '--type=service',
+             '--no-legend', '--plain', '--no-pager'],
+            capture_output=True, timeout=12, check=False, text=True)
+        names = sorted(set(re.findall(r'(?m)^(php[0-9.]*-fpm|php-fpm)\.service\s', proc.stdout)))
+        for name in names[:5]:
+            journal(name + '.service')
+        if not names:
+            journal('php-fpm.service')
+    except (OSError, subprocess.TimeoutExpired):
+        read_errors += 1
+    paths = sorted(set(
+        glob.glob('/var/log/php*-fpm.log') +
+        glob.glob('/var/log/php*/fpm*.log') +
+        glob.glob('/var/log/php-fpm/error.log')
+    ))[:5]
+    for path in paths:
+        if Path(path).is_file():
+            file_tail(path)
+
+print('ARCADECLOUD_LOG_SUMMARY=' + json.dumps({
+    'sources': min(sources, 20),
+    'lines': min(total, 5000),
+    'read_errors': min(read_errors, 20),
+    'counts': {key: min(counts[key], 5000) for key in categories},
+}, sort_keys=True))
+PY
+""".replace("TARGET_FAMILY", unit)
     if op == "diagnose" and arg == "docker-summary":
         # Prints only a numeric count. No container names, env, mounts or logs.
         return (
@@ -333,6 +429,23 @@ def execute(request, env, session_factory, sleeper=time.sleep):
             result.update({"status": status, "exit_code": invocation.get("ResponseCode")})
             # Prevent public workflow logs from ever carrying raw command output.
             output = invocation.get("StandardOutputContent", "")
+            if (request["operation"] == "diagnose" and
+                    request["argument"] in ("nginx-log-summary", "php-fpm-log-summary") and
+                    status == "Success"):
+                marker = "ARCADECLOUD_LOG_SUMMARY="
+                if output.startswith(marker):
+                    try:
+                        summary = json.loads(output[len(marker):])
+                        fields = ("critical", "error", "warning", "timeout", "upstream", "php_fatal", "memory")
+                        if (isinstance(summary, dict) and set(summary) == {"sources", "lines", "read_errors", "counts"}
+                                and isinstance(summary["counts"], dict) and set(summary["counts"]) == set(fields)
+                                and all(type(summary[k]) is int and 0 <= summary[k] <= 5000
+                                        for k in ("sources", "lines", "read_errors"))
+                                and all(type(summary["counts"][k]) is int and 0 <= summary["counts"][k] <= 5000
+                                        for k in fields)):
+                            result["log_summary"] = summary
+                    except (ValueError, TypeError):
+                        pass
             if request["operation"] == "diagnose" and request["argument"] == "docker-summary" and status == "Success":
                 match = re.fullmatch(r"ARCADECLOUD_DOCKER_COUNT=(\d+)\s*", output)
                 if match:

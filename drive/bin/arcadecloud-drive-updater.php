@@ -289,7 +289,7 @@ final class ArcadeCloudDriveUpdater
 
         if ($behind > 0) {
             $log = $this->git($config, [
-                'log', '--format=%h %s', '--max-count=8', 'HEAD..origin/main',
+                'log', '--format=%h %s', '--max-count=8', 'HEAD..origin/main', '--', 'drive/',
             ])['stdout'];
             if ($log !== '') {
                 $summary = preg_split('/\R/', $log) ?: [];

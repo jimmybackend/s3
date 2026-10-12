@@ -148,7 +148,30 @@ class OperatorTests(unittest.TestCase):
                 ops.load_request("other", path, "", "", "", "", "22")
 
     def test_no_stop_no_terminate_no_run_instances(self):
-        self.assertEqual(ops.OPERATIONS, {"diagnose", "service", "power-start"})
+        # updater-sync is deliberately limited to a fixed helper action
+        # on the small node; it does not grant EC2 stop/terminate powers.
+        self.assertEqual(
+            ops.OPERATIONS,
+            {"diagnose", "service", "power-start", "updater-sync"},
+        )
+        self.assertFalse(any(
+            forbidden in ops.OPERATIONS
+            for forbidden in ("power-stop", "terminate", "run-instances", "shell")
+        ))
+
+    def test_updater_sync_restricted_to_small_node_and_fixed_argument(self):
+        valid = req(
+            alias="small", operation="updater-sync",
+            argument="arcadecloud", confirm="SYNC_HELPER",
+        )
+        self.assertEqual(ops.validate_request(valid), valid)
+        for invalid in (
+            req(alias="large", operation="updater-sync", argument="arcadecloud", confirm="SYNC_HELPER"),
+            req(alias="small", operation="updater-sync", argument="shell", confirm="SYNC_HELPER"),
+            req(alias="small", operation="updater-sync", argument="arcadecloud", confirm="READ_DIAGNOSTIC"),
+        ):
+            with self.subTest(invalid=invalid), self.assertRaises(ValueError):
+                ops.validate_request(invalid)
 
 
 if __name__ == "__main__":

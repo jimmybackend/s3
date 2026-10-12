@@ -104,7 +104,7 @@ final class UploadTaskStore
             $raw = @file_get_contents($path);
             $job = is_string($raw) ? json_decode($raw, true) : null;
             if (!is_array($job) || (string)($job['upload_mode'] ?? '') !== 'local_put'
-                || !in_array((string)($job['status'] ?? ''), ['queued','pending','running'], true)
+                || !in_array((string)($job['status'] ?? ''), ['queued','pending','running','failed'], true)
                 || (int)($job['user_id'] ?? 0) < 1
                 || trim((string)($job['object_key'] ?? '')) === '') continue;
             $updated = strtotime((string)($job['updated_at'] ?? ''));

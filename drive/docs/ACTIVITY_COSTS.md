@@ -279,6 +279,39 @@ La configuración sólo se consulta del entorno efectivo del proceso PHP.
 No hay interruptores públicos ni parámetros de URL para cambiar el perfil,
 y nunca se realizan cobros automáticamente.
 
+## Precisión de microcostos (octubre 2026)
+
+En el catálogo de precios hay operaciones S3 con cargos de referencia
+de fracciones minúsculas de USD (por ejemplo, GET: 0.0000004 USD).
+La interfaz muestra ahora **hasta 16 decimales significativos**, sin
+recortar automáticamente a 8 para cifras menores de un centavo.
+Los importes exactamente cero siguen mostrándose como $0.00; los
+no tasados siguen siendo **sin precio**, no costo cero.
+
+El esquema maestro usa `DriveActivityEvents.EstimatedCost DECIMAL(28,16)`
+para instalaciones nuevas. Los servidores con la columna anterior
+`DECIMAL(20,10)` **requieren una migración independiente**; editar
+el esquema maestro NO modifica por sí solo la tabla instalada.
+
+Ruta: `drive/migrations/20261012_drive_activity_microcost_precision.sql`.
+
+**Procedimiento de producción controlado:**
+
+1. Respaldar previamente la base de datos del Drive y confirmar el respaldo.
+2. Comprobar la definición efectiva con
+   `SHOW COLUMNS FROM DriveActivityEvents LIKE 'EstimatedCost';`.
+3. Ejecutar el ALTER del archivo de migración usando la DB correcta en
+   una ventana de mantenimiento (puede bloquear escrituras brevemente).
+4. Repetir la consulta de columna y ejecutar
+   `php drive/tests/activity_costs_smoke.php`.
+
+**Importante:** el cambio preserva valores guardados, pero no recupera
+fracciones ya redondeadas antes de la migración. No crea precio para
+unidades desconocidas y no convierte estimaciones AWS en factura real.
+Los totales de la pantalla pueden tener hasta 16 decimales de precisión
+visible; sumas PHP con coma flotante pueden mostrar diferencias ínfimas
+para valores extremadamente pequeños.
+
 ## Extensión futura
 
 Nuevos workers no deben escribir SQL directamente. Deben expresar unidades mediante `ActivityCostRecorder`, por ejemplo cuando existan datos reales para:

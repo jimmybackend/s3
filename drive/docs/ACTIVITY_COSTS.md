@@ -251,6 +251,34 @@ temporales de almacenamiento, política de reparto aprobada, consumo de
 instancias por horas y reconciliación específica de rubros facturados.
 Los filtros por servicio/acción ocultan esta conciliación integral.
 
+## Perfil familiar y preparación empresarial (octubre 2026)
+
+El uso actual de ArcadeCloud es **familiar**, con factura de AWS cubierta
+por el propietario. Los desgloses son exclusivamente informativos: no crean
+deudas, cuotas obligatorias, facturas, pagos ni márgenes de ganancia.
+El propietario puede acordar aportaciones voluntarias, sin exceder el gasto
+real compartido del período, y sin convertir las estimaciones en cobros.
+
+`AccountingProfile` aplica por defecto el perfil `family`. La configuración
+opcional `ARCADECLOUD_ACCOUNTING_PROFILE=business_preview` permite que el
+propietario vea un **catálogo de preparación**, sin habilitar facturación ni
+dar acceso a terceros. Entradas previstas:
+
+- Digitalización y cotejo documental por página.
+- Transcripción de audiencias y videos por minuto de audio/video.
+- Revisión humana de transcripciones por minuto revisado.
+- Organización e índice de expedientes por expediente.
+
+El catálogo **no** cotiza, procesa trabajos nuevos, crea clientes ni altera
+permisos. Una futura operación profesional necesita gestión de clientes,
+autorizaciones, confidencialidad de expedientes y datos personales,
+consentimiento para tratamiento de audios/video, tarifas aprobadas,
+revisión humana, cotizaciones y comprobantes fiscales cuando proceda.
+
+La configuración sólo se consulta del entorno efectivo del proceso PHP.
+No hay interruptores públicos ni parámetros de URL para cambiar el perfil,
+y nunca se realizan cobros automáticamente.
+
 ## Extensión futura
 
 Nuevos workers no deben escribir SQL directamente. Deben expresar unidades mediante `ActivityCostRecorder`, por ejemplo cuando existan datos reales para:

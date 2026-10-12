@@ -92,7 +92,7 @@ final class ActivityCostPageRenderer
         $pagination = $this->pagination($vm);
 
         $ownerAccounting = is_array($vm['owner_accounting'] ?? null)
-            ? $this->ownerAccountingHtml($vm['owner_accounting'])
+            ? $this->ownerAccountingHtml($vm['owner_accounting'], (array)($vm['accounting_profile'] ?? []))
             : '';
         $ownerBreakdown = is_array($vm['owner_breakdown'] ?? null)
             ? $this->ownerBreakdownHtml($vm['owner_breakdown'])
@@ -259,8 +259,23 @@ HTML;
     /**
      * Account-owner-only accounting. Null rates display as pending, never $0.
      */
-    private function ownerAccountingHtml(array $accounting): string
+    private function ownerAccountingHtml(array $accounting, array $profile = []): string
     {
+        $business = ($profile['mode'] ?? 'family') === 'business_preview';
+        $profileTitle = $business ? 'Preparación empresarial · derechos y transcripciones'
+            : 'Uso familiar · costos compartidos';
+        $profileNote = $business
+            ? 'Modo empresarial en preparación: sin cobros, tarifas de venta, facturas ni activación de clientes.'
+            : 'El propietario cubre actualmente los gastos AWS. Estos montos por usuario son informativos: no constituyen deudas ni cuotas obligatorias. Cualquier aportación familiar sería voluntaria y la suma no debe exceder el gasto real compartido.';
+        $catalog = '';
+        if ($business) {
+            $catalog = '<h3 class="activity-section-title mt-3">Catálogo profesional previsto (sin facturación)</h3><ul>';
+            foreach ((array)($profile['service_catalog'] ?? []) as $item) {
+                $catalog .= '<li>' . $this->e((string)($item['label'] ?? ''))
+                    . ' · unidad: ' . $this->e((string)($item['unit'] ?? '')) . '</li>';
+            }
+            $catalog .= '</ul><p>Para operar con terceros faltarán autorización de clientes, confidencialidad, presupuestos, revisión humana, controles de acceso y facturación.</p>';
+        }
         $totals = (array)($accounting['totals'] ?? []);
         $policy = (array)($accounting['policy'] ?? []);
         $s3Configured = $totals['s3'] !== null;
@@ -293,7 +308,9 @@ HTML;
             ? '<p><strong>Período histórico:</strong> no se asigna S3 sin fotografías históricas de bytes almacenados.</p>'
             : '<p>Almacenamiento S3: fotografía actual del catálogo FileS3 (Found=1), no medición histórica de GB-mes ni inventario de objetos huérfanos.</p>';
         return '<section class="activity-panel mb-4" aria-label="Contabilidad AWS por usuario">'
-            . '<h2 class="activity-section-title">Contabilidad AWS por usuario</h2>'
+             . '<h2 class="activity-section-title">Contabilidad AWS por usuario</h2>'
+            . '<h3 class="activity-section-title">' . $this->e($profileTitle) . '</h3>'
+            . '<p>' . $this->e($profileNote) . '</p>'
             . '<p>Solo propietario · USD · política de reparto explícita; no es una factura AWS individual.</p>'
             . '<div class="table-responsive"><table class="table table-sm activity-table"><thead>'
             . '<tr><th>Concepto</th><th colspan="2">Descripción</th><th colspan="3" class="text-right">Importe USD</th></tr></thead><tbody>'
@@ -314,6 +331,7 @@ HTML;
             . '<tr><th>Usuario</th><th>Almacenamiento actual</th><th class="text-right">Directo</th>'
             . '<th class="text-right">S3 compartido</th><th class="text-right">EC2 compartida</th>'
             . '<th class="text-right">Subtotal calculable</th></tr></thead><tbody>' . $rows . '</tbody></table></div>'
+            . $catalog
             . '</section>';
     }
 

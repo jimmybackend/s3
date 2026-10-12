@@ -25,7 +25,11 @@ final class FileAccessController
             $result=$this->service()->signedDownload($userId,$key);
             $this->activity()->success($userId, 'download', 'S3', (int)($result['id'] ?? 0), [
                 's3.presigned_get_intent' => 1,
-            ], $started);
+            ], $started, [
+                'phase' => 'presigned_redirect',
+                'get_confirmed' => false,
+                'cost_basis' => 'intent_only',
+            ]);
             $this->response->redirect((string)$result['url_descarga']);
         } catch (\Throwable $e) {
             if ($userId > 0) $this->activity()->failure($userId, 'download', 'S3', $started);

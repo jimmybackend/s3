@@ -146,4 +146,27 @@ check(str_contains($html, 'activity-breakdown-stack'), 'Stacked breakdown wrappe
 check(!str_contains($html, 'activity-breakdown-row'), 'Old flex breakdown row must not render');
 check(str_contains($html, 'activity-costs.css?v=20260923-3'), 'Activity CSS cache-busting version missing');
 
+// Owner-only breakdown: visible for an authorized VM and absent for ordinary users.
+$ownerVm = [
+    'totals' => ['operations' => 1, 'estimated_cost' => 0.1],
+    'by_service' => [], 'by_action' => [], 'daily' => [], 'recent' => [],
+    'recent_pagination' => [], 'filters' => ['services' => [], 'actions' => []],
+    'period' => 'month', 'period_label' => 'Mes actual',
+    'selected_service' => null, 'selected_action' => null,
+    'real_aws' => null, 'real_aws_note' => '', 'difference' => null,
+    'owner_breakdown' => [
+        'users' => [['user_id' => 7, 'operations' => 2, 'service_events' => 3,
+            'estimated_cost' => 0.12, 'partial_count' => 1, 'unpriced_count' => 1, 'error_count' => 0]],
+        'services' => [['user_id' => 7, 'service' => 'Bedrock', 'operations' => 2,
+            'estimated_cost' => 0.12, 'incomplete_count' => 1]]
+    ]
+];
+$ownerHtml = $renderer->render($ownerVm, 1);
+check(str_contains($ownerHtml, 'Consumo AWS atribuido por usuario'), 'Owner aggregation missing');
+check(str_contains($ownerHtml, 'Usuario #7'), 'Owner aggregation user absent');
+check(str_contains($ownerHtml, 'Bedrock'), 'Owner AWS service breakdown absent');
+unset($ownerVm['owner_breakdown']);
+$regularHtml = $renderer->render($ownerVm, 7);
+check(!str_contains($regularHtml, 'Consumo AWS atribuido por usuario'), 'Cross-user aggregation leaked to regular view');
+
 fwrite(STDOUT, "OK activity-costs smoke\n");

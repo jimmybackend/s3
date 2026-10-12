@@ -91,6 +91,9 @@ final class ActivityCostPageRenderer
         $recentTotal = (int)($recentPagination['total_items'] ?? count((array)($vm['recent'] ?? [])));
         $pagination = $this->pagination($vm);
 
+        $ownerAccounting = is_array($vm['owner_accounting'] ?? null)
+            ? $this->ownerAccountingHtml($vm['owner_accounting'])
+            : '';
         $ownerBreakdown = is_array($vm['owner_breakdown'] ?? null)
             ? $this->ownerBreakdownHtml($vm['owner_breakdown'])
             : '';
@@ -199,6 +202,8 @@ final class ActivityCostPageRenderer
     <div class="activity-notice"><i class="fas fa-circle-info mr-1"></i> {$note}</div>
   </section>
 
+  {$ownerAccounting}
+
   {$ownerBreakdown}
 
   <section class="activity-breakdown-stack mt-4">
@@ -249,6 +254,67 @@ HTML;
     {
         $message = $this->e($message);
         return '<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Actividad y costos</title><link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"></head><body class="p-4"><div class="container"><div class="alert alert-danger"><strong>No se pudo cargar Actividad y costos.</strong><br>' . $message . '</div><a class="btn btn-primary" href="s3.php">Volver al Drive</a></div></body></html>';
+    }
+
+    /**
+     * Account-owner-only accounting. Null rates display as pending, never $0.
+     */
+    private function ownerAccountingHtml(array $accounting): string
+    {
+        $totals = (array)($accounting['totals'] ?? []);
+        $policy = (array)($accounting['policy'] ?? []);
+        $s3Configured = $totals['s3'] !== null;
+        $ec2Configured = $totals['ec2'] !== null;
+        $moneyOrPending = fn($value): string => $value === null
+            ? 'Pendiente de configurar'
+            : $this->money((float)$value);
+        $rows = '';
+        foreach ((array)($accounting['users'] ?? []) as $user) {
+            $rows .= '<tr><td>Usuario #' . (int)($user['user_id'] ?? 0) . '</td>'
+                . '<td>' . $this->bytes((float)($user['bytes'] ?? 0)) . ' · ' . (int)($user['files'] ?? 0) . ' archivos</td>'
+                . '<td class="text-right">' . $this->money((float)($user['direct'] ?? 0)) . '</td>'
+                . '<td class="text-right">' . $this->e($moneyOrPending($user['s3_estimate'] ?? null)) . '</td>'
+                . '<td class="text-right">' . $this->e($moneyOrPending($user['ec2_share'] ?? null)) . '</td>'
+                . '<td class="text-right">' . $this->money((float)($user['allocated_total'] ?? 0)) . '</td></tr>';
+        }
+        if ($rows === '') $rows = '<tr><td colspan="6">No hay usuarios con actividad o archivos registrados.</td></tr>';
+        $direct = $this->money((float)($totals['direct'] ?? 0));
+        $s3 = $this->e($moneyOrPending($totals['s3'] ?? null));
+        $ec2 = $this->e($moneyOrPending($totals['ec2'] ?? null));
+        $allocated = $this->money((float)($totals['allocated'] ?? 0));
+        $real = $this->e($moneyOrPending($totals['real_aws'] ?? null));
+        $unassigned = $this->e($moneyOrPending($totals['unassigned'] ?? null));
+        $warning = !$s3Configured || !$ec2Configured
+            ? 'Faltan tarifas compartidas; el total asignado es parcial y la diferencia NO es gasto definitivo sin atribuir.'
+            : 'La diferencia es contable/provisional: pueden existir operaciones sin tasar, descuentos y desfases de Cost Explorer.';
+        $s3Rate = $this->e($moneyOrPending($policy['s3_usd_gb_month'] ?? null));
+        $ec2Rate = $this->e($moneyOrPending($policy['ec2_usd_month'] ?? null));
+        $history = !($policy['snapshot_available'] ?? false)
+            ? '<p><strong>Período histórico:</strong> no se asigna S3 sin fotografías históricas de bytes almacenados.</p>'
+            : '<p>Almacenamiento S3: fotografía actual del catálogo FileS3 (Found=1), no medición histórica de GB-mes ni inventario de objetos huérfanos.</p>';
+        return '<section class="activity-panel mb-4" aria-label="Contabilidad AWS por usuario">'
+            . '<h2 class="activity-section-title">Contabilidad AWS por usuario</h2>'
+            . '<p>Solo propietario · USD · política de reparto explícita; no es una factura AWS individual.</p>'
+            . '<div class="table-responsive"><table class="table table-sm activity-table"><thead>'
+            . '<tr><th>Concepto</th><th colspan="2">Descripción</th><th colspan="3" class="text-right">Importe USD</th></tr></thead><tbody>'
+            . '<tr><td>1. Consumo directo estimado</td><td colspan="2">Eventos atribuibles de todos los usuarios</td><td colspan="3" class="text-right">' . $direct . '</td></tr>'
+            . '<tr><td>2a. Almacenamiento S3 asignado</td><td colspan="2">Proporcional a bytes registrados</td><td colspan="3" class="text-right">' . $s3 . '</td></tr>'
+            . '<tr><td>2b. Infraestructura EC2 asignada</td><td colspan="2">Cuota mensual repartida por usuario</td><td colspan="3" class="text-right">' . $ec2 . '</td></tr>'
+            . '<tr><td>Total estimado asignado (parcial si falta tarifa)</td><td colspan="2">Solo componentes calculables</td><td colspan="3" class="text-right">' . $allocated . '</td></tr>'
+            . '<tr><td>Costo real AWS · toda la cuenta</td><td colspan="2">Cost Explorer (puede retrasarse)</td><td colspan="3" class="text-right">' . $real . '</td></tr>'
+            . '<tr><td>3. Diferencia pendiente de conciliación</td><td colspan="2">Real AWS menos estimado asignado; puede ser negativa</td><td colspan="3" class="text-right">' . $unassigned . '</td></tr>'
+            . '</tbody></table></div>'
+            . '<p><strong>Tarifas configuradas:</strong> S3 ' . $s3Rate . ' USD/GB-mes; EC2 ' . $ec2Rate . ' USD/mes. '
+            . 'EC2 se divide en partes iguales entre usuarios que tienen eventos o archivos en el catálogo. '
+            . 'La cuota mensual se prorratea por días naturales del período.</p>'
+            . $history
+            . '<p><strong>Precaución:</strong> ' . $this->e($warning) . '</p>'
+            . '<h3 class="activity-section-title mt-3">Asignación estimada individual</h3>'
+            . '<div class="table-responsive"><table class="table table-sm activity-table"><thead>'
+            . '<tr><th>Usuario</th><th>Almacenamiento actual</th><th class="text-right">Directo</th>'
+            . '<th class="text-right">S3 compartido</th><th class="text-right">EC2 compartida</th>'
+            . '<th class="text-right">Subtotal calculable</th></tr></thead><tbody>' . $rows . '</tbody></table></div>'
+            . '</section>';
     }
 
     /**

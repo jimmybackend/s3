@@ -34,7 +34,7 @@ class ArcadeCloudOsNodeMonitor {
   }
 
   isOpen() { return Boolean(this.document.getElementById('nodeWindow')?.classList.contains('is-open')); }
-  startPolling() { this.stopPolling(); this.refresh(); this.pollTimer = this.window.setInterval(() => { if (this.isOpen()) this.refresh(); else this.stopPolling(); }, 30000); }
+  startPolling() { this.stopPolling(); this.refresh(); this.pollTimer = this.window.setInterval(() => { if (this.isOpen()) this.refresh(); else this.stopPolling(); }, 15000); }
   stopPolling() { if (this.pollTimer) this.window.clearInterval(this.pollTimer); this.pollTimer = null; if (this.countdownTimer) this.window.clearInterval(this.countdownTimer); this.countdownTimer = null; }
 
   async refresh() {
@@ -351,7 +351,57 @@ class ArcadeCloudOsNodeMonitor {
   }
   processesCard(processes) { const total = Number(this.node?.resources?.memory?.total_bytes || 0); const entries = processes.slice(0, 6).map((p) => [p.name, this.bytes(p.memory_bytes) + ' · ' + (total ? (Number(p.memory_bytes) * 100 / total).toFixed(1) + '% RAM · ' : '') + p.processes + ' proc.']); return this.card('Mayor consumo actual', entries.length ? entries : [['Procesos ArcadeCloud', 'No disponibles']]); }
   phpNginxCard(php, nginx) { const fpm = php.service || {}; const ng = nginx.service || {}; const config = nginx.config_status === 'ok' ? 'Correcta' : nginx.config_status === 'permission_denied' ? 'No verificable (permisos)' : nginx.config_status === 'command_unavailable' ? 'Comando no disponible' : 'Error de configuración'; const average = Number(php.workers) > 0 ? this.bytes(Number(php.memory_bytes) / Number(php.workers)) : '—'; const card = this.card('PHP / Nginx', [['PHP', php.version || '—'], ['Estado PHP-FPM', fpm.active || 'No instalado'], ['Procesos FPM', php.workers ?? '—'], ['Activos / idle', php.pool_metrics_available ? String(php.active_processes) + ' / ' + String(php.idle_processes) : 'No disponible sin status privado'], ['RAM PHP-FPM', this.bytes(php.memory_bytes)], ['Promedio por proceso', average], ['Estado del servicio Nginx', ng.active || 'No instalado'], ['Validación de configuración', config], ['Versión Nginx', nginx.version || '—'], ['RAM Nginx', this.bytes(nginx.memory_bytes)]]); const details = this.el('details', 'os-node-details'); details.append(this.el('summary', '', 'Detalles'), this.metrics([['FPM unit', fpm.unit || '—'], ['FPM PID', fpm.pid || '—'], ['Uptime FPM desde', fpm.since || '—'], ['memory_limit', php.settings?.memory_limit || '—'], ['Pool FPM', php.pool_message || '—'], ['Nginx PID', ng.pid || '—'], ['Nginx desde', ng.since || '—'], ['Causa nginx -t', nginx.config_message || config]])); card.append(details); return card; }
-  databaseCard(db) { const previous = this.mysqlSnapshot; const delta = (key) => previous && Number(db[key]) >= Number(previous[key]) ? ' (+' + (Number(db[key]) - Number(previous[key])) + ' desde último refresh)' : ''; const card = this.card('MySQL / Base de datos', [['Tipo', db.type === 'local' ? 'Local' : 'Remota'], ['Host', db.host || '—'], ['Estado', db.available ? 'Disponible' : 'No disponible'], ['Respuesta', db.latency_ms == null ? '—' : db.latency_ms + ' ms'], ['Conexiones actuales · instantánea', db.advanced_available ? db.threads_connected + ' / ' + db.max_connections + ' (' + db.connections_used_percent + '%)' : 'No disponible'], ['Threads running · instantánea', db.advanced_available ? db.threads_running : '—'], ['Connections · acumulado desde arranque', db.connections == null ? '—' : db.connections + delta('connections')], ['Aborted connects · acumulado', db.aborted_connects == null ? '—' : db.aborted_connects + delta('aborted_connects')], ['Slow queries · acumulado', db.slow_queries == null ? '—' : db.slow_queries + delta('slow_queries')], ['Tamaño DB', this.bytes(db.database_size_bytes)], ['Uptime MySQL', db.advanced_available ? this.duration(db.uptime_seconds) : '—']]); if (db.advanced_available) this.mysqlSnapshot = { connections: db.connections, aborted_connects: db.aborted_connects, slow_queries: db.slow_queries }; return card; }
+  databaseCard(db) {
+    const previous = this.mysqlSnapshot;
+    // Deltas are meaningful only within the same MySQL uptime/session.
+    const sameUptime = previous && Number(db.uptime_seconds) >= Number(previous.uptime_seconds);
+    const delta = (key) => sameUptime && Number.isFinite(Number(db[key])) && Number(db[key]) >= Number(previous[key])
+      ? ' (+' + (Number(db[key]) - Number(previous[key])) + ' desde última lectura)' : '';
+    const max = Math.max(1, Number(db.max_connections || 1));
+    const connected = Math.max(0, Number(db.threads_connected || 0));
+    const peak = Math.max(0, Number(db.max_used_connections || 0));
+    const remaining = Math.max(0, max - connected);
+    const mysqlMemory = (this.node.processes || []).filter(p => /^(MySQL|MariaDB)$/.test(String(p.name || '')))
+      .reduce((sum, p) => sum + Math.max(0, Number(p.memory_bytes || 0)), 0);
+    const available = db.advanced_available === true;
+    const load = available ? (connected / max * 100) : 0;
+    const state = !db.available ? 'Sin conexión'
+      : !available ? 'Diagnóstico limitado'
+      : load >= 95 ? 'Crítico · conexiones'
+      : load >= 80 ? 'Atención · conexiones'
+      : 'Normal';
+    const rows = [
+      ['Tipo', db.type === 'local' ? 'Local' : 'Remota'],
+      ['Host', db.host || '—'],
+      ['Estado', (db.available ? 'Disponible' : 'No disponible') + ' · ' + state],
+      ['Respuesta', db.latency_ms == null ? '—' : db.latency_ms + ' ms'],
+      ['Conexiones actuales', available ? connected + ' / ' + max + ' (' + db.connections_used_percent + '%)' : 'No disponible'],
+      ['Conexiones libres ahora', available ? remaining : '—'],
+      ['Pico desde arranque', available ? peak + ' / ' + max + ' (' + db.peak_connections_percent + '%)' : '—'],
+      ['Consultas activas ahora', available ? db.threads_running : '—'],
+      ['Memoria procesos MariaDB/MySQL', mysqlMemory > 0 ? this.bytes(mysqlMemory) + ' · RSS aproximada' : 'No disponible'],
+      ['InnoDB buffer pool configurado', available ? this.bytes(db.innodb_buffer_pool_bytes) : '—'],
+      ['Key buffer configurado (límite)', available ? this.bytes(db.key_buffer_bytes) : '—'],
+      ['Connections · acumulado', db.connections == null ? '—' : db.connections + delta('connections')],
+      ['Conexiones rechazadas · acumulado', db.aborted_connects == null ? '—' : db.aborted_connects + delta('aborted_connects')],
+      ['Consultas lentas · acumulado', db.slow_queries == null ? '—' : db.slow_queries + delta('slow_queries')],
+      ['Tablas temporales en disco · acumulado', db.tmp_disk_tables == null ? '—' : db.tmp_disk_tables + delta('tmp_disk_tables')],
+      ['Tamaño DB', this.bytes(db.database_size_bytes)],
+      ['Uptime MySQL', available ? this.duration(db.uptime_seconds) : '—']
+    ];
+    const card = this.card('MySQL / Base de datos · lectura cada 15 s', rows);
+    if (available && peak >= max * .9) {
+      const note = this.el('p', 'os-node-placeholder',
+        'Se alcanzó un pico cercano al límite desde el arranque. No significa que las conexiones sigan saturadas ahora.');
+      card.append(note);
+    }
+    if (available) this.mysqlSnapshot = {
+      connections: db.connections, aborted_connects: db.aborted_connects,
+      slow_queries: db.slow_queries, tmp_disk_tables: db.tmp_disk_tables,
+      uptime_seconds: db.uptime_seconds
+    };
+    return card;
+  }
   usersCard(users) { return this.card('Usuarios / Sesiones', [['Usuarios registrados', users.registered ?? 'No disponible'], ['Sesiones abiertas', users.online_available ? users.sessions : 'No disponible'], ['Definición', users.message || '—']]); }
   federationCard(f) {
     return this.card('FederationCloud local', [

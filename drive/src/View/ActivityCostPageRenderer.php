@@ -511,8 +511,116 @@ HTML;
 
     private function money(float $value): string
     {
-        $decimals = abs($value) < 0.01 && $value != 0.0 ? 8 : 2;
-        return '$' . number_format($value, $decimals, '.', ',');
+        // Keep tiny positive costs visible without exposing binary float noise
+        // (e.g. 15.99 must not render as 15.9900000000000002).
+        if (!is_finite($value)) return 'No disponible';
+        if ($value === 0.0) return '$0.00';
+        if (abs($value) < 1e-16) {
+            return ($value < 0 ? '-' : '') . 'menos de $0.0000000000000001';
+        }
+        $negative = $value < 0;
+        $absolute = abs($value);
+        $number = sprintf('%.15g', $absolute);
+        if (stripos($number, 'e') !== false) {
+            [$mantissa, $exponent] = preg_split('/e/i', $number, 2);
+            $mantissaParts = explode('.', $mantissa, 2);
+            $digits = implode('', $mantissaParts);
+            $point = strlen($mantissaParts[0]) + (int)$exponent;
+            if ($point <= 0) {
+                $number = '0.' . str_repeat('0', -$point) . $digits;
+            } elseif ($point >= strlen($digits)) {
+                $number = $digits . str_repeat('0', $point - strlen($digits));
+            } else {
+                $number = substr($digits, 0, $point) . '.' . substr($digits, $point);
+            }
+        }
+        $parts = explode('.', $number, 2);
+        $integer = preg_replace('/\B(?=(\d{3})+(?!\d))/', ',', $parts[0]);
+        $fraction = rtrim($parts[1] ?? '', '0');
+        $fraction = str_pad($fraction, $absolute < 0.01 ? 8 : 2, '0');
+        return ($negative ? '-$' : '$') . $integer . '.' . $fraction;
+    }
+
+    private function bytes(float $bytes): string
+    {
+        $units = ['B', 'KB', 'MB', 'GB', 'TB'];
+        $index = 0;
+        while ($bytes >= 1024 && $index < count($units) - 1) {
+            $bytes /= 1024;
+            $index++;
+        }
+        return number_format($bytes, $index === 0 ? 0 : 2, '.', ',') . ' ' . $units[$index];
+    }
+
+    private function e(string $value): string
+    {
+        return htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+    }
+}
+ : '
+
+    private function bytes(float $bytes): string
+    {
+        $units = ['B', 'KB', 'MB', 'GB', 'TB'];
+        $index = 0;
+        while ($bytes >= 1024 && $index < count($units) - 1) {
+            $bytes /= 1024;
+            $index++;
+        }
+        return number_format($bytes, $index === 0 ? 0 : 2, '.', ',') . ' ' . $units[$index];
+    }
+
+    private function e(string $value): string
+    {
+        return htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+    }
+}
+) . 'muy pequeño (menos de 10^-16 USD)';
+        }
+        $negative = $value < 0;
+        $absolute = abs($value);
+        $minDecimals = $absolute < 0.01 ? 8 : 2;
+        $formatted = number_format($absolute, 16, '.', ',');
+        [$integer, $fraction] = explode('.', $formatted, 2);
+        $fraction = rtrim($fraction, '0');
+        $fraction = str_pad($fraction, $minDecimals, '0');
+        return ($negative ? '-
+
+    private function bytes(float $bytes): string
+    {
+        $units = ['B', 'KB', 'MB', 'GB', 'TB'];
+        $index = 0;
+        while ($bytes >= 1024 && $index < count($units) - 1) {
+            $bytes /= 1024;
+            $index++;
+        }
+        return number_format($bytes, $index === 0 ? 0 : 2, '.', ',') . ' ' . $units[$index];
+    }
+
+    private function e(string $value): string
+    {
+        return htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+    }
+}
+ : '
+
+    private function bytes(float $bytes): string
+    {
+        $units = ['B', 'KB', 'MB', 'GB', 'TB'];
+        $index = 0;
+        while ($bytes >= 1024 && $index < count($units) - 1) {
+            $bytes /= 1024;
+            $index++;
+        }
+        return number_format($bytes, $index === 0 ? 0 : 2, '.', ',') . ' ' . $units[$index];
+    }
+
+    private function e(string $value): string
+    {
+        return htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+    }
+}
+) . $integer . '.' . $fraction;
     }
 
     private function bytes(float $bytes): string

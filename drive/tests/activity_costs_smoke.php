@@ -201,6 +201,11 @@ $microVm = [
     'period_label' => 'Mes actual', 'selected_service' => null, 'selected_action' => null,
     'real_aws' => null, 'real_aws_note' => '', 'difference' => null,
 ];
+$ordinaryVm = $microVm;
+$ordinaryVm['totals']['estimated_cost'] = 15.99;
+$ordinaryHtml = $renderer->render($ordinaryVm, 1);
+check(str_contains($ordinaryHtml, '$15.99'), 'Normal USD cost must show ordinary cents');
+check(!str_contains($ordinaryHtml, '15.9900000000000002'), 'Float noise must not be rendered');
 $microHtml = $renderer->render($microVm, 1);
 check(str_contains($microHtml, '$0.000000000001'), 'Sub-8-decimal USD cost must be visible');
 check(!str_contains($microHtml, '$0.00000000</div>'), 'Micro-cost must not appear as zero');

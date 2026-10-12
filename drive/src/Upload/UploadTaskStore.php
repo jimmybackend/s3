@@ -94,6 +94,26 @@ final class UploadTaskStore
         return $job;
     }
 
+    /** Scan a bounded set of stale tasks without exposing cross-user records. */
+    public function staleLocalUploads(int $minAgeSeconds = 180, int $limit = 20): array
+    {
+        $cutoff = time() - max(60, $minAgeSeconds);
+        $rows = [];
+        foreach (glob($this->directory . '/*.json') ?: [] as $path) {
+            if (count($rows) >= max(1, min(100, $limit))) break;
+            $raw = @file_get_contents($path);
+            $job = is_string($raw) ? json_decode($raw, true) : null;
+            if (!is_array($job) || (string)($job['upload_mode'] ?? '') !== 'local_put'
+                || !in_array((string)($job['status'] ?? ''), ['queued','pending','running','failed'], true)
+                || (int)($job['user_id'] ?? 0) < 1
+                || trim((string)($job['object_key'] ?? '')) === '') continue;
+            $updated = strtotime((string)($job['updated_at'] ?? ''));
+            if ($updated === false || $updated > $cutoff) continue;
+            $rows[] = $job;
+        }
+        return $rows;
+    }
+
     public function recentForUser(int $userId, int $limit = 50): array
     {
         if ($userId <= 0) return [];
@@ -139,6 +159,8 @@ final class UploadTaskStore
             'destination' => 500,
             'service' => 80,
             'provider' => 80,
+            // Asignado exclusivamente por el controlador después de init.
+            'object_key' => 1024,
         ];
         foreach ($stringFields as $key => $max) {
             if (!array_key_exists($key, $changes)) continue;

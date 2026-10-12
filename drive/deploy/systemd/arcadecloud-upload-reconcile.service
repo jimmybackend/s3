@@ -1,0 +1,17 @@
+[Unit]
+Description=ArcadeCloud reconcile stale S3/FileS3 upload tasks
+After=network-online.target mariadb.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=apache
+Group=apache
+WorkingDirectory=/var/www/arcadecloud-drive/drive
+ExecStart=/usr/bin/php /var/www/arcadecloud-drive/drive/bin/upload_task_reconcile.php
+TimeoutStartSec=90
+MemoryMax=160M
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true

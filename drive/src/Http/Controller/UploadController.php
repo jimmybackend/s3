@@ -84,6 +84,15 @@ final class UploadController
 
             if ($keepSessionOpen) $session->closeWrite();
 
+            // Only record the object key issued by our uploader. Never trust
+            // a browser-supplied key when reconciling later.
+            if ($mode === 'local_put' && $action === 'init'
+                && !empty($req['task_id']) && !empty($result['key'])) {
+                $this->app->uploadTaskStore()->put($userId, (string)$req['task_id'], [
+                    'object_key' => (string)$result['key'],
+                ]);
+            }
+
             $this->finishUploadTaskPhase($userId, $mode, $action, $req, $result);
             $this->recordObservedOperation($userId, $mode, $action, $req, $result, $started);
             JsonResponse::send(['ok' => true] + $result);

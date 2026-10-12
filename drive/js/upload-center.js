@@ -434,17 +434,10 @@ class ArcadeCloudUploadCenter {
         tamano: String(Number(blob.size || 0)),
         task_id: task.id
       });
-      const completeResponse = await fetch(this.api + '?mode=local_put&action=complete', {
-        method: 'POST',
-        credentials: 'same-origin',
-        cache: 'no-store',
-        headers: this.apiHeaders(),
-        body: complete.toString()
-      });
-      const completeJson = await this.safeJson(completeResponse);
-      if (!completeResponse.ok || completeJson?.ok !== true) {
-        throw new Error(completeJson?.error || 'La subida llegó a S3 pero no pudo confirmarse en FileS3.');
-      }
+      // El backend confirma con HeadObject (tamaño), SHA-256 y FileS3.
+      // Si se pierde la respuesta HTTP, reintentar con el MISMO token es
+      // idempotente; nunca repetir el PUT ni crear una subida adicional.
+      await this.confirmLocalPut(complete, task.id);
 
       this.completeTask(task.id, 'Archivo guardado en la carpeta fijada.');
       await this.afterSuccess(route);
@@ -454,6 +447,46 @@ class ArcadeCloudUploadCenter {
       }
       this.failTask(task.id, error);
     }
+  }
+
+  async confirmLocalPut(complete, taskId) {
+    const attempts = 3;
+    for (let attempt = 1; attempt <= attempts; attempt++) {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 45000);
+      try {
+        const response = await fetch(this.api + '?mode=local_put&action=complete', {
+          method: 'POST',
+          credentials: 'same-origin',
+          cache: 'no-store',
+          headers: this.apiHeaders(),
+          body: complete.toString(),
+          signal: controller.signal
+        });
+        const result = await this.safeJson(response);
+        if (response.ok && result?.ok === true) return result;
+        // No repetir errores explícitos de aplicación: pueden indicar
+        // moderación, tamaño incorrecto, CSRF o una sesión expirada.
+        if (response.status < 500 && response.status !== 408 && response.status !== 429) {
+          throw new Error(result?.error || ('La confirmación falló. HTTP ' + response.status));
+        }
+        if (attempt === attempts) {
+          throw new Error(result?.error || ('La confirmación no respondió correctamente. HTTP ' + response.status));
+        }
+      } catch (error) {
+        if (attempt === attempts || (error?.name !== 'AbortError'
+            && !(error instanceof TypeError)
+            && !String(error?.message || '').includes('La confirmación'))) throw error;
+      } finally {
+        clearTimeout(timeout);
+      }
+      this.updateTask(taskId, {
+        progress: 96,
+        detail: 'Verificando en S3 y FileS3 · intento ' + (attempt + 1) + ' de ' + attempts + '.'
+      });
+      await new Promise(resolve => setTimeout(resolve, attempt * 1500));
+    }
+    throw new Error('No se pudo confirmar el archivo; comprueba su estado antes de volver a subirlo.');
   }
 
   async startRemoteUrl(url, route) {

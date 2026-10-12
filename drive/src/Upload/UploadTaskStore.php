@@ -55,6 +55,22 @@ final class UploadTaskStore
                 throw new RuntimeException('La tarea de subida pertenece a otro usuario.');
             }
 
+            // Una señal de progreso retrasada no puede reabrir una tarea terminal.
+            // La confirmación autorizada del servidor es la fuente de verdad.
+            $currentStatus = (string)($job['status'] ?? '');
+            $nextStatus = (string)($changes['status'] ?? $currentStatus);
+            if (in_array($currentStatus, ['completed', 'failed', 'cancelled'], true)
+                && !in_array($nextStatus, ['completed', 'failed', 'cancelled'], true)) {
+                flock($fh, LOCK_UN);
+                return $job;
+            }
+            // En particular, un fallo tardío del navegador no revierte un éxito
+            // ya confirmado por el backend y su registro FileS3.
+            if ($currentStatus === 'completed' && $nextStatus !== 'completed') {
+                flock($fh, LOCK_UN);
+                return $job;
+            }
+
             foreach ($this->sanitizeChanges($changes) as $key => $value) {
                 $job[$key] = $value;
             }

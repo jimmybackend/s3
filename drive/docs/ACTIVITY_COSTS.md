@@ -196,6 +196,61 @@ automáticamente costos de EC2, almacenamiento por tiempo, transferencias ni
 otros rubros compartidos de AWS. El dato REAL de Cost Explorer conserva su
 alcance de toda la cuenta.
 
+## Contabilidad AWS por usuario: directo, compartido y diferencia (octubre 2026)
+
+`activity_costs.php` incluye ahora **Contabilidad AWS por usuario**, visible sólo
+para la cuenta propietaria ya autorizada. Se conservan los informes anteriores.
+
+El informe presenta por separado:
+
+1. **Directo estimado**: suma de `EstimatedCost` de todos los usuarios
+   presentes en `DriveActivityEvents` dentro del período, no sólo del usuario
+   actualmente autenticado. Conserva la distinción parcial/no tasado.
+2. **Compartido estimado**: tamaño actual por usuario registrado en `FileS3`
+   con `Found=1`, siguiendo la misma condición que
+   `StorageUsageService`, y un presupuesto mensual EC2 explícito dividido
+   **en partes iguales** entre usuarios con eventos o archivos registrados.
+   Incluye usuarios sin eventos pero con archivos.
+3. **Diferencia**: `UnblendedCost` real de toda la cuenta AWS menos todo el
+   costo estimado asignado (directo + compartidos disponibles), **con signo**.
+   Puede ser negativa y no implica un error de AWS ni una deuda.
+
+### Tarifas compartidas configurables
+
+Definir mediante el entorno seguro que ya utiliza la aplicación (por ejemplo
+`/etc/arcadecloud-drive/drive.env` y el entorno efectivo de PHP-FPM):
+
+```ini
+ARCADECLOUD_AWS_S3_USD_GB_MONTH=VALOR_ELEGIDO_POR_EL_PROPIETARIO
+ARCADECLOUD_AWS_EC2_USD_MONTH=CUOTA_MENSUAL_DE_LA_INFRAESTRUCTURA_COMPARTIDA
+```
+
+Estas cadenas son **marcadores explicativos, no valores válidos**: sustituir
+por números decimales en USD y comprobar que PHP-FPM vea las variables.
+No publicar secretos. La cifra EC2 debe ser una **política** aprobada por el
+propietario, no confundirse con la factura real de AWS. Ambas variables son
+opcionales: si faltan, la interfaz muestra *Pendiente de configurar* y deja
+el subtotal calculable como **parcial**, sin convertir desconocido en cero.
+
+La tarifa S3 es USD por GiB-mes (1 GiB = 1,073,741,824 bytes) del catálogo
+actual, para fines de aproximación; no representa todas las clases, mínimos,
+versionado u objetos huérfanos en S3. La cuota EC2 es USD/mes para un
+**presupuesto conjunto de infraestructura**; no calcula horas efectivamente
+encendidas ni asigna una instancia separada a cada usuario. Ambas se prorratean
+por días naturales del período; el día actual se cuenta completo.
+
+Para mes anterior, **no** se atribuye un costo S3 retroactivo utilizando
+el tamaño actual: se deja pendiente por falta de instantáneas históricas.
+La asignación EC2 histórica también es una aproximación sujeta a usuarios
+observables actualmente y en los eventos del período.
+
+No se efectúan llamadas extra a S3, ninguna escritura SQL, ningún cambio a
+precios actuales del catálogo y ningún cargo real al usuario. Para obtener
+facturación verdaderamente precisa por cliente harían falta mediciones
+temporales de almacenamiento, política de reparto aprobada, consumo de
+instancias por horas y reconciliación específica de rubros facturados.
+Los filtros por servicio/acción ocultan esta conciliación integral.
+
 ## Extensión futura
 
 Nuevos workers no deben escribir SQL directamente. Deben expresar unidades mediante `ActivityCostRecorder`, por ejemplo cuando existan datos reales para:

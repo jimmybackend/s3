@@ -511,8 +511,94 @@ HTML;
 
     private function money(float $value): string
     {
-        $decimals = abs($value) < 0.01 && $value != 0.0 ? 8 : 2;
-        return '$' . number_format($value, $decimals, '.', ',');
+        // Show every meaningful sub-cent digit supported by EstimatedCost.
+        // Keep conventional cents for ordinary round amounts, while never
+        // presenting a positive measurable micro-cost as "$0.00".
+        if (!is_finite($value)) return 'No disponible';
+        if ($value === 0.0) return '$0.00';
+        if (abs($value) < 0.0000000000000001) {
+            return ($value < 0 ? '-
+
+    private function bytes(float $bytes): string
+    {
+        $units = ['B', 'KB', 'MB', 'GB', 'TB'];
+        $index = 0;
+        while ($bytes >= 1024 && $index < count($units) - 1) {
+            $bytes /= 1024;
+            $index++;
+        }
+        return number_format($bytes, $index === 0 ? 0 : 2, '.', ',') . ' ' . $units[$index];
+    }
+
+    private function e(string $value): string
+    {
+        return htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+    }
+}
+ : '
+
+    private function bytes(float $bytes): string
+    {
+        $units = ['B', 'KB', 'MB', 'GB', 'TB'];
+        $index = 0;
+        while ($bytes >= 1024 && $index < count($units) - 1) {
+            $bytes /= 1024;
+            $index++;
+        }
+        return number_format($bytes, $index === 0 ? 0 : 2, '.', ',') . ' ' . $units[$index];
+    }
+
+    private function e(string $value): string
+    {
+        return htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+    }
+}
+) . '<0.0000000000000001';
+        }
+        $negative = $value < 0;
+        $absolute = abs($value);
+        $minDecimals = $absolute < 0.01 ? 8 : 2;
+        $formatted = number_format($absolute, 16, '.', ',');
+        [$integer, $fraction] = explode('.', $formatted, 2);
+        $fraction = rtrim($fraction, '0');
+        $fraction = str_pad($fraction, $minDecimals, '0');
+        return ($negative ? '-
+
+    private function bytes(float $bytes): string
+    {
+        $units = ['B', 'KB', 'MB', 'GB', 'TB'];
+        $index = 0;
+        while ($bytes >= 1024 && $index < count($units) - 1) {
+            $bytes /= 1024;
+            $index++;
+        }
+        return number_format($bytes, $index === 0 ? 0 : 2, '.', ',') . ' ' . $units[$index];
+    }
+
+    private function e(string $value): string
+    {
+        return htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+    }
+}
+ : '
+
+    private function bytes(float $bytes): string
+    {
+        $units = ['B', 'KB', 'MB', 'GB', 'TB'];
+        $index = 0;
+        while ($bytes >= 1024 && $index < count($units) - 1) {
+            $bytes /= 1024;
+            $index++;
+        }
+        return number_format($bytes, $index === 0 ? 0 : 2, '.', ',') . ' ' . $units[$index];
+    }
+
+    private function e(string $value): string
+    {
+        return htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+    }
+}
+) . $integer . '.' . $fraction;
     }
 
     private function bytes(float $bytes): string

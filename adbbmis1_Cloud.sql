@@ -173,7 +173,7 @@ CREATE TABLE IF NOT EXISTS `DriveActivityEvents` (
   `Service` varchar(64) COLLATE utf8mb4_unicode_ci NOT NULL,
   `FileId` int DEFAULT NULL,
   `UnitsJson` text COLLATE utf8mb4_unicode_ci,
-  `EstimatedCost` decimal(20,10) DEFAULT NULL,
+  `EstimatedCost` decimal(28,16) DEFAULT NULL,
   `Currency` char(3) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'USD',
   `PriceSource` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `PricingState` varchar(16) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'unpriced',

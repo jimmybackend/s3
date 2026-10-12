@@ -192,4 +192,20 @@ unset($accountingVm['owner_accounting']);
 check(!str_contains($renderer->render($accountingVm, 3), 'Contabilidad AWS por usuario'),
     'Regular user accounting section should not be present');
 
+// Micro-costs must not disappear in presentation at 8-digit precision.
+$microVm = [
+    'totals' => ['operations' => 1, 'estimated_cost' => 0.000000000001],
+    'by_service' => [['service' => 'S3', 'operations' => 1, 'estimated_cost' => 0.000000000001]],
+    'by_action' => [], 'daily' => [], 'recent' => [], 'recent_pagination' => [],
+    'filters' => ['services' => [], 'actions' => []], 'period' => 'month',
+    'period_label' => 'Mes actual', 'selected_service' => null, 'selected_action' => null,
+    'real_aws' => null, 'real_aws_note' => '', 'difference' => null,
+];
+$microHtml = $renderer->render($microVm, 1);
+check(str_contains($microHtml, '$0.000000000001'), 'Sub-8-decimal USD cost must be visible');
+check(!str_contains($microHtml, '$0.00000000</div>'), 'Micro-cost must not appear as zero');
+$negativeVm = $microVm;
+$negativeVm['totals']['estimated_cost'] = -0.000000000001;
+check(str_contains($renderer->render($negativeVm, 1), '-$0.000000000001'), 'Negative reconciliation formatting precision');
+
 fwrite(STDOUT, "OK activity-costs smoke\n");

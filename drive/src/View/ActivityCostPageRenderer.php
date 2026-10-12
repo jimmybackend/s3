@@ -553,7 +553,7 @@ HTML;
         return htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
     }
 }
-) . '<0.0000000000000001';
+) . 'muy pequeño (menos de 10^-16 USD)';
         }
         $negative = $value < 0;
         $absolute = abs($value);

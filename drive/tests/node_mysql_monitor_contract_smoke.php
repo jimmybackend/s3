@@ -19,7 +19,7 @@ foreach (['Conexiones libres ahora', 'Pico desde arranque', 'Memoria procesos Ma
         throw new RuntimeException('Falta indicador de Mi nodo: ' . $label);
     }
 }
-if (!str_contains((string)$controller, "if (!$this->app->session()->isSuperAdmin())")
+if (!str_contains((string)$controller, 'if (!$this->app->session()->isSuperAdmin())')
     || !str_contains((string)$controller, '$local = $this->publicSnapshot($local);')) {
     throw new RuntimeException('Las métricas privadas deben permanecer sólo para superadmin.');
 }

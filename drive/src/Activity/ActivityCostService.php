@@ -89,6 +89,12 @@ final class ActivityCostService
             }
         }
 
+        // Owner-facing reconciliation must use all users (and configured
+        // shared components), not the logged-in owner's personal subtotal.
+        if (isset($data['owner_accounting'])) {
+            $difference = $data['owner_accounting']['totals']['unassigned'];
+        }
+
         return $data + [
             'period' => $period,
             'period_label' => $label,

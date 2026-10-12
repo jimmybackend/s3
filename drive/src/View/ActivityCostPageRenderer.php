@@ -511,13 +511,35 @@ HTML;
 
     private function money(float $value): string
     {
-        // Show every meaningful sub-cent digit supported by EstimatedCost.
-        // Keep conventional cents for ordinary round amounts, while never
-        // presenting a positive measurable micro-cost as "$0.00".
+        // Keep tiny positive costs visible without exposing binary float noise
+        // (e.g. 15.99 must not render as 15.9900000000000002).
         if (!is_finite($value)) return 'No disponible';
         if ($value === 0.0) return '$0.00';
-        if (abs($value) < 0.0000000000000001) {
-            return ($value < 0 ? '-
+        if (abs($value) < 1e-16) {
+            return ($value < 0 ? '-' : '') . 'menos de $0.0000000000000001';
+        }
+        $negative = $value < 0;
+        $absolute = abs($value);
+        $number = sprintf('%.15g', $absolute);
+        if (stripos($number, 'e') !== false) {
+            [$mantissa, $exponent] = preg_split('/e/i', $number, 2);
+            $mantissaParts = explode('.', $mantissa, 2);
+            $digits = implode('', $mantissaParts);
+            $point = strlen($mantissaParts[0]) + (int)$exponent;
+            if ($point <= 0) {
+                $number = '0.' . str_repeat('0', -$point) . $digits;
+            } elseif ($point >= strlen($digits)) {
+                $number = $digits . str_repeat('0', $point - strlen($digits));
+            } else {
+                $number = substr($digits, 0, $point) . '.' . substr($digits, $point);
+            }
+        }
+        $parts = explode('.', $number, 2);
+        $integer = preg_replace('/\B(?=(\d{3})+(?!\d))/', ',', $parts[0]);
+        $fraction = rtrim($parts[1] ?? '', '0');
+        $fraction = str_pad($fraction, $absolute < 0.01 ? 8 : 2, '0');
+        return ($negative ? '-$' : '$') . $integer . '.' . $fraction;
+    }
 
     private function bytes(float $bytes): string
     {

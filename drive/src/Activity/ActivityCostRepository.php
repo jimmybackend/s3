@@ -186,6 +186,21 @@ final class ActivityCostRepository
         return ['users' => $totals, 'services' => $services];
     }
 
+    /**
+     * Catalog snapshot, not historical S3 billing. Uses the same Found=1
+     * inclusion rule as StorageUsageService; no S3 LIST or AWS API calls.
+     */
+    public function ownerStorageSnapshot(): array
+    {
+        return $this->all(
+            'SELECT `user_id_` AS user_id, COUNT(*) AS file_count,
+                    COALESCE(SUM(`Tamano`), 0) AS bytes
+             FROM `FileS3` WHERE `Found` = 1
+             GROUP BY `user_id_` ORDER BY `user_id_`',
+            []
+        );
+    }
+
     private function availableFilters(int $userId): array
     {
         return [

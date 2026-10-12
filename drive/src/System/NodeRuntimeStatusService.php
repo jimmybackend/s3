@@ -271,14 +271,20 @@ final class NodeRuntimeStatusService
             'latency_ms' => round((hrtime(true) - $started) / 1_000_000, 1), 'advanced_available' => false];
         if (!$available) return $base;
         try {
-            $status = $this->mysqlPairs($db, "SHOW GLOBAL STATUS WHERE Variable_name IN ('Threads_connected','Threads_running','Connections','Aborted_connects','Uptime','Slow_queries')");
-            $vars = $this->mysqlPairs($db, "SHOW GLOBAL VARIABLES WHERE Variable_name IN ('max_connections')");
+            $status = $this->mysqlPairs($db, "SHOW GLOBAL STATUS WHERE Variable_name IN ('Threads_connected','Threads_running','Max_used_connections','Connections','Aborted_connects','Uptime','Slow_queries','Created_tmp_tables','Created_tmp_disk_tables')");
+            $vars = $this->mysqlPairs($db, "SHOW GLOBAL VARIABLES WHERE Variable_name IN ('max_connections','innodb_buffer_pool_size','key_buffer_size')");
             if (!isset($status['Threads_connected'], $vars['max_connections'])) return $base;
             $connected = (int)$status['Threads_connected']; $max = max(1, (int)$vars['max_connections']);
             return array_merge($base, ['advanced_available' => true, 'threads_connected' => $connected,
                 'threads_running' => (int)($status['Threads_running'] ?? 0), 'max_connections' => $max,
                 'connections_used_percent' => round($connected * 100 / $max, 1), 'uptime_seconds' => (int)($status['Uptime'] ?? 0),
                 'connections' => (int)($status['Connections'] ?? 0), 'aborted_connects' => (int)($status['Aborted_connects'] ?? 0),
+                'max_used_connections' => (int)($status['Max_used_connections'] ?? 0),
+                'peak_connections_percent' => round((int)($status['Max_used_connections'] ?? 0) * 100 / $max, 1),
+                'innodb_buffer_pool_bytes' => (int)($vars['innodb_buffer_pool_size'] ?? 0),
+                'key_buffer_bytes' => (int)($vars['key_buffer_size'] ?? 0),
+                'tmp_tables' => (int)($status['Created_tmp_tables'] ?? 0),
+                'tmp_disk_tables' => (int)($status['Created_tmp_disk_tables'] ?? 0),
                 'slow_queries' => (int)($status['Slow_queries'] ?? 0), 'database_size_bytes' => $this->cachedDatabaseSize($db)]);
         } catch (Throwable) { return $base; }
     }

@@ -76,6 +76,7 @@ final class ActivityCostService
             // Account-level reconciliation is only comparable without filters.
             // Catalog storage is a CURRENT snapshot, never historical billing.
             if ($service === null && $action === null) {
+                $data['accounting_profile'] = AccountingProfile::fromEnvironment();
                 $data['owner_accounting'] = UserAwsAccounting::build(
                     $data['owner_breakdown'],
                     $this->repository->ownerStorageSnapshot(),

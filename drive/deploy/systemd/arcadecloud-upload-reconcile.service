@@ -8,6 +8,8 @@ Type=oneshot
 User=apache
 Group=apache
 WorkingDirectory=/var/www/arcadecloud-drive/drive
+# Same DB/AWS environment source used by the existing Drive reconcile workers.
+EnvironmentFile=-/etc/arcadecloud-drive/drive.env
 ExecStart=/usr/bin/php /var/www/arcadecloud-drive/drive/bin/upload_task_reconcile.php
 TimeoutStartSec=90
 MemoryMax=160M

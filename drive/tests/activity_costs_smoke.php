@@ -169,4 +169,27 @@ unset($ownerVm['owner_breakdown']);
 $regularHtml = $renderer->render($ownerVm, 7);
 check(!str_contains($regularHtml, 'Consumo AWS atribuido por usuario'), 'Cross-user aggregation leaked to regular view');
 
+$accountingVm = [
+    'totals' => ['operations' => 1, 'estimated_cost' => 0.5],
+    'by_service' => [], 'by_action' => [], 'daily' => [], 'recent' => [],
+    'recent_pagination' => [], 'filters' => ['services' => [], 'actions' => []],
+    'period' => 'month', 'period_label' => 'Mes actual',
+    'selected_service' => null, 'selected_action' => null,
+    'real_aws' => null, 'real_aws_note' => '', 'difference' => null,
+    'owner_accounting' => [
+        'users' => [['user_id' => 3, 'bytes' => 1024, 'files' => 1,
+            'direct' => 0.2, 's3_estimate' => null, 'ec2_share' => null, 'allocated_total' => 0.2]],
+        'totals' => ['direct' => 0.2, 's3' => null, 'ec2' => null,
+            'allocated' => 0.2, 'real_aws' => 1.0, 'unassigned' => 0.8],
+        'policy' => ['s3_usd_gb_month' => null, 'ec2_usd_month' => null,
+            'snapshot_available' => true],
+    ],
+];
+$accountingHtml = $renderer->render($accountingVm, 1);
+check(str_contains($accountingHtml, 'Contabilidad AWS por usuario'), 'Accounting section missing');
+check(str_contains($accountingHtml, 'Pendiente de configurar'), 'Missing rate must not show as zero');
+unset($accountingVm['owner_accounting']);
+check(!str_contains($renderer->render($accountingVm, 3), 'Contabilidad AWS por usuario'),
+    'Regular user accounting section should not be present');
+
 fwrite(STDOUT, "OK activity-costs smoke\n");

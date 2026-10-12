@@ -91,6 +91,10 @@ final class ActivityCostPageRenderer
         $recentTotal = (int)($recentPagination['total_items'] ?? count((array)($vm['recent'] ?? [])));
         $pagination = $this->pagination($vm);
 
+        $ownerBreakdown = is_array($vm['owner_breakdown'] ?? null)
+            ? $this->ownerBreakdownHtml($vm['owner_breakdown'])
+            : '';
+
         $note = $this->e((string)($vm['real_aws_note'] ?? ''));
         $periodLabel = $this->e((string)($vm['period_label'] ?? 'Período'));
         $incomplete = $partial + $unpriced;
@@ -195,6 +199,8 @@ final class ActivityCostPageRenderer
     <div class="activity-notice"><i class="fas fa-circle-info mr-1"></i> {$note}</div>
   </section>
 
+  {$ownerBreakdown}
+
   <section class="activity-breakdown-stack mt-4">
     <div class="activity-panel activity-breakdown-panel mb-4">
       <h2 class="activity-section-title">Costo atribuido por servicio</h2>
@@ -243,6 +249,49 @@ HTML;
     {
         $message = $this->e($message);
         return '<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Actividad y costos</title><link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"></head><body class="p-4"><div class="container"><div class="alert alert-danger"><strong>No se pudo cargar Actividad y costos.</strong><br>' . $message . '</div><a class="btn btn-primary" href="s3.php">Volver al Drive</a></div></body></html>';
+    }
+
+    /**
+     * Aggregate attribution is not an AWS user invoice. Never infer a real
+     * AWS charge from summed reference prices.
+     */
+    private function ownerBreakdownHtml(array $breakdown): string
+    {
+        $users = (array)($breakdown['users'] ?? []);
+        $services = (array)($breakdown['services'] ?? []);
+        $userRows = '';
+        foreach ($users as $row) {
+            $userRows .= '<tr><td>Usuario #' . (int)($row['user_id'] ?? 0) . '</td>'
+                . '<td>' . (int)($row['operations'] ?? 0) . '</td>'
+                . '<td>' . (int)($row['service_events'] ?? 0) . '</td>'
+                . '<td>' . (int)($row['partial_count'] ?? 0) . ' / ' . (int)($row['unpriced_count'] ?? 0) . '</td>'
+                . '<td>' . (int)($row['error_count'] ?? 0) . '</td>'
+                . '<td class="text-right">' . $this->money((float)($row['estimated_cost'] ?? 0)) . '</td></tr>';
+        }
+        if ($userRows === '') $userRows = '<tr><td colspan="6">Sin actividad registrada para el período.</td></tr>';
+        $serviceRows = '';
+        foreach ($services as $row) {
+            $serviceRows .= '<tr><td>Usuario #' . (int)($row['user_id'] ?? 0) . '</td>'
+                . '<td>' . $this->e((string)($row['service'] ?? '')) . '</td>'
+                . '<td>' . (int)($row['operations'] ?? 0) . '</td>'
+                . '<td>' . (int)($row['incomplete_count'] ?? 0) . '</td>'
+                . '<td class="text-right">' . $this->money((float)($row['estimated_cost'] ?? 0)) . '</td></tr>';
+        }
+        if ($serviceRows === '') $serviceRows = '<tr><td colspan="5">Sin servicios registrados para el período.</td></tr>';
+        return '<section class="activity-panel mb-4" aria-label="Costos por usuario, sólo propietario">'
+            . '<h2 class="activity-section-title">Consumo AWS atribuido por usuario</h2>'
+            . '<p>Vista exclusiva del propietario. Importes <strong>estimados</strong> por operaciones observadas del Drive; '
+            . 'no incluyen necesariamente EC2, almacenamiento por tiempo, transferencias ni descuentos. '
+            . 'El costo real de AWS corresponde a toda la cuenta, no a cada usuario.</p>'
+            . '<div class="table-responsive"><table class="table table-sm activity-table">'
+            . '<thead><tr><th>Usuario</th><th>Operaciones</th><th>Eventos de servicio</th>'
+            . '<th>Parcial / sin precio</th><th>Errores</th><th class="text-right">Estimado USD</th></tr></thead>'
+            . '<tbody>' . $userRows . '</tbody></table></div>'
+            . '<h3 class="activity-section-title mt-4">Recursos AWS utilizados por usuario</h3>'
+            . '<div class="table-responsive"><table class="table table-sm activity-table">'
+            . '<thead><tr><th>Usuario</th><th>Servicio AWS</th><th>Operaciones</th>'
+            . '<th>Eventos sin tasación completa</th><th class="text-right">Estimado USD</th></tr></thead>'
+            . '<tbody>' . $serviceRows . '</tbody></table></div></section>';
     }
 
     private function summaryRows(array $rows, string $key, bool $action = false): string

@@ -64,6 +64,17 @@ final class ActivityCostService
             $difference = (float)$real['amount'] - $estimated;
         }
 
+        // Only the account owner may inspect cross-user attribution.
+        // The individual dashboard remains scoped to the logged-in user.
+        if ($canViewRealAws) {
+            $data['owner_breakdown'] = $this->repository->ownerBreakdown(
+                $start->format('Y-m-d H:i:s'),
+                $end->format('Y-m-d H:i:s'),
+                $service,
+                $action
+            );
+        }
+
         return $data + [
             'period' => $period,
             'period_label' => $label,

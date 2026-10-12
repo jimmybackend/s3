@@ -175,6 +175,27 @@ La interfaz muestra:
 
 La vista reutiliza los CSS del Drive, `vision-accessibility.css` y la preferencia `ui-theme-state`; no agrega una librería de gráficos.
 
+## Desglose por usuario para el propietario (octubre de 2026)
+
+La pantalla actual de `activity_costs.php` agrega, exclusivamente para el propietario
+autorizado por `PersonalToolAccessService`, dos tablas de lectura de
+`DriveActivityEvents`: total atribuido por `user_id_` y desglose por
+`user_id_` + servicio AWS. Los filtros existentes de período, servicio y
+operación se aplican también al desglose administrativo.
+
+La autorización no depende de un ID de usuario enviado por el navegador; el
+backend añade `owner_breakdown` solamente cuando la sesión tiene el estado
+`owner`. Los demás usuarios siguen viendo exclusivamente sus propios datos.
+No se crean cargos, no se modifica la facturación ni se asumen costos exactos
+por usuario. Los eventos sin tasa y parciales permanecen identificables.
+Los recuentos de operaciones son distintos por correlación dentro de cada
+usuario; los costos sí suman componentes de servicio.
+
+El desglose muestra sólo usuarios que tienen eventos en el período. No asigna
+automáticamente costos de EC2, almacenamiento por tiempo, transferencias ni
+otros rubros compartidos de AWS. El dato REAL de Cost Explorer conserva su
+alcance de toda la cuenta.
+
 ## Extensión futura
 
 Nuevos workers no deben escribir SQL directamente. Deben expresar unidades mediante `ActivityCostRecorder`, por ejemplo cuando existan datos reales para:

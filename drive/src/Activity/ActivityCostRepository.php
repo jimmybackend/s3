@@ -144,6 +144,48 @@ final class ActivityCostRepository
         ];
     }
 
+    /**
+     * Account-owner-only aggregation. Authorization is enforced by the caller;
+     * this method deliberately never accepts a browser-supplied user ID.
+     * Counts distinct correlated operations per user (not per AWS component).
+     */
+    public function ownerBreakdown(string $start, string $end, ?string $service, ?string $action): array
+    {
+        $where = 'e.`CreatedAt` >= ? AND e.`CreatedAt` < ?';
+        $params = [$start, $end];
+        if ($service !== null) {
+            $where .= ' AND e.`Service` = ?';
+            $params[] = $service;
+        }
+        if ($action !== null) {
+            $where .= ' AND e.`Action` = ?';
+            $params[] = $action;
+        }
+        $operation = "COUNT(DISTINCT COALESCE(e.`CorrelationId`, CONCAT('row:', e.id_)))";
+        $totals = $this->all(
+            "SELECT e.`user_id_` AS user_id, $operation AS operations,
+                    COUNT(*) AS service_events,
+                    COALESCE(SUM(e.`EstimatedCost`), 0) AS estimated_cost,
+                    SUM(CASE WHEN e.`PricingState` = 'partial' THEN 1 ELSE 0 END) AS partial_count,
+                    SUM(CASE WHEN e.`PricingState` = 'unpriced' THEN 1 ELSE 0 END) AS unpriced_count,
+                    SUM(CASE WHEN e.`Status` = 'error' THEN 1 ELSE 0 END) AS error_count
+             FROM `DriveActivityEvents` e WHERE $where
+             GROUP BY e.`user_id_` ORDER BY estimated_cost DESC, e.`user_id_` ASC",
+            $params
+        );
+        $services = $this->all(
+            "SELECT e.`user_id_` AS user_id, e.`Service` AS service,
+                    $operation AS operations,
+                    COALESCE(SUM(e.`EstimatedCost`), 0) AS estimated_cost,
+                    SUM(CASE WHEN e.`PricingState` IN ('partial','unpriced') THEN 1 ELSE 0 END) AS incomplete_count
+             FROM `DriveActivityEvents` e WHERE $where
+             GROUP BY e.`user_id_`, e.`Service`
+             ORDER BY e.`user_id_` ASC, estimated_cost DESC, e.`Service` ASC",
+            $params
+        );
+        return ['users' => $totals, 'services' => $services];
+    }
+
     private function availableFilters(int $userId): array
     {
         return [

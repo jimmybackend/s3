@@ -1,7 +1,7 @@
 # Reconciliador conservador de subidas local_put
 
 El worker `bin/upload_task_reconcile.php` revisa cada cinco minutos (si se
-instala el timer) un máximo de 20 subidas locales antiguas (más de 180 segundos)
+instala el timer) un máximo de 20 subidas locales antiguas (más de 180 segundos), incluidas las marcadas como fallidas por un timeout del navegador
 con clave S3 generada por el servidor y guardada en UploadTaskStore.
 
 Sólo marca una tarea `completed` cuando:

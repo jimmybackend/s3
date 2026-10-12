@@ -878,7 +878,22 @@ final class MediaWorkerNodeService
         $userId = (int)($session['started_by_user_id'] ?? 0);
         if ($userId <= 0) return;
 
-        $this->activity->success(
+        // Prefer the rate saved when the session started. A later change
+        // to the environment must never reprice this historical session.
+        $sessionHourly = $session['hourly_usd'] ?? null;
+        $sessionPriced = is_numeric($sessionHourly) && (float)$sessionHourly >= 0
+            && is_finite((float)$sessionHourly);
+        $recorder = $sessionPriced
+            ? new ActivityCostRecorder(
+                new \ArcadeCloud\Drive\Activity\ActivityCostRepository($this->db),
+                \ArcadeCloud\Drive\Activity\AwsUnitPriceCatalog::default()
+                    ->withMediaSessionHourlyUsd((float)$sessionHourly)
+            )
+            : new ActivityCostRecorder(
+                new \ArcadeCloud\Drive\Activity\ActivityCostRepository($this->db),
+                \ArcadeCloud\Drive\Activity\AwsUnitPriceCatalog::withoutMediaWorkerRate()
+            );
+        $recorder->success(
             $userId,
             'media-node-session',
             'EC2',
@@ -890,7 +905,8 @@ final class MediaWorkerNodeService
                 'instance_type' => (string)($session['instance_type'] ?? ''),
                 'elapsed_seconds' => $elapsed,
                 'billing_reference_seconds' => $billable,
-                'hourly_usd' => $this->hourlyUsd,
+                'hourly_usd' => $sessionPriced ? (float)$sessionHourly : null,
+                'rate_source' => $sessionPriced ? 'session_snapshot' : 'unavailable',
                 'stop_reason' => $reason,
             ],
             ActivityCostRecorder::correlation('media-node', (string)$session['session_id'])

@@ -53,6 +53,28 @@ final class AwsUnitPriceCatalog
         return $catalog;
     }
 
+    public static function withoutMediaWorkerRate(): self
+    {
+        // A missing historical session rate must remain unpriced, even if
+        // the current environment happens to have a rate today.
+        return self::fromFile(dirname(__DIR__, 2) . '/config/activity-cost-pricing.json');
+    }
+
+    /**
+     * Use the rate captured with this specific EC2 session, rather than a
+     * potentially changed environment rate. Does not affect other units.
+     */
+    public function withMediaSessionHourlyUsd(float $hourlyUsd): self
+    {
+        if (!is_finite($hourlyUsd) || $hourlyUsd < 0) {
+            throw new RuntimeException('Tarifa EC2 inválida.');
+        }
+        $copy = clone $this;
+        $copy->rates['ec2.media_worker_second'] = $hourlyUsd / 3600;
+        $copy->sourceId .= '; tarifa histórica EC2 de sesión';
+        return $copy;
+    }
+
     public function estimate(array $units): array
     {
         $amount = 0.0;

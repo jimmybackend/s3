@@ -312,6 +312,32 @@ Los totales de la pantalla pueden tener hasta 16 decimales de precisión
 visible; sumas PHP con coma flotante pueden mostrar diferencias ínfimas
 para valores extremadamente pequeños.
 
+## Protección de costos EC2, Transcribe y descargas S3 (octubre 2026)
+
+- **EC2 multimedia:** cada sesión conserva su tarifa `HourlyUsd` en
+  `MediaWorkerNodeSessions`. Al registrar segundos de sesión se usa esa tarifa
+  histórica exclusivamente. Una sesión sin tarifa guardada **permanece no
+  tasada**, incluso si la configuración actual tiene una tarifa distinta.
+  La correlación `media-node:<hash>` actualiza el mismo evento si se reintenta,
+  sin sumar otra sesión.
+- **Descargas S3 firmadas:** redirigir al navegador a una URL firmada sólo
+  acredita la intención, no un GET ejecutado. Se conserva
+  `s3.presigned_get_intent` como **sin precio** y se añaden metadatos
+  `get_confirmed=false`, `cost_basis=intent_only`. No se realiza ningún
+  GET/HEAD adicional ni se guardan URLs o claves físicas. Para conocer los
+  GET reales del navegador se necesitaría otra fuente de telemetría AWS
+  específica, con decisión explícita sobre su costo de observabilidad.
+- **Transcribe:** el reconciliador existente consulta el trabajo y actualiza
+  el mismo evento por correlación cuando hay resultado COMPLETED y duración
+  atribuible; `transcribe.job_started` por sí solo sigue sin precio, sin
+  duplicarlo como trabajo completo ni volver a facturarlo. Las fallas
+  permanecen con estado de error y no se les inventa costo.
+
+Los cambios son de observabilidad y atribución estimada; no generan
+facturas, pagos ni cargos AWS nuevos de forma intencional. Las sesiones EC2
+históricas sin una tarifa registrada siguen no tasadas; nunca se les aplica
+retroactivamente la tarifa actual.
+
 ## Extensión futura
 
 Nuevos workers no deben escribir SQL directamente. Deben expresar unidades mediante `ActivityCostRecorder`, por ejemplo cuando existan datos reales para:

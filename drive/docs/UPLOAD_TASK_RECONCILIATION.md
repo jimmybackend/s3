@@ -26,6 +26,8 @@ sudo -u apache php drive/bin/upload_task_reconcile.php
 
 ## Activación opcional del timer en EC2
 
+El servicio utiliza `EnvironmentFile=-/etc/arcadecloud-drive/drive.env`, igual que el instalador existente de Transcribe. Antes de activarlo, verificar que dicho archivo exista y contenga las variables DB_* (sin imprimir sus valores). Si la configuración real procede sólo del pool PHP-FPM, adaptar la fuente de entorno del servicio antes de arrancarlo.
+
 Tras validar el comando anterior, copiar ambos archivos desde
 `drive/deploy/systemd/` a `/etc/systemd/system/` y habilitar el timer:
 

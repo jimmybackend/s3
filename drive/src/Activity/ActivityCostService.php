@@ -73,6 +73,20 @@ final class ActivityCostService
                 $service,
                 $action
             );
+            // Account-level reconciliation is only comparable without filters.
+            // Catalog storage is a CURRENT snapshot, never historical billing.
+            if ($service === null && $action === null) {
+                $data['owner_accounting'] = UserAwsAccounting::build(
+                    $data['owner_breakdown'],
+                    $this->repository->ownerStorageSnapshot(),
+                    $start,
+                    $end,
+                    UserAwsAccounting::configuredRate('ARCADECLOUD_AWS_S3_USD_GB_MONTH'),
+                    UserAwsAccounting::configuredRate('ARCADECLOUD_AWS_EC2_USD_MONTH'),
+                    is_array($real) && ($real['available'] ?? false) === true ? (float)$real['amount'] : null,
+                    $period !== 'previous_month'
+                );
+            }
         }
 
         return $data + [

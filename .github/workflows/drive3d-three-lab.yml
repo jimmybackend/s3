@@ -28,7 +28,7 @@ jobs:
       - name: Render and verify geometry, camera and mobile controls
         run: |
           PLAYWRIGHT_MODULE="$RUNNER_TEMP/drive3d-tests/node_modules/playwright" SCREENSHOT_DIR="$RUNNER_TEMP/drive3d-shots" node drive/three-lab/verify.cjs
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: drive3d-lab-views

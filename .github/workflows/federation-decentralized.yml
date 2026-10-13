@@ -27,6 +27,7 @@ on:
       - 'drive/bin/install_arcadecloud.sh'
       - 'adbbmis1_Cloud.sql'
       - 'drive/tests/federation_catalog_event_smoke.php'
+      - 'drive/tests/federation_sequence_allocator_contract.php'
       - 'drive/docs/FEDERATION_DECENTRALIZED_CATALOG.md'
       - '.github/workflows/federation-decentralized.yml'
   pull_request:
@@ -50,6 +51,7 @@ on:
       - 'drive/bin/install_arcadecloud.sh'
       - 'adbbmis1_Cloud.sql'
       - 'drive/tests/federation_catalog_event_smoke.php'
+      - 'drive/tests/federation_sequence_allocator_contract.php'
       - 'drive/docs/FEDERATION_DECENTRALIZED_CATALOG.md'
       - '.github/workflows/federation-decentralized.yml'
   workflow_dispatch:
@@ -85,6 +87,7 @@ jobs:
           php -l drive/src/Federation/FederationSchemaMigrationService.php
           php -l drive/bin/federation_sync.php
           php -l drive/tests/federation_catalog_event_smoke.php
+          php -l drive/tests/federation_sequence_allocator_contract.php
 
       - name: Validate timer installer
         run: |
@@ -105,6 +108,9 @@ jobs:
 
       - name: Signed event smoke test
         run: php drive/tests/federation_catalog_event_smoke.php
+
+      - name: Federation sequence regression contract
+        run: php drive/tests/federation_sequence_allocator_contract.php
 
       - name: Decentralized catalog guards
         run: |

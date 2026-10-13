@@ -28,7 +28,23 @@ final class FederationEventStore
             $stmt->execute();
             $row = $stmt->get_result()->fetch_assoc();
             $stmt->close();
-            $next = max(0, (int)($row['LastSequence'] ?? 0)) + 1;
+            // The origin counter can lag behind events already imported through
+            // ingestMany() (for example when two runtimes share one database).
+            // Keep the counter row locked while consulting the committed event
+            // history so that the next locally emitted sequence is never reused.
+            $maxStmt = $this->db->prepare(
+                'SELECT MAX(OriginSequence) AS MaxSequence FROM FederationEvents WHERE OriginNodeId = ?'
+            );
+            if (!$maxStmt) throw new FederationException('No se pudo consultar última secuencia federada.', 500);
+            $maxStmt->bind_param('s', $origin);
+            $maxStmt->execute();
+            $maxRow = $maxStmt->get_result()->fetch_assoc();
+            $maxStmt->close();
+            $next = max(
+                0,
+                (int)($row['LastSequence'] ?? 0),
+                (int)($maxRow['MaxSequence'] ?? 0)
+            ) + 1;
 
             $event = $this->codec->create($identity, $next, $eventType, $entityId, $payload);
             $this->insertEvent($event);

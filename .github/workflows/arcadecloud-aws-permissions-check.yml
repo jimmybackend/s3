@@ -18,7 +18,7 @@ jobs:
     timeout-minutes: 3
     steps:
       - name: Assume existing AWS OIDC role
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v6
         with:
           role-to-assume: ${{ vars.ARCADECLOUD_AWS_BRIDGE_ROLE_ARN }}
           aws-region: ${{ vars.ARCADECLOUD_AWS_REGION }}

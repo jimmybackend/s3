@@ -223,3 +223,18 @@ OIDC de amplios permisos según la documentación de este proyecto. Estos
 comandos fijos no sustituyen la necesidad de dividir los roles IAM y proteger
 `main` y `.github/workflows`. Este cambio no ejecuta servicios ni
 reparaciones y no altera la configuración de AWS.
+
+## FastDrive: Docker de solo lectura
+
+El diagnóstico `docker-health-large` sólo acepta `alias=large`,
+`operation=diagnose` y `confirm=READ_DIAGNOSTIC`. Si la EC2 grande está
+apagada, el operador falla sin encenderla. Si está encendida con SSM Online,
+consulta `docker ps -a` con salida JSON local y devuelve únicamente conteos:
+`total`, `running`, `exited`, `restarting` y `unhealthy`.
+No publica nombres de contenedores, imágenes, variables, redes ni logs.
+
+**No es acceso interactivo ni autoriza reparaciones.** Para inspeccionar un
+contenedor concreto del sistema que se ejecuta dentro de FastDrive habrá que
+identificar sus servicios reales y utilizar un canal privado autenticado.
+Las operaciones Docker que cambien su estado requieren aprobación explícita,
+plan de reversión y verificación posterior.

@@ -202,7 +202,7 @@ webOsContract(
     substr_count($paths['js'], 'this.window.open(') === 3
     && str_contains($paths['js'], "this.window.open(officeUrl, '_blank')")
     && str_contains($paths['js'], "this.window.open(entry.dataset.officeUrl, '_blank')")
-    && str_contains($paths['js'], "this.window.open(url, '_blank', 'noopener,noreferrer')")
+    && str_contains($paths['js'], "this.window.open(url, '_blank')")
     && str_contains($paths['file_apps_js'], "ver_pdf.php?archivo="),
     'Office y PDF pueden abrir pestañas nuevas; PDF utiliza visor dedicado'
 );

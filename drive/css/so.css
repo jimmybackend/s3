@@ -504,6 +504,8 @@ a{text-decoration:none;color:inherit}
 }
 .os-launcher-header{padding:10px 10px 12px;border-bottom:1px solid var(--os-border);margin-bottom:5px}
 .os-launcher-profile{display:flex;align-items:center;gap:10px}
+.os-launcher-profile-open{display:flex;align-items:center;gap:10px;min-width:0;flex:1;text-align:left;border:0;padding:4px;border-radius:8px;background:transparent;color:inherit;cursor:pointer}
+.os-launcher-profile-open:hover,.os-launcher-profile-open:focus-visible{background:var(--os-surface-hover);outline:2px solid var(--os-accent)}
 .os-launcher-profile img,.os-launcher-profile .os-avatar{width:42px;height:42px;border-radius:50%;object-fit:cover;flex:0 0 42px}
 .os-launcher-header strong,.os-launcher-header span{display:block}
 .os-launcher-header span{font-size:.72rem;color:var(--os-soft);margin-top:3px}

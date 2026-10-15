@@ -175,7 +175,7 @@ class ArcadeCloudFileApplicationService {
       wallpaper.addEventListener('click', () => this.window.ArcadeCloudOsAppearance?.setWallpaper(file.wallpaperUrl, file.name)); toolbar.append(wallpaper);
     }
     if (toolbar.children.length) {
-      if (application === 'image' || application === 'text') {
+      if (application === 'image' || application === 'text' || application === 'pdf') {
         toolbar.classList.add('os-viewer-toolbar-bottom');
         const status = record.element.querySelector('.os-statusbar');
         if (status) status.append(toolbar);

@@ -618,7 +618,7 @@ webOsContract(!str_contains($launcherMarkup, 'id="osWindowOpacity"') && !str_con
 webOsContract(str_contains($launcherMarkup, 'data-window-open="settingsWindow"'), 'lanzador abre Configuración');
 webOsContract(str_contains($launcherMarkup, 'data-window-open="linksWindow"'), 'lanzador abre Enlaces');
 webOsContract(!str_contains($launcherMarkup, 'terminalWindow'), 'Terminal ya no aparece en el menú inferior izquierdo');
-webOsContract(str_contains($paths['shell'], '<strong>Consola servidor</strong>'), 'Consola servidor aparece dentro de Aplicaciones');
+webOsContract(str_contains($paths['shell'], '<strong>Consola Servidor</strong>'), 'Consola servidor aparece dentro de Aplicaciones');
 webOsContract(str_contains($paths['shell'], '<strong>Linux XFCE</strong>'), 'Aplicaciones incluye acceso explícito al escritorio Linux');
 webOsContract(str_contains($paths['shell'], 'href="office-launch.php" target="_blank" rel="noopener" title="Abrir escritorio Linux remoto por noVNC"'), 'Linux XFCE reutiliza el gateway autenticado noVNC');
 webOsContract(str_contains($paths['shell'], '<strong>Guacamole</strong>'), 'Aplicaciones incluye acceso explícito a Guacamole');

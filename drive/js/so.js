@@ -1262,8 +1262,9 @@ class ArcadeCloudOsShell {
       const key = String(entry.dataset.key || '');
       if (!key) return;
       const url = 'ver_pdf.php?archivo=' + encodeURIComponent(key);
-      const opened = this.window.open(url, '_blank', 'noopener,noreferrer');
-      if (!opened) this.notify('Permite las ventanas emergentes para abrir el PDF en otra pestaña.', 'warning');
+      const opened = this.window.open(url, '_blank');
+      if (opened) opened.opener = null;
+      else this.notify('Permite las ventanas emergentes para abrir el PDF en otra pestaña.', 'warning');
       this.hideContext();
       return;
     }

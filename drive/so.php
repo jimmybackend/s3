@@ -527,7 +527,7 @@ if ($isDrive3dNativeActions) ob_start();
                     data-download-url="<?= $e($downloadUrl) ?>"
                     data-edit-url="<?= $e($editUrl) ?>"
                     data-office-url="<?= $e($officeUrl) ?>"
-                    data-classic-url="s3.php"
+                    <?php if ($isSuperAdmin): ?>data-classic-url="s3.php"<?php endif; ?>
                     data-locked="<?= $locked ? '1' : '0' ?>"
                     data-has-security="<?= FileViewHelper::hasSecurity($row) ? '1' : '0' ?>"
                     data-unlocked="<?= (($row['AccessType'] ?? 'normal') === 'unlocked') ? '1' : '0' ?>"
@@ -569,7 +569,7 @@ if ($isDrive3dNativeActions) ob_start();
             <div class="os-empty">
               <i class="far fa-folder-open"></i>
               <strong>Esta carpeta está vacía.</strong>
-              <span>Usa el Drive clásico para subir archivos mientras terminamos el escritorio.</span>
+              <span>Usa el botón Subir para agregar archivos a esta carpeta.</span>
             </div>
           <?php endif; ?>
         </div>
@@ -577,7 +577,9 @@ if ($isDrive3dNativeActions) ob_start();
 
       <div class="os-statusbar">
         <span><?= count($folders) ?> carpetas · <?= $fileTotal ?> archivos · Página <?= $page ?> de <?= $pages ?></span>
+        <?php if ($isSuperAdmin): ?>
         <a href="s3.php"><i class="fas fa-arrow-up-right-from-square"></i> Abrir Drive clásico</a>
+        <?php endif; ?>
       </div>
       </div>
     </section>

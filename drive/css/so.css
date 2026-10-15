@@ -236,11 +236,19 @@ a{text-decoration:none;color:inherit}
   background:var(--os-surface-subtle);color:var(--os-soft);font-size:.68rem;font-weight:800
 }
 .os-entry-grid.is-list-view .os-entry{
-  height:24px;min-height:24px;width:100%;display:grid;
+  height:24px;min-height:24px;max-height:24px;box-sizing:border-box;width:100%;display:grid;
   grid-template-columns:20px minmax(160px,1.8fr) minmax(90px,.7fr) minmax(90px,.6fr) minmax(135px,.9fr) 18px;
   align-items:center;align-content:center;justify-content:normal;gap:5px;
   padding:1px 6px;border:0;border-bottom:1px solid var(--os-divider);
   border-radius:0;text-align:left;line-height:1.15
+}
+.os-entry-grid.is-list-view .os-entry > .os-entry-icon,
+.os-entry-grid.is-list-view .os-entry > .os-entry-name,
+.os-entry-grid.is-list-view .os-entry > .os-entry-list-type,
+.os-entry-grid.is-list-view .os-entry > .os-entry-list-size,
+.os-entry-grid.is-list-view .os-entry > .os-entry-list-date,
+.os-entry-grid.is-list-view .os-entry > .os-entry-menu{
+  align-self:center;min-height:0;line-height:16px;margin:0;vertical-align:middle
 }
 .os-entry-grid.is-list-view .os-entry-icon{font-size:.82rem;line-height:1}
 .os-entry-grid.is-list-view .os-entry-thumb-wrap{width:18px;height:18px}

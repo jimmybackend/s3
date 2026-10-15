@@ -664,6 +664,7 @@ if ($isDrive3dNativeActions) ob_start();
           <a class="os-app-card is-ready" data-launcher-app="guacamole" href="office-launch.php?target=guacamole" target="_blank" rel="noopener" title="Abrir escritorio Linux remoto por Guacamole RDP"><i class="fas fa-headset"></i><strong>Guacamole</strong><span>Audio + micrófono</span></a>
           <a class="os-app-card is-ready" data-launcher-app="office" href="office-launch.php" target="_blank" rel="noopener"><i class="fas fa-file-word"></i><strong>Office</strong><span>Disponible</span></a>
           <a class="os-app-card is-ready" data-launcher-app="office-web" href="https://office.esforzados.com/" target="_blank" rel="noopener" title="Suite ofimática en la nube"><i class="fas fa-file-lines"></i><strong>Office Web</strong><span>Enlace directo</span></a>
+          <button type="button" class="os-app-card is-ready" data-window-open="linksWindow"><i class="fas fa-link"></i><strong>Enlaces</strong><span>Accesos y servicios</span></button>
         </div>
       </div>
     </section>

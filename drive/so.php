@@ -195,6 +195,11 @@ $e = static fn(mixed $value): string => FileViewHelper::escape($value);
 $formatBytes = static fn(int $bytes): string => FileViewHelper::formatBytes($bytes);
 $load = $nodeSnapshot['load_average'] ?? [0, 0, 0];
 $isSuperAdmin = $session->isSuperAdmin();
+$profileCsrf = (string)$session->get('profile_csrf', '');
+if (!preg_match('/\A[a-f0-9]{64}\z/', $profileCsrf)) {
+    $profileCsrf = bin2hex(random_bytes(32));
+    $session->set('profile_csrf', $profileCsrf);
+}
 $canViewPersonalTools = $isSuperAdmin && $app->personalToolAccessService()->state() === 'owner';
 $serverConsoleCsrf = (string)$session->get('csrf', '');
 if ($isSuperAdmin && !preg_match('/\A[a-f0-9]{32,128}\z/', $serverConsoleCsrf)) {
@@ -2065,9 +2070,12 @@ Escribe help o usa uno de los botones disponibles.</pre>
   </div>
   <?php endif; ?>
 
+  <?= \ArcadeCloud\Drive\View\UserProfileModalRenderer::render($profileCsrf) ?>
+
   <div class="os-launcher" id="osLauncher" hidden>
     <div class="os-launcher-header">
       <div class="os-launcher-profile">
+        <button type="button" class="os-launcher-profile-open" data-toggle="modal" data-target="#modalUserProfile" aria-label="Abrir Mi perfil" title="Mi perfil">
         <?php if ($userAvatarUrl !== ''): ?>
           <img src="<?= $e($userAvatarUrl) ?>" alt="Perfil">
         <?php else: ?>
@@ -2075,8 +2083,9 @@ Escribe help o usa uno de los botones disponibles.</pre>
         <?php endif; ?>
         <div>
           <strong><?= $e($userAlias) ?></strong>
-          <span>ArcadeCloud OS</span>
+          <span>Mi perfil</span>
         </div>
+        </button>
         <?php if ($isSuperAdmin): ?>
         <button type="button"
                 class="os-launcher-power"
@@ -2090,13 +2099,13 @@ Escribe help o usa uno de los botones disponibles.</pre>
     </div>
     <button type="button" data-window-open="nodeWindow"><i class="fas fa-server"></i> Mi nodo</button>
     <button type="button" data-app-open="explorer"><i class="fas fa-folder-open"></i> Mis datos</button>
+    <button type="button" data-window-open="searchWindow" data-open-search><i class="fas fa-magnifying-glass"></i> Buscar</button>
     <button type="button" data-window-open="appsWindow"><i class="fas fa-shapes"></i> Aplicaciones</button>
-    <a href="notebook.php"><i class="fas fa-book-open"></i> Notebook</a>
-    <a href="s3.php"><i class="fas fa-hard-drive"></i> Drive clásico</a>
-    <a href="dataword3d.php"><i class="fas fa-cubes"></i> Drive 3D</a>
-    <button type="button" data-window-open="settingsWindow"><i class="fas fa-gear"></i> Configuración</button>
     <button type="button" data-window-open="linksWindow"><i class="fas fa-link"></i> Enlaces</button>
-    <button type="button" data-os-reload><i class="fas fa-rotate-right"></i> Actualizar</button>
+    <?php if ($isSuperAdmin): ?>
+    <a href="s3.php"><i class="fas fa-hard-drive"></i> Drive Clásico</a>
+    <?php endif; ?>
+    <a href="dataword3d.php"><i class="fas fa-cubes"></i> Drive 3D</a>
     <button type="button" data-os-about data-toggle="modal" data-target="#modalAcercaArcadeCloud"><i class="fas fa-circle-info"></i> Acerca de</button>
     <a href="logout.php" class="is-danger"><i class="fas fa-right-from-bracket"></i> Cerrar sesión</a>
   </div>
@@ -2256,6 +2265,7 @@ Escribe help o usa uno de los botones disponibles.</pre>
   <script src="js/so.js?v=<?= (int)filemtime(__DIR__ . '/js/so.js') ?>"></script>
   <script src="js/so-clipboard.js?v=<?= (int)filemtime(__DIR__ . '/js/so-clipboard.js') ?>"></script>
   <script src="js/page-task-manager.js?v=<?= (int)filemtime(__DIR__ . '/js/page-task-manager.js') ?>"></script>
+  <script src="js/profile.js?v=<?= (int)filemtime(__DIR__ . '/js/profile.js') ?>"></script>
   <script src="js/desktop-shell.js?v=<?= (int)filemtime(__DIR__ . '/js/desktop-shell.js') ?>"></script>
 </body>
 </html>

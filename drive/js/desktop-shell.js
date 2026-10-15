@@ -27,7 +27,7 @@ class ArcadeCloudDesktopShell {
       if (!node) { node = this.document.createElement('div'); node.id = id; node.className = className; node.innerHTML = html; Object.entries(attributes).forEach(([key, value]) => node.setAttribute(key, value)); this.document.body.append(node); }
       return node;
     };
-    this.desktopMenu = create('osDesktopContext', 'os-shell-menu', '<button type="button" data-shell-action="explorer"><i class="fas fa-folder-open"></i>Nueva ventana Mis datos</button><button type="button" data-shell-action="page-monitor"><i class="fas fa-chart-line"></i>Administrador de la página</button><button type="button" data-shell-action="settings"><i class="fas fa-gear"></i>Configuración</button><button type="button" data-shell-action="refresh"><i class="fas fa-rotate"></i>Actualizar escritorio</button>', { role: 'menu', hidden: '' });
+    this.desktopMenu = create('osDesktopContext', 'os-shell-menu', '<button type="button" data-shell-action="explorer"><i class="fas fa-folder-open"></i>Mis Datos</button><button type="button" data-shell-action="page-monitor"><i class="fas fa-chart-line"></i>Administrador de la página</button><button type="button" data-shell-action="settings"><i class="fas fa-gear"></i>Configuración</button><button type="button" data-shell-action="refresh"><i class="fas fa-rotate"></i>Actualizar</button>', { role: 'menu', hidden: '' });
     this.switcher = create('osWindowSwitcher', 'os-window-switcher', '<div class="os-switcher-list" role="listbox" aria-label="Ventanas abiertas"></div>', { hidden: '', 'aria-hidden': 'true' });
     this.notifications = create('osNotifications', 'os-notifications', '', { 'aria-label': 'Notificaciones', 'aria-live': 'polite' });
   }
@@ -117,7 +117,7 @@ class ArcadeCloudDesktopShell {
       if (action === 'explorer') this.runtime.openExplorer(this.runtime.root, { forceNew: true });
       if (action === 'page-monitor') this.launchTarget('pageMonitorWindow');
       if (action === 'settings') this.launchTarget('settingsWindow');
-      if (action === 'refresh') this.manager.openRecords().filter(record => record.app === 'explorer').forEach(record => this.runtime.explorers.get(record.id)?.reload?.());
+      if (action === 'refresh') { this.window.location.reload(); return; }
       this.desktopMenu.hidden = true;
     });
     this.document.addEventListener('pointerdown', event => { if (!event.target.closest('#osDesktopContext')) this.desktopMenu.hidden = true; }, true);

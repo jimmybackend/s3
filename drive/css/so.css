@@ -1142,6 +1142,58 @@ body.arcade-os{
   content:attr(data-placeholder);color:var(--os-soft);pointer-events:none
 }
 
+/* Mi perfil reutiliza el modal de s3.php pero hereda el tema activo de ArcadeCloud OS. */
+.arcade-os #modalUserProfile .card{
+  background:var(--os-surface-2)!important;
+  color:var(--os-text)!important;
+  border:1px solid var(--os-border)!important;
+  border-radius:10px;
+}
+.arcade-os #modalUserProfile .card-header{
+  background:var(--os-surface)!important;
+  color:var(--os-text)!important;
+  border-bottom:1px solid var(--os-border)!important;
+}
+.arcade-os #modalUserProfile .card-body,
+.arcade-os #modalUserProfile label,
+.arcade-os #modalUserProfile .modal-title{
+  color:var(--os-text)!important;
+}
+.arcade-os #modalUserProfile .form-control,
+.arcade-os #modalUserProfile .form-control-file,
+.arcade-os #modalUserProfile select{
+  background:var(--os-input-bg)!important;
+  color:var(--os-text)!important;
+  border-color:var(--os-border)!important;
+  color-scheme:dark;
+}
+body.arcade-os.os-theme-light #modalUserProfile .form-control,
+body.arcade-os.os-theme-light #modalUserProfile select{
+  color-scheme:light;
+}
+.arcade-os #modalUserProfile .form-control[readonly]{
+  background:var(--os-surface-subtle)!important;
+  opacity:.9;
+}
+.arcade-os #modalUserProfile #profileAvatarPreview{
+  background:var(--os-surface)!important;
+  color:var(--os-text)!important;
+  border-color:var(--os-border)!important;
+}
+.arcade-os #modalUserProfile .btn-outline-secondary{
+  color:var(--os-text)!important;
+  border-color:var(--os-border)!important;
+}
+.arcade-os #modalUserProfile .btn-outline-secondary:hover{
+  background:var(--os-surface-hover)!important;
+}
+.arcade-os #modalUserProfile input[type="file"]::file-selector-button{
+  background:var(--os-surface)!important;
+  color:var(--os-text)!important;
+  border:1px solid var(--os-border);
+  border-radius:5px;
+}
+
 /* Centro unificado de Tareas sobre la barra del sistema. */
 #backgroundTaskButton{
   z-index:13020!important;

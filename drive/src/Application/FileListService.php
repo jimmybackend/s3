@@ -108,6 +108,43 @@ final class FileListService
         ];
     }
 
+
+    /**
+     * Aggregate files in each requested folder, including all descendants.
+     * Uses the existing FileS3 user/route/size/date columns and a single grouped DB query.
+     * @param list<string> $prefixes
+     * @return array<string,array{bytes:int,date:string}>
+     */
+    public function descendantFolderStats(int $userId, array $prefixes): array
+    {
+        $stats = [];
+        foreach ($prefixes as $prefix) {
+            $key = rtrim(str_replace('\\\\', '/', (string) $prefix), '/') . '/';
+            if ($key !== '/') $stats[$key] = ['bytes' => 0, 'date' => ''];
+        }
+        if ($userId <= 0 || !$stats) return $stats;
+
+        $stmt = $this->prepare(
+            'SELECT Ruta, COALESCE(SUM(Tamano), 0) AS bytes, MAX(Fecha) AS latest
+             FROM FileS3 WHERE user_id_ = ? AND Found = 1 GROUP BY Ruta'
+        );
+        $stmt->bind_param('i', $userId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        while ($row = $result->fetch_assoc()) {
+            $route = rtrim(str_replace('\\\\', '/', (string) ($row['Ruta'] ?? '')), '/') . '/';
+            foreach ($stats as $prefix => &$value) {
+                if (!str_starts_with($route, $prefix)) continue;
+                $value['bytes'] += max(0, (int) ($row['bytes'] ?? 0));
+                $date = (string) ($row['latest'] ?? '');
+                if ($date > $value['date']) $value['date'] = $date;
+            }
+            unset($value);
+        }
+        $stmt->close();
+        return $stats;
+    }
+
     public function listExtensions(int $userId, string $route): array
     {
         $stmt = $this->prepare(

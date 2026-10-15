@@ -232,10 +232,64 @@ class ArcadeCloudOsFolderActions {
     const divider = this.context.querySelector('[data-folder-mutating-divider]');
     if (divider) divider.hidden = folder.isRoot;
 
+    this.arrangeContextActions(isCurrent, folder);
     this.context.hidden = false;
     const rect = this.context.getBoundingClientRect();
     this.context.style.left = Math.max(4, Math.min(x, this.window.innerWidth - rect.width - 4)) + 'px';
     this.context.style.top = Math.max(4, Math.min(y, this.window.innerHeight - rect.height - 52)) + 'px';
+  }
+
+  arrangeContextActions(isCurrent, folder) {
+    const menu = this.context;
+    const action = id => menu.querySelector('[data-folder-action="' + id + '"]');
+    const clipboard = (id) => menu.querySelector('[data-os-clipboard-action="' + id + '"][data-os-clipboard-kind="folder"]');
+    const labels = {
+      'create-document':['Crear archivo desde texto pegado','Crea un archivo nuevo con el texto que escribas o pegues.'],
+      'create-folder':['Nueva carpeta','Crea una subcarpeta en esta ubicación.'],
+      'extract-text':['Extraer texto de documentos','Extrae texto de imágenes y documentos compatibles de esta carpeta.'],
+      sync:['Sincronizar desde S3','Actualiza esta carpeta con el contenido de Amazon S3.'],
+      rename:['Cambiar nombre','Cambia el nombre de la carpeta seleccionada.'],
+    };
+    Object.entries(labels).forEach(([id, values]) => {
+      const button = action(id);
+      if (!button) return;
+      const icon = button.querySelector('i')?.outerHTML || '';
+      button.innerHTML = icon + values[0];
+      button.title = values[1];
+      button.setAttribute('aria-label',values[0]);
+    });
+    [['copy','Copiar carpeta','Prepara una copia de esta carpeta para pegarla en otro lugar.'],
+     ['cut','Mover carpeta','Prepara esta carpeta para trasladarla a otra ubicación.'],
+     ['paste','Pegar dentro','Coloca aquí los archivos o carpetas que hayas copiado o cortado.']]
+      .forEach(([id,label,description]) => {
+        const button = clipboard(id);
+        if (!button) return;
+        const span = button.querySelector('span');
+        if (span) span.textContent = label;
+        button.title = description;
+      });
+    const list = isCurrent
+      ? [action('open-new'),action('create-empty-file'),action('create-document'),action('create-folder'),clipboard('paste'),action('extract-text'),action('sync')]
+      : [action('open'),action('open-new'),action('create-empty-file'),action('create-document'),action('create-folder'),action('move'),clipboard('copy'),action('rename'),action('delete'),clipboard('copy'),clipboard('cut'),clipboard('paste'),action('extract-text'),action('sync')];
+    // "Copiar" and "Copiar carpeta" use the same established clipboard action.
+    // Never duplicate a DOM control or issue an unexpected second copy action.
+    const seen = new Set();
+    list.forEach(button => {
+      if (!button || seen.has(button)) return;
+      seen.add(button);
+      menu.appendChild(button);
+    });
+    menu.querySelectorAll('.os-context-divider').forEach(divider => divider.hidden = true);
+    if (isCurrent) {
+      [action('open'),action('move'),action('rename'),action('delete'),clipboard('copy'),clipboard('cut')].forEach(button => { if (button) button.hidden = true; });
+    } else {
+      [clipboard('copy'),clipboard('cut')].forEach(button => { if (button) button.hidden = folder.isRoot; });
+    }
+    const paste = clipboard('paste');
+    if (paste) {
+      const state = this.window.ArcadeCloudOsClipboard;
+      paste.hidden = !(state?.clipboard);
+    }
   }
 
   hideContext() {

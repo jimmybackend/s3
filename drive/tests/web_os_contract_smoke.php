@@ -229,7 +229,7 @@ webOsContract(str_contains($paths['shell'], '<span>Mis datos</span>'), 'escritor
 webOsContract(str_contains($paths['shell'], '<span>Aplicaciones</span>'), 'escritorio incluye Aplicaciones');
 webOsContract(str_contains($paths['shell'], '<span>Notebook</span>') && str_contains($paths['shell'], 'href="notebook.php"'), 'escritorio incluye acceso directo a Notebook');
 webOsContract(str_contains($paths['shell'], 'href="notebook.php" target="_blank" rel="noopener"'), 'Notebook abre en pestaña separada y conserva ArcadeCloud OS');
-webOsContract(str_contains($paths['shell'], '<strong>Notebook</strong><span>Nueva pestaña</span>'), 'Aplicaciones incluye Notebook en nueva pestaña');
+webOsContract(str_contains($paths['shell'], '<span>Notebook</span>') && str_contains($paths['shell'], 'href="notebook.php" target="_blank" rel="noopener"'), 'Notebook permanece disponible desde el escritorio en nueva pestaña');
 webOsContract(str_contains($paths['shell'], 'nodeKey: <?= json_encode($osPreferenceNodeKey'), 'shell entrega la identidad del nodo al gestor de apariencia');
 webOsContract(str_contains($paths['preferences_repository'], "'nodes' => []") && str_contains($paths['preferences_repository'], 'FOR UPDATE'), 'preferencias compartidas en DB se aíslan por nodo sin perder actualizaciones concurrentes');
 webOsContract(str_contains($paths['preferences_node_resolver'], 'NodeIdentityService') && str_contains($paths['preferences_node_resolver'], "return 'host:'"), 'nodo de preferencias se resuelve por FederationCloud con fallback local');
@@ -577,7 +577,7 @@ webOsContract(!str_contains($paths['shell'], '>Mis documentos<'), 'Web OS ya no 
 webOsContract(!str_contains($paths['shell'], '> Mis archivos</button>'), 'Web OS ya no muestra Mis archivos');
 webOsContract(!str_contains($paths['shell'], '>Explorador<'), 'Web OS ya no muestra Explorador como nombre visible');
 webOsContract(str_contains($paths['shell'], 'data-window-title="Mis datos"'), 'ventana de archivos se llama Mis datos');
-webOsContract(str_contains($paths['shell'], '<strong>Mis datos</strong>'), 'Aplicaciones usa el nombre Mis datos');
+webOsContract(str_contains($paths['shell'], '<span>Mis datos</span>'), 'Mis datos permanece disponible en escritorio');
 webOsContract(str_contains($paths['shell'], 'id="terminalWindow"'), 'SO incluye ventana Terminal para superadmin');
 webOsContract(str_contains($paths['shell'], "if (\$isSuperAdmin): ?>\n    <section class=\"os-window os-terminal-window\""), 'Terminal se renderiza sólo dentro del guard superadmin');
 webOsContract(str_contains($paths['shell'], 'data-open-terminal'), 'Aplicaciones puede abrir Terminal');
@@ -618,7 +618,7 @@ webOsContract(!str_contains($launcherMarkup, 'id="osWindowOpacity"') && !str_con
 webOsContract(str_contains($launcherMarkup, 'data-window-open="settingsWindow"'), 'lanzador abre Configuración');
 webOsContract(str_contains($launcherMarkup, 'data-window-open="linksWindow"'), 'lanzador abre Enlaces');
 webOsContract(!str_contains($launcherMarkup, 'terminalWindow'), 'Terminal ya no aparece en el menú inferior izquierdo');
-webOsContract(str_contains($paths['shell'], '<strong>Consola servidor</strong>'), 'Consola servidor aparece dentro de Aplicaciones');
+webOsContract(str_contains($paths['shell'], '<strong>Consola Servidor</strong>'), 'Consola servidor aparece dentro de Aplicaciones');
 webOsContract(str_contains($paths['shell'], '<strong>Linux XFCE</strong>'), 'Aplicaciones incluye acceso explícito al escritorio Linux');
 webOsContract(str_contains($paths['shell'], 'href="office-launch.php" target="_blank" rel="noopener" title="Abrir escritorio Linux remoto por noVNC"'), 'Linux XFCE reutiliza el gateway autenticado noVNC');
 webOsContract(str_contains($paths['shell'], '<strong>Guacamole</strong>'), 'Aplicaciones incluye acceso explícito a Guacamole');

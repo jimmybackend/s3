@@ -1211,6 +1211,49 @@ class ArcadeCloudOsShell {
     const key = String(entry.dataset.key || '');
     const name = String(entry.dataset.name || key);
 
+    if (action === 'rename') {
+      this.hideContext();
+      const modal = this.document.getElementById('osRenameFileModal');
+      const form = this.document.getElementById('osRenameFileForm');
+      const input = this.document.getElementById('osRenameFileName');
+      const error = this.document.getElementById('osRenameFileError');
+      if (!modal || !form || !input) return;
+      input.value = name;
+      if (error) { error.hidden = true; error.textContent = ''; }
+      form.onsubmit = async (event) => {
+        event.preventDefault();
+        const nextName = input.value.trim();
+        if (!nextName) return;
+        const submit = form.querySelector('[type="submit"]');
+        if (submit) submit.disabled = true;
+        try {
+          const params = new URLSearchParams({key, nombre_nuevo:nextName});
+          const response = await this.window.fetch('renombrar_archivo.php',{
+            method:'POST',credentials:'same-origin',
+            headers:{
+              'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8',
+              'X-Requested-With':'XMLHttpRequest',
+              'X-Drive-CSRF':String(this.window.DRIVE_UPLOAD_CSRF || '')
+            },
+            body:params.toString()
+          });
+          const result = await response.json();
+          if (!response.ok || (result.ok !== true && result.estado !== 'ok')) {
+            throw new Error(result.mensaje || result.error || 'No se pudo cambiar el nombre.');
+          }
+          this.window.jQuery?.(modal).modal('hide');
+          await this.refreshCurrentExplorer();
+          this.notify('Nombre actualizado.', 'success');
+        } catch (failure) {
+          if (error) { error.textContent = failure.message || 'No se pudo cambiar el nombre.'; error.hidden = false; }
+        } finally {
+          if (submit) submit.disabled = false;
+        }
+      };
+      this.window.jQuery?.(modal).modal('show');
+      return;
+    }
+
     if (action === 'open') {
       this.openFileEntry(entry, false);
       return;

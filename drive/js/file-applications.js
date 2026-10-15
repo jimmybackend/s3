@@ -126,7 +126,9 @@ class ArcadeCloudFileApplicationService {
     const content = this.document.createElement('div');
     content.className = 'os-viewer-content';
     let viewer;
-    const source = application === 'text' && file.editUrl ? file.editUrl : file.openUrl;
+    const source = application === 'pdf' && file.key
+      ? 'ver_pdf.php?archivo=' + encodeURIComponent(file.key)
+      : application === 'text' && file.editUrl ? file.editUrl : file.openUrl;
     let imagePreviewUrl = '';
     if (application === 'image') {
       imagePreviewUrl = 'thumb.php?key=' + encodeURIComponent(String(file.key || '')) + '&scale=50&fit=contain';
@@ -147,6 +149,9 @@ class ArcadeCloudFileApplicationService {
     viewer.addEventListener('error', failed);
     viewer.src = application === 'image' ? imagePreviewUrl : source; content.append(viewer); body.replaceChildren(content); body.classList.add('is-loading');
     const toolbar = this.document.createElement('div'); toolbar.className = 'os-viewer-toolbar';
+    if (application === 'pdf' && file.key) {
+      toolbar.append(this.actionLink(source, 'fa-arrow-up-right-from-square', 'Abrir en pestaña nueva', false));
+    }
     if (file.downloadUrl) toolbar.append(this.actionLink(file.downloadUrl, 'fa-download', 'Descargar', true));
     if (application === 'image' && file.openUrl) {
       const full = this.document.createElement('button');

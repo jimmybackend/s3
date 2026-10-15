@@ -974,6 +974,7 @@ Escribe help o usa uno de los botones disponibles.</pre>
     <div class="os-context-name" id="fileContextName">Archivo</div>
     <button type="button" class="os-context-page-control is-up" data-context-page-up hidden aria-label="Ver acciones anteriores"><i class="fas fa-chevron-up"></i><span>10 anteriores</span></button>
     <button type="button" data-file-action="open"><i class="fas fa-eye"></i><span>Abrir en ventana</span></button>
+    <button type="button" data-file-action="open-tab"><i class="fas fa-arrow-up-right-from-square"></i><span>Abrir en pestaña nueva</span></button>
     <button type="button" data-file-action="open-with"><i class="fas fa-table-list"></i><span>Abrir con…</span></button>
     <button type="button" data-file-action="office"><i class="fas fa-file-word"></i><span>Abrir con Office</span></button>
     <button type="button" data-file-action="edit"><i class="fas fa-pen"></i>Editar texto</button>

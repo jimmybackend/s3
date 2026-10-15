@@ -215,7 +215,7 @@ class ArcadeCloudOsShell {
       image:['open',...common,'wallpaper','details','textract','translate','rekognition','security-lock'],
       audio:['open',...common,'details','transcribe','split-audio','security-lock'],
       video:['open',...common,'details','transcribe','split-video','extract-mp3','security-lock'],
-      pdf:['open',...common,'details','textract','translate','security-lock'],
+      pdf:['open','open-tab',...common,'details','textract','translate','security-lock'],
       doc:['open','office',...common,'details','security-lock'],
       other:['open','open-with','office','edit',...common,'details','security-lock']
     };
@@ -318,6 +318,7 @@ class ArcadeCloudOsShell {
     const ext = String(entry.dataset.ext || '').toLowerCase();
 
     this.setContextAction('open', !multi && !locked && Boolean(entry.dataset.openUrl));
+    this.setContextAction('open-tab', !multi && !locked && ext === 'pdf' && Boolean(entry.dataset.openUrl));
     const fileApps = this.window.ArcadeCloudFileApplications;
     this.setContextAction('open-with', !multi && !locked && Boolean(fileApps) && fileApps.applicationsFor(fileApps.fileFromEntry(entry)).length > 1);
     const openControl = this.context.querySelector('[data-file-action="open"]');
@@ -1253,6 +1254,18 @@ class ArcadeCloudOsShell {
         }
       };
       this.window.jQuery?.(modal).modal('show');
+      return;
+    }
+
+    if (action === 'open-tab') {
+      if (entry.dataset.locked === '1' || String(entry.dataset.ext || '').toLowerCase() !== 'pdf') return;
+      const key = String(entry.dataset.key || '');
+      if (!key) return;
+      const url = 'ver_pdf.php?archivo=' + encodeURIComponent(key);
+      const opened = this.window.open(url, '_blank');
+      if (opened) opened.opener = null;
+      else this.notify('Permite las ventanas emergentes para abrir el PDF en otra pestaña.', 'warning');
+      this.hideContext();
       return;
     }
 

@@ -154,6 +154,11 @@ foreach ($folderRows as $row) {
 }
 
 usort($folders, static fn(array $a, array $b): int => strnatcasecmp((string)$a['name'], (string)$b['name']));
+$folderStats = $app->fileListService()->descendantFolderStats(
+    $userId,
+    array_column($folders, 'prefix')
+);
+
 
 $nodeSnapshot = (new NodeCapabilityService())->snapshot(__DIR__);
 
@@ -462,16 +467,16 @@ if ($isDrive3dNativeActions) ob_start();
                data-folder-name="<?= $e((string)$folder['name']) ?>"
                data-folder-root="0"
                data-list-type="Carpeta"
-               data-list-size=""
-               data-list-date=""
+               data-list-size="<?= $e($formatBytes((int)($folderStats[(string)$folder['prefix']]['bytes'] ?? 0))) ?>"
+               data-list-date="<?= $e((string)($folderStats[(string)$folder['prefix']]['date'] ?? '')) ?>"
                title="<?= $e($folder['name']) ?>">
               <span class="os-entry-menu os-folder-entry-menu" aria-hidden="true"><i class="fas fa-ellipsis-vertical"></i></span>
               <span class="os-entry-icon"><i class="fas fa-folder"></i></span>
               <span class="os-entry-name"><?= $e($folder['name']) ?></span>
               <span class="os-entry-meta">Carpeta</span>
               <span class="os-entry-list-type">Carpeta</span>
-              <span class="os-entry-list-size">—</span>
-              <span class="os-entry-list-date">—</span>
+              <span class="os-entry-list-size"><?= $e($formatBytes((int)($folderStats[(string)$folder['prefix']]['bytes'] ?? 0))) ?></span>
+              <span class="os-entry-list-date"><?= $e((string)($folderStats[(string)$folder['prefix']]['date'] ?? '') !== '' ? (string)$folderStats[(string)$folder['prefix']]['date'] : '—') ?></span>
             </a>
           <?php endforeach; ?>
 

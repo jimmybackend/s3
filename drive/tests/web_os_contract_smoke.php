@@ -229,7 +229,7 @@ webOsContract(str_contains($paths['shell'], '<span>Mis datos</span>'), 'escritor
 webOsContract(str_contains($paths['shell'], '<span>Aplicaciones</span>'), 'escritorio incluye Aplicaciones');
 webOsContract(str_contains($paths['shell'], '<span>Notebook</span>') && str_contains($paths['shell'], 'href="notebook.php"'), 'escritorio incluye acceso directo a Notebook');
 webOsContract(str_contains($paths['shell'], 'href="notebook.php" target="_blank" rel="noopener"'), 'Notebook abre en pestaña separada y conserva ArcadeCloud OS');
-webOsContract(str_contains($paths['shell'], '<strong>Notebook</strong><span>Nueva pestaña</span>'), 'Aplicaciones incluye Notebook en nueva pestaña');
+webOsContract(str_contains($paths['shell'], '<span>Notebook</span>') && str_contains($paths['shell'], 'href="notebook.php" target="_blank" rel="noopener"'), 'Notebook permanece disponible desde el escritorio en nueva pestaña');
 webOsContract(str_contains($paths['shell'], 'nodeKey: <?= json_encode($osPreferenceNodeKey'), 'shell entrega la identidad del nodo al gestor de apariencia');
 webOsContract(str_contains($paths['preferences_repository'], "'nodes' => []") && str_contains($paths['preferences_repository'], 'FOR UPDATE'), 'preferencias compartidas en DB se aíslan por nodo sin perder actualizaciones concurrentes');
 webOsContract(str_contains($paths['preferences_node_resolver'], 'NodeIdentityService') && str_contains($paths['preferences_node_resolver'], "return 'host:'"), 'nodo de preferencias se resuelve por FederationCloud con fallback local');

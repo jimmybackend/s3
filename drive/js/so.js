@@ -256,6 +256,8 @@ class ArcadeCloudOsShell {
     menu.querySelectorAll('[data-file-action], [data-os-clipboard-kind="file"]').forEach(button => {
       if (!allowed.has(button)) button.hidden = true;
     });
+    const rename = file('rename');
+    if (rename) rename.hidden = multi || locked;
     ordered.forEach(button => menu.appendChild(button));
     menu.querySelectorAll('.os-context-divider').forEach(divider => divider.hidden = true);
     const classic = file('classic');

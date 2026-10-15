@@ -199,10 +199,12 @@ webOsContract(str_contains($paths['file_apps_js'], "toolbar.classList.add('os-vi
 webOsContract(str_contains($paths['file_apps_js'], "application === 'image' || application === 'text'"), 'imagen y editor de texto colocan Descargar en la barra inferior');
 webOsContract(str_contains($paths['css'], '.os-statusbar .os-viewer-toolbar-bottom'), 'acciones de documento en footer quedan separadas de los controles de ventana');
 webOsContract(
-    substr_count($paths['js'], 'this.window.open(') === 2
+    substr_count($paths['js'], 'this.window.open(') === 3
     && str_contains($paths['js'], "this.window.open(officeUrl, '_blank')")
-    && str_contains($paths['js'], "this.window.open(entry.dataset.officeUrl, '_blank')"),
-    'sólo Office abre pestañas nuevas desde Mis datos'
+    && str_contains($paths['js'], "this.window.open(entry.dataset.officeUrl, '_blank')")
+    && str_contains($paths['js'], "this.window.open(url, '_blank', 'noopener,noreferrer')")
+    && str_contains($paths['file_apps_js'], "ver_pdf.php?archivo="),
+    'Office y PDF pueden abrir pestañas nuevas; PDF utiliza visor dedicado'
 );
 webOsContract(str_contains($paths['js'], "invokeMediaProcessing(entry, 'split_video')"), 'video puede abrir procesamiento desde sus acciones');
 webOsContract(str_contains($paths['js'], "invokeGlobal('abrirModalTranscribir'"), 'Transcribe se abre desde el archivo seleccionado');

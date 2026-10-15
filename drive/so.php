@@ -195,7 +195,7 @@ $e = static fn(mixed $value): string => FileViewHelper::escape($value);
 $formatBytes = static fn(int $bytes): string => FileViewHelper::formatBytes($bytes);
 $load = $nodeSnapshot['load_average'] ?? [0, 0, 0];
 $isSuperAdmin = $session->isSuperAdmin();
-$canViewPersonalTools = $app->personalToolAccessService()->state() === 'owner';
+$canViewPersonalTools = $isSuperAdmin && $app->personalToolAccessService()->state() === 'owner';
 $serverConsoleCsrf = (string)$session->get('csrf', '');
 if ($isSuperAdmin && !preg_match('/\A[a-f0-9]{32,128}\z/', $serverConsoleCsrf)) {
     $serverConsoleCsrf = bin2hex(random_bytes(16));
@@ -279,6 +279,11 @@ if ($isDrive3dNativeActions) ob_start();
       <span>Mis datos</span>
     </button>
 
+    <button class="os-desktop-icon" type="button" data-window-open="searchWindow" data-open-search>
+      <span class="os-icon-tile"><i class="fas fa-magnifying-glass"></i></span>
+      <span>Buscar</span>
+    </button>
+
     <button class="os-desktop-icon" type="button" data-window-open="appsWindow">
       <span class="os-icon-tile"><i class="fas fa-shapes"></i></span>
       <span>Aplicaciones</span>
@@ -287,6 +292,16 @@ if ($isDrive3dNativeActions) ob_start();
     <a class="os-desktop-icon" href="notebook.php" target="_blank" rel="noopener">
       <span class="os-icon-tile"><i class="fas fa-book-open"></i></span>
       <span>Notebook</span>
+    </a>
+
+    <button class="os-desktop-icon" type="button" data-window-open="federationWindow" data-open-federation>
+      <span class="os-icon-tile"><i class="fas fa-globe"></i></span>
+      <span>Federation Cloud</span>
+    </button>
+
+    <a class="os-desktop-icon" href="https://drive.esforzados.com/federationcloud/" target="_blank" rel="noopener noreferrer">
+      <span class="os-icon-tile"><i class="fas fa-link"></i></span>
+      <span>ArcadeLink</span>
     </a>
 
     <?php if ($isExplorerFragment || $isDrive3dActions): ?>
@@ -637,32 +652,18 @@ if ($isDrive3dNativeActions) ob_start();
       </div>
       <div class="os-window-body">
         <div class="os-app-grid">
-          <button type="button" class="os-app-card is-ready" data-app-open="explorer"><i class="fas fa-folder-open"></i><strong>Mis datos</strong><span>Disponible</span></button>
-          <button type="button" class="os-app-card is-ready" data-window-open="searchWindow" data-open-search>
-            <i class="fas fa-magnifying-glass"></i><strong>Buscar</strong><span>Normal + IA</span>
-          </button>
-          <button type="button" class="os-app-card is-ready" data-window-open="federationWindow" data-open-federation>
-            <i class="fas fa-globe"></i><strong>FederationCloud</strong><span>Compartidos y red</span>
-          </button>
+          <a class="os-app-card is-ready" href="activity_costs.php" data-os-tool="activity-costs" data-tool-title="Actividad y costos"><i class="fas fa-receipt"></i><strong>Actividad y costos</strong><span>Consumo de tu cuenta</span></a>
           <?php if ($isSuperAdmin): ?>
-          <button type="button" class="os-app-card is-ready" data-window-open="terminalWindow" data-open-terminal>
-            <i class="fas fa-terminal"></i><strong>Consola servidor</strong><span>Mi nodo</span>
-          </button>
+          <a class="os-app-card is-ready" href="ec2.php?surface=os" data-os-tool="ec2" data-tool-title="Gestión EC2"><i class="fas fa-server"></i><strong>Gestión EC2</strong><span>Instancias y bases AWS</span></a>
+          <?php if ($canViewPersonalTools): ?>
+          <a class="os-app-card is-ready" href="aws.php" data-os-tool="aws" data-tool-title="AWS y códigos TOTP"><i class="fab fa-aws"></i><strong>AWS y códigos TOTP</strong><span>Herramienta autorizada</span></a>
           <?php endif; ?>
-          <a class="os-app-card is-ready" href="notebook.php" target="_blank" rel="noopener"><i class="fas fa-book-open"></i><strong>Notebook</strong><span>Nueva pestaña</span></a>
-          <a class="os-app-card is-ready" href="s3.php"><i class="fas fa-hard-drive"></i><strong>Drive clásico</strong><span>Disponible</span></a>
-          <a class="os-app-card is-ready" href="dataword3d.php"><i class="fas fa-cubes"></i><strong>Drive 3D</strong><span>Biblioteca espacial</span></a>
-          <a class="os-app-card is-ready" data-launcher-app="office" href="office-launch.php" target="_blank" rel="noopener"><i class="fas fa-file-word"></i><strong>Office</strong><span>Disponible</span></a>
+          <button type="button" class="os-app-card is-ready" data-window-open="terminalWindow" data-open-terminal><i class="fas fa-terminal"></i><strong>Consola Servidor</strong><span>Mi nodo</span></button>
+          <?php endif; ?>
           <a class="os-app-card is-ready" data-launcher-app="linux-xfce" href="office-launch.php" target="_blank" rel="noopener" title="Abrir escritorio Linux remoto por noVNC"><i class="fab fa-linux"></i><strong>Linux XFCE</strong><span>noVNC</span></a>
           <a class="os-app-card is-ready" data-launcher-app="guacamole" href="office-launch.php?target=guacamole" target="_blank" rel="noopener" title="Abrir escritorio Linux remoto por Guacamole RDP"><i class="fas fa-headset"></i><strong>Guacamole</strong><span>Audio + micrófono</span></a>
-          <a class="os-app-card is-ready" data-launcher-app="office-web" href="https://office.esforzados.com/" target="_blank" rel="noopener" title="Suite ofimática en la nube (enlace directo)"><i class="fas fa-file-lines"></i><strong>Office Web</strong><span>Enlace directo</span></a>
-          <a class="os-app-card is-ready" data-launcher-app="kde-plasma" href="office-launch.php?target=kde" target="_blank" rel="noopener" title="Abrir escritorio KDE Plasma remoto por Guacamole"><i class="fas fa-desktop"></i><strong>KDE Plasma</strong><span>Guacamole</span></a>
-          <button type="button" class="os-app-card" disabled><i class="fas fa-pen-ruler"></i><strong>Diagramas</strong><span>Próximamente</span></button>
-          <button type="button" class="os-app-card" disabled><i class="fas fa-image"></i><strong>Imagen</strong><span>Próximamente</span></button>
-          <button type="button" class="os-app-card" disabled><i class="fas fa-wave-square"></i><strong>Audio</strong><span>Próximamente</span></button>
-          <button type="button" class="os-app-card" disabled><i class="fas fa-film"></i><strong>Video</strong><span>Próximamente</span></button>
-          <button type="button" class="os-app-card" disabled><i class="fas fa-file-pdf"></i><strong>PDF</strong><span>Próximamente</span></button>
-          <button type="button" class="os-app-card" disabled><i class="fas fa-earth-americas"></i><strong>Mapas</strong><span>Próximamente</span></button>
+          <a class="os-app-card is-ready" data-launcher-app="office" href="office-launch.php" target="_blank" rel="noopener"><i class="fas fa-file-word"></i><strong>Office</strong><span>Disponible</span></a>
+          <a class="os-app-card is-ready" data-launcher-app="office-web" href="https://office.esforzados.com/" target="_blank" rel="noopener" title="Suite ofimática en la nube"><i class="fas fa-file-lines"></i><strong>Office Web</strong><span>Enlace directo</span></a>
         </div>
       </div>
     </section>
@@ -927,13 +928,16 @@ Escribe help o usa uno de los botones disponibles.</pre>
       </div>
       <div class="os-window-body">
         <div class="os-links-grid">
-          <a href="activity_costs.php" data-os-tool="activity-costs" data-tool-title="Actividad y costos"><i class="fas fa-receipt"></i><span><strong>Actividad y costos</strong><small>Consumo de tu cuenta</small></span></a>
-          <a href="up.php" target="_blank" rel="noopener noreferrer"><i class="fas fa-cloud-arrow-up"></i><span><strong>Subir archivos</strong><small>Subida pública a usuarios</small></span></a>
+          <a href="https://drive.esforzados.com/up.php" target="_blank" rel="noopener noreferrer"><i class="fas fa-cloud-arrow-up"></i><span><strong>Subir archivos</strong><small>Subida pública a usuarios</small></span></a>
+          <a href="https://drive.esforzados.com/federationcloud/" target="_blank" rel="noopener noreferrer"><i class="fas fa-link"></i><span><strong>ArcadeLink</strong><small>Identidad federada</small></span></a>
+          <a href="https://drive.esforzados.com/federationcloud/portal.php?view=shares" target="_blank" rel="noopener noreferrer"><i class="fas fa-globe"></i><span><strong>FederationCloud</strong><small>Portal de compartidos</small></span></a>
+          <?php if ($isSuperAdmin): ?>
+          <a href="https://drive.esforzados.com/ec2.php" target="_blank" rel="noopener noreferrer"><i class="fas fa-server"></i><span><strong>Gestión EC2</strong><small>Administración AWS</small></span></a>
           <?php if ($canViewPersonalTools): ?>
-          <a href="aws.php" data-os-tool="aws" data-tool-title="AWS y códigos TOTP"><i class="fab fa-aws"></i><span><strong>AWS y códigos TOTP</strong><small>Herramienta personal autorizada</small></span></a>
-          <a href="ec2.php?surface=os" data-os-tool="ec2" data-tool-title="Gestión EC2"><i class="fas fa-server"></i><span><strong>Gestión EC2</strong><small>Instancias y bases AWS</small></span></a>
+          <a href="https://drive.esforzados.com/aws.php" target="_blank" rel="noopener noreferrer"><i class="fab fa-aws"></i><span><strong>Generador TOTP</strong><small>Códigos autorizados</small></span></a>
           <?php endif; ?>
-          <a href="#federationWindow" data-window-open="federationWindow" data-open-federation><i class="fas fa-globe"></i><span><strong>FederationCloud</strong><small>Red y contenido compartido</small></span></a>
+          <a href="https://web.airdroid.com/?from=usercenter&amp;lang=es-es" target="_blank" rel="noopener noreferrer"><i class="fas fa-mobile-screen"></i><span><strong>AirDroid Web</strong><small>Herramienta externa</small></span></a>
+          <?php endif; ?>
         </div>
       </div>
     </section>

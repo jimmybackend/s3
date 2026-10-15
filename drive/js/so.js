@@ -198,6 +198,70 @@ class ArcadeCloudOsShell {
     if (control) control.hidden = !visible;
   }
 
+  arrangeFileContext(entry, multi, locked) {
+    const menu = this.context;
+    const file = (id) => menu.querySelector('[data-file-action="' + id + '"]');
+    const clip = (id) => menu.querySelector('[data-os-clipboard-action="' + id + '"][data-os-clipboard-kind="file"]');
+    const ext = String(entry.dataset.ext || '').toLowerCase();
+    const kind = entry.dataset.image === '1' ? 'image'
+      : entry.dataset.video === '1' ? 'video'
+      : entry.dataset.audio === '1' ? 'audio'
+      : ext === 'pdf' ? 'pdf'
+      : ['doc','docx'].includes(ext) ? 'doc'
+      : ['txt','md','markdown','text','log','csv','json','xml','html','css','js'].includes(ext) ? 'text' : 'other';
+    const common = ['download','copy','cut','share','rename','delete'];
+    const matrix = {
+      text:['open','open-with','edit',...common,'details','polly','comprehend','security-lock'],
+      image:['open',...common,'wallpaper','details','textract','translate','rekognition','security-lock'],
+      audio:['open',...common,'details','transcribe','split-audio','security-lock'],
+      video:['open',...common,'details','transcribe','split-video','extract-mp3','security-lock'],
+      pdf:['open',...common,'details','textract','translate','security-lock'],
+      doc:['open','office',...common,'details','security-lock'],
+      other:['open','open-with','office','edit',...common,'details','security-lock']
+    };
+    const help = {
+      polly:'Convierte el texto del documento en voz con Amazon Polly.',
+      comprehend:'Analiza el contenido del documento con Amazon Comprehend.',
+      textract:'Reconoce y extrae texto de imágenes o documentos mediante Textract.',
+      translate:'Traduce texto de un documento compatible con Amazon Translate.',
+      rekognition:'Identifica elementos y características de una imagen.',
+      transcribe:'Convierte las palabras del audio o video en una transcripción.',
+      'split-audio':'Separa el archivo de audio en segmentos.',
+      'split-video':'Divide el video en segmentos.',
+      'extract-mp3':'Obtiene el audio de un video y lo guarda en MP3.',
+      'security-lock':'Protege el archivo mediante una contraseña.'
+    };
+    const controls = new Map();
+    menu.querySelectorAll('[data-file-action]').forEach(button => {
+      const id = button.dataset.fileAction;
+      controls.set(id,button);
+      if (help[id]) button.title = help[id];
+      if (id === 'classic') button.hidden = true;
+    });
+    if (multi) return;
+    const ordered = matrix[kind].map(id => {
+      const button = ['copy','cut','share','delete'].includes(id) ? clip(id) : file(id);
+      if (button && id === 'cut') {
+        const label = button.querySelector('span');
+        if (label) label.textContent = 'Cortar / Mover';
+      }
+      return button;
+    }).filter(Boolean);
+    // Keep protection-management controls available for already locked files.
+    ['security-unlock','security-relock','security-unsecure'].forEach(id => {
+      const button = file(id);
+      if (button && !button.hidden) ordered.push(button);
+    });
+    const allowed = new Set(ordered);
+    menu.querySelectorAll('[data-file-action], [data-os-clipboard-kind="file"]').forEach(button => {
+      if (!allowed.has(button)) button.hidden = true;
+    });
+    ordered.forEach(button => menu.appendChild(button));
+    menu.querySelectorAll('.os-context-divider').forEach(divider => divider.hidden = true);
+    const classic = file('classic');
+    if (classic) classic.hidden = true;
+  }
+
   selectedFileEntries() {
     const activeExplorer = this.document.querySelector('.os-explorer-window.is-active');
     return Array.from((activeExplorer || this.document).querySelectorAll('.os-file-entry.is-selected'));
@@ -325,6 +389,7 @@ class ArcadeCloudOsShell {
       }
     }
 
+    this.arrangeFileContext(entry, multi, locked);
     this.context.hidden = false;
     this.contextPage = 0;
     this.applyContextPaging();

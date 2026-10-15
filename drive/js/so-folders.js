@@ -161,10 +161,7 @@ class ArcadeCloudOsFolderActions {
     };
 
     body.addEventListener('contextmenu', showCurrentFolderMenu);
-    body.addEventListener('click', (event) => {
-      if (event.button !== undefined && event.button !== 0) return;
-      showCurrentFolderMenu(event);
-    });
+
   }
 
   bindCurrentFolderToolbar(root = this.document) {
@@ -268,9 +265,18 @@ class ArcadeCloudOsFolderActions {
         if (span) span.textContent = label;
         button.title = description;
       });
+    let copyFolder = menu.querySelector('[data-folder-copy-alias]');
+    if (!copyFolder && clipboard('copy')) {
+      copyFolder = clipboard('copy').cloneNode(true);
+      copyFolder.dataset.folderCopyAlias = '1';
+      menu.appendChild(copyFolder);
+    }
+    if (clipboard('copy')?.querySelector('span')) clipboard('copy').querySelector('span').textContent = 'Copiar';
+    if (copyFolder?.querySelector('span')) copyFolder.querySelector('span').textContent = 'Copiar carpeta';
+    if (copyFolder) copyFolder.title = 'Prepara una copia de esta carpeta para pegarla en otro lugar.';
     const list = isCurrent
       ? [action('open-new'),action('create-empty-file'),action('create-document'),action('create-folder'),clipboard('paste'),action('extract-text'),action('sync')]
-      : [action('open'),action('open-new'),action('create-empty-file'),action('create-document'),action('create-folder'),action('move'),clipboard('copy'),action('rename'),action('delete'),clipboard('copy'),clipboard('cut'),clipboard('paste'),action('extract-text'),action('sync')];
+      : [action('open'),action('open-new'),action('create-empty-file'),action('create-document'),action('create-folder'),action('move'),clipboard('copy'),action('rename'),action('delete'),copyFolder,clipboard('cut'),clipboard('paste'),action('extract-text'),action('sync')];
     // "Copiar" and "Copiar carpeta" use the same established clipboard action.
     // Never duplicate a DOM control or issue an unexpected second copy action.
     const seen = new Set();
@@ -281,9 +287,9 @@ class ArcadeCloudOsFolderActions {
     });
     menu.querySelectorAll('.os-context-divider').forEach(divider => divider.hidden = true);
     if (isCurrent) {
-      [action('open'),action('move'),action('rename'),action('delete'),clipboard('copy'),clipboard('cut')].forEach(button => { if (button) button.hidden = true; });
+      [action('open'),action('move'),action('rename'),action('delete'),clipboard('copy'),copyFolder,clipboard('cut')].forEach(button => { if (button) button.hidden = true; });
     } else {
-      [clipboard('copy'),clipboard('cut')].forEach(button => { if (button) button.hidden = folder.isRoot; });
+      [clipboard('copy'),copyFolder,clipboard('cut')].forEach(button => { if (button) button.hidden = folder.isRoot; });
     }
     const paste = clipboard('paste');
     if (paste) {

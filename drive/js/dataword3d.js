@@ -81,7 +81,10 @@
       this.spatialDrag = null;
       this.spatialPictureLayer = doc.querySelector('[data-dw-spatial-picture-layer]');
       this.spatialPictures = new Map();
-      this.spatialPictureState = this.normalizeSpatialImagePreferences(this.config.preferences?.spatialImages);
+      // Each visit starts with a clear dome. Persisted image windows belong to
+      // the previous visit, not to the current viewing session.
+      // Environment, camera and shelf preferences remain unchanged.
+      this.spatialPictureState = [];
       this.spatialPictureZ = 80;
       this.preDomeCamera = null;
       this.environmentPanel = doc.querySelector('[data-dw-environment-panel]');

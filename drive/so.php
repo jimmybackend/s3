@@ -971,6 +971,7 @@ Escribe help o usa uno de los botones disponibles.</pre>
     <button type="button" data-file-action="office"><i class="fas fa-file-word"></i><span>Abrir con Office</span></button>
     <button type="button" data-file-action="edit"><i class="fas fa-pen"></i>Editar texto</button>
     <button type="button" data-file-action="download"><i class="fas fa-download"></i>Descargar</button>
+    <button type="button" data-file-action="rename"><i class="fas fa-pen"></i>Cambiar nombre</button>
     <button type="button" data-file-action="details"><i class="fas fa-circle-info"></i><span>Detalles</span></button>
     <button type="button" data-file-action="wallpaper"><i class="fas fa-panorama"></i><span>Usar como fondo de pantalla</span></button>
     <div class="os-context-divider" data-selection-context-divider hidden></div>
@@ -998,6 +999,29 @@ Escribe help o usa uno de los botones disponibles.</pre>
     <div class="os-context-divider"></div>
     <button type="button" data-file-action="classic"><i class="fas fa-hard-drive"></i>Abrir en Drive clásico</button>
     <button type="button" class="os-context-page-control is-down" data-context-page-down hidden aria-label="Ver acciones siguientes"><i class="fas fa-chevron-down"></i><span>10 siguientes</span></button>
+  </div>
+
+  <!-- Cambio de nombre del archivo, reutiliza el endpoint seguro existente. -->
+  <div class="modal fade" id="osRenameFileModal" tabindex="-1" role="dialog" aria-labelledby="osRenameFileTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 id="osRenameFileTitle" class="modal-title">Cambiar nombre</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar"><span aria-hidden="true">&times;</span></button>
+        </div>
+        <form id="osRenameFileForm">
+          <div class="modal-body">
+            <label for="osRenameFileName">Nuevo nombre del archivo</label>
+            <input id="osRenameFileName" class="form-control" type="text" required maxlength="255" autocomplete="off">
+            <p id="osRenameFileError" class="text-danger small mt-2" role="alert" hidden></p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+            <button type="submit" class="btn btn-primary">Guardar</button>
+          </div>
+        </form>
+      </div>
+    </div>
   </div>
 
   <!-- Modal compartido: Seguridad del archivo -->

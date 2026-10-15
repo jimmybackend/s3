@@ -69,6 +69,11 @@ class ArcadeCloudDesktopShell {
     const appsWindow = this.document.getElementById('appsWindow'); const body = appsWindow?.querySelector('.os-window-body');
     if (!body) return;
     this.registerDeclarativeApplications(appsWindow);
+    const cards = [...body.querySelectorAll('.os-app-grid > .os-app-card')].map((card, index) => ({
+      id: 'catalog-' + index,
+      title: card.querySelector('strong')?.textContent?.trim() || '',
+      template: card.cloneNode(true)
+    }));
     body.innerHTML = '<label class="os-app-search"><i class="fas fa-magnifying-glass"></i><input type="search" autocomplete="off" placeholder="Buscar aplicaciones" aria-label="Buscar aplicaciones"></label><div class="os-app-grid" role="listbox" aria-label="Aplicaciones"></div><p class="os-app-empty" hidden>No hay aplicaciones coincidentes.</p>';
     this.launcherInput = body.querySelector('input'); this.launcherGrid = body.querySelector('.os-app-grid'); this.launcherEmpty = body.querySelector('.os-app-empty');
     this.apps = this.launchableApplications(); this.renderApplications('');
@@ -82,16 +87,18 @@ class ArcadeCloudDesktopShell {
     const matches = this.apps.filter(app => app.title.toLocaleLowerCase().includes(normalized));
     this.launcherGrid.replaceChildren();
     matches.forEach((app, index) => {
-      const button = this.document.createElement('button'); button.type = 'button'; button.className = `os-app-card is-ready${index === 0 ? ' is-selected' : ''}`;
-      button.dataset.appId = app.id; button.setAttribute('role', 'option'); button.setAttribute('aria-selected', index === 0 ? 'true' : 'false');
-      button.innerHTML = `<i class="fas ${app.icon}"></i><strong></strong><span>Disponible</span>`; button.querySelector('strong').textContent = app.title;
-      button.addEventListener('click', () => { app.launch(); this.manager.close('appsWindow'); }); this.launcherGrid.append(button);
+      const card = app.template.cloneNode(true);
+      card.classList.toggle('is-selected', index === 0);
+      card.setAttribute('role', 'option');
+      card.setAttribute('aria-selected', index === 0 ? 'true' : 'false');
+      card.addEventListener('click', () => this.manager.close('appsWindow'));
+      this.launcherGrid.append(card);
     });
     this.launcherEmpty.hidden = matches.length !== 0;
   }
 
   routeLauncherKey(event) {
-    const buttons = [...this.launcherGrid.querySelectorAll('button')]; if (!buttons.length) return;
+    const buttons = [...this.launcherGrid.querySelectorAll('.os-app-card')]; if (!buttons.length) return;
     let index = Math.max(0, buttons.findIndex(button => button.classList.contains('is-selected')));
     if (event.key === 'Escape') { event.preventDefault(); this.manager.close('appsWindow'); return; }
     if (event.key === 'Enter') { event.preventDefault(); buttons[index].click(); return; }

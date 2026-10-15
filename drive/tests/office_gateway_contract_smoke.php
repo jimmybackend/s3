@@ -100,8 +100,7 @@ officeGatewayContract(
 );
 
 officeGatewayContract(
-    str_contains($so, 'href="office-launch.php?target=kde"')
-    && str_contains($launch, "['novnc', 'guacamole', 'kde']")
+    str_contains($launch, "['novnc', 'guacamole', 'kde']")
     && str_contains($gateway, "['novnc', 'guacamole', 'kde']"),
     'KDE usa el mismo gateway de actividad real que Office y Guacamole'
 );

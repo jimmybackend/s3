@@ -76,7 +76,7 @@ class ArcadeCloudDesktopShell {
     }));
     body.innerHTML = '<label class="os-app-search"><i class="fas fa-magnifying-glass"></i><input type="search" autocomplete="off" placeholder="Buscar aplicaciones" aria-label="Buscar aplicaciones"></label><div class="os-app-grid" role="listbox" aria-label="Aplicaciones"></div><p class="os-app-empty" hidden>No hay aplicaciones coincidentes.</p>';
     this.launcherInput = body.querySelector('input'); this.launcherGrid = body.querySelector('.os-app-grid'); this.launcherEmpty = body.querySelector('.os-app-empty');
-    this.apps = this.launchableApplications(); this.renderApplications('');
+    this.apps = cards; this.renderApplications('');
     this.launcherInput.addEventListener('input', () => this.renderApplications(this.launcherInput.value));
     this.launcherInput.addEventListener('keydown', event => this.routeLauncherKey(event));
     this.bus?.on?.('window-opened', event => { if (event.detail?.app === 'apps') { this.launcherInput.value = ''; this.renderApplications(''); this.window.setTimeout(() => this.launcherInput.focus(), 0); } });

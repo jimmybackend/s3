@@ -198,6 +198,72 @@ class ArcadeCloudOsShell {
     if (control) control.hidden = !visible;
   }
 
+  arrangeFileContext(entry, multi, locked) {
+    const menu = this.context;
+    const file = (id) => menu.querySelector('[data-file-action="' + id + '"]');
+    const clip = (id) => menu.querySelector('[data-os-clipboard-action="' + id + '"][data-os-clipboard-kind="file"]');
+    const ext = String(entry.dataset.ext || '').toLowerCase();
+    const kind = entry.dataset.image === '1' ? 'image'
+      : entry.dataset.video === '1' ? 'video'
+      : entry.dataset.audio === '1' ? 'audio'
+      : ext === 'pdf' ? 'pdf'
+      : ['doc','docx'].includes(ext) ? 'doc'
+      : ['txt','md','markdown','text','log','csv','json','xml','html','css','js'].includes(ext) ? 'text' : 'other';
+    const common = ['download','copy','cut','share','rename','delete'];
+    const matrix = {
+      text:['open','open-with','edit',...common,'details','polly','comprehend','security-lock'],
+      image:['open',...common,'wallpaper','details','textract','translate','rekognition','security-lock'],
+      audio:['open',...common,'details','transcribe','split-audio','security-lock'],
+      video:['open',...common,'details','transcribe','split-video','extract-mp3','security-lock'],
+      pdf:['open',...common,'details','textract','translate','security-lock'],
+      doc:['open','office',...common,'details','security-lock'],
+      other:['open','open-with','office','edit',...common,'details','security-lock']
+    };
+    const help = {
+      polly:'Convierte el texto del documento en voz con Amazon Polly.',
+      comprehend:'Analiza el contenido del documento con Amazon Comprehend.',
+      textract:'Reconoce y extrae texto de imágenes o documentos mediante Textract.',
+      translate:'Traduce texto de un documento compatible con Amazon Translate.',
+      rekognition:'Identifica elementos y características de una imagen.',
+      transcribe:'Convierte las palabras del audio o video en una transcripción.',
+      'split-audio':'Separa el archivo de audio en segmentos.',
+      'split-video':'Divide el video en segmentos.',
+      'extract-mp3':'Obtiene el audio de un video y lo guarda en MP3.',
+      'security-lock':'Protege el archivo mediante una contraseña.'
+    };
+    const controls = new Map();
+    menu.querySelectorAll('[data-file-action]').forEach(button => {
+      const id = button.dataset.fileAction;
+      controls.set(id,button);
+      if (help[id]) button.title = help[id];
+      if (id === 'classic') button.hidden = true;
+    });
+    if (multi) return;
+    const ordered = matrix[kind].map(id => {
+      const button = ['copy','cut','share','delete'].includes(id) ? clip(id) : file(id);
+      if (button && id === 'cut') {
+        const label = button.querySelector('span');
+        if (label) label.textContent = 'Cortar / Mover';
+      }
+      return button;
+    }).filter(Boolean);
+    // Keep protection-management controls available for already locked files.
+    ['security-unlock','security-relock','security-unsecure'].forEach(id => {
+      const button = file(id);
+      if (button && !button.hidden) ordered.push(button);
+    });
+    const allowed = new Set(ordered);
+    menu.querySelectorAll('[data-file-action], [data-os-clipboard-kind="file"]').forEach(button => {
+      if (!allowed.has(button)) button.hidden = true;
+    });
+    const rename = file('rename');
+    if (rename) rename.hidden = multi || locked;
+    ordered.forEach(button => menu.appendChild(button));
+    menu.querySelectorAll('.os-context-divider').forEach(divider => divider.hidden = true);
+    const classic = file('classic');
+    if (classic) classic.hidden = true;
+  }
+
   selectedFileEntries() {
     const activeExplorer = this.document.querySelector('.os-explorer-window.is-active');
     return Array.from((activeExplorer || this.document).querySelectorAll('.os-file-entry.is-selected'));
@@ -325,6 +391,7 @@ class ArcadeCloudOsShell {
       }
     }
 
+    this.arrangeFileContext(entry, multi, locked);
     this.context.hidden = false;
     this.contextPage = 0;
     this.applyContextPaging();
@@ -1145,6 +1212,49 @@ class ArcadeCloudOsShell {
     const entry = this.activeFile;
     const key = String(entry.dataset.key || '');
     const name = String(entry.dataset.name || key);
+
+    if (action === 'rename') {
+      this.hideContext();
+      const modal = this.document.getElementById('osRenameFileModal');
+      const form = this.document.getElementById('osRenameFileForm');
+      const input = this.document.getElementById('osRenameFileName');
+      const error = this.document.getElementById('osRenameFileError');
+      if (!modal || !form || !input) return;
+      input.value = name;
+      if (error) { error.hidden = true; error.textContent = ''; }
+      form.onsubmit = async (event) => {
+        event.preventDefault();
+        const nextName = input.value.trim();
+        if (!nextName) return;
+        const submit = form.querySelector('[type="submit"]');
+        if (submit) submit.disabled = true;
+        try {
+          const params = new URLSearchParams({key, nombre_nuevo:nextName});
+          const response = await this.window.fetch('renombrar_archivo.php',{
+            method:'POST',credentials:'same-origin',
+            headers:{
+              'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8',
+              'X-Requested-With':'XMLHttpRequest',
+              'X-Drive-CSRF':String(this.window.DRIVE_UPLOAD_CSRF || '')
+            },
+            body:params.toString()
+          });
+          const result = await response.json();
+          if (!response.ok || (result.ok !== true && result.estado !== 'ok')) {
+            throw new Error(result.mensaje || result.error || 'No se pudo cambiar el nombre.');
+          }
+          this.window.jQuery?.(modal).modal('hide');
+          await this.refreshCurrentExplorer();
+          this.notify('Nombre actualizado.', 'success');
+        } catch (failure) {
+          if (error) { error.textContent = failure.message || 'No se pudo cambiar el nombre.'; error.hidden = false; }
+        } finally {
+          if (submit) submit.disabled = false;
+        }
+      };
+      this.window.jQuery?.(modal).modal('show');
+      return;
+    }
 
     if (action === 'open') {
       this.openFileEntry(entry, false);

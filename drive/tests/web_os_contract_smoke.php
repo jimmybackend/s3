@@ -577,7 +577,7 @@ webOsContract(!str_contains($paths['shell'], '>Mis documentos<'), 'Web OS ya no 
 webOsContract(!str_contains($paths['shell'], '> Mis archivos</button>'), 'Web OS ya no muestra Mis archivos');
 webOsContract(!str_contains($paths['shell'], '>Explorador<'), 'Web OS ya no muestra Explorador como nombre visible');
 webOsContract(str_contains($paths['shell'], 'data-window-title="Mis datos"'), 'ventana de archivos se llama Mis datos');
-webOsContract(str_contains($paths['shell'], '<strong>Mis datos</strong>'), 'Aplicaciones usa el nombre Mis datos');
+webOsContract(str_contains($paths['shell'], '<span>Mis datos</span>'), 'Mis datos permanece disponible en escritorio');
 webOsContract(str_contains($paths['shell'], 'id="terminalWindow"'), 'SO incluye ventana Terminal para superadmin');
 webOsContract(str_contains($paths['shell'], "if (\$isSuperAdmin): ?>\n    <section class=\"os-window os-terminal-window\""), 'Terminal se renderiza sólo dentro del guard superadmin');
 webOsContract(str_contains($paths['shell'], 'data-open-terminal'), 'Aplicaciones puede abrir Terminal');

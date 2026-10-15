@@ -662,9 +662,10 @@ class BackgroundTaskCenter {
     if (!task || !this.isTerminalTask(task)) return null;
 
     if (String(task.kind || '') === 'upload') {
+      const controlId = String(task.control_id || '');
       return {
-        controlId: String(task.id || ''),
-        action: 'dismiss'
+        controlId: controlId.startsWith('upload-task:') ? controlId : String(task.id || ''),
+        action: controlId.startsWith('upload-task:') ? 'delete' : 'dismiss'
       };
     }
 
@@ -769,7 +770,14 @@ class BackgroundTaskCenter {
         if (!removal) throw new Error('La tarea ya no se puede eliminar.');
 
         if (String(task.kind || '') === 'upload') {
-          if (!this.dismissClientUpload(task)) throw new Error('No se pudo quitar la subida del centro.');
+          // El registro del servidor debe eliminarse también: si solo se
+          // descarta el snapshot local, reaparece en la siguiente consulta.
+          if (removal.action === 'delete') {
+            await this.requestTaskAction(removal.controlId, 'delete');
+            this.dismissClientUpload(task);
+          } else if (!this.dismissClientUpload(task)) {
+            throw new Error('No se pudo quitar la subida del centro.');
+          }
           return;
         }
 

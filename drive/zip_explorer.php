@@ -84,6 +84,10 @@ try {
             echo $part;
         }
         fclose($stream);
+        $zip->close();
+        $zip = null;
+        @unlink($tmp);
+        $tmp = null;
         exit;
     }
 

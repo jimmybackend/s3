@@ -344,6 +344,7 @@ if ($isDrive3dNativeActions) ob_start();
           <button type="button" data-selection-action="copy"><i class="fas fa-copy"></i> Copiar</button>
           <button type="button" data-selection-action="cut"><i class="fas fa-scissors"></i> Cortar</button>
           <button type="button" data-selection-action="download"><i class="fas fa-download"></i> Descargar</button>
+          <button type="button" data-selection-action="share"><i class="fas fa-share-nodes"></i> Compartir</button>
           <button type="button" data-selection-action="delete"><i class="fas fa-trash"></i> Eliminar</button>
           <button type="button" data-selection-action="more"><i class="fas fa-ellipsis"></i> Más…</button>
         </div>
@@ -1970,8 +1971,25 @@ Escribe help o usa uno de los botones disponibles.</pre>
           <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar"><span aria-hidden="true">&times;</span></button>
         </div>
         <div class="modal-body">
+          <div id="osBulkSharePanel" class="mb-3" hidden>
+            <strong id="osBulkShareCount">Archivos seleccionados</strong>
+            <p class="small text-muted mb-2">Elige cómo compartir los archivos. Los enlaces directos se generan individualmente; ArcadeLink crea una colección.</p>
+            <label for="osBulkShareDays">Vigencia de los enlaces directos (días)</label>
+            <input type="number" id="osBulkShareDays" class="form-control mb-2" min="1" max="3650" value="1">
+            <div class="d-flex flex-wrap gap-2 mb-2">
+              <button type="button" class="btn btn-primary btn-sm" id="osBulkDirectGenerate">Generar enlaces directos</button>
+              <button type="button" class="btn btn-info btn-sm" id="osBulkArcadeLinkChoose">Usar ArcadeLink</button>
+            </div>
+            <div id="osBulkDirectResults" hidden>
+              <label for="osBulkDirectText">Enlaces directos generados</label>
+              <textarea class="form-control" id="osBulkDirectText" rows="5" readonly></textarea>
+              <button type="button" class="btn btn-outline-info btn-sm mt-2" id="osBulkDirectCopy">Copiar enlaces</button>
+            </div>
+            <p id="osBulkShareStatus" class="small mt-2" role="status"></p>
+          </div>
+          <div id="osSingleDirectSharePanel">
           <div class="form-group mb-2">
-            <label for="diasCompartir" class="mb-1">Días de vigencia</label>
+            <label for="diasCompartir class="mb-1">Días de vigencia</label>
             <div class="input-group">
               <input type="number" id="diasCompartir" class="form-control" min="1" max="3650" step="1" value="1" inputmode="numeric">
               <div class="input-group-append"><span class="input-group-text">día(s)</span></div>
@@ -1988,6 +2006,7 @@ Escribe help o usa uno de los botones disponibles.</pre>
             </div>
             <small id="copyStatus" class="form-text" style="opacity:0;transition:opacity .2s">&nbsp;</small>
             <small id="sharePanelStatus" class="small text-muted">El enlace se generará con la expiración indicada.</small>
+          </div>
           </div>
         </div>
       </div>

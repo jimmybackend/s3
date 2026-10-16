@@ -4,6 +4,7 @@ class ArcadeCloudOsShare {
     this.document = doc;
     this.context = null;
     this.timer = null;
+    this.bulkEntries = [];
   }
 
   init() {
@@ -21,6 +22,12 @@ class ArcadeCloudOsShare {
         this.copyLink();
       }
     });
+    this.document.addEventListener('click', (event) => {
+      const id = event.target?.closest?.('button')?.id;
+      if (id === 'osBulkDirectGenerate') { event.preventDefault(); this.generateBulkDirect(); }
+      if (id === 'osBulkArcadeLinkChoose') { event.preventDefault(); this.chooseBulkArcadeLink(); }
+      if (id === 'osBulkDirectCopy') { event.preventDefault(); this.copyBulkDirect(); }
+    });
     return this;
   }
 
@@ -30,6 +37,8 @@ class ArcadeCloudOsShare {
       return;
     }
 
+    this.bulkEntries = [];
+    this.updateBulkVisibility();
     const key = String(entry.dataset.key || '').trim();
     if (!key) return;
 
@@ -58,6 +67,107 @@ class ArcadeCloudOsShare {
     this.updateExpiry();
     this.showModal();
     this.generate();
+  }
+
+  updateBulkVisibility() {
+    const multi = this.bulkEntries.length > 1;
+    const bulk = this.document.getElementById('osBulkSharePanel');
+    const single = this.document.getElementById('osSingleDirectSharePanel');
+    if (bulk) bulk.hidden = !multi;
+    if (single) single.hidden = multi;
+    const count = this.document.getElementById('osBulkShareCount');
+    if (count && multi) count.textContent = this.bulkEntries.length + ' archivos seleccionados';
+  }
+
+  openMultiple(entries) {
+    const files = Array.from(entries || []);
+    if (!files.length) return;
+    if (files.length === 1) { this.open(files[0]); return; }
+    if (files.some(file => file.dataset.locked === '1' || !file.dataset.key)) {
+      this.notify('Desbloquea los archivos protegidos antes de compartirlos.', 'warning');
+      return;
+    }
+    this.context = null;
+    this.bulkEntries = files.map(file => ({
+      key: String(file.dataset.key),
+      name: String(file.dataset.name || file.dataset.key),
+      ext: String(file.dataset.ext || '').toLowerCase()
+    }));
+    const module = this.window.ArcadeCloudDrive?.modules?.['arcadelink-share'];
+    if (module) {
+      module.bulkKeys = this.bulkEntries.map(file => file.key);
+      module.context = {key:'',name:''};
+      module.ensurePanel?.();
+      module.updateContextLabel?.();
+      module.updateDownloadButton?.();
+    }
+    const results = this.document.getElementById('osBulkDirectResults');
+    const status = this.document.getElementById('osBulkShareStatus');
+    if (results) results.hidden = true;
+    if (status) status.textContent = '';
+    this.updateBulkVisibility();
+    this.showModal();
+  }
+
+  chooseBulkArcadeLink() {
+    if (!this.bulkEntries.length) return;
+    const module = this.window.ArcadeCloudDrive?.modules?.['arcadelink-share'];
+    if (!module) { this.notify('ArcadeLink no está disponible.', 'warning'); return; }
+    module.bulkKeys = this.bulkEntries.map(file => file.key);
+    module.context = {key:'',name:''};
+    module.ensurePanel?.();
+    module.updateContextLabel?.();
+    module.updateDiscoveryHelp?.();
+    module.updateDownloadButton?.();
+    const target = this.document.getElementById('arcadeLinkSharePanel');
+    target?.scrollIntoView?.({block:'nearest'});
+    const status = this.document.getElementById('osBulkShareStatus');
+    if (status) status.textContent = 'Configura la visibilidad y pulsa Descargar ArcadeLink para generar la colección.';
+  }
+
+  async generateBulkDirect() {
+    if (this.bulkEntries.length < 2) return;
+    const button = this.document.getElementById('osBulkDirectGenerate');
+    const output = this.document.getElementById('osBulkDirectText');
+    const area = this.document.getElementById('osBulkDirectResults');
+    const status = this.document.getElementById('osBulkShareStatus');
+    const days = Math.max(1, Math.min(3650, parseInt(this.document.getElementById('osBulkShareDays')?.value || '1', 10) || 1));
+    if (button) button.disabled = true;
+    const lines = [];
+    let failed = 0;
+    try {
+      for (const file of this.bulkEntries) {
+        try {
+          const response = await this.window.fetch('generar_token.php', {
+            method:'POST', credentials:'same-origin', cache:'no-store',
+            headers:{'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8',
+              'X-Requested-With':'XMLHttpRequest',
+              'X-Drive-CSRF':String(this.window.DRIVE_UPLOAD_CSRF || '')},
+            body:new URLSearchParams({archivo:file.key,tipo:this.typeForExtension(file.ext),dias:String(days)}).toString()
+          });
+          const data = await response.json();
+          if (!response.ok || data.estado !== 'ok' || !data.url) throw new Error(data.mensaje || 'No se pudo generar');
+          lines.push(file.name + ': ' + data.url);
+        } catch (_) {
+          failed++;
+          lines.push(file.name + ': ERROR al generar enlace');
+        }
+      }
+      if (output) output.value = lines.join('\n');
+      if (area) area.hidden = false;
+      if (status) status.textContent = 'Generados: ' + (this.bulkEntries.length - failed) + '. Fallidos: ' + failed + '.';
+    } finally { if (button) button.disabled = false; }
+  }
+
+  async copyBulkDirect() {
+    const value = this.document.getElementById('osBulkDirectText')?.value || '';
+    if (!value) return;
+    try { await this.window.navigator.clipboard.writeText(value); }
+    catch (_) {
+      const input = this.document.getElementById('osBulkDirectText');
+      input?.select();
+      this.document.execCommand('copy');
+    }
   }
 
   showModal() {

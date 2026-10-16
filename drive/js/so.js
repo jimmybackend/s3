@@ -1007,6 +1007,9 @@ class ArcadeCloudOsShell {
         if (selected[0]) this.window.ArcadeCloudOsClipboard?.captureFiles?.(selected[0], action, context);
       } else if (action === 'more') {
         if (selected[0]) this.showContext(selected[0], button.getBoundingClientRect().left, button.getBoundingClientRect().bottom);
+      } else if (action === 'share') {
+        this.window.ArcadeCloudOsShare?.openMultiple?.(selected);
+        this.hideContext();
       } else if (action === 'download') {
         this.downloadSelectedFiles();
         this.hideContext();
@@ -1037,7 +1040,7 @@ class ArcadeCloudOsShell {
         let disabled = !hasSelection;
         let title = '';
 
-        if (['copy', 'cut', 'download', 'delete'].includes(action) && hasLocked) {
+        if (['copy', 'cut', 'download', 'delete', 'share'].includes(action) && hasLocked) {
           disabled = true;
           title = 'Desbloquea los archivos protegidos para usar esta acción';
         }

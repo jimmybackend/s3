@@ -326,6 +326,7 @@ class ArcadeCloudOsShell {
 
     this.setContextAction('open', !multi && !locked && Boolean(entry.dataset.openUrl));
     this.setContextAction('open-tab', !multi && !locked && ext === 'pdf' && Boolean(entry.dataset.openUrl));
+    this.setContextAction('explore-zip', !multi && !locked && ext === 'zip' && Boolean(entry.dataset.key));
     const fileApps = this.window.ArcadeCloudFileApplications;
     this.setContextAction('open-with', !multi && !locked && Boolean(fileApps) && fileApps.applicationsFor(fileApps.fileFromEntry(entry)).length > 1);
     const openControl = this.context.querySelector('[data-file-action="open"]');
@@ -1270,6 +1271,14 @@ class ArcadeCloudOsShell {
         }
       };
       this.window.jQuery?.(modal).modal('show');
+      return;
+    }
+
+    if (action === 'explore-zip') {
+      const url = 'zip_explorer.php?archivo=' + encodeURIComponent(String(entry.dataset.key || ''));
+      const win = this.createViewerWindow('ZIP · ' + String(entry.dataset.name || 'Archivo'), 'zip', url, false);
+      this.registerWindow(win);
+      this.hideContext();
       return;
     }
 

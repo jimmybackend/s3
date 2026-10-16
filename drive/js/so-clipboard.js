@@ -208,7 +208,12 @@ class ArcadeCloudOsClipboard {
         if (action === 'copy' || action === 'cut') {
           this.captureFiles(entry, action === 'copy' ? 'copy' : 'move');
         } else if (action === 'share') {
-          await this.shareFile(entry);
+          const selected = Array.from(entry.closest('.os-explorer-window')?.querySelectorAll('.os-file-entry.is-selected') || []);
+          if (selected.length > 1) {
+            this.window.ArcadeCloudOsShare?.openMultiple?.(selected);
+          } else {
+            await this.shareFile(entry);
+          }
         } else if (action === 'delete') {
           await this.deleteFile(entry);
         }

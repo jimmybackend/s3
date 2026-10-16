@@ -116,7 +116,7 @@ final class ZipExplorerService
             <input id="search" type="search" placeholder="Buscar en la carpeta actual"><div id="files"></div></main>
             <script>const entries=' . json_encode($items, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_INVALID_UTF8_SUBSTITUTE) . ';
             const base=' . json_encode($baseUrl) . ';let current="";const root=document.getElementById("files"),path=document.getElementById("path"),search=document.getElementById("search");
-            function render(){root.replaceChildren();path.textContent="/"+current;const direct=new Map();
+            const render=()=>{root.replaceChildren();path.textContent="/"+current;const direct=new Map();
               entries.forEach(e=>{if(!e.name.startsWith(current))return;const rest=e.name.slice(current.length);if(!rest)return;const slash=rest.indexOf("/");const dir=slash>=0;const label=dir?rest.slice(0,slash):rest;const child=dir?current+label+"/":e.name;if(!label)return;
                 const old=direct.get(child);if(!old||(!dir&&old.dir))direct.set(child,{name:label,dir,full:child,index:e.index,size:e.size,encrypted:e.encrypted});});
               [...direct.values()].filter(e=>e.name.toLowerCase().includes(search.value.toLowerCase())).sort((a,b)=>Number(b.dir)-Number(a.dir)||a.name.localeCompare(b.name,"es")).forEach(e=>{
@@ -124,7 +124,7 @@ final class ZipExplorerService
                 if(e.dir){const button=document.createElement("button");button.textContent="Abrir";button.onclick=()=>{current=e.full;search.value="";render()};line.append(button)}
                 else{const size=document.createElement("span");size.className="size";size.textContent=(e.size/1024).toFixed(1)+" KB";line.append(size);const link=document.createElement("a");link.href=base+"&entry="+e.index;link.textContent=e.encrypted?"Cifrado":"Extraer archivo";if(e.encrypted){link.removeAttribute("href");link.setAttribute("aria-disabled","true")};line.append(link)}
                 root.append(line)});
-              if(!root.children.length)root.textContent="No hay archivos en esta carpeta.";}
+              if(!root.children.length)root.textContent="No hay archivos en esta carpeta.";};
             document.getElementById("back").onclick=()=>{const p=current.replace(/\/$/,"");current=p.includes("/")?p.slice(0,p.lastIndexOf("/")+1):"";search.value="";render()};search.oninput=render;render();
             </script></body></html>';
         } catch (Throwable $error) {

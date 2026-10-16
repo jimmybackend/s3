@@ -238,7 +238,14 @@ class ArcadeCloudOsShell {
       if (help[id]) button.title = help[id];
       if (id === 'classic') button.hidden = true;
     });
-    if (multi) return;
+    if (multi) {
+      const share = clip('share');
+      if (share) {
+        const label = share.querySelector('span');
+        if (label) label.textContent = 'Compartir ' + this.selectedFileEntries().length + ' archivos seleccionados';
+      }
+      return;
+    }
     const ordered = matrix[kind].map(id => {
       const button = ['copy','cut','share','delete'].includes(id) ? clip(id) : file(id);
       if (button && id === 'cut') {
@@ -377,7 +384,13 @@ class ArcadeCloudOsShell {
       const label = cut.querySelector('span');
       if (label) label.textContent = multi ? 'Cortar / mover ' + count + ' archivos' : 'Cortar / mover';
     }
-    if (share) share.hidden = multi;
+    if (share) {
+      share.hidden = false;
+      share.disabled = selectionHasLocked;
+      share.title = selectionHasLocked ? 'Desbloquea los archivos protegidos para compartirlos' : '';
+      const label = share.querySelector('span');
+      if (label) label.textContent = multi ? 'Compartir ' + count + ' archivos seleccionados' : 'Compartir';
+    }
     if (remove) remove.hidden = multi;
 
     const serviceButtons = Array.from(this.context.querySelectorAll('[data-service-action]'));

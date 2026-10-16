@@ -1974,6 +1974,8 @@ Escribe help o usa uno de los botones disponibles.</pre>
           <div id="osBulkSharePanel" class="mb-3" hidden>
             <strong id="osBulkShareCount">Archivos seleccionados</strong>
             <p class="small text-muted mb-2">Elige cómo compartir los archivos. Los enlaces directos se generan individualmente; ArcadeLink crea una colección.</p>
+            <label for="osBulkShareDays">Vigencia de los enlaces directos (días)</label>
+            <input type="number" id="osBulkShareDays" class="form-control mb-2" min="1" max="3650" value="1">
             <div class="d-flex flex-wrap gap-2 mb-2">
               <button type="button" class="btn btn-primary btn-sm" id="osBulkDirectGenerate">Generar enlaces directos</button>
               <button type="button" class="btn btn-info btn-sm" id="osBulkArcadeLinkChoose">Usar ArcadeLink</button>

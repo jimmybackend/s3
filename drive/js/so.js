@@ -716,6 +716,16 @@ class ArcadeCloudOsShell {
       return;
     }
 
+    if (!forceEdit && String(entry.dataset.ext || '').toLowerCase() === 'zip') {
+      const key = String(entry.dataset.key || '');
+      if (!key) { this.notify('No se encontró la ruta del ZIP.', 'warning'); return; }
+      const url = 'zip_explorer.php?archivo=' + encodeURIComponent(key);
+      const win = this.createViewerWindow('ZIP · ' + String(entry.dataset.name || 'Archivo'), 'zip', url, false);
+      this.registerWindow(win);
+      this.hideContext();
+      return;
+    }
+
     const fileApplications = this.window.ArcadeCloudFileApplications;
     if (fileApplications) {
       try {

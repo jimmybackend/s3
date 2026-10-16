@@ -131,7 +131,7 @@ class ArcadeCloudOsShare {
     const output = this.document.getElementById('osBulkDirectText');
     const area = this.document.getElementById('osBulkDirectResults');
     const status = this.document.getElementById('osBulkShareStatus');
-    const days = Math.max(1, Math.min(3650, parseInt(this.document.getElementById('diasCompartir')?.value || '1', 10) || 1));
+    const days = Math.max(1, Math.min(3650, parseInt(this.document.getElementById('osBulkShareDays')?.value || '1', 10) || 1));
     if (button) button.disabled = true;
     const lines = [];
     let failed = 0;

@@ -19,7 +19,7 @@ final class ZipExplorerService
             http_response_code(401);
             exit('Sesión requerida.');
         }
-        
+
         $key = trim((string)($_GET['archivo'] ?? ''));
         $selected = isset($_GET['entry']) ? filter_var($_GET['entry'], FILTER_VALIDATE_INT) : null;
         $maxArchive = 128 * 1024 * 1024;
@@ -49,7 +49,7 @@ final class ZipExplorerService
             $zip = new ZipArchive();
             if ($zip->open($tmp, ZipArchive::RDONLY) !== true) throw new RuntimeException('ZIP inválido.');
             if ($zip->numFiles > $maxItems) throw new RuntimeException('ZIP con demasiadas entradas.');
-        
+
             $safeEntry = static function (string $name): bool {
                 if ($name === '' || str_contains($name, "\0") || str_contains($name, '\\')) return false;
                 if (str_starts_with($name, '/') || preg_match('/^[A-Za-z]:/', $name)) return false;
@@ -68,7 +68,7 @@ final class ZipExplorerService
                 if (!$isDir && (int)($stat['size'] ?? 0) > $maxExtract) continue;
                 $items[] = ['index' => $i, 'name' => $name, 'dir' => $isDir, 'size' => (int)($stat['size'] ?? 0), 'encrypted' => !empty($stat['encryption_method']) && (int)$stat['encryption_method'] !== ZipArchive::EM_NONE];
             }
-        
+
             if ($selected !== null) {
                 if ($selected === false) throw new RuntimeException('Entrada inválida.');
                 $found = null;
@@ -97,7 +97,7 @@ final class ZipExplorerService
                 $tmp = null;
                 exit;
             }
-        
+
             header('Content-Type: text/html; charset=utf-8');
             header('Cache-Control: no-store');
             $escape = static fn(string $value): string => htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');

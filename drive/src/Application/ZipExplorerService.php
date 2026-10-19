@@ -22,6 +22,7 @@ final class ZipExplorerService
 
         $key = trim((string)($_GET['archivo'] ?? ''));
         $selected = isset($_GET['entry']) ? filter_var($_GET['entry'], FILTER_VALIDATE_INT) : null;
+        $selectedFolder = isset($_GET['folder']) ? (string)$_GET['folder'] : null;
         $tmp = null;
         $zip = null;
         try {
@@ -59,6 +60,14 @@ final class ZipExplorerService
             $page = filter_var($_GET['page'] ?? 1, FILTER_VALIDATE_INT);
             $page = $page === false ? 1 : max(1, $page);
             $pageSize = 100;
+            if ($selectedFolder !== null) {
+                if ($selectedFolder === '' || !$safeEntry($selectedFolder) || !str_ends_with($selectedFolder, '/')) {
+                    throw new RuntimeException('Carpeta ZIP inválida.');
+                }
+                self::downloadFolder($zip, $selectedFolder);
+                return;
+            }
+
             if ($selected !== null) {
                 if ($selected === false) throw new RuntimeException('Entrada inválida.');
                 $stat = ($selected >= 0 && $selected < $zip->numFiles) ? $zip->statIndex($selected) : false;
@@ -151,7 +160,8 @@ final class ZipExplorerService
                 echo '<div class="item"><span>' . ($item['dir'] ? '📁' : '📄') . '</span><span class="name">'
                     . $escape($item['name']) . '</span>';
                 if ($item['dir']) {
-                    echo '<a href="' . $escape($url($item['full'])) . '">Abrir</a>';
+                    echo '<a href="' . $escape($url($item['full'])) . '">Abrir</a>'
+                        . ' <a href="' . $escape($base . '&folder=' . rawurlencode($item['full'])) . '">Extraer carpeta ZIP</a>';
                 } elseif ($item['encrypted']) {
                     echo '<span class="muted">Cifrado</span>';
                 } else {
@@ -172,6 +182,82 @@ final class ZipExplorerService
         } finally {
             if ($zip instanceof ZipArchive) $zip->close();
             if (is_string($tmp) && is_file($tmp)) @unlink($tmp);
+        }
+    }
+
+    /**
+     * Create a ZIP containing only the requested subtree.
+     * Streams one source entry at a time to disk; never loads extracted files into PHP memory.
+     * Native temporary disk capacity, execution timeout and ZIP format limits still apply.
+     */
+    private static function downloadFolder(ZipArchive $source, string $prefix): void
+    {
+        $work = tempnam(sys_get_temp_dir(), 'arc_folder_');
+        if ($work === false) throw new RuntimeException('No hay espacio temporal para extraer la carpeta.');
+        @unlink($work);
+        if (!mkdir($work, 0700)) throw new RuntimeException('No se pudo preparar la extracción.');
+        $output = $work . '/selection.zip';
+        $dest = new ZipArchive();
+        $opened = $dest->open($output, ZipArchive::CREATE | ZipArchive::OVERWRITE);
+        if ($opened !== true) throw new RuntimeException('No se pudo crear el ZIP de la carpeta.');
+        $files = [];
+        $completed = false;
+        try {
+            $count = 0;
+            for ($i = 0; $i < $source->numFiles; $i++) {
+                $stat = $source->statIndex($i);
+                if (!is_array($stat)) continue;
+                $name = (string)($stat['name'] ?? '');
+                if (!str_starts_with($name, $prefix)) continue;
+                $relative = substr($name, strlen($prefix));
+                if ($relative === '') continue;
+                if (str_contains($relative, "\0") || str_contains($relative, '\\')
+                    || str_starts_with($relative, '/') || preg_match('/(^|\/)\.\.(\/|$)/', $relative)) {
+                    throw new RuntimeException('La carpeta contiene una ruta insegura.');
+                }
+                if (str_ends_with($relative, '/')) {
+                    if (!$dest->addEmptyDir($relative)) throw new RuntimeException('No se pudo añadir un directorio.');
+                    continue;
+                }
+                if (!empty($stat['encryption_method']) && (int)$stat['encryption_method'] !== ZipArchive::EM_NONE) {
+                    throw new RuntimeException('La carpeta contiene archivos cifrados; no puede extraerse parcialmente.');
+                }
+                $input = $source->getStreamIndex($i);
+                if (!is_resource($input)) throw new RuntimeException('No se pudo leer una entrada de la carpeta.');
+                $file = $work . '/part_' . $i;
+                $out = fopen($file, 'wb');
+                if (!is_resource($out)) { fclose($input); throw new RuntimeException('Sin espacio temporal suficiente.'); }
+                $copied = stream_copy_to_stream($input, $out);
+                fclose($input);
+                fclose($out);
+                if ($copied === false || $copied !== (int)$stat['size']) {
+                    throw new RuntimeException('Lectura incompleta de una entrada ZIP.');
+                }
+                $files[] = $file;
+                if (!$dest->addFile($file, $relative)) throw new RuntimeException('No se pudo añadir el archivo seleccionado.');
+                $count++;
+            }
+            if ($count === 0) throw new RuntimeException('La carpeta no contiene archivos extraíbles.');
+            if (!$dest->close()) throw new RuntimeException('No se pudo completar el ZIP seleccionado.');
+            $completed = true;
+            $filename = str_replace(["\r", "\n", '"'], '', basename(rtrim($prefix, '/'))) . '.zip';
+            header('Content-Type: application/zip');
+            header('Content-Disposition: attachment; filename="selected-folder.zip"; filename*=UTF-8' . "''" . rawurlencode($filename));
+            header('X-Content-Type-Options: nosniff');
+            header('Cache-Control: no-store');
+            $stream = fopen($output, 'rb');
+            if (!is_resource($stream)) throw new RuntimeException('No se pudo abrir la carpeta comprimida.');
+            while (!feof($stream) && !connection_aborted()) {
+                $chunk = fread($stream, 65536);
+                if ($chunk === false || $chunk === '') break;
+                echo $chunk;
+            }
+            fclose($stream);
+        } finally {
+            if (!$completed) $dest->close();
+            foreach ($files as $file) @unlink($file);
+            @unlink($output);
+            @rmdir($work);
         }
     }
 }

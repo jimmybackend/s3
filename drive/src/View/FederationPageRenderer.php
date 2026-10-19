@@ -89,7 +89,7 @@ final class FederationPageRenderer
 </head>
 <body class="ui-theme theme-neon-green theme-dark vision-normal ascii-on">
 <nav class="navbar navbar-expand-lg navbar-dark px-3 drive-navbar">
-  <a class="navbar-brand d-flex align-items-center" href="../s3.php" title="Volver al Drive">
+  <a class="navbar-brand d-flex align-items-center" href="../so.php" title="Volver al Drive">
     <img src="../ellogo.png" width="48" height="38" class="drive-brand-logo mr-2" alt="Logo">
     Cloud Drive
   </a>
@@ -98,7 +98,7 @@ final class FederationPageRenderer
     <a class="btn btn-info btn-sm mr-2" rel="noopener noreferrer" href="<?= $h($dropUrl) ?>">
       <i class="fas fa-cloud-arrow-up mr-1"></i> Subir / pagar
     </a>
-    <a class="btn btn-outline-light btn-sm" href="../s3.php">
+    <a class="btn btn-outline-light btn-sm" href="../so.php">
       <i class="fas fa-arrow-left mr-1"></i> Drive
     </a>
   </div>

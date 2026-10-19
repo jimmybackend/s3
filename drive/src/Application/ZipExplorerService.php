@@ -22,18 +22,12 @@ final class ZipExplorerService
 
         $key = trim((string)($_GET['archivo'] ?? ''));
         $selected = isset($_GET['entry']) ? filter_var($_GET['entry'], FILTER_VALIDATE_INT) : null;
-        $maxArchive = 128 * 1024 * 1024;
-        $maxExtract = 256 * 1024 * 1024;
-        $maxItems = 10000;
         $tmp = null;
         $zip = null;
         try {
             $row = $app->fileRecordLocator()->requireReadableByKey($session->userId(), $key);
             if (strtolower(pathinfo((string)$row['Nombre'], PATHINFO_EXTENSION)) !== 'zip') {
                 throw new RuntimeException('El archivo seleccionado no es ZIP.');
-            }
-            if ((int)$row['Tamano'] > $maxArchive) {
-                throw new RuntimeException('Este ZIP supera el límite de exploración temporal de 128 MB.');
             }
             if (!class_exists(ZipArchive::class)) {
                 throw new RuntimeException('El servidor requiere la extensión PHP ZipArchive.');
@@ -45,10 +39,8 @@ final class ZipExplorerService
                 'Key' => (string)$row['_key'],
                 'SaveAs' => $tmp,
             ]);
-            if (filesize($tmp) > $maxArchive) throw new RuntimeException('ZIP demasiado grande.');
             $zip = new ZipArchive();
             if ($zip->open($tmp, ZipArchive::RDONLY) !== true) throw new RuntimeException('ZIP inválido.');
-            if ($zip->numFiles > $maxItems) throw new RuntimeException('ZIP con demasiadas entradas.');
 
             $safeEntry = static function (string $name): bool {
                 if ($name === '' || str_contains($name, "\0") || str_contains($name, '\\')) return false;
@@ -65,7 +57,6 @@ final class ZipExplorerService
                 $name = (string)($stat['name'] ?? '');
                 if (!$safeEntry($name)) continue;
                 $isDir = str_ends_with($name, '/');
-                if (!$isDir && (int)($stat['size'] ?? 0) > $maxExtract) continue;
                 $items[] = ['index' => $i, 'name' => $name, 'dir' => $isDir, 'size' => (int)($stat['size'] ?? 0), 'encrypted' => !empty($stat['encryption_method']) && (int)$stat['encryption_method'] !== ZipArchive::EM_NONE];
             }
 
@@ -86,9 +77,9 @@ final class ZipExplorerService
                 while (!feof($stream)) {
                     $part = fread($stream, 65536);
                     if ($part === false) break;
-                    $sent += strlen($part);
-                    if ($sent > $maxExtract) break;
+                    if ($part === '') break;
                     echo $part;
+                    if (connection_aborted()) break;
                 }
                 fclose($stream);
                 $zip->close();

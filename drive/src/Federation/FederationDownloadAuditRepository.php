@@ -92,8 +92,17 @@ final class FederationDownloadAuditRepository
     /** @return array<int,array<string,mixed>> */
     public function ownedDeliveryHistory(int $userId, string $resourceId, int $limit = 50): array
     {
-        // Comprobar propietario ANTES de leer registros de entrega.
-        if ($this->ownedResource($userId, $resourceId) === null) return [];
+        // Authorization-only lookup: do not execute summary queries just to check ownership.
+        if ($userId <= 0 || !preg_match('/\\Aarl_[A-Za-z0-9_-]{16,80}\\z/', $resourceId)) return [];
+        $stmt = $this->db->prepare(
+            'SELECT 1 FROM FederatedResources WHERE ResourceId=? AND OwnerUserId=? LIMIT 1'
+        );
+        if (!$stmt) throw new FederationException('No se pudo comprobar la propiedad del recurso.', 500);
+        $stmt->bind_param('si', $resourceId, $userId);
+        $stmt->execute();
+        $owned = $stmt->get_result()->fetch_row() !== null;
+        $stmt->close();
+        if (!$owned) return [];
         return (new FederationResourceDeliveryRepository($this->db))->history($resourceId, $limit);
     }
 }

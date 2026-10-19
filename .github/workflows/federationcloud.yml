@@ -53,6 +53,7 @@ on:
       - 'drive/js/subir-dropzone.js'
       - 'drive/js/subir-chunked.js'
       - 'drive/up.php'
+      - 'drive/tests/federation_download_audit_contract_smoke.php'
       - 'drive/tests/federationcloud_smoke.php'
       - 'drive/tests/federation_directory_smoke.php'
       - 'drive/tests/federation_provider_smoke.php'
@@ -187,6 +188,7 @@ jobs:
           php -l drive/src/Security/SessionManager.php
           php -l drive/src/View/FederationPageRenderer.php
           php -l drive/bloque_footer.php
+          php -l drive/tests/federation_download_audit_contract_smoke.php
           php -l drive/tests/federationcloud_smoke.php
           php -l drive/tests/federation_directory_smoke.php
           php -l drive/tests/federation_provider_smoke.php
@@ -210,6 +212,9 @@ jobs:
           bash -n drive/bin/install_arcadecloud.sh
           bash -n drive/bin/install_federation_sync_timer.sh
           bash -n drive/bin/reconcile_arcadecloud_services.sh
+
+      - name: Federation owner audit static security contract
+        run: php drive/tests/federation_download_audit_contract_smoke.php
 
       - name: FederationCloud cryptographic smoke test
         run: php drive/tests/federationcloud_smoke.php

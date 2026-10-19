@@ -12,6 +12,10 @@ final class ZipExplorerService
 {
     public static function handle(): void
     {
+        if (ZipLambdaExplorerService::enabled()) {
+            ZipLambdaExplorerService::handle();
+            return;
+        }
         $app = ApplicationKernel::app();
         $session = $app->session();
         $session->start();

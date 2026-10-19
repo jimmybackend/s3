@@ -1,0 +1,24 @@
+name: ZIP Lambda integration
+on:
+  push:
+    paths:
+      - 'drive/src/Application/ZipLambdaExplorerService.php'
+      - 'drive/src/Application/ZipExplorerService.php'
+      - 'drive/config/activity-cost-pricing.json'
+      - 'drive/tests/zip_lambda_integration_contract_smoke.php'
+      - '.github/workflows/zip-lambda-integration.yml'
+  pull_request:
+    paths:
+      - 'drive/src/Application/ZipLambdaExplorerService.php'
+      - 'drive/src/Application/ZipExplorerService.php'
+      - 'drive/config/activity-cost-pricing.json'
+      - 'drive/tests/zip_lambda_integration_contract_smoke.php'
+      - '.github/workflows/zip-lambda-integration.yml'
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: php -l drive/src/Application/ZipLambdaExplorerService.php
+      - run: php -l drive/src/Application/ZipExplorerService.php
+      - run: php drive/tests/zip_lambda_integration_contract_smoke.php

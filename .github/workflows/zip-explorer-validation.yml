@@ -1,0 +1,25 @@
+name: ZIP explorer validation
+on:
+  pull_request:
+    paths:
+      - 'drive/src/Application/ZipExplorerService.php'
+      - 'drive/tests/zip_large_archive_contract_smoke.php'
+      - '.github/workflows/zip-explorer-validation.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'drive/src/Application/ZipExplorerService.php'
+      - 'drive/tests/zip_large_archive_contract_smoke.php'
+permissions:
+  contents: read
+jobs:
+  zip-validation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: PHP syntax
+        run: |
+          php -l drive/src/Application/ZipExplorerService.php
+          php -l drive/tests/zip_large_archive_contract_smoke.php
+      - name: Archive contract
+        run: php drive/tests/zip_large_archive_contract_smoke.php

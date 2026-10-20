@@ -39,9 +39,12 @@ class ArcadeCloudFolderRecorder {
       '<p id="osFolderRecorderMessage" role="status" aria-live="polite"></p>' +
       '<video id="osFolderRecorderVideo" autoplay playsinline muted hidden></video>' +
       '<audio id="osFolderRecorderAudio" controls hidden></audio>' +
+      '<img id="osFolderRecorderPhoto" alt="Vista previa de foto" hidden>' +
+      '<canvas id="osFolderRecorderCanvas" hidden></canvas>' +
       '<div class="os-folder-recorder-controls">' +
       '<button type="button" data-recorder-start>Comenzar grabación</button>' +
       '<button type="button" data-recorder-stop disabled>Detener</button>' +
+      '<button type="button" data-recorder-snap hidden>Tomar foto</button>' +
       '<button type="button" data-recorder-save disabled>Guardar en esta carpeta</button>' +
       '</div><small>Al guardar, el archivo pasa a Tareas y se sube directamente a S3. ' +
       'El video está limitado a 5 minutos o 180 MB para proteger la memoria del teléfono.</small>' +
@@ -50,6 +53,7 @@ class ArcadeCloudFolderRecorder {
     this.dialog = dialog;
     dialog.querySelector('[data-recorder-start]').addEventListener('click', () => this.start());
     dialog.querySelector('[data-recorder-stop]').addEventListener('click', () => this.stop());
+    dialog.querySelector('[data-recorder-snap]').addEventListener('click', () => this.snap());
     dialog.querySelector('[data-recorder-save]').addEventListener('click', () => this.save());
     dialog.querySelectorAll('[data-recorder-close]').forEach(btn => btn.addEventListener('click', () => this.close()));
     this.doc.addEventListener('keydown', e => {
@@ -61,7 +65,7 @@ class ArcadeCloudFolderRecorder {
 
   open(folder, mode) {
     const route = String(folder?.route || '').trim().replace(/\\/g, '/');
-    if (!route || !['audio', 'video'].includes(mode)) return false;
+    if (!route || !['audio', 'video', 'photo'].includes(mode)) return false;
     if (!this.dialog) this.boot();
     if (this.active) {
       this.message('Primero detén la grabación anterior.');
@@ -73,12 +77,15 @@ class ArcadeCloudFolderRecorder {
     this.folderName = String(folder?.name || this.route);
     this.mode = mode;
     this.dialog.querySelector('#osFolderRecorderTitle').textContent =
-      mode === 'audio' ? 'Grabar nota de voz' : 'Grabar video';
+      mode === 'audio' ? 'Grabar nota de voz' : mode === 'video' ? 'Grabar video' : 'Tomar fotografía';
     this.dialog.querySelector('#osFolderRecorderRoute').textContent = 'Carpeta: ' + this.folderName;
     this.dialog.hidden = false;
+    this.dialog.querySelector('[data-recorder-snap]').hidden = mode !== 'photo';
+    this.dialog.querySelector('[data-recorder-snap]').disabled = true;
     this.message(mode === 'audio'
       ? 'Pulsa Comenzar para activar el micrófono.'
-      : 'Pulsa Comenzar para activar la cámara y el micrófono.');
+      : mode === 'video' ? 'Pulsa Comenzar para activar la cámara y el micrófono.'
+      : 'Pulsa Comenzar para activar la cámara.');
     this.dialog.querySelector('[data-recorder-start]').focus();
     return true;
   }
@@ -94,7 +101,7 @@ class ArcadeCloudFolderRecorder {
   async start() {
     if (this.active || this.dialog.hidden || !this.route) return;
     if (!this.win.isSecureContext || !this.win.navigator.mediaDevices?.getUserMedia ||
-        typeof this.win.MediaRecorder !== 'function') {
+        (this.mode !== 'photo' && typeof this.win.MediaRecorder !== 'function')) {
       this.message('Este navegador no permite grabar. Revisa HTTPS y los permisos.', true);
       return;
     }
@@ -106,11 +113,22 @@ class ArcadeCloudFolderRecorder {
     try {
       const options = this.mode === 'audio'
         ? { audio: true, video: false }
-        : { audio: true, video: { facingMode: { ideal: 'environment' } } };
+        : { audio: this.mode === 'video', video: { facingMode: { ideal: 'environment' } } };
       this.stream = await this.win.navigator.mediaDevices.getUserMedia(options);
       if (this.dialog.hidden || this.closing) {
         this.releaseTracks();
         this.active = false;
+        return;
+      }
+      if (this.mode === 'photo') {
+        const camera = this.dialog.querySelector('#osFolderRecorderVideo');
+        camera.srcObject = this.stream;
+        camera.hidden = false;
+        camera.muted = true;
+        camera.controls = false;
+        await camera.play();
+        this.dialog.querySelector('[data-recorder-snap]').disabled = false;
+        this.message('Cámara lista. Pulsa Tomar foto.');
         return;
       }
       const mime = this.chooseFormat();
@@ -185,6 +203,34 @@ class ArcadeCloudFolderRecorder {
     }
   }
 
+  snap() {
+    if (this.mode !== 'photo' || !this.active || !this.stream || this.dialog.hidden) return;
+    const camera = this.dialog.querySelector('#osFolderRecorderVideo');
+    if (!camera.videoWidth || !camera.videoHeight) {
+      this.message('Espera a que la cámara esté lista.', true);
+      return;
+    }
+    const canvas = this.dialog.querySelector('#osFolderRecorderCanvas');
+    canvas.width = camera.videoWidth;
+    canvas.height = camera.videoHeight;
+    canvas.getContext('2d').drawImage(camera, 0, 0);
+    this.dialog.querySelector('[data-recorder-snap]').disabled = true;
+    canvas.toBlob(blob => {
+      this.releaseTracks();
+      this.active = false;
+      if (this.dialog.hidden || this.closing || !blob) return;
+      this.mediaBlob = blob;
+      this.mediaUrl = URL.createObjectURL(blob);
+      const preview = this.dialog.querySelector('#osFolderRecorderPhoto');
+      preview.src = this.mediaUrl;
+      preview.hidden = false;
+      camera.hidden = true;
+      this.dialog.querySelector('[data-recorder-start]').disabled = false;
+      this.dialog.querySelector('[data-recorder-save]').disabled = false;
+      this.message('Fotografía lista. Pulsa Guardar en esta carpeta.');
+    }, 'image/jpeg', 0.88);
+  }
+
   stop() {
     if (this.recorder?.state === 'recording') {
       this.dialog.querySelector('[data-recorder-stop]').disabled = true;
@@ -201,10 +247,10 @@ class ArcadeCloudFolderRecorder {
     }
     const blob = this.mediaBlob;
     const mime = blob.type.split(';')[0].toLowerCase();
-    const extension = mime.includes('mp4') ? 'mp4' : 'webm';
-    const name = (this.mode === 'audio' ? 'Nota_voz_' : 'Video_') +
+    const extension = this.mode === 'photo' ? 'jpg' : mime.includes('mp4') ? 'mp4' : 'webm';
+    const name = (this.mode === 'audio' ? 'Nota_voz_' : this.mode === 'video' ? 'Video_' : 'Foto_') +
       new Date().toISOString().replace(/[:.]/g, '-') + '.' + extension;
-    const file = new File([blob], name, { type: mime || (this.mode === 'audio' ? 'audio/webm' : 'video/webm') });
+    const file = new File([blob], name, { type: mime || (this.mode === 'audio' ? 'audio/webm' : this.mode === 'video' ? 'video/webm' : 'image/jpeg') });
     const route = this.route;
     try {
       if (file.size >= 8 * 1024 * 1024) {
@@ -213,7 +259,7 @@ class ArcadeCloudFolderRecorder {
           this.win.ArcadeCloudOsShell?.notify?.(error.message || 'Falló la subida del video.', 'danger');
         });
       } else {
-        upload.enqueueLocal(file, route, this.mode === 'audio' ? 'Nota de voz' : 'Video');
+        upload.enqueueLocal(file, route, this.mode === 'audio' ? 'Nota de voz' : this.mode === 'video' ? 'Video' : 'Foto');
       }
       this.win.ArcadeCloudOsShell?.notify?.(
         name + ' enviado a Tareas para guardar en ' + this.folderName + '.', 'success');
@@ -242,6 +288,8 @@ class ArcadeCloudFolderRecorder {
       media.removeAttribute('src');
       media.hidden = true;
     });
+    const image = this.dialog?.querySelector('#osFolderRecorderPhoto');
+    if (image) { image.hidden = true; image.removeAttribute('src'); }
   }
 
   reset() {
@@ -254,6 +302,7 @@ class ArcadeCloudFolderRecorder {
       this.dialog.querySelector('[data-recorder-start]').disabled = false;
       this.dialog.querySelector('[data-recorder-stop]').disabled = true;
       this.dialog.querySelector('[data-recorder-save]').disabled = true;
+      this.dialog.querySelector('[data-recorder-snap]').disabled = true;
     }
   }
 

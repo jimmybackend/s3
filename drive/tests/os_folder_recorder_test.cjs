@@ -11,7 +11,7 @@ const native = fs.readFileSync(path.join(__dirname, '..', '..', 'android-app', '
 const upload = fs.readFileSync(path.join(__dirname, '..', 'js', 'upload-center.js'), 'utf8');
 
 test('capture is available from real folder entries and active folder toolbar', () => {
-  for (const name of ['record-audio', 'record-video']) {
+  for (const name of ['record-audio', 'record-video', 'record-photo']) {
     assert.match(so, new RegExp('data-folder-action="' + name + '"'));
     assert.match(so, new RegExp('data-current-folder-action="' + name + '"'));
     assert.match(folders, new RegExp("action\\('" + name + "'\\)"));
@@ -90,4 +90,26 @@ test('save dispatches large video to multipart in the frozen folder', async () =
   await new Promise(resolve => setImmediate(resolve));
   assert.equal(selected, 'Data3/subfolder/');
   assert.equal(fileType, 'video/webm');
+});
+
+test('camera photo stays in the requested folder and uses the regular direct S3 upload', () => {
+  let saved = null;
+  const recorder = new ArcadeCloudFolderRecorder({
+    ArcadeCloudUploadManager: {
+      enqueueLocal(file, route, source) {
+        saved = { file, route, source };
+      },
+      startMultipart() { throw new Error('Photo unexpectedly used multipart'); }
+    },
+    ArcadeCloudOsShell: { notify() {} }
+  }, {});
+  recorder.route = 'Data4/imagenes/';
+  recorder.folderName = 'imagenes';
+  recorder.mode = 'photo';
+  recorder.mediaBlob = new Blob(['JPEG test fixture'], { type: 'image/jpeg' });
+  recorder.close = () => {};
+  recorder.save();
+  assert.equal(saved.route, 'Data4/imagenes/');
+  assert.equal(saved.source, 'Foto');
+  assert.match(saved.file.name, /^Foto_.*\.jpg$/);
 });

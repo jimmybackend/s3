@@ -272,6 +272,7 @@ if ($isDrive3dNativeActions) ob_start();
   <link rel="stylesheet" href="css/federation-os-admin.css?v=<?= (int)filemtime(__DIR__ . '/css/federation-os-admin.css') ?>">
   <link rel="stylesheet" href="css/federation-moderation.css?v=<?= (int)filemtime(__DIR__ . '/css/federation-moderation.css') ?>">
   <link rel="stylesheet" href="css/upload-center.css?v=<?= (int)filemtime(__DIR__ . '/css/upload-center.css') ?>">
+  <link rel="stylesheet" href="css/os-folder-recorder.css?v=<?= (int)filemtime(__DIR__ . '/css/os-folder-recorder.css') ?>">
   <link rel="stylesheet" href="css/compute-node-idle.css?v=<?= (int)filemtime(__DIR__ . '/css/compute-node-idle.css') ?>">
   <link rel="stylesheet" href="css/os-media-cloud.css?v=<?= (int)filemtime(__DIR__ . '/css/os-media-cloud.css') ?>">
   <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
@@ -367,6 +368,15 @@ if ($isDrive3dNativeActions) ob_start();
                 aria-label="Subir archivos a esta carpeta">
           <i class="fas fa-cloud-arrow-up"></i>
           <span>Subir</span>
+        </button>
+
+        <button type="button" class="os-tool-button" data-current-folder-action="record-audio"
+                title="Grabar nota de voz en esta carpeta" aria-label="Grabar nota de voz en esta carpeta">
+          <i class="fas fa-microphone"></i>
+        </button>
+        <button type="button" class="os-tool-button" data-current-folder-action="record-video"
+                title="Grabar video en esta carpeta" aria-label="Grabar video en esta carpeta">
+          <i class="fas fa-video"></i>
         </button>
 
         <button type="button"
@@ -965,6 +975,8 @@ Escribe help o usa uno de los botones disponibles.</pre>
     <button type="button" data-folder-action="create-empty-file"><i class="fas fa-file-circle-plus"></i>Nuevo archivo de texto</button>
     <button type="button" data-folder-action="create-document"><i class="fas fa-paste"></i>Crear desde texto pegado</button>
     <button type="button" data-folder-action="create-folder"><i class="fas fa-folder-plus"></i>Nueva subcarpeta</button>
+    <button type="button" data-folder-action="record-audio"><i class="fas fa-microphone"></i>Grabar nota de voz</button>
+    <button type="button" data-folder-action="record-video"><i class="fas fa-video"></i>Grabar video</button>
     <div class="os-context-divider" data-folder-mutating-divider></div>
     <button type="button" data-folder-action="move" data-folder-mutating><i class="fas fa-arrows-alt"></i>Mover</button>
     <button type="button" data-folder-action="rename" data-folder-mutating><i class="fas fa-pen"></i>Editar nombre</button>
@@ -2300,6 +2312,7 @@ Escribe help o usa uno de los botones disponibles.</pre>
   <?php endif; ?>
   <script src="js/upload-destination.js?v=<?= (int)filemtime(__DIR__ . '/js/upload-destination.js') ?>"></script>
   <script src="js/upload-center.js?v=<?= (int)filemtime(__DIR__ . '/js/upload-center.js') ?>"></script>
+  <script src="js/so-folder-recorder.js?v=<?= (int)filemtime(__DIR__ . '/js/so-folder-recorder.js') ?>"></script>
   <script data-drive-updater src="js/arcadecloud-updater.js?v=<?= (int)filemtime(__DIR__ . '/js/arcadecloud-updater.js') ?>"></script>
   <script src="js/compute-node-idle.js?v=<?= (int)filemtime(__DIR__ . '/js/compute-node-idle.js') ?>"></script>
   <?php if ($isSuperAdmin): ?>

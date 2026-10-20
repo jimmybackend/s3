@@ -16,7 +16,7 @@ final class ImageRotationController extends AbstractJsonController
             $this->requireDriveCsrf();
             $key = $this->requireNonEmpty($this->request->postString('key'), 'Falta el archivo.');
             $degrees = (int)$this->request->postString('degrees');
-            if (!in_array($degrees, [-90, 90], true)) {
+            if (!in_array($degrees, [-90, 90, 180], true)) {
                 throw new RuntimeException('Rotación no permitida.');
             }
             $file = $this->app->fileRecordLocator()->requireReadableByKey($userId, $key);

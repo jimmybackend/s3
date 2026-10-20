@@ -1,0 +1,34 @@
+name: ArcadeCloud mobile capture contract
+on:
+  push:
+    paths:
+      - 'drive/mobile_capture.php'
+      - 'drive/mobile-capture-upload.php'
+      - 'drive/css/mobile-capture.css'
+      - 'drive/js/mobile-capture.js'
+      - 'drive/tests/mobile_capture_contract_smoke.php'
+      - '.github/workflows/mobile-capture.yml'
+  pull_request:
+    paths:
+      - 'drive/mobile_capture.php'
+      - 'drive/mobile-capture-upload.php'
+      - 'drive/css/mobile-capture.css'
+      - 'drive/js/mobile-capture.js'
+      - 'drive/tests/mobile_capture_contract_smoke.php'
+      - '.github/workflows/mobile-capture.yml'
+permissions:
+  contents: read
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: PHP syntax
+        run: |
+          php -l drive/mobile_capture.php
+          php -l drive/mobile-capture-upload.php
+          php -l drive/tests/mobile_capture_contract_smoke.php
+      - name: JavaScript syntax
+        run: node --check drive/js/mobile-capture.js
+      - name: Runtime contract
+        run: php drive/tests/mobile_capture_contract_smoke.php

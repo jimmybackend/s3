@@ -1,5 +1,18 @@
 # ArcadeCloud Android (APK de pruebas)
 
+## Captura móvil 0.2.0 (funciones por autorización)
+- La app muestra un menú superior «⋮» con «Notas de voz y fotos».
+- Al iniciar grabación se solicita permiso del micrófono; al abrir cámara se solicita permiso de cámara. Se respetan rechazos.
+- La vista `drive/mobile_capture.php` deja escoger una carpeta existente del usuario y requiere pulsar «Guardar» para subir a S3.
+- Formatos admitidos: voz WebM/M4A/Ogg y foto JPG/PNG/WebP, máximo 25 MB por archivo; el servidor valida sesión, token CSRF, tamaño, tipo real y propiedad de la carpeta.
+- Se mantiene la sesión web solo durante la vigencia permitida por PHP. La app persiste las cookies gestionadas por Android, sin contraseñas locales ni tokens eternos.
+- El selector de archivos Android no necesita permiso amplio de almacenamiento; no se recopilan contactos indiscriminadamente.
+- **No se incluye** la captura automática o periódica de ubicación: se requiere implementar consentimiento claro, revocable y una política de retención de coordenadas.
+- Para el acceso a cámara y micrófono en páginas externas se deniegan solicitudes; solo orígenes Drive/FastDrive aprobados y únicamente recursos audio/video admitidos.
+- Pendiente: validar cámara, micrófono, tamaño de imágenes, subida en segundo plano y sesiones en teléfonos reales. El APK 0.1.0 existente en `releases/` **no contiene** esta función; es necesario compilar e instalar el nuevo APK 0.2.0 desde Actions.
+
+
+
 ## APK de prueba almacenado en GitHub
 
 El instalador compilado se conserva en

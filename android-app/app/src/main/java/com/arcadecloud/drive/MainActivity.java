@@ -1,5 +1,7 @@
 package com.arcadecloud.drive;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
@@ -14,6 +16,7 @@ import android.provider.MediaStore;
 import android.view.Gravity;
 import android.view.View;
 import android.webkit.CookieManager;
+import android.webkit.PermissionRequest;
 import android.webkit.SslErrorHandler;
 import android.net.http.SslError;
 import android.webkit.URLUtil;
@@ -25,6 +28,8 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.webkit.WebSettings;
 import android.widget.FrameLayout;
+import android.widget.Button;
+import android.widget.PopupMenu;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -44,6 +49,8 @@ import java.util.concurrent.Executors;
  */
 public final class MainActivity extends Activity {
     private static final int FILE_PICKER_REQUEST = 101;
+    private static final int MEDIA_PERMISSION_REQUEST = 102;
+    private PermissionRequest pendingMediaPermission;
     private final ExecutorService downloads = Executors.newSingleThreadExecutor();
     private WebView webView;
     private ProgressBar progress;
@@ -63,6 +70,32 @@ public final class MainActivity extends Activity {
         progress.setMax(100);
         FrameLayout.LayoutParams progressParams = new FrameLayout.LayoutParams(-1, dp(3), Gravity.TOP);
         root.addView(progress, progressParams);
+
+        Button tools = new Button(this);
+        tools.setText("⋮");
+        tools.setContentDescription("Herramientas de ArcadeCloud: voz y fotografías");
+        tools.setAllCaps(false);
+        tools.setTextSize(22);
+        tools.setAlpha(0.88f);
+        FrameLayout.LayoutParams toolsParams = new FrameLayout.LayoutParams(dp(52), dp(56), Gravity.TOP | Gravity.RIGHT);
+        root.addView(tools, toolsParams);
+        tools.setOnClickListener(v -> {
+            PopupMenu menu = new PopupMenu(this, tools);
+            menu.getMenu().add(0, 1, 0, "Notas de voz y fotos");
+            menu.getMenu().add(0, 2, 1, "Volver al escritorio");
+            menu.setOnMenuItemClickListener(item -> {
+                if (item.getItemId() == 1) {
+                    webView.loadUrl("https://drive.esforzados.com/mobile_capture.php");
+                    return true;
+                }
+                if (item.getItemId() == 2) {
+                    webView.loadUrl(UrlPolicy.START_URL);
+                    return true;
+                }
+                return false;
+            });
+            menu.show();
+        });
 
         connectionError = new TextView(this);
         connectionError.setText(R.string.offline_message);
@@ -125,6 +158,40 @@ public final class MainActivity extends Activity {
             }
         });
         webView.setWebChromeClient(new WebChromeClient() {
+            @Override public void onPermissionRequest(PermissionRequest request) {
+                runOnUiThread(() -> {
+                    if (!UrlPolicy.isFirstParty(request.getOrigin().toString())) {
+                        request.deny();
+                        return;
+                    }
+                    if (pendingMediaPermission != null) {
+                        request.deny();
+                        return;
+                    }
+                    java.util.List<String> required = new java.util.ArrayList<>();
+                    for (String resource : request.getResources()) {
+                        if (PermissionRequest.RESOURCE_AUDIO_CAPTURE.equals(resource)
+                                && checkSelfPermission(Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+                            required.add(Manifest.permission.RECORD_AUDIO);
+                        }
+                        if (PermissionRequest.RESOURCE_VIDEO_CAPTURE.equals(resource)
+                                && checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+                            required.add(Manifest.permission.CAMERA);
+                        }
+                    }
+                    if (required.isEmpty()) {
+                        grantKnownMedia(request);
+                    } else {
+                        pendingMediaPermission = request;
+                        requestPermissions(required.toArray(new String[0]), MEDIA_PERMISSION_REQUEST);
+                    }
+                });
+            }
+
+            @Override public void onPermissionRequestCanceled(PermissionRequest request) {
+                if (pendingMediaPermission == request) pendingMediaPermission = null;
+            }
+
             @Override public void onProgressChanged(WebView view, int newProgress) {
                 progress.setProgress(newProgress);
                 progress.setVisibility(newProgress == 100 ? View.GONE : View.VISIBLE);
@@ -178,6 +245,41 @@ public final class MainActivity extends Activity {
         callback.onReceiveValue(WebChromeClient.FileChooserParams.parseResult(resultCode, data));
     }
 
+    private void grantKnownMedia(PermissionRequest request) {
+        if (!UrlPolicy.isFirstParty(request.getOrigin().toString())) {
+            request.deny();
+            return;
+        }
+        java.util.List<String> approved = new java.util.ArrayList<>();
+        for (String resource : request.getResources()) {
+            if (PermissionRequest.RESOURCE_AUDIO_CAPTURE.equals(resource)
+                    && checkSelfPermission(Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
+                approved.add(resource);
+            }
+            if (PermissionRequest.RESOURCE_VIDEO_CAPTURE.equals(resource)
+                    && checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+                approved.add(resource);
+            }
+        }
+        if (approved.isEmpty()) request.deny();
+        else request.grant(approved.toArray(new String[0]));
+    }
+
+    @Override public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == MEDIA_PERMISSION_REQUEST && pendingMediaPermission != null) {
+            PermissionRequest request = pendingMediaPermission;
+            pendingMediaPermission = null;
+            grantKnownMedia(request);
+        }
+    }
+
+    @Override protected void onPause() {
+        // Persist existing first-party cookies without inventing a long-lived login token.
+        CookieManager.getInstance().flush();
+        super.onPause();
+    }
+
     @Override public void onBackPressed() {
         if (webView != null && webView.canGoBack()) webView.goBack();
         else super.onBackPressed();
@@ -192,6 +294,10 @@ public final class MainActivity extends Activity {
         if (uploadCallback != null) {
             uploadCallback.onReceiveValue(null);
             uploadCallback = null;
+        }
+        if (pendingMediaPermission != null) {
+            pendingMediaPermission.deny();
+            pendingMediaPermission = null;
         }
         downloads.shutdownNow();
         if (webView != null) {

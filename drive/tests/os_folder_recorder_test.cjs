@@ -214,3 +214,41 @@ test('Android capture fallback is wired without broad file or camera access', ()
   assert.doesNotMatch(native, /addJavascriptInterface/);
   assert.doesNotMatch(native, /mobile_capture\.php/);
 });
+
+
+test('Android WebView rejected muted preview playback does not prevent video recording', async () => {
+  let started = 0;
+  class WorkingRecorder {
+    static isTypeSupported(type) { return type === 'video/webm'; }
+    constructor(stream, opts) { this.mimeType = opts.mimeType; this.state = 'inactive'; }
+    addEventListener() {}
+    start() { started += 1; this.state = 'recording'; }
+  }
+  const nodes = new Map();
+  function node() {
+    return { disabled:false, hidden:false, srcObject:null, muted:true,
+      controls:false, focus() {}, pause() {}, removeAttribute() {}, src:'',
+      play:() => Promise.reject(Object.assign(new Error('Autoplay denied'), {name:'NotAllowedError'})) };
+  }
+  for (const selector of ['[data-recorder-start]','[data-recorder-stop]','[data-recorder-save]',
+    '[data-recorder-native]','#osFolderRecorderVideo','#osFolderRecorderMessage']) {
+    nodes.set(selector,node());
+  }
+  const dialog={ hidden:false, querySelector: key => nodes.get(key) || node(),querySelectorAll:()=>[] };
+  const recorder = new ArcadeCloudFolderRecorder({
+    isSecureContext: true,
+    navigator: { mediaDevices: { getUserMedia: async () => ({getTracks:()=>[]}) } },
+    MediaRecorder: WorkingRecorder,
+    setInterval: () => 42,
+    clearInterval() {}
+  }, {});
+  recorder.mode='video';
+  recorder.route='Data/Temporal/';
+  recorder.folderName='Temporal';
+  recorder.dialog=dialog;
+  await recorder.start();
+  await Promise.resolve();
+  assert.equal(started, 1);
+  assert.equal(recorder.active, true);
+  assert.equal(nodes.get('[data-recorder-stop]').disabled, false);
+});

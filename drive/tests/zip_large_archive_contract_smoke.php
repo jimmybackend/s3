@@ -12,9 +12,9 @@ $checks = [
     'EC2 does not write extracted ZIP files' => !str_contains($router, 'fopen(') && !str_contains($router, 'sys_get_temp_dir'),
     'Lambda enforces authenticated ownership' => str_contains($lambda, 'requireReadableByKey($userId, $key)'),
     'Lambda executes remote operation' => str_contains($lambda, "'InvocationType' => 'RequestResponse'"),
-    'Lambda controls paginated listing' => str_contains($lambda, "'page' => $page"),
-    'Lambda file download uses remote redirect' => str_contains($lambda, "header('Location: ' . $url, true, 303)"),
-    'Lambda validates signed download destination' => str_contains($lambda, "$expectedBucket . '.s3.amazonaws.com'"),
+    'Lambda controls paginated listing' => str_contains($lambda, "'page' => " . '$page'),
+    'Lambda file download uses remote redirect' => str_contains($lambda, "header('Location: ' . " . '$url' . ", true, 303)"),
+    'Lambda validates signed download destination' => str_contains($lambda, '$expectedBucket' . " . '.s3.amazonaws.com'"),
 ];
 foreach ($checks as $name => $ok) {
     if (!$ok) { fwrite(STDERR, "FAIL: $name\n"); exit(1); }

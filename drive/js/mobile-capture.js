@@ -1,4 +1,5 @@
-(() => {
+class ArcadeCloudMobileCapture {
+  static boot() {
   'use strict';
   const element = id => document.getElementById(id);
   const result = message => { element('result').textContent = message; };
@@ -159,4 +160,6 @@
     if (audioUrl) URL.revokeObjectURL(audioUrl);
     if (photoUrl) URL.revokeObjectURL(photoUrl);
   });
-})();
+  }
+}
+ArcadeCloudMobileCapture.boot();

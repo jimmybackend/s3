@@ -1,5 +1,17 @@
 # ArcadeCloud Android (APK de pruebas)
 
+## Descargar APK actual 0.3.0 desde el repositorio
+
+**[ArcadeCloud Android 0.3.0 (archivo APK)](releases/ArcadeCloud-Android-0.3.0-debug.apk)**
+
+Descarga directa: https://raw.githubusercontent.com/jimmybackend/s3/main/android-app/releases/ArcadeCloud-Android-0.3.0-debug.apk
+
+Archivo de 32,413 bytes, generado por GitHub Actions de `main` después del PR #492.
+Origen: ejecución `39411673515`, artifact `12259099761`.
+SHA-256: `7f6128b854f4d6dddbb7c05b2674f420ebe285fc7b80001526faa9c866f67441`.
+
+Es una versión de prueba firmada en modo depuración, **no** una distribución Play Store. Puede ser necesario desinstalar 0.2.0 antes de instalar 0.3.0 si las firmas debug no coinciden. El backend web debe estar actualizado para mostrar las acciones de grabación en carpetas.
+
 ## Versión 0.3.0 — grabaciones dentro de carpetas
 
 La versión 0.3.0 **elimina el botón flotante ⋮**, que invocaba una página `mobile_capture.php` ausente en algunos despliegues. Las acciones ahora están dentro de `so.php`: en **Mis datos** abre una carpeta y utiliza su barra superior (iconos de micrófono, video o cámara) o el menú de acciones de una carpeta. El toque en espacio vacío ofrece las acciones de la carpeta actual.

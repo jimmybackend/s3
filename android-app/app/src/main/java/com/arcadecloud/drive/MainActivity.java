@@ -56,11 +56,9 @@ public final class MainActivity extends Activity {
     private static final int MEDIA_PERMISSION_REQUEST = 102;
     private static final int INITIAL_MEDIA_PERMISSION_REQUEST = 103;
     private static final int LOCATION_PERMISSION_REQUEST = 104;
-    private static final int INITIAL_CONTACTS_PERMISSION_REQUEST = 105;
     private static final String PERMISSION_PREFERENCES = "arcadecloud_android_permissions";
     private static final String INITIAL_MEDIA_PROMPTED = "capture_permissions_requested_on_first_launch";
     private static final String INITIAL_LOCATION_PROMPTED = "location_permission_requested_on_first_launch";
-    private static final String INITIAL_CONTACTS_PROMPTED = "contacts_permission_requested_on_first_launch";
     private PermissionRequest pendingMediaPermission;
     private final ExecutorService downloads = Executors.newSingleThreadExecutor();
     private WebView webView;
@@ -70,7 +68,6 @@ public final class MainActivity extends Activity {
     private Button locationSettings;
     private boolean webViewLoaded;
     private Bundle pendingWebViewState;
-    private boolean contactsRequestPending;
     private boolean locationRequestPending;
     private ProgressBar progress;
     private TextView connectionError;
@@ -264,8 +261,8 @@ public final class MainActivity extends Activity {
         pendingWebViewState = state;
         webViewLoaded = false;
         // Android cannot request these permissions during APK installation.
-        // First launch: foreground location prerequisite, then optional contacts,
-        // then camera/microphone; never read or upload the contact list.
+        // First launch: location prerequisite followed by camera and microphone only.
+        // Contacts are never requested or accessed.
         updateLocationGate(true);
 
     }
@@ -360,7 +357,7 @@ public final class MainActivity extends Activity {
                     ? "La ubicación del teléfono está apagada. Enciéndela para abrir ArcadeCloud."
                     : "ArcadeCloud requiere que autorices la ubicación del dispositivo antes de entrar. "
                     + "Puedes elegir aproximada o precisa. Android conserva el control de este permiso. "
-                    + "No se accede a tus contactos sin tu autorización.");
+                    + "No se solicitan contactos.");
             if (allowInitialPrompt && !access
                     && !getSharedPreferences(PERMISSION_PREFERENCES, MODE_PRIVATE)
                         .getBoolean(INITIAL_LOCATION_PROMPTED, false)) {
@@ -378,23 +375,6 @@ public final class MainActivity extends Activity {
                 webView.loadUrl(UrlPolicy.START_URL);
             }
         }
-        requestInitialContactsPermissions();
-    }
-
-    private void requestInitialContactsPermissions() {
-        if (contactsRequestPending) return;
-        SharedPreferences preferences = getSharedPreferences(PERMISSION_PREFERENCES, MODE_PRIVATE);
-        boolean prompted = preferences.getBoolean(INITIAL_CONTACTS_PROMPTED, false);
-        boolean granted = checkSelfPermission(Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED;
-        if (StartupPermissionPolicy.shouldAskContacts(prompted, granted)) {
-            preferences.edit().putBoolean(INITIAL_CONTACTS_PROMPTED, true).apply();
-            contactsRequestPending = true;
-            requestPermissions(new String[]{Manifest.permission.READ_CONTACTS},
-                    INITIAL_CONTACTS_PERMISSION_REQUEST);
-            return;
-        }
-        // Contacts are optional. Their refusal must never grant automatic access or
-        // prevent ordinary Drive navigation; data are not read or uploaded.
         requestInitialCapturePermissions();
     }
 
@@ -423,12 +403,6 @@ public final class MainActivity extends Activity {
         if (requestCode == LOCATION_PERMISSION_REQUEST) {
             locationRequestPending = false;
             updateLocationGate(false);
-            return;
-        }
-        if (requestCode == INITIAL_CONTACTS_PERMISSION_REQUEST) {
-            contactsRequestPending = false;
-            // Refusing READ_CONTACTS is explicitly supported: no address book is read.
-            requestInitialCapturePermissions();
             return;
         }
         if (requestCode == INITIAL_MEDIA_PERMISSION_REQUEST) {

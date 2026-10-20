@@ -1,0 +1,17 @@
+.os-folder-recorder[hidden]{display:none!important}
+.os-folder-recorder{position:fixed;inset:0;z-index:99990;display:flex;align-items:center;justify-content:center;padding:12px}
+.os-folder-recorder-backdrop{position:absolute;inset:0;background:rgba(1,12,23,.85)}
+.os-folder-recorder-panel{position:relative;width:min(530px,100%);max-height:calc(100dvh - 24px);overflow-y:auto;border:1px solid var(--os-border,#447182);border-radius:16px;background:var(--os-surface-2,#102f45);color:var(--os-text,#edfaff);box-shadow:0 20px 55px rgba(0,0,0,.7);padding:16px}
+.os-folder-recorder-panel header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px}
+.os-folder-recorder-panel header strong{display:block;font-size:1.2rem}
+.os-folder-recorder-panel header small{display:block;max-width:440px;overflow-wrap:anywhere;color:var(--os-soft,#c9e2ed);margin-top:5px}
+.os-folder-recorder-panel button{font:inherit;padding:10px 13px;border-radius:10px;border:1px solid var(--os-border,#487685);background:var(--os-surface-subtle,#214e61);color:var(--os-text,#fff);min-height:45px;cursor:pointer}
+.os-folder-recorder-panel button:disabled{opacity:.4;cursor:default}
+.os-folder-recorder-panel [data-recorder-save]{background:#14767b;border-color:#36b4a6;color:white;font-weight:700}
+.os-folder-recorder-panel video,.os-folder-recorder-panel audio{display:block;width:100%;max-height:43dvh;background:#071724;border-radius:9px;margin:12px 0}
+.os-folder-recorder-panel video[hidden],.os-folder-recorder-panel audio[hidden]{display:none}
+.os-folder-recorder-controls{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.os-folder-recorder-panel p{padding:9px 10px;border-radius:8px;background:rgba(65,171,196,.13);margin:0}
+.os-folder-recorder-panel p[data-error=true]{background:rgba(220,58,58,.2)}
+.os-folder-recorder-panel small{line-height:1.4}
+@media(max-width:500px){.os-folder-recorder{align-items:flex-end;padding:0}.os-folder-recorder-panel{width:100%;max-height:calc(100dvh - 35px);border-radius:16px 16px 0 0;padding-bottom:max(19px,env(safe-area-inset-bottom))}.os-folder-recorder-controls button{flex:1 0 40%}}

@@ -1,5 +1,21 @@
 # ArcadeCloud Android (APK de pruebas)
 
+## Android 0.5.0 — ubicación requerida y contactos opcionales
+
+Esta edición solicita los permisos **al abrir la APK por primera vez**, ya que Android no admite requerirlos durante la instalación. Antes de mostrar `so.php`, el cliente comprueba:
+
+- Que el usuario concedió ubicación **aproximada o precisa**; se acepta cualquiera de las dos.
+- Que los servicios de ubicación estén encendidos en Android.
+
+Si falta uno, la app muestra su pantalla de autorización, con opciones para pedir el permiso o ir a los Ajustes. El WebView no navega ni restaura sesión mientras no se cumplan ambos requisitos. El usuario puede **instalar** la APK pero **no acceder al escritorio** hasta autorizar ubicación. La decisión de aceptar o denegar la toma el usuario en el sistema operativo.
+
+Una vez autorizada la ubicación, Android solicita el permiso de **contactos** una sola vez en esa instalación. Es opcional: rechazarlo permite continuar con Drive, porque la aplicación **no lee, transfiere ni sincroniza contactos todavía**. Después se solicitan cámara y micrófono como en 0.4.0; estas dos autorizaciones siguen siendo revocables y no se requieren para navegar.
+
+**Alcance de privacidad:** este cambio verifica ubicación localmente como condición de acceso; **no obtiene ni almacena coordenadas GPS en la base de datos, ni actualiza aún `Users.os_preferences`**, y no recopila contactos ni realiza seguimiento en segundo plano. El registro de última ubicación, si se desea, debe implementarse separadamente con aviso transparente, autenticación, retención definida y protección contra accesos no autorizados. No se pidió ni se habilitó `ACCESS_BACKGROUND_LOCATION`.
+
+La experiencia web `so.php` es la misma; no aparece el botón Android flotante de versiones viejas. El binario 0.4.0 anterior no incluye la pantalla de ubicación. La versión 0.5.0 se compila y distribuye desde GitHub Actions; **una modificación del código en Git no actualiza por sí sola una APK previamente instalada**.
+
+
 ## Android 0.4.0 — permisos al primer inicio
 
 La versión 0.4.0 mantiene eliminada la superposición flotante **⋮**. Si aparece en pantalla, se está ejecutando una APK antigua (0.2.0), no la versión actual.

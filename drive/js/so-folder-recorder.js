@@ -90,19 +90,81 @@ class ArcadeCloudFolderRecorder {
     return true;
   }
 
-  chooseFormat() {
-    if (!this.win.MediaRecorder) return null;
+  /**
+   * A Samsung/Android WebView can support MediaRecorder without supporting
+   * a particular WebM codec. Try declared supported types and finally let the
+   * browser select its default encoder instead of treating this as a denial.
+   */
+  createRecorder(stream) {
+    const Recorder = this.win.MediaRecorder;
+    if (typeof Recorder !== 'function') {
+      const error = new Error('La versión de Android WebView no incluye MediaRecorder.');
+      error.name = 'RecorderUnavailableError';
+      throw error;
+    }
     const candidates = this.mode === 'audio'
-      ? ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4']
-      : ['video/webm;codecs=vp8,opus', 'video/webm', 'video/mp4'];
-    return candidates.find(type => this.win.MediaRecorder.isTypeSupported(type)) || '';
+      ? ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4', 'audio/ogg;codecs=opus', 'audio/ogg']
+      : ['video/webm;codecs=vp8,opus', 'video/webm;codecs=vp9,opus',
+         'video/webm', 'video/mp4'];
+    const supports = typeof Recorder.isTypeSupported === 'function'
+      ? type => {
+          try { return Recorder.isTypeSupported(type); }
+          catch (error) { return false; }
+        }
+      : () => true;
+    let lastError = null;
+    for (const mimeType of candidates) {
+      if (!supports(mimeType)) continue;
+      try { return new Recorder(stream, { mimeType }); }
+      catch (error) { lastError = error; }
+    }
+    try { return new Recorder(stream); }
+    catch (error) {
+      const cause = error?.name || lastError?.name || 'NotSupportedError';
+      const unavailable = new Error('No se encontró un codificador de audio/video compatible con Android WebView.');
+      unavailable.name = cause === 'SecurityError' ? cause : 'NotSupportedError';
+      throw unavailable;
+    }
+  }
+
+  describeCaptureError(error) {
+    switch (error?.name) {
+      case 'NotAllowedError':
+      case 'PermissionDeniedError':
+      case 'SecurityError':
+        return 'Android o el navegador bloqueó el acceso a cámara/micrófono. Revisa los permisos de ArcadeCloud y el acceso del sitio en WebView.';
+      case 'NotFoundError':
+      case 'DevicesNotFoundError':
+        return 'No se encontró la cámara o el micrófono solicitado. Comprueba que esté disponible.';
+      case 'NotReadableError':
+      case 'TrackStartError':
+        return 'La cámara o el micrófono está ocupado por otra aplicación, o Android no permite utilizarlo ahora.';
+      case 'OverconstrainedError':
+      case 'ConstraintNotSatisfiedError':
+        return 'La cámara no admite la configuración solicitada. Prueba de nuevo.';
+      case 'NotSupportedError':
+      case 'RecorderUnavailableError':
+      case 'TypeError':
+        return 'Android WebView no admite este formato o la API de grabación. Actualiza Android System WebView/Chrome o usa un navegador compatible.';
+      case 'AbortError':
+        return 'Android interrumpió el acceso al dispositivo. Cierra otras aplicaciones con cámara/micrófono y vuelve a intentarlo.';
+      default:
+        return 'No se pudo iniciar la grabación (' + String(error?.name || 'error desconocido').slice(0, 50) + '). Revisa el estado de cámara/micrófono.';
+    }
   }
 
   async start() {
     if (this.active || this.dialog.hidden || !this.route) return;
-    if (!this.win.isSecureContext || !this.win.navigator.mediaDevices?.getUserMedia ||
-        (this.mode !== 'photo' && typeof this.win.MediaRecorder !== 'function')) {
-      this.message('Este navegador no permite grabar. Revisa HTTPS y los permisos.', true);
+    if (!this.win.isSecureContext) {
+      this.message('La cámara y el micrófono requieren HTTPS y un contexto seguro.', true);
+      return;
+    }
+    if (!this.win.navigator.mediaDevices?.getUserMedia) {
+      this.message('Esta versión de Android WebView no ofrece acceso a la cámara/micrófono desde el navegador.', true);
+      return;
+    }
+    if (this.mode !== 'photo' && typeof this.win.MediaRecorder !== 'function') {
+      this.message(this.describeCaptureError({ name: 'RecorderUnavailableError' }), true);
       return;
     }
     // Prevent double taps while the Android permission prompt is visible.
@@ -114,7 +176,20 @@ class ArcadeCloudFolderRecorder {
       const options = this.mode === 'audio'
         ? { audio: true, video: false }
         : { audio: this.mode === 'video', video: { facingMode: { ideal: 'environment' } } };
-      this.stream = await this.win.navigator.mediaDevices.getUserMedia(options);
+      try {
+        this.stream = await this.win.navigator.mediaDevices.getUserMedia(options);
+      } catch (error) {
+        // Some rear-camera constraints are unsupported despite valid permission.
+        // Retry once with the default camera, but NEVER retry a denied permission.
+        if (this.mode !== 'audio' &&
+            ['NotFoundError', 'OverconstrainedError', 'ConstraintNotSatisfiedError'].includes(error?.name)) {
+          this.stream = await this.win.navigator.mediaDevices.getUserMedia({
+            video: true, audio: this.mode === 'video'
+          });
+        } else {
+          throw error;
+        }
+      }
       if (this.dialog.hidden || this.closing) {
         this.releaseTracks();
         this.active = false;
@@ -131,9 +206,7 @@ class ArcadeCloudFolderRecorder {
         this.message('Cámara lista. Pulsa Tomar foto.');
         return;
       }
-      const mime = this.chooseFormat();
-      if (!mime) throw new Error('MediaRecorder no admite un formato de grabación compatible.');
-      this.recorder = new this.win.MediaRecorder(this.stream, { mimeType: mime });
+      this.recorder = this.createRecorder(this.stream);
       this.chunks = [];
       this.chunkBytes = 0;
       this.startedAt = Date.now();
@@ -199,7 +272,7 @@ class ArcadeCloudFolderRecorder {
       this.active = false;
       this.dialog.querySelector('[data-recorder-start]').disabled = false;
       this.dialog.querySelector('[data-recorder-stop]').disabled = true;
-      this.message('No se pudo iniciar la grabación. Autoriza los permisos de cámara/micrófono o revisa su disponibilidad.', true);
+      this.message(this.describeCaptureError(error), true);
     }
   }
 
@@ -247,7 +320,9 @@ class ArcadeCloudFolderRecorder {
     }
     const blob = this.mediaBlob;
     const mime = blob.type.split(';')[0].toLowerCase();
-    const extension = this.mode === 'photo' ? 'jpg' : mime.includes('mp4') ? 'mp4' : 'webm';
+    const extension = this.mode === 'photo' ? 'jpg'
+      : mime.includes('mp4') ? (this.mode === 'audio' ? 'm4a' : 'mp4')
+      : mime.includes('ogg') ? 'ogg' : 'webm';
     const name = (this.mode === 'audio' ? 'Nota_voz_' : this.mode === 'video' ? 'Video_' : 'Foto_') +
       new Date().toISOString().replace(/[:.]/g, '-') + '.' + extension;
     const file = new File([blob], name, { type: mime || (this.mode === 'audio' ? 'audio/webm' : this.mode === 'video' ? 'video/webm' : 'image/jpeg') });

@@ -1,0 +1,39 @@
+name: One-time verified ArcadeCloud Android 0.6.0 APK import
+on:
+  push:
+    branches:
+      - build/android-060-debug-apk-20261020
+    paths:
+      - .github/workflows/import-android-060.yml
+permissions:
+  contents: write
+  actions: read
+jobs:
+  import:
+    if: github.repository == 'jimmybackend/s3' && github.ref == 'refs/heads/build/android-060-debug-apk-20261020'
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          run-id: 39419721040
+          artifact-ids: 12263317719
+          github-token: ${{ github.token }}
+          path: /tmp/arcadecloud-android-060
+      - name: Verify artifact and publish APK only to this branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git branch --show-current)" = "build/android-060-debug-apk-20261020"
+          mapfile -t APK < <(find /tmp/arcadecloud-android-060 -type f -name 'app-debug.apk')
+          test "${#APK[@]}" -eq 1
+          printf '%s  %s\n' '4a5c07e2c91bb43e09ab835b870e31a1cf2ff07ddffc4fed11442f94532ca2e2' "${APK[0]}" | sha256sum -c -
+          mkdir -p android-app/releases
+          cp "${APK[0]}" android-app/releases/ArcadeCloud-Android-0.6.0-debug.apk
+          file android-app/releases/ArcadeCloud-Android-0.6.0-debug.apk
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -f android-app/releases/ArcadeCloud-Android-0.6.0-debug.apk
+          git commit -m 'build(android): publish verified APK 0.6.0 (no contacts)'
+          git push origin HEAD:build/android-060-debug-apk-20261020

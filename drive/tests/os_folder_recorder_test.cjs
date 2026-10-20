@@ -167,7 +167,8 @@ test('native Android recorder selection saves original recording in frozen S3 fo
   };
   const selectors = new Map();
   const node = () => ({ disabled: false, hidden: true, src: '', srcObject: null,
-    controls: false, muted: true, textContent: '' });
+    controls: false, muted: true, textContent: '', dataset: {},
+    removeAttribute() {}, pause() {} });
   for (const selector of ['#osFolderRecorderAudio', '[data-recorder-save]',
     '#osFolderRecorderMessage', '#osFolderRecorderVideo', '#osFolderRecorderPhoto']) {
     selectors.set(selector, node());
@@ -226,7 +227,7 @@ test('Android WebView rejected muted preview playback does not prevent video rec
   }
   const nodes = new Map();
   function node() {
-    return { disabled:false, hidden:false, srcObject:null, muted:true,
+    return { disabled:false, hidden:false, srcObject:null, muted:true, dataset: {},
       controls:false, focus() {}, pause() {}, removeAttribute() {}, src:'',
       play:() => Promise.reject(Object.assign(new Error('Autoplay denied'), {name:'NotAllowedError'})) };
   }

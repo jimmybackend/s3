@@ -154,7 +154,7 @@ class ArcadeCloudFolderRecorder {
       case 'NotAllowedError':
       case 'PermissionDeniedError':
       case 'SecurityError':
-        return 'Android o el navegador bloqueó el acceso a cámara/micrófono. Revisa los permisos de ArcadeCloud y el acceso del sitio en WebView.';
+        return 'Android o WebView bloqueó cámara/micrófono aunque la app pueda tener permiso. Usa la grabadora del teléfono o revisa ajustes de privacidad.';
       case 'NotFoundError':
       case 'DevicesNotFoundError':
         return 'No se encontró la cámara o el micrófono solicitado. Comprueba que esté disponible.';
@@ -167,7 +167,7 @@ class ArcadeCloudFolderRecorder {
       case 'NotSupportedError':
       case 'RecorderUnavailableError':
       case 'TypeError':
-        return 'Android WebView no admite este formato o la API de grabación. Actualiza Android System WebView/Chrome o usa un navegador compatible.';
+        return 'Android WebView no admite este formato o la API de grabación. Prueba «Usar grabadora del teléfono» o actualiza WebView.';
       case 'AbortError':
         return 'Android interrumpió el acceso al dispositivo. Cierra otras aplicaciones con cámara/micrófono y vuelve a intentarlo.';
       default:
@@ -225,7 +225,12 @@ class ArcadeCloudFolderRecorder {
         camera.hidden = false;
         camera.muted = true;
         camera.controls = false;
-        await camera.play();
+        // WebView can reject autoplay even for muted camera previews.
+        // Do not report that as a CAMERA permission denial.
+        const playback = camera.play();
+        if (playback && typeof playback.catch === 'function') {
+          playback.catch(() => this.message('Cámara activa; toca la vista previa si no aparece la imagen.', true));
+        }
         this.dialog.querySelector('[data-recorder-snap]').disabled = false;
         this.message('Cámara lista. Pulsa Tomar foto.');
         return;
@@ -272,11 +277,16 @@ class ArcadeCloudFolderRecorder {
         this.dialog.querySelector('[data-recorder-native]').disabled = false;
         this.message('Grabación lista. Reprodúcela o guárdala en ' + this.folderName + '.');
       }, { once: true });
-      currentRecorder.addEventListener('error', () => {
+      currentRecorder.addEventListener('error', event => {
         this.releaseTracks();
+        if (this.timer) this.win.clearInterval(this.timer);
+        this.timer = null;
         this.active = false;
-        this.message('Falló la grabación. Intenta nuevamente.', true);
         this.dialog.querySelector('[data-recorder-start]').disabled = false;
+        this.dialog.querySelector('[data-recorder-stop]').disabled = true;
+        this.dialog.querySelector('[data-recorder-native]').disabled = false;
+        this.message(this.describeCaptureError(event?.error || { name: 'NotSupportedError' }) +
+          ' También puedes usar la grabadora del teléfono.', true);
       });
       if (this.mode === 'video') {
         const video = this.dialog.querySelector('#osFolderRecorderVideo');
@@ -284,7 +294,15 @@ class ArcadeCloudFolderRecorder {
         video.muted = true;
         video.controls = false;
         video.hidden = false;
-        await video.play();
+        // Preview playback is independent of recording permission/encoding.
+        // Some Android WebViews deny autoplay after the async getUserMedia prompt.
+        const playback = video.play();
+        if (playback && typeof playback.catch === 'function') {
+          playback.catch(() => {
+            if (!this.dialog.hidden && this.active)
+              this.message('Grabando: la vista previa puede requerir un toque para reproducirse.');
+          });
+        }
       }
       currentRecorder.start(1000);
       this.dialog.querySelector('[data-recorder-stop]').disabled = false;

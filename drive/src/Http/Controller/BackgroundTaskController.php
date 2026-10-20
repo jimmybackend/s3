@@ -183,9 +183,9 @@ final class BackgroundTaskController extends AbstractJsonController
                 ? max(0, min(100, (int)$job['progress']))
                 : null;
             $actions = [];
-            if ($status === 'failed' && (string)($job['upload_mode'] ?? '') === 'chunked') {
-                // La recuperación necesita que el usuario vuelva a seleccionar el archivo local.
-                $actions[] = $this->uiAction('retry_upload', 'Reanudar subida', 'primary', false);
+            if ($status === 'failed' && in_array((string)($job['upload_mode'] ?? ''), ['chunked', 'local_put'], true)) {
+                // La recuperación de subidas locales depende del archivo disponible en el navegador.
+                $actions[] = $this->uiAction('retry_upload', 'Volver a poner en cola', 'primary', false);
             }
             if (in_array($status, ['completed','failed','cancelled'], true)) {
                 $actions[] = $this->uiAction('delete', 'Eliminar de Tareas', 'muted', true);

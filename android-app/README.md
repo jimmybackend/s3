@@ -1,5 +1,20 @@
 # ArcadeCloud Android (APK de pruebas)
 
+## APK de prueba almacenado en GitHub
+
+El instalador compilado se conserva en
+[`android-app/releases/ArcadeCloud-Android-0.1.0-debug.apk`](releases/ArcadeCloud-Android-0.1.0-debug.apk).
+
+**Descarga directa desde main** (usar "Download raw file"):
+https://github.com/jimmybackend/s3/raw/refs/heads/main/android-app/releases/ArcadeCloud-Android-0.1.0-debug.apk
+
+Procedencia: artefacto GitHub Actions `arcadecloud-android-debug-apk`,
+ejecución `39378713344`, compilación del 20 de octubre de 2026.
+SHA-256: `9e3f0ed033fabd6360cc604a3176296bae87120cd0b4388acb97697f568a7b5b`.
+
+Este APK usa una **firma de depuración**, sirve para pruebas y **no se debe publicar como release definitivo**. El código sigue siendo la fuente de verdad. Para nuevas versiones, construir el APK con CI y verificar su SHA-256 antes de sustituir el binario; no introducir credenciales ni claves privadas al repositorio.
+
+
 Proyecto Android nativo de cliente ligero: HTTPS WebView sobre el ArcadeCloud existente, iniciado en https://drive.esforzados.com/so.php. No duplica backend PHP, MySQL, AWS S3 o FederationCloud y no contiene claves ni credenciales de AWS.
 
 Estado: VERSION 0.1, PROTOTIPO. No es una aplicación móvil validada en dispositivos reales ni una publicación en Google Play.

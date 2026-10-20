@@ -2165,6 +2165,7 @@ Escribe help o usa uno de los botones disponibles.</pre>
     <button type="button" data-app-open="explorer"><i class="fas fa-folder-open"></i> Mis datos</button>
     <button type="button" data-window-open="searchWindow" data-open-search><i class="fas fa-magnifying-glass"></i> Buscar</button>
     <button type="button" data-window-open="appsWindow"><i class="fas fa-shapes"></i> Aplicaciones</button>
+    <button type="button" data-window-open="settingsWindow"><i class="fas fa-gear"></i> Configuración</button>
     <button type="button" data-window-open="linksWindow"><i class="fas fa-link"></i> Enlaces</button>
     <?php if ($isSuperAdmin): ?>
     <a href="s3.php"><i class="fas fa-hard-drive"></i> Drive Clásico</a>

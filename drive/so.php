@@ -378,6 +378,10 @@ if ($isDrive3dNativeActions) ob_start();
                 title="Grabar video en esta carpeta" aria-label="Grabar video en esta carpeta">
           <i class="fas fa-video"></i>
         </button>
+        <button type="button" class="os-tool-button" data-current-folder-action="record-photo"
+                title="Tomar foto en esta carpeta" aria-label="Tomar foto en esta carpeta">
+          <i class="fas fa-camera"></i>
+        </button>
 
         <button type="button"
                 class="os-tool-button"
@@ -977,6 +981,7 @@ Escribe help o usa uno de los botones disponibles.</pre>
     <button type="button" data-folder-action="create-folder"><i class="fas fa-folder-plus"></i>Nueva subcarpeta</button>
     <button type="button" data-folder-action="record-audio"><i class="fas fa-microphone"></i>Grabar nota de voz</button>
     <button type="button" data-folder-action="record-video"><i class="fas fa-video"></i>Grabar video</button>
+    <button type="button" data-folder-action="record-photo"><i class="fas fa-camera"></i>Tomar fotografía</button>
     <div class="os-context-divider" data-folder-mutating-divider></div>
     <button type="button" data-folder-action="move" data-folder-mutating><i class="fas fa-arrows-alt"></i>Mover</button>
     <button type="button" data-folder-action="rename" data-folder-mutating><i class="fas fa-pen"></i>Editar nombre</button>
@@ -2165,13 +2170,11 @@ Escribe help o usa uno de los botones disponibles.</pre>
     <button type="button" data-app-open="explorer"><i class="fas fa-folder-open"></i> Mis datos</button>
     <button type="button" data-window-open="searchWindow" data-open-search><i class="fas fa-magnifying-glass"></i> Buscar</button>
     <button type="button" data-window-open="appsWindow"><i class="fas fa-shapes"></i> Aplicaciones</button>
-    <button type="button" data-window-open="settingsWindow"><i class="fas fa-gear"></i> Configuración</button>
     <button type="button" data-window-open="linksWindow"><i class="fas fa-link"></i> Enlaces</button>
     <?php if ($isSuperAdmin): ?>
     <a href="s3.php"><i class="fas fa-hard-drive"></i> Drive Clásico</a>
     <?php endif; ?>
     <a href="dataword3d.php"><i class="fas fa-cubes"></i> Drive 3D</a>
-    <button type="button" data-os-reload><i class="fas fa-rotate"></i> Actualizar escritorio</button>
     <button type="button" data-os-about data-toggle="modal" data-target="#modalAcercaArcadeCloud"><i class="fas fa-circle-info"></i> Acerca de</button>
     <a href="logout.php" class="is-danger"><i class="fas fa-right-from-bracket"></i> Cerrar sesión</a>
   </div>

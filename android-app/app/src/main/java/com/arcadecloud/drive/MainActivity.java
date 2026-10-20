@@ -191,8 +191,11 @@ public final class MainActivity extends Activity {
                         return;
                     }
                     if (pendingMediaPermission != null) {
-                        request.deny();
-                        return;
+                        // A previous WebView request may still be waiting for
+                        // Android's runtime dialog. Never deny the new request
+                        // silently: cancel the stale one first.
+                        pendingMediaPermission.deny();
+                        pendingMediaPermission = null;
                     }
                     java.util.List<String> required = new java.util.ArrayList<>();
                     for (String resource : request.getResources()) {
@@ -215,7 +218,9 @@ public final class MainActivity extends Activity {
             }
 
             @Override public void onPermissionRequestCanceled(PermissionRequest request) {
-                if (pendingMediaPermission == request) pendingMediaPermission = null;
+                runOnUiThread(() -> {
+                    if (pendingMediaPermission == request) pendingMediaPermission = null;
+                });
             }
 
             @Override public void onProgressChanged(WebView view, int newProgress) {
@@ -441,6 +446,9 @@ public final class MainActivity extends Activity {
                 approved.add(resource);
             }
         }
+        // WebView requires a separate origin-specific grant even when Android
+        // Settings already reports camera and microphone as permitted.
+        // Grant only capture resources explicitly requested by our HTTPS origin.
         if (approved.isEmpty()) request.deny();
         else request.grant(approved.toArray(new String[0]));
     }

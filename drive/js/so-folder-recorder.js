@@ -96,6 +96,8 @@ class ArcadeCloudFolderRecorder {
     this.dialog.hidden = false;
     const fallback = this.dialog.querySelector('[data-recorder-native]');
     const nativeInput = this.dialog.querySelector('[data-recorder-native-input]');
+    // Always expose Android's native capture fallback when the embedded
+    // browser cannot open a device even though runtime permissions are granted.
     fallback.hidden = mode === 'photo';
     fallback.textContent = mode === 'audio'
       ? 'Usar grabadora del teléfono' : 'Usar cámara del teléfono';
@@ -316,7 +318,18 @@ class ArcadeCloudFolderRecorder {
       this.dialog.querySelector('[data-recorder-start]').disabled = false;
       this.dialog.querySelector('[data-recorder-stop]').disabled = true;
       this.dialog.querySelector('[data-recorder-native]').disabled = false;
-      this.message(this.describeCaptureError(error), true);
+      // Keep the real WebView/Android failure visible instead of a generic
+      // permission warning; granted Android permissions do not imply WebView
+      // capture support, available hardware or a working media encoder.
+      const detail = this.describeCaptureError(error);
+      this.message(detail, true);
+      if (this.win.console && typeof this.win.console.warn === 'function') {
+        this.win.console.warn('[ArcadeCloud folder recorder] capture failed', {
+          mode: this.mode,
+          name: String(error?.name || 'UnknownError'),
+          message: String(error?.message || '').slice(0, 300)
+        });
+      }
     }
   }
 

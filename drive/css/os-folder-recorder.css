@@ -8,8 +8,8 @@
 .os-folder-recorder-panel button{font:inherit;padding:10px 13px;border-radius:10px;border:1px solid var(--os-border,#487685);background:var(--os-surface-subtle,#214e61);color:var(--os-text,#fff);min-height:45px;cursor:pointer}
 .os-folder-recorder-panel button:disabled{opacity:.4;cursor:default}
 .os-folder-recorder-panel [data-recorder-save]{background:#14767b;border-color:#36b4a6;color:white;font-weight:700}
-.os-folder-recorder-panel video,.os-folder-recorder-panel audio{display:block;width:100%;max-height:43dvh;background:#071724;border-radius:9px;margin:12px 0}
-.os-folder-recorder-panel video[hidden],.os-folder-recorder-panel audio[hidden]{display:none}
+.os-folder-recorder-panel video,.os-folder-recorder-panel audio,.os-folder-recorder-panel img{display:block;width:100%;max-height:43dvh;background:#071724;border-radius:9px;margin:12px 0}
+.os-folder-recorder-panel video[hidden],.os-folder-recorder-panel audio[hidden],.os-folder-recorder-panel img[hidden]{display:none}
 .os-folder-recorder-controls{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
 .os-folder-recorder-panel p{padding:9px 10px;border-radius:8px;background:rgba(65,171,196,.13);margin:0}
 .os-folder-recorder-panel p[data-error=true]{background:rgba(220,58,58,.2)}

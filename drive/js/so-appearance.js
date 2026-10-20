@@ -4,7 +4,8 @@ class ArcadeCloudOsAppearance {
     this.document = doc;
     this.remote = win.ARCADECLOUD_OS_APPEARANCE || {};
     this.nodeKey = String(this.remote.nodeKey || 'default');
-    this.storageKey = 'arcadecloud-os-appearance-v2:' + this.nodeKey;
+    this.mobileDevice = /Android/i.test(win.navigator?.userAgent || '');
+    this.storageKey = 'arcadecloud-os-appearance-v2:' + this.nodeKey + (this.mobileDevice ? ':android-device' : '');
     this.defaults = { theme: 'dark', wallpaper: '', wallpaperName: '', wallpaperEnabled: true, windowOpacity: 94, menuOpacity: 98, chromeOpacity: 96 };
     this.state = this.load();
   }
@@ -51,7 +52,8 @@ class ArcadeCloudOsAppearance {
       const saved = JSON.parse(this.window.localStorage.getItem(this.storageKey) || '{}');
       local = saved && typeof saved === 'object' ? saved : {};
     } catch (_) {}
-    const remote = this.remote.preferences && typeof this.remote.preferences === 'object' ? this.remote.preferences : {};
+    // Mobile wallpaper/preferences remain device-local; never overwrite desktop settings.
+    const remote = !this.mobileDevice && this.remote.preferences && typeof this.remote.preferences === 'object' ? this.remote.preferences : {};
     const state = Object.assign({}, this.defaults, local, remote);
     // Los datos anteriores no tenían wallpaperEnabled: una URL guardada continúa activa.
     if (!Object.prototype.hasOwnProperty.call(local, 'wallpaperEnabled') && !Object.prototype.hasOwnProperty.call(remote, 'wallpaperEnabled')) {
@@ -62,7 +64,7 @@ class ArcadeCloudOsAppearance {
 
   save() {
     try { this.window.localStorage.setItem(this.storageKey, JSON.stringify(this.state)); } catch (_) {}
-    this.saveRemote();
+    if (!this.mobileDevice) this.saveRemote();
   }
 
   saveRemote() {

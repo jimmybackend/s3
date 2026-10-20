@@ -13,7 +13,16 @@
 
 
 
-## APK de prueba almacenado en GitHub
+## APK actualizado 0.2.0 (voz y cámara)
+**Descargar desde la rama main:** https://raw.githubusercontent.com/jimmybackend/s3/main/android-app/releases/ArcadeCloud-Android-0.2.0-debug.apk
+
+La versión 0.2.0 se compiló y pasó pruebas de Java, Android Lint, APK y CI en el commit `e2f42e52` (workflow `39407463425`, artefacto `12257238654`).
+SHA-256 del APK: `a2335b8190929ed1d86abc5a953cfdd6d53935eeb99bdc1cd5f94d363d0b6940`.
+Es APK de **depuración**, con identidad de firma dependiente del runner. Si Android rechaza la actualización sobre 0.1.0 por firma diferente, desinstala 0.1.0 e instala 0.2.0; esto puede eliminar datos locales de la app, pero no los archivos del Drive guardados en S3.
+
+El APK 0.1.0 se conserva para referencia histórica, pero 0.2.0 es el instalador de pruebas vigente. El envío de fotos/notas depende de que el backend publicado tenga `mobile_capture.php` y `mobile-capture-upload.php` desplegados. La fusión en GitHub no certifica que la EC2 haya descargado esos archivos.
+
+## APK de prueba almacenado en GitHub (0.1.0, anterior)
 
 El instalador compilado se conserva en
 [`android-app/releases/ArcadeCloud-Android-0.1.0-debug.apk`](releases/ArcadeCloud-Android-0.1.0-debug.apk).

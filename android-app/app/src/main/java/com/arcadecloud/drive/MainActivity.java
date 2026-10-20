@@ -7,6 +7,9 @@ import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.ContentValues;
 import android.content.Intent;
+import android.content.Context;
+import android.location.LocationManager;
+import android.provider.Settings;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.Bitmap;
@@ -29,6 +32,8 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.webkit.WebSettings;
 import android.widget.FrameLayout;
+import android.widget.LinearLayout;
+import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -50,11 +55,22 @@ public final class MainActivity extends Activity {
     private static final int FILE_PICKER_REQUEST = 101;
     private static final int MEDIA_PERMISSION_REQUEST = 102;
     private static final int INITIAL_MEDIA_PERMISSION_REQUEST = 103;
+    private static final int LOCATION_PERMISSION_REQUEST = 104;
+    private static final int INITIAL_CONTACTS_PERMISSION_REQUEST = 105;
     private static final String PERMISSION_PREFERENCES = "arcadecloud_android_permissions";
     private static final String INITIAL_MEDIA_PROMPTED = "capture_permissions_requested_on_first_launch";
+    private static final String INITIAL_LOCATION_PROMPTED = "location_permission_requested_on_first_launch";
+    private static final String INITIAL_CONTACTS_PROMPTED = "contacts_permission_requested_on_first_launch";
     private PermissionRequest pendingMediaPermission;
     private final ExecutorService downloads = Executors.newSingleThreadExecutor();
     private WebView webView;
+    private LinearLayout locationGate;
+    private TextView locationMessage;
+    private Button locationAllow;
+    private Button locationSettings;
+    private boolean webViewLoaded;
+    private boolean contactsRequestPending;
+    private boolean locationRequestPending;
     private ProgressBar progress;
     private TextView connectionError;
     private ValueCallback<Uri[]> uploadCallback;
@@ -67,6 +83,7 @@ public final class MainActivity extends Activity {
         FrameLayout root = new FrameLayout(this);
         webView = new WebView(this);
         root.addView(webView, new FrameLayout.LayoutParams(-1, -1));
+        webView.setVisibility(View.GONE);
 
         progress = new ProgressBar(this, null, android.R.attr.progressBarStyleHorizontal);
         progress.setMax(100);
@@ -83,6 +100,41 @@ public final class MainActivity extends Activity {
         connectionError.setVisibility(View.GONE);
         connectionError.setOnClickListener(v -> webView.reload());
         root.addView(connectionError, new FrameLayout.LayoutParams(-1, -1));
+        // The user's requested location prerequisite can block app USE, never APK installation.
+        // This view is the only entry point until location permission and location services are on.
+        locationGate = new LinearLayout(this);
+        locationGate.setOrientation(LinearLayout.VERTICAL);
+        locationGate.setGravity(Gravity.CENTER);
+        locationGate.setPadding(dp(24), dp(32), dp(24), dp(32));
+        locationGate.setBackgroundColor(Color.rgb(11, 29, 44));
+
+        TextView heading = new TextView(this);
+        heading.setText("Ubicación necesaria para usar ArcadeCloud");
+        heading.setTextColor(Color.WHITE);
+        heading.setTextSize(23);
+        heading.setGravity(Gravity.CENTER);
+        locationGate.addView(heading);
+
+        locationMessage = new TextView(this);
+        locationMessage.setTextColor(Color.WHITE);
+        locationMessage.setTextSize(16);
+        locationMessage.setGravity(Gravity.CENTER);
+        locationMessage.setPadding(0, dp(18), 0, dp(20));
+        locationGate.addView(locationMessage);
+
+        locationAllow = new Button(this);
+        locationAllow.setText("Autorizar ubicación");
+        locationAllow.setOnClickListener(v -> requestLocationAccess());
+        locationGate.addView(locationAllow, new LinearLayout.LayoutParams(-1, dp(55)));
+
+        locationSettings = new Button(this);
+        locationSettings.setText("Abrir ajustes de ubicación");
+        locationSettings.setOnClickListener(v -> openLocationSettings());
+        LinearLayout.LayoutParams settingsParams = new LinearLayout.LayoutParams(-1, dp(55));
+        settingsParams.topMargin = dp(10);
+        locationGate.addView(locationSettings, settingsParams);
+
+        root.addView(locationGate, new FrameLayout.LayoutParams(-1, -1));
         setContentView(root);
 
         WebSettings settings = webView.getSettings();
@@ -206,10 +258,11 @@ public final class MainActivity extends Activity {
         webView.setDownloadListener((url, agent, disposition, mime, size) ->
                 downloadFile(url, disposition, mime));
 
-        if (state == null || webView.restoreState(state) == null) {
-            webView.loadUrl(UrlPolicy.START_URL);
-        }
-        requestInitialCapturePermissions();
+        webViewLoaded = state != null && webView.restoreState(state) != null;
+        // Android cannot request these permissions during APK installation.
+        // First launch: foreground location prerequisite, then optional contacts,
+        // then camera/microphone; never read or upload the contact list.
+        updateLocationGate(true);
 
     }
 
@@ -245,6 +298,98 @@ public final class MainActivity extends Activity {
         requestPermissions(missing.toArray(new String[0]), INITIAL_MEDIA_PERMISSION_REQUEST);
     }
 
+    /** Location is required by this app's onboarding policy; the OS remains in control. */
+    private boolean hasLocationAccess() {
+        return StartupPermissionPolicy.hasLocationAccess(
+                checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED,
+                checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED);
+    }
+
+    private boolean isLocationEnabled() {
+        LocationManager manager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        return manager != null && manager.isLocationEnabled();
+    }
+
+    private void requestLocationAccess() {
+        if (locationRequestPending || hasLocationAccess()) {
+            updateLocationGate(false);
+            return;
+        }
+        locationRequestPending = true;
+        getSharedPreferences(PERMISSION_PREFERENCES, MODE_PRIVATE)
+                .edit().putBoolean(INITIAL_LOCATION_PROMPTED, true).apply();
+        // Android 12+ requires asking both together for the optional precise choice.
+        requestPermissions(new String[]{
+                Manifest.permission.ACCESS_COARSE_LOCATION,
+                Manifest.permission.ACCESS_FINE_LOCATION
+        }, LOCATION_PERMISSION_REQUEST);
+    }
+
+    private void openLocationSettings() {
+        Intent intent;
+        if (hasLocationAccess()) {
+            intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+        } else {
+            intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+            intent.setData(Uri.parse("package:" + getPackageName()));
+        }
+        try { startActivity(intent); }
+        catch (ActivityNotFoundException error) {
+            Toast.makeText(this, "No se pudieron abrir los ajustes de Android.", Toast.LENGTH_LONG).show();
+        }
+    }
+
+    /** No web navigation or authenticated content is displayed until location is authorized. */
+    private void updateLocationGate(boolean allowInitialPrompt) {
+        if (locationGate == null || webView == null) return;
+        boolean access = hasLocationAccess();
+        boolean servicesOn = isLocationEnabled();
+        boolean ready = StartupPermissionPolicy.canEnterDrive(access, servicesOn);
+        locationGate.setVisibility(ready ? View.GONE : View.VISIBLE);
+        webView.setVisibility(ready ? View.VISIBLE : View.GONE);
+
+        if (!ready) {
+            webView.onPause();
+            locationAllow.setVisibility(access ? View.GONE : View.VISIBLE);
+            locationSettings.setText(access ? "Encender ubicación en Android" : "Abrir permisos en Ajustes");
+            locationMessage.setText(access
+                    ? "La ubicación del teléfono está apagada. Enciéndela para abrir ArcadeCloud."
+                    : "ArcadeCloud requiere que autorices la ubicación del dispositivo antes de entrar. "
+                    + "Puedes elegir aproximada o precisa. Android conserva el control de este permiso. "
+                    + "No se accede a tus contactos sin tu autorización.");
+            if (allowInitialPrompt && !access
+                    && !getSharedPreferences(PERMISSION_PREFERENCES, MODE_PRIVATE)
+                        .getBoolean(INITIAL_LOCATION_PROMPTED, false)) {
+                locationGate.post(this::requestLocationAccess);
+            }
+            return;
+        }
+
+        webView.onResume();
+        if (!webViewLoaded) {
+            webViewLoaded = true;
+            webView.loadUrl(UrlPolicy.START_URL);
+        }
+        requestInitialContactsPermissions();
+    }
+
+    private void requestInitialContactsPermissions() {
+        if (contactsRequestPending) return;
+        SharedPreferences preferences = getSharedPreferences(PERMISSION_PREFERENCES, MODE_PRIVATE);
+        boolean prompted = preferences.getBoolean(INITIAL_CONTACTS_PROMPTED, false);
+        boolean granted = checkSelfPermission(Manifest.permission.READ_CONTACTS) == PackageManager.PERMISSION_GRANTED;
+        if (StartupPermissionPolicy.shouldAskContacts(prompted, granted)) {
+            preferences.edit().putBoolean(INITIAL_CONTACTS_PROMPTED, true).apply();
+            contactsRequestPending = true;
+            requestPermissions(new String[]{Manifest.permission.READ_CONTACTS},
+                    INITIAL_CONTACTS_PERMISSION_REQUEST);
+            return;
+        }
+        // Contacts are optional. Their refusal must never grant automatic access or
+        // prevent ordinary Drive navigation; data are not read or uploaded.
+        requestInitialCapturePermissions();
+    }
+
     private void grantKnownMedia(PermissionRequest request) {
         if (!UrlPolicy.isFirstParty(request.getOrigin().toString())) {
             request.deny();
@@ -267,6 +412,17 @@ public final class MainActivity extends Activity {
 
     @Override public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == LOCATION_PERMISSION_REQUEST) {
+            locationRequestPending = false;
+            updateLocationGate(false);
+            return;
+        }
+        if (requestCode == INITIAL_CONTACTS_PERMISSION_REQUEST) {
+            contactsRequestPending = false;
+            // Refusing READ_CONTACTS is explicitly supported: no address book is read.
+            requestInitialCapturePermissions();
+            return;
+        }
         if (requestCode == INITIAL_MEDIA_PERMISSION_REQUEST) {
             // Android remembers the grant/deny state. The user can retry later
             // from a voice/video/photo button inside the trusted Drive origin.
@@ -277,6 +433,11 @@ public final class MainActivity extends Activity {
             pendingMediaPermission = null;
             grantKnownMedia(request);
         }
+    }
+
+    @Override protected void onResume() {
+        super.onResume();
+        if (locationGate != null) updateLocationGate(false);
     }
 
     @Override protected void onPause() {

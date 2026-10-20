@@ -25,6 +25,12 @@ final class ManagedRuntimeEnvironment
         'ARCADECLOUD_FEDERATION_DYNAMIC_IP' => ['secret' => false, 'group' => 'FederationCloud avanzado'],
         'ARCADECLOUD_TLS_TERMINATION' => ['secret' => false, 'group' => 'FederationCloud avanzado'],
 
+        // ZIP explorer: persistent configuration loaded before service dispatch.
+        'ARCADECLOUD_ZIP_LAMBDA_ENABLED' => ['secret' => false, 'group' => 'ZIP Lambda'],
+        'ARCADECLOUD_ZIP_LAMBDA_FUNCTION' => ['secret' => false, 'group' => 'ZIP Lambda'],
+        'ARCADECLOUD_ZIP_LAMBDA_REGION' => ['secret' => false, 'group' => 'ZIP Lambda'],
+        'ARCADECLOUD_ZIP_LAMBDA_MEMORY_MB' => ['secret' => false, 'group' => 'ZIP Lambda'],
+
         'ARCADECLOUD_NODE_ROLE' => ['secret' => false, 'group' => 'Nodo y procesamiento'],
         'ARCADECLOUD_MEDIA_WORKER' => ['secret' => false, 'group' => 'Nodo y procesamiento'],
         'ARCADECLOUD_MEDIA_WORKER_INSTANCE_ID' => ['secret' => false, 'group' => 'Nodo y procesamiento'],

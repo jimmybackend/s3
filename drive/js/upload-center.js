@@ -5,6 +5,8 @@ class ArcadeCloudUploadCenter {
     this.api = String(win.UPLOAD_API || 'api/upload.php');
     this.csrf = String(win.DRIVE_UPLOAD_CSRF || '');
     this.tasks = new Map();
+    // Keep browser File/Blob references for retries without searching the original again.
+    this.retrySources = new Map();
     this.serverTaskSyncAt = new Map();
     this.localQueue = Promise.resolve();
     this.modal = null;
@@ -352,6 +354,7 @@ class ArcadeCloudUploadCenter {
   enqueueLocal(blob, route, source, forcedName = '') {
     const name = String(forcedName || blob?.name || 'archivo.bin');
     const task = this.createTask(name, route, source || 'Archivo', Number(blob?.size || 0), 'local_put');
+    this.retrySources.set(task.id, { blob, name, route, source: source || 'Archivo' });
     this.localQueue = this.localQueue
       .then(() => this.runLocal(task, blob, name, route))
       .catch(() => {});
@@ -535,8 +538,40 @@ class ArcadeCloudUploadCenter {
     }
   }
 
+  async selectRetryFile(name, size) {
+    return new Promise((resolve, reject) => {
+      const input = this.document.createElement('input');
+      input.type = 'file';
+      input.style.display = 'none';
+      this.document.body.appendChild(input);
+      input.addEventListener('change', () => {
+        const chosen = input.files && input.files[0];
+        input.remove();
+        if (!chosen) return resolve(null);
+        if (chosen.name !== name || chosen.size !== size) {
+          return reject(new Error('El archivo elegido no coincide con el nombre y tamaño de la tarea fallida.'));
+        }
+        resolve(chosen);
+      }, { once: true });
+      input.click();
+    });
+  }
+
   async retryUploadTask(task) {
     const meta = task && task.metadata || {};
+    if (String(meta.upload_mode || '') === 'local_put') {
+      if (String(task.status || '') !== 'failed') throw new Error('Esta subida no está fallida.');
+      const source = this.retrySources.get(String(task.id || ''));
+      if (source && source.blob) {
+        this.enqueueLocal(source.blob, source.route, source.source, source.name);
+        return true;
+      }
+      // Browser restarts erase File references. Never claim to have retained the bytes.
+      const selected = await this.selectRetryFile(String(task.title || ''), Number(meta.bytes_total || 0));
+      if (!selected) return false;
+      this.enqueueLocal(selected, String(meta.destination || ''), 'Dropzone');
+      return true;
+    }
     if (String(meta.upload_mode || '') !== 'chunked' || String(task.status || '') !== 'failed') {
       throw new Error('Solo se pueden recuperar subidas multipart fallidas.');
     }
@@ -833,6 +868,7 @@ class ArcadeCloudUploadCenter {
     const status = String(task.status || '').toLowerCase();
     if (!['completed', 'failed', 'cancelled'].includes(status)) return false;
 
+    this.retrySources.delete(key);
     this.tasks.delete(key);
     this.document.dispatchEvent(new CustomEvent('drive:client-upload-task', {
       detail: { removed: key }

@@ -69,6 +69,7 @@ public final class MainActivity extends Activity {
     private Button locationAllow;
     private Button locationSettings;
     private boolean webViewLoaded;
+    private Bundle pendingWebViewState;
     private boolean contactsRequestPending;
     private boolean locationRequestPending;
     private ProgressBar progress;
@@ -258,7 +259,10 @@ public final class MainActivity extends Activity {
         webView.setDownloadListener((url, agent, disposition, mime, size) ->
                 downloadFile(url, disposition, mime));
 
-        webViewLoaded = state != null && webView.restoreState(state) != null;
+        // Do not restore or navigate the WebView before location is authorized.
+        // Restoring while gated could start hidden network requests.
+        pendingWebViewState = state;
+        webViewLoaded = false;
         // Android cannot request these permissions during APK installation.
         // First launch: foreground location prerequisite, then optional contacts,
         // then camera/microphone; never read or upload the contact list.
@@ -368,7 +372,11 @@ public final class MainActivity extends Activity {
         webView.onResume();
         if (!webViewLoaded) {
             webViewLoaded = true;
-            webView.loadUrl(UrlPolicy.START_URL);
+            Bundle restore = pendingWebViewState;
+            pendingWebViewState = null;
+            if (restore == null || webView.restoreState(restore) == null) {
+                webView.loadUrl(UrlPolicy.START_URL);
+            }
         }
         requestInitialContactsPermissions();
     }

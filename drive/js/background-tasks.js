@@ -608,7 +608,7 @@ class BackgroundTaskCenter {
           throw new Error('El recuperador de subidas no está disponible en esta página.');
         }
         const started = await manager.retryUploadTask(task);
-        if (started) this.notify('Archivo validado. Recuperación multipart iniciada.', 'success');
+        if (started) this.notify('Subida añadida nuevamente a Tareas.', 'success');
       } else if (task && String(task.kind || '') === 'upload' && action === 'dismiss') {
         this.dismissClientUpload(task);
         const controlId = String(task.control_id || '');

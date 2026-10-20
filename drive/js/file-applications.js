@@ -170,6 +170,63 @@ class ArcadeCloudFileApplicationService {
       });
       toolbar.append(full);
     }
+    if (application === 'image' && file.key) {
+      let angle = 0;
+      const rotateButton = (direction, label, symbol) => {
+        const button = this.document.createElement('button');
+        button.type = 'button';
+        button.title = label;
+        button.innerHTML = '<i class="fas ' + symbol + '"></i><span>' + label + '</span>';
+        button.addEventListener('click', () => {
+          angle = (angle + direction + 360) % 360;
+          viewer.style.transform = 'rotate(' + angle + 'deg)';
+          save.disabled = angle === 0;
+        });
+        toolbar.append(button);
+      };
+      const save = this.document.createElement('button');
+      save.type = 'button';
+      save.title = 'Guardar rotación en el archivo original';
+      save.innerHTML = '<i class="fas fa-floppy-disk"></i><span>Guardar rotación</span>';
+      save.disabled = true;
+      rotateButton(-90, 'Girar izquierda', 'fa-rotate-left');
+      rotateButton(90, 'Girar derecha', 'fa-rotate-right');
+      save.addEventListener('click', async () => {
+        const signedAngle = angle === 270 ? -90 : angle;
+        const steps = [signedAngle];
+        save.disabled = true;
+        const previous = save.innerHTML;
+        save.textContent = 'Guardando…';
+        try {
+          for (const degrees of steps) {
+            const payload = new URLSearchParams({ key: String(file.key), degrees: String(degrees) });
+            const response = await this.window.fetch('image-rotate.php', {
+              method: 'POST', credentials: 'same-origin', cache: 'no-store',
+              headers: {
+                'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+                'X-Drive-CSRF': String(this.window.DRIVE_UPLOAD_CSRF || '')
+              },
+              body: payload.toString()
+            });
+            const json = await response.json();
+            if (!response.ok || !json.ok) throw new Error(json.error || 'No se pudo guardar la rotación.');
+          }
+          angle = 0;
+          viewer.style.transform = '';
+          const stamp = Date.now();
+          imagePreviewUrl = 'thumb.php?key=' + encodeURIComponent(String(file.key)) + '&scale=50&fit=contain&v=' + stamp;
+          viewer.src = imagePreviewUrl;
+          this.document.dispatchEvent(new CustomEvent('drive:storage-changed', { detail: { route: file.route || '', fileId: file.fileId, operation: 'image-rotate' } }));
+          this.window.BackgroundTaskCenter?.notify?.('Rotación guardada en la imagen original.', 'success');
+        } catch (error) {
+          this.window.alert(error.message || 'No se pudo guardar la rotación.');
+        } finally {
+          save.innerHTML = previous;
+          save.disabled = angle === 0;
+        }
+      });
+      toolbar.append(save);
+    }
     if (application === 'image' && file.wallpaperUrl) {
       const wallpaper = this.document.createElement('button'); wallpaper.type = 'button'; wallpaper.title = 'Usar como fondo'; wallpaper.setAttribute('aria-label', 'Usar como fondo'); wallpaper.innerHTML = '<i class="fas fa-panorama"></i><span>Usar como fondo</span>';
       wallpaper.addEventListener('click', () => this.window.ArcadeCloudOsAppearance?.setWallpaper(file.wallpaperUrl, file.name)); toolbar.append(wallpaper);

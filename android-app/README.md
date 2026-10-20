@@ -1,5 +1,20 @@
 # ArcadeCloud Android (APK de pruebas)
 
+## Android 0.7.0 — solución para grabaciones en Samsung/WebView
+
+Si la APK tiene autorizados cámara y micrófono pero en una carpeta aparece el error genérico de grabación, puede deberse a un **formato multimedia no disponible en WebView** o a un fallo de reproducción de la vista previa; no necesariamente a un permiso denegado.
+
+- El grabador de `so.php` ahora prueba los codificadores disponibles y después el codificador predeterminado de Android WebView (sin MIME prefijado). Distingue errores: permiso web bloqueado, cámara/micrófono ocupado, dispositivo ausente o formato sin compatibilidad.
+- Una negativa al autoplay de la vista previa de video ya no impide iniciar MediaRecorder.
+- Botón de respaldo **«Usar grabadora del teléfono»** para notas de voz y **«Usar cámara del teléfono»** para video. Se abre la aplicación nativa de grabación del dispositivo mediante `<input capture>` y el selector Android. Si no hay una app de grabación, permite seleccionar un archivo ya grabado. La grabación capturada vuelve a la misma ventana y requiere pulsar **Guardar en esta carpeta**.
+- El archivo de cámara/grabadora nativa puede guardarse temporalmente en el teléfono según la aplicación que lo crea. Desde ArcadeCloud el usuario lo envía mediante las **subidas directas a S3** registradas en **Tareas**, sin escribir archivos multimedia en el disco de la EC2. Se mantiene inmutable la carpeta seleccionada.
+- Para usar el respaldo nativo hacen falta **ambos**: APK Android 0.7.0 y nueva versión de `drive/so.php` y `drive/js/so-folder-recorder.js` desplegada en EC2. Un merge en GitHub no implica que el servidor se haya actualizado.
+- Se conservan únicamente permisos de ubicación, cámara y micrófono; **no** se solicitan contactos. Ubicación sigue siendo requisito de acceso a Drive, no de instalación.
+- La compatibilidad final de grabación nativa y WebView requiere una prueba real en Samsung; los tests unitarios y Android CI no sustituyen esa prueba. Los videos grabados dentro de WebView tienen un máximo de 5 minutos / 180 MB; la app nativa controla sus propios límites y ArcadeCloud rechaza archivos superiores a 180 MB.
+
+**Importante:** no instalar la APK histórica 0.6.0 y esperar el respaldo nativo. Las descargas publicadas en `releases/` son APK de depuración, con posibles firmas incompatibles entre versiones.
+
+
 ## Descargar APK Android 0.6.0 (versión de pruebas actual)
 
 **[ArcadeCloud Android 0.6.0 — instalador APK](releases/ArcadeCloud-Android-0.6.0-debug.apk)**

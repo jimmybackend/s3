@@ -1,5 +1,20 @@
 # ArcadeCloud Android (APK de pruebas)
 
+## Android 0.4.0 — permisos al primer inicio
+
+La versión 0.4.0 mantiene eliminada la superposición flotante **⋮**. Si aparece en pantalla, se está ejecutando una APK antigua (0.2.0), no la versión actual.
+
+**Nuevo primer inicio:** cuando el usuario abre ArcadeCloud Android por primera vez, Android solicita los permisos de **Cámara** y **Micrófono** necesarios para tomar fotos, grabar voz y grabar video. La app no puede activar permisos a la fuerza durante la instalación: deben concederse en el cuadro nativo de Android. Se pregunta una sola vez al arrancar; si rechaza, la grabación puede volver a solicitarlos solamente al tocar una acción de cámara/micrófono dentro de una carpeta. Android conserva el control sobre permisos y puede permitir un único uso, denegarlos o revocarlos después.
+
+- El primer permiso se solicita en el **primer inicio después de instalar/actualizar a 0.4.0**. Se guarda un indicador local para no repetir preguntas al abrirla o girar la pantalla.
+- La versión sigue funcionando si alguien no autoriza los permisos: simplemente no podrá usar la captura correspondiente hasta concederlos.
+- No se solicitan permisos de ubicación, contactos ni acceso completo a archivos. Para elegir documentos se usa el selector del sistema.
+- Si Android rechaza la actualización porque la versión anterior se firmó con otra clave de depuración, puede ser necesario desinstalarla. Eso borrará las cookies/sesiones guardadas **localmente**; los archivos ya existentes en S3 no se borran.
+- El web Drive debe desplegar los cambios de las grabadoras en `so.php` para mostrar las acciones dentro de carpetas. La APK no actualiza la EC2.
+
+El código Android 0.4.0 se compila en GitHub Actions. **No instalar el APK 0.3.0 esperando que pregunte permisos al iniciarse:** ese APK solo solicita los permisos al empezar a grabar.
+
+
 ## Descargar APK actual 0.3.0 desde el repositorio
 
 **[ArcadeCloud Android 0.3.0 (archivo APK)](releases/ArcadeCloud-Android-0.3.0-debug.apk)**

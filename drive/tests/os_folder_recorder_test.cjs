@@ -113,3 +113,143 @@ test('camera photo stays in the requested folder and uses the regular direct S3 
   assert.equal(saved.source, 'Foto');
   assert.match(saved.file.name, /^Foto_.*\.jpg$/);
 });
+
+
+test('Android WebView selects default MediaRecorder when none of the named codecs is supported', () => {
+  const attempted = [];
+  class MockRecorder {
+    static isTypeSupported() { return false; }
+    constructor(stream, opts) {
+      attempted.push(opts?.mimeType || 'default');
+      this.mimeType = opts?.mimeType || 'audio/webm';
+    }
+  }
+  const recorder = new ArcadeCloudFolderRecorder({ MediaRecorder: MockRecorder }, {});
+  recorder.mode = 'audio';
+  const instance = recorder.createRecorder({ id: 'mic' });
+  assert.equal(instance.mimeType, 'audio/webm');
+  assert.deepEqual(attempted, ['default']);
+});
+
+test('Android WebView retries codecs and finally its automatic media encoder', () => {
+  const attempts = [];
+  class MockRecorder {
+    static isTypeSupported() { return true; }
+    constructor(stream, opts) {
+      attempts.push(opts?.mimeType || 'default');
+      if (opts?.mimeType) throw Object.assign(new Error('encoder mismatch'), { name: 'NotSupportedError' });
+      this.mimeType = 'video/webm';
+    }
+  }
+  const recorder = new ArcadeCloudFolderRecorder({ MediaRecorder: MockRecorder }, {});
+  recorder.mode = 'video';
+  assert.equal(recorder.createRecorder({}).mimeType, 'video/webm');
+  assert.ok(attempts.includes('video/webm;codecs=vp8,opus'));
+  assert.equal(attempts.at(-1), 'default');
+});
+
+test('differentiate device permission, encoder and busy-device failures', () => {
+  const recorder = new ArcadeCloudFolderRecorder({}, {});
+  assert.match(recorder.describeCaptureError({ name: 'NotAllowedError' }), /bloqueó/);
+  assert.match(recorder.describeCaptureError({ name: 'NotReadableError' }), /ocupado/);
+  assert.match(recorder.describeCaptureError({ name: 'NotSupportedError' }), /WebView/);
+  assert.match(recorder.describeCaptureError({ name: 'NotFoundError' }), /No se encontró/);
+});
+
+test('native Android recorder selection saves original recording in frozen S3 folder', () => {
+  let saved = null;
+  const win = {
+    ArcadeCloudUploadManager: {
+      enqueueLocal(file, route, source) { saved = { file, route, source }; },
+      startMultipart() { throw new Error('not expected for small file'); }
+    },
+    ArcadeCloudOsShell: { notify() {} }
+  };
+  const selectors = new Map();
+  const node = () => ({ disabled: false, hidden: true, src: '', srcObject: null,
+    controls: false, muted: true, textContent: '', dataset: {},
+    removeAttribute() {}, pause() {} });
+  for (const selector of ['#osFolderRecorderAudio', '[data-recorder-save]',
+    '#osFolderRecorderMessage', '#osFolderRecorderVideo', '#osFolderRecorderPhoto']) {
+    selectors.set(selector, node());
+  }
+  const dialog = {
+    hidden: false,
+    querySelector: selector => selectors.get(selector) || node(),
+    querySelectorAll: () => []
+  };
+  const blobUrl = URL.createObjectURL;
+  const revoke = URL.revokeObjectURL;
+  URL.createObjectURL = () => 'blob:native-test';
+  URL.revokeObjectURL = () => {};
+  try {
+    const recorder = new ArcadeCloudFolderRecorder(win, {});
+    recorder.dialog = dialog;
+    recorder.route = 'Data2/Temporal/';
+    recorder.folderName = 'Temporal';
+    recorder.mode = 'audio';
+    recorder.close = () => {};
+    const inputFile = new File(['recorded native audio'], 'voice-recorded.m4a', { type: 'audio/mp4' });
+    recorder.acceptNativeRecording(inputFile);
+    assert.equal(recorder.mediaBlob, inputFile);
+    assert.equal(selectors.get('[data-recorder-save]').disabled, false);
+    recorder.save();
+    assert.equal(saved.route, 'Data2/Temporal/');
+    assert.equal(saved.file.name, 'voice-recorded.m4a');
+    assert.equal(saved.source, 'Nota de voz');
+  } finally {
+    URL.createObjectURL = blobUrl;
+    URL.revokeObjectURL = revoke;
+  }
+});
+
+test('Android capture fallback is wired without broad file or camera access', () => {
+  const body = fs.readFileSync(path.join(__dirname, '..', 'js', 'so-folder-recorder.js'), 'utf8');
+  assert.match(body, /data-recorder-native-input/);
+  assert.match(body, /setAttribute\('capture'/);
+  assert.match(native, /params\.isCaptureEnabled\(\)/);
+  assert.match(native, /MediaStore\.ACTION_VIDEO_CAPTURE/);
+  assert.match(native, /MediaStore\.Audio\.Media\.RECORD_SOUND_ACTION/);
+  assert.match(native, /FLAG_GRANT_READ_URI_PERMISSION/);
+  assert.match(native, /"content"\.equalsIgnoreCase\(uri\.getScheme\(\)\)/);
+  assert.doesNotMatch(native, /addJavascriptInterface/);
+  assert.doesNotMatch(native, /mobile_capture\.php/);
+});
+
+
+test('Android WebView rejected muted preview playback does not prevent video recording', async () => {
+  let started = 0;
+  class WorkingRecorder {
+    static isTypeSupported(type) { return type === 'video/webm'; }
+    constructor(stream, opts) { this.mimeType = opts.mimeType; this.state = 'inactive'; }
+    addEventListener() {}
+    start() { started += 1; this.state = 'recording'; }
+  }
+  const nodes = new Map();
+  function node() {
+    return { disabled:false, hidden:false, srcObject:null, muted:true, dataset: {},
+      controls:false, focus() {}, pause() {}, removeAttribute() {}, src:'',
+      play:() => Promise.reject(Object.assign(new Error('Autoplay denied'), {name:'NotAllowedError'})) };
+  }
+  for (const selector of ['[data-recorder-start]','[data-recorder-stop]','[data-recorder-save]',
+    '[data-recorder-native]','#osFolderRecorderVideo','#osFolderRecorderMessage']) {
+    nodes.set(selector,node());
+  }
+  const dialog={ hidden:false, querySelector: key => nodes.get(key) || node(),querySelectorAll:()=>[] };
+  const recorder = new ArcadeCloudFolderRecorder({
+    isSecureContext: true,
+    navigator: { mediaDevices: { getUserMedia: async () => ({getTracks:()=>[]}) } },
+    MediaRecorder: WorkingRecorder,
+    setInterval: () => 42,
+    clearInterval() {}
+  }, {});
+  recorder.mode='video';
+  recorder.route='Data/Temporal/';
+  recorder.folderName='Temporal';
+  recorder.dialog=dialog;
+  await recorder.start();
+  await Promise.resolve();
+  assert.equal(started, 1);
+  assert.equal(recorder.active, true);
+  assert.equal(nodes.get('[data-recorder-stop]').disabled, false);
+});

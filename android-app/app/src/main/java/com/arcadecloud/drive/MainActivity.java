@@ -225,8 +225,47 @@ public final class MainActivity extends Activity {
 
             @Override public boolean onShowFileChooser(WebView view,
                     ValueCallback<Uri[]> callback, FileChooserParams params) {
+                if (!UrlPolicy.isFirstParty(view.getUrl())) {
+                    callback.onReceiveValue(null);
+                    return true;
+                }
                 if (uploadCallback != null) uploadCallback.onReceiveValue(null);
                 uploadCallback = callback;
+
+                // HTML <input capture> should use the phone's system recorder/camera
+                // when WebView's MediaRecorder codec is unavailable.
+                // Do not expose a JavaScript bridge or give access to app-private files.
+                if (params.isCaptureEnabled() && params.getMode() == FileChooserParams.MODE_OPEN) {
+                    String[] requestedTypes = params.getAcceptTypes();
+                    boolean audio = false;
+                    boolean video = false;
+                    if (requestedTypes != null) {
+                        for (String type : requestedTypes) {
+                            if (type == null) continue;
+                            if (type.toLowerCase(java.util.Locale.ROOT).startsWith("audio/")) audio = true;
+                            if (type.toLowerCase(java.util.Locale.ROOT).startsWith("video/")) video = true;
+                        }
+                    }
+                    if (audio || video) {
+                        Intent capture;
+                        if (audio && !video) {
+                            capture = new Intent(MediaStore.Audio.Media.RECORD_SOUND_ACTION);
+                            capture.putExtra(MediaStore.Audio.Media.EXTRA_MAX_BYTES, 180L * 1024 * 1024);
+                        } else {
+                            capture = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
+                            capture.putExtra(MediaStore.EXTRA_DURATION_LIMIT, 300);
+                            capture.putExtra(MediaStore.EXTRA_SIZE_LIMIT, 180L * 1024 * 1024);
+                        }
+                        capture.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                        try {
+                            startActivityForResult(capture, FILE_PICKER_REQUEST);
+                            return true;
+                        } catch (ActivityNotFoundException unavailable) {
+                            // Not every Android device installs a sound-recording app.
+                            // Fall back to choosing an already recorded audio/video file.
+                        }
+                    }
+                }
                 Intent choose = new Intent(Intent.ACTION_GET_CONTENT);
                 choose.addCategory(Intent.CATEGORY_OPENABLE);
                 choose.setType("*/*");
@@ -274,7 +313,15 @@ public final class MainActivity extends Activity {
         if (requestCode != FILE_PICKER_REQUEST || uploadCallback == null) return;
         ValueCallback<Uri[]> callback = uploadCallback;
         uploadCallback = null;
-        callback.onReceiveValue(WebChromeClient.FileChooserParams.parseResult(resultCode, data));
+        Uri[] selected = WebChromeClient.FileChooserParams.parseResult(resultCode, data);
+        if (selected != null) {
+            java.util.ArrayList<Uri> permitted = new java.util.ArrayList<>();
+            for (Uri uri : selected) {
+                if (uri != null && "content".equalsIgnoreCase(uri.getScheme())) permitted.add(uri);
+            }
+            selected = permitted.isEmpty() ? null : permitted.toArray(new Uri[0]);
+        }
+        callback.onReceiveValue(selected);
     }
 
     /**

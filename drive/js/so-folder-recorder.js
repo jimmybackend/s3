@@ -13,6 +13,7 @@ class ArcadeCloudFolderRecorder {
     this.chunks = [];
     this.chunkBytes = 0;
     this.mediaBlob = null;
+    this.nativePickedFile = null;
     this.mediaUrl = '';
     this.startedAt = 0;
     this.timer = null;
@@ -46,6 +47,8 @@ class ArcadeCloudFolderRecorder {
       '<button type="button" data-recorder-stop disabled>Detener</button>' +
       '<button type="button" data-recorder-snap hidden>Tomar foto</button>' +
       '<button type="button" data-recorder-save disabled>Guardar en esta carpeta</button>' +
+      '<button type="button" data-recorder-native hidden>Usar grabadora del teléfono</button>' +
+      '<input type="file" data-recorder-native-input hidden>' +
       '</div><small>Al guardar, el archivo pasa a Tareas y se sube directamente a S3. ' +
       'El video está limitado a 5 minutos o 180 MB para proteger la memoria del teléfono.</small>' +
       '</div>';
@@ -55,6 +58,17 @@ class ArcadeCloudFolderRecorder {
     dialog.querySelector('[data-recorder-stop]').addEventListener('click', () => this.stop());
     dialog.querySelector('[data-recorder-snap]').addEventListener('click', () => this.snap());
     dialog.querySelector('[data-recorder-save]').addEventListener('click', () => this.save());
+    dialog.querySelector('[data-recorder-native]').addEventListener('click', () => {
+      const input = dialog.querySelector('[data-recorder-native-input]');
+      if (input && !this.active) {
+        // A real user gesture is required for the Android system capture intent.
+        input.value = '';
+        input.click();
+      }
+    });
+    dialog.querySelector('[data-recorder-native-input]').addEventListener('change', event => {
+      this.acceptNativeRecording(event.target.files?.[0] || null);
+    });
     dialog.querySelectorAll('[data-recorder-close]').forEach(btn => btn.addEventListener('click', () => this.close()));
     this.doc.addEventListener('keydown', e => {
       if (e.key === 'Escape' && this.dialog && !this.dialog.hidden) this.close();
@@ -80,6 +94,14 @@ class ArcadeCloudFolderRecorder {
       mode === 'audio' ? 'Grabar nota de voz' : mode === 'video' ? 'Grabar video' : 'Tomar fotografía';
     this.dialog.querySelector('#osFolderRecorderRoute').textContent = 'Carpeta: ' + this.folderName;
     this.dialog.hidden = false;
+    const fallback = this.dialog.querySelector('[data-recorder-native]');
+    const nativeInput = this.dialog.querySelector('[data-recorder-native-input]');
+    fallback.hidden = mode === 'photo';
+    fallback.textContent = mode === 'audio'
+      ? 'Usar grabadora del teléfono' : 'Usar cámara del teléfono';
+    nativeInput.setAttribute('accept', mode === 'audio' ? 'audio/*' : mode === 'video' ? 'video/*' : 'image/*');
+    // Android WebChromeClient opens an OS capture intent when capture is enabled.
+    nativeInput.setAttribute('capture', mode === 'audio' ? 'microphone' : 'environment');
     this.dialog.querySelector('[data-recorder-snap]').hidden = mode !== 'photo';
     this.dialog.querySelector('[data-recorder-snap]').disabled = true;
     this.message(mode === 'audio'
@@ -90,31 +112,108 @@ class ArcadeCloudFolderRecorder {
     return true;
   }
 
-  chooseFormat() {
-    if (!this.win.MediaRecorder) return null;
+  /**
+   * A Samsung/Android WebView can support MediaRecorder without supporting
+   * a particular WebM codec. Try declared supported types and finally let the
+   * browser select its default encoder instead of treating this as a denial.
+   */
+  createRecorder(stream) {
+    const Recorder = this.win.MediaRecorder;
+    if (typeof Recorder !== 'function') {
+      const error = new Error('La versión de Android WebView no incluye MediaRecorder.');
+      error.name = 'RecorderUnavailableError';
+      throw error;
+    }
     const candidates = this.mode === 'audio'
-      ? ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4']
-      : ['video/webm;codecs=vp8,opus', 'video/webm', 'video/mp4'];
-    return candidates.find(type => this.win.MediaRecorder.isTypeSupported(type)) || '';
+      ? ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4', 'audio/ogg;codecs=opus', 'audio/ogg']
+      : ['video/webm;codecs=vp8,opus', 'video/webm;codecs=vp9,opus',
+         'video/webm', 'video/mp4'];
+    const supports = typeof Recorder.isTypeSupported === 'function'
+      ? type => {
+          try { return Recorder.isTypeSupported(type); }
+          catch (error) { return false; }
+        }
+      : () => true;
+    let lastError = null;
+    for (const mimeType of candidates) {
+      if (!supports(mimeType)) continue;
+      try { return new Recorder(stream, { mimeType }); }
+      catch (error) { lastError = error; }
+    }
+    try { return new Recorder(stream); }
+    catch (error) {
+      const cause = error?.name || lastError?.name || 'NotSupportedError';
+      const unavailable = new Error('No se encontró un codificador de audio/video compatible con Android WebView.');
+      unavailable.name = cause === 'SecurityError' ? cause : 'NotSupportedError';
+      throw unavailable;
+    }
+  }
+
+  describeCaptureError(error) {
+    switch (error?.name) {
+      case 'NotAllowedError':
+      case 'PermissionDeniedError':
+      case 'SecurityError':
+        return 'Android o WebView bloqueó cámara/micrófono aunque la app pueda tener permiso. Usa la grabadora del teléfono o revisa ajustes de privacidad.';
+      case 'NotFoundError':
+      case 'DevicesNotFoundError':
+        return 'No se encontró la cámara o el micrófono solicitado. Comprueba que esté disponible.';
+      case 'NotReadableError':
+      case 'TrackStartError':
+        return 'La cámara o el micrófono está ocupado por otra aplicación, o Android no permite utilizarlo ahora.';
+      case 'OverconstrainedError':
+      case 'ConstraintNotSatisfiedError':
+        return 'La cámara no admite la configuración solicitada. Prueba de nuevo.';
+      case 'NotSupportedError':
+      case 'RecorderUnavailableError':
+      case 'TypeError':
+        return 'Android WebView no admite este formato o la API de grabación. Prueba «Usar grabadora del teléfono» o actualiza WebView.';
+      case 'AbortError':
+        return 'Android interrumpió el acceso al dispositivo. Cierra otras aplicaciones con cámara/micrófono y vuelve a intentarlo.';
+      default:
+        return 'No se pudo iniciar la grabación (' + String(error?.name || 'error desconocido').slice(0, 50) + '). Revisa el estado de cámara/micrófono.';
+    }
   }
 
   async start() {
     if (this.active || this.dialog.hidden || !this.route) return;
-    if (!this.win.isSecureContext || !this.win.navigator.mediaDevices?.getUserMedia ||
-        (this.mode !== 'photo' && typeof this.win.MediaRecorder !== 'function')) {
-      this.message('Este navegador no permite grabar. Revisa HTTPS y los permisos.', true);
+    if (!this.win.isSecureContext) {
+      this.message('La cámara y el micrófono requieren HTTPS y un contexto seguro.', true);
+      return;
+    }
+    if (!this.win.navigator.mediaDevices?.getUserMedia) {
+      this.message('Esta versión de Android WebView no ofrece acceso a la cámara/micrófono desde el navegador.', true);
+      return;
+    }
+    if (this.mode !== 'photo' && typeof this.win.MediaRecorder !== 'function') {
+      this.message(this.describeCaptureError({ name: 'RecorderUnavailableError' }), true);
       return;
     }
     // Prevent double taps while the Android permission prompt is visible.
     this.active = true;
     this.dialog.querySelector('[data-recorder-start]').disabled = true;
     this.dialog.querySelector('[data-recorder-save]').disabled = true;
+    const nativeBtn = this.dialog.querySelector('[data-recorder-native]');
+    if (nativeBtn) nativeBtn.disabled = true;
     this.clearMedia();
     try {
       const options = this.mode === 'audio'
         ? { audio: true, video: false }
         : { audio: this.mode === 'video', video: { facingMode: { ideal: 'environment' } } };
-      this.stream = await this.win.navigator.mediaDevices.getUserMedia(options);
+      try {
+        this.stream = await this.win.navigator.mediaDevices.getUserMedia(options);
+      } catch (error) {
+        // Some rear-camera constraints are unsupported despite valid permission.
+        // Retry once with the default camera, but NEVER retry a denied permission.
+        if (this.mode !== 'audio' &&
+            ['NotFoundError', 'OverconstrainedError', 'ConstraintNotSatisfiedError'].includes(error?.name)) {
+          this.stream = await this.win.navigator.mediaDevices.getUserMedia({
+            video: true, audio: this.mode === 'video'
+          });
+        } else {
+          throw error;
+        }
+      }
       if (this.dialog.hidden || this.closing) {
         this.releaseTracks();
         this.active = false;
@@ -126,14 +225,17 @@ class ArcadeCloudFolderRecorder {
         camera.hidden = false;
         camera.muted = true;
         camera.controls = false;
-        await camera.play();
+        // WebView can reject autoplay even for muted camera previews.
+        // Do not report that as a CAMERA permission denial.
+        const playback = camera.play();
+        if (playback && typeof playback.catch === 'function') {
+          playback.catch(() => this.message('Cámara activa; toca la vista previa si no aparece la imagen.', true));
+        }
         this.dialog.querySelector('[data-recorder-snap]').disabled = false;
         this.message('Cámara lista. Pulsa Tomar foto.');
         return;
       }
-      const mime = this.chooseFormat();
-      if (!mime) throw new Error('MediaRecorder no admite un formato de grabación compatible.');
-      this.recorder = new this.win.MediaRecorder(this.stream, { mimeType: mime });
+      this.recorder = this.createRecorder(this.stream);
       this.chunks = [];
       this.chunkBytes = 0;
       this.startedAt = Date.now();
@@ -172,13 +274,19 @@ class ArcadeCloudFolderRecorder {
         this.dialog.querySelector('[data-recorder-start]').disabled = false;
         this.dialog.querySelector('[data-recorder-stop]').disabled = true;
         this.dialog.querySelector('[data-recorder-save]').disabled = false;
+        this.dialog.querySelector('[data-recorder-native]').disabled = false;
         this.message('Grabación lista. Reprodúcela o guárdala en ' + this.folderName + '.');
       }, { once: true });
-      currentRecorder.addEventListener('error', () => {
+      currentRecorder.addEventListener('error', event => {
         this.releaseTracks();
+        if (this.timer) this.win.clearInterval(this.timer);
+        this.timer = null;
         this.active = false;
-        this.message('Falló la grabación. Intenta nuevamente.', true);
         this.dialog.querySelector('[data-recorder-start]').disabled = false;
+        this.dialog.querySelector('[data-recorder-stop]').disabled = true;
+        this.dialog.querySelector('[data-recorder-native]').disabled = false;
+        this.message(this.describeCaptureError(event?.error || { name: 'NotSupportedError' }) +
+          ' También puedes usar la grabadora del teléfono.', true);
       });
       if (this.mode === 'video') {
         const video = this.dialog.querySelector('#osFolderRecorderVideo');
@@ -186,7 +294,15 @@ class ArcadeCloudFolderRecorder {
         video.muted = true;
         video.controls = false;
         video.hidden = false;
-        await video.play();
+        // Preview playback is independent of recording permission/encoding.
+        // Some Android WebViews deny autoplay after the async getUserMedia prompt.
+        const playback = video.play();
+        if (playback && typeof playback.catch === 'function') {
+          playback.catch(() => {
+            if (!this.dialog.hidden && this.active)
+              this.message('Grabando: la vista previa puede requerir un toque para reproducirse.');
+          });
+        }
       }
       currentRecorder.start(1000);
       this.dialog.querySelector('[data-recorder-stop]').disabled = false;
@@ -199,8 +315,40 @@ class ArcadeCloudFolderRecorder {
       this.active = false;
       this.dialog.querySelector('[data-recorder-start]').disabled = false;
       this.dialog.querySelector('[data-recorder-stop]').disabled = true;
-      this.message('No se pudo iniciar la grabación. Autoriza los permisos de cámara/micrófono o revisa su disponibilidad.', true);
+      this.dialog.querySelector('[data-recorder-native]').disabled = false;
+      this.message(this.describeCaptureError(error), true);
     }
+  }
+
+  acceptNativeRecording(file) {
+    if (!file || !this.dialog || this.dialog.hidden || this.active) return;
+    const actualType = String(file.type || '').toLowerCase();
+    const ext = (String(file.name || '').split('.').pop() || '').toLowerCase();
+    const audio = ['webm', 'ogg', 'mp3', 'mp4', 'm4a', '3gp', 'aac', 'wav'];
+    const video = ['webm', 'mp4', '3gp', 'mkv', 'mov'];
+    const expected = this.mode === 'audio' ? audio : video;
+    if ((this.mode === 'audio' && !actualType.startsWith('audio/') && !audio.includes(ext)) ||
+        (this.mode === 'video' && !actualType.startsWith('video/') && !video.includes(ext))) {
+      this.message('El archivo capturado no corresponde a ' +
+        (this.mode === 'audio' ? 'una nota de voz' : 'un video') + '.', true);
+      return;
+    }
+    if (!file.size || file.size > this.maxBytes) {
+      this.message('El archivo de la grabadora debe medir entre 1 byte y 180 MB.', true);
+      return;
+    }
+    this.clearMedia();
+    this.nativePickedFile = file;
+    this.mediaBlob = file;
+    this.mediaUrl = URL.createObjectURL(file);
+    const preview = this.dialog.querySelector(this.mode === 'audio'
+      ? '#osFolderRecorderAudio' : '#osFolderRecorderVideo');
+    preview.srcObject = null;
+    preview.src = this.mediaUrl;
+    preview.hidden = false;
+    if (this.mode === 'video') { preview.controls = true; preview.muted = false; }
+    this.dialog.querySelector('[data-recorder-save]').disabled = false;
+    this.message('Grabación recibida de Android. Revísala y pulsa Guardar en esta carpeta.');
   }
 
   snap() {
@@ -247,10 +395,14 @@ class ArcadeCloudFolderRecorder {
     }
     const blob = this.mediaBlob;
     const mime = blob.type.split(';')[0].toLowerCase();
-    const extension = this.mode === 'photo' ? 'jpg' : mime.includes('mp4') ? 'mp4' : 'webm';
+    const extension = this.mode === 'photo' ? 'jpg'
+      : mime.includes('mp4') ? (this.mode === 'audio' ? 'm4a' : 'mp4')
+      : mime.includes('ogg') ? 'ogg' : 'webm';
     const name = (this.mode === 'audio' ? 'Nota_voz_' : this.mode === 'video' ? 'Video_' : 'Foto_') +
       new Date().toISOString().replace(/[:.]/g, '-') + '.' + extension;
-    const file = new File([blob], name, { type: mime || (this.mode === 'audio' ? 'audio/webm' : this.mode === 'video' ? 'video/webm' : 'image/jpeg') });
+    const file = this.nativePickedFile || new File([blob], name, {
+      type: mime || (this.mode === 'audio' ? 'audio/webm' : this.mode === 'video' ? 'video/webm' : 'image/jpeg')
+    });
     const route = this.route;
     try {
       if (file.size >= 8 * 1024 * 1024) {
@@ -281,6 +433,7 @@ class ArcadeCloudFolderRecorder {
     if (this.mediaUrl) URL.revokeObjectURL(this.mediaUrl);
     this.mediaUrl = '';
     this.mediaBlob = null;
+    this.nativePickedFile = null;
     this.chunks = [];
     this.chunkBytes = 0;
     this.dialog?.querySelectorAll('audio,video').forEach(media => {
@@ -302,6 +455,7 @@ class ArcadeCloudFolderRecorder {
       this.dialog.querySelector('[data-recorder-start]').disabled = false;
       this.dialog.querySelector('[data-recorder-stop]').disabled = true;
       this.dialog.querySelector('[data-recorder-save]').disabled = true;
+      this.dialog.querySelector('[data-recorder-native]').disabled = false;
       this.dialog.querySelector('[data-recorder-snap]').disabled = true;
     }
   }

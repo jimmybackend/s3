@@ -140,6 +140,10 @@ class ArcadeCloudFilesystemOperations {
 
   confirm(options = {}) {
     if (!this.document?.body || !this.document.createElement) return Promise.resolve(false);
+    // The initiating context menu must not cover the confirmation dialog.
+    // Keep selected-file state intact; only dismiss the visible menu.
+    const contextMenu = this.document.getElementById('fileContextMenu');
+    if (contextMenu) contextMenu.hidden = true;
     const overlay = this.document.createElement('div');
     overlay.className = 'os-operation-dialog-backdrop';
     overlay.innerHTML = `<section class="os-operation-dialog" role="alertdialog" aria-modal="true" aria-labelledby="os-operation-dialog-title" aria-describedby="os-operation-dialog-message"><h2 id="os-operation-dialog-title"></h2><p id="os-operation-dialog-message"></p><div class="os-operation-dialog-actions"><button type="button" data-dialog-cancel>Cancelar</button><button type="button" class="is-primary" data-dialog-confirm></button></div></section>`;

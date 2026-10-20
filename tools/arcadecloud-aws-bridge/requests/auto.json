@@ -1,7 +1,7 @@
 {
-  "request_id": "memory-small-20261011-0210",
+  "request_id": "upload-ec2-nginx-20261020-01",
   "alias": "small",
   "operation": "diagnose",
-  "argument": "memory",
+  "argument": "nginx-log-summary",
   "confirm": "READ_DIAGNOSTIC"
 }

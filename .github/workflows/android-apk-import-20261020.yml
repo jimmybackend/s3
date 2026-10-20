@@ -1,0 +1,49 @@
+name: Import verified ArcadeCloud debug APK to feature branch
+
+on:
+  push:
+    branches:
+      - feat/android-apk-in-repo-20261020
+    paths:
+      - .github/workflows/android-apk-import-20261020.yml
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  import-verified-artifact:
+    if: github.repository == 'jimmybackend/s3' && github.ref == 'refs/heads/feat/android-apk-in-repo-20261020'
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fetch fixed previously validated main-branch APK
+        uses: actions/download-artifact@v4
+        with:
+          run-id: 39378713344
+          artifact-ids: 12244815319
+          github-token: ${{ github.token }}
+          path: /tmp/arcadecloud-apk-import
+      - name: Verify SHA-256 and commit binary only on feature branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "$(git branch --show-current)" != "feat/android-apk-in-repo-20261020" ]; then
+            echo "::error::Wrong branch"
+            exit 1
+          fi
+          mapfile -t candidates < <(find /tmp/arcadecloud-apk-import -type f -name app-debug.apk)
+          if [ "${#candidates[@]}" -ne 1 ]; then
+            echo "::error::Expected exactly one APK"
+            exit 1
+          fi
+          printf '%s  %s\n' '9e3f0ed033fabd6360cc604a3176296bae87120cd0b4388acb97697f568a7b5b' "${candidates[0]}" | sha256sum -c -
+          mkdir -p android-app/releases
+          cp "${candidates[0]}" android-app/releases/ArcadeCloud-Android-0.1.0-debug.apk
+          file android-app/releases/ArcadeCloud-Android-0.1.0-debug.apk
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add android-app/releases/ArcadeCloud-Android-0.1.0-debug.apk
+          git commit -m 'build(android): include verified APK 0.1.0 test installer'
+          git push origin HEAD:feat/android-apk-in-repo-20261020

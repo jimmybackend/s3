@@ -28,8 +28,9 @@ function harness() {
     setInterval: (callback) => { interval = callback; return 1; },
     clearInterval: () => { interval = null; }
   });
-  const methods = vm.runInContext('({' + source.slice(from, to) + '})', ctx);
-  const obj = Object.assign({ window: { location: { origin: 'https://drive.example' } } }, methods);
+  const UploadMethods = vm.runInContext('(class UploadMethods {' + source.slice(from, to) + '})', ctx);
+  const obj = new UploadMethods();
+  obj.window = { location: { origin: 'https://drive.example' } };
   return { obj, request: () => request, tick: (ms) => { now += ms; if (interval) interval(); } };
 }
 

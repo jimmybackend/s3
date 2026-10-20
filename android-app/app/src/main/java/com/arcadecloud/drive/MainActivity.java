@@ -28,8 +28,6 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.webkit.WebSettings;
 import android.widget.FrameLayout;
-import android.widget.Button;
-import android.widget.PopupMenu;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -70,32 +68,6 @@ public final class MainActivity extends Activity {
         progress.setMax(100);
         FrameLayout.LayoutParams progressParams = new FrameLayout.LayoutParams(-1, dp(3), Gravity.TOP);
         root.addView(progress, progressParams);
-
-        Button tools = new Button(this);
-        tools.setText("⋮");
-        tools.setContentDescription("Herramientas de ArcadeCloud: voz y fotografías");
-        tools.setAllCaps(false);
-        tools.setTextSize(22);
-        tools.setAlpha(0.88f);
-        FrameLayout.LayoutParams toolsParams = new FrameLayout.LayoutParams(dp(52), dp(56), Gravity.TOP | Gravity.RIGHT);
-        root.addView(tools, toolsParams);
-        tools.setOnClickListener(v -> {
-            PopupMenu menu = new PopupMenu(this, tools);
-            menu.getMenu().add(0, 1, 0, "Notas de voz y fotos");
-            menu.getMenu().add(0, 2, 1, "Volver al escritorio");
-            menu.setOnMenuItemClickListener(item -> {
-                if (item.getItemId() == 1) {
-                    webView.loadUrl("https://drive.esforzados.com/mobile_capture.php");
-                    return true;
-                }
-                if (item.getItemId() == 2) {
-                    webView.loadUrl(UrlPolicy.START_URL);
-                    return true;
-                }
-                return false;
-            });
-            menu.show();
-        });
 
         connectionError = new TextView(this);
         connectionError.setText(R.string.offline_message);

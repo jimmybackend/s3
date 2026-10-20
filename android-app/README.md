@@ -1,5 +1,14 @@
 # ArcadeCloud Android (APK de pruebas)
 
+## Versión 0.3.0 — grabaciones dentro de carpetas
+
+La versión 0.3.0 **elimina el botón flotante ⋮**, que invocaba una página `mobile_capture.php` ausente en algunos despliegues. Las acciones ahora están dentro de `so.php`: en **Mis datos** abre una carpeta y utiliza su barra superior (iconos de micrófono, video o cámara) o el menú de acciones de una carpeta. El toque en espacio vacío ofrece las acciones de la carpeta actual.
+
+Se puede grabar nota de voz, grabar video con cámara y micrófono o tomar una fotografía. Pulsa *Comenzar* (Android pide permisos de cámara/micrófono al usar), *Detener* (voz/video) y *Guardar en esta carpeta*. La ruta de destino queda fija al abrir el grabador y **no** cambia si navegas a otra carpeta. El archivo entra a **Tareas**, donde su estado real refleja el progreso de la transferencia **directa del navegador a S3**; no se envía un video al PHP temporal de EC2. Multipart firmado para archivos de al menos 8 MiB. Grabaciones limitadas a 5 minutos y 180 MiB; no funcionan en segundo plano si Android suspende el WebView. Para poder utilizarlo, **ambos** deben estar actualizados: el APK 0.3.0 y el código `drive/so.php` del servidor web.
+
+La APK 0.2.0 contenía el botón anterior y no debe utilizarse para probar este flujo. Antes de instalar 0.3.0, comprueba su compilación en el workflow Android de GitHub; la APK 0.3.0 no sustituye automáticamente los binarios anteriores guardados en `releases/`.
+
+
 ## Captura móvil 0.2.0 (funciones por autorización)
 - La app muestra un menú superior «⋮» con «Notas de voz y fotos».
 - Al iniciar grabación se solicita permiso del micrófono; al abrir cámara se solicita permiso de cámara. Se respetan rechazos.

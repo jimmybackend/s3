@@ -11,8 +11,10 @@
   const map = card.querySelector('[data-device-location-map]');
   const ua = navigator.userAgent || '';
   const android = /Android/i.test(ua);
+  const nativeApp = android && /ArcadeCloudAndroidApp\/1\b/.test(ua);
   const mobile = android || /iPhone|iPad|iPod/i.test(ua);
-  platform.textContent = android ? 'Dispositivo Android · Fondo personalizado independiente en este teléfono'
+  platform.textContent = nativeApp ? 'Aplicación ArcadeCloud Android · Fondo personalizado independiente en este teléfono'
+    : android ? 'Navegador Android · Fondo personalizado independiente en este teléfono'
     : (mobile ? 'Dispositivo móvil' : 'Navegador de escritorio');
   button?.addEventListener('click', () => {
     if (!navigator.geolocation || !window.isSecureContext) {

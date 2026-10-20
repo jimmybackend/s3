@@ -136,6 +136,9 @@ public final class MainActivity extends Activity {
         setContentView(root);
 
         WebSettings settings = webView.getSettings();
+        // Presentation hint only: never use this marker for authentication or access control.
+        // Appends rather than replacing the system UA to preserve WebView capabilities.
+        settings.setUserAgentString(settings.getUserAgentString() + " ArcadeCloudAndroidApp/1");
         settings.setJavaScriptEnabled(true);
         settings.setDomStorageEnabled(true);
         settings.setAllowFileAccess(false);

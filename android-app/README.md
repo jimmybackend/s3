@@ -15,7 +15,19 @@ La versión 0.4.0 mantiene eliminada la superposición flotante **⋮**. Si apar
 El código Android 0.4.0 se compila en GitHub Actions. **No instalar el APK 0.3.0 esperando que pregunte permisos al iniciarse:** ese APK solo solicita los permisos al empezar a grabar.
 
 
-## Descargar APK actual 0.3.0 desde el repositorio
+## Descargar APK actual 0.4.0 desde main
+
+**[ArcadeCloud Android 0.4.0 — instalador APK](releases/ArcadeCloud-Android-0.4.0-debug.apk)**
+
+Descarga directa: https://raw.githubusercontent.com/jimmybackend/s3/main/android-app/releases/ArcadeCloud-Android-0.4.0-debug.apk
+
+- Tamaño: 33,701 bytes.
+- Origen: compilación de `main` tras PR #494, workflow `39415246092`, artefacto `12261396213`.
+- SHA-256 del APK: `f35f405090b56580aebdb683f776ff41067c40f5a05d196389206f7d510e80b3`.
+- Verificado en GitHub Actions contra el artefacto oficial antes de incorporarlo a `releases/`.
+- Instalador de depuración: puede necesitar desinstalar anteriores debido a firmas diferentes; no está firmado para Google Play.
+
+## Descarga histórica 0.3.0 desde el repositorio
 
 **[ArcadeCloud Android 0.3.0 (archivo APK)](releases/ArcadeCloud-Android-0.3.0-debug.apk)**
 

@@ -1003,76 +1003,93 @@ class ArcadeCloudUploadCenter {
     } catch (_) {}
   }
 
-  putBlob(url, blob, onProgress) {
+  // Browser-to-S3 transfers: measure actual byte advancement, not repeated progress events.
+  // The 90s watchdog also rejects sustained near-zero throughput so a slow upload
+  // cannot block the upload queue for tens of minutes.
+  putToS3(url, blob, onProgress, multipart = false) {
     return new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest();
-      // A stalled connection must never monopolize the sequential Dropzone queue.
-      // This checks inactivity, not total upload duration (large uploads remain possible).
-      const stallMs = 90000;
-      let timer = null;
+      const idleMs = 90000;
+      const slowWindowMs = 90000;
+      const minimumBytesPerSecond = 32 * 1024;
+      const startedAt = Date.now();
+      let lastAdvanceAt = startedAt;
+      let advancedBytes = 0;
+      let slowWindowStartedAt = startedAt;
+      let slowWindowStartBytes = 0;
       let settled = false;
-      const finish = (error = null) => {
+      const finish = (error = null, etag = null) => {
         if (settled) return;
         settled = true;
-        if (timer !== null) clearTimeout(timer);
+        clearInterval(watchdog);
         if (error) reject(error);
-        else resolve();
+        else resolve(etag);
       };
-      const armWatchdog = () => {
-        if (timer !== null) clearTimeout(timer);
-        timer = setTimeout(() => {
-          finish(new Error('Subida detenida: 90 segundos sin actividad. Se liberó la cola para continuar los demás archivos.'));
-          xhr.abort();
-        }, stallMs);
+      const abortWith = (message, code) => {
+        const error = new Error(message);
+        error.code = code;
+        finish(error);
+        xhr.abort();
       };
+      const watchdog = setInterval(() => {
+        if (settled) return;
+        const now = Date.now();
+        if (now - lastAdvanceAt >= idleMs) {
+          abortWith('Subida detenida: 90 segundos sin avance de datos.', 'UPLOAD_STALLED');
+          return;
+        }
+        // Tiny uploads are exempt. Large uploads must make meaningful forward
+        // progress over a full window; no fixed total-duration limit is imposed.
+        if (blob.size >= 1024 * 1024 && advancedBytes < blob.size &&
+            now - slowWindowStartedAt >= slowWindowMs) {
+          const seconds = (now - slowWindowStartedAt) / 1000;
+          const rate = (advancedBytes - slowWindowStartBytes) / seconds;
+          if (rate < minimumBytesPerSecond) {
+            abortWith('Subida demasiado lenta durante 90 segundos (menos de 32 KB/s). Revisa tu conexión de subida.', 'UPLOAD_TOO_SLOW');
+            return;
+          }
+          slowWindowStartedAt = now;
+          slowWindowStartBytes = advancedBytes;
+        }
+      }, 1000);
       xhr.open('PUT', url, true);
-      xhr.setRequestHeader('Content-Type', blob.type || 'application/octet-stream');
+      if (!multipart) xhr.setRequestHeader('Content-Type', blob.type || 'application/octet-stream');
       xhr.upload.onprogress = (event) => {
-        // Even when bytes repeat, transfer activity indicates the request is still alive.
-        armWatchdog();
+        if (settled) return;
+        const loaded = Math.max(0, Math.min(blob.size, Number(event.loaded) || 0));
+        if (loaded > advancedBytes) {
+          advancedBytes = loaded;
+          lastAdvanceAt = Date.now();
+        }
         if (event.lengthComputable && typeof onProgress === 'function') {
-          onProgress(event.loaded, event.total);
+          try { onProgress(loaded, event.total); } catch (_) { /* UI callback must not break upload */ }
         }
       };
       xhr.onload = () => {
-        if (xhr.status >= 200 && xhr.status < 300) finish();
-        else finish(new Error('S3 rechazó la subida. HTTP ' + xhr.status));
+        if (xhr.status < 200 || xhr.status >= 300) {
+          finish(new Error('S3 rechazó la subida. HTTP ' + xhr.status));
+          return;
+        }
+        if (!multipart) { finish(); return; }
+        const etag = String(xhr.getResponseHeader('ETag') || xhr.getResponseHeader('etag') || '').replace(/"/g, '').trim();
+        if (!etag) { finish(new Error('S3 no expuso ETag. Revisa CORS del bucket.')); return; }
+        finish(null, etag);
       };
       xhr.onerror = () => finish(new Error(
-        'No se pudo enviar el archivo directamente a S3. Revisa conectividad y CORS para ' +
+        'No se pudo enviar el archivo a S3. Revisa conectividad y CORS para ' +
         String(this.window.location.origin || 'este origen') + '.'
       ));
       xhr.onabort = () => finish(new Error('La subida se interrumpió.'));
-      armWatchdog();
       try { xhr.send(blob); } catch (error) { finish(error); }
     });
   }
 
+  putBlob(url, blob, onProgress) {
+    return this.putToS3(url, blob, onProgress, false);
+  }
+
   putPart(url, blob, onProgress) {
-    return new Promise((resolve, reject) => {
-      const xhr = new XMLHttpRequest();
-      xhr.open('PUT', url, true);
-      xhr.upload.onprogress = (event) => {
-        if (event.lengthComputable && typeof onProgress === 'function') onProgress(event.loaded);
-      };
-      xhr.onload = () => {
-        if (xhr.status < 200 || xhr.status >= 300) {
-          reject(new Error('S3 rechazó una parte. HTTP ' + xhr.status));
-          return;
-        }
-        const etag = String(xhr.getResponseHeader('ETag') || xhr.getResponseHeader('etag') || '').replace(/"/g, '').trim();
-        if (!etag) {
-          reject(new Error('S3 no expuso ETag. Revisa CORS del bucket.'));
-          return;
-        }
-        resolve(etag);
-      };
-      xhr.onerror = () => reject(new Error(
-        'No se pudo enviar una parte multipart a S3. Revisa conectividad y CORS para ' +
-        String(this.window.location.origin || 'este origen') + '.'
-      ));
-      xhr.send(blob);
-    });
+    return this.putToS3(url, blob, onProgress, true);
   }
 
   async putPartWithRetry(url, blob, onProgress) {
@@ -1082,7 +1099,8 @@ class ArcadeCloudUploadCenter {
         return await this.putPart(url, blob, onProgress);
       } catch (error) {
         last = error;
-        if (attempt >= 5) break;
+        // A persistently slow uplink will not improve with five immediate retries.
+        if (error?.code === 'UPLOAD_TOO_SLOW' || attempt >= 5) break;
         await new Promise((resolve) => this.window.setTimeout(resolve, 800 * attempt));
       }
     }

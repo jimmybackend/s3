@@ -1,0 +1,25 @@
+name: S3 upload watchdog regression
+on:
+  pull_request:
+    paths:
+      - 'drive/js/upload-center.js'
+      - 'drive/tests/s3_upload_watchdog_test.cjs'
+      - '.github/workflows/s3-upload-watchdog.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'drive/js/upload-center.js'
+      - 'drive/tests/s3_upload_watchdog_test.cjs'
+      - '.github/workflows/s3-upload-watchdog.yml'
+permissions:
+  contents: read
+jobs:
+  watchdog:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --check drive/js/upload-center.js
+      - run: node drive/tests/s3_upload_watchdog_test.cjs

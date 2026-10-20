@@ -243,7 +243,8 @@ final class NodeCapabilityService
 
         $body = curl_exec($curl);
         $status = (int)curl_getinfo($curl, CURLINFO_RESPONSE_CODE);
-        curl_close($curl);
+        // CurlHandle is released automatically when it goes out of scope.
+        // curl_close() is deprecated on PHP 8.5 and is a no-op since PHP 8.0.
 
         if (!is_string($body) || $status < 200 || $status >= 300) {
             return '';

@@ -7,6 +7,7 @@ import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.ContentValues;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.Bitmap;
 import android.net.Uri;
@@ -48,6 +49,9 @@ import java.util.concurrent.Executors;
 public final class MainActivity extends Activity {
     private static final int FILE_PICKER_REQUEST = 101;
     private static final int MEDIA_PERMISSION_REQUEST = 102;
+    private static final int INITIAL_MEDIA_PERMISSION_REQUEST = 103;
+    private static final String PERMISSION_PREFERENCES = "arcadecloud_android_permissions";
+    private static final String INITIAL_MEDIA_PROMPTED = "capture_permissions_requested_on_first_launch";
     private PermissionRequest pendingMediaPermission;
     private final ExecutorService downloads = Executors.newSingleThreadExecutor();
     private WebView webView;
@@ -205,6 +209,8 @@ public final class MainActivity extends Activity {
         if (state == null || webView.restoreState(state) == null) {
             webView.loadUrl(UrlPolicy.START_URL);
         }
+        requestInitialCapturePermissions();
+
     }
 
     @Override
@@ -215,6 +221,28 @@ public final class MainActivity extends Activity {
         ValueCallback<Uri[]> callback = uploadCallback;
         uploadCallback = null;
         callback.onReceiveValue(WebChromeClient.FileChooserParams.parseResult(resultCode, data));
+    }
+
+    /**
+     * Android grants camera and microphone only through its own runtime dialogs.
+     * Ask once on the app's first launch. Later, only a user-initiated recording
+     * can ask again for a permission the user previously declined.
+     */
+    private void requestInitialCapturePermissions() {
+        SharedPreferences preferences = getSharedPreferences(PERMISSION_PREFERENCES, MODE_PRIVATE);
+        boolean previouslyPrompted = preferences.getBoolean(INITIAL_MEDIA_PROMPTED, false);
+        boolean cameraGranted = checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED;
+        boolean micGranted = checkSelfPermission(Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED;
+        if (!MediaPermissionPolicy.shouldPromptAtLaunch(previouslyPrompted, cameraGranted, micGranted)) {
+            return;
+        }
+
+        java.util.List<String> missing = new java.util.ArrayList<>();
+        if (!cameraGranted) missing.add(Manifest.permission.CAMERA);
+        if (!micGranted) missing.add(Manifest.permission.RECORD_AUDIO);
+        // Persist before showing the OS dialog to avoid duplicate prompts after rotation.
+        preferences.edit().putBoolean(INITIAL_MEDIA_PROMPTED, true).apply();
+        requestPermissions(missing.toArray(new String[0]), INITIAL_MEDIA_PERMISSION_REQUEST);
     }
 
     private void grantKnownMedia(PermissionRequest request) {
@@ -239,6 +267,11 @@ public final class MainActivity extends Activity {
 
     @Override public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == INITIAL_MEDIA_PERMISSION_REQUEST) {
+            // Android remembers the grant/deny state. The user can retry later
+            // from a voice/video/photo button inside the trusted Drive origin.
+            return;
+        }
         if (requestCode == MEDIA_PERMISSION_REQUEST && pendingMediaPermission != null) {
             PermissionRequest request = pendingMediaPermission;
             pendingMediaPermission = null;

@@ -386,13 +386,21 @@ class ArcadeCloudUploadCenter {
       });
       if (sha256) init.set('sha256', sha256);
 
-      const initResponse = await fetch(this.api + '?mode=local_put&action=init', {
-        method: 'POST',
-        credentials: 'same-origin',
-        cache: 'no-store',
-        headers: this.apiHeaders(),
-        body: init.toString()
-      });
+      const initController = new AbortController();
+      const initDeadline = setTimeout(() => initController.abort(), 45000);
+      let initResponse;
+      try {
+        initResponse = await fetch(this.api + '?mode=local_put&action=init', {
+          method: 'POST',
+          credentials: 'same-origin',
+          cache: 'no-store',
+          headers: this.apiHeaders(),
+          body: init.toString(),
+          signal: initController.signal
+        });
+      } finally {
+        clearTimeout(initDeadline);
+      }
       const initJson = await this.safeJson(initResponse);
       if (!initResponse.ok || !initJson?.url || !initJson?.upload_token) {
         throw new Error(initJson?.error || ('No se pudo iniciar la subida. HTTP ' + initResponse.status));

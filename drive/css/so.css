@@ -1473,3 +1473,34 @@ body.arcade-os.os-theme-light #modalUserProfile select{
     max-height:calc(100dvh - 58px);
   }
 }
+
+
+/* Mis datos: indicador de carga centrado dentro de la ventana. */
+.os-explorer-window .os-explorer-loading {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: clamp(200px, 48vh, 470px);
+  width: 100%;
+  padding: 24px;
+  text-align: center;
+}
+.os-explorer-window .os-explorer-loading-card {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  max-width: 100%;
+  padding: 18px 26px;
+  border: 1px solid #239963;
+  border-radius: 14px;
+  background: #d9f8e8;
+  color: #115c39;
+  font-weight: 650;
+  box-shadow: 0 8px 28px rgba(13, 103, 65, .15);
+}
+.os-explorer-window .os-explorer-loading-card i { font-size: 1.4rem; }
+@media (max-width: 480px) {
+  .os-explorer-window .os-explorer-loading-card { padding: 14px 16px; font-size: .92rem; }
+}

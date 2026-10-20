@@ -386,13 +386,21 @@ class ArcadeCloudUploadCenter {
       });
       if (sha256) init.set('sha256', sha256);
 
-      const initResponse = await fetch(this.api + '?mode=local_put&action=init', {
-        method: 'POST',
-        credentials: 'same-origin',
-        cache: 'no-store',
-        headers: this.apiHeaders(),
-        body: init.toString()
-      });
+      const initController = new AbortController();
+      const initDeadline = setTimeout(() => initController.abort(), 45000);
+      let initResponse;
+      try {
+        initResponse = await fetch(this.api + '?mode=local_put&action=init', {
+          method: 'POST',
+          credentials: 'same-origin',
+          cache: 'no-store',
+          headers: this.apiHeaders(),
+          body: init.toString(),
+          signal: initController.signal
+        });
+      } finally {
+        clearTimeout(initDeadline);
+      }
       const initJson = await this.safeJson(initResponse);
       if (!initResponse.ok || !initJson?.url || !initJson?.upload_token) {
         throw new Error(initJson?.error || ('No se pudo iniciar la subida. HTTP ' + initResponse.status));
@@ -978,35 +986,65 @@ class ArcadeCloudUploadCenter {
   async cancelLocal(uploadToken) {
     try {
       const body = new URLSearchParams({ upload_token: uploadToken, cancel: '1' });
-      await fetch(this.api + '?mode=local_put&action=part', {
-        method: 'POST',
-        credentials: 'same-origin',
-        cache: 'no-store',
-        headers: this.apiHeaders(),
-        body: body.toString()
-      });
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 10000);
+      try {
+        await fetch(this.api + '?mode=local_put&action=part', {
+          method: 'POST',
+          credentials: 'same-origin',
+          cache: 'no-store',
+          headers: this.apiHeaders(),
+          body: body.toString(),
+          signal: controller.signal
+        });
+      } finally {
+        clearTimeout(timeout);
+      }
     } catch (_) {}
   }
 
   putBlob(url, blob, onProgress) {
     return new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest();
+      // A stalled connection must never monopolize the sequential Dropzone queue.
+      // This checks inactivity, not total upload duration (large uploads remain possible).
+      const stallMs = 90000;
+      let timer = null;
+      let settled = false;
+      const finish = (error = null) => {
+        if (settled) return;
+        settled = true;
+        if (timer !== null) clearTimeout(timer);
+        if (error) reject(error);
+        else resolve();
+      };
+      const armWatchdog = () => {
+        if (timer !== null) clearTimeout(timer);
+        timer = setTimeout(() => {
+          finish(new Error('Subida detenida: 90 segundos sin actividad. Se liberó la cola para continuar los demás archivos.'));
+          xhr.abort();
+        }, stallMs);
+      };
       xhr.open('PUT', url, true);
       xhr.setRequestHeader('Content-Type', blob.type || 'application/octet-stream');
       xhr.upload.onprogress = (event) => {
+        // Even when bytes repeat, transfer activity indicates the request is still alive.
+        armWatchdog();
         if (event.lengthComputable && typeof onProgress === 'function') {
           onProgress(event.loaded, event.total);
         }
       };
       xhr.onload = () => {
-        if (xhr.status >= 200 && xhr.status < 300) resolve();
-        else reject(new Error('S3 rechazó la subida. HTTP ' + xhr.status));
+        if (xhr.status >= 200 && xhr.status < 300) finish();
+        else finish(new Error('S3 rechazó la subida. HTTP ' + xhr.status));
       };
-      xhr.onerror = () => reject(new Error(
+      xhr.onerror = () => finish(new Error(
         'No se pudo enviar el archivo directamente a S3. Revisa conectividad y CORS para ' +
         String(this.window.location.origin || 'este origen') + '.'
       ));
-      xhr.send(blob);
+      xhr.onabort = () => finish(new Error('La subida se interrumpió.'));
+      armWatchdog();
+      try { xhr.send(blob); } catch (error) { finish(error); }
     });
   }
 

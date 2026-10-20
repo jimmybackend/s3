@@ -13,6 +13,7 @@ class ArcadeCloudFolderRecorder {
     this.chunks = [];
     this.chunkBytes = 0;
     this.mediaBlob = null;
+    this.nativePickedFile = null;
     this.mediaUrl = '';
     this.startedAt = 0;
     this.timer = null;
@@ -46,6 +47,8 @@ class ArcadeCloudFolderRecorder {
       '<button type="button" data-recorder-stop disabled>Detener</button>' +
       '<button type="button" data-recorder-snap hidden>Tomar foto</button>' +
       '<button type="button" data-recorder-save disabled>Guardar en esta carpeta</button>' +
+      '<button type="button" data-recorder-native hidden>Usar grabadora del teléfono</button>' +
+      '<input type="file" data-recorder-native-input hidden>' +
       '</div><small>Al guardar, el archivo pasa a Tareas y se sube directamente a S3. ' +
       'El video está limitado a 5 minutos o 180 MB para proteger la memoria del teléfono.</small>' +
       '</div>';
@@ -55,6 +58,17 @@ class ArcadeCloudFolderRecorder {
     dialog.querySelector('[data-recorder-stop]').addEventListener('click', () => this.stop());
     dialog.querySelector('[data-recorder-snap]').addEventListener('click', () => this.snap());
     dialog.querySelector('[data-recorder-save]').addEventListener('click', () => this.save());
+    dialog.querySelector('[data-recorder-native]').addEventListener('click', () => {
+      const input = dialog.querySelector('[data-recorder-native-input]');
+      if (input && !this.active) {
+        // A real user gesture is required for the Android system capture intent.
+        input.value = '';
+        input.click();
+      }
+    });
+    dialog.querySelector('[data-recorder-native-input]').addEventListener('change', event => {
+      this.acceptNativeRecording(event.target.files?.[0] || null);
+    });
     dialog.querySelectorAll('[data-recorder-close]').forEach(btn => btn.addEventListener('click', () => this.close()));
     this.doc.addEventListener('keydown', e => {
       if (e.key === 'Escape' && this.dialog && !this.dialog.hidden) this.close();
@@ -80,6 +94,14 @@ class ArcadeCloudFolderRecorder {
       mode === 'audio' ? 'Grabar nota de voz' : mode === 'video' ? 'Grabar video' : 'Tomar fotografía';
     this.dialog.querySelector('#osFolderRecorderRoute').textContent = 'Carpeta: ' + this.folderName;
     this.dialog.hidden = false;
+    const fallback = this.dialog.querySelector('[data-recorder-native]');
+    const nativeInput = this.dialog.querySelector('[data-recorder-native-input]');
+    fallback.hidden = mode === 'photo';
+    fallback.textContent = mode === 'audio'
+      ? 'Usar grabadora del teléfono' : 'Usar cámara del teléfono';
+    nativeInput.setAttribute('accept', mode === 'audio' ? 'audio/*' : mode === 'video' ? 'video/*' : 'image/*');
+    // Android WebChromeClient opens an OS capture intent when capture is enabled.
+    nativeInput.setAttribute('capture', mode === 'audio' ? 'microphone' : 'environment');
     this.dialog.querySelector('[data-recorder-snap]').hidden = mode !== 'photo';
     this.dialog.querySelector('[data-recorder-snap]').disabled = true;
     this.message(mode === 'audio'
@@ -171,6 +193,8 @@ class ArcadeCloudFolderRecorder {
     this.active = true;
     this.dialog.querySelector('[data-recorder-start]').disabled = true;
     this.dialog.querySelector('[data-recorder-save]').disabled = true;
+    const nativeBtn = this.dialog.querySelector('[data-recorder-native]');
+    if (nativeBtn) nativeBtn.disabled = true;
     this.clearMedia();
     try {
       const options = this.mode === 'audio'
@@ -245,6 +269,7 @@ class ArcadeCloudFolderRecorder {
         this.dialog.querySelector('[data-recorder-start]').disabled = false;
         this.dialog.querySelector('[data-recorder-stop]').disabled = true;
         this.dialog.querySelector('[data-recorder-save]').disabled = false;
+        this.dialog.querySelector('[data-recorder-native]').disabled = false;
         this.message('Grabación lista. Reprodúcela o guárdala en ' + this.folderName + '.');
       }, { once: true });
       currentRecorder.addEventListener('error', () => {
@@ -272,8 +297,40 @@ class ArcadeCloudFolderRecorder {
       this.active = false;
       this.dialog.querySelector('[data-recorder-start]').disabled = false;
       this.dialog.querySelector('[data-recorder-stop]').disabled = true;
+      this.dialog.querySelector('[data-recorder-native]').disabled = false;
       this.message(this.describeCaptureError(error), true);
     }
+  }
+
+  acceptNativeRecording(file) {
+    if (!file || !this.dialog || this.dialog.hidden || this.active) return;
+    const actualType = String(file.type || '').toLowerCase();
+    const ext = (String(file.name || '').split('.').pop() || '').toLowerCase();
+    const audio = ['webm', 'ogg', 'mp3', 'mp4', 'm4a', '3gp', 'aac', 'wav'];
+    const video = ['webm', 'mp4', '3gp', 'mkv', 'mov'];
+    const expected = this.mode === 'audio' ? audio : video;
+    if ((this.mode === 'audio' && !actualType.startsWith('audio/') && !audio.includes(ext)) ||
+        (this.mode === 'video' && !actualType.startsWith('video/') && !video.includes(ext))) {
+      this.message('El archivo capturado no corresponde a ' +
+        (this.mode === 'audio' ? 'una nota de voz' : 'un video') + '.', true);
+      return;
+    }
+    if (!file.size || file.size > this.maxBytes) {
+      this.message('El archivo de la grabadora debe medir entre 1 byte y 180 MB.', true);
+      return;
+    }
+    this.clearMedia();
+    this.nativePickedFile = file;
+    this.mediaBlob = file;
+    this.mediaUrl = URL.createObjectURL(file);
+    const preview = this.dialog.querySelector(this.mode === 'audio'
+      ? '#osFolderRecorderAudio' : '#osFolderRecorderVideo');
+    preview.srcObject = null;
+    preview.src = this.mediaUrl;
+    preview.hidden = false;
+    if (this.mode === 'video') { preview.controls = true; preview.muted = false; }
+    this.dialog.querySelector('[data-recorder-save]').disabled = false;
+    this.message('Grabación recibida de Android. Revísala y pulsa Guardar en esta carpeta.');
   }
 
   snap() {
@@ -325,7 +382,9 @@ class ArcadeCloudFolderRecorder {
       : mime.includes('ogg') ? 'ogg' : 'webm';
     const name = (this.mode === 'audio' ? 'Nota_voz_' : this.mode === 'video' ? 'Video_' : 'Foto_') +
       new Date().toISOString().replace(/[:.]/g, '-') + '.' + extension;
-    const file = new File([blob], name, { type: mime || (this.mode === 'audio' ? 'audio/webm' : this.mode === 'video' ? 'video/webm' : 'image/jpeg') });
+    const file = this.nativePickedFile || new File([blob], name, {
+      type: mime || (this.mode === 'audio' ? 'audio/webm' : this.mode === 'video' ? 'video/webm' : 'image/jpeg')
+    });
     const route = this.route;
     try {
       if (file.size >= 8 * 1024 * 1024) {
@@ -356,6 +415,7 @@ class ArcadeCloudFolderRecorder {
     if (this.mediaUrl) URL.revokeObjectURL(this.mediaUrl);
     this.mediaUrl = '';
     this.mediaBlob = null;
+    this.nativePickedFile = null;
     this.chunks = [];
     this.chunkBytes = 0;
     this.dialog?.querySelectorAll('audio,video').forEach(media => {
@@ -377,6 +437,7 @@ class ArcadeCloudFolderRecorder {
       this.dialog.querySelector('[data-recorder-start]').disabled = false;
       this.dialog.querySelector('[data-recorder-stop]').disabled = true;
       this.dialog.querySelector('[data-recorder-save]').disabled = true;
+      this.dialog.querySelector('[data-recorder-native]').disabled = false;
       this.dialog.querySelector('[data-recorder-snap]').disabled = true;
     }
   }

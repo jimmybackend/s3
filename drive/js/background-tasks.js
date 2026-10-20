@@ -580,6 +580,59 @@ class BackgroundTaskCenter {
     });
   }
 
+  confirmInOs(message) {
+    return new Promise((resolve) => {
+      const overlay = this.document.createElement('div');
+      overlay.setAttribute('role', 'presentation');
+      overlay.style.cssText = 'position:fixed;inset:0;z-index:2147483000;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(0,0,0,.68)';
+      const dialog = this.document.createElement('div');
+      dialog.setAttribute('role', 'alertdialog');
+      dialog.setAttribute('aria-modal', 'true');
+      dialog.setAttribute('aria-label', 'Confirmar acción en Tareas');
+      dialog.style.cssText = 'width:min(100%,440px);border:1px solid rgba(65,200,146,.5);border-radius:16px;background:#10283a;color:#f1f5f9;padding:24px;box-shadow:0 16px 50px rgba(0,0,0,.4)';
+      const title = this.document.createElement('h3');
+      title.textContent = 'Confirmar acción';
+      title.style.cssText = 'font-size:1.2rem;margin:0 0 12px';
+      const description = this.document.createElement('p');
+      description.textContent = message;
+      description.style.cssText = 'line-height:1.5;margin:0 0 22px';
+      const actions = this.document.createElement('div');
+      actions.style.cssText = 'display:flex;justify-content:flex-end;gap:12px;flex-wrap:wrap';
+      const cancel = this.document.createElement('button');
+      cancel.type = 'button'; cancel.textContent = 'Cancelar';
+      const accept = this.document.createElement('button');
+      accept.type = 'button'; accept.textContent = 'Confirmar';
+      for (const button of [cancel, accept]) {
+        button.style.cssText = 'border:1px solid rgba(148,163,184,.5);border-radius:9px;padding:10px 18px;font-weight:600;color:#fff;background:#27465b';
+      }
+      accept.style.background = '#166534';
+      let completed = false;
+      const finish = (value) => {
+        if (completed) return;
+        completed = true;
+        this.document.removeEventListener('keydown', onKey);
+        overlay.remove();
+        resolve(value);
+      };
+      const onKey = (event) => {
+        if (event.key === 'Escape') { event.preventDefault(); finish(false); }
+        if (event.key === 'Tab') {
+          const target = this.document.activeElement === cancel ? accept : cancel;
+          event.preventDefault(); target.focus();
+        }
+      };
+      cancel.addEventListener('click', () => finish(false));
+      accept.addEventListener('click', () => finish(true));
+      overlay.addEventListener('click', (event) => { if (event.target === overlay) finish(false); });
+      this.document.addEventListener('keydown', onKey);
+      actions.append(cancel, accept);
+      dialog.append(title, description, actions);
+      overlay.append(dialog);
+      this.document.body.append(overlay);
+      cancel.focus();
+    });
+  }
+
   async performAction(button) {
     const taskId = String(button.dataset.taskId || '');
     const action = String(button.dataset.bgTaskAction || '');
@@ -592,7 +645,7 @@ class BackgroundTaskCenter {
       const question = action === 'cancel'
         ? '¿Detener esta tarea? El servidor la detendrá en un punto seguro para no dejar una operación a medias.'
         : '¿Quitar esta tarea de la lista? Cuando exista historial de costos se conservará.';
-      if (!this.window.confirm(question)) return;
+      if (!await this.confirmInOs(question)) return;
     }
 
     this.busy.add(key);
@@ -608,7 +661,17 @@ class BackgroundTaskCenter {
           throw new Error('El recuperador de subidas no está disponible en esta página.');
         }
         const started = await manager.retryUploadTask(task);
-        if (started) this.notify('Subida añadida nuevamente a Tareas.', 'success');
+        if (started) {
+          // Remove the obsolete failed attempt after a new job is queued.
+          // Never remove it when file selection was cancelled or failed.
+          this.dismissClientUpload(task);
+          const controlId = String(task.control_id || '');
+          if (controlId.startsWith('upload-task:')) {
+            await this.requestTaskAction(controlId, 'delete');
+          }
+          this.notify('Subida puesta en cola. Se retiró el intento fallido.', 'success');
+          await this.refresh();
+        }
       } else if (task && String(task.kind || '') === 'upload' && action === 'dismiss') {
         this.dismissClientUpload(task);
         const controlId = String(task.control_id || '');
@@ -747,7 +810,7 @@ class BackgroundTaskCenter {
   async removeSelectedTasks() {
     const tasks = this.selectedTasks();
     if (!tasks.length || this.bulkBusy) return;
-    if (!this.window.confirm(`¿Eliminar ${tasks.length} tarea(s) seleccionada(s) de la lista?`)) return;
+    if (!await this.confirmInOs(`¿Eliminar ${tasks.length} tarea(s) seleccionada(s) de la lista?`)) return;
     await this.bulkRemoveTasks(tasks);
   }
 
@@ -758,7 +821,7 @@ class BackgroundTaskCenter {
       this.notify('No hay tareas terminadas o fallidas para limpiar.', 'info', 4500);
       return;
     }
-    if (!this.window.confirm(`¿Limpiar ${tasks.length} tarea(s) terminada(s), fallida(s) o cancelada(s)?`)) return;
+    if (!await this.confirmInOs(`¿Limpiar ${tasks.length} tarea(s) terminada(s), fallida(s) o cancelada(s)?`)) return;
     await this.bulkRemoveTasks(tasks);
   }
 

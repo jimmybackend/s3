@@ -665,6 +665,14 @@ if ($isDrive3dNativeActions) ob_start();
             <div><span>EC2 Instance ID</span><strong data-node-field="instance_id"><?= $e((string)$nodeSnapshot['instance_id']) ?></strong></div>
           <?php endif; ?>
         </div>
+        <section class="os-device-location" data-device-location style="margin-top:1.25rem;padding:1rem;border:1px solid var(--os-border,rgba(127,147,160,.3));border-radius:12px">
+          <h3 style="font-size:1rem;margin:0 0 .5rem"><i class="fas fa-mobile-screen-button" aria-hidden="true"></i> Tu dispositivo y ubicación</h3>
+          <p data-device-platform style="margin:0 0 .5rem"></p>
+          <p data-device-location-status aria-live="polite">Ubicación no consultada. Solo se mostrará si autorizas el acceso desde este dispositivo.</p>
+          <button type="button" class="btn btn-sm btn-outline-primary" data-device-location-request>Consultar mi ubicación</button>
+          <a data-device-location-map href="#" target="_blank" rel="noopener noreferrer" hidden>Ver en el mapa</a>
+          <small style="display:block;margin-top:.5rem">La ubicación se consulta en tu dispositivo, no se almacena en ArcadeCloud ni se envía a los nodos.</small>
+        </section>
       </div>
     </section>
 
@@ -2328,6 +2336,7 @@ Escribe help o usa uno de los botones disponibles.</pre>
   <script src="js/arcadelink-share.js?v=<?= (int)filemtime(__DIR__ . '/js/arcadelink-share.js') ?>"></script>
   <script src="js/so-share.js?v=<?= (int)filemtime(__DIR__ . '/js/so-share.js') ?>"></script>
   <script src="js/so-node.js?v=<?= (int)filemtime(__DIR__ . '/js/so-node.js') ?>"></script>
+  <script src="js/so-device-location.js?v=<?= (int)filemtime(__DIR__ . '/js/so-device-location.js') ?>"></script>
   <script src="js/so-appearance.js?v=<?= (int)filemtime(__DIR__ . '/js/so-appearance.js') ?>"></script>
   <script src="js/os-window-manager.js?v=<?= (int)filemtime(__DIR__ . '/js/os-window-manager.js') ?>"></script>
   <script src="js/os-media-cloud.js?v=<?= (int)filemtime(__DIR__ . '/js/os-media-cloud.js') ?>"></script>

@@ -2170,6 +2170,7 @@ Escribe help o usa uno de los botones disponibles.</pre>
     <a href="s3.php"><i class="fas fa-hard-drive"></i> Drive Clásico</a>
     <?php endif; ?>
     <a href="dataword3d.php"><i class="fas fa-cubes"></i> Drive 3D</a>
+    <button type="button" data-os-reload><i class="fas fa-rotate"></i> Actualizar escritorio</button>
     <button type="button" data-os-about data-toggle="modal" data-target="#modalAcercaArcadeCloud"><i class="fas fa-circle-info"></i> Acerca de</button>
     <a href="logout.php" class="is-danger"><i class="fas fa-right-from-bracket"></i> Cerrar sesión</a>
   </div>

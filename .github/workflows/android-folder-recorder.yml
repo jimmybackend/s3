@@ -1,0 +1,34 @@
+name: Android folder recording regression
+on:
+  pull_request:
+    paths:
+      - 'android-app/**'
+      - 'drive/so.php'
+      - 'drive/js/so-folders.js'
+      - 'drive/js/so-folder-recorder.js'
+      - 'drive/css/os-folder-recorder.css'
+      - 'drive/tests/os_folder_recorder_test.cjs'
+      - '.github/workflows/android-folder-recorder.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'android-app/**'
+      - 'drive/so.php'
+      - 'drive/js/so-folders.js'
+      - 'drive/js/so-folder-recorder.js'
+      - 'drive/css/os-folder-recorder.css'
+      - 'drive/tests/os_folder_recorder_test.cjs'
+      - '.github/workflows/android-folder-recorder.yml'
+permissions:
+  contents: read
+jobs:
+  folder-recorder:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate Web OS PHP/JS
+        run: |
+          php -l drive/so.php
+          node --check drive/js/so-folders.js
+          node --check drive/js/so-folder-recorder.js
+          node --test drive/tests/os_folder_recorder_test.cjs

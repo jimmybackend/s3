@@ -602,7 +602,14 @@ class BackgroundTaskCenter {
 
     try {
       const task = this.tasks.find((item) => String(item.control_id || item.id || '') === taskId || String(item.id || '') === taskId);
-      if (task && String(task.kind || '') === 'upload' && action === 'dismiss') {
+      if (task && String(task.kind || '') === 'upload' && action === 'retry_upload') {
+        const manager = this.window.ArcadeCloudUploadManager;
+        if (!manager || typeof manager.retryUploadTask !== 'function') {
+          throw new Error('El recuperador de subidas no está disponible en esta página.');
+        }
+        const started = await manager.retryUploadTask(task);
+        if (started) this.notify('Archivo validado. Recuperación multipart iniciada.', 'success');
+      } else if (task && String(task.kind || '') === 'upload' && action === 'dismiss') {
         this.dismissClientUpload(task);
         const controlId = String(task.control_id || '');
         if (controlId.startsWith('upload-task:')) {

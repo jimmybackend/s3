@@ -308,7 +308,12 @@ public final class MainActivity extends Activity {
 
     private static String safeFileName(String name) {
         if (name == null || name.isEmpty()) return "archivo-descargado";
-        String safe = name.replaceAll("[\\/\u0000-\u001f\u007f]", "_");
+        StringBuilder cleaned = new StringBuilder(name.length());
+        for (int i = 0; i < name.length(); i++) {
+            char c = name.charAt(i);
+            cleaned.append(c < 32 || c == 127 || c == '/' || c == 92 ? '_' : c);
+        }
+        String safe = cleaned.toString().trim();
         if (safe.equals(".") || safe.equals("..") || safe.isEmpty()) safe = "archivo-descargado";
         return safe.length() > 160 ? safe.substring(safe.length() - 160) : safe;
     }

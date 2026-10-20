@@ -7,6 +7,8 @@ class ArcadeCloudUploadCenter {
     this.tasks = new Map();
     // Keep browser File/Blob references for retries without searching the original again.
     this.retrySources = new Map();
+    this.activeTransfers = new Map();
+    this.cancelledTasks = new Set();
     this.serverTaskSyncAt = new Map();
     this.localQueue = Promise.resolve();
     this.modal = null;
@@ -356,13 +358,14 @@ class ArcadeCloudUploadCenter {
     const task = this.createTask(name, route, source || 'Archivo', Number(blob?.size || 0), 'local_put');
     this.retrySources.set(task.id, { blob, name, route, source: source || 'Archivo' });
     this.localQueue = this.localQueue
-      .then(() => this.runLocal(task, blob, name, route))
+      .then(() => { if (!this.cancelledTasks.has(task.id)) return this.runLocal(task, blob, name, route); })
       .catch(() => {});
     this.setPanelStatus(name + ' agregado a Tareas. Puedes seguir navegando.', 'success');
     return task.id;
   }
 
   async runLocal(task, blob, name, route) {
+    if (this.cancelledTasks.has(task.id)) return;
     this.updateTask(task.id, {
       status: 'running',
       progress: 1,
@@ -374,6 +377,7 @@ class ArcadeCloudUploadCenter {
 
     try {
       const sha256 = await this.sha256Hex(blob);
+      if (this.cancelledTasks.has(task.id)) return;
       const init = new URLSearchParams({
         mode: 'local_put',
         action: 'init',
@@ -407,6 +411,7 @@ class ArcadeCloudUploadCenter {
       }
 
       uploadToken = String(initJson.upload_token);
+      if (this.cancelledTasks.has(task.id)) { await this.cancelLocal(uploadToken); return; }
       this.updateTask(task.id, { progress: 4, detail: 'Subiendo directamente a Amazon S3.' });
       const transferStartedAt = Date.now();
 
@@ -425,8 +430,9 @@ class ArcadeCloudUploadCenter {
             speed_bps: speedBps,
             eta_seconds: etaSeconds
           }
-        }, true);
+        }, task.id);
       });
+      if (this.cancelledTasks.has(task.id)) { await this.cancelLocal(uploadToken); return; }
 
       completeStarted = true;
       this.updateTask(task.id, {
@@ -456,17 +462,11 @@ class ArcadeCloudUploadCenter {
       if (uploadToken && !completeStarted) {
         await this.cancelLocal(uploadToken);
       }
+      if (this.cancelledTasks.has(task.id)) return;
       this.failTask(task.id, error);
-      // Automatic single retry only before complete, when the previous upload token
-      // has been cancelled. Never replay an ambiguous FileS3 confirmation.
-      if (!completeStarted && String(task.metadata?.source || '') === 'Dropzone'
-          && !task._automaticRequeued) {
-        task._automaticRequeued = true;
-        const nextId = this.enqueueLocal(blob, route, 'Dropzone', name);
-        const next = this.tasks.get(nextId);
-        if (next) next._automaticRequeued = true;
-        this.updateTask(task.id, { detail: String(task.detail || '') + ' · Reintento automático en cola.' });
-      }
+      // Never requeue stalled/slow transfers, deliberate cancellation or ambiguous
+      // failures. The user decides whether a failed upload should be attempted again.
+      // This prevents repeated transfers when the network is persistently degraded.
     }
   }
 
@@ -843,7 +843,7 @@ class ArcadeCloudUploadCenter {
 
   updateTask(id, changes, throttled = false) {
     const task = this.tasks.get(id);
-    if (!task) return;
+    if (!task || (this.cancelledTasks.has(String(id)) && String(changes.status || '') !== 'cancelled')) return;
     const now = Date.now();
     if (throttled && task._lastEmit && now - task._lastEmit < 350) {
       Object.assign(task, changes, { updated_at: new Date().toISOString() });
@@ -878,6 +878,24 @@ class ArcadeCloudUploadCenter {
     this.notify('Subida con error: ' + message, 'danger');
   }
 
+  cancelUploadTask(id) {
+    const key = String(id || '');
+    const task = this.tasks.get(key);
+    if (!task || !['queued', 'pending', 'running'].includes(String(task.status))) return false;
+    // Completion/DB registration cannot safely be interrupted after S3 PUT.
+    if (Number(task.progress || 0) >= 96) return false;
+    this.cancelledTasks.add(key);
+    const xhr = this.activeTransfers.get(key);
+    if (xhr) xhr.abort();
+    this.updateTask(key, {
+      status: 'cancelled',
+      detail: 'Subida cancelada por el usuario.',
+      actions: [{ id: 'dismiss', label: 'Eliminar de Tareas', tone: 'muted', confirm: true }],
+      metadata: { ...task.metadata, speed_bps: 0, eta_seconds: 0 }
+    });
+    return true;
+  }
+
   dismissTask(id) {
     const key = String(id || '');
     const task = this.tasks.get(key);
@@ -887,6 +905,8 @@ class ArcadeCloudUploadCenter {
     if (!['completed', 'failed', 'cancelled'].includes(status)) return false;
 
     this.retrySources.delete(key);
+    this.cancelledTasks.delete(key);
+    this.activeTransfers.delete(key);
     this.tasks.delete(key);
     this.document.dispatchEvent(new CustomEvent('drive:client-upload-task', {
       detail: { removed: key }
@@ -1006,9 +1026,10 @@ class ArcadeCloudUploadCenter {
   // Browser-to-S3 transfers: measure actual byte advancement, not repeated progress events.
   // The 90s watchdog also rejects sustained near-zero throughput so a slow upload
   // cannot block the upload queue for tens of minutes.
-  putToS3(url, blob, onProgress, multipart = false) {
+  putToS3(url, blob, onProgress, multipart = false, taskId = '') {
     return new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest();
+      if (taskId) this.activeTransfers.set(taskId, xhr);
       const idleMs = 90000;
       const slowWindowMs = 90000;
       const minimumBytesPerSecond = 32 * 1024;
@@ -1022,6 +1043,7 @@ class ArcadeCloudUploadCenter {
         if (settled) return;
         settled = true;
         clearInterval(watchdog);
+        if (taskId && this.activeTransfers.get(taskId) === xhr) this.activeTransfers.delete(taskId);
         if (error) reject(error);
         else resolve(etag);
       };
@@ -1084,8 +1106,8 @@ class ArcadeCloudUploadCenter {
     });
   }
 
-  putBlob(url, blob, onProgress) {
-    return this.putToS3(url, blob, onProgress, false);
+  putBlob(url, blob, onProgress, taskId = '') {
+    return this.putToS3(url, blob, onProgress, false, taskId);
   }
 
   putPart(url, blob, onProgress) {

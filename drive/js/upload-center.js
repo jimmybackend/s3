@@ -430,7 +430,7 @@ class ArcadeCloudUploadCenter {
             speed_bps: speedBps,
             eta_seconds: etaSeconds
           }
-        }, true, task.id);
+        }, task.id);
       });
       if (this.cancelledTasks.has(task.id)) { await this.cancelLocal(uploadToken); return; }
 

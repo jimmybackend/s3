@@ -642,7 +642,9 @@ class BackgroundTaskCenter {
 
     const needsConfirm = button.dataset.confirm === '1';
     if (needsConfirm) {
-      const question = action === 'cancel'
+      const question = action === 'cancel_upload'
+        ? '¿Cancelar la subida ahora? Se interrumpirá la transferencia y no se reintentará automáticamente.'
+        : action === 'cancel'
         ? '¿Detener esta tarea? El servidor la detendrá en un punto seguro para no dejar una operación a medias.'
         : '¿Quitar esta tarea de la lista? Cuando exista historial de costos se conservará.';
       if (!await this.confirmInOs(question)) return;
@@ -655,7 +657,15 @@ class BackgroundTaskCenter {
 
     try {
       const task = this.tasks.find((item) => String(item.control_id || item.id || '') === taskId || String(item.id || '') === taskId);
-      if (task && String(task.kind || '') === 'upload' && action === 'retry_upload') {
+      if (task && String(task.kind || '') === 'upload' && action === 'cancel_upload') {
+        const manager = this.window.ArcadeCloudUploadManager;
+        if (!manager || typeof manager.cancelUploadTask !== 'function'
+            || !manager.cancelUploadTask(String(task.id || ''))) {
+          throw new Error('La subida ya no puede cancelarse desde esta pestaña.');
+        }
+        this.notify('Se canceló la transferencia. Puedes eliminar la tarea de la lista.', 'success');
+        await this.refresh();
+      } else if (task && String(task.kind || '') === 'upload' && action === 'retry_upload') {
         const manager = this.window.ArcadeCloudUploadManager;
         if (!manager || typeof manager.retryUploadTask !== 'function') {
           throw new Error('El recuperador de subidas no está disponible en esta página.');
@@ -1144,8 +1154,20 @@ class BackgroundTaskCenter {
         <div class="bg-task-active-detail">${this.escapeHtml(task.detail || 'Procesando…')}</div>
         <div class="bg-task-active-meta">${pieces.map((item) => `<span>${this.escapeHtml(item)}</span>`).join('')}</div>
         <div class="bg-task-progress ${progress.cssClass}"><span style="${progress.widthStyle}"></span></div>
+        ${this.uploadCancelHtml(task)}
       </article>
     `;
+  }
+
+  uploadCancelHtml(task) {
+    const manager = this.window.ArcadeCloudUploadManager;
+    const local = manager?.tasks?.get?.(String(task.id || ''));
+    if (task.kind !== 'upload' || !local ||
+        !['queued', 'pending', 'running'].includes(String(local.status || '')) ||
+        Number(local.progress || 0) >= 96) return '';
+    return '<div class="bg-task-actions">' + this.actionHtml(task, {
+      id: 'cancel_upload', label: 'Cancelar subida', tone: 'danger', confirm: true
+    }) + '</div>';
   }
 
   taskListHtml(tasks) {
@@ -1257,7 +1279,10 @@ class BackgroundTaskCenter {
     }
 
     const progress = this.progressInfo(task, status, meta);
-    const actions = Array.isArray(task.actions) ? task.actions : [];
+    const actions = Array.isArray(task.actions) ? [...task.actions] : [];
+    if (this.uploadCancelHtml(task) && !actions.some((action) => action.id === 'cancel_upload')) {
+      actions.push({ id: 'cancel_upload', label: 'Cancelar subida', tone: 'danger', confirm: true });
+    }
     const actionHtml = actions.length
       ? `<div class="bg-task-actions">${actions.map((action) => this.actionHtml(task, action)).join('')}</div>`
       : '';

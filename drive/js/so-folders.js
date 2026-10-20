@@ -161,6 +161,9 @@ class ArcadeCloudOsFolderActions {
     };
 
     body.addEventListener('contextmenu', showCurrentFolderMenu);
+    // A simple tap on empty Explorer space must expose folder actions on mobile.
+    // The entry guard above preserves normal file/folder selection and opening.
+    body.addEventListener('click', showCurrentFolderMenu);
 
   }
 

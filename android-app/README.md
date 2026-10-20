@@ -1,5 +1,19 @@
 # ArcadeCloud Android (APK de pruebas)
 
+## Descargar APK Android 0.6.0 (versión de pruebas actual)
+
+**[ArcadeCloud Android 0.6.0 — instalador APK](releases/ArcadeCloud-Android-0.6.0-debug.apk)**
+
+Descarga directa: https://raw.githubusercontent.com/jimmybackend/s3/main/android-app/releases/ArcadeCloud-Android-0.6.0-debug.apk
+
+- APK de 38,881 bytes, compilado desde `main` tras el PR #498.
+- GitHub Actions `39419721040`, artifact `12263317719`.
+- SHA-256 del APK: `4a5c07e2c91bb43e09ab835b870e31a1cf2ff07ddffc4fed11442f94532ca2e2`.
+- Se verificó el SHA-256 antes de importar el instalador al repositorio.
+- Solo solicita ubicación, micrófono y cámara: **no solicita contactos**.
+- Es una APK de depuración: una actualización desde versiones anteriores puede requerir desinstalar la anterior debido a firmas diferentes. Los archivos S3 no se ven afectados.
+
+
 ## Android 0.6.0 — únicamente ubicación, micrófono y cámara
 
 La versión 0.6.0 **no solicita acceso a contactos**. Se eliminó `READ_CONTACTS` del manifiesto Android, la lógica de solicitudes, y los tests que permitían pedir ese permiso.
@@ -12,7 +26,7 @@ La versión 0.6.0 **no solicita acceso a contactos**. Se eliminó `READ_CONTACTS
 APK compilable mediante el flujo Android de GitHub Actions. Las versiones 0.5.0 y anteriores se mantienen solo por motivos históricos; para verificar la eliminación de contactos instala 0.6.0. Las firmas de depuración pueden requerir desinstalar la versión previa (esto elimina datos locales de la app, no los archivos S3).
 
 
-## Descargar APK Android 0.5.0 (pruebas)
+## Descarga histórica de APK Android 0.5.0 (anterior; solicita contactos)
 
 **[ArcadeCloud Android 0.5.0 — instalador APK](releases/ArcadeCloud-Android-0.5.0-debug.apk)**
 

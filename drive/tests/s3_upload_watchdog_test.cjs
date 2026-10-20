@@ -3,7 +3,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const vm = require('node:vm');
 const source = fs.readFileSync(require('node:path').join(__dirname, '../js/upload-center.js'), 'utf8');
-const from = source.indexOf('  putToS3(url, blob, onProgress, multipart = false) {');
+const from = source.indexOf('  putToS3(url, blob, onProgress, multipart = false, taskId = '') {');
 const to = source.indexOf('  chooseChunkSize(file)', from);
 assert.ok(from !== -1 && to > from, 'S3 upload methods must exist');
 
@@ -30,6 +30,7 @@ function harness() {
   });
   const UploadMethods = vm.runInContext('(class UploadMethods {' + source.slice(from, to) + '})', ctx);
   const obj = new UploadMethods();
+  obj.activeTransfers = new Map();
   obj.window = { location: { origin: 'https://drive.example' } };
   return { obj, request: () => request, tick: (ms) => { now += ms; if (interval) interval(); } };
 }
@@ -72,5 +73,13 @@ function harness() {
     await assert.rejects(result, /90 segundos sin avance/);
     assert.equal(h.request().aborted, true);
   }
-  process.stdout.write('S3 watchdog: 4 tests passed\\n');
+  {
+    const h = harness();
+    const result = h.obj.putBlob('https://s3.example', { size: 2 * 1024 * 1024 }, () => {}, 'upload:test');
+    assert.equal(h.obj.activeTransfers.has('upload:test'), true);
+    h.obj.activeTransfers.get('upload:test').abort();
+    await assert.rejects(result, /interrumpió/);
+    assert.equal(h.obj.activeTransfers.size, 0);
+  }
+  process.stdout.write('S3 watchdog: 5 tests passed\\n');
 })().catch(e => { console.error(e); process.exitCode = 1; });

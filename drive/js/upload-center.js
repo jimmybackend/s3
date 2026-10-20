@@ -815,7 +815,12 @@ class ArcadeCloudUploadCenter {
       status: 'failed',
       progress: 100,
       detail: message + (suffix ? ' ' + suffix : ''),
-      actions: [{ id: 'dismiss', label: 'Eliminar de Tareas', tone: 'muted', confirm: true }]
+      actions: [
+        ...(String(this.tasks.get(id)?.metadata?.upload_mode || '') === 'chunked'
+          ? [{ id: 'retry_upload', label: 'Reanudar subida', tone: 'primary', confirm: false }]
+          : []),
+        { id: 'dismiss', label: 'Eliminar de Tareas', tone: 'muted', confirm: true }
+      ]
     });
     this.notify('Subida con error: ' + message, 'danger');
   }

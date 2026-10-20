@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">ArcadeCloud</string>
+    <string name="offline_message">No se pudo conectar con ArcadeCloud. Toca aquí para reintentar.</string>
+    <string name="download_complete">Descarga guardada en Descargas/ArcadeCloud.</string>
+    <string name="download_error">No se pudo completar la descarga.</string>
+    <string name="unsupported_link">Este enlace no se puede abrir desde la aplicación.</string>
+</resources>

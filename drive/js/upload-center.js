@@ -535,6 +535,41 @@ class ArcadeCloudUploadCenter {
     }
   }
 
+  async retryUploadTask(task) {
+    const meta = task && task.metadata || {};
+    if (String(meta.upload_mode || '') !== 'chunked' || String(task.status || '') !== 'failed') {
+      throw new Error('Solo se pueden recuperar subidas multipart fallidas.');
+    }
+    const route = String(meta.destination || '');
+    const name = String(task.title || '');
+    const size = Number(meta.bytes_total || 0);
+    if (!name || !Number.isSafeInteger(size) || size <= 0) {
+      throw new Error('Esta tarea no conserva los datos necesarios para recuperarla.');
+    }
+    // El navegador no puede recuperar automáticamente un archivo local tras cerrar la pestaña.
+    // El usuario debe seleccionarlo; jamás reutilizar una ruta o un archivo arbitrario.
+    const file = await new Promise((resolve) => {
+      const input = this.document.createElement('input');
+      input.type = 'file';
+      input.style.display = 'none';
+      this.document.body.appendChild(input);
+      const cleanup = (file) => { input.remove(); resolve(file || null); };
+      input.addEventListener('change', () => cleanup(input.files && input.files[0]), { once: true });
+      input.click();
+    });
+    if (!file) return false;
+    if (file.name !== name || file.size !== size) {
+      throw new Error('El archivo seleccionado no coincide con el nombre y tamaño de la tarea original.');
+    }
+    const saved = this.loadMultipartSession(file, route);
+    if (!saved || !saved.uploadId || !saved.key || !saved.stateId) {
+      throw new Error('No hay una sesión multipart recuperable para este archivo y destino en este navegador. No se iniciará una subida duplicada.');
+    }
+    // startMultipart consulta a S3 las partes recibidas antes de transferir solo las pendientes.
+    this.startMultipart(file, route);
+    return true;
+  }
+
   async startMultipart(file, requestedRoute) {
     if (!file) return;
     const task = this.createTask(file.name, requestedRoute, 'Multipart', Number(file.size || 0), 'chunked');

@@ -1,5 +1,18 @@
 # ArcadeCloud Android (APK de pruebas)
 
+## Descargar APK Android 0.5.0 (pruebas)
+
+**[ArcadeCloud Android 0.5.0 — instalador APK](releases/ArcadeCloud-Android-0.5.0-debug.apk)**
+
+Descarga directa: https://raw.githubusercontent.com/jimmybackend/s3/main/android-app/releases/ArcadeCloud-Android-0.5.0-debug.apk
+
+- 39,529 bytes, APK de depuración, creado desde `main` tras PR #496.
+- Workflow de GitHub Actions `39417108162`, artefacto `12261379195`.
+- SHA-256: `b257eaae2c1ec6166aae190d7bc52014c6a16b8693a8bbb415271cca1ad66585`.
+- Archivo importado al repositorio tras comparar el checksum contra el artefacto original.
+- Las APK anteriores (0.1, 0.2, 0.3 y 0.4) se mantienen solo como versiones históricas.
+- Firmas debug de distintas ejecuciones pueden ser incompatibles: quizá debas desinstalar la APK anterior antes de instalar 0.5.0. Se borrarán cookies y sesión locales; los archivos en S3 no se tocan.
+
 ## Android 0.5.0 — ubicación requerida y contactos opcionales
 
 Esta edición solicita los permisos **al abrir la APK por primera vez**, ya que Android no admite requerirlos durante la instalación. Antes de mostrar `so.php`, el cliente comprueba:

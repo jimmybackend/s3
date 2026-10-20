@@ -193,7 +193,7 @@ class ArcadeCloudFileApplicationService {
       rotateButton(90, 'Girar derecha', 'fa-rotate-right');
       save.addEventListener('click', async () => {
         const signedAngle = angle === 270 ? -90 : angle;
-        const steps = signedAngle === 180 ? [90, 90] : [signedAngle];
+        const steps = [signedAngle];
         save.disabled = true;
         const previous = save.innerHTML;
         save.textContent = 'Guardando…';

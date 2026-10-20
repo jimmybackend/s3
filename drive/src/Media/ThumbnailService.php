@@ -283,6 +283,36 @@ final class ThumbnailService
         }
     }
 
+    /** Remove all variants generated from this original (S3 and local cache). */
+    public function invalidateForFile(int $userId, string $key): void
+    {
+        $key = $this->normalizeKey($key);
+        $root = 'Data/';
+        $rest = $key;
+        if (preg_match('~^(Data\\d*/)(.*)$~i', $key, $match)) {
+            $root = $match[1];
+            $rest = $match[2];
+        }
+        $withoutExtension = preg_replace('/\\.[A-Za-z0-9]+$/', '', $rest) ?? $rest;
+        $prefix = 'thumbs/' . $root . $withoutExtension . '__';
+        $continuation = null;
+        do {
+            $options = ['Bucket' => $this->bucket, 'Prefix' => $prefix, 'MaxKeys' => 1000];
+            if ($continuation !== null) $options['ContinuationToken'] = $continuation;
+            $result = $this->s3->listObjectsV2($options);
+            foreach (($result['Contents'] ?? []) as $item) {
+                $variantKey = (string)($item['Key'] ?? '');
+                if (!str_starts_with($variantKey, $prefix) || !str_ends_with($variantKey, '.jpg')) continue;
+                $this->s3->deleteObject(['Bucket' => $this->bucket, 'Key' => $variantKey]);
+                @unlink($this->localPath($userId, $variantKey));
+            }
+            $continuation = !empty($result['IsTruncated'])
+                ? (string)($result['NextContinuationToken'] ?? '')
+                : null;
+            if ($continuation === '') break;
+        } while ($continuation !== null);
+    }
+
     private function lookupFile(int $userId, string $key): ?array
     {
         $slash = strrpos($key, '/');

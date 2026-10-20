@@ -1,5 +1,19 @@
 # ArcadeCloud Android (APK de pruebas)
 
+## Descargar ArcadeCloud Android 0.7.0 (versión de pruebas actual)
+
+**[APK ArcadeCloud 0.7.0 — grabación de voz y video corregida](releases/ArcadeCloud-Android-0.7.0-debug.apk)**
+
+Descarga directa desde `main`: https://raw.githubusercontent.com/jimmybackend/s3/main/android-app/releases/ArcadeCloud-Android-0.7.0-debug.apk
+
+- Tamaño: **39,881 bytes**. APK Android de depuración.
+- Compilación desde `main` después del PR #500. GitHub Actions workflow `39434258176`, artifact `12268434727`.
+- SHA-256: `8874076b13171c8340774a7cd3bf288b395eb98fdcd9bf5b65bfb1bde9027502`.
+- APK cotejada con el artefacto original antes de almacenarla en `releases/`; no contiene permisos de contactos.
+- Puede ser necesario desinstalar la APK anterior si tiene una firma debug diferente. Esto borra los datos locales de la aplicación, **no** los archivos almacenados en S3.
+- **Se requiere actualizar el servidor Drive web** para obtener la corrección de `so-folder-recorder.js`. Esta APK por sí sola no modifica la EC2.
+
+
 ## Android 0.7.0 — solución para grabaciones en Samsung/WebView
 
 Si la APK tiene autorizados cámara y micrófono pero en una carpeta aparece el error genérico de grabación, puede deberse a un **formato multimedia no disponible en WebView** o a un fallo de reproducción de la vista previa; no necesariamente a un permiso denegado.
@@ -15,7 +29,7 @@ Si la APK tiene autorizados cámara y micrófono pero en una carpeta aparece el 
 **Importante:** no instalar la APK histórica 0.6.0 y esperar el respaldo nativo. Las descargas publicadas en `releases/` son APK de depuración, con posibles firmas incompatibles entre versiones.
 
 
-## Descargar APK Android 0.6.0 (versión de pruebas actual)
+## Descargar APK Android 0.6.0 (versión histórica)
 
 **[ArcadeCloud Android 0.6.0 — instalador APK](releases/ArcadeCloud-Android-0.6.0-debug.apk)**
 

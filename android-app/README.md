@@ -1,5 +1,17 @@
 # ArcadeCloud Android (APK de pruebas)
 
+## Android 0.6.0 — únicamente ubicación, micrófono y cámara
+
+La versión 0.6.0 **no solicita acceso a contactos**. Se eliminó `READ_CONTACTS` del manifiesto Android, la lógica de solicitudes, y los tests que permitían pedir ese permiso.
+
+- **Ubicación (obligatoria para entrar):** al primer inicio, Android solicita ubicación aproximada o precisa. Si no se autoriza o los servicios de ubicación están apagados, ArcadeCloud muestra una pantalla de acceso pendiente en lugar de cargar `so.php`. No se puede bloquear la *instalación* de una APK por permisos; sí se restringe el *uso* hasta que estén habilitados. Es una comprobación local y **no** envía ni almacena coordenadas.
+- **Micrófono y cámara:** tras habilitar ubicación, Android solicita los permisos necesarios al primer inicio. Si se deniegan, el usuario puede volver a autorizarlos al grabar voz/video o tomar fotografías desde una carpeta.
+- **Contactos:** no se piden, no se consultan, no se sincronizan ni se almacenan.
+- **Archivos:** se siguen seleccionando mediante el selector del sistema Android, sin acceso general al almacenamiento.
+
+APK compilable mediante el flujo Android de GitHub Actions. Las versiones 0.5.0 y anteriores se mantienen solo por motivos históricos; para verificar la eliminación de contactos instala 0.6.0. Las firmas de depuración pueden requerir desinstalar la versión previa (esto elimina datos locales de la app, no los archivos S3).
+
+
 ## Descargar APK Android 0.5.0 (pruebas)
 
 **[ArcadeCloud Android 0.5.0 — instalador APK](releases/ArcadeCloud-Android-0.5.0-debug.apk)**

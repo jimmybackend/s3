@@ -1,7 +1,6 @@
 package com.arcadecloud.drive;
 
 import org.junit.Test;
-
 import static org.junit.Assert.*;
 
 public final class StartupPermissionPolicyTest {
@@ -16,14 +15,6 @@ public final class StartupPermissionPolicyTest {
         assertFalse(StartupPermissionPolicy.canEnterDrive(false, true));
         assertFalse(StartupPermissionPolicy.canEnterDrive(true, false));
         assertFalse(StartupPermissionPolicy.canEnterDrive(false, false));
-        assertTrue(StartupPermissionPolicy.canEnterDrive(true, true));
-    }
-
-    @Test public void contactsRequestIsOneTimeAndOptionalForEntry() {
-        assertTrue(StartupPermissionPolicy.shouldAskContacts(false, false));
-        assertFalse(StartupPermissionPolicy.shouldAskContacts(true, false));
-        assertFalse(StartupPermissionPolicy.shouldAskContacts(false, true));
-        // Contacts do not affect the ability to access Drive.
         assertTrue(StartupPermissionPolicy.canEnterDrive(true, true));
     }
 }

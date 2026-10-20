@@ -1,8 +1,8 @@
 package com.arcadecloud.drive;
 
 /**
- * Android user-consent decision logic. Permits either approximate or precise
- * foreground location, and never treats contacts as mandatory for Drive access.
+ * Foreground location is the only required permission for entering Drive.
+ * Approximate location is accepted; no contacts or GPS coordinates are read.
  */
 public final class StartupPermissionPolicy {
     private StartupPermissionPolicy() {}
@@ -13,9 +13,5 @@ public final class StartupPermissionPolicy {
 
     public static boolean canEnterDrive(boolean hasLocationPermission, boolean deviceLocationEnabled) {
         return hasLocationPermission && deviceLocationEnabled;
-    }
-
-    public static boolean shouldAskContacts(boolean alreadyAsked, boolean contactsGranted) {
-        return !alreadyAsked && !contactsGranted;
     }
 }

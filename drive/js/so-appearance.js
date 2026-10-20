@@ -4,6 +4,7 @@ class ArcadeCloudOsAppearance {
     this.document = doc;
     this.remote = win.ARCADECLOUD_OS_APPEARANCE || {};
     this.nodeKey = String(this.remote.nodeKey || 'default');
+    this.nativeApp = /ArcadeCloudAndroidApp\/1\b/.test(win.navigator?.userAgent || '');
     this.mobileDevice = /Android/i.test(win.navigator?.userAgent || '');
     this.storageKey = 'arcadecloud-os-appearance-v2:' + this.nodeKey + (this.mobileDevice ? ':android-device' : '');
     this.defaults = { theme: 'dark', wallpaper: '', wallpaperName: '', wallpaperEnabled: true, windowOpacity: 94, menuOpacity: 98, chromeOpacity: 96 };

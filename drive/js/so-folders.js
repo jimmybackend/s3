@@ -248,6 +248,7 @@ class ArcadeCloudOsFolderActions {
       'create-folder':['Nueva carpeta','Crea una subcarpeta en esta ubicación.'],
       'record-audio':['Grabar nota de voz','Graba una nota y guárdala directamente en esta carpeta.'],
       'record-video':['Grabar video','Graba con cámara y micrófono para guardar aquí.'],
+      'record-photo':['Tomar fotografía','Usa la cámara para guardar una imagen en esta carpeta.'],
       'extract-text':['Extraer texto de documentos','Extrae texto de imágenes y documentos compatibles de esta carpeta.'],
       sync:['Sincronizar desde S3','Actualiza esta carpeta con el contenido de Amazon S3.'],
       rename:['Cambiar nombre','Cambia el nombre de la carpeta seleccionada.'],
@@ -280,8 +281,8 @@ class ArcadeCloudOsFolderActions {
     if (copyFolder?.querySelector('span')) copyFolder.querySelector('span').textContent = 'Copiar carpeta';
     if (copyFolder) copyFolder.title = 'Prepara una copia de esta carpeta para pegarla en otro lugar.';
     const list = isCurrent
-      ? [action('open-new'),action('create-empty-file'),action('create-document'),action('create-folder'),action('record-audio'),action('record-video'),clipboard('paste'),action('extract-text'),action('sync')]
-      : [action('open'),action('open-new'),action('create-empty-file'),action('create-document'),action('create-folder'),action('record-audio'),action('record-video'),action('move'),clipboard('copy'),action('rename'),action('delete'),copyFolder,clipboard('cut'),clipboard('paste'),action('extract-text'),action('sync')];
+      ? [action('open-new'),action('create-empty-file'),action('create-document'),action('create-folder'),action('record-audio'),action('record-video'),action('record-photo'),clipboard('paste'),action('extract-text'),action('sync')]
+      : [action('open'),action('open-new'),action('create-empty-file'),action('create-document'),action('create-folder'),action('record-audio'),action('record-video'),action('record-photo'),action('move'),clipboard('copy'),action('rename'),action('delete'),copyFolder,clipboard('cut'),clipboard('paste'),action('extract-text'),action('sync')];
     // "Copiar" and "Copiar carpeta" use the same established clipboard action.
     // Never duplicate a DOM control or issue an unexpected second copy action.
     const seen = new Set();
@@ -343,9 +344,10 @@ class ArcadeCloudOsFolderActions {
       return;
     }
 
-    if (action === 'record-audio' || action === 'record-video') {
+    if (['record-audio', 'record-video', 'record-photo'].includes(action)) {
       const recorder = this.window.ArcadeCloudFolderRecorder;
-      if (!recorder?.open?.(folder, action === 'record-video' ? 'video' : 'audio')) {
+      const mode = action === 'record-photo' ? 'photo' : action === 'record-video' ? 'video' : 'audio';
+      if (!recorder?.open?.(folder, mode)) {
         this.notify('No se pudo abrir la grabadora de esta carpeta.', 'warning');
       }
       return;

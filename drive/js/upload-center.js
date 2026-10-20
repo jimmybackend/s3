@@ -449,6 +449,16 @@ class ArcadeCloudUploadCenter {
         await this.cancelLocal(uploadToken);
       }
       this.failTask(task.id, error);
+      // Automatic single retry only before complete, when the previous upload token
+      // has been cancelled. Never replay an ambiguous FileS3 confirmation.
+      if (!completeStarted && String(task.metadata?.source || '') === 'Dropzone'
+          && !task._automaticRequeued) {
+        task._automaticRequeued = true;
+        const nextId = this.enqueueLocal(blob, route, 'Dropzone', name);
+        const next = this.tasks.get(nextId);
+        if (next) next._automaticRequeued = true;
+        this.updateTask(task.id, { detail: String(task.detail || '') + ' · Reintento automático en cola.' });
+      }
     }
   }
 
@@ -851,8 +861,8 @@ class ArcadeCloudUploadCenter {
       progress: 100,
       detail: message + (suffix ? ' ' + suffix : ''),
       actions: [
-        ...(String(this.tasks.get(id)?.metadata?.upload_mode || '') === 'chunked'
-          ? [{ id: 'retry_upload', label: 'Reanudar subida', tone: 'primary', confirm: false }]
+        ...( ['chunked', 'local_put'].includes(String(this.tasks.get(id)?.metadata?.upload_mode || ''))
+          ? [{ id: 'retry_upload', label: 'Volver a poner en cola', tone: 'primary', confirm: false }]
           : []),
         { id: 'dismiss', label: 'Eliminar de Tareas', tone: 'muted', confirm: true }
       ]

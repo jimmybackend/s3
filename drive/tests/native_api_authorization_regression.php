@@ -58,7 +58,7 @@ namespace {
     }
     $case = $argv[1]; $GLOBALS['case'] = $case;
     register_shutdown_function(static function(): void { fwrite(STDERR,(string)(http_response_code() ?: 200)); });
-    $session = new \ArcadeCloud\Drive\Security\SessionManager(); $session->start();
+    $session = new \ArcadeCloud\Drive\Security\SessionManager(static fn(...$args): bool => true); $session->start();
     if(!in_array($case,['anonymous','csrf','login_method','login_bad','login_ok','rate_limit'],true)) {
         $session->establishAuthenticatedUser('native@example.test',2,'user');
         $session->set('native_issued_at',time()); $session->set('native_last_seen',time());

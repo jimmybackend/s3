@@ -5,6 +5,8 @@ namespace ArcadeCloud\Drive\Security;
 
 final class SessionManager
 {
+    public function __construct(private ?\Closure $nativeValidator = null) {}
+
     public function start(): void
     {
         if (session_status() === PHP_SESSION_ACTIVE) {
@@ -63,6 +65,12 @@ final class SessionManager
             $now = time();
             if ($now - (int)$_SESSION['native_issued_at'] > 43200
                 || $now - (int)($_SESSION['native_last_seen'] ?? 0) > 1800) {
+                return false;
+            }
+            // Fail closed for native credentials even when another legacy endpoint is called directly.
+            if ($this->nativeValidator === null || !($this->nativeValidator)(
+                $this->userName(), $this->userId(), (string)$this->get('native_credential_fingerprint', '')
+            )) {
                 return false;
             }
             $_SESSION['native_last_seen'] = $now;
@@ -143,6 +151,8 @@ final class SessionManager
     ): void {
         $this->start();
         session_regenerate_id(true);
+        // A fresh login starts a new authentication context. Native login reapplies its policy below.
+        unset($_SESSION['native_issued_at'], $_SESSION['native_last_seen'], $_SESSION['native_credential_fingerprint']);
 
         $_SESSION['usuario'] = $email;
         $_SESSION['user_id'] = $userId;

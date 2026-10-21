@@ -58,7 +58,7 @@ La app no consulta MySQL ni AWS con credenciales propias. HTTPS valida certifica
 - `background_tasks.php`: tareas del servidor del usuario; se muestran además de las transferencias locales.
 - `crear_carpeta.php`, `renombrar_carpeta.php`, `renombrar_archivo.php`, `mover_archivo.php`, `eliminar_archivo.php`, `unlock_file.php`: POST de formularios y X-Drive-CSRF existentes. Los servicios actuales vuelven a verificar propiedad/protección.
 
-Antes de usar endpoints antiguos, DriveRepository consulta la sesión nativa y valida estado de cuenta y huella de la credencial. Sesión nativa: máximo 12 horas, inactividad 30 minutos; también puede vencer por la política de almacenamiento PHP. NativeDriveController detecta cambio de contraseña o cuenta inactiva. No se cambia el sistema de roles ni se crea una tabla de tokens. Una URL S3 ya firmada mantiene su vigencia hasta su expiración: no se promete revocación inmediata de una URL emitida.
+Antes de usar endpoints antiguos, DriveRepository consulta la sesión nativa. Además, el guard compartido SessionManager valida estado de cuenta y huella de credencial en el servidor para todas las sesiones nativas, aunque se invoque un endpoint antiguo directamente sin pasar por la app. DriveApplication inyecta esa validación usando AuthenticationRepository; un SessionManager sin verificador rechaza sesiones nativas de forma cerrada. Sesión nativa: máximo 12 horas, inactividad 30 minutos; también puede vencer por la política de almacenamiento PHP. NativeDriveController detecta cambio de contraseña o cuenta inactiva. No se cambia el sistema de roles ni se crea una tabla de tokens. Una URL S3 ya firmada mantiene su vigencia hasta su expiración: no se promete revocación inmediata de una URL emitida.
 
 ## Funcionalidad implementada y límites
 
@@ -85,7 +85,7 @@ Antes de usar endpoints antiguos, DriveRepository consulta la sesión nativa y v
 
 ## Verificación y aceptación pendiente
 
-Tests PHP ejecutables sin DB/AWS: `native_drive_policy_regression.php` (33 aserciones) y `native_api_authorization_regression.php` (18 escenarios de controlador con colaboradores aislados). Los colaboradores de pruebas son dobles declarados expresamente: no prueban MySQL/S3 reales. Pruebas Android unitarias: límites multipart, ETA, URLs/nodos. Pruebas instrumentadas: pantalla Compose y almacén Android Keystore. CI publica los reportes correspondientes; compilar el test APK no equivale a ejecutar el emulador.
+Tests PHP ejecutables sin DB/AWS: `native_session_revocation_regression.php` (9 aserciones sobre el guard compartido), `native_drive_policy_regression.php` (33 aserciones) y `native_api_authorization_regression.php` (18 escenarios de controlador con colaboradores aislados). Los colaboradores de pruebas son dobles declarados expresamente: no prueban MySQL/S3 reales. Pruebas Android unitarias: límites multipart, ETA, URLs/nodos. Pruebas instrumentadas: pantalla Compose y almacén Android Keystore. CI publica los reportes correspondientes; compilar el test APK no equivale a ejecutar el emulador.
 
 Antes de distribuir ampliamente, en Samsung Android 14 básico y otra marca:
 

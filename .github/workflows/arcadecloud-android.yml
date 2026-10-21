@@ -50,6 +50,7 @@ jobs:
           coverage: none
       - name: Backend authorization and isolation tests
         run: |
+          php ../drive/tests/native_session_revocation_regression.php
           php ../drive/tests/native_drive_policy_regression.php
           php ../drive/tests/native_api_authorization_regression.php
           php ../drive/tests/mobile_capture_contract_smoke.php

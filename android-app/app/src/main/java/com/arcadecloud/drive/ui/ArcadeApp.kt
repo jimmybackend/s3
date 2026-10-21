@@ -248,7 +248,11 @@ import java.io.File
         rows.forEach { t ->
             if(t.optString("status") in listOf("running", "queued")) {
                 val work = androidx.work.WorkManager.getInstance(context).getWorkInfosForUniqueWork(t.getString("id")).get().lastOrNull()
-                if(work?.state == androidx.work.WorkInfo.State.CANCELLED) vm.graph.transfers.update(t.getString("id")) { it.put("status", "paused") }
+                if(work?.state == androidx.work.WorkInfo.State.CANCELLED) vm.graph.transfers.update(t.getString("id")) { it.put("status", "paused").put("speed", 0) }
+                if(work?.state in listOf(androidx.work.WorkInfo.State.ENQUEUED, androidx.work.WorkInfo.State.BLOCKED) && t.optString("status") == "running")
+                    vm.graph.transfers.update(t.getString("id")) { it.put("status", "queued").put("speed", 0) }
+                if(work == null && System.currentTimeMillis() - t.optLong("created") > 10000)
+                    vm.graph.transfers.update(t.getString("id")) { it.put("status", "paused").put("error", "Trabajo Android no programado. Revisa y reintenta la tarea.") }
             }
         }
         vm.graph.transfers.list(vm.repo.owner, vm.repo.node)

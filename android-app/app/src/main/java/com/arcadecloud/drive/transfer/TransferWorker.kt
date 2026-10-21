@@ -33,8 +33,13 @@ class TransferWorker(context: Context, params: WorkerParameters) : CoroutineWork
     private val s3 = OkHttpClient.Builder().followRedirects(false).followSslRedirects(false)
         .connectTimeout(30, TimeUnit.SECONDS).readTimeout(90, TimeUnit.SECONDS).writeTimeout(90, TimeUnit.SECONDS)
         .callTimeout(30, TimeUnit.MINUTES).build()
+    @Volatile private var lastPolicyCheck = 0L
     private fun checkActive() {
         if (isStopped) throw CancellationException()
+        // Check cancellation on every buffer; limit disk/Keystore ownership checks to twice/sec.
+        val now = System.nanoTime()
+        if (now - lastPolicyCheck < 500_000_000L) return
+        lastPolicyCheck = now
         val task = store.get(taskId)
         if (task.optString("status") in listOf("paused", "cancelled")) throw CancellationException()
         if (task.getLong("owner") != repo.owner || task.getString("node") != repo.node || task.getString("generation") != repo.generation) throw SessionExpired()

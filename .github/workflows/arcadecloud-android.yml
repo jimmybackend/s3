@@ -10,7 +10,7 @@ on:
   pull_request:
     paths: ['android-app/**', 'drive/api/native.php', 'drive/src/Application/NativeDrive*', 'drive/src/Http/Controller/NativeDriveController.php', 'drive/src/Security/SessionManager.php', 'drive/src/Storage/FolderRepository.php', 'drive/tests/native_*', '.github/workflows/arcadecloud-android.yml']
   push:
-    branches: [main, feature/android-native-client]
+    branches: [main]
     paths: ['android-app/**', '.github/workflows/arcadecloud-android.yml']
 
 permissions:

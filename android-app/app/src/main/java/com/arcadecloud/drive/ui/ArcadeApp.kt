@@ -8,6 +8,7 @@ import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -24,6 +25,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
@@ -89,6 +93,7 @@ import java.io.File
 @Composable fun LoginScreen(busy: Boolean, error: String?, onLogin: (String,String,String) -> Unit) {
     var email by rememberSaveable { mutableStateOf("") }; var password by remember { mutableStateOf("") }
     var node by rememberSaveable { mutableStateOf(NodePolicy.nodes.first()) }
+    var passwordVisible by remember { mutableStateOf(false) }
     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Column(Modifier.widthIn(max = 520.dp).fillMaxWidth().padding(24.dp).imePadding().verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(16.dp)) {
             Icon(Icons.Default.Cloud, null, Modifier.size(56.dp), tint = MaterialTheme.colorScheme.primary)
@@ -97,11 +102,21 @@ import java.io.File
             NodePolicy.nodes.forEach { candidate -> Row(Modifier.fillMaxWidth().clickable(enabled = !busy) { node = candidate }, verticalAlignment = Alignment.CenterVertically) {
                 RadioButton(node == candidate, onClick = { node = candidate }, enabled = !busy); Text(Uri.parse(candidate).host ?: candidate)
             } }
-            OutlinedTextField(email, { email = it }, label = { Text("Correo") }, singleLine = true, modifier = Modifier.fillMaxWidth(), enabled = !busy)
-            OutlinedTextField(password, { password = it }, label = { Text("Contraseña") }, visualTransformation = PasswordVisualTransformation(), singleLine = true, modifier = Modifier.fillMaxWidth(), enabled = !busy)
+            OutlinedTextField(email, { email = it }, label = { Text("Correo o identificador de acceso") },
+                keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.None, autoCorrectEnabled = false, keyboardType = KeyboardType.Email),
+                singleLine = true, modifier = Modifier.fillMaxWidth(), enabled = !busy)
+            OutlinedTextField(password, { password = it }, label = { Text("Contraseña") },
+                visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.None, autoCorrectEnabled = false,
+                    keyboardType = if (passwordVisible) KeyboardType.PasswordVisible else KeyboardType.Password),
+                trailingIcon = { IconButton(onClick = { passwordVisible = !passwordVisible }, enabled = !busy) {
+                    Icon(if (passwordVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
+                        if (passwordVisible) "Ocultar contraseña" else "Mostrar contraseña")
+                } }, singleLine = true, modifier = Modifier.fillMaxWidth(), enabled = !busy)
             error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
-            Button(onClick = { onLogin(node, email.trim(), password); password = "" }, enabled = !busy && email.isNotBlank() && password.isNotEmpty(), modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp)) { Text(if (busy) "Conectando…" else "Iniciar sesión") }
+            Button(onClick = { passwordVisible = false; onLogin(node, email.trim(), password) }, enabled = !busy && email.isNotBlank() && password.isNotEmpty(), modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp)) { Text(if (busy) "Conectando…" else "Iniciar sesión") }
             Text("Conexión HTTPS con tu nodo ArcadeCloud", style = MaterialTheme.typography.bodySmall)
+            Text("Versión ${com.arcadecloud.drive.BuildConfig.VERSION_NAME}", style = MaterialTheme.typography.bodySmall)
         }
     }
 }

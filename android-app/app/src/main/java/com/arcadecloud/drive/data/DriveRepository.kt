@@ -39,7 +39,7 @@ class DriveRepository(private val vault: SessionVault) {
         if (fields != null) request.post(FormBody.Builder().apply { fields.forEach { (k,v) -> add(k,v) } }.build())
             .header("X-Drive-CSRF", vault.read().optString("csrf"))
         client.newCall(request.build()).execute().use { response ->
-            if (response.code == 401) throw SessionExpired()
+            if (response.code == 401 && path != "api/native.php?action=login") throw SessionExpired()
             val raw = response.body?.string() ?: throw IOException("Respuesta vacía")
             val json = try { JSONObject(raw) } catch (_: Exception) { throw ApiError(response.code, "El servidor no ofrece la API nativa. Requiere desplegar esta versión del backend.") }
             if (!response.isSuccessful || !json.optBoolean("ok", false)) throw ApiError(response.code,

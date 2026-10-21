@@ -67,6 +67,8 @@ final class NativeDriveController extends AbstractJsonController
             JsonResponse::error('Operación desconocida.', 404);
         } catch (\Throwable $error) {
             $status = in_array($error->getCode(), [401,403,404,423], true) ? $error->getCode() : 500;
+            if ($status === 500 && str_contains(strtolower($error->getMessage()), 'protegido')) $status = 423;
+            if ($status === 500 && str_contains(strtolower($error->getMessage()), 'no encontrado')) $status = 404;
             $this->fail($error, $status);
         }
     }

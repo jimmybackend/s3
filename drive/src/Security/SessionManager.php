@@ -58,6 +58,15 @@ final class SessionManager
 
     public function isAuthenticated(): bool
     {
+        // Native sessions share all existing guards, including upload/mutation endpoints.
+        if (isset($_SESSION['native_issued_at'])) {
+            $now = time();
+            if ($now - (int)$_SESSION['native_issued_at'] > 43200
+                || $now - (int)($_SESSION['native_last_seen'] ?? 0) > 1800) {
+                return false;
+            }
+            $_SESSION['native_last_seen'] = $now;
+        }
         return isset($_SESSION['usuario']) && trim((string)$_SESSION['usuario']) !== '';
     }
 

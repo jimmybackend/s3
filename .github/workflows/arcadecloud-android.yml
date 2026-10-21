@@ -1,19 +1,24 @@
-name: ArcadeCloud Android debug APK
+name: ArcadeCloud Android Native
 
 on:
   workflow_dispatch:
+    inputs:
+      instrumented:
+        description: Run Android 14 emulator smoke tests
+        type: boolean
+        default: true
   pull_request:
-    paths:
-      - 'android-app/**'
-      - '.github/workflows/arcadecloud-android.yml'
+    paths: ['android-app/**', 'drive/api/native.php', 'drive/src/Application/NativeDrive*', 'drive/src/Http/Controller/NativeDriveController.php', 'drive/src/Security/SessionManager.php', 'drive/src/Storage/FolderRepository.php', 'drive/tests/native_*', '.github/workflows/arcadecloud-android.yml']
   push:
-    branches: [main]
-    paths:
-      - 'android-app/**'
-      - '.github/workflows/arcadecloud-android.yml'
+    branches: [main, feature/android-native-client]
+    paths: ['android-app/**', '.github/workflows/arcadecloud-android.yml']
 
 permissions:
   contents: read
+
+concurrency:
+  group: android-native-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   android:
@@ -24,24 +29,91 @@ jobs:
         working-directory: android-app
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
-      - name: Install Android SDK 35 using runner tools
-        run: |
-          SDKMANAGER="$(find "$ANDROID_HOME/cmdline-tools" -path '*/bin/sdkmanager' -type f | head -n 1)"
-          test -n "$SDKMANAGER"
-          yes | "$SDKMANAGER" --licenses > /dev/null || true
-          "$SDKMANAGER" --install 'platforms;android-35' 'build-tools;35.0.0'
+      - uses: android-actions/setup-android@v3
+      - run: sdkmanager 'platforms;android-36' 'build-tools;35.0.0'
       - uses: gradle/actions/setup-gradle@v4
         with:
-          gradle-version: '8.11.1'
-      - name: Unit tests, lint and build debug APK
-        run: gradle --no-daemon :app:testDebugUnitTest :app:lintDebug :app:assembleDebug
+          gradle-version: '8.13'
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+      - name: Backend authorization and isolation tests
+        run: |
+          php ../drive/tests/native_drive_policy_regression.php
+          php ../drive/tests/native_api_authorization_regression.php
+          php ../drive/tests/mobile_capture_contract_smoke.php
+          node --test ../drive/tests/os_folder_recorder_test.cjs
+          find ../drive/src -name 'NativeDrive*.php' -exec php -l {} \;
+      - name: Unit tests, lint and installable APK
+        run: gradle --no-daemon :app:testDebugUnitTest :app:lintDebug :app:assembleDebug :app:assembleDebugAndroidTest
+      - name: Version, source commit, checksum and signing identity
+        run: |
+          mkdir -p app/build/outputs/delivery
+          cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/delivery/ArcadeCloud-Android-0.9.0-native-preview-debug.apk
+          python3 tools/build_metadata.py app/build/outputs/delivery
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --print-certs app/build/outputs/apk/debug/app-debug.apk > app/build/outputs/delivery/signing-certificate.txt
+          cat app/build/outputs/delivery/build-info.json >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-artifact@v4
         with:
-          name: arcadecloud-android-debug-apk
-          path: android-app/app/build/outputs/apk/debug/app-debug.apk
+          name: arcadecloud-native-0.9.0-debug-${{ github.run_number }}
+          path: android-app/app/build/outputs/delivery/
           if-no-files-found: error
+          retention-days: 30
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: android-native-test-reports-${{ github.run_number }}
+          path: |
+            android-app/app/build/reports/
+            android-app/app/build/test-results/
+          retention-days: 14
+
+  instrumented:
+    needs: android
+    if: github.event_name != 'workflow_dispatch' || inputs.instrumented
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: android-app
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.13'
+      - name: Enable runner KVM access
+        working-directory: .
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          arch: x86_64
+          target: default
+          profile: pixel_2
+          working-directory: android-app
+          disable-animations: true
+          script: gradle --no-daemon :app:connectedDebugAndroidTest
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: android-native-instrumented-reports-${{ github.run_number }}
+          path: |
+            android-app/app/build/reports/androidTests/
+            android-app/app/build/outputs/androidTest-results/
           retention-days: 14

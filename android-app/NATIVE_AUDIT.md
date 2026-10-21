@@ -1,0 +1,100 @@
+# Auditoría y entrega inicial — 21 de octubre de 2026
+
+## Base inspeccionada
+
+`jimmybackend/s3`, `main` en `ea79751796d7e36501289174e7d78854b291bbc8`. Trabajo separado en `feature/android-native-client`. Sin merge, despliegue, migración SQL ni acciones AWS.
+
+Se leyeron MainActivity.java, AndroidManifest.xml, ambos build.gradle, README, so-folder-recorder.js, upload-center.js, so.php, workflow Android, AuthController/AuthenticationService/AuthenticationRepository/SessionManager, FileListService, FolderRepository/FolderQueryService, FileAccessService/FileRecordLocator, controladores de mutaciones y protección, UploadController y los drivers local_put/chunked. Se revisaron los puntos de entrada de ZIP/ZIP Lambda y las tareas unificadas.
+
+Hallazgos:
+
+- MainActivity.java era un contenedor WebView con cookies, selectores y puente de permisos web. Que Android concediera un permiso no garantizaba disponibilidad del codificador web ni compatibilidad de getUserMedia/MediaRecorder. La nueva app elimina esa dependencia; la compatibilidad de hardware sigue pendiente de prueba física.
+- build.gradle declaraba 0.8.0/code 8; README encabezaba 0.7.0 y contenía varios bloques históricos llamados «actual». Se archivó íntegramente como LEGACY_RELEASES y se definió una sola versión nueva: 0.9.0-native-preview/code 9. No se reetiquetaron APK antiguas.
+- AuthenticationService verifica las credenciales reales, status Activo, migra credenciales heredadas si corresponde, regenera ID de sesión y registra acceso. No se encontró un segundo factor global en ese servicio: los controles adicionales de archivos/herramientas son específicos. La app no implementa acceso a herramientas TOTP ni omite sus controles.
+- El catálogo real usa FileS3 y S3Folders. FileListService filtra user_id_, Ruta y Found y pagina SQL. Su resultado interno contiene PasswordHash: nunca se devuelve directamente desde la API nueva. NativeDrivePolicy emite una lista explícita de campos; oculta metadatos de archivos bloqueados.
+- La raíz se deriva de UserStoragePath, no del teléfono: Data/ para usuario 1 según Config, DataN/ para los demás. La API nativa rechaza rutas ajenas/traversal en vez de reinterpretarlas como la raíz. Los nombres físicos no se usan como etiquetas de carpeta.
+- local_put mantiene un upload_token ligado a sesión; completa verificando el objeto y registrando FileS3. chunked crea una sesión S3, firma partes, consulta ListParts para recuperar y finalmente registra el archivo.
+- La finalización chunked no es idempotente frente a una respuesta perdida. El cliente guarda la fase completing antes de enviarla y, en recuperación, consulta el catálogo por la clave exacta. Si no puede verificarla, conserva el estado y muestra fallo: no crea otra subida automáticamente. Endurecer reconciliación servidor es trabajo pendiente.
+- upload-center tiene watchdog de 90 s sin avance y umbral 32 KB/s sostenido 90 s para blobs >= 1 MiB. Android reproduce esos límites, con comprobación cada 5 s, más timeouts de red. No se midió ancho de banda real de los nodos ni se atribuye la lentitud a una causa concreta sin evidencias.
+- El cliente viejo imponía una puerta local de ubicación que no enviaba coordenadas al servidor. La preview nativa no pide ubicación ni contactos. Esa condición local no era parte de AuthenticationService. Confirmar la política de ubicación deseada antes de una distribución general.
+
+## Módulos y responsabilidades
+
+| Ruta | Responsabilidad |
+| --- | --- |
+| app/src/main/.../ui | Material 3, Navigation Compose, ViewModel/StateFlow, explorador, login, tareas, preferencias |
+| app/src/main/.../domain | DTO de catálogo, políticas HTTPS/nodos, cálculo multipart/ETA |
+| app/src/main/.../data | Repositorio HTTP y cookies/secreto de sesión AES-GCM con Android Keystore |
+| app/src/main/.../media | CameraX foto/video, MediaRecorder Android AAC/M4A, Media3, revisión previa |
+| app/src/main/.../transfer | WorkManager, checkpoints cifrados atómicos, subidas S3 y descargas sin cookies hacia S3 |
+| legacy-webview | Cliente y tests anteriores íntegros, excluidos del APK nativo |
+| drive/api/native.php | Entrada JSON nueva |
+| NativeDriveController/Service/Policy | Autenticación adaptada, sesión, catálogo paginado, DTO y descargas autorizadas |
+| FolderRepository | Nueva consulta de hijos con user_id_ + ParentPrefix + Found y LIMIT/OFFSET |
+| SessionManager | Caducidad solo para sesiones marcadas como nativas; los clientes web existentes no cambian |
+| .github/workflows/arcadecloud-android.yml | Tests PHP/Android, lint, APK, procedencia, emulador Android 14 |
+
+La app no consulta MySQL ni AWS con credenciales propias. HTTPS valida certificados normales; no hay trust-all, bypass TLS ni logging de cookies/contraseñas/URLs firmadas. El cliente de objetos S3 es distinto del cliente PHP y no sigue redirects. Nodos permitidos: Drive y FastDrive; no hay cambio de nodo con sesión activa.
+
+## Contratos HTTP
+
+**Nuevo `api/native.php`:**
+
+| Método / action | Función / autorización |
+| --- | --- |
+| GET bootstrap | Cookie de sesión prelogin y token upload_csrf; no datos de usuario |
+| POST login | Form email/password; X-Drive-CSRF, LoginRateLimiter y AuthenticationService reales |
+| GET session | Usuario real, alias, raíz y CSRF de la sesión; valida estado e identidad |
+| POST logout | Sesión + CSRF; SessionManager::destroy |
+| GET browse | Sesión; route/page/folder_page/search/type; catálogo paginado por propietario |
+| GET file | Sesión; key; FileRecordLocator autoriza lectura antes de devolver DTO; usado para verificar finalización |
+| GET download | Sesión; key; FileAccessService firma GET y registra intención de descarga en actividad/costos |
+
+**Reutilizados sin duplicar servicios:**
+
+- `api/upload.php?mode=local_put&action=init/complete`: nombre, ruta_objetivo, task_id y tamano/upload_token conforme al contrato existente.
+- `api/upload.php?mode=chunked&action=init/part/complete`: filename/filesize/mime, stateId/uploadId/key, step=resume, partNumber/contentLength y etags.
+- `api/upload.php?mode=task&action=progress/fail`: bytes, velocidad, ETA y estado; el backend conserva el control de finalización.
+- `background_tasks.php`: tareas del servidor del usuario; se muestran además de las transferencias locales.
+- `crear_carpeta.php`, `renombrar_carpeta.php`, `renombrar_archivo.php`, `mover_archivo.php`, `eliminar_archivo.php`, `unlock_file.php`: POST de formularios y X-Drive-CSRF existentes. Los servicios actuales vuelven a verificar propiedad/protección.
+
+Antes de usar endpoints antiguos, DriveRepository consulta la sesión nativa y valida estado de cuenta y huella de la credencial. Sesión nativa: máximo 12 horas, inactividad 30 minutos; también puede vencer por la política de almacenamiento PHP. NativeDriveController detecta cambio de contraseña o cuenta inactiva. No se cambia el sistema de roles ni se crea una tabla de tokens. Una URL S3 ya firmada mantiene su vigencia hasta su expiración: no se promete revocación inmediata de una URL emitida.
+
+## Funcionalidad implementada y límites
+
+- Login/logout nativos; restauración cifrada de cookie de sesión. Sin guardar contraseña. Caducidad y errores de servidor visibles. Contratos reales implementados; login de producción todavía no verificado porque el endpoint nuevo no está desplegado.
+- Navegación, breadcrumbs y paginación independiente de archivos/carpetas; creación/renombrado de carpeta; propiedades, búsqueda por nombre y filtro por extensión. Orden alfabético **solo de la página cargada**; el backend conserva su orden por fecha. Selección múltiple de la página, mover y eliminar con confirmación; renombrar archivo y desbloquear mediante contraseña existente. Bloqueados no se descargan por decisión local solamente: el backend los vuelve a validar.
+- Foto con CameraX y EXIF del archivo capturado, frontal/trasera, vista previa/repetir; video SD con audio para reducir carga en gama básica; MP4 hasta 5 min/180 MiB; pausa/detención; audio Android AAC en contenedor M4A con pausa/detención. No se usan APIs multimedia del navegador.
+- La cámara solo abre tras permiso solicitado mediante botón. La grabación exige un toque independiente. Preview no inicia reproducción automática. Audio/video se detienen al ON_STOP; no hay grabación en segundo plano. Fallos de permiso, cámara ausente/ocupada, encoder y espacio se reportan por sus rutas respectivas; falta probar códigos específicos en Samsung. Llamadas e interrupciones reales pendientes.
+- Galería mediante Photo Picker y documentos mediante SAF; no se pide almacenamiento general. Copia estable en disco privado para reintento de providers no seekables: puede requerir espacio adicional. Nunca se carga un archivo grande completo en RAM.
+- Subida directa HTTPS a S3: PUT pequeño y multipart de 8 MiB a partir de 8 MiB. El video no pasa por un temporal EC2 en el cliente nuevo. Se conservan las comprobaciones/moderación existentes del servidor, que pueden leer el objeto al completar.
+- WorkManager persiste el trabajo; checkpoints cifrados guardan destino, propietario, nodo, generación de sesión, clave/uploadId y fase. Progreso refleja bytes escritos al socket; completado solo tras respuesta de complete o verificación de catálogo. Velocidad es promedio de la parte activa, ETA aproximada y tiempo transcurrido incluye esperas desde el primer arranque. No es confirmación de recepción remota byte a byte.
+- La recuperación multipart consulta partes reales de S3 a través del backend; los PUT pequeños reinician su mismo objeto pendiente. Pérdida de respuesta de init se trata como incierta y no genera otro objeto automáticamente. El usuario ve el fallo y debe revisar las tareas antes de volver a seleccionar.
+- Se puede pausar/reintentar/cancelar localmente. Cancelar detiene el trabajo Android y señaliza la tarea, pero no aborta ni borra por sí mismo un multipart S3: aplica la limpieza existente del servidor. El archivo fuente/checkpoint de una tarea fallida se conserva. Las capturas temporales se limpian al confirmar su subida; las descargas completadas quedan privadas para el visor.
+- Los trabajos se ligan a la generación de sesión para impedir que otra cuenta o un login distinto herede una tarea. Tras logout/relogin no se retoman automáticamente las sesiones anteriores; falta una recuperación explícita tras reautenticación. Se puede volver a seleccionar el original previa revisión de la tarea del servidor.
+- Descargas directas firmadas a disco privado, progreso y apertura con Media3, imagen o app Android mediante FileProvider. Reintentos de descargas reinician el GET; **no hay resume por Range validado con ETag**. No hay exportación SAF de la descarga en esta preview.
+- Android puede suspender trabajos por batería, cuotas, red o force-stop. Las transferencias usan foreground dataSync y notificaciones cuando Android las permite; la autorización de notificaciones es opcional. No se promete continuidad tras force-stop ni después de borrar datos. Sin prueba física de ahorro energético Samsung.
+
+## Etapas
+
+1. Base nativa: implementada para validación; integración real pendiente de despliegue autorizado y cuenta de pruebas.
+2. Multimedia: implementada; validación física y comportamiento bajo todas las interrupciones pendientes.
+3. Transferencias: primera implementación; pruebas reales grandes/red y recuperación después de reautenticación pendientes.
+4. Avanzadas: **pendientes** ZIP/Lambda individual, descarga de carpetas, ArcadeLink, FederationCloud/nodos federados, biblioteca 3D, preferencias de nodo y equivalencia de todas las acciones web. Ninguna se simula con WebView. Herramientas que requieren TOTP no están expuestas.
+5. Validación: tests automatizados, lint, APK y CI; auditoría de seguridad completa y aceptación física pendientes. No es una declaración de que toda la migración está terminada.
+
+## Verificación y aceptación pendiente
+
+Tests PHP ejecutables sin DB/AWS: `native_drive_policy_regression.php` (33 aserciones) y `native_api_authorization_regression.php` (18 escenarios de controlador con colaboradores aislados). Los colaboradores de pruebas son dobles declarados expresamente: no prueban MySQL/S3 reales. Pruebas Android unitarias: límites multipart, ETA, URLs/nodos. Pruebas instrumentadas: pantalla Compose y almacén Android Keystore. CI publica los reportes correspondientes; compilar el test APK no equivale a ejecutar el emulador.
+
+Antes de distribuir ampliamente, en Samsung Android 14 básico y otra marca:
+
+- Login real/logout/expiración/revocación; dos usuarios distintos y archivos bloqueados, sin acceso cruzado.
+- Fotos frontal/trasera y EXIF en horizontal/vertical; video con audio, pausa y límite; notas de voz cortas/largas; revisar antes de guardar.
+- Permisos denegados/permanentes/revocados, cámara ocupada, almacenamiento lleno, codificador no disponible y llamada entrante.
+- Rotar antes/durante/después de capturar, minimizar y restaurar, cerrar proceso y volver a abrir; confirmar detención segura y ausencia de grabación oculta.
+- Subir archivo pequeño y uno >132 MB con red buena/lenta; comparar bytes reales, tareas servidor y registro final; pérdida de red a mitad de parte y después de complete.
+- Pausa/cancelación desde app/notificación, reinicio de proceso, force-stop y restricciones de batería. Confirmar que una tarea no se marca completa al encolarla.
+- Pantalla pequeña, tablet, fuente Android ampliada y lector de pantalla; comprobar controles de grabación y formularios con teclado.
+
+No se usaron credenciales de usuario, no se eliminó ningún objeto S3 de prueba, no se probó hardware físico y no se actualizó producción. Las pruebas reales de extremo a extremo requieren primero revisión y autorización del despliegue backend.

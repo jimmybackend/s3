@@ -54,8 +54,9 @@ class TransferWorker(context: Context, params: WorkerParameters) : CoroutineWork
         } catch (e: CancellationException) { throw e }
         catch (e: Exception) {
             val task = store.get(taskId)
-            val retry = e is IOException && runAttemptCount < 4 && task.optString("phase") != "completing"
-            val message = when (e) { is StalledTransfer -> "Subida bloqueada: 90 segundos sin avance o menos de 32 KB/s. Revisa la conexión."; is SessionExpired -> e.message!!; is ApiError -> e.message ?: "Servidor rechazó la tarea"; else -> "Transferencia interrumpida: ${e.javaClass.simpleName}. Puedes reintentar desde Tareas." }
+            val noSpace = generateSequence<Throwable>(e) { it.cause }.any { (it as? android.system.ErrnoException)?.errno == android.system.OsConstants.ENOSPC || it.message?.contains("ENOSPC", true) == true }
+            val retry = !noSpace && e is IOException && runAttemptCount < 4 && task.optString("phase") != "completing"
+            val message = if (noSpace) "No hay espacio suficiente en el teléfono. Libera espacio y reintenta." else when (e) { is StalledTransfer -> "Subida bloqueada: 90 segundos sin avance o menos de 32 KB/s. Revisa la conexión."; is SessionExpired -> e.message!!; is ApiError -> e.message ?: "Servidor rechazó la tarea"; is IllegalArgumentException -> e.message ?: "Datos de transferencia inválidos"; is IllegalStateException -> e.message ?: "La transferencia necesita revisión"; else -> "Transferencia interrumpida: ${e.javaClass.simpleName}. Puedes reintentar desde Tareas." }
             store.update(taskId) { if (it.optString("status") !in listOf("paused", "cancelled")) it.put("status", if (retry) "queued" else "failed").put("error", message) }
             if (task.optString("direction") != "download") runCatching { signal(if (retry) "queued" else "failed", task.optLong("done"), task.optLong("bytes")) }
             if (retry) Result.retry() else Result.failure()

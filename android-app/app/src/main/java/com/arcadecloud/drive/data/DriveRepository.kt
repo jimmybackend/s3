@@ -33,7 +33,7 @@ class DriveRepository(private val vault: SessionVault) {
         .connectTimeout(30, TimeUnit.SECONDS).readTimeout(90, TimeUnit.SECONDS).writeTimeout(90, TimeUnit.SECONDS).build()
     suspend fun request(path: String, fields: Map<String,String>? = null): JSONObject = withContext(Dispatchers.IO) {
         if (!path.startsWith("api/native.php")) request("api/native.php?action=session")
-        require(!path.startsWith("/") && !path.contains(":") && !path.contains(".."))
+        require(!path.substringBefore('?').let { it.startsWith("/") || it.contains(":") || it.contains("..") })
         val request = Request.Builder().url(node + path).header("Accept", "application/json")
             .header("User-Agent", "ArcadeCloudAndroidNative/0.9.0")
         if (fields != null) request.post(FormBody.Builder().apply { fields.forEach { (k,v) -> add(k,v) } }.build())

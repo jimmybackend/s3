@@ -7,9 +7,12 @@ import java.util.UUID
 import java.util.concurrent.TimeUnit
 
 object TransferQueue {
-    fun enqueue(context: Context, uri: String, name: String, mime: String, route: String): String {
+    @Synchronized fun enqueue(context: Context, uri: String, name: String, mime: String, route: String): String {
         val app = context.applicationContext as ArcadeApplication
         check(app.repository.owner > 0)
+        check(app.transfers.list(app.repository.owner, app.repository.node).none {
+            it.optString("generation") == app.repository.generation && it.optString("name") == name && it.optString("route") == route && it.optString("status") in listOf("queued", "running", "paused")
+        }) { "Ya existe una subida pendiente con este nombre en esa carpeta. Revisa Tareas antes de repetirla." }
         val id = UUID.randomUUID().toString()
         app.transfers.update(id) { it.put("uri", uri).put("name", name).put("mime", mime).put("route", route)
             .put("node", app.repository.node).put("owner", app.repository.owner).put("generation", app.repository.generation)

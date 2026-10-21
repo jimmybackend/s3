@@ -64,7 +64,10 @@ fun CaptureScreen(destination: String, onSave: (String, String, String) -> Unit,
         onDispose { disposed = true; provider?.unbindAll(); image = null; video = null }
     }
     DisposableEffect(lifecycle) {
-        val observer = LifecycleEventObserver { _, event -> if (event == Lifecycle.Event.ON_STOP) vm.stop() }
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_STOP) vm.stop()
+            if (event == Lifecycle.Event.ON_RESUME) permissionTick++
+        }
         lifecycle.lifecycle.addObserver(observer)
         onDispose { lifecycle.lifecycle.removeObserver(observer) }
     }

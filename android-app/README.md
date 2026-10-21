@@ -1,6 +1,6 @@
-# ArcadeCloud Android Native — 0.9.0 preview
+# ArcadeCloud Android Native — 0.9.1 preview
 
-Cliente Android Kotlin/Compose. El módulo `app` no incluye WebView, Custom Tabs ni HTML. Conserva `com.arcadecloud.drive`, sube `versionCode` de 8 a 9 y utiliza el backend PHP existente.
+Cliente Android Kotlin/Compose. El módulo `app` no incluye WebView, Custom Tabs ni HTML. Conserva `com.arcadecloud.drive`, sube `versionCode` de 8 a 10 y utiliza el backend PHP existente.
 
 **Esta es una primera implementación, no paridad completa con el Drive web ni una versión certificada para Samsung. Requiere desplegar los cambios PHP de esta rama antes de iniciar sesión. No se ha desplegado producción.**
 
@@ -15,12 +15,12 @@ gradle :app:testDebugUnitTest :app:lintDebug :app:assembleDebug :app:assembleDeb
 gradle :app:connectedDebugAndroidTest
 ```
 
-El workflow **ArcadeCloud Android Native** entrega un artefacto `arcadecloud-native-0.9.0-debug-N` con APK, `build-info.json`, `SHA256SUMS` y certificado de firma. El JSON contiene el commit realmente compilado. Las pruebas instrumentadas Android 14 tienen su propio job y resultados; no son pruebas físicas.
+El workflow **ArcadeCloud Android Native** entrega un artefacto `arcadecloud-native-0.9.1-debug-N` con APK, `build-info.json`, `SHA256SUMS` y certificado de firma. El JSON contiene el commit realmente compilado. Las pruebas instrumentadas Android 14 tienen su propio job y resultados; no son pruebas físicas.
 
 ## Instalar
 
 1. Obtener el artefacto de una ejecución verde del PR; verificar SHA-256 contra `SHA256SUMS`.
-2. Instalar `ArcadeCloud-Android-0.9.0-native-preview-debug.apk` en Android 10 o superior.
+2. Instalar `ArcadeCloud-Android-0.9.1-native-preview-debug.apk` en Android 10 o superior.
 3. Autorizar ubicación aproximada o precisa y activar el servicio, como exigía la APK anterior; la app no consulta coordenadas. Elegir Drive o FastDrive e iniciar sesión en la pantalla nativa. FastDrive no se enciende desde esta app.
 4. Abrir una carpeta y usar los botones Subir, Galería o Cámara. La captura exige una acción explícita y luego **Guardar en esta carpeta**.
 5. Revisar transferencias en Tareas; abrir una descarga completada para verla o enviarla a un visor Android mediante FileProvider.

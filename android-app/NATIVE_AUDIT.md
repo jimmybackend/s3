@@ -98,3 +98,11 @@ Antes de distribuir ampliamente, en Samsung Android 14 básico y otra marca:
 - Pantalla pequeña, tablet, fuente Android ampliada y lector de pantalla; comprobar controles de grabación y formularios con teclado.
 
 No se usaron credenciales de usuario, no se eliminó ningún objeto S3 de prueba, no se probó hardware físico y no se actualizó producción. Las pruebas reales de extremo a extremo requieren primero revisión y autorización del despliegue backend.
+
+## Resultado local confirmado
+
+JDK 17, Gradle 8.13, compileSdk 36: `testDebugUnitTest`, `lintDebug`, `assembleDebug` y `assembleDebugAndroidTest` terminaron correctamente. Lint: **0 errores, 32 advertencias** (principalmente versiones disponibles más recientes, recursos históricos y APIs objetivo). No se ha ejecutado emulador local: no hay /dev/kvm; la ejecución instrumentada se solicita en CI. Ninguna advertencia se silenció mediante baseline o desactivación global de lint.
+
+La primera ejecución CI falló durante setup-android, antes de compilar, porque su configuración predeterminada intentaba instalar el paquete SDK obsoleto `tools`. Se fijaron commandline-tools y `platform-tools` explícitos.
+
+Dependencias fijadas a una matriz estable compatible, no a versiones dinámicas: AGP 8.13.2, Kotlin/Compose compiler 2.2.21, BOM 2025.10.01, Activity 1.11.0, Lifecycle 2.9.4, Navigation 2.9.5, WorkManager 2.10.5, CameraX 1.5.3 y Media3 1.8.0. **Hay versiones estables más nuevas; renovar toda la matriz es pendiente antes de release.** Se verificaron las notas oficiales y la compatibilidad compilando esta matriz: [AGP](https://developer.android.com/build/releases/agp-8-13-0-release-notes), [Compose/compiler](https://developer.android.com/jetpack/androidx/releases/compose-kotlin), [BOM](https://developer.android.com/develop/ui/compose/bom), [CameraX](https://developer.android.com/jetpack/androidx/releases/camera), [WorkManager](https://developer.android.com/jetpack/androidx/releases/work), [Navigation](https://developer.android.com/jetpack/androidx/releases/navigation), [Media3](https://developer.android.com/jetpack/androidx/releases/media3).

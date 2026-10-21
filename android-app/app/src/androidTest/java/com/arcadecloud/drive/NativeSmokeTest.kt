@@ -20,7 +20,8 @@ class NativeSmokeTest {
     @get:Rule val compose = createComposeRule()
     @Test fun loginUsesNativeControlsAndReturnsEnteredCredentialsOnlyOnTap() {
         var submitted = ""
-        compose.setContent { ArcadeTheme { LoginScreen(false,null) { node,email,password -> submitted = "$node|$email|$password" } } }
+        var attempts = 0
+        compose.setContent { ArcadeTheme { LoginScreen(false,null) { node,email,password -> attempts++; submitted = "$node|$email|$password" } } }
         compose.onNodeWithText("Iniciar sesión").assertIsDisplayed()
         compose.onNodeWithText("Correo o identificador de acceso").performTextInput("native@example.test")
         compose.onNodeWithText("Contraseña").performTextInput(" aB+&%ñ= 123 ")
@@ -32,6 +33,7 @@ class NativeSmokeTest {
         assertEquals("https://drive.esforzados.com/|native@example.test| aB+&%ñ= 123 ", submitted)
         // A rejected request must allow checking/retrying the same exact input.
         compose.onNodeWithText("Iniciar sesión").performClick()
+        assertEquals(2, attempts)
         assertEquals("https://drive.esforzados.com/|native@example.test| aB+&%ñ= 123 ", submitted)
     }
     @Test fun vaultPersistsEncryptedSessionAndCanRevokeLocally() {

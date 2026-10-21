@@ -16,7 +16,7 @@ Hallazgos:
 - local_put mantiene un upload_token ligado a sesión; completa verificando el objeto y registrando FileS3. chunked crea una sesión S3, firma partes, consulta ListParts para recuperar y finalmente registra el archivo.
 - La finalización chunked no es idempotente frente a una respuesta perdida. El cliente guarda la fase completing antes de enviarla y, en recuperación, consulta el catálogo por la clave exacta. Si no puede verificarla, conserva el estado y muestra fallo: no crea otra subida automáticamente. Endurecer reconciliación servidor es trabajo pendiente.
 - upload-center tiene watchdog de 90 s sin avance y umbral 32 KB/s sostenido 90 s para blobs >= 1 MiB. Android reproduce esos límites, con comprobación cada 5 s, más timeouts de red. No se midió ancho de banda real de los nodos ni se atribuye la lentitud a una causa concreta sin evidencias.
-- El cliente viejo imponía una puerta local de ubicación que no enviaba coordenadas al servidor. La preview nativa no pide ubicación ni contactos. Esa condición local no era parte de AuthenticationService. Confirmar la política de ubicación deseada antes de una distribución general.
+- El cliente viejo imponía una puerta local de ubicación que no enviaba coordenadas al servidor. La preview conserva esa condición mediante RequireLocation nativo: permiso aproximado o preciso y servicios habilitados. No obtiene coordenadas ni pide contactos. Esa condición local es independiente de AuthenticationService.
 
 ## Módulos y responsabilidades
 

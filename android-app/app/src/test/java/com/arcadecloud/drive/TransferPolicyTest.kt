@@ -3,6 +3,12 @@ import com.arcadecloud.drive.domain.*
 import org.junit.Assert.*
 import org.junit.Test
 class TransferPolicyTest {
+    @Test fun legacyLocationPrerequisiteIsPreservedWithoutCoordinates() {
+        assertTrue(com.arcadecloud.drive.ui.StartupPolicy.allowed(true,false,true))
+        assertTrue(com.arcadecloud.drive.ui.StartupPolicy.allowed(false,true,true))
+        assertFalse(com.arcadecloud.drive.ui.StartupPolicy.allowed(true,true,false))
+        assertFalse(com.arcadecloud.drive.ui.StartupPolicy.allowed(false,false,true))
+    }
     @Test fun multipartBoundaries() {
         assertEquals(1, TransferMath.parts(TransferMath.PART))
         assertEquals(2, TransferMath.parts(TransferMath.PART + 1))

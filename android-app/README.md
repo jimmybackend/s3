@@ -21,7 +21,7 @@ El workflow **ArcadeCloud Android Native** entrega un artefacto `arcadecloud-nat
 
 1. Obtener el artefacto de una ejecución verde del PR; verificar SHA-256 contra `SHA256SUMS`.
 2. Instalar `ArcadeCloud-Android-0.9.0-native-preview-debug.apk` en Android 10 o superior.
-3. Elegir Drive o FastDrive e iniciar sesión en la pantalla nativa. FastDrive no se enciende desde esta app.
+3. Autorizar ubicación aproximada o precisa y activar el servicio, como exigía la APK anterior; la app no consulta coordenadas. Elegir Drive o FastDrive e iniciar sesión en la pantalla nativa. FastDrive no se enciende desde esta app.
 4. Abrir una carpeta y usar los botones Subir, Galería o Cámara. La captura exige una acción explícita y luego **Guardar en esta carpeta**.
 5. Revisar transferencias en Tareas; abrir una descarga completada para verla o enviarla a un visor Android mediante FileProvider.
 

@@ -108,7 +108,7 @@ import java.io.File
             OutlinedTextField(password, { password = it }, label = { Text("Contraseña") },
                 visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.None, autoCorrectEnabled = false,
-                    keyboardType = if (passwordVisible) KeyboardType.PasswordVisible else KeyboardType.Password),
+                    keyboardType = KeyboardType.Password),
                 trailingIcon = { IconButton(onClick = { passwordVisible = !passwordVisible }, enabled = !busy) {
                     Icon(if (passwordVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
                         if (passwordVisible) "Ocultar contraseña" else "Mostrar contraseña")

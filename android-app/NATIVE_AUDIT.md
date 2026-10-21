@@ -110,3 +110,31 @@ Dependencias fijadas a una matriz estable compatible, no a versiones dinámicas:
 La auditoría OOP global falla también en el commit base `ea79751796d7e36501289174e7d78854b291bbc8`: el inventario marca `drive/js/so-device-location.js` como script sin clase (`js_needs_migration = 1`). Se reprodujo en un worktree aislado del commit base; este archivo no se modifica en el PR. No se silencia ni se presenta esa auditoría global como verde.
 
 Se rechaza en el teléfono una segunda subida activa/pausada con el mismo nombre y destino; el protocolo chunked existente deriva stateId de usuario/ruta/nombre/tamaño. No se ha demostrado exclusión global contra otra subida web simultánea de ese mismo archivo. Cancelar durante una finalización ya aceptada por el servidor no revierte el archivo guardado. La expiración del PUT pequeño exige revisar la tarea; no se promete renovar la URL preservando el token si el servidor ya descartó esa sesión.
+
+
+## Revisión de acceso 0.9.1 (2026-10-21)
+
+El usuario confirma que las mismas credenciales funcionan en la web. La API pública
+`https://drive.esforzados.com/api/native.php?action=bootstrap` respondió 200 JSON;
+FastDrive respondió HTML, por lo que esa comprobación no acredita disponibilidad de
+su API nativa. No se enviaron credenciales ni se consultó el hash de ninguna cuenta.
+
+NativeDriveController ya delega en AuthenticationService, exactamente como AuthController.
+El servicio usa PasswordCredentialVerifier::verify(), que llama a password_verify().
+Android usa FormBody y PHP postRawString('password'): no debe aplicar trim, hash local,
+cambio de mayúsculas ni normalización Unicode a la contraseña.
+
+Se corrigió una omisión del formulario Android: faltaba configurar el teclado de
+contraseña y desactivar autocorrección. Se añadió mostrar/ocultar contraseña,
+conservación en memoria para reintentar tras rechazo y versión visible antes de entrar.
+La contraseña sigue fuera de rememberSaveable y de SessionVault; desaparece al salir
+de la pantalla. No se cambia el verificador, el hash de cuentas ni la base de datos.
+Esta omisión puede afectar la entrada con teclados del dispositivo; no se ha demostrado
+que explique por sí sola el rechazo reportado.
+
+Pruebas nuevas: AuthenticationService real con repositorio aislado, bcrypt y Argon2id
+cuando está disponible, POST codificado, contraseña con espacios significativos,
+caracteres especiales/Unicode, rechazo de contraseña errónea y del hash como contraseña,
+y cuenta inactiva. Prueba instrumentada del formulario con visualización, envío exacto
+y reintento. Falta repetir el login real en el Samsung con la APK corregida; no se
+presenta la prueba aislada como validación de una cuenta de producción.

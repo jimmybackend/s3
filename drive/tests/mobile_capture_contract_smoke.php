@@ -5,8 +5,8 @@ $root = dirname(__DIR__);
 $page = (string)file_get_contents($root . '/mobile_capture.php');
 $upload = (string)file_get_contents($root . '/mobile-capture-upload.php');
 $script = (string)file_get_contents($root . '/js/mobile-capture.js');
-$native = (string)file_get_contents($root . '/../android-app/app/src/main/java/com/arcadecloud/drive/MainActivity.java');
-$manifest = (string)file_get_contents($root . '/../android-app/app/src/main/AndroidManifest.xml');
+$native = (string)file_get_contents($root . '/../android-app/legacy-webview/src/main/java/com/arcadecloud/drive/MainActivity.java');
+$manifest = (string)file_get_contents($root . '/../android-app/legacy-webview/src/main/AndroidManifest.xml');
 
 $checks = [
     'authenticated mobile page' => str_contains($page, "requireAuthenticated('index.php')"),

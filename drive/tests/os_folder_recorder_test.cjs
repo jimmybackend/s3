@@ -7,7 +7,7 @@ const { ArcadeCloudFolderRecorder } = require('../js/so-folder-recorder.js');
 
 const so = fs.readFileSync(path.join(__dirname, '..', 'so.php'), 'utf8');
 const folders = fs.readFileSync(path.join(__dirname, '..', 'js', 'so-folders.js'), 'utf8');
-const native = fs.readFileSync(path.join(__dirname, '..', '..', 'android-app', 'app', 'src', 'main', 'java', 'com', 'arcadecloud', 'drive', 'MainActivity.java'), 'utf8');
+const native = fs.readFileSync(path.join(__dirname, '..', '..', 'android-app', 'legacy-webview', 'src', 'main', 'java', 'com', 'arcadecloud', 'drive', 'MainActivity.java'), 'utf8');
 const upload = fs.readFileSync(path.join(__dirname, '..', 'js', 'upload-center.js'), 'utf8');
 
 test('capture is available from real folder entries and active folder toolbar', () => {

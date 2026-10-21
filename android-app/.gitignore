@@ -8,3 +8,6 @@ local.properties
 *.keystore
 *.apk
 *.aab
+
+/legacy-webview/build/
+/.kotlin/

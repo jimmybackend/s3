@@ -143,7 +143,11 @@ final class DriveApplication
 
     public function session(): SessionManager
     {
-        return $this->session ??= new SessionManager();
+        return $this->session ??= new SessionManager(function (string $email, int $userId, string $fingerprint): bool {
+            $user = $this->authenticationRepository()->findUserByEmail($email);
+            return $user !== null && (int)$user['id'] === $userId && $user['userstatus'] === 'Activo'
+                && $fingerprint !== '' && hash_equals($fingerprint, hash('sha256', (string)$user['password']));
+        });
     }
 
     public function authenticationRepository(): AuthenticationRepository

@@ -12,6 +12,17 @@ final class FolderRepository
     {
     }
 
+    /** Direct children only, using existing ownership and hierarchy columns. */
+    public function listChildrenPage(int $userId, string $parent, int $limit, int $offset): array
+    {
+        $stmt = $this->db->prepare('SELECT Prefix, Nombre FROM S3Folders WHERE user_id_ = ? AND ParentPrefix = ? AND Found = 1 ORDER BY Nombre, Prefix LIMIT ? OFFSET ?');
+        if (!$stmt) throw new RuntimeException('No se pudo consultar carpetas.');
+        $limit = max(1, min(100, $limit)); $offset = max(0, $offset);
+        $stmt->bind_param('isii', $userId, $parent, $limit, $offset);
+        $stmt->execute(); $rows = $stmt->get_result()->fetch_all(MYSQLI_ASSOC); $stmt->close();
+        return $rows;
+    }
+
     public function listPrefixesUnder(int $userId, string $basePrefix): array
     {
         $stmt = $this->db->prepare(

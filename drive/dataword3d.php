@@ -149,7 +149,7 @@ $buildState = static function (string $route, int $page = 1, int $limit = FileLi
         $key = FileViewHelper::buildS3Key((string)($row['Ruta'] ?? ''), (string)($row['Encriptado'] ?? ''));
         $openHref = $locked || $key === '' ? '' : 'ver_archivo.php?archivo=' . rawurlencode($key);
         $downloadHref = $locked || $key === '' ? '' : 'descargar_archivo.php?archivo=' . rawurlencode($key) . '&nombre=' . rawurlencode($name);
-        $thumbnailHref = (!$locked && $key !== '' && $kind === 'image')
+        $thumbnailHref = (!$locked && $key !== '' && in_array($kind, ['image', 'video'], true))
             ? 'thumb.php?key=' . rawurlencode($key) . '&w=420&h=280&fit=cover'
             : '';
         $environmentHref = (!$locked && $key !== '' && $kind === 'image')

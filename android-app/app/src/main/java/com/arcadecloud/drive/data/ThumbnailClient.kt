@@ -1,6 +1,9 @@
 package com.arcadecloud.drive.data
 
 import com.arcadecloud.drive.domain.SessionExpired
+import com.arcadecloud.drive.domain.NodePolicy
+import com.arcadecloud.drive.domain.ApiError
+import org.json.JSONObject
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
@@ -43,6 +46,29 @@ internal class ThumbnailClient(client: OkHttpClient) {
                 }
             })
         }
+    }
+
+    /** Cancellable authorization request. Session cookies stay on the node, never on S3. */
+    suspend fun signedVideoUrl(url: HttpUrl): String = suspendCancellableCoroutine { continuation ->
+        val call = client.newCall(Request.Builder().url(url).header("Accept", "application/json").build())
+        continuation.invokeOnCancellation { call.cancel() }
+        call.enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) { if (!continuation.isCancelled) continuation.resumeWithException(e) }
+            override fun onResponse(call: Call, response: Response) {
+                val source = try { response.use {
+                    if (it.code == 401) throw SessionExpired()
+                    if (!it.isSuccessful) throw ApiError(it.code, "No se autorizó la miniatura del video")
+                    val bytes = it.peekBody(65537).bytes()
+                    if (bytes.size > 65536) throw IOException("Respuesta demasiado grande")
+                    val json = JSONObject(String(bytes, Charsets.UTF_8))
+                    NodePolicy.requireSignedUrl(json.getString("url_descarga"))
+                } } catch (e: Exception) {
+                    if (!continuation.isCancelled) continuation.resumeWithException(e)
+                    return
+                }
+                if (!continuation.isCancelled) continuation.resume(source)
+            }
+        })
     }
 
     companion object { const val MAX_BYTES=1024L*1024 }

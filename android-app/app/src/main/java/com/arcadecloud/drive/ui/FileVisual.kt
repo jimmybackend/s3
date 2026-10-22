@@ -20,7 +20,7 @@ import coil.request.ImageRequest
 import com.arcadecloud.drive.domain.*
 import kotlinx.coroutines.CancellationException
 
-/** Fetches only visible image rows. No private thumbnails survive in a shared image cache. */
+/** Fetches only visible image and video rows. No private thumbnails survive in a shared image cache. */
 @Composable internal fun FileVisual(file: DriveFile, sessionIdentity: String, load: suspend ()->ByteArray?) {
     key(sessionIdentity,file.key,file.name,file.date,file.bytes,file.locked) {
         FileVisualContent(file,load)

@@ -24,10 +24,11 @@ class NativeFileVisualTest {
             FileVisual(file("acta.pdf"),"test"){calls++;null}
             FileVisual(file("fotos.zip"),"test"){calls++;null}
             FileVisual(file("privada.jpg",true),"test"){calls++;null}
+            FileVisual(file("privado.mp4",true),"test"){calls++;null}
         } } }
         compose.onNodeWithContentDescription("Tipo: PDF").assertIsDisplayed()
         compose.onNodeWithContentDescription("Tipo: Archivo comprimido").assertIsDisplayed()
-        compose.onNodeWithContentDescription("Archivo protegido").assertIsDisplayed()
+        compose.onAllNodesWithContentDescription("Archivo protegido").assertCountEquals(2)
         compose.runOnIdle {assertEquals(0,calls)}
     }
     @Test fun imageShowsRealDecodedThumbnailAndDisappearsWhenRelocked() {
@@ -42,4 +43,17 @@ class NativeFileVisualTest {
         compose.onNodeWithContentDescription("Miniatura de foto.jpg").assertDoesNotExist()
         compose.runOnIdle{assertEquals(1,calls)}
     }
+    @Test fun videoPosterShowsCameraAndIsDiscardedOnSessionChange() {
+        val bitmap=Bitmap.createBitmap(16,16,Bitmap.Config.ARGB_8888).apply{eraseColor(Color.GREEN)}
+        val bytes=ByteArrayOutputStream().use{bitmap.compress(Bitmap.CompressFormat.JPEG,80,it);it.toByteArray()};bitmap.recycle()
+        var identity by mutableStateOf("user2-session1")
+        compose.setContent {ArcadeTheme {FileVisual(file("clip.mp4"),identity){if(identity=="user2-session1") bytes else null}}}
+        compose.waitUntil(10000){compose.onAllNodesWithContentDescription("Miniatura de clip.mp4").fetchSemanticsNodes().isNotEmpty()}
+        compose.onNodeWithContentDescription("Video").assertIsDisplayed()
+        compose.runOnIdle{identity="user3-session2"}
+        compose.onNodeWithContentDescription("Miniatura de clip.mp4").assertDoesNotExist()
+        compose.onNodeWithContentDescription("Video").assertDoesNotExist()
+        compose.onNodeWithContentDescription("Tipo: Video").assertIsDisplayed()
+    }
+
 }

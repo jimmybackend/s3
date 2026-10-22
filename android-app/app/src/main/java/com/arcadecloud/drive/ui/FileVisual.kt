@@ -22,7 +22,7 @@ import kotlinx.coroutines.CancellationException
 
 /** Fetches only visible image and video rows. No private thumbnails survive in a shared image cache. */
 @Composable internal fun FileVisual(file: DriveFile, sessionIdentity: String, load: suspend ()->ByteArray?) {
-    key(sessionIdentity,file.key,file.name,file.date,file.bytes,file.locked) {
+    key(sessionIdentity,file.key,file.name,file.date,file.bytes,file.locked,file.protected) {
         FileVisualContent(file,load)
     }
 }
@@ -41,7 +41,7 @@ import kotlinx.coroutines.CancellationException
         if(request!=null && !file.locked) AsyncImage(request,if(decoded)"Miniatura de ${file.name}" else null,
             modifier=Modifier.fillMaxSize(),contentScale=ContentScale.Crop,onSuccess={decoded=true},onError={decoded=false})
         if(decoded && kind.category=="video" && !file.locked) {
-            Box(Modifier.align(Alignment.BottomEnd).padding(3.dp).size(20.dp).clip(RoundedCornerShape(4.dp))
+            Box(Modifier.align(Alignment.BottomEnd).padding(3.dp).size(22.dp).clip(RoundedCornerShape(4.dp))
                 .background(androidx.compose.ui.graphics.Color(0xCC071426)), contentAlignment=Alignment.Center) {
                 Icon(Icons.Default.Videocam, "Video", Modifier.size(13.dp), tint=androidx.compose.ui.graphics.Color.White)
             }

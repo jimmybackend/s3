@@ -196,3 +196,40 @@ disco y memoria compartida de Coil deshabilitadas para estos bytes. El estado lo
 se identifica por nodo, usuario, generación de sesión, clave, fecha, tamaño y bloqueo.
 No se solicita miniatura de archivos bloqueados ni de tipos no imagen. Fallos, respuesta
 FALLBACK o formato no decodificable muestran icono del tipo. No hay cambios PHP ni AWS.
+
+## Miniaturas de video Android 0.9.4 (2026-10-22)
+
+Auditados PR #520/#521/#522 y base 828a5c891c8a8469fbd7a5b0e8f5e3066d233a00.
+La alternativa Android inicial usaba setDataSource(URL) y getFrameAtTime sin límite
+verificable de bytes ni cancelación HTTP, y escalaba después de decodificar toda la imagen.
+Se conserva el flujo existente: thumb.php autenticado primero; ante FALLBACK se solicita
+api/native.php?action=download&key=... con la sesión existente. No hay endpoint nuevo.
+La autorización se repite incluso antes de reutilizar un fotograma en memoria; no se
+reutilizan URLs firmadas. Un 401/NO_SESSION impide continuar y un 403 impide la extracción.
+
+MediaMetadataRetriever recibe ahora MediaDataSource con lecturas Range validadas (206 y
+Content-Range), sin cookies, redirecciones, archivos temporales ni caché HTTP. Máximo
+64 KB por bloque y 8 MB acumulados por intento; respuestas 200 se rechazan antes de
+leer el cuerpo. Límite de red 8 s por solicitud y 25 s para nuevas lecturas del intento.
+No es un límite duro sobre el tiempo interno del códec; cancelar cierra la fuente y
+cancela el HTTP activo, y el decodificador libera su plaza cuando termina. Máximo dos
+decodificadores. getScaledFrameAtTime limita el resultado a 160×120. Se intenta 1 s,
+luego 2 s/0 s si no hay fotograma o es casi negro. No puede garantizar un fotograma
+claro si el contenido es oscuro o el formato/códec no es compatible.
+
+Caché LRU de JPEG hasta 4 MB sólo en RAM, aislada por nodo/usuario/generación y DriveFile
+(clave, tamaño, fecha y protección incluidos), vaciada al cerrar/cambiar sesión. Archivos
+protegidos no se almacenan. LazyColumn y produceState cancelan al abandonar filas;
+no se inicia reproducción. La insignia blanca mide 22×22 dp en una tarjeta 72×54 dp
+(12.45% de su área), fondo oscuro semitransparente. Archivos y Buscar comparten FileVisual.
+
+Pruebas añadidas: caché/aislamiento/límite, MP4 real sintético de 3 s (negro inicial,
+verde desde 0.5 s) servido por HTTPS Range, mismo contenedor extendido sintéticamente
+a 256 MB, fotograma verde próximo a 1 s, límites de bytes, rechazar 200/redirect/403,
+cancelación, autorización expirada, insignia y descarte al cambiar sesión. El contenedor
+grande es una prueba sintética de lectura parcial; no equivale a un video de producción
+largo ni a una prueba física. No se accedió a Data/Video/Sarayu con una cuenta real.
+No se modificaron PHP, web/3D, AWS o EC2. Verificación física S20 FE, códecs de videos
+reales grandes y consumo de datos/batería en carpetas de cientos de videos pendientes.
+La firma debug CI puede cambiar: respaldar pendientes locales antes de desinstalar
+la APK anterior. Identidad com.arcadecloud.drive conservada, versionCode 13.

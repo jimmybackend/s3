@@ -59,9 +59,13 @@ class DriveViewModel(app: Application) : AndroidViewModel(app) {
     }
     fun select(id: Long) { mutable.update { it.copy(selected = if (id in it.selected) it.selected - id else it.selected + id) } }
     fun mutate(path: String, fields: Map<String,String>) = run { repo.request(path, fields); browse() }
-    fun refreshTasks() = run {
+    private var taskJob: Job? = null
+    fun refreshTasks() {
+        if(taskJob?.isActive == true) return
+        taskJob = run {
         val result = repo.request("background_tasks.php"); val arr = result.getJSONArray("tasks")
         mutable.update { it.copy(serverTasks = (0 until arr.length()).map { index -> arr.getJSONObject(index) }) }
+        }
     }
     fun logout() = run { WorkManager.getInstance(graph).cancelAllWorkByTag("native-transfer"); repo.logout(); clipboard = null; mutable.value = DriveState() }
     fun upload(uri: String, name: String, mime: String, route: String) = run { TransferQueue.enqueue(graph, uri, name, mime, route) }

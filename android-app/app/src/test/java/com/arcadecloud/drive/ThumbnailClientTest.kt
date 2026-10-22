@@ -32,10 +32,11 @@ class ThumbnailClientTest {
             val loader=ThumbnailClient(OkHttpClient())
             listOf(MockResponse().setHeader("Content-Type","image/png").setHeader("X-Thumb-Status","FALLBACK").setBody("placeholder"),
                 MockResponse().setHeader("Content-Type","text/html").setBody("login page"),
+                MockResponse().setHeader("Content-Type","image/avif").setHeader("X-Thumb-Status","SOURCE_PREVIEW").setBody("original"),
                 MockResponse().setResponseCode(302).setHeader("Location",server.url("/original.jpg"))).forEach { response ->
                 server.enqueue(response);assertNull(loader.load(server.url("/thumb.php")))
             }
-            assertEquals(3,server.requestCount)
+            assertEquals(4,server.requestCount)
         } finally {server.shutdown()}
     }
     @Test fun oversizedThumbnailIsBounded() = runBlocking {

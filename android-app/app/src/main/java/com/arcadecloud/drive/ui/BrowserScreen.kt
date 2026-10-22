@@ -106,10 +106,10 @@ import com.arcadecloud.drive.domain.*
             items(if(descending) catalog.files.sortedByDescending { it.name.lowercase() } else catalog.files,key={"file:${it.id}"}) { item ->
                 ElevatedCard(Modifier.fillMaxWidth()) { Row(Modifier.padding(8.dp),verticalAlignment=Alignment.CenterVertically) {
                     Checkbox(item.id in state.selected,onCheckedChange={ vm.select(item.id) },enabled=!state.busy)
-                    Icon(if(item.locked) Icons.Default.Lock else Icons.Default.InsertDriveFile,null,tint=MaterialTheme.colorScheme.secondary)
+                    FileVisual(item,"${vm.repo.node}|${vm.repo.owner}|${vm.repo.generation}") { vm.repo.thumbnail(item) }
                     Column(Modifier.weight(1f).clickable { file=item;menu="file" }.padding(10.dp)) {
                         Text(item.name,maxLines=2,overflow=TextOverflow.Ellipsis)
-                        Text("${bytes(item.bytes)} · ${item.date}",style=MaterialTheme.typography.bodySmall)
+                        Text("${FilePresentation.kind(item.name).label} · ${bytes(item.bytes)} · ${item.date}",style=MaterialTheme.typography.bodySmall)
                     }
                     IconButton(onClick={ file=item;menu="file" },enabled=!state.busy) { Icon(Icons.Default.MoreVert,"Acciones del archivo ${item.name}") }
                 } }

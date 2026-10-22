@@ -28,5 +28,5 @@ object FilePresentation {
         val group = groups.firstOrNull { ext in it.third }
         return if(group != null) FileKind(group.first,group.second) else FileKind("generic",ext.uppercase(java.util.Locale.ROOT).ifBlank { "Archivo" })
     }
-    fun thumbnailAllowed(file: DriveFile) = !file.locked && kind(file.name).category == "image"
+    fun thumbnailAllowed(file: DriveFile) = !file.locked && kind(file.name).category in setOf("image", "video")
 }

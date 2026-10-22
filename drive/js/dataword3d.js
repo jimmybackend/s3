@@ -760,7 +760,7 @@
         ? `${state.folder_count || 0} carpetas · ${state.file_count || 0} archivos`
         : (isFolder ? 'Acércate para explorar' : 'Archivo');
 
-      const canShowThumb = item.kind === 'image' && Boolean(item.thumbHref) && !item.locked;
+      const canShowThumb = ['image', 'video'].includes(item.kind) && Boolean(item.thumbHref) && !item.locked;
       if (this.hud.previewIcon && this.hud.previewImage) {
         this.hud.previewIcon.className = `fas ${this.iconFor(item.kind)}`;
         this.hud.previewIcon.hidden = canShowThumb;
@@ -893,7 +893,7 @@
       button.dataset.itemLocked = item.locked ? '1' : '0';
       button.title = item.name || 'Elemento';
 
-      if (!folder && item.kind === 'image' && item.thumbnail_href) {
+      if (!folder && ['image', 'video'].includes(item.kind) && item.thumbnail_href) {
         const img = this.document.createElement('img');
         img.src = item.thumbnail_href;
         img.alt = '';

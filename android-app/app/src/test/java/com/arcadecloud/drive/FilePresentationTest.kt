@@ -19,6 +19,7 @@ class FilePresentationTest {
     @Test fun onlyUnlockedImagesMayRequestThumbnails() {
         val photo=DriveFile(1,"foto.jpg","Data2/a.jpg","Data2/",20,"2026",false,"")
         assertTrue(FilePresentation.thumbnailAllowed(photo))
+        assertTrue(FilePresentation.thumbnailAllowed(photo.copy(name="video.mp4")))
         assertFalse(FilePresentation.thumbnailAllowed(photo.copy(locked=true)))
         assertFalse(FilePresentation.thumbnailAllowed(photo.copy(name="documento.pdf")))
         assertFalse(FilePresentation.thumbnailAllowed(photo.copy(name="image.jpg.exe")))

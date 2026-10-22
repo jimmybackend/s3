@@ -37,6 +37,7 @@ import org.json.JSONObject
         if(busy) return
         busy=true;error=null
         scope.launch { try { block() } catch(e: Exception) {
+            if(e is kotlinx.coroutines.CancellationException) throw e
             if(e is SessionExpired) vm.run { throw e }
             error=e.message ?: "No se pudo completar la operación"
         } finally { busy=false } }
@@ -158,7 +159,7 @@ import org.json.JSONObject
                 "unlock" -> post("unlock_file.php",mapOf("key" to file!!.key,"password" to password))
                 "relock" -> post("relock_file.php",mapOf("key" to file!!.key))
                 "unsecure" -> post("set_file_security.php",mapOf("key" to file!!.key,"mode" to "normal"))
-                "share" -> { val days=parts.toIntOrNull() ?: error("Indica días válidos");check(days in 1..3650);post("generar_token.php",mapOf("archivo" to file!!.key,"tipo" to "otro","dias" to "$days")).also { link=it.getString("url");check(Uri.parse(link).scheme=="https"){"El servidor devolvió un enlace sin HTTPS."} } }
+                "share" -> { val days=parts.toIntOrNull() ?: error("Indica días válidos");check(days in 1..3650){"La vigencia debe estar entre 1 y 3650 días."};post("generar_token.php",mapOf("archivo" to file!!.key,"tipo" to "otro","dias" to "$days")).also { link=it.getString("url");check(Uri.parse(link).scheme=="https"){"El servidor devolvió un enlace sin HTTPS."} } }
                 "sync" -> post("sync_s3_to_db.php",mapOf("prefix" to folder.route))
                 "folderTextract" -> post("procesar_textract_carpeta.php",mapOf("ruta" to folder.route,"nombre" to folder.name))
                 "textract" -> post("procesar_textract.php",mapOf("archivo" to file!!.key))
@@ -167,7 +168,7 @@ import org.json.JSONObject
                 "rekognition" -> post("rekognition_labels.php",mapOf("archivo" to file!!.key))
                 "comprehend" -> post("comprehend_archivo.php",mapOf("key" to file!!.key))
                 "polly" -> {val v=voice ?: error("Elige una voz"); val engines=v.optJSONArray("SupportedEngines");val engine=if(engines!=null && engines.length()>0)engines.getString(0) else "standard";post("polly_tts.php",mapOf("texto" to content,"from_key" to file!!.key,"voiceId" to v.getString("Id"),"engine" to engine,"to_s3" to "1","format" to "mp3"))}
-                "split_audio","split_video","extract_mp3" -> {val n=if(operation=="extract_mp3")1 else parts.toIntOrNull() ?: error("Indica un número de partes");check(operation=="extract_mp3"||n in 2..50);post("media_processing.php",mapOf("archivo" to file!!.key,"operation" to operation,"parts" to "$n","overlap_before" to "3","overlap_after" to "3","authorize_node_start" to "0"))}
+                "split_audio","split_video","extract_mp3" -> {val n=if(operation=="extract_mp3")1 else parts.toIntOrNull() ?: error("Indica un número de partes");check(operation=="extract_mp3"||n in 2..50){"El número de partes debe estar entre 2 y 50."};post("media_processing.php",mapOf("archivo" to file!!.key,"operation" to operation,"parts" to "$n","overlap_before" to "3","overlap_after" to "3","authorize_node_start" to "0"))}
                 "openWith","openWithOffice","download","wallpaper" -> {vm.download(file!!);JSONObject().put("ok",true).put("message","Descarga solicitada. Consulta Tareas para ver el progreso y abrir el archivo cuando termine.")}
                 else -> error("Acción no reconocida")
             }
@@ -176,7 +177,9 @@ import org.json.JSONObject
     },dismissButton={if(result==null&&!immediate)TextButton(onClick=onDismiss,enabled=!busy){Text("Cancelar")}})
 }
 internal fun enc(value: String)=java.net.URLEncoder.encode(value,"UTF-8")
-internal fun readableResult(j: JSONObject): String = buildList {
+internal fun readableResult(response: JSONObject): String {
+    val j=response.optJSONObject("analysis") ?: response
+    return buildList {
     listOf("message","mensaje","msg","traduccion","texto","text").forEach { key ->
         if(j.has(key)) { val v=j.opt(key);add(if(v is JSONArray)(0 until v.length()).joinToString("\n"){v.optString(it)} else v.toString()) }
     }
@@ -187,3 +190,4 @@ internal fun readableResult(j: JSONObject): String = buildList {
     if(j.has("sentiment")) add("Sentimiento: ${j.optString("sentiment")}")
     if(j.has("language")) add("Idioma: ${j.optString("language")}")
 }.filter{it.isNotBlank()}.distinct().joinToString("\n\n")
+}

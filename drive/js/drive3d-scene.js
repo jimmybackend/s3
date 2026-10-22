@@ -447,16 +447,25 @@ class Drive3DScene {
             media.position.set(0,.08,.031); card.add(media);
 
             if (['image', 'video'].includes(item?.kind) && item?.thumbnail_href && !item?.locked) {
-                new T.TextureLoader().load(item.thumbnail_href, map => {
-                    if (!isCurrent()) { map.dispose(); return; }
-                    map.colorSpace = T.SRGBColorSpace;
-                    const old = mediaMaterial.map;
-                    mediaMaterial.map = map;
-                    mediaMaterial.color.set(0xffffff);
-                    mediaMaterial.needsUpdate = true;
-                    old?.dispose?.();
-                    needsRender = true;
-                }, undefined, () => {});
+                const applyTexture = url => {
+                    if (!url || !isCurrent()) return;
+                    new T.TextureLoader().load(url, map => {
+                        if (!isCurrent()) { map.dispose(); return; }
+                        map.colorSpace = T.SRGBColorSpace;
+                        const previous = mediaMaterial.map;
+                        mediaMaterial.map = map;
+                        mediaMaterial.color.set(0xffffff);
+                        mediaMaterial.needsUpdate = true;
+                        previous?.dispose?.();
+                        needsRender = true;
+                    }, undefined, () => {});
+                };
+                if (item.kind === 'video') {
+                    window.ArcadeVideoPosters?.posterUrl(item.thumbnail_href, item.open_href || '')
+                        .then(applyTexture).catch(() => {});
+                } else {
+                    applyTexture(item.thumbnail_href);
+                }
             }
 
             if (item?.kind === 'video' && !item?.locked) {

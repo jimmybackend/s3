@@ -1,6 +1,11 @@
 package com.arcadecloud.drive.data
 
 import com.arcadecloud.drive.domain.*
+import android.media.MediaMetadataRetriever
+import android.graphics.Bitmap
+import java.io.ByteArrayOutputStream
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.*
@@ -32,11 +37,39 @@ class DriveRepository(private val vault: SessionVault) {
     private val client = OkHttpClient.Builder().cookieJar(jar).followRedirects(false).followSslRedirects(false)
         .connectTimeout(30, TimeUnit.SECONDS).readTimeout(90, TimeUnit.SECONDS).writeTimeout(90, TimeUnit.SECONDS).build()
     private val thumbnails = ThumbnailClient(client)
+    private val videoPosterSlots = Semaphore(2)
     suspend fun thumbnail(file: DriveFile): ByteArray? {
         if(!FilePresentation.thumbnailAllowed(file) || owner<=0) return null
         val url=(node+"thumb.php").toHttpUrl().newBuilder().addQueryParameter("key",file.key)
             .addQueryParameter("w","160").addQueryParameter("h","120").addQueryParameter("fit","cover").build()
-        return thumbnails.load(url)
+        val stored = thumbnails.load(url)
+        if (stored != null || FilePresentation.kind(file.name).category != "video") return stored
+        return videoPosterSlots.withPermit {
+            withContext(Dispatchers.IO) {
+                val retriever = MediaMetadataRetriever()
+                try {
+                    // The existing download API authorizes the owner and returns a
+                    // short-lived S3 URL; native range decoding avoids full downloads.
+                    val source = signedDownload(file.key)
+                    retriever.setDataSource(source, emptyMap<String, String>())
+                    val frame = retriever.getFrameAtTime(1_000_000L, MediaMetadataRetriever.OPTION_CLOSEST_SYNC)
+                        ?: retriever.getFrameAtTime(0L, MediaMetadataRetriever.OPTION_CLOSEST_SYNC)
+                    if (frame == null) null else {
+                        val output = ByteArrayOutputStream()
+                        try {
+                            val ratio = minOf(160f / frame.width, 120f / frame.height, 1f)
+                            val scaled = Bitmap.createScaledBitmap(frame,
+                                maxOf(1, (frame.width * ratio).toInt()),
+                                maxOf(1, (frame.height * ratio).toInt()), true)
+                            try { scaled.compress(Bitmap.CompressFormat.JPEG, 75, output) }
+                            finally { if (scaled !== frame) scaled.recycle() }
+                            output.toByteArray().takeIf { it.isNotEmpty() && it.size <= 1024 * 1024 }
+                        } finally { frame.recycle() }
+                    }
+                } catch (_: Exception) { null }
+                finally { retriever.release() }
+            }
+        }
     }
     suspend fun request(path: String, fields: Map<String,String>? = null): JSONObject = withContext(Dispatchers.IO) {
         if (!path.startsWith("api/native.php")) request("api/native.php?action=session")

@@ -19,11 +19,15 @@ object TransferQueue {
             .put("status", "queued").put("created", System.currentTimeMillis()).put("bytes", 0).put("done", 0) }
         resume(context, id); return id
     }
-    fun download(context: Context, key: String, name: String, mime: String, size: Long): String {
+    fun download(context: Context, key: String, name: String, mime: String, size: Long, sourcePath: String? = null): String {
         val app = context.applicationContext as ArcadeApplication; val id = UUID.randomUUID().toString()
         app.transfers.update(id) { it.put("direction", "download").put("key", key).put("name", name).put("mime", mime)
             .put("bytes", size).put("done", 0).put("owner", app.repository.owner).put("node", app.repository.node)
             .put("generation", app.repository.generation).put("status", "queued").put("created", System.currentTimeMillis()) }
+        if(sourcePath != null) {
+            require(sourcePath.startsWith("zip_explorer.php?format=json&archivo="))
+            app.transfers.update(id) { it.put("sourcePath",sourcePath) }
+        }
         resume(context, id); return id
     }
     fun resume(context: Context, id: String) {

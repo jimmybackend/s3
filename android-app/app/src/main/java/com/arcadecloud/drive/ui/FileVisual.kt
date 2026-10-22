@@ -40,6 +40,12 @@ import kotlinx.coroutines.CancellationException
     Box(Modifier.size(72.dp,54.dp).clip(RoundedCornerShape(8.dp)).background(MaterialTheme.colorScheme.surfaceVariant),contentAlignment=Alignment.Center) {
         if(request!=null && !file.locked) AsyncImage(request,if(decoded)"Miniatura de ${file.name}" else null,
             modifier=Modifier.fillMaxSize(),contentScale=ContentScale.Crop,onSuccess={decoded=true},onError={decoded=false})
+        if(decoded && kind.category=="video" && !file.locked) {
+            Box(Modifier.align(Alignment.BottomEnd).padding(3.dp).size(20.dp).clip(RoundedCornerShape(4.dp))
+                .background(androidx.compose.ui.graphics.Color(0xCC071426)), contentAlignment=Alignment.Center) {
+                Icon(Icons.Default.Videocam, "Video", Modifier.size(13.dp), tint=androidx.compose.ui.graphics.Color.White)
+            }
+        }
         if(!decoded || file.locked) Icon(if(file.locked) Icons.Default.Lock else fileTypeIcon(kind.category),
             if(file.locked)"Archivo protegido" else "Tipo: ${kind.label}",Modifier.size(30.dp),
             tint=if(kind.category=="pdf"&&!file.locked)MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary)

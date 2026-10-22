@@ -566,7 +566,12 @@ if ($isDrive3dNativeActions) ob_start();
               <?php if (($isImage || $isVideo) && !$locked): ?>
                 <span class="os-entry-thumb-wrap">
                   <img class="os-entry-thumbnail"
+                       <?php if ($isVideo): ?>
+                       data-video-poster data-video-thumb="<?= $e($thumbUrl) ?>"
+                       data-video-source="<?= $e($openUrl) ?>"
+                       <?php else: ?>
                        src="<?= $e($thumbUrl) ?>"
+                       <?php endif; ?>
                        width="96" height="72"
                        loading="lazy"
                        decoding="async"
@@ -2342,6 +2347,7 @@ Escribe help o usa uno de los botones disponibles.</pre>
   <script src="js/os-window-manager.js?v=<?= (int)filemtime(__DIR__ . '/js/os-window-manager.js') ?>"></script>
   <script src="js/os-media-cloud.js?v=<?= (int)filemtime(__DIR__ . '/js/os-media-cloud.js') ?>"></script>
   <script src="js/file-applications.js?v=<?= (int)filemtime(__DIR__ . '/js/file-applications.js') ?>"></script>
+  <script src="js/video-poster-loader.js?v=<?= (int)filemtime(__DIR__ . '/js/video-poster-loader.js') ?>"></script>
   <script src="js/so.js?v=<?= (int)filemtime(__DIR__ . '/js/so.js') ?>"></script>
   <script src="js/so-clipboard.js?v=<?= (int)filemtime(__DIR__ . '/js/so-clipboard.js') ?>"></script>
   <script src="js/page-task-manager.js?v=<?= (int)filemtime(__DIR__ . '/js/page-task-manager.js') ?>"></script>

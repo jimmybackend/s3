@@ -12,6 +12,7 @@ use RuntimeException;
 final class ThumbnailService
 {
     private const IMAGE_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'avif', 'tif', 'tiff'];
+    private const VIDEO_EXTENSIONS = ['mp4', 'm4v', 'mov', 'webm', 'mkv', 'avi', 'ogv', 'ogg', '3gp'];
 
     public function __construct(
         private mysqli $db,
@@ -166,6 +167,9 @@ final class ThumbnailService
 
         $key = $this->normalizeKey($requestedKey);
         $extension = strtolower((string)pathinfo($key, PATHINFO_EXTENSION));
+        if (in_array($extension, self::VIDEO_EXTENSIONS, true)) {
+            return $this->getVideo($userId, $key, $width, $height, $session);
+        }
         if (!in_array($extension, self::IMAGE_EXTENSIONS, true)) {
             throw new RuntimeException('El archivo no admite miniatura de imagen.');
         }
@@ -280,6 +284,71 @@ final class ThumbnailService
                 @flock($lockHandle, LOCK_UN);
                 @fclose($lockHandle);
             }
+        }
+    }
+
+
+    /** Private persistent video poster, extracted with bounded FFmpeg execution. */
+    private function getVideo(int $userId, string $key, int $width, int $height, array $session): array
+    {
+        $width = max(24, min(512, $width));
+        $height = max(24, min(512, $height));
+        $file = $this->lookupFile($userId, $key);
+        if ($file === null || !$this->canPreview($file, $key, $session)) {
+            throw new RuntimeException('Video no disponible para vista previa.');
+        }
+        $thumbKey = 'video-posters/' . hash('sha256', $key) . '/' . $width . 'x' . $height . '.jpg';
+        $localPath = $this->localPath($userId, $thumbKey);
+        $cached = $this->readLocal($localPath);
+        if ($cached !== null) return ['bytes'=>$cached,'content_type'=>'image/jpeg','status'=>'LOCAL_HIT','thumb_key'=>$thumbKey];
+        $this->ensureDirectory(dirname($localPath));
+        $lock = @fopen($localPath . '.lock', 'c');
+        if ($lock !== false) @flock($lock, LOCK_EX);
+        try {
+            $cached = $this->readLocal($localPath);
+            if ($cached !== null) return ['bytes'=>$cached,'content_type'=>'image/jpeg','status'=>'LOCAL_HIT_AFTER_LOCK','thumb_key'=>$thumbKey];
+            try {
+                $object = $this->s3->getObject(['Bucket'=>$this->bucket,'Key'=>$thumbKey]);
+                $bytes = (string)$object['Body'];
+                if ($bytes !== '') {
+                    $this->writeLocal($localPath,$bytes);
+                    return ['bytes'=>$bytes,'content_type'=>'image/jpeg','status'=>'S3_THUMB_HIT','thumb_key'=>$thumbKey];
+                }
+            } catch (AwsException $e) { if (!$this->isNotFound($e)) throw $e; }
+            if (!function_exists('proc_open') || !is_executable('/usr/bin/ffmpeg') || !is_executable('/usr/bin/timeout')) {
+                throw new RuntimeException('Miniatura pendiente: FFmpeg no disponible.');
+            }
+            $head = $this->s3->headObject(['Bucket'=>$this->bucket,'Key'=>$key]);
+            if ((int)($head['ContentLength'] ?? 0) > 150 * 1024 * 1024) {
+                throw new RuntimeException('Video grande pendiente de procesamiento.');
+            }
+            $signed = $this->s3->createPresignedRequest(
+                $this->s3->getCommand('GetObject',['Bucket'=>$this->bucket,'Key'=>$key]),'+2 minutes');
+            $filter = 'scale=' . $width . ':' . $height
+                . ':force_original_aspect_ratio=decrease,pad=' . $width . ':' . $height . ':(ow-iw)/2:(oh-ih)/2';
+            $args = ['/usr/bin/timeout','-k','2','12','/usr/bin/ffmpeg','-nostdin','-hide_banner',
+                '-loglevel','error','-threads','1','-ss','1','-i',(string)$signed->getUri(),
+                '-frames:v','1','-vf',$filter,'-f','image2pipe','-vcodec','mjpeg','pipe:1'];
+            $pipes = [];
+            $process = @proc_open($args,[0=>['pipe','r'],1=>['pipe','w'],2=>['pipe','w']],$pipes);
+            if (!is_resource($process)) throw new RuntimeException('FFmpeg no pudo iniciarse.');
+            fclose($pipes[0]);
+            $bytes = stream_get_contents($pipes[1],1024*1024+1);
+            fclose($pipes[1]);
+            // Do not expose signed S3 URLs contained in stderr.
+            stream_get_contents($pipes[2],8192);
+            fclose($pipes[2]);
+            $exit = proc_close($process);
+            if ($exit !== 0 || !is_string($bytes) || strlen($bytes)>1024*1024
+                || !str_starts_with($bytes,"\xFF\xD8")) {
+                throw new RuntimeException('No se pudo generar la miniatura del video.');
+            }
+            $this->s3->putObject(['Bucket'=>$this->bucket,'Key'=>$thumbKey,'Body'=>$bytes,
+                'ContentType'=>'image/jpeg','ACL'=>'private']);
+            $this->writeLocal($localPath,$bytes);
+            return ['bytes'=>$bytes,'content_type'=>'image/jpeg','status'=>'GENERATED_ONCE','thumb_key'=>$thumbKey];
+        } finally {
+            if ($lock !== false) { @flock($lock,LOCK_UN); @fclose($lock); }
         }
     }
 

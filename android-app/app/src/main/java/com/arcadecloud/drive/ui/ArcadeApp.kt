@@ -60,7 +60,7 @@ import java.io.File
         if (!state.authenticated) LoginScreen(state.busy, state.error, vm::login)
         else Scaffold(topBar = {
             TopAppBar(title = { Column { Text("ArcadeCloud", style = MaterialTheme.typography.titleLarge); Text(state.alias, style = MaterialTheme.typography.labelMedium) } },
-                actions = { IconButton(onClick = { if(section == "tasks") vm.refreshTasks() else if(section == "search") vm.notice("Usa el botón Buscar para actualizar los resultados con tus filtros.") else vm.browse() }) { Icon(Icons.Default.Refresh, "Actualizar") } })
+                actions = { IconButton(onClick = { if(section == "tasks") vm.refreshTasks() else if(section == "search") vm.refreshSearch() else vm.browse() }) { Icon(Icons.Default.Refresh, "Actualizar") } })
         }, bottomBar = {
             DriveNavigationBar(section) { route -> vm.clearSelection(); nav.navigate(route) { launchSingleTop = true; popUpTo("files") } }
 

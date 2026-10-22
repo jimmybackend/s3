@@ -446,7 +446,7 @@ class Drive3DScene {
             const media = new T.Mesh(new T.PlaneGeometry(.78,.52), mediaMaterial);
             media.position.set(0,.08,.031); card.add(media);
 
-            if (item?.kind === 'image' && item?.thumbnail_href && !item?.locked) {
+            if (['image', 'video'].includes(item?.kind) && item?.thumbnail_href && !item?.locked) {
                 new T.TextureLoader().load(item.thumbnail_href, map => {
                     if (!isCurrent()) { map.dispose(); return; }
                     map.colorSpace = T.SRGBColorSpace;
@@ -457,6 +457,26 @@ class Drive3DScene {
                     old?.dispose?.();
                     needsRender = true;
                 }, undefined, () => {});
+            }
+
+            if (item?.kind === 'video' && !item?.locked) {
+                const badgeCanvas = document.createElement('canvas');
+                badgeCanvas.width = 64; badgeCanvas.height = 64;
+                const ctx = badgeCanvas.getContext('2d');
+                if (ctx) {
+                    ctx.fillStyle = 'rgba(5,15,30,.86)';
+                    ctx.fillRect(0,0,64,64);
+                    ctx.fillStyle = '#fff';
+                    ctx.fillRect(12,22,26,22);
+                    ctx.beginPath();
+                    ctx.moveTo(40,26); ctx.lineTo(54,18); ctx.lineTo(54,48); ctx.lineTo(40,40);
+                    ctx.closePath(); ctx.fill();
+                    const badgeTexture = new T.CanvasTexture(badgeCanvas);
+                    const badge = new T.Mesh(new T.PlaneGeometry(.14,.14),
+                        new T.MeshBasicMaterial({map:badgeTexture,transparent:true,depthTest:false}));
+                    badge.position.set(.30,-.115,.065);
+                    card.add(badge);
+                }
             }
 
             const labelMat = new T.MeshBasicMaterial({map:cardLabelTexture(item),side:T.DoubleSide});

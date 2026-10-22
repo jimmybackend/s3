@@ -20,7 +20,7 @@ import java.util.concurrent.atomic.AtomicLong
 
 @RunWith(AndroidJUnit4::class)
 class NativeVideoPosterTest {
-    private fun video() = InstrumentationRegistry.getInstrumentation().context.assets.open("black-then-green.mp4").use { it.readBytes() }
+    private fun videoFixture(name:String) = InstrumentationRegistry.getInstrumentation().context.assets.open(name).use { it.readBytes() }
     private fun server(block: (MockWebServer,OkHttpClient)->Unit) {
         val cert=HeldCertificate.Builder().addSubjectAlternativeName("localhost").build()
         val server=MockWebServer()
@@ -32,21 +32,40 @@ class NativeVideoPosterTest {
         try {block(server,client)} finally {server.shutdown()}
     }
     @Test fun fallbackDecodesRealGreenFrameForSmallAndLargeContainerUsingOnlyRanges() = server { server,client ->
-        val video=video();val transferred=AtomicLong()
+        var video=videoFixture("black-then-green.mp4");val transferred=AtomicLong()
         var length=video.size.toLong()
+        var insertion=video.size
         server.dispatcher=object:Dispatcher() {
             override fun dispatch(request:RecordedRequest):MockResponse {
                 if(request.path!!.startsWith("/thumb.php")) return MockResponse().setHeader("Content-Type","image/png").setHeader("X-Thumb-Status","FALLBACK").setBody("generic")
                 val range=Regex("bytes=(\\d+)-(\\d+)").matchEntire(request.getHeader("Range").orEmpty()) ?: return MockResponse().setResponseCode(400)
                 val start=range.groupValues[1].toLong();val end=minOf(range.groupValues[2].toLong(),length-1)
-                val data=ByteArray((end-start+1).toInt()) { i -> video.getOrElse((start+i).toInt()){0} }
+                val gap=(length-video.size).toInt()
+                val free=java.nio.ByteBuffer.allocate(8).putInt(gap).put("free".toByteArray(Charsets.US_ASCII)).array()
+                // Valid sparse MP4: a free atom moves moov to the far end without moving mdat.
+                val data=ByteArray((end-start+1).toInt()) { i ->
+                    val position=(start+i).toInt()
+                    when {
+                        gap==0 || position<insertion -> video[position]
+                        position<insertion+8 -> free[position-insertion]
+                        position<insertion+gap -> 0
+                        else -> video[position-gap]
+                    }
+                }
                 transferred.addAndGet(data.size.toLong())
                 assertNull(request.getHeader("Cookie"))
                 return MockResponse().setResponseCode(206).setHeader("Content-Range","bytes $start-$end/$length").setBody(Buffer().write(data))
             }
         }
         val extractor=VideoFrameExtractor { url,current -> VideoRangeSource(url,current,client) }
-        for (size in listOf(video.size.toLong(),256L*1024*1024)) {
+        for (asset in listOf("black-then-green.mp4","black-then-green-tail.mp4")) {
+          video=videoFixture(asset)
+          insertion=if(asset.contains("tail")) {
+              var offset=0
+              while(String(video,offset+4,4,Charsets.US_ASCII)!="moov") offset+=java.nio.ByteBuffer.wrap(video,offset,4).int
+              offset
+          } else video.size
+          for (size in listOf(video.size.toLong(),256L*1024*1024)) {
             length=size;transferred.set(0)
             runBlocking {
                 assertNull(ThumbnailClient(client).load(server.url("/thumb.php")))
@@ -60,18 +79,20 @@ class NativeVideoPosterTest {
                 assertTrue(transferred.get()<=VideoRangeSource.MAX_BYTES)
                 if(size>video.size) assertTrue(transferred.get()<size/10)
             }
+          }
         }
     }
     @Test fun fullBodyRedirectAndRevokedAccessAreRejectedWithoutFollowing() = server { server,client ->
-        for(response in listOf(MockResponse().setBody("full video"),MockResponse().setResponseCode(302).setHeader("Location",server.url("/other")),MockResponse().setResponseCode(403))) {
+        for(response in listOf(MockResponse().setBody("full video"),MockResponse().setResponseCode(302).setHeader("Location",server.url("/other")),MockResponse().setResponseCode(403),
+            MockResponse().setResponseCode(206).setHeader("Content-Range","bytes 0-1023/10000").setBody("short"))) {
             server.enqueue(response)
             val source=VideoRangeSource(server.url("/video").toString(),{true},client)
             try {source.size;fail("Expected partial response only")} catch(_:java.io.IOException) {} finally {source.close()}
         }
-        assertEquals(3,server.requestCount)
+        assertEquals(4,server.requestCount)
         val source=VideoRangeSource(server.url("/video").toString(),{false},client)
         try {source.size;fail("Revoked identity accepted")} catch(_:java.io.IOException) {} finally {source.close()}
-        assertEquals(3,server.requestCount)
+        assertEquals(4,server.requestCount)
     }
     @Test fun cancelledDecodeStopsActiveRangeAndDoesNotReturnPixels() = server { server,client -> runBlocking {
         server.enqueue(MockResponse().setSocketPolicy(SocketPolicy.NO_RESPONSE))

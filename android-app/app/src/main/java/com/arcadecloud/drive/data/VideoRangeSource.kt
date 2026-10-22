@@ -47,22 +47,29 @@ internal class VideoRangeSource(url: String, private val authorized: () -> Boole
         try {
             checkOpen()
             call.execute().use { response ->
-                checkOpen()
-                // Refuse ignored ranges before consuming any body bytes.
-                if (response.code != 206) throw IOException("El origen no permite lectura parcial")
-                val range = Regex("bytes (\\d+)-(\\d+)/(\\d+)").matchEntire(response.header("Content-Range").orEmpty())
-                    ?: throw IOException("Respuesta parcial inválida")
-                val (start, last, length) = range.destructured.toList().map { it.toLong() }
-                if (start != position || last < start || last > end || length <= last || (total >= 0 && total != length))
-                    throw IOException("Rango inesperado")
-                val expected = (last - start + 1).toInt()
-                val body = response.body ?: throw IOException("Respuesta vacía")
-                val data = body.source().readByteArray(expected.toLong())
-                consumed += data.size
-                checkOpen()
-                total = length
-                blockStart = position
-                block = data
+                try {
+                    checkOpen()
+                    // Refuse ignored ranges before consuming any body bytes.
+                    if (response.code != 206) throw IOException("El origen no permite lectura parcial")
+                    val range = Regex("bytes (\\d+)-(\\d+)/(\\d+)").matchEntire(response.header("Content-Range").orEmpty())
+                        ?: throw IOException("Respuesta parcial inválida")
+                    val (start, last, length) = range.destructured.toList().map { it.toLong() }
+                    if (start != position || last < start || last > end || length <= last || (total >= 0 && total != length))
+                        throw IOException("Rango inesperado")
+                    val expected = (last - start + 1).toInt()
+                    val body = response.body ?: throw IOException("Respuesta vacía")
+                    if (body.contentLength() != expected.toLong()) throw IOException("Longitud parcial inválida")
+                    val data = body.source().readByteArray(expected.toLong())
+                    consumed += data.size
+                    checkOpen()
+                    total = length
+                    blockStart = position
+                    block = data
+                } catch (e: Exception) {
+                    // Cancel before Response.close(): OkHttp must not drain an ignored/oversized body.
+                    call.cancel()
+                    throw e
+                }
             }
         } finally { active = null }
     }

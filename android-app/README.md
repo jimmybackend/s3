@@ -37,7 +37,7 @@ El cliente original completo está en `legacy-webview/`, excluido de `settings.g
 
 Auditoría, contratos, alcance y pruebas físicas pendientes: [NATIVE_AUDIT.md](NATIVE_AUDIT.md).
 
-### Navegación y acciones 0.9.4
+### Navegación y acciones 0.9.3
 
 La barra inferior tiene Archivos, Buscar, Tareas y Cuenta. Buscar mantiene un catálogo
 independiente; Archivos no muestra filtros. Los controles de subida y captura aparecen
@@ -59,7 +59,7 @@ Abrir en otra ventana/pestaña y Drive clásico son controles del escritorio web
 Android corresponden a abrir, abrir con y la navegación nativa. Federación y 3D siguen
 pendientes. Descarga ZIP usa Lambda y S3, nunca una copia temporal del archivo fuente en EC2.
 
-La versión 0.9.4 añade iconos Material por extensión con las mismas categorías y prioridad
+La versión 0.9.3 añade iconos Material por extensión con las mismas categorías y prioridad
 de FileIconResolver del cliente web. Las imágenes visibles solicitan thumb.php (160×120,
 fit=cover) con la sesión HTTPS existente; no descargan el original al teléfono. Archivos
 bloqueados, fallos y formatos sin miniatura conservan icono. Hay un máximo de cuatro

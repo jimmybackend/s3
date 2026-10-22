@@ -145,7 +145,7 @@ import com.arcadecloud.drive.domain.*
             }
         },confirmButton={ TextButton(onClick={menu=""}) {Text("Cerrar")} })
     }
-    if(operation.isNotEmpty()) BrowserOperationDialog(vm,operation,file,folder ?: current,catalog.files.filter{it.id in state.selected},refresh,{operation=""})
+    if(operation.isNotEmpty()) BrowserOperationDialog(vm,operation,file,folder ?: current,state.root,catalog.files.filter{it.id in state.selected},refresh,{operation=""})
 }
 
 @Composable fun SearchControls(query: String, type: String, onQuery: (String)->Unit, onType: (String)->Unit, onSearch: ()->Unit, onClear: ()->Unit, busy: Boolean) {

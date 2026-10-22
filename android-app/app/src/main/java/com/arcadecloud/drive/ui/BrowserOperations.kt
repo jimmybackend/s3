@@ -21,7 +21,7 @@ import kotlinx.coroutines.launch
 import org.json.JSONArray
 import org.json.JSONObject
 
-@Composable internal fun BrowserOperationDialog(vm: DriveViewModel, operation: String, file: DriveFile?, folder: Folder,
+@Composable internal fun BrowserOperationDialog(vm: DriveViewModel, operation: String, file: DriveFile?, folder: Folder, root: String,
     selected: List<DriveFile>, onRefresh: ()->Unit, onDismiss: ()->Unit) {
     val scope = rememberCoroutineScope(); val context = LocalContext.current
     var busy by remember { mutableStateOf(false) }; var error by remember { mutableStateOf<String?>(null) }
@@ -75,7 +75,7 @@ import org.json.JSONObject
     }
     val moving=operation in listOf("move","copy","moveFolder","copyFolder","moveMany","copyMany")
     if(moving && result==null) {
-        DestinationDialog(vm,vm.state.value.root,{ destination -> perform {
+        DestinationDialog(vm,root,{ destination -> perform {
             val item=if(operation.endsWith("Folder")) DriveClipboard(if(operation=="copyFolder")"copy" else "move",folder=folder.route)
                 else DriveClipboard(if(operation.startsWith("copy"))"copy" else "move",keys=if(operation.endsWith("Many"))selected.map{it.key} else listOf(file!!.key))
             val j=post("move_task.php",item.fields(destination));vm.notice(j.optString("mensaje","Operación enviada a Tareas; todavía no ha finalizado."));vm.refreshTasks();onDismiss()

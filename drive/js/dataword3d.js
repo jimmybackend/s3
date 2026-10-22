@@ -895,7 +895,13 @@
 
       if (!folder && ['image', 'video'].includes(item.kind) && item.thumbnail_href) {
         const img = this.document.createElement('img');
-        img.src = item.thumbnail_href;
+        if (item.kind === 'video') {
+          img.dataset.videoPoster = '1';
+          img.dataset.videoThumb = item.thumbnail_href;
+          img.dataset.videoSource = item.open_href || '';
+        } else {
+          img.src = item.thumbnail_href;
+        }
         img.alt = '';
         img.loading = 'lazy';
         img.className = 'dw-book-thumb';
@@ -962,7 +968,7 @@
 
       const media = this.document.createElement('span');
       media.className = 'dw-desk-book-media';
-      if (item.kind === 'image' && item.thumbnail_href && !item.locked) {
+      if (['image', 'video'].includes(item.kind) && item.thumbnail_href && !item.locked) {
         const img = this.document.createElement('img');
         img.src = item.thumbnail_href;
         img.alt = `Miniatura de ${item.name || 'imagen'}`;
@@ -1114,7 +1120,7 @@
 
     renderDeskPreview(item, animate = false) {
       if (!item || !this.deskFocus || !this.deskIcon || !this.deskImage || !this.deskName || !this.deskMeta) return;
-      const canShowThumb = item.kind === 'image' && Boolean(item.thumbHref) && !item.locked;
+      const canShowThumb = ['image', 'video'].includes(item.kind) && Boolean(item.thumbHref) && !item.locked;
       this.deskIcon.className = `fas ${this.iconFor(item.kind)}`;
       this.deskIcon.hidden = canShowThumb;
       this.deskImage.hidden = !canShowThumb;

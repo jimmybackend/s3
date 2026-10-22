@@ -563,7 +563,7 @@ if ($isDrive3dNativeActions) ob_start();
                     data-polly="<?= $canPolly ? '1' : '0' ?>"
                     title="<?= $e($name) ?>">
               <span class="os-entry-menu" aria-hidden="true"><i class="fas fa-ellipsis-vertical"></i></span>
-              <?php if ($isImage && !$locked): ?>
+              <?php if (($isImage || $isVideo) && !$locked): ?>
                 <span class="os-entry-thumb-wrap">
                   <img class="os-entry-thumbnail"
                        src="<?= $e($thumbUrl) ?>"
@@ -571,6 +571,7 @@ if ($isDrive3dNativeActions) ob_start();
                        loading="lazy"
                        decoding="async"
                        alt="Miniatura de <?= $e($name) ?>">
+                  <?php if ($isVideo): ?><span class="arcade-video-badge" aria-label="Video"><i class="fas fa-video"></i></span><?php endif; ?>
                 </span>
               <?php else: ?>
                 <span class="os-entry-icon os-file-type-<?= $e($icon['category']) ?>">

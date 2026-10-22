@@ -42,7 +42,7 @@ class DriveRepository(private val vault: SessionVault) {
             if (response.code == 401 && path != "api/native.php?action=login") throw SessionExpired()
             val raw = response.body?.string() ?: throw IOException("Respuesta vacía")
             val json = try { JSONObject(raw) } catch (_: Exception) { throw ApiError(response.code, "El servidor no ofrece la API nativa. Requiere desplegar esta versión del backend.") }
-            if (!response.isSuccessful || !json.optBoolean("ok", false)) throw ApiError(response.code,
+            if (!response.isSuccessful || !ApiOutcome.successful(json.has("ok"), json.optBoolean("ok", false), json.optString("estado"))) throw ApiError(response.code,
                 json.optString("error", json.optString("msg", json.optString("mensaje", "Operación rechazada"))))
             json
         }
@@ -66,7 +66,7 @@ class DriveRepository(private val vault: SessionVault) {
         val j = request(url)
         fun folders(key: String, routeKey: String, nameKey: String) = j.getJSONArray(key).let { arr -> (0 until arr.length()).map { arr.getJSONObject(it).let { f -> Folder(f.getString(routeKey), f.getString(nameKey)) } } }
         val files = j.getJSONArray("files").let { arr -> (0 until arr.length()).map { arr.getJSONObject(it).let { f ->
-            DriveFile(f.getLong("id"), f.getString("name"), f.getString("key"), f.getString("route"), f.getLong("bytes"), f.getString("date"), f.getBoolean("locked"), f.optJSONObject("metadata")?.toString(2) ?: "") } } }
+            DriveFile(f.getLong("id"), f.getString("name"), f.getString("key"), f.getString("route"), f.getLong("bytes"), f.getString("date"), f.getBoolean("locked"), f.optJSONObject("metadata")?.toString(2) ?: "", f.optBoolean("protected", f.getBoolean("locked"))) } } }
         return Catalog(j.getString("route"), folders("breadcrumbs", "route", "label"), folders("folders", "route", "name"), files, j.getInt("page"), j.getInt("pages"), j.getInt("folder_page"), j.getBoolean("more_folders"))
     }
     suspend fun signedDownload(key: String): String = NodePolicy.requireSignedUrl(request("api/native.php?action=download&key=${encode(key)}").getString("url_descarga"))

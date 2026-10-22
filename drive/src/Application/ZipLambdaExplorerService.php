@@ -28,11 +28,17 @@ final class ZipLambdaExplorerService
         $session->start();
         if (!$session->isAuthenticated() || $session->userId() <= 0) {
             http_response_code(401);
+            if (($_GET['format'] ?? '') === 'json') \ArcadeCloud\Drive\Http\JsonResponse::error('Sesión requerida.', 401);
             exit('Sesión requerida.');
         }
         $userId = $session->userId();
         $key = trim((string)($_GET['archivo'] ?? ''));
-        $row = $app->fileRecordLocator()->requireReadableByKey($userId, $key);
+        try {
+            $row = $app->fileRecordLocator()->requireReadableByKey($userId, $key);
+        } catch (Throwable $error) {
+            if (($_GET['format'] ?? '') === 'json') \ArcadeCloud\Drive\Http\JsonResponse::error('Archivo no disponible o protegido.', 403);
+            throw $error;
+        }
         if (strtolower(pathinfo((string)$row['Nombre'], PATHINFO_EXTENSION)) !== 'zip') {
             throw new RuntimeException('El archivo seleccionado no es ZIP.');
         }
@@ -90,12 +96,15 @@ final class ZipLambdaExplorerService
                 }
                 header('Cache-Control: no-store');
                 header('Referrer-Policy: no-referrer');
+                if (($_GET['format'] ?? '') === 'json') \ArcadeCloud\Drive\Http\JsonResponse::send(['ok' => true, 'download_url' => $url]);
                 header('Location: ' . $url, true, 303);
                 return;
             }
+            if (($_GET['format'] ?? '') === 'json') \ArcadeCloud\Drive\Http\JsonResponse::send($body);
             self::render($key, (string)$row['Nombre'], $nested, $body);
         } catch (Throwable $error) {
             $recorder->failure($userId, 'zip.lambda.' . $action, 'Lambda', $started, ['error_type' => get_class($error)], $correlation);
+            if (($_GET['format'] ?? '') === 'json') \ArcadeCloud\Drive\Http\JsonResponse::error('No se pudo completar la operación ZIP con Lambda.', 502);
             http_response_code(502);
             header('Content-Type: text/plain; charset=utf-8');
             header('Cache-Control: no-store');

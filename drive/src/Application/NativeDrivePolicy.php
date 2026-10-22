@@ -29,6 +29,7 @@ final class NativeDrivePolicy
             'key' => FileViewHelper::buildS3Key((string)$row['Ruta'], (string)$row['Encriptado']),
             'route' => (string)$row['Ruta'], 'bytes' => (int)$row['Tamano'],
             'date' => (string)$row['Fecha'], 'locked' => $locked,
+            'protected' => FileViewHelper::hasSecurity($row),
             'hint' => (string)($row['SecureHint'] ?? ''),
             'metadata' => $locked ? null : FileViewHelper::metadataArray($row['Metadatos'] ?? null),
         ];

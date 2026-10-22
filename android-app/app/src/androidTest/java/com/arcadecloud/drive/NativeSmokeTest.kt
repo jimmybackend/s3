@@ -1,5 +1,6 @@
 package com.arcadecloud.drive
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.performTextInput
@@ -19,13 +20,21 @@ class NativeSmokeTest {
     @get:Rule val compose = createComposeRule()
     @Test fun loginUsesNativeControlsAndReturnsEnteredCredentialsOnlyOnTap() {
         var submitted = ""
-        compose.setContent { ArcadeTheme { LoginScreen(false,null) { node,email,password -> submitted = "$node|$email|$password" } } }
+        var attempts = 0
+        compose.setContent { ArcadeTheme { LoginScreen(false,null) { node,email,password -> attempts++; submitted = "$node|$email|$password" } } }
         compose.onNodeWithText("Iniciar sesión").assertIsDisplayed()
-        compose.onNodeWithText("Correo").performTextInput("native@example.test")
-        compose.onNodeWithText("Contraseña").performTextInput("sample-password")
+        compose.onNodeWithText("Correo o identificador de acceso").performTextInput("native@example.test")
+        compose.onNodeWithText("Contraseña").performTextInput(" aB+&%ñ= 123 ")
         assertEquals("",submitted)
+        compose.onNodeWithContentDescription("Mostrar contraseña").performClick()
+        compose.onNodeWithText(" aB+&%ñ= 123 ").assertIsDisplayed()
+        compose.onNodeWithContentDescription("Ocultar contraseña").performClick()
         compose.onNodeWithText("Iniciar sesión").performScrollTo().performClick()
-        assertEquals("https://drive.esforzados.com/|native@example.test|sample-password", submitted)
+        assertEquals("https://drive.esforzados.com/|native@example.test| aB+&%ñ= 123 ", submitted)
+        // A rejected request must allow checking/retrying the same exact input.
+        compose.onNodeWithText("Iniciar sesión").performClick()
+        assertEquals(2, attempts)
+        assertEquals("https://drive.esforzados.com/|native@example.test| aB+&%ñ= 123 ", submitted)
     }
     @Test fun vaultPersistsEncryptedSessionAndCanRevokeLocally() {
         val context = InstrumentationRegistry.getInstrumentation().targetContext

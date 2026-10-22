@@ -13,6 +13,7 @@ final class ZipExplorerService
     {
         if (!ZipLambdaExplorerService::enabled()) {
             // Fail closed: the EC2 must not process ZIP contents locally.
+            if (($_GET['format'] ?? '') === 'json') \ArcadeCloud\Drive\Http\JsonResponse::error('Este nodo requiere Lambda habilitada para explorar ZIP.', 503);
             http_response_code(503);
             header('Content-Type: text/plain; charset=utf-8');
             header('Cache-Control: no-store');

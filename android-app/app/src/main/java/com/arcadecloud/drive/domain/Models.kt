@@ -11,7 +11,7 @@ object NodePolicy {
         require(u.host != null && (u.host.endsWith(".amazonaws.com") || u.host.endsWith(".amazonaws.com.cn"))) { "Destino S3 inválido" }
     }
 }
-data class DriveFile(val id: Long, val name: String, val key: String, val route: String, val bytes: Long, val date: String, val locked: Boolean, val metadata: String)
+data class DriveFile(val id: Long, val name: String, val key: String, val route: String, val bytes: Long, val date: String, val locked: Boolean, val metadata: String, val protected: Boolean = locked)
 data class Folder(val route: String, val name: String)
 data class Catalog(val route: String, val crumbs: List<Folder>, val folders: List<Folder>, val files: List<DriveFile>, val page: Int, val pages: Int, val folderPage: Int, val moreFolders: Boolean)
 class SessionExpired : Exception("Tu sesión venció. Vuelve a iniciar sesión.")

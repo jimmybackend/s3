@@ -12,7 +12,11 @@ import kotlin.coroutines.resumeWithException
 
 /** Uses the repository's authenticated cookie jar, with no redirects or HTTP disk cache. */
 internal class ThumbnailClient(client: OkHttpClient) {
-    private val client = client.newBuilder().followRedirects(false).followSslRedirects(false).cache(null)
+    private val sourceCookies = client.cookieJar
+    private val client = client.newBuilder().cookieJar(object: CookieJar {
+        override fun saveFromResponse(url: HttpUrl, cookies: List<Cookie>) { /* Thumbnail responses cannot replace the login session. */ }
+        override fun loadForRequest(url: HttpUrl) = sourceCookies.loadForRequest(url)
+    }).followRedirects(false).followSslRedirects(false).cache(null)
         .callTimeout(25,TimeUnit.SECONDS).readTimeout(20,TimeUnit.SECONDS).build()
     private val slots = Semaphore(4)
     suspend fun load(url: HttpUrl): ByteArray? = slots.withPermit {

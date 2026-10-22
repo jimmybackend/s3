@@ -1,6 +1,6 @@
-# ArcadeCloud Android Native — 0.9.1 preview
+# ArcadeCloud Android Native — 0.9.2 preview
 
-Cliente Android Kotlin/Compose. El módulo `app` no incluye WebView, Custom Tabs ni HTML. Conserva `com.arcadecloud.drive`, sube `versionCode` de 8 a 10 y utiliza el backend PHP existente.
+Cliente Android Kotlin/Compose. El módulo `app` no incluye WebView, Custom Tabs ni HTML. Conserva `com.arcadecloud.drive`, sube `versionCode` de 8 a 11 y utiliza el backend PHP existente.
 
 **Esta es una primera implementación, no paridad completa con el Drive web ni una versión certificada para Samsung. Requiere desplegar los cambios PHP de esta rama antes de iniciar sesión. No se ha desplegado producción.**
 
@@ -15,12 +15,12 @@ gradle :app:testDebugUnitTest :app:lintDebug :app:assembleDebug :app:assembleDeb
 gradle :app:connectedDebugAndroidTest
 ```
 
-El workflow **ArcadeCloud Android Native** entrega un artefacto `arcadecloud-native-0.9.1-debug-N` con APK, `build-info.json`, `SHA256SUMS` y certificado de firma. El JSON contiene el commit realmente compilado. Las pruebas instrumentadas Android 14 tienen su propio job y resultados; no son pruebas físicas.
+El workflow **ArcadeCloud Android Native** entrega un artefacto `arcadecloud-native-0.9.2-debug-N` con APK, `build-info.json`, `SHA256SUMS` y certificado de firma. El JSON contiene el commit realmente compilado. Las pruebas instrumentadas Android 14 tienen su propio job y resultados; no son pruebas físicas.
 
 ## Instalar
 
 1. Obtener el artefacto de una ejecución verde del PR; verificar SHA-256 contra `SHA256SUMS`.
-2. Instalar `ArcadeCloud-Android-0.9.1-native-preview-debug.apk` en Android 10 o superior.
+2. Instalar `ArcadeCloud-Android-0.9.2-native-preview-debug.apk` en Android 10 o superior.
 3. Autorizar ubicación aproximada o precisa y activar el servicio, como exigía la APK anterior; la app no consulta coordenadas. Elegir Drive o FastDrive e iniciar sesión en la pantalla nativa. FastDrive no se enciende desde esta app.
 4. Abrir una carpeta y usar los botones Subir, Galería o Cámara. La captura exige una acción explícita y luego **Guardar en esta carpeta**.
 5. Revisar transferencias en Tareas; abrir una descarga completada para verla o enviarla a un visor Android mediante FileProvider.
@@ -36,3 +36,25 @@ El workflow **ArcadeCloud Android Native** entrega un artefacto `arcadecloud-nat
 El cliente original completo está en `legacy-webview/`, excluido de `settings.gradle`. Para reconstruirlo en una copia aislada, usar el commit base `ea79751796d7e36501289174e7d78854b291bbc8` o restaurar ese módulo como `app` junto con su `build.gradle` raíz. No bajar versiones sobre una instalación sin entender el efecto de la firma y los datos locales. Historial de APK anteriores: [LEGACY_RELEASES.md](LEGACY_RELEASES.md), exclusivamente histórico; sus enlaces no son la APK nativa nueva.
 
 Auditoría, contratos, alcance y pruebas físicas pendientes: [NATIVE_AUDIT.md](NATIVE_AUDIT.md).
+
+### Navegación y acciones 0.9.2
+
+La barra inferior tiene Archivos, Buscar, Tareas y Cuenta. Buscar mantiene un catálogo
+independiente; Archivos no muestra filtros. Los controles de subida y captura aparecen
+después de la paginación. Cada carpeta, incluida la actual, tiene un menú desplazable.
+
+Se reutilizan move_task.php, delete_multiple.php, endpoints de carpetas, seguridad,
+texto, ArcadeLink y servicios AWS. Los trabajos en cola no se presentan como terminados.
+No se autoriza arrancar una EC2 desde las nuevas acciones multimedia. Office y abrir
+con usan aplicaciones instaladas de Android después de descargar desde Tareas.
+El fondo se configura con el selector de Android; el escritorio web mantiene su fondo propio.
+
+Para mostrar protección de archivos desbloqueados y explorar ZIP nativamente hay que
+actualizar el backend: NativeDrivePolicy añade sólo el booleano protected, sin hashes;
+zip_explorer.php acepta format=json sobre la misma validación y Lambda existentes.
+Un backend anterior puede seguir listando archivos, pero no ofrece el contrato JSON de ZIP.
+No se ha desplegado este cambio ni se han ejecutado acciones sobre datos reales.
+
+Abrir en otra ventana/pestaña y Drive clásico son controles del escritorio web: en
+Android corresponden a abrir, abrir con y la navegación nativa. Federación y 3D siguen
+pendientes. Descarga ZIP usa Lambda y S3, nunca una copia temporal del archivo fuente en EC2.

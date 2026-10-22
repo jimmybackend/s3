@@ -57,27 +57,32 @@
       const thumb = img.dataset.videoThumb;
       const source = img.dataset.videoSource;
       if (!thumb || !source || !img.isConnected) return;
+      const url = await this.posterUrl(thumb, source);
+      if (!img.isConnected || !url) return;
+      img.src = url;
+      img.dataset.videoPosterState = 'ready';
+    }
+    posterUrl(thumb, source) {
+      if (!thumb || !source) return Promise.resolve(null);
       const key = thumb + '|' + source;
-      let url = this.posters.get(key);
-      if (!url) {
+      if (this.posters.has(key)) return this.posters.get(key);
+      const pending = (async () => {
+        let url = null;
         try {
           const response = await fetch(thumb, { credentials: 'same-origin', cache: 'no-store' });
           if (response.ok && response.headers.get('X-Thumb-Status') !== 'FALLBACK'
               && (response.headers.get('Content-Type') || '').includes('image/jpeg')) {
             const blob = await response.blob();
-            if (blob.size > 0 && blob.size <= 1024 * 1024) {
-              url = URL.createObjectURL(blob);
-            }
+            if (blob.size > 0 && blob.size <= 1024 * 1024) url = URL.createObjectURL(blob);
           }
-        } catch (_) { /* Use the client-side decoder. */ }
-        if (!url) {
-          url = await this.capture(source);
-        }
-        if (url) this.posters.set(key, url);
-      }
-      if (!img.isConnected || !url) return;
-      img.src = url;
-      img.dataset.videoPosterState = 'ready';
+        } catch (_) { /* Try browser frame decoding. */ }
+        return url || this.capture(source);
+      })();
+      this.posters.set(key, pending);
+      pending.then(url => {
+        if (!url) this.posters.delete(key);
+      }, () => this.posters.delete(key));
+      return pending;
     }
     capture(source) {
       return new Promise(resolve => {
@@ -130,7 +135,13 @@
       });
     }
   }
-  const start = () => { if (document.body) new VideoPosterLoader(document); };
+  const start = () => {
+    if (!document.body || window.ArcadeVideoPosters) return;
+    const instance = new VideoPosterLoader(document);
+    window.ArcadeVideoPosters = {
+      posterUrl: (thumb, source) => instance.posterUrl(thumb, source)
+    };
+  };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start, { once: true });
   else start();
 })();

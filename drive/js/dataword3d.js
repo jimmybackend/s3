@@ -970,7 +970,13 @@
       media.className = 'dw-desk-book-media';
       if (['image', 'video'].includes(item.kind) && item.thumbnail_href && !item.locked) {
         const img = this.document.createElement('img');
-        img.src = item.thumbnail_href;
+        if (item.kind === 'video') {
+          img.dataset.videoPoster = '1';
+          img.dataset.videoThumb = item.thumbnail_href;
+          img.dataset.videoSource = item.open_href || '';
+        } else {
+          img.src = item.thumbnail_href;
+        }
         img.alt = `Miniatura de ${item.name || 'imagen'}`;
         img.loading = 'lazy';
         img.decoding = 'async';

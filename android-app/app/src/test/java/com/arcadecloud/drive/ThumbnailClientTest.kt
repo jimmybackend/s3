@@ -12,16 +12,18 @@ class ThumbnailClientTest {
     @Test fun existingSessionIsSentToThumbnailEndpoint() = runBlocking {
         val server=MockWebServer();server.start()
         try {
+            var cookieWrites=0
             val client=OkHttpClient.Builder().cookieJar(object:CookieJar {
-                override fun saveFromResponse(url:HttpUrl,cookies:List<Cookie>) {}
+                override fun saveFromResponse(url:HttpUrl,cookies:List<Cookie>) {cookieWrites++}
                 override fun loadForRequest(url:HttpUrl)=listOf(Cookie.Builder().name("PHPSESSID").value("isolated-test-session").domain(url.host).build())
             }).build()
             val bytes=byteArrayOf(1,2,3)
-            server.enqueue(MockResponse().setHeader("Content-Type","image/jpeg").setHeader("X-Thumb-Status","S3_THUMB_HIT").setBody(Buffer().write(bytes)))
+            server.enqueue(MockResponse().setHeader("Content-Type","image/jpeg").setHeader("X-Thumb-Status","S3_THUMB_HIT").setHeader("Set-Cookie","PHPSESSID=late-session; Path=/").setBody(Buffer().write(bytes)))
             assertArrayEquals(bytes,ThumbnailClient(client).load(server.url("/thumb.php?key=Data2%2Fa.jpg&w=160&h=120&fit=cover")))
             val request=server.takeRequest()
             assertEquals("PHPSESSID=isolated-test-session",request.getHeader("Cookie"))
             assertTrue(request.path!!.startsWith("/thumb.php?key="))
+            assertEquals(0,cookieWrites)
         } finally {server.shutdown()}
     }
     @Test fun fallbackHtmlAndRedirectNeverFetchAnOriginal() = runBlocking {

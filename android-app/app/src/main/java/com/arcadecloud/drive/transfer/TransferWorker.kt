@@ -178,7 +178,12 @@ class TransferWorker(context: Context, params: WorkerParameters) : CoroutineWork
             "speed_bps" to "${task.optLong("speed")}", "eta_seconds" to "${task.optLong("eta")}", "detail" to (task.optString("error").ifEmpty { "Transferencia Android" })))
     }
     private suspend fun download() {
-        val task = store.get(taskId); val url = repo.signedDownload(task.getString("key"))
+        val task = store.get(taskId)
+        val sourcePath = task.optString("sourcePath")
+        val url = if(sourcePath.isNotEmpty()) {
+            require(sourcePath.startsWith("zip_explorer.php?format=json&archivo="))
+            com.arcadecloud.drive.domain.NodePolicy.requireSignedUrl(repo.request(sourcePath).getString("download_url"))
+        } else repo.signedDownload(task.getString("key"))
         val dir = File(applicationContext.filesDir, "downloads").apply { mkdirs() }
         val partial = File(dir, "$taskId.partial"); val target = File(dir, taskId)
         // Restarting GET is safe. Range recovery deferred until ETag validation is implemented.

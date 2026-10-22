@@ -25,7 +25,11 @@ class DriveViewModel(app: Application) : AndroidViewModel(app) {
     fun clearSelection() { mutable.update { it.copy(selected = emptySet()) } }
     fun notice(message: String?) { mutable.update { it.copy(notice = message) } }
     private var searchJob: Job? = null
+    private data class SearchRequest(val route: String, val page: Int, val folderPage: Int, val query: String, val type: String)
+    private var lastSearch: SearchRequest? = null
+    fun refreshSearch() { lastSearch?.let { search(it.route,it.page,it.folderPage,it.query,it.type) } }
     fun search(route: String, page: Int = 1, folderPage: Int = 1, query: String = "", type: String = "") {
+        lastSearch = SearchRequest(route,page,folderPage,query,type)
         searchJob?.cancel(); searchJob = run {
             val result = repo.browse(route, page, folderPage, query, type)
             mutable.update { it.copy(searchCatalog = result, selected = emptySet()) }
@@ -47,7 +51,7 @@ class DriveViewModel(app: Application) : AndroidViewModel(app) {
         mutable.update { it.copy(busy = true, error = null) }
         try { block() }
         catch(e: CancellationException) { throw e }
-        catch(e: SessionExpired) { WorkManager.getInstance(graph).cancelAllWorkByTag("native-transfer"); repo.forget(); clipboard = null; mutable.value = DriveState(error = e.message) }
+        catch(e: SessionExpired) { WorkManager.getInstance(graph).cancelAllWorkByTag("native-transfer"); repo.forget(); clipboard = null; lastSearch = null; mutable.value = DriveState(error = e.message) }
         catch(e: Exception) { mutable.update { it.copy(error = e.message ?: "No se pudo completar la operación") } }
         finally { mutable.update { it.copy(busy = false) } }
     }
@@ -67,7 +71,7 @@ class DriveViewModel(app: Application) : AndroidViewModel(app) {
         mutable.update { it.copy(serverTasks = (0 until arr.length()).map { index -> arr.getJSONObject(index) }) }
         }
     }
-    fun logout() = run { WorkManager.getInstance(graph).cancelAllWorkByTag("native-transfer"); repo.logout(); clipboard = null; mutable.value = DriveState() }
+    fun logout() = run { WorkManager.getInstance(graph).cancelAllWorkByTag("native-transfer"); repo.logout(); clipboard = null; lastSearch = null; mutable.value = DriveState() }
     fun upload(uri: String, name: String, mime: String, route: String) = run { TransferQueue.enqueue(graph, uri, name, mime, route) }
     fun download(file: DriveFile) = run {
         check(!file.locked) { "Desbloquea el archivo antes de descargar." }

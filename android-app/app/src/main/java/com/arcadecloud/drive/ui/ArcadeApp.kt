@@ -145,7 +145,7 @@ import java.io.File
 @Composable private fun TasksScreen(vm: DriveViewModel, remote: List<JSONObject>) {
     val context = LocalContext.current
     var tasks by remember { mutableStateOf(emptyList<JSONObject>()) }; var local by remember { mutableStateOf<JSONObject?>(null) }
-    LaunchedEffect(Unit) { vm.refreshTasks(); while(true) { tasks = withContext(Dispatchers.IO) {
+    LaunchedEffect(Unit) { var ticks = 0; vm.refreshTasks(); while(true) { if(ticks++ % 5 == 0) vm.refreshTasks(); tasks = withContext(Dispatchers.IO) {
         val rows = vm.graph.transfers.list(vm.repo.owner, vm.repo.node)
         rows.forEach { t ->
             if(t.optString("status") in listOf("running", "queued")) {

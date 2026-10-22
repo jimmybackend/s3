@@ -265,8 +265,10 @@ foreach ($filas as $row) {
 
           <?php if ($esVideo && !$soloSeguridad): ?>
             <span class="arcade-video-thumb" style="position:relative;display:inline-block;width:56px;height:56px;margin-right:8px">
-              <img src="<?= FileViewHelper::escape($thumbUrl) ?>" width="56" height="56" loading="lazy" decoding="async"
-                   style="width:56px;height:56px;object-fit:cover;border-radius:5px" alt="Miniatura de <?= FileViewHelper::escape($nombre) ?>">
+              <img data-video-poster data-video-thumb="<?= FileViewHelper::escape($thumbUrl) ?>"
+                   data-video-source="<?= FileViewHelper::escape($origUrl) ?>"
+                   width="56" height="56" loading="lazy" decoding="async"
+                   style="width:56px;height:56px;object-fit:cover;border-radius:5px;background:#071426" alt="Miniatura de <?= FileViewHelper::escape($nombre) ?>">
               <span aria-label="Video" style="position:absolute;right:2px;bottom:2px;width:34%;aspect-ratio:1;display:grid;place-items:center;background:rgba(5,15,30,.78);color:white;border-radius:4px;font-size:11px;pointer-events:none"><i class="fas fa-video"></i></span>
             </span>
           <?php elseif ($esImg && !$soloSeguridad): ?>

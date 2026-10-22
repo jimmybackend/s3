@@ -53,26 +53,29 @@ import java.io.File
     val context = LocalContext.current
     var captureRoute by rememberSaveable { mutableStateOf("") }
     var captureLabel by rememberSaveable { mutableStateOf("") }
+    var captureMode by rememberSaveable { mutableStateOf("Foto") }
     val notifications = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { }
     LaunchedEffect(state.authenticated) { if (state.authenticated && android.os.Build.VERSION.SDK_INT >= 33) notifications.launch(Manifest.permission.POST_NOTIFICATIONS) }
     Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
         if (!state.authenticated) LoginScreen(state.busy, state.error, vm::login)
         else Scaffold(topBar = {
             TopAppBar(title = { Column { Text("ArcadeCloud", style = MaterialTheme.typography.titleLarge); Text(state.alias, style = MaterialTheme.typography.labelMedium) } },
-                actions = { IconButton(onClick = { if(section == "tasks") vm.refreshTasks() else vm.browse() }) { Icon(Icons.Default.Refresh, "Actualizar") } })
+                actions = { IconButton(onClick = { if(section == "tasks") vm.refreshTasks() else if(section == "search") vm.notice("Usa el botón Buscar para actualizar los resultados con tus filtros.") else vm.browse() }) { Icon(Icons.Default.Refresh, "Actualizar") } })
         }, bottomBar = {
-            NavigationBar {
-                listOf(Triple("files", "Archivos", Icons.Default.Folder), Triple("tasks", "Tareas", Icons.Default.Sync), Triple("settings", "Cuenta", Icons.Default.Person)).forEach { (route,label,icon) ->
-                    NavigationBarItem(selected = section == route, onClick = { nav.navigate(route) { launchSingleTop = true; popUpTo("files") } }, icon = { Icon(icon, label) }, label = { Text(label) })
-                }
-            }
+            DriveNavigationBar(section) { route -> vm.clearSelection(); nav.navigate(route) { launchSingleTop = true; popUpTo("files") } }
+
         }) { padding ->
             Column(Modifier.padding(padding).fillMaxSize()) {
                 if (state.busy) LinearProgressIndicator(Modifier.fillMaxWidth())
                 state.error?.let { Text(it, Modifier.padding(12.dp), color = MaterialTheme.colorScheme.error) }
+                state.notice?.let { message -> Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(message, Modifier.weight(1f).padding(horizontal = 12.dp), style = MaterialTheme.typography.bodySmall)
+                    IconButton(onClick = { vm.notice(null) }) { Icon(Icons.Default.Close, "Cerrar aviso") }
+                } }
                 NavHost(nav, startDestination = "files", modifier = Modifier.weight(1f)) {
-                    composable("files") { FilesScreen(state, vm) { route,label -> captureRoute = route; captureLabel = label; nav.navigate("capture") } }
-                    composable("capture") { CaptureScreen(captureLabel, { uri,name,mime -> vm.upload(uri,name,mime,captureRoute); nav.navigate("tasks") { popUpTo("files") } }) }
+                    composable("files") { FilesScreen(state, vm, false) { route,label,mode -> captureRoute = route; captureLabel = label; captureMode = mode; nav.navigate("capture") } }
+                    composable("search") { FilesScreen(state, vm, true) { route,label,mode -> captureRoute = route; captureLabel = label; captureMode = mode; nav.navigate("capture") } }
+                    composable("capture") { CaptureScreen(captureLabel, { uri,name,mime -> vm.upload(uri,name,mime,captureRoute); nav.navigate("tasks") { popUpTo("files") } }, initialMode = captureMode) }
                     composable("tasks") { TasksScreen(vm, state.serverTasks) }
                     composable("settings") {
                         Column(Modifier.padding(20.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(16.dp)) {
@@ -121,123 +124,7 @@ import java.io.File
     }
 }
 
-@Composable private fun FilesScreen(state: DriveState, vm: DriveViewModel, onCapture: (String,String) -> Unit) {
-    val context = LocalContext.current; val catalog = state.catalog
-    var query by rememberSaveable { mutableStateOf("") }; var type by rememberSaveable { mutableStateOf("") }
-    var sort by rememberSaveable { mutableStateOf(false) }
-    var actionFile by remember { mutableStateOf<DriveFile?>(null) }
-    var actionFolder by remember { mutableStateOf<Folder?>(null) }
-    var dialog by remember { mutableStateOf("") }; var input by remember { mutableStateOf("") }
-    var targetRoute by rememberSaveable { mutableStateOf("") }
-    val docs = rememberLauncherForActivityResult(ActivityResultContracts.OpenMultipleDocuments()) { uris ->
-        uris.forEach { uri ->
-            runCatching { context.contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION) }
-            val name = context.contentResolver.query(uri, arrayOf(OpenableColumns.DISPLAY_NAME), null,null,null)?.use { c -> if(c.moveToFirst()) c.getString(0) else null } ?: "archivo"
-            vm.upload(uri.toString(), name, context.contentResolver.getType(uri) ?: "application/octet-stream", targetRoute)
-        }
-    }
-    val photos = rememberLauncherForActivityResult(ActivityResultContracts.PickMultipleVisualMedia()) { uris ->
-        uris.forEach { uri ->
-            runCatching { context.contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION) }
-            val name = context.contentResolver.query(uri, arrayOf(OpenableColumns.DISPLAY_NAME),null,null,null)?.use { c -> if(c.moveToFirst()) c.getString(0) else null } ?: "imagen-${System.currentTimeMillis()}.jpg"
-            vm.upload(uri.toString(), name, context.contentResolver.getType(uri) ?: "image/jpeg", targetRoute)
-        }
-    }
-    if (catalog == null) { Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Text("Abriendo tu Drive…") }; return }
-    val parent = catalog.crumbs.dropLast(1).lastOrNull()
-    BackHandler(parent != null) { parent?.let { vm.browse(it.route) } }
-    Column(Modifier.fillMaxSize().padding(horizontal = 12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            IconButton(onClick = { parent?.let { vm.browse(it.route) } }, enabled = parent != null) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Carpeta anterior") }
-            Text(catalog.crumbs.joinToString(" / ") { it.name }, style = MaterialTheme.typography.titleMedium, maxLines = 2, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
-            IconButton(onClick = { input = ""; dialog = "create" }) { Icon(Icons.Default.CreateNewFolder, "Crear carpeta") }
-        }
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            OutlinedTextField(query, { query = it }, label = { Text("Buscar en esta carpeta") }, singleLine = true, modifier = Modifier.weight(1f))
-            IconButton(onClick = { vm.browse(catalog.route, search = query, type = type) }) { Icon(Icons.Default.Search, "Buscar") }
-            IconButton(onClick = { sort = !sort }) { Icon(Icons.Default.SortByAlpha, "Ordenar nombres en esta página") }
-        }
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            OutlinedTextField(type, { type = it }, label = { Text("Extensión: pdf, jpg…") }, singleLine = true, modifier = Modifier.weight(1f))
-            TextButton(onClick = { query = ""; type = ""; vm.browse(catalog.route) }) { Text("Limpiar") }
-        }
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
-            FilledTonalIconButton(onClick = { targetRoute = catalog.route; docs.launch(arrayOf("*/*")) }) { Icon(Icons.Default.UploadFile, "Subir archivos") }
-            FilledTonalIconButton(onClick = { targetRoute = catalog.route; photos.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageAndVideo)) }) { Icon(Icons.Default.PhotoLibrary, "Elegir fotos o videos") }
-            FilledTonalIconButton(onClick = { onCapture(catalog.route, catalog.crumbs.lastOrNull()?.name ?: "Mi Drive") }) { Icon(Icons.Default.CameraAlt, "Cámara, video y notas de voz") }
-        }
-        if (state.selected.isNotEmpty()) Row(verticalAlignment = Alignment.CenterVertically) {
-            Text("${state.selected.size} seleccionados", Modifier.weight(1f))
-            TextButton(onClick = { dialog = "moveMany" }) { Text("Mover") }
-            TextButton(onClick = { dialog = "deleteMany" }) { Text("Eliminar") }
-        }
-        LazyColumn(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            items(catalog.folders, key = { "folder:${it.route}" }) { folder ->
-                ElevatedCard(Modifier.fillMaxWidth()) { Row(Modifier.fillMaxWidth().clickable { vm.browse(folder.route) }.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Default.Folder, null, tint = MaterialTheme.colorScheme.primary); Spacer(Modifier.width(12.dp)); Text(folder.name, Modifier.weight(1f))
-                    IconButton(onClick = { actionFolder = folder; input = folder.name; dialog = "renameFolder" }) { Icon(Icons.Default.Edit, "Renombrar carpeta") }
-                } }
-            }
-            if(catalog.moreFolders || catalog.folderPage > 1) item {
-                Row { TextButton(onClick = { vm.browse(catalog.route, catalog.page, catalog.folderPage - 1, query, type) }, enabled = catalog.folderPage > 1) { Text("Carpetas anteriores") }
-                    TextButton(onClick = { vm.browse(catalog.route, catalog.page, catalog.folderPage + 1, query, type) }, enabled = catalog.moreFolders) { Text("Más carpetas") } }
-            }
-            val files = if(sort) catalog.files.sortedBy { it.name.lowercase() } else catalog.files
-            items(files, key = { "file:${it.id}" }) { file ->
-                ElevatedCard(Modifier.fillMaxWidth()) { Row(Modifier.padding(8.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Checkbox(file.id in state.selected, onCheckedChange = { vm.select(file.id) })
-                    Icon(if(file.locked) Icons.Default.Lock else Icons.Default.InsertDriveFile, null, tint = MaterialTheme.colorScheme.secondary)
-                    Column(Modifier.weight(1f).clickable { actionFile = file; dialog = "file" }.padding(10.dp)) {
-                        Text(file.name, maxLines = 2, overflow = TextOverflow.Ellipsis)
-                        Text("${bytes(file.bytes)} · ${file.date}", style = MaterialTheme.typography.bodySmall)
-                    }
-                    IconButton(onClick = { actionFile = file; dialog = "file" }) { Icon(Icons.Default.MoreVert, "Acciones del archivo") }
-                } }
-            }
-            if(files.isEmpty()) item { Text("No hay archivos que mostrar", Modifier.padding(20.dp)) }
-        }
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-            TextButton(onClick = { vm.browse(catalog.route, catalog.page - 1, catalog.folderPage, query, type) }, enabled = catalog.page > 1) { Text("Anterior") }
-            Text("${catalog.page} / ${catalog.pages}")
-            TextButton(onClick = { vm.browse(catalog.route, catalog.page + 1, catalog.folderPage, query, type) }, enabled = catalog.page < catalog.pages) { Text("Siguiente") }
-        }
-    }
-    if(dialog == "file" && actionFile != null) AlertDialog(onDismissRequest = { dialog = "" }, title = { Text(actionFile!!.name) }, text = {
-        Column(Modifier.verticalScroll(rememberScrollState())) {
-            val file = actionFile!!
-            Text("${bytes(file.bytes)} · ${file.date}"); Text(file.metadata, style = MaterialTheme.typography.bodySmall)
-            TextButton(onClick = { vm.download(file); dialog = "" }, enabled = !file.locked) { Text("Descargar y abrir desde Tareas") }
-            TextButton(onClick = { input = file.name; dialog = "rename" }, enabled = !file.locked) { Text("Renombrar") }
-            TextButton(onClick = { dialog = "move" }, enabled = !file.locked) { Text("Mover a otra carpeta") }
-            if(file.locked) TextButton(onClick = { input = ""; dialog = "unlock" }) { Text("Desbloquear con contraseña") }
-            TextButton(onClick = { dialog = "delete" }, enabled = !file.locked) { Text("Eliminar archivo") }
-        }
-    }, confirmButton = { TextButton(onClick = { dialog = "" }) { Text("Cerrar") } })
-    if(dialog in listOf("create", "rename", "renameFolder", "unlock")) AlertDialog(onDismissRequest = { dialog = "" }, title = { Text(when(dialog) { "create" -> "Nueva carpeta"; "unlock" -> "Contraseña del archivo"; else -> "Renombrar" }) }, text = {
-        OutlinedTextField(input, { input = it }, label = { Text(if(dialog == "unlock") "Contraseña" else "Nombre") }, visualTransformation = if(dialog == "unlock") PasswordVisualTransformation() else androidx.compose.ui.text.input.VisualTransformation.None)
-    }, confirmButton = { TextButton(onClick = {
-        when(dialog) {
-            "create" -> vm.mutate("crear_carpeta.php", mapOf("ruta" to catalog.route, "nueva" to input))
-            "rename" -> vm.mutate("renombrar_archivo.php", mapOf("key" to actionFile!!.key, "nombre_nuevo" to input))
-            "renameFolder" -> vm.mutate("renombrar_carpeta.php", mapOf("ruta" to actionFolder!!.route, "nuevo" to input))
-            "unlock" -> vm.mutate("unlock_file.php", mapOf("key" to actionFile!!.key, "password" to input))
-        }; input = ""; dialog = ""
-    }, enabled = input.isNotBlank()) { Text("Aceptar") } }, dismissButton = { TextButton(onClick = { input = ""; dialog = "" }) { Text("Cancelar") } })
-    if(dialog in listOf("move", "moveMany")) DestinationDialog(vm, state.root, { destination ->
-        if(dialog == "move") vm.mutate("mover_archivo.php", mapOf("file_id" to "${actionFile!!.id}", "nueva_ruta" to destination))
-        else vm.mutate("mover_archivo.php", mapOf("archivos_json" to JSONArray(catalog.files.filter { it.id in state.selected }.map { it.key }).toString(), "nueva_ruta" to destination))
-        dialog = ""
-    }, { dialog = "" })
-    if(dialog in listOf("delete", "deleteMany")) AlertDialog(onDismissRequest = { dialog = "" }, title = { Text("Confirmar eliminación") }, text = { Text("Se eliminarán del Drive ${if(dialog == "delete") actionFile!!.name else "los archivos seleccionados"}.") }, confirmButton = {
-        TextButton(onClick = {
-            if(dialog == "delete") vm.mutate("eliminar_archivo.php", mapOf("file_id" to "${actionFile!!.id}"))
-            else vm.run { catalog.files.filter { it.id in state.selected }.forEach { vm.repo.request("eliminar_archivo.php", mapOf("file_id" to "${it.id}")) }; vm.browse() }
-            dialog = ""
-        }) { Text("Eliminar") }
-    }, dismissButton = { TextButton(onClick = { dialog = "" }) { Text("Cancelar") } })
-}
-
-@Composable private fun DestinationDialog(vm: DriveViewModel, root: String, onSelect: (String) -> Unit, onDismiss: () -> Unit) {
+@Composable internal fun DestinationDialog(vm: DriveViewModel, root: String, onSelect: (String) -> Unit, onDismiss: () -> Unit, confirmLabel: String = "Elegir esta carpeta") {
     var route by remember { mutableStateOf(root) }; var page by remember { mutableIntStateOf(1) }
     var result by remember { mutableStateOf<Catalog?>(null) }; var error by remember { mutableStateOf<String?>(null) }
     LaunchedEffect(route,page) { result = null; error = null; try { result = vm.repo.browse(route, folderPage = page) } catch(e: Exception) { error = e.message } }
@@ -252,7 +139,7 @@ import java.io.File
                 if(catalog.moreFolders) TextButton(onClick = { page++ }) { Text("Más carpetas") }
             }
         }
-    }, confirmButton = { TextButton(onClick = { onSelect(route) }, enabled = result != null) { Text("Mover aquí") } }, dismissButton = { TextButton(onClick = onDismiss) { Text("Cancelar") } })
+    }, confirmButton = { TextButton(onClick = { onSelect(route) }, enabled = result != null) { Text(confirmLabel) } }, dismissButton = { TextButton(onClick = onDismiss) { Text("Cancelar") } })
 }
 
 @Composable private fun TasksScreen(vm: DriveViewModel, remote: List<JSONObject>) {
@@ -310,6 +197,10 @@ import java.io.File
                 context.startActivity(Intent.createChooser(Intent(Intent.ACTION_VIEW).setDataAndType(uri, mime).addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION), "Abrir documento"))
             }.onFailure { vm.run { throw IllegalStateException("Instala una aplicación compatible para abrir este tipo de archivo.") } } }) { Text("Abrir con…") }
         })
+        if(mime.startsWith("image/")) TextButton(onClick = { runCatching {
+            val uri = FileProvider.getUriForFile(context, "${context.packageName}.files", file)
+            context.startActivity(Intent.createChooser(Intent(Intent.ACTION_ATTACH_DATA).setDataAndType(uri,mime).addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION), "Usar imagen como fondo"))
+        }.onFailure { vm.notice("No hay una aplicación disponible para configurar este fondo.") } }) { Text("Fondo de Android") }
     }
 }
 fun bytes(value: Long): String = if(value < 1024) "$value B" else if(value < 1024 * 1024) "${value / 1024} KB" else "%.1f MB".format(value / 1048576.0)

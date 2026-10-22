@@ -1,6 +1,6 @@
-# ArcadeCloud Android Native — 0.9.2 preview
+# ArcadeCloud Android Native — 0.9.3 preview
 
-Cliente Android Kotlin/Compose. El módulo `app` no incluye WebView, Custom Tabs ni HTML. Conserva `com.arcadecloud.drive`, sube `versionCode` de 8 a 11 y utiliza el backend PHP existente.
+Cliente Android Kotlin/Compose. El módulo `app` no incluye WebView, Custom Tabs ni HTML. Conserva `com.arcadecloud.drive`, sube `versionCode` de 8 a 12 y utiliza el backend PHP existente.
 
 **Esta es una primera implementación, no paridad completa con el Drive web ni una versión certificada para Samsung. Requiere desplegar los cambios PHP de esta rama antes de iniciar sesión. No se ha desplegado producción.**
 
@@ -15,12 +15,12 @@ gradle :app:testDebugUnitTest :app:lintDebug :app:assembleDebug :app:assembleDeb
 gradle :app:connectedDebugAndroidTest
 ```
 
-El workflow **ArcadeCloud Android Native** entrega un artefacto `arcadecloud-native-0.9.2-debug-N` con APK, `build-info.json`, `SHA256SUMS` y certificado de firma. El JSON contiene el commit realmente compilado. Las pruebas instrumentadas Android 14 tienen su propio job y resultados; no son pruebas físicas.
+El workflow **ArcadeCloud Android Native** entrega un artefacto `arcadecloud-native-0.9.3-debug-N` con APK, `build-info.json`, `SHA256SUMS` y certificado de firma. El JSON contiene el commit realmente compilado. Las pruebas instrumentadas Android 14 tienen su propio job y resultados; no son pruebas físicas.
 
 ## Instalar
 
 1. Obtener el artefacto de una ejecución verde del PR; verificar SHA-256 contra `SHA256SUMS`.
-2. Instalar `ArcadeCloud-Android-0.9.2-native-preview-debug.apk` en Android 10 o superior.
+2. Instalar `ArcadeCloud-Android-0.9.3-native-preview-debug.apk` en Android 10 o superior.
 3. Autorizar ubicación aproximada o precisa y activar el servicio, como exigía la APK anterior; la app no consulta coordenadas. Elegir Drive o FastDrive e iniciar sesión en la pantalla nativa. FastDrive no se enciende desde esta app.
 4. Abrir una carpeta y usar los botones Subir, Galería o Cámara. La captura exige una acción explícita y luego **Guardar en esta carpeta**.
 5. Revisar transferencias en Tareas; abrir una descarga completada para verla o enviarla a un visor Android mediante FileProvider.
@@ -37,7 +37,7 @@ El cliente original completo está en `legacy-webview/`, excluido de `settings.g
 
 Auditoría, contratos, alcance y pruebas físicas pendientes: [NATIVE_AUDIT.md](NATIVE_AUDIT.md).
 
-### Navegación y acciones 0.9.2
+### Navegación y acciones 0.9.3
 
 La barra inferior tiene Archivos, Buscar, Tareas y Cuenta. Buscar mantiene un catálogo
 independiente; Archivos no muestra filtros. Los controles de subida y captura aparecen
@@ -58,3 +58,10 @@ No se ha desplegado este cambio ni se han ejecutado acciones sobre datos reales.
 Abrir en otra ventana/pestaña y Drive clásico son controles del escritorio web: en
 Android corresponden a abrir, abrir con y la navegación nativa. Federación y 3D siguen
 pendientes. Descarga ZIP usa Lambda y S3, nunca una copia temporal del archivo fuente en EC2.
+
+La versión 0.9.3 añade iconos Material por extensión con las mismas categorías y prioridad
+de FileIconResolver del cliente web. Las imágenes visibles solicitan thumb.php (160×120,
+fit=cover) con la sesión HTTPS existente; no descargan el original al teléfono. Archivos
+bloqueados, fallos y formatos sin miniatura conservan icono. Hay un máximo de cuatro
+solicitudes concurrentes y 1 MB por respuesta; no se almacenan miniaturas privadas en
+caché de disco ni en la caché compartida de Coil. No requiere nuevos endpoints PHP.

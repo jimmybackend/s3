@@ -179,3 +179,20 @@ No se incorpora el Drive clásico web en la APK. El tamaño total de carpetas no
 FederationCloud/3D siguen pendientes. Las opciones avanzadas de Transcribe no tienen todavía
 paridad con todo el formulario web. Abrir documentos externos requiere terminar la descarga
 en Tareas. No se ejecutaron servicios AWS, borrados ni movimientos sobre datos reales.
+
+
+## Iconos y miniaturas 0.9.3 (2026-10-22)
+
+Se verificó FileIconResolver, el marcado de so.php, thumb.php, ThumbnailController y
+ThumbnailService. Se reutiliza exactamente thumb.php?key=...&w=160&h=120&fit=cover,
+con la sesión del Repository. ThumbnailService sigue validando catálogo MySQL,
+propietario y protección; Android no lista S3 ni carga el original para el listado.
+El cliente muestra categorías de documento, hoja, PDF, presentación, comprimido,
+código, texto, imagen, audio, video y los demás grupos de FileIconResolver.
+
+LazyColumn sólo compone filas visibles y próximas. La carga se cancela al abandonar
+la fila; como máximo cuatro solicitudes simultáneas y 1 MB por respuesta. Caché HTTP,
+disco y memoria compartida de Coil deshabilitadas para estos bytes. El estado local
+se identifica por nodo, usuario, generación de sesión, clave, fecha, tamaño y bloqueo.
+No se solicita miniatura de archivos bloqueados ni de tipos no imagen. Fallos, respuesta
+FALLBACK o formato no decodificable muestran icono del tipo. No hay cambios PHP ni AWS.

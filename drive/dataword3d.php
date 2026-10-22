@@ -557,6 +557,7 @@ header('Content-Type: text/html; charset=UTF-8');
   <script src="js/os-media-cloud.js?v=<?= (int)filemtime(__DIR__ . '/js/os-media-cloud.js') ?>"></script>
   <script data-background-tasks src="js/background-tasks.js?v=<?= (int)filemtime(__DIR__ . '/js/background-tasks.js') ?>"></script>
   <script src="js/drive3d-actions.js?v=<?= (int)filemtime(__DIR__ . '/js/drive3d-actions.js') ?>"></script>
+  <script src="js/video-poster-loader.js?v=<?= (int)filemtime(__DIR__ . '/js/video-poster-loader.js') ?>"></script>
   <script src="js/dataword3d.js?v=<?= (int)filemtime(__DIR__ . '/js/dataword3d.js') ?>"></script>
 </body>
 </html>

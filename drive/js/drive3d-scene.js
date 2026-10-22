@@ -446,7 +446,7 @@ class Drive3DScene {
             const media = new T.Mesh(new T.PlaneGeometry(.78,.52), mediaMaterial);
             media.position.set(0,.08,.031); card.add(media);
 
-            if (item?.kind === 'image' && item?.thumbnail_href && !item?.locked) {
+            if (['image', 'video'].includes(item?.kind) && item?.thumbnail_href && !item?.locked) {
                 new T.TextureLoader().load(item.thumbnail_href, map => {
                     if (!isCurrent()) { map.dispose(); return; }
                     map.colorSpace = T.SRGBColorSpace;

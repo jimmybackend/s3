@@ -138,3 +138,44 @@ caracteres especiales/Unicode, rechazo de contraseña errónea y del hash como c
 y cuenta inactiva. Prueba instrumentada del formulario con visualización, envío exacto
 y reintento. Falta repetir el login real en el Samsung con la APK corregida; no se
 presenta la prueba aislada como validación de una cuenta de producción.
+
+
+## Navegación y acciones nativas 0.9.2 (2026-10-22)
+
+Se auditaron los menús estáticos y dinámicos de so.php, so.js, so-folders.js,
+so-clipboard.js, so-share.js y controladores/servicios de cada operación. Las cuatro
+pestañas son Archivos, Buscar, Tareas y Cuenta; buscar mantiene catálogo separado.
+Subir archivos, seleccionar medios y cámara quedan después de ambas paginaciones.
+
+| Grupo | Contratos reutilizados |
+|---|---|
+| Copiar/mover/cortar/pegar | move_task.php (202, job_id; no se declara finalización) |
+| Borrados y carpetas | delete_multiple.php, eliminar_archivo.php, crear_carpeta.php, renombrar_carpeta.php, eliminar_carpeta.php |
+| Texto | create_folder_document.php, leer_texto.php, guardar_texto.php (editor móvil hasta 2 MB) |
+| Seguridad | set_file_security.php, unlock_file.php, relock_file.php |
+| Compartición | generar_token.php; enlace con vigencia, compartir con Android |
+| AWS | procesar_textract.php, procesar_textract_carpeta.php, traducir_archivo.php, transcribir_iniciar.php, polly_cargar_texto.php, polly_list_voices.php, polly_tts.php, rekognition_labels.php, comprehend_archivo.php |
+| Multimedia servidor | media_processing.php, authorize_node_start=0 |
+| Sincronización | sync_s3_to_db.php, prefix validado por el servicio existente |
+| ZIP | zip_explorer.php?format=json; misma autorización de catálogo, gate y Lambda |
+
+NativeDrivePolicy publica protected mediante FileViewHelper::hasSecurity para distinguir
+normal/secure/unlocked sin exponer hashes. Los menús de archivos bloqueados sólo ofrecen
+detalles, tareas y desbloqueo. La raíz no permite copiar/cortar/mover/renombrar/eliminar.
+La aprobación de permisos definitiva permanece en el backend. No se añaden tablas.
+
+El cliente acepta respuestas legacy estado=ok solamente cuando no existe un ok explícito;
+un ok=false nunca se convierte en éxito. Esta compatibilidad es necesaria para texto y
+ArcadeLink. Se han comprobado nombres de endpoints y campos contra código real.
+
+La extensión JSON del broker ZIP conserva validación de propietario/archivo protegido y
+la lista de hosts S3 antes de entregar URL. Descargas recuperan una URL nueva por el
+broker al reintentar. No descargan el ZIP fuente al teléfono ni EC2 para explorarlo.
+Requiere actualizar PHP en el servidor; no se desplegó ni se activó Lambda desde este trabajo.
+
+Equivalencias: ventanas/pestañas del escritorio pasan a navegación/visores nativos; Office
+usa aplicaciones Android instaladas después de descargar; fondo usa el selector Android.
+No se incorpora el Drive clásico web en la APK. El tamaño total de carpetas no se inventa.
+FederationCloud/3D siguen pendientes. Las opciones avanzadas de Transcribe no tienen todavía
+paridad con todo el formulario web. Abrir documentos externos requiere terminar la descarga
+en Tareas. No se ejecutaron servicios AWS, borrados ni movimientos sobre datos reales.

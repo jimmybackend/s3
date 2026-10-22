@@ -26,10 +26,10 @@ import coil.compose.AsyncImage
 import kotlinx.coroutines.delay
 
 @Composable
-fun CaptureScreen(destination: String, onSave: (String, String, String) -> Unit, vm: CaptureViewModel = viewModel()) {
+fun CaptureScreen(destination: String, onSave: (String, String, String) -> Unit, initialMode: String = "Foto", vm: CaptureViewModel = viewModel()) {
     val context = LocalContext.current; val lifecycle = LocalLifecycleOwner.current
     val state by vm.state.collectAsStateWithLifecycle()
-    var mode by rememberSaveable { mutableStateOf("Foto") }; var front by rememberSaveable { mutableStateOf(false) }
+    var mode by rememberSaveable { mutableStateOf(initialMode) }; var front by rememberSaveable { mutableStateOf(false) }
     var permissionTick by remember { mutableIntStateOf(0) }
     val permissions = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { grants ->
         permissionTick++; if (grants.values.any { !it }) vm.error(SecurityException())

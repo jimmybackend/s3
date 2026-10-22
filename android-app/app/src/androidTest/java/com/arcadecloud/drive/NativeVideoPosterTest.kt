@@ -41,13 +41,13 @@ class NativeVideoPosterTest {
                 val range=Regex("bytes=(\\d+)-(\\d+)").matchEntire(request.getHeader("Range").orEmpty()) ?: return MockResponse().setResponseCode(400)
                 val start=range.groupValues[1].toLong();val end=minOf(range.groupValues[2].toLong(),length-1)
                 val gap=(length-video.size).toInt()
-                val free=java.nio.ByteBuffer.allocate(8).putInt(gap).put("free".toByteArray(Charsets.US_ASCII)).array()
-                // Valid sparse MP4: a free atom moves moov to the far end without moving mdat.
+                val padding=java.nio.ByteBuffer.allocate(8).putInt(gap).put("mdat".toByteArray(Charsets.US_ASCII)).array()
+                // A sparse second mdat moves moov to the end; referenced video samples stay intact.
                 val data=ByteArray((end-start+1).toInt()) { i ->
                     val position=(start+i).toInt()
                     when {
                         gap==0 || position<insertion -> video[position]
-                        position<insertion+8 -> free[position-insertion]
+                        position<insertion+8 -> padding[position-insertion]
                         position<insertion+gap -> 0
                         else -> video[position-gap]
                     }
@@ -70,7 +70,7 @@ class NativeVideoPosterTest {
             runBlocking {
                 assertNull(ThumbnailClient(client).load(server.url("/thumb.php")))
                 val jpeg=extractor.extract(server.url("/video.mp4").toString()){true}
-                assertNotNull("Generic fallback must produce a real frame",jpeg)
+                assertNotNull("Expected real frame for $asset with $size bytes (served ${transferred.get()})",jpeg)
                 val frame=BitmapFactory.decodeByteArray(jpeg,0,jpeg!!.size)
                 assertTrue(frame.width<=160 && frame.height<=120)
                 val pixel=frame.getPixel(frame.width/2,frame.height/2)

@@ -224,7 +224,7 @@ no se inicia reproducción. La insignia blanca mide 22×22 dp en una tarjeta 72�
 (12.45% de su área), fondo oscuro semitransparente. Archivos y Buscar comparten FileVisual.
 
 Pruebas añadidas: caché/aislamiento/límite, MP4 real sintético de 3 s (negro inicial,
-verde desde 0.5 s) servido por HTTPS Range, contenedores con moov al inicio y al final, extendidos mediante un átomo free
+verde desde 0.5 s) servido por HTTPS Range, contenedores con moov al inicio y al final, extendidos mediante un segundo átomo mdat
 sintético a 256 MB, fotograma verde próximo a 1 s, límites de bytes, rechazar 200/redirect/403,
 cancelación, autorización expirada, insignia y descarte al cambiar sesión. El contenedor
 grande es una prueba sintética de lectura parcial; no equivale a un video de producción

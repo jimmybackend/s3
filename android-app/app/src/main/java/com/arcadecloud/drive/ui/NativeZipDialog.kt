@@ -20,7 +20,7 @@ import org.json.JSONObject
     var error by remember { mutableStateOf<String?>(null) };var notice by remember { mutableStateOf<String?>(null) }
     fun base()="zip_explorer.php?format=json&archivo=${enc(file.key)}&nested=${enc(JSONArray(nested).toString())}"
     LaunchedEffect(dir,page,nested) { data=null;error=null;try { data=vm.repo.request(base()+"&dir=${enc(dir)}&page=$page") }
-        catch(e: Exception){if(e is SessionExpired)vm.run{throw e};error=e.message} }
+        catch(e: Exception){if(e is kotlinx.coroutines.CancellationException)throw e;if(e is SessionExpired)vm.run{throw e};error=e.message} }
     fun download(item: JSONObject) {
         val folder=item.optString("type")=="folder"
         val path=base()+if(folder)"&folder=${enc(item.getString("path"))}" else "&file=${enc(item.getString("path"))}"

@@ -31,6 +31,13 @@ class DriveRepository(private val vault: SessionVault) {
     }
     private val client = OkHttpClient.Builder().cookieJar(jar).followRedirects(false).followSslRedirects(false)
         .connectTimeout(30, TimeUnit.SECONDS).readTimeout(90, TimeUnit.SECONDS).writeTimeout(90, TimeUnit.SECONDS).build()
+    private val thumbnails = ThumbnailClient(client)
+    suspend fun thumbnail(file: DriveFile): ByteArray? {
+        if(!FilePresentation.thumbnailAllowed(file) || owner<=0) return null
+        val url=(node+"thumb.php").toHttpUrl().newBuilder().addQueryParameter("key",file.key)
+            .addQueryParameter("w","160").addQueryParameter("h","120").addQueryParameter("fit","cover").build()
+        return thumbnails.load(url)
+    }
     suspend fun request(path: String, fields: Map<String,String>? = null): JSONObject = withContext(Dispatchers.IO) {
         if (!path.startsWith("api/native.php")) request("api/native.php?action=session")
         require(!path.substringBefore('?').let { it.startsWith("/") || it.contains(":") || it.contains("..") })

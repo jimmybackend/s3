@@ -900,6 +900,13 @@
         img.loading = 'lazy';
         img.className = 'dw-book-thumb';
         button.append(img);
+        if (item.kind === 'video') {
+          const badge = this.document.createElement('i');
+          badge.className = 'fas fa-video';
+          badge.setAttribute('aria-label', 'Video');
+          badge.style.cssText = 'position:absolute;right:4px;bottom:28px;padding:4px;background:rgba(5,15,30,.8);color:white;border-radius:4px;font-size:12px;pointer-events:none';
+          button.append(badge);
+        }
       }
       const label = this.document.createElement('span');
       label.textContent = item.name || 'Elemento';

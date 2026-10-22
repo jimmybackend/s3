@@ -1,6 +1,7 @@
 package com.arcadecloud.drive
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.Text
+import androidx.compose.runtime.*
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -32,11 +33,13 @@ class NativeBrowserTest {
         compose.onNodeWithText("Buscar en esta carpeta").assertDoesNotExist()
     }
     @Test fun searchIsAnExplicitSeparateForm() {
-        var query="";var type="";var requested=false
-        compose.setContent { ArcadeTheme { SearchControls("","",{query=it},{type=it},{requested=true},{},false) } }
+        var query by mutableStateOf("");var type by mutableStateOf("");var requested=false;var submitted=""
+        compose.setContent { ArcadeTheme { SearchControls(query,type,{query=it},{type=it},{submitted="$query|$type";requested=true},{},false) } }
         compose.onNodeWithText("Buscar en esta carpeta").performTextInput("contrato")
         compose.onNodeWithText("Extensión: pdf, jpg…").performTextInput("pdf")
+        compose.onNodeWithText("Buscar en esta carpeta").assertTextContains("contrato")
+        compose.onNodeWithText("Extensión: pdf, jpg…").assertTextContains("pdf")
         assertEquals("contrato",query);assertEquals("pdf",type);assertFalse(requested)
-        compose.onNodeWithContentDescription("Ejecutar búsqueda").performClick();assertTrue(requested)
+        compose.onNodeWithContentDescription("Ejecutar búsqueda").performClick();assertTrue(requested);assertEquals("contrato|pdf",submitted)
     }
 }

@@ -30,6 +30,7 @@ internal class ThumbnailClient(client: OkHttpClient) {
                     // until the bounded body has been read and the response closed.
                     val bytes = try { response.use {
                         if(it.code==401 || it.header("X-Thumb-Status")=="NO_SESSION") throw SessionExpired()
+                        if(it.header("X-Thumb-Status")=="SOURCE_PREVIEW") { call.cancel();return@use null }
                         if(!it.isSuccessful || it.header("X-Thumb-Status") in listOf("FALLBACK","NO_KEY")) return@use null
                         if(it.body?.contentType()?.type != "image") return@use null
                         val data=it.peekBody(MAX_BYTES+1).bytes()

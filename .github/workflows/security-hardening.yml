@@ -151,4 +151,3 @@ jobs:
             echo "Potential committed secret detected."
             exit 1
           fi
-

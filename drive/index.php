@@ -229,6 +229,44 @@ $h = static fn(string $value): string => htmlspecialchars(
       color: #58ef86;
     }
 
+    .home-footer-copy {
+      max-width: 900px;
+      margin: 0 auto;
+      color: #d4deea;
+      font-size: .875rem;
+      line-height: 1.65;
+      overflow-wrap: anywhere;
+    }
+
+    .home-footer-copy p {
+      margin: 0 0 .75rem;
+    }
+
+    .home-footer-copy .home-footer-brand,
+    .home-footer-copy .home-footer-contact-title,
+    .home-footer-copy .home-footer-closing {
+      text-align: center;
+    }
+
+    .home-footer-copy .home-contact {
+      gap: .6rem 1.5rem;
+    }
+
+    .home-footer-copy a {
+      color: #d4deea;
+      text-decoration: underline;
+      text-underline-offset: .2em;
+    }
+
+    .home-footer-copy a:hover,
+    .home-footer-copy a:focus-visible {
+      color: #58ef86;
+    }
+
+    .home-footer-copy .home-footer-closing {
+      margin: 1rem 0 0;
+    }
+
     .home-modal .modal-content {
       border: 1px solid rgba(84,173,230,.3);
       background: #091827;
@@ -438,11 +476,19 @@ $h = static fn(string $value): string => htmlspecialchars(
   </section>
 
   <footer id="contacto" class="home-footer">
-    <div class="home-contact">
-      <a href="mailto:<?= $h($authorEmail) ?>"><i class="fas fa-envelope mr-2"></i><?= $h($authorEmail) ?></a>
-      <a href="tel:<?= $h($contactPhoneHref) ?>"><i class="fas fa-phone mr-2"></i><?= $h($contactPhoneDisplay) ?></a>
-      <a href="mailto:<?= $h($supportEmail) ?>"><i class="fas fa-headset mr-2"></i><?= $h($supportEmail) ?></a>
-      <a href="<?= $h($githubUrl) ?>" rel="noopener noreferrer"><i class="fab fa-github mr-2"></i>jimmybackend/s3</a>
+    <div class="home-footer-copy">
+      <p class="home-footer-brand"><strong>ArcadeCloud Drive</strong><br>Servidor privado de Esforzados</p>
+      <p>Este es el servidor privado de la empresa Esforzados, destinado al almacenamiento, organización y gestión de archivos y documentos, así como al intercambio de información con sus usuarios y clientes.</p>
+      <p>El acceso al área privada requiere una cuenta autorizada. Para recibir asistencia o solicitar información, comunícate con Esforzados.</p>
+      <p><strong>Acceso privado:</strong> Inicia sesión con tu cuenta autorizada.<br>
+        <strong>ArcadeLink:</strong> Consulta o comparte archivos mediante enlaces.<br>
+        <strong>FederationDrop:</strong> Envía y comparte archivos temporalmente.</p>
+      <p class="home-footer-contact-title"><strong>Contacto y soporte</strong></p>
+      <div class="home-contact">
+        <a href="tel:+525586458862"><i class="fas fa-phone mr-2" aria-hidden="true"></i>Esforzados Legal · +52 55 8645 8862</a>
+        <a href="mailto:<?= $h($supportEmail) ?>"><i class="fas fa-headset mr-2" aria-hidden="true"></i><?= $h($supportEmail) ?></a>
+      </div>
+      <p class="home-footer-closing">Servidor privado de Esforzados.</p>
     </div>
   </footer>
 </main>

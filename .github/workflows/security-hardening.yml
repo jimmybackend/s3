@@ -100,6 +100,9 @@ jobs:
       - name: Security regression tests
         run: |
           php drive/tests/security_hardening_smoke.php
+          php drive/tests/login_lockout_regression.php
+          python3 drive/tests/login_flow_http_regression.py
+          node drive/tests/login_cooldown_functional.js
           php drive/tests/federation_https_contract_smoke.php
           php drive/tests/setup_bootstrap_smoke.php
           php drive/tests/server_console_contract_smoke.php
@@ -148,3 +151,4 @@ jobs:
             echo "Potential committed secret detected."
             exit 1
           fi
+

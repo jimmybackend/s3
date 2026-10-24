@@ -9,6 +9,9 @@ if ($setupGuard->isSetupPending()) {
     exit;
 }
 
+require_once __DIR__ . '/src/Security/LoginPageGuard.php';
+\ArcadeCloud\Drive\Security\LoginPageGuard::enforce();
+
 $rawHost = strtolower(trim((string)($_SERVER['HTTP_HOST'] ?? '')));
 $sourceDomain = '';
 if ($rawHost !== '') {
@@ -508,6 +511,7 @@ $h = static fn(string $value): string => htmlspecialchars(
 
       <form action="psesion.php" method="POST">
         <div class="modal-body">
+          <p class="small text-muted">Tienes hasta 5 intentos. Al acumular 5 fallos para la misma cuenta y dirección IP, el acceso se bloquea durante 15 minutos.</p>
           <div class="form-group">
             <label for="email">Correo electrónico</label>
             <input class="form-control" id="email" name="email" type="email" autocomplete="username" required>
@@ -552,3 +556,4 @@ $h = static fn(string $value): string => htmlspecialchars(
 
 </body>
 </html>
+

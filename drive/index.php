@@ -556,4 +556,3 @@ $h = static fn(string $value): string => htmlspecialchars(
 
 </body>
 </html>
-

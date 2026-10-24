@@ -1,4 +1,8 @@
-
+<?php
+declare(strict_types=1);
+require_once __DIR__ . '/src/Security/LoginPageGuard.php';
+\ArcadeCloud\Drive\Security\LoginPageGuard::enforce();
+?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -49,6 +53,7 @@
                     <small class="text-muted">Ingresa tus datos</small>
                 </div>
 
+                <p class="small text-muted">Tienes hasta 5 intentos. Al acumular 5 fallos para la misma cuenta y dirección IP, el acceso se bloquea durante 15 minutos.</p>
                 <form action="psesion.php" method="POST">
                     <div class="form-group">
                         <label for="email">Correo electrónico</label>

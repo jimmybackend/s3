@@ -35,6 +35,12 @@ jobs:
       - name: Install locked dependencies
         run: composer install --no-interaction --prefer-dist
 
+      - name: Login error and cooldown regressions
+        run: |
+          php drive/tests/login_lockout_regression.php
+          python3 drive/tests/login_flow_http_regression.py
+          node drive/tests/login_cooldown_functional.js
+
       - name: File and folder CSRF controller behavior
         env:
           ARCADECLOUD_ISOLATED_TEST: '1'

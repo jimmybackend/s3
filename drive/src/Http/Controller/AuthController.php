@@ -6,6 +6,7 @@ namespace ArcadeCloud\Drive\Http\Controller;
 use ArcadeCloud\Drive\Core\DriveApplication;
 use ArcadeCloud\Drive\Http\Request;
 use ArcadeCloud\Drive\Security\LoginRateLimiter;
+use ArcadeCloud\Drive\Security\LoginPageGuard;
 use Throwable;
 
 final class AuthController
@@ -25,65 +26,44 @@ final class AuthController
             $this->redirect('index.php');
         }
 
-        if (!$this->request->hasPost('email') || !$this->request->hasPost('password')) {
-            $this->redirect('index.php');
-        }
-
-        $email = $this->request->postRawString('email');
+        header('Cache-Control: no-store');
+        LoginPageGuard::enforce();
+        $email = trim($this->request->postRawString('email'));
         $password = $this->request->postRawString('password');
-
         $ipAddress = $this->request->serverString('REMOTE_ADDR');
         $limiter = new LoginRateLimiter();
+        // Store only the identifier for server-side page guards. Never store the password.
+        $email = strlen($email) <= 320 ? $email : '';
+        $session->set('login_attempt_identifier', $email);
 
         try {
-            if (!$limiter->allow($email, $ipAddress)) {
-                $this->redirect('https://esforzados.com/index.php?x=101');
-            }
+            $result = $limiter->synchronized($ipAddress, function () use ($limiter, $email, $password, $ipAddress): array {
+                if (!$limiter->allow($email, $ipAddress)) return ['status' => 'blocked'];
+                $result = $email === '' || $password === '' || $this->containsRejectedCharacters($email)
+                    ? ['status' => 'invalid_credentials']
+                    : $this->app->authenticationService()->authenticate($email, $password, $ipAddress);
+                if (($result['status'] ?? '') !== 'authenticated') {
+                    $limiter->registerFailure($email, $ipAddress);
+                } else {
+                    $limiter->clear($email, $ipAddress);
+                }
+                return $result;
+            });
         } catch (Throwable $e) {
-            error_log('Drive login limiter error: ' . $e->getMessage());
-            http_response_code(503);
-            echo 'El inicio de sesión no está disponible temporalmente.';
-            exit;
+            // Fail closed when the limiter cannot persist a failed attempt.
+            // AuthenticationService may have established a session before a later write failed.
+            $session->destroy();
+            LoginPageGuard::unavailable($e);
         }
 
-        if ($this->containsRejectedCharacters($email)) {
-            $this->redirect('https://esforzados.com/index.php?x=100');
+        if (($result['status'] ?? '') !== 'authenticated') {
+            $session->set('login_credentials_error', true);
+            $this->redirect('login-error.php');
         }
-
-        try {
-            $result = $this->app->authenticationService()->authenticate(
-                $email,
-                $password,
-                $ipAddress
-            );
-        } catch (Throwable $e) {
-            error_log('Drive authentication error: ' . $e->getMessage());
-            http_response_code(500);
-            header('Content-Type: text/plain; charset=UTF-8');
-            echo 'No se pudo completar el inicio de sesión.';
-            exit;
-        }
-
-        if (($result['status'] ?? '') === 'invalid_credentials') {
-            try {
-                $limiter->registerFailure($email, $ipAddress);
-            } catch (Throwable $e) {
-                error_log('Drive login limiter failure-record error: ' . $e->getMessage());
-            }
-            $this->redirect('303.html');
-        }
-
-        if (($result['status'] ?? '') === 'inactive') {
-            $this->redirect('202.html');
-        }
+        $session->remove('login_attempt_identifier');
+        $session->remove('login_credentials_error');
 
         if (($result['status'] ?? '') === 'authenticated') {
-            try {
-                $limiter->clear($email, $ipAddress);
-            } catch (Throwable $e) {
-                error_log('Drive login limiter clear error: ' . $e->getMessage());
-            }
-
             // Conservamos explícita la rama de superadmin para que las
             // garantías/auditorías de rol sigan siendo visibles, aunque ArcadeCloud
             // OS sea ahora la experiencia principal para todos los usuarios.
@@ -112,7 +92,7 @@ final class AuthController
 
     private function redirect(string $location): never
     {
-        header('Location: ' . $location);
+        header('Location: ' . $location, true, 303);
         exit;
     }
 }

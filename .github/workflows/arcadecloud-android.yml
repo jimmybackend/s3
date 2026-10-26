@@ -69,13 +69,13 @@ jobs:
           python3 tools/build_metadata.py app/build/outputs/delivery
           "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --print-certs app/build/outputs/apk/debug/app-debug.apk > app/build/outputs/delivery/signing-certificate.txt
           cat app/build/outputs/delivery/build-info.json >> "$GITHUB_STEP_SUMMARY"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: arcadecloud-native-0.9.4-debug-${{ github.run_number }}
           path: android-app/app/build/outputs/delivery/
           if-no-files-found: error
           retention-days: 30
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: android-native-test-reports-${{ github.run_number }}
@@ -118,7 +118,7 @@ jobs:
           working-directory: android-app
           disable-animations: true
           script: gradle --no-daemon :app:connectedDebugAndroidTest
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: android-native-instrumented-reports-${{ github.run_number }}

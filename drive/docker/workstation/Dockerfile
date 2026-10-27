@@ -12,6 +12,7 @@ RUN apt-get update \
       tigervnc-standalone-server tigervnc-tools unzip wget xfce4 xfce4-terminal xterm xdg-utils \
       atril audacity dia dia-shapes ffmpeg file-roller flameshot handbrake handbrake-cli \
       kdenlive kolourpaint mediainfo p7zip-full rar socat soundconverter unrar x11-utils xclip zip \
+      kde-plasma-desktop kwin-x11 dolphin konsole okular kde-spectacle ark kate vlc breeze-icon-theme \
       pipewire pipewire-pulse wireplumber pipewire-audio-client-libraries \
       pipewire-module-xrdp pavucontrol pulseaudio-utils alsa-utils xrdp xorgxrdp \
  && install -d -m 0755 /etc/apt/keyrings \

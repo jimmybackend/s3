@@ -1017,8 +1017,12 @@ class CarpetasModule {
         if (modal.id === CFG.ids.modalEliminarCarpeta) onShowEliminarModal(evt);
       }, true);
 
-      document.addEventListener('shown.bs.modal', function () {
+      document.addEventListener('shown.bs.modal', function (evt) {
         initNuevaRutaSelect();
+        if (evt.target?.id === CFG.ids.modalCrearCarpeta) {
+          const input = $id(CFG.ids.crearCarpetaNombre);
+          if (input) input.focus();
+        }
       }, true);
 
       if (window.jQuery) {
@@ -1041,8 +1045,12 @@ class CarpetasModule {
 
           window.jQuery(document)
             .off('shown.bs.modal.carpetasjs')
-            .on('shown.bs.modal.carpetasjs', function () {
+            .on('shown.bs.modal.carpetasjs', function (evt) {
               initNuevaRutaSelect();
+              if (evt.target?.id === CFG.ids.modalCrearCarpeta) {
+                const input = $id(CFG.ids.crearCarpetaNombre);
+                if (input) input.focus();
+              }
             });
 
         } catch (_) {}

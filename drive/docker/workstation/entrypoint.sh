@@ -63,6 +63,27 @@ sleep 2
 /usr/libexec/pipewire-module-xrdp/load_pw_modules.sh -l 3 \
   >/tmp/arcade-xrdp-audio.log 2>&1 &
 
+# Selector de escritorio ArcadeCloud.
+# XFCE continúa siendo el valor predeterminado.
+if [ "${ARCADECLOUD_DESKTOP:-xfce}" = "plasma" ]; then
+    export XDG_SESSION_TYPE=x11
+    export XDG_CURRENT_DESKTOP=KDE
+    export XDG_SESSION_DESKTOP=KDE
+    export DESKTOP_SESSION=plasma
+    export KDE_FULL_SESSION=true
+    export QT_QPA_PLATFORM=xcb
+    export LIBGL_ALWAYS_SOFTWARE=1
+    export KWIN_COMPOSE=N
+
+    if ! command -v startplasma-x11 >/dev/null 2>&1; then
+        echo "ERROR: KDE Plasma X11 no está instalado." >&2
+        exit 1
+    fi
+
+    echo "Iniciando KDE Plasma X11"
+    exec startplasma-x11 >/tmp/arcade-plasma.log 2>&1
+fi
+
 startxfce4 >/tmp/arcade-xfce.log 2>&1 &
 XFCE_PID=$!
 

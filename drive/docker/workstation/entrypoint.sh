@@ -124,10 +124,22 @@ VNC
 chmod 700 /home/arcade/.vnc/xstartup
 chown -R arcade:arcade /home/arcade/.vnc
 
+# Agrega el control de audio al navegador sin tocar las preferencias KDE.
+python3 - <<'PY'
+from pathlib import Path
+page = Path("/usr/share/novnc/vnc.html")
+if page.exists():
+    content = page.read_text(encoding="utf-8")
+    marker = '<script src="/arcadecloud-audio.js"></script>'
+    if marker not in content and "</body>" in content:
+        page.write_text(content.replace("</body>", marker + "\n</body>"), encoding="utf-8")
+PY
+
 dbus-daemon --system --fork 2>/dev/null || true
 
 cleanup() {
   [[ -n "${NOVNC_PID:-}" ]] && kill "$NOVNC_PID" >/dev/null 2>&1 || true
+  [[ -n "${AUDIO_PID:-}" ]] && kill "$AUDIO_PID" >/dev/null 2>&1 || true
   [[ -n "${XRDP_PID:-}" ]] && kill "$XRDP_PID" >/dev/null 2>&1 || true
   [[ -n "${SES_PID:-}" ]] && kill "$SES_PID" >/dev/null 2>&1 || true
   su -s /bin/bash arcade -c "vncserver -kill :${DISPLAY_NUMBER}" >/dev/null 2>&1 || true
@@ -159,6 +171,11 @@ websockify \
   "127.0.0.1:${VNC_PORT}" &
 NOVNC_PID=$!
 
+echo "===== ARRANCANDO AUDIO WEB PRIVADO ====="
+su -s /bin/bash arcade -c 'exec python3 /usr/local/bin/arcadecloud-audio-server' \
+  >/tmp/arcade-audio-web.log 2>&1 &
+AUDIO_PID=$!
+
 sleep 3
 kill -0 "$NOVNC_PID" 2>/dev/null || {
   echo "noVNC/websockify no pudo iniciar." >&2
@@ -169,6 +186,7 @@ kill -0 "$XRDP_PID" 2>/dev/null || {
   exit 1
 }
 
+kill -0 "$AUDIO_PID" 2>/dev/null || echo "AVISO: servidor de audio web no iniciado."
 echo "ArcadeCloud Workstation lista."
 echo "noVNC :6080"
 echo "XRDP  :3389"

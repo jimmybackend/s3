@@ -67,6 +67,20 @@ server {
         fastcgi_pass ${FPM_LISTEN};
     }
 
+    # La autenticación del gateway público protege también esta ruta.
+    # Audio accesible solo en loopback de FastDrive.
+    location = /__office_audio {
+        proxy_pass http://127.0.0.1:6081;
+        proxy_http_version 1.1;
+        proxy_set_header Host \$host;
+        proxy_set_header Connection "";
+        proxy_buffering off;
+        proxy_cache off;
+        proxy_read_timeout 3600s;
+        add_header Cache-Control "no-store" always;
+        add_header X-Content-Type-Options nosniff always;
+    }
+
     location /guacamole/ {
         proxy_pass http://127.0.0.1:8085/guacamole/;
         proxy_http_version 1.1;

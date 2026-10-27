@@ -453,7 +453,8 @@ button{width:100%;margin-top:12px;padding:13px;border:1px solid var(--accent);bo
 .small{font-size:12px;color:var(--soft)}
 .office-document-badge{position:fixed;z-index:40;right:12px;top:10px;max-width:min(520px,70vw);padding:7px 11px;border:1px solid #2f8c59;border-radius:9px;background:#061726e8;color:#dfffea;font-size:12px;box-shadow:0 6px 24px #0007}
 .office-document-badge.is-conflict{border-color:#d49935;color:#ffd993}
-.office-idle-status{position:fixed;z-index:40;left:12px;top:10px;padding:7px 11px;border:1px solid #2d6784;border-radius:9px;background:#061726e8;color:#ccecff;font-size:12px;box-shadow:0 6px 24px #0007}
+.office-idle-status{position:fixed;z-index:40;right:140px;bottom:60px;max-width:calc(100vw - 24px);padding:7px 11px;border:1px solid #2d6784;border-radius:9px;background:#061726e8;color:#ccecff;font-size:12px;box-shadow:0 6px 24px #0007;pointer-events:none}
+@media(max-width:600px){.office-idle-status{right:12px;bottom:60px;font-size:11px}}
 .office-idle-status.is-paused{border-color:#d49935;color:#ffd993}
 </style>
 </head>

@@ -161,9 +161,47 @@ class ArcadeCloudOsFolderActions {
     };
 
     body.addEventListener('contextmenu', showCurrentFolderMenu);
-    // A simple tap on empty Explorer space must expose folder actions on mobile.
-    // The entry guard above preserves normal file/folder selection and opening.
-    body.addEventListener('click', showCurrentFolderMenu);
+
+    // Mouse: only right-click opens the blank-area menu. Touch: long press.
+    // Ignore file/folder entries and interactive controls, including toolbar buttons.
+    const blankTarget = (target) => target instanceof Element &&
+      !target.closest('.os-entry, button, a, input, textarea, select, [contenteditable], .os-file-context');
+    let pressTimer = null;
+    let pressStart = null;
+    let suppressClick = false;
+    const cancelPress = () => {
+      if (pressTimer !== null) clearTimeout(pressTimer);
+      pressTimer = null;
+      pressStart = null;
+    };
+
+    body.addEventListener('pointerdown', (event) => {
+      cancelPress();
+      if (event.pointerType === 'mouse' || !event.isPrimary || !blankTarget(event.target)) return;
+      pressStart = { x: event.clientX, y: event.clientY, pointerId: event.pointerId };
+      pressTimer = setTimeout(() => {
+        pressTimer = null;
+        if (!pressStart) return;
+        suppressClick = true;
+        showCurrentFolderMenu(event);
+        pressStart = null;
+      }, 500);
+    });
+    body.addEventListener('pointermove', (event) => {
+      if (pressStart && (Math.abs(event.clientX - pressStart.x) > 10 ||
+          Math.abs(event.clientY - pressStart.y) > 10)) cancelPress();
+    });
+    body.addEventListener('pointerup', cancelPress);
+    body.addEventListener('pointercancel', cancelPress);
+    body.addEventListener('pointerleave', cancelPress);
+    body.addEventListener('scroll', cancelPress, { passive: true });
+    // Prevent the synthesized tap from immediately dismissing a long-press menu.
+    body.addEventListener('click', (event) => {
+      if (!suppressClick) return;
+      suppressClick = false;
+      event.preventDefault();
+      event.stopPropagation();
+    }, true);
 
   }
 

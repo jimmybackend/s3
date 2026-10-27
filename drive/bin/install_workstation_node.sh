@@ -150,6 +150,7 @@ ExecStart=/usr/bin/docker run --rm --name $CONTAINER \
   --env-file $RDP_ENV_FILE \
   --network $OFFICE_NETWORK \
   --publish 127.0.0.1:6080:6080 \
+  --publish 127.0.0.1:6081:6081 \
   --volume $WORKSPACE:/workspace \
   --volume $PERSISTENT_HOME:/home/arcade \
   --memory=5632m --cpus=3.25 --shm-size=1g --tmpfs /tmp:rw,nosuid,nodev,mode=1777 \

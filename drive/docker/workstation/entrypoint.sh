@@ -37,6 +37,9 @@ fi
 # KDE fija iconos en el panel mediante .desktop; que todos utilicen el mismo
 # wrapper evita que el icono del Dock invoque un Chrome sin permisos Docker.
 python3 /usr/local/bin/repair-chrome-launchers.py
+# La Workstation aún no ha iniciado Chrome: limpiar bloqueos de otros
+# contenedores antes de restaurar la sesión gráfica conservando el perfil.
+python3 /usr/local/bin/arcadecloud-chrome-unlock.py
 
 cat > /home/arcade/.local/bin/arcadecloud-start-xfce <<'XFCESTART'
 #!/bin/sh

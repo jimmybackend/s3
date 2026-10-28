@@ -4,10 +4,8 @@ set -euo pipefail
 PROFILE_DIR="${HOME}/.config/google-chrome"
 mkdir -p "$PROFILE_DIR"
 
-# Un reinicio de la EC2/contenedor puede dejar locks de un Chrome que ya no existe.
-# Sólo se eliminan si no hay ningún proceso Chrome activo del usuario actual.
-if ! pgrep -u "$(id -u)" -f '(^|/)(google-chrome|chrome)( |$)' >/dev/null 2>&1; then
-  rm -f "$PROFILE_DIR/SingletonLock" "$PROFILE_DIR/SingletonSocket" "$PROFILE_DIR/SingletonCookie"
-fi
+# Los archivos SingletonLock de una sesión Docker anterior pueden quedar
+# apuntando al hostname viejo. Nunca eliminar locks con Chrome todavía abierto.
+python3 /usr/local/bin/arcadecloud-chrome-unlock.py
 
 exec /usr/bin/google-chrome-stable --no-sandbox --disable-dev-shm-usage "$@"

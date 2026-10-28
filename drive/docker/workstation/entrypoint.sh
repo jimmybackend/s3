@@ -34,6 +34,10 @@ if [[ -n "${ARCADECLOUD_RDP_PASSWORD:-}" ]]; then
   echo "arcade:${ARCADECLOUD_RDP_PASSWORD}" | chpasswd
 fi
 
+# KDE fija iconos en el panel mediante .desktop; que todos utilicen el mismo
+# wrapper evita que el icono del Dock invoque un Chrome sin permisos Docker.
+python3 /usr/local/bin/repair-chrome-launchers.py
+
 cat > /home/arcade/.local/bin/arcadecloud-start-xfce <<'XFCESTART'
 #!/bin/sh
 set -eu

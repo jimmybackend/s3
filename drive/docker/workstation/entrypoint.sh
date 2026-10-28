@@ -153,6 +153,14 @@ cleanup() {
 }
 trap cleanup EXIT INT TERM
 
+# Ubuntu 24.04 dentro de Docker no ejecuta systemd-tmpfiles al arrancar.
+# XRDP 0.9.x necesita su socketdir en /run (tmpfs del contenedor), o los
+# intentos de reconectar desde Guacamole fallan con g_create_path(...).
+# 1777 + sticky bit es el modo requerido por el protocolo de XRDP 0.9.x;
+# nunca tocar /run/user/10001 ni las configuraciones persistentes de KDE.
+install -d -o root -g root -m 0755 /run/xrdp
+install -d -o root -g root -m 1777 /run/xrdp/sockdir
+
 echo "===== ARRANCANDO XRDP ====="
 /usr/sbin/xrdp-sesman --nodaemon >/tmp/xrdp-sesman.log 2>&1 &
 SES_PID=$!

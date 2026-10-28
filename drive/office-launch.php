@@ -44,6 +44,11 @@ $target = strtolower(trim((string)($_GET['target'] ?? 'novnc')));
 if (!in_array($target, ['novnc', 'guacamole', 'kde'], true)) {
     $target = 'novnc';
 }
+// KDE se ejecuta por noVNC en Workstation; nunca debe abrir Guacamole RDP.
+// El selector de escritorio está en ARCADECLOUD_DESKTOP=plasma.
+if ($target === 'kde') {
+    $target = 'novnc';
+}
 
 if ($fileId > 0) {
     try {

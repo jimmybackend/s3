@@ -35,6 +35,7 @@ RUN groupadd --gid 10001 arcade \
 
 COPY entrypoint.sh /usr/local/bin/arcadecloud-workstation-entrypoint
 COPY repair-chrome-launchers.py /usr/local/bin/repair-chrome-launchers.py
+COPY arcadecloud-chrome-unlock.py /usr/local/bin/arcadecloud-chrome-unlock.py
 COPY arcadecloud-audio-server.py /usr/local/bin/arcadecloud-audio-server
 COPY arcadecloud-audio.js /usr/share/novnc/arcadecloud-audio.js
 COPY arcadecloud-chrome /usr/local/bin/arcadecloud-chrome

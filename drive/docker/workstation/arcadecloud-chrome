@@ -1,9 +1,21 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# KDE/noVNC usa DISPLAY=:1. XRDP/Guacamole abre otra sesión X11 (:10+).
+# Abrir el mismo perfil de Chrome desde ambos escritorios produce bloqueos
+# Singleton o ventanas invisibles en la otra pantalla. Preservar exactamente
+# el perfil KDE existente y crear uno separado SOLO para las sesiones XRDP.
 PROFILE_DIR="${HOME}/.config/google-chrome"
-mkdir -p "$PROFILE_DIR"
 
+if [[ "${DISPLAY:-}" =~ ^:([0-9]+)(\.[0-9]+)?$ ]] && (( 10#${BASH_REMATCH[1]} >= 10 )); then
+  PROFILE_DIR="${HOME}/.config/arcadecloud-chrome-rdp"
+  mkdir -p "$PROFILE_DIR"
+  exec /usr/bin/google-chrome-stable \
+    --no-sandbox --disable-dev-shm-usage \
+    --user-data-dir="$PROFILE_DIR" "$@"
+fi
+
+mkdir -p "$PROFILE_DIR"
 # Los archivos SingletonLock de una sesión Docker anterior pueden quedar
 # apuntando al hostname viejo. Nunca eliminar locks con Chrome todavía abierto.
 python3 /usr/local/bin/arcadecloud-chrome-unlock.py

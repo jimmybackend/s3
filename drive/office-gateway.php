@@ -468,7 +468,7 @@ button{width:100%;margin-top:12px;padding:13px;border:1px solid var(--accent);bo
   <?php endif; ?>
   <div class="office-idle-status" id="officeIdleStatus">Autoapagado listo · esperando inactividad</div>
   <iframe id="officeFrame"
-          src="<?= in_array($officeDesktopTarget, ['guacamole', 'kde'], true) ? '/guacamole/' : '/vnc.html?path=websockify&amp;resize=remote&amp;autoconnect=true' ?>"
+          src="<?= $officeDesktopTarget === 'guacamole' ? '/guacamole/' : '/vnc.html?path=websockify&amp;resize=remote&amp;autoconnect=true' ?>"
           title="<?= $officeDesktopTarget === 'kde' ? 'ArcadeCloud KDE Plasma' : ($officeDesktopTarget === 'guacamole' ? 'ArcadeCloud Guacamole RDP' : 'ArcadeCloud Office') ?>"
           allow="microphone; autoplay; clipboard-read; clipboard-write"></iframe>
 </div>

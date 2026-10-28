@@ -34,13 +34,14 @@ RUN groupadd --gid 10001 arcade \
  && chown -R arcade:arcade /workspace /home/arcade
 
 COPY entrypoint.sh /usr/local/bin/arcadecloud-workstation-entrypoint
+COPY repair-chrome-launchers.py /usr/local/bin/repair-chrome-launchers.py
 COPY arcadecloud-audio-server.py /usr/local/bin/arcadecloud-audio-server
 COPY arcadecloud-audio.js /usr/share/novnc/arcadecloud-audio.js
 COPY arcadecloud-chrome /usr/local/bin/arcadecloud-chrome
 COPY arcadecloud-office-document /usr/local/bin/arcadecloud-office-document
 COPY arcadecloud-chrome-helper.desktop /usr/share/xfce4/helpers/arcadecloud-chrome.desktop
 COPY arcadecloud-chrome.desktop /usr/share/applications/arcadecloud-chrome.desktop
-RUN chmod 0755 /usr/local/bin/arcadecloud-workstation-entrypoint /usr/local/bin/arcadecloud-chrome /usr/local/bin/arcadecloud-office-document /usr/local/bin/arcadecloud-audio-server \
+RUN chmod 0755 /usr/local/bin/arcadecloud-workstation-entrypoint /usr/local/bin/arcadecloud-chrome /usr/local/bin/arcadecloud-office-document /usr/local/bin/arcadecloud-audio-server /usr/local/bin/repair-chrome-launchers.py \
  && chmod 0644 /usr/share/xfce4/helpers/arcadecloud-chrome.desktop /usr/share/applications/arcadecloud-chrome.desktop
 
 WORKDIR /home/arcade

@@ -38,7 +38,7 @@ for path in TARGETS:
             # Respaldo único del lanzador personalizado anterior.
             BACKUPS.mkdir(parents=True, exist_ok=True)
             os.chown(BACKUPS, 10001, 10001)
-            backup = BACKUPS / "Chrome.desktop.pre-arcadecloud-audio"
+            backup = BACKUPS / "Chrome.desktop.pre-arcadecloud-chrome"
             if not backup.exists():
                 shutil.copy2(path, backup)
                 os.chown(backup, 10001, 10001)

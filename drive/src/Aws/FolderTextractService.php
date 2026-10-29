@@ -120,6 +120,7 @@ final class FolderTextractService
 
         $objectName = (new StorageObjectNameCodec())->createFileObjectName($visibleName);
         $key = $this->buildPhysicalKey($parentRoute, $objectName);
+        StorageObjectNameCodec::assertS3KeyLength($key);
 
         $this->s3->putObject([
             'Bucket' => $this->bucket,

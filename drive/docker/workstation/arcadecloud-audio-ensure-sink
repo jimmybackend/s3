@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+# Salida de audio virtual, independiente de la sesión Guacamole/XRDP.
+# Sólo toca el estado efímero de PipeWire, no los perfiles KDE/XFCE.
+set -euo pipefail
+export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/10001}"
+export PULSE_SERVER="unix:${XDG_RUNTIME_DIR}/pulse/native"
+SINK=arcadecloud-web
+
+# VNC y XRDP comparten el servidor PipeWire del mismo usuario.
+ready=0
+for _ in 1 2 3 4 5 6 7 8 9 10; do
+  if pactl info >/dev/null 2>&1; then
+    ready=1
+    break
+  fi
+  sleep 1
+done
+if [[ "$ready" -ne 1 ]]; then
+  echo "[Office audio] PipeWire Pulse no está disponible." >&2
+  exit 1
+fi
+
+sinks="$(pactl list short sinks)"
+if ! printf '%s\n' "$sinks" | awk -v n="$SINK" '$2==n {found=1} END {exit !found}'; then
+  # La salida nula recibe audio y expone arcadecloud-web.monitor incluso
+  # cuando no existe hardware de audio ni Guacamole está conectado.
+  if ! pactl load-module module-null-sink \
+      "sink_name=$SINK" "rate=44100" "channels=2" >/dev/null; then
+    echo "[Office audio] No se pudo crear el monitor virtual." >&2
+    exit 1
+  fi
+  echo "[Office audio] Sink virtual arcadecloud-web creado." >&2
+  sinks="$(pactl list short sinks)"
+fi
+
+# Solo elegirlo en la sesión noVNC cuando NO haya otra salida.
+# No cambiar el predeterminado si Guacamole está funcionando.
+if [[ "${DISPLAY:-}" =~ ^:([1-9])(\.[0-9]+)?$ ]]; then
+  other="$(printf '%s\n' "$sinks" | awk -v n="$SINK" '$2!=n && NF>1 {print $2}')"
+  if [[ -z "$other" ]]; then
+    pactl set-default-sink "$SINK" || {
+      echo "[Office audio] Falló la selección de la salida virtual." >&2
+      exit 1
+    }
+    echo "[Office audio] Salida predeterminada KDE/noVNC: $SINK." >&2
+  fi
+fi
+
+pactl list short sinks | awk -v n="$SINK" '$2==n {print "[Office audio] Disponible: " n ".monitor"}'

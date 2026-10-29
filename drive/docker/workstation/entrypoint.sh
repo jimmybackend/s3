@@ -67,8 +67,26 @@ sleep 1
 wireplumber >/tmp/arcade-wireplumber.log 2>&1 &
 sleep 2
 
-/usr/libexec/pipewire-module-xrdp/load_pw_modules.sh -l 3 \
-  >/tmp/arcade-xrdp-audio.log 2>&1 &
+# KDE/noVNC necesita una salida de sonido propia aunque Guacamole no haya
+# iniciado XRDP. El script es idempotente entre sesiones y conserva XRDP.
+if ! /usr/local/bin/arcadecloud-audio-ensure-sink >/tmp/arcade-virtual-audio.log 2>&1; then
+    echo "[Office audio] No se pudo configurar el sink virtual; XRDP sigue disponible." >&2
+fi
+
+# Sólo las sesiones RDP (:10+) necesitan pipewire-module-xrdp.
+# Antes se cargaba también desde VNC (:1) y la salida KDE dependía de
+# conectarse a Guacamole. XRDP mantiene su audio al iniciar su sesión.
+RDP_DISPLAY="${DISPLAY#:}"
+RDP_DISPLAY="${RDP_DISPLAY%%.*}"
+case "$RDP_DISPLAY" in
+    ''|*[!0-9]*) ;;
+    *)
+        if [ "$RDP_DISPLAY" -ge 10 ]; then
+            /usr/libexec/pipewire-module-xrdp/load_pw_modules.sh -l 3 \
+              >/tmp/arcade-xrdp-audio.log 2>&1 &
+        fi
+        ;;
+esac
 
 # Selector de escritorio ArcadeCloud.
 # XFCE continúa siendo el valor predeterminado.

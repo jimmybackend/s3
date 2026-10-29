@@ -456,7 +456,6 @@ button{width:100%;margin-top:12px;padding:13px;border:1px solid var(--accent);bo
 .office-idle-status{position:fixed;z-index:40;right:12px;bottom:12px;max-width:calc(100vw - 24px);padding:7px 11px;border:1px solid #2d6784;border-radius:9px;background:#061726e8;color:#ccecff;font-size:12px;box-shadow:0 6px 24px #0007;pointer-events:none}
 @media(max-width:600px){.office-idle-status{right:12px;bottom:12px;font-size:11px}}
 .office-idle-status.is-paused{border-color:#d49935;color:#ffd993}
-}
 </style>
 </head>
 <body>

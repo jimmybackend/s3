@@ -493,9 +493,77 @@ button{width:100%;margin-top:12px;padding:13px;border:1px solid var(--accent);bo
   const hasDocument = <?= ($officeFileId > 0 && preg_match('/^[a-f0-9]{32}$/', $officeDocumentSessionId)) ? 'true' : 'false' ?>;
   const documentBadge = document.getElementById('officeDocumentBadge');
   const idleStatus = document.getElementById('officeIdleStatus');
-  // El audio de noVNC se administra dentro de su único iframe.
-  // Guacamole conserva su propia pista RDP. Sin botones duplicados.
-
+  // noVNC y Office comparten origen. El script de audio de la imagen
+  // de TigerVNC puede faltar en un vnc.html cacheado; el gateway garantiza
+  // que se cargue una sola vez, sin tocar Guacamole ni crear otro player.
+  const isNoVncFrame = Boolean(frame &&
+    frame.getAttribute('src')?.startsWith('/vnc.html'));
+  if (isNoVncFrame) {
+    let audioBootstrapState = 'esperando-iframe';
+    window.__arcadecloudOfficeAudioDiagnostics = () => {
+      const result = {phase: audioBootstrapState, scriptInstalled: false};
+      try {
+        const child = frame.contentWindow;
+        if (!child) return result;
+        if (typeof child.__arcadecloudAudioDiagnostics === 'function') {
+          return child.__arcadecloudAudioDiagnostics();
+        }
+        result.scriptInstalled = child.__arcadecloudAudioInstalled === true;
+      } catch (_) {
+        result.phase = 'iframe-no-accesible';
+      }
+      return result;
+    };
+    const ensureNoVncAudio = () => {
+      let child;
+      let documentFrame;
+      try {
+        child = frame.contentWindow;
+        documentFrame = frame.contentDocument;
+        if (!child || !documentFrame || !documentFrame.body) {
+          audioBootstrapState = 'iframe-no-listo';
+          return;
+        }
+        if (typeof child.__arcadecloudAudioDiagnostics === 'function') {
+          audioBootstrapState = 'listo';
+          return;
+        }
+        if (child.__arcadecloudAudioInstalled === true) {
+          audioBootstrapState = 'script-antiguo-sin-diagnostico';
+          return;
+        }
+        if (documentFrame.getElementById('officeAudioBootstrapFallback')) {
+          audioBootstrapState = 'cargando-script';
+          return;
+        }
+        const script = documentFrame.createElement('script');
+        script.id = 'officeAudioBootstrapFallback';
+        // El parámetro evita que Chrome reutilice un JS anterior al arreglo.
+        script.src = '/arcadecloud-audio.js?v=office-audio-bootstrap-20261029';
+        script.onload = () => {
+          audioBootstrapState =
+            typeof child.__arcadecloudAudioDiagnostics === 'function'
+              ? 'listo' : 'script-cargado-sin-control';
+        };
+        script.onerror = () => {
+          audioBootstrapState = 'error-cargando-script';
+          console.warn('[ArcadeCloud Office] No se pudo cargar el audio noVNC');
+        };
+        audioBootstrapState = 'cargando-script';
+        documentFrame.body.appendChild(script);
+      } catch (_) {
+        audioBootstrapState = 'iframe-no-accesible';
+      }
+    };
+    frame.addEventListener('load', ensureNoVncAudio);
+    // En navegación restaurada desde caché, el iframe puede estar listo ya.
+    try {
+      if (frame.contentDocument?.readyState === 'complete') {
+        ensureNoVncAudio();
+      }
+    } catch (_) {}
+  }
+  // Guacamole utiliza su propio audio RDP sin capturas adicionales.
 
   function formatIdle(seconds) {
     const value = Math.max(0, Math.floor(Number(seconds || 0)));

@@ -44,6 +44,7 @@ final class PublicMultipartUploadService
         $sig = $this->signature($filename, $filesize);
         $basename = preg_replace('/[^\w\-.]+/u', '_', basename($filename)) ?: 'archivo';
         $key = $this->prefix . '/' . gmdate('Ymd') . '/' . $sig . '-' . $basename;
+        \ArcadeCloud\Drive\Storage\StorageObjectNameCodec::assertS3KeyLength($key);
 
         $res = $this->s3->createMultipartUpload([
             'Bucket' => $this->bucket,

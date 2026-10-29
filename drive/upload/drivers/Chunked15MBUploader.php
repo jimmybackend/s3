@@ -50,6 +50,7 @@ final class Chunked15MBUploader implements UploaderInterface
         $signature = $this->signature($filename, $filesize, $carpeta, $userId);
         $physicalName = $this->codec->createFileObjectName($filename);
         $key = $carpeta . '/' . $physicalName;
+        StorageObjectNameCodec::assertS3KeyLength($key);
 
         $result = $this->s3->createMultipartUpload([
             'Bucket' => $this->bucket,

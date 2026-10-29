@@ -51,8 +51,13 @@ def active_audio_monitor(env):
         )
         default_sink = default_result.stdout.strip()
 
-        # Una sesión con Chrome reproduciendo sonido en Guacamole puede
-        # cambiar el sink preferido; capturar donde realmente hay inputs.
+        # Si existe el monitor virtual noVNC, nunca reemplazarlo por
+        # xrdp-sink mientras Guacamole está abierto. Cada sesión escucha
+        # únicamente el audio de su propio escritorio.
+        if "arcadecloud-web" in sinks.values():
+            return "arcadecloud-web.monitor"
+
+        # Fallback de compatibilidad con Workstations anteriores sin sink.
         for name in reversed(active_sinks):
             if re.fullmatch(r"[A-Za-z0-9_.-]{1,128}", name):
                 return name + ".monitor"

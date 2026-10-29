@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+# Iniciar PipeWire ANTES de TigerVNC. Guacamole NO es requisito.
+# La salida web es exclusiva de noVNC; el audio XRDP sigue funcionando.
+# Ejecutar como usuario arcade desde el entrypoint de Workstation.
+set -euo pipefail
+
+if [[ "$(id -u)" -ne 10001 ]]; then
+  echo "ERROR: audio bootstrap necesita UID 10001 (arcade)" >&2
+  exit 2
+fi
+
+export HOME=/home/arcade
+export XDG_RUNTIME_DIR=/run/user/10001
+export PIPEWIRE_RUNTIME_DIR=/run/user/10001
+export PULSE_SERVER=unix:/run/user/10001/pulse/native
+
+if [[ ! -d "$XDG_RUNTIME_DIR" || ! -w "$XDG_RUNTIME_DIR" ]]; then
+  echo "ERROR: runtime de PipeWire no disponible" >&2
+  exit 2
+fi
+
+# Todos los procesos quedan en el mismo runtime del usuario. No arrancar
+# servidores duplicados si Guacamole inició antes o hay una reconexión.
+if ! pgrep -u 10001 -x pipewire >/dev/null 2>&1; then
+  nohup pipewire </dev/null >/tmp/arcade-pipewire.log 2>&1 &
+fi
+for _ in $(seq 1 12); do
+  [[ -S "$XDG_RUNTIME_DIR/pipewire-0" ]] && break
+  sleep 0.25
+done
+
+if ! pgrep -u 10001 -x pipewire-pulse >/dev/null 2>&1; then
+  nohup pipewire-pulse </dev/null >/tmp/arcade-pipewire-pulse.log 2>&1 &
+fi
+if ! pgrep -u 10001 -x wireplumber >/dev/null 2>&1; then
+  nohup wireplumber </dev/null >/tmp/arcade-wireplumber.log 2>&1 &
+fi
+
+# La configuración /etc/pipewire/pipewire-pulse.conf.d/10-arcadecloud-novnc.conf
+# crea arcadecloud-web de forma automática. El helper es un fallback.
+if ! /usr/local/bin/arcadecloud-audio-ensure-sink; then
+  echo "AVISO: salida web de PipeWire no disponible; revisar logs" >&2
+  exit 1
+fi
+
+pactl list short sinks | awk '$2=="arcadecloud-web" {ready=1; print "OK: PipeWire noVNC listo sin Guacamole"} END {exit !ready}'

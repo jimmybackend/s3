@@ -7,6 +7,14 @@
   if (window.__arcadecloudAudioInstalled) return;
   window.__arcadecloudAudioInstalled = true;
   function setup() {
+    // El gateway Office actualizado ofrece un botón de audio estable fuera
+    // del iframe. Si existe, no mostrar dos controles ni abrir dos flujos.
+    try {
+      if (window.parent !== window &&
+          window.parent.document.getElementById('officeAudioToggle')) return;
+    } catch (_) {
+      // noVNC autónomo o frame de otro origen: conservar botón local.
+    }
     const button = document.createElement('button');
     button.id = 'arcadecloud-audio-toggle';
     button.type = 'button';

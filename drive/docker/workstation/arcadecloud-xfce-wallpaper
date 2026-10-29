@@ -36,6 +36,14 @@ if [[ -z "$WALLPAPER" ]]; then
   exit 0
 fi
 
+# Respaldo único de la selección XFCE previa para poder restaurarla.
+old_cfg="$HOME/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-desktop.xml"
+backup_dir="$HOME/.config/arcadecloud-backups"
+if [[ -f "$old_cfg" && ! -e "$backup_dir/xfce4-desktop.xml.pre-office-wallpaper" ]]; then
+  mkdir -p "$backup_dir"
+  cp -p "$old_cfg" "$backup_dir/xfce4-desktop.xml.pre-office-wallpaper"
+fi
+
 # XFCE crea los nombres de monitor según la sesión XRDP actual.
 # Nunca escribir rutas de monitor inventadas ni borrar configuraciones.
 while IFS= read -r prop; do

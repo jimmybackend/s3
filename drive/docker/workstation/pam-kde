@@ -1,0 +1,7 @@
+# ArcadeCloud Office / Ubuntu 24.04 KDE KScreenLocker
+# Reutiliza la autenticación PAM del sistema para el usuario arcade.
+# Esta configuración NO omite contraseñas ni habilita pam_permit.
+# El proceso debe tener capacidad suficiente para comprobar /etc/shadow;
+# con no-new-privileges se requiere revisar la elevación de kcheckpass.
+@include common-auth
+@include common-account

@@ -135,6 +135,22 @@ if [[ -x "$DRIVE_ROOT/bin/install_guacamole_node.sh" ]]; then
   bash "$DRIVE_ROOT/bin/install_guacamole_node.sh"
 fi
 
+# Chrome sandbox: opt-in sólo tras pasar el ensayo aislado.
+# El perfil se almacena en un archivo raíz local, nunca en el navegador.
+CHROME_SANDBOX_PROFILE="/etc/arcadecloud-drive/chrome-seccomp.json"
+CHROME_SANDBOX_MARKER="/etc/arcadecloud-drive/chrome-sandbox-enabled"
+CHROME_RUNTIME_OPTS=""
+if [[ -s "$CHROME_SANDBOX_MARKER" && -r "$CHROME_SANDBOX_PROFILE" ]]; then
+  EXPECTED_CHROME_PROFILE_HASH="$(cat "$CHROME_SANDBOX_MARKER")"
+  ACTUAL_CHROME_PROFILE_HASH="$(sha256sum "$CHROME_SANDBOX_PROFILE" | awk '{print $1}')"
+  if [[ "$EXPECTED_CHROME_PROFILE_HASH" =~ ^[a-f0-9]{64}$ \
+        && "$ACTUAL_CHROME_PROFILE_HASH" == "$EXPECTED_CHROME_PROFILE_HASH" ]]; then
+    CHROME_RUNTIME_OPTS="--security-opt seccomp=$CHROME_SANDBOX_PROFILE --env ARCADECLOUD_CHROME_SANDBOX_ENABLED=1"
+    echo "✓ Chrome: perfil sandbox revisado habilitado para el próximo inicio."
+  else
+    echo "AVISO: el perfil sandbox de Chrome no coincide con su hash; se mantiene el modo anterior." >&2
+  fi
+fi
 cat > "$SERVICE" <<EOF
 [Unit]
 Description=ArcadeCloud Remote Workstation Phase 1
@@ -160,7 +176,7 @@ ExecStart=/usr/bin/docker run --rm --name $CONTAINER \
   --cap-add=SETGID \
   --cap-add=CHOWN \
   --cap-add=DAC_OVERRIDE \
-  --cap-add=FOWNER \
+  --cap-add=FOWNER $CHROME_RUNTIME_OPTS \
   $IMAGE
 ExecStop=/usr/bin/docker stop -t 20 $CONTAINER
 Restart=on-failure

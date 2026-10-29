@@ -190,6 +190,15 @@ PY
 
 dbus-daemon --system --fork 2>/dev/null || true
 
+# Guacamole y noVNC son independientes. Arrancar PipeWire + monitor virtual
+# antes de abrir VNC; previamente sólo se iniciaba dentro del xstartup,
+# que puede no ejecutarse si TigerVNC encuentra un script persistente viejo.
+echo "===== PREPARANDO AUDIO WEB SIN GUACAMOLE ====="
+if ! su -s /bin/bash arcade -c '/usr/local/bin/arcadecloud-audio-bootstrap' \
+    >/tmp/arcade-audio-bootstrap.log 2>&1; then
+  echo "AVISO: audio noVNC sin preparar, ver /tmp/arcade-audio-bootstrap.log" >&2
+fi
+
 cleanup() {
   [[ -n "${NOVNC_PID:-}" ]] && kill "$NOVNC_PID" >/dev/null 2>&1 || true
   [[ -n "${AUDIO_PID:-}" ]] && kill "$AUDIO_PID" >/dev/null 2>&1 || true
@@ -222,6 +231,7 @@ vncserver :${DISPLAY_NUMBER} \
   -localhost yes \
   -geometry '${VNC_GEOMETRY}' \
   -depth '${VNC_DEPTH}' \
+  -xstartup /home/arcade/.vnc/xstartup \
   -SecurityTypes None
 "
 
@@ -231,6 +241,21 @@ websockify \
   0.0.0.0:6080 \
   "127.0.0.1:${VNC_PORT}" &
 NOVNC_PID=$!
+
+# Esperar proceso KDE, no sólo websockify: un puerto abierto no demuestra
+# que el escritorio esté listo. No detener Workstation si KDE tarda demasiado.
+if [[ "${ARCADECLOUD_DESKTOP:-xfce}" == "plasma" ]]; then
+  for attempt in $(seq 1 25); do
+    if pgrep -u arcade -x plasmashell >/dev/null 2>&1; then
+      echo "KDE Plasma listo sin abrir Guacamole (intento $attempt)."
+      break
+    fi
+    if [[ "$attempt" -eq 25 ]]; then
+      echo "AVISO: KDE aún no está listo; revisar /tmp/arcade-plasma.log y ~/.vnc/*.log" >&2
+    fi
+    sleep 1
+  done
+fi
 
 echo "===== ARRANCANDO AUDIO WEB PRIVADO ====="
 su -s /bin/bash arcade -c 'exec python3 /usr/local/bin/arcadecloud-audio-server' \

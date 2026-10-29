@@ -35,4 +35,13 @@ with patch.object(module, "run", side_effect=without_active):
 with patch.object(module, "run", side_effect=OSError("offline")):
     assert module.active_audio_monitor({}) == "xrdp-sink.monitor"
 
+def with_web_sink(args, **kwargs):
+    if args == ["pactl", "list", "short", "sinks"]:
+        return SimpleNamespace(stdout="95\txrdp-sink\tPipeWire\n103\tarcadecloud-web\tPipeWire\n")
+    return returned(args, **kwargs)
+
+# Si Guacamole tiene una entrada activa, noVNC no debe capturarla.
+with patch.object(module, "run", side_effect=with_web_sink):
+    assert module.active_audio_monitor({}) == "arcadecloud-web.monitor"
+
 print("OK: audio KDE/XFCE captura el sink activo con fallback")

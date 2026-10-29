@@ -35,4 +35,18 @@ with patch.object(module, "run", side_effect=without_active):
 with patch.object(module, "run", side_effect=OSError("offline")):
     assert module.active_audio_monitor({}) == "xrdp-sink.monitor"
 
+def with_independent_novnc_sink(args, **kwargs):
+    if args == ["pactl", "list", "short", "sinks"]:
+        return SimpleNamespace(stdout=(
+            "95\txrdp-sink\tPipeWire\n"
+            "100\tfallback-sink\tPipeWire\n"
+            "103\tarcadecloud-novnc-sink\tPipeWire\n"
+        ))
+    return returned(args, **kwargs)
+
+# Guacamole puede estar reproduciendo en otro sink; noVNC debe
+# seguir capturando exclusivamente la salida virtual de KDE.
+with patch.object(module, "run", side_effect=with_independent_novnc_sink):
+    assert module.active_audio_monitor({}) == "arcadecloud-novnc-sink.monitor"
+
 print("OK: audio KDE/XFCE captura el sink activo con fallback")

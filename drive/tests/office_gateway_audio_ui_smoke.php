@@ -23,4 +23,16 @@ $check(str_contains($gateway, "window.addEventListener('pagehide', stopAudio"),
     'La reproducción termina al cerrar Office');
 $check(str_contains($novnc, "window.parent.document.getElementById('officeAudioToggle')"),
     'noVNC evita doble audio cuando el gateway tiene botón');
+$check(str_contains($gateway, 'id="officeAudioTest"')
+    && str_contains($gateway, 'new AudioCtx()'),
+    'Office permite comprobar localmente la salida de audifonos');
+$check(str_contains($gateway, "player.controls = true;")
+    && str_contains($gateway, "player.addEventListener('playing'")
+    && str_contains($gateway, "player.addEventListener('stalled'"),
+    'Office expone controles nativos y estado de reproduccion');
+$check(str_contains($novnc, 'arcadecloud-audio-test')
+    && str_contains($novnc, "audio.controls = true;")
+    && str_contains($novnc, "parentToggle.style.display = 'none'"),
+    'noVNC conserva diagnostico incluso con gateway publico anterior');
+
 echo "Office gateway audio controls passed.\n";

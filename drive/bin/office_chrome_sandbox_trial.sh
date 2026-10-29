@@ -44,23 +44,27 @@ if not any("clone3" in r.get("names", []) and
            r.get("action") == "SCMP_ACT_ERRNO" for r in rules):
     raise SystemExit("ERROR: se esperaba un perfil con clone3 restringido")
 
-# Docker utiliza máscara de espacios de nombres 0x7e020000. Añadir sólo
-# syscalls con el bit CLONE_NEWUSER=0x10000000 en las banderas; conservar
-# las restantes limitaciones y todas las reglas del perfil oficial.
+# Prueba aislada: Chromium necesita namespaces de usuario y procesos.
+# Conservamos el deny-by-default de Moby, sin SYS_ADMIN y sin unconfined.
+# Para clone/unshare permitir solamente llamadas que incluyan NEWUSER o
+# NEWPID (no habilitar mount, setns, bpf ni ptrace). Esta política es
+# temporal y NO se instalará en Workstation sin prueba y revisión.
 NAMESPACE_MASK = 0x7e020000
 NEW_USER = 0x10000000
+NEW_PID = 0x20000000
 for name in ("clone", "unshare"):
-    rules.append({
-        "names": [name],
-        "action": "SCMP_ACT_ALLOW",
-        "args": [{
-            "index": 0,
-            "value": NAMESPACE_MASK,
-            "valueTwo": NEW_USER,
-            "op": "SCMP_CMP_MASKED_EQ",
-        }],
-        "excludes": {"arches": ["s390", "s390x"]},
-    })
+    for flag in (NEW_USER, NEW_PID, NEW_USER | NEW_PID):
+        rules.append({
+            "names": [name],
+            "action": "SCMP_ACT_ALLOW",
+            "args": [{
+                "index": 0,
+                "value": NAMESPACE_MASK,
+                "valueTwo": flag,
+                "op": "SCMP_CMP_MASKED_EQ",
+            }],
+            "excludes": {"arches": ["s390", "s390x"]},
+        })
 
 with open(dst, "w", encoding="utf-8") as stream:
     json.dump(profile, stream, indent=2)

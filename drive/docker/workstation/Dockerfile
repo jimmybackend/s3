@@ -38,6 +38,8 @@ COPY repair-chrome-launchers.py /usr/local/bin/repair-chrome-launchers.py
 COPY arcadecloud-chrome-unlock.py /usr/local/bin/arcadecloud-chrome-unlock.py
 COPY arcadecloud-audio-server.py /usr/local/bin/arcadecloud-audio-server
 COPY arcadecloud-audio-ensure-sink /usr/local/bin/arcadecloud-audio-ensure-sink
+# Null sink is loaded by pipewire-pulse even if Guacamole never starts.
+COPY 10-arcadecloud-novnc.conf /etc/pipewire/pipewire-pulse.conf.d/10-arcadecloud-novnc.conf
 COPY arcadecloud-audio.js /usr/share/novnc/arcadecloud-audio.js
 COPY arcadecloud-chrome /usr/local/bin/arcadecloud-chrome
 COPY arcadecloud-xfce-wallpaper /usr/local/bin/arcadecloud-xfce-wallpaper

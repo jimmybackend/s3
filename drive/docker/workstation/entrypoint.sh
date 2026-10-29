@@ -58,13 +58,22 @@ chmod 700 "$XDG_RUNTIME_DIR"
 # La configuración visual vive en ~/.config/xfce4 y no se elimina.
 find "$HOME/.cache/sessions" -maxdepth 1 -type f -name 'xfce4-session-*' -delete 2>/dev/null || true
 
-pipewire >/tmp/arcade-pipewire.log 2>&1 &
+# KDE/noVNC y Guacamole/XRDP comparten el mismo UID y runtime.
+# Evitar servidores PipeWire duplicados al abrir una segunda sesión, ya que
+# eso puede reemplazar el socket Pulse y dejar a noVNC capturando silencio.
+if ! pgrep -u "$(id -u)" -x pipewire >/dev/null 2>&1; then
+    pipewire >/tmp/arcade-pipewire.log 2>&1 &
+fi
 sleep 1
 
-pipewire-pulse >/tmp/arcade-pipewire-pulse.log 2>&1 &
+if ! pgrep -u "$(id -u)" -x pipewire-pulse >/dev/null 2>&1; then
+    pipewire-pulse >/tmp/arcade-pipewire-pulse.log 2>&1 &
+fi
 sleep 1
 
-wireplumber >/tmp/arcade-wireplumber.log 2>&1 &
+if ! pgrep -u "$(id -u)" -x wireplumber >/dev/null 2>&1; then
+    wireplumber >/tmp/arcade-wireplumber.log 2>&1 &
+fi
 sleep 2
 
 # KDE/noVNC necesita una salida de sonido propia aunque Guacamole no haya

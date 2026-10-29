@@ -74,7 +74,7 @@ echo "=== CONTENEDOR DESCARTABLE, SIN RED NI VOLUMENES REALES ==="
 docker run --rm --network none \
   --security-opt=no-new-privileges:true \
   --security-opt="seccomp=$temp_dir/office-trial.json" \
-  --cap-drop=ALL --user 10001:10001 --read-only \
+  --cap-drop=ALL --user 10001:10001 --shm-size=512m \
   --tmpfs /tmp:rw,nosuid,nodev,mode=1777 \
   --tmpfs /home/arcade:rw,nosuid,nodev,uid=10001,gid=10001,mode=0700 \
   --entrypoint /bin/bash "$image_name" -lc '
@@ -89,15 +89,27 @@ docker run --rm --network none \
       exit 25
     fi
     echo "OK: user namespaces permitidos para arcade"
+    echo "=== REQUISITO: USER + PID NAMESPACES ==="
+    if unshare --user --map-root-user --pid --fork /usr/bin/true 2>/dev/null; then
+      echo "OK: user+pid namespaces disponibles."
+    else
+      echo "AVISO: user+pid namespaces no funcionan juntos con la política actual."
+    fi
     echo "=== CHROME SIN --no-sandbox ==="
-    if ! timeout 25s google-chrome-stable \
+    # El rootfs de prueba ahora es temporal y escribible, como Office real.
+    # Evitar grep -q sobre stdout vivo porque puede cerrar la tubería antes
+    # de que Chrome finalice y generar diagnósticos SIGPIPE falsos.
+    ulimit -c 0 || true
+    status=0
+    timeout 25s google-chrome-stable \
          --headless=new --disable-gpu --disable-dev-shm-usage \
          --no-first-run --no-default-browser-check \
          --user-data-dir=/tmp/arcade-chrome-test \
-         --dump-dom about:blank 2>/tmp/chrome-test.log |
-         grep -q "<html"; then
-      echo "NO APTO: Chrome no completó el arranque con sandbox"
-      tail -n 18 /tmp/chrome-test.log || true
+         --dump-dom about:blank \
+         >/tmp/chrome-dom.html 2>/tmp/chrome-test.log || status=$?
+    if [ "$status" -ne 0 ] || ! grep -q "<html" /tmp/chrome-dom.html; then
+      echo "NO APTO: Chrome no completó el arranque con sandbox (exit=$status)"
+      tail -n 28 /tmp/chrome-test.log || true
       exit 26
     fi
     echo "OK: Chrome arrancó sin --no-sandbox en el contenedor descartable"

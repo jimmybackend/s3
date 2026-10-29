@@ -45,14 +45,11 @@ fi
 echo "=== VOLUMEN DECODIFICADO (NO SE GUARDA AUDIO) ==="
 # Volumedetect sirve para distinguir un MP3 válido pero silencioso de un
 # problema exclusivo del navegador. La prueba procesa el audio temporal.
-docker_image="" # Compatibilidad con shellcheck: FFmpeg corre en host.
-if ! command -v ffmpeg >/dev/null 2>&1; then
-  echo "FFmpeg no está instalado en el host; el flujo MP3 sí produjo datos."
-else
-  ffmpeg -hide_banner -nostdin -loglevel info -y \
-    -i "$temp_dir/stream.mp3" -vn -af volumedetect -f null - \
-    2>&1 | grep -E 'mean_volume|max_volume|Invalid data|Error' || true
-fi
+docker exec -i --user arcade arcadecloud-workstation \
+  ffmpeg -hide_banner -nostdin -loglevel info \
+  -i pipe:0 -vn -af volumedetect -f null - \
+  < "$temp_dir/stream.mp3" 2>&1 \
+  | grep -E 'mean_volume|max_volume|Invalid data|Error' || true
 
 echo "=== RESULTADO ==="
 echo "Si mean_volume=-inf dB mientras reproduce sonido, el sink capturado está en silencio."

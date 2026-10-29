@@ -180,12 +180,26 @@ chown -R arcade:arcade /home/arcade/.vnc
 # Agrega el control de audio al navegador sin tocar las preferencias KDE.
 python3 - <<'PY'
 from pathlib import Path
+import re
 page = Path("/usr/share/novnc/vnc.html")
 if page.exists():
     content = page.read_text(encoding="utf-8")
-    marker = '<script src="/arcadecloud-audio.js"></script>'
-    if marker not in content and "</body>" in content:
-        page.write_text(content.replace("</body>", marker + "\n</body>"), encoding="utf-8")
+    marker = '<script src="/arcadecloud-audio.js?v=office-audio-bootstrap-20261029"></script>'
+    prior = re.compile(
+        r'<script\\s+[^>]*src=["\\']/arcadecloud-audio\\.js(?:\\?[^"\\']*)?["\\'][^>]*>\\s*</script>',
+        re.IGNORECASE,
+    )
+    # Reemplazar una única referencia anterior y evitar duplicar controles.
+    updated, count = prior.subn(marker, content, count=1)
+    if not count:
+        updated, count = re.subn(
+            r'</body\\s*>', marker + "\\n</body>", content, count=1,
+            flags=re.IGNORECASE,
+        )
+    if count and updated != content:
+        page.write_text(updated, encoding="utf-8")
+    elif not count:
+        print("AVISO: noVNC no incluye cierre de body; Office gateway cargará el audio.", flush=True)
 PY
 
 dbus-daemon --system --fork 2>/dev/null || true

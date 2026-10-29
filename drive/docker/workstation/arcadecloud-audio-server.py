@@ -6,14 +6,66 @@ en el loopback del host, nunca en interfaces públicas. Cada conexión autorizad
 desde el gateway crea una captura individual del monitor PipeWire de KDE.
 """
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
-from subprocess import DEVNULL, PIPE, Popen, TimeoutExpired
+from subprocess import DEVNULL, PIPE, Popen, TimeoutExpired, run
 import os
+import re
 import threading
 from urllib.parse import urlsplit
 
 PORT = 6081
 MAX_STREAMS = 3  # KDE noVNC + XRDP/Guacamole + reconexión temporal
 semaphore = threading.BoundedSemaphore(MAX_STREAMS)
+
+
+def active_audio_monitor(env):
+    """Captura la salida usada por aplicaciones, no un sink XRDP fijo.
+
+    En una Workstation con KDE/noVNC y XFCE/XRDP simultáneos pueden
+    coexistir varios sinks. Preferir un sink con reproducción activa y,
+    en su ausencia, el sink predeterminado actual de PipeWire.
+    """
+    try:
+        sinks_result = run(
+            ["pactl", "list", "short", "sinks"], capture_output=True,
+            text=True, timeout=3, env=env, check=True,
+        )
+        sinks = {}
+        for line in sinks_result.stdout.splitlines():
+            fields = line.split()
+            if len(fields) > 1 and fields[0].isdigit():
+                sinks[fields[0]] = fields[1]
+
+        inputs_result = run(
+            ["pactl", "list", "short", "sink-inputs"], capture_output=True,
+            text=True, timeout=3, env=env, check=True,
+        )
+        active_sinks = []
+        for line in inputs_result.stdout.splitlines():
+            fields = line.split()
+            if len(fields) > 1 and fields[1] in sinks:
+                active_sinks.append(sinks[fields[1]])
+
+        default_result = run(
+            ["pactl", "get-default-sink"], capture_output=True,
+            text=True, timeout=3, env=env, check=True,
+        )
+        default_sink = default_result.stdout.strip()
+
+        # Una sesión con Chrome reproduciendo sonido en Guacamole puede
+        # cambiar el sink preferido; capturar donde realmente hay inputs.
+        for name in reversed(active_sinks):
+            if re.fullmatch(r"[A-Za-z0-9_.-]{1,128}", name):
+                return name + ".monitor"
+        if default_sink in sinks.values() and re.fullmatch(
+            r"[A-Za-z0-9_.-]{1,128}", default_sink
+        ):
+            return default_sink + ".monitor"
+    except (OSError, TimeoutExpired, ValueError) as error:
+        # Permitir fallback si pactl todavía está arrancando.
+        pass
+    except Exception:
+        pass
+    return "xrdp-sink.monitor"
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -35,7 +87,7 @@ class Handler(BaseHTTPRequestHandler):
             proc = Popen(
                 [
                     "/usr/bin/ffmpeg", "-nostdin", "-hide_banner", "-loglevel", "error",
-                    "-f", "pulse", "-i", "xrdp-sink.monitor",
+                    "-f", "pulse", "-i", active_audio_monitor(env),
                     "-vn", "-ac", "2", "-ar", "44100",
                     "-c:a", "libmp3lame", "-b:a", "96k",
                     "-f", "mp3", "pipe:1",

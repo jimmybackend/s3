@@ -9,7 +9,7 @@ RDP_ENV=/etc/arcadecloud-drive/rdp.env
 GUAC_INSTALLER=/var/www/arcadecloud-drive/drive/bin/install_guacamole_node.sh
 CONTAINER=arcadecloud-workstation
 
-if [[ "\${EUID}" -ne 0 ]]; then
+if [[ "$EUID" -ne 0 ]]; then
   echo "Ejecuta con sudo: sudo bash drive/bin/office_password_set.sh"
   exit 2
 fi

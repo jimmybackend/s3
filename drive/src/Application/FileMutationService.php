@@ -56,6 +56,7 @@ final class FileMutationService
 
         $newRoute = $this->files->normalizePrefix($newRoute);
         $newKey = $this->files->normalizeKey($newRoute . $physicalName);
+        StorageObjectNameCodec::assertS3KeyLength($newKey);
         if ($oldKey === $newKey) throw new RuntimeException('El archivo ya está en esa misma ruta.');
 
         (new S3ObjectCopyService($this->s3, $this->bucket))->copy($oldKey, $newKey);
@@ -118,6 +119,7 @@ final class FileMutationService
         );
         $physicalName = $this->codec->createFileObjectName($visibleName);
         $newKey = $this->files->normalizeKey($newRoute . $physicalName);
+        StorageObjectNameCodec::assertS3KeyLength($newKey);
 
         (new S3ObjectCopyService($this->s3, $this->bucket))->copy($oldKey, $newKey);
 

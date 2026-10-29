@@ -12,7 +12,7 @@ import threading
 from urllib.parse import urlsplit
 
 PORT = 6081
-MAX_STREAMS = 1
+MAX_STREAMS = 3  # KDE noVNC + XRDP/Guacamole + reconexión temporal
 semaphore = threading.BoundedSemaphore(MAX_STREAMS)
 
 

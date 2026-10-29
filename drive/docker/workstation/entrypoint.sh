@@ -99,6 +99,11 @@ XFCE_PID=$!
 sleep 3
 xfce4-panel >/tmp/arcade-xfce4-panel.log 2>&1 &
 
+# En Guacamole (XRDP) XFCE usa el fondo elegido para KDE. No modificar
+# el Dock, los lanzadores ni el escritorio KDE de noVNC.
+sleep 2
+/usr/local/bin/arcadecloud-xfce-wallpaper >/tmp/arcade-xfce-wallpaper.log 2>&1 || true
+
 wait "$XFCE_PID"
 XFCESTART
 chmod 700 /home/arcade/.local/bin/arcadecloud-start-xfce

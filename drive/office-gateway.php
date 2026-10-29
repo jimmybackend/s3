@@ -456,11 +456,6 @@ button{width:100%;margin-top:12px;padding:13px;border:1px solid var(--accent);bo
 .office-idle-status{position:fixed;z-index:40;right:12px;bottom:12px;max-width:calc(100vw - 24px);padding:7px 11px;border:1px solid #2d6784;border-radius:9px;background:#061726e8;color:#ccecff;font-size:12px;box-shadow:0 6px 24px #0007;pointer-events:none}
 @media(max-width:600px){.office-idle-status{right:12px;bottom:12px;font-size:11px}}
 .office-idle-status.is-paused{border-color:#d49935;color:#ffd993}
-.office-audio-toggle{position:fixed;z-index:55;left:12px;bottom:65px;width:auto;max-width:min(260px,75vw);margin:0;padding:8px 12px;border:1px solid #476f85;border-radius:10px;background:#071725ef;color:#eaf7ff;font-size:13px;font-weight:600;box-shadow:0 4px 16px #0008}
-.office-audio-toggle:focus-visible{outline:2px solid #61f29b;outline-offset:2px}
-.office-audio-test{position:fixed;z-index:55;left:12px;bottom:20px;width:auto;max-width:220px;margin:0;padding:7px 10px;border:1px solid #476f85;border-radius:9px;background:#071725ef;color:#eaf7ff;font-size:12px;font-weight:600}
-.office-audio-player{position:fixed;z-index:55;left:172px;bottom:65px;width:min(300px,calc(100vw - 185px));height:34px}
-@media(max-width:600px){.office-audio-player{bottom:108px;left:12px;width:min(300px,80vw)}}
 </style>
 </head>
 <body>
@@ -472,10 +467,6 @@ button{width:100%;margin-top:12px;padding:13px;border:1px solid var(--accent);bo
   </div>
   <?php endif; ?>
   <div class="office-idle-status" id="officeIdleStatus">Autoapagado listo · esperando inactividad</div>
-  <?php if ($officeDesktopTarget !== 'guacamole'): ?>
-  <button type="button" class="office-audio-toggle" id="officeAudioToggle" aria-pressed="false">🔊 Activar sonido</button>
-  <button type="button" class="office-audio-test" id="officeAudioTest" title="Comprueba la salida de este navegador, sin conectarse al servidor">🔔 Probar audífonos</button>
-  <?php endif; ?>
   <iframe id="officeFrame"
           src="<?= $officeDesktopTarget === 'guacamole' ? '/guacamole/' : '/vnc.html?path=websockify&amp;resize=remote&amp;autoconnect=true' ?>"
           title="<?= $officeDesktopTarget === 'kde' ? 'ArcadeCloud KDE Plasma' : ($officeDesktopTarget === 'guacamole' ? 'ArcadeCloud Guacamole RDP' : 'ArcadeCloud Office') ?>"
@@ -502,111 +493,9 @@ button{width:100%;margin-top:12px;padding:13px;border:1px solid var(--accent);bo
   const hasDocument = <?= ($officeFileId > 0 && preg_match('/^[a-f0-9]{32}$/', $officeDocumentSessionId)) ? 'true' : 'false' ?>;
   const documentBadge = document.getElementById('officeDocumentBadge');
   const idleStatus = document.getElementById('officeIdleStatus');
-  const officeAudioToggle = document.getElementById('officeAudioToggle');
-  if (officeAudioToggle) {
-    // Diagnóstico visible de audio. Reproducir únicamente tras click
-    // para cumplir la política de reproducción del navegador.
-    const testButton = document.getElementById('officeAudioTest');
-    const player = new Audio();
-    player.preload = 'none';
-    player.controls = true;
-    player.muted = false;
-    player.volume = 1;
-    player.className = 'office-audio-player';
-    player.style.display = 'none';
-    player.setAttribute('aria-label', 'Audio remoto de ArcadeCloud Office');
-    document.body.appendChild(player);
+  // El audio de noVNC se administra dentro de su único iframe.
+  // Guacamole conserva su propia pista RDP. Sin botones duplicados.
 
-    let listening = false;
-    let receivedAudio = false;
-    function audioStatus(message) {
-      officeAudioToggle.textContent = message;
-    }
-    const stopAudio = () => {
-      listening = false;
-      receivedAudio = false;
-      player.pause();
-      player.removeAttribute('src');
-      player.load();
-      player.style.display = 'none';
-      audioStatus('🔊 Activar sonido');
-      officeAudioToggle.setAttribute('aria-pressed', 'false');
-    };
-    officeAudioToggle.addEventListener('click', async () => {
-      if (listening) {
-        stopAudio();
-        return;
-      }
-      listening = true;
-      player.muted = false;
-      player.volume = 1;
-      player.style.display = 'block';
-      player.src = '/__office_audio?session=' + Date.now();
-      audioStatus('Conectando sonido…');
-      try {
-        await player.play();
-      } catch (error) {
-        stopAudio();
-        audioStatus('Error de audio · reintentar');
-        console.warn('[ArcadeCloud Office audio]', error);
-      }
-    });
-    player.addEventListener('playing', () => {
-      if (!listening) return;
-      audioStatus('🔇 Detener sonido');
-      officeAudioToggle.setAttribute('aria-pressed', 'true');
-    });
-    player.addEventListener('timeupdate', () => {
-      if (listening && !receivedAudio && player.currentTime > 0) {
-        receivedAudio = true;
-        audioStatus('🔇 Detener sonido');
-      }
-    });
-    player.addEventListener('waiting', () => {
-      if (listening) audioStatus('Audio en espera de datos…');
-    });
-    player.addEventListener('stalled', () => {
-      if (listening) audioStatus('Audio detenido por la red…');
-    });
-    player.addEventListener('error', () => {
-      if (!listening) return;
-      const code = player.error?.code ?? 0;
-      stopAudio();
-      audioStatus('Error de transmisión (' + code + ') · reintentar');
-      console.warn('[ArcadeCloud Office audio] Error multimedia', code);
-    });
-    if (testButton) {
-      testButton.addEventListener('click', async () => {
-        // Tono corto generado localmente: si no se oye, revisar volumen,
-        // pestaña silenciada o dispositivo de salida del navegador.
-        const AudioCtx = window.AudioContext || window.webkitAudioContext;
-        if (!AudioCtx) {
-          testButton.textContent = 'Prueba no compatible';
-          return;
-        }
-        const ctx = new AudioCtx();
-        try {
-          await ctx.resume();
-          const oscillator = ctx.createOscillator();
-          const gain = ctx.createGain();
-          oscillator.type = 'sine';
-          oscillator.frequency.value = 523.25;
-          gain.gain.value = 0.035;
-          oscillator.connect(gain);
-          gain.connect(ctx.destination);
-          oscillator.start();
-          oscillator.stop(ctx.currentTime + 0.18);
-          oscillator.onended = () => { ctx.close().catch(() => {}); };
-          testButton.textContent = '🔔 Tono enviado';
-        } catch (error) {
-          testButton.textContent = 'Error en salida local';
-          console.warn('[ArcadeCloud Office audio] Prueba de audífonos', error);
-          ctx.close().catch(() => {});
-        }
-      });
-    }
-    window.addEventListener('pagehide', stopAudio, {once: true});
-  }
 
   function formatIdle(seconds) {
     const value = Math.max(0, Math.floor(Number(seconds || 0)));

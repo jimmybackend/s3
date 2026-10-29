@@ -1,156 +1,134 @@
-/* ArcadeCloud noVNC: escuchar sonido remoto sin Guacamole.
-   No hay reproduccion automática: el usuario activa el sonido. */
+/* ArcadeCloud Office / noVNC:
+ * Recibir sonido de KDE sin botones flotantes ni tonos de prueba.
+ * Autoplay audible solo cuando el navegador lo autorice; si Chrome
+ * requiere un gesto, el primer clic/tecla dentro del escritorio inicia
+ * el canal automáticamente, sin pedir al usuario pulsar "Activar sonido".
+ * No alterar la política del navegador ni iniciar varios streams.
+ */
 (() => {
   'use strict';
   if (window.__arcadecloudAudioInstalled) return;
   window.__arcadecloudAudioInstalled = true;
 
-  function setup() {
-    // Office ofrece el mismo control fuera del iframe. Evitar abrir
-    // streams duplicados cuando la página principal ya tiene controles.
-    try {
-      if (window.parent !== window) {
-        // Si Office público aún no recibió el CSS nuevo, posicionar el
-        // contador existente durante esta sesión sin tocar KDE ni el Dock.
-        const idleCountdown = window.parent.document.getElementById('officeIdleStatus');
-        if (idleCountdown) {
-          idleCountdown.style.right = '12px';
-          idleCountdown.style.bottom = '12px';
+  function boot() {
+    const parent = (() => {
+      try { return window.parent !== window ? window.parent : null; }
+      catch (_) { return null; }
+    })();
+
+    // Compatibilidad con el gateway PHP anterior, que todavía ofrece
+    // controles diagnósticos. Ocultarlos cuando noVNC tome el audio.
+    if (parent) {
+      try {
+        const host = parent.document;
+        const idle = host.getElementById('officeIdleStatus');
+        if (idle) {
+          idle.style.right = '12px';
+          idle.style.bottom = '12px';
         }
-        const parentToggle = window.parent.document.getElementById('officeAudioToggle');
-        const parentTest = window.parent.document.getElementById('officeAudioTest');
-        if (parentToggle && parentTest) return;
-        // El gateway antiguo todavía no incluye diagnóstico ni volumen.
-        // Preferir los nuevos controles internos hasta actualizarlo,
-        // sin dejar dos transmisiones activables.
-        if (parentToggle) parentToggle.style.display = 'none';
+        const prior = host.getElementById('officeAudioToggle');
+        if (prior) {
+          if (prior.getAttribute('aria-pressed') === 'true') prior.click();
+          prior.style.display = 'none';
+        }
+        const test = host.getElementById('officeAudioTest');
+        if (test) test.style.display = 'none';
+        const priorPlayer = host.querySelector('.office-audio-player');
+        if (priorPlayer) priorPlayer.style.display = 'none';
+      } catch (_) {
+        // Fallback independiente si se usa noVNC en otro origen.
       }
-    } catch (_) {
-      // noVNC autónomo: mostrar los controles dentro del visor.
     }
-
-    const button = document.createElement('button');
-    button.id = 'arcadecloud-audio-toggle';
-    button.type = 'button';
-    button.textContent = '🔊 Activar sonido';
-    button.setAttribute('aria-pressed', 'false');
-    button.title = 'Escuchar el audio de KDE en este navegador';
-    Object.assign(button.style, {
-      position: 'fixed', left: '12px', bottom: '68px', zIndex: '10000',
-      fontFamily: 'system-ui,sans-serif', fontSize: '13px',
-      padding: '8px 12px', borderRadius: '10px', cursor: 'pointer',
-      border: '1px solid #476f85', background: 'rgba(7,23,37,.94)',
-      color: '#eaf7ff', boxShadow: '0 4px 16px #0008'
-    });
-
-    const test = document.createElement('button');
-    test.id = 'arcadecloud-audio-test';
-    test.type = 'button';
-    test.textContent = '🔔 Probar audífonos';
-    test.title = 'Emite un tono corto en este navegador sin comunicarse con el servidor';
-    Object.assign(test.style, {
-      position: 'fixed', left: '12px', bottom: '28px', zIndex: '10000',
-      fontFamily: 'system-ui,sans-serif', fontSize: '12px',
-      padding: '6px 10px', borderRadius: '9px', cursor: 'pointer',
-      border: '1px solid #476f85', background: 'rgba(7,23,37,.94)',
-      color: '#eaf7ff'
-    });
 
     const audio = new Audio();
     audio.preload = 'none';
-    audio.controls = true;
+    audio.autoplay = false;
     audio.muted = false;
     audio.volume = 1;
-    audio.style.display = 'none';
-    Object.assign(audio.style, {
-      position: 'fixed', left: '190px', bottom: '67px', width: '240px',
-      maxWidth: 'calc(100vw - 205px)', height: '32px', zIndex: '10000'
-    });
-    audio.setAttribute('aria-label', 'Audio remoto de KDE');
-    document.body.appendChild(audio);
 
-    let enabled = false;
-    function stop() {
-      enabled = false;
+    let playing = false;
+    let starting = false;
+    let closed = false;
+    let needsGesture = false;
+
+    function tryStart() {
+      if (closed || playing || starting) return;
+      starting = true;
+      if (!audio.hasAttribute('src')) audio.src = '/__office_audio?session=' + Date.now();
+      // El método play() se invoca de forma síncrona desde pointerdown/keydown
+      // para preservar la activación de usuario del navegador.
+      const request = audio.play();
+      if (!request || typeof request.then !== 'function') {
+        starting = false;
+        return;
+      }
+      request.then(() => {
+        starting = false;
+        playing = true;
+        needsGesture = false;
+      }).catch((error) => {
+        starting = false;
+        if (error && error.name === 'NotAllowedError') {
+          needsGesture = true;
+        } else {
+          needsGesture = true;
+          console.warn('[ArcadeCloud noVNC audio] Reproducción no disponible', error);
+        }
+        // No dejar una captura FFmpeg en curso si el navegador impide sonar.
+        audio.pause();
+        audio.removeAttribute('src');
+        audio.load();
+      });
+    }
+
+    audio.addEventListener('playing', () => {
+      playing = true;
+      starting = false;
+      needsGesture = false;
+    });
+    audio.addEventListener('error', () => {
+      if (closed) return;
+      playing = false;
+      starting = false;
+      needsGesture = true;
+      console.warn('[ArcadeCloud noVNC audio] El flujo MP3 no llegó al navegador');
+    });
+    audio.addEventListener('ended', () => {
+      playing = false;
+      starting = false;
+      needsGesture = true;
+      audio.removeAttribute('src');
+    });
+
+    function retryAfterGesture() {
+      if (!playing && !starting && needsGesture) tryStart();
+    }
+    // Solo cuando el usuario interactúa. No hay botón ni tono flotante.
+    document.addEventListener('pointerdown', retryAfterGesture, {capture: true});
+    document.addEventListener('keydown', retryAfterGesture, {capture: true});
+    if (parent) {
+      try {
+        parent.document.addEventListener('pointerdown', retryAfterGesture, {capture: true});
+        parent.document.addEventListener('keydown', retryAfterGesture, {capture: true});
+      } catch (_) { /* noVNC de otro origen */ }
+    }
+
+    window.addEventListener('pagehide', () => {
+      closed = true;
       audio.pause();
       audio.removeAttribute('src');
       audio.load();
-      audio.style.display = 'none';
-      button.textContent = '🔊 Activar sonido';
-      button.setAttribute('aria-pressed', 'false');
-    }
-    button.addEventListener('click', async () => {
-      if (enabled) {
-        stop();
-        return;
-      }
-      enabled = true;
-      audio.muted = false;
-      audio.volume = 1;
-      audio.style.display = 'block';
-      audio.src = '/__office_audio?session=' + Date.now();
-      button.textContent = 'Conectando sonido…';
-      try {
-        await audio.play();
-      } catch (error) {
-        stop();
-        button.textContent = 'Error de audio · reintentar';
-        console.warn('[ArcadeCloud audio]', error);
-      }
-    });
-    audio.addEventListener('playing', () => {
-      if (!enabled) return;
-      button.textContent = '🔇 Detener sonido';
-      button.setAttribute('aria-pressed', 'true');
-    });
-    audio.addEventListener('waiting', () => {
-      if (enabled) button.textContent = 'Audio en espera de datos…';
-    });
-    audio.addEventListener('stalled', () => {
-      if (enabled) button.textContent = 'Audio detenido por la red…';
-    });
-    audio.addEventListener('error', () => {
-      if (!enabled) return;
-      const code = audio.error?.code ?? 0;
-      stop();
-      button.textContent = 'Error de transmisión (' + code + ') · reintentar';
-      console.warn('[ArcadeCloud audio] Error multimedia', code);
-    });
+    }, {once: true});
 
-    test.addEventListener('click', async () => {
-      const AudioCtx = window.AudioContext || window.webkitAudioContext;
-      if (!AudioCtx) {
-        test.textContent = 'Prueba no compatible';
-        return;
-      }
-      const ctx = new AudioCtx();
-      try {
-        await ctx.resume();
-        const oscillator = ctx.createOscillator();
-        const gain = ctx.createGain();
-        oscillator.frequency.value = 523.25;
-        gain.gain.value = 0.035;
-        oscillator.connect(gain);
-        gain.connect(ctx.destination);
-        oscillator.start();
-        oscillator.stop(ctx.currentTime + 0.18);
-        oscillator.onended = () => { ctx.close().catch(() => {}); };
-        test.textContent = '🔔 Tono enviado';
-      } catch (error) {
-        test.textContent = 'Error en salida local';
-        console.warn('[ArcadeCloud audio] Prueba de audífonos', error);
-        ctx.close().catch(() => {});
-      }
-    });
-
-    // Una pestaña cerrada no debe dejar un flujo FFmpeg activo.
-    window.addEventListener('pagehide', stop, {once: true});
-    document.body.appendChild(button);
-    document.body.appendChild(test);
+    // Intentar el audio sin interacción cuando el navegador ya autoriza
+    // autoplay para office.esforzados.com. Si lo bloquea, basta hacer clic
+    // dentro del escritorio, sin modificar políticas de Chrome.
+    tryStart();
   }
+
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', setup, {once: true});
+    document.addEventListener('DOMContentLoaded', boot, {once: true});
   } else {
-    setup();
+    boot();
   }
 })();

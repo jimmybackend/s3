@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+# Usa en XRDP el fondo que el usuario ya eligió en KDE; no toca Plasma.
+# Sólo propiedades de fondo existentes de XFCE, sin recrear el panel ni Dock.
+set -euo pipefail
+export HOME="${HOME:-/home/arcade}"
+
+command -v xfconf-query >/dev/null 2>&1 || exit 0
+
+WALLPAPER="$(python3 - <<'PY'
+from pathlib import Path
+from urllib.parse import unquote, urlparse
+home = Path.home()
+cfg = home / ".config/plasma-org.kde.plasma.desktop-appletsrc"
+paths = []
+try:
+    for line in cfg.read_text(encoding="utf-8").splitlines():
+        if not line.startswith("Image="):
+            continue
+        value = line.split("=", 1)[1].strip()
+        if value.startswith("file://"):
+            value = unquote(urlparse(value).path)
+        if value.startswith("/"):
+            paths.append(Path(value))
+except OSError:
+    pass
+paths.append(home / "Imagenes/windows-10.png")
+for path in paths:
+    if path.is_file() and path.suffix.lower() in (".png", ".jpg", ".jpeg", ".webp"):
+        print(path)
+        break
+PY
+)"
+
+if [[ -z "$WALLPAPER" ]]; then
+  echo "[XFCE] No se encontró fondo de KDE; se conserva fondo XFCE." >&2
+  exit 0
+fi
+
+# XFCE crea los nombres de monitor según la sesión XRDP actual.
+# Nunca escribir rutas de monitor inventadas ni borrar configuraciones.
+while IFS= read -r prop; do
+  [[ "$prop" == /backdrop/*/last-image ]] || continue
+  xfconf-query -c xfce4-desktop -p "$prop" -s "$WALLPAPER" >/dev/null 2>&1 || true
+  style="${prop%/last-image}/image-style"
+  if xfconf-query -c xfce4-desktop -p "$style" >/dev/null 2>&1; then
+    xfconf-query -c xfce4-desktop -p "$style" -s 5 >/dev/null 2>&1 || true
+  fi
+done < <(xfconf-query -c xfce4-desktop -l 2>/dev/null || true)
+echo "[XFCE] Fondo sincronizado con KDE, sin modificar el Dock." >&2

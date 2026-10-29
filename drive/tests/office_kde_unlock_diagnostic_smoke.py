@@ -20,5 +20,5 @@ for forbidden in (
 ):
     assert forbidden not in body, f"Unexpected destructive diagnostic: {forbidden}"
 assert "NoNewPrivs" in body and "/etc/pam.d/kde" in body
-assert "no se cambió ninguna contraseña" not in body.lower() or "no se cambió ninguna contraseña" in body.lower()
+assert "No se cambió ninguna contraseña" in body
 print("OK: diagnóstico KDE/PAM es sintácticamente válido y de solo lectura.")

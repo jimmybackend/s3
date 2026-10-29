@@ -113,6 +113,13 @@ if grep -q '^TZ=' "$ENV_FILE"; then
 else
   printf '%s\n' 'TZ=America/Mexico_City' >> "$ENV_FILE"
 fi
+# La imagen legacy usa un solo escritorio por instancia. El lease
+# Office se fija a un UserId para impedir que otro usuario herede su home.
+# El navegador SSO es la barrera de acceso; el bloqueo PAM de KDE no funciona
+# con no-new-privileges. No aplicar este modo a contenedores multiusuario.
+if ! grep -q '^ARCADECLOUD_OFFICE_LEGACY_SSO=' "$ENV_FILE"; then
+  printf '%s\n' 'ARCADECLOUD_OFFICE_LEGACY_SSO=1' >> "$ENV_FILE"
+fi
 chown root:root "$ENV_FILE"
 chmod 0600 "$ENV_FILE"
 

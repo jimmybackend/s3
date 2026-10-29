@@ -47,6 +47,18 @@ final class OfficeSessionLeaseRepository
             $current = $stmt->get_result()?->fetch_assoc();
             $stmt->close();
 
+            // Fase legacy: todos los navegadores comparten el mismo
+            // /home/arcade y el mismo escritorio. Incluso con lease
+            // vencido no permitir que otro UserId herede datos/cookies.
+            // El broker multiusuario futuro asignará volúmenes aislados y
+            // sustituirá esta reserva exclusiva por leases por usuario.
+            if (is_array($current) && (int)($current['UserId'] ?? 0) !== $userId) {
+                throw new RuntimeException(
+                    'Office legacy está asignado a otro usuario. '
+                    . 'Se requiere un escritorio individual; no se pueden compartir sus datos.'
+                );
+            }
+
             if (is_array($current) && (int)($current['IsActive'] ?? 0) === 1) {
                 $sameUser = (int)($current['UserId'] ?? 0) === $userId;
                 $sameKey = hash_equals((string)($current['SessionKeyHash'] ?? ''), $hash);

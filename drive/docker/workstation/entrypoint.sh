@@ -119,6 +119,13 @@ if [ "${ARCADECLOUD_DESKTOP:-xfce}" = "plasma" ]; then
         exit 1
     fi
 
+    # El único propietario legacy se autentica en office.esforzados.com.
+    # KDE/noVNC no debe crear un segundo bloqueo PAM que, con
+    # no-new-privileges, no logra leer las credenciales de /etc/shadow.
+    # No se aplica a XRDP, otros transportes ni futuros contenedores por usuario.
+    python3 /usr/local/bin/arcadecloud-kde-remote-sso.py \
+      >/tmp/arcade-kde-remote-sso.log 2>&1
+
     echo "Iniciando KDE Plasma X11"
     exec startplasma-x11 >/tmp/arcade-plasma.log 2>&1
 fi

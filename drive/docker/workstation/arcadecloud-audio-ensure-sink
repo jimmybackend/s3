@@ -33,17 +33,7 @@ if ! printf '%s\n' "$sinks" | awk -v n="$SINK" '$2==n {found=1} END {exit !found
   sinks="$(pactl list short sinks)"
 fi
 
-# Solo elegirlo en la sesión noVNC cuando NO haya otra salida.
-# No cambiar el predeterminado si Guacamole está funcionando.
-if [[ "${DISPLAY:-}" =~ ^:([1-9])(\.[0-9]+)?$ ]]; then
-  other="$(printf '%s\n' "$sinks" | awk -v n="$SINK" '$2!=n && NF>1 {print $2}')"
-  if [[ -z "$other" ]]; then
-    pactl set-default-sink "$SINK" || {
-      echo "[Office audio] Falló la selección de la salida virtual." >&2
-      exit 1
-    }
-    echo "[Office audio] Salida predeterminada KDE/noVNC: $SINK." >&2
-  fi
-fi
-
+# No cambiar el predeterminado global: el mismo PipeWire atiende XRDP.
+# La sesión noVNC selecciona este sink mediante su propio PULSE_SINK,
+# heredado por KDE y sus aplicaciones, sin desviar el audio de Guacamole.
 pactl list short sinks | awk -v n="$SINK" '$2==n {print "[Office audio] Disponible: " n ".monitor"}'

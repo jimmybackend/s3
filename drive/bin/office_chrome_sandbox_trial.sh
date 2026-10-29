@@ -138,7 +138,7 @@ if [[ "$ENABLE_ON_PASS" -eq 1 ]]; then
   hash="$(sha256sum "$profile" | awk '{print $1}')"
   temporary_marker="$(mktemp /etc/arcadecloud-drive/.chrome-sandbox-enabled.XXXXXXXX)"
   trap 'rm -f "$temporary_marker"; rm -rf "$temp_dir"' EXIT
-  printf '%s\\n' "$hash" > "$temporary_marker"
+  printf '%s\n' "$hash" > "$temporary_marker"
   chown root:root "$temporary_marker"
   chmod 0600 "$temporary_marker"
   mv -f "$temporary_marker" "$marker"

@@ -54,7 +54,7 @@
     function tryStart() {
       if (closed || playing || starting) return;
       starting = true;
-      if (!audio.src) audio.src = '/__office_audio?session=' + Date.now();
+      if (!audio.hasAttribute('src')) audio.src = '/__office_audio?session=' + Date.now();
       // El método play() se invoca de forma síncrona desde pointerdown/keydown
       // para preservar la activación de usuario del navegador.
       const request = audio.play();

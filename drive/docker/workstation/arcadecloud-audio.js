@@ -9,8 +9,15 @@
     // Office ofrece el mismo control fuera del iframe. Evitar abrir
     // streams duplicados cuando la página principal ya tiene controles.
     try {
-      if (window.parent !== window &&
-          window.parent.document.getElementById('officeAudioToggle')) return;
+      if (window.parent !== window) {
+        const parentToggle = window.parent.document.getElementById('officeAudioToggle');
+        const parentTest = window.parent.document.getElementById('officeAudioTest');
+        if (parentToggle && parentTest) return;
+        // El gateway antiguo todavía no incluye diagnóstico ni volumen.
+        // Preferir los nuevos controles internos hasta actualizarlo,
+        // sin dejar dos transmisiones activables.
+        if (parentToggle) parentToggle.style.display = 'none';
+      }
     } catch (_) {
       // noVNC autónomo: mostrar los controles dentro del visor.
     }

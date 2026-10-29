@@ -32,6 +32,7 @@ final class FolderMutationService
 
         $physical = $this->codec->createFolderObjectName($name);
         $prefix = $this->normalizePrefix($route . $physical);
+        StorageObjectNameCodec::assertS3KeyLength($prefix);
         if (!str_starts_with($prefix, $base)) throw new RuntimeException('Ruta fuera de la carpeta base del usuario.');
 
         $this->s3->putObject([
@@ -82,10 +83,13 @@ final class FolderMutationService
         if ($origin === $base) throw new RuntimeException('No puedes mover la carpeta raíz.');
 
         $final = $this->normalizePrefix($destination . basename(rtrim($origin, '/')));
+        StorageObjectNameCodec::assertS3KeyLength($final);
         if ($origin === $final) throw new RuntimeException('El destino es igual al origen.');
         if (str_starts_with($final, $origin)) throw new RuntimeException('No puedes mover una carpeta dentro de sí misma.');
 
-        $listRequests = 1;
+        // Preflight a longer destination before changing any S3 objects.
+        $listRequests = 1 + ($this->needsTreePreflight($origin, $final)
+            ? $this->preflightTreeDestination($origin, $final) : 0);
         $copyRequests = 0;
         $deleteRequests = 0;
 
@@ -109,6 +113,7 @@ final class FolderMutationService
             foreach (($objects['Contents'] ?? []) as $object) {
                 $oldKey = (string)$object['Key'];
                 $newKey = $final . substr($oldKey, strlen($origin));
+                StorageObjectNameCodec::assertS3KeyLength($newKey);
                 (new S3ObjectCopyService($this->s3, $this->bucket))->copy($oldKey, $newKey);
                 $copyRequests++;
                 $toDelete[] = ['Key' => $oldKey];
@@ -160,9 +165,13 @@ final class FolderMutationService
         $copyName = $this->uniqueCopyName($userId, $destination, $sourceName);
         $physical = $this->codec->createFolderObjectName($copyName);
         $final = $this->normalizePrefix($destination . $physical);
+        StorageObjectNameCodec::assertS3KeyLength($final);
+        // Avoid creating an empty partial destination if any descendant is too long.
+        $preflightRequests = $this->needsTreePreflight($origin, $final)
+            ? $this->preflightTreeDestination($origin, $final) : 0;
 
         $copiedKeys = [];
-        $listRequests = 0;
+        $listRequests = $preflightRequests;
         $copyRequests = 0;
         $putRequests = 1;
 
@@ -188,6 +197,7 @@ final class FolderMutationService
                     if ($oldKey === '' || $oldKey === $origin) continue;
 
                     $newKey = $final . substr($oldKey, strlen($origin));
+                    StorageObjectNameCodec::assertS3KeyLength($newKey);
                     (new S3ObjectCopyService($this->s3, $this->bucket))->copy($oldKey, $newKey);
                     $copyRequests++;
                     $copiedKeys[] = ['Key' => $newKey];
@@ -266,6 +276,36 @@ final class FolderMutationService
             'folders_deleted' => $deleted['folders'],
             'parent' => $this->parentPrefix($route) ?: $base,
         ];
+    }
+
+    private function needsTreePreflight(string $origin, string $destination): bool
+    {
+        // Existing S3 keys are valid. Replacing a prefix with an equal or
+        // shorter one cannot make their total byte lengths exceed 1024.
+        return strlen($destination) > strlen($origin);
+    }
+
+    /** Check every derived key before any mutation, including paginated trees. */
+    private function preflightTreeDestination(string $origin, string $destination): int
+    {
+        $requests = 0;
+        $continuation = null;
+        do {
+            $params = ['Bucket' => $this->bucket, 'Prefix' => $origin, 'MaxKeys' => 1000];
+            if ($continuation) $params['ContinuationToken'] = $continuation;
+            $objects = $this->s3->listObjectsV2($params);
+            $requests++;
+            foreach (($objects['Contents'] ?? []) as $object) {
+                $oldKey = (string)($object['Key'] ?? '');
+                if ($oldKey === '' || !str_starts_with($oldKey, $origin)) continue;
+                StorageObjectNameCodec::assertS3KeyLength(
+                    $destination . substr($oldKey, strlen($origin))
+                );
+            }
+            $continuation = !empty($objects['IsTruncated'])
+                ? ($objects['NextContinuationToken'] ?? null) : null;
+        } while ($continuation);
+        return $requests;
     }
 
     private function uniqueCopyName(int $userId, string $parent, string $name): string

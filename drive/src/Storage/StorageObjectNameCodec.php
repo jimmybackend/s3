@@ -9,7 +9,20 @@ final class StorageObjectNameCodec
 {
     private const FILE_PREFIX = 'f_';
     private const FOLDER_PREFIX = 'd_';
-    private const TOKEN_BYTES = 16;
+    private const TOKEN_BYTES = 8;
+    public const MAX_S3_KEY_BYTES = 1024;
+
+    /** S3 counts UTF-8 bytes across the entire object key, including folder prefixes. */
+    public static function assertS3KeyLength(string $key): void
+    {
+        $bytes = strlen($key);
+        if ($bytes === 0 || $bytes > self::MAX_S3_KEY_BYTES) {
+            throw new RuntimeException(
+                "La ruta completa del objeto S3 ocupa {$bytes} bytes (máximo 1024). " .
+                'Acorta el nombre o utiliza una carpeta de destino menos profunda.'
+            );
+        }
+    }
 
     public function createFileObjectName(string $visibleName): string
     {
@@ -30,8 +43,8 @@ final class StorageObjectNameCodec
             return null;
         }
 
-        // Formato actual: f_<32 hex>-<nombre visible>
-        if (preg_match('/^f_[a-f0-9]{32}-(.+)$/iu', $base, $match) === 1) {
+        // Formatos: 16 hex para objetos nuevos; 32 hex heredados.
+        if (preg_match('/^f_[a-f0-9]{16}(?:[a-f0-9]{16})?-(.+)$/iu', $base, $match) === 1) {
             return $this->cleanRecovered($match[1]);
         }
 
@@ -51,7 +64,7 @@ final class StorageObjectNameCodec
             return null;
         }
 
-        if (preg_match('/^d_[a-f0-9]{32}-(.+)$/iu', $segment, $match) === 1) {
+        if (preg_match('/^d_[a-f0-9]{16}(?:[a-f0-9]{16})?-(.+)$/iu', $segment, $match) === 1) {
             return $this->cleanRecovered($match[1]);
         }
 

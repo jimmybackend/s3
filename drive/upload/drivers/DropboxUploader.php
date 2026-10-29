@@ -93,6 +93,7 @@ final class DropboxUploader implements UploaderInterface
             $metadatosJSON = json_encode($metadatosArray, JSON_UNESCAPED_UNICODE);
 
             try {
+                StorageObjectNameCodec::assertS3KeyLength($keyFinal);
                 $this->s3->putObject([
                     'Bucket' => $this->bucket,
                     'Key' => $keyFinal,

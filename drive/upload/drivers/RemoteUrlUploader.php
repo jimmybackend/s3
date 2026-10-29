@@ -290,6 +290,7 @@ final class RemoteUrlUploader implements UploaderInterface
 
         $nombreEncriptado = $this->codec->createFileObjectName($nombreOriginal);
         $key = $carpeta . '/' . $nombreEncriptado;
+        StorageObjectNameCodec::assertS3KeyLength($key);
 
         $buffer = '';
         $uploadId = null;

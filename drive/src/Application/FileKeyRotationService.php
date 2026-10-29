@@ -31,6 +31,7 @@ final class FileKeyRotationService
         }
         $newBase = $this->names->createFileObjectName($visible);
         $newKey = $route . $newBase;
+        StorageObjectNameCodec::assertS3KeyLength($newKey);
 
         $this->s3->copyObject([
             'Bucket' => $this->bucket,

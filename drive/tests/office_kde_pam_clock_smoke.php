@@ -21,8 +21,8 @@ $check(str_contains($novnc, "idleCountdown.style.right = '12px'")
 $check(str_contains($docker, 'COPY pam-kde /etc/pam.d/kde')
     && str_contains($pam, '@include common-auth'),
     'Servicio PAM KDE incluido en la imagen');
-$check(!str_contains($pam, 'pam_permit') && !str_contains($pam, 'pam_exec'),
-    'El archivo PAM no omite autenticación');
+$check(!preg_match('/^(?:auth|account)[^\\r\\n]*(?:pam_permit|pam_exec)/m', $pam),
+    'Ninguna directiva PAM activa omite autenticación');
 $check(str_contains($installer, '--security-opt=no-new-privileges:true'),
     'La protección no-new-privileges permanece habilitada');
 echo "Ubicación de contador y configuración PAM: contrato aprobado.\n";

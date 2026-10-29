@@ -93,6 +93,7 @@ final class LocalPresignedPutUploader implements UploaderInterface
 
         $nombreEncriptado = $this->codec->createFileObjectName($nombreOriginal);
         $key = $rutaObjetivo . $nombreEncriptado;
+        StorageObjectNameCodec::assertS3KeyLength($key);
 
         $claimedSha256 = strtolower(trim((string)($req['sha256'] ?? '')));
         if ($claimedSha256 !== '') {
